@@ -1,0 +1,9 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/ToolKit/v16
+/ToolKit/x64/Release_Static
+/Samples/SpaceShooter/x64/Release_Static
+/ToolKit/x64/Debug_Static
+/Samples/SpaceShooter/x64/Debug_Static
