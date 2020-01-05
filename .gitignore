@@ -7,3 +7,6 @@
 /Samples/SpaceShooter/x64/Release_Static
 /ToolKit/x64/Debug_Static
 /Samples/SpaceShooter/x64/Debug_Static
+/.vs/ToolKit/DesignTimeBuild
+/ToolKit/x64
+/Samples/SpaceShooter/x64
