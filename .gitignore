@@ -10,3 +10,9 @@
 /.vs/ToolKit/DesignTimeBuild
 /ToolKit/x64
 /Samples/SpaceShooter/x64
+/Editor/obj/Debug_Editor/netcoreapp3.0
+/Editor/obj/Release_Editor/netcoreapp3.0
+/Editor/bin/Debug_Editor/netcoreapp3.0
+/Editor/bin/Release_Editor/netcoreapp3.0
+/ToolKit/Release_Editor
+/Bin
