@@ -75,9 +75,6 @@
     <ClInclude Include="..\Source\Surface.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\TestApp.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\Texture.h">
       <Filter>Source</Filter>
     </ClInclude>

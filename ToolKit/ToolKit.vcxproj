@@ -111,7 +111,6 @@
     <ClInclude Include="..\Source\SpriteSheet.h" />
     <ClInclude Include="..\Source\stdafx.h" />
     <ClInclude Include="..\Source\Surface.h" />
-    <ClInclude Include="..\Source\TestApp.h" />
     <ClInclude Include="..\Source\Texture.h" />
     <ClInclude Include="..\Source\Util.h" />
   </ItemGroup>
