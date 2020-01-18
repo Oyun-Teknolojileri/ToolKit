@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "Editor": {
-      "commandName": "Project",
-      "workingDirectory": "$(SolutionDir)Bin",
-      "nativeDebugging": true
-    }
-  }
-}

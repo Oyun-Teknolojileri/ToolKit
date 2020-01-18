@@ -16,3 +16,6 @@
 /Editor/bin/Release_Editor/netcoreapp3.0
 /ToolKit/Release_Editor
 /Bin
+/.vs
+/.vs
+/Dependency/Glm/out/build/x64-Debug
