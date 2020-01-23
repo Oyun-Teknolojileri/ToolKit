@@ -12,8 +12,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{7A30B3BF-4169-45D4-84EF-B00DC94D8B1C}</ProjectGuid>
-    <RootNamespace>Template</RootNamespace>
+    <ProjectGuid>{4c9f2815-b688-431c-966c-f9aedac07a78}</ProjectGuid>
+    <RootNamespace>Editor</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

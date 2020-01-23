@@ -1,0 +1,17 @@
+ToolKit Initialization
+Initiating manager class ToolKit::Animation
+Initiating manager class ToolKit::Texture
+Initiating manager class ToolKit::Mesh
+Initiating manager class ToolKit::SkinMesh
+Initiating manager class ToolKit::SpriteSheet
+Initiating manager class ToolKit::Audio
+Initiating manager class ToolKit::Shader
+Initiating manager class ToolKit::Material
+Uninitiating manager class ToolKit::Animation
+Uninitiating manager class ToolKit::Texture
+Uninitiating manager class ToolKit::Mesh
+Uninitiating manager class ToolKit::SkinMesh
+Uninitiating manager class ToolKit::SpriteSheet
+Uninitiating manager class ToolKit::Audio
+Uninitiating manager class ToolKit::Shader
+Uninitiating manager class ToolKit::Material
