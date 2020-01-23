@@ -1,8 +1,8 @@
 #include "App.h"
 #include "SDL.h"
 #include "SDL_ttf.h"
-#include "DebugNew.h"
 #include <chrono>
+#include "DebugNew.h"
 
 // Setup.
 const char* appName = "$safeprojectname$";
@@ -10,7 +10,7 @@ const int width = 640;
 const int height = 480;
 const unsigned int fps = 60;
 
-// Global handels.
+// Global handles.
 SDL_Window* g_window = nullptr;
 SDL_GLContext g_context = nullptr;
 $safeprojectname$::App* g_app;
@@ -112,10 +112,7 @@ void ProcessEvent(SDL_Event e)
 
 int main(int argc, char* argv[])
 {
-#ifdef _DEBUG
-	_CrtMemState memState;
-	_CrtMemCheckpoint(&memState);
-#endif
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	Init();
 
@@ -148,10 +145,6 @@ int main(int argc, char* argv[])
 	}
 
 	Exit();
-
-#ifdef _DEBUG
-	_CrtMemDumpAllObjectsSince(&memState);
-#endif
 
 	return 0;
 }

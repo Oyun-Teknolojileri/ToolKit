@@ -20,3 +20,4 @@
 /.vs
 /Dependency/Glm/out/build/x64-Debug
 /Editor/x64
+/x64/Debug

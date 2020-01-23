@@ -70,13 +70,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\..\Bin\</OutDir>
+    <OutDir>..\Bin\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>$(SolutionDir)Source;$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\LoadPng;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(SolutionDir)Dependency\Glew\lib\Release\x64;$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>..\..\Bin\</OutDir>
+    <OutDir>..\Bin\</OutDir>
     <IncludePath>$(SolutionDir)Source;$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\LoadPng;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(SolutionDir)Dependency\Glew\lib\Release\x64;$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>

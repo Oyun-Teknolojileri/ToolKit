@@ -163,10 +163,7 @@ unsigned long GetMilliSeconds()
 
 int main(int argc, char *argv[])
 {
-#ifdef _DEBUG
-  _CrtMemState memstate1;
-  _CrtMemCheckpoint(&memstate1);
-#endif
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
   Init();
 
@@ -226,10 +223,6 @@ int main(int argc, char *argv[])
   }
 
   Exit();
-
-#ifdef _DEBUG
-  _CrtMemDumpAllObjectsSince(&memstate1);
-#endif
 
   return 0;
 }

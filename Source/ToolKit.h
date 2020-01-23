@@ -7,7 +7,6 @@
 #include "Animation.h"
 #include "Material.h"
 #include "Shader.h"
-#include "GL\glew.h"
 
 namespace ToolKit
 {
