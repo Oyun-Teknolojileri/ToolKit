@@ -2,7 +2,7 @@
 
 #include "ToolKit.h"
 #include "Primative.h"
-#include "Renderer.h""
+#include "Renderer.h"
 #include "Directional.h"
 
 #include "ImGui/imgui.h"
@@ -41,11 +41,12 @@ namespace Editor
 		{
 			m_renderer.Render(&m_cube, &m_cam);
 
-			//ImGui_ImplOpenGL3_NewFrame();
-			//ImGui_ImplSDL2_NewFrame(g_window);
-			//ImGui::NewFrame();
-			//ImGui::ShowDemoWindow();
-			//ImGui::Render();
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplSDL2_NewFrame(g_window);
+			ImGui::NewFrame();
+			ImGui::ShowDemoWindow();
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
 
 	private:
