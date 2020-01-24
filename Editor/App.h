@@ -1,6 +1,9 @@
 #pragma once
 
 #include "ToolKit.h"
+#include "Primative.h"
+#include "Renderer.h""
+#include "Directional.h"
 
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl.h"
@@ -30,19 +33,27 @@ namespace Editor
 
 		void Init()
 		{
+			m_cube.m_mesh->Init();
+			m_cam.Translate(vec3(0.0f, 0.0f, 2.0f));
 		}
 
 		void Frame(int deltaTime)
 		{
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplSDL2_NewFrame(g_window);
-			ImGui::NewFrame();
-			ImGui::ShowDemoWindow();
-			ImGui::Render();
+			m_renderer.Render(&m_cube, &m_cam);
+
+			//ImGui_ImplOpenGL3_NewFrame();
+			//ImGui_ImplSDL2_NewFrame(g_window);
+			//ImGui::NewFrame();
+			//ImGui::ShowDemoWindow();
+			//ImGui::Render();
 		}
 
 	private:
 		int m_windowWidth;
 		int m_windowHeight;
+
+		Cube m_cube;
+		Renderer m_renderer;
+		Camera m_cam;
 	};
 }

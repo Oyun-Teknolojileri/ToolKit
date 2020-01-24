@@ -14,8 +14,8 @@
 
 // Setup.
 const char* appName = "Editor";
-const int width = 640;
-const int height = 480;
+const int width = 1024;
+const int height = 768;
 const unsigned int fps = 60;
 
 // Global handles.
@@ -37,7 +37,6 @@ void Init()
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
-		SDL_SetRelativeMouseMode(SDL_TRUE);
 
 		g_window = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 		if (g_window == nullptr)
@@ -65,9 +64,11 @@ void Init()
 				if (TTF_Init() == -1)
 					return;
 
+				ToolKit::Main::GetInstance()->Init();
+
 				// Set defaults
-				SDL_ShowCursor(SDL_ENABLE);
 				SDL_GL_SetSwapInterval(1);
+				
 				glEnable(GL_CULL_FACE);
 				glEnable(GL_DEPTH_TEST);
 				glEnable(GL_MULTISAMPLE);
@@ -137,10 +138,9 @@ int main(int argc, char* argv[])
 	ImGui::StyleColorsDark();
 
 	ImGui_ImplSDL2_InitForOpenGL(g_window, g_context);
-	ImGui_ImplOpenGL3_Init("#version 130");
+	ImGui_ImplOpenGL3_Init("#version 300 es");
 
 	// Continue with editor.
-
 	unsigned int lastTime = GetMilliSeconds();
 	unsigned int currentTime;
 	unsigned int deltaTime = 1000 / fps;
