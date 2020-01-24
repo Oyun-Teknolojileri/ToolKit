@@ -2,6 +2,12 @@
 
 #include "ToolKit.h"
 
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_sdl.h"
+#include "ImGui/imgui_impl_opengl3.h"
+
+extern SDL_Window* g_window;
+
 namespace Editor
 {
 	using namespace ToolKit;
@@ -28,6 +34,11 @@ namespace Editor
 
 		void Frame(int deltaTime)
 		{
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplSDL2_NewFrame(g_window);
+			ImGui::NewFrame();
+			ImGui::ShowDemoWindow();
+			ImGui::Render();
 		}
 
 	private:

@@ -1,6 +1,14 @@
 #include "App.h"
+
+// Imgui
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_sdl.h"
+#include "ImGui/imgui_impl_opengl3.h"
+#include <stdio.h>
 #include "SDL.h"
 #include "SDL_ttf.h"
+
+// Others
 #include <chrono>
 #include "DebugNew.h"
 
@@ -58,6 +66,7 @@ void Init()
 					return;
 
 				// Set defaults
+				SDL_ShowCursor(SDL_ENABLE);
 				SDL_GL_SetSwapInterval(1);
 				glEnable(GL_CULL_FACE);
 				glEnable(GL_DEPTH_TEST);
@@ -87,6 +96,10 @@ void Exit()
 	g_running = false;
 	SafeDel(g_app);
 
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+	ImGui::DestroyContext();
+
 	SDL_DestroyWindow(g_window);
 	TTF_Quit();
 	SDL_Quit();
@@ -115,6 +128,18 @@ int main(int argc, char* argv[])
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	Init();
+
+	// Init imgui
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+	ImGui::StyleColorsDark();
+
+	ImGui_ImplSDL2_InitForOpenGL(g_window, g_context);
+	ImGui_ImplOpenGL3_Init("#version 130");
+
+	// Continue with editor.
 
 	unsigned int lastTime = GetMilliSeconds();
 	unsigned int currentTime;
