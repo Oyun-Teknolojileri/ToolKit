@@ -108,6 +108,15 @@ void Exit()
 
 void ProcessEvent(SDL_Event e)
 {
+	if (e.type == SDL_WINDOWEVENT)
+	{
+		if (e.window.event == SDL_WINDOWEVENT_RESIZED) 
+		{
+			glViewport(0, 0, e.window.data1, e.window.data2);
+			g_app->OnResize(e.window.data1, e.window.data2);
+		}
+	}
+
 	if (e.type == SDL_QUIT)
 		g_running = false;
 

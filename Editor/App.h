@@ -49,6 +49,13 @@ namespace Editor
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
 
+		void OnResize(int width, int height)
+		{
+			m_windowWidth = width;
+			m_windowHeight = height;
+			m_cam.SetLens(glm::radians(90.0f), (float)m_windowWidth, (float)m_windowHeight, 0.01f, 1000.0f);
+		}
+
 	private:
 		int m_windowWidth;
 		int m_windowHeight;
