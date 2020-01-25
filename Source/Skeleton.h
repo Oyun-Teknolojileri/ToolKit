@@ -26,8 +26,10 @@ namespace ToolKit
     Skeleton(std::string file);
     ~Skeleton();
 
-    void Init(bool flushClientSideArray = true);
-    void Load();
+    virtual void Init(bool flushClientSideArray = true) override;
+		virtual void UnInit() override;
+    virtual void Load() override;
+
     void AddBone(Bone* bone, Bone* parent = nullptr);
     int GetBoneIndex(std::string bone);
     Bone* GetBone(std::string bone);

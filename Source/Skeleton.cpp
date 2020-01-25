@@ -29,10 +29,7 @@ ToolKit::Skeleton::Skeleton(std::string file)
 
 ToolKit::Skeleton::~Skeleton()
 {
-  SafeDel(m_node);
-  for (auto bone : m_bones)
-    SafeDel(bone);
-  m_bones.clear();
+	UnInit();
 }
 
 void ToolKit::Skeleton::Init(bool flushClientSideArray)
@@ -46,6 +43,14 @@ void ToolKit::Skeleton::Init(bool flushClientSideArray)
 
   m_initiated = true;
   */
+}
+
+void ToolKit::Skeleton::UnInit()
+{
+	SafeDel(m_node);
+	for (auto bone : m_bones)
+		SafeDel(bone);
+	m_bones.clear();
 }
 
 void ToolKit::Skeleton::Load()

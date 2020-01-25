@@ -18,8 +18,7 @@ ToolKit::SpriteSheet::SpriteSheet(std::string file)
 
 ToolKit::SpriteSheet::~SpriteSheet()
 {
-  for (auto entry : m_sprites)
-    SafeDel(entry.second);
+	UnInit();
 }
 
 void ToolKit::SpriteSheet::Load()
@@ -49,6 +48,12 @@ void ToolKit::SpriteSheet::Init(bool flushClientSideArray)
     entry.second->Init(flushClientSideArray);
 
   m_initiated = true;
+}
+
+void ToolKit::SpriteSheet::UnInit()
+{
+	for (auto entry : m_sprites)
+		SafeDel(entry.second);
 }
 
 bool ToolKit::SpriteSheet::FetchEntries()

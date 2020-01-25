@@ -1,21 +1,14 @@
 #include "App.h"
-
-// Imgui
-#include "ImGui/imgui.h"
-#include "ImGui/imgui_impl_sdl.h"
-#include "ImGui/imgui_impl_opengl3.h"
 #include <stdio.h>
+#include <chrono>
 #include "SDL.h"
 #include "SDL_ttf.h"
-
-// Others
-#include <chrono>
 #include "DebugNew.h"
 
 // Setup.
 const char* appName = "Editor";
 const int width = 1024;
-const int height = 768;
+const int height = 640;
 const unsigned int fps = 60;
 
 // Global handles.
@@ -108,6 +101,8 @@ void Exit()
 
 void ProcessEvent(SDL_Event e)
 {
+	ImGui_ImplSDL2_ProcessEvent(&e);
+
 	if (e.type == SDL_WINDOWEVENT)
 	{
 		if (e.window.event == SDL_WINDOWEVENT_RESIZED) 
@@ -143,6 +138,7 @@ int main(int argc, char* argv[])
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 	ImGui::StyleColorsDark();
 

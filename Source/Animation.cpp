@@ -18,6 +18,7 @@ ToolKit::Animation::Animation(std::string file)
 
 ToolKit::Animation::~Animation()
 {
+	UnInit();
 }
 
 void ToolKit::Animation::GetCurrentPose(Node* node)
@@ -123,6 +124,10 @@ void ToolKit::Animation::Load()
 }
 
 void ToolKit::Animation::Init(bool flushClientSideArray)
+{
+}
+
+void ToolKit::Animation::UnInit()
 {
 }
 

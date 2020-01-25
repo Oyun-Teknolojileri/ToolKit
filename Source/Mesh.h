@@ -26,8 +26,9 @@ namespace ToolKit
     Mesh(std::string file);
     virtual ~Mesh();
 
-    virtual void Init(bool flushClientSideArray = true);
-    virtual void Load();
+    virtual void Init(bool flushClientSideArray = true) override;
+		virtual void UnInit() override;
+    virtual void Load() override;
     virtual int GetVertexSize();
     virtual bool IsSkinned();
 
@@ -66,8 +67,10 @@ namespace ToolKit
     SkinMesh(std::string file);
     ~SkinMesh();
 
-    void Init(bool flushClientSideArray = true);
-    void Load();
+    virtual void Init(bool flushClientSideArray = true) override;
+		virtual void UnInit() override;
+    virtual void Load() override;
+
     int GetVertexSize();
     bool IsSkinned();
 

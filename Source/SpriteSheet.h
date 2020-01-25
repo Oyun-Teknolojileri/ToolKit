@@ -26,8 +26,9 @@ namespace ToolKit
     SpriteSheet(std::string file);
     ~SpriteSheet();
 
-    void Load();
-    void Init(bool flushClientSideArray = true);
+    virtual void Load() override;
+    virtual void Init(bool flushClientSideArray = true) override;
+		virtual void UnInit() override;
 
   private:
     bool FetchEntries();

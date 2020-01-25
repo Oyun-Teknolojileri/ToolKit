@@ -24,8 +24,9 @@ namespace ToolKit
     Shader(std::string file);
     ~Shader();
 
-    void Load();
-    void Init(bool flushClientSideArray = true);
+    virtual void Load() override;
+    virtual void Init(bool flushClientSideArray = true) override;
+		virtual void UnInit() override;
 
   public:
     GLuint m_type = GL_VERTEX_SHADER;

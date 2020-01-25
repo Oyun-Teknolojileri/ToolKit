@@ -16,6 +16,7 @@ ToolKit::Material::Material(std::string file)
 
 ToolKit::Material::~Material()
 {
+	UnInit();
 }
 
 void ToolKit::Material::Load()
@@ -113,6 +114,10 @@ void ToolKit::Material::Init(bool flushClientSideArray)
   }
 
   m_initiated = true;
+}
+
+void ToolKit::Material::UnInit()
+{
 }
 
 ToolKit::Material* ToolKit::Material::GetCopy()

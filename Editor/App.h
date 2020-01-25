@@ -5,11 +5,7 @@
 #include "Renderer.h"
 #include "Directional.h"
 
-#include "ImGui/imgui.h"
-#include "ImGui/imgui_impl_sdl.h"
-#include "ImGui/imgui_impl_opengl3.h"
-
-extern SDL_Window* g_window;
+#include "GUI.h"
 
 namespace Editor
 {
@@ -41,12 +37,7 @@ namespace Editor
 		{
 			m_renderer.Render(&m_cube, &m_cam);
 
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplSDL2_NewFrame(g_window);
-			ImGui::NewFrame();
-			ImGui::ShowDemoWindow();
-			ImGui::Render();
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			EditorGUI::PresentGUI();
 		}
 
 		void OnResize(int width, int height)

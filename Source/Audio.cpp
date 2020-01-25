@@ -148,7 +148,7 @@ ToolKit::Audio::Audio(std::string file)
 
 ToolKit::Audio::~Audio()
 {
-  alDeleteBuffers(1, &m_buffer);
+	UnInit();
 }
 
 void ToolKit::Audio::Init(bool flushClientSideArray)
@@ -161,6 +161,11 @@ void ToolKit::Audio::Load()
   ALenum tmp3;
   loadWavFile(m_file.c_str(), &m_buffer, &tmp1, &tmp2, &tmp3);
   m_loaded = true;
+}
+
+void ToolKit::Audio::UnInit()
+{
+	alDeleteBuffers(1, &m_buffer);
 }
 
 void ToolKit::AudioManager::Init()

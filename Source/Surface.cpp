@@ -28,6 +28,7 @@ ToolKit::Surface::Surface(std::string file, glm::vec2 pivotOffset)
 
 ToolKit::Surface::~Surface()
 {
+	UnInit();
 }
 
 ToolKit::EntityType ToolKit::Surface::GetType()
@@ -59,6 +60,10 @@ void ToolKit::Surface::Init(bool flushClientSideArray)
   m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
 
   m_initiated = true;
+}
+
+void ToolKit::Surface::UnInit()
+{
 }
 
 void ToolKit::Surface::CreateQuat()

@@ -15,8 +15,9 @@ namespace ToolKit
     Texture(std::string file);
     virtual ~Texture();
 
-    virtual void Load();
-    virtual void Init(bool flushClientSideArray = true);
+    virtual void Load() override;
+    virtual void Init(bool flushClientSideArray = true) override;
+		virtual void UnInit() override;
 
   public:
     GLuint m_textureId = 0;
@@ -32,8 +33,9 @@ namespace ToolKit
     CubeMap(std::string file);
     ~CubeMap();
 
-    void Load();
-    void Init(bool flushClientSideArray = true);
+    virtual void Load() override;
+    virtual void Init(bool flushClientSideArray = true) override;
+		virtual void UnInit() override;
 
   public:
     std::vector<std::vector<unsigned char>> m_images;
@@ -42,11 +44,12 @@ namespace ToolKit
   class RenderTarget : public Texture
   {
   public:
-    RenderTarget(const glm::ivec2& size);
+    RenderTarget(unsigned int widht, unsigned int height);
 		virtual ~RenderTarget();
 
-    void Load();
-    void Init(bool flushClientSideArray = true);
+    virtual void Load() override;
+    virtual void Init(bool flushClientSideArray = true) override;
+		virtual void UnInit() override;
 
 	public:
 		GLuint m_frameBufferId = 0;

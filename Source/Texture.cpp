@@ -14,7 +14,7 @@ ToolKit::Texture::Texture(std::string file)
 
 ToolKit::Texture::~Texture()
 {
-  glDeleteTextures(1, &m_textureId);
+	UnInit();
 }
 
 void ToolKit::Texture::Load()
@@ -45,6 +45,11 @@ void ToolKit::Texture::Init(bool flushClientSideArray)
   m_initiated = true;
 }
 
+void ToolKit::Texture::UnInit()
+{
+	glDeleteTextures(1, &m_textureId);
+}
+
 ToolKit::CubeMap::CubeMap()
 {
 }
@@ -56,6 +61,7 @@ ToolKit::CubeMap::CubeMap(std::string file)
 
 ToolKit::CubeMap::~CubeMap()
 {
+	UnInit();
 }
 
 void ToolKit::CubeMap::Load()
@@ -152,18 +158,21 @@ void ToolKit::CubeMap::Init(bool flushClientSideArray)
   m_initiated = true;
 }
 
-ToolKit::RenderTarget::RenderTarget(const glm::ivec2& size)
+void ToolKit::CubeMap::UnInit()
 {
-	m_width = size.x;
-	m_height = size.y;
+}
+
+ToolKit::RenderTarget::RenderTarget(unsigned int width, unsigned int height)
+{
+	m_width = width;
+	m_height = height;
 	m_frameBufferId = 0;
 	m_depthBufferId = 0;
 }
 
 ToolKit::RenderTarget::~RenderTarget()
 {
-	glDeleteFramebuffers(1, &m_frameBufferId);
-	glDeleteRenderbuffers(1, &m_depthBufferId);
+	UnInit();
 }
 
 void ToolKit::RenderTarget::Load()
@@ -217,4 +226,10 @@ void ToolKit::RenderTarget::Init(bool flushClientSideArray)
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void ToolKit::RenderTarget::UnInit()
+{
+	glDeleteFramebuffers(1, &m_frameBufferId);
+	glDeleteRenderbuffers(1, &m_depthBufferId);
 }

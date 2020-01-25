@@ -19,9 +19,10 @@ namespace ToolKit
     Material(std::string file);
     ~Material();
 
-    void Load();
-    void Init(bool flushClientSideArray = true);
-    Material* GetCopy();
+    virtual void Load() override;
+    virtual void Init(bool flushClientSideArray = true) override;
+		virtual void UnInit() override;
+    virtual Material* GetCopy() override;
 		RenderState* GetRenderState();
 
   public:

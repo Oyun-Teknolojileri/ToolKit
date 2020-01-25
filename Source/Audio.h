@@ -15,8 +15,9 @@ namespace ToolKit
     Audio(std::string file);
     ~Audio();
 
-    void Init(bool flushClientSideArray = true);
-    void Load();
+    virtual void Init(bool flushClientSideArray = true) override;
+    virtual void Load() override;
+		virtual void UnInit() override;
 
   public:
     ALuint m_buffer;

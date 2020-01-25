@@ -17,7 +17,7 @@ ToolKit::Shader::Shader(std::string file)
 
 ToolKit::Shader::~Shader()
 {
-  glDeleteShader(m_shaderHandle);
+	UnInit();
 }
 
 void ToolKit::Shader::Load()
@@ -135,6 +135,11 @@ void ToolKit::Shader::Init(bool flushClientSideArray)
     m_source.clear();
 
   m_initiated = true;
+}
+
+void ToolKit::Shader::UnInit()
+{
+	glDeleteShader(m_shaderHandle);
 }
 
 void ToolKit::ShaderManager::Init()

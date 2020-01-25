@@ -59,5 +59,11 @@
     <ClInclude Include="ImGui\imstb_truetype.h">
       <Filter>ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="GUI.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Viewport.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

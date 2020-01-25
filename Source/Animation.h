@@ -31,9 +31,11 @@ namespace ToolKit
     void GetCurrentPose(Node* node); // interpolate keys based on time.
     void GetCurrentPose(Skeleton* skeleton);
     float GetDuration();
-    void Load();
-    void Init(bool flushClientSideArray = true);
-    Animation* GetCopy();
+
+    virtual void Load() override;
+    virtual void Init(bool flushClientSideArray = true) override;
+		virtual void UnInit() override;
+    virtual Animation* GetCopy() override;
     
 
   private:

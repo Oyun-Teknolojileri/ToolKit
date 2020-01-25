@@ -21,11 +21,7 @@ ToolKit::Mesh::Mesh(std::string file)
 
 ToolKit::Mesh::~Mesh()
 {
-  GLuint buffers[2] = { m_vboIndexId, m_vboVertexId };
-  glDeleteBuffers(2, buffers);
-  
-  for (auto subMesh : m_subMeshes)
-    SafeDel(subMesh);
+	UnInit();
 }
 
 void ToolKit::Mesh::Init(bool flushClientSideArray)
@@ -41,6 +37,15 @@ void ToolKit::Mesh::Init(bool flushClientSideArray)
     mesh->Init(flushClientSideArray);
 
   m_initiated = true;
+}
+
+void ToolKit::Mesh::UnInit()
+{
+	GLuint buffers[2] = { m_vboIndexId, m_vboVertexId };
+	glDeleteBuffers(2, buffers);
+
+	for (auto subMesh : m_subMeshes)
+		SafeDel(subMesh);
 }
 
 void ToolKit::Mesh::Load()
@@ -161,13 +166,18 @@ ToolKit::SkinMesh::SkinMesh(std::string file)
 
 ToolKit::SkinMesh::~SkinMesh()
 {
-  SafeDel(m_skeleton);
+	UnInit();
 }
 
 void ToolKit::SkinMesh::Init(bool flushClientSideArray)
 {
   m_skeleton->Init(flushClientSideArray);
   Mesh::Init(flushClientSideArray);
+}
+
+void ToolKit::SkinMesh::UnInit()
+{
+	SafeDel(m_skeleton);
 }
 
 void ToolKit::SkinMesh::Load()

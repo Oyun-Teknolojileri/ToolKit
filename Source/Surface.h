@@ -20,8 +20,9 @@ namespace ToolKit
     ~Surface();
 
     EntityType GetType();
-    void Load();
-    void Init(bool flushClientSideArray = true);
+    virtual void Load() override;
+    virtual void Init(bool flushClientSideArray = true) override;
+		virtual void UnInit() override;
 
   private:
     void CreateQuat();
