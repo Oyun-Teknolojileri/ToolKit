@@ -10,6 +10,7 @@ extern bool g_running;
 
 Editor::App::App(int windowWidth, int windowHeight)
 {
+	m_dummy = nullptr;
 	m_renderer = new Renderer();
 	m_renderer->m_windowWidth = windowWidth;
 	m_renderer->m_windowHeight = windowHeight;
@@ -33,6 +34,7 @@ void Editor::App::Init()
 	Main::GetInstance()->Init();
 
 	m_dummy = new Cube();
+	m_dummy->m_mesh->Init();
 	m_dummy->m_node->Rotate(glm::angleAxis(glm::radians(45.f), ToolKit::X_AXIS));
 	m_dummy->m_node->Rotate(glm::angleAxis(glm::radians(45.f), ToolKit::Y_AXIS));
 	m_dummy->m_node->Rotate(glm::angleAxis(glm::radians(45.f), ToolKit::Z_AXIS));
@@ -42,7 +44,19 @@ void Editor::App::Init()
 
 void Editor::App::Frame(int deltaTime)
 {
+	m_dummy->m_node->Rotate(glm::angleAxis(glm::radians(1.f), ToolKit::Z_AXIS));
+
 	// Update Viewports
+	for (int i = (int)m_viewports.size() - 1; i >= 0; i--)
+	{
+		Viewport* vp = m_viewports[i];
+		if (!vp->m_open)
+		{
+			SafeDel(vp);
+			m_viewports.erase(m_viewports.begin() + i);
+		}
+	}
+
 	for (Viewport* vp : m_viewports)
 	{
 		m_renderer->SetRenderTarget(vp->m_viewportImage);

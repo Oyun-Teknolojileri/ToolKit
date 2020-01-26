@@ -65,6 +65,7 @@ void Init()
 
 				// Set defaults
 				SDL_GL_SetSwapInterval(1);
+				glClearColor(0.0, 0.0, 0.0, 1.0);
 				
 				glEnable(GL_CULL_FACE);
 				glEnable(GL_DEPTH_TEST);
@@ -152,8 +153,6 @@ int main(int argc, char* argv[])
 	uint lastTime = GetMilliSeconds();
 	uint currentTime;
 	uint deltaTime = 1000 / fps;
-
-	glClearColor(1.0, 0.3, 0.3, 1.0);
 
 	while (g_running)
 	{

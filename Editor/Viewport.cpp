@@ -12,6 +12,7 @@ Editor::Viewport::Viewport(float width, float height)
 	m_camera = new Camera();
 	m_camera->SetLens(glm::half_pi<float>(), width, height);
 	m_viewportImage = new RenderTarget((uint)width, (uint)height);
+	m_viewportImage->Init();
 	m_name += " " + std::to_string(m_nextId++);
 }
 
@@ -35,17 +36,38 @@ void Editor::Viewport::OnResize(float width, float height)
 
 void Editor::Viewport::ShowViewport()
 {
-	ImGui::Begin(m_name.c_str());
+	ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
+	ImGui::Begin(m_name.c_str(), &m_open, ImGuiWindowFlags_NoSavedSettings);
 	{
-		ImGui::SetWindowSize(ImVec2(m_width, m_height), ImGuiCond_FirstUseEver);
+		// Content area size
+		ImVec2 vMin = ImGui::GetWindowContentRegionMin();
+		ImVec2 vMax = ImGui::GetWindowContentRegionMax();
 
-		ImVec2 currSize = ImGui::GetWindowSize();
-		if (currSize.x != m_width || currSize.y != m_height)
+		vMin.x += ImGui::GetWindowPos().x;
+		vMin.y += ImGui::GetWindowPos().y;
+		vMax.x += ImGui::GetWindowPos().x;
+		vMax.y += ImGui::GetWindowPos().y;
+
+		// Highlight content area for debug.
+		// ImGui::GetForegroundDrawList()->AddRect(vMin, vMax, IM_COL32(255, 255, 0, 255));
+
+		ImVec2 contentSize(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
+
+		if (!ImGui::IsWindowCollapsed())
 		{
-			OnResize(currSize.x, currSize.y);
-		}
+			if (contentSize.x > 0 && contentSize.y > 0)
+			{
+				ImGui::Image((void*)(intptr_t)m_viewportImage->m_textureId, ImVec2(m_width, m_height));
 
-		ImGui::Image((void*)(intptr_t)m_viewportImage->m_textureId, ImVec2(m_width, m_height));
+				ImVec2 currSize = ImGui::GetContentRegionMax();
+				if (contentSize.x != m_width || contentSize.y != m_height)
+				{
+					OnResize(contentSize.x, contentSize.y);
+				}
+
+				ImGui::GetWindowDrawList()->AddRect(vMin, vMax, IM_COL32(128, 128, 128, 255));
+			}
+		}
 	}
 	ImGui::End();
 }

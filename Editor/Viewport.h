@@ -30,6 +30,7 @@ namespace Editor
 		float m_height = 480.0f;
 		Camera* m_camera = nullptr;
 		RenderTarget* m_viewportImage = nullptr;
+		bool m_open = true;
 
 	private:
 		static uint m_nextId;
