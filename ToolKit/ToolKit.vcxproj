@@ -112,6 +112,7 @@
     <ClInclude Include="..\Source\stdafx.h" />
     <ClInclude Include="..\Source\Surface.h" />
     <ClInclude Include="..\Source\Texture.h" />
+    <ClInclude Include="..\Source\Types.h" />
     <ClInclude Include="..\Source\Util.h" />
   </ItemGroup>
   <ItemGroup>

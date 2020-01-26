@@ -84,6 +84,9 @@
     <ClInclude Include="..\Source\ToolKit.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Types.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Actor.cpp">

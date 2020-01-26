@@ -168,9 +168,9 @@ int main(int argc, char *argv[])
   Init();
 
   SDL_Event e;
-  unsigned int lastTime = GetMilliSeconds();
-  unsigned int currentTime;
-  unsigned int fps = 1000 / 60;
+  uint lastTime = GetMilliSeconds();
+  uint currentTime;
+  uint fps = 1000 / 60;
   while (g_running)
   {
     while (SDL_PollEvent(&e))
@@ -199,10 +199,10 @@ int main(int argc, char *argv[])
       int fireRate = 1000 / g_app->m_spaceShip->m_fireRate;
       {
         static int lastFireTime = 0;
-        if (currentTime > (unsigned int)(lastFireTime + fireRate))
+        if (currentTime > (uint)(lastFireTime + fireRate))
         {
           for (auto entry : g_app->m_spaceShip->m_fireLocs)
-            g_app->m_projectileManager.FireProjectile(entry->GetTranslation(ToolKit::TS_WORLD));
+            g_app->m_projectileManager.FireProjectile(entry->GetTranslation(TransformationSpace::TS_WORLD));
           lastFireTime = currentTime;
           if (!g_app->m_shipGone)
             ToolKit::AudioPlayer::Play(&g_app->m_lazerShotSource);

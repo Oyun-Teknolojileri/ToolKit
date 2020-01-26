@@ -8,7 +8,7 @@
 const char* appName = "$safeprojectname$";
 const int width = 640;
 const int height = 480;
-const unsigned int fps = 60;
+const uint fps = 60;
 
 // Global handles.
 SDL_Window* g_window = nullptr;
@@ -116,9 +116,9 @@ int main(int argc, char* argv[])
 
 	Init();
 
-	unsigned int lastTime = GetMilliSeconds();
-	unsigned int currentTime;
-	unsigned int deltaTime = 1000 / fps;
+	uint lastTime = GetMilliSeconds();
+	uint currentTime;
+	uint deltaTime = 1000 / fps;
 
 	while (g_running)
 	{

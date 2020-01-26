@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Types.h"
 #include "Resource.h"
 #include "ResourceManager.h"
 #include "GL/glew.h"
@@ -38,11 +39,11 @@ namespace ToolKit
 
   public:
     std::vector<Vertex> m_clientSideVertices;
-    std::vector<unsigned int> m_clientSideIndices;
+    std::vector<uint> m_clientSideIndices;
     GLuint m_vboVertexId = 0;
     GLuint m_vboIndexId = 0;
-    unsigned int m_vertexCount = 0;
-    unsigned int m_indexCount = 0;
+    uint m_vertexCount = 0;
+    uint m_indexCount = 0;
     std::shared_ptr<Material> m_material;
     std::vector<Mesh*> m_subMeshes;
   };

@@ -6,6 +6,8 @@
 #include "Node.h"
 #include "glm\gtc\random.hpp"
 
+using namespace ToolKit;
+
 class Meteor : public ToolKit::Drawable
 {
 public:
@@ -59,7 +61,7 @@ public:
     for (int i = (int)m_meteors.size() - 1; i > -1; i--)
     {
       m_meteors[i]->m_node->m_translation.z += m_meteors[i]->m_speed;
-      m_meteors[i]->m_node->Rotate(glm::angleAxis(glm::radians(glm::linearRand(0.1f, 1.5f)), ToolKit::Z_AXIS), ToolKit::TS_LOCAL);
+      m_meteors[i]->m_node->Rotate(glm::angleAxis(glm::radians(glm::linearRand(0.1f, 1.5f)), ToolKit::Z_AXIS), TransformationSpace::TS_LOCAL);
       if (m_meteors[i]->m_node->m_translation.z > 20)
       {
         SafeDel(m_meteors[i]);

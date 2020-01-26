@@ -5,13 +5,13 @@
 namespace ToolKit
 {
 
-  enum BlendFunction
+  enum class BlendFunction
   {
     NONE,
     SRC_ALPHA_ONE_MINUS_SRC_ALPHA
   };
 
-  enum DrawType
+  enum class DrawType
   {
     //Quad = GL_QUADS,
     Triangle = GL_TRIANGLES,
@@ -23,8 +23,8 @@ namespace ToolKit
   {
     bool backCullingEnabled = true;
     bool depthTestEnabled = true;
-    BlendFunction blendFunction = NONE;
-    DrawType drawType = Triangle;
+    BlendFunction blendFunction = BlendFunction::NONE;
+    DrawType drawType = DrawType::Triangle;
     GLuint diffuseTexture = 0;
     bool diffuseTextureInUse = false;
     GLuint cubeMap = 0;

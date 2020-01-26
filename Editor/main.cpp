@@ -3,19 +3,23 @@
 #include <chrono>
 #include "SDL.h"
 #include "SDL_ttf.h"
+#include "GUI.h"
+#include "Types.h"
 #include "DebugNew.h"
 
 // Setup.
 const char* appName = "Editor";
 const int width = 1024;
 const int height = 640;
-const unsigned int fps = 60;
+const ToolKit::uint fps = 60;
 
 // Global handles.
 SDL_Window* g_window = nullptr;
 SDL_GLContext g_context = nullptr;
 Editor::App* g_app;
 bool g_running = true;
+
+using namespace ToolKit;
 
 void Init()
 {
@@ -107,7 +111,6 @@ void ProcessEvent(SDL_Event e)
 	{
 		if (e.window.event == SDL_WINDOWEVENT_RESIZED) 
 		{
-			glViewport(0, 0, e.window.data1, e.window.data2);
 			g_app->OnResize(e.window.data1, e.window.data2);
 		}
 	}
@@ -146,9 +149,11 @@ int main(int argc, char* argv[])
 	ImGui_ImplOpenGL3_Init("#version 300 es");
 
 	// Continue with editor.
-	unsigned int lastTime = GetMilliSeconds();
-	unsigned int currentTime;
-	unsigned int deltaTime = 1000 / fps;
+	uint lastTime = GetMilliSeconds();
+	uint currentTime;
+	uint deltaTime = 1000 / fps;
+
+	glClearColor(1.0, 0.3, 0.3, 1.0);
 
 	while (g_running)
 	{

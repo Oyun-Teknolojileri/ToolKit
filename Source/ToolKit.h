@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Types.h"
 #include "Texture.h"
 #include "Mesh.h"
 #include "SpriteSheet.h"

@@ -34,6 +34,7 @@ namespace ToolKit
     Camera();
     ~Camera();
 
+		void SetLens(float fov, float width, float height);
     void SetLens(float fov, float width, float height, float near, float far);
     void SetLens(float aspect, float left, float right, float bottom, float top, float near, float far);
     glm::mat4 GetViewMatrix();

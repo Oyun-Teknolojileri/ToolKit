@@ -48,6 +48,7 @@ void ToolKit::Texture::Init(bool flushClientSideArray)
 void ToolKit::Texture::UnInit()
 {
 	glDeleteTextures(1, &m_textureId);
+	m_initiated = false;
 }
 
 ToolKit::CubeMap::CubeMap()
@@ -130,7 +131,7 @@ void ToolKit::CubeMap::Init(bool flushClientSideArray)
   glGenTextures(1, &m_textureId);
   glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureId);
 
-  unsigned int sides[6] =
+  uint sides[6] =
   {
     GL_TEXTURE_CUBE_MAP_POSITIVE_X,
     GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
@@ -160,9 +161,12 @@ void ToolKit::CubeMap::Init(bool flushClientSideArray)
 
 void ToolKit::CubeMap::UnInit()
 {
+	Texture::UnInit();
+
+	m_initiated = false;
 }
 
-ToolKit::RenderTarget::RenderTarget(unsigned int width, unsigned int height)
+ToolKit::RenderTarget::RenderTarget(uint width, uint height)
 {
 	m_width = width;
 	m_height = height;
@@ -230,6 +234,9 @@ void ToolKit::RenderTarget::Init(bool flushClientSideArray)
 
 void ToolKit::RenderTarget::UnInit()
 {
+	Texture::UnInit();
+
 	glDeleteFramebuffers(1, &m_frameBufferId);
 	glDeleteRenderbuffers(1, &m_depthBufferId);
+	m_initiated = false;
 }

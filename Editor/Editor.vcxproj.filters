@@ -7,6 +7,9 @@
     <Filter Include="ImGui">
       <UniqueIdentifier>{bd5e2daf-8f9d-415f-a384-97eb0c4eaa08}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header">
+      <UniqueIdentifier>{df283293-ea59-4282-96ac-c8586bb6b3d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -30,11 +33,17 @@
     <ClCompile Include="ImGui\imgui_widgets.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Viewport.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="App.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="App.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="ImGui\imconfig.h">
       <Filter>ImGui</Filter>
     </ClInclude>
@@ -60,10 +69,13 @@
       <Filter>ImGui</Filter>
     </ClInclude>
     <ClInclude Include="GUI.h">
-      <Filter>Source</Filter>
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="App.h">
+      <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="Viewport.h">
-      <Filter>Source</Filter>
+      <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

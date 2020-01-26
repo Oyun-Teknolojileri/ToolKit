@@ -160,7 +160,7 @@ ToolKit::Sphere::Sphere()
   const int nSegments = 32;
 
   std::vector<Vertex> vertices;
-  std::vector<unsigned int> indices;
+  std::vector<uint> indices;
 
   constexpr float fDeltaRingAngle = (glm::pi<float>() / nRings);
   constexpr float fDeltaSegAngle = (glm::two_pi<float>() / nSegments);

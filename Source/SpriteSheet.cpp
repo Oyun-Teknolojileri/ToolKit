@@ -54,6 +54,7 @@ void ToolKit::SpriteSheet::UnInit()
 {
 	for (auto entry : m_sprites)
 		SafeDel(entry.second);
+	m_initiated = false;
 }
 
 bool ToolKit::SpriteSheet::FetchEntries()

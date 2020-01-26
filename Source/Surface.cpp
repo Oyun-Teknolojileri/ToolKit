@@ -64,6 +64,7 @@ void ToolKit::Surface::Init(bool flushClientSideArray)
 
 void ToolKit::Surface::UnInit()
 {
+	m_initiated = false;
 }
 
 void ToolKit::Surface::CreateQuat()

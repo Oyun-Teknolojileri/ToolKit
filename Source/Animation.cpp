@@ -129,6 +129,7 @@ void ToolKit::Animation::Init(bool flushClientSideArray)
 
 void ToolKit::Animation::UnInit()
 {
+	m_initiated = false;
 }
 
 ToolKit::Animation* ToolKit::Animation::GetCopy()

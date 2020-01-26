@@ -5,7 +5,7 @@
 namespace ToolKit
 {
 
-  enum TransformationSpace
+  enum class TransformationSpace
   {
     TS_WORLD,
     TS_PARENT,
@@ -17,14 +17,14 @@ namespace ToolKit
   public:
     Node();
     Node(glm::vec3 translation);
-    void Translate(glm::vec3 val, TransformationSpace space = TS_PARENT);
-    void Rotate(glm::quat val, TransformationSpace space = TS_PARENT);
+    void Translate(glm::vec3 val, TransformationSpace space = TransformationSpace::TS_PARENT);
+    void Rotate(glm::quat val, TransformationSpace space = TransformationSpace::TS_PARENT);
     void Scale(glm::vec3 val);
-    void Transform(glm::mat4 val, TransformationSpace space = TS_PARENT);
-    glm::mat4 GetTransform(TransformationSpace space = TS_WORLD);
-    glm::vec3 GetTranslation(TransformationSpace space = TS_PARENT);
-    glm::quat GetOrientation(TransformationSpace space = TS_PARENT);
-    glm::vec3 GetScale(TransformationSpace space = TS_PARENT);
+    void Transform(glm::mat4 val, TransformationSpace space = TransformationSpace::TS_PARENT);
+    glm::mat4 GetTransform(TransformationSpace space = TransformationSpace::TS_WORLD);
+    glm::vec3 GetTranslation(TransformationSpace space = TransformationSpace::TS_PARENT);
+    glm::quat GetOrientation(TransformationSpace space = TransformationSpace::TS_PARENT);
+    glm::vec3 GetScale(TransformationSpace space = TransformationSpace::TS_PARENT);
     void AddChild(Node* child);
 
   public:

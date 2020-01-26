@@ -166,6 +166,7 @@ void ToolKit::Audio::Load()
 void ToolKit::Audio::UnInit()
 {
 	alDeleteBuffers(1, &m_buffer);
+	m_initiated = false;
 }
 
 void ToolKit::AudioManager::Init()

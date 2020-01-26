@@ -6,7 +6,7 @@ namespace ToolKit
   class Node;
   class Animation;
 
-  enum EntityType
+  enum class EntityType
   {
     Entity_Base,
     Entity_AudioSource,

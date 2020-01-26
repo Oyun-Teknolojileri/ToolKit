@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Types.h"
 #include "RenderState.h"
 #include <memory>
 #include <unordered_map>
@@ -50,7 +51,9 @@ namespace ToolKit
     void FeedUniforms(std::shared_ptr<Program> program);
 
   public:
-    unsigned int m_frameCount = 0;
+    uint m_frameCount = 0;
+		uint m_windowWidth = 0;
+		uint m_windowHeight = 0;
 
   private:
     GLuint m_currentProgram;

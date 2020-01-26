@@ -140,6 +140,7 @@ void ToolKit::Shader::Init(bool flushClientSideArray)
 void ToolKit::Shader::UnInit()
 {
 	glDeleteShader(m_shaderHandle);
+	m_initiated = false;
 }
 
 void ToolKit::ShaderManager::Init()

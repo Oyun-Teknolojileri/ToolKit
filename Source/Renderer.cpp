@@ -64,11 +64,11 @@ void ToolKit::Renderer::Render(Drawable* object, Camera* cam, Light* light)
     if (mesh->m_indexCount != 0)
     {
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-      glDrawElements(rs.drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
+      glDrawElements((GLenum)rs.drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
     }
     else
     {
-      glDrawArrays(rs.drawType, 0, mesh->m_vertexCount);
+      glDrawArrays((GLenum)rs.drawType, 0, mesh->m_vertexCount);
     }
   }
 }
@@ -126,7 +126,7 @@ void ToolKit::Renderer::RenderSkinned(Drawable* object, Camera* cam)
     glEnableVertexAttribArray(3); // BiTangent
     glVertexAttribIPointer(3, 3, GL_UNSIGNED_INT, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
 
-    offset += 3 * sizeof(unsigned int);
+    offset += 3 * sizeof(uint);
     glEnableVertexAttribArray(4); // Bones
     glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
 
@@ -135,7 +135,7 @@ void ToolKit::Renderer::RenderSkinned(Drawable* object, Camera* cam)
     glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-    glDrawElements(rs.drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
+    glDrawElements((GLenum)rs.drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
   }
 }
 
@@ -174,7 +174,7 @@ void ToolKit::Renderer::Render2d(Surface* object, glm::ivec2 screenDimensions)
   glEnableVertexAttribArray(3); // BiTangent
   glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
 
-  glDrawArrays(rs.drawType, 0, object->m_mesh->m_vertexCount);
+  glDrawArrays((GLenum)rs.drawType, 0, object->m_mesh->m_vertexCount);
 }
 
 void ToolKit::Renderer::Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions)
@@ -243,11 +243,13 @@ void ToolKit::Renderer::SetRenderTarget(RenderTarget* renderTarget)
 	if (renderTarget != nullptr)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->m_frameBufferId);
+		glViewport(0, 0, renderTarget->m_width, renderTarget->m_height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	else
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, m_windowWidth, m_windowHeight);
 	}
 
 	m_renderTarget = renderTarget;

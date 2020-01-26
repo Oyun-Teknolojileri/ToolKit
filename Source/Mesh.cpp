@@ -46,6 +46,8 @@ void ToolKit::Mesh::UnInit()
 
 	for (auto subMesh : m_subMeshes)
 		SafeDel(subMesh);
+
+	m_initiated = false;
 }
 
 void ToolKit::Mesh::Load()
@@ -127,7 +129,7 @@ void ToolKit::Mesh::InitVertices(bool flush)
     glGenBuffers(1, &m_vboVertexId);
     glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
     glBufferData(GL_ARRAY_BUFFER, GetVertexSize() * m_clientSideVertices.size(), m_clientSideVertices.data(), GL_STATIC_DRAW);
-    m_vertexCount = (unsigned int)m_clientSideVertices.size();
+    m_vertexCount = (uint)m_clientSideVertices.size();
   }
 
   if (flush)
@@ -142,8 +144,8 @@ void ToolKit::Mesh::InitIndices(bool flush)
   {
     glGenBuffers(1, &m_vboIndexId);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vboIndexId);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * m_clientSideIndices.size(), m_clientSideIndices.data(), GL_STATIC_DRAW);
-    m_indexCount = (unsigned int)m_clientSideIndices.size();
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * m_clientSideIndices.size(), m_clientSideIndices.data(), GL_STATIC_DRAW);
+    m_indexCount = (uint)m_clientSideIndices.size();
   }
 
   if (flush)
@@ -178,6 +180,7 @@ void ToolKit::SkinMesh::Init(bool flushClientSideArray)
 void ToolKit::SkinMesh::UnInit()
 {
 	SafeDel(m_skeleton);
+	m_initiated = false;
 }
 
 void ToolKit::SkinMesh::Load()
@@ -265,7 +268,7 @@ void ToolKit::SkinMesh::InitVertices(bool flush)
     glGenBuffers(1, &m_vboVertexId);
     glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
     glBufferData(GL_ARRAY_BUFFER, GetVertexSize() * m_clientSideVertices.size(), m_clientSideVertices.data(), GL_STATIC_DRAW);
-    m_vertexCount = (unsigned int)m_clientSideVertices.size();
+    m_vertexCount = (uint)m_clientSideVertices.size();
   }
 
   if (flush)

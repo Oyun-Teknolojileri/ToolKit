@@ -118,6 +118,7 @@ void ToolKit::Material::Init(bool flushClientSideArray)
 
 void ToolKit::Material::UnInit()
 {
+	m_initiated = false;
 }
 
 ToolKit::Material* ToolKit::Material::GetCopy()

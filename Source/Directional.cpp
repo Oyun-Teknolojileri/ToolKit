@@ -13,29 +13,29 @@ ToolKit::Directional::~Directional()
 void ToolKit::Directional::Pitch(float val)
 {
   glm::quat q = glm::angleAxis(val, glm::vec3(1.0f, 0.0f, 0.0f));
-  m_node->Rotate(q, ToolKit::TS_LOCAL);
+  m_node->Rotate(q, TransformationSpace::TS_LOCAL);
 }
 
 void ToolKit::Directional::Yaw(float val)
 {
   glm::quat q = glm::angleAxis(val, glm::vec3(0.0f, 1.0f, 0.0f));
-  m_node->Rotate(q, ToolKit::TS_LOCAL);
+  m_node->Rotate(q, TransformationSpace::TS_LOCAL);
 }
 
 void ToolKit::Directional::Roll(float val)
 {
   glm::quat q = glm::angleAxis(val, glm::vec3(1.0f, 0.0f, 0.0f));
-  m_node->Rotate(q, ToolKit::TS_LOCAL);
+  m_node->Rotate(q, TransformationSpace::TS_LOCAL);
 }
 
 void ToolKit::Directional::Translate(glm::vec3 pos)
 {
-  m_node->Translate(pos, ToolKit::TS_LOCAL);
+  m_node->Translate(pos, TransformationSpace::TS_LOCAL);
 }
 
 void ToolKit::Directional::RotateOnUpVector(float val)
 {
-  m_node->Rotate(glm::angleAxis(val, glm::vec3(0.0f, 1.0f, 0.0f)), ToolKit::TS_WORLD);
+  m_node->Rotate(glm::angleAxis(val, glm::vec3(0.0f, 1.0f, 0.0f)), TransformationSpace::TS_WORLD);
 }
 
 void ToolKit::Directional::GetLocalAxis(glm::vec3& dir, glm::vec3& up, glm::vec3& right)
@@ -60,6 +60,11 @@ ToolKit::Camera::~Camera()
 {
 }
 
+void ToolKit::Camera::SetLens(float fov, float width, float height)
+{
+	SetLens(fov, width, height, 0.01f, 1000.0f);
+}
+
 void ToolKit::Camera::SetLens(float fov, float width, float height, float near, float far)
 {
   m_projection = glm::perspectiveFov(fov, width, height, near, far);
@@ -72,7 +77,7 @@ void ToolKit::Camera::SetLens(float aspect, float left, float right, float botto
 
 glm::mat4 ToolKit::Camera::GetViewMatrix()
 {
-  glm::mat4 view = m_node->GetTransform(ToolKit::TS_WORLD);
+  glm::mat4 view = m_node->GetTransform(TransformationSpace::TS_WORLD);
   return glm::inverse(view);
 }
 
@@ -81,7 +86,7 @@ ToolKit::Camera::CamData ToolKit::Camera::GetData()
   CamData data;
   glm::vec3 tmp;
   GetLocalAxis(data.dir, data.pos, tmp);
-  data.pos = m_node->GetTranslation(ToolKit::TS_WORLD);
+  data.pos = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
   return data;
 }
@@ -104,7 +109,7 @@ ToolKit::Light::LightData ToolKit::Light::GetData()
 {
   LightData data;
   GetLocalAxis(data.dir, data.pos, data.color);
-  data.pos = m_node->GetTranslation(ToolKit::TS_WORLD);
+  data.pos = m_node->GetTranslation(TransformationSpace::TS_WORLD);
   data.color = m_color;
 
   return data;

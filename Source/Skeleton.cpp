@@ -51,6 +51,7 @@ void ToolKit::Skeleton::UnInit()
 	for (auto bone : m_bones)
 		SafeDel(bone);
 	m_bones.clear();
+	m_initiated = false;
 }
 
 void ToolKit::Skeleton::Load()
