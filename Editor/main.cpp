@@ -36,8 +36,6 @@ void Init()
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 
 		ToolKit::Editor::g_window = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 		if (ToolKit::Editor::g_window == nullptr)
@@ -73,7 +71,6 @@ void Init()
 				
 				glEnable(GL_CULL_FACE);
 				glEnable(GL_DEPTH_TEST);
-				glEnable(GL_MULTISAMPLE);
 
 				// Init app
 				ToolKit::Editor::g_app = new ToolKit::Editor::App(width, height);
@@ -147,8 +144,8 @@ int main(int argc, char* argv[])
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
+	io.ConfigWindowsMoveFromTitleBarOnly = true;
 
-	//ImGui::StyleColorsDark();
 	ToolKit::Editor::EditorGUI::ApplyCustomTheme();
 
 	ImGui_ImplSDL2_InitForOpenGL(ToolKit::Editor::g_window, ToolKit::Editor::g_context);

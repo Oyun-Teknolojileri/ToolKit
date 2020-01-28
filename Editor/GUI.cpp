@@ -68,9 +68,6 @@ void ToolKit::Editor::EditorGUI::PresentGUI()
 		vp->ShowViewport();
 	}
 
-	static bool op = true;
-	//ImGui::ShowDemoWindow(&op);
-
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	ImGui::EndFrame();

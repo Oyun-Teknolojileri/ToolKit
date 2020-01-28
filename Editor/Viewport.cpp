@@ -27,11 +27,16 @@ Editor::Viewport::~Viewport()
 
 void Editor::Viewport::Update(uint deltaTime)
 {
+	if (!m_active)
+		return;
+
 	UpdateFpsNavigation(deltaTime);
 }
 
 void Editor::Viewport::ShowViewport()
 {
+	m_active = false;
+
 	ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
 	ImGui::Begin(m_name.c_str(), &m_open, ImGuiWindowFlags_NoSavedSettings);
 	{
@@ -58,7 +63,14 @@ void Editor::Viewport::ShowViewport()
 					OnResize(contentSize.x, contentSize.y);
 				}
 
-				ImGui::GetWindowDrawList()->AddRect(vMin, vMax, IM_COL32(128, 128, 128, 255));
+				if (m_active = ImGui::IsWindowFocused())
+				{
+					ImGui::GetWindowDrawList()->AddRect(vMin, vMax, IM_COL32(255, 255, 0, 255));
+				}
+				else
+				{
+					ImGui::GetWindowDrawList()->AddRect(vMin, vMax, IM_COL32(128, 128, 128, 255));
+				}
 			}
 		}
 	}
@@ -81,21 +93,19 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 {
 	if (m_camera)
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		
 		// Mouse is rightclicked
 		if (ImGui::IsMouseDown(1))
 		{
-			m_camera->Yaw(glm::radians(-io.MouseDelta.x * g_app->m_mouseSensitivity));
-			m_camera->RotateOnUpVector(glm::radians(io.MouseDelta.y * g_app->m_mouseSensitivity));
-			
+			ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+			ImGuiIO& io = ImGui::GetIO();
+
+			m_camera->Pitch(glm::radians(io.MouseDelta.y * g_app->m_mouseSensitivity));
+			m_camera->RotateOnUpVector(-glm::radians(io.MouseDelta.x * g_app->m_mouseSensitivity));
 
 			glm::vec3 dir, up, right;
-			m_camera->GetLocalAxis(dir, up, right);
-
-			dir = ToolKit::Z_AXIS;
+			dir = -ToolKit::Z_AXIS;
 			up = ToolKit::Y_AXIS;
-			right = T;
+			right = ToolKit::X_AXIS;
 
 			float speed = g_app->m_camSpeed;
 
@@ -132,6 +142,10 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 
 			float displace = speed * MilisecToSec(deltaTime);
 			m_camera->Translate(move * displace);
+		}
+		else
+		{
+			ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
 		}
 	} 
 }

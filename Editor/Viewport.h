@@ -16,13 +16,12 @@ namespace ToolKit
 		public:
 			Viewport(float width, float height);
 			~Viewport();
-
 			void Update(uint deltaTime);
 			void ShowViewport();
 
 		private:
-			void OnResize(float width, float height);
 			void UpdateFpsNavigation(uint deltaTime);
+			void OnResize(float width, float height);
 
 		public:
 			std::string m_name;
@@ -31,7 +30,10 @@ namespace ToolKit
 			float m_height = 480.0f;
 			Camera* m_camera = nullptr;
 			RenderTarget* m_viewportImage = nullptr;
+
+			// States
 			bool m_open = true;
+			bool m_active = false;
 
 		private:
 			static uint m_nextId;

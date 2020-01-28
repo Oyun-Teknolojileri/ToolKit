@@ -45,7 +45,7 @@ namespace ToolKit
 
 		private:
 			Renderer* m_renderer;
-			Cube* m_dummy;
+			Drawable* m_dummy;
 		};
 
 	}
