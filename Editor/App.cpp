@@ -5,10 +5,9 @@
 #include "Viewport.h"
 #include "Primative.h"
 #include "Node.h"
+#include "GlobalDef.h"
 
-extern bool g_running;
-
-Editor::App::App(int windowWidth, int windowHeight)
+ToolKit::Editor::App::App(int windowWidth, int windowHeight)
 {
 	m_dummy = nullptr;
 	m_renderer = new Renderer();
@@ -16,7 +15,7 @@ Editor::App::App(int windowWidth, int windowHeight)
 	m_renderer->m_windowHeight = windowHeight;
 }
 
-Editor::App::~App()
+ToolKit::Editor::App::~App()
 {
 	for (Viewport* vp : m_viewports)
 	{
@@ -29,7 +28,7 @@ Editor::App::~App()
 	Main::GetInstance()->Uninit();
 }
 
-void Editor::App::Init()
+void ToolKit::Editor::App::Init()
 {
 	Main::GetInstance()->Init();
 
@@ -42,7 +41,7 @@ void Editor::App::Init()
 	m_scene.m_entitites.push_back(m_dummy);
 }
 
-void Editor::App::Frame(int deltaTime)
+void ToolKit::Editor::App::Frame(int deltaTime)
 {
 	m_dummy->m_node->Rotate(glm::angleAxis(glm::radians(1.f), ToolKit::Z_AXIS));
 
@@ -50,6 +49,7 @@ void Editor::App::Frame(int deltaTime)
 	for (int i = (int)m_viewports.size() - 1; i >= 0; i--)
 	{
 		Viewport* vp = m_viewports[i];
+		vp->Update(deltaTime);
 		if (!vp->m_open)
 		{
 			SafeDel(vp);
@@ -76,14 +76,14 @@ void Editor::App::Frame(int deltaTime)
 	EditorGUI::PresentGUI();
 }
 
-void Editor::App::OnResize(int width, int height)
+void ToolKit::Editor::App::OnResize(int width, int height)
 {
 	m_renderer->m_windowWidth = width;
 	m_renderer->m_windowHeight = height;
 	glViewport(0, 0, width, height);
 }
 
-void Editor::App::OnQuit()
+void ToolKit::Editor::App::OnQuit()
 {
 	g_running = false;
 }

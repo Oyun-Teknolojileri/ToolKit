@@ -7,33 +7,35 @@ namespace ToolKit
 {
 	class Camera;
 	class RenderTarget;
-}
 
-namespace Editor
-{
-
-	using namespace ToolKit;
-
-	class Viewport
+	namespace Editor
 	{
-	public:
-		Viewport(float width, float height);
-		~Viewport();
 
-		void OnResize(float width, float height);
-		void ShowViewport();
+		class Viewport
+		{
+		public:
+			Viewport(float width, float height);
+			~Viewport();
 
-	public:
-		std::string m_name;
+			void Update(uint deltaTime);
+			void ShowViewport();
 
-		float m_width = 640.0f;
-		float m_height = 480.0f;
-		Camera* m_camera = nullptr;
-		RenderTarget* m_viewportImage = nullptr;
-		bool m_open = true;
+		private:
+			void OnResize(float width, float height);
+			void UpdateFpsNavigation(uint deltaTime);
 
-	private:
-		static uint m_nextId;
-	};
+		public:
+			std::string m_name;
 
+			float m_width = 640.0f;
+			float m_height = 480.0f;
+			Camera* m_camera = nullptr;
+			RenderTarget* m_viewportImage = nullptr;
+			bool m_open = true;
+
+		private:
+			static uint m_nextId;
+		};
+
+	}
 }

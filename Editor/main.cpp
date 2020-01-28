@@ -7,25 +7,29 @@
 #include "Types.h"
 #include "DebugNew.h"
 
+// Global handles.
+namespace ToolKit
+{
+	namespace Editor
+	{
+		bool g_running = true;
+		SDL_Window* g_window = nullptr;
+		SDL_GLContext g_context = nullptr;
+		App* g_app;
+	}
+}
+
 // Setup.
 const char* appName = "Editor";
 const int width = 1024;
 const int height = 640;
 const ToolKit::uint fps = 60;
 
-// Global handles.
-SDL_Window* g_window = nullptr;
-SDL_GLContext g_context = nullptr;
-Editor::App* g_app;
-bool g_running = true;
-
-using namespace ToolKit;
-
 void Init()
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0)
 	{
-		g_running = false;
+		ToolKit::Editor::g_running = false;
 	}
 	else
 	{
@@ -35,17 +39,17 @@ void Init()
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 
-		g_window = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
-		if (g_window == nullptr)
+		ToolKit::Editor::g_window = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+		if (ToolKit::Editor::g_window == nullptr)
 		{
-			g_running = false;
+			ToolKit::Editor::g_running = false;
 		}
 		else
 		{
-			g_context = SDL_GL_CreateContext(g_window);
-			if (g_context == nullptr)
+			ToolKit::Editor::g_context = SDL_GL_CreateContext(ToolKit::Editor::g_window);
+			if (ToolKit::Editor::g_context == nullptr)
 			{
-				g_running = false;
+				ToolKit::Editor::g_running = false;
 			}
 			else
 			{
@@ -54,7 +58,7 @@ void Init()
 				GLenum err = glewInit();
 				if (GLEW_OK != err)
 				{
-					g_running = false;
+					ToolKit::Editor::g_running = false;
 					return;
 				}
 
@@ -72,8 +76,8 @@ void Init()
 				glEnable(GL_MULTISAMPLE);
 
 				// Init app
-				g_app = new Editor::App(width, height);
-				g_app->Init();
+				ToolKit::Editor::g_app = new ToolKit::Editor::App(width, height);
+				ToolKit::Editor::g_app->Init();
 			}
 		}
 	}
@@ -92,14 +96,14 @@ unsigned long GetMilliSeconds()
 
 void Exit()
 {
-	g_running = false;
-	SafeDel(g_app);
+	ToolKit::Editor::g_running = false;
+	SafeDel(ToolKit::Editor::g_app);
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 
-	SDL_DestroyWindow(g_window);
+	SDL_DestroyWindow(ToolKit::Editor::g_window);
 	TTF_Quit();
 	SDL_Quit();
 }
@@ -112,19 +116,19 @@ void ProcessEvent(SDL_Event e)
 	{
 		if (e.window.event == SDL_WINDOWEVENT_RESIZED) 
 		{
-			g_app->OnResize(e.window.data1, e.window.data2);
+			ToolKit::Editor::g_app->OnResize(e.window.data1, e.window.data2);
 		}
 	}
 
 	if (e.type == SDL_QUIT)
-		g_running = false;
+		ToolKit::Editor::g_running = false;
 
 	if (e.type == SDL_KEYDOWN)
 	{
 		switch (e.key.keysym.sym)
 		{
 		case SDLK_ESCAPE:
-			g_running = false;
+			ToolKit::Editor::g_running = false;
 			break;
 		default:
 			break;
@@ -145,17 +149,17 @@ int main(int argc, char* argv[])
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
 
 	//ImGui::StyleColorsDark();
-	Editor::EditorGUI::ApplyCustomTheme();
+	ToolKit::Editor::EditorGUI::ApplyCustomTheme();
 
-	ImGui_ImplSDL2_InitForOpenGL(g_window, g_context);
+	ImGui_ImplSDL2_InitForOpenGL(ToolKit::Editor::g_window, ToolKit::Editor::g_context);
 	ImGui_ImplOpenGL3_Init("#version 300 es");
 
 	// Continue with editor.
-	uint lastTime = GetMilliSeconds();
-	uint currentTime;
-	uint deltaTime = 1000 / fps;
+	ToolKit::uint lastTime = GetMilliSeconds();
+	ToolKit::uint currentTime;
+	ToolKit::uint deltaTime = 1000 / fps;
 
-	while (g_running)
+	while (ToolKit::Editor::g_running)
 	{
 		SDL_Event sdlEvent;
 		while (SDL_PollEvent(&sdlEvent))
@@ -168,8 +172,8 @@ int main(int argc, char* argv[])
 		{
 			// Update & Render
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			g_app->Frame(currentTime - lastTime);
-			SDL_GL_SwapWindow(g_window);
+			ToolKit::Editor::g_app->Frame(currentTime - lastTime);
+			SDL_GL_SwapWindow(ToolKit::Editor::g_window);
 
 			lastTime = currentTime;
 		}

@@ -77,5 +77,8 @@
     <ClInclude Include="Viewport.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="GlobalDef.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,6 +1,9 @@
 #include "Viewport.h"
 #include "Directional.h"
 #include "Renderer.h"
+#include "App.h"
+#include "GlobalDef.h"
+#include "SDL.h"
 
 using namespace ToolKit;
 
@@ -22,16 +25,9 @@ Editor::Viewport::~Viewport()
 	SafeDel(m_viewportImage);
 }
 
-void Editor::Viewport::OnResize(float width, float height)
+void Editor::Viewport::Update(uint deltaTime)
 {
-	m_width = width;
-	m_height = height;
-	m_camera->SetLens(glm::half_pi<float>(), width, height);
-
-	m_viewportImage->UnInit();
-	m_viewportImage->m_width = (uint)width;
-	m_viewportImage->m_height = (uint)height;
-	m_viewportImage->Init();
+	UpdateFpsNavigation(deltaTime);
 }
 
 void Editor::Viewport::ShowViewport()
@@ -47,9 +43,6 @@ void Editor::Viewport::ShowViewport()
 		vMin.y += ImGui::GetWindowPos().y;
 		vMax.x += ImGui::GetWindowPos().x;
 		vMax.y += ImGui::GetWindowPos().y;
-
-		// Highlight content area for debug.
-		// ImGui::GetForegroundDrawList()->AddRect(vMin, vMax, IM_COL32(255, 255, 0, 255));
 
 		ImVec2 contentSize(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
 
@@ -70,4 +63,75 @@ void Editor::Viewport::ShowViewport()
 		}
 	}
 	ImGui::End();
+}
+
+void Editor::Viewport::OnResize(float width, float height)
+{
+	m_width = width;
+	m_height = height;
+	m_camera->SetLens(glm::half_pi<float>(), width, height);
+
+	m_viewportImage->UnInit();
+	m_viewportImage->m_width = (uint)width;
+	m_viewportImage->m_height = (uint)height;
+	m_viewportImage->Init();
+}
+
+void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
+{
+	if (m_camera)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		
+		// Mouse is rightclicked
+		if (ImGui::IsMouseDown(1))
+		{
+			m_camera->Yaw(glm::radians(-io.MouseDelta.x * g_app->m_mouseSensitivity));
+			m_camera->RotateOnUpVector(glm::radians(io.MouseDelta.y * g_app->m_mouseSensitivity));
+			
+
+			glm::vec3 dir, up, right;
+			m_camera->GetLocalAxis(dir, up, right);
+
+			dir = ToolKit::Z_AXIS;
+			up = ToolKit::Y_AXIS;
+			right = T;
+
+			float speed = g_app->m_camSpeed;
+
+			glm::vec3 move;
+			if (io.KeysDown[SDL_SCANCODE_A])
+			{
+				move += -right;
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_D])
+			{
+				move += right;
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_W])
+			{
+				move += dir;
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_S])
+			{
+				move += -dir;
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_PAGEUP])
+			{
+				move += up;
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_PAGEDOWN])
+			{
+				move += -up;
+			}
+
+			float displace = speed * MilisecToSec(deltaTime);
+			m_camera->Translate(move * displace);
+		}
+	} 
 }

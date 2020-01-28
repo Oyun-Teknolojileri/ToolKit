@@ -2,12 +2,9 @@
 #include "GUI.h"
 #include "Viewport.h"
 #include "SDL.h"
+#include "GlobalDef.h"
 
-extern SDL_Window* g_window;
-extern SDL_GLContext g_context;
-extern Editor::App* g_app;
-
-void Editor::EditorGUI::ApplyCustomTheme()
+void ToolKit::Editor::EditorGUI::ApplyCustomTheme()
 {
 	ImGuiStyle* style = &ImGui::GetStyle();
 	style->WindowRounding = 5.3f;
@@ -57,16 +54,16 @@ void Editor::EditorGUI::ApplyCustomTheme()
 	style->Colors[ImGuiCol_TextSelectedBg] = { 0.18431373f, 0.39607847f, 0.79215693f, 0.90f };
 }
 
-void Editor::EditorGUI::PresentGUI()
+void ToolKit::Editor::EditorGUI::PresentGUI()
 {
 	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplSDL2_NewFrame(g_window);
+	ImGui_ImplSDL2_NewFrame(ToolKit::Editor::g_window);
 	ImGui::NewFrame();
 
 	InitDocking();
 	ShowAppMainMenuBar();
 
-	for (Viewport* vp : g_app->m_viewports)
+	for (Viewport* vp : ToolKit::Editor::g_app->m_viewports)
 	{
 		vp->ShowViewport();
 	}
@@ -80,10 +77,10 @@ void Editor::EditorGUI::PresentGUI()
 
 	ImGui::UpdatePlatformWindows();
 	ImGui::RenderPlatformWindowsDefault();
-	SDL_GL_MakeCurrent(g_window, g_context);
+	SDL_GL_MakeCurrent(ToolKit::Editor::g_window, ToolKit::Editor::g_context);
 }
 
-void Editor::EditorGUI::ShowSimpleWindow()
+void ToolKit::Editor::EditorGUI::ShowSimpleWindow()
 {
 	ImGui::Begin("Another Window");
 	ImGui::Text("Hello from another window!");
@@ -91,7 +88,7 @@ void Editor::EditorGUI::ShowSimpleWindow()
 	ImGui::End();
 }
 
-void Editor::EditorGUI::InitDocking()
+void ToolKit::Editor::EditorGUI::InitDocking()
 {
 	static bool opt_fullscreen_persistant = true;
 	bool opt_fullscreen = opt_fullscreen_persistant;
@@ -131,7 +128,7 @@ void Editor::EditorGUI::InitDocking()
 	ImGui::End();
 }
 
-void Editor::EditorGUI::ShowAppMainMenuBar()
+void ToolKit::Editor::EditorGUI::ShowAppMainMenuBar()
 {
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -151,19 +148,19 @@ void Editor::EditorGUI::ShowAppMainMenuBar()
 	}
 }
 
-void Editor::EditorGUI::ShowMenuFile()
+void ToolKit::Editor::EditorGUI::ShowMenuFile()
 {
 	if (ImGui::MenuItem("Quit", "Alt+F4"))
 	{
-		g_app->OnQuit();
+		ToolKit::Editor::g_app->OnQuit();
 	}
 }
 
-void Editor::EditorGUI::ShowMenuWindows()
+void ToolKit::Editor::EditorGUI::ShowMenuWindows()
 {
 	if (ImGui::MenuItem("Add Viewport", "Alt+V"))
 	{
 		Viewport* vp = new Viewport(640, 480);
-		g_app->m_viewports.push_back(vp);
+		ToolKit::Editor::g_app->m_viewports.push_back(vp);
 	}
 }
