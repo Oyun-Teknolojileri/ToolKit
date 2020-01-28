@@ -1,8 +1,10 @@
 #include "App.h"
 #include "GUI.h"
 #include "Viewport.h"
+#include "SDL.h"
 
 extern SDL_Window* g_window;
+extern SDL_GLContext g_context;
 extern Editor::App* g_app;
 
 void Editor::EditorGUI::ApplyCustomTheme()
@@ -69,8 +71,16 @@ void Editor::EditorGUI::PresentGUI()
 		vp->ShowViewport();
 	}
 
+	static bool op = true;
+	//ImGui::ShowDemoWindow(&op);
+
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	ImGui::EndFrame();
+
+	ImGui::UpdatePlatformWindows();
+	ImGui::RenderPlatformWindowsDefault();
+	SDL_GL_MakeCurrent(g_window, g_context);
 }
 
 void Editor::EditorGUI::ShowSimpleWindow()
@@ -83,8 +93,6 @@ void Editor::EditorGUI::ShowSimpleWindow()
 
 void Editor::EditorGUI::InitDocking()
 {
-	ApplyCustomTheme();
-
 	static bool opt_fullscreen_persistant = true;
 	bool opt_fullscreen = opt_fullscreen_persistant;
 	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;

@@ -142,9 +142,10 @@ int main(int argc, char* argv[])
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
 
-	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsDark();
+	Editor::EditorGUI::ApplyCustomTheme();
 
 	ImGui_ImplSDL2_InitForOpenGL(g_window, g_context);
 	ImGui_ImplOpenGL3_Init("#version 300 es");
