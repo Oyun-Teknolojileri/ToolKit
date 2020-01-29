@@ -96,11 +96,19 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 		// Mouse is rightclicked
 		if (ImGui::IsMouseDown(1))
 		{
-			ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 			ImGuiIO& io = ImGui::GetIO();
 
-			m_camera->Pitch(glm::radians(io.MouseDelta.y * g_app->m_mouseSensitivity));
-			m_camera->RotateOnUpVector(-glm::radians(io.MouseDelta.x * g_app->m_mouseSensitivity));
+			int mx = 0, my = 0;
+			if (m_relMouseModBegin)
+			{
+				m_relMouseModBegin = false;
+				SDL_SetRelativeMouseMode(SDL_TRUE);
+				SDL_GetRelativeMouseState(&mx, &my);
+			}
+
+			SDL_GetRelativeMouseState(&mx, &my);
+			m_camera->Pitch(glm::radians(my * g_app->m_mouseSensitivity));
+			m_camera->RotateOnUpVector(-glm::radians(mx * g_app->m_mouseSensitivity));
 
 			glm::vec3 dir, up, right;
 			dir = -ToolKit::Z_AXIS;
@@ -145,7 +153,8 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 		}
 		else
 		{
-			ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+			m_relMouseModBegin = true;
+			SDL_SetRelativeMouseMode(SDL_FALSE);
 		}
 	} 
 }
