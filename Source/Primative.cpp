@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include "ToolKit.h"
 #include "MathUtil.h"
+#include "DebugNew.h"
 
 ToolKit::Cube::Cube()
 {

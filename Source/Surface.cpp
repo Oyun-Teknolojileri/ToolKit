@@ -4,6 +4,7 @@
 #include "Texture.h"
 #include "Material.h"
 #include "Node.h"
+#include "DebugNew.h"
 
 ToolKit::Surface::Surface(std::shared_ptr<Texture> texture, glm::vec2 pivotOffset)
 {

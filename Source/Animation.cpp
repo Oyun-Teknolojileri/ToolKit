@@ -6,6 +6,7 @@
 #include "rapidxml_utils.hpp"
 #include "Util.h"
 #include "Skeleton.h"
+#include "DebugNew.h"
 
 ToolKit::Animation::Animation()
 {

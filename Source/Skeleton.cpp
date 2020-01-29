@@ -4,6 +4,7 @@
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
 #include "Util.h"
+#include "DebugNew.h"
 
 ToolKit::Bone::Bone(std::string name)
 {

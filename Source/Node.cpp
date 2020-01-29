@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Node.h"
 #include "MathUtil.h"
+#include "DebugNew.h"
 
 ToolKit::Node::Node()
 {

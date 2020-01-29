@@ -1,5 +1,6 @@
-#include "App.h"
+#include "stdafx.h"
 
+#include "App.h"
 #include "Renderer.h"
 #include "GUI.h"
 #include "Viewport.h"

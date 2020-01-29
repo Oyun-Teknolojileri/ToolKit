@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "App.h"
 #include <stdio.h>
 #include <chrono>

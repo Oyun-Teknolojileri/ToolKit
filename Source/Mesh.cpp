@@ -7,6 +7,7 @@
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
 #include <unordered_map>
+#include "DebugNew.h"
 
 ToolKit::Mesh::Mesh()
 {

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Directional.h"
 #include "Node.h"
+#include "DebugNew.h"
 
 ToolKit::Directional::Directional()
 {

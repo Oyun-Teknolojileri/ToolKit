@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include "Material.h"
 #include "ToolKit.h"
+#include "DebugNew.h"
 
 ToolKit::Drawable::Drawable()
 {

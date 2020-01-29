@@ -4,6 +4,7 @@
 #include "Node.h"
 #include "ToolKit.h"
 #include "Skeleton.h"
+#include "DebugNew.h"
 
 ToolKit::Entity::Entity()
 {

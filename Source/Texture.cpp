@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Texture.h"
 #include "lodepng.h"
+#include "DebugNew.h"
 
 ToolKit::Texture::Texture()
 {

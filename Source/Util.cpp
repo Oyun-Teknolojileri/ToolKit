@@ -2,6 +2,7 @@
 #include "Util.h"
 #include "rapidxml.hpp"
 #include <fstream>
+#include "DebugNew.h"
 
 void ExtractXYFromNode(void* nodev, glm::vec2& val)
 {

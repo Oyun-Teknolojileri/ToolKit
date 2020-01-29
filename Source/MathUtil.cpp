@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "MathUtil.h"
 #include "Mesh.h"
+#include "DebugNew.h"
 
 void DecomposeMatrix(const glm::mat4& transform, glm::vec3& position, glm::quat& rotation, glm::vec3& scale)
 {

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Logger.h"
 #include "ToolKit.h"
+#include "DebugNew.h"
 
 ToolKit::Logger ToolKit::Logger::m_logger;
 

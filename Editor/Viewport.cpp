@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Viewport.h"
 #include "Directional.h"
 #include "Renderer.h"
@@ -149,6 +151,11 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 			}
 
 			float displace = speed * MilisecToSec(deltaTime);
+			if (length(move) > 0.0f)
+			{
+				move = normalize(move);
+			}
+
 			m_camera->Translate(move * displace);
 		}
 		else

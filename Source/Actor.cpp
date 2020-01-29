@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Actor.h"
 #include "ToolKit.h"
+#include "DebugNew.h"
+
 ToolKit::SignaleId::SignaleId(int id)
 {
   m_id = id;

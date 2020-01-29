@@ -5,6 +5,7 @@
 #include "rapidxml_utils.hpp"
 #include "rapidxml_print.hpp"
 #include <vector>
+#include "DebugNew.h"
 
 ToolKit::Shader::Shader()
 {

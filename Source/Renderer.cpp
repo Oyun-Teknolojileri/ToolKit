@@ -8,6 +8,7 @@
 #include "Material.h"
 #include "Surface.h"
 #include "Skeleton.h"
+#include "DebugNew.h"
 
 #define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
 

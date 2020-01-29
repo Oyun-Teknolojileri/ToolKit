@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ToolKit.h"
 #include "Logger.h"
+#include "DebugNew.h"
 
 std::string ToolKit::TexturePath(std::string file)
 {

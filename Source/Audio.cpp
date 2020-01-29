@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Audio.h"
 #include <iostream>
+#include "DebugNew.h"
 
 // http://www.dunsanyinteractive.com/blogs/oliver/?p=72
 
