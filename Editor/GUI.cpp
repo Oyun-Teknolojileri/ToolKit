@@ -5,6 +5,7 @@
 #include "Viewport.h"
 #include "SDL.h"
 #include "GlobalDef.h"
+#include "DebugNew.h"
 
 void ToolKit::Editor::EditorGUI::ApplyCustomTheme()
 {

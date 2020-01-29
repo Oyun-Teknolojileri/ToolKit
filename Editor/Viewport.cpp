@@ -6,6 +6,7 @@
 #include "App.h"
 #include "GlobalDef.h"
 #include "SDL.h"
+#include "DebugNew.h"
 
 using namespace ToolKit;
 

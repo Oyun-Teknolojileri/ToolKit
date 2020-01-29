@@ -7,6 +7,7 @@
 #include "Primative.h"
 #include "Node.h"
 #include "GlobalDef.h"
+#include "DebugNew.h"
 
 ToolKit::Editor::App::App(int windowWidth, int windowHeight)
 {
