@@ -32,15 +32,10 @@ ToolKit::Editor::App::~App()
 
 void ToolKit::Editor::App::Init()
 {
-	Main::GetInstance()->Init();
-
 	m_dummy = new Drawable();
 	m_dummy->m_mesh = Main::GetInstance()->m_meshMan.Create(MeshPath("zemin.mesh"));
 	m_dummy->m_mesh->Init();
 	m_dummy->m_node->Rotate(glm::angleAxis(glm::radians(180.f), ToolKit::X_AXIS));
-	//m_dummy->m_node->Rotate(glm::angleAxis(glm::radians(45.f), ToolKit::Y_AXIS));
-	//m_dummy->m_node->Rotate(glm::angleAxis(glm::radians(45.f), ToolKit::Z_AXIS));
-	//m_dummy->m_node->Translate(glm::vec3(0.0f, 0.0f, -2.0f));
 	m_scene.m_entitites.push_back(m_dummy);
 }
 
