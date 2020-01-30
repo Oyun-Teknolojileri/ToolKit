@@ -38,6 +38,7 @@ namespace ToolKit
 		private:
 			static uint m_nextId;
 			bool m_relMouseModBegin = true;
+			glm::ivec2 m_mousePosBegin;
 		};
 
 	}

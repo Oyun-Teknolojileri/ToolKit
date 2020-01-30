@@ -105,6 +105,7 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 			if (m_relMouseModBegin)
 			{
 				m_relMouseModBegin = false;
+				SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);
 				SDL_SetRelativeMouseMode(SDL_TRUE);
 				SDL_GetRelativeMouseState(&mx, &my);
 			}
@@ -161,8 +162,12 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 		}
 		else
 		{
-			m_relMouseModBegin = true;
-			SDL_SetRelativeMouseMode(SDL_FALSE);
+			if (!m_relMouseModBegin)
+			{
+				m_relMouseModBegin = true;
+				SDL_SetRelativeMouseMode(SDL_FALSE);
+				SDL_WarpMouseGlobal(m_mousePosBegin.x, m_mousePosBegin.y);
+			}
 		}
 	} 
 }
