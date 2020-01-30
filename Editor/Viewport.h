@@ -11,6 +11,12 @@ namespace ToolKit
 	namespace Editor
 	{
 
+		enum class ViewportMode
+		{
+			Idle,
+			FpsNavigation
+		};
+
 		class Viewport
 		{
 		public:
@@ -18,10 +24,13 @@ namespace ToolKit
 			~Viewport();
 			void Update(uint deltaTime);
 			void ShowViewport();
+			bool IsActive();
+			bool IsOpen();
 
 		private:
 			void UpdateFpsNavigation(uint deltaTime);
 			void OnResize(float width, float height);
+			void SetActive();
 
 		public:
 			std::string m_name;
@@ -30,13 +39,13 @@ namespace ToolKit
 			float m_height = 480.0f;
 			Camera* m_camera = nullptr;
 			RenderTarget* m_viewportImage = nullptr;
+			
+		private:
+			static uint m_nextId;
 
 			// States
 			bool m_open = true;
 			bool m_active = false;
-
-		private:
-			static uint m_nextId;
 			bool m_relMouseModBegin = true;
 			glm::ivec2 m_mousePosBegin;
 		};

@@ -30,7 +30,7 @@ Editor::Viewport::~Viewport()
 
 void Editor::Viewport::Update(uint deltaTime)
 {
-	if (!m_active)
+	if (!IsActive())
 		return;
 
 	UpdateFpsNavigation(deltaTime);
@@ -38,11 +38,14 @@ void Editor::Viewport::Update(uint deltaTime)
 
 void Editor::Viewport::ShowViewport()
 {
-	m_active = false;
-
 	ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
 	ImGui::Begin(m_name.c_str(), &m_open, ImGuiWindowFlags_NoSavedSettings);
 	{
+		if (ImGui::IsMouseDown(1) && ImGui::IsWindowHovered()) // Activate with right click.
+		{
+			ImGui::SetWindowFocus();
+		}
+
 		// Content area size
 		ImVec2 vMin = ImGui::GetWindowContentRegionMin();
 		ImVec2 vMax = ImGui::GetWindowContentRegionMax();
@@ -66,8 +69,9 @@ void Editor::Viewport::ShowViewport()
 					OnResize(contentSize.x, contentSize.y);
 				}
 
-				if (m_active = ImGui::IsWindowFocused())
+				if (ImGui::IsWindowFocused())
 				{
+					SetActive();
 					ImGui::GetWindowDrawList()->AddRect(vMin, vMax, IM_COL32(255, 255, 0, 255));
 				}
 				else
@@ -78,6 +82,16 @@ void Editor::Viewport::ShowViewport()
 		}
 	}
 	ImGui::End();
+}
+
+bool ToolKit::Editor::Viewport::IsActive()
+{
+	return m_active;
+}
+
+bool ToolKit::Editor::Viewport::IsOpen()
+{
+	return m_open;
 }
 
 void Editor::Viewport::OnResize(float width, float height)
@@ -92,6 +106,22 @@ void Editor::Viewport::OnResize(float width, float height)
 	m_viewportImage->Init();
 }
 
+void ToolKit::Editor::Viewport::SetActive()
+{
+	for (Viewport* vp : g_app->m_viewports)
+	{
+		// Deactivate all the others.
+		if (vp != this)
+		{
+			vp->m_active = false;
+		}
+		else
+		{
+			m_active = true;
+		}
+	}
+}
+
 void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 {
 	if (m_camera)
@@ -101,18 +131,22 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 		{
 			ImGuiIO& io = ImGui::GetIO();
 
-			int mx = 0, my = 0;
+			// Handle relative mouse hack.
 			if (m_relMouseModBegin)
 			{
 				m_relMouseModBegin = false;
-				SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);
-				SDL_SetRelativeMouseMode(SDL_TRUE);
-				SDL_GetRelativeMouseState(&mx, &my);
+				SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);				
 			}
 
-			SDL_GetRelativeMouseState(&mx, &my);
-			m_camera->Pitch(glm::radians(my * g_app->m_mouseSensitivity));
-			m_camera->RotateOnUpVector(-glm::radians(mx * g_app->m_mouseSensitivity));
+			ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+			glm::ivec2 mp;
+			SDL_GetGlobalMouseState(&mp.x, &mp.y);
+			mp = mp - m_mousePosBegin;
+			SDL_WarpMouseGlobal(m_mousePosBegin.x, m_mousePosBegin.y);
+			// End of relative mouse hack.
+
+			m_camera->Pitch(glm::radians(mp.y * g_app->m_mouseSensitivity));
+			m_camera->RotateOnUpVector(-glm::radians(mp.x * g_app->m_mouseSensitivity));
 
 			glm::vec3 dir, up, right;
 			dir = -ToolKit::Z_AXIS;
@@ -165,8 +199,6 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 			if (!m_relMouseModBegin)
 			{
 				m_relMouseModBegin = true;
-				SDL_SetRelativeMouseMode(SDL_FALSE);
-				SDL_WarpMouseGlobal(m_mousePosBegin.x, m_mousePosBegin.y);
 			}
 		}
 	} 

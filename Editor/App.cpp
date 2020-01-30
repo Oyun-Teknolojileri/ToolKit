@@ -47,7 +47,7 @@ void ToolKit::Editor::App::Frame(int deltaTime)
 		Viewport* vp = m_viewports[i];
 		vp->Update(deltaTime);
 
-		if (!vp->m_open)
+		if (!vp->IsOpen())
 		{
 			SafeDel(vp);
 			m_viewports.erase(m_viewports.begin() + i);
