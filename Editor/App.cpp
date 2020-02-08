@@ -8,6 +8,7 @@
 #include "Node.h"
 #include "GlobalDef.h"
 #include "DebugNew.h"
+#include "OverlayMenu.h"
 
 ToolKit::Editor::App::App(int windowWidth, int windowHeight)
 {
@@ -24,6 +25,7 @@ ToolKit::Editor::App::~App()
 		SafeDel(vp);
 	}
 
+	SafeDel(Viewport::m_overlayNav);
 	SafeDel(m_dummy);
 	SafeDel(m_renderer);
 

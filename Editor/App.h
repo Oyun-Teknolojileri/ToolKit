@@ -42,6 +42,7 @@ namespace ToolKit
 			// Editor variables
 			float m_camSpeed = 4.0; // Meters per sec.
 			float m_mouseSensitivity = 0.5f;
+			bool m_windowMenushowMetrics = false;
 
 		private:
 			Renderer* m_renderer;

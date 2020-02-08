@@ -10,6 +10,7 @@ namespace ToolKit
 
 	namespace Editor
 	{
+		class OverlayNav;
 
 		enum class ViewportMode
 		{
@@ -39,6 +40,8 @@ namespace ToolKit
 			float m_height = 480.0f;
 			Camera* m_camera = nullptr;
 			RenderTarget* m_viewportImage = nullptr;
+			glm::ivec2 m_lastWndPos;
+			static OverlayNav* m_overlayNav;
 			
 		private:
 			static uint m_nextId;

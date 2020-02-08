@@ -71,6 +71,12 @@ void ToolKit::Editor::EditorGUI::PresentGUI()
 		vp->ShowViewport();
 	}
 
+	// ImGui::ShowDemoWindow();
+	if (g_app->m_windowMenushowMetrics)
+	{
+		ImGui::ShowMetricsWindow(&g_app->m_windowMenushowMetrics);
+	}
+
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	ImGui::EndFrame();
@@ -162,5 +168,13 @@ void ToolKit::Editor::EditorGUI::ShowMenuWindows()
 	{
 		Viewport* vp = new Viewport(640, 480);
 		ToolKit::Editor::g_app->m_viewports.push_back(vp);
+	}
+
+	if (!g_app->m_windowMenushowMetrics)
+	{
+		if (ImGui::MenuItem("Show Metrics", "Alt+M"))
+		{
+			g_app->m_windowMenushowMetrics = true;
+		}
 	}
 }

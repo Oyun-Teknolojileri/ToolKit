@@ -45,6 +45,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="OverlayMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -81,6 +82,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="GlobalDef.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlayMenu.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

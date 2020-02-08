@@ -7,10 +7,12 @@
 #include "GlobalDef.h"
 #include "SDL.h"
 #include "DebugNew.h"
+#include "OverlayMenu.h"
 
 using namespace ToolKit;
 
 uint Editor::Viewport::m_nextId = 1;
+Editor::OverlayNav* Editor::Viewport::m_overlayNav = nullptr;
 
 Editor::Viewport::Viewport(float width, float height)
 	: m_width(width), m_height(height), m_name("Viewport")
@@ -20,6 +22,11 @@ Editor::Viewport::Viewport(float width, float height)
 	m_viewportImage = new RenderTarget((uint)width, (uint)height);
 	m_viewportImage->Init();
 	m_name += " " + std::to_string(m_nextId++);
+
+	if (m_overlayNav == nullptr)
+	{
+		m_overlayNav = new OverlayNav(this);
+	}
 }
 
 Editor::Viewport::~Viewport()
@@ -49,6 +56,9 @@ void Editor::Viewport::ShowViewport()
 		// Content area size
 		ImVec2 vMin = ImGui::GetWindowContentRegionMin();
 		ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+
+		m_lastWndPos.x = (int)ImGui::GetWindowPos().x;
+		m_lastWndPos.y = (int)ImGui::GetWindowPos().y;
 
 		vMin.x += ImGui::GetWindowPos().x;
 		vMin.y += ImGui::GetWindowPos().y;
@@ -81,6 +91,14 @@ void Editor::Viewport::ShowViewport()
 			}
 		}
 	}
+
+	if (IsActive() && m_overlayNav != nullptr)
+	{
+		m_overlayNav->m_owner = this;
+		m_overlayNav->ShowOverlayNav();
+	}
+
+
 	ImGui::End();
 }
 
