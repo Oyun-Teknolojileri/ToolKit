@@ -34,13 +34,17 @@ namespace ToolKit
 			void SetActive();
 
 		public:
-			std::string m_name;
-
-			float m_width = 640.0f;
-			float m_height = 480.0f;
+			// ToolKit bindings.
 			Camera* m_camera = nullptr;
 			RenderTarget* m_viewportImage = nullptr;
-			glm::ivec2 m_lastWndPos;
+
+			// Window properties.
+			std::string m_name;
+			float m_width = 640.0f;
+			float m_height = 480.0f;
+			glm::ivec2 m_wndPos;
+			glm::vec2 m_wndContentAreaSize;
+
 			static OverlayNav* m_overlayNav;
 			
 		private:

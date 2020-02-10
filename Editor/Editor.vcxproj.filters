@@ -10,6 +10,9 @@
     <Filter Include="Header">
       <UniqueIdentifier>{df283293-ea59-4282-96ac-c8586bb6b3d8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="NanoSvg">
+      <UniqueIdentifier>{f07df9fc-f01e-461c-9cfa-6340868e1119}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -86,6 +89,12 @@
     </ClInclude>
     <ClInclude Include="OverlayMenu.h">
       <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="NanoSvg\nanosvg.h">
+      <Filter>NanoSvg</Filter>
+    </ClInclude>
+    <ClInclude Include="NanoSvg\nanosvgrast.h">
+      <Filter>NanoSvg</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

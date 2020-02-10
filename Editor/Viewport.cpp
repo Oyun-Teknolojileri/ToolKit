@@ -57,26 +57,26 @@ void Editor::Viewport::ShowViewport()
 		ImVec2 vMin = ImGui::GetWindowContentRegionMin();
 		ImVec2 vMax = ImGui::GetWindowContentRegionMax();
 
-		m_lastWndPos.x = (int)ImGui::GetWindowPos().x;
-		m_lastWndPos.y = (int)ImGui::GetWindowPos().y;
+		m_wndPos.x = (int)ImGui::GetWindowPos().x;
+		m_wndPos.y = (int)ImGui::GetWindowPos().y;
 
 		vMin.x += ImGui::GetWindowPos().x;
 		vMin.y += ImGui::GetWindowPos().y;
 		vMax.x += ImGui::GetWindowPos().x;
 		vMax.y += ImGui::GetWindowPos().y;
 
-		ImVec2 contentSize(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
+		m_wndContentAreaSize = *(glm::vec2*)&ImVec2(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
 
 		if (!ImGui::IsWindowCollapsed())
 		{
-			if (contentSize.x > 0 && contentSize.y > 0)
+			if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
 			{
 				ImGui::Image((void*)(intptr_t)m_viewportImage->m_textureId, ImVec2(m_width, m_height));
 
 				ImVec2 currSize = ImGui::GetContentRegionMax();
-				if (contentSize.x != m_width || contentSize.y != m_height)
+				if (m_wndContentAreaSize.x != m_width || m_wndContentAreaSize.y != m_height)
 				{
-					OnResize(contentSize.x, contentSize.y);
+					OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
 				}
 
 				if (ImGui::IsWindowFocused())
@@ -97,7 +97,6 @@ void Editor::Viewport::ShowViewport()
 		m_overlayNav->m_owner = this;
 		m_overlayNav->ShowOverlayNav();
 	}
-
 
 	ImGui::End();
 }

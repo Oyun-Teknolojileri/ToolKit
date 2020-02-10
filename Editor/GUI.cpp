@@ -7,6 +7,8 @@
 #include "GlobalDef.h"
 #include "DebugNew.h"
 
+bool ToolKit::Editor::EditorGUI::m_windowMenushowMetrics = false;
+
 void ToolKit::Editor::EditorGUI::ApplyCustomTheme()
 {
 	ImGuiStyle* style = &ImGui::GetStyle();
@@ -72,9 +74,9 @@ void ToolKit::Editor::EditorGUI::PresentGUI()
 	}
 
 	// ImGui::ShowDemoWindow();
-	if (g_app->m_windowMenushowMetrics)
+	if (m_windowMenushowMetrics)
 	{
-		ImGui::ShowMetricsWindow(&g_app->m_windowMenushowMetrics);
+		ImGui::ShowMetricsWindow(&m_windowMenushowMetrics);
 	}
 
 	ImGui::Render();
@@ -170,11 +172,24 @@ void ToolKit::Editor::EditorGUI::ShowMenuWindows()
 		ToolKit::Editor::g_app->m_viewports.push_back(vp);
 	}
 
-	if (!g_app->m_windowMenushowMetrics)
+	if (!m_windowMenushowMetrics)
 	{
 		if (ImGui::MenuItem("Show Metrics", "Alt+M"))
 		{
-			g_app->m_windowMenushowMetrics = true;
+			m_windowMenushowMetrics = true;
 		}
+	}
+}
+
+void ToolKit::Editor::EditorGUI::HelpMarker(const char* desc)
+{
+	ImGui::TextDisabled("(?)");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+		ImGui::TextUnformatted(desc);
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
 	}
 }

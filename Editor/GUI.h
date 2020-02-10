@@ -19,6 +19,10 @@ namespace ToolKit
 				static void ShowAppMainMenuBar();
 				static void ShowMenuFile();
 				static void ShowMenuWindows();
+				static void HelpMarker(const char* desc);
+
+			public:
+				static bool m_windowMenushowMetrics;
 			};
 
 		}

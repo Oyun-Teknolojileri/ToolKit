@@ -60,6 +60,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <PreprocessorDefinitions>TK_EDITOR;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -75,6 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <PreprocessorDefinitions>TK_EDITOR;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -130,6 +132,8 @@
     <ClInclude Include="ImGui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="GUI.h" />
+    <ClInclude Include="NanoSvg\nanosvg.h" />
+    <ClInclude Include="NanoSvg\nanosvgrast.h" />
     <ClInclude Include="OverlayMenu.h" />
     <ClInclude Include="Viewport.h" />
   </ItemGroup>
