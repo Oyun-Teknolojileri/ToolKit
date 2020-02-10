@@ -19,10 +19,19 @@ namespace ToolKit
 				static void ShowAppMainMenuBar();
 				static void ShowMenuFile();
 				static void ShowMenuWindows();
-				static void HelpMarker(const char* desc);
+				static void HelpMarker(const char* desc, float* elapsedHoverTime);
+				static void InitIcons();
 
 			public:
 				static bool m_windowMenushowMetrics;
+				static float m_hoverTimeForHelp;
+
+				// Toolbar Icon
+				static std::shared_ptr<Texture> m_selectIcn;
+				static std::shared_ptr<Texture> m_cursorIcn;
+				static std::shared_ptr<Texture> m_moveIcn;
+				static std::shared_ptr<Texture> m_rotateIcn;
+				static std::shared_ptr<Texture> m_scaleIcn;
 			};
 
 		}

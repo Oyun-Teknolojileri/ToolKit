@@ -21,9 +21,15 @@ void ToolKit::Editor::OverlayNav::ShowOverlayNav()
 		ImGuiStyle& style = ImGui::GetStyle();
 		float spacing = style.ItemInnerSpacing.x;
 
-		ImGui::Button("X"); ImGui::SameLine(); EditorGUI::HelpMarker("Camera speed m/s\n"); ImGui::SameLine(0, spacing);
-		ImGui::Button("Y"); ImGui::SameLine(); EditorGUI::HelpMarker("Camera speed m/s\n"); ImGui::SameLine(0, spacing);
-		ImGui::Button("Z"); ImGui::SameLine(); EditorGUI::HelpMarker("Camera speed m/s\n"); ImGui::SameLine(0, spacing);
+		// Select button.
+		static float hoverTimeX = 0.0f;
+		ImGui::Button("X"); ImGui::SameLine(); EditorGUI::HelpMarker("Camera speed m/s\n", &hoverTimeX); ImGui::SameLine(0, spacing);
+
+		static float hoverTimeY = 0.0f;
+		ImGui::Button("Y"); ImGui::SameLine(); EditorGUI::HelpMarker("Camera speed m/s\n", &hoverTimeY); ImGui::SameLine(0, spacing);
+
+		static float hoverTimeZ = 0.0f;
+		ImGui::Button("Z"); ImGui::SameLine(); EditorGUI::HelpMarker("Camera speed m/s\n", &hoverTimeZ); ImGui::SameLine(0, spacing);
 
 		const char* items[] = { "0.5", "1", "2", "4", "8" };
 		static int current_item = 4;
@@ -69,8 +75,8 @@ void ToolKit::Editor::OverlayNav::ShowOverlayNav()
 			break;
 		}
 
-		ImGui::SameLine(0, spacing); ImGui::Text("CS");
-		ImGui::SameLine(0, spacing); EditorGUI::HelpMarker("Camera speed m/s\n");
+		static float hoverTimeCS = 0.0f;
+		ImGui::SameLine(0, spacing); EditorGUI::HelpMarker("Camera speed m/s\n", &hoverTimeCS);
 	}
 	ImGui::EndChildFrame();
 }

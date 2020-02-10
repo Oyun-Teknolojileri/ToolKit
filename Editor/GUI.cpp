@@ -8,6 +8,14 @@
 #include "DebugNew.h"
 
 bool ToolKit::Editor::EditorGUI::m_windowMenushowMetrics = false;
+float ToolKit::Editor::EditorGUI::m_hoverTimeForHelp = 1.0f;
+
+// Icons
+std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_selectIcn;
+std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_cursorIcn;
+std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_moveIcn;
+std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_rotateIcn;
+std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_scaleIcn;
 
 void ToolKit::Editor::EditorGUI::ApplyCustomTheme()
 {
@@ -181,15 +189,39 @@ void ToolKit::Editor::EditorGUI::ShowMenuWindows()
 	}
 }
 
-void ToolKit::Editor::EditorGUI::HelpMarker(const char* desc)
+void ToolKit::Editor::EditorGUI::HelpMarker(const char* desc, float* elapsedHoverTime)
 {
-	ImGui::TextDisabled("(?)");
 	if (ImGui::IsItemHovered())
 	{
+		*elapsedHoverTime += ImGui::GetIO().DeltaTime;
+		if (EditorGUI::m_hoverTimeForHelp > *elapsedHoverTime)
+		{
+			return;
+		}
+
 		ImGui::BeginTooltip();
 		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 		ImGui::TextUnformatted(desc);
 		ImGui::PopTextWrapPos();
 		ImGui::EndTooltip();
 	}
+	else
+	{
+		*elapsedHoverTime = 0.0f;
+	}
+}
+
+void ToolKit::Editor::EditorGUI::InitIcons()
+{
+	m_selectIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/select.png"));
+	m_selectIcn->Init();
+	// ImGui::GetWindowDrawList()->AddImage((ImTextureID)&m_selectIcn->m_textureId);
+	m_cursorIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/cursor.png"));
+	m_cursorIcn->Init();
+	m_moveIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/move.png"));
+	m_moveIcn->Init();
+	m_rotateIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/rotate.png"));
+	m_rotateIcn->Init();
+	m_scaleIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/scale.png"));
+	m_scaleIcn->Init();
 }

@@ -39,6 +39,7 @@ void ToolKit::Editor::App::Init()
 	m_dummy->m_mesh->Init();
 	m_dummy->m_node->Rotate(glm::angleAxis(glm::radians(180.f), ToolKit::X_AXIS));
 	m_scene.m_entitites.push_back(m_dummy);
+	EditorGUI::InitIcons();
 }
 
 void ToolKit::Editor::App::Frame(int deltaTime)
