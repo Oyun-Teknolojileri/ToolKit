@@ -12,6 +12,7 @@ namespace ToolKit
 	{
 
 		class Viewport;
+		class Grid;
 
 		using namespace ToolKit;
 		using namespace glm;
@@ -46,6 +47,7 @@ namespace ToolKit
 		private:
 			Renderer* m_renderer;
 			Drawable* m_dummy;
+			Grid* m_grid;
 		};
 
 	}

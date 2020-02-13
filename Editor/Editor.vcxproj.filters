@@ -51,6 +51,7 @@
     <ClCompile Include="OverlayMenu.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Grid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -97,6 +98,9 @@
     </ClInclude>
     <ClInclude Include="NanoSvg\nanosvgrast.h">
       <Filter>NanoSvg</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid.h">
+      <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

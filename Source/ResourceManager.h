@@ -33,7 +33,7 @@ namespace ToolKit
     template<typename Ti = T>
     std::shared_ptr<T> Create(std::string file)
     {
-      if (m_storage.find(file) == m_storage.end())
+      if (!Exist(file))
       {
         bool fileCheck = CheckFile(file);
         if (!fileCheck)
@@ -54,6 +54,11 @@ namespace ToolKit
     std::shared_ptr<Ti> CreateDerived(std::string file)
     {
       return std::static_pointer_cast<Ti> (Create<Ti>(file));
+    }
+
+    bool Exist(std::string file)
+    {
+      return m_storage.find(file) != m_storage.end();
     }
 
   public:

@@ -215,7 +215,6 @@ void ToolKit::Editor::EditorGUI::InitIcons()
 {
 	m_selectIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/select.png"));
 	m_selectIcn->Init();
-	// ImGui::GetWindowDrawList()->AddImage((ImTextureID)&m_selectIcn->m_textureId);
 	m_cursorIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/cursor.png"));
 	m_cursorIcn->Init();
 	m_moveIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/move.png"));

@@ -23,7 +23,9 @@ ToolKit::Material::~Material()
 void ToolKit::Material::Load()
 {
   if (m_loaded)
+  {
     return;
+  }
 
   rapidxml::file<> file(m_file.c_str());
   rapidxml::xml_document<> doc;
@@ -31,7 +33,9 @@ void ToolKit::Material::Load()
 
   rapidxml::xml_node<>* rootNode = doc.first_node("material");
   if (rootNode == nullptr)
+  {
     return;
+  }
 
   for (rapidxml::xml_node<>* node = rootNode->first_node(); node; node = node->next_sibling())
   {
@@ -78,7 +82,9 @@ void ToolKit::Material::Load()
 void ToolKit::Material::Init(bool flushClientSideArray)
 {
   if (m_initiated)
+  {
     return;
+  }
 
   if (m_diffuseTexture)
   {
@@ -130,10 +136,14 @@ ToolKit::Material* ToolKit::Material::GetCopy()
 ToolKit::RenderState* ToolKit::Material::GetRenderState()
 {
 	if (m_diffuseTexture)
+  {
 		m_renderState.diffuseTexture = m_diffuseTexture->m_textureId;
+  }
 	
 	if (m_cubeMap)
+  {
 		m_renderState.cubeMap = m_cubeMap->m_textureId;
+  }
 	
 	return &m_renderState;
 }

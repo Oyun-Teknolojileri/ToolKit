@@ -9,6 +9,7 @@
 #include "GlobalDef.h"
 #include "DebugNew.h"
 #include "OverlayMenu.h"
+#include "Grid.h"
 
 ToolKit::Editor::App::App(int windowWidth, int windowHeight)
 {
@@ -26,6 +27,7 @@ ToolKit::Editor::App::~App()
 	}
 
 	SafeDel(Viewport::m_overlayNav);
+	SafeDel(m_grid);
 	SafeDel(m_dummy);
 	SafeDel(m_renderer);
 
@@ -34,11 +36,15 @@ ToolKit::Editor::App::~App()
 
 void ToolKit::Editor::App::Init()
 {
+	m_grid = new Grid(100);
+	m_scene.m_entitites.push_back(m_grid);
+
 	m_dummy = new Drawable();
 	m_dummy->m_mesh = Main::GetInstance()->m_meshMan.Create(MeshPath("zemin.mesh"));
 	m_dummy->m_mesh->Init();
 	m_dummy->m_node->Rotate(glm::angleAxis(glm::radians(180.f), ToolKit::X_AXIS));
 	m_scene.m_entitites.push_back(m_dummy);
+
 	EditorGUI::InitIcons();
 }
 

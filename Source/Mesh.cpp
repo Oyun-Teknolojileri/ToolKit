@@ -28,14 +28,18 @@ ToolKit::Mesh::~Mesh()
 void ToolKit::Mesh::Init(bool flushClientSideArray)
 {
   if (m_initiated)
+  {
     return;
+  }
 
   InitVertices(flushClientSideArray);
   InitIndices(flushClientSideArray);
   m_material->Init();
 
-  for (auto mesh : m_subMeshes)
+  for (Mesh* mesh : m_subMeshes)
+  {
     mesh->Init(flushClientSideArray);
+  }
 
   m_initiated = true;
 }
@@ -45,8 +49,10 @@ void ToolKit::Mesh::UnInit()
 	GLuint buffers[2] = { m_vboIndexId, m_vboVertexId };
 	glDeleteBuffers(2, buffers);
 
-	for (auto subMesh : m_subMeshes)
-		SafeDel(subMesh);
+  for (Mesh* subMesh : m_subMeshes)
+  {
+    SafeDel(subMesh);
+  }
 
 	m_initiated = false;
 }
@@ -54,7 +60,9 @@ void ToolKit::Mesh::UnInit()
 void ToolKit::Mesh::Load()
 {
   if (m_loaded)
+  {
     return;
+  }
 
   rapidxml::file<> file(m_file.c_str());
   rapidxml::xml_document<> doc;
@@ -62,7 +70,9 @@ void ToolKit::Mesh::Load()
 
   rapidxml::xml_node<>* node = doc.first_node("meshContainer");
   if (node == nullptr)
+  {
     return;
+  }
 
   Mesh* mesh = this;
   for (node = node->first_node("mesh"); node; node = node->next_sibling("mesh"))
@@ -134,7 +144,9 @@ void ToolKit::Mesh::InitVertices(bool flush)
   }
 
   if (flush)
+  {
     m_clientSideVertices.clear();
+  }
 }
 
 void ToolKit::Mesh::InitIndices(bool flush)
@@ -150,7 +162,9 @@ void ToolKit::Mesh::InitIndices(bool flush)
   }
 
   if (flush)
+  {
     m_clientSideIndices.clear();
+  }
 }
 
 ToolKit::SkinMesh::SkinMesh()
@@ -190,10 +204,14 @@ void ToolKit::SkinMesh::Load()
   m_skeleton->Load();
   assert(m_skeleton->m_loaded);
   if (!m_skeleton->m_loaded)
+  {
     return;
+  }
   
   if (m_loaded)
+  {
     return;
+  }
 
   rapidxml::file<> file(m_file.c_str());
   rapidxml::xml_document<> doc;
@@ -202,7 +220,9 @@ void ToolKit::SkinMesh::Load()
   rapidxml::xml_node<>* node = doc.first_node("meshContainer");
   assert(m_skeleton->m_loaded);
   if (node == nullptr)
+  {
     return;
+  }
 
   SkinMesh* mesh = this;
   for (node = node->first_node("skinMesh"); node; node = node->next_sibling("skinMesh"))
@@ -217,9 +237,13 @@ void ToolKit::SkinMesh::Load()
     std::string matFile = materialNode->first_attribute("name")->value();
 
     if (CheckFile(MaterialPath(matFile)))
+    {
       mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath(matFile));
+    }
     else
+    {
       mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath("default.material"));
+    }
 
     rapidxml::xml_node<>* vertex = node->first_node("vertices");
     for (rapidxml::xml_node<>* v = vertex->first_node("v"); v; v = v->next_sibling())
@@ -273,5 +297,7 @@ void ToolKit::SkinMesh::InitVertices(bool flush)
   }
 
   if (flush)
+  {
     m_clientSideVertices.clear();
+  }
 }
