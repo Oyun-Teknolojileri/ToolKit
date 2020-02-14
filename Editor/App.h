@@ -13,6 +13,7 @@ namespace ToolKit
 
 		class Viewport;
 		class Grid;
+		class Axis3d;
 
 		using namespace ToolKit;
 		using namespace glm;
@@ -48,6 +49,7 @@ namespace ToolKit
 			Renderer* m_renderer;
 			Drawable* m_dummy;
 			Grid* m_grid;
+			Axis3d* m_origin;
 		};
 
 	}

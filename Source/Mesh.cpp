@@ -36,7 +36,7 @@ void ToolKit::Mesh::Init(bool flushClientSideArray)
   InitIndices(flushClientSideArray);
   m_material->Init();
 
-  for (Mesh* mesh : m_subMeshes)
+  for (std::shared_ptr<Mesh> mesh : m_subMeshes)
   {
     mesh->Init(flushClientSideArray);
   }
@@ -49,9 +49,9 @@ void ToolKit::Mesh::UnInit()
 	GLuint buffers[2] = { m_vboIndexId, m_vboVertexId };
 	glDeleteBuffers(2, buffers);
 
-  for (Mesh* subMesh : m_subMeshes)
+  for (std::shared_ptr<Mesh> subMesh : m_subMeshes)
   {
-    SafeDel(subMesh);
+		subMesh = nullptr;
   }
 
 	m_initiated = false;
@@ -80,7 +80,7 @@ void ToolKit::Mesh::Load()
     if (mesh == nullptr)
     {
       mesh = new Mesh();
-      m_subMeshes.push_back(mesh);
+      m_subMeshes.push_back(std::shared_ptr<Mesh>(mesh));
     }
 
     rapidxml::xml_node<>* materialNode = node->first_node("material");
@@ -230,7 +230,7 @@ void ToolKit::SkinMesh::Load()
     if (mesh == nullptr)
     {
       mesh = new SkinMesh();
-      m_subMeshes.push_back(mesh);
+      m_subMeshes.push_back(std::shared_ptr<Mesh>(mesh));
     }
 
     rapidxml::xml_node<>* materialNode = node->first_node("material");

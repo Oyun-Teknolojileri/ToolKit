@@ -45,7 +45,7 @@ namespace ToolKit
     uint m_vertexCount = 0;
     uint m_indexCount = 0;
     std::shared_ptr<Material> m_material;
-    std::vector<Mesh*> m_subMeshes;
+    std::vector<std::shared_ptr<Mesh>> m_subMeshes;
   };
 
   class MeshManager : public ResourceManager<Mesh>

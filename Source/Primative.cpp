@@ -269,7 +269,7 @@ void ToolKit::Arrow2d::Generate(ToolKit::Arrow2d::ArrowType t)
 	if (m_arrowType == Z)
 	{
 		newMaterial->m_color = glm::vec3(0.0f, 0.0f, 1.0f);
-		rotation = glm::angleAxis(glm::half_pi<float>(), Y_AXIS);
+		rotation = glm::angleAxis(-glm::half_pi<float>(), Y_AXIS);
 	}
 
 	for (size_t i = 0; i < vertices.size(); i++)

@@ -8,6 +8,7 @@
 #include "SDL.h"
 #include "DebugNew.h"
 #include "OverlayMenu.h"
+#include "Node.h"
 
 using namespace ToolKit;
 
@@ -71,7 +72,7 @@ void Editor::Viewport::ShowViewport()
 		{
 			if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
 			{
-				ImGui::Image((void*)(intptr_t)m_viewportImage->m_textureId, ImVec2(m_width, m_height));
+				ImGui::Image((void*)(intptr_t)m_viewportImage->m_textureId, ImVec2(m_width, m_height), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
 
 				ImVec2 currSize = ImGui::GetContentRegionMax();
 				if (m_wndContentAreaSize.x != m_width || m_wndContentAreaSize.y != m_height)
@@ -146,8 +147,6 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 		// Mouse is rightclicked
 		if (ImGui::IsMouseDown(1))
 		{
-			ImGuiIO& io = ImGui::GetIO();
-
 			// Handle relative mouse hack.
 			if (m_relMouseModBegin)
 			{
@@ -162,7 +161,7 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 			SDL_WarpMouseGlobal(m_mousePosBegin.x, m_mousePosBegin.y);
 			// End of relative mouse hack.
 
-			m_camera->Pitch(glm::radians(mp.y * g_app->m_mouseSensitivity));
+			m_camera->Pitch(-glm::radians(mp.y * g_app->m_mouseSensitivity));
 			m_camera->RotateOnUpVector(-glm::radians(mp.x * g_app->m_mouseSensitivity));
 
 			glm::vec3 dir, up, right;
@@ -173,6 +172,7 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 			float speed = g_app->m_camSpeed;
 
 			glm::vec3 move;
+			ImGuiIO& io = ImGui::GetIO();
 			if (io.KeysDown[SDL_SCANCODE_A])
 			{
 				move += -right;

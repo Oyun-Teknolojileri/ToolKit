@@ -24,16 +24,18 @@ void ToolKit::Renderer::Render(Drawable* object, Camera* cam, Light* light)
 {
   object->m_mesh->Init();
 
-  std::vector<Mesh*> meshes;
-  meshes.push_back(object->m_mesh.get());
-  for (int i = 0; i < (int)object->m_mesh->m_subMeshes.size(); i++)
-    meshes.push_back(object->m_mesh->m_subMeshes[i]);
+  std::vector<std::shared_ptr<Mesh>> meshes;
+  meshes.push_back(object->m_mesh);
+	for (int i = 0; i < (int)object->m_mesh->m_subMeshes.size(); i++)
+	{
+		meshes.push_back(object->m_mesh->m_subMeshes[i]);
+	}
 
   m_cam = cam;
   m_light = light;
   SetProjectViewModel(object, cam);
 
-  for (auto mesh : meshes)
+  for (std::shared_ptr<Mesh> mesh : meshes)
   {
     m_mat = mesh->m_material.get();
 
@@ -99,12 +101,14 @@ void ToolKit::Renderer::RenderSkinned(Drawable* object, Camera* cam)
     glUniformMatrix4fv(loc, 1, false, &bone->m_inverseWorldMatrix[0][0]);
   }
 
-  std::vector<Mesh*> meshes;
-  meshes.push_back(object->m_mesh.get());
-  for (int i = 0; i < (int)object->m_mesh->m_subMeshes.size(); i++)
-    meshes.push_back(object->m_mesh->m_subMeshes[i]);
+  std::vector<std::shared_ptr<Mesh>> meshes;
+  meshes.push_back(object->m_mesh);
+	for (int i = 0; i < (int)object->m_mesh->m_subMeshes.size(); i++)
+	{
+		meshes.push_back(object->m_mesh->m_subMeshes[i]);
+	}
 
-  for (auto mesh : meshes)
+  for (std::shared_ptr<Mesh> mesh : meshes)
   {
     RenderState rs = *mesh->m_material->GetRenderState();
     SetRenderState(rs);
