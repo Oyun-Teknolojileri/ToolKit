@@ -96,14 +96,6 @@ void ToolKit::Editor::EditorGUI::PresentGUI()
 	SDL_GL_MakeCurrent(ToolKit::Editor::g_window, ToolKit::Editor::g_context);
 }
 
-void ToolKit::Editor::EditorGUI::ShowSimpleWindow()
-{
-	ImGui::Begin("Another Window");
-	ImGui::Text("Hello from another window!");
-	ImGui::Button("Close Me");
-	ImGui::End();
-}
-
 void ToolKit::Editor::EditorGUI::InitDocking()
 {
 	static bool opt_fullscreen_persistant = true;

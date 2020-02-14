@@ -24,6 +24,7 @@ ToolKit::Editor::Axis3d::Axis3d()
 		}
 
 		Arrow2d arrow(t);
+		arrow.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
 		if (i == 0)
 		{
 			m_mesh = arrow.m_mesh;
@@ -42,11 +43,11 @@ ToolKit::Editor::Grid::Grid(uint size)
 	// Create grid material.
 	if (!Main::GetInstance()->m_materialManager.Exist(g_GRID_MATERIAL_NAME))
 	{
-		std::shared_ptr<Material> gridMaterial = std::shared_ptr<Material>(new Material());
-		gridMaterial->m_diffuseTexture = Main::GetInstance()->m_textureMan.Create(TexturePath("grid.png"));
-		gridMaterial->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-		gridMaterial->GetRenderState()->backCullingEnabled = false;
-		Main::GetInstance()->m_materialManager.m_storage[g_GRID_MATERIAL_NAME] = gridMaterial;
+		m_material = std::shared_ptr<Material>(new Material());
+		m_material->m_diffuseTexture = Main::GetInstance()->m_textureMan.Create(TexturePath("grid.png"));
+		m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+		m_material->GetRenderState()->backCullingEnabled = false;
+		Main::GetInstance()->m_materialManager.m_storage[g_GRID_MATERIAL_NAME] = m_material;
 	}
 
 	// Create grid mesh.
@@ -58,35 +59,16 @@ void ToolKit::Editor::Grid::Resize(uint size)
 {
 	m_mesh->UnInit();
 
-	// Create 4 different quad to complate the grid.
-	glm::vec3 shiftVecs[4] =
-	{
-		glm::vec3(0.5f, 0.5f, 0.0), // 1'th quadrant and goes to the 4'th quadrant.
-		glm::vec3(-0.5f, 0.5f, 0.0),
-		glm::vec3(-0.5f, -0.5f, 0.0),
-		glm::vec3(0.5f, -0.5f, 0.0)
-	};
-
-	Quad quads[4];
+	Quad quad;
 	float scale = m_size / 2.0f;
-	for (int i = 0; i < 4; i++)
+	std::shared_ptr<Mesh> mesh = quad.m_mesh;
+	for (int j = 0; j < 4; j++)
 	{
-		std::shared_ptr<Mesh> mesh = quads[i].m_mesh;
-		for (int j = 0; j < 4; j++)
-		{
-			mesh->m_clientSideVertices[j].pos = ((mesh->m_clientSideVertices[j].pos + shiftVecs[j]) * 1.0f);
-			mesh->m_clientSideVertices[j].tex * 0.5f;
-		}
-
-		if (i == 0)
-		{
-			m_mesh = mesh;
-		}
-		else
-		{
-			m_mesh->m_subMeshes.push_back(mesh);
-		}
+		mesh->m_clientSideVertices[j].pos = (mesh->m_clientSideVertices[j].pos * scale).xzy;
+		mesh->m_clientSideVertices[j].tex *= scale;
 	}
+	m_mesh = mesh;
+	m_mesh->m_material = m_material;
 
 	std::vector<ToolKit::Vertex> vertices;
 	vertices.resize(2);
