@@ -28,6 +28,7 @@ ToolKit::Editor::App::~App()
 
 	SafeDel(Viewport::m_overlayNav);
 	SafeDel(m_grid);
+	SafeDel(m_origin);
 	SafeDel(m_dummy);
 	SafeDel(m_renderer);
 
@@ -36,14 +37,19 @@ ToolKit::Editor::App::~App()
 
 void ToolKit::Editor::App::Init()
 {
-	m_grid = new Grid(100);
-	m_scene.m_entitites.push_back(m_grid);
-
 	m_dummy = new Drawable();
 	m_dummy->m_mesh = Main::GetInstance()->m_meshMan.Create(MeshPath("zemin.mesh"));
 	m_dummy->m_mesh->Init();
-	m_dummy->m_node->Rotate(glm::angleAxis(glm::radians(180.f), ToolKit::X_AXIS));
 	m_scene.m_entitites.push_back(m_dummy);
+
+	m_origin = new Axis3d();
+	m_scene.m_entitites.push_back(m_origin);
+
+	m_grid = new Grid(100);
+	m_scene.m_entitites.push_back(m_grid);
+
+	Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+	m_viewports.push_back(vp);
 
 	EditorGUI::InitIcons();
 }
