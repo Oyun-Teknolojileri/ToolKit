@@ -51,7 +51,9 @@
     <ClCompile Include="OverlayMenu.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="Grid.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">

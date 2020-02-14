@@ -9,6 +9,12 @@ namespace ToolKit
 
 	namespace Editor
 	{
+		class Axis3d : public Drawable
+		{
+		public:
+			Axis3d();
+		};
+
 		class Grid : public Drawable
 		{
 		public:

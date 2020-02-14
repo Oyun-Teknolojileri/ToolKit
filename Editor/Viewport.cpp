@@ -8,6 +8,7 @@
 #include "SDL.h"
 #include "DebugNew.h"
 #include "OverlayMenu.h"
+#include "Node.h"
 
 using namespace ToolKit;
 
@@ -146,8 +147,6 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 		// Mouse is rightclicked
 		if (ImGui::IsMouseDown(1))
 		{
-			ImGuiIO& io = ImGui::GetIO();
-
 			// Handle relative mouse hack.
 			if (m_relMouseModBegin)
 			{
@@ -173,6 +172,7 @@ void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
 			float speed = g_app->m_camSpeed;
 
 			glm::vec3 move;
+			ImGuiIO& io = ImGui::GetIO();
 			if (io.KeysDown[SDL_SCANCODE_A])
 			{
 				move += -right;
