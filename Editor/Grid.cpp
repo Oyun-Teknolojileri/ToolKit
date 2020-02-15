@@ -60,7 +60,7 @@ void ToolKit::Editor::Grid::Resize(uint size)
 	m_mesh->UnInit();
 
 	Quad quad;
-	float scale = m_size / 2.0f;
+	float scale = m_size;
 	std::shared_ptr<Mesh> mesh = quad.m_mesh;
 	for (int j = 0; j < 4; j++)
 	{
@@ -76,8 +76,8 @@ void ToolKit::Editor::Grid::Resize(uint size)
 	// x - z lines.
 	for (int i = 0; i < 2; i++)
 	{
-		glm::vec3 p1(-scale, 0.0f, 0.0f);
-		glm::vec3 p2(scale, 0.0f, 0.0f);
+		glm::vec3 p1(-scale, 0.01f, 0.0f);
+		glm::vec3 p2(scale, 0.01f, 0.0f);
 		glm::vec3 col(1.0f, 0.0f, 0.0f);
 
 		if (i == 1)

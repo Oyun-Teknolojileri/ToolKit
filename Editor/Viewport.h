@@ -2,6 +2,7 @@
 
 #include "ToolKit.h"
 #include "GUI.h"
+#include "MathUtil.h"
 
 namespace ToolKit
 {
@@ -28,10 +29,21 @@ namespace ToolKit
 			bool IsActive();
 			bool IsOpen();
 
+			// Viewport Picking Utilities
+			struct PickData
+			{
+				glm::vec3 pickPos;
+				Entity* entity = nullptr;
+			};
+
+			PickData PickObject();
+			Ray RayFromMousePosition();
+
 		private:
 			void UpdateFpsNavigation(uint deltaTime);
 			void OnResize(float width, float height);
 			void SetActive();
+			bool IsViewportQueriable();
 
 		public:
 			// ToolKit bindings.
@@ -51,6 +63,7 @@ namespace ToolKit
 			static uint m_nextId;
 
 			// States
+			bool m_mouseOverContentArea = false;
 			bool m_open = true;
 			bool m_active = false;
 			bool m_relMouseModBegin = true;

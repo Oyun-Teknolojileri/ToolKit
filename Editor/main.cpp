@@ -8,6 +8,7 @@
 #include "GUI.h"
 #include "Types.h"
 #include "DebugNew.h"
+#include "Glm/gtx/intersect.hpp"
 
 // Global handles.
 namespace ToolKit
@@ -69,7 +70,7 @@ void Init()
 
 				// Set defaults
 				SDL_GL_SetSwapInterval(1);
-				glClearColor(0.0, 0.0, 0.0, 1.0);
+				glClearColor(0.2f, 0.2f, 0.2f, 1.0);
 				
 				glEnable(GL_CULL_FACE);
 				glEnable(GL_DEPTH_TEST);

@@ -40,7 +40,7 @@ public:
     {
       glm::vec3 vertex = m_mesh->m_clientSideVertices[i].pos;
       vertex = (transform * glm::vec4(vertex, 1.0f));
-      if (SpherePointIntersection(pos, radius, vertex))
+      if (ToolKit::SpherePointIntersection(pos, radius, vertex))
         return true;
     }
 

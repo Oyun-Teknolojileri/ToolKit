@@ -68,6 +68,7 @@ void Editor::Viewport::ShowViewport()
 
 		m_wndContentAreaSize = *(glm::vec2*)&ImVec2(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
 
+
 		if (!ImGui::IsWindowCollapsed())
 		{
 			if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
@@ -138,6 +139,35 @@ void ToolKit::Editor::Viewport::SetActive()
 			m_active = true;
 		}
 	}
+}
+
+bool ToolKit::Editor::Viewport::IsViewportQueriable()
+{
+	return m_mouseOverContentArea && m_active && m_open && !m_relMouseModBegin;
+}
+
+ToolKit::Editor::Viewport::PickData ToolKit::Editor::Viewport::PickObject()
+{
+	PickData pd;
+	if (!IsViewportQueriable())
+	{
+		return pd;
+	}
+
+	for (Entity* e : g_app->m_scene.m_entitites)
+	{
+
+	}
+
+	return pd;
+}
+
+Ray ToolKit::Editor::Viewport::RayFromMousePosition()
+{
+	Ray r;
+
+
+	return r;
 }
 
 void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
