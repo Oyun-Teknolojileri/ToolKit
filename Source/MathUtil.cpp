@@ -143,7 +143,30 @@ bool ToolKit::RayMeshIntersection(Mesh* const mesh, const Ray& ray, float& t)
 	mesh->GetAllMeshes(meshes);
 	for (Mesh* const mesh : meshes)
 	{
+		glm::vec3 triangle[3];
+		for (uint i = 0; i < mesh->m_clientSideVertices.size(); i += 3)
+		{
+			if (mesh->m_clientSideIndices.empty())
+			{
+				for (int j = i; j < 3; j++)
+				{
+					triangle[j] = mesh->m_clientSideVertices[j].pos;
+				}
+			}
+			else
+			{
+				for (int j = i; j < 3; j++)
+				{
+					int indx = mesh->m_clientSideIndices[j];
+					triangle[j] = mesh->m_clientSideVertices[indx].pos;
+				}
+			}
 
+			if (RayTriangleIntersection(ray, triangle[0], triangle[1], triangle[2], t))
+			{
+				return true;
+			}
+		}
 	}
 
 	return false;

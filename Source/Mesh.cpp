@@ -158,7 +158,7 @@ void ToolKit::Mesh::CalculateAABoundingBox()
 			continue;
 		}
 
-		for (size_t j = 0; j < m->m_clientSideIndices.size(); j++)
+		for (size_t j = 0; j < m->m_clientSideVertices.size(); j++)
 		{
 			Vertex& v = m_clientSideVertices[j];
 			UpdateAABBMax(v.pos);
@@ -188,6 +188,7 @@ void ToolKit::Mesh::InitVertices(bool flush)
     m_vertexCount = (uint)m_clientSideVertices.size();
   }
 
+  m_vertexCount = m_clientSideVertices.size();
   if (flush)
   {
     m_clientSideVertices.clear();
@@ -206,6 +207,7 @@ void ToolKit::Mesh::InitIndices(bool flush)
     m_indexCount = (uint)m_clientSideIndices.size();
   }
 
+  m_indexCount = m_clientSideIndices.size();
   if (flush)
   {
     m_clientSideIndices.clear();
