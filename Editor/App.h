@@ -8,6 +8,7 @@ namespace ToolKit
 	class Light;
 	class Cube;
 	class Sphere;
+	class Camera;
 
 	namespace Editor
 	{
@@ -22,7 +23,7 @@ namespace ToolKit
 		class Scene
 		{
 		public:
-			// Viewport Picking Utilities
+			// Scene queries.
 			struct PickData
 			{
 				glm::vec3 pickPos;
@@ -34,6 +35,7 @@ namespace ToolKit
 		public:
 			std::vector<Light*> m_lights;
 			std::vector<Entity*> m_entitites;
+			std::unordered_map<EntityId, std::shared_ptr<Entity>> m_selectedEntities;
 		};
 
 		class App
@@ -47,17 +49,21 @@ namespace ToolKit
 			void OnResize(int width, int height);
 			void OnQuit();
 
-		public:
-			std::vector<Viewport*> m_viewports;
-			Scene m_scene;
+			// Quick selected render implementation.
+			void RenderSelected(Drawable* e, Camera* c);
 
-			// Editor variables
+		public:
+			Scene m_scene;
+			std::vector<Viewport*> m_viewports;
+
+			// Editor variables.
 			float m_camSpeed = 4.0; // Meters per sec.
 			float m_mouseSensitivity = 0.5f;
+			std::shared_ptr<Material> m_highLightMaterial;
 
 		private:
 			Renderer* m_renderer;
-			Drawable* m_dummy;
+			Drawable* m_suzanne;
 			Cube* m_q1;
 			Cube* m_q2;
 			Grid* m_grid;

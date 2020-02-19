@@ -19,9 +19,16 @@ namespace ToolKit
     Point = GL_POINTS
   };
 
+	enum class CullingType
+	{
+		TwoSided, // No culling
+		Front,
+		Back
+	};
+
   struct RenderState
   {
-    bool backCullingEnabled = true;
+		CullingType cullMode = CullingType::Back;
     bool depthTestEnabled = true;
     BlendFunction blendFunction = BlendFunction::NONE;
     DrawType drawType = DrawType::Triangle;

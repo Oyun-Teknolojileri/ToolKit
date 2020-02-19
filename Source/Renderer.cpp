@@ -196,13 +196,32 @@ void ToolKit::Renderer::Render2d(SpriteAnimation* object, glm::ivec2 screenDimen
 
 void ToolKit::Renderer::SetRenderState(RenderState state)
 {
-  if (m_renderState.backCullingEnabled != state.backCullingEnabled)
+  if (m_renderState.cullMode != state.cullMode)
   {
-    if (state.backCullingEnabled)
-      glEnable(GL_CULL_FACE);
-    else
-      glDisable(GL_CULL_FACE);
-    m_renderState.backCullingEnabled = state.backCullingEnabled;
+		if (state.cullMode == CullingType::TwoSided)
+		{
+			glDisable(GL_CULL_FACE);
+		}
+
+		if (state.cullMode == CullingType::Front)
+		{
+			if (m_renderState.cullMode == CullingType::TwoSided)
+			{
+				glEnable(GL_CULL_FACE);
+			}
+			glCullFace(GL_FRONT);
+		}
+
+		if (state.cullMode == CullingType::Back)
+		{
+			if (m_renderState.cullMode == CullingType::TwoSided)
+			{
+				glEnable(GL_CULL_FACE);
+			}
+			glCullFace(GL_BACK);
+		}
+
+    m_renderState.cullMode = state.cullMode;
   }
 
   if (m_renderState.depthTestEnabled != state.depthTestEnabled)

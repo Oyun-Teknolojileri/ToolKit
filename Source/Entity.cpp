@@ -6,9 +6,12 @@
 #include "Skeleton.h"
 #include "DebugNew.h"
 
+ToolKit::EntityId ToolKit::Entity::m_lastId = 0;
+
 ToolKit::Entity::Entity()
 {
   m_node = new Node();
+	m_id = m_lastId++;
 }
 
 ToolKit::Entity::~Entity()

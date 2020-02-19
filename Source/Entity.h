@@ -1,8 +1,9 @@
 #pragma once
 
+#include "Types.h"
+
 namespace ToolKit
 {
-
   class Node;
   class Animation;
 
@@ -34,7 +35,11 @@ namespace ToolKit
     virtual void SetPose(Animation* anim);
 
   public:
-    Node* m_node = nullptr;
+    Node* m_node;
+		EntityId m_id;
+
+	private:
+		static EntityId m_lastId;
   };
 
 }

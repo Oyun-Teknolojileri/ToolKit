@@ -14,7 +14,7 @@
 
 ToolKit::Editor::App::App(int windowWidth, int windowHeight)
 {
-	m_dummy = nullptr;
+	m_suzanne = nullptr;
 	m_q1 = nullptr;
 	m_q2 = nullptr;
 	m_renderer = new Renderer();
@@ -32,7 +32,7 @@ ToolKit::Editor::App::~App()
 	SafeDel(Viewport::m_overlayNav);
 	SafeDel(m_grid);
 	SafeDel(m_origin);
-	SafeDel(m_dummy);
+	SafeDel(m_suzanne);
 	SafeDel(m_q1);
 	SafeDel(m_q2);
 	SafeDel(m_hitMarker);
@@ -43,22 +43,23 @@ ToolKit::Editor::App::~App()
 
 void ToolKit::Editor::App::Init()
 {
-	m_dummy = new Drawable();
-	m_dummy->m_mesh = Main::GetInstance()->m_meshMan.Create(MeshPath("zemin.mesh"));
-	m_dummy->m_mesh->Init(false);
-	//m_scene.m_entitites.push_back(m_dummy);
+	m_suzanne = new Drawable();
+	m_suzanne->m_mesh = Main::GetInstance()->m_meshMan.Create(MeshPath("suzanne.mesh"));
+	m_suzanne->m_mesh->Init(false);
+	m_scene.m_entitites.push_back(m_suzanne);
 
 	m_q1 = new Cube();
 	m_q1->m_mesh->Init(false);
-	m_q1->m_node->m_translation = glm::vec3(-2.0f, 0.0f, 0.0f);
+	m_q1->m_node->m_translation = glm::vec3(-4.0f, 0.0f, 0.0f);
 	m_scene.m_entitites.push_back(m_q1);
 	m_q2 = new Cube();
 	m_q2->m_mesh->Init(false);
-	m_q2->m_node->m_translation = glm::vec3(2.0f, 0.0f, 0.0f);
+	m_q2->m_node->m_translation = glm::vec3(4.0f, 0.0f, 0.0f);
 	m_scene.m_entitites.push_back(m_q2);
 
 	m_hitMarker = new Sphere();
-	m_hitMarker->m_mesh->m_material = ToolKit::Main::GetInstance()->m_materialManager.Create(ToolKit::MaterialPath("solidColor.material"));
+	std::shared_ptr<Material> solidColorMaterial = ToolKit::Main::GetInstance()->m_materialManager.Create(ToolKit::MaterialPath("solidColor.material"));
+	m_hitMarker->m_mesh->m_material = solidColorMaterial;
 	m_hitMarker->m_mesh->m_material->m_color = glm::vec3(1.0f, 1.0f, 1.0f);
 	m_hitMarker->m_node->m_scale = glm::vec3(0.03f, 0.03f, 0.03f);
 	m_scene.m_entitites.push_back(m_hitMarker);
@@ -69,6 +70,10 @@ void ToolKit::Editor::App::Init()
 	m_grid = new Grid(100);
 	m_grid->m_mesh->Init(false);
 	m_scene.m_entitites.push_back(m_grid);
+
+	m_highLightMaterial = std::shared_ptr<Material>(solidColorMaterial->GetCopy());
+	m_highLightMaterial->m_color = glm::vec3(1.0f, 0.627f, 0.156f);
+	m_highLightMaterial->GetRenderState()->cullMode = CullingType::Front;
 
 	Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
 	m_viewports.push_back(vp);
@@ -93,12 +98,12 @@ void ToolKit::Editor::App::Frame(int deltaTime)
 				m_hitMarker->m_node->m_translation = pd.pickPos;
 			}
 		
-			// Test Shoot rays. For debug purpose, leaks memory (rayMdl);
-			static Arrow2d* rayMdl = nullptr;
+			// Test Shoot rays. For debug visualisation purpose.
+			static std::shared_ptr<Arrow2d> rayMdl = nullptr;
 			if (rayMdl == nullptr)
 			{
-				rayMdl = new Arrow2d();
-				m_scene.m_entitites.push_back(rayMdl);
+				rayMdl = std::shared_ptr<Arrow2d> (new Arrow2d());
+				m_scene.m_entitites.push_back(rayMdl.get());
 			}
 
 			Ray r = vp->RayFromMousePosition();
@@ -142,6 +147,19 @@ void ToolKit::Editor::App::OnResize(int width, int height)
 void ToolKit::Editor::App::OnQuit()
 {
 	g_running = false;
+}
+
+void ToolKit::Editor::App::RenderSelected(Drawable* e, Camera* c)
+{
+	glm::vec3 s = e->m_node->m_scale;
+	e->m_node->m_scale += 0.02f;
+	std::shared_ptr<Material> m = e->m_mesh->m_material;
+	e->m_mesh->m_material = m_highLightMaterial;
+	m_renderer->Render(e, c);
+
+	e->m_node->m_scale = s;
+	e->m_mesh->m_material = m;
+	m_renderer->Render(e, c);
 }
 
 ToolKit::Editor::Scene::PickData ToolKit::Editor::Scene::PickObject(Ray ray)
