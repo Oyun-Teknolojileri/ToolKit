@@ -7,6 +7,7 @@ namespace ToolKit
 	class Renderer;
 	class Light;
 	class Cube;
+	class Sphere;
 
 	namespace Editor
 	{
@@ -61,6 +62,7 @@ namespace ToolKit
 			Cube* m_q2;
 			Grid* m_grid;
 			Axis3d* m_origin;
+			Sphere* m_hitMarker;
 		};
 
 	}

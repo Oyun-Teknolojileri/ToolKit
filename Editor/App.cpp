@@ -35,6 +35,7 @@ ToolKit::Editor::App::~App()
 	SafeDel(m_dummy);
 	SafeDel(m_q1);
 	SafeDel(m_q2);
+	SafeDel(m_hitMarker);
 	SafeDel(m_renderer);
 
 	Main::GetInstance()->Uninit();
@@ -48,16 +49,25 @@ void ToolKit::Editor::App::Init()
 	//m_scene.m_entitites.push_back(m_dummy);
 
 	m_q1 = new Cube();
+	m_q1->m_mesh->Init(false);
 	m_q1->m_node->m_translation = glm::vec3(-2.0f, 0.0f, 0.0f);
 	m_scene.m_entitites.push_back(m_q1);
 	m_q2 = new Cube();
+	m_q2->m_mesh->Init(false);
 	m_q2->m_node->m_translation = glm::vec3(2.0f, 0.0f, 0.0f);
 	m_scene.m_entitites.push_back(m_q2);
+
+	m_hitMarker = new Sphere();
+	m_hitMarker->m_mesh->m_material = ToolKit::Main::GetInstance()->m_materialManager.Create(ToolKit::MaterialPath("solidColor.material"));
+	m_hitMarker->m_mesh->m_material->m_color = glm::vec3(1.0f, 1.0f, 1.0f);
+	m_hitMarker->m_node->m_scale = glm::vec3(0.03f, 0.03f, 0.03f);
+	m_scene.m_entitites.push_back(m_hitMarker);
 
 	m_origin = new Axis3d();
 	m_scene.m_entitites.push_back(m_origin);
 
 	m_grid = new Grid(100);
+	m_grid->m_mesh->Init(false);
 	m_scene.m_entitites.push_back(m_grid);
 
 	Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
@@ -77,6 +87,11 @@ void ToolKit::Editor::App::Frame(int deltaTime)
 		if (vp->IsViewportQueriable() && ImGui::GetIO().MouseClicked[0])
 		{
 			Scene::PickData pd = m_scene.PickObject(vp->RayFromMousePosition());
+
+			if (pd.entity != nullptr)
+			{
+				m_hitMarker->m_node->m_translation = pd.pickPos;
+			}
 		
 			// Test Shoot rays. For debug purpose, leaks memory (rayMdl);
 			static Arrow2d* rayMdl = nullptr;
@@ -152,10 +167,10 @@ ToolKit::Editor::Scene::PickData ToolKit::Editor::Scene::PickObject(Ray ray)
 		{
 			if (RayMeshIntersection(dw->m_mesh.get(), rayInObjectSpace, dist))
 			{
-				if (dist < closestPickedDistance)
+				if (dist < closestPickedDistance && dist > 0.0f)
 				{
 					pd.entity = e;
-					pd.pickPos = rayInObjectSpace.position + rayInObjectSpace.direction * dist;
+					pd.pickPos = ray.position + ray.direction * dist;
 					closestPickedDistance = dist;
 				}
 			}
