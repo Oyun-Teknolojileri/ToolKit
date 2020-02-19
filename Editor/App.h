@@ -10,7 +10,6 @@ namespace ToolKit
 
 	namespace Editor
 	{
-
 		class Viewport;
 		class Grid;
 		class Axis3d;
@@ -58,6 +57,8 @@ namespace ToolKit
 		private:
 			Renderer* m_renderer;
 			Drawable* m_dummy;
+			Cube* m_q1;
+			Cube* m_q2;
 			Grid* m_grid;
 			Axis3d* m_origin;
 		};

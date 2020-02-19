@@ -86,7 +86,7 @@ ToolKit::Camera::CamData ToolKit::Camera::GetData()
 {
   CamData data;
   glm::vec3 tmp;
-  GetLocalAxis(data.dir, data.pos, tmp);
+  GetLocalAxis(data.dir, tmp, tmp);
   data.pos = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
   return data;

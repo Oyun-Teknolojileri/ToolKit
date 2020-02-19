@@ -160,16 +160,15 @@ bool ToolKit::Editor::Viewport::IsViewportQueriable()
 
 Ray ToolKit::Editor::Viewport::RayFromMousePosition()
 {
-	Ray ray;
 	glm::vec3 screenPoint = glm::vec3(m_lastMousePosRelContentArea, 0);
 	screenPoint.y = m_wndContentAreaSize.y - screenPoint.y; // Imgui Window origin Top - Left to OpenGL window origin Bottom - Left
 
 	glm::mat4 view = m_camera->GetViewMatrix();
 	glm::mat4 project = m_camera->m_projection;
+	
+	Ray ray;
 	ray.position = glm::unProject(screenPoint, view, project, glm::vec4(0.0f, 0.0f, m_width, m_height));
-
-	glm::vec3 dummy;
-	m_camera->GetLocalAxis(ray.direction, dummy, dummy);
+	ray.direction = glm::normalize(ray.position - m_camera->m_node->m_translation);
 
 	return ray;
 }
