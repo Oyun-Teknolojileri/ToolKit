@@ -146,10 +146,10 @@ ToolKit::Editor::Scene::PickData ToolKit::Editor::Scene::PickObject(Ray ray)
 		rayInObjectSpace.position = InvModelTs * glm::vec4(ray.position, 1.0f);
 		rayInObjectSpace.direction = glm::transpose(modelTs) * glm::vec4(ray.direction, 1.0f);
 
+		float dist = 0;
 		Drawable* dw = static_cast<Drawable*>(e);
-		if (RayBoxIntersection(rayInObjectSpace, dw->m_mesh->m_AABoundingBox))
+		if (RayBoxIntersection(rayInObjectSpace, dw->m_mesh->m_AABoundingBox, dist))
 		{
-			float dist = 0;
 			if (RayMeshIntersection(dw->m_mesh.get(), rayInObjectSpace, dist))
 			{
 				if (dist < closestPickedDistance)

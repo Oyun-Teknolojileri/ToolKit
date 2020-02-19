@@ -97,5 +97,6 @@ void ToolKit::Editor::Grid::Resize(uint size)
 		subMesh->m_clientSideVertices = vertices;
 		subMesh->m_material = std::shared_ptr<Material>(newMaterial);
 		m_mesh->m_subMeshes.push_back(subMesh);
+		m_mesh->CalculateAABoundingBox();
 	}
 }

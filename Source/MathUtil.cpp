@@ -46,43 +46,43 @@ bool ToolKit::SphereSphereIntersection(const glm::vec3& spherePos, float sphereR
 	return dist < (sphereRadius + sphereRadius2);
 }
 
-// https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection
-bool ToolKit::RayBoxIntersection(const Ray& ray, const BoundingBox& box)
+// https://gamedev.stackexchange.com/questions/18436/most-efficient-aabb-vs-ray-collision-algorithms
+bool ToolKit::RayBoxIntersection(const Ray& ray, const BoundingBox& box, float& t)
 {
-  float tmin = (box.min.x - ray.position.x) / ray.direction.x;
-  float tmax = (box.max.x - ray.position.x) / ray.direction.x;
+	// r.dir is unit direction vector of ray
+	glm::vec3 dirfrac;
+	dirfrac.x = 1.0f / ray.direction.x;
+	dirfrac.y = 1.0f / ray.direction.y;
+	dirfrac.z = 1.0f / ray.direction.z;
 
-  if (tmin > tmax) std::swap(tmin, tmax);
+	// lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
+	// r.org is origin of ray
+	float t1 = (box.min.x - ray.position.x) * dirfrac.x;
+	float t2 = (box.max.x - ray.position.x) * dirfrac.x;
+	float t3 = (box.min.y - ray.position.y) * dirfrac.y;
+	float t4 = (box.max.y - ray.position.y) * dirfrac.y;
+	float t5 = (box.min.z - ray.position.z) * dirfrac.z;
+	float t6 = (box.max.z - ray.position.z) * dirfrac.z;
 
-  float tymin = (box.min.y - ray.position.y) / ray.direction.y;
-  float tymax = (box.max.y - ray.position.y) / ray.direction.y;
+	float tmin = glm::max(glm::max(glm::min(t1, t2), glm::min(t3, t4)), glm::min(t5, t6));
+	float tmax = glm::min(glm::min(glm::max(t1, t2), glm::max(t3, t4)), glm::max(t5, t6));
 
-  if (tymin > tymax) std::swap(tymin, tymax);
+	// if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
+	if (tmax < 0)
+	{
+		t = tmax;
+		return false;
+	}
 
-  if ((tmin > tymax) || (tymin > tmax))
-    return false;
+	// if tmin > tmax, ray doesn't intersect AABB
+	if (tmin > tmax)
+	{
+		t = tmax;
+		return false;
+	}
 
-  if (tymin > tmin)
-    tmin = tymin;
-
-  if (tymax < tmax)
-    tmax = tymax;
-
-  float tzmin = (box.min.z - ray.position.z) / ray.direction.z;
-  float tzmax = (box.max.z - ray.position.z) / ray.direction.z;
-
-  if (tzmin > tzmax) std::swap(tzmin, tzmax);
-
-  if ((tmin > tzmax) || (tzmin > tmax))
-    return false;
-
-  if (tzmin > tmin)
-    tmin = tzmin;
-
-  if (tzmax < tmax)
-    tmax = tzmax;
-
-  return true;
+	t = tmin;
+	return true;
 }
 
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
