@@ -60,7 +60,7 @@ void ToolKit::Editor::Grid::Resize(uint size)
 	m_mesh->UnInit();
 
 	Quad quad;
-	float scale = m_size;
+	float scale = (float)m_size;
 	std::shared_ptr<Mesh> mesh = quad.m_mesh;
 	for (int j = 0; j < 4; j++)
 	{

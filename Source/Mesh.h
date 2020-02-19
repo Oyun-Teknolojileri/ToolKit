@@ -3,6 +3,7 @@
 #include "Types.h"
 #include "Resource.h"
 #include "ResourceManager.h"
+#include "MathUtil.h"
 #include "GL/glew.h"
 #include <memory>
 
@@ -32,10 +33,14 @@ namespace ToolKit
     virtual void Load() override;
     virtual int GetVertexSize();
     virtual bool IsSkinned();
+		void CalculateAABoundingBox();
+		void GetAllMeshes(std::vector<Mesh*>& meshes);
 
   protected:
     virtual void InitVertices(bool flush);
     virtual void InitIndices(bool flush);
+		inline void UpdateAABBMax(const glm::vec3& v);
+		inline void UpdateAABBMin(const glm::vec3& v);
 
   public:
     std::vector<Vertex> m_clientSideVertices;
@@ -46,6 +51,7 @@ namespace ToolKit
     uint m_indexCount = 0;
     std::shared_ptr<Material> m_material;
     std::vector<std::shared_ptr<Mesh>> m_subMeshes;
+		BoundingBox m_AABoundingBox;
   };
 
   class MeshManager : public ResourceManager<Mesh>

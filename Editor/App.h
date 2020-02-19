@@ -22,6 +22,16 @@ namespace ToolKit
 		class Scene
 		{
 		public:
+			// Viewport Picking Utilities
+			struct PickData
+			{
+				glm::vec3 pickPos;
+				Entity* entity = nullptr;
+			};
+
+			PickData PickObject(Ray ray);
+
+		public:
 			std::vector<Light*> m_lights;
 			std::vector<Entity*> m_entitites;
 		};

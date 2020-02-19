@@ -18,8 +18,8 @@ namespace ToolKit
 
   struct BoundingBox
   {
-    glm::vec3 min;
-    glm::vec3 max;
+		glm::vec3 min;
+		glm::vec3 max;
   };
 
   struct Ray
@@ -44,11 +44,13 @@ namespace ToolKit
   bool SpherePointIntersection(const glm::vec3& spherePos, float sphereRadius, const glm::vec3& vertex);
   bool SphereSphereIntersection(const glm::vec3& spherePos, float sphereRadius, const glm::vec3& spherePos2, float sphereRadius2);
   bool RayBoxIntersection(const Ray& ray, const BoundingBox& box);
+	bool RayTriangleIntersection(const Ray& ray, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float& t);
+	bool RayMeshIntersection(class Mesh* const mesh, const Ray& ray, float& t);
 
-  // Converssion and Interpolation
+  // Conversions and Interpolation
   //////////////////////////////////////////
   glm::vec3 Interpolate(const glm::vec3& vec1, const glm::vec3& vec2, float ratio);
   void ToSpherical(glm::vec3 p, float& r, float& zenith, float& azimuth);
   glm::vec3 ToCartesian(float r, float zenith, float azimuth);
+	glm::quat RotationTo(glm::vec3 a, glm::vec3 b); // Returns quaternion wich rotates a on to b.
 }
-

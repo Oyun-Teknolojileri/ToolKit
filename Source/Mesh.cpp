@@ -74,6 +74,9 @@ void ToolKit::Mesh::Load()
     return;
   }
 
+	m_AABoundingBox.min = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+	m_AABoundingBox.max = glm::vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
   Mesh* mesh = this;
   for (node = node->first_node("mesh"); node; node = node->next_sibling("mesh"))
   {
@@ -100,6 +103,9 @@ void ToolKit::Mesh::Load()
     {
       Vertex vd;
       ExtractXYZFromNode(v->first_node("p"), vd.pos);
+			UpdateAABBMax(vd.pos);
+			UpdateAABBMin(vd.pos);
+
       ExtractXYZFromNode(v->first_node("n"), vd.norm);
       ExtractXYFromNode(v->first_node("t"), vd.tex);
       ExtractXYZFromNode(v->first_node("bt"), vd.btan);
@@ -129,6 +135,45 @@ int ToolKit::Mesh::GetVertexSize()
 bool ToolKit::Mesh::IsSkinned()
 {
   return false;
+}
+
+void ToolKit::Mesh::CalculateAABoundingBox()
+{
+	if (m_clientSideVertices.empty())
+	{
+		return;
+	}
+
+	m_AABoundingBox.min = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+	m_AABoundingBox.max = glm::vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	std::vector<Mesh*> meshes;
+	GetAllMeshes(meshes);
+
+	for (size_t i = 0; i < meshes.size(); i++)
+	{
+		Mesh* m = meshes[i];
+		if (m->m_clientSideVertices.empty())
+		{
+			continue;
+		}
+
+		for (size_t j = 0; j < m->m_clientSideIndices.size(); j++)
+		{
+			Vertex& v = m_clientSideVertices[j];
+			UpdateAABBMax(v.pos);
+			UpdateAABBMin(v.pos);
+		}
+	}
+}
+
+void ToolKit::Mesh::GetAllMeshes(std::vector<Mesh*>& meshes)
+{
+	meshes.push_back(this);
+	for (size_t i = 0; i < m_subMeshes.size(); i++)
+	{
+		m_subMeshes[i]->GetAllMeshes(meshes);
+	}
 }
 
 void ToolKit::Mesh::InitVertices(bool flush)
@@ -165,6 +210,42 @@ void ToolKit::Mesh::InitIndices(bool flush)
   {
     m_clientSideIndices.clear();
   }
+}
+
+void ToolKit::Mesh::UpdateAABBMax(const glm::vec3& v)
+{
+	if (m_AABoundingBox.max.x < v.x)
+	{
+		m_AABoundingBox.max.x = v.x;
+	}
+
+	if (m_AABoundingBox.max.y < v.y)
+	{
+		m_AABoundingBox.max.y = v.y;
+	}
+
+	if (m_AABoundingBox.max.z < v.z)
+	{
+		m_AABoundingBox.max.z = v.z;
+	}
+}
+
+void ToolKit::Mesh::UpdateAABBMin(const glm::vec3& v)
+{
+	if (m_AABoundingBox.min.x > v.x)
+	{
+		m_AABoundingBox.min.x = v.x;
+	}
+
+	if (m_AABoundingBox.min.y > v.y)
+	{
+		m_AABoundingBox.min.y = v.y;
+	}
+
+	if (m_AABoundingBox.min.z > v.z)
+	{
+		m_AABoundingBox.min.z = v.z;
+	}
 }
 
 ToolKit::SkinMesh::SkinMesh()

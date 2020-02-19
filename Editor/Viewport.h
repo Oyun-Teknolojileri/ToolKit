@@ -29,21 +29,13 @@ namespace ToolKit
 			bool IsActive();
 			bool IsOpen();
 
-			// Viewport Picking Utilities
-			struct PickData
-			{
-				glm::vec3 pickPos;
-				Entity* entity = nullptr;
-			};
-
-			PickData PickObject();
+			bool IsViewportQueriable();
 			Ray RayFromMousePosition();
 
 		private:
 			void UpdateFpsNavigation(uint deltaTime);
 			void OnResize(float width, float height);
 			void SetActive();
-			bool IsViewportQueriable();
 
 		public:
 			// ToolKit bindings.
@@ -68,6 +60,7 @@ namespace ToolKit
 			bool m_active = false;
 			bool m_relMouseModBegin = true;
 			glm::ivec2 m_mousePosBegin;
+			glm::ivec2 m_lastMousePosRelContentArea;
 		};
 
 	}

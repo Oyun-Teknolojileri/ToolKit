@@ -67,7 +67,19 @@ void Editor::Viewport::ShowViewport()
 		vMax.y += ImGui::GetWindowPos().y;
 
 		m_wndContentAreaSize = *(glm::vec2*)&ImVec2(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
-
+		ImGuiIO& io = ImGui::GetIO();
+		
+		m_mouseOverContentArea = false;
+		ImVec2 absMousePos = io.MousePos;
+		if (vMin.x < absMousePos.x && vMax.x > absMousePos.x)
+		{
+			if (vMin.y < absMousePos.y && vMax.y > absMousePos.y)
+			{
+				m_mouseOverContentArea = true;
+				m_lastMousePosRelContentArea.x = (int)(absMousePos.x - vMin.x);
+				m_lastMousePosRelContentArea.y = (int)(absMousePos.y - vMin.y);
+			}
+		}
 
 		if (!ImGui::IsWindowCollapsed())
 		{
@@ -143,31 +155,23 @@ void ToolKit::Editor::Viewport::SetActive()
 
 bool ToolKit::Editor::Viewport::IsViewportQueriable()
 {
-	return m_mouseOverContentArea && m_active && m_open && !m_relMouseModBegin;
-}
-
-ToolKit::Editor::Viewport::PickData ToolKit::Editor::Viewport::PickObject()
-{
-	PickData pd;
-	if (!IsViewportQueriable())
-	{
-		return pd;
-	}
-
-	for (Entity* e : g_app->m_scene.m_entitites)
-	{
-
-	}
-
-	return pd;
+	return m_mouseOverContentArea && m_active && m_open && m_relMouseModBegin;
 }
 
 Ray ToolKit::Editor::Viewport::RayFromMousePosition()
 {
-	Ray r;
+	Ray ray;
+	glm::vec3 screenPoint = glm::vec3(m_lastMousePosRelContentArea, 0);
+	screenPoint.y = m_wndContentAreaSize.y - screenPoint.y; // Imgui Window origin Top - Left to OpenGL window origin Bottom - Left
 
+	glm::mat4 view = m_camera->GetViewMatrix();
+	glm::mat4 project = m_camera->m_projection;
+	ray.position = glm::unProject(screenPoint, view, project, glm::vec4(0.0f, 0.0f, m_width, m_height));
 
-	return r;
+	glm::vec3 dummy;
+	m_camera->GetLocalAxis(ray.direction, dummy, dummy);
+
+	return ray;
 }
 
 void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
