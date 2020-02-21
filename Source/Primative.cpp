@@ -269,18 +269,18 @@ void ToolKit::Arrow2d::Generate(ToolKit::Arrow2d::ArrowType t)
 	vertices[7].pos = glm::vec3(0.8f, -0.2f, 0.0f);
 
 	Material* newMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("LineColor.material"))->GetCopy();
-	newMaterial->m_color = glm::vec3(1.0f, 0.0f, 0.0f);
+	newMaterial->m_color = glm::vec3(0.89f, 0.239f, 0.341f);
 
 	glm::quat rotation;
 	if (m_arrowType == Y)
 	{
-		newMaterial->m_color = glm::vec3(0.0f, 1.0f, 0.0f);
+		newMaterial->m_color = glm::vec3(0.537f, 0.831f, 0.07f);
 		rotation = glm::angleAxis(glm::half_pi<float>(), Z_AXIS);
 	}
 
 	if (m_arrowType == Z)
 	{
-		newMaterial->m_color = glm::vec3(0.0f, 0.0f, 1.0f);
+		newMaterial->m_color = glm::vec3(0.196f, 0.541f, 0.905f);
 		rotation = glm::angleAxis(-glm::half_pi<float>(), Y_AXIS);
 	}
 

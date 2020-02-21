@@ -9,6 +9,8 @@
 #include "DebugNew.h"
 #include "OverlayMenu.h"
 #include "Node.h"
+#include "Primative.h"
+#include "Grid.h"
 
 using namespace ToolKit;
 
@@ -41,6 +43,8 @@ void Editor::Viewport::Update(uint deltaTime)
 	if (!IsActive())
 		return;
 
+	// Update viewport mods.
+	PickObject();
 	UpdateFpsNavigation(deltaTime);
 }
 
@@ -123,6 +127,60 @@ bool ToolKit::Editor::Viewport::IsActive()
 bool ToolKit::Editor::Viewport::IsOpen()
 {
 	return m_open;
+}
+
+void ToolKit::Editor::Viewport::PickObject()
+{
+	if (!IsViewportQueriable() || !ImGui::GetIO().MouseClicked[0])
+	{
+		return;
+	}
+
+	bool shiftClick = ImGui::GetIO().KeyShift;
+	Ray ray = RayFromMousePosition();
+
+	std::vector<EntityId> ignoreList = { g_app->m_grid->m_id };
+
+
+	Scene::PickData pd = g_app->m_scene.PickObject(ray, ignoreList);
+	if (pd.entity == nullptr && !shiftClick)
+	{
+		g_app->m_scene.m_selectedEntities.clear();
+	}
+
+	if (pd.entity && !shiftClick)
+	{
+		g_app->m_scene.m_selectedEntities.clear();
+		g_app->m_scene.m_selectedEntities[pd.entity->m_id] = pd.entity;
+	}
+
+	if (pd.entity && shiftClick)
+	{
+		if (g_app->m_scene.IsSelected(pd.entity->m_id))
+		{
+			g_app->m_scene.m_selectedEntities.erase(pd.entity->m_id);
+		}
+		else
+		{
+			g_app->m_scene.m_selectedEntities[pd.entity->m_id] = pd.entity;
+		}
+	}
+
+	// Test Shoot rays. For debug visualisation purpose.
+	if (pd.entity != nullptr)
+	{
+		g_app->m_hitMarker->m_node->m_translation = pd.pickPos;
+	}
+
+	static std::shared_ptr<Arrow2d> rayMdl = nullptr;
+	if (rayMdl == nullptr)
+	{
+		rayMdl = std::shared_ptr<Arrow2d>(new Arrow2d());
+		g_app->m_scene.m_entitites.push_back(rayMdl.get());
+	}
+
+	rayMdl->m_node->m_translation = ray.position;
+	rayMdl->m_node->m_orientation = ToolKit::RotationTo(ToolKit::X_AXIS, ray.direction);
 }
 
 void Editor::Viewport::OnResize(float width, float height)

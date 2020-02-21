@@ -28,6 +28,7 @@ namespace ToolKit
 			void ShowViewport();
 			bool IsActive();
 			bool IsOpen();
+			void PickObject();
 
 			bool IsViewportQueriable();
 			Ray RayFromMousePosition();

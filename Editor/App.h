@@ -30,12 +30,13 @@ namespace ToolKit
 				Entity* entity = nullptr;
 			};
 
-			PickData PickObject(Ray ray);
+			PickData PickObject(Ray ray, const std::vector<EntityId>& ignoreList = std::vector<EntityId>());
+			bool IsSelected(EntityId id);
 
 		public:
 			std::vector<Light*> m_lights;
 			std::vector<Entity*> m_entitites;
-			std::unordered_map<EntityId, std::shared_ptr<Entity>> m_selectedEntities;
+			std::unordered_map<EntityId, Entity*> m_selectedEntities;
 		};
 
 		class App
@@ -61,14 +62,16 @@ namespace ToolKit
 			float m_mouseSensitivity = 0.5f;
 			std::shared_ptr<Material> m_highLightMaterial;
 
+			// Editor objects.
+			Sphere* m_hitMarker;
+			Grid* m_grid;
+			Axis3d* m_origin;
+
 		private:
 			Renderer* m_renderer;
 			Drawable* m_suzanne;
 			Cube* m_q1;
 			Cube* m_q2;
-			Grid* m_grid;
-			Axis3d* m_origin;
-			Sphere* m_hitMarker;
 		};
 
 	}

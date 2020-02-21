@@ -43,6 +43,9 @@ ToolKit::Editor::App::~App()
 
 void ToolKit::Editor::App::Init()
 {
+	std::shared_ptr<Material> solidColorMaterial = ToolKit::Main::GetInstance()->m_materialManager.Create(ToolKit::MaterialPath("solidColor.material"));
+	solidColorMaterial->m_color = glm::vec3(0.8f, 0.8f, 0.8f);
+
 	m_suzanne = new Drawable();
 	m_suzanne->m_mesh = Main::GetInstance()->m_meshMan.Create(MeshPath("suzanne.mesh"));
 	m_suzanne->m_mesh->Init(false);
@@ -58,9 +61,8 @@ void ToolKit::Editor::App::Init()
 	m_scene.m_entitites.push_back(m_q2);
 
 	m_hitMarker = new Sphere();
-	std::shared_ptr<Material> solidColorMaterial = ToolKit::Main::GetInstance()->m_materialManager.Create(ToolKit::MaterialPath("solidColor.material"));
-	m_hitMarker->m_mesh->m_material = solidColorMaterial;
-	m_hitMarker->m_mesh->m_material->m_color = glm::vec3(1.0f, 1.0f, 1.0f);
+	m_hitMarker->m_mesh->m_material = std::shared_ptr<Material>(solidColorMaterial->GetCopy());;
+	m_hitMarker->m_mesh->m_material->m_color = glm::vec3(1.0f, 0.627f, 0.156f);
 	m_hitMarker->m_node->m_scale = glm::vec3(0.03f, 0.03f, 0.03f);
 	m_scene.m_entitites.push_back(m_hitMarker);
 
@@ -89,28 +91,6 @@ void ToolKit::Editor::App::Frame(int deltaTime)
 		Viewport* vp = m_viewports[i];
 		vp->Update(deltaTime);
 		
-		if (vp->IsViewportQueriable() && ImGui::GetIO().MouseClicked[0])
-		{
-			Scene::PickData pd = m_scene.PickObject(vp->RayFromMousePosition());
-
-			if (pd.entity != nullptr)
-			{
-				m_hitMarker->m_node->m_translation = pd.pickPos;
-			}
-		
-			// Test Shoot rays. For debug visualisation purpose.
-			static std::shared_ptr<Arrow2d> rayMdl = nullptr;
-			if (rayMdl == nullptr)
-			{
-				rayMdl = std::shared_ptr<Arrow2d> (new Arrow2d());
-				m_scene.m_entitites.push_back(rayMdl.get());
-			}
-
-			Ray r = vp->RayFromMousePosition();
-			rayMdl->m_node->m_translation = r.position;
-			rayMdl->m_node->m_orientation = ToolKit::RotationTo(ToolKit::X_AXIS, r.direction);
-		}
-
 		if (!vp->IsOpen())
 		{
 			SafeDel(vp);
@@ -126,7 +106,14 @@ void ToolKit::Editor::App::Frame(int deltaTime)
 		{
 			if (ntt->IsDrawable())
 			{
-				m_renderer->Render((Drawable*)ntt, vp->m_camera);
+				if (m_scene.IsSelected(ntt->m_id))
+				{
+					RenderSelected((Drawable*)ntt, vp->m_camera);
+				}
+				else
+				{
+					m_renderer->Render((Drawable*)ntt, vp->m_camera);
+				}
 			}
 		}
 	}
@@ -162,13 +149,18 @@ void ToolKit::Editor::App::RenderSelected(Drawable* e, Camera* c)
 	m_renderer->Render(e, c);
 }
 
-ToolKit::Editor::Scene::PickData ToolKit::Editor::Scene::PickObject(Ray ray)
+ToolKit::Editor::Scene::PickData ToolKit::Editor::Scene::PickObject(Ray ray, const std::vector<EntityId>& ignoreList)
 {
 	PickData pd;
 	float closestPickedDistance = FLT_MAX;
 	for (Entity* e : m_entitites)
 	{
 		if (!e->IsDrawable())
+		{
+			continue;
+		}
+
+		if (std::find(ignoreList.begin(), ignoreList.end(), e->m_id) != ignoreList.end())
 		{
 			continue;
 		}
@@ -196,4 +188,9 @@ ToolKit::Editor::Scene::PickData ToolKit::Editor::Scene::PickObject(Ray ray)
 	}
 
 	return pd;
+}
+
+bool ToolKit::Editor::Scene::IsSelected(EntityId id)
+{
+	return m_selectedEntities.find(id) != m_selectedEntities.end();
 }

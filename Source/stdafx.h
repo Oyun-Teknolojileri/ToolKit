@@ -13,6 +13,8 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/matrix_access.hpp"
 #include "glm/gtc/epsilon.hpp"
+#include "glm/gtx/closest_point.hpp"
+#include "glm/gtx/vector_query.hpp"
 
 // LoadPng
 #include "lodepng.h"
