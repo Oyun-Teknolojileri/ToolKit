@@ -31,12 +31,20 @@ namespace ToolKit
 			};
 
 			PickData PickObject(Ray ray, const std::vector<EntityId>& ignoreList = std::vector<EntityId>());
+			
+			// Selection operations
 			bool IsSelected(EntityId id);
+			void RemoveFromSelection(EntityId id);
+			void AddToSelection(EntityId id);
+			void ClearSelection();
+			bool IsCurrentSelection(EntityId id);
 
 		public:
 			std::vector<Light*> m_lights;
 			std::vector<Entity*> m_entitites;
-			std::unordered_map<EntityId, Entity*> m_selectedEntities;
+
+		private:
+			std::vector<EntityId> m_selectedEntities;
 		};
 
 		class App
@@ -61,6 +69,7 @@ namespace ToolKit
 			float m_camSpeed = 4.0; // Meters per sec.
 			float m_mouseSensitivity = 0.5f;
 			std::shared_ptr<Material> m_highLightMaterial;
+			std::shared_ptr<Material> m_highLightSecondaryMaterial;
 
 			// Editor objects.
 			Sphere* m_hitMarker;

@@ -25,16 +25,22 @@ namespace ToolKit
 			Viewport(float width, float height);
 			~Viewport();
 			void Update(uint deltaTime);
+
+			// Window queries.
 			void ShowViewport();
 			bool IsActive();
 			bool IsOpen();
-			void PickObject();
-
 			bool IsViewportQueriable();
+
+			// Utility Functions.
 			Ray RayFromMousePosition();
 
 		private:
-			void UpdateFpsNavigation(uint deltaTime);
+			// Modes.
+			void PickObjectMode();
+			void FpsNavigationMode(uint deltaTime);
+
+			// Internal window handlings.
 			void OnResize(float width, float height);
 			void SetActive();
 
@@ -60,6 +66,8 @@ namespace ToolKit
 			bool m_open = true;
 			bool m_active = false;
 			bool m_relMouseModBegin = true;
+			bool m_pickingDebug = false;
+
 			glm::ivec2 m_mousePosBegin;
 			glm::ivec2 m_lastMousePosRelContentArea;
 		};

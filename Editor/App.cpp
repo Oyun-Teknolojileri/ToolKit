@@ -77,6 +77,10 @@ void ToolKit::Editor::App::Init()
 	m_highLightMaterial->m_color = glm::vec3(1.0f, 0.627f, 0.156f);
 	m_highLightMaterial->GetRenderState()->cullMode = CullingType::Front;
 
+	m_highLightSecondaryMaterial = std::shared_ptr<Material>(solidColorMaterial->GetCopy());
+	m_highLightSecondaryMaterial->m_color = glm::vec3(0.898f, 0.352f, 0.031f);
+	m_highLightSecondaryMaterial->GetRenderState()->cullMode = CullingType::Front;
+
 	Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
 	m_viewports.push_back(vp);
 
@@ -140,8 +144,17 @@ void ToolKit::Editor::App::RenderSelected(Drawable* e, Camera* c)
 {
 	glm::vec3 s = e->m_node->m_scale;
 	e->m_node->m_scale += 0.02f;
+
 	std::shared_ptr<Material> m = e->m_mesh->m_material;
-	e->m_mesh->m_material = m_highLightMaterial;
+	if (m_scene.IsCurrentSelection(e->m_id))
+	{
+		e->m_mesh->m_material = m_highLightMaterial;
+	}
+	else
+	{
+		e->m_mesh->m_material = m_highLightSecondaryMaterial;
+	}
+
 	m_renderer->Render(e, c);
 
 	e->m_node->m_scale = s;
@@ -192,5 +205,30 @@ ToolKit::Editor::Scene::PickData ToolKit::Editor::Scene::PickObject(Ray ray, con
 
 bool ToolKit::Editor::Scene::IsSelected(EntityId id)
 {
-	return m_selectedEntities.find(id) != m_selectedEntities.end();
+	return std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id) != m_selectedEntities.end();
+}
+
+void ToolKit::Editor::Scene::RemoveFromSelection(EntityId id)
+{
+	auto nttIt = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
+	if (nttIt != m_selectedEntities.end())
+	{
+		m_selectedEntities.erase(nttIt);
+	}
+}
+
+void ToolKit::Editor::Scene::AddToSelection(EntityId id)
+{
+	assert(!IsSelected(id));
+	m_selectedEntities.push_back(id);
+}
+
+void ToolKit::Editor::Scene::ClearSelection()
+{
+	m_selectedEntities.clear();
+}
+
+bool ToolKit::Editor::Scene::IsCurrentSelection(EntityId id)
+{
+	return m_selectedEntities.back() == id;
 }

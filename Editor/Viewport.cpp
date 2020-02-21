@@ -41,11 +41,13 @@ Editor::Viewport::~Viewport()
 void Editor::Viewport::Update(uint deltaTime)
 {
 	if (!IsActive())
+	{
 		return;
+	}
 
 	// Update viewport mods.
-	PickObject();
-	UpdateFpsNavigation(deltaTime);
+	PickObjectMode();
+	FpsNavigationMode(deltaTime);
 }
 
 void Editor::Viewport::ShowViewport()
@@ -129,7 +131,7 @@ bool ToolKit::Editor::Viewport::IsOpen()
 	return m_open;
 }
 
-void ToolKit::Editor::Viewport::PickObject()
+void ToolKit::Editor::Viewport::PickObjectMode()
 {
 	if (!IsViewportQueriable() || !ImGui::GetIO().MouseClicked[0])
 	{
@@ -145,42 +147,45 @@ void ToolKit::Editor::Viewport::PickObject()
 	Scene::PickData pd = g_app->m_scene.PickObject(ray, ignoreList);
 	if (pd.entity == nullptr && !shiftClick)
 	{
-		g_app->m_scene.m_selectedEntities.clear();
+		g_app->m_scene.ClearSelection();
 	}
 
 	if (pd.entity && !shiftClick)
 	{
-		g_app->m_scene.m_selectedEntities.clear();
-		g_app->m_scene.m_selectedEntities[pd.entity->m_id] = pd.entity;
+		g_app->m_scene.ClearSelection();
+		g_app->m_scene.AddToSelection(pd.entity->m_id);
 	}
 
 	if (pd.entity && shiftClick)
 	{
 		if (g_app->m_scene.IsSelected(pd.entity->m_id))
 		{
-			g_app->m_scene.m_selectedEntities.erase(pd.entity->m_id);
+			g_app->m_scene.RemoveFromSelection(pd.entity->m_id);
 		}
 		else
 		{
-			g_app->m_scene.m_selectedEntities[pd.entity->m_id] = pd.entity;
+			g_app->m_scene.AddToSelection(pd.entity->m_id);
 		}
 	}
 
 	// Test Shoot rays. For debug visualisation purpose.
-	if (pd.entity != nullptr)
+	if (m_pickingDebug)
 	{
-		g_app->m_hitMarker->m_node->m_translation = pd.pickPos;
-	}
+		if (pd.entity != nullptr)
+		{
+			g_app->m_hitMarker->m_node->m_translation = pd.pickPos;
+		}
 
-	static std::shared_ptr<Arrow2d> rayMdl = nullptr;
-	if (rayMdl == nullptr)
-	{
-		rayMdl = std::shared_ptr<Arrow2d>(new Arrow2d());
-		g_app->m_scene.m_entitites.push_back(rayMdl.get());
-	}
+		static std::shared_ptr<Arrow2d> rayMdl = nullptr;
+		if (rayMdl == nullptr)
+		{
+			rayMdl = std::shared_ptr<Arrow2d>(new Arrow2d());
+			g_app->m_scene.m_entitites.push_back(rayMdl.get());
+		}
 
-	rayMdl->m_node->m_translation = ray.position;
-	rayMdl->m_node->m_orientation = ToolKit::RotationTo(ToolKit::X_AXIS, ray.direction);
+		rayMdl->m_node->m_translation = ray.position;
+		rayMdl->m_node->m_orientation = ToolKit::RotationTo(ToolKit::X_AXIS, ray.direction);
+	}
 }
 
 void Editor::Viewport::OnResize(float width, float height)
@@ -231,7 +236,7 @@ Ray ToolKit::Editor::Viewport::RayFromMousePosition()
 	return ray;
 }
 
-void Editor::Viewport::UpdateFpsNavigation(uint deltaTime)
+void Editor::Viewport::FpsNavigationMode(uint deltaTime)
 {
 	if (m_camera)
 	{
