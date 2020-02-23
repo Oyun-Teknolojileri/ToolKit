@@ -17,6 +17,7 @@ ToolKit::Editor::App::App(int windowWidth, int windowHeight)
 	m_suzanne = nullptr;
 	m_q1 = nullptr;
 	m_q2 = nullptr;
+	m_cursor = nullptr;
 	m_renderer = new Renderer();
 	m_renderer->m_windowWidth = windowWidth;
 	m_renderer->m_windowHeight = windowHeight;
@@ -36,6 +37,7 @@ ToolKit::Editor::App::~App()
 	SafeDel(m_q1);
 	SafeDel(m_q2);
 	SafeDel(m_hitMarker);
+	SafeDel(m_cursor);
 	SafeDel(m_renderer);
 
 	Main::GetInstance()->Uninit();
@@ -51,6 +53,8 @@ void ToolKit::Editor::App::Init()
 	m_suzanne->m_mesh->Init(false);
 	m_scene.m_entitites.push_back(m_suzanne);
 
+	m_cursor = new Cursor();
+
 	m_q1 = new Cube();
 	m_q1->m_mesh->Init(false);
 	m_q1->m_node->m_translation = glm::vec3(-4.0f, 0.0f, 0.0f);
@@ -61,7 +65,7 @@ void ToolKit::Editor::App::Init()
 	m_scene.m_entitites.push_back(m_q2);
 
 	m_hitMarker = new Sphere();
-	m_hitMarker->m_mesh->m_material = std::shared_ptr<Material>(solidColorMaterial->GetCopy());;
+	m_hitMarker->m_mesh->m_material = std::shared_ptr<Material>(solidColorMaterial->GetCopy());
 	m_hitMarker->m_mesh->m_material->m_color = glm::vec3(1.0f, 0.627f, 0.156f);
 	m_hitMarker->m_node->m_scale = glm::vec3(0.03f, 0.03f, 0.03f);
 	m_scene.m_entitites.push_back(m_hitMarker);
@@ -120,6 +124,9 @@ void ToolKit::Editor::App::Frame(int deltaTime)
 				}
 			}
 		}
+
+		m_cursor->LookAt(vp->m_camera);
+		m_renderer->Render(m_cursor, vp->m_camera);
 	}
 
 	m_renderer->SetRenderTarget(nullptr);

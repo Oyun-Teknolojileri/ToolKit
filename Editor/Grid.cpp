@@ -4,6 +4,58 @@
 #include "ToolKit.h"
 #include "Material.h"
 #include "Texture.h"
+#include "Surface.h"
+#include "Directional.h"
+#include "Node.h"
+#include "Renderer.h"
+#include "Material.h"
+
+ToolKit::Editor::Cursor::Cursor()
+{
+	Generate();
+}
+
+ToolKit::Editor::Cursor::~Cursor()
+{
+	// Nothing to do.
+}
+
+void ToolKit::Editor::Cursor::LookAt(Camera* cam)
+{
+	//m_node->m_translation = glm::vec3();
+	//m_node->m_orientation = glm::quat();
+	//m_node->Transform(cam->m_node->GetTransform());
+	//m_node->m_translation = m_pickPosition;
+	//m_node->m_scale = glm::vec3(0.1f, 0.1f, 0.1f) * glm::min(glm::distance(cam->m_node->m_translation, m_pickPosition), 5.0f);
+
+	// Billboard placement.
+	glm::vec3 dir = glm::normalize(m_pickPosition - cam->m_node->m_translation);
+	m_node->m_translation = cam->m_node->m_translation + dir * 10.0f;
+	m_node->m_orientation = cam->m_node->m_orientation;
+	//m_node->Translate(glm::vec3(0.0f, 0.0f, -0.0f), ToolKit::TransformationSpace::TS_LOCAL);
+}
+
+void ToolKit::Editor::Cursor::Generate()
+{
+	m_mesh->UnInit();
+	
+	Quad quad;
+	m_mesh = quad.m_mesh;
+
+	//glm::quat orientation = m_node->GetOrientation(ToolKit::TransformationSpace::TS_WORLD);
+	//for (uint i = 0; i < m_mesh->m_vertexCount; i++)
+	//{
+	//	m_mesh->m_clientSideVertices[i].pos = orientation * m_mesh->m_clientSideVertices[i].pos;
+	//}
+
+	m_mesh->m_material = std::shared_ptr<Material>(m_mesh->m_material->GetCopy());
+	m_mesh->m_material->UnInit();
+	m_mesh->m_material->m_diffuseTexture = ToolKit::Main::GetInstance()->m_textureMan.Create(ToolKit::TexturePath("Icons/cursor4k.png"));
+	m_mesh->m_material->GetRenderState()->blendFunction = ToolKit::BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+	m_mesh->m_material->Init();
+
+	m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
+}
 
 ToolKit::Editor::Axis3d::Axis3d()
 {

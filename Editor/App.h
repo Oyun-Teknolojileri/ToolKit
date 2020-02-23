@@ -15,6 +15,7 @@ namespace ToolKit
 		class Viewport;
 		class Grid;
 		class Axis3d;
+		class Cursor;
 
 		using namespace ToolKit;
 		using namespace glm;
@@ -75,6 +76,7 @@ namespace ToolKit
 			Sphere* m_hitMarker;
 			Grid* m_grid;
 			Axis3d* m_origin;
+			Cursor* m_cursor;
 
 		private:
 			Renderer* m_renderer;

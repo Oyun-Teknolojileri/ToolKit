@@ -168,6 +168,11 @@ void ToolKit::Editor::Viewport::PickObjectMode()
 		}
 	}
 
+	if (pd.entity != nullptr)
+	{
+		g_app->m_cursor->m_pickPosition = pd.pickPos;
+	}
+
 	// Test Shoot rays. For debug visualisation purpose.
 	if (m_pickingDebug)
 	{

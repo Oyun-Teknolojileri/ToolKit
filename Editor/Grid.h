@@ -6,9 +6,26 @@
 namespace ToolKit
 {
 	class Material;
+	class Camera;
+	class Surface;
+	class Renderer;
 
 	namespace Editor
 	{
+		class Cursor : public Drawable
+		{
+		public:
+			Cursor();
+			~Cursor();
+			void LookAt(Camera* cam);
+
+		public:
+			glm::vec3 m_pickPosition;
+
+		private:
+			void Generate();
+		};
+
 		class Axis3d : public Drawable
 		{
 		public:
