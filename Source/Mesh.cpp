@@ -160,7 +160,7 @@ void ToolKit::Mesh::CalculateAABoundingBox()
 
 		for (size_t j = 0; j < m->m_clientSideVertices.size(); j++)
 		{
-			Vertex& v = m_clientSideVertices[j];
+			Vertex& v = m->m_clientSideVertices[j];
 			UpdateAABBMax(v.pos);
 			UpdateAABBMin(v.pos);
 		}

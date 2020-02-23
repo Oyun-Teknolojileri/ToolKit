@@ -21,6 +21,7 @@ namespace ToolKit
 
 		public:
 			glm::vec3 m_pickPosition;
+			Drawable* m_billboard;
 
 		private:
 			void Generate();

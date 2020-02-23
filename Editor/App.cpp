@@ -127,6 +127,7 @@ void ToolKit::Editor::App::Frame(int deltaTime)
 
 		m_cursor->LookAt(vp->m_camera);
 		m_renderer->Render(m_cursor, vp->m_camera);
+		m_renderer->Render(m_cursor->m_billboard, vp->m_camera);
 	}
 
 	m_renderer->SetRenderTarget(nullptr);

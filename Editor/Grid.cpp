@@ -12,49 +12,77 @@
 
 ToolKit::Editor::Cursor::Cursor()
 {
+	m_billboard = new Drawable();
 	Generate();
 }
 
 ToolKit::Editor::Cursor::~Cursor()
 {
-	// Nothing to do.
+	SafeDel(m_billboard);
 }
 
 void ToolKit::Editor::Cursor::LookAt(Camera* cam)
 {
-	//m_node->m_translation = glm::vec3();
-	//m_node->m_orientation = glm::quat();
-	//m_node->Transform(cam->m_node->GetTransform());
-	//m_node->m_translation = m_pickPosition;
-	//m_node->m_scale = glm::vec3(0.1f, 0.1f, 0.1f) * glm::min(glm::distance(cam->m_node->m_translation, m_pickPosition), 5.0f);
-
 	// Billboard placement.
-	glm::vec3 dir = glm::normalize(m_pickPosition - cam->m_node->m_translation);
-	m_node->m_translation = cam->m_node->m_translation + dir * 10.0f;
-	m_node->m_orientation = cam->m_node->m_orientation;
-	//m_node->Translate(glm::vec3(0.0f, 0.0f, -0.0f), ToolKit::TransformationSpace::TS_LOCAL);
+	glm::vec3 cdir, dir;
+	cam->GetLocalAxis(cdir, dir, dir);
+	dir = glm::normalize(m_pickPosition - cam->m_node->m_translation);
+	
+	float distToCameraPlane = 10.0f / glm::dot(cdir, dir);
+
+	m_billboard->m_node->m_translation = cam->m_node->m_translation + dir * distToCameraPlane;
+	m_billboard->m_node->m_orientation = cam->m_node->m_orientation;
+
+	m_node->m_translation = m_billboard->m_node->m_translation;
 }
 
 void ToolKit::Editor::Cursor::Generate()
 {
 	m_mesh->UnInit();
-	
+
+	// Billboard
 	Quad quad;
-	m_mesh = quad.m_mesh;
+	m_billboard->m_mesh = quad.m_mesh;
+	std::shared_ptr<Mesh> meshPtr = m_billboard->m_mesh;
 
-	//glm::quat orientation = m_node->GetOrientation(ToolKit::TransformationSpace::TS_WORLD);
-	//for (uint i = 0; i < m_mesh->m_vertexCount; i++)
-	//{
-	//	m_mesh->m_clientSideVertices[i].pos = orientation * m_mesh->m_clientSideVertices[i].pos;
-	//}
+	meshPtr->m_material = std::shared_ptr<Material>(meshPtr->m_material->GetCopy());
+	meshPtr->m_material->UnInit();
+	meshPtr->m_material->m_diffuseTexture = ToolKit::Main::GetInstance()->m_textureMan.Create(ToolKit::TexturePath("Icons/cursor4k.png"));
+	meshPtr->m_material->GetRenderState()->blendFunction = ToolKit::BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+	meshPtr->m_material->Init();
 
-	m_mesh->m_material = std::shared_ptr<Material>(m_mesh->m_material->GetCopy());
-	m_mesh->m_material->UnInit();
-	m_mesh->m_material->m_diffuseTexture = ToolKit::Main::GetInstance()->m_textureMan.Create(ToolKit::TexturePath("Icons/cursor4k.png"));
-	m_mesh->m_material->GetRenderState()->blendFunction = ToolKit::BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-	m_mesh->m_material->Init();
+	meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
 
-	m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
+	// Lines
+	std::vector<ToolKit::Vertex> vertices;
+	vertices.resize(12);
+
+	vertices[0].pos.z = -0.5f;
+	vertices[1].pos.z = -1.0f;
+
+	vertices[2].pos.z = 1.0f;
+	vertices[3].pos.z = 0.5f;
+
+	vertices[4].pos.x = 0.5f;
+	vertices[5].pos.x = 1.0f;
+
+	vertices[6].pos.x = -0.5f;
+	vertices[7].pos.x = -1.0f;
+
+	vertices[8].pos.y = 1.0f;
+	vertices[9].pos.y = 0.5f;
+
+	vertices[10].pos.y = -0.5f;
+	vertices[11].pos.y = -1.0f;
+
+	Material* newMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("LineColor.material"))->GetCopy();
+	newMaterial->m_color = glm::vec3(0.1f, 0.1f, 0.1f);
+	newMaterial->GetRenderState()->depthTestEnabled = false;
+
+	m_mesh->m_clientSideVertices = vertices;
+	m_mesh->m_material = std::shared_ptr<Material>(newMaterial);
+
+	m_mesh->CalculateAABoundingBox();
 }
 
 ToolKit::Editor::Axis3d::Axis3d()

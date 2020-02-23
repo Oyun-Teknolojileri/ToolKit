@@ -21,7 +21,7 @@ Editor::Viewport::Viewport(float width, float height)
 	: m_width(width), m_height(height), m_name("Viewport")
 {
 	m_camera = new Camera();
-	m_camera->SetLens(glm::half_pi<float>(), width, height);
+	m_camera->SetLens(glm::quarter_pi<float>(), width, height);
 	m_viewportImage = new RenderTarget((uint)width, (uint)height);
 	m_viewportImage->Init();
 	m_name += " " + std::to_string(m_nextId++);
