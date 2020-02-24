@@ -57,23 +57,23 @@ void ToolKit::Editor::Cursor::Generate()
 	std::vector<ToolKit::Vertex> vertices;
 	vertices.resize(12);
 
-	vertices[0].pos.z = -0.5f;
-	vertices[1].pos.z = -1.0f;
+	vertices[0].pos.z = -0.3f;
+	vertices[1].pos.z = -0.7f;
 
-	vertices[2].pos.z = 1.0f;
-	vertices[3].pos.z = 0.5f;
+	vertices[2].pos.z = 0.3f;
+	vertices[3].pos.z = 0.7f;
 
-	vertices[4].pos.x = 0.5f;
-	vertices[5].pos.x = 1.0f;
+	vertices[4].pos.x = 0.3f;
+	vertices[5].pos.x = 0.7f;
 
-	vertices[6].pos.x = -0.5f;
-	vertices[7].pos.x = -1.0f;
+	vertices[6].pos.x = -0.3f;
+	vertices[7].pos.x = -0.7f;
 
-	vertices[8].pos.y = 1.0f;
-	vertices[9].pos.y = 0.5f;
+	vertices[8].pos.y = 0.3f;
+	vertices[9].pos.y = 0.7f;
 
-	vertices[10].pos.y = -0.5f;
-	vertices[11].pos.y = -1.0f;
+	vertices[10].pos.y = -0.3f;
+	vertices[11].pos.y = -0.7f;
 
 	Material* newMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("LineColor.material"))->GetCopy();
 	newMaterial->m_color = glm::vec3(0.1f, 0.1f, 0.1f);
