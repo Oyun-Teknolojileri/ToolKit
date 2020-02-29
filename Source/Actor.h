@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include "Drawable.h"
+#include "StateMachine.h"
 
 namespace ToolKit
 {
@@ -10,40 +11,16 @@ namespace ToolKit
   class StateMachine;
   class Actor;
 
-  class SignaleId
-  {
-  public:
-    SignaleId(int id);
-    int m_id;
-  };
+	class ActorState : public State
+	{
+	public:
+		ActorState(Actor* actor);
+		virtual ~ActorState();
 
-  class State
-  {
-  public:
-    State(Actor* actor);
-    virtual ~State();
-    virtual void TransitionIn(State* prevState) = 0;
-    virtual void TransitionOut(State* nextState) = 0;
-    virtual void Update(float deltaTime) = 0;
-    virtual State* Signaled(SignaleId signale) = 0;
-
-  public:
-    Animation* m_currentAnim = nullptr;
-    SignaleId m_currentSignale;
-    Actor* m_actor;
-  };
-
-  class StateMachine
-  {
-  public:
-    ~StateMachine();
-    void Signale(SignaleId signale);
-    bool QueryState(std::string stateName);
-
-  public:
-    std::unordered_map<std::string, State*> m_states;
-    State* m_currentState;
-  };
+	public:
+		Animation* m_currentAnim = nullptr;
+		Actor* m_actor;
+	};
 
   class Actor : public Drawable
   {

@@ -190,7 +190,6 @@ ToolKit::RenderTarget::~RenderTarget()
 
 void ToolKit::RenderTarget::Load()
 {
-	// Nothing to do.
 }
 
 void ToolKit::RenderTarget::Init(bool flushClientSideArray)

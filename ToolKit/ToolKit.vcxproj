@@ -87,6 +87,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\StateMachine.h" />
     <ClInclude Include="..\Source\ToolKit.h" />
     <ClInclude Include="..\Source\Actor.h" />
     <ClInclude Include="..\Source\Animation.h" />
@@ -116,6 +117,7 @@
     <ClInclude Include="..\Source\Util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Source\StateMachine.cpp" />
     <ClCompile Include="..\Source\ToolKit.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>

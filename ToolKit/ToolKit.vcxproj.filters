@@ -87,6 +87,9 @@
     <ClInclude Include="..\Source\Types.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\StateMachine.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Actor.cpp">
@@ -153,6 +156,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\ToolKit.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\StateMachine.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
