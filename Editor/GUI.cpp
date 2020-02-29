@@ -16,6 +16,7 @@ std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_cursorIcn;
 std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_moveIcn;
 std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_rotateIcn;
 std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_scaleIcn;
+std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_appIcon;
 
 void ToolKit::Editor::EditorGUI::ApplyCustomTheme()
 {
@@ -215,4 +216,11 @@ void ToolKit::Editor::EditorGUI::InitIcons()
 	m_rotateIcn->Init();
 	m_scaleIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/scale.png"));
 	m_scaleIcn->Init();
+
+	// Set application Icon.
+	m_appIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/app.png"));
+	m_appIcon->Init(false);
+	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(m_appIcon->m_image.data(), m_appIcon->m_width, m_appIcon->m_height, 8, m_appIcon->m_width * 4, SDL_PIXELFORMAT_ABGR8888);
+	SDL_SetWindowIcon(g_window, surface);
+	SDL_FreeSurface(surface);
 }

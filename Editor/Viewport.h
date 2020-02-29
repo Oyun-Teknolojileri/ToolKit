@@ -13,12 +13,6 @@ namespace ToolKit
 	{
 		class OverlayNav;
 
-		enum class ViewportMode
-		{
-			Idle,
-			FpsNavigation
-		};
-
 		class Viewport
 		{
 		public:

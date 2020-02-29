@@ -23,7 +23,7 @@ namespace ToolKit
 }
 
 // Setup.
-const char* appName = "Editor";
+const char* appName = "ToolKit";
 const int width = 1024;
 const int height = 640;
 const ToolKit::uint fps = 60;

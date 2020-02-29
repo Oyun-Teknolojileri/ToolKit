@@ -104,5 +104,8 @@
     <ClInclude Include="Grid.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="Mod.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
