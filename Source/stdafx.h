@@ -27,14 +27,7 @@
 #include "rapidxml_utils.hpp"
 
 #ifdef TK_EDITOR
-// NanoSVG
-#include <stdio.h>
-#include <string.h>
-#include <float.h>
-#define NANOSVG_IMPLEMENTATION
-#include "NanoSvg/nanosvg.h"
-#define NANOSVGRAST_IMPLEMENTATION
-#include "NanoSvg/nanosvgrast.h"
+
 #endif 
 
 // STL
