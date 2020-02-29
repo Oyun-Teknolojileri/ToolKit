@@ -135,8 +135,6 @@
     <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="Mod.h" />
-    <ClInclude Include="NanoSvg\nanosvg.h" />
-    <ClInclude Include="NanoSvg\nanosvgrast.h" />
     <ClInclude Include="OverlayMenu.h" />
     <ClInclude Include="Viewport.h" />
   </ItemGroup>
