@@ -21,21 +21,49 @@ namespace ToolKit
 		};
 
 		// Common signals and states.
-		class LeftClickSgnl : public SignalId
+		class LeftClickDownSgnl : public SignalId
 		{
 		public:
-			LeftClickSgnl() : SignalId(101) {}
+			LeftClickDownSgnl() : SignalId(101) {}
 		};
 
-		class LeftClickDragSgnl : public SignalId
+		class LeftClickUpSgnl : public SignalId
 		{
 		public:
-			LeftClickDragSgnl() : SignalId(102) {}
+			LeftClickUpSgnl() : SignalId(102) {}
 		};
 
-		class StatePicking : public State
+		class MouseMoveSgnl : public SignalId
 		{
+		public:
+			MouseMoveSgnl() : SignalId(103) {}
+		};
 
+		class StateBeginPick : public State
+		{
+		public:
+			virtual void TransitionIn(State* prevState) override {};
+			virtual void TransitionOut(State* nextState) override {};
+			virtual void Update(float deltaTime) override;
+			virtual State* Signaled(SignalId signale) override;
+		};
+
+		class StateBeginBoxPick : public State
+		{
+		public:
+			virtual void TransitionIn(State* prevState) override {};
+			virtual void TransitionOut(State* nextState) override {};
+			virtual void Update(float deltaTime) override;
+			virtual State* Signaled(SignalId signale) override;
+		};
+
+		class StateEndPick : public State
+		{
+		public:
+			virtual void TransitionIn(State* prevState) override {};
+			virtual void TransitionOut(State* nextState) override {};
+			virtual void Update(float deltaTime) override;
+			virtual State* Signaled(SignalId signale) override;
 		};
 
 		class SelectMod : public BaseMod
