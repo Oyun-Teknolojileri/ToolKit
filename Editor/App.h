@@ -58,6 +58,8 @@ namespace ToolKit
 			void Frame(int deltaTime);
 			void OnResize(int width, int height);
 			void OnQuit();
+			
+			Viewport* GetActiveViewport(); // Returns open and active viewport or nullptr.
 
 			// Quick selected render implementation.
 			void RenderSelected(Drawable* e, Camera* c);

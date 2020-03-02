@@ -39,7 +39,14 @@ namespace ToolKit
 			MouseMoveSgnl() : SignalId(103) {}
 		};
 
-		class StateBeginPick : public State
+		class StatePickingBase : public State
+		{
+		public:
+			std::vector<EntityId> m_pickedNtties;
+			glm::ivec2 m_screenSpacePickingCoordinates[2];
+		};
+
+		class StateBeginPick : public StatePickingBase
 		{
 		public:
 			virtual void TransitionIn(State* prevState) override {};
@@ -48,7 +55,7 @@ namespace ToolKit
 			virtual State* Signaled(SignalId signale) override;
 		};
 
-		class StateBeginBoxPick : public State
+		class StateBeginBoxPick : public StatePickingBase
 		{
 		public:
 			virtual void TransitionIn(State* prevState) override {};
@@ -57,7 +64,7 @@ namespace ToolKit
 			virtual State* Signaled(SignalId signale) override;
 		};
 
-		class StateEndPick : public State
+		class StateEndPick : public StatePickingBase
 		{
 		public:
 			virtual void TransitionIn(State* prevState) override {};
