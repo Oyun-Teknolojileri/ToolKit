@@ -14,7 +14,7 @@ namespace ToolKit
 			virtual ~BaseMod();
 
 			virtual void Init();
-			virtual void Update(float deltaTime_ms);
+			virtual void Update(float deltaTime);
 
 		public:
 			StateMachine* m_stateMachine;
@@ -45,7 +45,7 @@ namespace ToolKit
 			virtual void TransitionIn(State* prevState) override {};
 			virtual void TransitionOut(State* nextState) override {};
 			virtual void Update(float deltaTime) override;
-			virtual State* Signaled(SignalId signale) override;
+			virtual State* Signaled(SignalId signal) override;
 		};
 
 		class StateBeginBoxPick : public State
@@ -54,7 +54,7 @@ namespace ToolKit
 			virtual void TransitionIn(State* prevState) override {};
 			virtual void TransitionOut(State* nextState) override {};
 			virtual void Update(float deltaTime) override;
-			virtual State* Signaled(SignalId signale) override;
+			virtual State* Signaled(SignalId signal) override;
 		};
 
 		class StateEndPick : public State
@@ -63,14 +63,14 @@ namespace ToolKit
 			virtual void TransitionIn(State* prevState) override {};
 			virtual void TransitionOut(State* nextState) override {};
 			virtual void Update(float deltaTime) override;
-			virtual State* Signaled(SignalId signale) override;
+			virtual State* Signaled(SignalId signal) override;
 		};
 
 		class SelectMod : public BaseMod
 		{
 		public:
 			virtual void Init() override;
-			virtual void Update(float deltaTime_ms) override;
+			virtual void Update(float deltaTime) override;
 		};
 	}
 }
