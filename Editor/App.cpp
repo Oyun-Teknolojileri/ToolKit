@@ -148,6 +148,19 @@ void ToolKit::Editor::App::OnQuit()
 	g_running = false;
 }
 
+ToolKit::Editor::Viewport* ToolKit::Editor::App::GetActiveViewport()
+{
+	for (Viewport* vp : m_viewports)
+	{
+		if (vp->IsActive() && vp->IsOpen())
+		{
+			return vp;
+		}
+	}
+
+	return nullptr;
+}
+
 void ToolKit::Editor::App::RenderSelected(Drawable* e, Camera* c)
 {
 	glm::vec3 s = e->m_node->m_scale;

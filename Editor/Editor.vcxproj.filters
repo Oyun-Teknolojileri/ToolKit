@@ -51,7 +51,9 @@
     <ClCompile Include="Grid.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Mod.cpp" />
+    <ClCompile Include="Mod.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
