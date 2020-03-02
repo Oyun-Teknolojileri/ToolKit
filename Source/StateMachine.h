@@ -8,6 +8,9 @@ namespace ToolKit
 	{
 	public:
 		SignalId(int id);
+		bool operator== (const SignalId& rhs);
+
+	public:
 		int m_id;
 	};
 

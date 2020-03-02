@@ -8,6 +8,11 @@ ToolKit::SignalId::SignalId(int id)
 	m_id = id;
 }
 
+bool ToolKit::SignalId::operator== (const SignalId& rhs)
+{ 
+	return m_id == rhs.m_id; 
+}
+
 ToolKit::State::State()
 	: m_currentSignal(-1)
 {
