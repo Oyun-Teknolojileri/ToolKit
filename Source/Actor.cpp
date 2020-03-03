@@ -4,6 +4,7 @@
 #include "DebugNew.h"
 
 ToolKit::ActorState::ActorState(Actor* actor)
+  : State("Actor")
 {
   m_actor = actor;
 }

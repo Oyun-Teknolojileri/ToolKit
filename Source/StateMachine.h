@@ -17,7 +17,7 @@ namespace ToolKit
 	class State
 	{
 	public:
-		State();
+		State(std::string name);
 		~State();
 		virtual void TransitionIn(State* prevState) = 0;
 		virtual void TransitionOut(State* nextState) = 0;
@@ -26,6 +26,10 @@ namespace ToolKit
 
 	public:
 		SignalId m_currentSignal;
+		std::string m_name;
+
+	private:
+		static std::vector<std::string> m_nameBuffer;
 	};
 
 	class StateMachine

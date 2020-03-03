@@ -13,9 +13,14 @@ bool ToolKit::SignalId::operator== (const SignalId& rhs)
 	return m_id == rhs.m_id; 
 }
 
-ToolKit::State::State()
+std::vector<std::string> ToolKit::State::m_nameBuffer;
+
+ToolKit::State::State(std::string name)
 	: m_currentSignal(-1)
 {
+	assert(std::find(m_nameBuffer.begin(), m_nameBuffer.end(), name) == m_nameBuffer.end()); // Name must be unique.
+	m_nameBuffer.push_back(m_name);
+	m_name = name;
 }
 
 ToolKit::State::~State()
