@@ -21,6 +21,11 @@ void ToolKit::Editor::BaseMod::Update(float deltaTime_ms)
 {
 }
 
+void ToolKit::Editor::StateBeginPick::TransitionOut(State* nextState)
+{
+
+}
+
 void ToolKit::Editor::StateBeginPick::Update(float deltaTime)
 {
 }
@@ -33,8 +38,14 @@ ToolKit::State* ToolKit::Editor::StateBeginPick::Signaled(SignalId signale)
 		if (vp != nullptr)
 		{
 			Ray ray = vp->RayFromMousePosition();
+			m_pickingRays[0] = ray;
+
 			Scene::PickData pd = g_app->m_scene.PickObject(ray);
-			
+			if (pd.entity != nullptr)
+			{
+				m_pickedNtties.push_back(pd.entity->m_id);
+				return new StateEndPick();
+			}
 		}
 	}
 

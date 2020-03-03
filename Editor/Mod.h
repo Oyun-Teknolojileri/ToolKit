@@ -33,24 +33,24 @@ namespace ToolKit
 			LeftClickUpSgnl() : SignalId(102) {}
 		};
 
-		class MouseMoveSgnl : public SignalId
+		class DragMouseSgnl : public SignalId
 		{
 		public:
-			MouseMoveSgnl() : SignalId(103) {}
+			DragMouseSgnl() : SignalId(103) {}
 		};
 
 		class StatePickingBase : public State
 		{
 		public:
 			std::vector<EntityId> m_pickedNtties;
-			glm::ivec2 m_screenSpacePickingCoordinates[2];
+			Ray m_pickingRays[2];
 		};
 
 		class StateBeginPick : public StatePickingBase
 		{
 		public:
 			virtual void TransitionIn(State* prevState) override {};
-			virtual void TransitionOut(State* nextState) override {};
+			virtual void TransitionOut(State* nextState) override;
 			virtual void Update(float deltaTime) override;
 			virtual State* Signaled(SignalId signale) override;
 		};
