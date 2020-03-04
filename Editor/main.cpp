@@ -7,9 +7,8 @@
 #include "SDL_ttf.h"
 #include "GUI.h"
 #include "Types.h"
-#include "DebugNew.h"
-#include "Glm/gtx/intersect.hpp"
 #include "Mod.h"
+#include "DebugNew.h"
 
 // Global handles.
 namespace ToolKit
