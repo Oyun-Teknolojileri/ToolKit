@@ -9,6 +9,7 @@
 #include "Types.h"
 #include "DebugNew.h"
 #include "Glm/gtx/intersect.hpp"
+#include "Mod.h"
 
 // Global handles.
 namespace ToolKit
@@ -121,7 +122,9 @@ void ProcessEvent(SDL_Event e)
 	}
 
 	if (e.type == SDL_QUIT)
+	{
 		ToolKit::Editor::g_running = false;
+	}
 
 	if (e.type == SDL_KEYDOWN)
 	{
@@ -132,6 +135,23 @@ void ProcessEvent(SDL_Event e)
 			break;
 		default:
 			break;
+		}
+	}
+
+	// Dispatch Mod Signals
+	if (e.type == SDL_MOUSEBUTTONDOWN)
+	{
+		if (e.button.button == SDL_BUTTON_LEFT)
+		{
+			ToolKit::Editor::ModManager::GetInstance()->DispatchSignal(ToolKit::Editor::LeftMouseBtnDownSgnl());
+		}
+	}
+
+	if (e.type == SDL_MOUSEBUTTONUP)
+	{
+		if (e.button.button == SDL_BUTTON_LEFT)
+		{
+			ToolKit::Editor::ModManager::GetInstance()->DispatchSignal(ToolKit::Editor::LeftMouseBtnUpSgnl());
 		}
 	}
 }
@@ -145,7 +165,7 @@ int main(int argc, char* argv[])
 	// Init imgui
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
 

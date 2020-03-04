@@ -27,6 +27,10 @@ ToolKit::State::~State()
 {
 }
 
+ToolKit::StateMachine::StateMachine()
+{
+}
+
 ToolKit::StateMachine::~StateMachine()
 {
 	for (auto& state : m_states)
@@ -52,4 +56,18 @@ void ToolKit::StateMachine::Signal(SignalId signal)
 bool ToolKit::StateMachine::QueryState(std::string stateName)
 {
 	return m_states.find(stateName) != m_states.end();
+}
+
+void ToolKit::StateMachine::PushState(State* state)
+{
+	assert(m_states.find(state->m_name) == m_states.end()); // Make sure states are unique.
+	m_states[state->m_name] = state;
+}
+
+void ToolKit::StateMachine::Update(float deltaTime)
+{
+	if (m_currentState != nullptr)
+	{
+		m_currentState->Update(deltaTime);
+	}
 }
