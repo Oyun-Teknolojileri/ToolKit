@@ -254,3 +254,16 @@ bool ToolKit::Editor::Scene::IsCurrentSelection(EntityId id)
 {
 	return m_selectedEntities.back() == id;
 }
+
+ToolKit::Entity* ToolKit::Editor::Scene::GetEntity(EntityId id)
+{
+	for (Entity* e : m_entitites)
+	{
+		if (e->m_id == id)
+		{
+			return e;
+		}
+	}
+
+	return nullptr;
+}

@@ -123,6 +123,7 @@ namespace ToolKit
 		public:
 			virtual void Init() override;
 			virtual void Update(float deltaTime) override;
+			void ApplySelection(std::vector<EntityId>& selectedNtties);
 		};
 	}
 }

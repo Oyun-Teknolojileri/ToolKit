@@ -139,3 +139,39 @@ void ToolKit::Editor::SelectMod::Update(float deltaTime)
 
 	}
 }
+
+void ToolKit::Editor::SelectMod::ApplySelection(std::vector<EntityId>& selectedNtties)
+{
+	bool shiftClick = ImGui::GetIO().KeyShift;
+
+	if (selectedNtties.empty())
+	{
+		if (!shiftClick)
+		{
+			g_app->m_scene.ClearSelection();
+		}
+	}
+
+	for (EntityId id : selectedNtties)
+	{
+		Entity* e = g_app->m_scene.GetEntity(id);		
+
+		if (e && !shiftClick)
+		{
+			g_app->m_scene.ClearSelection();
+			g_app->m_scene.AddToSelection(e->m_id);
+		}
+
+		if (e && shiftClick)
+		{
+			if (g_app->m_scene.IsSelected(e->m_id))
+			{
+				g_app->m_scene.RemoveFromSelection(e->m_id);
+			}
+			else
+			{
+				g_app->m_scene.AddToSelection(e->m_id);
+			}
+		}
+	}
+}

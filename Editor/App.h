@@ -39,6 +39,7 @@ namespace ToolKit
 			void AddToSelection(EntityId id);
 			void ClearSelection();
 			bool IsCurrentSelection(EntityId id);
+			Entity* GetEntity(EntityId id);
 
 		public:
 			std::vector<Light*> m_lights;
