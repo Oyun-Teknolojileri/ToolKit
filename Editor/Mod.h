@@ -31,10 +31,19 @@ namespace ToolKit
 			std::vector<BaseMod*> m_modStack;
 		};
 
+		enum class ModId
+		{
+			Base,
+			Select,
+			Move,
+			Rotate,
+			Scale
+		};
+
 		class BaseMod
 		{
 		public:
-			BaseMod();
+			BaseMod(ModId id);
 			virtual ~BaseMod();
 
 			virtual void Init();
@@ -43,6 +52,7 @@ namespace ToolKit
 			virtual void Signal(SignalId signal);
 
 		public:
+			ModId m_id;
 			StateMachine* m_stateMachine;
 			bool m_terminate; // When set to true, ModManager will terminate the mod.
 		};
@@ -121,6 +131,8 @@ namespace ToolKit
 		class SelectMod : public BaseMod
 		{
 		public:
+			SelectMod() : BaseMod(ModId::Select) {}
+
 			virtual void Init() override;
 			virtual void Update(float deltaTime) override;
 			void ApplySelection(std::vector<EntityId>& selectedNtties);

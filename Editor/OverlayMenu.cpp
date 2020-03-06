@@ -2,6 +2,7 @@
 #include "OverlayMenu.h"
 #include "Viewport.h"
 #include "GlobalDef.h"
+#include "Mod.h"
 
 ToolKit::Editor::OverlayNav::OverlayNav(Viewport* owner)
 {
@@ -23,7 +24,21 @@ void ToolKit::Editor::OverlayNav::ShowOverlayNav()
 
 		// Select button.
 		static float hoverTimeSelectBtn = 0.0f;
+		bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Base;
+		if (isCurrentMod)
+		{
+			ImGui::PushID(1);
+			ImGui::PushStyleColor(ImGuiCol_Button, style.Colors[ImGuiCol_ButtonHovered]);
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_ButtonHovered]);
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, style.Colors[ImGuiCol_ButtonHovered]);
+		}
 		ImGui::ImageButton((void*)(intptr_t)EditorGUI::m_selectIcn->m_textureId, ImVec2(32, 32));
+		if (isCurrentMod)
+		{
+			ImGui::PopStyleColor(3);
+			ImGui::PopID();
+		}
+
 		EditorGUI::HelpMarker("Select Box\nSelect items using box selection.", &hoverTimeSelectBtn);
 
 		// Cursor button.

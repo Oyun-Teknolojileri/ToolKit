@@ -7,6 +7,11 @@ ToolKit::Editor::ModManager ToolKit::Editor::ModManager::m_instance;
 
 ToolKit::Editor::ModManager::~ModManager()
 {
+	for (BaseMod* mod : m_modStack)
+	{
+		mod->UnInit();
+		SafeDel(mod);
+	}
 }
 
 ToolKit::Editor::ModManager* ToolKit::Editor::ModManager::GetInstance()
@@ -37,10 +42,12 @@ void ToolKit::Editor::ModManager::DispatchSignal(SignalId signal)
 
 ToolKit::Editor::ModManager::ModManager()
 {
+	m_modStack.push_back(new BaseMod(ModId::Base));
 }
 
-ToolKit::Editor::BaseMod::BaseMod()
+ToolKit::Editor::BaseMod::BaseMod(ModId id)
 {
+	m_id = id;
 	m_stateMachine = new StateMachine();
 	m_terminate = false;
 }

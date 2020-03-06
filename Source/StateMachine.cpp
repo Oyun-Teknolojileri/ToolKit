@@ -41,8 +41,12 @@ ToolKit::StateMachine::~StateMachine()
 
 void ToolKit::StateMachine::Signal(SignalId signal)
 {
-	State* nextState = m_currentState->Signaled(signal);
+	if (m_currentState == nullptr)
+	{
+		return;
+	}
 
+	State* nextState = m_currentState->Signaled(signal);
 	if (nextState == nullptr)
 	{
 		return;
