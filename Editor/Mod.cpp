@@ -40,6 +40,42 @@ void ToolKit::Editor::ModManager::DispatchSignal(SignalId signal)
 	m_modStack.back()->Signal(signal);
 }
 
+void ToolKit::Editor::ModManager::SetMod(bool set, ModId mod)
+{
+	if (set)
+	{
+		if (m_modStack.back()->m_id != ModId::Base)
+		{
+			BaseMod* prevMod = m_modStack.back();
+			SafeDel(prevMod);
+			m_modStack.pop_back();
+		}
+
+		BaseMod* nextMod = nullptr;
+		switch (mod)
+		{
+		case ToolKit::Editor::ModId::Select:
+			nextMod = new SelectMod();
+			break;
+		case ToolKit::Editor::ModId::Move:
+			break;
+		case ToolKit::Editor::ModId::Rotate:
+			break;
+		case ToolKit::Editor::ModId::Scale:
+			break;
+		case ToolKit::Editor::ModId::Base:
+		default:
+			break;
+		}
+
+		assert(nextMod);
+		if (nextMod != nullptr)
+		{
+			m_modStack.push_back(nextMod);
+		}
+	}
+}
+
 ToolKit::Editor::ModManager::ModManager()
 {
 	m_modStack.push_back(new BaseMod(ModId::Base));

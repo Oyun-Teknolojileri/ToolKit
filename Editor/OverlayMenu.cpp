@@ -19,32 +19,16 @@ void ToolKit::Editor::OverlayNav::ShowOverlayNav()
 	ImGui::SetNextWindowBgAlpha(0.65f);
 	if (ImGui::BeginChildFrame(ImGui::GetID("Navigation"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 	{
-		ImGuiStyle& style = ImGui::GetStyle();
-		float spacing = style.ItemInnerSpacing.x;
-
 		// Select button.
 		static float hoverTimeSelectBtn = 0.0f;
-		bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Base;
-		if (isCurrentMod)
-		{
-			ImGui::PushID(1);
-			ImGui::PushStyleColor(ImGuiCol_Button, style.Colors[ImGuiCol_ButtonHovered]);
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_ButtonHovered]);
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, style.Colors[ImGuiCol_ButtonHovered]);
-		}
-		ImGui::ImageButton((void*)(intptr_t)EditorGUI::m_selectIcn->m_textureId, ImVec2(32, 32));
-		if (isCurrentMod)
-		{
-			ImGui::PopStyleColor(3);
-			ImGui::PopID();
-		}
-
+		bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Select;
+		ModManager::GetInstance()->SetMod(EditorGUI::ToggleButton((void*)(intptr_t)EditorGUI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod), ModId::Select);
 		EditorGUI::HelpMarker("Select Box\nSelect items using box selection.", &hoverTimeSelectBtn);
 
 		// Cursor button.
 		static float hoverTimeCursorBtn = 0.0f;
 		ImGui::ImageButton((void*)(intptr_t)EditorGUI::m_cursorIcn->m_textureId, ImVec2(32, 32));
-		EditorGUI::HelpMarker("Cursor\nSet the cursor location. Drag to transform.", &hoverTimeCursorBtn);
+		EditorGUI::HelpMarker("Cursor\nSet the cursor location.", &hoverTimeCursorBtn);
 		ImGui::Separator();
 
 		// Move button.
@@ -106,6 +90,9 @@ void ToolKit::Editor::OverlayNav::ShowOverlayNav()
 			g_app->m_camSpeed = 4;
 			break;
 		}
+
+		ImGuiStyle& style = ImGui::GetStyle();
+		float spacing = style.ItemInnerSpacing.x;
 
 		static float hoverTimeCS = 0.0f;
 		ImGui::SameLine(0, spacing); EditorGUI::HelpMarker("Camera speed m/s\n", &hoverTimeCS);

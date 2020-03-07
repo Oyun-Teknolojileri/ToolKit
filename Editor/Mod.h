@@ -7,30 +7,6 @@ namespace ToolKit
 {
 	namespace Editor
 	{
-		class BaseMod;
-
-		class ModManager
-		{
-		public:
-			~ModManager();
-
-			ModManager(ModManager const&) = delete;
-			void operator=(ModManager const&) = delete;
-
-			static ModManager* GetInstance();
-			void Update(float deltaTime);
-			void DispatchSignal(SignalId signal);
-
-		private:
-			ModManager();
-			
-		private:
-			static ModManager m_instance;
-
-		public:
-			std::vector<BaseMod*> m_modStack;
-		};
-
 		enum class ModId
 		{
 			Base,
@@ -55,6 +31,29 @@ namespace ToolKit
 			ModId m_id;
 			StateMachine* m_stateMachine;
 			bool m_terminate; // When set to true, ModManager will terminate the mod.
+		};
+
+		class ModManager
+		{
+		public:
+			~ModManager();
+
+			ModManager(ModManager const&) = delete;
+			void operator=(ModManager const&) = delete;
+
+			static ModManager* GetInstance();
+			void Update(float deltaTime);
+			void DispatchSignal(SignalId signal);
+			void SetMod(bool set, ModId mod); // If set true, sets the given mod. Else does nothing.
+
+		private:
+			ModManager();
+			
+		private:
+			static ModManager m_instance;
+
+		public:
+			std::vector<BaseMod*> m_modStack;
 		};
 
 		// Common signals and states.

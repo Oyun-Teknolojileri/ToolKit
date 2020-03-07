@@ -18,6 +18,5 @@ namespace ToolKit
 		public:
 			Viewport* m_owner;
 		};
-
 	}
 }
