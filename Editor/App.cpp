@@ -221,6 +221,7 @@ ToolKit::Editor::Scene::PickData ToolKit::Editor::Scene::PickObject(Ray ray, con
 				{
 					pd.entity = e;
 					pd.pickPos = ray.position + ray.direction * dist;
+					pd.pickRay = ray;
 					closestPickedDistance = dist;
 				}
 			}

@@ -4,6 +4,7 @@
 #include "Viewport.h"
 #include "Node.h"
 #include "Primative.h"
+#include "Grid.h"
 #include "DebugNew.h"
 
 ToolKit::Editor::ModManager ToolKit::Editor::ModManager::m_instance;
@@ -59,6 +60,9 @@ void ToolKit::Editor::ModManager::SetMod(bool set, ModId mod)
 		{
 		case ToolKit::Editor::ModId::Select:
 			nextMod = new SelectMod();
+			break;
+		case ToolKit::Editor::ModId::Cursor:
+			nextMod = new CursorMod();
 			break;
 		case ToolKit::Editor::ModId::Move:
 			break;
@@ -122,12 +126,10 @@ void ToolKit::Editor::StateBeginPick::TransitionOut(State* nextState)
 {
 	if (StatePickingBase* baseState = dynamic_cast<StatePickingBase*> (nextState))
 	{
-		baseState->m_pickedNtties = m_pickedNtties;
-		baseState->m_pickingRays = m_pickingRays;
+		baseState->m_pickData = m_pickData;
 	}
 
-	m_pickedNtties.clear();
-	m_pickingRays.clear();
+	m_pickData.clear();
 }
 
 void ToolKit::Editor::StateBeginPick::Update(float deltaTime)
@@ -142,13 +144,8 @@ std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 		if (vp != nullptr)
 		{
 			Ray ray = vp->RayFromMousePosition();
-			m_pickingRays.push_back(ray);
-
 			Scene::PickData pd = g_app->m_scene.PickObject(ray);
-			if (pd.entity != nullptr)
-			{
-				m_pickedNtties.push_back(pd.entity->m_id);
-			}
+			m_pickData.push_back(pd);
 
 			// Test Shoot rays. For debug visualisation purpose.
 			if (g_app->m_pickingDebug)
@@ -187,13 +184,11 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 
 void ToolKit::Editor::StateEndPick::TransitionIn(State* prevState) 
 {
-	ApplySelection(m_pickedNtties);
 }
 
 void ToolKit::Editor::StateEndPick::TransitionOut(State* nextState) 
 {
-	m_pickedNtties.clear();
-	m_pickingRays.clear();
+	m_pickData.clear();
 }
 
 void ToolKit::Editor::StateEndPick::Update(float deltaTime)
@@ -224,13 +219,27 @@ void ToolKit::Editor::SelectMod::Init()
 void ToolKit::Editor::SelectMod::Update(float deltaTime)
 {
 	BaseMod::Update(deltaTime);
+	static bool stateTransition = false;
+
+	if (m_stateMachine->m_currentState->m_name == StateBeginPick().m_name)
+	{
+		stateTransition = true;
+	}
+
+	if (m_stateMachine->m_currentState->m_name == StateEndPick().m_name && stateTransition)
+	{
+		stateTransition = false;
+
+		StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
+		ApplySelection(endPick->m_pickData);
+	}
 }
 
-void ToolKit::Editor::StateEndPick::ApplySelection(std::vector<EntityId>& selectedNtties)
+void ToolKit::Editor::SelectMod::ApplySelection(std::vector<Scene::PickData>& pickedNtties)
 {
 	bool shiftClick = ImGui::GetIO().KeyShift;
 
-	if (selectedNtties.empty())
+	if (pickedNtties.empty())
 	{
 		if (!shiftClick)
 		{
@@ -238,9 +247,9 @@ void ToolKit::Editor::StateEndPick::ApplySelection(std::vector<EntityId>& select
 		}
 	}
 
-	for (EntityId id : selectedNtties)
+	for (Scene::PickData& pd : pickedNtties)
 	{
-		Entity* e = g_app->m_scene.GetEntity(id);		
+		Entity* e = pd.entity;		
 
 		if (e && !shiftClick)
 		{
@@ -258,6 +267,43 @@ void ToolKit::Editor::StateEndPick::ApplySelection(std::vector<EntityId>& select
 			{
 				g_app->m_scene.AddToSelection(e->m_id);
 			}
+		}
+	}
+}
+
+void ToolKit::Editor::CursorMod::Init()
+{
+	State* initialState = new StateBeginPick();
+	m_stateMachine->m_currentState = initialState;
+
+	m_stateMachine->PushState(initialState);
+	m_stateMachine->PushState(new StateEndPick());
+}
+
+void ToolKit::Editor::CursorMod::Update(float deltaTime)
+{
+	BaseMod::Update(deltaTime);
+	static bool stateTransition = false;
+
+	if (m_stateMachine->m_currentState->m_name == StateBeginPick().m_name)
+	{
+		stateTransition = true;
+	}
+
+	if (m_stateMachine->m_currentState->m_name == StateEndPick().m_name && stateTransition)
+	{
+		stateTransition = false;
+
+		StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
+		Scene::PickData& pd = endPick->m_pickData.back();
+
+		if (pd.entity)
+		{
+			g_app->m_cursor->m_pickPosition = pd.pickPos;
+		}
+		else
+		{
+			g_app->m_cursor->m_pickPosition = pd.pickRay.position;
 		}
 	}
 }

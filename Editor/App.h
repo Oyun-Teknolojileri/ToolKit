@@ -28,6 +28,7 @@ namespace ToolKit
 			struct PickData
 			{
 				glm::vec3 pickPos;
+				Ray pickRay;
 				Entity* entity = nullptr;
 			};
 
@@ -76,13 +77,13 @@ namespace ToolKit
 			std::shared_ptr<Material> m_highLightSecondaryMaterial;
 
 			// Editor objects.
-			Sphere* m_hitMarker;
 			Grid* m_grid;
 			Axis3d* m_origin;
 			Cursor* m_cursor;
 
 			// Editor debug states.
 			bool m_pickingDebug = false;
+			Sphere* m_hitMarker;
 
 		private:
 			Renderer* m_renderer;

@@ -27,7 +27,8 @@ void ToolKit::Editor::OverlayNav::ShowOverlayNav()
 
 		// Cursor button.
 		static float hoverTimeCursorBtn = 0.0f;
-		ImGui::ImageButton((void*)(intptr_t)EditorGUI::m_cursorIcn->m_textureId, ImVec2(32, 32));
+		isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Cursor;
+		ModManager::GetInstance()->SetMod(EditorGUI::ToggleButton((void*)(intptr_t)EditorGUI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Cursor);
 		EditorGUI::HelpMarker("Cursor\nSet the cursor location.", &hoverTimeCursorBtn);
 		ImGui::Separator();
 

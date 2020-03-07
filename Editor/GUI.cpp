@@ -251,7 +251,7 @@ bool ToolKit::Editor::EditorGUI::ToggleButton(ImTextureID user_texture_id, const
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_ButtonHovered]);
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, style.Colors[ImGuiCol_ButtonHovered]);
 	}
-	bool newPushState = pushState | ImGui::ImageButton((void*)(intptr_t)EditorGUI::m_selectIcn->m_textureId, ImVec2(32, 32));
+	bool newPushState = pushState | ImGui::ImageButton((void*)(intptr_t)user_texture_id, ImVec2(32, 32));
 	if (pushState)
 	{
 		ImGui::PopStyleColor(3);

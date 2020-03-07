@@ -2,6 +2,7 @@
 
 #include "ToolKit.h"
 #include "StateMachine.h"
+#include "App.h"
 
 namespace ToolKit
 {
@@ -11,6 +12,7 @@ namespace ToolKit
 		{
 			Base,
 			Select,
+			Cursor,
 			Move,
 			Rotate,
 			Scale
@@ -87,8 +89,7 @@ namespace ToolKit
 			StatePickingBase(std::string name) : State(name) {}
 
 		public:
-			std::vector<EntityId> m_pickedNtties;
-			std::vector<Ray> m_pickingRays;
+			std::vector<Scene::PickData> m_pickData;
 		};
 
 		class StateBeginPick : public StatePickingBase
@@ -125,14 +126,22 @@ namespace ToolKit
 			virtual void TransitionOut(State* nextState) override;
 			virtual void Update(float deltaTime) override;
 			virtual std::string Signaled(SignalId signal) override;
-
-			void ApplySelection(std::vector<EntityId>& selectedNtties);
 		};
 
 		class SelectMod : public BaseMod
 		{
 		public:
 			SelectMod() : BaseMod(ModId::Select) { Init(); }
+
+			virtual void Init() override;
+			virtual void Update(float deltaTime) override;
+			void ApplySelection(std::vector<Scene::PickData>& pickedNtties);
+		};
+
+		class CursorMod : public BaseMod
+		{
+		public:
+			CursorMod() : BaseMod(ModId::Cursor) { Init(); }
 
 			virtual void Init() override;
 			virtual void Update(float deltaTime) override;
