@@ -97,10 +97,10 @@ namespace ToolKit
 			StateBeginPick() : StatePickingBase("BeginPick") {}
 
 		public:
-			virtual void TransitionIn(State* prevState) override {};
+			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* nextState) override;
 			virtual void Update(float deltaTime) override;
-			virtual State* Signaled(SignalId signal) override;
+			virtual std::string Signaled(SignalId signal) override;
 		};
 
 		class StateBeginBoxPick : public StatePickingBase
@@ -112,7 +112,7 @@ namespace ToolKit
 			virtual void TransitionIn(State* prevState) override {};
 			virtual void TransitionOut(State* nextState) override {};
 			virtual void Update(float deltaTime) override;
-			virtual State* Signaled(SignalId signal) override;
+			virtual std::string Signaled(SignalId signal) override;
 		};
 
 		class StateEndPick : public StatePickingBase
@@ -121,20 +121,21 @@ namespace ToolKit
 			StateEndPick() : StatePickingBase("EndPick") {}
 
 		public:
-			virtual void TransitionIn(State* prevState) override {};
-			virtual void TransitionOut(State* nextState) override {};
+			virtual void TransitionIn(State* prevState) override;
+			virtual void TransitionOut(State* nextState) override;
 			virtual void Update(float deltaTime) override;
-			virtual State* Signaled(SignalId signal) override;
+			virtual std::string Signaled(SignalId signal) override;
+
+			void ApplySelection(std::vector<EntityId>& selectedNtties);
 		};
 
 		class SelectMod : public BaseMod
 		{
 		public:
-			SelectMod() : BaseMod(ModId::Select) {}
+			SelectMod() : BaseMod(ModId::Select) { Init(); }
 
 			virtual void Init() override;
 			virtual void Update(float deltaTime) override;
-			void ApplySelection(std::vector<EntityId>& selectedNtties);
 		};
 	}
 }

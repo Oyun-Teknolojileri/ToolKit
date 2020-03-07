@@ -13,14 +13,9 @@ bool ToolKit::SignalId::operator== (const SignalId& rhs)
 	return m_id == rhs.m_id; 
 }
 
-std::vector<std::string> ToolKit::State::m_nameBuffer;
-
 ToolKit::State::State(std::string name)
-	: m_currentSignal(-1)
+	: m_name(name)
 {
-	assert(std::find(m_nameBuffer.begin(), m_nameBuffer.end(), name) == m_nameBuffer.end()); // Name must be unique.
-	m_nameBuffer.push_back(m_name);
-	m_name = name;
 }
 
 ToolKit::State::~State()
@@ -29,6 +24,7 @@ ToolKit::State::~State()
 
 ToolKit::StateMachine::StateMachine()
 {
+	m_currentState = nullptr;
 }
 
 ToolKit::StateMachine::~StateMachine()
@@ -46,7 +42,7 @@ void ToolKit::StateMachine::Signal(SignalId signal)
 		return;
 	}
 
-	State* nextState = m_currentState->Signaled(signal);
+	State* nextState = QueryState(m_currentState->Signaled(signal));
 	if (nextState == nullptr)
 	{
 		return;
@@ -57,9 +53,14 @@ void ToolKit::StateMachine::Signal(SignalId signal)
 	m_currentState = nextState;
 }
 
-bool ToolKit::StateMachine::QueryState(std::string stateName)
+ToolKit::State* ToolKit::StateMachine::QueryState(std::string stateName)
 {
-	return m_states.find(stateName) != m_states.end();
+	if (m_states.find(stateName) != m_states.end())
+	{
+		return m_states[stateName];
+	}
+
+	return nullptr;
 }
 
 void ToolKit::StateMachine::PushState(State* state)

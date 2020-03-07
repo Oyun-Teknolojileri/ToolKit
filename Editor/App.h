@@ -56,7 +56,7 @@ namespace ToolKit
 			~App();
 
 			void Init();
-			void Frame(int deltaTime);
+			void Frame(float deltaTime);
 			void OnResize(int width, int height);
 			void OnQuit();
 			
@@ -80,6 +80,9 @@ namespace ToolKit
 			Grid* m_grid;
 			Axis3d* m_origin;
 			Cursor* m_cursor;
+
+			// Editor debug states.
+			bool m_pickingDebug = false;
 
 		private:
 			Renderer* m_renderer;

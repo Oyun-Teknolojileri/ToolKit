@@ -83,7 +83,7 @@ void Init()
 	}
 }
 
-unsigned long GetMilliSeconds()
+float GetMilliSeconds()
 {
 	using namespace std::chrono;
 
@@ -91,7 +91,7 @@ unsigned long GetMilliSeconds()
 	high_resolution_clock::time_point t2 = high_resolution_clock::now();
 	duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
 
-	return (unsigned long)(time_span.count() * 1000.0);
+	return (float)(time_span.count() * 1000.0);
 }
 
 void Exit()
@@ -136,23 +136,6 @@ void ProcessEvent(SDL_Event e)
 			break;
 		}
 	}
-
-	// Dispatch Mod Signals
-	if (e.type == SDL_MOUSEBUTTONDOWN)
-	{
-		if (e.button.button == SDL_BUTTON_LEFT)
-		{
-			ToolKit::Editor::ModManager::GetInstance()->DispatchSignal(ToolKit::Editor::LeftMouseBtnDownSgnl());
-		}
-	}
-
-	if (e.type == SDL_MOUSEBUTTONUP)
-	{
-		if (e.button.button == SDL_BUTTON_LEFT)
-		{
-			ToolKit::Editor::ModManager::GetInstance()->DispatchSignal(ToolKit::Editor::LeftMouseBtnUpSgnl());
-		}
-	}
 }
 
 int main(int argc, char* argv[])
@@ -174,9 +157,9 @@ int main(int argc, char* argv[])
 	ImGui_ImplOpenGL3_Init("#version 300 es");
 
 	// Continue with editor.
-	ToolKit::uint lastTime = GetMilliSeconds();
-	ToolKit::uint currentTime;
-	ToolKit::uint deltaTime = 1000 / fps;
+	float lastTime = GetMilliSeconds();
+	float currentTime;
+	float deltaTime = 1000.0f / fps;
 
 	while (ToolKit::Editor::g_running)
 	{

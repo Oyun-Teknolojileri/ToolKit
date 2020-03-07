@@ -2,6 +2,9 @@
 #include "Mod.h"
 #include "GlobalDef.h"
 #include "Viewport.h"
+#include "Node.h"
+#include "Primative.h"
+#include "DebugNew.h"
 
 ToolKit::Editor::ModManager ToolKit::Editor::ModManager::m_instance;
 
@@ -111,6 +114,10 @@ void ToolKit::Editor::BaseMod::Signal(SignalId signal)
 	m_stateMachine->Signal(signal);
 }
 
+void ToolKit::Editor::StateBeginPick::TransitionIn(State* prevState) 
+{
+}
+
 void ToolKit::Editor::StateBeginPick::TransitionOut(State* nextState)
 {
 	if (StatePickingBase* baseState = dynamic_cast<StatePickingBase*> (nextState))
@@ -118,13 +125,16 @@ void ToolKit::Editor::StateBeginPick::TransitionOut(State* nextState)
 		baseState->m_pickedNtties = m_pickedNtties;
 		baseState->m_pickingRays = m_pickingRays;
 	}
+
+	m_pickedNtties.clear();
+	m_pickingRays.clear();
 }
 
 void ToolKit::Editor::StateBeginPick::Update(float deltaTime)
 {
 }
 
-ToolKit::State* ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
+std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 {
 	if (signal == LeftMouseBtnUpSgnl())
 	{
@@ -138,35 +148,75 @@ ToolKit::State* ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 			if (pd.entity != nullptr)
 			{
 				m_pickedNtties.push_back(pd.entity->m_id);
-				return new StateEndPick();
 			}
+
+			// Test Shoot rays. For debug visualisation purpose.
+			if (g_app->m_pickingDebug)
+			{
+				if (pd.entity != nullptr)
+				{
+					g_app->m_hitMarker->m_node->m_translation = pd.pickPos;
+				}
+
+				static std::shared_ptr<Arrow2d> rayMdl = nullptr;
+				if (rayMdl == nullptr)
+				{
+					rayMdl = std::shared_ptr<Arrow2d>(new Arrow2d());
+					g_app->m_scene.m_entitites.push_back(rayMdl.get());
+				}
+
+				rayMdl->m_node->m_translation = ray.position;
+				rayMdl->m_node->m_orientation = ToolKit::RotationTo(ToolKit::X_AXIS, ray.direction);
+			}
+
+			return StateEndPick().m_name;
 		}
 	}
 
-	return nullptr;
+	return std::string();
 }
 
 void ToolKit::Editor::StateBeginBoxPick::Update(float deltaTime)
 {
 }
 
-ToolKit::State* ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
+std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 {
-	return nullptr;
+	return std::string();
+}
+
+void ToolKit::Editor::StateEndPick::TransitionIn(State* prevState) 
+{
+	ApplySelection(m_pickedNtties);
+}
+
+void ToolKit::Editor::StateEndPick::TransitionOut(State* nextState) 
+{
+	m_pickedNtties.clear();
+	m_pickingRays.clear();
 }
 
 void ToolKit::Editor::StateEndPick::Update(float deltaTime)
 {
 }
 
-ToolKit::State* ToolKit::Editor::StateEndPick::Signaled(SignalId signal)
+std::string ToolKit::Editor::StateEndPick::Signaled(SignalId signal)
 {
-	return nullptr;
+	// Keep picking.
+	if (signal == LeftMouseBtnDownSgnl())
+	{
+		return StateBeginPick().m_name;
+	}
+
+	return std::string();
 }
 
 void ToolKit::Editor::SelectMod::Init()
 {
-	m_stateMachine->PushState(new StateBeginPick());
+	State* initialState = new StateBeginPick();
+	m_stateMachine->m_currentState = initialState;
+
+	m_stateMachine->PushState(initialState);
 	m_stateMachine->PushState(new StateBeginBoxPick());
 	m_stateMachine->PushState(new StateEndPick());
 }
@@ -174,16 +224,9 @@ void ToolKit::Editor::SelectMod::Init()
 void ToolKit::Editor::SelectMod::Update(float deltaTime)
 {
 	BaseMod::Update(deltaTime);
-
-	// Final state.
-	if (m_stateMachine->m_currentState->m_name == StateEndPick().m_name)
-	{
-		StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
-
-	}
 }
 
-void ToolKit::Editor::SelectMod::ApplySelection(std::vector<EntityId>& selectedNtties)
+void ToolKit::Editor::StateEndPick::ApplySelection(std::vector<EntityId>& selectedNtties)
 {
 	bool shiftClick = ImGui::GetIO().KeyShift;
 

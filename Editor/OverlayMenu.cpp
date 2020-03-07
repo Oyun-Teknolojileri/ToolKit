@@ -22,7 +22,7 @@ void ToolKit::Editor::OverlayNav::ShowOverlayNav()
 		// Select button.
 		static float hoverTimeSelectBtn = 0.0f;
 		bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Select;
-		ModManager::GetInstance()->SetMod(EditorGUI::ToggleButton((void*)(intptr_t)EditorGUI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod), ModId::Select);
+		ModManager::GetInstance()->SetMod(EditorGUI::ToggleButton((void*)(intptr_t)EditorGUI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Select);
 		EditorGUI::HelpMarker("Select Box\nSelect items using box selection.", &hoverTimeSelectBtn);
 
 		// Cursor button.

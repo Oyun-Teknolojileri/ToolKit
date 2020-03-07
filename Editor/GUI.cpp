@@ -5,6 +5,7 @@
 #include "Viewport.h"
 #include "SDL.h"
 #include "GlobalDef.h"
+#include "Mod.h"
 #include "DebugNew.h"
 
 bool ToolKit::Editor::EditorGUI::m_windowMenushowMetrics = false;
@@ -223,6 +224,21 @@ void ToolKit::Editor::EditorGUI::InitIcons()
 	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(m_appIcon->m_image.data(), m_appIcon->m_width, m_appIcon->m_height, 8, m_appIcon->m_width * 4, SDL_PIXELFORMAT_ABGR8888);
 	SDL_SetWindowIcon(g_window, surface);
 	SDL_FreeSurface(surface);
+}
+
+void ToolKit::Editor::EditorGUI::DispatchSignals()
+{
+	ImGuiIO& io = ImGui::GetIO();
+	
+	if (io.MouseClicked[0])
+	{
+		ToolKit::Editor::ModManager::GetInstance()->DispatchSignal(ToolKit::Editor::LeftMouseBtnDownSgnl());
+	}
+
+	if (io.MouseReleased[0])
+	{
+		ToolKit::Editor::ModManager::GetInstance()->DispatchSignal(ToolKit::Editor::LeftMouseBtnUpSgnl());
+	}
 }
 
 bool ToolKit::Editor::EditorGUI::ToggleButton(ImTextureID user_texture_id, const ImVec2& size, bool pushState)

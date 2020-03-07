@@ -14,7 +14,7 @@ namespace ToolKit
 		extern Editor::App* g_app;
 		extern bool g_running;
 
-		inline float MilisecToSec(uint ms)
+		inline float MilisecToSec(float ms)
 		{
 			return ms / 1000.0f;
 		}

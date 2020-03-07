@@ -18,7 +18,7 @@ namespace ToolKit
 		public:
 			Viewport(float width, float height);
 			~Viewport();
-			void Update(uint deltaTime);
+			void Update(float deltaTime);
 
 			// Window queries.
 			void ShowViewport();
@@ -31,8 +31,7 @@ namespace ToolKit
 
 		private:
 			// Modes.
-			void PickObjectMode();
-			void FpsNavigationMode(uint deltaTime);
+			void FpsNavigationMode(float deltaTime);
 
 			// Internal window handlings.
 			void OnResize(float width, float height);
@@ -60,7 +59,6 @@ namespace ToolKit
 			bool m_open = true;
 			bool m_active = false;
 			bool m_relMouseModBegin = true;
-			bool m_pickingDebug = false;
 
 			glm::ivec2 m_mousePosBegin;
 			glm::ivec2 m_lastMousePosRelContentArea;

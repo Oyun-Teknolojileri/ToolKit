@@ -18,18 +18,14 @@ namespace ToolKit
 	{
 	public:
 		State(std::string name);
-		~State();
+		virtual ~State();
 		virtual void TransitionIn(State* prevState) = 0;
 		virtual void TransitionOut(State* nextState) = 0;
 		virtual void Update(float deltaTime) = 0;
-		virtual State* Signaled(SignalId signal) = 0;
+		virtual std::string Signaled(SignalId signal) = 0; // Returns next state's name.
 
 	public:
-		SignalId m_currentSignal;
-		std::string m_name;
-
-	private:
-		static std::vector<std::string> m_nameBuffer;
+		const std::string m_name;
 	};
 
 	class StateMachine
@@ -39,7 +35,7 @@ namespace ToolKit
 		~StateMachine();
 
 		void Signal(SignalId signal);
-		bool QueryState(std::string stateName);
+		State* QueryState(std::string stateName);
 		void PushState(State* state);
 		void Update(float deltaTime);
 

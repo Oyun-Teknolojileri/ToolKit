@@ -19,6 +19,7 @@ namespace ToolKit
 				static void ShowMenuWindows();
 				static void HelpMarker(const char* desc, float* elapsedHoverTime);
 				static void InitIcons();
+				static void DispatchSignals();
 
 				// Custom widgets.
 				static bool ToggleButton(ImTextureID user_texture_id, const ImVec2& size, bool pushState);

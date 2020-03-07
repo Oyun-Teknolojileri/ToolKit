@@ -7,10 +7,11 @@
 #include "Primative.h"
 #include "Node.h"
 #include "GlobalDef.h"
-#include "DebugNew.h"
 #include "OverlayMenu.h"
 #include "Grid.h"
 #include "Directional.h"
+#include "Mod.h"
+#include "DebugNew.h"
 
 ToolKit::Editor::App::App(int windowWidth, int windowHeight)
 {
@@ -91,8 +92,12 @@ void ToolKit::Editor::App::Init()
 	EditorGUI::InitIcons();
 }
 
-void ToolKit::Editor::App::Frame(int deltaTime)
+void ToolKit::Editor::App::Frame(float deltaTime)
 {
+	// Update Mods.
+	EditorGUI::DispatchSignals();
+	ModManager::GetInstance()->Update(deltaTime);
+
 	// Update Viewports
 	for (int i = (int)m_viewports.size() - 1; i >= 0; i--)
 	{
