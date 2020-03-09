@@ -90,6 +90,7 @@ namespace ToolKit
 
 		public:
 			std::vector<Scene::PickData> m_pickData;
+			std::vector<EntityId> m_ignoreList;
 		};
 
 		class StateBeginPick : public StatePickingBase

@@ -192,6 +192,9 @@ void ToolKit::Editor::App::RenderSelected(Drawable* e, Camera* c)
 ToolKit::Editor::Scene::PickData ToolKit::Editor::Scene::PickObject(Ray ray, const std::vector<EntityId>& ignoreList)
 {
 	PickData pd;
+	pd.pickRay = ray;
+	pd.pickPos = ray.position + ray.direction * 100.0f;
+
 	float closestPickedDistance = FLT_MAX;
 	for (Entity* e : m_entitites)
 	{

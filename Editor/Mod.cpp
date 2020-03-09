@@ -144,7 +144,7 @@ std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 		if (vp != nullptr)
 		{
 			Ray ray = vp->RayFromMousePosition();
-			Scene::PickData pd = g_app->m_scene.PickObject(ray);
+			Scene::PickData pd = g_app->m_scene.PickObject(ray, m_ignoreList);
 			m_pickData.push_back(pd);
 
 			// Test Shoot rays. For debug visualisation purpose.
@@ -208,8 +208,9 @@ std::string ToolKit::Editor::StateEndPick::Signaled(SignalId signal)
 
 void ToolKit::Editor::SelectMod::Init()
 {
-	State* initialState = new StateBeginPick();
+	StateBeginPick* initialState = new StateBeginPick();
 	m_stateMachine->m_currentState = initialState;
+	initialState->m_ignoreList = { g_app->m_grid->m_id };
 
 	m_stateMachine->PushState(initialState);
 	m_stateMachine->PushState(new StateBeginBoxPick());
@@ -239,7 +240,7 @@ void ToolKit::Editor::SelectMod::ApplySelection(std::vector<Scene::PickData>& pi
 {
 	bool shiftClick = ImGui::GetIO().KeyShift;
 
-	if (pickedNtties.empty())
+	if (pickedNtties.size() == 1 && pickedNtties.back().entity == nullptr)
 	{
 		if (!shiftClick)
 		{
@@ -296,14 +297,6 @@ void ToolKit::Editor::CursorMod::Update(float deltaTime)
 
 		StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
 		Scene::PickData& pd = endPick->m_pickData.back();
-
-		if (pd.entity)
-		{
-			g_app->m_cursor->m_pickPosition = pd.pickPos;
-		}
-		else
-		{
-			g_app->m_cursor->m_pickPosition = pd.pickRay.position;
-		}
+		g_app->m_cursor->m_pickPosition = pd.pickPos;
 	}
 }
