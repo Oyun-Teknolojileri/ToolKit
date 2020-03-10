@@ -168,9 +168,21 @@ ToolKit::Editor::Viewport* ToolKit::Editor::App::GetActiveViewport()
 
 void ToolKit::Editor::App::RenderSelected(Drawable* e, Camera* c)
 {
-	glm::vec3 s = e->m_node->m_scale;
-	float dist = glm::distance(e->m_node->GetTranslation(ToolKit::TransformationSpace::TS_WORLD), c->m_node->GetTranslation(ToolKit::TransformationSpace::TS_WORLD));
-	e->m_node->m_scale += 0.01f * dist;
+	glEnable(GL_STENCIL_TEST);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	glStencilFunc(GL_ALWAYS, 1, 0xFF);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	glDepthMask(GL_FALSE);
+
+	CullingType cm = e->m_mesh->m_material->GetRenderState()->cullMode;
+	e->m_mesh->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
+	m_renderer->Render(e, c);
+
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glDepthMask(GL_TRUE);
+
+	e->m_mesh->m_material->GetRenderState()->cullMode = cm;
+	m_renderer->Render(e, c);
 
 	std::shared_ptr<Material> m = e->m_mesh->m_material;
 	if (m_scene.IsCurrentSelection(e->m_id))
@@ -182,11 +194,16 @@ void ToolKit::Editor::App::RenderSelected(Drawable* e, Camera* c)
 		e->m_mesh->m_material = m_highLightSecondaryMaterial;
 	}
 
-	m_renderer->Render(e, c);
+	glm::vec3 s = e->m_node->m_scale;
+	float dist = glm::distance(e->m_node->GetTranslation(ToolKit::TransformationSpace::TS_WORLD), c->m_node->GetTranslation(ToolKit::TransformationSpace::TS_WORLD));
+	e->m_node->m_scale += 0.01f * dist;
 
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	m_renderer->Render(e, c);
+	glDisable(GL_STENCIL_TEST);
+	
 	e->m_node->m_scale = s;
 	e->m_mesh->m_material = m;
-	m_renderer->Render(e, c);
 }
 
 ToolKit::Editor::Scene::PickData ToolKit::Editor::Scene::PickObject(Ray ray, const std::vector<EntityId>& ignoreList)

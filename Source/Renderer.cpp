@@ -269,7 +269,7 @@ void ToolKit::Renderer::SetRenderTarget(RenderTarget* renderTarget)
 		m_renderState.diffuseTexture = renderTarget->m_textureId;
 		glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->m_frameBufferId);
 		glViewport(0, 0, renderTarget->m_width, renderTarget->m_height);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 	else
 	{
