@@ -170,7 +170,7 @@ void ToolKit::Editor::App::RenderSelected(Drawable* e, Camera* c)
 {
 	glm::vec3 s = e->m_node->m_scale;
 	float dist = glm::distance(e->m_node->GetTranslation(ToolKit::TransformationSpace::TS_WORLD), c->m_node->GetTranslation(ToolKit::TransformationSpace::TS_WORLD));
-	e->m_node->m_scale += 0.005f * dist;
+	e->m_node->m_scale += 0.01f * dist;
 
 	std::shared_ptr<Material> m = e->m_mesh->m_material;
 	if (m_scene.IsCurrentSelection(e->m_id))
