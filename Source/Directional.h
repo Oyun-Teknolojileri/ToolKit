@@ -28,6 +28,9 @@ namespace ToolKit
     {
       glm::vec3 pos;
       glm::vec3 dir;
+      glm::mat4 projection;
+      float fov;
+      bool ortographic;
     };
 
   public:
@@ -42,7 +45,9 @@ namespace ToolKit
     CamData GetData();
     virtual EntityType GetType();
 
-  public:
+  private:
+		float m_fov;
+		bool m_ortographic;
     glm::mat4 m_projection;
   };
 

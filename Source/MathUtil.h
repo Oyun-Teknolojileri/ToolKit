@@ -28,6 +28,17 @@ namespace ToolKit
     glm::vec3 direction;
   };
 
+  struct PlaneEquation
+  {
+    glm::vec3 normal;
+    float d;
+  };
+
+  struct Frustum
+  {
+    PlaneEquation planes[6]; // Left - Right - Top - Bottom - Near - Far
+  };
+
   // Matrix Operations
   //////////////////////////////////////////
 
@@ -38,6 +49,7 @@ namespace ToolKit
   // Assuming transformation applied in this order translate * rotate * scale * vector,
   // Decomposes matrix.
   void DecomposeMatrix(const glm::mat4& transform, glm::vec3& position, glm::quat& rotation);
+  Frustum ExtractFrustum(const glm::mat4& modelViewProject);
 
   // Intersections
   //////////////////////////////////////////
@@ -46,6 +58,12 @@ namespace ToolKit
   bool RayBoxIntersection(const Ray& ray, const BoundingBox& box, float& t);
 	bool RayTriangleIntersection(const Ray& ray, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float& t);
 	bool RayMeshIntersection(class Mesh* const mesh, const Ray& ray, float& t);
+  int FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box); // 0 outside, 1 inside, 2 intersect
+
+  // Geometric Operations
+  //////////////////////////////////////////
+
+  void NormalzePlaneEquation(PlaneEquation& plane);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

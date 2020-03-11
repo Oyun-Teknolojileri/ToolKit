@@ -93,7 +93,7 @@ public:
   glm::ivec2 GetSSP(glm::mat4 model)
   {
     glm::mat4 view = m_cam.GetViewMatrix();
-    glm::mat4 project = m_cam.m_projection;
+    glm::mat4 project = m_cam.GetData().projection;
     glm::vec3 screenPos = glm::project(glm::vec3(), view * model, project, glm::vec4(0.0f, 0.0f, m_windowWidth, m_windowHeight));
     return glm::ivec2(screenPos.x, screenPos.y);
   }
@@ -102,7 +102,7 @@ public:
   {
     glm::vec3 cp = glm::vec3(m_sscp, 0);
     glm::mat4 view = m_cam.GetViewMatrix();
-    glm::mat4 project = m_cam.m_projection;
+    glm::mat4 project = m_cam.GetData().projection;
     return glm::unProject(cp, view, project, glm::vec4(0.0f, 0.0f, m_windowWidth, m_windowHeight));
   }
 

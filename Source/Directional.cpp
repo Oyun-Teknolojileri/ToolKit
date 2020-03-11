@@ -69,11 +69,15 @@ void ToolKit::Camera::SetLens(float fov, float width, float height)
 void ToolKit::Camera::SetLens(float fov, float width, float height, float near, float far)
 {
   m_projection = glm::perspectiveFov(fov, width, height, near, far);
+  m_fov = fov;
+  m_ortographic = false;
 }
 
 void ToolKit::Camera::SetLens(float aspect, float left, float right, float bottom, float top, float near, float far)
 {
   m_projection = glm::ortho(left * aspect, right * aspect, bottom, top, near, far);
+	m_fov = 0.0f;
+	m_ortographic = true;
 }
 
 glm::mat4 ToolKit::Camera::GetViewMatrix()
@@ -88,6 +92,9 @@ ToolKit::Camera::CamData ToolKit::Camera::GetData()
   glm::vec3 tmp;
   GetLocalAxis(data.dir, tmp, tmp);
   data.pos = m_node->GetTranslation(TransformationSpace::TS_WORLD);
+  data.projection = m_projection;
+  data.fov = m_fov;
+  data.ortographic = m_ortographic;
 
   return data;
 }

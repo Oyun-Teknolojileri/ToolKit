@@ -28,6 +28,56 @@ void ToolKit::DecomposeMatrix(const glm::mat4& transform, glm::vec3& position, g
 	scale = glm::vec3(sx, sy, sz);
 }
 
+// http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
+ToolKit::Frustum ToolKit::ExtractFrustum(const glm::mat4& modelViewProject)
+{
+	Frustum frustum;
+
+	// Left clipping plane
+	frustum.planes[0].normal.x = modelViewProject[3][0] + modelViewProject[0][0];
+	frustum.planes[0].normal.y = modelViewProject[3][1] + modelViewProject[0][1];
+	frustum.planes[0].normal.z = modelViewProject[3][2] + modelViewProject[0][2];
+	frustum.planes[0].d = modelViewProject[3][3] + modelViewProject[0][3];
+
+	// Right clipping plane
+	frustum.planes[1].normal.x = modelViewProject[3][0] - modelViewProject[0][0];
+	frustum.planes[1].normal.y = modelViewProject[3][1] - modelViewProject[0][1];
+	frustum.planes[1].normal.z = modelViewProject[3][2] - modelViewProject[0][2];
+	frustum.planes[1].d = modelViewProject[3][3] - modelViewProject[0][3];
+
+	// Top clipping plane
+	frustum.planes[2].normal.x = modelViewProject[3][0] + modelViewProject[1][0];
+	frustum.planes[2].normal.y = modelViewProject[3][1] + modelViewProject[1][1];
+	frustum.planes[2].normal.z = modelViewProject[3][2] + modelViewProject[1][2];
+	frustum.planes[2].d = modelViewProject[3][3] + modelViewProject[1][3];
+
+	// Bottom clipping plane
+	frustum.planes[3].normal.x = modelViewProject[3][0] - modelViewProject[1][0];
+	frustum.planes[3].normal.y = modelViewProject[3][1] - modelViewProject[1][1];
+	frustum.planes[3].normal.z = modelViewProject[3][2] - modelViewProject[1][2];
+	frustum.planes[3].d = modelViewProject[3][3] - modelViewProject[1][3];
+
+	// Near clipping plane
+	frustum.planes[4].normal.x = modelViewProject[3][0] + modelViewProject[2][0];
+	frustum.planes[4].normal.y = modelViewProject[3][1] + modelViewProject[2][1];
+	frustum.planes[4].normal.z = modelViewProject[3][2] + modelViewProject[2][2];
+	frustum.planes[4].d = modelViewProject[3][3] + modelViewProject[2][3];
+
+	// Far clipping plane
+	frustum.planes[5].normal.x = modelViewProject[3][0] - modelViewProject[2][0];
+	frustum.planes[5].normal.y = modelViewProject[3][1] - modelViewProject[2][1];
+	frustum.planes[5].normal.z = modelViewProject[3][2] - modelViewProject[2][2];
+	frustum.planes[5].d = modelViewProject[3][3] - modelViewProject[2][3];
+	
+	// Normalize the plane equations, if requested
+	for (int i = 0; i < 6; i++)
+	{
+		NormalzePlaneEquation(frustum.planes[i]);
+	}
+
+	return frustum;
+}
+
 void ToolKit::DecomposeMatrix(const glm::mat4& transform, glm::vec3& position, glm::quat& rotation)
 {
 	glm::vec3 tmp;
@@ -162,6 +212,42 @@ bool ToolKit::RayMeshIntersection(Mesh* const mesh, const Ray& ray, float& t)
 	}
 
 	return hit;
+}
+
+// https://old.cescg.org/CESCG-2002/DSykoraJJelinek/
+int ToolKit::FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box)
+{
+	float m, n; int i, result = 1;
+	glm::vec3 b[2] = { box.min, box.max };
+
+	for (i = 0; i < 6; i++) 
+	{
+		const PlaneEquation* p = &frustum.planes[i];
+
+		m = (p->normal.x * b[(int)p->normal.x].x) + (p->normal.y * b[(int)p->normal.y].y) + (p->normal.z * b[(int)p->normal.z].z);
+		if (m > -p->d)
+		{
+			return 0;
+		}
+		
+		n = (p->normal.x * b[(int)p->normal.x].x) + (p->normal.y * b[(int)p->normal.y].y) + (p->normal.z * b[(int)p->normal.z].z);
+		if (n > -p->d)
+		{
+			result = 2;
+		}
+	} 
+	
+	return result;
+}
+
+// http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
+void ToolKit::NormalzePlaneEquation(PlaneEquation& plane)
+{
+	float mag = glm::length(plane.normal);
+	plane.normal.x = plane.normal.x / mag;
+	plane.normal.y = plane.normal.y / mag;
+	plane.normal.z = plane.normal.z / mag;
+	plane.d = plane.d / mag;
 }
 
 glm::vec3 ToolKit::Interpolate(const glm::vec3& vec1, const glm::vec3& vec2, float ratio)

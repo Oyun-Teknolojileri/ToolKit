@@ -169,7 +169,7 @@ Ray ToolKit::Editor::Viewport::RayFromMousePosition()
 	screenPoint.y = m_wndContentAreaSize.y - screenPoint.y; // Imgui Window origin Top - Left to OpenGL window origin Bottom - Left
 
 	glm::mat4 view = m_camera->GetViewMatrix();
-	glm::mat4 project = m_camera->m_projection;
+	glm::mat4 project = m_camera->GetData().projection;
 	
 	Ray ray;
 	ray.position = glm::unProject(screenPoint, view, project, glm::vec4(0.0f, 0.0f, m_width, m_height));
@@ -182,7 +182,7 @@ void Editor::Viewport::FpsNavigationMode(float deltaTime)
 {
 	if (m_camera)
 	{
-		// Mouse is rightclicked
+		// Mouse is right clicked
 		if (ImGui::IsMouseDown(1))
 		{
 			// Handle relative mouse hack.

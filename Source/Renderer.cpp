@@ -284,7 +284,7 @@ void ToolKit::Renderer::SetRenderTarget(RenderTarget* renderTarget)
 void ToolKit::Renderer::SetProjectViewModel(Drawable* object, Camera* cam)
 {
   m_view = cam->GetViewMatrix();
-  m_project = cam->m_projection;
+  m_project = cam->GetData().projection;
   m_model = object->m_node->GetTransform();
 }
 
