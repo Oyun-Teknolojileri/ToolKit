@@ -117,6 +117,14 @@ void Editor::Viewport::ShowViewport()
 		m_overlayNav->ShowOverlayNav();
 	}
 
+	// Process draw commands.
+	for (DrawUI* command : m_drawQueue)
+	{
+		command->Draw();
+		SafeDel(command);
+	}
+	m_drawQueue.clear();
+
 	ImGui::End();
 }
 
@@ -165,17 +173,29 @@ bool ToolKit::Editor::Viewport::IsViewportQueriable()
 
 Ray ToolKit::Editor::Viewport::RayFromMousePosition()
 {
-	glm::vec3 screenPoint = glm::vec3(m_lastMousePosRelContentArea, 0);
-	screenPoint.y = m_wndContentAreaSize.y - screenPoint.y; // Imgui Window origin Top - Left to OpenGL window origin Bottom - Left
-
-	glm::mat4 view = m_camera->GetViewMatrix();
-	glm::mat4 project = m_camera->GetData().projection;
-	
 	Ray ray;
-	ray.position = glm::unProject(screenPoint, view, project, glm::vec4(0.0f, 0.0f, m_width, m_height));
+	ray.position = GetLastMousePosInWorldSpace();
 	ray.direction = glm::normalize(ray.position - m_camera->m_node->m_translation);
 
 	return ray;
+}
+
+glm::vec3 ToolKit::Editor::Viewport::GetLastMousePosInWorldSpace()
+{
+	glm::vec3 screenPoint = glm::vec3(GetLastMousePosWindowSpace(), 0.0f);
+	
+	glm::mat4 view = m_camera->GetViewMatrix();
+	glm::mat4 project = m_camera->GetData().projection;
+
+	return glm::unProject(screenPoint, view, project, glm::vec4(0.0f, 0.0f, m_width, m_height));
+}
+
+glm::vec2 ToolKit::Editor::Viewport::GetLastMousePosWindowSpace()
+{
+	glm::vec3 screenPoint = glm::vec3(m_lastMousePosRelContentArea, 0);
+	screenPoint.y = m_wndContentAreaSize.y - screenPoint.y; // Imgui Window origin Top - Left to OpenGL window origin Bottom - Left
+
+	return screenPoint;
 }
 
 void Editor::Viewport::FpsNavigationMode(float deltaTime)

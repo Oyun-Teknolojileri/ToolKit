@@ -229,7 +229,7 @@ void ToolKit::Editor::EditorGUI::InitIcons()
 void ToolKit::Editor::EditorGUI::DispatchSignals()
 {
 	ImGuiIO& io = ImGui::GetIO();
-	
+		
 	if (io.MouseClicked[0])
 	{
 		ToolKit::Editor::ModManager::GetInstance()->DispatchSignal(ToolKit::Editor::LeftMouseBtnDownSgnl());
@@ -238,6 +238,11 @@ void ToolKit::Editor::EditorGUI::DispatchSignals()
 	if (io.MouseReleased[0])
 	{
 		ToolKit::Editor::ModManager::GetInstance()->DispatchSignal(ToolKit::Editor::LeftMouseBtnUpSgnl());
+	}
+
+	if (ImGui::IsMouseDragging(0))
+	{
+		ToolKit::Editor::ModManager::GetInstance()->DispatchSignal(ToolKit::Editor::LeftMouseBtnDragSgnl());
 	}
 }
 

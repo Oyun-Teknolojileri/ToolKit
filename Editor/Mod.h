@@ -71,10 +71,10 @@ namespace ToolKit
 			LeftMouseBtnUpSgnl() : SignalId(102) {}
 		};
 
-		class MouseDragSgnl : public SignalId
+		class LeftMouseBtnDragSgnl : public SignalId
 		{
 		public:
-			MouseDragSgnl() : SignalId(103) {} // Left click is pressed and mouse is moving.
+			LeftMouseBtnDragSgnl() : SignalId(103) {}
 		};
 
 		class MouseMoveSgnl : public SignalId
@@ -86,9 +86,14 @@ namespace ToolKit
 		class StatePickingBase : public State
 		{
 		public:
-			StatePickingBase(std::string name) : State(name) {}
+			StatePickingBase(std::string name);
+			virtual void TransitionIn(State* prevState) override;
+			virtual void TransitionOut(State* nextState) override;
+
+			void DebugDrawPickingRay(Ray ray);
 
 		public:
+			std::vector<glm::vec2> m_mouseData;
 			std::vector<Scene::PickData> m_pickData;
 			std::vector<EntityId> m_ignoreList;
 		};
@@ -99,8 +104,6 @@ namespace ToolKit
 			StateBeginPick() : StatePickingBase("BeginPick") {}
 
 		public:
-			virtual void TransitionIn(State* prevState) override;
-			virtual void TransitionOut(State* nextState) override;
 			virtual void Update(float deltaTime) override;
 			virtual std::string Signaled(SignalId signal) override;
 		};
@@ -111,8 +114,6 @@ namespace ToolKit
 			StateBeginBoxPick() : StatePickingBase("BeginBoxPick") {}
 
 		public:
-			virtual void TransitionIn(State* prevState) override {};
-			virtual void TransitionOut(State* nextState) override {};
 			virtual void Update(float deltaTime) override;
 			virtual std::string Signaled(SignalId signal) override;
 		};
@@ -123,8 +124,6 @@ namespace ToolKit
 			StateEndPick() : StatePickingBase("EndPick") {}
 
 		public:
-			virtual void TransitionIn(State* prevState) override;
-			virtual void TransitionOut(State* nextState) override;
 			virtual void Update(float deltaTime) override;
 			virtual std::string Signaled(SignalId signal) override;
 		};

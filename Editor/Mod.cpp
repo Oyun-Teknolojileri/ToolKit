@@ -118,15 +118,25 @@ void ToolKit::Editor::BaseMod::Signal(SignalId signal)
 	m_stateMachine->Signal(signal);
 }
 
-void ToolKit::Editor::StateBeginPick::TransitionIn(State* prevState) 
+ToolKit::Editor::StatePickingBase::StatePickingBase(std::string name)
+	: State(name) 
+{ 
+	m_mouseData.resize(2); 
+}
+
+void ToolKit::Editor::StatePickingBase::TransitionIn(State* prevState)
 {
 }
 
-void ToolKit::Editor::StateBeginPick::TransitionOut(State* nextState)
+void ToolKit::Editor::StatePickingBase::TransitionOut(State* nextState)
 {
 	if (StatePickingBase* baseState = dynamic_cast<StatePickingBase*> (nextState))
 	{
-		baseState->m_pickData = m_pickData;
+		if (nextState->m_name != StateBeginPick().m_name)
+		{
+			baseState->m_pickData = m_pickData;
+			baseState->m_mouseData = m_mouseData;
+		}
 	}
 
 	m_pickData.clear();
@@ -138,6 +148,15 @@ void ToolKit::Editor::StateBeginPick::Update(float deltaTime)
 
 std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 {
+	if (signal == LeftMouseBtnDownSgnl())
+	{
+		Viewport* vp = g_app->GetActiveViewport();
+		if (vp != nullptr)
+		{
+			m_mouseData[0] = vp->GetLastMousePosWindowSpace();
+		}
+	}
+
 	if (signal == LeftMouseBtnUpSgnl())
 	{
 		Viewport* vp = g_app->GetActiveViewport();
@@ -146,28 +165,24 @@ std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 			Ray ray = vp->RayFromMousePosition();
 			Scene::PickData pd = g_app->m_scene.PickObject(ray, m_ignoreList);
 			m_pickData.push_back(pd);
+			m_mouseData[0] = vp->GetLastMousePosWindowSpace();
 
-			// Test Shoot rays. For debug visualisation purpose.
 			if (g_app->m_pickingDebug)
 			{
 				if (pd.entity != nullptr)
 				{
 					g_app->m_hitMarker->m_node->m_translation = pd.pickPos;
 				}
-
-				static std::shared_ptr<Arrow2d> rayMdl = nullptr;
-				if (rayMdl == nullptr)
-				{
-					rayMdl = std::shared_ptr<Arrow2d>(new Arrow2d());
-					g_app->m_scene.m_entitites.push_back(rayMdl.get());
-				}
-
-				rayMdl->m_node->m_translation = ray.position;
-				rayMdl->m_node->m_orientation = ToolKit::RotationTo(ToolKit::X_AXIS, ray.direction);
+				DebugDrawPickingRay(ray);
 			}
 
 			return StateEndPick().m_name;
 		}
+	}
+
+	if (signal == LeftMouseBtnDragSgnl())
+	{
+		return StateBeginBoxPick().m_name;
 	}
 
 	return std::string();
@@ -179,16 +194,25 @@ void ToolKit::Editor::StateBeginBoxPick::Update(float deltaTime)
 
 std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 {
+	if (signal == LeftMouseBtnUpSgnl())
+	{
+		// Frustum - AABB test.
+		return StateEndPick().m_name;
+	}
+
+	if (signal == LeftMouseBtnDragSgnl())
+	{
+		Viewport* vp = g_app->GetActiveViewport();
+		if (vp != nullptr)
+		{
+			m_mouseData[1] = vp->GetLastMousePosWindowSpace();
+
+			DrawUIFilledRectangle* drawCommand = new DrawUIFilledRectangle(m_mouseData[0], m_mouseData[1], glm::vec4(0.4f), 5.0f);
+			vp->m_drawQueue.push_back(drawCommand);
+		}
+	}
+
 	return std::string();
-}
-
-void ToolKit::Editor::StateEndPick::TransitionIn(State* prevState) 
-{
-}
-
-void ToolKit::Editor::StateEndPick::TransitionOut(State* nextState) 
-{
-	m_pickData.clear();
 }
 
 void ToolKit::Editor::StateEndPick::Update(float deltaTime)
@@ -299,4 +323,17 @@ void ToolKit::Editor::CursorMod::Update(float deltaTime)
 		Scene::PickData& pd = endPick->m_pickData.back();
 		g_app->m_cursor->m_pickPosition = pd.pickPos;
 	}
+}
+
+void ToolKit::Editor::StatePickingBase::DebugDrawPickingRay(Ray ray)
+{
+	static std::shared_ptr<Arrow2d> rayMdl = nullptr;
+	if (rayMdl == nullptr)
+	{
+		rayMdl = std::shared_ptr<Arrow2d>(new Arrow2d());
+		g_app->m_scene.m_entitites.push_back(rayMdl.get());
+	}
+
+	rayMdl->m_node->m_translation = ray.position;
+	rayMdl->m_node->m_orientation = ToolKit::RotationTo(ToolKit::X_AXIS, ray.direction);
 }

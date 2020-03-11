@@ -28,7 +28,6 @@ namespace ToolKit
 			struct PickData
 			{
 				glm::vec3 pickPos;
-				Ray pickRay;
 				Entity* entity = nullptr;
 			};
 
