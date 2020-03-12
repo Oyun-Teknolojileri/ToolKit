@@ -118,12 +118,12 @@ void Editor::Viewport::ShowViewport()
 	}
 
 	// Process draw commands.
-	for (DrawUI* command : m_drawQueue)
+	ImDrawList* drawList = ImGui::GetWindowDrawList();
+	for (auto command : m_drawCommands)
 	{
-		command->Draw();
-		SafeDel(command);
+		command(drawList);
 	}
-	m_drawQueue.clear();
+	m_drawCommands.clear();
 
 	ImGui::End();
 }

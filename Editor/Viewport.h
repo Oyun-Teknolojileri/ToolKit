@@ -3,6 +3,7 @@
 #include "ToolKit.h"
 #include "GUI.h"
 #include "MathUtil.h"
+#include <functional>
 
 namespace ToolKit
 {
@@ -11,50 +12,6 @@ namespace ToolKit
 
 	namespace Editor
 	{
-		class OverlayNav;
-
-		class DrawUI
-		{
-		public:
-			enum class DrawCode
-			{
-				FilledRectangle
-			};
-
-		public:
-			virtual void Draw() = 0;
-
-		public:
-			DrawCode m_code;
-		};
-
-		class DrawUIFilledRectangle : public DrawUI
-		{
-		public:
-			DrawUIFilledRectangle(glm::vec2 min, glm::vec2 max, glm::vec4 col, float rounding)
-			{
-				m_code = DrawCode::FilledRectangle;
-				m_min = min;
-				m_max = max;
-				m_col = col;
-				m_rounding = rounding;
-			}
-			
-			virtual void Draw()
-			{
-				ImDrawList* drawList = ImGui::GetWindowDrawList();
-				ImVec4 colf = ImVec4(m_col.r, m_col.g, m_col.b, m_col.a);
-				const ImU32 col = ImColor(colf);
-				drawList->AddRectFilled(ImVec2(m_min.x, m_min.y), ImVec2(m_max.x, m_max.y), col, m_rounding);
-			}
-
-		public:
-			glm::vec2 m_min;
-			glm::vec2 m_max;
-			glm::vec4 m_col;
-			float m_rounding;
-		};
-
 		class Viewport
 		{
 		public:
@@ -83,8 +40,8 @@ namespace ToolKit
 
 		public:
 			// ToolKit bindings.
-			Camera* m_camera = nullptr;
-			RenderTarget* m_viewportImage = nullptr;
+			class Camera* m_camera = nullptr;
+			class RenderTarget* m_viewportImage = nullptr;
 
 			// Window properties.
 			std::string m_name;
@@ -93,10 +50,10 @@ namespace ToolKit
 			glm::ivec2 m_wndPos;
 			glm::vec2 m_wndContentAreaSize;
 
-			static OverlayNav* m_overlayNav;
+			static class OverlayNav* m_overlayNav;
 
-			// UI Draw Queue
-			std::vector<DrawUI*> m_drawQueue;
+			// UI Draw commands.
+			std::vector<std::function<void(ImDrawList*)>> m_drawCommands;
 			
 		private:
 			static uint m_nextId;

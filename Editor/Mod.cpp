@@ -203,12 +203,18 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 	if (signal == LeftMouseBtnDragSgnl())
 	{
 		Viewport* vp = g_app->GetActiveViewport();
-		if (vp != nullptr)
+		if (vp != nullptr && vp->IsViewportQueriable())
 		{
 			m_mouseData[1] = vp->GetLastMousePosWindowSpace();
 
-			DrawUIFilledRectangle* drawCommand = new DrawUIFilledRectangle(m_mouseData[0], m_mouseData[1], glm::vec4(0.4f), 5.0f);
-			vp->m_drawQueue.push_back(drawCommand);
+			auto drawSelectionRectangleFn = [this](ImDrawList* drawList) -> void
+			{
+				ImVec4 colf = ImVec4(0.4f, 0.4f, 0.4f, 0.4f);
+				const ImU32 col = ImColor(colf);
+				drawList->AddRectFilled(ImVec2(m_mouseData[0].x, m_mouseData[0].y), ImVec2(m_mouseData[1].x, m_mouseData[1].y), col, 5.0f);
+			};
+
+			vp->m_drawCommands.push_back(drawSelectionRectangleFn);
 		}
 	}
 
