@@ -63,13 +63,13 @@ void Editor::Viewport::ShowViewport()
 		ImVec2 vMin = ImGui::GetWindowContentRegionMin();
 		ImVec2 vMax = ImGui::GetWindowContentRegionMax();
 
-		m_wndPos.x = (int)ImGui::GetWindowPos().x;
-		m_wndPos.y = (int)ImGui::GetWindowPos().y;
-
 		vMin.x += ImGui::GetWindowPos().x;
 		vMin.y += ImGui::GetWindowPos().y;
 		vMax.x += ImGui::GetWindowPos().x;
 		vMax.y += ImGui::GetWindowPos().y;
+
+		m_wndPos.x = vMin.x;
+		m_wndPos.y = vMin.y;
 
 		m_wndContentAreaSize = *(glm::vec2*)&ImVec2(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
 		ImGuiIO& io = ImGui::GetIO();
@@ -174,13 +174,13 @@ bool ToolKit::Editor::Viewport::IsViewportQueriable()
 Ray ToolKit::Editor::Viewport::RayFromMousePosition()
 {
 	Ray ray;
-	ray.position = GetLastMousePosInWorldSpace();
+	ray.position = GetLastMousePosWorldSpace();
 	ray.direction = glm::normalize(ray.position - m_camera->m_node->m_translation);
 
 	return ray;
 }
 
-glm::vec3 ToolKit::Editor::Viewport::GetLastMousePosInWorldSpace()
+glm::vec3 ToolKit::Editor::Viewport::GetLastMousePosWorldSpace()
 {
 	glm::vec3 screenPoint = glm::vec3(GetLastMousePosWindowSpace(), 0.0f);
 	
@@ -196,6 +196,14 @@ glm::vec2 ToolKit::Editor::Viewport::GetLastMousePosWindowSpace()
 	screenPoint.y = m_wndContentAreaSize.y - screenPoint.y; // Imgui Window origin Top - Left to OpenGL window origin Bottom - Left
 
 	return screenPoint;
+}
+
+glm::vec2 ToolKit::Editor::Viewport::GetLastMousePosScreenSpace()
+{
+	glm::vec2 screenPoint = GetLastMousePosWindowSpace();
+	screenPoint.y = m_wndContentAreaSize.y - screenPoint.y; // Bring it back from opengl (BottomLeft) to Imgui (TopLeft) system.
+
+	return m_wndPos + screenPoint; // Move it from window space to screen space.
 }
 
 void Editor::Viewport::FpsNavigationMode(float deltaTime)

@@ -27,8 +27,9 @@ namespace ToolKit
 
 			// Utility Functions.
 			Ray RayFromMousePosition();
-			glm::vec3 GetLastMousePosInWorldSpace();
+			glm::vec3 GetLastMousePosWorldSpace();
 			glm::vec2 GetLastMousePosWindowSpace();
+			glm::vec2 GetLastMousePosScreenSpace();
 
 		private:
 			// Modes.
@@ -47,7 +48,7 @@ namespace ToolKit
 			std::string m_name;
 			float m_width = 640.0f;
 			float m_height = 480.0f;
-			glm::ivec2 m_wndPos;
+			glm::vec2 m_wndPos;
 			glm::vec2 m_wndContentAreaSize;
 
 			static class OverlayNav* m_overlayNav;

@@ -132,10 +132,11 @@ void ToolKit::Editor::StatePickingBase::TransitionOut(State* nextState)
 {
 	if (StatePickingBase* baseState = dynamic_cast<StatePickingBase*> (nextState))
 	{
+		baseState->m_mouseData = m_mouseData;
+
 		if (nextState->m_name != StateBeginPick().m_name)
 		{
 			baseState->m_pickData = m_pickData;
-			baseState->m_mouseData = m_mouseData;
 		}
 	}
 
@@ -153,7 +154,7 @@ std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 		Viewport* vp = g_app->GetActiveViewport();
 		if (vp != nullptr)
 		{
-			m_mouseData[0] = vp->GetLastMousePosWindowSpace();
+			m_mouseData[0] = vp->GetLastMousePosScreenSpace();
 		}
 	}
 
@@ -162,10 +163,11 @@ std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 		Viewport* vp = g_app->GetActiveViewport();
 		if (vp != nullptr)
 		{
+			m_mouseData[0] = vp->GetLastMousePosScreenSpace();
+
 			Ray ray = vp->RayFromMousePosition();
 			Scene::PickData pd = g_app->m_scene.PickObject(ray, m_ignoreList);
 			m_pickData.push_back(pd);
-			m_mouseData[0] = vp->GetLastMousePosWindowSpace();
 
 			if (g_app->m_pickingDebug)
 			{
@@ -205,13 +207,24 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 		Viewport* vp = g_app->GetActiveViewport();
 		if (vp != nullptr && vp->IsViewportQueriable())
 		{
-			m_mouseData[1] = vp->GetLastMousePosWindowSpace();
+			m_mouseData[1] = vp->GetLastMousePosScreenSpace();
 
 			auto drawSelectionRectangleFn = [this](ImDrawList* drawList) -> void
 			{
-				ImVec4 colf = ImVec4(0.4f, 0.4f, 0.4f, 0.4f);
-				const ImU32 col = ImColor(colf);
-				drawList->AddRectFilled(ImVec2(m_mouseData[0].x, m_mouseData[0].y), ImVec2(m_mouseData[1].x, m_mouseData[1].y), col, 5.0f);
+				glm::vec2 min(FLT_MAX, FLT_MAX);
+				glm::vec2 max(-FLT_MAX, -FLT_MAX);
+
+				for (int i = 0; i < 2; i++)
+				{
+					min = glm::min(min, m_mouseData[i]);
+					max = glm::max(max, m_mouseData[i]);
+				}
+
+				ImU32 col = ImColor(ImVec4(0.4f, 0.4f, 0.4f, 0.4f));
+				drawList->AddRectFilled(GLM2IMVEC(min), GLM2IMVEC(max), col, 5.0f);
+				
+				col = ImColor(ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+				drawList->AddRect(GLM2IMVEC(min), GLM2IMVEC(max), col, 5.0f, 15, 2.0f);
 			};
 
 			vp->m_drawCommands.push_back(drawSelectionRectangleFn);
@@ -230,7 +243,12 @@ std::string ToolKit::Editor::StateEndPick::Signaled(SignalId signal)
 	// Keep picking.
 	if (signal == LeftMouseBtnDownSgnl())
 	{
-		return StateBeginPick().m_name;
+		Viewport* vp = g_app->GetActiveViewport();
+		if (vp != nullptr && vp->IsViewportQueriable())
+		{
+			m_mouseData[0] = vp->GetLastMousePosScreenSpace();
+			return StateBeginPick().m_name;
+		}
 	}
 
 	return std::string();

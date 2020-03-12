@@ -12,9 +12,8 @@ ToolKit::Editor::OverlayNav::OverlayNav(Viewport* owner)
 void ToolKit::Editor::OverlayNav::ShowOverlayNav()
 {
 	ImVec2 overlaySize(48, 258);
-	ImVec2 padding = ImGui::GetStyle().WindowPadding;
-	const float headerSize = 17.0f;
-	ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding.x + 5, m_owner->m_wndPos.y + headerSize + padding.y + 5);
+	const float padding = 5.0f;
+	ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding, m_owner->m_wndPos.y + padding);
 	ImGui::SetNextWindowPos(window_pos);
 	ImGui::SetNextWindowBgAlpha(0.65f);
 	if (ImGui::BeginChildFrame(ImGui::GetID("Navigation"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))

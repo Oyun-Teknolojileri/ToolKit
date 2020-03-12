@@ -4,6 +4,8 @@
 #include "ImGui/imgui_impl_sdl.h"
 #include "ImGui/imgui_impl_opengl3.h"
 
+#define GLM2IMVEC(v) *reinterpret_cast<ImVec2*>(&v)
+
 namespace ToolKit
 {
 		namespace Editor

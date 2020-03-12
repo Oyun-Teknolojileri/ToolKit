@@ -62,7 +62,6 @@ namespace ToolKit
 
   // Geometric Operations
   //////////////////////////////////////////
-
   void NormalzePlaneEquation(PlaneEquation& plane);
 
   // Conversions and Interpolation
