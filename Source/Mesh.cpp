@@ -103,8 +103,7 @@ void ToolKit::Mesh::Load()
     {
       Vertex vd;
       ExtractXYZFromNode(v->first_node("p"), vd.pos);
-			UpdateAABBMax(vd.pos);
-			UpdateAABBMin(vd.pos);
+			UpdateAABB(vd.pos);
 
       ExtractXYZFromNode(v->first_node("n"), vd.norm);
       ExtractXYFromNode(v->first_node("t"), vd.tex);
@@ -161,8 +160,7 @@ void ToolKit::Mesh::CalculateAABoundingBox()
 		for (size_t j = 0; j < m->m_clientSideVertices.size(); j++)
 		{
 			Vertex& v = m->m_clientSideVertices[j];
-			UpdateAABBMax(v.pos);
-			UpdateAABBMin(v.pos);
+			UpdateAABB(v.pos);
 		}
 	}
 }
@@ -214,40 +212,10 @@ void ToolKit::Mesh::InitIndices(bool flush)
   }
 }
 
-void ToolKit::Mesh::UpdateAABBMax(const glm::vec3& v)
+void ToolKit::Mesh::UpdateAABB(const glm::vec3& v)
 {
-	if (m_AABoundingBox.max.x < v.x)
-	{
-		m_AABoundingBox.max.x = v.x;
-	}
-
-	if (m_AABoundingBox.max.y < v.y)
-	{
-		m_AABoundingBox.max.y = v.y;
-	}
-
-	if (m_AABoundingBox.max.z < v.z)
-	{
-		m_AABoundingBox.max.z = v.z;
-	}
-}
-
-void ToolKit::Mesh::UpdateAABBMin(const glm::vec3& v)
-{
-	if (m_AABoundingBox.min.x > v.x)
-	{
-		m_AABoundingBox.min.x = v.x;
-	}
-
-	if (m_AABoundingBox.min.y > v.y)
-	{
-		m_AABoundingBox.min.y = v.y;
-	}
-
-	if (m_AABoundingBox.min.z > v.z)
-	{
-		m_AABoundingBox.min.z = v.z;
-	}
+	m_AABoundingBox.max = glm::max(m_AABoundingBox.max, v);
+	m_AABoundingBox.min = glm::min(m_AABoundingBox.min, v);
 }
 
 ToolKit::SkinMesh::SkinMesh()

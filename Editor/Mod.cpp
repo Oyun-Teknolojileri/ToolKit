@@ -205,7 +205,7 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 	if (signal == LeftMouseBtnDragSgnl())
 	{
 		Viewport* vp = g_app->GetActiveViewport();
-		if (vp != nullptr && vp->IsViewportQueriable())
+		if (vp != nullptr)
 		{
 			m_mouseData[1] = vp->GetLastMousePosScreenSpace();
 

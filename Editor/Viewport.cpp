@@ -81,10 +81,11 @@ void Editor::Viewport::ShowViewport()
 			if (vMin.y < absMousePos.y && vMax.y > absMousePos.y)
 			{
 				m_mouseOverContentArea = true;
-				m_lastMousePosRelContentArea.x = (int)(absMousePos.x - vMin.x);
-				m_lastMousePosRelContentArea.y = (int)(absMousePos.y - vMin.y);
 			}
 		}
+
+		m_lastMousePosRelContentArea.x = (int)(absMousePos.x - vMin.x);
+		m_lastMousePosRelContentArea.y = (int)(absMousePos.y - vMin.y);
 
 		if (!ImGui::IsWindowCollapsed())
 		{
@@ -116,6 +117,8 @@ void Editor::Viewport::ShowViewport()
 		m_overlayNav->m_owner = this;
 		m_overlayNav->ShowOverlayNav();
 	}
+
+	m_mouseHover = ImGui::IsWindowHovered();
 
 	// Process draw commands.
 	ImDrawList* drawList = ImGui::GetWindowDrawList();
@@ -168,7 +171,7 @@ void ToolKit::Editor::Viewport::SetActive()
 
 bool ToolKit::Editor::Viewport::IsViewportQueriable()
 {
-	return m_mouseOverContentArea && m_active && m_open && m_relMouseModBegin;
+	return m_mouseOverContentArea && m_mouseHover && m_active && m_open && m_relMouseModBegin;
 }
 
 Ray ToolKit::Editor::Viewport::RayFromMousePosition()
