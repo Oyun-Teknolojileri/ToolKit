@@ -220,10 +220,10 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 					max = glm::max(max, m_mouseData[i]);
 				}
 
-				ImU32 col = ImColor(ImVec4(0.4f, 0.4f, 0.4f, 0.4f));
+				ImU32 col = ImColor(GLM4IMVEC(g_selectBoxWindowColor));
 				drawList->AddRectFilled(GLM2IMVEC(min), GLM2IMVEC(max), col, 5.0f);
 				
-				col = ImColor(ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+				col = ImColor(GLM4IMVEC(g_selectBoxBorderColor));
 				drawList->AddRect(GLM2IMVEC(min), GLM2IMVEC(max), col, 5.0f, 15, 2.0f);
 			};
 

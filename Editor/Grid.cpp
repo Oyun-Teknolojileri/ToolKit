@@ -9,6 +9,8 @@
 #include "Node.h"
 #include "Renderer.h"
 #include "Material.h"
+#include "GlobalDef.h"
+#include "DebugNew.h"
 
 ToolKit::Editor::Cursor::Cursor()
 {
@@ -116,8 +118,6 @@ ToolKit::Editor::Axis3d::Axis3d()
 	}
 }
 
-const std::string g_GRID_MATERIAL_NAME("TK_EDITOR_GRID");
-
 ToolKit::Editor::Grid::Grid(uint size)
 {
 	// Create grid material.
@@ -158,13 +158,13 @@ void ToolKit::Editor::Grid::Resize(uint size)
 	{
 		glm::vec3 p1(-scale * 0.5f, 0.01f, 0.0f);
 		glm::vec3 p2(scale * 0.5f, 0.01f, 0.0f);
-		glm::vec3 col(0.89f, 0.239f, 0.341f);
+		glm::vec3 col = g_gridAxisRed;
 
 		if (i == 1)
 		{
 			p1 = p1.zyx;
 			p2 = p2.zyx;
-			col = glm::vec3(0.196f, 0.541f, 0.905f);
+			col = g_gridAxisBlue;
 		}
 
 		vertices[0].pos = p1;
