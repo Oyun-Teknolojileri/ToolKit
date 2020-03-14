@@ -158,19 +158,20 @@ void ToolKit::Editor::Grid::Resize(uint size)
 	{
 		glm::vec3 p1(-scale * 0.5f, 0.01f, 0.0f);
 		glm::vec3 p2(scale * 0.5f, 0.01f, 0.0f);
-		glm::vec3 col(1.0f, 0.0f, 0.0f);
+		glm::vec3 col(0.89f, 0.239f, 0.341f);
 
 		if (i == 1)
 		{
 			p1 = p1.zyx;
 			p2 = p2.zyx;
-			col = col.bgr;
+			col = glm::vec3(0.196f, 0.541f, 0.905f);
 		}
 
 		vertices[0].pos = p1;
 		vertices[1].pos = p2;
 
 		Material* newMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("LineColor.material"))->GetCopy();
+		newMaterial->GetRenderState()->lineWidth = 3.0f;
 		newMaterial->m_color = col;
 
 		std::shared_ptr<Mesh> subMesh(new Mesh());

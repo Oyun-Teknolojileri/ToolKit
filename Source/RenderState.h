@@ -36,6 +36,7 @@ namespace ToolKit
     bool diffuseTextureInUse = false;
     GLuint cubeMap = 0;
     bool cubeMapInUse = false;
+		float lineWidth = 1.0f;
   };
 
 }

@@ -260,6 +260,12 @@ void ToolKit::Renderer::SetRenderState(RenderState state)
     m_renderState.cubeMap = state.cubeMap;
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderState.cubeMap);
   }
+
+	if (m_renderState.lineWidth != state.lineWidth)
+	{
+		m_renderState.lineWidth = state.lineWidth;
+		glLineWidth(m_renderState.lineWidth);
+	}
 }
 
 void ToolKit::Renderer::SetRenderTarget(RenderTarget* renderTarget)
