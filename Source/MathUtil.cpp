@@ -214,30 +214,62 @@ bool ToolKit::RayMeshIntersection(Mesh* const mesh, const Ray& ray, float& t)
 	return hit;
 }
 
-// https://old.cescg.org/CESCG-2002/DSykoraJJelinek/
+// https://gist.github.com/Kinwailo/d9a07f98d8511206182e50acda4fbc9b
 int ToolKit::FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box)
 {
-	float m, n; int i, result = 1;
-	glm::vec3 b[2] = { box.min, box.max };
+	int ret = 1;
+	glm::vec3 vmin, vmax;
 
-	for (i = 0; i < 6; i++) 
+	for (int i = 0; i < 6; ++i)
 	{
-		const PlaneEquation* p = &frustum.planes[i];
+		// X axis.
+		if (frustum.planes[i].normal.x > 0)
+		{
+			vmin.x = box.min.x;
+			vmax.x = box.max.x;
+		}
+		else
+		{
+			vmin.x = box.max.x;
+			vmax.x = box.min.x;
+		}
 
-		m = (p->normal.x * b[(int)p->normal.x].x) + (p->normal.y * b[(int)p->normal.y].y) + (p->normal.z * b[(int)p->normal.z].z);
-		if (m > -p->d)
+		// Y axis.
+		if (frustum.planes[i].normal.y > 0)
+		{
+			vmin.y = box.min.y;
+			vmax.y = box.max.y;
+		}
+		else 
+		{
+			vmin.y = box.max.y;
+			vmax.y = box.min.y;
+		}
+
+		// Z axis.
+		if (frustum.planes[i].normal.z > 0)
+		{
+			vmin.z = box.min.z;
+			vmax.z = box.max.z;
+		}
+		else
+		{
+			vmin.z = box.max.z;
+			vmax.z = box.min.z;
+		}
+
+		if (glm::dot(frustum.planes[i].normal, vmin) + frustum.planes[i].d > 0)
 		{
 			return 0;
 		}
-		
-		n = (p->normal.x * b[(int)p->normal.x].x) + (p->normal.y * b[(int)p->normal.y].y) + (p->normal.z * b[(int)p->normal.z].z);
-		if (n > -p->d)
+
+		if (glm::dot(frustum.planes[i].normal, vmax) + frustum.planes[i].d >= 0)
 		{
-			result = 2;
+			ret = 1;
 		}
-	} 
-	
-	return result;
+	}
+
+	return ret;
 }
 
 // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
@@ -248,6 +280,57 @@ void ToolKit::NormalzePlaneEquation(PlaneEquation& plane)
 	plane.normal.y = plane.normal.y / mag;
 	plane.normal.z = plane.normal.z / mag;
 	plane.d = plane.d / mag;
+}
+
+void ToolKit::TransformAABB(BoundingBox& box, const glm::mat4& transform)
+{
+	// Calculate all 8 edges.
+	glm::vec3 maxtr = box.max;
+	
+	glm::vec3 maxtl = box.max;
+	maxtl.x = box.min.x;
+
+	glm::vec3 maxbr = maxtr;
+	maxbr.y = box.min.y;
+
+	glm::vec3 maxbl = maxtl;
+	maxbl.x = box.min.x;
+
+	glm::vec3 minbl = maxbl;
+	minbl.z = box.min.z;
+
+	glm::vec3 minbr = maxbr;
+	minbr.z = box.min.z;
+
+	glm::vec3 mintl = maxtl;
+	maxtl.z = box.min.z;
+
+	glm::vec3 mintr = maxtr;
+	mintr.z = box.min.z;
+
+	std::vector<glm::vec4> vertices = 
+	{ 
+		glm::vec4(mintr, 1.0f),
+		glm::vec4(mintl, 1.0f), 
+		glm::vec4(minbr, 1.0f), 
+		glm::vec4(minbl, 1.0f), 
+		glm::vec4(maxtr, 1.0f), 
+		glm::vec4(maxtl, 1.0f), 
+		glm::vec4(maxbr, 1.0f),
+		glm::vec4(maxbl, 1.0f)
+	};
+	
+	BoundingBox bb;
+	
+	// Transform and update aabb.
+	for (int i = 0; i < 8; i++)
+	{
+		glm::vec3 v = transform * vertices[i];
+		bb.min = glm::min(v, bb.min);
+		bb.max = glm::max(v, bb.max);
+	}
+
+	box = bb;
 }
 
 glm::vec3 ToolKit::Interpolate(const glm::vec3& vec1, const glm::vec3& vec2, float ratio)

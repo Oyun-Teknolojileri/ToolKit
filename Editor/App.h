@@ -32,6 +32,7 @@ namespace ToolKit
 			};
 
 			PickData PickObject(Ray ray, const std::vector<EntityId>& ignoreList = std::vector<EntityId>());
+			void PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const std::vector<EntityId>& ignoreList = std::vector<EntityId>(), bool pickPartiallyInside = true);
 			
 			// Selection operations
 			bool IsSelected(EntityId id);

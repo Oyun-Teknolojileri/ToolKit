@@ -89,6 +89,7 @@ namespace ToolKit
 			StatePickingBase(std::string name);
 			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* nextState) override;
+			bool IsIgnored(Entity* ntt);
 
 			void DebugDrawPickingRay(Ray ray);
 

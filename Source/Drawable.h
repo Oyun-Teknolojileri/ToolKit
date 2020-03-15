@@ -14,9 +14,10 @@ namespace ToolKit
   public:
     Drawable();
     virtual ~Drawable();
-    virtual EntityType GetType();
-    virtual bool IsDrawable();
-    virtual void SetPose(Animation* anim);
+		virtual bool IsDrawable() override;
+    virtual EntityType GetType() override;
+    virtual void SetPose(Animation* anim) override;
+		virtual struct BoundingBox GetAABB(bool inWorld = false) override;
 
   public:
     std::shared_ptr<Mesh> m_mesh;

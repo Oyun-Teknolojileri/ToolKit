@@ -50,7 +50,7 @@ namespace ToolKit
     uint m_indexCount = 0;
     std::shared_ptr<Material> m_material;
     std::vector<std::shared_ptr<Mesh>> m_subMeshes;
-		BoundingBox m_AABoundingBox;
+		BoundingBox m_aabb;
   };
 
   class MeshManager : public ResourceManager<Mesh>

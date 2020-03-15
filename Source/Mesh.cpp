@@ -74,8 +74,7 @@ void ToolKit::Mesh::Load()
     return;
   }
 
-	m_AABoundingBox.min = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-	m_AABoundingBox.max = glm::vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	m_aabb = BoundingBox();
 
   Mesh* mesh = this;
   for (node = node->first_node("mesh"); node; node = node->next_sibling("mesh"))
@@ -143,8 +142,7 @@ void ToolKit::Mesh::CalculateAABoundingBox()
 		return;
 	}
 
-	m_AABoundingBox.min = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-	m_AABoundingBox.max = glm::vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	m_aabb = BoundingBox();
 
 	std::vector<Mesh*> meshes;
 	GetAllMeshes(meshes);
@@ -214,8 +212,8 @@ void ToolKit::Mesh::InitIndices(bool flush)
 
 void ToolKit::Mesh::UpdateAABB(const glm::vec3& v)
 {
-	m_AABoundingBox.max = glm::max(m_AABoundingBox.max, v);
-	m_AABoundingBox.min = glm::min(m_AABoundingBox.min, v);
+	m_aabb.max = glm::max(m_aabb.max, v);
+	m_aabb.min = glm::min(m_aabb.min, v);
 }
 
 ToolKit::SkinMesh::SkinMesh()

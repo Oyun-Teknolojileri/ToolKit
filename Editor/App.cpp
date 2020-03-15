@@ -59,6 +59,7 @@ void ToolKit::Editor::App::Init()
 	m_q1 = new Cube();
 	m_q1->m_mesh->Init(false);
 	m_q1->m_node->m_translation = glm::vec3(-4.0f, 0.0f, 0.0f);
+	m_q1->m_node->m_orientation = glm::angleAxis(1.1f, glm::normalize(glm::vec3(1.0f, 1.0f, 1.0f)));
 	m_scene.m_entitites.push_back(m_q1);
 	m_q2 = new Cube();
 	m_q2->m_mesh->Init(false);
@@ -232,7 +233,7 @@ ToolKit::Editor::Scene::PickData ToolKit::Editor::Scene::PickObject(Ray ray, con
 
 		float dist = 0;
 		Drawable* dw = static_cast<Drawable*>(e);
-		if (RayBoxIntersection(rayInObjectSpace, dw->m_mesh->m_AABoundingBox, dist))
+		if (RayBoxIntersection(rayInObjectSpace, dw->GetAABB(), dist))
 		{
 			if (RayMeshIntersection(dw->m_mesh.get(), rayInObjectSpace, dist))
 			{
@@ -247,6 +248,40 @@ ToolKit::Editor::Scene::PickData ToolKit::Editor::Scene::PickObject(Ray ray, con
 	}
 
 	return pd;
+}
+
+void ToolKit::Editor::Scene::PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const std::vector<EntityId>& ignoreList, bool pickPartiallyInside)
+{
+	for (Entity* e : m_entitites)
+	{
+		if (!e->IsDrawable())
+		{
+			continue;
+		}
+
+		if (std::find(ignoreList.begin(), ignoreList.end(), e->m_id) != ignoreList.end())
+		{
+			continue;
+		}
+
+		BoundingBox bb = e->GetAABB(true);
+		int res = FrustumBoxIntersection(frustum, bb);
+		if (res > 0)
+		{
+			PickData pd;
+			pd.pickPos = (bb.max + bb.min) * 0.5f;
+			pd.entity = e;
+
+			if (res == 1)
+			{
+				pickedObjects.push_back(pd);
+			}
+			else if (pickPartiallyInside)
+			{
+				pickedObjects.push_back(pd);
+			}
+		}
+	}
 }
 
 bool ToolKit::Editor::Scene::IsSelected(EntityId id)

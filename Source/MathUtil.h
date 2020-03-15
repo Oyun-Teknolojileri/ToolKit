@@ -18,8 +18,8 @@ namespace ToolKit
 
   struct BoundingBox
   {
-		glm::vec3 min;
-		glm::vec3 max;
+		glm::vec3 min = glm::vec3(FLT_MAX);
+		glm::vec3 max = glm::vec3(-FLT_MAX);
   };
 
   struct Ray
@@ -63,6 +63,7 @@ namespace ToolKit
   // Geometric Operations
   //////////////////////////////////////////
   void NormalzePlaneEquation(PlaneEquation& plane);
+	void TransformAABB(BoundingBox& box, const glm::mat4& transform);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

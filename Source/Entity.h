@@ -33,6 +33,7 @@ namespace ToolKit
     virtual bool IsDrawable();
     virtual EntityType GetType();
     virtual void SetPose(Animation* anim);
+		virtual struct BoundingBox GetAABB(bool inWorld = false);
 
   public:
     Node* m_node;

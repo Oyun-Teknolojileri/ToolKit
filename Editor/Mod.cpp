@@ -5,6 +5,7 @@
 #include "Node.h"
 #include "Primative.h"
 #include "Grid.h"
+#include "Directional.h"
 #include "DebugNew.h"
 
 ToolKit::Editor::ModManager ToolKit::Editor::ModManager::m_instance;
@@ -143,6 +144,11 @@ void ToolKit::Editor::StatePickingBase::TransitionOut(State* nextState)
 	m_pickData.clear();
 }
 
+bool ToolKit::Editor::StatePickingBase::IsIgnored(Entity* ntt)
+{
+	return std::find(m_ignoreList.begin(), m_ignoreList.end(), ntt->m_id) != m_ignoreList.end();
+}
+
 void ToolKit::Editor::StateBeginPick::Update(float deltaTime)
 {
 }
@@ -199,6 +205,24 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 	if (signal == LeftMouseBtnUpSgnl())
 	{
 		// Frustum - AABB test.
+		Viewport* vp = g_app->GetActiveViewport();
+		if (vp != nullptr)
+		{
+			Camera* cam = vp->m_camera;
+			glm::mat4 view = cam->GetViewMatrix();
+			float fov = cam->GetData().fov;
+
+			static Camera virtCam;
+			glm::vec2 boxSize = glm::abs(m_mouseData[1] - m_mouseData[0]);
+			virtCam.SetLens(fov, boxSize.x, boxSize.y);
+			glm::mat4 project = virtCam.GetData().projection;
+			
+			std::vector<Scene::PickData> ntties;
+			Frustum frustum = ExtractFrustum(project * view);
+			g_app->m_scene.PickObject(frustum, ntties, m_ignoreList);
+			m_pickData.insert(m_pickData.end(), ntties.begin(), ntties.end());
+		}
+
 		return StateEndPick().m_name;
 	}
 

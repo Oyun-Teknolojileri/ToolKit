@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "Entity.h"
-#include "Entity.h"
 #include "Node.h"
 #include "ToolKit.h"
 #include "Skeleton.h"
+#include "MathUtil.h"
 #include "DebugNew.h"
 
 ToolKit::EntityId ToolKit::Entity::m_lastId = 0;
@@ -32,4 +32,20 @@ ToolKit::EntityType ToolKit::Entity::GetType()
 void ToolKit::Entity::SetPose(Animation* anim)
 {
   anim->GetCurrentPose(m_node);
+}
+
+struct ToolKit::BoundingBox ToolKit::Entity::GetAABB(bool inWorld)
+{
+	BoundingBox aabb;
+	
+	// Unit aabb.
+	aabb.min = glm::vec3(0.5f, 0.5f, 0.5f);
+	aabb.max = glm::vec3(-0.5f, -0.5f, -0.5f);
+ 
+	if (inWorld)
+	{
+		TransformAABB(aabb, m_node->GetTransform());
+	}
+
+	return aabb;
 }
