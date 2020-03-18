@@ -83,7 +83,6 @@ namespace ToolKit
 
 			// Editor debug states.
 			bool m_pickingDebug = false;
-			Sphere* m_hitMarker;
 
 		private:
 			Renderer* m_renderer;

@@ -37,7 +37,6 @@ ToolKit::Editor::App::~App()
 	SafeDel(m_suzanne);
 	SafeDel(m_q1);
 	SafeDel(m_q2);
-	SafeDel(m_hitMarker);
 	SafeDel(m_cursor);
 	SafeDel(m_renderer);
 
@@ -65,12 +64,6 @@ void ToolKit::Editor::App::Init()
 	m_q2->m_mesh->Init(false);
 	m_q2->m_node->m_translation = glm::vec3(4.0f, 0.0f, 0.0f);
 	m_scene.m_entitites.push_back(m_q2);
-
-	m_hitMarker = new Sphere();
-	m_hitMarker->m_mesh->m_material = std::shared_ptr<Material>(solidColorMaterial->GetCopy());
-	m_hitMarker->m_mesh->m_material->m_color = glm::vec3(1.0f, 0.627f, 0.156f);
-	m_hitMarker->m_node->m_scale = glm::vec3(0.03f, 0.03f, 0.03f);
-	m_scene.m_entitites.push_back(m_hitMarker);
 
 	m_origin = new Axis3d();
 	m_scene.m_entitites.push_back(m_origin);

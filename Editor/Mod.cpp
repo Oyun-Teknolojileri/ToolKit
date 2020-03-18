@@ -133,6 +133,7 @@ void ToolKit::Editor::StatePickingBase::TransitionOut(State* nextState)
 {
 	if (StatePickingBase* baseState = dynamic_cast<StatePickingBase*> (nextState))
 	{
+		baseState->m_ignoreList = m_ignoreList;
 		baseState->m_mouseData = m_mouseData;
 
 		if (nextState->m_name != StateBeginPick().m_name)
@@ -177,10 +178,7 @@ std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 
 			if (g_app->m_pickingDebug)
 			{
-				if (pd.entity != nullptr)
-				{
-					g_app->m_hitMarker->m_node->m_translation = pd.pickPos;
-				}
+				g_app->m_cursor->m_pickPosition = pd.pickPos;
 				DebugDrawPickingRay(ray);
 			}
 
@@ -312,24 +310,23 @@ void ToolKit::Editor::SelectMod::ApplySelection(std::vector<Scene::PickData>& pi
 {
 	bool shiftClick = ImGui::GetIO().KeyShift;
 
-	if (pickedNtties.size() == 1 && pickedNtties.back().entity == nullptr)
+	// Start with a clear selection list.
+	if (!shiftClick)
 	{
-		if (!shiftClick)
-		{
-			g_app->m_scene.ClearSelection();
-		}
+		g_app->m_scene.ClearSelection();
 	}
 
 	for (Scene::PickData& pd : pickedNtties)
 	{
 		Entity* e = pd.entity;		
 
+		// Add to selection.
 		if (e && !shiftClick)
 		{
-			g_app->m_scene.ClearSelection();
 			g_app->m_scene.AddToSelection(e->m_id);
 		}
 
+		// Add or toggle selection.
 		if (e && shiftClick)
 		{
 			if (g_app->m_scene.IsSelected(e->m_id))
