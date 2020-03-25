@@ -272,6 +272,23 @@ int ToolKit::FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& b
 	return ret;
 }
 
+// https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
+bool ToolKit::RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
+{
+	glm::vec3 p0 = plane.normal * plane.d;
+
+	// assuming vectors are all normalized
+	float denom = glm::dot(plane.normal, ray.direction);
+	if (denom > 1e-6) 
+	{
+		glm::vec3 p0l0 = p0 - ray.position;
+		t = glm::dot(p0l0, plane.normal) / denom;
+		return (t >= 0.0f);
+	}
+
+	return false;
+}
+
 // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
 void ToolKit::NormalzePlaneEquation(PlaneEquation& plane)
 {

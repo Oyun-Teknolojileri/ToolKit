@@ -179,7 +179,8 @@ std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 			if (g_app->m_pickingDebug)
 			{
 				g_app->m_cursor->m_pickPosition = pd.pickPos;
-				DebugDrawPickingRay(ray);
+				static std::shared_ptr<Arrow2d> mdl = nullptr;
+				DebugDrawPickingRay(ray, mdl);
 			}
 
 			return StateEndPick().m_name;
@@ -216,9 +217,44 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 			glm::mat4 project = virtCam.GetData().projection;
 			
 			std::vector<Scene::PickData> ntties;
-			Frustum frustum = ExtractFrustum(project * view);
+			Frustum frustum = ExtractFrustum(project * view * cam->m_node->GetTransform());
 			g_app->m_scene.PickObject(frustum, ntties, m_ignoreList);
 			m_pickData.insert(m_pickData.end(), ntties.begin(), ntties.end());
+
+			// Debug draw the picking frustum.
+			{
+				float focalLen = boxSize.x * 0.5f / glm::tan(fov * 0.5f);
+				float fovy = glm::atan(boxSize.y / focalLen) * 2.0f;
+				
+				glm::vec3 cx, cy, cz;
+				cam->GetLocalAxis(cz, cy, cx);
+
+				glm::quat qx = glm::angleAxis(fov * 0.5f, cy);
+				glm::quat qy = glm::angleAxis(fovy * 0.5f, cx);
+				glm::quat nqx = glm::angleAxis(-fov * 0.5f, cy);
+				glm::quat nqy = glm::angleAxis(-fovy * 0.5f, cx);
+
+				Ray ur;
+				ur.position = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+				ur.direction = glm::normalize(cz * qx + cz * qy);
+				static std::shared_ptr<Arrow2d> urMdl = nullptr;
+				DebugDrawPickingRay(ur, urMdl);
+
+				Ray ul = ur;
+				ul.direction =  glm::normalize(cz * qy + cz * nqx);
+				static std::shared_ptr<Arrow2d> ulMdl = nullptr;
+				DebugDrawPickingRay(ul, ulMdl);
+
+				Ray lr = ur;
+				lr.direction = glm::normalize(cz * qx + cz * nqy);
+				static std::shared_ptr<Arrow2d> lrMdl = nullptr;
+				DebugDrawPickingRay(lr, lrMdl);
+
+				Ray ll = ur;
+				ll.direction = glm::normalize(cz * nqx + cz * nqy);
+				static std::shared_ptr<Arrow2d> llMdl = nullptr;
+				DebugDrawPickingRay(ll, llMdl);
+			}
 		}
 
 		return StateEndPick().m_name;
@@ -370,15 +406,14 @@ void ToolKit::Editor::CursorMod::Update(float deltaTime)
 	}
 }
 
-void ToolKit::Editor::StatePickingBase::DebugDrawPickingRay(Ray ray)
+void ToolKit::Editor::StatePickingBase::DebugDrawPickingRay(Ray ray, std::shared_ptr<Arrow2d>& mdl)
 {
-	static std::shared_ptr<Arrow2d> rayMdl = nullptr;
-	if (rayMdl == nullptr)
+	if (mdl == nullptr)
 	{
-		rayMdl = std::shared_ptr<Arrow2d>(new Arrow2d());
-		g_app->m_scene.m_entitites.push_back(rayMdl.get());
+		mdl = std::shared_ptr<Arrow2d>(new Arrow2d());
+		g_app->m_scene.m_entitites.push_back(mdl.get());
 	}
 
-	rayMdl->m_node->m_translation = ray.position;
-	rayMdl->m_node->m_orientation = ToolKit::RotationTo(ToolKit::X_AXIS, ray.direction);
+	mdl->m_node->m_translation = ray.position;
+	mdl->m_node->m_orientation = ToolKit::RotationTo(ToolKit::X_AXIS, ray.direction);
 }

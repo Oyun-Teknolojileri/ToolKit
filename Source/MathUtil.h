@@ -59,6 +59,7 @@ namespace ToolKit
 	bool RayTriangleIntersection(const Ray& ray, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float& t);
 	bool RayMeshIntersection(class Mesh* const mesh, const Ray& ray, float& t);
   int FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box); // 0 outside, 1 inside, 2 intersect
+  bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t);
 
   // Geometric Operations
   //////////////////////////////////////////

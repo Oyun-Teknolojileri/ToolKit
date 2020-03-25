@@ -6,6 +6,8 @@
 
 namespace ToolKit
 {
+	class Arrow2d;
+
 	namespace Editor
 	{
 		enum class ModId
@@ -91,7 +93,7 @@ namespace ToolKit
 			virtual void TransitionOut(State* nextState) override;
 			bool IsIgnored(Entity* ntt);
 
-			void DebugDrawPickingRay(Ray ray);
+			void DebugDrawPickingRay(Ray ray, std::shared_ptr<Arrow2d>& mdl);
 
 		public:
 			std::vector<glm::vec2> m_mouseData;
