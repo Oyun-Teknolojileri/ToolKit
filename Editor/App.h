@@ -82,7 +82,7 @@ namespace ToolKit
 			Cursor* m_cursor;
 
 			// Editor debug states.
-			bool m_pickingDebug = true;
+			bool m_pickingDebug = false;
 
 		private:
 			Renderer* m_renderer;

@@ -241,7 +241,7 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 			// Frustum from 8 points.
 			Frustum frustum;
 			std::vector<glm::vec3> planePnts;			
-			planePnts = { rect3d[0], rect3d[3], rect3d[4] }; // Left plane.
+			planePnts = { rect3d[0], rect3d[4], rect3d[3] }; // Left plane.
 			frustum.planes[0] = PlaneFrom3Points(planePnts.data());
 
 			planePnts = { rect3d[1], rect3d[2], rect3d[5] }; // Right plane.
@@ -250,10 +250,10 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 			planePnts = { rect3d[0], rect3d[1], rect3d[4] }; // Top plane.
 			frustum.planes[2] = PlaneFrom3Points(planePnts.data());
 
-			planePnts = { rect3d[2], rect3d[3], rect3d[6] }; // Bottom plane.
+			planePnts = { rect3d[2], rect3d[7], rect3d[6] }; // Bottom plane.
 			frustum.planes[3] = PlaneFrom3Points(planePnts.data());
 
-			planePnts = { rect3d[0], rect3d[1], rect3d[2] }; // Near plane.
+			planePnts = { rect3d[0], rect3d[2], rect3d[1] }; // Near plane.
 			frustum.planes[4] = PlaneFrom3Points(planePnts.data());
 
 			planePnts = { rect3d[4], rect3d[5], rect3d[6] }; // Far plane.

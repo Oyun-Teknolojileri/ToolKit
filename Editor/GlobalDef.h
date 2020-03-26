@@ -21,6 +21,8 @@ namespace ToolKit
 		const glm::vec3 g_gridAxisRed = glm::vec3(0.89f, 0.239f, 0.341f);
 		const glm::vec4 g_selectBoxWindowColor = glm::vec4(0.4f, 0.4f, 0.4f, 0.4f);
 		const glm::vec4 g_selectBoxBorderColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		const glm::vec3 g_selectHighLightPrimaryColor = glm::vec3(1.0f, 0.627f, 0.156f);
+		const glm::vec3 g_selectHighLightSecondaryColor = glm::vec3(0.898f, 0.352f, 0.031f);
 
 		// Utility functions.		
 		inline float MilisecToSec(float ms)

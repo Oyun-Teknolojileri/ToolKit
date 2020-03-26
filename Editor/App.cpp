@@ -60,24 +60,23 @@ void ToolKit::Editor::App::Init()
 	m_q1->m_node->m_translation = glm::vec3(-4.0f, 0.0f, 0.0f);
 	m_q1->m_node->m_orientation = glm::angleAxis(1.1f, glm::normalize(glm::vec3(1.0f, 1.0f, 1.0f)));
 	m_scene.m_entitites.push_back(m_q1);
+	
 	m_q2 = new Cube();
 	m_q2->m_mesh->Init(false);
 	m_q2->m_node->m_translation = glm::vec3(4.0f, 0.0f, 0.0f);
 	m_scene.m_entitites.push_back(m_q2);
 
 	m_origin = new Axis3d();
-	m_scene.m_entitites.push_back(m_origin);
-
+	
 	m_grid = new Grid(100);
 	m_grid->m_mesh->Init(false);
-	m_scene.m_entitites.push_back(m_grid);
 
 	m_highLightMaterial = std::shared_ptr<Material>(solidColorMaterial->GetCopy());
-	m_highLightMaterial->m_color = glm::vec3(1.0f, 0.627f, 0.156f);
+	m_highLightMaterial->m_color = g_selectHighLightPrimaryColor;
 	m_highLightMaterial->GetRenderState()->cullMode = CullingType::Front;
 
 	m_highLightSecondaryMaterial = std::shared_ptr<Material>(solidColorMaterial->GetCopy());
-	m_highLightSecondaryMaterial->m_color = glm::vec3(0.898f, 0.352f, 0.031f);
+	m_highLightSecondaryMaterial->m_color = g_selectHighLightSecondaryColor;
 	m_highLightSecondaryMaterial->GetRenderState()->cullMode = CullingType::Front;
 
 	Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
@@ -123,6 +122,9 @@ void ToolKit::Editor::App::Frame(float deltaTime)
 				}
 			}
 		}
+
+		m_renderer->Render(m_grid, vp->m_camera);
+		m_renderer->Render(m_origin, vp->m_camera);
 
 		m_cursor->LookAt(vp->m_camera);
 		m_renderer->Render(m_cursor, vp->m_camera);
@@ -258,14 +260,14 @@ void ToolKit::Editor::Scene::PickObject(const Frustum& frustum, std::vector<Pick
 		}
 
 		BoundingBox bb = e->GetAABB(true);
-		int res = FrustumBoxIntersection(frustum, bb);
-		if (res > 0)
+		IntersectResult res = FrustumBoxIntersection(frustum, bb);
+		if (res != IntersectResult::Outside)
 		{
 			PickData pd;
 			pd.pickPos = (bb.max + bb.min) * 0.5f;
 			pd.entity = e;
 
-			if (res == 1)
+			if (res == IntersectResult::Inside)
 			{
 				pickedObjects.push_back(pd);
 			}

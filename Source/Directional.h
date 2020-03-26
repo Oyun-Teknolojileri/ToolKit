@@ -30,6 +30,7 @@ namespace ToolKit
       glm::vec3 dir;
       glm::mat4 projection;
       float fov;
+      float aspect;
       bool ortographic;
     };
 
@@ -47,6 +48,7 @@ namespace ToolKit
 
   private:
 		float m_fov;
+    float m_aspect;
 		bool m_ortographic;
     glm::mat4 m_projection;
   };

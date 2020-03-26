@@ -41,11 +41,10 @@ void ToolKit::Drawable::SetPose(Animation* anim)
 ToolKit::BoundingBox ToolKit::Drawable::GetAABB(bool inWorld)
 {
 	BoundingBox bb = m_mesh->m_aabb;
-
 	if (inWorld)
 	{
 		TransformAABB(bb, m_node->GetTransform());
 	}
 
-	return m_mesh->m_aabb;
+	return bb;
 }

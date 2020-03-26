@@ -215,10 +215,10 @@ bool ToolKit::RayMeshIntersection(Mesh* const mesh, const Ray& ray, float& t)
 }
 
 // https://gist.github.com/Kinwailo/d9a07f98d8511206182e50acda4fbc9b
-int ToolKit::FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box)
+ToolKit::IntersectResult ToolKit::FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box)
 {
-	int ret = 1;
 	glm::vec3 vmin, vmax;
+	IntersectResult res = IntersectResult::Inside;
 
 	for (int i = 0; i < 6; ++i)
 	{
@@ -260,16 +260,16 @@ int ToolKit::FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& b
 
 		if (glm::dot(frustum.planes[i].normal, vmin) + frustum.planes[i].d > 0)
 		{
-			return 0;
+			return IntersectResult::Outside;
 		}
 
 		if (glm::dot(frustum.planes[i].normal, vmax) + frustum.planes[i].d >= 0)
 		{
-			ret = 1;
+			res = IntersectResult::Intersect;
 		}
 	}
 
-	return ret;
+	return res;
 }
 
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
@@ -352,9 +352,9 @@ void ToolKit::TransformAABB(BoundingBox& box, const glm::mat4& transform)
 
 ToolKit::PlaneEquation ToolKit::PlaneFrom3Points(glm::vec3 const pnts[3])
 {
-	// Expecting 3 non coplanar points.
-	glm::vec3 v1 = pnts[0] - pnts[1];
-	glm::vec3 v2 = pnts[0] - pnts[2];
+	// Expecting 3 non coplanar points in CCW order.
+	glm::vec3 v1 = pnts[1] - pnts[0];
+	glm::vec3 v2 = pnts[2] - pnts[0];
 	
 	PlaneEquation eq;
 	eq.normal = glm::normalize(glm::cross(v1, v2));
