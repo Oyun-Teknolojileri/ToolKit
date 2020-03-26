@@ -65,6 +65,7 @@ namespace ToolKit
   //////////////////////////////////////////
   void NormalzePlaneEquation(PlaneEquation& plane);
 	void TransformAABB(BoundingBox& box, const glm::mat4& transform);
+  PlaneEquation PlaneFrom3Points(glm::vec3 const pnts[3]);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

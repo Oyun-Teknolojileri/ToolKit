@@ -208,76 +208,91 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 		if (vp != nullptr)
 		{
 			Camera* cam = vp->m_camera;
-			float fov = cam->GetData().fov;
+			
+			glm::vec2 rect[4];
+			GetMouseRect(rect[0], rect[2]);
 
-			static Camera virtCam;
-			glm::vec2 boxSize = glm::abs(m_mouseData[1] - m_mouseData[0]);
-			virtCam.SetLens(fov, boxSize.x, boxSize.y);
-			glm::mat4 project = virtCam.GetData().projection;
+			rect[1].x = rect[2].x;
+			rect[1].y = rect[0].y;
+			rect[3].x = rect[0].x;
+			rect[3].y = rect[2].y;
 
-			// Place the camera at the center of the virtual viewport.
-			glm::vec2 vpCenter = (m_mouseData[1] + m_mouseData[0]) * 0.5f;
-			vpCenter = vp->TransformScreenToViewportSpace(vpCenter);
-			virtCam.m_node->m_translation = vp->TransformViewportToWorldSpace(vpCenter);
-			virtCam.m_node->m_orientation = cam->m_node->GetOrientation(TransformationSpace::TS_WORLD);
-			glm::mat4 view = virtCam.GetViewMatrix();
+			std::vector<Ray> rays;
+			std::vector<glm::vec3> rect3d;
 
+			// Front rectangle.
+			glm::vec3 lensLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+			for (int i = 0; i < 4; i++)
+			{
+				glm::vec2 p = vp->TransformScreenToViewportSpace(rect[i]);
+				glm::vec3 p0 = vp->TransformViewportToWorldSpace(p);
+				rect3d.push_back(p0);
+				rays.push_back({ lensLoc, glm::normalize(p0 - lensLoc) });
+			}
+
+			// Back rectangle.
+			float depth = 1000.0f;
+			for (int i = 0; i < 4; i++)
+			{
+				glm::vec3 p = rect3d[i] + rays[i].direction * depth;
+				rect3d.push_back(p);
+			}
+
+			// Frustum from 8 points.
+			Frustum frustum;
+			std::vector<glm::vec3> planePnts;			
+			planePnts = { rect3d[0], rect3d[3], rect3d[4] }; // Left plane.
+			frustum.planes[0] = PlaneFrom3Points(planePnts.data());
+
+			planePnts = { rect3d[1], rect3d[2], rect3d[5] }; // Right plane.
+			frustum.planes[1] = PlaneFrom3Points(planePnts.data());
+
+			planePnts = { rect3d[0], rect3d[1], rect3d[4] }; // Top plane.
+			frustum.planes[2] = PlaneFrom3Points(planePnts.data());
+
+			planePnts = { rect3d[2], rect3d[3], rect3d[6] }; // Bottom plane.
+			frustum.planes[3] = PlaneFrom3Points(planePnts.data());
+
+			planePnts = { rect3d[0], rect3d[1], rect3d[2] }; // Near plane.
+			frustum.planes[4] = PlaneFrom3Points(planePnts.data());
+
+			planePnts = { rect3d[4], rect3d[5], rect3d[6] }; // Far plane.
+			frustum.planes[5] = PlaneFrom3Points(planePnts.data());
+
+			// Perform picking.
 			std::vector<Scene::PickData> ntties;
-			Frustum frustum = ExtractFrustum(project);
 			g_app->m_scene.PickObject(frustum, ntties, m_ignoreList);
 			m_pickData.insert(m_pickData.end(), ntties.begin(), ntties.end());
 
 			// Debug draw the picking frustum.
 			if (g_app->m_pickingDebug)
 			{
-				float focalLen = boxSize.x * 0.5f / glm::tan(fov * 0.5f);
-
-				glm::vec3 x, y, z;
-				virtCam.GetLocalAxis(z, y, x);
-
-				glm::vec3 lensLoc = virtCam.m_node->GetTranslation(TransformationSpace::TS_WORLD);
-				lensLoc = lensLoc - z * focalLen;
-
-				glm::vec2 rect[4];
-				GetMouseRect(rect[0], rect[2]);
-
-				rect[1].x = rect[2].x;
-				rect[1].y = rect[0].y;
-
-				rect[3].x = rect[0].x;
-				rect[3].y = rect[2].y;
-
-				std::vector<Ray> rays;
-				for (int i = 0; i < 4; i++)
+				std::vector<glm::vec3> corners =
 				{
-					glm::vec2 p = vp->TransformScreenToViewportSpace(rect[i]);
-					glm::vec3 p0 = vp->TransformViewportToWorldSpace(p);
-
-					rays.push_back({ lensLoc, glm::normalize(p0 - lensLoc) });
-				}
-
-				std::vector<glm::vec3> corners;
-				for (int i = 0; i < 6; i++)
-				{
-					for (const Ray& r : rays)
-					{
-						float t = 0;
-						if (RayPlaneIntersection(r, frustum.planes[i], t))
-						{
-							corners.push_back(r.position + r.direction * t);
-						}
-					}
-				}
+					rect3d[0], rect3d[1], rect3d[1], rect3d[2], rect3d[2], rect3d[3], rect3d[3], rect3d[0],
+					rect3d[0], rect3d[0] + rays[0].direction * depth,
+					rect3d[1], rect3d[1] + rays[1].direction * depth,
+					rect3d[2], rect3d[2] + rays[2].direction * depth,
+					rect3d[3], rect3d[3] + rays[3].direction * depth,
+					rect3d[0] + rays[0].direction * depth,
+					rect3d[1] + rays[1].direction * depth,
+					rect3d[1] + rays[1].direction * depth,
+					rect3d[2] + rays[2].direction * depth,
+					rect3d[2] + rays[2].direction * depth,
+					rect3d[3] + rays[3].direction * depth,
+					rect3d[3] + rays[3].direction * depth,
+					rect3d[0] + rays[0].direction * depth
+				};
 
 				static std::shared_ptr<LineBatch> mdl = nullptr; 
 				if (mdl == nullptr)
 				{
-					mdl = std::shared_ptr<LineBatch>(new LineBatch(corners, ToolKit::X_AXIS, DrawType::LineStrip));
+					mdl = std::shared_ptr<LineBatch>(new LineBatch(corners, ToolKit::X_AXIS, DrawType::Line));
 					g_app->m_scene.m_entitites.push_back(mdl.get());
 				}
 				else
 				{
-					mdl->Generate(corners, ToolKit::X_AXIS, DrawType::LineStrip);
+					mdl->Generate(corners, ToolKit::X_AXIS, DrawType::Line);
 				}
 			}
 		}

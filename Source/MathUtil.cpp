@@ -350,6 +350,19 @@ void ToolKit::TransformAABB(BoundingBox& box, const glm::mat4& transform)
 	box = bb;
 }
 
+ToolKit::PlaneEquation ToolKit::PlaneFrom3Points(glm::vec3 const pnts[3])
+{
+	// Expecting 3 non coplanar points.
+	glm::vec3 v1 = pnts[0] - pnts[1];
+	glm::vec3 v2 = pnts[0] - pnts[2];
+	
+	PlaneEquation eq;
+	eq.normal = glm::normalize(glm::cross(v1, v2));
+	eq.d = -glm::dot(eq.normal, pnts[0]);
+
+	return eq;
+}
+
 glm::vec3 ToolKit::Interpolate(const glm::vec3& vec1, const glm::vec3& vec2, float ratio)
 {
 	return (vec2 - vec1) * ratio + vec1;
