@@ -16,6 +16,7 @@ namespace ToolKit
     Entity_Quad,
     Entity_Sphere,
     Etity_Arrow,
+    Entity_LineBatch,
     Entity_Drawable,
     Entity_SpriteAnim,
     Entity_Surface,

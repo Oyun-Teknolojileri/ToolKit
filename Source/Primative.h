@@ -49,4 +49,13 @@ namespace ToolKit
 		void Generate(ArrowType t);
   };
 
+  class LineBatch : public Drawable
+  {
+  public:
+    LineBatch(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t);
+    ~LineBatch();
+		EntityType GetType();
+    void Generate(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t);
+  };
+
 }

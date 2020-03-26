@@ -16,6 +16,8 @@ namespace ToolKit
     //Quad = GL_QUADS,
     Triangle = GL_TRIANGLES,
     Line = GL_LINES,
+    LineStrip = GL_LINE_STRIP,
+    LineLoop = GL_LINE_LOOP,
     Point = GL_POINTS
   };
 

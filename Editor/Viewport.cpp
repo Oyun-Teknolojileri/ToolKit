@@ -185,17 +185,12 @@ Ray ToolKit::Editor::Viewport::RayFromMousePosition()
 
 glm::vec3 ToolKit::Editor::Viewport::GetLastMousePosWorldSpace()
 {
-	glm::vec3 screenPoint = glm::vec3(GetLastMousePosWindowSpace(), 0.0f);
-	
-	glm::mat4 view = m_camera->GetViewMatrix();
-	glm::mat4 project = m_camera->GetData().projection;
-
-	return glm::unProject(screenPoint, view, project, glm::vec4(0.0f, 0.0f, m_width, m_height));
+	return TransformViewportToWorldSpace(GetLastMousePosViewportSpace());
 }
 
-glm::vec2 ToolKit::Editor::Viewport::GetLastMousePosWindowSpace()
+glm::vec2 ToolKit::Editor::Viewport::GetLastMousePosViewportSpace()
 {
-	glm::vec3 screenPoint = glm::vec3(m_lastMousePosRelContentArea, 0);
+	glm::vec2 screenPoint = m_lastMousePosRelContentArea;
 	screenPoint.y = m_wndContentAreaSize.y - screenPoint.y; // Imgui Window origin Top - Left to OpenGL window origin Bottom - Left
 
 	return screenPoint;
@@ -203,10 +198,27 @@ glm::vec2 ToolKit::Editor::Viewport::GetLastMousePosWindowSpace()
 
 glm::vec2 ToolKit::Editor::Viewport::GetLastMousePosScreenSpace()
 {
-	glm::vec2 screenPoint = GetLastMousePosWindowSpace();
+	glm::vec2 screenPoint = GetLastMousePosViewportSpace();
 	screenPoint.y = m_wndContentAreaSize.y - screenPoint.y; // Bring it back from opengl (BottomLeft) to Imgui (TopLeft) system.
 
 	return m_wndPos + screenPoint; // Move it from window space to screen space.
+}
+
+glm::vec3 ToolKit::Editor::Viewport::TransformViewportToWorldSpace(const glm::vec2& pnt)
+{
+	glm::vec3 screenPoint = glm::vec3(pnt, 0.0f);
+
+	glm::mat4 view = m_camera->GetViewMatrix();
+	glm::mat4 project = m_camera->GetData().projection;
+
+	return glm::unProject(screenPoint, view, project, glm::vec4(0.0f, 0.0f, m_width, m_height));
+}
+
+glm::vec2 ToolKit::Editor::Viewport::TransformScreenToViewportSpace(const glm::vec2& pnt)
+{
+	glm::vec2 vp = pnt - m_wndPos; // In window space.
+	vp.y = m_wndContentAreaSize.y - vp.y; // In viewport space.
+	return vp;
 }
 
 void Editor::Viewport::FpsNavigationMode(float deltaTime)

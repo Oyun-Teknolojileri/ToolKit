@@ -28,8 +28,10 @@ namespace ToolKit
 			// Utility Functions.
 			Ray RayFromMousePosition();
 			glm::vec3 GetLastMousePosWorldSpace();
-			glm::vec2 GetLastMousePosWindowSpace();
+			glm::vec2 GetLastMousePosViewportSpace();
 			glm::vec2 GetLastMousePosScreenSpace();
+			glm::vec3 TransformViewportToWorldSpace(const glm::vec2& pnt);
+			glm::vec2 TransformScreenToViewportSpace(const glm::vec2& pnt);
 
 		private:
 			// Modes.

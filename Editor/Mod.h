@@ -119,6 +119,9 @@ namespace ToolKit
 		public:
 			virtual void Update(float deltaTime) override;
 			virtual std::string Signaled(SignalId signal) override;
+
+		private:
+			void GetMouseRect(glm::vec2& min, glm::vec2& max);
 		};
 
 		class StateEndPick : public StatePickingBase

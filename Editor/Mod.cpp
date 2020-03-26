@@ -208,52 +208,77 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 		if (vp != nullptr)
 		{
 			Camera* cam = vp->m_camera;
-			glm::mat4 view = cam->GetViewMatrix();
 			float fov = cam->GetData().fov;
 
 			static Camera virtCam;
 			glm::vec2 boxSize = glm::abs(m_mouseData[1] - m_mouseData[0]);
 			virtCam.SetLens(fov, boxSize.x, boxSize.y);
 			glm::mat4 project = virtCam.GetData().projection;
-			
+
+			// Place the camera at the center of the virtual viewport.
+			glm::vec2 vpCenter = (m_mouseData[1] + m_mouseData[0]) * 0.5f;
+			vpCenter = vp->TransformScreenToViewportSpace(vpCenter);
+			virtCam.m_node->m_translation = vp->TransformViewportToWorldSpace(vpCenter);
+			virtCam.m_node->m_orientation = cam->m_node->GetOrientation(TransformationSpace::TS_WORLD);
+			glm::mat4 view = virtCam.GetViewMatrix();
+
 			std::vector<Scene::PickData> ntties;
-			Frustum frustum = ExtractFrustum(project * view * cam->m_node->GetTransform());
+			Frustum frustum = ExtractFrustum(project);
 			g_app->m_scene.PickObject(frustum, ntties, m_ignoreList);
 			m_pickData.insert(m_pickData.end(), ntties.begin(), ntties.end());
 
 			// Debug draw the picking frustum.
+			if (g_app->m_pickingDebug)
 			{
 				float focalLen = boxSize.x * 0.5f / glm::tan(fov * 0.5f);
-				float fovy = glm::atan(boxSize.y / focalLen) * 2.0f;
-				
-				glm::vec3 cx, cy, cz;
-				cam->GetLocalAxis(cz, cy, cx);
 
-				glm::quat qx = glm::angleAxis(fov * 0.5f, cy);
-				glm::quat qy = glm::angleAxis(fovy * 0.5f, cx);
-				glm::quat nqx = glm::angleAxis(-fov * 0.5f, cy);
-				glm::quat nqy = glm::angleAxis(-fovy * 0.5f, cx);
+				glm::vec3 x, y, z;
+				virtCam.GetLocalAxis(z, y, x);
 
-				Ray ur;
-				ur.position = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-				ur.direction = glm::normalize(cz * qx + cz * qy);
-				static std::shared_ptr<Arrow2d> urMdl = nullptr;
-				DebugDrawPickingRay(ur, urMdl);
+				glm::vec3 lensLoc = virtCam.m_node->GetTranslation(TransformationSpace::TS_WORLD);
+				lensLoc = lensLoc - z * focalLen;
 
-				Ray ul = ur;
-				ul.direction =  glm::normalize(cz * qy + cz * nqx);
-				static std::shared_ptr<Arrow2d> ulMdl = nullptr;
-				DebugDrawPickingRay(ul, ulMdl);
+				glm::vec2 rect[4];
+				GetMouseRect(rect[0], rect[2]);
 
-				Ray lr = ur;
-				lr.direction = glm::normalize(cz * qx + cz * nqy);
-				static std::shared_ptr<Arrow2d> lrMdl = nullptr;
-				DebugDrawPickingRay(lr, lrMdl);
+				rect[1].x = rect[2].x;
+				rect[1].y = rect[0].y;
 
-				Ray ll = ur;
-				ll.direction = glm::normalize(cz * nqx + cz * nqy);
-				static std::shared_ptr<Arrow2d> llMdl = nullptr;
-				DebugDrawPickingRay(ll, llMdl);
+				rect[3].x = rect[0].x;
+				rect[3].y = rect[2].y;
+
+				std::vector<Ray> rays;
+				for (int i = 0; i < 4; i++)
+				{
+					glm::vec2 p = vp->TransformScreenToViewportSpace(rect[i]);
+					glm::vec3 p0 = vp->TransformViewportToWorldSpace(p);
+
+					rays.push_back({ lensLoc, glm::normalize(p0 - lensLoc) });
+				}
+
+				std::vector<glm::vec3> corners;
+				for (int i = 0; i < 6; i++)
+				{
+					for (const Ray& r : rays)
+					{
+						float t = 0;
+						if (RayPlaneIntersection(r, frustum.planes[i], t))
+						{
+							corners.push_back(r.position + r.direction * t);
+						}
+					}
+				}
+
+				static std::shared_ptr<LineBatch> mdl = nullptr; 
+				if (mdl == nullptr)
+				{
+					mdl = std::shared_ptr<LineBatch>(new LineBatch(corners, ToolKit::X_AXIS, DrawType::LineStrip));
+					g_app->m_scene.m_entitites.push_back(mdl.get());
+				}
+				else
+				{
+					mdl->Generate(corners, ToolKit::X_AXIS, DrawType::LineStrip);
+				}
 			}
 		}
 
@@ -269,14 +294,8 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 
 			auto drawSelectionRectangleFn = [this](ImDrawList* drawList) -> void
 			{
-				glm::vec2 min(FLT_MAX, FLT_MAX);
-				glm::vec2 max(-FLT_MAX, -FLT_MAX);
-
-				for (int i = 0; i < 2; i++)
-				{
-					min = glm::min(min, m_mouseData[i]);
-					max = glm::max(max, m_mouseData[i]);
-				}
+				glm::vec2 min, max;
+				GetMouseRect(min, max);
 
 				ImU32 col = ImColor(GLM4IMVEC(g_selectBoxWindowColor));
 				drawList->AddRectFilled(GLM2IMVEC(min), GLM2IMVEC(max), col, 5.0f);
@@ -290,6 +309,18 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 	}
 
 	return std::string();
+}
+
+void ToolKit::Editor::StateBeginBoxPick::GetMouseRect(glm::vec2& min, glm::vec2& max)
+{
+	min = glm::vec2(FLT_MAX, FLT_MAX);
+	max = glm::vec2(-FLT_MAX, -FLT_MAX);
+
+	for (int i = 0; i < 2; i++)
+	{
+		min = glm::min(min, m_mouseData[i]);
+		max = glm::max(max, m_mouseData[i]);
+	}
 }
 
 void ToolKit::Editor::StateEndPick::Update(float deltaTime)
