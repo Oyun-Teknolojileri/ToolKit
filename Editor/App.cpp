@@ -309,6 +309,27 @@ bool ToolKit::Editor::Scene::IsCurrentSelection(EntityId id)
 	return m_selectedEntities.back() == id;
 }
 
+void ToolKit::Editor::Scene::MakeCurrentSelection(EntityId id, bool ifExist)
+{
+	std::vector<EntityId>::iterator itr = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
+	if (itr != m_selectedEntities.end())
+	{
+		std::iter_swap(itr, m_selectedEntities.end() - 1);
+	}
+	else
+	{
+		if (!ifExist)
+		{
+			m_selectedEntities.push_back(id);
+		}
+	}
+}
+
+ToolKit::uint ToolKit::Editor::Scene::GetSelectedEntityCount()
+{
+	return m_selectedEntities.size();
+}
+
 ToolKit::Entity* ToolKit::Editor::Scene::GetEntity(EntityId id)
 {
 	for (Entity* e : m_entitites)

@@ -40,6 +40,8 @@ namespace ToolKit
 			void AddToSelection(EntityId id);
 			void ClearSelection();
 			bool IsCurrentSelection(EntityId id);
+			void MakeCurrentSelection(EntityId id, bool ifExist);
+			uint GetSelectedEntityCount();
 			Entity* GetEntity(EntityId id);
 
 		public:

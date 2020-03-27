@@ -392,6 +392,21 @@ void ToolKit::Editor::SelectMod::ApplySelection(std::vector<Scene::PickData>& pi
 {
 	bool shiftClick = ImGui::GetIO().KeyShift;
 
+	EntityId currentId = NULL_ENTITY;
+	if (pickedNtties.size() > 1)
+	{
+		for (Scene::PickData& pd : pickedNtties)
+		{
+			if (pd.entity != nullptr)
+			{
+				if (g_app->m_scene.IsCurrentSelection(pd.entity->m_id))
+				{
+					currentId = pd.entity->m_id;
+				}
+			}
+		}
+	}
+
 	// Start with a clear selection list.
 	if (!shiftClick)
 	{
@@ -400,20 +415,39 @@ void ToolKit::Editor::SelectMod::ApplySelection(std::vector<Scene::PickData>& pi
 
 	for (Scene::PickData& pd : pickedNtties)
 	{
-		Entity* e = pd.entity;		
+		Entity* e = pd.entity;
+		if (e == nullptr)
+		{
+			continue;
+		}
 
 		// Add to selection.
-		if (e && !shiftClick)
+		if (!shiftClick)
 		{
 			g_app->m_scene.AddToSelection(e->m_id);
 		}
-
-		// Add or toggle selection.
-		if (e && shiftClick)
+		else // Add, make current or toggle selection.
 		{
 			if (g_app->m_scene.IsSelected(e->m_id))
 			{
-				g_app->m_scene.RemoveFromSelection(e->m_id);
+				if (g_app->m_scene.GetSelectedEntityCount() > 1)
+				{
+					if (pickedNtties.size() == 1)
+					{
+						if (g_app->m_scene.IsCurrentSelection(e->m_id))
+						{
+							g_app->m_scene.RemoveFromSelection(e->m_id);
+						}
+						else
+						{
+							g_app->m_scene.MakeCurrentSelection(e->m_id, false);
+						}
+					}
+				}
+				else
+				{
+					g_app->m_scene.RemoveFromSelection(e->m_id);
+				}
 			}
 			else
 			{
@@ -421,6 +455,8 @@ void ToolKit::Editor::SelectMod::ApplySelection(std::vector<Scene::PickData>& pi
 			}
 		}
 	}
+
+	g_app->m_scene.MakeCurrentSelection(currentId, true);
 }
 
 void ToolKit::Editor::CursorMod::Init()

@@ -6,7 +6,7 @@
 #include "MathUtil.h"
 #include "DebugNew.h"
 
-ToolKit::EntityId ToolKit::Entity::m_lastId = 0;
+ToolKit::EntityId ToolKit::Entity::m_lastId = 1; // 0 is null entity id.
 
 ToolKit::Entity::Entity()
 {
