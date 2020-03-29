@@ -31,6 +31,8 @@ namespace ToolKit
       glm::mat4 projection;
       float fov;
       float aspect;
+      float nearDist;
+      float height;
       bool ortographic;
     };
 
@@ -49,6 +51,8 @@ namespace ToolKit
   private:
 		float m_fov;
     float m_aspect;
+    float m_near;
+    float m_height;
 		bool m_ortographic;
     glm::mat4 m_projection;
   };

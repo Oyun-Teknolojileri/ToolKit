@@ -71,6 +71,8 @@ void ToolKit::Camera::SetLens(float fov, float width, float height, float near, 
   m_projection = glm::perspectiveFov(fov, width, height, near, far);
   m_fov = fov;
   m_aspect = width / height;
+  m_near = near;
+  m_height = height;
   m_ortographic = false;
 }
 
@@ -79,6 +81,8 @@ void ToolKit::Camera::SetLens(float aspect, float left, float right, float botto
   m_projection = glm::ortho(left * aspect, right * aspect, bottom, top, near, far);
 	m_fov = 0.0f;
   m_aspect = aspect;
+  m_near = near;
+  m_height = top - bottom;
 	m_ortographic = true;
 }
 
@@ -97,6 +101,8 @@ ToolKit::Camera::CamData ToolKit::Camera::GetData()
   data.projection = m_projection;
   data.fov = m_fov;
   data.aspect = m_aspect;
+  data.nearDist = m_near;
+  data.height = m_height;
   data.ortographic = m_ortographic;
 
   return data;

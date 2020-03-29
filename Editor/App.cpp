@@ -327,7 +327,7 @@ void ToolKit::Editor::Scene::MakeCurrentSelection(EntityId id, bool ifExist)
 
 ToolKit::uint ToolKit::Editor::Scene::GetSelectedEntityCount()
 {
-	return m_selectedEntities.size();
+	return (uint)m_selectedEntities.size();
 }
 
 ToolKit::Entity* ToolKit::Editor::Scene::GetEntity(EntityId id)

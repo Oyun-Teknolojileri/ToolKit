@@ -145,7 +145,7 @@ void Editor::Viewport::OnResize(float width, float height)
 {
 	m_width = width;
 	m_height = height;
-	m_camera->SetLens(glm::half_pi<float>(), width, height);
+	m_camera->SetLens(m_camera->GetData().fov, width, height);
 
 	m_viewportImage->UnInit();
 	m_viewportImage->m_width = (uint)width;
