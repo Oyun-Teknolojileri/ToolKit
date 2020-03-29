@@ -37,7 +37,7 @@ namespace ToolKit
 			// Modes.
 			void FpsNavigationMode(float deltaTime);
 
-			// Internal window handlings.
+			// Internal window handling.
 			void OnResize(float width, float height);
 			void SetActive();
 

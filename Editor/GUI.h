@@ -25,6 +25,7 @@ namespace ToolKit
 				static bool ToggleButton(ImTextureID user_texture_id, const ImVec2& size, bool pushState);
 
 			public:
+				static bool m_imguiSampleWindow;
 				static bool m_windowMenushowMetrics;
 				static float m_hoverTimeForHelp;
 

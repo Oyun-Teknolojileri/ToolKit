@@ -126,6 +126,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
+    <ClInclude Include="ConsolWindow.h" />
     <ClInclude Include="GlobalDef.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="ImGui\imconfig.h" />

@@ -101,5 +101,8 @@
     <ClInclude Include="Mod.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="ConsolWindow.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

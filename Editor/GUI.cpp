@@ -9,6 +9,7 @@
 #include "DebugNew.h"
 
 bool ToolKit::Editor::EditorGUI::m_windowMenushowMetrics = false;
+bool ToolKit::Editor::EditorGUI::m_imguiSampleWindow = false;
 float ToolKit::Editor::EditorGUI::m_hoverTimeForHelp = 1.0f;
 
 // Icons
@@ -84,6 +85,11 @@ void ToolKit::Editor::EditorGUI::PresentGUI()
 	}
 
 	// ImGui::ShowDemoWindow();
+	if (m_imguiSampleWindow)
+	{
+		ImGui::ShowDemoWindow(&m_imguiSampleWindow);
+	}
+
 	if (m_windowMenushowMetrics)
 	{
 		ImGui::ShowMetricsWindow(&m_windowMenushowMetrics);
@@ -179,6 +185,14 @@ void ToolKit::Editor::EditorGUI::ShowMenuWindows()
 		if (ImGui::MenuItem("Show Metrics", "Alt+M"))
 		{
 			m_windowMenushowMetrics = true;
+		}
+	}
+
+	if (!m_imguiSampleWindow)
+	{
+		if (ImGui::MenuItem("Imgui Sample", "Alt+I"))
+		{
+			m_imguiSampleWindow = true;
 		}
 	}
 }

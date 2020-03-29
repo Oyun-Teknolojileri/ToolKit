@@ -29,14 +29,14 @@ void ToolKit::Editor::Cursor::LookAt(Camera* cam)
 	dir = glm::normalize(m_pickPosition - cam->m_node->m_translation);
 
 	Camera::CamData data = cam->GetData();
-	float distToCameraPlane = (10.0f / glm::dot(cdir, dir)); // Always place at the same distance from the near plane.
+	float distToCameraPlane = glm::dot(cdir, dir); // Always place at the same distance from the near plane.
 	if (distToCameraPlane < 0)
 	{
 		return;
 	}
 
 	m_node->m_translation = cam->m_node->m_translation + dir * distToCameraPlane;
-	m_node->m_scale = glm::vec3(500.0f / data.height); // Compensate shrinkage due to height changes.
+	m_node->m_scale = glm::vec3(40.0f / data.height); // Compensate shrinkage due to height changes.
 	m_node->m_orientation = cam->m_node->m_orientation;
 }
 
