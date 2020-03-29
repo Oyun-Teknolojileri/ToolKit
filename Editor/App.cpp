@@ -128,7 +128,6 @@ void ToolKit::Editor::App::Frame(float deltaTime)
 
 		m_cursor->LookAt(vp->m_camera);
 		m_renderer->Render(m_cursor, vp->m_camera);
-		m_renderer->Render(m_cursor->m_billboard, vp->m_camera);
 	}
 
 	m_renderer->SetRenderTarget(nullptr);
@@ -192,7 +191,7 @@ void ToolKit::Editor::App::RenderSelected(Drawable* e, Camera* c)
 
 	glm::vec3 s = e->m_node->m_scale;
 	float dist = glm::distance(e->m_node->GetTranslation(ToolKit::TransformationSpace::TS_WORLD), c->m_node->GetTranslation(ToolKit::TransformationSpace::TS_WORLD));
-	e->m_node->m_scale += 0.01f * dist;
+	e->m_node->m_scale += 0.005f * dist;
 
 	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 	m_renderer->Render(e, c);
@@ -205,7 +204,7 @@ void ToolKit::Editor::App::RenderSelected(Drawable* e, Camera* c)
 ToolKit::Editor::Scene::PickData ToolKit::Editor::Scene::PickObject(Ray ray, const std::vector<EntityId>& ignoreList)
 {
 	PickData pd;
-	pd.pickPos = ray.position + ray.direction * 100.0f;
+	pd.pickPos = ray.position + ray.direction * 5.0f;
 
 	float closestPickedDistance = FLT_MAX;
 	for (Entity* e : m_entitites)
@@ -306,7 +305,12 @@ void ToolKit::Editor::Scene::ClearSelection()
 
 bool ToolKit::Editor::Scene::IsCurrentSelection(EntityId id)
 {
-	return m_selectedEntities.back() == id;
+	if (!m_selectedEntities.empty())
+	{
+		return m_selectedEntities.back() == id;
+	}
+
+	return false;
 }
 
 void ToolKit::Editor::Scene::MakeCurrentSelection(EntityId id, bool ifExist)

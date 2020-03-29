@@ -14,13 +14,11 @@
 
 ToolKit::Editor::Cursor::Cursor()
 {
-	m_billboard = new Drawable();
 	Generate();
 }
 
 ToolKit::Editor::Cursor::~Cursor()
 {
-	SafeDel(m_billboard);
 }
 
 void ToolKit::Editor::Cursor::LookAt(Camera* cam)
@@ -37,10 +35,9 @@ void ToolKit::Editor::Cursor::LookAt(Camera* cam)
 		return;
 	}
 
-	m_billboard->m_node->m_translation = cam->m_node->m_translation + dir * distToCameraPlane;
-	m_billboard->m_node->m_scale = glm::vec3(500.0f / data.height); // Compensate shrinkage due to height changes.
-	m_billboard->m_node->m_orientation = cam->m_node->m_orientation;
-	m_node->m_translation = m_billboard->m_node->m_translation;
+	m_node->m_translation = cam->m_node->m_translation + dir * distToCameraPlane;
+	m_node->m_scale = glm::vec3(500.0f / data.height); // Compensate shrinkage due to height changes.
+	m_node->m_orientation = cam->m_node->m_orientation;
 }
 
 void ToolKit::Editor::Cursor::Generate()
@@ -49,8 +46,7 @@ void ToolKit::Editor::Cursor::Generate()
 
 	// Billboard
 	Quad quad;
-	m_billboard->m_mesh = quad.m_mesh;
-	std::shared_ptr<Mesh> meshPtr = m_billboard->m_mesh;
+	std::shared_ptr<Mesh> meshPtr = quad.m_mesh;
 
 	meshPtr->m_material = std::shared_ptr<Material>(meshPtr->m_material->GetCopy());
 	meshPtr->m_material->UnInit();
@@ -59,6 +55,7 @@ void ToolKit::Editor::Cursor::Generate()
 	meshPtr->m_material->Init();
 
 	meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
+	m_mesh->m_subMeshes.push_back(meshPtr);
 
 	// Lines
 	std::vector<ToolKit::Vertex> vertices;
