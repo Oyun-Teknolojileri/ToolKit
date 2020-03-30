@@ -54,6 +54,9 @@
     <ClCompile Include="Mod.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="ConsoleWindow.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -101,7 +104,7 @@
     <ClInclude Include="Mod.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="ConsolWindow.h">
+    <ClInclude Include="ConsoleWindow.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
