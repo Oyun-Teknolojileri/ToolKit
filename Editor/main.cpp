@@ -5,7 +5,7 @@
 #include <chrono>
 #include "SDL.h"
 #include "SDL_ttf.h"
-#include "GUI.h"
+#include "UI.h"
 #include "Types.h"
 #include "Mod.h"
 #include "DebugNew.h"
@@ -151,7 +151,7 @@ int main(int argc, char* argv[])
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
 
-	ToolKit::Editor::EditorGUI::ApplyCustomTheme();
+	ToolKit::Editor::UI::ApplyCustomTheme();
 
 	ImGui_ImplSDL2_InitForOpenGL(ToolKit::Editor::g_window, ToolKit::Editor::g_context);
 	ImGui_ImplOpenGL3_Init("#version 300 es");

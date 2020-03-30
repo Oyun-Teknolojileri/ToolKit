@@ -49,7 +49,7 @@ void Editor::Viewport::Update(float deltaTime)
 	FpsNavigationMode(deltaTime);
 }
 
-void Editor::Viewport::ShowViewport()
+void Editor::Viewport::Show()
 {
 	ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
 	ImGui::Begin(m_name.c_str(), &m_open, ImGuiWindowFlags_NoSavedSettings);

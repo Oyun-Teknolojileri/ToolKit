@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ToolKit.h"
-#include "GUI.h"
+#include "UI.h"
 
 namespace ToolKit
 {

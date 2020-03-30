@@ -8,11 +8,11 @@ namespace ToolKit
 {
 		namespace Editor
 		{
-			class EditorGUI
+			class UI
 			{
 			public:
 				static void ApplyCustomTheme();
-				static void PresentGUI();
+				static void ShowUI();
 				static void InitDocking();
 				static void ShowAppMainMenuBar();
 				static void ShowMenuFile();

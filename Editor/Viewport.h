@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ToolKit.h"
-#include "GUI.h"
+#include "UI.h"
 #include "MathUtil.h"
 #include <functional>
 
@@ -18,9 +18,9 @@ namespace ToolKit
 			Viewport(float width, float height);
 			~Viewport();
 			void Update(float deltaTime);
+			void Show();
 
 			// Window queries.
-			void ShowViewport();
 			bool IsActive();
 			bool IsOpen();
 			bool IsViewportQueriable();
@@ -34,7 +34,7 @@ namespace ToolKit
 			glm::vec2 TransformScreenToViewportSpace(const glm::vec2& pnt);
 
 		private:
-			// Modes.
+			// Mods.
 			void FpsNavigationMode(float deltaTime);
 
 			// Internal window handling.

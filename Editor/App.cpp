@@ -2,7 +2,7 @@
 
 #include "App.h"
 #include "Renderer.h"
-#include "GUI.h"
+#include "UI.h"
 #include "Viewport.h"
 #include "Primative.h"
 #include "Node.h"
@@ -82,13 +82,13 @@ void ToolKit::Editor::App::Init()
 	Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
 	m_viewports.push_back(vp);
 
-	EditorGUI::InitIcons();
+	UI::InitIcons();
 }
 
 void ToolKit::Editor::App::Frame(float deltaTime)
 {
 	// Update Mods.
-	EditorGUI::DispatchSignals();
+	UI::DispatchSignals();
 	ModManager::GetInstance()->Update(deltaTime);
 
 	// Update Viewports
@@ -133,7 +133,7 @@ void ToolKit::Editor::App::Frame(float deltaTime)
 	m_renderer->SetRenderTarget(nullptr);
 
 	// Render Gui
-	EditorGUI::PresentGUI();
+	UI::ShowUI();
 }
 
 void ToolKit::Editor::App::OnResize(int width, int height)

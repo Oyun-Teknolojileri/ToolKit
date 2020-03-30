@@ -21,30 +21,30 @@ void ToolKit::Editor::OverlayNav::ShowOverlayNav()
 		// Select button.
 		static float hoverTimeSelectBtn = 0.0f;
 		bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Select;
-		ModManager::GetInstance()->SetMod(EditorGUI::ToggleButton((void*)(intptr_t)EditorGUI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Select);
-		EditorGUI::HelpMarker("Select Box\nSelect items using box selection.", &hoverTimeSelectBtn);
+		ModManager::GetInstance()->SetMod(UI::ToggleButton((void*)(intptr_t)UI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Select);
+		UI::HelpMarker("Select Box\nSelect items using box selection.", &hoverTimeSelectBtn);
 
 		// Cursor button.
 		static float hoverTimeCursorBtn = 0.0f;
 		isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Cursor;
-		ModManager::GetInstance()->SetMod(EditorGUI::ToggleButton((void*)(intptr_t)EditorGUI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Cursor);
-		EditorGUI::HelpMarker("Cursor\nSet the cursor location.", &hoverTimeCursorBtn);
+		ModManager::GetInstance()->SetMod(UI::ToggleButton((void*)(intptr_t)UI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Cursor);
+		UI::HelpMarker("Cursor\nSet the cursor location.", &hoverTimeCursorBtn);
 		ImGui::Separator();
 
 		// Move button.
 		static float hoverTimeMoveBtn = 0.0f;
-		ImGui::ImageButton((void*)(intptr_t)EditorGUI::m_moveIcn->m_textureId, ImVec2(32, 32));
-		EditorGUI::HelpMarker("Move\nMove selected items.", &hoverTimeMoveBtn);
+		ImGui::ImageButton((void*)(intptr_t)UI::m_moveIcn->m_textureId, ImVec2(32, 32));
+		UI::HelpMarker("Move\nMove selected items.", &hoverTimeMoveBtn);
 
 		// Rotate button.
 		static float hoverTimeRotateBtn = 0.0f;
-		ImGui::ImageButton((void*)(intptr_t)EditorGUI::m_rotateIcn->m_textureId, ImVec2(32, 32));
-		EditorGUI::HelpMarker("Rotate\nRotate selected items.", &hoverTimeRotateBtn);
+		ImGui::ImageButton((void*)(intptr_t)UI::m_rotateIcn->m_textureId, ImVec2(32, 32));
+		UI::HelpMarker("Rotate\nRotate selected items.", &hoverTimeRotateBtn);
 
 		// Scale button.
 		static float hoverTimeScaleBtn = 0.0f;
-		ImGui::ImageButton((void*)(intptr_t)EditorGUI::m_scaleIcn->m_textureId, ImVec2(32, 32));
-		EditorGUI::HelpMarker("Scale\nScale (resize) selected items.", &hoverTimeScaleBtn);
+		ImGui::ImageButton((void*)(intptr_t)UI::m_scaleIcn->m_textureId, ImVec2(32, 32));
+		UI::HelpMarker("Scale\nScale (resize) selected items.", &hoverTimeScaleBtn);
 		ImGui::Separator();
 
 		const char* items[] = {"1", "2", "4", "8" };
@@ -95,7 +95,7 @@ void ToolKit::Editor::OverlayNav::ShowOverlayNav()
 		float spacing = style.ItemInnerSpacing.x;
 
 		static float hoverTimeCS = 0.0f;
-		ImGui::SameLine(0, spacing); EditorGUI::HelpMarker("Camera speed m/s\n", &hoverTimeCS);
+		ImGui::SameLine(0, spacing); UI::HelpMarker("Camera speed m/s\n", &hoverTimeCS);
 	}
 	ImGui::EndChildFrame();
 }

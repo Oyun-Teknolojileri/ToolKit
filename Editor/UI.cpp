@@ -1,26 +1,26 @@
 #include "stdafx.h"
 
 #include "App.h"
-#include "GUI.h"
+#include "UI.h"
 #include "Viewport.h"
 #include "SDL.h"
 #include "GlobalDef.h"
 #include "Mod.h"
 #include "DebugNew.h"
 
-bool ToolKit::Editor::EditorGUI::m_windowMenushowMetrics = false;
-bool ToolKit::Editor::EditorGUI::m_imguiSampleWindow = false;
-float ToolKit::Editor::EditorGUI::m_hoverTimeForHelp = 1.0f;
+bool ToolKit::Editor::UI::m_windowMenushowMetrics = false;
+bool ToolKit::Editor::UI::m_imguiSampleWindow = false;
+float ToolKit::Editor::UI::m_hoverTimeForHelp = 1.0f;
 
 // Icons
-std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_selectIcn;
-std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_cursorIcn;
-std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_moveIcn;
-std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_rotateIcn;
-std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_scaleIcn;
-std::shared_ptr<ToolKit::Texture> ToolKit::Editor::EditorGUI::m_appIcon;
+std::shared_ptr<ToolKit::Texture> ToolKit::Editor::UI::m_selectIcn;
+std::shared_ptr<ToolKit::Texture> ToolKit::Editor::UI::m_cursorIcn;
+std::shared_ptr<ToolKit::Texture> ToolKit::Editor::UI::m_moveIcn;
+std::shared_ptr<ToolKit::Texture> ToolKit::Editor::UI::m_rotateIcn;
+std::shared_ptr<ToolKit::Texture> ToolKit::Editor::UI::m_scaleIcn;
+std::shared_ptr<ToolKit::Texture> ToolKit::Editor::UI::m_appIcon;
 
-void ToolKit::Editor::EditorGUI::ApplyCustomTheme()
+void ToolKit::Editor::UI::ApplyCustomTheme()
 {
 	ImGuiStyle* style = &ImGui::GetStyle();
 	style->WindowRounding = 5.3f;
@@ -70,7 +70,7 @@ void ToolKit::Editor::EditorGUI::ApplyCustomTheme()
 	style->Colors[ImGuiCol_TextSelectedBg] = { 0.18431373f, 0.39607847f, 0.79215693f, 0.90f };
 }
 
-void ToolKit::Editor::EditorGUI::PresentGUI()
+void ToolKit::Editor::UI::ShowUI()
 {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame(ToolKit::Editor::g_window);
@@ -81,7 +81,7 @@ void ToolKit::Editor::EditorGUI::PresentGUI()
 
 	for (Viewport* vp : ToolKit::Editor::g_app->m_viewports)
 	{
-		vp->ShowViewport();
+		vp->Show();
 	}
 
 	// ImGui::ShowDemoWindow();
@@ -104,7 +104,7 @@ void ToolKit::Editor::EditorGUI::PresentGUI()
 	SDL_GL_MakeCurrent(ToolKit::Editor::g_window, ToolKit::Editor::g_context);
 }
 
-void ToolKit::Editor::EditorGUI::InitDocking()
+void ToolKit::Editor::UI::InitDocking()
 {
 	static bool opt_fullscreen_persistant = true;
 	bool opt_fullscreen = opt_fullscreen_persistant;
@@ -144,7 +144,7 @@ void ToolKit::Editor::EditorGUI::InitDocking()
 	ImGui::End();
 }
 
-void ToolKit::Editor::EditorGUI::ShowAppMainMenuBar()
+void ToolKit::Editor::UI::ShowAppMainMenuBar()
 {
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -164,7 +164,7 @@ void ToolKit::Editor::EditorGUI::ShowAppMainMenuBar()
 	}
 }
 
-void ToolKit::Editor::EditorGUI::ShowMenuFile()
+void ToolKit::Editor::UI::ShowMenuFile()
 {
 	if (ImGui::MenuItem("Quit", "Alt+F4"))
 	{
@@ -172,7 +172,7 @@ void ToolKit::Editor::EditorGUI::ShowMenuFile()
 	}
 }
 
-void ToolKit::Editor::EditorGUI::ShowMenuWindows()
+void ToolKit::Editor::UI::ShowMenuWindows()
 {
 	if (ImGui::MenuItem("Add Viewport", "Alt+V"))
 	{
@@ -197,12 +197,12 @@ void ToolKit::Editor::EditorGUI::ShowMenuWindows()
 	}
 }
 
-void ToolKit::Editor::EditorGUI::HelpMarker(const char* desc, float* elapsedHoverTime)
+void ToolKit::Editor::UI::HelpMarker(const char* desc, float* elapsedHoverTime)
 {
 	if (ImGui::IsItemHovered())
 	{
 		*elapsedHoverTime += ImGui::GetIO().DeltaTime;
-		if (EditorGUI::m_hoverTimeForHelp > *elapsedHoverTime)
+		if (UI::m_hoverTimeForHelp > *elapsedHoverTime)
 		{
 			return;
 		}
@@ -219,7 +219,7 @@ void ToolKit::Editor::EditorGUI::HelpMarker(const char* desc, float* elapsedHove
 	}
 }
 
-void ToolKit::Editor::EditorGUI::InitIcons()
+void ToolKit::Editor::UI::InitIcons()
 {
 	m_selectIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/select.png"));
 	m_selectIcn->Init();
@@ -240,7 +240,7 @@ void ToolKit::Editor::EditorGUI::InitIcons()
 	SDL_FreeSurface(surface);
 }
 
-void ToolKit::Editor::EditorGUI::DispatchSignals()
+void ToolKit::Editor::UI::DispatchSignals()
 {
 	ImGuiIO& io = ImGui::GetIO();
 		
@@ -260,7 +260,7 @@ void ToolKit::Editor::EditorGUI::DispatchSignals()
 	}
 }
 
-bool ToolKit::Editor::EditorGUI::ToggleButton(ImTextureID user_texture_id, const ImVec2& size, bool pushState)
+bool ToolKit::Editor::UI::ToggleButton(ImTextureID user_texture_id, const ImVec2& size, bool pushState)
 {
 	ImGuiStyle& style = ImGui::GetStyle();
 	if (pushState)
