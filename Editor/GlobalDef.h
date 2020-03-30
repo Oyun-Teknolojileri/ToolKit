@@ -15,8 +15,12 @@ namespace ToolKit
 		extern Editor::App* g_app;
 		extern bool g_running;
 
+		// UI Strings
+		const std::string g_consoleStr("Console");
+		const std::string g_viewportStr("Viewport");
+
 		// Colors and materials.
-		const std::string g_GRID_MATERIAL_NAME("TK_EDITOR_GRID");
+		const std::string g_gridMaterialName("TK_EDITOR_GRID");
 		const glm::vec3 g_gridAxisBlue = glm::vec3(0.196f, 0.541f, 0.905f);
 		const glm::vec3 g_gridAxisRed = glm::vec3(0.89f, 0.239f, 0.341f);
 		const glm::vec4 g_selectBoxWindowColor = glm::vec4(0.4f, 0.4f, 0.4f, 0.4f);

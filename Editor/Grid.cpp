@@ -123,13 +123,13 @@ ToolKit::Editor::Axis3d::Axis3d()
 ToolKit::Editor::Grid::Grid(uint size)
 {
 	// Create grid material.
-	if (!Main::GetInstance()->m_materialManager.Exist(g_GRID_MATERIAL_NAME))
+	if (!Main::GetInstance()->m_materialManager.Exist(g_gridMaterialName))
 	{
 		m_material = std::shared_ptr<Material>(new Material());
 		m_material->m_diffuseTexture = Main::GetInstance()->m_textureMan.Create(TexturePath("grid.png"));
 		m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
 		m_material->GetRenderState()->cullMode = CullingType::TwoSided;
-		Main::GetInstance()->m_materialManager.m_storage[g_GRID_MATERIAL_NAME] = m_material;
+		Main::GetInstance()->m_materialManager.m_storage[g_gridMaterialName] = m_material;
 	}
 
 	// Create grid mesh.

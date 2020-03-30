@@ -18,7 +18,7 @@ uint Editor::Viewport::m_nextId = 1;
 Editor::OverlayNav* Editor::Viewport::m_overlayNav = nullptr;
 
 Editor::Viewport::Viewport(float width, float height)
-	: m_width(width), m_height(height), m_name("Viewport")
+	: m_width(width), m_height(height), m_name(g_viewportStr)
 {
 	m_camera = new Camera();
 	m_camera->SetLens(glm::quarter_pi<float>(), width, height);
@@ -115,7 +115,7 @@ void Editor::Viewport::Show()
 	if (IsActive() && m_overlayNav != nullptr)
 	{
 		m_overlayNav->m_owner = this;
-		m_overlayNav->ShowOverlayNav();
+		m_overlayNav->Show();
 	}
 
 	m_mouseHover = ImGui::IsWindowHovered();

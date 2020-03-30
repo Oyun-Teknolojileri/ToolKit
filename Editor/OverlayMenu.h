@@ -13,7 +13,7 @@ namespace ToolKit
 		{
 		public:
 			OverlayNav(Viewport* owner);
-			void ShowOverlayNav();
+			void Show();
 
 		public:
 			Viewport* m_owner;

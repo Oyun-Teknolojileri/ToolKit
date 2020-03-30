@@ -1,4 +1,5 @@
 #include "stdafx.h"
+
 #include "OverlayMenu.h"
 #include "Viewport.h"
 #include "GlobalDef.h"
@@ -9,7 +10,7 @@ ToolKit::Editor::OverlayNav::OverlayNav(Viewport* owner)
 	m_owner = owner;
 }
 
-void ToolKit::Editor::OverlayNav::ShowOverlayNav()
+void ToolKit::Editor::OverlayNav::Show()
 {
 	ImVec2 overlaySize(48, 258);
 	const float padding = 5.0f;

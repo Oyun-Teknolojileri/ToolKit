@@ -61,7 +61,7 @@ namespace ToolKit
 		private:
 			static uint m_nextId;
 
-			// States
+			// States.
 			bool m_mouseHover = false;
 			bool m_mouseOverContentArea = false;
 			bool m_open = true;

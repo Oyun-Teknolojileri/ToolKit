@@ -63,9 +63,6 @@ void Init()
 					return;
 				}
 
-				if (TTF_Init() == -1)
-					return;
-
 				ToolKit::Main::GetInstance()->Init();
 
 				// Set defaults
@@ -78,6 +75,15 @@ void Init()
 				// Init app
 				ToolKit::Editor::g_app = new ToolKit::Editor::App(width, height);
 				ToolKit::Editor::g_app->Init();
+
+				// Init imgui
+				IMGUI_CHECKVERSION();
+				ImGui::CreateContext();
+				ImGuiIO& io = ImGui::GetIO();
+				io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
+				io.ConfigWindowsMoveFromTitleBarOnly = true;
+
+				ToolKit::Editor::UI::ApplyCustomTheme();
 			}
 		}
 	}
@@ -143,15 +149,6 @@ int main(int argc, char* argv[])
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	Init();
-
-	// Init imgui
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
-	io.ConfigWindowsMoveFromTitleBarOnly = true;
-
-	ToolKit::Editor::UI::ApplyCustomTheme();
 
 	ImGui_ImplSDL2_InitForOpenGL(ToolKit::Editor::g_window, ToolKit::Editor::g_context);
 	ImGui_ImplOpenGL3_Init("#version 300 es");

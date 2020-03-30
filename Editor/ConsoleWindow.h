@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ToolKit.h"
-#include "GUI.h"
+#include "UI.h"
 
 namespace ToolKit
 {
@@ -11,6 +11,10 @@ namespace ToolKit
 		{
 		public:
 			void Show();
+
+		private:
+			// States.
+			bool m_open = true;
 		};
 	}
 }
