@@ -16,6 +16,7 @@ namespace ToolKit
 		class Grid;
 		class Axis3d;
 		class Cursor;
+		class ConsoleWindow;
 
 		using namespace ToolKit;
 		using namespace glm;
@@ -70,7 +71,10 @@ namespace ToolKit
 
 		public:
 			Scene m_scene;
+			
+			// UI elements.
 			std::vector<Viewport*> m_viewports;
+			ConsoleWindow* m_console;
 
 			// Editor variables.
 			float m_camSpeed = 4.0; // Meters per sec.

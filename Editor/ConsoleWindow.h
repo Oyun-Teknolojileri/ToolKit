@@ -11,6 +11,10 @@ namespace ToolKit
 		{
 		public:
 			void Show();
+			void SetVisibility(bool visible);
+
+			// Window queries.
+			bool IsOpen();
 
 		private:
 			// States.

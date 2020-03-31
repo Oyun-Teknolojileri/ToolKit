@@ -29,7 +29,7 @@ namespace ToolKit
 				static bool m_windowMenushowMetrics;
 				static float m_hoverTimeForHelp;
 
-				// Toolbar Icon
+				// Toolbar Icons.
 				static std::shared_ptr<Texture> m_selectIcn;
 				static std::shared_ptr<Texture> m_cursorIcn;
 				static std::shared_ptr<Texture> m_moveIcn;

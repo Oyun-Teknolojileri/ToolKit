@@ -11,6 +11,7 @@
 #include "Grid.h"
 #include "Directional.h"
 #include "Mod.h"
+#include "ConsoleWindow.h"
 #include "DebugNew.h"
 
 ToolKit::Editor::App::App(int windowWidth, int windowHeight)
@@ -26,18 +27,24 @@ ToolKit::Editor::App::App(int windowWidth, int windowHeight)
 
 ToolKit::Editor::App::~App()
 {
+	// UI.
 	for (Viewport* vp : m_viewports)
 	{
 		SafeDel(vp);
 	}
 
 	SafeDel(Viewport::m_overlayNav);
+	SafeDel(m_console);
+
+	// Editor objects.
 	SafeDel(m_grid);
 	SafeDel(m_origin);
 	SafeDel(m_suzanne);
 	SafeDel(m_q1);
 	SafeDel(m_q2);
 	SafeDel(m_cursor);
+
+	// Engine components.
 	SafeDel(m_renderer);
 
 	Main::GetInstance()->Uninit();
@@ -79,8 +86,11 @@ void ToolKit::Editor::App::Init()
 	m_highLightSecondaryMaterial->m_color = g_selectHighLightSecondaryColor;
 	m_highLightSecondaryMaterial->GetRenderState()->cullMode = CullingType::Front;
 
+	// UI.
 	Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
 	m_viewports.push_back(vp);
+
+	m_console = new ConsoleWindow();
 
 	UI::InitIcons();
 }
@@ -91,17 +101,11 @@ void ToolKit::Editor::App::Frame(float deltaTime)
 	UI::DispatchSignals();
 	ModManager::GetInstance()->Update(deltaTime);
 
-	// Update Viewports
+	// Update Viewports.
 	for (int i = (int)m_viewports.size() - 1; i >= 0; i--)
 	{
 		Viewport* vp = m_viewports[i];
 		vp->Update(deltaTime);
-		
-		if (!vp->IsOpen())
-		{
-			SafeDel(vp);
-			m_viewports.erase(m_viewports.begin() + i);
-		}
 	}
 
 	for (Viewport* vp : m_viewports)
@@ -132,7 +136,7 @@ void ToolKit::Editor::App::Frame(float deltaTime)
 
 	m_renderer->SetRenderTarget(nullptr);
 
-	// Render Gui
+	// Render UI.
 	UI::ShowUI();
 }
 

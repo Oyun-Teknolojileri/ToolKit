@@ -19,6 +19,7 @@ namespace ToolKit
 			~Viewport();
 			void Update(float deltaTime);
 			void Show();
+			void SetVisibility(bool visible);
 
 			// Window queries.
 			bool IsActive();

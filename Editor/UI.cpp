@@ -6,6 +6,7 @@
 #include "SDL.h"
 #include "GlobalDef.h"
 #include "Mod.h"
+#include "ConsoleWindow.h"
 #include "DebugNew.h"
 
 bool ToolKit::Editor::UI::m_windowMenushowMetrics = false;
@@ -73,18 +74,19 @@ void ToolKit::Editor::UI::ApplyCustomTheme()
 void ToolKit::Editor::UI::ShowUI()
 {
 	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplSDL2_NewFrame(ToolKit::Editor::g_window);
+	ImGui_ImplSDL2_NewFrame(g_window);
 	ImGui::NewFrame();
 
 	InitDocking();
 	ShowAppMainMenuBar();
 
-	for (Viewport* vp : ToolKit::Editor::g_app->m_viewports)
+	for (Viewport* vp : g_app->m_viewports)
 	{
 		vp->Show();
 	}
 
-	// ImGui::ShowDemoWindow();
+	g_app->m_console->Show();
+
 	if (m_imguiSampleWindow)
 	{
 		ImGui::ShowDemoWindow(&m_imguiSampleWindow);
@@ -101,7 +103,7 @@ void ToolKit::Editor::UI::ShowUI()
 
 	ImGui::UpdatePlatformWindows();
 	ImGui::RenderPlatformWindowsDefault();
-	SDL_GL_MakeCurrent(ToolKit::Editor::g_window, ToolKit::Editor::g_context);
+	SDL_GL_MakeCurrent(g_window, g_context);
 }
 
 void ToolKit::Editor::UI::InitDocking()
@@ -168,17 +170,44 @@ void ToolKit::Editor::UI::ShowMenuFile()
 {
 	if (ImGui::MenuItem("Quit", "Alt+F4"))
 	{
-		ToolKit::Editor::g_app->OnQuit();
+		g_app->OnQuit();
 	}
 }
 
 void ToolKit::Editor::UI::ShowMenuWindows()
 {
-	if (ImGui::MenuItem("Add Viewport", "Alt+V"))
+	if (ImGui::BeginMenu("Viewport"))
 	{
-		Viewport* vp = new Viewport(640, 480);
-		ToolKit::Editor::g_app->m_viewports.push_back(vp);
+		for (int i = (int)g_app->m_viewports.size() - 1; i >= 0; i--)
+		{
+			Viewport* vp = g_app->m_viewports[i];
+			if (ImGui::MenuItem(vp->m_name.c_str(), nullptr, false, !vp->IsOpen()))
+			{
+				vp->SetVisibility(true);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("x"))
+			{
+				g_app->m_viewports.erase(g_app->m_viewports.begin() + i);
+				SafeDel(vp);
+				continue;
+			}
+		}
+
+		if (ImGui::MenuItem("Add Viewport", "Alt+V"))
+		{
+			Viewport* vp = new Viewport(640, 480);
+			g_app->m_viewports.push_back(vp);
+		}
+		ImGui::EndMenu();
 	}
+
+	if (ImGui::MenuItem("Console Window", "Alt+C", nullptr, !g_app->m_console->IsOpen()))
+	{
+		g_app->m_console->SetVisibility(true);
+	}
+
+	ImGui::Separator();
 
 	if (!m_windowMenushowMetrics)
 	{
@@ -190,7 +219,7 @@ void ToolKit::Editor::UI::ShowMenuWindows()
 
 	if (!m_imguiSampleWindow)
 	{
-		if (ImGui::MenuItem("Imgui Sample", "Alt+I"))
+		if (ImGui::MenuItem("Imgui Sample", "Alt+S"))
 		{
 			m_imguiSampleWindow = true;
 		}
@@ -246,17 +275,17 @@ void ToolKit::Editor::UI::DispatchSignals()
 		
 	if (io.MouseClicked[0])
 	{
-		ToolKit::Editor::ModManager::GetInstance()->DispatchSignal(ToolKit::Editor::LeftMouseBtnDownSgnl());
+		ModManager::GetInstance()->DispatchSignal(LeftMouseBtnDownSgnl());
 	}
 
 	if (io.MouseReleased[0])
 	{
-		ToolKit::Editor::ModManager::GetInstance()->DispatchSignal(ToolKit::Editor::LeftMouseBtnUpSgnl());
+		ModManager::GetInstance()->DispatchSignal(LeftMouseBtnUpSgnl());
 	}
 
 	if (ImGui::IsMouseDragging(0))
 	{
-		ToolKit::Editor::ModManager::GetInstance()->DispatchSignal(ToolKit::Editor::LeftMouseBtnDragSgnl());
+		ModManager::GetInstance()->DispatchSignal(LeftMouseBtnDragSgnl());
 	}
 }
 

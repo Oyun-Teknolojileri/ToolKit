@@ -51,6 +51,11 @@ void Editor::Viewport::Update(float deltaTime)
 
 void Editor::Viewport::Show()
 {
+	if (!IsOpen())
+	{
+		return;
+	}
+
 	ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
 	ImGui::Begin(m_name.c_str(), &m_open, ImGuiWindowFlags_NoSavedSettings);
 	{
@@ -129,6 +134,11 @@ void Editor::Viewport::Show()
 	m_drawCommands.clear();
 
 	ImGui::End();
+}
+
+void ToolKit::Editor::Viewport::SetVisibility(bool visible)
+{
+	m_open = visible;
 }
 
 bool ToolKit::Editor::Viewport::IsActive()
