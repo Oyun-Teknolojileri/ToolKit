@@ -7,6 +7,7 @@
 namespace ToolKit
 {
 	class Arrow2d;
+	class LineBatch;
 
 	namespace Editor
 	{
@@ -93,12 +94,15 @@ namespace ToolKit
 			virtual void TransitionOut(State* nextState) override;
 			bool IsIgnored(Entity* ntt);
 
-			void DebugDrawPickingRay(Ray ray, std::shared_ptr<Arrow2d>& mdl);
-
 		public:
+			// Picking data.
 			std::vector<glm::vec2> m_mouseData;
 			std::vector<Scene::PickData> m_pickData;
 			std::vector<EntityId> m_ignoreList;
+
+			// Debug models.
+			static std::shared_ptr<Arrow2d> m_dbgArrow;
+			static std::shared_ptr<LineBatch> m_dbgFrustum;
 		};
 
 		class StateBeginPick : public StatePickingBase

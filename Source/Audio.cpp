@@ -195,7 +195,7 @@ ToolKit::AudioSource::~AudioSource()
   alDeleteSources(1, &m_source);
 }
 
-ToolKit::EntityType ToolKit::AudioSource::GetType()
+ToolKit::EntityType ToolKit::AudioSource::GetType() const
 {
   return EntityType::Entity_AudioSource;
 }

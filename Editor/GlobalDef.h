@@ -18,6 +18,10 @@ namespace ToolKit
 		// UI Strings
 		const std::string g_consoleStr("Console");
 		const std::string g_viewportStr("Viewport");
+		const std::string g_memoStr("");
+		const std::string g_errorStr("[Err] ");
+		const std::string g_warningStr("[Wrn] ");
+		const std::string g_commandStr("# ");
 
 		// Colors and materials.
 		const std::string g_gridMaterialName("TK_EDITOR_GRID");
@@ -27,6 +31,10 @@ namespace ToolKit
 		const glm::vec4 g_selectBoxBorderColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		const glm::vec3 g_selectHighLightPrimaryColor = glm::vec3(1.0f, 0.627f, 0.156f);
 		const glm::vec3 g_selectHighLightSecondaryColor = glm::vec3(0.898f, 0.352f, 0.031f);
+		const glm::vec4 g_consoleErrorColor = glm::vec4(1.0f, 0.4f, 0.4f, 1.0f);
+		const glm::vec4 g_consoleCommandColor = glm::vec4(1.0f, 0.8f, 0.6f, 1.0f);
+		const glm::vec4 g_consoleWarningColor = glm::vec4(0.3f, 0.8f, 0.3f, 1.0f);
+		const glm::vec4 g_consoleMemoColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
 
 		// Utility functions.		
 		inline float MilisecToSec(float ms)

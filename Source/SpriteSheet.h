@@ -52,7 +52,7 @@ namespace ToolKit
     SpriteAnimation(std::shared_ptr<SpriteSheet> spriteSheet);
     ~SpriteAnimation();
 
-    EntityType GetType();
+    virtual EntityType GetType() const;
     Surface* GetCurrentSurface();
     void Update(float deltaTime);
 

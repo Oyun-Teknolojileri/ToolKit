@@ -19,12 +19,12 @@ ToolKit::Entity::~Entity()
   SafeDel(m_node);
 }
 
-bool ToolKit::Entity::IsDrawable()
+bool ToolKit::Entity::IsDrawable() const
 {
   return false;
 }
 
-ToolKit::EntityType ToolKit::Entity::GetType()
+ToolKit::EntityType ToolKit::Entity::GetType() const
 {
   return EntityType::Entity_Base;
 }
@@ -34,7 +34,7 @@ void ToolKit::Entity::SetPose(Animation* anim)
   anim->GetCurrentPose(m_node);
 }
 
-struct ToolKit::BoundingBox ToolKit::Entity::GetAABB(bool inWorld)
+struct ToolKit::BoundingBox ToolKit::Entity::GetAABB(bool inWorld) const
 {
 	BoundingBox aabb;
 	

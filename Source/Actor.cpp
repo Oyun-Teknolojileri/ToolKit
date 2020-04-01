@@ -24,7 +24,7 @@ ToolKit::Actor::~Actor()
   SafeDel(m_stateMachine);
 }
 
-ToolKit::EntityType ToolKit::Actor::GetType()
+ToolKit::EntityType ToolKit::Actor::GetType() const
 {
   return EntityType::Entity_Actor;
 }

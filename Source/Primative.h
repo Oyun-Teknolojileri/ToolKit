@@ -10,7 +10,7 @@ namespace ToolKit
   public:
     Cube();
     ~Cube();
-    EntityType GetType();
+    virtual EntityType GetType() const override;
   };
 
   class Quad : public Drawable
@@ -18,7 +18,7 @@ namespace ToolKit
   public:
     Quad();
     ~Quad();
-    EntityType GetType();
+    virtual EntityType GetType() const override;
   };
 
   class Sphere : public Drawable
@@ -26,7 +26,7 @@ namespace ToolKit
   public:
     Sphere();
     ~Sphere();
-    EntityType GetType();
+    virtual EntityType GetType() const override;
   };
 
   class Arrow2d : public Drawable
@@ -43,7 +43,7 @@ namespace ToolKit
     Arrow2d();
     Arrow2d(ArrowType t);
     ~Arrow2d();
-    EntityType GetType();
+    virtual EntityType GetType() const override;
 
 	private:
 		void Generate(ArrowType t);
@@ -54,7 +54,7 @@ namespace ToolKit
   public:
     LineBatch(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t);
     ~LineBatch();
-		EntityType GetType();
+		virtual EntityType GetType() const override;
     void Generate(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t);
   };
 

@@ -150,7 +150,7 @@ ToolKit::SpriteAnimation::~SpriteAnimation()
 {
 }
 
-ToolKit::EntityType ToolKit::SpriteAnimation::GetType()
+ToolKit::EntityType ToolKit::SpriteAnimation::GetType() const
 {
   return EntityType::Entity_SpriteAnim;
 }

@@ -58,7 +58,7 @@ void ToolKit::Editor::App::Init()
 	m_suzanne = new Drawable();
 	m_suzanne->m_mesh = Main::GetInstance()->m_meshMan.Create(MeshPath("suzanne.mesh"));
 	m_suzanne->m_mesh->Init(false);
-	m_scene.m_entitites.push_back(m_suzanne);
+	m_scene.AddEntity(m_suzanne);
 
 	m_cursor = new Cursor();
 
@@ -66,12 +66,12 @@ void ToolKit::Editor::App::Init()
 	m_q1->m_mesh->Init(false);
 	m_q1->m_node->m_translation = glm::vec3(-4.0f, 0.0f, 0.0f);
 	m_q1->m_node->m_orientation = glm::angleAxis(1.1f, glm::normalize(glm::vec3(1.0f, 1.0f, 1.0f)));
-	m_scene.m_entitites.push_back(m_q1);
+	m_scene.AddEntity(m_q1);
 	
 	m_q2 = new Cube();
 	m_q2->m_mesh->Init(false);
 	m_q2->m_node->m_translation = glm::vec3(4.0f, 0.0f, 0.0f);
-	m_scene.m_entitites.push_back(m_q2);
+	m_scene.AddEntity(m_q2);
 
 	m_origin = new Axis3d();
 	
@@ -112,7 +112,7 @@ void ToolKit::Editor::App::Frame(float deltaTime)
 	{
 		m_renderer->SetRenderTarget(vp->m_viewportImage);
 
-		for (Entity* ntt : m_scene.m_entitites)
+		for (Entity* ntt : m_scene.GetEntities())
 		{
 			if (ntt->IsDrawable())
 			{
@@ -349,4 +349,31 @@ ToolKit::Entity* ToolKit::Editor::Scene::GetEntity(EntityId id)
 	}
 
 	return nullptr;
+}
+
+void ToolKit::Editor::Scene::AddEntity(Entity* entity)
+{
+	m_entitites.push_back(entity);
+}
+
+ToolKit::Entity* ToolKit::Editor::Scene::RemoveEntity(EntityId id)
+{
+	Entity* removed = nullptr;
+	for (size_t i = m_entitites.size() - 1; i >= 0; i--)
+	{
+		if (m_entitites[i]->m_id == id)
+		{
+			removed = m_entitites[i];
+			m_entitites.erase(m_entitites.begin() + i);
+			RemoveFromSelection(id);
+			break;
+		}
+	}
+
+	return removed;
+}
+
+const std::vector<ToolKit::Entity*>& ToolKit::Editor::Scene::GetEntities()
+{
+	return m_entitites;
 }

@@ -27,7 +27,7 @@ namespace ToolKit
   public:
     Actor();
     virtual ~Actor();
-    virtual EntityType GetType();
+    virtual EntityType GetType() const override;
 
   public:
     StateMachine* m_stateMachine;

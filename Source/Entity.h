@@ -31,10 +31,10 @@ namespace ToolKit
     Entity();
     virtual ~Entity();
 
-    virtual bool IsDrawable();
-    virtual EntityType GetType();
+    virtual bool IsDrawable() const;
+    virtual EntityType GetType() const;
     virtual void SetPose(Animation* anim);
-		virtual struct BoundingBox GetAABB(bool inWorld = false);
+		virtual struct BoundingBox GetAABB(bool inWorld = false) const;
 
   public:
     Node* m_node;

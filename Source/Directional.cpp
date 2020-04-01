@@ -47,7 +47,7 @@ void ToolKit::Directional::GetLocalAxis(glm::vec3& dir, glm::vec3& up, glm::vec3
   dir = -glm::column(transform, 2);
 }
 
-ToolKit::EntityType ToolKit::Directional::GetType()
+ToolKit::EntityType ToolKit::Directional::GetType() const
 {
   return EntityType::Entity_Directional;
 }
@@ -108,7 +108,7 @@ ToolKit::Camera::CamData ToolKit::Camera::GetData()
   return data;
 }
 
-ToolKit::EntityType ToolKit::Camera::GetType()
+ToolKit::EntityType ToolKit::Camera::GetType() const
 {
   return EntityType::Entity_Camera;
 }
@@ -132,7 +132,7 @@ ToolKit::Light::LightData ToolKit::Light::GetData()
   return data;
 }
 
-ToolKit::EntityType ToolKit::Light::GetType()
+ToolKit::EntityType ToolKit::Light::GetType() const
 {
   return EntityType::Entity_Light;
 }

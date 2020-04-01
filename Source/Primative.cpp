@@ -113,7 +113,7 @@ ToolKit::Cube::~Cube()
 {
 }
 
-ToolKit::EntityType ToolKit::Cube::GetType()
+ToolKit::EntityType ToolKit::Cube::GetType() const
 {
   return EntityType::Entity_Cube;
 }
@@ -157,7 +157,7 @@ ToolKit::Quad::~Quad()
 {
 }
 
-ToolKit::EntityType ToolKit::Quad::GetType()
+ToolKit::EntityType ToolKit::Quad::GetType() const
 {
   return EntityType::Entity_Quad;
 }
@@ -226,7 +226,7 @@ ToolKit::Sphere::Sphere()
 {
 }
 
-ToolKit::EntityType ToolKit::Sphere::GetType()
+ToolKit::EntityType ToolKit::Sphere::GetType() const
 {
   return EntityType::Entity_Sphere;
 }
@@ -246,7 +246,7 @@ ToolKit::Arrow2d::~Arrow2d()
 {
 }
 
-ToolKit::EntityType ToolKit::Arrow2d::GetType()
+ToolKit::EntityType ToolKit::Arrow2d::GetType() const
 {
   return EntityType::Etity_Arrow;
 }
@@ -308,7 +308,7 @@ ToolKit::LineBatch::~LineBatch()
 {
 }
 
-ToolKit::EntityType ToolKit::LineBatch::GetType()
+ToolKit::EntityType ToolKit::LineBatch::GetType() const
 {
   return EntityType::Entity_LineBatch;
 }

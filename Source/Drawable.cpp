@@ -15,12 +15,12 @@ ToolKit::Drawable::~Drawable()
 {
 }
 
-bool ToolKit::Drawable::IsDrawable()
+bool ToolKit::Drawable::IsDrawable() const
 {
 	return true;
 }
 
-ToolKit::EntityType ToolKit::Drawable::GetType()
+ToolKit::EntityType ToolKit::Drawable::GetType() const
 {
   return EntityType::Entity_Drawable;
 }
@@ -38,7 +38,7 @@ void ToolKit::Drawable::SetPose(Animation* anim)
   }
 }
 
-ToolKit::BoundingBox ToolKit::Drawable::GetAABB(bool inWorld)
+ToolKit::BoundingBox ToolKit::Drawable::GetAABB(bool inWorld) const
 {
 	BoundingBox bb = m_mesh->m_aabb;
 	if (inWorld)

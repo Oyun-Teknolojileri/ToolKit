@@ -18,7 +18,7 @@ namespace ToolKit
     void RotateOnUpVector(float val);
     void GetLocalAxis(glm::vec3& dir, glm::vec3& up, glm::vec3& right);
     
-    virtual EntityType GetType();
+    virtual EntityType GetType() const override;
   };
 
   class Camera : public Directional
@@ -46,7 +46,7 @@ namespace ToolKit
     glm::mat4 GetViewMatrix();
 
     CamData GetData();
-    virtual EntityType GetType();
+    virtual EntityType GetType() const override;
 
   private:
 		float m_fov;
@@ -72,7 +72,7 @@ namespace ToolKit
     virtual ~Light();
 
     LightData GetData();
-    virtual EntityType GetType();
+    virtual EntityType GetType() const override;
 
   public:
     glm::vec3 m_color;

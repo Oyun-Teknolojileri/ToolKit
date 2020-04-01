@@ -35,7 +35,7 @@ namespace ToolKit
 			PickData PickObject(Ray ray, const std::vector<EntityId>& ignoreList = std::vector<EntityId>());
 			void PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const std::vector<EntityId>& ignoreList = std::vector<EntityId>(), bool pickPartiallyInside = true);
 			
-			// Selection operations
+			// Selection operations.
 			bool IsSelected(EntityId id);
 			void RemoveFromSelection(EntityId id);
 			void AddToSelection(EntityId id);
@@ -43,13 +43,15 @@ namespace ToolKit
 			bool IsCurrentSelection(EntityId id);
 			void MakeCurrentSelection(EntityId id, bool ifExist);
 			uint GetSelectedEntityCount();
-			Entity* GetEntity(EntityId id);
 
-		public:
-			std::vector<Light*> m_lights;
-			std::vector<Entity*> m_entitites;
+			// Entity operations.
+			Entity* GetEntity(EntityId id);
+			void AddEntity(Entity* entity);
+			Entity* RemoveEntity(EntityId id);
+			const std::vector<Entity*>& GetEntities();
 
 		private:
+			std::vector<Entity*> m_entitites;
 			std::vector<EntityId> m_selectedEntities;
 		};
 

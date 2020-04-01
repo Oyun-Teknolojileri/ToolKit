@@ -32,7 +32,7 @@ ToolKit::Surface::~Surface()
 	UnInit();
 }
 
-ToolKit::EntityType ToolKit::Surface::GetType()
+ToolKit::EntityType ToolKit::Surface::GetType() const
 {
   return EntityType::Entity_Surface;
 }

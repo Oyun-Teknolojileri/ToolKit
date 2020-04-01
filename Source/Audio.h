@@ -40,7 +40,7 @@ namespace ToolKit
     AudioSource();
     ~AudioSource();
 
-    EntityType GetType();
+    virtual EntityType GetType() const override;
     void AttachAudio(std::shared_ptr<Audio> audio);
     void SetLoop(bool enable);
     void SetVolume(float val);

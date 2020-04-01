@@ -19,7 +19,7 @@ namespace ToolKit
     Surface(std::string file, glm::vec2 pivotOffset);
     ~Surface();
 
-    EntityType GetType();
+    virtual EntityType GetType() const override;
     virtual void Load() override;
     virtual void Init(bool flushClientSideArray = true) override;
 		virtual void UnInit() override;

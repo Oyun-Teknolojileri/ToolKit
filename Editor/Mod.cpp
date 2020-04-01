@@ -119,6 +119,9 @@ void ToolKit::Editor::BaseMod::Signal(SignalId signal)
 	m_stateMachine->Signal(signal);
 }
 
+std::shared_ptr< ToolKit::Arrow2d> ToolKit::Editor::StatePickingBase::m_dbgArrow = nullptr;
+std::shared_ptr< ToolKit::LineBatch> ToolKit::Editor::StatePickingBase::m_dbgFrustum = nullptr;
+
 ToolKit::Editor::StatePickingBase::StatePickingBase(std::string name)
 	: State(name) 
 { 
@@ -179,8 +182,15 @@ std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 			if (g_app->m_pickingDebug)
 			{
 				g_app->m_cursor->m_pickPosition = pd.pickPos;
-				static std::shared_ptr<Arrow2d> mdl = nullptr;
-				DebugDrawPickingRay(ray, mdl);
+				if (m_dbgArrow == nullptr)
+				{
+					m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d());
+					m_ignoreList.push_back(m_dbgArrow->m_id);
+					g_app->m_scene.AddEntity(m_dbgArrow.get());
+				}
+
+				m_dbgArrow->m_node->m_translation = ray.position;
+				m_dbgArrow->m_node->m_orientation = ToolKit::RotationTo(ToolKit::X_AXIS, ray.direction);
 			}
 
 			return StateEndPick().m_name;
@@ -284,15 +294,15 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 					rect3d[0] + rays[0].direction * depth
 				};
 
-				static std::shared_ptr<LineBatch> mdl = nullptr; 
-				if (mdl == nullptr)
+				if (m_dbgFrustum == nullptr)
 				{
-					mdl = std::shared_ptr<LineBatch>(new LineBatch(corners, ToolKit::X_AXIS, DrawType::Line));
-					g_app->m_scene.m_entitites.push_back(mdl.get());
+					m_dbgFrustum = std::shared_ptr<LineBatch>(new LineBatch(corners, ToolKit::X_AXIS, DrawType::Line));
+					m_ignoreList.push_back(m_dbgFrustum->m_id);
+					g_app->m_scene.AddEntity(m_dbgFrustum.get());
 				}
 				else
 				{
-					mdl->Generate(corners, ToolKit::X_AXIS, DrawType::Line);
+					m_dbgFrustum->Generate(corners, ToolKit::X_AXIS, DrawType::Line);
 				}
 			}
 		}
@@ -486,16 +496,4 @@ void ToolKit::Editor::CursorMod::Update(float deltaTime)
 		Scene::PickData& pd = endPick->m_pickData.back();
 		g_app->m_cursor->m_pickPosition = pd.pickPos;
 	}
-}
-
-void ToolKit::Editor::StatePickingBase::DebugDrawPickingRay(Ray ray, std::shared_ptr<Arrow2d>& mdl)
-{
-	if (mdl == nullptr)
-	{
-		mdl = std::shared_ptr<Arrow2d>(new Arrow2d());
-		g_app->m_scene.m_entitites.push_back(mdl.get());
-	}
-
-	mdl->m_node->m_translation = ray.position;
-	mdl->m_node->m_orientation = ToolKit::RotationTo(ToolKit::X_AXIS, ray.direction);
 }
