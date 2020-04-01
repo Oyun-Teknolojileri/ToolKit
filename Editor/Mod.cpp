@@ -179,7 +179,7 @@ std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 			Scene::PickData pd = g_app->m_scene.PickObject(ray, m_ignoreList);
 			m_pickData.push_back(pd);
 
-			if (g_app->m_pickingDebug)
+			if (g_app->m_showPickingDebug)
 			{
 				g_app->m_cursor->m_pickPosition = pd.pickPos;
 				if (m_dbgArrow == nullptr)
@@ -275,7 +275,7 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 			m_pickData.insert(m_pickData.end(), ntties.begin(), ntties.end());
 
 			// Debug draw the picking frustum.
-			if (g_app->m_pickingDebug)
+			if (g_app->m_showPickingDebug)
 			{
 				std::vector<glm::vec3> corners =
 				{

@@ -89,8 +89,9 @@ namespace ToolKit
 			Axis3d* m_origin;
 			Cursor* m_cursor;
 
-			// Editor debug states.
-			bool m_pickingDebug = false;
+			// Editor states.
+			bool m_showPickingDebug = false;
+			bool m_showOverlayUI = true;
 
 		private:
 			Renderer* m_renderer;

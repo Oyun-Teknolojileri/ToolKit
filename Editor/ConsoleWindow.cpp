@@ -9,28 +9,34 @@
 // Executors
 void ToolKit::Editor::ShowPickDebugExec(std::string args)
 {
-	g_app->m_pickingDebug = true;
-}
+	if (args == "1")
+	{
+		g_app->m_showPickingDebug = true;
+	}
 
-void ToolKit::Editor::HidePickDebugExec(std::string args)
-{
-	g_app->m_pickingDebug = false;
+	if (args == "0")
+	{
+		g_app->m_showPickingDebug = false;
 
-	g_app->m_scene.RemoveEntity(StatePickingBase::m_dbgArrow->m_id);
-	StatePickingBase::m_dbgArrow = nullptr;
+		g_app->m_scene.RemoveEntity(StatePickingBase::m_dbgArrow->m_id);
+		StatePickingBase::m_dbgArrow = nullptr;
 
-	g_app->m_scene.RemoveEntity(StatePickingBase::m_dbgFrustum->m_id);
-	StatePickingBase::m_dbgFrustum = nullptr;
+		g_app->m_scene.RemoveEntity(StatePickingBase::m_dbgFrustum->m_id);
+		StatePickingBase::m_dbgFrustum = nullptr;
+	}
 }
 
 void ToolKit::Editor::ShowOverlayExec(std::string args)
 {
+	if (args == "1")
+	{
+		g_app->m_showOverlayUI = true;
+	}
 
-}
-
-void ToolKit::Editor::HideOverlayExec(std::string args)
-{
-
+	if (args == "0")
+	{
+		g_app->m_showOverlayUI = false;
+	}
 }
 
 // ImGui ripoff. Portable helpers.
@@ -42,9 +48,7 @@ static void  Strtrim(char* str) { char* str_end = str + strlen(str); while (str_
 ToolKit::Editor::ConsoleWindow::ConsoleWindow()
 {
 	CreateCommand(g_showPickDebugCmd, ShowPickDebugExec);
-	CreateCommand(g_hidePickDebugCmd, HidePickDebugExec);
 	CreateCommand(g_showOverlayUICmd, ShowOverlayExec);
-	CreateCommand(g_hideOverlayUICmd, HideOverlayExec);
 }
 
 void ToolKit::Editor::ConsoleWindow::Show()
@@ -184,7 +188,7 @@ void ToolKit::Editor::ConsoleWindow::ExecCommand(const std::string& commandLine)
 	std::string args, cmd;
 	if (argsIndx != std::string::npos)
 	{
-		args = commandLine.substr(argsIndx);
+		args = commandLine.substr(argsIndx + 1);
 		cmd = commandLine.substr(0, argsIndx);
 	}
 	else

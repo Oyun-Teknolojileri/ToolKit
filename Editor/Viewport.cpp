@@ -117,10 +117,13 @@ void Editor::Viewport::Show()
 		}
 	}
 
-	if (IsActive() && m_overlayNav != nullptr)
+	if (g_app->m_showOverlayUI)
 	{
-		m_overlayNav->m_owner = this;
-		m_overlayNav->Show();
+		if (IsActive() && m_overlayNav != nullptr)
+		{
+			m_overlayNav->m_owner = this;
+			m_overlayNav->Show();
+		}
 	}
 
 	m_mouseHover = ImGui::IsWindowHovered();

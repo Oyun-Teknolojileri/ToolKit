@@ -12,14 +12,8 @@ namespace ToolKit
 		const std::string g_showPickDebugCmd("ShowPickDebug");
 		extern void ShowPickDebugExec(std::string args);
 
-		const std::string g_hidePickDebugCmd("HidePickDebug");
-		extern void HidePickDebugExec(std::string args);
-
 		const std::string g_showOverlayUICmd("ShowOverlayUI");
 		extern void ShowOverlayExec(std::string args);
-
-		const std::string g_hideOverlayUICmd("HideOverlayUI");
-		extern void HideOverlayExec(std::string args);
 
 		class ConsoleWindow
 		{
