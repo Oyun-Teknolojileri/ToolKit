@@ -185,12 +185,16 @@ void ToolKit::Editor::UI::ShowMenuWindows()
 			{
 				vp->SetVisibility(true);
 			}
-			ImGui::SameLine();
-			if (ImGui::Button("x"))
+
+			if (vp->IsOpen())
 			{
-				g_app->m_viewports.erase(g_app->m_viewports.begin() + i);
-				SafeDel(vp);
-				continue;
+				ImGui::SameLine();
+				if (ImGui::Button("x"))
+				{
+					g_app->m_viewports.erase(g_app->m_viewports.begin() + i);
+					SafeDel(vp);
+					continue;
+				}
 			}
 		}
 
