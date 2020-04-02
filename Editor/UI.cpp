@@ -361,8 +361,8 @@ void ToolKit::Editor::Window::SetActive()
 
 void ToolKit::Editor::Window::HandleStates()
 {
-	m_mouseHover = ImGui::IsWindowHovered();
-	if (ImGui::IsMouseDown(1) && m_mouseHover) // Activate with right click.
+	m_mouseHover = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+	if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && m_mouseHover) // Activate with right click.
 	{
 		ImGui::SetWindowFocus();
 	}

@@ -66,7 +66,7 @@ void ToolKit::Editor::ConsoleWindow::Show()
 		ImGui::Text("Search: ");
 		ImGui::SameLine();
 
-		m_filter.Draw("", 180);
+		m_filter.Draw("##Filter", 180);
 		ImGui::Separator();
 
 		// Output window.
@@ -119,11 +119,14 @@ void ToolKit::Editor::ConsoleWindow::Show()
 		ImGui::PopStyleVar();
 		ImGui::EndChild();
 
+		ImGui::Text("Command: ");
+		ImGui::SameLine();
+
 		// Command window.
 		bool reclaim_focus = false;
 		static char inputBuff[256];
 		if (ImGui::InputText(
-			"Input",
+			"##Input",
 			inputBuff,
 			IM_ARRAYSIZE(inputBuff),
 			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
@@ -143,7 +146,9 @@ void ToolKit::Editor::ConsoleWindow::Show()
 		// Auto-focus on window apparition
 		ImGui::SetItemDefaultFocus();
 		if (reclaim_focus)
+		{
 			ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
+		}
 	}
 	ImGui::End();
 }
