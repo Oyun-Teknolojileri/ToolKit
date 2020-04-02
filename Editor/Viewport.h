@@ -12,18 +12,16 @@ namespace ToolKit
 
 	namespace Editor
 	{
-		class Viewport
+		class Viewport : public Window
 		{
 		public:
 			Viewport(float width, float height);
-			~Viewport();
+			virtual ~Viewport();
+			virtual void Show() override;
+			virtual Type GetType() override;
 			void Update(float deltaTime);
-			void Show();
-			void SetVisibility(bool visible);
 
 			// Window queries.
-			bool IsActive();
-			bool IsOpen();
 			bool IsViewportQueriable();
 
 			// Utility Functions.
@@ -40,7 +38,6 @@ namespace ToolKit
 
 			// Internal window handling.
 			void OnResize(float width, float height);
-			void SetActive();
 
 		public:
 			// ToolKit bindings.

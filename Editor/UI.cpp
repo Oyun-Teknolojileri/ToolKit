@@ -80,12 +80,13 @@ void ToolKit::Editor::UI::ShowUI()
 	InitDocking();
 	ShowAppMainMenuBar();
 
-	for (Viewport* vp : g_app->m_viewports)
+	for (Window* wnd : g_app->m_windows)
 	{
-		vp->Show();
+		if (wnd->IsOpen())
+		{
+			wnd->Show();
+		}
 	}
-
-	g_app->m_console->Show();
 
 	if (m_imguiSampleWindow)
 	{
@@ -178,9 +179,15 @@ void ToolKit::Editor::UI::ShowMenuWindows()
 {
 	if (ImGui::BeginMenu("Viewport"))
 	{
-		for (int i = (int)g_app->m_viewports.size() - 1; i >= 0; i--)
+		for (int i = (int)g_app->m_windows.size() - 1; i >= 0; i--)
 		{
-			Viewport* vp = g_app->m_viewports[i];
+			Window* wnd = g_app->m_windows[i];
+			if (wnd->GetType() != Window::Type::Viewport)
+			{
+				continue;
+			}
+
+			Viewport* vp = static_cast<Viewport*> (wnd);
 			if (ImGui::MenuItem(vp->m_name.c_str(), nullptr, false, !vp->IsOpen()))
 			{
 				vp->SetVisibility(true);
@@ -191,7 +198,7 @@ void ToolKit::Editor::UI::ShowMenuWindows()
 				ImGui::SameLine();
 				if (ImGui::Button("x"))
 				{
-					g_app->m_viewports.erase(g_app->m_viewports.begin() + i);
+					g_app->m_windows.erase(g_app->m_windows.begin() + i);
 					SafeDel(vp);
 					continue;
 				}
@@ -201,14 +208,14 @@ void ToolKit::Editor::UI::ShowMenuWindows()
 		if (ImGui::MenuItem("Add Viewport", "Alt+V"))
 		{
 			Viewport* vp = new Viewport(640, 480);
-			g_app->m_viewports.push_back(vp);
+			g_app->m_windows.push_back(vp);
 		}
 		ImGui::EndMenu();
 	}
 
-	if (ImGui::MenuItem("Console Window", "Alt+C", nullptr, !g_app->m_console->IsOpen()))
+	if (ImGui::MenuItem("Console Window", "Alt+C", nullptr, !g_app->GetConsole()->IsOpen()))
 	{
-		g_app->m_console->SetVisibility(true);
+		g_app->GetConsole()->SetVisibility(true);
 	}
 
 	ImGui::Separator();
@@ -311,4 +318,61 @@ bool ToolKit::Editor::UI::ToggleButton(ImTextureID user_texture_id, const ImVec2
 	}
 
 	return newPushState;
+}
+
+ToolKit::Editor::Window::Window()
+{
+}
+
+ToolKit::Editor::Window::~Window()
+{
+}
+
+void ToolKit::Editor::Window::SetVisibility(bool visible)
+{
+	m_open = visible;
+}
+
+bool ToolKit::Editor::Window::IsActive()
+{
+	return m_active;
+}
+
+bool ToolKit::Editor::Window::IsOpen()
+{
+	return m_open;
+}
+
+void ToolKit::Editor::Window::SetActive()
+{
+	for (Window* wnd : g_app->m_windows)
+	{
+		// Deactivate all the others.
+		if (wnd != this)
+		{
+			wnd->m_active = false;
+		}
+		else
+		{
+			m_active = true;
+		}
+	}
+}
+
+void ToolKit::Editor::Window::HandleStates()
+{
+	m_mouseHover = ImGui::IsWindowHovered();
+	if (ImGui::IsMouseDown(1) && m_mouseHover) // Activate with right click.
+	{
+		ImGui::SetWindowFocus();
+	}
+
+	if (ImGui::IsWindowFocused())
+	{
+		SetActive();
+	}
+	else
+	{
+		m_active = false;
+	}
 }

@@ -28,13 +28,11 @@ ToolKit::Editor::App::App(int windowWidth, int windowHeight)
 ToolKit::Editor::App::~App()
 {
 	// UI.
-	for (Viewport* vp : m_viewports)
+	for (Window* wnd : m_windows)
 	{
-		SafeDel(vp);
+		SafeDel(wnd);
 	}
-
 	SafeDel(Viewport::m_overlayNav);
-	SafeDel(m_console);
 
 	// Editor objects.
 	SafeDel(m_grid);
@@ -88,9 +86,10 @@ void ToolKit::Editor::App::Init()
 
 	// UI.
 	Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
-	m_viewports.push_back(vp);
+	m_windows.push_back(vp);
 
-	m_console = new ConsoleWindow();
+	ConsoleWindow* console = new ConsoleWindow();
+	m_windows.push_back(console);
 
 	UI::InitIcons();
 }
@@ -102,14 +101,16 @@ void ToolKit::Editor::App::Frame(float deltaTime)
 	ModManager::GetInstance()->Update(deltaTime);
 
 	// Update Viewports.
-	for (int i = (int)m_viewports.size() - 1; i >= 0; i--)
+	for (Window* wnd : m_windows)
 	{
-		Viewport* vp = m_viewports[i];
-		vp->Update(deltaTime);
-	}
+		if (wnd->GetType() != Window::Type::Viewport)
+		{
+			continue;
+		}
 
-	for (Viewport* vp : m_viewports)
-	{
+		Viewport* vp = static_cast<Viewport*> (wnd);
+		vp->Update(deltaTime);
+
 		m_renderer->SetRenderTarget(vp->m_viewportImage);
 
 		for (Entity* ntt : m_scene.GetEntities())
@@ -154,11 +155,29 @@ void ToolKit::Editor::App::OnQuit()
 
 ToolKit::Editor::Viewport* ToolKit::Editor::App::GetActiveViewport()
 {
-	for (Viewport* vp : m_viewports)
+	for (Window* wnd : m_windows)
 	{
-		if (vp->IsActive() && vp->IsOpen())
+		if (wnd->GetType() != Window::Type::Viewport)
 		{
-			return vp;
+			continue;
+		}
+
+		if (wnd->IsActive() && wnd->IsOpen())
+		{
+			return static_cast<Viewport*> (wnd);
+		}
+	}
+
+	return nullptr;
+}
+
+ToolKit::Editor::ConsoleWindow* ToolKit::Editor::App::GetConsole()
+{
+	for (Window* wnd : m_windows)
+	{
+		if (wnd->GetType() == Window::Type::Console)
+		{
+			return static_cast<ConsoleWindow*> (wnd);
 		}
 	}
 

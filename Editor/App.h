@@ -17,6 +17,7 @@ namespace ToolKit
 		class Axis3d;
 		class Cursor;
 		class ConsoleWindow;
+		class Window;
 
 		using namespace ToolKit;
 		using namespace glm;
@@ -67,6 +68,7 @@ namespace ToolKit
 			void OnQuit();
 			
 			Viewport* GetActiveViewport(); // Returns open and active viewport or nullptr.
+			ConsoleWindow* GetConsole();
 
 			// Quick selected render implementation.
 			void RenderSelected(Drawable* e, Camera* c);
@@ -75,8 +77,7 @@ namespace ToolKit
 			Scene m_scene;
 			
 			// UI elements.
-			std::vector<Viewport*> m_viewports;
-			ConsoleWindow* m_console;
+			std::vector<Window*> m_windows;
 
 			// Editor variables.
 			float m_camSpeed = 4.0; // Meters per sec.

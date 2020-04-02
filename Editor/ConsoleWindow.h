@@ -15,13 +15,13 @@ namespace ToolKit
 		const std::string g_showOverlayUICmd("ShowOverlayUI");
 		extern void ShowOverlayExec(std::string args);
 
-		class ConsoleWindow
+		class ConsoleWindow : public Window
 		{
 		public:
 			ConsoleWindow();
-
-			void Show();
-			void SetVisibility(bool visible);
+			virtual ~ConsoleWindow();
+			virtual void Show() override;
+			virtual Type GetType() override;
 
 			// Functions.
 			enum class LogType
@@ -35,9 +35,6 @@ namespace ToolKit
 			void ClearLog();
 			void ExecCommand(const std::string& commandLine);
 
-			// Window queries.
-			bool IsOpen();
-
 		private:
 			// Command line word processing. Auto-complete and history lookups.
 			int TextEditCallback(ImGuiInputTextCallbackData* data);
@@ -45,7 +42,6 @@ namespace ToolKit
 			
 		private:
 			// States.
-			bool m_open = true;
 			bool m_scrollToBottom = false;
 
 			// Buffers.

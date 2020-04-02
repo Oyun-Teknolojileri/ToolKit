@@ -38,31 +38,12 @@ Editor::Viewport::~Viewport()
 	SafeDel(m_viewportImage);
 }
 
-void Editor::Viewport::Update(float deltaTime)
-{
-	if (!IsActive())
-	{
-		return;
-	}
-
-	// Update viewport mods.
-	FpsNavigationMode(deltaTime);
-}
-
 void Editor::Viewport::Show()
 {
-	if (!IsOpen())
-	{
-		return;
-	}
-
 	ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
-	ImGui::Begin(m_name.c_str(), &m_open, ImGuiWindowFlags_NoSavedSettings);
+	ImGui::Begin(m_name.c_str(), &m_open);
 	{
-		if (ImGui::IsMouseDown(1) && ImGui::IsWindowHovered()) // Activate with right click.
-		{
-			ImGui::SetWindowFocus();
-		}
+		HandleStates();
 
 		// Content area size
 		ImVec2 vMin = ImGui::GetWindowContentRegionMin();
@@ -104,9 +85,8 @@ void Editor::Viewport::Show()
 					OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
 				}
 
-				if (ImGui::IsWindowFocused())
+				if (IsActive())
 				{
-					SetActive();
 					ImGui::GetWindowDrawList()->AddRect(vMin, vMax, IM_COL32(255, 255, 0, 255));
 				}
 				else
@@ -139,19 +119,15 @@ void Editor::Viewport::Show()
 	ImGui::End();
 }
 
-void ToolKit::Editor::Viewport::SetVisibility(bool visible)
+void Editor::Viewport::Update(float deltaTime)
 {
-	m_open = visible;
-}
+	if (!IsActive())
+	{
+		return;
+	}
 
-bool ToolKit::Editor::Viewport::IsActive()
-{
-	return m_active;
-}
-
-bool ToolKit::Editor::Viewport::IsOpen()
-{
-	return m_open;
+	// Update viewport mods.
+	FpsNavigationMode(deltaTime);
 }
 
 void Editor::Viewport::OnResize(float width, float height)
@@ -166,20 +142,9 @@ void Editor::Viewport::OnResize(float width, float height)
 	m_viewportImage->Init();
 }
 
-void ToolKit::Editor::Viewport::SetActive()
+ToolKit::Editor::Window::Type ToolKit::Editor::Viewport::GetType()
 {
-	for (Viewport* vp : g_app->m_viewports)
-	{
-		// Deactivate all the others.
-		if (vp != this)
-		{
-			vp->m_active = false;
-		}
-		else
-		{
-			m_active = true;
-		}
-	}
+	return Type::Viewport;
 }
 
 bool ToolKit::Editor::Viewport::IsViewportQueriable()

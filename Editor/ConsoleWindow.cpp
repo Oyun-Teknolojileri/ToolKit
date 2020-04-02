@@ -51,16 +51,17 @@ ToolKit::Editor::ConsoleWindow::ConsoleWindow()
 	CreateCommand(g_showOverlayUICmd, ShowOverlayExec);
 }
 
+ToolKit::Editor::ConsoleWindow::~ConsoleWindow()
+{
+}
+
 void ToolKit::Editor::ConsoleWindow::Show()
 {
-	if (!IsOpen())
-	{
-		return;
-	}
-
 	ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Once);
-	ImGui::Begin(g_consoleStr.c_str(), &m_open, ImGuiWindowFlags_NoSavedSettings);
+	ImGui::Begin(g_consoleStr.c_str(), &m_open);
 	{
+		HandleStates();
+
 		// Search bar.
 		ImGui::Text("Search: ");
 		ImGui::SameLine();
@@ -147,9 +148,9 @@ void ToolKit::Editor::ConsoleWindow::Show()
 	ImGui::End();
 }
 
-void ToolKit::Editor::ConsoleWindow::SetVisibility(bool visible)
+ToolKit::Editor::Window::Type ToolKit::Editor::ConsoleWindow::GetType()
 {
-	m_open = visible;
+	return Type::Console;
 }
 
 void ToolKit::Editor::ConsoleWindow::AddLog(const std::string& log, LogType type)
@@ -222,11 +223,6 @@ void ToolKit::Editor::ConsoleWindow::ExecCommand(const std::string& commandLine)
 	}
 
 	m_scrollToBottom = true;
-}
-
-bool ToolKit::Editor::ConsoleWindow::IsOpen()
-{
-	return m_open;
 }
 
 // Mostly ripoff from the ImGui Console Example.
