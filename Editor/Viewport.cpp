@@ -149,7 +149,7 @@ ToolKit::Editor::Window::Type ToolKit::Editor::Viewport::GetType()
 
 bool ToolKit::Editor::Viewport::IsViewportQueriable()
 {
-	return m_mouseOverContentArea && m_mouseHover && m_active && m_open && m_relMouseModBegin;
+	return m_mouseOverContentArea && m_mouseHover && m_active && m_open && m_relMouseModBegin; // OPEN - ACTIVE - AND RELATIVE MOD IS BROKEN !! FIX DUE TO UI - HANDLESTATES
 }
 
 Ray ToolKit::Editor::Viewport::RayFromMousePosition()

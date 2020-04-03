@@ -1,5 +1,11 @@
 #include "stdafx.h"
 
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_internal.h"
+
+#include "ImGui/imgui_impl_sdl.h"
+#include "ImGui/imgui_impl_opengl3.h"
+
 #include "App.h"
 #include "UI.h"
 #include "Viewport.h"
@@ -310,7 +316,7 @@ bool ToolKit::Editor::UI::ToggleButton(ImTextureID user_texture_id, const ImVec2
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_ButtonHovered]);
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, style.Colors[ImGuiCol_ButtonHovered]);
 	}
-	bool newPushState = pushState | ImGui::ImageButton((void*)(intptr_t)user_texture_id, ImVec2(32, 32));
+	bool newPushState = pushState | ImGui::ImageButton((void*)(intptr_t)user_texture_id, size);
 	if (pushState)
 	{
 		ImGui::PopStyleColor(3);
@@ -362,17 +368,27 @@ void ToolKit::Editor::Window::SetActive()
 void ToolKit::Editor::Window::HandleStates()
 {
 	m_mouseHover = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
-	if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && m_mouseHover) // Activate with right click.
+	bool rightClick = ImGui::IsMouseDown(ImGuiMouseButton_Right);
+	bool leftClick = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+
+	if ((rightClick || leftClick) && m_mouseHover) // Activate with right click.
 	{
 		ImGui::SetWindowFocus();
 	}
 
-	if (ImGui::IsWindowFocused())
+	if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
 	{
-		SetActive();
+		if (!m_active)
+		{
+			ImGui::ClearActiveID();
+			m_active = true;
+		}
 	}
 	else
 	{
-		m_active = false;
+		if (m_active)
+		{
+			m_active = false;
+		}		
 	}
 }
