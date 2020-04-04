@@ -24,16 +24,15 @@ namespace ToolKit
 
 				// Window queries.
 				bool IsActive();
-				bool IsOpen();
+				bool IsVisible();
 
 			protected:
 				// Internal window handling.
-				void SetActive();
 				void HandleStates();
 
 			protected:
 				// States.
-				bool m_open = true;
+				bool m_visible = true;
 				bool m_active = false;
 				bool m_mouseHover = false;
 			};

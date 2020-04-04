@@ -88,7 +88,7 @@ void ToolKit::Editor::UI::ShowUI()
 
 	for (Window* wnd : g_app->m_windows)
 	{
-		if (wnd->IsOpen())
+		if (wnd->IsVisible())
 		{
 			wnd->Show();
 		}
@@ -194,12 +194,12 @@ void ToolKit::Editor::UI::ShowMenuWindows()
 			}
 
 			Viewport* vp = static_cast<Viewport*> (wnd);
-			if (ImGui::MenuItem(vp->m_name.c_str(), nullptr, false, !vp->IsOpen()))
+			if (ImGui::MenuItem(vp->m_name.c_str(), nullptr, false, !vp->IsVisible()))
 			{
 				vp->SetVisibility(true);
 			}
 
-			if (vp->IsOpen())
+			if (vp->IsVisible())
 			{
 				ImGui::SameLine();
 				if (ImGui::Button("x"))
@@ -219,7 +219,7 @@ void ToolKit::Editor::UI::ShowMenuWindows()
 		ImGui::EndMenu();
 	}
 
-	if (ImGui::MenuItem("Console Window", "Alt+C", nullptr, !g_app->GetConsole()->IsOpen()))
+	if (ImGui::MenuItem("Console Window", "Alt+C", nullptr, !g_app->GetConsole()->IsVisible()))
 	{
 		g_app->GetConsole()->SetVisibility(true);
 	}
@@ -336,7 +336,7 @@ ToolKit::Editor::Window::~Window()
 
 void ToolKit::Editor::Window::SetVisibility(bool visible)
 {
-	m_open = visible;
+	m_visible = visible;
 }
 
 bool ToolKit::Editor::Window::IsActive()
@@ -344,25 +344,9 @@ bool ToolKit::Editor::Window::IsActive()
 	return m_active;
 }
 
-bool ToolKit::Editor::Window::IsOpen()
+bool ToolKit::Editor::Window::IsVisible()
 {
-	return m_open;
-}
-
-void ToolKit::Editor::Window::SetActive()
-{
-	for (Window* wnd : g_app->m_windows)
-	{
-		// Deactivate all the others.
-		if (wnd != this)
-		{
-			wnd->m_active = false;
-		}
-		else
-		{
-			m_active = true;
-		}
-	}
+	return m_visible;
 }
 
 void ToolKit::Editor::Window::HandleStates()

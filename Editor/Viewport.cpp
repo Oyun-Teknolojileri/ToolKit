@@ -41,7 +41,7 @@ Editor::Viewport::~Viewport()
 void Editor::Viewport::Show()
 {
 	ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
-	ImGui::Begin(m_name.c_str(), &m_open);
+	ImGui::Begin(m_name.c_str(), &m_visible);
 	{
 		HandleStates();
 
@@ -149,7 +149,7 @@ ToolKit::Editor::Window::Type ToolKit::Editor::Viewport::GetType()
 
 bool ToolKit::Editor::Viewport::IsViewportQueriable()
 {
-	return m_mouseOverContentArea && m_mouseHover && m_active && m_open && m_relMouseModBegin; // OPEN - ACTIVE - AND RELATIVE MOD IS BROKEN !! FIX DUE TO UI - HANDLESTATES
+	return m_mouseOverContentArea && m_mouseHover && m_active && m_visible && m_relMouseModBegin;
 }
 
 Ray ToolKit::Editor::Viewport::RayFromMousePosition()

@@ -60,10 +60,7 @@ namespace ToolKit
 			static uint m_nextId;
 
 			// States.
-			bool m_mouseHover = false;
 			bool m_mouseOverContentArea = false;
-			bool m_open = true;
-			bool m_active = false;
 			bool m_relMouseModBegin = true;
 
 			glm::ivec2 m_mousePosBegin;

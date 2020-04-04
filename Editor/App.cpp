@@ -162,7 +162,7 @@ ToolKit::Editor::Viewport* ToolKit::Editor::App::GetActiveViewport()
 			continue;
 		}
 
-		if (wnd->IsActive() && wnd->IsOpen())
+		if (wnd->IsActive() && wnd->IsVisible())
 		{
 			return static_cast<Viewport*> (wnd);
 		}
