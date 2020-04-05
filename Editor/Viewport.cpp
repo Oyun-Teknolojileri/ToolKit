@@ -204,7 +204,7 @@ void Editor::Viewport::FpsNavigationMode(float deltaTime)
 	if (m_camera)
 	{
 		// Mouse is right clicked
-		if (ImGui::IsMouseDown(1))
+		if (ImGui::IsMouseDown(ImGuiMouseButton_Right))
 		{
 			// Handle relative mouse hack.
 			if (m_relMouseModBegin)

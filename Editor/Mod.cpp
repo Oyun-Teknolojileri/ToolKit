@@ -181,7 +181,7 @@ std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 
 			if (g_app->m_showPickingDebug)
 			{
-				g_app->m_cursor->m_pickPosition = pd.pickPos;
+				g_app->m_cursor->m_worldLocation = pd.pickPos;
 				if (m_dbgArrow == nullptr)
 				{
 					m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d());
@@ -494,6 +494,6 @@ void ToolKit::Editor::CursorMod::Update(float deltaTime)
 
 		StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
 		Scene::PickData& pd = endPick->m_pickData.back();
-		g_app->m_cursor->m_pickPosition = pd.pickPos;
+		g_app->m_cursor->m_worldLocation = pd.pickPos;
 	}
 }

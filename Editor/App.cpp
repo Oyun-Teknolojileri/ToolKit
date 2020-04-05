@@ -129,6 +129,8 @@ void ToolKit::Editor::App::Frame(float deltaTime)
 		}
 
 		m_renderer->Render(m_grid, vp->m_camera);
+		
+		m_origin->LookAt(vp->m_camera);
 		m_renderer->Render(m_origin, vp->m_camera);
 
 		m_cursor->LookAt(vp->m_camera);

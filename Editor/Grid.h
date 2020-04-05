@@ -12,24 +12,45 @@ namespace ToolKit
 
 	namespace Editor
 	{
-		class Cursor : public Drawable
+		class Billboard : public Drawable
+		{
+		public:
+			struct Settings
+			{
+				bool lookAtCamera;
+				bool keepDistanceToCamera;
+				float distanceToCamera;
+				bool keepScreenSpaceSize;
+				float heightScreenSpace;
+			};
+
+		public:
+			Billboard(const Settings& settings);
+			virtual ~Billboard();
+			virtual void LookAt(Camera* cam);
+
+		public:
+			Settings m_settings;
+			glm::vec3 m_worldLocation;
+		};
+
+		class Cursor : public Billboard
 		{
 		public:
 			Cursor();
-			~Cursor();
-			void LookAt(Camera* cam);
-
-		public:
-			glm::vec3 m_pickPosition;
+			virtual ~Cursor();
 
 		private:
 			void Generate();
 		};
 
-		class Axis3d : public Drawable
+		class Axis3d : public Billboard
 		{
 		public:
 			Axis3d();
+
+		private:
+			void Generate();
 		};
 
 		class Grid : public Drawable

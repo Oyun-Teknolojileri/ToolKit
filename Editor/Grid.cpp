@@ -13,31 +13,13 @@
 #include "DebugNew.h"
 
 ToolKit::Editor::Cursor::Cursor()
+	: Billboard({ true, true, 10.0f, true, 400.0f })
 {
 	Generate();
 }
 
 ToolKit::Editor::Cursor::~Cursor()
 {
-}
-
-void ToolKit::Editor::Cursor::LookAt(Camera* cam)
-{
-	// Billboard placement.
-	glm::vec3 cdir, dir;
-	cam->GetLocalAxis(cdir, dir, dir);
-	dir = glm::normalize(m_pickPosition - cam->m_node->m_translation);
-
-	Camera::CamData data = cam->GetData();
-	float distToCameraPlane = 10.0f / glm::dot(cdir, dir); // Always place at the same distance from the near plane.
-	if (distToCameraPlane < 0)
-	{
-		return;
-	}
-
-	m_node->m_translation = cam->m_node->m_translation + dir * distToCameraPlane;
-	m_node->m_scale = glm::vec3(400.0f / data.height); // Compensate shrinkage due to height changes.
-	m_node->m_orientation = cam->m_node->m_orientation;
 }
 
 void ToolKit::Editor::Cursor::Generate()
@@ -90,6 +72,12 @@ void ToolKit::Editor::Cursor::Generate()
 }
 
 ToolKit::Editor::Axis3d::Axis3d()
+	: Billboard({ false, true, 10.0f, true, 400.0f })
+{
+	Generate();
+}
+
+void ToolKit::Editor::Axis3d::Generate()
 {
 	for (int i = 0; i < 3; i++)
 	{
@@ -181,5 +169,50 @@ void ToolKit::Editor::Grid::Resize(uint size)
 		subMesh->m_material = std::shared_ptr<Material>(newMaterial);
 		m_mesh->m_subMeshes.push_back(subMesh);
 		m_mesh->CalculateAABoundingBox();
+	}
+}
+
+ToolKit::Editor::Billboard::Billboard(const Settings& settings)
+	: m_settings(settings)
+{
+}
+
+ToolKit::Editor::Billboard::~Billboard()
+{
+}
+
+void ToolKit::Editor::Billboard::LookAt(Camera* cam)
+{
+	// SetTranslation in given space is not provided in Node class.
+	// Therefore all objects must be in the worldSpace.
+	assert(m_node->m_parent == nullptr);
+	assert(cam->m_node->m_parent == nullptr);
+	
+	Camera::CamData data = cam->GetData();
+
+	// Billboard placement.
+	if (m_settings.keepDistanceToCamera)
+	{
+		glm::vec3 cdir, dir;
+		cam->GetLocalAxis(cdir, dir, dir);
+		dir = glm::normalize(m_worldLocation - cam->m_node->m_translation);
+
+		float radialToPlanarDistance = 1.0f / glm::dot(cdir, dir); // Always place at the same distance from the near plane.
+		if (radialToPlanarDistance < 0)
+		{
+			return;
+		}
+
+		m_node->m_translation = cam->m_node->m_translation + dir * m_settings.distanceToCamera * radialToPlanarDistance;
+	}
+
+	if (m_settings.keepScreenSpaceSize)
+	{
+		m_node->m_scale = glm::vec3(m_settings.heightScreenSpace / data.height); // Compensate shrinkage due to height changes.
+	}
+
+	if (m_settings.lookAtCamera)
+	{
+		m_node->m_orientation = cam->m_node->m_orientation;
 	}
 }
