@@ -3,7 +3,54 @@
 #include "Mesh.h"
 #include "ToolKit.h"
 #include "MathUtil.h"
+#include "Directional.h"
+#include "Node.h"
 #include "DebugNew.h"
+
+ToolKit::Billboard::Billboard(const Settings& settings)
+	: m_settings(settings)
+{
+}
+
+ToolKit::Billboard::~Billboard()
+{
+}
+
+void ToolKit::Billboard::LookAt(Camera* cam)
+{
+	// SetTranslation in given space is not provided in Node class.
+	// Therefore all objects must be in the worldSpace.
+	assert(m_node->m_parent == nullptr);
+	assert(cam->m_node->m_parent == nullptr);
+
+	Camera::CamData data = cam->GetData();
+
+	// Billboard placement.
+	if (m_settings.keepDistanceToCamera)
+	{
+		glm::vec3 cdir, dir;
+		cam->GetLocalAxis(cdir, dir, dir);
+		dir = glm::normalize(m_worldLocation - cam->m_node->m_translation);
+
+		float radialToPlanarDistance = 1.0f / glm::dot(cdir, dir); // Always place at the same distance from the near plane.
+		if (radialToPlanarDistance < 0)
+		{
+			return;
+		}
+
+		m_node->m_translation = cam->m_node->m_translation + dir * m_settings.distanceToCamera * radialToPlanarDistance;
+	}
+
+	if (m_settings.keepScreenSpaceSize)
+	{
+		m_node->m_scale = glm::vec3(m_settings.heightScreenSpace / data.height); // Compensate shrinkage due to height changes.
+	}
+
+	if (m_settings.lookAtCamera)
+	{
+		m_node->m_orientation = cam->m_node->m_orientation;
+	}
+}
 
 ToolKit::Cube::Cube()
 {

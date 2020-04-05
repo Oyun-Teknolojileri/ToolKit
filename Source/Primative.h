@@ -4,6 +4,29 @@
 
 namespace ToolKit
 {
+  class Camera;
+
+	class Billboard : public Drawable
+	{
+	public:
+		struct Settings
+		{
+			bool lookAtCamera;
+			bool keepDistanceToCamera;
+			float distanceToCamera;
+			bool keepScreenSpaceSize;
+			float heightScreenSpace;
+		};
+
+	public:
+		Billboard(const Settings& settings);
+		virtual ~Billboard();
+		virtual void LookAt(Camera* cam);
+
+	public:
+		Settings m_settings;
+		glm::vec3 m_worldLocation;
+	};
 
   class Cube : public Drawable
   {
