@@ -351,28 +351,28 @@ bool ToolKit::Editor::Window::IsVisible()
 
 void ToolKit::Editor::Window::HandleStates()
 {
-	m_mouseHover = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+	ImGui::GetIO().WantCaptureMouse = true;
+
+	m_mouseHover = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByPopup);
 	bool rightClick = ImGui::IsMouseDown(ImGuiMouseButton_Right);
 	bool leftClick = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+	bool middleClick = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
 
-	if ((rightClick || leftClick) && m_mouseHover) // Activate with right click.
-	{
-		ImGui::SetWindowFocus();
-	}
-
-	if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
+	if ((rightClick || leftClick || middleClick) && m_mouseHover) // Activate with any click.
 	{
 		if (!m_active)
 		{
-			ImGui::ClearActiveID();
+			ImGui::ClearActiveID(); // Deactivate previous window.
+			ImGui::SetWindowFocus();
 			m_active = true;
 		}
 	}
-	else
+
+	if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
 	{
 		if (m_active)
 		{
 			m_active = false;
-		}		
+		}
 	}
 }
