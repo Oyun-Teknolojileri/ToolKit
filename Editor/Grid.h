@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Primative.h"
+#include "Drawable.h"
 
 namespace ToolKit
 {
@@ -8,25 +8,6 @@ namespace ToolKit
 
 	namespace Editor
 	{
-		class Cursor : public Billboard
-		{
-		public:
-			Cursor();
-			virtual ~Cursor();
-
-		private:
-			void Generate();
-		};
-
-		class Axis3d : public Billboard
-		{
-		public:
-			Axis3d();
-
-		private:
-			void Generate();
-		};
-
 		class Grid : public Drawable
 		{
 		public:

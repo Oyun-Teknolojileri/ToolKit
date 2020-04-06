@@ -12,6 +12,7 @@
 #include "Directional.h"
 #include "Mod.h"
 #include "ConsoleWindow.h"
+#include "Gizmo.h"
 #include "DebugNew.h"
 
 ToolKit::Editor::App::App(int windowWidth, int windowHeight)

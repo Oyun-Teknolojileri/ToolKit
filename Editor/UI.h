@@ -4,6 +4,8 @@
 
 namespace ToolKit
 {
+	class Texture;
+
 		namespace Editor
 		{
 			class Window
@@ -40,14 +42,16 @@ namespace ToolKit
 			class UI
 			{
 			public:
-				static void ApplyCustomTheme();
-				static void ShowUI();
+				static void Init();
+				static void UnInit();
 				static void InitDocking();
+				static void InitIcons();
+				static void InitTheme();
+				static void ShowUI();
 				static void ShowAppMainMenuBar();
 				static void ShowMenuFile();
 				static void ShowMenuWindows();
 				static void HelpMarker(const char* desc, float* elapsedHoverTime);
-				static void InitIcons();
 				static void DispatchSignals();
 
 				// Custom widgets.

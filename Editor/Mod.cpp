@@ -6,6 +6,7 @@
 #include "Primative.h"
 #include "Grid.h"
 #include "Directional.h"
+#include "Gizmo.h"
 #include "DebugNew.h"
 
 ToolKit::Editor::ModManager ToolKit::Editor::ModManager::m_instance;

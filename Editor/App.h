@@ -19,10 +19,6 @@ namespace ToolKit
 		class ConsoleWindow;
 		class Window;
 
-		using namespace ToolKit;
-		using namespace glm;
-		using namespace std;
-
 		class Scene
 		{
 		public:

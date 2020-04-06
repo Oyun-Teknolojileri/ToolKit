@@ -23,6 +23,7 @@ namespace ToolKit
     Entity_Directional,
     Entity_Light,
     Entity_Camera,
+    Entity_Billboard
   };
 
   class Entity

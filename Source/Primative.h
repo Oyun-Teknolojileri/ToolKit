@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Drawable.h"
+#include "RenderState.h"
 
 namespace ToolKit
 {
@@ -21,6 +22,7 @@ namespace ToolKit
 	public:
 		Billboard(const Settings& settings);
 		virtual ~Billboard();
+		virtual EntityType GetType() const override;
 		virtual void LookAt(Camera* cam);
 
 	public:

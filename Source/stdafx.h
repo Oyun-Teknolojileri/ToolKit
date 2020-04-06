@@ -27,7 +27,9 @@
 #include "rapidxml_utils.hpp"
 
 #ifdef TK_EDITOR
-
+	// ImGui
+	#include "ImGui/imgui.h"
+	#include "ImGui/imgui_internal.h"
 #endif 
 
 // STL

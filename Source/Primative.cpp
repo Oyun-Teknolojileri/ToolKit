@@ -16,6 +16,11 @@ ToolKit::Billboard::~Billboard()
 {
 }
 
+ToolKit::EntityType ToolKit::Billboard::GetType() const
+{
+  return EntityType::Entity_Billboard;
+}
+
 void ToolKit::Billboard::LookAt(Camera* cam)
 {
 	// SetTranslation in given space is not provided in Node class.

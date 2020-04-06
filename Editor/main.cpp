@@ -5,9 +5,10 @@
 #include <chrono>
 #include "SDL.h"
 #include "SDL_ttf.h"
-#include "UI.h"
 #include "Types.h"
 #include "Mod.h"
+#include "UI.h"
+#include "ImGui/imgui_impl_sdl.h"
 #include "DebugNew.h"
 
 // Global handles.
@@ -76,14 +77,8 @@ void Init()
 				ToolKit::Editor::g_app = new ToolKit::Editor::App(width, height);
 				ToolKit::Editor::g_app->Init();
 
-				// Init imgui
-				IMGUI_CHECKVERSION();
-				ImGui::CreateContext();
-				ImGuiIO& io = ImGui::GetIO();
-				io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
-				io.ConfigWindowsMoveFromTitleBarOnly = true;
-
-				ToolKit::Editor::UI::ApplyCustomTheme();
+				// Init UI
+				ToolKit::Editor::UI::Init();
 			}
 		}
 	}
@@ -105,9 +100,7 @@ void Exit()
 	ToolKit::Editor::g_running = false;
 	SafeDel(ToolKit::Editor::g_app);
 
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplSDL2_Shutdown();
-	ImGui::DestroyContext();
+	ToolKit::Editor::UI::UnInit();
 
 	SDL_DestroyWindow(ToolKit::Editor::g_window);
 	TTF_Quit();
@@ -149,9 +142,6 @@ int main(int argc, char* argv[])
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	Init();
-
-	ImGui_ImplSDL2_InitForOpenGL(ToolKit::Editor::g_window, ToolKit::Editor::g_context);
-	ImGui_ImplOpenGL3_Init("#version 300 es");
 
 	// Continue with editor.
 	float lastTime = GetMilliSeconds();

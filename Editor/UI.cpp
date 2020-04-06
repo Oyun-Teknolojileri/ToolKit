@@ -1,13 +1,11 @@
 #include "stdafx.h"
 
-#include "ImGui/imgui.h"
-#include "ImGui/imgui_internal.h"
+#include "UI.h"
 
 #include "ImGui/imgui_impl_sdl.h"
 #include "ImGui/imgui_impl_opengl3.h"
 
 #include "App.h"
-#include "UI.h"
 #include "Viewport.h"
 #include "SDL.h"
 #include "GlobalDef.h"
@@ -27,7 +25,90 @@ std::shared_ptr<ToolKit::Texture> ToolKit::Editor::UI::m_rotateIcn;
 std::shared_ptr<ToolKit::Texture> ToolKit::Editor::UI::m_scaleIcn;
 std::shared_ptr<ToolKit::Texture> ToolKit::Editor::UI::m_appIcon;
 
-void ToolKit::Editor::UI::ApplyCustomTheme()
+void ToolKit::Editor::UI::Init()
+{
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
+	io.ConfigWindowsMoveFromTitleBarOnly = true;
+
+	ImGui_ImplSDL2_InitForOpenGL(ToolKit::Editor::g_window, ToolKit::Editor::g_context);
+	ImGui_ImplOpenGL3_Init("#version 300 es");
+
+	InitIcons();
+	InitTheme();
+}
+
+void ToolKit::Editor::UI::UnInit()
+{
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+	ImGui::DestroyContext();
+}
+
+void ToolKit::Editor::UI::InitDocking()
+{
+	static bool opt_fullscreen_persistant = true;
+	bool opt_fullscreen = opt_fullscreen_persistant;
+	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	if (opt_fullscreen)
+	{
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->Pos);
+		ImGui::SetNextWindowSize(viewport->Size);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+	}
+
+	if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+		window_flags |= ImGuiWindowFlags_NoBackground;
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::Begin("DockSpace Demo", nullptr, window_flags);
+	ImGui::PopStyleVar();
+
+	if (opt_fullscreen)
+		ImGui::PopStyleVar(2);
+
+	// DockSpace
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+	{
+		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+	}
+
+	ImGui::End();
+}
+
+void ToolKit::Editor::UI::InitIcons()
+{
+	m_selectIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/select.png"));
+	m_selectIcn->Init();
+	m_cursorIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/cursor.png"));
+	m_cursorIcn->Init();
+	m_moveIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/move.png"));
+	m_moveIcn->Init();
+	m_rotateIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/rotate.png"));
+	m_rotateIcn->Init();
+	m_scaleIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/scale.png"));
+	m_scaleIcn->Init();
+
+	// Set application Icon.
+	m_appIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/app.png"));
+	m_appIcon->Init(false);
+	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(m_appIcon->m_image.data(), m_appIcon->m_width, m_appIcon->m_height, 8, m_appIcon->m_width * 4, SDL_PIXELFORMAT_ABGR8888);
+	SDL_SetWindowIcon(g_window, surface);
+	SDL_FreeSurface(surface);
+}
+
+void ToolKit::Editor::UI::InitTheme()
 {
 	ImGuiStyle* style = &ImGui::GetStyle();
 	style->WindowRounding = 5.3f;
@@ -111,46 +192,6 @@ void ToolKit::Editor::UI::ShowUI()
 	ImGui::UpdatePlatformWindows();
 	ImGui::RenderPlatformWindowsDefault();
 	SDL_GL_MakeCurrent(g_window, g_context);
-}
-
-void ToolKit::Editor::UI::InitDocking()
-{
-	static bool opt_fullscreen_persistant = true;
-	bool opt_fullscreen = opt_fullscreen_persistant;
-	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-	if (opt_fullscreen)
-	{
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->Pos);
-		ImGui::SetNextWindowSize(viewport->Size);
-		ImGui::SetNextWindowViewport(viewport->ID);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-	}
-
-	if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-		window_flags |= ImGuiWindowFlags_NoBackground;
-
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	ImGui::Begin("DockSpace Demo", nullptr, window_flags);
-	ImGui::PopStyleVar();
-
-	if (opt_fullscreen)
-		ImGui::PopStyleVar(2);
-
-	// DockSpace
-	ImGuiIO& io = ImGui::GetIO();
-	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-	{
-		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-	}
-
-	ImGui::End();
 }
 
 void ToolKit::Editor::UI::ShowAppMainMenuBar()
@@ -263,27 +304,6 @@ void ToolKit::Editor::UI::HelpMarker(const char* desc, float* elapsedHoverTime)
 	{
 		*elapsedHoverTime = 0.0f;
 	}
-}
-
-void ToolKit::Editor::UI::InitIcons()
-{
-	m_selectIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/select.png"));
-	m_selectIcn->Init();
-	m_cursorIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/cursor.png"));
-	m_cursorIcn->Init();
-	m_moveIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/move.png"));
-	m_moveIcn->Init();
-	m_rotateIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/rotate.png"));
-	m_rotateIcn->Init();
-	m_scaleIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/scale.png"));
-	m_scaleIcn->Init();
-
-	// Set application Icon.
-	m_appIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/app.png"));
-	m_appIcon->Init(false);
-	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(m_appIcon->m_image.data(), m_appIcon->m_width, m_appIcon->m_height, 8, m_appIcon->m_width * 4, SDL_PIXELFORMAT_ABGR8888);
-	SDL_SetWindowIcon(g_window, surface);
-	SDL_FreeSurface(surface);
 }
 
 void ToolKit::Editor::UI::DispatchSignals()

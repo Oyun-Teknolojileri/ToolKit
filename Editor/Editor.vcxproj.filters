@@ -57,6 +57,9 @@
     <ClCompile Include="UI.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Gizmo.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -105,6 +108,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="UI.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Gizmo.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
