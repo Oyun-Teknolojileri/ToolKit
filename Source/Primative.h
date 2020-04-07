@@ -57,12 +57,12 @@ namespace ToolKit
   class Arrow2d : public Drawable
   {
   public:
-    enum ArrowType
+    enum class ArrowType
     {
       X,
       Y,
       Z
-    } m_arrowType = X;
+    } m_arrowType = ArrowType::X;
 
   public:
     Arrow2d();

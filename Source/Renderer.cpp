@@ -24,18 +24,14 @@ void ToolKit::Renderer::Render(Drawable* object, Camera* cam, Light* light)
 {
   object->m_mesh->Init();
 
-  std::vector<std::shared_ptr<Mesh>> meshes;
-  meshes.push_back(object->m_mesh);
-	for (int i = 0; i < (int)object->m_mesh->m_subMeshes.size(); i++)
-	{
-		meshes.push_back(object->m_mesh->m_subMeshes[i]);
-	}
+  std::vector<Mesh*> meshes;
+  object->m_mesh->GetAllMeshes(meshes);
 
   m_cam = cam;
   m_light = light;
   SetProjectViewModel(object, cam);
 
-  for (std::shared_ptr<Mesh> mesh : meshes)
+  for (Mesh* mesh : meshes)
   {
     m_mat = mesh->m_material.get();
 

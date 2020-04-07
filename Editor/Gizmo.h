@@ -43,12 +43,14 @@ namespace ToolKit
 				YZ
 			};
 			Axis HitTest(const Ray& ray);
+			void Update(float deltaTime);
 
 		private:
 			void Generate();
 
 		private:
 			BoundingBox m_hitBox[3]; // X - Y - Z.
+			std::shared_ptr<Mesh> m_solids[3];
 		};
 	}
 }

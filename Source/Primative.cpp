@@ -324,13 +324,13 @@ void ToolKit::Arrow2d::Generate(ToolKit::Arrow2d::ArrowType t)
 	newMaterial->m_color = glm::vec3(0.89f, 0.239f, 0.341f);
 
 	glm::quat rotation;
-	if (m_arrowType == Y)
+	if (m_arrowType == ArrowType::Y)
 	{
 		newMaterial->m_color = glm::vec3(0.537f, 0.831f, 0.07f);
 		rotation = glm::angleAxis(glm::half_pi<float>(), Z_AXIS);
 	}
 
-	if (m_arrowType == Z)
+	if (m_arrowType == ArrowType::Z)
 	{
 		newMaterial->m_color = glm::vec3(0.196f, 0.541f, 0.905f);
 		rotation = glm::angleAxis(-glm::half_pi<float>(), Y_AXIS);
