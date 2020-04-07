@@ -15,7 +15,7 @@
 #include "DebugNew.h"
 
 ToolKit::Editor::Cursor::Cursor()
-	: Billboard({ true, true, 10.0f, true, 400.0f })
+	: Billboard({ true, 10.0f, 400.0f })
 {
 	Generate();
 }
@@ -74,7 +74,7 @@ void ToolKit::Editor::Cursor::Generate()
 }
 
 ToolKit::Editor::Axis3d::Axis3d()
-	: Billboard({ false, true, 10.0f, true, 400.0f })
+	: Billboard({ false, 10.0f, 400.0f })
 {
 	Generate();
 }
@@ -108,4 +108,72 @@ void ToolKit::Editor::Axis3d::Generate()
 			m_mesh->m_subMeshes.push_back(arrow.m_mesh);
 		}
 	}
+}
+
+ToolKit::Editor::MoveGizmo::MoveGizmo()
+	: Billboard({ false, 10.0f, 400.0f })
+{
+	m_hitBox[0].min = glm::vec3(0.05f, -0.05f, -0.05f);
+	m_hitBox[0].max = glm::vec3(1.0f, 0.05f, 0.05f);
+
+	m_hitBox[1].min = m_hitBox[0].min.yxz;
+	m_hitBox[1].max = m_hitBox[0].max.yxz;
+
+	m_hitBox[2].min = m_hitBox[0].min.zyx;
+	m_hitBox[2].max = m_hitBox[0].max.zyx;
+
+	Generate();
+}
+
+ToolKit::Editor::MoveGizmo::~MoveGizmo()
+{
+}
+
+ToolKit::Editor::MoveGizmo::Axis ToolKit::Editor::MoveGizmo::HitTest(const Ray& ray)
+{
+	glm::mat4 invMat = m_node->GetTransform(TransformationSpace::TS_WORLD);
+	glm::mat4 tpsMat = glm::transpose(invMat);
+	invMat = glm::inverse(invMat);
+
+	Ray rayInObjectSpace = ray;
+	rayInObjectSpace.position = invMat * glm::vec4(rayInObjectSpace.position, 1.0f);
+	rayInObjectSpace.direction = tpsMat * glm::vec4(rayInObjectSpace.direction, 1.0f);
+
+	float d, t = std::numeric_limits<float>::infinity();
+	int minIndx = -1;
+	for (int i = 0; i < 3; i++)
+	{
+		if (RayBoxIntersection(rayInObjectSpace, m_hitBox[i], d))
+		{
+			if (d < t)
+			{
+				t = d;
+				minIndx = i;
+			}
+		}
+	}
+
+	switch (minIndx)
+	{
+	case 0:
+		return Axis::X;
+		break;
+	case 1:
+		return Axis::Y;
+		break;
+	case 2:
+		return Axis::Z;
+		break;
+	}
+
+	return Axis::None;
+}
+
+void ToolKit::Editor::MoveGizmo::Generate()
+{
+	Axis3d axis;
+	axis.m_mesh->Init();
+	
+	m_mesh = axis.m_mesh;
+	axis.m_mesh = nullptr;
 }

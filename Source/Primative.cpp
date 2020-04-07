@@ -31,7 +31,7 @@ void ToolKit::Billboard::LookAt(Camera* cam)
 	Camera::CamData data = cam->GetData();
 
 	// Billboard placement.
-	if (m_settings.keepDistanceToCamera)
+	if (m_settings.distanceToCamera > 0.0f)
 	{
 		glm::vec3 cdir, dir;
 		cam->GetLocalAxis(cdir, dir, dir);
@@ -46,9 +46,9 @@ void ToolKit::Billboard::LookAt(Camera* cam)
 		m_node->m_translation = cam->m_node->m_translation + dir * m_settings.distanceToCamera * radialToPlanarDistance;
 	}
 
-	if (m_settings.keepScreenSpaceSize)
+	if (m_settings.heightInScreenSpace > 0.0f)
 	{
-		m_node->m_scale = glm::vec3(m_settings.heightScreenSpace / data.height); // Compensate shrinkage due to height changes.
+		m_node->m_scale = glm::vec3(m_settings.heightInScreenSpace / data.height); // Compensate shrinkage due to height changes.
 	}
 
 	if (m_settings.lookAtCamera)

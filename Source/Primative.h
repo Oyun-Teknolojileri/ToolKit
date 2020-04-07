@@ -12,11 +12,11 @@ namespace ToolKit
 	public:
 		struct Settings
 		{
-			bool lookAtCamera;
-			bool keepDistanceToCamera;
-			float distanceToCamera;
-			bool keepScreenSpaceSize;
-			float heightScreenSpace;
+			bool lookAtCamera = true;
+      // If grater then 0, place the billboard always at approximately (Difference due to RadialToPlanarDistance conversion) given distance to camera.
+			float distanceToCamera = 0.0f;
+      // If greater then 0, Fov changes due to window height changes doesn't shrink the object.
+			float heightInScreenSpace = 0.0f;
 		};
 
 	public:

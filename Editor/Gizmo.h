@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Primative.h"
+#include "MathUtil.h"
 
 namespace ToolKit
 {
@@ -23,6 +24,31 @@ namespace ToolKit
 
 		private:
 			void Generate();
+		};
+
+		class MoveGizmo : public Billboard
+		{
+		public:
+			MoveGizmo();
+			virtual ~MoveGizmo();
+
+			enum class Axis
+			{
+				None,
+				X,
+				Y,
+				Z,
+				XY,
+				XZ,
+				YZ
+			};
+			Axis HitTest(const Ray& ray);
+
+		private:
+			void Generate();
+
+		private:
+			BoundingBox m_hitBox[3]; // X - Y - Z.
 		};
 	}
 }
