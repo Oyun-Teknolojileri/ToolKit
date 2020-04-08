@@ -7,17 +7,14 @@
 #include "Grid.h"
 #include "Directional.h"
 #include "Gizmo.h"
+#include "Move.h"
 #include "DebugNew.h"
 
 ToolKit::Editor::ModManager ToolKit::Editor::ModManager::m_instance;
 
 ToolKit::Editor::ModManager::~ModManager()
 {
-	for (BaseMod* mod : m_modStack)
-	{
-		mod->UnInit();
-		SafeDel(mod);
-	}
+	assert(m_initiated == false && "Call UnInit.");
 }
 
 ToolKit::Editor::ModManager* ToolKit::Editor::ModManager::GetInstance()
@@ -60,19 +57,20 @@ void ToolKit::Editor::ModManager::SetMod(bool set, ModId mod)
 		BaseMod* nextMod = nullptr;
 		switch (mod)
 		{
-		case ToolKit::Editor::ModId::Select:
+		case ModId::Select:
 			nextMod = new SelectMod();
 			break;
-		case ToolKit::Editor::ModId::Cursor:
+		case ModId::Cursor:
 			nextMod = new CursorMod();
 			break;
-		case ToolKit::Editor::ModId::Move:
+		case ModId::Move:
+			nextMod = new MoveMod();
 			break;
-		case ToolKit::Editor::ModId::Rotate:
+		case ModId::Rotate:
 			break;
-		case ToolKit::Editor::ModId::Scale:
+		case ModId::Scale:
 			break;
-		case ToolKit::Editor::ModId::Base:
+		case ModId::Base:
 		default:
 			break;
 		}
@@ -87,7 +85,23 @@ void ToolKit::Editor::ModManager::SetMod(bool set, ModId mod)
 
 ToolKit::Editor::ModManager::ModManager()
 {
+	m_initiated = false;
+}
+
+void ToolKit::Editor::ModManager::Init()
+{
 	m_modStack.push_back(new BaseMod(ModId::Base));
+	m_initiated = true;
+}
+
+void ToolKit::Editor::ModManager::UnInit()
+{
+	for (BaseMod* mod : m_modStack)
+	{
+		mod->UnInit();
+		SafeDel(mod);
+	}
+	m_initiated = false;
 }
 
 ToolKit::Editor::BaseMod::BaseMod(ModId id)

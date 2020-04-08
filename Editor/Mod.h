@@ -46,6 +46,8 @@ namespace ToolKit
 			ModManager(ModManager const&) = delete;
 			void operator=(ModManager const&) = delete;
 
+			void Init();
+			void UnInit();
 			static ModManager* GetInstance();
 			void Update(float deltaTime);
 			void DispatchSignal(SignalId signal);
@@ -56,6 +58,7 @@ namespace ToolKit
 			
 		private:
 			static ModManager m_instance;
+			bool m_initiated;
 
 		public:
 			std::vector<BaseMod*> m_modStack;

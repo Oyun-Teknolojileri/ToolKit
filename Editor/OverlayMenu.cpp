@@ -34,7 +34,8 @@ void ToolKit::Editor::OverlayNav::Show()
 
 		// Move button.
 		static float hoverTimeMoveBtn = 0.0f;
-		ImGui::ImageButton((void*)(intptr_t)UI::m_moveIcn->m_textureId, ImVec2(32, 32));
+		isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Move;
+		ModManager::GetInstance()->SetMod(UI::ToggleButton((void*)(intptr_t)UI::m_moveIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Move);
 		UI::HelpMarker("Move\nMove selected items.", &hoverTimeMoveBtn);
 
 		// Rotate button.

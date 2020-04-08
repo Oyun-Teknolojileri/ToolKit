@@ -4,11 +4,17 @@
     <Filter Include="Source">
       <UniqueIdentifier>{9fad1c78-f44f-4f3d-bd80-80d2485b1524}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ImGui">
+    <Filter Include="Mods">
+      <UniqueIdentifier>{1aaa25f9-ba8f-4c67-a165-afd0ced38f10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{3f04a579-03cf-4d54-8a19-71d5241aac83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\ImGui">
       <UniqueIdentifier>{bd5e2daf-8f9d-415f-a384-97eb0c4eaa08}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header">
-      <UniqueIdentifier>{df283293-ea59-4282-96ac-c8586bb6b3d8}</UniqueIdentifier>
+    <Filter Include="Entities">
+      <UniqueIdentifier>{23ef0147-ea57-41a4-9b24-719e3e46ff22}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -16,25 +22,22 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="ImGui\imgui.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="ImGui\imgui_impl_opengl3.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="ImGui\imgui_impl_sdl.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="ImGui\imgui_demo.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="ImGui\imgui_draw.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="ImGui\imgui_widgets.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="Viewport.cpp">
-      <Filter>Source</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="App.cpp">
       <Filter>Source</Filter>
@@ -42,76 +45,91 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="OverlayMenu.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Grid.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="Mod.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="ConsoleWindow.cpp">
-      <Filter>Source</Filter>
+      <Filter>Mods</Filter>
     </ClCompile>
     <ClCompile Include="UI.cpp">
-      <Filter>Source</Filter>
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlayMenu.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Viewport.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ConsoleWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Move.cpp">
+      <Filter>Mods</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid.cpp">
+      <Filter>Entities</Filter>
     </ClCompile>
     <ClCompile Include="Gizmo.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
-      <Filter>ImGui</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imgui.h">
-      <Filter>ImGui</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imgui_impl_opengl3.h">
-      <Filter>ImGui</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imgui_impl_sdl.h">
-      <Filter>ImGui</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imgui_internal.h">
-      <Filter>ImGui</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imstb_rectpack.h">
-      <Filter>ImGui</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imstb_textedit.h">
-      <Filter>ImGui</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imstb_truetype.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="App.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="Viewport.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GlobalDef.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="OverlayMenu.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="Grid.h">
-      <Filter>Header</Filter>
+      <Filter>UI\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="Mod.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="ConsoleWindow.h">
-      <Filter>Header</Filter>
+      <Filter>Mods</Filter>
     </ClInclude>
     <ClInclude Include="UI.h">
-      <Filter>Header</Filter>
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlayMenu.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Viewport.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ConsoleWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Move.h">
+      <Filter>Mods</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid.h">
+      <Filter>Entities</Filter>
     </ClInclude>
     <ClInclude Include="Gizmo.h">
-      <Filter>Header</Filter>
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalDef.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="App.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

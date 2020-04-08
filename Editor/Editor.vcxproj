@@ -92,6 +92,8 @@
     <ClCompile Include="ConsoleWindow.cpp" />
     <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="Move.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="ImGui\imgui.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -140,6 +142,8 @@
     <ClInclude Include="ImGui\imstb_rectpack.h" />
     <ClInclude Include="ImGui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imstb_truetype.h" />
+    <ClInclude Include="Move.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="Mod.h" />
     <ClInclude Include="OverlayMenu.h" />
