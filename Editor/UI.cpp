@@ -312,17 +312,17 @@ void ToolKit::Editor::UI::DispatchSignals()
 		
 	if (io.MouseClicked[0])
 	{
-		ModManager::GetInstance()->DispatchSignal(LeftMouseBtnDownSgnl());
+		ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnDownSgnl);
 	}
 
 	if (io.MouseReleased[0])
 	{
-		ModManager::GetInstance()->DispatchSignal(LeftMouseBtnUpSgnl());
+		ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnUpSgnl);
 	}
 
 	if (ImGui::IsMouseDragging(0))
 	{
-		ModManager::GetInstance()->DispatchSignal(LeftMouseBtnDragSgnl());
+		ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnDragSgnl);
 	}
 }
 

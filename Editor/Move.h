@@ -8,13 +8,6 @@ namespace ToolKit
 	{
 		class MoveGizmo;
 
-		// Signals.
-		class LinkBackToMoveBeginSgnl : public SignalId
-		{
-		public:
-			LinkBackToMoveBeginSgnl() : SignalId(105) {}
-		};
-
 		// States.
 		class StateMoveBase : public State
 		{
@@ -63,6 +56,10 @@ namespace ToolKit
 
 			virtual void Init() override;
 			virtual void Update(float deltaTime) override;
+
+		public:
+			// Signals.
+			static SignalId m_linkToMoveBeginSgnl;
 		};
 	}
 }

@@ -1,19 +1,10 @@
 #pragma once
 
 #include <unordered_map>
+#include "Types.h"
 
 namespace ToolKit
 {
-	class SignalId
-	{
-	public:
-		SignalId(int id);
-		bool operator== (const SignalId& rhs);
-
-	public:
-		int m_id;
-	};
-
 	class State
 	{
 	public:

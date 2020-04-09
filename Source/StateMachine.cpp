@@ -3,16 +3,6 @@
 #include "StateMachine.h"
 #include "DebugNew.h"
 
-ToolKit::SignalId::SignalId(int id)
-{
-	m_id = id;
-}
-
-bool ToolKit::SignalId::operator== (const SignalId& rhs)
-{ 
-	return m_id == rhs.m_id; 
-}
-
 ToolKit::State::State(std::string name)
 	: m_name(name)
 {
@@ -46,7 +36,7 @@ void ToolKit::StateMachine::Signal(SignalId signal)
 	if (query.empty())
 	{
 		// If the signal is not processed in the current state, check links for hijack.
-		auto link = m_currentState->m_links.find(signal.m_id);
+		auto link = m_currentState->m_links.find(signal);
 		if (link != m_currentState->m_links.end())
 		{
 			query = link->second;

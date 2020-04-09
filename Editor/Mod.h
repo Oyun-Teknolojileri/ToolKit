@@ -32,10 +32,18 @@ namespace ToolKit
 			virtual void Update(float deltaTime);
 			virtual void Signal(SignalId signal);
 
+		protected:
+			static int GetNextSignalId();
+
 		public:
 			ModId m_id;
 			StateMachine* m_stateMachine;
-			bool m_terminate; // When set to true, ModManager will terminate the mod.
+
+			// Signals.
+			static SignalId m_leftMouseBtnDownSgnl;
+			static SignalId m_leftMouseBtnUpSgnl;
+			static SignalId m_leftMouseBtnDragSgnl;
+			static SignalId m_mouseMoveSgnl;
 		};
 
 		class ModManager
@@ -64,31 +72,7 @@ namespace ToolKit
 			std::vector<BaseMod*> m_modStack;
 		};
 
-		// Common signals and states.
-		class LeftMouseBtnDownSgnl : public SignalId
-		{
-		public:
-			LeftMouseBtnDownSgnl() : SignalId(101) {}
-		};
-
-		class LeftMouseBtnUpSgnl : public SignalId
-		{
-		public:
-			LeftMouseBtnUpSgnl() : SignalId(102) {}
-		};
-
-		class LeftMouseBtnDragSgnl : public SignalId
-		{
-		public:
-			LeftMouseBtnDragSgnl() : SignalId(103) {}
-		};
-
-		class MouseMoveSgnl : public SignalId
-		{
-		public:
-			MouseMoveSgnl() : SignalId(104) {}
-		};
-
+		// Common states.
 		class StatePickingBase : public State
 		{
 		public:

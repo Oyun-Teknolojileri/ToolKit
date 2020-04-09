@@ -119,11 +119,22 @@ void ToolKit::Editor::ModManager::UnInit()
 	m_initiated = false;
 }
 
+// Signal definitions.
+namespace ToolKit
+{
+	namespace Editor
+	{
+		SignalId BaseMod::m_leftMouseBtnDownSgnl = BaseMod::GetNextSignalId();
+		SignalId BaseMod::m_leftMouseBtnUpSgnl = BaseMod::GetNextSignalId();
+		SignalId BaseMod::m_leftMouseBtnDragSgnl = BaseMod::GetNextSignalId();
+		SignalId BaseMod::m_mouseMoveSgnl = BaseMod::GetNextSignalId();
+	}
+}
+
 ToolKit::Editor::BaseMod::BaseMod(ModId id)
 {
 	m_id = id;
 	m_stateMachine = new StateMachine();
-	m_terminate = false;
 }
 
 ToolKit::Editor::BaseMod::~BaseMod()
@@ -166,6 +177,12 @@ void ToolKit::Editor::BaseMod::Signal(SignalId signal)
 			}
 		}
 	}
+}
+
+int ToolKit::Editor::BaseMod::GetNextSignalId()
+{
+	static int signalCounter = 100;
+	return ++signalCounter;
 }
 
 std::shared_ptr< ToolKit::Arrow2d> ToolKit::Editor::StatePickingBase::m_dbgArrow = nullptr;
@@ -223,7 +240,7 @@ void ToolKit::Editor::StateBeginPick::Update(float deltaTime)
 
 std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 {
-	if (signal == LeftMouseBtnDownSgnl())
+	if (signal == BaseMod::m_leftMouseBtnDownSgnl)
 	{
 		Viewport* vp = g_app->GetActiveViewport();
 		if (vp != nullptr)
@@ -232,7 +249,7 @@ std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 		}
 	}
 
-	if (signal == LeftMouseBtnUpSgnl())
+	if (signal == BaseMod::m_leftMouseBtnUpSgnl)
 	{
 		Viewport* vp = g_app->GetActiveViewport();
 		if (vp != nullptr)
@@ -261,7 +278,7 @@ std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 		}
 	}
 
-	if (signal == LeftMouseBtnDragSgnl())
+	if (signal == BaseMod::m_leftMouseBtnDragSgnl)
 	{
 		return StateBeginBoxPick().m_name;
 	}
@@ -275,7 +292,7 @@ void ToolKit::Editor::StateBeginBoxPick::Update(float deltaTime)
 
 std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 {
-	if (signal == LeftMouseBtnUpSgnl())
+	if (signal == BaseMod::m_leftMouseBtnUpSgnl)
 	{
 		// Frustum - AABB test.
 		Viewport* vp = g_app->GetActiveViewport();
@@ -374,7 +391,7 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 		return StateEndPick().m_name;
 	}
 
-	if (signal == LeftMouseBtnDragSgnl())
+	if (signal == BaseMod::m_leftMouseBtnDragSgnl)
 	{
 		Viewport* vp = g_app->GetActiveViewport();
 		if (vp != nullptr)
@@ -419,7 +436,7 @@ void ToolKit::Editor::StateEndPick::Update(float deltaTime)
 std::string ToolKit::Editor::StateEndPick::Signaled(SignalId signal)
 {
 	// Keep picking.
-	if (signal == LeftMouseBtnDownSgnl())
+	if (signal == BaseMod::m_leftMouseBtnDownSgnl)
 	{
 		Viewport* vp = g_app->GetActiveViewport();
 		if (vp != nullptr && vp->IsViewportQueriable())

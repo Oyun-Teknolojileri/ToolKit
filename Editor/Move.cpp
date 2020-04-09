@@ -68,7 +68,7 @@ void ToolKit::Editor::StateBeginMove::Update(float deltaTime)
 
 std::string ToolKit::Editor::StateBeginMove::Signaled(SignalId signal)
 {
-	if (signal == LeftMouseBtnDownSgnl())
+	if (signal == BaseMod::m_leftMouseBtnDownSgnl)
 	{
 		Viewport* vp = g_app->GetActiveViewport();
 		if (vp != nullptr)
@@ -80,6 +80,15 @@ std::string ToolKit::Editor::StateBeginMove::Signaled(SignalId signal)
 	}
 
 	return "";
+}
+
+// Signal definitions.
+namespace ToolKit
+{
+	namespace Editor
+	{
+		SignalId MoveMod::m_linkToMoveBeginSgnl = BaseMod::GetNextSignalId();
+	}
 }
 
 ToolKit::Editor::MoveMod::~MoveMod()
@@ -106,7 +115,7 @@ void ToolKit::Editor::MoveMod::Init()
 	m_stateMachine->PushState(new StateBeginBoxPick());
 
 	state = new StateEndPick();
-	state->m_links[LinkBackToMoveBeginSgnl().m_id] = StateBeginMove().m_name;
+	state->m_links[m_linkToMoveBeginSgnl] = StateBeginMove().m_name;
 	m_stateMachine->PushState(state);
 }
 
@@ -121,6 +130,6 @@ void ToolKit::Editor::MoveMod::Update(float deltaTime)
 		endPick->PickDataToEntityId(entities);
 		g_app->m_scene.AddToSelection(entities, ImGui::GetIO().KeyShift);
 
-		ModManager::GetInstance()->DispatchSignal(LinkBackToMoveBeginSgnl().m_id);
+		ModManager::GetInstance()->DispatchSignal(m_linkToMoveBeginSgnl);
 	}
 }
