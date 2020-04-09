@@ -39,7 +39,7 @@ void ToolKit::Editor::ShowOverlayExec(std::string args)
 	}
 }
 
-extern void ToolKit::Editor::ShowStateTransitionsExec(std::string args)
+extern void ToolKit::Editor::ShowModTransitionsExec(std::string args)
 {
 	if (args == "1")
 	{
@@ -62,7 +62,7 @@ ToolKit::Editor::ConsoleWindow::ConsoleWindow()
 {
 	CreateCommand(g_showPickDebugCmd, ShowPickDebugExec);
 	CreateCommand(g_showOverlayUICmd, ShowOverlayExec);
-	CreateCommand(g_showStateTransitions, ShowStateTransitionsExec);
+	CreateCommand(g_showModTransitions, ShowModTransitionsExec);
 }
 
 ToolKit::Editor::ConsoleWindow::~ConsoleWindow()

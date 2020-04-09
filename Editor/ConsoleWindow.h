@@ -9,14 +9,14 @@ namespace ToolKit
 	namespace Editor
 	{
 		// Commands & Executors.
-		const std::string g_showPickDebugCmd("ShowPickDebug");
+		const std::string g_showPickDebugCmd("ShowPickGeometry");
 		extern void ShowPickDebugExec(std::string args);
 
 		const std::string g_showOverlayUICmd("ShowOverlayUI");
 		extern void ShowOverlayExec(std::string args);
 
-		const std::string g_showStateTransitions("ShowStateTransitions");
-		extern void ShowStateTransitionsExec(std::string args);
+		const std::string g_showModTransitions("ShowModTransitions");
+		extern void ShowModTransitionsExec(std::string args);
 
 		class ConsoleWindow : public Window
 		{

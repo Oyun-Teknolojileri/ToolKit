@@ -45,9 +45,13 @@ void ToolKit::Editor::StateBeginMove::Update(float deltaTime)
 		if (m_gizmo == nullptr)
 		{
 			m_gizmo = std::make_shared<MoveGizmo>();
-			g_app->m_scene.AddEntity(m_gizmo.get());
 		}
 
+		if (g_app->m_scene.GetEntity(m_gizmo->m_id) == nullptr)
+		{
+			g_app->m_scene.AddEntity(m_gizmo.get());
+		}
+		
 		Entity* e = g_app->m_scene.GetCurrentSelection();
 		m_gizmo->m_worldLocation = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 		m_gizmo->m_node->m_orientation = e->m_node->GetOrientation(TransformationSpace::TS_WORLD);
@@ -82,7 +86,9 @@ ToolKit::Editor::MoveMod::~MoveMod()
 {
 	if (m_stateMachine->m_currentState != nullptr)
 	{
-		StateMoveBase* baseState = dynamic_cast<StateMoveBase*> (m_stateMachine->m_currentState);
+		StateMoveBase* baseState = static_cast<StateMoveBase*> (m_stateMachine->QueryState(StateBeginMove().m_name));
+		assert(baseState && "Gizmo remains in the scene as dead pointer.");
+
 		if (baseState != nullptr && baseState->m_gizmo != nullptr)
 		{
 			g_app->m_scene.RemoveEntity(baseState->m_gizmo->m_id);
@@ -97,6 +103,7 @@ void ToolKit::Editor::MoveMod::Init()
 
 	m_stateMachine->PushState(state);
 	m_stateMachine->PushState(new StateBeginPick());
+	m_stateMachine->PushState(new StateBeginBoxPick());
 
 	state = new StateEndPick();
 	state->m_links[LinkBackToMoveBeginSgnl().m_id] = StateBeginMove().m_name;
@@ -114,6 +121,6 @@ void ToolKit::Editor::MoveMod::Update(float deltaTime)
 		endPick->PickDataToEntityId(entities);
 		g_app->m_scene.AddToSelection(entities, ImGui::GetIO().KeyShift);
 
-		m_stateMachine->Signal(LinkBackToMoveBeginSgnl().m_id);
+		ModManager::GetInstance()->DispatchSignal(LinkBackToMoveBeginSgnl().m_id);
 	}
 }
