@@ -9,6 +9,7 @@
 #include "Gizmo.h"
 #include "Move.h"
 #include "DebugNew.h"
+#include "ConsoleWindow.h"
 
 ToolKit::Editor::ModManager ToolKit::Editor::ModManager::m_instance;
 
@@ -54,17 +55,21 @@ void ToolKit::Editor::ModManager::SetMod(bool set, ModId mod)
 			m_modStack.pop_back();
 		}
 
+		static std::string modNameDbg;
 		BaseMod* nextMod = nullptr;
 		switch (mod)
 		{
 		case ModId::Select:
 			nextMod = new SelectMod();
+			modNameDbg = "Mod: Select";
 			break;
 		case ModId::Cursor:
 			nextMod = new CursorMod();
+			modNameDbg = "Mod: Cursor";
 			break;
 		case ModId::Move:
 			nextMod = new MoveMod();
+			modNameDbg = "Mod: Move";
 			break;
 		case ModId::Rotate:
 			break;
@@ -79,6 +84,16 @@ void ToolKit::Editor::ModManager::SetMod(bool set, ModId mod)
 		if (nextMod != nullptr)
 		{
 			m_modStack.push_back(nextMod);
+
+			// #ConsoleDebug_Mod
+			if (g_app->m_showStateTransitionsDebug)
+			{
+				ConsoleWindow* console = g_app->GetConsole();
+				if (console != nullptr)
+				{
+					console->AddLog(modNameDbg, "ModDbg");
+				}
+			}
 		}
 	}
 }
@@ -131,7 +146,26 @@ void ToolKit::Editor::BaseMod::Update(float deltaTime)
 
 void ToolKit::Editor::BaseMod::Signal(SignalId signal)
 {
+	State* prevStateDbg = m_stateMachine->m_currentState;
+
 	m_stateMachine->Signal(signal);
+
+	// #ConsoleDebug_Mod
+	if (g_app->m_showStateTransitionsDebug)
+	{
+		State* nextState = m_stateMachine->m_currentState;
+		if (prevStateDbg != nextState)
+		{
+			if (prevStateDbg && nextState)
+			{
+				if (ConsoleWindow* consol = g_app->GetConsole())
+				{
+					std::string log = "\t" + prevStateDbg->m_name + " -> " + nextState->m_name;
+					consol->AddLog(log, "ModDbg");
+				}
+			}
+		}
+	}
 }
 
 std::shared_ptr< ToolKit::Arrow2d> ToolKit::Editor::StatePickingBase::m_dbgArrow = nullptr;
@@ -166,6 +200,21 @@ void ToolKit::Editor::StatePickingBase::TransitionOut(State* nextState)
 bool ToolKit::Editor::StatePickingBase::IsIgnored(Entity* ntt)
 {
 	return std::find(m_ignoreList.begin(), m_ignoreList.end(), ntt->m_id) != m_ignoreList.end();
+}
+
+void ToolKit::Editor::StatePickingBase::PickDataToEntityId(std::vector<EntityId>& ids)
+{
+	for (Scene::PickData& pd : m_pickData)
+	{
+		if (pd.entity != nullptr)
+		{
+			ids.push_back(pd.entity->m_id);
+		}
+		else
+		{
+			ids.push_back(NULL_ENTITY);
+		}
+	}
 }
 
 void ToolKit::Editor::StateBeginPick::Update(float deltaTime)
@@ -409,79 +458,10 @@ void ToolKit::Editor::SelectMod::Update(float deltaTime)
 		stateTransition = false;
 
 		StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
-		ApplySelection(endPick->m_pickData);
+		std::vector<EntityId> entities;
+		endPick->PickDataToEntityId(entities);
+		g_app->m_scene.AddToSelection(entities, ImGui::GetIO().KeyShift);
 	}
-}
-
-void ToolKit::Editor::SelectMod::ApplySelection(std::vector<Scene::PickData>& pickedNtties)
-{
-	bool shiftClick = ImGui::GetIO().KeyShift;
-
-	EntityId currentId = NULL_ENTITY;
-	if (pickedNtties.size() > 1)
-	{
-		for (Scene::PickData& pd : pickedNtties)
-		{
-			if (pd.entity != nullptr)
-			{
-				if (g_app->m_scene.IsCurrentSelection(pd.entity->m_id))
-				{
-					currentId = pd.entity->m_id;
-				}
-			}
-		}
-	}
-
-	// Start with a clear selection list.
-	if (!shiftClick)
-	{
-		g_app->m_scene.ClearSelection();
-	}
-
-	for (Scene::PickData& pd : pickedNtties)
-	{
-		Entity* e = pd.entity;
-		if (e == nullptr)
-		{
-			continue;
-		}
-
-		// Add to selection.
-		if (!shiftClick)
-		{
-			g_app->m_scene.AddToSelection(e->m_id);
-		}
-		else // Add, make current or toggle selection.
-		{
-			if (g_app->m_scene.IsSelected(e->m_id))
-			{
-				if (g_app->m_scene.GetSelectedEntityCount() > 1)
-				{
-					if (pickedNtties.size() == 1)
-					{
-						if (g_app->m_scene.IsCurrentSelection(e->m_id))
-						{
-							g_app->m_scene.RemoveFromSelection(e->m_id);
-						}
-						else
-						{
-							g_app->m_scene.MakeCurrentSelection(e->m_id, false);
-						}
-					}
-				}
-				else
-				{
-					g_app->m_scene.RemoveFromSelection(e->m_id);
-				}
-			}
-			else
-			{
-				g_app->m_scene.AddToSelection(e->m_id);
-			}
-		}
-	}
-
-	g_app->m_scene.MakeCurrentSelection(currentId, true);
 }
 
 void ToolKit::Editor::CursorMod::Init()

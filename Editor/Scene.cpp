@@ -98,6 +98,74 @@ void ToolKit::Editor::Scene::AddToSelection(EntityId id)
 	m_selectedEntities.push_back(id);
 }
 
+void ToolKit::Editor::Scene::AddToSelection(const std::vector<EntityId>& entities, bool additive)
+{
+	EntityId currentId = NULL_ENTITY;
+	if (entities.size() > 1)
+	{
+		for (const EntityId& id : entities)
+		{
+			if (id != NULL_ENTITY)
+			{
+				if (IsCurrentSelection(id))
+				{
+					currentId = id;
+				}
+			}
+		}
+	}
+
+	// Start with a clear selection list.
+	if (!additive)
+	{
+		ClearSelection();
+	}
+
+	for (const EntityId& id : entities)
+	{
+		if (id == NULL_ENTITY)
+		{
+			continue;
+		}
+
+		// Add to selection.
+		if (!additive)
+		{
+			AddToSelection(id);
+		}
+		else // Add, make current or toggle selection.
+		{
+			if (IsSelected(id))
+			{
+				if (GetSelectedEntityCount() > 1)
+				{
+					if (entities.size() == 1)
+					{
+						if (IsCurrentSelection(id))
+						{
+							RemoveFromSelection(id);
+						}
+						else
+						{
+							MakeCurrentSelection(id, false);
+						}
+					}
+				}
+				else
+				{
+					RemoveFromSelection(id);
+				}
+			}
+			else
+			{
+				AddToSelection(id);
+			}
+		}
+	}
+
+	MakeCurrentSelection(currentId, true);
+}
+
 void ToolKit::Editor::Scene::ClearSelection()
 {
 	m_selectedEntities.clear();
@@ -165,7 +233,7 @@ void ToolKit::Editor::Scene::AddEntity(Entity* entity)
 ToolKit::Entity* ToolKit::Editor::Scene::RemoveEntity(EntityId id)
 {
 	Entity* removed = nullptr;
-	for (size_t i = m_entitites.size() - 1; i >= 0; i--)
+	for (int i = (int)m_entitites.size() - 1; i >= 0; i--)
 	{
 		if (m_entitites[i]->m_id == id)
 		{

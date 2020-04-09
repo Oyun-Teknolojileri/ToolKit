@@ -96,6 +96,7 @@ namespace ToolKit
 			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* nextState) override;
 			bool IsIgnored(Entity* ntt);
+			void PickDataToEntityId(std::vector<EntityId>& ids);
 
 		public:
 			// Picking data.
@@ -148,7 +149,6 @@ namespace ToolKit
 
 			virtual void Init() override;
 			virtual void Update(float deltaTime) override;
-			void ApplySelection(std::vector<Scene::PickData>& pickedNtties);
 		};
 
 		class CursorMod : public BaseMod

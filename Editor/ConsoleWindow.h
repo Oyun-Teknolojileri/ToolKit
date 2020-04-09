@@ -15,6 +15,9 @@ namespace ToolKit
 		const std::string g_showOverlayUICmd("ShowOverlayUI");
 		extern void ShowOverlayExec(std::string args);
 
+		const std::string g_showStateTransitions("ShowStateTransitions");
+		extern void ShowStateTransitionsExec(std::string args);
+
 		class ConsoleWindow : public Window
 		{
 		public:
@@ -32,6 +35,7 @@ namespace ToolKit
 				Command
 			};
 			void AddLog(const std::string& log, LogType type = LogType::Memo);
+			void AddLog(const std::string& log, const std::string& tag);
 			void ClearLog();
 			void ExecCommand(const std::string& commandLine);
 

@@ -22,6 +22,7 @@ namespace ToolKit
 			// Selection operations.
 			bool IsSelected(EntityId id);
 			void RemoveFromSelection(EntityId id);
+			void AddToSelection(const std::vector<EntityId>& entities, bool additive);
 			void AddToSelection(EntityId id);
 			void ClearSelection();
 			bool IsCurrentSelection(EntityId id);

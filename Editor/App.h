@@ -56,6 +56,7 @@ namespace ToolKit
 
 			// Editor states.
 			bool m_showPickingDebug = false;
+			bool m_showStateTransitionsDebug = false;
 			bool m_showOverlayUI = true;
 
 		private:

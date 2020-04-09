@@ -39,6 +39,19 @@ void ToolKit::Editor::ShowOverlayExec(std::string args)
 	}
 }
 
+extern void ToolKit::Editor::ShowStateTransitionsExec(std::string args)
+{
+	if (args == "1")
+	{
+		g_app->m_showStateTransitionsDebug = true;
+	}
+
+	if (args == "0")
+	{
+		g_app->m_showStateTransitionsDebug = false;
+	}
+}
+
 // ImGui ripoff. Portable helpers.
 static int   Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
 static int   Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
@@ -49,6 +62,7 @@ ToolKit::Editor::ConsoleWindow::ConsoleWindow()
 {
 	CreateCommand(g_showPickDebugCmd, ShowPickDebugExec);
 	CreateCommand(g_showOverlayUICmd, ShowOverlayExec);
+	CreateCommand(g_showStateTransitions, ShowStateTransitionsExec);
 }
 
 ToolKit::Editor::ConsoleWindow::~ConsoleWindow()
@@ -178,6 +192,13 @@ void ToolKit::Editor::ConsoleWindow::AddLog(const std::string& log, LogType type
 		break;
 	}
 
+	m_items.push_back(prefixed);
+	m_scrollToBottom = true;
+}
+
+void ToolKit::Editor::ConsoleWindow::AddLog(const std::string& log, const std::string& tag)
+{
+	std::string prefixed = "[" + tag + "] " + log;
 	m_items.push_back(prefixed);
 	m_scrollToBottom = true;
 }

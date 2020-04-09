@@ -83,7 +83,7 @@ ToolKit::Editor::MoveMod::~MoveMod()
 	if (m_stateMachine->m_currentState != nullptr)
 	{
 		StateMoveBase* baseState = dynamic_cast<StateMoveBase*> (m_stateMachine->m_currentState);
-		if (baseState->m_gizmo != nullptr)
+		if (baseState != nullptr && baseState->m_gizmo != nullptr)
 		{
 			g_app->m_scene.RemoveEntity(baseState->m_gizmo->m_id);
 		}
@@ -109,12 +109,10 @@ void ToolKit::Editor::MoveMod::Update(float deltaTime)
 
 	if (m_stateMachine->m_currentState->m_name == StateEndPick().m_name)
 	{
-		StateEndPick* pickEnd = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
-		Entity* e = pickEnd->m_pickData.back().entity;
-		if (e != nullptr)
-		{
-			g_app->m_scene.MakeCurrentSelection(e->m_id, false);
-		}
+		StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
+		std::vector<EntityId> entities;
+		endPick->PickDataToEntityId(entities);
+		g_app->m_scene.AddToSelection(entities, ImGui::GetIO().KeyShift);
 
 		m_stateMachine->Signal(LinkBackToMoveBeginSgnl().m_id);
 	}
