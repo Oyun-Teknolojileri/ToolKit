@@ -72,11 +72,23 @@ namespace ToolKit
 			std::vector<BaseMod*> m_modStack;
 		};
 
-		// Common states.
+		// States.
+		class StateType
+		{
+		public:
+			const static std::string Null;
+			const static std::string StateBeginPick;
+			const static std::string StateBeginBoxPick;
+			const static std::string StateEndPick;
+			const static std::string StateBeginMove;
+			const static std::string StateMoveTo;
+			const static std::string StateEndMove;
+		};
+
 		class StatePickingBase : public State
 		{
 		public:
-			StatePickingBase(std::string name);
+			StatePickingBase();
 			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* nextState) override;
 			bool IsIgnored(Entity* ntt);
@@ -96,21 +108,17 @@ namespace ToolKit
 		class StateBeginPick : public StatePickingBase
 		{
 		public:
-			StateBeginPick() : StatePickingBase("BeginPick") {}
-
-		public:
 			virtual void Update(float deltaTime) override;
 			virtual std::string Signaled(SignalId signal) override;
+			virtual std::string GetType() override { return StateType::StateBeginPick; }
 		};
 
 		class StateBeginBoxPick : public StatePickingBase
 		{
 		public:
-			StateBeginBoxPick() : StatePickingBase("BeginBoxPick") {}
-
-		public:
 			virtual void Update(float deltaTime) override;
 			virtual std::string Signaled(SignalId signal) override;
+			virtual std::string GetType() override { return StateType::StateBeginBoxPick; }
 
 		private:
 			void GetMouseRect(glm::vec2& min, glm::vec2& max);
@@ -119,13 +127,12 @@ namespace ToolKit
 		class StateEndPick : public StatePickingBase
 		{
 		public:
-			StateEndPick() : StatePickingBase("EndPick") {}
-
-		public:
 			virtual void Update(float deltaTime) override;
 			virtual std::string Signaled(SignalId signal) override;
+			virtual std::string GetType() override { return StateType::StateEndPick; }
 		};
 
+		// Mods.
 		class SelectMod : public BaseMod
 		{
 		public:

@@ -6,8 +6,7 @@
 #include "DebugNew.h"
 #include "Viewport.h"
 
-ToolKit::Editor::StateMoveBase::StateMoveBase(std::string name)
-	: State(name)
+ToolKit::Editor::StateMoveBase::StateMoveBase()
 {
 	m_mouseData.resize(2);
 }
@@ -31,7 +30,7 @@ void ToolKit::Editor::StateBeginMove::TransitionIn(State* prevState)
 
 void ToolKit::Editor::StateBeginMove::TransitionOut(State* nextState)
 {
-	if (nextState->m_name == StateBeginPick().m_name)
+	if (nextState->GetType() == StateType::StateBeginPick)
 	{
 		StateBeginPick* baseNext = static_cast<StateBeginPick*> (nextState);
 		baseNext->m_mouseData = m_mouseData;
@@ -76,10 +75,10 @@ std::string ToolKit::Editor::StateBeginMove::Signaled(SignalId signal)
 			m_mouseData[0] = vp->GetLastMousePosScreenSpace();
 		}
 
-		return StateBeginPick().m_name;
+		return StateType::StateBeginPick;
 	}
 
-	return "";
+	return StateType::Null;
 }
 
 // Signal definitions.
@@ -95,7 +94,7 @@ ToolKit::Editor::MoveMod::~MoveMod()
 {
 	if (m_stateMachine->m_currentState != nullptr)
 	{
-		StateMoveBase* baseState = static_cast<StateMoveBase*> (m_stateMachine->QueryState(StateBeginMove().m_name));
+		StateMoveBase* baseState = static_cast<StateMoveBase*> (m_stateMachine->QueryState(StateType::StateBeginMove));
 		assert(baseState && "Gizmo remains in the scene as dead pointer.");
 
 		if (baseState != nullptr && baseState->m_gizmo != nullptr)
@@ -115,7 +114,7 @@ void ToolKit::Editor::MoveMod::Init()
 	m_stateMachine->PushState(new StateBeginBoxPick());
 
 	state = new StateEndPick();
-	state->m_links[m_linkToMoveBeginSgnl] = StateBeginMove().m_name;
+	state->m_links[m_linkToMoveBeginSgnl] = StateType::StateBeginMove;
 	m_stateMachine->PushState(state);
 }
 
@@ -123,7 +122,7 @@ void ToolKit::Editor::MoveMod::Update(float deltaTime)
 {
 	BaseMod::Update(deltaTime);
 
-	if (m_stateMachine->m_currentState->m_name == StateEndPick().m_name)
+	if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick)
 	{
 		StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
 		std::vector<EntityId> entities;

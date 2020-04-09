@@ -6,9 +6,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Source\Actor.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\Animation.h">
       <Filter>Source</Filter>
     </ClInclude>
@@ -92,9 +89,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Source\Actor.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\Source\Animation.cpp">
       <Filter>Source</Filter>
     </ClCompile>

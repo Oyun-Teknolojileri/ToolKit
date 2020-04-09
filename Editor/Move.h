@@ -12,7 +12,7 @@ namespace ToolKit
 		class StateMoveBase : public State
 		{
 		public:
-			StateMoveBase(std::string name);
+			StateMoveBase();
 			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* nextState) override;
 
@@ -24,27 +24,20 @@ namespace ToolKit
 		class StateBeginMove : public StateMoveBase
 		{
 		public:
-			StateBeginMove() : StateMoveBase("BeginMove") {}
-
 			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* nextState) override;
 
 			virtual void Update(float deltaTime) override;
 			virtual std::string Signaled(SignalId signal) override;
+			virtual std::string GetType() override { return StateType::StateBeginMove; }
 		};
 
 		class StateMoveTo : public StateMoveBase
 		{
-		public:
-			StateMoveTo() : StateMoveBase("MoveTo") {}
-
 		};
 
 		class StateEndMove : public StateMoveBase
 		{
-		public:
-			StateEndMove() : StateMoveBase("EndMove") {}
-
 		};
 
 		// Mod.

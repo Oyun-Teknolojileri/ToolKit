@@ -3,8 +3,7 @@
 #include "StateMachine.h"
 #include "DebugNew.h"
 
-ToolKit::State::State(std::string name)
-	: m_name(name)
+ToolKit::State::State()
 {
 }
 
@@ -54,11 +53,11 @@ void ToolKit::StateMachine::Signal(SignalId signal)
 	m_currentState = nextState;
 }
 
-ToolKit::State* ToolKit::StateMachine::QueryState(std::string stateName)
+ToolKit::State* ToolKit::StateMachine::QueryState(std::string type)
 {
-	if (m_states.find(stateName) != m_states.end())
+	if (m_states.find(type) != m_states.end())
 	{
-		return m_states[stateName];
+		return m_states[type];
 	}
 
 	return nullptr;
@@ -66,8 +65,8 @@ ToolKit::State* ToolKit::StateMachine::QueryState(std::string stateName)
 
 void ToolKit::StateMachine::PushState(State* state)
 {
-	assert(m_states.find(state->m_name) == m_states.end()); // Make sure states are unique.
-	m_states[state->m_name] = state;
+	assert(m_states.find(state->GetType()) == m_states.end()); // Make sure states are unique.
+	m_states[state->GetType()] = state;
 }
 
 void ToolKit::StateMachine::Update(float deltaTime)

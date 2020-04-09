@@ -171,7 +171,7 @@ void ToolKit::Editor::BaseMod::Signal(SignalId signal)
 			{
 				if (ConsoleWindow* consol = g_app->GetConsole())
 				{
-					std::string log = "\t" + prevStateDbg->m_name + " -> " + nextState->m_name;
+					std::string log = "\t" + prevStateDbg->GetType() + " -> " + nextState->GetType();
 					consol->AddLog(log, "ModDbg");
 				}
 			}
@@ -185,11 +185,26 @@ int ToolKit::Editor::BaseMod::GetNextSignalId()
 	return ++signalCounter;
 }
 
-std::shared_ptr< ToolKit::Arrow2d> ToolKit::Editor::StatePickingBase::m_dbgArrow = nullptr;
-std::shared_ptr< ToolKit::LineBatch> ToolKit::Editor::StatePickingBase::m_dbgFrustum = nullptr;
 
-ToolKit::Editor::StatePickingBase::StatePickingBase(std::string name)
-	: State(name) 
+// State definitions.
+namespace ToolKit
+{
+	namespace Editor
+	{
+		const std::string StateType::Null = "";
+		const std::string StateType::StateBeginPick = "StateBeginPick";
+		const std::string StateType::StateBeginBoxPick = "StateBeginBoxPick";
+		const std::string StateType::StateEndPick = "StateEndPick";
+		const std::string StateType::StateBeginMove = "StateBeginMove";
+		const std::string StateType::StateMoveTo = "StateMoveTo";
+		const std::string StateType::StateEndMove = "StateEndMove";
+
+		std::shared_ptr<Arrow2d> StatePickingBase::m_dbgArrow = nullptr;
+		std::shared_ptr<LineBatch> StatePickingBase::m_dbgFrustum = nullptr;
+	}
+}
+
+ToolKit::Editor::StatePickingBase::StatePickingBase()
 { 
 	m_mouseData.resize(2); 
 }
@@ -205,7 +220,7 @@ void ToolKit::Editor::StatePickingBase::TransitionOut(State* nextState)
 		baseState->m_ignoreList = m_ignoreList;
 		baseState->m_mouseData = m_mouseData;
 
-		if (nextState->m_name != StateBeginPick().m_name)
+		if (nextState->GetType() != StateType::StateBeginPick)
 		{
 			baseState->m_pickData = m_pickData;
 		}
@@ -274,16 +289,16 @@ std::string ToolKit::Editor::StateBeginPick::Signaled(SignalId signal)
 				m_dbgArrow->m_node->m_orientation = ToolKit::RotationTo(ToolKit::X_AXIS, ray.direction);
 			}
 
-			return StateEndPick().m_name;
+			return StateType::StateEndPick;
 		}
 	}
 
 	if (signal == BaseMod::m_leftMouseBtnDragSgnl)
 	{
-		return StateBeginBoxPick().m_name;
+		return StateType::StateBeginBoxPick;
 	}
 
-	return std::string();
+	return StateType::Null;
 }
 
 void ToolKit::Editor::StateBeginBoxPick::Update(float deltaTime)
@@ -388,7 +403,7 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 			}
 		}
 
-		return StateEndPick().m_name;
+		return StateType::StateEndPick;
 	}
 
 	if (signal == BaseMod::m_leftMouseBtnDragSgnl)
@@ -414,7 +429,7 @@ std::string ToolKit::Editor::StateBeginBoxPick::Signaled(SignalId signal)
 		}
 	}
 
-	return std::string();
+	return StateType::Null;
 }
 
 void ToolKit::Editor::StateBeginBoxPick::GetMouseRect(glm::vec2& min, glm::vec2& max)
@@ -442,11 +457,11 @@ std::string ToolKit::Editor::StateEndPick::Signaled(SignalId signal)
 		if (vp != nullptr && vp->IsViewportQueriable())
 		{
 			m_mouseData[0] = vp->GetLastMousePosScreenSpace();
-			return StateBeginPick().m_name;
+			return StateType::StateBeginPick;
 		}
 	}
 
-	return std::string();
+	return StateType::Null;
 }
 
 void ToolKit::Editor::SelectMod::Init()
@@ -465,12 +480,12 @@ void ToolKit::Editor::SelectMod::Update(float deltaTime)
 	BaseMod::Update(deltaTime);
 	static bool stateTransition = false;
 
-	if (m_stateMachine->m_currentState->m_name == StateBeginPick().m_name)
+	if (m_stateMachine->m_currentState->GetType() == StateType::StateBeginPick)
 	{
 		stateTransition = true;
 	}
 
-	if (m_stateMachine->m_currentState->m_name == StateEndPick().m_name && stateTransition)
+	if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick && stateTransition)
 	{
 		stateTransition = false;
 
@@ -495,12 +510,12 @@ void ToolKit::Editor::CursorMod::Update(float deltaTime)
 	BaseMod::Update(deltaTime);
 	static bool stateTransition = false;
 
-	if (m_stateMachine->m_currentState->m_name == StateBeginPick().m_name)
+	if (m_stateMachine->m_currentState->GetType() == StateType::StateBeginPick)
 	{
 		stateTransition = true;
 	}
 
-	if (m_stateMachine->m_currentState->m_name == StateEndPick().m_name && stateTransition)
+	if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick && stateTransition)
 	{
 		stateTransition = false;
 

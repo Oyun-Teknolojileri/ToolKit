@@ -1,22 +1,22 @@
 #pragma once
 
-#include <unordered_map>
-#include "Types.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {
+
 	class State
 	{
 	public:
-		State(std::string name);
+		State();
 		virtual ~State();
 		virtual void TransitionIn(State* prevState) = 0;
 		virtual void TransitionOut(State* nextState) = 0;
 		virtual void Update(float deltaTime) = 0;
 		virtual std::string Signaled(SignalId signal) = 0; // Returns next state's name.
+		virtual std::string GetType() = 0;
 
 	public:
-		const std::string m_name;
 		std::unordered_map<int, std::string> m_links; // Specific signals might jump to a state. This provides the hijacking mechanism.
 	};
 
@@ -27,7 +27,7 @@ namespace ToolKit
 		~StateMachine();
 
 		void Signal(SignalId signal);
-		State* QueryState(std::string stateName);
+		State* QueryState(std::string type);
 		void PushState(State* state);
 		void Update(float deltaTime);
 
