@@ -8,6 +8,13 @@ namespace ToolKit
 	{
 		class MoveGizmo;
 
+		// Signals.
+		class LinkBackToMoveBeginSgnl : public SignalId
+		{
+		public:
+			LinkBackToMoveBeginSgnl() : SignalId(105) {}
+		};
+
 		// States.
 		class StateMoveBase : public State
 		{
@@ -18,6 +25,7 @@ namespace ToolKit
 
 		public:
 			std::shared_ptr<MoveGizmo> m_gizmo = nullptr;
+			std::vector<glm::vec2> m_mouseData;
 		};
 
 		class StateBeginMove : public StateMoveBase

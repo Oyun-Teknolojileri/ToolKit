@@ -26,6 +26,7 @@ namespace ToolKit
 
 	public:
 		const std::string m_name;
+		std::unordered_map<int, std::string> m_links; // Specific signals might jump to a state. This provides the hijacking mechanism.
 	};
 
 	class StateMachine

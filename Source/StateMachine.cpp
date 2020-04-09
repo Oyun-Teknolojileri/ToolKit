@@ -42,7 +42,18 @@ void ToolKit::StateMachine::Signal(SignalId signal)
 		return;
 	}
 
-	State* nextState = QueryState(m_currentState->Signaled(signal));
+	std::string query = m_currentState->Signaled(signal);
+	if (query.empty())
+	{
+		// If the signal is not processed in the current state, check links for hijack.
+		auto link = m_currentState->m_links.find(signal.m_id);
+		if (link != m_currentState->m_links.end())
+		{
+			query = link->second;
+		}
+	}
+
+	State* nextState = QueryState(query);
 	if (nextState == nullptr)
 	{
 		return;

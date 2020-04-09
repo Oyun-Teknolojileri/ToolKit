@@ -4,10 +4,12 @@
 #include "GlobalDef.h"
 #include "Node.h"
 #include "DebugNew.h"
+#include "Viewport.h"
 
 ToolKit::Editor::StateMoveBase::StateMoveBase(std::string name)
 	: State(name)
 {
+	m_mouseData.resize(2);
 }
 
 void ToolKit::Editor::StateMoveBase::TransitionIn(State* prevState)
@@ -29,6 +31,11 @@ void ToolKit::Editor::StateBeginMove::TransitionIn(State* prevState)
 
 void ToolKit::Editor::StateBeginMove::TransitionOut(State* nextState)
 {
+	if (nextState->m_name == StateBeginPick().m_name)
+	{
+		StateBeginPick* baseNext = static_cast<StateBeginPick*> (nextState);
+		baseNext->m_mouseData = m_mouseData;
+	}
 }
 
 void ToolKit::Editor::StateBeginMove::Update(float deltaTime)
@@ -57,6 +64,17 @@ void ToolKit::Editor::StateBeginMove::Update(float deltaTime)
 
 std::string ToolKit::Editor::StateBeginMove::Signaled(SignalId signal)
 {
+	if (signal == LeftMouseBtnDownSgnl())
+	{
+		Viewport* vp = g_app->GetActiveViewport();
+		if (vp != nullptr)
+		{
+			m_mouseData[0] = vp->GetLastMousePosScreenSpace();
+		}
+
+		return StateBeginPick().m_name;
+	}
+
 	return "";
 }
 
@@ -74,13 +92,30 @@ ToolKit::Editor::MoveMod::~MoveMod()
 
 void ToolKit::Editor::MoveMod::Init()
 {
-	StateBeginMove* initialState = new StateBeginMove();
-	m_stateMachine->m_currentState = initialState;
+	State* state = new StateBeginMove();
+	m_stateMachine->m_currentState = state;
 
-	m_stateMachine->PushState(initialState);
+	m_stateMachine->PushState(state);
+	m_stateMachine->PushState(new StateBeginPick());
+
+	state = new StateEndPick();
+	state->m_links[LinkBackToMoveBeginSgnl().m_id] = StateBeginMove().m_name;
+	m_stateMachine->PushState(state);
 }
 
 void ToolKit::Editor::MoveMod::Update(float deltaTime)
 {
 	BaseMod::Update(deltaTime);
+
+	if (m_stateMachine->m_currentState->m_name == StateEndPick().m_name)
+	{
+		StateEndPick* pickEnd = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
+		Entity* e = pickEnd->m_pickData.back().entity;
+		if (e != nullptr)
+		{
+			g_app->m_scene.MakeCurrentSelection(e->m_id, false);
+		}
+
+		m_stateMachine->Signal(LinkBackToMoveBeginSgnl().m_id);
+	}
 }
