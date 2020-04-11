@@ -58,6 +58,7 @@ namespace ToolKit
 			bool m_showPickingDebug = false;
 			bool m_showStateTransitionsDebug = false;
 			bool m_showOverlayUI = true;
+			bool m_showOverlayUIAlways = true;
 
 		private:
 			Renderer* m_renderer;

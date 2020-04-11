@@ -15,6 +15,9 @@ namespace ToolKit
 		const std::string g_showOverlayUICmd("ShowOverlayUI");
 		extern void ShowOverlayExec(std::string args);
 
+		const std::string g_showOverlayUIAlwaysCmd("ShowOverlayUIAlways");
+		extern void ShowOverlayAlwaysExec(std::string args);
+
 		const std::string g_showModTransitions("ShowModTransitions");
 		extern void ShowModTransitionsExec(std::string args);
 

@@ -99,10 +99,13 @@ void Editor::Viewport::Show()
 
 	if (g_app->m_showOverlayUI)
 	{
-		if (IsActive() && m_overlayNav != nullptr)
+		if (IsActive() || g_app->m_showOverlayUIAlways)
 		{
-			m_overlayNav->m_owner = this;
-			m_overlayNav->Show();
+			if (m_overlayNav != nullptr)
+			{
+				m_overlayNav->m_owner = this;
+				m_overlayNav->Show();
+			}
 		}
 	}
 

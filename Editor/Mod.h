@@ -44,6 +44,7 @@ namespace ToolKit
 			static SignalId m_leftMouseBtnUpSgnl;
 			static SignalId m_leftMouseBtnDragSgnl;
 			static SignalId m_mouseMoveSgnl;
+			static SignalId m_backToStart;
 		};
 
 		class ModManager

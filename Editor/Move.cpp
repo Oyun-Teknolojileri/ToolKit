@@ -26,7 +26,14 @@ namespace ToolKit
 		{
 			if (m_gizmo != nullptr)
 			{
+				if (g_app->m_scene.GetSelectedEntityCount() == 0)
+				{
+					g_app->m_scene.RemoveEntity(m_gizmo->m_id);
+					return;
+				}
+
 				m_gizmo->Update(deltaTime);
+
 				Entity* e = g_app->m_scene.GetCurrentSelection();
 				if (e != nullptr)
 				{
@@ -86,14 +93,6 @@ namespace ToolKit
 		void StateBeginMove::Update(float deltaTime)
 		{
 			StateMoveBase::Update(deltaTime);
-
-			if (g_app->m_scene.GetSelectedEntityCount() == 0)
-			{
-				if (m_gizmo != nullptr)
-				{
-					g_app->m_scene.RemoveEntity(m_gizmo->m_id);
-				}
-			}
 		}
 
 		std::string StateBeginMove::Signaled(SignalId signal)
@@ -128,14 +127,6 @@ namespace ToolKit
 
 		// StateMoveTo
 		//////////////////////////////////////////////////////////////////////////
-
-		void StateMoveTo::TransitionIn(State* prevState)
-		{
-		}
-
-		void StateMoveTo::TransitionOut(State* nextState)
-		{
-		}
 
 		void StateMoveTo::Update(float deltaTime)
 		{
@@ -240,9 +231,25 @@ namespace ToolKit
 		// StateEndMove
 		//////////////////////////////////////////////////////////////////////////
 
+		void StateEndMove::TransitionOut(State* nextState)
+		{
+			if (nextState->ThisIsA<StateBeginMove>())
+			{
+				StateBeginMove* baseNext = static_cast<StateBeginMove*> (nextState);
+				baseNext->m_grabbedAxis = MoveGizmo::Axis::None;
+				baseNext->m_mouseData[0] = glm::vec2();
+				baseNext->m_mouseData[1] = glm::vec2();
+			}
+		}
+
 		std::string StateEndMove::Signaled(SignalId signal)
 		{
-			return StateType::StateBeginMove;
+			if (signal == BaseMod::m_backToStart)
+			{
+				return StateType::StateBeginMove;
+			}
+
+			return StateType::Null;
 		}
 
 		// MoveMod
@@ -285,7 +292,7 @@ namespace ToolKit
 		{
 			BaseMod::Update(deltaTime);
 
-			if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick)
+			if (m_stateMachine->m_currentState->ThisIsA<StateEndPick>())
 			{
 				StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
 				
@@ -294,6 +301,11 @@ namespace ToolKit
 				g_app->m_scene.AddToSelection(entities, ImGui::GetIO().KeyShift);
 
 				ModManager::GetInstance()->DispatchSignal(m_linkToMoveBeginSgnl);
+			}
+
+			if (m_stateMachine->m_currentState->ThisIsA<StateEndMove>())
+			{
+				ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
 			}
 		}
 

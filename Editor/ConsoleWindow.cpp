@@ -39,6 +39,19 @@ void ToolKit::Editor::ShowOverlayExec(std::string args)
 	}
 }
 
+extern void ToolKit::Editor::ShowOverlayAlwaysExec(std::string args)
+{
+	if (args == "1")
+	{
+		g_app->m_showOverlayUIAlways = true;
+	}
+
+	if (args == "0")
+	{
+		g_app->m_showOverlayUIAlways = false;
+	}
+}
+
 extern void ToolKit::Editor::ShowModTransitionsExec(std::string args)
 {
 	if (args == "1")
@@ -62,6 +75,7 @@ ToolKit::Editor::ConsoleWindow::ConsoleWindow()
 {
 	CreateCommand(g_showPickDebugCmd, ShowPickDebugExec);
 	CreateCommand(g_showOverlayUICmd, ShowOverlayExec);
+	CreateCommand(g_showOverlayUIAlwaysCmd, ShowOverlayAlwaysExec);
 	CreateCommand(g_showModTransitions, ShowModTransitionsExec);
 }
 

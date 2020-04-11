@@ -128,6 +128,7 @@ namespace ToolKit
 		SignalId BaseMod::m_leftMouseBtnUpSgnl = BaseMod::GetNextSignalId();
 		SignalId BaseMod::m_leftMouseBtnDragSgnl = BaseMod::GetNextSignalId();
 		SignalId BaseMod::m_mouseMoveSgnl = BaseMod::GetNextSignalId();
+		SignalId BaseMod::m_backToStart = BaseMod::GetNextSignalId();
 	}
 }
 
