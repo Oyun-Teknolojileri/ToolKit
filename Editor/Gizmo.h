@@ -11,7 +11,6 @@ namespace ToolKit
 		{
 		public:
 			Cursor();
-			virtual ~Cursor();
 
 		private:
 			void Generate();
@@ -30,26 +29,19 @@ namespace ToolKit
 		{
 		public:
 			MoveGizmo();
-			virtual ~MoveGizmo();
 
-			enum class Axis
-			{
-				None,
-				X,
-				Y,
-				Z,
-				XY,
-				XZ,
-				YZ
-			};
-			Axis HitTest(const Ray& ray);
+			AxisLabel HitTest(const Ray& ray);
 			void Update(float deltaTime);
 
 		private:
 			void Generate();
 
+		public:
+			AxisLabel m_inAccessable;
+
 		private:
 			BoundingBox m_hitBox[3]; // X - Y - Z.
+			std::shared_ptr<Mesh> m_lines[3];
 			std::shared_ptr<Mesh> m_solids[3];
 		};
 	}

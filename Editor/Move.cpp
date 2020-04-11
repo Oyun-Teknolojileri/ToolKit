@@ -6,6 +6,7 @@
 #include "DebugNew.h"
 #include "Viewport.h"
 #include "ConsoleWindow.h"
+#include <Directional.h>
 
 namespace ToolKit
 {
@@ -17,7 +18,7 @@ namespace ToolKit
 		StateMoveBase::StateMoveBase()
 		{
 			m_gizmo = nullptr;
-			m_grabbedAxis = MoveGizmo::Axis::None;
+			m_grabbedAxis = AxisLabel::None;
 
 			m_mouseData.resize(2);
 		}
@@ -93,6 +94,30 @@ namespace ToolKit
 		void StateBeginMove::Update(float deltaTime)
 		{
 			StateMoveBase::Update(deltaTime);
+
+			m_gizmo->m_inAccessable = AxisLabel::None;
+			Entity* ce = g_app->m_scene.GetCurrentSelection();
+			if (ce != nullptr)
+			{
+				glm::vec3 x, y, z;
+				glm::mat4 ts = ce->m_node->GetTransform();
+				ExtractAxes(ts, x, y, z);
+
+				Viewport* vp = g_app->GetActiveViewport();
+				glm::vec3 dir = vp->m_camera->GetDir();
+
+				float safetyMeasure = glm::abs(glm::cos(glm::radians(45.0f)));
+				AxisLabel axisLabes[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
+				glm::vec3 axes[3] = { x, y, z };
+
+				for (int i = 0; i < 3; i++)
+				{
+					if (safetyMeasure < glm::abs(glm::dot(dir, axes[i])))
+					{
+						m_gizmo->m_inAccessable = axisLabes[i];
+					}
+				}
+			}
 		}
 
 		std::string StateBeginMove::Signaled(SignalId signal)
@@ -108,7 +133,7 @@ namespace ToolKit
 					m_grabbedAxis = m_gizmo->HitTest(vp->RayFromMousePosition());
 				}
 
-				if (m_grabbedAxis == MoveGizmo::Axis::None)
+				if (m_grabbedAxis == AxisLabel::None)
 				{
 					return StateType::StateBeginPick;
 				}
@@ -116,7 +141,7 @@ namespace ToolKit
 
 			if (signal == BaseMod::m_leftMouseBtnDragSgnl)
 			{
-				if (m_grabbedAxis != MoveGizmo::Axis::None)
+				if (m_grabbedAxis != AxisLabel::None)
 				{
 					return StateType::StateMoveTo;
 				}
@@ -151,6 +176,8 @@ namespace ToolKit
 
 		void StateMoveTo::Move()
 		{
+			return;
+
 			// Move on active selection.
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 
@@ -167,19 +194,16 @@ namespace ToolKit
 
 			switch (m_grabbedAxis)
 			{
-			case MoveGizmo::Axis::X:
+			case AxisLabel::X:
 				break;
-			case MoveGizmo::Axis::Y:
+			case AxisLabel::Y:
 				std::swap(x, y);
 				break;
-			case MoveGizmo::Axis::Z:
+			case AxisLabel::Z:
 				std::swap(x, z);
 				break;
-			case MoveGizmo::Axis::None:
-			case MoveGizmo::Axis::XY:
-			case MoveGizmo::Axis::XZ:
-			case MoveGizmo::Axis::YZ:
 			default:
+				assert(false && "Not implemented.");
 				break;
 			}
 
@@ -236,7 +260,7 @@ namespace ToolKit
 			if (nextState->ThisIsA<StateBeginMove>())
 			{
 				StateBeginMove* baseNext = static_cast<StateBeginMove*> (nextState);
-				baseNext->m_grabbedAxis = MoveGizmo::Axis::None;
+				baseNext->m_grabbedAxis = AxisLabel::None;
 				baseNext->m_mouseData[0] = glm::vec2();
 				baseNext->m_mouseData[1] = glm::vec2();
 			}

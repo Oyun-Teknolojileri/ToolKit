@@ -20,9 +20,9 @@ namespace ToolKit
 			void MakeSureGizmoIsValid();
 
 		public:
-			std::shared_ptr<MoveGizmo> m_gizmo;
-			MoveGizmo::Axis m_grabbedAxis;
 			std::vector<glm::vec2> m_mouseData;
+			std::shared_ptr<MoveGizmo> m_gizmo;
+			AxisLabel m_grabbedAxis;
 		};
 
 		class StateBeginMove : public StateMoveBase

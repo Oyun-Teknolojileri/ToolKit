@@ -30,6 +30,17 @@ namespace ToolKit
 
   static const EntityId NULL_ENTITY = 0;
 
+  enum class AxisLabel
+  {
+    None,
+    X,
+    Y,
+    Z,
+    XY,
+    XZ,
+    YZ
+  };
+
   class Main
   {
   public:

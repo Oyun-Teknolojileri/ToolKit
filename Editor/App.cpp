@@ -117,6 +117,9 @@ void ToolKit::Editor::App::Frame(float deltaTime)
 
 		m_renderer->SetRenderTarget(vp->m_viewportImage);
 
+		// Dirty hack.
+		MoveGizmo* gizmo = nullptr;
+
 		for (Entity* ntt : m_scene.GetEntities())
 		{
 			if (ntt->IsDrawable())
@@ -125,6 +128,12 @@ void ToolKit::Editor::App::Frame(float deltaTime)
 				{
 					Billboard* billboard = static_cast<Billboard*> (ntt);
 					billboard->LookAt(vp->m_camera);
+
+					if (typeid(ntt) == typeid(MoveGizmo))
+					{
+						gizmo = static_cast<MoveGizmo*> (ntt);
+						continue;
+					}
 				}
 
 				if (m_scene.IsSelected(ntt->m_id))
@@ -142,6 +151,11 @@ void ToolKit::Editor::App::Frame(float deltaTime)
 		
 		m_origin->LookAt(vp->m_camera);
 		m_renderer->Render(m_origin, vp->m_camera);
+
+		if (gizmo != nullptr)
+		{
+			m_renderer->Render(gizmo, vp->m_camera);
+		}
 
 		m_cursor->LookAt(vp->m_camera);
 		m_renderer->Render(m_cursor, vp->m_camera);

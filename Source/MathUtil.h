@@ -44,8 +44,8 @@ namespace ToolKit
 
   void DecomposeMatrix(const glm::mat4& transform, glm::vec3& position, glm::quat& rotation, glm::vec3& scale); // Assuming transformation applied in this order translate * rotate * scale * vector.
   void DecomposeMatrix(const glm::mat4& transform, glm::vec3& position, glm::quat& rotation); // Assuming transformation applied in this order translate * rotate * scale * vector.
-  void ExtractAxes(const glm::mat4& transform, glm::vec3& x, glm::vec3& y, glm::vec3& z);
-  Frustum ExtractFrustum(const glm::mat4& modelViewProject);
+  void ExtractAxes(const glm::mat4& transform, glm::vec3& x, glm::vec3& y, glm::vec3& z, bool normalize = true);
+  Frustum ExtractFrustum(const glm::mat4& projectViewModel);
 
   // Intersections
   //////////////////////////////////////////

@@ -16,7 +16,10 @@ namespace ToolKit
     void Roll(float val);
     void Translate(glm::vec3 pos);
     void RotateOnUpVector(float val);
-    void GetLocalAxis(glm::vec3& dir, glm::vec3& up, glm::vec3& right);
+    void GetLocalAxis(glm::vec3& dir, glm::vec3& up, glm::vec3& right) const;
+    glm::vec3 GetDir() const;
+    glm::vec3 GetUp() const;
+    glm::vec3 GetRight() const;
     
     virtual EntityType GetType() const override;
   };
@@ -43,9 +46,9 @@ namespace ToolKit
 		void SetLens(float fov, float width, float height);
     void SetLens(float fov, float width, float height, float near, float far);
     void SetLens(float aspect, float left, float right, float bottom, float top, float near, float far);
-    glm::mat4 GetViewMatrix();
+    glm::mat4 GetViewMatrix() const;
 
-    CamData GetData();
+    CamData GetData() const;
     virtual EntityType GetType() const override;
 
   private:
@@ -71,7 +74,7 @@ namespace ToolKit
     Light();
     virtual ~Light();
 
-    LightData GetData();
+    LightData GetData() const;
     virtual EntityType GetType() const override;
 
   public:

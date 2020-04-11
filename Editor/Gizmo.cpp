@@ -21,10 +21,6 @@ ToolKit::Editor::Cursor::Cursor()
 	Generate();
 }
 
-ToolKit::Editor::Cursor::~Cursor()
-{
-}
-
 void ToolKit::Editor::Cursor::Generate()
 {
 	m_mesh->UnInit();
@@ -84,17 +80,17 @@ void ToolKit::Editor::Axis3d::Generate()
 {
 	for (int i = 0; i < 3; i++)
 	{
-		Arrow2d::ArrowType t;
+		AxisLabel t;
 		switch (i)
 		{
 		case 0:
-			t = Arrow2d::ArrowType::X;
+			t = AxisLabel::X;
 			break;
 		case 1:
-			t = Arrow2d::ArrowType::Y;
+			t = AxisLabel::Y;
 			break;
 		case 2:
-			t = Arrow2d::ArrowType::Z;
+			t = AxisLabel::Z;
 			break;
 		}
 
@@ -114,14 +110,23 @@ void ToolKit::Editor::Axis3d::Generate()
 ToolKit::Editor::MoveGizmo::MoveGizmo()
 	: Billboard({ false, 10.0f, 400.0f })
 {
+	m_inAccessable = AxisLabel::None;
+
+	// Hit boxes.
+	m_hitBox[0].min = glm::vec3(0.05f, -0.05f, -0.05f);
+	m_hitBox[0].max = glm::vec3(1.0f, 0.05f, 0.05f);
+
+	m_hitBox[1].min = m_hitBox[0].min.yxz;
+	m_hitBox[1].max = m_hitBox[0].max.yxz;
+
+	m_hitBox[2].min = m_hitBox[0].min.zyx;
+	m_hitBox[2].max = m_hitBox[0].max.zyx;
+	
+	// Mesh.
 	Generate();
 }
 
-ToolKit::Editor::MoveGizmo::~MoveGizmo()
-{
-}
-
-ToolKit::Editor::MoveGizmo::Axis ToolKit::Editor::MoveGizmo::HitTest(const Ray& ray)
+ToolKit::AxisLabel ToolKit::Editor::MoveGizmo::HitTest(const Ray& ray)
 {
 	glm::mat4 invMat = m_node->GetTransform(TransformationSpace::TS_WORLD);
 	glm::mat4 tpsMat = glm::transpose(invMat);
@@ -145,20 +150,21 @@ ToolKit::Editor::MoveGizmo::Axis ToolKit::Editor::MoveGizmo::HitTest(const Ray& 
 		}
 	}
 
+	AxisLabel hit = AxisLabel::None;
 	switch (minIndx)
 	{
 	case 0:
-		return Axis::X;
+		hit = AxisLabel::X;
 		break;
 	case 1:
-		return Axis::Y;
+		hit = AxisLabel::Y;
 		break;
 	case 2:
-		return Axis::Z;
+		hit = AxisLabel::Z;
 		break;
 	}
 
-	return Axis::None;
+	return hit;
 }
 
 void ToolKit::Editor::MoveGizmo::Update(float deltaTime)
@@ -169,47 +175,60 @@ void ToolKit::Editor::MoveGizmo::Update(float deltaTime)
 		return;
 	}
 
-	if (m_mesh->m_subMeshes.size() == 3)
+	std::vector<Mesh*> allMeshes;
+	m_mesh->GetAllMeshes(allMeshes);
+	assert(allMeshes.size() <= 4 && "Max expected size is 4");
+	
+	for (Mesh* mesh : allMeshes)
 	{
-		m_mesh->m_subMeshes.pop_back();
+		mesh->m_subMeshes.clear();
 	}
 
-	MoveGizmo::Axis hitRes = HitTest(vp->RayFromMousePosition());
-	switch (hitRes)
+	AxisLabel hitRes = HitTest(vp->RayFromMousePosition());
+	AxisLabel axisLabels[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
+
+	bool firstFilled = false;
+	for (int i = 0; i < 3; i++)
 	{
-	case ToolKit::Editor::MoveGizmo::Axis::X:
-		m_mesh->m_subMeshes.push_back(m_solids[0]);
-		break;
-	case ToolKit::Editor::MoveGizmo::Axis::Y:
-		m_mesh->m_subMeshes.push_back(m_solids[1]);
-		break;
-	case ToolKit::Editor::MoveGizmo::Axis::Z:
-		m_mesh->m_subMeshes.push_back(m_solids[2]);
-		break;
-	case ToolKit::Editor::MoveGizmo::Axis::None:
-	default:
-		break;
+		if (m_inAccessable == axisLabels[i])
+		{
+			continue;
+		}
+
+		if (!firstFilled)
+		{
+			m_mesh = m_lines[i];
+			firstFilled = true;
+		}
+		else
+		{
+			m_mesh->m_subMeshes.push_back(m_lines[i]);
+		}
+
+		if (hitRes == axisLabels[i])
+		{
+			m_mesh->m_subMeshes.push_back(m_solids[i]);
+		}
 	}
 }
 
 void ToolKit::Editor::MoveGizmo::Generate()
 {
-	// Hit boxes.
-	m_hitBox[0].min = glm::vec3(0.05f, -0.05f, -0.05f);
-	m_hitBox[0].max = glm::vec3(1.0f, 0.05f, 0.05f);
+	// Lines.
+	AxisLabel axisLabels[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
 
-	m_hitBox[1].min = m_hitBox[0].min.yxz;
-	m_hitBox[1].max = m_hitBox[0].max.yxz;
+	for (int i = 0; i < 3; i++)
+	{
+		Arrow2d axis(axisLabels[i]);
+		axis.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
+		axis.m_mesh->Init();
+		m_lines[i] = axis.m_mesh;		
+		axis.m_mesh = nullptr;
+	}
 
-	m_hitBox[2].min = m_hitBox[0].min.zyx;
-	m_hitBox[2].max = m_hitBox[0].max.zyx;
-
-	// Axis.
-	Axis3d axis;
-	axis.m_mesh->Init();
-	
-	m_mesh = axis.m_mesh;
-	axis.m_mesh = nullptr;
+	m_mesh = m_lines[0];
+	m_mesh->m_subMeshes.push_back(m_lines[1]);
+	m_mesh->m_subMeshes.push_back(m_lines[2]);
 
 	// Solids.
 	std::vector<ToolKit::Vertex> vertices;

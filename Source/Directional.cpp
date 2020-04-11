@@ -39,12 +39,30 @@ void ToolKit::Directional::RotateOnUpVector(float val)
   m_node->Rotate(glm::angleAxis(val, glm::vec3(0.0f, 1.0f, 0.0f)), TransformationSpace::TS_WORLD);
 }
 
-void ToolKit::Directional::GetLocalAxis(glm::vec3& dir, glm::vec3& up, glm::vec3& right)
+void ToolKit::Directional::GetLocalAxis(glm::vec3& dir, glm::vec3& up, glm::vec3& right) const
 {
   glm::mat4 transform = m_node->GetTransform();
   right = glm::column(transform, 0);
   up = glm::column(transform, 1);
   dir = -glm::column(transform, 2);
+}
+
+glm::vec3 ToolKit::Directional::GetDir() const
+{
+	glm::mat4 transform = m_node->GetTransform();
+	return -glm::column(transform, 2);
+}
+
+glm::vec3 ToolKit::Directional::GetUp() const
+{
+	glm::mat4 transform = m_node->GetTransform();
+	return glm::column(transform, 1);
+}
+
+glm::vec3 ToolKit::Directional::GetRight() const
+{
+	glm::mat4 transform = m_node->GetTransform();
+	return glm::column(transform, 0);
 }
 
 ToolKit::EntityType ToolKit::Directional::GetType() const
@@ -86,17 +104,16 @@ void ToolKit::Camera::SetLens(float aspect, float left, float right, float botto
 	m_ortographic = true;
 }
 
-glm::mat4 ToolKit::Camera::GetViewMatrix()
+glm::mat4 ToolKit::Camera::GetViewMatrix() const
 {
   glm::mat4 view = m_node->GetTransform(TransformationSpace::TS_WORLD);
   return glm::inverse(view);
 }
 
-ToolKit::Camera::CamData ToolKit::Camera::GetData()
+ToolKit::Camera::CamData ToolKit::Camera::GetData() const
 {
   CamData data;
-  glm::vec3 tmp;
-  GetLocalAxis(data.dir, tmp, tmp);
+  data.dir = GetDir();
   data.pos = m_node->GetTranslation(TransformationSpace::TS_WORLD);
   data.projection = m_projection;
   data.fov = m_fov;
@@ -122,10 +139,10 @@ ToolKit::Light::~Light()
 {
 }
 
-ToolKit::Light::LightData ToolKit::Light::GetData()
+ToolKit::Light::LightData ToolKit::Light::GetData() const
 {
   LightData data;
-  GetLocalAxis(data.dir, data.pos, data.color);
+  data.dir = GetDir();
   data.pos = m_node->GetTranslation(TransformationSpace::TS_WORLD);
   data.color = m_color;
 

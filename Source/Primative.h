@@ -5,7 +5,6 @@
 
 namespace ToolKit
 {
-  class Camera;
 
 	class Billboard : public Drawable
 	{
@@ -21,9 +20,9 @@ namespace ToolKit
 
 	public:
 		Billboard(const Settings& settings);
-		virtual ~Billboard();
+
 		virtual EntityType GetType() const override;
-		virtual void LookAt(Camera* cam);
+		virtual void LookAt(class Camera* cam);
 
 	public:
 		Settings m_settings;
@@ -34,7 +33,7 @@ namespace ToolKit
   {
   public:
     Cube();
-    ~Cube();
+
     virtual EntityType GetType() const override;
   };
 
@@ -42,7 +41,7 @@ namespace ToolKit
   {
   public:
     Quad();
-    ~Quad();
+
     virtual EntityType GetType() const override;
   };
 
@@ -50,28 +49,23 @@ namespace ToolKit
   {
   public:
     Sphere();
-    ~Sphere();
+
     virtual EntityType GetType() const override;
   };
 
   class Arrow2d : public Drawable
   {
   public:
-    enum class ArrowType
-    {
-      X,
-      Y,
-      Z
-    } m_arrowType = ArrowType::X;
-
-  public:
     Arrow2d();
-    Arrow2d(ArrowType t);
-    ~Arrow2d();
+    Arrow2d(AxisLabel label); // X - Y - Z.
+
     virtual EntityType GetType() const override;
 
 	private:
-		void Generate(ArrowType t);
+		void Generate();
+
+  private:
+    AxisLabel m_label;
   };
 
   class LineBatch : public Drawable

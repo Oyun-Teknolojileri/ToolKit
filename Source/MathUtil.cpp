@@ -28,53 +28,60 @@ void ToolKit::DecomposeMatrix(const glm::mat4& transform, glm::vec3& position, g
 	scale = glm::vec3(sx, sy, sz);
 }
 
-void ToolKit::ExtractAxes(const glm::mat4& transform, glm::vec3& x, glm::vec3& y, glm::vec3& z)
+void ToolKit::ExtractAxes(const glm::mat4& transform, glm::vec3& x, glm::vec3& y, glm::vec3& z, bool normalize)
 {
-	x = glm::normalize(glm::column(transform, 0));
-	y = glm::normalize(glm::column(transform, 1));
-	z = glm::normalize(glm::column(transform, 2));
+	x = glm::column(transform, 0);
+	y = glm::column(transform, 1);
+	z = glm::column(transform, 2);
+
+	if (normalize)
+	{
+		x = glm::normalize(x);
+		y = glm::normalize(y);
+		z = glm::normalize(z);
+	}
 }
 
 // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
-ToolKit::Frustum ToolKit::ExtractFrustum(const glm::mat4& modelViewProject)
+ToolKit::Frustum ToolKit::ExtractFrustum(const glm::mat4& projectViewModel)
 {
 	Frustum frustum;
 
 	// Left clipping plane
-	frustum.planes[0].normal.x = modelViewProject[3][0] + modelViewProject[0][0];
-	frustum.planes[0].normal.y = modelViewProject[3][1] + modelViewProject[0][1];
-	frustum.planes[0].normal.z = modelViewProject[3][2] + modelViewProject[0][2];
-	frustum.planes[0].d = modelViewProject[3][3] + modelViewProject[0][3];
+	frustum.planes[0].normal.x = projectViewModel[3][0] + projectViewModel[0][0];
+	frustum.planes[0].normal.y = projectViewModel[3][1] + projectViewModel[0][1];
+	frustum.planes[0].normal.z = projectViewModel[3][2] + projectViewModel[0][2];
+	frustum.planes[0].d = projectViewModel[3][3] + projectViewModel[0][3];
 
 	// Right clipping plane
-	frustum.planes[1].normal.x = modelViewProject[3][0] - modelViewProject[0][0];
-	frustum.planes[1].normal.y = modelViewProject[3][1] - modelViewProject[0][1];
-	frustum.planes[1].normal.z = modelViewProject[3][2] - modelViewProject[0][2];
-	frustum.planes[1].d = modelViewProject[3][3] - modelViewProject[0][3];
+	frustum.planes[1].normal.x = projectViewModel[3][0] - projectViewModel[0][0];
+	frustum.planes[1].normal.y = projectViewModel[3][1] - projectViewModel[0][1];
+	frustum.planes[1].normal.z = projectViewModel[3][2] - projectViewModel[0][2];
+	frustum.planes[1].d = projectViewModel[3][3] - projectViewModel[0][3];
 
 	// Top clipping plane
-	frustum.planes[2].normal.x = modelViewProject[3][0] + modelViewProject[1][0];
-	frustum.planes[2].normal.y = modelViewProject[3][1] + modelViewProject[1][1];
-	frustum.planes[2].normal.z = modelViewProject[3][2] + modelViewProject[1][2];
-	frustum.planes[2].d = modelViewProject[3][3] + modelViewProject[1][3];
+	frustum.planes[2].normal.x = projectViewModel[3][0] + projectViewModel[1][0];
+	frustum.planes[2].normal.y = projectViewModel[3][1] + projectViewModel[1][1];
+	frustum.planes[2].normal.z = projectViewModel[3][2] + projectViewModel[1][2];
+	frustum.planes[2].d = projectViewModel[3][3] + projectViewModel[1][3];
 
 	// Bottom clipping plane
-	frustum.planes[3].normal.x = modelViewProject[3][0] - modelViewProject[1][0];
-	frustum.planes[3].normal.y = modelViewProject[3][1] - modelViewProject[1][1];
-	frustum.planes[3].normal.z = modelViewProject[3][2] - modelViewProject[1][2];
-	frustum.planes[3].d = modelViewProject[3][3] - modelViewProject[1][3];
+	frustum.planes[3].normal.x = projectViewModel[3][0] - projectViewModel[1][0];
+	frustum.planes[3].normal.y = projectViewModel[3][1] - projectViewModel[1][1];
+	frustum.planes[3].normal.z = projectViewModel[3][2] - projectViewModel[1][2];
+	frustum.planes[3].d = projectViewModel[3][3] - projectViewModel[1][3];
 
 	// Near clipping plane
-	frustum.planes[4].normal.x = modelViewProject[3][0] + modelViewProject[2][0];
-	frustum.planes[4].normal.y = modelViewProject[3][1] + modelViewProject[2][1];
-	frustum.planes[4].normal.z = modelViewProject[3][2] + modelViewProject[2][2];
-	frustum.planes[4].d = modelViewProject[3][3] + modelViewProject[2][3];
+	frustum.planes[4].normal.x = projectViewModel[3][0] + projectViewModel[2][0];
+	frustum.planes[4].normal.y = projectViewModel[3][1] + projectViewModel[2][1];
+	frustum.planes[4].normal.z = projectViewModel[3][2] + projectViewModel[2][2];
+	frustum.planes[4].d = projectViewModel[3][3] + projectViewModel[2][3];
 
 	// Far clipping plane
-	frustum.planes[5].normal.x = modelViewProject[3][0] - modelViewProject[2][0];
-	frustum.planes[5].normal.y = modelViewProject[3][1] - modelViewProject[2][1];
-	frustum.planes[5].normal.z = modelViewProject[3][2] - modelViewProject[2][2];
-	frustum.planes[5].d = modelViewProject[3][3] - modelViewProject[2][3];
+	frustum.planes[5].normal.x = projectViewModel[3][0] - projectViewModel[2][0];
+	frustum.planes[5].normal.y = projectViewModel[3][1] - projectViewModel[2][1];
+	frustum.planes[5].normal.z = projectViewModel[3][2] - projectViewModel[2][2];
+	frustum.planes[5].d = projectViewModel[3][3] - projectViewModel[2][3];
 	
 	// Normalize the plane equations, if requested
 	for (int i = 0; i < 6; i++)
@@ -160,11 +167,11 @@ bool ToolKit::RayTriangleIntersection(const Ray& ray, const glm::vec3& v0, const
 	f = 1.0f / a;
 	s = ray.position - vertex0;
 	u = f * glm::dot(s, h);
-	if (u < 0.0 || u > 1.0)
+	if (u < 0.0f || u > 1.0f)
 		return false;
 	q = glm::cross(s, edge1);
 	v = f * glm::dot(ray.direction, q);
-	if (v < 0.0 || u + v > 1.0)
+	if (v < 0.0f || (u + v) > 1.0f)
 		return false;
 	// At this stage we can compute t to find out where the intersection point is on the line.
 	t = f * glm::dot(edge2, q);
@@ -284,7 +291,7 @@ bool ToolKit::RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, f
 {
 	// assuming vectors are all normalized
 	float denom = glm::dot(plane.normal, ray.direction);
-	if (denom < 0.0001f)
+	if (denom < 0.0001f) // Scratch pixel made a mistake here.
 	{
 		glm::vec3 p0 = plane.normal * plane.d;
 		glm::vec3 p0l0 = p0 - ray.position;

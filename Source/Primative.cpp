@@ -12,10 +12,6 @@ ToolKit::Billboard::Billboard(const Settings& settings)
 {
 }
 
-ToolKit::Billboard::~Billboard()
-{
-}
-
 ToolKit::EntityType ToolKit::Billboard::GetType() const
 {
   return EntityType::Entity_Billboard;
@@ -161,10 +157,6 @@ ToolKit::Cube::Cube()
 	m_mesh->CalculateAABoundingBox();
 }
 
-ToolKit::Cube::~Cube()
-{
-}
-
 ToolKit::EntityType ToolKit::Cube::GetType() const
 {
   return EntityType::Entity_Cube;
@@ -203,10 +195,6 @@ ToolKit::Quad::Quad()
   m_mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath("default.material"));
 
 	m_mesh->CalculateAABoundingBox();
-}
-
-ToolKit::Quad::~Quad()
-{
 }
 
 ToolKit::EntityType ToolKit::Quad::GetType() const
@@ -274,10 +262,6 @@ ToolKit::Sphere::Sphere()
 	m_mesh->CalculateAABoundingBox();
 }
 
-  ToolKit::Sphere::~Sphere()
-{
-}
-
 ToolKit::EntityType ToolKit::Sphere::GetType() const
 {
   return EntityType::Entity_Sphere;
@@ -285,17 +269,13 @@ ToolKit::EntityType ToolKit::Sphere::GetType() const
 
 ToolKit::Arrow2d::Arrow2d()
 {
-	Generate(m_arrowType);
+	Generate();
 }
 
-ToolKit::Arrow2d::Arrow2d(ArrowType t)
-	: m_arrowType(t)
+ToolKit::Arrow2d::Arrow2d(AxisLabel label)
+	: m_label(label)
 {
-	Generate(m_arrowType);
-}
-
-ToolKit::Arrow2d::~Arrow2d()
-{
+	Generate();
 }
 
 ToolKit::EntityType ToolKit::Arrow2d::GetType() const
@@ -303,7 +283,7 @@ ToolKit::EntityType ToolKit::Arrow2d::GetType() const
   return EntityType::Etity_Arrow;
 }
 
-void ToolKit::Arrow2d::Generate(ToolKit::Arrow2d::ArrowType t)
+void ToolKit::Arrow2d::Generate()
 {
 	std::vector<ToolKit::Vertex> vertices;
 	vertices.resize(8);
@@ -324,13 +304,13 @@ void ToolKit::Arrow2d::Generate(ToolKit::Arrow2d::ArrowType t)
 	newMaterial->m_color = glm::vec3(0.89f, 0.239f, 0.341f);
 
 	glm::quat rotation;
-	if (m_arrowType == ArrowType::Y)
+	if (m_label == AxisLabel::Y)
 	{
 		newMaterial->m_color = glm::vec3(0.537f, 0.831f, 0.07f);
 		rotation = glm::angleAxis(glm::half_pi<float>(), Z_AXIS);
 	}
 
-	if (m_arrowType == ArrowType::Z)
+	if (m_label == AxisLabel::Z)
 	{
 		newMaterial->m_color = glm::vec3(0.196f, 0.541f, 0.905f);
 		rotation = glm::angleAxis(-glm::half_pi<float>(), Y_AXIS);
