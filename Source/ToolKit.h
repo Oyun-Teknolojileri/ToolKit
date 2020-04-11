@@ -32,7 +32,7 @@ namespace ToolKit
 
   enum class AxisLabel
   {
-    None,
+    None = -1, // Order matters. Don't change.
     X,
     Y,
     Z,

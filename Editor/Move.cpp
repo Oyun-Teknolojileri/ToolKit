@@ -19,6 +19,7 @@ namespace ToolKit
 		{
 			m_gizmo = nullptr;
 			m_grabbedAxis = AxisLabel::None;
+			m_intersectDist = 0.0f;
 
 			m_mouseData.resize(2);
 		}
@@ -56,6 +57,8 @@ namespace ToolKit
 				baseState->m_gizmo = m_gizmo;
 				baseState->m_grabbedAxis = m_grabbedAxis;
 				baseState->m_mouseData = m_mouseData;
+				baseState->m_intersectionPlane = m_intersectionPlane;
+				baseState->m_intersectionPlaneX = m_intersectionPlaneX;
 			}
 		}
 
@@ -71,6 +74,9 @@ namespace ToolKit
 				g_app->m_scene.AddEntity(m_gizmo.get());
 			}
 		}
+
+		// StateBeginMove
+		//////////////////////////////////////////////////////////////////////////
 
 		void StateBeginMove::TransitionIn(State* prevState)
 		{
@@ -88,19 +94,16 @@ namespace ToolKit
 			}
 		}
 
-		// StateBeginMove
-		//////////////////////////////////////////////////////////////////////////
-
 		void StateBeginMove::Update(float deltaTime)
 		{
 			StateMoveBase::Update(deltaTime);
 
 			m_gizmo->m_inAccessable = AxisLabel::None;
-			Entity* ce = g_app->m_scene.GetCurrentSelection();
-			if (ce != nullptr)
+			Entity* e = g_app->m_scene.GetCurrentSelection();
+			if (e != nullptr)
 			{
 				glm::vec3 x, y, z;
-				glm::mat4 ts = ce->m_node->GetTransform();
+				glm::mat4 ts = e->m_node->GetTransform();
 				ExtractAxes(ts, x, y, z);
 
 				Viewport* vp = g_app->GetActiveViewport();
@@ -145,11 +148,60 @@ namespace ToolKit
 			{
 				if (m_grabbedAxis != AxisLabel::None)
 				{
-					return StateType::StateMoveTo;
+					if (m_grabbedAxis != m_gizmo->m_inAccessable)
+					{
+						CalculateIntersectionPlane();
+						return StateType::StateMoveTo;
+					}
 				}
 			}
 
 			return StateType::Null;
+		}
+
+		void StateBeginMove::CalculateIntersectionPlane()
+		{
+			Entity* e = g_app->m_scene.GetCurrentSelection();
+			glm::vec3 x, y, z;
+			glm::mat4 ts = e->m_node->GetTransform();
+			ExtractAxes(ts, x, y, z);
+
+			Viewport* vp = g_app->GetActiveViewport();
+			glm::vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+			glm::vec3 gizmOrg = m_gizmo->m_worldLocation;
+			glm::vec3 dir = glm::normalize(camOrg - gizmOrg);
+
+			glm::vec3 px, py, pz;
+			switch (m_grabbedAxis)
+			{
+			case AxisLabel::X:
+				px = x;
+				break;
+			case AxisLabel::Y:
+				px = y;
+				break;
+			case AxisLabel::Z:
+				px = z;
+				break;
+			}
+
+			m_intersectionPlaneX = px;
+			py = glm::normalize(glm::cross(px, dir));
+			pz = glm::normalize(glm::cross(py, px));
+			m_intersectionPlane = PlaneFrom(gizmOrg, pz);
+
+			float t;
+			Ray ray = vp->RayFromMousePosition();
+			if (RayPlaneIntersection(ray, m_intersectionPlane, t))
+			{
+				glm::vec3 p = PointOnRay(ray, t);
+				glm::vec3 go2p = p - gizmOrg;
+				m_intersectDist = glm::dot(px, go2p);
+			}
+			else
+			{
+				assert(false && "Intersection expected.");
+			}
 		}
 
 		// StateMoveTo
@@ -165,7 +217,6 @@ namespace ToolKit
 			if (signal == BaseMod::m_leftMouseBtnDragSgnl)
 			{
 				Move();
-				return StateType::Null;
 			}
 
 			if (signal == BaseMod::m_leftMouseBtnUpSgnl)
@@ -178,80 +229,30 @@ namespace ToolKit
 
 		void StateMoveTo::Move()
 		{
-			return;
-
-			// Move on active selection.
-			Entity* e = g_app->m_scene.GetCurrentSelection();
-
-			// Construct plane parameters. Dragging will be on intersection plane's x
 			Viewport* vp = g_app->GetActiveViewport();
-			Ray grabRay = vp->RayFromScreenSpacePoint(m_mouseData[0]);
-			Ray deltaRay = vp->RayFromScreenSpacePoint(m_mouseData[1]);
-			m_mouseData[0] = m_mouseData[1]; // This drag, becomes next grab for delta move.
+			m_mouseData[1] = vp->GetLastMousePosScreenSpace();
 
-			glm::mat4 ts = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
-			glm::vec3 x, y, z, origin;
-			origin = glm::column(ts, 3);
-			ExtractAxes(ts, x, y, z);
-
-			switch (m_grabbedAxis)
+			float t;
+			Ray ray = vp->RayFromMousePosition();
+			if (RayPlaneIntersection(ray, m_intersectionPlane, t))
 			{
-			case AxisLabel::X:
-				break;
-			case AxisLabel::Y:
-				std::swap(x, y);
-				break;
-			case AxisLabel::Z:
-				std::swap(x, z);
-				break;
-			default:
-				assert(false && "Not implemented.");
-				break;
-			}
+				glm::vec3 p = PointOnRay(ray, t);
+				glm::vec3 go2p = p - m_gizmo->m_worldLocation;
+				float projDst = glm::dot(m_intersectionPlaneX, go2p);
+				glm::vec3 delta = m_intersectionPlaneX * projDst;
+				
+				std::vector<Entity*> selecteds;
+				g_app->m_scene.GetSelectedEntities(selecteds);
 
-			glm::vec3 checkDir = glm::normalize(glm::cross(x, grabRay.direction));
-			float safetyAngl = glm::abs(glm::dot(checkDir, x));
-			if (glm::degrees(safetyAngl) < 5.0f)
-			{
-				ConsoleWindow* cns = g_app->GetConsole();
-				if (cns != nullptr)
+				for (Entity* e : selecteds)
 				{
-					cns->AddLog("Can not grab axis, angle is not safe.", ConsoleWindow::LogType::Warning);
+					e->m_node->Translate(delta);
 				}
 			}
-
-			if (glm::abs(glm::dot(checkDir, z)) > glm::abs(glm::dot(checkDir, y)))
+			else
 			{
-				std::swap(y, z);
+				assert(false && "Intersection expected.");
 			}
-
-			PlaneEquation intersectionPlane = PlaneFrom(origin, z);
-
-			bool hit = false;
-			float tGrab, tDelta;
-			if (RayPlaneIntersection(grabRay, intersectionPlane, tGrab))
-			{
-				if (RayPlaneIntersection(deltaRay, intersectionPlane, tDelta))
-				{
-					hit = true;
-
-					glm::vec3 p1 = PointOnRay(grabRay, tGrab);
-					glm::vec3 p2 = PointOnRay(deltaRay, tDelta);
-
-					glm::vec3 delta = p2 - p1;
-					delta = glm::dot(x, delta) * x;
-
-					// Move current selection.
-					std::vector<Entity*> selecteds;
-					g_app->m_scene.GetSelectedEntities(selecteds);
-					for (Entity* e : selecteds)
-					{
-						e->m_node->Translate(delta, TransformationSpace::TS_LOCAL);
-					}
-				}
-			}
-
-			// assert(hit && "Ray-Plane intersection is expected.");
 		}
 
 		// StateEndMove

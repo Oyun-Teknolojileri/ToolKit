@@ -23,6 +23,9 @@ namespace ToolKit
 			std::vector<glm::vec2> m_mouseData;
 			std::shared_ptr<MoveGizmo> m_gizmo;
 			AxisLabel m_grabbedAxis;
+			PlaneEquation m_intersectionPlane;
+			glm::vec3 m_intersectionPlaneX;
+			float m_intersectDist;
 		};
 
 		class StateBeginMove : public StateMoveBase
@@ -34,6 +37,9 @@ namespace ToolKit
 			virtual void Update(float deltaTime) override;
 			virtual std::string Signaled(SignalId signal) override;
 			virtual std::string GetType() override { return StateType::StateBeginMove; }
+
+		private:
+			void CalculateIntersectionPlane();
 		};
 
 		class StateMoveTo : public StateMoveBase
