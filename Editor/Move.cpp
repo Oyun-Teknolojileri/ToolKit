@@ -104,9 +104,11 @@ namespace ToolKit
 				ExtractAxes(ts, x, y, z);
 
 				Viewport* vp = g_app->GetActiveViewport();
-				glm::vec3 dir = vp->m_camera->GetDir();
+				glm::vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+				glm::vec3 gizmOrg = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+				glm::vec3 dir = glm::normalize(camOrg - gizmOrg);
 
-				float safetyMeasure = glm::abs(glm::cos(glm::radians(45.0f)));
+				float safetyMeasure = glm::abs(glm::cos(glm::radians(30.0f)));
 				AxisLabel axisLabes[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
 				glm::vec3 axes[3] = { x, y, z };
 
