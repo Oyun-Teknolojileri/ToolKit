@@ -58,6 +58,7 @@ namespace ToolKit
 				baseState->m_grabbedAxis = m_grabbedAxis;
 				baseState->m_mouseData = m_mouseData;
 				baseState->m_intersectionPlane = m_intersectionPlane;
+				baseState->m_intersectDist = m_intersectDist;
 				baseState->m_intersectionPlaneX = m_intersectionPlaneX;
 			}
 		}
@@ -200,7 +201,7 @@ namespace ToolKit
 			}
 			else
 			{
-				assert(false && "Intersection expected.");
+				// assert(false && "Intersection expected.");
 			}
 		}
 
@@ -239,7 +240,7 @@ namespace ToolKit
 				glm::vec3 p = PointOnRay(ray, t);
 				glm::vec3 go2p = p - m_gizmo->m_worldLocation;
 				float projDst = glm::dot(m_intersectionPlaneX, go2p);
-				glm::vec3 delta = m_intersectionPlaneX * projDst;
+				glm::vec3 delta = m_intersectionPlaneX * (projDst - m_intersectDist);
 				
 				std::vector<Entity*> selecteds;
 				g_app->m_scene.GetSelectedEntities(selecteds);
@@ -251,7 +252,7 @@ namespace ToolKit
 			}
 			else
 			{
-				assert(false && "Intersection expected.");
+				// assert(false && "Intersection expected.");
 			}
 		}
 
@@ -266,6 +267,7 @@ namespace ToolKit
 				baseNext->m_grabbedAxis = AxisLabel::None;
 				baseNext->m_mouseData[0] = glm::vec2();
 				baseNext->m_mouseData[1] = glm::vec2();
+				baseNext->m_intersectDist = 0.0f;
 			}
 		}
 
