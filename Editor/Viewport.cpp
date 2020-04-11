@@ -154,8 +154,15 @@ bool ToolKit::Editor::Viewport::IsViewportQueriable()
 
 Ray ToolKit::Editor::Viewport::RayFromMousePosition()
 {
+	return RayFromScreenSpacePoint(GetLastMousePosScreenSpace());
+}
+
+ToolKit::Ray ToolKit::Editor::Viewport::RayFromScreenSpacePoint(const glm::vec2& pnt)
+{
+	glm::vec2 mcInVs = TransformScreenToViewportSpace(pnt);
+
 	Ray ray;
-	ray.position = GetLastMousePosWorldSpace();
+	ray.position = TransformViewportToWorldSpace(mcInVs);
 	ray.direction = glm::normalize(ray.position - m_camera->m_node->m_translation);
 
 	return ray;

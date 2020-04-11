@@ -1,23 +1,27 @@
 #pragma once
 
 #include "Mod.h"
+#include "Gizmo.h"
 
 namespace ToolKit
 {
 	namespace Editor
 	{
-		class MoveGizmo;
-
 		// States.
 		class StateMoveBase : public State
 		{
 		public:
 			StateMoveBase();
+			virtual void Update(float deltaTime) override;
 			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* nextState) override;
 
+		protected:
+			void MakeSureGizmoIsValid();
+
 		public:
-			std::shared_ptr<MoveGizmo> m_gizmo = nullptr;
+			std::shared_ptr<MoveGizmo> m_gizmo;
+			MoveGizmo::Axis m_grabbedAxis;
 			std::vector<glm::vec2> m_mouseData;
 		};
 
@@ -34,6 +38,16 @@ namespace ToolKit
 
 		class StateMoveTo : public StateMoveBase
 		{
+		public:
+			virtual void TransitionIn(State* prevState) override;
+			virtual void TransitionOut(State* nextState) override;
+
+			virtual void Update(float deltaTime) override;
+			virtual std::string Signaled(SignalId signal) override;
+			virtual std::string GetType() override { return StateType::StateMoveTo; }
+
+		private:
+			void Move();
 		};
 
 		class StateEndMove : public StateMoveBase

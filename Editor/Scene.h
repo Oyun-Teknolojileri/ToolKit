@@ -35,6 +35,7 @@ namespace ToolKit
 			void AddEntity(Entity* entity);
 			Entity* RemoveEntity(EntityId id);
 			const std::vector<Entity*>& GetEntities();
+			void GetSelectedEntities(std::vector<Entity*>& entities);
 
 		private:
 			std::vector<Entity*> m_entitites;

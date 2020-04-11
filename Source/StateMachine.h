@@ -15,6 +15,9 @@ namespace ToolKit
 		virtual void Update(float deltaTime) = 0;
 		virtual std::string Signaled(SignalId signal) = 0; // Returns next state's name.
 		virtual std::string GetType() = 0;
+		
+		template<typename T>
+		bool ThisIsA() { return typeid(*this) == typeid(T); }
 
 	public:
 		std::unordered_map<int, std::string> m_links; // Specific signals might jump to a state. This provides the hijacking mechanism.

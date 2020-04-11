@@ -42,13 +42,9 @@ namespace ToolKit
   // Matrix Operations
   //////////////////////////////////////////
 
-  // Assuming transformation applied in this order translate * rotate * scale * vector,
-  // Decomposes matrix.
-  void DecomposeMatrix(const glm::mat4& transform, glm::vec3& position, glm::quat& rotation, glm::vec3& scale);
-
-  // Assuming transformation applied in this order translate * rotate * scale * vector,
-  // Decomposes matrix.
-  void DecomposeMatrix(const glm::mat4& transform, glm::vec3& position, glm::quat& rotation);
+  void DecomposeMatrix(const glm::mat4& transform, glm::vec3& position, glm::quat& rotation, glm::vec3& scale); // Assuming transformation applied in this order translate * rotate * scale * vector.
+  void DecomposeMatrix(const glm::mat4& transform, glm::vec3& position, glm::quat& rotation); // Assuming transformation applied in this order translate * rotate * scale * vector.
+  void ExtractAxes(const glm::mat4& transform, glm::vec3& x, glm::vec3& y, glm::vec3& z);
   Frustum ExtractFrustum(const glm::mat4& modelViewProject);
 
   // Intersections
@@ -68,12 +64,14 @@ namespace ToolKit
 	bool RayMeshIntersection(class Mesh* const mesh, const Ray& ray, float& t);
   IntersectResult FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box); // 0 outside, 1 inside, 2 intersect
   bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t);
+  glm::vec3 PointOnRay(const Ray& ray, float t);
 
   // Geometric Operations
   //////////////////////////////////////////
   void NormalzePlaneEquation(PlaneEquation& plane);
 	void TransformAABB(BoundingBox& box, const glm::mat4& transform);
-  PlaneEquation PlaneFrom3Points(glm::vec3 const pnts[3]);
+  PlaneEquation PlaneFrom(glm::vec3 const pnts[3]);
+  PlaneEquation PlaneFrom(glm::vec3 point, glm::vec3 normal);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

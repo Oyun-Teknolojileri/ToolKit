@@ -28,6 +28,13 @@ void ToolKit::DecomposeMatrix(const glm::mat4& transform, glm::vec3& position, g
 	scale = glm::vec3(sx, sy, sz);
 }
 
+void ToolKit::ExtractAxes(const glm::mat4& transform, glm::vec3& x, glm::vec3& y, glm::vec3& z)
+{
+	x = glm::normalize(glm::column(transform, 0));
+	y = glm::normalize(glm::column(transform, 1));
+	z = glm::normalize(glm::column(transform, 2));
+}
+
 // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
 ToolKit::Frustum ToolKit::ExtractFrustum(const glm::mat4& modelViewProject)
 {
@@ -275,18 +282,22 @@ ToolKit::IntersectResult ToolKit::FrustumBoxIntersection(const Frustum& frustum,
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
 bool ToolKit::RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
 {
-	glm::vec3 p0 = plane.normal * plane.d;
-
 	// assuming vectors are all normalized
 	float denom = glm::dot(plane.normal, ray.direction);
-	if (denom > 1e-6) 
+	if (denom < 0.0001f)
 	{
+		glm::vec3 p0 = plane.normal * plane.d;
 		glm::vec3 p0l0 = p0 - ray.position;
 		t = glm::dot(p0l0, plane.normal) / denom;
 		return (t >= 0.0f);
 	}
 
 	return false;
+}
+
+glm::vec3 ToolKit::PointOnRay(const Ray& ray, float t)
+{
+	return ray.position + ray.direction * t;
 }
 
 // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
@@ -350,7 +361,7 @@ void ToolKit::TransformAABB(BoundingBox& box, const glm::mat4& transform)
 	box = bb;
 }
 
-ToolKit::PlaneEquation ToolKit::PlaneFrom3Points(glm::vec3 const pnts[3])
+ToolKit::PlaneEquation ToolKit::PlaneFrom(glm::vec3 const pnts[3])
 {
 	// Expecting 3 non coplanar points in CCW order.
 	glm::vec3 v1 = pnts[1] - pnts[0];
@@ -361,6 +372,11 @@ ToolKit::PlaneEquation ToolKit::PlaneFrom3Points(glm::vec3 const pnts[3])
 	eq.d = -glm::dot(eq.normal, pnts[0]);
 
 	return eq;
+}
+
+ToolKit::PlaneEquation ToolKit::PlaneFrom(glm::vec3 point, glm::vec3 normal)
+{
+	return { normal, -glm::dot(point, normal) };
 }
 
 glm::vec3 ToolKit::Interpolate(const glm::vec3& vec1, const glm::vec3& vec2, float ratio)

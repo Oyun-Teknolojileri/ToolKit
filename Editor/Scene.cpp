@@ -251,3 +251,14 @@ const std::vector<ToolKit::Entity*>& ToolKit::Editor::Scene::GetEntities()
 {
 	return m_entitites;
 }
+
+void ToolKit::Editor::Scene::GetSelectedEntities(std::vector<Entity*>& entities)
+{
+	for (EntityId id : m_selectedEntities)
+	{
+		Entity* e = GetEntity(id);
+		assert(e);
+
+		entities.push_back(e);
+	}
+}
