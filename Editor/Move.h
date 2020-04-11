@@ -52,6 +52,9 @@ namespace ToolKit
 
 		class StateEndMove : public StateMoveBase
 		{
+		public:
+			virtual std::string Signaled(SignalId signal) override;
+			virtual std::string GetType() override { return StateType::StateEndMove; }
 		};
 
 		// Mod.

@@ -237,6 +237,14 @@ namespace ToolKit
 			// assert(hit && "Ray-Plane intersection is expected.");
 		}
 
+		// StateEndMove
+		//////////////////////////////////////////////////////////////////////////
+
+		std::string StateEndMove::Signaled(SignalId signal)
+		{
+			return StateType::StateBeginMove;
+		}
+
 		// MoveMod
 		//////////////////////////////////////////////////////////////////////////
 
@@ -263,10 +271,11 @@ namespace ToolKit
 			m_stateMachine->m_currentState = state;
 
 			m_stateMachine->PushState(state);
+			m_stateMachine->PushState(new StateMoveTo());
+			m_stateMachine->PushState(new StateEndMove());
+
 			m_stateMachine->PushState(new StateBeginPick());
 			m_stateMachine->PushState(new StateBeginBoxPick());
-
-			m_stateMachine->PushState(new StateMoveTo());
 			state = new StateEndPick();
 			state->m_links[m_linkToMoveBeginSgnl] = StateType::StateBeginMove;
 			m_stateMachine->PushState(state);
@@ -279,6 +288,7 @@ namespace ToolKit
 			if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick)
 			{
 				StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
+				
 				std::vector<EntityId> entities;
 				endPick->PickDataToEntityId(entities);
 				g_app->m_scene.AddToSelection(entities, ImGui::GetIO().KeyShift);
