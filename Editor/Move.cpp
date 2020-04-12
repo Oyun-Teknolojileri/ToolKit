@@ -58,7 +58,7 @@ namespace ToolKit
 				baseState->m_gizmo = m_gizmo;
 				baseState->m_grabbedAxis = m_grabbedAxis;
 				baseState->m_intersectionPlane = m_intersectionPlane;
-				baseState->m_intersectionPlaneX = m_intersectionPlaneX;
+				baseState->m_moveAxis = m_moveAxis;
 				baseState->m_intersectDist = m_intersectDist;
 			}
 		}
@@ -199,7 +199,7 @@ namespace ToolKit
 				break;
 			}
 
-			m_intersectionPlaneX = px;
+			m_moveAxis = px;
 			py = glm::normalize(glm::cross(px, dir));
 			pz = glm::normalize(glm::cross(py, px));
 			m_intersectionPlane = PlaneFrom(gizmOrg, pz);
@@ -220,6 +220,38 @@ namespace ToolKit
 
 		// StateMoveTo
 		//////////////////////////////////////////////////////////////////////////
+
+		void StateMoveTo::TransitionIn(State* prevState)
+		{
+			StateMoveBase::TransitionIn(prevState);
+
+			// Create guide line.
+			if ((int)m_grabbedAxis < 3)
+			{
+				assert(m_grabbedAxis != AxisLabel::None && "{0, 1, 2} expected.");
+
+				glm::vec3 p = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+				glm::vec3 color = g_gizmoColor[(int)m_grabbedAxis];
+				std::vector<glm::vec3> points
+				{
+					p + m_moveAxis * 100.0f,
+					p - m_moveAxis * 100.0f
+				};
+
+				assert(m_activeAxis == nullptr && "Expected to be nulled on TransitionOut.");
+				m_activeAxis = std::make_shared<LineBatch>(points, color, DrawType::Line, 1.0f);
+				g_app->m_scene.AddEntity(m_activeAxis.get());
+			}
+		}
+
+		void StateMoveTo::TransitionOut(State* prevState)
+		{
+			StateMoveBase::TransitionOut(prevState);
+
+			g_app->m_scene.RemoveEntity(m_activeAxis->m_id);
+			assert(m_activeAxis.use_count() == 1 && "There must be single instance.");
+			m_activeAxis = nullptr;
+		}
 
 		void StateMoveTo::Update(float deltaTime)
 		{
@@ -253,8 +285,8 @@ namespace ToolKit
 				glm::vec3 p = PointOnRay(ray, t);
 				glm::vec3 go2p = p - m_gizmo->m_worldLocation;
 				
-				float projDst = glm::dot(m_intersectionPlaneX, go2p);
-				glm::vec3 delta = m_intersectionPlaneX * (projDst - m_intersectDist);
+				float projDst = glm::dot(m_moveAxis, go2p);
+				glm::vec3 delta = m_moveAxis * (projDst - m_intersectDist);
 
 				std::vector<Entity*> selecteds;
 				g_app->m_scene.GetSelectedEntities(selecteds);

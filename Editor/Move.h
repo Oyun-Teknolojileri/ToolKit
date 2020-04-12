@@ -24,7 +24,7 @@ namespace ToolKit
 			std::shared_ptr<MoveGizmo> m_gizmo;
 			AxisLabel m_grabbedAxis;
 			PlaneEquation m_intersectionPlane;
-			glm::vec3 m_intersectionPlaneX;
+			glm::vec3 m_moveAxis;
 			float m_intersectDist;
 		};
 
@@ -44,12 +44,17 @@ namespace ToolKit
 		class StateMoveTo : public StateMoveBase
 		{
 		public:
+			virtual void TransitionIn(State* prevState) override;
+			virtual void TransitionOut(State* prevState) override;
 			virtual void Update(float deltaTime) override;
 			virtual std::string Signaled(SignalId signal) override;
 			virtual std::string GetType() override { return StateType::StateMoveTo; }
 
 		private:
 			void Move();
+
+		private:
+			std::shared_ptr<LineBatch> m_activeAxis;
 		};
 
 		class StateEndMove : public StateMoveBase
