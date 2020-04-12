@@ -15,260 +15,276 @@
 #include "Viewport.h"
 #include "DebugNew.h"
 
-ToolKit::Editor::Cursor::Cursor()
-	: Billboard({ true, 10.0f, 400.0f })
+namespace ToolKit
 {
-	Generate();
-}
-
-void ToolKit::Editor::Cursor::Generate()
-{
-	m_mesh->UnInit();
-
-	// Billboard
-	Quad quad;
-	std::shared_ptr<Mesh> meshPtr = quad.m_mesh;
-
-	meshPtr->m_material = std::shared_ptr<Material>(meshPtr->m_material->GetCopy());
-	meshPtr->m_material->UnInit();
-	meshPtr->m_material->m_diffuseTexture = ToolKit::Main::GetInstance()->m_textureMan.Create(ToolKit::TexturePath("Icons/cursor4k.png"));
-	meshPtr->m_material->GetRenderState()->blendFunction = ToolKit::BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-	meshPtr->m_material->Init();
-
-	meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
-	m_mesh->m_subMeshes.push_back(meshPtr);
-
-	// Lines
-	std::vector<ToolKit::Vertex> vertices;
-	vertices.resize(12);
-
-	vertices[0].pos.z = -0.3f;
-	vertices[1].pos.z = -0.7f;
-
-	vertices[2].pos.z = 0.3f;
-	vertices[3].pos.z = 0.7f;
-
-	vertices[4].pos.x = 0.3f;
-	vertices[5].pos.x = 0.7f;
-
-	vertices[6].pos.x = -0.3f;
-	vertices[7].pos.x = -0.7f;
-
-	vertices[8].pos.y = 0.3f;
-	vertices[9].pos.y = 0.7f;
-
-	vertices[10].pos.y = -0.3f;
-	vertices[11].pos.y = -0.7f;
-
-	std::shared_ptr<Material> newMaterial = Main::GetInstance()->m_materialManager.GetCopyOfSolidMaterial();
-	newMaterial->m_color = glm::vec3(0.1f, 0.1f, 0.1f);
-	newMaterial->GetRenderState()->depthTestEnabled = false;
-
-	m_mesh->m_clientSideVertices = vertices;
-	m_mesh->m_material = newMaterial;
-
-	m_mesh->CalculateAABoundingBox();
-}
-
-ToolKit::Editor::Axis3d::Axis3d()
-	: Billboard({ false, 10.0f, 400.0f })
-{
-	Generate();
-}
-
-void ToolKit::Editor::Axis3d::Generate()
-{
-	for (int i = 0; i < 3; i++)
+	namespace Editor
 	{
-		AxisLabel t;
-		switch (i)
+
+		Cursor::Cursor()
+			: Billboard({ true, 10.0f, 400.0f })
 		{
-		case 0:
-			t = AxisLabel::X;
-			break;
-		case 1:
-			t = AxisLabel::Y;
-			break;
-		case 2:
-			t = AxisLabel::Z;
-			break;
+			Generate();
 		}
 
-		Arrow2d arrow(t);
-		arrow.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
-		if (i == 0)
+		void Cursor::Generate()
 		{
-			m_mesh = arrow.m_mesh;
+			m_mesh->UnInit();
+
+			// Billboard
+			Quad quad;
+			std::shared_ptr<Mesh> meshPtr = quad.m_mesh;
+
+			meshPtr->m_material = std::shared_ptr<Material>(meshPtr->m_material->GetCopy());
+			meshPtr->m_material->UnInit();
+			meshPtr->m_material->m_diffuseTexture = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/cursor4k.png"));
+			meshPtr->m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+			meshPtr->m_material->Init();
+
+			meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
+			m_mesh->m_subMeshes.push_back(meshPtr);
+
+			// Lines
+			std::vector<Vertex> vertices;
+			vertices.resize(12);
+
+			vertices[0].pos.z = -0.3f;
+			vertices[1].pos.z = -0.7f;
+
+			vertices[2].pos.z = 0.3f;
+			vertices[3].pos.z = 0.7f;
+
+			vertices[4].pos.x = 0.3f;
+			vertices[5].pos.x = 0.7f;
+
+			vertices[6].pos.x = -0.3f;
+			vertices[7].pos.x = -0.7f;
+
+			vertices[8].pos.y = 0.3f;
+			vertices[9].pos.y = 0.7f;
+
+			vertices[10].pos.y = -0.3f;
+			vertices[11].pos.y = -0.7f;
+
+			std::shared_ptr<Material> newMaterial = Main::GetInstance()->m_materialManager.GetCopyOfSolidMaterial();
+			newMaterial->m_color = glm::vec3(0.1f, 0.1f, 0.1f);
+			newMaterial->GetRenderState()->depthTestEnabled = false;
+
+			m_mesh->m_clientSideVertices = vertices;
+			m_mesh->m_material = newMaterial;
+
+			m_mesh->CalculateAABoundingBox();
 		}
-		else
+
+		Axis3d::Axis3d()
+			: Billboard({ false, 10.0f, 400.0f })
 		{
-			m_mesh->m_subMeshes.push_back(arrow.m_mesh);
+			Generate();
 		}
-	}
-}
 
-ToolKit::Editor::MoveGizmo::MoveGizmo()
-	: Billboard({ false, 10.0f, 400.0f })
-{
-	m_inAccessable = AxisLabel::None;
-
-	// Hit boxes.
-	m_hitBox[0].min = glm::vec3(0.05f, -0.05f, -0.05f);
-	m_hitBox[0].max = glm::vec3(1.0f, 0.05f, 0.05f);
-
-	m_hitBox[1].min = m_hitBox[0].min.yxz;
-	m_hitBox[1].max = m_hitBox[0].max.yxz;
-
-	m_hitBox[2].min = m_hitBox[0].min.zyx;
-	m_hitBox[2].max = m_hitBox[0].max.zyx;
-	
-	// Mesh.
-	Generate();
-}
-
-ToolKit::AxisLabel ToolKit::Editor::MoveGizmo::HitTest(const Ray& ray)
-{
-	glm::mat4 invMat = m_node->GetTransform(TransformationSpace::TS_WORLD);
-	glm::mat4 tpsMat = glm::transpose(invMat);
-	invMat = glm::inverse(invMat);
-
-	Ray rayInObjectSpace = ray;
-	rayInObjectSpace.position = invMat * glm::vec4(rayInObjectSpace.position, 1.0f);
-	rayInObjectSpace.direction = tpsMat * glm::vec4(rayInObjectSpace.direction, 1.0f);
-
-	float d, t = std::numeric_limits<float>::infinity();
-	int minIndx = -1;
-	for (int i = 0; i < 3; i++)
-	{
-		if (RayBoxIntersection(rayInObjectSpace, m_hitBox[i], d))
+		void Axis3d::Generate()
 		{
-			if (d < t)
+			for (int i = 0; i < 3; i++)
 			{
-				t = d;
-				minIndx = i;
+				AxisLabel t;
+				switch (i)
+				{
+				case 0:
+					t = AxisLabel::X;
+					break;
+				case 1:
+					t = AxisLabel::Y;
+					break;
+				case 2:
+					t = AxisLabel::Z;
+					break;
+				}
+
+				Arrow2d arrow(t);
+				arrow.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
+				if (i == 0)
+				{
+					m_mesh = arrow.m_mesh;
+				}
+				else
+				{
+					m_mesh->m_subMeshes.push_back(arrow.m_mesh);
+				}
 			}
 		}
-	}
 
-	AxisLabel hit = AxisLabel::None;
-	switch (minIndx)
-	{
-	case 0:
-		hit = AxisLabel::X;
-		break;
-	case 1:
-		hit = AxisLabel::Y;
-		break;
-	case 2:
-		hit = AxisLabel::Z;
-		break;
-	}
-
-	return hit;
-}
-
-void ToolKit::Editor::MoveGizmo::Update(float deltaTime)
-{
-	Viewport* vp = g_app->GetActiveViewport();
-	if (vp == nullptr)
-	{
-		return;
-	}
-
-	std::vector<Mesh*> allMeshes;
-	m_mesh->GetAllMeshes(allMeshes);
-	assert(allMeshes.size() <= 4 && "Max expected size is 4");
-	
-	for (Mesh* mesh : allMeshes)
-	{
-		mesh->m_subMeshes.clear();
-	}
-
-	AxisLabel hitRes = HitTest(vp->RayFromMousePosition());
-	AxisLabel axisLabels[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
-
-	bool firstFilled = false;
-	for (int i = 0; i < 3; i++)
-	{
-		if (m_inAccessable == axisLabels[i])
+		MoveGizmo::MoveGizmo()
+			: Billboard({ false, 10.0f, 400.0f })
 		{
-			continue;
+			m_inAccessable = AxisLabel::None;
+
+			// Hit boxes.
+			m_hitBox[0].min = glm::vec3(0.05f, -0.05f, -0.05f);
+			m_hitBox[0].max = glm::vec3(1.0f, 0.05f, 0.05f);
+
+			m_hitBox[1].min = m_hitBox[0].min.yxz;
+			m_hitBox[1].max = m_hitBox[0].max.yxz;
+
+			m_hitBox[2].min = m_hitBox[0].min.zyx;
+			m_hitBox[2].max = m_hitBox[0].max.zyx;
+
+			// Mesh.
+			Generate();
 		}
 
-		if (!firstFilled)
+		AxisLabel MoveGizmo::HitTest(const Ray& ray)
 		{
-			m_mesh = m_lines[i];
-			firstFilled = true;
-		}
-		else
-		{
-			m_mesh->m_subMeshes.push_back(m_lines[i]);
-		}
+			glm::mat4 invMat = m_node->GetTransform(TransformationSpace::TS_WORLD);
+			glm::mat4 tpsMat = glm::transpose(invMat);
+			invMat = glm::inverse(invMat);
 
-		if (hitRes == axisLabels[i])
-		{
-			m_mesh->m_subMeshes.push_back(m_solids[i]);
-		}
-	}
-}
+			Ray rayInObjectSpace = ray;
+			rayInObjectSpace.position = invMat * glm::vec4(rayInObjectSpace.position, 1.0f);
+			rayInObjectSpace.direction = tpsMat * glm::vec4(rayInObjectSpace.direction, 1.0f);
 
-void ToolKit::Editor::MoveGizmo::Generate()
-{
-	// Lines.
-	AxisLabel axisLabels[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
+			float d, t = std::numeric_limits<float>::infinity();
+			int minIndx = -1;
+			for (int i = 0; i < 3; i++)
+			{
+				if (RayBoxIntersection(rayInObjectSpace, m_hitBox[i], d))
+				{
+					if (d < t)
+					{
+						t = d;
+						minIndx = i;
+					}
+				}
+			}
 
-	for (int i = 0; i < 3; i++)
-	{
-		Arrow2d axis(axisLabels[i]);
-		axis.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
-		axis.m_mesh->Init();
-		m_lines[i] = axis.m_mesh;		
-		axis.m_mesh = nullptr;
-	}
+			AxisLabel hit = AxisLabel::None;
+			switch (minIndx)
+			{
+			case 0:
+				hit = AxisLabel::X;
+				break;
+			case 1:
+				hit = AxisLabel::Y;
+				break;
+			case 2:
+				hit = AxisLabel::Z;
+				break;
+			}
 
-	m_mesh = m_lines[0];
-	m_mesh->m_subMeshes.push_back(m_lines[1]);
-	m_mesh->m_subMeshes.push_back(m_lines[2]);
-
-	// Solids.
-	std::vector<ToolKit::Vertex> vertices;
-	vertices.resize(3);
-
-	for (int i = 0; i < 3; i++)
-	{
-		vertices[0].pos = glm::vec3(0.8f, -0.2f, 0.0f);
-		vertices[1].pos = glm::vec3(0.8f, 0.2f, 0.0f);
-		vertices[2].pos = glm::vec3(1.0f, 0.0f, 0.0f);
-
-		glm::quat rotation;
-		std::shared_ptr<Material> solidMat = std::shared_ptr<Material>(m_mesh->m_material->GetCopy());
-		solidMat->GetRenderState()->drawType = DrawType::Triangle;
-		solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
-
-		switch (i)
-		{
-		case 0:
-			solidMat->m_color = g_gizmoRed;
-			break;
-		case 1:
-			solidMat->m_color = g_gizmoGreen;
-			rotation = glm::angleAxis(glm::half_pi<float>(), Z_AXIS);
-			break;
-		case 2:
-			solidMat->m_color = g_gizmoBlue;
-			rotation = glm::angleAxis(-glm::half_pi<float>(), Y_AXIS);
-			break;
+			return hit;
 		}
 
-		for (size_t i = 0; i < vertices.size(); i++)
+		void MoveGizmo::Update(float deltaTime)
 		{
-			vertices[i].pos = rotation * vertices[i].pos;
+			Viewport* vp = g_app->GetActiveViewport();
+			if (vp == nullptr)
+			{
+				return;
+			}
+
+			std::vector<Mesh*> allMeshes;
+			m_mesh->GetAllMeshes(allMeshes);
+			assert(allMeshes.size() <= 4 && "Max expected size is 4");
+
+			for (Mesh* mesh : allMeshes)
+			{
+				mesh->m_subMeshes.clear();
+			}
+
+			AxisLabel hitRes = HitTest(vp->RayFromMousePosition());
+			AxisLabel axisLabels[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
+
+			bool firstFilled = false;
+			for (int i = 0; i < 3; i++)
+			{
+				if (m_inAccessable == axisLabels[i])
+				{
+					continue;
+				}
+
+				if (!firstFilled)
+				{
+					m_mesh = m_lines[i];
+					firstFilled = true;
+				}
+				else
+				{
+					m_mesh->m_subMeshes.push_back(m_lines[i]);
+				}
+
+				if (hitRes == axisLabels[i])
+				{
+					m_mesh->m_subMeshes.push_back(m_solids[i]);
+				}
+			}
 		}
 
-		m_solids[i] = std::shared_ptr<Mesh>(new Mesh());
-		m_solids[i]->m_vertexCount = (uint)vertices.size();
-		m_solids[i]->m_clientSideVertices = vertices;
-		m_solids[i]->m_material = solidMat;
-		m_solids[i]->Init();
+		// Static cone heads.
+		std::shared_ptr<Mesh> g_ArrowHeads[3] = { nullptr, nullptr, nullptr };
+
+		void MoveGizmo::Generate()
+		{
+			// Lines.
+			AxisLabel axisLabels[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
+
+			for (int i = 0; i < 3; i++)
+			{
+				Arrow2d axis(axisLabels[i]);
+				axis.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
+				axis.m_mesh->Init();
+				m_lines[i] = axis.m_mesh;
+				axis.m_mesh = nullptr;
+			}
+
+			m_mesh = m_lines[0];
+			m_mesh->m_subMeshes.push_back(m_lines[1]);
+			m_mesh->m_subMeshes.push_back(m_lines[2]);
+
+			// Solids.
+			for (int i = 0; i < 3; i++)
+			{
+				// Cones 1 time init.
+				if (g_ArrowHeads[i] == nullptr)
+				{
+					Cone head = Cone(0.2f, 0.1f, 10, 10);
+					head.m_mesh->UnInit();
+
+					glm::vec3 t(0.8f, 0.0f, 0.0f);
+					glm::quat q;
+
+					if (i == 0)
+					{
+						q = glm::angleAxis(-glm::half_pi<float>(), Z_AXIS);
+					}
+
+					if (i == 2)
+					{
+						q = glm::angleAxis(-glm::half_pi<float>(), Y_AXIS);
+					}
+
+					glm::mat4 transform;
+					if (i != 1)
+					{
+						transform = glm::toMat4(q);
+					}
+					transform = glm::translate(transform, t);
+					glm::mat4 invTrans = glm::transpose(glm::inverse(transform));
+
+					for (Vertex& v : head.m_mesh->m_clientSideVertices)
+					{
+						v.pos = transform * glm::vec4(v.pos, 1.0f);
+						v.norm = glm::inverseTranspose(transform) * glm::vec4(v.norm, 1.0f);
+					}
+
+					head.m_mesh->m_material = GetMaterialManager()->GetCopyOfSolidMaterial();
+					head.m_mesh->m_material->m_color = g_gizmoColor[i];
+					head.m_mesh->Init(true);
+
+					g_ArrowHeads[i] = head.m_mesh;
+					head.m_mesh = nullptr;
+				}
+
+				m_solids[i] = g_ArrowHeads[i];
+			}
+		}
+
 	}
 }

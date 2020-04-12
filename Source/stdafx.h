@@ -8,14 +8,15 @@
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include "glm/glm.hpp"
-#include "glm/gtc/quaternion.hpp"
-#include "glm/gtx/quaternion.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/matrix_access.hpp"
 #include "glm/gtc/epsilon.hpp"
+#include "glm/gtc/matrix_access.hpp"
+#include "glm/gtc/matrix_inverse.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/closest_point.hpp"
-#include "glm/gtx/vector_query.hpp"
+#include "glm/gtx/quaternion.hpp"
 #include "glm/gtx/scalar_relational.hpp"
+#include "glm/gtx/vector_query.hpp"
 
 // LoadPng
 #include "lodepng.h"
