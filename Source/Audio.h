@@ -3,8 +3,6 @@
 #include "Resource.h"
 #include "ResourceManager.h"
 #include "Entity.h"
-#include "al.h"
-#include "alc.h"
 
 namespace ToolKit
 {
@@ -20,7 +18,7 @@ namespace ToolKit
 		virtual void UnInit() override;
 
   public:
-    ALuint m_buffer;
+    uint m_buffer;
   };
 
   class AudioManager : public ResourceManager<Audio>
@@ -30,8 +28,8 @@ namespace ToolKit
     void Uninit();
 
   public:
-    ALCdevice* m_device = nullptr;
-    ALCcontext* m_context = nullptr;
+    void* m_device = nullptr;
+    void* m_context = nullptr;
   };
 
   class AudioSource : public Entity
@@ -47,7 +45,7 @@ namespace ToolKit
 
   public:
     std::shared_ptr<Audio> m_audio;
-    ALuint m_source = 0;
+    uint m_source = 0;
   };
   
   class AudioPlayer

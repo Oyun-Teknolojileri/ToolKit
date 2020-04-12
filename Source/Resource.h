@@ -1,7 +1,7 @@
 #pragma once
 
-#include <assert.h>
 #include <string>
+#include <assert.h>
 
 namespace ToolKit
 {

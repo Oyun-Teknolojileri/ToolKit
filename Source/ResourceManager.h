@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Util.h"
+#include "Logger.h"
+
 #include <memory>
 #include <unordered_map>
 #include <string>
-#include "Util.h"
-#include "Logger.h"
 
 namespace ToolKit
 {

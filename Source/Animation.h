@@ -1,14 +1,14 @@
 #pragma once
 
-#include "glm\glm.hpp"
-#include "glm\gtc\quaternion.hpp"
 #include "Resource.h"
 #include "ResourceManager.h"
-#include <vector>
-#include <unordered_map>
 
 namespace ToolKit
 {
+  class Node;
+  class Skeleton;
+  class Entity;
+
   class Key
   {
   public:
@@ -17,9 +17,6 @@ namespace ToolKit
     glm::quat m_rotation;
     glm::vec3 m_scale;
   };
-
-  class Skeleton;
-  class Node;
 
   class Animation : public Resource
   {
@@ -62,7 +59,6 @@ namespace ToolKit
   {
   };
 
-  class Entity;
   class AnimationPlayer
   {
   public:

@@ -2,7 +2,6 @@
 
 #include "Resource.h"
 
-
 namespace ToolKit
 {
   class Node;

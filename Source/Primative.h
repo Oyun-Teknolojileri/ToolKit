@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Drawable.h"
-#include "RenderState.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {

@@ -3,6 +3,10 @@
 #include "glm\glm.hpp"
 #include "glm\gtc\quaternion.hpp"
 
+#include <assert.h>
+#include <string.h>
+#include <vector>
+
 namespace ToolKit
 {
 
@@ -24,7 +28,7 @@ namespace ToolKit
 	void pop_front(std::vector<T>& vec)
 	{
 		assert(!vec.empty());
-		vec.front() = std::move(vec.back());
-		vec.pop_back();
+		vec.erase(vec.begin());
 	}
+
 }

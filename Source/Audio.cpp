@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "Audio.h"
+#include "al.h"
+#include "alc.h"
 #include <iostream>
 #include "DebugNew.h"
 
@@ -174,14 +176,14 @@ void ToolKit::AudioManager::Init()
 {
   ResourceManager::Init();
   m_device = alcOpenDevice(nullptr);
-  m_context = alcCreateContext(m_device, nullptr);
-  alcMakeContextCurrent(m_context);
+  m_context = alcCreateContext((ALCdevice*)m_device, nullptr);
+  alcMakeContextCurrent((ALCcontext*)m_context);
 }
 
 void ToolKit::AudioManager::Uninit()
 {
-  alcDestroyContext(m_context);
-  alcCloseDevice(m_device);
+  alcDestroyContext((ALCcontext*)m_context);
+  alcCloseDevice((ALCdevice*)m_device);
   ResourceManager::Uninit();
 }
 
