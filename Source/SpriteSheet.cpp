@@ -32,7 +32,7 @@ namespace ToolKit
 
 		if (FetchEntries())
 		{
-			m_spriteSheet = Main::GetInstance()->m_textureMan.Create(SpritePath(m_imageFile));
+			m_spriteSheet = GetTextureManager()->Create(SpritePath(m_imageFile));
 			for (auto entry : m_entries)
 			{
 				Surface* surface = new Surface(m_spriteSheet, CreateQuat(entry));

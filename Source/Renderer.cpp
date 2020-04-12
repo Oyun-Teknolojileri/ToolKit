@@ -80,8 +80,8 @@ namespace ToolKit
 		object->m_mesh->Init();
 		SetProjectViewModel(object, cam);
 
-		std::shared_ptr<Shader> skinShader = Main::GetInstance()->m_shaderMan.Create(ShaderPath("defaultSkin.shader"));
-		std::shared_ptr<Shader> fragShader = Main::GetInstance()->m_shaderMan.Create(ShaderPath("defaultFragment.shader"));
+		std::shared_ptr<Shader> skinShader = GetShaderManager()->Create(ShaderPath("defaultSkin.shader"));
+		std::shared_ptr<Shader> fragShader = GetShaderManager()->Create(ShaderPath("defaultFragment.shader"));
 		std::shared_ptr<Program> skinProg = CreateProgram(skinShader, fragShader);
 		BindProgram(skinProg);
 		FeedUniforms(skinProg);
@@ -147,8 +147,8 @@ namespace ToolKit
 	{
 		object->Init();
 
-		std::shared_ptr<Shader> vertexShader = Main::GetInstance()->m_shaderMan.Create(ShaderPath("defaultVertex.shader"));
-		std::shared_ptr<Shader> fragShader = Main::GetInstance()->m_shaderMan.Create(ShaderPath("defaultFragment.shader"));
+		std::shared_ptr<Shader> vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
+		std::shared_ptr<Shader> fragShader = GetShaderManager()->Create(ShaderPath("defaultFragment.shader"));
 		std::shared_ptr<Program> prog = CreateProgram(vertexShader, fragShader);
 		BindProgram(prog);
 

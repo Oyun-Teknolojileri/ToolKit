@@ -58,4 +58,14 @@ namespace ToolKit
     bool m_initiated = false;
   };
 
+	AnimationManager* GetAnimationManager();
+  AnimationPlayer* GetAnimationPlayer();
+	AudioManager* GetAudioManager();
+  MaterialManager* GetMaterialManager();
+  MeshManager* GetMeshManager();
+  ShaderManager* GetShaderManager();
+  SkinMeshManager* GetSkinMeshManager();
+  SpriteSheetManager* GetSpriteSheetManager();
+  TextureManager* GetTextureManager();
+
 }

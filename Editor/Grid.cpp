@@ -61,13 +61,13 @@ void ToolKit::Editor::Grid::Resize(uint size)
 		vertices[0].pos = p1;
 		vertices[1].pos = p2;
 
-		Material* newMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("LineColor.material"))->GetCopy();
+		std::shared_ptr<Material> newMaterial = Main::GetInstance()->m_materialManager.GetCopyOfSolidMaterial();
 		newMaterial->GetRenderState()->lineWidth = 3.0f;
 		newMaterial->m_color = col;
 
 		std::shared_ptr<Mesh> subMesh(new Mesh());
 		subMesh->m_clientSideVertices = vertices;
-		subMesh->m_material = std::shared_ptr<Material>(newMaterial);
+		subMesh->m_material = newMaterial;
 		m_mesh->m_subMeshes.push_back(subMesh);
 		m_mesh->CalculateAABoundingBox();
 	}

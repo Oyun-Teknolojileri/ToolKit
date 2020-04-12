@@ -60,12 +60,12 @@ void ToolKit::Editor::Cursor::Generate()
 	vertices[10].pos.y = -0.3f;
 	vertices[11].pos.y = -0.7f;
 
-	Material* newMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("LineColor.material"))->GetCopy();
+	std::shared_ptr<Material> newMaterial = Main::GetInstance()->m_materialManager.GetCopyOfSolidMaterial();
 	newMaterial->m_color = glm::vec3(0.1f, 0.1f, 0.1f);
 	newMaterial->GetRenderState()->depthTestEnabled = false;
 
 	m_mesh->m_clientSideVertices = vertices;
-	m_mesh->m_material = std::shared_ptr<Material>(newMaterial);
+	m_mesh->m_material = newMaterial;
 
 	m_mesh->CalculateAABoundingBox();
 }

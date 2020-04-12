@@ -46,7 +46,7 @@ namespace ToolKit
 			return;
 
 		assert(!m_file.empty());
-		m_mesh->m_material->m_diffuseTexture = Main::GetInstance()->m_textureMan.Create(m_file);
+		m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create(m_file);
 		CreateQuat();
 
 		m_loaded = true;

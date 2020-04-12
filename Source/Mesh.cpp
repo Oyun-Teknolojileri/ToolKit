@@ -93,11 +93,11 @@ namespace ToolKit
 
 			if (CheckFile(MaterialPath(matFile)))
 			{
-				mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath(matFile));
+				mesh->m_material = GetMaterialManager()->Create(MaterialPath(matFile));
 			}
 			else
 			{
-				mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath("default.material"));
+				mesh->m_material = GetMaterialManager()->Create(MaterialPath("default.material"));
 			}
 
 			rapidxml::xml_node<>* vertex = node->first_node("vertices");
@@ -290,11 +290,11 @@ namespace ToolKit
 
 			if (CheckFile(MaterialPath(matFile)))
 			{
-				mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath(matFile));
+				mesh->m_material = GetMaterialManager()->Create(MaterialPath(matFile));
 			}
 			else
 			{
-				mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath("default.material"));
+				mesh->m_material = GetMaterialManager()->Create(MaterialPath("default.material"));
 			}
 
 			rapidxml::xml_node<>* vertex = node->first_node("vertices");

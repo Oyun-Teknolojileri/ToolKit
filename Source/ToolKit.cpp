@@ -114,4 +114,49 @@ namespace ToolKit
 		return &m_instance;
 	}
 
+	AnimationManager* GetAnimationManager()
+	{
+		return &Main::GetInstance()->m_animationMan;
+	}
+
+	AnimationPlayer* GetAnimationPlayer()
+	{
+		return &Main::GetInstance()->m_animationPlayer;
+	}
+
+	AudioManager* GetAudioManager()
+	{
+		return &Main::GetInstance()->m_audioMan;
+	}
+
+	MaterialManager* GetMaterialManager()
+	{
+		return &Main::GetInstance()->m_materialManager;
+	}
+
+	MeshManager* GetMeshManager()
+	{
+		return &Main::GetInstance()->m_meshMan;
+	}
+
+	ShaderManager* GetShaderManager()
+	{
+		return &Main::GetInstance()->m_shaderMan;
+	}
+
+	SkinMeshManager* GetSkinMeshManager()
+	{
+		return &Main::GetInstance()->m_skinMeshMan;
+	}
+
+	SpriteSheetManager* GetSpriteSheetManager()
+	{
+		return &Main::GetInstance()->m_spriteSheetMan;
+	}
+
+	TextureManager* GetTextureManager()
+	{
+		return &Main::GetInstance()->m_textureMan;
+	}
+
 }

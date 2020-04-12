@@ -50,12 +50,12 @@ namespace ToolKit
 			else if (std::string("cubeMap").compare(node->name()) == 0)
 			{
 				rapidxml::xml_attribute<>* attr = node->first_attribute("name");
-				m_cubeMap = Main::GetInstance()->m_textureMan.CreateDerived<CubeMap>(TexturePath(attr->value()));
+				m_cubeMap = GetTextureManager()->CreateDerived<CubeMap>(TexturePath(attr->value()));
 			}
 			else if (std::string("shader").compare(node->name()) == 0)
 			{
 				rapidxml::xml_attribute<>* attr = node->first_attribute("name");
-				std::shared_ptr<Shader> shader = Main::GetInstance()->m_shaderMan.Create(ShaderPath(attr->value()));
+				std::shared_ptr<Shader> shader = GetShaderManager()->Create(ShaderPath(attr->value()));
 				if (shader->m_type == GL_VERTEX_SHADER)
 				{
 					m_vertexShader = shader;
@@ -109,7 +109,7 @@ namespace ToolKit
 		}
 		else
 		{
-			m_vertexShader = Main::GetInstance()->m_shaderMan.Create(ShaderPath("defaultVertex.shader"));
+			m_vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
 			m_vertexShader->Init();
 		}
 
@@ -119,7 +119,7 @@ namespace ToolKit
 		}
 		else
 		{
-			m_fragmetShader = Main::GetInstance()->m_shaderMan.Create(ShaderPath("defaultFragment.shader"));
+			m_fragmetShader = GetShaderManager()->Create(ShaderPath("defaultFragment.shader"));
 			m_fragmetShader->Init();
 		}
 
@@ -156,20 +156,30 @@ namespace ToolKit
 		ResourceManager::Init();
 
 		Material* material = new Material();
-		material->m_vertexShader = Main::GetInstance()->m_shaderMan.Create(ShaderPath("defaultVertex.shader"));
-		material->m_fragmetShader = Main::GetInstance()->m_shaderMan.Create(ShaderPath("defaultFragment.shader"));
-		material->m_diffuseTexture = Main::GetInstance()->m_textureMan.Create(TexturePath("default.png"));
+		material->m_vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
+		material->m_fragmetShader = GetShaderManager()->Create(ShaderPath("defaultFragment.shader"));
+		material->m_diffuseTexture = GetTextureManager()->Create(TexturePath("default.png"));
 		material->Init();
 
 		m_storage[MaterialPath("default.material")] = std::shared_ptr<Material>(material);
 
 		material = new Material();
 		material->GetRenderState()->drawType = DrawType::Line;
-		material->m_vertexShader = Main::GetInstance()->m_shaderMan.Create(ShaderPath("defaultVertex.shader"));
-		material->m_fragmetShader = Main::GetInstance()->m_shaderMan.Create(ShaderPath("solidColorFrag.shader"));
+		material->m_vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
+		material->m_fragmetShader = GetShaderManager()->Create(ShaderPath("solidColorFrag.shader"));
 		material->Init();
 
-		m_storage[MaterialPath("LineColor.material")] = std::shared_ptr<Material>(material);
+		m_storage[MaterialPath("solid.material")] = std::shared_ptr<Material>(material);
+	}
+
+	std::shared_ptr<ToolKit::Material> MaterialManager::GetCopyOfSolidMaterial()
+	{
+		return std::shared_ptr<Material> (m_storage[MaterialPath("solid.material")]->GetCopy());
+	}
+
+	std::shared_ptr<ToolKit::Material> MaterialManager::GetCopyOfDefaultMaterial()
+	{
+		return std::shared_ptr<Material>(m_storage[MaterialPath("default.material")]->GetCopy());
 	}
 
 }
