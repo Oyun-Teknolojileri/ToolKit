@@ -230,7 +230,7 @@ namespace ToolKit
 			{
 				assert(m_grabbedAxis != AxisLabel::None && "{0, 1, 2} expected.");
 
-				glm::vec3 p = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+				glm::vec3 p = m_gizmo->m_worldLocation;
 				glm::vec3 color = g_gizmoColor[(int)m_grabbedAxis];
 				std::vector<glm::vec3> points
 				{
