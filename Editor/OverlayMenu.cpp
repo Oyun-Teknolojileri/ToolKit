@@ -54,8 +54,8 @@ namespace ToolKit
 				UI::HelpMarker("Scale\nScale (resize) selected items.", &hoverTimeScaleBtn);
 				ImGui::Separator();
 
-				const char* items[] = { "1", "2", "4", "8" };
-				static int current_item = 3; // Also the defualt.
+				const char* items[] = { "1", "2", "4", "8", "16" };
+				static int current_item = 3; // Also the default.
 				ImGui::PushItemWidth(40);
 				if (ImGui::BeginCombo("##CS", items[current_item], ImGuiComboFlags_None))
 				{
@@ -79,19 +79,19 @@ namespace ToolKit
 				switch (current_item)
 				{
 				case 0:
-					g_app->m_camSpeed = 0.5;
+					g_app->m_camSpeed = 0.5f;
 					break;
 				case 1:
-					g_app->m_camSpeed = 1;
+					g_app->m_camSpeed = 1.0f;
 					break;
 				case 2:
-					g_app->m_camSpeed = 2;
+					g_app->m_camSpeed = 2.0f;
 					break;
 				case 3:
-					g_app->m_camSpeed = 4;
+					g_app->m_camSpeed = 4.0f;
 					break;
 				case 4:
-					g_app->m_camSpeed = 8;
+					g_app->m_camSpeed = 16.0f;
 					break;
 				default:
 					g_app->m_camSpeed = 8;

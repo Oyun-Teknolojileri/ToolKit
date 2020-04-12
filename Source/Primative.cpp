@@ -334,6 +334,7 @@ namespace ToolKit
 	LineBatch::LineBatch(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t, float lineWidth)
 	{
 		Material* newMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("LineColor.material"))->GetCopy();
+		newMaterial->GetRenderState()->depthTestEnabled = false;
 		m_mesh->m_material = std::shared_ptr<Material>(newMaterial);
 
 		Generate(linePnts, color, t, lineWidth);
