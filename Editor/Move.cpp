@@ -92,6 +92,14 @@ namespace ToolKit
 			{
 				StateBeginPick* baseNext = static_cast<StateBeginPick*> (nextState);
 				baseNext->m_mouseData = m_mouseData;
+
+				if (m_gizmo != nullptr)
+				{
+					if (!baseNext->IsIgnored(m_gizmo->m_id))
+					{
+						baseNext->m_ignoreList.push_back(m_gizmo->m_id);
+					}
+				}
 			}
 		}
 

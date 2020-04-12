@@ -230,9 +230,9 @@ void ToolKit::Editor::StatePickingBase::TransitionOut(State* nextState)
 	m_pickData.clear();
 }
 
-bool ToolKit::Editor::StatePickingBase::IsIgnored(Entity* ntt)
+bool ToolKit::Editor::StatePickingBase::IsIgnored(EntityId id)
 {
-	return std::find(m_ignoreList.begin(), m_ignoreList.end(), ntt->m_id) != m_ignoreList.end();
+	return std::find(m_ignoreList.begin(), m_ignoreList.end(), id) != m_ignoreList.end();
 }
 
 void ToolKit::Editor::StatePickingBase::PickDataToEntityId(std::vector<EntityId>& ids)

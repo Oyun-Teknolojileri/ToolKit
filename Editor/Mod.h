@@ -92,7 +92,7 @@ namespace ToolKit
 			StatePickingBase();
 			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* nextState) override;
-			bool IsIgnored(Entity* ntt);
+			bool IsIgnored(EntityId id);
 			void PickDataToEntityId(std::vector<EntityId>& ids);
 
 		public:
