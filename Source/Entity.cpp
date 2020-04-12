@@ -6,46 +6,51 @@
 #include "MathUtil.h"
 #include "DebugNew.h"
 
-ToolKit::EntityId ToolKit::Entity::m_lastId = 1; // 0 is null entity id.
-
-ToolKit::Entity::Entity()
+namespace ToolKit
 {
-  m_node = new Node();
-	m_id = m_lastId++;
-}
 
-ToolKit::Entity::~Entity()
-{
-  SafeDel(m_node);
-}
+	EntityId Entity::m_lastId = 1; // 0 is null entity id.
 
-bool ToolKit::Entity::IsDrawable() const
-{
-  return false;
-}
-
-ToolKit::EntityType ToolKit::Entity::GetType() const
-{
-  return EntityType::Entity_Base;
-}
-
-void ToolKit::Entity::SetPose(Animation* anim)
-{
-  anim->GetCurrentPose(m_node);
-}
-
-struct ToolKit::BoundingBox ToolKit::Entity::GetAABB(bool inWorld) const
-{
-	BoundingBox aabb;
-	
-	// Unit aabb.
-	aabb.min = glm::vec3(0.5f, 0.5f, 0.5f);
-	aabb.max = glm::vec3(-0.5f, -0.5f, -0.5f);
- 
-	if (inWorld)
+	Entity::Entity()
 	{
-		TransformAABB(aabb, m_node->GetTransform());
+		m_node = new Node();
+		m_id = m_lastId++;
 	}
 
-	return aabb;
+	Entity::~Entity()
+	{
+		SafeDel(m_node);
+	}
+
+	bool Entity::IsDrawable() const
+	{
+		return false;
+	}
+
+	EntityType Entity::GetType() const
+	{
+		return EntityType::Entity_Base;
+	}
+
+	void Entity::SetPose(Animation* anim)
+	{
+		anim->GetCurrentPose(m_node);
+	}
+
+	struct BoundingBox Entity::GetAABB(bool inWorld) const
+	{
+		BoundingBox aabb;
+
+		// Unit aabb.
+		aabb.min = glm::vec3(0.5f, 0.5f, 0.5f);
+		aabb.max = glm::vec3(-0.5f, -0.5f, -0.5f);
+
+		if (inWorld)
+		{
+			TransformAABB(aabb, m_node->GetTransform());
+		}
+
+		return aabb;
+	}
+
 }

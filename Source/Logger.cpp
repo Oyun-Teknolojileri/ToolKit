@@ -3,25 +3,30 @@
 #include "ToolKit.h"
 #include "DebugNew.h"
 
-ToolKit::Logger ToolKit::Logger::m_logger;
-
-ToolKit::Logger::Logger()
+namespace ToolKit
 {
-  m_logFile.open("Log.txt", std::ios::out);
-  assert(m_logFile.good());
-}
 
-ToolKit::Logger::~Logger()
-{
-  m_logFile.close();
-}
+	Logger Logger::m_logger;
 
-ToolKit::Logger* ToolKit::Logger::GetInstance()
-{
-  return &m_logger;
-}
+	Logger::Logger()
+	{
+		m_logFile.open("Log.txt", std::ios::out);
+		assert(m_logFile.good());
+	}
 
-void ToolKit::Logger::Log(std::string message)
-{
-  m_logFile << message << std::endl;
+	Logger::~Logger()
+	{
+		m_logFile.close();
+	}
+
+	Logger* Logger::GetInstance()
+	{
+		return &m_logger;
+	}
+
+	void Logger::Log(std::string message)
+	{
+		m_logFile << message << std::endl;
+	}
+
 }

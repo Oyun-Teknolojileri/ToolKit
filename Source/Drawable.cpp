@@ -6,45 +6,50 @@
 #include "Node.h"
 #include "DebugNew.h"
 
-ToolKit::Drawable::Drawable()
+namespace ToolKit
 {
-  m_mesh = std::shared_ptr<Mesh>(new Mesh());
-}
 
-ToolKit::Drawable::~Drawable()
-{
-}
-
-bool ToolKit::Drawable::IsDrawable() const
-{
-	return true;
-}
-
-ToolKit::EntityType ToolKit::Drawable::GetType() const
-{
-  return EntityType::Entity_Drawable;
-}
-
-void ToolKit::Drawable::SetPose(Animation* anim)
-{
-  if (m_mesh->IsSkinned())
-  {
-    Skeleton* skeleton = ((SkinMesh*)m_mesh.get())->m_skeleton;
-    anim->GetCurrentPose(skeleton);
-  }
-  else
-  {
-    anim->GetCurrentPose(m_node);
-  }
-}
-
-ToolKit::BoundingBox ToolKit::Drawable::GetAABB(bool inWorld) const
-{
-	BoundingBox bb = m_mesh->m_aabb;
-	if (inWorld)
+	Drawable::Drawable()
 	{
-		TransformAABB(bb, m_node->GetTransform());
+		m_mesh = std::shared_ptr<Mesh>(new Mesh());
 	}
 
-	return bb;
+	Drawable::~Drawable()
+	{
+	}
+
+	bool Drawable::IsDrawable() const
+	{
+		return true;
+	}
+
+	EntityType Drawable::GetType() const
+	{
+		return EntityType::Entity_Drawable;
+	}
+
+	void Drawable::SetPose(Animation* anim)
+	{
+		if (m_mesh->IsSkinned())
+		{
+			Skeleton* skeleton = ((SkinMesh*)m_mesh.get())->m_skeleton;
+			anim->GetCurrentPose(skeleton);
+		}
+		else
+		{
+			anim->GetCurrentPose(m_node);
+		}
+	}
+
+	BoundingBox Drawable::GetAABB(bool inWorld) const
+	{
+		BoundingBox bb = m_mesh->m_aabb;
+		if (inWorld)
+		{
+			TransformAABB(bb, m_node->GetTransform());
+		}
+
+		return bb;
+	}
+
 }

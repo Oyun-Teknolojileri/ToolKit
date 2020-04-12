@@ -9,344 +9,349 @@
 #include <unordered_map>
 #include "DebugNew.h"
 
-ToolKit::Mesh::Mesh()
+namespace ToolKit
 {
-  m_material = std::shared_ptr<Material>(new Material());
-}
 
-ToolKit::Mesh::Mesh(std::string file)
-{
-  m_file = file;
-  m_material = std::shared_ptr<Material>(new Material());
-}
-
-ToolKit::Mesh::~Mesh()
-{
-	UnInit();
-}
-
-void ToolKit::Mesh::Init(bool flushClientSideArray)
-{
-  if (m_initiated)
-  {
-    return;
-  }
-
-  InitVertices(flushClientSideArray);
-  InitIndices(flushClientSideArray);
-  m_material->Init();
-
-  for (std::shared_ptr<Mesh> mesh : m_subMeshes)
-  {
-    mesh->Init(flushClientSideArray);
-  }
-
-  m_initiated = true;
-}
-
-void ToolKit::Mesh::UnInit()
-{
-	GLuint buffers[2] = { m_vboIndexId, m_vboVertexId };
-	glDeleteBuffers(2, buffers);
-
-  for (std::shared_ptr<Mesh> subMesh : m_subMeshes)
-  {
-		subMesh = nullptr;
-  }
-
-	m_initiated = false;
-}
-
-void ToolKit::Mesh::Load()
-{
-  if (m_loaded)
-  {
-    return;
-  }
-
-  rapidxml::file<> file(m_file.c_str());
-  rapidxml::xml_document<> doc;
-  doc.parse<0>(file.data());
-
-  rapidxml::xml_node<>* node = doc.first_node("meshContainer");
-  if (node == nullptr)
-  {
-    return;
-  }
-
-	m_aabb = BoundingBox();
-
-  Mesh* mesh = this;
-  for (node = node->first_node("mesh"); node; node = node->next_sibling("mesh"))
-  {
-    if (mesh == nullptr)
-    {
-      mesh = new Mesh();
-      m_subMeshes.push_back(std::shared_ptr<Mesh>(mesh));
-    }
-
-    rapidxml::xml_node<>* materialNode = node->first_node("material");
-    std::string matFile = materialNode->first_attribute("name")->value();
-
-    if (CheckFile(MaterialPath(matFile)))
-    {
-      mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath(matFile));
-    }
-    else
-    {
-      mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath("default.material"));
-    }
-
-    rapidxml::xml_node<>* vertex = node->first_node("vertices");
-    for (rapidxml::xml_node<>* v = vertex->first_node("v"); v; v = v->next_sibling())
-    {
-      Vertex vd;
-      ExtractXYZFromNode(v->first_node("p"), vd.pos);
-			UpdateAABB(vd.pos);
-
-      ExtractXYZFromNode(v->first_node("n"), vd.norm);
-      ExtractXYFromNode(v->first_node("t"), vd.tex);
-      ExtractXYZFromNode(v->first_node("bt"), vd.btan);
-      mesh->m_clientSideVertices.push_back(vd);
-    }
-
-    rapidxml::xml_node<>* faces = node->first_node("faces");
-    for (rapidxml::xml_node<>* i = faces->first_node("f"); i; i = i->next_sibling())
-    {
-      glm::ivec3 indices;
-      ExtractXYZFromNode(i, indices);
-      mesh->m_clientSideIndices.push_back(indices.x);
-      mesh->m_clientSideIndices.push_back(indices.y);
-      mesh->m_clientSideIndices.push_back(indices.z);
-    }
-
-    mesh->m_loaded = true;
-    mesh = nullptr;
-  }
-}
-
-int ToolKit::Mesh::GetVertexSize()
-{
-  return sizeof(Vertex);
-}
-
-bool ToolKit::Mesh::IsSkinned()
-{
-  return false;
-}
-
-void ToolKit::Mesh::CalculateAABoundingBox()
-{
-	if (m_clientSideVertices.empty())
+	Mesh::Mesh()
 	{
-		return;
+		m_material = std::shared_ptr<Material>(new Material());
 	}
 
-	m_aabb = BoundingBox();
-
-	std::vector<Mesh*> meshes;
-	GetAllMeshes(meshes);
-
-	for (size_t i = 0; i < meshes.size(); i++)
+	Mesh::Mesh(std::string file)
 	{
-		Mesh* m = meshes[i];
-		if (m->m_clientSideVertices.empty())
+		m_file = file;
+		m_material = std::shared_ptr<Material>(new Material());
+	}
+
+	Mesh::~Mesh()
+	{
+		UnInit();
+	}
+
+	void Mesh::Init(bool flushClientSideArray)
+	{
+		if (m_initiated)
 		{
-			continue;
+			return;
 		}
 
-		for (size_t j = 0; j < m->m_clientSideVertices.size(); j++)
+		InitVertices(flushClientSideArray);
+		InitIndices(flushClientSideArray);
+		m_material->Init();
+
+		for (std::shared_ptr<Mesh> mesh : m_subMeshes)
 		{
-			Vertex& v = m->m_clientSideVertices[j];
-			UpdateAABB(v.pos);
+			mesh->Init(flushClientSideArray);
+		}
+
+		m_initiated = true;
+	}
+
+	void Mesh::UnInit()
+	{
+		GLuint buffers[2] = { m_vboIndexId, m_vboVertexId };
+		glDeleteBuffers(2, buffers);
+
+		for (std::shared_ptr<Mesh> subMesh : m_subMeshes)
+		{
+			subMesh = nullptr;
+		}
+
+		m_initiated = false;
+	}
+
+	void Mesh::Load()
+	{
+		if (m_loaded)
+		{
+			return;
+		}
+
+		rapidxml::file<> file(m_file.c_str());
+		rapidxml::xml_document<> doc;
+		doc.parse<0>(file.data());
+
+		rapidxml::xml_node<>* node = doc.first_node("meshContainer");
+		if (node == nullptr)
+		{
+			return;
+		}
+
+		m_aabb = BoundingBox();
+
+		Mesh* mesh = this;
+		for (node = node->first_node("mesh"); node; node = node->next_sibling("mesh"))
+		{
+			if (mesh == nullptr)
+			{
+				mesh = new Mesh();
+				m_subMeshes.push_back(std::shared_ptr<Mesh>(mesh));
+			}
+
+			rapidxml::xml_node<>* materialNode = node->first_node("material");
+			std::string matFile = materialNode->first_attribute("name")->value();
+
+			if (CheckFile(MaterialPath(matFile)))
+			{
+				mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath(matFile));
+			}
+			else
+			{
+				mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath("default.material"));
+			}
+
+			rapidxml::xml_node<>* vertex = node->first_node("vertices");
+			for (rapidxml::xml_node<>* v = vertex->first_node("v"); v; v = v->next_sibling())
+			{
+				Vertex vd;
+				ExtractXYZFromNode(v->first_node("p"), vd.pos);
+				UpdateAABB(vd.pos);
+
+				ExtractXYZFromNode(v->first_node("n"), vd.norm);
+				ExtractXYFromNode(v->first_node("t"), vd.tex);
+				ExtractXYZFromNode(v->first_node("bt"), vd.btan);
+				mesh->m_clientSideVertices.push_back(vd);
+			}
+
+			rapidxml::xml_node<>* faces = node->first_node("faces");
+			for (rapidxml::xml_node<>* i = faces->first_node("f"); i; i = i->next_sibling())
+			{
+				glm::ivec3 indices;
+				ExtractXYZFromNode(i, indices);
+				mesh->m_clientSideIndices.push_back(indices.x);
+				mesh->m_clientSideIndices.push_back(indices.y);
+				mesh->m_clientSideIndices.push_back(indices.z);
+			}
+
+			mesh->m_loaded = true;
+			mesh = nullptr;
 		}
 	}
-}
 
-void ToolKit::Mesh::GetAllMeshes(std::vector<Mesh*>& meshes)
-{
-	meshes.push_back(this);
-	for (size_t i = 0; i < m_subMeshes.size(); i++)
+	int Mesh::GetVertexSize()
 	{
-		m_subMeshes[i]->GetAllMeshes(meshes);
+		return sizeof(Vertex);
 	}
-}
 
-void ToolKit::Mesh::InitVertices(bool flush)
-{
-  glDeleteBuffers(1, &m_vboVertexId);
+	bool Mesh::IsSkinned()
+	{
+		return false;
+	}
 
-  if (!m_clientSideVertices.empty())
-  {
-    glGenBuffers(1, &m_vboVertexId);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
-    glBufferData(GL_ARRAY_BUFFER, GetVertexSize() * m_clientSideVertices.size(), m_clientSideVertices.data(), GL_STATIC_DRAW);
-    m_vertexCount = (uint)m_clientSideVertices.size();
-  }
+	void Mesh::CalculateAABoundingBox()
+	{
+		if (m_clientSideVertices.empty())
+		{
+			return;
+		}
 
-  m_vertexCount = (uint)m_clientSideVertices.size();
-  if (flush)
-  {
-    m_clientSideVertices.clear();
-  }
-}
+		m_aabb = BoundingBox();
 
-void ToolKit::Mesh::InitIndices(bool flush)
-{
-  glDeleteBuffers(1, &m_vboIndexId);
+		std::vector<Mesh*> meshes;
+		GetAllMeshes(meshes);
 
-  if (!m_clientSideIndices.empty())
-  {
-    glGenBuffers(1, &m_vboIndexId);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vboIndexId);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * m_clientSideIndices.size(), m_clientSideIndices.data(), GL_STATIC_DRAW);
-    m_indexCount = (uint)m_clientSideIndices.size();
-  }
+		for (size_t i = 0; i < meshes.size(); i++)
+		{
+			Mesh* m = meshes[i];
+			if (m->m_clientSideVertices.empty())
+			{
+				continue;
+			}
 
-  m_indexCount = (uint)m_clientSideIndices.size();
-  if (flush)
-  {
-    m_clientSideIndices.clear();
-  }
-}
+			for (size_t j = 0; j < m->m_clientSideVertices.size(); j++)
+			{
+				Vertex& v = m->m_clientSideVertices[j];
+				UpdateAABB(v.pos);
+			}
+		}
+	}
 
-void ToolKit::Mesh::UpdateAABB(const glm::vec3& v)
-{
-	m_aabb.max = glm::max(m_aabb.max, v);
-	m_aabb.min = glm::min(m_aabb.min, v);
-}
+	void Mesh::GetAllMeshes(std::vector<Mesh*>& meshes)
+	{
+		meshes.push_back(this);
+		for (size_t i = 0; i < m_subMeshes.size(); i++)
+		{
+			m_subMeshes[i]->GetAllMeshes(meshes);
+		}
+	}
 
-ToolKit::SkinMesh::SkinMesh()
-{
-  m_skeleton = new Skeleton();
-}
+	void Mesh::InitVertices(bool flush)
+	{
+		glDeleteBuffers(1, &m_vboVertexId);
 
-ToolKit::SkinMesh::SkinMesh(std::string file)
-  : Mesh(file)
-{
-  std::string skelFile = file.substr(0, file.find_last_of("."));
-  skelFile += ".skeleton";
+		if (!m_clientSideVertices.empty())
+		{
+			glGenBuffers(1, &m_vboVertexId);
+			glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
+			glBufferData(GL_ARRAY_BUFFER, GetVertexSize() * m_clientSideVertices.size(), m_clientSideVertices.data(), GL_STATIC_DRAW);
+			m_vertexCount = (uint)m_clientSideVertices.size();
+		}
 
-  m_skeleton = new Skeleton(skelFile);
-}
+		m_vertexCount = (uint)m_clientSideVertices.size();
+		if (flush)
+		{
+			m_clientSideVertices.clear();
+		}
+	}
 
-ToolKit::SkinMesh::~SkinMesh()
-{
-	UnInit();
-}
+	void Mesh::InitIndices(bool flush)
+	{
+		glDeleteBuffers(1, &m_vboIndexId);
 
-void ToolKit::SkinMesh::Init(bool flushClientSideArray)
-{
-  m_skeleton->Init(flushClientSideArray);
-  Mesh::Init(flushClientSideArray);
-}
+		if (!m_clientSideIndices.empty())
+		{
+			glGenBuffers(1, &m_vboIndexId);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vboIndexId);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * m_clientSideIndices.size(), m_clientSideIndices.data(), GL_STATIC_DRAW);
+			m_indexCount = (uint)m_clientSideIndices.size();
+		}
 
-void ToolKit::SkinMesh::UnInit()
-{
-	SafeDel(m_skeleton);
-	m_initiated = false;
-}
+		m_indexCount = (uint)m_clientSideIndices.size();
+		if (flush)
+		{
+			m_clientSideIndices.clear();
+		}
+	}
 
-void ToolKit::SkinMesh::Load()
-{
-  // Skeleton
-  m_skeleton->Load();
-  assert(m_skeleton->m_loaded);
-  if (!m_skeleton->m_loaded)
-  {
-    return;
-  }
-  
-  if (m_loaded)
-  {
-    return;
-  }
+	void Mesh::UpdateAABB(const glm::vec3& v)
+	{
+		m_aabb.max = glm::max(m_aabb.max, v);
+		m_aabb.min = glm::min(m_aabb.min, v);
+	}
 
-  rapidxml::file<> file(m_file.c_str());
-  rapidxml::xml_document<> doc;
-  doc.parse<0>(file.data());
+	SkinMesh::SkinMesh()
+	{
+		m_skeleton = new Skeleton();
+	}
 
-  rapidxml::xml_node<>* node = doc.first_node("meshContainer");
-  assert(m_skeleton->m_loaded);
-  if (node == nullptr)
-  {
-    return;
-  }
+	SkinMesh::SkinMesh(std::string file)
+		: Mesh(file)
+	{
+		std::string skelFile = file.substr(0, file.find_last_of("."));
+		skelFile += ".skeleton";
 
-  SkinMesh* mesh = this;
-  for (node = node->first_node("skinMesh"); node; node = node->next_sibling("skinMesh"))
-  {
-    if (mesh == nullptr)
-    {
-      mesh = new SkinMesh();
-      m_subMeshes.push_back(std::shared_ptr<Mesh>(mesh));
-    }
+		m_skeleton = new Skeleton(skelFile);
+	}
 
-    rapidxml::xml_node<>* materialNode = node->first_node("material");
-    std::string matFile = materialNode->first_attribute("name")->value();
+	SkinMesh::~SkinMesh()
+	{
+		UnInit();
+	}
 
-    if (CheckFile(MaterialPath(matFile)))
-    {
-      mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath(matFile));
-    }
-    else
-    {
-      mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath("default.material"));
-    }
+	void SkinMesh::Init(bool flushClientSideArray)
+	{
+		m_skeleton->Init(flushClientSideArray);
+		Mesh::Init(flushClientSideArray);
+	}
 
-    rapidxml::xml_node<>* vertex = node->first_node("vertices");
-    for (rapidxml::xml_node<>* v = vertex->first_node("v"); v; v = v->next_sibling())
-    {
-      SkinVertex vd;
-      ExtractXYZFromNode(v->first_node("p"), vd.pos);
-      ExtractXYZFromNode(v->first_node("n"), vd.norm);
-      ExtractXYFromNode(v->first_node("t"), vd.tex);
-      ExtractXYZFromNode(v->first_node("bt"), vd.btan);
-      ExtractWXYZFromNode(v->first_node("b"), vd.bones);
-      ExtractWXYZFromNode(v->first_node("w"), vd.weights);
-      mesh->m_clientSideVertices.push_back(vd);
-    }
+	void SkinMesh::UnInit()
+	{
+		SafeDel(m_skeleton);
+		m_initiated = false;
+	}
 
-    rapidxml::xml_node<>* faces = node->first_node("faces");
-    for (rapidxml::xml_node<>* i = faces->first_node("f"); i; i = i->next_sibling())
-    {
-      glm::ivec3 indices;
-      ExtractXYZFromNode(i, indices);
-      mesh->m_clientSideIndices.push_back(indices.x);
-      mesh->m_clientSideIndices.push_back(indices.y);
-      mesh->m_clientSideIndices.push_back(indices.z);
-    }
+	void SkinMesh::Load()
+	{
+		// Skeleton
+		m_skeleton->Load();
+		assert(m_skeleton->m_loaded);
+		if (!m_skeleton->m_loaded)
+		{
+			return;
+		}
 
-    mesh = nullptr;
-  }
+		if (m_loaded)
+		{
+			return;
+		}
 
-  m_loaded = true;
-}
+		rapidxml::file<> file(m_file.c_str());
+		rapidxml::xml_document<> doc;
+		doc.parse<0>(file.data());
 
-int ToolKit::SkinMesh::GetVertexSize()
-{
-  return sizeof(SkinVertex);
-}
+		rapidxml::xml_node<>* node = doc.first_node("meshContainer");
+		assert(m_skeleton->m_loaded);
+		if (node == nullptr)
+		{
+			return;
+		}
 
-bool ToolKit::SkinMesh::IsSkinned()
-{
-  return true;
-}
+		SkinMesh* mesh = this;
+		for (node = node->first_node("skinMesh"); node; node = node->next_sibling("skinMesh"))
+		{
+			if (mesh == nullptr)
+			{
+				mesh = new SkinMesh();
+				m_subMeshes.push_back(std::shared_ptr<Mesh>(mesh));
+			}
 
-void ToolKit::SkinMesh::InitVertices(bool flush)
-{
-  glDeleteBuffers(1, &m_vboIndexId);
+			rapidxml::xml_node<>* materialNode = node->first_node("material");
+			std::string matFile = materialNode->first_attribute("name")->value();
 
-  if (!m_clientSideVertices.empty())
-  {
-    glGenBuffers(1, &m_vboVertexId);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
-    glBufferData(GL_ARRAY_BUFFER, GetVertexSize() * m_clientSideVertices.size(), m_clientSideVertices.data(), GL_STATIC_DRAW);
-    m_vertexCount = (uint)m_clientSideVertices.size();
-  }
+			if (CheckFile(MaterialPath(matFile)))
+			{
+				mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath(matFile));
+			}
+			else
+			{
+				mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath("default.material"));
+			}
 
-  if (flush)
-  {
-    m_clientSideVertices.clear();
-  }
+			rapidxml::xml_node<>* vertex = node->first_node("vertices");
+			for (rapidxml::xml_node<>* v = vertex->first_node("v"); v; v = v->next_sibling())
+			{
+				SkinVertex vd;
+				ExtractXYZFromNode(v->first_node("p"), vd.pos);
+				ExtractXYZFromNode(v->first_node("n"), vd.norm);
+				ExtractXYFromNode(v->first_node("t"), vd.tex);
+				ExtractXYZFromNode(v->first_node("bt"), vd.btan);
+				ExtractWXYZFromNode(v->first_node("b"), vd.bones);
+				ExtractWXYZFromNode(v->first_node("w"), vd.weights);
+				mesh->m_clientSideVertices.push_back(vd);
+			}
+
+			rapidxml::xml_node<>* faces = node->first_node("faces");
+			for (rapidxml::xml_node<>* i = faces->first_node("f"); i; i = i->next_sibling())
+			{
+				glm::ivec3 indices;
+				ExtractXYZFromNode(i, indices);
+				mesh->m_clientSideIndices.push_back(indices.x);
+				mesh->m_clientSideIndices.push_back(indices.y);
+				mesh->m_clientSideIndices.push_back(indices.z);
+			}
+
+			mesh = nullptr;
+		}
+
+		m_loaded = true;
+	}
+
+	int SkinMesh::GetVertexSize()
+	{
+		return sizeof(SkinVertex);
+	}
+
+	bool SkinMesh::IsSkinned()
+	{
+		return true;
+	}
+
+	void SkinMesh::InitVertices(bool flush)
+	{
+		glDeleteBuffers(1, &m_vboIndexId);
+
+		if (!m_clientSideVertices.empty())
+		{
+			glGenBuffers(1, &m_vboVertexId);
+			glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
+			glBufferData(GL_ARRAY_BUFFER, GetVertexSize() * m_clientSideVertices.size(), m_clientSideVertices.data(), GL_STATIC_DRAW);
+			m_vertexCount = (uint)m_clientSideVertices.size();
+		}
+
+		if (flush)
+		{
+			m_clientSideVertices.clear();
+		}
+	}
+
 }
