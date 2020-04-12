@@ -34,14 +34,14 @@ namespace ToolKit
 					return;
 				}
 
-				m_gizmo->Update(deltaTime);
-
 				Entity* e = g_app->m_scene.GetCurrentSelection();
 				if (e != nullptr)
 				{
 					glm::mat4 ts = e->m_node->GetTransform();
 					DecomposeMatrix(ts, m_gizmo->m_worldLocation, m_gizmo->m_node->m_orientation);
 				}
+
+				m_gizmo->Update(deltaTime);
 			}
 		}
 
@@ -54,12 +54,12 @@ namespace ToolKit
 			StateMoveBase* baseState = dynamic_cast<StateMoveBase*> (nextState);
 			if (baseState != nullptr)
 			{
+				baseState->m_mouseData = m_mouseData;
 				baseState->m_gizmo = m_gizmo;
 				baseState->m_grabbedAxis = m_grabbedAxis;
-				baseState->m_mouseData = m_mouseData;
 				baseState->m_intersectionPlane = m_intersectionPlane;
-				baseState->m_intersectDist = m_intersectDist;
 				baseState->m_intersectionPlaneX = m_intersectionPlaneX;
+				baseState->m_intersectDist = m_intersectDist;
 			}
 		}
 
@@ -105,7 +105,7 @@ namespace ToolKit
 
 		void StateBeginMove::Update(float deltaTime)
 		{
-			StateMoveBase::Update(deltaTime);
+			StateMoveBase::Update(deltaTime); // Update gizmo's loc & view.
 
 			m_gizmo->m_inAccessable = AxisLabel::None;
 			Entity* e = g_app->m_scene.GetCurrentSelection();
@@ -206,6 +206,22 @@ namespace ToolKit
 				glm::vec3 p = PointOnRay(ray, t);
 				glm::vec3 go2p = p - gizmOrg;
 				m_intersectDist = glm::dot(px, go2p);
+
+				// #DebugDeleteMe
+				static std::shared_ptr<Sphere> tmpSpr = nullptr;
+				if (tmpSpr == nullptr)
+				{
+					tmpSpr = std::make_shared<Sphere>();
+					Material* newMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("LineColor.material"))->GetCopy();
+					newMaterial->GetRenderState()->drawType = DrawType::Triangle;
+					newMaterial->m_color = g_selectHighLightPrimaryColor;
+					tmpSpr->m_mesh->m_material = std::shared_ptr<Material> (newMaterial);
+
+					tmpSpr->m_node->m_scale = glm::vec3(0.1f);
+					g_app->m_scene.AddEntity(tmpSpr.get());
+				}
+
+				tmpSpr->m_node->m_translation = p;
 			}
 			else
 			{
@@ -247,6 +263,17 @@ namespace ToolKit
 			{
 				glm::vec3 p = PointOnRay(ray, t);
 				glm::vec3 go2p = p - m_gizmo->m_worldLocation;
+
+				// #DebugDeleteMe
+				#ifdef _DEBUG
+					Entity* e = g_app->m_scene.GetCurrentSelection();
+					if (e != nullptr)
+					{
+						glm::bvec3 all = glm::equal(e->m_node->m_translation, m_gizmo->m_worldLocation);
+						assert(glm::all(all) && "Gizmo must be eq. to node");
+					}
+				#endif
+				
 				float projDst = glm::dot(m_intersectionPlaneX, go2p);
 				glm::vec3 delta = m_intersectionPlaneX * (projDst - m_intersectDist);
 
@@ -256,15 +283,22 @@ namespace ToolKit
 					m_gizmo->m_worldLocation + m_intersectionPlaneX * projDst
 				};
 
-				static std::shared_ptr<LineBatch> dblb = nullptr;
+				// #DebugDeleteMe
+				static std::shared_ptr<LineBatch> pg, dblb = nullptr;
 				if (dblb == nullptr)
 				{
-					dblb = std::shared_ptr<LineBatch>(new LineBatch(corners, X_AXIS, DrawType::Line, 3.0f));
+					dblb = std::shared_ptr<LineBatch>(new LineBatch(corners, X_AXIS, DrawType::Line, 10.0f));
 					g_app->m_scene.AddEntity(dblb.get());
 				}
 				else
 				{
-					dblb->Generate(corners, X_AXIS, DrawType::Line, 3.0f);
+					corners.push_back(p + m_intersectionPlaneX * 100.0f);
+					corners.push_back(p - m_intersectionPlaneX * 100.0f);
+					dblb->Generate(corners, X_AXIS, DrawType::Line, 10.0f);
+
+					pg = std::shared_ptr<LineBatch>(CreatePlaneDebugObject(m_intersectionPlane, 5.0f));
+					dblb->m_mesh->m_subMeshes.clear();
+					dblb->m_mesh->m_subMeshes.push_back(pg->m_mesh);
 				}
 
 				std::vector<Entity*> selecteds;

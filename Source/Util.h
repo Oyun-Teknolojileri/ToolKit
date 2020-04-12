@@ -2,6 +2,7 @@
 
 #include "glm\glm.hpp"
 #include "glm\gtc\quaternion.hpp"
+#include "MathUtil.h"
 
 #include <assert.h>
 #include <string.h>
@@ -18,11 +19,8 @@ namespace ToolKit
 	void ExtractWXYZFromNode(void* node, glm::ivec4& val);
 	void ExtractQuatFromNode(void* node, glm::quat& val);
 	bool CheckFile(std::string path);
-
-	// split a string into multiple sub strings, based on a separator string
-	// for example, if separator="::",
-	// s = "abc::def xy::st:" -> "abc", "def xy" and "st:",
 	void Split(const std::string& s, const std::string& sep, std::vector<std::string>& v);
+	class LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size);
 
 	template<typename T>
 	void pop_front(std::vector<T>& vec)

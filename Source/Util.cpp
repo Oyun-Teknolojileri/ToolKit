@@ -1,8 +1,10 @@
 #include "stdafx.h"
 #include "Util.h"
 #include "rapidxml.hpp"
-#include <fstream>
+#include "Primative.h"
 #include "DebugNew.h"
+
+#include <fstream>
 
 namespace ToolKit
 {
@@ -109,6 +111,9 @@ namespace ToolKit
 		return f.good();
 	}
 
+	// split a string into multiple sub strings, based on a separator string
+	// for example, if separator="::",
+	// s = "abc::def xy::st:" -> "abc", "def xy" and "st:",
 	// https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c?page=2&tab=votes#tab-top
 	void Split(const std::string& s, const std::string& sep, std::vector<std::string>& v)
 	{
@@ -145,6 +150,31 @@ namespace ToolKit
 				b = i;
 			}
 		}
+	}
+
+	ToolKit::LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size)
+	{
+		// Searching perpendicular axes on the plane.
+		glm::vec3 z = plane.normal;
+		glm::vec3 x = z + glm::vec3(1.0f);
+		glm::vec3 y = glm::cross(z, x);
+		x = glm::normalize(glm::cross(y, z));
+		y = glm::normalize(glm::cross(z, x));
+
+		NormalzePlaneEquation(plane);
+		glm::vec3 o = plane.normal * plane.d;
+
+		float hSize = size * 0.5f;
+		std::vector<glm::vec3> corners
+		{
+			o + x * hSize + y * hSize,
+			o - x * hSize + y * hSize,
+			o - x * hSize - y * hSize,
+			o + x * hSize - y * hSize
+		};
+
+		LineBatch* obj = new LineBatch(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+		return obj;
 	}
 
 }
