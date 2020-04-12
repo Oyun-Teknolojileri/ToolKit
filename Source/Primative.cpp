@@ -270,17 +270,21 @@ namespace ToolKit
 		return EntityType::Entity_Sphere;
 	}
 
+	Cone::Cone()
+	{
+		Generate(1.0f, 1.0f, 30, 30);
+	}
+
+	Cone::Cone(float height, float radius, int nSegBase, int nSegHeight)
+	{
+		Generate(height, radius, nSegBase, nSegHeight);
+	}
 
 	// https://github.com/OGRECave/ogre-procedural/blob/master/library/src/ProceduralConeGenerator.cpp
-	Cone::Cone()
+	void Cone::Generate(float height, float radius, int nSegBase, int nSegHeight)
 	{
 		std::vector<Vertex> vertices;
 		std::vector<uint> indices;
-
-		int nSegBase = 30;
-		int nSegHeight = 30;
-		float height = 1.0f;
-		float radius = 1.0f;
 
 		float deltaAngle = (glm::two_pi<float>() / nSegBase);
 		float deltaHeight = height / nSegHeight;
@@ -363,7 +367,7 @@ namespace ToolKit
 		m_mesh->m_clientSideVertices = vertices;
 		m_mesh->m_indexCount = (uint)indices.size();
 		m_mesh->m_clientSideIndices = indices;
-		m_mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath("default.material"));
+		m_mesh->m_material = GetMaterialManager()->Create(MaterialPath("default.material"));
 
 		m_mesh->CalculateAABoundingBox();
 	}

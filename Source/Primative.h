@@ -56,8 +56,12 @@ namespace ToolKit
   {
   public:
     Cone();
+    Cone(float height, float radius, int nSegBase, int nSegHeight);
 
     virtual EntityType GetType() const override;
+
+  private:
+    void Generate(float height, float radius, int nSegBase, int nSegHeight);
   };
 
   class Arrow2d : public Drawable
