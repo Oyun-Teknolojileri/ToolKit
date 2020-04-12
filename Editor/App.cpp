@@ -117,6 +117,9 @@ namespace ToolKit
 			UI::DispatchSignals();
 			ModManager::GetInstance()->Update(deltaTime);
 
+			// Dirty hack.
+			MoveGizmo* gizmo = nullptr;
+
 			// Update Viewports.
 			for (Window* wnd : m_windows)
 			{
@@ -130,9 +133,6 @@ namespace ToolKit
 
 				m_renderer->SetRenderTarget(vp->m_viewportImage);
 
-				// Dirty hack.
-				MoveGizmo* gizmo = nullptr;
-
 				for (Entity* ntt : m_scene.GetEntities())
 				{
 					if (ntt->IsDrawable())
@@ -142,7 +142,7 @@ namespace ToolKit
 							Billboard* billboard = static_cast<Billboard*> (ntt);
 							billboard->LookAt(vp->m_camera);
 
-							if (typeid(ntt) == typeid(MoveGizmo))
+							if (typeid(*ntt) == typeid(MoveGizmo))
 							{
 								gizmo = static_cast<MoveGizmo*> (ntt);
 								continue;
@@ -167,6 +167,7 @@ namespace ToolKit
 
 				if (gizmo != nullptr)
 				{
+					glClear(GL_DEPTH_BUFFER_BIT);
 					m_renderer->Render(gizmo, vp->m_camera);
 				}
 

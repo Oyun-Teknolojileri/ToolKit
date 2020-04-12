@@ -109,6 +109,7 @@ namespace ToolKit
 			MakeSureGizmoIsValid();
 
 			m_gizmo->m_inAccessable = AxisLabel::None;
+			m_gizmo->m_grabbed = m_grabbedAxis;
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			if (e != nullptr)
 			{
@@ -121,7 +122,7 @@ namespace ToolKit
 				glm::vec3 gizmOrg = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 				glm::vec3 dir = glm::normalize(camOrg - gizmOrg);
 
-				float safetyMeasure = glm::abs(glm::cos(glm::radians(30.0f)));
+				float safetyMeasure = glm::abs(glm::cos(glm::radians(15.0f)));
 				AxisLabel axisLabes[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
 				glm::vec3 axes[3] = { x, y, z };
 
@@ -357,7 +358,7 @@ namespace ToolKit
 			m_stateMachine->PushState(new StateEndMove());
 
 			m_stateMachine->PushState(new StateBeginPick());
-			m_stateMachine->PushState(new StateBeginBoxPick());
+			// m_stateMachine->PushState(new StateBeginBoxPick());
 			state = new StateEndPick();
 			state->m_links[m_linkToMoveBeginSgnl] = StateType::StateBeginMove;
 			m_stateMachine->PushState(state);

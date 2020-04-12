@@ -116,6 +116,7 @@ namespace ToolKit
 			: Billboard({ false, 10.0f, 400.0f })
 		{
 			m_inAccessable = AxisLabel::None;
+			m_grabbed = AxisLabel::None;
 
 			// Hit boxes.
 			m_hitBox[0].min = glm::vec3(0.05f, -0.05f, -0.05f);
@@ -155,18 +156,10 @@ namespace ToolKit
 				}
 			}
 
-			AxisLabel hit = AxisLabel::None;
-			switch (minIndx)
+			AxisLabel hit = (AxisLabel)minIndx;
+			if (m_grabbed != AxisLabel::None)
 			{
-			case 0:
-				hit = AxisLabel::X;
-				break;
-			case 1:
-				hit = AxisLabel::Y;
-				break;
-			case 2:
-				hit = AxisLabel::Z;
-				break;
+				hit = m_grabbed; // If grabbed, always highlight.
 			}
 
 			return hit;
@@ -236,7 +229,7 @@ namespace ToolKit
 					AXIS[i] * 0.8f
 				};
 				LineBatch l(points, g_gizmoColor[i], DrawType::Line);
-				l.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
+				// l.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
 				l.m_mesh->Init();
 				m_lines[i] = l.m_mesh;
 				l.m_mesh = nullptr;
@@ -280,7 +273,7 @@ namespace ToolKit
 
 					head.m_mesh->m_material = GetMaterialManager()->GetCopyOfSolidMaterial();
 					head.m_mesh->m_material->m_color = g_gizmoColor[i];
-					head.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
+					// head.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
 					head.m_mesh->Init(true);
 
 					g_ArrowHeads[i] = head.m_mesh;

@@ -38,6 +38,7 @@ namespace ToolKit
 
 		public:
 			AxisLabel m_inAccessable;
+			AxisLabel m_grabbed;
 
 		private:
 			BoundingBox m_hitBox[3]; // X - Y - Z.
