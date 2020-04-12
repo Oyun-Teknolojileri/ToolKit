@@ -12,18 +12,19 @@ namespace ToolKit
     Entity_Base,
     Entity_AudioSource,
     Entity_Actor,
+    Entity_Billboard,
     Entity_Cube,
     Entity_Quad,
     Entity_Sphere,
     Etity_Arrow,
     Entity_LineBatch,
+    Entity_Cone,
     Entity_Drawable,
     Entity_SpriteAnim,
     Entity_Surface,
-    Entity_Directional,
     Entity_Light,
     Entity_Camera,
-    Entity_Billboard
+    Entity_Directional
   };
 
   class Entity

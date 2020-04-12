@@ -25,6 +25,7 @@ namespace ToolKit
 			m_suzanne = nullptr;
 			m_q1 = nullptr;
 			m_q2 = nullptr;
+			m_q3 = nullptr;
 			m_cursor = nullptr;
 			m_renderer = new Renderer();
 			m_renderer->m_windowWidth = windowWidth;
@@ -46,6 +47,7 @@ namespace ToolKit
 			SafeDel(m_suzanne);
 			SafeDel(m_q1);
 			SafeDel(m_q2);
+			SafeDel(m_q3);
 			SafeDel(m_cursor);
 
 			ModManager::GetInstance()->UnInit();
@@ -77,6 +79,12 @@ namespace ToolKit
 			m_q2->m_mesh->Init(false);
 			m_q2->m_node->m_translation = glm::vec3(4.0f, 0.0f, 0.0f);
 			m_scene.AddEntity(m_q2);
+
+			m_q3 = new Cone();
+			m_q3->m_mesh->Init(false);
+			m_q3->m_node->m_scale = glm::vec3(0.3f, 1.0f, 0.3f);
+			m_q3->m_node->m_translation = glm::vec3(2.0f, 0.0f, 0.0f);
+			m_scene.AddEntity(m_q3);
 
 			m_origin = new Axis3d();
 

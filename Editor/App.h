@@ -65,6 +65,7 @@ namespace ToolKit
 			Drawable* m_suzanne;
 			Cube* m_q1;
 			Cube* m_q2;
+			Cone* m_q3;
 		};
 
 	}

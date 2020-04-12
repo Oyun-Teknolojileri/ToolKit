@@ -52,6 +52,14 @@ namespace ToolKit
     virtual EntityType GetType() const override;
   };
 
+  class Cone : public Drawable
+  {
+  public:
+    Cone();
+
+    virtual EntityType GetType() const override;
+  };
+
   class Arrow2d : public Drawable
   {
   public:

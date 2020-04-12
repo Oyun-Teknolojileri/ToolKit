@@ -244,7 +244,7 @@ namespace ToolKit
 
 				if (ring != nRings)
 				{
-					// each vertex (except the last) has six indicies pointing to it
+					// each vertex (except the last) has six indices pointing to it
 					indices.push_back(wVerticeIndex + nSegments + 1);
 					indices.push_back(wVerticeIndex);
 					indices.push_back(wVerticeIndex + nSegments);
@@ -268,6 +268,109 @@ namespace ToolKit
 	EntityType Sphere::GetType() const
 	{
 		return EntityType::Entity_Sphere;
+	}
+
+
+	// https://github.com/OGRECave/ogre-procedural/blob/master/library/src/ProceduralConeGenerator.cpp
+	Cone::Cone()
+	{
+		std::vector<Vertex> vertices;
+		std::vector<uint> indices;
+
+		int nSegBase = 30;
+		int nSegHeight = 30;
+		float height = 1.0f;
+		float radius = 1.0f;
+
+		float deltaAngle = (glm::two_pi<float>() / nSegBase);
+		float deltaHeight = height / nSegHeight;
+		int offset = 0;
+
+		glm::vec3 refNormal = glm::normalize(glm::vec3(radius, height, 0.0f));
+		glm::quat q;
+
+		for (int i = 0; i <= nSegHeight; i++)
+		{
+			float r0 = radius * (1 - i / (float)nSegHeight);
+			for (int j = 0; j <= nSegBase; j++)
+			{
+				float x0 = r0 * glm::cos(j * deltaAngle);
+				float z0 = r0 * glm::sin(j * deltaAngle);
+
+				q = glm::angleAxis(glm::radians(-deltaAngle * j), Y_AXIS);
+
+				Vertex v
+				{
+					glm::vec3(x0, i * deltaHeight, z0),
+					q * refNormal,
+					glm::vec2(j / (float)nSegBase, i / (float)nSegHeight),
+					glm::vec3() // btan missing.
+				};
+
+				vertices.push_back(v);
+
+				if (i != nSegHeight && j != nSegBase)
+				{
+					indices.push_back(offset + nSegBase + 2);
+					indices.push_back(offset);
+					indices.push_back(offset + nSegBase + 1);
+					indices.push_back(offset + nSegBase + +2); // Is this valid "nSegBase + +2" ??
+					indices.push_back(offset + 1);
+					indices.push_back(offset);
+				}
+
+				offset++;
+			}
+		}
+
+		//low cap
+		int centerIndex = offset;
+
+		Vertex v
+		{
+			glm::vec3(),
+			-Y_AXIS,
+			Y_AXIS,
+			glm::vec3() // btan missing.
+		};
+		vertices.push_back(v);
+
+		offset++;
+		for (int j = 0; j <= nSegBase; j++)
+		{
+			float x0 = radius * glm::cos(j * deltaAngle);
+			float z0 = radius * glm::sin(j * deltaAngle);
+
+			Vertex v
+			{
+				glm::vec3(x0, 0.0f, z0),
+				-Y_AXIS,
+				glm::vec2(j / (float)nSegBase, 0.0f),
+				glm::vec3() // btan missing.
+			};
+			vertices.push_back(v);
+
+			if (j != nSegBase)
+			{
+				indices.push_back(centerIndex);
+				indices.push_back(offset);
+				indices.push_back(offset + 1);
+			}
+			offset++;
+		}
+
+		m_mesh->m_vertexCount = (uint)vertices.size();
+		m_mesh->m_clientSideVertices = vertices;
+		m_mesh->m_indexCount = (uint)indices.size();
+		m_mesh->m_clientSideIndices = indices;
+		m_mesh->m_material = Main::GetInstance()->m_materialManager.Create(MaterialPath("default.material"));
+
+		m_mesh->CalculateAABoundingBox();
+	}
+
+	ToolKit::EntityType Cone::GetType() const
+	{
+		return EntityType::Entity_Cone;
 	}
 
 	Arrow2d::Arrow2d()
