@@ -44,7 +44,7 @@ namespace ToolKit
 			std::vector<Window*> m_windows;
 
 			// Editor variables.
-			float m_camSpeed = 4.0; // Meters per sec.
+			float m_camSpeed = 8.0; // Meters per sec.
 			float m_mouseSensitivity = 0.5f;
 			std::shared_ptr<Material> m_highLightMaterial;
 			std::shared_ptr<Material> m_highLightSecondaryMaterial;

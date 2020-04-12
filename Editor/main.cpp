@@ -20,159 +20,165 @@ namespace ToolKit
 		SDL_Window* g_window = nullptr;
 		SDL_GLContext g_context = nullptr;
 		App* g_app;
-	}
-}
 
-// Setup.
-const char* appName = "ToolKit";
-const int width = 1024;
-const int height = 640;
-const ToolKit::uint fps = 60;
+		// Setup.
+		const char* appName = "ToolKit";
+		const int width = 1024;
+		const int height = 640;
+		const uint fps = 60;
 
-void Init()
-{
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0)
-	{
-		ToolKit::Editor::g_running = false;
-	}
-	else
-	{
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-
-		ToolKit::Editor::g_window = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
-		if (ToolKit::Editor::g_window == nullptr)
+		void Init()
 		{
-			ToolKit::Editor::g_running = false;
-		}
-		else
-		{
-			ToolKit::Editor::g_context = SDL_GL_CreateContext(ToolKit::Editor::g_window);
-			if (ToolKit::Editor::g_context == nullptr)
+			if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0)
 			{
-				ToolKit::Editor::g_running = false;
+				g_running = false;
 			}
 			else
 			{
-				// Init glew
-				glewExperimental = true;
-				GLenum err = glewInit();
-				if (GLEW_OK != err)
+				SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+				SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+				SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+				g_window = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+				if (g_window == nullptr)
 				{
-					ToolKit::Editor::g_running = false;
-					return;
+					g_running = false;
 				}
+				else
+				{
+					g_context = SDL_GL_CreateContext(g_window);
+					if (g_context == nullptr)
+					{
+						g_running = false;
+					}
+					else
+					{
+						// Init glew
+						glewExperimental = true;
+						GLenum err = glewInit();
+						if (GLEW_OK != err)
+						{
+							g_running = false;
+							return;
+						}
 
-				ToolKit::Main::GetInstance()->Init();
+						Main::GetInstance()->Init();
 
-				// Set defaults
-				SDL_GL_SetSwapInterval(1);
-				glClearColor(0.2f, 0.2f, 0.2f, 1.0);
-				
-				glEnable(GL_CULL_FACE);
-				glEnable(GL_DEPTH_TEST);
+						// Set defaults
+						SDL_GL_SetSwapInterval(1);
+						glClearColor(0.2f, 0.2f, 0.2f, 1.0);
 
-				// Init app
-				ToolKit::Editor::g_app = new ToolKit::Editor::App(width, height);
-				ToolKit::Editor::g_app->Init();
+						glEnable(GL_CULL_FACE);
+						glEnable(GL_DEPTH_TEST);
 
-				// Init UI
-				ToolKit::Editor::UI::Init();
+						// Init app
+						g_app = new App(width, height);
+						g_app->Init();
+
+						// Init UI
+						UI::Init();
+					}
+				}
 			}
 		}
-	}
-}
 
-float GetMilliSeconds()
-{
-	using namespace std::chrono;
-
-	static high_resolution_clock::time_point t1 = high_resolution_clock::now();
-	high_resolution_clock::time_point t2 = high_resolution_clock::now();
-	duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-
-	return (float)(time_span.count() * 1000.0);
-}
-
-void Exit()
-{
-	ToolKit::Editor::g_running = false;
-	SafeDel(ToolKit::Editor::g_app);
-
-	ToolKit::Editor::UI::UnInit();
-
-	SDL_DestroyWindow(ToolKit::Editor::g_window);
-	TTF_Quit();
-	SDL_Quit();
-}
-
-void ProcessEvent(SDL_Event e)
-{
-	ImGui_ImplSDL2_ProcessEvent(&e);
-
-	if (e.type == SDL_WINDOWEVENT)
-	{
-		if (e.window.event == SDL_WINDOWEVENT_RESIZED) 
+		float GetMilliSeconds()
 		{
-			ToolKit::Editor::g_app->OnResize(e.window.data1, e.window.data2);
+			using namespace std::chrono;
+
+			static high_resolution_clock::time_point t1 = high_resolution_clock::now();
+			high_resolution_clock::time_point t2 = high_resolution_clock::now();
+			duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+
+			return (float)(time_span.count() * 1000.0);
 		}
-	}
 
-	if (e.type == SDL_QUIT)
-	{
-		ToolKit::Editor::g_running = false;
-	}
-
-	if (e.type == SDL_KEYDOWN)
-	{
-		switch (e.key.keysym.sym)
+		void Exit()
 		{
-		case SDLK_ESCAPE:
-			ToolKit::Editor::g_running = false;
-			break;
-		default:
-			break;
+			g_running = false;
+			SafeDel(g_app);
+
+			UI::UnInit();
+
+			SDL_DestroyWindow(g_window);
+			TTF_Quit();
+			SDL_Quit();
 		}
+
+		void ProcessEvent(SDL_Event e)
+		{
+			ImGui_ImplSDL2_ProcessEvent(&e);
+
+			if (e.type == SDL_WINDOWEVENT)
+			{
+				if (e.window.event == SDL_WINDOWEVENT_RESIZED)
+				{
+					g_app->OnResize(e.window.data1, e.window.data2);
+				}
+			}
+
+			if (e.type == SDL_QUIT)
+			{
+				g_running = false;
+			}
+
+			if (e.type == SDL_KEYDOWN)
+			{
+				switch (e.key.keysym.sym)
+				{
+				case SDLK_ESCAPE:
+					g_running = false;
+					break;
+				default:
+					break;
+				}
+			}
+		}
+
+		int ToolKit_Main(int argc, char* argv[])
+		{
+			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
+			Init();
+
+			// Continue with editor.
+			float lastTime = GetMilliSeconds();
+			float currentTime;
+			float deltaTime = 1000.0f / fps;
+
+			while (g_running)
+			{
+				SDL_Event sdlEvent;
+				while (SDL_PollEvent(&sdlEvent))
+				{
+					ProcessEvent(sdlEvent);
+				}
+
+				currentTime = GetMilliSeconds();
+				if (currentTime > lastTime + deltaTime)
+				{
+					// Update & Render
+					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+					g_app->Frame(currentTime - lastTime);
+					SDL_GL_SwapWindow(g_window);
+
+					lastTime = currentTime;
+				}
+				else
+				{
+					SDL_Delay(10);
+				}
+			}
+
+			Exit();
+
+			return 0;
+		}
+
 	}
 }
 
 int main(int argc, char* argv[])
 {
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
-	Init();
-
-	// Continue with editor.
-	float lastTime = GetMilliSeconds();
-	float currentTime;
-	float deltaTime = 1000.0f / fps;
-
-	while (ToolKit::Editor::g_running)
-	{
-		SDL_Event sdlEvent;
-		while (SDL_PollEvent(&sdlEvent))
-		{
-			ProcessEvent(sdlEvent);
-		}
-
-		currentTime = GetMilliSeconds();
-		if (currentTime > lastTime + deltaTime)
-		{
-			// Update & Render
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			ToolKit::Editor::g_app->Frame(currentTime - lastTime);
-			SDL_GL_SwapWindow(ToolKit::Editor::g_window);
-
-			lastTime = currentTime;
-		}
-		else
-		{
-			SDL_Delay(10);
-		}
-	}
-
-	Exit();
-
-	return 0;
+	return ToolKit::Editor::ToolKit_Main(argc, argv);
 }

@@ -5,99 +5,107 @@
 #include "GlobalDef.h"
 #include "Mod.h"
 
-ToolKit::Editor::OverlayNav::OverlayNav(Viewport* owner)
+namespace ToolKit
 {
-	m_owner = owner;
-}
-
-void ToolKit::Editor::OverlayNav::Show()
-{
-	ImVec2 overlaySize(48, 258);
-	const float padding = 5.0f;
-	ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding, m_owner->m_wndPos.y + padding);
-	ImGui::SetNextWindowPos(window_pos);
-	ImGui::SetNextWindowBgAlpha(0.65f);
-	if (ImGui::BeginChildFrame(ImGui::GetID("Navigation"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
+	namespace Editor
 	{
-		// Select button.
-		static float hoverTimeSelectBtn = 0.0f;
-		bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Select;
-		ModManager::GetInstance()->SetMod(UI::ToggleButton((void*)(intptr_t)UI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Select);
-		UI::HelpMarker("Select Box\nSelect items using box selection.", &hoverTimeSelectBtn);
-
-		// Cursor button.
-		static float hoverTimeCursorBtn = 0.0f;
-		isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Cursor;
-		ModManager::GetInstance()->SetMod(UI::ToggleButton((void*)(intptr_t)UI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Cursor);
-		UI::HelpMarker("Cursor\nSet the cursor location.", &hoverTimeCursorBtn);
-		ImGui::Separator();
-
-		// Move button.
-		static float hoverTimeMoveBtn = 0.0f;
-		isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Move;
-		ModManager::GetInstance()->SetMod(UI::ToggleButton((void*)(intptr_t)UI::m_moveIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Move);
-		UI::HelpMarker("Move\nMove selected items.", &hoverTimeMoveBtn);
-
-		// Rotate button.
-		static float hoverTimeRotateBtn = 0.0f;
-		ImGui::ImageButton((void*)(intptr_t)UI::m_rotateIcn->m_textureId, ImVec2(32, 32));
-		UI::HelpMarker("Rotate\nRotate selected items.", &hoverTimeRotateBtn);
-
-		// Scale button.
-		static float hoverTimeScaleBtn = 0.0f;
-		ImGui::ImageButton((void*)(intptr_t)UI::m_scaleIcn->m_textureId, ImVec2(32, 32));
-		UI::HelpMarker("Scale\nScale (resize) selected items.", &hoverTimeScaleBtn);
-		ImGui::Separator();
-
-		const char* items[] = {"1", "2", "4", "8" };
-		static int current_item = 2;
-		ImGui::PushItemWidth(40);
-		if (ImGui::BeginCombo("##CS", items[current_item], ImGuiComboFlags_None))
+		
+		OverlayNav::OverlayNav(Viewport* owner)
 		{
-			for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+			m_owner = owner;
+		}
+
+		void OverlayNav::Show()
+		{
+			ImVec2 overlaySize(48, 258);
+			const float padding = 5.0f;
+			ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding, m_owner->m_wndPos.y + padding);
+			ImGui::SetNextWindowPos(window_pos);
+			ImGui::SetNextWindowBgAlpha(0.65f);
+			if (ImGui::BeginChildFrame(ImGui::GetID("Navigation"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 			{
-				bool is_selected = (current_item == n);
-				if (ImGui::Selectable(items[n], is_selected))
+				// Select button.
+				static float hoverTimeSelectBtn = 0.0f;
+				bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Select;
+				ModManager::GetInstance()->SetMod(UI::ToggleButton((void*)(intptr_t)UI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Select);
+				UI::HelpMarker("Select Box\nSelect items using box selection.", &hoverTimeSelectBtn);
+
+				// Cursor button.
+				static float hoverTimeCursorBtn = 0.0f;
+				isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Cursor;
+				ModManager::GetInstance()->SetMod(UI::ToggleButton((void*)(intptr_t)UI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Cursor);
+				UI::HelpMarker("Cursor\nSet the cursor location.", &hoverTimeCursorBtn);
+				ImGui::Separator();
+
+				// Move button.
+				static float hoverTimeMoveBtn = 0.0f;
+				isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Move;
+				ModManager::GetInstance()->SetMod(UI::ToggleButton((void*)(intptr_t)UI::m_moveIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Move);
+				UI::HelpMarker("Move\nMove selected items.", &hoverTimeMoveBtn);
+
+				// Rotate button.
+				static float hoverTimeRotateBtn = 0.0f;
+				ImGui::ImageButton((void*)(intptr_t)UI::m_rotateIcn->m_textureId, ImVec2(32, 32));
+				UI::HelpMarker("Rotate\nRotate selected items.", &hoverTimeRotateBtn);
+
+				// Scale button.
+				static float hoverTimeScaleBtn = 0.0f;
+				ImGui::ImageButton((void*)(intptr_t)UI::m_scaleIcn->m_textureId, ImVec2(32, 32));
+				UI::HelpMarker("Scale\nScale (resize) selected items.", &hoverTimeScaleBtn);
+				ImGui::Separator();
+
+				const char* items[] = { "1", "2", "4", "8" };
+				static int current_item = 3; // Also the defualt.
+				ImGui::PushItemWidth(40);
+				if (ImGui::BeginCombo("##CS", items[current_item], ImGuiComboFlags_None))
 				{
-					current_item = n;
+					for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+					{
+						bool is_selected = (current_item == n);
+						if (ImGui::Selectable(items[n], is_selected))
+						{
+							current_item = n;
+						}
+
+						if (is_selected)
+						{
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+				ImGui::PopItemWidth();
+
+				switch (current_item)
+				{
+				case 0:
+					g_app->m_camSpeed = 0.5;
+					break;
+				case 1:
+					g_app->m_camSpeed = 1;
+					break;
+				case 2:
+					g_app->m_camSpeed = 2;
+					break;
+				case 3:
+					g_app->m_camSpeed = 4;
+					break;
+				case 4:
+					g_app->m_camSpeed = 8;
+					break;
+				default:
+					g_app->m_camSpeed = 8;
+					break;
 				}
 
-				if (is_selected)
-				{
-					ImGui::SetItemDefaultFocus();
-				}
+				ImGuiStyle& style = ImGui::GetStyle();
+				float spacing = style.ItemInnerSpacing.x;
+
+				static float hoverTimeCS = 0.0f;
+				ImGui::SameLine(0, spacing); UI::HelpMarker("Camera speed m/s\n", &hoverTimeCS);
 			}
-			ImGui::EndCombo();
-		}
-		ImGui::PopItemWidth();
-
-		switch (current_item)
-		{
-		case 0:
-			g_app->m_camSpeed = 0.5;
-			break;
-		case 1:
-			g_app->m_camSpeed = 1;
-			break;
-		case 2:
-			g_app->m_camSpeed = 2;
-			break;
-		case 3:
-			g_app->m_camSpeed = 4;
-			break;
-		case 4:
-			g_app->m_camSpeed = 8;
-			break;
-		default:
-			g_app->m_camSpeed = 4;
-			break;
+			ImGui::EndChildFrame();
 		}
 
-		ImGuiStyle& style = ImGui::GetStyle();
-		float spacing = style.ItemInnerSpacing.x;
-
-		static float hoverTimeCS = 0.0f;
-		ImGui::SameLine(0, spacing); UI::HelpMarker("Camera speed m/s\n", &hoverTimeCS);
 	}
-	ImGui::EndChildFrame();
 }

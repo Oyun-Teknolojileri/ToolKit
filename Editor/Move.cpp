@@ -259,12 +259,12 @@ namespace ToolKit
 				static std::shared_ptr<LineBatch> dblb = nullptr;
 				if (dblb == nullptr)
 				{
-					dblb = std::shared_ptr<LineBatch>(new LineBatch(corners, ToolKit::X_AXIS, DrawType::Line, 3.0f));
+					dblb = std::shared_ptr<LineBatch>(new LineBatch(corners, X_AXIS, DrawType::Line, 3.0f));
 					g_app->m_scene.AddEntity(dblb.get());
 				}
 				else
 				{
-					dblb->Generate(corners, ToolKit::X_AXIS, DrawType::Line, 3.0f);
+					dblb->Generate(corners, X_AXIS, DrawType::Line, 3.0f);
 				}
 
 				std::vector<Entity*> selecteds;
