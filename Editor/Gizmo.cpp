@@ -182,7 +182,7 @@ namespace ToolKit
 
 			std::vector<Mesh*> allMeshes;
 			m_mesh->GetAllMeshes(allMeshes);
-			assert(allMeshes.size() <= 4 && "Max expected size is 4");
+			assert(allMeshes.size() <= 6 && "Max expected size is 6");
 
 			for (Mesh* mesh : allMeshes)
 			{
@@ -190,12 +190,13 @@ namespace ToolKit
 			}
 
 			AxisLabel hitRes = HitTest(vp->RayFromMousePosition());
-			AxisLabel axisLabels[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
 
 			bool firstFilled = false;
 			for (int i = 0; i < 3; i++)
 			{
-				if (m_inAccessable == axisLabels[i])
+				m_solids[i]->m_material->m_color = g_gizmoColor[i];
+
+				if (m_inAccessable == (AxisLabel)i)
 				{
 					continue;
 				}
@@ -203,16 +204,20 @@ namespace ToolKit
 				if (!firstFilled)
 				{
 					m_mesh = m_lines[i];
+					m_mesh->m_subMeshes.push_back(m_solids[i]);
+
 					firstFilled = true;
 				}
 				else
 				{
 					m_mesh->m_subMeshes.push_back(m_lines[i]);
+					m_mesh->m_subMeshes.push_back(m_solids[i]);
 				}
 
-				if (hitRes == axisLabels[i])
+				if (hitRes == (AxisLabel)i)
 				{
-					m_mesh->m_subMeshes.push_back(m_solids[i]);
+					// Highlight.
+					m_solids[i]->m_material->m_color = AXIS[i];
 				}
 			}
 		}
@@ -223,15 +228,18 @@ namespace ToolKit
 		void MoveGizmo::Generate()
 		{
 			// Lines.
-			AxisLabel axisLabels[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
-
 			for (int i = 0; i < 3; i++)
 			{
-				Arrow2d axis(axisLabels[i]);
-				axis.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
-				axis.m_mesh->Init();
-				m_lines[i] = axis.m_mesh;
-				axis.m_mesh = nullptr;
+				std::vector<glm::vec3> points
+				{
+					glm::vec3(),
+					AXIS[i] * 0.8f
+				};
+				LineBatch l(points, g_gizmoColor[i], DrawType::Line);
+				l.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
+				l.m_mesh->Init();
+				m_lines[i] = l.m_mesh;
+				l.m_mesh = nullptr;
 			}
 
 			m_mesh = m_lines[0];
@@ -247,7 +255,7 @@ namespace ToolKit
 					Cone head = Cone(0.2f, 0.1f, 10, 10);
 					head.m_mesh->UnInit();
 
-					glm::vec3 t(0.8f, 0.0f, 0.0f);
+					glm::vec3 t(0.0f, 0.8f, 0.0f);
 					glm::quat q;
 
 					if (i == 0)
@@ -257,14 +265,10 @@ namespace ToolKit
 
 					if (i == 2)
 					{
-						q = glm::angleAxis(-glm::half_pi<float>(), Y_AXIS);
+						q = glm::angleAxis(glm::half_pi<float>(), X_AXIS);
 					}
 
-					glm::mat4 transform;
-					if (i != 1)
-					{
-						transform = glm::toMat4(q);
-					}
+					glm::mat4 transform = glm::toMat4(q);
 					transform = glm::translate(transform, t);
 					glm::mat4 invTrans = glm::transpose(glm::inverse(transform));
 
@@ -276,6 +280,7 @@ namespace ToolKit
 
 					head.m_mesh->m_material = GetMaterialManager()->GetCopyOfSolidMaterial();
 					head.m_mesh->m_material->m_color = g_gizmoColor[i];
+					head.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
 					head.m_mesh->Init(true);
 
 					g_ArrowHeads[i] = head.m_mesh;
