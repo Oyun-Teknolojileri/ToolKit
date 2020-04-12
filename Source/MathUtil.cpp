@@ -286,17 +286,25 @@ ToolKit::IntersectResult ToolKit::FrustumBoxIntersection(const Frustum& frustum,
 	return res;
 }
 
-// https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
 bool ToolKit::RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
 {
-	// assuming vectors are all normalized
-	float denom = glm::dot(plane.normal, ray.direction);
-	if (denom < 0.0001f) // Scratch pixel made a mistake here.
+	float denom = glm::dot(ray.direction, plane.normal);
+	if (glm::lessThan(denom, 0.0f)) // Ray and plane facing(-). Not parallel (0) or ray facing plane's back (+).
 	{
-		glm::vec3 p0 = plane.normal * plane.d;
-		glm::vec3 p0l0 = p0 - ray.position;
-		t = glm::dot(p0l0, plane.normal) / denom;
-		return (t >= 0.0f);
+		t = -(glm::dot(plane.normal, ray.position) - plane.d) / denom;
+		return glm::greaterThanEqual(t, 0.0f); // On (0) or in front of (+) the plane.
+	}
+
+	return false;
+}
+
+bool ToolKit::LinePlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
+{
+	float denom = glm::dot(ray.direction, plane.normal);
+	if (glm::notEqual(denom, 0.0f)) // Not parallel (0).
+	{
+		t = -(glm::dot(plane.normal, ray.position) - plane.d) / denom;
+		return true;
 	}
 
 	return false;

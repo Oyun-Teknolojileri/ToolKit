@@ -71,10 +71,10 @@ namespace ToolKit
   class LineBatch : public Drawable
   {
   public:
-    LineBatch(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t);
-    ~LineBatch();
+    LineBatch(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t, float lineWidth = 1.0f);
+
 		virtual EntityType GetType() const override;
-    void Generate(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t);
+    void Generate(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t, float lineWidth = 1.0f);
   };
 
 }

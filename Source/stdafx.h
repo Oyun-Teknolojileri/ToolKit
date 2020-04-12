@@ -15,6 +15,7 @@
 #include "glm/gtc/epsilon.hpp"
 #include "glm/gtx/closest_point.hpp"
 #include "glm/gtx/vector_query.hpp"
+#include "glm/gtx/scalar_relational.hpp"
 
 // LoadPng
 #include "lodepng.h"

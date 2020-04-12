@@ -64,6 +64,7 @@ namespace ToolKit
 	bool RayMeshIntersection(class Mesh* const mesh, const Ray& ray, float& t);
   IntersectResult FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box); // 0 outside, 1 inside, 2 intersect
   bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t);
+  bool LinePlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t); // Line is same as ray but it is infinite on both sides. Unless ray is parallel to plane, it will always yield a result.
   glm::vec3 PointOnRay(const Ray& ray, float t);
 
   // Geometric Operations

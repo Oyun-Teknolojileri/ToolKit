@@ -193,7 +193,7 @@ namespace ToolKit
 
 			float t;
 			Ray ray = vp->RayFromMousePosition();
-			if (RayPlaneIntersection(ray, m_intersectionPlane, t))
+			if (LinePlaneIntersection(ray, m_intersectionPlane, t))
 			{
 				glm::vec3 p = PointOnRay(ray, t);
 				glm::vec3 go2p = p - gizmOrg;
@@ -201,7 +201,7 @@ namespace ToolKit
 			}
 			else
 			{
-				// assert(false && "Intersection expected.");
+				assert(false && "Intersection expected.");
 			}
 		}
 
@@ -235,13 +235,30 @@ namespace ToolKit
 
 			float t;
 			Ray ray = vp->RayFromMousePosition();
-			if (RayPlaneIntersection(ray, m_intersectionPlane, t))
+			if (LinePlaneIntersection(ray, m_intersectionPlane, t))
 			{
 				glm::vec3 p = PointOnRay(ray, t);
 				glm::vec3 go2p = p - m_gizmo->m_worldLocation;
 				float projDst = glm::dot(m_intersectionPlaneX, go2p);
 				glm::vec3 delta = m_intersectionPlaneX * (projDst - m_intersectDist);
-				
+
+				std::vector<glm::vec3> corners =
+				{
+					m_gizmo->m_worldLocation + m_intersectionPlaneX * m_intersectDist,
+					m_gizmo->m_worldLocation + m_intersectionPlaneX * projDst
+				};
+
+				static std::shared_ptr<LineBatch> dblb = nullptr;
+				if (dblb == nullptr)
+				{
+					dblb = std::shared_ptr<LineBatch>(new LineBatch(corners, ToolKit::X_AXIS, DrawType::Line, 3.0f));
+					g_app->m_scene.AddEntity(dblb.get());
+				}
+				else
+				{
+					dblb->Generate(corners, ToolKit::X_AXIS, DrawType::Line, 3.0f);
+				}
+
 				std::vector<Entity*> selecteds;
 				g_app->m_scene.GetSelectedEntities(selecteds);
 
@@ -252,7 +269,7 @@ namespace ToolKit
 			}
 			else
 			{
-				// assert(false && "Intersection expected.");
+				assert(false && "Intersection expected.");
 			}
 		}
 

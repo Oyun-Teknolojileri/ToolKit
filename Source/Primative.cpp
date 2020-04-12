@@ -328,16 +328,12 @@ void ToolKit::Arrow2d::Generate()
 	m_mesh->CalculateAABoundingBox();
 }
 
-ToolKit::LineBatch::LineBatch(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t)
+ToolKit::LineBatch::LineBatch(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t, float lineWidth)
 {
 	Material* newMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("LineColor.material"))->GetCopy();
 	m_mesh->m_material = std::shared_ptr<Material>(newMaterial);
 
-  Generate(linePnts, color, t);
-}
-
-ToolKit::LineBatch::~LineBatch()
-{
+  Generate(linePnts, color, t, lineWidth);
 }
 
 ToolKit::EntityType ToolKit::LineBatch::GetType() const
@@ -345,7 +341,7 @@ ToolKit::EntityType ToolKit::LineBatch::GetType() const
   return EntityType::Entity_LineBatch;
 }
 
-void ToolKit::LineBatch::Generate(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t)
+void ToolKit::LineBatch::Generate(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t, float lineWidth)
 {
 	std::vector<ToolKit::Vertex> vertices;
 	vertices.resize(linePnts.size());
@@ -361,6 +357,7 @@ void ToolKit::LineBatch::Generate(const std::vector<glm::vec3>& linePnts, glm::v
 	m_mesh->m_clientSideVertices = vertices;
 	m_mesh->m_material->m_color = color;
   m_mesh->m_material->GetRenderState()->drawType = t;
+  m_mesh->m_material->GetRenderState()->lineWidth = lineWidth;
 
 	m_mesh->CalculateAABoundingBox();
 }
