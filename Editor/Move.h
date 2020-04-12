@@ -31,7 +31,6 @@ namespace ToolKit
 		class StateBeginMove : public StateMoveBase
 		{
 		public:
-			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* nextState) override;
 
 			virtual void Update(float deltaTime) override;
