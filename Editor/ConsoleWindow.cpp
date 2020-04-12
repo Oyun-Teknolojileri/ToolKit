@@ -4,23 +4,20 @@
 #include "GlobalDef.h"
 #include "Primative.h"
 #include "Mod.h"
+#include "Entity.h""
+#include "Node.h"
 #include "DebugNew.h"
-#include <Entity.h>
+
 
 // Executors
-void ToolKit::Editor::ShowPickDebugExec(std::vector<std::string> args)
+void ToolKit::Editor::ShowPickDebugExec(std::string args)
 {
-	if (args.empty())
-	{
-		return;
-	}
-
-	if (args.front() == "1")
+	if (args == "1")
 	{
 		g_app->m_showPickingDebug = true;
 	}
 
-	if (args.front() == "0")
+	if (args == "0")
 	{
 		g_app->m_showPickingDebug = false;
 
@@ -32,61 +29,46 @@ void ToolKit::Editor::ShowPickDebugExec(std::vector<std::string> args)
 	}
 }
 
-void ToolKit::Editor::ShowOverlayExec(std::vector<std::string> args)
+void ToolKit::Editor::ShowOverlayExec(std::string args)
 {
-	if (args.empty())
-	{
-		return;
-	}
-
-	if (args.front() == "1")
+	if (args == "1")
 	{
 		g_app->m_showOverlayUI = true;
 	}
 
-	if (args.front() == "0")
+	if (args == "0")
 	{
 		g_app->m_showOverlayUI = false;
 	}
 }
 
-extern void ToolKit::Editor::ShowOverlayAlwaysExec(std::vector<std::string> args)
+extern void ToolKit::Editor::ShowOverlayAlwaysExec(std::string args)
 {
-	if (args.empty())
-	{
-		return;
-	}
-
-	if (args.front() == "1")
+	if (args == "1")
 	{
 		g_app->m_showOverlayUIAlways = true;
 	}
 
-	if (args.front() == "0")
+	if (args == "0")
 	{
 		g_app->m_showOverlayUIAlways = false;
 	}
 }
 
-extern void ToolKit::Editor::ShowModTransitionsExec(std::vector<std::string> args)
+extern void ToolKit::Editor::ShowModTransitionsExec(std::string args)
 {
-	if (args.empty())
-	{
-		return;
-	}
-
-	if (args.front() == "1")
+	if (args == "1")
 	{
 		g_app->m_showStateTransitionsDebug = true;
 	}
 
-	if (args.front() == "0")
+	if (args == "0")
 	{
 		g_app->m_showStateTransitionsDebug = false;
 	}
 }
 
-extern void ToolKit::Editor::SetLocExec(std::vector<std::string> args)
+extern void ToolKit::Editor::SetTransformExec(std::string args)
 {
 	if (args.empty())
 	{
@@ -99,13 +81,50 @@ extern void ToolKit::Editor::SetLocExec(std::vector<std::string> args)
 		return;
 	}
 
-	glm::vec3 loc;
-	for (int i = 0; i < args.size(); i++)
-	{
-		loc[i] = (float)std::atof(args[i].c_str());
-	}
+	std::vector<std::string> splits;
+	Split(args, "--", splits);
 
-	e->m_node->m_translation = loc;
+	for (std::string& arg : splits)
+	{
+		std::vector<std::string> values;
+		Split(arg, " ", values);
+		if (values.empty())
+		{
+			continue;
+		}
+
+		char cmd = values.front()[0];
+		pop_front(values);
+
+		if (values.empty())
+		{
+			continue;
+		}
+
+		glm::vec3 transfrom;
+		int maxIndx = glm::min((int)values.size(), 3);
+		for (int i = 0; i < maxIndx; i++)
+		{
+			transfrom[i] = (float)std::atof(values[i].c_str());
+		}
+
+		if (cmd == 'r')
+		{
+			glm::quat qx = glm::angleAxis(glm::radians(transfrom.x), X_AXIS);
+			glm::quat qy = glm::angleAxis(glm::radians(transfrom.y), Y_AXIS);
+			glm::quat qz = glm::angleAxis(glm::radians(transfrom.z), Z_AXIS);
+
+			e->m_node->m_orientation = qz * qy * qx;
+		}
+		else if (cmd == 's')
+		{
+			e->m_node->m_scale = transfrom;
+		}
+		else if (cmd == 't')
+		{
+			e->m_node->m_translation = transfrom;
+		}
+	}
 }
 
 // ImGui ripoff. Portable helpers.
@@ -120,7 +139,7 @@ ToolKit::Editor::ConsoleWindow::ConsoleWindow()
 	CreateCommand(g_showOverlayUICmd, ShowOverlayExec);
 	CreateCommand(g_showOverlayUIAlwaysCmd, ShowOverlayAlwaysExec);
 	CreateCommand(g_showModTransitionsCmd, ShowModTransitionsExec);
-	CreateCommand(g_SetLocCmd, SetLocExec);
+	CreateCommand(g_SetTransformCmd, SetTransformExec);
 }
 
 ToolKit::Editor::ConsoleWindow::~ConsoleWindow()
@@ -270,22 +289,15 @@ void ToolKit::Editor::ConsoleWindow::ExecCommand(const std::string& commandLine)
 {
 	// Split command and args.
 	size_t argsIndx = commandLine.find_first_of(" ");
-	std::string arg, cmd;
+	std::string args, cmd;
 	if (argsIndx != std::string::npos)
 	{
-		arg = commandLine.substr(argsIndx + 1);
+		args = commandLine.substr(argsIndx + 1);
 		cmd = commandLine.substr(0, argsIndx);
 	}
 	else
 	{
 		cmd = commandLine;
-	}
-
-	// Split args.
-	std::vector<std::string> args;
-	if (!arg.empty())
-	{
-		Split(arg, " ", args);
 	}
 
 	// Insert into history. First find match and delete it so it can be pushed to the back. This isn't trying to be smart or optimal.
@@ -440,7 +452,7 @@ int ToolKit::Editor::ConsoleWindow::TextEditCallback(ImGuiInputTextCallbackData*
 	return 0;
 }
 
-void ToolKit::Editor::ConsoleWindow::CreateCommand(const std::string& command, std::function<void(std::vector<std::string>)> executor)
+void ToolKit::Editor::ConsoleWindow::CreateCommand(const std::string& command, std::function<void(std::string)> executor)
 {
 	m_commands.push_back(command);
 	m_commandExecutors[command] = executor;

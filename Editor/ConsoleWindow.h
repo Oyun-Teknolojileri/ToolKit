@@ -10,19 +10,19 @@ namespace ToolKit
 	{
 		// Commands & Executors.
 		const std::string g_showPickDebugCmd("ShowPickGeometry");
-		extern void ShowPickDebugExec(std::vector<std::string> args);
+		extern void ShowPickDebugExec(std::string args);
 
 		const std::string g_showOverlayUICmd("ShowOverlayUI");
-		extern void ShowOverlayExec(std::vector<std::string> args);
+		extern void ShowOverlayExec(std::string args);
 
 		const std::string g_showOverlayUIAlwaysCmd("ShowOverlayUIAlways");
-		extern void ShowOverlayAlwaysExec(std::vector<std::string> args);
+		extern void ShowOverlayAlwaysExec(std::string args);
 
 		const std::string g_showModTransitionsCmd("ShowModTransitions");
-		extern void ShowModTransitionsExec(std::vector<std::string> args);
+		extern void ShowModTransitionsExec(std::string args);
 
-		const std::string g_SetLocCmd("SetLoc");
-		extern void SetLocExec(std::vector<std::string> args);
+		const std::string g_SetTransformCmd("SetTransform");
+		extern void SetTransformExec(std::string args);
 
 		class ConsoleWindow : public Window
 		{
@@ -48,7 +48,7 @@ namespace ToolKit
 		private:
 			// Command line word processing. Auto-complete and history lookups.
 			int TextEditCallback(ImGuiInputTextCallbackData* data);
-			void CreateCommand(const std::string& command, std::function<void(std::vector<std::string>)> executor);
+			void CreateCommand(const std::string& command, std::function<void(std::string)> executor);
 			
 		private:
 			// States.
@@ -57,7 +57,7 @@ namespace ToolKit
 			// Buffers.
 			std::vector<std::string> m_items;
 			std::vector<std::string> m_commands;
-			std::unordered_map<std::string, std::function<void(std::vector<std::string>)>> m_commandExecutors;
+			std::unordered_map<std::string, std::function<void(std::string)>> m_commandExecutors;
 
 			std::vector < std::string> m_history;
 			int m_historyPos; // -1: new line, 0..History.Size-1 browsing history.

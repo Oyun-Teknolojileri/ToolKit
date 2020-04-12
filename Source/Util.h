@@ -18,7 +18,13 @@ namespace ToolKit
 	// split a string into multiple sub strings, based on a separator string
 	// for example, if separator="::",
 	// s = "abc::def xy::st:" -> "abc", "def xy" and "st:",
-	// https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c?page=2&tab=votes#tab-top
 	void Split(const std::string& s, const std::string& sep, std::vector<std::string>& v);
 
+	template<typename T>
+	void pop_front(std::vector<T>& vec)
+	{
+		assert(!vec.empty());
+		vec.front() = std::move(vec.back());
+		vec.pop_back();
+	}
 }
