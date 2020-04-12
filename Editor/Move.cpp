@@ -175,6 +175,17 @@ namespace ToolKit
 			glm::mat4 ts = e->m_node->GetTransform();
 			ExtractAxes(ts, x, y, z);
 
+			// #DebugDeleteMe
+#ifdef _DEBUG
+
+			if (e != nullptr)
+			{
+				glm::bvec3 all = glm::equal(e->m_node->m_translation, m_gizmo->m_worldLocation);
+				assert(glm::all(all) && "Gizmo must be eq. to node");
+			}
+#endif
+
+
 			Viewport* vp = g_app->GetActiveViewport();
 			glm::vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 			glm::vec3 gizmOrg = m_gizmo->m_worldLocation;
@@ -208,20 +219,27 @@ namespace ToolKit
 				m_intersectDist = glm::dot(px, go2p);
 
 				// #DebugDeleteMe
-				static std::shared_ptr<Sphere> tmpSpr = nullptr;
+				static std::shared_ptr<Sphere> tmpSpr, sprog = nullptr;
 				if (tmpSpr == nullptr)
 				{
 					tmpSpr = std::make_shared<Sphere>();
+					sprog = std::make_shared<Sphere>();
+
 					Material* newMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("LineColor.material"))->GetCopy();
 					newMaterial->GetRenderState()->drawType = DrawType::Triangle;
 					newMaterial->m_color = g_selectHighLightPrimaryColor;
 					tmpSpr->m_mesh->m_material = std::shared_ptr<Material> (newMaterial);
 
 					tmpSpr->m_node->m_scale = glm::vec3(0.1f);
+					sprog->m_mesh->m_material = tmpSpr->m_mesh->m_material;
+					sprog->m_node->m_scale = glm::vec3(0.1f);
+
 					g_app->m_scene.AddEntity(tmpSpr.get());
+					g_app->m_scene.AddEntity(sprog.get());
 				}
 
 				tmpSpr->m_node->m_translation = p;
+				sprog->m_node->m_translation = gizmOrg;
 			}
 			else
 			{

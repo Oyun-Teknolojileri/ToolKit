@@ -391,7 +391,12 @@ ToolKit::PlaneEquation ToolKit::PlaneFrom(glm::vec3 const pnts[3])
 
 ToolKit::PlaneEquation ToolKit::PlaneFrom(glm::vec3 point, glm::vec3 normal)
 {
-	return { normal, -glm::dot(point, normal) };
+	assert(glm::isNormalized(normal, 0.0001f) && "Normalized vector expected.");
+
+	PlaneEquation plane = { normal, 0.0f };
+	plane.d = glm::dot(point, normal) / glm::dot(normal, normal);
+
+	return  plane;
 }
 
 glm::vec3 ToolKit::Interpolate(const glm::vec3& vec1, const glm::vec3& vec2, float ratio)
