@@ -24,9 +24,6 @@
     <ClInclude Include="..\Source\Entity.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\lodepng.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\Logger.h">
       <Filter>Source</Filter>
     </ClInclude>
@@ -102,9 +99,6 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Entity.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\lodepng.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Logger.cpp">

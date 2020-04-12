@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Texture.h"
 #include "lodepng.h"
+#include "LoadPng/lodepng.h"
+#include "LoadPng/lodepng.cpp"
 #include "DebugNew.h"
 
 namespace ToolKit
