@@ -5,16 +5,22 @@
 #include "Primative.h"
 #include "Mod.h"
 #include "DebugNew.h"
+#include <Entity.h>
 
 // Executors
-void ToolKit::Editor::ShowPickDebugExec(std::string args)
+void ToolKit::Editor::ShowPickDebugExec(std::vector<std::string> args)
 {
-	if (args == "1")
+	if (args.empty())
+	{
+		return;
+	}
+
+	if (args.front() == "1")
 	{
 		g_app->m_showPickingDebug = true;
 	}
 
-	if (args == "0")
+	if (args.front() == "0")
 	{
 		g_app->m_showPickingDebug = false;
 
@@ -26,43 +32,80 @@ void ToolKit::Editor::ShowPickDebugExec(std::string args)
 	}
 }
 
-void ToolKit::Editor::ShowOverlayExec(std::string args)
+void ToolKit::Editor::ShowOverlayExec(std::vector<std::string> args)
 {
-	if (args == "1")
+	if (args.empty())
+	{
+		return;
+	}
+
+	if (args.front() == "1")
 	{
 		g_app->m_showOverlayUI = true;
 	}
 
-	if (args == "0")
+	if (args.front() == "0")
 	{
 		g_app->m_showOverlayUI = false;
 	}
 }
 
-extern void ToolKit::Editor::ShowOverlayAlwaysExec(std::string args)
+extern void ToolKit::Editor::ShowOverlayAlwaysExec(std::vector<std::string> args)
 {
-	if (args == "1")
+	if (args.empty())
+	{
+		return;
+	}
+
+	if (args.front() == "1")
 	{
 		g_app->m_showOverlayUIAlways = true;
 	}
 
-	if (args == "0")
+	if (args.front() == "0")
 	{
 		g_app->m_showOverlayUIAlways = false;
 	}
 }
 
-extern void ToolKit::Editor::ShowModTransitionsExec(std::string args)
+extern void ToolKit::Editor::ShowModTransitionsExec(std::vector<std::string> args)
 {
-	if (args == "1")
+	if (args.empty())
+	{
+		return;
+	}
+
+	if (args.front() == "1")
 	{
 		g_app->m_showStateTransitionsDebug = true;
 	}
 
-	if (args == "0")
+	if (args.front() == "0")
 	{
 		g_app->m_showStateTransitionsDebug = false;
 	}
+}
+
+extern void ToolKit::Editor::SetLocExec(std::vector<std::string> args)
+{
+	if (args.empty())
+	{
+		return;
+	}
+
+	Entity* e = g_app->m_scene.GetCurrentSelection();
+	if (e == nullptr)
+	{
+		return;
+	}
+
+	glm::vec3 loc;
+	for (int i = 0; i < args.size(); i++)
+	{
+		loc[i] = (float)std::atof(args[i].c_str());
+	}
+
+	e->m_node->m_translation = loc;
 }
 
 // ImGui ripoff. Portable helpers.
@@ -76,7 +119,8 @@ ToolKit::Editor::ConsoleWindow::ConsoleWindow()
 	CreateCommand(g_showPickDebugCmd, ShowPickDebugExec);
 	CreateCommand(g_showOverlayUICmd, ShowOverlayExec);
 	CreateCommand(g_showOverlayUIAlwaysCmd, ShowOverlayAlwaysExec);
-	CreateCommand(g_showModTransitions, ShowModTransitionsExec);
+	CreateCommand(g_showModTransitionsCmd, ShowModTransitionsExec);
+	CreateCommand(g_SetLocCmd, SetLocExec);
 }
 
 ToolKit::Editor::ConsoleWindow::~ConsoleWindow()
@@ -224,17 +268,24 @@ void ToolKit::Editor::ConsoleWindow::ClearLog()
 
 void ToolKit::Editor::ConsoleWindow::ExecCommand(const std::string& commandLine)
 {
-	// Separate command and args.
+	// Split command and args.
 	size_t argsIndx = commandLine.find_first_of(" ");
-	std::string args, cmd;
+	std::string arg, cmd;
 	if (argsIndx != std::string::npos)
 	{
-		args = commandLine.substr(argsIndx + 1);
+		arg = commandLine.substr(argsIndx + 1);
 		cmd = commandLine.substr(0, argsIndx);
 	}
 	else
 	{
 		cmd = commandLine;
+	}
+
+	// Split args.
+	std::vector<std::string> args;
+	if (!arg.empty())
+	{
+		Split(arg, " ", args);
 	}
 
 	// Insert into history. First find match and delete it so it can be pushed to the back. This isn't trying to be smart or optimal.
@@ -389,7 +440,7 @@ int ToolKit::Editor::ConsoleWindow::TextEditCallback(ImGuiInputTextCallbackData*
 	return 0;
 }
 
-void ToolKit::Editor::ConsoleWindow::CreateCommand(const std::string& command, std::function<void(std::string)> executor)
+void ToolKit::Editor::ConsoleWindow::CreateCommand(const std::string& command, std::function<void(std::vector<std::string>)> executor)
 {
 	m_commands.push_back(command);
 	m_commandExecutors[command] = executor;
