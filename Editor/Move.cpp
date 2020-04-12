@@ -72,7 +72,11 @@ namespace ToolKit
 
 			if (g_app->m_scene.GetEntity(m_gizmo->m_id) == nullptr)
 			{
-				g_app->m_scene.AddEntity(m_gizmo.get());
+				Entity* e = g_app->m_scene.GetCurrentSelection();
+				if (e != nullptr)
+				{
+					g_app->m_scene.AddEntity(m_gizmo.get());
+				}
 			}
 		}
 
@@ -101,6 +105,8 @@ namespace ToolKit
 		void StateBeginMove::Update(float deltaTime)
 		{
 			StateMoveBase::Update(deltaTime); // Update gizmo's loc & view.
+
+			MakeSureGizmoIsValid();
 
 			m_gizmo->m_inAccessable = AxisLabel::None;
 			Entity* e = g_app->m_scene.GetCurrentSelection();
@@ -131,8 +137,6 @@ namespace ToolKit
 
 		std::string StateBeginMove::Signaled(SignalId signal)
 		{
-			MakeSureGizmoIsValid();
-
 			if (signal == BaseMod::m_leftMouseBtnDownSgnl)
 			{
 				Viewport* vp = g_app->GetActiveViewport();
