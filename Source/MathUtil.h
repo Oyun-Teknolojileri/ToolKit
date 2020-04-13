@@ -42,10 +42,10 @@ namespace ToolKit
   // Matrix Operations
   //////////////////////////////////////////
 
-  void DecomposeMatrix(const glm::mat4& transform, Vec3& position, glm::quat& rotation, Vec3& scale); // Assuming transformation applied in this order translate * rotate * scale * vector.
-  void DecomposeMatrix(const glm::mat4& transform, Vec3& position, glm::quat& rotation); // Assuming transformation applied in this order translate * rotate * scale * vector.
-  void ExtractAxes(const glm::mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize = true);
-  Frustum ExtractFrustum(const glm::mat4& projectViewModel);
+  void DecomposeMatrix(const Mat4& transform, Vec3& position, glm::quat& rotation, Vec3& scale); // Assuming transformation applied in this order translate * rotate * scale * vector.
+  void DecomposeMatrix(const Mat4& transform, Vec3& position, glm::quat& rotation); // Assuming transformation applied in this order translate * rotate * scale * vector.
+  void ExtractAxes(const Mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize = true);
+  Frustum ExtractFrustum(const Mat4& projectViewModel);
 
   // Intersections
   //////////////////////////////////////////
@@ -70,7 +70,7 @@ namespace ToolKit
   // Geometric Operations
   //////////////////////////////////////////
   void NormalzePlaneEquation(PlaneEquation& plane);
-	void TransformAABB(BoundingBox& box, const glm::mat4& transform);
+	void TransformAABB(BoundingBox& box, const Mat4& transform);
   PlaneEquation PlaneFrom(Vec3 const pnts[3]);
   PlaneEquation PlaneFrom(Vec3 point, Vec3 normal);
 

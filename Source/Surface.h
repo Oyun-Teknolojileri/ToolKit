@@ -14,9 +14,9 @@ namespace ToolKit
   class Surface : public Drawable, public Resource
   {
   public:
-    Surface(std::shared_ptr<Texture> texture, glm::vec2 pivotOffset);
+    Surface(std::shared_ptr<Texture> texture, Vec2 pivotOffset);
     Surface(std::shared_ptr<Texture> texture, const std::vector<Vertex>& vertices);
-    Surface(String file, glm::vec2 pivotOffset);
+    Surface(String file, Vec2 pivotOffset);
     ~Surface();
 
     virtual EntityType GetType() const override;
@@ -28,7 +28,7 @@ namespace ToolKit
     void CreateQuat();
 
   private:
-    glm::vec2 m_pivotOffset;
+    Vec2 m_pivotOffset;
   };
 
 }

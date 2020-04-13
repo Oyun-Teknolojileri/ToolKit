@@ -9,7 +9,7 @@
 namespace ToolKit
 {
 
-	Surface::Surface(std::shared_ptr<Texture> texture, glm::vec2 pivotOffset)
+	Surface::Surface(std::shared_ptr<Texture> texture, Vec2 pivotOffset)
 	{
 		m_mesh->m_material->m_diffuseTexture = texture;
 		m_pivotOffset = pivotOffset;
@@ -24,7 +24,7 @@ namespace ToolKit
 		m_loaded = true;
 	}
 
-	Surface::Surface(String file, glm::vec2 pivotOffset)
+	Surface::Surface(String file, Vec2 pivotOffset)
 	{
 		m_file = file;
 		m_pivotOffset = pivotOffset;
@@ -76,23 +76,23 @@ namespace ToolKit
 		float width = (float)m_mesh->m_material->m_diffuseTexture->m_width;
 		float height = (float)m_mesh->m_material->m_diffuseTexture->m_height;
 		float depth = 0;
-		glm::vec2 absOffset = glm::vec2(m_pivotOffset.x * width, m_pivotOffset.y * height);
+		Vec2 absOffset = Vec2(m_pivotOffset.x * width, m_pivotOffset.y * height);
 
 		std::vector<Vertex> vertices;
 		vertices.resize(6);
 		vertices[0].pos = Vec3(-absOffset.x, -absOffset.y, depth);
-		vertices[0].tex = glm::vec2(0.0f, 1.0f);
+		vertices[0].tex = Vec2(0.0f, 1.0f);
 		vertices[1].pos = Vec3(width - absOffset.x, -absOffset.y, depth);
-		vertices[1].tex = glm::vec2(1.0f, 1.0f);
+		vertices[1].tex = Vec2(1.0f, 1.0f);
 		vertices[2].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
-		vertices[2].tex = glm::vec2(0.0f, 0.0f);
+		vertices[2].tex = Vec2(0.0f, 0.0f);
 
 		vertices[3].pos = Vec3(width - absOffset.x, -absOffset.y, depth);
-		vertices[3].tex = glm::vec2(1.0f, 1.0f);
+		vertices[3].tex = Vec2(1.0f, 1.0f);
 		vertices[4].pos = Vec3(width - absOffset.x, height - absOffset.y, depth);
-		vertices[4].tex = glm::vec2(1.0f, 0.0f);
+		vertices[4].tex = Vec2(1.0f, 0.0f);
 		vertices[5].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
-		vertices[5].tex = glm::vec2(0.0f, 0.0f);
+		vertices[5].tex = Vec2(0.0f, 0.0f);
 
 		m_mesh->m_clientSideVertices = vertices;
 	}

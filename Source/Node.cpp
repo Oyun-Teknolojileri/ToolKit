@@ -25,7 +25,7 @@ namespace ToolKit
 		{
 		case TransformationSpace::TS_WORLD:
 		{
-			glm::mat4 ts, ps, ws;
+			Mat4 ts, ps, ws;
 			ts = glm::translate(ts, val);
 			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
@@ -40,7 +40,7 @@ namespace ToolKit
 		break;
 		case TransformationSpace::TS_LOCAL:
 		{
-			glm::mat4 ts, ps, ws;
+			Mat4 ts, ps, ws;
 			ts = glm::translate(ts, val);
 			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
@@ -85,7 +85,7 @@ namespace ToolKit
 		m_scale += val;
 	}
 
-	void Node::Transform(glm::mat4 val, TransformationSpace space)
+	void Node::Transform(Mat4 val, TransformationSpace space)
 	{
 		Vec3 translation;
 		glm::quat orientation;
@@ -95,15 +95,15 @@ namespace ToolKit
 		Rotate(orientation, space);
 	}
 
-	glm::mat4 Node::GetTransform(TransformationSpace space)
+	Mat4 Node::GetTransform(TransformationSpace space)
 	{
-		auto constructTransform = [this]() -> glm::mat4
+		auto constructTransform = [this]() -> Mat4
 		{
-			glm::mat4 scale;
+			Mat4 scale;
 			scale = glm::scale(scale, m_scale);
-			glm::mat4 rotate;
+			Mat4 rotate;
 			rotate = glm::toMat4(m_orientation);
-			glm::mat4 translate;
+			Mat4 translate;
 			translate = glm::translate(translate, m_translation);
 			return translate * rotate * scale;
 		};
@@ -120,7 +120,7 @@ namespace ToolKit
 			break;
 		case TransformationSpace::TS_LOCAL:
 		default:
-			return glm::mat4();
+			return Mat4();
 		}
 	}
 
@@ -130,7 +130,7 @@ namespace ToolKit
 		{
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
-				return (m_parent->GetTransform(TransformationSpace::TS_WORLD) * glm::vec4(m_translation, 1.0f)).xyz;
+				return (m_parent->GetTransform(TransformationSpace::TS_WORLD) * Vec4(m_translation, 1.0f)).xyz;
 			return m_translation;
 			break;
 		case TransformationSpace::TS_PARENT:

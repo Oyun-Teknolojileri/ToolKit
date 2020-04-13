@@ -60,7 +60,7 @@ namespace ToolKit
 				m_wndPos.x = vMin.x;
 				m_wndPos.y = vMin.y;
 
-				m_wndContentAreaSize = *(glm::vec2*) & ImVec2(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
+				m_wndContentAreaSize = *(Vec2*) & ImVec2(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
 				ImGuiIO& io = ImGui::GetIO();
 
 				m_mouseOverContentArea = false;
@@ -163,9 +163,9 @@ namespace ToolKit
 			return RayFromScreenSpacePoint(GetLastMousePosScreenSpace());
 		}
 
-		Ray Viewport::RayFromScreenSpacePoint(const glm::vec2& pnt)
+		Ray Viewport::RayFromScreenSpacePoint(const Vec2& pnt)
 		{
-			glm::vec2 mcInVs = TransformScreenToViewportSpace(pnt);
+			Vec2 mcInVs = TransformScreenToViewportSpace(pnt);
 
 			Ray ray;
 			ray.position = TransformViewportToWorldSpace(mcInVs);
@@ -179,35 +179,35 @@ namespace ToolKit
 			return TransformViewportToWorldSpace(GetLastMousePosViewportSpace());
 		}
 
-		glm::vec2 Viewport::GetLastMousePosViewportSpace()
+		Vec2 Viewport::GetLastMousePosViewportSpace()
 		{
-			glm::vec2 screenPoint = m_lastMousePosRelContentArea;
+			Vec2 screenPoint = m_lastMousePosRelContentArea;
 			screenPoint.y = m_wndContentAreaSize.y - screenPoint.y; // Imgui Window origin Top - Left to OpenGL window origin Bottom - Left
 
 			return screenPoint;
 		}
 
-		glm::vec2 Viewport::GetLastMousePosScreenSpace()
+		Vec2 Viewport::GetLastMousePosScreenSpace()
 		{
-			glm::vec2 screenPoint = GetLastMousePosViewportSpace();
+			Vec2 screenPoint = GetLastMousePosViewportSpace();
 			screenPoint.y = m_wndContentAreaSize.y - screenPoint.y; // Bring it back from opengl (BottomLeft) to Imgui (TopLeft) system.
 
 			return m_wndPos + screenPoint; // Move it from window space to screen space.
 		}
 
-		Vec3 Viewport::TransformViewportToWorldSpace(const glm::vec2& pnt)
+		Vec3 Viewport::TransformViewportToWorldSpace(const Vec2& pnt)
 		{
 			Vec3 screenPoint = Vec3(pnt, 0.0f);
 
-			glm::mat4 view = m_camera->GetViewMatrix();
-			glm::mat4 project = m_camera->GetData().projection;
+			Mat4 view = m_camera->GetViewMatrix();
+			Mat4 project = m_camera->GetData().projection;
 
-			return glm::unProject(screenPoint, view, project, glm::vec4(0.0f, 0.0f, m_width, m_height));
+			return glm::unProject(screenPoint, view, project, Vec4(0.0f, 0.0f, m_width, m_height));
 		}
 
-		glm::vec2 Viewport::TransformScreenToViewportSpace(const glm::vec2& pnt)
+		Vec2 Viewport::TransformScreenToViewportSpace(const Vec2& pnt)
 		{
-			glm::vec2 vp = pnt - m_wndPos; // In window space.
+			Vec2 vp = pnt - m_wndPos; // In window space.
 			vp.y = m_wndContentAreaSize.y - vp.y; // In viewport space.
 			return vp;
 		}

@@ -11,10 +11,10 @@
 namespace ToolKit
 {
 
-	void ExtractXYFromNode(void* node, glm::vec2& val);
+	void ExtractXYFromNode(void* node, Vec2& val);
 	void ExtractXYZFromNode(void* node, Vec3& val);
 	void ExtractXYZFromNode(void* node, glm::ivec3& val);
-	void ExtractWXYZFromNode(void* node, glm::vec4& val);
+	void ExtractWXYZFromNode(void* node, Vec4& val);
 	void ExtractWXYZFromNode(void* node, glm::uvec4& val);
 	void ExtractWXYZFromNode(void* node, glm::ivec4& val);
 	void ExtractQuatFromNode(void* node, glm::quat& val);

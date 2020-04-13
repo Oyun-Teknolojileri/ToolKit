@@ -17,7 +17,7 @@ namespace ToolKit
   public:
     Vec3 pos;
     Vec3 norm;
-    glm::vec2 tex;
+    Vec2 tex;
     Vec3 btan;
   };
 
@@ -61,7 +61,7 @@ namespace ToolKit
   {
   public:
     glm::uvec4 bones;
-    glm::vec4 weights;
+    Vec4 weights;
   };
 
   class Skeleton;

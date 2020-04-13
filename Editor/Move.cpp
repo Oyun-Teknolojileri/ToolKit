@@ -37,7 +37,7 @@ namespace ToolKit
 				Entity* e = g_app->m_scene.GetCurrentSelection();
 				if (e != nullptr)
 				{
-					glm::mat4 ts = e->m_node->GetTransform();
+					Mat4 ts = e->m_node->GetTransform();
 					DecomposeMatrix(ts, m_gizmo->m_worldLocation, m_gizmo->m_node->m_orientation);
 				}
 
@@ -114,7 +114,7 @@ namespace ToolKit
 			if (e != nullptr)
 			{
 				Vec3 x, y, z;
-				glm::mat4 ts = e->m_node->GetTransform();
+				Mat4 ts = e->m_node->GetTransform();
 				ExtractAxes(ts, x, y, z);
 
 				Viewport* vp = g_app->GetActiveViewport();
@@ -178,7 +178,7 @@ namespace ToolKit
 		{
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			Vec3 x, y, z;
-			glm::mat4 ts = e->m_node->GetTransform();
+			Mat4 ts = e->m_node->GetTransform();
 			ExtractAxes(ts, x, y, z);
 
 			Viewport* vp = g_app->GetActiveViewport();
@@ -312,8 +312,8 @@ namespace ToolKit
 			{
 				StateBeginMove* baseNext = static_cast<StateBeginMove*> (nextState);
 				baseNext->m_grabbedAxis = AxisLabel::None;
-				baseNext->m_mouseData[0] = glm::vec2();
-				baseNext->m_mouseData[1] = glm::vec2();
+				baseNext->m_mouseData[0] = Vec2();
+				baseNext->m_mouseData[1] = Vec2();
 				baseNext->m_intersectDist = 0.0f;
 			}
 		}

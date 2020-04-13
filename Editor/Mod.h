@@ -97,7 +97,7 @@ namespace ToolKit
 
 		public:
 			// Picking data.
-			std::vector<glm::vec2> m_mouseData;
+			std::vector<Vec2> m_mouseData;
 			std::vector<Scene::PickData> m_pickData;
 			std::vector<EntityId> m_ignoreList;
 
@@ -122,7 +122,7 @@ namespace ToolKit
 			virtual String GetType() override { return StateType::StateBeginBoxPick; }
 
 		private:
-			void GetMouseRect(glm::vec2& min, glm::vec2& max);
+			void GetMouseRect(Vec2& min, Vec2& max);
 		};
 
 		class StateEndPick : public StatePickingBase

@@ -20,7 +20,7 @@ namespace ToolKit
 			void MakeSureGizmoIsValid();
 
 		public:
-			std::vector<glm::vec2> m_mouseData;
+			std::vector<Vec2> m_mouseData;
 			std::shared_ptr<MoveGizmo> m_gizmo;
 			AxisLabel m_grabbedAxis;
 			PlaneEquation m_intersectionPlane;

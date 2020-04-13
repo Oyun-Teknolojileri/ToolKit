@@ -15,7 +15,7 @@ namespace ToolKit
   public:
     String m_name;
     Node* m_node;
-    glm::mat4 m_inverseWorldMatrix;
+    Mat4 m_inverseWorldMatrix;
   };
 
   class Skeleton : public Resource

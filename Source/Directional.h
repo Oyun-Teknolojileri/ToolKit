@@ -31,7 +31,7 @@ namespace ToolKit
     {
       Vec3 pos;
       Vec3 dir;
-      glm::mat4 projection;
+      Mat4 projection;
       float fov;
       float aspect;
       float nearDist;
@@ -46,7 +46,7 @@ namespace ToolKit
 		void SetLens(float fov, float width, float height);
     void SetLens(float fov, float width, float height, float near, float far);
     void SetLens(float aspect, float left, float right, float bottom, float top, float near, float far);
-    glm::mat4 GetViewMatrix() const;
+    Mat4 GetViewMatrix() const;
 
     CamData GetData() const;
     virtual EntityType GetType() const override;
@@ -57,7 +57,7 @@ namespace ToolKit
     float m_near;
     float m_height;
 		bool m_ortographic;
-    glm::mat4 m_projection;
+    Mat4 m_projection;
   };
 
   class Light : public Directional

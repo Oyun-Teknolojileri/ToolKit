@@ -119,23 +119,23 @@ namespace ToolKit
 		float depth = 0.0f;
 		float width = (float)val.rectangle.width;
 		float height = (float)val.rectangle.height;
-		glm::vec2 absOffset = glm::vec2(val.offset.x * val.rectangle.width, val.offset.y * val.rectangle.height);
+		Vec2 absOffset = Vec2(val.offset.x * val.rectangle.width, val.offset.y * val.rectangle.height);
 
 		std::vector<Vertex> vertices;
 		vertices.resize(6);
 		vertices[0].pos = Vec3(-absOffset.x, -absOffset.y, depth);
-		vertices[0].tex = glm::vec2(textureRect.x, 1.0f - textureRect.y);
+		vertices[0].tex = Vec2(textureRect.x, 1.0f - textureRect.y);
 		vertices[1].pos = Vec3(width - absOffset.x, -absOffset.y, depth);
-		vertices[1].tex = glm::vec2(textureRect.x + textureRect.width, 1.0f - textureRect.y);
+		vertices[1].tex = Vec2(textureRect.x + textureRect.width, 1.0f - textureRect.y);
 		vertices[2].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
-		vertices[2].tex = glm::vec2(textureRect.x, 1.0f - (textureRect.y + textureRect.height));
+		vertices[2].tex = Vec2(textureRect.x, 1.0f - (textureRect.y + textureRect.height));
 
 		vertices[3].pos = Vec3(width - absOffset.x, -absOffset.y, depth);
-		vertices[3].tex = glm::vec2(textureRect.x + textureRect.width, 1.0f - textureRect.y);
+		vertices[3].tex = Vec2(textureRect.x + textureRect.width, 1.0f - textureRect.y);
 		vertices[4].pos = Vec3(width - absOffset.x, height - absOffset.y, depth);
-		vertices[4].tex = glm::vec2(textureRect.x + textureRect.width, 1.0f - (textureRect.y + textureRect.height));
+		vertices[4].tex = Vec2(textureRect.x + textureRect.width, 1.0f - (textureRect.y + textureRect.height));
 		vertices[5].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
-		vertices[5].tex = glm::vec2(textureRect.x, 1.0f - (textureRect.y + textureRect.height));
+		vertices[5].tex = Vec2(textureRect.x, 1.0f - (textureRect.y + textureRect.height));
 
 		return vertices;
 	}

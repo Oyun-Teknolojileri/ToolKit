@@ -13,7 +13,10 @@ namespace ToolKit
 	typedef unsigned long EntityId;
 	typedef const int SignalId;
 	typedef std::string String;
+	typedef glm::vec2 Vec2;
 	typedef glm::vec3 Vec3;
+	typedef glm::vec4 Vec4;
+	typedef glm::mat4 Mat4;
 
 	static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
 	static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);

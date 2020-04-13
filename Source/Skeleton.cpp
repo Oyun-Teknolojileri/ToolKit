@@ -143,11 +143,11 @@ namespace ToolKit
       subNode = bindPoseNode->first_node("rotation");
       ExtractQuatFromNode(subNode, rt);
 
-      glm::mat4 tsm;
+      Mat4 tsm;
       tsm = glm::translate(tsm, ts);
-      glm::mat4 sclm;
+      Mat4 sclm;
       sclm = glm::scale(sclm, scl);
-      glm::mat4 rtm = glm::toMat4(rt);
+      Mat4 rtm = glm::toMat4(rt);
 
       bone->m_inverseWorldMatrix = tsm * rtm * sclm;
     }

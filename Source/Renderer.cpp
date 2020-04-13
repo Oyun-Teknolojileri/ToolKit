@@ -92,7 +92,7 @@ namespace ToolKit
 			Bone* bone = skeleton->m_bones[i];
 			String shaderName = "bones[" + std::to_string(i) + "].transform";
 			GLint loc = glGetUniformLocation(skinProg->m_handle, shaderName.c_str());
-			glm::mat4 transform = bone->m_node->GetTransform();
+			Mat4 transform = bone->m_node->GetTransform();
 			glUniformMatrix4fv(loc, 1, false, &transform[0][0]);
 
 			shaderName = "bones[" + std::to_string(i) + "].bindPose";
@@ -156,8 +156,8 @@ namespace ToolKit
 		SetRenderState(rs);
 
 		GLint pvloc = glGetUniformLocation(prog->m_handle, "ProjectViewModel");
-		glm::mat4 pm = glm::ortho(0.0f, (float)screenDimensions.x, 0.0f, (float)screenDimensions.y, 0.0f, 100.0f);
-		glm::mat4 mul = pm * object->m_node->GetTransform();
+		Mat4 pm = glm::ortho(0.0f, (float)screenDimensions.x, 0.0f, (float)screenDimensions.y, 0.0f, 100.0f);
+		Mat4 mul = pm * object->m_node->GetTransform();
 		glUniformMatrix4fv(pvloc, 1, false, &mul[0][0]);
 
 		glBindBuffer(GL_ARRAY_BUFFER, object->m_mesh->m_vboVertexId);
@@ -355,7 +355,7 @@ namespace ToolKit
 				case Uniform::PROJECT_MODEL_VIEW:
 				{
 					GLint loc = glGetUniformLocation(program->m_handle, "ProjectViewModel");
-					glm::mat4 mul = m_project * m_view * m_model;
+					Mat4 mul = m_project * m_view * m_model;
 					glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
 				}
 				break;
@@ -368,7 +368,7 @@ namespace ToolKit
 				case Uniform::INV_TR_MODEL:
 				{
 					GLint loc = glGetUniformLocation(program->m_handle, "InverseTransModel");
-					glm::mat4 invTrModel = glm::transpose(glm::inverse(m_model));
+					Mat4 invTrModel = glm::transpose(glm::inverse(m_model));
 					glUniformMatrix4fv(loc, 1, false, &invTrModel[0][0]);
 				}
 				break;

@@ -6,7 +6,7 @@
 namespace ToolKit
 {
 
-	void DecomposeMatrix(const glm::mat4& transform, Vec3& position, glm::quat& rotation, Vec3& scale)
+	void DecomposeMatrix(const Mat4& transform, Vec3& position, glm::quat& rotation, Vec3& scale)
 	{
 		position = glm::column(transform, 3).xyz;
 
@@ -31,7 +31,7 @@ namespace ToolKit
 		scale = Vec3(sx, sy, sz);
 	}
 
-	void ExtractAxes(const glm::mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize)
+	void ExtractAxes(const Mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize)
 	{
 		x = glm::column(transform, 0);
 		y = glm::column(transform, 1);
@@ -46,7 +46,7 @@ namespace ToolKit
 	}
 
 	// http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
-	Frustum ExtractFrustum(const glm::mat4& projectViewModel)
+	Frustum ExtractFrustum(const Mat4& projectViewModel)
 	{
 		Frustum frustum;
 
@@ -95,7 +95,7 @@ namespace ToolKit
 		return frustum;
 	}
 
-	void DecomposeMatrix(const glm::mat4& transform, Vec3& position, glm::quat& rotation)
+	void DecomposeMatrix(const Mat4& transform, Vec3& position, glm::quat& rotation)
 	{
 		Vec3 tmp;
 		DecomposeMatrix(transform, position, rotation, tmp);
@@ -328,7 +328,7 @@ namespace ToolKit
 		plane.d = plane.d / mag;
 	}
 
-	void TransformAABB(BoundingBox& box, const glm::mat4& transform)
+	void TransformAABB(BoundingBox& box, const Mat4& transform)
 	{
 		// Calculate all 8 edges.
 		Vec3 maxtr = box.max;
@@ -354,16 +354,16 @@ namespace ToolKit
 		Vec3 mintr = maxtr;
 		mintr.z = box.min.z;
 
-		std::vector<glm::vec4> vertices =
+		std::vector<Vec4> vertices =
 		{
-			glm::vec4(mintr, 1.0f),
-			glm::vec4(mintl, 1.0f),
-			glm::vec4(minbr, 1.0f),
-			glm::vec4(minbl, 1.0f),
-			glm::vec4(maxtr, 1.0f),
-			glm::vec4(maxtl, 1.0f),
-			glm::vec4(maxbr, 1.0f),
-			glm::vec4(maxbl, 1.0f)
+			Vec4(mintr, 1.0f),
+			Vec4(mintl, 1.0f),
+			Vec4(minbr, 1.0f),
+			Vec4(minbl, 1.0f),
+			Vec4(maxtr, 1.0f),
+			Vec4(maxtl, 1.0f),
+			Vec4(maxbr, 1.0f),
+			Vec4(maxbl, 1.0f)
 		};
 
 		BoundingBox bb;

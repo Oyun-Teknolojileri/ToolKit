@@ -15,7 +15,7 @@ namespace ToolKit
   struct SpriteEntry
   {
     String name;
-    glm::vec2 offset;
+    Vec2 offset;
     Rect<int> rectangle;
   };
 

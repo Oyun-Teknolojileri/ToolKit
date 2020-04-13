@@ -26,12 +26,12 @@ namespace ToolKit
 
 			// Utility Functions.
 			Ray RayFromMousePosition();
-			Ray RayFromScreenSpacePoint(const glm::vec2& pnt);
+			Ray RayFromScreenSpacePoint(const Vec2& pnt);
 			Vec3 GetLastMousePosWorldSpace();
-			glm::vec2 GetLastMousePosViewportSpace();
-			glm::vec2 GetLastMousePosScreenSpace();
-			Vec3 TransformViewportToWorldSpace(const glm::vec2& pnt);
-			glm::vec2 TransformScreenToViewportSpace(const glm::vec2& pnt);
+			Vec2 GetLastMousePosViewportSpace();
+			Vec2 GetLastMousePosScreenSpace();
+			Vec3 TransformViewportToWorldSpace(const Vec2& pnt);
+			Vec2 TransformScreenToViewportSpace(const Vec2& pnt);
 
 		private:
 			// Mods.
@@ -49,8 +49,8 @@ namespace ToolKit
 			String m_name;
 			float m_width = 640.0f;
 			float m_height = 480.0f;
-			glm::vec2 m_wndPos;
-			glm::vec2 m_wndContentAreaSize;
+			Vec2 m_wndPos;
+			Vec2 m_wndContentAreaSize;
 
 			static class OverlayNav* m_overlayNav;
 

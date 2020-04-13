@@ -57,9 +57,9 @@ namespace ToolKit
 
   private:
     GLuint m_currentProgram;
-    glm::mat4 m_project;
-    glm::mat4 m_view;
-    glm::mat4 m_model;
+    Mat4 m_project;
+    Mat4 m_view;
+    Mat4 m_model;
     Light* m_light = nullptr;
     Camera* m_cam = nullptr;
     Material* m_mat = nullptr;

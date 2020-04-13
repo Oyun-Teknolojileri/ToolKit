@@ -44,7 +44,7 @@ namespace ToolKit
 
 	void Directional::GetLocalAxis(Vec3& dir, Vec3& up, Vec3& right) const
 	{
-		glm::mat4 transform = m_node->GetTransform();
+		Mat4 transform = m_node->GetTransform();
 		right = glm::column(transform, 0);
 		up = glm::column(transform, 1);
 		dir = -glm::column(transform, 2);
@@ -52,19 +52,19 @@ namespace ToolKit
 
 	Vec3 Directional::GetDir() const
 	{
-		glm::mat4 transform = m_node->GetTransform();
+		Mat4 transform = m_node->GetTransform();
 		return -glm::column(transform, 2);
 	}
 
 	Vec3 Directional::GetUp() const
 	{
-		glm::mat4 transform = m_node->GetTransform();
+		Mat4 transform = m_node->GetTransform();
 		return glm::column(transform, 1);
 	}
 
 	Vec3 Directional::GetRight() const
 	{
-		glm::mat4 transform = m_node->GetTransform();
+		Mat4 transform = m_node->GetTransform();
 		return glm::column(transform, 0);
 	}
 
@@ -107,9 +107,9 @@ namespace ToolKit
 		m_ortographic = true;
 	}
 
-	glm::mat4 Camera::GetViewMatrix() const
+	Mat4 Camera::GetViewMatrix() const
 	{
-		glm::mat4 view = m_node->GetTransform(TransformationSpace::TS_WORLD);
+		Mat4 view = m_node->GetTransform(TransformationSpace::TS_WORLD);
 		return glm::inverse(view);
 	}
 

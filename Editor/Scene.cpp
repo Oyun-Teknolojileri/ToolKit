@@ -25,10 +25,10 @@ namespace ToolKit
 				}
 
 				Ray rayInObjectSpace = ray;
-				glm::mat4 modelTs = e->m_node->GetTransform();
-				glm::mat4 InvModelTs = glm::inverse(modelTs);
-				rayInObjectSpace.position = InvModelTs * glm::vec4(ray.position, 1.0f);
-				rayInObjectSpace.direction = glm::transpose(modelTs) * glm::vec4(ray.direction, 1.0f);
+				Mat4 modelTs = e->m_node->GetTransform();
+				Mat4 InvModelTs = glm::inverse(modelTs);
+				rayInObjectSpace.position = InvModelTs * Vec4(ray.position, 1.0f);
+				rayInObjectSpace.direction = glm::transpose(modelTs) * Vec4(ray.direction, 1.0f);
 
 				float dist = 0;
 				Drawable* dw = static_cast<Drawable*>(e);

@@ -20,8 +20,8 @@ namespace ToolKit
     void Translate(Vec3 val, TransformationSpace space = TransformationSpace::TS_PARENT);
     void Rotate(glm::quat val, TransformationSpace space = TransformationSpace::TS_PARENT);
     void Scale(Vec3 val);
-    void Transform(glm::mat4 val, TransformationSpace space = TransformationSpace::TS_PARENT);
-    glm::mat4 GetTransform(TransformationSpace space = TransformationSpace::TS_WORLD);
+    void Transform(Mat4 val, TransformationSpace space = TransformationSpace::TS_PARENT);
+    Mat4 GetTransform(TransformationSpace space = TransformationSpace::TS_WORLD);
     Vec3 GetTranslation(TransformationSpace space = TransformationSpace::TS_PARENT);
     glm::quat GetOrientation(TransformationSpace space = TransformationSpace::TS_PARENT);
     Vec3 GetScale(TransformationSpace space = TransformationSpace::TS_PARENT);

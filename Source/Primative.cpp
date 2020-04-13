@@ -63,93 +63,93 @@ namespace ToolKit
 
 		// Front
 		vertices[0].pos = Vec3(-0.5f, 0.5f, 0.5f);
-		vertices[0].tex = glm::vec2(0.0f, 1.0f);
+		vertices[0].tex = Vec2(0.0f, 1.0f);
 		vertices[1].pos = Vec3(-0.5f, -0.5f, 0.5f);
-		vertices[1].tex = glm::vec2(0.0f, 0.0f);
+		vertices[1].tex = Vec2(0.0f, 0.0f);
 		vertices[2].pos = Vec3(0.5f, -0.5f, 0.5f);
-		vertices[2].tex = glm::vec2(1.0f, 0.0f);
+		vertices[2].tex = Vec2(1.0f, 0.0f);
 
 		vertices[3].pos = Vec3(-0.5f, 0.5f, 0.5f);
-		vertices[3].tex = glm::vec2(0.0f, 1.0f);
+		vertices[3].tex = Vec2(0.0f, 1.0f);
 		vertices[4].pos = Vec3(0.5f, -0.5f, 0.5f);
-		vertices[4].tex = glm::vec2(1.0f, 0.0f);
+		vertices[4].tex = Vec2(1.0f, 0.0f);
 		vertices[5].pos = Vec3(0.5f, 0.5f, 0.5f);
-		vertices[5].tex = glm::vec2(1.0f, 1.0f);
+		vertices[5].tex = Vec2(1.0f, 1.0f);
 
 		// Right
 		vertices[6].pos = Vec3(0.5f, 0.5f, 0.5f);
-		vertices[6].tex = glm::vec2(0.0f, 1.0f);
+		vertices[6].tex = Vec2(0.0f, 1.0f);
 		vertices[7].pos = Vec3(0.5f, -0.5f, 0.5f);
-		vertices[7].tex = glm::vec2(0.0f, 0.0f);
+		vertices[7].tex = Vec2(0.0f, 0.0f);
 		vertices[8].pos = Vec3(0.5f, -0.5f, -0.5f);
-		vertices[8].tex = glm::vec2(1.0f, 0.0f);
+		vertices[8].tex = Vec2(1.0f, 0.0f);
 
 		vertices[9].pos = Vec3(0.5f, 0.5f, 0.5f);
-		vertices[9].tex = glm::vec2(0.0f, 1.0f);
+		vertices[9].tex = Vec2(0.0f, 1.0f);
 		vertices[10].pos = Vec3(0.5f, -0.5f, -0.5f);
-		vertices[10].tex = glm::vec2(1.0f, 0.0f);
+		vertices[10].tex = Vec2(1.0f, 0.0f);
 		vertices[11].pos = Vec3(0.5f, 0.5f, -0.5f);
-		vertices[11].tex = glm::vec2(1.0f, 1.0f);
+		vertices[11].tex = Vec2(1.0f, 1.0f);
 
 		// Top
 		vertices[12].pos = Vec3(-0.5f, 0.5f, 0.5f);
-		vertices[12].tex = glm::vec2(0.0f, 0.0f);
+		vertices[12].tex = Vec2(0.0f, 0.0f);
 		vertices[13].pos = Vec3(0.5f, 0.5f, 0.5f);
-		vertices[13].tex = glm::vec2(1.0f, 0.0f);
+		vertices[13].tex = Vec2(1.0f, 0.0f);
 		vertices[14].pos = Vec3(0.5f, 0.5f, -0.5f);
-		vertices[14].tex = glm::vec2(1.0f, 1.0f);
+		vertices[14].tex = Vec2(1.0f, 1.0f);
 
 		vertices[15].pos = Vec3(-0.5f, 0.5f, 0.5f);
-		vertices[15].tex = glm::vec2(0.0f, 0.0f);
+		vertices[15].tex = Vec2(0.0f, 0.0f);
 		vertices[16].pos = Vec3(0.5f, 0.5f, -0.5f);
-		vertices[16].tex = glm::vec2(1.0f, 1.0f);
+		vertices[16].tex = Vec2(1.0f, 1.0f);
 		vertices[17].pos = Vec3(-0.5f, 0.5f, -0.5f);
-		vertices[17].tex = glm::vec2(0.0f, 1.0f);
+		vertices[17].tex = Vec2(0.0f, 1.0f);
 
 		// Back
 		vertices[18].pos = Vec3(-0.5f, 0.5f, -0.5f);
-		vertices[18].tex = glm::vec2(0.0f, 1.0f);
+		vertices[18].tex = Vec2(0.0f, 1.0f);
 		vertices[19].pos = Vec3(0.5f, -0.5f, -0.5f);
-		vertices[19].tex = glm::vec2(1.0f, 0.0f);
+		vertices[19].tex = Vec2(1.0f, 0.0f);
 		vertices[20].pos = Vec3(-0.5f, -0.5f, -0.5f);
-		vertices[20].tex = glm::vec2(0.0f, 0.0f);
+		vertices[20].tex = Vec2(0.0f, 0.0f);
 
 		vertices[21].pos = Vec3(-0.5f, 0.5f, -0.5f);
-		vertices[21].tex = glm::vec2(0.0f, 1.0f);
+		vertices[21].tex = Vec2(0.0f, 1.0f);
 		vertices[22].pos = Vec3(0.5f, 0.5f, -0.5f);
-		vertices[22].tex = glm::vec2(1.0f, 1.0f);
+		vertices[22].tex = Vec2(1.0f, 1.0f);
 		vertices[23].pos = Vec3(0.5f, -0.5f, -0.5f);
-		vertices[23].tex = glm::vec2(1.0f, 0.0f);
+		vertices[23].tex = Vec2(1.0f, 0.0f);
 
 		// Left
 		vertices[24].pos = Vec3(-0.5f, 0.5f, 0.5f);
-		vertices[24].tex = glm::vec2(0.0f, 1.0f);
+		vertices[24].tex = Vec2(0.0f, 1.0f);
 		vertices[25].pos = Vec3(-0.5f, -0.5f, -0.5f);
-		vertices[25].tex = glm::vec2(1.0f, 0.0f);
+		vertices[25].tex = Vec2(1.0f, 0.0f);
 		vertices[26].pos = Vec3(-0.5f, -0.5f, 0.5f);
-		vertices[26].tex = glm::vec2(0.0f, 0.0f);
+		vertices[26].tex = Vec2(0.0f, 0.0f);
 
 		vertices[27].pos = Vec3(-0.5f, 0.5f, 0.5f);
-		vertices[27].tex = glm::vec2(0.0f, 1.0f);
+		vertices[27].tex = Vec2(0.0f, 1.0f);
 		vertices[28].pos = Vec3(-0.5f, 0.5f, -0.5f);
-		vertices[28].tex = glm::vec2(1.0f, 1.0f);
+		vertices[28].tex = Vec2(1.0f, 1.0f);
 		vertices[29].pos = Vec3(-0.5f, -0.5f, -0.5f);
-		vertices[29].tex = glm::vec2(1.0f, 0.0f);
+		vertices[29].tex = Vec2(1.0f, 0.0f);
 
 		// Bottom
 		vertices[30].pos = Vec3(-0.5f, -0.5f, 0.5f);
-		vertices[30].tex = glm::vec2(0.0f, 1.0f);
+		vertices[30].tex = Vec2(0.0f, 1.0f);
 		vertices[31].pos = Vec3(0.5f, -0.5f, -0.5f);
-		vertices[31].tex = glm::vec2(1.0f, 0.0f);
+		vertices[31].tex = Vec2(1.0f, 0.0f);
 		vertices[32].pos = Vec3(0.5f, -0.5f, 0.5f);
-		vertices[32].tex = glm::vec2(0.0f, 0.0f);
+		vertices[32].tex = Vec2(0.0f, 0.0f);
 
 		vertices[33].pos = Vec3(-0.5f, -0.5f, 0.5f);
-		vertices[33].tex = glm::vec2(0.0f, 1.0f);
+		vertices[33].tex = Vec2(0.0f, 1.0f);
 		vertices[34].pos = Vec3(-0.5f, -0.5f, -0.5f);
-		vertices[34].tex = glm::vec2(1.0f, 1.0f);
+		vertices[34].tex = Vec2(1.0f, 1.0f);
 		vertices[35].pos = Vec3(0.5f, -0.5f, -0.5f);
-		vertices[35].tex = glm::vec2(1.0f, 0.0f);
+		vertices[35].tex = Vec2(1.0f, 0.0f);
 
 		m_mesh->m_vertexCount = (uint)vertices.size();
 		m_mesh->m_clientSideVertices = vertices;
@@ -172,22 +172,22 @@ namespace ToolKit
 
 		// Front
 		vertices[0].pos = Vec3(-0.5f, 0.5f, 0.0f);
-		vertices[0].tex = glm::vec2(0.0f, 1.0f);
+		vertices[0].tex = Vec2(0.0f, 1.0f);
 		vertices[0].norm = Vec3(0.0f, 0.0f, 1.0f);
 		vertices[0].btan = Vec3(0.0f, 1.0f, 0.0f);
 
 		vertices[1].pos = Vec3(-0.5f, -0.5f, 0.0f);
-		vertices[1].tex = glm::vec2(0.0f, 0.0f);
+		vertices[1].tex = Vec2(0.0f, 0.0f);
 		vertices[1].norm = Vec3(0.0f, 0.0f, 1.0f);
 		vertices[1].btan = Vec3(0.0f, 1.0f, 0.0f);
 
 		vertices[2].pos = Vec3(0.5f, -0.5f, 0.0f);
-		vertices[2].tex = glm::vec2(1.0f, 0.0f);
+		vertices[2].tex = Vec2(1.0f, 0.0f);
 		vertices[2].norm = Vec3(0.0f, 0.0f, 1.0f);
 		vertices[2].btan = Vec3(0.0f, 1.0f, 0.0f);
 
 		vertices[3].pos = Vec3(0.5f, 0.5f, 0.0f);
-		vertices[3].tex = glm::vec2(1.0f, 1.0f);
+		vertices[3].tex = Vec2(1.0f, 1.0f);
 		vertices[3].norm = Vec3(0.0f, 0.0f, 1.0f);
 		vertices[3].btan = Vec3(0.0f, 1.0f, 0.0f);
 
@@ -234,7 +234,7 @@ namespace ToolKit
 				Vertex v;
 				v.pos = Vec3(x0, y0, z0);
 				v.norm = Vec3(x0, y0, z0);
-				v.tex = glm::vec2((float)seg / (float)nSegments, (float)ring / (float)nRings);
+				v.tex = Vec2((float)seg / (float)nSegments, (float)ring / (float)nRings);
 
 				float r2, zenith, azimuth;
 				ToSpherical(v.pos, r2, zenith, azimuth);
@@ -307,7 +307,7 @@ namespace ToolKit
 				{
 					Vec3(x0, i * deltaHeight, z0),
 					q * refNormal,
-					glm::vec2(j / (float)nSegBase, i / (float)nSegHeight),
+					Vec2(j / (float)nSegBase, i / (float)nSegHeight),
 					Vec3() // btan missing.
 				};
 
@@ -349,7 +349,7 @@ namespace ToolKit
 			{
 				Vec3(x0, 0.0f, z0),
 				-Y_AXIS,
-				glm::vec2(j / (float)nSegBase, 0.0f),
+				Vec2(j / (float)nSegBase, 0.0f),
 				Vec3() // btan missing.
 			};
 			vertices.push_back(v);

@@ -308,7 +308,7 @@ namespace ToolKit
 				{
 					Camera* cam = vp->m_camera;
 
-					glm::vec2 rect[4];
+					Vec2 rect[4];
 					GetMouseRect(rect[0], rect[2]);
 
 					rect[1].x = rect[2].x;
@@ -323,7 +323,7 @@ namespace ToolKit
 					Vec3 lensLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 					for (int i = 0; i < 4; i++)
 					{
-						glm::vec2 p = vp->TransformScreenToViewportSpace(rect[i]);
+						Vec2 p = vp->TransformScreenToViewportSpace(rect[i]);
 						Vec3 p0 = vp->TransformViewportToWorldSpace(p);
 						rect3d.push_back(p0);
 						rays.push_back({ lensLoc, glm::normalize(p0 - lensLoc) });
@@ -408,7 +408,7 @@ namespace ToolKit
 
 					auto drawSelectionRectangleFn = [this](ImDrawList* drawList) -> void
 					{
-						glm::vec2 min, max;
+						Vec2 min, max;
 						GetMouseRect(min, max);
 
 						ImU32 col = ImColor(GLM4IMVEC(g_selectBoxWindowColor));
@@ -425,10 +425,10 @@ namespace ToolKit
 			return StateType::Null;
 		}
 
-		void StateBeginBoxPick::GetMouseRect(glm::vec2& min, glm::vec2& max)
+		void StateBeginBoxPick::GetMouseRect(Vec2& min, Vec2& max)
 		{
-			min = glm::vec2(FLT_MAX, FLT_MAX);
-			max = glm::vec2(-FLT_MAX, -FLT_MAX);
+			min = Vec2(FLT_MAX, FLT_MAX);
+			max = Vec2(-FLT_MAX, -FLT_MAX);
 
 			for (int i = 0; i < 2; i++)
 			{

@@ -134,13 +134,13 @@ namespace ToolKit
 
 		AxisLabel MoveGizmo::HitTest(const Ray& ray)
 		{
-			glm::mat4 invMat = m_node->GetTransform(TransformationSpace::TS_WORLD);
-			glm::mat4 tpsMat = glm::transpose(invMat);
+			Mat4 invMat = m_node->GetTransform(TransformationSpace::TS_WORLD);
+			Mat4 tpsMat = glm::transpose(invMat);
 			invMat = glm::inverse(invMat);
 
 			Ray rayInObjectSpace = ray;
-			rayInObjectSpace.position = invMat * glm::vec4(rayInObjectSpace.position, 1.0f);
-			rayInObjectSpace.direction = tpsMat * glm::vec4(rayInObjectSpace.direction, 1.0f);
+			rayInObjectSpace.position = invMat * Vec4(rayInObjectSpace.position, 1.0f);
+			rayInObjectSpace.direction = tpsMat * Vec4(rayInObjectSpace.direction, 1.0f);
 
 			float d, t = std::numeric_limits<float>::infinity();
 			int minIndx = -1;
@@ -261,14 +261,14 @@ namespace ToolKit
 						q = glm::angleAxis(glm::half_pi<float>(), X_AXIS);
 					}
 
-					glm::mat4 transform = glm::toMat4(q);
+					Mat4 transform = glm::toMat4(q);
 					transform = glm::translate(transform, t);
-					glm::mat4 invTrans = glm::transpose(glm::inverse(transform));
+					Mat4 invTrans = glm::transpose(glm::inverse(transform));
 
 					for (Vertex& v : head.m_mesh->m_clientSideVertices)
 					{
-						v.pos = transform * glm::vec4(v.pos, 1.0f);
-						v.norm = glm::inverseTranspose(transform) * glm::vec4(v.norm, 1.0f);
+						v.pos = transform * Vec4(v.pos, 1.0f);
+						v.norm = glm::inverseTranspose(transform) * Vec4(v.norm, 1.0f);
 					}
 
 					head.m_mesh->m_material = GetMaterialManager()->GetCopyOfSolidMaterial();
