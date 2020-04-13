@@ -6,69 +6,6 @@
 namespace ToolKit
 {
 
-	std::string TexturePath(std::string file)
-	{
-		std::string path = "../Resources/Textures/";
-		path += file;
-		return path;
-	}
-
-	std::string MeshPath(std::string file)
-	{
-		std::string path = "../Resources/Meshes/";
-		path += file;
-		return path;
-	}
-
-	std::string FontPath(std::string file)
-	{
-		std::string path = "../Resources/Fonts/";
-		path += file;
-		return path;
-	}
-
-	std::string SpritePath(std::string file)
-	{
-		std::string path = "../Resources/Sprites/";
-		path += file;
-		return path;
-	}
-
-	std::string AudioPath(std::string file)
-	{
-		std::string path = "../Resources/Audio/";
-		path += file;
-		return path;
-	}
-
-	std::string AnimationPath(std::string file)
-	{
-		std::string path = "../Resources/Meshes/";
-		path += file;
-		return path;
-	}
-
-	std::string SkeletonPath(std::string file)
-	{
-		std::string path = "../Resources/Meshes/";
-		path += file;
-		return path;
-	}
-
-	std::string ShaderPath(std::string file)
-	{
-		std::string path = "../Resources/Shaders/";
-		path += file;
-		return path;
-	}
-
-	std::string MaterialPath(std::string file)
-	{
-		std::string path = "../Resources/Materials/";
-		path += file;
-		return path;
-	}
-
 	Main Main::m_instance;
 
 	Main::~Main()
@@ -157,6 +94,69 @@ namespace ToolKit
 	TextureManager* GetTextureManager()
 	{
 		return &Main::GetInstance()->m_textureMan;
+	}
+
+	std::string TexturePath(std::string file)
+	{
+		std::string path = "../Resources/Textures/";
+		path += file;
+		return path;
+	}
+
+	std::string MeshPath(std::string file)
+	{
+		std::string path = "../Resources/Meshes/";
+		path += file;
+		return path;
+	}
+
+	std::string FontPath(std::string file)
+	{
+		std::string path = "../Resources/Fonts/";
+		path += file;
+		return path;
+	}
+
+	std::string SpritePath(std::string file)
+	{
+		std::string path = "../Resources/Sprites/";
+		path += file;
+		return path;
+	}
+
+	std::string AudioPath(std::string file)
+	{
+		std::string path = "../Resources/Audio/";
+		path += file;
+		return path;
+	}
+
+	std::string AnimationPath(std::string file)
+	{
+		std::string path = "../Resources/Meshes/";
+		path += file;
+		return path;
+	}
+
+	std::string SkeletonPath(std::string file)
+	{
+		std::string path = "../Resources/Meshes/";
+		path += file;
+		return path;
+	}
+
+	std::string ShaderPath(std::string file)
+	{
+		std::string path = "../Resources/Shaders/";
+		path += file;
+		return path;
+	}
+
+	std::string MaterialPath(std::string file)
+	{
+		std::string path = "../Resources/Materials/";
+		path += file;
+		return path;
 	}
 
 }

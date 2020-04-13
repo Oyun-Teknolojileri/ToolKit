@@ -68,4 +68,14 @@ namespace ToolKit
   SpriteSheetManager* GetSpriteSheetManager();
   TextureManager* GetTextureManager();
 
+	std::string TexturePath(std::string file);
+	std::string MeshPath(std::string file);
+	std::string FontPath(std::string file);
+	std::string SpritePath(std::string file);
+	std::string AudioPath(std::string file);
+	std::string AnimationPath(std::string file);
+	std::string SkeletonPath(std::string file);
+	std::string ShaderPath(std::string file);
+	std::string MaterialPath(std::string file);
+
 }
