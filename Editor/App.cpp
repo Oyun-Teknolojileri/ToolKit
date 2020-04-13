@@ -63,6 +63,7 @@ namespace ToolKit
 			solidColorMaterial->m_color = Vec3(1.0f);
 
 			m_suzanne = new Drawable();
+			m_suzanne->m_node->m_translation = Vec3(0.0f, 0.0f, -5.0f);
 			m_suzanne->m_mesh = GetMeshManager()->Create(MeshPath("suzanne.mesh"));
 			m_suzanne->m_mesh->m_material = solidColorMaterial;
 			m_suzanne->m_mesh->Init(false);
@@ -104,6 +105,10 @@ namespace ToolKit
 
 			// UI.
 			Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+			vp->m_camera->m_node->m_translation = Vec3(5.0f, 3.0f, 5.0f);
+			vp->m_camera->Pitch(glm::radians(-20.0f));
+			vp->m_camera->RotateOnUpVector(glm::radians(30.0f));
+
 			m_windows.push_back(vp);
 
 			ConsoleWindow* console = new ConsoleWindow();

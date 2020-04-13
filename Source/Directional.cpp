@@ -14,21 +14,21 @@ namespace ToolKit
 	{
 	}
 
-	void Directional::Pitch(float val)
+	void Directional::Pitch(float angle)
 	{
-		Quaternion q = glm::angleAxis(val, Vec3(1.0f, 0.0f, 0.0f));
+		Quaternion q = glm::angleAxis(angle, Vec3(1.0f, 0.0f, 0.0f));
 		m_node->Rotate(q, TransformationSpace::TS_LOCAL);
 	}
 
-	void Directional::Yaw(float val)
+	void Directional::Yaw(float angle)
 	{
-		Quaternion q = glm::angleAxis(val, Vec3(0.0f, 1.0f, 0.0f));
+		Quaternion q = glm::angleAxis(angle, Vec3(0.0f, 1.0f, 0.0f));
 		m_node->Rotate(q, TransformationSpace::TS_LOCAL);
 	}
 
-	void Directional::Roll(float val)
+	void Directional::Roll(float angle)
 	{
-		Quaternion q = glm::angleAxis(val, Vec3(1.0f, 0.0f, 0.0f));
+		Quaternion q = glm::angleAxis(angle, Vec3(1.0f, 0.0f, 0.0f));
 		m_node->Rotate(q, TransformationSpace::TS_LOCAL);
 	}
 
@@ -37,9 +37,9 @@ namespace ToolKit
 		m_node->Translate(pos, TransformationSpace::TS_LOCAL);
 	}
 
-	void Directional::RotateOnUpVector(float val)
+	void Directional::RotateOnUpVector(float angle)
 	{
-		m_node->Rotate(glm::angleAxis(val, Vec3(0.0f, 1.0f, 0.0f)), TransformationSpace::TS_WORLD);
+		m_node->Rotate(glm::angleAxis(angle, Vec3(0.0f, 1.0f, 0.0f)), TransformationSpace::TS_WORLD);
 	}
 
 	void Directional::GetLocalAxis(Vec3& dir, Vec3& up, Vec3& right) const

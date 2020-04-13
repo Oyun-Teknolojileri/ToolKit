@@ -11,11 +11,11 @@ namespace ToolKit
     Directional();
     virtual ~Directional();
 
-    void Pitch(float val);
-    void Yaw(float val);
-    void Roll(float val);
+    void Pitch(float angle);
+    void Yaw(float angle);
+    void Roll(float angle);
     void Translate(Vec3 pos);
-    void RotateOnUpVector(float val);
+    void RotateOnUpVector(float angle);
     void GetLocalAxis(Vec3& dir, Vec3& up, Vec3& right) const;
     Vec3 GetDir() const;
     Vec3 GetUp() const;
