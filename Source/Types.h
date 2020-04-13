@@ -2,6 +2,7 @@
 
 #include "Glm/glm.hpp"
 #include <string>
+#include <memory>
 
 namespace ToolKit
 {
@@ -17,6 +18,8 @@ namespace ToolKit
 	typedef glm::vec3 Vec3;
 	typedef glm::vec4 Vec4;
 	typedef glm::mat4 Mat4;
+	typedef glm::quat Quaternion;
+	typedef std::shared_ptr<class Material> MaterialPtr;
 
 	static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
 	static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);

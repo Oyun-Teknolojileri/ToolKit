@@ -19,7 +19,7 @@ namespace ToolKit
 			// Create grid material.
 			if (!GetMaterialManager()->Exist(g_gridMaterialName))
 			{
-				m_material = std::shared_ptr<Material>(new Material());
+				m_material = MaterialPtr(new Material());
 				m_material->m_diffuseTexture = GetTextureManager()->Create(TexturePath("grid.png"));
 				m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
 				m_material->GetRenderState()->cullMode = CullingType::TwoSided;
@@ -66,7 +66,7 @@ namespace ToolKit
 				vertices[0].pos = p1;
 				vertices[1].pos = p2;
 
-				std::shared_ptr<Material> newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
+				MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
 				newMaterial->GetRenderState()->lineWidth = 3.0f;
 				newMaterial->m_color = col;
 

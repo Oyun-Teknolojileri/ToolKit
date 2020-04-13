@@ -48,7 +48,7 @@ namespace ToolKit
     GLuint m_vboIndexId = 0;
     uint m_vertexCount = 0;
     uint m_indexCount = 0;
-    std::shared_ptr<Material> m_material;
+    MaterialPtr m_material;
     std::vector<std::shared_ptr<Mesh>> m_subMeshes;
 		BoundingBox m_aabb;
   };

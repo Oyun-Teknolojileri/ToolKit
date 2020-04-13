@@ -132,7 +132,7 @@ namespace ToolKit
     if (bindPoseNode != nullptr)
     {
       Vec3 ts, scl;
-      glm::quat rt;
+      Quaternion rt;
 
       rapidxml::xml_node<>* subNode = bindPoseNode->first_node("translation");
       ExtractXYZFromNode(subNode, ts);

@@ -16,7 +16,7 @@ namespace ToolKit
 
 		public:
 			uint m_size; // m^2 size of the grid.
-			std::shared_ptr<Material> m_material;
+			MaterialPtr m_material;
 		};
 	}
 }

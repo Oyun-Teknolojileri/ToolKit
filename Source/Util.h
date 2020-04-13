@@ -17,7 +17,7 @@ namespace ToolKit
 	void ExtractWXYZFromNode(void* node, Vec4& val);
 	void ExtractWXYZFromNode(void* node, glm::uvec4& val);
 	void ExtractWXYZFromNode(void* node, glm::ivec4& val);
-	void ExtractQuatFromNode(void* node, glm::quat& val);
+	void ExtractQuatFromNode(void* node, Quaternion& val);
 	bool CheckFile(String path);
 	void Split(const String& s, const String& sep, std::vector<String>& v);
 	class LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size);

@@ -161,7 +161,7 @@ namespace ToolKit
 		material->m_diffuseTexture = GetTextureManager()->Create(TexturePath("default.png"));
 		material->Init();
 
-		m_storage[MaterialPath("default.material")] = std::shared_ptr<Material>(material);
+		m_storage[MaterialPath("default.material")] = MaterialPtr(material);
 
 		material = new Material();
 		material->GetRenderState()->drawType = DrawType::Line;
@@ -169,17 +169,17 @@ namespace ToolKit
 		material->m_fragmetShader = GetShaderManager()->Create(ShaderPath("solidColorFrag.shader"));
 		material->Init();
 
-		m_storage[MaterialPath("solid.material")] = std::shared_ptr<Material>(material);
+		m_storage[MaterialPath("solid.material")] = MaterialPtr(material);
 	}
 
-	std::shared_ptr<Material> MaterialManager::GetCopyOfSolidMaterial()
+	MaterialPtr MaterialManager::GetCopyOfSolidMaterial()
 	{
-		return std::shared_ptr<Material> (m_storage[MaterialPath("solid.material")]->GetCopy());
+		return MaterialPtr (m_storage[MaterialPath("solid.material")]->GetCopy());
 	}
 
-	std::shared_ptr<Material> MaterialManager::GetCopyOfDefaultMaterial()
+	MaterialPtr MaterialManager::GetCopyOfDefaultMaterial()
 	{
-		return std::shared_ptr<Material>(m_storage[MaterialPath("default.material")]->GetCopy());
+		return MaterialPtr(m_storage[MaterialPath("default.material")]->GetCopy());
 	}
 
 }

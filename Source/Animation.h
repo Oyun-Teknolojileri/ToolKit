@@ -14,7 +14,7 @@ namespace ToolKit
   public:
     int m_frame = 0;
     Vec3 m_position;
-    glm::quat m_rotation;
+    Quaternion m_rotation;
     Vec3 m_scale;
   };
 

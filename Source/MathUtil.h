@@ -42,8 +42,8 @@ namespace ToolKit
   // Matrix Operations
   //////////////////////////////////////////
 
-  void DecomposeMatrix(const Mat4& transform, Vec3& position, glm::quat& rotation, Vec3& scale); // Assuming transformation applied in this order translate * rotate * scale * vector.
-  void DecomposeMatrix(const Mat4& transform, Vec3& position, glm::quat& rotation); // Assuming transformation applied in this order translate * rotate * scale * vector.
+  void DecomposeMatrix(const Mat4& transform, Vec3& position, Quaternion& rotation, Vec3& scale); // Assuming transformation applied in this order translate * rotate * scale * vector.
+  void DecomposeMatrix(const Mat4& transform, Vec3& position, Quaternion& rotation); // Assuming transformation applied in this order translate * rotate * scale * vector.
   void ExtractAxes(const Mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize = true);
   Frustum ExtractFrustum(const Mat4& projectViewModel);
 
@@ -79,5 +79,5 @@ namespace ToolKit
   Vec3 Interpolate(const Vec3& vec1, const Vec3& vec2, float ratio);
   void ToSpherical(Vec3 p, float& r, float& zenith, float& azimuth);
   Vec3 ToCartesian(float r, float zenith, float azimuth);
-	glm::quat RotationTo(Vec3 a, Vec3 b); // Returns quaternion wich rotates a on to b.
+	Quaternion RotationTo(Vec3 a, Vec3 b); // Returns quaternion wich rotates a on to b.
 }

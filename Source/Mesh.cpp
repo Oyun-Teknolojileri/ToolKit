@@ -14,13 +14,13 @@ namespace ToolKit
 
 	Mesh::Mesh()
 	{
-		m_material = std::shared_ptr<Material>(new Material());
+		m_material = MaterialPtr(new Material());
 	}
 
 	Mesh::Mesh(String file)
 	{
 		m_file = file;
-		m_material = std::shared_ptr<Material>(new Material());
+		m_material = MaterialPtr(new Material());
 	}
 
 	Mesh::~Mesh()

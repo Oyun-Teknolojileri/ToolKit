@@ -96,13 +96,13 @@ namespace ToolKit
 		val.w = std::atoi(attr->value());
 	}
 
-	void ExtractQuatFromNode(void* nodev, glm::quat& val)
+	void ExtractQuatFromNode(void* nodev, Quaternion& val)
 	{
 		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
 
 		Vec4 tmp;
 		ExtractWXYZFromNode(node, tmp);
-		val = glm::quat(tmp.w, tmp.xyz);
+		val = Quaternion(tmp.w, tmp.xyz);
 	}
 
 	bool CheckFile(String path)

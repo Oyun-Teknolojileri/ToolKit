@@ -114,9 +114,9 @@ namespace ToolKit
 
 				if (cmd == 'r')
 				{
-					glm::quat qx = glm::angleAxis(glm::radians(transfrom.x), X_AXIS);
-					glm::quat qy = glm::angleAxis(glm::radians(transfrom.y), Y_AXIS);
-					glm::quat qz = glm::angleAxis(glm::radians(transfrom.z), Z_AXIS);
+					Quaternion qx = glm::angleAxis(glm::radians(transfrom.x), X_AXIS);
+					Quaternion qy = glm::angleAxis(glm::radians(transfrom.y), Y_AXIS);
+					Quaternion qz = glm::angleAxis(glm::radians(transfrom.z), Z_AXIS);
 
 					e->m_node->m_orientation = qz * qy * qx;
 				}

@@ -34,7 +34,7 @@ namespace ToolKit
 			Quad quad;
 			std::shared_ptr<Mesh> meshPtr = quad.m_mesh;
 
-			meshPtr->m_material = std::shared_ptr<Material>(meshPtr->m_material->GetCopy());
+			meshPtr->m_material = MaterialPtr(meshPtr->m_material->GetCopy());
 			meshPtr->m_material->UnInit();
 			meshPtr->m_material->m_diffuseTexture = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/cursor4k.png"));
 			meshPtr->m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
@@ -65,7 +65,7 @@ namespace ToolKit
 			vertices[10].pos.y = -0.3f;
 			vertices[11].pos.y = -0.7f;
 
-			std::shared_ptr<Material> newMaterial = Main::GetInstance()->m_materialManager.GetCopyOfSolidMaterial();
+			MaterialPtr newMaterial = Main::GetInstance()->m_materialManager.GetCopyOfSolidMaterial();
 			newMaterial->m_color = Vec3(0.1f, 0.1f, 0.1f);
 			newMaterial->GetRenderState()->depthTestEnabled = false;
 
@@ -249,7 +249,7 @@ namespace ToolKit
 					head.m_mesh->UnInit();
 
 					Vec3 t(0.0f, 0.8f, 0.0f);
-					glm::quat q;
+					Quaternion q;
 
 					if (i == 0)
 					{

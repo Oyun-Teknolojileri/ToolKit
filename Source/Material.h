@@ -41,8 +41,8 @@ namespace ToolKit
   public:
     void Init();
 
-    std::shared_ptr<Material> GetCopyOfSolidMaterial();
-    std::shared_ptr<Material> GetCopyOfDefaultMaterial();
+    MaterialPtr GetCopyOfSolidMaterial();
+    MaterialPtr GetCopyOfDefaultMaterial();
   };
 
 }

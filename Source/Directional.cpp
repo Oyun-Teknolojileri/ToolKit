@@ -16,19 +16,19 @@ namespace ToolKit
 
 	void Directional::Pitch(float val)
 	{
-		glm::quat q = glm::angleAxis(val, Vec3(1.0f, 0.0f, 0.0f));
+		Quaternion q = glm::angleAxis(val, Vec3(1.0f, 0.0f, 0.0f));
 		m_node->Rotate(q, TransformationSpace::TS_LOCAL);
 	}
 
 	void Directional::Yaw(float val)
 	{
-		glm::quat q = glm::angleAxis(val, Vec3(0.0f, 1.0f, 0.0f));
+		Quaternion q = glm::angleAxis(val, Vec3(0.0f, 1.0f, 0.0f));
 		m_node->Rotate(q, TransformationSpace::TS_LOCAL);
 	}
 
 	void Directional::Roll(float val)
 	{
-		glm::quat q = glm::angleAxis(val, Vec3(1.0f, 0.0f, 0.0f));
+		Quaternion q = glm::angleAxis(val, Vec3(1.0f, 0.0f, 0.0f));
 		m_node->Rotate(q, TransformationSpace::TS_LOCAL);
 	}
 

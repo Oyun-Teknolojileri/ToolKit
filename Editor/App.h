@@ -46,8 +46,8 @@ namespace ToolKit
 			// Editor variables.
 			float m_camSpeed = 8.0; // Meters per sec.
 			float m_mouseSensitivity = 0.5f;
-			std::shared_ptr<Material> m_highLightMaterial;
-			std::shared_ptr<Material> m_highLightSecondaryMaterial;
+			MaterialPtr m_highLightMaterial;
+			MaterialPtr m_highLightSecondaryMaterial;
 
 			// Editor objects.
 			Grid* m_grid;

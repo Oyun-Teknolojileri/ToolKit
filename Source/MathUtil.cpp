@@ -6,7 +6,7 @@
 namespace ToolKit
 {
 
-	void DecomposeMatrix(const Mat4& transform, Vec3& position, glm::quat& rotation, Vec3& scale)
+	void DecomposeMatrix(const Mat4& transform, Vec3& position, Quaternion& rotation, Vec3& scale)
 	{
 		position = glm::column(transform, 3).xyz;
 
@@ -95,7 +95,7 @@ namespace ToolKit
 		return frustum;
 	}
 
-	void DecomposeMatrix(const Mat4& transform, Vec3& position, glm::quat& rotation)
+	void DecomposeMatrix(const Mat4& transform, Vec3& position, Quaternion& rotation)
 	{
 		Vec3 tmp;
 		DecomposeMatrix(transform, position, rotation, tmp);
@@ -419,7 +419,7 @@ namespace ToolKit
 		return Vec3(r * glm::sin(zenith) * glm::sin(azimuth), r * glm::cos(zenith), r * glm::sin(zenith) * glm::cos(azimuth));
 	}
 
-	glm::quat RotationTo(Vec3 a, Vec3 b)
+	Quaternion RotationTo(Vec3 a, Vec3 b)
 	{
 		a = glm::normalize(a);
 		b = glm::normalize(b);

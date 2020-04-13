@@ -291,7 +291,7 @@ namespace ToolKit
 		int offset = 0;
 
 		Vec3 refNormal = glm::normalize(Vec3(radius, height, 0.0f));
-		glm::quat q;
+		Quaternion q;
 
 		for (int i = 0; i <= nSegHeight; i++)
 		{
@@ -410,10 +410,10 @@ namespace ToolKit
 		vertices[6].pos = Vec3(1.0f, 0.0f, 0.0f);
 		vertices[7].pos = Vec3(0.8f, -0.2f, 0.0f);
 
-		std::shared_ptr<Material> newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
+		MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
 		newMaterial->m_color = Vec3(0.89f, 0.239f, 0.341f);
 
-		glm::quat rotation;
+		Quaternion rotation;
 		if (m_label == AxisLabel::Y)
 		{
 			newMaterial->m_color = Vec3(0.537f, 0.831f, 0.07f);
@@ -440,7 +440,7 @@ namespace ToolKit
 
 	LineBatch::LineBatch(const std::vector<Vec3>& linePnts, Vec3 color, DrawType t, float lineWidth)
 	{
-		std::shared_ptr<Material> newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
+		MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
 		m_mesh->m_material = newMaterial;
 
 		Generate(linePnts, color, t, lineWidth);

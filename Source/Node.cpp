@@ -51,13 +51,13 @@ namespace ToolKit
 		}
 	}
 
-	void Node::Rotate(glm::quat val, TransformationSpace space)
+	void Node::Rotate(Quaternion val, TransformationSpace space)
 	{
 		switch (space)
 		{
 		case TransformationSpace::TS_WORLD:
 		{
-			glm::quat ps, ws;
+			Quaternion ps, ws;
 			ws = GetOrientation(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 				ps = m_parent->GetOrientation(TransformationSpace::TS_WORLD);
@@ -69,7 +69,7 @@ namespace ToolKit
 			break;
 		case TransformationSpace::TS_LOCAL:
 		{
-			glm::quat ps, ws;
+			Quaternion ps, ws;
 			ws = GetOrientation(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 				ps = m_parent->GetOrientation(TransformationSpace::TS_WORLD);
@@ -88,7 +88,7 @@ namespace ToolKit
 	void Node::Transform(Mat4 val, TransformationSpace space)
 	{
 		Vec3 translation;
-		glm::quat orientation;
+		Quaternion orientation;
 		DecomposeMatrix(val, translation, orientation);
 
 		Translate(translation, space);
@@ -143,7 +143,7 @@ namespace ToolKit
 		}
 	}
 
-	glm::quat Node::GetOrientation(TransformationSpace space)
+	Quaternion Node::GetOrientation(TransformationSpace space)
 	{
 		switch (space)
 		{
@@ -157,7 +157,7 @@ namespace ToolKit
 			break;
 		case TransformationSpace::TS_LOCAL:
 		default:
-			return glm::quat();
+			return Quaternion();
 			break;
 		}
 	}

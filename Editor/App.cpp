@@ -59,7 +59,7 @@ namespace ToolKit
 
 		void App::Init()
 		{
-			std::shared_ptr<Material> solidColorMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("solidColor.material"));
+			MaterialPtr solidColorMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("solidColor.material"));
 			solidColorMaterial->m_color = Vec3(0.8f, 0.8f, 0.8f);
 
 			m_suzanne = new Drawable();
@@ -91,11 +91,11 @@ namespace ToolKit
 			m_grid = new Grid(100);
 			m_grid->m_mesh->Init(false);
 
-			m_highLightMaterial = std::shared_ptr<Material>(solidColorMaterial->GetCopy());
+			m_highLightMaterial = MaterialPtr(solidColorMaterial->GetCopy());
 			m_highLightMaterial->m_color = g_selectHighLightPrimaryColor;
 			m_highLightMaterial->GetRenderState()->cullMode = CullingType::Front;
 
-			m_highLightSecondaryMaterial = std::shared_ptr<Material>(solidColorMaterial->GetCopy());
+			m_highLightSecondaryMaterial = MaterialPtr(solidColorMaterial->GetCopy());
 			m_highLightSecondaryMaterial->m_color = g_selectHighLightSecondaryColor;
 			m_highLightSecondaryMaterial->GetRenderState()->cullMode = CullingType::Front;
 
@@ -242,7 +242,7 @@ namespace ToolKit
 			e->m_mesh->m_material->GetRenderState()->cullMode = cm;
 			m_renderer->Render(e, c);
 
-			std::shared_ptr<Material> m = e->m_mesh->m_material;
+			MaterialPtr m = e->m_mesh->m_material;
 			if (m_scene.IsCurrentSelection(e->m_id))
 			{
 				e->m_mesh->m_material = m_highLightMaterial;
