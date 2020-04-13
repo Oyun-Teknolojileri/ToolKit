@@ -19,7 +19,7 @@ namespace ToolKit
 		val.y = (float)std::atof(attr->value());
 	}
 
-	void ExtractXYZFromNode(void* nodev, glm::vec3& val)
+	void ExtractXYZFromNode(void* nodev, Vec3& val)
 	{
 		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
 		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
@@ -105,7 +105,7 @@ namespace ToolKit
 		val = glm::quat(tmp.w, tmp.xyz);
 	}
 
-	bool CheckFile(std::string path)
+	bool CheckFile(String path)
 	{
 		std::ifstream f(path.c_str());
 		return f.good();
@@ -115,9 +115,9 @@ namespace ToolKit
 	// for example, if separator="::",
 	// s = "abc::def xy::st:" -> "abc", "def xy" and "st:",
 	// https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c?page=2&tab=votes#tab-top
-	void Split(const std::string& s, const std::string& sep, std::vector<std::string>& v)
+	void Split(const String& s, const String& sep, std::vector<String>& v)
 	{
-		typedef std::string::const_iterator iter;
+		typedef String::const_iterator iter;
 		iter b = s.begin(), e = s.end(), i;
 		iter sep_b = sep.begin(), sep_e = sep.end();
 
@@ -132,7 +132,7 @@ namespace ToolKit
 				// it's not an empty string
 				if (b != e)
 				{
-					v.push_back(std::string(b, e));
+					v.push_back(String(b, e));
 				}
 				break;
 			}
@@ -146,26 +146,26 @@ namespace ToolKit
 			else
 			{
 				// found the separator
-				v.push_back(std::string(b, i));
+				v.push_back(String(b, i));
 				b = i;
 			}
 		}
 	}
 
-	ToolKit::LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size)
+	LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size)
 	{
 		// Searching perpendicular axes on the plane.
-		glm::vec3 z = plane.normal;
-		glm::vec3 x = z + glm::vec3(1.0f);
-		glm::vec3 y = glm::cross(z, x);
+		Vec3 z = plane.normal;
+		Vec3 x = z + Vec3(1.0f);
+		Vec3 y = glm::cross(z, x);
 		x = glm::normalize(glm::cross(y, z));
 		y = glm::normalize(glm::cross(z, x));
 
 		NormalzePlaneEquation(plane);
-		glm::vec3 o = plane.normal * plane.d;
+		Vec3 o = plane.normal * plane.d;
 
 		float hSize = size * 0.5f;
-		std::vector<glm::vec3> corners
+		std::vector<Vec3> corners
 		{
 			o + x * hSize + y * hSize,
 			o - x * hSize + y * hSize,

@@ -15,7 +15,7 @@ namespace ToolKit
 	{
 	}
 
-	Animation::Animation(std::string file)
+	Animation::Animation(String file)
 	{
 		m_file = file;
 	}
@@ -103,7 +103,7 @@ namespace ToolKit
 		for (rapidxml::xml_node<>* animNode = node->first_node("node"); animNode; animNode = animNode->next_sibling())
 		{
 			attr = animNode->first_attribute("name");
-			std::string boneName = attr->value();
+			String boneName = attr->value();
 
 			for (rapidxml::xml_node<>* keyNode = animNode->first_node("key"); keyNode; keyNode = keyNode->next_sibling())
 			{

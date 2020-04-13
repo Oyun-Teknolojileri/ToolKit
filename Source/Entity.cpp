@@ -42,8 +42,8 @@ namespace ToolKit
 		BoundingBox aabb;
 
 		// Unit aabb.
-		aabb.min = glm::vec3(0.5f, 0.5f, 0.5f);
-		aabb.max = glm::vec3(-0.5f, -0.5f, -0.5f);
+		aabb.min = Vec3(0.5f, 0.5f, 0.5f);
+		aabb.max = Vec3(-0.5f, -0.5f, -0.5f);
 
 		if (inWorld)
 		{

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Types.h"
+
 #include <string>
 #include <assert.h>
 
@@ -16,7 +18,7 @@ namespace ToolKit
     virtual Resource* GetCopy() { assert(false); return nullptr; }
 
   public:
-    std::string m_file;
+    String m_file;
     bool m_loaded = false;
     bool m_initiated = false;
   };

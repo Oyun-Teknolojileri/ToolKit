@@ -16,7 +16,7 @@ namespace ToolKit
   {
   public:
     Material();
-    Material(std::string file);
+    Material(String file);
     ~Material();
 
     virtual void Load() override;
@@ -30,7 +30,7 @@ namespace ToolKit
     std::shared_ptr<Texture> m_diffuseTexture;
     std::shared_ptr<Shader> m_vertexShader;
     std::shared_ptr<Shader> m_fragmetShader;
-    glm::vec3 m_color;
+    Vec3 m_color;
 
 	private:
 		RenderState m_renderState;

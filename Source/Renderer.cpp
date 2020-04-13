@@ -90,7 +90,7 @@ namespace ToolKit
 		for (int i = 0; i < (int)skeleton->m_bones.size(); i++)
 		{
 			Bone* bone = skeleton->m_bones[i];
-			std::string shaderName = "bones[" + std::to_string(i) + "].transform";
+			String shaderName = "bones[" + std::to_string(i) + "].transform";
 			GLint loc = glGetUniformLocation(skinProg->m_handle, shaderName.c_str());
 			glm::mat4 transform = bone->m_node->GetTransform();
 			glUniformMatrix4fv(loc, 1, false, &transform[0][0]);
@@ -404,7 +404,7 @@ namespace ToolKit
 					if (m_mat == nullptr)
 						return;
 
-					glm::vec3 color = m_mat->m_color;
+					Vec3 color = m_mat->m_color;
 					GLint loc = glGetUniformLocation(program->m_handle, "Color");
 					glUniform3fv(loc, 1, &color.x);
 				}

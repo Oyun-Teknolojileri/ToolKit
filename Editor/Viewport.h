@@ -27,10 +27,10 @@ namespace ToolKit
 			// Utility Functions.
 			Ray RayFromMousePosition();
 			Ray RayFromScreenSpacePoint(const glm::vec2& pnt);
-			glm::vec3 GetLastMousePosWorldSpace();
+			Vec3 GetLastMousePosWorldSpace();
 			glm::vec2 GetLastMousePosViewportSpace();
 			glm::vec2 GetLastMousePosScreenSpace();
-			glm::vec3 TransformViewportToWorldSpace(const glm::vec2& pnt);
+			Vec3 TransformViewportToWorldSpace(const glm::vec2& pnt);
 			glm::vec2 TransformScreenToViewportSpace(const glm::vec2& pnt);
 
 		private:
@@ -46,7 +46,7 @@ namespace ToolKit
 			class RenderTarget* m_viewportImage = nullptr;
 
 			// Window properties.
-			std::string m_name;
+			String m_name;
 			float m_width = 640.0f;
 			float m_height = 480.0f;
 			glm::vec2 m_wndPos;

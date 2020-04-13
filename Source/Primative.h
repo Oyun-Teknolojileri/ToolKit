@@ -25,7 +25,7 @@ namespace ToolKit
 
 	public:
 		Settings m_settings;
-		glm::vec3 m_worldLocation;
+		Vec3 m_worldLocation;
 	};
 
   class Cube : public Drawable
@@ -82,10 +82,10 @@ namespace ToolKit
   class LineBatch : public Drawable
   {
   public:
-    LineBatch(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t, float lineWidth = 1.0f);
+    LineBatch(const std::vector<Vec3>& linePnts, Vec3 color, DrawType t, float lineWidth = 1.0f);
 
 		virtual EntityType GetType() const override;
-    void Generate(const std::vector<glm::vec3>& linePnts, glm::vec3 color, DrawType t, float lineWidth = 1.0f);
+    void Generate(const std::vector<Vec3>& linePnts, Vec3 color, DrawType t, float lineWidth = 1.0f);
   };
 
 }

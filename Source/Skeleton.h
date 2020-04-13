@@ -9,11 +9,11 @@ namespace ToolKit
   class Bone
   {
   public:
-    Bone(std::string name);
+    Bone(String name);
     ~Bone();
 
   public:
-    std::string m_name;
+    String m_name;
     Node* m_node;
     glm::mat4 m_inverseWorldMatrix;
   };
@@ -22,7 +22,7 @@ namespace ToolKit
   {
   public:
     Skeleton();
-    Skeleton(std::string file);
+    Skeleton(String file);
     ~Skeleton();
 
     virtual void Init(bool flushClientSideArray = true) override;
@@ -30,8 +30,8 @@ namespace ToolKit
     virtual void Load() override;
 
     void AddBone(Bone* bone, Bone* parent = nullptr);
-    int GetBoneIndex(std::string bone);
-    Bone* GetBone(std::string bone);
+    int GetBoneIndex(String bone);
+    Bone* GetBone(String bone);
 
   private:
     void Traverse(void* data, Bone* parent);

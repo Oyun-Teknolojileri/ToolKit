@@ -15,7 +15,7 @@ namespace ToolKit
 	{
 	}
 
-	SpriteSheet::SpriteSheet(std::string file)
+	SpriteSheet::SpriteSheet(String file)
 	{
 		m_file = file;
 	}
@@ -123,18 +123,18 @@ namespace ToolKit
 
 		std::vector<Vertex> vertices;
 		vertices.resize(6);
-		vertices[0].pos = glm::vec3(-absOffset.x, -absOffset.y, depth);
+		vertices[0].pos = Vec3(-absOffset.x, -absOffset.y, depth);
 		vertices[0].tex = glm::vec2(textureRect.x, 1.0f - textureRect.y);
-		vertices[1].pos = glm::vec3(width - absOffset.x, -absOffset.y, depth);
+		vertices[1].pos = Vec3(width - absOffset.x, -absOffset.y, depth);
 		vertices[1].tex = glm::vec2(textureRect.x + textureRect.width, 1.0f - textureRect.y);
-		vertices[2].pos = glm::vec3(-absOffset.x, height - absOffset.y, depth);
+		vertices[2].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
 		vertices[2].tex = glm::vec2(textureRect.x, 1.0f - (textureRect.y + textureRect.height));
 
-		vertices[3].pos = glm::vec3(width - absOffset.x, -absOffset.y, depth);
+		vertices[3].pos = Vec3(width - absOffset.x, -absOffset.y, depth);
 		vertices[3].tex = glm::vec2(textureRect.x + textureRect.width, 1.0f - textureRect.y);
-		vertices[4].pos = glm::vec3(width - absOffset.x, height - absOffset.y, depth);
+		vertices[4].pos = Vec3(width - absOffset.x, height - absOffset.y, depth);
 		vertices[4].tex = glm::vec2(textureRect.x + textureRect.width, 1.0f - (textureRect.y + textureRect.height));
-		vertices[5].pos = glm::vec3(-absOffset.x, height - absOffset.y, depth);
+		vertices[5].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
 		vertices[5].tex = glm::vec2(textureRect.x, 1.0f - (textureRect.y + textureRect.height));
 
 		return vertices;

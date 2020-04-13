@@ -14,12 +14,12 @@ namespace ToolKit
     void Pitch(float val);
     void Yaw(float val);
     void Roll(float val);
-    void Translate(glm::vec3 pos);
+    void Translate(Vec3 pos);
     void RotateOnUpVector(float val);
-    void GetLocalAxis(glm::vec3& dir, glm::vec3& up, glm::vec3& right) const;
-    glm::vec3 GetDir() const;
-    glm::vec3 GetUp() const;
-    glm::vec3 GetRight() const;
+    void GetLocalAxis(Vec3& dir, Vec3& up, Vec3& right) const;
+    Vec3 GetDir() const;
+    Vec3 GetUp() const;
+    Vec3 GetRight() const;
     
     virtual EntityType GetType() const override;
   };
@@ -29,8 +29,8 @@ namespace ToolKit
   public:
     struct CamData
     {
-      glm::vec3 pos;
-      glm::vec3 dir;
+      Vec3 pos;
+      Vec3 dir;
       glm::mat4 projection;
       float fov;
       float aspect;
@@ -65,9 +65,9 @@ namespace ToolKit
   public:
     struct LightData
     {
-      glm::vec3 pos;
-      glm::vec3 dir;
-      glm::vec3 color;
+      Vec3 pos;
+      Vec3 dir;
+      Vec3 color;
     };
 
   public:
@@ -78,7 +78,7 @@ namespace ToolKit
     virtual EntityType GetType() const override;
 
   public:
-    glm::vec3 m_color;
+    Vec3 m_color;
   };
 
 }

@@ -14,7 +14,7 @@ namespace ToolKit
 	{
 
 		// Executors
-		void ShowPickDebugExec(std::string args)
+		void ShowPickDebugExec(String args)
 		{
 			if (args == "1")
 			{
@@ -33,7 +33,7 @@ namespace ToolKit
 			}
 		}
 
-		void ShowOverlayExec(std::string args)
+		void ShowOverlayExec(String args)
 		{
 			if (args == "1")
 			{
@@ -46,7 +46,7 @@ namespace ToolKit
 			}
 		}
 
-		extern void ShowOverlayAlwaysExec(std::string args)
+		extern void ShowOverlayAlwaysExec(String args)
 		{
 			if (args == "1")
 			{
@@ -59,7 +59,7 @@ namespace ToolKit
 			}
 		}
 
-		extern void ShowModTransitionsExec(std::string args)
+		extern void ShowModTransitionsExec(String args)
 		{
 			if (args == "1")
 			{
@@ -72,7 +72,7 @@ namespace ToolKit
 			}
 		}
 
-		extern void SetTransformExec(std::string args)
+		extern void SetTransformExec(String args)
 		{
 			if (args.empty())
 			{
@@ -85,12 +85,12 @@ namespace ToolKit
 				return;
 			}
 
-			std::vector<std::string> splits;
+			std::vector<String> splits;
 			Split(args, "--", splits);
 
-			for (std::string& arg : splits)
+			for (String& arg : splits)
 			{
-				std::vector<std::string> values;
+				std::vector<String> values;
 				Split(arg, " ", values);
 				if (values.empty())
 				{
@@ -105,7 +105,7 @@ namespace ToolKit
 					continue;
 				}
 
-				glm::vec3 transfrom;
+				Vec3 transfrom;
 				int maxIndx = glm::min((int)values.size(), 3);
 				for (int i = 0; i < maxIndx; i++)
 				{
@@ -253,9 +253,9 @@ namespace ToolKit
 			return Type::Console;
 		}
 
-		void ConsoleWindow::AddLog(const std::string& log, LogType type)
+		void ConsoleWindow::AddLog(const String& log, LogType type)
 		{
-			std::string prefixed;
+			String prefixed;
 			switch (type)
 			{
 			case LogType::Error:
@@ -277,9 +277,9 @@ namespace ToolKit
 			m_scrollToBottom = true;
 		}
 
-		void ConsoleWindow::AddLog(const std::string& log, const std::string& tag)
+		void ConsoleWindow::AddLog(const String& log, const String& tag)
 		{
-			std::string prefixed = "[" + tag + "] " + log;
+			String prefixed = "[" + tag + "] " + log;
 			m_items.push_back(prefixed);
 			m_scrollToBottom = true;
 		}
@@ -289,12 +289,12 @@ namespace ToolKit
 			m_items.clear();
 		}
 
-		void ConsoleWindow::ExecCommand(const std::string& commandLine)
+		void ConsoleWindow::ExecCommand(const String& commandLine)
 		{
 			// Split command and args.
 			size_t argsIndx = commandLine.find_first_of(" ");
-			std::string args, cmd;
-			if (argsIndx != std::string::npos)
+			String args, cmd;
+			if (argsIndx != String::npos)
 			{
 				args = commandLine.substr(argsIndx + 1);
 				cmd = commandLine.substr(0, argsIndx);
@@ -355,7 +355,7 @@ namespace ToolKit
 				}
 
 				// Build a list of candidates
-				std::vector<std::string> candidates;
+				std::vector<String> candidates;
 				for (size_t i = 0; i < m_commands.size(); i++)
 				{
 					if (Strnicmp(m_commands[i].c_str(), word_start, (int)(word_end - word_start)) == 0)
@@ -456,7 +456,7 @@ namespace ToolKit
 			return 0;
 		}
 
-		void ConsoleWindow::CreateCommand(const std::string& command, std::function<void(std::string)> executor)
+		void ConsoleWindow::CreateCommand(const String& command, std::function<void(String)> executor)
 		{
 			m_commands.push_back(command);
 			m_commandExecutors[command] = executor;

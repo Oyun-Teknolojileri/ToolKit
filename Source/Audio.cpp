@@ -45,7 +45,7 @@ namespace ToolKit
 	/*
 	* Load wave file function. No need for ALUT with this
 	*/
-	bool loadWavFile(const std::string filename, ALuint* buffer,
+	bool loadWavFile(const String filename, ALuint* buffer,
 		ALsizei* size, ALsizei* frequency,
 		ALenum* format) {
 		//Local Declarations
@@ -135,7 +135,7 @@ namespace ToolKit
 			fclose(soundFile);
 			return true;
 		}
-		catch (std::string error) {
+		catch (String error) {
 			//our catch statement for if we throw a string
 			std::cerr << error << " : trying to load " << filename << std::endl;
 			//clean up memory if wave loading fails
@@ -146,7 +146,7 @@ namespace ToolKit
 		}
 	}
 
-	Audio::Audio(std::string file)
+	Audio::Audio(String file)
 	{
 		m_file = file;
 	}

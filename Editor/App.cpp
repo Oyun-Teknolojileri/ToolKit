@@ -60,7 +60,7 @@ namespace ToolKit
 		void App::Init()
 		{
 			std::shared_ptr<Material> solidColorMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("solidColor.material"));
-			solidColorMaterial->m_color = glm::vec3(0.8f, 0.8f, 0.8f);
+			solidColorMaterial->m_color = Vec3(0.8f, 0.8f, 0.8f);
 
 			m_suzanne = new Drawable();
 			m_suzanne->m_mesh = Main::GetInstance()->m_meshMan.Create(MeshPath("suzanne.mesh"));
@@ -71,19 +71,19 @@ namespace ToolKit
 
 			m_q1 = new Cube();
 			m_q1->m_mesh->Init(false);
-			m_q1->m_node->m_translation = glm::vec3(-4.0f, 0.0f, 0.0f);
-			m_q1->m_node->m_orientation = glm::angleAxis(1.1f, glm::normalize(glm::vec3(1.0f, 1.0f, 1.0f)));
+			m_q1->m_node->m_translation = Vec3(-4.0f, 0.0f, 0.0f);
+			m_q1->m_node->m_orientation = glm::angleAxis(1.1f, glm::normalize(Vec3(1.0f, 1.0f, 1.0f)));
 			m_scene.AddEntity(m_q1);
 
 			m_q2 = new Cube();
 			m_q2->m_mesh->Init(false);
-			m_q2->m_node->m_translation = glm::vec3(4.0f, 0.0f, 0.0f);
+			m_q2->m_node->m_translation = Vec3(4.0f, 0.0f, 0.0f);
 			m_scene.AddEntity(m_q2);
 
 			m_q3 = new Cone();
 			m_q3->m_mesh->Init(false);
-			m_q3->m_node->m_scale = glm::vec3(0.3f, 1.0f, 0.3f);
-			m_q3->m_node->m_translation = glm::vec3(2.0f, 0.0f, 0.0f);
+			m_q3->m_node->m_scale = Vec3(0.3f, 1.0f, 0.3f);
+			m_q3->m_node->m_translation = Vec3(2.0f, 0.0f, 0.0f);
 			m_scene.AddEntity(m_q3);
 
 			m_origin = new Axis3d();
@@ -252,7 +252,7 @@ namespace ToolKit
 				e->m_mesh->m_material = m_highLightSecondaryMaterial;
 			}
 
-			glm::vec3 s = e->m_node->m_scale;
+			Vec3 s = e->m_node->m_scale;
 			float dist = glm::distance(e->m_node->GetTranslation(TransformationSpace::TS_WORLD), c->m_node->GetTranslation(TransformationSpace::TS_WORLD));
 			e->m_node->m_scale += 0.005f * dist;
 

@@ -13,16 +13,16 @@ namespace ToolKit
   {
   public:
     int m_frame = 0;
-    glm::vec3 m_position;
+    Vec3 m_position;
     glm::quat m_rotation;
-    glm::vec3 m_scale;
+    Vec3 m_scale;
   };
 
   class Animation : public Resource
   {
   public:
     Animation();
-    Animation(std::string file);
+    Animation(String file);
     ~Animation();
 
     void GetCurrentPose(Node* node); // interpolate keys based on time.
@@ -47,7 +47,7 @@ namespace ToolKit
       Stop
     };
 
-    std::unordered_map<std::string, std::vector<Key> > m_keys;
+    std::unordered_map<String, std::vector<Key> > m_keys;
     float m_fps = 30.0f;
     float m_currentTime = 0.0f; // Seconds
     float m_duration = 0.0f;

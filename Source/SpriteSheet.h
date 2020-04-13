@@ -14,7 +14,7 @@ namespace ToolKit
 
   struct SpriteEntry
   {
-    std::string name;
+    String name;
     glm::vec2 offset;
     Rect<int> rectangle;
   };
@@ -23,7 +23,7 @@ namespace ToolKit
   {
   public:
     SpriteSheet();
-    SpriteSheet(std::string file);
+    SpriteSheet(String file);
     ~SpriteSheet();
 
     virtual void Load() override;
@@ -37,12 +37,12 @@ namespace ToolKit
   public:
     std::shared_ptr<Texture> m_spriteSheet;
     std::vector<SpriteEntry> m_entries;
-    std::string m_imageFile;
+    String m_imageFile;
     int m_imageWidth;
     int m_imageHeight;
 
   public:
-    std::unordered_map<std::string, ToolKit::Surface*> m_sprites;
+    std::unordered_map<String, Surface*> m_sprites;
   };
 
   class SpriteAnimation : public Drawable
@@ -60,9 +60,9 @@ namespace ToolKit
     float m_animFps = 23.4f;
     bool m_looping = false;
     bool m_animationStoped = false;
-    std::vector<std::string> m_frames;
+    std::vector<String> m_frames;
     std::shared_ptr<SpriteSheet> m_sheet;
-    std::string m_currentFrame;
+    String m_currentFrame;
 
   private:
     float m_currentTime = 0.0f; // Seconds

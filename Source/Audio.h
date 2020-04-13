@@ -10,7 +10,7 @@ namespace ToolKit
   class Audio : public Resource
   {
   public:
-    Audio(std::string file);
+    Audio(String file);
     ~Audio();
 
     virtual void Init(bool flushClientSideArray = true) override;

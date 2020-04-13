@@ -17,12 +17,12 @@ namespace ToolKit
 
     virtual void Init()
     {
-      Logger::GetInstance()->Log("Initiating manager " + std::string(typeid(T).name()));
+      Logger::GetInstance()->Log("Initiating manager " + String(typeid(T).name()));
     }
 
     virtual void Uninit()
     {
-      Logger::GetInstance()->Log("Uninitiating manager " + std::string(typeid(T).name()));
+      Logger::GetInstance()->Log("Uninitiating manager " + String(typeid(T).name()));
       m_storage.clear();
     }
 
@@ -32,7 +32,7 @@ namespace ToolKit
     }
 
     template<typename Ti = T>
-    std::shared_ptr<T> Create(std::string file)
+    std::shared_ptr<T> Create(String file)
     {
       if (!Exist(file))
       {
@@ -52,18 +52,18 @@ namespace ToolKit
     }
 
     template<typename Ti>
-    std::shared_ptr<Ti> CreateDerived(std::string file)
+    std::shared_ptr<Ti> CreateDerived(String file)
     {
       return std::static_pointer_cast<Ti> (Create<Ti>(file));
     }
 
-    bool Exist(std::string file)
+    bool Exist(String file)
     {
       return m_storage.find(file) != m_storage.end();
     }
 
   public:
-    std::unordered_map<std::string, std::shared_ptr<T>> m_storage;
+    std::unordered_map<String, std::shared_ptr<T>> m_storage;
   };
 
 }

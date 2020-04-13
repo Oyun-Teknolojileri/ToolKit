@@ -174,7 +174,7 @@ namespace ToolKit
 			return ray;
 		}
 
-		glm::vec3 Viewport::GetLastMousePosWorldSpace()
+		Vec3 Viewport::GetLastMousePosWorldSpace()
 		{
 			return TransformViewportToWorldSpace(GetLastMousePosViewportSpace());
 		}
@@ -195,9 +195,9 @@ namespace ToolKit
 			return m_wndPos + screenPoint; // Move it from window space to screen space.
 		}
 
-		glm::vec3 Viewport::TransformViewportToWorldSpace(const glm::vec2& pnt)
+		Vec3 Viewport::TransformViewportToWorldSpace(const glm::vec2& pnt)
 		{
-			glm::vec3 screenPoint = glm::vec3(pnt, 0.0f);
+			Vec3 screenPoint = Vec3(pnt, 0.0f);
 
 			glm::mat4 view = m_camera->GetViewMatrix();
 			glm::mat4 project = m_camera->GetData().projection;
@@ -236,14 +236,14 @@ namespace ToolKit
 					m_camera->Pitch(-glm::radians(mp.y * g_app->m_mouseSensitivity));
 					m_camera->RotateOnUpVector(-glm::radians(mp.x * g_app->m_mouseSensitivity));
 
-					glm::vec3 dir, up, right;
+					Vec3 dir, up, right;
 					dir = -Z_AXIS;
 					up = Y_AXIS;
 					right = X_AXIS;
 
 					float speed = g_app->m_camSpeed;
 
-					glm::vec3 move;
+					Vec3 move;
 					ImGuiIO& io = ImGui::GetIO();
 					if (io.KeysDown[SDL_SCANCODE_A])
 					{

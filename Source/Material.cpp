@@ -10,10 +10,10 @@ namespace ToolKit
 
 	Material::Material()
 	{
-		m_color = glm::vec3(1.0f);
+		m_color = Vec3(1.0f);
 	}
 
-	Material::Material(std::string file)
+	Material::Material(String file)
 	{
 		m_file = file;
 	}
@@ -42,17 +42,17 @@ namespace ToolKit
 
 		for (rapidxml::xml_node<>* node = rootNode->first_node(); node; node = node->next_sibling())
 		{
-			if (std::string("diffuseTexture").compare(node->name()) == 0)
+			if (String("diffuseTexture").compare(node->name()) == 0)
 			{
 				rapidxml::xml_attribute<>* attr = node->first_attribute("name");
 				m_diffuseTexture = Main::GetInstance()->m_textureMan.Create(TexturePath(attr->value()));
 			}
-			else if (std::string("cubeMap").compare(node->name()) == 0)
+			else if (String("cubeMap").compare(node->name()) == 0)
 			{
 				rapidxml::xml_attribute<>* attr = node->first_attribute("name");
 				m_cubeMap = GetTextureManager()->CreateDerived<CubeMap>(TexturePath(attr->value()));
 			}
-			else if (std::string("shader").compare(node->name()) == 0)
+			else if (String("shader").compare(node->name()) == 0)
 			{
 				rapidxml::xml_attribute<>* attr = node->first_attribute("name");
 				std::shared_ptr<Shader> shader = GetShaderManager()->Create(ShaderPath(attr->value()));
@@ -69,7 +69,7 @@ namespace ToolKit
 					assert(false);
 				}
 			}
-			else if (std::string("color").compare(node->name()) == 0)
+			else if (String("color").compare(node->name()) == 0)
 			{
 				ExtractXYZFromNode(node, m_color);
 			}
@@ -172,12 +172,12 @@ namespace ToolKit
 		m_storage[MaterialPath("solid.material")] = std::shared_ptr<Material>(material);
 	}
 
-	std::shared_ptr<ToolKit::Material> MaterialManager::GetCopyOfSolidMaterial()
+	std::shared_ptr<Material> MaterialManager::GetCopyOfSolidMaterial()
 	{
 		return std::shared_ptr<Material> (m_storage[MaterialPath("solid.material")]->GetCopy());
 	}
 
-	std::shared_ptr<ToolKit::Material> MaterialManager::GetCopyOfDefaultMaterial()
+	std::shared_ptr<Material> MaterialManager::GetCopyOfDefaultMaterial()
 	{
 		return std::shared_ptr<Material>(m_storage[MaterialPath("default.material")]->GetCopy());
 	}

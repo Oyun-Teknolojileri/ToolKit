@@ -13,7 +13,7 @@ namespace ToolKit
   {
   public:
     Texture();
-    Texture(std::string file);
+    Texture(String file);
     virtual ~Texture();
 
     virtual void Load() override;
@@ -31,7 +31,7 @@ namespace ToolKit
   {
   public:
     CubeMap();
-    CubeMap(std::string file);
+    CubeMap(String file);
     ~CubeMap();
 
     virtual void Load() override;

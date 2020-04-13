@@ -34,7 +34,7 @@ namespace ToolKit
 			return;
 		}
 
-		std::string query = m_currentState->Signaled(signal);
+		String query = m_currentState->Signaled(signal);
 		if (query.empty())
 		{
 			// If the signal is not processed in the current state, check links for hijack.
@@ -56,7 +56,7 @@ namespace ToolKit
 		m_currentState = nextState;
 	}
 
-	State* StateMachine::QueryState(std::string type)
+	State* StateMachine::QueryState(String type)
 	{
 		if (m_states.find(type) != m_states.end())
 		{

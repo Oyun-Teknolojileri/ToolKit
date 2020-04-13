@@ -96,65 +96,65 @@ namespace ToolKit
 		return &Main::GetInstance()->m_textureMan;
 	}
 
-	std::string TexturePath(std::string file)
+	String TexturePath(String file)
 	{
-		std::string path = "../Resources/Textures/";
+		String path = "../Resources/Textures/";
 		path += file;
 		return path;
 	}
 
-	std::string MeshPath(std::string file)
+	String MeshPath(String file)
 	{
-		std::string path = "../Resources/Meshes/";
+		String path = "../Resources/Meshes/";
 		path += file;
 		return path;
 	}
 
-	std::string FontPath(std::string file)
+	String FontPath(String file)
 	{
-		std::string path = "../Resources/Fonts/";
+		String path = "../Resources/Fonts/";
 		path += file;
 		return path;
 	}
 
-	std::string SpritePath(std::string file)
+	String SpritePath(String file)
 	{
-		std::string path = "../Resources/Sprites/";
+		String path = "../Resources/Sprites/";
 		path += file;
 		return path;
 	}
 
-	std::string AudioPath(std::string file)
+	String AudioPath(String file)
 	{
-		std::string path = "../Resources/Audio/";
+		String path = "../Resources/Audio/";
 		path += file;
 		return path;
 	}
 
-	std::string AnimationPath(std::string file)
+	String AnimationPath(String file)
 	{
-		std::string path = "../Resources/Meshes/";
+		String path = "../Resources/Meshes/";
 		path += file;
 		return path;
 	}
 
-	std::string SkeletonPath(std::string file)
+	String SkeletonPath(String file)
 	{
-		std::string path = "../Resources/Meshes/";
+		String path = "../Resources/Meshes/";
 		path += file;
 		return path;
 	}
 
-	std::string ShaderPath(std::string file)
+	String ShaderPath(String file)
 	{
-		std::string path = "../Resources/Shaders/";
+		String path = "../Resources/Shaders/";
 		path += file;
 		return path;
 	}
 
-	std::string MaterialPath(std::string file)
+	String MaterialPath(String file)
 	{
-		std::string path = "../Resources/Materials/";
+		String path = "../Resources/Materials/";
 		path += file;
 		return path;
 	}

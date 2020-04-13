@@ -15,17 +15,17 @@ namespace ToolKit
   class Vertex
   {
   public:
-    glm::vec3 pos;
-    glm::vec3 norm;
+    Vec3 pos;
+    Vec3 norm;
     glm::vec2 tex;
-    glm::vec3 btan;
+    Vec3 btan;
   };
 
   class Mesh : public Resource
   {
   public:
     Mesh();
-    Mesh(std::string file);
+    Mesh(String file);
     virtual ~Mesh();
 
     virtual void Init(bool flushClientSideArray = true) override;
@@ -39,7 +39,7 @@ namespace ToolKit
   protected:
     virtual void InitVertices(bool flush);
     virtual void InitIndices(bool flush);
-		void UpdateAABB(const glm::vec3& v);
+		void UpdateAABB(const Vec3& v);
 
   public:
     std::vector<Vertex> m_clientSideVertices;
@@ -70,7 +70,7 @@ namespace ToolKit
   {
   public:
     SkinMesh();
-    SkinMesh(std::string file);
+    SkinMesh(String file);
     ~SkinMesh();
 
     virtual void Init(bool flushClientSideArray = true) override;

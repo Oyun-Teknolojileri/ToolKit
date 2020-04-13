@@ -60,7 +60,7 @@ namespace ToolKit
 					m_modStack.pop_back();
 				}
 
-				static std::string modNameDbg;
+				static String modNameDbg;
 				BaseMod* nextMod = nullptr;
 				switch (mod)
 				{
@@ -171,7 +171,7 @@ namespace ToolKit
 					{
 						if (ConsoleWindow* consol = g_app->GetConsole())
 						{
-							std::string log = "\t" + prevStateDbg->GetType() + " -> " + nextState->GetType();
+							String log = "\t" + prevStateDbg->GetType() + " -> " + nextState->GetType();
 							consol->AddLog(log, "ModDbg");
 						}
 					}
@@ -186,13 +186,13 @@ namespace ToolKit
 		}
 
 		// State definitions.
-		const std::string StateType::Null = "";
-		const std::string StateType::StateBeginPick = "StateBeginPick";
-		const std::string StateType::StateBeginBoxPick = "StateBeginBoxPick";
-		const std::string StateType::StateEndPick = "StateEndPick";
-		const std::string StateType::StateBeginMove = "StateBeginMove";
-		const std::string StateType::StateMoveTo = "StateMoveTo";
-		const std::string StateType::StateEndMove = "StateEndMove";
+		const String StateType::Null = "";
+		const String StateType::StateBeginPick = "StateBeginPick";
+		const String StateType::StateBeginBoxPick = "StateBeginBoxPick";
+		const String StateType::StateEndPick = "StateEndPick";
+		const String StateType::StateBeginMove = "StateBeginMove";
+		const String StateType::StateMoveTo = "StateMoveTo";
+		const String StateType::StateEndMove = "StateEndMove";
 
 		std::shared_ptr<Arrow2d> StatePickingBase::m_dbgArrow = nullptr;
 		std::shared_ptr<LineBatch> StatePickingBase::m_dbgFrustum = nullptr;
@@ -246,7 +246,7 @@ namespace ToolKit
 		{
 		}
 
-		std::string StateBeginPick::Signaled(SignalId signal)
+		String StateBeginPick::Signaled(SignalId signal)
 		{
 			if (signal == BaseMod::m_leftMouseBtnDownSgnl)
 			{
@@ -298,7 +298,7 @@ namespace ToolKit
 		{
 		}
 
-		std::string StateBeginBoxPick::Signaled(SignalId signal)
+		String StateBeginBoxPick::Signaled(SignalId signal)
 		{
 			if (signal == BaseMod::m_leftMouseBtnUpSgnl)
 			{
@@ -317,14 +317,14 @@ namespace ToolKit
 					rect[3].y = rect[2].y;
 
 					std::vector<Ray> rays;
-					std::vector<glm::vec3> rect3d;
+					std::vector<Vec3> rect3d;
 
 					// Front rectangle.
-					glm::vec3 lensLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+					Vec3 lensLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 					for (int i = 0; i < 4; i++)
 					{
 						glm::vec2 p = vp->TransformScreenToViewportSpace(rect[i]);
-						glm::vec3 p0 = vp->TransformViewportToWorldSpace(p);
+						Vec3 p0 = vp->TransformViewportToWorldSpace(p);
 						rect3d.push_back(p0);
 						rays.push_back({ lensLoc, glm::normalize(p0 - lensLoc) });
 					}
@@ -333,13 +333,13 @@ namespace ToolKit
 					float depth = 1000.0f;
 					for (int i = 0; i < 4; i++)
 					{
-						glm::vec3 p = rect3d[i] + rays[i].direction * depth;
+						Vec3 p = rect3d[i] + rays[i].direction * depth;
 						rect3d.push_back(p);
 					}
 
 					// Frustum from 8 points.
 					Frustum frustum;
-					std::vector<glm::vec3> planePnts;
+					std::vector<Vec3> planePnts;
 					planePnts = { rect3d[0], rect3d[4], rect3d[3] }; // Left plane.
 					frustum.planes[0] = PlaneFrom(planePnts.data());
 
@@ -366,7 +366,7 @@ namespace ToolKit
 					// Debug draw the picking frustum.
 					if (g_app->m_showPickingDebug)
 					{
-						std::vector<glm::vec3> corners =
+						std::vector<Vec3> corners =
 						{
 							rect3d[0], rect3d[1], rect3d[1], rect3d[2], rect3d[2], rect3d[3], rect3d[3], rect3d[0],
 							rect3d[0], rect3d[0] + rays[0].direction * depth,
@@ -441,7 +441,7 @@ namespace ToolKit
 		{
 		}
 
-		std::string StateEndPick::Signaled(SignalId signal)
+		String StateEndPick::Signaled(SignalId signal)
 		{
 			// Keep picking.
 			if (signal == BaseMod::m_leftMouseBtnDownSgnl)

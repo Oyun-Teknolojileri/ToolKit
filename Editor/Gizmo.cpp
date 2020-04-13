@@ -66,7 +66,7 @@ namespace ToolKit
 			vertices[11].pos.y = -0.7f;
 
 			std::shared_ptr<Material> newMaterial = Main::GetInstance()->m_materialManager.GetCopyOfSolidMaterial();
-			newMaterial->m_color = glm::vec3(0.1f, 0.1f, 0.1f);
+			newMaterial->m_color = Vec3(0.1f, 0.1f, 0.1f);
 			newMaterial->GetRenderState()->depthTestEnabled = false;
 
 			m_mesh->m_clientSideVertices = vertices;
@@ -119,8 +119,8 @@ namespace ToolKit
 			m_grabbed = AxisLabel::None;
 
 			// Hit boxes.
-			m_hitBox[0].min = glm::vec3(0.05f, -0.05f, -0.05f);
-			m_hitBox[0].max = glm::vec3(1.0f, 0.05f, 0.05f);
+			m_hitBox[0].min = Vec3(0.05f, -0.05f, -0.05f);
+			m_hitBox[0].max = Vec3(1.0f, 0.05f, 0.05f);
 
 			m_hitBox[1].min = m_hitBox[0].min.yxz;
 			m_hitBox[1].max = m_hitBox[0].max.yxz;
@@ -223,9 +223,9 @@ namespace ToolKit
 			// Lines.
 			for (int i = 0; i < 3; i++)
 			{
-				std::vector<glm::vec3> points
+				std::vector<Vec3> points
 				{
-					glm::vec3(),
+					Vec3(),
 					AXIS[i] * 0.8f
 				};
 				LineBatch l(points, g_gizmoColor[i], DrawType::Line);
@@ -248,7 +248,7 @@ namespace ToolKit
 					Cone head = Cone(0.2f, 0.1f, 10, 10);
 					head.m_mesh->UnInit();
 
-					glm::vec3 t(0.0f, 0.8f, 0.0f);
+					Vec3 t(0.0f, 0.8f, 0.0f);
 					glm::quat q;
 
 					if (i == 0)

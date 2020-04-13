@@ -12,7 +12,7 @@ namespace ToolKit
 			// Scene queries.
 			struct PickData
 			{
-				glm::vec3 pickPos;
+				Vec3 pickPos;
 				Entity* entity = nullptr;
 			};
 

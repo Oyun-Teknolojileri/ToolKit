@@ -17,7 +17,7 @@ namespace ToolKit
 		m_material = std::shared_ptr<Material>(new Material());
 	}
 
-	Mesh::Mesh(std::string file)
+	Mesh::Mesh(String file)
 	{
 		m_file = file;
 		m_material = std::shared_ptr<Material>(new Material());
@@ -89,7 +89,7 @@ namespace ToolKit
 			}
 
 			rapidxml::xml_node<>* materialNode = node->first_node("material");
-			std::string matFile = materialNode->first_attribute("name")->value();
+			String matFile = materialNode->first_attribute("name")->value();
 
 			if (CheckFile(MaterialPath(matFile)))
 			{
@@ -213,7 +213,7 @@ namespace ToolKit
 		}
 	}
 
-	void Mesh::UpdateAABB(const glm::vec3& v)
+	void Mesh::UpdateAABB(const Vec3& v)
 	{
 		m_aabb.max = glm::max(m_aabb.max, v);
 		m_aabb.min = glm::min(m_aabb.min, v);
@@ -224,10 +224,10 @@ namespace ToolKit
 		m_skeleton = new Skeleton();
 	}
 
-	SkinMesh::SkinMesh(std::string file)
+	SkinMesh::SkinMesh(String file)
 		: Mesh(file)
 	{
-		std::string skelFile = file.substr(0, file.find_last_of("."));
+		String skelFile = file.substr(0, file.find_last_of("."));
 		skelFile += ".skeleton";
 
 		m_skeleton = new Skeleton(skelFile);
@@ -286,7 +286,7 @@ namespace ToolKit
 			}
 
 			rapidxml::xml_node<>* materialNode = node->first_node("material");
-			std::string matFile = materialNode->first_attribute("name")->value();
+			String matFile = materialNode->first_attribute("name")->value();
 
 			if (CheckFile(MaterialPath(matFile)))
 			{

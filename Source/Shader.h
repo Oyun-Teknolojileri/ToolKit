@@ -21,7 +21,7 @@ namespace ToolKit
   {
   public:
     Shader();
-    Shader(std::string file);
+    Shader(String file);
     ~Shader();
 
     virtual void Load() override;
@@ -32,7 +32,7 @@ namespace ToolKit
     GLuint m_type = GL_VERTEX_SHADER;
     GLuint m_shaderHandle = 0;
     std::vector<Uniform> m_uniforms;
-    std::string m_source;
+    String m_source;
   };
 
   class ShaderManager : public ResourceManager<Shader>

@@ -9,20 +9,20 @@ namespace ToolKit
 	namespace Editor
 	{
 		// Commands & Executors.
-		const std::string g_showPickDebugCmd("ShowPickGeometry");
-		extern void ShowPickDebugExec(std::string args);
+		const String g_showPickDebugCmd("ShowPickGeometry");
+		extern void ShowPickDebugExec(String args);
 
-		const std::string g_showOverlayUICmd("ShowOverlayUI");
-		extern void ShowOverlayExec(std::string args);
+		const String g_showOverlayUICmd("ShowOverlayUI");
+		extern void ShowOverlayExec(String args);
 
-		const std::string g_showOverlayUIAlwaysCmd("ShowOverlayUIAlways");
-		extern void ShowOverlayAlwaysExec(std::string args);
+		const String g_showOverlayUIAlwaysCmd("ShowOverlayUIAlways");
+		extern void ShowOverlayAlwaysExec(String args);
 
-		const std::string g_showModTransitionsCmd("ShowModTransitions");
-		extern void ShowModTransitionsExec(std::string args);
+		const String g_showModTransitionsCmd("ShowModTransitions");
+		extern void ShowModTransitionsExec(String args);
 
-		const std::string g_SetTransformCmd("SetTransform");
-		extern void SetTransformExec(std::string args);
+		const String g_SetTransformCmd("SetTransform");
+		extern void SetTransformExec(String args);
 
 		class ConsoleWindow : public Window
 		{
@@ -40,26 +40,26 @@ namespace ToolKit
 				Warning,
 				Command
 			};
-			void AddLog(const std::string& log, LogType type = LogType::Memo);
-			void AddLog(const std::string& log, const std::string& tag);
+			void AddLog(const String& log, LogType type = LogType::Memo);
+			void AddLog(const String& log, const String& tag);
 			void ClearLog();
-			void ExecCommand(const std::string& commandLine);
+			void ExecCommand(const String& commandLine);
 
 		private:
 			// Command line word processing. Auto-complete and history lookups.
 			int TextEditCallback(ImGuiInputTextCallbackData* data);
-			void CreateCommand(const std::string& command, std::function<void(std::string)> executor);
+			void CreateCommand(const String& command, std::function<void(String)> executor);
 			
 		private:
 			// States.
 			bool m_scrollToBottom = false;
 
 			// Buffers.
-			std::vector<std::string> m_items;
-			std::vector<std::string> m_commands;
-			std::unordered_map<std::string, std::function<void(std::string)>> m_commandExecutors;
+			std::vector<String> m_items;
+			std::vector<String> m_commands;
+			std::unordered_map<String, std::function<void(String)>> m_commandExecutors;
 
-			std::vector < std::string> m_history;
+			std::vector < String> m_history;
 			int m_historyPos; // -1: new line, 0..History.Size-1 browsing history.
 
 			// ImGui Helpers.

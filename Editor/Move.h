@@ -24,7 +24,7 @@ namespace ToolKit
 			std::shared_ptr<MoveGizmo> m_gizmo;
 			AxisLabel m_grabbedAxis;
 			PlaneEquation m_intersectionPlane;
-			glm::vec3 m_moveAxis;
+			Vec3 m_moveAxis;
 			float m_intersectDist;
 		};
 
@@ -34,8 +34,8 @@ namespace ToolKit
 			virtual void TransitionOut(State* nextState) override;
 
 			virtual void Update(float deltaTime) override;
-			virtual std::string Signaled(SignalId signal) override;
-			virtual std::string GetType() override { return StateType::StateBeginMove; }
+			virtual String Signaled(SignalId signal) override;
+			virtual String GetType() override { return StateType::StateBeginMove; }
 
 		private:
 			void CalculateIntersectionPlane();
@@ -47,8 +47,8 @@ namespace ToolKit
 			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* prevState) override;
 			virtual void Update(float deltaTime) override;
-			virtual std::string Signaled(SignalId signal) override;
-			virtual std::string GetType() override { return StateType::StateMoveTo; }
+			virtual String Signaled(SignalId signal) override;
+			virtual String GetType() override { return StateType::StateMoveTo; }
 
 		private:
 			void Move();
@@ -61,8 +61,8 @@ namespace ToolKit
 		{
 		public:
 			virtual void TransitionOut(State* nextState) override;
-			virtual std::string Signaled(SignalId signal) override;
-			virtual std::string GetType() override { return StateType::StateEndMove; }
+			virtual String Signaled(SignalId signal) override;
+			virtual String GetType() override { return StateType::StateEndMove; }
 		};
 
 		// Mod.

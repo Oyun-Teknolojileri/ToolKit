@@ -9,17 +9,17 @@ namespace ToolKit
 	Node::Node()
 	{
 		m_parent = nullptr;
-		m_scale = glm::vec3(1, 1, 1);
+		m_scale = Vec3(1, 1, 1);
 	}
 
-	Node::Node(glm::vec3 translation)
+	Node::Node(Vec3 translation)
 	{
 		m_parent = nullptr;
-		m_scale = glm::vec3(1, 1, 1);
+		m_scale = Vec3(1, 1, 1);
 		m_translation = translation;
 	}
 
-	void Node::Translate(glm::vec3 val, TransformationSpace space)
+	void Node::Translate(Vec3 val, TransformationSpace space)
 	{
 		switch (space)
 		{
@@ -80,14 +80,14 @@ namespace ToolKit
 		m_orientation = glm::normalize(m_orientation);
 	}
 
-	void Node::Scale(glm::vec3 val)
+	void Node::Scale(Vec3 val)
 	{
 		m_scale += val;
 	}
 
 	void Node::Transform(glm::mat4 val, TransformationSpace space)
 	{
-		glm::vec3 translation;
+		Vec3 translation;
 		glm::quat orientation;
 		DecomposeMatrix(val, translation, orientation);
 
@@ -124,7 +124,7 @@ namespace ToolKit
 		}
 	}
 
-	glm::vec3 Node::GetTranslation(TransformationSpace space)
+	Vec3 Node::GetTranslation(TransformationSpace space)
 	{
 		switch (space)
 		{
@@ -138,7 +138,7 @@ namespace ToolKit
 			break;
 		case TransformationSpace::TS_LOCAL:
 		default:
-			return glm::vec3();
+			return Vec3();
 			break;
 		}
 	}
@@ -162,7 +162,7 @@ namespace ToolKit
 		}
 	}
 
-	glm::vec3 Node::GetScale(TransformationSpace space)
+	Vec3 Node::GetScale(TransformationSpace space)
 	{
 		switch (space)
 		{
@@ -176,7 +176,7 @@ namespace ToolKit
 			break;
 		case TransformationSpace::TS_LOCAL:
 		default:
-			return glm::vec3();
+			return Vec3();
 			break;
 		}
 	}

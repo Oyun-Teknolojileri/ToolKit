@@ -12,7 +12,7 @@ namespace ToolKit
 	{
 	}
 
-	Texture::Texture(std::string file)
+	Texture::Texture(String file)
 	{
 		m_file = file;
 		m_textureId = 0;
@@ -69,7 +69,7 @@ namespace ToolKit
 	{
 	}
 
-	CubeMap::CubeMap(std::string file)
+	CubeMap::CubeMap(String file)
 		: Texture(file)
 	{
 	}
@@ -86,17 +86,17 @@ namespace ToolKit
 
 		m_images.resize(6);
 		size_t pos = m_file.find("px.png");
-		if (pos == std::string::npos)
+		if (pos == String::npos)
 		{
 			Logger::GetInstance()->Log("Inapropriate postfix. Looking for \"px.png\": " + m_file);
 			return;
 		}
 
-		std::string file = m_file.substr(0, pos);
+		String file = m_file.substr(0, pos);
 
 		for (int i = 0; i < 6; i++)
 		{
-			std::string postfix = "px.png";
+			String postfix = "px.png";
 			switch (i)
 			{
 			case 1:

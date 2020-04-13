@@ -16,33 +16,33 @@ namespace ToolKit
 
 	void Directional::Pitch(float val)
 	{
-		glm::quat q = glm::angleAxis(val, glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::quat q = glm::angleAxis(val, Vec3(1.0f, 0.0f, 0.0f));
 		m_node->Rotate(q, TransformationSpace::TS_LOCAL);
 	}
 
 	void Directional::Yaw(float val)
 	{
-		glm::quat q = glm::angleAxis(val, glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::quat q = glm::angleAxis(val, Vec3(0.0f, 1.0f, 0.0f));
 		m_node->Rotate(q, TransformationSpace::TS_LOCAL);
 	}
 
 	void Directional::Roll(float val)
 	{
-		glm::quat q = glm::angleAxis(val, glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::quat q = glm::angleAxis(val, Vec3(1.0f, 0.0f, 0.0f));
 		m_node->Rotate(q, TransformationSpace::TS_LOCAL);
 	}
 
-	void Directional::Translate(glm::vec3 pos)
+	void Directional::Translate(Vec3 pos)
 	{
 		m_node->Translate(pos, TransformationSpace::TS_LOCAL);
 	}
 
 	void Directional::RotateOnUpVector(float val)
 	{
-		m_node->Rotate(glm::angleAxis(val, glm::vec3(0.0f, 1.0f, 0.0f)), TransformationSpace::TS_WORLD);
+		m_node->Rotate(glm::angleAxis(val, Vec3(0.0f, 1.0f, 0.0f)), TransformationSpace::TS_WORLD);
 	}
 
-	void Directional::GetLocalAxis(glm::vec3& dir, glm::vec3& up, glm::vec3& right) const
+	void Directional::GetLocalAxis(Vec3& dir, Vec3& up, Vec3& right) const
 	{
 		glm::mat4 transform = m_node->GetTransform();
 		right = glm::column(transform, 0);
@@ -50,19 +50,19 @@ namespace ToolKit
 		dir = -glm::column(transform, 2);
 	}
 
-	glm::vec3 Directional::GetDir() const
+	Vec3 Directional::GetDir() const
 	{
 		glm::mat4 transform = m_node->GetTransform();
 		return -glm::column(transform, 2);
 	}
 
-	glm::vec3 Directional::GetUp() const
+	Vec3 Directional::GetUp() const
 	{
 		glm::mat4 transform = m_node->GetTransform();
 		return glm::column(transform, 1);
 	}
 
-	glm::vec3 Directional::GetRight() const
+	Vec3 Directional::GetRight() const
 	{
 		glm::mat4 transform = m_node->GetTransform();
 		return glm::column(transform, 0);
@@ -135,7 +135,7 @@ namespace ToolKit
 
 	Light::Light()
 	{
-		m_color = glm::vec3(1.0f, 1.0f, 1.0f);
+		m_color = Vec3(1.0f, 1.0f, 1.0f);
 	}
 
 	Light::~Light()

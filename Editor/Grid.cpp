@@ -52,9 +52,9 @@ namespace ToolKit
 			// x - z lines.
 			for (int i = 0; i < 2; i++)
 			{
-				glm::vec3 p1(-scale * 0.5f, 0.01f, 0.0f);
-				glm::vec3 p2(scale * 0.5f, 0.01f, 0.0f);
-				glm::vec3 col = g_gridAxisRed;
+				Vec3 p1(-scale * 0.5f, 0.01f, 0.0f);
+				Vec3 p2(scale * 0.5f, 0.01f, 0.0f);
+				Vec3 col = g_gridAxisRed;
 
 				if (i == 1)
 				{

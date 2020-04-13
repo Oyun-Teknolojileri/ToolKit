@@ -39,7 +39,7 @@ namespace ToolKit
 
     public:
       GLuint m_handle = 0;
-      std::string m_tag;
+      String m_tag;
       std::vector<std::shared_ptr<Shader>> m_shaders;
     };
 
@@ -65,7 +65,7 @@ namespace ToolKit
     Material* m_mat = nullptr;
 		RenderTarget* m_renderTarget = nullptr;
 
-    std::unordered_map<std::string, std::shared_ptr<Program>> m_programs;
+    std::unordered_map<String, std::shared_ptr<Program>> m_programs;
     RenderState m_renderState;
   };
 

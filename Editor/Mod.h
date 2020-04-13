@@ -77,13 +77,13 @@ namespace ToolKit
 		class StateType
 		{
 		public:
-			const static std::string Null;
-			const static std::string StateBeginPick;
-			const static std::string StateBeginBoxPick;
-			const static std::string StateEndPick;
-			const static std::string StateBeginMove;
-			const static std::string StateMoveTo;
-			const static std::string StateEndMove;
+			const static String Null;
+			const static String StateBeginPick;
+			const static String StateBeginBoxPick;
+			const static String StateEndPick;
+			const static String StateBeginMove;
+			const static String StateMoveTo;
+			const static String StateEndMove;
 		};
 
 		class StatePickingBase : public State
@@ -110,16 +110,16 @@ namespace ToolKit
 		{
 		public:
 			virtual void Update(float deltaTime) override;
-			virtual std::string Signaled(SignalId signal) override;
-			virtual std::string GetType() override { return StateType::StateBeginPick; }
+			virtual String Signaled(SignalId signal) override;
+			virtual String GetType() override { return StateType::StateBeginPick; }
 		};
 
 		class StateBeginBoxPick : public StatePickingBase
 		{
 		public:
 			virtual void Update(float deltaTime) override;
-			virtual std::string Signaled(SignalId signal) override;
-			virtual std::string GetType() override { return StateType::StateBeginBoxPick; }
+			virtual String Signaled(SignalId signal) override;
+			virtual String GetType() override { return StateType::StateBeginBoxPick; }
 
 		private:
 			void GetMouseRect(glm::vec2& min, glm::vec2& max);
@@ -129,8 +129,8 @@ namespace ToolKit
 		{
 		public:
 			virtual void Update(float deltaTime) override;
-			virtual std::string Signaled(SignalId signal) override;
-			virtual std::string GetType() override { return StateType::StateEndPick; }
+			virtual String Signaled(SignalId signal) override;
+			virtual String GetType() override { return StateType::StateEndPick; }
 		};
 
 		// Mods.

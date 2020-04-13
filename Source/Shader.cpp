@@ -14,7 +14,7 @@ namespace ToolKit
 	{
 	}
 
-	Shader::Shader(std::string file)
+	Shader::Shader(String file)
 	{
 		m_file = file;
 	}
@@ -39,14 +39,14 @@ namespace ToolKit
 
 		for (rapidxml::xml_node<>* node = rootNode->first_node(); node; node = node->next_sibling())
 		{
-			if (std::string("type").compare(node->name()) == 0)
+			if (String("type").compare(node->name()) == 0)
 			{
 				rapidxml::xml_attribute<>* attr = node->first_attribute("name");
-				if (std::string("vertexShader").compare(attr->value()) == 0)
+				if (String("vertexShader").compare(attr->value()) == 0)
 				{
 					m_type = GL_VERTEX_SHADER;
 				}
-				else if (std::string("fragmentShader").compare(attr->value()) == 0)
+				else if (String("fragmentShader").compare(attr->value()) == 0)
 				{
 					m_type = GL_FRAGMENT_SHADER;
 				}
@@ -56,34 +56,34 @@ namespace ToolKit
 				}
 			}
 
-			if (std::string("uniform").compare(node->name()) == 0)
+			if (String("uniform").compare(node->name()) == 0)
 			{
 				rapidxml::xml_attribute<>* attr = node->first_attribute();
-				if (std::string("ProjectViewModel").compare(attr->value()) == 0)
+				if (String("ProjectViewModel").compare(attr->value()) == 0)
 				{
 					m_uniforms.push_back(Uniform::PROJECT_MODEL_VIEW);
 				}
-				else if (std::string("Model").compare(attr->value()) == 0)
+				else if (String("Model").compare(attr->value()) == 0)
 				{
 					m_uniforms.push_back(Uniform::MODEL);
 				}
-				else if (std::string("InverseTransModel").compare(attr->value()) == 0)
+				else if (String("InverseTransModel").compare(attr->value()) == 0)
 				{
 					m_uniforms.push_back(Uniform::INV_TR_MODEL);
 				}
-				else if (std::string("LightData").compare(attr->value()) == 0)
+				else if (String("LightData").compare(attr->value()) == 0)
 				{
 					m_uniforms.push_back(Uniform::LIGHT_DATA);
 				}
-				else if (std::string("CamData").compare(attr->value()) == 0)
+				else if (String("CamData").compare(attr->value()) == 0)
 				{
 					m_uniforms.push_back(Uniform::CAM_DATA);
 				}
-				else if (std::string("Color").compare(attr->value()) == 0)
+				else if (String("Color").compare(attr->value()) == 0)
 				{
 					m_uniforms.push_back(Uniform::COLOR);
 				}
-				else if (std::string("FrameCount").compare(attr->value()) == 0)
+				else if (String("FrameCount").compare(attr->value()) == 0)
 				{
 					m_uniforms.push_back(Uniform::FRAME_COUNT);
 				}
@@ -93,7 +93,7 @@ namespace ToolKit
 				}
 			}
 
-			if (std::string("source").compare(node->name()) == 0)
+			if (String("source").compare(node->name()) == 0)
 			{
 				m_source = node->first_node()->value();
 			}

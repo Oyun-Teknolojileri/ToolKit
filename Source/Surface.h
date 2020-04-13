@@ -16,7 +16,7 @@ namespace ToolKit
   public:
     Surface(std::shared_ptr<Texture> texture, glm::vec2 pivotOffset);
     Surface(std::shared_ptr<Texture> texture, const std::vector<Vertex>& vertices);
-    Surface(std::string file, glm::vec2 pivotOffset);
+    Surface(String file, glm::vec2 pivotOffset);
     ~Surface();
 
     virtual EntityType GetType() const override;

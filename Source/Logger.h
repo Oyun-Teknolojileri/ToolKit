@@ -11,7 +11,7 @@ namespace ToolKit
   public:
     ~Logger();
     static Logger* GetInstance();
-    void Log(std::string message);
+    void Log(String message);
 
   private:
     Logger();

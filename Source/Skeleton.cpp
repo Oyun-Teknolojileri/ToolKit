@@ -9,7 +9,7 @@
 namespace ToolKit
 {
 
-  Bone::Bone(std::string name)
+  Bone::Bone(String name)
   {
     m_name = name;
     m_node = new Node();
@@ -25,7 +25,7 @@ namespace ToolKit
     m_node = new Node();
   }
 
-  Skeleton::Skeleton(std::string file)
+  Skeleton::Skeleton(String file)
   {
     m_file = file;
     m_node = new Node();
@@ -88,7 +88,7 @@ namespace ToolKit
     m_bones.push_back(bone);
   }
 
-  int Skeleton::GetBoneIndex(std::string bone)
+  int Skeleton::GetBoneIndex(String bone)
   {
     for (int i = 0; i < (int)m_bones.size(); i++)
     {
@@ -99,7 +99,7 @@ namespace ToolKit
     return -1;
   }
 
-  Bone* Skeleton::GetBone(std::string bone)
+  Bone* Skeleton::GetBone(String bone)
   {
     int index = GetBoneIndex(bone);
     if (index == -1)
@@ -131,7 +131,7 @@ namespace ToolKit
     rapidxml::xml_node<>* bindPoseNode = node->first_node("bindPose");
     if (bindPoseNode != nullptr)
     {
-      glm::vec3 ts, scl;
+      Vec3 ts, scl;
       glm::quat rt;
 
       rapidxml::xml_node<>* subNode = bindPoseNode->first_node("translation");

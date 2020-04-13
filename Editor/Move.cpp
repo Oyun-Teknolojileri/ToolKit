@@ -113,18 +113,18 @@ namespace ToolKit
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			if (e != nullptr)
 			{
-				glm::vec3 x, y, z;
+				Vec3 x, y, z;
 				glm::mat4 ts = e->m_node->GetTransform();
 				ExtractAxes(ts, x, y, z);
 
 				Viewport* vp = g_app->GetActiveViewport();
-				glm::vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-				glm::vec3 gizmOrg = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-				glm::vec3 dir = glm::normalize(camOrg - gizmOrg);
+				Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+				Vec3 gizmOrg = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+				Vec3 dir = glm::normalize(camOrg - gizmOrg);
 
 				float safetyMeasure = glm::abs(glm::cos(glm::radians(15.0f)));
 				AxisLabel axisLabes[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
-				glm::vec3 axes[3] = { x, y, z };
+				Vec3 axes[3] = { x, y, z };
 
 				for (int i = 0; i < 3; i++)
 				{
@@ -136,7 +136,7 @@ namespace ToolKit
 			}
 		}
 
-		std::string StateBeginMove::Signaled(SignalId signal)
+		String StateBeginMove::Signaled(SignalId signal)
 		{
 			if (signal == BaseMod::m_leftMouseBtnDownSgnl)
 			{
@@ -177,16 +177,16 @@ namespace ToolKit
 		void StateBeginMove::CalculateIntersectionPlane()
 		{
 			Entity* e = g_app->m_scene.GetCurrentSelection();
-			glm::vec3 x, y, z;
+			Vec3 x, y, z;
 			glm::mat4 ts = e->m_node->GetTransform();
 			ExtractAxes(ts, x, y, z);
 
 			Viewport* vp = g_app->GetActiveViewport();
-			glm::vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-			glm::vec3 gizmOrg = m_gizmo->m_worldLocation;
-			glm::vec3 dir = glm::normalize(camOrg - gizmOrg);
+			Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+			Vec3 gizmOrg = m_gizmo->m_worldLocation;
+			Vec3 dir = glm::normalize(camOrg - gizmOrg);
 
-			glm::vec3 px, py, pz;
+			Vec3 px, py, pz;
 			switch (m_grabbedAxis)
 			{
 			case AxisLabel::X:
@@ -209,8 +209,8 @@ namespace ToolKit
 			Ray ray = vp->RayFromMousePosition();
 			if (LinePlaneIntersection(ray, m_intersectionPlane, t))
 			{
-				glm::vec3 p = PointOnRay(ray, t);
-				glm::vec3 go2p = p - gizmOrg;
+				Vec3 p = PointOnRay(ray, t);
+				Vec3 go2p = p - gizmOrg;
 				m_intersectDist = glm::dot(px, go2p);
 			}
 			else
@@ -231,9 +231,9 @@ namespace ToolKit
 			{
 				assert(m_grabbedAxis != AxisLabel::None && "{0, 1, 2} expected.");
 
-				glm::vec3 p = m_gizmo->m_worldLocation;
-				glm::vec3 color = g_gizmoColor[(int)m_grabbedAxis];
-				std::vector<glm::vec3> points
+				Vec3 p = m_gizmo->m_worldLocation;
+				Vec3 color = g_gizmoColor[(int)m_grabbedAxis];
+				std::vector<Vec3> points
 				{
 					p + m_moveAxis * 100.0f,
 					p - m_moveAxis * 100.0f
@@ -259,7 +259,7 @@ namespace ToolKit
 			StateMoveBase::Update(deltaTime);
 		}
 
-		std::string StateMoveTo::Signaled(SignalId signal)
+		String StateMoveTo::Signaled(SignalId signal)
 		{		
 			if (signal == BaseMod::m_leftMouseBtnDragSgnl)
 			{
@@ -283,11 +283,11 @@ namespace ToolKit
 			Ray ray = vp->RayFromMousePosition();
 			if (LinePlaneIntersection(ray, m_intersectionPlane, t))
 			{
-				glm::vec3 p = PointOnRay(ray, t);
-				glm::vec3 go2p = p - m_gizmo->m_worldLocation;
+				Vec3 p = PointOnRay(ray, t);
+				Vec3 go2p = p - m_gizmo->m_worldLocation;
 				
 				float projDst = glm::dot(m_moveAxis, go2p);
-				glm::vec3 delta = m_moveAxis * (projDst - m_intersectDist);
+				Vec3 delta = m_moveAxis * (projDst - m_intersectDist);
 
 				std::vector<Entity*> selecteds;
 				g_app->m_scene.GetSelectedEntities(selecteds);
@@ -318,7 +318,7 @@ namespace ToolKit
 			}
 		}
 
-		std::string StateEndMove::Signaled(SignalId signal)
+		String StateEndMove::Signaled(SignalId signal)
 		{
 			if (signal == BaseMod::m_backToStart)
 			{
