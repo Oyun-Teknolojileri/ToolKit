@@ -54,7 +54,7 @@ namespace ToolKit
 			void Move();
 
 		private:
-			std::shared_ptr<LineBatch> m_activeAxis;
+			std::shared_ptr<LineBatch> m_guideLine;
 		};
 
 		class StateEndMove : public StateMoveBase

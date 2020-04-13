@@ -177,6 +177,7 @@ namespace ToolKit
 		void StateBeginMove::CalculateIntersectionPlane()
 		{
 			Entity* e = g_app->m_scene.GetCurrentSelection();
+			
 			Vec3 x, y, z;
 			Mat4 ts = e->m_node->GetTransform();
 			ExtractAxes(ts, x, y, z);
@@ -198,24 +199,38 @@ namespace ToolKit
 			case AxisLabel::Z:
 				px = z;
 				break;
+			case AxisLabel::XY:
+				m_intersectionPlane = PlaneFrom(gizmOrg, z);
+				break;
+			case AxisLabel::YZ:
+				m_intersectionPlane = PlaneFrom(gizmOrg, x);
+				break;
+			case AxisLabel::ZX:
+				m_intersectionPlane = PlaneFrom(gizmOrg, y);
+				break;
+			default:
+				assert(false);
 			}
 
-			m_moveAxis = px;
-			py = glm::normalize(glm::cross(px, dir));
-			pz = glm::normalize(glm::cross(py, px));
-			m_intersectionPlane = PlaneFrom(gizmOrg, pz);
+			if (m_grabbedAxis <= AxisLabel::Z)
+			{
+				m_moveAxis = px;
+				py = glm::normalize(glm::cross(px, dir));
+				pz = glm::normalize(glm::cross(py, px));
+				m_intersectionPlane = PlaneFrom(gizmOrg, pz);
 
-			float t;
-			Ray ray = vp->RayFromMousePosition();
-			if (LinePlaneIntersection(ray, m_intersectionPlane, t))
-			{
-				Vec3 p = PointOnRay(ray, t);
-				Vec3 go2p = p - gizmOrg;
-				m_intersectDist = glm::dot(px, go2p);
-			}
-			else
-			{
-				assert(false && "Intersection expected.");
+				float t;
+				Ray ray = vp->RayFromMousePosition();
+				if (LinePlaneIntersection(ray, m_intersectionPlane, t))
+				{
+					Vec3 p = PointOnRay(ray, t);
+					Vec3 go2p = p - gizmOrg;
+					m_intersectDist = glm::dot(px, go2p);
+				}
+				else
+				{
+					assert(false && "Intersection expected.");
+				}
 			}
 		}
 
@@ -229,7 +244,7 @@ namespace ToolKit
 			// Create guide line.
 			if ((int)m_grabbedAxis < 3)
 			{
-				assert(m_grabbedAxis != AxisLabel::None && "{0, 1, 2} expected.");
+				assert(m_grabbedAxis != AxisLabel::None);
 
 				Vec3 p = m_gizmo->m_worldLocation;
 				Vec3 color = g_gizmoColor[(int)m_grabbedAxis];
@@ -239,9 +254,9 @@ namespace ToolKit
 					p - m_moveAxis * 100.0f
 				};
 
-				assert(m_activeAxis == nullptr && "Expected to be nulled on TransitionOut.");
-				m_activeAxis = std::make_shared<LineBatch>(points, color, DrawType::Line, 1.0f);
-				g_app->m_scene.AddEntity(m_activeAxis.get());
+				assert(m_guideLine == nullptr && "Expected to be nulled on TransitionOut.");
+				m_guideLine = std::make_shared<LineBatch>(points, color, DrawType::Line, 1.0f);
+				g_app->m_scene.AddEntity(m_guideLine.get());
 			}
 		}
 
@@ -249,9 +264,12 @@ namespace ToolKit
 		{
 			StateMoveBase::TransitionOut(prevState);
 
-			g_app->m_scene.RemoveEntity(m_activeAxis->m_id);
-			assert(m_activeAxis.use_count() == 1 && "There must be single instance.");
-			m_activeAxis = nullptr;
+			if (m_guideLine != nullptr)
+			{
+				g_app->m_scene.RemoveEntity(m_guideLine->m_id);
+				assert(m_guideLine.use_count() == 1 && "There must be single instance.");
+				m_guideLine = nullptr;
+			}
 		}
 
 		void StateMoveTo::Update(float deltaTime)
@@ -286,8 +304,12 @@ namespace ToolKit
 				Vec3 p = PointOnRay(ray, t);
 				Vec3 go2p = p - m_gizmo->m_worldLocation;
 				
-				float projDst = glm::dot(m_moveAxis, go2p);
-				Vec3 delta = m_moveAxis * (projDst - m_intersectDist);
+				Vec3 delta = go2p;
+				if (m_grabbedAxis <= AxisLabel::Z)
+				{
+					float projDst = glm::dot(m_moveAxis, go2p);
+					delta = m_moveAxis * (projDst - m_intersectDist);
+				}
 
 				std::vector<Entity*> selecteds;
 				g_app->m_scene.GetSelectedEntities(selecteds);
