@@ -139,12 +139,17 @@ namespace ToolKit
 			{
 				bool line = RayBoxIntersection(rayInObjectSpace, m_hitBox[i], d);
 				bool cone = RayBoxIntersection(rayInObjectSpace, m_hitBox[i + 3], d);
-				if (line || cone)
+				bool plane = RayBoxIntersection(rayInObjectSpace, m_hitBox[i + 6], d);
+				if (line || cone || plane)
 				{
 					if (d < t)
 					{
 						t = d;
 						minIndx = i;
+						if (plane)
+						{
+							minIndx += 3;
+						}
 					}
 				}
 			}
@@ -182,6 +187,7 @@ namespace ToolKit
 			for (int i = 0; i < 3; i++)
 			{
 				m_lines[i]->m_material->m_color = g_gizmoColor[i];
+				m_lines[i + 3]->m_material->m_color = g_gizmoColor[i];
 				m_solids[i]->m_material->m_color = g_gizmoColor[i];
 
 				if (m_inAccessable == (AxisLabel)i)
@@ -291,6 +297,7 @@ namespace ToolKit
 
 				plane.m_mesh->Init();
 				m_lines[i + 3] = plane.m_mesh;
+				m_hitBox[6 + i] = plane.m_mesh->m_aabb;
 				plane.m_mesh = nullptr;
 			}
 

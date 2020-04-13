@@ -41,7 +41,7 @@ namespace ToolKit
 			AxisLabel m_grabbed;
 
 		private:
-			BoundingBox m_hitBox[6]; // X - Y - Z.
+			BoundingBox m_hitBox[9]; // X - Y - Z.
 			std::shared_ptr<Mesh> m_lines[6];
 			std::shared_ptr<Mesh> m_solids[6];
 		};
