@@ -35,8 +35,8 @@ namespace ToolKit
 		Y,
 		Z,
 		XY,
-		XZ,
-		YZ
+		YZ,
+		ZX
 	};
 
 }

@@ -13,7 +13,6 @@ namespace ToolKit
 
   enum class DrawType
   {
-    //Quad = GL_QUADS,
     Triangle = GL_TRIANGLES,
     Line = GL_LINES,
     LineStrip = GL_LINE_STRIP,

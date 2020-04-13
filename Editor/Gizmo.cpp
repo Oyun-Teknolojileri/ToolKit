@@ -168,7 +168,7 @@ namespace ToolKit
 
 			std::vector<Mesh*> allMeshes;
 			m_mesh->GetAllMeshes(allMeshes);
-			assert(allMeshes.size() <= 6 && "Max expected size is 6");
+			assert(allMeshes.size() <= 9 && "Max expected size is 6");
 
 			for (Mesh* mesh : allMeshes)
 			{
@@ -177,6 +177,7 @@ namespace ToolKit
 
 			AxisLabel hitRes = HitTest(vp->RayFromMousePosition());
 
+			// Arrows.
 			bool firstFilled = false;
 			for (int i = 0; i < 3; i++)
 			{
@@ -206,6 +207,19 @@ namespace ToolKit
 					m_lines[i]->m_material->m_color = g_selectHighLightPrimaryColor;
 					m_solids[i]->m_material->m_color = g_selectHighLightPrimaryColor;
 				}
+			}
+
+			// Planes.
+			for (int i = 0; i < 3; i++)
+			{
+				m_lines[i + 3]->m_material->m_color = g_gizmoColor[(i + 2) % 3];
+				
+				if (hitRes == (AxisLabel)(i + 3))
+				{
+					m_lines[i + 3]->m_material->m_color = g_selectHighLightPrimaryColor;
+				}
+
+				m_mesh->m_subMeshes.push_back(m_lines[i + 3]);
 			}
 		}
 
@@ -243,18 +257,48 @@ namespace ToolKit
 				std::vector<Vec3> points
 				{
 					AXIS[i] * tip,
-					AXIS[i] * toe
+					AXIS[i] * toe,
 				};
+
 				LineBatch l(points, g_gizmoColor[i], DrawType::Line);
-				// l.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
 				l.m_mesh->Init();
 				m_lines[i] = l.m_mesh;
 				l.m_mesh = nullptr;
 			}
 
+			// Planes
+			const float o = 0.35f, s = 0.15f;
+			for (int i = 0; i < 3; i++)
+			{
+				Vec3 axis1 = AXIS[i] * o;
+				Vec3 off1 = AXIS[i] * s;
+				Vec3 axis2 = AXIS[(i + 1) % 3] * o;
+				Vec3 off2 = AXIS[(i + 1) % 3] * s;
+
+				std::vector<Vec3> points
+				{
+					axis1 + axis2,
+					axis1 + off1 + axis2,
+					axis1 + off1 + axis2 + off2,
+					axis1 + axis2 + off2,
+					axis1 + axis2,
+					axis1 + off1 + axis2 + off2,
+					axis1 + axis2 + off2
+				};
+
+				LineBatch plane(points, g_gizmoColor[(i + 2) % 3], DrawType::Triangle);
+				plane.m_mesh->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
+
+				plane.m_mesh->Init();
+				m_lines[i + 3] = plane.m_mesh;
+				plane.m_mesh = nullptr;
+			}
+
 			m_mesh = m_lines[0];
-			m_mesh->m_subMeshes.push_back(m_lines[1]);
-			m_mesh->m_subMeshes.push_back(m_lines[2]);
+			for (int i = 1; i < 6; i++)
+			{
+				m_mesh->m_subMeshes.push_back(m_lines[i]);
+			}
 
 			// Solids.
 			for (int i = 0; i < 3; i++)

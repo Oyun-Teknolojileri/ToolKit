@@ -42,8 +42,8 @@ namespace ToolKit
 
 		private:
 			BoundingBox m_hitBox[6]; // X - Y - Z.
-			std::shared_ptr<Mesh> m_lines[3];
-			std::shared_ptr<Mesh> m_solids[3];
+			std::shared_ptr<Mesh> m_lines[6];
+			std::shared_ptr<Mesh> m_solids[6];
 		};
 	}
 }
