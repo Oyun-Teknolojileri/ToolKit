@@ -164,7 +164,6 @@ namespace ToolKit
 		m_storage[MaterialPath("default.material")] = MaterialPtr(material);
 
 		material = new Material();
-		material->GetRenderState()->drawType = DrawType::Line;
 		material->m_vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
 		material->m_fragmetShader = GetShaderManager()->Create(ShaderPath("solidColorFrag.shader"));
 		material->Init();

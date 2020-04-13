@@ -59,11 +59,12 @@ namespace ToolKit
 
 		void App::Init()
 		{
-			MaterialPtr solidColorMaterial = Main::GetInstance()->m_materialManager.Create(MaterialPath("solidColor.material"));
-			solidColorMaterial->m_color = Vec3(0.8f, 0.8f, 0.8f);
+			MaterialPtr solidColorMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
+			solidColorMaterial->m_color = Vec3(1.0f);
 
 			m_suzanne = new Drawable();
-			m_suzanne->m_mesh = Main::GetInstance()->m_meshMan.Create(MeshPath("suzanne.mesh"));
+			m_suzanne->m_mesh = GetMeshManager()->Create(MeshPath("suzanne.mesh"));
+			m_suzanne->m_mesh->m_material = solidColorMaterial;
 			m_suzanne->m_mesh->Init(false);
 			m_scene.AddEntity(m_suzanne);
 

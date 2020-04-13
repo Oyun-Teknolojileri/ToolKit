@@ -68,8 +68,8 @@ public:
     m_sscp = glm::ivec2(m_windowWidth / 2, m_windowHeight / 2);
     m_crosshair->m_node->Translate(glm::vec3(m_sscp.x, m_sscp.y, 0));
 
-    m_backGround.m_mesh = ToolKit::Main::GetInstance()->m_meshMan.Create(ToolKit::MeshPath("earthBg.mesh"));
-    m_paralaxLayer.m_mesh = ToolKit::Main::GetInstance()->m_meshMan.Create(ToolKit::MeshPath("starParalaxLayer.mesh"));
+    m_backGround.m_mesh = ToolKit::GetMeshManager()->Create(ToolKit::MeshPath("earthBg.mesh"));
+    m_paralaxLayer.m_mesh = ToolKit::GetMeshManager()->Create(ToolKit::MeshPath("starParalaxLayer.mesh"));
     m_paralaxLayer.m_mesh->m_material->GetRenderState()->blendFunction = ToolKit::BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
     m_paralaxLayer.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
 

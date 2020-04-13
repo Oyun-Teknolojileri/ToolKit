@@ -411,6 +411,7 @@ namespace ToolKit
 		vertices[7].pos = Vec3(0.8f, -0.2f, 0.0f);
 
 		MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
+		newMaterial->GetRenderState()->drawType = DrawType::Line;
 		newMaterial->m_color = Vec3(0.89f, 0.239f, 0.341f);
 
 		Quaternion rotation;
@@ -441,6 +442,7 @@ namespace ToolKit
 	LineBatch::LineBatch(const std::vector<Vec3>& linePnts, Vec3 color, DrawType t, float lineWidth)
 	{
 		MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
+		newMaterial->GetRenderState()->drawType = t;
 		m_mesh->m_material = newMaterial;
 
 		Generate(linePnts, color, t, lineWidth);
@@ -466,7 +468,6 @@ namespace ToolKit
 		m_mesh->m_vertexCount = (uint)vertices.size();
 		m_mesh->m_clientSideVertices = vertices;
 		m_mesh->m_material->m_color = color;
-		m_mesh->m_material->GetRenderState()->drawType = t;
 		m_mesh->m_material->GetRenderState()->lineWidth = lineWidth;
 
 		m_mesh->CalculateAABoundingBox();

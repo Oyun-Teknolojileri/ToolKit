@@ -37,7 +37,7 @@ public:
   FireRate2X(std::shared_ptr<ToolKit::Mesh> pillObj)
     : PowerUp(pillObj)
   {
-    m_mesh->m_material = ToolKit::Main::GetInstance()->m_materialManager.Create(ToolKit::MaterialPath("pillBlue.material"));
+    m_mesh->m_material = ToolKit::GetMaterialManager()->Create(ToolKit::MaterialPath("pillBlue.material"));
     m_mesh->m_material->Init();
     m_duration = 30;
   }
@@ -63,7 +63,7 @@ public:
   ForPower(std::shared_ptr<ToolKit::Mesh> pillObj)
     : PowerUp(pillObj)
   {
-    m_mesh->m_material = ToolKit::Main::GetInstance()->m_materialManager.Create(ToolKit::MaterialPath("pillRed.material"));
+    m_mesh->m_material = ToolKit::GetMaterialManager()->Create(ToolKit::MaterialPath("pillRed.material"));
     m_mesh->m_material->Init();
     m_duration = 30;
   }
@@ -95,7 +95,7 @@ public:
 
   PowerUpManager()
   {
-    m_pillObj = ToolKit::Main::GetInstance()->m_meshMan.Create(ToolKit::MeshPath("pill.mesh"));
+    m_pillObj = ToolKit::GetMeshManager()->Create(ToolKit::MeshPath("pill.mesh"));
   }
 
   ~PowerUpManager()

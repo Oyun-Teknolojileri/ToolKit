@@ -65,8 +65,9 @@ namespace ToolKit
 			vertices[10].pos.y = -0.3f;
 			vertices[11].pos.y = -0.7f;
 
-			MaterialPtr newMaterial = Main::GetInstance()->m_materialManager.GetCopyOfSolidMaterial();
+			MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
 			newMaterial->m_color = Vec3(0.1f, 0.1f, 0.1f);
+			newMaterial->GetRenderState()->drawType = DrawType::Line;
 			newMaterial->GetRenderState()->depthTestEnabled = false;
 
 			m_mesh->m_clientSideVertices = vertices;

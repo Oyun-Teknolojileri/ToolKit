@@ -12,7 +12,7 @@ class Projectile : public ToolKit::Drawable
 public:
   Projectile(glm::vec3 pos)
   {
-    m_mesh = ToolKit::Main::GetInstance()->m_meshMan.Create(ToolKit::MeshPath("projectile.mesh"));
+    m_mesh = ToolKit::GetMeshManager()->Create(ToolKit::MeshPath("projectile.mesh"));
     m_node->m_translation = pos;
   }
 };
