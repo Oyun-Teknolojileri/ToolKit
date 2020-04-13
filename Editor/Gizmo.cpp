@@ -119,16 +119,6 @@ namespace ToolKit
 			m_inAccessable = AxisLabel::None;
 			m_grabbed = AxisLabel::None;
 
-			// Hit boxes.
-			m_hitBox[0].min = Vec3(0.05f, -0.05f, -0.05f);
-			m_hitBox[0].max = Vec3(1.0f, 0.05f, 0.05f);
-
-			m_hitBox[1].min = m_hitBox[0].min.yxz;
-			m_hitBox[1].max = m_hitBox[0].max.yxz;
-
-			m_hitBox[2].min = m_hitBox[0].min.zyx;
-			m_hitBox[2].max = m_hitBox[0].max.zyx;
-
 			// Mesh.
 			Generate();
 		}
@@ -147,7 +137,9 @@ namespace ToolKit
 			int minIndx = -1;
 			for (int i = 0; i < 3; i++)
 			{
-				if (RayBoxIntersection(rayInObjectSpace, m_hitBox[i], d))
+				bool line = RayBoxIntersection(rayInObjectSpace, m_hitBox[i], d);
+				bool cone = RayBoxIntersection(rayInObjectSpace, m_hitBox[i + 3], d);
+				if (line || cone)
 				{
 					if (d < t)
 					{
@@ -188,6 +180,7 @@ namespace ToolKit
 			bool firstFilled = false;
 			for (int i = 0; i < 3; i++)
 			{
+				m_lines[i]->m_material->m_color = g_gizmoColor[i];
 				m_solids[i]->m_material->m_color = g_gizmoColor[i];
 
 				if (m_inAccessable == (AxisLabel)i)
@@ -210,8 +203,8 @@ namespace ToolKit
 
 				if (hitRes == (AxisLabel)i)
 				{
-					// Highlight.
-					m_solids[i]->m_material->m_color = AXIS[i];
+					m_lines[i]->m_material->m_color = g_selectHighLightPrimaryColor;
+					m_solids[i]->m_material->m_color = g_selectHighLightPrimaryColor;
 				}
 			}
 		}
@@ -221,13 +214,36 @@ namespace ToolKit
 
 		void MoveGizmo::Generate()
 		{
+			// Axis dimensions.
+			const float tip = 0.8f, toe = 0.05f, rad = 0.1f;
+
+			// Hit box line.
+			m_hitBox[0].min = Vec3(0.05f, -0.05f, -0.05f);
+			m_hitBox[0].max = Vec3(1.0f, 0.05f, 0.05f);
+			
+			m_hitBox[1].min = m_hitBox[0].min.yxz;
+			m_hitBox[1].max = m_hitBox[0].max.yxz;
+
+			m_hitBox[2].min = m_hitBox[0].min.zyx;
+			m_hitBox[2].max = m_hitBox[0].max.zyx;
+
+			// Hit box cone.
+			m_hitBox[3].min = Vec3(tip, -rad, -rad);
+			m_hitBox[3].max = Vec3(1.0f, rad, rad);
+
+			m_hitBox[4].min = m_hitBox[3].min.yxz;
+			m_hitBox[4].max = m_hitBox[3].max.yxz;
+
+			m_hitBox[5].min = m_hitBox[3].min.zyx;
+			m_hitBox[5].max = m_hitBox[3].max.zyx;
+
 			// Lines.
 			for (int i = 0; i < 3; i++)
 			{
 				std::vector<Vec3> points
 				{
-					Vec3(),
-					AXIS[i] * 0.8f
+					AXIS[i] * tip,
+					AXIS[i] * toe
 				};
 				LineBatch l(points, g_gizmoColor[i], DrawType::Line);
 				// l.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
@@ -246,10 +262,10 @@ namespace ToolKit
 				// Cones 1 time init.
 				if (g_ArrowHeads[i] == nullptr)
 				{
-					Cone head = Cone(0.2f, 0.1f, 10, 10);
+					Cone head = Cone(1.0f - tip, rad, 10, 10);
 					head.m_mesh->UnInit();
 
-					Vec3 t(0.0f, 0.8f, 0.0f);
+					Vec3 t(0.0f, tip, 0.0f);
 					Quaternion q;
 
 					if (i == 0)

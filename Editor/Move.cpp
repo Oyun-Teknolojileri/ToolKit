@@ -358,7 +358,7 @@ namespace ToolKit
 			m_stateMachine->PushState(new StateEndMove());
 
 			m_stateMachine->PushState(new StateBeginPick());
-			// m_stateMachine->PushState(new StateBeginBoxPick());
+			m_stateMachine->PushState(new StateBeginBoxPick());
 			state = new StateEndPick();
 			state->m_links[m_linkToMoveBeginSgnl] = StateType::StateBeginMove;
 			m_stateMachine->PushState(state);
