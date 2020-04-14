@@ -36,4 +36,6 @@
 
 // STL
 #include <algorithm>
+#include <assert.h>
+#include <unordered_map>
 #include <vector>

@@ -37,14 +37,16 @@ namespace ToolKit
 			virtual void Update(float deltaTime) = 0;
 			bool IsLocked(AxisLabel axis) const;
 			void Lock(AxisLabel axis);
+			void UnLock(AxisLabel axis);
 			bool IsGrabbed(AxisLabel axis) const;
 			void Grab(AxisLabel axis);
+			AxisLabel GetGrabbedAxis() const;
 
 		protected:
 			typedef std::pair<AxisLabel, std::vector<BoundingBox>> LabelBoxPair;
 			std::vector<LabelBoxPair> m_hitBoxes;
 			std::vector<AxisLabel> m_lockedAxis;
-			std::vector<AxisLabel> m_grabbedAxis;
+			AxisLabel m_grabbedAxis;
 		};
 
 		class MoveGizmo : public Gizmo

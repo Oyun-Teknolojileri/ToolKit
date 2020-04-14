@@ -3,10 +3,10 @@
 #include "Gizmo.h"
 #include "GlobalDef.h"
 #include "Node.h"
-#include "DebugNew.h"
 #include "Viewport.h"
 #include "ConsoleWindow.h"
-#include <Directional.h>
+#include "Directional.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -18,7 +18,6 @@ namespace ToolKit
 		StateGizmoBase::StateGizmoBase()
 		{
 			m_gizmo = nullptr;
-			m_grabbedAxis = AxisLabel::None;
 			m_mouseData.resize(2);
 		}
 
@@ -54,7 +53,6 @@ namespace ToolKit
 			{
 				baseState->m_mouseData = m_mouseData;
 				baseState->m_gizmo = m_gizmo;
-				baseState->m_grabbedAxis = m_grabbedAxis;
 				baseState->m_intersectionPlane = m_intersectionPlane;
 			}
 		}
@@ -82,7 +80,7 @@ namespace ToolKit
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			ExtractAxes(e->m_node->GetTransform(), axes[0], axes[1], axes[2]);
 
-			int first = (int)m_grabbedAxis % 3;
+			int first = (int)(int)m_gizmo->GetGrabbedAxis() % 3;
 			if (n == 0)
 			{
 				return axes[first];
@@ -94,11 +92,16 @@ namespace ToolKit
 
 		bool StateGizmoBase::IsPlaneMod()
 		{
-			return m_grabbedAxis > AxisLabel::Z;
+			return m_gizmo->GetGrabbedAxis() > AxisLabel::Z;
 		}
 
 		// StateBeginMove
 		//////////////////////////////////////////////////////////////////////////
+
+		void StateGizmoBegin::TransitionIn(State* prevState)
+		{
+			StateGizmoBase::TransitionIn(prevState);
+		}
 
 		void StateGizmoBegin::TransitionOut(State* nextState)
 		{
@@ -125,7 +128,6 @@ namespace ToolKit
 
 			MakeSureGizmoIsValid();
 
-			m_gizmo->Grab(m_grabbedAxis);
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			if (e != nullptr)
 			{
@@ -138,7 +140,7 @@ namespace ToolKit
 				Vec3 gizmOrg = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 				Vec3 dir = glm::normalize(camOrg - gizmOrg);
 
-				float safetyMeasure = glm::abs(glm::cos(glm::radians(15.0f)));
+				float safetyMeasure = glm::abs(glm::cos(glm::radians(5.0f)));
 				AxisLabel axisLabes[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
 				Vec3 axes[3] = { x, y, z };
 
@@ -147,6 +149,10 @@ namespace ToolKit
 					if (safetyMeasure < glm::abs(glm::dot(dir, axes[i])))
 					{
 						m_gizmo->Lock(axisLabes[i]);
+					}
+					else
+					{
+						m_gizmo->UnLock(axisLabes[i]);
 					}
 				}
 			}
@@ -160,12 +166,24 @@ namespace ToolKit
 				if (vp != nullptr)
 				{
 					m_mouseData[0] = vp->GetLastMousePosScreenSpace();
-					m_grabbedAxis = m_gizmo->HitTest(vp->RayFromMousePosition());
+					AxisLabel axis = m_gizmo->HitTest(vp->RayFromMousePosition());
+					if (!m_gizmo->IsLocked(axis))
+					{
+						m_gizmo->Grab(axis);
+					}
 				}
 
-				if (m_grabbedAxis == AxisLabel::None)
+				if (m_gizmo->IsGrabbed(AxisLabel::None))
 				{
 					return StateType::StateBeginPick;
+				}
+			}
+
+			if (signal == BaseMod::m_leftMouseBtnUpSgnl)
+			{
+				if (m_gizmo != nullptr)
+				{
+					m_gizmo->Grab(AxisLabel::None);
 				}
 			}
 
@@ -177,9 +195,10 @@ namespace ToolKit
 					return StateType::Null;
 				}
 
-				if (m_grabbedAxis != AxisLabel::None)
+				if (!m_gizmo->IsGrabbed(AxisLabel::None))
 				{
-					if (!m_gizmo->IsLocked(m_grabbedAxis))
+					// Cant be both grabbed and locked.
+					// if (!m_gizmo->IsLocked(m_gizmo->GetGrabbedAxis()))
 					{
 						CalculateIntersectionPlane();
 						return StateType::StateMoveTo;
@@ -204,7 +223,7 @@ namespace ToolKit
 			Vec3 dir = glm::normalize(camOrg - gizmOrg);
 
 			Vec3 px, py, pz;
-			switch (m_grabbedAxis)
+			switch (m_gizmo->GetGrabbedAxis())
 			{
 			case AxisLabel::X:
 				px = x;
@@ -228,7 +247,7 @@ namespace ToolKit
 				assert(false);
 			}
 
-			if (m_grabbedAxis <= AxisLabel::Z)
+			if (m_gizmo->GetGrabbedAxis() <= AxisLabel::Z)
 			{
 				py = glm::normalize(glm::cross(px, dir));
 				pz = glm::normalize(glm::cross(py, px));
@@ -244,12 +263,12 @@ namespace ToolKit
 			StateGizmoBase::TransitionIn(prevState);
 
 			// Create guide line.
-			if ((int)m_grabbedAxis < 3)
+			if ((int)m_gizmo->GetGrabbedAxis() < 3)
 			{
-				assert(m_grabbedAxis != AxisLabel::None);
+				assert(m_gizmo->GetGrabbedAxis() != AxisLabel::None);
 
 				Vec3 p = m_gizmo->m_worldLocation;
-				Vec3 color = g_gizmoColor[(int)m_grabbedAxis];
+				Vec3 color = g_gizmoColor[(int)m_gizmo->GetGrabbedAxis()];
 				Vec3 axis = GetGrabbedAxis(0);
 				std::vector<Vec3> points
 				{
@@ -349,7 +368,7 @@ namespace ToolKit
 			if (nextState->ThisIsA<StateGizmoBegin>())
 			{
 				StateGizmoBegin* baseNext = static_cast<StateGizmoBegin*> (nextState);
-				baseNext->m_grabbedAxis = AxisLabel::None;
+				baseNext->m_gizmo->Grab(AxisLabel::None);
 				baseNext->m_mouseData[0] = Vec2();
 				baseNext->m_mouseData[1] = Vec2();
 			}

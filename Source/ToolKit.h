@@ -18,11 +18,6 @@
 #include "Texture.h"
 #include "Types.h"
 
-#include <assert.h>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
 namespace ToolKit
 {
 

@@ -127,6 +127,7 @@ namespace ToolKit
 		Gizmo::Gizmo(const Billboard::Settings& set)
 			: Billboard(set)
 		{
+			m_grabbedAxis = AxisLabel::None;
 		}
 
 		Gizmo::~Gizmo()
@@ -165,40 +166,51 @@ namespace ToolKit
 
 		bool Gizmo::IsLocked(AxisLabel axis) const
 		{
-			if (axis == AxisLabel::None)
-			{
-				return m_lockedAxis.empty();
-			}
-
 			return std::find(m_lockedAxis.begin(), m_lockedAxis.end(), axis) != m_lockedAxis.end();
 		}
 
 		void Gizmo::Lock(AxisLabel axis)
 		{
 			assert(axis != AxisLabel::None);
-			if (!IsLocked(axis))
+			if (axis != AxisLabel::None && !IsLocked(axis))
 			{
 				m_lockedAxis.push_back(axis);
 			}
 		}
 
+		void Gizmo::UnLock(AxisLabel axis)
+		{
+			m_lockedAxis.erase
+			(
+				std::remove(m_lockedAxis.begin(), m_lockedAxis.end(), axis), m_lockedAxis.end()
+			);
+		}
+
 		bool Gizmo::IsGrabbed(AxisLabel axis) const
 		{
-			if (axis == AxisLabel::None)
-			{
-				return m_grabbedAxis.empty();
-			}
-
-			return std::find(m_grabbedAxis.begin(), m_grabbedAxis.end(), axis) != m_grabbedAxis.end();
+			return m_grabbedAxis == axis;
 		}
 
 		void Gizmo::Grab(AxisLabel axis)
 		{
-			assert(axis != AxisLabel::None);
-			if (!IsGrabbed(axis))
+			if (axis != AxisLabel::None)
 			{
-				m_grabbedAxis.push_back(axis);
+				bool locked = IsLocked(axis);
+				assert(!locked && "A locked axis cant be grabbed.");
+				if (!locked)
+				{
+					m_grabbedAxis = axis;
+				}
 			}
+			else
+			{
+				m_grabbedAxis = axis;
+			}
+		}
+
+		ToolKit::AxisLabel Gizmo::GetGrabbedAxis() const
+		{
+			return m_grabbedAxis;
 		}
 
 		// MoveGizmo
@@ -260,7 +272,7 @@ namespace ToolKit
 					m_mesh->m_subMeshes.push_back(m_solids[i]);
 				}
 
-				if (hitRes == (AxisLabel)i)
+				if (hitRes == (AxisLabel)i || m_grabbedAxis == (AxisLabel)i)
 				{
 					m_lines[i]->m_material->m_color = g_selectHighLightPrimaryColor;
 					m_solids[i]->m_material->m_color = g_selectHighLightPrimaryColor;
@@ -272,7 +284,7 @@ namespace ToolKit
 			{
 				m_lines[i + 3]->m_material->m_color = g_gizmoColor[(i + 2) % 3];
 				
-				if (hitRes == (AxisLabel)(i + 3))
+				if (hitRes == (AxisLabel)(i + 3) || m_grabbedAxis == (AxisLabel)(i + 3))
 				{
 					m_lines[i + 3]->m_material->m_color = g_selectHighLightPrimaryColor;
 				}
@@ -365,7 +377,11 @@ namespace ToolKit
 
 				plane.m_mesh->Init();
 				m_lines[i + 3] = plane.m_mesh;
-				m_hitBoxes[i].second.push_back(plane.m_mesh->m_aabb);
+
+				LabelBoxPair hbPlane;
+				hbPlane.first = (AxisLabel)(i + 3);
+				hbPlane.second.push_back(plane.m_mesh->m_aabb);
+				m_hitBoxes.push_back(hbPlane);
 				plane.m_mesh = nullptr;
 			}
 
@@ -409,7 +425,6 @@ namespace ToolKit
 
 					head.m_mesh->m_material = GetMaterialManager()->GetCopyOfSolidMaterial();
 					head.m_mesh->m_material->m_color = g_gizmoColor[i];
-					// head.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
 					head.m_mesh->Init(true);
 
 					g_ArrowHeads[i] = head.m_mesh;

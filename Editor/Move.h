@@ -24,13 +24,13 @@ namespace ToolKit
 		public:
 			std::vector<Vec2> m_mouseData;
 			std::shared_ptr<Gizmo> m_gizmo;
-			AxisLabel m_grabbedAxis;
 			PlaneEquation m_intersectionPlane;
 		};
 
 		class StateGizmoBegin : public StateGizmoBase
 		{
 		public:
+			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* nextState) override;
 
 			virtual void Update(float deltaTime) override;
