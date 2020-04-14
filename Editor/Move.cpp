@@ -197,12 +197,8 @@ namespace ToolKit
 
 				if (!m_gizmo->IsGrabbed(AxisLabel::None))
 				{
-					// Cant be both grabbed and locked.
-					// if (!m_gizmo->IsLocked(m_gizmo->GetGrabbedAxis()))
-					{
-						CalculateIntersectionPlane();
-						return StateType::StateMoveTo;
-					}
+					CalculateIntersectionPlane();
+					return StateType::StateMoveTo;
 				}
 			}
 
@@ -351,13 +347,14 @@ namespace ToolKit
 				for (Entity* e : selecteds)
 				{
 					e->m_node->Translate(delta);
-					std::swap(m_mouseData[0], m_mouseData[1]);
 				}
 			}
 			else
 			{
 				assert(false && "Intersection expected.");
 			}
+
+			std::swap(m_mouseData[0], m_mouseData[1]);
 		}
 
 		// StateEndMove
