@@ -8,10 +8,10 @@ namespace ToolKit
 	namespace Editor
 	{
 		// States.
-		class StateMoveBase : public State
+		class StateGizmoBase : public State
 		{
 		public:
-			StateMoveBase();
+			StateGizmoBase();
 			virtual void Update(float deltaTime) override;
 			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* nextState) override;
@@ -23,12 +23,12 @@ namespace ToolKit
 
 		public:
 			std::vector<Vec2> m_mouseData;
-			std::shared_ptr<MoveGizmo> m_gizmo;
+			std::shared_ptr<Gizmo> m_gizmo;
 			AxisLabel m_grabbedAxis;
 			PlaneEquation m_intersectionPlane;
 		};
 
-		class StateBeginMove : public StateMoveBase
+		class StateGizmoBegin : public StateGizmoBase
 		{
 		public:
 			virtual void TransitionOut(State* nextState) override;
@@ -41,7 +41,7 @@ namespace ToolKit
 			void CalculateIntersectionPlane();
 		};
 
-		class StateMoveTo : public StateMoveBase
+		class StateMoveTo : public StateGizmoBase
 		{
 		public:
 			virtual void TransitionIn(State* prevState) override;
@@ -57,7 +57,7 @@ namespace ToolKit
 			std::shared_ptr<LineBatch> m_guideLine;
 		};
 
-		class StateEndMove : public StateMoveBase
+		class StateGizmoEnd : public StateGizmoBase
 		{
 		public:
 			virtual void TransitionOut(State* nextState) override;

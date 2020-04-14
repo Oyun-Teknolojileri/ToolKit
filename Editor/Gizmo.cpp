@@ -26,6 +26,10 @@ namespace ToolKit
 			Generate();
 		}
 
+		Cursor::~Cursor()
+		{
+		}
+
 		void Cursor::Generate()
 		{
 			m_mesh->UnInit();
@@ -82,6 +86,10 @@ namespace ToolKit
 			Generate();
 		}
 
+		Axis3d::~Axis3d()
+		{
+		}
+
 		void Axis3d::Generate()
 		{
 			for (int i = 0; i < 3; i++)
@@ -113,17 +121,19 @@ namespace ToolKit
 			}
 		}
 
-		MoveGizmo::MoveGizmo()
-			: Billboard({ false, 10.0f, 400.0f })
-		{
-			m_inAccessable = AxisLabel::None;
-			m_grabbed = AxisLabel::None;
+		// Gizmo
+		//////////////////////////////////////////////////////////////////////////
 
-			// Mesh.
-			Generate();
+		Gizmo::Gizmo(const Billboard::Settings& set)
+			: Billboard(set)
+		{
 		}
 
-		AxisLabel MoveGizmo::HitTest(const Ray& ray)
+		Gizmo::~Gizmo()
+		{
+		}
+		
+		ToolKit::AxisLabel Gizmo::HitTest(const Ray& ray) const
 		{
 			Mat4 invMat = m_node->GetTransform(TransformationSpace::TS_WORLD);
 			Mat4 tpsMat = glm::transpose(invMat);
@@ -133,34 +143,76 @@ namespace ToolKit
 			rayInObjectSpace.position = invMat * Vec4(rayInObjectSpace.position, 1.0f);
 			rayInObjectSpace.direction = tpsMat * Vec4(rayInObjectSpace.direction, 1.0f);
 
+			AxisLabel hit = AxisLabel::None;
 			float d, t = std::numeric_limits<float>::infinity();
-			int minIndx = -1;
-			for (int i = 0; i < 3; i++)
+			for (const LabelBoxPair& pair : m_hitBoxes)
 			{
-				bool line = RayBoxIntersection(rayInObjectSpace, m_hitBox[i], d);
-				bool cone = RayBoxIntersection(rayInObjectSpace, m_hitBox[i + 3], d);
-				bool plane = RayBoxIntersection(rayInObjectSpace, m_hitBox[i + 6], d);
-				if (line || cone || plane)
+				for (const BoundingBox& hitBox : pair.second)
 				{
-					if (d < t)
+					if (RayBoxIntersection(rayInObjectSpace, hitBox, d))
 					{
-						t = d;
-						minIndx = i;
-						if (plane)
+						if (d < t)
 						{
-							minIndx += 3;
+							t = d;
+							hit = pair.first;
 						}
 					}
 				}
 			}
 
-			AxisLabel hit = (AxisLabel)minIndx;
-			if (m_grabbed != AxisLabel::None)
+			return hit;
+		}
+
+		bool Gizmo::IsLocked(AxisLabel axis) const
+		{
+			if (axis == AxisLabel::None)
 			{
-				hit = m_grabbed; // If grabbed, always highlight.
+				return m_lockedAxis.empty();
 			}
 
-			return hit;
+			return std::find(m_lockedAxis.begin(), m_lockedAxis.end(), axis) != m_lockedAxis.end();
+		}
+
+		void Gizmo::Lock(AxisLabel axis)
+		{
+			assert(axis != AxisLabel::None);
+			if (!IsLocked(axis))
+			{
+				m_lockedAxis.push_back(axis);
+			}
+		}
+
+		bool Gizmo::IsGrabbed(AxisLabel axis) const
+		{
+			if (axis == AxisLabel::None)
+			{
+				return m_grabbedAxis.empty();
+			}
+
+			return std::find(m_grabbedAxis.begin(), m_grabbedAxis.end(), axis) != m_grabbedAxis.end();
+		}
+
+		void Gizmo::Grab(AxisLabel axis)
+		{
+			assert(axis != AxisLabel::None);
+			if (!IsGrabbed(axis))
+			{
+				m_grabbedAxis.push_back(axis);
+			}
+		}
+
+		// MoveGizmo
+		//////////////////////////////////////////////////////////////////////////
+
+		MoveGizmo::MoveGizmo()
+			: Gizmo({ false, 10.0f, 400.0f })
+		{
+			// Mesh.
+			Generate();
+		}
+
+		MoveGizmo::~MoveGizmo()
+		{
 		}
 
 		void MoveGizmo::Update(float deltaTime)
@@ -190,7 +242,7 @@ namespace ToolKit
 				m_lines[i + 3]->m_material->m_color = g_gizmoColor[i];
 				m_solids[i]->m_material->m_color = g_gizmoColor[i];
 
-				if (m_inAccessable == (AxisLabel)i)
+				if (IsLocked((AxisLabel)i))
 				{
 					continue;
 				}
@@ -237,25 +289,41 @@ namespace ToolKit
 			// Axis dimensions.
 			const float tip = 0.8f, toe = 0.05f, rad = 0.1f;
 
-			// Hit box line.
-			m_hitBox[0].min = Vec3(0.05f, -0.05f, -0.05f);
-			m_hitBox[0].max = Vec3(1.0f, 0.05f, 0.05f);
-			
-			m_hitBox[1].min = m_hitBox[0].min.yxz;
-			m_hitBox[1].max = m_hitBox[0].max.yxz;
+			LabelBoxPair hb;
+			hb.first = AxisLabel::X;
 
-			m_hitBox[2].min = m_hitBox[0].min.zyx;
-			m_hitBox[2].max = m_hitBox[0].max.zyx;
+			// Line.
+			hb.second.push_back
+			(
+				{
+				Vec3(0.05f, -0.05f, -0.05f),
+				Vec3(1.0f, 0.05f, 0.05f)
+				}
+			);
 
-			// Hit box cone.
-			m_hitBox[3].min = Vec3(tip, -rad, -rad);
-			m_hitBox[3].max = Vec3(1.0f, rad, rad);
+			// Cone.
+			hb.second.push_back
+			(
+				{
+					Vec3(tip, -rad, -rad),
+					Vec3(1.0f, rad, rad)
+				}
+			);
+			m_hitBoxes.push_back(hb);
 
-			m_hitBox[4].min = m_hitBox[3].min.yxz;
-			m_hitBox[4].max = m_hitBox[3].max.yxz;
+			hb.first = AxisLabel::Y;
+			hb.second[0].min = hb.second[0].min.yxz;
+			hb.second[0].max = hb.second[0].max.yxz;
+			hb.second[1].min = hb.second[1].min.yxz;
+			hb.second[1].max = hb.second[1].max.yxz;
+			m_hitBoxes.push_back(hb);
 
-			m_hitBox[5].min = m_hitBox[3].min.zyx;
-			m_hitBox[5].max = m_hitBox[3].max.zyx;
+			hb.first = AxisLabel::Z;
+			hb.second[0].min = hb.second[0].min.zxy;
+			hb.second[0].max = hb.second[0].max.zxy;
+			hb.second[1].min = hb.second[1].min.zxy;
+			hb.second[1].max = hb.second[1].max.zxy;
+			m_hitBoxes.push_back(hb);
 
 			// Lines.
 			for (int i = 0; i < 3; i++)
@@ -297,7 +365,7 @@ namespace ToolKit
 
 				plane.m_mesh->Init();
 				m_lines[i + 3] = plane.m_mesh;
-				m_hitBox[6 + i] = plane.m_mesh->m_aabb;
+				m_hitBoxes[i].second.push_back(plane.m_mesh->m_aabb);
 				plane.m_mesh = nullptr;
 			}
 

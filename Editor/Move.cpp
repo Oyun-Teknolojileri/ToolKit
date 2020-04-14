@@ -15,14 +15,14 @@ namespace ToolKit
 		// StateMoveBase
 		//////////////////////////////////////////////////////////////////////////
 		
-		StateMoveBase::StateMoveBase()
+		StateGizmoBase::StateGizmoBase()
 		{
 			m_gizmo = nullptr;
 			m_grabbedAxis = AxisLabel::None;
 			m_mouseData.resize(2);
 		}
 
-		void StateMoveBase::Update(float deltaTime)
+		void StateGizmoBase::Update(float deltaTime)
 		{
 			if (m_gizmo != nullptr)
 			{
@@ -43,13 +43,13 @@ namespace ToolKit
 			}
 		}
 
-		void StateMoveBase::TransitionIn(State* prevState)
+		void StateGizmoBase::TransitionIn(State* prevState)
 		{
 		}
 
-		void StateMoveBase::TransitionOut(State* nextState)
+		void StateGizmoBase::TransitionOut(State* nextState)
 		{
-			StateMoveBase* baseState = dynamic_cast<StateMoveBase*> (nextState);
+			StateGizmoBase* baseState = dynamic_cast<StateGizmoBase*> (nextState);
 			if (baseState != nullptr)
 			{
 				baseState->m_mouseData = m_mouseData;
@@ -59,7 +59,7 @@ namespace ToolKit
 			}
 		}
 
-		void StateMoveBase::MakeSureGizmoIsValid()
+		void StateGizmoBase::MakeSureGizmoIsValid()
 		{
 			if (m_gizmo == nullptr)
 			{
@@ -76,7 +76,7 @@ namespace ToolKit
 			}
 		}
 
-		ToolKit::Vec3 StateMoveBase::GetGrabbedAxis(int n)
+		ToolKit::Vec3 StateGizmoBase::GetGrabbedAxis(int n)
 		{
 			Vec3 axes[3];
 			Entity* e = g_app->m_scene.GetCurrentSelection();
@@ -92,7 +92,7 @@ namespace ToolKit
 			return axes[second];
 		}
 
-		bool StateMoveBase::IsPlaneMod()
+		bool StateGizmoBase::IsPlaneMod()
 		{
 			return m_grabbedAxis > AxisLabel::Z;
 		}
@@ -100,9 +100,9 @@ namespace ToolKit
 		// StateBeginMove
 		//////////////////////////////////////////////////////////////////////////
 
-		void StateBeginMove::TransitionOut(State* nextState)
+		void StateGizmoBegin::TransitionOut(State* nextState)
 		{
-			StateMoveBase::TransitionOut(nextState);
+			StateGizmoBase::TransitionOut(nextState);
 
 			if (nextState->ThisIsA<StateBeginPick>())
 			{
@@ -119,14 +119,13 @@ namespace ToolKit
 			}
 		}
 
-		void StateBeginMove::Update(float deltaTime)
+		void StateGizmoBegin::Update(float deltaTime)
 		{
-			StateMoveBase::Update(deltaTime); // Update gizmo's loc & view.
+			StateGizmoBase::Update(deltaTime); // Update gizmo's loc & view.
 
 			MakeSureGizmoIsValid();
 
-			m_gizmo->m_inAccessable = AxisLabel::None;
-			m_gizmo->m_grabbed = m_grabbedAxis;
+			m_gizmo->Grab(m_grabbedAxis);
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			if (e != nullptr)
 			{
@@ -147,13 +146,13 @@ namespace ToolKit
 				{
 					if (safetyMeasure < glm::abs(glm::dot(dir, axes[i])))
 					{
-						m_gizmo->m_inAccessable = axisLabes[i];
+						m_gizmo->Lock(axisLabes[i]);
 					}
 				}
 			}
 		}
 
-		String StateBeginMove::Signaled(SignalId signal)
+		String StateGizmoBegin::Signaled(SignalId signal)
 		{
 			if (signal == BaseMod::m_leftMouseBtnDownSgnl)
 			{
@@ -180,7 +179,7 @@ namespace ToolKit
 
 				if (m_grabbedAxis != AxisLabel::None)
 				{
-					if (m_grabbedAxis != m_gizmo->m_inAccessable)
+					if (!m_gizmo->IsLocked(m_grabbedAxis))
 					{
 						CalculateIntersectionPlane();
 						return StateType::StateMoveTo;
@@ -191,7 +190,7 @@ namespace ToolKit
 			return StateType::Null;
 		}
 
-		void StateBeginMove::CalculateIntersectionPlane()
+		void StateGizmoBegin::CalculateIntersectionPlane()
 		{
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			
@@ -242,7 +241,7 @@ namespace ToolKit
 
 		void StateMoveTo::TransitionIn(State* prevState)
 		{
-			StateMoveBase::TransitionIn(prevState);
+			StateGizmoBase::TransitionIn(prevState);
 
 			// Create guide line.
 			if ((int)m_grabbedAxis < 3)
@@ -266,7 +265,7 @@ namespace ToolKit
 
 		void StateMoveTo::TransitionOut(State* prevState)
 		{
-			StateMoveBase::TransitionOut(prevState);
+			StateGizmoBase::TransitionOut(prevState);
 
 			if (m_guideLine != nullptr)
 			{
@@ -278,7 +277,7 @@ namespace ToolKit
 
 		void StateMoveTo::Update(float deltaTime)
 		{
-			StateMoveBase::Update(deltaTime);
+			StateGizmoBase::Update(deltaTime);
 		}
 
 		String StateMoveTo::Signaled(SignalId signal)
@@ -345,18 +344,18 @@ namespace ToolKit
 		// StateEndMove
 		//////////////////////////////////////////////////////////////////////////
 
-		void StateEndMove::TransitionOut(State* nextState)
+		void StateGizmoEnd::TransitionOut(State* nextState)
 		{
-			if (nextState->ThisIsA<StateBeginMove>())
+			if (nextState->ThisIsA<StateGizmoBegin>())
 			{
-				StateBeginMove* baseNext = static_cast<StateBeginMove*> (nextState);
+				StateGizmoBegin* baseNext = static_cast<StateGizmoBegin*> (nextState);
 				baseNext->m_grabbedAxis = AxisLabel::None;
 				baseNext->m_mouseData[0] = Vec2();
 				baseNext->m_mouseData[1] = Vec2();
 			}
 		}
 
-		String StateEndMove::Signaled(SignalId signal)
+		String StateGizmoEnd::Signaled(SignalId signal)
 		{
 			if (signal == BaseMod::m_backToStart)
 			{
@@ -376,7 +375,7 @@ namespace ToolKit
 		{
 			if (m_stateMachine->m_currentState != nullptr)
 			{
-				StateMoveBase* baseState = static_cast<StateMoveBase*> (m_stateMachine->QueryState(StateType::StateBeginMove));
+				StateGizmoBase* baseState = static_cast<StateGizmoBase*> (m_stateMachine->QueryState(StateType::StateBeginMove));
 				assert(baseState && "Gizmo remains in the scene as dead pointer.");
 
 				if (baseState != nullptr && baseState->m_gizmo != nullptr)
@@ -388,12 +387,12 @@ namespace ToolKit
 
 		void MoveMod::Init()
 		{
-			State* state = new StateBeginMove();
+			State* state = new StateGizmoBegin();
 			m_stateMachine->m_currentState = state;
 
 			m_stateMachine->PushState(state);
 			m_stateMachine->PushState(new StateMoveTo());
-			m_stateMachine->PushState(new StateEndMove());
+			m_stateMachine->PushState(new StateGizmoEnd());
 
 			m_stateMachine->PushState(new StateBeginPick());
 			m_stateMachine->PushState(new StateBeginBoxPick());
@@ -417,7 +416,7 @@ namespace ToolKit
 				ModManager::GetInstance()->DispatchSignal(m_linkToMoveBeginSgnl);
 			}
 
-			if (m_stateMachine->m_currentState->ThisIsA<StateEndMove>())
+			if (m_stateMachine->m_currentState->ThisIsA<StateGizmoEnd>())
 			{
 				ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
 			}

@@ -11,6 +11,7 @@ namespace ToolKit
 		{
 		public:
 			Cursor();
+			virtual ~Cursor();
 
 		private:
 			void Generate();
@@ -20,28 +21,44 @@ namespace ToolKit
 		{
 		public:
 			Axis3d();
+			virtual ~Axis3d();
 
 		private:
 			void Generate();
 		};
 
-		class MoveGizmo : public Billboard
+		class Gizmo : public Billboard
+		{
+		public:
+			Gizmo(const Billboard::Settings& set);
+			virtual ~Gizmo();
+
+			virtual AxisLabel HitTest(const Ray& ray) const;
+			virtual void Update(float deltaTime) = 0;
+			bool IsLocked(AxisLabel axis) const;
+			void Lock(AxisLabel axis);
+			bool IsGrabbed(AxisLabel axis) const;
+			void Grab(AxisLabel axis);
+
+		protected:
+			typedef std::pair<AxisLabel, std::vector<BoundingBox>> LabelBoxPair;
+			std::vector<LabelBoxPair> m_hitBoxes;
+			std::vector<AxisLabel> m_lockedAxis;
+			std::vector<AxisLabel> m_grabbedAxis;
+		};
+
+		class MoveGizmo : public Gizmo
 		{
 		public:
 			MoveGizmo();
+			virtual ~MoveGizmo();
 
-			AxisLabel HitTest(const Ray& ray);
-			void Update(float deltaTime);
+			virtual void Update(float deltaTime) override;
 
 		private:
 			void Generate();
 
-		public:
-			AxisLabel m_inAccessable;
-			AxisLabel m_grabbed;
-
 		private:
-			BoundingBox m_hitBox[9]; // X - Y - Z.
 			std::shared_ptr<Mesh> m_lines[6];
 			std::shared_ptr<Mesh> m_solids[6];
 		};
