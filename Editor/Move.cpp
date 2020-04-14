@@ -19,8 +19,6 @@ namespace ToolKit
 		{
 			m_gizmo = nullptr;
 			m_grabbedAxis = AxisLabel::None;
-			m_intersectDist = 0.0f;
-
 			m_mouseData.resize(2);
 		}
 
@@ -58,8 +56,6 @@ namespace ToolKit
 				baseState->m_gizmo = m_gizmo;
 				baseState->m_grabbedAxis = m_grabbedAxis;
 				baseState->m_intersectionPlane = m_intersectionPlane;
-				baseState->m_moveAxis = m_moveAxis;
-				baseState->m_intersectDist = m_intersectDist;
 			}
 		}
 
@@ -78,6 +74,27 @@ namespace ToolKit
 					g_app->m_scene.AddEntity(m_gizmo.get());
 				}
 			}
+		}
+
+		ToolKit::Vec3 StateMoveBase::GetGrabbedAxis(int n)
+		{
+			Vec3 axes[3];
+			Entity* e = g_app->m_scene.GetCurrentSelection();
+			ExtractAxes(e->m_node->GetTransform(), axes[0], axes[1], axes[2]);
+
+			int first = (int)m_grabbedAxis % 3;
+			if (n == 0)
+			{
+				return axes[first];
+			}
+
+			int second = (first + 1) % 3;
+			return axes[second];
+		}
+
+		bool StateMoveBase::IsPlaneMod()
+		{
+			return m_grabbedAxis > AxisLabel::Z;
 		}
 
 		// StateBeginMove
@@ -214,23 +231,9 @@ namespace ToolKit
 
 			if (m_grabbedAxis <= AxisLabel::Z)
 			{
-				m_moveAxis = px;
 				py = glm::normalize(glm::cross(px, dir));
 				pz = glm::normalize(glm::cross(py, px));
 				m_intersectionPlane = PlaneFrom(gizmOrg, pz);
-
-				float t;
-				Ray ray = vp->RayFromMousePosition();
-				if (LinePlaneIntersection(ray, m_intersectionPlane, t))
-				{
-					Vec3 p = PointOnRay(ray, t);
-					Vec3 go2p = p - gizmOrg;
-					m_intersectDist = glm::dot(px, go2p);
-				}
-				else
-				{
-					assert(false && "Intersection expected.");
-				}
 			}
 		}
 
@@ -248,10 +251,11 @@ namespace ToolKit
 
 				Vec3 p = m_gizmo->m_worldLocation;
 				Vec3 color = g_gizmoColor[(int)m_grabbedAxis];
+				Vec3 axis = GetGrabbedAxis(0);
 				std::vector<Vec3> points
 				{
-					p + m_moveAxis * 100.0f,
-					p - m_moveAxis * 100.0f
+					p + axis * 100.0f,
+					p - axis * 100.0f
 				};
 
 				assert(m_guideLine == nullptr && "Expected to be nulled on TransitionOut.");
@@ -302,13 +306,25 @@ namespace ToolKit
 			if (LinePlaneIntersection(ray, m_intersectionPlane, t))
 			{
 				Vec3 p = PointOnRay(ray, t);
-				Vec3 go2p = p - m_gizmo->m_worldLocation;
-				
-				Vec3 delta = go2p;
-				if (m_grabbedAxis <= AxisLabel::Z)
+				Vec3 g2p = p - m_gizmo->m_worldLocation;
+
+				ray = vp->RayFromScreenSpacePoint(m_mouseData[0]);
+				LinePlaneIntersection(ray, m_intersectionPlane, t);
+				Vec3 p0 = PointOnRay(ray, t);
+
+				Vec3 delta;
+				if (IsPlaneMod())
 				{
-					float projDst = glm::dot(m_moveAxis, go2p);
-					delta = m_moveAxis * (projDst - m_intersectDist);
+					delta = p - p0;
+				}
+				else
+				{
+					Vec3 movAxis = GetGrabbedAxis(0);
+					Vec3 g2p0 = p0 - m_gizmo->m_worldLocation;
+					float intsDst = glm::dot(movAxis, g2p0);
+					float projDst = glm::dot(movAxis, g2p);
+
+					delta = movAxis * (projDst - intsDst);
 				}
 
 				std::vector<Entity*> selecteds;
@@ -317,6 +333,7 @@ namespace ToolKit
 				for (Entity* e : selecteds)
 				{
 					e->m_node->Translate(delta);
+					std::swap(m_mouseData[0], m_mouseData[1]);
 				}
 			}
 			else
@@ -336,7 +353,6 @@ namespace ToolKit
 				baseNext->m_grabbedAxis = AxisLabel::None;
 				baseNext->m_mouseData[0] = Vec2();
 				baseNext->m_mouseData[1] = Vec2();
-				baseNext->m_intersectDist = 0.0f;
 			}
 		}
 

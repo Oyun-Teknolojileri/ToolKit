@@ -18,14 +18,14 @@ namespace ToolKit
 
 		protected:
 			void MakeSureGizmoIsValid();
+			Vec3 GetGrabbedAxis(int n); // {0: grabbed 1: orthogonal axis}.
+			bool IsPlaneMod();
 
 		public:
 			std::vector<Vec2> m_mouseData;
 			std::shared_ptr<MoveGizmo> m_gizmo;
 			AxisLabel m_grabbedAxis;
 			PlaneEquation m_intersectionPlane;
-			Vec3 m_moveAxis;
-			float m_intersectDist;
 		};
 
 		class StateBeginMove : public StateMoveBase
