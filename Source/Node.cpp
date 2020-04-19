@@ -12,14 +12,14 @@ namespace ToolKit
 		m_scale = Vec3(1, 1, 1);
 	}
 
-	Node::Node(Vec3 translation)
+	Node::Node(const Vec3& translation)
 	{
 		m_parent = nullptr;
 		m_scale = Vec3(1, 1, 1);
 		m_translation = translation;
 	}
 
-	void Node::Translate(Vec3 val, TransformationSpace space)
+	void Node::Translate(const Vec3& val, TransformationSpace space)
 	{
 		switch (space)
 		{
@@ -29,7 +29,9 @@ namespace ToolKit
 			ts = glm::translate(ts, val);
 			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
+			{
 				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+			}
 			m_translation = glm::column(glm::inverse(ps) * ts * ws, 3).xyz;
 		}
 		break;
@@ -44,14 +46,16 @@ namespace ToolKit
 			ts = glm::translate(ts, val);
 			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
+			{
 				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+			}
 			m_translation = glm::column(glm::inverse(ps) * ws * ts, 3).xyz;
 		}
 		break;
 		}
 	}
 
-	void Node::Rotate(Quaternion val, TransformationSpace space)
+	void Node::Rotate(const Quaternion& val, TransformationSpace space)
 	{
 		switch (space)
 		{
@@ -60,7 +64,9 @@ namespace ToolKit
 			Quaternion ps, ws;
 			ws = GetOrientation(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
+			{
 				ps = m_parent->GetOrientation(TransformationSpace::TS_WORLD);
+			}
 			m_orientation = glm::inverse(ps) * val * ws;
 		}
 		break;
@@ -72,7 +78,9 @@ namespace ToolKit
 			Quaternion ps, ws;
 			ws = GetOrientation(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
+			{
 				ps = m_parent->GetOrientation(TransformationSpace::TS_WORLD);
+			}
 			m_orientation = glm::inverse(ps) * ws * val;
 		}
 		}
@@ -80,7 +88,7 @@ namespace ToolKit
 		m_orientation = glm::normalize(m_orientation);
 	}
 
-	void Node::Scale(Vec3 val, TransformationSpace space)
+	void Node::Scale(const Vec3& val, TransformationSpace space)
 	{
 		switch (space)
 		{
@@ -112,7 +120,7 @@ namespace ToolKit
 		}
 	}
 
-	void Node::Transform(Mat4 val, TransformationSpace space)
+	void Node::Transform(const Mat4& val, TransformationSpace space)
 	{
 		Vec3 translation;
 		Vec3 scale;
@@ -124,7 +132,12 @@ namespace ToolKit
 		m_scale = scale;
 	}
 
-	Mat4 Node::GetTransform(TransformationSpace space)
+	void Node::SetTransform(const Mat4& val, TransformationSpace space)
+	{
+
+	}
+
+	Mat4 Node::GetTransform(TransformationSpace space) const
 	{
 		auto constructTransform = [this]() -> Mat4
 		{
@@ -141,7 +154,9 @@ namespace ToolKit
 		{
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
+			{
 				return m_parent->GetTransform(TransformationSpace::TS_WORLD) * constructTransform();
+			}
 			return constructTransform();
 			break;
 		case TransformationSpace::TS_PARENT:
@@ -153,7 +168,18 @@ namespace ToolKit
 		}
 	}
 
-	Vec3 Node::GetTranslation(TransformationSpace space)
+	void Node::SetTranslation(const Vec3& val, TransformationSpace space)
+	{
+		Mat4 ts;
+		ts = glm::translate(ts, val);
+
+		GetOffsetToParentSpace(ts, space);
+
+		// Extract, apply offset.
+		m_translation = glm::column(ts, 3).xyz;
+	}
+
+	Vec3 Node::GetTranslation(TransformationSpace space) const
 	{
 		switch (space)
 		{
@@ -172,7 +198,17 @@ namespace ToolKit
 		}
 	}
 
-	Quaternion Node::GetOrientation(TransformationSpace space)
+	void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
+	{
+		Mat4 ts = glm::toMat4(val);
+
+		GetOffsetToParentSpace(ts, space);
+
+		// Extract, apply offset.
+		m_orientation = glm::normalize(glm::toQuat(ts));
+	}
+
+	Quaternion Node::GetOrientation(TransformationSpace space) const
 	{
 		switch (space)
 		{
@@ -191,7 +227,22 @@ namespace ToolKit
 		}
 	}
 
-	Vec3 Node::GetScale(TransformationSpace space)
+	void Node::SetScale(const Vec3& val, TransformationSpace space)
+	{
+		Mat4 ts;
+		ts = glm::translate(ts, val);
+
+		GetOffsetToParentSpace(ts, space);
+
+		Vec3 t, s;
+		Quaternion q;
+		DecomposeMatrix(ts, t, q, s);
+
+		// Extract, apply offset.
+		m_scale = s;
+	}
+
+	Vec3 Node::GetScale(TransformationSpace space) const
 	{
 		switch (space)
 		{
@@ -214,6 +265,19 @@ namespace ToolKit
 	{
 		m_children.push_back(child);
 		child->m_parent = this;
+	}
+
+	void Node::GetOffsetToParentSpace(Mat4& val, TransformationSpace space) const
+	{
+		// Transform in queried space.
+		Mat4 itsQuerySpace = GetTransform(TransformationSpace::TS_WORLD);
+		itsQuerySpace = glm::inverse(itsQuerySpace);
+		val = itsQuerySpace * val; 
+
+		// Offset in parent space.
+		Mat4 itsParentSpace = GetTransform(TransformationSpace::TS_PARENT);
+		itsParentSpace = glm::inverse(itsParentSpace);
+		val = itsParentSpace * val;
 	}
 
 }

@@ -16,16 +16,23 @@ namespace ToolKit
   {
   public:
     Node();
-    Node(Vec3 translation);
-    void Translate(Vec3 val, TransformationSpace space = TransformationSpace::TS_PARENT);
-    void Rotate(Quaternion val, TransformationSpace space = TransformationSpace::TS_PARENT);
-    void Scale(Vec3 val, TransformationSpace space = TransformationSpace::TS_PARENT);
-    void Transform(Mat4 val, TransformationSpace space = TransformationSpace::TS_PARENT);
-    Mat4 GetTransform(TransformationSpace space = TransformationSpace::TS_WORLD);
-    Vec3 GetTranslation(TransformationSpace space = TransformationSpace::TS_PARENT);
-    Quaternion GetOrientation(TransformationSpace space = TransformationSpace::TS_PARENT);
-    Vec3 GetScale(TransformationSpace space = TransformationSpace::TS_PARENT);
+    Node(const Vec3& translation);
+    void Translate(const Vec3& val, TransformationSpace space = TransformationSpace::TS_PARENT);
+    void Rotate(const Quaternion& val, TransformationSpace space = TransformationSpace::TS_PARENT);
+    void Scale(const Vec3& val, TransformationSpace space = TransformationSpace::TS_PARENT);
+    void Transform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_PARENT);
+    void SetTransform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_WORLD);
+    Mat4 GetTransform(TransformationSpace space = TransformationSpace::TS_WORLD) const;
+    void SetTranslation(const Vec3& val, TransformationSpace space = TransformationSpace::TS_PARENT);
+    Vec3 GetTranslation(TransformationSpace space = TransformationSpace::TS_PARENT) const;
+    void SetOrientation(const Quaternion& val, TransformationSpace space = TransformationSpace::TS_PARENT);
+    Quaternion GetOrientation(TransformationSpace space = TransformationSpace::TS_PARENT) const;
+    void SetScale(const Vec3& val, TransformationSpace space = TransformationSpace::TS_PARENT);
+    Vec3 GetScale(TransformationSpace space = TransformationSpace::TS_PARENT) const;
     void AddChild(Node* child);
+
+  private:
+    void GetOffsetToParentSpace(Mat4& val, TransformationSpace space) const;
 
   public:
     Vec3 m_translation;

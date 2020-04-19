@@ -73,7 +73,7 @@ namespace ToolKit
 
 			m_q1 = new Cube();
 			m_q1->m_mesh->Init(false);
-			m_q1->m_node->m_translation = Vec3(0.0f, 0.0f, 0.0f);
+			m_q1->m_node->m_translation = Vec3(2.0f, 0.0f, 0.0f);
 			m_scene.AddEntity(m_q1);
 
 			m_q2 = new Cube();

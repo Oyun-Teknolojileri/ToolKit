@@ -131,56 +131,7 @@ namespace ToolKit
 			}
 		}
 
-		void SetTransformExec(TagArgArray tagArgs)
-		{
-			Entity* e = g_app->m_scene.GetCurrentSelection();
-			if (e == nullptr)
-			{
-				return;
-			}
-
-			for (TagArg& tagIt : tagArgs)
-			{
-				String tag = tagIt.first;
-				std::vector<String>& args = tagIt.second;
-
-				if (tag.empty())
-				{
-					continue;
-				}
-
-				if (args.empty())
-				{
-					continue;
-				}
-
-				Vec3 transfrom;
-				int maxIndx = glm::min((int)args.size(), 3);
-				for (int i = 0; i < maxIndx; i++)
-				{
-					transfrom[i] = (float)std::atof(args[i].c_str());
-				}
-
-				if (tag == "r")
-				{
-					Quaternion qx = glm::angleAxis(glm::radians(transfrom.x), X_AXIS);
-					Quaternion qy = glm::angleAxis(glm::radians(transfrom.y), Y_AXIS);
-					Quaternion qz = glm::angleAxis(glm::radians(transfrom.z), Z_AXIS);
-
-					e->m_node->m_orientation = qz * qy * qx;
-				}
-				else if (tag == "s")
-				{
-					e->m_node->m_scale = transfrom;
-				}
-				else if (tag == "t")
-				{
-					e->m_node->m_translation = transfrom;
-				}
-			}
-		}
-
-		void TransformExec(TagArgArray tagArgs)
+		void TransformInternal(TagArgArray tagArgs, bool set)
 		{
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			if (e == nullptr)
@@ -239,17 +190,50 @@ namespace ToolKit
 					Quaternion qx = glm::angleAxis(glm::radians(transfrom.x), X_AXIS);
 					Quaternion qy = glm::angleAxis(glm::radians(transfrom.y), Y_AXIS);
 					Quaternion qz = glm::angleAxis(glm::radians(transfrom.z), Z_AXIS);
-					e->m_node->Rotate(qz * qy * qx, ts);
+					Quaternion q = qz * qy * qx;
+
+					if (set)
+					{
+						e->m_node->SetOrientation(q, ts);
+					}
+					else
+					{
+						e->m_node->Rotate(q, ts);
+					}
 				}
 				else if (tag == "s")
 				{
-					e->m_node->Scale(transfrom, ts);
+					if (set)
+					{
+						e->m_node->SetScale(transfrom, ts);
+					}
+					else
+					{
+						e->m_node->Scale(transfrom, ts);
+					}
 				}
 				else if (tag == "t")
 				{
-					e->m_node->Translate(transfrom, ts);
+					if (set)
+					{
+						e->m_node->SetTranslation(transfrom, ts);
+					}
+					else
+					{
+						e->m_node->Translate(transfrom, ts);
+					}
 				}
 			}
+		}
+
+		void SetTransformExec(TagArgArray tagArgs)
+		{
+			TransformInternal(tagArgs, true);
+		}
+
+		void TransformExec(TagArgArray tagArgs)
+		{
+			TransformInternal(tagArgs, false);
 		}
 
 		void SetCameraTransformExec(TagArgArray tagArgs)
