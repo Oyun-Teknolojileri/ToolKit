@@ -152,6 +152,16 @@ namespace ToolKit
 		}
 	}
 
+	// https://stackoverflow.com/questions/5878775/how-to-find-and-replace-string
+	void ReplaceStringInPlace(String& subject, const String& search, const String& replace)
+	{
+		size_t pos = 0;
+		while ((pos = subject.find(search, pos)) != std::string::npos) {
+			subject.replace(pos, search.length(), replace);
+			pos += replace.length();
+		}
+	}
+
 	LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size)
 	{
 		// Searching perpendicular axes on the plane.

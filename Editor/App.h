@@ -32,6 +32,7 @@ namespace ToolKit
 			void OnQuit();
 			
 			Viewport* GetActiveViewport(); // Returns open and active viewport or nullptr.
+			Viewport* GetViewport(const String& name);
 			ConsoleWindow* GetConsole();
 
 			// Quick selected render implementation.

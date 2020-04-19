@@ -21,13 +21,13 @@ namespace ToolKit
 		OverlayNav* Viewport::m_overlayNav = nullptr;
 
 		Viewport::Viewport(float width, float height)
-			: m_width(width), m_height(height), m_name(g_viewportStr)
+			: m_width(width), m_height(height)
 		{
 			m_camera = new Camera();
 			m_camera->SetLens(glm::quarter_pi<float>(), width, height);
 			m_viewportImage = new RenderTarget((uint)width, (uint)height);
 			m_viewportImage->Init();
-			m_name += " " + std::to_string(m_nextId++);
+			m_name = g_viewportStr + " " + std::to_string(m_nextId++);
 
 			if (m_overlayNav == nullptr)
 			{

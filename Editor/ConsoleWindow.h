@@ -8,21 +8,28 @@ namespace ToolKit
 {
 	namespace Editor
 	{
+		typedef std::pair<String, std::vector<String>> TagArg;
+		typedef std::vector<TagArg> TagArgArray;
+		TagArgArray::const_iterator GetTag(String tag, const TagArgArray& tagArgs);
+
 		// Commands & Executors.
 		const String g_showPickDebugCmd("ShowPickGeometry");
-		extern void ShowPickDebugExec(String args);
+		void ShowPickDebugExec(TagArgArray tagArgs);
 
 		const String g_showOverlayUICmd("ShowOverlayUI");
-		extern void ShowOverlayExec(String args);
+		void ShowOverlayExec(TagArgArray tagArgs);
 
 		const String g_showOverlayUIAlwaysCmd("ShowOverlayUIAlways");
-		extern void ShowOverlayAlwaysExec(String args);
+		void ShowOverlayAlwaysExec(TagArgArray tagArgs);
 
 		const String g_showModTransitionsCmd("ShowModTransitions");
-		extern void ShowModTransitionsExec(String args);
+		void ShowModTransitionsExec(TagArgArray tagArgs);
 
-		const String g_SetTransformCmd("SetTransform");
-		extern void SetTransformExec(String args);
+		const String g_setTransformCmd("SetTransform");
+		void SetTransformExec(TagArgArray tagArgs);
+
+		const String g_setCameraAlignment("SetCameraAligment");
+		void SetCameraAlignmentExec(TagArgArray tagArgs);
 
 		class ConsoleWindow : public Window
 		{
@@ -44,12 +51,13 @@ namespace ToolKit
 			void AddLog(const String& log, const String& tag);
 			void ClearLog();
 			void ExecCommand(const String& commandLine);
+			void ParseCommandLine(String commandLine, String& command, TagArgArray& tagArgs);
 
 		private:
 			// Command line word processing. Auto-complete and history lookups.
 			int TextEditCallback(ImGuiInputTextCallbackData* data);
-			void CreateCommand(const String& command, std::function<void(String)> executor);
-			
+			void CreateCommand(const String& command, std::function<void(TagArgArray)> executor);
+
 		private:
 			// States.
 			bool m_scrollToBottom = false;
@@ -57,7 +65,7 @@ namespace ToolKit
 			// Buffers.
 			std::vector<String> m_items;
 			std::vector<String> m_commands;
-			std::unordered_map<String, std::function<void(String)>> m_commandExecutors;
+			std::unordered_map<String, std::function<void(TagArgArray&)>> m_commandExecutors;
 
 			std::vector < String> m_history;
 			int m_historyPos; // -1: new line, 0..History.Size-1 browsing history.

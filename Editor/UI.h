@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ImGui/imgui.h"
+#include "Types.h"
 
 namespace ToolKit
 {
@@ -37,6 +38,9 @@ namespace ToolKit
 				bool m_visible = true;
 				bool m_active = false;
 				bool m_mouseHover = false;
+
+			public:
+				String m_name;
 			};
 
 			class UI

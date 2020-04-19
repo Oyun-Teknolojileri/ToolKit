@@ -6,6 +6,8 @@
 #include "Mod.h"
 #include "Entity.h"
 #include "Node.h"
+#include "Directional.h"
+#include "Viewport.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -13,9 +15,33 @@ namespace ToolKit
 	namespace Editor
 	{
 
-		// Executors
-		void ShowPickDebugExec(String args)
+		TagArgArray::const_iterator GetTag(String tag, const TagArgArray& tagArgs)
 		{
+			for (TagArgArray::const_iterator ta = tagArgs.cbegin(); ta != tagArgs.cend(); ta++)
+			{
+				if (ta->first == tag)
+				{
+					return ta;
+				}
+			}
+
+			return tagArgs.end();
+		}
+
+		// Executors
+		void ShowPickDebugExec(TagArgArray tagArgs)
+		{
+			if (tagArgs.empty())
+			{
+				return;
+			}
+			if (tagArgs.front().second.empty())
+			{
+				return;
+			}
+
+			String args = tagArgs.front().second.front();
+
 			if (args == "1")
 			{
 				g_app->m_showPickingDebug = true;
@@ -33,8 +59,19 @@ namespace ToolKit
 			}
 		}
 
-		void ShowOverlayExec(String args)
+		void ShowOverlayExec(TagArgArray tagArgs)
 		{
+			if (tagArgs.empty())
+			{
+				return;
+			}
+			if (tagArgs.front().second.empty())
+			{
+				return;
+			}
+
+			String args = tagArgs.front().second.front();
+
 			if (args == "1")
 			{
 				g_app->m_showOverlayUI = true;
@@ -46,8 +83,19 @@ namespace ToolKit
 			}
 		}
 
-		extern void ShowOverlayAlwaysExec(String args)
+		void ShowOverlayAlwaysExec(TagArgArray tagArgs)
 		{
+			if (tagArgs.empty())
+			{
+				return;
+			}
+			if (tagArgs.front().second.empty())
+			{
+				return;
+			}
+
+			String args = tagArgs.front().second.front();
+
 			if (args == "1")
 			{
 				g_app->m_showOverlayUIAlways = true;
@@ -59,8 +107,19 @@ namespace ToolKit
 			}
 		}
 
-		extern void ShowModTransitionsExec(String args)
+		void ShowModTransitionsExec(TagArgArray tagArgs)
 		{
+			if (tagArgs.empty())
+			{
+				return;
+			}
+			if (tagArgs.front().second.empty())
+			{
+				return;
+			}
+
+			String args = tagArgs.front().second.front();
+
 			if (args == "1")
 			{
 				g_app->m_showStateTransitionsDebug = true;
@@ -72,47 +131,37 @@ namespace ToolKit
 			}
 		}
 
-		extern void SetTransformExec(String args)
+		void SetTransformExec(TagArgArray tagArgs)
 		{
-			if (args.empty())
-			{
-				return;
-			}
-
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			if (e == nullptr)
 			{
 				return;
 			}
 
-			std::vector<String> splits;
-			Split(args, "--", splits);
-
-			for (String& arg : splits)
+			for (TagArg& tagIt : tagArgs)
 			{
-				std::vector<String> values;
-				Split(arg, " ", values);
-				if (values.empty())
+				String tag = tagIt.first;
+				std::vector<String>& args = tagIt.second;
+
+				if (tag.empty())
 				{
-					continue;
+					continue;;
 				}
 
-				char cmd = values.front()[0];
-				pop_front(values);
-
-				if (values.empty())
+				if (args.empty())
 				{
 					continue;
 				}
 
 				Vec3 transfrom;
-				int maxIndx = glm::min((int)values.size(), 3);
+				int maxIndx = glm::min((int)args.size(), 3);
 				for (int i = 0; i < maxIndx; i++)
 				{
-					transfrom[i] = (float)std::atof(values[i].c_str());
+					transfrom[i] = (float)std::atof(args[i].c_str());
 				}
 
-				if (cmd == 'r')
+				if (tag == "r")
 				{
 					Quaternion qx = glm::angleAxis(glm::radians(transfrom.x), X_AXIS);
 					Quaternion qy = glm::angleAxis(glm::radians(transfrom.y), Y_AXIS);
@@ -120,13 +169,41 @@ namespace ToolKit
 
 					e->m_node->m_orientation = qz * qy * qx;
 				}
-				else if (cmd == 's')
+				else if (tag == "s")
 				{
 					e->m_node->m_scale = transfrom;
 				}
-				else if (cmd == 't')
+				else if (tag == "t")
 				{
 					e->m_node->m_translation = transfrom;
+				}
+			}
+		}
+
+		void SetCameraAlignmentExec(TagArgArray tagArgs)
+		{
+			TagArgArray::const_iterator viewportTag = GetTag("v", tagArgs);
+			if (viewportTag == tagArgs.end()) // Tag must be exist.
+			{
+				return;
+			}
+
+			if (viewportTag->second.size() != 2) // Tag cant be empty.
+			{
+				return;
+			}
+
+			if (Viewport* vp = g_app->GetViewport(viewportTag->second[0]))
+			{
+				if (Camera* c = vp->m_camera)
+				{
+					assert(c->m_node->m_parent == nullptr && "SetTransform(TS_WORLD) must be implemented.");
+
+					Node* node = c->m_node;
+					if (viewportTag->second[1] == "top")
+					{
+						node->m_orientation = glm::angleAxis(glm::half_pi<float>(), X_AXIS) * glm::angleAxis(glm::pi<float>(), Y_AXIS);
+					}
 				}
 			}
 		}
@@ -143,7 +220,8 @@ namespace ToolKit
 			CreateCommand(g_showOverlayUICmd, ShowOverlayExec);
 			CreateCommand(g_showOverlayUIAlwaysCmd, ShowOverlayAlwaysExec);
 			CreateCommand(g_showModTransitionsCmd, ShowModTransitionsExec);
-			CreateCommand(g_SetTransformCmd, SetTransformExec);
+			CreateCommand(g_setTransformCmd, SetTransformExec);
+			CreateCommand(g_setCameraAlignment, SetCameraAlignmentExec);
 		}
 
 		ConsoleWindow::~ConsoleWindow()
@@ -292,17 +370,9 @@ namespace ToolKit
 		void ConsoleWindow::ExecCommand(const String& commandLine)
 		{
 			// Split command and args.
-			size_t argsIndx = commandLine.find_first_of(" ");
-			String args, cmd;
-			if (argsIndx != String::npos)
-			{
-				args = commandLine.substr(argsIndx + 1);
-				cmd = commandLine.substr(0, argsIndx);
-			}
-			else
-			{
-				cmd = commandLine;
-			}
+			String cmd;
+			TagArgArray tagArgs;
+			ParseCommandLine(commandLine, cmd, tagArgs);
 
 			// Insert into history. First find match and delete it so it can be pushed to the back. This isn't trying to be smart or optimal.
 			m_historyPos = -1;
@@ -321,7 +391,7 @@ namespace ToolKit
 			if (m_commandExecutors.find(cmd) != m_commandExecutors.end())
 			{
 				AddLog(commandLine, LogType::Command);
-				m_commandExecutors[cmd](args);
+				m_commandExecutors[cmd](tagArgs);
 			}
 			else
 			{
@@ -330,6 +400,87 @@ namespace ToolKit
 			}
 
 			m_scrollToBottom = true;
+		}
+
+		void SplitPreserveText(const String& s, const String& sep, std::vector<String>& v)
+		{
+			String arg = s;
+			const char spaceSub = (char)26;
+
+			size_t indx = arg.find_first_of('"');
+			size_t indx2 = arg.find_first_of('"', indx + 1);
+			while (indx != String::npos && indx2 != String::npos)
+			{
+				std::replace(arg.begin() + indx, arg.begin() + indx2, ' ', spaceSub);
+				std::swap(indx, indx2);
+				indx2 = arg.find_first_of('"', indx + 1);
+			}
+
+			Split(arg, sep, v);
+
+			for (String& val : v)
+			{
+				val.erase
+				(
+					std::remove_if(val.begin(), val.end(), [](char c) { return c == '"'; }),
+					val.end()
+				);
+
+				std::replace(val.begin(), val.end(), spaceSub, ' ');
+			}
+		}
+
+		void ConsoleWindow::ParseCommandLine(String commandLine, String& command, TagArgArray& tagArgs)
+		{
+			String args;
+			size_t indx = commandLine.find_first_of(" ");
+			if (indx != String::npos)
+			{
+				args = commandLine.substr(indx + 1);
+				command = commandLine.substr(0, indx);
+			}
+			else
+			{
+				command = commandLine;
+				return;
+			}
+			
+			// Single arg, no tag.
+			if (args.find_first_of("--") == String::npos)
+			{
+				TagArg nullTag;
+				std::vector<String> values;
+				SplitPreserveText(args, " ", nullTag.second);
+				tagArgs.push_back(nullTag);
+				return;
+			}
+
+			std::vector<String> splits;
+			Split(args, "--", splits);
+
+			// Preserve all spaces in text.
+			const char spaceSub = (char)26;
+			for (String& arg : splits)
+			{
+				std::vector<String> values;
+				SplitPreserveText(arg, " ", values);
+				if (values.empty())
+				{
+					continue;
+				}
+
+				String tag;
+				tag = values.front();
+				pop_front(values);
+
+				if (values.empty())
+				{
+					continue;
+				}
+
+				TagArg input(tag, values);
+				tagArgs.push_back(input);
+			}
 		}
 
 		// Mostly ripoff from the ImGui Console Example.
@@ -456,7 +607,7 @@ namespace ToolKit
 			return 0;
 		}
 
-		void ConsoleWindow::CreateCommand(const String& command, std::function<void(String)> executor)
+		void ConsoleWindow::CreateCommand(const String& command, std::function<void(TagArgArray)> executor)
 		{
 			m_commands.push_back(command);
 			m_commandExecutors[command] = executor;

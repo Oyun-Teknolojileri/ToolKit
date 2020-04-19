@@ -46,7 +46,6 @@ namespace ToolKit
 			class RenderTarget* m_viewportImage = nullptr;
 
 			// Window properties.
-			String m_name;
 			float m_width = 640.0f;
 			float m_height = 480.0f;
 			Vec2 m_wndPos;

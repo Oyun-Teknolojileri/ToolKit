@@ -217,6 +217,19 @@ namespace ToolKit
 			return nullptr;
 		}
 
+		Viewport* App::GetViewport(const String& name)
+		{
+			for (Window* wnd : m_windows)
+			{
+				if (wnd->m_name == name)
+				{
+					return dynamic_cast<Viewport*> (wnd);
+				}
+			}
+
+			return nullptr;
+		}
+
 		ConsoleWindow* App::GetConsole()
 		{
 			for (Window* wnd : m_windows)

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "glm\glm.hpp"
-#include "glm\gtc\quaternion.hpp"
 #include "MathUtil.h"
+#include "Types.h"
 
 #include <assert.h>
 #include <string.h>
@@ -20,6 +19,7 @@ namespace ToolKit
 	void ExtractQuatFromNode(void* node, Quaternion& val);
 	bool CheckFile(String path);
 	void Split(const String& s, const String& sep, std::vector<String>& v);
+	void ReplaceStringInPlace(String& subject, const String& search, const String& replace);
 	class LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size);
 
 	template<typename T>
