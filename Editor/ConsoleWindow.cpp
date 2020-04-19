@@ -146,7 +146,7 @@ namespace ToolKit
 
 				if (tag.empty())
 				{
-					continue;;
+					continue;
 				}
 
 				if (args.empty())
@@ -176,6 +176,78 @@ namespace ToolKit
 				else if (tag == "t")
 				{
 					e->m_node->m_translation = transfrom;
+				}
+			}
+		}
+
+		void TransformExec(TagArgArray tagArgs)
+		{
+			Entity* e = g_app->m_scene.GetCurrentSelection();
+			if (e == nullptr)
+			{
+				return;
+			}
+
+			TransformationSpace ts = TransformationSpace::TS_WORLD;
+			TagArgArray::const_iterator transformSpaceTag = GetTag("ts", tagArgs);
+			if (transformSpaceTag != tagArgs.end())
+			{
+				if (!transformSpaceTag->second.empty())
+				{
+					String tsStr = transformSpaceTag->second.front();
+					if (tsStr == "world")
+					{
+						ts = TransformationSpace::TS_WORLD;
+					}
+
+					if (tsStr == "parent")
+					{
+						ts = TransformationSpace::TS_PARENT;
+					}
+
+					if (tsStr == "local")
+					{
+						ts = TransformationSpace::TS_LOCAL;
+					}
+				}
+			}
+
+			for (TagArg& tagIt : tagArgs)
+			{
+				String tag = tagIt.first;
+				std::vector<String>& args = tagIt.second;
+
+				if (tag.empty())
+				{
+					continue;
+				}
+
+				if (args.empty())
+				{
+					continue;
+				}
+
+				Vec3 transfrom;
+				int maxIndx = glm::min((int)args.size(), 3);
+				for (int i = 0; i < maxIndx; i++)
+				{
+					transfrom[i] = (float)std::atof(args[i].c_str());
+				}
+
+				if (tag == "r")
+				{
+					Quaternion qx = glm::angleAxis(glm::radians(transfrom.x), X_AXIS);
+					Quaternion qy = glm::angleAxis(glm::radians(transfrom.y), Y_AXIS);
+					Quaternion qz = glm::angleAxis(glm::radians(transfrom.z), Z_AXIS);
+					e->m_node->Rotate(qz * qy * qx, ts);
+				}
+				else if (tag == "s")
+				{
+					e->m_node->Scale(transfrom, ts);
+				}
+				else if (tag == "t")
+				{
+					e->m_node->Translate(transfrom, ts);
 				}
 			}
 		}
@@ -229,19 +301,19 @@ namespace ToolKit
 								node->m_orientation = glm::angleAxis(glm::half_pi<float>(), -Y_AXIS);
 							}
 						}
-					}
 
-					TagArgArray::const_iterator translateTag = GetTag("t", tagArgs);
-					if (translateTag != tagArgs.end())
-					{
-						Vec3 translate;
-						int maxIndx = glm::min((int)translateTag->second.size(), 3);
-						for (int i = 0; i < maxIndx; i++)
+						TagArgArray::const_iterator translateTag = GetTag("t", tagArgs);
+						if (translateTag != tagArgs.end())
 						{
-							translate[i] = (float)std::atof(translateTag->second[i].c_str());
-						}
+							Vec3 translate;
+							int maxIndx = glm::min((int)translateTag->second.size(), 3);
+							for (int i = 0; i < maxIndx; i++)
+							{
+								translate[i] = (float)std::atof(translateTag->second[i].c_str());
+							}
 
-						vp->m_camera->m_node->m_translation = translate;
+							c->m_node->m_translation = translate;
+						}
 					}
 				}
 			}
@@ -260,7 +332,8 @@ namespace ToolKit
 			CreateCommand(g_showOverlayUIAlwaysCmd, ShowOverlayAlwaysExec);
 			CreateCommand(g_showModTransitionsCmd, ShowModTransitionsExec);
 			CreateCommand(g_setTransformCmd, SetTransformExec);
-			CreateCommand(g_setCameraTransform, SetCameraTransformExec);
+			CreateCommand(g_setCameraTransformCmd, SetCameraTransformExec);
+			CreateCommand(g_transformCmd, TransformExec);
 		}
 
 		ConsoleWindow::~ConsoleWindow()

@@ -73,20 +73,21 @@ namespace ToolKit
 
 			m_q1 = new Cube();
 			m_q1->m_mesh->Init(false);
-			m_q1->m_node->m_translation = Vec3(-4.0f, 0.0f, 0.0f);
-			m_q1->m_node->m_orientation = glm::angleAxis(1.1f, glm::normalize(Vec3(1.0f, 1.0f, 1.0f)));
+			m_q1->m_node->m_translation = Vec3(0.0f, 0.0f, 0.0f);
 			m_scene.AddEntity(m_q1);
 
 			m_q2 = new Cube();
 			m_q2->m_mesh->Init(false);
-			m_q2->m_node->m_translation = Vec3(4.0f, 0.0f, 0.0f);
+			m_q2->m_node->m_translation = Vec3(2.0f, 0.0f, 0.0f);
 			m_scene.AddEntity(m_q2);
 
 			m_q3 = new Cone();
 			m_q3->m_mesh->Init(false);
-			m_q3->m_node->m_scale = Vec3(0.3f, 1.0f, 0.3f);
 			m_q3->m_node->m_translation = Vec3(2.0f, 0.0f, 0.0f);
 			m_scene.AddEntity(m_q3);
+
+			m_q1->m_node->AddChild(m_q2->m_node);
+			m_q2->m_node->AddChild(m_q3->m_node);
 
 			m_origin = new Axis3d();
 

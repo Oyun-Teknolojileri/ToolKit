@@ -80,19 +80,48 @@ namespace ToolKit
 		m_orientation = glm::normalize(m_orientation);
 	}
 
-	void Node::Scale(Vec3 val)
+	void Node::Scale(Vec3 val, TransformationSpace space)
 	{
-		m_scale += val;
+		switch (space)
+		{
+		case TransformationSpace::TS_WORLD:
+		{
+			Vec3 ps, ws;
+			ws = GetScale(TransformationSpace::TS_WORLD);
+			if (m_parent != nullptr)
+			{
+				ps = m_parent->GetScale(TransformationSpace::TS_WORLD);
+			}
+			m_scale = (1.0f / ps) * val * ws;
+		}
+		break;
+		case TransformationSpace::TS_PARENT:
+			m_scale = val * m_scale;
+			break;
+		case TransformationSpace::TS_LOCAL:
+		{
+			Vec3 ps, ws;
+			ws = GetScale(TransformationSpace::TS_WORLD);
+			if (m_parent != nullptr)
+			{
+				ps = m_parent->GetScale(TransformationSpace::TS_WORLD);
+			}
+				
+			m_scale = (1.0f / ps) * ws * val;
+		}
+		}
 	}
 
 	void Node::Transform(Mat4 val, TransformationSpace space)
 	{
 		Vec3 translation;
+		Vec3 scale;
 		Quaternion orientation;
-		DecomposeMatrix(val, translation, orientation);
+		DecomposeMatrix(val, translation, orientation, scale);
 
 		Translate(translation, space);
 		Rotate(orientation, space);
+		m_scale = scale;
 	}
 
 	Mat4 Node::GetTransform(TransformationSpace space)

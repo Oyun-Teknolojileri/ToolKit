@@ -19,7 +19,7 @@ namespace ToolKit
     Node(Vec3 translation);
     void Translate(Vec3 val, TransformationSpace space = TransformationSpace::TS_PARENT);
     void Rotate(Quaternion val, TransformationSpace space = TransformationSpace::TS_PARENT);
-    void Scale(Vec3 val);
+    void Scale(Vec3 val, TransformationSpace space = TransformationSpace::TS_PARENT);
     void Transform(Mat4 val, TransformationSpace space = TransformationSpace::TS_PARENT);
     Mat4 GetTransform(TransformationSpace space = TransformationSpace::TS_WORLD);
     Vec3 GetTranslation(TransformationSpace space = TransformationSpace::TS_PARENT);
