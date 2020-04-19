@@ -180,29 +180,68 @@ namespace ToolKit
 			}
 		}
 
-		void SetCameraAlignmentExec(TagArgArray tagArgs)
+		void SetCameraTransformExec(TagArgArray tagArgs)
 		{
 			TagArgArray::const_iterator viewportTag = GetTag("v", tagArgs);
-			if (viewportTag == tagArgs.end()) // Tag must be exist.
+			if (viewportTag != tagArgs.end())
 			{
-				return;
-			}
-
-			if (viewportTag->second.size() != 2) // Tag cant be empty.
-			{
-				return;
-			}
-
-			if (Viewport* vp = g_app->GetViewport(viewportTag->second[0]))
-			{
-				if (Camera* c = vp->m_camera)
+				if (viewportTag->second.empty()) // Tag cant be empty.
 				{
-					assert(c->m_node->m_parent == nullptr && "SetTransform(TS_WORLD) must be implemented.");
+					return;
+				}
 
-					Node* node = c->m_node;
-					if (viewportTag->second[1] == "top")
+				if (Viewport* vp = g_app->GetViewport(viewportTag->second[0]))
+				{
+					if (Camera* c = vp->m_camera)
 					{
-						node->m_orientation = glm::angleAxis(glm::half_pi<float>(), X_AXIS) * glm::angleAxis(glm::pi<float>(), Y_AXIS);
+						assert(c->m_node->m_parent == nullptr && "SetTransform(TS_WORLD) must be implemented.");
+
+						if (viewportTag->second.size() == 2)
+						{
+							Node* node = c->m_node;
+							if (viewportTag->second[1] == "top")
+							{
+								node->m_orientation = glm::angleAxis(glm::pi<float>(), -Y_AXIS) * glm::angleAxis(glm::half_pi<float>(), X_AXIS) * glm::angleAxis(glm::pi<float>(), Y_AXIS);
+							}
+
+							if (viewportTag->second[1] == "bottom")
+							{
+								node->m_orientation = glm::angleAxis(glm::pi<float>(), -Y_AXIS) * glm::angleAxis(glm::half_pi<float>(), -X_AXIS) * glm::angleAxis(glm::pi<float>(), Y_AXIS);
+							}
+
+							if (viewportTag->second[1] == "front")
+							{
+								node->m_orientation = Quaternion();
+							}
+
+							if (viewportTag->second[1] == "back")
+							{
+								node->m_orientation = glm::angleAxis(glm::pi<float>(), Y_AXIS);
+							}
+
+							if (viewportTag->second[1] == "left")
+							{
+								node->m_orientation = glm::angleAxis(glm::half_pi<float>(), Y_AXIS);
+							}
+
+							if (viewportTag->second[1] == "right")
+							{
+								node->m_orientation = glm::angleAxis(glm::half_pi<float>(), -Y_AXIS);
+							}
+						}
+					}
+
+					TagArgArray::const_iterator translateTag = GetTag("t", tagArgs);
+					if (translateTag != tagArgs.end())
+					{
+						Vec3 translate;
+						int maxIndx = glm::min((int)translateTag->second.size(), 3);
+						for (int i = 0; i < maxIndx; i++)
+						{
+							translate[i] = (float)std::atof(translateTag->second[i].c_str());
+						}
+
+						vp->m_camera->m_node->m_translation = translate;
 					}
 				}
 			}
@@ -221,7 +260,7 @@ namespace ToolKit
 			CreateCommand(g_showOverlayUIAlwaysCmd, ShowOverlayAlwaysExec);
 			CreateCommand(g_showModTransitionsCmd, ShowModTransitionsExec);
 			CreateCommand(g_setTransformCmd, SetTransformExec);
-			CreateCommand(g_setCameraAlignment, SetCameraAlignmentExec);
+			CreateCommand(g_setCameraTransform, SetCameraTransformExec);
 		}
 
 		ConsoleWindow::~ConsoleWindow()

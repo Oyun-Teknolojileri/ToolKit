@@ -28,8 +28,8 @@ namespace ToolKit
 		const String g_setTransformCmd("SetTransform");
 		void SetTransformExec(TagArgArray tagArgs);
 
-		const String g_setCameraAlignment("SetCameraAligment");
-		void SetCameraAlignmentExec(TagArgArray tagArgs);
+		const String g_setCameraTransform("SetCameraTransform");
+		void SetCameraTransformExec(TagArgArray tagArgs);
 
 		class ConsoleWindow : public Window
 		{
