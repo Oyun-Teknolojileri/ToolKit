@@ -94,13 +94,18 @@ namespace ToolKit
 		{
 		case TransformationSpace::TS_WORLD:
 		{
-			Vec3 ps, ws;
-			ws = GetScale(TransformationSpace::TS_WORLD);
+			Mat4 ts, ps, ws;
+			ts = glm::scale(ts, val);
+			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetScale(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 			}
-			m_scale = (1.0f / ps) * val * ws;
+			ts = glm::inverse(ps) * ts * ws;
+
+			Vec3 t;
+			Quaternion q;
+			DecomposeMatrix(ts, t, q, m_scale);
 		}
 		break;
 		case TransformationSpace::TS_PARENT:
@@ -108,14 +113,18 @@ namespace ToolKit
 			break;
 		case TransformationSpace::TS_LOCAL:
 		{
-			Vec3 ps, ws;
-			ws = GetScale(TransformationSpace::TS_WORLD);
+			Mat4 ts, ps, ws;
+			ts = glm::scale(ts, val);
+			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetScale(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 			}
-				
-			m_scale = (1.0f / ps) * ws * val;
+			ts = glm::inverse(ps) * ws * ts;
+
+			Vec3 t;
+			Quaternion q;
+			DecomposeMatrix(ts, t, q, m_scale);
 		}
 		}
 	}
@@ -248,7 +257,9 @@ namespace ToolKit
 		{
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
-				return m_parent->GetScale(TransformationSpace::TS_WORLD) + m_scale;
+			{
+				return m_parent->GetScale(TransformationSpace::TS_WORLD) * m_scale;
+			}
 			return m_scale;
 			break;
 		case TransformationSpace::TS_PARENT:
@@ -256,7 +267,7 @@ namespace ToolKit
 			break;
 		case TransformationSpace::TS_LOCAL:
 		default:
-			return Vec3();
+			return Vec3(1.0f);
 			break;
 		}
 	}
