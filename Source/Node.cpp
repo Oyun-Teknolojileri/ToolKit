@@ -168,7 +168,7 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
-				Mat4 ps = m_parent->GetTransform(space);
+				Mat4 ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 				return ps * constructTransform();
 			}
 			return constructTransform();
@@ -194,7 +194,7 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
-				Mat4 ts = GetTransform(space);
+				Mat4 ts = GetTransform(TransformationSpace::TS_WORLD);
 				Vec3 t, s;
 				Quaternion q;
 				DecomposeMatrix(ts, t, q, s);
@@ -224,7 +224,7 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
-				Mat4 ts = GetTransform(space);
+				Mat4 ts = GetTransform(TransformationSpace::TS_WORLD);
 				Vec3 t, s;
 				Quaternion q;
 				DecomposeMatrix(ts, t, q, s);
@@ -254,7 +254,7 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
-				Mat4 ts = GetTransform(space);
+				Mat4 ts = GetTransform(TransformationSpace::TS_WORLD);
 				Vec3 t, s;
 				Quaternion q;
 				DecomposeMatrix(ts, t, q, s);
