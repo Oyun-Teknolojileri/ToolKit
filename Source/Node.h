@@ -31,9 +31,6 @@ namespace ToolKit
     Vec3 GetScale(TransformationSpace space = TransformationSpace::TS_PARENT) const;
     void AddChild(Node* child);
 
-  private:
-    void GetOffsetToParentSpace(Mat4& val, TransformationSpace space) const;
-
   public:
     Vec3 m_translation;
     Vec3 m_scale;

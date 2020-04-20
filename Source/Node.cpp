@@ -143,7 +143,7 @@ namespace ToolKit
 
 	void Node::SetTransform(const Mat4& val, TransformationSpace space)
 	{
-
+		assert(false && "Not implemented.");
 	}
 
 	Mat4 Node::GetTransform(TransformationSpace space) const
@@ -164,7 +164,8 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
-				return m_parent->GetTransform(TransformationSpace::TS_WORLD) * constructTransform();
+				Mat4 ps = m_parent->GetTransform(space);
+				return ps * constructTransform();
 			}
 			return constructTransform();
 			break;
@@ -179,13 +180,7 @@ namespace ToolKit
 
 	void Node::SetTranslation(const Vec3& val, TransformationSpace space)
 	{
-		Mat4 ts;
-		ts = glm::translate(ts, val);
-
-		GetOffsetToParentSpace(ts, space);
-
-		// Extract, apply offset.
-		m_translation = glm::column(ts, 3).xyz;
+		m_translation = val;
 	}
 
 	Vec3 Node::GetTranslation(TransformationSpace space) const
@@ -194,7 +189,13 @@ namespace ToolKit
 		{
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
-				return (m_parent->GetTransform(TransformationSpace::TS_WORLD) * Vec4(m_translation, 1.0f)).xyz;
+			{
+				Mat4 ts = GetTransform(space);
+				Vec3 t, s;
+				Quaternion q;
+				DecomposeMatrix(ts, t, q, s);
+				return t;
+			}
 			return m_translation;
 			break;
 		case TransformationSpace::TS_PARENT:
@@ -209,12 +210,7 @@ namespace ToolKit
 
 	void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
 	{
-		Mat4 ts = glm::toMat4(val);
-
-		GetOffsetToParentSpace(ts, space);
-
-		// Extract, apply offset.
-		m_orientation = glm::normalize(glm::toQuat(ts));
+		m_orientation = val;
 	}
 
 	Quaternion Node::GetOrientation(TransformationSpace space) const
@@ -223,7 +219,13 @@ namespace ToolKit
 		{
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
-				return glm::normalize(m_parent->GetOrientation(TransformationSpace::TS_WORLD) * m_orientation);
+			{
+				Mat4 ts = GetTransform(space);
+				Vec3 t, s;
+				Quaternion q;
+				DecomposeMatrix(ts, t, q, s);
+				return q;
+			}
 			return m_orientation;
 			break;
 		case TransformationSpace::TS_PARENT:
@@ -248,7 +250,11 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
-				return m_parent->GetScale(TransformationSpace::TS_WORLD) * m_scale;
+				Mat4 ts = GetTransform(space);
+				Vec3 t, s;
+				Quaternion q;
+				DecomposeMatrix(ts, t, q, s);
+				return s;
 			}
 			return m_scale;
 			break;
@@ -266,19 +272,6 @@ namespace ToolKit
 	{
 		m_children.push_back(child);
 		child->m_parent = this;
-	}
-
-	void Node::GetOffsetToParentSpace(Mat4& val, TransformationSpace space) const
-	{
-		// Transform in queried space.
-		Mat4 itsQuerySpace = GetTransform(TransformationSpace::TS_WORLD);
-		itsQuerySpace = glm::inverse(itsQuerySpace);
-		val = itsQuerySpace * val; 
-
-		// Offset in parent space.
-		Mat4 itsParentSpace = GetTransform(TransformationSpace::TS_PARENT);
-		itsParentSpace = glm::inverse(itsParentSpace);
-		val = itsParentSpace * val;
 	}
 
 }
