@@ -32,7 +32,8 @@ namespace ToolKit
 			{
 				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 			}
-			m_translation = glm::column(glm::inverse(ps) * ts * ws, 3).xyz;
+			ts = glm::inverse(ps) * ts * ws;
+			m_translation = ts[3].xyz;
 		}
 		break;
 		case TransformationSpace::TS_PARENT:
@@ -49,7 +50,8 @@ namespace ToolKit
 			{
 				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 			}
-			m_translation = glm::column(glm::inverse(ps) * ws * ts, 3).xyz;
+			ts = glm::inverse(ps) * ws * ts;
+			m_translation = ts[3].xyz;
 		}
 		break;
 		}
@@ -61,14 +63,13 @@ namespace ToolKit
 		{
 		case TransformationSpace::TS_WORLD:
 		{
-			glm::mat3 ps, ws;
+			Mat3 ps, ws;
 			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 			{
 				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 			}
-
-			glm::mat3 ts = glm::inverse(ps) * glm::toMat3(val) * ws;
+			Mat3 ts = glm::inverse(ps) * glm::toMat3(val) * ws;
 			m_orientation = glm::toQuat(ts);
 		}
 		break;
@@ -77,13 +78,13 @@ namespace ToolKit
 			break;
 		case TransformationSpace::TS_LOCAL:
 		{
-			glm::mat3 ps, ws;
+			Mat3 ps, ws;
 			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 			{
 				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 			}
-			glm::mat3 ts = glm::inverse(ps) * ws * glm::toMat3(val);
+			Mat3 ts = glm::inverse(ps) * ws * glm::toMat3(val);
 			m_orientation = glm::toQuat(ts);
 		}
 		}
