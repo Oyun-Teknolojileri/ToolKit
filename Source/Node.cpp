@@ -85,6 +85,7 @@ namespace ToolKit
 			Mat3 ts = glm::inverse(ps) * ws * glm::toMat3(val);
 			m_orientation = glm::toQuat(ts);
 		}
+		break;
 		}
 
 		m_orientation = glm::normalize(m_orientation);
@@ -138,6 +139,7 @@ namespace ToolKit
 			Quaternion q;
 			DecomposeMatrix(ts, t, q, m_scale);
 		}
+		break;
 		}
 	}
 
@@ -180,10 +182,8 @@ namespace ToolKit
 				return ps * constructTransform();
 			}
 			return constructTransform();
-			break;
 		case TransformationSpace::TS_PARENT:
 			return constructTransform();
-			break;
 		case TransformationSpace::TS_LOCAL:
 		default:
 			return Mat4();
@@ -192,7 +192,28 @@ namespace ToolKit
 
 	void Node::SetTranslation(const Vec3& val, TransformationSpace space)
 	{
-		m_translation = val;
+		switch (space)
+		{
+		case TransformationSpace::TS_WORLD:
+		{
+			Mat4 ps, ws;
+			ws = GetTransform(TransformationSpace::TS_WORLD);
+			if (m_parent != nullptr)
+			{
+				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+			}
+			ws[3].xyz = val;
+			Mat4 ts = glm::inverse(ps) * ws;
+			m_translation = ts[3].xyz;
+		}
+		break;
+		case TransformationSpace::TS_PARENT:
+			m_translation = val;
+			break;
+		case TransformationSpace::TS_LOCAL:
+			Translate(val, TransformationSpace::TS_LOCAL);
+		break;
+		}
 	}
 
 	Vec3 Node::GetTranslation(TransformationSpace space) const
@@ -222,7 +243,34 @@ namespace ToolKit
 
 	void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
 	{
-		m_orientation = val;
+		switch (space)
+		{
+		case TransformationSpace::TS_WORLD:
+		{
+			Mat3 ps, ws;
+			ws = GetTransform(TransformationSpace::TS_WORLD);
+			if (m_parent != nullptr)
+			{
+				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+			}
+			Vec3 t, s;
+			Quaternion q;
+			DecomposeMatrix(ws, t, q, s);
+			ws = glm::toMat3(val);
+			ws = ws * glm::diagonal3x3(s);
+
+			Mat3 ts = glm::inverse(ps) * ts;
+			m_orientation = glm::toQuat(ts);
+			m_orientation = glm::normalize(m_orientation);
+		}
+		break;
+		case TransformationSpace::TS_PARENT:
+			m_orientation = val;
+			break;
+		case TransformationSpace::TS_LOCAL:
+			Rotate(val, TransformationSpace::TS_LOCAL);
+			break;
+		}
 	}
 
 	Quaternion Node::GetOrientation(TransformationSpace space) const
