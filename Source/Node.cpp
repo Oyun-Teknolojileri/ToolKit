@@ -109,8 +109,8 @@ namespace ToolKit
 		}
 		break;
 		case TransformationSpace::TS_PARENT:
-			m_scale = val * m_scale;
-			break;
+			m_scale = m_scale * val;
+		break;
 		case TransformationSpace::TS_LOCAL:
 		{
 			Mat4 ts, ps, ws;
@@ -138,7 +138,7 @@ namespace ToolKit
 
 		Translate(translation, space);
 		Rotate(orientation, space);
-		m_scale = scale;
+		Scale(scale, space);
 	}
 
 	void Node::SetTransform(const Mat4& val, TransformationSpace space)
@@ -238,17 +238,7 @@ namespace ToolKit
 
 	void Node::SetScale(const Vec3& val, TransformationSpace space)
 	{
-		Mat4 ts;
-		ts = glm::translate(ts, val);
-
-		GetOffsetToParentSpace(ts, space);
-
-		Vec3 t, s;
-		Quaternion q;
-		DecomposeMatrix(ts, t, q, s);
-
-		// Extract, apply offset.
-		m_scale = s;
+		m_scale = val;
 	}
 
 	Vec3 Node::GetScale(TransformationSpace space) const
