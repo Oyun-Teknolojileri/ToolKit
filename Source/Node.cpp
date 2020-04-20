@@ -111,17 +111,17 @@ namespace ToolKit
 		break;
 		case TransformationSpace::TS_PARENT:
 		{
-			Mat3 ts, ps;
+			Mat3 ts, ps, ws;
 			ts = glm::diagonal3x3(val);
+			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 			{
 				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 			}
-			ts = glm::inverse(ps) * ts * ps;
+			ts = glm::inverse(ps) * ts * glm::inverse(ps) * ws;
 			Vec3 t, s;
 			Quaternion q;
-			DecomposeMatrix(ts, t, q, s);
-			m_scale = s * m_scale;
+			DecomposeMatrix(ts, t, q, m_scale);
 		}
 		break;
 		case TransformationSpace::TS_LOCAL:
