@@ -37,9 +37,7 @@ namespace ToolKit
 		}
 		break;
 		case TransformationSpace::TS_PARENT:
-		{
 			m_translation = val + m_translation;
-		}
 		break;
 		case TransformationSpace::TS_LOCAL:
 		{
@@ -98,34 +96,44 @@ namespace ToolKit
 		{
 		case TransformationSpace::TS_WORLD:
 		{
-			Mat4 ts, ps, ws;
-			ts = glm::scale(ts, val);
+			Mat3 ts, ps, ws;
+			ts = glm::diagonal3x3(val);
 			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 			{
 				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 			}
 			ts = glm::inverse(ps) * ts * ws;
-
 			Vec3 t;
 			Quaternion q;
 			DecomposeMatrix(ts, t, q, m_scale);
 		}
 		break;
 		case TransformationSpace::TS_PARENT:
-			m_scale = m_scale * val;
+		{
+			Mat3 ts, ps;
+			ts = glm::diagonal3x3(val);
+			if (m_parent != nullptr)
+			{
+				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+			}
+			ts = glm::inverse(ps) * ts * ps;
+			Vec3 t, s;
+			Quaternion q;
+			DecomposeMatrix(ts, t, q, s);
+			m_scale = s * m_scale;
+		}
 		break;
 		case TransformationSpace::TS_LOCAL:
 		{
-			Mat4 ts, ps, ws;
-			ts = glm::scale(ts, val);
+			Mat3 ts, ps, ws;
+			ts = glm::diagonal3x3(val);
 			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 			{
 				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 			}
 			ts = glm::inverse(ps) * ws * ts;
-
 			Vec3 t;
 			Quaternion q;
 			DecomposeMatrix(ts, t, q, m_scale);
