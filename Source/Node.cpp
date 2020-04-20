@@ -230,14 +230,11 @@ namespace ToolKit
 				return t;
 			}
 			return m_translation;
-			break;
 		case TransformationSpace::TS_PARENT:
 			return m_translation;
-			break;
 		case TransformationSpace::TS_LOCAL:
 		default:
 			return Vec3();
-			break;
 		}
 	}
 
@@ -287,14 +284,11 @@ namespace ToolKit
 				return q;
 			}
 			return m_orientation;
-			break;
 		case TransformationSpace::TS_PARENT:
 			return m_orientation;
-			break;
 		case TransformationSpace::TS_LOCAL:
 		default:
 			return Quaternion();
-			break;
 		}
 	}
 
@@ -317,14 +311,11 @@ namespace ToolKit
 				return s;
 			}
 			return m_scale;
-			break;
 		case TransformationSpace::TS_PARENT:
 			return m_scale;
-			break;
 		case TransformationSpace::TS_LOCAL:
 		default:
 			return Vec3(1.0f);
-			break;
 		}
 	}
 
