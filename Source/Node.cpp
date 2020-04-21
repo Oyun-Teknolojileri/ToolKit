@@ -27,10 +27,10 @@ namespace ToolKit
 		{
 			Mat4 ts, ps, ws;
 			ts = glm::translate(ts, val);
-			ws = GetTransform(TransformationSpace::TS_WORLD);
+			ws = GetTransform();
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform();
 			}
 			ts = glm::inverse(ps) * ts * ws;
 			m_translation = ts[3].xyz;
@@ -43,10 +43,10 @@ namespace ToolKit
 		{
 			Mat4 ts, ps, ws;
 			ts = glm::translate(ts, val);
-			ws = GetTransform(TransformationSpace::TS_WORLD);
+			ws = GetTransform();
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform();
 			}
 			ts = glm::inverse(ps) * ws * ts;
 			m_translation = ts[3].xyz;
@@ -62,10 +62,10 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 		{
 			Mat3 ps, ws;
-			ws = GetTransform(TransformationSpace::TS_WORLD);
+			ws = GetTransform();
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform();
 			}
 			Mat3 ts = glm::inverse(ps) * glm::toMat3(val) * ws;
 			m_orientation = glm::toQuat(ts);
@@ -77,10 +77,10 @@ namespace ToolKit
 		case TransformationSpace::TS_LOCAL:
 		{
 			Mat3 ps, ws;
-			ws = GetTransform(TransformationSpace::TS_WORLD);
+			ws = GetTransform();
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform();
 			}
 			Mat3 ts = glm::inverse(ps) * ws * glm::toMat3(val);
 			m_orientation = glm::toQuat(ts);
@@ -99,10 +99,10 @@ namespace ToolKit
 		{
 			Mat3 ts, ps, ws;
 			ts = glm::diagonal3x3(val);
-			ws = GetTransform(TransformationSpace::TS_WORLD);
+			ws = GetTransform();
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform();
 			}
 			ts = glm::inverse(ps) * ts * ws;
 			Vec3 t;
@@ -114,10 +114,10 @@ namespace ToolKit
 		{
 			Mat3 ts, ps, ws;
 			ts = glm::diagonal3x3(val);
-			ws = GetTransform(TransformationSpace::TS_WORLD);
+			ws = GetTransform();
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform();
 			}
 			ts = glm::inverse(ps) * ts * glm::inverse(ps) * ws;
 			Vec3 t, s;
@@ -129,10 +129,10 @@ namespace ToolKit
 		{
 			Mat3 ts, ps, ws;
 			ts = glm::diagonal3x3(val);
-			ws = GetTransform(TransformationSpace::TS_WORLD);
+			ws = GetTransform();
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform();
 			}
 			ts = glm::inverse(ps) * ws * ts;
 			Vec3 t;
@@ -146,10 +146,10 @@ namespace ToolKit
 	void Node::Transform(const Mat4& val, TransformationSpace space)
 	{
 		Mat4 ips, ws;
-		ws = GetTransform(TransformationSpace::TS_WORLD);
+		ws = GetTransform();
 		if (m_parent != nullptr)
 		{
-			ips = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+			ips = m_parent->GetTransform();
 			ips = glm::inverse(ips);
 		}
 
@@ -193,7 +193,7 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
-				Mat4 ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				Mat4 ps = m_parent->GetTransform();
 				return ps * LocalTransform();
 			}
 			return LocalTransform();
@@ -212,10 +212,10 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 		{
 			Mat4 ps, ws;
-			ws = GetTransform(TransformationSpace::TS_WORLD);
+			ws = GetTransform();
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform();
 			}
 			ws[3].xyz = val;
 			Mat4 ts = glm::inverse(ps) * ws;
@@ -238,7 +238,7 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
-				Mat4 ts = GetTransform(TransformationSpace::TS_WORLD);
+				Mat4 ts = GetTransform();
 				Vec3 t, s;
 				Quaternion q;
 				DecomposeMatrix(ts, t, q, s);
@@ -260,10 +260,10 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 		{
 			Mat3 ps, ws;
-			ws = GetTransform(TransformationSpace::TS_WORLD);
+			ws = GetTransform();
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform();
 			}
 			Vec3 t, s;
 			Quaternion q;
@@ -292,7 +292,7 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
-				Mat4 ts = GetTransform(TransformationSpace::TS_WORLD);
+				Mat4 ts = GetTransform();
 				Vec3 t, s;
 				Quaternion q;
 				DecomposeMatrix(ts, t, q, s);
@@ -315,10 +315,10 @@ namespace ToolKit
 		{
 			Mat3 ts, ps;
 			ts = glm::diagonal3x3(val);
-			Quaternion ws = GetOrientation(TransformationSpace::TS_WORLD);
+			Quaternion ws = GetOrientation();
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform();
 			}
 			ts = glm::inverse(ps) * ts * glm::toMat3(ws);
 			Vec3 t;
@@ -330,10 +330,10 @@ namespace ToolKit
 		{
 			Mat3 ts, ps;
 			ts = glm::diagonal3x3(val);
-			Quaternion ws = GetOrientation(TransformationSpace::TS_WORLD);
+			Quaternion ws = GetOrientation();
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform();
 			}
 			ts = glm::inverse(ps) * ts * glm::inverse(ps) * glm::toMat3(ws);
 			Vec3 t, s;
@@ -345,10 +345,10 @@ namespace ToolKit
 		{
 			Mat3 ts, ps;
 			ts = glm::diagonal3x3(val);
-			Quaternion ws = GetOrientation(TransformationSpace::TS_WORLD);
+			Quaternion ws = GetOrientation();
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform();
 			}
 			ts = glm::inverse(ps) * glm::toMat3(ws) * ts;
 			Vec3 t;
@@ -366,7 +366,7 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
-				Mat4 ts = GetTransform(TransformationSpace::TS_WORLD);
+				Mat4 ts = GetTransform();
 				Vec3 t, s;
 				Quaternion q;
 				DecomposeMatrix(ts, t, q, s);
