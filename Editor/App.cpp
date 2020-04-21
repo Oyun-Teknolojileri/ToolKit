@@ -87,11 +87,11 @@ namespace ToolKit
 			m_q3 = new Cone();
 			m_q3->m_mesh->Init(false);
 			m_q3->m_node->m_scale = Vec3(0.3f, 1.0f, 0.3f);
-			m_q3->m_node->m_translation = Vec3(-2.0f, 0.0f, 0.0f);
+			m_q3->m_node->m_translation = Vec3(2.0f, 0.0f, 0.0f);
 			m_scene.AddEntity(m_q3);
 
 			m_q1->m_node->AddChild(m_q2->m_node);
-			//m_q2->m_node->AddChild(m_q3->m_node);
+			m_q2->m_node->AddChild(m_q3->m_node);
 
 			m_origin = new Axis3d();
 
