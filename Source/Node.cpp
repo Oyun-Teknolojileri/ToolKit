@@ -145,14 +145,29 @@ namespace ToolKit
 
 	void Node::Transform(const Mat4& val, TransformationSpace space)
 	{
-		Vec3 translation;
-		Vec3 scale;
-		Quaternion orientation;
-		DecomposeMatrix(val, translation, orientation, scale);
+		Mat4 ips, ws;
+		ws = GetTransform(TransformationSpace::TS_WORLD);
+		if (m_parent != nullptr)
+		{
+			ips = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+			ips = glm::inverse(ips);
+		}
 
-		Translate(translation, space);
-		Rotate(orientation, space);
-		Scale(scale, space);
+		Mat4 offset;
+		switch (space)
+		{
+		case TransformationSpace::TS_WORLD:
+			offset = ips * val * ws;
+			break;
+		case TransformationSpace::TS_PARENT:
+			offset = ips * val * ips * ws;
+			break;
+		case TransformationSpace::TS_LOCAL:
+			offset = ips * val * ws;
+			break;
+		}
+
+		DecomposeMatrix(offset, m_translation, m_orientation, m_scale);
 	}
 
 	void Node::SetTransform(const Mat4& val, TransformationSpace space)
@@ -162,7 +177,7 @@ namespace ToolKit
 
 	Mat4 Node::GetTransform(TransformationSpace space) const
 	{
-		auto constructTransform = [this]() -> Mat4
+		auto LocalTransform = [this]() -> Mat4
 		{
 			Mat4 scale;
 			scale = glm::scale(scale, m_scale);
@@ -179,11 +194,11 @@ namespace ToolKit
 			if (m_parent != nullptr)
 			{
 				Mat4 ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
-				return ps * constructTransform();
+				return ps * LocalTransform();
 			}
-			return constructTransform();
+			return LocalTransform();
 		case TransformationSpace::TS_PARENT:
-			return constructTransform();
+			return LocalTransform();
 		case TransformationSpace::TS_LOCAL:
 		default:
 			return Mat4();
