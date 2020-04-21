@@ -294,7 +294,54 @@ namespace ToolKit
 
 	void Node::SetScale(const Vec3& val, TransformationSpace space)
 	{
-		m_scale = val;
+		switch (space)
+		{
+		case TransformationSpace::TS_WORLD:
+		{
+			Mat3 ts, ps;
+			ts = glm::diagonal3x3(val);
+			Quaternion ws = GetOrientation(TransformationSpace::TS_WORLD);
+			if (m_parent != nullptr)
+			{
+				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+			}
+			ts = glm::inverse(ps) * ts * glm::toMat3(ws);
+			Vec3 t;
+			Quaternion q;
+			DecomposeMatrix(ts, t, q, m_scale);
+		}
+		break;
+		case TransformationSpace::TS_PARENT:
+		{
+			Mat3 ts, ps;
+			ts = glm::diagonal3x3(val);
+			Quaternion ws = GetOrientation(TransformationSpace::TS_WORLD);
+			if (m_parent != nullptr)
+			{
+				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+			}
+			ts = glm::inverse(ps) * ts * glm::inverse(ps) * glm::toMat3(ws);
+			Vec3 t, s;
+			Quaternion q;
+			DecomposeMatrix(ts, t, q, m_scale);
+		}
+		break;
+		case TransformationSpace::TS_LOCAL:
+		{
+			Mat3 ts, ps;
+			ts = glm::diagonal3x3(val);
+			Quaternion ws = GetOrientation(TransformationSpace::TS_WORLD);
+			if (m_parent != nullptr)
+			{
+				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+			}
+			ts = glm::inverse(ps) * glm::toMat3(ws) * ts;
+			Vec3 t;
+			Quaternion q;
+			DecomposeMatrix(ts, t, q, m_scale);
+		}
+		break;
+		}
 	}
 
 	Vec3 Node::GetScale(TransformationSpace space) const
