@@ -23,6 +23,8 @@ namespace ToolKit
 		App::App(int windowWidth, int windowHeight)
 		{
 			m_suzanne = nullptr;
+			m_knight = nullptr;
+			m_knightRunAnim = nullptr;
 			m_q1 = nullptr;
 			m_q2 = nullptr;
 			m_q3 = nullptr;
@@ -45,6 +47,7 @@ namespace ToolKit
 			SafeDel(m_grid);
 			SafeDel(m_origin);
 			SafeDel(m_suzanne);
+			SafeDel(m_knight);
 			SafeDel(m_q1);
 			SafeDel(m_q2);
 			SafeDel(m_q3);
@@ -68,6 +71,17 @@ namespace ToolKit
 			m_suzanne->m_mesh->m_material = solidColorMaterial;
 			m_suzanne->m_mesh->Init(false);
 			m_scene.AddEntity(m_suzanne);
+
+			// https://t-allen-studios.itch.io/low-poly-saxon-warrior
+			m_knight = new Drawable();
+			m_knight->m_mesh = GetSkinMeshManager()->Create(MeshPath("Knight.skinMesh"));
+			m_knight->m_node->SetScale({ 0.01f, 0.01f, 0.01f });
+			m_knight->m_node->SetTranslation({ 0.0f, 0.0f, 5.0f });
+			m_scene.AddEntity(m_knight);
+
+			m_knightRunAnim = GetAnimationManager()->Create(AnimationPath("Knight_Armature_Run.anim"));
+			m_knightRunAnim->m_loop = true;
+			GetAnimationPlayer()->AddRecord(m_knight, m_knightRunAnim.get());
 
 			m_cursor = new Cursor();
 
@@ -131,6 +145,9 @@ namespace ToolKit
 			// Dirty hack.
 			MoveGizmo* gizmo = nullptr;
 
+			// Update animations.
+			GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
+
 			// Update Viewports.
 			for (Window* wnd : m_windows)
 			{
@@ -160,7 +177,8 @@ namespace ToolKit
 							}
 						}
 
-						if (m_scene.IsSelected(ntt->m_id))
+						Drawable* drawObj = static_cast<Drawable*> (ntt);
+						if (m_scene.IsSelected(drawObj->m_id) && !drawObj->m_mesh->IsSkinned())
 						{
 							RenderSelected((Drawable*)ntt, vp->m_camera);
 						}

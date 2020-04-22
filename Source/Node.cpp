@@ -145,6 +145,8 @@ namespace ToolKit
 
 	void Node::Transform(const Mat4& val, TransformationSpace space)
 	{
+		assert(false && "Not tested.");
+
 		Mat4 ips, ws;
 		ws = GetTransform();
 		if (m_parent != nullptr)

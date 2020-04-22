@@ -10,6 +10,7 @@ namespace ToolKit
 	class Cube;
 	class Sphere;
 	class Camera;
+	class Animation;
 
 	namespace Editor
 	{
@@ -64,6 +65,8 @@ namespace ToolKit
 		private:
 			Renderer* m_renderer;
 			Drawable* m_suzanne;
+			Drawable* m_knight;
+			std::shared_ptr<Animation> m_knightRunAnim;
 			Cube* m_q1;
 			Cube* m_q2;
 			Cone* m_q3;

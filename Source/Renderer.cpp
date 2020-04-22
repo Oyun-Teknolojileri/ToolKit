@@ -25,6 +25,12 @@ namespace ToolKit
 
 	void Renderer::Render(Drawable* object, Camera* cam, Light* light)
 	{
+		if (object->m_mesh->IsSkinned())
+		{
+			RenderSkinned(object, cam);
+			return;
+		}
+
 		object->m_mesh->Init();
 
 		std::vector<Mesh*> meshes;
