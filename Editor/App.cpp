@@ -28,6 +28,7 @@ namespace ToolKit
 			m_q1 = nullptr;
 			m_q2 = nullptr;
 			m_q3 = nullptr;
+			m_q4 = nullptr;
 			m_cursor = nullptr;
 			m_renderer = new Renderer();
 			m_renderer->m_windowWidth = windowWidth;
@@ -51,6 +52,7 @@ namespace ToolKit
 			SafeDel(m_q1);
 			SafeDel(m_q2);
 			SafeDel(m_q3);
+			SafeDel(m_q4);
 			SafeDel(m_cursor);
 
 			ModManager::GetInstance()->UnInit();
@@ -110,6 +112,15 @@ namespace ToolKit
 
 			m_q1->m_node->AddChild(m_q2->m_node);
 			m_q2->m_node->AddChild(m_q3->m_node);
+
+			m_q4 = new Cube();
+			m_q4->m_mesh->m_material = normalMat;
+			m_q4->m_mesh->Init(false);
+			m_q4->m_node->m_translation = Vec3(4.0f, 0.0f, 0.0f);
+			m_scene.AddEntity(m_q4);
+
+			m_scene.AddEntity(m_q1);
+
 
 			m_origin = new Axis3d();
 

@@ -71,6 +71,7 @@ namespace ToolKit
 			Cube* m_q1;
 			Cube* m_q2;
 			Cone* m_q3;
+			Cube* m_q4;
 		};
 
 	}

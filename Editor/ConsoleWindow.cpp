@@ -325,29 +325,29 @@ namespace ToolKit
 					}
 				};
 
-				auto tag = GetTag("ts", tagArgs);
-				if (tag != tagArgs.end())
+				if (tagArgs.empty())
 				{
-					if (!tag->second.empty())
-					{
-						String tsStr = tag->second.front();
-						if (tsStr == "world")
-						{
-							PrintTransform(TransformationSpace::TS_WORLD);
-						}
+					return;
+				}
+				if (tagArgs.front().second.empty())
+				{
+					return;
+				}
 
-						if (tsStr == "parent")
-						{
-							PrintTransform(TransformationSpace::TS_PARENT);
-						}
+				String tsStr = tagArgs.front().second.front();
+				if (tsStr == "world")
+				{
+					PrintTransform(TransformationSpace::TS_WORLD);
+				}
 
-						if (tsStr == "local")
-						{
-							PrintTransform(TransformationSpace::TS_LOCAL);
-						}
+				if (tsStr == "parent")
+				{
+					PrintTransform(TransformationSpace::TS_PARENT);
+				}
 
-						return;
-					}
+				if (tsStr == "local")
+				{
+					PrintTransform(TransformationSpace::TS_LOCAL);
 				}
 			}
 		}

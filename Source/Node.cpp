@@ -135,6 +135,7 @@ namespace ToolKit
 		assert(false && "Not implemented.");
 	}
 
+	// Fully tested.
 	Mat4 Node::GetTransform(TransformationSpace space) const
 	{
 		auto LocalTransform = [this]() -> Mat4
@@ -165,6 +166,7 @@ namespace ToolKit
 		}
 	}
 
+	// Fully tested.
 	void Node::SetTranslation(const Vec3& val, TransformationSpace space)
 	{
 		switch (space)
@@ -191,6 +193,7 @@ namespace ToolKit
 		}
 	}
 
+	// Fully tested.
 	Vec3 Node::GetTranslation(TransformationSpace space) const
 	{
 		switch (space)
@@ -213,6 +216,7 @@ namespace ToolKit
 		}
 	}
 
+	// Fully tested.
 	void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
 	{
 		switch (space)
@@ -245,6 +249,7 @@ namespace ToolKit
 		}
 	}
 
+	// Fully tested.
 	Quaternion Node::GetOrientation(TransformationSpace space) const
 	{
 		switch (space)
@@ -267,6 +272,7 @@ namespace ToolKit
 		}
 	}
 
+	// Fully tested.
 	void Node::SetScale(const Vec3& val, TransformationSpace space)
 	{
 		switch (space)
@@ -275,7 +281,7 @@ namespace ToolKit
 		{
 			Mat3 ts, ps;
 			ts = glm::diagonal3x3(val);
-			Quaternion ws = GetOrientation();
+			Quaternion ws = GetOrientation(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 			{
 				ps = m_parent->GetTransform();
@@ -290,7 +296,7 @@ namespace ToolKit
 		{
 			Mat3 ts, ps;
 			ts = glm::diagonal3x3(val);
-			Quaternion ws = GetOrientation();
+			Quaternion ws = GetOrientation(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 			{
 				ps = m_parent->GetTransform();
@@ -307,6 +313,7 @@ namespace ToolKit
 		}
 	}
 
+	// Fully tested.
 	Vec3 Node::GetScale(TransformationSpace space) const
 	{
 		switch (space)
