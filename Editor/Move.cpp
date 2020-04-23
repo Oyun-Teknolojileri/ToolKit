@@ -38,8 +38,25 @@ namespace ToolKit
 					m_gizmo->m_worldLocation = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 					
 					// Get transform orientation.
-					Quaternion q = e->m_node->GetOrientation(g_app->m_transformOrientation);
-					m_gizmo->m_node->SetOrientation(q, TransformationSpace::TS_WORLD);					
+					Quaternion orientation;
+					switch (g_app->m_transformOrientation)
+					{
+					case TransformationSpace::TS_WORLD:
+						break;
+					case TransformationSpace::TS_PARENT:
+						if (e->m_node->m_parent != nullptr)
+						{
+							orientation = e->m_node->m_parent->GetOrientation(TransformationSpace::TS_WORLD);
+						}
+						break;
+					case TransformationSpace::TS_LOCAL:
+						orientation = e->m_node->GetOrientation(TransformationSpace::TS_WORLD);
+					default:
+						break;
+					}
+
+					m_axisOrientation = orientation;
+					m_gizmo->m_node->SetOrientation(orientation, TransformationSpace::TS_WORLD);
 				}
 
 				m_gizmo->Update(deltaTime);
@@ -81,10 +98,9 @@ namespace ToolKit
 		ToolKit::Vec3 StateGizmoBase::GetGrabbedAxis(int n)
 		{
 			Vec3 axes[3];
-			Entity* e = g_app->m_scene.GetCurrentSelection();
-			ExtractAxes(e->m_node->GetTransform(TransformationSpace::TS_WORLD), axes[0], axes[1], axes[2]);
+			ExtractAxes(glm::toMat4(m_axisOrientation), axes[0], axes[1], axes[2]);
 
-			int first = (int)(int)m_gizmo->GetGrabbedAxis() % 3;
+			int first = (int)m_gizmo->GetGrabbedAxis() % 3;
 			if (n == 0)
 			{
 				return axes[first];
@@ -136,8 +152,7 @@ namespace ToolKit
 			if (e != nullptr)
 			{
 				Vec3 x, y, z;
-				Mat4 ts = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
-				ExtractAxes(ts, x, y, z);
+				ExtractAxes(glm::toMat4(m_axisOrientation), x, y, z);
 
 				Viewport* vp = g_app->GetActiveViewport();
 				Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
@@ -214,8 +229,7 @@ namespace ToolKit
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			
 			Vec3 x, y, z;
-			Mat4 ts = e->m_node->GetTransform(g_app->m_transformOrientation);
-			ExtractAxes(ts, x, y, z);
+			ExtractAxes(glm::toMat4(m_axisOrientation), x, y, z);
 
 			Viewport* vp = g_app->GetActiveViewport();
 			Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
@@ -350,7 +364,7 @@ namespace ToolKit
 
 				for (Entity* e : selecteds)
 				{
-					e->m_node->Translate(delta, g_app->m_transformOrientation);
+					e->m_node->Translate(delta, TransformationSpace::TS_WORLD);
 				}
 			}
 			else
@@ -373,6 +387,11 @@ namespace ToolKit
 				baseNext->m_mouseData[0] = Vec2();
 				baseNext->m_mouseData[1] = Vec2();
 			}
+		}
+
+		void StateGizmoEnd::Update(float deltaTime)
+		{
+			StateGizmoBase::Update(deltaTime);
 		}
 
 		String StateGizmoEnd::Signaled(SignalId signal)

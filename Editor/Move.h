@@ -22,6 +22,7 @@ namespace ToolKit
 			bool IsPlaneMod();
 
 		public:
+			Quaternion m_axisOrientation;
 			std::vector<Vec2> m_mouseData;
 			std::shared_ptr<Gizmo> m_gizmo;
 			PlaneEquation m_intersectionPlane;
@@ -61,6 +62,7 @@ namespace ToolKit
 		{
 		public:
 			virtual void TransitionOut(State* nextState) override;
+			virtual void Update(float deltaTime) override;
 			virtual String Signaled(SignalId signal) override;
 			virtual String GetType() override { return StateType::StateEndMove; }
 		};
