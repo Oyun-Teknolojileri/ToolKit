@@ -13,12 +13,12 @@
 		
 		void main()
 		{
-			vec3 n = v_normal;  
+			vec3 n = v_normal * 0.8;  
 			for (int i = 0; i < 3; i++)
 			{
 				if (n[i] < 0.0)
 				{
-					n[i] *= -0.5;
+					n[i] *= -0.3;
 				}
 			}
 			v_fragColor = vec4(n, 1.0);

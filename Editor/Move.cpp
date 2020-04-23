@@ -34,8 +34,12 @@ namespace ToolKit
 				Entity* e = g_app->m_scene.GetCurrentSelection();
 				if (e != nullptr)
 				{
-					Mat4 ts = e->m_node->GetTransform();
-					DecomposeMatrix(ts, m_gizmo->m_worldLocation, m_gizmo->m_node->m_orientation);
+					// Get world location as gizmo origin.
+					m_gizmo->m_worldLocation = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+					
+					// Get transform orientation.
+					Quaternion q = e->m_node->GetOrientation(g_app->m_transformOrientation);
+					m_gizmo->m_node->SetOrientation(q, TransformationSpace::TS_WORLD);					
 				}
 
 				m_gizmo->Update(deltaTime);
@@ -210,7 +214,7 @@ namespace ToolKit
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			
 			Vec3 x, y, z;
-			Mat4 ts = e->m_node->GetTransform();
+			Mat4 ts = e->m_node->GetTransform(g_app->m_transformOrientation);
 			ExtractAxes(ts, x, y, z);
 
 			Viewport* vp = g_app->GetActiveViewport();
@@ -346,7 +350,7 @@ namespace ToolKit
 
 				for (Entity* e : selecteds)
 				{
-					e->m_node->Translate(delta);
+					e->m_node->Translate(delta, g_app->m_transformOrientation);
 				}
 			}
 			else

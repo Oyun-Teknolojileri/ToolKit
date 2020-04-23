@@ -19,6 +19,7 @@ namespace ToolKit
 		m_translation = translation;
 	}
 
+	// Fully tested.
 	void Node::Translate(const Vec3& val, TransformationSpace space)
 	{
 		switch (space)
@@ -55,6 +56,7 @@ namespace ToolKit
 		}
 	}
 
+	// Fully tested.
 	void Node::Rotate(const Quaternion& val, TransformationSpace space)
 	{
 		switch (space)
@@ -91,6 +93,7 @@ namespace ToolKit
 		m_orientation = glm::normalize(m_orientation);
 	}
 
+	// Fully tested.
 	void Node::Scale(const Vec3& val, TransformationSpace space)
 	{
 		switch (space)
@@ -98,7 +101,7 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 		{
 			Mat3 ts, ps, ws;
-			ts = glm::diagonal3x3(val);
+			ts = glm::diagonal4x4(Vec4(val, 1.0f));
 			ws = GetTransform();
 			if (m_parent != nullptr)
 			{
@@ -113,7 +116,7 @@ namespace ToolKit
 		case TransformationSpace::TS_PARENT:
 		{
 			Mat3 ts, ps, ws;
-			ts = glm::diagonal3x3(val);
+			ts = glm::diagonal4x4(Vec4(val, 1.0f));
 			ws = GetTransform();
 			if (m_parent != nullptr)
 			{
@@ -126,19 +129,7 @@ namespace ToolKit
 		}
 		break;
 		case TransformationSpace::TS_LOCAL:
-		{
-			Mat3 ts, ps, ws;
-			ts = glm::diagonal3x3(val);
-			ws = GetTransform();
-			if (m_parent != nullptr)
-			{
-				ps = m_parent->GetTransform();
-			}
-			ts = glm::inverse(ps) * ws * ts;
-			Vec3 t;
-			Quaternion q;
-			DecomposeMatrix(ts, t, q, m_scale);
-		}
+			m_scale = val * m_scale;
 		break;
 		}
 	}
@@ -344,19 +335,7 @@ namespace ToolKit
 		}
 		break;
 		case TransformationSpace::TS_LOCAL:
-		{
-			Mat3 ts, ps;
-			ts = glm::diagonal3x3(val);
-			Quaternion ws = GetOrientation();
-			if (m_parent != nullptr)
-			{
-				ps = m_parent->GetTransform();
-			}
-			ts = glm::inverse(ps) * glm::toMat3(ws) * ts;
-			Vec3 t;
-			Quaternion q;
-			DecomposeMatrix(ts, t, q, m_scale);
-		}
+			m_scale = val;
 		break;
 		}
 	}

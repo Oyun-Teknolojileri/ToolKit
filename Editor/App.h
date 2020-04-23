@@ -61,7 +61,7 @@ namespace ToolKit
 			bool m_showStateTransitionsDebug = false;
 			bool m_showOverlayUI = true;
 			bool m_showOverlayUIAlways = true;
-			TransformationSpace m_transformOrientation = TransformationSpace::TS_PARENT;
+			TransformationSpace m_transformOrientation = TransformationSpace::TS_WORLD;
 
 		private:
 			Renderer* m_renderer;

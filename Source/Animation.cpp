@@ -43,9 +43,9 @@ namespace ToolKit
 
 		Key k1 = keys[key1];
 		Key k2 = keys[key2];
-		node->m_translation = Interpolate(k1.m_position, k2.m_position, ratio);
-		node->m_orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
-		node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
+		node->SetTranslation(Interpolate(k1.m_position, k2.m_position, ratio));
+		node->SetOrientation(glm::slerp(k1.m_rotation, k2.m_rotation, ratio));
+		node->SetScale(Interpolate(k1.m_scale, k2.m_scale, ratio), TransformationSpace::TS_LOCAL);
 	}
 
 	void Animation::GetCurrentPose(Skeleton* skeleton)
@@ -73,9 +73,9 @@ namespace ToolKit
 
 			Key k1 = entry->second[key1];
 			Key k2 = entry->second[key2];
-			bone->m_node->m_translation = Interpolate(k1.m_position, k2.m_position, ratio);
-			bone->m_node->m_orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
-			bone->m_node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
+			bone->m_node->SetTranslation(Interpolate(k1.m_position, k2.m_position, ratio));
+			bone->m_node->SetOrientation(glm::slerp(k1.m_rotation, k2.m_rotation, ratio));
+			bone->m_node->SetScale(Interpolate(k1.m_scale, k2.m_scale, ratio), TransformationSpace::TS_LOCAL);
 		}
 	}
 
