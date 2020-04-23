@@ -6,9 +6,9 @@
 namespace ToolKit
 {
 
-	void DecomposeMatrix(const Mat4& transform, Vec3& position, Quaternion& rotation, Vec3& scale)
+	void DecomposeMatrix(const Mat4& transform, Vec3& translation, Quaternion& orientation, Vec3& scale)
 	{
-		position = glm::column(transform, 3).xyz;
+		translation = glm::column(transform, 3).xyz;
 
 		Vec3 col0 = glm::column(transform, 0).xyz;
 		float sx = glm::length(col0);
@@ -27,8 +27,14 @@ namespace ToolKit
 		rotm = glm::column(rotm, 1, col1);
 		rotm = glm::column(rotm, 2, col2);
 
-		rotation = glm::toQuat(rotm);
+		orientation = glm::toQuat(rotm);
 		scale = Vec3(sx, sy, sz);
+	}
+
+	void DecomposeMatrix(const Mat4& transform, Vec3& translation, Quaternion& orientation)
+	{
+		Vec3 tmp;
+		DecomposeMatrix(transform, translation, orientation, tmp);
 	}
 
 	void ExtractAxes(const Mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize)
@@ -93,12 +99,6 @@ namespace ToolKit
 		}
 
 		return frustum;
-	}
-
-	void DecomposeMatrix(const Mat4& transform, Vec3& position, Quaternion& rotation)
-	{
-		Vec3 tmp;
-		DecomposeMatrix(transform, position, rotation, tmp);
 	}
 
 	bool SpherePointIntersection(const Vec3& spherePos, float sphereRadius, const Vec3& vertex)

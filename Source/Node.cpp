@@ -8,15 +8,6 @@ namespace ToolKit
 
 	Node::Node()
 	{
-		m_parent = nullptr;
-		m_scale = Vec3(1, 1, 1);
-	}
-
-	Node::Node(const Vec3& translation)
-	{
-		m_parent = nullptr;
-		m_scale = Vec3(1, 1, 1);
-		m_translation = translation;
 	}
 
 	// Fully tested.
@@ -136,31 +127,7 @@ namespace ToolKit
 
 	void Node::Transform(const Mat4& val, TransformationSpace space)
 	{
-		assert(false && "Not tested.");
-
-		Mat4 ips, ws;
-		ws = GetTransform();
-		if (m_parent != nullptr)
-		{
-			ips = m_parent->GetTransform();
-			ips = glm::inverse(ips);
-		}
-
-		Mat4 offset;
-		switch (space)
-		{
-		case TransformationSpace::TS_WORLD:
-			offset = ips * val * ws;
-			break;
-		case TransformationSpace::TS_PARENT:
-			offset = ips * val * ips * ws;
-			break;
-		case TransformationSpace::TS_LOCAL:
-			offset = ips * val * ws;
-			break;
-		}
-
-		DecomposeMatrix(offset, m_translation, m_orientation, m_scale);
+		assert(false && "Not implemented.");
 	}
 
 	void Node::SetTransform(const Mat4& val, TransformationSpace space)

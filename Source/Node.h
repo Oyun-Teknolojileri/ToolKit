@@ -33,10 +33,10 @@ namespace ToolKit
 
   public:
     Vec3 m_translation;
-    Vec3 m_scale;
     Quaternion m_orientation;
+    Vec3 m_scale = Vec3(1.0f);
+    Node* m_parent = nullptr;
     std::vector<Node*> m_children;
-    Node* m_parent;
   };
 
 }
