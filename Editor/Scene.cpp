@@ -25,7 +25,7 @@ namespace ToolKit
 				}
 
 				Ray rayInObjectSpace = ray;
-				Mat4 ts = e->m_node->GetTransform();
+				Mat4 ts = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
 				Mat4 its = glm::inverse(ts);
 				rayInObjectSpace.position = its * Vec4(ray.position, 1.0f);
 				rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);

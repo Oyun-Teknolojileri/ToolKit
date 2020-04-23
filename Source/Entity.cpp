@@ -47,7 +47,7 @@ namespace ToolKit
 
 		if (inWorld)
 		{
-			TransformAABB(aabb, m_node->GetTransform());
+			TransformAABB(aabb, m_node->GetTransform(TransformationSpace::TS_WORLD));
 		}
 
 		return aabb;

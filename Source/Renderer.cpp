@@ -98,7 +98,7 @@ namespace ToolKit
 			Bone* bone = skeleton->m_bones[i];
 			String shaderName = "bones[" + std::to_string(i) + "].transform";
 			GLint loc = glGetUniformLocation(skinProg->m_handle, shaderName.c_str());
-			Mat4 transform = bone->m_node->GetTransform();
+			Mat4 transform = bone->m_node->GetTransform(TransformationSpace::TS_WORLD);
 			glUniformMatrix4fv(loc, 1, false, &transform[0][0]);
 
 			shaderName = "bones[" + std::to_string(i) + "].bindPose";
@@ -163,7 +163,7 @@ namespace ToolKit
 
 		GLint pvloc = glGetUniformLocation(prog->m_handle, "ProjectViewModel");
 		Mat4 pm = glm::ortho(0.0f, (float)screenDimensions.x, 0.0f, (float)screenDimensions.y, 0.0f, 100.0f);
-		Mat4 mul = pm * object->m_node->GetTransform();
+		Mat4 mul = pm * object->m_node->GetTransform(TransformationSpace::TS_WORLD);
 		glUniformMatrix4fv(pvloc, 1, false, &mul[0][0]);
 
 		glBindBuffer(GL_ARRAY_BUFFER, object->m_mesh->m_vboVertexId);
@@ -296,7 +296,7 @@ namespace ToolKit
 	{
 		m_view = cam->GetViewMatrix();
 		m_project = cam->GetData().projection;
-		m_model = object->m_node->GetTransform();
+		m_model = object->m_node->GetTransform(TransformationSpace::TS_WORLD);
 	}
 
 	void Renderer::BindProgram(std::shared_ptr<Program> program)

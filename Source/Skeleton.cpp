@@ -43,7 +43,7 @@ namespace ToolKit
       return;
 
     for (auto bone : m_bones)
-      bone->m_inverseWorldMatrix = glm::inverse(bone->m_node->GetTransform());
+      bone->m_inverseWorldMatrix = glm::inverse(bone->m_node->GetTransform(TransformationSpace::TS_WORLD));
 
     m_initiated = true;
     */

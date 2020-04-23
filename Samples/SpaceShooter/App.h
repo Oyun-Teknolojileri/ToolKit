@@ -135,7 +135,7 @@ public:
       if (markForDel)
       {
         ToolKit::Node* meteorNode = m_meteorManager.m_meteors[i]->m_node;
-        m_explotionManager.SpawnMeteorExplosion(GetSSP(meteorNode->GetTransform()));
+        m_explotionManager.SpawnMeteorExplosion(GetSSP(meteorNode->GetTransform(TransformationSpace::TS_WORLD)));
 
         if (m_meteorManager.m_meteors[i]->m_speed > 0.3f)
           m_score += 30;
@@ -264,7 +264,7 @@ public:
           ToolKit::AudioPlayer::Play(&m_explosionSource);
 
       m_meteorManager.m_meteors.erase(m_meteorManager.m_meteors.begin() + removeList[i]);
-      m_explotionManager.SpawnMeteorExplosion(GetSSP(meteor->m_node->GetTransform()));
+      m_explotionManager.SpawnMeteorExplosion(GetSSP(meteor->m_node->GetTransform(TransformationSpace::TS_WORLD)));
       SafeDel(meteor);
     }
   }
@@ -324,7 +324,7 @@ public:
       if (m_spaceShip->CheckShipSphereCollision(meteor->m_node->m_translation, meteor->m_collisionRadius))
       {
         m_shipGone = true;
-        glm::ivec2 explosionPoint = GetSSP(m_spaceShip->m_node->GetTransform());
+        glm::ivec2 explosionPoint = GetSSP(m_spaceShip->m_node->GetTransform(TransformationSpace::TS_WORLD));
         m_explotionManager.SpawnShipExplosion(explosionPoint);
         ToolKit::AudioPlayer::Play(&m_shipExplosionSource);
       }

@@ -46,7 +46,7 @@ namespace ToolKit
 		BoundingBox bb = m_mesh->m_aabb;
 		if (inWorld)
 		{
-			TransformAABB(bb, m_node->GetTransform());
+			TransformAABB(bb, m_node->GetTransform(TransformationSpace::TS_WORLD));
 		}
 
 		return bb;

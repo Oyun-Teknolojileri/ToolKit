@@ -82,7 +82,7 @@ namespace ToolKit
 		{
 			Vec3 axes[3];
 			Entity* e = g_app->m_scene.GetCurrentSelection();
-			ExtractAxes(e->m_node->GetTransform(), axes[0], axes[1], axes[2]);
+			ExtractAxes(e->m_node->GetTransform(TransformationSpace::TS_WORLD), axes[0], axes[1], axes[2]);
 
 			int first = (int)(int)m_gizmo->GetGrabbedAxis() % 3;
 			if (n == 0)
@@ -136,7 +136,7 @@ namespace ToolKit
 			if (e != nullptr)
 			{
 				Vec3 x, y, z;
-				Mat4 ts = e->m_node->GetTransform();
+				Mat4 ts = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
 				ExtractAxes(ts, x, y, z);
 
 				Viewport* vp = g_app->GetActiveViewport();

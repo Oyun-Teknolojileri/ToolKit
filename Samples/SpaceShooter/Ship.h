@@ -35,7 +35,7 @@ public:
 
   bool CheckShipSphereCollision(glm::vec3 pos, float radius)
   {
-    glm::mat4 transform = m_node->GetTransform();
+    glm::mat4 transform = m_node->GetTransform(ToolKit::TransformationSpace::TS_WORLD);
     for (int i = 0; i < (int)m_mesh->m_clientSideVertices.size(); i++)
     {
       glm::vec3 vertex = m_mesh->m_clientSideVertices[i].pos;
