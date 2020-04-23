@@ -37,6 +37,9 @@ namespace ToolKit
 		const String g_getTransformCmd("GetTransform");
 		void GetTransformExec(TagArgArray tagArgs);
 
+		const String g_setTransformSpaceCmd("SetTransformSpace");
+		void SetTransformSpaceExec(TagArgArray tagArgs);
+
 		class ConsoleWindow : public Window
 		{
 		public:

@@ -352,6 +352,34 @@ namespace ToolKit
 			}
 		}
 
+		void SetTransformSpaceExec(TagArgArray tagArgs)
+		{
+			if (tagArgs.empty())
+			{
+				return;
+			}
+			if (tagArgs.front().second.empty())
+			{
+				return;
+			}
+
+			String tsStr = tagArgs.front().second.front();
+			if (tsStr == "world")
+			{
+				g_app->m_activeSpace = TransformationSpace::TS_WORLD;
+			}
+
+			if (tsStr == "parent")
+			{
+				g_app->m_activeSpace = TransformationSpace::TS_PARENT;
+			}
+
+			if (tsStr == "local")
+			{
+				g_app->m_activeSpace = TransformationSpace::TS_LOCAL;
+			}
+		}
+
 		// ImGui ripoff. Portable helpers.
 		static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
 		static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
@@ -368,6 +396,7 @@ namespace ToolKit
 			CreateCommand(g_setCameraTransformCmd, SetCameraTransformExec);
 			CreateCommand(g_transformCmd, TransformExec);
 			CreateCommand(g_getTransformCmd, GetTransformExec);
+			CreateCommand(g_setTransformSpaceCmd, SetTransformSpaceExec);
 		}
 
 		ConsoleWindow::~ConsoleWindow()
