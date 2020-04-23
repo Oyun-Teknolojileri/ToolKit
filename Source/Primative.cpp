@@ -64,92 +64,128 @@ namespace ToolKit
 		// Front
 		vertices[0].pos = Vec3(-0.5f, 0.5f, 0.5f);
 		vertices[0].tex = Vec2(0.0f, 1.0f);
+		vertices[0].norm = Vec3(0.0f, 0.0f, 1.0f);
 		vertices[1].pos = Vec3(-0.5f, -0.5f, 0.5f);
 		vertices[1].tex = Vec2(0.0f, 0.0f);
+		vertices[1].norm = Vec3(0.0f, 0.0f, 1.0f);
 		vertices[2].pos = Vec3(0.5f, -0.5f, 0.5f);
 		vertices[2].tex = Vec2(1.0f, 0.0f);
+		vertices[2].norm = Vec3(0.0f, 0.0f, 1.0f);
 
 		vertices[3].pos = Vec3(-0.5f, 0.5f, 0.5f);
 		vertices[3].tex = Vec2(0.0f, 1.0f);
+		vertices[3].norm = Vec3(0.0f, 0.0f, 1.0f);
 		vertices[4].pos = Vec3(0.5f, -0.5f, 0.5f);
 		vertices[4].tex = Vec2(1.0f, 0.0f);
+		vertices[4].norm = Vec3(0.0f, 0.0f, 1.0f);
 		vertices[5].pos = Vec3(0.5f, 0.5f, 0.5f);
 		vertices[5].tex = Vec2(1.0f, 1.0f);
+		vertices[5].norm = Vec3(0.0f, 0.0f, 1.0f);
 
 		// Right
 		vertices[6].pos = Vec3(0.5f, 0.5f, 0.5f);
 		vertices[6].tex = Vec2(0.0f, 1.0f);
+		vertices[6].norm = Vec3(1.0f, 0.0f, 0.0f);
 		vertices[7].pos = Vec3(0.5f, -0.5f, 0.5f);
 		vertices[7].tex = Vec2(0.0f, 0.0f);
+		vertices[7].norm = Vec3(1.0f, 0.0f, 0.0f);
 		vertices[8].pos = Vec3(0.5f, -0.5f, -0.5f);
 		vertices[8].tex = Vec2(1.0f, 0.0f);
+		vertices[8].norm = Vec3(1.0f, 0.0f, 0.0f);
 
 		vertices[9].pos = Vec3(0.5f, 0.5f, 0.5f);
 		vertices[9].tex = Vec2(0.0f, 1.0f);
+		vertices[9].norm = Vec3(1.0f, 0.0f, 0.0f);
 		vertices[10].pos = Vec3(0.5f, -0.5f, -0.5f);
 		vertices[10].tex = Vec2(1.0f, 0.0f);
+		vertices[10].norm = Vec3(1.0f, 0.0f, 0.0f);
 		vertices[11].pos = Vec3(0.5f, 0.5f, -0.5f);
 		vertices[11].tex = Vec2(1.0f, 1.0f);
+		vertices[11].norm = Vec3(1.0f, 0.0f, 0.0f);
 
 		// Top
 		vertices[12].pos = Vec3(-0.5f, 0.5f, 0.5f);
 		vertices[12].tex = Vec2(0.0f, 0.0f);
+		vertices[12].norm = Vec3(0.0f, 1.0f, 0.0f);
 		vertices[13].pos = Vec3(0.5f, 0.5f, 0.5f);
 		vertices[13].tex = Vec2(1.0f, 0.0f);
+		vertices[13].norm = Vec3(0.0f, 1.0f, 0.0f);
 		vertices[14].pos = Vec3(0.5f, 0.5f, -0.5f);
 		vertices[14].tex = Vec2(1.0f, 1.0f);
+		vertices[14].norm = Vec3(0.0f, 1.0f, 0.0f);
 
 		vertices[15].pos = Vec3(-0.5f, 0.5f, 0.5f);
 		vertices[15].tex = Vec2(0.0f, 0.0f);
+		vertices[15].norm = Vec3(0.0f, 1.0f, 0.0f);
 		vertices[16].pos = Vec3(0.5f, 0.5f, -0.5f);
 		vertices[16].tex = Vec2(1.0f, 1.0f);
+		vertices[16].norm = Vec3(0.0f, 1.0f, 0.0f);
 		vertices[17].pos = Vec3(-0.5f, 0.5f, -0.5f);
 		vertices[17].tex = Vec2(0.0f, 1.0f);
+		vertices[17].norm = Vec3(0.0f, 1.0f, 0.0f);
 
 		// Back
 		vertices[18].pos = Vec3(-0.5f, 0.5f, -0.5f);
 		vertices[18].tex = Vec2(0.0f, 1.0f);
+		vertices[18].norm = Vec3(0.0f, 0.0f, -1.0f);
 		vertices[19].pos = Vec3(0.5f, -0.5f, -0.5f);
 		vertices[19].tex = Vec2(1.0f, 0.0f);
+		vertices[19].norm = Vec3(0.0f, 0.0f, -1.0f);
 		vertices[20].pos = Vec3(-0.5f, -0.5f, -0.5f);
 		vertices[20].tex = Vec2(0.0f, 0.0f);
+		vertices[20].norm = Vec3(0.0f, 0.0f, -1.0f);
 
 		vertices[21].pos = Vec3(-0.5f, 0.5f, -0.5f);
 		vertices[21].tex = Vec2(0.0f, 1.0f);
+		vertices[21].norm = Vec3(0.0f, 0.0f, -1.0f);
 		vertices[22].pos = Vec3(0.5f, 0.5f, -0.5f);
 		vertices[22].tex = Vec2(1.0f, 1.0f);
+		vertices[22].norm = Vec3(0.0f, 0.0f, -1.0f);
 		vertices[23].pos = Vec3(0.5f, -0.5f, -0.5f);
 		vertices[23].tex = Vec2(1.0f, 0.0f);
+		vertices[23].norm = Vec3(0.0f, 0.0f, -1.0f);
 
 		// Left
 		vertices[24].pos = Vec3(-0.5f, 0.5f, 0.5f);
 		vertices[24].tex = Vec2(0.0f, 1.0f);
+		vertices[24].norm = Vec3(-1.0f, 0.0f, 0.0f);
 		vertices[25].pos = Vec3(-0.5f, -0.5f, -0.5f);
 		vertices[25].tex = Vec2(1.0f, 0.0f);
+		vertices[25].norm = Vec3(-1.0f, 0.0f, 0.0f);
 		vertices[26].pos = Vec3(-0.5f, -0.5f, 0.5f);
 		vertices[26].tex = Vec2(0.0f, 0.0f);
+		vertices[26].norm = Vec3(-1.0f, 0.0f, 0.0f);
 
 		vertices[27].pos = Vec3(-0.5f, 0.5f, 0.5f);
 		vertices[27].tex = Vec2(0.0f, 1.0f);
+		vertices[27].norm = Vec3(-1.0f, 0.0f, 0.0f);
 		vertices[28].pos = Vec3(-0.5f, 0.5f, -0.5f);
 		vertices[28].tex = Vec2(1.0f, 1.0f);
+		vertices[28].norm = Vec3(-1.0f, 0.0f, 0.0f);
 		vertices[29].pos = Vec3(-0.5f, -0.5f, -0.5f);
 		vertices[29].tex = Vec2(1.0f, 0.0f);
+		vertices[29].norm = Vec3(-1.0f, 0.0f, 0.0f);
 
 		// Bottom
 		vertices[30].pos = Vec3(-0.5f, -0.5f, 0.5f);
 		vertices[30].tex = Vec2(0.0f, 1.0f);
+		vertices[30].norm = Vec3(0.0f, -1.0f, 0.0f);
 		vertices[31].pos = Vec3(0.5f, -0.5f, -0.5f);
 		vertices[31].tex = Vec2(1.0f, 0.0f);
+		vertices[31].norm = Vec3(0.0f, -1.0f, 0.0f);
 		vertices[32].pos = Vec3(0.5f, -0.5f, 0.5f);
 		vertices[32].tex = Vec2(0.0f, 0.0f);
+		vertices[32].norm = Vec3(0.0f, -1.0f, 0.0f);
 
 		vertices[33].pos = Vec3(-0.5f, -0.5f, 0.5f);
 		vertices[33].tex = Vec2(0.0f, 1.0f);
+		vertices[33].norm = Vec3(0.0f, -1.0f, 0.0f);
 		vertices[34].pos = Vec3(-0.5f, -0.5f, -0.5f);
 		vertices[34].tex = Vec2(1.0f, 1.0f);
+		vertices[34].norm = Vec3(0.0f, -1.0f, 0.0f);
 		vertices[35].pos = Vec3(0.5f, -0.5f, -0.5f);
 		vertices[35].tex = Vec2(1.0f, 0.0f);
+		vertices[35].norm = Vec3(0.0f, -1.0f, 0.0f);
 
 		m_mesh->m_vertexCount = (uint)vertices.size();
 		m_mesh->m_clientSideVertices = vertices;

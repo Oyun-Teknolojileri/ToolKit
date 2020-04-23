@@ -85,7 +85,10 @@ namespace ToolKit
 
 			m_cursor = new Cursor();
 
+			MaterialPtr normalMat = GetMaterialManager()->Create(MaterialPath("objectNormal.material"));
+
 			m_q1 = new Cube();
+			m_q1->m_mesh->m_material = normalMat;
 			m_q1->m_mesh->Init(false);
 			m_q1->m_node->m_translation = Vec3(2.0f, 0.0f, 0.0f);
 			m_q1->m_node->m_orientation = glm::angleAxis(glm::half_pi<float>(), Y_AXIS);
@@ -93,6 +96,7 @@ namespace ToolKit
 			m_scene.AddEntity(m_q1);
 
 			m_q2 = new Cube();
+			m_q2->m_mesh->m_material = normalMat;
 			m_q2->m_mesh->Init(false);
 			m_q2->m_node->m_translation = Vec3(2.0f, 0.0f, 0.0f);
 			m_q2->m_node->m_orientation = glm::angleAxis(glm::half_pi<float>(), Y_AXIS);

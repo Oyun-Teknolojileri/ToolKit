@@ -1,0 +1,3 @@
+<material>
+  <shader name = "fragment.shader"/>
+</material>

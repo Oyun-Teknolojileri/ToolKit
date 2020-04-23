@@ -352,7 +352,7 @@ namespace ToolKit
 			}
 		}
 
-		void SetTransformSpaceExec(TagArgArray tagArgs)
+		void SetTransformOrientationExec(TagArgArray tagArgs)
 		{
 			if (tagArgs.empty())
 			{
@@ -366,17 +366,17 @@ namespace ToolKit
 			String tsStr = tagArgs.front().second.front();
 			if (tsStr == "world")
 			{
-				g_app->m_activeSpace = TransformationSpace::TS_WORLD;
+				g_app->m_transformOrientation = TransformationSpace::TS_WORLD;
 			}
 
 			if (tsStr == "parent")
 			{
-				g_app->m_activeSpace = TransformationSpace::TS_PARENT;
+				g_app->m_transformOrientation = TransformationSpace::TS_PARENT;
 			}
 
 			if (tsStr == "local")
 			{
-				g_app->m_activeSpace = TransformationSpace::TS_LOCAL;
+				g_app->m_transformOrientation = TransformationSpace::TS_LOCAL;
 			}
 		}
 
@@ -396,7 +396,7 @@ namespace ToolKit
 			CreateCommand(g_setCameraTransformCmd, SetCameraTransformExec);
 			CreateCommand(g_transformCmd, TransformExec);
 			CreateCommand(g_getTransformCmd, GetTransformExec);
-			CreateCommand(g_setTransformSpaceCmd, SetTransformSpaceExec);
+			CreateCommand(g_setTransformOrientationCmd, SetTransformOrientationExec);
 		}
 
 		ConsoleWindow::~ConsoleWindow()

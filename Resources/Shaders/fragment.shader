@@ -1,6 +1,7 @@
 <shader>
 	<type name = "fragmentShader" />
 	<source>
+	<!--
 		#version 300 es
 		precision mediump float;
 		
@@ -12,8 +13,16 @@
 		
 		void main()
 		{
-			vec2 texFixedc = vec2(v_texCoord.x, 1.0 - v_texCoord.y);
-			v_fragColor = vec4(v_bitan, 1.0);
+			vec3 n = v_normal;  
+			for (int i = 0; i < 3; i++)
+			{
+				if (n[i] < 0.0)
+				{
+					n[i] *= -0.5;
+				}
+			}
+			v_fragColor = vec4(n, 1.0);
 		}
+	-->
 	</source>
 </shader>
