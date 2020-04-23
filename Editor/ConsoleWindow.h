@@ -34,6 +34,9 @@ namespace ToolKit
 		const String g_setCameraTransformCmd("SetCameraTransform");
 		void SetCameraTransformExec(TagArgArray tagArgs);
 
+		const String g_getTransformCmd("GetTransform");
+		void GetTransformExec(TagArgArray tagArgs);
+
 		class ConsoleWindow : public Window
 		{
 		public:

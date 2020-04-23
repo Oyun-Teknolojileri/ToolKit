@@ -303,11 +303,60 @@ namespace ToolKit
 			}
 		}
 
+		void GetTransformExec(TagArgArray tagArgs)
+		{
+			Entity* e = g_app->m_scene.GetCurrentSelection();
+			if (e != nullptr)
+			{
+				auto PrintTransform = [e](TransformationSpace ts) -> void
+				{
+					Quaternion q = e->m_node->GetOrientation(ts);
+					Vec3 t = e->m_node->GetTranslation(ts);
+					Vec3 s = e->m_node->GetScale(ts);
+
+					if (ConsoleWindow* cwnd = g_app->GetConsole())
+					{
+						String str = "T: " + glm::to_string(t);
+						cwnd->AddLog(str);
+						str = "R: " + glm::to_string(glm::degrees(glm::eulerAngles(q)));
+						cwnd->AddLog(str);
+						str = "S: " + glm::to_string(s);
+						cwnd->AddLog(str);
+					}
+				};
+
+				auto tag = GetTag("ts", tagArgs);
+				if (tag != tagArgs.end())
+				{
+					if (!tag->second.empty())
+					{
+						String tsStr = tag->second.front();
+						if (tsStr == "world")
+						{
+							PrintTransform(TransformationSpace::TS_WORLD);
+						}
+
+						if (tsStr == "parent")
+						{
+							PrintTransform(TransformationSpace::TS_PARENT);
+						}
+
+						if (tsStr == "local")
+						{
+							PrintTransform(TransformationSpace::TS_LOCAL);
+						}
+
+						return;
+					}
+				}
+			}
+		}
+
 		// ImGui ripoff. Portable helpers.
-		static int   Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
-		static int   Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
+		static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
+		static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
 		static char* Strdup(const char* str) { size_t len = strlen(str) + 1; void* buf = malloc(len); IM_ASSERT(buf); return (char*)memcpy(buf, (const void*)str, len); }
-		static void  Strtrim(char* str) { char* str_end = str + strlen(str); while (str_end > str && str_end[-1] == ' ') str_end--; *str_end = 0; }
+		static void Strtrim(char* str) { char* str_end = str + strlen(str); while (str_end > str && str_end[-1] == ' ') str_end--; *str_end = 0; }
 
 		ConsoleWindow::ConsoleWindow()
 		{
@@ -318,6 +367,7 @@ namespace ToolKit
 			CreateCommand(g_setTransformCmd, SetTransformExec);
 			CreateCommand(g_setCameraTransformCmd, SetCameraTransformExec);
 			CreateCommand(g_transformCmd, TransformExec);
+			CreateCommand(g_getTransformCmd, GetTransformExec);
 		}
 
 		ConsoleWindow::~ConsoleWindow()

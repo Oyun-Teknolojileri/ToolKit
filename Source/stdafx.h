@@ -18,6 +18,7 @@
 #include "glm/gtx/quaternion.hpp"
 #include "glm/gtx/scalar_relational.hpp"
 #include "glm/gtx/vector_query.hpp"
+#include "glm/gtx/string_cast.hpp"
 
 // LoadPng
 #include "lodepng.h"
