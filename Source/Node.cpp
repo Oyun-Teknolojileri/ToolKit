@@ -273,7 +273,7 @@ namespace ToolKit
 			ws = glm::toMat3(val);
 			ws = ws * glm::diagonal3x3(s);
 
-			Mat3 ts = glm::inverse(ps) * ts;
+			Mat3 ts = glm::inverse(ps) * ws;
 			m_orientation = glm::toQuat(ts);
 			m_orientation = glm::normalize(m_orientation);
 		}
