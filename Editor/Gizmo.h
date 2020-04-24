@@ -64,5 +64,21 @@ namespace ToolKit
 			std::shared_ptr<Mesh> m_lines[6];
 			std::shared_ptr<Mesh> m_solids[6];
 		};
+
+		class ScaleGizmo : public Gizmo
+		{
+		public:
+			ScaleGizmo();
+			virtual ~ScaleGizmo();
+
+			virtual void Update(float deltaTime) override;
+
+		private:
+			void Generate();
+
+		private:
+			std::shared_ptr<Mesh> m_lines[3];
+			std::shared_ptr<Mesh> m_solids[3];
+		};
 	}
 }

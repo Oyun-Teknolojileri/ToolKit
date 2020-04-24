@@ -158,7 +158,7 @@ namespace ToolKit
 			ModManager::GetInstance()->Update(deltaTime);
 
 			// Dirty hack.
-			MoveGizmo* gizmo = nullptr;
+			Gizmo* gizmo = nullptr;
 
 			// Update animations.
 			GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
@@ -185,9 +185,8 @@ namespace ToolKit
 							Billboard* billboard = static_cast<Billboard*> (ntt);
 							billboard->LookAt(vp->m_camera);
 
-							if (typeid(*ntt) == typeid(MoveGizmo))
+							if (gizmo = dynamic_cast<Gizmo*> (ntt))
 							{
-								gizmo = static_cast<MoveGizmo*> (ntt);
 								continue;
 							}
 						}

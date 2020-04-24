@@ -237,7 +237,7 @@ namespace ToolKit
 
 			std::vector<Mesh*> allMeshes;
 			m_mesh->GetAllMeshes(allMeshes);
-			assert(allMeshes.size() <= 9 && "Max expected size is 6");
+			assert(allMeshes.size() <= 9 && "Max expected size is 9");
 
 			for (Mesh* mesh : allMeshes)
 			{
@@ -435,5 +435,181 @@ namespace ToolKit
 			}
 		}
 
+		// ScaleGizmo
+		//////////////////////////////////////////////////////////////////////////
+
+		ScaleGizmo::ScaleGizmo()
+			: Gizmo({ false, 10.0f, 400.0f })
+		{
+			// Mesh.
+			Generate();
+		}
+
+		ScaleGizmo::~ScaleGizmo()
+		{
+		}
+
+		void ScaleGizmo::Update(float deltaTime)
+		{
+			Viewport* vp = g_app->GetActiveViewport();
+			if (vp == nullptr)
+			{
+				return;
+			}
+
+			std::vector<Mesh*> allMeshes;
+			m_mesh->GetAllMeshes(allMeshes);
+			assert(allMeshes.size() <= 6 && "Max expected size is 6");
+
+			for (Mesh* mesh : allMeshes)
+			{
+				mesh->m_subMeshes.clear();
+			}
+
+			AxisLabel hitRes = HitTest(vp->RayFromMousePosition());
+
+			// Axes.
+			bool firstFilled = false;
+			for (int i = 0; i < 3; i++)
+			{
+				m_lines[i]->m_material->m_color = g_gizmoColor[i];
+				m_lines[i + 3]->m_material->m_color = g_gizmoColor[i];
+				m_solids[i]->m_material->m_color = g_gizmoColor[i];
+
+				if (IsLocked((AxisLabel)i))
+				{
+					continue;
+				}
+
+				if (!firstFilled)
+				{
+					m_mesh = m_lines[i];
+					m_mesh->m_subMeshes.push_back(m_solids[i]);
+
+					firstFilled = true;
+				}
+				else
+				{
+					m_mesh->m_subMeshes.push_back(m_lines[i]);
+					m_mesh->m_subMeshes.push_back(m_solids[i]);
+				}
+
+				if (hitRes == (AxisLabel)i || m_grabbedAxis == (AxisLabel)i)
+				{
+					m_solids[i]->m_material->m_color = g_selectHighLightPrimaryColor;
+				}
+			}
+		}
+
+		// Static box heads.
+		std::shared_ptr<Mesh> g_boxHeads[3] = { nullptr, nullptr, nullptr };
+
+		void ScaleGizmo::Generate()
+		{
+			// Axis dimensions.
+			const float tip = 0.8f, toe = 0.05f, rad = 0.1f;
+
+			LabelBoxPair hb;
+			hb.first = AxisLabel::X;
+
+			// Line.
+			hb.second.push_back
+			(
+				{
+				Vec3(0.05f, -0.05f, -0.05f),
+				Vec3(1.0f, 0.05f, 0.05f)
+				}
+			);
+
+			// Box.
+			hb.second.push_back
+			(
+				{
+					Vec3(tip, -rad, -rad),
+					Vec3(1.0f, rad, rad)
+				}
+			);
+			m_hitBoxes.push_back(hb);
+
+			hb.first = AxisLabel::Y;
+			hb.second[0].min = hb.second[0].min.yxz;
+			hb.second[0].max = hb.second[0].max.yxz;
+			hb.second[1].min = hb.second[1].min.yxz;
+			hb.second[1].max = hb.second[1].max.yxz;
+			m_hitBoxes.push_back(hb);
+
+			hb.first = AxisLabel::Z;
+			hb.second[0].min = hb.second[0].min.zxy;
+			hb.second[0].max = hb.second[0].max.zxy;
+			hb.second[1].min = hb.second[1].min.zxy;
+			hb.second[1].max = hb.second[1].max.zxy;
+			m_hitBoxes.push_back(hb);
+
+			// Lines.
+			for (int i = 0; i < 3; i++)
+			{
+				std::vector<Vec3> points
+				{
+					AXIS[i] * tip,
+					AXIS[i] * toe,
+				};
+
+				LineBatch l(points, g_gizmoColor[i], DrawType::Line);
+				l.m_mesh->Init();
+				m_lines[i] = l.m_mesh;
+				l.m_mesh = nullptr;
+			}
+
+			m_mesh = m_lines[0];
+			for (int i = 1; i < 3; i++)
+			{
+				m_mesh->m_subMeshes.push_back(m_lines[i]);
+			}
+
+			// Solids.
+			for (int i = 0; i < 3; i++)
+			{
+				// Boxes 1 time init.
+				if (g_boxHeads[i] == nullptr)
+				{
+					Cube head = Cube(Vec3(1.0f - tip));
+					head.m_mesh->UnInit();
+
+					Vec3 t(0.0f, tip, 0.0f);
+					Quaternion q;
+
+					if (i == 0)
+					{
+						q = glm::angleAxis(-glm::half_pi<float>(), Z_AXIS);
+					}
+
+					if (i == 2)
+					{
+						q = glm::angleAxis(glm::half_pi<float>(), X_AXIS);
+					}
+
+					Mat4 transform = glm::toMat4(q);
+					transform = glm::translate(transform, t);
+					Mat4 invTrans = glm::transpose(glm::inverse(transform));
+
+					for (Vertex& v : head.m_mesh->m_clientSideVertices)
+					{
+						v.pos = transform * Vec4(v.pos, 1.0f);
+						v.norm = glm::inverseTranspose(transform) * Vec4(v.norm, 1.0f);
+					}
+
+					head.m_mesh->m_material = GetMaterialManager()->GetCopyOfSolidMaterial();
+					head.m_mesh->m_material->m_color = g_gizmoColor[i];
+					head.m_mesh->Init(true);
+
+					g_boxHeads[i] = head.m_mesh;
+					head.m_mesh = nullptr;
+				}
+
+				m_solids[i] = g_boxHeads[i];
+			}
+		}
+
 	}
+
 }
