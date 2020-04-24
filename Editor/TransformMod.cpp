@@ -402,8 +402,8 @@ namespace ToolKit
 		// Signal definitions.
 		SignalId TransformMod::m_linkToTransformBeginSgnl = BaseMod::GetNextSignalId();
 
-		TransformMod::TransformMod(TransformType t) 
-			: m_transformType(t), BaseMod(ModId::Move)
+		TransformMod::TransformMod(ModId id) 
+			: BaseMod(id)
 		{
 			Init();
 		}
@@ -457,6 +457,7 @@ namespace ToolKit
 			{
 				StateTransformTo* t = static_cast<StateTransformTo*> (m_stateMachine->m_currentState);
 				Transform(t->m_delta);
+				t->m_delta = Vec3(0.0f);
 				t->Update(deltaTime); // Update gizmo in this frame.
 			}
 
@@ -473,15 +474,15 @@ namespace ToolKit
 
 			for (Entity* e : selecteds)
 			{
-				switch (m_transformType)
+				switch (m_id)
 				{
-				case TransformType::Translate:
+				case ModId::Move:
 					e->m_node->Translate(delta, g_app->m_transformOrientation);
 					break;
-				case TransformType::Rotate:
+				case ModId::Rotate:
 					assert(false && "Not implemented.");
 					break;
-				case TransformType::Scale:
+				case ModId::Scale:
 					e->m_node->Scale(Vec3(1.0f) + delta, g_app->m_transformOrientation);
 					break;
 				}

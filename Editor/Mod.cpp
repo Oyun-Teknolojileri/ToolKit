@@ -73,12 +73,14 @@ namespace ToolKit
 					modNameDbg = "Mod: Cursor";
 					break;
 				case ModId::Move:
-					nextMod = new TransformMod(TransformMod::TransformType::Translate);
+					nextMod = new TransformMod(mod);
 					modNameDbg = "Mod: Move";
 					break;
 				case ModId::Rotate:
 					break;
 				case ModId::Scale:
+					nextMod = new TransformMod(mod);
+					modNameDbg = "Mod: Scale";
 					break;
 				case ModId::Base:
 				default:

@@ -27,20 +27,32 @@ namespace ToolKit
 				// Select button.
 				static float hoverTimeSelectBtn = 0.0f;
 				bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Select;
-				ModManager::GetInstance()->SetMod(UI::ToggleButton((void*)(intptr_t)UI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Select);
+				ModManager::GetInstance()->SetMod
+				(
+					UI::ToggleButton((void*)(intptr_t)UI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+					ModId::Select
+				);
 				UI::HelpMarker("Select Box\nSelect items using box selection.", &hoverTimeSelectBtn);
 
 				// Cursor button.
 				static float hoverTimeCursorBtn = 0.0f;
 				isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Cursor;
-				ModManager::GetInstance()->SetMod(UI::ToggleButton((void*)(intptr_t)UI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Cursor);
+				ModManager::GetInstance()->SetMod
+				(
+					UI::ToggleButton((void*)(intptr_t)UI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+					ModId::Cursor
+				);
 				UI::HelpMarker("Cursor\nSet the cursor location.", &hoverTimeCursorBtn);
 				ImGui::Separator();
 
 				// Move button.
 				static float hoverTimeMoveBtn = 0.0f;
 				isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Move;
-				ModManager::GetInstance()->SetMod(UI::ToggleButton((void*)(intptr_t)UI::m_moveIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod, ModId::Move);
+				ModManager::GetInstance()->SetMod
+				(
+					UI::ToggleButton((void*)(intptr_t)UI::m_moveIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+					ModId::Move
+				);
 				UI::HelpMarker("Move\nMove selected items.", &hoverTimeMoveBtn);
 
 				// Rotate button.
@@ -50,7 +62,12 @@ namespace ToolKit
 
 				// Scale button.
 				static float hoverTimeScaleBtn = 0.0f;
-				ImGui::ImageButton((void*)(intptr_t)UI::m_scaleIcn->m_textureId, ImVec2(32, 32));
+				isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Scale;
+				ModManager::GetInstance()->SetMod
+				(
+					UI::ToggleButton((void*)(intptr_t)UI::m_scaleIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+					ModId::Scale
+				);
 				UI::HelpMarker("Scale\nScale (resize) selected items.", &hoverTimeScaleBtn);
 				ImGui::Separator();
 

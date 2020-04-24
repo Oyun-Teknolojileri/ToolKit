@@ -74,15 +74,7 @@ namespace ToolKit
 		class TransformMod : public BaseMod
 		{
 		public:
-			enum class TransformType
-			{
-				Translate,
-				Rotate,
-				Scale
-			};
-
-		public:
-			TransformMod(TransformType t);
+			TransformMod(ModId id);
 			virtual ~TransformMod();
 
 			virtual void Init() override;
@@ -90,9 +82,6 @@ namespace ToolKit
 
 		private:
 			void Transform(const Vec3& delta) const;
-
-		public:
-			TransformType m_transformType;
 
 			// Signals.
 			static SignalId m_linkToTransformBeginSgnl;
