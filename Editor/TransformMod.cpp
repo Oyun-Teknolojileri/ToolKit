@@ -412,8 +412,8 @@ namespace ToolKit
 				m_gizmo = new MoveGizmo();
 				break;
 			case ModId::Rotate:
-				assert(false && "Not implemented.");
-				return;
+				m_gizmo = new MoveGizmo();
+				break;
 			case ModId::Scale:
 				m_gizmo = new ScaleGizmo();
 				break;
@@ -479,7 +479,12 @@ namespace ToolKit
 					e->m_node->Translate(delta, g_app->m_transformOrientation);
 					break;
 				case ModId::Rotate:
-					assert(false && "Not implemented.");
+				{
+					Quaternion qx = glm::angleAxis(delta.x, X_AXIS);
+					Quaternion qy = glm::angleAxis(delta.y, Y_AXIS);
+					Quaternion qz = glm::angleAxis(delta.z, Z_AXIS);
+					e->m_node->Rotate(qz * qy * qx, g_app->m_transformOrientation);
+				}
 					break;
 				case ModId::Scale:
 					e->m_node->Scale(Vec3(1.0f) + delta, g_app->m_transformOrientation);

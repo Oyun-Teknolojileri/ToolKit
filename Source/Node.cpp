@@ -54,14 +54,13 @@ namespace ToolKit
 		{
 		case TransformationSpace::TS_WORLD:
 		{
-			Mat3 ps, ws;
-			ws = GetTransform(TransformationSpace::TS_WORLD);
+			Quaternion ps, ws;
+			ws = GetOrientation(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetOrientation(TransformationSpace::TS_WORLD);
 			}
-			Mat3 ts = glm::inverse(ps) * glm::toMat3(val) * ws;
-			m_orientation = glm::toQuat(ts);
+			m_orientation = glm::inverse(ps) * val * ws;
 		}
 		break;
 		case TransformationSpace::TS_PARENT:
@@ -69,14 +68,13 @@ namespace ToolKit
 			break;
 		case TransformationSpace::TS_LOCAL:
 		{
-			Mat3 ps, ws;
-			ws = GetTransform(TransformationSpace::TS_WORLD);
+			Quaternion ps, ws;
+			ws = GetOrientation(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetOrientation(TransformationSpace::TS_WORLD);
 			}
-			Mat3 ts = glm::inverse(ps) * ws * glm::toMat3(val);
-			m_orientation = glm::toQuat(ts);
+			m_orientation = glm::inverse(ps) * ws * val;
 		}
 		break;
 		}

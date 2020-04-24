@@ -57,7 +57,12 @@ namespace ToolKit
 
 				// Rotate button.
 				static float hoverTimeRotateBtn = 0.0f;
-				ImGui::ImageButton((void*)(intptr_t)UI::m_rotateIcn->m_textureId, ImVec2(32, 32));
+				isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Rotate;
+				ModManager::GetInstance()->SetMod
+				(
+					UI::ToggleButton((void*)(intptr_t)UI::m_rotateIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+					ModId::Rotate
+				);
 				UI::HelpMarker("Rotate\nRotate selected items.", &hoverTimeRotateBtn);
 
 				// Scale button.

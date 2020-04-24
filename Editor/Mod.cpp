@@ -77,6 +77,8 @@ namespace ToolKit
 					modNameDbg = "Mod: Move";
 					break;
 				case ModId::Rotate:
+					nextMod = new TransformMod(mod);
+					modNameDbg = "Mod: Rotate";
 					break;
 				case ModId::Scale:
 					nextMod = new TransformMod(mod);
