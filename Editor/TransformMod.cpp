@@ -23,44 +23,41 @@ namespace ToolKit
 
 		void StateTransformBase::Update(float deltaTime)
 		{
-			if (m_gizmo != nullptr)
+			if (g_app->m_scene.GetSelectedEntityCount() == 0)
 			{
-				if (g_app->m_scene.GetSelectedEntityCount() == 0)
-				{
-					g_app->m_scene.RemoveEntity(m_gizmo->m_id);
-					return;
-				}
-
-				Entity* e = g_app->m_scene.GetCurrentSelection();
-				if (e != nullptr)
-				{
-					// Get world location as gizmo origin.
-					m_gizmo->m_worldLocation = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-					
-					// Get transform orientation.
-					Quaternion orientation;
-					switch (g_app->m_transformOrientation)
-					{
-					case TransformationSpace::TS_WORLD:
-						break;
-					case TransformationSpace::TS_PARENT:
-						if (e->m_node->m_parent != nullptr)
-						{
-							orientation = e->m_node->m_parent->GetOrientation(TransformationSpace::TS_WORLD);
-						}
-						break;
-					case TransformationSpace::TS_LOCAL:
-						orientation = e->m_node->GetOrientation(TransformationSpace::TS_WORLD);
-					default:
-						break;
-					}
-
-					m_axisOrientation = orientation;
-					m_gizmo->m_node->SetOrientation(orientation, TransformationSpace::TS_WORLD);
-				}
-
-				m_gizmo->Update(deltaTime);
+				g_app->m_scene.RemoveEntity(m_gizmo->m_id);
+				return;
 			}
+
+			Entity* e = g_app->m_scene.GetCurrentSelection();
+			if (e != nullptr)
+			{
+				// Get world location as gizmo origin.
+				m_gizmo->m_worldLocation = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+					
+				// Get transform orientation.
+				Quaternion orientation;
+				switch (g_app->m_transformOrientation)
+				{
+				case TransformationSpace::TS_WORLD:
+					break;
+				case TransformationSpace::TS_PARENT:
+					if (e->m_node->m_parent != nullptr)
+					{
+						orientation = e->m_node->m_parent->GetOrientation(TransformationSpace::TS_WORLD);
+					}
+					break;
+				case TransformationSpace::TS_LOCAL:
+					orientation = e->m_node->GetOrientation(TransformationSpace::TS_WORLD);
+				default:
+					break;
+				}
+
+				m_axisOrientation = orientation;
+				m_gizmo->m_node->SetOrientation(orientation, TransformationSpace::TS_WORLD);
+			}
+
+			m_gizmo->Update(deltaTime);
 		}
 
 		void StateTransformBase::TransitionIn(State* prevState)
@@ -80,17 +77,12 @@ namespace ToolKit
 
 		void StateTransformBase::MakeSureGizmoIsValid()
 		{
-			if (m_gizmo == nullptr)
-			{
-				m_gizmo = std::make_shared<MoveGizmo>();
-			}
-
 			if (g_app->m_scene.GetEntity(m_gizmo->m_id) == nullptr)
 			{
 				Entity* e = g_app->m_scene.GetCurrentSelection();
 				if (e != nullptr)
 				{
-					g_app->m_scene.AddEntity(m_gizmo.get());
+					g_app->m_scene.AddEntity(m_gizmo);
 				}
 			}
 		}
@@ -132,12 +124,9 @@ namespace ToolKit
 				StateBeginPick* baseNext = static_cast<StateBeginPick*> (nextState);
 				baseNext->m_mouseData = m_mouseData;
 
-				if (m_gizmo != nullptr)
+				if (!baseNext->IsIgnored(m_gizmo->m_id))
 				{
-					if (!baseNext->IsIgnored(m_gizmo->m_id))
-					{
-						baseNext->m_ignoreList.push_back(m_gizmo->m_id);
-					}
+					baseNext->m_ignoreList.push_back(m_gizmo->m_id);
 				}
 			}
 		}
@@ -405,26 +394,36 @@ namespace ToolKit
 		TransformMod::TransformMod(ModId id) 
 			: BaseMod(id)
 		{
+			m_gizmo = nullptr;
 			Init();
 		}
 
 		TransformMod::~TransformMod()
 		{
-			if (m_stateMachine->m_currentState != nullptr)
-			{
-				StateTransformBase* baseState = static_cast<StateTransformBase*> (m_stateMachine->QueryState(StateType::StateTransformBegin));
-				assert(baseState && "Gizmo remains in the scene as dead pointer.");
-
-				if (baseState != nullptr && baseState->m_gizmo != nullptr)
-				{
-					g_app->m_scene.RemoveEntity(baseState->m_gizmo->m_id);
-				}
-			}
+			g_app->m_scene.RemoveEntity(m_gizmo->m_id);
+			SafeDel(m_gizmo);
 		}
 
 		void TransformMod::Init()
 		{
+			switch (m_id)
+			{
+			case ModId::Move:
+				m_gizmo = new MoveGizmo();
+				break;
+			case ModId::Rotate:
+				assert(false && "Not implemented.");
+				return;
+			case ModId::Scale:
+				m_gizmo = new ScaleGizmo();
+				break;
+			default:
+				assert(false);
+				return;
+			}
+
 			State* state = new StateTransformBegin();
+			static_cast<StateTransformBegin*> (state)->m_gizmo = m_gizmo;
 			m_stateMachine->m_currentState = state;
 
 			m_stateMachine->PushState(state);

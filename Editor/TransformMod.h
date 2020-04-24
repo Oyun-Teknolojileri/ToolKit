@@ -22,9 +22,9 @@ namespace ToolKit
 			bool IsPlaneMod();
 
 		public:
+			Gizmo* m_gizmo;
 			Quaternion m_axisOrientation;
 			std::vector<Vec2> m_mouseData;
-			std::shared_ptr<Gizmo> m_gizmo;
 			PlaneEquation m_intersectionPlane;
 		};
 
@@ -82,6 +82,9 @@ namespace ToolKit
 
 		private:
 			void Transform(const Vec3& delta) const;
+
+		public:
+			Gizmo* m_gizmo;
 
 			// Signals.
 			static SignalId m_linkToTransformBeginSgnl;
