@@ -351,12 +351,13 @@ namespace ToolKit
 				}
 				else
 				{
-					Vec3 movAxis = GetGrabbedAxis(0);
+					Vec3 projAxis = GetGrabbedAxis(0);
 					Vec3 g2p0 = p0 - m_gizmo->m_worldLocation;
-					float intsDst = glm::dot(movAxis, g2p0);
-					float projDst = glm::dot(movAxis, g2p);
+					float intsDst = glm::dot(projAxis, g2p0);
+					float projDst = glm::dot(projAxis, g2p);
 
-					delta = movAxis * (projDst - intsDst);
+					Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
+					delta = moveAxis * (projDst - intsDst);
 				}
 
 				std::vector<Entity*> selecteds;
@@ -364,7 +365,7 @@ namespace ToolKit
 
 				for (Entity* e : selecteds)
 				{
-					e->m_node->Translate(delta, TransformationSpace::TS_WORLD);
+					e->m_node->Translate(delta, g_app->m_transformOrientation);
 				}
 			}
 			else

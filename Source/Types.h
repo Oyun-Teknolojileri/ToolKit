@@ -25,7 +25,10 @@ namespace ToolKit
 	static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
 	static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);
 	static const Vec3 Z_AXIS = Vec3(0.0f, 0.0f, 1.0f);
-	static const Vec3 AXIS[3] = { X_AXIS, Y_AXIS, Z_AXIS };
+	static const Vec3 XY_AXIS = Vec3(1.0f, 1.0f, 0.0f);
+	static const Vec3 YZ_AXIS = Vec3(0.0f, 1.0f, 1.0f);
+	static const Vec3 ZX_AXIS = Vec3(1.0f, 0.0f, 1.0f);
+	static const Vec3 AXIS[6] = { X_AXIS, Y_AXIS, Z_AXIS, XY_AXIS, YZ_AXIS, ZX_AXIS };
 
 	static const EntityId NULL_ENTITY = 0;
 
