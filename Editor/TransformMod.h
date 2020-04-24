@@ -8,10 +8,10 @@ namespace ToolKit
 	namespace Editor
 	{
 		// States.
-		class StateGizmoBase : public State
+		class StateTransformBase : public State
 		{
 		public:
-			StateGizmoBase();
+			StateTransformBase();
 			virtual void Update(float deltaTime) override;
 			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* nextState) override;
@@ -28,7 +28,7 @@ namespace ToolKit
 			PlaneEquation m_intersectionPlane;
 		};
 
-		class StateGizmoBegin : public StateGizmoBase
+		class StateTransformBegin : public StateTransformBase
 		{
 		public:
 			virtual void TransitionIn(State* prevState) override;
@@ -36,50 +36,66 @@ namespace ToolKit
 
 			virtual void Update(float deltaTime) override;
 			virtual String Signaled(SignalId signal) override;
-			virtual String GetType() override { return StateType::StateBeginMove; }
+			virtual String GetType() override { return StateType::StateTransformBegin; }
 
 		private:
 			void CalculateIntersectionPlane();
 		};
 
-		class StateMoveTo : public StateGizmoBase
+		class StateTransformTo : public StateTransformBase
 		{
 		public:
 			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* prevState) override;
 			virtual void Update(float deltaTime) override;
 			virtual String Signaled(SignalId signal) override;
-			virtual String GetType() override { return StateType::StateMoveTo; }
+			virtual String GetType() override { return StateType::StateTransformTo; }
 
 		private:
-			void Move();
+			void CalculateDelta();
+
+		public:
+			Vec3 m_delta;
 
 		private:
 			std::shared_ptr<LineBatch> m_guideLine;
 		};
 
-		class StateGizmoEnd : public StateGizmoBase
+		class StateTransformEnd : public StateTransformBase
 		{
 		public:
 			virtual void TransitionOut(State* nextState) override;
 			virtual void Update(float deltaTime) override;
 			virtual String Signaled(SignalId signal) override;
-			virtual String GetType() override { return StateType::StateEndMove; }
+			virtual String GetType() override { return StateType::StateTransformEnd; }
 		};
 
 		// Mod.
-		class MoveMod : public BaseMod
+		class TransformMod : public BaseMod
 		{
 		public:
-			MoveMod() : BaseMod(ModId::Move) { Init(); }
-			virtual ~MoveMod();
+			enum class TransformType
+			{
+				Translate,
+				Rotate,
+				Scale
+			};
+
+		public:
+			TransformMod(TransformType t);
+			virtual ~TransformMod();
 
 			virtual void Init() override;
 			virtual void Update(float deltaTime) override;
 
+		private:
+			void Transform(const Vec3& delta) const;
+
 		public:
+			TransformType m_transformType;
+
 			// Signals.
-			static SignalId m_linkToMoveBeginSgnl;
+			static SignalId m_linkToTransformBeginSgnl;
 		};
 	}
 }

@@ -7,7 +7,7 @@
 #include "Grid.h"
 #include "Directional.h"
 #include "Gizmo.h"
-#include "Move.h"
+#include "TransformMod.h"
 #include "ConsoleWindow.h"
 #include "DebugNew.h"
 
@@ -73,7 +73,7 @@ namespace ToolKit
 					modNameDbg = "Mod: Cursor";
 					break;
 				case ModId::Move:
-					nextMod = new MoveMod();
+					nextMod = new TransformMod(TransformMod::TransformType::Translate);
 					modNameDbg = "Mod: Move";
 					break;
 				case ModId::Rotate:
@@ -190,9 +190,9 @@ namespace ToolKit
 		const String StateType::StateBeginPick = "StateBeginPick";
 		const String StateType::StateBeginBoxPick = "StateBeginBoxPick";
 		const String StateType::StateEndPick = "StateEndPick";
-		const String StateType::StateBeginMove = "StateBeginMove";
-		const String StateType::StateMoveTo = "StateMoveTo";
-		const String StateType::StateEndMove = "StateEndMove";
+		const String StateType::StateTransformBegin = "StateTransformBegin";
+		const String StateType::StateTransformTo = "StateTransformTo";
+		const String StateType::StateTransformEnd = "StateTransformEnd";
 
 		std::shared_ptr<Arrow2d> StatePickingBase::m_dbgArrow = nullptr;
 		std::shared_ptr<LineBatch> StatePickingBase::m_dbgFrustum = nullptr;

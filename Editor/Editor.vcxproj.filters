@@ -60,9 +60,6 @@
     <ClCompile Include="ConsoleWindow.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="Move.cpp">
-      <Filter>Mods</Filter>
-    </ClCompile>
     <ClCompile Include="Grid.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
@@ -71,6 +68,9 @@
     </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformMod.cpp">
+      <Filter>Mods</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -113,9 +113,6 @@
     <ClInclude Include="ConsoleWindow.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="Move.h">
-      <Filter>Mods</Filter>
-    </ClInclude>
     <ClInclude Include="Grid.h">
       <Filter>Entities</Filter>
     </ClInclude>
@@ -130,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformMod.h">
+      <Filter>Mods</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

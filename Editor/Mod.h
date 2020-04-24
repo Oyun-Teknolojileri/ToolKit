@@ -81,9 +81,9 @@ namespace ToolKit
 			const static String StateBeginPick;
 			const static String StateBeginBoxPick;
 			const static String StateEndPick;
-			const static String StateBeginMove;
-			const static String StateMoveTo;
-			const static String StateEndMove;
+			const static String StateTransformBegin;
+			const static String StateTransformTo;
+			const static String StateTransformEnd;
 		};
 
 		class StatePickingBase : public State

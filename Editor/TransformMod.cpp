@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Move.h"
+#include "TransformMod.h"
 #include "Gizmo.h"
 #include "GlobalDef.h"
 #include "Node.h"
@@ -15,13 +15,13 @@ namespace ToolKit
 		// StateMoveBase
 		//////////////////////////////////////////////////////////////////////////
 		
-		StateGizmoBase::StateGizmoBase()
+		StateTransformBase::StateTransformBase()
 		{
 			m_gizmo = nullptr;
 			m_mouseData.resize(2);
 		}
 
-		void StateGizmoBase::Update(float deltaTime)
+		void StateTransformBase::Update(float deltaTime)
 		{
 			if (m_gizmo != nullptr)
 			{
@@ -63,13 +63,13 @@ namespace ToolKit
 			}
 		}
 
-		void StateGizmoBase::TransitionIn(State* prevState)
+		void StateTransformBase::TransitionIn(State* prevState)
 		{
 		}
 
-		void StateGizmoBase::TransitionOut(State* nextState)
+		void StateTransformBase::TransitionOut(State* nextState)
 		{
-			StateGizmoBase* baseState = dynamic_cast<StateGizmoBase*> (nextState);
+			StateTransformBase* baseState = dynamic_cast<StateTransformBase*> (nextState);
 			if (baseState != nullptr)
 			{
 				baseState->m_mouseData = m_mouseData;
@@ -78,7 +78,7 @@ namespace ToolKit
 			}
 		}
 
-		void StateGizmoBase::MakeSureGizmoIsValid()
+		void StateTransformBase::MakeSureGizmoIsValid()
 		{
 			if (m_gizmo == nullptr)
 			{
@@ -95,7 +95,7 @@ namespace ToolKit
 			}
 		}
 
-		ToolKit::Vec3 StateGizmoBase::GetGrabbedAxis(int n)
+		ToolKit::Vec3 StateTransformBase::GetGrabbedAxis(int n)
 		{
 			Vec3 axes[3];
 			ExtractAxes(glm::toMat4(m_axisOrientation), axes[0], axes[1], axes[2]);
@@ -110,22 +110,22 @@ namespace ToolKit
 			return axes[second];
 		}
 
-		bool StateGizmoBase::IsPlaneMod()
+		bool StateTransformBase::IsPlaneMod()
 		{
 			return m_gizmo->GetGrabbedAxis() > AxisLabel::Z;
 		}
 
-		// StateBeginMove
+		// StateTransformBegin
 		//////////////////////////////////////////////////////////////////////////
 
-		void StateGizmoBegin::TransitionIn(State* prevState)
+		void StateTransformBegin::TransitionIn(State* prevState)
 		{
-			StateGizmoBase::TransitionIn(prevState);
+			StateTransformBase::TransitionIn(prevState);
 		}
 
-		void StateGizmoBegin::TransitionOut(State* nextState)
+		void StateTransformBegin::TransitionOut(State* nextState)
 		{
-			StateGizmoBase::TransitionOut(nextState);
+			StateTransformBase::TransitionOut(nextState);
 
 			if (nextState->ThisIsA<StateBeginPick>())
 			{
@@ -142,9 +142,9 @@ namespace ToolKit
 			}
 		}
 
-		void StateGizmoBegin::Update(float deltaTime)
+		void StateTransformBegin::Update(float deltaTime)
 		{
-			StateGizmoBase::Update(deltaTime); // Update gizmo's loc & view.
+			StateTransformBase::Update(deltaTime); // Update gizmo's loc & view.
 
 			MakeSureGizmoIsValid();
 
@@ -177,7 +177,7 @@ namespace ToolKit
 			}
 		}
 
-		String StateGizmoBegin::Signaled(SignalId signal)
+		String StateTransformBegin::Signaled(SignalId signal)
 		{
 			if (signal == BaseMod::m_leftMouseBtnDownSgnl)
 			{
@@ -217,14 +217,14 @@ namespace ToolKit
 				if (!m_gizmo->IsGrabbed(AxisLabel::None))
 				{
 					CalculateIntersectionPlane();
-					return StateType::StateMoveTo;
+					return StateType::StateTransformTo;
 				}
 			}
 
 			return StateType::Null;
 		}
 
-		void StateGizmoBegin::CalculateIntersectionPlane()
+		void StateTransformBegin::CalculateIntersectionPlane()
 		{
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			
@@ -269,12 +269,12 @@ namespace ToolKit
 			}
 		}
 
-		// StateMoveTo
+		// StateTransformTo
 		//////////////////////////////////////////////////////////////////////////
 
-		void StateMoveTo::TransitionIn(State* prevState)
+		void StateTransformTo::TransitionIn(State* prevState)
 		{
-			StateGizmoBase::TransitionIn(prevState);
+			StateTransformBase::TransitionIn(prevState);
 
 			// Create guide line.
 			if ((int)m_gizmo->GetGrabbedAxis() < 3)
@@ -296,9 +296,9 @@ namespace ToolKit
 			}
 		}
 
-		void StateMoveTo::TransitionOut(State* prevState)
+		void StateTransformTo::TransitionOut(State* prevState)
 		{
-			StateGizmoBase::TransitionOut(prevState);
+			StateTransformBase::TransitionOut(prevState);
 
 			if (m_guideLine != nullptr)
 			{
@@ -308,27 +308,27 @@ namespace ToolKit
 			}
 		}
 
-		void StateMoveTo::Update(float deltaTime)
+		void StateTransformTo::Update(float deltaTime)
 		{
-			StateGizmoBase::Update(deltaTime);
+			StateTransformBase::Update(deltaTime);
 		}
 
-		String StateMoveTo::Signaled(SignalId signal)
+		String StateTransformTo::Signaled(SignalId signal)
 		{		
 			if (signal == BaseMod::m_leftMouseBtnDragSgnl)
 			{
-				Move();
+				CalculateDelta();
 			}
 
 			if (signal == BaseMod::m_leftMouseBtnUpSgnl)
 			{
-				return StateType::StateEndMove;
+				return StateType::StateTransformEnd;
 			}
 
 			return StateType::Null;
 		}
 
-		void StateMoveTo::Move()
+		void StateTransformTo::CalculateDelta()
 		{
 			Viewport* vp = g_app->GetActiveViewport();
 			m_mouseData[1] = vp->GetLastMousePosScreenSpace();
@@ -344,10 +344,9 @@ namespace ToolKit
 				LinePlaneIntersection(ray, m_intersectionPlane, t);
 				Vec3 p0 = PointOnRay(ray, t);
 
-				Vec3 delta;
 				if (IsPlaneMod())
 				{
-					delta = p - p0;
+					m_delta = p - p0;
 				}
 				else
 				{
@@ -357,15 +356,7 @@ namespace ToolKit
 					float projDst = glm::dot(projAxis, g2p);
 
 					Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
-					delta = moveAxis * (projDst - intsDst);
-				}
-
-				std::vector<Entity*> selecteds;
-				g_app->m_scene.GetSelectedEntities(selecteds);
-
-				for (Entity* e : selecteds)
-				{
-					e->m_node->Translate(delta, g_app->m_transformOrientation);
+					m_delta = moveAxis * (projDst - intsDst);
 				}
 			}
 			else
@@ -376,30 +367,30 @@ namespace ToolKit
 			std::swap(m_mouseData[0], m_mouseData[1]);
 		}
 
-		// StateEndMove
+		// StateTransformEnd
 		//////////////////////////////////////////////////////////////////////////
 
-		void StateGizmoEnd::TransitionOut(State* nextState)
+		void StateTransformEnd::TransitionOut(State* nextState)
 		{
-			if (nextState->ThisIsA<StateGizmoBegin>())
+			if (nextState->ThisIsA<StateTransformBegin>())
 			{
-				StateGizmoBegin* baseNext = static_cast<StateGizmoBegin*> (nextState);
+				StateTransformBegin* baseNext = static_cast<StateTransformBegin*> (nextState);
 				baseNext->m_gizmo->Grab(AxisLabel::None);
 				baseNext->m_mouseData[0] = Vec2();
 				baseNext->m_mouseData[1] = Vec2();
 			}
 		}
 
-		void StateGizmoEnd::Update(float deltaTime)
+		void StateTransformEnd::Update(float deltaTime)
 		{
-			StateGizmoBase::Update(deltaTime);
+			StateTransformBase::Update(deltaTime);
 		}
 
-		String StateGizmoEnd::Signaled(SignalId signal)
+		String StateTransformEnd::Signaled(SignalId signal)
 		{
 			if (signal == BaseMod::m_backToStart)
 			{
-				return StateType::StateBeginMove;
+				return StateType::StateTransformBegin;
 			}
 
 			return StateType::Null;
@@ -409,13 +400,19 @@ namespace ToolKit
 		//////////////////////////////////////////////////////////////////////////
 
 		// Signal definitions.
-		SignalId MoveMod::m_linkToMoveBeginSgnl = BaseMod::GetNextSignalId();
+		SignalId TransformMod::m_linkToTransformBeginSgnl = BaseMod::GetNextSignalId();
 
-		MoveMod::~MoveMod()
+		TransformMod::TransformMod(TransformType t) 
+			: m_transformType(t), BaseMod(ModId::Move)
+		{
+			Init();
+		}
+
+		TransformMod::~TransformMod()
 		{
 			if (m_stateMachine->m_currentState != nullptr)
 			{
-				StateGizmoBase* baseState = static_cast<StateGizmoBase*> (m_stateMachine->QueryState(StateType::StateBeginMove));
+				StateTransformBase* baseState = static_cast<StateTransformBase*> (m_stateMachine->QueryState(StateType::StateTransformBegin));
 				assert(baseState && "Gizmo remains in the scene as dead pointer.");
 
 				if (baseState != nullptr && baseState->m_gizmo != nullptr)
@@ -425,23 +422,23 @@ namespace ToolKit
 			}
 		}
 
-		void MoveMod::Init()
+		void TransformMod::Init()
 		{
-			State* state = new StateGizmoBegin();
+			State* state = new StateTransformBegin();
 			m_stateMachine->m_currentState = state;
 
 			m_stateMachine->PushState(state);
-			m_stateMachine->PushState(new StateMoveTo());
-			m_stateMachine->PushState(new StateGizmoEnd());
+			m_stateMachine->PushState(new StateTransformTo());
+			m_stateMachine->PushState(new StateTransformEnd());
 
 			m_stateMachine->PushState(new StateBeginPick());
 			m_stateMachine->PushState(new StateBeginBoxPick());
 			state = new StateEndPick();
-			state->m_links[m_linkToMoveBeginSgnl] = StateType::StateBeginMove;
+			state->m_links[m_linkToTransformBeginSgnl] = StateType::StateTransformBegin;
 			m_stateMachine->PushState(state);
 		}
 
-		void MoveMod::Update(float deltaTime)
+		void TransformMod::Update(float deltaTime)
 		{
 			BaseMod::Update(deltaTime);
 
@@ -453,12 +450,41 @@ namespace ToolKit
 				endPick->PickDataToEntityId(entities);
 				g_app->m_scene.AddToSelection(entities, ImGui::GetIO().KeyShift);
 
-				ModManager::GetInstance()->DispatchSignal(m_linkToMoveBeginSgnl);
+				ModManager::GetInstance()->DispatchSignal(m_linkToTransformBeginSgnl);
 			}
 
-			if (m_stateMachine->m_currentState->ThisIsA<StateGizmoEnd>())
+			if (m_stateMachine->m_currentState->ThisIsA<StateTransformTo>())
+			{
+				StateTransformTo* t = static_cast<StateTransformTo*> (m_stateMachine->m_currentState);
+				Transform(t->m_delta);
+				t->Update(deltaTime); // Update gizmo in this frame.
+			}
+
+			if (m_stateMachine->m_currentState->ThisIsA<StateTransformEnd>())
 			{
 				ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
+			}
+		}
+
+		void TransformMod::Transform(const Vec3& delta) const
+		{
+			std::vector<Entity*> selecteds;
+			g_app->m_scene.GetSelectedEntities(selecteds);
+
+			for (Entity* e : selecteds)
+			{
+				switch (m_transformType)
+				{
+				case TransformType::Translate:
+					e->m_node->Translate(delta, g_app->m_transformOrientation);
+					break;
+				case TransformType::Rotate:
+					assert(false && "Not implemented.");
+					break;
+				case TransformType::Scale:
+					e->m_node->Scale(Vec3(1.0f) + delta, g_app->m_transformOrientation);
+					break;
+				}
 			}
 		}
 
