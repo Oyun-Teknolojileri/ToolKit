@@ -32,7 +32,12 @@ namespace ToolKit
   {
   public:
     Cube();
+    Cube(const Vec3& scale);
 
+  private:
+    void Generate(Vec3 scale);
+
+  public:
     virtual EntityType GetType() const override;
   };
 
@@ -82,10 +87,10 @@ namespace ToolKit
   class LineBatch : public Drawable
   {
   public:
-    LineBatch(const std::vector<Vec3>& linePnts, Vec3 color, DrawType t, float lineWidth = 1.0f);
+    LineBatch(const std::vector<Vec3>& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
 
 		virtual EntityType GetType() const override;
-    void Generate(const std::vector<Vec3>& linePnts, Vec3 color, DrawType t, float lineWidth = 1.0f);
+    void Generate(const std::vector<Vec3>& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
   };
 
 }
