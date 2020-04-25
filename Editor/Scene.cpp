@@ -232,6 +232,7 @@ namespace ToolKit
 
 		void Scene::AddEntity(Entity* entity)
 		{
+			assert(GetEntity(entity->m_id) == nullptr && "Entity is already in the scene.");
 			m_entitites.push_back(entity);
 		}
 
