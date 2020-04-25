@@ -118,9 +118,6 @@ namespace ToolKit
 			m_q4->m_node->m_translation = Vec3(4.0f, 0.0f, 0.0f);
 			m_scene.AddEntity(m_q4);
 
-			m_scene.AddEntity(m_q1);
-
-
 			m_origin = new Axis3d();
 
 			m_grid = new Grid(100);
