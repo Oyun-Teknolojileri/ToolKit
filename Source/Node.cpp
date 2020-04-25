@@ -13,6 +13,12 @@ namespace ToolKit
 	// Fully tested.
 	void Node::Translate(const Vec3& val, TransformationSpace space)
 	{
+		Mat4 ts;
+		ts = glm::translate(ts, val);
+		Transform(ts, space);
+		return;
+
+
 		switch (space)
 		{
 		case TransformationSpace::TS_WORLD:
@@ -129,12 +135,6 @@ namespace ToolKit
 
 	void Node::Transform(const Mat4& val, TransformationSpace space)
 	{
-		assert(false && "Not implemented.");
-	}
-
-	void Node::SetTransform(const Mat4& val, TransformationSpace space)
-	{
-		//assert(false && "Not implemented.");
 		Mat4 ps, ts, ws;
 		if (m_parent != nullptr)
 		{
@@ -144,13 +144,41 @@ namespace ToolKit
 		switch (space)
 		{
 		case TransformationSpace::TS_WORLD:
-			ts = glm::inverse(ps)* val* ws;
+			ws = GetTransform(TransformationSpace::TS_WORLD);
+			ts = glm::inverse(ps) * val * ws;
+			break;
+		case TransformationSpace::TS_PARENT:
+			ws = GetTransform(TransformationSpace::TS_PARENT);
+			ts = val * ws;
+			break;
+		case TransformationSpace::TS_LOCAL:
+			ws = GetTransform(TransformationSpace::TS_WORLD);
+			ts = glm::inverse(ps)* ws * val;
+			break;
+		}
+
+		DecomposeMatrix(ts, m_translation, m_orientation, m_scale);
+	}
+
+	void Node::SetTransform(const Mat4& val, TransformationSpace space)
+	{
+		//assert(false && "Not implemented.");
+		Mat4 ps, ts;
+		if (m_parent != nullptr)
+		{
+			ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+		}
+
+		switch (space)
+		{
+		case TransformationSpace::TS_WORLD:
+			ts = glm::inverse(ps) * val;
 			break;
 		case TransformationSpace::TS_PARENT:
 			ts = val;
 			break;
 		case TransformationSpace::TS_LOCAL:
-			glm::inverse(ps)* ws * val;
+			glm::inverse(ps) * val;
 			break;
 		}
 
