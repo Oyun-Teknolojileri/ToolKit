@@ -64,13 +64,12 @@ namespace ToolKit
 
 		void App::Init()
 		{
-			MaterialPtr solidColorMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
-			solidColorMaterial->m_color = Vec3(1.0f);
+			MaterialPtr normalMat = GetMaterialManager()->Create(MaterialPath("objectNormal.material"));
 
 			m_suzanne = new Drawable();
 			m_suzanne->m_node->m_translation = Vec3(0.0f, 0.0f, -5.0f);
 			m_suzanne->m_mesh = GetMeshManager()->Create(MeshPath("suzanne.mesh"));
-			m_suzanne->m_mesh->m_material = solidColorMaterial;
+			m_suzanne->m_mesh->m_material = normalMat;
 			m_suzanne->m_mesh->Init(false);
 			m_scene.AddEntity(m_suzanne);
 
@@ -86,8 +85,6 @@ namespace ToolKit
 			GetAnimationPlayer()->AddRecord(m_knight, m_knightRunAnim.get());
 
 			m_cursor = new Cursor();
-
-			MaterialPtr normalMat = GetMaterialManager()->Create(MaterialPath("objectNormal.material"));
 
 			m_q1 = new Cube();
 			m_q1->m_mesh->m_material = normalMat;
@@ -105,6 +102,7 @@ namespace ToolKit
 			m_scene.AddEntity(m_q2);
 
 			m_q3 = new Cone();
+			m_q3->m_mesh->m_material = normalMat;
 			m_q3->m_mesh->Init(false);
 			m_q3->m_node->m_scale = Vec3(0.3f, 1.0f, 0.3f);
 			m_q3->m_node->m_translation = Vec3(2.0f, 0.0f, 0.0f);
@@ -127,6 +125,7 @@ namespace ToolKit
 			m_grid = new Grid(100);
 			m_grid->m_mesh->Init(false);
 
+			MaterialPtr solidColorMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
 			m_highLightMaterial = MaterialPtr(solidColorMaterial->GetCopy());
 			m_highLightMaterial->m_color = g_selectHighLightPrimaryColor;
 			m_highLightMaterial->GetRenderState()->cullMode = CullingType::Front;

@@ -56,6 +56,10 @@ namespace ToolKit
 	// Fully tested.
 	void Node::Rotate(const Quaternion& val, TransformationSpace space)
 	{
+		Vec3 t, s;
+		TransformImp(glm::toMat4(val), t, m_orientation, s, space);
+		return;
+
 		switch (space)
 		{
 		case TransformationSpace::TS_WORLD:
@@ -135,29 +139,7 @@ namespace ToolKit
 
 	void Node::Transform(const Mat4& val, TransformationSpace space)
 	{
-		Mat4 ps, ts, ws;
-		if (m_parent != nullptr)
-		{
-			ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
-		}
-
-		switch (space)
-		{
-		case TransformationSpace::TS_WORLD:
-			ws = GetTransform(TransformationSpace::TS_WORLD);
-			ts = glm::inverse(ps) * val * ws;
-			break;
-		case TransformationSpace::TS_PARENT:
-			ws = GetTransform(TransformationSpace::TS_PARENT);
-			ts = val * ws;
-			break;
-		case TransformationSpace::TS_LOCAL:
-			ws = GetTransform(TransformationSpace::TS_WORLD);
-			ts = glm::inverse(ps)* ws * val;
-			break;
-		}
-
-		DecomposeMatrix(ts, m_translation, m_orientation, m_scale);
+		TransformImp(val, m_translation, m_orientation, m_scale, space);
 	}
 
 	void Node::SetTransform(const Mat4& val, TransformationSpace space)
@@ -390,6 +372,33 @@ namespace ToolKit
 	{
 		m_children.push_back(child);
 		child->m_parent = this;
+	}
+
+	void Node::TransformImp(const Mat4& val, Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space)
+	{
+		Mat4 ps, ts, ws;
+		if (m_parent != nullptr)
+		{
+			ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+		}
+
+		switch (space)
+		{
+		case TransformationSpace::TS_WORLD:
+			ws = GetTransform(TransformationSpace::TS_WORLD);
+			ts = glm::inverse(ps) * val * ws;
+			break;
+		case TransformationSpace::TS_PARENT:
+			ws = GetTransform(TransformationSpace::TS_PARENT);
+			ts = val * ws;
+			break;
+		case TransformationSpace::TS_LOCAL:
+			ws = GetTransform(TransformationSpace::TS_WORLD);
+			ts = glm::inverse(ps) * ws * val;
+			break;
+		}
+
+		DecomposeMatrix(ts, translation, orientation, scale);
 	}
 
 }

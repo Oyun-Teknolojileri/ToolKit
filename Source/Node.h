@@ -31,6 +31,9 @@ namespace ToolKit
     Vec3 GetScale(TransformationSpace space = TransformationSpace::TS_PARENT) const;
     void AddChild(Node* child);
 
+  private:
+    void TransformImp(const Mat4& val, Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space);
+
   public:
     Vec3 m_translation;
     Quaternion m_orientation;
