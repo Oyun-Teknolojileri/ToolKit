@@ -54,13 +54,15 @@ namespace ToolKit
 		{
 		case TransformationSpace::TS_WORLD:
 		{
-			Quaternion ps, ws;
-			ws = GetOrientation(TransformationSpace::TS_WORLD);
+			Mat4 ps, ws;
+			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetOrientation(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 			}
-			m_orientation = glm::inverse(ps) * val * ws;
+			Mat4 ts = glm::inverse(ps) * glm::toMat4(val) * ws;
+			Vec3 t, s;
+			DecomposeMatrix(ts, t, m_orientation, s);
 		}
 		break;
 		case TransformationSpace::TS_PARENT:
@@ -68,13 +70,15 @@ namespace ToolKit
 			break;
 		case TransformationSpace::TS_LOCAL:
 		{
-			Quaternion ps, ws;
-			ws = GetOrientation(TransformationSpace::TS_WORLD);
+			Mat4 ps, ws;
+			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
 			{
-				ps = m_parent->GetOrientation(TransformationSpace::TS_WORLD);
+				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 			}
-			m_orientation = glm::inverse(ps) * ws * val;
+			Mat4 ts = glm::inverse(ps) * ws * glm::toMat4(val);
+			Vec3 t, s;
+			DecomposeMatrix(ts, t, m_orientation, s);
 		}
 		break;
 		}
@@ -89,7 +93,7 @@ namespace ToolKit
 		{
 		case TransformationSpace::TS_WORLD:
 		{
-			Mat3 ts, ps, ws;
+			Mat4 ts, ps, ws;
 			ts = glm::diagonal4x4(Vec4(val, 1.0f));
 			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
@@ -104,7 +108,7 @@ namespace ToolKit
 		break;
 		case TransformationSpace::TS_PARENT:
 		{
-			Mat3 ts, ps, ws;
+			Mat4 ts, ps, ws;
 			ts = glm::diagonal4x4(Vec4(val, 1.0f));
 			ws = GetTransform(TransformationSpace::TS_WORLD);
 			if (m_parent != nullptr)
