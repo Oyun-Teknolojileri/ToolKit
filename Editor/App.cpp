@@ -68,6 +68,7 @@ namespace ToolKit
 
 			m_suzanne = new Drawable();
 			m_suzanne->m_node->m_translation = Vec3(0.0f, 0.0f, -5.0f);
+			m_suzanne->m_node->m_orientation = glm::angleAxis(-glm::half_pi<float>(), X_AXIS);
 			m_suzanne->m_mesh = GetMeshManager()->Create(MeshPath("suzanne.mesh"));
 			m_suzanne->m_mesh->m_material = normalMat;
 			m_suzanne->m_mesh->Init(false);
@@ -97,7 +98,7 @@ namespace ToolKit
 			m_q2 = new Cube();
 			m_q2->m_mesh->m_material = normalMat;
 			m_q2->m_mesh->Init(false);
-			m_q2->m_node->m_translation = Vec3(2.0f, 0.0f, 0.0f);
+			m_q2->m_node->m_translation = Vec3(2.0f, 0.0f, 2.0f);
 			m_q2->m_node->m_orientation = glm::angleAxis(glm::half_pi<float>(), Y_AXIS);
 			m_scene.AddEntity(m_q2);
 
