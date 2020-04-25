@@ -610,6 +610,22 @@ namespace ToolKit
 			}
 		}
 
+		RotateGizmo::RotateGizmo()
+			: Gizmo({ false, 10.0f, 400.0f })
+		{
+
+		}
+
+		RotateGizmo::~RotateGizmo()
+		{
+
+		}
+
+		void RotateGizmo::Generate()
+		{
+
+		}
+
 	}
 
 }

@@ -54,7 +54,7 @@ namespace ToolKit
 				}
 
 				m_axisOrientation = orientation;
-				m_gizmo->m_node->SetOrientation(orientation, TransformationSpace::TS_WORLD);
+				m_gizmo->m_node->m_orientation = orientation; // SetOrientation(orientation, TransformationSpace::TS_WORLD); #TK_FIX
 			}
 
 			m_gizmo->Update(deltaTime);

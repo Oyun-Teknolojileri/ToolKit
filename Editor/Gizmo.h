@@ -80,5 +80,18 @@ namespace ToolKit
 			std::shared_ptr<Mesh> m_lines[3];
 			std::shared_ptr<Mesh> m_solids[3];
 		};
+
+		class RotateGizmo : public Gizmo
+		{
+		public:
+			RotateGizmo();
+			virtual ~RotateGizmo();
+
+		private:
+			void Generate();
+
+		private:
+			std::shared_ptr<Mesh> m_lines[3];
+		};
 	}
 }

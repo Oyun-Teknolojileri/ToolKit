@@ -42,8 +42,10 @@ namespace ToolKit
   // Matrix Operations
   //////////////////////////////////////////
 
-  void DecomposeMatrix(const Mat4& transform, Vec3& translation, Quaternion& orientation, Vec3& scale); // Assuming only translate + rotate + scale is applied. Non uniform scale is ok.
+  void DecomposeMatrix(const Mat4& transform, Vec3& translation, Quaternion& orientation, Vec3& scale);
   void DecomposeMatrix(const Mat4& transform, Vec3& translation, Quaternion& orientation);
+  bool IsAffine(const Mat4& transform);
+  void QDUDecomposition(const Mat3& transform, Mat3& kQ, Vec3& kD, Vec3& kU);
   void ExtractAxes(const Mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize = true);
   Frustum ExtractFrustum(const Mat4& projectViewModel);
 
