@@ -134,7 +134,27 @@ namespace ToolKit
 
 	void Node::SetTransform(const Mat4& val, TransformationSpace space)
 	{
-		assert(false && "Not implemented.");
+		//assert(false && "Not implemented.");
+		Mat4 ps, ts, ws;
+		if (m_parent != nullptr)
+		{
+			ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+		}
+
+		switch (space)
+		{
+		case TransformationSpace::TS_WORLD:
+			ts = glm::inverse(ps)* val* ws;
+			break;
+		case TransformationSpace::TS_PARENT:
+			ts = val;
+			break;
+		case TransformationSpace::TS_LOCAL:
+			glm::inverse(ps)* ws * val;
+			break;
+		}
+
+		DecomposeMatrix(ts, m_translation, m_orientation, m_scale);
 	}
 
 	// Fully tested.

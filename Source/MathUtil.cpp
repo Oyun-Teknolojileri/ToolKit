@@ -8,7 +8,7 @@ namespace ToolKit
 
 	void DecomposeMatrix(const Mat4& transform, Vec3& translation, Quaternion& orientation, Vec3& scale)
 	{
-		assert(IsAffine(transform));
+		// assert(IsAffine(transform));
 
 		Mat3 matQ;
 		Vec3 vecU;
