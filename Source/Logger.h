@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include "Types.h"
 #include <fstream>
 
 namespace ToolKit
