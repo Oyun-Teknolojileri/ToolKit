@@ -57,6 +57,7 @@ namespace ToolKit
 			Cursor* m_cursor;
 
 			// Editor states.
+			int m_fps = 0;
 			bool m_showPickingDebug = false;
 			bool m_showStateTransitionsDebug = false;
 			bool m_showOverlayUI = true;

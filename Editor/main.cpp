@@ -145,6 +145,8 @@ namespace ToolKit
 			float lastTime = GetMilliSeconds();
 			float currentTime;
 			float deltaTime = 1000.0f / fps;
+			int frameCount = 0;
+			float timeAccum = 0.0f;
 
 			while (g_running)
 			{
@@ -161,6 +163,15 @@ namespace ToolKit
 					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 					g_app->Frame(currentTime - lastTime);
 					SDL_GL_SwapWindow(g_window);
+
+					frameCount++;
+					timeAccum += currentTime - lastTime;
+					if (timeAccum >= 1000.0f)
+					{
+						g_app->m_fps = frameCount;
+						timeAccum = 0;
+						frameCount = 0;
+					}
 
 					lastTime = currentTime;
 				}

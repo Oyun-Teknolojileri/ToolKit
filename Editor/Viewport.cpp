@@ -114,6 +114,12 @@ namespace ToolKit
 
 			m_mouseHover = ImGui::IsWindowHovered();
 
+			ImVec2 pos = GLM2IMVEC(m_wndPos);
+			pos.x += m_width * 0.5;
+			pos.y += 15;
+			String fps = "Fps: " + std::to_string(g_app->m_fps);
+			ImGui::GetWindowDrawList()->AddText(pos, IM_COL32(255, 255, 0, 255), fps.c_str());
+
 			// Process draw commands.
 			ImDrawList* drawList = ImGui::GetWindowDrawList();
 			for (auto command : m_drawCommands)
