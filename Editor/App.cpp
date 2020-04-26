@@ -191,11 +191,11 @@ namespace ToolKit
 						Drawable* drawObj = static_cast<Drawable*> (ntt);
 						if (m_scene.IsSelected(drawObj->m_id) && !drawObj->m_mesh->IsSkinned())
 						{
-							RenderSelected((Drawable*)ntt, vp->m_camera);
+							RenderSelected(drawObj, vp->m_camera);
 						}
 						else
 						{
-							m_renderer->Render((Drawable*)ntt, vp->m_camera);
+							m_renderer->Render(drawObj, vp->m_camera);
 						}
 					}
 				}
