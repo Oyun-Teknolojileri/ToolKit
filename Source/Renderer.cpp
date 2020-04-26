@@ -275,6 +275,11 @@ namespace ToolKit
 
 	void Renderer::SetRenderTarget(RenderTarget* renderTarget)
 	{
+		if (m_renderTarget == renderTarget)
+		{
+			return;
+		}
+
 		if (renderTarget != nullptr)
 		{
 			m_renderState.diffuseTexture = renderTarget->m_textureId;
