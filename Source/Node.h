@@ -33,7 +33,7 @@ namespace ToolKit
   private:
     void TransformImp(const Mat4& val, Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space);
     void SetTransformImp(const Mat4& val, Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space);
-    void GetTransformImp(Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space) const;
+    Mat4 GetTransformImp(Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space) const;
 
   public:
     Vec3 m_translation;

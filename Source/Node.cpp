@@ -43,32 +43,9 @@ namespace ToolKit
 
 	Mat4 Node::GetTransform(TransformationSpace space) const
 	{
-		auto LocalTransform = [this]() -> Mat4
-		{
-			Mat4 scale;
-			scale = glm::scale(scale, m_scale);
-			Mat4 rotate;
-			rotate = glm::toMat4(m_orientation);
-			Mat4 translate;
-			translate = glm::translate(translate, m_translation);
-			return translate * rotate * scale;
-		};
-
-		switch (space)
-		{
-		case TransformationSpace::TS_WORLD:
-			if (m_parent != nullptr)
-			{
-				Mat4 ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
-				return ps * LocalTransform();
-			}
-			return LocalTransform();
-		case TransformationSpace::TS_PARENT:
-			return LocalTransform();
-		case TransformationSpace::TS_LOCAL:
-		default:
-			return Mat4();
-		}
+		Vec3 t, s;
+		Quaternion q;
+		return GetTransformImp(t, q, s, space);
 	}
 
 	void Node::SetTranslation(const Vec3& val, TransformationSpace space)
@@ -212,18 +189,32 @@ namespace ToolKit
 		DecomposeMatrix(ts, translation, orientation, scale);
 	}
 
-	void Node::GetTransformImp(Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space) const
+	Mat4 Node::GetTransformImp(Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space) const
 	{
+		auto LocalTransform = [this]() -> Mat4
+		{
+			Mat4 scale;
+			scale = glm::scale(scale, m_scale);
+			Mat4 rotate;
+			rotate = glm::toMat4(m_orientation);
+			Mat4 translate;
+			translate = glm::translate(translate, m_translation);
+			return translate * rotate * scale;
+		};
+
+		Mat4 ts;
 		switch (space)
 		{
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
-				Mat4 ts = GetTransform(TransformationSpace::TS_WORLD);
+				Mat4 ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ts = ps * LocalTransform();
 				DecomposeMatrix(ts, translation, orientation, scale);
 				break;
 			} // Fall trough.
 		case TransformationSpace::TS_PARENT:
+			ts = LocalTransform();
 			translation = m_translation;
 			orientation = m_orientation;
 			scale = m_scale;
@@ -235,6 +226,8 @@ namespace ToolKit
 			scale = Vec3(1.0f);
 			break;
 		}
+
+		return ts;
 	}
 
 }
