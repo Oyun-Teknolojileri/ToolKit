@@ -282,8 +282,8 @@ namespace ToolKit
 							g_app->m_scene.AddEntity(m_dbgArrow.get());
 						}
 
-						m_dbgArrow->m_node->m_translation = ray.position;
-						m_dbgArrow->m_node->m_orientation = RotationTo(X_AXIS, ray.direction);
+						m_dbgArrow->m_node->SetTranslation(ray.position);
+						m_dbgArrow->m_node->SetOrientation(RotationTo(X_AXIS, ray.direction));
 					}
 
 					return StateType::StateEndPick;

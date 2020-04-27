@@ -175,7 +175,7 @@ namespace ToolKit
 
 			Ray ray;
 			ray.position = TransformViewportToWorldSpace(mcInVs);
-			ray.direction = glm::normalize(ray.position - m_camera->m_node->m_translation);
+			ray.direction = glm::normalize(ray.position - m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD));
 
 			return ray;
 		}
