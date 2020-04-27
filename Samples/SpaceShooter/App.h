@@ -109,10 +109,10 @@ public:
   void MoveShip()
   {
     glm::vec3 wscp = GetWSCP() + glm::vec3(0, 0, 5);
-    glm::vec3 moveVec = (wscp - m_spaceShip->m_node->m_translation) / 20.0f;
-    m_spaceShip->m_node->m_translation += (glm::vec3(moveVec.x, 0, moveVec.z));
+    glm::vec3 moveVec = (wscp - m_spaceShip->m_node->GetTranslation()) / 20.0f;
+    m_spaceShip->m_node->Translate({ moveVec.x, 0, moveVec.z });
 
-    m_spaceShip->m_node->m_orientation = glm::angleAxis(glm::radians(moveVec.x * 50), ToolKit::Z_AXIS);
+    m_spaceShip->m_node->SetOrientation(glm::angleAxis(glm::radians(moveVec.x * 50), ToolKit::Z_AXIS));
   }
 
   void CheckProjectileMeteorCollision()

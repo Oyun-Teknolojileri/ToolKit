@@ -16,7 +16,8 @@ public:
   PowerUp(std::shared_ptr<ToolKit::Mesh> pillObj)
   {
     m_mesh = pillObj;
-    m_node->m_translation = glm::vec3(glm::linearRand(-10.0f, 10.0f), 0.0f, glm::linearRand(0.0f, -10.0f));
+    Vec3 wt = Vec3(glm::linearRand(-10.0f, 10.0f), 0.0f, glm::linearRand(0.0f, -10.0f));
+    m_node->SetTranslation(wt, TransformationSpace::TS_WORLD);
   }
 
   virtual void SetActor(Ship* actor) = 0;
@@ -147,7 +148,7 @@ public:
     for (int i = (int)m_onGoingPowerUps.size() - 1; i > -1; i--)
     {
       PowerUp* pup = m_onGoingPowerUps[i];
-      if (ship->CheckShipSphereCollision(pup->m_node->m_translation, pup->m_collisionRad))
+      if (ship->CheckShipSphereCollision(pup->m_node->GetTranslation(TransformationSpace::TS_WORLD), pup->m_collisionRad))
       {
         pup->SetActor(ship);
         m_collectedPowerUps.push_back(pup);
@@ -158,7 +159,7 @@ public:
         pup->m_node->Translate(ToolKit::Z_AXIS * 0.1f);
         pup->m_node->Rotate(glm::angleAxis(glm::radians(1.5f), ToolKit::X_AXIS));
 
-        if (pup->m_node->m_translation.z >= 150.0f)
+        if (pup->m_node->GetTranslation(TransformationSpace::TS_WORLD).z >= 150.0f)
         {
           SafeDel(pup);
           m_onGoingPowerUps.erase(m_onGoingPowerUps.begin() + i);

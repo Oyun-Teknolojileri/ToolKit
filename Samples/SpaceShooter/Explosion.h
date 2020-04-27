@@ -18,10 +18,12 @@ public:
   {
     std::shared_ptr<ToolKit::SpriteSheet> spriteSheet = ToolKit::Main::GetInstance()->m_spriteSheetMan.Create(ToolKit::SpritePath("explosion.sprites"));
     ToolKit::SpriteAnimation* anim = new ToolKit::SpriteAnimation(spriteSheet);
-    anim->m_node->m_translation = glm::vec3(pos.x, pos.y, 0.0f);
+    anim->m_node->SetTranslation({ pos.x, pos.y, 0.0f }, TransformationSpace::TS_WORLD);
     anim->m_animFps = 30.0f;
     for (int i = 0; i < (int)spriteSheet->m_sprites.size(); i++)
+    {
       anim->m_frames.push_back(std::to_string(i));
+    }
     m_sprites.push_back(anim);
   }
 
@@ -29,10 +31,12 @@ public:
   {
     std::shared_ptr<ToolKit::SpriteSheet> spriteSheet = ToolKit::Main::GetInstance()->m_spriteSheetMan.Create(ToolKit::SpritePath("shipExplosion.sprites"));
     ToolKit::SpriteAnimation* anim = new ToolKit::SpriteAnimation(spriteSheet);
-    anim->m_node->m_translation = glm::vec3(pos.x, pos.y, 0.0f);
+    anim->m_node->SetTranslation({ pos.x, pos.y, 0.0f }, TransformationSpace::TS_WORLD);
     anim->m_animFps = 30.0f;
     for (int i = 0; i < (int)spriteSheet->m_sprites.size(); i++)
+    {
       anim->m_frames.push_back(std::to_string(i));
+    }
 
     m_sprites.push_back(anim);
   }
