@@ -12,23 +12,55 @@ namespace ToolKit
 
 	void Node::Translate(const Vec3& val, TransformationSpace space)
 	{
-		Vec3 s;
-		Quaternion q;
-		Mat4 ts = glm::translate(glm::diagonal4x4(Vec4(1.0f)), val);
-		TransformImp(ts, space, &m_translation, &q, &s);
+		if (m_parent == nullptr)
+		{
+			if (space == TransformationSpace::TS_LOCAL)
+			{
+				m_translation = m_translation + (m_orientation * (m_scale * val));
+			}
+			else
+			{
+				m_translation += val;
+			}
+		}
+		else
+		{
+			Mat4 ts = glm::translate(Mat4(), val);
+			TransformImp(ts, space, &m_translation, nullptr, nullptr);
+		}
 	}
 
 	void Node::Rotate(const Quaternion& val, TransformationSpace space)
 	{
-		Vec3 t, s;
-		TransformImp(glm::toMat4(val), space, &t, &m_orientation, &s);
+		if (m_parent == nullptr)
+		{
+			if (space == TransformationSpace::TS_LOCAL)
+			{
+				m_orientation = m_orientation * val;
+			}
+			else
+			{
+				m_orientation = val * m_orientation;
+			}
+		}
+		else
+		{
+			Mat4 ts = glm::toMat4(val);
+			TransformImp(ts, space, nullptr, &m_orientation, nullptr);
+		}
 	}
 
 	void Node::Scale(const Vec3& val, TransformationSpace space)
 	{
-		Vec3 t;
-		Quaternion q;
-		TransformImp(glm::diagonal4x4(Vec4(val, 1.0f)), space, &t, &q, &m_scale);
+		if (m_parent == nullptr)
+		{
+			m_scale = m_scale * val;
+		}
+		else
+		{
+			Mat4 ts = glm::diagonal4x4(Vec4(val, 1.0f));
+			TransformImp(ts, space, nullptr, nullptr, &m_scale);
+		}
 	}
 
 	void Node::Transform(const Mat4& val, TransformationSpace space)
