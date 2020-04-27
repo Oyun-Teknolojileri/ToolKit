@@ -15,6 +15,7 @@ namespace ToolKit
 	class Node
 	{
 		friend class Animation;
+		friend class Skeleton;
 
 	public:
 		Node();
