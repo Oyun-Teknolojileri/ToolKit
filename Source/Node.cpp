@@ -82,8 +82,22 @@ namespace ToolKit
 
 	void Node::SetTranslation(const Vec3& val, TransformationSpace space)
 	{
-		Mat4 ts = glm::translate(Mat4(), val);
-		SetTransformImp(ts, space, &m_translation, nullptr, nullptr);
+		if (m_parent == nullptr)
+		{
+			if (space == TransformationSpace::TS_LOCAL)
+			{
+				Translate(val, space);
+			}
+			else
+			{
+				m_translation = val;
+			}
+		}
+		else
+		{
+			Mat4 ts = glm::translate(Mat4(), val);
+			SetTransformImp(ts, space, &m_translation, nullptr, nullptr);
+		}
 	}
 
 	Vec3 Node::GetTranslation(TransformationSpace space) const
@@ -96,8 +110,22 @@ namespace ToolKit
 
 	void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
 	{
-		Mat4 ts = glm::toMat4(val);
-		SetTransformImp(ts, space, nullptr, &m_orientation, nullptr);
+		if (m_parent == nullptr)
+		{
+			if (space == TransformationSpace::TS_LOCAL)
+			{
+				Rotate(val, space);
+			}
+			else
+			{
+				m_orientation = val;
+			}
+		}
+		else
+		{
+			Mat4 ts = glm::toMat4(val);
+			SetTransformImp(ts, space, nullptr, &m_orientation, nullptr);
+		}
 	}
 
 	Quaternion Node::GetOrientation(TransformationSpace space) const
