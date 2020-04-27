@@ -55,7 +55,7 @@ void ProcessEvent(SDL_Event e)
     static bool skip = true;
     if (!skip)
     {
-      glm::vec3 pos = g_app->m_crosshair->m_node->m_translation;
+      glm::vec3 pos = g_app->m_crosshair->m_node->GetTranslation();
       g_app->m_sscp += glm::ivec2(e.motion.xrel, -e.motion.yrel);
 
       if (g_app->m_sscp.x >= width)

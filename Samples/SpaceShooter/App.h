@@ -122,10 +122,14 @@ public:
       bool markForDel = false;
       for (int j = (int)m_projectileManager.m_projectiles.size() - 1; j > -1; j--)
       {
-        if (SpherePointIntersection(
-          m_meteorManager.m_meteors[i]->m_node->m_translation,
-          m_meteorManager.m_meteors[i]->m_collisionRadius, 
-          m_projectileManager.m_projectiles[j]->m_node->m_translation))
+        if (
+            SpherePointIntersection
+            (
+              m_meteorManager.m_meteors[i]->m_node->GetTranslation(),
+              m_meteorManager.m_meteors[i]->m_collisionRadius, 
+              m_projectileManager.m_projectiles[j]->m_node->GetTranslation(TransformationSpace::TS_WORLD)
+            )
+          )
         {
           SafeDel(m_projectileManager.m_projectiles[j]);
           m_projectileManager.m_projectiles.erase(m_projectileManager.m_projectiles.begin() + j);
@@ -135,12 +139,16 @@ public:
       if (markForDel)
       {
         ToolKit::Node* meteorNode = m_meteorManager.m_meteors[i]->m_node;
-        m_explotionManager.SpawnMeteorExplosion(GetSSP(meteorNode->GetTransform(TransformationSpace::TS_WORLD)));
+        m_explotionManager.SpawnMeteorExplosion(GetSSP(meteorNode->GetTransform()));
 
         if (m_meteorManager.m_meteors[i]->m_speed > 0.3f)
+        {
           m_score += 30;
+        }
         else
+        {
           m_score++;
+        }
 
         SafeDel(m_meteorManager.m_meteors[i]);
         m_meteorManager.m_meteors.erase(m_meteorManager.m_meteors.begin() + i);
@@ -151,7 +159,8 @@ public:
 
   void MoveFogLayer()
   {
-    m_paralaxLayer.m_node->m_translation = -(m_spaceShip->m_node->m_translation - m_paralaxLayer.m_node->m_translation) / 24.0f;
+    Vec3 dt = -(m_spaceShip->m_node->GetTranslation() - m_paralaxLayer.m_node->GetTranslation()) / 24.0f;
+    m_paralaxLayer.m_node->SetTranslation(dt);
   }
 
   void SetScoreText()
@@ -205,7 +214,7 @@ public:
 
     m_meteorManager.Update(m_score);
     m_explotionManager.Update(deltaTime / 1000.0f);
-    m_crosshair->m_node->m_translation = glm::vec3(m_sscp.x, m_sscp.y, 0);
+    m_crosshair->m_node->SetTranslation({ m_sscp.x, m_sscp.y, 0 });
 
     if (m_restartSignaled)
     {
@@ -240,10 +249,13 @@ public:
       {
         Meteor* a = m_meteorManager.m_meteors[i];
         Meteor* b = m_meteorManager.m_meteors[j];
-        if (SphereSphereIntersection(
-          a->m_node->m_translation, a->m_collisionRadius,
-          b->m_node->m_translation, b->m_collisionRadius
-          ))
+        if (
+            SphereSphereIntersection
+            (
+              a->m_node->GetTranslation(), a->m_collisionRadius,
+              b->m_node->GetTranslation(), b->m_collisionRadius
+            )
+          )
         {
           if (glm::abs(b->m_speed - 0.3f) < 0.01)
           {
@@ -259,9 +271,13 @@ public:
     {
       Meteor* meteor = m_meteorManager.m_meteors[removeList[i]];
 
-      if (meteor->m_node->m_translation.z >= -10.0f)
-        if (meteor->m_node->m_translation.z <= 10.0f)
+      if (meteor->m_node->GetTranslation().z >= -10.0f)
+      {
+        if (meteor->m_node->GetTranslation().z <= 10.0f)
+        {
           ToolKit::AudioPlayer::Play(&m_explosionSource);
+        }
+      }
 
       m_meteorManager.m_meteors.erase(m_meteorManager.m_meteors.begin() + removeList[i]);
       m_explotionManager.SpawnMeteorExplosion(GetSSP(meteor->m_node->GetTransform(TransformationSpace::TS_WORLD)));
@@ -274,10 +290,14 @@ public:
     if (m_powerUpManager.m_collectedPowerUps.empty() && m_powerUpManager.m_onGoingPowerUps.empty())
     {
       if (glm::linearRand(1, 2) == 2)
+      {
         m_powerUpManager.Spawn<FireRate2X>();
+      }
 
       if (glm::linearRand(1, 3) == 2)
+      {
         m_powerUpManager.Spawn<ForPower>();
+      }
     }
   }
 
@@ -287,7 +307,7 @@ public:
     MoveFogLayer();
     m_projectileManager.UpdateProjectiles();
 
-    m_crosshair->m_node->m_translation = glm::vec3(m_sscp.x, m_sscp.y, 0);
+    m_crosshair->m_node->SetTranslation({ m_sscp.x, m_sscp.y, 0 });
 
     m_meteorManager.Update(m_score);
     m_explotionManager.Update(deltaTime / 1000.0f);
@@ -321,7 +341,7 @@ public:
   {
     for (auto meteor : m_meteorManager.m_meteors)
     {
-      if (m_spaceShip->CheckShipSphereCollision(meteor->m_node->m_translation, meteor->m_collisionRadius))
+      if (m_spaceShip->CheckShipSphereCollision(meteor->m_node->GetTranslation(), meteor->m_collisionRadius))
       {
         m_shipGone = true;
         glm::ivec2 explosionPoint = GetSSP(m_spaceShip->m_node->GetTransform(TransformationSpace::TS_WORLD));
@@ -354,7 +374,7 @@ public:
     m_powerUpManager.m_onGoingPowerUps.clear();
 
     m_score = 0;
-    m_spaceShip->m_node->m_translation = glm::vec3();
+    m_spaceShip->m_node->SetTranslation(Vec3());
   }
 
   ToolKit::Camera m_cam;
