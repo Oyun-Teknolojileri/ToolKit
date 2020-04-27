@@ -14,6 +14,8 @@ namespace ToolKit
 
 	class Node
 	{
+		friend class Animation;
+
 	public:
 		Node();
 		void Translate(const Vec3& val, TransformationSpace space = TransformationSpace::TS_PARENT);
