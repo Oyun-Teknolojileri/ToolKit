@@ -65,7 +65,7 @@ namespace ToolKit
 						Main::GetInstance()->Init();
 
 						// Set defaults
-						SDL_GL_SetSwapInterval(1);
+						SDL_GL_SetSwapInterval(0);
 						glClearColor(0.2f, 0.2f, 0.2f, 1.0);
 
 						glEnable(GL_CULL_FACE);
