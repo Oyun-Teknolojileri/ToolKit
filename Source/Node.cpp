@@ -190,7 +190,7 @@ namespace ToolKit
 
 	void Node::TransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale)
 	{
-		Mat4 ps, ts, ws;
+		Mat4 ps, ts;
 		if (m_parent != nullptr)
 		{
 			ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
@@ -199,16 +199,13 @@ namespace ToolKit
 		switch (space)
 		{
 		case TransformationSpace::TS_WORLD:
-			ws = GetTransform(TransformationSpace::TS_WORLD);
-			ts = glm::inverse(ps) * val * ws;
+			ts = glm::inverse(ps) * val * ps * GetLocalTransform();
 			break;
 		case TransformationSpace::TS_PARENT:
-			ws = GetTransform(TransformationSpace::TS_PARENT);
-			ts = val * ws;
+			ts = val * GetLocalTransform();
 			break;
 		case TransformationSpace::TS_LOCAL:
-			ws = GetTransform(TransformationSpace::TS_WORLD);
-			ts = glm::inverse(ps) * ws * val;
+			ts = GetLocalTransform() * val;
 			break;
 		}
 
