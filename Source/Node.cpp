@@ -70,7 +70,7 @@ namespace ToolKit
 
 	void Node::SetTransform(const Mat4& val, TransformationSpace space)
 	{
-		SetTransformImp(val, m_translation, m_orientation, m_scale, space);
+		SetTransformImp(val, space, &m_translation, &m_orientation, &m_scale);
 	}
 
 	Mat4 Node::GetTransform(TransformationSpace space) const
@@ -82,10 +82,8 @@ namespace ToolKit
 
 	void Node::SetTranslation(const Vec3& val, TransformationSpace space)
 	{
-		Vec3 s;
-		Quaternion q;
-		Mat4 ts = glm::translate(glm::diagonal4x4(Vec4(1.0f)), val);
-		SetTransformImp(ts, m_translation, q, s, space);
+		Mat4 ts = glm::translate(Mat4(), val);
+		SetTransformImp(ts, space, &m_translation, nullptr, nullptr);
 	}
 
 	Vec3 Node::GetTranslation(TransformationSpace space) const
@@ -98,8 +96,8 @@ namespace ToolKit
 
 	void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
 	{
-		Vec3 t, s;
-		SetTransformImp(glm::toMat4(val), t, m_orientation, s, space);
+		Mat4 ts = glm::toMat4(val);
+		SetTransformImp(ts, space, nullptr, &m_orientation, nullptr);
 	}
 
 	Quaternion Node::GetOrientation(TransformationSpace space) const
@@ -192,7 +190,7 @@ namespace ToolKit
 		DecomposeMatrix(ts, translation, orientation, scale);
 	}
 
-	void Node::SetTransformImp(const Mat4& val, Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space)
+	void Node::SetTransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale)
 	{
 		Mat4 ps, ts;
 		if (m_parent != nullptr)
@@ -213,7 +211,7 @@ namespace ToolKit
 			return;
 		}
 
-		DecomposeMatrix(ts, &translation, &orientation, &scale);
+		DecomposeMatrix(ts, translation, orientation, scale);
 	}
 
 	Mat4 Node::GetTransformImp(Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space) const
