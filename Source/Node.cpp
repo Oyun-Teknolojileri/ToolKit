@@ -78,14 +78,9 @@ namespace ToolKit
 		return q;
 	}
 
-	// Fully tested.
 	void Node::SetScale(const Vec3& val, TransformationSpace space)
 	{
-		Vec3 t;
-		Quaternion q;
-		SetTransformImp(glm::diagonal4x4(Vec4(val, 1.0f)), t, q, m_scale, space);
-		return;
-
+		// Unless locally applied, Scale needs to preserve directions. Apply rotation first.
 		switch (space)
 		{
 		case TransformationSpace::TS_WORLD:
