@@ -67,8 +67,8 @@ namespace ToolKit
 			MaterialPtr normalMat = GetMaterialManager()->Create(MaterialPath("objectNormal.material"));
 
 			m_suzanne = new Drawable();
-			m_suzanne->m_node->m_translation = Vec3(0.0f, 0.0f, -5.0f);
-			m_suzanne->m_node->m_orientation = glm::angleAxis(-glm::half_pi<float>(), X_AXIS);
+			m_suzanne->m_node->SetTranslation({ 0.0f, 0.0f, -5.0f });
+			m_suzanne->m_node->SetOrientation(glm::angleAxis(-glm::half_pi<float>(), X_AXIS));
 			m_suzanne->m_mesh = GetMeshManager()->Create(MeshPath("suzanne.mesh"));
 			m_suzanne->m_mesh->m_material = normalMat;
 			m_suzanne->m_mesh->Init(false);
@@ -90,23 +90,23 @@ namespace ToolKit
 			m_q1 = new Cube();
 			m_q1->m_mesh->m_material = normalMat;
 			m_q1->m_mesh->Init(false);
-			m_q1->m_node->m_translation = Vec3(2.0f, 0.0f, 0.0f);
-			m_q1->m_node->m_orientation = glm::angleAxis(glm::half_pi<float>(), Y_AXIS);
-			m_q1->m_node->m_orientation *= glm::angleAxis(glm::half_pi<float>(), Z_AXIS);
+			m_q1->m_node->SetTranslation({ 2.0f, 0.0f, 0.0f });
+			m_q1->m_node->Rotate(glm::angleAxis(glm::half_pi<float>(), Y_AXIS), TransformationSpace::TS_LOCAL);
+			m_q1->m_node->Rotate(glm::angleAxis(glm::half_pi<float>(), Z_AXIS), TransformationSpace::TS_LOCAL);
 			m_scene.AddEntity(m_q1);
 
 			m_q2 = new Cube();
 			m_q2->m_mesh->m_material = normalMat;
 			m_q2->m_mesh->Init(false);
-			m_q2->m_node->m_translation = Vec3(2.0f, 0.0f, 2.0f);
-			m_q2->m_node->m_orientation = glm::angleAxis(glm::half_pi<float>(), Y_AXIS);
+			m_q2->m_node->SetTranslation({ 2.0f, 0.0f, 2.0f });
+			m_q2->m_node->SetOrientation(glm::angleAxis(glm::half_pi<float>(), Y_AXIS));
 			m_scene.AddEntity(m_q2);
 
 			m_q3 = new Cone();
 			m_q3->m_mesh->m_material = normalMat;
 			m_q3->m_mesh->Init(false);
-			m_q3->m_node->m_scale = Vec3(0.3f, 1.0f, 0.3f);
-			m_q3->m_node->m_translation = Vec3(2.0f, 0.0f, 0.0f);
+			m_q3->m_node->Scale({ 0.3f, 1.0f, 0.3f });
+			m_q3->m_node->SetTranslation({ 2.0f, 0.0f, 0.0f });
 			m_scene.AddEntity(m_q3);
 
 			m_q1->m_node->AddChild(m_q2->m_node);
@@ -115,7 +115,7 @@ namespace ToolKit
 			m_q4 = new Cube();
 			m_q4->m_mesh->m_material = normalMat;
 			m_q4->m_mesh->Init(false);
-			m_q4->m_node->m_translation = Vec3(4.0f, 0.0f, 0.0f);
+			m_q4->m_node->SetTranslation({ 4.0f, 0.0f, 0.0f });
 			m_scene.AddEntity(m_q4);
 
 			m_origin = new Axis3d();
@@ -136,7 +136,7 @@ namespace ToolKit
 
 			// UI.
 			Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
-			vp->m_camera->m_node->m_translation = Vec3(5.0f, 3.0f, 5.0f);
+			vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
 			vp->m_camera->Pitch(glm::radians(-20.0f));
 			vp->m_camera->RotateOnUpVector(glm::radians(30.0f));
 
@@ -305,15 +305,15 @@ namespace ToolKit
 				e->m_mesh->m_material = m_highLightSecondaryMaterial;
 			}
 
-			Vec3 s = e->m_node->m_scale;
+			Vec3 s = e->m_node->GetScale();
 			float dist = glm::distance(e->m_node->GetTranslation(TransformationSpace::TS_WORLD), c->m_node->GetTranslation(TransformationSpace::TS_WORLD));
-			e->m_node->m_scale += 0.005f * dist;
+			e->m_node->Scale(Vec3(1.0f + 0.005f * dist), TransformationSpace::TS_LOCAL);
 
 			glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 			m_renderer->Render(e, c);
 			glDisable(GL_STENCIL_TEST);
 
-			e->m_node->m_scale = s;
+			e->m_node->SetScale(s, TransformationSpace::TS_LOCAL);
 			e->m_mesh->m_material = m;
 		}
 

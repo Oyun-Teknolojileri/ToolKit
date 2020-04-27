@@ -38,7 +38,8 @@ namespace ToolKit
 	public:
 		Node* m_parent = nullptr;
 		std::vector<Node*> m_children;
-
+	
+	private:
 		Vec3 m_translation;
 		Quaternion m_orientation;
 		Vec3 m_scale = Vec3(1.0f);

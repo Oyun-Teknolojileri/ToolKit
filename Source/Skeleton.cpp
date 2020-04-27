@@ -120,13 +120,18 @@ namespace ToolKit
 
     Bone* bone = new Bone(attr->value());
     rapidxml::xml_node<>* subNode = node->first_node("translation");
-    ExtractXYZFromNode(subNode, bone->m_node->m_translation);
+    Vec3 v;
+    ExtractXYZFromNode(subNode, v);
+    bone->m_node->SetTranslation(v);
 
     subNode = node->first_node("scale");
-    ExtractXYZFromNode(subNode, bone->m_node->m_scale);
+    ExtractXYZFromNode(subNode, v);
+    bone->m_node->SetScale(v, TransformationSpace::TS_LOCAL);
 
     subNode = node->first_node("rotation");
-    ExtractQuatFromNode(subNode, bone->m_node->m_orientation);
+    Quaternion q;
+    ExtractQuatFromNode(subNode, q);
+    bone->m_node->SetOrientation(q);
 
     rapidxml::xml_node<>* bindPoseNode = node->first_node("bindPose");
     if (bindPoseNode != nullptr)
