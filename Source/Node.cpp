@@ -75,9 +75,9 @@ namespace ToolKit
 
 	Mat4 Node::GetTransform(TransformationSpace space) const
 	{
-		Vec3 t, s;
-		Quaternion q;
-		return GetTransformImp(t, q, s, space);
+		Mat4 ts;
+		GetTransformImp(space, &ts, nullptr, nullptr, nullptr);
+		return ts;
 	}
 
 	void Node::SetTranslation(const Vec3& val, TransformationSpace space)
@@ -102,9 +102,8 @@ namespace ToolKit
 
 	Vec3 Node::GetTranslation(TransformationSpace space) const
 	{
-		Vec3 t, s;
-		Quaternion q;
-		GetTransformImp(t, q, s, space);
+		Vec3 t;
+		GetTransformImp(space, nullptr, &t, nullptr, nullptr);
 		return t;
 	}
 
@@ -130,9 +129,8 @@ namespace ToolKit
 
 	Quaternion Node::GetOrientation(TransformationSpace space) const
 	{
-		Vec3 t, s;
 		Quaternion q;
-		GetTransformImp(t, q, s, space);
+		GetTransformImp(space, nullptr, nullptr, &q, nullptr);
 		return q;
 	}
 
@@ -179,9 +177,8 @@ namespace ToolKit
 
 	Vec3 Node::GetScale(TransformationSpace space) const
 	{
-		Vec3 t, s;
-		Quaternion q;
-		GetTransformImp(t, q, s, space);
+		Vec3 s;
+		GetTransformImp(space, nullptr, nullptr, nullptr, &s);
 		return s;
 	}
 
@@ -242,7 +239,7 @@ namespace ToolKit
 		DecomposeMatrix(ts, translation, orientation, scale);
 	}
 
-	Mat4 Node::GetTransformImp(Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space) const
+	void Node::GetTransformImp(TransformationSpace space, Mat4* transform, Vec3* translation, Quaternion* orientation, Vec3* scale) const
 	{
 		auto LocalTransform = [this]() -> Mat4
 		{
@@ -252,32 +249,59 @@ namespace ToolKit
 			return ts;
 		};
 
-		Mat4 ts;
 		switch (space)
 		{
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
+				Mat4 ts = LocalTransform();
 				Mat4 ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
-				ts = ps * LocalTransform();
-				DecomposeMatrix(ts, &translation, &orientation, &scale);
+				ts = ps * ts;
+				if (transform != nullptr)
+				{
+					*transform = ts;
+				}
+				DecomposeMatrix(ts, translation, orientation, scale);
 				break;
 			} // Fall trough.
 		case TransformationSpace::TS_PARENT:
-			ts = LocalTransform();
-			translation = m_translation;
-			orientation = m_orientation;
-			scale = m_scale;
+			if (transform != nullptr)
+			{
+				*transform = LocalTransform();
+			}
+			if (translation != nullptr)
+			{
+				*translation = m_translation;
+			}
+			if (orientation != nullptr)
+			{
+				*orientation = m_orientation;
+			}
+			if (scale != nullptr)
+			{
+				*scale = m_scale;
+			}
 			break;
 		case TransformationSpace::TS_LOCAL:
 		default:
-			translation = Vec3();
-			orientation = Quaternion();
-			scale = Vec3(1.0f);
+			if (transform != nullptr)
+			{
+				*transform = Mat4();
+			}
+			if (translation != nullptr)
+			{
+				*translation = Vec3();
+			}
+			if (orientation != nullptr)
+			{
+				*orientation = Quaternion();
+			}
+			if (scale != nullptr)
+			{
+				*scale = Vec3(1.0f);
+			}
 			break;
 		}
-
-		return ts;
 	}
 
 }
