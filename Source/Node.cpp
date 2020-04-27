@@ -246,13 +246,10 @@ namespace ToolKit
 	{
 		auto LocalTransform = [this]() -> Mat4
 		{
-			Mat4 scale;
-			scale = glm::scale(scale, m_scale);
-			Mat4 rotate;
-			rotate = glm::toMat4(m_orientation);
-			Mat4 translate;
-			translate = glm::translate(translate, m_translation);
-			return translate * rotate * scale;
+			Mat4 ts = glm::toMat4(m_orientation);
+			ts = glm::scale(ts, m_scale);
+			ts[3].xyz = m_translation;
+			return ts;
 		};
 
 		Mat4 ts;
