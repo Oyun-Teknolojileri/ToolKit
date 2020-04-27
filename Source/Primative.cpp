@@ -22,11 +22,6 @@ namespace ToolKit
 
 	void Billboard::LookAt(Camera* cam)
 	{
-		// SetTranslation in given space is not provided in Node class.
-		// Therefore all objects must be in the worldSpace.
-		assert(m_node->m_parent == nullptr);
-		assert(cam->m_node->m_parent == nullptr);
-
 		Camera::CamData data = cam->GetData();
 
 		// Billboard placement.
