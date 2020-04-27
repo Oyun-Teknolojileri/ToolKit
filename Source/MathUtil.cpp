@@ -6,22 +6,28 @@
 namespace ToolKit
 {
 
-	void DecomposeMatrix(const Mat4& transform, Vec3& translation, Quaternion& orientation, Vec3& scale)
+	void DecomposeMatrix(const Mat4& transform, Vec3* translation, Quaternion* orientation, Vec3* scale)
 	{
 		// assert(IsAffine(transform));
 
 		Mat3 matQ;
-		Vec3 vecU;
-		QDUDecomposition(transform, matQ, scale, vecU);
+		Vec3 s, vecU;
+		QDUDecomposition(transform, matQ, s, vecU);
 
-		orientation = glm::toQuat(matQ);
-		translation = glm::column(transform, 3).xyz;
-	}
+		if (scale != nullptr)
+		{
+			*scale = s;
+		}
 
-	void DecomposeMatrix(const Mat4& transform, Vec3& translation, Quaternion& orientation)
-	{
-		Vec3 tmp;
-		DecomposeMatrix(transform, translation, orientation, tmp);
+		if (orientation != nullptr)
+		{
+			*orientation = glm::toQuat(matQ);
+		}
+
+		if (translation != nullptr)
+		{
+			*translation = glm::column(transform, 3).xyz;
+		}
 	}
 
 	bool IsAffine(const Mat4& transform)

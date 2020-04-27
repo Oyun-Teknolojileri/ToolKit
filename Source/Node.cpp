@@ -15,25 +15,25 @@ namespace ToolKit
 		Vec3 s;
 		Quaternion q;
 		Mat4 ts = glm::translate(glm::diagonal4x4(Vec4(1.0f)), val);
-		TransformImp(ts, m_translation, q, s, space);
+		TransformImp(ts, space, &m_translation, &q, &s);
 	}
 
 	void Node::Rotate(const Quaternion& val, TransformationSpace space)
 	{
 		Vec3 t, s;
-		TransformImp(glm::toMat4(val), t, m_orientation, s, space);
+		TransformImp(glm::toMat4(val), space, &t, &m_orientation, &s);
 	}
 
 	void Node::Scale(const Vec3& val, TransformationSpace space)
 	{
 		Vec3 t;
 		Quaternion q;
-		TransformImp(glm::diagonal4x4(Vec4(val, 1.0f)), t, q, m_scale, space);
+		TransformImp(glm::diagonal4x4(Vec4(val, 1.0f)), space, &t, &q, &m_scale);
 	}
 
 	void Node::Transform(const Mat4& val, TransformationSpace space)
 	{
-		TransformImp(val, m_translation, m_orientation, m_scale, space);
+		TransformImp(val, space, &m_translation, &m_orientation, &m_scale);
 	}
 
 	void Node::SetTransform(const Mat4& val, TransformationSpace space)
@@ -95,7 +95,7 @@ namespace ToolKit
 			ts = glm::inverse(ps) * ts * glm::toMat3(ws);
 			Vec3 t;
 			Quaternion q;
-			DecomposeMatrix(ts, t, q, m_scale);
+			DecomposeMatrix(ts, &t, &q, &m_scale);
 		}
 		break;
 		case TransformationSpace::TS_PARENT:
@@ -110,7 +110,7 @@ namespace ToolKit
 			ts = glm::inverse(ps) * ts * glm::inverse(ps) * glm::toMat3(ws);
 			Vec3 t, s;
 			Quaternion q;
-			DecomposeMatrix(ts, t, q, m_scale);
+			DecomposeMatrix(ts, &t, &q, &m_scale);
 		}
 		break;
 		case TransformationSpace::TS_LOCAL:
@@ -133,7 +133,7 @@ namespace ToolKit
 		child->m_parent = this;
 	}
 
-	void Node::TransformImp(const Mat4& val, Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space)
+	void Node::TransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale)
 	{
 		Mat4 ps, ts, ws;
 		if (m_parent != nullptr)
@@ -181,7 +181,7 @@ namespace ToolKit
 			return;
 		}
 
-		DecomposeMatrix(ts, translation, orientation, scale);
+		DecomposeMatrix(ts, &translation, &orientation, &scale);
 	}
 
 	Mat4 Node::GetTransformImp(Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space) const
@@ -205,7 +205,7 @@ namespace ToolKit
 			{
 				Mat4 ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 				ts = ps * LocalTransform();
-				DecomposeMatrix(ts, translation, orientation, scale);
+				DecomposeMatrix(ts, &translation, &orientation, &scale);
 				break;
 			} // Fall trough.
 		case TransformationSpace::TS_PARENT:
