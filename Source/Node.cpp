@@ -149,9 +149,7 @@ namespace ToolKit
 				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 			}
 			ts = glm::inverse(ps) * ts * glm::toMat3(ws);
-			Vec3 t;
-			Quaternion q;
-			DecomposeMatrix(ts, &t, &q, &m_scale);
+			DecomposeMatrix(ts, nullptr, nullptr, &m_scale);
 		}
 		break;
 		case TransformationSpace::TS_PARENT:
@@ -164,9 +162,7 @@ namespace ToolKit
 				ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 			}
 			ts = glm::inverse(ps) * ts * glm::inverse(ps) * glm::toMat3(ws);
-			Vec3 t, s;
-			Quaternion q;
-			DecomposeMatrix(ts, &t, &q, &m_scale);
+			DecomposeMatrix(ts, nullptr, nullptr, &m_scale);
 		}
 		break;
 		case TransformationSpace::TS_LOCAL:
