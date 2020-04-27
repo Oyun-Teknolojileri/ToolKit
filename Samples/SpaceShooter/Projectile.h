@@ -13,7 +13,7 @@ public:
   Projectile(glm::vec3 pos)
   {
     m_mesh = ToolKit::GetMeshManager()->Create(ToolKit::MeshPath("projectile.mesh"));
-    m_node->m_translation = pos;
+    m_node->SetTranslation(pos);
   }
 };
 
@@ -41,9 +41,9 @@ public:
     for (int i = (int)m_projectiles.size() - 1; i > -1; i--)
     {
       Projectile* projectile = m_projectiles[i];
-      projectile->m_node->m_translation.z -= 2.1f;
+      projectile->m_node->Translate({ 0.0f, 0.0f, -2.1f });
 
-      if (projectile->m_node->m_translation.z <= m_projectileDethZone)
+      if (projectile->m_node->GetTranslation(ToolKit::TransformationSpace::TS_WORLD).z <= m_projectileDethZone)
       {
         m_projectiles.erase(m_projectiles.begin() + i);
         SafeDel(projectile);

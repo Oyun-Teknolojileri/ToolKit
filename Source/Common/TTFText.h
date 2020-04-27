@@ -41,7 +41,7 @@ public:
   void SetPos(int x, int y)
   {
     if (m_surface != nullptr)
-      m_surface->m_node->m_translation = glm::vec3(x, y, 0);
+      m_surface->m_node->SetTranslation({ x, y, 0 });
   }
 
 private:
