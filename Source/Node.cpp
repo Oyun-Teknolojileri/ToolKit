@@ -210,17 +210,16 @@ namespace ToolKit
 
 	void Node::SetTransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale)
 	{
-		Mat4 ps, ts;
-		if (m_parent != nullptr)
-		{
-			ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
-		}
-
+		Mat4 ts;
 		switch (space)
 		{
 		case TransformationSpace::TS_WORLD:
-			ts = glm::inverse(ps) * val;
-			break;
+			if (m_parent != nullptr)
+			{
+				Mat4 ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				ts = glm::inverse(ps) * val;
+				break;
+			} // Fall trough.
 		case TransformationSpace::TS_PARENT:
 			ts = val;
 			break;
