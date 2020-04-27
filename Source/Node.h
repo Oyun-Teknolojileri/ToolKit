@@ -34,6 +34,7 @@ namespace ToolKit
 		void TransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale);
 		void SetTransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale);
 		void GetTransformImp(TransformationSpace space, Mat4* transform, Vec3* translation, Quaternion* orientation, Vec3* scale) const;
+		Mat4 GetLocalTransform() const;
 
 	public:
 		Node* m_parent = nullptr;

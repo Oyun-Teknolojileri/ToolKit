@@ -241,20 +241,12 @@ namespace ToolKit
 
 	void Node::GetTransformImp(TransformationSpace space, Mat4* transform, Vec3* translation, Quaternion* orientation, Vec3* scale) const
 	{
-		auto LocalTransform = [this]() -> Mat4
-		{
-			Mat4 ts = glm::toMat4(m_orientation);
-			ts = glm::scale(ts, m_scale);
-			ts[3].xyz = m_translation;
-			return ts;
-		};
-
 		switch (space)
 		{
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
-				Mat4 ts = LocalTransform();
+				Mat4 ts = GetLocalTransform();
 				Mat4 ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 				ts = ps * ts;
 				if (transform != nullptr)
@@ -267,7 +259,7 @@ namespace ToolKit
 		case TransformationSpace::TS_PARENT:
 			if (transform != nullptr)
 			{
-				*transform = LocalTransform();
+				*transform = GetLocalTransform();
 			}
 			if (translation != nullptr)
 			{
@@ -302,6 +294,14 @@ namespace ToolKit
 			}
 			break;
 		}
+	}
+
+	ToolKit::Mat4 Node::GetLocalTransform() const
+	{
+		Mat4 ts = glm::toMat4(m_orientation);
+		ts = glm::scale(ts, m_scale);
+		ts[3].xyz = m_translation;
+		return ts;
 	}
 
 }
