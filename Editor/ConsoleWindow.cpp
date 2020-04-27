@@ -257,32 +257,37 @@ namespace ToolKit
 							Node* node = c->m_node;
 							if (viewportTag->second[1] == "top")
 							{
-								node->m_orientation = glm::angleAxis(glm::pi<float>(), -Y_AXIS) * glm::angleAxis(glm::half_pi<float>(), X_AXIS) * glm::angleAxis(glm::pi<float>(), Y_AXIS);
+								Quaternion ws = glm::angleAxis(glm::pi<float>(), -Y_AXIS) * glm::angleAxis(glm::half_pi<float>(), X_AXIS) * glm::angleAxis(glm::pi<float>(), Y_AXIS);
+								node->SetOrientation(ws, TransformationSpace::TS_WORLD);
 							}
 
 							if (viewportTag->second[1] == "bottom")
 							{
-								node->m_orientation = glm::angleAxis(glm::pi<float>(), -Y_AXIS) * glm::angleAxis(glm::half_pi<float>(), -X_AXIS) * glm::angleAxis(glm::pi<float>(), Y_AXIS);
+								Quaternion ws = glm::angleAxis(glm::pi<float>(), -Y_AXIS) * glm::angleAxis(glm::half_pi<float>(), -X_AXIS) * glm::angleAxis(glm::pi<float>(), Y_AXIS);
+								node->SetOrientation(ws, TransformationSpace::TS_WORLD);
 							}
 
 							if (viewportTag->second[1] == "front")
 							{
-								node->m_orientation = Quaternion();
+								node->SetOrientation(Quaternion());
 							}
 
 							if (viewportTag->second[1] == "back")
 							{
-								node->m_orientation = glm::angleAxis(glm::pi<float>(), Y_AXIS);
+								Quaternion ws = glm::angleAxis(glm::pi<float>(), Y_AXIS);
+								node->SetOrientation(ws, TransformationSpace::TS_WORLD);
 							}
 
 							if (viewportTag->second[1] == "left")
 							{
-								node->m_orientation = glm::angleAxis(glm::half_pi<float>(), Y_AXIS);
+								Quaternion ws = glm::angleAxis(glm::half_pi<float>(), Y_AXIS);
+								node->SetOrientation(ws, TransformationSpace::TS_WORLD);
 							}
 
 							if (viewportTag->second[1] == "right")
 							{
-								node->m_orientation = glm::angleAxis(glm::half_pi<float>(), -Y_AXIS);
+								Quaternion ws = glm::angleAxis(glm::half_pi<float>(), -Y_AXIS);
+								node->SetOrientation(ws, TransformationSpace::TS_WORLD);
 							}
 						}
 
@@ -296,7 +301,7 @@ namespace ToolKit
 								translate[i] = (float)std::atof(translateTag->second[i].c_str());
 							}
 
-							c->m_node->m_translation = translate;
+							c->m_node->SetTranslation(translate, TransformationSpace::TS_WORLD);
 						}
 					}
 				}

@@ -36,11 +36,12 @@ namespace ToolKit
 		Mat4 GetTransformImp(Vec3& translation, Quaternion& orientation, Vec3& scale, TransformationSpace space) const;
 
 	public:
+		Node* m_parent = nullptr;
+		std::vector<Node*> m_children;
+
 		Vec3 m_translation;
 		Quaternion m_orientation;
 		Vec3 m_scale = Vec3(1.0f);
-		Node* m_parent = nullptr;
-		std::vector<Node*> m_children;
 	};
 
 }

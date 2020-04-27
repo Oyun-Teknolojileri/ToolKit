@@ -19,14 +19,14 @@ public:
     m_mesh->Init(false);
 
     // Create fire locations
-    m_leftFireLoc.m_translation = glm::vec3(-1.0143f, 0.0173f, -0.7783f);
+    m_leftFireLoc.SetTranslation({ -1.0143f, 0.0173f, -0.7783f });
     m_node->AddChild(&m_leftFireLoc);
-    m_leftWing.m_translation = glm::vec3(-2.7617f, -0.8409f, 0.5458);
+    m_leftWing.SetTranslation({ -2.7617f, -0.8409f, 0.5458 });
     m_node->AddChild(&m_leftWing);
 
-    m_rightFireLoc.m_translation = glm::vec3(1.0143f, 0.0173f, -0.7783f);
+    m_rightFireLoc.SetTranslation({ 1.0143f, 0.0173f, -0.7783f });
     m_node->AddChild(&m_rightFireLoc);
-    m_rightWing.m_translation = glm::vec3(2.7617f, -0.8409f, 0.5458);
+    m_rightWing.SetTranslation({ 2.7617f, -0.8409f, 0.5458 });
     m_node->AddChild(&m_rightWing);
 
     m_fireLocs.push_back(&m_leftFireLoc);
