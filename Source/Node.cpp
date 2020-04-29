@@ -52,15 +52,8 @@ namespace ToolKit
 
 	void Node::Scale(const Vec3& val, TransformationSpace space)
 	{
-		if (m_parent == nullptr)
-		{
-			m_scale = m_scale * val;
-		}
-		else
-		{
-			Mat4 ts = glm::diagonal4x4(Vec4(val, 1.0f));
-			TransformImp(ts, space, nullptr, nullptr, &m_scale);
-		}
+		Mat4 ts = glm::diagonal4x4(Vec4(val, 1.0f));
+		TransformImp(ts, space, nullptr, nullptr, &m_scale);
 	}
 
 	void Node::Transform(const Mat4& val, TransformationSpace space)
