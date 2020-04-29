@@ -217,7 +217,7 @@ namespace ToolKit
 		//////////////////////////////////////////////////////////////////////////
 
 		MoveGizmo::MoveGizmo()
-			: Gizmo({ false, 10.0f, 400.0f })
+			: Gizmo({ false, 6.0f, 400.0f })
 		{
 			// Mesh.
 			Generate();
@@ -439,7 +439,7 @@ namespace ToolKit
 		//////////////////////////////////////////////////////////////////////////
 
 		ScaleGizmo::ScaleGizmo()
-			: Gizmo({ false, 10.0f, 400.0f })
+			: Gizmo({ false, 6.0f, 400.0f })
 		{
 			// Mesh.
 			Generate();
@@ -507,7 +507,7 @@ namespace ToolKit
 		void ScaleGizmo::Generate()
 		{
 			// Axis dimensions.
-			const float tip = 0.8f, toe = 0.05f, rad = 0.1f;
+			const float tip = 0.8f, toe = 0.05f, rad = 0.05f;
 
 			LabelBoxPair hb;
 			hb.first = AxisLabel::X;
@@ -611,7 +611,7 @@ namespace ToolKit
 		}
 
 		RotateGizmo::RotateGizmo()
-			: Gizmo({ false, 10.0f, 400.0f })
+			: Gizmo({ false, 4.0f, 400.0f })
 		{
 
 		}
