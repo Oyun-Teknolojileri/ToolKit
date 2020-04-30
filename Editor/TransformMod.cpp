@@ -71,6 +71,7 @@ namespace ToolKit
 			{
 				baseState->m_mouseData = m_mouseData;
 				baseState->m_gizmo = m_gizmo;
+				baseState->m_axisOrientation = m_axisOrientation;
 				baseState->m_intersectionPlane = m_intersectionPlane;
 			}
 		}
@@ -431,7 +432,6 @@ namespace ToolKit
 			m_stateMachine->PushState(new StateTransformEnd());
 
 			m_stateMachine->PushState(new StateBeginPick());
-			m_stateMachine->PushState(new StateBeginBoxPick());
 			state = new StateEndPick();
 			state->m_links[m_linkToTransformBeginSgnl] = StateType::StateTransformBegin;
 			m_stateMachine->PushState(state);
