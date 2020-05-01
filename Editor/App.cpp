@@ -212,12 +212,12 @@ namespace ToolKit
 
 					// Test code for Gizmo handle.
 					GizmoHandle::HandleParams p;
-					p.dir.position = gizmo->m_worldLocation + Vec3(0.5f);
-					p.dir.direction = gizmo->m_normalVectors[0];
+					p.dir.position = gizmo->m_worldLocation;
+					p.dir.direction = gizmo->m_normalVectors[1];
 					p.solidDim.xy = Vec2(0.05f, 0.1f);
 					p.color = Vec3(1.0f);
 					p.toeTip = Vec2(0.05f, 0.75f);
-					p.localDir = AxisLabel::Z;
+					p.localDir = AxisLabel::X;
 					p.type = GizmoHandle::SolidType::Cone;
 
 					GizmoHandle h(p);

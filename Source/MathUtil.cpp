@@ -528,7 +528,14 @@ namespace ToolKit
 	{
 		a = glm::normalize(a);
 		b = glm::normalize(b);
-		float rad = glm::acos(glm::dot(a, b));
+		
+		float d = glm::dot(a, b);
+		if (glm::equal(d, 1.0f))
+		{
+			return Quaternion(); // Vectors are aligned.
+		}
+
+		float rad = glm::acos(d);
 		Vec3 axis = glm::normalize(glm::cross(a, b));
 
 		return glm::angleAxis(rad, axis);

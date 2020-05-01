@@ -648,6 +648,7 @@ namespace ToolKit
 			Quaternion headOrientation = RotationTo(AXIS[1], params.dir.direction);
 			for (int i = 0; i < 2; i++)
 			{
+				pnts[i] = headOrientation * pnts[i];
 				pnts[i] += params.dir.position;
 			}
 
@@ -681,8 +682,9 @@ namespace ToolKit
 			MeshPtr m = m_mesh->m_subMeshes.back();
 			for (Vertex& v : m->m_clientSideVertices)
 			{
-				v.pos += params.dir.position;
 				v.pos.y += params.toeTip.y;
+				v.pos = headOrientation * v.pos;
+				v.pos += params.dir.position;
 			}
 		}
 
