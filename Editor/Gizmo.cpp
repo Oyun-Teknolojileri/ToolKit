@@ -621,9 +621,104 @@ namespace ToolKit
 
 		}
 
+		void RotateGizmo::Update(float deltaTime)
+		{
+			// Axis dimensions.
+			const float tip = 0.8f, toe = 0.05f, rad = 0.05f;
+			for (int i = 0; i < 3; i++)
+			{
+				GizmoHandle::HandleParams params;
+				params.begin = m_worldLocation + m_normalVectors[i] * toe;
+				params.end = m_worldLocation + m_normalVectors[i] * tip;
+				params.solidDim.xyz = rad;
+				params.color = g_gizmoColor[i];
+				params.type = GizmoHandle::SolidType::Cone;
+				params.localDir = (AxisLabel)i;
+
+				GizmoHandle handle(params);
+				if (i == 0)
+				{
+					m_mesh = handle.m_mesh;
+				}
+				else
+				{
+					m_mesh->m_subMeshes.push_back(handle.m_mesh);
+				}
+				handle.m_mesh = nullptr;
+			}
+		}
+
 		void RotateGizmo::Generate()
 		{
 
+		}
+
+		GizmoHandle::GizmoHandle(const HandleParams& params)
+		{
+			Generate(params);
+		}
+
+		GizmoHandle::~GizmoHandle()
+		{
+		}
+
+		void GizmoHandle::Generate(const HandleParams& params)
+		{
+			Vec3 dir = params.end - params.begin;
+			float length = glm::length(dir);
+			std::vector<Vec3> pnts =
+			{
+				Vec3(),
+				Vec3(0.0f, length, 0.0f)
+			};
+
+			MaterialPtr material = GetMaterialManager()->GetCopyOfSolidMaterial();
+			material->m_color = params.color;
+
+			LineBatch line(pnts, params.color, DrawType::Line);
+			m_mesh = line.m_mesh;
+			m_mesh->m_material = material;
+			line.m_mesh = nullptr;
+
+			if (params.type == SolidType::Cube)
+			{
+				Cube solid(params.solidDim);
+				solid.m_mesh->m_material = material;
+				m_mesh->m_subMeshes.push_back(solid.m_mesh);
+				solid.m_mesh = nullptr;
+			}
+			else if (params.type == SolidType::Cone)
+			{
+				Cone solid(params.solidDim.x, params.solidDim.y, 10, 10);
+				solid.m_mesh->m_material = material;
+				m_mesh->m_subMeshes.push_back(solid.m_mesh);
+				solid.m_mesh = nullptr;
+			}
+			else
+			{
+				assert(false);
+				return;
+			}
+
+			std::vector<MeshPtr> meshes
+			{
+				m_mesh,
+				m_mesh->m_subMeshes.front()
+			};
+
+			for (MeshPtr& m : meshes)
+			{
+				Quaternion headOrientation = RotationTo(AXIS[1], dir);
+				for (Vertex& v : m->m_clientSideVertices)
+				{
+					v.pos = headOrientation * v.pos;
+				}
+			}
+		}
+
+		bool GizmoHandle::HitTest(AxisLabel localDir, const Ray& ray)
+		{
+			return false;
 		}
 
 	}

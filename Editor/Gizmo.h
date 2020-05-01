@@ -52,6 +52,36 @@ namespace ToolKit
 			AxisLabel m_grabbedAxis;
 		};
 
+		class GizmoHandle
+		{
+		public:
+			enum class SolidType
+			{
+				Cube,
+				Cone
+			};
+
+			struct HandleParams
+			{
+				Vec3 begin;
+				Vec3 end;
+				Vec3 solidDim;
+				Vec3 color;
+				SolidType type;
+				AxisLabel localDir;
+			};
+
+		public:
+			GizmoHandle(const HandleParams& params);
+			~GizmoHandle();
+
+			void Generate(const HandleParams& params);
+			bool HitTest(AxisLabel localDir, const Ray& ray);
+
+		public:
+			MeshPtr m_mesh;
+		};
+
 		class MoveGizmo : public Gizmo
 		{
 		public:
@@ -89,6 +119,8 @@ namespace ToolKit
 		public:
 			RotateGizmo();
 			virtual ~RotateGizmo();
+
+			virtual void Update(float deltaTime) override;
 
 		private:
 			void Generate();

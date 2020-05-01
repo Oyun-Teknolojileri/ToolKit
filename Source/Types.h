@@ -22,6 +22,7 @@ namespace ToolKit
 	typedef glm::mat3 Mat3;
 	typedef glm::quat Quaternion;
 	typedef std::shared_ptr<class Material> MaterialPtr;
+	typedef std::shared_ptr<class Mesh> MeshPtr;
 
 	static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
 	static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);
