@@ -75,10 +75,12 @@ namespace ToolKit
 			~GizmoHandle();
 
 			void Generate(const HandleParams& params);
-			bool HitTest(const Ray& ray);
+			bool HitTest(const HandleParams& params, const Ray& ray) const;
 
 		public:
 			MeshPtr m_mesh;
+
+		private:
 			HandleParams m_params;
 		};
 

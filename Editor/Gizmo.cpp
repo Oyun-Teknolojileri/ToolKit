@@ -689,10 +689,10 @@ namespace ToolKit
 			}
 		}
 
-		bool GizmoHandle::HitTest(const Ray& ray)
+		bool GizmoHandle::HitTest(const HandleParams& params, const Ray& ray) const
 		{
-			Mat4 ts = glm::toMat4(RotationTo(AXIS[1], m_params.dir.direction));
-			ts[3].xyz = m_params.dir.position;
+			Mat4 ts = glm::toMat4(RotationTo(AXIS[1], params.dir.direction));
+			ts[3].xyz = params.dir.position;
 			Mat4 its = glm::inverse(ts);
 
 			Ray rayInObj;
@@ -702,10 +702,10 @@ namespace ToolKit
 			// Check for line.
 			BoundingBox hitBox;
 			hitBox.min.x = -0.05f;
-			hitBox.min.y = m_params.toeTip.x;
+			hitBox.min.y = params.toeTip.x;
 			hitBox.min.z = -0.05f;
 			hitBox.max.x = 0.05f;
-			hitBox.max.y = m_params.toeTip.y;
+			hitBox.max.y = params.toeTip.y;
 			hitBox.max.z = 0.05f;
 
 			float t;
@@ -715,7 +715,17 @@ namespace ToolKit
 			}
 
 			// Check for solid.
+			hitBox.min.x = -params.solidDim.x * 0.5f;
+			hitBox.min.y = params.toeTip.y;
+			hitBox.min.z = -params.solidDim.z * 0.5f;
+			hitBox.max.x = params.solidDim.x * 0.5f;
+			hitBox.max.y = params.toeTip.y + params.solidDim.y;
+			hitBox.max.z = params.solidDim.z * 0.5f;
 
+			if (RayBoxIntersection(rayInObj, hitBox, t))
+			{
+				return true;
+			}
 
 			return false;
 		}

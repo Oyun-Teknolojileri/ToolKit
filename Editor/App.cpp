@@ -214,18 +214,17 @@ namespace ToolKit
 					GizmoHandle::HandleParams p;
 					p.dir.position = gizmo->m_worldLocation;
 					p.dir.direction = gizmo->m_normalVectors[1];
-					p.solidDim.xy = Vec2(0.05f, 0.1f);
+					p.solidDim.xyz = Vec3(0.05f, 0.1f, 0.05f);
 					p.color = Vec3(1.0f);
 					p.toeTip = Vec2(0.05f, 0.75f);
 					p.type = GizmoHandle::SolidType::Cone;
 
 					GizmoHandle h;
-					h.m_params = p;
-					if (h.HitTest(vp->RayFromMousePosition()))
+					if (h.HitTest(p, vp->RayFromMousePosition()))
 					{
-						h.m_params.color = g_selectHighLightPrimaryColor;
+						p.color = g_selectHighLightPrimaryColor;
 					}
-					h.Generate(h.m_params);
+					h.Generate(p);
 
 					Drawable* dummy = new Drawable();
 					dummy->m_mesh = h.m_mesh;
