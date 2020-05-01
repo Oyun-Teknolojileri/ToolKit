@@ -210,6 +210,23 @@ namespace ToolKit
 					glClear(GL_DEPTH_BUFFER_BIT);
 					m_renderer->Render(gizmo, vp->m_camera);
 
+					// Test code for Gizmo handle.
+					GizmoHandle::HandleParams p;
+					p.dir.position = gizmo->m_worldLocation + Vec3(0.5f);
+					p.dir.direction = gizmo->m_normalVectors[0];
+					p.solidDim.xy = Vec2(0.05f, 0.1f);
+					p.color = Vec3(1.0f);
+					p.toeTip = Vec2(0.05f, 0.75f);
+					p.localDir = AxisLabel::Z;
+					p.type = GizmoHandle::SolidType::Cone;
+
+					GizmoHandle h(p);
+					Drawable* dummy = new Drawable();
+					dummy->m_mesh = h.m_mesh;
+					m_renderer->Render(dummy, vp->m_camera);
+					SafeDel(dummy);
+
+					// Visualization for gizmo normal vectors.
 					std::vector<Vec3> v1 =
 					{
 						gizmo->m_worldLocation,

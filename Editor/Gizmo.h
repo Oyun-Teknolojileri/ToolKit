@@ -63,8 +63,8 @@ namespace ToolKit
 
 			struct HandleParams
 			{
-				Vec3 begin;
-				Vec3 end;
+				Ray dir;
+				Vec2 toeTip;
 				Vec3 solidDim;
 				Vec3 color;
 				SolidType type;

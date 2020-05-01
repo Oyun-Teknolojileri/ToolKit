@@ -611,41 +611,16 @@ namespace ToolKit
 		}
 
 		RotateGizmo::RotateGizmo()
-			: Gizmo({ false, 4.0f, 400.0f })
+			: Gizmo({ false, 6.0f, 400.0f })
 		{
-
 		}
 
 		RotateGizmo::~RotateGizmo()
 		{
-
 		}
 
 		void RotateGizmo::Update(float deltaTime)
 		{
-			// Axis dimensions.
-			const float tip = 0.8f, toe = 0.05f, rad = 0.05f;
-			for (int i = 0; i < 3; i++)
-			{
-				GizmoHandle::HandleParams params;
-				params.begin = m_worldLocation + m_normalVectors[i] * toe;
-				params.end = m_worldLocation + m_normalVectors[i] * tip;
-				params.solidDim.xyz = rad;
-				params.color = g_gizmoColor[i];
-				params.type = GizmoHandle::SolidType::Cone;
-				params.localDir = (AxisLabel)i;
-
-				GizmoHandle handle(params);
-				if (i == 0)
-				{
-					m_mesh = handle.m_mesh;
-				}
-				else
-				{
-					m_mesh->m_subMeshes.push_back(handle.m_mesh);
-				}
-				handle.m_mesh = nullptr;
-			}
 		}
 
 		void RotateGizmo::Generate()
@@ -664,21 +639,24 @@ namespace ToolKit
 
 		void GizmoHandle::Generate(const HandleParams& params)
 		{
-			Vec3 dir = params.end - params.begin;
-			float length = glm::length(dir);
 			std::vector<Vec3> pnts =
 			{
-				Vec3(),
-				Vec3(0.0f, length, 0.0f)
+				Vec3(0.0f, params.toeTip.x, 0.0f),
+			  Vec3(0.0f, params.toeTip.y, 0.0f)
 			};
 
-			MaterialPtr material = GetMaterialManager()->GetCopyOfSolidMaterial();
-			material->m_color = params.color;
+			Quaternion headOrientation = RotationTo(AXIS[1], params.dir.direction);
+			for (int i = 0; i < 2; i++)
+			{
+				pnts[i] += params.dir.position;
+			}
 
 			LineBatch line(pnts, params.color, DrawType::Line);
 			m_mesh = line.m_mesh;
-			m_mesh->m_material = material;
 			line.m_mesh = nullptr;
+
+			MaterialPtr material = GetMaterialManager()->GetCopyOfSolidMaterial();
+			material->m_color = params.color;
 
 			if (params.type == SolidType::Cube)
 			{
@@ -689,7 +667,7 @@ namespace ToolKit
 			}
 			else if (params.type == SolidType::Cone)
 			{
-				Cone solid(params.solidDim.x, params.solidDim.y, 10, 10);
+				Cone solid(params.solidDim.y, params.solidDim.x, 10, 10);
 				solid.m_mesh->m_material = material;
 				m_mesh->m_subMeshes.push_back(solid.m_mesh);
 				solid.m_mesh = nullptr;
@@ -700,19 +678,11 @@ namespace ToolKit
 				return;
 			}
 
-			std::vector<MeshPtr> meshes
+			MeshPtr m = m_mesh->m_subMeshes.back();
+			for (Vertex& v : m->m_clientSideVertices)
 			{
-				m_mesh,
-				m_mesh->m_subMeshes.front()
-			};
-
-			for (MeshPtr& m : meshes)
-			{
-				Quaternion headOrientation = RotationTo(AXIS[1], dir);
-				for (Vertex& v : m->m_clientSideVertices)
-				{
-					v.pos = headOrientation * v.pos;
-				}
+				v.pos += params.dir.position;
+				v.pos.y += params.toeTip.y;
 			}
 		}
 

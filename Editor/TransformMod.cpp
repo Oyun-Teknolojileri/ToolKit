@@ -420,7 +420,7 @@ namespace ToolKit
 				m_gizmo = new MoveGizmo();
 				break;
 			case ModId::Rotate:
-				m_gizmo = new RotateGizmo();
+				m_gizmo = new MoveGizmo();
 				break;
 			case ModId::Scale:
 				m_gizmo = new ScaleGizmo();
