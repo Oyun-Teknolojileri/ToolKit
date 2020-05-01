@@ -628,9 +628,8 @@ namespace ToolKit
 
 		}
 
-		GizmoHandle::GizmoHandle(const HandleParams& params)
+		GizmoHandle::GizmoHandle()
 		{
-			Generate(params);
 		}
 
 		GizmoHandle::~GizmoHandle()
@@ -639,6 +638,8 @@ namespace ToolKit
 
 		void GizmoHandle::Generate(const HandleParams& params)
 		{
+			m_params = params;
+
 			std::vector<Vec3> pnts =
 			{
 				Vec3(0.0f, params.toeTip.x, 0.0f),
@@ -688,8 +689,34 @@ namespace ToolKit
 			}
 		}
 
-		bool GizmoHandle::HitTest(AxisLabel localDir, const Ray& ray)
+		bool GizmoHandle::HitTest(const Ray& ray)
 		{
+			Mat4 ts = glm::toMat4(RotationTo(AXIS[1], m_params.dir.direction));
+			ts[3].xyz = m_params.dir.position;
+			Mat4 its = glm::inverse(ts);
+
+			Ray rayInObj;
+			rayInObj.position = its * Vec4(ray.position, 1.0f);
+			rayInObj.direction = its * Vec4(ray.direction, 0.0f);
+
+			// Check for line.
+			BoundingBox hitBox;
+			hitBox.min.x = -0.05f;
+			hitBox.min.y = m_params.toeTip.x;
+			hitBox.min.z = -0.05f;
+			hitBox.max.x = 0.05f;
+			hitBox.max.y = m_params.toeTip.y;
+			hitBox.max.z = 0.05f;
+
+			float t;
+			if (RayBoxIntersection(rayInObj, hitBox, t))
+			{
+				return true;
+			}
+
+			// Check for solid.
+
+
 			return false;
 		}
 

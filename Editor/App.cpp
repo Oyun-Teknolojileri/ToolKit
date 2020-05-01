@@ -217,10 +217,16 @@ namespace ToolKit
 					p.solidDim.xy = Vec2(0.05f, 0.1f);
 					p.color = Vec3(1.0f);
 					p.toeTip = Vec2(0.05f, 0.75f);
-					p.localDir = AxisLabel::X;
 					p.type = GizmoHandle::SolidType::Cone;
 
-					GizmoHandle h(p);
+					GizmoHandle h;
+					h.m_params = p;
+					if (h.HitTest(vp->RayFromMousePosition()))
+					{
+						h.m_params.color = g_selectHighLightPrimaryColor;
+					}
+					h.Generate(h.m_params);
+
 					Drawable* dummy = new Drawable();
 					dummy->m_mesh = h.m_mesh;
 					m_renderer->Render(dummy, vp->m_camera);

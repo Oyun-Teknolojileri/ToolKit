@@ -68,18 +68,18 @@ namespace ToolKit
 				Vec3 solidDim;
 				Vec3 color;
 				SolidType type;
-				AxisLabel localDir;
 			};
 
 		public:
-			GizmoHandle(const HandleParams& params);
+			GizmoHandle();
 			~GizmoHandle();
 
 			void Generate(const HandleParams& params);
-			bool HitTest(AxisLabel localDir, const Ray& ray);
+			bool HitTest(const Ray& ray);
 
 		public:
 			MeshPtr m_mesh;
+			HandleParams m_params;
 		};
 
 		class MoveGizmo : public Gizmo
