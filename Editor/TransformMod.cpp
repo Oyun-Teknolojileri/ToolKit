@@ -45,15 +45,22 @@ namespace ToolKit
 					if (e->m_node->m_parent != nullptr)
 					{
 						orientation = e->m_node->m_parent->GetOrientation(TransformationSpace::TS_WORLD);
+						m_gizmo->m_normalVectors = e->m_node->m_parent->GetTransform(TransformationSpace::TS_WORLD);
 					}
 					break;
 				case TransformationSpace::TS_LOCAL:
 					orientation = e->m_node->GetOrientation(TransformationSpace::TS_WORLD);
+					m_gizmo->m_normalVectors = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
 				default:
 					break;
 				}
 
-				m_axisOrientation = orientation;
+				m_axisOrientation = orientation;				
+				for (int i = 0; i < 3; i++)
+				{
+					m_gizmo->m_normalVectors[0] = glm::normalize(m_gizmo->m_normalVectors[0]);
+				}
+				
 				m_gizmo->m_node->SetOrientation(orientation, TransformationSpace::TS_WORLD);
 			}
 
@@ -345,8 +352,8 @@ namespace ToolKit
 					float intsDst = glm::dot(projAxis, g2p0);
 					float projDst = glm::dot(projAxis, g2p);
 
-					//Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
-					m_delta = projAxis * (projDst - intsDst);
+					Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
+					m_delta = moveAxis * (projDst - intsDst);
 				}
 			}
 			else
@@ -476,7 +483,7 @@ namespace ToolKit
 				switch (m_id)
 				{
 				case ModId::Move:
-					e->m_node->Translate(delta, TransformationSpace::TS_WORLD);
+					e->m_node->Translate(delta, g_app->m_transformOrientation);
 					break;
 				case ModId::Rotate:
 				{
@@ -488,11 +495,11 @@ namespace ToolKit
 
 					Vec3 axis = delta / angle;
 					Quaternion rotation = glm::angleAxis(angle, axis);
-					e->m_node->Rotate(rotation, TransformationSpace::TS_WORLD);
+					e->m_node->Rotate(rotation, g_app->m_transformOrientation);
 				}
 					break;
 				case ModId::Scale:
-					e->m_node->Scale(Vec3(1.0f) + delta, TransformationSpace::TS_WORLD);
+					e->m_node->Scale(Vec3(1.0f) + delta, g_app->m_transformOrientation);
 					break;
 				}
 			}

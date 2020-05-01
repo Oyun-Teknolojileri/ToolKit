@@ -42,6 +42,9 @@ namespace ToolKit
 			void Grab(AxisLabel axis);
 			AxisLabel GetGrabbedAxis() const;
 
+		public:
+			Mat3 m_normalVectors;
+
 		protected:
 			typedef std::pair<AxisLabel, std::vector<BoundingBox>> LabelBoxPair;
 			std::vector<LabelBoxPair> m_hitBoxes;
