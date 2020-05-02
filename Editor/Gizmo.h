@@ -27,31 +27,6 @@ namespace ToolKit
 			void Generate();
 		};
 
-		class Gizmo : public Billboard
-		{
-		public:
-			Gizmo(const Billboard::Settings& set);
-			virtual ~Gizmo();
-
-			virtual AxisLabel HitTest(const Ray& ray) const;
-			virtual void Update(float deltaTime) = 0;
-			bool IsLocked(AxisLabel axis) const;
-			void Lock(AxisLabel axis);
-			void UnLock(AxisLabel axis);
-			bool IsGrabbed(AxisLabel axis) const;
-			void Grab(AxisLabel axis);
-			AxisLabel GetGrabbedAxis() const;
-
-		public:
-			Mat3 m_normalVectors;
-
-		protected:
-			typedef std::pair<AxisLabel, std::vector<BoundingBox>> LabelBoxPair;
-			std::vector<LabelBoxPair> m_hitBoxes;
-			std::vector<AxisLabel> m_lockedAxis;
-			AxisLabel m_grabbedAxis;
-		};
-
 		class GizmoHandle
 		{
 		public:
@@ -84,52 +59,58 @@ namespace ToolKit
 			HandleParams m_params;
 		};
 
-		class MoveGizmo : public Gizmo
+		class Gizmo : public Billboard
+		{
+		public:
+			Gizmo(const Billboard::Settings& set);
+			virtual ~Gizmo();
+
+			virtual AxisLabel HitTest(const Ray& ray) const;
+			virtual void Update(float deltaTime) = 0;
+			bool IsLocked(AxisLabel axis) const;
+			void Lock(AxisLabel axis);
+			void UnLock(AxisLabel axis);
+			bool IsGrabbed(AxisLabel axis) const;
+			void Grab(AxisLabel axis);
+			AxisLabel GetGrabbedAxis() const;
+
+		public:
+			Mat3 m_normalVectors;
+
+		protected:
+			std::vector<GizmoHandle> m_handles;
+			std::vector<AxisLabel> m_lockedAxis;
+			AxisLabel m_grabbedAxis;
+		};
+
+		class LinearGizmo : public Gizmo
+		{
+		public:
+			LinearGizmo();
+			virtual ~LinearGizmo();
+
+			virtual AxisLabel HitTest(const Ray& ray) const;
+			virtual void Update(float deltaTime) override;
+
+		protected:
+			virtual GizmoHandle::HandleParams GetParam() const;
+		};
+
+		class MoveGizmo : public LinearGizmo
 		{
 		public:
 			MoveGizmo();
 			virtual ~MoveGizmo();
-
-			virtual void Update(float deltaTime) override;
-
-		private:
-			void Generate();
-
-		private:
-			std::shared_ptr<Mesh> m_lines[6];
-			std::shared_ptr<Mesh> m_solids[6];
 		};
 
-		class ScaleGizmo : public Gizmo
+		class ScaleGizmo : public LinearGizmo
 		{
 		public:
 			ScaleGizmo();
 			virtual ~ScaleGizmo();
 
-			virtual void Update(float deltaTime) override;
-
-		private:
-			void Generate();
-
-		private:
-			std::shared_ptr<Mesh> m_lines[3];
-			std::shared_ptr<Mesh> m_solids[3];
-		};
-
-		class RotateGizmo : public Gizmo
-		{
-		public:
-			RotateGizmo();
-			virtual ~RotateGizmo();
-
-			virtual AxisLabel HitTest(const Ray& ray) const;
-			virtual void Update(float deltaTime) override;
-
-		private:
-			GizmoHandle::HandleParams GetParam() const;
-
-		private:
-			GizmoHandle m_handles[3];
+		protected:
+			virtual GizmoHandle::HandleParams GetParam() const override;
 		};
 	}
 }
