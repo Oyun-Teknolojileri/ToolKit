@@ -348,8 +348,8 @@ namespace ToolKit
 					float intsDst = glm::dot(projAxis, g2p0);
 					float projDst = glm::dot(projAxis, g2p);
 
-					Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
-					m_delta = moveAxis * (projDst - intsDst);
+					// Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
+					m_delta = projAxis * (projDst - intsDst);
 				}
 			}
 			else
@@ -473,12 +473,13 @@ namespace ToolKit
 			std::vector<Entity*> selecteds;
 			g_app->m_scene.GetSelectedEntities(selecteds);
 
+			TransformationSpace space = TransformationSpace::TS_WORLD;
 			for (Entity* e : selecteds)
 			{
 				switch (m_id)
 				{
 				case ModId::Move:
-					e->m_node->Translate(delta, g_app->m_transformOrientation);
+					e->m_node->Translate(delta, space);
 					break;
 				case ModId::Rotate:
 				{
@@ -490,11 +491,11 @@ namespace ToolKit
 
 					Vec3 axis = delta / angle;
 					Quaternion rotation = glm::angleAxis(angle, axis);
-					e->m_node->Rotate(rotation, g_app->m_transformOrientation);
+					e->m_node->Rotate(rotation, space);
 				}
 					break;
 				case ModId::Scale:
-					e->m_node->Scale(Vec3(1.0f) + delta, g_app->m_transformOrientation);
+					e->m_node->Scale(Vec3(1.0f) + delta, space);
 					break;
 				}
 			}
