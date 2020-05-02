@@ -182,11 +182,7 @@ namespace ToolKit
 	void Node::TransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale)
 	{
 		Mat4 ps, ts;
-		if (m_parent != nullptr)
-		{
-			ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
-		}
-
+		ps = GetParentTransform();
 		switch (space)
 		{
 		case TransformationSpace::TS_WORLD:
@@ -234,7 +230,7 @@ namespace ToolKit
 			if (m_parent != nullptr)
 			{
 				Mat4 ts = GetLocalTransform();
-				Mat4 ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				Mat4 ps = GetParentTransform();
 				ts = ps * ts;
 				if (transform != nullptr)
 				{
@@ -289,6 +285,31 @@ namespace ToolKit
 		ts = glm::scale(ts, m_scale);
 		ts[3].xyz = m_translation;
 		return ts;
+	}
+
+	Mat4 Node::GetParentTransform() const
+	{
+		Mat4 ps;
+		if (m_parent != nullptr)
+		{
+			ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+
+			if (m_inheritOnlyTranslate)
+			{
+				Vec3 t = ps[3];
+				ps = glm::translate(Mat4(), t);
+			}
+			else if (!m_inheritScale)
+			{
+				for (int i = 0; i < 3; i++)
+				{
+					Vec3 v = ps[i];
+					ps[i].xyz = glm::normalize(v);
+				}
+			}
+		}
+
+		return ps;
 	}
 
 }

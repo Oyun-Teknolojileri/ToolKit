@@ -38,9 +38,12 @@ namespace ToolKit
 		void SetTransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale);
 		void GetTransformImp(TransformationSpace space, Mat4* transform, Vec3* translation, Quaternion* orientation, Vec3* scale) const;
 		Mat4 GetLocalTransform() const;
+		Mat4 GetParentTransform() const;
 
 	public:
 		Node* m_parent = nullptr;
+		bool m_inheritScale = false;
+		bool m_inheritOnlyTranslate = false;
 		std::vector<Node*> m_children;
 	
 	private:
