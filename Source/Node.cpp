@@ -12,42 +12,14 @@ namespace ToolKit
 
 	void Node::Translate(const Vec3& val, TransformationSpace space)
 	{
-		if (m_parent == nullptr)
-		{
-			if (space == TransformationSpace::TS_LOCAL)
-			{
-				m_translation = m_translation + (m_orientation * (m_scale * val));
-			}
-			else
-			{
-				m_translation += val;
-			}
-		}
-		else
-		{
-			Mat4 ts = glm::translate(Mat4(), val);
-			TransformImp(ts, space, &m_translation, nullptr, nullptr);
-		}
+		Mat4 ts = glm::translate(Mat4(), val);
+		TransformImp(ts, space, &m_translation, nullptr, nullptr);
 	}
 
 	void Node::Rotate(const Quaternion& val, TransformationSpace space)
 	{
-		if (m_parent == nullptr)
-		{
-			if (space == TransformationSpace::TS_LOCAL)
-			{
-				m_orientation = m_orientation * val;
-			}
-			else
-			{
-				m_orientation = val * m_orientation;
-			}
-		}
-		else
-		{
-			Mat4 ts = glm::toMat4(val);
-			TransformImp(ts, space, nullptr, &m_orientation, nullptr);
-		}
+		Mat4 ts = glm::toMat4(val);
+		TransformImp(ts, space, nullptr, &m_orientation, nullptr);
 	}
 
 	void Node::Scale(const Vec3& val, TransformationSpace space)
