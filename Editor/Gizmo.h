@@ -79,9 +79,6 @@ namespace ToolKit
 
 		public:
 			MeshPtr m_mesh;
-
-		private:
-			HandleParams m_params;
 		};
 
 		class MoveGizmo : public Gizmo
@@ -122,13 +119,14 @@ namespace ToolKit
 			RotateGizmo();
 			virtual ~RotateGizmo();
 
+			virtual AxisLabel HitTest(const Ray& ray) const;
 			virtual void Update(float deltaTime) override;
 
 		private:
-			void Generate();
+			GizmoHandle::HandleParams GetParam() const;
 
 		private:
-			std::shared_ptr<Mesh> m_lines[3];
+			GizmoHandle m_handles[3];
 		};
 	}
 }

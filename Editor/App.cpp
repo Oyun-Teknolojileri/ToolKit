@@ -208,8 +208,11 @@ namespace ToolKit
 				if (gizmo != nullptr)
 				{
 					glClear(GL_DEPTH_BUFFER_BIT);
+					gizmo->m_node->SetTransform(Mat4());
+					gizmo->LookAt(vp->m_camera);
 					m_renderer->Render(gizmo, vp->m_camera);
 
+/*
 					// Test code for Gizmo handle.
 					GizmoHandle::HandleParams p;
 					p.dir.position = gizmo->m_worldLocation;
@@ -230,6 +233,7 @@ namespace ToolKit
 					dummy->m_mesh = h.m_mesh;
 					m_renderer->Render(dummy, vp->m_camera);
 					SafeDel(dummy);
+*/
 
 					// Visualization for gizmo normal vectors.
 					std::vector<Vec3> v1 =

@@ -619,13 +619,67 @@ namespace ToolKit
 		{
 		}
 
-		void RotateGizmo::Update(float deltaTime)
+		ToolKit::AxisLabel RotateGizmo::HitTest(const Ray& ray) const
 		{
+			GizmoHandle::HandleParams p = GetParam();
+			for (int i = 0; i < 3; i++)
+			{
+				p.dir.position = m_worldLocation;
+				p.dir.direction = m_normalVectors[i];
+
+				if (m_handles[i].HitTest(p, ray))
+				{
+					return (AxisLabel)i;
+				}
+			}
+
+			return AxisLabel::None;
 		}
 
-		void RotateGizmo::Generate()
+		void RotateGizmo::Update(float deltaTime)
 		{
+			Viewport* vp = g_app->GetActiveViewport();
+			if (vp == nullptr)
+			{
+				return;
+			}
 
+			GizmoHandle::HandleParams p = GetParam();
+
+			for (int i = 0; i < 3; i++)
+			{
+				p.dir.position = m_worldLocation;
+				p.dir.direction = m_normalVectors[i];
+
+				if (m_handles[i].HitTest(p, vp->RayFromMousePosition()))
+				{
+					p.color = g_selectHighLightPrimaryColor;
+				}
+				else
+				{
+					p.color = g_gizmoColor[i];
+				}
+
+				p.dir.position = Vec3();
+				m_handles[i].Generate(p);
+			}
+
+			m_mesh = m_handles[0].m_mesh;
+			m_mesh->m_subMeshes.push_back(m_handles[1].m_mesh);
+			m_mesh->m_subMeshes.push_back(m_handles[2].m_mesh);
+		}
+
+		GizmoHandle::HandleParams RotateGizmo::GetParam() const
+		{
+			const float tip = 0.8f, toe = 0.05f, rad = 0.05f;
+
+			GizmoHandle::HandleParams p;
+			p.dir.position = Vec3();
+			p.solidDim.xyz = Vec3(rad, 1.0f - tip, rad);
+			p.toeTip = Vec2(toe, tip);
+			p.type = GizmoHandle::SolidType::Cone;
+
+			return p;
 		}
 
 		GizmoHandle::GizmoHandle()
@@ -638,8 +692,6 @@ namespace ToolKit
 
 		void GizmoHandle::Generate(const HandleParams& params)
 		{
-			m_params = params;
-
 			std::vector<Vec3> pnts =
 			{
 				Vec3(0.0f, params.toeTip.x, 0.0f),
