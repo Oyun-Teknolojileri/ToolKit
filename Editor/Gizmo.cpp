@@ -342,6 +342,11 @@ namespace ToolKit
 					p.color = g_gizmoColor[i];
 				}
 
+				if (IsLocked((AxisLabel)i))
+				{
+					p.color = g_gizmoLocked;
+				}
+
 				p.dir.direction = m_normalVectors[i];
 				m_handles[i].Generate(p);
 			}
