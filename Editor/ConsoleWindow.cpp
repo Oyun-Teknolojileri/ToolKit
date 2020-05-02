@@ -9,6 +9,7 @@
 #include "Directional.h"
 #include "Viewport.h"
 #include "DebugNew.h"
+#include "TransformMod.h"
 
 namespace ToolKit
 {
@@ -382,6 +383,12 @@ namespace ToolKit
 			if (tsStr == "local")
 			{
 				g_app->m_transformOrientation = TransformationSpace::TS_LOCAL;
+			}
+
+			BaseMod* mod = ModManager::GetInstance()->m_modStack.back();
+			if (TransformMod* tsm = dynamic_cast<TransformMod*> (mod))
+			{
+				tsm->Signal(TransformMod::m_backToStart);
 			}
 		}
 

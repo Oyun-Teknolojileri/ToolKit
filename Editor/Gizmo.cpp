@@ -329,12 +329,6 @@ namespace ToolKit
 
 		void LinearGizmo::Update(float deltaTime)
 		{
-			Viewport* vp = g_app->GetActiveViewport();
-			if (vp == nullptr)
-			{
-				return;
-			}
-
 			GizmoHandle::HandleParams p = GetParam();
 
 			for (int i = 0; i < 3; i++)

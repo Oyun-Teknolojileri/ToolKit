@@ -84,9 +84,6 @@ namespace ToolKit
 
 		public:
 			Gizmo* m_gizmo;
-
-			// Signals.
-			static SignalId m_linkToTransformBeginSgnl;
 		};
 	}
 }

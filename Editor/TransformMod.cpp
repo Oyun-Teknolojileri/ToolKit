@@ -36,7 +36,7 @@ namespace ToolKit
 				m_gizmo->m_worldLocation = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 					
 				// Get transform orientation.
-				Quaternion orientation;
+				m_gizmo->m_normalVectors = Mat3();
 				switch (g_app->m_transformOrientation)
 				{
 				case TransformationSpace::TS_WORLD:
@@ -44,12 +44,10 @@ namespace ToolKit
 				case TransformationSpace::TS_PARENT:
 					if (e->m_node->m_parent != nullptr)
 					{
-						orientation = e->m_node->m_parent->GetOrientation(TransformationSpace::TS_WORLD);
 						m_gizmo->m_normalVectors = e->m_node->m_parent->GetTransform(TransformationSpace::TS_WORLD);
 					}
 					break;
 				case TransformationSpace::TS_LOCAL:
-					orientation = e->m_node->GetOrientation(TransformationSpace::TS_WORLD);
 					m_gizmo->m_normalVectors = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
 				default:
 					break;
@@ -57,7 +55,7 @@ namespace ToolKit
 
 				for (int i = 0; i < 3; i++)
 				{
-					m_gizmo->m_normalVectors[0] = glm::normalize(m_gizmo->m_normalVectors[0]);
+					m_gizmo->m_normalVectors[i] = glm::normalize(m_gizmo->m_normalVectors[i]);
 				}
 			}
 
@@ -145,6 +143,11 @@ namespace ToolKit
 			if (e != nullptr)
 			{
 				Viewport* vp = g_app->GetActiveViewport();
+				if (vp == nullptr)
+				{
+					return; // Console commands may put the process here whit out active viewport.
+				}
+
 				Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 				Vec3 gizmOrg = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 				Vec3 dir = glm::normalize(camOrg - gizmOrg);
@@ -389,9 +392,6 @@ namespace ToolKit
 		// MoveMod
 		//////////////////////////////////////////////////////////////////////////
 
-		// Signal definitions.
-		SignalId TransformMod::m_linkToTransformBeginSgnl = BaseMod::GetNextSignalId();
-
 		TransformMod::TransformMod(ModId id) 
 			: BaseMod(id)
 		{
@@ -431,9 +431,11 @@ namespace ToolKit
 			m_stateMachine->PushState(new StateTransformTo());
 			m_stateMachine->PushState(new StateTransformEnd());
 
-			m_stateMachine->PushState(new StateBeginPick());
+			state = new StateBeginPick();
+			state->m_links[m_backToStart] = StateType::StateTransformBegin;
+			m_stateMachine->PushState(state);
 			state = new StateEndPick();
-			state->m_links[m_linkToTransformBeginSgnl] = StateType::StateTransformBegin;
+			state->m_links[m_backToStart] = StateType::StateTransformBegin;
 			m_stateMachine->PushState(state);
 		}
 
@@ -449,7 +451,7 @@ namespace ToolKit
 				endPick->PickDataToEntityId(entities);
 				g_app->m_scene.AddToSelection(entities, ImGui::GetIO().KeyShift);
 
-				ModManager::GetInstance()->DispatchSignal(m_linkToTransformBeginSgnl);
+				ModManager::GetInstance()->DispatchSignal(m_backToStart);
 			}
 
 			if (m_stateMachine->m_currentState->ThisIsA<StateTransformTo>())
