@@ -38,6 +38,8 @@ namespace ToolKit
 
 			struct HandleParams
 			{
+				AxisLabel axis;
+				Mat3 normalVectors;
 				Ray dir;
 				Vec2 toeTip;
 				Vec3 solidDim;

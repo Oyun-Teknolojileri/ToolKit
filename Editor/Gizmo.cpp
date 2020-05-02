@@ -138,15 +138,9 @@ namespace ToolKit
 
 			std::vector<Vec3> pnts =
 			{
-				Vec3(0.0f, params.toeTip.x, 0.0f),
-				Vec3(0.0f, params.toeTip.y, 0.0f)
+				params.dir.direction * params.toeTip.x,
+				params.dir.direction * params.toeTip.y
 			};
-
-			Quaternion headOrientation = RotationTo(AXIS[1], params.dir.direction);
-			for (int i = 0; i < 2; i++)
-			{
-				pnts[i] = headOrientation * pnts[i];
-			}
 
 			LineBatch line(pnts, params.color, DrawType::Line);
 			m_mesh = line.m_mesh;
@@ -175,11 +169,25 @@ namespace ToolKit
 				return;
 			}
 
+			Quaternion headOrientation = RotationTo(AXIS[1], params.dir.direction);
 			MeshPtr m = m_mesh->m_subMeshes.back();
 			for (Vertex& v : m->m_clientSideVertices)
 			{
 				v.pos.y += params.toeTip.y;
-				v.pos = headOrientation * v.pos;
+				switch (params.axis)
+				{
+				case AxisLabel::X:
+					v.pos = v.pos.yxz;
+					break;
+				case AxisLabel::Z:
+					v.pos = v.pos.zxy;
+					break;
+				case AxisLabel::Y:
+				default:
+					break;
+				}
+
+				v.pos = params.normalVectors * v.pos;
 			}
 		}
 
@@ -236,7 +244,7 @@ namespace ToolKit
 		Gizmo::~Gizmo()
 		{
 		}
-		
+
 		ToolKit::AxisLabel Gizmo::HitTest(const Ray& ray) const
 		{
 			AxisLabel hit = AxisLabel::None;
@@ -347,6 +355,8 @@ namespace ToolKit
 					p.color = g_gizmoLocked;
 				}
 
+				p.normalVectors = m_normalVectors;
+				p.axis = (AxisLabel)i;
 				p.dir.direction = m_normalVectors[i];
 				m_handles[i].Generate(p);
 			}
@@ -361,6 +371,7 @@ namespace ToolKit
 			const float tip = 0.8f, toe = 0.05f, rad = 0.1f;
 
 			GizmoHandle::HandleParams p;
+			p.normalVectors = m_normalVectors;
 			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 			p.solidDim.xyz = Vec3(rad, 1.0f - tip, rad);
 			p.toeTip = Vec2(toe, tip);
@@ -384,7 +395,7 @@ namespace ToolKit
 		ScaleGizmo::~ScaleGizmo()
 		{
 		}
-		
+
 		GizmoHandle::HandleParams ScaleGizmo::GetParam() const
 		{
 			GizmoHandle::HandleParams p = LinearGizmo::GetParam();
