@@ -348,8 +348,8 @@ namespace ToolKit
 					float intsDst = glm::dot(projAxis, g2p0);
 					float projDst = glm::dot(projAxis, g2p);
 
-					// Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
-					m_delta = projAxis * (projDst - intsDst);
+					Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
+					m_delta = moveAxis * (projDst - intsDst);
 				}
 			}
 			else
@@ -473,7 +473,7 @@ namespace ToolKit
 			std::vector<Entity*> selecteds;
 			g_app->m_scene.GetSelectedEntities(selecteds);
 
-			TransformationSpace space = TransformationSpace::TS_WORLD;
+			TransformationSpace space = g_app->m_transformOrientation;
 			for (Entity* e : selecteds)
 			{
 				switch (m_id)

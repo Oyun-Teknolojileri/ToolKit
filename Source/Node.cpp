@@ -12,44 +12,24 @@ namespace ToolKit
 
 	void Node::Translate(const Vec3& val, TransformationSpace space)
 	{
-		if (m_parent == nullptr)
-		{
-			// Skip scale. For single nodes, its weird to see scale affects the object.
-			if (space == TransformationSpace::TS_LOCAL)
-			{
-				m_translation = m_translation + (m_orientation * val);
-			}
-			else
-			{
-				m_translation += val;
-			}
-		}
-		else
-		{
-			Mat4 ts = glm::translate(Mat4(), val);
-			TransformImp(ts, space, &m_translation, nullptr, nullptr);
-		}
+		Vec3 tmpScl = m_scale;
+		m_scale = Vec3(1.0f);
+
+		Mat4 ts = glm::translate(Mat4(), val);
+		TransformImp(ts, space, &m_translation, nullptr, nullptr);
+
+		m_scale = tmpScl;
 	}
 
 	void Node::Rotate(const Quaternion& val, TransformationSpace space)
 	{
-		if (m_parent == nullptr)
-		{
-			// Skip scale. For single nodes, its weird to see scale affects the object.
-			if (space == TransformationSpace::TS_LOCAL)
-			{
-				m_orientation = m_orientation * val;
-			}
-			else
-			{
-				m_orientation = val * m_orientation;
-			}
-		}
-		else
-		{
-			Mat4 ts = glm::toMat4(val);
-			TransformImp(ts, space, nullptr, &m_orientation, nullptr);
-		}
+		Vec3 tmpScl = m_scale;
+		m_scale = Vec3(1.0f);
+
+		Mat4 ts = glm::toMat4(val);
+		TransformImp(ts, space, nullptr, &m_orientation, nullptr);
+
+		m_scale = tmpScl;
 	}
 
 	void Node::Scale(const Vec3& val, TransformationSpace space)
