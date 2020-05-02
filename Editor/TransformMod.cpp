@@ -61,7 +61,7 @@ namespace ToolKit
 					m_gizmo->m_normalVectors[0] = glm::normalize(m_gizmo->m_normalVectors[0]);
 				}
 				
-				m_gizmo->m_node->SetOrientation(orientation, TransformationSpace::TS_WORLD);
+				//m_gizmo->m_node->SetOrientation(orientation, TransformationSpace::TS_WORLD);
 			}
 
 			m_gizmo->Update(deltaTime);

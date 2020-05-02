@@ -621,13 +621,9 @@ namespace ToolKit
 
 		ToolKit::AxisLabel RotateGizmo::HitTest(const Ray& ray) const
 		{
-			GizmoHandle::HandleParams p = GetParam();
 			for (int i = 0; i < 3; i++)
 			{
-				p.dir.position = m_worldLocation;
-				p.dir.direction = m_normalVectors[i];
-
-				if (m_handles[i].HitTest(p, ray))
+				if (m_handles[i].HitTest(ray))
 				{
 					return (AxisLabel)i;
 				}
@@ -648,10 +644,7 @@ namespace ToolKit
 
 			for (int i = 0; i < 3; i++)
 			{
-				p.dir.position = m_worldLocation;
-				p.dir.direction = m_normalVectors[i];
-
-				if (m_handles[i].HitTest(p, vp->RayFromMousePosition()))
+				if (m_grabbedAxis == (AxisLabel)i)
 				{
 					p.color = g_selectHighLightPrimaryColor;
 				}
@@ -659,8 +652,8 @@ namespace ToolKit
 				{
 					p.color = g_gizmoColor[i];
 				}
-
-				p.dir.position = Vec3();
+				
+				p.dir.direction = m_normalVectors[i];
 				m_handles[i].Generate(p);
 			}
 
@@ -674,7 +667,7 @@ namespace ToolKit
 			const float tip = 0.8f, toe = 0.05f, rad = 0.05f;
 
 			GizmoHandle::HandleParams p;
-			p.dir.position = Vec3();
+			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 			p.solidDim.xyz = Vec3(rad, 1.0f - tip, rad);
 			p.toeTip = Vec2(toe, tip);
 			p.type = GizmoHandle::SolidType::Cone;
@@ -692,6 +685,8 @@ namespace ToolKit
 
 		void GizmoHandle::Generate(const HandleParams& params)
 		{
+			m_params = params;
+
 			std::vector<Vec3> pnts =
 			{
 				Vec3(0.0f, params.toeTip.x, 0.0f),
@@ -702,7 +697,7 @@ namespace ToolKit
 			for (int i = 0; i < 2; i++)
 			{
 				pnts[i] = headOrientation * pnts[i];
-				pnts[i] += params.dir.position;
+				//pnts[i] += params.dir.position;
 			}
 
 			LineBatch line(pnts, params.color, DrawType::Line);
@@ -737,14 +732,14 @@ namespace ToolKit
 			{
 				v.pos.y += params.toeTip.y;
 				v.pos = headOrientation * v.pos;
-				v.pos += params.dir.position;
+				//v.pos += params.dir.position;
 			}
 		}
 
-		bool GizmoHandle::HitTest(const HandleParams& params, const Ray& ray) const
+		bool GizmoHandle::HitTest(const Ray& ray) const
 		{
-			Mat4 ts = glm::toMat4(RotationTo(AXIS[1], params.dir.direction));
-			ts[3].xyz = params.dir.position;
+			Mat4 ts = glm::toMat4(RotationTo(AXIS[1], m_params.dir.direction));
+			ts[3].xyz = m_params.dir.position;
 			Mat4 its = glm::inverse(ts);
 
 			Ray rayInObj;
@@ -754,10 +749,10 @@ namespace ToolKit
 			// Check for line.
 			BoundingBox hitBox;
 			hitBox.min.x = -0.05f;
-			hitBox.min.y = params.toeTip.x;
+			hitBox.min.y = m_params.toeTip.x;
 			hitBox.min.z = -0.05f;
 			hitBox.max.x = 0.05f;
-			hitBox.max.y = params.toeTip.y;
+			hitBox.max.y = m_params.toeTip.y;
 			hitBox.max.z = 0.05f;
 
 			float t;
@@ -767,12 +762,12 @@ namespace ToolKit
 			}
 
 			// Check for solid.
-			hitBox.min.x = -params.solidDim.x * 0.5f;
-			hitBox.min.y = params.toeTip.y;
-			hitBox.min.z = -params.solidDim.z * 0.5f;
-			hitBox.max.x = params.solidDim.x * 0.5f;
-			hitBox.max.y = params.toeTip.y + params.solidDim.y;
-			hitBox.max.z = params.solidDim.z * 0.5f;
+			hitBox.min.x = -m_params.solidDim.x * 0.5f;
+			hitBox.min.y = m_params.toeTip.y;
+			hitBox.min.z = -m_params.solidDim.z * 0.5f;
+			hitBox.max.x = m_params.solidDim.x * 0.5f;
+			hitBox.max.y = m_params.toeTip.y + m_params.solidDim.y;
+			hitBox.max.z = m_params.solidDim.z * 0.5f;
 
 			if (RayBoxIntersection(rayInObj, hitBox, t))
 			{

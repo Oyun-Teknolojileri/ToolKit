@@ -208,8 +208,9 @@ namespace ToolKit
 				if (gizmo != nullptr)
 				{
 					glClear(GL_DEPTH_BUFFER_BIT);
+/*
 					gizmo->m_node->SetTransform(Mat4());
-					gizmo->LookAt(vp->m_camera);
+					gizmo->LookAt(vp->m_camera);*/
 					m_renderer->Render(gizmo, vp->m_camera);
 
 /*
