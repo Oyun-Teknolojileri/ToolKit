@@ -208,33 +208,7 @@ namespace ToolKit
 				if (gizmo != nullptr)
 				{
 					glClear(GL_DEPTH_BUFFER_BIT);
-/*
-					gizmo->m_node->SetTransform(Mat4());
-					gizmo->LookAt(vp->m_camera);*/
 					m_renderer->Render(gizmo, vp->m_camera);
-
-/*
-					// Test code for Gizmo handle.
-					GizmoHandle::HandleParams p;
-					p.dir.position = gizmo->m_worldLocation;
-					p.dir.direction = gizmo->m_normalVectors[1];
-					p.solidDim.xyz = Vec3(0.05f, 0.1f, 0.05f);
-					p.color = Vec3(1.0f);
-					p.toeTip = Vec2(0.05f, 0.75f);
-					p.type = GizmoHandle::SolidType::Cone;
-
-					GizmoHandle h;
-					if (h.HitTest(p, vp->RayFromMousePosition()))
-					{
-						p.color = g_selectHighLightPrimaryColor;
-					}
-					h.Generate(p);
-
-					Drawable* dummy = new Drawable();
-					dummy->m_mesh = h.m_mesh;
-					m_renderer->Render(dummy, vp->m_camera);
-					SafeDel(dummy);
-*/
 
 					// Visualization for gizmo normal vectors.
 					std::vector<Vec3> v1 =
