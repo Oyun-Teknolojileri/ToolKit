@@ -13,6 +13,7 @@ namespace ToolKit
   {
     m_name = name;
     m_node = new Node();
+    m_node->m_inheritScale = true;
   }
 
   Bone::~Bone()
