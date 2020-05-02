@@ -32,6 +32,7 @@ namespace ToolKit
 		void SetScale(const Vec3& val, TransformationSpace space = TransformationSpace::TS_PARENT);
 		Vec3 GetScale(TransformationSpace space = TransformationSpace::TS_PARENT) const;
 		void AddChild(Node* child);
+		Node* GetRoot();
 
 	private:
 		void TransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale);

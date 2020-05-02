@@ -6,7 +6,7 @@ namespace ToolKit
 	namespace Editor
 	{
 
-		Scene::PickData Scene::PickObject(Ray ray, const std::vector<EntityId>& ignoreList)
+		Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList)
 		{
 			PickData pd;
 			pd.pickPos = ray.position + ray.direction * 5.0f;
@@ -49,7 +49,7 @@ namespace ToolKit
 			return pd;
 		}
 
-		void Scene::PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const std::vector<EntityId>& ignoreList, bool pickPartiallyInside)
+		void Scene::PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const EntityIdArray& ignoreList, bool pickPartiallyInside)
 		{
 			for (Entity* e : m_entitites)
 			{
@@ -103,7 +103,7 @@ namespace ToolKit
 			m_selectedEntities.push_back(id);
 		}
 
-		void Scene::AddToSelection(const std::vector<EntityId>& entities, bool additive)
+		void Scene::AddToSelection(const EntityIdArray& entities, bool additive)
 		{
 			EntityId currentId = NULL_ENTITY;
 			if (entities.size() > 1)
@@ -188,7 +188,7 @@ namespace ToolKit
 
 		void Scene::MakeCurrentSelection(EntityId id, bool ifExist)
 		{
-			std::vector<EntityId>::iterator itr = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
+			EntityIdArray::iterator itr = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
 			if (itr != m_selectedEntities.end())
 			{
 				std::iter_swap(itr, m_selectedEntities.end() - 1);
@@ -253,12 +253,12 @@ namespace ToolKit
 			return removed;
 		}
 
-		const std::vector<Entity*>& Scene::GetEntities()
+		const EntityRawPtrArray& Scene::GetEntities()
 		{
 			return m_entitites;
 		}
 
-		void Scene::GetSelectedEntities(std::vector<Entity*>& entities)
+		void Scene::GetSelectedEntities(EntityRawPtrArray& entities)
 		{
 			for (EntityId id : m_selectedEntities)
 			{

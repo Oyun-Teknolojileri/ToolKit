@@ -81,6 +81,7 @@ namespace ToolKit
 
 		private:
 			void Transform(const Vec3& delta) const;
+			void RootsOnly(EntityRawPtrArray& selecteds) const;
 
 		public:
 			Gizmo* m_gizmo;

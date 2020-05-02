@@ -231,7 +231,7 @@ namespace ToolKit
 			return std::find(m_ignoreList.begin(), m_ignoreList.end(), id) != m_ignoreList.end();
 		}
 
-		void StatePickingBase::PickDataToEntityId(std::vector<EntityId>& ids)
+		void StatePickingBase::PickDataToEntityId(EntityIdArray& ids)
 		{
 			for (Scene::PickData& pd : m_pickData)
 			{
@@ -487,7 +487,7 @@ namespace ToolKit
 				stateTransition = false;
 
 				StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
-				std::vector<EntityId> entities;
+				EntityIdArray entities;
 				endPick->PickDataToEntityId(entities);
 				g_app->m_scene.AddToSelection(entities, ImGui::GetIO().KeyShift);
 			}

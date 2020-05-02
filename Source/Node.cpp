@@ -159,6 +159,16 @@ namespace ToolKit
 		child->m_parent = this;
 	}
 
+	Node* Node::GetRoot()
+	{
+		if (m_parent == nullptr)
+		{
+			return this;
+		}
+
+		return m_parent->GetRoot();
+	}
+
 	void Node::TransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale)
 	{
 		Mat4 ps, ts;

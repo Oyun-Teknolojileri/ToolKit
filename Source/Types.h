@@ -2,6 +2,7 @@
 
 #include "Glm/glm.hpp"
 #include "Glm/gtc/quaternion.hpp"
+#include <vector>
 #include <string>
 #include <memory>
 
@@ -23,6 +24,9 @@ namespace ToolKit
 	typedef glm::quat Quaternion;
 	typedef std::shared_ptr<class Material> MaterialPtr;
 	typedef std::shared_ptr<class Mesh> MeshPtr;
+	typedef std::vector<class Entity*> EntityRawPtrArray;
+	typedef std::vector<std::shared_ptr<class Entity>> EntitySharedPtrArray;
+	typedef std::vector<EntityId> EntityIdArray;
 
 	static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
 	static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);

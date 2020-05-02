@@ -93,13 +93,13 @@ namespace ToolKit
 			virtual void TransitionIn(State* prevState) override;
 			virtual void TransitionOut(State* nextState) override;
 			bool IsIgnored(EntityId id);
-			void PickDataToEntityId(std::vector<EntityId>& ids);
+			void PickDataToEntityId(EntityIdArray& ids);
 
 		public:
 			// Picking data.
 			std::vector<Vec2> m_mouseData;
 			std::vector<Scene::PickData> m_pickData;
-			std::vector<EntityId> m_ignoreList;
+			EntityIdArray m_ignoreList;
 
 			// Debug models.
 			static std::shared_ptr<Arrow2d> m_dbgArrow;

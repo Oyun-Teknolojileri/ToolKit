@@ -16,13 +16,13 @@ namespace ToolKit
 				Entity* entity = nullptr;
 			};
 
-			PickData PickObject(Ray ray, const std::vector<EntityId>& ignoreList = std::vector<EntityId>());
-			void PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const std::vector<EntityId>& ignoreList = std::vector<EntityId>(), bool pickPartiallyInside = true);
+			PickData PickObject(Ray ray, const EntityIdArray& ignoreList = EntityIdArray());
+			void PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const EntityIdArray& ignoreList = EntityIdArray(), bool pickPartiallyInside = true);
 
 			// Selection operations.
 			bool IsSelected(EntityId id);
 			void RemoveFromSelection(EntityId id);
-			void AddToSelection(const std::vector<EntityId>& entities, bool additive);
+			void AddToSelection(const EntityIdArray& entities, bool additive);
 			void AddToSelection(EntityId id);
 			void ClearSelection();
 			bool IsCurrentSelection(EntityId id);
@@ -34,12 +34,12 @@ namespace ToolKit
 			Entity* GetEntity(EntityId id);
 			void AddEntity(Entity* entity);
 			Entity* RemoveEntity(EntityId id);
-			const std::vector<Entity*>& GetEntities();
-			void GetSelectedEntities(std::vector<Entity*>& entities);
+			const EntityRawPtrArray& GetEntities();
+			void GetSelectedEntities(EntityRawPtrArray& entities);
 
 		private:
-			std::vector<Entity*> m_entitites;
-			std::vector<EntityId> m_selectedEntities;
+			EntityRawPtrArray m_entitites;
+			EntityIdArray m_selectedEntities;
 		};
 	}
 }
