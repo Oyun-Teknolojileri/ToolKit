@@ -55,13 +55,10 @@ namespace ToolKit
 					break;
 				}
 
-				m_axisOrientation = orientation;				
 				for (int i = 0; i < 3; i++)
 				{
 					m_gizmo->m_normalVectors[0] = glm::normalize(m_gizmo->m_normalVectors[0]);
 				}
-				
-				//m_gizmo->m_node->SetOrientation(orientation, TransformationSpace::TS_WORLD);
 			}
 
 			m_gizmo->Update(deltaTime);
@@ -76,9 +73,8 @@ namespace ToolKit
 			StateTransformBase* baseState = dynamic_cast<StateTransformBase*> (nextState);
 			if (baseState != nullptr)
 			{
-				baseState->m_mouseData = m_mouseData;
 				baseState->m_gizmo = m_gizmo;
-				baseState->m_axisOrientation = m_axisOrientation;
+				baseState->m_mouseData = m_mouseData;
 				baseState->m_intersectionPlane = m_intersectionPlane;
 			}
 		}
@@ -98,7 +94,7 @@ namespace ToolKit
 		ToolKit::Vec3 StateTransformBase::GetGrabbedAxis(int n)
 		{
 			Vec3 axes[3];
-			ExtractAxes(glm::toMat4(m_axisOrientation), axes[0], axes[1], axes[2]);
+			ExtractAxes(m_gizmo->m_normalVectors, axes[0], axes[1], axes[2]);
 
 			int first = (int)m_gizmo->GetGrabbedAxis() % 3;
 			if (n == 0)
@@ -148,9 +144,6 @@ namespace ToolKit
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			if (e != nullptr)
 			{
-				Vec3 x, y, z;
-				ExtractAxes(glm::toMat4(m_axisOrientation), x, y, z);
-
 				Viewport* vp = g_app->GetActiveViewport();
 				Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 				Vec3 gizmOrg = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
@@ -158,7 +151,9 @@ namespace ToolKit
 
 				float safetyMeasure = glm::abs(glm::cos(glm::radians(5.0f)));
 				AxisLabel axisLabes[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
-				Vec3 axes[3] = { x, y, z };
+				
+				Vec3 axes[3];
+				ExtractAxes(m_gizmo->m_normalVectors, axes[0], axes[1], axes[2]);
 
 				for (int i = 0; i < 3; i++)
 				{
@@ -197,10 +192,7 @@ namespace ToolKit
 
 			if (signal == BaseMod::m_leftMouseBtnUpSgnl)
 			{
-				if (m_gizmo != nullptr)
-				{
-					m_gizmo->Grab(AxisLabel::None);
-				}
+				m_gizmo->Grab(AxisLabel::None);
 			}
 
 			if (signal == BaseMod::m_leftMouseBtnDragSgnl)
@@ -211,7 +203,8 @@ namespace ToolKit
 					return StateType::Null;
 				}
 
-				if (!m_gizmo->IsGrabbed(AxisLabel::None))
+				bool nothingGrabbed = m_gizmo->IsGrabbed(AxisLabel::None);
+				if (!nothingGrabbed)
 				{
 					CalculateIntersectionPlane();
 					return StateType::StateTransformTo;
@@ -226,7 +219,7 @@ namespace ToolKit
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			
 			Vec3 x, y, z;
-			ExtractAxes(glm::toMat4(m_axisOrientation), x, y, z);
+			ExtractAxes(m_gizmo->m_normalVectors, x, y, z);
 
 			Viewport* vp = g_app->GetActiveViewport();
 			Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);

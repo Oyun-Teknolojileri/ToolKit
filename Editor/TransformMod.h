@@ -23,7 +23,6 @@ namespace ToolKit
 
 		public:
 			Gizmo* m_gizmo;
-			Quaternion m_axisOrientation;
 			std::vector<Vec2> m_mouseData;
 			PlaneEquation m_intersectionPlane;
 		};
