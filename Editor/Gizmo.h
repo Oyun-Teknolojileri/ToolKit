@@ -52,7 +52,7 @@ namespace ToolKit
 			~GizmoHandle();
 
 			void Generate(const HandleParams& params);
-			bool HitTest(const Ray& ray) const;
+			bool HitTest(const Ray& ray, float& t) const;
 
 		public:
 			MeshPtr m_mesh;
@@ -91,7 +91,6 @@ namespace ToolKit
 			LinearGizmo();
 			virtual ~LinearGizmo();
 
-			virtual AxisLabel HitTest(const Ray& ray) const;
 			virtual void Update(float deltaTime) override;
 
 		protected:

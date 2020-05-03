@@ -191,7 +191,7 @@ namespace ToolKit
 			}
 		}
 
-		bool GizmoHandle::HitTest(const Ray& ray) const
+		bool GizmoHandle::HitTest(const Ray& ray, float& t) const
 		{
 			Mat4 ts = glm::toMat4(RotationTo(AXIS[1], m_params.dir.direction));
 			ts[3].xyz = m_params.dir.position;
@@ -210,7 +210,6 @@ namespace ToolKit
 			hitBox.max.y = m_params.toeTip.y;
 			hitBox.max.z = 0.05f;
 
-			float t;
 			if (RayBoxIntersection(rayInObj, hitBox, t))
 			{
 				return true;
@@ -245,14 +244,19 @@ namespace ToolKit
 		{
 		}
 
-		ToolKit::AxisLabel Gizmo::HitTest(const Ray& ray) const
+		AxisLabel Gizmo::HitTest(const Ray& ray) const
 		{
+			float t, tMin = std::numeric_limits<float>::max();
 			AxisLabel hit = AxisLabel::None;
 			for (size_t i = 0; i < m_handles.size(); i++)
 			{
-				if (m_handles[i].HitTest(ray))
+				if (m_handles[i].HitTest(ray, t))
 				{
-					return (AxisLabel)i;
+					if (t < tMin)
+					{
+						tMin = t;
+						hit = (AxisLabel)i;
+					}
 				}
 			}
 
@@ -320,19 +324,6 @@ namespace ToolKit
 
 		LinearGizmo::~LinearGizmo()
 		{
-		}
-
-		ToolKit::AxisLabel LinearGizmo::HitTest(const Ray& ray) const
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				if (m_handles[i].HitTest(ray))
-				{
-					return (AxisLabel)i;
-				}
-			}
-
-			return AxisLabel::None;
 		}
 
 		void LinearGizmo::Update(float deltaTime)
