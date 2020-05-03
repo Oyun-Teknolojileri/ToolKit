@@ -132,7 +132,7 @@ namespace ToolKit
 		{
 		}
 
-		void GizmoHandle::Generate(const HandleParams& params)
+		void GizmoHandle::Generate(const Params& params)
 		{
 			m_params = params;
 
@@ -380,7 +380,7 @@ namespace ToolKit
 
 		void LinearGizmo::Update(float deltaTime)
 		{
-			GizmoHandle::HandleParams p = GetParam();
+			GizmoHandle::Params p = GetParam();
 
 			for (int i = 0; i < 3; i++)
 			{
@@ -409,11 +409,11 @@ namespace ToolKit
 			m_mesh->m_subMeshes.push_back(m_handles[2]->m_mesh);
 		}
 
-		GizmoHandle::HandleParams LinearGizmo::GetParam() const
+		GizmoHandle::Params LinearGizmo::GetParam() const
 		{
 			const float tip = 0.8f, toe = 0.05f, rad = 0.1f;
 
-			GizmoHandle::HandleParams p;
+			GizmoHandle::Params p;
 			p.normalVectors = m_normalVectors;
 			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 			p.solidDim.xyz = Vec3(rad, 1.0f - tip, rad);
@@ -439,9 +439,9 @@ namespace ToolKit
 		{
 		}
 
-		GizmoHandle::HandleParams ScaleGizmo::GetParam() const
+		GizmoHandle::Params ScaleGizmo::GetParam() const
 		{
-			GizmoHandle::HandleParams p = LinearGizmo::GetParam();
+			GizmoHandle::Params p = LinearGizmo::GetParam();
 			p.solidDim = Vec3(0.15f);
 			p.type = GizmoHandle::SolidType::Cube;
 
@@ -449,8 +449,12 @@ namespace ToolKit
 		}
 
 		PolarGizmo::PolarGizmo()
-			: Gizmo({ false, 6.0f, 400.0f })
 		{
+			for (int i = 0; i < 3; i++)
+			{
+				SafeDel(m_handles[i]);
+			}
+
 			m_handles =
 			{
 				new PolarHandle(),
@@ -463,49 +467,19 @@ namespace ToolKit
 
 		PolarGizmo::~PolarGizmo()
 		{
-			for (int i = 0; i < 3; i++)
-			{
-				SafeDel(m_handles[i]);
-			}
 		}
 
 		void PolarGizmo::LookAt(Camera* cam)
 		{
-
+			Billboard::LookAt(cam);
 		}
 
-		void PolarGizmo::Update(float deltaTime)
+		GizmoHandle::Params PolarGizmo::GetParam() const
 		{
-			GizmoHandle::HandleParams p;
-			p.normalVectors = m_normalVectors;
-			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
+			GizmoHandle::Params p = LinearGizmo::GetParam();
 			p.type = GizmoHandle::SolidType::Circle;
 
-			for (int i = 0; i < 3; i++)
-			{
-				if (m_grabbedAxis == (AxisLabel)i)
-				{
-					p.color = g_selectHighLightPrimaryColor;
-				}
-				else
-				{
-					p.color = g_gizmoColor[i];
-				}
-
-				if (IsLocked((AxisLabel)i))
-				{
-					p.color = g_gizmoLocked;
-				}
-
-				p.normalVectors = m_normalVectors;
-				p.axis = (AxisLabel)i;
-				p.dir.direction = m_normalVectors[i];
-				m_handles[i]->Generate(p);
-			}
-
-			m_mesh = m_handles[0]->m_mesh;
-			m_mesh->m_subMeshes.push_back(m_handles[1]->m_mesh);
-			m_mesh->m_subMeshes.push_back(m_handles[2]->m_mesh);
+			return p;
 		}
 
 	}

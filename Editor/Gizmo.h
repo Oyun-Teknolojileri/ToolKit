@@ -37,7 +37,7 @@ namespace ToolKit
 				Circle
 			};
 
-			struct HandleParams
+			struct Params
 			{
 				AxisLabel axis;
 				Mat3 normalVectors;
@@ -52,14 +52,14 @@ namespace ToolKit
 			GizmoHandle();
 			virtual ~GizmoHandle();
 
-			virtual void Generate(const HandleParams& params);
+			virtual void Generate(const Params& params);
 			virtual bool HitTest(const Ray& ray, float& t) const;
 
 		public:
 			MeshPtr m_mesh;
 
 		protected:
-			HandleParams m_params;
+			Params m_params;
 		};
 
 		class PolarHandle : public GizmoHandle
@@ -101,7 +101,7 @@ namespace ToolKit
 			virtual void Update(float deltaTime) override;
 
 		protected:
-			virtual GizmoHandle::HandleParams GetParam() const;
+			virtual GizmoHandle::Params GetParam() const;
 		};
 
 		class MoveGizmo : public LinearGizmo
@@ -118,10 +118,10 @@ namespace ToolKit
 			virtual ~ScaleGizmo();
 
 		protected:
-			virtual GizmoHandle::HandleParams GetParam() const override;
+			virtual GizmoHandle::Params GetParam() const override;
 		};
 
-		class PolarGizmo : public Gizmo 
+		class PolarGizmo : public LinearGizmo
 		{
 			using Billboard::LookAt;
 		public:
@@ -129,7 +129,9 @@ namespace ToolKit
 			virtual ~PolarGizmo();
 
 			virtual void LookAt(Camera* cam) override;
-			virtual void Update(float deltaTime) override;
+
+		protected:
+			virtual GizmoHandle::Params GetParam() const override;
 		};
 	}
 }
