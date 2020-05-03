@@ -171,7 +171,7 @@ namespace ToolKit
 		x = glm::normalize(glm::cross(y, z));
 		y = glm::normalize(glm::cross(z, x));
 
-		NormalzePlaneEquation(plane);
+		NormalizePlaneEquation(plane);
 		Vec3 o = plane.normal * plane.d;
 
 		float hSize = size * 0.5f;

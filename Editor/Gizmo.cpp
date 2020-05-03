@@ -284,6 +284,61 @@ namespace ToolKit
 
 				v.pos = params.normalVectors * v.pos;
 			}
+			
+			// Cut the circle.
+			if (glm::isNull(params.dir.direction, 0.0001f))
+			{
+				return;
+			}
+
+			Vec3 dir = glm::inverseTranspose(params.normalVectors) * params.dir.direction;
+			PlaneEquation plane = PlaneFrom(Vec3(), dir);
+			plane.d = 0.1f; // Cut distance.
+			int firstCutIndx = -1, lastCutIndx = -1;
+
+			for (size_t i = 0; i < m_mesh->m_vertexCount; i++)
+			{
+				if (SignedDistance(plane, m_mesh->m_clientSideVertices[i].pos) > 0.0f)
+				{
+					if (firstCutIndx != -1)
+					{
+						lastCutIndx = (int)i;
+					}
+
+					if (firstCutIndx == -1)
+					{
+						firstCutIndx = (int)i;
+					}
+				}
+			}
+
+			if (lastCutIndx == -1)
+			{
+				lastCutIndx = m_mesh->m_vertexCount - 1;
+			}
+
+			if (firstCutIndx == -1)
+			{
+				firstCutIndx = 0;
+			}
+
+			VertexArray cutted;
+			cutted.insert
+			(
+				cutted.begin(),
+				m_mesh->m_clientSideVertices.begin() + lastCutIndx,
+				m_mesh->m_clientSideVertices.end()
+			);
+
+			cutted.insert
+			(
+				cutted.end(),
+				m_mesh->m_clientSideVertices.begin(),
+				m_mesh->m_clientSideVertices.begin() + firstCutIndx
+			);
+
+			m_mesh->m_clientSideVertices = cutted;
+			m_mesh->m_vertexCount = (uint)cutted.size();
 		}
 
 		bool PolarHandle::HitTest(const Ray& ray, float& t) const
@@ -486,11 +541,15 @@ namespace ToolKit
 		void PolarGizmo::LookAt(Camera* cam)
 		{
 			Billboard::LookAt(cam);
+			m_camDir = cam->GetDir();
+			Update(0.0f); // Plane cuts.
 		}
 
 		void PolarGizmo::Update(float deltaTime)
 		{
 			GizmoHandle::Params p;
+			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
+			p.dir.direction = m_camDir;
 
 			for (int i = 0; i < 3; i++)
 			{
@@ -510,14 +569,12 @@ namespace ToolKit
 
 				p.normalVectors = m_normalVectors;
 				p.axis = (AxisLabel)i;
-				p.dir.direction = m_normalVectors[i];
 				m_handles[i]->Generate(p);
 			}
 
 			m_mesh = m_handles[0]->m_mesh;
 			m_mesh->m_subMeshes.push_back(m_handles[1]->m_mesh);
 			m_mesh->m_subMeshes.push_back(m_handles[2]->m_mesh);
-
 		}
 
 	}

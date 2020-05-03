@@ -200,7 +200,7 @@ namespace ToolKit
 		// Normalize the plane equations, if requested
 		for (int i = 0; i < 6; i++)
 		{
-			NormalzePlaneEquation(frustum.planes[i]);
+			NormalizePlaneEquation(frustum.planes[i]);
 		}
 
 		return frustum;
@@ -424,7 +424,7 @@ namespace ToolKit
 	}
 
 	// http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
-	void NormalzePlaneEquation(PlaneEquation& plane)
+	void NormalizePlaneEquation(PlaneEquation& plane)
 	{
 		float mag = glm::length(plane.normal);
 		plane.normal.x = plane.normal.x / mag;
@@ -505,6 +505,16 @@ namespace ToolKit
 		plane.d = glm::dot(point, normal) / glm::dot(normal, normal);
 
 		return  plane;
+	}
+
+	float SignedDistance(const PlaneEquation& plane, const Vec3& pnt)
+	{
+		assert(glm::isNormalized(plane.normal, 0.0001f) && "Normalized vector expected.");
+
+		Vec3 planeOrig = plane.normal * plane.d;
+		Vec3 checkPnt = pnt - planeOrig;
+
+		return glm::dot(checkPnt, plane.normal);
 	}
 
 	Vec3 Interpolate(const Vec3& vec1, const Vec3& vec2, float ratio)

@@ -69,10 +69,11 @@ namespace ToolKit
 
   // Geometric Operations
   //////////////////////////////////////////
-  void NormalzePlaneEquation(PlaneEquation& plane);
+  void NormalizePlaneEquation(PlaneEquation& plane);
 	void TransformAABB(BoundingBox& box, const Mat4& transform);
   PlaneEquation PlaneFrom(Vec3 const pnts[3]);
   PlaneEquation PlaneFrom(Vec3 point, Vec3 normal);
+  float SignedDistance(const PlaneEquation& plane, const Vec3& pnt);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

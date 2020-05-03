@@ -34,7 +34,7 @@ namespace ToolKit
     virtual int GetVertexSize();
     virtual bool IsSkinned();
 		void CalculateAABoundingBox();
-		void GetAllMeshes(std::vector<Mesh*>& meshes);
+		void GetAllMeshes(MeshRawPtrArray& meshes);
 
   protected:
     virtual void InitVertices(bool flush);
@@ -42,14 +42,14 @@ namespace ToolKit
 		void UpdateAABB(const Vec3& v);
 
   public:
-    std::vector<Vertex> m_clientSideVertices;
+    VertexArray m_clientSideVertices;
     std::vector<uint> m_clientSideIndices;
     GLuint m_vboVertexId = 0;
     GLuint m_vboIndexId = 0;
     uint m_vertexCount = 0;
     uint m_indexCount = 0;
     MaterialPtr m_material;
-    std::vector<std::shared_ptr<Mesh>> m_subMeshes;
+    MeshPtrArray m_subMeshes;
 		BoundingBox m_aabb;
   };
 

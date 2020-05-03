@@ -131,6 +131,9 @@ namespace ToolKit
 
 			virtual void LookAt(Camera* cam) override;
 			virtual void Update(float deltaTime) override;
+
+		private:
+			Vec3 m_camDir;
 		};
 	}
 }

@@ -39,7 +39,7 @@ namespace ToolKit
 		InitIndices(flushClientSideArray);
 		m_material->Init();
 
-		for (std::shared_ptr<Mesh> mesh : m_subMeshes)
+		for (MeshPtr mesh : m_subMeshes)
 		{
 			mesh->Init(flushClientSideArray);
 		}
@@ -52,7 +52,7 @@ namespace ToolKit
 		GLuint buffers[2] = { m_vboIndexId, m_vboVertexId };
 		glDeleteBuffers(2, buffers);
 
-		for (std::shared_ptr<Mesh> subMesh : m_subMeshes)
+		for (MeshPtr& subMesh : m_subMeshes)
 		{
 			subMesh = nullptr;
 		}
@@ -85,7 +85,7 @@ namespace ToolKit
 			if (mesh == nullptr)
 			{
 				mesh = new Mesh();
-				m_subMeshes.push_back(std::shared_ptr<Mesh>(mesh));
+				m_subMeshes.push_back(MeshPtr(mesh));
 			}
 
 			rapidxml::xml_node<>* materialNode = node->first_node("material");
@@ -147,7 +147,7 @@ namespace ToolKit
 
 		m_aabb = BoundingBox();
 
-		std::vector<Mesh*> meshes;
+		MeshRawPtrArray meshes;
 		GetAllMeshes(meshes);
 
 		for (size_t i = 0; i < meshes.size(); i++)
@@ -166,7 +166,7 @@ namespace ToolKit
 		}
 	}
 
-	void Mesh::GetAllMeshes(std::vector<Mesh*>& meshes)
+	void Mesh::GetAllMeshes(MeshRawPtrArray& meshes)
 	{
 		meshes.push_back(this);
 		for (size_t i = 0; i < m_subMeshes.size(); i++)
@@ -282,7 +282,7 @@ namespace ToolKit
 			if (mesh == nullptr)
 			{
 				mesh = new SkinMesh();
-				m_subMeshes.push_back(std::shared_ptr<Mesh>(mesh));
+				m_subMeshes.push_back(MeshPtr(mesh));
 			}
 
 			rapidxml::xml_node<>* materialNode = node->first_node("material");
