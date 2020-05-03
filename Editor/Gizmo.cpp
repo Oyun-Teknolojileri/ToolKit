@@ -142,7 +142,7 @@ namespace ToolKit
 				params.dir.direction * params.toeTip.y
 			};
 
-			LineBatch line(pnts, params.color, DrawType::Line);
+			LineBatch line(pnts, params.color, DrawType::Line, 2.0f);
 			m_mesh = line.m_mesh;
 			line.m_mesh = nullptr;
 
@@ -302,6 +302,10 @@ namespace ToolKit
 
 		Gizmo::~Gizmo()
 		{
+			for (size_t i = 0; i < m_handles.size(); i++)
+			{
+				SafeDel(m_handles[i]);
+			}
 		}
 
 		AxisLabel Gizmo::HitTest(const Ray& ray) const
@@ -390,10 +394,6 @@ namespace ToolKit
 
 		LinearGizmo::~LinearGizmo()
 		{
-			for (int i = 0; i < 3; i++)
-			{
-				SafeDel(m_handles[i]);
-			}
 		}
 
 		void LinearGizmo::Update(float deltaTime)
@@ -435,7 +435,7 @@ namespace ToolKit
 			p.normalVectors = m_normalVectors;
 			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 			p.solidDim.xyz = Vec3(rad, 1.0f - tip, rad);
-			p.toeTip = Vec2(toe, tip);
+			p.toeTip = Vec3(toe, tip, 0.0f);
 			p.type = GizmoHandle::SolidType::Cone;
 
 			return p;
@@ -467,12 +467,8 @@ namespace ToolKit
 		}
 
 		PolarGizmo::PolarGizmo()
+			: Gizmo({ false, 6.0f, 400.0f })
 		{
-			for (int i = 0; i < 3; i++)
-			{
-				SafeDel(m_handles[i]);
-			}
-
 			m_handles =
 			{
 				new PolarHandle(),
@@ -492,12 +488,36 @@ namespace ToolKit
 			Billboard::LookAt(cam);
 		}
 
-		GizmoHandle::Params PolarGizmo::GetParam() const
+		void PolarGizmo::Update(float deltaTime)
 		{
-			GizmoHandle::Params p = LinearGizmo::GetParam();
-			p.type = GizmoHandle::SolidType::Circle;
+			GizmoHandle::Params p;
 
-			return p;
+			for (int i = 0; i < 3; i++)
+			{
+				if (m_grabbedAxis == (AxisLabel)i)
+				{
+					p.color = g_selectHighLightPrimaryColor;
+				}
+				else
+				{
+					p.color = g_gizmoColor[i];
+				}
+
+				if (IsLocked((AxisLabel)i))
+				{
+					p.color = g_gizmoLocked;
+				}
+
+				p.normalVectors = m_normalVectors;
+				p.axis = (AxisLabel)i;
+				p.dir.direction = m_normalVectors[i];
+				m_handles[i]->Generate(p);
+			}
+
+			m_mesh = m_handles[0]->m_mesh;
+			m_mesh->m_subMeshes.push_back(m_handles[1]->m_mesh);
+			m_mesh->m_subMeshes.push_back(m_handles[2]->m_mesh);
+
 		}
 
 	}

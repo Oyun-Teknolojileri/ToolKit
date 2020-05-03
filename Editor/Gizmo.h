@@ -42,7 +42,7 @@ namespace ToolKit
 				AxisLabel axis;
 				Mat3 normalVectors;
 				Ray dir;
-				Vec2 toeTip;
+				Vec3 toeTip;
 				Vec3 solidDim;
 				Vec3 color;
 				SolidType type;
@@ -122,7 +122,7 @@ namespace ToolKit
 			virtual GizmoHandle::Params GetParam() const override;
 		};
 
-		class PolarGizmo : public LinearGizmo
+		class PolarGizmo : public Gizmo
 		{
 			using Billboard::LookAt;
 		public:
@@ -130,9 +130,7 @@ namespace ToolKit
 			virtual ~PolarGizmo();
 
 			virtual void LookAt(Camera* cam) override;
-
-		protected:
-			virtual GizmoHandle::Params GetParam() const override;
+			virtual void Update(float deltaTime) override;
 		};
 	}
 }
