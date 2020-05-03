@@ -209,45 +209,6 @@ namespace ToolKit
 				{
 					glClear(GL_DEPTH_BUFFER_BIT);
 					m_renderer->Render(gizmo, vp->m_camera);
-
-					// Visualization for gizmo normal vectors.
-					std::vector<Vec3> v1 =
-					{
-						gizmo->m_worldLocation,
-						gizmo->m_worldLocation + gizmo->m_normalVectors[0].xyz * 10.0f
-					};
-
-					std::vector<Vec3> v2 =
-					{
-						gizmo->m_worldLocation,
-						gizmo->m_worldLocation + gizmo->m_normalVectors[1].xyz * 10.0f
-					};
-
-					std::vector<Vec3> v3 =
-					{
-						gizmo->m_worldLocation,
-						gizmo->m_worldLocation + gizmo->m_normalVectors[2].xyz * 10.0f
-					};
-
-					static std::shared_ptr<LineBatch> dbgX = nullptr;
-					static std::shared_ptr<LineBatch> dbgY = nullptr;
-					static std::shared_ptr<LineBatch> dbgZ = nullptr;
-					if (dbgX == nullptr)
-					{
-						dbgX = std::make_shared<LineBatch>(v1, AXIS[0], DrawType::Line);
-						dbgY = std::make_shared<LineBatch>(v2, AXIS[1], DrawType::Line);
-						dbgZ = std::make_shared<LineBatch>(v3, AXIS[2], DrawType::Line);
-					}
-					else
-					{
-						dbgX->Generate(v1, AXIS[0], DrawType::Line);
-						dbgY->Generate(v2, AXIS[1], DrawType::Line);
-						dbgZ->Generate(v3, AXIS[2], DrawType::Line);
-					}
-
-					m_renderer->Render(dbgX.get(), vp->m_camera);
-					m_renderer->Render(dbgY.get(), vp->m_camera);
-					m_renderer->Render(dbgZ.get(), vp->m_camera);
 				}
 
 				m_cursor->LookAt(vp->m_camera);

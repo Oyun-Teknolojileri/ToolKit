@@ -33,7 +33,8 @@ namespace ToolKit
 			enum class SolidType
 			{
 				Cube,
-				Cone
+				Cone,
+				Circle
 			};
 
 			struct HandleParams
@@ -49,16 +50,22 @@ namespace ToolKit
 
 		public:
 			GizmoHandle();
-			~GizmoHandle();
+			virtual ~GizmoHandle();
 
-			void Generate(const HandleParams& params);
-			bool HitTest(const Ray& ray, float& t) const;
+			virtual void Generate(const HandleParams& params);
+			virtual bool HitTest(const Ray& ray, float& t) const;
 
 		public:
 			MeshPtr m_mesh;
 
-		private:
+		protected:
 			HandleParams m_params;
+		};
+
+		class PolarHandle : public GizmoHandle
+		{
+		public:
+			virtual bool HitTest(const Ray& ray, float& t) const override;
 		};
 
 		class Gizmo : public Billboard
@@ -112,6 +119,17 @@ namespace ToolKit
 
 		protected:
 			virtual GizmoHandle::HandleParams GetParam() const override;
+		};
+
+		class PolarGizmo : public Gizmo 
+		{
+			using Billboard::LookAt;
+		public:
+			PolarGizmo();
+			virtual ~PolarGizmo();
+
+			virtual void LookAt(class Camera* cam) override;
+			virtual void Update(float deltaTime) override;
 		};
 	}
 }

@@ -149,12 +149,14 @@ namespace ToolKit
 			MaterialPtr material = GetMaterialManager()->GetCopyOfSolidMaterial();
 			material->m_color = params.color;
 
+			float deltaY = 0.0f;
 			if (params.type == SolidType::Cube)
 			{
 				Cube solid(params.solidDim);
 				solid.m_mesh->m_material = material;
 				m_mesh->m_subMeshes.push_back(solid.m_mesh);
 				solid.m_mesh = nullptr;
+				deltaY = params.toeTip.y;
 			}
 			else if (params.type == SolidType::Cone)
 			{
@@ -162,6 +164,40 @@ namespace ToolKit
 				solid.m_mesh->m_material = material;
 				m_mesh->m_subMeshes.push_back(solid.m_mesh);
 				solid.m_mesh = nullptr;
+				deltaY = params.toeTip.y;
+			}
+			else if (params.type == SolidType::Circle)
+			{
+				int cornerCount = 60;
+				std::vector<Vec3> corners;
+				pnts.reserve(cornerCount);
+
+				float deltaAngle = glm::two_pi<float>() / cornerCount;
+				for (int i = 0; i < cornerCount; i++)
+				{
+					float angle = deltaAngle * i;
+					corners.push_back(Vec3(glm::cos(angle), glm::sin(angle), 0.0f));
+
+					switch (params.axis)
+					{
+					case AxisLabel::X:
+						corners[i] = corners[i].yzx;
+						break;
+					case AxisLabel::Y:
+						corners[i] = corners[i].xzy;
+						break;
+					case AxisLabel::Z:
+						corners[i] = corners[i].xzy;
+						break;
+					default:
+						assert(false);
+						break;
+					}
+				}
+
+				LineBatch circle(corners, params.color, DrawType::LineLoop, 4.0f);
+				m_mesh->m_subMeshes.push_back(circle.m_mesh);
+				circle.m_mesh = nullptr;
 			}
 			else
 			{
@@ -173,7 +209,8 @@ namespace ToolKit
 			MeshPtr m = m_mesh->m_subMeshes.back();
 			for (Vertex& v : m->m_clientSideVertices)
 			{
-				v.pos.y += params.toeTip.y;
+				v.pos.y += deltaY;
+				
 				switch (params.axis)
 				{
 				case AxisLabel::X:
@@ -228,6 +265,11 @@ namespace ToolKit
 				return true;
 			}
 
+			return false;
+		}
+
+		bool PolarHandle::HitTest(const Ray& ray, float& t) const
+		{
 			return false;
 		}
 
@@ -394,6 +436,24 @@ namespace ToolKit
 			p.type = GizmoHandle::SolidType::Cube;
 
 			return p;
+		}
+
+		PolarGizmo::PolarGizmo()
+			: Gizmo({ false, 6.0f, 400.0f })
+		{
+		}
+
+		PolarGizmo::~PolarGizmo()
+		{
+		}
+
+		void PolarGizmo::LookAt(class Camera* cam)
+		{
+
+		}
+
+		void PolarGizmo::Update(float deltaTime)
+		{
 		}
 
 	}
