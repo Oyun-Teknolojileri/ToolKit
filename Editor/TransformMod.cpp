@@ -472,9 +472,15 @@ namespace ToolKit
 		{
 			EntityRawPtrArray selecteds;
 			g_app->m_scene.GetSelectedEntities(selecteds);
+			
+			EntityRawPtrArray roots;
+			for (Entity* e : selecteds)
+			{
+				RootsOnly(selecteds, roots, e);
+			}
 
 			TransformationSpace space = g_app->m_transformOrientation;
-			for (Entity* e : selecteds)
+			for (Entity* e : roots)
 			{
 				switch (m_id)
 				{
@@ -503,6 +509,34 @@ namespace ToolKit
 
 		void TransformMod::RootsOnly(EntityRawPtrArray& selecteds, EntityRawPtrArray& roots, Entity* child) const
 		{
+			auto AddUnique = [&roots](Entity* e)
+			{
+				assert(e != nullptr);
+
+				bool unique = std::find(roots.begin(), roots.end(), e) == roots.end();
+				if (unique)
+				{
+					roots.push_back(e);
+				}
+			};
+
+			Node* parent = child->m_node->m_parent;
+			if (parent != nullptr)
+			{
+				Entity* parentEntity = parent->m_entity;
+				if (std::find(selecteds.begin(), selecteds.end(), parentEntity) != selecteds.end())
+				{
+					RootsOnly(selecteds, roots, parentEntity);
+				}
+				else
+				{
+					AddUnique(child);
+				}
+			}
+			else
+			{
+				AddUnique(child);
+			}
 		}
 
 	}
