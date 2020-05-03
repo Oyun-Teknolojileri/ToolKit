@@ -87,7 +87,7 @@ namespace ToolKit
 			Mat3 m_normalVectors;
 
 		protected:
-			std::vector<GizmoHandle> m_handles;
+			std::vector<GizmoHandle*> m_handles;
 			std::vector<AxisLabel> m_lockedAxis;
 			AxisLabel m_grabbedAxis;
 		};
@@ -128,7 +128,7 @@ namespace ToolKit
 			PolarGizmo();
 			virtual ~PolarGizmo();
 
-			virtual void LookAt(class Camera* cam) override;
+			virtual void LookAt(Camera* cam) override;
 			virtual void Update(float deltaTime) override;
 		};
 	}

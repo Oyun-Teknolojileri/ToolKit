@@ -413,7 +413,7 @@ namespace ToolKit
 				m_gizmo = new MoveGizmo();
 				break;
 			case ModId::Rotate:
-				m_gizmo = new LinearGizmo();
+				m_gizmo = new PolarGizmo();
 				break;
 			case ModId::Scale:
 				m_gizmo = new ScaleGizmo();

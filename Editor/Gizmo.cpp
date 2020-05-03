@@ -292,7 +292,7 @@ namespace ToolKit
 			AxisLabel hit = AxisLabel::None;
 			for (size_t i = 0; i < m_handles.size(); i++)
 			{
-				if (m_handles[i].HitTest(ray, t))
+				if (m_handles[i]->HitTest(ray, t))
 				{
 					if (t < tMin)
 					{
@@ -360,12 +360,22 @@ namespace ToolKit
 		LinearGizmo::LinearGizmo()
 			: Gizmo({ false, 6.0f, 400.0f })
 		{
-			m_handles.resize(3);
+			m_handles =
+			{
+				new GizmoHandle(),
+				new GizmoHandle(),
+				new GizmoHandle()
+			};
+
 			Update(0.0f);
 		}
 
 		LinearGizmo::~LinearGizmo()
 		{
+			for (int i = 0; i < 3; i++)
+			{
+				SafeDel(m_handles[i]);
+			}
 		}
 
 		void LinearGizmo::Update(float deltaTime)
@@ -391,12 +401,12 @@ namespace ToolKit
 				p.normalVectors = m_normalVectors;
 				p.axis = (AxisLabel)i;
 				p.dir.direction = m_normalVectors[i];
-				m_handles[i].Generate(p);
+				m_handles[i]->Generate(p);
 			}
 
-			m_mesh = m_handles[0].m_mesh;
-			m_mesh->m_subMeshes.push_back(m_handles[1].m_mesh);
-			m_mesh->m_subMeshes.push_back(m_handles[2].m_mesh);
+			m_mesh = m_handles[0]->m_mesh;
+			m_mesh->m_subMeshes.push_back(m_handles[1]->m_mesh);
+			m_mesh->m_subMeshes.push_back(m_handles[2]->m_mesh);
 		}
 
 		GizmoHandle::HandleParams LinearGizmo::GetParam() const
@@ -441,19 +451,61 @@ namespace ToolKit
 		PolarGizmo::PolarGizmo()
 			: Gizmo({ false, 6.0f, 400.0f })
 		{
+			m_handles =
+			{
+				new PolarHandle(),
+				new PolarHandle(),
+				new PolarHandle()
+			};
+
+			Update(0.0f);
 		}
 
 		PolarGizmo::~PolarGizmo()
 		{
+			for (int i = 0; i < 3; i++)
+			{
+				SafeDel(m_handles[i]);
+			}
 		}
 
-		void PolarGizmo::LookAt(class Camera* cam)
+		void PolarGizmo::LookAt(Camera* cam)
 		{
 
 		}
 
 		void PolarGizmo::Update(float deltaTime)
 		{
+			GizmoHandle::HandleParams p;
+			p.normalVectors = m_normalVectors;
+			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
+			p.type = GizmoHandle::SolidType::Circle;
+
+			for (int i = 0; i < 3; i++)
+			{
+				if (m_grabbedAxis == (AxisLabel)i)
+				{
+					p.color = g_selectHighLightPrimaryColor;
+				}
+				else
+				{
+					p.color = g_gizmoColor[i];
+				}
+
+				if (IsLocked((AxisLabel)i))
+				{
+					p.color = g_gizmoLocked;
+				}
+
+				p.normalVectors = m_normalVectors;
+				p.axis = (AxisLabel)i;
+				p.dir.direction = m_normalVectors[i];
+				m_handles[i]->Generate(p);
+			}
+
+			m_mesh = m_handles[0]->m_mesh;
+			m_mesh->m_subMeshes.push_back(m_handles[1]->m_mesh);
+			m_mesh->m_subMeshes.push_back(m_handles[2]->m_mesh);
 		}
 
 	}
