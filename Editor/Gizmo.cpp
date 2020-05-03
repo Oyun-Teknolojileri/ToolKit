@@ -307,7 +307,7 @@ namespace ToolKit
 			}
 		}
 
-		ToolKit::AxisLabel Gizmo::GetGrabbedAxis() const
+		AxisLabel Gizmo::GetGrabbedAxis() const
 		{
 			return m_grabbedAxis;
 		}
