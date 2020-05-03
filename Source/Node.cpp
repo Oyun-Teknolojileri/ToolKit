@@ -10,6 +10,30 @@ namespace ToolKit
 	{
 	}
 
+	Node::~Node()
+	{
+		if (m_parent != nullptr)
+		{
+			for (
+				NodePtrArray::iterator itr = m_parent->m_children.begin();
+				itr != m_parent->m_children.end();
+				itr++
+				) 
+			{
+				if (*itr == this)
+				{
+					m_parent->m_children.erase(itr);
+					break;
+				}
+			}
+		}
+
+		for (Node* n : m_children)
+		{
+			n->m_parent = nullptr;
+		}
+	}
+
 	void Node::Translate(const Vec3& val, TransformationSpace space)
 	{
 		Vec3 tmpScl = m_scale;
@@ -159,11 +183,11 @@ namespace ToolKit
 		child->m_parent = this;
 	}
 
-	Node* Node::GetRoot()
+	Node* Node::GetRoot() const
 	{
 		if (m_parent == nullptr)
 		{
-			return this;
+			return nullptr;
 		}
 
 		return m_parent->GetRoot();

@@ -472,7 +472,6 @@ namespace ToolKit
 		{
 			EntityRawPtrArray selecteds;
 			g_app->m_scene.GetSelectedEntities(selecteds);
-			RootsOnly(selecteds);
 
 			TransformationSpace space = g_app->m_transformOrientation;
 			for (Entity* e : selecteds)
@@ -502,40 +501,8 @@ namespace ToolKit
 			}
 		}
 
-		void TransformMod::RootsOnly(EntityRawPtrArray& selecteds) const
+		void TransformMod::RootsOnly(EntityRawPtrArray& selecteds, EntityRawPtrArray& roots, Entity* child) const
 		{
-			// Pick all root entities.
-			EntityRawPtrArray rootNtts;
-			for (Entity* ntt : selecteds)
-			{
-				if (ntt->m_node->m_parent == nullptr)
-				{
-					rootNtts.push_back(ntt);
-					continue;
-				}
-			}
-
-			// Pick every entity whose roots not picked.
-			for (Entity* ntt : selecteds)
-			{
-				bool unique = true;
-				Node* rootNode = ntt->m_node->GetRoot();
-				for (Entity* root : rootNtts)
-				{
-					if (root->m_node == rootNode)
-					{
-						unique = false;
-						break;
-					}
-				}
-
-				if (unique)
-				{
-					rootNtts.push_back(ntt);
-				}
-			}
-
-			selecteds = rootNtts;
 		}
 
 	}

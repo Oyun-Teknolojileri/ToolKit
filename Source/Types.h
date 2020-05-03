@@ -27,6 +27,7 @@ namespace ToolKit
 	typedef std::vector<class Entity*> EntityRawPtrArray;
 	typedef std::vector<std::shared_ptr<class Entity>> EntitySharedPtrArray;
 	typedef std::vector<EntityId> EntityIdArray;
+	typedef std::vector<class Node*> NodePtrArray;
 
 	static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
 	static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);

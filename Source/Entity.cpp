@@ -14,6 +14,7 @@ namespace ToolKit
 	Entity::Entity()
 	{
 		m_node = new Node();
+		m_node->m_entity = this;
 		m_id = m_lastId++;
 	}
 
