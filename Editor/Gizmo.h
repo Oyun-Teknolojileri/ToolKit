@@ -65,6 +65,7 @@ namespace ToolKit
 		class PolarHandle : public GizmoHandle
 		{
 		public:
+			virtual void Generate(const Params& params) override;
 			virtual bool HitTest(const Ray& ray, float& t) const override;
 		};
 
