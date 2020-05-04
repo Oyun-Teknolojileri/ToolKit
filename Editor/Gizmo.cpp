@@ -288,6 +288,16 @@ namespace ToolKit
 
 		bool PolarHandle::HitTest(const Ray& ray, float& t) const
 		{
+			PlaneEquation plane = PlaneFrom(m_params.dir.position, m_params.dir.direction);
+
+			float margin = 0.1f;
+			if (RayPlaneIntersection(ray, plane, t))
+			{
+				Vec3 intersection = PointOnRay(ray, t);
+				float dist2center = glm::distance(intersection, m_params.dir.position);
+				return glm::abs(dist2center - 1.0f) < margin * 0.5f;
+			}
+
 			return false;
 		}
 
@@ -494,10 +504,11 @@ namespace ToolKit
 		{
 			GizmoHandle::Params p;
 			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
-			p.dir.direction = m_camDir;
 
 			for (int i = 0; i < 3; i++)
 			{
+				p.dir.direction = m_normalVectors[i];
+
 				if (m_grabbedAxis == (AxisLabel)i)
 				{
 					p.color = g_selectHighLightPrimaryColor;
