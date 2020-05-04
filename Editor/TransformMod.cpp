@@ -169,6 +169,16 @@ namespace ToolKit
 						m_gizmo->UnLock(axisLabes[i]);
 					}
 				}
+
+				// Highlight on mouse over.
+				AxisLabel axis = m_gizmo->HitTest(vp->RayFromMousePosition());
+				if (axis != AxisLabel::None)
+				{
+					if (!m_gizmo->IsLocked(axis))
+					{
+						m_gizmo->m_lastHovered = axis;
+					}
+				}
 			}
 		}
 

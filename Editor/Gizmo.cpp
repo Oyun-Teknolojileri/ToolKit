@@ -425,6 +425,11 @@ namespace ToolKit
 				{
 					p.color = g_gizmoLocked;
 				}
+				else if (m_lastHovered == (AxisLabel)i)
+				{
+					p.color = g_selectHighLightSecondaryColor;
+					m_lastHovered = AxisLabel::None;
+				}
 
 				p.normalVectors = m_normalVectors;
 				p.axis = (AxisLabel)i;
@@ -521,6 +526,11 @@ namespace ToolKit
 				if (IsLocked((AxisLabel)i))
 				{
 					p.color = g_gizmoLocked;
+				}
+				else if (m_lastHovered == (AxisLabel)i)
+				{
+					p.color = g_selectHighLightSecondaryColor;
+					m_lastHovered = AxisLabel::None;
 				}
 
 				p.normalVectors = m_normalVectors;

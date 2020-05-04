@@ -86,6 +86,7 @@ namespace ToolKit
 
 		public:
 			Mat3 m_normalVectors;
+			AxisLabel m_lastHovered;
 
 		protected:
 			std::vector<GizmoHandle*> m_handles;
