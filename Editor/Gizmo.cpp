@@ -284,61 +284,6 @@ namespace ToolKit
 
 				v.pos = params.normalVectors * v.pos;
 			}
-			
-			// Cut the circle.
-			if (glm::isNull(params.dir.direction, 0.0001f))
-			{
-				return;
-			}
-
-			Vec3 dir = glm::inverseTranspose(params.normalVectors) * params.dir.direction;
-			PlaneEquation plane = PlaneFrom(Vec3(), dir);
-			plane.d = 0.1f; // Cut distance.
-			int firstCutIndx = -1, lastCutIndx = -1;
-
-			for (size_t i = 0; i < m_mesh->m_vertexCount; i++)
-			{
-				if (SignedDistance(plane, m_mesh->m_clientSideVertices[i].pos) > 0.0f)
-				{
-					if (firstCutIndx != -1)
-					{
-						lastCutIndx = (int)i;
-					}
-
-					if (firstCutIndx == -1)
-					{
-						firstCutIndx = (int)i;
-					}
-				}
-			}
-
-			if (lastCutIndx == -1)
-			{
-				lastCutIndx = m_mesh->m_vertexCount - 1;
-			}
-
-			if (firstCutIndx == -1)
-			{
-				firstCutIndx = 0;
-			}
-
-			VertexArray cutted;
-			cutted.insert
-			(
-				cutted.begin(),
-				m_mesh->m_clientSideVertices.begin() + lastCutIndx,
-				m_mesh->m_clientSideVertices.end()
-			);
-
-			cutted.insert
-			(
-				cutted.end(),
-				m_mesh->m_clientSideVertices.begin(),
-				m_mesh->m_clientSideVertices.begin() + firstCutIndx
-			);
-
-			m_mesh->m_clientSideVertices = cutted;
-			m_mesh->m_vertexCount = (uint)cutted.size();
 		}
 
 		bool PolarHandle::HitTest(const Ray& ray, float& t) const
