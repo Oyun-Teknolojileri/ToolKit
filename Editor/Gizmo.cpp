@@ -522,6 +522,26 @@ namespace ToolKit
 			m_mesh->m_subMeshes.push_back(m_handles[2]->m_mesh);
 		}
 
+		void PolarGizmo::Render(Renderer* renderer, Camera* cam)
+		{
+			// Draw an inverted sphere to mask back side.
+			static std::shared_ptr<Sphere> sphere = nullptr;
+			if (sphere == nullptr)
+			{
+				sphere = std::make_shared<Sphere>();
+				sphere->m_mesh->m_material->GetRenderState()->cullMode = CullingType::Front;
+			}
+
+			*sphere->m_node = *m_node;
+			sphere->m_node->Scale(Vec3(0.95f));
+
+			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+			renderer->Render(sphere.get(), cam);
+			
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+			renderer->Render(this, cam);
+		}
+
 	}
 
 }

@@ -208,7 +208,14 @@ namespace ToolKit
 				if (gizmo != nullptr)
 				{
 					glClear(GL_DEPTH_BUFFER_BIT);
-					m_renderer->Render(gizmo, vp->m_camera);
+					if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (gizmo))
+					{
+						pg->Render(m_renderer, vp->m_camera);
+					}
+					else
+					{
+						m_renderer->Render(gizmo, vp->m_camera);
+					}
 				}
 
 				m_cursor->LookAt(vp->m_camera);
