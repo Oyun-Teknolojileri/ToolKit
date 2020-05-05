@@ -290,17 +290,26 @@ namespace ToolKit
 		{
 			PlaneEquation plane = PlaneFrom(m_params.dir.position, m_params.dir.direction);
 
-			float margin = 0.1f;
-			if (RayPlaneIntersection(ray, plane, t))
+			if (LinePlaneIntersection(ray, plane, t))
 			{
+				// Prevent back face selection by masking.
+				float maskDist;
+				BoundingSphere maskSphere = { m_params.dir.position, 0.95f * 0.5f };
+				if (RaySphereIntersection(ray, maskSphere, maskDist))
+				{
+					if (maskDist < t)
+					{
+						return false;
+					}
+				}
+
 				Vec3 intersection = PointOnRay(ray, t);
 				float dist2center = glm::distance(intersection, m_params.dir.position);
-				return glm::abs(dist2center - 1.0f) < margin * 0.5f;
+				return dist2center > 0.47f && dist2center < 0.51f;
 			}
 
 			return false;
 		}
-
 		// Gizmo
 		//////////////////////////////////////////////////////////////////////////
 

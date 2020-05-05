@@ -38,6 +38,12 @@ namespace ToolKit
     PlaneEquation planes[6]; // Left - Right - Top - Bottom - Near - Far
   };
 
+  struct BoundingSphere
+  {
+    Vec3 pos;
+    float radius;
+  };
+
   // Matrix Operations
   //////////////////////////////////////////
 
@@ -64,6 +70,7 @@ namespace ToolKit
 	bool RayMeshIntersection(class Mesh* const mesh, const Ray& ray, float& t);
   IntersectResult FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box); // 0 outside, 1 inside, 2 intersect
   bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t);
+  bool RaySphereIntersection(const Ray& ray, const BoundingSphere& sphere, float& t);
   bool LinePlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t); // Line is same as ray but it is infinite on both sides. Unless ray is parallel to plane, it will always yield a result.
   Vec3 PointOnRay(const Ray& ray, float t);
 
