@@ -53,4 +53,6 @@ namespace ToolKit
 		ZX
 	};
 
+	static const float TK_FLT_MAX = std::numeric_limits<float>::max();
+
 }

@@ -313,9 +313,11 @@ namespace ToolKit
 				Vec3(-0.5f, -0.5f, 0.5f) * scale // FBL.
 			};
 
+
+			Vec3 mid = (box.min + box.max) * 0.5f;
 			for (Vec3& v : vertices)
 			{
-				v += box.min;
+				v += mid;
 				if (transform != nullptr)
 				{
 					v = *transform * Vec4(v, 1.0f);
@@ -328,6 +330,8 @@ namespace ToolKit
 
 		bool PolarHandle::HitTest(const Ray& ray, float& t) const
 		{
+			t = TK_FLT_MAX;
+
 			Mat4 ts = m_params.parentTransform;
 			if (Viewport* vp = g_app->GetActiveViewport())
 			{
@@ -342,15 +346,50 @@ namespace ToolKit
 						mid + Vec3(0.05f)
 					};
 
-					// LineBatch* vol = GenerateBoundingVolumeGeometry(bb, &ts);
-					// g_app->m_perFrameDebugObjects.push_back(vol);
+					bb.min = m_params.parentTransform * Vec4(bb.min, 1.0f);
+					bb.max = m_params.parentTransform * Vec4(bb.max, 1.0f);
+
+					float tInt;
+					if (RayBoxIntersection(ray, bb, tInt))
+					{
+						if (tInt < t)
+						{
+							t = tInt;
+						}
+					}
+
+					LineBatch* vol = GenerateBoundingVolumeGeometry(bb, nullptr);
+					g_app->m_perFrameDebugObjects.push_back(vol);
 				}
 			}
+
+			// Prevent back face selection by masking.
+			float maskDist;
+			BoundingSphere maskSphere = { m_params.dir.position, 0.95f };
+			
+			// Calculate scaled rad due to window aspect. (billboard prop.)
+			Vec3 rad(0.95f);
+			rad = m_params.parentTransform * Vec4(rad, 0.0f);
+			assert(glm::all(glm::equal(rad, rad.xxx())) && "Uniform scale expected.");
+			
+			maskSphere.radius = rad.x;
+			Sphere* s = new Sphere(rad.x);
+			g_app->m_perFrameDebugObjects.push_back(s);
+
+			if (RaySphereIntersection(ray, maskSphere, maskDist))
+			{
+				if (maskDist < t)
+				{
+					return false;
+				}
+			}
+
+			return t != TK_FLT_MAX;
 
 			PlaneEquation plane = PlaneFrom(m_params.dir.position, m_params.dir.direction);
 			if (LinePlaneIntersection(ray, plane, t))
 			{
-				// Prevent back face selection by masking.
+				
 				float maskDist;
 				BoundingSphere maskSphere = { m_params.dir.position, 0.95f * 0.5f };
 				if (RaySphereIntersection(ray, maskSphere, maskDist))
@@ -549,7 +588,7 @@ namespace ToolKit
 		}
 
 		PolarGizmo::PolarGizmo()
-			: Gizmo({ false, 6.0f, 400.0f })
+			: Gizmo({ false, 0.0f, 400.0f })
 		{
 			m_handles =
 			{
@@ -597,7 +636,7 @@ namespace ToolKit
 				}
 				else if (m_lastHovered == (AxisLabel)i)
 				{
-					p.color = g_selectHighLightSecondaryColor;
+					p.color = Vec3(1.0f);
 					m_lastHovered = AxisLabel::None;
 				}
 

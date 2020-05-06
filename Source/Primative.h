@@ -53,8 +53,12 @@ namespace ToolKit
   {
   public:
     Sphere();
+    Sphere(float rad);
 
     virtual EntityType GetType() const override;
+
+  private:
+    void Generate(float rad);
   };
 
   class Cone : public Drawable

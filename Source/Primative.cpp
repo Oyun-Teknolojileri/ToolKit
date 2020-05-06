@@ -262,7 +262,22 @@ namespace ToolKit
 
 	Sphere::Sphere()
 	{
-		const float r = 1.0f;
+		Generate(1.0f);
+	}
+
+	Sphere::Sphere(float rad)
+	{
+		Generate(rad);
+	}
+
+	EntityType Sphere::GetType() const
+	{
+		return EntityType::Entity_Sphere;
+	}
+
+	void Sphere::Generate(float rad)
+	{
+		const float r = rad;
 		const int nRings = 32;
 		const int nSegments = 32;
 
@@ -318,11 +333,6 @@ namespace ToolKit
 		m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
 		m_mesh->CalculateAABoundingBox();
-	}
-
-	EntityType Sphere::GetType() const
-	{
-		return EntityType::Entity_Sphere;
 	}
 
 	Cone::Cone()
