@@ -126,17 +126,12 @@ namespace ToolKit
 
 		class PolarGizmo : public Gizmo
 		{
-			using Billboard::LookAt;
 		public:
 			PolarGizmo();
 			virtual ~PolarGizmo();
 
-			virtual void LookAt(Camera* cam) override;
 			virtual void Update(float deltaTime) override;
 			void Render(Renderer* renderer, Camera* cam);
-
-		private:
-			Vec3 m_camDir;
 		};
 	}
 }

@@ -539,13 +539,6 @@ namespace ToolKit
 		{
 		}
 
-		void PolarGizmo::LookAt(Camera* cam)
-		{
-			Billboard::LookAt(cam);
-			m_camDir = cam->GetDir();
-			Update(0.0f); // Plane cuts.
-		}
-
 		void PolarGizmo::Update(float deltaTime)
 		{
 			GizmoHandle::Params p;
