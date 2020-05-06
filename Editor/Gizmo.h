@@ -39,6 +39,7 @@ namespace ToolKit
 
 			struct Params
 			{
+				Mat4 parentTransform;
 				AxisLabel axis;
 				Mat3 normalVectors;
 				Ray dir;

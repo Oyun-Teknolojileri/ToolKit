@@ -41,7 +41,7 @@ namespace ToolKit
 
 		public:
 			Scene m_scene;
-			
+
 			// UI elements.
 			std::vector<Window*> m_windows;
 
@@ -55,6 +55,7 @@ namespace ToolKit
 			Grid* m_grid;
 			Axis3d* m_origin;
 			Cursor* m_cursor;
+			std::vector<Drawable*> m_perFrameDebugObjects;
 
 			// Editor states.
 			int m_fps = 0;

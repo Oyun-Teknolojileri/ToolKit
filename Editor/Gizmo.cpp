@@ -288,10 +288,66 @@ namespace ToolKit
 			}
 		}
 
+		LineBatch* GenerateBoundingVolumeGeometry(const BoundingBox& box, Mat4* transform = nullptr)
+		{			
+			Vec3 scale = box.max - box.min;
+			Cube cube(scale);
+
+			std::vector<Vec3> vertices =
+			{
+				Vec3(-0.5f, 0.5f, 0.5f) * scale, // FTL.
+				Vec3(-0.5f, -0.5f, 0.5f) * scale, // FBL.
+				Vec3(0.5f, -0.5f, 0.5f) * scale, // FBR.
+				Vec3(0.5f, 0.5f, 0.5f) * scale, // FTR.
+				Vec3(-0.5f, 0.5f, 0.5f) * scale, // FTL.
+				Vec3(-0.5f, 0.5f, -0.5f) * scale, // BTL.
+				Vec3(-0.5f, -0.5f, -0.5f) * scale, // BBL.
+				Vec3(0.5f, -0.5f, -0.5f) * scale, // BBR.
+				Vec3(0.5f, 0.5f, -0.5f) * scale, // BTR.
+				Vec3(-0.5f, 0.5f, -0.5f) * scale, // BTL.
+				Vec3(0.5f, 0.5f, -0.5f) * scale, // BTR.
+				Vec3(0.5f, 0.5f, 0.5f) * scale, // FTR.
+				Vec3(0.5f, -0.5f, 0.5f) * scale, // FBR.
+				Vec3(0.5f, -0.5f, -0.5f) * scale, // BBR.
+				Vec3(-0.5f, -0.5f, -0.5f) * scale, // BBL.
+				Vec3(-0.5f, -0.5f, 0.5f) * scale // FBL.
+			};
+
+			for (Vec3& v : vertices)
+			{
+				v += box.min;
+				if (transform != nullptr)
+				{
+					v = *transform * Vec4(v, 1.0f);
+				}
+			}
+
+			LineBatch* lineForm = new LineBatch(vertices, X_AXIS, DrawType::LineStrip, 2.0f);
+			return lineForm;
+		}
+
 		bool PolarHandle::HitTest(const Ray& ray, float& t) const
 		{
-			PlaneEquation plane = PlaneFrom(m_params.dir.position, m_params.dir.direction);
+			Mat4 ts = m_params.parentTransform;
+			if (Viewport* vp = g_app->GetActiveViewport())
+			{
+				for (size_t i = 1; i < m_mesh->m_clientSideVertices.size(); i++)
+				{
+					Vec3& v1 = m_mesh->m_clientSideVertices[i - 1].pos;
+					Vec3& v2 = m_mesh->m_clientSideVertices[i].pos;
+					Vec3 mid = (v1 + v2) * 0.5f;
+					BoundingBox bb =
+					{
+						mid - Vec3(0.05f),
+						mid + Vec3(0.05f)
+					};
 
+					// LineBatch* vol = GenerateBoundingVolumeGeometry(bb, &ts);
+					// g_app->m_perFrameDebugObjects.push_back(vol);
+				}
+			}
+
+			PlaneEquation plane = PlaneFrom(m_params.dir.position, m_params.dir.direction);
 			if (LinePlaneIntersection(ray, plane, t))
 			{
 				// Prevent back face selection by masking.
@@ -519,7 +575,8 @@ namespace ToolKit
 		void PolarGizmo::Update(float deltaTime)
 		{
 			GizmoHandle::Params p;
-			//p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
+			p.parentTransform = m_node->GetTransform(TransformationSpace::TS_WORLD);
+			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
 			for (int i = 0; i < 3; i++)
 			{

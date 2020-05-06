@@ -218,6 +218,16 @@ namespace ToolKit
 					}
 				}
 
+				if (!m_perFrameDebugObjects.empty())
+				{
+					for (Drawable* d : m_perFrameDebugObjects)
+					{
+						m_renderer->Render(d, vp->m_camera);
+						SafeDel(d);
+					}
+					m_perFrameDebugObjects.clear();
+				}
+
 				m_cursor->LookAt(vp->m_camera);
 				m_renderer->Render(m_cursor, vp->m_camera);
 			}

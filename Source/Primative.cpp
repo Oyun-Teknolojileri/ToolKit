@@ -72,11 +72,11 @@ namespace ToolKit
 		{
 			Vec3(-0.5f, 0.5f, 0.5f) * scale, // FTL.
 			Vec3(-0.5f, -0.5f, 0.5f) * scale, // FBL.
-			Vec3(0.5f, -0.5f, 0.5f)* scale, // FBR.
+			Vec3(0.5f, -0.5f, 0.5f) * scale, // FBR.
 			Vec3(0.5f, 0.5f, 0.5f) * scale, // FTR.
-			Vec3(-0.5f, 0.5f, -0.5f)* scale, // BTL.
-			Vec3(-0.5f, -0.5f, -0.5f)* scale, // BBL.
-			Vec3(0.5f, -0.5f, -0.5f)* scale, // BBR.
+			Vec3(-0.5f, 0.5f, -0.5f) * scale, // BTL.
+			Vec3(-0.5f, -0.5f, -0.5f) * scale, // BBL.
+			Vec3(0.5f, -0.5f, -0.5f) * scale, // BBR.
 			Vec3(0.5f, 0.5f, -0.5f) * scale, // BTR.
 		};
 
