@@ -364,11 +364,11 @@ namespace ToolKit
 			}
 
 			// Prevent back face selection by masking.
-			float maskDist;
-			BoundingSphere maskSphere = { m_params.dir.position, 0.95f };
-			
+			float maskDist, r = 0.95f;
+			BoundingSphere maskSphere = { m_params.dir.position, r }; // Pos wont update sphere loc. It has to be done by updating vertices.
+
 			// Calculate scaled rad due to window aspect. (billboard prop.)
-			Vec3 rad(0.95f);
+			Vec3 rad(r);
 			rad = m_params.parentTransform * Vec4(rad, 0.0f);
 			assert(glm::all(glm::equal(rad, rad.xxx())) && "Uniform scale expected.");
 			
@@ -385,28 +385,8 @@ namespace ToolKit
 			}
 
 			return t != TK_FLT_MAX;
-
-			PlaneEquation plane = PlaneFrom(m_params.dir.position, m_params.dir.direction);
-			if (LinePlaneIntersection(ray, plane, t))
-			{
-				
-				float maskDist;
-				BoundingSphere maskSphere = { m_params.dir.position, 0.95f * 0.5f };
-				if (RaySphereIntersection(ray, maskSphere, maskDist))
-				{
-					if (maskDist < t)
-					{
-						return false;
-					}
-				}
-
-				Vec3 intersection = PointOnRay(ray, t);
-				float dist2center = glm::distance(intersection, m_params.dir.position);
-				return dist2center > 0.47f && dist2center < 0.51f;
-			}
-
-			return false;
 		}
+
 		// Gizmo
 		//////////////////////////////////////////////////////////////////////////
 
@@ -588,7 +568,7 @@ namespace ToolKit
 		}
 
 		PolarGizmo::PolarGizmo()
-			: Gizmo({ false, 0.0f, 400.0f })
+			: Gizmo({ false, 6.0f, 400.0f })
 		{
 			m_handles =
 			{
