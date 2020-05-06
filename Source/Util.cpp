@@ -187,4 +187,43 @@ namespace ToolKit
 		return obj;
 	}
 
+	ToolKit::LineBatch* GenerateBoundingVolumeGeometry(const BoundingBox& box, Mat4* transform)
+	{
+		Vec3 scale = box.max - box.min;
+		Cube cube(scale);
+
+		std::vector<Vec3> vertices =
+		{
+			Vec3(-0.5f, 0.5f, 0.5f) * scale, // FTL.
+			Vec3(-0.5f, -0.5f, 0.5f) * scale, // FBL.
+			Vec3(0.5f, -0.5f, 0.5f) * scale, // FBR.
+			Vec3(0.5f, 0.5f, 0.5f) * scale, // FTR.
+			Vec3(-0.5f, 0.5f, 0.5f) * scale, // FTL.
+			Vec3(-0.5f, 0.5f, -0.5f) * scale, // BTL.
+			Vec3(-0.5f, -0.5f, -0.5f) * scale, // BBL.
+			Vec3(0.5f, -0.5f, -0.5f) * scale, // BBR.
+			Vec3(0.5f, 0.5f, -0.5f) * scale, // BTR.
+			Vec3(-0.5f, 0.5f, -0.5f) * scale, // BTL.
+			Vec3(0.5f, 0.5f, -0.5f) * scale, // BTR.
+			Vec3(0.5f, 0.5f, 0.5f) * scale, // FTR.
+			Vec3(0.5f, -0.5f, 0.5f) * scale, // FBR.
+			Vec3(0.5f, -0.5f, -0.5f) * scale, // BBR.
+			Vec3(-0.5f, -0.5f, -0.5f) * scale, // BBL.
+			Vec3(-0.5f, -0.5f, 0.5f) * scale // FBL.
+		};
+
+		Vec3 mid = (box.min + box.max) * 0.5f;
+		for (Vec3& v : vertices)
+		{
+			v += mid;
+			if (transform != nullptr)
+			{
+				v = *transform * Vec4(v, 1.0f);
+			}
+		}
+
+		LineBatch* lineForm = new LineBatch(vertices, X_AXIS, DrawType::LineStrip, 2.0f);
+		return lineForm;
+	}
+
 }

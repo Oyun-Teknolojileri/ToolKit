@@ -21,6 +21,8 @@ namespace ToolKit
 	void Split(const String& s, const String& sep, std::vector<String>& v);
 	void ReplaceStringInPlace(String& subject, const String& search, const String& replace);
 	class LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size);
+	class LineBatch* GenerateBoundingVolumeGeometry(const BoundingBox& box, Mat4* transform = nullptr);
+
 
 	template<typename T>
 	void pop_front(std::vector<T>& vec)

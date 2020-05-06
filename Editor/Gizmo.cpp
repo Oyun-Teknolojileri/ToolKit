@@ -288,46 +288,6 @@ namespace ToolKit
 			}
 		}
 
-		LineBatch* GenerateBoundingVolumeGeometry(const BoundingBox& box, Mat4* transform = nullptr)
-		{			
-			Vec3 scale = box.max - box.min;
-			Cube cube(scale);
-
-			std::vector<Vec3> vertices =
-			{
-				Vec3(-0.5f, 0.5f, 0.5f) * scale, // FTL.
-				Vec3(-0.5f, -0.5f, 0.5f) * scale, // FBL.
-				Vec3(0.5f, -0.5f, 0.5f) * scale, // FBR.
-				Vec3(0.5f, 0.5f, 0.5f) * scale, // FTR.
-				Vec3(-0.5f, 0.5f, 0.5f) * scale, // FTL.
-				Vec3(-0.5f, 0.5f, -0.5f) * scale, // BTL.
-				Vec3(-0.5f, -0.5f, -0.5f) * scale, // BBL.
-				Vec3(0.5f, -0.5f, -0.5f) * scale, // BBR.
-				Vec3(0.5f, 0.5f, -0.5f) * scale, // BTR.
-				Vec3(-0.5f, 0.5f, -0.5f) * scale, // BTL.
-				Vec3(0.5f, 0.5f, -0.5f) * scale, // BTR.
-				Vec3(0.5f, 0.5f, 0.5f) * scale, // FTR.
-				Vec3(0.5f, -0.5f, 0.5f) * scale, // FBR.
-				Vec3(0.5f, -0.5f, -0.5f) * scale, // BBR.
-				Vec3(-0.5f, -0.5f, -0.5f) * scale, // BBL.
-				Vec3(-0.5f, -0.5f, 0.5f) * scale // FBL.
-			};
-
-
-			Vec3 mid = (box.min + box.max) * 0.5f;
-			for (Vec3& v : vertices)
-			{
-				v += mid;
-				if (transform != nullptr)
-				{
-					v = *transform * Vec4(v, 1.0f);
-				}
-			}
-
-			LineBatch* lineForm = new LineBatch(vertices, X_AXIS, DrawType::LineStrip, 2.0f);
-			return lineForm;
-		}
-
 		bool PolarHandle::HitTest(const Ray& ray, float& t) const
 		{
 			t = TK_FLT_MAX;
@@ -357,15 +317,12 @@ namespace ToolKit
 							t = tInt;
 						}
 					}
-
-					LineBatch* vol = GenerateBoundingVolumeGeometry(bb, nullptr);
-					g_app->m_perFrameDebugObjects.push_back(vol);
 				}
 			}
 
 			// Prevent back face selection by masking.
 			float maskDist, r = 0.95f;
-			BoundingSphere maskSphere = { m_params.dir.position, r }; // Pos wont update sphere loc. It has to be done by updating vertices.
+			BoundingSphere maskSphere = { m_params.dir.position, r };
 
 			// Calculate scaled rad due to window aspect. (billboard prop.)
 			Vec3 rad(r);
@@ -373,8 +330,6 @@ namespace ToolKit
 			assert(glm::all(glm::equal(rad, rad.xxx())) && "Uniform scale expected.");
 			
 			maskSphere.radius = rad.x;
-			Sphere* s = new Sphere(rad.x);
-			g_app->m_perFrameDebugObjects.push_back(s);
 
 			if (RaySphereIntersection(ray, maskSphere, maskDist))
 			{
@@ -616,7 +571,7 @@ namespace ToolKit
 				}
 				else if (m_lastHovered == (AxisLabel)i)
 				{
-					p.color = Vec3(1.0f);
+					p.color = g_selectHighLightSecondaryColor;
 					m_lastHovered = AxisLabel::None;
 				}
 
