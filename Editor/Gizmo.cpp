@@ -136,6 +136,7 @@ namespace ToolKit
 		{
 			m_params = params;
 
+			// Object is oriented in world space, translated to world space while rendering.
 			std::vector<Vec3> pnts =
 			{
 				params.dir.direction * params.toeTip.x,
@@ -193,6 +194,7 @@ namespace ToolKit
 
 		bool GizmoHandle::HitTest(const Ray& ray, float& t) const
 		{
+			// Hit test done in object space bounding boxes. Ray is transformed to object space.
 			Mat4 ts = glm::toMat4(RotationTo(AXIS[1], m_params.dir.direction));
 			ts[3].xyz = m_params.dir.position;
 			Mat4 its = glm::inverse(ts);
@@ -235,7 +237,7 @@ namespace ToolKit
 		{
 			m_params = params;
 			
-			// Generate circle.
+			// Object is oriented in world space, translated to world space while rendering.
 			int cornerCount = 60;
 			std::vector<Vec3> corners;
 
@@ -517,7 +519,7 @@ namespace ToolKit
 		void PolarGizmo::Update(float deltaTime)
 		{
 			GizmoHandle::Params p;
-			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
+			//p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
 			for (int i = 0; i < 3; i++)
 			{
