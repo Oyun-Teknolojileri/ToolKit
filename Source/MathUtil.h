@@ -81,6 +81,7 @@ namespace ToolKit
   PlaneEquation PlaneFrom(Vec3 const pnts[3]);
   PlaneEquation PlaneFrom(Vec3 point, Vec3 normal);
   float SignedDistance(const PlaneEquation& plane, const Vec3& pnt);
+  Vec3 ProjectPointOntoPlane(const PlaneEquation& plane, const Vec3& pnt);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

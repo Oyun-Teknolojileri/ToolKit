@@ -552,6 +552,13 @@ namespace ToolKit
 		return glm::dot(checkPnt, plane.normal);
 	}
 
+	ToolKit::Vec3 ProjectPointOntoPlane(const PlaneEquation& plane, const Vec3& pnt)
+	{
+		assert(glm::isNormalized(plane.normal, 0.0001f) && "Normalized vector expected.");
+
+		return pnt - glm::dot(plane.normal, pnt) * plane.normal;
+	}
+
 	Vec3 Interpolate(const Vec3& vec1, const Vec3& vec2, float ratio)
 	{
 		return (vec2 - vec1) * ratio + vec1;

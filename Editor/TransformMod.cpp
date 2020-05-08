@@ -286,12 +286,50 @@ namespace ToolKit
 
 				Vec3 p = m_gizmo->m_worldLocation;
 				Vec3 color = g_gizmoColor[(int)m_gizmo->GetGrabbedAxis()];
+				std::vector<Vec3> points;
 				Vec3 axis = GetGrabbedAxis(0);
-				std::vector<Vec3> points
+
+				if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
 				{
-					p + axis * 100.0f,
-					p - axis * 100.0f
-				};
+					PlaneEquation axisPlane = PlaneFrom(p, axis);
+					if (Viewport* vp = g_app->GetActiveViewport())
+					{
+						float t;
+						Ray ray = vp->RayFromMousePosition();
+						if (LinePlaneIntersection(ray, axisPlane, t))
+						{
+							Vec3 intPnt = PointOnRay(ray, t);
+							Vec3 dir = glm::normalize(intPnt - p);
+							intPnt = p + dir;
+
+							g_app->m_cursor->m_worldLocation = intPnt;
+
+							// Neighbor points.
+							Quaternion q1 = glm::angleAxis(0.01f, axis);
+							Quaternion q2 = glm::angleAxis(-0.01f, axis);
+
+							Vec3 pxx = p + q1 * (intPnt - p);
+							Vec3 pxy = p + q2 * (intPnt - p);
+
+							Vec3 dd = pxx - pxy;
+							dd = glm::normalize(dd);
+
+							points =
+							{
+								intPnt + dd ,
+								intPnt - dd
+							};
+						}
+					}
+				}
+				else
+				{
+					points =
+					{
+						p + axis * 100.0f,
+							p - axis * 100.0f
+					};
+				}
 
 				assert(m_guideLine == nullptr && "Expected to be nulled on TransitionOut.");
 				m_guideLine = std::make_shared<LineBatch>(points, color, DrawType::Line, 1.0f);
