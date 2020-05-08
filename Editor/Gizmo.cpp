@@ -576,6 +576,7 @@ namespace ToolKit
 			m_mesh = m_handles[0]->m_mesh;
 			m_mesh->m_subMeshes.push_back(m_handles[1]->m_mesh);
 			m_mesh->m_subMeshes.push_back(m_handles[2]->m_mesh);
+			m_mesh->Init(false); // Vertices needed for intersection test.
 		}
 
 		void PolarGizmo::Render(Renderer* renderer, Camera* cam)
