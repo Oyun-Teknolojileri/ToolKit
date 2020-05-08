@@ -314,10 +314,18 @@ namespace ToolKit
 							Vec3 dd = pxx - pxy;
 							dd = glm::normalize(dd);
 
+							Mat4 scale = m_gizmo->m_node->GetTransform(TransformationSpace::TS_WORLD);
+							scale[3].xyz = 0.0f;
+
+							Vec3 translate = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+
+							Vec3 p1 = Vec4(translate, 1.0f) + scale * Vec4(intPnt + dd - p, 1.0f);
+							Vec3 p2 = Vec4(translate, 1.0f) + scale * Vec4(intPnt - dd - p, 1.0f);
+
 							points =
 							{
-								intPnt + dd ,
-								intPnt - dd
+								p1,
+								p2
 							};
 						}
 					}
