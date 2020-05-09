@@ -211,7 +211,7 @@ namespace ToolKit
 			if (signal == BaseMod::m_leftMouseBtnUpSgnl)
 			{
 				m_gizmo->Grab(AxisLabel::None);
-				m_gizmo->m_grabPnt = Vec3();
+				m_gizmo->m_grabPoint = Vec3();
 			}
 
 			if (signal == BaseMod::m_leftMouseBtnDragSgnl)
@@ -263,7 +263,7 @@ namespace ToolKit
 					}
 					else
 					{
-						m_gizmo->m_grabPnt = axis;
+						m_gizmo->m_grabPoint = axis;
 					}
 				}
 			}
@@ -335,7 +335,7 @@ namespace ToolKit
 				}
 				else
 				{
-					m_gizmo->m_grabPnt = axis;
+					m_gizmo->m_grabPoint = axis;
 				}
 			}
 		}
@@ -351,7 +351,7 @@ namespace ToolKit
 		void StateTransformTo::TransitionOut(State* prevState)
 		{
 			StateTransformBase::TransitionOut(prevState);
-			m_gizmo->m_grabPnt = Vec3();
+			m_gizmo->m_grabPoint = Vec3();
 		}
 
 		void StateTransformTo::Update(float deltaTime)

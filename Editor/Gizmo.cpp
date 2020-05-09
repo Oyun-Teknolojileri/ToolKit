@@ -531,7 +531,7 @@ namespace ToolKit
 				p.dir.direction = m_normalVectors[i];
 				if (IsGrabbed(p.axis))
 				{
-					p.grabPnt = m_grabPnt;
+					p.grabPnt = m_grabPoint;
 				}
 				else
 				{

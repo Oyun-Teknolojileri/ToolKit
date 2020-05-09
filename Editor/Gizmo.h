@@ -88,7 +88,7 @@ namespace ToolKit
 			AxisLabel GetGrabbedAxis() const;
 
 		public:
-			Vec3 m_grabPnt;
+			Vec3 m_grabPoint;
 			Mat3 m_normalVectors;
 			AxisLabel m_lastHovered;
 			std::vector<GizmoHandle*> m_handles;
@@ -135,9 +135,6 @@ namespace ToolKit
 
 			virtual void Update(float deltaTime) override;
 			void Render(Renderer* renderer, Camera* cam);
-
-		public:
-			Vec3 m_grabPoint;
 		};
 	}
 }
