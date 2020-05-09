@@ -190,6 +190,22 @@ namespace ToolKit
 
 				v.pos = params.normals * v.pos;
 			}
+
+			// Guide line.
+			if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
+			{
+				int axisInd = (int)m_params.axis;
+				Vec3 axis = m_params.normals[axisInd];
+				std::vector<Vec3> pnts =
+				{
+					axis * 999.0f,
+					axis * -999.0f
+				};
+				
+				LineBatch guide(pnts, g_gizmoColor[axisInd], DrawType::Line, 1.0f);
+				m_mesh->m_subMeshes.push_back(guide.m_mesh);
+				guide.m_mesh = nullptr;
+			}
 		}
 
 		bool GizmoHandle::HitTest(const Ray& ray, float& t) const
@@ -287,7 +303,7 @@ namespace ToolKit
 				v.pos = params.normals * v.pos;
 			}
 
-			// Grab guide line.
+			// Guide line.
 			if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
 			{
 				Vec3 axis = m_params.normals[(int)m_params.axis];
@@ -513,6 +529,15 @@ namespace ToolKit
 				p.normals = m_normalVectors;
 				p.axis = (AxisLabel)i;
 				p.dir.direction = m_normalVectors[i];
+				if (IsGrabbed(p.axis))
+				{
+					p.grabPnt = m_grabPnt;
+				}
+				else
+				{
+					p.grabPnt = Vec3();
+				}
+
 				m_handles[i]->Generate(p);
 			}
 

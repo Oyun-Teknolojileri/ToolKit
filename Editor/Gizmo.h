@@ -88,6 +88,7 @@ namespace ToolKit
 			AxisLabel GetGrabbedAxis() const;
 
 		public:
+			Vec3 m_grabPnt;
 			Mat3 m_normalVectors;
 			AxisLabel m_lastHovered;
 

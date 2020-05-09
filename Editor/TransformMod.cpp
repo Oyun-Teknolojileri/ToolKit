@@ -201,11 +201,16 @@ namespace ToolKit
 				{
 					return StateType::StateBeginPick;
 				}
+				else
+				{
+					CalculateGrabPoint();
+				}
 			}
 
 			if (signal == BaseMod::m_leftMouseBtnUpSgnl)
 			{
 				m_gizmo->Grab(AxisLabel::None);
+				m_gizmo->m_grabPnt = Vec3();
 			}
 
 			if (signal == BaseMod::m_leftMouseBtnDragSgnl)
@@ -272,14 +277,8 @@ namespace ToolKit
 			}
 		}
 
-		// StateTransformTo
-		//////////////////////////////////////////////////////////////////////////
-
-		void StateTransformTo::TransitionIn(State* prevState)
+		void StateTransformBegin::CalculateGrabPoint()
 		{
-			StateTransformBase::TransitionIn(prevState);
-
-			// Create guide line.
 			if ((int)m_gizmo->GetGrabbedAxis() < 3)
 			{
 				assert(m_gizmo->GetGrabbedAxis() != AxisLabel::None);
@@ -303,31 +302,23 @@ namespace ToolKit
 				}
 				else
 				{
-					std::vector<Vec3> points =
-					{
-						p + axis * 100.0f,
-							p - axis * 100.0f
-					};
-
-					Vec3 color = g_gizmoColor[(int)m_gizmo->GetGrabbedAxis()];
-
-					assert(m_guideLine == nullptr && "Expected to be nulled on TransitionOut.");
-					m_guideLine = std::make_shared<LineBatch>(points, color, DrawType::Line, 1.0f);
-					g_app->m_scene.AddEntity(m_guideLine.get());
+					m_gizmo->m_grabPnt = axis;
 				}
 			}
+		}
+
+		// StateTransformTo
+		//////////////////////////////////////////////////////////////////////////
+
+		void StateTransformTo::TransitionIn(State* prevState)
+		{
+			StateTransformBase::TransitionIn(prevState);
 		}
 
 		void StateTransformTo::TransitionOut(State* prevState)
 		{
 			StateTransformBase::TransitionOut(prevState);
-
-			if (m_guideLine != nullptr)
-			{
-				g_app->m_scene.RemoveEntity(m_guideLine->m_id);
-				assert(m_guideLine.use_count() == 1 && "There must be single instance.");
-				m_guideLine = nullptr;
-			}
+			m_gizmo->m_grabPnt = Vec3();
 		}
 
 		void StateTransformTo::Update(float deltaTime)

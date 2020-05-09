@@ -39,6 +39,7 @@ namespace ToolKit
 
 		private:
 			void CalculateIntersectionPlane();
+			void CalculateGrabPoint();
 		};
 
 		class StateTransformTo : public StateTransformBase
@@ -55,9 +56,6 @@ namespace ToolKit
 
 		public:
 			Vec3 m_delta;
-
-		private:
-			std::shared_ptr<LineBatch> m_guideLine;
 		};
 
 		class StateTransformEnd : public StateTransformBase
