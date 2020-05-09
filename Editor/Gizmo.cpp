@@ -214,8 +214,8 @@ namespace ToolKit
 			// Hit test done in object space bounding boxes. Ray is transformed to object space.
 			Vec3 dir = m_params.normals[(int)m_params.axis];
 			Mat4 ts = glm::toMat4(RotationTo(AXIS[1], dir));
-			ts = glm::scale(ts, Vec3(m_params.parentTs[0].x));
-			ts[3] = m_params.parentTs[3];
+			ts = glm::scale(ts, m_params.scale);
+			ts[3].xyz = m_params.translate;
 
 			Mat4 its = glm::inverse(ts);
 
@@ -350,22 +350,18 @@ namespace ToolKit
 		{
 			t = TK_FLT_MAX;
 
-			Mat4 ts = m_params.parentTs;
 			if (Viewport* vp = g_app->GetActiveViewport())
 			{
 				for (size_t i = 1; i < m_mesh->m_clientSideVertices.size(); i++)
 				{
 					Vec3& v1 = m_mesh->m_clientSideVertices[i - 1].pos;
 					Vec3& v2 = m_mesh->m_clientSideVertices[i].pos;
-					Vec3 mid = (v1 + v2) * 0.5f;
+					Vec3 mid = m_params.scale * (v1 + v2) * 0.5f + m_params.translate;
 					BoundingBox bb =
 					{
 						mid - Vec3(0.05f),
 						mid + Vec3(0.05f)
 					};
-
-					bb.min = m_params.parentTs * Vec4(bb.min, 1.0f);
-					bb.max = m_params.parentTs * Vec4(bb.max, 1.0f);
 
 					float tInt;
 					if (RayBoxIntersection(ray, bb, tInt))
@@ -380,11 +376,11 @@ namespace ToolKit
 
 			// Prevent back face selection by masking.
 			float maskDist, r = 0.95f;
-			BoundingSphere maskSphere = { m_params.parentTs[3].xyz, r };
+			BoundingSphere maskSphere = { m_params.translate, r };
 
 			// Calculate scaled rad due to window aspect. (billboard prop.)
 			Vec3 rad(r);
-			rad = m_params.parentTs * Vec4(rad, 0.0f);
+			rad = m_params.scale * rad;
 			assert(glm::all(glm::equal(rad, rad.xxx())) && "Uniform scale expected.");
 			
 			maskSphere.radius = rad.x;
@@ -555,7 +551,9 @@ namespace ToolKit
 
 			GizmoHandle::Params p;
 			p.normals = m_normalVectors;
-			p.parentTs = m_node->GetTransform(TransformationSpace::TS_WORLD);
+			Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
+			DecomposeMatrix(ts, &p.translate, nullptr, &p.scale);
+
 			p.solidDim.xyz = Vec3(rad, 1.0f - tip, rad);
 			p.toeTip = Vec3(toe, tip, 0.0f);
 			p.type = GizmoHandle::SolidType::Cone;
@@ -608,7 +606,8 @@ namespace ToolKit
 		void PolarGizmo::Update(float deltaTime)
 		{
 			GizmoHandle::Params p;
-			p.parentTs = m_node->GetTransform(TransformationSpace::TS_WORLD);
+			Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
+			DecomposeMatrix(ts, &p.translate, nullptr, &p.scale);
 
 			for (int i = 0; i < 3; i++)
 			{

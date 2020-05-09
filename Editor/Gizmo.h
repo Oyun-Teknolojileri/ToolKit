@@ -39,10 +39,13 @@ namespace ToolKit
 
 			struct Params
 			{
+				// Transform.
 				Vec3 grabPnt;
-				Mat4 parentTs;
-				AxisLabel axis;
+				Vec3 scale;
+				Vec3 translate;
 				Mat3 normals;
+				// Geometry.
+				AxisLabel axis;
 				Vec3 toeTip;
 				Vec3 solidDim;
 				Vec3 color;
