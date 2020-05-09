@@ -188,7 +188,7 @@ namespace ToolKit
 					break;
 				}
 
-				v.pos = params.normalVectors * v.pos;
+				v.pos = params.normals * v.pos;
 			}
 		}
 
@@ -284,19 +284,45 @@ namespace ToolKit
 					break;
 				}
 
-				v.pos = params.normalVectors * v.pos;
+				v.pos = params.normals * v.pos;
 			}
 
 			// Grab guide line.
 			if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
 			{
-				BoundingBox bb;
-				bb.min = params.grabPnt - Vec3(0.1f);
-				bb.max = params.grabPnt + Vec3(0.1f);
-				auto xx = GenerateBoundingVolumeGeometry(bb);
-				m_mesh->m_subMeshes.push_back(xx->m_mesh);
-				xx->m_mesh = nullptr;
-				delete xx;
+				Vec3 axis = m_params.normals[(int)m_params.axis];
+
+				// Neighbor points for parallel line.
+				Vec3 p1 = glm::angleAxis(0.0001f, axis) * params.grabPnt;
+				Vec3 p2 = glm::angleAxis(-0.0001f, axis) * params.grabPnt;
+				Vec3 dir = glm::normalize(p1 - p2);
+				m_tangentDir = dir;
+				
+				std::vector<Vec3> pnts;
+
+				// Arrow heads.
+				Arrow2d head(m_params.axis);
+				int axisInd = (int)m_params.axis;
+				Quaternion q = RotationTo(AXIS[axisInd], dir);
+				
+				for (Vertex& v : head.m_mesh->m_clientSideVertices)
+				{
+					Vec3 v1 = q * (v.pos * 0.5f) + m_params.grabPnt;
+					pnts.push_back(v1);
+				}
+
+				for (Vertex& v : head.m_mesh->m_clientSideVertices)
+				{
+					Vec3 v1 = q * (-v.pos * 0.5f) + m_params.grabPnt;
+					pnts.push_back(v1);
+				}
+
+				pnts.push_back(m_params.grabPnt + dir * 999.0f);
+				pnts.push_back(m_params.grabPnt - dir * 999.0f);
+
+				LineBatch guide(pnts, g_gizmoColor[axisInd], DrawType::Line, 1.0f);
+				m_mesh->m_subMeshes.push_back(guide.m_mesh);
+				guide.m_mesh = nullptr;
 			}
 		}
 
@@ -304,7 +330,7 @@ namespace ToolKit
 		{
 			t = TK_FLT_MAX;
 
-			Mat4 ts = m_params.parentTransform;
+			Mat4 ts = m_params.parentTs;
 			if (Viewport* vp = g_app->GetActiveViewport())
 			{
 				for (size_t i = 1; i < m_mesh->m_clientSideVertices.size(); i++)
@@ -318,8 +344,8 @@ namespace ToolKit
 						mid + Vec3(0.05f)
 					};
 
-					bb.min = m_params.parentTransform * Vec4(bb.min, 1.0f);
-					bb.max = m_params.parentTransform * Vec4(bb.max, 1.0f);
+					bb.min = m_params.parentTs * Vec4(bb.min, 1.0f);
+					bb.max = m_params.parentTs * Vec4(bb.max, 1.0f);
 
 					float tInt;
 					if (RayBoxIntersection(ray, bb, tInt))
@@ -338,7 +364,7 @@ namespace ToolKit
 
 			// Calculate scaled rad due to window aspect. (billboard prop.)
 			Vec3 rad(r);
-			rad = m_params.parentTransform * Vec4(rad, 0.0f);
+			rad = m_params.parentTs * Vec4(rad, 0.0f);
 			assert(glm::all(glm::equal(rad, rad.xxx())) && "Uniform scale expected.");
 			
 			maskSphere.radius = rad.x;
@@ -484,7 +510,7 @@ namespace ToolKit
 					m_lastHovered = AxisLabel::None;
 				}
 
-				p.normalVectors = m_normalVectors;
+				p.normals = m_normalVectors;
 				p.axis = (AxisLabel)i;
 				p.dir.direction = m_normalVectors[i];
 				m_handles[i]->Generate(p);
@@ -500,7 +526,7 @@ namespace ToolKit
 			const float tip = 0.8f, toe = 0.05f, rad = 0.1f;
 
 			GizmoHandle::Params p;
-			p.normalVectors = m_normalVectors;
+			p.normals = m_normalVectors;
 			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 			p.solidDim.xyz = Vec3(rad, 1.0f - tip, rad);
 			p.toeTip = Vec3(toe, tip, 0.0f);
@@ -554,8 +580,7 @@ namespace ToolKit
 		void PolarGizmo::Update(float deltaTime)
 		{
 			GizmoHandle::Params p;
-			p.grabPnt = m_grabPoint;
-			p.parentTransform = m_node->GetTransform(TransformationSpace::TS_WORLD);
+			p.parentTs = m_node->GetTransform(TransformationSpace::TS_WORLD);
 			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
 			for (int i = 0; i < 3; i++)
@@ -581,8 +606,17 @@ namespace ToolKit
 					m_lastHovered = AxisLabel::None;
 				}
 
-				p.normalVectors = m_normalVectors;
+				p.normals = m_normalVectors;
 				p.axis = (AxisLabel)i;
+				if (IsGrabbed(p.axis))
+				{
+					p.grabPnt = m_grabPoint;
+				}
+				else
+				{
+					p.grabPnt = Vec3();
+				}
+
 				m_handles[i]->Generate(p);
 			}
 

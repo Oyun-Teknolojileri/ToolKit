@@ -40,9 +40,9 @@ namespace ToolKit
 			struct Params
 			{
 				Vec3 grabPnt;
-				Mat4 parentTransform;
+				Mat4 parentTs;
 				AxisLabel axis;
-				Mat3 normalVectors;
+				Mat3 normals;
 				Ray dir;
 				Vec3 toeTip;
 				Vec3 solidDim;
@@ -59,6 +59,7 @@ namespace ToolKit
 
 		public:
 			MeshPtr m_mesh;
+			Vec3 m_tangentDir;
 
 		protected:
 			Params m_params;
