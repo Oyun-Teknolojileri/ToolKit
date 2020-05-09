@@ -45,6 +45,7 @@ namespace ToolKit
 			static SignalId m_leftMouseBtnDragSgnl;
 			static SignalId m_mouseMoveSgnl;
 			static SignalId m_backToStart;
+			static SignalId m_delete;
 		};
 
 		class ModManager
@@ -81,6 +82,7 @@ namespace ToolKit
 			const static String StateBeginPick;
 			const static String StateBeginBoxPick;
 			const static String StateEndPick;
+			const static String StateDeletePick;
 			const static String StateTransformBegin;
 			const static String StateTransformTo;
 			const static String StateTransformEnd;
@@ -131,6 +133,14 @@ namespace ToolKit
 			virtual void Update(float deltaTime) override;
 			virtual String Signaled(SignalId signal) override;
 			virtual String GetType() override { return StateType::StateEndPick; }
+		};
+
+		class StateDeletePick : public StatePickingBase
+		{
+		public:
+			virtual void Update(float deltaTime) override;
+			virtual String Signaled(SignalId signal) override;
+			virtual String GetType() override { return StateType::StateDeletePick; }
 		};
 
 		// Mods.

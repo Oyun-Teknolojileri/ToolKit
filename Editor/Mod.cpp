@@ -134,6 +134,7 @@ namespace ToolKit
 		SignalId BaseMod::m_leftMouseBtnDragSgnl = BaseMod::GetNextSignalId();
 		SignalId BaseMod::m_mouseMoveSgnl = BaseMod::GetNextSignalId();
 		SignalId BaseMod::m_backToStart = BaseMod::GetNextSignalId();
+		SignalId BaseMod::m_delete = BaseMod::GetNextSignalId();
 
 		BaseMod::BaseMod(ModId id)
 		{
@@ -194,6 +195,7 @@ namespace ToolKit
 		const String StateType::StateBeginPick = "StateBeginPick";
 		const String StateType::StateBeginBoxPick = "StateBeginBoxPick";
 		const String StateType::StateEndPick = "StateEndPick";
+		const String StateType::StateDeletePick = "StateDeletePick";
 		const String StateType::StateTransformBegin = "StateTransformBegin";
 		const String StateType::StateTransformTo = "StateTransformTo";
 		const String StateType::StateTransformEnd = "StateTransformEnd";
@@ -293,6 +295,11 @@ namespace ToolKit
 			if (signal == BaseMod::m_leftMouseBtnDragSgnl)
 			{
 				return StateType::StateBeginBoxPick;
+			}
+
+			if (signal == BaseMod::m_delete)
+			{
+				return StateType::StateDeletePick;
 			}
 
 			return StateType::Null;
@@ -431,8 +438,8 @@ namespace ToolKit
 
 		void StateBeginBoxPick::GetMouseRect(Vec2& min, Vec2& max)
 		{
-			min = Vec2(FLT_MAX, FLT_MAX);
-			max = Vec2(-FLT_MAX, -FLT_MAX);
+			min = Vec2(TK_FLT_MAX);
+			max = Vec2(-TK_FLT_MAX);
 
 			for (int i = 0; i < 2; i++)
 			{
@@ -448,6 +455,7 @@ namespace ToolKit
 		String StateEndPick::Signaled(SignalId signal)
 		{
 			// Keep picking.
+/*
 			if (signal == BaseMod::m_leftMouseBtnDownSgnl)
 			{
 				Viewport* vp = g_app->GetActiveViewport();
@@ -457,6 +465,7 @@ namespace ToolKit
 					return StateType::StateBeginPick;
 				}
 			}
+*/
 
 			return StateType::Null;
 		}
@@ -469,27 +478,33 @@ namespace ToolKit
 
 			m_stateMachine->PushState(initialState);
 			m_stateMachine->PushState(new StateBeginBoxPick());
-			m_stateMachine->PushState(new StateEndPick());
+			
+			State* state = new StateEndPick();
+			state->m_links[m_backToStart] = StateType::StateBeginPick;
+			m_stateMachine->PushState(state);
+
+			state = new StateDeletePick();
+			state->m_links[m_backToStart] = StateType::StateBeginPick;
+			m_stateMachine->PushState(state);
 		}
 
 		void SelectMod::Update(float deltaTime)
 		{
 			BaseMod::Update(deltaTime);
-			static bool stateTransition = false;
 
-			if (m_stateMachine->m_currentState->GetType() == StateType::StateBeginPick)
+			if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick)
 			{
-				stateTransition = true;
-			}
-
-			if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick && stateTransition)
-			{
-				stateTransition = false;
-
 				StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
 				EntityIdArray entities;
 				endPick->PickDataToEntityId(entities);
 				g_app->m_scene.AddToSelection(entities, ImGui::GetIO().KeyShift);
+
+				ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
+			}
+
+			if (m_stateMachine->m_currentState->GetType() == StateType::StateDeletePick)
+			{
+				ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
 			}
 		}
 
@@ -520,6 +535,22 @@ namespace ToolKit
 				Scene::PickData& pd = endPick->m_pickData.back();
 				g_app->m_cursor->m_worldLocation = pd.pickPos;
 			}
+		}
+
+		void StateDeletePick::Update(float deltaTime)
+		{
+			EntityRawPtrArray deleteList;
+			g_app->m_scene.GetSelectedEntities(deleteList);
+			for (Entity* e : deleteList)
+			{
+				g_app->m_scene.RemoveEntity(e->m_id);
+				SafeDel(e);
+			}
+		}
+
+		ToolKit::String StateDeletePick::Signaled(SignalId signal)
+		{
+			return StateType::Null;
 		}
 
 	}

@@ -329,6 +329,11 @@ namespace ToolKit
 			{
 				ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnDragSgnl);
 			}
+
+			if (io.KeysDown[io.KeyMap[ImGuiKey_Delete]])
+			{
+				ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
+			}
 		}
 
 		bool UI::ToggleButton(ImTextureID user_texture_id, const ImVec2& size, bool pushState)
