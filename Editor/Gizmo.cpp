@@ -286,6 +286,18 @@ namespace ToolKit
 
 				v.pos = params.normalVectors * v.pos;
 			}
+
+			// Grab guide line.
+			if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
+			{
+				BoundingBox bb;
+				bb.min = params.grabPnt - Vec3(0.1f);
+				bb.max = params.grabPnt + Vec3(0.1f);
+				auto xx = GenerateBoundingVolumeGeometry(bb);
+				m_mesh->m_subMeshes.push_back(xx->m_mesh);
+				xx->m_mesh = nullptr;
+				delete xx;
+			}
 		}
 
 		bool PolarHandle::HitTest(const Ray& ray, float& t) const
@@ -542,6 +554,7 @@ namespace ToolKit
 		void PolarGizmo::Update(float deltaTime)
 		{
 			GizmoHandle::Params p;
+			p.grabPnt = m_grabPoint;
 			p.parentTransform = m_node->GetTransform(TransformationSpace::TS_WORLD);
 			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 

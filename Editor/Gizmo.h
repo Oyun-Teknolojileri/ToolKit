@@ -39,6 +39,7 @@ namespace ToolKit
 
 			struct Params
 			{
+				Vec3 grabPnt;
 				Mat4 parentTransform;
 				AxisLabel axis;
 				Mat3 normalVectors;
@@ -132,6 +133,9 @@ namespace ToolKit
 
 			virtual void Update(float deltaTime) override;
 			void Render(Renderer* renderer, Camera* cam);
+
+		public:
+			Vec3 m_grabPoint;
 		};
 	}
 }

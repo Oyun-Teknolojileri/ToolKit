@@ -285,63 +285,36 @@ namespace ToolKit
 				assert(m_gizmo->GetGrabbedAxis() != AxisLabel::None);
 
 				Vec3 p = m_gizmo->m_worldLocation;
-				Vec3 color = g_gizmoColor[(int)m_gizmo->GetGrabbedAxis()];
-				std::vector<Vec3> points;
 				Vec3 axis = GetGrabbedAxis(0);
 
 				if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
 				{
-					PlaneEquation axisPlane = PlaneFrom(p, axis);
 					if (Viewport* vp = g_app->GetActiveViewport())
 					{
 						float t;
+						PlaneEquation axisPlane = PlaneFrom(p, axis);
 						Ray ray = vp->RayFromMousePosition();
 						if (LinePlaneIntersection(ray, axisPlane, t))
 						{
-							Vec3 intPnt = PointOnRay(ray, t);
-							Vec3 dir = glm::normalize(intPnt - p);
-							intPnt = p + dir;
-
-							g_app->m_cursor->m_worldLocation = intPnt;
-
-							// Neighbor points.
-							Quaternion q1 = glm::angleAxis(0.01f, axis);
-							Quaternion q2 = glm::angleAxis(-0.01f, axis);
-
-							Vec3 pxx = p + q1 * (intPnt - p);
-							Vec3 pxy = p + q2 * (intPnt - p);
-
-							Vec3 dd = pxx - pxy;
-							dd = glm::normalize(dd);
-
-							Mat4 scale = m_gizmo->m_node->GetTransform(TransformationSpace::TS_WORLD);
-							scale[3].xyz = 0.0f;
-
-							Vec3 translate = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-
-							Vec3 p1 = Vec4(translate, 1.0f) + scale * Vec4(intPnt + dd - p, 1.0f);
-							Vec3 p2 = Vec4(translate, 1.0f) + scale * Vec4(intPnt - dd - p, 1.0f);
-
-							points =
-							{
-								p1,
-								p2
-							};
+							Vec3 intersectPnt = PointOnRay(ray, t);
+							pg->m_grabPoint = glm::normalize(intersectPnt - p);
 						}
 					}
 				}
 				else
 				{
-					points =
+					std::vector<Vec3> points =
 					{
 						p + axis * 100.0f,
 							p - axis * 100.0f
 					};
-				}
 
-				assert(m_guideLine == nullptr && "Expected to be nulled on TransitionOut.");
-				m_guideLine = std::make_shared<LineBatch>(points, color, DrawType::Line, 1.0f);
-				g_app->m_scene.AddEntity(m_guideLine.get());
+					Vec3 color = g_gizmoColor[(int)m_gizmo->GetGrabbedAxis()];
+
+					assert(m_guideLine == nullptr && "Expected to be nulled on TransitionOut.");
+					m_guideLine = std::make_shared<LineBatch>(points, color, DrawType::Line, 1.0f);
+					g_app->m_scene.AddEntity(m_guideLine.get());
+				}
 			}
 		}
 
