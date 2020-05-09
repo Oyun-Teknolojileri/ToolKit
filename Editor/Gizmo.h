@@ -91,9 +91,9 @@ namespace ToolKit
 			Vec3 m_grabPnt;
 			Mat3 m_normalVectors;
 			AxisLabel m_lastHovered;
+			std::vector<GizmoHandle*> m_handles;
 
 		protected:
-			std::vector<GizmoHandle*> m_handles;
 			std::vector<AxisLabel> m_lockedAxis;
 			AxisLabel m_grabbedAxis;
 		};

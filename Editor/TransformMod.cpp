@@ -234,6 +234,41 @@ namespace ToolKit
 
 		void StateTransformBegin::CalculateIntersectionPlane()
 		{
+			if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
+			{
+				if ((int)m_gizmo->GetGrabbedAxis() < 3)
+				{
+					assert(m_gizmo->GetGrabbedAxis() != AxisLabel::None);
+
+					Vec3 p = m_gizmo->m_worldLocation;
+					Vec3 axis = GetGrabbedAxis(0);
+
+					if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
+					{
+						if (Viewport* vp = g_app->GetActiveViewport())
+						{
+							float t;
+							PlaneEquation axisPlane = PlaneFrom(p, axis);
+							Ray ray = vp->RayFromMousePosition();
+							if (LinePlaneIntersection(ray, axisPlane, t))
+							{
+								Vec3 intersectPnt = PointOnRay(ray, t);
+								intersectPnt = glm::normalize(intersectPnt - p);
+								pg->m_grabPoint = intersectPnt;
+
+								m_intersectionPlane = PlaneFrom(intersectPnt + m_gizmo->m_worldLocation, axis);
+							}
+						}
+					}
+					else
+					{
+						m_gizmo->m_grabPnt = axis;
+					}
+				}
+
+				return;
+			}
+
 			Entity* e = g_app->m_scene.GetCurrentSelection();
 			
 			Vec3 x, y, z;
@@ -343,6 +378,8 @@ namespace ToolKit
 
 		void StateTransformTo::CalculateDelta()
 		{
+			g_app->m_perFrameDebugObjects.push_back(CreatePlaneDebugObject(m_intersectionPlane, 3.0f));
+
 			Viewport* vp = g_app->GetActiveViewport();
 			m_mouseData[1] = vp->GetLastMousePosScreenSpace();
 
@@ -350,26 +387,37 @@ namespace ToolKit
 			Ray ray = vp->RayFromMousePosition();
 			if (LinePlaneIntersection(ray, m_intersectionPlane, t))
 			{
+				// This point.
 				Vec3 p = PointOnRay(ray, t);
-				Vec3 g2p = p - m_gizmo->m_worldLocation;
-
+				// Previous. point.
 				ray = vp->RayFromScreenSpacePoint(m_mouseData[0]);
 				LinePlaneIntersection(ray, m_intersectionPlane, t);
 				Vec3 p0 = PointOnRay(ray, t);
 
-				if (IsPlaneMod())
+				if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
 				{
-					m_delta = p - p0;
+					int axisInd = (int)m_gizmo->GetGrabbedAxis();
+					 Vec3 projAxis = pg->m_handles[axisInd]->m_tangentDir;
+					 float delta = glm::dot(projAxis, p - p0);
+					 m_delta = AXIS[axisInd] * delta;
 				}
 				else
 				{
-					Vec3 projAxis = GetGrabbedAxis(0);
-					Vec3 g2p0 = p0 - m_gizmo->m_worldLocation;
-					float intsDst = glm::dot(projAxis, g2p0);
-					float projDst = glm::dot(projAxis, g2p);
+					Vec3 g2p = p - m_gizmo->m_worldLocation;
+					if (IsPlaneMod())
+					{
+						m_delta = p - p0;
+					}
+					else
+					{
+						Vec3 projAxis = GetGrabbedAxis(0);
+						Vec3 g2p0 = p0 - m_gizmo->m_worldLocation;
+						float intsDst = glm::dot(projAxis, g2p0);
+						float projDst = glm::dot(projAxis, g2p);
 
-					Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
-					m_delta = moveAxis * (projDst - intsDst);
+						Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
+						m_delta = moveAxis * (projDst - intsDst);
+					}
 				}
 			}
 			else
