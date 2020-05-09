@@ -418,7 +418,7 @@ namespace ToolKit
 
 		AxisLabel Gizmo::HitTest(const Ray& ray) const
 		{
-			float t, tMin = std::numeric_limits<float>::max();
+			float t, tMin = TK_FLT_MAX;
 			AxisLabel hit = AxisLabel::None;
 			for (size_t i = 0; i < m_handles.size(); i++)
 			{
