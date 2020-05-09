@@ -204,6 +204,7 @@ namespace ToolKit
 				else
 				{
 					CalculateGrabPoint();
+					CalculateIntersectionPlane();
 				}
 			}
 
@@ -221,10 +222,9 @@ namespace ToolKit
 					return StateType::Null;
 				}
 
-				bool nothingGrabbed = m_gizmo->IsGrabbed(AxisLabel::None);
-				if (!nothingGrabbed)
+				if (!m_gizmo->IsGrabbed(AxisLabel::None))
 				{
-					CalculateIntersectionPlane();
+
 					return StateType::StateTransformTo;
 				}
 			}
