@@ -229,6 +229,11 @@ namespace ToolKit
 				}
 			}
 
+			if (signal == BaseMod::m_delete)
+			{
+				return StateType::StateDeletePick;
+			}
+
 			return StateType::Null;
 		}
 
@@ -502,6 +507,10 @@ namespace ToolKit
 			state = new StateEndPick();
 			state->m_links[m_backToStart] = StateType::StateTransformBegin;
 			m_stateMachine->PushState(state);
+
+			state = new StateDeletePick();
+			state->m_links[m_backToStart] = StateType::StateTransformBegin;
+			m_stateMachine->PushState(state);
 		}
 
 		void TransformMod::Update(float deltaTime)
@@ -528,6 +537,11 @@ namespace ToolKit
 			}
 
 			if (m_stateMachine->m_currentState->ThisIsA<StateTransformEnd>())
+			{
+				ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
+			}
+
+			if (m_stateMachine->m_currentState->ThisIsA<StateDeletePick>())
 			{
 				ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
 			}

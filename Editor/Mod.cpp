@@ -454,19 +454,6 @@ namespace ToolKit
 
 		String StateEndPick::Signaled(SignalId signal)
 		{
-			// Keep picking.
-/*
-			if (signal == BaseMod::m_leftMouseBtnDownSgnl)
-			{
-				Viewport* vp = g_app->GetActiveViewport();
-				if (vp != nullptr && vp->IsViewportQueriable())
-				{
-					m_mouseData[0] = vp->GetLastMousePosScreenSpace();
-					return StateType::StateBeginPick;
-				}
-			}
-*/
-
 			return StateType::Null;
 		}
 
