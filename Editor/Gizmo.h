@@ -43,7 +43,6 @@ namespace ToolKit
 				Mat4 parentTs;
 				AxisLabel axis;
 				Mat3 normals;
-				Ray dir;
 				Vec3 toeTip;
 				Vec3 solidDim;
 				Vec3 color;

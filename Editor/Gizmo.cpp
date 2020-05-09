@@ -137,10 +137,11 @@ namespace ToolKit
 			m_params = params;
 
 			// Object is oriented in world space, translated to world space while rendering.
+			Vec3 dir = params.normals[(int)params.axis];
 			std::vector<Vec3> pnts =
 			{
-				params.dir.direction * params.toeTip.x,
-				params.dir.direction * params.toeTip.y
+				dir * params.toeTip.x,
+				dir * params.toeTip.y
 			};
 
 			LineBatch line(pnts, params.color, DrawType::Line, 2.0f);
@@ -379,7 +380,7 @@ namespace ToolKit
 
 			// Prevent back face selection by masking.
 			float maskDist, r = 0.95f;
-			BoundingSphere maskSphere = { m_params.dir.position, r };
+			BoundingSphere maskSphere = { m_params.parentTs[3].xyz, r };
 
 			// Calculate scaled rad due to window aspect. (billboard prop.)
 			Vec3 rad(r);
@@ -531,7 +532,6 @@ namespace ToolKit
 
 				p.normals = m_normalVectors;
 				p.axis = (AxisLabel)i;
-				p.dir.direction = m_normalVectors[i];
 				if (IsGrabbed(p.axis))
 				{
 					p.grabPnt = m_grabPoint;
@@ -556,7 +556,6 @@ namespace ToolKit
 			GizmoHandle::Params p;
 			p.normals = m_normalVectors;
 			p.parentTs = m_node->GetTransform(TransformationSpace::TS_WORLD);
-			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 			p.solidDim.xyz = Vec3(rad, 1.0f - tip, rad);
 			p.toeTip = Vec3(toe, tip, 0.0f);
 			p.type = GizmoHandle::SolidType::Cone;
@@ -610,12 +609,9 @@ namespace ToolKit
 		{
 			GizmoHandle::Params p;
 			p.parentTs = m_node->GetTransform(TransformationSpace::TS_WORLD);
-			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
 			for (int i = 0; i < 3; i++)
 			{
-				p.dir.direction = m_normalVectors[i];
-
 				if (m_grabbedAxis == (AxisLabel)i)
 				{
 					p.color = g_selectHighLightPrimaryColor;
