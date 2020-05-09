@@ -236,6 +236,7 @@ namespace ToolKit
 		{
 			if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
 			{
+				// Polar intersection plane.
 				if ((int)m_gizmo->GetGrabbedAxis() < 3)
 				{
 					assert(m_gizmo->GetGrabbedAxis() != AxisLabel::None);
@@ -265,50 +266,47 @@ namespace ToolKit
 						m_gizmo->m_grabPnt = axis;
 					}
 				}
-
-				return;
 			}
-
-			Entity* e = g_app->m_scene.GetCurrentSelection();
-			
-			Vec3 x, y, z;
-			ExtractAxes(m_gizmo->m_normalVectors, x, y, z);
-
-			Viewport* vp = g_app->GetActiveViewport();
-			Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-			Vec3 gizmOrg = m_gizmo->m_worldLocation;
-			Vec3 dir = glm::normalize(camOrg - gizmOrg);
-
-			Vec3 px, py, pz;
-			switch (m_gizmo->GetGrabbedAxis())
+			else
 			{
-			case AxisLabel::X:
-				px = x;
-				break;
-			case AxisLabel::Y:
-				px = y;
-				break;
-			case AxisLabel::Z:
-				px = z;
-				break;
-			case AxisLabel::XY:
-				m_intersectionPlane = PlaneFrom(gizmOrg, z);
-				break;
-			case AxisLabel::YZ:
-				m_intersectionPlane = PlaneFrom(gizmOrg, x);
-				break;
-			case AxisLabel::ZX:
-				m_intersectionPlane = PlaneFrom(gizmOrg, y);
-				break;
-			default:
-				assert(false);
-			}
+				// Linear intersection plane.
+				Viewport* vp = g_app->GetActiveViewport();
+				Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+				Vec3 gizmOrg = m_gizmo->m_worldLocation;
+				Vec3 dir = glm::normalize(camOrg - gizmOrg);
 
-			if (m_gizmo->GetGrabbedAxis() <= AxisLabel::Z)
-			{
-				py = glm::normalize(glm::cross(px, dir));
-				pz = glm::normalize(glm::cross(py, px));
-				m_intersectionPlane = PlaneFrom(gizmOrg, pz);
+				Vec3 x, px, y, py, z, pz;
+				ExtractAxes(m_gizmo->m_normalVectors, x, y, z);
+				switch (m_gizmo->GetGrabbedAxis())
+				{
+				case AxisLabel::X:
+					px = x;
+					break;
+				case AxisLabel::Y:
+					px = y;
+					break;
+				case AxisLabel::Z:
+					px = z;
+					break;
+				case AxisLabel::XY:
+					m_intersectionPlane = PlaneFrom(gizmOrg, z);
+					break;
+				case AxisLabel::YZ:
+					m_intersectionPlane = PlaneFrom(gizmOrg, x);
+					break;
+				case AxisLabel::ZX:
+					m_intersectionPlane = PlaneFrom(gizmOrg, y);
+					break;
+				default:
+					assert(false);
+				}
+
+				if (m_gizmo->GetGrabbedAxis() <= AxisLabel::Z)
+				{
+					py = glm::normalize(glm::cross(px, dir));
+					pz = glm::normalize(glm::cross(py, px));
+					m_intersectionPlane = PlaneFrom(gizmOrg, pz);
+				}
 			}
 		}
 
@@ -378,8 +376,6 @@ namespace ToolKit
 
 		void StateTransformTo::CalculateDelta()
 		{
-			g_app->m_perFrameDebugObjects.push_back(CreatePlaneDebugObject(m_intersectionPlane, 3.0f));
-
 			Viewport* vp = g_app->GetActiveViewport();
 			m_mouseData[1] = vp->GetLastMousePosScreenSpace();
 
@@ -389,6 +385,7 @@ namespace ToolKit
 			{
 				// This point.
 				Vec3 p = PointOnRay(ray, t);
+
 				// Previous. point.
 				ray = vp->RayFromScreenSpacePoint(m_mouseData[0]);
 				LinePlaneIntersection(ray, m_intersectionPlane, t);
@@ -403,7 +400,6 @@ namespace ToolKit
 				}
 				else
 				{
-					Vec3 g2p = p - m_gizmo->m_worldLocation;
 					if (IsPlaneMod())
 					{
 						m_delta = p - p0;
@@ -411,6 +407,7 @@ namespace ToolKit
 					else
 					{
 						Vec3 projAxis = GetGrabbedAxis(0);
+						Vec3 g2p = p - m_gizmo->m_worldLocation;
 						Vec3 g2p0 = p0 - m_gizmo->m_worldLocation;
 						float intsDst = glm::dot(projAxis, g2p0);
 						float projDst = glm::dot(projAxis, g2p);
