@@ -211,8 +211,11 @@ namespace ToolKit
 		bool GizmoHandle::HitTest(const Ray& ray, float& t) const
 		{
 			// Hit test done in object space bounding boxes. Ray is transformed to object space.
-			Mat4 ts = glm::toMat4(RotationTo(AXIS[1], m_params.dir.direction));
-			ts[3].xyz = m_params.dir.position;
+			Vec3 dir = m_params.normals[(int)m_params.axis];
+			Mat4 ts = glm::toMat4(RotationTo(AXIS[1], dir));
+			ts = glm::scale(ts, Vec3(m_params.parentTs[0].x));
+			ts[3] = m_params.parentTs[3];
+
 			Mat4 its = glm::inverse(ts);
 
 			Ray rayInObj;
@@ -552,6 +555,7 @@ namespace ToolKit
 
 			GizmoHandle::Params p;
 			p.normals = m_normalVectors;
+			p.parentTs = m_node->GetTransform(TransformationSpace::TS_WORLD);
 			p.dir.position = m_node->GetTranslation(TransformationSpace::TS_WORLD);
 			p.solidDim.xyz = Vec3(rad, 1.0f - tip, rad);
 			p.toeTip = Vec3(toe, tip, 0.0f);
