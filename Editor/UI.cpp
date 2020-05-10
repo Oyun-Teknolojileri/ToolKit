@@ -334,6 +334,12 @@ namespace ToolKit
 			{
 				ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
 			}
+
+			// Undo
+			if (io.KeysDown[io.KeyMap[ImGuiKey_Z]] && io.KeyCtrl)
+			{
+				ActionManager::GetInstance()->Undo();
+			}
 		}
 
 		bool UI::ToggleButton(ImTextureID user_texture_id, const ImVec2& size, bool pushState)

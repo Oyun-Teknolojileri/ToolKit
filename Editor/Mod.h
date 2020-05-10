@@ -44,7 +44,7 @@ namespace ToolKit
 		private:
 			static ActionManager m_instance;
 			std::vector<Action*> m_actionStack;
-			size_t m_stackPointer;
+			int m_stackPointer;
 			bool m_initiated;
 		};
 
@@ -175,6 +175,20 @@ namespace ToolKit
 			virtual void Update(float deltaTime) override;
 			virtual String Signaled(SignalId signal) override;
 			virtual String GetType() override { return StateType::StateEndPick; }
+		};
+
+		class DeleteAction : public Action 
+		{
+		public:
+			DeleteAction(Entity* ntt);
+			virtual ~DeleteAction();
+
+			virtual void Undo() override;
+			virtual void Redo() override;
+
+		private:
+			Entity* m_ntt;
+			bool m_actionComitted;
 		};
 
 		class StateDeletePick : public StatePickingBase

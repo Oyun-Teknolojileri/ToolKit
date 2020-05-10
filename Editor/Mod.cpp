@@ -39,21 +39,39 @@ namespace ToolKit
 
 		void ActionManager::UnInit()
 		{
+			for (Action* action : m_actionStack)
+			{
+				SafeDel(action);
+			}
+
 			m_initiated = false;
 		}
 
 		void ActionManager::AddAction(Action* action)
 		{
-			if (m_stackPointer != m_actionStack.size() - 1)
+			if (m_stackPointer > -1)
 			{
-				// Remove all redos.
-				for (size_t i = m_stackPointer; i < m_actionStack.size(); i++)
+				if (m_stackPointer < (int)m_actionStack.size() - 1)
+				{
+					// All actions above stack pointer are invalidated.
+					for (size_t i = m_stackPointer; i < m_actionStack.size(); i++)
+					{
+						Action* a = m_actionStack[i];
+						SafeDel(a);
+					}
+
+					m_actionStack.erase(m_actionStack.begin() + m_stackPointer, m_actionStack.end());
+				}
+			}
+			else
+			{
+				for (size_t i = 0; i < m_actionStack.size(); i++)
 				{
 					Action* a = m_actionStack[i];
 					SafeDel(a);
 				}
 
-				m_actionStack.erase(m_actionStack.begin() + m_stackPointer, m_actionStack.end());
+				m_actionStack.clear();
 			}
 
 			m_actionStack.push_back(action);
@@ -64,19 +82,19 @@ namespace ToolKit
 
 				pop_front(m_actionStack);
 			}
-
-			m_stackPointer = m_actionStack.size() - 1;
+			m_stackPointer = (int)m_actionStack.size() - 1;
 		}
 
 		void ActionManager::Undo()
 		{
 			if (!m_actionStack.empty())
 			{
-				Action* action = m_actionStack.back();
-				action->Undo();
-
-				assert(m_stackPointer > 0);
-				m_stackPointer--;
+				if (m_stackPointer > -1)
+				{
+					Action* action = m_actionStack[m_stackPointer];
+					action->Undo();
+					m_stackPointer--;
+				}
 			}
 		}
 
@@ -545,6 +563,50 @@ namespace ToolKit
 			return StateType::Null;
 		}
 
+		DeleteAction::DeleteAction(Entity* ntt)
+		{
+			m_ntt = ntt;
+			g_app->m_scene.RemoveEntity(ntt->m_id);
+			m_actionComitted = true;
+		}
+
+		DeleteAction::~DeleteAction()
+		{
+			if (m_actionComitted)
+			{
+				SafeDel(m_ntt);
+			}
+		}
+
+		void DeleteAction::Undo()
+		{
+			assert(m_ntt != nullptr);
+			
+			m_actionComitted = false;
+			g_app->m_scene.AddEntity(m_ntt);
+		}
+
+		void DeleteAction::Redo()
+		{
+			m_actionComitted = true;
+			g_app->m_scene.RemoveEntity(m_ntt->m_id);
+		}
+
+		void StateDeletePick::Update(float deltaTime)
+		{
+			EntityRawPtrArray deleteList;
+			g_app->m_scene.GetSelectedEntities(deleteList);
+			for (Entity* e : deleteList)
+			{
+				ActionManager::GetInstance()->AddAction(new DeleteAction(e));
+			}
+		}
+
+		ToolKit::String StateDeletePick::Signaled(SignalId signal)
+		{
+			return StateType::Null;
+		}
+
 		// Mods
 		//////////////////////////////////////////////////////////////////////////
 
@@ -613,22 +675,6 @@ namespace ToolKit
 				Scene::PickData& pd = endPick->m_pickData.back();
 				g_app->m_cursor->m_worldLocation = pd.pickPos;
 			}
-		}
-
-		void StateDeletePick::Update(float deltaTime)
-		{
-			EntityRawPtrArray deleteList;
-			g_app->m_scene.GetSelectedEntities(deleteList);
-			for (Entity* e : deleteList)
-			{
-				g_app->m_scene.RemoveEntity(e->m_id);
-				SafeDel(e);
-			}
-		}
-
-		ToolKit::String StateDeletePick::Signaled(SignalId signal)
-		{
-			return StateType::Null;
 		}
 
 	}

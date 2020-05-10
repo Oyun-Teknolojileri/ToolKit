@@ -56,6 +56,7 @@ namespace ToolKit
 			SafeDel(m_cursor);
 
 			ModManager::GetInstance()->UnInit();
+			ActionManager::GetInstance()->UnInit();
 
 			// Engine components.
 			SafeDel(m_renderer);
@@ -133,6 +134,7 @@ namespace ToolKit
 			m_highLightSecondaryMaterial->GetRenderState()->cullMode = CullingType::Front;
 
 			ModManager::GetInstance()->Init();
+			ActionManager::GetInstance()->Init();
 
 			// UI.
 			Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
