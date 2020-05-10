@@ -33,6 +33,7 @@ namespace ToolKit
 
 			void Init();
 			void UnInit();
+			void AddAction(Action* action);
 			void Undo();
 			void Redo();
 			static ActionManager* GetInstance();
@@ -42,10 +43,9 @@ namespace ToolKit
 
 		private:
 			static ActionManager m_instance;
-			bool m_initiated;
-
-		public:
 			std::vector<Action*> m_actionStack;
+			size_t m_stackPointer;
+			bool m_initiated;
 		};
 
 		// ModManager

@@ -24,11 +24,12 @@ namespace ToolKit
 		ActionManager::ActionManager()
 		{
 			m_initiated = false;
+			m_stackPointer = 0;
 		}
 		
 		ActionManager::~ActionManager()
 		{
-			assert(m_initiated == false && "Call UnInit.");
+			assert(m_initiated == false && "Call ActionManager::UnInit.");
 		}
 
 		void ActionManager::Init()
@@ -41,14 +42,53 @@ namespace ToolKit
 			m_initiated = false;
 		}
 
+		void ActionManager::AddAction(Action* action)
+		{
+			if (m_stackPointer != m_actionStack.size() - 1)
+			{
+				// Remove all redos.
+				for (size_t i = m_stackPointer; i < m_actionStack.size(); i++)
+				{
+					Action* a = m_actionStack[i];
+					SafeDel(a);
+				}
+
+				m_actionStack.erase(m_actionStack.begin() + m_stackPointer, m_actionStack.end());
+			}
+
+			m_actionStack.push_back(action);
+			if (m_actionStack.size() > g_maxUndoCount)
+			{
+				Action* a = m_actionStack.front();
+				SafeDel(a);
+
+				pop_front(m_actionStack);
+			}
+
+			m_stackPointer = m_actionStack.size() - 1;
+		}
+
 		void ActionManager::Undo()
 		{
+			if (!m_actionStack.empty())
+			{
+				Action* action = m_actionStack.back();
+				action->Undo();
 
+				assert(m_stackPointer > 0);
+				m_stackPointer--;
+			}
 		}
 
 		void ActionManager::Redo()
 		{
+			if (m_stackPointer < m_actionStack.size())
+			{
+				Action* action = m_actionStack.back();
+				action->Redo();
 
+				m_stackPointer++;
+			}
 		}
 
 		ActionManager* ActionManager::GetInstance()

@@ -41,6 +41,9 @@ namespace ToolKit
 		const Vec4 g_consoleWarningColor = Vec4(0.3f, 0.8f, 0.3f, 1.0f);
 		const Vec4 g_consoleMemoColor = Vec4(0.7f, 0.7f, 0.7f, 1.0f);
 
+		// Editor settings.
+		const size_t g_maxUndoCount = 50;
+
 		// Utility functions.		
 		inline float MilisecToSec(float ms)
 		{
