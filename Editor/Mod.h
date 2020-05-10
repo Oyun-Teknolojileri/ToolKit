@@ -11,6 +11,46 @@ namespace ToolKit
 
 	namespace Editor
 	{
+		class Action
+		{
+		public:
+			Action() {};
+			virtual ~Action() {};
+			virtual void Undo() = 0;
+			virtual void Redo() = 0;
+		};
+
+		// ActionManager
+		//////////////////////////////////////////////////////////////////////////
+
+		class ActionManager
+		{
+		public:
+			~ActionManager();
+
+			ActionManager(ActionManager const&) = delete;
+			void operator=(ActionManager const&) = delete;
+
+			void Init();
+			void UnInit();
+			void Undo();
+			void Redo();
+			static ActionManager* GetInstance();
+
+		private:
+			ActionManager();
+
+		private:
+			static ActionManager m_instance;
+			bool m_initiated;
+
+		public:
+			std::vector<Action*> m_actionStack;
+		};
+
+		// ModManager
+		//////////////////////////////////////////////////////////////////////////
+
 		enum class ModId
 		{
 			Base,
@@ -74,7 +114,9 @@ namespace ToolKit
 			std::vector<BaseMod*> m_modStack;
 		};
 
-		// States.
+		// States
+		//////////////////////////////////////////////////////////////////////////
+
 		class StateType
 		{
 		public:
@@ -143,7 +185,9 @@ namespace ToolKit
 			virtual String GetType() override { return StateType::StateDeletePick; }
 		};
 
-		// Mods.
+		// Mods
+		//////////////////////////////////////////////////////////////////////////
+
 		class SelectMod : public BaseMod
 		{
 		public:

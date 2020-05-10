@@ -16,6 +16,49 @@ namespace ToolKit
 	namespace Editor
 	{
 
+		// ActionManager
+		//////////////////////////////////////////////////////////////////////////
+
+		ActionManager ActionManager::m_instance;
+
+		ActionManager::ActionManager()
+		{
+			m_initiated = false;
+		}
+		
+		ActionManager::~ActionManager()
+		{
+			assert(m_initiated == false && "Call UnInit.");
+		}
+
+		void ActionManager::Init()
+		{
+			m_initiated = true;
+		}
+
+		void ActionManager::UnInit()
+		{
+			m_initiated = false;
+		}
+
+		void ActionManager::Undo()
+		{
+
+		}
+
+		void ActionManager::Redo()
+		{
+
+		}
+
+		ActionManager* ActionManager::GetInstance()
+		{
+			return &m_instance;
+		}
+
+		// ModManager
+		//////////////////////////////////////////////////////////////////////////
+
 		ModManager ModManager::m_instance;
 
 		ModManager::~ModManager()
@@ -128,6 +171,9 @@ namespace ToolKit
 			m_initiated = false;
 		}
 
+		// ModManager
+		//////////////////////////////////////////////////////////////////////////
+
 		// Signal definitions.
 		SignalId BaseMod::m_leftMouseBtnDownSgnl = BaseMod::GetNextSignalId();
 		SignalId BaseMod::m_leftMouseBtnUpSgnl = BaseMod::GetNextSignalId();
@@ -190,7 +236,9 @@ namespace ToolKit
 			return ++signalCounter;
 		}
 
-		// State definitions.
+		// States
+		//////////////////////////////////////////////////////////////////////////
+
 		const String StateType::Null = "";
 		const String StateType::StateBeginPick = "StateBeginPick";
 		const String StateType::StateBeginBoxPick = "StateBeginBoxPick";
@@ -456,6 +504,9 @@ namespace ToolKit
 		{
 			return StateType::Null;
 		}
+
+		// Mods
+		//////////////////////////////////////////////////////////////////////////
 
 		void SelectMod::Init()
 		{
