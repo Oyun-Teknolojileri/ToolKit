@@ -11,6 +11,14 @@ namespace ToolKit
 		class StateTransformBase : public State
 		{
 		public:
+			enum class TransformType
+			{
+				Translate,
+				Rotate,
+				Scale
+			};
+
+		public:
 			StateTransformBase();
 			virtual void Update(float deltaTime) override;
 			virtual void TransitionIn(State* prevState) override;
@@ -25,6 +33,7 @@ namespace ToolKit
 			Gizmo* m_gizmo;
 			std::vector<Vec2> m_mouseData;
 			PlaneEquation m_intersectionPlane;
+			TransformType m_type;
 		};
 
 		class StateTransformBegin : public StateTransformBase
@@ -53,6 +62,8 @@ namespace ToolKit
 
 		private:
 			void CalculateDelta();
+			void Transform(const Vec3& delta);
+			void RootsOnly(EntityRawPtrArray& selecteds, EntityRawPtrArray& roots, Entity* child);
 
 		public:
 			Vec3 m_delta;
@@ -76,10 +87,6 @@ namespace ToolKit
 
 			virtual void Init() override;
 			virtual void Update(float deltaTime) override;
-
-		private:
-			void Transform(const Vec3& delta) const;
-			void RootsOnly(EntityRawPtrArray& selecteds, EntityRawPtrArray& roots, Entity* child) const;
 
 		public:
 			Gizmo* m_gizmo;

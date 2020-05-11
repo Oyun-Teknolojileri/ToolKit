@@ -18,6 +18,8 @@ namespace ToolKit
 		StateTransformBase::StateTransformBase()
 		{
 			m_gizmo = nullptr;
+			m_type = TransformType::Translate;
+
 			m_mouseData.resize(2);
 		}
 
@@ -74,6 +76,7 @@ namespace ToolKit
 				baseState->m_gizmo = m_gizmo;
 				baseState->m_mouseData = m_mouseData;
 				baseState->m_intersectionPlane = m_intersectionPlane;
+				baseState->m_type = m_type;
 			}
 		}
 
@@ -361,6 +364,7 @@ namespace ToolKit
 
 		void StateTransformTo::Update(float deltaTime)
 		{
+			Transform(m_delta);
 			StateTransformBase::Update(deltaTime);
 		}
 
@@ -430,6 +434,77 @@ namespace ToolKit
 			std::swap(m_mouseData[0], m_mouseData[1]);
 		}
 
+		void StateTransformTo::Transform(const Vec3& delta)
+		{
+			EntityRawPtrArray selecteds;
+			g_app->m_scene.GetSelectedEntities(selecteds);
+
+			EntityRawPtrArray roots;
+			for (Entity* e : selecteds)
+			{
+				RootsOnly(selecteds, roots, e);
+			}
+
+			TransformationSpace space = g_app->m_transformOrientation;
+			for (Entity* e : roots)
+			{
+				switch (m_type)
+				{
+				case TransformType::Translate:
+					e->m_node->Translate(delta, space);
+					break;
+				case TransformType::Rotate:
+				{
+					float angle = glm::length(delta);
+					if (glm::equal(angle, 0.0f))
+					{
+						return;
+					}
+
+					Vec3 axis = delta / angle;
+					Quaternion rotation = glm::angleAxis(angle, axis);
+					e->m_node->Rotate(rotation, space);
+				}
+				break;
+				case TransformType::Scale:
+					e->m_node->Scale(Vec3(1.0f) + delta, space);
+					break;
+				}
+			}
+		}
+
+		void StateTransformTo::RootsOnly(EntityRawPtrArray& selecteds, EntityRawPtrArray& roots, Entity* child)
+		{
+			auto AddUnique = [&roots](Entity* e)
+			{
+				assert(e != nullptr);
+
+				bool unique = std::find(roots.begin(), roots.end(), e) == roots.end();
+				if (unique)
+				{
+					roots.push_back(e);
+				}
+			};
+
+			Node* parent = child->m_node->m_parent;
+			if (parent != nullptr)
+			{
+				Entity* parentEntity = parent->m_entity;
+				if (std::find(selecteds.begin(), selecteds.end(), parentEntity) != selecteds.end())
+				{
+					RootsOnly(selecteds, roots, parentEntity);
+				}
+				else
+				{
+					AddUnique(child);
+				}
+			}
+			else
+			{
+				AddUnique(child);
+			}
+		}
+
 		// StateTransformEnd
 		//////////////////////////////////////////////////////////////////////////
 
@@ -477,24 +552,28 @@ namespace ToolKit
 
 		void TransformMod::Init()
 		{
+			State* state = new StateTransformBegin();
+			StateTransformBase* baseState = static_cast<StateTransformBase*> (state);
 			switch (m_id)
 			{
 			case ModId::Move:
 				m_gizmo = new MoveGizmo();
+				baseState->m_type = StateTransformBase::TransformType::Translate;
 				break;
 			case ModId::Rotate:
 				m_gizmo = new PolarGizmo();
+				baseState->m_type = StateTransformBase::TransformType::Rotate;
 				break;
 			case ModId::Scale:
 				m_gizmo = new ScaleGizmo();
+				baseState->m_type = StateTransformBase::TransformType::Scale;
 				break;
 			default:
 				assert(false);
 				return;
 			}
-
-			State* state = new StateTransformBegin();
-			static_cast<StateTransformBegin*> (state)->m_gizmo = m_gizmo;
+			
+			baseState->m_gizmo = m_gizmo;
 			m_stateMachine->m_currentState = state;
 
 			m_stateMachine->PushState(state);
@@ -528,14 +607,6 @@ namespace ToolKit
 				ModManager::GetInstance()->DispatchSignal(m_backToStart);
 			}
 
-			if (m_stateMachine->m_currentState->ThisIsA<StateTransformTo>())
-			{
-				StateTransformTo* t = static_cast<StateTransformTo*> (m_stateMachine->m_currentState);
-				Transform(t->m_delta);
-				t->m_delta = Vec3(0.0f);
-				t->Update(deltaTime); // Update gizmo in this frame.
-			}
-
 			if (m_stateMachine->m_currentState->ThisIsA<StateTransformEnd>())
 			{
 				ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
@@ -544,77 +615,6 @@ namespace ToolKit
 			if (m_stateMachine->m_currentState->ThisIsA<StateDeletePick>())
 			{
 				ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
-			}
-		}
-
-		void TransformMod::Transform(const Vec3& delta) const
-		{
-			EntityRawPtrArray selecteds;
-			g_app->m_scene.GetSelectedEntities(selecteds);
-			
-			EntityRawPtrArray roots;
-			for (Entity* e : selecteds)
-			{
-				RootsOnly(selecteds, roots, e);
-			}
-
-			TransformationSpace space = g_app->m_transformOrientation;
-			for (Entity* e : roots)
-			{
-				switch (m_id)
-				{
-				case ModId::Move:
-					e->m_node->Translate(delta, space);
-					break;
-				case ModId::Rotate:
-				{
-					float angle = glm::length(delta);
-					if (glm::equal(angle, 0.0f))
-					{
-						return;
-					}
-
-					Vec3 axis = delta / angle;
-					Quaternion rotation = glm::angleAxis(angle, axis);
-					e->m_node->Rotate(rotation, space);
-				}
-					break;
-				case ModId::Scale:
-					e->m_node->Scale(Vec3(1.0f) + delta, space);
-					break;
-				}
-			}
-		}
-
-		void TransformMod::RootsOnly(EntityRawPtrArray& selecteds, EntityRawPtrArray& roots, Entity* child) const
-		{
-			auto AddUnique = [&roots](Entity* e)
-			{
-				assert(e != nullptr);
-
-				bool unique = std::find(roots.begin(), roots.end(), e) == roots.end();
-				if (unique)
-				{
-					roots.push_back(e);
-				}
-			};
-
-			Node* parent = child->m_node->m_parent;
-			if (parent != nullptr)
-			{
-				Entity* parentEntity = parent->m_entity;
-				if (std::find(selecteds.begin(), selecteds.end(), parentEntity) != selecteds.end())
-				{
-					RootsOnly(selecteds, roots, parentEntity);
-				}
-				else
-				{
-					AddUnique(child);
-				}
-			}
-			else
-			{
-				AddUnique(child);
 			}
 		}
 
