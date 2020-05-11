@@ -348,12 +348,50 @@ namespace ToolKit
 			}
 		}
 
+		// TransformAction
+		//////////////////////////////////////////////////////////////////////////
+
+		TransformAction::TransformAction(Entity* ntt)
+		{
+			m_entity = ntt;
+			m_transform = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
+		}
+
+		TransformAction::~TransformAction()
+		{
+
+		}
+
+		void TransformAction::Undo()
+		{
+			Swap();
+		}
+
+		void TransformAction::Redo()
+		{
+			Swap();
+		}
+
+		void TransformAction::Swap()
+		{
+			Mat4 backUp = m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
+			m_entity->m_node->SetTransform(m_transform, TransformationSpace::TS_WORLD);
+			m_transform = backUp;
+		}
+
 		// StateTransformTo
 		//////////////////////////////////////////////////////////////////////////
 
 		void StateTransformTo::TransitionIn(State* prevState)
 		{
 			StateTransformBase::TransitionIn(prevState);
+			
+			EntityRawPtrArray ntties;
+			GetEntitiesToTransform(ntties);
+			for (Entity* e : ntties)
+			{
+				ActionManager::GetInstance()->AddAction(new TransformAction(e));
+			}
 		}
 
 		void StateTransformTo::TransitionOut(State* prevState)
@@ -436,14 +474,8 @@ namespace ToolKit
 
 		void StateTransformTo::Transform(const Vec3& delta)
 		{
-			EntityRawPtrArray selecteds;
-			g_app->m_scene.GetSelectedEntities(selecteds);
-
 			EntityRawPtrArray roots;
-			for (Entity* e : selecteds)
-			{
-				RootsOnly(selecteds, roots, e);
-			}
+			GetEntitiesToTransform(roots);
 
 			TransformationSpace space = g_app->m_transformOrientation;
 			for (Entity* e : roots)
@@ -502,6 +534,17 @@ namespace ToolKit
 			else
 			{
 				AddUnique(child);
+			}
+		}
+
+		void StateTransformTo::GetEntitiesToTransform(EntityRawPtrArray& ntties)
+		{
+			g_app->m_scene.GetSelectedEntities(ntties);
+
+			EntityRawPtrArray roots;
+			for (Entity* e : ntties)
+			{
+				RootsOnly(ntties, roots, e);
 			}
 		}
 

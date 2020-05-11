@@ -51,6 +51,23 @@ namespace ToolKit
 			void CalculateGrabPoint();
 		};
 
+		class TransformAction : public Action
+		{
+		public:
+			TransformAction(Entity* ntt);
+			virtual ~TransformAction();
+
+			virtual void Undo();
+			virtual void Redo();
+
+		private:
+			void Swap();
+
+		private:
+			Entity* m_entity;
+			Mat4 m_transform;
+		};
+
 		class StateTransformTo : public StateTransformBase
 		{
 		public:
@@ -64,6 +81,7 @@ namespace ToolKit
 			void CalculateDelta();
 			void Transform(const Vec3& delta);
 			void RootsOnly(EntityRawPtrArray& selecteds, EntityRawPtrArray& roots, Entity* child);
+			void GetEntitiesToTransform(EntityRawPtrArray& ntties);
 
 		public:
 			Vec3 m_delta;
