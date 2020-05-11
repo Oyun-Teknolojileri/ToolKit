@@ -332,13 +332,20 @@ namespace ToolKit
 
 			if (io.KeysDown[io.KeyMap[ImGuiKey_Delete]])
 			{
-				ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
+				if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Delete]] == 0.0f)
+				{
+					ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
+				}
 			}
 
 			// Undo
 			if (io.KeysDown[io.KeyMap[ImGuiKey_Z]] && io.KeyCtrl)
 			{
-				ActionManager::GetInstance()->Undo();
+				if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Z]] == 0.0f)
+				{
+					ActionManager::GetInstance()->Undo();
+					g_app->GetConsole()->AddLog("Z down");
+				}
 			}
 		}
 
