@@ -16,6 +16,22 @@ namespace ToolKit
 	namespace Editor
 	{
 
+		// Action
+		//////////////////////////////////////////////////////////////////////////
+
+		Action::Action()
+		{
+		}
+
+		Action::~Action()
+		{
+			for (Action* a : m_group)
+			{
+				SafeDel(a);
+			}
+			m_group.clear();
+		}
+
 		// ActionManager
 		//////////////////////////////////////////////////////////////////////////
 
@@ -85,6 +101,23 @@ namespace ToolKit
 			m_stackPointer = (int)m_actionStack.size() - 1;
 		}
 
+		void ActionManager::GroupLastActions(int n)
+		{
+			assert((int)m_actionStack.size() >= n);
+			assert(m_stackPointer == (int)m_actionStack.size() - 1 && "Call grouping right after add.");
+
+			int begIndx = (int)m_actionStack.size() - n;
+			Action* root = m_actionStack[begIndx++];
+			root->m_group.reserve(n - 1);
+			for (int i = begIndx; i < (int)m_actionStack.size(); i++)
+			{
+				root->m_group.push_back(m_actionStack[i]);
+			}
+
+			m_actionStack.erase(m_actionStack.begin() + begIndx, m_actionStack.end());
+			m_stackPointer = (int)m_actionStack.size() - 1;
+		}
+
 		void ActionManager::Undo()
 		{
 			if (!m_actionStack.empty())
@@ -93,6 +126,10 @@ namespace ToolKit
 				{
 					Action* action = m_actionStack[m_stackPointer];
 					action->Undo();
+					for (Action* ga : action->m_group)
+					{
+						ga->Undo();
+					}
 					m_stackPointer--;
 				}
 			}
@@ -109,6 +146,10 @@ namespace ToolKit
 			{
 				Action* action = m_actionStack[m_stackPointer + 1];
 				action->Redo();
+				for (Action* ga : action->m_group)
+				{
+					ga->Redo();
+				}
 
 				m_stackPointer++;
 			}
@@ -605,6 +646,7 @@ namespace ToolKit
 			{
 				ActionManager::GetInstance()->AddAction(new DeleteAction(e));
 			}
+			ActionManager::GetInstance()->GroupLastActions((int)deleteList.size());
 		}
 
 		ToolKit::String StateDeletePick::Signaled(SignalId signal)

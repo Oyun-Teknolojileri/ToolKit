@@ -14,10 +14,14 @@ namespace ToolKit
 		class Action
 		{
 		public:
-			Action() {};
-			virtual ~Action() {};
+			Action();;
+			virtual ~Action();;
+
 			virtual void Undo() = 0;
 			virtual void Redo() = 0;
+
+		public:
+			std::vector<Action*> m_group;
 		};
 
 		// ActionManager
@@ -34,6 +38,7 @@ namespace ToolKit
 			void Init();
 			void UnInit();
 			void AddAction(Action* action);
+			void GroupLastActions(int n);
 			void Undo();
 			void Redo();
 			static ActionManager* GetInstance();
