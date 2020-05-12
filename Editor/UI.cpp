@@ -338,13 +338,22 @@ namespace ToolKit
 				}
 			}
 
-			// Undo
-			if (io.KeysDown[io.KeyMap[ImGuiKey_Z]] && io.KeyCtrl)
+			// Undo - Redo.
+			if (io.KeysDown[io.KeyMap[ImGuiKey_Z]])
 			{
 				if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Z]] == 0.0f)
 				{
-					ActionManager::GetInstance()->Undo();
-					g_app->GetConsole()->AddLog("Z down");
+					if (io.KeyCtrl)
+					{
+						if (io.KeyShift)
+						{
+							ActionManager::GetInstance()->Redo();
+						}
+						else
+						{
+							ActionManager::GetInstance()->Undo();
+						}
+					}
 				}
 			}
 		}

@@ -100,9 +100,14 @@ namespace ToolKit
 
 		void ActionManager::Redo()
 		{
-			if (m_stackPointer < m_actionStack.size())
+			if (m_actionStack.empty())
 			{
-				Action* action = m_actionStack.back();
+				return;
+			}
+
+			if (m_stackPointer < (int)m_actionStack.size() - 1)
+			{
+				Action* action = m_actionStack[m_stackPointer + 1];
 				action->Redo();
 
 				m_stackPointer++;
