@@ -697,30 +697,26 @@ namespace ToolKit
 
 		void CursorMod::Init()
 		{
-			State* initialState = new StateBeginPick();
-			m_stateMachine->m_currentState = initialState;
+			State* state = new StateBeginPick();
+			m_stateMachine->m_currentState = state;
+			m_stateMachine->PushState(state);
 
-			m_stateMachine->PushState(initialState);
-			m_stateMachine->PushState(new StateEndPick());
+			state = new StateEndPick();
+			state->m_links[BaseMod::m_backToStart] = StateType::StateBeginPick;
+			m_stateMachine->PushState(state);
 		}
 
 		void CursorMod::Update(float deltaTime)
 		{
 			BaseMod::Update(deltaTime);
-			static bool stateTransition = false;
 
-			if (m_stateMachine->m_currentState->GetType() == StateType::StateBeginPick)
+			if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick)
 			{
-				stateTransition = true;
-			}
-
-			if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick && stateTransition)
-			{
-				stateTransition = false;
-
 				StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
 				Scene::PickData& pd = endPick->m_pickData.back();
 				g_app->m_cursor->m_worldLocation = pd.pickPos;
+
+				m_stateMachine->Signal(BaseMod::m_backToStart);
 			}
 		}
 
