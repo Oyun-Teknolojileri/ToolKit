@@ -539,12 +539,12 @@ namespace ToolKit
 
 		void StateTransformTo::GetEntitiesToTransform(EntityRawPtrArray& ntties)
 		{
-			g_app->m_scene.GetSelectedEntities(ntties);
+			EntityRawPtrArray selecteds;
+			g_app->m_scene.GetSelectedEntities(selecteds);
 
-			EntityRawPtrArray roots;
-			for (Entity* e : ntties)
+			for (Entity* e : selecteds)
 			{
-				RootsOnly(ntties, roots, e);
+				RootsOnly(selecteds, ntties, e);
 			}
 		}
 
