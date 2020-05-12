@@ -51,9 +51,6 @@
     <ClCompile Include="UI.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="OverlayMenu.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="Viewport.cpp">
       <Filter>UI</Filter>
     </ClCompile>
@@ -71,6 +68,9 @@
     </ClCompile>
     <ClCompile Include="TransformMod.cpp">
       <Filter>Mods</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlayUI.cpp">
+      <Filter>UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -104,9 +104,6 @@
     <ClInclude Include="UI.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="OverlayMenu.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="Viewport.h">
       <Filter>UI</Filter>
     </ClInclude>
@@ -130,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="TransformMod.h">
       <Filter>Mods</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlayUI.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

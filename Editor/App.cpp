@@ -7,7 +7,7 @@
 #include "Primative.h"
 #include "Node.h"
 #include "GlobalDef.h"
-#include "OverlayMenu.h"
+#include "OverlayUI.h"
 #include "Grid.h"
 #include "Directional.h"
 #include "Mod.h"
@@ -42,7 +42,7 @@ namespace ToolKit
 			{
 				SafeDel(wnd);
 			}
-			SafeDel(Viewport::m_overlayNav);
+			SafeDel(Viewport::m_overlayMods);
 
 			// Editor objects.
 			SafeDel(m_grid);

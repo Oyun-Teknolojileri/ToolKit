@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "OverlayMenu.h"
+#include "OverlayUI.h"
 #include "Viewport.h"
 #include "GlobalDef.h"
 #include "Mod.h"
@@ -10,12 +10,24 @@ namespace ToolKit
 	namespace Editor
 	{
 		
-		OverlayNav::OverlayNav(Viewport* owner)
+		OverlayUI::OverlayUI(Viewport* owner)
 		{
 			m_owner = owner;
 		}
 
-		void OverlayNav::Show()
+		OverlayUI::~OverlayUI()
+		{
+		}
+
+		// OverlayMods
+		//////////////////////////////////////////////////////////////////////////
+
+		OverlayMods::OverlayMods(Viewport* owner)
+			: OverlayUI(owner)
+		{
+		}
+
+		void OverlayMods::Show()
 		{
 			ImVec2 overlaySize(48, 258);
 			const float padding = 5.0f;
@@ -127,6 +139,19 @@ namespace ToolKit
 				ImGui::SameLine(0, spacing); UI::HelpMarker("Camera speed m/s\n", &hoverTimeCS);
 			}
 			ImGui::EndChildFrame();
+		}
+
+		// OverlayViewportOptions
+		//////////////////////////////////////////////////////////////////////////
+
+		OverlayViewportOptions::OverlayViewportOptions(Viewport* owner)
+			: OverlayUI(owner)
+		{
+		}
+
+		void OverlayViewportOptions::Show()
+		{
+
 		}
 
 	}

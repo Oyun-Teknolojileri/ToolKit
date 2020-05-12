@@ -6,11 +6,11 @@
 #include "App.h"
 #include "GlobalDef.h"
 #include "SDL.h"
-#include "DebugNew.h"
-#include "OverlayMenu.h"
+#include "OverlayUI.h"
 #include "Node.h"
 #include "Primative.h"
 #include "Grid.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -18,7 +18,7 @@ namespace ToolKit
 	{
 
 		uint Viewport::m_nextId = 1;
-		OverlayNav* Viewport::m_overlayNav = nullptr;
+		OverlayMods* Viewport::m_overlayMods = nullptr;
 
 		Viewport::Viewport(float width, float height)
 			: m_width(width), m_height(height)
@@ -29,9 +29,9 @@ namespace ToolKit
 			m_viewportImage->Init();
 			m_name = g_viewportStr + " " + std::to_string(m_nextId++);
 
-			if (m_overlayNav == nullptr)
+			if (m_overlayMods == nullptr)
 			{
-				m_overlayNav = new OverlayNav(this);
+				m_overlayMods = new OverlayMods(this);
 			}
 		}
 
@@ -104,10 +104,10 @@ namespace ToolKit
 			{
 				if (IsActive() || g_app->m_showOverlayUIAlways)
 				{
-					if (m_overlayNav != nullptr)
+					if (m_overlayMods != nullptr)
 					{
-						m_overlayNav->m_owner = this;
-						m_overlayNav->Show();
+						m_overlayMods->m_owner = this;
+						m_overlayMods->Show();
 					}
 				}
 			}
