@@ -54,13 +54,13 @@ namespace ToolKit
 				if (m_stackPointer < (int)m_actionStack.size() - 1)
 				{
 					// All actions above stack pointer are invalidated.
-					for (size_t i = m_stackPointer; i < m_actionStack.size(); i++)
+					for (size_t i = m_stackPointer + 1; i < m_actionStack.size(); i++)
 					{
 						Action* a = m_actionStack[i];
 						SafeDel(a);
 					}
 
-					m_actionStack.erase(m_actionStack.begin() + m_stackPointer, m_actionStack.end());
+					m_actionStack.erase(m_actionStack.begin() + m_stackPointer + 1, m_actionStack.end());
 				}
 			}
 			else
