@@ -19,6 +19,7 @@ namespace ToolKit
 
 		uint Viewport::m_nextId = 1;
 		OverlayMods* Viewport::m_overlayMods = nullptr;
+		OverlayViewportOptions* Viewport::m_overlayOptions = nullptr;
 
 		Viewport::Viewport(float width, float height)
 			: m_width(width), m_height(height)
@@ -32,6 +33,11 @@ namespace ToolKit
 			if (m_overlayMods == nullptr)
 			{
 				m_overlayMods = new OverlayMods(this);
+			}
+
+			if (m_overlayOptions == nullptr)
+			{
+				m_overlayOptions = new OverlayViewportOptions(this);
 			}
 		}
 
@@ -108,6 +114,12 @@ namespace ToolKit
 					{
 						m_overlayMods->m_owner = this;
 						m_overlayMods->Show();
+					}
+
+					if (m_overlayOptions != nullptr)
+					{
+						m_overlayOptions->m_owner = this;
+						m_overlayOptions->Show();
 					}
 				}
 			}

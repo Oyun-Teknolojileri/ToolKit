@@ -52,6 +52,7 @@ namespace ToolKit
 			Vec2 m_wndContentAreaSize;
 
 			static class OverlayMods* m_overlayMods;
+			static class OverlayViewportOptions* m_overlayOptions;
 
 			// UI Draw commands.
 			std::vector<std::function<void(ImDrawList*)>> m_drawCommands;

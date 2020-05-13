@@ -43,6 +43,7 @@ namespace ToolKit
 				SafeDel(wnd);
 			}
 			SafeDel(Viewport::m_overlayMods);
+			SafeDel(Viewport::m_overlayOptions);
 
 			// Editor objects.
 			SafeDel(m_grid);

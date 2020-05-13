@@ -4,6 +4,8 @@
 #include "Viewport.h"
 #include "GlobalDef.h"
 #include "Mod.h"
+#include "ConsoleWindow.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -151,7 +153,125 @@ namespace ToolKit
 
 		void OverlayViewportOptions::Show()
 		{
+			ImVec2 overlaySize(154, 24);
+			const float padding = 5.0f;
+			ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding + 50, m_owner->m_wndPos.y + padding);
+			ImGui::SetNextWindowPos(window_pos);
+			ImGui::SetNextWindowBgAlpha(0.65f);
+			if (ImGui::BeginChildFrame(ImGui::GetID("ViewportOptions"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
+			{
+				const char* itemsCam[] = { "Persp.", "Top", "Front", "Left" };
+				static int currentItemCam = 0;
+				bool change = false;
 
+				ImGui::PushItemWidth(72);
+				if (ImGui::BeginCombo("##VC", itemsCam[currentItemCam], ImGuiComboFlags_None))
+				{
+					for (int n = 0; n < IM_ARRAYSIZE(itemsCam); n++)
+					{
+						bool is_selected = (currentItemCam == n);
+						if (ImGui::Selectable(itemsCam[n], is_selected))
+						{
+							if (currentItemCam != n)
+							{
+								change = true;
+							}
+							currentItemCam = n;
+						}
+
+						if (is_selected)
+						{
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+				ImGui::PopItemWidth();
+
+				if (change)
+				{
+					String view;
+					switch (currentItemCam)
+					{
+					case 1:
+						view = "top";
+						break;
+					case 2:
+						view = "front";
+						break;
+					case 3:
+						view = "left";
+						break;
+					case 0:
+					default:
+						view = "persp.";
+						break;
+					}
+
+					String cmd = "SetCameraTransform --v \"" + m_owner->m_name + "\" " + view;
+					g_app->GetConsole()->ExecCommand(cmd);
+				}
+
+
+				ImGuiStyle& style = ImGui::GetStyle();
+				float spacing = style.ItemInnerSpacing.x;
+
+				static float hoverTimeCA = 0.0f;
+				ImGui::SameLine(0, spacing); UI::HelpMarker("Camera alignment\n", &hoverTimeCA);
+
+				const char* items[] = { "World", "Parent", "Local" };
+				static int current_item = 0;
+
+				change = false;
+				ImGui::PushItemWidth(72);
+				if (ImGui::BeginCombo("##TRS", items[current_item], ImGuiComboFlags_None))
+				{
+					for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+					{
+						bool is_selected = (current_item == n);
+						if (ImGui::Selectable(items[n], is_selected))
+						{
+							if (current_item != n)
+							{
+								change = true;
+							}
+							current_item = n;
+						}
+
+						if (is_selected)
+						{
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+				ImGui::PopItemWidth();
+				
+				if (change)
+				{
+					String ts;
+					switch (current_item)
+					{
+					case 1:
+						ts = "parent";
+						break;
+					case 2:
+						ts = "local";
+						break;
+					case 0:
+					default:
+						ts = "world";
+						break;
+					}
+
+					String cmd = "SetTransformOrientation " + ts;
+					g_app->GetConsole()->ExecCommand(cmd);
+				}
+
+				static float hoverTimeTO = 0.0f;
+				ImGui::SameLine(0, spacing); UI::HelpMarker("Transform orientations\n", &hoverTimeTO);
+			}
+			ImGui::EndChildFrame();
 		}
 
 	}
