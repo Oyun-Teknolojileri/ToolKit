@@ -73,6 +73,7 @@ namespace ToolKit
 				static std::shared_ptr<Texture> m_rotateIcn;
 				static std::shared_ptr<Texture> m_scaleIcn;
 				static std::shared_ptr<Texture> m_appIcon;
+				static std::shared_ptr<Texture> m_snapIcon;
 			};
 		}
 }

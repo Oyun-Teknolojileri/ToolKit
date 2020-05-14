@@ -155,7 +155,12 @@ namespace ToolKit
 
 		void OverlayViewportOptions::Show()
 		{
-			ImVec2 overlaySize(154, 24);
+			ImVec2 overlaySize(184, 24);
+			if (g_app->m_snapsEnabled)
+			{
+				overlaySize.x = 356;
+			}
+
 			const float padding = 5.0f;
 			ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding + 50, m_owner->m_wndPos.y + padding);
 			ImGui::SetNextWindowPos(window_pos);
@@ -164,6 +169,7 @@ namespace ToolKit
 			{
 				m_mouseOver = ImGui::IsWindowHovered();
 
+				// Camera alignment combo.
 				const char* itemsCam[] = { "Persp.", "Top", "Front", "Left" };
 				static int currentItemCam = 0;
 				bool change = false;
@@ -216,30 +222,30 @@ namespace ToolKit
 					g_app->GetConsole()->ExecCommand(cmd);
 				}
 
-
+				// Transform orientation combo.
 				ImGuiStyle& style = ImGui::GetStyle();
 				float spacing = style.ItemInnerSpacing.x;
 
 				static float hoverTimeCA = 0.0f;
 				ImGui::SameLine(0, spacing); UI::HelpMarker("Camera alignment\n", &hoverTimeCA);
 
-				const char* items[] = { "World", "Parent", "Local" };
-				static int current_item = 0;
+				const char* itemsOrient[] = { "World", "Parent", "Local" };
+				static int currentItemOrient = 0;
 
 				change = false;
 				ImGui::PushItemWidth(72);
-				if (ImGui::BeginCombo("##TRS", items[current_item], ImGuiComboFlags_None))
+				if (ImGui::BeginCombo("##TRS", itemsOrient[currentItemOrient], ImGuiComboFlags_None))
 				{
-					for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+					for (int n = 0; n < IM_ARRAYSIZE(itemsOrient); n++)
 					{
-						bool is_selected = (current_item == n);
-						if (ImGui::Selectable(items[n], is_selected))
+						bool is_selected = (currentItemOrient == n);
+						if (ImGui::Selectable(itemsOrient[n], is_selected))
 						{
-							if (current_item != n)
+							if (currentItemOrient != n)
 							{
 								change = true;
 							}
-							current_item = n;
+							currentItemOrient = n;
 						}
 
 						if (is_selected)
@@ -254,7 +260,7 @@ namespace ToolKit
 				if (change)
 				{
 					String ts;
-					switch (current_item)
+					switch (currentItemOrient)
 					{
 					case 1:
 						ts = "parent";
@@ -274,8 +280,45 @@ namespace ToolKit
 
 				static float hoverTimeTO = 0.0f;
 				ImGui::SameLine(0, spacing); UI::HelpMarker("Transform orientations\n", &hoverTimeTO);
+				
+				// Snap Bar.
+				ImGui::Separator();
+
+				// Snap button.
+				ImGui::SameLine(0, spacing);
+				static float hoverTimeSnapBtn = 0.0f;
+				g_app->m_snapsEnabled = UI::ToggleButton((void*)(intptr_t)UI::m_snapIcon->m_textureId, ImVec2(13, 13), g_app->m_snapsEnabled);
+				ImGui::SameLine(0, spacing); UI::HelpMarker("Snap\nEnable snapped transforms.", &hoverTimeSnapBtn);
+				
+				if (g_app->m_snapsEnabled)
+				{
+					static float moveDelta = 0.25f;
+					ImGui::SameLine(0, spacing);
+					ImGui::PushItemWidth(35.0f);
+					ImGui::InputFloat("Md", &moveDelta, 0.0f, 0.0f, "%.2f");
+					ImGui::PopItemWidth();
+					static float hoverTimeSnapMd = 0.0f;
+					ImGui::SameLine(0, spacing); UI::HelpMarker("Move snap delta.", &hoverTimeSnapMd);
+
+					static float rotationDelta = 5.0f;
+					ImGui::SameLine(0, spacing);
+					ImGui::PushItemWidth(35.0f);
+					ImGui::InputFloat("Rd", &rotationDelta, 0.0f, 0.0f, "%.2f");
+					ImGui::PopItemWidth();
+					static float hoverTimeSnapRd = 0.0f;
+					ImGui::SameLine(0, spacing); UI::HelpMarker("Rotation snap delta.", &hoverTimeSnapRd);
+
+					static float scaleDelta = 0.1f;
+					ImGui::SameLine(0, spacing);
+					ImGui::PushItemWidth(35.0f);
+					ImGui::InputFloat("Sd", &scaleDelta, 0.0f, 0.0f, "%.2f");
+					ImGui::PopItemWidth();
+					static float hoverTimeSnapSd = 0.0f;
+					ImGui::SameLine(0, spacing); UI::HelpMarker("Scale snap delta.", &hoverTimeSnapSd);
+				}
+
+				ImGui::EndChildFrame();
 			}
-			ImGui::EndChildFrame();
 		}
 
 	}

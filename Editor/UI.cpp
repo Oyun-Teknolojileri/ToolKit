@@ -30,6 +30,7 @@ namespace ToolKit
 		std::shared_ptr<Texture> UI::m_rotateIcn;
 		std::shared_ptr<Texture> UI::m_scaleIcn;
 		std::shared_ptr<Texture> UI::m_appIcon;
+		std::shared_ptr<Texture> UI::m_snapIcon;
 
 		void UI::Init()
 		{
@@ -105,6 +106,8 @@ namespace ToolKit
 			m_rotateIcn->Init();
 			m_scaleIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/scale.png"));
 			m_scaleIcn->Init();
+			m_snapIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/snap.png"));
+			m_snapIcon->Init();
 
 			// Set application Icon.
 			m_appIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/app.png"));
@@ -370,7 +373,13 @@ namespace ToolKit
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_ButtonHovered]);
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, style.Colors[ImGuiCol_ButtonHovered]);
 			}
-			bool newPushState = pushState | ImGui::ImageButton((void*)(intptr_t)user_texture_id, size);
+
+			bool newPushState = pushState;
+			if (ImGui::ImageButton((void*)(intptr_t)user_texture_id, size))
+			{
+				newPushState = !pushState; // If pressed toggle.
+			}
+
 			if (pushState)
 			{
 				ImGui::PopStyleColor(3);
