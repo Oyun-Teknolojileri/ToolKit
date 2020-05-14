@@ -18,6 +18,7 @@ namespace ToolKit
 
 		public:
 			Viewport* m_owner;
+			bool m_mouseOver = false;
 		};
 
 		class OverlayMods : public OverlayUI

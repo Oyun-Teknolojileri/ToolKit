@@ -38,6 +38,8 @@ namespace ToolKit
 			ImGui::SetNextWindowBgAlpha(0.65f);
 			if (ImGui::BeginChildFrame(ImGui::GetID("Navigation"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 			{
+				m_mouseOver = ImGui::IsWindowHovered();
+				
 				// Select button.
 				static float hoverTimeSelectBtn = 0.0f;
 				bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Select;
@@ -160,6 +162,8 @@ namespace ToolKit
 			ImGui::SetNextWindowBgAlpha(0.65f);
 			if (ImGui::BeginChildFrame(ImGui::GetID("ViewportOptions"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 			{
+				m_mouseOver = ImGui::IsWindowHovered();
+
 				const char* itemsCam[] = { "Persp.", "Top", "Front", "Left" };
 				static int currentItemCam = 0;
 				bool change = false;

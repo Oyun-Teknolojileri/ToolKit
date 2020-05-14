@@ -11,6 +11,7 @@
 #include "GlobalDef.h"
 #include "Mod.h"
 #include "ConsoleWindow.h"
+#include "OverlayUI.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -314,8 +315,9 @@ namespace ToolKit
 		void UI::DispatchSignals()
 		{
 			ImGuiIO& io = ImGui::GetIO();
+			bool mouseOnOverlayUI = Viewport::m_overlayMods->m_mouseOver || Viewport::m_overlayOptions->m_mouseOver;
 
-			if (io.MouseClicked[0])
+			if (io.MouseClicked[0] && !mouseOnOverlayUI)
 			{
 				ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnDownSgnl);
 			}
