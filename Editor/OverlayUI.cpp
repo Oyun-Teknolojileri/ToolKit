@@ -333,23 +333,37 @@ namespace ToolKit
 							{
 								if (ImGui::MenuItem("Plane"))
 								{
+									Quad* plane = new Quad();
+									plane->m_mesh->Init(false);
+									g_app->m_scene.AddEntity(plane);
 								}
 								if (ImGui::MenuItem("Cube"))
 								{
+									Cube* cube = new Cube();
+									cube->m_mesh->Init(false);
+									g_app->m_scene.AddEntity(cube);
 								}
 								if (ImGui::MenuItem("UV Sphere"))
 								{
+									Sphere* sphere = new Sphere();
+									sphere->m_mesh->Init(false);
+									g_app->m_scene.AddEntity(sphere);
 								}
 								if (ImGui::MenuItem("Cylinder"))
 								{
 								}
 								if (ImGui::MenuItem("Cone"))
 								{
+									Cone* cone = new Cone();
+									cone->m_mesh->Init(false);
+									g_app->m_scene.AddEntity(cone);
 								}
 								if (ImGui::MenuItem("Monkey"))
 								{
+									Drawable* suzanne = new Drawable();
+									suzanne->m_mesh = GetMeshManager()->Create(MeshPath("suzanne.mesh"));
+									g_app->m_scene.AddEntity(suzanne);
 								}
-
 								ImGui::EndMenu();
 							}
 							if (ImGui::BeginMenu("Light"))
