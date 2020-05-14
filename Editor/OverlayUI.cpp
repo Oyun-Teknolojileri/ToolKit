@@ -162,7 +162,7 @@ namespace ToolKit
 			}
 
 			const float padding = 5.0f;
-			ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding + 50, m_owner->m_wndPos.y + padding);
+			ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding + 100, m_owner->m_wndPos.y + padding);
 			ImGui::SetNextWindowPos(window_pos);
 			ImGui::SetNextWindowBgAlpha(0.65f);
 			if (ImGui::BeginChildFrame(ImGui::GetID("ViewportOptions"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
@@ -317,6 +317,84 @@ namespace ToolKit
 					ImGui::SameLine(0, spacing); UI::HelpMarker("Scale snap delta.", &hoverTimeSnapSd);
 				}
 
+				ImGui::EndChildFrame();
+			}
+
+			overlaySize = ImVec2(45, 22);
+			window_pos = ImVec2(m_owner->m_wndPos.x + padding + 50, m_owner->m_wndPos.y + padding + 2);
+			ImGui::SetNextWindowPos(window_pos);
+			ImGui::SetNextWindowBgAlpha(0.65f);
+			if (ImGui::BeginChildFrame(ImGui::GetID("ViewportMenu"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_MenuBar))
+			{
+				m_mouseOver = ImGui::IsWindowHovered();
+
+				if (ImGui::BeginMenuBar())
+				{
+					if (ImGui::BeginMenu("Add"))
+					{
+							if (ImGui::BeginMenu("Mesh"))
+							{
+								if (ImGui::MenuItem("Plane"))
+								{
+								}
+								if (ImGui::MenuItem("Cube"))
+								{
+								}
+								if (ImGui::MenuItem("UV Sphere"))
+								{
+								}
+								if (ImGui::MenuItem("Cylinder"))
+								{
+								}
+								if (ImGui::MenuItem("Cone"))
+								{
+								}
+								if (ImGui::MenuItem("Monkey"))
+								{
+								}
+
+								ImGui::EndMenu();
+							}
+							if (ImGui::BeginMenu("Light"))
+							{
+								if (ImGui::MenuItem("Point"))
+								{
+								}
+								if (ImGui::MenuItem("Sun"))
+								{
+								}
+								if (ImGui::MenuItem("Spot"))
+								{
+								}
+								if (ImGui::MenuItem("Area"))
+								{
+								}
+								ImGui::EndMenu();
+							}
+							if (ImGui::MenuItem("Camera"))
+							{
+							}
+							if (ImGui::MenuItem("Speaker"))
+							{
+							}
+							if (ImGui::BeginMenu("Light Probe"))
+							{
+								if (ImGui::MenuItem("Reflection Cubemap"))
+								{
+								}
+								if (ImGui::MenuItem("Reflection Plane"))
+								{
+								}
+								if (ImGui::MenuItem("Irradiance Volume"))
+								{
+								}
+								ImGui::EndMenu();
+							}
+
+							ImGui::EndMenu();
+						}
+						ImGui::EndMenuBar();
+					}
 				ImGui::EndChildFrame();
 			}
 		}
