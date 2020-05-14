@@ -292,26 +292,23 @@ namespace ToolKit
 				
 				if (g_app->m_snapsEnabled)
 				{
-					static float moveDelta = 0.25f;
 					ImGui::SameLine(0, spacing);
 					ImGui::PushItemWidth(35.0f);
-					ImGui::InputFloat("Md", &moveDelta, 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("Md", &g_app->m_moveDelta, 0.0f, 0.0f, "%.2f");
 					ImGui::PopItemWidth();
 					static float hoverTimeSnapMd = 0.0f;
 					ImGui::SameLine(0, spacing); UI::HelpMarker("Move snap delta.", &hoverTimeSnapMd);
 
-					static float rotationDelta = 5.0f;
 					ImGui::SameLine(0, spacing);
 					ImGui::PushItemWidth(35.0f);
-					ImGui::InputFloat("Rd", &rotationDelta, 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("Rd", &g_app->m_rotateDelta, 0.0f, 0.0f, "%.2f");
 					ImGui::PopItemWidth();
 					static float hoverTimeSnapRd = 0.0f;
 					ImGui::SameLine(0, spacing); UI::HelpMarker("Rotation snap delta.", &hoverTimeSnapRd);
 
-					static float scaleDelta = 0.1f;
 					ImGui::SameLine(0, spacing);
 					ImGui::PushItemWidth(35.0f);
-					ImGui::InputFloat("Sd", &scaleDelta, 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("Sd", &g_app->m_scaleDelta, 0.0f, 0.0f, "%.2f");
 					ImGui::PopItemWidth();
 					static float hoverTimeSnapSd = 0.0f;
 					ImGui::SameLine(0, spacing); UI::HelpMarker("Scale snap delta.", &hoverTimeSnapSd);
