@@ -438,11 +438,25 @@ namespace ToolKit
 				LinePlaneIntersection(ray, m_intersectionPlane, t);
 				Vec3 p0 = PointOnRay(ray, t);
 
+				static float deltaAccum = 0.0f;
 				if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
 				{
 					int axisInd = (int)m_gizmo->GetGrabbedAxis();
 					 Vec3 projAxis = pg->m_handles[axisInd]->m_tangentDir;
 					 float delta = glm::dot(projAxis, p - p0);
+					 if (g_app->m_snapsEnabled)
+					 {
+						 deltaAccum += glm::abs(delta);
+						 if (deltaAccum > 0.5f)
+						 {
+							 delta = glm::radians(g_app->m_rotateDelta) * glm::sign(delta);
+							 deltaAccum = 0.0f;
+						 }
+						 else
+						 {
+							 delta = 0.0f;
+						 }
+					 }
 					 m_delta = AXIS[axisInd] * delta;
 				}
 				else
@@ -458,9 +472,33 @@ namespace ToolKit
 						Vec3 g2p0 = p0 - m_gizmo->m_worldLocation;
 						float intsDst = glm::dot(projAxis, g2p0);
 						float projDst = glm::dot(projAxis, g2p);
+						float delta = projDst - intsDst;
+						if (g_app->m_snapsEnabled)
+						{
+							deltaAccum += glm::abs(delta);
+							if (deltaAccum > g_app->m_moveDelta)
+							{
+								switch (m_type)
+								{
+								case TransformType::Translate:
+									delta = g_app->m_moveDelta * glm::sign(delta);
+									break;
+								case TransformType::Scale:
+									delta = g_app->m_scaleDelta * glm::sign(delta);
+									break;
+								default:
+									assert(false);
+								}
+								deltaAccum = 0.0f;
+							}
+							else
+							{
+								delta = 0.0f;
+							}
+						}
 
 						Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
-						m_delta = moveAxis * (projDst - intsDst);
+						m_delta = moveAxis * delta;
 					}
 				}
 			}
