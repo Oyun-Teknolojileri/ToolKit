@@ -6,6 +6,16 @@ namespace ToolKit
 	namespace Editor
 	{
 
+		Scene::~Scene()
+		{
+			for (Entity* ntt : m_entitites)
+			{
+				SafeDel(ntt);
+			}
+			m_entitites.clear();
+			m_selectedEntities.clear();
+		}
+
 		Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList)
 		{
 			PickData pd;

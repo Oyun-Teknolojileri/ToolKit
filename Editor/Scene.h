@@ -9,6 +9,8 @@ namespace ToolKit
 		class Scene
 		{
 		public:
+			~Scene();
+
 			// Scene queries.
 			struct PickData
 			{

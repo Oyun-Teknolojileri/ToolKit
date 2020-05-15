@@ -48,12 +48,6 @@ namespace ToolKit
 			// Editor objects.
 			SafeDel(m_grid);
 			SafeDel(m_origin);
-			SafeDel(m_suzanne);
-			SafeDel(m_knight);
-			SafeDel(m_q1);
-			SafeDel(m_q2);
-			SafeDel(m_q3);
-			SafeDel(m_q4);
 			SafeDel(m_cursor);
 
 			ModManager::GetInstance()->UnInit();
