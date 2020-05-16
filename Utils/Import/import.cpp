@@ -10,8 +10,8 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
-#include <filesystem>
 #include "lodepng.h"
+#include <filesystem>
 
 using namespace std;
 

@@ -13,6 +13,8 @@
 #include "Mod.h"
 #include "ConsoleWindow.h"
 #include "Gizmo.h"
+#include <filesystem>
+#include <cstdlib>
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -247,9 +249,65 @@ namespace ToolKit
 			g_running = false;
 		}
 
-		void App::Import(const String& fullPath, const String& subDir)
+		int App::Import(const String& fullPath, const String& subDir, bool overwrite)
 		{
+			if (!CanImport(fullPath))
+			{
+				return -1;
+			}
 
+			if (CheckFile(fullPath))
+			{
+				std::filesystem::copy
+				(
+					fullPath, "..\\Utils\\Import",
+					overwrite ? std::filesystem::copy_options::overwrite_existing 
+					: std::filesystem::copy_options::skip_existing
+				);
+
+				String name, ext;
+				DecomposePath(fullPath, &path, &name, &ext);
+
+				String cmd = "..\\Utils\\Import ";
+				if (!subDir.empty())
+				{
+					cmd += subDir + '\\' + name + ext;
+				}
+				else
+				{
+					cmd += name + ext;
+				}
+
+				int result = std::system(cmd.c_str());
+				assert(result != -1);
+
+				return result;
+			}
+
+			return -1;
+		}
+
+		bool App::CanImport(const String& fullPath)
+		{
+			String ext;
+			DecomposePath(fullPath, nullptr, nullptr, &ext);
+
+			if (ext == ".fbx")
+			{
+				return true;
+			}
+
+			if (ext == ".glb")
+			{
+				return true;
+			}
+
+			if (ext == ".obj")
+			{
+				return true;
+			}
+
+			return false;
 		}
 
 		Viewport* App::GetActiveViewport()

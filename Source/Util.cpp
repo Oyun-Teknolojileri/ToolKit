@@ -105,10 +105,41 @@ namespace ToolKit
 		val = Quaternion(tmp.w, tmp.xyz);
 	}
 
-	bool CheckFile(String path)
+	bool CheckFile(const String& path)
 	{
 		std::ifstream f(path.c_str());
 		return f.good();
+	}
+
+	void DecomposePath(const String fullPath, String* path, String* name, String* ext)
+	{
+		String normal = fullPath;
+		NormalizePath(normal);
+
+		size_t ind1 = normal.find_last_of('\\');
+		if (path != nullptr)
+		{
+			*path = normal.substr(0, ind1);
+		}
+
+		size_t ind2 = normal.find_last_of('.');
+		if (ind2 != String::npos)
+		{
+			if (name != nullptr)
+			{
+				*name = normal.substr(ind1 + 1, ind2 - ind1 - 1);
+			}
+			
+			if (ext != nullptr)
+			{
+				*ext = normal.substr(ind2);
+			}
+		}
+	}
+
+	void NormalizePath(String& path)
+	{
+		ReplaceStringInPlace(path, "/", "\\");
 	}
 
 	// split a string into multiple sub strings, based on a separator string

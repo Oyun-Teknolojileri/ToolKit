@@ -69,7 +69,7 @@ namespace ToolKit
 
 				static struct Import
 				{
-					bool showImportPopup = true;
+					bool showImportPopup = false;
 					String fullPath;
 				} ImportData;
 

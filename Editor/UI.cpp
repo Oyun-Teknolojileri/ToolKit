@@ -313,13 +313,25 @@ namespace ToolKit
 				ImGui::Text(ImportData.fullPath.c_str());
 				ImGui::Separator();
 
+				bool canImp = g_app->CanImport(ImportData.fullPath);
+				if (!canImp)
+				{
+					ImGui::Text("File format is not supported.\nSuported formats are fbx, glb, obj.");
+					ImGui::Separator();
+				}
+
+				static bool overwrite = false;
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+				ImGui::Checkbox("Override", &overwrite);
+				ImGui::PopStyleVar();
+
 				String buffer;
 				buffer.resize(512);
 				bool sub = ImGui::InputTextWithHint("Subdir", "optional", buffer.data(), 512);
 
 				if (ImGui::Button("OK", ImVec2(120, 0))) 
 				{ 
-					g_app->Import(ImportData.fullPath, sub ? buffer : "");
+					g_app->Import(ImportData.fullPath, sub ? buffer : "", overwrite);
 					ImportData.showImportPopup = false;
 					ImGui::CloseCurrentPopup(); 
 				}
