@@ -31,6 +31,21 @@ void TrunckToFileName(string& fullPath)
 	}
 }
 
+void Decompose(string fullPath, string& path, string& name)
+{
+  std::replace(fullPath.begin(), fullPath.end(), '/', '\\');
+  path = "";
+  
+  size_t i = fullPath.find_last_of('\\');
+  if (i != string::npos)
+  {
+    path = fullPath.substr(0, fullPath.find_last_of('\\') + 1);
+  }
+
+  name = fullPath.substr(fullPath.find_last_of('\\') + 1);
+  name = name.substr(0, name.find_last_of('.'));
+}
+
 string GetTextureName(const aiTexture* texture, unsigned int i)
 {
 	string name = texture->mFilename.C_Str();
@@ -103,7 +118,7 @@ void PrintAnims_(const aiScene* scene, string file)
   for (unsigned int i = 0; i < scene->mNumAnimations; i++)
   {
     aiAnimation* anim = scene->mAnimations[i];
-    string path = file + "_";
+    string path = file;
     std::string animName(anim->mName.C_Str());
     replace(animName.begin(), animName.end(), '.', '_');
     replace(animName.begin(), animName.end(), '|', '_');
@@ -216,8 +231,11 @@ void AppendMesh_(aiMesh* mesh, ofstream& file, string filePath)
   if (skinData.empty())
     tag = "mesh";
 
+	string path, name;
+	Decompose(filePath, path, name);
+
   file << "  <" + tag + ">\n";
-  file << "    <material name=\"" + filePath + GetMaterialName(mesh) + ".material\"/>\n";
+  file << "    <material name=\"" + path + GetMaterialName(mesh) + ".material\"/>\n";
   file << "    <vertices>\n";
   for (unsigned int i = 0; i < mesh->mNumVertices; i++)
   {
@@ -277,16 +295,14 @@ void AppendMesh_(aiMesh* mesh, ofstream& file, string filePath)
 
 void PrintMesh_(const aiScene* scene, string filePath)
 {
-  string fileName = filePath.substr(filePath.find_last_of('\\') + 1);
-  fileName = fileName.substr(0, fileName.find_last_of('.'));
-
-  filePath = filePath.substr(0, filePath.find_last_of('\\') + 1);
+  string path, name;
+  Decompose(filePath, path, name);
 
   string tag = "mesh";
   if (!g_skeletonMap.empty())
     tag = "skinMesh";
 
-  ofstream file(filePath + fileName + "." + tag, ios::out);
+  ofstream file(path + name + "." + tag, ios::out);
   file << "<meshContainer>\n";
 
   function<void(aiNode*)> searchMeshFn = [&searchMeshFn, &scene, &file, &filePath](aiNode* node) -> void
@@ -413,7 +429,10 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
       file << tabSpace << "</bone>\n";
   };
 
-  ofstream file(filePath + ".skeleton", ios::out);
+  string name, path;
+  Decompose(filePath, path, name);
+
+  ofstream file(path + name + ".skeleton", ios::out);
   assert(file.good());
 
   file << "<skeleton>\n";
@@ -473,7 +492,7 @@ int main(int argc, char *argv[])
     pathPart = file.substr(0, file.find_last_of("\\") + 1);
   }
 
-  PrintSkeleton_(scene, pathPart);
+  PrintSkeleton_(scene, file);
   PrintMesh_(scene, file);
   PrintAnims_(scene, pathPart);
   PrintTextures_(scene, pathPart);
