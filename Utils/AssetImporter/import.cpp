@@ -10,6 +10,7 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
+#include <filesystem>
 #include "lodepng.h"
 
 using namespace std;
@@ -144,7 +145,7 @@ void PrintMaterial_(const aiScene* scene, string filePath)
   {
     aiMaterial* material = scene->mMaterials[i];
     string name = GetMaterialName(material, i);
-    string writePath = filePath + "_" + name + ".material";
+    string writePath = filePath + name + ".material";
     ofstream file(writePath, ios::out);
     assert(file.good());
 
@@ -156,7 +157,7 @@ void PrintMaterial_(const aiScene* scene, string filePath)
       material->GetTexture(aiTextureType_DIFFUSE, 0, &texture);
 
       string tName = texture.C_Str();
-      if (!tName.empty() && tName[0] == '*')// Embedded texture.
+      if (!tName.empty() && tName[0] == '*') // Embedded texture.
       {
         string indxPart = tName.substr(1);
         unsigned int tIndx = atoi(indxPart.c_str());
@@ -166,10 +167,26 @@ void PrintMaterial_(const aiScene* scene, string filePath)
           tName = GetTextureName(t, tIndx);
         }
       }
+      else
+      {
+				// Try copying texture.
+				string outName = tName;
+				TrunckToFileName(outName);
 
-      TrunckToFileName(tName);
+				string textPath = filePath + outName;
+        ifstream isGoodFile;
+        isGoodFile.open(tName, ios::binary | ios::in);
+        if (isGoodFile.good())
+        {
+          filesystem::copy(tName, textPath);
+        }
+        isGoodFile.close();
+      }
+     
+			string outName = tName;
+			TrunckToFileName(outName);
 
-      string textPath = filePath + "_" + tName;
+      string textPath = filePath + outName;
       file << "  <diffuseTexture name = \"" + textPath + "\"/>\n";
     }
     file << "</material>\n";
@@ -177,7 +194,7 @@ void PrintMaterial_(const aiScene* scene, string filePath)
   }
 }
 
-void AppendMesh_(aiMesh* mesh, ofstream& file, string fileName)
+void AppendMesh_(aiMesh* mesh, ofstream& file, string filePath)
 {
   // Skin data
   unordered_map<int, vector<pair<int, float> > > skinData;
@@ -200,7 +217,7 @@ void AppendMesh_(aiMesh* mesh, ofstream& file, string fileName)
     tag = "mesh";
 
   file << "  <" + tag + ">\n";
-  file << "    <material name=\"" + fileName + GetMaterialName(mesh) + ".material\"/>\n";
+  file << "    <material name=\"" + filePath + GetMaterialName(mesh) + ".material\"/>\n";
   file << "    <vertices>\n";
   for (unsigned int i = 0; i < mesh->mNumVertices; i++)
   {
@@ -260,21 +277,24 @@ void AppendMesh_(aiMesh* mesh, ofstream& file, string fileName)
 
 void PrintMesh_(const aiScene* scene, string filePath)
 {
-  string fileName = filePath.substr(filePath.find_last_of("\\") + 1) + "_";
+  string fileName = filePath.substr(filePath.find_last_of('\\') + 1);
+  fileName = fileName.substr(0, fileName.find_last_of('.'));
+
+  filePath = filePath.substr(0, filePath.find_last_of('\\') + 1);
 
   string tag = "mesh";
   if (!g_skeletonMap.empty())
     tag = "skinMesh";
 
-  ofstream file(filePath + "." + tag, ios::out);
+  ofstream file(filePath + fileName + "." + tag, ios::out);
   file << "<meshContainer>\n";
 
-  function<void(aiNode*)> searchMeshFn = [&searchMeshFn, &scene, &file, &filePath, &fileName](aiNode* node) -> void
+  function<void(aiNode*)> searchMeshFn = [&searchMeshFn, &scene, &file, &filePath](aiNode* node) -> void
   {
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
       aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-      AppendMesh_(mesh, file, fileName);
+      AppendMesh_(mesh, file, filePath);
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; i++)
@@ -410,7 +430,7 @@ void PrintTextures_(const aiScene* scene, string filePath)
 		for (unsigned int i = 0; i < scene->mNumTextures; i++)
 		{
       aiTexture* t = scene->mTextures[i];
-			string embId = "_" + GetTextureName(t, i);
+			string embId = GetTextureName(t, i);
 
       // Compressed.
       if (scene->mTextures[i]->mHeight == 0)
@@ -441,13 +461,20 @@ int main(int argc, char *argv[])
   Assimp::Importer importer;
   const aiScene* scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_LimitBoneWeights | aiProcess_GenNormals);
   if (scene == nullptr)
+  {
     return -1;
+  }
   g_scene = scene;
   
-  string pathPart = file.substr(0, file.find_last_of("."));
+  string pathPart;
+  size_t i = file.find_last_of("\\");
+  if (i != string::npos)
+  {
+    pathPart = file.substr(0, file.find_last_of("\\") + 1);
+  }
 
   PrintSkeleton_(scene, pathPart);
-  PrintMesh_(scene, pathPart);
+  PrintMesh_(scene, file);
   PrintAnims_(scene, pathPart);
   PrintTextures_(scene, pathPart);
   PrintMaterial_(scene, pathPart);
