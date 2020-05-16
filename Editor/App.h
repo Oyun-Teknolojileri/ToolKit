@@ -31,6 +31,7 @@ namespace ToolKit
 			void Frame(float deltaTime);
 			void OnResize(int width, int height);
 			void OnQuit();
+			void Import(const String& fullPath, const String& subDir);
 			
 			Viewport* GetActiveViewport(); // Returns open and active viewport or nullptr.
 			Viewport* GetViewport(const String& name);

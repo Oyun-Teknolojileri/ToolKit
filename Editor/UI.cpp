@@ -22,6 +22,7 @@ namespace ToolKit
 		bool UI::m_windowMenushowMetrics = false;
 		bool UI::m_imguiSampleWindow = false;
 		float UI::m_hoverTimeForHelp = 1.0f;
+		UI::Import UI::ImportData;
 
 		// Icons
 		std::shared_ptr<Texture> UI::m_selectIcn;
@@ -194,6 +195,11 @@ namespace ToolKit
 				ImGui::ShowMetricsWindow(&m_windowMenushowMetrics);
 			}
 
+			if (ImportData.showImportPopup)
+			{
+				ShowImportPopup();
+			}
+
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 			ImGui::EndFrame();
@@ -290,6 +296,41 @@ namespace ToolKit
 				{
 					m_imguiSampleWindow = true;
 				}
+			}
+		}
+
+		void UI::ShowImportPopup()
+		{
+			if (!ImportData.showImportPopup)
+			{
+				return;
+			}
+
+			ImGui::OpenPopup("Import");
+			if (ImGui::BeginPopupModal("Import", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::Text("Import file: \n\n");
+				ImGui::Text(ImportData.fullPath.c_str());
+				ImGui::Separator();
+
+				String buffer;
+				buffer.resize(512);
+				bool sub = ImGui::InputTextWithHint("Subdir", "optional", buffer.data(), 512);
+
+				if (ImGui::Button("OK", ImVec2(120, 0))) 
+				{ 
+					g_app->Import(ImportData.fullPath, sub ? buffer : "");
+					ImportData.showImportPopup = false;
+					ImGui::CloseCurrentPopup(); 
+				}
+				ImGui::SetItemDefaultFocus();
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel", ImVec2(120, 0))) 
+				{ 
+					ImportData.showImportPopup = false;
+					ImGui::CloseCurrentPopup(); 
+				}
+				ImGui::EndPopup();
 			}
 		}
 

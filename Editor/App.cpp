@@ -247,6 +247,11 @@ namespace ToolKit
 			g_running = false;
 		}
 
+		void App::Import(const String& fullPath, const String& subDir)
+		{
+
+		}
+
 		Viewport* App::GetActiveViewport()
 		{
 			for (Window* wnd : m_windows)

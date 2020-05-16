@@ -55,6 +55,7 @@ namespace ToolKit
 				static void ShowAppMainMenuBar();
 				static void ShowMenuFile();
 				static void ShowMenuWindows();
+				static void ShowImportPopup();
 				static void HelpMarker(const char* desc, float* elapsedHoverTime);
 				static void DispatchSignals();
 
@@ -65,6 +66,12 @@ namespace ToolKit
 				static bool m_imguiSampleWindow;
 				static bool m_windowMenushowMetrics;
 				static float m_hoverTimeForHelp;
+
+				static struct Import
+				{
+					bool showImportPopup = true;
+					String fullPath;
+				} ImportData;
 
 				// Toolbar Icons.
 				static std::shared_ptr<Texture> m_selectIcn;
