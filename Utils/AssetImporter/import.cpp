@@ -10,6 +10,7 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
+#include "lodepng.h"
 
 using namespace std;
 
@@ -18,16 +19,50 @@ class BoneNode;
 unordered_map<string, BoneNode> g_skeletonMap;
 const aiScene* g_scene = nullptr;
 
-string GenUniqueMaterialName(aiMesh* mesh)
+void TrunckToFileName(string& fullPath)
 {
-  aiString matName;
-  g_scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_NAME, matName);
+	std::replace(fullPath.begin(), fullPath.end(), '/', '\\');
 
-  string newName = string(matName.C_Str());
-  replace(newName.begin(), newName.end(), '|', '_');
-  replace(newName.begin(), newName.end(), '/', '_');
+	size_t i = fullPath.find_last_of('\\');
+	if (i != string::npos)
+	{
+    fullPath = fullPath.substr(i + 1);
+	}
+}
 
-  return newName;
+string GetTextureName(const aiTexture* texture, unsigned int i)
+{
+	string name = texture->mFilename.C_Str();
+  std::replace(name.begin(), name.end(), '/', '\\');
+
+	if (name.empty() || name[0] == '*')
+	{
+		name = "emb" + to_string(i) + "." + texture->achFormatHint;
+	}
+  else
+  {
+    TrunckToFileName(name);
+  }
+
+	return name;
+}
+
+string GetMaterialName(aiMaterial* material, unsigned int indx)
+{
+  string name = material->GetName().C_Str();
+  if (name.empty())
+  {
+    name = "emb" + to_string(indx);
+  }
+
+  return name;
+}
+
+string GetMaterialName(aiMesh* mesh)
+{
+	aiString matName;
+	g_scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_NAME, matName);
+	return GetMaterialName(g_scene->mMaterials[mesh->mMaterialIndex], mesh->mMaterialIndex);
 }
 
 struct Pnt3D
@@ -103,16 +138,14 @@ void PrintAnims_(const aiScene* scene, string file)
   }
 }
 
-void PrintMaterial_(aiMesh* mesh, const aiScene* scene, string filePath)
+void PrintMaterial_(const aiScene* scene, string filePath)
 {
-  string fileName = filePath.substr(filePath.find_last_of("\\") + 1) + "_";
-  filePath = filePath.substr(0, filePath.find_last_of("\\") + 1);
-  filePath += fileName + GenUniqueMaterialName(mesh);
-
-  if (mesh->mMaterialIndex >= 0)
+  for (unsigned int i = 0; i < scene->mNumMaterials; i++)
   {
-    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-    ofstream file(filePath + ".material", ios::out);
+    aiMaterial* material = scene->mMaterials[i];
+    string name = GetMaterialName(material, i);
+    string writePath = filePath + "_" + name + ".material";
+    ofstream file(writePath, ios::out);
     assert(file.good());
 
     file << "<material>\n";
@@ -121,9 +154,23 @@ void PrintMaterial_(aiMesh* mesh, const aiScene* scene, string filePath)
     {
       aiString texture;
       material->GetTexture(aiTextureType_DIFFUSE, 0, &texture);
-      string sText = texture.C_Str();
-      sText = sText.substr(sText.find_last_of("\\") + 1);
-      file << "  <diffuseTexture name = \"" + sText + "\"/>\n";
+
+      string tName = texture.C_Str();
+      if (!tName.empty() && tName[0] == '*')// Embedded texture.
+      {
+        string indxPart = tName.substr(1);
+        unsigned int tIndx = atoi(indxPart.c_str());
+        if (scene->mNumTextures > tIndx)
+        {
+          aiTexture* t = scene->mTextures[tIndx];
+          tName = GetTextureName(t, tIndx);
+        }
+      }
+
+      TrunckToFileName(tName);
+
+      string textPath = filePath + "_" + tName;
+      file << "  <diffuseTexture name = \"" + textPath + "\"/>\n";
     }
     file << "</material>\n";
     file.close();
@@ -151,9 +198,9 @@ void AppendMesh_(aiMesh* mesh, ofstream& file, string fileName)
   string tag = "skinMesh";
   if (skinData.empty())
     tag = "mesh";
-  
+
   file << "  <" + tag + ">\n";
-  file << "    <material name=\"" + fileName + GenUniqueMaterialName(mesh) + ".material\"/>\n";
+  file << "    <material name=\"" + fileName + GetMaterialName(mesh) + ".material\"/>\n";
   file << "    <vertices>\n";
   for (unsigned int i = 0; i < mesh->mNumVertices; i++)
   {
@@ -228,7 +275,6 @@ void PrintMesh_(const aiScene* scene, string filePath)
     {
       aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
       AppendMesh_(mesh, file, fileName);
-      PrintMaterial_(mesh, scene, filePath);
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; i++)
@@ -356,11 +402,38 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
   file.close();
 }
 
+void PrintTextures_(const aiScene* scene, string filePath)
+{
+  // Embedded textures.
+	if (scene->HasTextures())
+	{
+		for (unsigned int i = 0; i < scene->mNumTextures; i++)
+		{
+      aiTexture* t = scene->mTextures[i];
+			string embId = "_" + GetTextureName(t, i);
+
+      // Compressed.
+      if (scene->mTextures[i]->mHeight == 0)
+      {
+				ofstream file(filePath + embId, fstream::out | std::fstream::binary);
+				assert(file.good());
+
+        file.write((const char*)scene->mTextures[i]->pcData, scene->mTextures[i]->mWidth);
+      }
+      else
+      {
+				unsigned char* buffer = (unsigned char*)scene->mTextures[i]->pcData;
+				lodepng::encode(filePath, buffer, scene->mTextures[i]->mWidth, scene->mTextures[i]->mHeight);
+      }
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
   if (argc != 2)
   {
-    cout << "usage: AssimpAbt \"fileToImport.format\"\n";
+    cout << "usage: Import \"fileToImport.format\"\n";
     return -1;
   }
 
@@ -376,6 +449,8 @@ int main(int argc, char *argv[])
   PrintSkeleton_(scene, pathPart);
   PrintMesh_(scene, pathPart);
   PrintAnims_(scene, pathPart);
+  PrintTextures_(scene, pathPart);
+  PrintMaterial_(scene, pathPart);
 
   return 0;
 }
