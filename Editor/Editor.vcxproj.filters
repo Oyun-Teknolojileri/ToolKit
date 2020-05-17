@@ -72,6 +72,9 @@
     <ClCompile Include="OverlayUI.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="ImGui\imgui_stdlib.cpp">
+      <Filter>UI\ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -130,6 +133,9 @@
     </ClInclude>
     <ClInclude Include="OverlayUI.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_stdlib.h">
+      <Filter>UI\ImGui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -56,6 +56,7 @@ namespace ToolKit
 				static void ShowMenuFile();
 				static void ShowMenuWindows();
 				static void ShowImportPopup();
+				static void ShowSearchForFiles();
 				static void HelpMarker(const char* desc, float* elapsedHoverTime);
 				static void DispatchSignals();
 
@@ -70,8 +71,17 @@ namespace ToolKit
 				static struct Import
 				{
 					bool showImportPopup = false;
+					bool overwrite = false;
 					String fullPath;
+					String subDir;
 				} ImportData;
+
+				static struct SearchFile
+				{
+					bool showSearchFilePopup = false;
+					StringArray missingFiles;
+					StringArray searchPaths;
+				} SearchFileData;
 
 				// Toolbar Icons.
 				static std::shared_ptr<Texture> m_selectIcn;

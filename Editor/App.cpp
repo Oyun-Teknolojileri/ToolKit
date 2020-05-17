@@ -294,11 +294,58 @@ namespace ToolKit
 				assert(result != -1);
 
 				// Move assets.
+				String meshFile;
 				if (result != -1)
 				{
 					std::ifstream copyList("out.txt");
 					if (copyList.is_open())
 					{
+						// Check files.
+						StringArray missingFiles;
+						for (String line; std::getline(copyList, line); )
+						{
+							if (!CheckFile(line))
+							{
+								missingFiles.push_back(line);
+							}
+						}
+
+						if (!missingFiles.empty())
+						{
+							// Try search.
+							size_t numFound = 0;
+							for (String& searchPath : UI::SearchFileData.searchPaths)
+							{
+								for (String& missingFile : missingFiles)
+								{
+									String name, ext;
+									DecomposePath(missingFile, nullptr, &name, &ext);
+									String missingFullPath = searchPath + '\\' + name + ext;
+									if (CheckFile(missingFullPath))
+									{
+										numFound++;
+										std::filesystem::copy
+										(
+											missingFullPath, cpyDir,
+											std::filesystem::copy_options::overwrite_existing
+										);
+									}
+								}
+							}
+
+							if (numFound < missingFiles.size())
+							{
+								// Retry.
+								UI::SearchFileData.showSearchFilePopup = true;
+								UI::SearchFileData.missingFiles = missingFiles;
+
+								std::filesystem::current_path(pathBck);
+								return -1;
+							}
+						}
+
+						copyList.clear();
+						copyList.seekg(0, std::ios::beg);
 						for (String line; std::getline(copyList, line); )
 						{
 							String ext;
@@ -308,6 +355,7 @@ namespace ToolKit
 							if (ext == MESH || ext == SKINMESH)
 							{
 								fullPath = MeshPath(line);
+								meshFile = fullPath;
 							}
 
 							if (ext == SKELETON)
@@ -346,6 +394,24 @@ namespace ToolKit
 
 				std::filesystem::current_path(pathBck);
 
+				if (!meshFile.empty())
+				{
+					String ext;
+					DecomposePath(meshFile, nullptr, nullptr, &ext);
+					Drawable* ntt = new Drawable();
+					if (ext == SKINMESH)
+					{
+						ntt->m_mesh = GetSkinMeshManager()->Create(meshFile);
+					}
+					else
+					{
+						ntt->m_mesh = GetMeshManager()->Create(meshFile);
+					}
+
+					g_app->m_scene.AddEntity(ntt);
+				}
+
+				UI::SearchFileData.showSearchFilePopup = false;
 				return result;
 			}
 

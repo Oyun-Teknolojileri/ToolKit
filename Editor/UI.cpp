@@ -4,6 +4,7 @@
 
 #include "ImGui/imgui_impl_sdl.h"
 #include "ImGui/imgui_impl_opengl3.h"
+#include "ImGui/imgui_stdlib.h"
 
 #include "App.h"
 #include "Viewport.h"
@@ -23,6 +24,7 @@ namespace ToolKit
 		bool UI::m_imguiSampleWindow = false;
 		float UI::m_hoverTimeForHelp = 1.0f;
 		UI::Import UI::ImportData;
+		UI::SearchFile UI::SearchFileData;
 
 		// Icons
 		std::shared_ptr<Texture> UI::m_selectIcn;
@@ -195,10 +197,8 @@ namespace ToolKit
 				ImGui::ShowMetricsWindow(&m_windowMenushowMetrics);
 			}
 
-			if (ImportData.showImportPopup)
-			{
-				ShowImportPopup();
-			}
+			ShowImportPopup();
+			ShowSearchForFiles();
 
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -320,17 +320,15 @@ namespace ToolKit
 					ImGui::Separator();
 				}
 
-				static bool overwrite = false;
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-				ImGui::Checkbox("Override", &overwrite);
+				ImGui::Checkbox("Override", &ImportData.overwrite);
 				ImGui::PopStyleVar();
 
-				static char buffer[512] = "";
-				ImGui::InputTextWithHint("Subdir", "optional", buffer, 512);
+				ImGui::InputTextWithHint("Subdir", "optional", &ImportData.subDir);
 
 				if (ImGui::Button("OK", ImVec2(120, 0))) 
 				{ 
-					g_app->Import(ImportData.fullPath, buffer, overwrite);
+					g_app->Import(ImportData.fullPath, ImportData.subDir, ImportData.overwrite);
 					ImportData.showImportPopup = false;
 					ImGui::CloseCurrentPopup(); 
 				}
@@ -340,6 +338,81 @@ namespace ToolKit
 				{ 
 					ImportData.showImportPopup = false;
 					ImGui::CloseCurrentPopup(); 
+				}
+
+				ImGui::EndPopup();
+			}
+		}
+
+		void UI::ShowSearchForFiles()
+		{
+			if (!SearchFileData.showSearchFilePopup)
+			{
+				return;
+			}
+
+			ImGui::OpenPopup("SearchFile");
+			if (ImGui::BeginPopupModal("SearchFile", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				static String buffer;
+				float maxSize = 400.0f;
+				ImGui::PushItemWidth(maxSize);
+				ImGui::InputText("SearchPath", &buffer);
+				ImGui::PopItemWidth();
+				ImGui::SameLine();
+				
+				if (ImGui::Button("Add"))
+				{
+					if (!buffer.empty())
+					{
+						SearchFileData.searchPaths.push_back(buffer);
+					}
+				}
+				
+				ImGui::Separator();
+				ImGui::Text("MissingFiles:");
+				for (size_t i = 0; i < SearchFileData.missingFiles.size(); i++)
+				{
+					String* s = &SearchFileData.missingFiles[i];
+					ImGui::Text(s->c_str());
+				}
+
+				int itemCnt = (int)SearchFileData.searchPaths.size();
+				const char** items = new const char*[itemCnt];
+				for (int i = 0; i < itemCnt; i++)
+				{
+					items[i] = SearchFileData.searchPaths[i].c_str();
+					float textSize = ImGui::CalcTextSize(items[i]).x;
+					maxSize = glm::max(textSize, maxSize);
+				}
+
+				ImGui::Separator();
+				ImGui::Text("SearchPaths:");
+				static int currItem = 0;
+				ImGui::PushItemWidth(maxSize * 1.1f);
+				ImGui::ListBox("##1", &currItem, items, itemCnt, 4);
+				ImGui::PopItemWidth();
+				SafeDelArray(items);
+
+				if (ImGui::Button("Remove"))
+				{
+					if (currItem < itemCnt)
+					{
+						SearchFileData.searchPaths.erase(SearchFileData.searchPaths.begin() + currItem);
+					}
+				}
+
+				if (ImGui::Button("Search", ImVec2(120, 0)))
+				{
+					g_app->Import(ImportData.fullPath, ImportData.subDir, ImportData.overwrite);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SetItemDefaultFocus();
+				ImGui::SameLine();
+				if (ImGui::Button("Abort", ImVec2(120, 0)))
+				{
+					SearchFileData.showSearchFilePopup = false;
+					ImGui::CloseCurrentPopup();
 				}
 				ImGui::EndPopup();
 			}
