@@ -258,17 +258,29 @@ namespace ToolKit
 
 			if (CheckFile(fullPath))
 			{
+				// Set the execute path.
+				std::filesystem::path pathBck = std::filesystem::current_path();
+				std::filesystem::path path = pathBck.u8string() + "\\..\\Utils\\Import";
+				std::filesystem::current_path(path);
+
+				std::filesystem::path cpyDir = ".";
+				if (!subDir.empty())
+				{
+					cpyDir += '\\' + subDir;
+					std::filesystem::create_directories(cpyDir);
+				}
+
 				std::filesystem::copy
 				(
-					fullPath, "..\\Utils\\Import",
+					fullPath, cpyDir,
 					overwrite ? std::filesystem::copy_options::overwrite_existing 
 					: std::filesystem::copy_options::skip_existing
 				);
 
 				String name, ext;
-				DecomposePath(fullPath, &path, &name, &ext);
+				DecomposePath(fullPath, nullptr, &name, &ext);
 
-				String cmd = "..\\Utils\\Import ";
+				String cmd = "Import ";
 				if (!subDir.empty())
 				{
 					cmd += subDir + '\\' + name + ext;
@@ -280,6 +292,8 @@ namespace ToolKit
 
 				int result = std::system(cmd.c_str());
 				assert(result != -1);
+
+				std::filesystem::current_path(pathBck);
 
 				return result;
 			}

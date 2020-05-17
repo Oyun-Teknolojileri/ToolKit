@@ -325,13 +325,12 @@ namespace ToolKit
 				ImGui::Checkbox("Override", &overwrite);
 				ImGui::PopStyleVar();
 
-				String buffer;
-				buffer.resize(512);
-				bool sub = ImGui::InputTextWithHint("Subdir", "optional", buffer.data(), 512);
+				static char buffer[512] = "";
+				ImGui::InputTextWithHint("Subdir", "optional", buffer, 512);
 
 				if (ImGui::Button("OK", ImVec2(120, 0))) 
 				{ 
-					g_app->Import(ImportData.fullPath, sub ? buffer : "", overwrite);
+					g_app->Import(ImportData.fullPath, buffer, overwrite);
 					ImportData.showImportPopup = false;
 					ImGui::CloseCurrentPopup(); 
 				}
