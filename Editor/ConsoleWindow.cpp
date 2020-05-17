@@ -30,7 +30,7 @@ namespace ToolKit
 		}
 
 		// Executors
-		void ShowPickDebugExec(TagArgArray tagArgs)
+		void BoolCheck(const TagArgArray& tagArgs, bool* val)
 		{
 			if (tagArgs.empty())
 			{
@@ -45,13 +45,21 @@ namespace ToolKit
 
 			if (args == "1")
 			{
-				g_app->m_showPickingDebug = true;
+				*val = true;
 			}
 
 			if (args == "0")
 			{
-				g_app->m_showPickingDebug = false;
+				*val = false;
+			}
+		}
 
+		void ShowPickDebugExec(TagArgArray tagArgs)
+		{
+			BoolCheck(tagArgs, &g_app->m_showPickingDebug);
+
+			if (!g_app->m_showPickingDebug)
+			{
 				g_app->m_scene.RemoveEntity(StatePickingBase::m_dbgArrow->m_id);
 				StatePickingBase::m_dbgArrow = nullptr;
 
@@ -62,74 +70,17 @@ namespace ToolKit
 
 		void ShowOverlayExec(TagArgArray tagArgs)
 		{
-			if (tagArgs.empty())
-			{
-				return;
-			}
-			if (tagArgs.front().second.empty())
-			{
-				return;
-			}
-
-			String args = tagArgs.front().second.front();
-
-			if (args == "1")
-			{
-				g_app->m_showOverlayUI = true;
-			}
-
-			if (args == "0")
-			{
-				g_app->m_showOverlayUI = false;
-			}
+			BoolCheck(tagArgs, &g_app->m_showOverlayUI);
 		}
 
 		void ShowOverlayAlwaysExec(TagArgArray tagArgs)
 		{
-			if (tagArgs.empty())
-			{
-				return;
-			}
-			if (tagArgs.front().second.empty())
-			{
-				return;
-			}
-
-			String args = tagArgs.front().second.front();
-
-			if (args == "1")
-			{
-				g_app->m_showOverlayUIAlways = true;
-			}
-
-			if (args == "0")
-			{
-				g_app->m_showOverlayUIAlways = false;
-			}
+			BoolCheck(tagArgs, &g_app->m_showOverlayUIAlways);
 		}
 
 		void ShowModTransitionsExec(TagArgArray tagArgs)
 		{
-			if (tagArgs.empty())
-			{
-				return;
-			}
-			if (tagArgs.front().second.empty())
-			{
-				return;
-			}
-
-			String args = tagArgs.front().second.front();
-
-			if (args == "1")
-			{
-				g_app->m_showStateTransitionsDebug = true;
-			}
-
-			if (args == "0")
-			{
-				g_app->m_showStateTransitionsDebug = false;
-			}
+			BoolCheck(tagArgs, &g_app->m_showStateTransitionsDebug);
 		}
 
 		void TransformInternal(TagArgArray tagArgs, bool set)
@@ -392,6 +343,11 @@ namespace ToolKit
 			}
 		}
 
+		void SetImportSlient(TagArgArray tagArgs)
+		{
+			BoolCheck(tagArgs, &g_app->m_importSlient);
+		}
+
 		// ImGui ripoff. Portable helpers.
 		static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
 		static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
@@ -409,6 +365,7 @@ namespace ToolKit
 			CreateCommand(g_transformCmd, TransformExec);
 			CreateCommand(g_getTransformCmd, GetTransformExec);
 			CreateCommand(g_setTransformOrientationCmd, SetTransformOrientationExec);
+			CreateCommand(g_importSlientCmd, SetImportSlient);
 		}
 
 		ConsoleWindow::~ConsoleWindow()

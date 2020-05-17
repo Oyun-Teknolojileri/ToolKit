@@ -55,8 +55,8 @@ namespace ToolKit
 				static void ShowAppMainMenuBar();
 				static void ShowMenuFile();
 				static void ShowMenuWindows();
-				static void ShowImportPopup();
-				static void ShowSearchForFiles();
+				static void ShowImportWindow();
+				static void ShowSearchForFilesWindow();
 				static void HelpMarker(const char* desc, float* elapsedHoverTime);
 				static void DispatchSignals();
 
@@ -70,15 +70,16 @@ namespace ToolKit
 
 				static struct Import
 				{
-					bool showImportPopup = false;
+					bool showImportWindow = false;
 					bool overwrite = false;
 					String fullPath;
 					String subDir;
+					float scale = 0.01f;
 				} ImportData;
 
 				static struct SearchFile
 				{
-					bool showSearchFilePopup = false;
+					bool showSearchFileWindow = false;
 					StringArray missingFiles;
 					StringArray searchPaths;
 				} SearchFileData;

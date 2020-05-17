@@ -197,8 +197,8 @@ namespace ToolKit
 				ImGui::ShowMetricsWindow(&m_windowMenushowMetrics);
 			}
 
-			ShowImportPopup();
-			ShowSearchForFiles();
+			ShowImportWindow();
+			ShowSearchForFilesWindow();
 
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -299,11 +299,17 @@ namespace ToolKit
 			}
 		}
 
-		void UI::ShowImportPopup()
+		void UI::ShowImportWindow()
 		{
-			if (!ImportData.showImportPopup)
+			if (!ImportData.showImportWindow)
 			{
 				return;
+			}
+
+			if (g_app->m_importSlient)
+			{
+				g_app->Import(ImportData.fullPath, ImportData.subDir, ImportData.overwrite);
+				ImportData.showImportWindow = false;
 			}
 
 			ImGui::OpenPopup("Import");
@@ -329,14 +335,14 @@ namespace ToolKit
 				if (ImGui::Button("OK", ImVec2(120, 0))) 
 				{ 
 					g_app->Import(ImportData.fullPath, ImportData.subDir, ImportData.overwrite);
-					ImportData.showImportPopup = false;
+					ImportData.showImportWindow = false;
 					ImGui::CloseCurrentPopup(); 
 				}
 				ImGui::SetItemDefaultFocus();
 				ImGui::SameLine();
 				if (ImGui::Button("Cancel", ImVec2(120, 0))) 
 				{ 
-					ImportData.showImportPopup = false;
+					ImportData.showImportWindow = false;
 					ImGui::CloseCurrentPopup(); 
 				}
 
@@ -344,9 +350,9 @@ namespace ToolKit
 			}
 		}
 
-		void UI::ShowSearchForFiles()
+		void UI::ShowSearchForFilesWindow()
 		{
-			if (!SearchFileData.showSearchFilePopup)
+			if (!SearchFileData.showSearchFileWindow)
 			{
 				return;
 			}
@@ -411,7 +417,7 @@ namespace ToolKit
 				ImGui::SameLine();
 				if (ImGui::Button("Abort", ImVec2(120, 0)))
 				{
-					SearchFileData.showSearchFilePopup = false;
+					SearchFileData.showSearchFileWindow = false;
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::EndPopup();

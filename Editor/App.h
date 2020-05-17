@@ -68,6 +68,7 @@ namespace ToolKit
 			bool m_showOverlayUI = true;
 			bool m_showOverlayUIAlways = true;
 			bool m_snapsEnabled = false;
+			bool m_importSlient = false;
 			float m_moveDelta = 0.25f;
 			float m_rotateDelta = 5.0f;
 			float m_scaleDelta = 0.25f;

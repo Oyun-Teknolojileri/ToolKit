@@ -40,6 +40,9 @@ namespace ToolKit
 		const String g_setTransformOrientationCmd("SetTransformOrientation");
 		void SetTransformOrientationExec(TagArgArray tagArgs);
 
+		const String g_importSlientCmd("SetImportSlient");
+		void SetImportSlient(TagArgArray tagArgs);
+
 		class ConsoleWindow : public Window
 		{
 		public:

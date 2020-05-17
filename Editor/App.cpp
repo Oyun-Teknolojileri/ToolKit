@@ -256,10 +256,10 @@ namespace ToolKit
 				return -1;
 			}
 
+			std::filesystem::path pathBck = std::filesystem::current_path();
 			if (CheckFile(fullPath))
 			{
 				// Set the execute path.
-				std::filesystem::path pathBck = std::filesystem::current_path();
 				std::filesystem::path path = pathBck.u8string() + "\\..\\Utils\\Import";
 				std::filesystem::current_path(path);
 
@@ -273,7 +273,7 @@ namespace ToolKit
 				std::filesystem::copy
 				(
 					fullPath, cpyDir,
-					overwrite ? std::filesystem::copy_options::overwrite_existing 
+					overwrite ? std::filesystem::copy_options::overwrite_existing
 					: std::filesystem::copy_options::skip_existing
 				);
 
@@ -312,6 +312,12 @@ namespace ToolKit
 
 						if (!missingFiles.empty())
 						{
+							if (g_app->m_importSlient)
+							{
+								g_app->GetConsole()->AddLog("Import: " + fullPath + " failed.", ConsoleWindow::LogType::Error);
+								goto Fail;
+							}
+
 							// Try search.
 							size_t numFound = 0;
 							for (String& searchPath : UI::SearchFileData.searchPaths)
@@ -336,11 +342,8 @@ namespace ToolKit
 							if (numFound < missingFiles.size())
 							{
 								// Retry.
-								UI::SearchFileData.showSearchFilePopup = true;
 								UI::SearchFileData.missingFiles = missingFiles;
-
-								std::filesystem::current_path(pathBck);
-								return -1;
+								goto Retry;
 							}
 						}
 
@@ -391,9 +394,12 @@ namespace ToolKit
 						}
 					}
 				}
+				else
+				{
+					goto Fail;
+				}
 
 				std::filesystem::current_path(pathBck);
-
 				if (!meshFile.empty())
 				{
 					String ext;
@@ -408,13 +414,23 @@ namespace ToolKit
 						ntt->m_mesh = GetMeshManager()->Create(meshFile);
 					}
 
+					ntt->m_node->Scale({ UI::ImportData.scale, UI::ImportData.scale, UI::ImportData.scale });
 					g_app->m_scene.AddEntity(ntt);
 				}
 
-				UI::SearchFileData.showSearchFilePopup = false;
+				UI::SearchFileData.showSearchFileWindow = false;
 				return result;
 			}
+			else
+			{
+				goto Fail;
+			}
 
+		Retry:
+			UI::SearchFileData.showSearchFileWindow = true;
+
+		Fail:
+			std::filesystem::current_path(pathBck);
 			return -1;
 		}
 
