@@ -293,6 +293,57 @@ namespace ToolKit
 				int result = std::system(cmd.c_str());
 				assert(result != -1);
 
+				// Move assets.
+				if (result != -1)
+				{
+					std::ifstream copyList("out.txt");
+					if (copyList.is_open())
+					{
+						for (String line; std::getline(copyList, line); )
+						{
+							String ext;
+							DecomposePath(line, nullptr, nullptr, &ext);
+
+							String fullPath;
+							if (ext == MESH || ext == SKINMESH)
+							{
+								fullPath = MeshPath(line);
+							}
+
+							if (ext == SKELETON)
+							{
+								fullPath = SkeletonPath(line);
+							}
+
+							if (ext == ANIM)
+							{
+								fullPath = AnimationPath(line);
+							}
+
+							if (ext == PNG)
+							{
+								fullPath = TexturePath(line);
+							}
+
+							if (ext == MATERIAL)
+							{
+								fullPath = MaterialPath(line);
+							}
+
+							fullPath = "..\\" + fullPath; // Resource dir is one more level up.
+
+							String path, name;
+							DecomposePath(fullPath, &path, &name, &ext);
+							std::filesystem::create_directories(path);
+							std::filesystem::copy
+							(
+								line, fullPath,
+								std::filesystem::copy_options::overwrite_existing
+							);
+						}
+					}
+				}
+
 				std::filesystem::current_path(pathBck);
 
 				return result;

@@ -15,7 +15,51 @@
 
 using namespace std;
 
-class BoneNode;
+struct Pnt3D
+{
+	float x = 0;
+	float y = 0;
+	float z = 0;
+};
+
+struct Pnt2D
+{
+	float x = 0;
+	float y = 0;
+};
+
+class BoneNode
+{
+public:
+	BoneNode() {}
+
+	BoneNode(aiNode* node, unsigned int index)
+	{
+		boneIndex = index;
+		boneNode = node;
+	}
+
+	aiNode* boneNode = nullptr;
+	aiBone* bone = nullptr;
+	unsigned int boneIndex = 0;
+};
+
+vector<string> g_usedFiles;
+bool IsUsed(string file)
+{
+	return find(g_usedFiles.begin(), g_usedFiles.end(), file) == g_usedFiles.end();
+}
+
+void AddToUsedFiles(string file)
+{
+  // Add unique.
+  if (IsUsed(file))
+  {
+    g_usedFiles.push_back(file);
+  }
+}
+
+
 
 unordered_map<string, BoneNode> g_skeletonMap;
 const aiScene* g_scene = nullptr;
@@ -81,35 +125,6 @@ string GetMaterialName(aiMesh* mesh)
 	return GetMaterialName(g_scene->mMaterials[mesh->mMaterialIndex], mesh->mMaterialIndex);
 }
 
-struct Pnt3D
-{
-  float x = 0;
-  float y = 0;
-  float z = 0;
-};
-
-struct Pnt2D
-{
-  float x = 0;
-  float y = 0;
-};
-
-class BoneNode
-{
-public:
-  BoneNode() {}
-
-  BoneNode(aiNode* node, unsigned int index)
-  {
-    boneIndex = index;
-    boneNode = node;
-  }
-
-  aiNode* boneNode = nullptr;
-  aiBone* bone = nullptr;
-  unsigned int boneIndex = 0;
-};
-
 void PrintAnims_(const aiScene* scene, string file)
 {
   if (!scene->HasAnimations())
@@ -123,6 +138,8 @@ void PrintAnims_(const aiScene* scene, string file)
     replace(animName.begin(), animName.end(), '.', '_');
     replace(animName.begin(), animName.end(), '|', '_');
     path += animName + ".anim";
+
+    AddToUsedFiles(path);
 
     ofstream oFile;
     oFile.open(path, ios::out);
@@ -161,6 +178,12 @@ void PrintMaterial_(const aiScene* scene, string filePath)
     aiMaterial* material = scene->mMaterials[i];
     string name = GetMaterialName(material, i);
     string writePath = filePath + name + ".material";
+    if (IsUsed(writePath))
+    {
+      // Unused material.
+      continue;
+    }
+
     ofstream file(writePath, ios::out);
     assert(file.good());
 
@@ -202,6 +225,8 @@ void PrintMaterial_(const aiScene* scene, string filePath)
 			TrunckToFileName(outName);
 
       string textPath = filePath + outName;
+      AddToUsedFiles(textPath);
+
       file << "  <diffuseTexture name = \"" + textPath + "\"/>\n";
     }
     file << "</material>\n";
@@ -234,8 +259,11 @@ void AppendMesh_(aiMesh* mesh, ofstream& file, string filePath)
 	string path, name;
 	Decompose(filePath, path, name);
 
+  string fullMaterialPath = path + GetMaterialName(mesh) + ".material";
+  AddToUsedFiles(fullMaterialPath);
+
   file << "  <" + tag + ">\n";
-  file << "    <material name=\"" + path + GetMaterialName(mesh) + ".material\"/>\n";
+  file << "    <material name=\"" + fullMaterialPath + "\"/>\n";
   file << "    <vertices>\n";
   for (unsigned int i = 0; i < mesh->mNumVertices; i++)
   {
@@ -302,7 +330,10 @@ void PrintMesh_(const aiScene* scene, string filePath)
   if (!g_skeletonMap.empty())
     tag = "skinMesh";
 
-  ofstream file(path + name + "." + tag, ios::out);
+  string fullPath = path + name + "." + tag;
+  AddToUsedFiles(fullPath);
+
+  ofstream file(fullPath, ios::out);
   file << "<meshContainer>\n";
 
   function<void(aiNode*)> searchMeshFn = [&searchMeshFn, &scene, &file, &filePath](aiNode* node) -> void
@@ -392,7 +423,8 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
   assignBoneIndexFn(scene->mRootNode, boneIndex);
 
   // Print
-  function<void(aiNode*, ofstream&, string)> writeFn = [&writeFn](aiNode* node, ofstream& file, string tabSpace) -> void
+  bool anythingPrinted = false;
+  function<void(aiNode*, ofstream&, string)> writeFn = [&writeFn, &anythingPrinted](aiNode* node, ofstream& file, string tabSpace) -> void
   {
     bool bonePrinted = false;
     if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
@@ -426,19 +458,32 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
       writeFn(node->mChildren[i], file, tabSpace + "  ");
 
     if (bonePrinted)
+    {
+      anythingPrinted = true;
       file << tabSpace << "</bone>\n";
+    }
   };
 
   string name, path;
   Decompose(filePath, path, name);
 
-  ofstream file(path + name + ".skeleton", ios::out);
+  string fullPath = path + name + ".skeleton";
+  ofstream file(fullPath, ios::out);
   assert(file.good());
 
   file << "<skeleton>\n";
   writeFn(scene->mRootNode, file, "  ");
   file << "</skeleton>\n";
   file.close();
+
+  if (!anythingPrinted)
+  {
+    std::remove(fullPath.c_str());
+  }
+  else
+  {
+    AddToUsedFiles(fullPath);
+  }
 }
 
 void PrintTextures_(const aiScene* scene, string filePath)
@@ -495,8 +540,16 @@ int main(int argc, char *argv[])
   PrintSkeleton_(scene, file);
   PrintMesh_(scene, file);
   PrintAnims_(scene, pathPart);
-  PrintTextures_(scene, pathPart);
   PrintMaterial_(scene, pathPart);
+  PrintTextures_(scene, pathPart);
+
+  // Report all in use files.
+  fstream inUse("out.txt", ios::out);
+  for (string& fs : g_usedFiles)
+  {
+    inUse << fs << endl;
+  }
+  inUse.close();
 
   return 0;
 }

@@ -40,6 +40,18 @@ namespace ToolKit
 	static const Vec3 ZX_AXIS = Vec3(1.0f, 0.0f, 1.0f);
 	static const Vec3 AXIS[6] = { X_AXIS, Y_AXIS, Z_AXIS, XY_AXIS, YZ_AXIS, ZX_AXIS };
 
+	// Supported file formats.
+	static const String FBX(".fbx");
+	static const String glTF(".glb");
+	static const String OBJ(".obj");
+	static const String PNG(".png");
+	// Local formats.
+	static const String MESH(".mesh");
+	static const String ANIM(".anim");
+	static const String SKINMESH(".skinMesh");
+	static const String SKELETON(".skeleton");
+	static const String MATERIAL(".material");
+
 	static const EntityId NULL_ENTITY = 0;
 
 	enum class AxisLabel

@@ -98,63 +98,63 @@ namespace ToolKit
 
 	String TexturePath(String file)
 	{
-		String path = "../Resources/Textures/";
+		String path = "..\\Resources\\Textures\\";
 		path += file;
 		return path;
 	}
 
 	String MeshPath(String file)
 	{
-		String path = "../Resources/Meshes/";
+		String path = "..\\Resources\\Meshes\\";
 		path += file;
 		return path;
 	}
 
 	String FontPath(String file)
 	{
-		String path = "../Resources/Fonts/";
+		String path = "..\\Resources\\Fonts\\";
 		path += file;
 		return path;
 	}
 
 	String SpritePath(String file)
 	{
-		String path = "../Resources/Sprites/";
+		String path = "..\\Resources\\Sprites\\";
 		path += file;
 		return path;
 	}
 
 	String AudioPath(String file)
 	{
-		String path = "../Resources/Audio/";
+		String path = "..\\Resources\\Audio\\";
 		path += file;
 		return path;
 	}
 
 	String AnimationPath(String file)
 	{
-		String path = "../Resources/Meshes/";
+		String path = "..\\Resources\\Meshes\\";
 		path += file;
 		return path;
 	}
 
 	String SkeletonPath(String file)
 	{
-		String path = "../Resources/Meshes/";
+		String path = "..\\Resources\\Meshes\\";
 		path += file;
 		return path;
 	}
 
 	String ShaderPath(String file)
 	{
-		String path = "../Resources/Shaders/";
+		String path = "..\\Resources\\Shaders\\";
 		path += file;
 		return path;
 	}
 
 	String MaterialPath(String file)
 	{
-		String path = "../Resources/Materials/";
+		String path = "..\\Resources\\Materials\\";
 		path += file;
 		return path;
 	}
