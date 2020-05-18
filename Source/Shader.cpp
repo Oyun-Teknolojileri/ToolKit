@@ -151,22 +151,6 @@ namespace ToolKit
 	{
 		ResourceManager::Init();
 
-		char vShaderStr[] =
-			"#version 300 es\n"
-			"in vec3 vPosition;"
-			"in vec3 vNormal;"
-			"in vec2 vTexture;"
-			"in vec3 vBiTan;"
-			"uniform mat4 ProjectViewModel;"
-			"out vec3 v_normal;"
-			"out vec2 v_texCoord;"
-			"void main()"
-			"{"
-			"   gl_Position = ProjectViewModel * vec4(vPosition, 1.0);"
-			"   v_texCoord = vTexture;"
-			"   v_normal = vNormal;"
-			"}";
-
 		char skinShaderStr[] =
 			"#version 300 es\n"
 			"struct Bone"
@@ -196,33 +180,6 @@ namespace ToolKit
 			"   v_normal = vNormal;"
 			"   v_bitan = vBiTan;"
 			"}";
-
-		char fShaderStr[] =
-			"#version 300 es\n"
-			"precision mediump float;"
-			"in vec3 v_normal;"
-			"in vec2 v_texCoord;"
-			"out vec4 v_fragColor;"
-			"uniform sampler2D s_texture;"
-			"void main()"
-			"{"
-			"  vec2 texFixedc = vec2(v_texCoord.x, 1.0 - v_texCoord.y);"
-			"  v_fragColor = texture(s_texture, v_texCoord);"
-			"}";
-
-		std::shared_ptr<Shader> vertex = std::make_shared<Shader>();
-		vertex->m_source = vShaderStr;
-		vertex->m_uniforms.push_back(Uniform::PROJECT_MODEL_VIEW);
-		vertex->Init();
-
-		m_storage[ShaderPath("defaultVertex.shader")] = vertex;
-
-		std::shared_ptr<Shader> fragment = std::make_shared<Shader>();
-		fragment->m_source = fShaderStr;
-		fragment->m_type = GL_FRAGMENT_SHADER;
-		fragment->Init();
-
-		m_storage[ShaderPath("defaultFragment.shader")] = fragment;
 
 		std::shared_ptr<Shader> skin = std::make_shared<Shader>();
 		skin->m_source = skinShaderStr;
