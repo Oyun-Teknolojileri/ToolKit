@@ -38,9 +38,9 @@ namespace ToolKit
 			Quad quad;
 			std::shared_ptr<Mesh> meshPtr = quad.m_mesh;
 
-			meshPtr->m_material = MaterialPtr(meshPtr->m_material->GetCopy());
+			meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
 			meshPtr->m_material->UnInit();
-			meshPtr->m_material->m_diffuseTexture = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/cursor4k.png"));
+			meshPtr->m_material->m_diffuseTexture = GetTextureManager()->Create(TexturePath("Icons/cursor4k.png"));
 			meshPtr->m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
 			meshPtr->m_material->Init();
 

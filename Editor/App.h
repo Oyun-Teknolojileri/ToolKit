@@ -59,6 +59,9 @@ namespace ToolKit
 			Grid* m_grid;
 			Axis3d* m_origin;
 			Cursor* m_cursor;
+			Light* m_keyLight;
+			Light* m_fillLight;
+			Light* m_backLight;
 			std::vector<Drawable*> m_perFrameDebugObjects;
 
 			// Editor states.

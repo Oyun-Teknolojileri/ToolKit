@@ -165,10 +165,23 @@ namespace ToolKit
 
 		material = new Material();
 		material->m_vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
+		material->m_fragmetShader = GetShaderManager()->Create(ShaderPath("unlitFrag.shader"));
+		material->m_diffuseTexture = GetTextureManager()->Create(TexturePath("default.png"));
+		material->Init();
+
+		m_storage[MaterialPath("unlit.material")] = MaterialPtr(material);
+
+		material = new Material();
+		material->m_vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
 		material->m_fragmetShader = GetShaderManager()->Create(ShaderPath("solidColorFrag.shader"));
 		material->Init();
 
 		m_storage[MaterialPath("solid.material")] = MaterialPtr(material);
+	}
+
+	ToolKit::MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()
+	{
+		return MaterialPtr(m_storage[MaterialPath("unlit.material")]->GetCopy());
 	}
 
 	MaterialPtr MaterialManager::GetCopyOfSolidMaterial()

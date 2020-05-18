@@ -1,21 +1,59 @@
 <shader>
-	<type name = "fragmentShader" />
-	<source>
-	<!--
-		#version 300 es
-		precision mediump float;
-		
-		in vec3 v_normal;
-		in vec2 v_texCoord;
-		
-		out vec4 v_fragColor;
-		uniform sampler2D s_texture;
-		
-		void main()
-		{
-		  vec2 texFixedc = vec2(v_texCoord.x, 1.0 - v_texCoord.y);
-		  v_fragColor = texture(s_texture, v_texCoord);
-		}
-	-->
-	</source>
+  <type name = "fragmentShader" />
+  <uniform name = "LightData" />
+  <uniform name = "CamData" />
+  <source>
+  <!--
+    #version 300 es
+    precision mediump float;
+
+    // Fixed Declaretions
+    struct _LightData
+    {
+      vec3 pos;
+      vec3 dir;
+      vec3 color;
+    };
+
+    struct _CamData
+    {
+      vec3 pos;
+      vec3 dir;
+    };
+
+    uniform _LightData LightData;
+    uniform _CamData CamData;
+    uniform sampler2D s_texture;
+
+    in vec3 v_pos;
+    in vec3 v_normal;
+    in vec2 v_texture;
+
+    out vec4 fragColor;
+
+    void main()
+    {
+      vec3 n = normalize(v_normal);
+      vec3 l = normalize(LightData.pos - v_pos);
+      vec3 e = normalize(CamData.pos - v_pos);
+	  
+	  // ambient
+      float ambientStrength = 0.1;
+      vec3 ambient = ambientStrength * LightData.color;
+	  
+	  // diffuse 
+      float diff = max(dot(n, l), 0.0);
+      vec3 diffuse = diff * LightData.color;
+	  
+	  // specular
+	  float specularStrength = 0.5;
+	  vec3 reflectDir = reflect(-LightData.dir, n);  
+      float spec = pow(max(dot(e, reflectDir), 0.0), 32.0);
+      vec3 specular = specularStrength * spec * LightData.color;   
+	  
+	  vec4 objectColor = texture(s_texture, v_texture);
+	  fragColor = vec4((ambient + diffuse + specular), 1.0) * objectColor;
+    }
+  -->
+  </source>
 </shader>

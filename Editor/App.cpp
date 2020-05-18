@@ -32,6 +32,9 @@ namespace ToolKit
 			m_q3 = nullptr;
 			m_q4 = nullptr;
 			m_cursor = nullptr;
+			m_keyLight = nullptr;
+			m_fillLight = nullptr;
+			m_backLight = nullptr;
 			m_renderer = new Renderer();
 			m_renderer->m_windowWidth = windowWidth;
 			m_renderer->m_windowHeight = windowHeight;
@@ -51,6 +54,9 @@ namespace ToolKit
 			SafeDel(m_grid);
 			SafeDel(m_origin);
 			SafeDel(m_cursor);
+			SafeDel(m_keyLight);
+			SafeDel(m_fillLight);
+			SafeDel(m_backLight);
 
 			ModManager::GetInstance()->UnInit();
 			ActionManager::GetInstance()->UnInit();
@@ -133,6 +139,10 @@ namespace ToolKit
 			ModManager::GetInstance()->Init();
 			ActionManager::GetInstance()->Init();
 
+			m_keyLight = new Light();
+			m_fillLight = new Light();
+			m_backLight = new Light();
+
 			// UI.
 			Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
 			vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
@@ -194,7 +204,7 @@ namespace ToolKit
 						}
 						else
 						{
-							m_renderer->Render(drawObj, vp->m_camera);
+							m_renderer->Render(drawObj, vp->m_camera, m_keyLight);
 						}
 					}
 				}
