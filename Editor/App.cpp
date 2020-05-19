@@ -70,13 +70,10 @@ namespace ToolKit
 
 		void App::Init()
 		{
-			MaterialPtr normalMat = GetMaterialManager()->Create(MaterialPath("objectNormal.material"));
-
 			m_suzanne = new Drawable();
 			m_suzanne->m_node->SetTranslation({ 0.0f, 0.0f, -5.0f });
 			m_suzanne->m_node->SetOrientation(glm::angleAxis(-glm::half_pi<float>(), X_AXIS));
 			Mesh* szm = GetMeshManager()->CreateDerived<Mesh>(MeshPath("suzanne.mesh"))->GetCopy();
-			szm->m_material = normalMat;
 			szm->Init(false);
 			m_suzanne->m_mesh = std::shared_ptr<Mesh>(szm);
 			m_scene.AddEntity(m_suzanne);
@@ -93,6 +90,8 @@ namespace ToolKit
 			GetAnimationPlayer()->AddRecord(m_knight, m_knightRunAnim.get());
 
 			m_cursor = new Cursor();
+
+			MaterialPtr normalMat = GetMaterialManager()->Create(MaterialPath("objectNormal.material"));
 
 			m_q1 = new Cube();
 			m_q1->m_mesh->m_material = normalMat;
@@ -151,20 +150,24 @@ namespace ToolKit
 			m_sceneLights.push_back(light);
 
 			light = new Light();
+			light->m_intensity = 0.5f;
 			light->Yaw(glm::radians(60.0f));
 			m_lightMaster->AddChild(light->m_node);
 			m_sceneLights.push_back(light);
 
 			light = new Light();
-			light->Yaw(glm::radians(-110.0f));
+			light->m_intensity = 0.3f;
+			light->Yaw(glm::radians(-140.0f));
 			m_lightMaster->AddChild(light->m_node);
 			m_sceneLights.push_back(light);
 
 			// UI.
 			Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+/*
 			vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
 			vp->m_camera->Pitch(glm::radians(-20.0f));
 			vp->m_camera->RotateOnUpVector(glm::radians(30.0f));
+*/
 
 			m_windows.push_back(vp);
 

@@ -52,7 +52,7 @@
 				vec3 diffuse = diff * LightData.color[i];
 
 				// specular
-				float specularStrength = 8.5;
+				float specularStrength = 0.5;
 				vec3 reflectDir = reflect(-l, n);
 				float spec = pow(max(dot(e, reflectDir), 0.0), 32.0);
 				vec3 specular = specularStrength * spec * LightData.color[i];
