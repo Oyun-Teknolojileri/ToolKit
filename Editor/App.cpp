@@ -163,11 +163,9 @@ namespace ToolKit
 
 			// UI.
 			Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
-/*
 			vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
 			vp->m_camera->Pitch(glm::radians(-20.0f));
 			vp->m_camera->RotateOnUpVector(glm::radians(30.0f));
-*/
 
 			m_windows.push_back(vp);
 

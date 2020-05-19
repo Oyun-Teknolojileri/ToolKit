@@ -44,7 +44,13 @@ namespace ToolKit
 				Drawable* dw = static_cast<Drawable*>(e);
 				if (RayBoxIntersection(rayInObjectSpace, dw->GetAABB(), dist))
 				{
-					if (RayMeshIntersection(dw->m_mesh.get(), rayInObjectSpace, dist))
+					bool hit = true;
+					if (dw->m_mesh->m_clientSideVertices.size() == dw->m_mesh->m_vertexCount)
+					{
+						// Per polygon check if data exist.
+						hit = RayMeshIntersection(dw->m_mesh.get(), rayInObjectSpace, dist);
+					}
+					if (hit)
 					{
 						if (dist < closestPickedDistance && dist > 0.0f)
 						{

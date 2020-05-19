@@ -71,6 +71,7 @@ namespace ToolKit
 
 				MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
 				newMaterial->GetRenderState()->lineWidth = 3.0f;
+				newMaterial->GetRenderState()->drawType = DrawType::Line;
 				newMaterial->m_color = col;
 
 				std::shared_ptr<Mesh> subMesh(new Mesh());
