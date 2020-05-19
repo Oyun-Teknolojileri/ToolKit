@@ -63,9 +63,7 @@ namespace ToolKit
 
 			// 3 point lighting system.
 			Node* m_lightMaster;
-			Light* m_keyLight;
-			Light* m_fillLight;
-			Light* m_backLight;
+			LightRawPtrArray m_sceneLights; // { 0:key 1:fill, 2:back }
 
 			// Editor states.
 			int m_fps = 0;

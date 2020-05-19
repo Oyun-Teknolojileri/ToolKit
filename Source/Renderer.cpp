@@ -23,7 +23,7 @@ namespace ToolKit
 	{
 	}
 
-	void Renderer::Render(Drawable* object, Camera* cam, Light* light)
+	void Renderer::Render(Drawable* object, Camera* cam, const LightRawPtrArray& lights)
 	{
 		if (object->m_mesh->IsSkinned())
 		{
@@ -37,7 +37,7 @@ namespace ToolKit
 		object->m_mesh->GetAllMeshes(meshes);
 
 		m_cam = cam;
-		m_light = light;
+		m_lights = lights;
 		SetProjectViewModel(object, cam);
 
 		for (Mesh* mesh : meshes)
@@ -385,19 +385,29 @@ namespace ToolKit
 				break;
 				case Uniform::LIGHT_DATA:
 				{
-					if (m_light == nullptr)
+					if (m_lights.empty())
 						break;
 
-					Light::LightData data = m_light->GetData();
+					for (size_t i = 0; i < m_lights.size(); i++)
+					{
+						Light::LightData data = m_lights[i]->GetData();
 
-					GLint loc = glGetUniformLocation(program->m_handle, "LightData.pos");
-					glUniform3fv(loc, 1, &data.pos.x);
-					loc = glGetUniformLocation(program->m_handle, "LightData.dir");
-					glUniform3fv(loc, 1, &data.dir.x);
-					loc = glGetUniformLocation(program->m_handle, "LightData.color");
-					glUniform3fv(loc, 1, &data.color.x);
-					loc = glGetUniformLocation(program->m_handle, "LightData.intensity");
-					glUniform1f(loc, data.intensity);
+						String shaderName = "LightData.pos[" + std::to_string(i) + "]";
+						GLint loc = glGetUniformLocation(program->m_handle, shaderName.c_str());
+						glUniform3fv(loc, 1, &data.pos.x);
+						shaderName = "LightData.dir[" + std::to_string(i) + "]";
+						loc = glGetUniformLocation(program->m_handle, shaderName.c_str());
+						glUniform3fv(loc, 1, &data.dir.x);
+						shaderName = "LightData.color[" + std::to_string(i) + "]";
+						loc = glGetUniformLocation(program->m_handle, shaderName.c_str());
+						glUniform3fv(loc, 1, &data.color.x);
+						shaderName = "LightData.intensity[" + std::to_string(i) + "]";
+						loc = glGetUniformLocation(program->m_handle, shaderName.c_str());
+						glUniform1f(loc, data.intensity);
+					}
+
+					GLint loc = glGetUniformLocation(program->m_handle,"LightData.activeCount");
+					glUniform1i(loc, (int)m_lights.size());
 				}
 				break;
 				case Uniform::CAM_DATA:

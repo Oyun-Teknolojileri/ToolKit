@@ -1,60 +1,68 @@
 <shader>
-  <type name = "fragmentShader" />
-  <uniform name = "LightData" />
-  <uniform name = "CamData" />
-  <source>
-  <!--
-    #version 300 es
-    precision mediump float;
+	<type name = "fragmentShader" />
+	<uniform name = "LightData" />
+	<uniform name = "CamData" />
+	<source>
+	<!--
+		#version 300 es
+		precision mediump float;
 
-    // Fixed Declaretions
-    struct _LightData
-    {
-      vec3 pos;
-      vec3 dir;
-      vec3 color;
-	  float intensity;
-    };
+		// Fixed Declaretions
+		struct _LightData
+		{
+			vec3 pos[8];
+			vec3 dir[8];
+			vec3 color[8];
+			float intensity[8];
+			int activeCount;
+		};
 
-    struct _CamData
-    {
-      vec3 pos;
-      vec3 dir;
-    };
+		struct _CamData
+		{
+			vec3 pos;
+			vec3 dir;
+		};
 
-    uniform _LightData LightData;
-    uniform _CamData CamData;
-    uniform sampler2D s_texture;
+		uniform _LightData LightData;
+		uniform _CamData CamData;
+		uniform sampler2D s_texture;
 
-    in vec3 v_pos;
-    in vec3 v_normal;
-    in vec2 v_texture;
+		in vec3 v_pos;
+		in vec3 v_normal;
+		in vec2 v_texture;
 
-    out vec4 fragColor;
+		out vec4 fragColor;
 
-    void main()
-    {
-	  vec3 l = -LightData.dir;
-      vec3 n = normalize(v_normal);
-      vec3 e = normalize(CamData.pos - v_pos);
-	  
-	  // ambient
-      float ambientStrength = 0.1;
-      vec3 ambient = ambientStrength * LightData.color;
-	  
-	  // diffuse 
-      float diff = max(dot(n, l), 0.0);
-      vec3 diffuse = diff * LightData.color;
-	  
-	  // specular
-	  float specularStrength = 8.5;
-	  vec3 reflectDir = reflect(-l, n);  
-      float spec = pow(max(dot(e, reflectDir), 0.0), 32.0);
-      vec3 specular = specularStrength * spec * LightData.color;   
-	  
-	  vec4 objectColor = texture(s_texture, v_texture);
-	  fragColor = vec4((ambient + diffuse + specular) * LightData.intensity, 1.0) * objectColor;
-    }
-  -->
-  </source>
+		void main()
+		{
+			vec3 n = normalize(v_normal);
+			vec3 e = normalize(CamData.pos - v_pos);
+
+			vec3 irradiance = vec3(0.0);
+			for (int i = 0; i < LightData.activeCount; i++)
+			{
+				vec3 l = -LightData.dir[i];
+
+				// ambient
+				float ambientStrength = 0.1;
+				vec3 ambient = ambientStrength * LightData.color[i];
+
+				// diffuse 
+				float diff = max(dot(n, l), 0.0);
+				vec3 diffuse = diff * LightData.color[i];
+
+				// specular
+				float specularStrength = 8.5;
+				vec3 reflectDir = reflect(-l, n);
+				float spec = pow(max(dot(e, reflectDir), 0.0), 32.0);
+				vec3 specular = specularStrength * spec * LightData.color[i];
+
+				irradiance += (ambient + diffuse + specular) * LightData.intensity[i];
+			}
+
+			vec4 objectColor = texture(s_texture, v_texture);
+			fragColor = vec4(irradiance, 1.0) * objectColor;
+		}
+	-->
+	</source>
 </shader>

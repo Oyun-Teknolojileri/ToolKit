@@ -33,9 +33,6 @@ namespace ToolKit
 			m_q4 = nullptr;
 			m_cursor = nullptr;
 			m_lightMaster = nullptr;
-			m_keyLight = nullptr;
-			m_fillLight = nullptr;
-			m_backLight = nullptr;
 			m_renderer = new Renderer();
 			m_renderer->m_windowWidth = windowWidth;
 			m_renderer->m_windowHeight = windowHeight;
@@ -55,10 +52,13 @@ namespace ToolKit
 			SafeDel(m_grid);
 			SafeDel(m_origin);
 			SafeDel(m_cursor);
-			SafeDel(m_keyLight);
-			SafeDel(m_fillLight);
-			SafeDel(m_backLight);
 			SafeDel(m_lightMaster);
+			for (int i = 0; i < 3; i++)
+			{
+				SafeDel(m_sceneLights[i]);
+			}
+			assert(m_sceneLights.size() == 3);
+			m_sceneLights.clear();
 
 			ModManager::GetInstance()->UnInit();
 			ActionManager::GetInstance()->UnInit();
@@ -144,18 +144,20 @@ namespace ToolKit
 			// Lights and camera.
 			m_lightMaster = new Node();
 
-			m_keyLight = new Light();
-			m_keyLight->Yaw(glm::radians(-45.0f));
+			Light* light = new Light();
+			light->Yaw(glm::radians(-45.0f));
+			m_lightMaster->AddChild(light->m_node);
+			m_sceneLights.push_back(light);
 
-			m_fillLight = new Light();
-			m_fillLight->Yaw(glm::radians(60.0f));
+			light = new Light();
+			light->Yaw(glm::radians(60.0f));
+			m_lightMaster->AddChild(light->m_node);
+			m_sceneLights.push_back(light);
 
-			m_backLight = new Light();
-			m_backLight->Yaw(glm::radians(-110.0f));
-
-			m_lightMaster->AddChild(m_keyLight->m_node);
-			m_lightMaster->AddChild(m_fillLight->m_node);
-			m_lightMaster->AddChild(m_backLight->m_node);
+			light = new Light();
+			light->Yaw(glm::radians(-110.0f));
+			m_lightMaster->AddChild(light->m_node);
+			m_sceneLights.push_back(light);
 
 			// UI.
 			Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
@@ -223,9 +225,7 @@ namespace ToolKit
 						}
 						else
 						{
-							//m_renderer->Render(drawObj, vp->m_camera, m_keyLight);
-							//m_renderer->Render(drawObj, vp->m_camera, m_fillLight);
-							m_renderer->Render(drawObj, vp->m_camera, m_backLight);
+							m_renderer->Render(drawObj, vp->m_camera, m_sceneLights);
 						}
 					}
 				}

@@ -22,7 +22,7 @@ namespace ToolKit
   public:
     Renderer();
     ~Renderer();
-    void Render(Drawable* object, Camera* cam, Light* light = nullptr);
+    void Render(Drawable* object, Camera* cam, const LightRawPtrArray& lights = LightRawPtrArray());
     void RenderSkinned(Drawable* object, Camera* cam);
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
@@ -60,7 +60,7 @@ namespace ToolKit
     Mat4 m_project;
     Mat4 m_view;
     Mat4 m_model;
-    Light* m_light = nullptr;
+    LightRawPtrArray m_lights;
     Camera* m_cam = nullptr;
     Material* m_mat = nullptr;
 		RenderTarget* m_renderTarget = nullptr;
