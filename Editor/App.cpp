@@ -75,9 +75,10 @@ namespace ToolKit
 			m_suzanne = new Drawable();
 			m_suzanne->m_node->SetTranslation({ 0.0f, 0.0f, -5.0f });
 			m_suzanne->m_node->SetOrientation(glm::angleAxis(-glm::half_pi<float>(), X_AXIS));
-			m_suzanne->m_mesh = GetMeshManager()->Create(MeshPath("suzanne.mesh"));
-			m_suzanne->m_mesh->m_material = normalMat;
-			m_suzanne->m_mesh->Init(false);
+			Mesh* szm = GetMeshManager()->CreateDerived<Mesh>(MeshPath("suzanne.mesh"))->GetCopy();
+			szm->m_material = normalMat;
+			szm->Init(false);
+			m_suzanne->m_mesh = std::shared_ptr<Mesh>(szm);
 			m_scene.AddEntity(m_suzanne);
 
 			// https://t-allen-studios.itch.io/low-poly-saxon-warrior

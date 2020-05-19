@@ -128,6 +128,35 @@ namespace ToolKit
 		}
 	}
 
+	Mesh* Mesh::GetCopy()
+	{
+		Mesh* cpy = new Mesh();
+		cpy->m_clientSideVertices = m_clientSideVertices;
+		cpy->m_clientSideIndices = m_clientSideIndices;
+
+		// No copy video memory.
+		cpy->m_vboVertexId = m_vboVertexId;
+		cpy->m_vboIndexId = m_vboIndexId;
+
+		cpy->m_vertexCount = m_vertexCount;
+		cpy->m_indexCount = m_indexCount;
+
+		cpy->m_material = std::shared_ptr<Material>(m_material->GetCopy());
+		cpy->m_aabb = m_aabb;
+
+		cpy->m_file = m_file;
+		cpy->m_initiated = m_initiated;
+		cpy->m_loaded = m_loaded;
+
+		for (MeshPtr child : m_subMeshes)
+		{
+			MeshPtr ccpy = std::shared_ptr<Mesh>(child->GetCopy());
+			cpy->m_subMeshes.push_back(ccpy);
+		}
+
+		return cpy;
+	}
+
 	int Mesh::GetVertexSize()
 	{
 		return sizeof(Vertex);

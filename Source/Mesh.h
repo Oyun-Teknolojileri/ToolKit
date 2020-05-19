@@ -31,6 +31,7 @@ namespace ToolKit
     virtual void Init(bool flushClientSideArray = true) override;
 		virtual void UnInit() override;
     virtual void Load() override;
+    virtual Mesh* GetCopy() override;
     virtual int GetVertexSize();
     virtual bool IsSkinned();
 		void CalculateAABoundingBox();
