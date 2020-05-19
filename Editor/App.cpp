@@ -32,6 +32,7 @@ namespace ToolKit
 			m_q3 = nullptr;
 			m_q4 = nullptr;
 			m_cursor = nullptr;
+			m_lightMaster = nullptr;
 			m_keyLight = nullptr;
 			m_fillLight = nullptr;
 			m_backLight = nullptr;
@@ -57,6 +58,7 @@ namespace ToolKit
 			SafeDel(m_keyLight);
 			SafeDel(m_fillLight);
 			SafeDel(m_backLight);
+			SafeDel(m_lightMaster);
 
 			ModManager::GetInstance()->UnInit();
 			ActionManager::GetInstance()->UnInit();
@@ -139,9 +141,21 @@ namespace ToolKit
 			ModManager::GetInstance()->Init();
 			ActionManager::GetInstance()->Init();
 
+			// Lights and camera.
+			m_lightMaster = new Node();
+
 			m_keyLight = new Light();
+			m_keyLight->Yaw(glm::radians(-45.0f));
+
 			m_fillLight = new Light();
+			m_fillLight->Yaw(glm::radians(60.0f));
+
 			m_backLight = new Light();
+			m_backLight->Yaw(glm::radians(-110.0f));
+
+			m_lightMaster->AddChild(m_keyLight->m_node);
+			m_lightMaster->AddChild(m_fillLight->m_node);
+			m_lightMaster->AddChild(m_backLight->m_node);
 
 			// UI.
 			Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
@@ -180,6 +194,11 @@ namespace ToolKit
 				Viewport* vp = static_cast<Viewport*> (wnd);
 				vp->Update(deltaTime);
 
+				// Adjust scene lights.
+				Camera* cam = vp->m_camera;
+				m_lightMaster->OrphanSelf();
+				cam->m_node->AddChild(m_lightMaster);
+
 				m_renderer->SetRenderTarget(vp->m_viewportImage);
 
 				for (Entity* ntt : m_scene.GetEntities())
@@ -204,7 +223,9 @@ namespace ToolKit
 						}
 						else
 						{
-							m_renderer->Render(drawObj, vp->m_camera, m_keyLight);
+							//m_renderer->Render(drawObj, vp->m_camera, m_keyLight);
+							//m_renderer->Render(drawObj, vp->m_camera, m_fillLight);
+							m_renderer->Render(drawObj, vp->m_camera, m_backLight);
 						}
 					}
 				}

@@ -68,6 +68,7 @@ namespace ToolKit
       Vec3 pos;
       Vec3 dir;
       Vec3 color;
+      float intensity;
     };
 
   public:
@@ -79,6 +80,7 @@ namespace ToolKit
 
   public:
     Vec3 m_color;
+    float m_intensity;
   };
 
 }

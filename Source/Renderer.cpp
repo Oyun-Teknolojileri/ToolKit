@@ -396,6 +396,8 @@ namespace ToolKit
 					glUniform3fv(loc, 1, &data.dir.x);
 					loc = glGetUniformLocation(program->m_handle, "LightData.color");
 					glUniform3fv(loc, 1, &data.color.x);
+					loc = glGetUniformLocation(program->m_handle, "LightData.intensity");
+					glUniform1f(loc, data.intensity);
 				}
 				break;
 				case Uniform::CAM_DATA:

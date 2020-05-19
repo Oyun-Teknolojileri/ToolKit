@@ -34,6 +34,8 @@ namespace ToolKit
 		void SetScale(const Vec3& val, TransformationSpace space = TransformationSpace::TS_PARENT);
 		Vec3 GetScale(TransformationSpace space = TransformationSpace::TS_PARENT) const;
 		void AddChild(Node* child);
+		void Orphan(Node* child);
+		void OrphanSelf();
 		Node* GetRoot() const;
 
 	private:

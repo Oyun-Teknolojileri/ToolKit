@@ -179,8 +179,30 @@ namespace ToolKit
 
 	void Node::AddChild(Node* child)
 	{
+		assert(child->m_parent == nullptr);
 		m_children.push_back(child);
 		child->m_parent = this;
+	}
+
+	void Node::Orphan(Node* child)
+	{
+		for (size_t i = 0; i < m_children.size(); i++)
+		{
+			if (m_children[i] == child)
+			{
+				child->m_parent = nullptr;
+				m_children.erase(m_children.begin() + i);
+				return;
+			}
+		}
+	}
+
+	void Node::OrphanSelf()
+	{
+		if (m_parent)
+		{
+			m_parent->Orphan(this);
+		}
 	}
 
 	Node* Node::GetRoot() const

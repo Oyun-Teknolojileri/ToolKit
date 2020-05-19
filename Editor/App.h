@@ -59,10 +59,13 @@ namespace ToolKit
 			Grid* m_grid;
 			Axis3d* m_origin;
 			Cursor* m_cursor;
+			std::vector<Drawable*> m_perFrameDebugObjects;
+
+			// 3 point lighting system.
+			Node* m_lightMaster;
 			Light* m_keyLight;
 			Light* m_fillLight;
 			Light* m_backLight;
-			std::vector<Drawable*> m_perFrameDebugObjects;
 
 			// Editor states.
 			int m_fps = 0;
