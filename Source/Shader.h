@@ -35,6 +35,19 @@ namespace ToolKit
     String m_source;
   };
 
+	class Program
+	{
+	public:
+		Program();
+		Program(std::shared_ptr<Shader> vertex, std::shared_ptr<Shader> fragment);
+		~Program();
+
+	public:
+		GLuint m_handle = 0;
+		String m_tag;
+		std::vector<std::shared_ptr<Shader>> m_shaders;
+	};
+
   class ShaderManager : public ResourceManager<Shader>
   {
   public:

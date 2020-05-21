@@ -180,12 +180,13 @@ namespace ToolKit
 		m_initiated = false;
 	}
 
-	RenderTarget::RenderTarget(uint width, uint height)
+	RenderTarget::RenderTarget(uint width, uint height, bool depthStencil)
 	{
 		m_width = width;
 		m_height = height;
 		m_frameBufferId = 0;
 		m_depthBufferId = 0;
+		m_depthStencil = depthStencil;
 	}
 
 	RenderTarget::~RenderTarget()
@@ -219,12 +220,15 @@ namespace ToolKit
 		// Attach 2D texture to this FBO
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureId, 0);
 
-		glGenRenderbuffers(1, &m_depthBufferId);
-		glBindRenderbuffer(GL_RENDERBUFFER, m_depthBufferId);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
+		if (m_depthStencil)
+		{
+			glGenRenderbuffers(1, &m_depthBufferId);
+			glBindRenderbuffer(GL_RENDERBUFFER, m_depthBufferId);
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
 
-		// Attach depth buffer to FBO
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthBufferId);
+			// Attach depth buffer to FBO
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthBufferId);
+		}
 
 		GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
 		glDrawBuffers(1, DrawBuffers);

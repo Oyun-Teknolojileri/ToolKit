@@ -33,7 +33,7 @@ namespace ToolKit
 
 		object->m_mesh->Init();
 
-		std::vector<Mesh*> meshes;
+		MeshRawPtrArray meshes;
 		object->m_mesh->GetAllMeshes(meshes);
 
 		m_cam = cam;
@@ -44,7 +44,7 @@ namespace ToolKit
 		{
 			m_mat = mesh->m_material.get();
 
-			std::shared_ptr<Program> prg = CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmetShader);
+			ProgramPtr prg = CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmetShader);
 			BindProgram(prg);
 			FeedUniforms(prg);
 
@@ -86,9 +86,9 @@ namespace ToolKit
 		object->m_mesh->Init();
 		SetProjectViewModel(object, cam);
 
-		std::shared_ptr<Shader> skinShader = GetShaderManager()->Create(ShaderPath("defaultSkin.shader"));
-		std::shared_ptr<Shader> fragShader = GetShaderManager()->Create(ShaderPath("defaultFragment.shader"));
-		std::shared_ptr<Program> skinProg = CreateProgram(skinShader, fragShader);
+		ShaderPtr skinShader = GetShaderManager()->Create(ShaderPath("defaultSkin.shader"));
+		ShaderPtr fragShader = GetShaderManager()->Create(ShaderPath("defaultFragment.shader"));
+		ProgramPtr skinProg = CreateProgram(skinShader, fragShader);
 		BindProgram(skinProg);
 		FeedUniforms(skinProg);
 
@@ -106,14 +106,14 @@ namespace ToolKit
 			glUniformMatrix4fv(loc, 1, false, &bone->m_inverseWorldMatrix[0][0]);
 		}
 
-		std::vector<std::shared_ptr<Mesh>> meshes;
+		MeshPtrArray meshes;
 		meshes.push_back(object->m_mesh);
 		for (int i = 0; i < (int)object->m_mesh->m_subMeshes.size(); i++)
 		{
 			meshes.push_back(object->m_mesh->m_subMeshes[i]);
 		}
 
-		for (std::shared_ptr<Mesh> mesh : meshes)
+		for (MeshPtr mesh : meshes)
 		{
 			RenderState rs = *mesh->m_material->GetRenderState();
 			SetRenderState(rs);
@@ -273,7 +273,7 @@ namespace ToolKit
 		}
 	}
 
-	void Renderer::SetRenderTarget(RenderTarget* renderTarget)
+	void Renderer::SetRenderTarget(RenderTarget* renderTarget, bool clear)
 	{
 		if (m_renderTarget == renderTarget)
 		{
@@ -285,7 +285,11 @@ namespace ToolKit
 			m_renderState.diffuseTexture = renderTarget->m_textureId;
 			glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->m_frameBufferId);
 			glViewport(0, 0, renderTarget->m_width, renderTarget->m_height);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+			if (clear)
+			{
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+			}
 		}
 		else
 		{
@@ -297,6 +301,43 @@ namespace ToolKit
 		m_renderTarget = renderTarget;
 	}
 
+	void Renderer::DrawStencilToRenderTarget(RenderTarget* renderTarget)
+	{
+		RenderTarget* bckUp = m_renderTarget;
+		
+		renderTarget->Init();
+		SetRenderTarget(renderTarget);
+
+		glEnable(GL_STENCIL_TEST);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+
+		ShaderPtr solidColor = GetShaderManager()->Create(ShaderPath("solidColorFrag.shader"));
+		DrawFullQuad(solidColor);
+
+		glDisable(GL_STENCIL_TEST);
+
+		SetRenderTarget(bckUp, false);
+	}
+
+	void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
+	{
+		static ShaderPtr fullQuadVert = GetShaderManager()->Create(ShaderPath("fullQuadVert.shader"));
+		static MaterialPtr material = std::make_shared<Material>();
+		material->UnInit();
+
+		material->m_vertexShader = fullQuadVert;
+		material->m_fragmetShader = fragmentShader;
+		material->Init();
+		
+		static Quad quad;
+		quad.m_mesh->m_material = material;
+
+		static Camera dummy;
+
+		Render(&quad, &dummy);
+	}
+
 	void Renderer::SetProjectViewModel(Drawable* object, Camera* cam)
 	{
 		m_view = cam->GetViewMatrix();
@@ -304,7 +345,7 @@ namespace ToolKit
 		m_model = object->m_node->GetTransform(TransformationSpace::TS_WORLD);
 	}
 
-	void Renderer::BindProgram(std::shared_ptr<Program> program)
+	void Renderer::BindProgram(ProgramPtr program)
 	{
 		if (m_currentProgram == program->m_handle)
 			return;
@@ -339,12 +380,12 @@ namespace ToolKit
 		}
 	}
 
-	std::shared_ptr<Renderer::Program> Renderer::CreateProgram(std::shared_ptr<Shader> vertex, std::shared_ptr<Shader> fragment)
+	ProgramPtr Renderer::CreateProgram(ShaderPtr vertex, ShaderPtr fragment)
 	{
 		assert(vertex);
 		assert(fragment);
 
-		std::shared_ptr<Program> program = std::make_shared<Program>(vertex, fragment);
+		ProgramPtr program = std::make_shared<Program>(vertex, fragment);
 		if (m_programs.find(program->m_tag) == m_programs.end())
 		{
 			program->m_handle = glCreateProgram();
@@ -355,9 +396,9 @@ namespace ToolKit
 		return m_programs[program->m_tag];
 	}
 
-	void Renderer::FeedUniforms(std::shared_ptr<Program> program)
+	void Renderer::FeedUniforms(ProgramPtr program)
 	{
-		for (std::shared_ptr<Shader> shader : program->m_shaders)
+		for (ShaderPtr shader : program->m_shaders)
 		{
 			for (Uniform uni : shader->m_uniforms)
 			{
@@ -444,25 +485,6 @@ namespace ToolKit
 				}
 			}
 		}
-	}
-
-	Renderer::Program::Program()
-	{
-	}
-
-	Renderer::Program::Program(std::shared_ptr<Shader> vertex, std::shared_ptr<Shader> fragment)
-	{
-		m_shaders.push_back(vertex);
-		m_shaders.push_back(fragment);
-
-		m_tag += std::to_string(vertex->m_shaderHandle);
-		m_tag += std::to_string(fragment->m_shaderHandle);
-	}
-
-	Renderer::Program::~Program()
-	{
-		glDeleteProgram(m_handle);
-		m_handle = 0;
 	}
 
 }

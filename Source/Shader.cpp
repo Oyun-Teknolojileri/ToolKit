@@ -147,6 +147,25 @@ namespace ToolKit
 		m_initiated = false;
 	}
 
+	Program::Program()
+	{
+	}
+
+	Program::Program(std::shared_ptr<Shader> vertex, std::shared_ptr<Shader> fragment)
+	{
+		m_shaders.push_back(vertex);
+		m_shaders.push_back(fragment);
+
+		m_tag += std::to_string(vertex->m_shaderHandle);
+		m_tag += std::to_string(fragment->m_shaderHandle);
+	}
+
+	Program::~Program()
+	{
+		glDeleteProgram(m_handle);
+		m_handle = 0;
+	}
+
 	void ShaderManager::Init()
 	{
 		ResourceManager::Init();

@@ -45,7 +45,7 @@ namespace ToolKit
   class RenderTarget : public Texture
   {
   public:
-    RenderTarget(uint widht, uint height);
+    RenderTarget(uint widht, uint height, bool depthStencil = true);
 		virtual ~RenderTarget();
 
     virtual void Load() override;
@@ -53,8 +53,11 @@ namespace ToolKit
 		virtual void UnInit() override;
 
 	public:
-		GLuint m_frameBufferId = 0;
-		GLuint m_depthBufferId = 0;
+		GLuint m_frameBufferId;
+		GLuint m_depthBufferId;
+
+  private:
+    bool m_depthStencil;
   };
 
   class TextureManager : public ResourceManager<Texture>

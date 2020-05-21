@@ -27,28 +27,16 @@ namespace ToolKit
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
     void SetRenderState(RenderState state);
-		void SetRenderTarget(RenderTarget* renderTarget);
-
-  private:
-    class Program
-    {
-    public:
-      Program();
-      Program(std::shared_ptr<Shader> vertex, std::shared_ptr<Shader> fragment);
-      ~Program();
-
-    public:
-      GLuint m_handle = 0;
-      String m_tag;
-      std::vector<std::shared_ptr<Shader>> m_shaders;
-    };
+		void SetRenderTarget(RenderTarget* renderTarget, bool clear = true);
+    void DrawStencilToRenderTarget(RenderTarget* renderTarget);
+    void DrawFullQuad(ShaderPtr fragmentShader);
 
   private:
     void SetProjectViewModel(Drawable* object, Camera* cam);
-    void BindProgram(std::shared_ptr<Program> program);
+    void BindProgram(ProgramPtr program);
     void LinkProgram(GLuint program, GLuint vertexP, GLuint fragmentP);
-    std::shared_ptr<Program> CreateProgram(std::shared_ptr<Shader> vertex, std::shared_ptr<Shader> fragment);
-    void FeedUniforms(std::shared_ptr<Program> program);
+    ProgramPtr CreateProgram(ShaderPtr vertex, ShaderPtr fragment);
+    void FeedUniforms(ProgramPtr program);
 
   public:
     uint m_frameCount = 0;
@@ -56,7 +44,7 @@ namespace ToolKit
 		uint m_windowHeight = 0;
 
   private:
-    GLuint m_currentProgram;
+    GLuint m_currentProgram = 0;
     Mat4 m_project;
     Mat4 m_view;
     Mat4 m_model;
@@ -65,7 +53,7 @@ namespace ToolKit
     Material* m_mat = nullptr;
 		RenderTarget* m_renderTarget = nullptr;
 
-    std::unordered_map<String, std::shared_ptr<Program>> m_programs;
+    std::unordered_map<String, ProgramPtr> m_programs;
     RenderState m_renderState;
   };
 
