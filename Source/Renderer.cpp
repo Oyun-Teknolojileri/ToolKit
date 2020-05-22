@@ -73,10 +73,17 @@ namespace ToolKit
 			{
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
 				glDrawElements((GLenum)rs.drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 			}
 			else
 			{
 				glDrawArrays((GLenum)rs.drawType, 0, mesh->m_vertexCount);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
+
+			for (int i = 0; i < 4; i++)
+			{
+				glDisableVertexAttribArray(i);
 			}
 		}
 	}
@@ -146,6 +153,14 @@ namespace ToolKit
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
 			glDrawElements((GLenum)rs.drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
+
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+			for (int i = 0; i < 6; i++)
+			{
+				glDisableVertexAttribArray(i);
+			}
 		}
 	}
 
@@ -185,6 +200,13 @@ namespace ToolKit
 		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
 
 		glDrawArrays((GLenum)rs.drawType, 0, object->m_mesh->m_vertexCount);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		for (int i = 0; i < 4; i++)
+		{
+			glDisableVertexAttribArray(i);
+		}
 	}
 
 	void Renderer::Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions)
