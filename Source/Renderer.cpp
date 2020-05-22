@@ -55,19 +55,19 @@ namespace ToolKit
 
 			GLuint offset = 0;
 			glEnableVertexAttribArray(0); // Vertex
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), 0);
-
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 			offset += 3 * sizeof(float);
+			
 			glEnableVertexAttribArray(1); // Normal
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
-
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
 			offset += 3 * sizeof(float);
+			
 			glEnableVertexAttribArray(2); // Texture
-			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
-
+			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
 			offset += 2 * sizeof(float);
+			
 			glEnableVertexAttribArray(3); // BiTangent
-			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
+			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
 
 			if (mesh->m_indexCount != 0)
 			{
@@ -122,27 +122,27 @@ namespace ToolKit
 
 			GLuint offset = 0;
 			glEnableVertexAttribArray(0); // Vertex
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), 0);
-
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), 0);
 			offset += 3 * sizeof(float);
+			
 			glEnableVertexAttribArray(1); // Normal
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
-
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
 			offset += 3 * sizeof(float);
+			
 			glEnableVertexAttribArray(2); // Texture
-			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
-
+			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
 			offset += 2 * sizeof(float);
+			
 			glEnableVertexAttribArray(3); // BiTangent
-			glVertexAttribIPointer(3, 3, GL_UNSIGNED_INT, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
-
+			glVertexAttribIPointer(3, 3, GL_UNSIGNED_INT, sizeof(SkinVertex), BUFFER_OFFSET(offset));
 			offset += 3 * sizeof(uint);
+			
 			glEnableVertexAttribArray(4); // Bones
-			glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
-
+			glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
 			offset += 4 * sizeof(float);
+			
 			glEnableVertexAttribArray(5); // Weights
-			glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
+			glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
 			glDrawElements((GLenum)rs.drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
