@@ -259,25 +259,6 @@ namespace ToolKit
 		m_renderTarget = renderTarget;
 	}
 
-	void Renderer::DrawStencilToRenderTarget(RenderTarget* renderTarget)
-	{
-		RenderTarget* bckUp = m_renderTarget;
-		
-		renderTarget->Init();
-		SetRenderTarget(renderTarget);
-
-		glEnable(GL_STENCIL_TEST);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-
-		ShaderPtr solidColor = GetShaderManager()->Create(ShaderPath("solidColorFrag.shader"));
-		DrawFullQuad(solidColor);
-
-		glDisable(GL_STENCIL_TEST);
-
-		SetRenderTarget(bckUp, false);
-	}
-
 	void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
 	{
 		static ShaderPtr fullQuadVert = GetShaderManager()->Create(ShaderPath("fullQuadVert.shader"));

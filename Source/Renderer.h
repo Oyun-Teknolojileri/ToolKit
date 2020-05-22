@@ -28,7 +28,6 @@ namespace ToolKit
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
     void SetRenderState(RenderState state);
 		void SetRenderTarget(RenderTarget* renderTarget, bool clear = true);
-    void DrawStencilToRenderTarget(RenderTarget* renderTarget);
     void DrawFullQuad(ShaderPtr fragmentShader);
 
   private:

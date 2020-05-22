@@ -2,6 +2,7 @@
 	<type name = "fragmentShader" />
 	<uniform name = "Color" />
 	<source>
+	<!--
 		#version 300 es
 		precision mediump float;
 		
@@ -14,5 +15,6 @@
 		{
 			v_fragColor = vec4(v_texture, 0.0, 1.0);
 		}
+	-->
 	</source>
 </shader>

@@ -41,7 +41,7 @@ namespace ToolKit
 			ConsoleWindow* GetConsole();
 
 			// Quick selected render implementation.
-			void RenderSelected(Drawable* e, Camera* c);
+			void RenderSelected(Viewport *vp);
 
 		public:
 			Scene m_scene;

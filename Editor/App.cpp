@@ -220,17 +220,11 @@ namespace ToolKit
 							}
 						}
 
-						Drawable* drawObj = static_cast<Drawable*> (ntt);
-						if (m_scene.IsSelected(drawObj->m_id) && !drawObj->m_mesh->IsSkinned())
-						{
-							RenderSelected(drawObj, vp->m_camera);
-						}
-						else
-						{
-							m_renderer->Render(drawObj, vp->m_camera, m_sceneLights);
-						}
+						m_renderer->Render(static_cast<Drawable*> (ntt), vp->m_camera, m_sceneLights);
 					}
 				}
+
+				RenderSelected(vp);
 
 				m_renderer->Render(m_grid, vp->m_camera);
 
@@ -534,44 +528,47 @@ namespace ToolKit
 			return nullptr;
 		}
 
-		void App::RenderSelected(Drawable* e, Camera* c)
+		void App::RenderSelected(Viewport* vp)
 		{
+			if (m_scene.GetSelectedEntityCount() == 0)
+			{
+				return;
+			}
+
 			glEnable(GL_STENCIL_TEST);
 			glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 			glStencilFunc(GL_ALWAYS, 1, 0xFF);
 			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-			glDepthMask(GL_FALSE);
 
-			CullingType cm = e->m_mesh->m_material->GetRenderState()->cullMode;
-			e->m_mesh->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
-			m_renderer->Render(e, c);
+			RenderTarget stencilMask((int)vp->m_width, (int)vp->m_height);
+			stencilMask.Init();
+
+			m_renderer->SetRenderTarget(&stencilMask);
+
+			EntityRawPtrArray selecteds;
+			m_scene.GetSelectedEntities(selecteds);
+
+			for (Entity* ntt : selecteds)
+			{
+				if (ntt->IsDrawable())
+				{
+					m_renderer->Render(static_cast<Drawable*> (ntt), vp->m_camera);
+				}
+			}
 
 			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-			glDepthMask(GL_TRUE);
-
-			e->m_mesh->m_material->GetRenderState()->cullMode = cm;
-			m_renderer->Render(e, c);
-
-			MaterialPtr m = e->m_mesh->m_material;
-			if (m_scene.IsCurrentSelection(e->m_id))
-			{
-				e->m_mesh->m_material = m_highLightMaterial;
-			}
-			else
-			{
-				e->m_mesh->m_material = m_highLightSecondaryMaterial;
-			}
-
-			Vec3 s = e->m_node->GetScale();
-			float dist = glm::distance(e->m_node->GetTranslation(TransformationSpace::TS_WORLD), c->m_node->GetTranslation(TransformationSpace::TS_WORLD));
-			e->m_node->Scale(Vec3(1.0f + 0.005f * dist), TransformationSpace::TS_LOCAL);
 
 			glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-			m_renderer->Render(e, c);
+			ShaderPtr solidColor = GetShaderManager()->Create(ShaderPath("solidColorFrag.shader"));
+			m_renderer->DrawFullQuad(solidColor);
 			glDisable(GL_STENCIL_TEST);
 
-			e->m_node->SetScale(s, TransformationSpace::TS_LOCAL);
-			e->m_mesh->m_material = m;
+			m_renderer->SetRenderTarget(vp->m_viewportImage, false);
+
+			// Dilate.
+			glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
+			ShaderPtr dilate = GetShaderManager()->Create(ShaderPath("dilateFrag.shader"));
+			m_renderer->DrawFullQuad(dilate); // Which color ?? SetShaderPatarameter("Color", Vec4(1.0f))
 		}
 
 	}
