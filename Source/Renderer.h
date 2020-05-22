@@ -38,6 +38,14 @@ namespace ToolKit
     ProgramPtr CreateProgram(ShaderPtr vertex, ShaderPtr fragment);
     void FeedUniforms(ProgramPtr program);
 
+    enum class VertexLayout
+    {
+      None,
+      Mesh,
+      SkinMesh
+    };
+    void SetVertexLayout(VertexLayout layout);
+
   public:
     uint m_frameCount = 0;
 		uint m_windowWidth = 0;

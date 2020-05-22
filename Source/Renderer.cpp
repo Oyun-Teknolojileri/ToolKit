@@ -52,22 +52,7 @@ namespace ToolKit
 			SetRenderState(rs);
 
 			glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
-
-			GLuint offset = 0;
-			glEnableVertexAttribArray(0); // Vertex
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-			offset += 3 * sizeof(float);
-			
-			glEnableVertexAttribArray(1); // Normal
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
-			offset += 3 * sizeof(float);
-			
-			glEnableVertexAttribArray(2); // Texture
-			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
-			offset += 2 * sizeof(float);
-			
-			glEnableVertexAttribArray(3); // BiTangent
-			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
+			SetVertexLayout(VertexLayout::Mesh);
 
 			if (mesh->m_indexCount != 0)
 			{
@@ -81,10 +66,7 @@ namespace ToolKit
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 			}
 
-			for (int i = 0; i < 4; i++)
-			{
-				glDisableVertexAttribArray(i);
-			}
+			SetVertexLayout(VertexLayout::None);
 		}
 	}
 
@@ -126,41 +108,14 @@ namespace ToolKit
 			SetRenderState(rs);
 
 			glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
-
-			GLuint offset = 0;
-			glEnableVertexAttribArray(0); // Vertex
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), 0);
-			offset += 3 * sizeof(float);
-			
-			glEnableVertexAttribArray(1); // Normal
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
-			offset += 3 * sizeof(float);
-			
-			glEnableVertexAttribArray(2); // Texture
-			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
-			offset += 2 * sizeof(float);
-			
-			glEnableVertexAttribArray(3); // BiTangent
-			glVertexAttribIPointer(3, 3, GL_UNSIGNED_INT, sizeof(SkinVertex), BUFFER_OFFSET(offset));
-			offset += 3 * sizeof(uint);
-			
-			glEnableVertexAttribArray(4); // Bones
-			glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
-			offset += 4 * sizeof(float);
-			
-			glEnableVertexAttribArray(5); // Weights
-			glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+			SetVertexLayout(VertexLayout::SkinMesh);
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
 			glDrawElements((GLenum)rs.drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
 
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-			for (int i = 0; i < 6; i++)
-			{
-				glDisableVertexAttribArray(i);
-			}
+			SetVertexLayout(VertexLayout::None);
 		}
 	}
 
@@ -182,31 +137,12 @@ namespace ToolKit
 		glUniformMatrix4fv(pvloc, 1, false, &mul[0][0]);
 
 		glBindBuffer(GL_ARRAY_BUFFER, object->m_mesh->m_vboVertexId);
-
-		GLuint offset = 0;
-		glEnableVertexAttribArray(0); // Vertex
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), 0);
-
-		offset += 3 * sizeof(float);
-		glEnableVertexAttribArray(1); // Normal
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
-
-		offset += 3 * sizeof(float);
-		glEnableVertexAttribArray(2); // Texture
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
-
-		offset += 2 * sizeof(float);
-		glEnableVertexAttribArray(3); // BiTangent
-		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, object->m_mesh->GetVertexSize(), BUFFER_OFFSET(offset));
+		SetVertexLayout(VertexLayout::Mesh);
 
 		glDrawArrays((GLenum)rs.drawType, 0, object->m_mesh->m_vertexCount);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		for (int i = 0; i < 4; i++)
-		{
-			glDisableVertexAttribArray(i);
-		}
+		SetVertexLayout(VertexLayout::None);
 	}
 
 	void Renderer::Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions)
@@ -506,6 +442,63 @@ namespace ToolKit
 					break;
 				}
 			}
+		}
+	}
+
+	void Renderer::SetVertexLayout(VertexLayout layout)
+	{
+		if (layout == VertexLayout::None)
+		{
+			for (int i = 0; i < 6; i++)
+			{
+				glDisableVertexAttribArray(i);
+			}
+		}
+
+		if (layout == VertexLayout::Mesh)
+		{
+			GLuint offset = 0;
+			glEnableVertexAttribArray(0); // Vertex
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+			offset += 3 * sizeof(float);
+
+			glEnableVertexAttribArray(1); // Normal
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
+			offset += 3 * sizeof(float);
+
+			glEnableVertexAttribArray(2); // Texture
+			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
+			offset += 2 * sizeof(float);
+
+			glEnableVertexAttribArray(3); // BiTangent
+			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
+		}
+
+		if (layout == VertexLayout::SkinMesh)
+		{
+			GLuint offset = 0;
+			glEnableVertexAttribArray(0); // Vertex
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), 0);
+			offset += 3 * sizeof(float);
+
+			glEnableVertexAttribArray(1); // Normal
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+			offset += 3 * sizeof(float);
+
+			glEnableVertexAttribArray(2); // Texture
+			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+			offset += 2 * sizeof(float);
+
+			glEnableVertexAttribArray(3); // BiTangent
+			glVertexAttribIPointer(3, 3, GL_UNSIGNED_INT, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+			offset += 3 * sizeof(uint);
+
+			glEnableVertexAttribArray(4); // Bones
+			glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+			offset += 4 * sizeof(float);
+
+			glEnableVertexAttribArray(5); // Weights
+			glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
 		}
 	}
 
