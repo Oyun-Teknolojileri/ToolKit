@@ -32,7 +32,7 @@ namespace ToolKit
 	typedef std::vector<class Mesh*> MeshRawPtrArray;
 	typedef std::vector<class Entity*> EntityRawPtrArray;
 	typedef std::vector<class Light*> LightRawPtrArray;
-	typedef std::vector<std::shared_ptr<class Entity>> EntitySharedPtrArray;
+	typedef std::vector<std::shared_ptr<class Entity>> EntityPtrArray;
 	typedef std::vector<EntityId> EntityIdArray;
 	typedef std::vector<class Node*> NodePtrArray;
 	typedef std::vector<class Vertex> VertexArray;

@@ -535,41 +535,52 @@ namespace ToolKit
 				return;
 			}
 
-			glEnable(GL_STENCIL_TEST);
-			glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-			glStencilFunc(GL_ALWAYS, 1, 0xFF);
-			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+			auto RenderFn = [this, vp](const EntityRawPtrArray& selection, const Vec3& color)
+			{
+				glEnable(GL_STENCIL_TEST);
+				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+				glStencilFunc(GL_ALWAYS, 1, 0xFF);
+				glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-			RenderTarget stencilMask((int)vp->m_width, (int)vp->m_height);
-			stencilMask.Init();
+				RenderTarget stencilMask((int)vp->m_width, (int)vp->m_height);
+				stencilMask.Init();
 
-			m_renderer->SetRenderTarget(&stencilMask);
+				m_renderer->SetRenderTarget(&stencilMask);
 
+				for (Entity* ntt : selection)
+				{
+					if (ntt->IsDrawable())
+					{
+						m_renderer->Render(static_cast<Drawable*> (ntt), vp->m_camera);
+					}
+				}
+
+				glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+				glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+				ShaderPtr solidColor = GetShaderManager()->Create(ShaderPath("solidColorFrag.shader"));
+				m_renderer->DrawFullQuad(solidColor);
+				glDisable(GL_STENCIL_TEST);
+
+				m_renderer->SetRenderTarget(vp->m_viewportImage, false);
+
+				// Dilate.
+				glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
+				ShaderPtr dilate = GetShaderManager()->Create(ShaderPath("dilateFrag.shader"));
+				dilate->SetShaderParameter("Color", color);
+				m_renderer->DrawFullQuad(dilate);
+			};
+			
 			EntityRawPtrArray selecteds;
 			m_scene.GetSelectedEntities(selecteds);
+			Entity* primary = selecteds.back();
 
-			for (Entity* ntt : selecteds)
-			{
-				if (ntt->IsDrawable())
-				{
-					m_renderer->Render(static_cast<Drawable*> (ntt), vp->m_camera);
-				}
-			}
-
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
-			glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-			ShaderPtr solidColor = GetShaderManager()->Create(ShaderPath("solidColorFrag.shader"));
-			m_renderer->DrawFullQuad(solidColor);
-			glDisable(GL_STENCIL_TEST);
-
-			m_renderer->SetRenderTarget(vp->m_viewportImage, false);
-
-			// Dilate.
-			glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
-			ShaderPtr dilate = GetShaderManager()->Create(ShaderPath("dilateFrag.shader"));
-			dilate->SetShaderParameter("Color", g_selectHighLightPrimaryColor);
-			m_renderer->DrawFullQuad(dilate);
+			selecteds.pop_back();
+			RenderFn(selecteds, g_selectHighLightSecondaryColor);
+			
+			selecteds.clear();
+			selecteds.push_back(primary);
+			RenderFn(selecteds, g_selectHighLightPrimaryColor);
 		}
 
 	}

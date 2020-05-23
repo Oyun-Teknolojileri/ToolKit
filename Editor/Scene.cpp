@@ -187,6 +187,13 @@ namespace ToolKit
 			MakeCurrentSelection(currentId, true);
 		}
 
+		void Scene::AddToSelection(const EntityRawPtrArray& entities, bool additive)
+		{
+			EntityIdArray ids;
+			ToEntityIdArray(ids, entities);
+			AddToSelection(ids, additive);
+		}
+
 		void Scene::ClearSelection()
 		{
 			m_selectedEntities.clear();

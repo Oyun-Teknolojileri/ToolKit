@@ -24,6 +24,7 @@ namespace ToolKit
 	void ReplaceStringInPlace(String& subject, const String& search, const String& replace);
 	class LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size);
 	class LineBatch* GenerateBoundingVolumeGeometry(const BoundingBox& box, Mat4* transform = nullptr);
+	void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray);
 
 
 	template<typename T>

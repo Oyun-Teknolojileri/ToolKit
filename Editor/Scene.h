@@ -25,6 +25,7 @@ namespace ToolKit
 			bool IsSelected(EntityId id);
 			void RemoveFromSelection(EntityId id);
 			void AddToSelection(const EntityIdArray& entities, bool additive);
+			void AddToSelection(const EntityRawPtrArray& entities, bool additive);
 			void AddToSelection(EntityId id);
 			void ClearSelection();
 			bool IsCurrentSelection(EntityId id);

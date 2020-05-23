@@ -257,4 +257,13 @@ namespace ToolKit
 		return lineForm;
 	}
 
+	void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray)
+	{
+		idArray.reserve(ptrArray.size());
+		for (Entity* ntt : ptrArray)
+		{
+			idArray.push_back(ntt->m_id);
+		}
+	}
+
 }
