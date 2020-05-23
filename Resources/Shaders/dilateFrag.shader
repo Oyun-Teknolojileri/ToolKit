@@ -1,6 +1,5 @@
 <shader>
 	<type name = "fragmentShader" />
-	<uniform name = "Color" />
 	<source>
 	<!--
 		#version 300 es
@@ -35,7 +34,7 @@
 					if (c == 0.0)
 					{
 						// If anything in the kernel is 0, this pixel will be colored.
-						o_fragColor = vec4(1.0, 0.0, 1.0, 1.0);
+						o_fragColor = vec4(Color, 1.0);
 						return;
 					}
 				}

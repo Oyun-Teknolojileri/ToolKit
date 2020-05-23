@@ -568,7 +568,8 @@ namespace ToolKit
 			// Dilate.
 			glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
 			ShaderPtr dilate = GetShaderManager()->Create(ShaderPath("dilateFrag.shader"));
-			m_renderer->DrawFullQuad(dilate); // Which color ?? SetShaderPatarameter("Color", Vec4(1.0f))
+			dilate->SetShaderParameter("Color", g_selectHighLightPrimaryColor);
+			m_renderer->DrawFullQuad(dilate);
 		}
 
 	}

@@ -337,6 +337,8 @@ namespace ToolKit
 	{
 		for (ShaderPtr shader : program->m_shaders)
 		{
+
+			// Built-in variables.
 			for (Uniform uni : shader->m_uniforms)
 			{
 				switch (uni)
@@ -421,6 +423,42 @@ namespace ToolKit
 					break;
 				}
 			}
+
+			// Custom variables.
+			for (auto var : shader->m_shaderParams)
+			{
+				GLint loc = glGetUniformLocation(program->m_handle, var.first.c_str());
+				if (loc == -1)
+				{
+					continue;
+				}
+
+				switch (var.second.GetType())
+				{
+				case ShaderVariant::VariantType::Float:
+					glUniform1f(loc, var.second.GetVar<float>());
+					break;
+				case ShaderVariant::VariantType::Int:
+					glUniform1i(loc, var.second.GetVar<int>());
+					break;
+				case ShaderVariant::VariantType::Vec3:
+					glUniform3fv(loc, 1, (float*)&var.second.GetVar<Vec3>());
+					break;
+				case ShaderVariant::VariantType::Vec4:
+					glUniform4fv(loc, 1, (float*)&var.second.GetVar<Vec4>());
+					break;
+				case ShaderVariant::VariantType::Mat3:
+					glUniformMatrix3fv(loc, 1, false, (float*)&var.second.GetVar<Mat3>());
+					break;
+				case ShaderVariant::VariantType::Mat4:
+					glUniformMatrix4fv(loc, 1, false, (float*)&var.second.GetVar<Mat4>());
+					break;
+				default:
+					assert(false && "Invalid type.");
+					break;
+				}
+			}
+
 		}
 	}
 

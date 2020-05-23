@@ -147,6 +147,11 @@ namespace ToolKit
 		m_initiated = false;
 	}
 
+	void Shader::SetShaderParameter(String param, const ShaderVariant& val)
+	{
+		m_shaderParams[param] = val;
+	}
+
 	Program::Program()
 	{
 	}

@@ -25,6 +25,7 @@ namespace ToolKit
 	typedef std::shared_ptr<class Material> MaterialPtr;
 	typedef std::shared_ptr<class Mesh> MeshPtr;
 	typedef std::shared_ptr<class Shader> ShaderPtr;
+	typedef std::vector<ShaderPtr> ShaderPtrArray;
 	typedef std::shared_ptr<class Program> ProgramPtr;
 	typedef std::shared_ptr<class SkinMesh> SkinMeshPtr;
 	typedef std::vector<MeshPtr> MeshPtrArray;
