@@ -20,11 +20,15 @@ namespace ToolKit
     virtual void Init(bool flushClientSideArray = true) override;
 		virtual void UnInit() override;
 
+	protected:
+		virtual void Clear();
+
   public:
     GLuint m_textureId = 0;
-    uint m_width = 0;
-    uint m_height = 0;
-    std::vector<unsigned char> m_image;
+    int m_width = 0;
+    int m_height = 0;
+    int m_bytePP = 0;
+    uint8* m_image = nullptr;
   };
 
   class CubeMap : public Texture
@@ -38,8 +42,11 @@ namespace ToolKit
     virtual void Init(bool flushClientSideArray = true) override;
 		virtual void UnInit() override;
 
+  protected:
+    virtual void Clear() override;
+
   public:
-    std::vector<std::vector<unsigned char>> m_images;
+    std::vector<uint8*> m_images;
   };
 
   class RenderTarget : public Texture

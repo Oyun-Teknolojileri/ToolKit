@@ -115,7 +115,7 @@ namespace ToolKit
 			// Set application Icon.
 			m_appIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/app.png"));
 			m_appIcon->Init(false);
-			SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(m_appIcon->m_image.data(), m_appIcon->m_width, m_appIcon->m_height, 8, m_appIcon->m_width * 4, SDL_PIXELFORMAT_ABGR8888);
+			SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(m_appIcon->m_image, m_appIcon->m_width, m_appIcon->m_height, 8, m_appIcon->m_width * 4, SDL_PIXELFORMAT_ABGR8888);
 			SDL_SetWindowIcon(g_window, surface);
 			SDL_FreeSurface(surface);
 		}

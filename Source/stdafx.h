@@ -22,7 +22,7 @@
 #include "glm/gtx/string_cast.hpp"
 
 // LoadPng
-#include "lodepng.h"
+#include "stb/stb_image.h"
 
 // Glew
 #include "GL/glew.h"
