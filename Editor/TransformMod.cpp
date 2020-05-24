@@ -706,6 +706,11 @@ namespace ToolKit
 			{
 				ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
 			}
+
+			if (m_stateMachine->m_currentState->ThisIsA<StateDuplicate>())
+			{
+				ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
+			}
 		}
 
 	}

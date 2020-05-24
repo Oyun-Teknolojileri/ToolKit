@@ -697,13 +697,17 @@ namespace ToolKit
 
 		void StateDuplicate::TransitionIn(State* prevState)
 		{
-			Entity* ntt = g_app->m_scene.GetCurrentSelection();
-			if (ntt != nullptr)
+			if (g_app->m_scene.GetSelectedEntityCount() > 0)
 			{
-				Entity* duplicate = ntt->GetCopy();
-				g_app->m_scene.AddEntity(duplicate);
+				EntityRawPtrArray selecteds;
+				g_app->m_scene.GetSelectedEntities(selecteds);
 				g_app->m_scene.ClearSelection();
-				g_app->m_scene.AddToSelection(duplicate->m_id);
+				for (Entity* e : selecteds)
+				{
+					Entity* duplicate = e->GetCopy();
+					g_app->m_scene.AddEntity(duplicate);
+					g_app->m_scene.AddToSelection(duplicate->m_id);
+				}
 			}
 		}
 
