@@ -656,7 +656,7 @@ namespace ToolKit
 			static std::shared_ptr<Sphere> sphere = nullptr;
 			if (sphere == nullptr)
 			{
-				sphere = std::make_shared<Sphere>();
+				sphere = std::make_shared<Sphere>(1.0f);
 				sphere->m_mesh->m_material->GetRenderState()->cullMode = CullingType::Front;
 			}
 

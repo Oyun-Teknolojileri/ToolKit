@@ -314,7 +314,7 @@ namespace ToolKit
 	{
 		if (genDef)
 		{
-			Generate(1.0f);
+			Generate(0.5f);
 		}
 	}
 
