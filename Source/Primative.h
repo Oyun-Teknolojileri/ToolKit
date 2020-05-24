@@ -20,10 +20,10 @@ namespace ToolKit
 	public:
 		Billboard(const Settings& settings);
 
-		virtual EntityType GetType() const override;
 		virtual void LookAt(class Camera* cam);
 		virtual Billboard* GetCopy() const override;
     virtual void GetCopy(Entity* copyTo) const override;
+		virtual EntityType GetType() const override;
 
 	public:
 		Settings m_settings;
@@ -33,30 +33,38 @@ namespace ToolKit
   class Cube : public Drawable
   {
   public:
-    Cube();
+    Cube(bool genDef = true);
     Cube(const Vec3& scale);
 
-  private:
-    void Generate(Vec3 scale);
-
-  public:
+		virtual Cube* GetCopy() const override;
+		virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
+
+	private:
+		void Generate(Vec3 scale);
   };
 
   class Quad : public Drawable
   {
   public:
-    Quad();
+    Quad(bool genDef = true);
 
+		virtual Quad* GetCopy() const override;
+		virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
+
+  private:
+    void Generate();
   };
 
   class Sphere : public Drawable
   {
   public:
-    Sphere();
+    Sphere(bool genDef = true);
     Sphere(float rad);
 
+		virtual Sphere* GetCopy() const override;
+		virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
 
   private:
@@ -66,9 +74,11 @@ namespace ToolKit
   class Cone : public Drawable
   {
   public:
-    Cone();
+    Cone(bool genDef = true);
     Cone(float height, float radius, int nSegBase, int nSegHeight);
 
+		virtual Cone* GetCopy() const override;
+		virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
 
   private:
@@ -78,12 +88,12 @@ namespace ToolKit
   class Arrow2d : public Drawable
   {
   public:
-    Arrow2d();
+    Arrow2d(bool genDef = true);
     Arrow2d(AxisLabel label); // X - Y - Z.
 
-    virtual EntityType GetType() const override;
     virtual Arrow2d* GetCopy() const override;
     virtual void GetCopy(Entity* copyTo) const override;
+		virtual EntityType GetType() const override;
 
 	private:
 		void Generate();
@@ -94,11 +104,15 @@ namespace ToolKit
 
   class LineBatch : public Drawable
   {
-  public:
-    LineBatch(const std::vector<Vec3>& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
+    LineBatch(); // For copy.
 
+  public:
+    LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
+
+		virtual LineBatch* GetCopy() const override;
+		virtual void GetCopy(Entity* copyTo) const override;
 		virtual EntityType GetType() const override;
-    void Generate(const std::vector<Vec3>& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
+    void Generate(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
   };
 
 }

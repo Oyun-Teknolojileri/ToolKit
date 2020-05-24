@@ -108,7 +108,7 @@ namespace ToolKit
 			m_q2->m_node->SetOrientation(glm::angleAxis(glm::half_pi<float>(), Y_AXIS));
 			m_scene.AddEntity(m_q2);
 
-			m_q3 = new Cone();
+			m_q3 = new Cone(1.0f, 1.0f, 30, 30);
 			m_q3->m_mesh->m_material = normalMat;
 			m_q3->m_mesh->Init(false);
 			m_q3->m_node->Scale({ 0.3f, 1.0f, 0.3f });

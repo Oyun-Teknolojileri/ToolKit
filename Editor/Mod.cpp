@@ -352,6 +352,7 @@ namespace ToolKit
 		const String StateType::StateTransformBegin = "StateTransformBegin";
 		const String StateType::StateTransformTo = "StateTransformTo";
 		const String StateType::StateTransformEnd = "StateTransformEnd";
+		const String StateType::StateDuplicate = "StateDuplicate";
 
 		std::shared_ptr<Arrow2d> StatePickingBase::m_dbgArrow = nullptr;
 		std::shared_ptr<LineBatch> StatePickingBase::m_dbgFrustum = nullptr;
@@ -432,7 +433,7 @@ namespace ToolKit
 						g_app->m_cursor->m_worldLocation = pd.pickPos;
 						if (m_dbgArrow == nullptr)
 						{
-							m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d());
+							m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
 							m_ignoreList.push_back(m_dbgArrow->m_id);
 							g_app->m_scene.AddEntity(m_dbgArrow.get());
 						}
@@ -696,18 +697,22 @@ namespace ToolKit
 
 		void StateDuplicate::TransitionIn(State* prevState)
 		{
-
+			Entity* ntt = g_app->m_scene.GetCurrentSelection();
+			if (ntt != nullptr)
+			{
+				Entity* duplicate = ntt->GetCopy();
+				g_app->m_scene.AddEntity(duplicate);
+				g_app->m_scene.ClearSelection();
+				g_app->m_scene.AddToSelection(duplicate->m_id);
+			}
 		}
 
 		void StateDuplicate::TransitionOut(State* nextState)
 		{
-
 		}
 
 		void StateDuplicate::Update(float deltaTime)
 		{
-			Entity* ntt =  g_app->m_scene.GetCurrentSelection();
-
 		}
 
 		String StateDuplicate::Signaled(SignalId signal)

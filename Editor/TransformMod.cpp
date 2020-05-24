@@ -237,6 +237,11 @@ namespace ToolKit
 				return StateType::StateDeletePick;
 			}
 
+			if (signal == BaseMod::m_duplicate)
+			{
+				return StateType::StateDuplicate;
+			}
+
 			return StateType::Null;
 		}
 
@@ -669,6 +674,10 @@ namespace ToolKit
 			m_stateMachine->PushState(state);
 
 			state = new StateDeletePick();
+			state->m_links[m_backToStart] = StateType::StateTransformBegin;
+			m_stateMachine->PushState(state);
+
+			state = new StateDuplicate();
 			state->m_links[m_backToStart] = StateType::StateTransformBegin;
 			m_stateMachine->PushState(state);
 		}

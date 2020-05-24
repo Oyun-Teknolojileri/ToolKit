@@ -451,17 +451,17 @@ namespace ToolKit
 			ImGuiIO& io = ImGui::GetIO();
 			bool mouseOnOverlayUI = Viewport::m_overlayMods->m_mouseOver || Viewport::m_overlayOptions->m_mouseOver;
 
-			if (io.MouseClicked[0] && !mouseOnOverlayUI)
+			if (io.MouseClicked[ImGuiMouseButton_Left] && !mouseOnOverlayUI)
 			{
 				ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnDownSgnl);
 			}
 
-			if (io.MouseReleased[0])
+			if (io.MouseReleased[ImGuiMouseButton_Left])
 			{
 				ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnUpSgnl);
 			}
 
-			if (ImGui::IsMouseDragging(0))
+			if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
 			{
 				ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnDragSgnl);
 			}
@@ -471,6 +471,14 @@ namespace ToolKit
 				if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Delete]] == 0.0f)
 				{
 					ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
+				}
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_D] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+			{
+				if (io.KeysDownDuration[SDL_SCANCODE_D] == 0.0f)
+				{
+					ModManager::GetInstance()->DispatchSignal(BaseMod::m_duplicate);
 				}
 			}
 

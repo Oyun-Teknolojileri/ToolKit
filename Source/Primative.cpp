@@ -15,11 +15,6 @@ namespace ToolKit
 	{
 	}
 
-	EntityType Billboard::GetType() const
-	{
-		return EntityType::Entity_Billboard;
-	}
-
 	void Billboard::LookAt(Camera* cam)
 	{
 		Camera::CamData data = cam->GetData();
@@ -68,14 +63,39 @@ namespace ToolKit
 		ntt->m_worldLocation = m_worldLocation;
 	}
 
-	Cube::Cube()
+	EntityType Billboard::GetType() const
 	{
-		Generate(Vec3(1.0f));
+		return EntityType::Entity_Billboard;
+	}
+
+	Cube::Cube(bool genDef)
+	{
+		if (genDef)
+		{
+			Generate(Vec3(1.0f));
+		}
 	}
 
 	Cube::Cube(const Vec3& scale)
 	{
 		Generate(scale);
+	}
+
+	Cube* Cube::GetCopy() const
+	{
+		Cube* cpy = new Cube(false);
+		GetCopy(cpy);
+		return cpy;
+	}
+
+	void Cube::GetCopy(Entity* copyTo) const
+	{
+		Drawable::GetCopy(copyTo);
+	}
+
+	EntityType Cube::GetType() const
+	{
+		return EntityType::Entity_Cube;
 	}
 
 	void Cube::Generate(Vec3 scale)
@@ -230,12 +250,32 @@ namespace ToolKit
 		m_mesh->CalculateAABoundingBox();
 	}
 
-	EntityType Cube::GetType() const
+	Quad::Quad(bool genDef)
 	{
-		return EntityType::Entity_Cube;
+		if (genDef)
+		{
+			Generate();
+		}
 	}
 
-	Quad::Quad()
+	Quad* Quad::GetCopy() const
+	{
+		Quad* cpy = new Quad(false);
+		GetCopy(cpy);
+		return cpy;
+	}
+
+	void Quad::GetCopy(Entity* copyTo) const
+	{
+		Drawable::GetCopy(copyTo);
+	}
+
+	EntityType Quad::GetType() const
+	{
+		return EntityType::Entity_Quad;
+	}
+
+	void Quad::Generate()
 	{
 		std::vector<Vertex> vertices;
 		vertices.resize(4);
@@ -270,19 +310,29 @@ namespace ToolKit
 		m_mesh->CalculateAABoundingBox();
 	}
 
-	EntityType Quad::GetType() const
+	Sphere::Sphere(bool genDef)
 	{
-		return EntityType::Entity_Quad;
-	}
-
-	Sphere::Sphere()
-	{
-		Generate(1.0f);
+		if (genDef)
+		{
+			Generate(1.0f);
+		}
 	}
 
 	Sphere::Sphere(float rad)
 	{
 		Generate(rad);
+	}
+
+	Sphere* Sphere::GetCopy() const
+	{
+		Sphere* cpy = new Sphere(false);
+		GetCopy(cpy);
+		return cpy;
+	}
+
+	void Sphere::GetCopy(Entity* copyTo) const
+	{
+		Drawable::GetCopy(copyTo);
 	}
 
 	EntityType Sphere::GetType() const
@@ -350,9 +400,12 @@ namespace ToolKit
 		m_mesh->CalculateAABoundingBox();
 	}
 
-	Cone::Cone()
+	Cone::Cone(bool genDef)
 	{
-		Generate(1.0f, 1.0f, 30, 30);
+		if (genDef)
+		{
+			Generate(1.0f, 1.0f, 30, 30);
+		}
 	}
 
 	Cone::Cone(float height, float radius, int nSegBase, int nSegHeight)
@@ -452,14 +505,31 @@ namespace ToolKit
 		m_mesh->CalculateAABoundingBox();
 	}
 
+	Cone* Cone::GetCopy() const
+	{
+		Cone* cpy = new Cone(false);
+		GetCopy(cpy);
+		return cpy;
+	}
+
+	void Cone::GetCopy(Entity* copyTo) const
+	{
+		Drawable::GetCopy(copyTo);
+	}
+
 	EntityType Cone::GetType() const
 	{
 		return EntityType::Entity_Cone;
 	}
 
-	Arrow2d::Arrow2d()
+	Arrow2d::Arrow2d(bool genDef)
 	{
-		Generate();
+		m_label = AxisLabel::X;
+
+		if (genDef)
+		{
+			Generate();
+		}
 	}
 
 	Arrow2d::Arrow2d(AxisLabel label)
@@ -468,14 +538,9 @@ namespace ToolKit
 		Generate();
 	}
 
-	EntityType Arrow2d::GetType() const
-	{
-		return EntityType::Etity_Arrow;
-	}
-
 	Arrow2d* Arrow2d::GetCopy() const
 	{
-		Arrow2d* cpy = new Arrow2d();
+		Arrow2d* cpy = new Arrow2d(false);
 		GetCopy(cpy);
 		return cpy;
 	}
@@ -485,6 +550,11 @@ namespace ToolKit
 		Drawable::GetCopy(copyTo);
 		Arrow2d* ntt = static_cast<Arrow2d*> (copyTo);
 		ntt->m_label = m_label;
+	}
+
+	EntityType Arrow2d::GetType() const
+	{
+		return EntityType::Etity_Arrow;
 	}
 
 	void Arrow2d::Generate()
@@ -533,7 +603,7 @@ namespace ToolKit
 		m_mesh->CalculateAABoundingBox();
 	}
 
-	LineBatch::LineBatch(const std::vector<Vec3>& linePnts, const Vec3& color, DrawType t, float lineWidth)
+	LineBatch::LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
 	{
 		MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
 		newMaterial->GetRenderState()->drawType = t;
@@ -542,14 +612,30 @@ namespace ToolKit
 		Generate(linePnts, color, t, lineWidth);
 	}
 
+	LineBatch::LineBatch()
+	{
+	}
+
+	LineBatch* LineBatch::GetCopy() const
+	{
+		LineBatch* cpy = new LineBatch();
+		GetCopy(cpy);
+		return cpy;
+	}
+
+	void LineBatch::GetCopy(Entity* copyTo) const
+	{
+		Drawable::GetCopy(copyTo);
+	}
+
 	EntityType LineBatch::GetType() const
 	{
 		return EntityType::Entity_LineBatch;
 	}
 
-	void LineBatch::Generate(const std::vector<Vec3>& linePnts, const Vec3& color, DrawType t, float lineWidth)
+	void LineBatch::Generate(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
 	{
-		std::vector<Vertex> vertices;
+		VertexArray vertices;
 		vertices.resize(linePnts.size());
 
 		m_mesh->UnInit();

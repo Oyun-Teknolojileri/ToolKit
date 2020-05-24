@@ -16,9 +16,13 @@ namespace ToolKit
 	typedef unsigned long EntityId;
 	typedef const int SignalId;
 	typedef std::string String;
+	typedef std::vector<String> StringArray;
 	typedef glm::vec2 Vec2;
+	typedef std::vector<Vec2> Vec2Array;
 	typedef glm::vec3 Vec3;
+	typedef std::vector<Vec3> Vec3Array;
 	typedef glm::vec4 Vec4;
+	typedef std::vector<Vec4> Vec4Array;
 	typedef glm::mat4 Mat4;
 	typedef glm::mat3 Mat3;
 	typedef glm::quat Quaternion;
@@ -36,7 +40,6 @@ namespace ToolKit
 	typedef std::vector<EntityId> EntityIdArray;
 	typedef std::vector<class Node*> NodePtrArray;
 	typedef std::vector<class Vertex> VertexArray;
-	typedef std::vector<String> StringArray;
 
 	static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
 	static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);
