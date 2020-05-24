@@ -53,6 +53,21 @@ namespace ToolKit
 		}
 	}
 
+	Billboard* Billboard::GetCopy() const
+	{
+		Billboard* cpy = new Billboard(m_settings);
+		GetCopy(cpy);
+		return cpy;
+	}
+
+	void Billboard::GetCopy(Entity* copyTo) const
+	{
+		Drawable::GetCopy(copyTo);
+		Billboard* ntt = static_cast<Billboard*> (copyTo);
+		ntt->m_settings = m_settings;
+		ntt->m_worldLocation = m_worldLocation;
+	}
+
 	Cube::Cube()
 	{
 		Generate(Vec3(1.0f));
@@ -456,6 +471,20 @@ namespace ToolKit
 	EntityType Arrow2d::GetType() const
 	{
 		return EntityType::Etity_Arrow;
+	}
+
+	Arrow2d* Arrow2d::GetCopy() const
+	{
+		Arrow2d* cpy = new Arrow2d();
+		GetCopy(cpy);
+		return cpy;
+	}
+
+	void Arrow2d::GetCopy(Entity* copyTo) const
+	{
+		Drawable::GetCopy(copyTo);
+		Arrow2d* ntt = static_cast<Arrow2d*> (copyTo);
+		ntt->m_label = m_label;
 	}
 
 	void Arrow2d::Generate()

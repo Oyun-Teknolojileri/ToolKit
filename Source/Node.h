@@ -37,6 +37,7 @@ namespace ToolKit
 		void Orphan(Node* child);
 		void OrphanSelf();
 		Node* GetRoot() const;
+		Node* GetCopy() const;
 
 	private:
 		void TransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale);

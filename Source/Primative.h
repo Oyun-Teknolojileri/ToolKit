@@ -22,6 +22,8 @@ namespace ToolKit
 
 		virtual EntityType GetType() const override;
 		virtual void LookAt(class Camera* cam);
+		virtual Billboard* GetCopy() const override;
+    virtual void GetCopy(Entity* copyTo) const override;
 
 	public:
 		Settings m_settings;
@@ -80,6 +82,8 @@ namespace ToolKit
     Arrow2d(AxisLabel label); // X - Y - Z.
 
     virtual EntityType GetType() const override;
+    virtual Arrow2d* GetCopy() const override;
+    virtual void GetCopy(Entity* copyTo) const override;
 
 	private:
 		void Generate();

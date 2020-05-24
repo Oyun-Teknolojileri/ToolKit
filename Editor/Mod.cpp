@@ -285,6 +285,7 @@ namespace ToolKit
 		SignalId BaseMod::m_mouseMoveSgnl = BaseMod::GetNextSignalId();
 		SignalId BaseMod::m_backToStart = BaseMod::GetNextSignalId();
 		SignalId BaseMod::m_delete = BaseMod::GetNextSignalId();
+		SignalId BaseMod::m_duplicate = BaseMod::GetNextSignalId();
 
 		BaseMod::BaseMod(ModId id)
 		{
@@ -688,9 +689,30 @@ namespace ToolKit
 			ActionManager::GetInstance()->GroupLastActions((int)deleteList.size());
 		}
 
-		ToolKit::String StateDeletePick::Signaled(SignalId signal)
+		String StateDeletePick::Signaled(SignalId signal)
 		{
 			return StateType::Null;
+		}
+
+		void StateDuplicate::TransitionIn(State* prevState)
+		{
+
+		}
+
+		void StateDuplicate::TransitionOut(State* nextState)
+		{
+
+		}
+
+		void StateDuplicate::Update(float deltaTime)
+		{
+			Entity* ntt =  g_app->m_scene.GetCurrentSelection();
+
+		}
+
+		String StateDuplicate::Signaled(SignalId signal)
+		{
+			return "";
 		}
 
 		// Mods

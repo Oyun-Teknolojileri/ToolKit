@@ -141,7 +141,7 @@ namespace ToolKit
 		cpy->m_vertexCount = m_vertexCount;
 		cpy->m_indexCount = m_indexCount;
 
-		cpy->m_material = std::shared_ptr<Material>(m_material->GetCopy());
+		cpy->m_material = MaterialPtr(m_material->GetCopy());
 		cpy->m_aabb = m_aabb;
 
 		cpy->m_file = m_file;
@@ -150,7 +150,7 @@ namespace ToolKit
 
 		for (MeshPtr child : m_subMeshes)
 		{
-			MeshPtr ccpy = std::shared_ptr<Mesh>(child->GetCopy());
+			MeshPtr ccpy = MeshPtr(child->GetCopy());
 			cpy->m_subMeshes.push_back(ccpy);
 		}
 

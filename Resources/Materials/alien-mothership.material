@@ -1,3 +1,4 @@
 <material>
   <diffuseTexture name = "alien-mothership-green.png"/>
+  <shader name = "unlitFrag.shader"/>
 </material>

@@ -52,4 +52,19 @@ namespace ToolKit
 		return bb;
 	}
 
+	Drawable* Drawable::GetCopy() const
+	{
+		Drawable* cpy = new Drawable();
+		GetCopy(cpy);
+
+		return cpy;
+	}
+
+	void Drawable::GetCopy(Entity* copyTo) const
+	{
+		Entity::GetCopy(copyTo);
+		Drawable* ntt = static_cast<Drawable*> (copyTo);
+		ntt->m_mesh = MeshPtr(m_mesh->GetCopy());
+	}
+
 }

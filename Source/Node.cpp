@@ -215,6 +215,21 @@ namespace ToolKit
 		return m_parent->GetRoot();
 	}
 
+	Node* Node::GetCopy() const
+	{
+		Node* node = new Node();
+		node->m_parent = m_parent;
+		// node->m_parent // No Copy.
+		node->m_inheritScale = m_inheritScale;
+		node->m_inheritOnlyTranslate = m_inheritOnlyTranslate;
+		// m_children // No Copy.
+		node->m_translation = m_translation;
+		node->m_orientation = m_orientation;
+		node->m_scale = m_scale;
+
+		return node;
+	}
+
 	void Node::TransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale)
 	{
 		Mat4 ps, ts;

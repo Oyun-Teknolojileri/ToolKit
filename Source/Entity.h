@@ -37,6 +37,8 @@ namespace ToolKit
     virtual EntityType GetType() const;
     virtual void SetPose(Animation* anim);
 		virtual struct BoundingBox GetAABB(bool inWorld = false) const;
+    virtual Entity* GetCopy() const;
+    virtual void GetCopy(Entity* copyTo) const;
 
   public:
     Node* m_node;

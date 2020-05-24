@@ -11,11 +11,12 @@ namespace ToolKit
 
 	namespace Editor
 	{
+
 		class Action
 		{
 		public:
-			Action();;
-			virtual ~Action();;
+			Action();
+			virtual ~Action();
 
 			virtual void Undo() = 0;
 			virtual void Redo() = 0;
@@ -91,6 +92,7 @@ namespace ToolKit
 			static SignalId m_mouseMoveSgnl;
 			static SignalId m_backToStart;
 			static SignalId m_delete;
+			static SignalId m_duplicate;
 		};
 
 		class ModManager
@@ -133,6 +135,7 @@ namespace ToolKit
 			const static String StateTransformBegin;
 			const static String StateTransformTo;
 			const static String StateTransformEnd;
+			const static String StateDuplicate;
 		};
 
 		class StatePickingBase : public State
@@ -208,6 +211,16 @@ namespace ToolKit
 			virtual String GetType() override { return StateType::StateDeletePick; }
 		};
 
+		class StateDuplicate : public State 
+		{
+		public:
+			virtual void TransitionIn(State* prevState) override;
+			virtual void TransitionOut(State* nextState) override;
+			virtual void Update(float deltaTime) override;
+			virtual String Signaled(SignalId signal) override;
+			virtual String GetType() { return StateType::StateDuplicate; };
+		};
+
 		// Mods
 		//////////////////////////////////////////////////////////////////////////
 
@@ -228,5 +241,6 @@ namespace ToolKit
 			virtual void Init() override;
 			virtual void Update(float deltaTime) override;
 		};
+
 	}
 }

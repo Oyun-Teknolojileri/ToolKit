@@ -54,4 +54,20 @@ namespace ToolKit
 		return aabb;
 	}
 
+	Entity* Entity::GetCopy() const
+	{
+		Entity* cpy = new Entity();
+		GetCopy(cpy);
+
+		return cpy;
+	}
+
+	void Entity::GetCopy(Entity* copyTo) const
+	{
+		assert(copyTo->GetType() == GetType());
+		SafeDel(copyTo->m_node);
+		copyTo->m_node = m_node->GetCopy();
+		copyTo->m_node->m_entity = copyTo;
+	}
+
 }

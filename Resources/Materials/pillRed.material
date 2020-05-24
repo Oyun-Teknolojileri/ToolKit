@@ -1,3 +1,4 @@
 <material>
   <diffuseTexture name = "redPill.png"/>
+  <shader name = "unlitFrag.shader"/>
 </material>
