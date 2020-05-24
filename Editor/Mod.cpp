@@ -683,11 +683,14 @@ namespace ToolKit
 		{
 			EntityRawPtrArray deleteList;
 			g_app->m_scene.GetSelectedEntities(deleteList);
-			for (Entity* e : deleteList)
+			if (!deleteList.empty())
 			{
-				ActionManager::GetInstance()->AddAction(new DeleteAction(e));
+				for (Entity* e : deleteList)
+				{
+					ActionManager::GetInstance()->AddAction(new DeleteAction(e));
+				}
+				ActionManager::GetInstance()->GroupLastActions((int)deleteList.size());
 			}
-			ActionManager::GetInstance()->GroupLastActions((int)deleteList.size());
 		}
 
 		String StateDeletePick::Signaled(SignalId signal)

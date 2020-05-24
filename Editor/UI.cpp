@@ -482,6 +482,38 @@ namespace ToolKit
 				}
 			}
 
+			if (io.KeysDown[SDL_SCANCODE_B] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+			{
+				if (io.KeysDownDuration[SDL_SCANCODE_B] == 0.0f)
+				{
+					ModManager::GetInstance()->SetMod(true, ModId::Select);
+				}
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_S] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+			{
+				if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
+				{
+					ModManager::GetInstance()->SetMod(true, ModId::Scale);
+				}
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_R] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+			{
+				if (io.KeysDownDuration[SDL_SCANCODE_R] == 0.0f)
+				{
+					ModManager::GetInstance()->SetMod(true, ModId::Rotate);
+				}
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_G] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+			{
+				if (io.KeysDownDuration[SDL_SCANCODE_G] == 0.0f)
+				{
+					ModManager::GetInstance()->SetMod(true, ModId::Move);
+				}
+			}
+
 			// Undo - Redo.
 			if (io.KeysDown[io.KeyMap[ImGuiKey_Z]])
 			{
