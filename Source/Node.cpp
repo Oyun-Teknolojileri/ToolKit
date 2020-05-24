@@ -14,7 +14,8 @@ namespace ToolKit
 	{
 		if (m_parent != nullptr)
 		{
-			for (
+			for 
+				(
 				NodePtrArray::iterator itr = m_parent->m_children.begin();
 				itr != m_parent->m_children.end();
 				itr++
@@ -218,8 +219,11 @@ namespace ToolKit
 	Node* Node::GetCopy() const
 	{
 		Node* node = new Node();
-		node->m_parent = m_parent;
-		// node->m_parent // No Copy.
+		if (m_parent != nullptr)
+		{
+			m_parent->AddChild(node);
+		}
+
 		node->m_inheritScale = m_inheritScale;
 		node->m_inheritOnlyTranslate = m_inheritOnlyTranslate;
 		// m_children // No Copy.
