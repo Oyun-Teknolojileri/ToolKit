@@ -28,7 +28,9 @@ namespace ToolKit
 	void Animation::GetCurrentPose(Node* node)
 	{
 		if (m_keys.empty())
+		{
 			return;
+		}
 
 		float ratio;
 		int key1, key2;
@@ -36,10 +38,14 @@ namespace ToolKit
 		GetNearestKeys(keys, key1, key2, ratio);
 
 		if ((int)keys.size() <= key1)
+		{
 			return;
+		}
 
 		if ((int)keys.size() <= key2)
+		{
 			return;
+		}
 
 		Key k1 = keys[key1];
 		Key k2 = keys[key2];
@@ -59,17 +65,23 @@ namespace ToolKit
 		{
 			auto entry = m_keys.find(bone->m_name);
 			if (entry == m_keys.end())
+			{
 				continue;
+			}
 
 			GetNearestKeys(entry->second, key1, key2, ratio);
 
 			// Sanity checks
 			int keySize = (int)entry->second.size();
 			if (keySize <= key1 || keySize <= key2)
+			{
 				continue;
+			}
 
 			if (key1 == -1 || key2 == -1)
+			{
 				continue;
+			}
 
 			Key k1 = entry->second[key1];
 			Key k2 = entry->second[key2];
@@ -92,7 +104,9 @@ namespace ToolKit
 
 		rapidxml::xml_node<>* node = doc.first_node("anim");
 		if (node == nullptr)
+		{
 			return;
+		}
 
 		rapidxml::xml_attribute<>* attr = node->first_attribute("fps");
 		m_fps = (float)std::atof(attr->value());
@@ -188,11 +202,13 @@ namespace ToolKit
 		std::vector<int> removeList;
 		for (auto record : m_records)
 		{
-			if (record.second->m_state == Animation::Pause)
+			if (record.second->m_state == Animation::State::Pause)
+			{
 				continue;
+			}
 
 			Animation::State state = record.second->m_state;
-			if (state == Animation::Play)
+			if (state == Animation::State::Play)
 			{
 				float thisTime = record.second->m_currentTime + deltaTimeSec;
 				float duration = record.second->GetDuration();
@@ -200,33 +216,47 @@ namespace ToolKit
 				if (record.second->m_loop)
 				{
 					if (thisTime > duration)
+					{
 						record.second->m_currentTime = 0.0f;
+					}
 				}
 				else
 				{
 					if (thisTime > duration)
-						record.second->m_state = Animation::Stop;
+					{
+						record.second->m_state = Animation::State::Stop;
+					}
 				}
 			}
 
-			if (state == Animation::Rewind || state == Animation::Stop)
+			if (state == Animation::State::Rewind || state == Animation::State::Stop)
+			{
 				record.second->m_currentTime = 0;
+			}
 			else
+			{
 				record.second->m_currentTime += deltaTimeSec;
+			}
 
 			record.first->SetPose(record.second);
 
-			if (state == Animation::Rewind)
-				record.second->m_state = Animation::Play;
+			if (state == Animation::State::Rewind)
+			{
+				record.second->m_state = Animation::State::Play;
+			}
 
-			if (state == Animation::Stop)
+			if (state == Animation::State::Stop)
+			{
 				removeList.push_back(index);
+			}
 			index++;
 		}
 
 		std::reverse(removeList.begin(), removeList.end());
 		for (int i = 0; i < (int)removeList.size(); i++)
+		{
 			m_records.erase(m_records.begin() + removeList[i]);
+		}
 	}
 
 }

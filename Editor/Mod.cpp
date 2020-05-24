@@ -613,6 +613,7 @@ namespace ToolKit
 		{
 			m_ntt = ntt;
 			g_app->m_scene.RemoveEntity(ntt->m_id);
+			HandleAnimRecords(ntt, true);
 			m_actionComitted = true;
 		}
 
@@ -628,14 +629,52 @@ namespace ToolKit
 		{
 			assert(m_ntt != nullptr);
 			
-			m_actionComitted = false;
 			g_app->m_scene.AddEntity(m_ntt);
+			HandleAnimRecords(m_ntt, false);
+			m_actionComitted = false;
 		}
 
 		void DeleteAction::Redo()
 		{
-			m_actionComitted = true;
 			g_app->m_scene.RemoveEntity(m_ntt->m_id);
+			HandleAnimRecords(m_ntt, false);
+			m_actionComitted = true;
+		}
+
+		void DeleteAction::HandleAnimRecords(Entity* ntt, bool remove)
+		{
+			if (remove)
+			{
+				auto removeItr = std::remove_if
+				(
+					GetAnimationPlayer()->m_records.begin(),
+					GetAnimationPlayer()->m_records.end(),
+					[this, ntt](const AnimRecord& record)
+					{
+						if (ntt == record.first)
+						{
+							m_records.push_back(record);
+							return true;
+						}
+
+						return false;
+					}
+				);
+
+				if (GetAnimationPlayer()->m_records.end() != removeItr)
+				{
+					GetAnimationPlayer()->m_records.erase(removeItr);
+				}
+			}
+			else
+			{
+				GetAnimationPlayer()->m_records.insert
+				(
+					GetAnimationPlayer()->m_records.end(),
+					m_records.begin(),
+					m_records.end()
+				);
+			}
 		}
 
 		void StateDeletePick::Update(float deltaTime)

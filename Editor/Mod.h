@@ -192,7 +192,11 @@ namespace ToolKit
 			virtual void Redo() override;
 
 		private:
+			void HandleAnimRecords(Entity* ntt, bool remove);
+
+		private:
 			Entity* m_ntt;
+			std::vector<AnimRecord> m_records;
 			bool m_actionComitted;
 		};
 

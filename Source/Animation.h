@@ -40,7 +40,7 @@ namespace ToolKit
     void GetNearestKeys(const std::vector<Key>& keys, int& key1, int& key2, float& ratio); // Finds nearest keys and ratio to current time.
 
   public:
-    enum State
+    enum class State
     {
       Play,
       Pause,
@@ -53,12 +53,14 @@ namespace ToolKit
     float m_currentTime = 0.0f; // Seconds
     float m_duration = 0.0f;
     bool m_loop = false;
-    State m_state = Play;
+    State m_state = State::Play;
   };
 
   class AnimationManager : public ResourceManager <Animation>
   {
   };
+
+  typedef std::pair<Entity*, Animation*> AnimRecord;
 
   class AnimationPlayer
   {
@@ -68,6 +70,6 @@ namespace ToolKit
     void Update(float deltaTimeSec);
 
   public:
-    std::vector<std::pair<Entity*, Animation*>> m_records;
+    std::vector<AnimRecord> m_records;
   };
 }
