@@ -134,14 +134,30 @@ namespace ToolKit
 	{
 		Mesh* cpy = new Mesh();
 		cpy->m_clientSideVertices = m_clientSideVertices;
-		cpy->m_clientSideIndices = m_clientSideIndices;
-
-		// No copy video memory.
-		cpy->m_vboVertexId = m_vboVertexId;
-		cpy->m_vboIndexId = m_vboIndexId;
-
 		cpy->m_vertexCount = m_vertexCount;
+		cpy->m_clientSideIndices = m_clientSideIndices;
 		cpy->m_indexCount = m_indexCount;
+
+		// Copy video memory.
+		if (m_vertexCount > 0)
+		{
+			glGenBuffers(1, &cpy->m_vboVertexId);
+			glBindBuffer(GL_COPY_WRITE_BUFFER, cpy->m_vboVertexId);
+			glBindBuffer(GL_COPY_READ_BUFFER, m_vboVertexId);
+			uint size = GetVertexSize() * m_vertexCount;
+			glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
+			glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
+		}
+
+		if (m_indexCount > 0)
+		{
+			glGenBuffers(1, &cpy->m_vboIndexId);
+			glBindBuffer(GL_COPY_WRITE_BUFFER, cpy->m_vboIndexId);
+			glBindBuffer(GL_COPY_READ_BUFFER, m_vboIndexId);
+			uint size = sizeof(uint)* m_indexCount;
+			glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
+			glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
+		}
 
 		cpy->m_material = MaterialPtr(m_material->GetCopy());
 		cpy->m_aabb = m_aabb;

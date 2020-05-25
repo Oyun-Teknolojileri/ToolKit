@@ -53,6 +53,9 @@ namespace ToolKit
 			virtual void Redo() override;
 
 		private:
+			void SwapSelection();
+
+		private:
 			Entity* m_ntt;
 			bool m_actionComitted;
 			EntityIdArray m_selecteds;

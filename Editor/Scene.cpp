@@ -113,9 +113,13 @@ namespace ToolKit
 			}
 		}
 
-		void Scene::AddToSelection(EntityId id)
+		void Scene::AddToSelection(EntityId id, bool additive)
 		{
 			assert(!IsSelected(id));
+			if (!additive)
+			{
+				m_selectedEntities.clear();
+			}
 			m_selectedEntities.push_back(id);
 		}
 
@@ -152,7 +156,7 @@ namespace ToolKit
 				// Add to selection.
 				if (!additive)
 				{
-					AddToSelection(id);
+					AddToSelection(id, true);
 				}
 				else // Add, make current or toggle selection.
 				{
@@ -179,7 +183,7 @@ namespace ToolKit
 					}
 					else
 					{
-						AddToSelection(id);
+						AddToSelection(id, true);
 					}
 				}
 			}

@@ -104,8 +104,8 @@ namespace ToolKit
 		{
 			m_ntt = ntt;
 			m_actionComitted = true;
-			g_app->m_scene.AddEntity(ntt);
 			g_app->m_scene.GetSelectedEntities(m_selecteds);
+			g_app->m_scene.AddEntity(ntt);
 		}
 
 		CreateAction::~CreateAction()
@@ -118,14 +118,24 @@ namespace ToolKit
 
 		void CreateAction::Undo()
 		{
+			SwapSelection();
 			g_app->m_scene.RemoveEntity(m_ntt->m_id);
 			m_actionComitted = false;
 		}
 
 		void CreateAction::Redo()
 		{
+			SwapSelection();
 			g_app->m_scene.AddEntity(m_ntt);
 			m_actionComitted = true;
+		}
+
+		void CreateAction::SwapSelection()
+		{
+			EntityIdArray selection;
+			g_app->m_scene.GetSelectedEntities(selection);
+			g_app->m_scene.AddToSelection(m_selecteds, false);
+			std::swap(m_selecteds, selection);
 		}
 
 		// ActionManager
@@ -739,7 +749,7 @@ namespace ToolKit
 				{
 					Entity* duplicate = e->GetCopy();
 					ActionManager::GetInstance()->AddAction(new CreateAction(duplicate));
-					g_app->m_scene.AddToSelection(duplicate->m_id);
+					g_app->m_scene.AddToSelection(duplicate->m_id, true);
 				}
 				ActionManager::GetInstance()->GroupLastActions((int)selecteds.size());
 			}
