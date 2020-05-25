@@ -32,6 +32,102 @@ namespace ToolKit
 			m_group.clear();
 		}
 
+		DeleteAction::DeleteAction(Entity* ntt)
+		{
+			m_ntt = ntt;
+			g_app->m_scene.RemoveEntity(ntt->m_id);
+			HandleAnimRecords(ntt, true);
+			m_actionComitted = true;
+		}
+
+		DeleteAction::~DeleteAction()
+		{
+			if (m_actionComitted)
+			{
+				SafeDel(m_ntt);
+			}
+		}
+
+		void DeleteAction::Undo()
+		{
+			assert(m_ntt != nullptr);
+
+			g_app->m_scene.AddEntity(m_ntt);
+			HandleAnimRecords(m_ntt, false);
+			m_actionComitted = false;
+		}
+
+		void DeleteAction::Redo()
+		{
+			g_app->m_scene.RemoveEntity(m_ntt->m_id);
+			HandleAnimRecords(m_ntt, false);
+			m_actionComitted = true;
+		}
+
+		void DeleteAction::HandleAnimRecords(Entity* ntt, bool remove)
+		{
+			if (remove)
+			{
+				auto removeItr = std::remove_if
+				(
+					GetAnimationPlayer()->m_records.begin(),
+					GetAnimationPlayer()->m_records.end(),
+					[this, ntt](const AnimRecord& record)
+					{
+						if (ntt == record.first)
+						{
+							m_records.push_back(record);
+							return true;
+						}
+
+						return false;
+					}
+				);
+
+				if (GetAnimationPlayer()->m_records.end() != removeItr)
+				{
+					GetAnimationPlayer()->m_records.erase(removeItr);
+				}
+			}
+			else
+			{
+				GetAnimationPlayer()->m_records.insert
+				(
+					GetAnimationPlayer()->m_records.end(),
+					m_records.begin(),
+					m_records.end()
+				);
+			}
+		}
+
+		CreateAction::CreateAction(Entity* ntt)
+		{
+			m_ntt = ntt;
+			m_actionComitted = true;
+			g_app->m_scene.AddEntity(ntt);
+			g_app->m_scene.GetSelectedEntities(m_selecteds);
+		}
+
+		CreateAction::~CreateAction()
+		{
+			if (!m_actionComitted)
+			{
+				SafeDel(m_ntt);
+			}
+		}
+
+		void CreateAction::Undo()
+		{
+			g_app->m_scene.RemoveEntity(m_ntt->m_id);
+			m_actionComitted = false;
+		}
+
+		void CreateAction::Redo()
+		{
+			g_app->m_scene.AddEntity(m_ntt);
+			m_actionComitted = true;
+		}
+
 		// ActionManager
 		//////////////////////////////////////////////////////////////////////////
 
@@ -125,11 +221,13 @@ namespace ToolKit
 				if (m_stackPointer > -1)
 				{
 					Action* action = m_actionStack[m_stackPointer];
-					action->Undo();
-					for (Action* ga : action->m_group)
+
+					// Undo in reverse order.
+					for (int i = (int)action->m_group.size() - 1; i > -1; i--)
 					{
-						ga->Undo();
+						action->m_group[i]->Undo();
 					}
+					action->Undo();
 					m_stackPointer--;
 				}
 			}
@@ -611,74 +709,6 @@ namespace ToolKit
 			return StateType::Null;
 		}
 
-		DeleteAction::DeleteAction(Entity* ntt)
-		{
-			m_ntt = ntt;
-			g_app->m_scene.RemoveEntity(ntt->m_id);
-			HandleAnimRecords(ntt, true);
-			m_actionComitted = true;
-		}
-
-		DeleteAction::~DeleteAction()
-		{
-			if (m_actionComitted)
-			{
-				SafeDel(m_ntt);
-			}
-		}
-
-		void DeleteAction::Undo()
-		{
-			assert(m_ntt != nullptr);
-			
-			g_app->m_scene.AddEntity(m_ntt);
-			HandleAnimRecords(m_ntt, false);
-			m_actionComitted = false;
-		}
-
-		void DeleteAction::Redo()
-		{
-			g_app->m_scene.RemoveEntity(m_ntt->m_id);
-			HandleAnimRecords(m_ntt, false);
-			m_actionComitted = true;
-		}
-
-		void DeleteAction::HandleAnimRecords(Entity* ntt, bool remove)
-		{
-			if (remove)
-			{
-				auto removeItr = std::remove_if
-				(
-					GetAnimationPlayer()->m_records.begin(),
-					GetAnimationPlayer()->m_records.end(),
-					[this, ntt](const AnimRecord& record)
-					{
-						if (ntt == record.first)
-						{
-							m_records.push_back(record);
-							return true;
-						}
-
-						return false;
-					}
-				);
-
-				if (GetAnimationPlayer()->m_records.end() != removeItr)
-				{
-					GetAnimationPlayer()->m_records.erase(removeItr);
-				}
-			}
-			else
-			{
-				GetAnimationPlayer()->m_records.insert
-				(
-					GetAnimationPlayer()->m_records.end(),
-					m_records.begin(),
-					m_records.end()
-				);
-			}
-		}
-
 		void StateDeletePick::Update(float deltaTime)
 		{
 			EntityRawPtrArray deleteList;
@@ -700,17 +730,18 @@ namespace ToolKit
 
 		void StateDuplicate::TransitionIn(State* prevState)
 		{
-			if (g_app->m_scene.GetSelectedEntityCount() > 0)
+			EntityRawPtrArray selecteds;
+			g_app->m_scene.GetSelectedEntities(selecteds);
+			if (!selecteds.empty())
 			{
-				EntityRawPtrArray selecteds;
-				g_app->m_scene.GetSelectedEntities(selecteds);
 				g_app->m_scene.ClearSelection();
 				for (Entity* e : selecteds)
 				{
 					Entity* duplicate = e->GetCopy();
-					g_app->m_scene.AddEntity(duplicate);
+					ActionManager::GetInstance()->AddAction(new CreateAction(duplicate));
 					g_app->m_scene.AddToSelection(duplicate->m_id);
 				}
+				ActionManager::GetInstance()->GroupLastActions((int)selecteds.size());
 			}
 		}
 

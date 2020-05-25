@@ -51,6 +51,8 @@ namespace ToolKit
 	{
 		GLuint buffers[2] = { m_vboIndexId, m_vboVertexId };
 		glDeleteBuffers(2, buffers);
+		m_vboVertexId = 0;
+		m_vboIndexId = 0;
 
 		for (MeshPtr& subMesh : m_subMeshes)
 		{

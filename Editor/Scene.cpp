@@ -16,7 +16,7 @@ namespace ToolKit
 			m_selectedEntities.clear();
 		}
 
-		Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList)
+		Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList) const
 		{
 			PickData pd;
 			pd.pickPos = ray.position + ray.direction * 5.0f;
@@ -65,7 +65,7 @@ namespace ToolKit
 			return pd;
 		}
 
-		void Scene::PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const EntityIdArray& ignoreList, bool pickPartiallyInside)
+		void Scene::PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const EntityIdArray& ignoreList, bool pickPartiallyInside) const
 		{
 			for (Entity* e : m_entitites)
 			{
@@ -99,7 +99,7 @@ namespace ToolKit
 			}
 		}
 
-		bool Scene::IsSelected(EntityId id)
+		bool Scene::IsSelected(EntityId id) const
 		{
 			return std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id) != m_selectedEntities.end();
 		}
@@ -199,7 +199,7 @@ namespace ToolKit
 			m_selectedEntities.clear();
 		}
 
-		bool Scene::IsCurrentSelection(EntityId id)
+		bool Scene::IsCurrentSelection(EntityId id) const
 		{
 			if (!m_selectedEntities.empty())
 			{
@@ -225,12 +225,12 @@ namespace ToolKit
 			}
 		}
 
-		uint Scene::GetSelectedEntityCount()
+		uint Scene::GetSelectedEntityCount() const
 		{
 			return (uint)m_selectedEntities.size();
 		}
 
-		Entity* Scene::GetCurrentSelection()
+		Entity* Scene::GetCurrentSelection() const
 		{
 			if (!m_selectedEntities.empty())
 			{
@@ -240,7 +240,7 @@ namespace ToolKit
 			return nullptr;
 		}
 
-		Entity* Scene::GetEntity(EntityId id)
+		Entity* Scene::GetEntity(EntityId id) const
 		{
 			for (Entity* e : m_entitites)
 			{
@@ -276,12 +276,12 @@ namespace ToolKit
 			return removed;
 		}
 
-		const EntityRawPtrArray& Scene::GetEntities()
+		const EntityRawPtrArray& Scene::GetEntities() const
 		{
 			return m_entitites;
 		}
 
-		void Scene::GetSelectedEntities(EntityRawPtrArray& entities)
+		void Scene::GetSelectedEntities(EntityRawPtrArray& entities) const
 		{
 			for (EntityId id : m_selectedEntities)
 			{
@@ -290,6 +290,11 @@ namespace ToolKit
 
 				entities.push_back(e);
 			}
+		}
+
+		void Scene::GetSelectedEntities(EntityIdArray& entities) const
+		{
+			entities = m_selectedEntities;
 		}
 
 	}

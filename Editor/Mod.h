@@ -25,6 +25,39 @@ namespace ToolKit
 			std::vector<Action*> m_group;
 		};
 
+		class DeleteAction : public Action
+		{
+		public:
+			DeleteAction(Entity* ntt);
+			virtual ~DeleteAction();
+
+			virtual void Undo() override;
+			virtual void Redo() override;
+
+		private:
+			void HandleAnimRecords(Entity* ntt, bool remove);
+
+		private:
+			Entity* m_ntt;
+			std::vector<AnimRecord> m_records;
+			bool m_actionComitted;
+		};
+
+		class CreateAction : public Action 
+		{
+		public:
+			CreateAction(Entity* ntt);
+			virtual ~CreateAction();
+
+			virtual void Undo() override;
+			virtual void Redo() override;
+
+		private:
+			Entity* m_ntt;
+			bool m_actionComitted;
+			EntityIdArray m_selecteds;
+		};
+
 		// ActionManager
 		//////////////////////////////////////////////////////////////////////////
 
@@ -183,24 +216,6 @@ namespace ToolKit
 			virtual void Update(float deltaTime) override;
 			virtual String Signaled(SignalId signal) override;
 			virtual String GetType() override { return StateType::StateEndPick; }
-		};
-
-		class DeleteAction : public Action 
-		{
-		public:
-			DeleteAction(Entity* ntt);
-			virtual ~DeleteAction();
-
-			virtual void Undo() override;
-			virtual void Redo() override;
-
-		private:
-			void HandleAnimRecords(Entity* ntt, bool remove);
-
-		private:
-			Entity* m_ntt;
-			std::vector<AnimRecord> m_records;
-			bool m_actionComitted;
 		};
 
 		class StateDeletePick : public StatePickingBase
