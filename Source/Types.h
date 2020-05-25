@@ -20,6 +20,7 @@ namespace ToolKit
 	typedef unsigned int uint;
 	typedef unsigned char uint8;
 	typedef unsigned long EntityId;
+	typedef unsigned long NodeId;
 	typedef const int SignalId;
 	typedef std::string String;
 	typedef std::vector<String> StringArray;

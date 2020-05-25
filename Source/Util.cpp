@@ -9,9 +9,8 @@
 namespace ToolKit
 {
 
-	void ExtractXYFromNode(XmlNode* nodev, Vec2& val)
+	void ExtractXYFromNode(XmlNode* node, Vec2& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
 		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
 		val.x = (float)std::atof(attr->value());
 
@@ -19,9 +18,8 @@ namespace ToolKit
 		val.y = (float)std::atof(attr->value());
 	}
 
-	void ExtractXYZFromNode(XmlNode* nodev, Vec3& val)
+	void ExtractXYZFromNode(XmlNode* node, Vec3& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
 		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
 		val.x = (float)std::atof(attr->value());
 
@@ -32,9 +30,8 @@ namespace ToolKit
 		val.z = (float)std::atof(attr->value());
 	}
 
-	void ExtractXYZFromNode(XmlNode* nodev, glm::ivec3& val)
+	void ExtractXYZFromNode(XmlNode* node, glm::ivec3& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
 		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
 		val.x = std::atoi(attr->value());
 
@@ -45,10 +42,8 @@ namespace ToolKit
 		val.z = std::atoi(attr->value());
 	}
 
-	void ExtractWXYZFromNode(XmlNode* nodev, Vec4& val)
+	void ExtractWXYZFromNode(XmlNode* node, Vec4& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
-
 		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
 		val.x = (float)std::atof(attr->value());
 
@@ -62,10 +57,8 @@ namespace ToolKit
 		val.w = (float)std::atof(attr->value());
 	}
 
-	void ExtractWXYZFromNode(XmlNode* nodev, glm::uvec4& val)
+	void ExtractWXYZFromNode(XmlNode* node, glm::uvec4& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
-
 		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
 		val.x = std::atoi(attr->value());
 
@@ -79,10 +72,8 @@ namespace ToolKit
 		val.w = std::atoi(attr->value());
 	}
 
-	void ExtractWXYZFromNode(XmlNode* nodev, glm::ivec4& val)
+	void ExtractWXYZFromNode(XmlNode* node, glm::ivec4& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
-
 		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
 		val.x = std::atoi(attr->value());
 
@@ -96,13 +87,47 @@ namespace ToolKit
 		val.w = std::atoi(attr->value());
 	}
 
-	void ExtractQuatFromNode(XmlNode* nodev, Quaternion& val)
+	void ExtractQuatFromNode(XmlNode* node, Quaternion& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
-
 		Vec4 tmp;
 		ExtractWXYZFromNode(node, tmp);
 		val = Quaternion(tmp.w, tmp.xyz);
+	}
+
+	void WriteXY(XmlNode* node, XmlDocument* doc, const Vec2& val)
+	{
+		WriteAttr(node, doc, "x", std::to_string(val.x));
+		WriteAttr(node, doc, "y", std::to_string(val.y));
+	}
+
+	void WriteXYZ(XmlNode* node, XmlDocument* doc, const Vec3& val)
+	{
+		WriteXY(node, doc, val.xy);
+		WriteAttr(node, doc, "z", std::to_string(val.z));
+	}
+
+	void WriteXYZW(XmlNode* node, XmlDocument* doc, const Vec4& val)
+	{
+		WriteXYZ(node, doc, val.xyz);
+		WriteAttr(node, doc, "w", std::to_string(val.w));
+	}
+
+	void WriteXYZW(XmlNode* node, XmlDocument* doc, const Quaternion& val)
+	{
+		Vec4 dummy(val.x, val.y, val.z, val.w);
+		WriteXYZW(node, doc, dummy);
+	}
+
+	void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val)
+	{
+		node->append_attribute
+		(
+			doc->allocate_attribute
+			(
+				doc->allocate_string(name.c_str(), 0),
+				doc->allocate_string(val.c_str(), 0)
+			)
+		);
 	}
 
 	bool CheckFile(const String& path)

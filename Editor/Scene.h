@@ -41,6 +41,8 @@ namespace ToolKit
 			void GetSelectedEntities(EntityRawPtrArray& entities) const;
 			void GetSelectedEntities(EntityIdArray& entities) const;
 
+			void Serialize(XmlDocument* doc);
+
 		private:
 			EntityRawPtrArray m_entitites;
 			EntityIdArray m_selectedEntities;

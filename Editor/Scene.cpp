@@ -301,5 +301,25 @@ namespace ToolKit
 			entities = m_selectedEntities;
 		}
 
+		void Scene::Serialize(XmlDocument* doc)
+		{
+			std::ofstream file;
+			file.open("dummy.scene", std::ios::out);
+			if (file.is_open())
+			{
+				for (Entity* ntt : m_entitites)
+				{
+					ntt->Serialize(doc);
+				}
+
+				std::string s;
+				rapidxml::print(std::back_inserter(s), *doc, 0);
+
+				file << s;
+				file.close();
+				doc->clear();
+			}
+		}
+
 	}
 }

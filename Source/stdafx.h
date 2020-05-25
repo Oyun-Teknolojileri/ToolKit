@@ -28,8 +28,7 @@
 #include "GL/glew.h"
 
 // RapidXml
-#include "rapidxml.hpp"
-#include "rapidxml_utils.hpp"
+#include "rapidxml_ext.h"
 
 #ifdef TK_EDITOR
 	// ImGui

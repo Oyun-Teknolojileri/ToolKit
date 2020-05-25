@@ -173,6 +173,9 @@ namespace ToolKit
 			m_windows.push_back(console);
 
 			UI::InitIcons();
+	
+			XmlDocument doc;
+			m_scene.Serialize(&doc);
 		}
 
 		void App::Frame(float deltaTime)
