@@ -27,7 +27,9 @@ public:
   ~ProjectileManager()
   {
     for (size_t i = 0; i < m_projectiles.size(); i++)
-      SafeDel(m_projectiles[i]);
+    {
+      ToolKit::SafeDel(m_projectiles[i]);
+    }
   }
 
   void FireProjectile(glm::vec3 pos)
@@ -46,7 +48,7 @@ public:
       if (projectile->m_node->GetTranslation(ToolKit::TransformationSpace::TS_WORLD).z <= m_projectileDethZone)
       {
         m_projectiles.erase(m_projectiles.begin() + i);
-        SafeDel(projectile);
+        ToolKit::SafeDel(projectile);
       }
     }
   }

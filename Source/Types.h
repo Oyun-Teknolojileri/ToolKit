@@ -6,10 +6,16 @@
 #include <string>
 #include <memory>
 
+namespace rapidxml
+{
+	template<class Ch = char> class xml_document;
+	template<class Ch = char> class xml_node;
+}
+
 namespace ToolKit
 {
-#define SafeDel(ptr) {delete ptr; ptr = nullptr;}
-#define SafeDelArray(ptr) {delete [] ptr; ptr = nullptr;}
+	auto SafeDel = [](auto ptr) { delete ptr; ptr = nullptr; };
+	auto SafeDelArray = [](auto ptr) { delete[] ptr; ptr = nullptr; };
 
 	typedef unsigned int uint;
 	typedef unsigned char uint8;
@@ -40,6 +46,8 @@ namespace ToolKit
 	typedef std::vector<EntityId> EntityIdArray;
 	typedef std::vector<class Node*> NodePtrArray;
 	typedef std::vector<class Vertex> VertexArray;
+	typedef rapidxml::xml_document<> XmlDocument;
+	typedef rapidxml::xml_node<> XmlNode;
 
 	static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
 	static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);

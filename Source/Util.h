@@ -10,13 +10,13 @@
 namespace ToolKit
 {
 
-	void ExtractXYFromNode(void* node, Vec2& val);
-	void ExtractXYZFromNode(void* node, Vec3& val);
-	void ExtractXYZFromNode(void* node, glm::ivec3& val);
-	void ExtractWXYZFromNode(void* node, Vec4& val);
-	void ExtractWXYZFromNode(void* node, glm::uvec4& val);
-	void ExtractWXYZFromNode(void* node, glm::ivec4& val);
-	void ExtractQuatFromNode(void* node, Quaternion& val);
+	void ExtractXYFromNode(XmlNode* node, Vec2& val);
+	void ExtractXYZFromNode(XmlNode* node, Vec3& val);
+	void ExtractXYZFromNode(XmlNode* node, glm::ivec3& val);
+	void ExtractWXYZFromNode(XmlNode* node, Vec4& val);
+	void ExtractWXYZFromNode(XmlNode* node, glm::uvec4& val);
+	void ExtractWXYZFromNode(XmlNode* node, glm::ivec4& val);
+	void ExtractQuatFromNode(XmlNode* node, Quaternion& val);
 	bool CheckFile(const String& path);
 	void DecomposePath(const String fullPath, String* path, String* name, String* ext);
 	void NormalizePath(String& path);

@@ -70,4 +70,9 @@ namespace ToolKit
 		copyTo->m_node->m_entity = copyTo;
 	}
 
+	void Entity::Serialize(XmlDocument* doc)
+	{
+
+	}
+
 }

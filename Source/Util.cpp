@@ -9,7 +9,7 @@
 namespace ToolKit
 {
 
-	void ExtractXYFromNode(void* nodev, Vec2& val)
+	void ExtractXYFromNode(XmlNode* nodev, Vec2& val)
 	{
 		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
 		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
@@ -19,7 +19,7 @@ namespace ToolKit
 		val.y = (float)std::atof(attr->value());
 	}
 
-	void ExtractXYZFromNode(void* nodev, Vec3& val)
+	void ExtractXYZFromNode(XmlNode* nodev, Vec3& val)
 	{
 		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
 		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
@@ -32,7 +32,7 @@ namespace ToolKit
 		val.z = (float)std::atof(attr->value());
 	}
 
-	void ExtractXYZFromNode(void* nodev, glm::ivec3& val)
+	void ExtractXYZFromNode(XmlNode* nodev, glm::ivec3& val)
 	{
 		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
 		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
@@ -45,7 +45,7 @@ namespace ToolKit
 		val.z = std::atoi(attr->value());
 	}
 
-	void ExtractWXYZFromNode(void* nodev, Vec4& val)
+	void ExtractWXYZFromNode(XmlNode* nodev, Vec4& val)
 	{
 		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
 
@@ -62,7 +62,7 @@ namespace ToolKit
 		val.w = (float)std::atof(attr->value());
 	}
 
-	void ExtractWXYZFromNode(void* nodev, glm::uvec4& val)
+	void ExtractWXYZFromNode(XmlNode* nodev, glm::uvec4& val)
 	{
 		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
 
@@ -79,7 +79,7 @@ namespace ToolKit
 		val.w = std::atoi(attr->value());
 	}
 
-	void ExtractWXYZFromNode(void* nodev, glm::ivec4& val)
+	void ExtractWXYZFromNode(XmlNode* nodev, glm::ivec4& val)
 	{
 		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
 
@@ -96,7 +96,7 @@ namespace ToolKit
 		val.w = std::atoi(attr->value());
 	}
 
-	void ExtractQuatFromNode(void* nodev, Quaternion& val)
+	void ExtractQuatFromNode(XmlNode* nodev, Quaternion& val)
 	{
 		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
 
