@@ -108,7 +108,7 @@ namespace ToolKit
 		return true;
 	}
 
-	std::vector<Vertex> SpriteSheet::CreateQuat(SpriteEntry val)
+	VertexArray SpriteSheet::CreateQuat(SpriteEntry val)
 	{
 		Rect<float> textureRect;
 		textureRect.x = (float)val.rectangle.x / (float)m_imageWidth;
@@ -121,7 +121,7 @@ namespace ToolKit
 		float height = (float)val.rectangle.height;
 		Vec2 absOffset = Vec2(val.offset.x * val.rectangle.width, val.offset.y * val.rectangle.height);
 
-		std::vector<Vertex> vertices;
+		VertexArray vertices;
 		vertices.resize(6);
 		vertices[0].pos = Vec3(-absOffset.x, -absOffset.y, depth);
 		vertices[0].tex = Vec2(textureRect.x, 1.0f - textureRect.y);

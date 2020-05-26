@@ -9,7 +9,7 @@
 namespace ToolKit
 {
 
-	Surface::Surface(std::shared_ptr<Texture> texture, Vec2 pivotOffset)
+	Surface::Surface(TexturePtr texture, Vec2 pivotOffset)
 	{
 		m_mesh->m_material->m_diffuseTexture = texture;
 		m_pivotOffset = pivotOffset;
@@ -17,7 +17,7 @@ namespace ToolKit
 		m_loaded = true;
 	}
 
-	Surface::Surface(std::shared_ptr<Texture> texture, const std::vector<Vertex>& vertices)
+	Surface::Surface(TexturePtr texture, const VertexArray& vertices)
 	{
 		m_mesh->m_material->m_diffuseTexture = texture;
 		m_mesh->m_clientSideVertices = vertices;
@@ -78,7 +78,7 @@ namespace ToolKit
 		float depth = 0;
 		Vec2 absOffset = Vec2(m_pivotOffset.x * width, m_pivotOffset.y * height);
 
-		std::vector<Vertex> vertices;
+		VertexArray vertices;
 		vertices.resize(6);
 		vertices[0].pos = Vec3(-absOffset.x, -absOffset.y, depth);
 		vertices[0].tex = Vec2(0.0f, 1.0f);

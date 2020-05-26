@@ -100,7 +100,7 @@ namespace ToolKit
 
 	void Cube::Generate(Vec3 scale)
 	{
-		std::vector<Vertex> vertices;
+		VertexArray vertices;
 		vertices.resize(36);
 
 		Vec3 corners[8]
@@ -277,7 +277,7 @@ namespace ToolKit
 
 	void Quad::Generate()
 	{
-		std::vector<Vertex> vertices;
+		VertexArray vertices;
 		vertices.resize(4);
 
 		// Front
@@ -346,7 +346,7 @@ namespace ToolKit
 		const int nRings = 32;
 		const int nSegments = 32;
 
-		std::vector<Vertex> vertices;
+		VertexArray vertices;
 		std::vector<uint> indices;
 
 		constexpr float fDeltaRingAngle = (glm::pi<float>() / nRings);
@@ -416,7 +416,7 @@ namespace ToolKit
 	// https://github.com/OGRECave/ogre-procedural/blob/master/library/src/ProceduralConeGenerator.cpp
 	void Cone::Generate(float height, float radius, int nSegBase, int nSegHeight)
 	{
-		std::vector<Vertex> vertices;
+		VertexArray vertices;
 		std::vector<uint> indices;
 
 		float deltaAngle = (glm::two_pi<float>() / nSegBase);
@@ -559,7 +559,7 @@ namespace ToolKit
 
 	void Arrow2d::Generate()
 	{
-		std::vector<Vertex> vertices;
+		VertexArray vertices;
 		vertices.resize(8);
 
 		// Line

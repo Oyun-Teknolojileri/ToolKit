@@ -35,6 +35,7 @@ namespace ToolKit
 	typedef glm::mat3 Mat3;
 	typedef glm::quat Quaternion;
 	typedef std::shared_ptr<class Material> MaterialPtr;
+	typedef std::shared_ptr<class Texture> TexturePtr;
 	typedef std::shared_ptr<class Mesh> MeshPtr;
 	typedef std::shared_ptr<class Shader> ShaderPtr;
 	typedef std::vector<ShaderPtr> ShaderPtrArray;

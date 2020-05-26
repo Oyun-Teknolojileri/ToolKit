@@ -32,10 +32,10 @@ namespace ToolKit
 
   private:
     bool FetchEntries();
-    std::vector<Vertex> CreateQuat(SpriteEntry val);
+    VertexArray CreateQuat(SpriteEntry val);
 
   public:
-    std::shared_ptr<Texture> m_spriteSheet;
+    TexturePtr m_spriteSheet;
     std::vector<SpriteEntry> m_entries;
     String m_imageFile;
     int m_imageWidth;

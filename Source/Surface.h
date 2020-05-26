@@ -14,8 +14,8 @@ namespace ToolKit
   class Surface : public Drawable, public Resource
   {
   public:
-    Surface(std::shared_ptr<Texture> texture, Vec2 pivotOffset);
-    Surface(std::shared_ptr<Texture> texture, const std::vector<Vertex>& vertices);
+    Surface(TexturePtr texture, Vec2 pivotOffset);
+    Surface(TexturePtr texture, const VertexArray& vertices);
     Surface(String file, Vec2 pivotOffset);
     ~Surface();
 
