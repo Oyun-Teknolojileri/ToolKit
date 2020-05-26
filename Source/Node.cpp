@@ -246,10 +246,17 @@ namespace ToolKit
 	static const String XmlRotateStr("R");
 	static const String XmlScaleStr("S");
 
-	void Node::Serialize(XmlDocument* doc)
+	void Node::Serialize(XmlDocument* doc, XmlNode* parent)
 	{
 		XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlNodeStr.c_str());
-		doc->append_node(node);
+		if (parent != nullptr)
+		{
+			parent->append_node(node);
+		}
+		else
+		{
+			doc->append_node(node);
+		}
 		
 		WriteAttr(node, doc, XmlNodeIdAttrStr, std::to_string(m_id));
 

@@ -74,14 +74,21 @@ namespace ToolKit
 	const static String XmlEntityIdAttr("i");
 	const static String XmlEntityTypeAttr("t");
 
-	void Entity::Serialize(XmlDocument* doc)
+	void Entity::Serialize(XmlDocument* doc, XmlNode* parent)
 	{
 		XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlEntityElement.c_str());
-		doc->append_node(node);
+		if (parent != nullptr)
+		{
+			parent->append_node(node);
+		}
+		else
+		{
+			doc->append_node(node);
+		}
 
 		WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(m_id));
 		WriteAttr(node, doc, XmlEntityTypeAttr, std::to_string((int)GetType()));
-		m_node->Serialize(doc);
+		m_node->Serialize(doc, node);
 	}
 
 }

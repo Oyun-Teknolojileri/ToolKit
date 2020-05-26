@@ -9,6 +9,7 @@ namespace ToolKit
 		class Scene
 		{
 		public:
+			Scene();
 			~Scene();
 
 			// Scene queries.
@@ -41,7 +42,10 @@ namespace ToolKit
 			void GetSelectedEntities(EntityRawPtrArray& entities) const;
 			void GetSelectedEntities(EntityIdArray& entities) const;
 
-			void Serialize(XmlDocument* doc);
+			void Serialize(XmlDocument* doc, XmlNode* parent);
+
+		public:
+			String m_name;
 
 		private:
 			EntityRawPtrArray m_entitites;
