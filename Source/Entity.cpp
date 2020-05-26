@@ -74,7 +74,7 @@ namespace ToolKit
 	const static String XmlEntityIdAttr("i");
 	const static String XmlEntityTypeAttr("t");
 
-	void Entity::Serialize(XmlDocument* doc, XmlNode* parent)
+	void Entity::Serialize(XmlDocument* doc, XmlNode* parent) const
 	{
 		XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlEntityElement.c_str());
 		if (parent != nullptr)

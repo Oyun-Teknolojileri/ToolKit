@@ -38,7 +38,7 @@ namespace ToolKit
 		void OrphanSelf();
 		Node* GetRoot() const;
 		Node* GetCopy() const;
-		void Serialize(XmlDocument* doc, XmlNode* parent);
+		void Serialize(XmlDocument* doc, XmlNode* parent) const;
 
 	private:
 		void TransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale);

@@ -8,7 +8,7 @@ namespace ToolKit
 
 		Scene::Scene()
 		{
-			m_name = "NewMap";
+			m_name = "NewScene";
 		}
 
 		Scene::~Scene()

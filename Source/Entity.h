@@ -39,7 +39,7 @@ namespace ToolKit
 		virtual struct BoundingBox GetAABB(bool inWorld = false) const;
     virtual Entity* GetCopy() const;
     virtual void GetCopy(Entity* copyTo) const;
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent);
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
 
   public:
     Node* m_node;
