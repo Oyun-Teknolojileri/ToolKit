@@ -15,7 +15,7 @@ namespace ToolKit
   {
   public:
     Surface(TexturePtr texture, Vec2 pivotOffset);
-    Surface(TexturePtr texture, const VertexArray& vertices);
+    Surface(TexturePtr texture, const SpriteEntry& entry);
     Surface(String file, Vec2 pivotOffset);
     ~Surface();
 
@@ -26,6 +26,7 @@ namespace ToolKit
 
   private:
     void CreateQuat();
+    void CreateQuat(const SpriteEntry& val);
 
   private:
     Vec2 m_pivotOffset;

@@ -32,7 +32,6 @@ namespace ToolKit
 
   private:
     bool FetchEntries();
-    VertexArray CreateQuat(SpriteEntry val);
 
   public:
     TexturePtr m_spriteSheet;
