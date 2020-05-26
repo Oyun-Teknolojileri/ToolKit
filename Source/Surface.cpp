@@ -9,30 +9,31 @@
 namespace ToolKit
 {
 
-	Surface::Surface(TexturePtr texture, Vec2 pivotOffset)
+	Surface::Surface(TexturePtr texture, const Vec2& pivotOffset)
 	{
 		m_mesh->m_material->m_diffuseTexture = texture;
 		m_pivotOffset = pivotOffset;
 		CreateQuat();
-		m_loaded = true;
+		AssignTexture();
 	}
 
 	Surface::Surface(TexturePtr texture, const SpriteEntry& entry)
 	{
 		m_mesh->m_material->m_diffuseTexture = texture;
 		CreateQuat(entry);
-		m_loaded = true;
+		AssignTexture();
 	}
 
-	Surface::Surface(String file, Vec2 pivotOffset)
+	Surface::Surface(const String& textureFile, const Vec2& pivotOffset)
 	{
-		m_file = file;
+		m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create(textureFile);
 		m_pivotOffset = pivotOffset;
+		CreateQuat();
+		AssignTexture();
 	}
 
 	Surface::~Surface()
 	{
-		UnInit();
 	}
 
 	EntityType Surface::GetType() const
@@ -40,35 +41,10 @@ namespace ToolKit
 		return EntityType::Entity_Surface;
 	}
 
-	void Surface::Load()
+	void Surface::AssignTexture()
 	{
-		if (m_loaded)
-			return;
-
-		assert(!m_file.empty());
-		m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create(m_file);
-		CreateQuat();
-
-		m_loaded = true;
-	}
-
-	void Surface::Init(bool flushClientSideArray)
-	{
-		if (m_initiated)
-			return;
-
-		m_mesh->m_material->m_diffuseTexture->Init(flushClientSideArray);
-		m_mesh->Init(flushClientSideArray);
-
 		m_mesh->m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
 		m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
-
-		m_initiated = true;
-	}
-
-	void Surface::UnInit()
-	{
-		m_initiated = false;
 	}
 
 	void Surface::CreateQuat()

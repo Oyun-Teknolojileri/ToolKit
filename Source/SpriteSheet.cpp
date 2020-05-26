@@ -28,7 +28,9 @@ namespace ToolKit
 	void SpriteSheet::Load()
 	{
 		if (m_loaded)
+		{
 			return;
+		}
 
 		if (FetchEntries())
 		{
@@ -46,10 +48,14 @@ namespace ToolKit
 	void SpriteSheet::Init(bool flushClientSideArray)
 	{
 		if (m_initiated)
+		{
 			return;
+		}
 
 		for (auto entry : m_sprites)
-			entry.second->Init(flushClientSideArray);
+		{
+			entry.second->m_mesh->Init(flushClientSideArray);
+		}
 
 		m_initiated = true;
 	}
@@ -57,7 +63,9 @@ namespace ToolKit
 	void SpriteSheet::UnInit()
 	{
 		for (auto entry : m_sprites)
+		{
 			SafeDel(entry.second);
+		}
 		m_initiated = false;
 	}
 
@@ -69,7 +77,9 @@ namespace ToolKit
 
 		XmlNode* node = doc.first_node("img");
 		if (node == nullptr)
+		{
 			return false;
+		}
 
 		XmlAttribute* attr = node->first_attribute("name");
 		m_imageFile = attr->value();
@@ -132,9 +142,13 @@ namespace ToolKit
 		if (res == m_sheet->m_sprites.end())
 		{
 			if (m_frames.empty())
+			{
 				return m_sheet->m_sprites.begin()->second;
+			}
 			else
+			{
 				return m_sheet->m_sprites[m_frames.front()];
+			}
 		}
 
 		return m_sheet->m_sprites[m_currentFrame];
@@ -143,10 +157,14 @@ namespace ToolKit
 	void SpriteAnimation::Update(float deltaTime)
 	{
 		if (m_sheet == nullptr)
+		{
 			return;
+		}
 
 		if (m_animationStoped)
+		{
 			return;
+		}
 
 		if (m_currentTime > m_prevTime + 1.0f / m_animFps)
 		{
@@ -168,9 +186,13 @@ namespace ToolKit
 						else
 						{
 							if (m_looping)
+							{
 								m_currentFrame = m_frames.front();
+							}
 							else
+							{
 								m_animationStoped = true;
+							}
 							break;
 						}
 					}

@@ -63,7 +63,7 @@ public:
     m_spaceShip->m_node->Translate(glm::vec3(4, 0, 4));
 
     m_crosshair = new ToolKit::Surface(ToolKit::TexturePath("crosshair.png"), glm::vec2(0.5f, 0.5f));
-    m_crosshair->Load();
+    m_crosshair->m_mesh->Init();
 
     m_sscp = glm::ivec2(m_windowWidth / 2, m_windowHeight / 2);
     m_crosshair->m_node->Translate(glm::vec3(m_sscp.x, m_sscp.y, 0));

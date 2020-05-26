@@ -121,13 +121,12 @@ namespace ToolKit
 
 	void Renderer::Render2d(Surface* object, glm::ivec2 screenDimensions)
 	{
-		object->Init();
-
 		ShaderPtr vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
 		ShaderPtr fragShader = GetShaderManager()->Create(ShaderPath("unlitFrag.shader"));
 		ProgramPtr prog = CreateProgram(vertexShader, fragShader);
 		BindProgram(prog);
 
+		object->m_mesh->Init();
 		RenderState rs = *object->m_mesh->m_material->GetRenderState();
 		SetRenderState(rs);
 
