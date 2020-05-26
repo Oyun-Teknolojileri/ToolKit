@@ -124,7 +124,7 @@ namespace ToolKit
 		object->Init();
 
 		std::shared_ptr<Shader> vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
-		std::shared_ptr<Shader> fragShader = GetShaderManager()->Create(ShaderPath("defaultFragment.shader"));
+		std::shared_ptr<Shader> fragShader = GetShaderManager()->Create(ShaderPath("unlitFrag.shader"));
 		std::shared_ptr<Program> prog = CreateProgram(vertexShader, fragShader);
 		BindProgram(prog);
 
