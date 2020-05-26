@@ -147,7 +147,7 @@ namespace ToolKit
 		m_initiated = false;
 	}
 
-	void Shader::SetShaderParameter(String param, const ShaderVariant& val)
+	void Shader::SetShaderParameter(String param, const ParameterVariant& val)
 	{
 		m_shaderParams[param] = val;
 	}
@@ -156,7 +156,7 @@ namespace ToolKit
 	{
 	}
 
-	Program::Program(std::shared_ptr<Shader> vertex, std::shared_ptr<Shader> fragment)
+	Program::Program(ShaderPtr vertex, ShaderPtr fragment)
 	{
 		m_shaders.push_back(vertex);
 		m_shaders.push_back(fragment);

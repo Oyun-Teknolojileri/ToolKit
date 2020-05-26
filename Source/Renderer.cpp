@@ -435,22 +435,22 @@ namespace ToolKit
 
 				switch (var.second.GetType())
 				{
-				case ShaderVariant::VariantType::Float:
+				case ParameterVariant::VariantType::Float:
 					glUniform1f(loc, var.second.GetVar<float>());
 					break;
-				case ShaderVariant::VariantType::Int:
+				case ParameterVariant::VariantType::Int:
 					glUniform1i(loc, var.second.GetVar<int>());
 					break;
-				case ShaderVariant::VariantType::Vec3:
+				case ParameterVariant::VariantType::Vec3:
 					glUniform3fv(loc, 1, (float*)&var.second.GetVar<Vec3>());
 					break;
-				case ShaderVariant::VariantType::Vec4:
+				case ParameterVariant::VariantType::Vec4:
 					glUniform4fv(loc, 1, (float*)&var.second.GetVar<Vec4>());
 					break;
-				case ShaderVariant::VariantType::Mat3:
+				case ParameterVariant::VariantType::Mat3:
 					glUniformMatrix3fv(loc, 1, false, (float*)&var.second.GetVar<Mat3>());
 					break;
-				case ShaderVariant::VariantType::Mat4:
+				case ParameterVariant::VariantType::Mat4:
 					glUniformMatrix4fv(loc, 1, false, (float*)&var.second.GetVar<Mat4>());
 					break;
 				default:

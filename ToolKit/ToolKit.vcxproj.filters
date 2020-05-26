@@ -84,6 +84,9 @@
     <ClInclude Include="..\Source\StateMachine.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\ParameterBlock.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Animation.cpp">
@@ -147,6 +150,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\StateMachine.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\ParameterBlock.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
