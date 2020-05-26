@@ -29,6 +29,7 @@
 
 // RapidXml
 #include "rapidxml_ext.h"
+#include "rapidxml_utils.hpp"
 
 #ifdef TK_EDITOR
 	// ImGui

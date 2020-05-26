@@ -30,32 +30,32 @@ namespace ToolKit
 			return;
 		}
 
-		rapidxml::file<> file(m_file.c_str());
-		rapidxml::xml_document<> doc;
+		XmlFile file(m_file.c_str());
+		XmlDocument doc;
 		doc.parse<0>(file.data());
 
-		rapidxml::xml_node<>* rootNode = doc.first_node("material");
+		XmlNode* rootNode = doc.first_node("material");
 		if (rootNode == nullptr)
 		{
 			return;
 		}
 
-		for (rapidxml::xml_node<>* node = rootNode->first_node(); node; node = node->next_sibling())
+		for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
 		{
 			if (String("diffuseTexture").compare(node->name()) == 0)
 			{
-				rapidxml::xml_attribute<>* attr = node->first_attribute("name");
+				XmlAttribute* attr = node->first_attribute("name");
 				m_diffuseTexture = Main::GetInstance()->m_textureMan.Create(TexturePath(attr->value()));
 			}
 			else if (String("cubeMap").compare(node->name()) == 0)
 			{
-				rapidxml::xml_attribute<>* attr = node->first_attribute("name");
+				XmlAttribute* attr = node->first_attribute("name");
 				m_cubeMap = GetTextureManager()->CreateDerived<CubeMap>(TexturePath(attr->value()));
 			}
 			else if (String("shader").compare(node->name()) == 0)
 			{
-				rapidxml::xml_attribute<>* attr = node->first_attribute("name");
-				std::shared_ptr<Shader> shader = GetShaderManager()->Create(ShaderPath(attr->value()));
+				XmlAttribute* attr = node->first_attribute("name");
+				ShaderPtr shader = GetShaderManager()->Create(ShaderPath(attr->value()));
 				if (shader->m_type == GL_VERTEX_SHADER)
 				{
 					m_vertexShader = shader;

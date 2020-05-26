@@ -28,8 +28,8 @@ namespace ToolKit
   public:
     std::shared_ptr<CubeMap> m_cubeMap;
     TexturePtr m_diffuseTexture;
-    std::shared_ptr<Shader> m_vertexShader;
-    std::shared_ptr<Shader> m_fragmetShader;
+    ShaderPtr m_vertexShader;
+    ShaderPtr m_fragmetShader;
     Vec3 m_color;
 
 	private:

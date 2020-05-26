@@ -63,15 +63,15 @@ namespace ToolKit
 
 	bool SpriteSheet::FetchEntries()
 	{
-		rapidxml::file<> file(m_file.c_str());
-		rapidxml::xml_document<> doc;
+		XmlFile file(m_file.c_str());
+		XmlDocument doc;
 		doc.parse<0>(file.data());
 
-		rapidxml::xml_node<>* node = doc.first_node("img");
+		XmlNode* node = doc.first_node("img");
 		if (node == nullptr)
 			return false;
 
-		rapidxml::xml_attribute<>* attr = node->first_attribute("name");
+		XmlAttribute* attr = node->first_attribute("name");
 		m_imageFile = attr->value();
 
 		attr = node->first_attribute("w");
@@ -144,7 +144,7 @@ namespace ToolKit
 	{
 	}
 
-	SpriteAnimation::SpriteAnimation(std::shared_ptr<SpriteSheet> spriteSheet)
+	SpriteAnimation::SpriteAnimation(SpriteSheetPtr spriteSheet)
 	{
 		m_sheet = spriteSheet;
 	}

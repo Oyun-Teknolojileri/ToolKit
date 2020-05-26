@@ -118,7 +118,7 @@ namespace ToolKit
 			for (TagArg& tagIt : tagArgs)
 			{
 				String tag = tagIt.first;
-				std::vector<String>& args = tagIt.second;
+				StringArray& args = tagIt.second;
 
 				if (tag.empty())
 				{
@@ -546,7 +546,7 @@ namespace ToolKit
 			m_scrollToBottom = true;
 		}
 
-		void SplitPreserveText(const String& s, const String& sep, std::vector<String>& v)
+		void SplitPreserveText(const String& s, const String& sep, StringArray& v)
 		{
 			String arg = s;
 			const char spaceSub = (char)26;
@@ -593,20 +593,20 @@ namespace ToolKit
 			if (args.find_first_of("--") == String::npos)
 			{
 				TagArg nullTag;
-				std::vector<String> values;
+				StringArray values;
 				SplitPreserveText(args, " ", nullTag.second);
 				tagArgs.push_back(nullTag);
 				return;
 			}
 
-			std::vector<String> splits;
+			StringArray splits;
 			Split(args, "--", splits);
 
 			// Preserve all spaces in text.
 			const char spaceSub = (char)26;
 			for (String& arg : splits)
 			{
-				std::vector<String> values;
+				StringArray values;
 				SplitPreserveText(arg, " ", values);
 				if (values.empty())
 				{
@@ -650,7 +650,7 @@ namespace ToolKit
 				}
 
 				// Build a list of candidates
-				std::vector<String> candidates;
+				StringArray candidates;
 				for (size_t i = 0; i < m_commands.size(); i++)
 				{
 					if (Strnicmp(m_commands[i].c_str(), word_start, (int)(word_end - word_start)) == 0)

@@ -11,7 +11,7 @@ namespace ToolKit
 
 	void ExtractXYFromNode(XmlNode* node, Vec2& val)
 	{
-		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
+		XmlAttribute* attr = node->first_attribute("x");
 		val.x = (float)std::atof(attr->value());
 
 		attr = node->first_attribute("y");
@@ -20,7 +20,7 @@ namespace ToolKit
 
 	void ExtractXYZFromNode(XmlNode* node, Vec3& val)
 	{
-		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
+		XmlAttribute* attr = node->first_attribute("x");
 		val.x = (float)std::atof(attr->value());
 
 		attr = node->first_attribute("y");
@@ -32,7 +32,7 @@ namespace ToolKit
 
 	void ExtractXYZFromNode(XmlNode* node, glm::ivec3& val)
 	{
-		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
+		XmlAttribute* attr = node->first_attribute("x");
 		val.x = std::atoi(attr->value());
 
 		attr = node->first_attribute("y");
@@ -44,7 +44,7 @@ namespace ToolKit
 
 	void ExtractWXYZFromNode(XmlNode* node, Vec4& val)
 	{
-		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
+		XmlAttribute* attr = node->first_attribute("x");
 		val.x = (float)std::atof(attr->value());
 
 		attr = node->first_attribute("y");
@@ -59,7 +59,7 @@ namespace ToolKit
 
 	void ExtractWXYZFromNode(XmlNode* node, glm::uvec4& val)
 	{
-		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
+		XmlAttribute* attr = node->first_attribute("x");
 		val.x = std::atoi(attr->value());
 
 		attr = node->first_attribute("y");
@@ -74,7 +74,7 @@ namespace ToolKit
 
 	void ExtractWXYZFromNode(XmlNode* node, glm::ivec4& val)
 	{
-		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
+		XmlAttribute* attr = node->first_attribute("x");
 		val.x = std::atoi(attr->value());
 
 		attr = node->first_attribute("y");
@@ -171,7 +171,7 @@ namespace ToolKit
 	// for example, if separator="::",
 	// s = "abc::def xy::st:" -> "abc", "def xy" and "st:",
 	// https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c?page=2&tab=votes#tab-top
-	void Split(const String& s, const String& sep, std::vector<String>& v)
+	void Split(const String& s, const String& sep, StringArray& v)
 	{
 		typedef String::const_iterator iter;
 		iter b = s.begin(), e = s.end(), i;

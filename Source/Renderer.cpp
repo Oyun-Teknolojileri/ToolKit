@@ -123,9 +123,9 @@ namespace ToolKit
 	{
 		object->Init();
 
-		std::shared_ptr<Shader> vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
-		std::shared_ptr<Shader> fragShader = GetShaderManager()->Create(ShaderPath("unlitFrag.shader"));
-		std::shared_ptr<Program> prog = CreateProgram(vertexShader, fragShader);
+		ShaderPtr vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
+		ShaderPtr fragShader = GetShaderManager()->Create(ShaderPath("unlitFrag.shader"));
+		ProgramPtr prog = CreateProgram(vertexShader, fragShader);
 		BindProgram(prog);
 
 		RenderState rs = *object->m_mesh->m_material->GetRenderState();
