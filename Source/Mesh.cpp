@@ -215,25 +215,11 @@ namespace ToolKit
 
 	void Mesh::GetAllMeshes(MeshRawPtrArray& meshes)
 	{
-		size_t cap = m_allMeshes.capacity();
-		
-		m_allMeshes.clear();
-		assert(cap == m_allMeshes.capacity());
-
-		m_allMeshes.push_back(this);
+		meshes.push_back(this);
 		for (size_t i = 0; i < m_subMeshes.size(); i++)
 		{
-			MeshPtr m = m_subMeshes[i];
-			m->GetAllMeshes(meshes);
-			m_allMeshes.insert
-			(
-				m_allMeshes.begin(),
-				m->m_allMeshes.begin(),
-				m->m_allMeshes.end()
-			);
+			m_subMeshes[i]->GetAllMeshes(meshes);
 		}
-
-		meshes = m_allMeshes;
 	}
 
 	void Mesh::InitVertices(bool flush)

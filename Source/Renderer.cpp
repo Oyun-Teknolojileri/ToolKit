@@ -33,7 +33,9 @@ namespace ToolKit
 
 		object->m_mesh->Init();
 
-		MeshRawPtrArray meshes;
+		static MeshRawPtrArray meshes;
+		meshes.clear();
+
 		object->m_mesh->GetAllMeshes(meshes);
 
 		m_cam = cam;
