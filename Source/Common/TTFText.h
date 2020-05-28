@@ -18,7 +18,7 @@ public:
   {
     TTF_CloseFont(m_font);
     SDL_FreeSurface(m_sdlSurface);
-    SafeDel(m_surface);
+    ToolKit::SafeDel(m_surface);
   }
   
   void SetText(std::string text)
@@ -90,13 +90,13 @@ private:
     if (m_surface != nullptr)
       backUp = new ToolKit::Node(*m_surface->m_node);
 
-    SafeDel(m_surface);
+    ToolKit::SafeDel(m_surface);
     glm::vec2 zero(0.0f, 0.0f);
     m_surface = new ToolKit::Surface(texPtr, zero);
 
     if (backUp != nullptr)
     {
-      SafeDel(m_surface->m_node);
+      ToolKit::SafeDel(m_surface->m_node);
       m_surface->m_node = backUp;
     }
   }

@@ -69,11 +69,11 @@ namespace ToolKit
 			return;
 		}
 
-		rapidxml::file<> file(m_file.c_str());
-		rapidxml::xml_document<> doc;
+		XmlFile file(m_file.c_str());
+		XmlDocument doc;
 		doc.parse<0>(file.data());
 
-		rapidxml::xml_node<>* node = doc.first_node("meshContainer");
+		XmlNode* node = doc.first_node("meshContainer");
 		if (node == nullptr)
 		{
 			return;
@@ -90,7 +90,7 @@ namespace ToolKit
 				m_subMeshes.push_back(MeshPtr(mesh));
 			}
 
-			rapidxml::xml_node<>* materialNode = node->first_node("material");
+			XmlNode* materialNode = node->first_node("material");
 			String matFile = materialNode->first_attribute("name")->value();
 
 			if (CheckFile(MaterialPath(matFile)))
@@ -102,8 +102,8 @@ namespace ToolKit
 				mesh->m_material = GetMaterialManager()->Create(MaterialPath("default.material"));
 			}
 
-			rapidxml::xml_node<>* vertex = node->first_node("vertices");
-			for (rapidxml::xml_node<>* v = vertex->first_node("v"); v; v = v->next_sibling())
+			XmlNode* vertex = node->first_node("vertices");
+			for (XmlNode* v = vertex->first_node("v"); v; v = v->next_sibling())
 			{
 				Vertex vd;
 				ExtractXYZFromNode(v->first_node("p"), vd.pos);
@@ -115,8 +115,8 @@ namespace ToolKit
 				mesh->m_clientSideVertices.push_back(vd);
 			}
 
-			rapidxml::xml_node<>* faces = node->first_node("faces");
-			for (rapidxml::xml_node<>* i = faces->first_node("f"); i; i = i->next_sibling())
+			XmlNode* faces = node->first_node("faces");
+			for (XmlNode* i = faces->first_node("f"); i; i = i->next_sibling())
 			{
 				glm::ivec3 indices;
 				ExtractXYZFromNode(i, indices);
@@ -312,11 +312,11 @@ namespace ToolKit
 			return;
 		}
 
-		rapidxml::file<> file(m_file.c_str());
-		rapidxml::xml_document<> doc;
+		XmlFile file(m_file.c_str());
+		XmlDocument doc;
 		doc.parse<0>(file.data());
 
-		rapidxml::xml_node<>* node = doc.first_node("meshContainer");
+		XmlNode* node = doc.first_node("meshContainer");
 		assert(m_skeleton->m_loaded);
 		if (node == nullptr)
 		{
@@ -332,7 +332,7 @@ namespace ToolKit
 				m_subMeshes.push_back(MeshPtr(mesh));
 			}
 
-			rapidxml::xml_node<>* materialNode = node->first_node("material");
+			XmlNode* materialNode = node->first_node("material");
 			String matFile = materialNode->first_attribute("name")->value();
 
 			if (CheckFile(MaterialPath(matFile)))
@@ -344,8 +344,8 @@ namespace ToolKit
 				mesh->m_material = GetMaterialManager()->Create(MaterialPath("default.material"));
 			}
 
-			rapidxml::xml_node<>* vertex = node->first_node("vertices");
-			for (rapidxml::xml_node<>* v = vertex->first_node("v"); v; v = v->next_sibling())
+			XmlNode* vertex = node->first_node("vertices");
+			for (XmlNode* v = vertex->first_node("v"); v; v = v->next_sibling())
 			{
 				SkinVertex vd;
 				ExtractXYZFromNode(v->first_node("p"), vd.pos);
@@ -357,8 +357,8 @@ namespace ToolKit
 				mesh->m_clientSideVertices.push_back(vd);
 			}
 
-			rapidxml::xml_node<>* faces = node->first_node("faces");
-			for (rapidxml::xml_node<>* i = faces->first_node("f"); i; i = i->next_sibling())
+			XmlNode* faces = node->first_node("faces");
+			for (XmlNode* i = faces->first_node("f"); i; i = i->next_sibling())
 			{
 				glm::ivec3 indices;
 				ExtractXYZFromNode(i, indices);

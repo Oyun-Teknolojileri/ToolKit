@@ -6,6 +6,11 @@ namespace ToolKit
 	namespace Editor
 	{
 
+		Scene::Scene()
+		{
+			m_name = "NewScene";
+		}
+
 		Scene::~Scene()
 		{
 			for (Entity* ntt : m_entitites)
@@ -299,6 +304,41 @@ namespace ToolKit
 		void Scene::GetSelectedEntities(EntityIdArray& entities) const
 		{
 			entities = m_selectedEntities;
+		}
+
+		const String XmlSceneElement("S");
+
+		void Scene::Serialize(XmlDocument* doc, XmlNode* parent)
+		{
+			std::ofstream file;
+			String fileName = m_name + ".scene";
+
+			file.open(fileName.c_str(), std::ios::out);
+			if (file.is_open())
+			{
+				XmlNode* scene = doc->allocate_node(rapidxml::node_element, XmlSceneElement.c_str(), m_name.c_str());
+
+				if (parent != nullptr)
+				{
+					parent->append_node(scene);
+				}
+				else
+				{
+					doc->append_node(scene);
+				}
+
+				for (Entity* ntt : m_entitites)
+				{
+					ntt->Serialize(doc, scene);
+				}
+
+				std::string xml;
+				rapidxml::print(std::back_inserter(xml), *doc, 0);
+
+				file << xml;
+				file.close();
+				doc->clear();
+			}
 		}
 
 	}

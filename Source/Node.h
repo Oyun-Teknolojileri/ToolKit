@@ -38,6 +38,7 @@ namespace ToolKit
 		void OrphanSelf();
 		Node* GetRoot() const;
 		Node* GetCopy() const;
+		void Serialize(XmlDocument* doc, XmlNode* parent) const;
 
 	private:
 		void TransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale);
@@ -47,6 +48,7 @@ namespace ToolKit
 		Mat4 GetParentTransform() const;
 
 	public:
+		NodeId m_id;
 		Node* m_parent = nullptr;
 		Entity* m_entity = nullptr;
 		bool m_inheritScale = false;
@@ -57,6 +59,7 @@ namespace ToolKit
 		Vec3 m_translation;
 		Quaternion m_orientation;
 		Vec3 m_scale = Vec3(1.0f);
+		static NodeId m_nextId;
 	};
 
 }

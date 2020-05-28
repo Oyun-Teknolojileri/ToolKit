@@ -61,11 +61,11 @@ namespace ToolKit
 
   void Skeleton::Load()
   {
-    rapidxml::file<> file(m_file.c_str());
-    rapidxml::xml_document<> doc;
+    XmlFile file(m_file.c_str());
+    XmlDocument doc;
     doc.parse<0>(file.data());
 
-    rapidxml::xml_node<>* node = doc.first_node("skeleton");
+    XmlNode* node = doc.first_node("skeleton");
     if (node == nullptr)
       return;
 
@@ -110,17 +110,17 @@ namespace ToolKit
 
   void Skeleton::Traverse(void* data, Bone* parent)
   {
-    rapidxml::xml_node<>* node = (rapidxml::xml_node<char>*)(data);
+    XmlNode* node = (rapidxml::xml_node<char>*)(data);
     if (node == nullptr)
       return;
 
-    rapidxml::xml_attribute<>* attr = node->first_attribute("name");
+    XmlAttribute* attr = node->first_attribute("name");
 
     if (attr == nullptr)
       return;
 
     Bone* bone = new Bone(attr->value());
-    rapidxml::xml_node<>* subNode = node->first_node("translation");
+    XmlNode* subNode = node->first_node("translation");
     ExtractXYZFromNode(subNode, bone->m_node->m_translation);
 
     subNode = node->first_node("scale");
@@ -129,13 +129,13 @@ namespace ToolKit
     subNode = node->first_node("rotation");
     ExtractQuatFromNode(subNode, bone->m_node->m_orientation);
 
-    rapidxml::xml_node<>* bindPoseNode = node->first_node("bindPose");
+    XmlNode* bindPoseNode = node->first_node("bindPose");
     if (bindPoseNode != nullptr)
     {
       Vec3 ts, scl;
       Quaternion rt;
 
-      rapidxml::xml_node<>* subNode = bindPoseNode->first_node("translation");
+      XmlNode* subNode = bindPoseNode->first_node("translation");
       ExtractXYZFromNode(subNode, ts);
 
       subNode = bindPoseNode->first_node("scale");

@@ -6,8 +6,11 @@
 namespace ToolKit
 {
 
+	NodeId Node::m_nextId = 0;
+
 	Node::Node()
 	{
+		m_id = ++m_nextId;
 	}
 
 	Node::~Node()
@@ -232,6 +235,50 @@ namespace ToolKit
 		node->m_scale = m_scale;
 
 		return node;
+	}
+
+	static const String XmlNodeStr("N");
+	static const String XmlNodeIdAttrStr("i");
+	static const String XmlNodeParentIdAttrStr("pi");
+	static const String XmlNodeInheritScaleAttrStr("is");
+	static const String XmlNodeInheritTranslateOnlyAttrStr("ito");
+	static const String XmlTranslateStr("T");
+	static const String XmlRotateStr("R");
+	static const String XmlScaleStr("S");
+
+	void Node::Serialize(XmlDocument* doc, XmlNode* parent) const
+	{
+		XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlNodeStr.c_str());
+		if (parent != nullptr)
+		{
+			parent->append_node(node);
+		}
+		else
+		{
+			doc->append_node(node);
+		}
+		
+		WriteAttr(node, doc, XmlNodeIdAttrStr, std::to_string(m_id));
+
+		if (m_parent != nullptr)
+		{
+			WriteAttr(node, doc, XmlNodeParentIdAttrStr, std::to_string(m_parent->m_id));
+		}
+
+		WriteAttr(node, doc, XmlNodeInheritScaleAttrStr, std::to_string((int)m_inheritScale));
+		WriteAttr(node, doc, XmlNodeInheritTranslateOnlyAttrStr, std::to_string((int)m_inheritOnlyTranslate));
+
+		XmlNode* tNode = doc->allocate_node(rapidxml::node_element, XmlTranslateStr.c_str());
+		WriteXYZ(tNode, doc, m_translation);
+		node->append_node(tNode);
+
+		tNode = doc->allocate_node(rapidxml::node_element, XmlRotateStr.c_str());
+		WriteXYZW(tNode, doc, m_orientation);
+		node->append_node(tNode);
+
+		tNode = doc->allocate_node(rapidxml::node_element, XmlScaleStr.c_str());
+		WriteXYZ(tNode, doc, m_scale);
+		node->append_node(tNode);
 	}
 
 	void Node::TransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale)

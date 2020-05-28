@@ -8,7 +8,7 @@ namespace ToolKit
 {
 	namespace Editor
 	{
-		typedef std::pair<String, std::vector<String>> TagArg;
+		typedef std::pair<String, StringArray> TagArg;
 		typedef std::vector<TagArg> TagArgArray;
 		TagArgArray::const_iterator GetTag(String tag, const TagArgArray& tagArgs);
 
@@ -75,8 +75,8 @@ namespace ToolKit
 			bool m_scrollToBottom = false;
 
 			// Buffers.
-			std::vector<String> m_items;
-			std::vector<String> m_commands;
+			StringArray m_items;
+			StringArray m_commands;
 			std::unordered_map<String, std::function<void(TagArgArray&)>> m_commandExecutors;
 
 			std::vector < String> m_history;

@@ -48,7 +48,7 @@ namespace ToolKit
 			m_mesh->m_subMeshes.push_back(meshPtr);
 
 			// Lines
-			std::vector<Vertex> vertices;
+			VertexArray vertices;
 			vertices.resize(12);
 
 			vertices[0].pos.z = -0.3f;

@@ -9,23 +9,20 @@
 namespace ToolKit
 {
 
-  class Vertex;
-
-  class Surface : public Drawable, public Resource
+  class Surface : public Drawable
   {
   public:
-    Surface(std::shared_ptr<Texture> texture, Vec2 pivotOffset);
-    Surface(std::shared_ptr<Texture> texture, const std::vector<Vertex>& vertices);
-    Surface(String file, Vec2 pivotOffset);
-    ~Surface();
+    Surface(TexturePtr texture, const Vec2& pivotOffset);
+    Surface(TexturePtr texture, const SpriteEntry& entry);
+    Surface(const String& textureFile, const Vec2& pivotOffset);
+    virtual ~Surface();
 
     virtual EntityType GetType() const override;
-    virtual void Load() override;
-    virtual void Init(bool flushClientSideArray = true) override;
-		virtual void UnInit() override;
 
   private:
+    void AssignTexture();
     void CreateQuat();
+    void CreateQuat(const SpriteEntry& val);
 
   private:
     Vec2 m_pivotOffset;

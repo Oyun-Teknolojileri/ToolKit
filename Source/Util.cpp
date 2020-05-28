@@ -9,20 +9,18 @@
 namespace ToolKit
 {
 
-	void ExtractXYFromNode(void* nodev, Vec2& val)
+	void ExtractXYFromNode(XmlNode* node, Vec2& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
-		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
+		XmlAttribute* attr = node->first_attribute("x");
 		val.x = (float)std::atof(attr->value());
 
 		attr = node->first_attribute("y");
 		val.y = (float)std::atof(attr->value());
 	}
 
-	void ExtractXYZFromNode(void* nodev, Vec3& val)
+	void ExtractXYZFromNode(XmlNode* node, Vec3& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
-		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
+		XmlAttribute* attr = node->first_attribute("x");
 		val.x = (float)std::atof(attr->value());
 
 		attr = node->first_attribute("y");
@@ -32,10 +30,9 @@ namespace ToolKit
 		val.z = (float)std::atof(attr->value());
 	}
 
-	void ExtractXYZFromNode(void* nodev, glm::ivec3& val)
+	void ExtractXYZFromNode(XmlNode* node, glm::ivec3& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
-		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
+		XmlAttribute* attr = node->first_attribute("x");
 		val.x = std::atoi(attr->value());
 
 		attr = node->first_attribute("y");
@@ -45,11 +42,9 @@ namespace ToolKit
 		val.z = std::atoi(attr->value());
 	}
 
-	void ExtractWXYZFromNode(void* nodev, Vec4& val)
+	void ExtractWXYZFromNode(XmlNode* node, Vec4& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
-
-		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
+		XmlAttribute* attr = node->first_attribute("x");
 		val.x = (float)std::atof(attr->value());
 
 		attr = node->first_attribute("y");
@@ -62,11 +57,9 @@ namespace ToolKit
 		val.w = (float)std::atof(attr->value());
 	}
 
-	void ExtractWXYZFromNode(void* nodev, glm::uvec4& val)
+	void ExtractWXYZFromNode(XmlNode* node, glm::uvec4& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
-
-		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
+		XmlAttribute* attr = node->first_attribute("x");
 		val.x = std::atoi(attr->value());
 
 		attr = node->first_attribute("y");
@@ -79,11 +72,9 @@ namespace ToolKit
 		val.w = std::atoi(attr->value());
 	}
 
-	void ExtractWXYZFromNode(void* nodev, glm::ivec4& val)
+	void ExtractWXYZFromNode(XmlNode* node, glm::ivec4& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
-
-		rapidxml::xml_attribute<>* attr = node->first_attribute("x");
+		XmlAttribute* attr = node->first_attribute("x");
 		val.x = std::atoi(attr->value());
 
 		attr = node->first_attribute("y");
@@ -96,13 +87,47 @@ namespace ToolKit
 		val.w = std::atoi(attr->value());
 	}
 
-	void ExtractQuatFromNode(void* nodev, Quaternion& val)
+	void ExtractQuatFromNode(XmlNode* node, Quaternion& val)
 	{
-		rapidxml::xml_node<>* node = (rapidxml::xml_node<>*) nodev;
-
 		Vec4 tmp;
 		ExtractWXYZFromNode(node, tmp);
 		val = Quaternion(tmp.w, tmp.xyz);
+	}
+
+	void WriteXY(XmlNode* node, XmlDocument* doc, const Vec2& val)
+	{
+		WriteAttr(node, doc, "x", std::to_string(val.x));
+		WriteAttr(node, doc, "y", std::to_string(val.y));
+	}
+
+	void WriteXYZ(XmlNode* node, XmlDocument* doc, const Vec3& val)
+	{
+		WriteXY(node, doc, val.xy);
+		WriteAttr(node, doc, "z", std::to_string(val.z));
+	}
+
+	void WriteXYZW(XmlNode* node, XmlDocument* doc, const Vec4& val)
+	{
+		WriteXYZ(node, doc, val.xyz);
+		WriteAttr(node, doc, "w", std::to_string(val.w));
+	}
+
+	void WriteXYZW(XmlNode* node, XmlDocument* doc, const Quaternion& val)
+	{
+		Vec4 dummy(val.x, val.y, val.z, val.w);
+		WriteXYZW(node, doc, dummy);
+	}
+
+	void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val)
+	{
+		node->append_attribute
+		(
+			doc->allocate_attribute
+			(
+				doc->allocate_string(name.c_str(), 0),
+				doc->allocate_string(val.c_str(), 0)
+			)
+		);
 	}
 
 	bool CheckFile(const String& path)
@@ -146,7 +171,7 @@ namespace ToolKit
 	// for example, if separator="::",
 	// s = "abc::def xy::st:" -> "abc", "def xy" and "st:",
 	// https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c?page=2&tab=votes#tab-top
-	void Split(const String& s, const String& sep, std::vector<String>& v)
+	void Split(const String& s, const String& sep, StringArray& v)
 	{
 		typedef String::const_iterator iter;
 		iter b = s.begin(), e = s.end(), i;

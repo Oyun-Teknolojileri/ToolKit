@@ -32,10 +32,9 @@ namespace ToolKit
 
   private:
     bool FetchEntries();
-    std::vector<Vertex> CreateQuat(SpriteEntry val);
 
   public:
-    std::shared_ptr<Texture> m_spriteSheet;
+    TexturePtr m_spriteSheet;
     std::vector<SpriteEntry> m_entries;
     String m_imageFile;
     int m_imageWidth;
@@ -49,7 +48,7 @@ namespace ToolKit
   {
   public:
     SpriteAnimation();
-    SpriteAnimation(std::shared_ptr<SpriteSheet> spriteSheet);
+    SpriteAnimation(SpriteSheetPtr spriteSheet);
     ~SpriteAnimation();
 
     virtual EntityType GetType() const;
@@ -60,8 +59,8 @@ namespace ToolKit
     float m_animFps = 23.4f;
     bool m_looping = false;
     bool m_animationStoped = false;
-    std::vector<String> m_frames;
-    std::shared_ptr<SpriteSheet> m_sheet;
+    StringArray m_frames;
+    SpriteSheetPtr m_sheet;
     String m_currentFrame;
 
   private:

@@ -27,13 +27,13 @@ namespace ToolKit
 		UI::SearchFile UI::SearchFileData;
 
 		// Icons
-		std::shared_ptr<Texture> UI::m_selectIcn;
-		std::shared_ptr<Texture> UI::m_cursorIcn;
-		std::shared_ptr<Texture> UI::m_moveIcn;
-		std::shared_ptr<Texture> UI::m_rotateIcn;
-		std::shared_ptr<Texture> UI::m_scaleIcn;
-		std::shared_ptr<Texture> UI::m_appIcon;
-		std::shared_ptr<Texture> UI::m_snapIcon;
+		TexturePtr UI::m_selectIcn;
+		TexturePtr UI::m_cursorIcn;
+		TexturePtr UI::m_moveIcn;
+		TexturePtr UI::m_rotateIcn;
+		TexturePtr UI::m_scaleIcn;
+		TexturePtr UI::m_appIcon;
+		TexturePtr UI::m_snapIcon;
 
 		void UI::Init()
 		{

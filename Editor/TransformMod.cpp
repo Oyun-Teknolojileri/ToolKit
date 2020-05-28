@@ -391,11 +391,15 @@ namespace ToolKit
 		{
 			StateTransformBase::TransitionIn(prevState);
 			
-			EntityRawPtrArray ntties;
-			GetEntitiesToTransform(ntties);
-			for (Entity* e : ntties)
+			EntityRawPtrArray entities;
+			GetEntitiesToTransform(entities);
+			if (!entities.empty())
 			{
-				ActionManager::GetInstance()->AddAction(new TransformAction(e));
+				for (Entity* ntt : entities)
+				{
+					ActionManager::GetInstance()->AddAction(new TransformAction(ntt));
+				}
+				ActionManager::GetInstance()->GroupLastActions((int)entities.size());
 			}
 		}
 

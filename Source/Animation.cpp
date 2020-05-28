@@ -98,34 +98,34 @@ namespace ToolKit
 
 	void Animation::Load()
 	{
-		rapidxml::file<> file(m_file.c_str());
-		rapidxml::xml_document<> doc;
+		XmlFile file(m_file.c_str());
+		XmlDocument doc;
 		doc.parse<0>(file.data());
 
-		rapidxml::xml_node<>* node = doc.first_node("anim");
+		XmlNode* node = doc.first_node("anim");
 		if (node == nullptr)
 		{
 			return;
 		}
 
-		rapidxml::xml_attribute<>* attr = node->first_attribute("fps");
+		XmlAttribute* attr = node->first_attribute("fps");
 		m_fps = (float)std::atof(attr->value());
 
 		attr = node->first_attribute("duration");
 		m_duration = (float)std::atof(attr->value());
 
-		for (rapidxml::xml_node<>* animNode = node->first_node("node"); animNode; animNode = animNode->next_sibling())
+		for (XmlNode* animNode = node->first_node("node"); animNode; animNode = animNode->next_sibling())
 		{
 			attr = animNode->first_attribute("name");
 			String boneName = attr->value();
 
-			for (rapidxml::xml_node<>* keyNode = animNode->first_node("key"); keyNode; keyNode = keyNode->next_sibling())
+			for (XmlNode* keyNode = animNode->first_node("key"); keyNode; keyNode = keyNode->next_sibling())
 			{
 				Key key;
 				attr = keyNode->first_attribute("frame");
 				key.m_frame = std::atoi(attr->value());
 
-				rapidxml::xml_node<>* subNode = keyNode->first_node("translation");
+				XmlNode* subNode = keyNode->first_node("translation");
 				ExtractXYZFromNode(subNode, key.m_position);
 
 				subNode = keyNode->first_node("scale");

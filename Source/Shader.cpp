@@ -29,19 +29,19 @@ namespace ToolKit
 		if (m_loaded)
 			return;
 
-		rapidxml::file<> file(m_file.c_str());
-		rapidxml::xml_document<> doc;
+		XmlFile file(m_file.c_str());
+		XmlDocument doc;
 		doc.parse<rapidxml::parse_full>(file.data());
 
-		rapidxml::xml_node<>* rootNode = doc.first_node("shader");
+		XmlNode* rootNode = doc.first_node("shader");
 		if (rootNode == nullptr)
 			return;
 
-		for (rapidxml::xml_node<>* node = rootNode->first_node(); node; node = node->next_sibling())
+		for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
 		{
 			if (String("type").compare(node->name()) == 0)
 			{
-				rapidxml::xml_attribute<>* attr = node->first_attribute("name");
+				XmlAttribute* attr = node->first_attribute("name");
 				if (String("vertexShader").compare(attr->value()) == 0)
 				{
 					m_type = GL_VERTEX_SHADER;
@@ -58,7 +58,7 @@ namespace ToolKit
 
 			if (String("uniform").compare(node->name()) == 0)
 			{
-				rapidxml::xml_attribute<>* attr = node->first_attribute();
+				XmlAttribute* attr = node->first_attribute();
 				if (String("ProjectViewModel").compare(attr->value()) == 0)
 				{
 					m_uniforms.push_back(Uniform::PROJECT_MODEL_VIEW);
@@ -147,7 +147,7 @@ namespace ToolKit
 		m_initiated = false;
 	}
 
-	void Shader::SetShaderParameter(String param, const ShaderVariant& val)
+	void Shader::SetShaderParameter(String param, const ParameterVariant& val)
 	{
 		m_shaderParams[param] = val;
 	}
@@ -156,7 +156,7 @@ namespace ToolKit
 	{
 	}
 
-	Program::Program(std::shared_ptr<Shader> vertex, std::shared_ptr<Shader> fragment)
+	Program::Program(ShaderPtr vertex, ShaderPtr fragment)
 	{
 		m_shaders.push_back(vertex);
 		m_shaders.push_back(fragment);
@@ -207,7 +207,7 @@ namespace ToolKit
 			"   v_bitan = vBiTan;"
 			"}";
 
-		std::shared_ptr<Shader> skin = std::make_shared<Shader>();
+		ShaderPtr skin = std::make_shared<Shader>();
 		skin->m_source = skinShaderStr;
 		skin->m_uniforms.push_back(Uniform::PROJECT_MODEL_VIEW);
 		skin->Init();

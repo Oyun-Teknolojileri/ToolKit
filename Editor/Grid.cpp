@@ -49,7 +49,7 @@ namespace ToolKit
 			m_mesh = mesh;
 			m_mesh->m_material = m_material;
 
-			std::vector<Vertex> vertices;
+			VertexArray vertices;
 			vertices.resize(2);
 
 			// x - z lines.

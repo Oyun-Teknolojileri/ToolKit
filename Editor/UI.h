@@ -85,13 +85,13 @@ namespace ToolKit
 				} SearchFileData;
 
 				// Toolbar Icons.
-				static std::shared_ptr<Texture> m_selectIcn;
-				static std::shared_ptr<Texture> m_cursorIcn;
-				static std::shared_ptr<Texture> m_moveIcn;
-				static std::shared_ptr<Texture> m_rotateIcn;
-				static std::shared_ptr<Texture> m_scaleIcn;
-				static std::shared_ptr<Texture> m_appIcon;
-				static std::shared_ptr<Texture> m_snapIcon;
+				static TexturePtr m_selectIcn;
+				static TexturePtr m_cursorIcn;
+				static TexturePtr m_moveIcn;
+				static TexturePtr m_rotateIcn;
+				static TexturePtr m_scaleIcn;
+				static TexturePtr m_appIcon;
+				static TexturePtr m_snapIcon;
 			};
 		}
 }
