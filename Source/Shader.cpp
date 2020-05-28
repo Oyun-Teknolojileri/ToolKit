@@ -27,7 +27,9 @@ namespace ToolKit
 	void Shader::Load()
 	{
 		if (m_loaded)
+		{
 			return;
+		}
 
 		XmlFile file(m_file.c_str());
 		XmlDocument doc;
@@ -105,11 +107,15 @@ namespace ToolKit
 	void Shader::Init(bool flushClientSideArray)
 	{
 		if (m_initiated)
+		{
 			return;
+		}
 
 		m_shaderHandle = glCreateShader(m_type);
 		if (m_shaderHandle == 0)
+		{
 			return;
+		}
 
 		const char* str = m_source.c_str();
 		glShaderSource(m_shaderHandle, 1, &str, nullptr);
@@ -136,8 +142,11 @@ namespace ToolKit
 		}
 
 		if (flushClientSideArray)
+		{
 			m_source.clear();
+		}
 
+		m_tag = std::to_string(m_shaderHandle);
 		m_initiated = true;
 	}
 
@@ -161,7 +170,7 @@ namespace ToolKit
 		m_shaders.push_back(vertex);
 		m_shaders.push_back(fragment);
 
-		m_tag += std::to_string(vertex->m_shaderHandle);
+		m_tag = std::to_string(vertex->m_shaderHandle);
 		m_tag += std::to_string(fragment->m_shaderHandle);
 	}
 

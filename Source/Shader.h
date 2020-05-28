@@ -32,7 +32,8 @@ namespace ToolKit
 
   public:
     std::unordered_map<String, ParameterVariant> m_shaderParams;
-
+    
+    String m_tag;
     GLuint m_type = GL_VERTEX_SHADER;
     GLuint m_shaderHandle = 0;
     std::vector<Uniform> m_uniforms;

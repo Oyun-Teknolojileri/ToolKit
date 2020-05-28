@@ -320,15 +320,17 @@ namespace ToolKit
 		assert(vertex);
 		assert(fragment);
 
-		ProgramPtr program = std::make_shared<Program>(vertex, fragment);
-		if (m_programs.find(program->m_tag) == m_programs.end())
+		String tag;
+		tag = vertex->m_tag + fragment->m_tag;
+		if (m_programs.find(tag) == m_programs.end())
 		{
+			ProgramPtr program = std::make_shared<Program>(vertex, fragment);
 			program->m_handle = glCreateProgram();
 			LinkProgram(program->m_handle, vertex->m_shaderHandle, fragment->m_shaderHandle);
 			m_programs[program->m_tag] = program;
 		}
 
-		return m_programs[program->m_tag];
+		return m_programs[tag];
 	}
 
 	void Renderer::FeedUniforms(ProgramPtr program)
