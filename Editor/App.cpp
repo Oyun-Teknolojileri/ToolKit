@@ -75,7 +75,7 @@ namespace ToolKit
 			m_suzanne->m_node->SetOrientation(glm::angleAxis(-glm::half_pi<float>(), X_AXIS));
 			Mesh* szm = GetMeshManager()->CreateDerived<Mesh>(MeshPath("suzanne.mesh"))->GetCopy();
 			szm->Init(false);
-			m_suzanne->m_mesh = std::shared_ptr<Mesh>(szm);
+			m_suzanne->m_mesh = MeshPtr(szm);
 			m_scene.AddEntity(m_suzanne);
 
 			// https://t-allen-studios.itch.io/low-poly-saxon-warrior

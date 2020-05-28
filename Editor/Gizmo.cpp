@@ -36,7 +36,7 @@ namespace ToolKit
 
 			// Billboard
 			Quad quad;
-			std::shared_ptr<Mesh> meshPtr = quad.m_mesh;
+			MeshPtr meshPtr = quad.m_mesh;
 
 			meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
 			meshPtr->m_material->UnInit();

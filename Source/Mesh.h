@@ -52,6 +52,9 @@ namespace ToolKit
     MaterialPtr m_material;
     MeshPtrArray m_subMeshes;
 		BoundingBox m_aabb;
+
+  private:
+    MeshRawPtrArray m_allMeshes;
   };
 
   class MeshManager : public ResourceManager<Mesh>

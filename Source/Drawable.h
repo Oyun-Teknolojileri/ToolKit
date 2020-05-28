@@ -1,13 +1,9 @@
 #pragma once
 
 #include "Entity.h"
-#include <memory>
 
 namespace ToolKit
 {
-
-  class Mesh;
-  class Texture;
 
   class Drawable : public Entity
   {
@@ -20,10 +16,10 @@ namespace ToolKit
 		virtual struct BoundingBox GetAABB(bool inWorld = false) const override;
     virtual Drawable* GetCopy() const override;
     virtual void GetCopy(Entity* copyTo) const override;
-		virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
 
   public:
-    std::shared_ptr<Mesh> m_mesh;
+    MeshPtr m_mesh;
   };
 
 }

@@ -40,7 +40,7 @@ namespace ToolKit
 
 			Quad quad;
 			float scale = (float)m_size;
-			std::shared_ptr<Mesh> mesh = quad.m_mesh;
+			MeshPtr mesh = quad.m_mesh;
 			for (int j = 0; j < 4; j++)
 			{
 				mesh->m_clientSideVertices[j].pos = (mesh->m_clientSideVertices[j].pos * scale).xzy;
@@ -74,7 +74,7 @@ namespace ToolKit
 				newMaterial->GetRenderState()->drawType = DrawType::Line;
 				newMaterial->m_color = col;
 
-				std::shared_ptr<Mesh> subMesh(new Mesh());
+				MeshPtr subMesh(new Mesh());
 				subMesh->m_clientSideVertices = vertices;
 				subMesh->m_material = newMaterial;
 				m_mesh->m_subMeshes.push_back(subMesh);

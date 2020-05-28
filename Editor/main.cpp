@@ -27,7 +27,7 @@ namespace ToolKit
 		const char* appName = "ToolKit";
 		const int width = 1024;
 		const int height = 640;
-		const uint fps = 120;
+		const uint fps = 5000;
 
 		void Init()
 		{
