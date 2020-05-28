@@ -23,6 +23,9 @@ namespace ToolKit
 	{
 	}
 
+	// Optimization caches.
+	static MeshRawPtrArray g_meshCollector;
+
 	void Renderer::Render(Drawable* object, Camera* cam, const LightRawPtrArray& lights)
 	{
 		if (object->m_mesh->IsSkinned())
@@ -32,17 +35,15 @@ namespace ToolKit
 		}
 
 		object->m_mesh->Init();
-
-		static MeshRawPtrArray meshes;
-		meshes.clear();
-
-		object->m_mesh->GetAllMeshes(meshes);
+		
+		g_meshCollector.clear();
+		object->m_mesh->GetAllMeshes(g_meshCollector);
 
 		m_cam = cam;
 		m_lights = lights;
 		SetProjectViewModel(object, cam);
 
-		for (Mesh* mesh : meshes)
+		for (Mesh* mesh : g_meshCollector)
 		{
 			m_mat = mesh->m_material.get();
 
@@ -94,17 +95,13 @@ namespace ToolKit
 
 			shaderName = "bones[" + std::to_string(i) + "].bindPose";
 			loc = glGetUniformLocation(skinProg->m_handle, shaderName.c_str());
-			glUniformMatrix4fv(loc, 1, false, &bone->m_inverseWorldMatrix[0][0]);
+			glUniformMatrix4fv(loc, 1, false, (float*)&bone->m_inverseWorldMatrix);
 		}
 
-		MeshPtrArray meshes;
-		meshes.push_back(object->m_mesh);
-		for (int i = 0; i < (int)object->m_mesh->m_subMeshes.size(); i++)
-		{
-			meshes.push_back(object->m_mesh->m_subMeshes[i]);
-		}
+		g_meshCollector.clear();
+		object->m_mesh->GetAllMeshes(g_meshCollector);
 
-		for (MeshPtr mesh : meshes)
+		for (Mesh* mesh : g_meshCollector)
 		{
 			RenderState rs = *mesh->m_material->GetRenderState();
 			SetRenderState(rs);
