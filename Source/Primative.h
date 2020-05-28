@@ -39,6 +39,7 @@ namespace ToolKit
 		virtual Cube* GetCopy() const override;
 		virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
+		virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
 
 	private:
 		void Generate(Vec3 scale);

@@ -67,4 +67,8 @@ namespace ToolKit
 		ntt->m_mesh = MeshPtr(m_mesh->GetCopy());
 	}
 
+	void Drawable::Serialize(XmlDocument* doc, XmlNode* parent) const
+	{
+	}
+
 }

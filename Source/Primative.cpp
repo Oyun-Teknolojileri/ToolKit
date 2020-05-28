@@ -98,6 +98,11 @@ namespace ToolKit
 		return EntityType::Entity_Cube;
 	}
 
+	void Cube::Serialize(XmlDocument* doc, XmlNode* parent) const
+	{
+		Entity::Serialize(doc, parent);
+	}
+
 	void Cube::Generate(Vec3 scale)
 	{
 		VertexArray vertices;
