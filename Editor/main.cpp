@@ -27,12 +27,7 @@ namespace ToolKit
 		const char* appName = "ToolKit";
 		const int width = 1024;
 		const int height = 640;
-
-#ifdef TK_PROFILE
-		const uint fps = 5000;
-#else
-		const uint fps = 60;
-#endif
+		const uint fps = 120;
 
 		void Init()
 		{
@@ -188,12 +183,6 @@ namespace ToolKit
 
 					lastTime = currentTime;
 				}
-#ifndef TK_PROFILE
-				else
-				{
-					SDL_Delay(10);
-				}
-#endif
 			}
 
 			Exit();
