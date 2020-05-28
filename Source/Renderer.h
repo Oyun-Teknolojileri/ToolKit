@@ -26,7 +26,7 @@ namespace ToolKit
     void RenderSkinned(Drawable* object, Camera* cam);
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
-    void SetRenderState(RenderState state);
+    void SetRenderState(const RenderState* const state);
 		void SetRenderTarget(RenderTarget* renderTarget, bool clear = true);
     void DrawFullQuad(ShaderPtr fragmentShader);
 

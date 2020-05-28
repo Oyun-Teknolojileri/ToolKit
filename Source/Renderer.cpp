@@ -49,7 +49,7 @@ namespace ToolKit
 			BindProgram(prg);
 			FeedUniforms(prg);
 
-			RenderState rs = *m_mat->GetRenderState();
+			RenderState* rs = m_mat->GetRenderState();
 			SetRenderState(rs);
 
 			glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
@@ -58,12 +58,12 @@ namespace ToolKit
 			if (mesh->m_indexCount != 0)
 			{
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-				glDrawElements((GLenum)rs.drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
+				glDrawElements((GLenum)rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 			}
 			else
 			{
-				glDrawArrays((GLenum)rs.drawType, 0, mesh->m_vertexCount);
+				glDrawArrays((GLenum)rs->drawType, 0, mesh->m_vertexCount);
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 			}
 
@@ -99,14 +99,14 @@ namespace ToolKit
 
 		for (Mesh* mesh : g_meshCollector)
 		{
-			RenderState rs = *mesh->m_material->GetRenderState();
+			RenderState* rs = mesh->m_material->GetRenderState();
 			SetRenderState(rs);
 
 			glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
 			SetVertexLayout(VertexLayout::SkinMesh);
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-			glDrawElements((GLenum)rs.drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
+			glDrawElements((GLenum)rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
 
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -116,24 +116,24 @@ namespace ToolKit
 
 	void Renderer::Render2d(Surface* object, glm::ivec2 screenDimensions)
 	{
-		ShaderPtr vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
-		ShaderPtr fragShader = GetShaderManager()->Create(ShaderPath("unlitFrag.shader"));
-		ProgramPtr prog = CreateProgram(vertexShader, fragShader);
+		static ShaderPtr vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
+		static ShaderPtr fragShader = GetShaderManager()->Create(ShaderPath("unlitFrag.shader"));
+		static ProgramPtr prog = CreateProgram(vertexShader, fragShader);
 		BindProgram(prog);
 
 		object->m_mesh->Init();
-		RenderState rs = *object->m_mesh->m_material->GetRenderState();
+		RenderState* rs = object->m_mesh->m_material->GetRenderState();
 		SetRenderState(rs);
 
 		GLint pvloc = glGetUniformLocation(prog->m_handle, "ProjectViewModel");
 		Mat4 pm = glm::ortho(0.0f, (float)screenDimensions.x, 0.0f, (float)screenDimensions.y, 0.0f, 100.0f);
 		Mat4 mul = pm * object->m_node->GetTransform(TransformationSpace::TS_WORLD);
-		glUniformMatrix4fv(pvloc, 1, false, &mul[0][0]);
+		glUniformMatrix4fv(pvloc, 1, false, (float*)&mul);
 
 		glBindBuffer(GL_ARRAY_BUFFER, object->m_mesh->m_vboVertexId);
 		SetVertexLayout(VertexLayout::Mesh);
 
-		glDrawArrays((GLenum)rs.drawType, 0, object->m_mesh->m_vertexCount);
+		glDrawArrays((GLenum)rs->drawType, 0, object->m_mesh->m_vertexCount);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		SetVertexLayout(VertexLayout::None);
@@ -151,16 +151,16 @@ namespace ToolKit
 		surface->m_node = backup;
 	}
 
-	void Renderer::SetRenderState(RenderState state)
+	void Renderer::SetRenderState(const RenderState* const state)
 	{
-		if (m_renderState.cullMode != state.cullMode)
+		if (m_renderState.cullMode != state->cullMode)
 		{
-			if (state.cullMode == CullingType::TwoSided)
+			if (state->cullMode == CullingType::TwoSided)
 			{
 				glDisable(GL_CULL_FACE);
 			}
 
-			if (state.cullMode == CullingType::Front)
+			if (state->cullMode == CullingType::Front)
 			{
 				if (m_renderState.cullMode == CullingType::TwoSided)
 				{
@@ -169,7 +169,7 @@ namespace ToolKit
 				glCullFace(GL_FRONT);
 			}
 
-			if (state.cullMode == CullingType::Back)
+			if (state->cullMode == CullingType::Back)
 			{
 				if (m_renderState.cullMode == CullingType::TwoSided)
 				{
@@ -178,21 +178,25 @@ namespace ToolKit
 				glCullFace(GL_BACK);
 			}
 
-			m_renderState.cullMode = state.cullMode;
+			m_renderState.cullMode = state->cullMode;
 		}
 
-		if (m_renderState.depthTestEnabled != state.depthTestEnabled)
+		if (m_renderState.depthTestEnabled != state->depthTestEnabled)
 		{
-			if (state.depthTestEnabled)
+			if (state->depthTestEnabled)
+			{
 				glEnable(GL_DEPTH_TEST);
+			}
 			else
+			{
 				glDisable(GL_DEPTH_TEST);
-			m_renderState.depthTestEnabled = state.depthTestEnabled;
+			}
+			m_renderState.depthTestEnabled = state->depthTestEnabled;
 		}
 
-		if (m_renderState.blendFunction != state.blendFunction)
+		if (m_renderState.blendFunction != state->blendFunction)
 		{
-			switch (state.blendFunction)
+			switch (state->blendFunction)
 			{
 			case BlendFunction::NONE:
 				glDisable(GL_BLEND);
@@ -203,24 +207,24 @@ namespace ToolKit
 				break;
 			}
 
-			m_renderState.blendFunction = state.blendFunction;
+			m_renderState.blendFunction = state->blendFunction;
 		}
 
-		if (m_renderState.diffuseTexture != state.diffuseTexture && state.diffuseTextureInUse)
+		if (m_renderState.diffuseTexture != state->diffuseTexture && state->diffuseTextureInUse)
 		{
-			m_renderState.diffuseTexture = state.diffuseTexture;
+			m_renderState.diffuseTexture = state->diffuseTexture;
 			glBindTexture(GL_TEXTURE_2D, m_renderState.diffuseTexture);
 		}
 
-		if (m_renderState.cubeMap != state.cubeMap && state.cubeMapInUse)
+		if (m_renderState.cubeMap != state->cubeMap && state->cubeMapInUse)
 		{
-			m_renderState.cubeMap = state.cubeMap;
+			m_renderState.cubeMap = state->cubeMap;
 			glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderState.cubeMap);
 		}
 
-		if (m_renderState.lineWidth != state.lineWidth)
+		if (m_renderState.lineWidth != state->lineWidth)
 		{
-			m_renderState.lineWidth = state.lineWidth;
+			m_renderState.lineWidth = state->lineWidth;
 			glLineWidth(m_renderState.lineWidth);
 		}
 	}
