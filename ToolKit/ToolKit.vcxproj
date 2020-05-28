@@ -91,6 +91,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\GlobalCache.h" />
     <ClInclude Include="..\Source\ParameterBlock.h" />
     <ClInclude Include="..\Source\StateMachine.h" />
     <ClInclude Include="..\Source\ToolKit.h" />

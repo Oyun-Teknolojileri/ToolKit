@@ -8,6 +8,7 @@
 #include "Material.h"
 #include "Surface.h"
 #include "Skeleton.h"
+#include "GlobalCache.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -22,9 +23,6 @@ namespace ToolKit
 	Renderer::~Renderer()
 	{
 	}
-
-	// Optimization caches.
-	static MeshRawPtrArray g_meshCollector;
 
 	void Renderer::Render(Drawable* object, Camera* cam, const LightRawPtrArray& lights)
 	{
@@ -78,23 +76,21 @@ namespace ToolKit
 		object->m_mesh->Init();
 		SetProjectViewModel(object, cam);
 
-		ShaderPtr skinShader = GetShaderManager()->Create(ShaderPath("defaultSkin.shader"));
-		ShaderPtr fragShader = GetShaderManager()->Create(ShaderPath("defaultFragment.shader"));
-		ProgramPtr skinProg = CreateProgram(skinShader, fragShader);
+		static ShaderPtr skinShader = GetShaderManager()->Create(ShaderPath("defaultSkin.shader"));
+		static ShaderPtr fragShader = GetShaderManager()->Create(ShaderPath("defaultFragment.shader"));
+		static ProgramPtr skinProg = CreateProgram(skinShader, fragShader);
 		BindProgram(skinProg);
 		FeedUniforms(skinProg);
 
 		Skeleton* skeleton = static_cast<SkinMesh*> (object->m_mesh.get())->m_skeleton;
 		for (int i = 0; i < (int)skeleton->m_bones.size(); i++)
 		{
-			Bone* bone = skeleton->m_bones[i];
-			String shaderName = "bones[" + std::to_string(i) + "].transform";
-			GLint loc = glGetUniformLocation(skinProg->m_handle, shaderName.c_str());
+			Bone* bone = skeleton->m_bones[i];;
+			GLint loc = glGetUniformLocation(skinProg->m_handle, g_boneTransformStrCache[i].c_str());
 			Mat4 transform = bone->m_node->GetTransform(TransformationSpace::TS_WORLD);
 			glUniformMatrix4fv(loc, 1, false, &transform[0][0]);
 
-			shaderName = "bones[" + std::to_string(i) + "].bindPose";
-			loc = glGetUniformLocation(skinProg->m_handle, shaderName.c_str());
+			loc = glGetUniformLocation(skinProg->m_handle, g_boneBindPosStrCache[i].c_str());
 			glUniformMatrix4fv(loc, 1, false, (float*)&bone->m_inverseWorldMatrix);
 		}
 
@@ -283,7 +279,10 @@ namespace ToolKit
 	void Renderer::BindProgram(ProgramPtr program)
 	{
 		if (m_currentProgram == program->m_handle)
+		{
 			return;
+		}
+
 		m_currentProgram = program->m_handle;
 		glUseProgram(program->m_handle);
 	}
@@ -332,56 +331,6 @@ namespace ToolKit
 
 		return m_programs[tag];
 	}
-
-	// Optimization caches.
-	// LightData cache
-	StringArray g_lightPosStrCache =
-	{
-		"LightData.pos[0]",
-		"LightData.pos[1]",
-		"LightData.pos[2]",
-		"LightData.pos[3]",
-		"LightData.pos[4]",
-		"LightData.pos[5]",
-		"LightData.pos[6]",
-		"LightData.pos[7]",
-	};
-
-	StringArray g_lightDirStrCache =
-	{
-		"LightData.dir[0]",
-		"LightData.dir[1]",
-		"LightData.dir[2]",
-		"LightData.dir[3]",
-		"LightData.dir[4]",
-		"LightData.dir[5]",
-		"LightData.dir[6]",
-		"LightData.dir[7]"
-	};
-
-	StringArray g_lightColorStrCache =
-	{
-		"LightData.color[0]",
-		"LightData.color[1]",
-		"LightData.color[2]",
-		"LightData.color[3]",
-		"LightData.color[4]",
-		"LightData.color[5]",
-		"LightData.color[6]",
-		"LightData.color[7]"
-	};
-
-	StringArray g_lightIntensityStrCache =
-	{
-		"LightData.intensity[0]",
-		"LightData.intensity[1]",
-		"LightData.intensity[2]",
-		"LightData.intensity[3]",
-		"LightData.intensity[4]",
-		"LightData.intensity[5]",
-		"LightData.intensity[6]",
-		"LightData.intensity[7]"
-	};
 
 	void Renderer::FeedUniforms(ProgramPtr program)
 	{

@@ -87,6 +87,9 @@
     <ClInclude Include="..\Source\ParameterBlock.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\GlobalCache.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Animation.cpp">
