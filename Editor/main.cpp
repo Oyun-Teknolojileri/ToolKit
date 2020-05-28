@@ -11,7 +11,7 @@
 #include "ImGui/imgui_impl_sdl.h"
 #include "DebugNew.h"
 
-#define TK_PROFILE
+// #define TK_PROFILE
 
 // Global handles.
 namespace ToolKit
@@ -27,7 +27,12 @@ namespace ToolKit
 		const char* appName = "ToolKit";
 		const int width = 1024;
 		const int height = 640;
+
+#ifdef TK_PROFILE
 		const uint fps = 5000;
+#else
+		const uint fps = 120;
+#endif
 
 		void Init()
 		{
@@ -180,6 +185,12 @@ namespace ToolKit
 						timeAccum = 0;
 						frameCount = 0;
 					}
+#ifndef TK_PROFILE
+					else
+					{
+						SDL_Delay(10);
+					}
+#endif
 
 					lastTime = currentTime;
 				}
