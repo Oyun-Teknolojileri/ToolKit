@@ -108,16 +108,19 @@ namespace ToolKit
     return m_bones[index];
   }
 
-  void Skeleton::Traverse(void* data, Bone* parent)
+  void Skeleton::Traverse(XmlNode* node, Bone* parent)
   {
-    XmlNode* node = (rapidxml::xml_node<char>*)(data);
     if (node == nullptr)
+    {
       return;
+    }
 
     XmlAttribute* attr = node->first_attribute("name");
 
     if (attr == nullptr)
+    {
       return;
+    }
 
     Bone* bone = new Bone(attr->value());
     XmlNode* subNode = node->first_node("translation");
@@ -156,7 +159,9 @@ namespace ToolKit
     AddBone(bone, parent);
 
     for (subNode = node->first_node("bone"); subNode; subNode = subNode->next_sibling())
+    {
       Traverse(subNode, bone);
+    }
   }
 
 }

@@ -76,7 +76,7 @@ namespace ToolKit
 		SetTransformImp(val, space, &m_translation, &m_orientation, &m_scale);
 	}
 
-	Mat4 Node::GetTransform(TransformationSpace space) const
+	Mat4 Node::GetTransform(TransformationSpace space)
 	{
 		Mat4 ts;
 		GetTransformImp(space, &ts, nullptr, nullptr, nullptr);
@@ -95,6 +95,7 @@ namespace ToolKit
 			{
 				m_translation = val;
 			}
+			SetChildrenDirty();
 		}
 		else
 		{
@@ -103,7 +104,7 @@ namespace ToolKit
 		}
 	}
 
-	Vec3 Node::GetTranslation(TransformationSpace space) const
+	Vec3 Node::GetTranslation(TransformationSpace space)
 	{
 		Vec3 t;
 		GetTransformImp(space, nullptr, &t, nullptr, nullptr);
@@ -122,6 +123,7 @@ namespace ToolKit
 			{
 				m_orientation = val;
 			}
+			SetChildrenDirty();
 		}
 		else
 		{
@@ -130,7 +132,7 @@ namespace ToolKit
 		}
 	}
 
-	Quaternion Node::GetOrientation(TransformationSpace space) const
+	Quaternion Node::GetOrientation(TransformationSpace space)
 	{
 		Quaternion q;
 		GetTransformImp(space, nullptr, nullptr, &q, nullptr);
@@ -139,6 +141,8 @@ namespace ToolKit
 
 	void Node::SetScale(const Vec3& val, TransformationSpace space)
 	{
+		SetChildrenDirty();
+
 		// Unless locally applied, Scale needs to preserve directions. Apply rotation first.
 		switch (space)
 		{
@@ -174,7 +178,7 @@ namespace ToolKit
 		}
 	}
 
-	Vec3 Node::GetScale(TransformationSpace space) const
+	Vec3 Node::GetScale(TransformationSpace space)
 	{
 		Vec3 s;
 		GetTransformImp(space, nullptr, nullptr, nullptr, &s);
@@ -186,6 +190,8 @@ namespace ToolKit
 		assert(child->m_parent == nullptr);
 		m_children.push_back(child);
 		child->m_parent = this;
+		child->m_dirty = true;
+		child->SetChildrenDirty();
 	}
 
 	void Node::Orphan(Node* child)
@@ -195,6 +201,8 @@ namespace ToolKit
 			if (m_children[i] == child)
 			{
 				child->m_parent = nullptr;
+				child->m_dirty = true;
+				child->SetChildrenDirty();
 				m_children.erase(m_children.begin() + i);
 				return;
 			}
@@ -299,6 +307,7 @@ namespace ToolKit
 		}
 
 		DecomposeMatrix(ts, translation, orientation, scale);
+		SetChildrenDirty();
 	}
 
 	void Node::SetTransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale)
@@ -309,7 +318,7 @@ namespace ToolKit
 		case TransformationSpace::TS_WORLD:
 			if (m_parent != nullptr)
 			{
-				Mat4 ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+				Mat4 ps = GetParentTransform();
 				ts = glm::inverse(ps) * val;
 				break;
 			} // Fall trough.
@@ -322,9 +331,10 @@ namespace ToolKit
 		}
 
 		DecomposeMatrix(ts, translation, orientation, scale);
+		SetChildrenDirty();
 	}
 
-	void Node::GetTransformImp(TransformationSpace space, Mat4* transform, Vec3* translation, Quaternion* orientation, Vec3* scale) const
+	void Node::GetTransformImp(TransformationSpace space, Mat4* transform, Vec3* translation, Quaternion* orientation, Vec3* scale)
 	{
 		switch (space)
 		{
@@ -389,11 +399,16 @@ namespace ToolKit
 		return ts;
 	}
 
-	Mat4 Node::GetParentTransform() const
+	Mat4 Node::GetParentTransform()
 	{
 		Mat4 ps;
 		if (m_parent != nullptr)
 		{
+			if (!m_dirty)
+			{
+				return m_parentCache;
+			}
+
 			ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 
 			if (m_inheritOnlyTranslate)
@@ -409,9 +424,21 @@ namespace ToolKit
 					ps[i].xyz = glm::normalize(v);
 				}
 			}
+			
+			m_parentCache = ps;
 		}
 
+		m_dirty = false;
 		return ps;
+	}
+
+	void Node::SetChildrenDirty()
+	{
+		for (Node* c : m_children)
+		{
+			c->m_dirty = true;
+			c->SetChildrenDirty();
+		}
 	}
 
 }

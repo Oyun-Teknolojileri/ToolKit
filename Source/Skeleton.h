@@ -34,7 +34,7 @@ namespace ToolKit
     Bone* GetBone(String bone);
 
   private:
-    void Traverse(void* data, Bone* parent);
+    void Traverse(XmlNode* node, Bone* parent);
 
   public:
     Node* m_node;
