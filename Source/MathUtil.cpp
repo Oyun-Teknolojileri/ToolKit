@@ -10,18 +10,21 @@ namespace ToolKit
 	{
 		// assert(IsAffine(transform));
 
-		Mat3 matQ;
-		Vec3 s, vecU;
-		QDUDecomposition(transform, matQ, s, vecU);
-
-		if (scale != nullptr)
+		if (scale != nullptr || orientation != nullptr)
 		{
-			*scale = s;
-		}
+			Mat3 matQ;
+			Vec3 s, vecU;
+			QDUDecomposition(transform, matQ, s, vecU);
 
-		if (orientation != nullptr)
-		{
-			*orientation = glm::toQuat(matQ);
+			if (scale != nullptr)
+			{
+				*scale = s;
+			}
+
+			if (orientation != nullptr)
+			{
+				*orientation = glm::toQuat(matQ);
+			}
 		}
 
 		if (translation != nullptr)
