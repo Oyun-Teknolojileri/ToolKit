@@ -333,6 +333,56 @@ namespace ToolKit
 		return m_programs[tag];
 	}
 
+	// Optimization caches.
+	// LightData cache
+	StringArray g_lightPosStrCache =
+	{
+		"LightData.pos[0]",
+		"LightData.pos[1]",
+		"LightData.pos[2]",
+		"LightData.pos[3]",
+		"LightData.pos[4]",
+		"LightData.pos[5]",
+		"LightData.pos[6]",
+		"LightData.pos[7]",
+	};
+
+	StringArray g_lightDirStrCache =
+	{
+		"LightData.dir[0]",
+		"LightData.dir[1]",
+		"LightData.dir[2]",
+		"LightData.dir[3]",
+		"LightData.dir[4]",
+		"LightData.dir[5]",
+		"LightData.dir[6]",
+		"LightData.dir[7]"
+	};
+
+	StringArray g_lightColorStrCache =
+	{
+		"LightData.color[0]",
+		"LightData.color[1]",
+		"LightData.color[2]",
+		"LightData.color[3]",
+		"LightData.color[4]",
+		"LightData.color[5]",
+		"LightData.color[6]",
+		"LightData.color[7]"
+	};
+
+	StringArray g_lightIntensityStrCache =
+	{
+		"LightData.intensity[0]",
+		"LightData.intensity[1]",
+		"LightData.intensity[2]",
+		"LightData.intensity[3]",
+		"LightData.intensity[4]",
+		"LightData.intensity[5]",
+		"LightData.intensity[6]",
+		"LightData.intensity[7]"
+	};
+
 	void Renderer::FeedUniforms(ProgramPtr program)
 	{
 		for (ShaderPtr shader : program->m_shaders)
@@ -365,24 +415,25 @@ namespace ToolKit
 				break;
 				case Uniform::LIGHT_DATA:
 				{
-					if (m_lights.empty())
+					size_t lsize = m_lights.size();
+					if (lsize == 0)
+					{
 						break;
+					}
 
-					for (size_t i = 0; i < m_lights.size(); i++)
+					assert(g_lightPosStrCache.size() >= lsize);
+
+					for (size_t i = 0; i < lsize; i++)
 					{
 						Light::LightData data = m_lights[i]->GetData();
 
-						String shaderName = "LightData.pos[" + std::to_string(i) + "]";
-						GLint loc = glGetUniformLocation(program->m_handle, shaderName.c_str());
+						GLint loc = glGetUniformLocation(program->m_handle, g_lightPosStrCache[i].c_str());
 						glUniform3fv(loc, 1, &data.pos.x);
-						shaderName = "LightData.dir[" + std::to_string(i) + "]";
-						loc = glGetUniformLocation(program->m_handle, shaderName.c_str());
+						loc = glGetUniformLocation(program->m_handle, g_lightDirStrCache[i].c_str());
 						glUniform3fv(loc, 1, &data.dir.x);
-						shaderName = "LightData.color[" + std::to_string(i) + "]";
-						loc = glGetUniformLocation(program->m_handle, shaderName.c_str());
+						loc = glGetUniformLocation(program->m_handle, g_lightColorStrCache[i].c_str());
 						glUniform3fv(loc, 1, &data.color.x);
-						shaderName = "LightData.intensity[" + std::to_string(i) + "]";
-						loc = glGetUniformLocation(program->m_handle, shaderName.c_str());
+						loc = glGetUniformLocation(program->m_handle, g_lightIntensityStrCache[i].c_str());
 						glUniform1f(loc, data.intensity);
 					}
 
