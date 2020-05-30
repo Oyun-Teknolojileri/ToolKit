@@ -48,6 +48,8 @@ namespace ToolKit
 		void SetVar(const Mat4& var) { m_type = VariantType::Mat4; m_var = var; }
 		void SetVar(const String& var) { m_type = VariantType::String; m_var = var; }
 
+		virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
+
 	private:
 		std::variant<Byte, UByte, float, int, uint, Vec3, Vec4, Mat3, Mat4, String> m_var;
 		VariantType m_type;

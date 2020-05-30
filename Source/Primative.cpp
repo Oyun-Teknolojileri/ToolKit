@@ -101,7 +101,7 @@ namespace ToolKit
 	void Cube::Serialize(XmlDocument* doc, XmlNode* parent) const
 	{
 		Entity::Serialize(doc, parent);
-
+		m_params.m_scale.Serialize(doc, parent->last_node());
 	}
 
 	void Cube::Generate()

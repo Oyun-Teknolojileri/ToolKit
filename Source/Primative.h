@@ -31,7 +31,7 @@ namespace ToolKit
 		Vec3 m_worldLocation;
 	};
 
-  class Cube : public Drawable
+  class Cube final : public Drawable
   {
 	public:
 		class Params : public ParameterBlock
