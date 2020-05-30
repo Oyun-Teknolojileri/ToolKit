@@ -75,7 +75,7 @@ namespace ToolKit
 		class Params : public ParameterBlock
 		{
 		public:
-			Params() : m_rad(Vec3(0.5f)) {}
+			Params() : m_rad(1.0f) {}
 			Params(float rad) : m_rad(rad) {}
 			ParameterVariant m_rad;
 		} m_params;

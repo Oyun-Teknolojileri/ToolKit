@@ -551,12 +551,12 @@ namespace ToolKit
 			ImGui::OpenPopup("NewScene");
 			if (ImGui::BeginPopupModal("NewScene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				String name;
-				ImGui::InputTextWithHint("Name", "NewScene", &name);
+				static String sceneName;
+				ImGui::InputTextWithHint("Name", "NewScene", &sceneName);
 
 				if (ImGui::Button("OK", ImVec2(120, 0)))
 				{
-					g_app->OnNewScene(name);
+					g_app->OnNewScene(sceneName);
 					m_showNewSceneWindow = false;
 					ImGui::CloseCurrentPopup();
 				}
