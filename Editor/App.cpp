@@ -40,32 +40,10 @@ namespace ToolKit
 
 		App::~App()
 		{
-			// UI.
-			for (Window* wnd : m_windows)
-			{
-				SafeDel(wnd);
-			}
-			SafeDel(Viewport::m_overlayMods);
-			SafeDel(Viewport::m_overlayOptions);
-
-			// Editor objects.
-			SafeDel(m_grid);
-			SafeDel(m_origin);
-			SafeDel(m_cursor);
-			SafeDel(m_lightMaster);
-			for (int i = 0; i < 3; i++)
-			{
-				SafeDel(m_sceneLights[i]);
-			}
-			assert(m_sceneLights.size() == 3);
-			m_sceneLights.clear();
-
-			ModManager::GetInstance()->UnInit();
-			ActionManager::GetInstance()->UnInit();
+			Destroy();
 
 			// Engine components.
 			SafeDel(m_renderer);
-			Main::GetInstance()->Uninit();
 		}
 
 		void App::Init()
@@ -173,9 +151,36 @@ namespace ToolKit
 			m_windows.push_back(console);
 
 			UI::InitIcons();
-	
-			XmlDocument doc;
-			m_scene.Serialize(&doc, nullptr);
+		}
+
+		void App::Destroy()
+		{
+			// UI.
+			for (Window* wnd : m_windows)
+			{
+				SafeDel(wnd);
+			}
+			m_windows.clear();
+
+			SafeDel(Viewport::m_overlayMods);
+			SafeDel(Viewport::m_overlayOptions);
+
+			m_scene.Destroy();
+
+			// Editor objects.
+			SafeDel(m_grid);
+			SafeDel(m_origin);
+			SafeDel(m_cursor);
+			SafeDel(m_lightMaster);
+			for (int i = 0; i < 3; i++)
+			{
+				SafeDel(m_sceneLights[i]);
+			}
+			assert(m_sceneLights.size() == 3);
+			m_sceneLights.clear();
+
+			ModManager::GetInstance()->UnInit();
+			ActionManager::GetInstance()->UnInit();
 		}
 
 		void App::Frame(float deltaTime)
@@ -272,6 +277,18 @@ namespace ToolKit
 			m_renderer->m_windowWidth = width;
 			m_renderer->m_windowHeight = height;
 			glViewport(0, 0, width, height);
+		}
+
+		void App::OnNewScene(const String& name)
+		{
+			Destroy();
+			Init();
+			g_app->m_scene.m_name = name;
+		}
+
+		void App::OnSaveScene()
+		{
+
 		}
 
 		void App::OnQuit()

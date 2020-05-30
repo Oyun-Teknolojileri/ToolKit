@@ -59,11 +59,13 @@ namespace ToolKit
 				static void ShowSearchForFilesWindow();
 				static void HelpMarker(const char* desc, float* elapsedHoverTime);
 				static void DispatchSignals();
+				static void ShowNewSceneWindow();
 
 				// Custom widgets.
 				static bool ToggleButton(ImTextureID user_texture_id, const ImVec2& size, bool pushState);
 
 			public:
+				static bool m_showNewSceneWindow;
 				static bool m_imguiSampleWindow;
 				static bool m_windowMenushowMetrics;
 				static float m_hoverTimeForHelp;

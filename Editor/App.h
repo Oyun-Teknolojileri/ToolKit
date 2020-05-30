@@ -28,8 +28,11 @@ namespace ToolKit
 			~App();
 
 			void Init();
+			void Destroy();
 			void Frame(float deltaTime);
 			void OnResize(int width, int height);
+			void OnNewScene(const String& name);
+			void OnSaveScene();
 			void OnQuit();
 
 			// Import facilities.

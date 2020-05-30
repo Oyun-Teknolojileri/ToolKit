@@ -165,6 +165,7 @@ namespace ToolKit
 			{
 				SafeDel(action);
 			}
+			m_actionStack.clear();
 
 			m_initiated = false;
 		}
@@ -380,6 +381,8 @@ namespace ToolKit
 				mod->UnInit();
 				SafeDel(mod);
 			}
+			m_modStack.clear();
+
 			m_initiated = false;
 		}
 

@@ -22,6 +22,7 @@ namespace ToolKit
 
 		bool UI::m_windowMenushowMetrics = false;
 		bool UI::m_imguiSampleWindow = false;
+		bool UI::m_showNewSceneWindow = false;
 		float UI::m_hoverTimeForHelp = 1.0f;
 		UI::Import UI::ImportData;
 		UI::SearchFile UI::SearchFileData;
@@ -199,6 +200,7 @@ namespace ToolKit
 
 			ShowImportWindow();
 			ShowSearchForFilesWindow();
+			ShowNewSceneWindow();
 
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -231,6 +233,11 @@ namespace ToolKit
 
 		void UI::ShowMenuFile()
 		{
+			if (ImGui::MenuItem("NewScene"))
+			{
+				m_showNewSceneWindow = true;
+			}
+
 			if (ImGui::MenuItem("Quit", "Alt+F4"))
 			{
 				g_app->OnQuit();
@@ -531,6 +538,37 @@ namespace ToolKit
 						}
 					}
 				}
+			}
+		}
+
+		void UI::ShowNewSceneWindow()
+		{
+			if (!m_showNewSceneWindow)
+			{
+				return;
+			}
+
+			ImGui::OpenPopup("NewScene");
+			if (ImGui::BeginPopupModal("NewScene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				String name;
+				ImGui::InputTextWithHint("Name", "NewScene", &name);
+
+				if (ImGui::Button("OK", ImVec2(120, 0)))
+				{
+					g_app->OnNewScene(name);
+					m_showNewSceneWindow = false;
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SetItemDefaultFocus();
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel", ImVec2(120, 0)))
+				{
+					m_showNewSceneWindow = false;
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
 			}
 		}
 

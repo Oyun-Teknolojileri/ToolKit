@@ -13,12 +13,7 @@ namespace ToolKit
 
 		Scene::~Scene()
 		{
-			for (Entity* ntt : m_entitites)
-			{
-				SafeDel(ntt);
-			}
-			m_entitites.clear();
-			m_selectedEntities.clear();
+			Destroy();
 		}
 
 		Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList) const
@@ -304,6 +299,16 @@ namespace ToolKit
 		void Scene::GetSelectedEntities(EntityIdArray& entities) const
 		{
 			entities = m_selectedEntities;
+		}
+
+		void Scene::Destroy()
+		{
+			for (Entity* ntt : m_entitites)
+			{
+				SafeDel(ntt);
+			}
+			m_entitites.clear();
+			m_selectedEntities.clear();
 		}
 
 		const String XmlSceneElement("S");

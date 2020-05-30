@@ -16,8 +16,8 @@ namespace rapidxml
 
 namespace ToolKit
 {
-	auto SafeDel = [](auto ptr) { delete ptr; ptr = nullptr; };
-	auto SafeDelArray = [](auto ptr) { delete[] ptr; ptr = nullptr; };
+#define SafeDel(ptr) { delete ptr; ptr = nullptr; };
+#define SafeDelArray(ptr) { delete[] ptr; ptr = nullptr; };
 
 	typedef char Byte;
 	typedef unsigned char UByte;

@@ -139,7 +139,7 @@ public:
 
     if (deleteMark)
     {
-      ToolKit::SafeDel(pop);
+      SafeDel(pop);
     }
     else
     {

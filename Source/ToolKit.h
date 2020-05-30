@@ -63,14 +63,15 @@ namespace ToolKit
   SpriteSheetManager* GetSpriteSheetManager();
   TextureManager* GetTextureManager();
 
-	String TexturePath(String file);
-	String MeshPath(String file);
-	String FontPath(String file);
-	String SpritePath(String file);
-	String AudioPath(String file);
-	String AnimationPath(String file);
-	String SkeletonPath(String file);
-	String ShaderPath(String file);
-	String MaterialPath(String file);
+	String TexturePath(const String& file);
+	String MeshPath(const String& file);
+	String FontPath(const String& file);
+	String SpritePath(const String& file);
+	String AudioPath(const String& file);
+	String AnimationPath(const String& file);
+	String SkeletonPath(const String& file);
+	String ShaderPath(const String& file);
+	String MaterialPath(const String& file);
+  String ScenePath(const String& file);
 
 }

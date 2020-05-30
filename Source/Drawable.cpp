@@ -11,7 +11,7 @@ namespace ToolKit
 
 	Drawable::Drawable()
 	{
-		m_mesh = MeshPtr(new Mesh());
+		m_mesh = std::make_shared<Mesh>();
 	}
 
 	Drawable::~Drawable()

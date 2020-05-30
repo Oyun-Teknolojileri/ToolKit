@@ -1,15 +1,15 @@
 #include "stdafx.h"
 
 #include "App.h"
-#include <stdio.h>
-#include <chrono>
 #include "SDL.h"
-#include "SDL_ttf.h"
 #include "Types.h"
 #include "Mod.h"
 #include "UI.h"
 #include "ImGui/imgui_impl_sdl.h"
 #include "DebugNew.h"
+
+#include <stdio.h>
+#include <chrono>
 
 // #define TK_PROFILE
 
@@ -105,9 +105,9 @@ namespace ToolKit
 			SafeDel(g_app);
 
 			UI::UnInit();
+			Main::GetInstance()->Uninit();
 
 			SDL_DestroyWindow(g_window);
-			TTF_Quit();
 			SDL_Quit();
 		}
 

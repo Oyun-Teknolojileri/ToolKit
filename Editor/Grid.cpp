@@ -28,6 +28,10 @@ namespace ToolKit
 
 				GetMaterialManager()->m_storage[g_gridMaterialName] = m_material;
 			}
+			else
+			{
+				m_material = GetMaterialManager()->Create(g_gridMaterialName);
+			}
 
 			// Create grid mesh.
 			m_size = size % 2 == 0 ? size : size + 1;

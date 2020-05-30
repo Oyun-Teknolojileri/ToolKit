@@ -96,65 +96,72 @@ namespace ToolKit
 		return &Main::GetInstance()->m_textureMan;
 	}
 
-	String TexturePath(String file)
+	String TexturePath(const String& file)
 	{
 		String path = "..\\Resources\\Textures\\";
 		path += file;
 		return path;
 	}
 
-	String MeshPath(String file)
+	String MeshPath(const String& file)
 	{
 		String path = "..\\Resources\\Meshes\\";
 		path += file;
 		return path;
 	}
 
-	String FontPath(String file)
+	String FontPath(const String& file)
 	{
 		String path = "..\\Resources\\Fonts\\";
 		path += file;
 		return path;
 	}
 
-	String SpritePath(String file)
+	String SpritePath(const String& file)
 	{
 		String path = "..\\Resources\\Sprites\\";
 		path += file;
 		return path;
 	}
 
-	String AudioPath(String file)
+	String AudioPath(const String& file)
 	{
 		String path = "..\\Resources\\Audio\\";
 		path += file;
 		return path;
 	}
 
-	String AnimationPath(String file)
+	String AnimationPath(const String& file)
 	{
 		String path = "..\\Resources\\Meshes\\";
 		path += file;
 		return path;
 	}
 
-	String SkeletonPath(String file)
+	String SkeletonPath(const String& file)
 	{
 		String path = "..\\Resources\\Meshes\\";
 		path += file;
 		return path;
 	}
 
-	String ShaderPath(String file)
+	String ShaderPath(const String& file)
 	{
 		String path = "..\\Resources\\Shaders\\";
 		path += file;
 		return path;
 	}
 
-	String MaterialPath(String file)
+	String MaterialPath(const String& file)
 	{
 		String path = "..\\Resources\\Materials\\";
+		path += file;
+		return path;
+	}
+
+	ToolKit::String ScenePath(const String& file)
+	{
+		String path = "..\\Resources\\Scenes\\";
 		path += file;
 		return path;
 	}

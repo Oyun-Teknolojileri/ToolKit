@@ -41,6 +41,7 @@ namespace ToolKit
 			const EntityRawPtrArray& GetEntities() const;
 			void GetSelectedEntities(EntityRawPtrArray& entities) const;
 			void GetSelectedEntities(EntityIdArray& entities) const;
+			void Destroy();
 
 			void Serialize(XmlDocument* doc, XmlNode* parent);
 

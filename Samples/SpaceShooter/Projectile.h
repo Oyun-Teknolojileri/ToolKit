@@ -28,7 +28,7 @@ public:
   {
     for (size_t i = 0; i < m_projectiles.size(); i++)
     {
-      ToolKit::SafeDel(m_projectiles[i]);
+      SafeDel(m_projectiles[i]);
     }
   }
 
@@ -48,7 +48,7 @@ public:
       if (projectile->m_node->GetTranslation(ToolKit::TransformationSpace::TS_WORLD).z <= m_projectileDethZone)
       {
         m_projectiles.erase(m_projectiles.begin() + i);
-        ToolKit::SafeDel(projectile);
+        SafeDel(projectile);
       }
     }
   }
