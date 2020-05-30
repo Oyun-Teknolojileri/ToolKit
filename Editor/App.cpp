@@ -179,6 +179,8 @@ namespace ToolKit
 			assert(m_sceneLights.size() == 3);
 			m_sceneLights.clear();
 
+			GetAnimationPlayer()->m_records.clear();
+
 			ModManager::GetInstance()->UnInit();
 			ActionManager::GetInstance()->UnInit();
 		}
