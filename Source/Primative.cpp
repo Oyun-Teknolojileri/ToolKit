@@ -318,17 +318,23 @@ namespace ToolKit
 		m_mesh->CalculateAABoundingBox();
 	}
 
+	void Quad::Serialize(XmlDocument* doc, XmlNode* parent) const
+	{
+		Entity::Serialize(doc, parent);
+	}
+
 	Sphere::Sphere(bool genDef)
 	{
 		if (genDef)
 		{
-			Generate(0.5f);
+			Generate();
 		}
 	}
 
-	Sphere::Sphere(float rad)
+	Sphere::Sphere(const Params& params)
+		: m_params(params)
 	{
-		Generate(rad);
+		Generate();
 	}
 
 	Sphere* Sphere::GetCopy() const
@@ -348,9 +354,9 @@ namespace ToolKit
 		return EntityType::Entity_Sphere;
 	}
 
-	void Sphere::Generate(float rad)
+	void Sphere::Generate()
 	{
-		const float r = rad;
+		const float r = m_params.m_rad.GetVar<float>();
 		const int nRings = 32;
 		const int nSegments = 32;
 
@@ -406,6 +412,12 @@ namespace ToolKit
 		m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
 		m_mesh->CalculateAABoundingBox();
+	}
+
+	void Sphere::Serialize(XmlDocument* doc, XmlNode* parent) const
+	{
+		Entity::Serialize(doc, parent);
+		m_params.m_rad.Serialize(doc, parent->last_node());
 	}
 
 	Cone::Cone(bool genDef)

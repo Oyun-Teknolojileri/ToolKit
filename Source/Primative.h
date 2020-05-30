@@ -55,7 +55,7 @@ namespace ToolKit
 		void Generate();
   };
 
-  class Quad : public Drawable
+  class Quad final : public Drawable
   {
   public:
     Quad(bool genDef = true);
@@ -63,23 +63,34 @@ namespace ToolKit
 		virtual Quad* GetCopy() const override;
 		virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
+		virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
 
   private:
     void Generate();
   };
 
-  class Sphere : public Drawable
+  class Sphere final : public Drawable
   {
+	public:
+		class Params : public ParameterBlock
+		{
+		public:
+			Params() : m_rad(Vec3(0.5f)) {}
+			Params(float rad) : m_rad(rad) {}
+			ParameterVariant m_rad;
+		} m_params;
+
   public:
     Sphere(bool genDef = true);
-    Sphere(float rad);
+    Sphere(const Params& params);
 
 		virtual Sphere* GetCopy() const override;
 		virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
 
   private:
-    void Generate(float rad);
+    void Generate();
   };
 
   class Cone : public Drawable
