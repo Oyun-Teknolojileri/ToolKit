@@ -36,8 +36,8 @@ namespace ToolKit
 		{
 			m_ntt = ntt;
 			g_app->m_scene.RemoveEntity(ntt->m_id);
-			HandleAnimRecords(ntt, true);
 			m_actionComitted = true;
+			HandleAnimRecords(ntt);
 		}
 
 		DeleteAction::~DeleteAction()
@@ -53,21 +53,22 @@ namespace ToolKit
 			assert(m_ntt != nullptr);
 
 			g_app->m_scene.AddEntity(m_ntt);
-			HandleAnimRecords(m_ntt, false);
 			m_actionComitted = false;
+			HandleAnimRecords(m_ntt);
 		}
 
 		void DeleteAction::Redo()
 		{
 			g_app->m_scene.RemoveEntity(m_ntt->m_id);
-			HandleAnimRecords(m_ntt, false);
 			m_actionComitted = true;
+			HandleAnimRecords(m_ntt);
 		}
 
-		void DeleteAction::HandleAnimRecords(Entity* ntt, bool remove)
+		void DeleteAction::HandleAnimRecords(Entity* ntt)
 		{
-			if (remove)
+			if (m_actionComitted)
 			{
+				m_records.clear();
 				auto removeItr = std::remove_if
 				(
 					GetAnimationPlayer()->m_records.begin(),

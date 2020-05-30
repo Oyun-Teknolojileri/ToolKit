@@ -35,7 +35,7 @@ namespace ToolKit
 			virtual void Redo() override;
 
 		private:
-			void HandleAnimRecords(Entity* ntt, bool remove);
+			void HandleAnimRecords(Entity* ntt);
 
 		private:
 			Entity* m_ntt;
