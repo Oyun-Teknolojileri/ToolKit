@@ -181,20 +181,18 @@ namespace ToolKit
 
 	void AnimationPlayer::AddRecord(Entity* entity, Animation* anim)
 	{
-		m_records.push_back(std::pair<Entity*, Animation*>(entity, anim));
+		if (Exist({ entity, anim }) == -1)
+		{
+			m_records.push_back(AnimRecord(entity, anim));
+		}
 	}
 
 	void AnimationPlayer::RemoveRecord(Entity* entity, Animation* anim)
 	{
-		int index = 0;
-		for (auto& record : m_records)
+		int indx = Exist({ entity, anim });
+		if (indx != -1)
 		{
-			if (record.first == entity && record.second == anim)
-			{
-				m_records.erase(m_records.begin() + index);
-				return;
-			}
-			index++;
+			m_records.erase(m_records.begin() + indx);
 		}
 	}
 
@@ -259,6 +257,21 @@ namespace ToolKit
 		{
 			m_records.erase(m_records.begin() + removeList[i]);
 		}
+	}
+
+	int AnimationPlayer::Exist(const AnimRecord& record) const
+	{
+		int index = 0;
+		for (const AnimRecord& rec : m_records)
+		{
+			if (rec.first == record.first && rec.second == record.second)
+			{
+				return index;
+			}
+			index++;
+		}
+
+		return -1;
 	}
 
 }

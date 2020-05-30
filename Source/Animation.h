@@ -68,6 +68,7 @@ namespace ToolKit
     void AddRecord(Entity* entity, Animation* anim);
     void RemoveRecord(Entity* entity, Animation* anim);
     void Update(float deltaTimeSec);
+    int Exist(const AnimRecord& recrod) const; // -1 For not exist. Otherwise the record index.
 
   public:
     std::vector<AnimRecord> m_records;
