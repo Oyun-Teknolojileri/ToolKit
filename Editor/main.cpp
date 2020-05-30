@@ -188,6 +188,7 @@ namespace ToolKit
 					lastTime = currentTime;
 				}
 #ifndef TK_PROFILE
+				else
 				{
 					SDL_Delay(5);
 				}
