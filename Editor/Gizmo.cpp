@@ -160,7 +160,7 @@ namespace ToolKit
 			}
 			else if (params.type == SolidType::Cone)
 			{
-				Cone solid(params.solidDim.y, params.solidDim.x, 10, 10);
+				Cone solid({ params.solidDim.y, params.solidDim.x, 10, 10 });
 				solid.m_mesh->m_material = material;
 				m_mesh->m_subMeshes.push_back(solid.m_mesh);
 				solid.m_mesh = nullptr;

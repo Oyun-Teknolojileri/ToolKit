@@ -424,20 +424,26 @@ namespace ToolKit
 	{
 		if (genDef)
 		{
-			Generate(1.0f, 1.0f, 30, 30);
+			Generate();
 		}
 	}
 
-	Cone::Cone(float height, float radius, int nSegBase, int nSegHeight)
+	Cone::Cone(const Params& params)
+		: m_params(params)
 	{
-		Generate(height, radius, nSegBase, nSegHeight);
+		Generate();
 	}
 
 	// https://github.com/OGRECave/ogre-procedural/blob/master/library/src/ProceduralConeGenerator.cpp
-	void Cone::Generate(float height, float radius, int nSegBase, int nSegHeight)
+	void Cone::Generate()
 	{
 		VertexArray vertices;
 		std::vector<uint> indices;
+
+		float height = m_params.m_height.GetVar<float>();
+		float radius = m_params.m_rad.GetVar<float>();
+		int nSegBase = m_params.m_nSegBase.GetVar<int>();
+		int nSegHeight = m_params.m_nSegHeight.GetVar<int>();
 
 		float deltaAngle = (glm::two_pi<float>() / nSegBase);
 		float deltaHeight = height / nSegHeight;
@@ -540,6 +546,15 @@ namespace ToolKit
 	EntityType Cone::GetType() const
 	{
 		return EntityType::Entity_Cone;
+	}
+
+	void Cone::Serialize(XmlDocument* doc, XmlNode* parent) const
+	{
+		Entity::Serialize(doc, parent);
+		m_params.m_height.Serialize(doc, parent->last_node());
+		m_params.m_rad.Serialize(doc, parent->last_node());
+		m_params.m_nSegBase.Serialize(doc, parent->last_node());
+		m_params.m_nSegHeight.Serialize(doc, parent->last_node());
 	}
 
 	Arrow2d::Arrow2d(bool genDef)

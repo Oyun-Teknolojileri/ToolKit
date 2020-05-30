@@ -354,7 +354,7 @@ namespace ToolKit
 								}
 								if (ImGui::MenuItem("Cone"))
 								{
-									Cone* cone = new Cone(1.0f, 1.0f, 30, 30);
+									Cone* cone = new Cone({ 1.0f, 1.0f, 30, 30 });
 									cone->m_mesh->Init(false);
 									g_app->m_scene.AddEntity(cone);
 								}

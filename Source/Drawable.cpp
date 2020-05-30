@@ -72,8 +72,10 @@ namespace ToolKit
 
 	void Drawable::Serialize(XmlDocument* doc, XmlNode* parent) const
 	{
+		Entity::Serialize(doc, parent);
 		XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlMeshStr.c_str());
 		node->append_attribute(doc->allocate_attribute(XmlFileAttr.c_str(), m_mesh->m_file.c_str()));
+		parent->last_node()->append_node(node);
 	}
 
 }

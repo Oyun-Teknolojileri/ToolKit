@@ -95,16 +95,35 @@ namespace ToolKit
 
   class Cone : public Drawable
   {
+	public:
+		class Params : public ParameterBlock
+		{
+		public:
+			Params() : m_height(1.0f), m_rad(1.0f), m_nSegBase(30), m_nSegHeight(30)  {}
+			Params(float height, float rad, int nSegBase, int nSegHeight) :
+				m_height(height),
+				m_rad(rad),
+				m_nSegBase(nSegBase),
+				m_nSegHeight(nSegHeight)
+			{}
+
+			ParameterVariant m_height;
+			ParameterVariant m_rad;
+			ParameterVariant m_nSegBase;
+			ParameterVariant m_nSegHeight;
+		} m_params;
+
   public:
     Cone(bool genDef = true);
-    Cone(float height, float radius, int nSegBase, int nSegHeight);
+    Cone(const Params& params);
 
 		virtual Cone* GetCopy() const override;
 		virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
+		virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
 
   private:
-    void Generate(float height, float radius, int nSegBase, int nSegHeight);
+    void Generate();
   };
 
   class Arrow2d : public Drawable
