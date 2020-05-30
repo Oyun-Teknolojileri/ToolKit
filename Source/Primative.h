@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ToolKit.h"
+#include "ParameterBlock.h"
 
 namespace ToolKit
 {
@@ -32,9 +33,18 @@ namespace ToolKit
 
   class Cube : public Drawable
   {
+	public:
+		class Params : public ParameterBlock
+		{
+		public:
+      Params() : m_scale(Vec3(1.0f)) {}
+      Params(const Vec3& scale) : m_scale(scale) {}
+			ParameterVariant m_scale;
+		} m_params;
+
   public:
     Cube(bool genDef = true);
-    Cube(const Vec3& scale);
+    Cube(const Params& params);
 
 		virtual Cube* GetCopy() const override;
 		virtual void GetCopy(Entity* copyTo) const override;
@@ -42,7 +52,7 @@ namespace ToolKit
 		virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
 
 	private:
-		void Generate(Vec3 scale);
+		void Generate();
   };
 
   class Quad : public Drawable

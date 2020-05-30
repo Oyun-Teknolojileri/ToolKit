@@ -19,6 +19,8 @@ namespace ToolKit
 	auto SafeDel = [](auto ptr) { delete ptr; ptr = nullptr; };
 	auto SafeDelArray = [](auto ptr) { delete[] ptr; ptr = nullptr; };
 
+	typedef char Byte;
+	typedef unsigned char UByte;
 	typedef unsigned int uint;
 	typedef unsigned char uint8;
 	typedef unsigned long EntityId;

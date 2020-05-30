@@ -72,13 +72,13 @@ namespace ToolKit
 	{
 		if (genDef)
 		{
-			Generate(Vec3(1.0f));
+			Generate();
 		}
 	}
 
-	Cube::Cube(const Vec3& scale)
+	Cube::Cube(const Params& params)
+		: m_params(params)
 	{
-		Generate(scale);
 	}
 
 	Cube* Cube::GetCopy() const
@@ -101,12 +101,15 @@ namespace ToolKit
 	void Cube::Serialize(XmlDocument* doc, XmlNode* parent) const
 	{
 		Entity::Serialize(doc, parent);
+
 	}
 
-	void Cube::Generate(Vec3 scale)
+	void Cube::Generate()
 	{
 		VertexArray vertices;
 		vertices.resize(36);
+
+		const Vec3& scale = m_params.m_scale.GetVar<Vec3>();
 
 		Vec3 corners[8]
 		{
