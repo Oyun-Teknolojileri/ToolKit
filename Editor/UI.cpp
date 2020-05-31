@@ -26,6 +26,8 @@ namespace ToolKit
 		float UI::m_hoverTimeForHelp = 1.0f;
 		UI::Import UI::ImportData;
 		UI::SearchFile UI::SearchFileData;
+		StringInputWindow UI::m_strInputWindow;
+		std::vector<Window*> UI::m_windows;
 
 		// Icons
 		TexturePtr UI::m_selectIcn;
@@ -202,6 +204,20 @@ namespace ToolKit
 			ShowSearchForFilesWindow();
 			ShowNewSceneWindow();
 
+			m_strInputWindow.Show();
+
+			// Show & Destroy if not visible.
+			for (int i = (int)m_windows.size() - 1; i > -1; i--)
+			{
+				Window* wnd = m_windows[i];
+				wnd->Show();
+				if (!wnd->IsVisible())
+				{
+					m_windows.erase(m_windows.begin() + i);
+					SafeDel(wnd);
+				}
+			}
+
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 			ImGui::EndFrame();
@@ -235,7 +251,34 @@ namespace ToolKit
 		{
 			if (ImGui::MenuItem("NewScene"))
 			{
-				m_showNewSceneWindow = true;
+				m_strInputWindow.m_name = "NewScene##NwScn1";
+				m_strInputWindow.m_inputText = "Name";
+				m_strInputWindow.m_hint = "Scene name";
+				m_strInputWindow.SetVisibility(true);
+				m_strInputWindow.m_taskFn = [](const String& val)
+				{
+					g_app->OnNewScene(val);
+				};
+			}
+
+			if (ImGui::MenuItem("Save"))
+			{
+				XmlDocument doc;
+				g_app->m_scene.Serialize(&doc, nullptr);
+			}
+
+			if (ImGui::MenuItem("SaveAs"))
+			{
+				m_strInputWindow.m_name = "SaveScene##SvScn1";
+				m_strInputWindow.m_inputText = "Name";
+				m_strInputWindow.m_hint = "Scene name";
+				m_strInputWindow.SetVisibility(true);
+				m_strInputWindow.m_taskFn = [](const String& val)
+				{
+					XmlDocument doc;
+					g_app->m_scene.m_name = val;
+					g_app->m_scene.Serialize(&doc, nullptr);
+				};
 			}
 
 			if (ImGui::MenuItem("Quit", "Alt+F4"))
@@ -646,6 +689,77 @@ namespace ToolKit
 				{
 					m_active = false;
 				}
+			}
+		}
+
+		StringInputWindow::StringInputWindow()
+		{
+			m_visible = false;
+		}
+
+		void StringInputWindow::Show()
+		{
+			if (!m_visible)
+			{
+				return;
+			}
+
+			ImGui::OpenPopup(m_name.c_str());
+			if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::InputTextWithHint(m_inputText.c_str(), m_hint.c_str(), &m_inputVal);
+
+				if (ImGui::Button("OK", ImVec2(120, 0)))
+				{
+					m_visible = false;
+					m_taskFn(m_inputVal);
+					m_inputVal.clear();
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SetItemDefaultFocus();
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel", ImVec2(120, 0)))
+				{
+					m_visible = false;
+					m_inputVal.clear();
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+		}
+
+		YesNoWindow::YesNoWindow(const String& name)
+		{
+			m_name = name;
+		}
+
+		void YesNoWindow::Show()
+		{
+			if (!m_visible)
+			{
+				return;
+			}
+
+			ImGui::OpenPopup(m_name.c_str());
+			if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				if (ImGui::Button("Yes", ImVec2(120, 0)))
+				{
+					m_visible = false;
+					m_yesCallback();
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SetItemDefaultFocus();
+				ImGui::SameLine();
+				if (ImGui::Button("No", ImVec2(120, 0)))
+				{
+					m_visible = false;
+					m_noCallback();
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
 			}
 		}
 

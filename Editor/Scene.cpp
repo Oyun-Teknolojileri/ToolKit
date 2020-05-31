@@ -316,7 +316,7 @@ namespace ToolKit
 		void Scene::Serialize(XmlDocument* doc, XmlNode* parent)
 		{
 			std::ofstream file;
-			String fileName = m_name + ".scene";
+			String fileName = ScenePath(m_name + ".scene");
 
 			file.open(fileName.c_str(), std::ios::out);
 			if (file.is_open())

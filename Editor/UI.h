@@ -2,6 +2,7 @@
 
 #include "ImGui/imgui.h"
 #include "Types.h"
+#include <functional>
 
 namespace ToolKit
 {
@@ -15,7 +16,8 @@ namespace ToolKit
 				enum class Type
 				{
 					Viewport,
-					Console
+					Console,
+					InputPopup
 				};
 
 			public:
@@ -41,6 +43,32 @@ namespace ToolKit
 
 			public:
 				String m_name;
+			};
+
+			class StringInputWindow : public Window
+			{
+			public:
+				StringInputWindow();
+				virtual void Show();
+				virtual Type GetType() { return Window::Type::InputPopup; }
+
+			public:
+				std::function<void(const String& val)> m_taskFn;
+				String m_inputVal;
+				String m_inputText;
+				String m_hint;
+			};
+
+			class YesNoWindow : public Window
+			{
+			public:
+				YesNoWindow(const String& name);
+				virtual void Show();
+				virtual Type GetType() { return Window::Type::InputPopup; }
+
+			public:
+				std::function<void()> m_yesCallback;
+				std::function<void()> m_noCallback;
 			};
 
 			class UI
@@ -69,6 +97,8 @@ namespace ToolKit
 				static bool m_imguiSampleWindow;
 				static bool m_windowMenushowMetrics;
 				static float m_hoverTimeForHelp;
+				static StringInputWindow m_strInputWindow;
+				static std::vector<Window*> m_windows;
 
 				static struct Import
 				{

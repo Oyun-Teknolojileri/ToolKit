@@ -131,7 +131,7 @@ namespace ToolKit
 
 			if (e.type == SDL_QUIT)
 			{
-				g_running = false;
+				g_app->OnQuit();
 			}
 
 			if (e.type == SDL_KEYDOWN)
@@ -139,7 +139,7 @@ namespace ToolKit
 				switch (e.key.keysym.sym)
 				{
 				case SDLK_ESCAPE:
-					g_running = false;
+					g_app->OnQuit();
 					break;
 				default:
 					break;
@@ -190,7 +190,7 @@ namespace ToolKit
 #ifndef TK_PROFILE
 				else
 				{
-					SDL_Delay(5);
+					SDL_Delay(10);
 				}
 #endif
 			}

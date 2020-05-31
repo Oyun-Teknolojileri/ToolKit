@@ -295,7 +295,23 @@ namespace ToolKit
 
 		void App::OnQuit()
 		{
-			g_running = false;
+			static bool processing = false;
+			if (!processing)
+			{
+				YesNoWindow* reallyQuit = new YesNoWindow("Quiting... Are you sure?##ClsApp");
+				reallyQuit->m_yesCallback = []()
+				{
+					g_running = false;
+				};
+
+				reallyQuit->m_noCallback = []()
+				{
+					processing = false;
+				};
+
+				UI::m_windows.push_back(reallyQuit);
+				processing = true;
+			}
 		}
 
 		int App::Import(const String& fullPath, const String& subDir, bool overwrite)
