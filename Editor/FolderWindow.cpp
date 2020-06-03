@@ -21,7 +21,7 @@ namespace ToolKit
 			{
 				if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_None))
 				{
-					if (ImGui::BeginTabItem(m_name.c_str()))
+					if (ImGui::BeginTabItem("FNameHere"))
 					{
 						ImVec2 buttonSz(50, 50);
 						for (size_t i = 0; i < m_entiries.size(); i++)
@@ -44,7 +44,24 @@ namespace ToolKit
 							{
 								ImGui::SetTooltip(m_entiries[i].c_str());
 							}
-							
+
+							if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+							{
+								ImGui::SetDragDropPayload("DND_DEMO_CELL", &i, sizeof(size_t));    // Set payload to carry the index of our item (could be anything)
+								ImGui::Text("Copy %s", m_entiries[i].c_str()); // Display preview (could be anything, e.g. when dragging an image we could decide to display the filename and a small preview of the image, etc.)
+								ImGui::EndDragDropSource();
+							}
+
+							if (ImGui::BeginDragDropTarget())
+							{
+								if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
+								{
+									IM_ASSERT(payload->DataSize == sizeof(size_t));
+									int payload_n = *(const int*)payload->Data;
+								}
+								ImGui::EndDragDropTarget();
+							}
+
 							float lastBtnX2 = ImGui::GetItemRectMax().x;
 							float nextBtnX2 = lastBtnX2 + style.ItemSpacing.x + buttonSz.x;
 							if (nextBtnX2 < visX2)
