@@ -93,6 +93,7 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="ConsoleWindow.cpp" />
+    <ClCompile Include="FolderWindow.cpp" />
     <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="ImGui\imgui_stdlib.cpp">
@@ -137,6 +138,7 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="ConsoleWindow.h" />
+    <ClInclude Include="FolderWindow.h" />
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="GlobalDef.h" />
     <ClInclude Include="Grid.h" />

@@ -13,9 +13,11 @@
 #include "Mod.h"
 #include "ConsoleWindow.h"
 #include "Gizmo.h"
+#include "FolderWindow.h"
+#include "DebugNew.h"
+
 #include <filesystem>
 #include <cstdlib>
-#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -149,6 +151,10 @@ namespace ToolKit
 
 			ConsoleWindow* console = new ConsoleWindow();
 			m_windows.push_back(console);
+
+			FolderWindow* fwd = new FolderWindow();
+			fwd->Iterate(MeshPath(""));
+			m_windows.push_back(fwd);
 
 			UI::InitIcons();
 		}

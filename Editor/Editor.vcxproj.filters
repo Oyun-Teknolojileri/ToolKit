@@ -75,6 +75,9 @@
     <ClCompile Include="ImGui\imgui_stdlib.cpp">
       <Filter>UI\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="FolderWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -136,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="ImGui\imgui_stdlib.h">
       <Filter>UI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="FolderWindow.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
