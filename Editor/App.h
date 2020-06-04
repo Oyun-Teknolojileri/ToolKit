@@ -19,6 +19,7 @@ namespace ToolKit
 		class Axis3d;
 		class Cursor;
 		class ConsoleWindow;
+		class FolderWindow;
 		class Window;
 
 		class App
@@ -42,6 +43,7 @@ namespace ToolKit
 			Viewport* GetActiveViewport(); // Returns open and active viewport or nullptr.
 			Viewport* GetViewport(const String& name);
 			ConsoleWindow* GetConsole();
+			FolderWindow* GetAssetBrowser();
 
 			// Quick selected render implementation.
 			void RenderSelected(Viewport *vp);

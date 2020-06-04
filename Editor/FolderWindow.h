@@ -15,14 +15,20 @@ namespace ToolKit
 			bool m_isDirectory = false;
 		};
 
+		class FolderWindow;
+
 		class FolderView
 		{
 		public:
+			FolderView();
+			FolderView(FolderWindow* parent);
+
 			void Show();
 			void SetPath(const String& path);
 			void Iterate();
 
 		private:
+			FolderWindow* m_parent = nullptr;
 			std::vector<DirectoryEntry> m_entiries;
 			String m_path;
 			String m_folder;
@@ -38,6 +44,7 @@ namespace ToolKit
 			virtual void Show() override;
 			virtual Type GetType() override;
 			void Iterate(const String& path);
+			void AddEntry(const FolderView& view);
 
 		private:
 			std::vector<FolderView> m_entiries;

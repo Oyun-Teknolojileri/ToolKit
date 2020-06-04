@@ -11,6 +11,15 @@ namespace ToolKit
 	namespace Editor
 	{
 
+		FolderView::FolderView()
+		{
+		}
+
+		FolderView::FolderView(class FolderWindow* parent)
+		{
+			m_parent = parent;
+		}
+
 		void FolderView::Show()
 		{
 			if (ImGui::BeginTabItem(m_folder.c_str(), &m_visible))
@@ -85,6 +94,24 @@ namespace ToolKit
 					ImGui::PushID(i);
 					ImGui::BeginGroup();
 					ImGui::ImageButton((void*)(intptr_t)iconId, buttonSz);
+
+					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+					{
+						if (ImGui::IsItemHovered())
+						{
+							if (de.m_isDirectory)
+							{
+								if (m_parent != nullptr)
+								{
+									FolderView view(m_parent);
+									view.SetPath(de.m_rootPath + "\\" + de.m_fileName);
+									view.Iterate();
+									m_parent->AddEntry(view);
+								}
+							}
+						}
+					}
+
 					String fullName = de.m_fileName + de.m_ext;
 					if (ImGui::IsItemHovered())
 					{
@@ -93,7 +120,7 @@ namespace ToolKit
 
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 					{
-						ImGui::SetDragDropPayload("AssetBrowserDragZone", &i, sizeof(int));
+						ImGui::SetDragDropPayload("BrowserDragZone", &i, sizeof(int));
 						ImGui::Text("Copy %s", fullName.c_str());
 						ImGui::EndDragDropSource();
 					}
@@ -104,7 +131,7 @@ namespace ToolKit
 
 					if (ImGui::BeginDragDropTarget())
 					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("AssetBrowserDragZone"))
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
 						{
 							IM_ASSERT(payload->DataSize == sizeof(int));
 							int payload_n = *(const int*)payload->Data;
@@ -155,7 +182,7 @@ namespace ToolKit
 
 		void FolderWindow::Show()
 		{
-			ImGui::Begin("AssetBrowser", &m_visible);
+			ImGui::Begin(m_name.c_str(), &m_visible);
 			{
 				if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_NoTooltip))
 				{
@@ -184,12 +211,17 @@ namespace ToolKit
 			{
 				if (e.is_directory())
 				{
-					FolderView view;
+					FolderView view(this);
 					view.SetPath(e.path().u8string());
 					view.Iterate();
 					m_entiries.push_back(view);
 				}
 			}
+		}
+
+		void FolderWindow::AddEntry(const FolderView& view)
+		{
+			m_entiries.push_back(view);
 		}
 
 	}

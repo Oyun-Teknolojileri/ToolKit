@@ -152,9 +152,10 @@ namespace ToolKit
 			ConsoleWindow* console = new ConsoleWindow();
 			m_windows.push_back(console);
 
-			FolderWindow* fwd = new FolderWindow();
-			fwd->Iterate(ResourcePath());
-			m_windows.push_back(fwd);
+			FolderWindow* assetBrowser = new FolderWindow();
+			assetBrowser->m_name = g_assetBrowserStr;
+			assetBrowser->Iterate(ResourcePath());
+			m_windows.push_back(assetBrowser);
 
 			UI::InitIcons();
 		}
@@ -573,6 +574,22 @@ namespace ToolKit
 				if (wnd->GetType() == Window::Type::Console)
 				{
 					return static_cast<ConsoleWindow*> (wnd);
+				}
+			}
+
+			return nullptr;
+		}
+
+		FolderWindow* App::GetAssetBrowser()
+		{
+			for (Window* wnd : m_windows)
+			{
+				if (wnd->GetType() == Window::Type::Browser)
+				{
+					if (wnd->m_name == g_assetBrowserStr)
+					{
+						return static_cast<FolderWindow*> (wnd);
+					}
 				}
 			}
 
