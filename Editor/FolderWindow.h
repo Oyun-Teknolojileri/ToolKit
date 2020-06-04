@@ -25,6 +25,7 @@ namespace ToolKit
 
 			void Show();
 			void SetPath(const String& path);
+			const String& GetPath() const;
 			void Iterate();
 
 		private:
@@ -45,6 +46,7 @@ namespace ToolKit
 			virtual Type GetType() override;
 			void Iterate(const String& path);
 			void AddEntry(const FolderView& view);
+			int Exist(const String& path);
 
 		private:
 			std::vector<FolderView> m_entiries;

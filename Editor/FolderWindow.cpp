@@ -103,10 +103,14 @@ namespace ToolKit
 							{
 								if (m_parent != nullptr)
 								{
-									FolderView view(m_parent);
-									view.SetPath(de.m_rootPath + "\\" + de.m_fileName);
-									view.Iterate();
-									m_parent->AddEntry(view);
+									String path = de.m_rootPath + "\\" + de.m_fileName;
+									if (m_parent->Exist(path) == -1)
+									{
+										FolderView view(m_parent);
+										view.SetPath(path);
+										view.Iterate();
+										m_parent->AddEntry(view);
+									}
 								}
 							}
 						}
@@ -160,6 +164,11 @@ namespace ToolKit
 			m_folder = splits.back();
 		}
 
+		const String& FolderView::GetPath() const
+		{
+			return m_path;
+		}
+
 		void FolderView::Iterate()
 		{
 			using namespace std::filesystem;
@@ -187,9 +196,9 @@ namespace ToolKit
 				if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_NoTooltip))
 				{
 
-					for (FolderView& fv : m_entiries)
+					for (size_t i = 0; i < m_entiries.size(); i++)
 					{
-						fv.Show();
+						m_entiries[i].Show();
 					}
 
 					ImGui::EndTabBar();
@@ -221,7 +230,23 @@ namespace ToolKit
 
 		void FolderWindow::AddEntry(const FolderView& view)
 		{
-			m_entiries.push_back(view);
+			if (Exist(view.GetPath()) == -1)
+			{
+				m_entiries.push_back(view);
+			}
+		}
+
+		int FolderWindow::Exist(const String& path)
+		{
+			for (size_t i = 0; i < m_entiries.size(); i++)
+			{
+				if (m_entiries[i].GetPath() == path)
+				{
+					return (int)i;
+				}
+			}
+
+			return -1;
 		}
 
 	}
