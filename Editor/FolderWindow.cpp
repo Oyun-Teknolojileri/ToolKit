@@ -21,8 +21,13 @@ namespace ToolKit
 			{
 				if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_None))
 				{
-					if (ImGui::BeginTabItem("FNameHere"))
+					if (ImGui::BeginTabItem(m_folder.c_str()))
 					{
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip(m_path.c_str());
+						}
+
 						ImVec2 buttonSz(50, 50);
 						for (int i = 0; i < (int)m_entiries.size(); i++)
 						{
@@ -112,6 +117,11 @@ namespace ToolKit
 		void FolderWindow::Iterate(const String& path)
 		{
 			using namespace std::filesystem;
+
+			m_path = path;
+			StringArray splits;
+			Split(path, "\\", splits);
+			m_folder = splits.back();
 
 			for (const directory_entry& e : directory_iterator(path))
 			{

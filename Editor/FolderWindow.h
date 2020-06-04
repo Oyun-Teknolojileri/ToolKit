@@ -17,6 +17,8 @@ namespace ToolKit
 
 		private:
 			StringArray m_entiries;
+			String m_path;
+			String m_folder;
 		};
 
 	}
