@@ -63,6 +63,7 @@ namespace ToolKit
   SpriteSheetManager* GetSpriteSheetManager();
   TextureManager* GetTextureManager();
 
+  String ResourcePath();
 	String TexturePath(const String& file);
 	String MeshPath(const String& file);
 	String FontPath(const String& file);

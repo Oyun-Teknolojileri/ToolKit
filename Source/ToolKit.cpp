@@ -96,6 +96,11 @@ namespace ToolKit
 		return &Main::GetInstance()->m_textureMan;
 	}
 
+	String ResourcePath()
+	{
+		return "..\\Resources";
+	}
+
 	String TexturePath(const String& file)
 	{
 		String path = "..\\Resources\\Textures\\";

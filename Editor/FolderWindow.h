@@ -7,6 +7,19 @@ namespace ToolKit
 	namespace Editor
 	{
 
+		class FolderView
+		{
+		public:
+			void Show();
+			void SetPath(const String& path);
+			void Iterate();
+
+		private:
+			StringArray m_entiries;
+			String m_path;
+			String m_folder;
+		};
+
 		class FolderWindow : public Window
 		{
 		public:
@@ -16,9 +29,8 @@ namespace ToolKit
 			void Iterate(const String& path);
 
 		private:
-			StringArray m_entiries;
+			std::vector<FolderView> m_entiries;
 			String m_path;
-			String m_folder;
 		};
 
 	}

@@ -153,7 +153,7 @@ namespace ToolKit
 			m_windows.push_back(console);
 
 			FolderWindow* fwd = new FolderWindow();
-			fwd->Iterate(MeshPath(""));
+			fwd->Iterate(ResourcePath());
 			m_windows.push_back(fwd);
 
 			UI::InitIcons();
