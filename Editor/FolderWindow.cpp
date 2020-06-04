@@ -71,22 +71,22 @@ namespace ToolKit
 								ImGui::SetTooltip(m_entiries[i].c_str());
 							}
 
-							ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + buttonSz.x);
-							ImGui::TextWrapped(name.c_str());
-							ImGui::PopTextWrapPos();
-
 							if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 							{
-								ImGui::SetDragDropPayload("DND_DEMO_CELL", &i, sizeof(size_t));
+								ImGui::SetDragDropPayload("AssetBrowserDragZone", &i, sizeof(int));
 								ImGui::Text("Copy %s", m_entiries[i].c_str());
 								ImGui::EndDragDropSource();
 							}
 
+							ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + buttonSz.x);
+							ImGui::TextWrapped(name.c_str());
+							ImGui::PopTextWrapPos();
+
 							if (ImGui::BeginDragDropTarget())
 							{
-								if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
+								if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("AssetBrowserDragZone"))
 								{
-									IM_ASSERT(payload->DataSize == sizeof(size_t));
+									IM_ASSERT(payload->DataSize == sizeof(int));
 									int payload_n = *(const int*)payload->Data;
 								}
 								ImGui::EndDragDropTarget();
