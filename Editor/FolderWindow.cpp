@@ -24,31 +24,56 @@ namespace ToolKit
 					if (ImGui::BeginTabItem("FNameHere"))
 					{
 						ImVec2 buttonSz(50, 50);
-						for (size_t i = 0; i < m_entiries.size(); i++)
+						for (int i = 0; i < (int)m_entiries.size(); i++)
 						{
 							ImGuiStyle& style = ImGui::GetStyle();
 							float visX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
-							String name;
-							DecomposePath(m_entiries[i], nullptr, &name, nullptr);
-							
-							ImVec2 tSize = ImGui::CalcTextSize(name.c_str());
-							if (tSize.x > buttonSz.x * 0.8)
+							String name, ext;
+							DecomposePath(m_entiries[i], nullptr, &name, &ext);
+
+							uint iconId = UI::m_fileIcon->m_textureId;
+							if (ext == MESH)
 							{
-								name = name.substr(0, 4);
-								name += "...";
+								iconId = UI::m_meshIcon->m_textureId;
+							}
+							else if (ext == ANIM)
+							{
+								iconId = UI::m_clipIcon->m_textureId;
+							}
+							else if (ext == SKINMESH)
+							{
+								iconId = UI::m_armatureIcon->m_textureId;
+							}
+							else if (ext == AUDIO)
+							{
+								iconId = UI::m_audioIcon->m_textureId;
+							}
+							else if (ext == SHADER)
+							{
+								iconId = UI::m_codeIcon->m_textureId;
+							}
+							else if (ext == SKELETON)
+							{
+								iconId = UI::m_boneIcon->m_textureId;
 							}
 
-							ImGui::Button(name.c_str(), buttonSz);
+							ImGui::PushID(i);
+							ImGui::BeginGroup();
+							ImGui::ImageButton((void*)(intptr_t)iconId, buttonSz);
 							if (ImGui::IsItemHovered())
 							{
 								ImGui::SetTooltip(m_entiries[i].c_str());
 							}
 
+							ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + buttonSz.x);
+							ImGui::TextWrapped(name.c_str());
+							ImGui::PopTextWrapPos();
+
 							if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 							{
-								ImGui::SetDragDropPayload("DND_DEMO_CELL", &i, sizeof(size_t));    // Set payload to carry the index of our item (could be anything)
-								ImGui::Text("Copy %s", m_entiries[i].c_str()); // Display preview (could be anything, e.g. when dragging an image we could decide to display the filename and a small preview of the image, etc.)
+								ImGui::SetDragDropPayload("DND_DEMO_CELL", &i, sizeof(size_t));
+								ImGui::Text("Copy %s", m_entiries[i].c_str());
 								ImGui::EndDragDropSource();
 							}
 
@@ -61,6 +86,8 @@ namespace ToolKit
 								}
 								ImGui::EndDragDropTarget();
 							}
+							ImGui::EndGroup();
+							ImGui::PopID();
 
 							float lastBtnX2 = ImGui::GetItemRectMax().x;
 							float nextBtnX2 = lastBtnX2 + style.ItemSpacing.x + buttonSz.x;
@@ -96,5 +123,3 @@ namespace ToolKit
 
 	}
 }
-
-

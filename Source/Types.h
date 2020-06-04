@@ -83,6 +83,8 @@ namespace ToolKit
 	static const String SKINMESH(".skinMesh");
 	static const String SKELETON(".skeleton");
 	static const String MATERIAL(".material");
+	static const String SHADER(".shader");
+	static const String AUDIO(".wav");
 
 	static const EntityId NULL_ENTITY = 0;
 

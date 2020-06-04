@@ -37,6 +37,18 @@ namespace ToolKit
 		TexturePtr UI::m_scaleIcn;
 		TexturePtr UI::m_appIcon;
 		TexturePtr UI::m_snapIcon;
+		TexturePtr UI::m_audioIcon;
+		TexturePtr UI::m_cameraIcon;
+		TexturePtr UI::m_clipIcon;
+		TexturePtr UI::m_fileIcon;
+		TexturePtr UI::m_folderIcon;
+		TexturePtr UI::m_imageIcon;
+		TexturePtr UI::m_lightIcon;
+		TexturePtr UI::m_materialIcon;
+		TexturePtr UI::m_meshIcon;
+		TexturePtr UI::m_armatureIcon;
+		TexturePtr UI::m_codeIcon;
+		TexturePtr UI::m_boneIcon;
 
 		void UI::Init()
 		{
@@ -114,6 +126,30 @@ namespace ToolKit
 			m_scaleIcn->Init();
 			m_snapIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/snap.png"));
 			m_snapIcon->Init();
+			m_audioIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/audio.png"));
+			m_audioIcon->Init();
+			m_cameraIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/camera.png"));
+			m_cameraIcon->Init();
+			m_clipIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/clip.png"));
+			m_clipIcon->Init();
+			m_fileIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/file.png"));
+			m_fileIcon->Init();
+			m_folderIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/folder.png"));
+			m_folderIcon->Init();
+			m_imageIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/image.png"));
+			m_imageIcon->Init();
+			m_lightIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/light.png"));
+			m_lightIcon->Init();
+			m_materialIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/material.png"));
+			m_materialIcon->Init();
+			m_meshIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/mesh.png"));
+			m_meshIcon->Init();
+			m_armatureIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/armature.png"));
+			m_armatureIcon->Init();
+			m_codeIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/code.png"));
+			m_codeIcon->Init();
+			m_boneIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/bone.png"));
+			m_boneIcon->Init();
 
 			// Set application Icon.
 			m_appIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/app.png"));

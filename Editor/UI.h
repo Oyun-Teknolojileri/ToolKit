@@ -125,6 +125,18 @@ namespace ToolKit
 				static TexturePtr m_scaleIcn;
 				static TexturePtr m_appIcon;
 				static TexturePtr m_snapIcon;
+				static TexturePtr m_audioIcon;
+				static TexturePtr m_cameraIcon;
+				static TexturePtr m_clipIcon;
+				static TexturePtr m_fileIcon;
+				static TexturePtr m_folderIcon;
+				static TexturePtr m_imageIcon;
+				static TexturePtr m_lightIcon;
+				static TexturePtr m_materialIcon;
+				static TexturePtr m_meshIcon;
+				static TexturePtr m_armatureIcon;
+				static TexturePtr m_codeIcon;
+				static TexturePtr m_boneIcon;
 			};
 		}
 }
