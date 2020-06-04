@@ -7,6 +7,14 @@ namespace ToolKit
 	namespace Editor
 	{
 
+		struct DirectoryEntry
+		{
+			String m_ext;
+			String m_fileName;
+			String m_rootPath;
+			bool m_isDirectory = false;
+		};
+
 		class FolderView
 		{
 		public:
@@ -15,9 +23,12 @@ namespace ToolKit
 			void Iterate();
 
 		private:
-			StringArray m_entiries;
+			std::vector<DirectoryEntry> m_entiries;
 			String m_path;
 			String m_folder;
+
+		public:
+			bool m_visible = true;
 		};
 
 		class FolderWindow : public Window

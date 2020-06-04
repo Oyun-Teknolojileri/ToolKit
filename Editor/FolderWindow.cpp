@@ -13,7 +13,7 @@ namespace ToolKit
 
 		void FolderView::Show()
 		{
-			if (ImGui::BeginTabItem(m_folder.c_str()))
+			if (ImGui::BeginTabItem(m_folder.c_str(), &m_visible))
 			{
 				if (ImGui::IsItemHovered())
 				{
@@ -26,55 +26,58 @@ namespace ToolKit
 					ImGuiStyle& style = ImGui::GetStyle();
 					float visX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
-					String name, ext;
-					DecomposePath(m_entiries[i], nullptr, &name, &ext);
+					DirectoryEntry& de = m_entiries[i];
 
 					uint iconId = UI::m_fileIcon->m_textureId;
-					if (ext == MESH)
+					if (de.m_isDirectory)
+					{
+						iconId = UI::m_folderIcon->m_textureId;
+					}
+					else if (de.m_ext == MESH)
 					{
 						iconId = UI::m_meshIcon->m_textureId;
 					}
-					else if (ext == ANIM)
+					else if (de.m_ext == ANIM)
 					{
 						iconId = UI::m_clipIcon->m_textureId;
 					}
-					else if (ext == SKINMESH)
+					else if (de.m_ext == SKINMESH)
 					{
 						iconId = UI::m_armatureIcon->m_textureId;
 					}
-					else if (ext == AUDIO)
+					else if (de.m_ext == AUDIO)
 					{
 						iconId = UI::m_audioIcon->m_textureId;
 					}
-					else if (ext == SHADER)
+					else if (de.m_ext == SHADER)
 					{
 						iconId = UI::m_codeIcon->m_textureId;
 					}
-					else if (ext == SKELETON)
+					else if (de.m_ext == SKELETON)
 					{
 						iconId = UI::m_boneIcon->m_textureId;
 					}
-					else if (ext == MATERIAL)
+					else if (de.m_ext == MATERIAL)
 					{
 						iconId = UI::m_materialIcon->m_textureId;
 					}
-					else if (ext == PNG)
+					else if (de.m_ext == PNG)
 					{
 						iconId = UI::m_imageIcon->m_textureId;
 					}
-					else if (ext == JPEG)
+					else if (de.m_ext == JPEG)
 					{
 						iconId = UI::m_imageIcon->m_textureId;
 					}
-					else if (ext == TGA)
+					else if (de.m_ext == TGA)
 					{
 						iconId = UI::m_imageIcon->m_textureId;
 					}
-					else if (ext == BMP)
+					else if (de.m_ext == BMP)
 					{
 						iconId = UI::m_imageIcon->m_textureId;
 					}
-					else if (ext == PSD)
+					else if (de.m_ext == PSD)
 					{
 						iconId = UI::m_imageIcon->m_textureId;
 					}
@@ -82,20 +85,21 @@ namespace ToolKit
 					ImGui::PushID(i);
 					ImGui::BeginGroup();
 					ImGui::ImageButton((void*)(intptr_t)iconId, buttonSz);
+					String fullName = de.m_fileName + de.m_ext;
 					if (ImGui::IsItemHovered())
 					{
-						ImGui::SetTooltip(m_entiries[i].c_str());
+						ImGui::SetTooltip(fullName.c_str());
 					}
 
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 					{
 						ImGui::SetDragDropPayload("AssetBrowserDragZone", &i, sizeof(int));
-						ImGui::Text("Copy %s", m_entiries[i].c_str());
+						ImGui::Text("Copy %s", fullName.c_str());
 						ImGui::EndDragDropSource();
 					}
 
 					ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + buttonSz.x);
-					ImGui::TextWrapped(name.c_str());
+					ImGui::TextWrapped(de.m_fileName.c_str());
 					ImGui::PopTextWrapPos();
 
 					if (ImGui::BeginDragDropTarget())
@@ -124,7 +128,6 @@ namespace ToolKit
 		void FolderView::SetPath(const String& path)
 		{
 			m_path = path;
-			m_path = path;
 			StringArray splits;
 			Split(path, "\\", splits);
 			m_folder = splits.back();
@@ -136,9 +139,13 @@ namespace ToolKit
 
 			for (const directory_entry& e : directory_iterator(m_path))
 			{
-				String name, ext;
-				DecomposePath(e.path().u8string(), nullptr, &name, &ext);
-				m_entiries.push_back(name + ext);
+				DirectoryEntry de;
+				de.m_isDirectory = e.is_directory();
+				de.m_rootPath = e.path().parent_path().u8string();
+				de.m_fileName = e.path().stem().u8string();
+				de.m_ext = e.path().filename().extension().u8string();
+
+				m_entiries.push_back(de);
 			}
 		}
 
@@ -150,7 +157,7 @@ namespace ToolKit
 		{
 			ImGui::Begin("AssetBrowser", &m_visible);
 			{
-				if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_None))
+				if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_NoTooltip))
 				{
 
 					for (FolderView& fv : m_entiries)
