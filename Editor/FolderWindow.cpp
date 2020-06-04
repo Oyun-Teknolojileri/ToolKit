@@ -138,7 +138,7 @@ namespace ToolKit
 					{
 						if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 						{
-							ImGui::SetDragDropPayload("BrowserDragZone", &i, sizeof(int));
+							ImGui::SetDragDropPayload("BrowserDragZone", &de, sizeof(DirectoryEntry));
 							ImGui::Text("Copy %s", fullName.c_str());
 							ImGui::EndDragDropSource();
 						}
@@ -148,18 +148,6 @@ namespace ToolKit
 					ImGui::TextWrapped(de.m_fileName.c_str());
 					ImGui::PopTextWrapPos();
 
-					if (!de.m_isDirectory)
-					{
-						if (ImGui::BeginDragDropTarget())
-						{
-							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
-							{
-								IM_ASSERT(payload->DataSize == sizeof(int));
-								int payload_n = *(const int*)payload->Data;
-							}
-							ImGui::EndDragDropTarget();
-						}
-					}
 					ImGui::EndGroup();
 					ImGui::PopID();
 

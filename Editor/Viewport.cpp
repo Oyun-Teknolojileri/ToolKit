@@ -11,6 +11,7 @@
 #include "Primative.h"
 #include "Grid.h"
 #include "DebugNew.h"
+#include "FolderWindow.h"
 
 namespace ToolKit
 {
@@ -139,6 +140,22 @@ namespace ToolKit
 				command(drawList);
 			}
 			m_drawCommands.clear();
+
+			// AssetBrowser drop handling.
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
+				{
+					IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
+					DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
+
+					if (entry.m_ext == MESH)
+					{
+						GetMeshManager()->Create(entry.m_rootPath + entry.m_fileName + entry.m_ext);
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
 
 			ImGui::End();
 		}
