@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "ImGui/imgui.h"
-#include "ImGui/imgui_internal.h"
 
 #include "Grid.h"
 #include "GlobalDef.h"

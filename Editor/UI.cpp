@@ -713,7 +713,13 @@ namespace ToolKit
 			{
 				if (!m_active)
 				{
-					ImGui::ClearActiveID(); // Deactivate previous window.
+					if (!ImGui::GetIO().WantCaptureMouse)
+					{
+						if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) || ImGui::IsMouseClicked(ImGuiMouseButton_Middle))
+						{
+							ImGui::FocusWindow(nullptr);
+						}
+					}
 					ImGui::SetWindowFocus();
 					m_active = true;
 				}
