@@ -90,6 +90,13 @@ namespace ToolKit
 					{
 						iconId = UI::m_imageIcon->m_textureId;
 					}
+					else
+					{
+						if (m_onlyNativeTypes)
+						{
+							continue;
+						}
+					}
 
 					ImGui::PushID(i);
 					ImGui::BeginGroup();
@@ -104,12 +111,17 @@ namespace ToolKit
 								if (m_parent != nullptr)
 								{
 									String path = de.m_rootPath + "\\" + de.m_fileName;
-									if (m_parent->Exist(path) == -1)
+									int indx = m_parent->Exist(path);
+									if (indx == -1)
 									{
 										FolderView view(m_parent);
 										view.SetPath(path);
 										view.Iterate();
 										m_parent->AddEntry(view);
+									}
+									else
+									{
+										m_parent->GetView(indx).m_visible = true;
 									}
 								}
 							}
@@ -122,25 +134,31 @@ namespace ToolKit
 						ImGui::SetTooltip(fullName.c_str());
 					}
 
-					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+					if (!de.m_isDirectory)
 					{
-						ImGui::SetDragDropPayload("BrowserDragZone", &i, sizeof(int));
-						ImGui::Text("Copy %s", fullName.c_str());
-						ImGui::EndDragDropSource();
+						if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+						{
+							ImGui::SetDragDropPayload("BrowserDragZone", &i, sizeof(int));
+							ImGui::Text("Copy %s", fullName.c_str());
+							ImGui::EndDragDropSource();
+						}
 					}
 
 					ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + buttonSz.x);
 					ImGui::TextWrapped(de.m_fileName.c_str());
 					ImGui::PopTextWrapPos();
 
-					if (ImGui::BeginDragDropTarget())
+					if (!de.m_isDirectory)
 					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
+						if (ImGui::BeginDragDropTarget())
 						{
-							IM_ASSERT(payload->DataSize == sizeof(int));
-							int payload_n = *(const int*)payload->Data;
+							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
+							{
+								IM_ASSERT(payload->DataSize == sizeof(int));
+								int payload_n = *(const int*)payload->Data;
+							}
+							ImGui::EndDragDropTarget();
 						}
-						ImGui::EndDragDropTarget();
 					}
 					ImGui::EndGroup();
 					ImGui::PopID();
@@ -173,6 +191,7 @@ namespace ToolKit
 		{
 			using namespace std::filesystem;
 
+			m_entiries.clear();
 			for (const directory_entry& e : directory_iterator(m_path))
 			{
 				DirectoryEntry de;
@@ -216,6 +235,7 @@ namespace ToolKit
 		{
 			using namespace std::filesystem;
 
+			m_entiries.clear();
 			for (const directory_entry& e : directory_iterator(path))
 			{
 				if (e.is_directory())
@@ -234,6 +254,11 @@ namespace ToolKit
 			{
 				m_entiries.push_back(view);
 			}
+		}
+
+		FolderView& FolderWindow::GetView(int indx)
+		{
+			return m_entiries[indx];
 		}
 
 		int FolderWindow::Exist(const String& path)

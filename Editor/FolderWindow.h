@@ -36,6 +36,7 @@ namespace ToolKit
 
 		public:
 			bool m_visible = true;
+			bool m_onlyNativeTypes = true;
 		};
 
 		class FolderWindow : public Window
@@ -46,6 +47,7 @@ namespace ToolKit
 			virtual Type GetType() override;
 			void Iterate(const String& path);
 			void AddEntry(const FolderView& view);
+			FolderView& GetView(int indx);
 			int Exist(const String& path);
 
 		private:
