@@ -30,7 +30,7 @@ namespace ToolKit
 			void AddToSelection(EntityId id, bool additive);
 			void ClearSelection();
 			bool IsCurrentSelection(EntityId id) const;
-			void MakeCurrentSelection(EntityId id, bool ifExist);
+			void MakeCurrentSelection(EntityId id, bool ifExist); // Makes the entity current selection. ifExist true, only works if the entity exist in the selection. Otherwise adds entity to selection list and selects it.
 			uint GetSelectedEntityCount() const;
 			Entity* GetCurrentSelection() const;
 

@@ -85,5 +85,25 @@ namespace ToolKit
 			}
 		}
 
+		bool Grid::HitTest(const Ray& ray, Vec3& pos)
+		{
+			Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
+			Mat4 its = glm::inverse(ts);
+			Ray rayInObjectSpace =
+			{
+				its * Vec4(ray.position, 1.0f),
+				its * Vec4(ray.direction, 0.0f)
+			};
+
+			float dist = 0.0f;
+			if (RayBoxIntersection(rayInObjectSpace, GetAABB(), dist))
+			{
+				pos = PointOnRay(rayInObjectSpace, dist);
+				return true;
+			}
+
+			return false;
+		}
+
 	}
 }

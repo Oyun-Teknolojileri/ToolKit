@@ -13,6 +13,7 @@ namespace ToolKit
 		public:
 			Grid(uint size);
 			void Resize(uint size);
+			bool HitTest(const Ray& ray, Vec3& pos);
 
 		public:
 			uint m_size; // m^2 size of the grid.
