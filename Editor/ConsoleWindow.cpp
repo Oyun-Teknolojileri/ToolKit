@@ -446,15 +446,19 @@ namespace ToolKit
 				ImGui::SameLine();
 
 				// Command window.
-				bool reclaim_focus = false;
+				bool reclaimFocus = false;
 				static char inputBuff[256];
-				if (ImGui::InputText(
-					"##Input",
-					inputBuff,
-					IM_ARRAYSIZE(inputBuff),
-					ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
-					[](ImGuiInputTextCallbackData* data)->int { return ((ConsoleWindow*)(data->UserData))->TextEditCallback(data); },
-					(void*)this))
+				if (
+						ImGui::InputText
+						(
+							"##Input",
+							inputBuff,
+							IM_ARRAYSIZE(inputBuff),
+							ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
+							[](ImGuiInputTextCallbackData* data)->int { return ((ConsoleWindow*)(data->UserData))->TextEditCallback(data); },
+							(void*)this
+						)
+					)
 				{
 					char* s = inputBuff;
 					Strtrim(s);
@@ -463,12 +467,12 @@ namespace ToolKit
 						ExecCommand(s);
 					}
 					strcpy_s(s, sizeof(inputBuff), "");
-					reclaim_focus = true;
+					reclaimFocus = true;
 				}
 
 				// Auto-focus on window apparition
 				ImGui::SetItemDefaultFocus();
-				if (reclaim_focus)
+				if (reclaimFocus)
 				{
 					ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
 				}
