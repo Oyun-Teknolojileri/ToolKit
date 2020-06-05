@@ -384,6 +384,12 @@ namespace ToolKit
 				ImGui::SameLine();
 
 				m_filter.Draw("##Filter", 180);
+				ImGui::SameLine();
+
+				if (ImGui::Button("Clear"))
+				{
+					m_items.clear();
+				}
 				ImGui::Separator();
 
 				// Output window.
