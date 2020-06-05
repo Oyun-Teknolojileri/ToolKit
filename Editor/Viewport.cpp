@@ -10,8 +10,9 @@
 #include "Node.h"
 #include "Primative.h"
 #include "Grid.h"
-#include "DebugNew.h"
 #include "FolderWindow.h"
+#include "ConsoleWindow.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -67,11 +68,11 @@ namespace ToolKit
 				m_wndPos.x = vMin.x;
 				m_wndPos.y = vMin.y;
 
-				m_wndContentAreaSize = *(Vec2*) & ImVec2(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
+				m_wndContentAreaSize = Vec2(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
+				
 				ImGuiIO& io = ImGui::GetIO();
-
-				m_mouseOverContentArea = false;
 				ImVec2 absMousePos = io.MousePos;
+				m_mouseOverContentArea = false;
 				if (vMin.x < absMousePos.x && vMax.x > absMousePos.x)
 				{
 					if (vMin.y < absMousePos.y && vMax.y > absMousePos.y)
@@ -142,6 +143,7 @@ namespace ToolKit
 			m_drawCommands.clear();
 
 			// AssetBrowser drop handling.
+			ImGui::Dummy(GLM2IMVEC(m_wndContentAreaSize));
 			if (ImGui::BeginDragDropTarget())
 			{
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
@@ -151,7 +153,10 @@ namespace ToolKit
 
 					if (entry.m_ext == MESH)
 					{
-						GetMeshManager()->Create(entry.m_rootPath + entry.m_fileName + entry.m_ext);
+						String path = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
+						Drawable* dwMesh = new Drawable();
+						dwMesh->m_mesh = GetMeshManager()->Create(path);
+						g_app->m_scene.AddEntity(dwMesh);
 					}
 				}
 				ImGui::EndDragDropTarget();
