@@ -163,6 +163,7 @@ namespace ToolKit
 						dwMesh->m_node->SetTranslation(pos);
 						g_app->m_scene.AddEntity(dwMesh);
 						g_app->m_scene.AddToSelection(dwMesh->m_id, false);
+						SetActive();
 					}
 				}
 				ImGui::EndDragDropTarget();

@@ -745,6 +745,12 @@ namespace ToolKit
 			}
 		}
 
+		void Window::SetActive()
+		{
+			m_active = true;
+			ImGui::SetWindowFocus();
+		}
+
 		StringInputWindow::StringInputWindow()
 		{
 			m_visible = false;

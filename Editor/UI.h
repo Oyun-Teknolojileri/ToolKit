@@ -37,6 +37,7 @@ namespace ToolKit
 			protected:
 				// Internal window handling.
 				void HandleStates();
+				void SetActive();
 
 			protected:
 				// States.
