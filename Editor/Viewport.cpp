@@ -156,6 +156,7 @@ namespace ToolKit
 						String path = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
 						Drawable* dwMesh = new Drawable();
 						dwMesh->m_mesh = GetMeshManager()->Create(path);
+						dwMesh->m_mesh->Init(false);
 						Ray ray = RayFromMousePosition();
 						Vec3 pos = PointOnRay(ray, 5.0f);
 						g_app->m_grid->HitTest(ray, pos);
