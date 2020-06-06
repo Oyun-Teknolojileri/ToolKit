@@ -52,7 +52,7 @@ namespace ToolKit
 		void Viewport::Show()
 		{
 			ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
-			ImGui::Begin(m_name.c_str(), &m_visible);
+			if (ImGui::Begin(m_name.c_str(), &m_visible))
 			{
 				HandleStates();
 
@@ -69,7 +69,7 @@ namespace ToolKit
 				m_wndPos.y = vMin.y;
 
 				m_wndContentAreaSize = Vec2(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
-				
+
 				ImGuiIO& io = ImGui::GetIO();
 				ImVec2 absMousePos = io.MousePos;
 				m_mouseOverContentArea = false;
@@ -106,70 +106,70 @@ namespace ToolKit
 						}
 					}
 				}
-			}
 
-			if (g_app->m_showOverlayUI)
-			{
-				if (IsActive() || g_app->m_showOverlayUIAlways)
+				if (g_app->m_showOverlayUI)
 				{
-					if (m_overlayMods != nullptr)
+					if (IsActive() || g_app->m_showOverlayUIAlways)
 					{
-						m_overlayMods->m_owner = this;
-						m_overlayMods->Show();
-					}
+						if (m_overlayMods != nullptr)
+						{
+							m_overlayMods->m_owner = this;
+							m_overlayMods->Show();
+						}
 
-					if (m_overlayOptions != nullptr)
-					{
-						m_overlayOptions->m_owner = this;
-						m_overlayOptions->Show();
+						if (m_overlayOptions != nullptr)
+						{
+							m_overlayOptions->m_owner = this;
+							m_overlayOptions->Show();
+						}
 					}
 				}
-			}
 
-			m_mouseHover = ImGui::IsWindowHovered();
+				m_mouseHover = ImGui::IsWindowHovered();
 
-			ImVec2 pos = GLM2IMVEC(m_wndPos);
-			pos.x += m_width * 0.5f;
-			pos.y += 15;
-			String fps = "Fps: " + std::to_string(g_app->m_fps);
-			ImGui::GetWindowDrawList()->AddText(pos, IM_COL32(255, 255, 0, 255), fps.c_str());
+				ImVec2 pos = GLM2IMVEC(m_wndPos);
+				pos.x += m_width * 0.5f;
+				pos.y += 15;
+				String fps = "Fps: " + std::to_string(g_app->m_fps);
+				ImGui::GetWindowDrawList()->AddText(pos, IM_COL32(255, 255, 0, 255), fps.c_str());
 
-			// Process draw commands.
-			ImDrawList* drawList = ImGui::GetWindowDrawList();
-			for (auto command : m_drawCommands)
-			{
-				command(drawList);
-			}
-			m_drawCommands.clear();
-
-			// AssetBrowser drop handling.
-			ImGui::Dummy(GLM2IMVEC(m_wndContentAreaSize));
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
+				// Process draw commands.
+				ImDrawList* drawList = ImGui::GetWindowDrawList();
+				for (auto command : m_drawCommands)
 				{
-					IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
-					DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
-
-					if (entry.m_ext == MESH)
-					{
-						String path = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
-						Drawable* dwMesh = new Drawable();
-						dwMesh->m_mesh = GetMeshManager()->Create(path);
-						dwMesh->m_mesh->Init(false);
-						Ray ray = RayFromMousePosition();
-						Vec3 pos = PointOnRay(ray, 5.0f);
-						g_app->m_grid->HitTest(ray, pos);
-						dwMesh->m_node->SetTranslation(pos);
-						g_app->m_scene.AddEntity(dwMesh);
-						g_app->m_scene.AddToSelection(dwMesh->m_id, false);
-						SetActive();
-					}
+					command(drawList);
 				}
-				ImGui::EndDragDropTarget();
-			}
+				m_drawCommands.clear();
 
-			ImGui::End();
+				// AssetBrowser drop handling.
+				ImGui::Dummy(GLM2IMVEC(m_wndContentAreaSize));
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
+					{
+						IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
+						DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
+
+						if (entry.m_ext == MESH)
+						{
+							String path = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
+							Drawable* dwMesh = new Drawable();
+							dwMesh->m_mesh = GetMeshManager()->Create(path);
+							dwMesh->m_mesh->Init(false);
+							Ray ray = RayFromMousePosition();
+							Vec3 pos = PointOnRay(ray, 5.0f);
+							g_app->m_grid->HitTest(ray, pos);
+							dwMesh->m_node->SetTranslation(pos);
+							g_app->m_scene.AddEntity(dwMesh);
+							g_app->m_scene.AddToSelection(dwMesh->m_id, false);
+							SetActive();
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				ImGui::End();
+			}
 		}
 
 		void Viewport::Update(float deltaTime)

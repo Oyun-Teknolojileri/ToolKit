@@ -141,8 +141,9 @@ namespace ToolKit
 
 				static float hoverTimeCS = 0.0f;
 				ImGui::SameLine(0, spacing); UI::HelpMarker("Camera speed m/s\n", &hoverTimeCS);
+
+				ImGui::EndChildFrame();
 			}
-			ImGui::EndChildFrame();
 		}
 
 		// OverlayViewportOptions
