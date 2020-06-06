@@ -167,9 +167,8 @@ namespace ToolKit
 					}
 					ImGui::EndDragDropTarget();
 				}
-
-				ImGui::End();
 			}
+			ImGui::End();
 		}
 
 		void Viewport::Update(float deltaTime)

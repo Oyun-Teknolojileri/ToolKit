@@ -375,7 +375,7 @@ namespace ToolKit
 		void ConsoleWindow::Show()
 		{
 			ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Once);
-			ImGui::Begin(g_consoleStr.c_str(), &m_visible);
+			if (ImGui::Begin(g_consoleStr.c_str(), &m_visible))
 			{
 				HandleStates();
 

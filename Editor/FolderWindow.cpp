@@ -199,7 +199,7 @@ namespace ToolKit
 
 		void FolderWindow::Show()
 		{
-			ImGui::Begin(m_name.c_str(), &m_visible);
+			if (ImGui::Begin(m_name.c_str(), &m_visible))
 			{
 				HandleStates();
 
@@ -213,8 +213,8 @@ namespace ToolKit
 
 					ImGui::EndTabBar();
 				}
-				ImGui::End();
 			}
+			ImGui::End();
 		}
 
 		Window::Type FolderWindow::GetType() const
