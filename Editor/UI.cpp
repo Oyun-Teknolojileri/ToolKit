@@ -532,12 +532,20 @@ namespace ToolKit
 			}
 		}
 
-		void UI::DispatchSignals()
+		void UI::DispatchSignals(Window* wnd)
 		{
-			ImGuiIO& io = ImGui::GetIO();
-			bool mouseOnOverlayUI = Viewport::m_overlayMods->m_mouseOver || Viewport::m_overlayOptions->m_mouseOver;
+			if (wnd == nullptr)
+			{
+				return;
+			}
 
-			if (io.MouseClicked[ImGuiMouseButton_Left] && !mouseOnOverlayUI)
+			if (!wnd->CanDispatchEvents())
+			{
+				return;
+			}
+
+			ImGuiIO& io = ImGui::GetIO();
+			if (io.MouseClicked[ImGuiMouseButton_Left])
 			{
 				ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnDownSgnl);
 			}
@@ -690,14 +698,24 @@ namespace ToolKit
 			m_visible = visible;
 		}
 
-		bool Window::IsActive()
+		bool Window::IsActive() const
 		{
 			return m_active;
 		}
 
-		bool Window::IsVisible()
+		bool Window::IsVisible() const
 		{
 			return m_visible;
+		}
+
+		bool Window::MouseHovers() const
+		{
+			return m_mouseHover;
+		}
+
+		bool Window::CanDispatchEvents() const
+		{
+			return m_active & m_visible & m_mouseHover;
 		}
 
 		void Window::HandleStates()
@@ -713,13 +731,6 @@ namespace ToolKit
 			{
 				if (!m_active)
 				{
-					if (!ImGui::GetIO().WantCaptureMouse)
-					{
-						if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) || ImGui::IsMouseClicked(ImGuiMouseButton_Middle))
-						{
-							ImGui::FocusWindow(nullptr);
-						}
-					}
 					ImGui::SetWindowFocus();
 					m_active = true;
 				}

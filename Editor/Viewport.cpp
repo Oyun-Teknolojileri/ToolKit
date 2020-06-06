@@ -194,7 +194,7 @@ namespace ToolKit
 			m_viewportImage->Init();
 		}
 
-		Window::Type Viewport::GetType()
+		Window::Type Viewport::GetType() const
 		{
 			return Type::Viewport;
 		}

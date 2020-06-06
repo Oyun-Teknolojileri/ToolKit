@@ -49,7 +49,7 @@ namespace ToolKit
 			ConsoleWindow();
 			virtual ~ConsoleWindow();
 			virtual void Show() override;
-			virtual Type GetType() override;
+			virtual Type GetType() const override;
 
 			// Functions.
 			enum class LogType

@@ -18,7 +18,7 @@ namespace ToolKit
 			Viewport(float width, float height);
 			virtual ~Viewport();
 			virtual void Show() override;
-			virtual Type GetType() override;
+			virtual Type GetType() const override;
 			void Update(float deltaTime);
 
 			// Window queries.

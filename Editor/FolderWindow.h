@@ -44,7 +44,7 @@ namespace ToolKit
 		public:
 			FolderWindow();
 			virtual void Show() override;
-			virtual Type GetType() override;
+			virtual Type GetType() const override;
 			void Iterate(const String& path);
 			void AddEntry(const FolderView& view);
 			FolderView& GetView(int indx);

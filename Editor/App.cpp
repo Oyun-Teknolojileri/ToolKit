@@ -194,10 +194,6 @@ namespace ToolKit
 
 		void App::Frame(float deltaTime)
 		{
-			// Update Mods.
-			UI::DispatchSignals();
-			ModManager::GetInstance()->Update(deltaTime);
-
 			// Dirty hack.
 			Gizmo* gizmo = nullptr;
 
@@ -211,6 +207,8 @@ namespace ToolKit
 				{
 					continue;
 				}
+
+				UI::DispatchSignals(wnd);
 
 				Viewport* vp = static_cast<Viewport*> (wnd);
 				vp->Update(deltaTime);
@@ -279,6 +277,9 @@ namespace ToolKit
 
 			// Render UI.
 			UI::ShowUI();
+
+			// Update Mods.
+			ModManager::GetInstance()->Update(deltaTime);
 		}
 
 		void App::OnResize(int width, int height)

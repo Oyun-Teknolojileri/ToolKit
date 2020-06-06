@@ -201,6 +201,8 @@ namespace ToolKit
 		{
 			ImGui::Begin(m_name.c_str(), &m_visible);
 			{
+				HandleStates();
+
 				if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_NoTooltip))
 				{
 
@@ -215,7 +217,7 @@ namespace ToolKit
 			}
 		}
 
-		Window::Type FolderWindow::GetType()
+		Window::Type FolderWindow::GetType() const
 		{
 			return Window::Type::Browser;
 		}

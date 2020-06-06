@@ -480,7 +480,7 @@ namespace ToolKit
 			ImGui::End();
 		}
 
-		Window::Type ConsoleWindow::GetType()
+		Window::Type ConsoleWindow::GetType() const
 		{
 			return Type::Console;
 		}

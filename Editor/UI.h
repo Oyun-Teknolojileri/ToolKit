@@ -25,12 +25,14 @@ namespace ToolKit
 				Window();
 				virtual ~Window();
 				virtual void Show() = 0;
-				virtual Type GetType() = 0;
+				virtual Type GetType() const = 0;
 				void SetVisibility(bool visible);
 
 				// Window queries.
-				bool IsActive();
-				bool IsVisible();
+				bool IsActive() const;
+				bool IsVisible() const;
+				bool MouseHovers() const;
+				bool CanDispatchEvents() const; // If active & visible & mouse hovers.
 
 			protected:
 				// Internal window handling.
@@ -50,8 +52,8 @@ namespace ToolKit
 			{
 			public:
 				StringInputWindow();
-				virtual void Show();
-				virtual Type GetType() { return Window::Type::InputPopup; }
+				virtual void Show() override;
+				virtual Type GetType() const override { return Window::Type::InputPopup; }
 
 			public:
 				std::function<void(const String& val)> m_taskFn;
@@ -64,8 +66,8 @@ namespace ToolKit
 			{
 			public:
 				YesNoWindow(const String& name);
-				virtual void Show();
-				virtual Type GetType() { return Window::Type::InputPopup; }
+				virtual void Show() override;
+				virtual Type GetType() const override { return Window::Type::InputPopup; }
 
 			public:
 				std::function<void()> m_yesCallback;
@@ -87,7 +89,7 @@ namespace ToolKit
 				static void ShowImportWindow();
 				static void ShowSearchForFilesWindow();
 				static void HelpMarker(const char* desc, float* elapsedHoverTime);
-				static void DispatchSignals();
+				static void DispatchSignals(Window* wnd);
 				static void ShowNewSceneWindow();
 
 				// Custom widgets.
