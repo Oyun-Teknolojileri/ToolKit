@@ -374,23 +374,10 @@ namespace ToolKit
 
 		void ConsoleWindow::Show()
 		{
-			ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Once);
+			//ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Once);
 			if (ImGui::Begin(g_consoleStr.c_str(), &m_visible))
 			{
 				HandleStates();
-
-				// Search bar.
-				ImGui::Text("Search: ");
-				ImGui::SameLine();
-
-				m_filter.Draw("##Filter", 180);
-				ImGui::SameLine();
-
-				if (ImGui::Button("Clear"))
-				{
-					m_items.clear();
-				}
-				ImGui::Separator();
 
 				// Output window.
 				const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
@@ -442,12 +429,15 @@ namespace ToolKit
 				ImGui::PopStyleVar();
 				ImGui::EndChild();
 
+				ImGui::Separator();
+
 				ImGui::Text("Command: ");
 				ImGui::SameLine();
 
 				// Command window.
 				bool reclaimFocus = false;
 				static char inputBuff[256];
+				ImGui::PushItemWidth(600.0f);
 				if (
 						ImGui::InputText
 						(
@@ -468,6 +458,20 @@ namespace ToolKit
 					}
 					strcpy_s(s, sizeof(inputBuff), "");
 					reclaimFocus = true;
+				}
+				ImGui::PopItemWidth();
+				ImGui::SameLine();
+
+				// Search bar.
+				ImGui::Text("Filter: ");
+				ImGui::SameLine();
+
+				m_filter.Draw("##Filter", 180);
+				ImGui::SameLine();
+
+				if (ImGui::Button("Clear"))
+				{
+					m_items.clear();
 				}
 
 				// Auto-focus on window apparition

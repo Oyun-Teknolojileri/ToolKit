@@ -247,11 +247,6 @@ namespace ToolKit
 			{
 				Window* wnd = m_windows[i];
 				wnd->Show();
-				if (!wnd->IsVisible())
-				{
-					m_windows.erase(m_windows.begin() + i);
-					SafeDel(wnd);
-				}
 			}
 
 			ImGui::Render();

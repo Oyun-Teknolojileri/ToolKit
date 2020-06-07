@@ -142,11 +142,19 @@ namespace ToolKit
 			m_sceneLights.push_back(light);
 
 			// UI.
+			// Perspective.
 			Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+			vp->m_name = "Perspective";
 			vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
 			vp->m_camera->Pitch(glm::radians(-20.0f));
 			vp->m_camera->RotateOnUpVector(glm::radians(30.0f));
+			m_windows.push_back(vp);
 
+			// Top.
+			vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+			vp->m_name = "Top";
+			vp->m_camera->m_node->SetTranslation({ 0.0f, 5.0f, 0.0f });
+			vp->m_camera->Pitch(glm::radians(-90.0f));
 			m_windows.push_back(vp);
 
 			ConsoleWindow* console = new ConsoleWindow();
@@ -226,16 +234,24 @@ namespace ToolKit
 					{
 						if (ntt->GetType() == EntityType::Entity_Billboard)
 						{
-							Billboard* billboard = static_cast<Billboard*> (ntt);
-							billboard->LookAt(vp->m_camera);
-
-							if (gizmo = dynamic_cast<Gizmo*> (ntt))
+							gizmo = dynamic_cast<Gizmo*> (ntt);
+							if (gizmo != nullptr)
 							{
-								continue;
+								// Only update gizmo in active viewport. Otherwise hit test doesn't work correctly. Due to replacement of gizmo.
+								if (vp->IsActive())
+								{
+									gizmo->LookAt(cam);
+								}
+								continue; // Special drawing (Depth modifier) handled last.
+							}
+							else
+							{
+								Billboard* billboard = static_cast<Billboard*> (ntt);
+								billboard->LookAt(cam);
 							}
 						}
 
-						m_renderer->Render(static_cast<Drawable*> (ntt), vp->m_camera, m_sceneLights);
+						m_renderer->Render(static_cast<Drawable*> (ntt), cam, m_sceneLights);
 					}
 				}
 
@@ -246,7 +262,8 @@ namespace ToolKit
 				m_origin->LookAt(vp->m_camera);
 				m_renderer->Render(m_origin, vp->m_camera);
 
-				if (gizmo != nullptr)
+				// Only draw gizmo in active viewport.
+				if (gizmo != nullptr && vp->IsActive())
 				{
 					glClear(GL_DEPTH_BUFFER_BIT);
 					if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (gizmo))
