@@ -603,7 +603,14 @@ namespace ToolKit
 						Vec2 p = vp->TransformScreenToViewportSpace(rect[i]);
 						Vec3 p0 = vp->TransformViewportToWorldSpace(p);
 						rect3d.push_back(p0);
-						rays.push_back({ lensLoc, glm::normalize(p0 - lensLoc) });
+						if (cam->IsOrtographic())
+						{
+							rays.push_back({ lensLoc, cam->GetDir() });
+						}
+						else
+						{
+							rays.push_back({ lensLoc, glm::normalize(p0 - lensLoc) });
+						}
 					}
 
 					// Back rectangle.

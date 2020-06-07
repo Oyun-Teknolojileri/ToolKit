@@ -155,6 +155,7 @@ namespace ToolKit
 			vp->m_name = "Top";
 			vp->m_camera->m_node->SetTranslation({ 0.0f, 5.0f, 0.0f });
 			vp->m_camera->Pitch(glm::radians(-90.0f));
+			vp->m_orthographic = true;
 			m_windows.push_back(vp);
 
 			ConsoleWindow* console = new ConsoleWindow();

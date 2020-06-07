@@ -128,8 +128,8 @@ namespace ToolKit
 				m_mouseHover = ImGui::IsWindowHovered();
 
 				ImVec2 pos = GLM2IMVEC(m_wndPos);
-				pos.x += m_width * 0.5f;
-				pos.y += 15;
+				pos.x += m_width * 0.85f;
+				pos.y += m_wndContentAreaSize.y - 20.0f;
 				String fps = "Fps: " + std::to_string(g_app->m_fps);
 				ImGui::GetWindowDrawList()->AddText(pos, IM_COL32(255, 255, 0, 255), fps.c_str());
 
@@ -186,7 +186,14 @@ namespace ToolKit
 		{
 			m_width = width;
 			m_height = height;
-			m_camera->SetLens(m_camera->GetData().fov, width, height);
+			if (m_orthographic)
+			{
+				m_camera->SetLens(width / height, -10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
+			}
+			else
+			{
+				m_camera->SetLens(m_camera->GetData().fov, width, height);
+			}
 
 			m_viewportImage->UnInit();
 			m_viewportImage->m_width = (uint)width;
@@ -215,7 +222,14 @@ namespace ToolKit
 
 			Ray ray;
 			ray.position = TransformViewportToWorldSpace(mcInVs);
-			ray.direction = glm::normalize(ray.position - m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+			if (m_camera->IsOrtographic())
+			{
+				ray.direction = m_camera->GetDir();
+			}
+			else
+			{
+				ray.direction = glm::normalize(ray.position - m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+			}
 
 			return ray;
 		}

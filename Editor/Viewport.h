@@ -50,6 +50,7 @@ namespace ToolKit
 			float m_height = 480.0f;
 			Vec2 m_wndPos;
 			Vec2 m_wndContentAreaSize;
+			bool m_orthographic = false;
 
 			static class OverlayMods* m_overlayMods;
 			static class OverlayViewportOptions* m_overlayOptions;

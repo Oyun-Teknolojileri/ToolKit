@@ -113,6 +113,11 @@ namespace ToolKit
 		return glm::inverse(view);
 	}
 
+	bool Camera::IsOrtographic() const
+	{
+		return m_ortographic;
+	}
+
 	Camera::CamData Camera::GetData() const
 	{
 		CamData data;
