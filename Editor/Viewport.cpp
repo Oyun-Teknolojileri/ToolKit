@@ -128,7 +128,7 @@ namespace ToolKit
 				m_mouseHover = ImGui::IsWindowHovered();
 
 				ImVec2 pos = GLM2IMVEC(m_wndPos);
-				pos.x += m_width * 0.85f;
+				pos.x += m_width * 0.9f;
 				pos.y += m_wndContentAreaSize.y - 20.0f;
 				String fps = "Fps: " + std::to_string(g_app->m_fps);
 				ImGui::GetWindowDrawList()->AddText(pos, IM_COL32(255, 255, 0, 255), fps.c_str());
@@ -341,7 +341,16 @@ namespace ToolKit
 						move = normalize(move);
 					}
 
-					m_camera->Translate(move * displace);
+					if (m_camera->IsOrtographic())
+					{
+						Vec3 farPos = -m_camera->GetDir() * 500.0f;
+						// For zoom in & out adjust projection size.
+						m_camera->m_node->SetTranslation(farPos, TransformationSpace::TS_WORLD);
+					}
+					else
+					{
+						m_camera->Translate(move * displace);
+					}
 				}
 				else
 				{
