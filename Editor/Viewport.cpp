@@ -52,7 +52,7 @@ namespace ToolKit
 		void Viewport::Show()
 		{
 			ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
-			if (ImGui::Begin(m_name.c_str(), &m_visible))
+			if (ImGui::Begin(m_name.c_str(), &m_visible, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 			{
 				HandleStates();
 

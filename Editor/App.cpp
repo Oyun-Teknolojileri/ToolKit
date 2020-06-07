@@ -502,18 +502,21 @@ namespace ToolKit
 				{
 					String ext;
 					DecomposePath(meshFile, nullptr, nullptr, &ext);
-					Drawable* ntt = new Drawable();
+					MeshPtr mesh;
 					if (ext == SKINMESH)
 					{
-						ntt->m_mesh = GetSkinMeshManager()->Create(meshFile);
+						mesh = GetSkinMeshManager()->Create(meshFile);
 					}
 					else
 					{
-						ntt->m_mesh = GetMeshManager()->Create(meshFile);
+						mesh = GetMeshManager()->Create(meshFile);
 					}
 
-					ntt->m_node->Scale({ UI::ImportData.scale, UI::ImportData.scale, UI::ImportData.scale });
-					g_app->m_scene.AddEntity(ntt);
+					mesh->Scale(Vec3(UI::ImportData.scale));
+					if (FolderWindow* browser = GetAssetBrowser())
+					{
+						browser->Iterate(ResourcePath());
+					}
 				}
 
 				UI::SearchFileData.showSearchFileWindow = false;

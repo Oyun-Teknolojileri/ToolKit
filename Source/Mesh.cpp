@@ -126,6 +126,8 @@ namespace ToolKit
 			}
 
 			mesh->m_loaded = true;
+			mesh->m_vertexCount = mesh->m_clientSideVertices.size();
+			mesh->m_indexCount = mesh->m_clientSideIndices.size();
 			mesh = nullptr;
 		}
 	}
@@ -175,12 +177,12 @@ namespace ToolKit
 		return cpy;
 	}
 
-	int Mesh::GetVertexSize()
+	int Mesh::GetVertexSize() const
 	{
 		return sizeof(Vertex);
 	}
 
-	bool Mesh::IsSkinned()
+	bool Mesh::IsSkinned() const
 	{
 		return false;
 	}
@@ -219,6 +221,26 @@ namespace ToolKit
 		for (size_t i = 0; i < m_subMeshes.size(); i++)
 		{
 			m_subMeshes[i]->GetAllMeshes(meshes);
+		}
+	}
+
+	void Mesh::Scale(const Vec3& scale)
+	{
+		assert(!m_initiated && "Call this before initiating the mesh.");
+		if (!m_initiated)
+		{
+			MeshRawPtrArray meshes;
+			GetAllMeshes(meshes);
+			m_aabb.max = Vec3(-FLT_MAX);
+			m_aabb.min = Vec3(FLT_MAX);
+			for (Mesh* mesh : meshes)
+			{
+				for (size_t i = 0; i < m_vertexCount; i++)
+				{
+					m_clientSideVertices[i].pos *= scale;
+					UpdateAABB(m_clientSideVertices[i].pos);
+				}
+			}
 		}
 	}
 
@@ -373,12 +395,12 @@ namespace ToolKit
 		m_loaded = true;
 	}
 
-	int SkinMesh::GetVertexSize()
+	int SkinMesh::GetVertexSize() const
 	{
 		return sizeof(SkinVertex);
 	}
 
-	bool SkinMesh::IsSkinned()
+	bool SkinMesh::IsSkinned() const
 	{
 		return true;
 	}

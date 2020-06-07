@@ -36,7 +36,7 @@ namespace ToolKit
 			ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding, m_owner->m_wndPos.y + padding);
 			ImGui::SetNextWindowPos(window_pos);
 			ImGui::SetNextWindowBgAlpha(0.65f);
-			if (ImGui::BeginChildFrame(ImGui::GetID("Navigation"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
+			if (ImGui::BeginChildFrame(ImGui::GetID("Navigation"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 			{
 				m_mouseOver = ImGui::IsWindowHovered();
 				
@@ -166,7 +166,23 @@ namespace ToolKit
 			ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding + 100, m_owner->m_wndPos.y + padding);
 			ImGui::SetNextWindowPos(window_pos);
 			ImGui::SetNextWindowBgAlpha(0.65f);
-			if (ImGui::BeginChildFrame(ImGui::GetID("ViewportOptions"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
+			if (
+					ImGui::BeginChildFrame
+					(
+						ImGui::GetID("ViewportOptions"),
+						overlaySize,
+						ImGuiWindowFlags_NoMove
+						| ImGuiWindowFlags_NoDocking
+						| ImGuiWindowFlags_NoTitleBar
+						| ImGuiWindowFlags_NoResize
+						| ImGuiWindowFlags_AlwaysAutoResize
+						| ImGuiWindowFlags_NoSavedSettings
+						| ImGuiWindowFlags_NoFocusOnAppearing
+						| ImGuiWindowFlags_NoNav
+						| ImGuiWindowFlags_NoScrollbar
+						| ImGuiWindowFlags_NoScrollWithMouse
+					)
+				)
 			{
 				m_mouseOver = ImGui::IsWindowHovered();
 
@@ -322,7 +338,22 @@ namespace ToolKit
 			window_pos = ImVec2(m_owner->m_wndPos.x + padding + 50, m_owner->m_wndPos.y + padding + 2);
 			ImGui::SetNextWindowPos(window_pos);
 			ImGui::SetNextWindowBgAlpha(0.65f);
-			if (ImGui::BeginChildFrame(ImGui::GetID("ViewportMenu"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_MenuBar))
+			if (
+					ImGui::BeginChildFrame
+					(
+						ImGui::GetID("ViewportMenu"), 
+						overlaySize, 
+						ImGuiWindowFlags_NoMove 
+						| ImGuiWindowFlags_NoDocking 
+						| ImGuiWindowFlags_NoTitleBar 
+						| ImGuiWindowFlags_NoResize 
+						| ImGuiWindowFlags_AlwaysAutoResize 
+						| ImGuiWindowFlags_NoSavedSettings 
+						| ImGuiWindowFlags_NoFocusOnAppearing 
+						| ImGuiWindowFlags_NoNav 
+						| ImGuiWindowFlags_MenuBar
+					)
+				)
 			{
 				m_mouseOver = ImGui::IsWindowHovered();
 

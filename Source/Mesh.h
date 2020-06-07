@@ -32,10 +32,11 @@ namespace ToolKit
 		virtual void UnInit() override;
     virtual void Load() override;
     virtual Mesh* GetCopy() override;
-    virtual int GetVertexSize();
-    virtual bool IsSkinned();
+    virtual int GetVertexSize() const;
+    virtual bool IsSkinned() const;
 		void CalculateAABoundingBox();
 		void GetAllMeshes(MeshRawPtrArray& meshes);
+    void Scale(const Vec3& scale);
 
   protected:
     virtual void InitVertices(bool flush);
@@ -81,8 +82,8 @@ namespace ToolKit
 		virtual void UnInit() override;
     virtual void Load() override;
 
-    int GetVertexSize();
-    bool IsSkinned();
+    virtual int GetVertexSize() const override;
+    virtual bool IsSkinned() const override;
 
   protected:
     virtual void InitVertices(bool flush);
