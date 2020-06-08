@@ -371,7 +371,7 @@ namespace ToolKit
 				String name, ext;
 				DecomposePath(fullPath, nullptr, &name, &ext);
 
-				String cmd = "Import ";
+				String cmd = "Import \"";
 				if (!subDir.empty())
 				{
 					cmd += subDir + '\\' + name + ext;
@@ -381,6 +381,9 @@ namespace ToolKit
 					cmd += name + ext;
 				}
 
+				cmd += "\" -s " + std::to_string(UI::ImportData.scale);
+
+				// Execute command.
 				int result = std::system(cmd.c_str());
 				assert(result != -1);
 
@@ -512,7 +515,6 @@ namespace ToolKit
 						mesh = GetMeshManager()->Create(meshFile);
 					}
 
-					mesh->Scale(Vec3(UI::ImportData.scale));
 					if (FolderWindow* browser = GetAssetBrowser())
 					{
 						browser->Iterate(ResourcePath());

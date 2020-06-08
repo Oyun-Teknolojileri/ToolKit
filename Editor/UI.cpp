@@ -409,6 +409,9 @@ namespace ToolKit
 
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
 				ImGui::Checkbox("Override", &ImportData.overwrite);
+				ImGui::PushItemWidth(100);
+				ImGui::InputFloat("Scale", &ImportData.scale);
+				ImGui::PopItemWidth();
 				ImGui::PopStyleVar();
 
 				ImGui::InputTextWithHint("Subdir", "optional", &ImportData.subDir);

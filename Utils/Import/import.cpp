@@ -59,8 +59,6 @@ void AddToUsedFiles(string file)
   }
 }
 
-
-
 unordered_map<string, BoneNode> g_skeletonMap;
 const aiScene* g_scene = nullptr;
 
@@ -254,7 +252,9 @@ void AppendMesh_(aiMesh* mesh, ofstream& file, string filePath)
   assert(file.good());
   string tag = "skinMesh";
   if (skinData.empty())
+  {
     tag = "mesh";
+  }
 
 	string path, name;
 	Decompose(filePath, path, name);
@@ -298,7 +298,9 @@ void AppendMesh_(aiMesh* mesh, ofstream& file, string filePath)
         for (int j = 0; j < 4; j++)
         {
           if (j >= (int)skinData[i].size())
+          {
             skinData[i].push_back(pair<int, float>(0, 0.0f));
+          }
         }
         file << "        <b w=\"" + to_string(skinData[i][0].first) + "\" x=\"" + to_string(skinData[i][1].first) + "\" y=\"" + to_string(skinData[i][2].first) + "\" z=\"" + to_string(skinData[i][3].first) + "\"/>\n";
         file << "        <w w=\"" + to_string(skinData[i][0].second) + "\" x=\"" + to_string(skinData[i][1].second) + "\" y=\"" + to_string(skinData[i][2].second) + "\" z=\"" + to_string(skinData[i][3].second) + "\"/>\n";
@@ -328,7 +330,9 @@ void PrintMesh_(const aiScene* scene, string filePath)
 
   string tag = "mesh";
   if (!g_skeletonMap.empty())
+  {
     tag = "skinMesh";
+  }
 
   string fullPath = path + name + "." + tag;
   AddToUsedFiles(fullPath);
@@ -345,7 +349,9 @@ void PrintMesh_(const aiScene* scene, string filePath)
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; i++)
+    {
       searchMeshFn(node->mChildren[i]);
+    }
   };
 
   searchMeshFn(scene->mRootNode);
@@ -360,7 +366,9 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
   {
     BoneNode bn(node, 0);
     if (node->mName == bone->mName)
+    {
       bn.bone = bone;
+    }
     g_skeletonMap[node->mName.C_Str()] = bn;
   };
 
@@ -378,26 +386,37 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
       while (node) // Go Up
       {
         if (node == meshNode)
+        {
           break;
+        }
 
         if (meshNode != nullptr)
+        {
           if (node == meshNode->mParent)
+          {
             break;
+          }
+        }
 
         addBoneNodeFn(node, bone);
 
         node = node->mParent;
       }
+
       node = scene->mRootNode->FindNode(bone->mName);
       function<void(aiNode*)> checkDownFn = [&checkDownFn, &bone, &addBoneNodeFn](aiNode* node) -> void // Go Down
       {
         if (node == nullptr)
+        {
           return;
+        }
 
         addBoneNodeFn(node, bone);
 
         for (unsigned int i = 0; i < node->mNumChildren; i++)
+        {
           checkDownFn(node->mChildren[i]);
+        }
       };
       checkDownFn(node);
     }
@@ -406,17 +425,23 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
   for (auto& bone : bones)
   {
     if (g_skeletonMap.find(bone->mName.C_Str()) != g_skeletonMap.end())
+    {
       g_skeletonMap[bone->mName.C_Str()].bone = bone;
+    }
   }
 
   // Assign indices
   function<void(aiNode*, unsigned int&)> assignBoneIndexFn = [&assignBoneIndexFn](aiNode* node, unsigned int& index) -> void
   {
     if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
+    {
       g_skeletonMap[node->mName.C_Str()].boneIndex = index++;
+    }
 
     for (unsigned int i = 0; i < node->mNumChildren; i++)
+    {
       assignBoneIndexFn(node->mChildren[i], index);
+    }
   };
 
   unsigned int boneIndex = 0;
@@ -455,7 +480,9 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; i++)
+    {
       writeFn(node->mChildren[i], file, tabSpace + "  ");
+    }
 
     if (bonePrinted)
     {
@@ -515,15 +542,31 @@ void PrintTextures_(const aiScene* scene, string filePath)
 
 int main(int argc, char *argv[])
 {
-  if (argc != 2)
+  if (argc < 2 || argc > 4)
   {
-    cout << "usage: Import \"fileToImport.format\"\n";
+    cout << "usage: Import \"fileToImport.format\" <op> -s 1.0\n";
     return -1;
   }
 
   string file = argv[1];
   Assimp::Importer importer;
-  const aiScene* scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_LimitBoneWeights | aiProcess_GenNormals);
+	if (argc == 4)
+	{
+		float scale = (float)std::atof(argv[3]);
+		importer.SetPropertyFloat(AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, scale);
+	}
+
+  const aiScene* scene = importer.ReadFile
+  (
+    file, 
+    aiProcess_Triangulate 
+    | aiProcess_CalcTangentSpace 
+    | aiProcess_FlipUVs 
+    | aiProcess_LimitBoneWeights 
+    | aiProcess_GenNormals
+    | aiProcess_GlobalScale
+  );
+
   if (scene == nullptr)
   {
     return -1;

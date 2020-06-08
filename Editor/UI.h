@@ -110,7 +110,7 @@ namespace ToolKit
 					bool overwrite = false;
 					String fullPath;
 					String subDir;
-					float scale = 0.01f;
+					float scale = 1.0f;
 				} ImportData;
 
 				static struct SearchFile
