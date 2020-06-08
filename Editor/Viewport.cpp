@@ -369,8 +369,11 @@ namespace ToolKit
 			if (m_camera)
 			{
 				// Adjust zoom always.
-				float zoom = ImGui::GetIO().MouseWheel;
-				m_camera->Translate(Vec3(0.0f, 0.0f, -zoom));
+				if (m_mouseOverContentArea)
+				{
+					float zoom = ImGui::GetIO().MouseWheel;
+					m_camera->Translate(Vec3(0.0f, 0.0f, -zoom));
+				}
 
 				static bool hitFound = false;
 				static Vec3 orbitPnt;
