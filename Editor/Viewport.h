@@ -36,6 +36,7 @@ namespace ToolKit
 		private:
 			// Mods.
 			void FpsNavigationMode(float deltaTime);
+			void OrbitPanMod(float deltaTime);
 
 			// Internal window handling.
 			void OnResize(float width, float height);

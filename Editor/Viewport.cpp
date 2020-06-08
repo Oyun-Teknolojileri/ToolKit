@@ -12,6 +12,7 @@
 #include "Grid.h"
 #include "FolderWindow.h"
 #include "ConsoleWindow.h"
+#include "Gizmo.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -180,6 +181,7 @@ namespace ToolKit
 
 			// Update viewport mods.
 			FpsNavigationMode(deltaTime);
+			OrbitPanMod(deltaTime);
 		}
 
 		void Viewport::OnResize(float width, float height)
@@ -358,6 +360,73 @@ namespace ToolKit
 					{
 						m_relMouseModBegin = true;
 					}
+				}
+			}
+		}
+
+		void Viewport::OrbitPanMod(float deltaTime)
+		{
+			if (m_camera)
+			{
+				// Adjust zoom always.
+				float zoom = ImGui::GetIO().MouseWheel;
+				m_camera->Translate(Vec3(0.0f, 0.0f, -zoom));
+
+				static bool hitFound = false;
+				static Vec3 orbitPnt;
+				if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
+				{
+					// Figure out orbiting point.
+					if (!hitFound)
+					{
+						Ray orbitRay = RayFromMousePosition();
+						Scene::PickData pd = g_app->m_scene.PickObject(orbitRay);
+
+						if (pd.entity == nullptr)
+						{
+							if (!g_app->m_grid->HitTest(orbitRay, orbitPnt))
+							{
+								orbitPnt = PointOnRay(orbitRay, 5.0f);
+							}
+						}
+						else
+						{
+							orbitPnt = pd.pickPos;
+						}
+						hitFound = true;
+					}
+
+					// Orbit around it.
+					float x = ImGui::GetIO().MouseDelta.x;
+					float y = ImGui::GetIO().MouseDelta.y;
+					Vec3 r = m_camera->GetRight();
+					Vec3 u = m_camera->GetUp();
+
+					if (ImGui::GetIO().KeyShift)
+					{
+						Vec3 sum = r * -x + u * y;
+						float speed = g_app->m_camSpeed;
+						float displace = speed * MilisecToSec(deltaTime);
+						m_camera->m_node->Translate(sum * displace, TransformationSpace::TS_WORLD);
+					}
+					else
+					{
+						Mat4 camTs = m_camera->m_node->GetTransform(TransformationSpace::TS_WORLD);
+						Quaternion qx = glm::angleAxis(-glm::radians(y * g_app->m_mouseSensitivity), r);
+						Quaternion qy = glm::angleAxis(-glm::radians(x * g_app->m_mouseSensitivity), u);
+						Mat4 ts;
+						ts[3].xyz = orbitPnt;
+						Mat4 its;
+						its[3].xyz = -orbitPnt;
+
+						camTs = ts * glm::toMat4(qy * qx) * its * camTs;
+						m_camera->m_node->SetTransform(camTs, TransformationSpace::TS_WORLD);
+					}
+				}
+
+				if (!ImGui::IsMouseDown(ImGuiMouseButton_Middle))
+				{
+					hitFound = false;
 				}
 			}
 		}
