@@ -389,7 +389,11 @@ namespace ToolKit
 
 			if (g_app->m_importSlient)
 			{
-				g_app->Import(ImportData.fullPath, ImportData.subDir, ImportData.overwrite);
+				for (size_t i = 0; i < ImportData.files.size(); i++)
+				{
+					g_app->Import(ImportData.files[i], ImportData.subDir, ImportData.overwrite);
+				}
+				ImportData.files.clear();
 				ImportData.showImportWindow = false;
 			}
 
@@ -397,13 +401,33 @@ namespace ToolKit
 			if (ImGui::BeginPopupModal("Import", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				ImGui::Text("Import file: \n\n");
-				ImGui::Text(ImportData.fullPath.c_str());
+				for (size_t i = 0; i < ImportData.files.size(); i++)
+				{
+					ImGui::Text(ImportData.files[i].c_str());
+				}
 				ImGui::Separator();
 
-				bool canImp = g_app->CanImport(ImportData.fullPath);
-				if (!canImp)
+				StringArray fails;
+				if (!ImportData.files.empty())
 				{
-					ImGui::Text("File format is not supported.\nSuported formats are fbx, glb, obj.");
+					for (int i = (int)ImportData.files.size() - 1; i >= 0; i--)
+					{
+						bool canImp = g_app->CanImport(ImportData.files[i]);
+						if (!canImp)
+						{
+							fails.push_back(ImportData.files[i]);
+							ImportData.files.erase(ImportData.files.begin() + i);
+						}
+					}
+				}
+
+				if (!fails.empty())
+				{
+					ImGui::Text("Fallowing imports failed due to:\nFile format is not supported.\nSuported formats are fbx, glb, obj.");
+					for (String& file : fails)
+					{
+						ImGui::Text(file.c_str());
+					}
 					ImGui::Separator();
 				}
 
@@ -418,7 +442,17 @@ namespace ToolKit
 
 				if (ImGui::Button("OK", ImVec2(120, 0))) 
 				{ 
-					g_app->Import(ImportData.fullPath, ImportData.subDir, ImportData.overwrite);
+					for (size_t i = 0; i < ImportData.files.size(); i++)
+					{
+						if (g_app->Import(ImportData.files[i], ImportData.subDir, ImportData.overwrite) == -1)
+						{
+							// Fall back to search.
+							ImGui::EndPopup();
+							ImportData.showImportWindow = false;
+							return;
+						}
+					}
+					ImportData.files.clear();
 					ImportData.showImportWindow = false;
 					ImGui::CloseCurrentPopup(); 
 				}
@@ -426,6 +460,7 @@ namespace ToolKit
 				ImGui::SameLine();
 				if (ImGui::Button("Cancel", ImVec2(120, 0))) 
 				{ 
+					ImportData.files.clear();
 					ImportData.showImportWindow = false;
 					ImGui::CloseCurrentPopup(); 
 				}
@@ -494,13 +529,18 @@ namespace ToolKit
 
 				if (ImGui::Button("Search", ImVec2(120, 0)))
 				{
-					g_app->Import(ImportData.fullPath, ImportData.subDir, ImportData.overwrite);
+					for (size_t i = 0; i < ImportData.files.size(); i++)
+					{
+						g_app->Import(ImportData.files[i], ImportData.subDir, ImportData.overwrite);
+					}
+					ImportData.files.clear();
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::SetItemDefaultFocus();
 				ImGui::SameLine();
 				if (ImGui::Button("Abort", ImVec2(120, 0)))
 				{
+					ImportData.files.clear();
 					SearchFileData.showSearchFileWindow = false;
 					ImGui::CloseCurrentPopup();
 				}

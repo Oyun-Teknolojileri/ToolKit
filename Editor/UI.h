@@ -108,7 +108,7 @@ namespace ToolKit
 				{
 					bool showImportWindow = false;
 					bool overwrite = false;
-					String fullPath;
+					StringArray files;
 					String subDir;
 					float scale = 1.0f;
 				} ImportData;

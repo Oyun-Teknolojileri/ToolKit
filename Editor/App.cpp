@@ -344,6 +344,11 @@ namespace ToolKit
 		{
 			if (!CanImport(fullPath))
 			{
+				if (ConsoleWindow* con = GetConsole())
+				{
+					con->AddLog("Import failed: " + fullPath, ConsoleWindow::LogType::Error);
+					con->AddLog("File format is not supported.\nSuported formats are fbx, glb, obj.", ConsoleWindow::LogType::Error);
+				}
 				return -1;
 			}
 

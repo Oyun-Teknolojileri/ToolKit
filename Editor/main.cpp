@@ -125,7 +125,7 @@ namespace ToolKit
 
 			if (e.type == SDL_DROPFILE)
 			{
-				UI::ImportData.fullPath = e.drop.file;
+				UI::ImportData.files.push_back(e.drop.file);
 				UI::ImportData.showImportWindow = true;
 			}
 
