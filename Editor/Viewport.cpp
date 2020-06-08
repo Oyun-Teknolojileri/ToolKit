@@ -412,12 +412,10 @@ namespace ToolKit
 					else
 					{
 						Mat4 camTs = m_camera->m_node->GetTransform(TransformationSpace::TS_WORLD);
+						Mat4 ts = glm::translate(Mat4(), orbitPnt);
+						Mat4 its = glm::translate(Mat4(), -orbitPnt);
 						Quaternion qx = glm::angleAxis(-glm::radians(y * g_app->m_mouseSensitivity), r);
-						Quaternion qy = glm::angleAxis(-glm::radians(x * g_app->m_mouseSensitivity), u);
-						Mat4 ts;
-						ts[3].xyz = orbitPnt;
-						Mat4 its;
-						its[3].xyz = -orbitPnt;
+						Quaternion qy = glm::angleAxis(-glm::radians(x * g_app->m_mouseSensitivity), Y_AXIS);
 
 						camTs = ts * glm::toMat4(qy * qx) * its * camTs;
 						m_camera->m_node->SetTransform(camTs, TransformationSpace::TS_WORLD);
