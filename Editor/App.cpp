@@ -335,7 +335,7 @@ namespace ToolKit
 					processing = false;
 				};
 
-				UI::m_windows.push_back(reallyQuit);
+				UI::m_volatileWindows.push_back(reallyQuit);
 				processing = true;
 			}
 		}

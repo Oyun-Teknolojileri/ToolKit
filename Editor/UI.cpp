@@ -27,7 +27,7 @@ namespace ToolKit
 		UI::Import UI::ImportData;
 		UI::SearchFile UI::SearchFileData;
 		StringInputWindow UI::m_strInputWindow;
-		std::vector<Window*> UI::m_windows;
+		std::vector<Window*> UI::m_volatileWindows;
 
 		// Icons
 		TexturePtr UI::m_selectIcn;
@@ -67,6 +67,13 @@ namespace ToolKit
 
 		void UI::UnInit()
 		{
+			for (size_t i = 0; i < m_volatileWindows.size(); i++)
+			{
+				SafeDel(m_volatileWindows[i]);
+			}
+			assert(m_volatileWindows.size() < 10 && "Overflowing danger.");
+			m_volatileWindows.clear();
+
 			ImGui_ImplOpenGL3_Shutdown();
 			ImGui_ImplSDL2_Shutdown();
 			ImGui::DestroyContext();
@@ -243,10 +250,18 @@ namespace ToolKit
 			m_strInputWindow.Show();
 
 			// Show & Destroy if not visible.
-			for (int i = (int)m_windows.size() - 1; i > -1; i--)
+			for (int i = (int)m_volatileWindows.size() - 1; i > -1; i--)
 			{
-				Window* wnd = m_windows[i];
-				wnd->Show();
+				Window* wnd = m_volatileWindows[i];
+				if (wnd->IsVisible())
+				{
+					wnd->Show();
+				}
+				else
+				{
+					SafeDel(wnd);
+					m_volatileWindows.erase(m_volatileWindows.begin() + i);
+				}
 			}
 
 			ImGui::Render();

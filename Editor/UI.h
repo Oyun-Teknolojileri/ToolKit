@@ -102,7 +102,9 @@ namespace ToolKit
 				static bool m_windowMenushowMetrics;
 				static float m_hoverTimeForHelp;
 				static StringInputWindow m_strInputWindow;
-				static std::vector<Window*> m_windows;
+
+				// Volatile windows. (Pop-ups etc.)
+				static std::vector<Window*> m_volatileWindows;
 
 				static struct Import
 				{
