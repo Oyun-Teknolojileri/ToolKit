@@ -176,6 +176,7 @@ namespace ToolKit
 		{
 			if (!IsActive())
 			{
+				SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);
 				return;
 			}
 
