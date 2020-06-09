@@ -408,7 +408,10 @@ namespace ToolKit
 					if (ImGui::GetIO().KeyShift)
 					{
 						Vec3 sum = r * -x + u * y;
-						float speed = g_app->m_camSpeed;
+
+						Camera::CamData dat = m_camera->GetData();
+						float dist = glm::distance(orbitPnt, dat.pos);
+						float speed = 0.1f * glm::sqrt(dist);
 						float displace = speed * MilisecToSec(deltaTime);
 						m_camera->m_node->Translate(sum * displace, TransformationSpace::TS_WORLD);
 					}
