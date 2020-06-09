@@ -456,7 +456,7 @@ namespace ToolKit
 					 if (g_app->m_snapsEnabled)
 					 {
 						 deltaAccum += glm::abs(delta);
-						 if (deltaAccum > 0.5f)
+						 if (deltaAccum > glm::radians(g_app->m_rotateDelta))
 						 {
 							 delta = glm::radians(g_app->m_rotateDelta) * glm::sign(delta);
 							 deltaAccum = 0.0f;
