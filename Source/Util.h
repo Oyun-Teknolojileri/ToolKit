@@ -28,6 +28,7 @@ namespace ToolKit
 	void Split(const String& s, const String& sep, StringArray& v);
 	void ReplaceStringInPlace(String& subject, const String& search, const String& replace);
 	class LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size);
+	class LineBatch* CreateLineDebugObject(const Vec3Array& corners);
 	class LineBatch* GenerateBoundingVolumeGeometry(const BoundingBox& box, Mat4* transform = nullptr);
 	void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray);
 

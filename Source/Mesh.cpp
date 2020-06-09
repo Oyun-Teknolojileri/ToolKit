@@ -126,8 +126,8 @@ namespace ToolKit
 			}
 
 			mesh->m_loaded = true;
-			mesh->m_vertexCount = mesh->m_clientSideVertices.size();
-			mesh->m_indexCount = mesh->m_clientSideIndices.size();
+			mesh->m_vertexCount = (int)mesh->m_clientSideVertices.size();
+			mesh->m_indexCount = (int)mesh->m_clientSideIndices.size();
 			mesh = nullptr;
 		}
 	}

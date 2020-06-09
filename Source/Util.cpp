@@ -231,7 +231,7 @@ namespace ToolKit
 		Vec3 o = plane.normal * plane.d;
 
 		float hSize = size * 0.5f;
-		std::vector<Vec3> corners
+		Vec3Array corners
 		{
 			o + x * hSize + y * hSize,
 			o - x * hSize + y * hSize,
@@ -239,6 +239,12 @@ namespace ToolKit
 			o + x * hSize - y * hSize
 		};
 
+		LineBatch* obj = new LineBatch(corners, X_AXIS, DrawType::LineLoop, 5.0f);
+		return obj;
+	}
+
+	class LineBatch* CreateLineDebugObject(const Vec3Array& corners)
+	{
 		LineBatch* obj = new LineBatch(corners, X_AXIS, DrawType::LineLoop, 5.0f);
 		return obj;
 	}

@@ -258,6 +258,16 @@ namespace ToolKit
 
 				RenderSelected(vp);
 
+				if (!m_perFrameDebugObjects.empty())
+				{
+					for (Drawable* d : m_perFrameDebugObjects)
+					{
+						m_renderer->Render(d, vp->m_camera);
+						SafeDel(d);
+					}
+					m_perFrameDebugObjects.clear();
+				}
+
 				m_renderer->Render(m_grid, vp->m_camera);
 
 				m_origin->LookAt(vp->m_camera);
@@ -275,16 +285,6 @@ namespace ToolKit
 					{
 						m_renderer->Render(gizmo, vp->m_camera);
 					}
-				}
-
-				if (!m_perFrameDebugObjects.empty())
-				{
-					for (Drawable* d : m_perFrameDebugObjects)
-					{
-						m_renderer->Render(d, vp->m_camera);
-						SafeDel(d);
-					}
-					m_perFrameDebugObjects.clear();
 				}
 
 				m_cursor->LookAt(vp->m_camera);
