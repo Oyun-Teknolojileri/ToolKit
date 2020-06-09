@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Drawable.h"
+#include "MathUtil.h"
 
 namespace ToolKit
 {
