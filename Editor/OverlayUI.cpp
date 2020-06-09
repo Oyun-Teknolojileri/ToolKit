@@ -304,6 +304,23 @@ namespace ToolKit
 				// Snap button.
 				ImGui::SameLine(0, spacing);
 				static float hoverTimeSnapBtn = 0.0f;
+
+				// Auto snap.
+				static bool autoSnapActivated = false;
+				if (ImGui::GetIO().KeyCtrl)
+				{
+					if (!g_app->m_snapsEnabled)
+					{
+						autoSnapActivated = true;
+						g_app->m_snapsEnabled = true;
+					}
+				}
+				else if (autoSnapActivated)
+				{
+					autoSnapActivated = false;
+					g_app->m_snapsEnabled = false;
+				}
+
 				g_app->m_snapsEnabled = UI::ToggleButton((void*)(intptr_t)UI::m_snapIcon->m_textureId, ImVec2(13, 13), g_app->m_snapsEnabled);
 				ImGui::SameLine(0, spacing); UI::HelpMarker("Snap\nEnable snapped transforms.", &hoverTimeSnapBtn);
 				
