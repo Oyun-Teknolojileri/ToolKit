@@ -27,7 +27,7 @@ namespace ToolKit
 		{
 			if (g_app->m_scene.GetSelectedEntityCount() == 0)
 			{
-				g_app->m_scene.RemoveEntity(m_gizmo->m_id);
+				g_app->m_gizmo = nullptr;
 				return;
 			}
 
@@ -82,12 +82,12 @@ namespace ToolKit
 
 		void StateTransformBase::MakeSureGizmoIsValid()
 		{
-			if (g_app->m_scene.GetEntity(m_gizmo->m_id) == nullptr)
+			if (g_app->m_gizmo == nullptr)
 			{
 				Entity* e = g_app->m_scene.GetCurrentSelection();
 				if (e != nullptr)
 				{
-					g_app->m_scene.AddEntity(m_gizmo);
+					g_app->m_gizmo = m_gizmo;
 				}
 			}
 		}
@@ -636,7 +636,7 @@ namespace ToolKit
 
 		TransformMod::~TransformMod()
 		{
-			g_app->m_scene.RemoveEntity(m_gizmo->m_id);
+			g_app->m_gizmo = nullptr;
 			SafeDel(m_gizmo);
 		}
 

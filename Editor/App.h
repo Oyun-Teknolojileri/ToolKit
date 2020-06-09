@@ -21,6 +21,7 @@ namespace ToolKit
 		class ConsoleWindow;
 		class FolderWindow;
 		class Window;
+		class Gizmo;
 
 		class App
 		{
@@ -64,6 +65,7 @@ namespace ToolKit
 			Grid* m_grid;
 			Axis3d* m_origin;
 			Cursor* m_cursor;
+			Gizmo* m_gizmo = nullptr;
 			std::vector<Drawable*> m_perFrameDebugObjects;
 
 			// 3 point lighting system.

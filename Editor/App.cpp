@@ -119,6 +119,7 @@ namespace ToolKit
 			m_highLightSecondaryMaterial->GetRenderState()->cullMode = CullingType::Front;
 
 			ModManager::GetInstance()->Init();
+			ModManager::GetInstance()->SetMod(true, ModId::Select);
 			ActionManager::GetInstance()->Init();
 
 			// Lights and camera.
@@ -203,9 +204,6 @@ namespace ToolKit
 
 		void App::Frame(float deltaTime)
 		{
-			// Dirty hack.
-			Gizmo* gizmo = nullptr;
-
 			// Update animations.
 			GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
 
@@ -235,21 +233,8 @@ namespace ToolKit
 					{
 						if (ntt->GetType() == EntityType::Entity_Billboard)
 						{
-							gizmo = dynamic_cast<Gizmo*> (ntt);
-							if (gizmo != nullptr)
-							{
-								// Only update gizmo in active viewport. Otherwise hit test doesn't work correctly. Due to replacement of gizmo.
-								if (vp->IsActive())
-								{
-									gizmo->LookAt(cam, vp->m_height);
-								}
-								continue; // Special drawing (Depth modifier) handled last.
-							}
-							else
-							{
-								Billboard* billboard = static_cast<Billboard*> (ntt);
-								billboard->LookAt(cam, vp->m_height);
-							}
+							Billboard* billboard = static_cast<Billboard*> (ntt);
+							billboard->LookAt(cam, vp->m_height);
 						}
 
 						m_renderer->Render(static_cast<Drawable*> (ntt), cam, m_sceneLights);
@@ -274,16 +259,17 @@ namespace ToolKit
 				m_renderer->Render(m_origin, vp->m_camera);
 
 				// Only draw gizmo in active viewport.
-				if (gizmo != nullptr && vp->IsActive())
+				if (m_gizmo != nullptr && vp->IsActive())
 				{
+					m_gizmo->LookAt(cam, vp->m_height);
 					glClear(GL_DEPTH_BUFFER_BIT);
-					if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (gizmo))
+					if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
 					{
 						pg->Render(m_renderer, vp->m_camera);
 					}
 					else
 					{
-						m_renderer->Render(gizmo, vp->m_camera);
+						m_renderer->Render(m_gizmo, vp->m_camera);
 					}
 				}
 
