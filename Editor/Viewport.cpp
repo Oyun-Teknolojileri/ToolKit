@@ -277,7 +277,7 @@ namespace ToolKit
 
 		void Viewport::FpsNavigationMode(float deltaTime)
 		{
-			if (m_camera)
+			if (m_camera && !m_camera->IsOrtographic())
 			{
 				// Mouse is right clicked
 				if (ImGui::IsMouseDown(ImGuiMouseButton_Right))
@@ -344,16 +344,7 @@ namespace ToolKit
 						move = normalize(move);
 					}
 
-					if (m_camera->IsOrtographic())
-					{
-						Vec3 farPos = -m_camera->GetDir() * 500.0f;
-						// For zoom in & out adjust projection size.
-						m_camera->m_node->SetTranslation(farPos, TransformationSpace::TS_WORLD);
-					}
-					else
-					{
-						m_camera->Translate(move * displace);
-					}
+					m_camera->Translate(move * displace);
 				}
 				else
 				{
@@ -373,7 +364,20 @@ namespace ToolKit
 				if (m_mouseOverContentArea)
 				{
 					float zoom = ImGui::GetIO().MouseWheel;
-					m_camera->Translate(Vec3(0.0f, 0.0f, -zoom));
+					if (m_camera->IsOrtographic())
+					{
+						m_camera->Translate(Vec3(0.0f, 0.0f, -zoom * 10.0f));
+
+						Camera::CamData dat = m_camera->GetData();
+						float distToCenter = glm::distance(Vec3(), dat.pos);
+
+						float hDist = distToCenter * 10.0f / 500.0f;
+						m_camera->SetLens(dat.aspect, -hDist, hDist, -hDist, hDist, 0.01f, 1000.0f);
+					}
+					else
+					{
+						m_camera->Translate(Vec3(0.0f, 0.0f, -zoom));
+					}
 				}
 
 				static bool hitFound = false;

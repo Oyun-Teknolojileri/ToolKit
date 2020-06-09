@@ -21,7 +21,7 @@ namespace ToolKit
 	public:
 		Billboard(const Settings& settings);
 
-		virtual void LookAt(class Camera* cam);
+		virtual void LookAt(class Camera* cam, float windowHeight);
 		virtual Billboard* GetCopy() const override;
     virtual void GetCopy(Entity* copyTo) const override;
 		virtual EntityType GetType() const override;

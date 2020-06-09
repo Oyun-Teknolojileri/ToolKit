@@ -153,7 +153,7 @@ namespace ToolKit
 			// Top.
 			vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
 			vp->m_name = "Top";
-			vp->m_camera->m_node->SetTranslation({ 0.0f, 5.0f, 0.0f });
+			vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
 			vp->m_camera->Pitch(glm::radians(-90.0f));
 			vp->m_orthographic = true;
 			m_windows.push_back(vp);
@@ -241,14 +241,14 @@ namespace ToolKit
 								// Only update gizmo in active viewport. Otherwise hit test doesn't work correctly. Due to replacement of gizmo.
 								if (vp->IsActive())
 								{
-									gizmo->LookAt(cam);
+									gizmo->LookAt(cam, vp->m_height);
 								}
 								continue; // Special drawing (Depth modifier) handled last.
 							}
 							else
 							{
 								Billboard* billboard = static_cast<Billboard*> (ntt);
-								billboard->LookAt(cam);
+								billboard->LookAt(cam, vp->m_height);
 							}
 						}
 
@@ -270,7 +270,7 @@ namespace ToolKit
 
 				m_renderer->Render(m_grid, vp->m_camera);
 
-				m_origin->LookAt(vp->m_camera);
+				m_origin->LookAt(vp->m_camera, vp->m_height);
 				m_renderer->Render(m_origin, vp->m_camera);
 
 				// Only draw gizmo in active viewport.
@@ -287,7 +287,7 @@ namespace ToolKit
 					}
 				}
 
-				m_cursor->LookAt(vp->m_camera);
+				m_cursor->LookAt(vp->m_camera, vp->m_height);
 				m_renderer->Render(m_cursor, vp->m_camera);
 			}
 
