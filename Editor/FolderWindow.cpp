@@ -302,6 +302,14 @@ namespace ToolKit
 			}
 		}
 
+		void FolderWindow::UpdateContent()
+		{
+			for (FolderView& view : m_entiries)
+			{
+				view.Iterate();
+			}
+		}
+
 		void FolderWindow::AddEntry(const FolderView& view)
 		{
 			if (Exist(view.GetPath()) == -1)

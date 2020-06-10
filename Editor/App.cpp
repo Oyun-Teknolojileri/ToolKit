@@ -508,7 +508,7 @@ namespace ToolKit
 
 					if (FolderWindow* browser = GetAssetBrowser())
 					{
-						browser->Iterate(ResourcePath());
+						browser->UpdateContent();
 					}
 				}
 

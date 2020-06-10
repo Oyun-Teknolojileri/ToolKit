@@ -47,6 +47,7 @@ namespace ToolKit
 			virtual void Show() override;
 			virtual Type GetType() const override;
 			void Iterate(const String& path);
+			void UpdateContent();
 			void AddEntry(const FolderView& view);
 			FolderView& GetView(int indx);
 			int Exist(const String& path);
