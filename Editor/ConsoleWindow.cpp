@@ -437,7 +437,8 @@ namespace ToolKit
 				// Command window.
 				bool reclaimFocus = false;
 				static char inputBuff[256];
-				ImGui::PushItemWidth(600.0f);
+				float width = ImGui::GetWindowContentRegionWidth() * 0.4f;
+				ImGui::PushItemWidth(width);
 				if (
 						ImGui::InputText
 						(
@@ -466,7 +467,7 @@ namespace ToolKit
 				ImGui::Text("Filter: ");
 				ImGui::SameLine();
 
-				m_filter.Draw("##Filter", 180);
+				m_filter.Draw("##Filter", width * 0.5f);
 				ImGui::SameLine();
 
 				if (ImGui::Button("Clear"))

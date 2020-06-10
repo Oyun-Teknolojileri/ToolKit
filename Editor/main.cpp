@@ -25,8 +25,8 @@ namespace ToolKit
 
 		// Setup.
 		const char* appName = "ToolKit";
-		const int width = 1024;
-		const int height = 640;
+		const int width = 1280;
+		const int height = 720;
 #ifdef TK_PROFILE
 		const uint fps = 5000;
 #else

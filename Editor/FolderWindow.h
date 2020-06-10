@@ -32,11 +32,13 @@ namespace ToolKit
 			FolderWindow* m_parent = nullptr;
 			std::vector<DirectoryEntry> m_entiries;
 			String m_path;
-			String m_folder;
 
 		public:
+			bool m_currRoot = false; // Indicates this is a root folder (one level under Resources) and currently selected in the FolderWindow.
+			bool m_currSub = false; // Indicates this is a sub folder (two level under Resources) and currently selected in the FolderView.
 			bool m_visible = true;
 			bool m_onlyNativeTypes = true;
+			String m_folder;
 		};
 
 		class FolderWindow : public Window

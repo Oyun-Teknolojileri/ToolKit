@@ -22,7 +22,13 @@ namespace ToolKit
 
 		void FolderView::Show()
 		{
-			if (ImGui::BeginTabItem(m_folder.c_str(), &m_visible))
+			bool* visCheck = nullptr;
+			if (!m_currRoot)
+			{
+				visCheck = &m_visible;
+			}
+
+			if (ImGui::BeginTabItem(m_folder.c_str(), visCheck, m_currSub ? ImGuiTabItemFlags_SetSelected : 0))
 			{
 				if (ImGui::IsItemHovered())
 				{
@@ -117,6 +123,7 @@ namespace ToolKit
 										FolderView view(m_parent);
 										view.SetPath(path);
 										view.Iterate();
+										view.m_currSub = true;
 										m_parent->AddEntry(view);
 									}
 									else
@@ -203,17 +210,74 @@ namespace ToolKit
 			{
 				HandleStates();
 
+				auto IsRootFn = [](const String& path)
+				{
+					return std::count(path.begin(), path.end(), '\\') == 2;
+				};
+
+				// Show Resource folder structure.
+				ImGui::PushID("##FolderStructure");
+				ImGui::BeginGroup();
+				ImGui::TextUnformatted("Resources");
+				ImGui::BeginChild("##Folders", ImVec2(130, 0), true);
+				static int selectedFolder = -1;
+				for (int i = 0; i < (int)m_entiries.size(); i++)
+				{
+					if (!IsRootFn(m_entiries[i].GetPath()))
+					{
+						continue;
+					}
+
+					bool currSel = false;
+					if (selectedFolder == i)
+					{
+						currSel = true;
+					}
+
+					currSel = UI::ToggleButton
+					(
+						m_entiries[i].m_folder,
+						ImVec2(100, 25),
+						currSel
+					);
+
+					// Selection switch.
+					if (currSel)
+					{
+						selectedFolder = (int)i;
+					}
+				}
+				ImGui::EndChild();
+				ImGui::EndGroup();
+				ImGui::PopID();
+
+				ImGui::SameLine();
+
+				ImGui::PushID("##FolderContent");
+				ImGui::BeginGroup();
 				if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_NoTooltip))
 				{
 
-					for (size_t i = 0; i < m_entiries.size(); i++)
+					for (int i = 0; i < (int)m_entiries.size(); i++)
 					{
+						m_entiries[i].m_currRoot = i == selectedFolder;
+						if (IsRootFn(m_entiries[i].GetPath()))
+						{
+							if (!m_entiries[i].m_currRoot)
+							{
+								// Show only current root folder and all sub folders.
+								continue;
+							}
+						}
 						m_entiries[i].Show();
 					}
 
 					ImGui::EndTabBar();
 				}
+				ImGui::EndGroup();
+				ImGui::PopID();
 			}
+
 			ImGui::End();
 		}
 

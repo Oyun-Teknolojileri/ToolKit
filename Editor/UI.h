@@ -95,6 +95,7 @@ namespace ToolKit
 
 				// Custom widgets.
 				static bool ToggleButton(ImTextureID user_texture_id, const ImVec2& size, bool pushState);
+				static bool ToggleButton(const String& text, const ImVec2& size, bool pushState);
 
 			public:
 				static bool m_showNewSceneWindow;

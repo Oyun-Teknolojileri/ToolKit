@@ -738,6 +738,32 @@ namespace ToolKit
 			return newPushState;
 		}
 
+		bool UI::ToggleButton(const String& text, const ImVec2& size, bool pushState)
+		{
+			ImGuiStyle& style = ImGui::GetStyle();
+			if (pushState)
+			{
+				ImGui::PushID(1);
+				ImGui::PushStyleColor(ImGuiCol_Button, style.Colors[ImGuiCol_ButtonHovered]);
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_ButtonHovered]);
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, style.Colors[ImGuiCol_ButtonHovered]);
+			}
+
+			bool newPushState = pushState;
+			if (ImGui::Button(text.c_str(), size))
+			{
+				newPushState = !pushState; // If pressed toggle.
+			}
+
+			if (pushState)
+			{
+				ImGui::PopStyleColor(3);
+				ImGui::PopID();
+			}
+
+			return newPushState;
+		}
+
 		Window::Window()
 		{
 		}
