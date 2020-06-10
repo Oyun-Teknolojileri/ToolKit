@@ -254,9 +254,10 @@ namespace ToolKit
 
 				ImGui::PushID("##FolderContent");
 				ImGui::BeginGroup();
+				ImGui::BeginChild("##Contents", ImVec2(0, 0), true);
 				if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_NoTooltip | ImGuiTabBarFlags_AutoSelectNewTabs))
 				{
-
+					
 					for (int i = 0; i < (int)m_entiries.size(); i++)
 					{
 						m_entiries[i].m_currRoot = i == selectedFolder;
@@ -270,9 +271,9 @@ namespace ToolKit
 						}
 						m_entiries[i].Show();
 					}
-
 					ImGui::EndTabBar();
 				}
+				ImGui::EndChild();
 				ImGui::EndGroup();
 				ImGui::PopID();
 			}
