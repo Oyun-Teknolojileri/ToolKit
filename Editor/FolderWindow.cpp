@@ -36,6 +36,7 @@ namespace ToolKit
 				}
 
 				ImVec2 buttonSz(50, 50);
+				ImGui::BeginChild("##Content", ImVec2(0, 0), true);
 				for (int i = 0; i < (int)m_entiries.size(); i++)
 				{
 					ImGuiStyle& style = ImGui::GetStyle();
@@ -107,7 +108,6 @@ namespace ToolKit
 					ImGui::PushID(i);
 					ImGui::BeginGroup();
 					ImGui::ImageButton((void*)(intptr_t)iconId, buttonSz);
-
 					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 					{
 						if (ImGui::IsItemHovered())
@@ -154,7 +154,6 @@ namespace ToolKit
 					ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + buttonSz.x);
 					ImGui::TextWrapped(de.m_fileName.c_str());
 					ImGui::PopTextWrapPos();
-
 					ImGui::EndGroup();
 					ImGui::PopID();
 
@@ -165,6 +164,7 @@ namespace ToolKit
 						ImGui::SameLine();
 					}
 				}
+				ImGui::EndChild();
 				ImGui::EndTabItem();
 			}
 		}
@@ -254,10 +254,8 @@ namespace ToolKit
 
 				ImGui::PushID("##FolderContent");
 				ImGui::BeginGroup();
-				ImGui::BeginChild("##Contents", ImVec2(0, 0), true);
 				if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_NoTooltip | ImGuiTabBarFlags_AutoSelectNewTabs))
 				{
-					
 					for (int i = 0; i < (int)m_entiries.size(); i++)
 					{
 						m_entiries[i].m_currRoot = i == selectedFolder;
@@ -273,7 +271,6 @@ namespace ToolKit
 					}
 					ImGui::EndTabBar();
 				}
-				ImGui::EndChild();
 				ImGui::EndGroup();
 				ImGui::PopID();
 			}
