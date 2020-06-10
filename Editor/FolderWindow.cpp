@@ -28,7 +28,7 @@ namespace ToolKit
 				visCheck = &m_visible;
 			}
 
-			if (ImGui::BeginTabItem(m_folder.c_str(), visCheck, m_currSub ? ImGuiTabItemFlags_SetSelected : 0))
+			if (ImGui::BeginTabItem(m_folder.c_str(), visCheck))
 			{
 				if (ImGui::IsItemHovered())
 				{
@@ -123,7 +123,6 @@ namespace ToolKit
 										FolderView view(m_parent);
 										view.SetPath(path);
 										view.Iterate();
-										view.m_currSub = true;
 										m_parent->AddEntry(view);
 									}
 									else
@@ -255,7 +254,7 @@ namespace ToolKit
 
 				ImGui::PushID("##FolderContent");
 				ImGui::BeginGroup();
-				if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_NoTooltip))
+				if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_NoTooltip | ImGuiTabBarFlags_AutoSelectNewTabs))
 				{
 
 					for (int i = 0; i < (int)m_entiries.size(); i++)
