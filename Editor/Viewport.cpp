@@ -422,6 +422,22 @@ namespace ToolKit
 					}
 					else
 					{
+						if (m_cameraAlignment != 0)
+						{
+							if (m_cameraAlignment == 1)
+							{
+								orbitPnt.y = 0.0f;
+							}
+							else if (m_cameraAlignment == 2)
+							{
+								orbitPnt.z = 0.0f;
+							}
+							else if (m_cameraAlignment == 3)
+							{
+								orbitPnt.x = 0.0f;
+							}
+						}
+
 						Mat4 camTs = m_camera->m_node->GetTransform(TransformationSpace::TS_WORLD);
 						Mat4 ts = glm::translate(Mat4(), orbitPnt);
 						Mat4 its = glm::translate(Mat4(), -orbitPnt);
@@ -430,6 +446,7 @@ namespace ToolKit
 
 						camTs = ts * glm::toMat4(qy * qx) * its * camTs;
 						m_camera->m_node->SetTransform(camTs, TransformationSpace::TS_WORLD);
+						m_cameraAlignment = 0;
 					}
 				}
 

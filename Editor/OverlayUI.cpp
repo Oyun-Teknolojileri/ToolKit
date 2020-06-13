@@ -156,6 +156,12 @@ namespace ToolKit
 
 		void OverlayViewportOptions::Show()
 		{
+			assert(m_owner);
+			if (m_owner == nullptr)
+			{
+				return;
+			}
+
 			ImVec2 overlaySize(184, 24);
 			if (g_app->m_snapsEnabled)
 			{
@@ -172,13 +178,7 @@ namespace ToolKit
 						ImGui::GetID("ViewportOptions"),
 						overlaySize,
 						ImGuiWindowFlags_NoMove
-						| ImGuiWindowFlags_NoDocking
 						| ImGuiWindowFlags_NoTitleBar
-						| ImGuiWindowFlags_NoResize
-						| ImGuiWindowFlags_AlwaysAutoResize
-						| ImGuiWindowFlags_NoSavedSettings
-						| ImGuiWindowFlags_NoFocusOnAppearing
-						| ImGuiWindowFlags_NoNav
 						| ImGuiWindowFlags_NoScrollbar
 						| ImGuiWindowFlags_NoScrollWithMouse
 					)
@@ -187,8 +187,8 @@ namespace ToolKit
 				m_mouseOver = ImGui::IsWindowHovered();
 
 				// Camera alignment combo.
-				const char* itemsCam[] = { "Persp.", "Top", "Front", "Left" };
-				static int currentItemCam = 0;
+				const char* itemsCam[] = { "Free", "Top", "Front", "Left" };
+				int currentItemCam = m_owner->m_cameraAlignment;
 				bool change = false;
 
 				ImGui::PushItemWidth(72);
@@ -204,6 +204,7 @@ namespace ToolKit
 								change = true;
 							}
 							currentItemCam = n;
+							m_owner->m_cameraAlignment = currentItemCam;
 						}
 
 						if (is_selected)
@@ -231,12 +232,15 @@ namespace ToolKit
 						break;
 					case 0:
 					default:
-						view = "persp.";
+						view = "free";
 						break;
 					}
 
-					String cmd = "SetCameraTransform --v \"" + m_owner->m_name + "\" " + view;
-					g_app->GetConsole()->ExecCommand(cmd);
+					if (view != "free")
+					{
+						String cmd = "SetCameraTransform --v \"" + m_owner->m_name + "\" " + view;
+						g_app->GetConsole()->ExecCommand(cmd);
+					}
 				}
 
 				// Transform orientation combo.

@@ -202,8 +202,6 @@ namespace ToolKit
 				{
 					if (Camera* c = vp->m_camera)
 					{
-						assert(c->m_node->m_parent == nullptr && "SetTransform(TS_WORLD) must be implemented.");
-
 						if (viewportTag->second.size() == 2)
 						{
 							Node* node = c->m_node;
@@ -211,35 +209,29 @@ namespace ToolKit
 							{
 								Quaternion ws = glm::angleAxis(glm::pi<float>(), -Y_AXIS) * glm::angleAxis(glm::half_pi<float>(), X_AXIS) * glm::angleAxis(glm::pi<float>(), Y_AXIS);
 								node->SetOrientation(ws, TransformationSpace::TS_WORLD);
-							}
-
-							if (viewportTag->second[1] == "bottom")
-							{
-								Quaternion ws = glm::angleAxis(glm::pi<float>(), -Y_AXIS) * glm::angleAxis(glm::half_pi<float>(), -X_AXIS) * glm::angleAxis(glm::pi<float>(), Y_AXIS);
-								node->SetOrientation(ws, TransformationSpace::TS_WORLD);
+								if (c->IsOrtographic())
+								{
+									node->SetTranslation(Vec3(0.0f, 500.0f, 0.0f), TransformationSpace::TS_WORLD);
+								}
 							}
 
 							if (viewportTag->second[1] == "front")
 							{
 								node->SetOrientation(Quaternion());
-							}
-
-							if (viewportTag->second[1] == "back")
-							{
-								Quaternion ws = glm::angleAxis(glm::pi<float>(), Y_AXIS);
-								node->SetOrientation(ws, TransformationSpace::TS_WORLD);
+								if (c->IsOrtographic())
+								{
+									node->SetTranslation(Vec3(0.0f, 0.0f, 500.0f), TransformationSpace::TS_WORLD);
+								}
 							}
 
 							if (viewportTag->second[1] == "left")
 							{
-								Quaternion ws = glm::angleAxis(glm::half_pi<float>(), Y_AXIS);
-								node->SetOrientation(ws, TransformationSpace::TS_WORLD);
-							}
-
-							if (viewportTag->second[1] == "right")
-							{
 								Quaternion ws = glm::angleAxis(glm::half_pi<float>(), -Y_AXIS);
 								node->SetOrientation(ws, TransformationSpace::TS_WORLD);
+								if (c->IsOrtographic())
+								{
+									node->SetTranslation(Vec3(-500.0f, 0.0f, 0.0f), TransformationSpace::TS_WORLD);
+								}
 							}
 						}
 
