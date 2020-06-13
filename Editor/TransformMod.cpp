@@ -482,10 +482,16 @@ namespace ToolKit
 						float intsDst = glm::dot(projAxis, g2p0);
 						float projDst = glm::dot(projAxis, g2p);
 						float delta = projDst - intsDst;
-						if (g_app->m_snapsEnabled)
+						if (g_app->m_snapsEnabled || g_app->m_snapToGrid)
 						{
 							deltaAccum += glm::abs(delta);
-							if (deltaAccum > g_app->m_moveDelta)
+							float barrier = g_app->m_moveDelta;
+							if (g_app->m_snapToGrid)
+							{
+								barrier = glm::max(barrier, 0.25f);
+							}
+
+							if (deltaAccum > barrier)
 							{
 								switch (m_type)
 								{
@@ -530,7 +536,27 @@ namespace ToolKit
 				switch (m_type)
 				{
 				case TransformType::Translate:
-					e->m_node->Translate(delta, space);
+				{
+					if (g_app->m_snapToGrid)
+					{
+						const float gridMinSpace = 0.25f;
+						Vec3 currPos = e->m_node->GetTranslation(space);
+						Vec3 targetPos = currPos + delta;
+
+						int x = (int)(targetPos.x / gridMinSpace);
+						targetPos.x = x * gridMinSpace;
+
+						int z = (int)(targetPos.z / gridMinSpace);
+						targetPos.z = z * gridMinSpace;
+
+						Vec3 delAdjst = targetPos - currPos;
+						e->m_node->Translate(delAdjst, space);
+					}
+					else
+					{
+						e->m_node->Translate(delta, space);
+					}
+				}
 					break;
 				case TransformType::Rotate:
 				{
