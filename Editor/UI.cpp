@@ -673,6 +673,14 @@ namespace ToolKit
 				}
 			}
 
+			if (io.KeysDown[SDL_SCANCODE_1] && io.KeyCtrl)
+			{
+				if (io.KeysDownDuration[SDL_SCANCODE_1] == 0.0f)
+				{
+					g_app->m_snapToGrid = !g_app->m_snapToGrid;
+				}
+			}
+
 			// Undo - Redo.
 			if (io.KeysDown[io.KeyMap[ImGuiKey_Z]])
 			{

@@ -13,7 +13,7 @@ namespace ToolKit
 		{
 		public:
 			Grid(uint size);
-			void Resize(uint size);
+			void Resize(uint size, float gridSpaceScale = 1.0f);
 			bool HitTest(const Ray& ray, Vec3& pos);
 
 		public:

@@ -248,16 +248,28 @@ namespace ToolKit
 				{
 					for (Drawable* d : m_perFrameDebugObjects)
 					{
-						m_renderer->Render(d, vp->m_camera);
+						m_renderer->Render(d, cam);
 						SafeDel(d);
 					}
 					m_perFrameDebugObjects.clear();
 				}
 
-				m_renderer->Render(m_grid, vp->m_camera);
+				// Scale grid spacing.
+				if (cam->IsOrtographic())
+				{
+					Vec3 pos = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+					float dist = glm::distance(Vec3(), pos);
+					float scale = glm::max(1.0f, glm::trunc(dist / 100.0f));
+					m_grid->Resize(500, 1.0f / scale);
+				}
+				else
+				{
+					m_grid->Resize(500, 1.0f);
+				}
+				m_renderer->Render(m_grid, cam);
 
-				m_origin->LookAt(vp->m_camera, vp->m_height);
-				m_renderer->Render(m_origin, vp->m_camera);
+				m_origin->LookAt(cam, vp->m_height);
+				m_renderer->Render(m_origin, cam);
 
 				// Only draw gizmo in active viewport.
 				if (m_gizmo != nullptr && vp->IsActive())
@@ -266,16 +278,16 @@ namespace ToolKit
 					glClear(GL_DEPTH_BUFFER_BIT);
 					if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
 					{
-						pg->Render(m_renderer, vp->m_camera);
+						pg->Render(m_renderer, cam);
 					}
 					else
 					{
-						m_renderer->Render(m_gizmo, vp->m_camera);
+						m_renderer->Render(m_gizmo, cam);
 					}
 				}
 
-				m_cursor->LookAt(vp->m_camera, vp->m_height);
-				m_renderer->Render(m_cursor, vp->m_camera);
+				m_cursor->LookAt(cam, vp->m_height);
+				m_renderer->Render(m_cursor, cam);
 			}
 
 			m_renderer->SetRenderTarget(nullptr);

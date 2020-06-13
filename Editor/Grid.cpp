@@ -37,7 +37,7 @@ namespace ToolKit
 			Resize(size);
 		}
 
-		void Grid::Resize(uint size)
+		void Grid::Resize(uint size, float gridSpaceScale)
 		{
 			m_mesh->UnInit();
 
@@ -47,7 +47,7 @@ namespace ToolKit
 			for (int j = 0; j < 4; j++)
 			{
 				mesh->m_clientSideVertices[j].pos = (mesh->m_clientSideVertices[j].pos * scale).xzy;
-				mesh->m_clientSideVertices[j].tex *= scale;
+				mesh->m_clientSideVertices[j].tex *= scale * gridSpaceScale;
 			}
 			m_mesh = mesh;
 			m_mesh->m_material = m_material;
