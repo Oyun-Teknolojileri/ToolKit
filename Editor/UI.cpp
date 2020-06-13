@@ -12,6 +12,7 @@
 #include "GlobalDef.h"
 #include "Mod.h"
 #include "ConsoleWindow.h"
+#include "FolderWindow.h"
 #include "OverlayUI.h"
 #include "DebugNew.h"
 
@@ -380,6 +381,11 @@ namespace ToolKit
 			if (ImGui::MenuItem("Console Window", "Alt+C", nullptr, !g_app->GetConsole()->IsVisible()))
 			{
 				g_app->GetConsole()->SetVisibility(true);
+			}
+
+			if (ImGui::MenuItem("Resource Window", "Alt+B", nullptr, !g_app->GetAssetBrowser()->IsVisible()))
+			{
+				g_app->GetAssetBrowser()->SetVisibility(true);
 			}
 
 			ImGui::Separator();

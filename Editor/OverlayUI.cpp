@@ -417,30 +417,17 @@ namespace ToolKit
 				}
 
 				g_app->m_snapsEnabled = UI::ToggleButton((void*)(intptr_t)UI::m_snapIcon->m_textureId, ImVec2(13, 13), g_app->m_snapsEnabled);
-				ImGui::SameLine(0, spacing); UI::HelpMarker("Snap\nEnable snapped transforms.", &hoverTimeSnapBtn);
 				
-				if (g_app->m_snapsEnabled)
+				if (ImGui::BeginPopupContextItem("##SnapMenu"))
 				{
-					ImGui::SameLine(0, spacing);
-					ImGui::PushItemWidth(35.0f);
-					ImGui::InputFloat("Md", &g_app->m_moveDelta, 0.0f, 0.0f, "%.2f");
+					ImGui::PushItemWidth(50);
+					ImGui::InputFloat("Move delta", &g_app->m_moveDelta, 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("Rotate delta", &g_app->m_rotateDelta, 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("Scale delta", &g_app->m_scaleDelta, 0.0f, 0.0f, "%.2f");
 					ImGui::PopItemWidth();
-					static float hoverTimeSnapMd = 0.0f;
-					ImGui::SameLine(0, spacing); UI::HelpMarker("Move snap delta.", &hoverTimeSnapMd);
+					ImGui::Checkbox("Snap to grid", &g_app->m_snapToGrid);
 
-					ImGui::SameLine(0, spacing);
-					ImGui::PushItemWidth(35.0f);
-					ImGui::InputFloat("Rd", &g_app->m_rotateDelta, 0.0f, 0.0f, "%.2f");
-					ImGui::PopItemWidth();
-					static float hoverTimeSnapRd = 0.0f;
-					ImGui::SameLine(0, spacing); UI::HelpMarker("Rotation snap delta.", &hoverTimeSnapRd);
-
-					ImGui::SameLine(0, spacing);
-					ImGui::PushItemWidth(35.0f);
-					ImGui::InputFloat("Sd", &g_app->m_scaleDelta, 0.0f, 0.0f, "%.2f");
-					ImGui::PopItemWidth();
-					static float hoverTimeSnapSd = 0.0f;
-					ImGui::SameLine(0, spacing); UI::HelpMarker("Scale snap delta.", &hoverTimeSnapSd);
+					ImGui::EndPopup();
 				}
 
 				ImGui::EndChildFrame();

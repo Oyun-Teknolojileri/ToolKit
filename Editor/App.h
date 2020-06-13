@@ -78,12 +78,15 @@ namespace ToolKit
 			bool m_showStateTransitionsDebug = false;
 			bool m_showOverlayUI = true;
 			bool m_showOverlayUIAlways = true;
-			bool m_snapsEnabled = false;
 			bool m_importSlient = false;
+			TransformationSpace m_transformOrientation = TransformationSpace::TS_WORLD;
+
+			// Snap settings.
+			bool m_snapsEnabled = false; // Delta transforms.
+			bool m_snapToGrid = false; // Jump to grid junctions.
 			float m_moveDelta = 0.25f;
 			float m_rotateDelta = 5.0f;
 			float m_scaleDelta = 0.25f;
-			TransformationSpace m_transformOrientation = TransformationSpace::TS_WORLD;
 
 		private:
 			Renderer* m_renderer;
