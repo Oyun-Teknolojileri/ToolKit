@@ -156,6 +156,7 @@ namespace ToolKit
 			vp->m_name = "Orthographic";
 			vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
 			vp->m_camera->Pitch(glm::radians(-90.0f));
+			vp->m_cameraAlignment = 1;
 			vp->m_orthographic = true;
 			m_windows.push_back(vp);
 
