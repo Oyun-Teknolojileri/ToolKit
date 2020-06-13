@@ -420,7 +420,7 @@ namespace ToolKit
 				
 				if (ImGui::BeginPopupContextItem("##SnapMenu"))
 				{
-					ImGui::PushItemWidth(50);
+					ImGui::PushItemWidth(75);
 					ImGui::InputFloat("Move delta", &g_app->m_moveDelta, 0.0f, 0.0f, "%.2f");
 					ImGui::InputFloat("Rotate delta", &g_app->m_rotateDelta, 0.0f, 0.0f, "%.2f");
 					ImGui::InputFloat("Scale delta", &g_app->m_scaleDelta, 0.0f, 0.0f, "%.2f");
