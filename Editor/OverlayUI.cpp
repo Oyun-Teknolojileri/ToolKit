@@ -162,14 +162,86 @@ namespace ToolKit
 				return;
 			}
 
-			ImVec2 overlaySize(184, 24);
-			if (g_app->m_snapsEnabled)
+			auto ShowAddMenuFn = []()
 			{
-				overlaySize.x = 356;
-			}
+				if (ImGui::BeginMenu("Mesh"))
+				{
+					if (ImGui::MenuItem("Plane"))
+					{
+						Quad* plane = new Quad();
+						plane->m_mesh->Init(false);
+						g_app->m_scene.AddEntity(plane);
+					}
+					if (ImGui::MenuItem("Cube"))
+					{
+						Cube* cube = new Cube();
+						cube->m_mesh->Init(false);
+						g_app->m_scene.AddEntity(cube);
+					}
+					if (ImGui::MenuItem("UV Sphere"))
+					{
+						Sphere* sphere = new Sphere();
+						sphere->m_mesh->Init(false);
+						g_app->m_scene.AddEntity(sphere);
+					}
+					if (ImGui::MenuItem("Cylinder"))
+					{
+					}
+					if (ImGui::MenuItem("Cone"))
+					{
+						Cone* cone = new Cone({ 1.0f, 1.0f, 30, 30 });
+						cone->m_mesh->Init(false);
+						g_app->m_scene.AddEntity(cone);
+					}
+					if (ImGui::MenuItem("Monkey"))
+					{
+						Drawable* suzanne = new Drawable();
+						suzanne->m_mesh = GetMeshManager()->Create(MeshPath("suzanne.mesh"));
+						g_app->m_scene.AddEntity(suzanne);
+					}
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu("Light"))
+				{
+					if (ImGui::MenuItem("Point"))
+					{
+					}
+					if (ImGui::MenuItem("Sun"))
+					{
+					}
+					if (ImGui::MenuItem("Spot"))
+					{
+					}
+					if (ImGui::MenuItem("Area"))
+					{
+					}
+					ImGui::EndMenu();
+				}
+				if (ImGui::MenuItem("Camera"))
+				{
+				}
+				if (ImGui::MenuItem("Speaker"))
+				{
+				}
+				if (ImGui::BeginMenu("Light Probe"))
+				{
+					if (ImGui::MenuItem("Reflection Cubemap"))
+					{
+					}
+					if (ImGui::MenuItem("Reflection Plane"))
+					{
+					}
+					if (ImGui::MenuItem("Irradiance Volume"))
+					{
+					}
+					ImGui::EndMenu();
+				}
+			};
+
+			ImVec2 overlaySize(312, 24);
 
 			const float padding = 5.0f;
-			ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding + 100, m_owner->m_wndPos.y + padding);
+			ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding + 52, m_owner->m_wndPos.y + padding);
 			ImGui::SetNextWindowPos(window_pos);
 			ImGui::SetNextWindowBgAlpha(0.65f);
 			if (
@@ -185,6 +257,24 @@ namespace ToolKit
 				)
 			{
 				m_mouseOver = ImGui::IsWindowHovered();
+
+				ImGui::Image(Convert2ImGuiTexture(UI::m_worldIcon), ImVec2(20.0f, 20.0f));
+				ImGui::SameLine();
+
+				if (ImGui::Button("Add"))
+				{
+					ImGui::OpenPopup("##AddMenu");
+				}
+				ImGui::SameLine();
+
+				if (ImGui::BeginPopup("##AddMenu"))
+				{
+					ShowAddMenuFn();
+					ImGui::EndPopup();
+				}
+
+				ImGui::Image(Convert2ImGuiTexture(UI::m_cameraIcon), ImVec2(20.0f, 20.0f));
+				ImGui::SameLine();
 
 				// Camera alignment combo.
 				const char* itemsCam[] = { "Free", "Top", "Front", "Left" };
@@ -242,13 +332,14 @@ namespace ToolKit
 						g_app->GetConsole()->ExecCommand(cmd);
 					}
 				}
+				ImGui::SameLine();
+
+				ImGui::Image(Convert2ImGuiTexture(UI::m_axisIcon), ImVec2(20.0f, 20.0f));
+				ImGui::SameLine();
 
 				// Transform orientation combo.
 				ImGuiStyle& style = ImGui::GetStyle();
 				float spacing = style.ItemInnerSpacing.x;
-
-				static float hoverTimeCA = 0.0f;
-				ImGui::SameLine(0, spacing); UI::HelpMarker("Camera alignment\n", &hoverTimeCA);
 
 				const char* itemsOrient[] = { "World", "Parent", "Local" };
 				static int currentItemOrient = 0;
@@ -355,112 +446,6 @@ namespace ToolKit
 				ImGui::EndChildFrame();
 			}
 
-			overlaySize = ImVec2(45, 22);
-			window_pos = ImVec2(m_owner->m_wndPos.x + padding + 50, m_owner->m_wndPos.y + padding + 2);
-			ImGui::SetNextWindowPos(window_pos);
-			ImGui::SetNextWindowBgAlpha(0.65f);
-			if (
-					ImGui::BeginChildFrame
-					(
-						ImGui::GetID("ViewportMenu"), 
-						overlaySize, 
-						ImGuiWindowFlags_NoMove 
-						| ImGuiWindowFlags_NoDocking 
-						| ImGuiWindowFlags_NoTitleBar 
-						| ImGuiWindowFlags_NoResize 
-						| ImGuiWindowFlags_AlwaysAutoResize 
-						| ImGuiWindowFlags_NoSavedSettings 
-						| ImGuiWindowFlags_NoFocusOnAppearing 
-						| ImGuiWindowFlags_NoNav 
-						| ImGuiWindowFlags_MenuBar
-					)
-				)
-			{
-				m_mouseOver = ImGui::IsWindowHovered();
-
-				if (ImGui::BeginMenuBar())
-				{
-					if (ImGui::BeginMenu("Add"))
-					{
-							if (ImGui::BeginMenu("Mesh"))
-							{
-								if (ImGui::MenuItem("Plane"))
-								{
-									Quad* plane = new Quad();
-									plane->m_mesh->Init(false);
-									g_app->m_scene.AddEntity(plane);
-								}
-								if (ImGui::MenuItem("Cube"))
-								{
-									Cube* cube = new Cube();
-									cube->m_mesh->Init(false);
-									g_app->m_scene.AddEntity(cube);
-								}
-								if (ImGui::MenuItem("UV Sphere"))
-								{
-									Sphere* sphere = new Sphere();
-									sphere->m_mesh->Init(false);
-									g_app->m_scene.AddEntity(sphere);
-								}
-								if (ImGui::MenuItem("Cylinder"))
-								{
-								}
-								if (ImGui::MenuItem("Cone"))
-								{
-									Cone* cone = new Cone({ 1.0f, 1.0f, 30, 30 });
-									cone->m_mesh->Init(false);
-									g_app->m_scene.AddEntity(cone);
-								}
-								if (ImGui::MenuItem("Monkey"))
-								{
-									Drawable* suzanne = new Drawable();
-									suzanne->m_mesh = GetMeshManager()->Create(MeshPath("suzanne.mesh"));
-									g_app->m_scene.AddEntity(suzanne);
-								}
-								ImGui::EndMenu();
-							}
-							if (ImGui::BeginMenu("Light"))
-							{
-								if (ImGui::MenuItem("Point"))
-								{
-								}
-								if (ImGui::MenuItem("Sun"))
-								{
-								}
-								if (ImGui::MenuItem("Spot"))
-								{
-								}
-								if (ImGui::MenuItem("Area"))
-								{
-								}
-								ImGui::EndMenu();
-							}
-							if (ImGui::MenuItem("Camera"))
-							{
-							}
-							if (ImGui::MenuItem("Speaker"))
-							{
-							}
-							if (ImGui::BeginMenu("Light Probe"))
-							{
-								if (ImGui::MenuItem("Reflection Cubemap"))
-								{
-								}
-								if (ImGui::MenuItem("Reflection Plane"))
-								{
-								}
-								if (ImGui::MenuItem("Irradiance Volume"))
-								{
-								}
-								ImGui::EndMenu();
-							}
-
-							ImGui::EndMenu();
-						}
-						ImGui::EndMenuBar();
-					}
-				ImGui::EndChildFrame();
-			}
 		}
 
 	}

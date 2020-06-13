@@ -49,6 +49,8 @@ namespace ToolKit
 		TexturePtr UI::m_armatureIcon;
 		TexturePtr UI::m_codeIcon;
 		TexturePtr UI::m_boneIcon;
+		TexturePtr UI::m_worldIcon;
+		TexturePtr UI::m_axisIcon;
 
 		void UI::Init()
 		{
@@ -157,6 +159,10 @@ namespace ToolKit
 			m_codeIcon->Init();
 			m_boneIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/bone.png"));
 			m_boneIcon->Init();
+			m_worldIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/world.png"));
+			m_worldIcon->Init();
+			m_axisIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/axis.png"));
+			m_axisIcon->Init();
 
 			// Set application Icon.
 			m_appIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/app.png"));

@@ -143,6 +143,8 @@ namespace ToolKit
 				static TexturePtr m_armatureIcon;
 				static TexturePtr m_codeIcon;
 				static TexturePtr m_boneIcon;
+				static TexturePtr m_worldIcon;
+				static TexturePtr m_axisIcon;
 			};
 		}
 }

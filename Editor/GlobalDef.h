@@ -54,5 +54,6 @@ namespace ToolKit
 		#define GLM2IMVEC(v) *reinterpret_cast<const ImVec2*>(&v)
 		#define GLM4IMVEC(v) *reinterpret_cast<const ImVec4*>(&v)
 		#define IMVEC2GLM(v) *reinterpret_cast<const glm::vec2*>(&v)
+		#define Convert2ImGuiTexture(TexturePtr) (void*)(intptr_t)(TexturePtr->m_textureId)
 	}
 }
