@@ -116,7 +116,13 @@ namespace ToolKit
 	void Cube::Serialize(XmlDocument* doc, XmlNode* parent) const
 	{
 		Entity::Serialize(doc, parent);
-		m_params.m_scale.Serialize(doc, parent->last_node());
+		m_params.Serialize(doc, parent->last_node());
+	}
+
+	void Cube::DeSerialize(XmlDocument* doc, XmlNode* parent)
+	{
+		Entity::DeSerialize(doc, parent);
+		m_params.DeSerialize(doc, parent);
 	}
 
 	void Cube::Generate()
@@ -124,7 +130,7 @@ namespace ToolKit
 		VertexArray vertices;
 		vertices.resize(36);
 
-		const Vec3& scale = m_params.m_scale.GetVar<Vec3>();
+		const Vec3& scale = m_params.m_variants[0].GetVar<Vec3>();
 
 		Vec3 corners[8]
 		{
@@ -333,11 +339,6 @@ namespace ToolKit
 		m_mesh->CalculateAABoundingBox();
 	}
 
-	void Quad::Serialize(XmlDocument* doc, XmlNode* parent) const
-	{
-		Entity::Serialize(doc, parent);
-	}
-
 	Sphere::Sphere(bool genDef)
 	{
 		if (genDef)
@@ -371,7 +372,7 @@ namespace ToolKit
 
 	void Sphere::Generate()
 	{
-		const float r = m_params.m_rad.GetVar<float>();
+		const float r = m_params[0].GetVar<float>();
 		const int nRings = 32;
 		const int nSegments = 32;
 
@@ -432,7 +433,13 @@ namespace ToolKit
 	void Sphere::Serialize(XmlDocument* doc, XmlNode* parent) const
 	{
 		Entity::Serialize(doc, parent);
-		m_params.m_rad.Serialize(doc, parent->last_node());
+		m_params.Serialize(doc, parent->last_node());
+	}
+
+	void Sphere::DeSerialize(XmlDocument* doc, XmlNode* parent)
+	{
+		Entity::DeSerialize(doc, parent);
+		m_params.DeSerialize(doc, parent);
 	}
 
 	Cone::Cone(bool genDef)
@@ -455,10 +462,10 @@ namespace ToolKit
 		VertexArray vertices;
 		std::vector<uint> indices;
 
-		float height = m_params.m_height.GetVar<float>();
-		float radius = m_params.m_rad.GetVar<float>();
-		int nSegBase = m_params.m_nSegBase.GetVar<int>();
-		int nSegHeight = m_params.m_nSegHeight.GetVar<int>();
+		float height = m_params[0].GetVar<float>();
+		float radius = m_params[1].GetVar<float>();
+		int nSegBase = m_params[2].GetVar<int>();
+		int nSegHeight = m_params[3].GetVar<int>();
 
 		float deltaAngle = (glm::two_pi<float>() / nSegBase);
 		float deltaHeight = height / nSegHeight;
@@ -566,10 +573,13 @@ namespace ToolKit
 	void Cone::Serialize(XmlDocument* doc, XmlNode* parent) const
 	{
 		Entity::Serialize(doc, parent);
-		m_params.m_height.Serialize(doc, parent->last_node());
-		m_params.m_rad.Serialize(doc, parent->last_node());
-		m_params.m_nSegBase.Serialize(doc, parent->last_node());
-		m_params.m_nSegHeight.Serialize(doc, parent->last_node());
+		m_params.Serialize(doc, parent->last_node());
+	}
+
+	void Cone::DeSerialize(XmlDocument* doc, XmlNode* parent)
+	{
+		Entity::DeSerialize(doc, parent);
+		m_params.DeSerialize(doc, parent);
 	}
 
 	Arrow2d::Arrow2d(bool genDef)

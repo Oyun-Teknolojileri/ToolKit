@@ -67,15 +67,23 @@ namespace ToolKit
 		ntt->m_mesh = MeshPtr(m_mesh->GetCopy());
 	}
 
-	static const String XmlMeshStr("M");
-	static const String XmlFileAttr("f");
-
 	void Drawable::Serialize(XmlDocument* doc, XmlNode* parent) const
 	{
 		Entity::Serialize(doc, parent);
-		XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlMeshStr.c_str());
+		XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlMeshElement.c_str());
 		node->append_attribute(doc->allocate_attribute(XmlFileAttr.c_str(), m_mesh->m_file.c_str()));
 		parent->last_node()->append_node(node);
+	}
+
+	void Drawable::DeSerialize(XmlDocument* doc, XmlNode* parent)
+	{
+		Entity::Serialize(doc, parent);
+		if (XmlNode* meshNode = parent->first_node(XmlMeshElement.c_str()))
+		{
+			XmlAttribute* attr = meshNode->first_attribute(XmlFileAttr.c_str());
+			String filePath = attr->value();
+			m_mesh = GetMeshManager()->Create(filePath);
+		}
 	}
 
 }

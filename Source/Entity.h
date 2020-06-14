@@ -11,7 +11,6 @@ namespace ToolKit
   {
     Entity_Base,
     Entity_AudioSource,
-    Entity_Actor,
     Entity_Billboard,
     Entity_Cube,
     Entity_Quad,
@@ -40,6 +39,7 @@ namespace ToolKit
     virtual Entity* GetCopy() const;
     virtual void GetCopy(Entity* copyTo) const;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
   public:
     Node* m_node;

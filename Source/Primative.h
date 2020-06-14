@@ -37,9 +37,14 @@ namespace ToolKit
 		class Params : public ParameterBlock
 		{
 		public:
-      Params() : m_scale(Vec3(1.0f)) {}
-      Params(const Vec3& scale) : m_scale(scale) {}
-			ParameterVariant m_scale;
+      Params() 
+			{
+				m_variants.push_back(Vec3(1.0f));
+			}
+      Params(const Vec3& scale) 
+			{
+				m_variants.push_back(scale);
+			}
 		} m_params;
 
   public:
@@ -50,6 +55,7 @@ namespace ToolKit
 		virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
 		virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+		virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
 	private:
 		void Generate();
@@ -63,7 +69,6 @@ namespace ToolKit
 		virtual Quad* GetCopy() const override;
 		virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
-		virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
 
   private:
     void Generate();
@@ -75,9 +80,14 @@ namespace ToolKit
 		class Params : public ParameterBlock
 		{
 		public:
-			Params() : m_rad(1.0f) {}
-			Params(float rad) : m_rad(rad) {}
-			ParameterVariant m_rad;
+			Params() 
+			{
+				m_variants.push_back(1.0f);
+			}
+			Params(float rad)
+			{
+				m_variants.push_back(rad);
+			}
 		} m_params;
 
   public:
@@ -88,6 +98,7 @@ namespace ToolKit
 		virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+		virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   private:
     void Generate();
@@ -99,18 +110,20 @@ namespace ToolKit
 		class Params : public ParameterBlock
 		{
 		public:
-			Params() : m_height(1.0f), m_rad(1.0f), m_nSegBase(30), m_nSegHeight(30)  {}
-			Params(float height, float rad, int nSegBase, int nSegHeight) :
-				m_height(height),
-				m_rad(rad),
-				m_nSegBase(nSegBase),
-				m_nSegHeight(nSegHeight)
-			{}
-
-			ParameterVariant m_height;
-			ParameterVariant m_rad;
-			ParameterVariant m_nSegBase;
-			ParameterVariant m_nSegHeight;
+			Params()
+			{
+				m_variants.push_back(1.0f);
+				m_variants.push_back(1.0f);
+				m_variants.push_back(30);
+				m_variants.push_back(20);
+			}
+			Params(float height, float rad, int nSegBase, int nSegHeight)
+			{
+				m_variants.push_back(height);
+				m_variants.push_back(rad);
+				m_variants.push_back(nSegBase);
+				m_variants.push_back(nSegHeight);
+			}
 		} m_params;
 
   public:
@@ -121,6 +134,7 @@ namespace ToolKit
 		virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
 		virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+		virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   private:
     void Generate();

@@ -43,7 +43,8 @@ namespace ToolKit
 			void GetSelectedEntities(EntityIdArray& entities) const;
 			void Destroy();
 
-			void Serialize(XmlDocument* doc, XmlNode* parent);
+			virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
+			virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
 		public:
 			String m_name;

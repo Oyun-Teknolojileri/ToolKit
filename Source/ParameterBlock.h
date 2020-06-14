@@ -58,6 +58,16 @@ namespace ToolKit
 	class ParameterBlock
 	{
 	public:
+		virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
+		virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+
+		ParameterVariant& operator [](int indx)
+		{
+			return m_variants[indx];
+		}
+
+	public:
+		std::vector<ParameterVariant> m_variants;
 	};
 
 }

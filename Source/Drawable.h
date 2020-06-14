@@ -17,6 +17,7 @@ namespace ToolKit
     virtual Drawable* GetCopy() const override;
     virtual void GetCopy(Entity* copyTo) const override;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   public:
     MeshPtr m_mesh;

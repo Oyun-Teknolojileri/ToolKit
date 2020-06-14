@@ -88,6 +88,16 @@ namespace ToolKit
 
 	static const EntityId NULL_ENTITY = 0;
 
+	// Xml file IO.
+	const static String XmlEntityElement("E");
+	const static String XmlEntityIdAttr("i");
+	const static String XmlEntityTypeAttr("t");
+	const static String XmlSceneElement("S");
+	const static String XmlParamterElement("P");
+	const static String XmlParamBlockElement("PB");
+	static const String XmlMeshElement("M");
+	static const String XmlFileAttr("f");
+
 	enum class AxisLabel
 	{
 		None = -1, // Order matters. Don't change.

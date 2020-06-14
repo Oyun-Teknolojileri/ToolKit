@@ -6,37 +6,35 @@
 namespace ToolKit
 {
 
-	static const String XmlParamterStr("P");
-
 	void ParameterVariant::Serialize(XmlDocument* doc, XmlNode* parent) const
 	{
-		XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlParamterStr.c_str());
+		XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlParamterElement.c_str());
 
 		switch (m_type)
 		{
     case VariantType::Byte:
 		{
-			WriteAttr(node, doc, XmlParamterStr.c_str(), std::to_string(GetVar<Byte>()));
+			WriteAttr(node, doc, XmlParamterElement.c_str(), std::to_string(GetVar<Byte>()));
 		}
 		break;
     case VariantType::UByte:
 		{
-			WriteAttr(node, doc, XmlParamterStr.c_str(), std::to_string(GetVar<UByte>()));
+			WriteAttr(node, doc, XmlParamterElement.c_str(), std::to_string(GetVar<UByte>()));
 		}
 		break;
     case VariantType::Float:
 		{
-			WriteAttr(node, doc, XmlParamterStr.c_str(), std::to_string(GetVar<float>()));
+			WriteAttr(node, doc, XmlParamterElement.c_str(), std::to_string(GetVar<float>()));
 		}
     break;
     case VariantType::Int:
 		{
-			WriteAttr(node, doc, XmlParamterStr.c_str(), std::to_string(GetVar<int>()));
+			WriteAttr(node, doc, XmlParamterElement.c_str(), std::to_string(GetVar<int>()));
 		}
       break;
     case VariantType::UInt:
 		{
-			WriteAttr(node, doc, XmlParamterStr.c_str(), std::to_string(GetVar<uint>()));
+			WriteAttr(node, doc, XmlParamterElement.c_str(), std::to_string(GetVar<uint>()));
 		}
       break;
     case VariantType::Vec3:
@@ -55,7 +53,7 @@ namespace ToolKit
       break;
     case VariantType::String:
 		{
-			WriteAttr(node, doc, XmlParamterStr.c_str(), GetVar<String>());
+			WriteAttr(node, doc, XmlParamterElement.c_str(), GetVar<String>());
 		}
       break;
     default:
@@ -64,6 +62,21 @@ namespace ToolKit
 		}
 
 		parent->append_node(node);
+	}
+
+	void ParameterBlock::Serialize(XmlDocument* doc, XmlNode* parent) const
+	{
+		XmlNode* blockNode = doc->allocate_node(rapidxml::node_element, XmlParamBlockElement.c_str());
+		for (const ParameterVariant& var : m_variants)
+		{
+			var.Serialize(doc, blockNode);
+		}
+		parent->append_node(blockNode);
+	}
+
+	void ParameterBlock::DeSerialize(XmlDocument* doc, XmlNode* parent)
+	{
+
 	}
 
 }
