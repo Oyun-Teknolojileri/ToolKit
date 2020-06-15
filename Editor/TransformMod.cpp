@@ -540,7 +540,7 @@ namespace ToolKit
 					if (g_app->m_snapToGrid)
 					{
 						const float gridMinSpace = 0.25f;
-						Vec3 currPos = e->m_node->GetTranslation(space);
+						Vec3 currPos = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 						Vec3 targetPos = currPos + delta;
 
 						int x = (int)(targetPos.x / gridMinSpace);

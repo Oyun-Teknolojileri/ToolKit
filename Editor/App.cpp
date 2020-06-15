@@ -50,62 +50,8 @@ namespace ToolKit
 
 		void App::Init()
 		{
-			m_suzanne = new Drawable();
-			m_suzanne->m_node->SetTranslation({ 0.0f, 0.0f, -5.0f });
-			m_suzanne->m_node->SetOrientation(glm::angleAxis(-glm::half_pi<float>(), X_AXIS));
-			Mesh* szm = GetMeshManager()->CreateDerived<Mesh>(MeshPath("suzanne.mesh"))->GetCopy();
-			szm->Init(false);
-			m_suzanne->m_mesh = MeshPtr(szm);
-			m_scene.AddEntity(m_suzanne);
-
-			// https://t-allen-studios.itch.io/low-poly-saxon-warrior
-			m_knight = new Drawable();
-			m_knight->m_mesh = GetSkinMeshManager()->Create(MeshPath("Knight.skinMesh"));
-			m_knight->m_node->SetScale({ 0.01f, 0.01f, 0.01f });
-			m_knight->m_node->SetTranslation({ 0.0f, 0.0f, 5.0f });
-			m_scene.AddEntity(m_knight);
-
-			m_knightRunAnim = GetAnimationManager()->Create(AnimationPath("Knight_Armature_Run.anim"));
-			m_knightRunAnim->m_loop = true;
-			GetAnimationPlayer()->AddRecord(m_knight, m_knightRunAnim.get());
-
 			m_cursor = new Cursor();
-
-			MaterialPtr normalMat = GetMaterialManager()->Create(MaterialPath("objectNormal.material"));
-
-			m_q1 = new Cube();
-			m_q1->m_mesh->m_material = normalMat;
-			m_q1->m_mesh->Init(false);
-			m_q1->m_node->SetTranslation({ 2.0f, 0.0f, 0.0f });
-			m_q1->m_node->Rotate(glm::angleAxis(glm::half_pi<float>(), Y_AXIS), TransformationSpace::TS_LOCAL);
-			m_q1->m_node->Rotate(glm::angleAxis(glm::half_pi<float>(), Z_AXIS), TransformationSpace::TS_LOCAL);
-			m_scene.AddEntity(m_q1);
-
-			m_q2 = new Cube();
-			m_q2->m_mesh->m_material = normalMat;
-			m_q2->m_mesh->Init(false);
-			m_q2->m_node->SetTranslation({ 2.0f, 0.0f, 2.0f });
-			m_q2->m_node->SetOrientation(glm::angleAxis(glm::half_pi<float>(), Y_AXIS));
-			m_scene.AddEntity(m_q2);
-
-			m_q3 = new Cone({ 1.0f, 1.0f, 30, 30 });
-			m_q3->m_mesh->m_material = normalMat;
-			m_q3->m_mesh->Init(false);
-			m_q3->m_node->Scale({ 0.3f, 1.0f, 0.3f });
-			m_q3->m_node->SetTranslation({ 2.0f, 0.0f, 0.0f });
-			m_scene.AddEntity(m_q3);
-
-			m_q1->m_node->AddChild(m_q2->m_node);
-			m_q2->m_node->AddChild(m_q3->m_node);
-
-			m_q4 = new Cube();
-			m_q4->m_mesh->m_material = normalMat;
-			m_q4->m_mesh->Init(false);
-			m_q4->m_node->SetTranslation({ 4.0f, 0.0f, 0.0f });
-			m_scene.AddEntity(m_q4);
-
 			m_origin = new Axis3d();
-
 			m_grid = new Grid(100);
 			m_grid->m_mesh->Init(false);
 
