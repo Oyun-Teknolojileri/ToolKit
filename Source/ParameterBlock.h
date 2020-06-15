@@ -48,8 +48,8 @@ namespace ToolKit
 		void SetVar(const Mat4& var) { m_type = VariantType::Mat4; m_var = var; }
 		void SetVar(const String& var) { m_type = VariantType::String; m_var = var; }
 
-		virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-		virtual void DeSerialzie(XmlDocument* doc, XmlNode* parent);
+		void Serialize(XmlDocument* doc, XmlNode* parent) const;
+		void DeSerialzie(XmlDocument* doc, XmlNode* parent);
 
 	private:
 		std::variant<Byte, UByte, float, int, uint, Vec3, Vec4, Mat3, Mat4, String> m_var;
@@ -59,8 +59,8 @@ namespace ToolKit
 	class ParameterBlock
 	{
 	public:
-		virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-		virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+		void Serialize(XmlDocument* doc, XmlNode* parent) const;
+		void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
 		ParameterVariant& operator [](int indx)
 		{

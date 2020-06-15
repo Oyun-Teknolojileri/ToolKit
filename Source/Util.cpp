@@ -141,6 +141,12 @@ namespace ToolKit
 		return (T)0;
 	}
 
+	template Byte ReadAttr<Byte>(XmlNode* node, const String& name);
+	template UByte ReadAttr<UByte>(XmlNode* node, const String& name);
+	template int ReadAttr<int>(XmlNode* node, const String& name);
+	template uint ReadAttr<uint>(XmlNode* node, const String& name);
+	template float ReadAttr<float>(XmlNode* node, const String& name);
+
 	bool CheckFile(const String& path)
 	{
 		std::ifstream f(path.c_str());

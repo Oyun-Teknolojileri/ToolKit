@@ -6,8 +6,9 @@
 #include "Skeleton.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
-#include <unordered_map>
 #include "DebugNew.h"
+
+#include <unordered_map>
 
 namespace ToolKit
 {

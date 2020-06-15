@@ -5,7 +5,6 @@
 
 namespace ToolKit
 {
-	class Material;
 
 	namespace Editor
 	{
