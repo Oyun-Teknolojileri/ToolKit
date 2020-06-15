@@ -22,6 +22,10 @@ namespace ToolKit
 	void WriteXYZW(XmlNode* node, XmlDocument* doc, const Vec4& val);
 	void WriteXYZW(XmlNode* node, XmlDocument* doc, const Quaternion& val);
 	void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val);
+	
+	template<typename T>
+	T ReadAttr(XmlNode* node, const String& name);
+
 	bool CheckFile(const String& path);
 	void DecomposePath(const String fullPath, String* path, String* name, String* ext);
 	void NormalizePath(String& path);

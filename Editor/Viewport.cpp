@@ -165,6 +165,16 @@ namespace ToolKit
 							g_app->m_scene.AddToSelection(dwMesh->m_id, false);
 							SetActive();
 						}
+						else if (entry.m_ext == SCENE)
+						{
+							// Merge the scene.
+							String fullPath = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
+							XmlFile file(fullPath.c_str());
+							XmlDocument doc;
+							doc.parse<0>(file.data());
+
+							g_app->m_scene.DeSerialize(&doc, nullptr);
+						}
 					}
 					ImGui::EndDragDropTarget();
 				}

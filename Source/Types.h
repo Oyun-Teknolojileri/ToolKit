@@ -78,6 +78,7 @@ namespace ToolKit
 	static const String PSD(".psd");
 
 	// Local formats.
+	static const String SCENE(".scene");
 	static const String MESH(".mesh");
 	static const String ANIM(".anim");
 	static const String SKINMESH(".skinMesh");
@@ -94,9 +95,19 @@ namespace ToolKit
 	const static String XmlEntityTypeAttr("t");
 	const static String XmlSceneElement("S");
 	const static String XmlParamterElement("P");
+	const static String XmlParamterValAttr("v");
+	const static String XmlParamterTypeAttr("t");
 	const static String XmlParamBlockElement("PB");
 	static const String XmlMeshElement("M");
 	static const String XmlFileAttr("f");
+	static const String XmlNodeElement("N");
+	static const String XmlNodeIdAttr("i");
+	static const String XmlNodeParentIdAttr("pi");
+	static const String XmlNodeInheritScaleAttr("is");
+	static const String XmlNodeInheritTranslateOnlyAttr("ito");
+	static const String XmlTranslateElement("T");
+	static const String XmlRotateElement("R");
+	static const String XmlScaleElement("S");
 
 	enum class AxisLabel
 	{

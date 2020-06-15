@@ -77,7 +77,7 @@ namespace ToolKit
 
 	void Drawable::DeSerialize(XmlDocument* doc, XmlNode* parent)
 	{
-		Entity::Serialize(doc, parent);
+		Entity::DeSerialize(doc, parent);
 		if (XmlNode* meshNode = parent->first_node(XmlMeshElement.c_str()))
 		{
 			XmlAttribute* attr = meshNode->first_attribute(XmlFileAttr.c_str());

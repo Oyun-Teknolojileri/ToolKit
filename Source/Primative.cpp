@@ -123,6 +123,7 @@ namespace ToolKit
 	{
 		Entity::DeSerialize(doc, parent);
 		m_params.DeSerialize(doc, parent);
+		Generate();
 	}
 
 	void Cube::Generate()
@@ -440,6 +441,7 @@ namespace ToolKit
 	{
 		Entity::DeSerialize(doc, parent);
 		m_params.DeSerialize(doc, parent);
+		Generate();
 	}
 
 	Cone::Cone(bool genDef)
@@ -580,6 +582,7 @@ namespace ToolKit
 	{
 		Entity::DeSerialize(doc, parent);
 		m_params.DeSerialize(doc, parent);
+		Generate();
 	}
 
 	Arrow2d::Arrow2d(bool genDef)

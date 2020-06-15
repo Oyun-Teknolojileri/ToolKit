@@ -384,6 +384,7 @@ namespace ToolKit
 				case EntityType::Entity_LineBatch:
 					break;
 				case EntityType::Entity_Cone:
+					ntt = new Cone(false);
 					break;
 				case EntityType::Entity_Drawable:
 					ntt = new Drawable();
@@ -401,7 +402,8 @@ namespace ToolKit
 					continue;
 				}
 
-				ntt->DeSerialize(doc, root);
+				ntt->DeSerialize(doc, node);
+				m_entitites.push_back(ntt);
 			}
 		}
 

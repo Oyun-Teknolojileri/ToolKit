@@ -39,6 +39,7 @@ namespace ToolKit
 		Node* GetRoot() const;
 		Node* GetCopy() const;
 		void Serialize(XmlDocument* doc, XmlNode* parent) const;
+		void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
 	private:
 		void TransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale);

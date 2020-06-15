@@ -49,6 +49,10 @@ namespace ToolKit
 					{
 						iconId = UI::m_folderIcon->m_textureId;
 					}
+					else if (de.m_ext == SCENE)
+					{
+						iconId = UI::m_worldIcon->m_textureId;
+					}
 					else if (de.m_ext == MESH)
 					{
 						iconId = UI::m_meshIcon->m_textureId;

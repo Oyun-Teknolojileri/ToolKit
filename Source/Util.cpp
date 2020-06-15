@@ -130,6 +130,17 @@ namespace ToolKit
 		);
 	}
 
+	template<typename T>
+	T ReadAttr(XmlNode* node, const String& name)
+	{
+		if (XmlAttribute* attr = node->first_attribute(name.c_str()))
+		{
+			return (T)std::atoi(attr->value());
+		}
+
+		return (T)0;
+	}
+
 	bool CheckFile(const String& path)
 	{
 		std::ifstream f(path.c_str());

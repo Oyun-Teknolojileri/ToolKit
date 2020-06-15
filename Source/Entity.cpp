@@ -89,7 +89,26 @@ namespace ToolKit
 
 	void Entity::DeSerialize(XmlDocument* doc, XmlNode* parent)
 	{
+		XmlNode* nttNode = nullptr;
+		if (parent != nullptr)
+		{
+			nttNode = parent;
+		}
+		else
+		{
+			nttNode = doc->first_node(XmlEntityElement.c_str());
+		}
 
+		if (XmlAttribute* attr = nttNode->first_attribute(XmlEntityIdAttr.c_str()))
+		{
+			String val = attr->value();
+			m_id = std::atoi(val.c_str());
+		}
+		
+		if (XmlNode* transformNode = nttNode->first_node(XmlNodeElement.c_str()))
+		{
+			m_node->DeSerialize(doc, transformNode);
+		}
 	}
 
 }
