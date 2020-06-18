@@ -512,6 +512,12 @@ namespace ToolKit
 							}
 						}
 
+						if (glm::isnan(deltaAccum))
+						{
+							assert(false && "Nan is not expected.");
+							deltaAccum = 0.0f;
+						}
+
 						Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
 						m_delta = moveAxis * delta;
 					}
@@ -572,7 +578,15 @@ namespace ToolKit
 				}
 				break;
 				case TransformType::Scale:
-					e->m_node->Scale(Vec3(1.0f) + delta, space);
+				{
+					Vec3 scale = e->m_node->GetScale
+					(
+						space == TransformationSpace::TS_LOCAL 
+						? TransformationSpace::TS_WORLD 
+						: space
+					);
+					e->m_node->SetScale(scale + delta, space);
+				}
 					break;
 				}
 			}
