@@ -427,9 +427,15 @@ namespace ToolKit
 				ImGui::SameLine();
 
 				// Command window.
-				bool reclaimFocus = false;
+				static bool reclaimFocus = false;
 				static char inputBuff[256];
 				float width = ImGui::GetWindowContentRegionWidth() * 0.4f;
+
+				if (reclaimFocus)
+				{
+					ImGui::SetKeyboardFocusHere();
+				}
+
 				ImGui::PushItemWidth(width);
 				if (
 						ImGui::InputText
@@ -452,6 +458,10 @@ namespace ToolKit
 					strcpy_s(s, sizeof(inputBuff), "");
 					reclaimFocus = true;
 				}
+				else
+				{
+					reclaimFocus = false;
+				}
 				ImGui::PopItemWidth();
 				ImGui::SameLine();
 
@@ -465,13 +475,6 @@ namespace ToolKit
 				if (ImGui::Button("Clear"))
 				{
 					m_items.clear();
-				}
-
-				// Auto-focus on window apparition
-				ImGui::SetItemDefaultFocus();
-				if (reclaimFocus)
-				{
-					ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
 				}
 			}
 			ImGui::End();
