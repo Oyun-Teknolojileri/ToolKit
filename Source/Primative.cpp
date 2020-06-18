@@ -94,6 +94,7 @@ namespace ToolKit
 	Cube::Cube(const Params& params)
 		: m_params(params)
 	{
+		Generate();
 	}
 
 	Cube* Cube::GetCopy() const
