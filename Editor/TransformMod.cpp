@@ -534,12 +534,47 @@ namespace ToolKit
 		void StateTransformTo::Transform(const Vec3& delta)
 		{
 			EntityRawPtrArray roots;
-			GetEntitiesToTransform(roots);
+			g_app->m_scene.GetSelectedEntities(roots);
+			
+			Entity* e = g_app->m_scene.GetCurrentSelection();
+			NodePtrArray parents;
+
+			// Make all selecteds child of current & store their original parents.
+			//if (roots.size() > 1)
+			{
+				for (Entity* ntt : roots)
+				{
+					parents.push_back(ntt->m_node->m_parent);
+					ntt->m_node->OrphanSelf();
+				}
+
+				for (Entity* ntt : roots)
+				{
+					if (ntt != e)
+					{
+						e->m_node->AddChild(ntt->m_node);
+					}
+				}
+
+/*
+				roots.erase
+				(
+					std::remove_if
+					(
+						roots.begin(),
+						roots.end(),
+						[e](Entity* ntt)
+						{
+							return e->m_id == ntt->m_id;
+						}
+					)
+				);*/
+
+
+			}
 
 			TransformationSpace space = g_app->m_transformOrientation;
-			for (Entity* e : roots)
-			{
-				switch (m_type)
+			switch (m_type)
 				{
 				case TransformType::Translate:
 				{
@@ -569,7 +604,7 @@ namespace ToolKit
 					float angle = glm::length(delta);
 					if (glm::equal(angle, 0.0f))
 					{
-						return;
+						break;
 					}
 
 					Vec3 axis = delta / angle;
@@ -588,6 +623,16 @@ namespace ToolKit
 					e->m_node->SetScale(scale + delta, space);
 				}
 					break;
+				}
+
+			// Set original parents back.
+			for (int i = 0; i < (int)roots.size(); i++)
+			{
+				roots[i]->m_node->OrphanSelf();
+				Node* parent = parents[i];
+				if (parent != nullptr)
+				{
+					parent->AddChild(roots[i]->m_node);
 				}
 			}
 		}

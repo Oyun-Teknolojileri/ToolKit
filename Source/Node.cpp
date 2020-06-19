@@ -187,11 +187,17 @@ namespace ToolKit
 
 	void Node::AddChild(Node* child)
 	{
+		assert(child->m_id != m_id);
 		assert(child->m_parent == nullptr);
+		// Preserve initial transform.
+		Mat4 ts = child->GetTransform(TransformationSpace::TS_WORLD);
+
 		m_children.push_back(child);
 		child->m_parent = this;
 		child->m_dirty = true;
 		child->SetChildrenDirty();
+
+		child->SetTransform(ts, TransformationSpace::TS_WORLD);
 	}
 
 	void Node::Orphan(Node* child)
@@ -200,10 +206,15 @@ namespace ToolKit
 		{
 			if (m_children[i] == child)
 			{
+				// Preserve initial transform.
+				Mat4 ts = child->GetTransform(TransformationSpace::TS_WORLD);
+
 				child->m_parent = nullptr;
 				child->m_dirty = true;
 				child->SetChildrenDirty();
 				m_children.erase(m_children.begin() + i);
+
+				child->SetTransform(ts, TransformationSpace::TS_WORLD);
 				return;
 			}
 		}
