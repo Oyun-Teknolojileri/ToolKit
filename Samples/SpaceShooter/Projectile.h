@@ -7,12 +7,14 @@
 #include <array>
 #include "DebugNew.h"
 
-class Projectile : public ToolKit::Drawable
+using namespace ToolKit;
+
+class Projectile : public Drawable
 {
 public:
-  Projectile(glm::vec3 pos)
+  Projectile(Vec3 pos)
   {
-    m_mesh = ToolKit::GetMeshManager()->Create(ToolKit::MeshPath("projectile.mesh"));
+    m_mesh = GetMeshManager()->Create(MeshPath("projectile.mesh"));
     m_node->SetTranslation(pos);
   }
 };
@@ -32,7 +34,7 @@ public:
     }
   }
 
-  void FireProjectile(glm::vec3 pos)
+  void FireProjectile(Vec3 pos)
   {
     Projectile* projectile = new Projectile(pos);
     m_projectiles.push_back(projectile);
@@ -45,7 +47,7 @@ public:
       Projectile* projectile = m_projectiles[i];
       projectile->m_node->Translate({ 0.0f, 0.0f, -2.1f });
 
-      if (projectile->m_node->GetTranslation(ToolKit::TransformationSpace::TS_WORLD).z <= m_projectileDethZone)
+      if (projectile->m_node->GetTranslation(TransformationSpace::TS_WORLD).z <= m_projectileDethZone)
       {
         m_projectiles.erase(m_projectiles.begin() + i);
         SafeDel(projectile);

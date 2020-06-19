@@ -8,13 +8,13 @@
 
 using namespace ToolKit;
 
-class Meteor : public ToolKit::Drawable
+class Meteor : public Drawable
 {
 public:
 
   Meteor()
   {
-    m_mesh = ToolKit::GetMeshManager()->Create(ToolKit::MeshPath("rock.mesh"));
+    m_mesh = GetMeshManager()->Create(MeshPath("rock.mesh"));
   }
 
   float m_collisionRadius = 1.3f;
@@ -28,7 +28,9 @@ public:
   ~MeteorManager()
   {
     for (auto entry : m_meteors)
+    {
       SafeDel(entry);
+    }
   }
 
   void Spawn(bool speedy = false)
@@ -46,11 +48,15 @@ public:
 
     for (auto entry : m_meteors)
     {
-      if (SphereSphereIntersection(
-        entry->m_node->GetTranslation(TransformationSpace::TS_WORLD),
-        entry->m_collisionRadius + 1,
-        meteor->m_node->GetTranslation(TransformationSpace::TS_WORLD),
-        meteor->m_collisionRadius))
+      if (
+          SphereSphereIntersection
+          (
+            entry->m_node->GetTranslation(TransformationSpace::TS_WORLD),
+            entry->m_collisionRadius + 1,
+            meteor->m_node->GetTranslation(TransformationSpace::TS_WORLD),
+            meteor->m_collisionRadius
+          )
+        )
       {
         SafeDel(meteor);
         return;
@@ -65,14 +71,16 @@ public:
     for (int i = (int)m_meteors.size() - 1; i > -1; i--)
     {
       m_meteors[i]->m_node->Translate({ 0.0f, 0.0f, m_meteors[i]->m_speed });
-      m_meteors[i]->m_node->Rotate(glm::angleAxis(glm::radians(glm::linearRand(0.1f, 1.5f)), ToolKit::Z_AXIS), TransformationSpace::TS_LOCAL);
+      m_meteors[i]->m_node->Rotate(glm::angleAxis(glm::radians(glm::linearRand(0.1f, 1.5f)), Z_AXIS), TransformationSpace::TS_LOCAL);
       if (m_meteors[i]->m_node->GetTranslation(TransformationSpace::TS_WORLD).z > 20)
       {
         SafeDel(m_meteors[i]);
         m_meteors.erase(m_meteors.begin() + i);
         score -= 10;
         if (score < 0)
+        {
           score = 0;
+        }
       }
     }
   }

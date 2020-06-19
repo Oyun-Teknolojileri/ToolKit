@@ -11,7 +11,6 @@
 #include "Common/TTFText.h"
 #include "Projectile.h"
 #include "SpriteSheet.h"
-#include "DebugNew.h"
 #include "Meteor.h"
 #include "MathUtil.h"
 #include "Explosion.h"
@@ -19,7 +18,11 @@
 #include "PowerUp.h"
 #include "Audio.h"
 #include "Primative.h"
+#include "DebugNew.h"
+
 #include <algorithm>
+
+using namespace ToolKit;
 
 class App
 {
@@ -41,66 +44,66 @@ public:
     float wide = 15.0f;
     m_cam.SetLens((float)m_windowWidth / (float)m_windowHeight, -wide, wide, -wide, wide, 1.0f, 1000.0f);
     //m_cam.SetLens(glm::radians(90.0f), 640.0f, 768.0f, 1.0f, 100.0f);
-    m_cam.Translate(glm::vec3(0.0f, 10.0f, 0.0f));
+    m_cam.Translate(Vec3(0.0f, 10.0f, 0.0f));
     m_cam.Pitch(glm::radians(-90.0f));
 
-    m_scoreTxt = new TTFText(ToolKit::FontPath("techno_hideo.ttf"), 45);
+    m_scoreTxt = new TTFText(FontPath("techno_hideo.ttf"), 45);
     m_scoreTxt->SetText("Score : 0");
     m_scoreTxt->SetColor({ 255, 0, 0 });
     m_scoreTxt->SetPos((int)(m_windowWidth * 150.0f / 640.0f), (int)(m_windowHeight * 700.0f / 768.0f));
 
-    m_gameOverTxt = new TTFText(ToolKit::FontPath("techno_hideo.ttf"), 45);
+    m_gameOverTxt = new TTFText(FontPath("techno_hideo.ttf"), 45);
     m_gameOverTxt->SetText("GAME OVER");
     m_gameOverTxt->SetColor({ 255, 0, 0 });
     m_gameOverTxt->SetPos((int)(m_windowWidth * 110.0f / 640.0f), (int)(m_windowHeight * 400.0f / 768.0f));
 
-    m_quitReplay = new TTFText(ToolKit::FontPath("techno_hideo.ttf"), 45);
+    m_quitReplay = new TTFText(FontPath("techno_hideo.ttf"), 45);
     m_quitReplay->SetText("ESC or R");
     m_quitReplay->SetColor({ 255, 0, 0 });
     m_quitReplay->SetPos((int)(m_windowWidth * 179.0f / 640.0f), (int)(m_windowHeight * 300.0f / 768.0f));
 
     m_spaceShip = new Ship();
-    m_spaceShip->m_node->Translate(glm::vec3(4, 0, 4));
+    m_spaceShip->m_node->Translate(Vec3(4, 0, 4));
 
-    m_crosshair = new ToolKit::Surface(ToolKit::TexturePath("crosshair.png"), glm::vec2(0.5f, 0.5f));
+    m_crosshair = new Surface(TexturePath("crosshair.png"), glm::vec2(0.5f, 0.5f));
     m_crosshair->m_mesh->Init();
 
     m_sscp = glm::ivec2(m_windowWidth / 2, m_windowHeight / 2);
-    m_crosshair->m_node->Translate(glm::vec3(m_sscp.x, m_sscp.y, 0));
+    m_crosshair->m_node->Translate(Vec3(m_sscp.x, m_sscp.y, 0));
 
-    m_backGround.m_mesh = ToolKit::GetMeshManager()->Create(ToolKit::MeshPath("earthBg.mesh"));
-    m_paralaxLayer.m_mesh = ToolKit::GetMeshManager()->Create(ToolKit::MeshPath("starParalaxLayer.mesh"));
-    m_paralaxLayer.m_mesh->m_material->GetRenderState()->blendFunction = ToolKit::BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+    m_backGround.m_mesh = GetMeshManager()->Create(MeshPath("earthBg.mesh"));
+    m_paralaxLayer.m_mesh = GetMeshManager()->Create(MeshPath("starParalaxLayer.mesh"));
+    m_paralaxLayer.m_mesh->m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
     m_paralaxLayer.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
 
-    m_lazerShotWav = ToolKit::Main::GetInstance()->m_audioMan.Create(ToolKit::AudioPath("lazerShot.wav"));
+    m_lazerShotWav = Main::GetInstance()->m_audioMan.Create(AudioPath("lazerShot.wav"));
     m_lazerShotSource.AttachAudio(m_lazerShotWav);
     m_lazerShotSource.SetVolume(0.5f);
 
-    m_explosionWav = ToolKit::Main::GetInstance()->m_audioMan.Create(ToolKit::AudioPath("explosion.wav"));
+    m_explosionWav = Main::GetInstance()->m_audioMan.Create(AudioPath("explosion.wav"));
     m_explosionSource.AttachAudio(m_explosionWav);
     m_explosionSource.SetVolume(0.1f);
 
-    m_shipExplosionWav = ToolKit::Main::GetInstance()->m_audioMan.Create(ToolKit::AudioPath("shipExplosion.wav"));
+    m_shipExplosionWav = Main::GetInstance()->m_audioMan.Create(AudioPath("shipExplosion.wav"));
     m_shipExplosionSource.AttachAudio(m_shipExplosionWav);
 
-    m_ambientLoopWav = ToolKit::Main::GetInstance()->m_audioMan.Create(ToolKit::AudioPath("ambientLoop.wav"));
+    m_ambientLoopWav = Main::GetInstance()->m_audioMan.Create(AudioPath("ambientLoop.wav"));
     m_ambientLoopSource.AttachAudio(m_ambientLoopWav);
     m_ambientLoopSource.SetLoop(true);
-    ToolKit::AudioPlayer::Play(&m_ambientLoopSource);
+    AudioPlayer::Play(&m_ambientLoopSource);
   }
 
   glm::ivec2 GetSSP(glm::mat4 model)
   {
     glm::mat4 view = m_cam.GetViewMatrix();
     glm::mat4 project = m_cam.GetData().projection;
-    glm::vec3 screenPos = glm::project(glm::vec3(), view * model, project, glm::vec4(0.0f, 0.0f, m_windowWidth, m_windowHeight));
+    Vec3 screenPos = glm::project(Vec3(), view * model, project, glm::vec4(0.0f, 0.0f, m_windowWidth, m_windowHeight));
     return glm::ivec2(screenPos.x, screenPos.y);
   }
 
-  glm::vec3 GetWSCP()
+  Vec3 GetWSCP()
   {
-    glm::vec3 cp = glm::vec3(m_sscp, 0);
+    Vec3 cp = Vec3(m_sscp, 0);
     glm::mat4 view = m_cam.GetViewMatrix();
     glm::mat4 project = m_cam.GetData().projection;
     return glm::unProject(cp, view, project, glm::vec4(0.0f, 0.0f, m_windowWidth, m_windowHeight));
@@ -108,11 +111,11 @@ public:
 
   void MoveShip()
   {
-    glm::vec3 wscp = GetWSCP() + glm::vec3(0, 0, 5);
-    glm::vec3 moveVec = (wscp - m_spaceShip->m_node->GetTranslation()) / 20.0f;
+    Vec3 wscp = GetWSCP() + Vec3(0, 0, 5);
+    Vec3 moveVec = (wscp - m_spaceShip->m_node->GetTranslation()) / 20.0f;
     m_spaceShip->m_node->Translate({ moveVec.x, 0, moveVec.z });
 
-    m_spaceShip->m_node->SetOrientation(glm::angleAxis(glm::radians(moveVec.x * 50), ToolKit::Z_AXIS));
+    m_spaceShip->m_node->SetOrientation(glm::angleAxis(glm::radians(moveVec.x * 50), Z_AXIS));
   }
 
   void CheckProjectileMeteorCollision()
@@ -138,7 +141,7 @@ public:
       }
       if (markForDel)
       {
-        ToolKit::Node* meteorNode = m_meteorManager.m_meteors[i]->m_node;
+        Node* meteorNode = m_meteorManager.m_meteors[i]->m_node;
         m_explotionManager.SpawnMeteorExplosion(GetSSP(meteorNode->GetTransform()));
 
         if (m_meteorManager.m_meteors[i]->m_speed > 0.3f)
@@ -152,7 +155,7 @@ public:
 
         SafeDel(m_meteorManager.m_meteors[i]);
         m_meteorManager.m_meteors.erase(m_meteorManager.m_meteors.begin() + i);
-        ToolKit::AudioPlayer::Play(&m_explosionSource);
+        AudioPlayer::Play(&m_explosionSource);
       }
     }
   }
@@ -275,7 +278,7 @@ public:
       {
         if (meteor->m_node->GetTranslation().z <= 10.0f)
         {
-          ToolKit::AudioPlayer::Play(&m_explosionSource);
+          AudioPlayer::Play(&m_explosionSource);
         }
       }
 
@@ -346,7 +349,7 @@ public:
         m_shipGone = true;
         glm::ivec2 explosionPoint = GetSSP(m_spaceShip->m_node->GetTransform(TransformationSpace::TS_WORLD));
         m_explotionManager.SpawnShipExplosion(explosionPoint);
-        ToolKit::AudioPlayer::Play(&m_shipExplosionSource);
+        AudioPlayer::Play(&m_shipExplosionSource);
       }
     }
   }
@@ -377,31 +380,31 @@ public:
     m_spaceShip->m_node->SetTranslation(Vec3());
   }
 
-  ToolKit::Camera m_cam;
-  ToolKit::Renderer m_renderer;
+  Camera m_cam;
+  Renderer m_renderer;
   Ship* m_spaceShip = nullptr;
-  ToolKit::Surface* m_crosshair = nullptr;
+  Surface* m_crosshair = nullptr;
   glm::ivec2 m_sscp;
   bool m_shipGone = false;
   ProjectileManager m_projectileManager;
   MeteorManager m_meteorManager;
   ExplosionManager m_explotionManager;
   PowerUpManager m_powerUpManager;
-  ToolKit::Drawable m_backGround;
-  ToolKit::Drawable m_paralaxLayer;
+  Drawable m_backGround;
+  Drawable m_paralaxLayer;
   TTFText* m_scoreTxt;
   TTFText* m_gameOverTxt;
   TTFText* m_quitReplay;
   int m_score = 0;
   bool m_restartSignaled = false;
-  std::shared_ptr<ToolKit::Audio> m_lazerShotWav;
-  std::shared_ptr<ToolKit::Audio> m_explosionWav;
-  std::shared_ptr<ToolKit::Audio> m_shipExplosionWav;
-  std::shared_ptr<ToolKit::Audio> m_ambientLoopWav;
-  ToolKit::AudioSource m_lazerShotSource;
-  ToolKit::AudioSource m_explosionSource;
-  ToolKit::AudioSource m_shipExplosionSource;
-  ToolKit::AudioSource m_ambientLoopSource;
+  std::shared_ptr<Audio> m_lazerShotWav;
+  std::shared_ptr<Audio> m_explosionWav;
+  std::shared_ptr<Audio> m_shipExplosionWav;
+  std::shared_ptr<Audio> m_ambientLoopWav;
+  AudioSource m_lazerShotSource;
+  AudioSource m_explosionSource;
+  AudioSource m_shipExplosionSource;
+  AudioSource m_ambientLoopSource;
 
   int m_windowWidth;
   int m_windowHeight;
