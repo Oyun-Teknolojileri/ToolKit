@@ -33,9 +33,9 @@ namespace ToolKit
 		Quaternion GetOrientation(TransformationSpace space = TransformationSpace::TS_PARENT);
 		void SetScale(const Vec3& val, TransformationSpace space = TransformationSpace::TS_PARENT);
 		Vec3 GetScale(TransformationSpace space = TransformationSpace::TS_PARENT);
-		void AddChild(Node* child);
-		void Orphan(Node* child);
-		void OrphanSelf();
+		void AddChild(Node* child, bool preserveTransform = false);
+		void Orphan(Node* child, bool preserveTransform = false);
+		void OrphanSelf(bool preserveTransform = false);
 		Node* GetRoot() const;
 		Node* GetCopy() const;
 		void Serialize(XmlDocument* doc, XmlNode* parent) const;

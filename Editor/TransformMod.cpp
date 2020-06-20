@@ -545,32 +545,16 @@ namespace ToolKit
 				for (Entity* ntt : roots)
 				{
 					parents.push_back(ntt->m_node->m_parent);
-					ntt->m_node->OrphanSelf();
+					ntt->m_node->OrphanSelf(true);
 				}
 
 				for (Entity* ntt : roots)
 				{
 					if (ntt != e)
 					{
-						e->m_node->AddChild(ntt->m_node);
+						e->m_node->AddChild(ntt->m_node, true);
 					}
 				}
-
-/*
-				roots.erase
-				(
-					std::remove_if
-					(
-						roots.begin(),
-						roots.end(),
-						[e](Entity* ntt)
-						{
-							return e->m_id == ntt->m_id;
-						}
-					)
-				);*/
-
-
 			}
 
 			TransformationSpace space = g_app->m_transformOrientation;
@@ -628,11 +612,11 @@ namespace ToolKit
 			// Set original parents back.
 			for (int i = 0; i < (int)roots.size(); i++)
 			{
-				roots[i]->m_node->OrphanSelf();
+				roots[i]->m_node->OrphanSelf(true);
 				Node* parent = parents[i];
 				if (parent != nullptr)
 				{
-					parent->AddChild(roots[i]->m_node);
+					parent->AddChild(roots[i]->m_node, true);
 				}
 			}
 		}
