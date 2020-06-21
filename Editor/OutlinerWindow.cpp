@@ -113,11 +113,19 @@ namespace ToolKit
 
 									ImGui::TreePop();
 								}
+								else
+								{
+									SetItemStateFn(childNtt);
+								}
 							}
 						}
 					}
 
 					ImGui::TreePop();
+				}
+				else
+				{
+					SetItemStateFn(e);
 				}
 			}
 		}
