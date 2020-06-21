@@ -55,7 +55,6 @@ namespace ToolKit
 		void App::Init()
 		{
 #ifdef TK_SAMPLE_SCENE
-/*
 			m_suzanne = new Drawable();
 			m_suzanne->m_node->SetTranslation({ 0.0f, 0.0f, -5.0f });
 			m_suzanne->m_node->SetOrientation(glm::angleAxis(-glm::half_pi<float>(), X_AXIS));
@@ -63,9 +62,7 @@ namespace ToolKit
 			szm->Init(false);
 			m_suzanne->m_mesh = MeshPtr(szm);
 			m_scene.AddEntity(m_suzanne);
-*/
 
-/*
 			// https://t-allen-studios.itch.io/low-poly-saxon-warrior
 			m_knight = new Drawable();
 			m_knight->m_mesh = GetSkinMeshManager()->Create(MeshPath("Knight.skinMesh"));
@@ -76,7 +73,6 @@ namespace ToolKit
 			m_knightRunAnim = GetAnimationManager()->Create(AnimationPath("Knight_Armature_Run.anim"));
 			m_knightRunAnim->m_loop = true;
 			GetAnimationPlayer()->AddRecord(m_knight, m_knightRunAnim.get());
-*/
 
 			MaterialPtr normalMat = GetMaterialManager()->Create(MaterialPath("objectNormal.material"));
 
@@ -105,13 +101,11 @@ namespace ToolKit
 			m_q1->m_node->AddChild(m_q2->m_node);
 			m_q2->m_node->AddChild(m_q3->m_node);
 
-/*
 			m_q4 = new Cube();
 			m_q4->m_mesh->m_material = normalMat;
 			m_q4->m_mesh->Init(false);
 			m_q4->m_node->SetTranslation({ 4.0f, 0.0f, 0.0f });
 			m_scene.AddEntity(m_q4);
-*/
 #endif
 
 			m_cursor = new Cursor();

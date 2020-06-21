@@ -131,8 +131,21 @@ namespace ToolKit
 				g_parent = NULL_ENTITY;
 				g_child = NULL_ENTITY;
 
-				if (ImGui::TreeNode("Scene"))
+				if (ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen))
 				{
+					// Orphan in this case.
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
+						{
+							IM_ASSERT(payload->DataSize == sizeof(EntityId*));
+							g_child = *(EntityId*)payload->Data;
+							Entity* child = g_app->m_scene.GetEntity(g_child);
+							child->m_node->OrphanSelf(true);
+						}
+						ImGui::EndDragDropTarget();
+					}
+
 					const EntityRawPtrArray& ntties = g_app->m_scene.GetEntities();
 					EntityRawPtrArray roots;
 					GetRootEntities(ntties, roots);
@@ -155,7 +168,7 @@ namespace ToolKit
 				if (g_parent != NULL_ENTITY)
 				{
 					Entity* parent = g_app->m_scene.GetEntity(g_parent);
-					parent->m_node->AddChild(child->m_node);
+					parent->m_node->AddChild(child->m_node, true);
 				}
 			}
 
