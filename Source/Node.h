@@ -35,7 +35,7 @@ namespace ToolKit
 		Vec3 GetScale(TransformationSpace space = TransformationSpace::TS_PARENT);
 		void AddChild(Node* child, bool preserveTransform = false);
 		void Orphan(Node* child, bool preserveTransform = false);
-		void OrphanSelf(bool preserveTransform = false);
+		void OrphanSelf(bool preserveWorldTransform = false);
 		Node* GetRoot() const;
 		Node* GetCopy() const;
 		void Serialize(XmlDocument* doc, XmlNode* parent) const;

@@ -15,10 +15,10 @@ namespace ToolKit
 
 	Node::~Node()
 	{
-		OrphanSelf();
+		OrphanSelf(true);
 		for (Node* child : m_children)
 		{
-			Orphan(child);
+			Orphan(child, true);
 		}
 	}
 
