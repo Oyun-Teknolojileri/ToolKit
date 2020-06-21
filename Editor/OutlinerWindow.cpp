@@ -12,7 +12,9 @@ namespace ToolKit
 
 		}
 
-		// Recursively show entity hierarchy.
+		// Recursively show entity hierarchy & update via drag drop.
+		EntityId g_parent = NULL_ENTITY;
+		EntityId g_child = NULL_ENTITY;
 		void ShowNode(Entity* e)
 		{
 			static ImGuiTreeNodeFlags baseFlags 
@@ -26,7 +28,7 @@ namespace ToolKit
 				nodeFlags |= ImGuiTreeNodeFlags_Selected;
 			}
 
-			auto UpdateSelectionFn = [](Entity* e)
+			auto SetItemStateFn = [](Entity* e)
 			{
 				if (ImGui::IsItemClicked())
 				{
@@ -47,45 +49,75 @@ namespace ToolKit
 						g_app->m_scene.AddToSelection(e->m_id, false);
 					}
 				}
+
+				if (ImGui::BeginDragDropSource())
+				{
+					ImGui::SetDragDropPayload("HierarcyChange", &e->m_id, sizeof(EntityId*));
+					ImGui::Text("Drop on the new parent.");
+					ImGui::EndDragDropSource();
+				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
+					{
+						IM_ASSERT(payload->DataSize == sizeof(EntityId*));
+						g_child = *(EntityId*)payload->Data;
+						g_parent = e->m_id;
+					}
+					ImGui::EndDragDropTarget();
+				}
 			};
 
 			if (e->m_node->m_children.empty())
 			{
 				nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 				ImGui::TreeNodeEx(e->m_name.c_str(), nodeFlags);
-				UpdateSelectionFn(e);
+				SetItemStateFn(e);
 			}
 			else
 			{
-				for (Node* n : e->m_node->m_children)
+				if (ImGui::TreeNodeEx(e->m_name.c_str(), nodeFlags))
 				{
-					Entity* childNtt = n->m_entity;
-					if (childNtt != nullptr)
+					SetItemStateFn(e);
+					for (Node* n : e->m_node->m_children)
 					{
-						if (childNtt->m_node->m_children.empty())
+						Entity* childNtt = n->m_entity;
+						if (childNtt != nullptr)
 						{
-							nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-							ImGui::TreeNodeEx(e->m_name.c_str(), nodeFlags);
-							UpdateSelectionFn(e);
-						}
-						else
-						{
-							if (ImGui::TreeNodeEx(childNtt->m_name.c_str(), nodeFlags))
+							if (childNtt->m_node->m_children.empty())
 							{
-								UpdateSelectionFn(e);
-								for (Node* deepChildNode : childNtt->m_node->m_children)
+								nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+								ImGui::TreeNodeEx(childNtt->m_name.c_str(), nodeFlags);
+								SetItemStateFn(childNtt);
+							}
+							else
+							{
+								nodeFlags = baseFlags;
+								if (g_app->m_scene.IsSelected(childNtt->m_id))
 								{
-									Entity* deepChild = deepChildNode->m_entity;
-									if (deepChild)
-									{
-										ShowNode(deepChild);
-									}
+									nodeFlags |= ImGuiTreeNodeFlags_Selected;
 								}
 
-								ImGui::TreePop();
+								if (ImGui::TreeNodeEx(childNtt->m_name.c_str(), nodeFlags))
+								{
+									SetItemStateFn(childNtt);
+									for (Node* deepChildNode : childNtt->m_node->m_children)
+									{
+										Entity* deepChild = deepChildNode->m_entity;
+										if (deepChild)
+										{
+											ShowNode(deepChild);
+										}
+									}
+
+									ImGui::TreePop();
+								}
 							}
 						}
 					}
+
+					ImGui::TreePop();
 				}
 			}
 		}
@@ -95,6 +127,9 @@ namespace ToolKit
 			if (ImGui::Begin(m_name.c_str(), &m_visible))
 			{
 				HandleStates();
+
+				g_parent = NULL_ENTITY;
+				g_child = NULL_ENTITY;
 
 				if (ImGui::TreeNode("Scene"))
 				{
@@ -111,6 +146,19 @@ namespace ToolKit
 					ImGui::TreePop();
 				}
 			}
+
+			// Update hierarchy if there is a change.
+			if (g_child != NULL_ENTITY)
+			{
+				Entity* child = g_app->m_scene.GetEntity(g_child);
+				child->m_node->OrphanSelf(true);
+				if (g_parent != NULL_ENTITY)
+				{
+					Entity* parent = g_app->m_scene.GetEntity(g_parent);
+					parent->m_node->AddChild(child->m_node);
+				}
+			}
+
 			ImGui::End();
 		}
 
