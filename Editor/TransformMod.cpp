@@ -391,8 +391,9 @@ namespace ToolKit
 		{
 			StateTransformBase::TransitionIn(prevState);
 			
-			EntityRawPtrArray entities;
-			GetEntitiesToTransform(entities);
+			EntityRawPtrArray entities, selecteds;
+			g_app->m_scene.GetSelectedEntities(selecteds);
+			GetRootEntities(selecteds, entities);
 			if (!entities.empty())
 			{
 				for (Entity* ntt : entities)
@@ -618,49 +619,6 @@ namespace ToolKit
 				{
 					parent->AddChild(roots[i]->m_node, true);
 				}
-			}
-		}
-
-		void StateTransformTo::RootsOnly(EntityRawPtrArray& selecteds, EntityRawPtrArray& roots, Entity* child)
-		{
-			auto AddUnique = [&roots](Entity* e)
-			{
-				assert(e != nullptr);
-
-				bool unique = std::find(roots.begin(), roots.end(), e) == roots.end();
-				if (unique)
-				{
-					roots.push_back(e);
-				}
-			};
-
-			Node* parent = child->m_node->m_parent;
-			if (parent != nullptr)
-			{
-				Entity* parentEntity = parent->m_entity;
-				if (std::find(selecteds.begin(), selecteds.end(), parentEntity) != selecteds.end())
-				{
-					RootsOnly(selecteds, roots, parentEntity);
-				}
-				else
-				{
-					AddUnique(child);
-				}
-			}
-			else
-			{
-				AddUnique(child);
-			}
-		}
-
-		void StateTransformTo::GetEntitiesToTransform(EntityRawPtrArray& ntties)
-		{
-			EntityRawPtrArray selecteds;
-			g_app->m_scene.GetSelectedEntities(selecteds);
-
-			for (Entity* e : selecteds)
-			{
-				RootsOnly(selecteds, ntties, e);
 			}
 		}
 

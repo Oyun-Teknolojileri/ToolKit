@@ -99,6 +99,7 @@
     <ClCompile Include="ImGui\imgui_stdlib.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="OutlinerWindow.cpp" />
     <ClCompile Include="TransformMod.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="UI.cpp" />
@@ -151,6 +152,7 @@
     <ClInclude Include="ImGui\imstb_rectpack.h" />
     <ClInclude Include="ImGui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imstb_truetype.h" />
+    <ClInclude Include="OutlinerWindow.h" />
     <ClInclude Include="TransformMod.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="UI.h" />

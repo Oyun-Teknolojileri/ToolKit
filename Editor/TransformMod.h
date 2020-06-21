@@ -80,8 +80,6 @@ namespace ToolKit
 		private:
 			void CalculateDelta();
 			void Transform(const Vec3& delta);
-			void RootsOnly(EntityRawPtrArray& selecteds, EntityRawPtrArray& roots, Entity* child);
-			void GetEntitiesToTransform(EntityRawPtrArray& ntties);
 
 		public:
 			Vec3 m_delta;

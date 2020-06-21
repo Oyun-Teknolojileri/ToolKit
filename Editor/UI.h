@@ -18,7 +18,8 @@ namespace ToolKit
 					Viewport,
 					Console,
 					InputPopup,
-					Browser
+					Browser,
+					Outliner
 				};
 
 			public:

@@ -78,6 +78,9 @@
     <ClCompile Include="FolderWindow.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="OutlinerWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -141,6 +144,9 @@
       <Filter>UI\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="FolderWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="OutlinerWindow.h">
       <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
