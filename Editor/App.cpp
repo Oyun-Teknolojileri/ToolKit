@@ -638,7 +638,7 @@ namespace ToolKit
 			{
 				if (wnd->GetType() == Window::Type::Outliner)
 				{
-					if (wnd->m_name == g_assetBrowserStr)
+					if (wnd->m_name == g_outlinerStr)
 					{
 						return static_cast<OutlinerWindow*> (wnd);
 					}

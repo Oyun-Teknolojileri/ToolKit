@@ -14,6 +14,7 @@
 #include "ConsoleWindow.h"
 #include "FolderWindow.h"
 #include "OverlayUI.h"
+#include "OutlinerWindow.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -386,6 +387,11 @@ namespace ToolKit
 			if (ImGui::MenuItem("Resource Window", "Alt+B", nullptr, !g_app->GetAssetBrowser()->IsVisible()))
 			{
 				g_app->GetAssetBrowser()->SetVisibility(true);
+			}
+
+			if (ImGui::MenuItem("Outliner Window", "Alt+O", nullptr, !g_app->GetOutliner()->IsVisible()))
+			{
+				g_app->GetOutliner()->SetVisibility(true);
 			}
 
 			ImGui::Separator();
