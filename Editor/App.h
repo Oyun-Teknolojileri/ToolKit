@@ -20,6 +20,7 @@ namespace ToolKit
 		class Cursor;
 		class ConsoleWindow;
 		class FolderWindow;
+		class OutlinerWindow;
 		class Window;
 		class Gizmo;
 
@@ -45,6 +46,7 @@ namespace ToolKit
 			Viewport* GetViewport(const String& name);
 			ConsoleWindow* GetConsole();
 			FolderWindow* GetAssetBrowser();
+			OutlinerWindow* GetOutliner();
 
 			// Quick selected render implementation.
 			void RenderSelected(Viewport *vp);

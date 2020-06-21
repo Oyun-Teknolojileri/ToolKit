@@ -14,10 +14,14 @@
 #include "ConsoleWindow.h"
 #include "Gizmo.h"
 #include "FolderWindow.h"
+#include "OutlinerWindow.h"
 #include "DebugNew.h"
 
 #include <filesystem>
 #include <cstdlib>
+
+#define TK_SAMPLE_SCENE
+
 
 namespace ToolKit
 {
@@ -50,6 +54,60 @@ namespace ToolKit
 
 		void App::Init()
 		{
+#ifdef TK_SAMPLE_SCENE
+			m_suzanne = new Drawable();
+			m_suzanne->m_node->SetTranslation({ 0.0f, 0.0f, -5.0f });
+			m_suzanne->m_node->SetOrientation(glm::angleAxis(-glm::half_pi<float>(), X_AXIS));
+			Mesh* szm = GetMeshManager()->CreateDerived<Mesh>(MeshPath("suzanne.mesh"))->GetCopy();
+			szm->Init(false);
+			m_suzanne->m_mesh = MeshPtr(szm);
+			m_scene.AddEntity(m_suzanne);
+
+			// https://t-allen-studios.itch.io/low-poly-saxon-warrior
+			m_knight = new Drawable();
+			m_knight->m_mesh = GetSkinMeshManager()->Create(MeshPath("Knight.skinMesh"));
+			m_knight->m_node->SetScale({ 0.01f, 0.01f, 0.01f });
+			m_knight->m_node->SetTranslation({ 0.0f, 0.0f, 5.0f });
+			m_scene.AddEntity(m_knight);
+
+			m_knightRunAnim = GetAnimationManager()->Create(AnimationPath("Knight_Armature_Run.anim"));
+			m_knightRunAnim->m_loop = true;
+			GetAnimationPlayer()->AddRecord(m_knight, m_knightRunAnim.get());
+
+			MaterialPtr normalMat = GetMaterialManager()->Create(MaterialPath("objectNormal.material"));
+
+			m_q1 = new Cube();
+			m_q1->m_mesh->m_material = normalMat;
+			m_q1->m_mesh->Init(false);
+			m_q1->m_node->SetTranslation({ 2.0f, 0.0f, 0.0f });
+			m_q1->m_node->Rotate(glm::angleAxis(glm::half_pi<float>(), Y_AXIS), TransformationSpace::TS_LOCAL);
+			m_q1->m_node->Rotate(glm::angleAxis(glm::half_pi<float>(), Z_AXIS), TransformationSpace::TS_LOCAL);
+			m_scene.AddEntity(m_q1);
+
+			m_q2 = new Cube();
+			m_q2->m_mesh->m_material = normalMat;
+			m_q2->m_mesh->Init(false);
+			m_q2->m_node->SetTranslation({ 2.0f, 0.0f, 2.0f });
+			m_q2->m_node->SetOrientation(glm::angleAxis(glm::half_pi<float>(), Y_AXIS));
+			m_scene.AddEntity(m_q2);
+
+			m_q3 = new Cone({ 1.0f, 1.0f, 30, 30 });
+			m_q3->m_mesh->m_material = normalMat;
+			m_q3->m_mesh->Init(false);
+			m_q3->m_node->Scale({ 0.3f, 1.0f, 0.3f });
+			m_q3->m_node->SetTranslation({ 2.0f, 0.0f, 0.0f });
+			m_scene.AddEntity(m_q3);
+
+			m_q1->m_node->AddChild(m_q2->m_node);
+			m_q2->m_node->AddChild(m_q3->m_node);
+
+			m_q4 = new Cube();
+			m_q4->m_mesh->m_material = normalMat;
+			m_q4->m_mesh->Init(false);
+			m_q4->m_node->SetTranslation({ 4.0f, 0.0f, 0.0f });
+			m_scene.AddEntity(m_q4);
+#endif
+
 			m_cursor = new Cursor();
 			m_origin = new Axis3d();
 			m_grid = new Grid(100);
@@ -113,6 +171,10 @@ namespace ToolKit
 			assetBrowser->m_name = g_assetBrowserStr;
 			assetBrowser->Iterate(ResourcePath());
 			m_windows.push_back(assetBrowser);
+
+			OutlinerWindow* outliner = new OutlinerWindow();
+			outliner->m_name = g_outlinerStr;
+			m_windows.push_back(outliner);
 
 			UI::InitIcons();
 		}
@@ -563,6 +625,22 @@ namespace ToolKit
 					if (wnd->m_name == g_assetBrowserStr)
 					{
 						return static_cast<FolderWindow*> (wnd);
+					}
+				}
+			}
+
+			return nullptr;
+		}
+
+		OutlinerWindow* App::GetOutliner()
+		{
+			for (Window* wnd : m_windows)
+			{
+				if (wnd->GetType() == Window::Type::Outliner)
+				{
+					if (wnd->m_name == g_assetBrowserStr)
+					{
+						return static_cast<OutlinerWindow*> (wnd);
 					}
 				}
 			}

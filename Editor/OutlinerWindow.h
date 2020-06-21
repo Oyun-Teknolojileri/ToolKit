@@ -8,6 +8,7 @@ namespace ToolKit
 	{
 		class OutlinerWindow : public Window
 		{
+		public:
 			OutlinerWindow();
 			virtual void Show() override;
 			virtual Type GetType() const override;
