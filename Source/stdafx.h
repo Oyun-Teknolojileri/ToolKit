@@ -20,6 +20,7 @@
 #include "glm/gtx/scalar_relational.hpp"
 #include "glm/gtx/vector_query.hpp"
 #include "glm/gtx/string_cast.hpp"
+#include "glm/gtx/component_wise.hpp"
 
 // LoadPng
 #include "stb/stb_image.h"
