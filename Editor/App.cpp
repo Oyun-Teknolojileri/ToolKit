@@ -215,6 +215,11 @@ namespace ToolKit
 		{
 			// Update animations.
 			GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
+			
+			if (Window* wnd = GetOutliner())
+			{
+				wnd->DispatchSignals();
+			}
 
 			// Update Viewports.
 			for (Window* wnd : m_windows)
@@ -224,7 +229,7 @@ namespace ToolKit
 					continue;
 				}
 
-				UI::DispatchSignals(wnd);
+				wnd->DispatchSignals();
 
 				Viewport* vp = static_cast<Viewport*> (wnd);
 				vp->Update(deltaTime);

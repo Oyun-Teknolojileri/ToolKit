@@ -33,7 +33,10 @@ namespace ToolKit
 				bool IsActive() const;
 				bool IsVisible() const;
 				bool MouseHovers() const;
-				bool CanDispatchEvents() const; // If active & visible & mouse hovers.
+				bool CanDispatchSignals() const; // If active & visible & mouse hovers.
+
+				// System calls.
+				virtual void DispatchSignals() const;
 
 			protected:
 				// Internal window handling.
@@ -91,7 +94,6 @@ namespace ToolKit
 				static void ShowImportWindow();
 				static void ShowSearchForFilesWindow();
 				static void HelpMarker(const char* desc, float* elapsedHoverTime);
-				static void DispatchSignals(Window* wnd);
 				static void ShowNewSceneWindow();
 
 				// Custom widgets.

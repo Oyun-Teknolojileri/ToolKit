@@ -12,6 +12,7 @@ namespace ToolKit
 			OutlinerWindow();
 			virtual void Show() override;
 			virtual Type GetType() const override;
+			virtual void DispatchSignals() const override;
 		};
 	}
 }

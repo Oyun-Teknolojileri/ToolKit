@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "OutlinerWindow.h"
 #include "GlobalDef.h"
+#include "Mod.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -32,7 +34,7 @@ namespace ToolKit
 			{
 				if (ImGui::IsItemClicked())
 				{
-					if (ImGui::GetIO().KeyCtrl)
+					if (ImGui::GetIO().KeyShift)
 					{
 						if (g_app->m_scene.IsSelected(e->m_id))
 						{
@@ -87,6 +89,12 @@ namespace ToolKit
 						{
 							if (childNtt->m_node->m_children.empty())
 							{
+								nodeFlags = baseFlags;
+								if (g_app->m_scene.IsSelected(childNtt->m_id))
+								{
+									nodeFlags |= ImGuiTreeNodeFlags_Selected;
+								}
+
 								nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 								ImGui::TreeNodeEx(childNtt->m_name.c_str(), nodeFlags);
 								SetItemStateFn(childNtt);
@@ -186,6 +194,19 @@ namespace ToolKit
 		Window::Type OutlinerWindow::GetType() const
 		{
 			return Window::Type::Outliner;
+		}
+
+		void OutlinerWindow::DispatchSignals() const
+		{
+			ImGuiIO& io = ImGui::GetIO();
+
+			if (io.KeysDown[io.KeyMap[ImGuiKey_Delete]])
+			{
+				if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Delete]] == 0.0f)
+				{
+					ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
+				}
+			}
 		}
 
 	}
