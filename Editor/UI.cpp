@@ -440,8 +440,8 @@ namespace ToolKit
 				}
 				ImGui::Separator();
 
-				StringArray fails;
-				if (!ImportData.files.empty())
+				static StringArray fails;
+				if (!ImportData.files.empty() && fails.empty())
 				{
 					for (int i = (int)ImportData.files.size() - 1; i >= 0; i--)
 					{
@@ -485,6 +485,7 @@ namespace ToolKit
 							return;
 						}
 					}
+					fails.clear();
 					ImportData.files.clear();
 					ImportData.showImportWindow = false;
 					ImGui::CloseCurrentPopup(); 
@@ -493,6 +494,7 @@ namespace ToolKit
 				ImGui::SameLine();
 				if (ImGui::Button("Cancel", ImVec2(120, 0))) 
 				{ 
+					fails.clear();
 					ImportData.files.clear();
 					ImportData.showImportWindow = false;
 					ImGui::CloseCurrentPopup(); 

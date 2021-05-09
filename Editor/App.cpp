@@ -569,6 +569,11 @@ namespace ToolKit
 				return true;
 			}
 
+			if (ext == ".gltf")
+			{
+				return true;
+			}
+
 			if (ext == ".obj")
 			{
 				return true;
