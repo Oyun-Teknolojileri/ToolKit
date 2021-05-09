@@ -72,7 +72,8 @@ namespace ToolKit
 	static const String glTF(".glb");
 	static const String OBJ(".obj");
 	static const String PNG(".png");
-	static const String JPEG(".jpg");
+	static const String JPG(".jpg");
+	static const String JPEG(".jpeg");
 	static const String TGA(".tga");
 	static const String BMP(".bmp");
 	static const String PSD(".psd");

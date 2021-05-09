@@ -170,8 +170,10 @@ void PrintAnims_(const aiScene* scene, string file)
   }
 }
 
-void PrintMaterial_(const aiScene* scene, string filePath)
+void PrintMaterial_(const aiScene* scene, string filePath, string origin)
 {
+  filesystem::path pathOrg = filesystem::path(origin).parent_path();
+
   for (unsigned int i = 0; i < scene->mNumMaterials; i++)
   {
     aiMaterial* material = scene->mMaterials[i];
@@ -194,6 +196,10 @@ void PrintMaterial_(const aiScene* scene, string filePath)
       material->GetTexture(aiTextureType_DIFFUSE, 0, &texture);
 
       string tName = texture.C_Str();
+      filesystem::path nextPath = pathOrg;
+      tName = filesystem::canonical(nextPath.append(tName)).u8string();
+      string outName = filesystem::path(tName).filename().u8string();
+      string textPath = filePath + outName;
       if (!tName.empty() && tName[0] == '*') // Embedded texture.
       {
         string indxPart = tName.substr(1);
@@ -207,23 +213,15 @@ void PrintMaterial_(const aiScene* scene, string filePath)
       else
       {
         // Try copying texture.
-        string outName = tName;
-        TrunckToFileName(outName);
-
-        string textPath = filePath + outName;
         ifstream isGoodFile;
         isGoodFile.open(tName, ios::binary | ios::in);
         if (isGoodFile.good())
         {
-          filesystem::copy(tName, textPath);
+          filesystem::copy(tName, textPath, std::filesystem::copy_options::overwrite_existing);
         }
         isGoodFile.close();
       }
 
-      string outName = tName;
-      TrunckToFileName(outName);
-
-      string textPath = filePath + outName;
       AddToUsedFiles(textPath);
 
       file << "  <diffuseTexture name = \"" + textPath + "\"/>\n";
@@ -545,20 +543,35 @@ int main(int argc, char* argv[])
 {
   try 
   {
-    if (argc < 2 || argc > 4)
+    if (argc < 2)
     {
-      cout << "usage: Import \"fileToImport.format\" <op> -s 1.0\n";
+      cout << "usage: Import 'fileToImport.format' <op> -t 'importTo' <op> -s 1.0\n";
       throw (-1);
     }
 
-    Assimp::DefaultLogger::create("log.txt", Assimp::Logger::VERBOSE);
-
-    string file = argv[1];
     Assimp::Importer importer;
-    if (argc == 4)
+    string dest, file = argv[1];
+    Assimp::DefaultLogger::create("log.txt", Assimp::Logger::VERBOSE);
+    for (int i = 0; i < argc; i++)
     {
-      float scale = (float)std::atof(argv[3]);
-      importer.SetPropertyFloat(AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, scale);
+      string arg = argv[i];
+      Assimp::DefaultLogger::get()->info(arg);
+      
+      if (arg == "-t")
+      {
+        dest = filesystem::path(argv[i + 1]).append("").u8string();
+      }
+
+      if (arg == "-s")
+      {
+        float scale = (float)std::atof(argv[i + 1]);
+        importer.SetPropertyFloat(AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, scale);
+      }
+    }
+
+    if (!dest.empty())
+    {
+      std::filesystem::create_directories(dest);
     }
 
     const aiScene* scene = importer.ReadFile
@@ -579,14 +592,14 @@ int main(int argc, char* argv[])
     g_scene = scene;
 
     filesystem::path pathToProcess = file;
-    string pathPart = pathToProcess.root_path().u8string();
-    pathPart = (pathToProcess.parent_path().append("")).u8string();
+    string fileName = pathToProcess.filename().u8string();
+    string destFile = dest + fileName;
 
-    PrintSkeleton_(scene, file);
-    PrintMesh_(scene, file);
-    PrintAnims_(scene, pathPart);
-    PrintMaterial_(scene, pathPart);
-    PrintTextures_(scene, pathPart);
+    PrintSkeleton_(scene, destFile);
+    PrintMesh_(scene, destFile);
+    PrintAnims_(scene, dest);
+    PrintMaterial_(scene, dest, file);
+    PrintTextures_(scene, dest);
 
     // Report all in use files.
     fstream inUse("out.txt", ios::out);

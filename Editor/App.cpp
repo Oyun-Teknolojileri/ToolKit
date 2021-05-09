@@ -378,29 +378,22 @@ namespace ToolKit
 					std::filesystem::create_directories(cpyDir);
 				}
 
-				std::filesystem::copy
-				(
-					fullPath, cpyDir,
-					overwrite ? std::filesystem::copy_options::overwrite_existing
-					: std::filesystem::copy_options::skip_existing
-				);
-
 				String name, ext;
 				DecomposePath(fullPath, nullptr, &name, &ext);
 
 				String cmd = "Import \"";
 				if (!subDir.empty())
 				{
-					cmd += subDir + '\\' + name + ext;
+					cmd += fullPath + "\" -t \".\\" + subDir;
 				}
 				else
 				{
-					cmd += name + ext;
+					cmd += fullPath;
 				}
 
 				cmd += "\" -s " + std::to_string(UI::ImportData.scale);
 
-				// Execute command.
+				// Execute command
 				int result = std::system(cmd.c_str());
 				assert(result != -1);
 
@@ -464,6 +457,10 @@ namespace ToolKit
 						{
 							String ext;
 							DecomposePath(line, nullptr, nullptr, &ext);
+							if (line.rfind(".\\") == 0)
+							{
+								line = line.substr(2, -1);
+							}
 
 							String fullPath;
 							if (ext == MESH || ext == SKINMESH)
@@ -485,6 +482,7 @@ namespace ToolKit
 							if 
 								(
 									ext == PNG ||
+									ext == JPG ||
 									ext == JPEG ||
 									ext == TGA ||
 									ext == BMP ||
@@ -503,7 +501,7 @@ namespace ToolKit
 
 							String path, name;
 							DecomposePath(fullPath, &path, &name, &ext);
-							std::filesystem::create_directories(path);
+							std::filesystem::create_directory(path);
 							std::filesystem::copy
 							(
 								line, fullPath,
