@@ -81,6 +81,9 @@
     <ClCompile Include="OutlinerWindow.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="ImGui\imgui_tables.cpp">
+      <Filter>UI\ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
