@@ -3,6 +3,9 @@
 #include "Mesh.h"
 #include "DebugNew.h"
 
+#include <mutex>
+#include <execution>
+
 namespace ToolKit
 {
 
@@ -300,25 +303,30 @@ namespace ToolKit
 		mesh->GetAllMeshes(meshes);
 		float closestPickedDistance = FLT_MAX;
 		bool hit = false;
+		std::mutex updateHit;
 
 		for (Mesh* const mesh : meshes)
 		{
-			size_t triCnt = mesh->m_faces.size();
-			for (size_t i = 0; i < triCnt; i++)
-			{
-				Face* face = &mesh->m_faces[i];
-
-				float dist = FLT_MAX;
-				if (RayTriangleIntersection(ray, face->vertices[0]->pos, face->vertices[1]->pos, face->vertices[2]->pos, dist))
+			std::for_each
+			(
+				std::execution::par_unseq,
+				mesh->m_faces.begin(),
+				mesh->m_faces.end(),
+				[&updateHit, &t, &closestPickedDistance, &ray, &hit](Face& face)
 				{
-					if (dist < closestPickedDistance && t > 0.0f)
+					float dist = FLT_MAX;
+					if (RayTriangleIntersection(ray, face.vertices[0]->pos, face.vertices[1]->pos, face.vertices[2]->pos, dist))
 					{
-						t = dist;
-						closestPickedDistance = dist;
-						hit = true;
+						std::lock_guard<std::mutex> guard(updateHit);
+						if (dist < closestPickedDistance && t > 0.0f)
+						{
+							t = dist;
+							closestPickedDistance = dist;
+							hit = true;
+						}
 					}
 				}
-			}
+			);
 		}
 
 		return hit;
