@@ -54,6 +54,7 @@ namespace ToolKit
 	typedef std::vector<EntityId> EntityIdArray;
 	typedef std::vector<class Node*> NodePtrArray;
 	typedef std::vector<class Vertex> VertexArray;
+	typedef std::vector<class Face> FaceArray;
 	typedef rapidxml::xml_document<> XmlDocument;
 	typedef rapidxml::xml_node<> XmlNode;
 	typedef rapidxml::xml_attribute<> XmlAttribute;

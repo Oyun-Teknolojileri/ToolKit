@@ -303,28 +303,13 @@ namespace ToolKit
 
 		for (Mesh* const mesh : meshes)
 		{
-			Vec3 triangle[3];
-			size_t triCnt = mesh->m_clientSideIndices.size() / 3;
+			size_t triCnt = mesh->m_faces.size();
 			for (size_t i = 0; i < triCnt; i++)
 			{
-				if (mesh->m_clientSideIndices.empty())
-				{
-					for (size_t j = 0; j < 3; j++)
-					{
-						triangle[j] = mesh->m_clientSideVertices[i * 3 + j].pos;
-					}
-				}
-				else
-				{
-					for (size_t j = 0; j < 3; j++)
-					{
-						size_t indx = mesh->m_clientSideIndices[i * 3 + j];
-						triangle[j] = mesh->m_clientSideVertices[indx].pos;
-					}
-				}
+				Face* face = &mesh->m_faces[i];
 
 				float dist = FLT_MAX;
-				if (RayTriangleIntersection(ray, triangle[0], triangle[1], triangle[2], dist))
+				if (RayTriangleIntersection(ray, face->vertices[0]->pos, face->vertices[1]->pos, face->vertices[2]->pos, dist))
 				{
 					if (dist < closestPickedDistance && t > 0.0f)
 					{
