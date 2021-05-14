@@ -27,6 +27,7 @@ namespace ToolKit
 			void SetPath(const String& path);
 			const String& GetPath() const;
 			void Iterate();
+			int Exist(const String& file);
 
 		private:
 			FolderWindow* m_parent = nullptr;

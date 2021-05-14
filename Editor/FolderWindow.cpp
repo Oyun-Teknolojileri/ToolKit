@@ -203,6 +203,19 @@ namespace ToolKit
 			}
 		}
 
+		int FolderView::Exist(const String& file)
+		{
+			for (int i = 0; i < (int)m_entiries.size(); i++)
+			{
+				if (m_entiries[i].m_fileName == file)
+				{
+					return i;
+				}
+			}
+
+			return -1;
+		}
+
 		FolderWindow::FolderWindow()
 		{
 		}

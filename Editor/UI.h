@@ -70,13 +70,14 @@ namespace ToolKit
 			class YesNoWindow : public Window
 			{
 			public:
-				YesNoWindow(const String& name);
+				YesNoWindow(const String& name, const String& msg = "");
 				virtual void Show() override;
 				virtual Type GetType() const override { return Window::Type::InputPopup; }
 
 			public:
 				std::function<void()> m_yesCallback;
 				std::function<void()> m_noCallback;
+				String m_msg;
 			};
 
 			class UI

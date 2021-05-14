@@ -306,6 +306,7 @@ namespace ToolKit
 			if (ImGui::MenuItem("NewScene"))
 			{
 				m_strInputWindow.m_name = "NewScene##NwScn1";
+				m_strInputWindow.m_inputVal = "New Scene";
 				m_strInputWindow.m_inputText = "Name";
 				m_strInputWindow.m_hint = "Scene name";
 				m_strInputWindow.SetVisibility(true);
@@ -319,6 +320,7 @@ namespace ToolKit
 			{
 				XmlDocument doc;
 				g_app->m_scene.Serialize(&doc, nullptr);
+				g_app->GetAssetBrowser()->UpdateContent();
 			}
 
 			if (ImGui::MenuItem("SaveAs"))
@@ -616,7 +618,9 @@ namespace ToolKit
 			if (ImGui::BeginPopupModal("NewScene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				static String sceneName;
+				
 				ImGui::InputTextWithHint("Name", "NewScene", &sceneName);
+				ImGui::SetItemDefaultFocus();
 
 				if (ImGui::Button("OK", ImVec2(120, 0)))
 				{
@@ -624,7 +628,7 @@ namespace ToolKit
 					m_showNewSceneWindow = false;
 					ImGui::CloseCurrentPopup();
 				}
-				ImGui::SetItemDefaultFocus();
+				//ImGui::SetItemDefaultFocus();
 				ImGui::SameLine();
 				if (ImGui::Button("Cancel", ImVec2(120, 0)))
 				{
@@ -773,8 +777,12 @@ namespace ToolKit
 			ImGui::OpenPopup(m_name.c_str());
 			if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
 			{
+				if (ImGui::IsWindowAppearing())
+				{
+					ImGui::SetKeyboardFocusHere();
+				}
 				ImGui::InputTextWithHint(m_inputText.c_str(), m_hint.c_str(), &m_inputVal);
-
+				
 				if (ImGui::Button("OK", ImVec2(120, 0)))
 				{
 					m_visible = false;
@@ -782,7 +790,6 @@ namespace ToolKit
 					m_inputVal.clear();
 					ImGui::CloseCurrentPopup();
 				}
-				ImGui::SetItemDefaultFocus();
 				ImGui::SameLine();
 				if (ImGui::Button("Cancel", ImVec2(120, 0)))
 				{
@@ -795,9 +802,10 @@ namespace ToolKit
 			}
 		}
 
-		YesNoWindow::YesNoWindow(const String& name)
+		YesNoWindow::YesNoWindow(const String& name, const String& msg)
 		{
 			m_name = name;
+			m_msg = msg;
 		}
 
 		void YesNoWindow::Show()
@@ -810,6 +818,11 @@ namespace ToolKit
 			ImGui::OpenPopup(m_name.c_str());
 			if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
 			{
+				if (!m_msg.empty())
+				{
+					ImGui::Text(m_msg.c_str());
+				}
+
 				if (ImGui::Button("Yes", ImVec2(120, 0)))
 				{
 					m_visible = false;
