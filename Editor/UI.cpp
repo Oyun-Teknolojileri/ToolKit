@@ -306,7 +306,7 @@ namespace ToolKit
 			if (ImGui::MenuItem("NewScene"))
 			{
 				m_strInputWindow.m_name = "NewScene##NwScn1";
-				m_strInputWindow.m_inputVal = "New Scene";
+				m_strInputWindow.m_inputVal = "NewScene";
 				m_strInputWindow.m_inputText = "Name";
 				m_strInputWindow.m_hint = "Scene name";
 				m_strInputWindow.SetVisibility(true);
@@ -318,9 +318,27 @@ namespace ToolKit
 
 			if (ImGui::MenuItem("Save", "Ctrl+S"))
 			{
-				XmlDocument doc;
-				g_app->m_scene.Serialize(&doc, nullptr);
-				g_app->GetAssetBrowser()->UpdateContent();
+				String sceneName = g_app->m_scene.m_name + SCENE;
+				if (g_app->m_scene.m_newScene && CheckFile(ScenePath(sceneName)))
+				{
+					String msg = "Scene " + sceneName + " exist on the disk.\nOverride the existing scene ?";
+					YesNoWindow* overrideScene = new YesNoWindow("Override existing file##OvrdScn", msg);
+					overrideScene->m_yesCallback = []()
+					{
+						g_app->OnSaveScene();
+					};
+
+					overrideScene->m_noCallback = []()
+					{
+						g_app->GetConsole()->AddLog("Scene has not been saved.\nA scene with the same name exist. Use File->SaveAs.", ConsoleWindow::LogType::Error);
+					};
+
+					UI::m_volatileWindows.push_back(overrideScene);
+				}
+				else
+				{
+					g_app->OnSaveScene();
+				}
 			}
 
 			if (ImGui::MenuItem("SaveAs"))
@@ -331,9 +349,8 @@ namespace ToolKit
 				m_strInputWindow.SetVisibility(true);
 				m_strInputWindow.m_taskFn = [](const String& val)
 				{
-					XmlDocument doc;
 					g_app->m_scene.m_name = val;
-					g_app->m_scene.Serialize(&doc, nullptr);
+					g_app->OnSaveScene();
 				};
 			}
 

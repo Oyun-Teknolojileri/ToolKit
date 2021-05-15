@@ -48,6 +48,7 @@ namespace ToolKit
 
 		public:
 			String m_name;
+			bool m_newScene; // Indicates if this is created via new scene. That is not saved on the disk.
 
 		private:
 			EntityRawPtrArray m_entitites;

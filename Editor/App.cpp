@@ -320,45 +320,18 @@ namespace ToolKit
 
 		void App::OnNewScene(const String& name)
 		{
-			FolderWindow* assetBrowser = g_app->GetAssetBrowser();
-			if (assetBrowser)
-			{
-				String scnPth = ScenePath("");
-				scnPth = scnPth.substr(0, scnPth.size() - 1);
-				int sceneIndx = assetBrowser->Exist(scnPth);
-				if (sceneIndx > -1)
-				{
-					FolderView& sceneFolder = assetBrowser->GetView(sceneIndx);
-					if (sceneFolder.Exist(name) != -1)
-					{
-						YesNoWindow* overrideScene = new YesNoWindow("Override the existing scene ?##OvrdScn", "A scene with the same name exist, saving the new scene will override the old.\nDo you want to proceed ?");
-						overrideScene->m_yesCallback = [&name]()
-						{
-							g_app->Destroy();
-							g_app->Init();
-							g_app->m_scene.m_name = name;
-						};
-
-						overrideScene->m_noCallback = []()
-						{
-							g_app->GetConsole()->AddLog("New scene has not been created.", ConsoleWindow::LogType::Error);
-						};
-
-						UI::m_volatileWindows.push_back(overrideScene);
-					}
-					else
-					{
-						g_app->Destroy();
-						g_app->Init();
-						g_app->m_scene.m_name = name;
-					}
-				}
-			}
+			Destroy();
+			Init();
+			m_scene.m_name = name;
+			m_scene.m_newScene = true;
 		}
 
 		void App::OnSaveScene()
 		{
-
+			XmlDocument doc;
+			m_scene.Serialize(&doc, nullptr);
+			m_scene.m_newScene = false;
+			GetAssetBrowser()->UpdateContent();
 		}
 
 		void App::OnQuit()

@@ -9,6 +9,7 @@ namespace ToolKit
 		Scene::Scene()
 		{
 			m_name = "NewScene";
+			m_newScene = true;
 		}
 
 		Scene::~Scene()

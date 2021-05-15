@@ -51,7 +51,7 @@ namespace ToolKit
 			void UpdateContent();
 			void AddEntry(const FolderView& view);
 			FolderView& GetView(int indx);
-			int Exist(const String& path);
+			int Exist(const String& folder);
 
 		private:
 			std::vector<FolderView> m_entiries;

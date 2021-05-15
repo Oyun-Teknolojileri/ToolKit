@@ -338,11 +338,11 @@ namespace ToolKit
 			return m_entiries[indx];
 		}
 
-		int FolderWindow::Exist(const String& path)
+		int FolderWindow::Exist(const String& folder)
 		{
 			for (size_t i = 0; i < m_entiries.size(); i++)
 			{
-				if (m_entiries[i].GetPath() == path)
+				if (m_entiries[i].GetPath() == folder)
 				{
 					return (int)i;
 				}
