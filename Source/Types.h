@@ -29,6 +29,7 @@ namespace ToolKit
 	typedef const int SignalId;
 	typedef std::string String;
 	typedef std::vector<String> StringArray;
+	typedef glm::ivec2 IVec2;
 	typedef glm::vec2 Vec2;
 	typedef std::vector<Vec2> Vec2Array;
 	typedef glm::vec3 Vec3;

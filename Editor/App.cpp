@@ -328,10 +328,35 @@ namespace ToolKit
 
 		void App::OnSaveScene()
 		{
-			XmlDocument doc;
-			m_scene.Serialize(&doc, nullptr);
-			m_scene.m_newScene = false;
-			GetAssetBrowser()->UpdateContent();
+			auto saveFn = []() -> void
+			{
+				XmlDocument doc;
+				g_app->m_scene.Serialize(&doc, nullptr);
+				g_app->m_scene.m_newScene = false;
+				g_app->GetAssetBrowser()->UpdateContent();
+			};
+
+			String sceneName = m_scene.m_name + SCENE;
+			if (m_scene.m_newScene && CheckFile(ScenePath(sceneName)))
+			{
+				String msg = "Scene " + sceneName + " exist on the disk.\nOverride the existing scene ?";
+				YesNoWindow* overrideScene = new YesNoWindow("Override existing file##OvrdScn", msg);
+				overrideScene->m_yesCallback = [&saveFn]()
+				{
+					saveFn();
+				};
+
+				overrideScene->m_noCallback = []()
+				{
+					g_app->GetConsole()->AddLog("Scene has not been saved.\nA scene with the same name exist. Use File->SaveAs.", ConsoleWindow::LogType::Error);
+				};
+
+				UI::m_volatileWindows.push_back(overrideScene);
+			}
+			else
+			{
+				saveFn();
+			}
 		}
 
 		void App::OnQuit()

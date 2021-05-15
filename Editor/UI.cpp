@@ -318,27 +318,7 @@ namespace ToolKit
 
 			if (ImGui::MenuItem("Save", "Ctrl+S"))
 			{
-				String sceneName = g_app->m_scene.m_name + SCENE;
-				if (g_app->m_scene.m_newScene && CheckFile(ScenePath(sceneName)))
-				{
-					String msg = "Scene " + sceneName + " exist on the disk.\nOverride the existing scene ?";
-					YesNoWindow* overrideScene = new YesNoWindow("Override existing file##OvrdScn", msg);
-					overrideScene->m_yesCallback = []()
-					{
-						g_app->OnSaveScene();
-					};
-
-					overrideScene->m_noCallback = []()
-					{
-						g_app->GetConsole()->AddLog("Scene has not been saved.\nA scene with the same name exist. Use File->SaveAs.", ConsoleWindow::LogType::Error);
-					};
-
-					UI::m_volatileWindows.push_back(overrideScene);
-				}
-				else
-				{
-					g_app->OnSaveScene();
-				}
+				g_app->OnSaveScene();
 			}
 
 			if (ImGui::MenuItem("SaveAs"))
