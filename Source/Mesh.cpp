@@ -38,7 +38,11 @@ namespace ToolKit
 
 		InitVertices(flushClientSideArray);
 		InitIndices(flushClientSideArray);
-		ConstructFaces();
+		if (!flushClientSideArray)
+		{
+			ConstructFaces();
+		}
+		
 		m_material->Init();
 
 		for (MeshPtr mesh : m_subMeshes)
@@ -141,6 +145,7 @@ namespace ToolKit
 		cpy->m_vertexCount = m_vertexCount;
 		cpy->m_clientSideIndices = m_clientSideIndices;
 		cpy->m_indexCount = m_indexCount;
+		cpy->m_faces = m_faces;
 
 		// Copy video memory.
 		if (m_vertexCount > 0)
