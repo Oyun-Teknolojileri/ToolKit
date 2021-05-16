@@ -94,6 +94,7 @@ namespace ToolKit
 	Cube::Cube(const Params& params)
 		: m_params(params)
 	{
+		Generate();
 	}
 
 	Cube* Cube::GetCopy() const
@@ -278,6 +279,7 @@ namespace ToolKit
 		m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
 		m_mesh->CalculateAABoundingBox();
+		m_mesh->ConstructFaces();
 	}
 
 	Quad::Quad(bool genDef)
@@ -338,6 +340,7 @@ namespace ToolKit
 		m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
 		m_mesh->CalculateAABoundingBox();
+		m_mesh->ConstructFaces();
 	}
 
 	Sphere::Sphere(bool genDef)
@@ -429,6 +432,7 @@ namespace ToolKit
 		m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
 		m_mesh->CalculateAABoundingBox();
+		m_mesh->ConstructFaces();
 	}
 
 	void Sphere::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -553,6 +557,7 @@ namespace ToolKit
 		m_mesh->m_material = GetMaterialManager()->Create(MaterialPath("default.material"));
 
 		m_mesh->CalculateAABoundingBox();
+		m_mesh->ConstructFaces();
 	}
 
 	Cone* Cone::GetCopy() const
@@ -664,6 +669,7 @@ namespace ToolKit
 		m_mesh->m_material = newMaterial;
 
 		m_mesh->CalculateAABoundingBox();
+		m_mesh->ConstructFaces();
 	}
 
 	LineBatch::LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)

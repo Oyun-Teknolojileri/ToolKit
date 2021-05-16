@@ -16,6 +16,7 @@ namespace ToolKit
 		m_node = new Node();
 		m_node->m_entity = this;
 		m_id = m_lastId++;
+		m_name = "Entity_" + std::to_string(m_id);
 	}
 
 	Entity::~Entity()

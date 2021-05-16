@@ -161,15 +161,18 @@ namespace ToolKit
 				Vec3 axes[3];
 				ExtractAxes(m_gizmo->m_normalVectors, axes[0], axes[1], axes[2]);
 
-				for (int i = 0; i < 3; i++)
+				if (m_type != TransformType::Rotate)
 				{
-					if (safetyMeasure < glm::abs(glm::dot(dir, axes[i])))
+					for (int i = 0; i < 3; i++)
 					{
-						m_gizmo->Lock(axisLabes[i]);
-					}
-					else
-					{
-						m_gizmo->UnLock(axisLabes[i]);
+						if (safetyMeasure < glm::abs(glm::dot(dir, axes[i])))
+						{
+							m_gizmo->Lock(axisLabes[i]);
+						}
+						else
+						{
+							m_gizmo->UnLock(axisLabes[i]);
+						}
 					}
 				}
 
@@ -391,10 +394,16 @@ namespace ToolKit
 		{
 			StateTransformBase::TransitionIn(prevState);
 			
-			EntityRawPtrArray entities;
-			GetEntitiesToTransform(entities);
+			EntityRawPtrArray entities, selecteds;
+			g_app->m_scene.GetSelectedEntities(selecteds);
+			GetRootEntities(selecteds, entities);
 			if (!entities.empty())
 			{
+				if (entities.size() > 1)
+				{
+					ActionManager::GetInstance()->BeginActionGroup();
+				}
+				
 				for (Entity* ntt : entities)
 				{
 					ActionManager::GetInstance()->AddAction(new TransformAction(ntt));
@@ -512,6 +521,12 @@ namespace ToolKit
 							}
 						}
 
+						if (glm::isnan(deltaAccum))
+						{
+							assert(false && "Nan is not expected.");
+							deltaAccum = 0.0f;
+						}
+
 						Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
 						m_delta = moveAxis * delta;
 					}
@@ -528,12 +543,31 @@ namespace ToolKit
 		void StateTransformTo::Transform(const Vec3& delta)
 		{
 			EntityRawPtrArray roots;
-			GetEntitiesToTransform(roots);
+			g_app->m_scene.GetSelectedEntities(roots);
+			
+			Entity* e = g_app->m_scene.GetCurrentSelection();
+			NodePtrArray parents;
+
+			// Make all selecteds child of current & store their original parents.
+			//if (roots.size() > 1)
+			{
+				for (Entity* ntt : roots)
+				{
+					parents.push_back(ntt->m_node->m_parent);
+					ntt->m_node->OrphanSelf(true);
+				}
+
+				for (Entity* ntt : roots)
+				{
+					if (ntt != e)
+					{
+						e->m_node->AddChild(ntt->m_node, true);
+					}
+				}
+			}
 
 			TransformationSpace space = g_app->m_transformOrientation;
-			for (Entity* e : roots)
-			{
-				switch (m_type)
+			switch (m_type)
 				{
 				case TransformType::Translate:
 				{
@@ -563,7 +597,7 @@ namespace ToolKit
 					float angle = glm::length(delta);
 					if (glm::equal(angle, 0.0f))
 					{
-						return;
+						break;
 					}
 
 					Vec3 axis = delta / angle;
@@ -572,52 +606,30 @@ namespace ToolKit
 				}
 				break;
 				case TransformType::Scale:
-					e->m_node->Scale(Vec3(1.0f) + delta, space);
+				{
+					if (space == TransformationSpace::TS_LOCAL)
+					{
+						Vec3 scale = e->m_node->GetScale(TransformationSpace::TS_WORLD);
+						e->m_node->SetScale(scale + delta, TransformationSpace::TS_LOCAL);
+					}
+					else
+					{
+						int indx = (int)m_gizmo->GetGrabbedAxis();
+						e->m_node->Scale(Vec3(1.0f + delta[indx]), space);
+					}
+				}
 					break;
 				}
-			}
-		}
 
-		void StateTransformTo::RootsOnly(EntityRawPtrArray& selecteds, EntityRawPtrArray& roots, Entity* child)
-		{
-			auto AddUnique = [&roots](Entity* e)
+			// Set original parents back.
+			for (int i = 0; i < (int)roots.size(); i++)
 			{
-				assert(e != nullptr);
-
-				bool unique = std::find(roots.begin(), roots.end(), e) == roots.end();
-				if (unique)
+				roots[i]->m_node->OrphanSelf(true);
+				Node* parent = parents[i];
+				if (parent != nullptr)
 				{
-					roots.push_back(e);
+					parent->AddChild(roots[i]->m_node, true);
 				}
-			};
-
-			Node* parent = child->m_node->m_parent;
-			if (parent != nullptr)
-			{
-				Entity* parentEntity = parent->m_entity;
-				if (std::find(selecteds.begin(), selecteds.end(), parentEntity) != selecteds.end())
-				{
-					RootsOnly(selecteds, roots, parentEntity);
-				}
-				else
-				{
-					AddUnique(child);
-				}
-			}
-			else
-			{
-				AddUnique(child);
-			}
-		}
-
-		void StateTransformTo::GetEntitiesToTransform(EntityRawPtrArray& ntties)
-		{
-			EntityRawPtrArray selecteds;
-			g_app->m_scene.GetSelectedEntities(selecteds);
-
-			for (Entity* e : selecteds)
-			{
-				RootsOnly(selecteds, ntties, e);
 			}
 		}
 

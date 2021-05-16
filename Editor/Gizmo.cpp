@@ -224,13 +224,14 @@ namespace ToolKit
 			rayInObj.direction = its * Vec4(ray.direction, 0.0f);
 
 			// Check for line.
+			float scaleUp = 1.5f; // Extra grab space than solids holds.
 			BoundingBox hitBox;
-			hitBox.min.x = -0.05f;
+			hitBox.min.x = -0.05f * scaleUp;
 			hitBox.min.y = m_params.toeTip.x;
-			hitBox.min.z = -0.05f;
-			hitBox.max.x = 0.05f;
+			hitBox.min.z = -0.05f * scaleUp;
+			hitBox.max.x = 0.05f * scaleUp;
 			hitBox.max.y = m_params.toeTip.y;
-			hitBox.max.z = 0.05f;
+			hitBox.max.z = 0.05f * scaleUp;
 
 			if (RayBoxIntersection(rayInObj, hitBox, t))
 			{
@@ -238,12 +239,12 @@ namespace ToolKit
 			}
 
 			// Check for solid.
-			hitBox.min.x = -m_params.solidDim.x * 0.5f;
+			hitBox.min.x = -m_params.solidDim.x * 0.5f * scaleUp;
 			hitBox.min.y = m_params.toeTip.y;
-			hitBox.min.z = -m_params.solidDim.z * 0.5f;
-			hitBox.max.x = m_params.solidDim.x * 0.5f;
-			hitBox.max.y = m_params.toeTip.y + m_params.solidDim.y;
-			hitBox.max.z = m_params.solidDim.z * 0.5f;
+			hitBox.min.z = -m_params.solidDim.z * 0.5f * scaleUp;
+			hitBox.max.x = m_params.solidDim.x * 0.5f * scaleUp;
+			hitBox.max.y = m_params.toeTip.y + m_params.solidDim.y * scaleUp;
+			hitBox.max.z = m_params.solidDim.z * 0.5f * scaleUp;
 
 			if (RayBoxIntersection(rayInObj, hitBox, t))
 			{

@@ -158,6 +158,7 @@ namespace ToolKit
 		void ActionManager::Init()
 		{
 			m_initiated = true;
+			m_actionGrouping = false;
 		}
 
 		void ActionManager::UnInit()
@@ -199,7 +200,7 @@ namespace ToolKit
 			}
 
 			m_actionStack.push_back(action);
-			if (m_actionStack.size() > g_maxUndoCount)
+			if (m_actionStack.size() > g_maxUndoCount && !m_actionGrouping)
 			{
 				Action* a = m_actionStack.front();
 				SafeDel(a);
@@ -210,9 +211,14 @@ namespace ToolKit
 		}
 
 		void ActionManager::GroupLastActions(int n)
-		{
-			assert((int)m_actionStack.size() >= n);
+		{			
+			// Sanity Checks.
 			assert(m_stackPointer == (int)m_actionStack.size() - 1 && "Call grouping right after add.");
+			if (n >= (int)m_actionStack.size() && !m_actionGrouping)
+			{
+				assert((int)m_actionStack.size() >= n && "We can't stack more than we have. Try using BeginActionGroup() to pass a series of action as a group");
+				return;
+			}
 
 			int begIndx = (int)m_actionStack.size() - n;
 			Action* root = m_actionStack[begIndx++];
@@ -224,6 +230,12 @@ namespace ToolKit
 
 			m_actionStack.erase(m_actionStack.begin() + begIndx, m_actionStack.end());
 			m_stackPointer = (int)m_actionStack.size() - 1;
+			m_actionGrouping = false;
+		}
+
+		void ActionManager::BeginActionGroup()
+		{
+			m_actionGrouping = true;
 		}
 
 		void ActionManager::Undo()
@@ -736,6 +748,11 @@ namespace ToolKit
 			g_app->m_scene.GetSelectedEntities(deleteList);
 			if (!deleteList.empty())
 			{
+				if (deleteList.size() > 1)
+				{
+					ActionManager::GetInstance()->BeginActionGroup();
+				}
+
 				for (Entity* e : deleteList)
 				{
 					ActionManager::GetInstance()->AddAction(new DeleteAction(e));
@@ -756,6 +773,11 @@ namespace ToolKit
 			if (!selecteds.empty())
 			{
 				g_app->m_scene.ClearSelection();
+				if (selecteds.size() > 1)
+				{
+					ActionManager::GetInstance()->BeginActionGroup();
+				}
+
 				for (Entity* e : selecteds)
 				{
 					Entity* duplicate = e->GetCopy();

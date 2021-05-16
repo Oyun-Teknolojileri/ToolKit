@@ -3,6 +3,9 @@
 #include "Mesh.h"
 #include "DebugNew.h"
 
+#include <mutex>
+#include <execution>
+
 namespace ToolKit
 {
 
@@ -300,40 +303,30 @@ namespace ToolKit
 		mesh->GetAllMeshes(meshes);
 		float closestPickedDistance = FLT_MAX;
 		bool hit = false;
+		std::mutex updateHit;
 
 		for (Mesh* const mesh : meshes)
 		{
-			Vec3 triangle[3];
-			size_t triCnt = mesh->m_clientSideIndices.size() / 3;
-			for (size_t i = 0; i < triCnt; i++)
-			{
-				if (mesh->m_clientSideIndices.empty())
+			std::for_each
+			(
+				std::execution::par_unseq,
+				mesh->m_faces.begin(),
+				mesh->m_faces.end(),
+				[&updateHit, &t, &closestPickedDistance, &ray, &hit](Face& face)
 				{
-					for (size_t j = 0; j < 3; j++)
+					float dist = FLT_MAX;
+					if (RayTriangleIntersection(ray, face.vertices[0]->pos, face.vertices[1]->pos, face.vertices[2]->pos, dist))
 					{
-						triangle[j] = mesh->m_clientSideVertices[i * 3 + j].pos;
+						std::lock_guard<std::mutex> guard(updateHit);
+						if (dist < closestPickedDistance && t >= 0.0f)
+						{
+							t = dist;
+							closestPickedDistance = dist;
+							hit = true;
+						}
 					}
 				}
-				else
-				{
-					for (size_t j = 0; j < 3; j++)
-					{
-						size_t indx = mesh->m_clientSideIndices[i * 3 + j];
-						triangle[j] = mesh->m_clientSideVertices[indx].pos;
-					}
-				}
-
-				float dist = FLT_MAX;
-				if (RayTriangleIntersection(ray, triangle[0], triangle[1], triangle[2], dist))
-				{
-					if (dist < closestPickedDistance && t > 0.0f)
-					{
-						t = dist;
-						closestPickedDistance = dist;
-						hit = true;
-					}
-				}
-			}
+			);
 		}
 
 		return hit;

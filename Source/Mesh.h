@@ -21,6 +21,12 @@ namespace ToolKit
     Vec3 btan;
   };
 
+  class Face
+  {
+  public:
+    Vertex* vertices[3];
+  };
+
   class Mesh : public Resource
   {
   public:
@@ -37,6 +43,7 @@ namespace ToolKit
 		void CalculateAABoundingBox();
 		void GetAllMeshes(MeshRawPtrArray& meshes);
     void Scale(const Vec3& scale);
+    void ConstructFaces();
 
   protected:
     virtual void InitVertices(bool flush);
@@ -53,6 +60,7 @@ namespace ToolKit
     MaterialPtr m_material;
     MeshPtrArray m_subMeshes;
 		BoundingBox m_aabb;
+    FaceArray m_faces;
 
   private:
     MeshRawPtrArray m_allMeshes;

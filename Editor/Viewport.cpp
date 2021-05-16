@@ -13,6 +13,7 @@
 #include "FolderWindow.h"
 #include "ConsoleWindow.h"
 #include "Gizmo.h"
+#include "Mod.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -222,6 +223,114 @@ namespace ToolKit
 		bool Viewport::IsViewportQueriable()
 		{
 			return m_mouseOverContentArea && m_mouseHover && m_active && m_visible && m_relMouseModBegin;
+		}
+
+		void Viewport::DispatchSignals() const
+		{
+			if (CanDispatchSignals())
+			{
+				return;
+			}
+
+			ImGuiIO& io = ImGui::GetIO();
+			if (io.MouseClicked[ImGuiMouseButton_Left])
+			{
+				ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnDownSgnl);
+			}
+
+			if (io.MouseReleased[ImGuiMouseButton_Left])
+			{
+				ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnUpSgnl);
+			}
+
+			if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+			{
+				ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnDragSgnl);
+			}
+
+			if (io.KeysDown[io.KeyMap[ImGuiKey_Delete]])
+			{
+				if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Delete]] == 0.0f)
+				{
+					ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
+				}
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_D] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+			{
+				if (io.KeysDownDuration[SDL_SCANCODE_D] == 0.0f)
+				{
+					ModManager::GetInstance()->DispatchSignal(BaseMod::m_duplicate);
+				}
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_B] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+			{
+				if (io.KeysDownDuration[SDL_SCANCODE_B] == 0.0f)
+				{
+					ModManager::GetInstance()->SetMod(true, ModId::Select);
+				}
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_S] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+			{
+				if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
+				{
+					ModManager::GetInstance()->SetMod(true, ModId::Scale);
+				}
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_R] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+			{
+				if (io.KeysDownDuration[SDL_SCANCODE_R] == 0.0f)
+				{
+					ModManager::GetInstance()->SetMod(true, ModId::Rotate);
+				}
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_G] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+			{
+				if (io.KeysDownDuration[SDL_SCANCODE_G] == 0.0f)
+				{
+					ModManager::GetInstance()->SetMod(true, ModId::Move);
+				}
+			}
+
+			if (io.KeysDown[SDL_SCANCODE_1] && io.KeyCtrl)
+			{
+				if (io.KeysDownDuration[SDL_SCANCODE_1] == 0.0f)
+				{
+					g_app->m_snapToGrid = !g_app->m_snapToGrid;
+				}
+			}
+
+			if (io.KeyCtrl && io.KeysDown[SDL_SCANCODE_S])
+			{
+				if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
+				{
+					XmlDocument doc;
+					g_app->m_scene.Serialize(&doc, nullptr);
+				}
+			}
+
+			// Undo - Redo.
+			if (io.KeysDown[io.KeyMap[ImGuiKey_Z]])
+			{
+				if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Z]] == 0.0f)
+				{
+					if (io.KeyCtrl)
+					{
+						if (io.KeyShift)
+						{
+							ActionManager::GetInstance()->Redo();
+						}
+						else
+						{
+							ActionManager::GetInstance()->Undo();
+						}
+					}
+				}
+			}
 		}
 
 		Ray Viewport::RayFromMousePosition()

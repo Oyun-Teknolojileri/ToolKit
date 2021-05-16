@@ -29,6 +29,7 @@ namespace ToolKit
 	typedef const int SignalId;
 	typedef std::string String;
 	typedef std::vector<String> StringArray;
+	typedef glm::ivec2 IVec2;
 	typedef glm::vec2 Vec2;
 	typedef std::vector<Vec2> Vec2Array;
 	typedef glm::vec3 Vec3;
@@ -54,6 +55,7 @@ namespace ToolKit
 	typedef std::vector<EntityId> EntityIdArray;
 	typedef std::vector<class Node*> NodePtrArray;
 	typedef std::vector<class Vertex> VertexArray;
+	typedef std::vector<class Face> FaceArray;
 	typedef rapidxml::xml_document<> XmlDocument;
 	typedef rapidxml::xml_node<> XmlNode;
 	typedef rapidxml::xml_attribute<> XmlAttribute;
@@ -72,7 +74,8 @@ namespace ToolKit
 	static const String glTF(".glb");
 	static const String OBJ(".obj");
 	static const String PNG(".png");
-	static const String JPEG(".jpg");
+	static const String JPG(".jpg");
+	static const String JPEG(".jpeg");
 	static const String TGA(".tga");
 	static const String BMP(".bmp");
 	static const String PSD(".psd");

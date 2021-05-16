@@ -14,6 +14,7 @@
 #include "ConsoleWindow.h"
 #include "FolderWindow.h"
 #include "OverlayUI.h"
+#include "OutlinerWindow.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -305,6 +306,7 @@ namespace ToolKit
 			if (ImGui::MenuItem("NewScene"))
 			{
 				m_strInputWindow.m_name = "NewScene##NwScn1";
+				m_strInputWindow.m_inputVal = "NewScene";
 				m_strInputWindow.m_inputText = "Name";
 				m_strInputWindow.m_hint = "Scene name";
 				m_strInputWindow.SetVisibility(true);
@@ -314,10 +316,9 @@ namespace ToolKit
 				};
 			}
 
-			if (ImGui::MenuItem("Save"))
+			if (ImGui::MenuItem("Save", "Ctrl+S"))
 			{
-				XmlDocument doc;
-				g_app->m_scene.Serialize(&doc, nullptr);
+				g_app->OnSaveScene();
 			}
 
 			if (ImGui::MenuItem("SaveAs"))
@@ -328,9 +329,8 @@ namespace ToolKit
 				m_strInputWindow.SetVisibility(true);
 				m_strInputWindow.m_taskFn = [](const String& val)
 				{
-					XmlDocument doc;
 					g_app->m_scene.m_name = val;
-					g_app->m_scene.Serialize(&doc, nullptr);
+					g_app->OnSaveScene();
 				};
 			}
 
@@ -388,6 +388,11 @@ namespace ToolKit
 				g_app->GetAssetBrowser()->SetVisibility(true);
 			}
 
+			if (ImGui::MenuItem("Outliner Window", "Alt+O", nullptr, !g_app->GetOutliner()->IsVisible()))
+			{
+				g_app->GetOutliner()->SetVisibility(true);
+			}
+
 			ImGui::Separator();
 
 			if (!m_windowMenushowMetrics)
@@ -434,8 +439,8 @@ namespace ToolKit
 				}
 				ImGui::Separator();
 
-				StringArray fails;
-				if (!ImportData.files.empty())
+				static StringArray fails;
+				if (!ImportData.files.empty() && fails.empty())
 				{
 					for (int i = (int)ImportData.files.size() - 1; i >= 0; i--)
 					{
@@ -479,6 +484,7 @@ namespace ToolKit
 							return;
 						}
 					}
+					fails.clear();
 					ImportData.files.clear();
 					ImportData.showImportWindow = false;
 					ImGui::CloseCurrentPopup(); 
@@ -487,6 +493,7 @@ namespace ToolKit
 				ImGui::SameLine();
 				if (ImGui::Button("Cancel", ImVec2(120, 0))) 
 				{ 
+					fails.clear();
 					ImportData.files.clear();
 					ImportData.showImportWindow = false;
 					ImGui::CloseCurrentPopup(); 
@@ -597,110 +604,6 @@ namespace ToolKit
 			}
 		}
 
-		void UI::DispatchSignals(Window* wnd)
-		{
-			if (wnd == nullptr)
-			{
-				return;
-			}
-
-			if (!wnd->CanDispatchEvents())
-			{
-				return;
-			}
-
-			ImGuiIO& io = ImGui::GetIO();
-			if (io.MouseClicked[ImGuiMouseButton_Left])
-			{
-				ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnDownSgnl);
-			}
-
-			if (io.MouseReleased[ImGuiMouseButton_Left])
-			{
-				ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnUpSgnl);
-			}
-
-			if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-			{
-				ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnDragSgnl);
-			}
-
-			if (io.KeysDown[io.KeyMap[ImGuiKey_Delete]])
-			{
-				if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Delete]] == 0.0f)
-				{
-					ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
-				}
-			}
-
-			if (io.KeysDown[SDL_SCANCODE_D] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
-			{
-				if (io.KeysDownDuration[SDL_SCANCODE_D] == 0.0f)
-				{
-					ModManager::GetInstance()->DispatchSignal(BaseMod::m_duplicate);
-				}
-			}
-
-			if (io.KeysDown[SDL_SCANCODE_B] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
-			{
-				if (io.KeysDownDuration[SDL_SCANCODE_B] == 0.0f)
-				{
-					ModManager::GetInstance()->SetMod(true, ModId::Select);
-				}
-			}
-
-			if (io.KeysDown[SDL_SCANCODE_S] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
-			{
-				if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
-				{
-					ModManager::GetInstance()->SetMod(true, ModId::Scale);
-				}
-			}
-
-			if (io.KeysDown[SDL_SCANCODE_R] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
-			{
-				if (io.KeysDownDuration[SDL_SCANCODE_R] == 0.0f)
-				{
-					ModManager::GetInstance()->SetMod(true, ModId::Rotate);
-				}
-			}
-
-			if (io.KeysDown[SDL_SCANCODE_G] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
-			{
-				if (io.KeysDownDuration[SDL_SCANCODE_G] == 0.0f)
-				{
-					ModManager::GetInstance()->SetMod(true, ModId::Move);
-				}
-			}
-
-			if (io.KeysDown[SDL_SCANCODE_1] && io.KeyCtrl)
-			{
-				if (io.KeysDownDuration[SDL_SCANCODE_1] == 0.0f)
-				{
-					g_app->m_snapToGrid = !g_app->m_snapToGrid;
-				}
-			}
-
-			// Undo - Redo.
-			if (io.KeysDown[io.KeyMap[ImGuiKey_Z]])
-			{
-				if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Z]] == 0.0f)
-				{
-					if (io.KeyCtrl)
-					{
-						if (io.KeyShift)
-						{
-							ActionManager::GetInstance()->Redo();
-						}
-						else
-						{
-							ActionManager::GetInstance()->Undo();
-						}
-					}
-				}
-			}
-		}
-
 		void UI::ShowNewSceneWindow()
 		{
 			if (!m_showNewSceneWindow)
@@ -712,7 +615,9 @@ namespace ToolKit
 			if (ImGui::BeginPopupModal("NewScene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				static String sceneName;
+				
 				ImGui::InputTextWithHint("Name", "NewScene", &sceneName);
+				ImGui::SetItemDefaultFocus();
 
 				if (ImGui::Button("OK", ImVec2(120, 0)))
 				{
@@ -720,7 +625,7 @@ namespace ToolKit
 					m_showNewSceneWindow = false;
 					ImGui::CloseCurrentPopup();
 				}
-				ImGui::SetItemDefaultFocus();
+				//ImGui::SetItemDefaultFocus();
 				ImGui::SameLine();
 				if (ImGui::Button("Cancel", ImVec2(120, 0)))
 				{
@@ -812,9 +717,13 @@ namespace ToolKit
 			return m_mouseHover;
 		}
 
-		bool Window::CanDispatchEvents() const
+		bool Window::CanDispatchSignals() const
 		{
 			return m_active & m_visible & m_mouseHover;
+		}
+
+		void Window::DispatchSignals() const
+		{
 		}
 
 		void Window::HandleStates()
@@ -865,8 +774,12 @@ namespace ToolKit
 			ImGui::OpenPopup(m_name.c_str());
 			if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
 			{
+				if (ImGui::IsWindowAppearing())
+				{
+					ImGui::SetKeyboardFocusHere();
+				}
 				ImGui::InputTextWithHint(m_inputText.c_str(), m_hint.c_str(), &m_inputVal);
-
+				
 				if (ImGui::Button("OK", ImVec2(120, 0)))
 				{
 					m_visible = false;
@@ -874,7 +787,6 @@ namespace ToolKit
 					m_inputVal.clear();
 					ImGui::CloseCurrentPopup();
 				}
-				ImGui::SetItemDefaultFocus();
 				ImGui::SameLine();
 				if (ImGui::Button("Cancel", ImVec2(120, 0)))
 				{
@@ -887,9 +799,10 @@ namespace ToolKit
 			}
 		}
 
-		YesNoWindow::YesNoWindow(const String& name)
+		YesNoWindow::YesNoWindow(const String& name, const String& msg)
 		{
 			m_name = name;
+			m_msg = msg;
 		}
 
 		void YesNoWindow::Show()
@@ -902,6 +815,11 @@ namespace ToolKit
 			ImGui::OpenPopup(m_name.c_str());
 			if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
 			{
+				if (!m_msg.empty())
+				{
+					ImGui::Text(m_msg.c_str());
+				}
+
 				if (ImGui::Button("Yes", ImVec2(120, 0)))
 				{
 					m_visible = false;

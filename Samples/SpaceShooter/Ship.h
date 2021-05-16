@@ -9,12 +9,14 @@
 #include "glm\gtc\matrix_transform.hpp"
 #include "DebugNew.h"
 
-class Ship : public ToolKit::Drawable
+using namespace ToolKit;
+
+class Ship : public Drawable
 {
 public:
   Ship()
   {
-    m_mesh->m_file = ToolKit::MeshPath("alien-mothership.mesh");
+    m_mesh->m_file = MeshPath("alien-mothership.mesh");
     m_mesh->Load();
     m_mesh->Init(false);
 
@@ -33,14 +35,14 @@ public:
     m_fireLocs.push_back(&m_rightFireLoc);
   }
 
-  bool CheckShipSphereCollision(glm::vec3 pos, float radius)
+  bool CheckShipSphereCollision(Vec3 pos, float radius)
   {
-    glm::mat4 transform = m_node->GetTransform(ToolKit::TransformationSpace::TS_WORLD);
+    Mat4 transform = m_node->GetTransform(TransformationSpace::TS_WORLD);
     for (int i = 0; i < (int)m_mesh->m_clientSideVertices.size(); i++)
     {
-      glm::vec3 vertex = m_mesh->m_clientSideVertices[i].pos;
+      Vec3 vertex = m_mesh->m_clientSideVertices[i].pos;
       vertex = (transform * glm::vec4(vertex, 1.0f));
-      if (ToolKit::SpherePointIntersection(pos, radius, vertex))
+      if (SpherePointIntersection(pos, radius, vertex))
         return true;
     }
 
@@ -49,9 +51,9 @@ public:
 
 public:
   int m_fireRate = 3;
-  std::vector<ToolKit::Node*> m_fireLocs;
-  ToolKit::Node m_leftFireLoc;
-  ToolKit::Node m_leftWing;
-  ToolKit::Node m_rightFireLoc;
-  ToolKit::Node m_rightWing;
+  NodePtrArray m_fireLocs;
+  Node m_leftFireLoc;
+  Node m_leftWing;
+  Node m_rightFireLoc;
+  Node m_rightWing;
 };

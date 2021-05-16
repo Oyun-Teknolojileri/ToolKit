@@ -18,6 +18,8 @@ namespace ToolKit
 
   Bone::~Bone()
   {
+    // Override orphaning.
+    m_node->m_parent = nullptr;
     SafeDel(m_node);
   }
 

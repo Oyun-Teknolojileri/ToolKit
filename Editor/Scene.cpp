@@ -9,6 +9,7 @@ namespace ToolKit
 		Scene::Scene()
 		{
 			m_name = "NewScene";
+			m_newScene = true;
 		}
 
 		Scene::~Scene()
@@ -48,7 +49,12 @@ namespace ToolKit
 					if (dw->m_mesh->m_clientSideVertices.size() == dw->m_mesh->m_vertexCount)
 					{
 						// Per polygon check if data exist.
-						hit = RayMeshIntersection(dw->m_mesh.get(), rayInObjectSpace, dist);
+						float meshDist = 0.0f;
+						hit = RayMeshIntersection(dw->m_mesh.get(), rayInObjectSpace, meshDist);
+						if (hit)
+						{
+							dist = meshDist;
+						}
 					}
 					if (hit)
 					{

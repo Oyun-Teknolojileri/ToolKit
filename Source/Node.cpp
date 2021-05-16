@@ -15,26 +15,10 @@ namespace ToolKit
 
 	Node::~Node()
 	{
-		if (m_parent != nullptr)
+		OrphanSelf(true);
+		for (Node* child : m_children)
 		{
-			for 
-				(
-				NodePtrArray::iterator itr = m_parent->m_children.begin();
-				itr != m_parent->m_children.end();
-				itr++
-				) 
-			{
-				if (*itr == this)
-				{
-					m_parent->m_children.erase(itr);
-					break;
-				}
-			}
-		}
-
-		for (Node* n : m_children)
-		{
-			n->m_parent = nullptr;
+			Orphan(child, true);
 		}
 	}
 
@@ -185,35 +169,50 @@ namespace ToolKit
 		return s;
 	}
 
-	void Node::AddChild(Node* child)
+	void Node::AddChild(Node* child, bool preserveTransform)
 	{
+		assert(child->m_id != m_id);
 		assert(child->m_parent == nullptr);
+		Mat4 ts = child->GetTransform(TransformationSpace::TS_WORLD);
+
 		m_children.push_back(child);
 		child->m_parent = this;
 		child->m_dirty = true;
 		child->SetChildrenDirty();
+
+		if (preserveTransform)
+		{
+			child->SetTransform(ts, TransformationSpace::TS_WORLD);
+		}
 	}
 
-	void Node::Orphan(Node* child)
+	void Node::Orphan(Node* child, bool preserveTransform)
 	{
 		for (size_t i = 0; i < m_children.size(); i++)
 		{
 			if (m_children[i] == child)
 			{
+				Mat4 ts = child->GetTransform(TransformationSpace::TS_WORLD);
+
 				child->m_parent = nullptr;
 				child->m_dirty = true;
 				child->SetChildrenDirty();
 				m_children.erase(m_children.begin() + i);
+
+				if (preserveTransform)
+				{
+					child->SetTransform(ts, TransformationSpace::TS_WORLD);
+				}
 				return;
 			}
 		}
 	}
 
-	void Node::OrphanSelf()
+	void Node::OrphanSelf(bool preserveTransform)
 	{
 		if (m_parent)
 		{
-			m_parent->Orphan(this);
+			m_parent->Orphan(this, preserveTransform);
 		}
 	}
 

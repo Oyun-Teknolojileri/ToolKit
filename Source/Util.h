@@ -35,6 +35,8 @@ namespace ToolKit
 	class LineBatch* CreateLineDebugObject(const Vec3Array& corners);
 	class LineBatch* GenerateBoundingVolumeGeometry(const BoundingBox& box, Mat4* transform = nullptr);
 	void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray);
+	bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
+	void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots);
 
 	template<typename T>
 	void pop_front(std::vector<T>& vec)

@@ -18,7 +18,8 @@ namespace ToolKit
 					Viewport,
 					Console,
 					InputPopup,
-					Browser
+					Browser,
+					Outliner
 				};
 
 			public:
@@ -32,7 +33,10 @@ namespace ToolKit
 				bool IsActive() const;
 				bool IsVisible() const;
 				bool MouseHovers() const;
-				bool CanDispatchEvents() const; // If active & visible & mouse hovers.
+				bool CanDispatchSignals() const; // If active & visible & mouse hovers.
+
+				// System calls.
+				virtual void DispatchSignals() const;
 
 			protected:
 				// Internal window handling.
@@ -66,13 +70,14 @@ namespace ToolKit
 			class YesNoWindow : public Window
 			{
 			public:
-				YesNoWindow(const String& name);
+				YesNoWindow(const String& name, const String& msg = "");
 				virtual void Show() override;
 				virtual Type GetType() const override { return Window::Type::InputPopup; }
 
 			public:
 				std::function<void()> m_yesCallback;
 				std::function<void()> m_noCallback;
+				String m_msg;
 			};
 
 			class UI
@@ -90,7 +95,6 @@ namespace ToolKit
 				static void ShowImportWindow();
 				static void ShowSearchForFilesWindow();
 				static void HelpMarker(const char* desc, float* elapsedHoverTime);
-				static void DispatchSignals(Window* wnd);
 				static void ShowNewSceneWindow();
 
 				// Custom widgets.

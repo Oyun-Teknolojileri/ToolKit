@@ -19,7 +19,9 @@ const int height = (int)(768 * 2.0f / 3.0f);
 void ProcessEvent(SDL_Event e)
 {
   if (e.type == SDL_QUIT)
+  {
     g_running = false;
+  }
 
   if (e.type == SDL_KEYDOWN)
   {
@@ -30,7 +32,9 @@ void ProcessEvent(SDL_Event e)
       break;
     case SDLK_r:
       if (g_app->m_shipGone)
+      {
         g_app->m_restartSignaled = true;
+      }
       break;
     default:
       break;
@@ -41,13 +45,17 @@ void ProcessEvent(SDL_Event e)
   if (e.type == SDL_MOUSEBUTTONDOWN)
   {
     if (e.button.button == SDL_BUTTON_LEFT)
+    {
       lbtnclcked = true;
+    }
   }
 
   if (e.type == SDL_MOUSEBUTTONUP)
   {
     if (e.button.button == SDL_BUTTON_LEFT)
+    {
       lbtnclcked = false;
+    }
   }
 
   if (e.type == SDL_MOUSEMOTION)
@@ -59,16 +67,24 @@ void ProcessEvent(SDL_Event e)
       g_app->m_sscp += glm::ivec2(e.motion.xrel, -e.motion.yrel);
 
       if (g_app->m_sscp.x >= width)
+      {
         g_app->m_sscp.x = width;
+      }
 
       if (g_app->m_sscp.x < 0)
+      {
         g_app->m_sscp.x = 0;
+      }
 
       if (g_app->m_sscp.y >= height)
+      {
         g_app->m_sscp.y = height;
+      }
 
       if (pos.y < 0)
+      {
         g_app->m_sscp.y = 0;
+      }
     }
     skip = false;
 
@@ -121,7 +137,7 @@ void Init()
         if (TTF_Init() == -1)
           return;
 
-        ToolKit::Main::GetInstance()->Init();
+        Main::GetInstance()->Init();
 
         // Set defaults
         SDL_GL_SetSwapInterval(1);
@@ -142,7 +158,7 @@ void Init()
 void Exit()
 {
   g_running = false;
-  ToolKit::Main::GetInstance()->Uninit();
+  Main::GetInstance()->Uninit();
   SafeDel(g_app);
 
   SDL_DestroyWindow(g_window);
@@ -205,7 +221,7 @@ int main(int argc, char *argv[])
             g_app->m_projectileManager.FireProjectile(entry->GetTranslation(TransformationSpace::TS_WORLD));
           lastFireTime = currentTime;
           if (!g_app->m_shipGone)
-            ToolKit::AudioPlayer::Play(&g_app->m_lazerShotSource);
+            AudioPlayer::Play(&g_app->m_lazerShotSource);
         }
       }
 

@@ -38,6 +38,11 @@ namespace ToolKit
 
 		InitVertices(flushClientSideArray);
 		InitIndices(flushClientSideArray);
+		if (!flushClientSideArray)
+		{
+			ConstructFaces();
+		}
+		
 		m_material->Init();
 
 		for (MeshPtr mesh : m_subMeshes)
@@ -140,6 +145,7 @@ namespace ToolKit
 		cpy->m_vertexCount = m_vertexCount;
 		cpy->m_clientSideIndices = m_clientSideIndices;
 		cpy->m_indexCount = m_indexCount;
+		cpy->m_faces = m_faces;
 
 		// Copy video memory.
 		if (m_vertexCount > 0)
@@ -240,6 +246,30 @@ namespace ToolKit
 				{
 					m_clientSideVertices[i].pos *= scale;
 					UpdateAABB(m_clientSideVertices[i].pos);
+				}
+			}
+		}
+	}
+
+	void Mesh::ConstructFaces()
+	{
+		size_t triCnt = m_clientSideIndices.size() / 3;
+		m_faces.resize(triCnt);
+		for (size_t i = 0; i < triCnt; i++)
+		{
+			if (m_clientSideIndices.empty())
+			{
+				for (size_t j = 0; j < 3; j++)
+				{
+					m_faces[i].vertices[j] = &m_clientSideVertices[i * 3 + j];
+				}
+			}
+			else
+			{
+				for (size_t j = 0; j < 3; j++)
+				{
+					size_t indx = m_clientSideIndices[i * 3 + j];
+					m_faces[i].vertices[j] = &m_clientSideVertices[indx];
 				}
 			}
 		}

@@ -14,10 +14,13 @@
 #include "ConsoleWindow.h"
 #include "Gizmo.h"
 #include "FolderWindow.h"
+#include "OutlinerWindow.h"
 #include "DebugNew.h"
 
 #include <filesystem>
 #include <cstdlib>
+
+// #define TK_SAMPLE_SCENE
 
 namespace ToolKit
 {
@@ -50,6 +53,60 @@ namespace ToolKit
 
 		void App::Init()
 		{
+#ifdef TK_SAMPLE_SCENE
+			m_suzanne = new Drawable();
+			m_suzanne->m_node->SetTranslation({ 0.0f, 0.0f, -5.0f });
+			m_suzanne->m_node->SetOrientation(glm::angleAxis(-glm::half_pi<float>(), X_AXIS));
+			Mesh* szm = GetMeshManager()->CreateDerived<Mesh>(MeshPath("suzanne.mesh"))->GetCopy();
+			szm->Init(false);
+			m_suzanne->m_mesh = MeshPtr(szm);
+			m_scene.AddEntity(m_suzanne);
+
+			// https://t-allen-studios.itch.io/low-poly-saxon-warrior
+			m_knight = new Drawable();
+			m_knight->m_mesh = GetSkinMeshManager()->Create(MeshPath("Knight.skinMesh"));
+			m_knight->m_node->SetScale({ 0.01f, 0.01f, 0.01f });
+			m_knight->m_node->SetTranslation({ 0.0f, 0.0f, 5.0f });
+			m_scene.AddEntity(m_knight);
+
+			m_knightRunAnim = GetAnimationManager()->Create(AnimationPath("Knight_Armature_Run.anim"));
+			m_knightRunAnim->m_loop = true;
+			GetAnimationPlayer()->AddRecord(m_knight, m_knightRunAnim.get());
+
+			MaterialPtr normalMat = GetMaterialManager()->Create(MaterialPath("objectNormal.material"));
+
+			m_q1 = new Cube();
+			m_q1->m_mesh->m_material = normalMat;
+			m_q1->m_mesh->Init(false);
+			m_q1->m_node->SetTranslation({ 2.0f, 0.0f, 0.0f });
+			m_q1->m_node->Rotate(glm::angleAxis(glm::half_pi<float>(), Y_AXIS), TransformationSpace::TS_LOCAL);
+			m_q1->m_node->Rotate(glm::angleAxis(glm::half_pi<float>(), Z_AXIS), TransformationSpace::TS_LOCAL);
+			m_scene.AddEntity(m_q1);
+
+			m_q2 = new Cube();
+			m_q2->m_mesh->m_material = normalMat;
+			m_q2->m_mesh->Init(false);
+			m_q2->m_node->SetTranslation({ 2.0f, 0.0f, 2.0f });
+			m_q2->m_node->SetOrientation(glm::angleAxis(glm::half_pi<float>(), Y_AXIS));
+			m_scene.AddEntity(m_q2);
+
+			m_q3 = new Cone({ 1.0f, 1.0f, 30, 30 });
+			m_q3->m_mesh->m_material = normalMat;
+			m_q3->m_mesh->Init(false);
+			m_q3->m_node->Scale({ 0.3f, 1.0f, 0.3f });
+			m_q3->m_node->SetTranslation({ 2.0f, 0.0f, 0.0f });
+			m_scene.AddEntity(m_q3);
+
+			m_q1->m_node->AddChild(m_q2->m_node);
+			m_q2->m_node->AddChild(m_q3->m_node);
+
+			m_q4 = new Cube();
+			m_q4->m_mesh->m_material = normalMat;
+			m_q4->m_mesh->Init(false);
+			m_q4->m_node->SetTranslation({ 4.0f, 0.0f, 0.0f });
+			m_scene.AddEntity(m_q4);
+#endif
+
 			m_cursor = new Cursor();
 			m_origin = new Axis3d();
 			m_grid = new Grid(100);
@@ -114,6 +171,10 @@ namespace ToolKit
 			assetBrowser->Iterate(ResourcePath());
 			m_windows.push_back(assetBrowser);
 
+			OutlinerWindow* outliner = new OutlinerWindow();
+			outliner->m_name = g_outlinerStr;
+			m_windows.push_back(outliner);
+
 			UI::InitIcons();
 		}
 
@@ -153,6 +214,11 @@ namespace ToolKit
 		{
 			// Update animations.
 			GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
+			
+			if (Window* wnd = GetOutliner())
+			{
+				wnd->DispatchSignals();
+			}
 
 			// Update Viewports.
 			for (Window* wnd : m_windows)
@@ -162,7 +228,7 @@ namespace ToolKit
 					continue;
 				}
 
-				UI::DispatchSignals(wnd);
+				wnd->DispatchSignals();
 
 				Viewport* vp = static_cast<Viewport*> (wnd);
 				vp->Update(deltaTime);
@@ -256,12 +322,41 @@ namespace ToolKit
 		{
 			Destroy();
 			Init();
-			g_app->m_scene.m_name = name;
+			m_scene.m_name = name;
+			m_scene.m_newScene = true;
 		}
 
 		void App::OnSaveScene()
 		{
+			auto saveFn = []() -> void
+			{
+				XmlDocument doc;
+				g_app->m_scene.Serialize(&doc, nullptr);
+				g_app->m_scene.m_newScene = false;
+				g_app->GetAssetBrowser()->UpdateContent();
+			};
 
+			String sceneName = m_scene.m_name + SCENE;
+			if (m_scene.m_newScene && CheckFile(ScenePath(sceneName)))
+			{
+				String msg = "Scene " + sceneName + " exist on the disk.\nOverride the existing scene ?";
+				YesNoWindow* overrideScene = new YesNoWindow("Override existing file##OvrdScn", msg);
+				overrideScene->m_yesCallback = [&saveFn]()
+				{
+					saveFn();
+				};
+
+				overrideScene->m_noCallback = []()
+				{
+					g_app->GetConsole()->AddLog("Scene has not been saved.\nA scene with the same name exist. Use File->SaveAs.", ConsoleWindow::LogType::Error);
+				};
+
+				UI::m_volatileWindows.push_back(overrideScene);
+			}
+			else
+			{
+				saveFn();
+			}
 		}
 
 		void App::OnQuit()
@@ -311,29 +406,22 @@ namespace ToolKit
 					std::filesystem::create_directories(cpyDir);
 				}
 
-				std::filesystem::copy
-				(
-					fullPath, cpyDir,
-					overwrite ? std::filesystem::copy_options::overwrite_existing
-					: std::filesystem::copy_options::skip_existing
-				);
-
 				String name, ext;
 				DecomposePath(fullPath, nullptr, &name, &ext);
 
 				String cmd = "Import \"";
 				if (!subDir.empty())
 				{
-					cmd += subDir + '\\' + name + ext;
+					cmd += fullPath + "\" -t \".\\" + subDir;
 				}
 				else
 				{
-					cmd += name + ext;
+					cmd += fullPath;
 				}
 
 				cmd += "\" -s " + std::to_string(UI::ImportData.scale);
 
-				// Execute command.
+				// Execute command
 				int result = std::system(cmd.c_str());
 				assert(result != -1);
 
@@ -397,6 +485,10 @@ namespace ToolKit
 						{
 							String ext;
 							DecomposePath(line, nullptr, nullptr, &ext);
+							if (line.rfind(".\\") == 0)
+							{
+								line = line.substr(2, -1);
+							}
 
 							String fullPath;
 							if (ext == MESH || ext == SKINMESH)
@@ -418,6 +510,7 @@ namespace ToolKit
 							if 
 								(
 									ext == PNG ||
+									ext == JPG ||
 									ext == JPEG ||
 									ext == TGA ||
 									ext == BMP ||
@@ -436,7 +529,7 @@ namespace ToolKit
 
 							String path, name;
 							DecomposePath(fullPath, &path, &name, &ext);
-							std::filesystem::create_directories(path);
+							std::filesystem::create_directory(path);
 							std::filesystem::copy
 							(
 								line, fullPath,
@@ -502,6 +595,11 @@ namespace ToolKit
 				return true;
 			}
 
+			if (ext == ".gltf")
+			{
+				return true;
+			}
+
 			if (ext == ".obj")
 			{
 				return true;
@@ -563,6 +661,22 @@ namespace ToolKit
 					if (wnd->m_name == g_assetBrowserStr)
 					{
 						return static_cast<FolderWindow*> (wnd);
+					}
+				}
+			}
+
+			return nullptr;
+		}
+
+		OutlinerWindow* App::GetOutliner()
+		{
+			for (Window* wnd : m_windows)
+			{
+				if (wnd->GetType() == Window::Type::Outliner)
+				{
+					if (wnd->m_name == g_outlinerStr)
+					{
+						return static_cast<OutlinerWindow*> (wnd);
 					}
 				}
 			}

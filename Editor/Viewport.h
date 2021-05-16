@@ -24,6 +24,9 @@ namespace ToolKit
 			// Window queries.
 			bool IsViewportQueriable();
 
+			// System calls.
+			virtual void DispatchSignals() const override;
+
 			// Utility Functions.
 			Ray RayFromMousePosition();
 			Ray RayFromScreenSpacePoint(const Vec2& pnt);

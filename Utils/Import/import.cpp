@@ -10,6 +10,7 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
+#include "assimp/DefaultLogger.hpp"
 #include "lodepng.h"
 #include <filesystem>
 
@@ -17,37 +18,37 @@ using namespace std;
 
 struct Pnt3D
 {
-	float x = 0;
-	float y = 0;
-	float z = 0;
+  float x = 0;
+  float y = 0;
+  float z = 0;
 };
 
 struct Pnt2D
 {
-	float x = 0;
-	float y = 0;
+  float x = 0;
+  float y = 0;
 };
 
 class BoneNode
 {
 public:
-	BoneNode() {}
+  BoneNode() {}
 
-	BoneNode(aiNode* node, unsigned int index)
-	{
-		boneIndex = index;
-		boneNode = node;
-	}
+  BoneNode(aiNode* node, unsigned int index)
+  {
+    boneIndex = index;
+    boneNode = node;
+  }
 
-	aiNode* boneNode = nullptr;
-	aiBone* bone = nullptr;
-	unsigned int boneIndex = 0;
+  aiNode* boneNode = nullptr;
+  aiBone* bone = nullptr;
+  unsigned int boneIndex = 0;
 };
 
 vector<string> g_usedFiles;
 bool IsUsed(string file)
 {
-	return find(g_usedFiles.begin(), g_usedFiles.end(), file) == g_usedFiles.end();
+  return find(g_usedFiles.begin(), g_usedFiles.end(), file) == g_usedFiles.end();
 }
 
 void AddToUsedFiles(string file)
@@ -64,20 +65,20 @@ const aiScene* g_scene = nullptr;
 
 void TrunckToFileName(string& fullPath)
 {
-	std::replace(fullPath.begin(), fullPath.end(), '/', '\\');
+  std::replace(fullPath.begin(), fullPath.end(), '/', '\\');
 
-	size_t i = fullPath.find_last_of('\\');
-	if (i != string::npos)
-	{
+  size_t i = fullPath.find_last_of('\\');
+  if (i != string::npos)
+  {
     fullPath = fullPath.substr(i + 1);
-	}
+  }
 }
 
 void Decompose(string fullPath, string& path, string& name)
 {
   std::replace(fullPath.begin(), fullPath.end(), '/', '\\');
   path = "";
-  
+
   size_t i = fullPath.find_last_of('\\');
   if (i != string::npos)
   {
@@ -90,19 +91,19 @@ void Decompose(string fullPath, string& path, string& name)
 
 string GetTextureName(const aiTexture* texture, unsigned int i)
 {
-	string name = texture->mFilename.C_Str();
+  string name = texture->mFilename.C_Str();
   std::replace(name.begin(), name.end(), '/', '\\');
 
-	if (name.empty() || name[0] == '*')
-	{
-		name = "emb" + to_string(i) + "." + texture->achFormatHint;
-	}
+  if (name.empty() || name[0] == '*')
+  {
+    name = "emb" + to_string(i) + "." + texture->achFormatHint;
+  }
   else
   {
     TrunckToFileName(name);
   }
 
-	return name;
+  return name;
 }
 
 string GetMaterialName(aiMaterial* material, unsigned int indx)
@@ -118,9 +119,9 @@ string GetMaterialName(aiMaterial* material, unsigned int indx)
 
 string GetMaterialName(aiMesh* mesh)
 {
-	aiString matName;
-	g_scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_NAME, matName);
-	return GetMaterialName(g_scene->mMaterials[mesh->mMaterialIndex], mesh->mMaterialIndex);
+  aiString matName;
+  g_scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_NAME, matName);
+  return GetMaterialName(g_scene->mMaterials[mesh->mMaterialIndex], mesh->mMaterialIndex);
 }
 
 void PrintAnims_(const aiScene* scene, string file)
@@ -169,8 +170,10 @@ void PrintAnims_(const aiScene* scene, string file)
   }
 }
 
-void PrintMaterial_(const aiScene* scene, string filePath)
+void PrintMaterial_(const aiScene* scene, string filePath, string origin)
 {
+  filesystem::path pathOrg = filesystem::path(origin).parent_path();
+
   for (unsigned int i = 0; i < scene->mNumMaterials; i++)
   {
     aiMaterial* material = scene->mMaterials[i];
@@ -193,6 +196,10 @@ void PrintMaterial_(const aiScene* scene, string filePath)
       material->GetTexture(aiTextureType_DIFFUSE, 0, &texture);
 
       string tName = texture.C_Str();
+      filesystem::path nextPath = pathOrg;
+      tName = filesystem::canonical(nextPath.append(tName)).u8string();
+      string outName = filesystem::path(tName).filename().u8string();
+      string textPath = filePath + outName;
       if (!tName.empty() && tName[0] == '*') // Embedded texture.
       {
         string indxPart = tName.substr(1);
@@ -205,24 +212,16 @@ void PrintMaterial_(const aiScene* scene, string filePath)
       }
       else
       {
-				// Try copying texture.
-				string outName = tName;
-				TrunckToFileName(outName);
-
-				string textPath = filePath + outName;
+        // Try copying texture.
         ifstream isGoodFile;
         isGoodFile.open(tName, ios::binary | ios::in);
         if (isGoodFile.good())
         {
-          filesystem::copy(tName, textPath);
+          filesystem::copy(tName, textPath, std::filesystem::copy_options::overwrite_existing);
         }
         isGoodFile.close();
       }
-     
-			string outName = tName;
-			TrunckToFileName(outName);
 
-      string textPath = filePath + outName;
       AddToUsedFiles(textPath);
 
       file << "  <diffuseTexture name = \"" + textPath + "\"/>\n";
@@ -256,8 +255,8 @@ void AppendMesh_(aiMesh* mesh, ofstream& file, string filePath)
     tag = "mesh";
   }
 
-	string path, name;
-	Decompose(filePath, path, name);
+  string path, name;
+  Decompose(filePath, path, name);
 
   string fullMaterialPath = path + GetMaterialName(mesh) + ".material";
   AddToUsedFiles(fullMaterialPath);
@@ -378,7 +377,7 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
   {
     aiMesh* mesh = scene->mMeshes[i];
     aiNode* meshNode = scene->mRootNode->FindNode(mesh->mName);
-    for (unsigned int j = 0; j < mesh->mNumBones; j++) 
+    for (unsigned int j = 0; j < mesh->mNumBones; j++)
     {
       aiBone* bone = mesh->mBones[j];
       bones.push_back(bone);
@@ -516,83 +515,108 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
 void PrintTextures_(const aiScene* scene, string filePath)
 {
   // Embedded textures.
-	if (scene->HasTextures())
-	{
-		for (unsigned int i = 0; i < scene->mNumTextures; i++)
-		{
+  if (scene->HasTextures())
+  {
+    for (unsigned int i = 0; i < scene->mNumTextures; i++)
+    {
       aiTexture* t = scene->mTextures[i];
-			string embId = GetTextureName(t, i);
+      string embId = GetTextureName(t, i);
 
       // Compressed.
       if (scene->mTextures[i]->mHeight == 0)
       {
-				ofstream file(filePath + embId, fstream::out | std::fstream::binary);
-				assert(file.good());
+        ofstream file(filePath + embId, fstream::out | std::fstream::binary);
+        assert(file.good());
 
         file.write((const char*)scene->mTextures[i]->pcData, scene->mTextures[i]->mWidth);
       }
       else
       {
-				unsigned char* buffer = (unsigned char*)scene->mTextures[i]->pcData;
-				lodepng::encode(filePath, buffer, scene->mTextures[i]->mWidth, scene->mTextures[i]->mHeight);
+        unsigned char* buffer = (unsigned char*)scene->mTextures[i]->pcData;
+        lodepng::encode(filePath, buffer, scene->mTextures[i]->mWidth, scene->mTextures[i]->mHeight);
       }
-		}
-	}
+    }
+  }
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-  if (argc < 2 || argc > 4)
+  try 
   {
-    cout << "usage: Import \"fileToImport.format\" <op> -s 1.0\n";
-    return -1;
+    if (argc < 2)
+    {
+      cout << "usage: Import 'fileToImport.format' <op> -t 'importTo' <op> -s 1.0\n";
+      throw (-1);
+    }
+
+    Assimp::Importer importer;
+    string dest, file = argv[1];
+    Assimp::DefaultLogger::create("log.txt", Assimp::Logger::VERBOSE);
+    for (int i = 0; i < argc; i++)
+    {
+      string arg = argv[i];
+      Assimp::DefaultLogger::get()->info(arg);
+      
+      if (arg == "-t")
+      {
+        dest = filesystem::path(argv[i + 1]).append("").u8string();
+      }
+
+      if (arg == "-s")
+      {
+        float scale = (float)std::atof(argv[i + 1]);
+        importer.SetPropertyFloat(AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, scale);
+      }
+    }
+
+    if (!dest.empty())
+    {
+      std::filesystem::create_directories(dest);
+    }
+
+    const aiScene* scene = importer.ReadFile
+    (
+      file,
+      aiProcess_Triangulate
+      | aiProcess_CalcTangentSpace
+      | aiProcess_FlipUVs
+      | aiProcess_LimitBoneWeights
+      | aiProcess_GenNormals
+      | aiProcess_GlobalScale
+    );
+
+    if (scene == nullptr)
+    {
+      throw (-1);
+    }
+    g_scene = scene;
+
+    filesystem::path pathToProcess = file;
+    string fileName = pathToProcess.filename().u8string();
+    string destFile = dest + fileName;
+
+    PrintSkeleton_(scene, destFile);
+    PrintMesh_(scene, destFile);
+    PrintAnims_(scene, dest);
+    PrintMaterial_(scene, dest, file);
+    PrintTextures_(scene, dest);
+
+    // Report all in use files.
+    fstream inUse("out.txt", ios::out);
+    for (string fs : g_usedFiles)
+    {
+      inUse << fs << endl;
+    }
+    inUse.close();
+  }
+  catch (int code)
+  {
+    Assimp::DefaultLogger::get()->error("Import failed");
+    Assimp::DefaultLogger::kill();
+    return code;
   }
 
-  string file = argv[1];
-  Assimp::Importer importer;
-	if (argc == 4)
-	{
-		float scale = (float)std::atof(argv[3]);
-		importer.SetPropertyFloat(AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, scale);
-	}
-
-  const aiScene* scene = importer.ReadFile
-  (
-    file, 
-    aiProcess_Triangulate 
-    | aiProcess_CalcTangentSpace 
-    | aiProcess_FlipUVs 
-    | aiProcess_LimitBoneWeights 
-    | aiProcess_GenNormals
-    | aiProcess_GlobalScale
-  );
-
-  if (scene == nullptr)
-  {
-    return -1;
-  }
-  g_scene = scene;
-  
-  string pathPart;
-  size_t i = file.find_last_of("\\");
-  if (i != string::npos)
-  {
-    pathPart = file.substr(0, file.find_last_of("\\") + 1);
-  }
-
-  PrintSkeleton_(scene, file);
-  PrintMesh_(scene, file);
-  PrintAnims_(scene, pathPart);
-  PrintMaterial_(scene, pathPart);
-  PrintTextures_(scene, pathPart);
-
-  // Report all in use files.
-  fstream inUse("out.txt", ios::out);
-  for (string& fs : g_usedFiles)
-  {
-    inUse << fs << endl;
-  }
-  inUse.close();
-
+  Assimp::DefaultLogger::get()->info("Import success");
+  Assimp::DefaultLogger::kill();
   return 0;
 }

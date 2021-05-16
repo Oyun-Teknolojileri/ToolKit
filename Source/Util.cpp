@@ -314,4 +314,57 @@ namespace ToolKit
 		}
 	}
 
+	bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt)
+	{
+		for (Entity* e : nttArray)
+		{
+			if (e == ntt)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void RootsOnly(const EntityRawPtrArray& entities, EntityRawPtrArray& roots, Entity* child)
+	{
+		auto AddUnique = [&roots](Entity* e)
+		{
+			assert(e != nullptr);
+
+			bool unique = std::find(roots.begin(), roots.end(), e) == roots.end();
+			if (unique)
+			{
+				roots.push_back(e);
+			}
+		};
+
+		Node* parent = child->m_node->m_parent;
+		if (parent != nullptr)
+		{
+			Entity* parentEntity = parent->m_entity;
+			if (std::find(entities.begin(), entities.end(), parentEntity) != entities.end())
+			{
+				RootsOnly(entities, roots, parentEntity);
+			}
+			else
+			{
+				AddUnique(child);
+			}
+		}
+		else
+		{
+			AddUnique(child);
+		}
+	}
+
+	void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots)
+	{
+		for (Entity* e : entities)
+		{
+			RootsOnly(entities, roots, e);
+		}
+	}
+
 }

@@ -20,6 +20,7 @@ namespace ToolKit
 		class Cursor;
 		class ConsoleWindow;
 		class FolderWindow;
+		class OutlinerWindow;
 		class Window;
 		class Gizmo;
 
@@ -45,6 +46,7 @@ namespace ToolKit
 			Viewport* GetViewport(const String& name);
 			ConsoleWindow* GetConsole();
 			FolderWindow* GetAssetBrowser();
+			OutlinerWindow* GetOutliner();
 
 			// Quick selected render implementation.
 			void RenderSelected(Viewport *vp);
@@ -85,8 +87,8 @@ namespace ToolKit
 			bool m_snapsEnabled = false; // Delta transforms.
 			bool m_snapToGrid = false; // Jump to grid junctions.
 			float m_moveDelta = 0.25f;
-			float m_rotateDelta = 5.0f;
-			float m_scaleDelta = 0.25f;
+			float m_rotateDelta = 15.0f;
+			float m_scaleDelta = 0.5f;
 
 		private:
 			Renderer* m_renderer;
