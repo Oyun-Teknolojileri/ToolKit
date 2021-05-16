@@ -318,7 +318,7 @@ namespace ToolKit
 					if (RayTriangleIntersection(ray, face.vertices[0]->pos, face.vertices[1]->pos, face.vertices[2]->pos, dist))
 					{
 						std::lock_guard<std::mutex> guard(updateHit);
-						if (dist < closestPickedDistance && t > 0.0f)
+						if (dist < closestPickedDistance && t >= 0.0f)
 						{
 							t = dist;
 							closestPickedDistance = dist;
