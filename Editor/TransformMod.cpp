@@ -399,6 +399,11 @@ namespace ToolKit
 			GetRootEntities(selecteds, entities);
 			if (!entities.empty())
 			{
+				if (entities.size() > 1)
+				{
+					ActionManager::GetInstance()->BeginActionGroup();
+				}
+				
 				for (Entity* ntt : entities)
 				{
 					ActionManager::GetInstance()->AddAction(new TransformAction(ntt));

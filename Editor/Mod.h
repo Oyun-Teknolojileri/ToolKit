@@ -76,6 +76,7 @@ namespace ToolKit
 			void UnInit();
 			void AddAction(Action* action);
 			void GroupLastActions(int n);
+			void BeginActionGroup();
 			void Undo();
 			void Redo();
 			static ActionManager* GetInstance();
@@ -88,6 +89,7 @@ namespace ToolKit
 			std::vector<Action*> m_actionStack;
 			int m_stackPointer;
 			bool m_initiated;
+			bool m_actionGrouping;
 		};
 
 		// ModManager
