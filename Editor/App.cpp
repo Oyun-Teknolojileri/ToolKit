@@ -214,7 +214,10 @@ namespace ToolKit
 		{
 			// Update animations.
 			GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
-			
+
+			// Update Mods.
+			ModManager::GetInstance()->Update(deltaTime);
+
 			if (Window* wnd = GetOutliner())
 			{
 				wnd->DispatchSignals();
@@ -306,9 +309,6 @@ namespace ToolKit
 
 			// Render UI.
 			UI::ShowUI();
-
-			// Update Mods.
-			ModManager::GetInstance()->Update(deltaTime);
 		}
 
 		void App::OnResize(int width, int height)
