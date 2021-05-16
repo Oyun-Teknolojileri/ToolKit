@@ -161,15 +161,18 @@ namespace ToolKit
 				Vec3 axes[3];
 				ExtractAxes(m_gizmo->m_normalVectors, axes[0], axes[1], axes[2]);
 
-				for (int i = 0; i < 3; i++)
+				if (m_type != TransformType::Rotate)
 				{
-					if (safetyMeasure < glm::abs(glm::dot(dir, axes[i])))
+					for (int i = 0; i < 3; i++)
 					{
-						m_gizmo->Lock(axisLabes[i]);
-					}
-					else
-					{
-						m_gizmo->UnLock(axisLabes[i]);
+						if (safetyMeasure < glm::abs(glm::dot(dir, axes[i])))
+						{
+							m_gizmo->Lock(axisLabes[i]);
+						}
+						else
+						{
+							m_gizmo->UnLock(axisLabes[i]);
+						}
 					}
 				}
 
