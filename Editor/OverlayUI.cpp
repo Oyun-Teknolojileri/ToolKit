@@ -9,432 +9,432 @@
 
 namespace ToolKit
 {
-	namespace Editor
-	{
-		
-		OverlayUI::OverlayUI(Viewport* owner)
-		{
-			m_owner = owner;
-		}
+  namespace Editor
+  {
 
-		OverlayUI::~OverlayUI()
-		{
-		}
+    OverlayUI::OverlayUI(Viewport* owner)
+    {
+      m_owner = owner;
+    }
 
-		// OverlayMods
-		//////////////////////////////////////////////////////////////////////////
+    OverlayUI::~OverlayUI()
+    {
+    }
 
-		OverlayMods::OverlayMods(Viewport* owner)
-			: OverlayUI(owner)
-		{
-		}
+    // OverlayMods
+    //////////////////////////////////////////////////////////////////////////
 
-		void OverlayMods::Show()
-		{
-			ImVec2 overlaySize(48, 258);
-			const float padding = 5.0f;
-			ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding, m_owner->m_wndPos.y + padding);
-			ImGui::SetNextWindowPos(window_pos);
-			ImGui::SetNextWindowBgAlpha(0.65f);
-			if (ImGui::BeginChildFrame(ImGui::GetID("Navigation"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
-			{
-				m_mouseOver = ImGui::IsWindowHovered();
-				
-				// Select button.
-				static float hoverTimeSelectBtn = 0.0f;
-				bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Select;
-				ModManager::GetInstance()->SetMod
-				(
-					UI::ToggleButton((void*)(intptr_t)UI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
-					ModId::Select
-				);
-				UI::HelpMarker("Select Box\nSelect items using box selection.", &hoverTimeSelectBtn);
+    OverlayMods::OverlayMods(Viewport* owner)
+      : OverlayUI(owner)
+    {
+    }
 
-				// Cursor button.
-				static float hoverTimeCursorBtn = 0.0f;
-				isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Cursor;
-				ModManager::GetInstance()->SetMod
-				(
-					UI::ToggleButton((void*)(intptr_t)UI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
-					ModId::Cursor
-				);
-				UI::HelpMarker("Cursor\nSet the cursor location.", &hoverTimeCursorBtn);
-				ImGui::Separator();
+    void OverlayMods::Show()
+    {
+      ImVec2 overlaySize(48, 258);
+      const float padding = 5.0f;
+      ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding, m_owner->m_wndPos.y + padding);
+      ImGui::SetNextWindowPos(window_pos);
+      ImGui::SetNextWindowBgAlpha(0.65f);
+      if (ImGui::BeginChildFrame(ImGui::GetID("Navigation"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+      {
+        m_mouseOver = ImGui::IsWindowHovered();
 
-				// Move button.
-				static float hoverTimeMoveBtn = 0.0f;
-				isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Move;
-				ModManager::GetInstance()->SetMod
-				(
-					UI::ToggleButton((void*)(intptr_t)UI::m_moveIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
-					ModId::Move
-				);
-				UI::HelpMarker("Move\nMove selected items.", &hoverTimeMoveBtn);
+        // Select button.
+        static float hoverTimeSelectBtn = 0.0f;
+        bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Select;
+        ModManager::GetInstance()->SetMod
+        (
+          UI::ToggleButton((void*)(intptr_t)UI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          ModId::Select
+        );
+        UI::HelpMarker("Select Box\nSelect items using box selection.", &hoverTimeSelectBtn);
 
-				// Rotate button.
-				static float hoverTimeRotateBtn = 0.0f;
-				isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Rotate;
-				ModManager::GetInstance()->SetMod
-				(
-					UI::ToggleButton((void*)(intptr_t)UI::m_rotateIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
-					ModId::Rotate
-				);
-				UI::HelpMarker("Rotate\nRotate selected items.", &hoverTimeRotateBtn);
+        // Cursor button.
+        static float hoverTimeCursorBtn = 0.0f;
+        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Cursor;
+        ModManager::GetInstance()->SetMod
+        (
+          UI::ToggleButton((void*)(intptr_t)UI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          ModId::Cursor
+        );
+        UI::HelpMarker("Cursor\nSet the cursor location.", &hoverTimeCursorBtn);
+        ImGui::Separator();
 
-				// Scale button.
-				static float hoverTimeScaleBtn = 0.0f;
-				isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Scale;
-				ModManager::GetInstance()->SetMod
-				(
-					UI::ToggleButton((void*)(intptr_t)UI::m_scaleIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
-					ModId::Scale
-				);
-				UI::HelpMarker("Scale\nScale (resize) selected items.", &hoverTimeScaleBtn);
-				ImGui::Separator();
+        // Move button.
+        static float hoverTimeMoveBtn = 0.0f;
+        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Move;
+        ModManager::GetInstance()->SetMod
+        (
+          UI::ToggleButton((void*)(intptr_t)UI::m_moveIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          ModId::Move
+        );
+        UI::HelpMarker("Move\nMove selected items.", &hoverTimeMoveBtn);
 
-				const char* items[] = { "1", "2", "4", "8", "16" };
-				static int current_item = 3; // Also the default.
-				ImGui::PushItemWidth(40);
-				if (ImGui::BeginCombo("##CS", items[current_item], ImGuiComboFlags_None))
-				{
-					for (int n = 0; n < IM_ARRAYSIZE(items); n++)
-					{
-						bool is_selected = (current_item == n);
-						if (ImGui::Selectable(items[n], is_selected))
-						{
-							current_item = n;
-						}
+        // Rotate button.
+        static float hoverTimeRotateBtn = 0.0f;
+        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Rotate;
+        ModManager::GetInstance()->SetMod
+        (
+          UI::ToggleButton((void*)(intptr_t)UI::m_rotateIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          ModId::Rotate
+        );
+        UI::HelpMarker("Rotate\nRotate selected items.", &hoverTimeRotateBtn);
 
-						if (is_selected)
-						{
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-					ImGui::EndCombo();
-				}
-				ImGui::PopItemWidth();
+        // Scale button.
+        static float hoverTimeScaleBtn = 0.0f;
+        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Scale;
+        ModManager::GetInstance()->SetMod
+        (
+          UI::ToggleButton((void*)(intptr_t)UI::m_scaleIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          ModId::Scale
+        );
+        UI::HelpMarker("Scale\nScale (resize) selected items.", &hoverTimeScaleBtn);
+        ImGui::Separator();
 
-				switch (current_item)
-				{
-				case 0:
-					g_app->m_camSpeed = 0.5f;
-					break;
-				case 1:
-					g_app->m_camSpeed = 1.0f;
-					break;
-				case 2:
-					g_app->m_camSpeed = 2.0f;
-					break;
-				case 3:
-					g_app->m_camSpeed = 4.0f;
-					break;
-				case 4:
-					g_app->m_camSpeed = 16.0f;
-					break;
-				default:
-					g_app->m_camSpeed = 8;
-					break;
-				}
+        const char* items[] = { "1", "2", "4", "8", "16" };
+        static int current_item = 3; // Also the default.
+        ImGui::PushItemWidth(40);
+        if (ImGui::BeginCombo("##CS", items[current_item], ImGuiComboFlags_None))
+        {
+          for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+          {
+            bool is_selected = (current_item == n);
+            if (ImGui::Selectable(items[n], is_selected))
+            {
+              current_item = n;
+            }
 
-				ImGuiStyle& style = ImGui::GetStyle();
-				float spacing = style.ItemInnerSpacing.x;
+            if (is_selected)
+            {
+              ImGui::SetItemDefaultFocus();
+            }
+          }
+          ImGui::EndCombo();
+        }
+        ImGui::PopItemWidth();
 
-				static float hoverTimeCS = 0.0f;
-				ImGui::SameLine(0, spacing); UI::HelpMarker("Camera speed m/s\n", &hoverTimeCS);
+        switch (current_item)
+        {
+        case 0:
+          g_app->m_camSpeed = 0.5f;
+          break;
+        case 1:
+          g_app->m_camSpeed = 1.0f;
+          break;
+        case 2:
+          g_app->m_camSpeed = 2.0f;
+          break;
+        case 3:
+          g_app->m_camSpeed = 4.0f;
+          break;
+        case 4:
+          g_app->m_camSpeed = 16.0f;
+          break;
+        default:
+          g_app->m_camSpeed = 8;
+          break;
+        }
 
-				ImGui::EndChildFrame();
-			}
-		}
+        ImGuiStyle& style = ImGui::GetStyle();
+        float spacing = style.ItemInnerSpacing.x;
 
-		// OverlayViewportOptions
-		//////////////////////////////////////////////////////////////////////////
+        static float hoverTimeCS = 0.0f;
+        ImGui::SameLine(0, spacing); UI::HelpMarker("Camera speed m/s\n", &hoverTimeCS);
 
-		OverlayViewportOptions::OverlayViewportOptions(Viewport* owner)
-			: OverlayUI(owner)
-		{
-		}
+        ImGui::EndChildFrame();
+      }
+    }
 
-		void OverlayViewportOptions::Show()
-		{
-			assert(m_owner);
-			if (m_owner == nullptr)
-			{
-				return;
-			}
+    // OverlayViewportOptions
+    //////////////////////////////////////////////////////////////////////////
 
-			auto ShowAddMenuFn = []()
-			{
-				if (ImGui::BeginMenu("Mesh"))
-				{
-					if (ImGui::MenuItem("Plane"))
-					{
-						Quad* plane = new Quad();
-						plane->m_mesh->Init(false);
-						g_app->m_scene.AddEntity(plane);
-					}
-					if (ImGui::MenuItem("Cube"))
-					{
-						Cube* cube = new Cube();
-						cube->m_mesh->Init(false);
-						g_app->m_scene.AddEntity(cube);
-					}
-					if (ImGui::MenuItem("UV Sphere"))
-					{
-						Sphere* sphere = new Sphere();
-						sphere->m_mesh->Init(false);
-						g_app->m_scene.AddEntity(sphere);
-					}
-					if (ImGui::MenuItem("Cylinder"))
-					{
-					}
-					if (ImGui::MenuItem("Cone"))
-					{
-						Cone* cone = new Cone({ 1.0f, 1.0f, 30, 30 });
-						cone->m_mesh->Init(false);
-						g_app->m_scene.AddEntity(cone);
-					}
-					if (ImGui::MenuItem("Monkey"))
-					{
-						Drawable* suzanne = new Drawable();
-						suzanne->m_mesh = GetMeshManager()->Create(MeshPath("suzanne.mesh"));
-						suzanne->m_mesh->Init(false);
-						g_app->m_scene.AddEntity(suzanne);
-					}
-					ImGui::EndMenu();
-				}
-				if (ImGui::BeginMenu("Light"))
-				{
-					if (ImGui::MenuItem("Point"))
-					{
-					}
-					if (ImGui::MenuItem("Sun"))
-					{
-					}
-					if (ImGui::MenuItem("Spot"))
-					{
-					}
-					if (ImGui::MenuItem("Area"))
-					{
-					}
-					ImGui::EndMenu();
-				}
-				if (ImGui::MenuItem("Camera"))
-				{
-				}
-				if (ImGui::MenuItem("Speaker"))
-				{
-				}
-				if (ImGui::BeginMenu("Light Probe"))
-				{
-					if (ImGui::MenuItem("Reflection Cubemap"))
-					{
-					}
-					if (ImGui::MenuItem("Reflection Plane"))
-					{
-					}
-					if (ImGui::MenuItem("Irradiance Volume"))
-					{
-					}
-					ImGui::EndMenu();
-				}
-			};
+    OverlayViewportOptions::OverlayViewportOptions(Viewport* owner)
+      : OverlayUI(owner)
+    {
+    }
 
-			ImVec2 overlaySize(312, 24);
+    void OverlayViewportOptions::Show()
+    {
+      assert(m_owner);
+      if (m_owner == nullptr)
+      {
+        return;
+      }
 
-			const float padding = 5.0f;
-			ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding + 52, m_owner->m_wndPos.y + padding);
-			ImGui::SetNextWindowPos(window_pos);
-			ImGui::SetNextWindowBgAlpha(0.65f);
-			if (
-					ImGui::BeginChildFrame
-					(
-						ImGui::GetID("ViewportOptions"),
-						overlaySize,
-						ImGuiWindowFlags_NoMove
-						| ImGuiWindowFlags_NoTitleBar
-						| ImGuiWindowFlags_NoScrollbar
-						| ImGuiWindowFlags_NoScrollWithMouse
-					)
-				)
-			{
-				m_mouseOver = ImGui::IsWindowHovered();
+      auto ShowAddMenuFn = []()
+      {
+        if (ImGui::BeginMenu("Mesh"))
+        {
+          if (ImGui::MenuItem("Plane"))
+          {
+            Quad* plane = new Quad();
+            plane->m_mesh->Init(false);
+            g_app->m_scene.AddEntity(plane);
+          }
+          if (ImGui::MenuItem("Cube"))
+          {
+            Cube* cube = new Cube();
+            cube->m_mesh->Init(false);
+            g_app->m_scene.AddEntity(cube);
+          }
+          if (ImGui::MenuItem("UV Sphere"))
+          {
+            Sphere* sphere = new Sphere();
+            sphere->m_mesh->Init(false);
+            g_app->m_scene.AddEntity(sphere);
+          }
+          if (ImGui::MenuItem("Cylinder"))
+          {
+          }
+          if (ImGui::MenuItem("Cone"))
+          {
+            Cone* cone = new Cone({ 1.0f, 1.0f, 30, 30 });
+            cone->m_mesh->Init(false);
+            g_app->m_scene.AddEntity(cone);
+          }
+          if (ImGui::MenuItem("Monkey"))
+          {
+            Drawable* suzanne = new Drawable();
+            suzanne->m_mesh = GetMeshManager()->Create(MeshPath("suzanne.mesh"));
+            suzanne->m_mesh->Init(false);
+            g_app->m_scene.AddEntity(suzanne);
+          }
+          ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Light"))
+        {
+          if (ImGui::MenuItem("Point"))
+          {
+          }
+          if (ImGui::MenuItem("Sun"))
+          {
+          }
+          if (ImGui::MenuItem("Spot"))
+          {
+          }
+          if (ImGui::MenuItem("Area"))
+          {
+          }
+          ImGui::EndMenu();
+        }
+        if (ImGui::MenuItem("Camera"))
+        {
+        }
+        if (ImGui::MenuItem("Speaker"))
+        {
+        }
+        if (ImGui::BeginMenu("Light Probe"))
+        {
+          if (ImGui::MenuItem("Reflection Cubemap"))
+          {
+          }
+          if (ImGui::MenuItem("Reflection Plane"))
+          {
+          }
+          if (ImGui::MenuItem("Irradiance Volume"))
+          {
+          }
+          ImGui::EndMenu();
+        }
+      };
 
-				ImGui::Image(Convert2ImGuiTexture(UI::m_worldIcon), ImVec2(20.0f, 20.0f));
-				ImGui::SameLine();
+      ImVec2 overlaySize(312, 24);
 
-				if (ImGui::Button("Add"))
-				{
-					ImGui::OpenPopup("##AddMenu");
-				}
-				ImGui::SameLine();
+      const float padding = 5.0f;
+      ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding + 52, m_owner->m_wndPos.y + padding);
+      ImGui::SetNextWindowPos(window_pos);
+      ImGui::SetNextWindowBgAlpha(0.65f);
+      if (
+        ImGui::BeginChildFrame
+        (
+          ImGui::GetID("ViewportOptions"),
+          overlaySize,
+          ImGuiWindowFlags_NoMove
+          | ImGuiWindowFlags_NoTitleBar
+          | ImGuiWindowFlags_NoScrollbar
+          | ImGuiWindowFlags_NoScrollWithMouse
+        )
+        )
+      {
+        m_mouseOver = ImGui::IsWindowHovered();
 
-				if (ImGui::BeginPopup("##AddMenu"))
-				{
-					ShowAddMenuFn();
-					ImGui::EndPopup();
-				}
+        ImGui::Image(Convert2ImGuiTexture(UI::m_worldIcon), ImVec2(20.0f, 20.0f));
+        ImGui::SameLine();
 
-				ImGui::Image(Convert2ImGuiTexture(UI::m_cameraIcon), ImVec2(20.0f, 20.0f));
-				ImGui::SameLine();
+        if (ImGui::Button("Add"))
+        {
+          ImGui::OpenPopup("##AddMenu");
+        }
+        ImGui::SameLine();
 
-				// Camera alignment combo.
-				const char* itemsCam[] = { "Free", "Top", "Front", "Left" };
-				int currentItemCam = m_owner->m_cameraAlignment;
-				bool change = false;
+        if (ImGui::BeginPopup("##AddMenu"))
+        {
+          ShowAddMenuFn();
+          ImGui::EndPopup();
+        }
 
-				ImGui::PushItemWidth(72);
-				if (ImGui::BeginCombo("##VC", itemsCam[currentItemCam], ImGuiComboFlags_None))
-				{
-					for (int n = 0; n < IM_ARRAYSIZE(itemsCam); n++)
-					{
-						bool is_selected = (currentItemCam == n);
-						if (ImGui::Selectable(itemsCam[n], is_selected))
-						{
-							if (currentItemCam != n)
-							{
-								change = true;
-							}
-							currentItemCam = n;
-							m_owner->m_cameraAlignment = currentItemCam;
-						}
+        ImGui::Image(Convert2ImGuiTexture(UI::m_cameraIcon), ImVec2(20.0f, 20.0f));
+        ImGui::SameLine();
 
-						if (is_selected)
-						{
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-					ImGui::EndCombo();
-				}
-				ImGui::PopItemWidth();
+        // Camera alignment combo.
+        const char* itemsCam[] = { "Free", "Top", "Front", "Left" };
+        int currentItemCam = m_owner->m_cameraAlignment;
+        bool change = false;
 
-				if (change)
-				{
-					String view;
-					switch (currentItemCam)
-					{
-					case 1:
-						view = "top";
-						break;
-					case 2:
-						view = "front";
-						break;
-					case 3:
-						view = "left";
-						break;
-					case 0:
-					default:
-						view = "free";
-						break;
-					}
+        ImGui::PushItemWidth(72);
+        if (ImGui::BeginCombo("##VC", itemsCam[currentItemCam], ImGuiComboFlags_None))
+        {
+          for (int n = 0; n < IM_ARRAYSIZE(itemsCam); n++)
+          {
+            bool is_selected = (currentItemCam == n);
+            if (ImGui::Selectable(itemsCam[n], is_selected))
+            {
+              if (currentItemCam != n)
+              {
+                change = true;
+              }
+              currentItemCam = n;
+              m_owner->m_cameraAlignment = currentItemCam;
+            }
 
-					if (view != "free")
-					{
-						String cmd = "SetCameraTransform --v \"" + m_owner->m_name + "\" " + view;
-						g_app->GetConsole()->ExecCommand(cmd);
-					}
-				}
-				ImGui::SameLine();
+            if (is_selected)
+            {
+              ImGui::SetItemDefaultFocus();
+            }
+          }
+          ImGui::EndCombo();
+        }
+        ImGui::PopItemWidth();
 
-				ImGui::Image(Convert2ImGuiTexture(UI::m_axisIcon), ImVec2(20.0f, 20.0f));
-				ImGui::SameLine();
+        if (change)
+        {
+          String view;
+          switch (currentItemCam)
+          {
+          case 1:
+            view = "top";
+            break;
+          case 2:
+            view = "front";
+            break;
+          case 3:
+            view = "left";
+            break;
+          case 0:
+          default:
+            view = "free";
+            break;
+          }
 
-				// Transform orientation combo.
-				ImGuiStyle& style = ImGui::GetStyle();
-				float spacing = style.ItemInnerSpacing.x;
+          if (view != "free")
+          {
+            String cmd = "SetCameraTransform --v \"" + m_owner->m_name + "\" " + view;
+            g_app->GetConsole()->ExecCommand(cmd);
+          }
+        }
+        ImGui::SameLine();
 
-				const char* itemsOrient[] = { "World", "Parent", "Local" };
-				static int currentItemOrient = 0;
+        ImGui::Image(Convert2ImGuiTexture(UI::m_axisIcon), ImVec2(20.0f, 20.0f));
+        ImGui::SameLine();
 
-				change = false;
-				ImGui::PushItemWidth(72);
-				if (ImGui::BeginCombo("##TRS", itemsOrient[currentItemOrient], ImGuiComboFlags_None))
-				{
-					for (int n = 0; n < IM_ARRAYSIZE(itemsOrient); n++)
-					{
-						bool is_selected = (currentItemOrient == n);
-						if (ImGui::Selectable(itemsOrient[n], is_selected))
-						{
-							if (currentItemOrient != n)
-							{
-								change = true;
-							}
-							currentItemOrient = n;
-						}
+        // Transform orientation combo.
+        ImGuiStyle& style = ImGui::GetStyle();
+        float spacing = style.ItemInnerSpacing.x;
 
-						if (is_selected)
-						{
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-					ImGui::EndCombo();
-				}
-				ImGui::PopItemWidth();
-				
-				if (change)
-				{
-					String ts;
-					switch (currentItemOrient)
-					{
-					case 1:
-						ts = "parent";
-						break;
-					case 2:
-						ts = "local";
-						break;
-					case 0:
-					default:
-						ts = "world";
-						break;
-					}
+        const char* itemsOrient[] = { "World", "Parent", "Local" };
+        static int currentItemOrient = 0;
 
-					String cmd = "SetTransformOrientation " + ts;
-					g_app->GetConsole()->ExecCommand(cmd);
-				}
+        change = false;
+        ImGui::PushItemWidth(72);
+        if (ImGui::BeginCombo("##TRS", itemsOrient[currentItemOrient], ImGuiComboFlags_None))
+        {
+          for (int n = 0; n < IM_ARRAYSIZE(itemsOrient); n++)
+          {
+            bool is_selected = (currentItemOrient == n);
+            if (ImGui::Selectable(itemsOrient[n], is_selected))
+            {
+              if (currentItemOrient != n)
+              {
+                change = true;
+              }
+              currentItemOrient = n;
+            }
 
-				static float hoverTimeTO = 0.0f;
-				ImGui::SameLine(0, spacing); UI::HelpMarker("Transform orientations\n", &hoverTimeTO);
-				
-				// Snap Bar.
-				ImGui::Separator();
+            if (is_selected)
+            {
+              ImGui::SetItemDefaultFocus();
+            }
+          }
+          ImGui::EndCombo();
+        }
+        ImGui::PopItemWidth();
 
-				// Snap button.
-				ImGui::SameLine(0, spacing);
-				static float hoverTimeSnapBtn = 0.0f;
+        if (change)
+        {
+          String ts;
+          switch (currentItemOrient)
+          {
+          case 1:
+            ts = "parent";
+            break;
+          case 2:
+            ts = "local";
+            break;
+          case 0:
+          default:
+            ts = "world";
+            break;
+          }
 
-				// Auto snap.
-				static bool autoSnapActivated = false;
-				if (ImGui::GetIO().KeyCtrl)
-				{
-					if (!g_app->m_snapsEnabled)
-					{
-						autoSnapActivated = true;
-						g_app->m_snapsEnabled = true;
-					}
-				}
-				else if (autoSnapActivated)
-				{
-					autoSnapActivated = false;
-					g_app->m_snapsEnabled = false;
-				}
+          String cmd = "SetTransformOrientation " + ts;
+          g_app->GetConsole()->ExecCommand(cmd);
+        }
 
-				g_app->m_snapsEnabled = UI::ToggleButton((void*)(intptr_t)UI::m_snapIcon->m_textureId, ImVec2(13, 13), g_app->m_snapsEnabled);
-				
-				if (ImGui::BeginPopupContextItem("##SnapMenu"))
-				{
-					ImGui::PushItemWidth(75);
-					ImGui::InputFloat("Move delta", &g_app->m_moveDelta, 0.0f, 0.0f, "%.2f");
-					ImGui::InputFloat("Rotate delta", &g_app->m_rotateDelta, 0.0f, 0.0f, "%.2f");
-					ImGui::InputFloat("Scale delta", &g_app->m_scaleDelta, 0.0f, 0.0f, "%.2f");
-					ImGui::PopItemWidth();
-					ImGui::Checkbox("Snap to grid", &g_app->m_snapToGrid);
+        static float hoverTimeTO = 0.0f;
+        ImGui::SameLine(0, spacing); UI::HelpMarker("Transform orientations\n", &hoverTimeTO);
 
-					ImGui::EndPopup();
-				}
+        // Snap Bar.
+        ImGui::Separator();
 
-				ImGui::EndChildFrame();
-			}
+        // Snap button.
+        ImGui::SameLine(0, spacing);
+        static float hoverTimeSnapBtn = 0.0f;
 
-		}
+        // Auto snap.
+        static bool autoSnapActivated = false;
+        if (ImGui::GetIO().KeyCtrl)
+        {
+          if (!g_app->m_snapsEnabled)
+          {
+            autoSnapActivated = true;
+            g_app->m_snapsEnabled = true;
+          }
+        }
+        else if (autoSnapActivated)
+        {
+          autoSnapActivated = false;
+          g_app->m_snapsEnabled = false;
+        }
 
-	}
+        g_app->m_snapsEnabled = UI::ToggleButton((void*)(intptr_t)UI::m_snapIcon->m_textureId, ImVec2(13, 13), g_app->m_snapsEnabled);
+
+        if (ImGui::BeginPopupContextItem("##SnapMenu"))
+        {
+          ImGui::PushItemWidth(75);
+          ImGui::InputFloat("Move delta", &g_app->m_moveDelta, 0.0f, 0.0f, "%.2f");
+          ImGui::InputFloat("Rotate delta", &g_app->m_rotateDelta, 0.0f, 0.0f, "%.2f");
+          ImGui::InputFloat("Scale delta", &g_app->m_scaleDelta, 0.0f, 0.0f, "%.2f");
+          ImGui::PopItemWidth();
+          ImGui::Checkbox("Snap to grid", &g_app->m_snapToGrid);
+
+          ImGui::EndPopup();
+        }
+
+        ImGui::EndChildFrame();
+      }
+
+    }
+
+  }
 }

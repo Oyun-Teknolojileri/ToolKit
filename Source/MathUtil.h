@@ -17,8 +17,8 @@ namespace ToolKit
 
   struct BoundingBox
   {
-		Vec3 min = Vec3(FLT_MAX);
-		Vec3 max = Vec3(-FLT_MAX);
+    Vec3 min = Vec3(FLT_MAX);
+    Vec3 max = Vec3(-FLT_MAX);
   };
 
   struct Ray
@@ -66,8 +66,8 @@ namespace ToolKit
   bool SpherePointIntersection(const Vec3& spherePos, float sphereRadius, const Vec3& vertex);
   bool SphereSphereIntersection(const Vec3& spherePos, float sphereRadius, const Vec3& spherePos2, float sphereRadius2);
   bool RayBoxIntersection(const Ray& ray, const BoundingBox& box, float& t);
-	bool RayTriangleIntersection(const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t);
-	bool RayMeshIntersection(class Mesh* const mesh, const Ray& ray, float& t);
+  bool RayTriangleIntersection(const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t);
+  bool RayMeshIntersection(class Mesh* const mesh, const Ray& ray, float& t);
   IntersectResult FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box); // 0 outside, 1 inside, 2 intersect
   bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t);
   bool RaySphereIntersection(const Ray& ray, const BoundingSphere& sphere, float& t);
@@ -77,7 +77,7 @@ namespace ToolKit
   // Geometric Operations
   //////////////////////////////////////////
   void NormalizePlaneEquation(PlaneEquation& plane);
-	void TransformAABB(BoundingBox& box, const Mat4& transform);
+  void TransformAABB(BoundingBox& box, const Mat4& transform);
   PlaneEquation PlaneFrom(Vec3 const pnts[3]);
   PlaneEquation PlaneFrom(Vec3 point, Vec3 normal);
   float SignedDistance(const PlaneEquation& plane, const Vec3& pnt);
@@ -88,5 +88,5 @@ namespace ToolKit
   Vec3 Interpolate(const Vec3& vec1, const Vec3& vec2, float ratio);
   void ToSpherical(Vec3 p, float& r, float& zenith, float& azimuth);
   Vec3 ToCartesian(float r, float zenith, float azimuth);
-	Quaternion RotationTo(Vec3 a, Vec3 b); // Returns quaternion wich rotates a on to b.
+  Quaternion RotationTo(Vec3 a, Vec3 b); // Returns quaternion wich rotates a on to b.
 }

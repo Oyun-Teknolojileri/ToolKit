@@ -15,7 +15,7 @@ namespace ToolKit
   class SpriteAnimation;
   class Shader;
   class Material;
-	class RenderTarget;
+  class RenderTarget;
 
   class Renderer
   {
@@ -27,7 +27,7 @@ namespace ToolKit
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
     void SetRenderState(const RenderState* const state);
-		void SetRenderTarget(RenderTarget* renderTarget, bool clear = true);
+    void SetRenderTarget(RenderTarget* renderTarget, bool clear = true);
     void DrawFullQuad(ShaderPtr fragmentShader);
 
   private:
@@ -47,8 +47,8 @@ namespace ToolKit
 
   public:
     uint m_frameCount = 0;
-		uint m_windowWidth = 0;
-		uint m_windowHeight = 0;
+    uint m_windowWidth = 0;
+    uint m_windowHeight = 0;
 
   private:
     GLuint m_currentProgram = 0;
@@ -58,7 +58,7 @@ namespace ToolKit
     LightRawPtrArray m_lights;
     Camera* m_cam = nullptr;
     Material* m_mat = nullptr;
-		RenderTarget* m_renderTarget = nullptr;
+    RenderTarget* m_renderTarget = nullptr;
 
     std::unordered_map<String, ProgramPtr> m_programs;
     RenderState m_renderState;

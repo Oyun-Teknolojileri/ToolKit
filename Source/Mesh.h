@@ -35,20 +35,20 @@ namespace ToolKit
     virtual ~Mesh();
 
     virtual void Init(bool flushClientSideArray = true) override;
-		virtual void UnInit() override;
+    virtual void UnInit() override;
     virtual void Load() override;
     virtual Mesh* GetCopy() override;
     virtual int GetVertexSize() const;
     virtual bool IsSkinned() const;
-		void CalculateAABoundingBox();
-		void GetAllMeshes(MeshRawPtrArray& meshes);
+    void CalculateAABoundingBox();
+    void GetAllMeshes(MeshRawPtrArray& meshes);
     void Scale(const Vec3& scale);
     void ConstructFaces();
 
   protected:
     virtual void InitVertices(bool flush);
     virtual void InitIndices(bool flush);
-		void UpdateAABB(const Vec3& v);
+    void UpdateAABB(const Vec3& v);
 
   public:
     VertexArray m_clientSideVertices;
@@ -59,7 +59,7 @@ namespace ToolKit
     uint m_indexCount = 0;
     MaterialPtr m_material;
     MeshPtrArray m_subMeshes;
-		BoundingBox m_aabb;
+    BoundingBox m_aabb;
     FaceArray m_faces;
 
   private:
@@ -87,7 +87,7 @@ namespace ToolKit
     ~SkinMesh();
 
     virtual void Init(bool flushClientSideArray = true) override;
-		virtual void UnInit() override;
+    virtual void UnInit() override;
     virtual void Load() override;
 
     virtual int GetVertexSize() const override;

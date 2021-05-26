@@ -126,12 +126,12 @@ public:
       for (int j = (int)m_projectileManager.m_projectiles.size() - 1; j > -1; j--)
       {
         if (
-            SpherePointIntersection
-            (
-              m_meteorManager.m_meteors[i]->m_node->GetTranslation(),
-              m_meteorManager.m_meteors[i]->m_collisionRadius, 
-              m_projectileManager.m_projectiles[j]->m_node->GetTranslation(TransformationSpace::TS_WORLD)
-            )
+          SpherePointIntersection
+          (
+            m_meteorManager.m_meteors[i]->m_node->GetTranslation(),
+            m_meteorManager.m_meteors[i]->m_collisionRadius,
+            m_projectileManager.m_projectiles[j]->m_node->GetTranslation(TransformationSpace::TS_WORLD)
+          )
           )
         {
           SafeDel(m_projectileManager.m_projectiles[j]);
@@ -187,7 +187,7 @@ public:
     m_renderer.Render(&m_backGround, &m_cam);
     m_renderer.Render(&m_paralaxLayer, &m_cam);
     m_renderer.Render(m_spaceShip, &m_cam);
-    
+
     for (auto entry : m_projectileManager.m_projectiles)
       m_renderer.Render(entry, &m_cam);
 
@@ -205,7 +205,7 @@ public:
   {
     m_renderer.Render(&m_backGround, &m_cam);
     m_renderer.Render(&m_paralaxLayer, &m_cam);
-    
+
     for (auto entry : m_meteorManager.m_meteors)
       m_renderer.Render(entry, &m_cam);
 
@@ -253,11 +253,11 @@ public:
         Meteor* a = m_meteorManager.m_meteors[i];
         Meteor* b = m_meteorManager.m_meteors[j];
         if (
-            SphereSphereIntersection
-            (
-              a->m_node->GetTranslation(), a->m_collisionRadius,
-              b->m_node->GetTranslation(), b->m_collisionRadius
-            )
+          SphereSphereIntersection
+          (
+            a->m_node->GetTranslation(), a->m_collisionRadius,
+            b->m_node->GetTranslation(), b->m_collisionRadius
+          )
           )
         {
           if (glm::abs(b->m_speed - 0.3f) < 0.01)

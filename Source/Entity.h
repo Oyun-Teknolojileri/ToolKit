@@ -35,7 +35,7 @@ namespace ToolKit
     virtual bool IsDrawable() const;
     virtual EntityType GetType() const;
     virtual void SetPose(Animation* anim);
-		virtual struct BoundingBox GetAABB(bool inWorld = false) const;
+    virtual struct BoundingBox GetAABB(bool inWorld = false) const;
     virtual Entity* GetCopy() const;
     virtual void GetCopy(Entity* copyTo) const;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
@@ -43,11 +43,11 @@ namespace ToolKit
 
   public:
     Node* m_node;
-		EntityId m_id;
+    EntityId m_id;
     String m_name;
 
-	private:
-		static EntityId m_lastId;
+  private:
+    static EntityId m_lastId;
   };
 
 }

@@ -53,9 +53,9 @@ namespace ToolKit
     bool m_initiated = false;
   };
 
-	AnimationManager* GetAnimationManager();
+  AnimationManager* GetAnimationManager();
   AnimationPlayer* GetAnimationPlayer();
-	AudioManager* GetAudioManager();
+  AudioManager* GetAudioManager();
   MaterialManager* GetMaterialManager();
   MeshManager* GetMeshManager();
   ShaderManager* GetShaderManager();
@@ -64,15 +64,15 @@ namespace ToolKit
   TextureManager* GetTextureManager();
 
   String ResourcePath();
-	String TexturePath(const String& file);
-	String MeshPath(const String& file);
-	String FontPath(const String& file);
-	String SpritePath(const String& file);
-	String AudioPath(const String& file);
-	String AnimationPath(const String& file);
-	String SkeletonPath(const String& file);
-	String ShaderPath(const String& file);
-	String MaterialPath(const String& file);
+  String TexturePath(const String& file);
+  String MeshPath(const String& file);
+  String FontPath(const String& file);
+  String SpritePath(const String& file);
+  String AudioPath(const String& file);
+  String AnimationPath(const String& file);
+  String SkeletonPath(const String& file);
+  String ShaderPath(const String& file);
+  String MaterialPath(const String& file);
   String ScenePath(const String& file);
 
 }

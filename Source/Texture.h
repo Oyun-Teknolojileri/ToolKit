@@ -18,10 +18,10 @@ namespace ToolKit
 
     virtual void Load() override;
     virtual void Init(bool flushClientSideArray = true) override;
-		virtual void UnInit() override;
+    virtual void UnInit() override;
 
-	protected:
-		virtual void Clear();
+  protected:
+    virtual void Clear();
 
   public:
     GLuint m_textureId = 0;
@@ -40,7 +40,7 @@ namespace ToolKit
 
     virtual void Load() override;
     virtual void Init(bool flushClientSideArray = true) override;
-		virtual void UnInit() override;
+    virtual void UnInit() override;
 
   protected:
     virtual void Clear() override;
@@ -53,15 +53,15 @@ namespace ToolKit
   {
   public:
     RenderTarget(uint widht, uint height, bool depthStencil = true);
-		virtual ~RenderTarget();
+    virtual ~RenderTarget();
 
     virtual void Load() override;
     virtual void Init(bool flushClientSideArray = true) override;
-		virtual void UnInit() override;
+    virtual void UnInit() override;
 
-	public:
-		GLuint m_frameBufferId;
-		GLuint m_depthBufferId;
+  public:
+    GLuint m_frameBufferId;
+    GLuint m_depthBufferId;
 
   private:
     bool m_depthStencil;

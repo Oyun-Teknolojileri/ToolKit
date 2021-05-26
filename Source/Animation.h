@@ -32,9 +32,9 @@ namespace ToolKit
 
     virtual void Load() override;
     virtual void Init(bool flushClientSideArray = true) override;
-		virtual void UnInit() override;
+    virtual void UnInit() override;
     virtual Animation* GetCopy() override;
-    
+
 
   private:
     void GetNearestKeys(const std::vector<Key>& keys, int& key1, int& key2, float& ratio); // Finds nearest keys and ratio to current time.

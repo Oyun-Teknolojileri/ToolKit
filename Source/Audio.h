@@ -15,7 +15,7 @@ namespace ToolKit
 
     virtual void Init(bool flushClientSideArray = true) override;
     virtual void Load() override;
-		virtual void UnInit() override;
+    virtual void UnInit() override;
 
   public:
     uint m_buffer;
@@ -47,7 +47,7 @@ namespace ToolKit
     std::shared_ptr<Audio> m_audio;
     uint m_source = 0;
   };
-  
+
   class AudioPlayer
   {
   public:

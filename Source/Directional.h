@@ -20,7 +20,7 @@ namespace ToolKit
     Vec3 GetDir() const;
     Vec3 GetUp() const;
     Vec3 GetRight() const;
-    
+
     virtual EntityType GetType() const override;
   };
 
@@ -43,7 +43,7 @@ namespace ToolKit
     Camera();
     ~Camera();
 
-		void SetLens(float fov, float width, float height);
+    void SetLens(float fov, float width, float height);
     void SetLens(float fov, float width, float height, float near, float far);
     void SetLens(float aspect, float left, float right, float bottom, float top, float near, float far);
     Mat4 GetViewMatrix() const;
@@ -53,11 +53,11 @@ namespace ToolKit
     virtual EntityType GetType() const override;
 
   private:
-		float m_fov;
+    float m_fov;
     float m_aspect;
     float m_near;
     float m_height;
-		bool m_ortographic;
+    bool m_ortographic;
     Mat4 m_projection;
   };
 

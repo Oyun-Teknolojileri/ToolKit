@@ -49,13 +49,13 @@ public:
     for (auto entry : m_meteors)
     {
       if (
-          SphereSphereIntersection
-          (
-            entry->m_node->GetTranslation(TransformationSpace::TS_WORLD),
-            entry->m_collisionRadius + 1,
-            meteor->m_node->GetTranslation(TransformationSpace::TS_WORLD),
-            meteor->m_collisionRadius
-          )
+        SphereSphereIntersection
+        (
+          entry->m_node->GetTranslation(TransformationSpace::TS_WORLD),
+          entry->m_collisionRadius + 1,
+          meteor->m_node->GetTranslation(TransformationSpace::TS_WORLD),
+          meteor->m_collisionRadius
+        )
         )
       {
         SafeDel(meteor);
