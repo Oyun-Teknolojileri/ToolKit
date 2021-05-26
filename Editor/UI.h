@@ -6,149 +6,149 @@
 
 namespace ToolKit
 {
-	class Texture;
+  class Texture;
 
-		namespace Editor
-		{
-			class Window
-			{
-			public:
-				enum class Type
-				{
-					Viewport,
-					Console,
-					InputPopup,
-					Browser,
-					Outliner
-				};
+  namespace Editor
+  {
+    class Window
+    {
+    public:
+      enum class Type
+      {
+        Viewport,
+        Console,
+        InputPopup,
+        Browser,
+        Outliner
+      };
 
-			public:
-				Window();
-				virtual ~Window();
-				virtual void Show() = 0;
-				virtual Type GetType() const = 0;
-				void SetVisibility(bool visible);
+    public:
+      Window();
+      virtual ~Window();
+      virtual void Show() = 0;
+      virtual Type GetType() const = 0;
+      void SetVisibility(bool visible);
 
-				// Window queries.
-				bool IsActive() const;
-				bool IsVisible() const;
-				bool MouseHovers() const;
-				bool CanDispatchSignals() const; // If active & visible & mouse hovers.
+      // Window queries.
+      bool IsActive() const;
+      bool IsVisible() const;
+      bool MouseHovers() const;
+      bool CanDispatchSignals() const; // If active & visible & mouse hovers.
 
-				// System calls.
-				virtual void DispatchSignals() const;
+      // System calls.
+      virtual void DispatchSignals() const;
 
-			protected:
-				// Internal window handling.
-				void HandleStates();
-				void SetActive();
+    protected:
+      // Internal window handling.
+      void HandleStates();
+      void SetActive();
 
-			protected:
-				// States.
-				bool m_visible = true;
-				bool m_active = false;
-				bool m_mouseHover = false;
+    protected:
+      // States.
+      bool m_visible = true;
+      bool m_active = false;
+      bool m_mouseHover = false;
 
-			public:
-				String m_name;
-			};
+    public:
+      String m_name;
+    };
 
-			class StringInputWindow : public Window
-			{
-			public:
-				StringInputWindow();
-				virtual void Show() override;
-				virtual Type GetType() const override { return Window::Type::InputPopup; }
+    class StringInputWindow : public Window
+    {
+    public:
+      StringInputWindow();
+      virtual void Show() override;
+      virtual Type GetType() const override { return Window::Type::InputPopup; }
 
-			public:
-				std::function<void(const String& val)> m_taskFn;
-				String m_inputVal;
-				String m_inputText;
-				String m_hint;
-			};
+    public:
+      std::function<void(const String& val)> m_taskFn;
+      String m_inputVal;
+      String m_inputText;
+      String m_hint;
+    };
 
-			class YesNoWindow : public Window
-			{
-			public:
-				YesNoWindow(const String& name, const String& msg = "");
-				virtual void Show() override;
-				virtual Type GetType() const override { return Window::Type::InputPopup; }
+    class YesNoWindow : public Window
+    {
+    public:
+      YesNoWindow(const String& name, const String& msg = "");
+      virtual void Show() override;
+      virtual Type GetType() const override { return Window::Type::InputPopup; }
 
-			public:
-				std::function<void()> m_yesCallback;
-				std::function<void()> m_noCallback;
-				String m_msg;
-			};
+    public:
+      std::function<void()> m_yesCallback;
+      std::function<void()> m_noCallback;
+      String m_msg;
+    };
 
-			class UI
-			{
-			public:
-				static void Init();
-				static void UnInit();
-				static void InitDocking();
-				static void InitIcons();
-				static void InitTheme();
-				static void ShowUI();
-				static void ShowAppMainMenuBar();
-				static void ShowMenuFile();
-				static void ShowMenuWindows();
-				static void ShowImportWindow();
-				static void ShowSearchForFilesWindow();
-				static void HelpMarker(const char* desc, float* elapsedHoverTime);
-				static void ShowNewSceneWindow();
+    class UI
+    {
+    public:
+      static void Init();
+      static void UnInit();
+      static void InitDocking();
+      static void InitIcons();
+      static void InitTheme();
+      static void ShowUI();
+      static void ShowAppMainMenuBar();
+      static void ShowMenuFile();
+      static void ShowMenuWindows();
+      static void ShowImportWindow();
+      static void ShowSearchForFilesWindow();
+      static void HelpMarker(const char* desc, float* elapsedHoverTime);
+      static void ShowNewSceneWindow();
 
-				// Custom widgets.
-				static bool ToggleButton(ImTextureID user_texture_id, const ImVec2& size, bool pushState);
-				static bool ToggleButton(const String& text, const ImVec2& size, bool pushState);
+      // Custom widgets.
+      static bool ToggleButton(ImTextureID user_texture_id, const ImVec2& size, bool pushState);
+      static bool ToggleButton(const String& text, const ImVec2& size, bool pushState);
 
-			public:
-				static bool m_showNewSceneWindow;
-				static bool m_imguiSampleWindow;
-				static bool m_windowMenushowMetrics;
-				static float m_hoverTimeForHelp;
-				static StringInputWindow m_strInputWindow;
+    public:
+      static bool m_showNewSceneWindow;
+      static bool m_imguiSampleWindow;
+      static bool m_windowMenushowMetrics;
+      static float m_hoverTimeForHelp;
+      static StringInputWindow m_strInputWindow;
 
-				// Volatile windows. (Pop-ups etc.)
-				static std::vector<Window*> m_volatileWindows;
+      // Volatile windows. (Pop-ups etc.)
+      static std::vector<Window*> m_volatileWindows;
 
-				static struct Import
-				{
-					bool showImportWindow = false;
-					bool overwrite = false;
-					StringArray files;
-					String subDir;
-					float scale = 1.0f;
-				} ImportData;
+      static struct Import
+      {
+        bool showImportWindow = false;
+        bool overwrite = false;
+        StringArray files;
+        String subDir;
+        float scale = 1.0f;
+      } ImportData;
 
-				static struct SearchFile
-				{
-					bool showSearchFileWindow = false;
-					StringArray missingFiles;
-					StringArray searchPaths;
-				} SearchFileData;
+      static struct SearchFile
+      {
+        bool showSearchFileWindow = false;
+        StringArray missingFiles;
+        StringArray searchPaths;
+      } SearchFileData;
 
-				// Toolbar Icons.
-				static TexturePtr m_selectIcn;
-				static TexturePtr m_cursorIcn;
-				static TexturePtr m_moveIcn;
-				static TexturePtr m_rotateIcn;
-				static TexturePtr m_scaleIcn;
-				static TexturePtr m_appIcon;
-				static TexturePtr m_snapIcon;
-				static TexturePtr m_audioIcon;
-				static TexturePtr m_cameraIcon;
-				static TexturePtr m_clipIcon;
-				static TexturePtr m_fileIcon;
-				static TexturePtr m_folderIcon;
-				static TexturePtr m_imageIcon;
-				static TexturePtr m_lightIcon;
-				static TexturePtr m_materialIcon;
-				static TexturePtr m_meshIcon;
-				static TexturePtr m_armatureIcon;
-				static TexturePtr m_codeIcon;
-				static TexturePtr m_boneIcon;
-				static TexturePtr m_worldIcon;
-				static TexturePtr m_axisIcon;
-			};
-		}
+      // Toolbar Icons.
+      static TexturePtr m_selectIcn;
+      static TexturePtr m_cursorIcn;
+      static TexturePtr m_moveIcn;
+      static TexturePtr m_rotateIcn;
+      static TexturePtr m_scaleIcn;
+      static TexturePtr m_appIcon;
+      static TexturePtr m_snapIcon;
+      static TexturePtr m_audioIcon;
+      static TexturePtr m_cameraIcon;
+      static TexturePtr m_clipIcon;
+      static TexturePtr m_fileIcon;
+      static TexturePtr m_folderIcon;
+      static TexturePtr m_imageIcon;
+      static TexturePtr m_lightIcon;
+      static TexturePtr m_materialIcon;
+      static TexturePtr m_meshIcon;
+      static TexturePtr m_armatureIcon;
+      static TexturePtr m_codeIcon;
+      static TexturePtr m_boneIcon;
+      static TexturePtr m_worldIcon;
+      static TexturePtr m_axisIcon;
+    };
+  }
 }

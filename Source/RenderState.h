@@ -20,16 +20,16 @@ namespace ToolKit
     Point = GL_POINTS
   };
 
-	enum class CullingType
-	{
-		TwoSided, // No culling
-		Front,
-		Back
-	};
+  enum class CullingType
+  {
+    TwoSided, // No culling
+    Front,
+    Back
+  };
 
   struct RenderState
   {
-		CullingType cullMode = CullingType::Back;
+    CullingType cullMode = CullingType::Back;
     bool depthTestEnabled = true;
     BlendFunction blendFunction = BlendFunction::NONE;
     DrawType drawType = DrawType::Triangle;
@@ -37,7 +37,7 @@ namespace ToolKit
     bool diffuseTextureInUse = false;
     GLuint cubeMap = 0;
     bool cubeMapInUse = false;
-		float lineWidth = 1.0f;
+    float lineWidth = 1.0f;
   };
 
 }

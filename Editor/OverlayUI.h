@@ -5,35 +5,35 @@
 
 namespace ToolKit
 {
-	namespace Editor
-	{
-		class Viewport;
+  namespace Editor
+  {
+    class Viewport;
 
-		class OverlayUI
-		{
-		public:
-			OverlayUI(Viewport* owner);
-			virtual ~OverlayUI();
-			virtual void Show() = 0;
+    class OverlayUI
+    {
+    public:
+      OverlayUI(Viewport* owner);
+      virtual ~OverlayUI();
+      virtual void Show() = 0;
 
-		public:
-			Viewport* m_owner;
-			bool m_mouseOver = false;
-		};
+    public:
+      Viewport* m_owner;
+      bool m_mouseOver = false;
+    };
 
-		class OverlayMods : public OverlayUI
-		{
-		public:
-			OverlayMods(Viewport* owner);
-			virtual void Show() override;
-		};
+    class OverlayMods : public OverlayUI
+    {
+    public:
+      OverlayMods(Viewport* owner);
+      virtual void Show() override;
+    };
 
-		class OverlayViewportOptions : public OverlayUI
-		{
-		public:
-			OverlayViewportOptions(Viewport* owner);
-			virtual void Show() override;
-		};
+    class OverlayViewportOptions : public OverlayUI
+    {
+    public:
+      OverlayViewportOptions(Viewport* owner);
+      virtual void Show() override;
+    };
 
-	}
+  }
 }

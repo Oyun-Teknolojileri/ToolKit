@@ -21,9 +21,9 @@ namespace ToolKit
 
     virtual void Load() override;
     virtual void Init(bool flushClientSideArray = true) override;
-		virtual void UnInit() override;
+    virtual void UnInit() override;
     virtual Material* GetCopy() override;
-		RenderState* GetRenderState();
+    RenderState* GetRenderState();
 
   public:
     std::shared_ptr<CubeMap> m_cubeMap;
@@ -32,8 +32,8 @@ namespace ToolKit
     ShaderPtr m_fragmetShader;
     Vec3 m_color;
 
-	private:
-		RenderState m_renderState;
+  private:
+    RenderState m_renderState;
   };
 
   class MaterialManager : public ResourceManager<Material>

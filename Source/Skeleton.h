@@ -26,7 +26,7 @@ namespace ToolKit
     ~Skeleton();
 
     virtual void Init(bool flushClientSideArray = true) override;
-		virtual void UnInit() override;
+    virtual void UnInit() override;
     virtual void Load() override;
 
     void AddBone(Bone* bone, Bone* parent = nullptr);

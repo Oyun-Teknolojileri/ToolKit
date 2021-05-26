@@ -129,14 +129,14 @@ public:
     bool deleteMark = false;
     for (auto entry : m_onGoingPowerUps)
     {
-      if 
-      (
-        SphereSphereIntersection
+      if
         (
-          entry->m_node->GetTranslation(), entry->m_collisionRad,
-          pop->m_node->GetTranslation(), pop->m_collisionRad
-        )
-      )
+          SphereSphereIntersection
+          (
+            entry->m_node->GetTranslation(), entry->m_collisionRad,
+            pop->m_node->GetTranslation(), pop->m_collisionRad
+          )
+          )
       {
         deleteMark = true;
         break;

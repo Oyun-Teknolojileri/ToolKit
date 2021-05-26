@@ -177,9 +177,9 @@ unsigned long GetMilliSeconds()
   return (unsigned long)(time_span.count() * 1000.0);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
   Init();
 
@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
     if (currentTime > lastTime + fps)
     {
       // Key handlings
-      const Uint8 *state = SDL_GetKeyboardState(nullptr);
+      const Uint8* state = SDL_GetKeyboardState(nullptr);
       if (state[SDL_SCANCODE_W])
         g_app->m_cam.Translate(glm::vec3(0, 0, -0.1));
 
