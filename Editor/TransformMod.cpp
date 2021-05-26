@@ -410,6 +410,8 @@ namespace ToolKit
 				}
 				ActionManager::GetInstance()->GroupLastActions((int)entities.size());
 			}
+
+			m_delta = Vec3(0.0f);
 		}
 
 		void StateTransformTo::TransitionOut(State* prevState)
