@@ -508,14 +508,14 @@ namespace ToolKit
               }
 
               if
-                (
-                  ext == PNG ||
-                  ext == JPG ||
-                  ext == JPEG ||
-                  ext == TGA ||
-                  ext == BMP ||
-                  ext == PSD
-                  )
+              (
+                ext == PNG ||
+                ext == JPG ||
+                ext == JPEG ||
+                ext == TGA ||
+                ext == BMP ||
+                ext == PSD
+              )
               {
                 fullPath = TexturePath(line);
               }

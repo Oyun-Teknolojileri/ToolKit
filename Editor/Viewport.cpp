@@ -53,6 +53,8 @@ namespace ToolKit
 
     void Viewport::Show()
     {
+      m_mouseOverOverlay = false;
+
       ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
       if (ImGui::Begin(m_name.c_str(), &m_visible, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
       {
@@ -227,7 +229,7 @@ namespace ToolKit
 
     void Viewport::DispatchSignals() const
     {
-      if (CanDispatchSignals())
+      if (!CanDispatchSignals() || m_mouseOverOverlay)
       {
         return;
       }

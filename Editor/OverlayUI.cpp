@@ -21,6 +21,17 @@ namespace ToolKit
     {
     }
 
+    void OverlayUI::SetOwnerState()
+    {
+      if (m_owner && m_owner->IsActive() && m_owner->IsVisible())
+      {
+        if (ImGui::IsWindowHovered())
+        {
+          m_owner->m_mouseOverOverlay = true;
+        }
+      }
+    }
+
     // OverlayMods
     //////////////////////////////////////////////////////////////////////////
 
@@ -38,7 +49,7 @@ namespace ToolKit
       ImGui::SetNextWindowBgAlpha(0.65f);
       if (ImGui::BeginChildFrame(ImGui::GetID("Navigation"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
       {
-        m_mouseOver = ImGui::IsWindowHovered();
+        SetOwnerState();
 
         // Select button.
         static float hoverTimeSelectBtn = 0.0f;
@@ -245,7 +256,8 @@ namespace ToolKit
       ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding + 52, m_owner->m_wndPos.y + padding);
       ImGui::SetNextWindowPos(window_pos);
       ImGui::SetNextWindowBgAlpha(0.65f);
-      if (
+      if 
+      (
         ImGui::BeginChildFrame
         (
           ImGui::GetID("ViewportOptions"),
@@ -255,9 +267,9 @@ namespace ToolKit
           | ImGuiWindowFlags_NoScrollbar
           | ImGuiWindowFlags_NoScrollWithMouse
         )
-        )
+      )
       {
-        m_mouseOver = ImGui::IsWindowHovered();
+        SetOwnerState();
 
         ImGui::Image(Convert2ImGuiTexture(UI::m_worldIcon), ImVec2(20.0f, 20.0f));
         ImGui::SameLine();
