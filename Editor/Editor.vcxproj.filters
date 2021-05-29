@@ -84,6 +84,7 @@
     <ClCompile Include="ImGui\imgui_tables.cpp">
       <Filter>UI\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="PropInspector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -150,6 +151,9 @@
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="OutlinerWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="PropInspector.h">
       <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>

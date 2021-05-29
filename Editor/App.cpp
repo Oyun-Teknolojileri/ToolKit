@@ -15,6 +15,7 @@
 #include "Gizmo.h"
 #include "FolderWindow.h"
 #include "OutlinerWindow.h"
+#include "PropInspector.h"
 #include "DebugNew.h"
 
 #include <filesystem>
@@ -174,6 +175,10 @@ namespace ToolKit
       OutlinerWindow* outliner = new OutlinerWindow();
       outliner->m_name = g_outlinerStr;
       m_windows.push_back(outliner);
+
+      PropInspector* inspector = new PropInspector();
+      inspector->m_name = g_propInspector;
+      m_windows.push_back(inspector);
 
       UI::InitIcons();
     }
@@ -654,29 +659,30 @@ namespace ToolKit
 
     FolderWindow* App::GetAssetBrowser()
     {
-      for (Window* wnd : m_windows)
-      {
-        if (wnd->GetType() == Window::Type::Browser)
-        {
-          if (wnd->m_name == g_assetBrowserStr)
-          {
-            return static_cast<FolderWindow*> (wnd);
-          }
-        }
-      }
-
-      return nullptr;
+      return GetWindow<FolderWindow>(g_assetBrowserStr);
     }
 
     OutlinerWindow* App::GetOutliner()
     {
+      return GetWindow<OutlinerWindow>(g_outlinerStr);
+    }
+
+    PropInspector* App::GetPropInspector()
+    {
+      return GetWindow<PropInspector>(g_propInspector);
+    }
+
+    template<typename T>
+    T* App::GetWindow(const String& name)
+    {
       for (Window* wnd : m_windows)
       {
-        if (wnd->GetType() == Window::Type::Outliner)
+        T* casted = dynamic_cast<T*> (wnd);
+        if (casted)
         {
-          if (wnd->m_name == g_outlinerStr)
+          if (casted->m_name == name)
           {
-            return static_cast<OutlinerWindow*> (wnd);
+            return casted;
           }
         }
       }

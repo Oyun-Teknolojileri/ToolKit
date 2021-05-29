@@ -15,6 +15,7 @@
 #include "FolderWindow.h"
 #include "OverlayUI.h"
 #include "OutlinerWindow.h"
+#include "PropInspector.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -391,6 +392,11 @@ namespace ToolKit
       if (ImGui::MenuItem("Outliner Window", "Alt+O", nullptr, !g_app->GetOutliner()->IsVisible()))
       {
         g_app->GetOutliner()->SetVisibility(true);
+      }
+
+      if (ImGui::MenuItem("Property Inspector", "Alt+P", nullptr, !g_app->GetPropInspector()->IsVisible()))
+      {
+        g_app->GetPropInspector()->SetVisibility(true);
       }
 
       ImGui::Separator();

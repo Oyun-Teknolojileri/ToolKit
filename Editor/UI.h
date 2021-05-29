@@ -19,7 +19,8 @@ namespace ToolKit
         Console,
         InputPopup,
         Browser,
-        Outliner
+        Outliner,
+        Inspector
       };
 
     public:

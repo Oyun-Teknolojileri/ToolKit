@@ -21,6 +21,7 @@ namespace ToolKit
     class ConsoleWindow;
     class FolderWindow;
     class OutlinerWindow;
+    class PropInspector;
     class Window;
     class Gizmo;
 
@@ -47,6 +48,10 @@ namespace ToolKit
       ConsoleWindow* GetConsole();
       FolderWindow* GetAssetBrowser();
       OutlinerWindow* GetOutliner();
+      PropInspector* GetPropInspector();
+
+      template<typename T>
+      T* GetWindow(const String& name);
 
       // Quick selected render implementation.
       void RenderSelected(Viewport* vp);
