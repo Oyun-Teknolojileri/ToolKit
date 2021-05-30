@@ -39,7 +39,7 @@ namespace ToolKit
 
         // Get transform orientation.
         m_gizmo->m_normalVectors = Mat3();
-        switch (g_app->m_transformOrientation)
+        switch (g_app->m_transformSpace)
         {
         case TransformationSpace::TS_WORLD:
           break;
@@ -568,7 +568,7 @@ namespace ToolKit
         }
       }
 
-      TransformationSpace space = g_app->m_transformOrientation;
+      TransformationSpace space = g_app->m_transformSpace;
       switch (m_type)
       {
       case TransformType::Translate:
@@ -663,7 +663,6 @@ namespace ToolKit
       : BaseMod(id)
     {
       m_gizmo = nullptr;
-      Init();
     }
 
     TransformMod::~TransformMod()
@@ -716,6 +715,20 @@ namespace ToolKit
       state = new StateDuplicate();
       state->m_links[m_backToStart] = StateType::StateTransformBegin;
       m_stateMachine->PushState(state);
+
+      m_prevTransformSpace = g_app->m_transformSpace;
+      if (m_id == ModId::Scale)
+      {
+        g_app->m_transformSpace = TransformationSpace::TS_LOCAL;
+      }
+    }
+
+    void TransformMod::UnInit()
+    {
+      if (m_id == ModId::Scale)
+      {
+        g_app->m_transformSpace = m_prevTransformSpace;
+      }
     }
 
     void TransformMod::Update(float deltaTime)

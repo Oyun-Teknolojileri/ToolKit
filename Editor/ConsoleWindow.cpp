@@ -315,22 +315,23 @@ namespace ToolKit
       String tsStr = tagArgs.front().second.front();
       if (tsStr == "world")
       {
-        g_app->m_transformOrientation = TransformationSpace::TS_WORLD;
+        g_app->m_transformSpace = TransformationSpace::TS_WORLD;
       }
 
       if (tsStr == "parent")
       {
-        g_app->m_transformOrientation = TransformationSpace::TS_PARENT;
+        g_app->m_transformSpace = TransformationSpace::TS_PARENT;
       }
 
       if (tsStr == "local")
       {
-        g_app->m_transformOrientation = TransformationSpace::TS_LOCAL;
+        g_app->m_transformSpace = TransformationSpace::TS_LOCAL;
       }
 
       BaseMod* mod = ModManager::GetInstance()->m_modStack.back();
       if (TransformMod* tsm = dynamic_cast<TransformMod*> (mod))
       {
+        tsm->m_prevTransformSpace = g_app->m_transformSpace;
         tsm->Signal(TransformMod::m_backToStart);
       }
     }

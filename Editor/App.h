@@ -86,7 +86,7 @@ namespace ToolKit
       bool m_showOverlayUI = true;
       bool m_showOverlayUIAlways = true;
       bool m_importSlient = false;
-      TransformationSpace m_transformOrientation = TransformationSpace::TS_WORLD;
+      TransformationSpace m_transformSpace = TransformationSpace::TS_WORLD;
 
       // Snap settings.
       bool m_snapsEnabled = false; // Delta transforms.

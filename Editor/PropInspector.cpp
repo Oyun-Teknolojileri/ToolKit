@@ -39,14 +39,14 @@ namespace ToolKit
         {
           Mat3 rotate;
           Vec3 scale, shear;
-          Mat4 ts = curr->m_node->GetTransform(g_app->m_transformOrientation);
+          Mat4 ts = curr->m_node->GetTransform(g_app->m_transformSpace);
           QDUDecomposition(ts, rotate, scale, shear);
 
           Vec3 eularXYZ;
           glm::extractEulerAngleXYZ<float>(rotate, eularXYZ.x, eularXYZ.y, eularXYZ.z);
 
           bool setTs = false;
-          Vec3 translate = ts[3];
+          Vec3 translate = glm::column(ts, 3);
           if (ImGui::DragFloat3("Translate", &translate[0], 0.25f))
           {
             setTs = true;
@@ -59,23 +59,18 @@ namespace ToolKit
             setTs = true;
           }
 
+          scale = curr->m_node->GetScale();
           if (ImGui::DragFloat3("Scale", &scale[0], 0.01f, 0.0001f))
           {
-            setTs = true;
+            curr->m_node->SetScale(scale);
           }
 
           if (setTs)
           {
-            Mat4 ts, scl;
+            Mat4 ts;
             ts[3].xyz = translate;
-            Quaternion x = glm::angleAxis(eularXYZ.x, X_AXIS);
-            Quaternion y = glm::angleAxis(eularXYZ.y, Y_AXIS);
-            Quaternion z = glm::angleAxis(eularXYZ.z, Z_AXIS);
-            Mat4 rt = glm::toMat4(x * y * z);
-            //Mat4 rt = glm::eulerAngleXYZ(eularXYZ.x, eularXYZ.y, eularXYZ.z);
-            scl = glm::scale(scl, scale);
-
-            curr->m_node->SetTransform(ts * rt * scl, g_app->m_transformOrientation);
+            Mat4 rt = glm::eulerAngleXYZ(eularXYZ.x, eularXYZ.y, eularXYZ.z);
+            curr->m_node->SetTransform(ts * rt, g_app->m_transformSpace);
           }
         }
       }

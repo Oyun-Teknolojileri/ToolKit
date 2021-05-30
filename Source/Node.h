@@ -24,8 +24,8 @@ namespace ToolKit
     void Translate(const Vec3& val, TransformationSpace space = TransformationSpace::TS_PARENT);
     void Rotate(const Quaternion& val, TransformationSpace space = TransformationSpace::TS_PARENT);
     void Scale(const Vec3& val);
-    void Transform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_PARENT);
-    void SetTransform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_PARENT);
+    void Transform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_PARENT, bool noScale = true);
+    void SetTransform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_PARENT, bool noScale = true);
     Mat4 GetTransform(TransformationSpace space = TransformationSpace::TS_PARENT);
     void SetTranslation(const Vec3& val, TransformationSpace space = TransformationSpace::TS_PARENT);
     Vec3 GetTranslation(TransformationSpace space = TransformationSpace::TS_PARENT);

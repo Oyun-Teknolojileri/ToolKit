@@ -49,14 +49,26 @@ namespace ToolKit
     m_scale *= val;
   }
 
-  void Node::Transform(const Mat4& val, TransformationSpace space)
+  void Node::Transform(const Mat4& val, TransformationSpace space, bool noScale)
   {
-    TransformImp(val, space, &m_translation, &m_orientation, &m_scale);
+    Vec3 tmpScl = m_scale;
+    if (noScale)
+    {
+      m_scale = Vec3(1.0f);
+    } 
+    TransformImp(val, space, &m_translation, &m_orientation, noScale ? nullptr : &m_scale);
+    m_scale = tmpScl;
   }
 
-  void Node::SetTransform(const Mat4& val, TransformationSpace space)
+  void Node::SetTransform(const Mat4& val, TransformationSpace space, bool noScale)
   {
-    SetTransformImp(val, space, &m_translation, &m_orientation, &m_scale);
+    Vec3 tmpScl = m_scale;
+    if (noScale)
+    {
+      m_scale = Vec3(1.0f);
+    }
+    SetTransformImp(val, space, &m_translation, &m_orientation, noScale ? nullptr : &m_scale);
+    m_scale = tmpScl;
   }
 
   Mat4 Node::GetTransform(TransformationSpace space)
@@ -124,8 +136,8 @@ namespace ToolKit
 
   void Node::SetScale(const Vec3& val)
   {
-    SetChildrenDirty();
     m_scale = val;
+    SetChildrenDirty();
   }
 
   Vec3 Node::GetScale()
