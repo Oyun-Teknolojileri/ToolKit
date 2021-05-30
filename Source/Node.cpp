@@ -44,10 +44,9 @@ namespace ToolKit
     m_scale = tmpScl;
   }
 
-  void Node::Scale(const Vec3& val, TransformationSpace space)
+  void Node::Scale(const Vec3& val)
   {
-    Mat4 ts = glm::diagonal4x4(Vec4(val, 1.0f));
-    TransformImp(ts, space, nullptr, nullptr, &m_scale);
+    m_scale *= val;
   }
 
   void Node::Transform(const Mat4& val, TransformationSpace space)
@@ -78,8 +77,8 @@ namespace ToolKit
       else
       {
         m_translation = val;
+        SetChildrenDirty();
       }
-      SetChildrenDirty();
     }
     else
     {
@@ -106,8 +105,8 @@ namespace ToolKit
       else
       {
         m_orientation = val;
+        SetChildrenDirty();
       }
-      SetChildrenDirty();
     }
     else
     {
@@ -123,50 +122,15 @@ namespace ToolKit
     return q;
   }
 
-  void Node::SetScale(const Vec3& val, TransformationSpace space)
+  void Node::SetScale(const Vec3& val)
   {
     SetChildrenDirty();
-
-    // Unless locally applied, Scale needs to preserve directions. Apply rotation first.
-    switch (space)
-    {
-    case TransformationSpace::TS_WORLD:
-    {
-      Mat3 ts, ps;
-      ts = glm::diagonal3x3(val);
-      Quaternion ws = GetOrientation(TransformationSpace::TS_WORLD);
-      if (m_parent != nullptr)
-      {
-        ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
-      }
-      ts = glm::inverse(ps) * ts * glm::toMat3(ws);
-      DecomposeMatrix(ts, nullptr, nullptr, &m_scale);
-    }
-    break;
-    case TransformationSpace::TS_PARENT:
-    {
-      Mat3 ts, ps;
-      ts = glm::diagonal3x3(val);
-      Quaternion ws = GetOrientation(TransformationSpace::TS_WORLD);
-      if (m_parent != nullptr)
-      {
-        ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
-      }
-      ts = glm::inverse(ps) * ts * glm::inverse(ps) * glm::toMat3(ws);
-      DecomposeMatrix(ts, nullptr, nullptr, &m_scale);
-    }
-    break;
-    case TransformationSpace::TS_LOCAL:
-      m_scale = val;
-      break;
-    }
+    m_scale = val;
   }
 
-  Vec3 Node::GetScale(TransformationSpace space)
+  Vec3 Node::GetScale()
   {
-    Vec3 s;
-    GetTransformImp(space, nullptr, nullptr, nullptr, &s);
-    return s;
+    return m_scale;
   }
 
   void Node::AddChild(Node* child, bool preserveTransform)

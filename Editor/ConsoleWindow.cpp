@@ -157,11 +157,11 @@ namespace ToolKit
         {
           if (set)
           {
-            e->m_node->SetScale(transfrom, ts);
+            e->m_node->SetScale(transfrom);
           }
           else
           {
-            e->m_node->Scale(transfrom, ts);
+            e->m_node->Scale(transfrom);
           }
         }
         else if (tag == "t")
@@ -261,7 +261,7 @@ namespace ToolKit
         {
           Quaternion q = e->m_node->GetOrientation(ts);
           Vec3 t = e->m_node->GetTranslation(ts);
-          Vec3 s = e->m_node->GetScale(ts);
+          Vec3 s = e->m_node->GetScale();
 
           if (ConsoleWindow* cwnd = g_app->GetConsole())
           {

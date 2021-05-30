@@ -31,7 +31,7 @@ namespace ToolKit
           float distToCenter = glm::distance(Vec3(), data.pos);
           float dCompansate = distToCenter * 4.0f / 500.0f;
           float hCompansate = m_settings.heightInScreenSpace / windowHeight;
-          m_node->SetScale(Vec3(dCompansate * hCompansate), TransformationSpace::TS_LOCAL); // Compensate shrinkage due to height changes.
+          m_node->SetScale(Vec3(dCompansate * hCompansate)); // Compensate shrinkage due to height changes.
         }
       }
       else
@@ -51,7 +51,7 @@ namespace ToolKit
 
         if (m_settings.heightInScreenSpace > 0.0f)
         {
-          m_node->SetScale(Vec3(m_settings.heightInScreenSpace / data.height), TransformationSpace::TS_LOCAL); // Compensate shrinkage due to height changes.
+          m_node->SetScale(Vec3(m_settings.heightInScreenSpace / data.height)); // Compensate shrinkage due to height changes.
         }
       }
 

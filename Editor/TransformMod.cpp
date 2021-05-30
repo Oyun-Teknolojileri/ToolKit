@@ -609,16 +609,8 @@ namespace ToolKit
       break;
       case TransformType::Scale:
       {
-        if (space == TransformationSpace::TS_LOCAL)
-        {
-          Vec3 scale = e->m_node->GetScale(TransformationSpace::TS_WORLD);
-          e->m_node->SetScale(scale + delta, TransformationSpace::TS_LOCAL);
-        }
-        else
-        {
-          int indx = (int)m_gizmo->GetGrabbedAxis();
-          e->m_node->Scale(Vec3(1.0f + delta[indx]), space);
-        }
+        Vec3 scale = e->m_node->GetScale();
+        e->m_node->SetScale(scale + delta);
       }
       break;
       }

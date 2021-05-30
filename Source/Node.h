@@ -23,7 +23,7 @@ namespace ToolKit
 
     void Translate(const Vec3& val, TransformationSpace space = TransformationSpace::TS_PARENT);
     void Rotate(const Quaternion& val, TransformationSpace space = TransformationSpace::TS_PARENT);
-    void Scale(const Vec3& val, TransformationSpace space = TransformationSpace::TS_PARENT);
+    void Scale(const Vec3& val);
     void Transform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_PARENT);
     void SetTransform(const Mat4& val, TransformationSpace space = TransformationSpace::TS_PARENT);
     Mat4 GetTransform(TransformationSpace space = TransformationSpace::TS_PARENT);
@@ -31,8 +31,8 @@ namespace ToolKit
     Vec3 GetTranslation(TransformationSpace space = TransformationSpace::TS_PARENT);
     void SetOrientation(const Quaternion& val, TransformationSpace space = TransformationSpace::TS_PARENT);
     Quaternion GetOrientation(TransformationSpace space = TransformationSpace::TS_PARENT);
-    void SetScale(const Vec3& val, TransformationSpace space = TransformationSpace::TS_PARENT);
-    Vec3 GetScale(TransformationSpace space = TransformationSpace::TS_PARENT);
+    void SetScale(const Vec3& val);
+    Vec3 GetScale();
     void AddChild(Node* child, bool preserveTransform = false);
     void Orphan(Node* child, bool preserveTransform = false);
     void OrphanSelf(bool preserveWorldTransform = false);
