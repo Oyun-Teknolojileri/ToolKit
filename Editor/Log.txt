@@ -1,1 +1,0 @@
-Missing: ../Resources/Materials/default.material

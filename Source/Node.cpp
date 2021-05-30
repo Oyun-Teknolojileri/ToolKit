@@ -432,10 +432,11 @@ namespace ToolKit
 
   ToolKit::Mat4 Node::GetLocalTransform() const
   {
-    Mat4 ts = glm::toMat4(m_orientation);
-    ts = glm::scale(ts, m_scale);
-    ts[3].xyz = m_translation;
-    return ts;
+    Mat4 ts, rt, scl;
+    scl = glm::scale(scl, m_scale);
+    rt = glm::toMat4(m_orientation);
+    ts = glm::translate(ts, m_translation);
+    return ts * rt * scl;
   }
 
   Mat4 Node::GetParentTransform()

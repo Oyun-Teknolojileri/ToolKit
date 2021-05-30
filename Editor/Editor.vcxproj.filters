@@ -84,7 +84,9 @@
     <ClCompile Include="ImGui\imgui_tables.cpp">
       <Filter>UI\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="PropInspector.cpp" />
+    <ClCompile Include="PropInspector.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">

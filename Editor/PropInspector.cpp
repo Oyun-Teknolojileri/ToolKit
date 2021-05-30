@@ -68,7 +68,11 @@ namespace ToolKit
           {
             Mat4 ts, scl;
             ts[3].xyz = translate;
-            Mat4 rt = glm::eulerAngleXYZ(eularXYZ.x, eularXYZ.y, eularXYZ.z);
+            Quaternion x = glm::angleAxis(eularXYZ.x, X_AXIS);
+            Quaternion y = glm::angleAxis(eularXYZ.y, Y_AXIS);
+            Quaternion z = glm::angleAxis(eularXYZ.z, Z_AXIS);
+            Mat4 rt = glm::toMat4(x * y * z);
+            //Mat4 rt = glm::eulerAngleXYZ(eularXYZ.x, eularXYZ.y, eularXYZ.z);
             scl = glm::scale(scl, scale);
 
             curr->m_node->SetTransform(ts * rt * scl, g_app->m_transformOrientation);

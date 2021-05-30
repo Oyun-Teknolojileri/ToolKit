@@ -21,7 +21,7 @@
 #include <filesystem>
 #include <cstdlib>
 
-// #define TK_SAMPLE_SCENE
+#define TK_SAMPLE_SCENE
 
 namespace ToolKit
 {
