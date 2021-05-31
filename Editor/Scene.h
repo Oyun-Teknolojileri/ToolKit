@@ -43,6 +43,9 @@ namespace ToolKit
       void GetSelectedEntities(EntityIdArray& entities) const;
       void Destroy();
 
+      EntityRawPtrArray GetByTag(const String& tag);
+      void SelectByTag(const String& tag);
+
       virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 

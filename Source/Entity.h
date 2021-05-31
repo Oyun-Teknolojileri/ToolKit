@@ -45,6 +45,7 @@ namespace ToolKit
     Node* m_node;
     EntityId m_id;
     String m_name;
+    String m_tag;
 
   private:
     static EntityId m_lastId;

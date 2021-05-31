@@ -317,6 +317,25 @@ namespace ToolKit
       m_selectedEntities.clear();
     }
 
+    EntityRawPtrArray Scene::GetByTag(const String& tag)
+    {
+      EntityRawPtrArray arrayByTag;
+      for (Entity* e : m_entitites)
+      {
+        if (e->m_tag == tag)
+        {
+          arrayByTag.push_back(e);
+        }
+      }
+
+      return arrayByTag;
+    }
+
+    void Scene::SelectByTag(const String& tag)
+    {
+      AddToSelection(GetByTag(tag), false);
+    }
+
     void Scene::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
       std::ofstream file;

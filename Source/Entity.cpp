@@ -84,6 +84,8 @@ namespace ToolKit
     }
 
     WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(m_id));
+    WriteAttr(node, doc, XmlEntityNameAttr, m_name);
+    WriteAttr(node, doc, XmlEntityTagAttr, m_tag);
     WriteAttr(node, doc, XmlEntityTypeAttr, std::to_string((int)GetType()));
     m_node->Serialize(doc, node);
   }
@@ -104,6 +106,16 @@ namespace ToolKit
     {
       String val = attr->value();
       m_id = std::atoi(val.c_str());
+    }
+
+    if (XmlAttribute* attr = nttNode->first_attribute(XmlEntityNameAttr.c_str()))
+    {
+      m_name = attr->value();
+    }
+
+    if (XmlAttribute* attr = nttNode->first_attribute(XmlEntityTagAttr.c_str()))
+    {
+      m_tag = attr->value();
     }
 
     if (XmlNode* transformNode = nttNode->first_node(XmlNodeElement.c_str()))

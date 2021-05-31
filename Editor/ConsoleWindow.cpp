@@ -341,6 +341,22 @@ namespace ToolKit
       BoolCheck(tagArgs, &g_app->m_importSlient);
     }
 
+    void SelectByTag(TagArgArray tagArgs)
+    {
+      if (tagArgs.empty())
+      {
+        return;
+      }
+      if (tagArgs.front().second.empty())
+      {
+        return;
+      }
+
+      String args = tagArgs.front().second.front();
+
+      g_app->m_scene.SelectByTag(args);
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
     static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
@@ -359,6 +375,7 @@ namespace ToolKit
       CreateCommand(g_getTransformCmd, GetTransformExec);
       CreateCommand(g_setTransformOrientationCmd, SetTransformOrientationExec);
       CreateCommand(g_importSlientCmd, SetImportSlient);
+      CreateCommand(g_selectByTag, SelectByTag);
     }
 
     ConsoleWindow::~ConsoleWindow()

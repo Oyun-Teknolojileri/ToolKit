@@ -30,9 +30,7 @@ namespace ToolKit
         if (ImGui::CollapsingHeader("Basics"))
         {
           ImGui::InputText("Name", &curr->m_name);
-          
-          static String buffer;
-          ImGui::InputText("Tag", &buffer);
+          ImGui::InputText("Tag", &curr->m_tag);
         }
 
         if (ImGui::CollapsingHeader("Transforms"))
