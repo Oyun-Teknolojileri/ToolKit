@@ -45,20 +45,41 @@ namespace ToolKit
 
           bool setTs = false;
           Vec3 translate = glm::column(ts, 3);
-          if (ImGui::DragFloat3("Translate", &translate[0], 0.25f))
+          if
+          (
+            ImGui::DragFloat3("Translate", &translate[0], 0.25f) &&
+            (
+              ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0.1f) ||
+              ImGui::IsItemDeactivatedAfterEdit()
+            )
+          )
           {
             setTs = true;
           }
           
           Vec3 degrees = glm::degrees(eularXYZ);
-          if (ImGui::DragFloat3("Rotate", &degrees[0]))
+          if 
+          (
+            ImGui::DragFloat3("Rotate", &degrees[0], 0.25f) && 
+            (
+              ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0.1f) ||
+              ImGui::IsItemDeactivatedAfterEdit()
+            )
+          )
           {
             eularXYZ = glm::radians(degrees);
             setTs = true;
           }
 
           scale = curr->m_node->GetScale();
-          if (ImGui::DragFloat3("Scale", &scale[0], 0.01f, 0.0001f))
+          if
+          (
+            ImGui::DragFloat3("Scale", &scale[0], 0.25f) &&
+            (
+              ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0.1f) ||
+              ImGui::IsItemDeactivatedAfterEdit()
+            )
+          )
           {
             curr->m_node->SetScale(scale);
           }
