@@ -145,6 +145,33 @@ namespace ToolKit
     return m_scale;
   }
 
+  Mat3 Node::GetTransformAxes(TransformationSpace space)
+  {
+    Mat3 axes;
+    switch (space)
+    {
+    case TransformationSpace::TS_WORLD:
+      break;
+    case TransformationSpace::TS_PARENT:
+      if (m_parent != nullptr)
+      {
+        axes = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+      }
+      break;
+    case TransformationSpace::TS_LOCAL:
+      axes = GetTransform(TransformationSpace::TS_WORLD);
+    default:
+      break;
+    }
+
+    for (int i = 0; i < 3; i++)
+    {
+      axes[i] = glm::normalize(axes[i]);
+    }
+
+    return axes;
+  }
+
   void Node::AddChild(Node* child, bool preserveTransform)
   {
     assert(child->m_id != m_id);

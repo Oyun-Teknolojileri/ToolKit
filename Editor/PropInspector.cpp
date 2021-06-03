@@ -3,6 +3,7 @@
 #include "GlobalDef.h"
 
 #include "ImGui/imgui_stdlib.h"
+#include "ConsoleWindow.h"
 
 #include "DebugNew.h"
 
@@ -40,10 +41,7 @@ namespace ToolKit
           Mat4 ts = curr->m_node->GetTransform(g_app->m_transformSpace);
           QDUDecomposition(ts, rotate, scale, shear);
 
-          Vec3 eularXYZ;
-          glm::extractEulerAngleXYZ<float>(rotate, eularXYZ.x, eularXYZ.y, eularXYZ.z);
-
-          bool setTs = false;
+          TransformationSpace space = g_app->m_transformSpace;
           Vec3 translate = glm::column(ts, 3);
           if
           (
@@ -54,9 +52,11 @@ namespace ToolKit
             )
           )
           {
-            setTs = true;
+            curr->m_node->SetTranslation(translate, space);
           }
           
+          Quaternion q0 = glm::toQuat(rotate);
+          Vec3 eularXYZ = glm::eulerAngles(q0);
           Vec3 degrees = glm::degrees(eularXYZ);
           if 
           (
@@ -66,9 +66,29 @@ namespace ToolKit
               ImGui::IsItemDeactivatedAfterEdit()
             )
           )
-          {
-            eularXYZ = glm::radians(degrees);
-            setTs = true;
+          {            
+            Vec3 eular = glm::radians(degrees);
+            Vec3 change = eular - eularXYZ;
+
+            bool isDrag = ImGui::IsMouseDragging(0, 0.25f);
+            if (!isDrag)
+            {
+              change = eular;
+            }
+
+            Quaternion qx = glm::angleAxis(change.x, X_AXIS);
+            Quaternion qy = glm::angleAxis(change.y, Y_AXIS);
+            Quaternion qz = glm::angleAxis(change.z, Z_AXIS);
+            Quaternion q = qz * qy * qx;
+
+            if (isDrag)
+            {
+              curr->m_node->Rotate(q, space);
+            }
+            else
+            {
+              curr->m_node->SetOrientation(q, space);
+            }
           }
 
           scale = curr->m_node->GetScale();
@@ -82,14 +102,6 @@ namespace ToolKit
           )
           {
             curr->m_node->SetScale(scale);
-          }
-
-          if (setTs)
-          {
-            Mat4 ts;
-            ts[3].xyz = translate;
-            Mat4 rt = glm::eulerAngleXYZ(eularXYZ.x, eularXYZ.y, eularXYZ.z);
-            curr->m_node->SetTransform(ts * rt, g_app->m_transformSpace);
           }
         }
       }

@@ -33,6 +33,7 @@ namespace ToolKit
     Quaternion GetOrientation(TransformationSpace space = TransformationSpace::TS_PARENT);
     void SetScale(const Vec3& val);
     Vec3 GetScale();
+    Mat3 GetTransformAxes(TransformationSpace space = TransformationSpace::TS_LOCAL);
     void AddChild(Node* child, bool preserveTransform = false);
     void Orphan(Node* child, bool preserveTransform = false);
     void OrphanSelf(bool preserveWorldTransform = false);
