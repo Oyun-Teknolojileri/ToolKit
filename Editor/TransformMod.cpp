@@ -36,29 +36,7 @@ namespace ToolKit
       {
         // Get world location as gizmo origin.
         m_gizmo->m_worldLocation = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-
-        // Get transform orientation.
-        m_gizmo->m_normalVectors = Mat3();
-        switch (g_app->m_transformSpace)
-        {
-        case TransformationSpace::TS_WORLD:
-          break;
-        case TransformationSpace::TS_PARENT:
-          if (e->m_node->m_parent != nullptr)
-          {
-            m_gizmo->m_normalVectors = e->m_node->m_parent->GetTransform(TransformationSpace::TS_WORLD);
-          }
-          break;
-        case TransformationSpace::TS_LOCAL:
-          m_gizmo->m_normalVectors = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
-        default:
-          break;
-        }
-
-        for (int i = 0; i < 3; i++)
-        {
-          m_gizmo->m_normalVectors[i] = glm::normalize(m_gizmo->m_normalVectors[i]);
-        }
+        m_gizmo->m_normalVectors = e->m_node->GetTransformAxes(g_app->m_transformSpace);
       }
 
       m_gizmo->Update(deltaTime);
