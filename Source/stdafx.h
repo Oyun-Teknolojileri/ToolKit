@@ -21,6 +21,7 @@
 #include "glm/gtx/vector_query.hpp"
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtx/component_wise.hpp"
+#include "glm/gtx/euler_angles.hpp"
 
 // LoadPng
 #include "stb/stb_image.h"

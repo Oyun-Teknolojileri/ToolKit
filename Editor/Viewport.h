@@ -58,6 +58,7 @@ namespace ToolKit
 
       static class OverlayMods* m_overlayMods;
       static class OverlayViewportOptions* m_overlayOptions;
+      bool m_mouseOverOverlay;
       int m_cameraAlignment = 0; // 0: perspective, 1: top, 2: front, 3:left.
 
       // UI Draw commands.

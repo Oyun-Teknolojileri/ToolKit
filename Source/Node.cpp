@@ -44,20 +44,31 @@ namespace ToolKit
     m_scale = tmpScl;
   }
 
-  void Node::Scale(const Vec3& val, TransformationSpace space)
+  void Node::Scale(const Vec3& val)
   {
-    Mat4 ts = glm::diagonal4x4(Vec4(val, 1.0f));
-    TransformImp(ts, space, nullptr, nullptr, &m_scale);
+    m_scale *= val;
   }
 
-  void Node::Transform(const Mat4& val, TransformationSpace space)
+  void Node::Transform(const Mat4& val, TransformationSpace space, bool noScale)
   {
-    TransformImp(val, space, &m_translation, &m_orientation, &m_scale);
+    Vec3 tmpScl = m_scale;
+    if (noScale)
+    {
+      m_scale = Vec3(1.0f);
+    } 
+    TransformImp(val, space, &m_translation, &m_orientation, noScale ? nullptr : &m_scale);
+    m_scale = tmpScl;
   }
 
-  void Node::SetTransform(const Mat4& val, TransformationSpace space)
+  void Node::SetTransform(const Mat4& val, TransformationSpace space, bool noScale)
   {
-    SetTransformImp(val, space, &m_translation, &m_orientation, &m_scale);
+    Vec3 tmpScl = m_scale;
+    if (noScale)
+    {
+      m_scale = Vec3(1.0f);
+    }
+    SetTransformImp(val, space, &m_translation, &m_orientation, noScale ? nullptr : &m_scale);
+    m_scale = tmpScl;
   }
 
   Mat4 Node::GetTransform(TransformationSpace space)
@@ -78,8 +89,8 @@ namespace ToolKit
       else
       {
         m_translation = val;
+        SetChildrenDirty();
       }
-      SetChildrenDirty();
     }
     else
     {
@@ -106,8 +117,8 @@ namespace ToolKit
       else
       {
         m_orientation = val;
+        SetChildrenDirty();
       }
-      SetChildrenDirty();
     }
     else
     {
@@ -123,50 +134,42 @@ namespace ToolKit
     return q;
   }
 
-  void Node::SetScale(const Vec3& val, TransformationSpace space)
+  void Node::SetScale(const Vec3& val)
   {
+    m_scale = val;
     SetChildrenDirty();
+  }
 
-    // Unless locally applied, Scale needs to preserve directions. Apply rotation first.
+  Vec3 Node::GetScale()
+  {
+    return m_scale;
+  }
+
+  Mat3 Node::GetTransformAxes(TransformationSpace space)
+  {
+    Mat3 axes;
     switch (space)
     {
     case TransformationSpace::TS_WORLD:
-    {
-      Mat3 ts, ps;
-      ts = glm::diagonal3x3(val);
-      Quaternion ws = GetOrientation(TransformationSpace::TS_WORLD);
-      if (m_parent != nullptr)
-      {
-        ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
-      }
-      ts = glm::inverse(ps) * ts * glm::toMat3(ws);
-      DecomposeMatrix(ts, nullptr, nullptr, &m_scale);
-    }
-    break;
+      break;
     case TransformationSpace::TS_PARENT:
-    {
-      Mat3 ts, ps;
-      ts = glm::diagonal3x3(val);
-      Quaternion ws = GetOrientation(TransformationSpace::TS_WORLD);
       if (m_parent != nullptr)
       {
-        ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+        axes = m_parent->GetTransform(TransformationSpace::TS_WORLD);
       }
-      ts = glm::inverse(ps) * ts * glm::inverse(ps) * glm::toMat3(ws);
-      DecomposeMatrix(ts, nullptr, nullptr, &m_scale);
-    }
-    break;
+      break;
     case TransformationSpace::TS_LOCAL:
-      m_scale = val;
+      axes = GetTransform(TransformationSpace::TS_WORLD);
+    default:
       break;
     }
-  }
 
-  Vec3 Node::GetScale(TransformationSpace space)
-  {
-    Vec3 s;
-    GetTransformImp(space, nullptr, nullptr, nullptr, &s);
-    return s;
+    for (int i = 0; i < 3; i++)
+    {
+      axes[i] = glm::normalize(axes[i]);
+    }
+
+    return axes;
   }
 
   void Node::AddChild(Node* child, bool preserveTransform)
@@ -432,10 +435,11 @@ namespace ToolKit
 
   ToolKit::Mat4 Node::GetLocalTransform() const
   {
-    Mat4 ts = glm::toMat4(m_orientation);
-    ts = glm::scale(ts, m_scale);
-    ts[3].xyz = m_translation;
-    return ts;
+    Mat4 ts, rt, scl;
+    scl = glm::scale(scl, m_scale);
+    rt = glm::toMat4(m_orientation);
+    ts = glm::translate(ts, m_translation);
+    return ts * rt * scl;
   }
 
   Mat4 Node::GetParentTransform()

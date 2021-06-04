@@ -36,29 +36,7 @@ namespace ToolKit
       {
         // Get world location as gizmo origin.
         m_gizmo->m_worldLocation = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-
-        // Get transform orientation.
-        m_gizmo->m_normalVectors = Mat3();
-        switch (g_app->m_transformOrientation)
-        {
-        case TransformationSpace::TS_WORLD:
-          break;
-        case TransformationSpace::TS_PARENT:
-          if (e->m_node->m_parent != nullptr)
-          {
-            m_gizmo->m_normalVectors = e->m_node->m_parent->GetTransform(TransformationSpace::TS_WORLD);
-          }
-          break;
-        case TransformationSpace::TS_LOCAL:
-          m_gizmo->m_normalVectors = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
-        default:
-          break;
-        }
-
-        for (int i = 0; i < 3; i++)
-        {
-          m_gizmo->m_normalVectors[i] = glm::normalize(m_gizmo->m_normalVectors[i]);
-        }
+        m_gizmo->m_normalVectors = e->m_node->GetTransformAxes(g_app->m_transformSpace);
       }
 
       m_gizmo->Update(deltaTime);
@@ -568,7 +546,7 @@ namespace ToolKit
         }
       }
 
-      TransformationSpace space = g_app->m_transformOrientation;
+      TransformationSpace space = g_app->m_transformSpace;
       switch (m_type)
       {
       case TransformType::Translate:
@@ -609,16 +587,8 @@ namespace ToolKit
       break;
       case TransformType::Scale:
       {
-        if (space == TransformationSpace::TS_LOCAL)
-        {
-          Vec3 scale = e->m_node->GetScale(TransformationSpace::TS_WORLD);
-          e->m_node->SetScale(scale + delta, TransformationSpace::TS_LOCAL);
-        }
-        else
-        {
-          int indx = (int)m_gizmo->GetGrabbedAxis();
-          e->m_node->Scale(Vec3(1.0f + delta[indx]), space);
-        }
+        Vec3 scale = e->m_node->GetScale();
+        e->m_node->SetScale(scale + delta);
       }
       break;
       }
@@ -671,7 +641,6 @@ namespace ToolKit
       : BaseMod(id)
     {
       m_gizmo = nullptr;
-      Init();
     }
 
     TransformMod::~TransformMod()
@@ -724,6 +693,20 @@ namespace ToolKit
       state = new StateDuplicate();
       state->m_links[m_backToStart] = StateType::StateTransformBegin;
       m_stateMachine->PushState(state);
+
+      m_prevTransformSpace = g_app->m_transformSpace;
+      if (m_id == ModId::Scale)
+      {
+        g_app->m_transformSpace = TransformationSpace::TS_LOCAL;
+      }
+    }
+
+    void TransformMod::UnInit()
+    {
+      if (m_id == ModId::Scale)
+      {
+        g_app->m_transformSpace = m_prevTransformSpace;
+      }
     }
 
     void TransformMod::Update(float deltaTime)

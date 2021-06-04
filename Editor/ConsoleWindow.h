@@ -43,6 +43,9 @@ namespace ToolKit
     const String g_importSlientCmd("SetImportSlient");
     void SetImportSlient(TagArgArray tagArgs);
 
+    const String g_selectByTag("SelectByTag");
+    void SelectByTag(TagArgArray tagArgs);
+
     class ConsoleWindow : public Window
     {
     public:

@@ -89,4 +89,9 @@ namespace ToolKit
   void ToSpherical(Vec3 p, float& r, float& zenith, float& azimuth);
   Vec3 ToCartesian(float r, float zenith, float azimuth);
   Quaternion RotationTo(Vec3 a, Vec3 b); // Returns quaternion wich rotates a on to b.
+
+  // Numberic operations
+  //////////////////////////////////////////
+  template<typename T>
+  T SetPrecision(const T& val, int nDecimal);
 }

@@ -325,6 +325,7 @@ namespace ToolKit
         if (m_modStack.back()->m_id != ModId::Base)
         {
           BaseMod* prevMod = m_modStack.back();
+          prevMod->UnInit();
           SafeDel(prevMod);
           m_modStack.pop_back();
         }
@@ -361,6 +362,7 @@ namespace ToolKit
         assert(nextMod);
         if (nextMod != nullptr)
         {
+          nextMod->Init();
           m_modStack.push_back(nextMod);
 
           // #ConsoleDebug_Mod
@@ -391,7 +393,6 @@ namespace ToolKit
     {
       for (BaseMod* mod : m_modStack)
       {
-        mod->UnInit();
         SafeDel(mod);
       }
       m_modStack.clear();
@@ -804,6 +805,11 @@ namespace ToolKit
     // Mods
     //////////////////////////////////////////////////////////////////////////
 
+    SelectMod::SelectMod() 
+      : BaseMod(ModId::Select) 
+    {
+    }
+
     void SelectMod::Init()
     {
       StateBeginPick* initialState = new StateBeginPick();
@@ -840,6 +846,11 @@ namespace ToolKit
       {
         ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
       }
+    }
+
+    CursorMod::CursorMod() 
+      : BaseMod(ModId::Cursor)
+    { 
     }
 
     void CursorMod::Init()

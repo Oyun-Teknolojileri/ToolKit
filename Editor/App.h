@@ -21,6 +21,7 @@ namespace ToolKit
     class ConsoleWindow;
     class FolderWindow;
     class OutlinerWindow;
+    class PropInspector;
     class Window;
     class Gizmo;
 
@@ -47,6 +48,10 @@ namespace ToolKit
       ConsoleWindow* GetConsole();
       FolderWindow* GetAssetBrowser();
       OutlinerWindow* GetOutliner();
+      PropInspector* GetPropInspector();
+
+      template<typename T>
+      T* GetWindow(const String& name);
 
       // Quick selected render implementation.
       void RenderSelected(Viewport* vp);
@@ -81,7 +86,7 @@ namespace ToolKit
       bool m_showOverlayUI = true;
       bool m_showOverlayUIAlways = true;
       bool m_importSlient = false;
-      TransformationSpace m_transformOrientation = TransformationSpace::TS_WORLD;
+      TransformationSpace m_transformSpace = TransformationSpace::TS_WORLD;
 
       // Snap settings.
       bool m_snapsEnabled = false; // Delta transforms.

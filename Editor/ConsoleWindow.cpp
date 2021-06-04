@@ -157,11 +157,11 @@ namespace ToolKit
         {
           if (set)
           {
-            e->m_node->SetScale(transfrom, ts);
+            e->m_node->SetScale(transfrom);
           }
           else
           {
-            e->m_node->Scale(transfrom, ts);
+            e->m_node->Scale(transfrom);
           }
         }
         else if (tag == "t")
@@ -261,7 +261,7 @@ namespace ToolKit
         {
           Quaternion q = e->m_node->GetOrientation(ts);
           Vec3 t = e->m_node->GetTranslation(ts);
-          Vec3 s = e->m_node->GetScale(ts);
+          Vec3 s = e->m_node->GetScale();
 
           if (ConsoleWindow* cwnd = g_app->GetConsole())
           {
@@ -315,22 +315,23 @@ namespace ToolKit
       String tsStr = tagArgs.front().second.front();
       if (tsStr == "world")
       {
-        g_app->m_transformOrientation = TransformationSpace::TS_WORLD;
+        g_app->m_transformSpace = TransformationSpace::TS_WORLD;
       }
 
       if (tsStr == "parent")
       {
-        g_app->m_transformOrientation = TransformationSpace::TS_PARENT;
+        g_app->m_transformSpace = TransformationSpace::TS_PARENT;
       }
 
       if (tsStr == "local")
       {
-        g_app->m_transformOrientation = TransformationSpace::TS_LOCAL;
+        g_app->m_transformSpace = TransformationSpace::TS_LOCAL;
       }
 
       BaseMod* mod = ModManager::GetInstance()->m_modStack.back();
       if (TransformMod* tsm = dynamic_cast<TransformMod*> (mod))
       {
+        tsm->m_prevTransformSpace = g_app->m_transformSpace;
         tsm->Signal(TransformMod::m_backToStart);
       }
     }
@@ -338,6 +339,22 @@ namespace ToolKit
     void SetImportSlient(TagArgArray tagArgs)
     {
       BoolCheck(tagArgs, &g_app->m_importSlient);
+    }
+
+    void SelectByTag(TagArgArray tagArgs)
+    {
+      if (tagArgs.empty())
+      {
+        return;
+      }
+      if (tagArgs.front().second.empty())
+      {
+        return;
+      }
+
+      String args = tagArgs.front().second.front();
+
+      g_app->m_scene.SelectByTag(args);
     }
 
     // ImGui ripoff. Portable helpers.
@@ -358,6 +375,7 @@ namespace ToolKit
       CreateCommand(g_getTransformCmd, GetTransformExec);
       CreateCommand(g_setTransformOrientationCmd, SetTransformOrientationExec);
       CreateCommand(g_importSlientCmd, SetImportSlient);
+      CreateCommand(g_selectByTag, SelectByTag);
     }
 
     ConsoleWindow::~ConsoleWindow()

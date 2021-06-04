@@ -16,9 +16,10 @@ namespace ToolKit
       virtual ~OverlayUI();
       virtual void Show() = 0;
 
+      void SetOwnerState();
+
     public:
       Viewport* m_owner;
-      bool m_mouseOver = false;
     };
 
     class OverlayMods : public OverlayUI

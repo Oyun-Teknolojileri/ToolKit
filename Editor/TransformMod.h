@@ -102,10 +102,12 @@ namespace ToolKit
       virtual ~TransformMod();
 
       virtual void Init() override;
+      virtual void UnInit() override;
       virtual void Update(float deltaTime) override;
 
     public:
       Gizmo* m_gizmo;
+      TransformationSpace m_prevTransformSpace;
     };
   }
 }

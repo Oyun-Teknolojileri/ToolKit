@@ -110,7 +110,6 @@ namespace ToolKit
     public:
       BaseMod(ModId id);
       virtual ~BaseMod();
-
       virtual void Init();
       virtual void UnInit();
       virtual void Update(float deltaTime);
@@ -247,7 +246,7 @@ namespace ToolKit
     class SelectMod : public BaseMod
     {
     public:
-      SelectMod() : BaseMod(ModId::Select) { Init(); }
+      SelectMod();
 
       virtual void Init() override;
       virtual void Update(float deltaTime) override;
@@ -256,7 +255,7 @@ namespace ToolKit
     class CursorMod : public BaseMod
     {
     public:
-      CursorMod() : BaseMod(ModId::Cursor) { Init(); }
+      CursorMod();
 
       virtual void Init() override;
       virtual void Update(float deltaTime) override;
