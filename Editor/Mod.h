@@ -77,6 +77,7 @@ namespace ToolKit
       void AddAction(Action* action);
       void GroupLastActions(int n);
       void BeginActionGroup();
+      void RemoveLastAction();
       void Undo();
       void Redo();
       static ActionManager* GetInstance();

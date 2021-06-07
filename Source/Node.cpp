@@ -57,7 +57,10 @@ namespace ToolKit
       m_scale = Vec3(1.0f);
     } 
     TransformImp(val, space, &m_translation, &m_orientation, noScale ? nullptr : &m_scale);
-    m_scale = tmpScl;
+    if (noScale)
+    {
+      m_scale = tmpScl;
+    }
   }
 
   void Node::SetTransform(const Mat4& val, TransformationSpace space, bool noScale)
@@ -68,7 +71,10 @@ namespace ToolKit
       m_scale = Vec3(1.0f);
     }
     SetTransformImp(val, space, &m_translation, &m_orientation, noScale ? nullptr : &m_scale);
-    m_scale = tmpScl;
+    if (noScale)
+    {
+      m_scale = tmpScl;
+    }
   }
 
   Mat4 Node::GetTransform(TransformationSpace space)

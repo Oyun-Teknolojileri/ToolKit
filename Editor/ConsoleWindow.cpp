@@ -115,6 +115,9 @@ namespace ToolKit
         }
       }
 
+      ActionManager::GetInstance()->AddAction(new TransformAction(e));
+      bool actionApplied = false;
+
       for (TagArg& tagIt : tagArgs)
       {
         String tag = tagIt.first;
@@ -152,6 +155,7 @@ namespace ToolKit
           {
             e->m_node->Rotate(q, ts);
           }
+          actionApplied = true;
         }
         else if (tag == "s")
         {
@@ -163,6 +167,7 @@ namespace ToolKit
           {
             e->m_node->Scale(transfrom);
           }
+          actionApplied = true;
         }
         else if (tag == "t")
         {
@@ -174,7 +179,13 @@ namespace ToolKit
           {
             e->m_node->Translate(transfrom, ts);
           }
+          actionApplied = true;
         }
+      }
+      
+      if (!actionApplied)
+      {
+        ActionManager::GetInstance()->RemoveLastAction();
       }
     }
 
