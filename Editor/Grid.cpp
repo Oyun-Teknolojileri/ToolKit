@@ -40,17 +40,36 @@ namespace ToolKit
     void Grid::Resize(uint size, float gridSpaceScale)
     {
       m_mesh->UnInit();
-
-      Quad quad;
       float scale = (float)m_size;
-      MeshPtr mesh = quad.m_mesh;
-      for (int j = 0; j < 4; j++)
+
+      Vec3Array offsets =
       {
-        mesh->m_clientSideVertices[j].pos = (mesh->m_clientSideVertices[j].pos * scale).xzy;
-        mesh->m_clientSideVertices[j].tex *= scale * gridSpaceScale;
+        Vec3(-scale * 0.5f, 0.0f, scale * 0.5f),
+        Vec3(scale * 0.5f, 0.0f, scale * 0.5f),
+        Vec3(scale * 0.5f, 0.0f, -scale * 0.5f),
+        Vec3(-scale * 0.5f, 0.0f, -scale * 0.5f)
+      };
+
+      for (int i = 0; i < 4; i++)
+      {
+        Quad quad;
+        MeshPtr mesh = quad.m_mesh;
+        for (int j = 0; j < 4; j++)
+        {
+          mesh->m_clientSideVertices[j].pos = (mesh->m_clientSideVertices[j].pos * scale).xzy + offsets[i];
+          mesh->m_clientSideVertices[j].tex = mesh->m_clientSideVertices[j].pos.xz * gridSpaceScale;
+        }
+
+        mesh->m_material = m_material;
+        if (i == 0)
+        {
+          m_mesh = mesh;
+        }
+        else
+        {
+          m_mesh->m_subMeshes.push_back(mesh);
+        }
       }
-      m_mesh = mesh;
-      m_mesh->m_material = m_material;
 
       VertexArray vertices;
       vertices.resize(2);
