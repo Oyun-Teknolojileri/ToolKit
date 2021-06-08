@@ -118,6 +118,30 @@ namespace ToolKit
     return m_ortographic;
   }
 
+  void Camera::LookAt(Vec3 target)
+  {
+    Vec3 eye = m_node->GetTranslation(TransformationSpace::TS_WORLD);
+    Vec3 tdir = target - eye;
+    tdir.y = 0.0f; // project on xz
+    tdir = glm::normalize(tdir);
+    Vec3 dir = GetDir();
+    dir.y = 0.0f; // project on xz
+    dir = glm::normalize(dir);
+    Vec3 rotAxis = glm::normalize(glm::cross(dir, tdir));
+    float yaw = glm::acos(glm::dot(tdir, dir));
+
+    yaw *= glm::sign(glm::dot(Y_AXIS, rotAxis));
+    RotateOnUpVector(yaw);
+
+    tdir = target - eye;
+    tdir = glm::normalize(tdir);
+    dir = glm::normalize(GetDir());
+    rotAxis = glm::normalize(glm::cross(dir, tdir));
+    float pitch = glm::acos(glm::dot(tdir, dir));
+    pitch *= glm::sign(glm::dot(GetRight(), rotAxis));
+    Pitch(pitch);
+  }
+
   Camera::CamData Camera::GetData() const
   {
     CamData data;

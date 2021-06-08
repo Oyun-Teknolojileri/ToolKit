@@ -29,6 +29,15 @@ namespace ToolKit
       return tagArgs.end();
     }
 
+    void ParseVec(Vec3& vec, TagArgCIt tagIt)
+    {
+      int maxIndx = glm::min((int)tagIt->second.size(), 3);
+      for (int i = 0; i < maxIndx; i++)
+      {
+        vec[i] = (float)std::atof(tagIt->second[i].c_str());
+      }
+    }
+
     // Executors
     void BoolCheck(const TagArgArray& tagArgs, bool* val)
     {
@@ -250,12 +259,7 @@ namespace ToolKit
             if (translateTag != tagArgs.end())
             {
               Vec3 translate;
-              int maxIndx = glm::min((int)translateTag->second.size(), 3);
-              for (int i = 0; i < maxIndx; i++)
-              {
-                translate[i] = (float)std::atof(translateTag->second[i].c_str());
-              }
-
+              ParseVec(translate, translateTag);
               c->m_node->SetTranslation(translate, TransformationSpace::TS_WORLD);
             }
           }
@@ -368,6 +372,31 @@ namespace ToolKit
       g_app->m_scene.SelectByTag(args);
     }
 
+    void LookAt(TagArgArray tagArgs)
+    {
+      TagArgArray::const_iterator targetTag = GetTag("t", tagArgs);
+      if (targetTag != tagArgs.end())
+      {
+        if (targetTag->second.empty()) // Tag cant be empty.
+        {
+          return;
+        }
+
+        if (targetTag->second.empty())
+        {
+          return;
+        }
+
+        Vec3 target;
+        ParseVec(target, targetTag);
+        Viewport* vp = g_app->GetViewport("Perspective");
+        if (vp)
+        {
+          vp->m_camera->LookAt(target);
+        }
+      }
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
     static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
@@ -387,6 +416,7 @@ namespace ToolKit
       CreateCommand(g_setTransformOrientationCmd, SetTransformOrientationExec);
       CreateCommand(g_importSlientCmd, SetImportSlient);
       CreateCommand(g_selectByTag, SelectByTag);
+      CreateCommand(g_lookAt, LookAt);
     }
 
     ConsoleWindow::~ConsoleWindow()

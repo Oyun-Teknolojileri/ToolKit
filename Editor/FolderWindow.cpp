@@ -35,7 +35,6 @@ namespace ToolKit
           ImGui::SetTooltip(m_path.c_str());
         }
 
-        ImVec2 buttonSz(50, 50);
         ImGui::BeginChild("##Content", ImVec2(0, 0), true);
         for (int i = 0; i < (int)m_entiries.size(); i++)
         {
@@ -55,7 +54,12 @@ namespace ToolKit
           }
           else if (de.m_ext == MESH)
           {
-            iconId = UI::m_meshIcon->m_textureId;
+            if (de.m_thumbNail == nullptr)
+            {
+              GenerateThumbNail(de);
+            }
+            //iconId = UI::m_meshIcon->m_textureId;
+            iconId = de.m_thumbNail->m_textureId;
           }
           else if (de.m_ext == ANIM)
           {
@@ -111,7 +115,7 @@ namespace ToolKit
 
           ImGui::PushID(i);
           ImGui::BeginGroup();
-          ImGui::ImageButton((void*)(intptr_t)iconId, buttonSz);
+          ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize));
           if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
           {
             if (ImGui::IsItemHovered())
@@ -155,14 +159,14 @@ namespace ToolKit
             }
           }
 
-          ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + buttonSz.x);
+          ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
           ImGui::TextWrapped(de.m_fileName.c_str());
           ImGui::PopTextWrapPos();
           ImGui::EndGroup();
           ImGui::PopID();
 
           float lastBtnX2 = ImGui::GetItemRectMax().x;
-          float nextBtnX2 = lastBtnX2 + style.ItemSpacing.x + buttonSz.x;
+          float nextBtnX2 = lastBtnX2 + style.ItemSpacing.x + m_iconSize.x;
           if (nextBtnX2 < visX2)
           {
             ImGui::SameLine();
@@ -214,6 +218,32 @@ namespace ToolKit
       }
 
       return -1;
+    }
+
+    void FolderView::GenerateThumbNail(DirectoryEntry& entry)
+    {
+      if (entry.m_ext == MESH)
+      {
+        Drawable dw;
+        dw.m_mesh = Main::GetInstance()->m_meshMan.Create(MeshPath(entry.m_fileName + entry.m_ext));
+        dw.m_mesh->Init();
+
+        BoundingBox bb = dw.GetAABB();
+        Vec3 geoCenter = (bb.max - bb.min) * 0.5f;
+        geoCenter = Vec3(glm::compMax(geoCenter));
+
+        Camera cam;
+        cam.SetLens(25.0f, m_iconSize.x, m_iconSize.y);
+        cam.Translate(geoCenter * 10.0f);
+        cam.LookAt(geoCenter);
+
+        RenderTarget* thumb = new RenderTarget((uint)m_iconSize.x, (uint)m_iconSize.y);
+        thumb->Init();
+        g_app->m_renderer->SwapRenderTarget(&thumb);
+        g_app->m_renderer->Render(&dw, &cam, g_app->m_sceneLights);
+        g_app->m_renderer->SwapRenderTarget(&thumb, false);
+        entry.m_thumbNail = RenderTargetPtr(thumb);
+      }
     }
 
     FolderWindow::FolderWindow()

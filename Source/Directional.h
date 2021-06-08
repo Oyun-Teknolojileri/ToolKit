@@ -48,6 +48,7 @@ namespace ToolKit
     void SetLens(float aspect, float left, float right, float bottom, float top, float near, float far);
     Mat4 GetViewMatrix() const;
     bool IsOrtographic() const;
+    void LookAt(Vec3 target);
 
     CamData GetData() const;
     virtual EntityType GetType() const override;

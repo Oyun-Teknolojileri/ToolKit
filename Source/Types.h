@@ -41,6 +41,7 @@ namespace ToolKit
   typedef glm::quat Quaternion;
   typedef std::shared_ptr<class Material> MaterialPtr;
   typedef std::shared_ptr<class Texture> TexturePtr;
+  typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;
   typedef std::shared_ptr<class SpriteSheet> SpriteSheetPtr;
   typedef std::shared_ptr<class Mesh> MeshPtr;
   typedef std::shared_ptr<class Shader> ShaderPtr;

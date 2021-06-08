@@ -10,7 +10,9 @@ namespace ToolKit
   {
     typedef std::pair<String, StringArray> TagArg;
     typedef std::vector<TagArg> TagArgArray;
+    typedef TagArgArray::const_iterator TagArgCIt;
     TagArgArray::const_iterator GetTag(String tag, const TagArgArray& tagArgs);
+    void ParseVec(Vec3& vec, TagArgCIt tagIt);
 
     // Commands & Executors.
     const String g_showPickDebugCmd("ShowPickGeometry");
@@ -45,6 +47,9 @@ namespace ToolKit
 
     const String g_selectByTag("SelectByTag");
     void SelectByTag(TagArgArray tagArgs);
+
+    const String g_lookAt("LookAt");
+    void LookAt(TagArgArray tagArgs);
 
     class ConsoleWindow : public Window
     {

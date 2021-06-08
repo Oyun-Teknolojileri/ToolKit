@@ -255,6 +255,13 @@ namespace ToolKit
     m_renderTarget = renderTarget;
   }
 
+  void Renderer::SwapRenderTarget(RenderTarget** renderTarget, bool clear)
+  {
+    RenderTarget* tmp = *renderTarget;
+    *renderTarget = m_renderTarget;
+    SetRenderTarget(tmp, clear);
+  }
+
   void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
   {
     static ShaderPtr fullQuadVert = GetShaderManager()->Create(ShaderPath("fullQuadVert.shader"));
