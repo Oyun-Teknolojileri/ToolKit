@@ -225,7 +225,8 @@ namespace ToolKit
       if (entry.m_ext == MESH)
       {
         Drawable dw;
-        dw.m_mesh = Main::GetInstance()->m_meshMan.Create(MeshPath(entry.m_fileName + entry.m_ext));
+        String fullpath = entry.m_rootPath + GetPathSeparator() + entry.m_fileName + entry.m_ext;
+        dw.m_mesh = Main::GetInstance()->m_meshMan.Create(fullpath);
         dw.m_mesh->Init();
 
         BoundingBox bb = dw.GetAABB();

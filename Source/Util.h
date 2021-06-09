@@ -29,6 +29,7 @@ namespace ToolKit
   bool CheckFile(const String& path);
   void DecomposePath(const String fullPath, String* path, String* name, String* ext);
   void NormalizePath(String& path);
+  String GetPathSeparator();
   void Split(const String& s, const String& sep, StringArray& v);
   void ReplaceStringInPlace(String& subject, const String& search, const String& replace);
   class LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size);

@@ -5,6 +5,7 @@
 #include "DebugNew.h"
 
 #include <fstream>
+#include <filesystem>
 
 namespace ToolKit
 {
@@ -182,6 +183,11 @@ namespace ToolKit
   void NormalizePath(String& path)
   {
     ReplaceStringInPlace(path, "/", "\\");
+  }
+
+  String GetPathSeparator()
+  {
+    return "\\";
   }
 
   // split a string into multiple sub strings, based on a separator string
