@@ -28,7 +28,7 @@ namespace ToolKit
 
   void Directional::Roll(float angle)
   {
-    Quaternion q = glm::angleAxis(angle, Vec3(1.0f, 0.0f, 0.0f));
+    Quaternion q = glm::angleAxis(angle, Vec3(0.0f, 0.0f, 1.0f));
     m_node->Rotate(q, TransformationSpace::TS_LOCAL);
   }
 
@@ -140,6 +140,12 @@ namespace ToolKit
     float pitch = glm::acos(glm::dot(tdir, dir));
     pitch *= glm::sign(glm::dot(GetRight(), rotAxis));
     Pitch(pitch);
+
+    // Check upside down case
+    if (glm::dot(GetUp(), Y_AXIS) < 0.0f)
+    {
+      Roll(glm::pi<float>());
+    }
   }
 
   Camera::CamData Camera::GetData() const

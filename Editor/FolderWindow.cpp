@@ -43,6 +43,7 @@ namespace ToolKit
 
           DirectoryEntry& de = m_entiries[i];
 
+          bool flipRenderTarget = false;
           uint iconId = UI::m_fileIcon->m_textureId;
           if (de.m_isDirectory)
           {
@@ -58,8 +59,8 @@ namespace ToolKit
             {
               GenerateThumbNail(de);
             }
-            //iconId = UI::m_meshIcon->m_textureId;
             iconId = de.m_thumbNail->m_textureId;
+            flipRenderTarget = true;
           }
           else if (de.m_ext == ANIM)
           {
@@ -115,7 +116,15 @@ namespace ToolKit
 
           ImGui::PushID(i);
           ImGui::BeginGroup();
-          ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize));
+          if (flipRenderTarget)
+          {
+            ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
+          }
+          else
+          {
+            ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize));
+          }
+          
           if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
           {
             if (ImGui::IsItemHovered())
@@ -124,7 +133,7 @@ namespace ToolKit
               {
                 if (m_parent != nullptr)
                 {
-                  String path = de.m_rootPath + "\\" + de.m_fileName;
+                  String path = de.m_rootPath + GetPathSeparator() + de.m_fileName;
                   int indx = m_parent->Exist(path);
                   if (indx == -1)
                   {
@@ -181,7 +190,7 @@ namespace ToolKit
     {
       m_path = path;
       StringArray splits;
-      Split(path, "\\", splits);
+      Split(path, GetPathSeparatorAsStr(), splits);
       m_folder = splits.back();
     }
 
@@ -229,13 +238,19 @@ namespace ToolKit
         dw.m_mesh = Main::GetInstance()->m_meshMan.Create(fullpath);
         dw.m_mesh->Init();
 
+        // Tight fit a frustum to a bounding sphere
+        // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
         BoundingBox bb = dw.GetAABB();
         Vec3 geoCenter = (bb.max - bb.min) * 0.5f;
-        geoCenter = Vec3(glm::compMax(geoCenter));
+        float r = glm::length(geoCenter);
+        float a = glm::radians(20.0f);
+        float d = (r * 2.0f) / glm::tan(a / 2.0f);
+        
+        Vec3 eye = glm::normalize(Vec3(1.0f)) * d;
 
         Camera cam;
-        cam.SetLens(25.0f, m_iconSize.x, m_iconSize.y);
-        cam.Translate(geoCenter * 10.0f);
+        cam.SetLens(a, m_iconSize.x, m_iconSize.y);
+        cam.m_node->SetTranslation(eye);
         cam.LookAt(geoCenter);
 
         RenderTarget* thumb = new RenderTarget((uint)m_iconSize.x, (uint)m_iconSize.y);
@@ -259,7 +274,7 @@ namespace ToolKit
 
         auto IsRootFn = [](const String& path)
         {
-          return std::count(path.begin(), path.end(), '\\') == 2;
+          return std::count(path.begin(), path.end(), GetPathSeparator()) == 2;
         };
 
         // Show Resource folder structure.

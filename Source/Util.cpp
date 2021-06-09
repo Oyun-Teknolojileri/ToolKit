@@ -185,9 +185,14 @@ namespace ToolKit
     ReplaceStringInPlace(path, "/", "\\");
   }
 
-  String GetPathSeparator()
+  char GetPathSeparator()
   {
-    return "\\";
+    return '\\';
+  }
+
+  String GetPathSeparatorAsStr()
+  {
+    return String() + GetPathSeparator();
   }
 
   // split a string into multiple sub strings, based on a separator string
