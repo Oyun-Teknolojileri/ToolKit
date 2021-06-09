@@ -246,7 +246,7 @@ namespace ToolKit
         float a = glm::radians(20.0f);
         float d = (r * 2.0f) / glm::tan(a / 2.0f);
         
-        Vec3 eye = glm::normalize(Vec3(1.0f)) * d;
+        Vec3 eye = geoCenter + glm::normalize(Vec3(1.0f)) * d;
 
         Camera cam;
         cam.SetLens(a, m_iconSize.x, m_iconSize.y);
