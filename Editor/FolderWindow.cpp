@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "ConsoleWindow.h"
 #include "FolderWindow.h"
 #include "GlobalDef.h"
 #include "DebugNew.h"
@@ -10,6 +11,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+    Vec2 FolderView::m_iconSize = Vec2(50.0f, 50.0f);
 
     FolderView::FolderView()
     {
@@ -30,6 +32,26 @@ namespace ToolKit
 
       if (ImGui::BeginTabItem(m_folder.c_str(), visCheck))
       {
+        ImGuiIO io = ImGui::GetIO();
+        static float wheel = io.MouseWheel;
+        float delta = io.MouseWheel - wheel;
+
+        const float icMin = 50.0f;
+        const float icMax = 300.0f;
+        if (io.KeyCtrl)
+        {
+          m_iconSize += Vec2(delta) * 15.0f;
+          if (m_iconSize.x < icMin)
+          {
+            m_iconSize = Vec2(icMin);
+          }
+
+          if (m_iconSize.x > icMax)
+          {
+            m_iconSize = Vec2(icMax);
+          }
+        }
+
         if (ImGui::IsItemHovered())
         {
           ImGui::SetTooltip(m_path.c_str());
@@ -124,7 +146,7 @@ namespace ToolKit
           {
             ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize));
           }
-          
+
           if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
           {
             if (ImGui::IsItemHovered())
@@ -249,11 +271,11 @@ namespace ToolKit
         Vec3 eye = geoCenter + glm::normalize(Vec3(1.0f)) * d;
 
         Camera cam;
-        cam.SetLens(a, m_iconSize.x, m_iconSize.y);
+        cam.SetLens(a, m_thumbnailSize.x, m_thumbnailSize.y);
         cam.m_node->SetTranslation(eye);
         cam.LookAt(geoCenter);
 
-        RenderTarget* thumb = new RenderTarget((uint)m_iconSize.x, (uint)m_iconSize.y);
+        RenderTarget* thumb = new RenderTarget((uint)m_thumbnailSize.x, (uint)m_thumbnailSize.y);
         thumb->Init();
         g_app->m_renderer->SwapRenderTarget(&thumb);
         g_app->m_renderer->Render(&dw, &cam, g_app->m_sceneLights);

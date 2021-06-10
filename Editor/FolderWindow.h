@@ -40,7 +40,8 @@ namespace ToolKit
       bool m_currRoot = false; // Indicates this is a root folder (one level under Resources) and currently selected in the FolderWindow.
       bool m_visible = true;
       bool m_onlyNativeTypes = true;
-      Vec2 m_iconSize = Vec2(50.0f, 50.0f);
+      static Vec2 m_iconSize;
+      Vec2 m_thumbnailSize = Vec2(300.0f, 300.0f);
       String m_folder;
     };
 
