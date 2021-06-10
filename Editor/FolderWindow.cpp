@@ -3,6 +3,7 @@
 #include "ConsoleWindow.h"
 #include "FolderWindow.h"
 #include "GlobalDef.h"
+#include "Gizmo.h"
 #include "DebugNew.h"
 
 #include <filesystem>
@@ -11,7 +12,7 @@ namespace ToolKit
 {
   namespace Editor
   {
-    Vec2 FolderView::m_iconSize = Vec2(50.0f, 50.0f);
+    Vec2 FolderView::m_iconSize = Vec2(95.0f);
 
     FolderView::FolderView()
     {
@@ -263,10 +264,10 @@ namespace ToolKit
         // Tight fit a frustum to a bounding sphere
         // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
         BoundingBox bb = dw.GetAABB();
-        Vec3 geoCenter = (bb.max - bb.min) * 0.5f;
-        float r = glm::length(geoCenter);
-        float a = glm::radians(20.0f);
-        float d = (r * 2.0f) / glm::tan(a / 2.0f);
+        Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
+        float r = glm::distance(geoCenter, bb.max) * 1.1f; // 10% safezone.
+        float a = glm::radians(45.0f);
+        float d = r / glm::tan(a / 2.0f);
         
         Vec3 eye = geoCenter + glm::normalize(Vec3(1.0f)) * d;
 
