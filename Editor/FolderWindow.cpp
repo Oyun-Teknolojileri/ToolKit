@@ -259,7 +259,7 @@ namespace ToolKit
         Drawable dw;
         String fullpath = entry.m_rootPath + GetPathSeparator() + entry.m_fileName + entry.m_ext;
         dw.m_mesh = Main::GetInstance()->m_meshMan.Create(fullpath);
-        dw.m_mesh->Init();
+        dw.m_mesh->Init(false);
 
         // Tight fit a frustum to a bounding sphere
         // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
