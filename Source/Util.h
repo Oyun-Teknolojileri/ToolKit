@@ -10,21 +10,13 @@
 namespace ToolKit
 {
 
-  void ExtractXYFromNode(XmlNode* node, Vec2& val);
-  void ExtractXYZFromNode(XmlNode* node, Vec3& val);
-  void ExtractXYZFromNode(XmlNode* node, glm::ivec3& val);
-  void ExtractWXYZFromNode(XmlNode* node, Vec4& val);
-  void ExtractWXYZFromNode(XmlNode* node, glm::uvec4& val);
-  void ExtractWXYZFromNode(XmlNode* node, glm::ivec4& val);
-  void ExtractQuatFromNode(XmlNode* node, Quaternion& val);
-  void WriteXY(XmlNode* node, XmlDocument* doc, const Vec2& val);
-  void WriteXYZ(XmlNode* node, XmlDocument* doc, const Vec3& val);
-  void WriteXYZW(XmlNode* node, XmlDocument* doc, const Vec4& val);
-  void WriteXYZW(XmlNode* node, XmlDocument* doc, const Quaternion& val);
-  void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val);
-
+  template<typename T>
+  void ReadVec(XmlNode* node, T& val);
+  template<typename T>
+  void WriteVec(XmlNode* node, XmlDocument* doc, const T& val);
   template<typename T>
   T ReadAttr(XmlNode* node, const String& name);
+  void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val);
 
   bool CheckFile(const String& path);
   void DecomposePath(const String fullPath, String* path, String* name, String* ext);

@@ -276,15 +276,15 @@ namespace ToolKit
     WriteAttr(node, doc, XmlNodeInheritTranslateOnlyAttr, std::to_string((int)m_inheritOnlyTranslate));
 
     XmlNode* tNode = doc->allocate_node(rapidxml::node_element, XmlTranslateElement.c_str());
-    WriteXYZ(tNode, doc, m_translation);
+    WriteVec(tNode, doc, m_translation);
     node->append_node(tNode);
 
     tNode = doc->allocate_node(rapidxml::node_element, XmlRotateElement.c_str());
-    WriteXYZW(tNode, doc, m_orientation);
+    WriteVec(tNode, doc, m_orientation);
     node->append_node(tNode);
 
     tNode = doc->allocate_node(rapidxml::node_element, XmlScaleElement.c_str());
-    WriteXYZ(tNode, doc, m_scale);
+    WriteVec(tNode, doc, m_scale);
     node->append_node(tNode);
   }
 
@@ -323,17 +323,17 @@ namespace ToolKit
 
     if (XmlNode* n = node->first_node(XmlTranslateElement.c_str()))
     {
-      ExtractXYZFromNode(n, m_translation);
+      ReadVec(n, m_translation);
     }
 
     if (XmlNode* n = node->first_node(XmlRotateElement.c_str()))
     {
-      ExtractQuatFromNode(n, m_orientation);
+      ReadVec(n, m_orientation);
     }
 
     if (XmlNode* n = node->first_node(XmlScaleElement.c_str()))
     {
-      ExtractXYZFromNode(n, m_scale);
+      ReadVec(n, m_scale);
     }
   }
 

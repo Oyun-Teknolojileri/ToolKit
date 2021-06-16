@@ -80,61 +80,25 @@ namespace ToolKit
     doc.parse<0>(file.data());
 
     XmlNode* node = doc.first_node("meshContainer");
-    if (node == nullptr)
+    DeSerialize(&doc, node);
+  }
+
+  void Mesh::Save()
+  {
+    std::ofstream file;
+    String fileName = m_file;
+
+    file.open(fileName.c_str(), std::ios::out);
+    if (file.is_open())
     {
-      return;
-    }
+      XmlDocument doc;
+      Serialize(&doc, nullptr);
+      std::string xml;
+      rapidxml::print(std::back_inserter(xml), doc, 0);
 
-    m_aabb = BoundingBox();
-
-    Mesh* mesh = this;
-    for (node = node->first_node("mesh"); node; node = node->next_sibling("mesh"))
-    {
-      if (mesh == nullptr)
-      {
-        mesh = new Mesh();
-        m_subMeshes.push_back(MeshPtr(mesh));
-      }
-
-      XmlNode* materialNode = node->first_node("material");
-      String matFile = materialNode->first_attribute("name")->value();
-
-      if (CheckFile(MaterialPath(matFile)))
-      {
-        mesh->m_material = GetMaterialManager()->Create(MaterialPath(matFile));
-      }
-      else
-      {
-        mesh->m_material = GetMaterialManager()->Create(MaterialPath("default.material"));
-      }
-
-      XmlNode* vertex = node->first_node("vertices");
-      for (XmlNode* v = vertex->first_node("v"); v; v = v->next_sibling())
-      {
-        Vertex vd;
-        ExtractXYZFromNode(v->first_node("p"), vd.pos);
-        UpdateAABB(vd.pos);
-
-        ExtractXYZFromNode(v->first_node("n"), vd.norm);
-        ExtractXYFromNode(v->first_node("t"), vd.tex);
-        ExtractXYZFromNode(v->first_node("bt"), vd.btan);
-        mesh->m_clientSideVertices.push_back(vd);
-      }
-
-      XmlNode* faces = node->first_node("faces");
-      for (XmlNode* i = faces->first_node("f"); i; i = i->next_sibling())
-      {
-        glm::ivec3 indices;
-        ExtractXYZFromNode(i, indices);
-        mesh->m_clientSideIndices.push_back(indices.x);
-        mesh->m_clientSideIndices.push_back(indices.y);
-        mesh->m_clientSideIndices.push_back(indices.z);
-      }
-
-      mesh->m_loaded = true;
-      mesh->m_vertexCount = (int)mesh->m_clientSideVertices.size();
-      mesh->m_indexCount = (int)mesh->m_clientSideIndices.size();
-      mesh = nullptr;
+      file << xml;
+      file.close();
+      doc.clear();
     }
   }
 
@@ -275,6 +239,189 @@ namespace ToolKit
     }
   }
 
+  void Mesh::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* container = doc->allocate_node
+    (
+      rapidxml::node_type::node_element,
+      "meshContainer"
+    );
+
+    if (parent != nullptr)
+    {
+      parent->append_node(container);
+    }
+    else
+    {
+      doc->append_node(container);
+    }
+
+    auto writeMeshFn = [this, container, doc](const Mesh* mesh) -> void
+    {
+      XmlNode* meshNode = doc->allocate_node
+      (
+        rapidxml::node_type::node_element,
+        "mesh"
+      );
+      container->append_node(meshNode);
+
+      XmlNode* material = doc->allocate_node
+      (
+        rapidxml::node_type::node_element,
+        "material"
+      );
+      meshNode->append_node(material);
+
+      String fname = m_material->m_file;
+      if (fname.empty())
+      {
+        fname = "default.material";
+      }
+
+      XmlAttribute* nameAttr = doc->allocate_attribute("name", fname.c_str());
+      material->append_attribute(nameAttr);
+
+      XmlNode* vertices = doc->allocate_node
+      (
+        rapidxml::node_type::node_element,
+        "vertices"
+      );
+      meshNode->append_node(vertices);
+
+      // Serialize vertex
+      for (const Vertex& v : m_clientSideVertices)
+      {
+        XmlNode* vNod = doc->allocate_node
+        (
+          rapidxml::node_type::node_element,
+          "v"
+        );
+        vertices->append_node(vNod);
+
+        XmlNode* p = doc->allocate_node
+        (
+          rapidxml::node_type::node_element,
+          "p"
+        );
+        vNod->append_node(p);
+        WriteVec(p, doc, v.pos);
+
+        XmlNode* n = doc->allocate_node
+        (
+          rapidxml::node_type::node_element,
+          "n"
+        );
+        vNod->append_node(n);
+        WriteVec(n, doc, v.norm);
+
+        XmlNode* t = doc->allocate_node
+        (
+          rapidxml::node_type::node_element,
+          "t"
+        );
+        vNod->append_node(t);
+        WriteVec(t, doc, v.tex);
+
+        XmlNode* bt = doc->allocate_node
+        (
+          rapidxml::node_type::node_element,
+          "bt"
+        );
+        vNod->append_node(bt);
+        WriteVec(bt, doc, v.btan);
+      }
+
+      // Serialize faces
+      XmlNode* faces = doc->allocate_node
+      (
+        rapidxml::node_type::node_element,
+        "faces"
+      );
+      meshNode->append_node(faces);
+
+      for (size_t i = 0; i < m_clientSideIndices.size() / 3; i++)
+      {
+        XmlNode* f = doc->allocate_node
+        (
+          rapidxml::node_type::node_element,
+          "f"
+        );
+        faces->append_node(f);
+
+        WriteAttr(f, doc, "x", std::to_string(m_clientSideIndices[i * 3]));
+        WriteAttr(f, doc, "y", std::to_string(m_clientSideIndices[i * 3 + 1]));
+        WriteAttr(f, doc, "z", std::to_string(m_clientSideIndices[i * 3 + 2]));
+      }
+    };
+
+    writeMeshFn(this);
+    for (const MeshPtr& m : m_subMeshes)
+    {
+      writeMeshFn(m.get());
+    }
+  }
+
+  void Mesh::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    if (parent == nullptr)
+    {
+      return;
+    }
+
+    m_aabb = BoundingBox();
+
+    Mesh* mesh = this;
+    XmlNode* node = parent;
+    for (node = node->first_node("mesh"); node; node = node->next_sibling("mesh"))
+    {
+      if (mesh == nullptr)
+      {
+        mesh = new Mesh();
+        m_subMeshes.push_back(MeshPtr(mesh));
+      }
+
+      XmlNode* materialNode = node->first_node("material");
+      String matFile = materialNode->first_attribute("name")->value();
+
+      if (CheckFile(MaterialPath(matFile)))
+      {
+        mesh->m_material = GetMaterialManager()->Create(MaterialPath(matFile));
+      }
+      else
+      {
+        mesh->m_material = GetMaterialManager()->Create(MaterialPath("default.material"));
+      }
+
+      XmlNode* vertex = node->first_node("vertices");
+      for (XmlNode* v = vertex->first_node("v"); v; v = v->next_sibling())
+      {
+        Vertex vd;
+        ReadVec(v->first_node("p"), vd.pos);
+        UpdateAABB(vd.pos);
+
+        ReadVec(v->first_node("n"), vd.norm);
+        ReadVec(v->first_node("t"), vd.tex);
+        ReadVec(v->first_node("bt"), vd.btan);
+        mesh->m_clientSideVertices.push_back(vd);
+      }
+
+      XmlNode* faces = node->first_node("faces");
+      for (XmlNode* i = faces->first_node("f"); i; i = i->next_sibling())
+      {
+        glm::ivec3 indices;
+        ReadVec(i, indices);
+        mesh->m_clientSideIndices.push_back(indices.x);
+        mesh->m_clientSideIndices.push_back(indices.y);
+        mesh->m_clientSideIndices.push_back(indices.z);
+      }
+
+      mesh->m_loaded = true;
+      mesh->m_vertexCount = (int)mesh->m_clientSideVertices.size();
+      mesh->m_indexCount = (int)mesh->m_clientSideIndices.size();
+      mesh = nullptr;
+    }
+  }
+
   void Mesh::InitVertices(bool flush)
   {
     glDeleteBuffers(1, &m_vboVertexId);
@@ -401,12 +548,12 @@ namespace ToolKit
       for (XmlNode* v = vertex->first_node("v"); v; v = v->next_sibling())
       {
         SkinVertex vd;
-        ExtractXYZFromNode(v->first_node("p"), vd.pos);
-        ExtractXYZFromNode(v->first_node("n"), vd.norm);
-        ExtractXYFromNode(v->first_node("t"), vd.tex);
-        ExtractXYZFromNode(v->first_node("bt"), vd.btan);
-        ExtractWXYZFromNode(v->first_node("b"), vd.bones);
-        ExtractWXYZFromNode(v->first_node("w"), vd.weights);
+        ReadVec(v->first_node("p"), vd.pos);
+        ReadVec(v->first_node("n"), vd.norm);
+        ReadVec(v->first_node("t"), vd.tex);
+        ReadVec(v->first_node("bt"), vd.btan);
+        ReadVec(v->first_node("b"), vd.bones);
+        ReadVec(v->first_node("w"), vd.weights);
         mesh->m_clientSideVertices.push_back(vd);
       }
 
@@ -414,7 +561,7 @@ namespace ToolKit
       for (XmlNode* i = faces->first_node("f"); i; i = i->next_sibling())
       {
         glm::ivec3 indices;
-        ExtractXYZFromNode(i, indices);
+        ReadVec(i, indices);
         mesh->m_clientSideIndices.push_back(indices.x);
         mesh->m_clientSideIndices.push_back(indices.y);
         mesh->m_clientSideIndices.push_back(indices.z);

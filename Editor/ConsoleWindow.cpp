@@ -397,6 +397,23 @@ namespace ToolKit
       }
     }
 
+    void ApplyTransformToMesh(TagArgArray tagArgs)
+    {
+      if (Drawable* e = dynamic_cast<Drawable*> (g_app->m_scene.GetCurrentSelection()))
+      {
+        Mat4 ts = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
+        Mat4 its = glm::inverseTranspose(ts);
+        for (Vertex& v : e->m_mesh->m_clientSideVertices)
+        {
+          v.pos = ts * Vec4(v.pos, 1.0f);
+          v.norm = its * Vec4(v.norm, 1.0f);
+          v.btan = its * Vec4(v.btan, 1.0f);
+        }
+
+        e->m_mesh->Save();
+      }
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
     static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
@@ -417,6 +434,7 @@ namespace ToolKit
       CreateCommand(g_importSlientCmd, SetImportSlient);
       CreateCommand(g_selectByTag, SelectByTag);
       CreateCommand(g_lookAt, LookAt);
+      CreateCommand(g_applyTransformToMesh, ApplyTransformToMesh);
     }
 
     ConsoleWindow::~ConsoleWindow()

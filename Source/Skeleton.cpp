@@ -126,13 +126,13 @@ namespace ToolKit
 
     Bone* bone = new Bone(attr->value());
     XmlNode* subNode = node->first_node("translation");
-    ExtractXYZFromNode(subNode, bone->m_node->m_translation);
+    ReadVec(subNode, bone->m_node->m_translation);
 
     subNode = node->first_node("scale");
-    ExtractXYZFromNode(subNode, bone->m_node->m_scale);
+    ReadVec(subNode, bone->m_node->m_scale);
 
     subNode = node->first_node("rotation");
-    ExtractQuatFromNode(subNode, bone->m_node->m_orientation);
+    ReadVec(subNode, bone->m_node->m_orientation);
 
     XmlNode* bindPoseNode = node->first_node("bindPose");
     if (bindPoseNode != nullptr)
@@ -141,13 +141,13 @@ namespace ToolKit
       Quaternion rt;
 
       XmlNode* subNode = bindPoseNode->first_node("translation");
-      ExtractXYZFromNode(subNode, ts);
+      ReadVec(subNode, ts);
 
       subNode = bindPoseNode->first_node("scale");
-      ExtractXYZFromNode(subNode, scl);
+      ReadVec(subNode, scl);
 
       subNode = bindPoseNode->first_node("rotation");
-      ExtractQuatFromNode(subNode, rt);
+      ReadVec(subNode, rt);
 
       Mat4 tsm;
       tsm = glm::translate(tsm, ts);

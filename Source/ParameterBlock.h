@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Types.h"
+#include "Serialize.h"
 #include <variant>
 
 namespace ToolKit
 {
 
-  class ParameterVariant
+  class ParameterVariant : public Serializable
   {
   public:
     enum class VariantType
@@ -48,19 +49,19 @@ namespace ToolKit
     void SetVar(const Mat4& var) { m_type = VariantType::Mat4; m_var = var; }
     void SetVar(const String& var) { m_type = VariantType::String; m_var = var; }
 
-    void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerialzie(XmlDocument* doc, XmlNode* parent);
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   private:
     std::variant<Byte, UByte, float, int, uint, Vec3, Vec4, Mat3, Mat4, String> m_var;
     VariantType m_type;
   };
 
-  class ParameterBlock
+  class ParameterBlock : public Serializable
   {
   public:
-    void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    void DeSerialize(XmlDocument* doc, XmlNode* parent);
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     ParameterVariant& operator [](int indx)
     {

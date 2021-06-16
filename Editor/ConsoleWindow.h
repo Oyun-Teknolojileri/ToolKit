@@ -51,6 +51,9 @@ namespace ToolKit
     const String g_lookAt("LookAt");
     void LookAt(TagArgArray tagArgs);
 
+    const String g_applyTransformToMesh("ApplyTransformToMesh");
+    void ApplyTransformToMesh(TagArgArray tagArgs);
+
     class ConsoleWindow : public Window
     {
     public:

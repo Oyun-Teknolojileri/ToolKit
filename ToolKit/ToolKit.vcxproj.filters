@@ -90,6 +90,9 @@
     <ClInclude Include="..\Source\GlobalCache.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Serialize.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Animation.cpp">

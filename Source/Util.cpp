@@ -10,125 +10,38 @@
 namespace ToolKit
 {
 
-  void ExtractXYFromNode(XmlNode* node, Vec2& val)
+  template<typename T>
+  void ReadVec(XmlNode* node, T& val)
   {
-    XmlAttribute* attr = node->first_attribute("x");
-    val.x = (float)std::atof(attr->value());
-
-    attr = node->first_attribute("y");
-    val.y = (float)std::atof(attr->value());
+    static const char letters[] = { 'x', 'y', 'z', 'w' };
+    int limit = glm::min(val.length(), 4);
+    for (int i = 0; i < limit; i++)
+    {
+      XmlAttribute* attr = node->first_attribute(letters + i, 1);
+      if constexpr (std::is_integral_v<T::value_type>)
+      {
+        val[i] = std::atoi(attr->value());
+      }
+      else if (std::is_floating_point_v<T::value_type>)
+      {
+        val[i] = (float)std::atof(attr->value());
+      }
+      else
+      {
+        assert(false);
+      }
+    }
   }
 
-  void ExtractXYZFromNode(XmlNode* node, Vec3& val)
+  template<typename T>
+  void WriteVec(XmlNode* node, XmlDocument* doc, const T& val)
   {
-    XmlAttribute* attr = node->first_attribute("x");
-    val.x = (float)std::atof(attr->value());
-
-    attr = node->first_attribute("y");
-    val.y = (float)std::atof(attr->value());
-
-    attr = node->first_attribute("z");
-    val.z = (float)std::atof(attr->value());
-  }
-
-  void ExtractXYZFromNode(XmlNode* node, glm::ivec3& val)
-  {
-    XmlAttribute* attr = node->first_attribute("x");
-    val.x = std::atoi(attr->value());
-
-    attr = node->first_attribute("y");
-    val.y = std::atoi(attr->value());
-
-    attr = node->first_attribute("z");
-    val.z = std::atoi(attr->value());
-  }
-
-  void ExtractWXYZFromNode(XmlNode* node, Vec4& val)
-  {
-    XmlAttribute* attr = node->first_attribute("x");
-    val.x = (float)std::atof(attr->value());
-
-    attr = node->first_attribute("y");
-    val.y = (float)std::atof(attr->value());
-
-    attr = node->first_attribute("z");
-    val.z = (float)std::atof(attr->value());
-
-    attr = node->first_attribute("w");
-    val.w = (float)std::atof(attr->value());
-  }
-
-  void ExtractWXYZFromNode(XmlNode* node, glm::uvec4& val)
-  {
-    XmlAttribute* attr = node->first_attribute("x");
-    val.x = std::atoi(attr->value());
-
-    attr = node->first_attribute("y");
-    val.y = std::atoi(attr->value());
-
-    attr = node->first_attribute("z");
-    val.z = std::atoi(attr->value());
-
-    attr = node->first_attribute("w");
-    val.w = std::atoi(attr->value());
-  }
-
-  void ExtractWXYZFromNode(XmlNode* node, glm::ivec4& val)
-  {
-    XmlAttribute* attr = node->first_attribute("x");
-    val.x = std::atoi(attr->value());
-
-    attr = node->first_attribute("y");
-    val.y = std::atoi(attr->value());
-
-    attr = node->first_attribute("z");
-    val.z = std::atoi(attr->value());
-
-    attr = node->first_attribute("w");
-    val.w = std::atoi(attr->value());
-  }
-
-  void ExtractQuatFromNode(XmlNode* node, Quaternion& val)
-  {
-    Vec4 tmp;
-    ExtractWXYZFromNode(node, tmp);
-    val = Quaternion(tmp.w, tmp.xyz);
-  }
-
-  void WriteXY(XmlNode* node, XmlDocument* doc, const Vec2& val)
-  {
-    WriteAttr(node, doc, "x", std::to_string(val.x));
-    WriteAttr(node, doc, "y", std::to_string(val.y));
-  }
-
-  void WriteXYZ(XmlNode* node, XmlDocument* doc, const Vec3& val)
-  {
-    WriteXY(node, doc, val.xy);
-    WriteAttr(node, doc, "z", std::to_string(val.z));
-  }
-
-  void WriteXYZW(XmlNode* node, XmlDocument* doc, const Vec4& val)
-  {
-    WriteXYZ(node, doc, val.xyz);
-    WriteAttr(node, doc, "w", std::to_string(val.w));
-  }
-
-  void WriteXYZW(XmlNode* node, XmlDocument* doc, const Quaternion& val)
-  {
-    Vec4 dummy(val.x, val.y, val.z, val.w);
-    WriteXYZW(node, doc, dummy);
-  }
-
-  void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val)
-  {
-    node->append_attribute
-    (
-      doc->allocate_attribute
-      (
-        doc->allocate_string(name.c_str(), 0),
-        doc->allocate_string(val.c_str(), 0)
-      )
-    );
+    static const String letters[] = { "x", "y", "z", "w" };
+    int limit = glm::min(val.length(), 4);
+    for (int i = 0; i < limit; i++)
+    {
+      WriteAttr(node, doc, letters[i], std::to_string(val[i]));
+    }
   }
 
   template<typename T>
@@ -142,11 +55,17 @@ namespace ToolKit
     return (T)0;
   }
 
-  template Byte ReadAttr<Byte>(XmlNode* node, const String& name);
-  template UByte ReadAttr<UByte>(XmlNode* node, const String& name);
-  template int ReadAttr<int>(XmlNode* node, const String& name);
-  template uint ReadAttr<uint>(XmlNode* node, const String& name);
-  template float ReadAttr<float>(XmlNode* node, const String& name);
+  void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val)
+  {
+    node->append_attribute
+    (
+      doc->allocate_attribute
+      (
+        doc->allocate_string(name.c_str(), 0),
+        doc->allocate_string(val.c_str(), 0)
+      )
+    );
+  }
 
   bool CheckFile(const String& path)
   {

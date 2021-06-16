@@ -71,7 +71,7 @@ namespace ToolKit
       }
       else if (String("color").compare(node->name()) == 0)
       {
-        ExtractXYZFromNode(node, m_color);
+        ReadVec(node, m_color);
       }
       else
       {
