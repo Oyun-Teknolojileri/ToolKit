@@ -43,6 +43,7 @@ namespace ToolKit
     virtual bool IsSkinned() const;
     void CalculateAABoundingBox();
     void GetAllMeshes(MeshRawPtrArray& meshes);
+    void GetAllMeshes(MeshRawCPtrArray& meshes) const;
     void ConstructFaces();
     void ApplyTransform(const Mat4& transform);
 

@@ -176,6 +176,15 @@ namespace ToolKit
     }
   }
 
+  void Mesh::GetAllMeshes(MeshRawCPtrArray& meshes) const
+  {
+    meshes.push_back(this);
+    for (size_t i = 0; i < m_subMeshes.size(); i++)
+    {
+      m_subMeshes[i]->GetAllMeshes(meshes);
+    }
+  }
+
   void Mesh::ConstructFaces()
   {
     size_t triCnt = m_clientSideIndices.size() / 3;
@@ -228,7 +237,7 @@ namespace ToolKit
       doc->append_node(container);
     }
 
-    auto writeMeshFn = [this, container, doc](const Mesh* mesh) -> void
+    auto writeMeshFn = [container, doc](const Mesh* mesh) -> void
     {
       XmlNode* meshNode = doc->allocate_node
       (
@@ -244,7 +253,10 @@ namespace ToolKit
       );
       meshNode->append_node(material);
 
-      String fname = m_material->m_file;
+      String fname = mesh->m_material->m_file;
+      String name, ext;
+      DecomposePath(fname, nullptr, &name, &ext);
+      fname = name + ext;
       if (fname.empty())
       {
         fname = "default.material";
@@ -261,7 +273,7 @@ namespace ToolKit
       meshNode->append_node(vertices);
 
       // Serialize vertex
-      for (const Vertex& v : m_clientSideVertices)
+      for (const Vertex& v : mesh->m_clientSideVertices)
       {
         XmlNode* vNod = doc->allocate_node
         (
@@ -311,7 +323,7 @@ namespace ToolKit
       );
       meshNode->append_node(faces);
 
-      for (size_t i = 0; i < m_clientSideIndices.size() / 3; i++)
+      for (size_t i = 0; i < mesh->m_clientSideIndices.size() / 3; i++)
       {
         XmlNode* f = doc->allocate_node
         (
@@ -320,16 +332,19 @@ namespace ToolKit
         );
         faces->append_node(f);
 
-        WriteAttr(f, doc, "x", std::to_string(m_clientSideIndices[i * 3]));
-        WriteAttr(f, doc, "y", std::to_string(m_clientSideIndices[i * 3 + 1]));
-        WriteAttr(f, doc, "z", std::to_string(m_clientSideIndices[i * 3 + 2]));
+        WriteAttr(f, doc, "x", std::to_string(mesh->m_clientSideIndices[i * 3]));
+        WriteAttr(f, doc, "y", std::to_string(mesh->m_clientSideIndices[i * 3 + 1]));
+        WriteAttr(f, doc, "z", std::to_string(mesh->m_clientSideIndices[i * 3 + 2]));
       }
     };
 
-    writeMeshFn(this);
-    for (const MeshPtr& m : m_subMeshes)
+    // This approach will flatten the mesh on a single sibling level.
+    // To keep the depth hierarch, recursive save is needed.
+    MeshRawCPtrArray cMeshes;
+    GetAllMeshes(cMeshes);
+    for (const Mesh* m : cMeshes)
     {
-      m->Serialize(doc, parent);
+      writeMeshFn(m);
     }
   }
 

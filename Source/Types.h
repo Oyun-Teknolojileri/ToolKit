@@ -50,6 +50,7 @@ namespace ToolKit
   typedef std::shared_ptr<class SkinMesh> SkinMeshPtr;
   typedef std::vector<MeshPtr> MeshPtrArray;
   typedef std::vector<class Mesh*> MeshRawPtrArray;
+  typedef std::vector<const class Mesh*> MeshRawCPtrArray;
   typedef std::vector<class Entity*> EntityRawPtrArray;
   typedef std::vector<class Light*> LightRawPtrArray;
   typedef std::vector<std::shared_ptr<class Entity>> EntityPtrArray;
