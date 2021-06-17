@@ -305,7 +305,13 @@ namespace ToolKit
           }
         }
 
-        m_cursor->LookAt(cam, vp->m_height);
+        float orthScl = 1.0f;
+        if (vp->m_orthographic)
+        {
+          // Magic scale to match Billboards in perspective view with ortoghrapic view.
+          orthScl = 1.6f;
+        }
+        m_cursor->LookAt(cam, vp->m_height * orthScl);
         m_renderer->Render(m_cursor, cam);
       }
 
