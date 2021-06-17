@@ -29,6 +29,11 @@ namespace ToolKit
       return tagArgs.end();
     }
 
+    bool TagExist(String tag, const TagArgArray& tagArgs)
+    {
+      return GetTag(tag, tagArgs) != tagArgs.end();
+    }
+
     void ParseVec(Vec3& vec, TagArgCIt tagIt)
     {
       int maxIndx = glm::min((int)tagIt->second.size(), 3);
@@ -399,18 +404,58 @@ namespace ToolKit
 
     void ApplyTransformToMesh(TagArgArray tagArgs)
     {
+      // Caviate: A reload is neded since hardware buffers are not updated.
+      // After refreshing hardware buffers, transforms of the entity can be set to identity.
       if (Drawable* e = dynamic_cast<Drawable*> (g_app->m_scene.GetCurrentSelection()))
       {
         Mat4 ts = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
-        Mat4 its = glm::inverseTranspose(ts);
-        for (Vertex& v : e->m_mesh->m_clientSideVertices)
+        MeshRawPtrArray meshes;
+        e->m_mesh->GetAllMeshes(meshes);
+        for (Mesh* m : meshes)
         {
-          v.pos = ts * Vec4(v.pos, 1.0f);
-          v.norm = its * Vec4(v.norm, 1.0f);
-          v.btan = its * Vec4(v.btan, 1.0f);
+          m->ApplyTransform(ts);
+        }
+      }
+      else
+      {
+        g_app->GetConsole()->AddLog(g_noValidEntity, ConsoleWindow::LogType::Error);
+      }
+    }
+
+    void SaveMesh(TagArgArray tagArgs)
+    {
+      if (Drawable* e = dynamic_cast<Drawable*> (g_app->m_scene.GetCurrentSelection()))
+      {
+        TagArgArray::const_iterator nameTag = GetTag("n", tagArgs);
+        String fileName = e->m_mesh->m_file;
+        if (fileName.empty())
+        {
+          fileName = MeshPath(e->m_name + MESH);
         }
 
-        e->m_mesh->Save();
+        if (nameTag != tagArgs.end())
+        {
+          fileName = MeshPath(nameTag->second.front() + MESH);
+        }
+
+        std::ofstream file;
+        file.open(fileName.c_str(), std::ios::out);
+        if (file.is_open())
+        {
+          XmlDocument doc;
+          e->m_mesh->Serialize(&doc, nullptr);
+          std::string xml;
+          rapidxml::print(std::back_inserter(xml), doc, 0);
+
+          file << xml;
+          file.close();
+          doc.clear();
+          g_app->GetConsole()->AddLog("Mesh: " + fileName + " saved.");
+        }
+      }
+      else
+      {
+        g_app->GetConsole()->AddLog(g_noValidEntity, ConsoleWindow::LogType::Error);
       }
     }
 
@@ -435,6 +480,7 @@ namespace ToolKit
       CreateCommand(g_selectByTag, SelectByTag);
       CreateCommand(g_lookAt, LookAt);
       CreateCommand(g_applyTransformToMesh, ApplyTransformToMesh);
+      CreateCommand(g_saveMesh, SaveMesh);
     }
 
     ConsoleWindow::~ConsoleWindow()

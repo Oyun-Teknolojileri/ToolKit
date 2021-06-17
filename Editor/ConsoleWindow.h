@@ -54,6 +54,12 @@ namespace ToolKit
     const String g_applyTransformToMesh("ApplyTransformToMesh");
     void ApplyTransformToMesh(TagArgArray tagArgs);
 
+    const String g_saveMesh("SaveMesh");
+    void SaveMesh(TagArgArray tagArgs);
+
+    // Command errors
+    const String g_noValidEntity("No valid entity");
+
     class ConsoleWindow : public Window
     {
     public:

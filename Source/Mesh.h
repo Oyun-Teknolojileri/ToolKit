@@ -38,14 +38,13 @@ namespace ToolKit
     virtual void Init(bool flushClientSideArray = true) override;
     virtual void UnInit() override;
     virtual void Load() override;
-    void Save();
     virtual Mesh* GetCopy() override;
     virtual int GetVertexSize() const;
     virtual bool IsSkinned() const;
     void CalculateAABoundingBox();
     void GetAllMeshes(MeshRawPtrArray& meshes);
-    void Scale(const Vec3& scale);
     void ConstructFaces();
+    void ApplyTransform(const Mat4& transform);
 
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;

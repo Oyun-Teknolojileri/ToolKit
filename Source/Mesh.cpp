@@ -83,25 +83,6 @@ namespace ToolKit
     DeSerialize(&doc, node);
   }
 
-  void Mesh::Save()
-  {
-    std::ofstream file;
-    String fileName = m_file;
-
-    file.open(fileName.c_str(), std::ios::out);
-    if (file.is_open())
-    {
-      XmlDocument doc;
-      Serialize(&doc, nullptr);
-      std::string xml;
-      rapidxml::print(std::back_inserter(xml), doc, 0);
-
-      file << xml;
-      file.close();
-      doc.clear();
-    }
-  }
-
   Mesh* Mesh::GetCopy()
   {
     Mesh* cpy = new Mesh();
@@ -195,26 +176,6 @@ namespace ToolKit
     }
   }
 
-  void Mesh::Scale(const Vec3& scale)
-  {
-    assert(!m_initiated && "Call this before initiating the mesh.");
-    if (!m_initiated)
-    {
-      MeshRawPtrArray meshes;
-      GetAllMeshes(meshes);
-      m_aabb.max = Vec3(-FLT_MAX);
-      m_aabb.min = Vec3(FLT_MAX);
-      for (Mesh* mesh : meshes)
-      {
-        for (size_t i = 0; i < m_vertexCount; i++)
-        {
-          m_clientSideVertices[i].pos *= scale;
-          UpdateAABB(m_clientSideVertices[i].pos);
-        }
-      }
-    }
-  }
-
   void Mesh::ConstructFaces()
   {
     size_t triCnt = m_clientSideIndices.size() / 3;
@@ -236,6 +197,17 @@ namespace ToolKit
           m_faces[i].vertices[j] = &m_clientSideVertices[indx];
         }
       }
+    }
+  }
+
+  void Mesh::ApplyTransform(const Mat4& transform)
+  {
+    Mat4 its = glm::inverseTranspose(transform);
+    for (Vertex& v : m_clientSideVertices)
+    {
+      v.pos = transform * Vec4(v.pos, 1.0f);
+      v.norm = glm::normalize(its * Vec4(v.norm, 1.0f));
+      v.btan = glm::normalize(its * Vec4(v.btan, 1.0f));
     }
   }
 
@@ -278,7 +250,7 @@ namespace ToolKit
         fname = "default.material";
       }
 
-      XmlAttribute* nameAttr = doc->allocate_attribute("name", fname.c_str());
+      XmlAttribute* nameAttr = doc->allocate_attribute("name", doc->allocate_string(fname.c_str()));
       material->append_attribute(nameAttr);
 
       XmlNode* vertices = doc->allocate_node
@@ -357,7 +329,7 @@ namespace ToolKit
     writeMeshFn(this);
     for (const MeshPtr& m : m_subMeshes)
     {
-      writeMeshFn(m.get());
+      m->Serialize(doc, parent);
     }
   }
 
