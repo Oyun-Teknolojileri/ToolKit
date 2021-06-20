@@ -69,7 +69,7 @@ namespace ToolKit
       vertices[10].pos.y = -0.3f;
       vertices[11].pos.y = -0.7f;
 
-      MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
+      MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       newMaterial->m_color = Vec3(0.1f, 0.1f, 0.1f);
       newMaterial->GetRenderState()->drawType = DrawType::Line;
       newMaterial->GetRenderState()->depthTestEnabled = false;
@@ -148,7 +148,7 @@ namespace ToolKit
       m_mesh = line.m_mesh;
       line.m_mesh = nullptr;
 
-      MaterialPtr material = GetMaterialManager()->GetCopyOfSolidMaterial();
+      MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       material->m_color = params.color;
 
       if (params.type == SolidType::Cube)

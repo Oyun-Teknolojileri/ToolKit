@@ -642,7 +642,7 @@ namespace ToolKit
     vertices[6].pos = Vec3(1.0f, 0.0f, 0.0f);
     vertices[7].pos = Vec3(0.8f, -0.2f, 0.0f);
 
-    MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
+    MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
     newMaterial->GetRenderState()->drawType = DrawType::Line;
     newMaterial->m_color = Vec3(0.89f, 0.239f, 0.341f);
 
@@ -674,7 +674,7 @@ namespace ToolKit
 
   LineBatch::LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
   {
-    MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
+    MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
     newMaterial->GetRenderState()->drawType = t;
     m_mesh->m_material = newMaterial;
 

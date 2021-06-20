@@ -633,32 +633,57 @@ int main(int argc, char* argv[])
       std::filesystem::create_directories(dest);
     }
 
-    const aiScene* scene = importer.ReadFile
-    (
-      file,
-      aiProcess_Triangulate
-      | aiProcess_CalcTangentSpace
-      | aiProcess_FlipUVs
-      | aiProcess_LimitBoneWeights
-      | aiProcess_GenNormals
-      | aiProcess_GlobalScale
-    );
-
-    if (scene == nullptr)
+    string ext = file.substr(file.find_last_of("."));
+    std::vector<string> files;
+    if (ext == ".txt")
     {
-      throw (-1);
+      fstream fList;
+      fList.open(file, ios::in);
+      if (fList.is_open()) 
+      {
+        string fileStr;
+        while (getline(fList, fileStr)) 
+        {
+          files.push_back(fileStr);
+        }
+        fList.close();
+      }
     }
-    g_scene = scene;
+    else
+    {
+      files.push_back(file);
+    }
 
-    filesystem::path pathToProcess = file;
-    string fileName = pathToProcess.filename().u8string();
-    string destFile = dest + fileName;
+    for (int i = 0; i < (int)files.size(); i++)
+    {
+      file = files[i];
+      const aiScene* scene = importer.ReadFile
+      (
+        file,
+        aiProcess_Triangulate
+        | aiProcess_CalcTangentSpace
+        | aiProcess_FlipUVs
+        | aiProcess_LimitBoneWeights
+        | aiProcess_GenNormals
+        | aiProcess_GlobalScale
+      );
 
-    PrintSkeleton_(scene, destFile);
-    PrintMesh_(scene, destFile);
-    PrintAnims_(scene, dest);
-    PrintMaterial_(scene, dest, file);
-    PrintTextures_(scene, dest);
+      if (scene == nullptr)
+      {
+        throw (-1);
+      }
+      g_scene = scene;
+
+      filesystem::path pathToProcess = file;
+      string fileName = pathToProcess.filename().u8string();
+      string destFile = dest + fileName;
+
+      PrintSkeleton_(scene, destFile);
+      PrintMesh_(scene, destFile);
+      PrintAnims_(scene, dest);
+      PrintMaterial_(scene, dest, file);
+      PrintTextures_(scene, dest);
+    }
 
     // Report all in use files.
     fstream inUse("out.txt", ios::out);

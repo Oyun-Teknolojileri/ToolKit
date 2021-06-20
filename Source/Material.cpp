@@ -16,6 +16,7 @@ namespace ToolKit
   Material::Material(String file)
   {
     m_file = file;
+    m_color = Vec3(1.0f);
   }
 
   Material::~Material()
@@ -119,7 +120,15 @@ namespace ToolKit
     }
     else
     {
-      m_fragmetShader = GetShaderManager()->Create(ShaderPath("defaultFragment.shader"));
+      if (m_diffuseTexture)
+      {
+        m_fragmetShader = GetShaderManager()->Create(ShaderPath("defaultFragment.shader"));
+      }
+      else
+      {
+        m_fragmetShader = GetShaderManager()->Create(ShaderPath("solidColorFrag.shader"));
+      }
+      
       m_fragmetShader->Init();
     }
 
@@ -177,11 +186,23 @@ namespace ToolKit
     material->Init();
 
     m_storage[MaterialPath("solid.material")] = MaterialPtr(material);
+
+    material = new Material();
+    material->m_vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
+    material->m_fragmetShader = GetShaderManager()->Create(ShaderPath("unlitColorFrag.shader"));
+    material->Init();
+
+    m_storage[MaterialPath("unlitSolid.material")] = MaterialPtr(material);
   }
 
   ToolKit::MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()
   {
     return MaterialPtr(m_storage[MaterialPath("unlit.material")]->GetCopy());
+  }
+
+  MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial()
+  {
+    return MaterialPtr(m_storage[MaterialPath("unlitSolid.material")]->GetCopy());
   }
 
   MaterialPtr MaterialManager::GetCopyOfSolidMaterial()

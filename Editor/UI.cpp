@@ -480,16 +480,36 @@ namespace ToolKit
 
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {
-          for (size_t i = 0; i < ImportData.files.size(); i++)
+          String load;
+          if (ImportData.files.size() > 1)
           {
-            if (g_app->Import(ImportData.files[i], ImportData.subDir, ImportData.overwrite) == -1)
+            std::fstream importList;
+            load = "..\\Utils\\Import\\importList.txt";
+            importList.open(load, std::ios::out);
+            if (importList.is_open())
             {
-              // Fall back to search.
-              ImGui::EndPopup();
-              ImportData.showImportWindow = false;
-              return;
+              for (String& file : ImportData.files)
+              {
+                if (g_app->CanImport(file))
+                {
+                  importList << file + "\n";
+                }
+              }
             }
           }
+          else
+          {
+            load = ImportData.files.front();
+          }
+
+          if (g_app->Import(load, ImportData.subDir, ImportData.overwrite) == -1)
+          {
+            // Fall back to search.
+            ImGui::EndPopup();
+            ImportData.showImportWindow = false;
+            return;
+          }
+
           fails.clear();
           ImportData.files.clear();
           ImportData.showImportWindow = false;

@@ -113,7 +113,7 @@ namespace ToolKit
       m_grid = new Grid(100);
       m_grid->m_mesh->Init(false);
 
-      MaterialPtr solidColorMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
+      MaterialPtr solidColorMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       m_highLightMaterial = MaterialPtr(solidColorMaterial->GetCopy());
       m_highLightMaterial->m_color = g_selectHighLightPrimaryColor;
       m_highLightMaterial->GetRenderState()->cullMode = CullingType::Front;
@@ -418,15 +418,21 @@ namespace ToolKit
 
         String name, ext;
         DecomposePath(fullPath, nullptr, &name, &ext);
+        String finalPath = fullPath;
+
+        if (name == "importList" && ext == ".txt")
+        {
+          finalPath = "importList.txt";
+        }
 
         String cmd = "Import \"";
         if (!subDir.empty())
         {
-          cmd += fullPath + "\" -t \".\\" + subDir;
+          cmd += finalPath + "\" -t \".\\" + subDir;
         }
         else
         {
-          cmd += fullPath;
+          cmd += finalPath;
         }
 
         cmd += "\" -s " + std::to_string(UI::ImportData.scale);
@@ -620,6 +626,12 @@ namespace ToolKit
         return true;
       }
 
+      if (ext == ".txt")
+      {
+        // Hopefully, list of valid objects. Not a poem.
+        return true;
+      }
+
       return false;
     }
 
@@ -730,7 +742,7 @@ namespace ToolKit
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
         glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        ShaderPtr solidColor = GetShaderManager()->Create(ShaderPath("solidColorFrag.shader"));
+        ShaderPtr solidColor = GetShaderManager()->Create(ShaderPath("unlitColorFrag.shader"));
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
 

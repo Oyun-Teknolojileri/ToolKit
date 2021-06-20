@@ -78,7 +78,7 @@ namespace ToolKit
       Vec3 ls = Vec3(0.05f, scale * 2.0f, 1.0f);
       for (int i = 0; i < 2; i++)
       {
-        MaterialPtr solidMat = GetMaterialManager()->GetCopyOfSolidMaterial();
+        MaterialPtr solidMat = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
         solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
         solidMat->m_color = g_gridAxisBlue;
 
