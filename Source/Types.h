@@ -97,6 +97,7 @@ namespace ToolKit
   // Xml file IO.
   const static String XmlEntityElement("E");
   const static String XmlEntityIdAttr("i");
+  const static String XmlParentEntityIdAttr("pi");
   const static String XmlEntityNameAttr("n");
   const static String XmlEntityTagAttr("ta");
   const static String XmlEntityTypeAttr("t");

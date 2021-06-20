@@ -60,8 +60,15 @@ void AddToUsedFiles(string file)
   }
 }
 
+void ClearForbidden(std::string& str)
+{
+  const std::string forbiddenChars = "\\/:?\"<>|";
+  std::replace_if(str.begin(), str.end(), [&forbiddenChars](char c) { return std::string::npos != forbiddenChars.find(c); }, ' ');
+}
+
 unordered_map<string, BoneNode> g_skeletonMap;
 const aiScene* g_scene = nullptr;
+static unsigned int g_lastId = 1;
 
 void TrunckToFileName(string& fullPath)
 {
@@ -322,40 +329,92 @@ void AppendMesh_(aiMesh* mesh, ofstream& file, string filePath)
   file << "  </" + tag + ">\n";
 }
 
-void PrintMesh_(const aiScene* scene, string filePath)
+void SearchMesh(ofstream& sceneFile, const aiScene* scene, string filePath, aiNode* node, int parentId)
 {
-  string path, name;
-  Decompose(filePath, path, name);
+  int thisId = g_lastId++;
 
-  string tag = "mesh";
-  if (!g_skeletonMap.empty())
+  // Write meshes.
+  string meshPath;
+  if (node->mNumMeshes > 0)
   {
-    tag = "skinMesh";
-  }
+    string path, name;
+    Decompose(filePath, path, name);
 
-  string fullPath = path + name + "." + tag;
-  AddToUsedFiles(fullPath);
+    string tag = "mesh";
+    if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
+    {
+      tag = "skinMesh";
+    }
 
-  ofstream file(fullPath, ios::out);
-  file << "<meshContainer>\n";
+    string fileName = std::string(node->mName.C_Str());
+    ClearForbidden(fileName);
+    meshPath = path + name + "_" + fileName + "." + tag;
+    AddToUsedFiles(meshPath);
 
-  function<void(aiNode*)> searchMeshFn = [&searchMeshFn, &scene, &file, &filePath](aiNode* node) -> void
-  {
+    ofstream file(meshPath, ios::out);
+    file << "<meshContainer>\n";
+
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
       aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
       AppendMesh_(mesh, file, filePath);
     }
 
-    for (unsigned int i = 0; i < node->mNumChildren; i++)
-    {
-      searchMeshFn(node->mChildren[i]);
-    }
-  };
+    file << "</meshContainer>\n";
+    file.close();
+  }
 
-  searchMeshFn(scene->mRootNode);
+  // Write Entity.
+  if (parentId != -1)
+  {
+    sceneFile << "  <E i=\"" + std::to_string(thisId) + "\" pi=\"" + std::to_string(parentId) + "\" t=\"9\">\n";
+  }
+  else
+  {
+    sceneFile << "  <E i=\"" + std::to_string(thisId) + "\" t=\"9\">\n";
+  }
 
-  file << "</meshContainer>\n";
+  sceneFile << "    <N>\n";
+
+  aiQuaternion rt;
+  aiVector3D ts, scl;
+  node->mTransformation.Decompose(scl, rt, ts);
+
+  sceneFile << "      <T x=\"" + std::to_string(ts.x) + "\" y=\"" + std::to_string(ts.y) + "\" z=\"" + std::to_string(ts.z) + "\" />\n";
+  sceneFile << "      <R x=\"" + std::to_string(rt.x) + "\" y=\"" + std::to_string(rt.y) + "\" z=\"" + std::to_string(rt.z) + "\" w=\"" + std::to_string(rt.w) + "\" />\n";
+  sceneFile << "      <S x=\"" + std::to_string(scl.x) + "\" y=\"" + std::to_string(scl.y) + "\" z=\"" + std::to_string(scl.z) + "\" />\n";
+
+  sceneFile << "    </N>\n";
+
+  if (!meshPath.empty())
+  {
+    sceneFile << "    <M f=\"" + meshPath + "\"/>\n";
+  }
+
+  sceneFile << "  </E>\n";
+
+  for (unsigned int j = 0; j < node->mNumChildren; j++)
+  {
+    SearchMesh(sceneFile, scene, filePath, node->mChildren[j], thisId);
+  }
+}
+
+void PrintMesh_(const aiScene* scene, string filePath)
+{
+  // Print Scene.
+  string path, name;
+  Decompose(filePath, path, name);
+
+  string fullPath = path + name + ".scene";
+  AddToUsedFiles(fullPath);
+
+  ofstream file(fullPath, ios::out);
+  file << "<S>\n";
+
+  // Add Meshes.
+  SearchMesh(file, scene, filePath, scene->mRootNode, -1);
+
+  file << "</S>";
   file.close();
 }
 
@@ -541,7 +600,7 @@ void PrintTextures_(const aiScene* scene, string filePath)
 
 int main(int argc, char* argv[])
 {
-  try 
+  try
   {
     if (argc < 2)
     {
@@ -556,7 +615,7 @@ int main(int argc, char* argv[])
     {
       string arg = argv[i];
       Assimp::DefaultLogger::get()->info(arg);
-      
+
       if (arg == "-t")
       {
         dest = filesystem::path(argv[i + 1]).append("").u8string();

@@ -430,6 +430,20 @@ namespace ToolKit
         ntt->DeSerialize(doc, node);
         m_entitites.push_back(ntt);
       }
+
+      // Update parent - child relation for entities.
+      for (Entity* e : m_entitites)
+      {
+        if (e->_parentId != 0)
+        {
+          Entity* parent = GetEntity(e->_parentId);
+          if (parent)
+          {
+            parent->m_node->AddChild(e->m_node);
+          }
+        }
+      }
+
     }
 
   }

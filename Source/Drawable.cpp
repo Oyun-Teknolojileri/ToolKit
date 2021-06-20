@@ -81,7 +81,7 @@ namespace ToolKit
     if (XmlNode* meshNode = parent->first_node(XmlMeshElement.c_str()))
     {
       XmlAttribute* attr = meshNode->first_attribute(XmlFileAttr.c_str());
-      String filePath = attr->value();
+      String filePath = MeshPath(attr->value());
       m_mesh = GetMeshManager()->Create(filePath);
     }
   }

@@ -33,6 +33,13 @@ namespace ToolKit
     }
   }
 
+  template void ReadVec(XmlNode* node, Vec2& val);
+  template void ReadVec(XmlNode* node, Vec3& val);
+  template void ReadVec(XmlNode* node, glm::ivec3& val);
+  template void ReadVec(XmlNode* node, Quaternion& val);
+  template void ReadVec(XmlNode* node, Vec4& val);
+  template void ReadVec(XmlNode* node, glm::uvec4& val);
+
   template<typename T>
   void WriteVec(XmlNode* node, XmlDocument* doc, const T& val)
   {
@@ -44,6 +51,11 @@ namespace ToolKit
     }
   }
 
+  template void WriteVec(XmlNode* node, XmlDocument* doc, const Vec2& val);
+  template void WriteVec(XmlNode* node, XmlDocument* doc, const Vec3& val);
+  template void WriteVec(XmlNode* node, XmlDocument* doc, const Vec4& val);
+  template void WriteVec(XmlNode* node, XmlDocument* doc, const Quaternion& val);
+
   template<typename T>
   T ReadAttr(XmlNode* node, const String& name)
   {
@@ -54,6 +66,12 @@ namespace ToolKit
 
     return (T)0;
   }
+
+  template Byte ReadAttr<Byte>(XmlNode* node, const String& name);
+  template UByte ReadAttr<UByte>(XmlNode* node, const String& name);
+  template int ReadAttr<int>(XmlNode* node, const String& name);
+  template uint ReadAttr<uint>(XmlNode* node, const String& name);
+  template float ReadAttr<float>(XmlNode* node, const String& name);
 
   void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val)
   {

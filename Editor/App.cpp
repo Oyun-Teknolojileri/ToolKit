@@ -501,6 +501,11 @@ namespace ToolKit
               }
 
               String fullPath;
+              if (ext == SCENE)
+              {
+                fullPath = ScenePath(line);
+              }
+
               if (ext == MESH || ext == SKINMESH)
               {
                 fullPath = MeshPath(line);
