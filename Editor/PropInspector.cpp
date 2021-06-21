@@ -135,16 +135,7 @@ namespace ToolKit
 
           if (ImGui::Checkbox("Inherit Scale", &curr->m_node->m_inheritScale))
           {
-            std::function<void(Node*)> setInheritFn = [&setInheritFn](Node* n) -> void
-            {
-              n->m_inheritScale = true;
-              for (Node* cn : n->m_children)
-              {
-                setInheritFn(cn);
-              }
-            };
-
-            setInheritFn(curr->m_node);
+            curr->m_node->SetInheritScaleDeep(curr->m_node->m_inheritScale);
           }
 
           if (dragMem && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
