@@ -182,6 +182,7 @@ namespace ToolKit
   {
     assert(child->m_id != m_id);
     assert(child->m_parent == nullptr);
+    Mat4 ts = child->GetTransform(TransformationSpace::TS_WORLD);
 
     m_children.push_back(child);
     child->m_parent = this;
@@ -189,8 +190,7 @@ namespace ToolKit
     child->SetChildrenDirty();
 
     if (preserveTransform)
-    {
-      Mat4 ts = child->GetTransform(TransformationSpace::TS_WORLD);
+    {  
       child->SetTransform(ts, TransformationSpace::TS_WORLD);
     }
   }
@@ -201,6 +201,8 @@ namespace ToolKit
     {
       if (m_children[i] == child)
       {
+        Mat4 ts = child->GetTransform(TransformationSpace::TS_WORLD);
+
         child->m_parent = nullptr;
         child->m_dirty = true;
         child->SetChildrenDirty();
@@ -208,7 +210,6 @@ namespace ToolKit
 
         if (preserveTransform)
         {
-          Mat4 ts = child->GetTransform(TransformationSpace::TS_WORLD);
           child->SetTransform(ts, TransformationSpace::TS_WORLD);
         }
         return;
