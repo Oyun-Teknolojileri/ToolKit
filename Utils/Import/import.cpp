@@ -374,7 +374,7 @@ void SearchMesh(ofstream& sceneFile, const aiScene* scene, string filePath, aiNo
     sceneFile << "  <E i=\"" + std::to_string(thisId) + "\" t=\"9\">\n";
   }
 
-  sceneFile << "    <N>\n";
+  sceneFile << "    <N is=\"1\">\n";
 
   aiQuaternion rt;
   aiVector3D ts, scl;

@@ -307,6 +307,7 @@ namespace ToolKit
     {
       String val = pid->value();
       // Node look up from parent ...
+      // It's being handled in scene deserialize.
     }
 
     if (XmlAttribute* attr = node->first_attribute(XmlNodeInheritScaleAttr.c_str()))
