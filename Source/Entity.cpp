@@ -17,6 +17,7 @@ namespace ToolKit
     m_node->m_entity = this;
     m_id = m_lastId++;
     m_name = "Entity_" + std::to_string(m_id);
+    _parentId = 0;
   }
 
   Entity::~Entity()
@@ -84,6 +85,11 @@ namespace ToolKit
     }
 
     WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(m_id));
+    if (m_node->m_parent && m_node->m_parent->m_entity)
+    {
+      WriteAttr(node, doc, XmlParentEntityIdAttr, std::to_string(m_node->m_parent->m_entity->m_id));
+    }
+    
     WriteAttr(node, doc, XmlEntityNameAttr, m_name);
     WriteAttr(node, doc, XmlEntityTagAttr, m_tag);
     WriteAttr(node, doc, XmlEntityTypeAttr, std::to_string((int)GetType()));
@@ -106,6 +112,12 @@ namespace ToolKit
     {
       String val = attr->value();
       m_id = std::atoi(val.c_str());
+    }
+
+    if (XmlAttribute* attr = nttNode->first_attribute(XmlParentEntityIdAttr.c_str()))
+    {
+      String val = attr->value();
+      _parentId = std::atoi(val.c_str());
     }
 
     if (XmlAttribute* attr = nttNode->first_attribute(XmlEntityNameAttr.c_str()))

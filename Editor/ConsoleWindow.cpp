@@ -29,6 +29,20 @@ namespace ToolKit
       return tagArgs.end();
     }
 
+    bool TagExist(String tag, const TagArgArray& tagArgs)
+    {
+      return GetTag(tag, tagArgs) != tagArgs.end();
+    }
+
+    void ParseVec(Vec3& vec, TagArgCIt tagIt)
+    {
+      int maxIndx = glm::min((int)tagIt->second.size(), 3);
+      for (int i = 0; i < maxIndx; i++)
+      {
+        vec[i] = (float)std::atof(tagIt->second[i].c_str());
+      }
+    }
+
     // Executors
     void BoolCheck(const TagArgArray& tagArgs, bool* val)
     {
@@ -115,6 +129,9 @@ namespace ToolKit
         }
       }
 
+      ActionManager::GetInstance()->AddAction(new TransformAction(e));
+      bool actionApplied = false;
+
       for (TagArg& tagIt : tagArgs)
       {
         String tag = tagIt.first;
@@ -152,6 +169,7 @@ namespace ToolKit
           {
             e->m_node->Rotate(q, ts);
           }
+          actionApplied = true;
         }
         else if (tag == "s")
         {
@@ -163,6 +181,7 @@ namespace ToolKit
           {
             e->m_node->Scale(transfrom);
           }
+          actionApplied = true;
         }
         else if (tag == "t")
         {
@@ -174,7 +193,13 @@ namespace ToolKit
           {
             e->m_node->Translate(transfrom, ts);
           }
+          actionApplied = true;
         }
+      }
+      
+      if (!actionApplied)
+      {
+        ActionManager::GetInstance()->RemoveLastAction();
       }
     }
 
@@ -239,12 +264,7 @@ namespace ToolKit
             if (translateTag != tagArgs.end())
             {
               Vec3 translate;
-              int maxIndx = glm::min((int)translateTag->second.size(), 3);
-              for (int i = 0; i < maxIndx; i++)
-              {
-                translate[i] = (float)std::atof(translateTag->second[i].c_str());
-              }
-
+              ParseVec(translate, translateTag);
               c->m_node->SetTranslation(translate, TransformationSpace::TS_WORLD);
             }
           }
@@ -357,6 +377,88 @@ namespace ToolKit
       g_app->m_scene.SelectByTag(args);
     }
 
+    void LookAt(TagArgArray tagArgs)
+    {
+      TagArgArray::const_iterator targetTag = GetTag("t", tagArgs);
+      if (targetTag != tagArgs.end())
+      {
+        if (targetTag->second.empty()) // Tag cant be empty.
+        {
+          return;
+        }
+
+        if (targetTag->second.empty())
+        {
+          return;
+        }
+
+        Vec3 target;
+        ParseVec(target, targetTag);
+        Viewport* vp = g_app->GetViewport("Perspective");
+        if (vp)
+        {
+          vp->m_camera->LookAt(target);
+        }
+      }
+    }
+
+    void ApplyTransformToMesh(TagArgArray tagArgs)
+    {
+      // Caviate: A reload is neded since hardware buffers are not updated.
+      // After refreshing hardware buffers, transforms of the entity can be set to identity.
+      if (Drawable* e = dynamic_cast<Drawable*> (g_app->m_scene.GetCurrentSelection()))
+      {
+        Mat4 ts = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
+        MeshRawPtrArray meshes;
+        e->m_mesh->GetAllMeshes(meshes);
+        for (Mesh* m : meshes)
+        {
+          m->ApplyTransform(ts);
+        }
+      }
+      else
+      {
+        g_app->GetConsole()->AddLog(g_noValidEntity, ConsoleWindow::LogType::Error);
+      }
+    }
+
+    void SaveMesh(TagArgArray tagArgs)
+    {
+      if (Drawable* e = dynamic_cast<Drawable*> (g_app->m_scene.GetCurrentSelection()))
+      {
+        TagArgArray::const_iterator nameTag = GetTag("n", tagArgs);
+        String fileName = e->m_mesh->m_file;
+        if (fileName.empty())
+        {
+          fileName = MeshPath(e->m_name + MESH);
+        }
+
+        if (nameTag != tagArgs.end())
+        {
+          fileName = MeshPath(nameTag->second.front() + MESH);
+        }
+
+        std::ofstream file;
+        file.open(fileName.c_str(), std::ios::out);
+        if (file.is_open())
+        {
+          XmlDocument doc;
+          e->m_mesh->Serialize(&doc, nullptr);
+          std::string xml;
+          rapidxml::print(std::back_inserter(xml), doc, 0);
+
+          file << xml;
+          file.close();
+          doc.clear();
+          g_app->GetConsole()->AddLog("Mesh: " + fileName + " saved.");
+        }
+      }
+      else
+      {
+        g_app->GetConsole()->AddLog(g_noValidEntity, ConsoleWindow::LogType::Error);
+      }
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
     static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
@@ -376,6 +478,9 @@ namespace ToolKit
       CreateCommand(g_setTransformOrientationCmd, SetTransformOrientationExec);
       CreateCommand(g_importSlientCmd, SetImportSlient);
       CreateCommand(g_selectByTag, SelectByTag);
+      CreateCommand(g_lookAt, LookAt);
+      CreateCommand(g_applyTransformToMesh, ApplyTransformToMesh);
+      CreateCommand(g_saveMesh, SaveMesh);
     }
 
     ConsoleWindow::~ConsoleWindow()

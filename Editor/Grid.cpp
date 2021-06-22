@@ -40,49 +40,65 @@ namespace ToolKit
     void Grid::Resize(uint size, float gridSpaceScale)
     {
       m_mesh->UnInit();
+      float scale = (float)m_size * 0.5f;
 
-      Quad quad;
-      float scale = (float)m_size;
-      MeshPtr mesh = quad.m_mesh;
-      for (int j = 0; j < 4; j++)
+      Vec3Array offsets =
       {
-        mesh->m_clientSideVertices[j].pos = (mesh->m_clientSideVertices[j].pos * scale).xzy;
-        mesh->m_clientSideVertices[j].tex *= scale * gridSpaceScale;
+        Vec3(-scale * 0.5f - 0.025f, 0.0f, scale * 0.5f + 0.025f),
+        Vec3(scale * 0.5f + 0.025f, 0.0f, scale * 0.5f + 0.025f),
+        Vec3(scale * 0.5f + 0.025f, 0.0f, -scale * 0.5f - 0.025f),
+        Vec3(-scale * 0.5f - 0.025f, 0.0f, -scale * 0.5f - 0.025f)
+      };
+
+      for (int i = 0; i < 4; i++)
+      {
+        Quad quad;
+        MeshPtr mesh = quad.m_mesh;
+        for (int j = 0; j < 4; j++)
+        {
+          mesh->m_clientSideVertices[j].pos = (mesh->m_clientSideVertices[j].pos * scale).xzy + offsets[i];
+          mesh->m_clientSideVertices[j].tex = mesh->m_clientSideVertices[j].pos.xz * gridSpaceScale;
+        }
+
+        mesh->m_material = m_material;
+        if (i == 0)
+        {
+          m_mesh = mesh;
+        }
+        else
+        {
+          m_mesh->m_subMeshes.push_back(mesh);
+        }
       }
-      m_mesh = mesh;
-      m_mesh->m_material = m_material;
 
       VertexArray vertices;
       vertices.resize(2);
 
       // x - z lines.
+      Vec3 ls = Vec3(0.05f, scale * 2.0f, 1.0f);
       for (int i = 0; i < 2; i++)
       {
-        Vec3 p1(-scale * 0.5f, 0.01f, 0.0f);
-        Vec3 p2(scale * 0.5f, 0.01f, 0.0f);
-        Vec3 col = g_gridAxisRed;
+        MaterialPtr solidMat = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+        solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
+        solidMat->m_color = g_gridAxisBlue;
 
         if (i == 1)
         {
-          p1 = p1.zyx;
-          p2 = p2.zyx;
-          col = g_gridAxisBlue;
+          ls = ls.yxz;
+          solidMat->m_color = g_gridAxisRed;
         }
 
-        vertices[0].pos = p1;
-        vertices[1].pos = p2;
-
-        MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
-        newMaterial->GetRenderState()->lineWidth = 3.0f;
-        newMaterial->GetRenderState()->drawType = DrawType::Line;
-        newMaterial->m_color = col;
-
-        MeshPtr subMesh(new Mesh());
-        subMesh->m_clientSideVertices = vertices;
-        subMesh->m_material = newMaterial;
-        m_mesh->m_subMeshes.push_back(subMesh);
-        m_mesh->CalculateAABoundingBox();
+        Quad quad;
+        MeshPtr mesh = quad.m_mesh;
+        for (int j = 0; j < 4; j++)
+        {
+          mesh->m_clientSideVertices[j].pos = (mesh->m_clientSideVertices[j].pos * ls).xzy;
+        }
+        mesh->m_material = solidMat;
+        m_mesh->m_subMeshes.push_back(mesh);
       }
+
+      m_mesh->CalculateAABoundingBox();
     }
 
     bool Grid::HitTest(const Ray& ray, Vec3& pos)

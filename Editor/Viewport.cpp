@@ -176,7 +176,32 @@ namespace ToolKit
               XmlDocument doc;
               doc.parse<0>(file.data());
 
+              const EntityRawPtrArray& ntties = g_app->m_scene.GetEntities();
+              size_t lastSize = ntties.size();
               g_app->m_scene.DeSerialize(&doc, nullptr);
+              size_t thisSize = ntties.size();
+
+              if (lastSize < thisSize)
+              {
+                Drawable* master = new Drawable();
+                master->m_name = entry.m_fileName;
+                g_app->m_scene.AddEntity(master);
+
+                for (size_t i = lastSize; i < thisSize; i++)
+                {
+                  Entity* e = ntties[i];
+                  if (e->IsDrawable())
+                  {
+                    Drawable* dw = static_cast<Drawable*> (e);
+                    dw->m_mesh->Init(false);
+                    if (dw->m_node->m_parent == nullptr)
+                    {
+                      master->m_node->AddChild(dw->m_node);
+                    }
+                  }
+                }
+              }
+
             }
           }
           ImGui::EndDragDropTarget();

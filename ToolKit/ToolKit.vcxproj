@@ -93,6 +93,7 @@
   <ItemGroup>
     <ClInclude Include="..\Source\GlobalCache.h" />
     <ClInclude Include="..\Source\ParameterBlock.h" />
+    <ClInclude Include="..\Source\Serialize.h" />
     <ClInclude Include="..\Source\StateMachine.h" />
     <ClInclude Include="..\Source\ToolKit.h" />
     <ClInclude Include="..\Source\Animation.h" />

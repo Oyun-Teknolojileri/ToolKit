@@ -4,6 +4,7 @@
 #include "Resource.h"
 #include "ResourceManager.h"
 #include "MathUtil.h"
+#include "Serialize.h"
 #include "GL/glew.h"
 #include <memory>
 
@@ -27,7 +28,7 @@ namespace ToolKit
     Vertex* vertices[3];
   };
 
-  class Mesh : public Resource
+  class Mesh : public Resource, public Serializable
   {
   public:
     Mesh();
@@ -42,8 +43,12 @@ namespace ToolKit
     virtual bool IsSkinned() const;
     void CalculateAABoundingBox();
     void GetAllMeshes(MeshRawPtrArray& meshes);
-    void Scale(const Vec3& scale);
+    void GetAllMeshes(MeshRawCPtrArray& meshes) const;
     void ConstructFaces();
+    void ApplyTransform(const Mat4& transform);
+
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   protected:
     virtual void InitVertices(bool flush);

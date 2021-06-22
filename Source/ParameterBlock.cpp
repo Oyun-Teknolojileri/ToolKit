@@ -41,12 +41,12 @@ namespace ToolKit
     break;
     case VariantType::Vec3:
     {
-      WriteXYZ(node, doc, GetVar<Vec3>());
+      WriteVec(node, doc, GetVar<Vec3>());
     }
     break;
     case VariantType::Vec4:
     {
-      WriteXYZ(node, doc, GetVar<Vec4>());
+      WriteVec(node, doc, GetVar<Vec4>());
     }
     break;
     case VariantType::Mat3:
@@ -66,7 +66,7 @@ namespace ToolKit
     parent->append_node(node);
   }
 
-  void ParameterVariant::DeSerialzie(XmlDocument* doc, XmlNode* parent)
+  void ParameterVariant::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     if (parent == nullptr)
     {
@@ -107,14 +107,14 @@ namespace ToolKit
     case VariantType::Vec3:
     {
       Vec3 var;
-      ExtractXYZFromNode(parent, var);
+      ReadVec(parent, var);
       m_var = var;
     }
     break;
     case VariantType::Vec4:
     {
       Vec4 var;
-      ExtractWXYZFromNode(parent, var);
+      ReadVec(parent, var);
       m_var = var;
     }
     break;
@@ -147,7 +147,7 @@ namespace ToolKit
       while (param != nullptr)
       {
         ParameterVariant var;
-        var.DeSerialzie(doc, param);
+        var.DeSerialize(doc, param);
         m_variants.push_back(var);
         param = param->next_sibling();
       }

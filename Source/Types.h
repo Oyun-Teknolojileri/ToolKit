@@ -41,6 +41,7 @@ namespace ToolKit
   typedef glm::quat Quaternion;
   typedef std::shared_ptr<class Material> MaterialPtr;
   typedef std::shared_ptr<class Texture> TexturePtr;
+  typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;
   typedef std::shared_ptr<class SpriteSheet> SpriteSheetPtr;
   typedef std::shared_ptr<class Mesh> MeshPtr;
   typedef std::shared_ptr<class Shader> ShaderPtr;
@@ -49,6 +50,7 @@ namespace ToolKit
   typedef std::shared_ptr<class SkinMesh> SkinMeshPtr;
   typedef std::vector<MeshPtr> MeshPtrArray;
   typedef std::vector<class Mesh*> MeshRawPtrArray;
+  typedef std::vector<const class Mesh*> MeshRawCPtrArray;
   typedef std::vector<class Entity*> EntityRawPtrArray;
   typedef std::vector<class Light*> LightRawPtrArray;
   typedef std::vector<std::shared_ptr<class Entity>> EntityPtrArray;
@@ -95,6 +97,7 @@ namespace ToolKit
   // Xml file IO.
   const static String XmlEntityElement("E");
   const static String XmlEntityIdAttr("i");
+  const static String XmlParentEntityIdAttr("pi");
   const static String XmlEntityNameAttr("n");
   const static String XmlEntityTagAttr("ta");
   const static String XmlEntityTypeAttr("t");

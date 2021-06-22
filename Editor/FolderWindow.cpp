@@ -1,7 +1,9 @@
 #include "stdafx.h"
 
+#include "ConsoleWindow.h"
 #include "FolderWindow.h"
 #include "GlobalDef.h"
+#include "Gizmo.h"
 #include "DebugNew.h"
 
 #include <filesystem>
@@ -10,6 +12,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+    Vec2 FolderView::m_iconSize = Vec2(95.0f);
 
     FolderView::FolderView()
     {
@@ -30,12 +33,31 @@ namespace ToolKit
 
       if (ImGui::BeginTabItem(m_folder.c_str(), visCheck))
       {
+        ImGuiIO io = ImGui::GetIO();
+        static float wheel = io.MouseWheel;
+        float delta = io.MouseWheel - wheel;
+
+        const float icMin = 50.0f;
+        const float icMax = 300.0f;
+        if (io.KeyCtrl)
+        {
+          m_iconSize += Vec2(delta) * 15.0f;
+          if (m_iconSize.x < icMin)
+          {
+            m_iconSize = Vec2(icMin);
+          }
+
+          if (m_iconSize.x > icMax)
+          {
+            m_iconSize = Vec2(icMax);
+          }
+        }
+
         if (ImGui::IsItemHovered())
         {
           ImGui::SetTooltip(m_path.c_str());
         }
 
-        ImVec2 buttonSz(50, 50);
         ImGui::BeginChild("##Content", ImVec2(0, 0), true);
         for (int i = 0; i < (int)m_entiries.size(); i++)
         {
@@ -44,6 +66,7 @@ namespace ToolKit
 
           DirectoryEntry& de = m_entiries[i];
 
+          bool flipRenderTarget = false;
           uint iconId = UI::m_fileIcon->m_textureId;
           if (de.m_isDirectory)
           {
@@ -55,7 +78,12 @@ namespace ToolKit
           }
           else if (de.m_ext == MESH)
           {
-            iconId = UI::m_meshIcon->m_textureId;
+            if (de.m_thumbNail == nullptr)
+            {
+              GenerateThumbNail(de);
+            }
+            iconId = de.m_thumbNail->m_textureId;
+            flipRenderTarget = true;
           }
           else if (de.m_ext == ANIM)
           {
@@ -111,7 +139,15 @@ namespace ToolKit
 
           ImGui::PushID(i);
           ImGui::BeginGroup();
-          ImGui::ImageButton((void*)(intptr_t)iconId, buttonSz);
+          if (flipRenderTarget)
+          {
+            ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
+          }
+          else
+          {
+            ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize));
+          }
+
           if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
           {
             if (ImGui::IsItemHovered())
@@ -120,7 +156,7 @@ namespace ToolKit
               {
                 if (m_parent != nullptr)
                 {
-                  String path = de.m_rootPath + "\\" + de.m_fileName;
+                  String path = de.m_rootPath + GetPathSeparator() + de.m_fileName;
                   int indx = m_parent->Exist(path);
                   if (indx == -1)
                   {
@@ -155,14 +191,14 @@ namespace ToolKit
             }
           }
 
-          ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + buttonSz.x);
+          ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
           ImGui::TextWrapped(de.m_fileName.c_str());
           ImGui::PopTextWrapPos();
           ImGui::EndGroup();
           ImGui::PopID();
 
           float lastBtnX2 = ImGui::GetItemRectMax().x;
-          float nextBtnX2 = lastBtnX2 + style.ItemSpacing.x + buttonSz.x;
+          float nextBtnX2 = lastBtnX2 + style.ItemSpacing.x + m_iconSize.x;
           if (nextBtnX2 < visX2)
           {
             ImGui::SameLine();
@@ -177,7 +213,7 @@ namespace ToolKit
     {
       m_path = path;
       StringArray splits;
-      Split(path, "\\", splits);
+      Split(path, GetPathSeparatorAsStr(), splits);
       m_folder = splits.back();
     }
 
@@ -216,6 +252,39 @@ namespace ToolKit
       return -1;
     }
 
+    void FolderView::GenerateThumbNail(DirectoryEntry& entry)
+    {
+      if (entry.m_ext == MESH)
+      {
+        Drawable dw;
+        String fullpath = entry.m_rootPath + GetPathSeparator() + entry.m_fileName + entry.m_ext;
+        dw.m_mesh = Main::GetInstance()->m_meshMan.Create(fullpath);
+        dw.m_mesh->Init(false);
+
+        // Tight fit a frustum to a bounding sphere
+        // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
+        BoundingBox bb = dw.GetAABB();
+        Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
+        float r = glm::distance(geoCenter, bb.max) * 1.1f; // 10% safezone.
+        float a = glm::radians(45.0f);
+        float d = r / glm::tan(a / 2.0f);
+        
+        Vec3 eye = geoCenter + glm::normalize(Vec3(1.0f)) * d;
+
+        Camera cam;
+        cam.SetLens(a, m_thumbnailSize.x, m_thumbnailSize.y);
+        cam.m_node->SetTranslation(eye);
+        cam.LookAt(geoCenter);
+
+        RenderTarget* thumb = new RenderTarget((uint)m_thumbnailSize.x, (uint)m_thumbnailSize.y);
+        thumb->Init();
+        g_app->m_renderer->SwapRenderTarget(&thumb);
+        g_app->m_renderer->Render(&dw, &cam, g_app->m_sceneLights);
+        g_app->m_renderer->SwapRenderTarget(&thumb, false);
+        entry.m_thumbNail = RenderTargetPtr(thumb);
+      }
+    }
+
     FolderWindow::FolderWindow()
     {
     }
@@ -228,7 +297,7 @@ namespace ToolKit
 
         auto IsRootFn = [](const String& path)
         {
-          return std::count(path.begin(), path.end(), '\\') == 2;
+          return std::count(path.begin(), path.end(), GetPathSeparator()) == 2;
         };
 
         // Show Resource folder structure.

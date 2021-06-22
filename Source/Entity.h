@@ -47,6 +47,9 @@ namespace ToolKit
     String m_name;
     String m_tag;
 
+    // Internal use only, Helper ID for entity deserialization.
+    EntityId _parentId;
+
   private:
     static EntityId m_lastId;
   };

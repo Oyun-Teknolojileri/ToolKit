@@ -238,6 +238,20 @@ namespace ToolKit
       m_actionGrouping = true;
     }
 
+    void ActionManager::RemoveLastAction()
+    {
+      if (!m_actionStack.empty())
+      {
+        if (m_stackPointer > -1)
+        {
+          Action* action = m_actionStack[m_stackPointer];
+          SafeDel(action);
+          m_actionStack.erase(m_actionStack.begin() + m_stackPointer);
+          m_stackPointer--;
+        }
+      }
+    }
+
     void ActionManager::Undo()
     {
       if (!m_actionStack.empty())

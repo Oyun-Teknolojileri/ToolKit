@@ -4,6 +4,7 @@
 
 #include "ImGui/imgui_stdlib.h"
 #include "ConsoleWindow.h"
+#include "TransformMod.h"
 
 #include "DebugNew.h"
 
@@ -41,6 +42,15 @@ namespace ToolKit
           Mat4 ts = curr->m_node->GetTransform(g_app->m_transformSpace);
           QDUDecomposition(ts, rotate, scale, shear);
 
+          static TransformAction* dragMem = nullptr;
+          const auto saveDragMemFn = [curr]()
+          {
+            if (dragMem == nullptr)
+            {
+              dragMem = new TransformAction(curr);
+            }
+          };
+
           TransformationSpace space = g_app->m_transformSpace;
           Vec3 translate = glm::column(ts, 3);
           if
@@ -52,6 +62,15 @@ namespace ToolKit
             )
           )
           {
+            if (ImGui::IsMouseDragging(0, 0.25f))
+            {
+              saveDragMemFn();
+            }
+            else
+            {
+              ActionManager::GetInstance()->AddAction(new TransformAction(curr));
+            }
+            
             curr->m_node->SetTranslation(translate, space);
           }
           
@@ -83,10 +102,12 @@ namespace ToolKit
 
             if (isDrag)
             {
+              saveDragMemFn();
               curr->m_node->Rotate(q, space);
             }
             else
             {
+              ActionManager::GetInstance()->AddAction(new TransformAction(curr));
               curr->m_node->SetOrientation(q, space);
             }
           }
@@ -101,7 +122,26 @@ namespace ToolKit
             )
           )
           {
+            if (ImGui::IsMouseDragging(0, 0.25f))
+            {
+              saveDragMemFn();
+            }
+            else
+            {
+              ActionManager::GetInstance()->AddAction(new TransformAction(curr));
+            }
             curr->m_node->SetScale(scale);
+          }
+
+          if (ImGui::Checkbox("Inherit Scale", &curr->m_node->m_inheritScale))
+          {
+            curr->m_node->SetInheritScaleDeep(curr->m_node->m_inheritScale);
+          }
+
+          if (dragMem && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+          {
+            ActionManager::GetInstance()->AddAction(dragMem);
+            dragMem = nullptr;
           }
         }
       }

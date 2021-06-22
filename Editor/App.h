@@ -95,8 +95,9 @@ namespace ToolKit
       float m_rotateDelta = 15.0f;
       float m_scaleDelta = 0.5f;
 
-    private:
       Renderer* m_renderer;
+
+    private:
       Drawable* m_suzanne;
       Drawable* m_knight;
       std::shared_ptr<Animation> m_knightRunAnim;

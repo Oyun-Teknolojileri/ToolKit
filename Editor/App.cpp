@@ -21,7 +21,7 @@
 #include <filesystem>
 #include <cstdlib>
 
-#define TK_SAMPLE_SCENE
+//#define TK_SAMPLE_SCENE
 
 namespace ToolKit
 {
@@ -113,7 +113,7 @@ namespace ToolKit
       m_grid = new Grid(100);
       m_grid->m_mesh->Init(false);
 
-      MaterialPtr solidColorMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
+      MaterialPtr solidColorMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       m_highLightMaterial = MaterialPtr(solidColorMaterial->GetCopy());
       m_highLightMaterial->m_color = g_selectHighLightPrimaryColor;
       m_highLightMaterial->GetRenderState()->cullMode = CullingType::Front;
@@ -151,8 +151,7 @@ namespace ToolKit
       Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
       vp->m_name = "Perspective";
       vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
-      vp->m_camera->Pitch(glm::radians(-20.0f));
-      vp->m_camera->RotateOnUpVector(glm::radians(30.0f));
+      vp->m_camera->LookAt(Vec3(0.0f));
       m_windows.push_back(vp);
 
       // Orthographic.
@@ -306,7 +305,13 @@ namespace ToolKit
           }
         }
 
-        m_cursor->LookAt(cam, vp->m_height);
+        float orthScl = 1.0f;
+        if (vp->m_orthographic)
+        {
+          // Magic scale to match Billboards in perspective view with ortoghrapic view.
+          orthScl = 1.6f;
+        }
+        m_cursor->LookAt(cam, vp->m_height * orthScl);
         m_renderer->Render(m_cursor, cam);
       }
 
@@ -413,15 +418,21 @@ namespace ToolKit
 
         String name, ext;
         DecomposePath(fullPath, nullptr, &name, &ext);
+        String finalPath = fullPath;
+
+        if (name == "importList" && ext == ".txt")
+        {
+          finalPath = "importList.txt";
+        }
 
         String cmd = "Import \"";
         if (!subDir.empty())
         {
-          cmd += fullPath + "\" -t \".\\" + subDir;
+          cmd += finalPath + "\" -t \".\\" + subDir;
         }
         else
         {
-          cmd += fullPath;
+          cmd += finalPath;
         }
 
         cmd += "\" -s " + std::to_string(UI::ImportData.scale);
@@ -496,6 +507,11 @@ namespace ToolKit
               }
 
               String fullPath;
+              if (ext == SCENE)
+              {
+                fullPath = ScenePath(line);
+              }
+
               if (ext == MESH || ext == SKINMESH)
               {
                 fullPath = MeshPath(line);
@@ -610,6 +626,12 @@ namespace ToolKit
         return true;
       }
 
+      if (ext == ".txt")
+      {
+        // Hopefully, list of valid objects. Not a poem.
+        return true;
+      }
+
       return false;
     }
 
@@ -720,7 +742,7 @@ namespace ToolKit
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
         glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        ShaderPtr solidColor = GetShaderManager()->Create(ShaderPath("solidColorFrag.shader"));
+        ShaderPtr solidColor = GetShaderManager()->Create(ShaderPath("unlitColorFrag.shader"));
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
 

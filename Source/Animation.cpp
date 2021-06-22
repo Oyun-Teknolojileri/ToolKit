@@ -128,13 +128,13 @@ namespace ToolKit
         key.m_frame = std::atoi(attr->value());
 
         XmlNode* subNode = keyNode->first_node("translation");
-        ExtractXYZFromNode(subNode, key.m_position);
+        ReadVec(subNode, key.m_position);
 
         subNode = keyNode->first_node("scale");
-        ExtractXYZFromNode(subNode, key.m_scale);
+        ReadVec(subNode, key.m_scale);
 
         subNode = keyNode->first_node("rotation");
-        ExtractQuatFromNode(subNode, key.m_rotation);
+        ReadVec(subNode, key.m_rotation);
 
         m_keys[boneName].push_back(key);
       }

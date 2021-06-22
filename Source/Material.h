@@ -42,6 +42,7 @@ namespace ToolKit
     void Init();
 
     MaterialPtr GetCopyOfUnlitMaterial();
+    MaterialPtr GetCopyOfUnlitColorMaterial();
     MaterialPtr GetCopyOfSolidMaterial();
     MaterialPtr GetCopyOfDefaultMaterial();
   };

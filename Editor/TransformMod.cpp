@@ -361,7 +361,7 @@ namespace ToolKit
     void TransformAction::Swap()
     {
       Mat4 backUp = m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
-      m_entity->m_node->SetTransform(m_transform, TransformationSpace::TS_WORLD);
+      m_entity->m_node->SetTransform(m_transform, TransformationSpace::TS_WORLD, false);
       m_transform = backUp;
     }
 

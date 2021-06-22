@@ -57,7 +57,10 @@ namespace ToolKit
       m_scale = Vec3(1.0f);
     } 
     TransformImp(val, space, &m_translation, &m_orientation, noScale ? nullptr : &m_scale);
-    m_scale = tmpScl;
+    if (noScale)
+    {
+      m_scale = tmpScl;
+    }
   }
 
   void Node::SetTransform(const Mat4& val, TransformationSpace space, bool noScale)
@@ -68,7 +71,10 @@ namespace ToolKit
       m_scale = Vec3(1.0f);
     }
     SetTransformImp(val, space, &m_translation, &m_orientation, noScale ? nullptr : &m_scale);
-    m_scale = tmpScl;
+    if (noScale)
+    {
+      m_scale = tmpScl;
+    }
   }
 
   Mat4 Node::GetTransform(TransformationSpace space)
@@ -184,7 +190,7 @@ namespace ToolKit
     child->SetChildrenDirty();
 
     if (preserveTransform)
-    {
+    {  
       child->SetTransform(ts, TransformationSpace::TS_WORLD);
     }
   }
@@ -270,15 +276,15 @@ namespace ToolKit
     WriteAttr(node, doc, XmlNodeInheritTranslateOnlyAttr, std::to_string((int)m_inheritOnlyTranslate));
 
     XmlNode* tNode = doc->allocate_node(rapidxml::node_element, XmlTranslateElement.c_str());
-    WriteXYZ(tNode, doc, m_translation);
+    WriteVec(tNode, doc, m_translation);
     node->append_node(tNode);
 
     tNode = doc->allocate_node(rapidxml::node_element, XmlRotateElement.c_str());
-    WriteXYZW(tNode, doc, m_orientation);
+    WriteVec(tNode, doc, m_orientation);
     node->append_node(tNode);
 
     tNode = doc->allocate_node(rapidxml::node_element, XmlScaleElement.c_str());
-    WriteXYZ(tNode, doc, m_scale);
+    WriteVec(tNode, doc, m_scale);
     node->append_node(tNode);
   }
 
@@ -301,6 +307,7 @@ namespace ToolKit
     {
       String val = pid->value();
       // Node look up from parent ...
+      // It's being handled in scene deserialize.
     }
 
     if (XmlAttribute* attr = node->first_attribute(XmlNodeInheritScaleAttr.c_str()))
@@ -317,17 +324,26 @@ namespace ToolKit
 
     if (XmlNode* n = node->first_node(XmlTranslateElement.c_str()))
     {
-      ExtractXYZFromNode(n, m_translation);
+      ReadVec(n, m_translation);
     }
 
     if (XmlNode* n = node->first_node(XmlRotateElement.c_str()))
     {
-      ExtractQuatFromNode(n, m_orientation);
+      ReadVec(n, m_orientation);
     }
 
     if (XmlNode* n = node->first_node(XmlScaleElement.c_str()))
     {
-      ExtractXYZFromNode(n, m_scale);
+      ReadVec(n, m_scale);
+    }
+  }
+
+  void Node::SetInheritScaleDeep(bool val)
+  {
+    m_inheritScale = val;
+    for (Node* n : m_children)
+    {
+      n->SetInheritScaleDeep(val);
     }
   }
 
