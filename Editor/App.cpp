@@ -397,7 +397,7 @@ namespace ToolKit
         if (ConsoleWindow* con = GetConsole())
         {
           con->AddLog("Import failed: " + fullPath, ConsoleWindow::LogType::Error);
-          con->AddLog("File format is not supported.\nSuported formats are fbx, glb, obj.", ConsoleWindow::LogType::Error);
+          con->AddLog("File format is not supported.\nSuported formats are fbx, glb, gltf, obj.", ConsoleWindow::LogType::Error);
         }
         return -1;
       }
@@ -605,23 +605,8 @@ namespace ToolKit
     {
       String ext;
       DecomposePath(fullPath, nullptr, nullptr, &ext);
-
-      if (ext == ".fbx")
-      {
-        return true;
-      }
-
-      if (ext == ".glb")
-      {
-        return true;
-      }
-
-      if (ext == ".gltf")
-      {
-        return true;
-      }
-
-      if (ext == ".obj")
+      
+      if (SupportedMeshFormat(ext))
       {
         return true;
       }

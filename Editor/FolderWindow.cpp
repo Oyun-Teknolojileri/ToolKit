@@ -4,6 +4,7 @@
 #include "FolderWindow.h"
 #include "GlobalDef.h"
 #include "Gizmo.h"
+#include "PropInspector.h"
 #include "DebugNew.h"
 
 #include <filesystem>
@@ -68,6 +69,17 @@ namespace ToolKit
 
           bool flipRenderTarget = false;
           uint iconId = UI::m_fileIcon->m_textureId;
+
+          auto genThumbFn = [&flipRenderTarget, &iconId, &de, this]() -> void
+          {
+            if (de.m_thumbNail == nullptr)
+            {
+              GenerateThumbNail(de);
+            }
+            iconId = de.m_thumbNail->m_textureId;
+            flipRenderTarget = true;
+          };
+
           if (de.m_isDirectory)
           {
             iconId = UI::m_folderIcon->m_textureId;
@@ -78,12 +90,7 @@ namespace ToolKit
           }
           else if (de.m_ext == MESH)
           {
-            if (de.m_thumbNail == nullptr)
-            {
-              GenerateThumbNail(de);
-            }
-            iconId = de.m_thumbNail->m_textureId;
-            flipRenderTarget = true;
+            genThumbFn();
           }
           else if (de.m_ext == ANIM)
           {
@@ -107,27 +114,11 @@ namespace ToolKit
           }
           else if (de.m_ext == MATERIAL)
           {
-            iconId = UI::m_materialIcon->m_textureId;
+            genThumbFn();
           }
-          else if (de.m_ext == PNG)
+          else if (SupportedImageFormat(de.m_ext))
           {
-            iconId = UI::m_imageIcon->m_textureId;
-          }
-          else if (de.m_ext == JPEG)
-          {
-            iconId = UI::m_imageIcon->m_textureId;
-          }
-          else if (de.m_ext == TGA)
-          {
-            iconId = UI::m_imageIcon->m_textureId;
-          }
-          else if (de.m_ext == BMP)
-          {
-            iconId = UI::m_imageIcon->m_textureId;
-          }
-          else if (de.m_ext == PSD)
-          {
-            iconId = UI::m_imageIcon->m_textureId;
+            genThumbFn();
           }
           else
           {
@@ -137,15 +128,33 @@ namespace ToolKit
             }
           }
 
+          auto setViewFn = [&de]() -> void
+          {
+            if (PropInspector* inspector = g_app->GetPropInspector())
+            {
+              if (AssetView* av = inspector->GetView<AssetView>())
+              {
+                av->m_entry = de;
+                inspector->m_view = av;
+              }
+            }
+          };
+
           ImGui::PushID(i);
           ImGui::BeginGroup();
           if (flipRenderTarget)
           {
-            ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
+            if (ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f)))
+            {
+              setViewFn();
+            }
           }
           else
           {
-            ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize));
+            if (ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize)))
+            {
+              setViewFn();
+            }
           }
 
           if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
@@ -254,11 +263,21 @@ namespace ToolKit
 
     void FolderView::GenerateThumbNail(DirectoryEntry& entry)
     {
+      auto renderThumbFn = [this, &entry](Camera* cam, Drawable* dw) -> void
+      {
+        RenderTarget* thumb = new RenderTarget((uint)m_thumbnailSize.x, (uint)m_thumbnailSize.y);
+        thumb->Init();
+        g_app->m_renderer->SwapRenderTarget(&thumb);
+        g_app->m_renderer->Render(dw, cam, g_app->m_sceneLights);
+        g_app->m_renderer->SwapRenderTarget(&thumb, false);
+        entry.m_thumbNail = RenderTargetPtr(thumb);
+      };
+
       if (entry.m_ext == MESH)
       {
         Drawable dw;
         String fullpath = entry.m_rootPath + GetPathSeparator() + entry.m_fileName + entry.m_ext;
-        dw.m_mesh = Main::GetInstance()->m_meshMan.Create(fullpath);
+        dw.m_mesh = GetMeshManager()->Create(fullpath);
         dw.m_mesh->Init(false);
 
         // Tight fit a frustum to a bounding sphere
@@ -276,12 +295,34 @@ namespace ToolKit
         cam.m_node->SetTranslation(eye);
         cam.LookAt(geoCenter);
 
-        RenderTarget* thumb = new RenderTarget((uint)m_thumbnailSize.x, (uint)m_thumbnailSize.y);
-        thumb->Init();
-        g_app->m_renderer->SwapRenderTarget(&thumb);
-        g_app->m_renderer->Render(&dw, &cam, g_app->m_sceneLights);
-        g_app->m_renderer->SwapRenderTarget(&thumb, false);
-        entry.m_thumbNail = RenderTargetPtr(thumb);
+        renderThumbFn(&cam, &dw);
+      }
+      else if (entry.m_ext == MATERIAL)
+      {
+        Quad frame;
+        String fullpath = entry.m_rootPath + GetPathSeparator() + entry.m_fileName + entry.m_ext;
+        frame.m_mesh->m_material = GetMaterialManager()->Create(fullpath);
+        frame.m_mesh->Init(false);
+
+        Camera cam;
+        cam.SetLens(glm::half_pi<float>(), m_thumbnailSize.x, m_thumbnailSize.y);
+        cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 0.5f));
+        
+        renderThumbFn(&cam, &frame);
+      }
+      else if (SupportedImageFormat(entry.m_ext))
+      {
+        Quad frame;
+        String fullpath = entry.m_rootPath + GetPathSeparator() + entry.m_fileName + entry.m_ext;
+        frame.m_mesh->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+        frame.m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create(fullpath);
+        frame.m_mesh->m_material->m_diffuseTexture->Init(false);
+
+        Camera cam;
+        cam.SetLens(glm::half_pi<float>(), m_thumbnailSize.x, m_thumbnailSize.y);
+        cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 0.5f));
+
+        renderThumbFn(&cam, &frame);
       }
     }
 

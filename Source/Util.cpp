@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <filesystem>
+#include <algorithm>
 
 namespace ToolKit
 {
@@ -130,6 +131,18 @@ namespace ToolKit
   String GetPathSeparatorAsStr()
   {
     return String() + GetPathSeparator();
+  }
+
+  bool SupportedImageFormat(const String& ext) 
+  {
+    static String supportedFormats(PNG + JPG + JPEG + TGA + BMP + PSD);
+    return supportedFormats.find(ToLower(ext)) != String::npos;
+  }
+
+  bool SupportedMeshFormat(const String& ext)
+  {
+    static String supportedFormats(FBX + GLB + GLTF + OBJ);
+    return supportedFormats.find(ToLower(ext)) != String::npos;
   }
 
   // split a string into multiple sub strings, based on a separator string
@@ -313,6 +326,13 @@ namespace ToolKit
     {
       RootsOnly(entities, roots, e);
     }
+  }
+
+  String ToLower(const String& str)
+  {
+    String lwr = str;
+    transform(lwr.begin(), lwr.end(), lwr.begin(), ::tolower);
+    return lwr;
   }
 
 }

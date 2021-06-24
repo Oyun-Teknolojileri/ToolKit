@@ -608,12 +608,12 @@ namespace ToolKit
       }
     }
 
-    void UI::HelpMarker(const char* desc, float* elapsedHoverTime)
+    void UI::HelpMarker(const char* desc, float* elapsedHoverTime, float wait)
     {
       if (ImGui::IsItemHovered())
       {
         *elapsedHoverTime += ImGui::GetIO().DeltaTime;
-        if (UI::m_hoverTimeForHelp > *elapsedHoverTime)
+        if (wait > *elapsedHoverTime)
         {
           return;
         }
