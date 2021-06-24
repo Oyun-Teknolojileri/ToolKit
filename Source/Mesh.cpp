@@ -43,7 +43,7 @@ namespace ToolKit
       ConstructFaces();
     }
 
-    m_material->Init();
+    m_material->Init(flushClientSideArray);
 
     for (MeshPtr mesh : m_subMeshes)
     {

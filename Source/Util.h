@@ -23,6 +23,8 @@ namespace ToolKit
   void NormalizePath(String& path);
   char GetPathSeparator();
   String GetPathSeparatorAsStr();
+  bool SupportedImageFormat(const String& ext);
+  bool SupportedMeshFormat(const String& ext);
   void Split(const String& s, const String& sep, StringArray& v);
   void ReplaceStringInPlace(String& subject, const String& search, const String& replace);
   class LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size);
@@ -31,6 +33,7 @@ namespace ToolKit
   void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray);
   bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots);
+  String ToLower(const String& str);
 
   template<typename T>
   void pop_front(std::vector<T>& vec)
