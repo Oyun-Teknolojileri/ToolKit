@@ -11,7 +11,7 @@ namespace ToolKit
     class View 
     {
     public:
-      virtual ~View() {};
+      virtual ~View() {}
       virtual void Show() = 0;
     };
 
@@ -23,6 +23,26 @@ namespace ToolKit
 
     public:
       DirectoryEntry m_entry;
+    };
+
+    class EntityView : public View
+    {
+    public:
+      virtual ~EntityView() {}
+      virtual void Show();
+
+    public:
+      Entity* m_entry;
+    };
+
+    class MeshView : public View
+    {
+    public:
+      virtual ~MeshView() {}
+      virtual void Show() override;
+
+    public:
+      MeshPtr m_entry;
     };
 
     class PropInspector : public Window
@@ -52,7 +72,6 @@ namespace ToolKit
 
     public:
       std::vector<View*> m_views;
-      View* m_view = nullptr;
     };
 
   }
