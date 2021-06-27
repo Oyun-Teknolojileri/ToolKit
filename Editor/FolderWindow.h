@@ -33,7 +33,6 @@ namespace ToolKit
 
     private:
       FolderWindow* m_parent = nullptr;
-      std::vector<DirectoryEntry> m_entiries;
       String m_path;
 
     public:
@@ -42,6 +41,7 @@ namespace ToolKit
       bool m_onlyNativeTypes = true;
       static Vec2 m_iconSize;
       Vec2 m_thumbnailSize = Vec2(300.0f, 300.0f);
+      std::vector<DirectoryEntry> m_entiries;
       String m_folder;
     };
 
@@ -56,6 +56,7 @@ namespace ToolKit
       void AddEntry(const FolderView& view);
       FolderView& GetView(int indx);
       int Exist(const String& folder);
+      bool GetFileEntry(const String& fullPath, DirectoryEntry& entry);
 
     private:
       std::vector<FolderView> m_entiries;

@@ -135,26 +135,16 @@ namespace ToolKit
               if (AssetView* av = inspector->GetView<AssetView>())
               {
                 av->m_entry = de;
-                inspector->m_view = av;
               }
             }
           };
 
           ImGui::PushID(i);
           ImGui::BeginGroup();
-          if (flipRenderTarget)
+          ImVec2 texCoords = flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
+          if (ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize), ImVec2(0.0f, 0.0f), texCoords))
           {
-            if (ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f)))
-            {
-              setViewFn();
-            }
-          }
-          else
-          {
-            if (ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize)))
-            {
-              setViewFn();
-            }
+            setViewFn();
           }
 
           if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
@@ -459,6 +449,24 @@ namespace ToolKit
       }
 
       return -1;
+    }
+
+    bool FolderWindow::GetFileEntry(const String& fullPath, DirectoryEntry& entry)
+    {
+      String path, name, ext;
+      DecomposePath(fullPath, &path, &name, &ext);
+      int viewIndx = Exist(path);
+      if (viewIndx != -1)
+      {
+        int dirEntry = m_entiries[viewIndx].Exist(name);
+        if (dirEntry != -1)
+        {
+          entry = m_entiries[viewIndx].m_entiries[dirEntry];
+          return true;
+        }
+      }
+
+      return false;
     }
 
   }
