@@ -131,7 +131,7 @@ namespace ToolKit
 
         m_mouseHover = ImGui::IsWindowHovered();
 
-        ImVec2 pos = GLM2IMVEC(m_wndPos);
+        ImVec2 pos = m_wndPos;
         pos.x += m_width - 70.0f;
         pos.y += m_wndContentAreaSize.y - 20.0f;
         String fps = "Fps: " + std::to_string(g_app->m_fps);
@@ -146,7 +146,7 @@ namespace ToolKit
         m_drawCommands.clear();
 
         // AssetBrowser drop handling.
-        ImGui::Dummy(GLM2IMVEC(m_wndContentAreaSize));
+        ImGui::Dummy(m_wndContentAreaSize);
         if (ImGui::BeginDragDropTarget())
         {
           if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))

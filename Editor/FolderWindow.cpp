@@ -142,7 +142,7 @@ namespace ToolKit
           ImGui::PushID(i);
           ImGui::BeginGroup();
           ImVec2 texCoords = flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
-          if (ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize), ImVec2(0.0f, 0.0f), texCoords))
+          if (ImGui::ImageButton((void*)(intptr_t)iconId, m_iconSize, ImVec2(0.0f, 0.0f), texCoords))
           {
             setViewFn();
           }

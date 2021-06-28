@@ -95,7 +95,7 @@ namespace ToolKit
       static void ShowMenuWindows();
       static void ShowImportWindow();
       static void ShowSearchForFilesWindow();
-      static void HelpMarker(const char* desc, float* elapsedHoverTime, float wait = m_hoverTimeForHelp);
+      static void HelpMarker(const String& key, const char* desc, float wait = m_hoverTimeForHelp);
       static void ShowNewSceneWindow();
 
       // Custom widgets.

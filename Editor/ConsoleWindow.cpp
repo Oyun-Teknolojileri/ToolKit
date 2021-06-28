@@ -509,22 +509,22 @@ namespace ToolKit
           bool pop_color = false;
           if (strstr(item, g_errorStr.c_str()))
           {
-            ImGui::PushStyleColor(ImGuiCol_Text, GLM4IMVEC(g_consoleErrorColor));
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleErrorColor);
             pop_color = true;
           }
           else if (strstr(item, g_commandStr.c_str()))
           {
-            ImGui::PushStyleColor(ImGuiCol_Text, GLM4IMVEC(g_consoleCommandColor));
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleCommandColor);
             pop_color = true;
           }
           else if (strstr(item, g_warningStr.c_str()))
           {
-            ImGui::PushStyleColor(ImGuiCol_Text, GLM4IMVEC(g_consoleWarningColor));
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleWarningColor);
             pop_color = true;
           }
           else // Than its a memo.
           {
-            ImGui::PushStyleColor(ImGuiCol_Text, GLM4IMVEC(g_consoleMemoColor));
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleMemoColor);
             pop_color = true;
           }
 

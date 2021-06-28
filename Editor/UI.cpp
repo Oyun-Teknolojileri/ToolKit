@@ -608,8 +608,15 @@ namespace ToolKit
       }
     }
 
-    void UI::HelpMarker(const char* desc, float* elapsedHoverTime, float wait)
+    void UI::HelpMarker(const String& key, const char* desc, float wait)
     {
+      static std::unordered_map<String, float> helpTimers;
+      if (helpTimers.find(key) == helpTimers.end())
+      {
+        helpTimers[key] = 0.0f;
+      }
+      float* elapsedHoverTime = &helpTimers[key];
+
       if (ImGui::IsItemHovered())
       {
         *elapsedHoverTime += ImGui::GetIO().DeltaTime;
@@ -624,7 +631,7 @@ namespace ToolKit
         ImGui::PopTextWrapPos();
         ImGui::EndTooltip();
       }
-      else
+      else if (*elapsedHoverTime > 0.0f)
       {
         *elapsedHoverTime = 0.0f;
       }
