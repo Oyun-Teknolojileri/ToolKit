@@ -43,3 +43,7 @@
 #include <assert.h>
 #include <unordered_map>
 #include <vector>
+
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#define LOC __FILE__ ":" TOSTRING(__LINE__)

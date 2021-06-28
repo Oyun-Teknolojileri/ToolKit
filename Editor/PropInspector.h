@@ -2,6 +2,7 @@
 
 #include "UI.h"
 #include "FolderWindow.h"
+#include <functional>
 
 namespace ToolKit
 {
@@ -13,6 +14,8 @@ namespace ToolKit
     public:
       virtual ~View() {}
       virtual void Show() = 0;
+
+      void DropZone(uint fallbackIcon, const String& file, std::function<void(Entity*)> dropAction);
     };
 
     class AssetView : public View
@@ -42,7 +45,17 @@ namespace ToolKit
       virtual void Show() override;
 
     public:
-      MeshPtr m_entry;
+      Mesh* m_entry;
+    };
+
+    class MaterialView : public View
+    {
+    public:
+      virtual ~MaterialView() {}
+      virtual void Show() override;
+
+    public:
+      Material* m_entry;
     };
 
     class PropInspector : public Window

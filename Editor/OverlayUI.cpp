@@ -52,55 +52,50 @@ namespace ToolKit
         SetOwnerState();
 
         // Select button.
-        static float hoverTimeSelectBtn = 0.0f;
         bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Select;
         ModManager::GetInstance()->SetMod
         (
           UI::ToggleButton((void*)(intptr_t)UI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Select
         );
-        UI::HelpMarker("Select Box\nSelect items using box selection.", &hoverTimeSelectBtn);
+        UI::HelpMarker(LOC + m_owner->m_name, "Select Box\nSelect items using box selection.");
 
         // Cursor button.
-        static float hoverTimeCursorBtn = 0.0f;
         isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Cursor;
         ModManager::GetInstance()->SetMod
         (
           UI::ToggleButton((void*)(intptr_t)UI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Cursor
         );
-        UI::HelpMarker("Cursor\nSet the cursor location.", &hoverTimeCursorBtn);
+        UI::HelpMarker(LOC + m_owner->m_name, "Cursor\nSet the cursor location.");
         ImGui::Separator();
 
         // Move button.
-        static float hoverTimeMoveBtn = 0.0f;
         isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Move;
         ModManager::GetInstance()->SetMod
         (
           UI::ToggleButton((void*)(intptr_t)UI::m_moveIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Move
         );
-        UI::HelpMarker("Move\nMove selected items.", &hoverTimeMoveBtn);
+        UI::HelpMarker(LOC + m_owner->m_name, "Move\nMove selected items.");
 
         // Rotate button.
-        static float hoverTimeRotateBtn = 0.0f;
         isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Rotate;
         ModManager::GetInstance()->SetMod
         (
           UI::ToggleButton((void*)(intptr_t)UI::m_rotateIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Rotate
         );
-        UI::HelpMarker("Rotate\nRotate selected items.", &hoverTimeRotateBtn);
+        UI::HelpMarker(LOC + m_owner->m_name, "Rotate\nRotate selected items.");
 
         // Scale button.
-        static float hoverTimeScaleBtn = 0.0f;
         isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Scale;
         ModManager::GetInstance()->SetMod
         (
           UI::ToggleButton((void*)(intptr_t)UI::m_scaleIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Scale
         );
-        UI::HelpMarker("Scale\nScale (resize) selected items.", &hoverTimeScaleBtn);
+        UI::HelpMarker(LOC + m_owner->m_name, "Scale\nScale (resize) selected items.");
         ImGui::Separator();
 
         const char* items[] = { "1", "2", "4", "8", "16" };
@@ -150,8 +145,8 @@ namespace ToolKit
         ImGuiStyle& style = ImGui::GetStyle();
         float spacing = style.ItemInnerSpacing.x;
 
-        static float hoverTimeCS = 0.0f;
-        ImGui::SameLine(0, spacing); UI::HelpMarker("Camera speed m/s\n", &hoverTimeCS);
+        ImGui::SameLine(0, spacing); 
+        UI::HelpMarker(LOC + m_owner->m_name, "Camera speed m/s\n");
 
         ImGui::EndChildFrame();
       }
@@ -346,6 +341,7 @@ namespace ToolKit
           }
         }
         ImGui::SameLine();
+        UI::HelpMarker(LOC + m_owner->m_name, "Camera Orientation\n");
 
         ImGui::Image(Convert2ImGuiTexture(UI::m_axisIcon), ImVec2(20.0f, 20.0f));
         ImGui::SameLine();
@@ -403,8 +399,8 @@ namespace ToolKit
           g_app->GetConsole()->ExecCommand(cmd);
         }
 
-        static float hoverTimeTO = 0.0f;
-        ImGui::SameLine(0, spacing); UI::HelpMarker("Transform orientations\n", &hoverTimeTO);
+        ImGui::SameLine(0, spacing); 
+        UI::HelpMarker(LOC + m_owner->m_name, "Transform orientations\n");
 
         // Snap Bar.
         ImGui::Separator();

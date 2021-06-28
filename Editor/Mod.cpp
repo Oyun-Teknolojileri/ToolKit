@@ -722,11 +722,11 @@ namespace ToolKit
             Vec2 min, max;
             GetMouseRect(min, max);
 
-            ImU32 col = ImColor(GLM4IMVEC(g_selectBoxWindowColor));
-            drawList->AddRectFilled(GLM2IMVEC(min), GLM2IMVEC(max), col, 5.0f);
+            ImU32 col = ImColor(g_selectBoxWindowColor);
+            drawList->AddRectFilled(min, max, col, 5.0f);
 
-            col = ImColor(GLM4IMVEC(g_selectBoxBorderColor));
-            drawList->AddRect(GLM2IMVEC(min), GLM2IMVEC(max), col, 5.0f, 15, 2.0f);
+            col = ImColor(g_selectBoxBorderColor);
+            drawList->AddRect(min, max, col, 5.0f, 15, 2.0f);
           };
 
           vp->m_drawCommands.push_back(drawSelectionRectangleFn);

@@ -12,7 +12,40 @@ namespace ToolKit
 {
   namespace Editor
   {
+
+    // View
+    //////////////////////////////////////////////////////////////////////////
     
+    void View::DropZone(uint fallbackIcon, const String& file, std::function<void(Entity*)> dropAction)
+    {
+      DirectoryEntry dirEnt;
+      g_app->GetAssetBrowser()->GetFileEntry(file, dirEnt);
+      uint iconId = fallbackIcon;
+
+      ImVec2 texCoords = ImVec2(1.0f, 1.0f);
+      if (dirEnt.m_thumbNail)
+      {
+        texCoords = ImVec2(1.0f, -1.0f);
+        iconId = dirEnt.m_thumbNail->m_textureId;
+      }
+
+      if (ImGui::BeginTable("##DropZone", 2))
+      {
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+
+        ImGui::Image((void*)(intptr_t)iconId, ImVec2(48.0f, 48.0f), ImVec2(0.0f, 0.0f), texCoords);
+        UI::HelpMarker(LOC + file, "Drop zone", 0.1f);
+        ImGui::TableNextColumn();
+
+        String fullPath = dirEnt.m_rootPath + GetPathSeparatorAsStr() + dirEnt.m_fileName + dirEnt.m_ext;
+        ImGui::Text(fullPath.c_str());
+        UI::HelpMarker(LOC + file, fullPath.c_str(), 0.1f);
+
+        ImGui::EndTable();
+      }
+    }
+
     // AssetView
     //////////////////////////////////////////////////////////////////////////
 
@@ -22,9 +55,7 @@ namespace ToolKit
       {
         String fullPath = m_entry.m_rootPath + GetPathSeparatorAsStr() + m_entry.m_fileName + m_entry.m_ext;
         ImGui::Text(fullPath.c_str());
-        
-        static float hoverTime = 0.0f;
-        UI::HelpMarker(fullPath.c_str(), &hoverTime, 0.1f);
+        UI::HelpMarker(LOC, fullPath.c_str(), 0.1f);
 
         if (ImGui::Button("Reload"))
         {
@@ -49,68 +80,6 @@ namespace ToolKit
             res->Load();
           }
         }
-      }
-    }
-
-    // MeshView
-    //////////////////////////////////////////////////////////////////////////
-
-    void MeshView::Show()
-    {
-      if (m_entry)
-      {
-        if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-          if (ImGui::BeginTable("##MeshStats", 2))
-          {
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-
-            ImGui::Text("Face count:");
-            ImGui::TableNextColumn();
-            ImGui::Text("%d", m_entry->m_faces.size());
-           
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-
-            ImGui::Text("Vertex count:");
-            ImGui::TableNextColumn();
-            ImGui::Text("%d", m_entry->m_clientSideVertices.size());
-
-            ImGui::EndTable();
-          }
-
-          DirectoryEntry dirEnt;
-          if (g_app->GetAssetBrowser()->GetFileEntry(m_entry->m_file, dirEnt))
-          {
-            uint iconId = UI::m_meshIcon->m_textureId;
-
-            ImVec2 texCoords = ImVec2(1.0f, 1.0f);
-            if (dirEnt.m_thumbNail)
-            {
-              texCoords = ImVec2(1.0f, -1.0f);
-              iconId = dirEnt.m_thumbNail->m_textureId;
-            }
-
-            if (ImGui::BeginTable("##MeshRes", 2))
-            {
-              ImGui::TableNextRow();
-              ImGui::TableNextColumn();
-
-              ImGui::Image((void*)(intptr_t)iconId, ImVec2(48.0f, 48.0f), ImVec2(0.0f, 0.0f), texCoords);
-              ImGui::TableNextColumn();
-
-              String fullPath = dirEnt.m_rootPath + GetPathSeparatorAsStr() + dirEnt.m_fileName + dirEnt.m_ext;
-              ImGui::Text(fullPath.c_str());
-
-              static float hoverTime = 0.0f;
-              UI::HelpMarker(fullPath.c_str(), &hoverTime, 0.1f);
-
-              ImGui::EndTable();
-            }
-          }
-        }
-
       }
     }
 
@@ -242,12 +211,77 @@ namespace ToolKit
       }
     }
 
+    // MeshView
+    //////////////////////////////////////////////////////////////////////////
+
+    void MeshView::Show()
+    {
+      if (m_entry)
+      {
+        if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+          if (ImGui::BeginTable("##MeshStats", 2))
+          {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+
+            ImGui::Text("Face count:");
+            ImGui::TableNextColumn();
+            ImGui::Text("%d", m_entry->m_faces.size());
+           
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+
+            ImGui::Text("Vertex count:");
+            ImGui::TableNextColumn();
+            ImGui::Text("%d", m_entry->m_clientSideVertices.size());
+
+            ImGui::EndTable();
+          }
+
+          DropZone(UI::m_meshIcon->m_textureId, m_entry->m_file, [](Entity* e) -> void {});
+        }
+
+      }
+    }
+
+    // MaterialView
+    //////////////////////////////////////////////////////////////////////////
+
+    void MaterialView::Show()
+    {
+      if (m_entry)
+      {
+        if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+          ImGui::ColorEdit3("MatColor##1", (float*)&m_entry->m_color);
+          if (ImGui::TreeNode("Textures"))
+          {
+            ImGui::LabelText("##diffTexture", "Diffuse Texture: ");
+            DropZone(UI::m_imageIcon->m_textureId, m_entry->m_file, [](Entity* e) -> void {});
+            ImGui::TreePop();
+          }
+
+          if (ImGui::TreeNode("Shaders"))
+          {
+            ImGui::LabelText("##vertShader", "Vertex Shader: ");
+            DropZone(UI::m_codeIcon->m_textureId, m_entry->m_vertexShader->m_file, [](Entity* e) -> void {});
+
+            ImGui::LabelText("##fragShader", "Fragment Shader: ");
+            DropZone(UI::m_codeIcon->m_textureId, m_entry->m_fragmetShader->m_file, [](Entity* e) -> void {});
+            ImGui::TreePop();
+          }
+        }
+      }
+    }
+
     // PropInspector
     //////////////////////////////////////////////////////////////////////////
 
     PropInspector::PropInspector()
     {
       m_views.push_back(new EntityView());
+      m_views.push_back(new MaterialView());
       m_views.push_back(new MeshView());
       m_views.push_back(new AssetView());
     }
@@ -279,10 +313,24 @@ namespace ToolKit
           if (curr->IsDrawable())
           {
             Drawable* dw = static_cast<Drawable*> (curr);
-            MeshView* mv = GetView<MeshView>();
-            mv->m_entry = dw->m_mesh;
+            MeshRawPtrArray meshes;
+            dw->m_mesh->GetAllMeshes(meshes);
+            for (size_t i = 0; i < meshes.size(); i++)
+            {
+              Mesh* m = meshes[i];
+              MeshView* mev = GetView<MeshView>();
+              mev->m_entry = m;
+              mev->Show();
 
-            mv->Show();
+              MaterialView* mav = GetView <MaterialView>();
+              mav->m_entry = m->m_material.get();
+              mav->Show();
+
+              if (i > 1 && i != meshes.size() - 1)
+              {
+                ImGui::Separator();
+              }
+            }
           }
         }
 
