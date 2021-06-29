@@ -42,7 +42,7 @@ namespace ToolKit
 
     void OverlayMods::Show()
     {
-      ImVec2 overlaySize(48, 258);
+      ImVec2 overlaySize(48, 260);
       const float padding = 5.0f;
       ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding, m_owner->m_wndPos.y + padding);
       ImGui::SetNextWindowPos(window_pos);
@@ -245,7 +245,7 @@ namespace ToolKit
         }
       };
 
-      ImVec2 overlaySize(312, 24);
+      ImVec2 overlaySize(320, 30);
 
       const float padding = 5.0f;
       ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding + 52, m_owner->m_wndPos.y + padding);
@@ -425,7 +425,7 @@ namespace ToolKit
           g_app->m_snapsEnabled = false;
         }
 
-        g_app->m_snapsEnabled = UI::ToggleButton((void*)(intptr_t)UI::m_snapIcon->m_textureId, ImVec2(13, 13), g_app->m_snapsEnabled);
+        g_app->m_snapsEnabled = UI::ToggleButton((void*)(intptr_t)UI::m_snapIcon->m_textureId, ImVec2(16, 16), g_app->m_snapsEnabled);
 
         if (ImGui::BeginPopupContextItem("##SnapMenu"))
         {
