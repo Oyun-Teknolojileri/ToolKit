@@ -62,6 +62,7 @@ namespace ToolKit
       ImGuiIO& io = ImGui::GetIO();
       io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
       io.ConfigWindowsMoveFromTitleBarOnly = true;
+      io.Fonts->AddFontFromFileTTF(FontPath("Junicode.ttf").c_str(), 16);
 
       ImGui_ImplSDL2_InitForOpenGL(g_window, g_context);
       ImGui_ImplOpenGL3_Init("#version 300 es");
@@ -181,8 +182,16 @@ namespace ToolKit
       style->WindowRounding = 5.3f;
       style->GrabRounding = style->FrameRounding = 2.3f;
       style->ScrollbarRounding = 5.0f;
-      style->FrameBorderSize = 1.0f;
       style->ItemSpacing.y = 6.5f;
+
+      //style->WindowPadding = ImVec2(2.0f, 2.0f);
+      style->WindowBorderSize = 0.0f;
+      style->ChildBorderSize = 0.0f;
+      style->PopupBorderSize = 0.0f;
+      style->FrameBorderSize = 0.0f;
+      style->TabBorderSize = 0.0f;
+      style->WindowTitleAlign = ImVec2(0.5f, 0.5f);
+      style->WindowMenuButtonPosition = ImGuiDir_Right;
 
       style->Colors[ImGuiCol_Text] = { 0.73333335f, 0.73333335f, 0.73333335f, 1.00f };
       style->Colors[ImGuiCol_TextDisabled] = { 0.34509805f, 0.34509805f, 0.34509805f, 1.00f };
