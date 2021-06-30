@@ -17,7 +17,8 @@
 		
 		void main()
 		{
-			float c = texture(u_texture, v_texture).r;
+			vec2 yFlip = vec2(v_texture.x, -v_texture.y);
+			float c = texture(u_texture, yFlip).r;
 			if (c == 0.0)
 			{
 				// Reject inner part of the stencil.
@@ -30,7 +31,7 @@
 			{
 				for (int j = -R; j <= R; j++)
 				{
-					c = texture(u_texture, v_texture + (vec2(i, j) / g_textureSize));
+					c = texture(u_texture, yFlip + (vec2(i, j) / g_textureSize));
 					if (c == 0.0)
 					{
 						// If anything in the kernel is 0, this pixel will be colored.
