@@ -428,7 +428,7 @@ namespace ToolKit
         String cmd = "Import \"";
         if (!subDir.empty())
         {
-          cmd += finalPath + "\" -t \".\\" + subDir;
+          cmd += finalPath + "\" -t \"" + subDir;
         }
         else
         {
