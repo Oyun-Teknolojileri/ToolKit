@@ -15,7 +15,7 @@ namespace ToolKit
       virtual ~View() {}
       virtual void Show() = 0;
 
-      void DropZone(uint fallbackIcon, const String& file, std::function<void(Entity*)> dropAction);
+      void DropZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction);
     };
 
     class AssetView : public View

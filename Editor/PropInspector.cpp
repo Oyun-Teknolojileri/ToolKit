@@ -16,7 +16,7 @@ namespace ToolKit
     // View
     //////////////////////////////////////////////////////////////////////////
     
-    void View::DropZone(uint fallbackIcon, const String& file, std::function<void(Entity*)> dropAction)
+    void View::DropZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction)
     {
       DirectoryEntry dirEnt;
       g_app->GetAssetBrowser()->GetFileEntry(file, dirEnt);
@@ -35,6 +35,19 @@ namespace ToolKit
         ImGui::TableNextColumn();
 
         ImGui::Image((void*)(intptr_t)iconId, ImVec2(48.0f, 48.0f), ImVec2(0.0f, 0.0f), texCoords);
+
+        if (ImGui::BeginDragDropTarget())
+        {
+          if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
+          {
+            IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
+            DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
+            dropAction(entry);
+          }
+
+          ImGui::EndDragDropTarget();
+        }
+
         UI::HelpMarker(LOC + file, "Drop zone", 0.1f);
         ImGui::TableNextColumn();
 
@@ -62,7 +75,7 @@ namespace ToolKit
           Resource* res = nullptr;
           if (m_entry.m_ext == MESH)
           {
-            res =  GetMeshManager()->Create(fullPath).get();
+            res = GetMeshManager()->Create(fullPath).get();
           }
           else if (m_entry.m_ext == MATERIAL)
           {
@@ -239,7 +252,7 @@ namespace ToolKit
             ImGui::EndTable();
           }
 
-          DropZone(UI::m_meshIcon->m_textureId, m_entry->m_file, [](Entity* e) -> void {});
+          DropZone(UI::m_meshIcon->m_textureId, m_entry->m_file, [](const DirectoryEntry& entry) -> void {});
         }
 
       }
@@ -255,20 +268,32 @@ namespace ToolKit
         if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
         {
           ImGui::ColorEdit3("MatColor##1", (float*)&m_entry->m_color);
+
           if (ImGui::TreeNode("Textures"))
           {
             ImGui::LabelText("##diffTexture", "Diffuse Texture: ");
-            DropZone(UI::m_imageIcon->m_textureId, m_entry->m_file, [](Entity* e) -> void {});
+            String target = "\\";
+            if (m_entry->m_diffuseTexture)
+            {
+              target = m_entry->m_diffuseTexture->m_file;
+            }
+
+            DropZone(UI::m_imageIcon->m_textureId, target, [this](const DirectoryEntry& entry) -> void
+              {
+                String fullPath = entry.m_rootPath + GetPathSeparatorAsStr() + entry.m_fileName + entry.m_ext;
+                m_entry->m_diffuseTexture = GetTextureManager()->Create(fullPath);
+              });
+
             ImGui::TreePop();
           }
 
           if (ImGui::TreeNode("Shaders"))
           {
             ImGui::LabelText("##vertShader", "Vertex Shader: ");
-            DropZone(UI::m_codeIcon->m_textureId, m_entry->m_vertexShader->m_file, [](Entity* e) -> void {});
+            DropZone(UI::m_codeIcon->m_textureId, m_entry->m_vertexShader->m_file, [](const DirectoryEntry& entry) -> void {});
 
             ImGui::LabelText("##fragShader", "Fragment Shader: ");
-            DropZone(UI::m_codeIcon->m_textureId, m_entry->m_fragmetShader->m_file, [](Entity* e) -> void {});
+            DropZone(UI::m_codeIcon->m_textureId, m_entry->m_fragmetShader->m_file, [](const DirectoryEntry& entry) -> void {});
             ImGui::TreePop();
           }
         }
