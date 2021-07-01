@@ -277,7 +277,7 @@ namespace ToolKit
         float r = glm::distance(geoCenter, bb.max) * 1.1f; // 10% safezone.
         float a = glm::radians(45.0f);
         float d = r / glm::tan(a / 2.0f);
-        
+
         Vec3 eye = geoCenter + glm::normalize(Vec3(1.0f)) * d;
 
         Camera cam;
@@ -297,7 +297,7 @@ namespace ToolKit
         Camera cam;
         cam.SetLens(glm::half_pi<float>(), m_thumbnailSize.x, m_thumbnailSize.y);
         cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 0.5f));
-        
+
         renderThumbFn(&cam, &frame);
       }
       else if (SupportedImageFormat(entry.m_ext))
@@ -331,40 +331,59 @@ namespace ToolKit
           return std::count(path.begin(), path.end(), GetPathSeparator()) == 2;
         };
 
-        // Show Resource folder structure.
-        ImGui::PushID("##FolderStructure");
-        ImGui::BeginGroup();
-        ImGui::TextUnformatted("Resources");
-        ImGui::BeginChild("##Folders", ImVec2(130, 0), true);
-        for (int i = 0; i < (int)m_entiries.size(); i++)
+        if (m_showStructure)
         {
-          if (!IsRootFn(m_entiries[i].GetPath()))
+          // Show Resource folder structure.
+          ImGui::PushID("##FolderStructure");
+          ImGui::BeginGroup();
+
+          ImGui::TextUnformatted("Resources");
+
+          ImGui::SameLine();
+          if (ImGui::Button("O"))
           {
-            continue;
+            m_showStructure = !m_showStructure;
           }
 
-          bool currSel = false;
-          if (m_activeFolder == i)
+          ImGui::BeginChild("##Folders", ImVec2(130, 0), true);
+          for (int i = 0; i < (int)m_entiries.size(); i++)
           {
-            currSel = true;
+            if (!IsRootFn(m_entiries[i].GetPath()))
+            {
+              continue;
+            }
+
+            bool currSel = false;
+            if (m_activeFolder == i)
+            {
+              currSel = true;
+            }
+
+            currSel = UI::ToggleButton
+            (
+              m_entiries[i].m_folder,
+              ImVec2(100, 25),
+              currSel
+            );
+
+            // Selection switch.
+            if (currSel)
+            {
+              m_activeFolder = i;
+            }
           }
-
-          currSel = UI::ToggleButton
-          (
-            m_entiries[i].m_folder,
-            ImVec2(100, 25),
-            currSel
-          );
-
-          // Selection switch.
-          if (currSel)
+          ImGui::EndChild();
+          
+          ImGui::EndGroup();
+          ImGui::PopID();
+        }
+        else
+        {
+          if (ImGui::Button("-"))
           {
-            m_activeFolder = i;
+            m_showStructure = !m_showStructure;
           }
         }
-        ImGui::EndChild();
-        ImGui::EndGroup();
-        ImGui::PopID();
 
         ImGui::SameLine();
 
@@ -387,6 +406,8 @@ namespace ToolKit
           }
           ImGui::EndTabBar();
         }
+
+
         ImGui::EndGroup();
         ImGui::PopID();
       }
