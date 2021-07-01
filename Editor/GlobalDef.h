@@ -18,7 +18,7 @@ namespace ToolKit
     // UI Strings
     const String g_consoleStr("Console");
     const String g_viewportStr("Viewport");
-    const String g_assetBrowserStr("AssetBrowser");
+    const String g_assetBrowserStr("Asset Browser");
     const String g_outlinerStr("Outliner");
     const String g_propInspector("Inspector");
     const String g_memoStr("");

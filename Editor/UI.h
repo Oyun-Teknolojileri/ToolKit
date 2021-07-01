@@ -52,6 +52,11 @@ namespace ToolKit
 
     public:
       String m_name;
+      uint m_id;
+
+    private:
+      // Internal unique id generator.
+      static uint m_baseId;
     };
 
     class StringInputWindow : public Window

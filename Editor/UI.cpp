@@ -31,6 +31,7 @@ namespace ToolKit
     UI::SearchFile UI::SearchFileData;
     StringInputWindow UI::m_strInputWindow;
     std::vector<Window*> UI::m_volatileWindows;
+    uint Window::m_baseId = 0; // unused id.
 
     // Icons
     TexturePtr UI::m_selectIcn;
@@ -352,33 +353,37 @@ namespace ToolKit
 
     void UI::ShowMenuWindows()
     {
-      if (ImGui::BeginMenu("Viewport"))
+      auto handleMultiWindowFn = [](Window::Type windowType) -> void
       {
         for (int i = (int)g_app->m_windows.size() - 1; i >= 0; i--)
         {
           Window* wnd = g_app->m_windows[i];
-          if (wnd->GetType() != Window::Type::Viewport)
+          if (wnd->GetType() != windowType)
           {
             continue;
           }
 
-          Viewport* vp = static_cast<Viewport*> (wnd);
-          if (ImGui::MenuItem(vp->m_name.c_str(), nullptr, false, !vp->IsVisible()))
+          if (ImGui::MenuItem(wnd->m_name.c_str(), nullptr, false, !wnd->IsVisible()))
           {
-            vp->SetVisibility(true);
+            wnd->SetVisibility(true);
           }
 
-          if (vp->IsVisible())
+          if (wnd->IsVisible())
           {
             ImGui::SameLine();
             if (ImGui::Button("x"))
             {
               g_app->m_windows.erase(g_app->m_windows.begin() + i);
-              SafeDel(vp);
+              SafeDel(wnd);
               continue;
             }
           }
         }
+      };
+
+      if (ImGui::BeginMenu("Viewport"))
+      {
+        handleMultiWindowFn(Window::Type::Viewport);
 
         if (ImGui::MenuItem("Add Viewport", "Alt+V"))
         {
@@ -393,9 +398,19 @@ namespace ToolKit
         g_app->GetConsole()->SetVisibility(true);
       }
 
-      if (ImGui::MenuItem("Resource Window", "Alt+B", nullptr, !g_app->GetAssetBrowser()->IsVisible()))
+      if (ImGui::BeginMenu("Resource Window"))
       {
-        g_app->GetAssetBrowser()->SetVisibility(true);
+        handleMultiWindowFn(Window::Type::Browser);
+
+        if (ImGui::MenuItem("Add Browser", "Alt+B"))
+        {
+          FolderWindow* wnd = new FolderWindow();
+          wnd->m_name = g_assetBrowserStr + "##" + std::to_string(wnd->m_id);
+          wnd->Iterate(ResourcePath());
+          g_app->m_windows.push_back(wnd);
+        }
+
+        ImGui::EndMenu();
       }
 
       if (ImGui::MenuItem("Outliner Window", "Alt+O", nullptr, !g_app->GetOutliner()->IsVisible()))
@@ -733,6 +748,7 @@ namespace ToolKit
 
     Window::Window()
     {
+      m_id = ++m_baseId;
     }
 
     Window::~Window()
