@@ -65,6 +65,7 @@ namespace ToolKit
 
     private:
       std::vector<FolderView> m_entiries;
+      int m_activeFolder = -1;
       String m_path;
     };
 
