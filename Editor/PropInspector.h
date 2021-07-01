@@ -16,6 +16,9 @@ namespace ToolKit
       virtual void Show() = 0;
 
       void DropZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction);
+
+    public:
+      Entity* m_entity = nullptr;
     };
 
     class AssetView : public View
@@ -33,9 +36,6 @@ namespace ToolKit
     public:
       virtual ~EntityView() {}
       virtual void Show();
-
-    public:
-      Entity* m_entry;
     };
 
     class MeshView : public View
@@ -56,6 +56,7 @@ namespace ToolKit
 
     public:
       Material* m_entry;
+      Mesh* m_mesh = nullptr;
     };
 
     class PropInspector : public Window

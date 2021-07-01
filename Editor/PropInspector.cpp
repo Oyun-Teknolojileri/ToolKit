@@ -101,7 +101,7 @@ namespace ToolKit
 
     void EntityView::Show()
     {
-      if (m_entry == nullptr)
+      if (m_entity == nullptr)
       {
         return;
       }
@@ -109,15 +109,15 @@ namespace ToolKit
       // Entity View
       if (ImGui::CollapsingHeader("Basics"))
       {
-        ImGui::InputText("Name", &m_entry->m_name);
-        ImGui::InputText("Tag", &m_entry->m_tag);
+        ImGui::InputText("Name", &m_entity->m_name);
+        ImGui::InputText("Tag", &m_entity->m_tag);
       }
 
       if (ImGui::CollapsingHeader("Transforms"))
       {
         Mat3 rotate;
         Vec3 scale, shear;
-        Mat4 ts = m_entry->m_node->GetTransform(g_app->m_transformSpace);
+        Mat4 ts = m_entity->m_node->GetTransform(g_app->m_transformSpace);
         QDUDecomposition(ts, rotate, scale, shear);
 
         static TransformAction* dragMem = nullptr;
@@ -125,7 +125,7 @@ namespace ToolKit
         {
           if (dragMem == nullptr)
           {
-            dragMem = new TransformAction(m_entry);
+            dragMem = new TransformAction(m_entity);
           }
         };
 
@@ -146,10 +146,10 @@ namespace ToolKit
           }
           else
           {
-            ActionManager::GetInstance()->AddAction(new TransformAction(m_entry));
+            ActionManager::GetInstance()->AddAction(new TransformAction(m_entity));
           }
 
-          m_entry->m_node->SetTranslation(translate, space);
+          m_entity->m_node->SetTranslation(translate, space);
         }
 
         Quaternion q0 = glm::toQuat(rotate);
@@ -181,16 +181,16 @@ namespace ToolKit
           if (isDrag)
           {
             saveDragMemFn();
-            m_entry->m_node->Rotate(q, space);
+            m_entity->m_node->Rotate(q, space);
           }
           else
           {
-            ActionManager::GetInstance()->AddAction(new TransformAction(m_entry));
-            m_entry->m_node->SetOrientation(q, space);
+            ActionManager::GetInstance()->AddAction(new TransformAction(m_entity));
+            m_entity->m_node->SetOrientation(q, space);
           }
         }
 
-        scale = m_entry->m_node->GetScale();
+        scale = m_entity->m_node->GetScale();
         if
           (
             ImGui::DragFloat3("Scale", &scale[0], 0.25f) &&
@@ -206,14 +206,14 @@ namespace ToolKit
           }
           else
           {
-            ActionManager::GetInstance()->AddAction(new TransformAction(m_entry));
+            ActionManager::GetInstance()->AddAction(new TransformAction(m_entity));
           }
-          m_entry->m_node->SetScale(scale);
+          m_entity->m_node->SetScale(scale);
         }
 
-        if (ImGui::Checkbox("Inherit Scale", &m_entry->m_node->m_inheritScale))
+        if (ImGui::Checkbox("Inherit Scale", &m_entity->m_node->m_inheritScale))
         {
-          m_entry->m_node->SetInheritScaleDeep(m_entry->m_node->m_inheritScale);
+          m_entity->m_node->SetInheritScaleDeep(m_entity->m_node->m_inheritScale);
         }
 
         if (dragMem && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
@@ -278,11 +278,22 @@ namespace ToolKit
               target = m_entry->m_diffuseTexture->m_file;
             }
 
-            DropZone(UI::m_imageIcon->m_textureId, target, [this](const DirectoryEntry& entry) -> void
+            DropZone
+            (
+              UI::m_imageIcon->m_textureId, 
+              target, 
+              [this](const DirectoryEntry& entry) -> void
               {
+                // Switch from solid color material to default for texturing.
+                if (m_mesh && m_entry->m_diffuseTexture == nullptr)
+                {
+                  m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
+                  m_entry = m_mesh->m_material.get();
+                }
                 String fullPath = entry.m_rootPath + GetPathSeparatorAsStr() + entry.m_fileName + entry.m_ext;
                 m_entry->m_diffuseTexture = GetTextureManager()->Create(fullPath);
-              });
+              }
+            );
 
             ImGui::TreePop();
           }
@@ -332,7 +343,7 @@ namespace ToolKit
         else
         {
           EntityView* ev = GetView<EntityView>();
-          ev->m_entry = curr;
+          ev->m_entity = curr;
           ev->Show();
 
           if (curr->IsDrawable())
@@ -345,10 +356,13 @@ namespace ToolKit
               Mesh* m = meshes[i];
               MeshView* mev = GetView<MeshView>();
               mev->m_entry = m;
+              mev->m_entity = curr;
               mev->Show();
 
               MaterialView* mav = GetView <MaterialView>();
               mav->m_entry = m->m_material.get();
+              mav->m_mesh = m;
+              mav->m_entity = curr;
               mav->Show();
 
               if (i > 1 && i != meshes.size() - 1)
