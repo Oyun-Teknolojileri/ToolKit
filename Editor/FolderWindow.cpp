@@ -336,7 +336,6 @@ namespace ToolKit
         ImGui::BeginGroup();
         ImGui::TextUnformatted("Resources");
         ImGui::BeginChild("##Folders", ImVec2(130, 0), true);
-        static int selectedFolder = -1;
         for (int i = 0; i < (int)m_entiries.size(); i++)
         {
           if (!IsRootFn(m_entiries[i].GetPath()))
@@ -345,7 +344,7 @@ namespace ToolKit
           }
 
           bool currSel = false;
-          if (selectedFolder == i)
+          if (m_activeFolder == i)
           {
             currSel = true;
           }
@@ -360,7 +359,7 @@ namespace ToolKit
           // Selection switch.
           if (currSel)
           {
-            selectedFolder = (int)i;
+            m_activeFolder = i;
           }
         }
         ImGui::EndChild();
@@ -375,7 +374,7 @@ namespace ToolKit
         {
           for (int i = 0; i < (int)m_entiries.size(); i++)
           {
-            m_entiries[i].m_currRoot = i == selectedFolder;
+            m_entiries[i].m_currRoot = (i == m_activeFolder);
             if (IsRootFn(m_entiries[i].GetPath()))
             {
               if (!m_entiries[i].m_currRoot)
