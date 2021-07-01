@@ -324,6 +324,66 @@ namespace ToolKit
             );
             ImGui::TreePop();
           }
+
+          if (ImGui::TreeNode("Render State"))
+          {
+            int cullMode = (int)m_entry->GetRenderState()->cullMode;
+            if (ImGui::Combo("Cull mode", &cullMode, "Two Sided\0Front\0Back"))
+            {
+              m_entry->GetRenderState()->cullMode = (CullingType)cullMode;
+            }
+
+            int blendMode = (int)m_entry->GetRenderState()->blendFunction;
+            if (ImGui::Combo("Blend mode", &blendMode, "None\0Alpha Blending"))
+            {
+              m_entry->GetRenderState()->blendFunction = (BlendFunction)blendMode;
+            }
+
+            int drawType = -1;
+            switch (m_entry->GetRenderState()->drawType)
+            {
+            case DrawType::Triangle:
+              drawType = 0;
+              break;
+            case DrawType::Line:
+              drawType = 1;
+              break;
+            case DrawType::LineStrip:
+              drawType = 2;
+              break;
+            case DrawType::LineLoop:
+              drawType = 3;
+              break;
+            case DrawType::Point:
+              drawType = 4;
+              break;
+            }
+
+            if (ImGui::Combo("Draw mode", &drawType, "Triangle\0Line\0Line Strip\0Line Loop\0Point"))
+            {
+              switch (drawType)
+              {
+              case 0:
+                m_entry->GetRenderState()->drawType = DrawType::Triangle;
+                break;
+              case 1:
+                m_entry->GetRenderState()->drawType = DrawType::Line;
+                break;
+              case 2:
+                m_entry->GetRenderState()->drawType = DrawType::LineStrip;
+                break;
+              case 3:
+                m_entry->GetRenderState()->drawType = DrawType::LineLoop;
+                break;
+              case 4:
+                m_entry->GetRenderState()->drawType = DrawType::Point;
+                break;
+              }
+            }
+
+            ImGui::TreePop();
+          }
+
         }
       }
     }
