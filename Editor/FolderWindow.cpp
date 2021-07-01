@@ -369,6 +369,14 @@ namespace ToolKit
             // Selection switch.
             if (currSel)
             {
+              if (i != m_activeFolder)
+              {
+                for (FolderView& view : m_entiries)
+                {
+                  view.m_visible = false;
+                }
+              }
+
               m_activeFolder = i;
             }
           }
