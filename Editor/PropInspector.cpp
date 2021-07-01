@@ -290,8 +290,7 @@ namespace ToolKit
                   m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
                   m_entry = m_mesh->m_material.get();
                 }
-                String fullPath = entry.m_rootPath + GetPathSeparatorAsStr() + entry.m_fileName + entry.m_ext;
-                m_entry->m_diffuseTexture = GetTextureManager()->Create(fullPath);
+                m_entry->m_diffuseTexture = GetTextureManager()->Create(entry.GetFullPath());
               }
             );
 
@@ -301,10 +300,28 @@ namespace ToolKit
           if (ImGui::TreeNode("Shaders"))
           {
             ImGui::LabelText("##vertShader", "Vertex Shader: ");
-            DropZone(UI::m_codeIcon->m_textureId, m_entry->m_vertexShader->m_file, [](const DirectoryEntry& entry) -> void {});
+            DropZone
+            (
+              UI::m_codeIcon->m_textureId,
+              m_entry->m_vertexShader->m_file,
+              [this](const DirectoryEntry& entry) -> void 
+              {
+                m_entry->m_vertexShader = GetShaderManager()->Create(entry.GetFullPath());
+                m_entry->m_vertexShader->Init();
+              }
+            );
 
             ImGui::LabelText("##fragShader", "Fragment Shader: ");
-            DropZone(UI::m_codeIcon->m_textureId, m_entry->m_fragmetShader->m_file, [](const DirectoryEntry& entry) -> void {});
+            DropZone
+            (
+              UI::m_codeIcon->m_textureId,
+              m_entry->m_fragmetShader->m_file,
+              [this](const DirectoryEntry& entry) -> void 
+              {
+                m_entry->m_fragmetShader = GetShaderManager()->Create(entry.GetFullPath());
+                m_entry->m_fragmetShader->Init();
+              }
+            );
             ImGui::TreePop();
           }
         }
