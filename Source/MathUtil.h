@@ -78,6 +78,7 @@ namespace ToolKit
   //////////////////////////////////////////
   void NormalizePlaneEquation(PlaneEquation& plane);
   void TransformAABB(BoundingBox& box, const Mat4& transform);
+  void GetCorners(const BoundingBox& box, Vec3Array& corners);
   PlaneEquation PlaneFrom(Vec3 const pnts[3]);
   PlaneEquation PlaneFrom(Vec3 point, Vec3 normal);
   float SignedDistance(const PlaneEquation& plane, const Vec3& pnt);

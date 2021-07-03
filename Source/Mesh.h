@@ -11,8 +11,6 @@
 namespace ToolKit
 {
 
-  class Material;
-
   class Vertex
   {
   public:
@@ -71,18 +69,12 @@ namespace ToolKit
     MeshRawPtrArray m_allMeshes;
   };
 
-  class MeshManager : public ResourceManager<Mesh>
-  {
-  };
-
   class SkinVertex : public Vertex
   {
   public:
-    glm::uvec4 bones;
+    UVec4 bones;
     Vec4 weights;
   };
-
-  class Skeleton;
 
   class SkinMesh : public Mesh
   {
@@ -103,11 +95,14 @@ namespace ToolKit
 
   public:
     std::vector<SkinVertex> m_clientSideVertices;
-    Skeleton* m_skeleton;
+    class Skeleton* m_skeleton;
   };
 
-  class SkinMeshManager : public ResourceManager<SkinMesh>
+  class MeshManager : public ResourceManager
   {
+  public:
+    MeshManager();
+    virtual ~MeshManager();
   };
 
 }

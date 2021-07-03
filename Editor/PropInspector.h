@@ -16,24 +16,17 @@ namespace ToolKit
       virtual void Show() = 0;
 
       void DropZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction);
+      void DropSubZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction);
 
     public:
       Entity* m_entity = nullptr;
-    };
-
-    class AssetView : public View
-    {
-    public:
-      virtual ~AssetView() {}
-      virtual void Show() override;
-
-    public:
-      DirectoryEntry m_entry;
+      int m_viewID = 0;
     };
 
     class EntityView : public View
     {
     public:
+      EntityView() { m_viewID = 1;  }
       virtual ~EntityView() {}
       virtual void Show();
     };
@@ -41,22 +34,17 @@ namespace ToolKit
     class MeshView : public View
     {
     public:
+      MeshView() { m_viewID = 2; }
       virtual ~MeshView() {}
       virtual void Show() override;
-
-    public:
-      Mesh* m_entry;
     };
 
     class MaterialView : public View
     {
     public:
+      MaterialView() { m_viewID = 3; }
       virtual ~MaterialView() {}
       virtual void Show() override;
-
-    public:
-      Material* m_entry;
-      Mesh* m_mesh = nullptr;
     };
 
     class PropInspector : public Window

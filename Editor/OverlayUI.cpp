@@ -202,7 +202,7 @@ namespace ToolKit
           if (ImGui::MenuItem("Monkey"))
           {
             Drawable* suzanne = new Drawable();
-            suzanne->m_mesh = GetMeshManager()->Create(MeshPath("suzanne.mesh"));
+            suzanne->m_mesh = GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh"));
             suzanne->m_mesh->Init(false);
             g_app->m_scene.AddEntity(suzanne);
           }

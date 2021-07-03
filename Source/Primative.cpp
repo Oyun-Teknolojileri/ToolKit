@@ -554,7 +554,7 @@ namespace ToolKit
     m_mesh->m_clientSideVertices = vertices;
     m_mesh->m_indexCount = (uint)indices.size();
     m_mesh->m_clientSideIndices = indices;
-    m_mesh->m_material = GetMaterialManager()->Create(MaterialPath("default.material"));
+    m_mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("default.material"));
 
     m_mesh->CalculateAABoundingBox();
     m_mesh->ConstructFaces();

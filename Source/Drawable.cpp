@@ -82,7 +82,7 @@ namespace ToolKit
     {
       XmlAttribute* attr = meshNode->first_attribute(XmlFileAttr.c_str());
       String filePath = MeshPath(attr->value());
-      m_mesh = GetMeshManager()->Create(filePath);
+      m_mesh = GetMeshManager()->Create<Mesh>(filePath);
     }
   }
 

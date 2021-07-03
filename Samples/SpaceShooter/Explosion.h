@@ -17,7 +17,7 @@ public:
 
   void SpawnMeteorExplosion(glm::vec2 pos)
   {
-    SpriteSheetPtr spriteSheet = Main::GetInstance()->m_spriteSheetMan.Create(SpritePath("explosion.sprites"));
+    SpriteSheetPtr spriteSheet = GetSpriteSheetManager()->Create<SpriteSheet>(SpritePath("explosion.sprites"));
     SpriteAnimation* anim = new SpriteAnimation(spriteSheet);
     anim->m_node->SetTranslation({ pos.x, pos.y, 0.0f }, TransformationSpace::TS_WORLD);
     anim->m_animFps = 30.0f;
@@ -30,7 +30,7 @@ public:
 
   void SpawnShipExplosion(glm::vec2 pos)
   {
-    SpriteSheetPtr spriteSheet = Main::GetInstance()->m_spriteSheetMan.Create(SpritePath("shipExplosion.sprites"));
+    SpriteSheetPtr spriteSheet = GetSpriteSheetManager()->Create<SpriteSheet>(SpritePath("shipExplosion.sprites"));
     SpriteAnimation* anim = new SpriteAnimation(spriteSheet);
     anim->m_node->SetTranslation({ pos.x, pos.y, 0.0f }, TransformationSpace::TS_WORLD);
     anim->m_animFps = 30.0f;

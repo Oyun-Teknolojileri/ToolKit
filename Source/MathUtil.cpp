@@ -466,6 +466,21 @@ namespace ToolKit
 
   void TransformAABB(BoundingBox& box, const Mat4& transform)
   {
+    Vec3Array corners;
+    GetCorners(box, corners);
+
+    // Transform and update aabb.
+    box = BoundingBox();
+    for (int i = 0; i < 8; i++)
+    {
+      Vec3 v = transform * Vec4(corners[i], 1.0f);
+      box.min = glm::min(v, box.min);
+      box.max = glm::max(v, box.max);
+    }
+  }
+
+  void GetCorners(const BoundingBox& box, Vec3Array& corners)
+  {
     // Calculate all 8 edges.
     Vec3 maxtr = box.max;
 
@@ -476,7 +491,7 @@ namespace ToolKit
     maxbr.y = box.min.y;
 
     Vec3 maxbl = maxtl;
-    maxbl.x = box.min.x;
+    maxbl.y = box.min.y;
 
     Vec3 minbl = maxbl;
     minbl.z = box.min.z;
@@ -485,34 +500,22 @@ namespace ToolKit
     minbr.z = box.min.z;
 
     Vec3 mintl = maxtl;
-    maxtl.z = box.min.z;
+    mintl.z = box.min.z;
 
     Vec3 mintr = maxtr;
     mintr.z = box.min.z;
 
-    std::vector<Vec4> vertices =
+    corners =
     {
-      Vec4(mintr, 1.0f),
-      Vec4(mintl, 1.0f),
-      Vec4(minbr, 1.0f),
-      Vec4(minbl, 1.0f),
-      Vec4(maxtr, 1.0f),
-      Vec4(maxtl, 1.0f),
-      Vec4(maxbr, 1.0f),
-      Vec4(maxbl, 1.0f)
+      mintl,
+      mintr,
+      minbr,
+      minbl,
+      maxtl,
+      maxtr,
+      maxbr,
+      maxbl
     };
-
-    BoundingBox bb;
-
-    // Transform and update aabb.
-    for (int i = 0; i < 8; i++)
-    {
-      Vec3 v = transform * vertices[i];
-      bb.min = glm::min(v, bb.min);
-      bb.max = glm::max(v, bb.max);
-    }
-
-    box = bb;
   }
 
   PlaneEquation PlaneFrom(Vec3 const pnts[3])

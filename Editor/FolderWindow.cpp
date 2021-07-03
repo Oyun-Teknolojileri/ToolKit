@@ -5,6 +5,7 @@
 #include "GlobalDef.h"
 #include "Gizmo.h"
 #include "PropInspector.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 #include <filesystem>
@@ -13,6 +14,11 @@ namespace ToolKit
 {
   namespace Editor
   {
+    String DirectoryEntry::GetFullPath() const
+    {
+      return m_rootPath + GetPathSeparatorAsStr() + m_fileName + m_ext;
+    }
+
     Vec2 FolderView::m_iconSize = Vec2(95.0f);
 
     FolderView::FolderView()
@@ -128,24 +134,10 @@ namespace ToolKit
             }
           }
 
-          auto setViewFn = [&de]() -> void
-          {
-            if (PropInspector* inspector = g_app->GetPropInspector())
-            {
-              if (AssetView* av = inspector->GetView<AssetView>())
-              {
-                av->m_entry = de;
-              }
-            }
-          };
-
           ImGui::PushID(i);
           ImGui::BeginGroup();
           ImVec2 texCoords = flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
-          if (ImGui::ImageButton((void*)(intptr_t)iconId, m_iconSize, ImVec2(0.0f, 0.0f), texCoords))
-          {
-            setViewFn();
-          }
+          ImGui::ImageButton((void*)(intptr_t)iconId, m_iconSize, ImVec2(0.0f, 0.0f), texCoords);
 
           if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
           {
@@ -267,7 +259,7 @@ namespace ToolKit
       {
         Drawable dw;
         String fullpath = entry.m_rootPath + GetPathSeparator() + entry.m_fileName + entry.m_ext;
-        dw.m_mesh = GetMeshManager()->Create(fullpath);
+        dw.m_mesh = GetMeshManager()->Create<Mesh>(fullpath);
         dw.m_mesh->Init(false);
 
         // Tight fit a frustum to a bounding sphere
@@ -289,23 +281,23 @@ namespace ToolKit
       }
       else if (entry.m_ext == MATERIAL)
       {
-        Quad frame;
+        Sphere ball;
         String fullpath = entry.m_rootPath + GetPathSeparator() + entry.m_fileName + entry.m_ext;
-        frame.m_mesh->m_material = GetMaterialManager()->Create(fullpath);
-        frame.m_mesh->Init(false);
+        ball.m_mesh->m_material = GetMaterialManager()->Create<Material>(fullpath);
+        ball.m_mesh->Init(false);
 
         Camera cam;
         cam.SetLens(glm::half_pi<float>(), m_thumbnailSize.x, m_thumbnailSize.y);
-        cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 0.5f));
+        cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 1.5f));
 
-        renderThumbFn(&cam, &frame);
+        renderThumbFn(&cam, &ball);
       }
       else if (SupportedImageFormat(entry.m_ext))
       {
         Quad frame;
         String fullpath = entry.m_rootPath + GetPathSeparator() + entry.m_fileName + entry.m_ext;
         frame.m_mesh->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-        frame.m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create(fullpath);
+        frame.m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(fullpath);
         frame.m_mesh->m_material->m_diffuseTexture->Init(false);
 
         Camera cam;

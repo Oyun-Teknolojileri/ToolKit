@@ -20,7 +20,7 @@ namespace ToolKit
       {
         m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
         m_material->UnInit();
-        m_material->m_diffuseTexture = GetTextureManager()->Create(TexturePath("grid.png"));
+        m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("grid.png"));
         m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
         m_material->GetRenderState()->cullMode = CullingType::TwoSided;
         m_material->Init();
@@ -29,7 +29,7 @@ namespace ToolKit
       }
       else
       {
-        m_material = GetMaterialManager()->Create(g_gridMaterialName);
+        m_material = GetMaterialManager()->Create<Material>(g_gridMaterialName);
       }
 
       // Create grid mesh.

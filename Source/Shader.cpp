@@ -4,17 +4,20 @@
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
 #include "rapidxml_print.hpp"
-#include <vector>
 #include "DebugNew.h"
+
+#include <vector>
 
 namespace ToolKit
 {
 
   Shader::Shader()
   {
+    m_type = ResourceType::Shader;
   }
 
   Shader::Shader(String file)
+    : Shader()
   {
     m_file = file;
   }
@@ -37,7 +40,9 @@ namespace ToolKit
 
     XmlNode* rootNode = doc.first_node("shader");
     if (rootNode == nullptr)
+    {
       return;
+    }
 
     for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
     {
@@ -46,11 +51,11 @@ namespace ToolKit
         XmlAttribute* attr = node->first_attribute("name");
         if (String("vertexShader").compare(attr->value()) == 0)
         {
-          m_type = GL_VERTEX_SHADER;
+          m_shaderType = GL_VERTEX_SHADER;
         }
         else if (String("fragmentShader").compare(attr->value()) == 0)
         {
-          m_type = GL_FRAGMENT_SHADER;
+          m_shaderType = GL_FRAGMENT_SHADER;
         }
         else
         {
@@ -111,7 +116,7 @@ namespace ToolKit
       return;
     }
 
-    m_shaderHandle = glCreateShader(m_type);
+    m_shaderHandle = glCreateShader(m_shaderType);
     if (m_shaderHandle == 0)
     {
       return;
@@ -178,6 +183,15 @@ namespace ToolKit
   {
     glDeleteProgram(m_handle);
     m_handle = 0;
+  }
+
+  ShaderManager::ShaderManager()
+  {
+    m_type = ResourceType::Shader;
+  }
+
+  ShaderManager::~ShaderManager()
+  {
   }
 
   void ShaderManager::Init()

@@ -2,6 +2,7 @@
 #include "OutlinerWindow.h"
 #include "GlobalDef.h"
 #include "Mod.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit

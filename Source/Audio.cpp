@@ -146,7 +146,13 @@ namespace ToolKit
     }
   }
 
+  Audio::Audio()
+  {
+    m_type = ResourceType::Audio;
+  }
+
   Audio::Audio(String file)
+    : Audio()
   {
     m_file = file;
   }
@@ -172,6 +178,15 @@ namespace ToolKit
   {
     alDeleteBuffers(1, &m_buffer);
     m_initiated = false;
+  }
+
+  AudioManager::AudioManager()
+  {
+    m_type = ResourceType::Audio;
+  }
+
+  AudioManager::~AudioManager()
+  {
   }
 
   void AudioManager::Init()

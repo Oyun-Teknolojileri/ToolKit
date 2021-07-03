@@ -73,6 +73,7 @@ namespace ToolKit
             // Set defaults
             SDL_GL_SetSwapInterval(0);
             glClearColor(0.2f, 0.2f, 0.2f, 1.0);
+            glPointSize(5.0f);
 
             glEnable(GL_CULL_FACE);
             glEnable(GL_DEPTH_TEST);

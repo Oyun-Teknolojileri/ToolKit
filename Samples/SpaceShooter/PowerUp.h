@@ -40,7 +40,7 @@ public:
   FireRate2X(MeshPtr pillObj)
     : PowerUp(pillObj)
   {
-    m_mesh->m_material = GetMaterialManager()->Create(MaterialPath("pillBlue.material"));
+    m_mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("pillBlue.material"));
     m_mesh->m_material->Init();
     m_duration = 30;
   }
@@ -66,7 +66,7 @@ public:
   ForPower(MeshPtr pillObj)
     : PowerUp(pillObj)
   {
-    m_mesh->m_material = GetMaterialManager()->Create(MaterialPath("pillRed.material"));
+    m_mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("pillRed.material"));
     m_mesh->m_material->Init();
     m_duration = 30;
   }
@@ -98,7 +98,7 @@ public:
 
   PowerUpManager()
   {
-    m_pillObj = GetMeshManager()->Create(MeshPath("pill.mesh"));
+    m_pillObj = GetMeshManager()->Create<Mesh>(MeshPath("pill.mesh"));
   }
 
   ~PowerUpManager()

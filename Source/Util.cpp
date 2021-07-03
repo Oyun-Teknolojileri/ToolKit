@@ -39,7 +39,7 @@ namespace ToolKit
   template void ReadVec(XmlNode* node, glm::ivec3& val);
   template void ReadVec(XmlNode* node, Quaternion& val);
   template void ReadVec(XmlNode* node, Vec4& val);
-  template void ReadVec(XmlNode* node, glm::uvec4& val);
+  template void ReadVec(XmlNode* node, UVec4& val);
 
   template<typename T>
   void WriteVec(XmlNode* node, XmlDocument* doc, const T& val)
@@ -229,34 +229,32 @@ namespace ToolKit
 
   ToolKit::LineBatch* GenerateBoundingVolumeGeometry(const BoundingBox& box, Mat4* transform)
   {
-    Vec3 scale = box.max - box.min;
-    Cube cube(scale);
+    Vec3Array corners;
+    GetCorners(box, corners);
 
     std::vector<Vec3> vertices =
     {
-      Vec3(-0.5f, 0.5f, 0.5f) * scale, // FTL.
-      Vec3(-0.5f, -0.5f, 0.5f) * scale, // FBL.
-      Vec3(0.5f, -0.5f, 0.5f) * scale, // FBR.
-      Vec3(0.5f, 0.5f, 0.5f) * scale, // FTR.
-      Vec3(-0.5f, 0.5f, 0.5f) * scale, // FTL.
-      Vec3(-0.5f, 0.5f, -0.5f) * scale, // BTL.
-      Vec3(-0.5f, -0.5f, -0.5f) * scale, // BBL.
-      Vec3(0.5f, -0.5f, -0.5f) * scale, // BBR.
-      Vec3(0.5f, 0.5f, -0.5f) * scale, // BTR.
-      Vec3(-0.5f, 0.5f, -0.5f) * scale, // BTL.
-      Vec3(0.5f, 0.5f, -0.5f) * scale, // BTR.
-      Vec3(0.5f, 0.5f, 0.5f) * scale, // FTR.
-      Vec3(0.5f, -0.5f, 0.5f) * scale, // FBR.
-      Vec3(0.5f, -0.5f, -0.5f) * scale, // BBR.
-      Vec3(-0.5f, -0.5f, -0.5f) * scale, // BBL.
-      Vec3(-0.5f, -0.5f, 0.5f) * scale // FBL.
+      corners[0], // FTL
+      corners[3], // FBL
+      corners[2], // FBR
+      corners[1], // FTR
+      corners[0], // FTL
+      corners[4], // BTL
+      corners[7], // BBL
+      corners[6], // BBR
+      corners[5], // BTR
+      corners[4], // BTL
+      corners[5], // BTR
+      corners[1], // FTR
+      corners[2], // FBR
+      corners[6], // BBR
+      corners[7], // BBL
+      corners[3] // FBL
     };
 
-    Vec3 mid = (box.min + box.max) * 0.5f;
-    for (Vec3& v : vertices)
+    if (transform != nullptr)
     {
-      v += mid;
-      if (transform != nullptr)
+      for (Vec3& v : vertices)
       {
         v = *transform * Vec4(v, 1.0f);
       }

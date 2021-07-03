@@ -9,12 +9,14 @@ namespace ToolKit
 
   Texture::Texture()
   {
+    m_type = ResourceType::Texture;
+    m_textureId = 0;
   }
 
   Texture::Texture(String file)
+    : Texture()
   {
     m_file = file;
-    m_textureId = 0;
   }
 
   Texture::~Texture()
@@ -83,12 +85,15 @@ namespace ToolKit
   }
 
   CubeMap::CubeMap()
+    : Texture()
   {
+    m_type = ResourceType::CubeMap;
   }
 
   CubeMap::CubeMap(String file)
-    : Texture(file)
+    : Texture()
   {
+    m_file = file;
   }
 
   CubeMap::~CubeMap()
@@ -218,7 +223,14 @@ namespace ToolKit
     }
   }
 
+  RenderTarget::RenderTarget()
+    : Texture()
+  {
+    m_type = ResourceType::RenderTarget;
+  }
+
   RenderTarget::RenderTarget(uint width, uint height, bool depthStencil)
+    : RenderTarget()
   {
     m_width = width;
     m_height = height;
@@ -294,6 +306,15 @@ namespace ToolKit
     glDeleteFramebuffers(1, &m_frameBufferId);
     glDeleteRenderbuffers(1, &m_depthBufferId);
     m_initiated = false;
+  }
+
+  TextureManager::TextureManager()
+  {
+    m_type = ResourceType::Texture;
+  }
+
+  TextureManager::~TextureManager()
+  {
   }
 
 }

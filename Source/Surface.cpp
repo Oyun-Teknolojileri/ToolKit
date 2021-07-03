@@ -26,7 +26,7 @@ namespace ToolKit
 
   Surface::Surface(const String& textureFile, const Vec2& pivotOffset)
   {
-    m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create(textureFile);
+    m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(textureFile);
     m_pivotOffset = pivotOffset;
     CreateQuat();
     AssignTexture();

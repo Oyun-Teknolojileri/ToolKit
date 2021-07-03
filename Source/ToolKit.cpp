@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "ToolKit.h"
-#include "Logger.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -18,7 +17,6 @@ namespace ToolKit
     m_animationMan.Init();
     m_textureMan.Init();
     m_meshMan.Init();
-    m_skinMeshMan.Init();
     m_spriteSheetMan.Init();
     m_audioMan.Init();
     m_shaderMan.Init();
@@ -33,7 +31,6 @@ namespace ToolKit
     m_animationMan.Uninit();
     m_textureMan.Uninit();
     m_meshMan.Uninit();
-    m_skinMeshMan.Uninit();
     m_spriteSheetMan.Uninit();
     m_audioMan.Uninit();
     m_shaderMan.Uninit();
@@ -81,11 +78,6 @@ namespace ToolKit
     return &Main::GetInstance()->m_shaderMan;
   }
 
-  SkinMeshManager* GetSkinMeshManager()
-  {
-    return &Main::GetInstance()->m_skinMeshMan;
-  }
-
   SpriteSheetManager* GetSpriteSheetManager()
   {
     return &Main::GetInstance()->m_spriteSheetMan;
@@ -94,6 +86,36 @@ namespace ToolKit
   TextureManager* GetTextureManager()
   {
     return &Main::GetInstance()->m_textureMan;
+  }
+
+  ResourceManager* GetResourceManager(ResourceType type)
+  {
+    switch (type)
+    {
+    case ResourceType::Animation:
+      return GetAnimationManager();
+    case ResourceType::Audio:
+      return GetAudioManager();
+    case ResourceType::Material:
+      return GetMaterialManager();
+    case ResourceType::SkinMesh:
+    case ResourceType::Mesh:
+      return GetMeshManager();
+    case ResourceType::Shader:
+      return GetShaderManager();
+    case ResourceType::SpriteSheet:
+      return GetSpriteSheetManager();
+    case ResourceType::Texture:
+    case ResourceType::CubeMap:
+    case ResourceType::RenderTarget:
+      return GetTextureManager();
+    case ResourceType::Base:
+    default:
+      assert(false);
+      break;
+    }
+
+    return nullptr;
   }
 
   String ResourcePath()
