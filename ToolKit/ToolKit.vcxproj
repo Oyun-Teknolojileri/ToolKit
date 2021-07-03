@@ -123,6 +123,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\ParameterBlock.cpp" />
+    <ClCompile Include="..\Source\Resource.cpp" />
+    <ClCompile Include="..\Source\ResourceManager.cpp" />
     <ClCompile Include="..\Source\StateMachine.cpp" />
     <ClCompile Include="..\Source\ToolKit.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>

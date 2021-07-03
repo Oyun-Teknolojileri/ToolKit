@@ -74,11 +74,17 @@ namespace ToolKit
 
       if (!g_app->m_showPickingDebug)
       {
-        g_app->m_scene.RemoveEntity(StatePickingBase::m_dbgArrow->m_id);
-        StatePickingBase::m_dbgArrow = nullptr;
+        if (StatePickingBase::m_dbgArrow)
+        {
+          g_app->m_scene.RemoveEntity(StatePickingBase::m_dbgArrow->m_id);
+          StatePickingBase::m_dbgArrow = nullptr;
+        }
 
-        g_app->m_scene.RemoveEntity(StatePickingBase::m_dbgFrustum->m_id);
-        StatePickingBase::m_dbgFrustum = nullptr;
+        if (StatePickingBase::m_dbgFrustum)
+        {
+          g_app->m_scene.RemoveEntity(StatePickingBase::m_dbgFrustum->m_id);
+          StatePickingBase::m_dbgFrustum = nullptr;
+        }
       }
     }
 
@@ -459,6 +465,11 @@ namespace ToolKit
       }
     }
 
+    void ShowSelectionBoundary(TagArgArray tagArgs)
+    {
+      BoolCheck(tagArgs, &g_app->m_showSelectionBoundary);
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
     static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
@@ -481,6 +492,7 @@ namespace ToolKit
       CreateCommand(g_lookAt, LookAt);
       CreateCommand(g_applyTransformToMesh, ApplyTransformToMesh);
       CreateCommand(g_saveMesh, SaveMesh);
+      CreateCommand(g_showSelectionBoundary, ShowSelectionBoundary);
     }
 
     ConsoleWindow::~ConsoleWindow()
@@ -560,7 +572,8 @@ namespace ToolKit
         }
 
         ImGui::PushItemWidth(width);
-        if (
+        if 
+        (
           ImGui::InputText
           (
             "##Input",
@@ -570,7 +583,7 @@ namespace ToolKit
             [](ImGuiInputTextCallbackData* data)->int { return ((ConsoleWindow*)(data->UserData))->TextEditCallback(data); },
             (void*)this
           )
-          )
+        )
         {
           char* s = inputBuff;
           Strtrim(s);

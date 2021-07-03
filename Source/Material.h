@@ -36,10 +36,12 @@ namespace ToolKit
     RenderState m_renderState;
   };
 
-  class MaterialManager : public ResourceManager<Material>
+  class MaterialManager : public ResourceManager
   {
   public:
-    void Init();
+    MaterialManager();
+    virtual ~MaterialManager();
+    virtual void Init() override;
 
     MaterialPtr GetCopyOfUnlitMaterial();
     MaterialPtr GetCopyOfUnlitColorMaterial();

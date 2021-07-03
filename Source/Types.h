@@ -27,6 +27,7 @@ namespace ToolKit
   typedef unsigned long NodeId;
   typedef unsigned long SceneId;
   typedef const int SignalId;
+  typedef std::shared_ptr<class Resource> ResourcePtr;
   typedef std::string String;
   typedef std::vector<String> StringArray;
   typedef glm::ivec2 IVec2;
@@ -36,9 +37,11 @@ namespace ToolKit
   typedef std::vector<Vec3> Vec3Array;
   typedef glm::vec4 Vec4;
   typedef std::vector<Vec4> Vec4Array;
+  typedef glm::uvec4 UVec4;
   typedef glm::mat4 Mat4;
   typedef glm::mat3 Mat3;
   typedef glm::quat Quaternion;
+  typedef std::shared_ptr<class Animation> AnimationPtr;
   typedef std::shared_ptr<class Material> MaterialPtr;
   typedef std::shared_ptr<class Texture> TexturePtr;
   typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;

@@ -86,6 +86,7 @@ namespace ToolKit
       bool m_showOverlayUI = true;
       bool m_showOverlayUIAlways = true;
       bool m_importSlient = false;
+      bool m_showSelectionBoundary = false;
       TransformationSpace m_transformSpace = TransformationSpace::TS_WORLD;
 
       // Snap settings.

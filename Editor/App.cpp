@@ -16,12 +16,13 @@
 #include "FolderWindow.h"
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 #include <filesystem>
 #include <cstdlib>
 
-//#define TK_SAMPLE_SCENE
+#define TK_SAMPLE_SCENE
 
 namespace ToolKit
 {
@@ -58,23 +59,23 @@ namespace ToolKit
       m_suzanne = new Drawable();
       m_suzanne->m_node->SetTranslation({ 0.0f, 0.0f, -5.0f });
       m_suzanne->m_node->SetOrientation(glm::angleAxis(-glm::half_pi<float>(), X_AXIS));
-      Mesh* szm = GetMeshManager()->CreateDerived<Mesh>(MeshPath("suzanne.mesh"))->GetCopy();
+      Mesh* szm = GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh"))->GetCopy();
       szm->Init(false);
       m_suzanne->m_mesh = MeshPtr(szm);
       m_scene.AddEntity(m_suzanne);
 
       // https://t-allen-studios.itch.io/low-poly-saxon-warrior
       m_knight = new Drawable();
-      m_knight->m_mesh = GetSkinMeshManager()->Create(MeshPath("Knight.skinMesh"));
+      m_knight->m_mesh = GetMeshManager()->Create<SkinMesh>(MeshPath("Knight.skinMesh"), ResourceType::SkinMesh);
       m_knight->m_node->SetScale({ 0.01f, 0.01f, 0.01f });
       m_knight->m_node->SetTranslation({ 0.0f, 0.0f, 5.0f });
       m_scene.AddEntity(m_knight);
 
-      m_knightRunAnim = GetAnimationManager()->Create(AnimationPath("Knight_Armature_Run.anim"));
+      m_knightRunAnim = GetAnimationManager()->Create<Animation>(AnimationPath("Knight_Armature_Run.anim"));
       m_knightRunAnim->m_loop = true;
       GetAnimationPlayer()->AddRecord(m_knight, m_knightRunAnim.get());
 
-      MaterialPtr normalMat = GetMaterialManager()->Create(MaterialPath("objectNormal.material"));
+      MaterialPtr normalMat = GetMaterialManager()->Create<Material>(MaterialPath("objectNormal.material"));
 
       m_q1 = new Cube();
       m_q1->m_mesh->m_material = normalMat;
@@ -572,11 +573,12 @@ namespace ToolKit
           MeshPtr mesh;
           if (ext == SKINMESH)
           {
-            mesh = GetSkinMeshManager()->Create(meshFile);
+            assert(false);
+            //mesh = GetSkinMeshManager()->Create(meshFile);
           }
           else
           {
-            mesh = GetMeshManager()->Create(meshFile);
+            mesh = GetMeshManager()->Create<Mesh>(meshFile);
           }
 
           if (FolderWindow* browser = GetAssetBrowser())
@@ -727,7 +729,7 @@ namespace ToolKit
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
         glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        ShaderPtr solidColor = GetShaderManager()->Create(ShaderPath("unlitColorFrag.shader"));
+        ShaderPtr solidColor = GetShaderManager()->Create<Shader>(ShaderPath("unlitColorFrag.shader"));
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
 
@@ -735,7 +737,7 @@ namespace ToolKit
 
         // Dilate.
         glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
-        ShaderPtr dilate = GetShaderManager()->Create(ShaderPath("dilateFrag.shader"));
+        ShaderPtr dilate = GetShaderManager()->Create<Shader>(ShaderPath("dilateFrag.shader"));
         dilate->SetShaderParameter("Color", color);
         m_renderer->DrawFullQuad(dilate);
       };
@@ -750,7 +752,12 @@ namespace ToolKit
       selecteds.clear();
       selecteds.push_back(primary);
       RenderFn(selecteds, g_selectHighLightPrimaryColor);
-    }
 
+      if (m_showSelectionBoundary && primary->IsDrawable())
+      {
+        Drawable* dw = static_cast<Drawable*> (primary);
+        m_perFrameDebugObjects.push_back(GenerateBoundingVolumeGeometry(dw->GetAABB(true)));
+      }
+    }
   }
 }

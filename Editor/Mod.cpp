@@ -9,6 +9,7 @@
 #include "Gizmo.h"
 #include "TransformMod.h"
 #include "ConsoleWindow.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit

@@ -13,9 +13,11 @@ namespace ToolKit
 
   SpriteSheet::SpriteSheet()
   {
+    m_type = ResourceType::SpriteSheet;
   }
 
   SpriteSheet::SpriteSheet(String file)
+    : SpriteSheet()
   {
     m_file = file;
   }
@@ -34,7 +36,7 @@ namespace ToolKit
 
     if (FetchEntries())
     {
-      m_spriteSheet = GetTextureManager()->Create(SpritePath(m_imageFile));
+      m_spriteSheet = GetTextureManager()->Create<Texture>(SpritePath(m_imageFile));
       for (auto entry : m_entries)
       {
         Surface* surface = new Surface(m_spriteSheet, entry);
@@ -203,6 +205,15 @@ namespace ToolKit
     }
 
     m_currentTime += deltaTime;
+  }
+
+  SpriteSheetManager::SpriteSheetManager()
+  {
+    m_type = ResourceType::SpriteSheet;
+  }
+
+  SpriteSheetManager::~SpriteSheetManager()
+  {
   }
 
 }

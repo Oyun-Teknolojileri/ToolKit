@@ -46,7 +46,6 @@ namespace ToolKit
     MaterialManager m_materialManager;
     MeshManager m_meshMan;
     ShaderManager m_shaderMan;
-    SkinMeshManager m_skinMeshMan;
     SpriteSheetManager m_spriteSheetMan;
     TextureManager m_textureMan;
 
@@ -59,9 +58,9 @@ namespace ToolKit
   MaterialManager* GetMaterialManager();
   MeshManager* GetMeshManager();
   ShaderManager* GetShaderManager();
-  SkinMeshManager* GetSkinMeshManager();
   SpriteSheetManager* GetSpriteSheetManager();
   TextureManager* GetTextureManager();
+  ResourceManager* GetResourceManager(ResourceType type);
 
   String ResourcePath();
   String TexturePath(const String& file);

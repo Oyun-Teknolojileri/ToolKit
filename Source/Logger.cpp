@@ -24,7 +24,7 @@ namespace ToolKit
     return &m_logger;
   }
 
-  void Logger::Log(String message)
+  void Logger::Log(const std::string& message)
   {
     m_logFile << message << std::endl;
   }

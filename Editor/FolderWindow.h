@@ -15,10 +15,7 @@ namespace ToolKit
       RenderTargetPtr m_thumbNail = nullptr;
       bool m_isDirectory = false;
 
-      String GetFullPath() const
-      {
-        return m_rootPath + GetPathSeparatorAsStr() + m_fileName + m_ext;
-      }
+      String GetFullPath() const;
     };
 
     class FolderWindow;

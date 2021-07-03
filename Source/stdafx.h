@@ -38,6 +38,8 @@
   #include "ImGui/imgui.h"
 #endif 
 
+#include "Logger.h"
+
 // STL
 #include <algorithm>
 #include <assert.h>

@@ -57,6 +57,9 @@ namespace ToolKit
     const String g_saveMesh("SaveMesh");
     void SaveMesh(TagArgArray tagArgs);
 
+    const String g_showSelectionBoundary("ShowSelectionBoundary");
+    void ShowSelectionBoundary(TagArgArray tagArgs);
+
     // Command errors
     const String g_noValidEntity("No valid entity");
 

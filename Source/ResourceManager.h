@@ -1,69 +1,54 @@
 #pragma once
 
-#include "Util.h"
-#include "Logger.h"
-
-#include <memory>
+#include "Types.h"
 #include <unordered_map>
-#include <string>
+#include <memory>
 
 namespace ToolKit
 {
 
-  template <class T>
+  enum class ResourceType
+  {
+    Base,
+    Animation,
+    Audio,
+    Material,
+    Mesh,
+    Shader,
+    SkinMesh,
+    SpriteSheet,
+    Texture,
+    CubeMap,
+    RenderTarget
+  };
+
   class ResourceManager
   {
   public:
+    virtual void Init();
+    virtual void Uninit();
+    virtual ~ResourceManager();
 
-    virtual void Init()
+    virtual ResourcePtr Create(const String& file);
+    virtual ResourcePtr Create(const String& file, ResourceType type);
+
+    template<typename T>
+    std::shared_ptr<T> Create(const String& file)
     {
-      Logger::GetInstance()->Log("Initiating manager " + String(typeid(T).name()));
+      return std::static_pointer_cast<T> (Create(file, m_type));
     }
 
-    virtual void Uninit()
+    template<typename T>
+    std::shared_ptr<T> Create(const String& file, ResourceType type)
     {
-      Logger::GetInstance()->Log("Uninitiating manager " + String(typeid(T).name()));
-      m_storage.clear();
+      return std::static_pointer_cast<T> (Create(file, type));
     }
 
-    virtual ~ResourceManager()
-    {
-      assert(m_storage.size() == 0); // Uninitialize all resources before exit.
-    }
-
-    template<typename Ti = T>
-    std::shared_ptr<T> Create(String file)
-    {
-      if (!Exist(file))
-      {
-        bool fileCheck = CheckFile(file);
-        if (!fileCheck)
-        {
-          Logger::GetInstance()->Log("Missing: " + file);
-          assert(fileCheck);
-        }
-
-        T* resource = new Ti(file);
-        resource->Load();
-        m_storage[file] = std::shared_ptr<T>(resource);
-      }
-
-      return m_storage[file];
-    }
-
-    template<typename Ti>
-    std::shared_ptr<Ti> CreateDerived(String file)
-    {
-      return std::static_pointer_cast<Ti> (Create<Ti>(file));
-    }
-
-    bool Exist(String file)
-    {
-      return m_storage.find(file) != m_storage.end();
-    }
+    bool Exist(String file);
 
   public:
-    std::unordered_map<String, std::shared_ptr<T>> m_storage;
+    std::unordered_map<String, ResourcePtr> m_storage;
+    ResourceType m_type = ResourceType::Base;
   };
 
 }
