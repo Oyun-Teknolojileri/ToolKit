@@ -7,15 +7,19 @@ namespace ToolKit
   namespace Editor
   {
 
-    struct DirectoryEntry
+    class DirectoryEntry
     {
+    public:
+      String GetFullPath() const;
+      ResourceManager* GetManager() const;
+      void GenerateThumbnail();
+      RenderTargetPtr GetThumbnail() const;
+
+    public:
       String m_ext;
       String m_fileName;
       String m_rootPath;
-      RenderTargetPtr m_thumbNail = nullptr;
       bool m_isDirectory = false;
-
-      String GetFullPath() const;
     };
 
     class FolderWindow;
@@ -31,7 +35,6 @@ namespace ToolKit
       const String& GetPath() const;
       void Iterate();
       int Exist(const String& file);
-      void GenerateThumbNail(DirectoryEntry& entry);
 
     private:
       FolderWindow* m_parent = nullptr;
@@ -41,8 +44,7 @@ namespace ToolKit
       bool m_currRoot = false; // Indicates this is a root folder (one level under Resources) and currently selected in the FolderWindow.
       bool m_visible = true;
       bool m_onlyNativeTypes = true;
-      static Vec2 m_iconSize;
-      Vec2 m_thumbnailSize = Vec2(300.0f, 300.0f);
+      Vec2 m_iconSize = Vec2(95.0f);
       std::vector<DirectoryEntry> m_entiries;
       String m_folder;
     };
@@ -53,7 +55,7 @@ namespace ToolKit
       FolderWindow();
       virtual void Show() override;
       virtual Type GetType() const override;
-      void Iterate(const String& path);
+      void Iterate(const String& path, bool clear);
       void UpdateContent();
       void AddEntry(const FolderView& view);
       FolderView& GetView(int indx);

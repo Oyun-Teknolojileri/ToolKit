@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "Scene.h"
+#include "Util.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {

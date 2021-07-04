@@ -67,6 +67,8 @@ namespace ToolKit
       float m_mouseSensitivity = 0.5f;
       MaterialPtr m_highLightMaterial;
       MaterialPtr m_highLightSecondaryMaterial;
+      Vec2 m_thumbnailSize = Vec2(300.0f, 300.0f);
+      std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
 
       // Editor objects.
       Grid* m_grid;

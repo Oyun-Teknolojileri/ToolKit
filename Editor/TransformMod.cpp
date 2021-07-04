@@ -6,6 +6,7 @@
 #include "Viewport.h"
 #include "ConsoleWindow.h"
 #include "Directional.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit

@@ -20,14 +20,23 @@ namespace ToolKit
     void View::DropZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction)
     {
       DirectoryEntry dirEnt;
-      g_app->GetAssetBrowser()->GetFileEntry(file, dirEnt);
+      bool fileExist = g_app->GetAssetBrowser()->GetFileEntry(file, dirEnt);
       uint iconId = fallbackIcon;
 
       ImVec2 texCoords = ImVec2(1.0f, 1.0f);
-      if (dirEnt.m_thumbNail)
+      if (RenderTargetPtr thumb = dirEnt.GetThumbnail())
       {
         texCoords = ImVec2(1.0f, -1.0f);
-        iconId = dirEnt.m_thumbNail->m_textureId;
+        iconId = thumb->m_textureId;
+      }
+      else if (fileExist)
+      {
+        dirEnt.GenerateThumbnail();
+        
+        if (RenderTargetPtr thumb = dirEnt.GetThumbnail())
+        {
+          iconId = thumb->m_textureId;
+        }
       }
 
       if (ImGui::BeginTable("##DropZone", 2))
@@ -55,6 +64,22 @@ namespace ToolKit
         String fullPath = dirEnt.GetFullPath();
         ImGui::Text(fullPath.c_str());
         UI::HelpMarker(LOC + file, fullPath.c_str(), 0.1f);
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TableNextColumn();
+
+        if (ImGui::Button("Reload"))
+        {
+          if (ResourceManager* man = dirEnt.GetManager())
+          {
+            if (man->Exist(file))
+            {
+              man->m_storage[file]->Reload();
+              man->m_storage[file]->Init(false);
+            }
+          }
+        }
 
         ImGui::EndTable();
       }

@@ -143,8 +143,6 @@ namespace ToolKit
     {
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        HandleStates();
-
         g_parent = NULL_ENTITY;
         g_child = NULL_ENTITY;
 

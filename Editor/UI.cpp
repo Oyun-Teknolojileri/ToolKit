@@ -406,7 +406,7 @@ namespace ToolKit
         {
           FolderWindow* wnd = new FolderWindow();
           wnd->m_name = g_assetBrowserStr + "##" + std::to_string(wnd->m_id);
-          wnd->Iterate(ResourcePath());
+          wnd->Iterate(ResourcePath(), true);
           g_app->m_windows.push_back(wnd);
         }
 
@@ -795,6 +795,16 @@ namespace ToolKit
 
       if ((rightClick || leftClick || middleClick) && m_mouseHover) // Activate with any click.
       {
+        if 
+        (
+          ImGui::IsMouseDragging(ImGuiMouseButton_Left) ||
+          ImGui::IsMouseDragging(ImGuiMouseButton_Right) ||
+          ImGui::IsMouseDragging(ImGuiMouseButton_Middle)
+        )
+        {
+          return;
+        }
+
         if (!m_active)
         {
           ImGui::SetWindowFocus();
