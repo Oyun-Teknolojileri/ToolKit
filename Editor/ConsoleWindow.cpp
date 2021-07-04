@@ -8,8 +8,9 @@
 #include "Node.h"
 #include "Directional.h"
 #include "Viewport.h"
-#include "DebugNew.h"
 #include "TransformMod.h"
+#include "util.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -504,8 +505,6 @@ namespace ToolKit
       //ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Once);
       if (ImGui::Begin(g_consoleStr.c_str(), &m_visible))
       {
-        HandleStates();
-
         // Output window.
         const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
         ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar);

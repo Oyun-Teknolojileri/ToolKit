@@ -77,7 +77,7 @@ namespace ToolKit
   // Supported file formats.
   static const String FBX(".fbx");
   static const String GLTF(".gltf");
-  static const String GLB(".gltf");
+  static const String GLB(".glb");
   static const String OBJ(".obj");
   static const String PNG(".png");
   static const String JPG(".jpg");

@@ -14,12 +14,118 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     String DirectoryEntry::GetFullPath() const
     {
       return m_rootPath + GetPathSeparatorAsStr() + m_fileName + m_ext;
     }
 
-    Vec2 FolderView::m_iconSize = Vec2(95.0f);
+    ResourceManager* DirectoryEntry::GetManager() const
+    {
+      if (m_ext == ANIM)
+      {
+        return GetAnimationManager();
+      }
+      else if (m_ext == AUDIO)
+      {
+        return GetAudioManager();
+      }
+      else if (m_ext == MATERIAL)
+      {
+        return GetMaterialManager();
+      }
+      else if (m_ext == MESH)
+      {
+        return GetMeshManager();
+      }
+      else if (m_ext == SHADER)
+      {
+        return GetShaderManager();
+      }
+      else if (SupportedImageFormat(m_ext))
+      {
+        return GetTextureManager();
+      }
+
+      return nullptr;
+    }
+
+    void DirectoryEntry::GenerateThumbnail()
+    {
+      const Vec2& thumbSize = g_app->m_thumbnailSize;
+      auto renderThumbFn = [this, &thumbSize](Camera* cam, Drawable* dw) -> void
+      {
+        RenderTarget* thumb = new RenderTarget((uint)thumbSize.x, (uint)thumbSize.y);
+        thumb->Init();
+        g_app->m_renderer->SwapRenderTarget(&thumb);
+        g_app->m_renderer->Render(dw, cam, g_app->m_sceneLights);
+        g_app->m_renderer->SwapRenderTarget(&thumb, false);
+        g_app->m_thumbnailCache[GetFullPath()] = RenderTargetPtr(thumb);
+      };
+
+      if (m_ext == MESH)
+      {
+        Drawable dw;
+        String fullpath = m_rootPath + GetPathSeparator() + m_fileName + m_ext;
+        dw.m_mesh = GetMeshManager()->Create<Mesh>(fullpath);
+        dw.m_mesh->Init(false);
+
+        // Tight fit a frustum to a bounding sphere
+        // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
+        BoundingBox bb = dw.GetAABB();
+        Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
+        float r = glm::distance(geoCenter, bb.max) * 1.1f; // 10% safezone.
+        float a = glm::radians(45.0f);
+        float d = r / glm::tan(a / 2.0f);
+
+        Vec3 eye = geoCenter + glm::normalize(Vec3(1.0f)) * d;
+
+        Camera cam;
+        cam.SetLens(a, thumbSize.x, thumbSize.y);
+        cam.m_node->SetTranslation(eye);
+        cam.LookAt(geoCenter);
+
+        renderThumbFn(&cam, &dw);
+      }
+      else if (m_ext == MATERIAL)
+      {
+        Sphere ball;
+        String fullpath = m_rootPath + GetPathSeparator() + m_fileName + m_ext;
+        ball.m_mesh->m_material = GetMaterialManager()->Create<Material>(fullpath);
+        ball.m_mesh->Init(false);
+
+        Camera cam;
+        cam.SetLens(glm::half_pi<float>(), thumbSize.x, thumbSize.y);
+        cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 1.5f));
+
+        renderThumbFn(&cam, &ball);
+      }
+      else if (SupportedImageFormat(m_ext))
+      {
+        Quad frame;
+        String fullpath = m_rootPath + GetPathSeparator() + m_fileName + m_ext;
+        frame.m_mesh->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+        frame.m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(fullpath);
+        frame.m_mesh->m_material->m_diffuseTexture->Init(false);
+
+        Camera cam;
+        cam.SetLens(glm::half_pi<float>(), thumbSize.x, thumbSize.y);
+        cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 0.5f));
+
+        renderThumbFn(&cam, &frame);
+      }
+    }
+
+    RenderTargetPtr DirectoryEntry::GetThumbnail() const
+    {
+      String fullPath = GetFullPath();
+      if (g_app->m_thumbnailCache.find(fullPath) != g_app->m_thumbnailCache.end())
+      {
+        return g_app->m_thumbnailCache[fullPath];
+      }
+
+      return nullptr;
+    }
 
     FolderView::FolderView()
     {
@@ -46,7 +152,7 @@ namespace ToolKit
 
         const float icMin = 50.0f;
         const float icMax = 300.0f;
-        if (io.KeyCtrl)
+        if (io.KeyCtrl && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
         {
           m_iconSize += Vec2(delta) * 15.0f;
           if (m_iconSize.x < icMin)
@@ -78,11 +184,11 @@ namespace ToolKit
 
           auto genThumbFn = [&flipRenderTarget, &iconId, &de, this]() -> void
           {
-            if (de.m_thumbNail == nullptr)
+            if (de.GetThumbnail() == nullptr)
             {
-              GenerateThumbNail(de);
+              de.GenerateThumbnail();
             }
-            iconId = de.m_thumbNail->m_textureId;
+            iconId = de.GetThumbnail()->m_textureId;
             flipRenderTarget = true;
           };
 
@@ -243,71 +349,6 @@ namespace ToolKit
       return -1;
     }
 
-    void FolderView::GenerateThumbNail(DirectoryEntry& entry)
-    {
-      auto renderThumbFn = [this, &entry](Camera* cam, Drawable* dw) -> void
-      {
-        RenderTarget* thumb = new RenderTarget((uint)m_thumbnailSize.x, (uint)m_thumbnailSize.y);
-        thumb->Init();
-        g_app->m_renderer->SwapRenderTarget(&thumb);
-        g_app->m_renderer->Render(dw, cam, g_app->m_sceneLights);
-        g_app->m_renderer->SwapRenderTarget(&thumb, false);
-        entry.m_thumbNail = RenderTargetPtr(thumb);
-      };
-
-      if (entry.m_ext == MESH)
-      {
-        Drawable dw;
-        String fullpath = entry.m_rootPath + GetPathSeparator() + entry.m_fileName + entry.m_ext;
-        dw.m_mesh = GetMeshManager()->Create<Mesh>(fullpath);
-        dw.m_mesh->Init(false);
-
-        // Tight fit a frustum to a bounding sphere
-        // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
-        BoundingBox bb = dw.GetAABB();
-        Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
-        float r = glm::distance(geoCenter, bb.max) * 1.1f; // 10% safezone.
-        float a = glm::radians(45.0f);
-        float d = r / glm::tan(a / 2.0f);
-
-        Vec3 eye = geoCenter + glm::normalize(Vec3(1.0f)) * d;
-
-        Camera cam;
-        cam.SetLens(a, m_thumbnailSize.x, m_thumbnailSize.y);
-        cam.m_node->SetTranslation(eye);
-        cam.LookAt(geoCenter);
-
-        renderThumbFn(&cam, &dw);
-      }
-      else if (entry.m_ext == MATERIAL)
-      {
-        Sphere ball;
-        String fullpath = entry.m_rootPath + GetPathSeparator() + entry.m_fileName + entry.m_ext;
-        ball.m_mesh->m_material = GetMaterialManager()->Create<Material>(fullpath);
-        ball.m_mesh->Init(false);
-
-        Camera cam;
-        cam.SetLens(glm::half_pi<float>(), m_thumbnailSize.x, m_thumbnailSize.y);
-        cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 1.5f));
-
-        renderThumbFn(&cam, &ball);
-      }
-      else if (SupportedImageFormat(entry.m_ext))
-      {
-        Quad frame;
-        String fullpath = entry.m_rootPath + GetPathSeparator() + entry.m_fileName + entry.m_ext;
-        frame.m_mesh->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-        frame.m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(fullpath);
-        frame.m_mesh->m_material->m_diffuseTexture->Init(false);
-
-        Camera cam;
-        cam.SetLens(glm::half_pi<float>(), m_thumbnailSize.x, m_thumbnailSize.y);
-        cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 0.5f));
-
-        renderThumbFn(&cam, &frame);
-      }
-    }
-
     FolderWindow::FolderWindow()
     {
     }
@@ -316,8 +357,6 @@ namespace ToolKit
     {
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        HandleStates();
-
         auto IsRootFn = [](const String& path)
         {
           return std::count(path.begin(), path.end(), GetPathSeparator()) == 2;
@@ -391,22 +430,28 @@ namespace ToolKit
         ImGui::BeginGroup();
         if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_NoTooltip | ImGuiTabBarFlags_AutoSelectNewTabs))
         {
+          String currRootPath; 
+          auto IsDescendentFn = [&currRootPath](String candidate) -> bool
+          {
+            return !currRootPath.empty() && candidate.find(currRootPath) != std::string::npos;
+          };
+
           for (int i = 0; i < (int)m_entiries.size(); i++)
           {
-            m_entiries[i].m_currRoot = (i == m_activeFolder);
-            if (IsRootFn(m_entiries[i].GetPath()))
+            String candidate = m_entiries[i].GetPath();
+            if (m_entiries[i].m_currRoot = (i == m_activeFolder))
             {
-              if (!m_entiries[i].m_currRoot)
-              {
-                // Show only current root folder and all sub folders.
-                continue;
-              }
+              currRootPath = candidate;
             }
-            m_entiries[i].Show();
+            
+            // Show only current root folder or descendents.
+            if (m_entiries[i].m_currRoot || IsDescendentFn(candidate))
+            {
+              m_entiries[i].Show();
+            }
           }
           ImGui::EndTabBar();
         }
-
 
         ImGui::EndGroup();
         ImGui::PopID();
@@ -420,11 +465,15 @@ namespace ToolKit
       return Window::Type::Browser;
     }
 
-    void FolderWindow::Iterate(const String& path)
+    void FolderWindow::Iterate(const String& path, bool clear)
     {
       using namespace std::filesystem;
 
-      m_entiries.clear();
+      if (clear)
+      {
+        m_entiries.clear();
+      }
+      
       for (const directory_entry& e : directory_iterator(path))
       {
         if (e.is_directory())
@@ -433,6 +482,7 @@ namespace ToolKit
           view.SetPath(e.path().u8string());
           view.Iterate();
           m_entiries.push_back(view);
+          Iterate(view.GetPath(), false);
         }
       }
     }

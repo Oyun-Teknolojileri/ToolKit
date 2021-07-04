@@ -22,7 +22,7 @@
 #include <filesystem>
 #include <cstdlib>
 
-#define TK_SAMPLE_SCENE
+//#define TK_SAMPLE_SCENE
 
 namespace ToolKit
 {
@@ -59,7 +59,7 @@ namespace ToolKit
       m_suzanne = new Drawable();
       m_suzanne->m_node->SetTranslation({ 0.0f, 0.0f, -5.0f });
       m_suzanne->m_node->SetOrientation(glm::angleAxis(-glm::half_pi<float>(), X_AXIS));
-      Mesh* szm = GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh"))->GetCopy();
+      Mesh* szm = GetMeshManager()->Create<Mesh>(MeshPath("Suzanne.mesh"))->GetCopy();
       szm->Init(false);
       m_suzanne->m_mesh = MeshPtr(szm);
       m_scene.AddEntity(m_suzanne);
@@ -169,7 +169,7 @@ namespace ToolKit
 
       FolderWindow* assetBrowser = new FolderWindow();
       assetBrowser->m_name = g_assetBrowserStr;
-      assetBrowser->Iterate(ResourcePath());
+      assetBrowser->Iterate(ResourcePath(), true);
       m_windows.push_back(assetBrowser);
 
       OutlinerWindow* outliner = new OutlinerWindow();

@@ -4,6 +4,7 @@
 #include "ToolKit.h"
 #include "Skeleton.h"
 #include "MathUtil.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit
