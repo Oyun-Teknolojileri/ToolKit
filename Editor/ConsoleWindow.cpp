@@ -517,6 +517,10 @@ namespace ToolKit
             continue;
           }
 
+          String lineNum = std::to_string(i) + ":  ";
+          ImGui::TextUnformatted(lineNum.c_str());
+          ImGui::SameLine();
+
           bool pop_color = false;
           if (strstr(item, g_errorStr.c_str()))
           {
