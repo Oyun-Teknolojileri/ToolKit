@@ -188,7 +188,7 @@ namespace ToolKit
     public:
       // Picking data.
       std::vector<Vec2> m_mouseData;
-      std::vector<Scene::PickData> m_pickData;
+      std::vector<EditorScene::PickData> m_pickData;
       EntityIdArray m_ignoreList;
 
       // Debug models.

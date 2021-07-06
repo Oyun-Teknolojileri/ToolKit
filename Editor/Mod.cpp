@@ -529,7 +529,7 @@ namespace ToolKit
 
     void StatePickingBase::PickDataToEntityId(EntityIdArray& ids)
     {
-      for (Scene::PickData& pd : m_pickData)
+      for (EditorScene::PickData& pd : m_pickData)
       {
         if (pd.entity != nullptr)
         {
@@ -565,7 +565,7 @@ namespace ToolKit
           m_mouseData[0] = vp->GetLastMousePosScreenSpace();
 
           Ray ray = vp->RayFromMousePosition();
-          Scene::PickData pd = g_app->m_scene.PickObject(ray, m_ignoreList);
+          EditorScene::PickData pd = g_app->m_scene.PickObject(ray, m_ignoreList);
           m_pickData.push_back(pd);
 
           if (g_app->m_showPickingDebug)
@@ -671,7 +671,7 @@ namespace ToolKit
           frustum.planes[5] = PlaneFrom(planePnts.data());
 
           // Perform picking.
-          std::vector<Scene::PickData> ntties;
+          std::vector<EditorScene::PickData> ntties;
           g_app->m_scene.PickObject(frustum, ntties, m_ignoreList);
           m_pickData.insert(m_pickData.end(), ntties.begin(), ntties.end());
 
@@ -886,7 +886,7 @@ namespace ToolKit
       if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick)
       {
         StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
-        Scene::PickData& pd = endPick->m_pickData.back();
+        EditorScene::PickData& pd = endPick->m_pickData.back();
         g_app->m_cursor->m_worldLocation = pd.pickPos;
 
         m_stateMachine->Signal(BaseMod::m_backToStart);

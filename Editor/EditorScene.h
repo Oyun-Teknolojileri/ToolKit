@@ -1,26 +1,17 @@
 #pragma once
 
 #include "ToolKit.h"
+#include "Scene.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
-    class Scene
+    class EditorScene : public Scene
     {
     public:
-      Scene();
-      ~Scene();
-
-      // Scene queries.
-      struct PickData
-      {
-        Vec3 pickPos;
-        Entity* entity = nullptr;
-      };
-
-      PickData PickObject(Ray ray, const EntityIdArray& ignoreList = EntityIdArray()) const;
-      void PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const EntityIdArray& ignoreList = EntityIdArray(), bool pickPartiallyInside = true) const;
+      EditorScene();
+      virtual ~EditorScene();
 
       // Selection operations.
       bool IsSelected(EntityId id) const;
@@ -35,26 +26,16 @@ namespace ToolKit
       Entity* GetCurrentSelection() const;
 
       // Entity operations.
-      Entity* GetEntity(EntityId id) const;
-      void AddEntity(Entity* entity);
-      Entity* RemoveEntity(EntityId id);
-      const EntityRawPtrArray& GetEntities() const;
+      virtual Entity* RemoveEntity(EntityId id) override;
+      virtual void Destroy() override;
       void GetSelectedEntities(EntityRawPtrArray& entities) const;
       void GetSelectedEntities(EntityIdArray& entities) const;
-      void Destroy();
-
-      EntityRawPtrArray GetByTag(const String& tag);
       void SelectByTag(const String& tag);
 
-      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
-
     public:
-      String m_name;
       bool m_newScene; // Indicates if this is created via new scene. That is not saved on the disk.
 
     private:
-      EntityRawPtrArray m_entitites;
       EntityIdArray m_selectedEntities;
     };
   }

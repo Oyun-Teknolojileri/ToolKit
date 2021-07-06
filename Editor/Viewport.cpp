@@ -534,7 +534,7 @@ namespace ToolKit
           if (!hitFound)
           {
             Ray orbitRay = RayFromMousePosition();
-            Scene::PickData pd = g_app->m_scene.PickObject(orbitRay);
+            EditorScene::PickData pd = g_app->m_scene.PickObject(orbitRay);
 
             if (pd.entity == nullptr)
             {

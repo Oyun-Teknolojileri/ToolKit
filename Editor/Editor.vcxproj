@@ -107,7 +107,7 @@
     <ClCompile Include="OutlinerWindow.cpp" />
     <ClCompile Include="PropInspector.cpp" />
     <ClCompile Include="TransformMod.cpp" />
-    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="EditorScene.cpp" />
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="ImGui\imgui.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -161,7 +161,7 @@
     <ClInclude Include="OutlinerWindow.h" />
     <ClInclude Include="PropInspector.h" />
     <ClInclude Include="TransformMod.h" />
-    <ClInclude Include="Scene.h" />
+    <ClInclude Include="EditorScene.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="Mod.h" />
     <ClInclude Include="OverlayUI.h" />
