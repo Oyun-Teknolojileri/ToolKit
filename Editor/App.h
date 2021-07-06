@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ToolKit.h"
-#include "Scene.h"
+#include "EditorScene.h"
 
 namespace ToolKit
 {
@@ -57,7 +57,7 @@ namespace ToolKit
       void RenderSelected(Viewport* vp);
 
     public:
-      Scene m_scene;
+      EditorScene m_scene;
 
       // UI elements.
       std::vector<Window*> m_windows;
