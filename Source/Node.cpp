@@ -17,9 +17,9 @@ namespace ToolKit
   Node::~Node()
   {
     OrphanSelf(true);
-    for (Node* child : m_children)
+    for (int i = (int)m_children.size() - 1; i >= 0; i--)
     {
-      Orphan(child, true);
+      Orphan(m_children[i], true);
     }
   }
 
