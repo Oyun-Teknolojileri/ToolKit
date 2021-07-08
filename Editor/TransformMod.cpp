@@ -71,7 +71,7 @@ namespace ToolKit
       }
     }
 
-    ToolKit::Vec3 StateTransformBase::GetGrabbedAxis(int n)
+    Vec3 StateTransformBase::GetGrabbedAxis(int n)
     {
       Vec3 axes[3];
       ExtractAxes(m_gizmo->m_normalVectors, axes[0], axes[1], axes[2]);

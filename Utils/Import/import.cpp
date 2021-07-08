@@ -364,14 +364,20 @@ void SearchMesh(ofstream& sceneFile, const aiScene* scene, string filePath, aiNo
     file.close();
   }
 
+  int etype = 9; // Drawable
+  if (meshPath.empty())
+  {
+    etype = 0; // Base. Empty entities are used for transform nodes.
+  }
+
   // Write Entity.
   if (parentId != -1)
   {
-    sceneFile << "  <E i=\"" + std::to_string(thisId) + "\" pi=\"" + std::to_string(parentId) + "\" t=\"9\">\n";
+    sceneFile << "  <E i=\"" + std::to_string(thisId) + "\" pi=\"" + std::to_string(parentId) + "\" t=\"" + std::to_string(etype) + "\">\n";
   }
   else
   {
-    sceneFile << "  <E i=\"" + std::to_string(thisId) + "\" t=\"9\">\n";
+    sceneFile << "  <E i=\"" + std::to_string(thisId) + "\" t=\"" + std::to_string(etype) + "\">\n";
   }
 
   sceneFile << "    <N is=\"1\">\n";

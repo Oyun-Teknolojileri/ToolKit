@@ -15,6 +15,7 @@ namespace ToolKit
     class Viewport : public Window
     {
     public:
+      Viewport(XmlNode* node);
       Viewport(float width, float height);
       virtual ~Viewport();
       virtual void Show() override;
@@ -35,6 +36,9 @@ namespace ToolKit
       Vec2 GetLastMousePosScreenSpace();
       Vec3 TransformViewportToWorldSpace(const Vec2& pnt);
       Vec2 TransformScreenToViewportSpace(const Vec2& pnt);
+
+      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     private:
       // Mods.
@@ -58,7 +62,7 @@ namespace ToolKit
 
       static class OverlayMods* m_overlayMods;
       static class OverlayViewportOptions* m_overlayOptions;
-      bool m_mouseOverOverlay;
+      bool m_mouseOverOverlay = false;
       int m_cameraAlignment = 0; // 0: perspective, 1: top, 2: front, 3:left.
 
       // UI Draw commands.

@@ -16,6 +16,7 @@
 #include "OverlayUI.h"
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -784,6 +785,42 @@ namespace ToolKit
     {
     }
 
+    void Window::Serialize(XmlDocument* doc, XmlNode* parent) const
+    {
+      XmlNode* node = doc->allocate_node(rapidxml::node_element, "Window");
+      if (parent != nullptr)
+      {
+        parent->append_node(node);
+      }
+      else
+      {
+        doc->append_node(node);
+      }
+
+      WriteAttr(node, doc, "name", m_name);
+      WriteAttr(node, doc, "id", std::to_string(m_id));
+      WriteAttr(node, doc, "type", std::to_string((int)GetType()));
+      WriteAttr(node, doc, "visible", std::to_string((int)m_visible));
+    }
+
+    void Window::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    {
+      XmlNode* node = nullptr;
+      if (parent != nullptr)
+      {
+        node = parent;
+      }
+      else
+      {
+        node = doc->first_node("Window");
+      }
+
+      ReadAttr(node, "name", m_name);
+      ReadAttr(node, "id", m_id);
+      // Type is determined by the corrsesponding constructor.
+      ReadAttr(node, "visible", m_visible);
+    }
+
     void Window::HandleStates()
     {
       ImGui::GetIO().WantCaptureMouse = true;
@@ -873,6 +910,15 @@ namespace ToolKit
       m_msg = msg;
     }
 
+    YesNoWindow::YesNoWindow(const String& name, const String& yesBtnText, const String& noBtnText, const String& msg, bool showCancel)
+    {
+      m_name = name;
+      m_yesText = yesBtnText;
+      m_noText = noBtnText;
+      m_msg = msg;
+      m_showCancel = showCancel;
+    }
+
     void YesNoWindow::Show()
     {
       if (!m_visible)
@@ -888,7 +934,7 @@ namespace ToolKit
           ImGui::Text(m_msg.c_str());
         }
 
-        if (ImGui::Button("Yes", ImVec2(120, 0)))
+        if (ImGui::Button(m_yesText.empty() ? "Yes" : m_yesText.c_str(), ImVec2(120, 0)))
         {
           m_visible = false;
           m_yesCallback();
@@ -896,11 +942,22 @@ namespace ToolKit
         }
         ImGui::SetItemDefaultFocus();
         ImGui::SameLine();
-        if (ImGui::Button("No", ImVec2(120, 0)))
+
+        if (ImGui::Button(m_noText.empty() ? "No" : m_noText.c_str(), ImVec2(120, 0)))
         {
           m_visible = false;
           m_noCallback();
           ImGui::CloseCurrentPopup();
+        }
+
+        if (m_showCancel)
+        {
+          ImGui::SameLine();
+          if (ImGui::Button("Cancel", ImVec2(120, 0)))
+          {
+            m_visible = false;
+            ImGui::CloseCurrentPopup();
+          }
         }
 
         ImGui::EndPopup();

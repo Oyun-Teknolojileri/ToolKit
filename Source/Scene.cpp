@@ -175,7 +175,8 @@ namespace ToolKit
     file.open(fileName.c_str(), std::ios::out);
     if (file.is_open())
     {
-      XmlNode* scene = doc->allocate_node(rapidxml::node_element, XmlSceneElement.c_str(), m_name.c_str());
+      XmlNode* scene = doc->allocate_node(rapidxml::node_element, XmlSceneElement.c_str());
+      WriteAttr(scene, doc, "name", m_name.c_str());
 
       if (parent != nullptr)
       {
@@ -212,6 +213,8 @@ namespace ToolKit
       root = doc->first_node(XmlSceneElement.c_str());
     }
 
+    ReadAttr(root, "name", m_name);
+
     XmlNode* node = nullptr;
     for (node = root->first_node(XmlEntityElement.c_str()); node; node = node->next_sibling(XmlEntityElement.c_str()))
     {
@@ -221,6 +224,8 @@ namespace ToolKit
       switch (et)
       {
       case EntityType::Entity_Base:
+        ntt = new Entity(); // Empty entities are used for transform hierarchy.
+        break;
       case EntityType::Entity_AudioSource:
         continue;
       case EntityType::Entity_Billboard:
@@ -255,6 +260,7 @@ namespace ToolKit
       case EntityType::Entity_Directional:
         continue;
       default:
+        assert(false);
         continue;
       }
 

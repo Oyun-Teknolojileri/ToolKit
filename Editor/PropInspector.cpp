@@ -414,6 +414,12 @@ namespace ToolKit
     // PropInspector
     //////////////////////////////////////////////////////////////////////////
 
+    PropInspector::PropInspector(XmlNode* node)
+      : PropInspector()
+    {
+      DeSerialize(nullptr, node);
+    }
+
     PropInspector::PropInspector()
     {
       m_views.push_back(new EntityView());

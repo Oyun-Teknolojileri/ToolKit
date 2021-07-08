@@ -146,39 +146,48 @@ namespace ToolKit
       light->Yaw(glm::radians(-140.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
+      
+      // Set last window layout.
+      if (CheckFile("..//Resources//Editor.settings") && !m_onNewScene)
+      {
+        DeSerialize(nullptr, nullptr);
+      }
+      else
+      {
+        // Default UI
+        
+        // Perspective.
+        Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+        vp->m_name = "Perspective";
+        vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
+        vp->m_camera->LookAt(Vec3(0.0f));
+        m_windows.push_back(vp);
 
-      // UI.
-      // Perspective.
-      Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
-      vp->m_name = "Perspective";
-      vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
-      vp->m_camera->LookAt(Vec3(0.0f));
-      m_windows.push_back(vp);
+        // Orthographic.
+        vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+        vp->m_name = "Orthographic";
+        vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
+        vp->m_camera->Pitch(glm::radians(-90.0f));
+        vp->m_cameraAlignment = 1;
+        vp->m_orthographic = true;
+        m_windows.push_back(vp);
 
-      // Orthographic.
-      vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
-      vp->m_name = "Orthographic";
-      vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
-      vp->m_camera->Pitch(glm::radians(-90.0f));
-      vp->m_cameraAlignment = 1;
-      vp->m_orthographic = true;
-      m_windows.push_back(vp);
+        ConsoleWindow* console = new ConsoleWindow();
+        m_windows.push_back(console);
 
-      ConsoleWindow* console = new ConsoleWindow();
-      m_windows.push_back(console);
+        FolderWindow* assetBrowser = new FolderWindow();
+        assetBrowser->m_name = g_assetBrowserStr;
+        assetBrowser->Iterate(ResourcePath(), true);
+        m_windows.push_back(assetBrowser);
 
-      FolderWindow* assetBrowser = new FolderWindow();
-      assetBrowser->m_name = g_assetBrowserStr;
-      assetBrowser->Iterate(ResourcePath(), true);
-      m_windows.push_back(assetBrowser);
+        OutlinerWindow* outliner = new OutlinerWindow();
+        outliner->m_name = g_outlinerStr;
+        m_windows.push_back(outliner);
 
-      OutlinerWindow* outliner = new OutlinerWindow();
-      outliner->m_name = g_outlinerStr;
-      m_windows.push_back(outliner);
-
-      PropInspector* inspector = new PropInspector();
-      inspector->m_name = g_propInspector;
-      m_windows.push_back(inspector);
+        PropInspector* inspector = new PropInspector();
+        inspector->m_name = g_propInspector;
+        m_windows.push_back(inspector);
+      }
 
       UI::InitIcons();
     }
@@ -331,6 +340,8 @@ namespace ToolKit
 
     void App::OnNewScene(const String& name)
     {
+      m_onNewScene = true;
+
       Destroy();
       Init();
       m_scene.m_name = name;
@@ -376,8 +387,9 @@ namespace ToolKit
       if (!processing)
       {
         YesNoWindow* reallyQuit = new YesNoWindow("Quiting... Are you sure?##ClsApp");
-        reallyQuit->m_yesCallback = []()
+        reallyQuit->m_yesCallback = [this]()
         {
+          Serialize(nullptr, nullptr);
           g_running = false;
         };
 
@@ -622,6 +634,51 @@ namespace ToolKit
       return false;
     }
 
+    void App::OpenScene(const String& fullPath)
+    {
+      XmlFile sceneFile(fullPath.c_str());
+      XmlDocument sceneDoc;
+      sceneDoc.parse<0>(sceneFile.data());
+      
+      m_scene.Destroy();
+      m_scene.DeSerialize(&sceneDoc, nullptr);
+      m_scene.m_newScene = false;
+
+      const EntityRawPtrArray& ntties = m_scene.GetEntities();
+      for (Entity* ntt : ntties)
+      {
+        if (ntt->IsDrawable())
+        {
+          static_cast<Drawable*> (ntt)->m_mesh->Init(false);
+        }
+      }
+    }
+
+    void App::MergeScene(const String& fullPath)
+    {
+      XmlFile file(fullPath.c_str());
+      XmlDocument doc;
+      doc.parse<0>(file.data());
+
+      const EntityRawPtrArray& ntties = m_scene.GetEntities();
+      size_t lastSize = ntties.size();
+      m_scene.DeSerialize(&doc, nullptr);
+      size_t thisSize = ntties.size();
+
+      if (lastSize < thisSize)
+      {
+        for (size_t i = lastSize; i < thisSize; i++)
+        {
+          Entity* e = ntties[i];
+          if (e->IsDrawable())
+          {
+            Drawable* dw = static_cast<Drawable*> (e);
+            dw->m_mesh->Init(false);
+          }
+        }
+      }
+    }
+
     Viewport* App::GetActiveViewport()
     {
       for (Window* wnd : m_windows)
@@ -759,5 +816,90 @@ namespace ToolKit
         m_perFrameDebugObjects.push_back(GenerateBoundingVolumeGeometry(dw->GetAABB(true)));
       }
     }
+
+    void App::Serialize(XmlDocument* doc, XmlNode* parent) const
+    {
+      std::ofstream file;
+      String fileName = "..//Resources//Editor.settings";
+
+      file.open(fileName.c_str(), std::ios::out);
+      if (file.is_open())
+      {
+        XmlDocument appDoc;
+        XmlNode* app = appDoc.allocate_node(rapidxml::node_element, "App");
+        appDoc.append_node(app);
+        for (Window* w : m_windows)
+        {
+          w->Serialize(&appDoc, app);
+        }
+
+        if (!m_scene.m_newScene)
+        {
+          WriteAttr(app, &appDoc, "scene", m_scene.m_name);
+        }
+
+        std::string xml;
+        rapidxml::print(std::back_inserter(xml), appDoc, 0);
+
+        file << xml;
+        file.close();
+        appDoc.clear();
+      }
+    }
+
+    void App::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    {
+      XmlFile file("..//Resources//Editor.settings");
+      XmlDocument appDoc;
+      appDoc.parse<0>(file.data());
+
+      if (XmlNode* root = appDoc.first_node("App"))
+      {
+        // Windows
+        XmlNode* wndNode = root->first_node("Window");
+        do 
+        {
+          int type;
+          ReadAttr(wndNode, "type", type);
+
+          Window* wnd = nullptr;
+          switch ((Window::Type)type)
+          {
+          case Window::Type::Viewport:
+            wnd = new Viewport(wndNode);
+            break;
+          case Window::Type::Console:
+            wnd = new ConsoleWindow(wndNode);
+            break;
+          case Window::Type::Outliner:
+            wnd = new OutlinerWindow(wndNode);
+            break;
+          case Window::Type::Browser:
+            wnd = new FolderWindow(wndNode);
+            break;
+          case Window::Type::Inspector:
+            wnd = new PropInspector(wndNode);
+            break;
+          default:
+            assert(false);
+            break;
+          }
+
+          if (wnd)
+          {
+            m_windows.push_back(wnd);
+          }
+        } while (wndNode = wndNode->next_sibling("Window"));
+
+        String scene;
+        ReadAttr(root, "scene", scene);
+        if (!scene.empty())
+        {
+          String fullPath = ScenePath(scene + SCENE);
+          OpenScene(fullPath);
+        }
+      }
+    }
+
   }
 }

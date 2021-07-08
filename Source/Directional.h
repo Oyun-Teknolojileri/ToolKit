@@ -22,6 +22,9 @@ namespace ToolKit
     Vec3 GetRight() const;
 
     virtual EntityType GetType() const override;
+
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override {};
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override {};
   };
 
   class Camera : public Directional
@@ -40,6 +43,7 @@ namespace ToolKit
     };
 
   public:
+    Camera(XmlNode* node);
     Camera();
     ~Camera();
 
@@ -53,12 +57,20 @@ namespace ToolKit
     CamData GetData() const;
     virtual EntityType GetType() const override;
 
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
   private:
-    float m_fov;
-    float m_aspect;
-    float m_near;
-    float m_height;
-    bool m_ortographic;
+    float m_fov = 1.0f;
+    float m_aspect = 1.0f;
+    float m_near = 0.01f;
+    float m_far = 1000.0f;
+    float m_height = 400.0f;
+    float m_left = 10.0f;
+    float m_right = 10.0f;
+    float m_bottom = 10.0f;
+    float m_top = 10.0f;
+    bool m_ortographic = false;
     Mat4 m_projection;
   };
 

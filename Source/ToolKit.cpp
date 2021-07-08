@@ -186,7 +186,7 @@ namespace ToolKit
     return path;
   }
 
-  ToolKit::String ScenePath(const String& file)
+  String ScenePath(const String& file)
   {
     String path = "..\\Resources\\Scenes\\";
     path += file;

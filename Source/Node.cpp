@@ -450,7 +450,7 @@ namespace ToolKit
     }
   }
 
-  ToolKit::Mat4 Node::GetLocalTransform() const
+  Mat4 Node::GetLocalTransform() const
   {
     Mat4 ts, rt, scl;
     scl = glm::scale(scl, m_scale);

@@ -17,7 +17,7 @@ namespace ToolKit
 
     String DirectoryEntry::GetFullPath() const
     {
-      return m_rootPath + GetPathSeparatorAsStr() + m_fileName + m_ext;
+      return ConcatPaths({ m_rootPath, m_fileName + m_ext });
     }
 
     ResourceManager* DirectoryEntry::GetManager() const
@@ -349,7 +349,17 @@ namespace ToolKit
       return -1;
     }
 
+    FolderWindow::FolderWindow(XmlNode* node)
+    {
+      DeSerialize(nullptr, node);
+      Iterate(ResourcePath(), true);
+    }
+
     FolderWindow::FolderWindow()
+    {
+    }
+
+    FolderWindow::~FolderWindow()
     {
     }
 
@@ -537,6 +547,27 @@ namespace ToolKit
       }
 
       return false;
+    }
+
+    void FolderWindow::Serialize(XmlDocument* doc, XmlNode* parent) const
+    {
+      Window::Serialize(doc, parent);
+      XmlNode* node = parent->last_node();
+
+      XmlNode* folder = doc->allocate_node(rapidxml::node_element, "FolderWindow");
+      node->append_node(folder);
+      WriteAttr(folder, doc, "activeFolder", std::to_string(m_activeFolder));
+      WriteAttr(folder, doc, "showStructure", std::to_string(m_showStructure));
+    }
+
+    void FolderWindow::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    {
+      Window::DeSerialize(doc, parent);
+      if (XmlNode* node = parent->first_node("FolderWindow"))
+      {
+        ReadAttr(node, "activeFolder", m_activeFolder);
+        ReadAttr(node, "showStructure", m_showStructure);
+      }
     }
 
   }

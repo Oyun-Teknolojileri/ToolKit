@@ -477,6 +477,12 @@ namespace ToolKit
     static char* Strdup(const char* str) { size_t len = strlen(str) + 1; void* buf = malloc(len); IM_ASSERT(buf); return (char*)memcpy(buf, (const void*)str, len); }
     static void Strtrim(char* str) { char* str_end = str + strlen(str); while (str_end > str && str_end[-1] == ' ') str_end--; *str_end = 0; }
 
+    ConsoleWindow::ConsoleWindow(XmlNode* node)
+      : ConsoleWindow()
+    {
+      DeSerialize(nullptr, node);
+    }
+
     ConsoleWindow::ConsoleWindow()
     {
       CreateCommand(g_showPickDebugCmd, ShowPickDebugExec);
