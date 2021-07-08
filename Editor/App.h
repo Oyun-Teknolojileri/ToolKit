@@ -25,7 +25,7 @@ namespace ToolKit
     class Window;
     class Gizmo;
 
-    class App
+    class App : Serializable
     {
     public:
       App(int windowWidth, int windowHeight);
@@ -42,6 +42,8 @@ namespace ToolKit
       // Import facilities.
       int Import(const String& fullPath, const String& subDir, bool overwrite);
       bool CanImport(const String& fullPath);
+      void OpenScene(const String& fullPath);
+      void MergeScene(const String& fullPath);
 
       Viewport* GetActiveViewport(); // Returns open and active viewport or nullptr.
       Viewport* GetViewport(const String& name);
@@ -55,6 +57,9 @@ namespace ToolKit
 
       // Quick selected render implementation.
       void RenderSelected(Viewport* vp);
+
+      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     public:
       EditorScene m_scene;
@@ -101,6 +106,7 @@ namespace ToolKit
       Renderer* m_renderer;
 
     private:
+      bool m_onNewScene = false;
       Drawable* m_suzanne;
       Drawable* m_knight;
       std::shared_ptr<Animation> m_knightRunAnim;

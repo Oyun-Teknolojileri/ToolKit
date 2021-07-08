@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Directional.h"
 #include "Node.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -73,6 +74,20 @@ namespace ToolKit
     return EntityType::Entity_Directional;
   }
 
+  Camera::Camera(XmlNode* node)
+  {
+    DeSerialize(nullptr, node);
+
+    if (m_ortographic)
+    {
+      SetLens(m_aspect, m_left, m_right, m_top, m_bottom, m_near, m_far);
+    }
+    else
+    {
+      SetLens(m_fov, m_aspect * m_height, m_height);
+    }
+  }
+
   Camera::Camera()
   {
     SetLens(glm::radians(90.0f), 640.0f, 480.0f, 0.01f, 1000.0f);
@@ -93,6 +108,7 @@ namespace ToolKit
     m_fov = fov;
     m_aspect = width / height;
     m_near = near;
+    m_far = far;
     m_height = height;
     m_ortographic = false;
   }
@@ -100,9 +116,14 @@ namespace ToolKit
   void Camera::SetLens(float aspect, float left, float right, float bottom, float top, float near, float far)
   {
     m_projection = glm::ortho(left * aspect, right * aspect, bottom, top, near, far);
+    m_left = left;
+    m_right = right;
+    m_top = top;
+    m_bottom = bottom;
     m_fov = 0.0f;
     m_aspect = aspect;
     m_near = near;
+    m_far = far;
     m_height = top - bottom;
     m_ortographic = true;
   }
@@ -166,6 +187,44 @@ namespace ToolKit
   EntityType Camera::GetType() const
   {
     return EntityType::Entity_Camera;
+  }
+
+  void Camera::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+    Entity::Serialize(doc, parent);
+    parent = parent->last_node();
+    
+    XmlNode* node = doc->allocate_node(rapidxml::node_element, "Camera");
+    parent->append_node(node);
+
+    WriteAttr(node, doc, "fov", std::to_string(m_fov));
+    WriteAttr(node, doc, "aspect", std::to_string(m_aspect));
+    WriteAttr(node, doc, "near", std::to_string(m_near));
+    WriteAttr(node, doc, "far", std::to_string(m_far));
+    WriteAttr(node, doc, "height", std::to_string(m_height));
+    WriteAttr(node, doc, "ortographic", std::to_string(m_ortographic));
+    WriteAttr(node, doc, "left", std::to_string(m_left));
+    WriteAttr(node, doc, "right", std::to_string(m_right));
+    WriteAttr(node, doc, "top", std::to_string(m_top));
+    WriteAttr(node, doc, "bottom", std::to_string(m_bottom));
+  }
+
+  void Camera::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    Entity::DeSerialize(doc, parent);
+    if (XmlNode* node = parent->first_node("Camera"))
+    {
+      ReadAttr(node, "fov", m_fov);
+      ReadAttr(node, "aspect", m_aspect);
+      ReadAttr(node, "near", m_near);
+      ReadAttr(node, "far", m_far);
+      ReadAttr(node, "height", m_height);
+      ReadAttr(node, "ortographic", m_ortographic);
+      ReadAttr(node, "left", m_left);
+      ReadAttr(node, "right", m_right);
+      ReadAttr(node, "top", m_top);
+      ReadAttr(node, "bottom", m_bottom);
+    }
   }
 
   Light::Light()

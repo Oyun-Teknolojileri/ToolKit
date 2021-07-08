@@ -50,6 +50,7 @@ namespace ToolKit
     class PropInspector : public Window
     {
     public:
+      PropInspector(XmlNode* node);
       PropInspector();
       virtual ~PropInspector();
 

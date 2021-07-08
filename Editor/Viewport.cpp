@@ -14,6 +14,7 @@
 #include "ConsoleWindow.h"
 #include "Gizmo.h"
 #include "Mod.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -24,6 +25,24 @@ namespace ToolKit
     uint Viewport::m_nextId = 1;
     OverlayMods* Viewport::m_overlayMods = nullptr;
     OverlayViewportOptions* Viewport::m_overlayOptions = nullptr;
+
+    Viewport::Viewport(XmlNode* node)
+    {
+      DeSerialize(nullptr, node);
+
+      m_viewportImage = new RenderTarget((uint)m_width, (uint)m_height);
+      m_viewportImage->Init();
+
+      if (m_overlayMods == nullptr)
+      {
+        m_overlayMods = new OverlayMods(this);
+      }
+
+      if (m_overlayOptions == nullptr)
+      {
+        m_overlayOptions = new OverlayViewportOptions(this);
+      }
+    }
 
     Viewport::Viewport(float width, float height)
       : m_width(width), m_height(height)
@@ -111,24 +130,6 @@ namespace ToolKit
           }
         }
 
-        if (g_app->m_showOverlayUI)
-        {
-          if (IsActive() || g_app->m_showOverlayUIAlways)
-          {
-            if (m_overlayMods != nullptr)
-            {
-              m_overlayMods->m_owner = this;
-              m_overlayMods->Show();
-            }
-
-            if (m_overlayOptions != nullptr)
-            {
-              m_overlayOptions->m_owner = this;
-              m_overlayOptions->Show();
-            }
-          }
-        }
-
         m_mouseHover = ImGui::IsWindowHovered();
 
         ImVec2 pos = m_wndPos;
@@ -146,7 +147,6 @@ namespace ToolKit
         m_drawCommands.clear();
 
         // AssetBrowser drop handling.
-        ImGui::Dummy(m_wndContentAreaSize);
         if (ImGui::BeginDragDropTarget())
         {
           if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
@@ -170,42 +170,43 @@ namespace ToolKit
             }
             else if (entry.m_ext == SCENE)
             {
-              // Merge the scene.
-              String fullPath = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
-              XmlFile file(fullPath.c_str());
-              XmlDocument doc;
-              doc.parse<0>(file.data());
-
-              const EntityRawPtrArray& ntties = g_app->m_scene.GetEntities();
-              size_t lastSize = ntties.size();
-              g_app->m_scene.DeSerialize(&doc, nullptr);
-              size_t thisSize = ntties.size();
-
-              if (lastSize < thisSize)
+              YesNoWindow* importOptionWnd = new YesNoWindow("Open Scene", "Open", "Merge", "Open or merge the scene ?", true);
+              importOptionWnd->m_yesCallback = [entry]() ->void
               {
-                Drawable* master = new Drawable();
-                master->m_name = entry.m_fileName;
-                g_app->m_scene.AddEntity(master);
+                String fullPath = entry.GetFullPath();
+                g_app->OpenScene(fullPath);
+              };
 
-                for (size_t i = lastSize; i < thisSize; i++)
-                {
-                  Entity* e = ntties[i];
-                  if (e->IsDrawable())
-                  {
-                    Drawable* dw = static_cast<Drawable*> (e);
-                    dw->m_mesh->Init(false);
-                    if (dw->m_node->m_parent == nullptr)
-                    {
-                      master->m_node->AddChild(dw->m_node);
-                    }
-                  }
-                }
-              }
+              importOptionWnd->m_noCallback = [entry]() -> void
+              {
+                String fullPath = entry.GetFullPath();
+                g_app->MergeScene(fullPath);
+              };
 
+              UI::m_volatileWindows.push_back(importOptionWnd);
             }
           }
           ImGui::EndDragDropTarget();
         }
+
+        if (g_app->m_showOverlayUI)
+        {
+          if (IsActive() || g_app->m_showOverlayUIAlways)
+          {
+            if (m_overlayMods != nullptr)
+            {
+              m_overlayMods->m_owner = this;
+              m_overlayMods->Show();
+            }
+
+            if (m_overlayOptions != nullptr)
+            {
+              m_overlayOptions->m_owner = this;
+              m_overlayOptions->Show();
+            }
+          }
+        }
+
       }
       ImGui::End();
     }
@@ -419,6 +420,35 @@ namespace ToolKit
       Vec2 vp = pnt - m_wndPos; // In window space.
       vp.y = m_wndContentAreaSize.y - vp.y; // In viewport space.
       return vp;
+    }
+
+    void Viewport::Serialize(XmlDocument* doc, XmlNode* parent) const
+    {
+      Window::Serialize(doc, parent);
+      XmlNode* node = doc->allocate_node(rapidxml::node_element, "Viewport");
+
+      WriteAttr(node, doc, "width", std::to_string(m_width));
+      WriteAttr(node, doc, "height", std::to_string(m_height));
+      WriteAttr(node, doc, "orthographic", std::to_string((int)m_orthographic));
+      WriteAttr(node, doc, "alignment", std::to_string((int)m_cameraAlignment));
+      m_camera->Serialize(doc, node);
+
+      XmlNode* wnd = parent->last_node();
+      wnd->append_node(node);
+    }
+
+    void Viewport::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    {
+      Window::DeSerialize(doc, parent);
+
+      if (XmlNode* node = parent->first_node("Viewport"))
+      {
+        ReadAttr(node, "width", m_width);
+        ReadAttr(node, "height", m_height);
+        ReadAttr(node, "orthographic", m_orthographic);
+        ReadAttr(node, "alignment", m_cameraAlignment);
+        m_camera = new Camera(node->first_node("E"));
+      }
     }
 
     void Viewport::FpsNavigationMode(float deltaTime)

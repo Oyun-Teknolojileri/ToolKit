@@ -42,7 +42,7 @@ namespace ToolKit
 
     public:
       bool m_currRoot = false; // Indicates this is a root folder (one level under Resources) and currently selected in the FolderWindow.
-      bool m_visible = true;
+      bool m_visible = false;
       bool m_onlyNativeTypes = true;
       Vec2 m_iconSize = Vec2(95.0f);
       std::vector<DirectoryEntry> m_entiries;
@@ -52,7 +52,9 @@ namespace ToolKit
     class FolderWindow : public Window
     {
     public:
+      FolderWindow(XmlNode* node);
       FolderWindow();
+      virtual ~FolderWindow();
       virtual void Show() override;
       virtual Type GetType() const override;
       void Iterate(const String& path, bool clear);
@@ -62,11 +64,13 @@ namespace ToolKit
       int Exist(const String& folder);
       bool GetFileEntry(const String& fullPath, DirectoryEntry& entry);
 
+      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
+      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+
     private:
       std::vector<FolderView> m_entiries;
       int m_activeFolder = -1;
       bool m_showStructure = true;
-      String m_path;
     };
 
   }

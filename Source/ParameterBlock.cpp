@@ -81,27 +81,37 @@ namespace ToolKit
     {
     case VariantType::Byte:
     {
-      m_var = ReadAttr<Byte>(parent, XmlParamterValAttr);
+      Byte val(0);
+      ReadAttr(parent, XmlParamterValAttr, val);
+      m_var = val;
     }
     break;
     case VariantType::UByte:
     {
-      m_var = ReadAttr<UByte>(parent, XmlParamterValAttr);
+      UByte val(0);
+      ReadAttr(parent, XmlParamterValAttr, val);
+      m_var = val;
     }
     break;
     case VariantType::Float:
     {
-      m_var = ReadAttr<float>(parent, XmlParamterValAttr);
+      float val(0);
+      ReadAttr(parent, XmlParamterValAttr, val);
+      m_var = val;
     }
     break;
     case VariantType::Int:
     {
-      m_var = ReadAttr<int>(parent, XmlParamterValAttr);
+      int val(0);
+      ReadAttr(parent, XmlParamterValAttr, val);
+      m_var = val;
     }
     break;
     case VariantType::UInt:
     {
-      m_var = ReadAttr<uint>(parent, XmlParamterValAttr);
+      int val(0);
+      ReadAttr(parent, XmlParamterValAttr, val);
+      m_var = val;
     }
     break;
     case VariantType::Vec3:

@@ -99,39 +99,22 @@ namespace ToolKit
 
   void Entity::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
-    XmlNode* nttNode = nullptr;
+    XmlNode* node = nullptr;
     if (parent != nullptr)
     {
-      nttNode = parent;
+      node = parent;
     }
     else
     {
-      nttNode = doc->first_node(XmlEntityElement.c_str());
+      node = doc->first_node(XmlEntityElement.c_str());
     }
 
-    if (XmlAttribute* attr = nttNode->first_attribute(XmlEntityIdAttr.c_str()))
-    {
-      String val = attr->value();
-      m_id = std::atoi(val.c_str());
-    }
+    ReadAttr(node, XmlEntityIdAttr, *(uint*)&m_id);
+    ReadAttr(node, XmlParentEntityIdAttr, *(uint*)&_parentId);
+    ReadAttr(node, XmlEntityNameAttr, m_name);
+    ReadAttr(node, XmlEntityTagAttr, m_tag);
 
-    if (XmlAttribute* attr = nttNode->first_attribute(XmlParentEntityIdAttr.c_str()))
-    {
-      String val = attr->value();
-      _parentId = std::atoi(val.c_str());
-    }
-
-    if (XmlAttribute* attr = nttNode->first_attribute(XmlEntityNameAttr.c_str()))
-    {
-      m_name = attr->value();
-    }
-
-    if (XmlAttribute* attr = nttNode->first_attribute(XmlEntityTagAttr.c_str()))
-    {
-      m_tag = attr->value();
-    }
-
-    if (XmlNode* transformNode = nttNode->first_node(XmlNodeElement.c_str()))
+    if (XmlNode* transformNode = node->first_node(XmlNodeElement.c_str()))
     {
       m_node->DeSerialize(doc, transformNode);
     }

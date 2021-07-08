@@ -4,6 +4,7 @@
 #include "Material.h"
 #include "ToolKit.h"
 #include "Node.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -71,7 +72,17 @@ namespace ToolKit
   {
     Entity::Serialize(doc, parent);
     XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlMeshElement.c_str());
-    node->append_attribute(doc->allocate_attribute(XmlFileAttr.c_str(), m_mesh->m_file.c_str()));
+
+    String relPath = GetRelativeResourcePath(m_mesh->m_file);
+    
+    node->append_attribute
+    (
+      doc->allocate_attribute
+      (
+        XmlFileAttr.c_str(),
+        doc->allocate_string(relPath.c_str())
+      )
+    );
     parent->last_node()->append_node(node);
   }
 
