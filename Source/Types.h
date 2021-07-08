@@ -8,10 +8,10 @@
 
 namespace rapidxml
 {
-  template<class Ch = char> class xml_document;
-  template<class Ch = char> class xml_node;
-  template<class Ch = char> class xml_attribute;
-  template<class Ch = char> class file;
+  template<class Ch> class xml_document;
+  template<class Ch> class xml_node;
+  template<class Ch> class xml_attribute;
+  template<class Ch> class file;
 }
 
 namespace ToolKit
@@ -61,10 +61,10 @@ namespace ToolKit
   typedef std::vector<class Node*> NodePtrArray;
   typedef std::vector<class Vertex> VertexArray;
   typedef std::vector<class Face> FaceArray;
-  typedef rapidxml::xml_document<> XmlDocument;
-  typedef rapidxml::xml_node<> XmlNode;
-  typedef rapidxml::xml_attribute<> XmlAttribute;
-  typedef rapidxml::file<> XmlFile;
+  typedef rapidxml::xml_document<char> XmlDocument;
+  typedef rapidxml::xml_node<char> XmlNode;
+  typedef rapidxml::xml_attribute<char> XmlAttribute;
+  typedef rapidxml::file<char> XmlFile;
 
   static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
   static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);
