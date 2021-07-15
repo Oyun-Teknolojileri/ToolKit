@@ -838,6 +838,10 @@ namespace ToolKit
           WriteAttr(app, &appDoc, "scene", m_scene.m_name);
         }
 
+        WriteAttr(app, &appDoc, "width", std::to_string(m_renderer->m_windowWidth));
+        WriteAttr(app, &appDoc, "height", std::to_string(m_renderer->m_windowHeight));
+        WriteAttr(app, &appDoc, "maximized", std::to_string(m_windowMaximized));
+
         std::string xml;
         rapidxml::print(std::back_inserter(xml), appDoc, 0);
 
@@ -898,6 +902,18 @@ namespace ToolKit
           String fullPath = ScenePath(scene + SCENE);
           OpenScene(fullPath);
         }
+
+        float width = 0.0f;
+        ReadAttr(root, "width", width);
+        float height = 0.0f;
+        ReadAttr(root, "height", height);
+
+        if (width > 0.0f && height > 0.0f)
+        {
+          OnResize(width, height);
+        }
+
+        ReadAttr(root, "maximized", m_windowMaximized);
       }
     }
 
