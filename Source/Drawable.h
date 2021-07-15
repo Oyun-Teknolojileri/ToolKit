@@ -19,6 +19,9 @@ namespace ToolKit
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+  protected:
+    virtual Entity* GetInstance(Entity* copyTo) const override;
+
   public:
     MeshPtr m_mesh;
   };
