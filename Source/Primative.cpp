@@ -78,6 +78,15 @@ namespace ToolKit
     ntt->m_worldLocation = m_worldLocation;
   }
 
+  Entity* Billboard::GetInstance(Entity* copyTo) const
+  {
+    Drawable::GetInstance(copyTo);
+    Billboard* instance = static_cast<Billboard*> (copyTo);
+    instance->m_settings = m_settings;
+    instance->m_worldLocation = m_worldLocation;
+    return nullptr;
+  }
+
   EntityType Billboard::GetType() const
   {
     return EntityType::Entity_Billboard;
@@ -125,6 +134,15 @@ namespace ToolKit
     Entity::DeSerialize(doc, parent);
     m_params.DeSerialize(doc, parent);
     Generate();
+  }
+
+  Entity* Cube::GetInstance(Entity* copyTo) const
+  {
+    Drawable::GetInstance(copyTo);
+    Cube* instance = static_cast<Cube*> (copyTo);
+    instance->m_params = m_params;
+
+    return instance;
   }
 
   void Cube::Generate()
@@ -307,6 +325,14 @@ namespace ToolKit
     return EntityType::Entity_Quad;
   }
 
+  Entity* Quad::GetInstance(Entity* copyTo) const
+  {
+    Drawable::GetInstance(copyTo);
+    Quad* instance = static_cast<Quad*> (copyTo);
+
+    return instance;
+  }
+
   void Quad::Generate()
   {
     VertexArray vertices;
@@ -446,6 +472,14 @@ namespace ToolKit
     Entity::DeSerialize(doc, parent);
     m_params.DeSerialize(doc, parent);
     Generate();
+  }
+
+  Entity* Sphere::GetInstance(Entity* copyTo) const
+  {
+    Drawable::GetInstance(copyTo);
+    Sphere* instance = static_cast<Sphere*> (copyTo);
+    instance->m_params = m_params;
+    return instance;
   }
 
   Cone::Cone(bool genDef)
@@ -590,6 +624,14 @@ namespace ToolKit
     Generate();
   }
 
+  Entity* Cone::GetInstance(Entity* copyTo) const
+  {
+    Drawable::GetInstance(copyTo);
+    Cone* instance = static_cast<Cone*> (copyTo);
+    instance->m_params = m_params;
+    return instance;
+  }
+
   Arrow2d::Arrow2d(bool genDef)
   {
     m_label = AxisLabel::X;
@@ -618,6 +660,14 @@ namespace ToolKit
     Drawable::GetCopy(copyTo);
     Arrow2d* ntt = static_cast<Arrow2d*> (copyTo);
     ntt->m_label = m_label;
+  }
+
+  Entity* Arrow2d::GetInstance(Entity* copyTo) const
+  {
+    Drawable::GetInstance(copyTo);
+    Arrow2d* instance = static_cast<Arrow2d*> (copyTo);
+    instance->m_label = m_label;
+    return instance;
   }
 
   EntityType Arrow2d::GetType() const

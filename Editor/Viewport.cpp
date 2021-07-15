@@ -157,8 +157,16 @@ namespace ToolKit
             if (entry.m_ext == MESH)
             {
               String path = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
+              
               Drawable* dwMesh = new Drawable();
               dwMesh->m_mesh = GetMeshManager()->Create<Mesh>(path);
+              if (ImGui::GetIO().KeyShift)
+              {
+                Drawable* copy = dwMesh->GetCopy();
+                SafeDel(dwMesh);
+                dwMesh = copy;
+              }
+
               dwMesh->m_mesh->Init(false);
               Ray ray = RayFromMousePosition();
               Vec3 pos = PointOnRay(ray, 5.0f);

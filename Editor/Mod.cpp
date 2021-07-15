@@ -794,9 +794,18 @@ namespace ToolKit
           ActionManager::GetInstance()->BeginActionGroup();
         }
 
+        bool copy = ImGui::GetIO().KeyShift;
         for (Entity* e : selecteds)
         {
-          Entity* duplicate = e->GetCopy();
+          Entity* duplicate = nullptr;
+          if (copy)
+          {
+            duplicate = e->GetCopy();
+          }
+          else
+          {
+            duplicate = e->GetInstance();
+          }
           ActionManager::GetInstance()->AddAction(new CreateAction(duplicate));
           g_app->m_scene.AddToSelection(duplicate->m_id, true);
         }

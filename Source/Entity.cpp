@@ -67,10 +67,69 @@ namespace ToolKit
 
   void Entity::GetCopy(Entity* copyTo) const
   {
+    // This just copies the node, other contents should be copied by the descendent.
     assert(copyTo->GetType() == GetType());
     SafeDel(copyTo->m_node);
     copyTo->m_node = m_node->GetCopy();
     copyTo->m_node->m_entity = copyTo;
+  }
+
+  Entity* Entity::GetInstance() const
+  {
+    Entity* e = nullptr;
+    switch (GetType())
+    {
+    case  EntityType::Entity_Base:
+      e = new Entity();
+      break;
+    case  EntityType::Entity_AudioSource:
+      e = new AudioSource();
+      break;
+    case  EntityType::Entity_Billboard:
+      e = new Billboard(Billboard::Settings());
+      break;
+    case  EntityType::Entity_Cube:
+      e = new Cube(false);
+      break;
+    case  EntityType::Entity_Quad:
+      e = new Quad(false);
+      break;
+    case  EntityType::Entity_Sphere:
+      e = new Sphere(false);
+      break;
+    case  EntityType::Etity_Arrow:
+      e = new Arrow2d(false);
+      break;
+    case  EntityType::Entity_LineBatch:
+      e = new LineBatch();
+      break;
+    case  EntityType::Entity_Cone:
+      e = new Cone(false);
+      break;
+    case  EntityType::Entity_Drawable:
+      e = new Drawable();
+      break;
+    case  EntityType::Entity_SpriteAnim:
+    case  EntityType::Entity_Surface:
+    case  EntityType::Entity_Light:
+    case  EntityType::Entity_Camera:
+    case  EntityType::Entity_Directional:
+    default:
+      assert(false);
+      break;
+    }
+
+    return GetInstance(e);
+  }
+
+  Entity* Entity::GetInstance(Entity* copyTo) const
+  {
+    assert(copyTo->GetType() == GetType());
+    SafeDel(copyTo->m_node);
+    copyTo->m_node = m_node->GetCopy();
+    copyTo->m_node->m_entity = copyTo;
+
+    return copyTo;
   }
 
   void Entity::Serialize(XmlDocument* doc, XmlNode* parent) const

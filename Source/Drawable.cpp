@@ -97,4 +97,13 @@ namespace ToolKit
     }
   }
 
+  Entity* Drawable::GetInstance(Entity* copyTo) const
+  {
+    Entity::GetInstance(copyTo);
+    Drawable* instance = dynamic_cast<Drawable*> (copyTo);
+    instance->m_mesh = m_mesh;
+
+    return instance;
+  }
+
 }

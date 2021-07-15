@@ -331,7 +331,7 @@ namespace ToolKit
       UI::ShowUI();
     }
 
-    void App::OnResize(int width, int height)
+    void App::OnResize(uint width, uint height)
     {
       m_renderer->m_windowWidth = width;
       m_renderer->m_windowHeight = height;
@@ -903,12 +903,12 @@ namespace ToolKit
           OpenScene(fullPath);
         }
 
-        float width = 0.0f;
+        uint width = 0;
         ReadAttr(root, "width", width);
-        float height = 0.0f;
+        uint height = 0;
         ReadAttr(root, "height", height);
 
-        if (width > 0.0f && height > 0.0f)
+        if (width > 0 && height > 0)
         {
           OnResize(width, height);
         }

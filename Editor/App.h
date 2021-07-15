@@ -34,7 +34,7 @@ namespace ToolKit
       void Init();
       void Destroy();
       void Frame(float deltaTime);
-      void OnResize(int width, int height);
+      void OnResize(uint width, uint height);
       void OnNewScene(const String& name);
       void OnSaveScene();
       void OnQuit();
