@@ -59,22 +59,40 @@ namespace ToolKit
 
   Entity* Entity::GetCopy() const
   {
-    Entity* cpy = new Entity();
-    GetCopy(cpy);
-
-    return cpy;
+    EntityType t = GetType();
+    Entity* e = CreateByType(t);
+    return GetCopy(e);
   }
 
-  void Entity::GetCopy(Entity* copyTo) const
+  Entity* Entity::GetCopy(Entity* copyTo) const
   {
     // This just copies the node, other contents should be copied by the descendent.
     assert(copyTo->GetType() == GetType());
     SafeDel(copyTo->m_node);
     copyTo->m_node = m_node->GetCopy();
     copyTo->m_node->m_entity = copyTo;
+
+    return copyTo;
   }
 
   Entity* Entity::GetInstance() const
+  {
+    EntityType t = GetType();
+    Entity* e = CreateByType(t);
+    return GetInstance(e);
+  }
+
+  Entity* Entity::GetInstance(Entity* copyTo) const
+  {
+    assert(copyTo->GetType() == GetType());
+    SafeDel(copyTo->m_node);
+    copyTo->m_node = m_node->GetCopy();
+    copyTo->m_node->m_entity = copyTo;
+
+    return copyTo;
+  }
+
+  Entity* Entity::CreateByType(EntityType t) const
   {
     Entity* e = nullptr;
     switch (GetType())
@@ -119,17 +137,7 @@ namespace ToolKit
       break;
     }
 
-    return GetInstance(e);
-  }
-
-  Entity* Entity::GetInstance(Entity* copyTo) const
-  {
-    assert(copyTo->GetType() == GetType());
-    SafeDel(copyTo->m_node);
-    copyTo->m_node = m_node->GetCopy();
-    copyTo->m_node->m_entity = copyTo;
-
-    return copyTo;
+    return e;
   }
 
   void Entity::Serialize(XmlDocument* doc, XmlNode* parent) const
