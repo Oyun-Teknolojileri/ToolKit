@@ -162,7 +162,7 @@ namespace ToolKit
               dwMesh->m_mesh = GetMeshManager()->Create<Mesh>(path);
               if (ImGui::GetIO().KeyShift)
               {
-                Drawable* copy = dwMesh->GetCopy();
+                Drawable* copy = static_cast<Drawable*> (dwMesh->GetInstance());
                 SafeDel(dwMesh);
                 dwMesh = copy;
               }
