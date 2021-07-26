@@ -1,16 +1,12 @@
 #pragma once
 
-#include <memory>
 #include "RenderState.h"
 #include "Resource.h"
 #include "ResourceManager.h"
+#include "Serialize.h"
 
 namespace ToolKit
 {
-
-  class Texture;
-  class CubeMap;
-  class Shader;
 
   class Material : public Resource
   {
@@ -26,7 +22,7 @@ namespace ToolKit
     RenderState* GetRenderState();
 
   public:
-    std::shared_ptr<CubeMap> m_cubeMap;
+    CubeMapPtr m_cubeMap;
     TexturePtr m_diffuseTexture;
     ShaderPtr m_vertexShader;
     ShaderPtr m_fragmetShader;
