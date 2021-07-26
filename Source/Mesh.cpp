@@ -83,6 +83,8 @@ namespace ToolKit
 
     XmlNode* node = doc.first_node("meshContainer");
     DeSerialize(&doc, node);
+
+    m_loaded = true;
   }
 
   Mesh* Mesh::GetCopy()

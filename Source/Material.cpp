@@ -36,51 +36,9 @@ namespace ToolKit
     XmlFile file(m_file.c_str());
     XmlDocument doc;
     doc.parse<0>(file.data());
-
+    
     XmlNode* rootNode = doc.first_node("material");
-    if (rootNode == nullptr)
-    {
-      return;
-    }
-
-    for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
-    {
-      if (String("diffuseTexture").compare(node->name()) == 0)
-      {
-        XmlAttribute* attr = node->first_attribute("name");
-        m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath(attr->value()));
-      }
-      else if (String("cubeMap").compare(node->name()) == 0)
-      {
-        XmlAttribute* attr = node->first_attribute("name");
-        m_cubeMap = GetTextureManager()->Create<CubeMap>(TexturePath(attr->value()), ResourceType::CubeMap);
-      }
-      else if (String("shader").compare(node->name()) == 0)
-      { 
-        XmlAttribute* attr = node->first_attribute("name");
-        ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath(attr->value()));
-        if (shader->m_shaderType == GL_VERTEX_SHADER)
-        {
-          m_vertexShader = shader;
-        }
-        else if (shader->m_shaderType == GL_FRAGMENT_SHADER)
-        {
-          m_fragmetShader = shader;
-        }
-        else
-        {
-          assert(false);
-        }
-      }
-      else if (String("color").compare(node->name()) == 0)
-      {
-        ReadVec(node, m_color);
-      }
-      else
-      {
-        assert(false);
-      }
-    }
+    DeSerialize(&doc, rootNode);
 
     m_loaded = true;
   }
@@ -160,6 +118,58 @@ namespace ToolKit
     }
 
     return &m_renderState;
+  }
+
+  void Material::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+  }
+
+  void Material::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    if (parent == nullptr)
+    {
+      return;
+    }
+
+    XmlNode* rootNode = parent;
+    for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
+    {
+      if (String("diffuseTexture").compare(node->name()) == 0)
+      {
+        XmlAttribute* attr = node->first_attribute("name");
+        m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath(attr->value()));
+      }
+      else if (String("cubeMap").compare(node->name()) == 0)
+      {
+        XmlAttribute* attr = node->first_attribute("name");
+        m_cubeMap = GetTextureManager()->Create<CubeMap>(TexturePath(attr->value()), ResourceType::CubeMap);
+      }
+      else if (String("shader").compare(node->name()) == 0)
+      {
+        XmlAttribute* attr = node->first_attribute("name");
+        ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath(attr->value()));
+        if (shader->m_shaderType == GL_VERTEX_SHADER)
+        {
+          m_vertexShader = shader;
+        }
+        else if (shader->m_shaderType == GL_FRAGMENT_SHADER)
+        {
+          m_fragmetShader = shader;
+        }
+        else
+        {
+          assert(false);
+        }
+      }
+      else if (String("color").compare(node->name()) == 0)
+      {
+        ReadVec(node, m_color);
+      }
+      else
+      {
+        assert(false);
+      }
+    }
   }
 
   MaterialManager::MaterialManager()
