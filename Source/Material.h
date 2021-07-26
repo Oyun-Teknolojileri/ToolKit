@@ -8,7 +8,7 @@
 namespace ToolKit
 {
 
-  class Material : public Resource
+  class Material : public Resource, public Serializable
   {
   public:
     Material();
@@ -20,6 +20,9 @@ namespace ToolKit
     virtual void UnInit() override;
     virtual Material* GetCopy() override;
     RenderState* GetRenderState();
+
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
   public:
     CubeMapPtr m_cubeMap;
