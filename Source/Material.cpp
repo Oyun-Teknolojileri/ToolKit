@@ -122,6 +122,78 @@ namespace ToolKit
 
   void Material::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
+    XmlNode* container = doc->allocate_node
+    (
+      rapidxml::node_type::node_element,
+      "material"
+    );
+
+    if (parent != nullptr)
+    {
+      parent->append_node(container);
+    }
+    else
+    {
+      doc->append_node(container);
+    }
+
+    if (m_diffuseTexture)
+    {
+      XmlNode* node = doc->allocate_node
+      (
+        rapidxml::node_type::node_element,
+        "diffuseTexture"
+      );
+      container->append_node(node);
+
+      String file = GetRelativeResourcePath(m_diffuseTexture->m_file);
+      WriteAttr(node, doc, "name", file);
+    }
+
+    if (m_cubeMap)
+    {
+      XmlNode* node = doc->allocate_node
+      (
+        rapidxml::node_type::node_element,
+        "cubeMap"
+      );
+      container->append_node(node);
+
+      String file = GetRelativeResourcePath(m_cubeMap->m_file);
+      WriteAttr(node, doc, "name", file);
+    }
+
+    if (m_vertexShader)
+    {
+      XmlNode* node = doc->allocate_node
+      (
+        rapidxml::node_type::node_element,
+        "shader"
+      );
+      container->append_node(node);
+
+      WriteAttr(node, doc, "name", GetRelativeResourcePath(m_vertexShader->m_file));
+    }
+
+    if (m_fragmetShader)
+    {
+      XmlNode* node = doc->allocate_node
+      (
+        rapidxml::node_type::node_element,
+        "shader"
+      );
+      container->append_node(node);
+
+      WriteAttr(node, doc, "name", GetRelativeResourcePath(m_fragmetShader->m_file));
+    }
+
+    XmlNode* node = doc->allocate_node
+    (
+      rapidxml::node_type::node_element,
+      "color"
+    );
+    container->append_node(node);
+    WriteVec(node, doc, m_color);
   }
 
   void Material::DeSerialize(XmlDocument* doc, XmlNode* parent)
