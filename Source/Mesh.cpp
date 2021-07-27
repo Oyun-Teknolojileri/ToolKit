@@ -88,6 +88,13 @@ namespace ToolKit
     }
   }
 
+  void Mesh::Save(bool onlyIfDirty)
+  {
+    // Force save if child is dirty.
+    Resource::Save(!m_dirty && !m_material->m_dirty);
+    m_material->Save(onlyIfDirty);
+  }
+
   Mesh* Mesh::GetCopy()
   {
     Mesh* cpy = new Mesh();
@@ -121,7 +128,7 @@ namespace ToolKit
     cpy->m_material = MaterialPtr(m_material->GetCopy());
     cpy->m_aabb = m_aabb;
 
-    cpy->m_file = m_file;
+    cpy->m_file = CreateCopyFileFullPath(m_file);
     cpy->m_initiated = m_initiated;
     cpy->m_loaded = m_loaded;
 

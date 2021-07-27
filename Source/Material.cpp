@@ -43,6 +43,13 @@ namespace ToolKit
     m_loaded = true;
   }
 
+  void Material::Save(bool onlyIfDirty)
+  {
+    Resource::Save(onlyIfDirty);
+    m_vertexShader->Save(onlyIfDirty);
+    m_fragmetShader->Save(onlyIfDirty);
+  }
+
   void Material::Init(bool flushClientSideArray)
   {
     if (m_initiated)
@@ -102,7 +109,15 @@ namespace ToolKit
 
   Material* Material::GetCopy()
   {
-    return new Material(*this);
+    Material* cpyMat = new Material(*this);
+    cpyMat->m_dirty = true;
+
+    if (!m_file.empty())
+    {
+      cpyMat->m_file = CreateCopyFileFullPath(m_file);
+    }
+
+    return cpyMat;
   }
 
   RenderState* Material::GetRenderState()

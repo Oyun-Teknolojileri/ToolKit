@@ -77,6 +77,7 @@ namespace ToolKit
       )
     );
     parent->last_node()->append_node(node);
+    m_mesh->Save(true);
   }
 
   void Drawable::DeSerialize(XmlDocument* doc, XmlNode* parent)
