@@ -3,6 +3,7 @@
 #include "Resource.h"
 #include "ResourceManager.h"
 #include "ParameterBlock.h"
+#include "Serialize.h"
 
 namespace ToolKit
 {
@@ -18,7 +19,7 @@ namespace ToolKit
     FRAME_COUNT
   };
 
-  class Shader : public Resource
+  class Shader : public Resource, public Serializable
   {
   public:
     Shader();
@@ -29,6 +30,9 @@ namespace ToolKit
     virtual void Init(bool flushClientSideArray = true) override;
     virtual void UnInit() override;
     void SetShaderParameter(String param, const ParameterVariant& val);
+
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
   public:
     std::unordered_map<String, ParameterVariant> m_shaderParams;

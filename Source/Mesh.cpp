@@ -81,10 +81,11 @@ namespace ToolKit
     XmlDocument doc;
     doc.parse<0>(file.data());
 
-    XmlNode* node = doc.first_node("meshContainer");
-    DeSerialize(&doc, node);
-
-    m_loaded = true;
+    if (XmlNode* node = doc.first_node("meshContainer"))
+    {
+      DeSerialize(&doc, node);
+      m_loaded = true;
+    }
   }
 
   Mesh* Mesh::GetCopy()

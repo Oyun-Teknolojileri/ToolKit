@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Shader.h"
 #include "ToolKit.h"
+#include "Util.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
 #include "rapidxml_print.hpp"
@@ -37,13 +38,167 @@ namespace ToolKit
     XmlFile file(m_file.c_str());
     XmlDocument doc;
     doc.parse<rapidxml::parse_full>(file.data());
+    if (XmlNode* rootNode = doc.first_node("shader"))
+    {
+      DeSerialize(&doc, rootNode);
+      m_loaded = true;
+    }
+  }
 
-    XmlNode* rootNode = doc.first_node("shader");
-    if (rootNode == nullptr)
+  void Shader::Init(bool flushClientSideArray)
+  {
+    if (m_initiated)
     {
       return;
     }
 
+    m_shaderHandle = glCreateShader(m_shaderType);
+    if (m_shaderHandle == 0)
+    {
+      return;
+    }
+
+    const char* str = m_source.c_str();
+    glShaderSource(m_shaderHandle, 1, &str, nullptr);
+    glCompileShader(m_shaderHandle);
+
+    GLint compiled;
+    glGetShaderiv(m_shaderHandle, GL_COMPILE_STATUS, &compiled);
+    if (!compiled)
+    {
+      assert(compiled);
+      GLint infoLen = 0;
+      glGetShaderiv(m_shaderHandle, GL_INFO_LOG_LENGTH, &infoLen);
+      if (infoLen > 1)
+      {
+        char* log = new char[infoLen];
+        glGetShaderInfoLog(m_shaderHandle, infoLen, nullptr, log);
+        Logger::GetInstance()->Log(log);
+
+        SafeDelArray(log);
+      }
+
+      glDeleteShader(m_shaderHandle);
+      return;
+    }
+
+    if (flushClientSideArray)
+    {
+      m_source.clear();
+    }
+
+    m_tag = std::to_string(m_shaderHandle);
+    m_initiated = true;
+  }
+
+  void Shader::UnInit()
+  {
+    glDeleteShader(m_shaderHandle);
+    m_initiated = false;
+  }
+
+  void Shader::SetShaderParameter(String param, const ParameterVariant& val)
+  {
+    m_shaderParams[param] = val;
+  }
+
+  void Shader::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* container = doc->allocate_node
+    (
+      rapidxml::node_type::node_element,
+      "shader"
+    );
+
+    if (parent != nullptr)
+    {
+      parent->append_node(container);
+    }
+    else
+    {
+      doc->append_node(container);
+    }
+
+    XmlNode* node = doc->allocate_node
+    (
+      rapidxml::node_type::node_element,
+      "type"
+    );
+    container->append_node(node);
+
+    if (m_shaderType == GL_VERTEX_SHADER)
+    {
+      WriteAttr(node, doc, "name", "fragmentShader");
+    }
+    else if (m_shaderType == GL_FRAGMENT_SHADER)
+    {
+      WriteAttr(node, doc, "name", "vertexShader");
+    }
+
+    for (Uniform ui : m_uniforms)
+    {
+      XmlNode* node = doc->allocate_node
+      (
+        rapidxml::node_type::node_element,
+        "uniform"
+      );
+      container->append_node(node);
+
+      String name;
+      switch (ui)
+      {
+      case Uniform::PROJECT_MODEL_VIEW:
+        name = "ProjectViewModel";
+        break;
+      case Uniform::MODEL:
+        name = "Model";
+        break;
+      case Uniform::INV_TR_MODEL:
+        name = "InverseTransModel";
+        break;
+      case Uniform::LIGHT_DATA:
+        name = "LightData";
+        break;
+      case Uniform::CAM_DATA:
+        name = "CamData";
+        break;
+      case Uniform::COLOR:
+        name = "Color";
+        break;
+      case Uniform::FRAME_COUNT:
+        name = "FrameCount";
+        break;
+      default:
+        assert(false && "unknown uniform");
+        break;
+      }
+
+      WriteAttr(node, doc, "name", name);
+    }
+
+    XmlNode* src = doc->allocate_node
+    (
+      rapidxml::node_type::node_element,
+      "source"
+    );
+    container->append_node(src);
+
+    XmlNode* srcInput = doc->allocate_node
+    (
+      rapidxml::node_type::node_comment
+    );
+    src->append_node(srcInput);
+    srcInput->value(doc->allocate_string(m_source.c_str()));
+  }
+
+  void Shader::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    if (parent == nullptr)
+    {
+      return;
+    }
+
+    XmlNode* rootNode = parent;
     for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
     {
       if (String("type").compare(node->name()) == 0)
@@ -105,65 +260,6 @@ namespace ToolKit
         m_source = node->first_node()->value();
       }
     }
-
-    m_loaded = true;
-  }
-
-  void Shader::Init(bool flushClientSideArray)
-  {
-    if (m_initiated)
-    {
-      return;
-    }
-
-    m_shaderHandle = glCreateShader(m_shaderType);
-    if (m_shaderHandle == 0)
-    {
-      return;
-    }
-
-    const char* str = m_source.c_str();
-    glShaderSource(m_shaderHandle, 1, &str, nullptr);
-    glCompileShader(m_shaderHandle);
-
-    GLint compiled;
-    glGetShaderiv(m_shaderHandle, GL_COMPILE_STATUS, &compiled);
-    if (!compiled)
-    {
-      assert(compiled);
-      GLint infoLen = 0;
-      glGetShaderiv(m_shaderHandle, GL_INFO_LOG_LENGTH, &infoLen);
-      if (infoLen > 1)
-      {
-        char* log = new char[infoLen];
-        glGetShaderInfoLog(m_shaderHandle, infoLen, nullptr, log);
-        Logger::GetInstance()->Log(log);
-
-        SafeDelArray(log);
-      }
-
-      glDeleteShader(m_shaderHandle);
-      return;
-    }
-
-    if (flushClientSideArray)
-    {
-      m_source.clear();
-    }
-
-    m_tag = std::to_string(m_shaderHandle);
-    m_initiated = true;
-  }
-
-  void Shader::UnInit()
-  {
-    glDeleteShader(m_shaderHandle);
-    m_initiated = false;
-  }
-
-  void Shader::SetShaderParameter(String param, const ParameterVariant& val)
-  {
-    m_shaderParams[param] = val;
   }
 
   Program::Program()

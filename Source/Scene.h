@@ -2,11 +2,12 @@
 
 #include "ToolKit.h"
 #include "Types.h"
+#include "Serialize.h"
 
 namespace ToolKit
 {
 
-  class Scene
+  class Scene : public Serializable
   {
   public:
     struct PickData
