@@ -3,7 +3,6 @@
 #include "Resource.h"
 #include "ResourceManager.h"
 #include "ParameterBlock.h"
-#include "Serialize.h"
 
 namespace ToolKit
 {
@@ -19,7 +18,7 @@ namespace ToolKit
     FRAME_COUNT
   };
 
-  class Shader : public Resource, public Serializable
+  class Shader : public Resource
   {
   public:
     Shader();

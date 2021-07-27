@@ -4,7 +4,6 @@
 #include "Resource.h"
 #include "ResourceManager.h"
 #include "MathUtil.h"
-#include "Serialize.h"
 #include "GL/glew.h"
 #include <memory>
 
@@ -26,7 +25,7 @@ namespace ToolKit
     Vertex* vertices[3];
   };
 
-  class Mesh : public Resource, public Serializable
+  class Mesh : public Resource
   {
   public:
     Mesh();
@@ -36,6 +35,7 @@ namespace ToolKit
     virtual void Init(bool flushClientSideArray = true) override;
     virtual void UnInit() override;
     virtual void Load() override;
+    virtual void Save(bool onlyIfDirty) override;
     virtual Mesh* GetCopy() override;
     virtual int GetVertexSize() const;
     virtual bool IsSkinned() const;

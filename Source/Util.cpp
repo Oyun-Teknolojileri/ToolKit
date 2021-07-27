@@ -128,6 +128,27 @@ namespace ToolKit
     return f.good();
   }
 
+  String CreateCopyFileFullPath(const String& fullPath)
+  {
+    String cpyPath;
+    if (!fullPath.empty())
+    {
+      String path, name, ext;
+      DecomposePath(fullPath, &path, &name, &ext);
+      cpyPath = ConcatPaths({ path, name + "_copy" + ext });
+      if (CheckFile(cpyPath))
+      {
+        int i = 1;
+        do
+        {
+          cpyPath = ConcatPaths({ path, name + "_copy(" + std::to_string(i++) + ")" + ext });
+        } while (CheckFile(cpyPath));
+      }
+    }
+
+    return cpyPath;
+  }
+
   void DecomposePath(const String& fullPath, String* path, String* name, String* ext)
   {
     String normal = fullPath;

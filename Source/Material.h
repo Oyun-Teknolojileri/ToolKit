@@ -3,12 +3,11 @@
 #include "RenderState.h"
 #include "Resource.h"
 #include "ResourceManager.h"
-#include "Serialize.h"
 
 namespace ToolKit
 {
 
-  class Material : public Resource, public Serializable
+  class Material : public Resource
   {
   public:
     Material();
@@ -16,6 +15,7 @@ namespace ToolKit
     ~Material();
 
     virtual void Load() override;
+    virtual void Save(bool onlyIfDirty) override;
     virtual void Init(bool flushClientSideArray = true) override;
     virtual void UnInit() override;
     virtual Material* GetCopy() override;

@@ -272,10 +272,14 @@ namespace ToolKit
 
     void MaterialView::Show()
     {
-      MaterialPtr entry = static_cast<Drawable*> (m_entity)->m_mesh->m_material;
+      Drawable* drawable = static_cast<Drawable*> (m_entity);
+      MaterialPtr entry = drawable->m_mesh->m_material;
       if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        ImGui::ColorEdit3("MatColor##1", (float*)&entry->m_color);
+        if (ImGui::ColorEdit3("MatColor##1", (float*)&entry->m_color))
+        {
+          entry->m_dirty = true;
+        }
 
         if (ImGui::TreeNode("Textures"))
         {
@@ -290,18 +294,18 @@ namespace ToolKit
           (
             UI::m_imageIcon->m_textureId,
             target,
-            [this](const DirectoryEntry& dirEnt) -> void
+            [&drawable](const DirectoryEntry& dirEnt) -> void
             {
-              Drawable* dw = static_cast<Drawable*> (m_entity);
-              MaterialPtr material = dw->m_mesh->m_material;
+              MaterialPtr material = drawable->m_mesh->m_material;
 
               // Switch from solid color material to default for texturing.
               if (material->m_diffuseTexture == nullptr)
               {
-                dw->m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
+                drawable->m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
               }
               material->m_diffuseTexture = GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
               material->m_diffuseTexture->Init();
+              material->m_dirty = true;
             }
           );
 
@@ -315,11 +319,12 @@ namespace ToolKit
           (
             UI::m_codeIcon->m_textureId,
             entry->m_vertexShader->m_file,
-            [this](const DirectoryEntry& dirEnt) -> void
+            [&drawable](const DirectoryEntry& dirEnt) -> void
             {
-              MaterialPtr material = static_cast<Drawable*> (m_entity)->m_mesh->m_material;
+              MaterialPtr material = drawable->m_mesh->m_material;
               material->m_vertexShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
               material->m_vertexShader->Init();
+              material->m_dirty = true;
             }
           );
 
@@ -328,11 +333,12 @@ namespace ToolKit
           (
             UI::m_codeIcon->m_textureId,
             entry->m_fragmetShader->m_file,
-            [this](const DirectoryEntry& dirEnt) -> void
+            [&drawable](const DirectoryEntry& dirEnt) -> void
             {
-              MaterialPtr material = static_cast<Drawable*> (m_entity)->m_mesh->m_material;
+              MaterialPtr material = drawable->m_mesh->m_material;
               material->m_fragmetShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
               material->m_fragmetShader->Init();
+              material->m_dirty = true;
             }
           );
           ImGui::TreePop();
@@ -401,11 +407,12 @@ namespace ToolKit
         (
           UI::m_materialIcon->m_textureId,
           entry->m_file,
-          [this](const DirectoryEntry& dirEnt) -> void
+          [&drawable](const DirectoryEntry& dirEnt) -> void
           {
-            MeshPtr mesh = static_cast<Drawable*> (m_entity)->m_mesh;
+            MeshPtr mesh = drawable->m_mesh;
             mesh->m_material = GetMaterialManager()->Create<Material>(dirEnt.GetFullPath());
             mesh->m_material->Init();
+            mesh->m_dirty = true;
           }
         );
       }
