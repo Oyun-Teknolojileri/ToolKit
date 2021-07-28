@@ -282,7 +282,14 @@ namespace ToolKit
             if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
             {
               ImGui::SetDragDropPayload("BrowserDragZone", &de, sizeof(DirectoryEntry));
-              ImGui::SetTooltip("Copy %s", fullName.c_str());
+              if (io.KeyShift)
+              {
+                ImGui::SetTooltip("Copy %s", fullName.c_str());
+              }
+              else
+              {
+                ImGui::SetTooltip("Instantiate %s", fullName.c_str());
+              }
               ImGui::EndDragDropSource();
             }
           }

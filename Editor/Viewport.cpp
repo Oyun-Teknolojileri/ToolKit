@@ -159,8 +159,15 @@ namespace ToolKit
               String path = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
               
               Drawable* dwMesh = new Drawable();
-              // Always create a copy of file system resources.
-              dwMesh->m_mesh.reset(GetMeshManager()->Create<Mesh>(path)->GetCopy());
+              if (io.KeyShift)
+              {
+                dwMesh->m_mesh.reset(GetMeshManager()->Create<Mesh>(path)->GetCopy());
+              }
+              else
+              {
+                dwMesh->m_mesh = GetMeshManager()->Create<Mesh>(path);
+              }
+              
               dwMesh->m_mesh->Init(false);
               Ray ray = RayFromMousePosition();
               Vec3 pos = PointOnRay(ray, 5.0f);
