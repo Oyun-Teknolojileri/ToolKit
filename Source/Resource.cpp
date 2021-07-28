@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Resource.h"
+#include "Util.h"
 
 namespace ToolKit
 {
@@ -26,7 +27,7 @@ namespace ToolKit
     String fileName = m_file;
     if (fileName.empty())
     {
-      fileName = m_name + MESH;
+      fileName = m_name + GetExtFromType(m_type);
     }
 
     std::ofstream file;

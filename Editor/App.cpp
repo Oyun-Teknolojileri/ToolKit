@@ -16,13 +16,9 @@
 #include "FolderWindow.h"
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
-#include "Util.h"
 #include "DebugNew.h"
 
 #include <filesystem>
-#include <cstdlib>
-
-//#define TK_SAMPLE_SCENE
 
 namespace ToolKit
 {
@@ -31,13 +27,6 @@ namespace ToolKit
 
     App::App(int windowWidth, int windowHeight)
     {
-      m_suzanne = nullptr;
-      m_knight = nullptr;
-      m_knightRunAnim = nullptr;
-      m_q1 = nullptr;
-      m_q2 = nullptr;
-      m_q3 = nullptr;
-      m_q4 = nullptr;
       m_cursor = nullptr;
       m_lightMaster = nullptr;
       m_renderer = new Renderer();
@@ -55,59 +44,7 @@ namespace ToolKit
 
     void App::Init()
     {
-#ifdef TK_SAMPLE_SCENE
-      m_suzanne = new Drawable();
-      m_suzanne->m_node->SetTranslation({ 0.0f, 0.0f, -5.0f });
-      m_suzanne->m_node->SetOrientation(glm::angleAxis(-glm::half_pi<float>(), X_AXIS));
-      Mesh* szm = GetMeshManager()->Create<Mesh>(MeshPath("Suzanne.mesh"))->GetCopy();
-      szm->Init(false);
-      m_suzanne->m_mesh = MeshPtr(szm);
-      m_scene.AddEntity(m_suzanne);
-
-      // https://t-allen-studios.itch.io/low-poly-saxon-warrior
-      m_knight = new Drawable();
-      m_knight->m_mesh = GetMeshManager()->Create<SkinMesh>(MeshPath("Knight.skinMesh"), ResourceType::SkinMesh);
-      m_knight->m_node->SetScale({ 0.01f, 0.01f, 0.01f });
-      m_knight->m_node->SetTranslation({ 0.0f, 0.0f, 5.0f });
-      m_scene.AddEntity(m_knight);
-
-      m_knightRunAnim = GetAnimationManager()->Create<Animation>(AnimationPath("Knight_Armature_Run.anim"));
-      m_knightRunAnim->m_loop = true;
-      GetAnimationPlayer()->AddRecord(m_knight, m_knightRunAnim.get());
-
-      MaterialPtr normalMat = GetMaterialManager()->Create<Material>(MaterialPath("objectNormal.material"));
-
-      m_q1 = new Cube();
-      m_q1->m_mesh->m_material = normalMat;
-      m_q1->m_mesh->Init(false);
-      m_q1->m_node->SetTranslation({ 2.0f, 0.0f, 0.0f });
-      m_q1->m_node->Rotate(glm::angleAxis(glm::half_pi<float>(), Y_AXIS), TransformationSpace::TS_LOCAL);
-      m_q1->m_node->Rotate(glm::angleAxis(glm::half_pi<float>(), Z_AXIS), TransformationSpace::TS_LOCAL);
-      m_scene.AddEntity(m_q1);
-
-      m_q2 = new Cube();
-      m_q2->m_mesh->m_material = normalMat;
-      m_q2->m_mesh->Init(false);
-      m_q2->m_node->SetTranslation({ 2.0f, 0.0f, 2.0f });
-      m_q2->m_node->SetOrientation(glm::angleAxis(glm::half_pi<float>(), Y_AXIS));
-      m_scene.AddEntity(m_q2);
-
-      m_q3 = new Cone({ 1.0f, 1.0f, 30, 30 });
-      m_q3->m_mesh->m_material = normalMat;
-      m_q3->m_mesh->Init(false);
-      m_q3->m_node->Scale({ 0.3f, 1.0f, 0.3f });
-      m_q3->m_node->SetTranslation({ 2.0f, 0.0f, 0.0f });
-      m_scene.AddEntity(m_q3);
-
-      m_q1->m_node->AddChild(m_q2->m_node);
-      m_q2->m_node->AddChild(m_q3->m_node);
-
-      m_q4 = new Cube();
-      m_q4->m_mesh->m_material = normalMat;
-      m_q4->m_mesh->Init(false);
-      m_q4->m_node->SetTranslation({ 4.0f, 0.0f, 0.0f });
-      m_scene.AddEntity(m_q4);
-#endif
+      m_scene = std::make_shared<EditorScene>(ScenePath("New Scene" + SCENE));
 
       m_cursor = new Cursor();
       m_origin = new Axis3d();
@@ -204,7 +141,7 @@ namespace ToolKit
       SafeDel(Viewport::m_overlayMods);
       SafeDel(Viewport::m_overlayOptions);
 
-      m_scene.Destroy();
+      m_scene->Destroy();
 
       // Editor objects.
       SafeDel(m_grid);
@@ -257,7 +194,7 @@ namespace ToolKit
 
         m_renderer->SetRenderTarget(vp->m_viewportImage);
 
-        for (Entity* ntt : m_scene.GetEntities())
+        for (Entity* ntt : m_scene->GetEntities())
         {
           if (ntt->IsDrawable())
           {
@@ -344,24 +281,23 @@ namespace ToolKit
 
       Destroy();
       Init();
-      m_scene.m_name = name;
-      m_scene.m_newScene = true;
+      m_scene = std::make_shared<EditorScene>(ScenePath(name + SCENE));
+      m_scene->m_newScene = true;
     }
 
     void App::OnSaveScene()
     {
       auto saveFn = []() -> void
       {
-        XmlDocument doc;
-        g_app->m_scene.Serialize(&doc, nullptr);
-        g_app->m_scene.m_newScene = false;
+        g_app->m_scene->Save(false);
         g_app->GetAssetBrowser()->UpdateContent();
       };
 
-      String sceneName = m_scene.m_name + SCENE;
-      if (m_scene.m_newScene && CheckFile(ScenePath(sceneName)))
+      // File existance check.
+      String fullPath = m_scene->m_file;
+      if (m_scene->m_newScene && CheckFile(fullPath))
       {
-        String msg = "Scene " + sceneName + " exist on the disk.\nOverride the existing scene ?";
+        String msg = "Scene " + fullPath + " exist on the disk.\nOverride the existing scene ?";
         YesNoWindow* overrideScene = new YesNoWindow("Override existing file##OvrdScn", msg);
         overrideScene->m_yesCallback = [&saveFn]()
         {
@@ -636,46 +572,23 @@ namespace ToolKit
 
     void App::OpenScene(const String& fullPath)
     {
-      XmlFile sceneFile(fullPath.c_str());
-      XmlDocument sceneDoc;
-      sceneDoc.parse<0>(sceneFile.data());
-      
-      m_scene.Destroy();
-      m_scene.DeSerialize(&sceneDoc, nullptr);
-      m_scene.m_newScene = false;
-
-      const EntityRawPtrArray& ntties = m_scene.GetEntities();
-      for (Entity* ntt : ntties)
-      {
-        if (ntt->IsDrawable())
-        {
-          static_cast<Drawable*> (ntt)->m_mesh->Init(false);
-        }
-      }
+      m_scene->Destroy();
+      m_scene = GetSceneManager()->Create<EditorScene>(fullPath);
+      m_scene->Load(); // Make sure its loaded.
+      m_scene->Init(false);
+      m_scene->m_newScene = false;
     }
 
     void App::MergeScene(const String& fullPath)
     {
-      XmlFile file(fullPath.c_str());
-      XmlDocument doc;
-      doc.parse<0>(file.data());
+      ScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
+      scene->Load();
+      scene->Init(false);
 
-      const EntityRawPtrArray& ntties = m_scene.GetEntities();
-      size_t lastSize = ntties.size();
-      m_scene.DeSerialize(&doc, nullptr);
-      size_t thisSize = ntties.size();
-
-      if (lastSize < thisSize)
+      EntityRawPtrArray newNtts = scene->GetEntities();
+      for (Entity* e : newNtts)
       {
-        for (size_t i = lastSize; i < thisSize; i++)
-        {
-          Entity* e = ntties[i];
-          if (e->IsDrawable())
-          {
-            Drawable* dw = static_cast<Drawable*> (e);
-            dw->m_mesh->Init(false);
-          }
-        }
+        g_app->m_scene->AddEntity(e);
       }
     }
 
@@ -758,7 +671,7 @@ namespace ToolKit
 
     void App::RenderSelected(Viewport* vp)
     {
-      if (m_scene.GetSelectedEntityCount() == 0)
+      if (m_scene->GetSelectedEntityCount() == 0)
       {
         return;
       }
@@ -800,7 +713,7 @@ namespace ToolKit
       };
 
       EntityRawPtrArray selecteds;
-      m_scene.GetSelectedEntities(selecteds);
+      m_scene->GetSelectedEntities(selecteds);
       Entity* primary = selecteds.back();
 
       selecteds.pop_back();
@@ -833,9 +746,9 @@ namespace ToolKit
           w->Serialize(&appDoc, app);
         }
 
-        if (!m_scene.m_newScene)
+        if (!m_scene->m_newScene)
         {
-          WriteAttr(app, &appDoc, "scene", m_scene.m_name);
+          WriteAttr(app, &appDoc, "scene", m_scene->m_name);
         }
 
         WriteAttr(app, &appDoc, "width", std::to_string(m_renderer->m_windowWidth));

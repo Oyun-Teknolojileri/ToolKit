@@ -173,8 +173,8 @@ namespace ToolKit
               Vec3 pos = PointOnRay(ray, 5.0f);
               g_app->m_grid->HitTest(ray, pos);
               dwMesh->m_node->SetTranslation(pos);
-              g_app->m_scene.AddEntity(dwMesh);
-              g_app->m_scene.AddToSelection(dwMesh->m_id, false);
+              g_app->m_scene->AddEntity(dwMesh);
+              g_app->m_scene->AddToSelection(dwMesh->m_id, false);
               SetActive();
             }
             else if (entry.m_ext == SCENE)
@@ -346,7 +346,7 @@ namespace ToolKit
         if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
         {
           XmlDocument doc;
-          g_app->m_scene.Serialize(&doc, nullptr);
+          g_app->m_scene->Serialize(&doc, nullptr);
         }
       }
 
@@ -573,7 +573,7 @@ namespace ToolKit
           if (!hitFound)
           {
             Ray orbitRay = RayFromMousePosition();
-            EditorScene::PickData pd = g_app->m_scene.PickObject(orbitRay);
+            EditorScene::PickData pd = g_app->m_scene->PickObject(orbitRay);
 
             if (pd.entity == nullptr)
             {

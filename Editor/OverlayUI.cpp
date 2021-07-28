@@ -176,19 +176,19 @@ namespace ToolKit
           {
             Quad* plane = new Quad();
             plane->m_mesh->Init(false);
-            g_app->m_scene.AddEntity(plane);
+            g_app->m_scene->AddEntity(plane);
           }
           if (ImGui::MenuItem("Cube"))
           {
             Cube* cube = new Cube();
             cube->m_mesh->Init(false);
-            g_app->m_scene.AddEntity(cube);
+            g_app->m_scene->AddEntity(cube);
           }
           if (ImGui::MenuItem("UV Sphere"))
           {
             Sphere* sphere = new Sphere();
             sphere->m_mesh->Init(false);
-            g_app->m_scene.AddEntity(sphere);
+            g_app->m_scene->AddEntity(sphere);
           }
           if (ImGui::MenuItem("Cylinder"))
           {
@@ -197,14 +197,14 @@ namespace ToolKit
           {
             Cone* cone = new Cone({ 1.0f, 1.0f, 30, 30 });
             cone->m_mesh->Init(false);
-            g_app->m_scene.AddEntity(cone);
+            g_app->m_scene->AddEntity(cone);
           }
           if (ImGui::MenuItem("Monkey"))
           {
             Drawable* suzanne = new Drawable();
             suzanne->m_mesh = GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh"));
             suzanne->m_mesh->Init(false);
-            g_app->m_scene.AddEntity(suzanne);
+            g_app->m_scene->AddEntity(suzanne);
           }
           ImGui::EndMenu();
         }

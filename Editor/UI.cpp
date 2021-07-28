@@ -315,10 +315,10 @@ namespace ToolKit
 
     void UI::ShowMenuFile()
     {
-      if (ImGui::MenuItem("NewScene"))
+      if (ImGui::MenuItem(g_newSceneStr.c_str()))
       {
         m_strInputWindow.m_name = "NewScene##NwScn1";
-        m_strInputWindow.m_inputVal = "NewScene";
+        m_strInputWindow.m_inputVal = g_newSceneStr;
         m_strInputWindow.m_inputText = "Name";
         m_strInputWindow.m_hint = "Scene name";
         m_strInputWindow.SetVisibility(true);
@@ -341,7 +341,11 @@ namespace ToolKit
         m_strInputWindow.SetVisibility(true);
         m_strInputWindow.m_taskFn = [](const String& val)
         {
-          g_app->m_scene.m_name = val;
+          String path;
+          DecomposePath(g_app->m_scene->m_file, &path, nullptr, nullptr);
+          String fullPath = ConcatPaths({ path, val + SCENE });
+          g_app->m_scene->m_file = fullPath;
+          g_app->m_scene->m_name = val;
           g_app->OnSaveScene();
         };
       }
@@ -669,12 +673,12 @@ namespace ToolKit
         return;
       }
 
-      ImGui::OpenPopup("NewScene");
-      if (ImGui::BeginPopupModal("NewScene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+      ImGui::OpenPopup(g_newSceneStr.c_str());
+      if (ImGui::BeginPopupModal(g_newSceneStr.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
       {
         static String sceneName;
 
-        ImGui::InputTextWithHint("Name", "NewScene", &sceneName);
+        ImGui::InputTextWithHint("Name", g_newSceneStr.c_str(), &sceneName);
         ImGui::SetItemDefaultFocus();
 
         if (ImGui::Button("OK", ImVec2(120, 0)))

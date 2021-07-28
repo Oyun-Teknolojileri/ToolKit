@@ -232,6 +232,101 @@ namespace ToolKit
     return ResourceType::Base;
   }
 
+  String GetTypeString(ResourceType type)
+  {
+    switch (type)
+    {
+    case ResourceType::Base:
+      return "Base";
+      break;
+    case ResourceType::Animation:
+      return "Animation";
+      break;
+    case ResourceType::Audio:
+      return "Audio";
+      break;
+    case ResourceType::Material:
+      return "Material";
+      break;
+    case ResourceType::Mesh:
+      return "Mesh";
+      break;
+    case ResourceType::Shader:
+      return "Shader";
+      break;
+    case ResourceType::SkinMesh:
+      return "SkinMesh";
+      break;
+    case ResourceType::SpriteSheet:
+      return "SpriteSheet";
+      break;
+    case ResourceType::Texture:
+      return "Texture";
+      break;
+    case ResourceType::CubeMap:
+      return "CubeMap";
+      break;
+    case ResourceType::RenderTarget:
+      return "RenderTarget";
+      break;
+    case ResourceType::Scene:
+      return "Scene";
+      break;
+    default:
+      assert(false);
+      break;
+    }
+
+    return String();
+  }
+
+  String GetExtFromType(ResourceType type)
+  {
+    switch (type)
+    {
+    case ResourceType::Base:
+      break;
+    case ResourceType::Animation:
+      return ANIM;
+      break;
+    case ResourceType::Audio:
+      return AUDIO;
+      break;
+    case ResourceType::Material:
+      return MATERIAL;
+      break;
+    case ResourceType::Mesh:
+      return MESH;
+      break;
+    case ResourceType::Shader:
+      return SHADER;
+      break;
+    case ResourceType::SkinMesh:
+      return SKINMESH;
+      break;
+    case ResourceType::SpriteSheet:
+      assert(false);
+      break;
+    case ResourceType::Texture:
+      assert(false);
+      break;
+    case ResourceType::CubeMap:
+      assert(false);
+      break;
+    case ResourceType::RenderTarget:
+      assert(false);
+      break;
+    case ResourceType::Scene:
+      return SCENE;
+      break;
+    default:
+      assert(false);
+      break;
+    }
+    
+    return String();
+  }
+
   String GetResourcePath(ResourceType type)
   {
     String path;

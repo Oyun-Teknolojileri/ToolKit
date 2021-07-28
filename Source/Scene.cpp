@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "ToolKit.h"
 #include "Scene.h"
 #include "Util.h"
 #include "DebugNew.h"
@@ -8,10 +9,94 @@ namespace ToolKit
 
   Scene::Scene()
   {
-    m_name = "NewScene";
+    m_name = "New Scene";
+    m_type = ResourceType::Scene;
+  }
+
+  Scene::Scene(String file)
+    : Scene()
+  {
+    m_file = file;
   }
 
   Scene::~Scene()
+  {
+    Destroy();
+  }
+
+  void Scene::Load()
+  {
+    if (m_loaded)
+    {
+      return;
+    }
+
+    XmlFile sceneFile(m_file.c_str());
+    XmlDocument sceneDoc;
+    sceneDoc.parse<0>(sceneFile.data());
+
+    DeSerialize(&sceneDoc, nullptr);
+
+    // Update parent - child relation for entities.
+    for (Entity* e : m_entitites)
+    {
+      if (e->_parentId != 0)
+      {
+        Entity* parent = GetEntity(e->_parentId);
+        if (parent)
+        {
+          parent->m_node->AddChild(e->m_node);
+        }
+      }
+    }
+
+    m_loaded = true;
+  }
+
+  void Scene::Save(bool onlyIfDirty)
+  {
+    String fullPath = m_file;
+    if (m_file.empty())
+    {
+      fullPath = ScenePath(m_name + SCENE);
+    }
+
+    std::ofstream file;
+    file.open(fullPath.c_str(), std::ios::out);
+    if (file.is_open())
+    {
+      XmlDocument doc;
+      Serialize(&doc, nullptr);
+      
+      std::string xml;
+      rapidxml::print(std::back_inserter(xml), doc, 0);
+
+      file << xml;
+      file.close();
+      doc.clear();
+    }
+  }
+
+  void Scene::Init(bool flushClientSideArray)
+  {
+    if (m_initiated)
+    {
+      return;
+    }
+
+    const EntityRawPtrArray& ntties = GetEntities();
+    for (Entity* ntt : ntties)
+    {
+      if (ntt->IsDrawable())
+      {
+        static_cast<Drawable*> (ntt)->m_mesh->Init(flushClientSideArray);
+      }
+    }
+
+    m_initiated = true;
+  }
+
+  void Scene::UnInit()
   {
     Destroy();
   }
@@ -165,39 +250,28 @@ namespace ToolKit
       SafeDel(ntt);
     }
     m_entitites.clear();
+
+    m_loaded = false;
+    m_initiated = false;
   }
 
   void Scene::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    std::ofstream file;
-    String fileName = ScenePath(m_name + ".scene");
+    XmlNode* scene = doc->allocate_node(rapidxml::node_element, XmlSceneElement.c_str());
+    WriteAttr(scene, doc, "name", m_name.c_str());
 
-    file.open(fileName.c_str(), std::ios::out);
-    if (file.is_open())
+    if (parent != nullptr)
     {
-      XmlNode* scene = doc->allocate_node(rapidxml::node_element, XmlSceneElement.c_str());
-      WriteAttr(scene, doc, "name", m_name.c_str());
+      parent->append_node(scene);
+    }
+    else
+    {
+      doc->append_node(scene);
+    }
 
-      if (parent != nullptr)
-      {
-        parent->append_node(scene);
-      }
-      else
-      {
-        doc->append_node(scene);
-      }
-
-      for (Entity* ntt : m_entitites)
-      {
-        ntt->Serialize(doc, scene);
-      }
-
-      std::string xml;
-      rapidxml::print(std::back_inserter(xml), *doc, 0);
-
-      file << xml;
-      file.close();
-      doc->clear();
+    for (Entity* ntt : m_entitites)
+    {
+      ntt->Serialize(doc, scene);
     }
   }
 
@@ -267,19 +341,15 @@ namespace ToolKit
       ntt->DeSerialize(doc, node);
       m_entitites.push_back(ntt);
     }
+  }
 
-    // Update parent - child relation for entities.
-    for (Entity* e : m_entitites)
-    {
-      if (e->_parentId != 0)
-      {
-        Entity* parent = GetEntity(e->_parentId);
-        if (parent)
-        {
-          parent->m_node->AddChild(e->m_node);
-        }
-      }
-    }
+  SceneManager::SceneManager()
+  {
+    m_type = ResourceType::Scene;
+  }
+
+  SceneManager::~SceneManager()
+  {
   }
 
 }

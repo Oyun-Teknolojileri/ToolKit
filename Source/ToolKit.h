@@ -16,6 +16,7 @@
 #include "StateMachine.h"
 #include "Surface.h"
 #include "Texture.h"
+#include "Scene.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -48,6 +49,7 @@ namespace ToolKit
     ShaderManager m_shaderMan;
     SpriteSheetManager m_spriteSheetMan;
     TextureManager m_textureMan;
+    SceneManager m_sceneManager;
 
     bool m_initiated = false;
   };
@@ -60,6 +62,7 @@ namespace ToolKit
   ShaderManager* GetShaderManager();
   SpriteSheetManager* GetSpriteSheetManager();
   TextureManager* GetTextureManager();
+  SceneManager* GetSceneManager();
   ResourceManager* GetResourceManager(ResourceType type);
 
   String ResourcePath();
