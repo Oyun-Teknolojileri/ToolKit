@@ -447,7 +447,7 @@ namespace ToolKit
     {
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        Entity* curr = g_app->m_scene.GetCurrentSelection();
+        Entity* curr = g_app->m_scene->GetCurrentSelection();
         if (curr == nullptr)
         {
           ImGui::Text("Select an Entity");

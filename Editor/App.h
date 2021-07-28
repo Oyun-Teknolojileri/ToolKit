@@ -62,7 +62,7 @@ namespace ToolKit
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     public:
-      EditorScene m_scene;
+      EditorScenePtr m_scene;
 
       // UI elements.
       std::vector<Window*> m_windows;
@@ -108,13 +108,6 @@ namespace ToolKit
 
     private:
       bool m_onNewScene = false;
-      Drawable* m_suzanne;
-      Drawable* m_knight;
-      std::shared_ptr<Animation> m_knightRunAnim;
-      Cube* m_q1;
-      Cube* m_q2;
-      Cone* m_q3;
-      Cube* m_q4;
     };
 
   }

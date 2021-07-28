@@ -25,6 +25,7 @@ namespace ToolKit
     const String g_errorStr("[Err] ");
     const String g_warningStr("[Wrn] ");
     const String g_commandStr("# ");
+    const String g_newSceneStr("New Scene");
 
     // Colors and materials.
     const String g_gridMaterialName("TK_EDITOR_GRID");

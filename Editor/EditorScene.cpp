@@ -13,6 +13,12 @@ namespace ToolKit
       m_newScene = true;
     }
 
+    EditorScene::EditorScene(const String& file)
+      : EditorScene()
+    {
+      m_file = file;
+    }
+
     EditorScene::~EditorScene()
     {
     }

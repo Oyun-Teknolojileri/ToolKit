@@ -31,6 +31,8 @@ namespace ToolKit
   void NormalizePath(String& path);
   String ConcatPaths(const StringArray& entries);
   enum class ResourceType GetResourceType(const String& ext);
+  String GetTypeString(enum class ResourceType type);
+  String GetExtFromType(enum class ResourceType type);
   String GetResourcePath(enum class ResourceType type);
   String GetRelativeResourcePath(const String& fullPath);
   char GetPathSeparator();

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Types.h"
+#include "Util.h"
+#include "Logger.h"
 #include <unordered_map>
 #include <memory>
 
@@ -19,7 +21,8 @@ namespace ToolKit
     SpriteSheet,
     Texture,
     CubeMap,
-    RenderTarget
+    RenderTarget,
+    Scene
   };
 
   class ResourceManager
@@ -29,19 +32,26 @@ namespace ToolKit
     virtual void Uninit();
     virtual ~ResourceManager();
 
-    virtual ResourcePtr Create(const String& file);
-    virtual ResourcePtr Create(const String& file, ResourceType type);
-
     template<typename T>
-    std::shared_ptr<T> Create(const String& file)
+    std::shared_ptr<T> Create(String file)
     {
-      return std::static_pointer_cast<T> (Create(file, m_type));
-    }
+      if (!Exist(file))
+      {
+        bool fileCheck = CheckFile(file);
+        if (!fileCheck)
+        {
+          Logger::GetInstance()->Log("Missing: " + file);
+          assert(fileCheck);
+          return nullptr;
+        }
 
-    template<typename T>
-    std::shared_ptr<T> Create(const String& file, ResourceType type)
-    {
-      return std::static_pointer_cast<T> (Create(file, type));
+        ResourcePtr resource = std::make_shared<T>(file);
+
+        resource->Load();
+        m_storage[file] = resource;
+      }
+
+      return std::reinterpret_pointer_cast<T> (m_storage[file]);
     }
 
     bool Exist(String file);

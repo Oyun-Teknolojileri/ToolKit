@@ -21,6 +21,7 @@ namespace ToolKit
     m_audioMan.Init();
     m_shaderMan.Init();
     m_materialManager.Init();
+    m_sceneManager.Init();
 
     m_initiated = true;
   }
@@ -35,6 +36,8 @@ namespace ToolKit
     m_audioMan.Uninit();
     m_shaderMan.Uninit();
     m_materialManager.Uninit();
+    m_materialManager.Uninit();
+    m_sceneManager.Uninit();
 
     m_initiated = false;
   }
@@ -86,6 +89,11 @@ namespace ToolKit
   TextureManager* GetTextureManager()
   {
     return &Main::GetInstance()->m_textureMan;
+  }
+
+  SceneManager* GetSceneManager()
+  {
+    return &Main::GetInstance()->m_sceneManager;
   }
 
   ResourceManager* GetResourceManager(ResourceType type)

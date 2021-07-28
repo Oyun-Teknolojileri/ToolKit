@@ -1,13 +1,12 @@
 #pragma once
 
-#include "ToolKit.h"
-#include "Types.h"
-#include "Serialize.h"
+#include "Resource.h"
+#include "MathUtil.h"
 
 namespace ToolKit
 {
 
-  class Scene : public Serializable
+  class Scene : public Resource
   {
   public:
     struct PickData
@@ -18,7 +17,13 @@ namespace ToolKit
 
   public:
     Scene();
+    Scene(String file);
     virtual ~Scene();
+
+    virtual void Load();
+    virtual void Save(bool onlyIfDirty);
+    virtual void Init(bool flushClientSideArray = true);
+    virtual void UnInit();
 
     // Scene queries.
     PickData PickObject(Ray ray, const EntityIdArray& ignoreList = EntityIdArray()) const;
@@ -37,11 +42,15 @@ namespace ToolKit
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
-  public:
-    String m_name;
-
   protected:
     EntityRawPtrArray m_entitites;
+  };
+
+  class SceneManager : public ResourceManager
+  {
+  public:
+    SceneManager();
+    virtual ~SceneManager();
   };
 
 }

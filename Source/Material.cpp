@@ -229,7 +229,7 @@ namespace ToolKit
       else if (String("cubeMap").compare(node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute("name");
-        m_cubeMap = GetTextureManager()->Create<CubeMap>(TexturePath(attr->value()), ResourceType::CubeMap);
+        m_cubeMap = GetTextureManager()->Create<CubeMap>(TexturePath(attr->value()));
       }
       else if (String("shader").compare(node->name()) == 0)
       {

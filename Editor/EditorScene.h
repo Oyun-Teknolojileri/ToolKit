@@ -7,10 +7,14 @@ namespace ToolKit
 {
   namespace Editor
   {
+
+    typedef std::shared_ptr<class EditorScene> EditorScenePtr;
+
     class EditorScene : public Scene
     {
     public:
       EditorScene();
+      EditorScene(const String& file);
       virtual ~EditorScene();
 
       // Selection operations.
