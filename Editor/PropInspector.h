@@ -45,6 +45,9 @@ namespace ToolKit
       MaterialView() { m_viewID = 3; }
       virtual ~MaterialView() {}
       virtual void Show() override;
+
+    public:
+      MaterialPtr m_material;
     };
 
     class PropInspector : public Window
@@ -59,22 +62,28 @@ namespace ToolKit
       virtual void DispatchSignals() const override;
 
       template<typename T>
-      T* GetView()
-      {
-        for (View* v : m_views)
-        {
-          if (T* cv = dynamic_cast<T*> (v))
-          {
-            return cv;
-          }
-        }
-
-        assert(false && "Invalid View type queried");
-        return nullptr;
-      }
+      T* GetView();
 
     public:
       std::vector<View*> m_views;
+    };
+
+    class MaterialInspector : public Window
+    {
+    public:
+      MaterialInspector(XmlNode* node);
+      MaterialInspector();
+      virtual ~MaterialInspector();
+
+      virtual void Show() override;
+      virtual Type GetType() const override;
+      virtual void DispatchSignals() const override;
+
+    public:
+      MaterialPtr m_material;
+
+    private:
+      MaterialView* m_view;
     };
 
   }

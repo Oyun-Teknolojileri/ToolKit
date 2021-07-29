@@ -21,7 +21,8 @@ namespace ToolKit
         InputPopup,
         Browser,
         Outliner,
-        Inspector
+        Inspector,
+        MaterialInspector
       };
 
     public:

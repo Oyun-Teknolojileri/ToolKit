@@ -428,6 +428,11 @@ namespace ToolKit
         g_app->GetPropInspector()->SetVisibility(true);
       }
 
+      if (ImGui::MenuItem("Material Inspector", "Alt+R", nullptr, !g_app->GetMaterialInspector()->IsVisible()))
+      {
+        g_app->GetMaterialInspector()->SetVisibility(true);
+      }
+
       ImGui::Separator();
 
       if (!m_windowMenushowMetrics)

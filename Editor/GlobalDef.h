@@ -20,7 +20,8 @@ namespace ToolKit
     const String g_viewportStr("Viewport");
     const String g_assetBrowserStr("Asset Browser");
     const String g_outlinerStr("Outliner");
-    const String g_propInspector("Inspector");
+    const String g_propInspector("Property Inspector");
+    const String g_matInspector("Material Inspector");
     const String g_memoStr("");
     const String g_errorStr("[Err] ");
     const String g_warningStr("[Wrn] ");

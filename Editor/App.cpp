@@ -124,6 +124,10 @@ namespace ToolKit
         PropInspector* inspector = new PropInspector();
         inspector->m_name = g_propInspector;
         m_windows.push_back(inspector);
+
+        MaterialInspector* matInspect = new MaterialInspector();
+        matInspect->m_name = g_matInspector;
+        m_windows.push_back(matInspect);
       }
 
       UI::InitIcons();
@@ -649,6 +653,11 @@ namespace ToolKit
     PropInspector* App::GetPropInspector()
     {
       return GetWindow<PropInspector>(g_propInspector);
+    }
+
+    MaterialInspector* App::GetMaterialInspector()
+    {
+      return GetWindow<MaterialInspector>(g_matInspector);
     }
 
     template<typename T>
