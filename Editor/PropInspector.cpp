@@ -517,6 +517,7 @@ namespace ToolKit
     MaterialInspector::MaterialInspector(XmlNode* node)
       : MaterialInspector()
     {
+      DeSerialize(nullptr, node);
     }
 
     MaterialInspector::MaterialInspector()

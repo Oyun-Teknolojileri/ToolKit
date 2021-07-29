@@ -806,6 +806,9 @@ namespace ToolKit
           case Window::Type::Inspector:
             wnd = new PropInspector(wndNode);
             break;
+          case Window::Type::MaterialInspector:
+            wnd = new MaterialInspector(wndNode);
+            break;
           default:
             assert(false);
             break;
