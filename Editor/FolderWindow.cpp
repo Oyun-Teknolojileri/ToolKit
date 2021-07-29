@@ -243,7 +243,15 @@ namespace ToolKit
           ImGui::PushID(i);
           ImGui::BeginGroup();
           ImVec2 texCoords = flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
-          ImGui::ImageButton((void*)(intptr_t)iconId, m_iconSize, ImVec2(0.0f, 0.0f), texCoords);
+          if (ImGui::ImageButton((void*)(intptr_t)iconId, m_iconSize, ImVec2(0.0f, 0.0f), texCoords))
+          {
+            ResourceManager* rm = de.GetManager();
+            if (rm && rm->m_type == ResourceType::Material)
+            {
+              MaterialInspector* mi = g_app->GetMaterialInspector();
+              mi->m_material = rm->Create<Material>(de.GetFullPath());
+            }
+          }
 
           if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
           {

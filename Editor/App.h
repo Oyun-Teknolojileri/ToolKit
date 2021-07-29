@@ -22,6 +22,7 @@ namespace ToolKit
     class FolderWindow;
     class OutlinerWindow;
     class PropInspector;
+    class MaterialInspector;
     class Window;
     class Gizmo;
 
@@ -51,6 +52,7 @@ namespace ToolKit
       FolderWindow* GetAssetBrowser();
       OutlinerWindow* GetOutliner();
       PropInspector* GetPropInspector();
+      MaterialInspector* GetMaterialInspector();
 
       template<typename T>
       T* GetWindow(const String& name);

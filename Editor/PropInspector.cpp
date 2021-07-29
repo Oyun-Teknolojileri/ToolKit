@@ -273,7 +273,22 @@ namespace ToolKit
     void MaterialView::Show()
     {
       Drawable* drawable = static_cast<Drawable*> (m_entity);
-      MaterialPtr entry = drawable->m_mesh->m_material;
+      MaterialPtr entry;
+
+      bool entityMod = true;
+      if (entry = m_material)
+      {
+        entityMod = false;
+      }
+      else
+      {
+        if (drawable == nullptr)
+        {
+          return;
+        }
+        entry = drawable->m_mesh->m_material;
+      }
+
       if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
       {
         if (ImGui::ColorEdit3("MatColor##1", (float*)&entry->m_color))
@@ -319,12 +334,11 @@ namespace ToolKit
           (
             UI::m_codeIcon->m_textureId,
             entry->m_vertexShader->m_file,
-            [&drawable](const DirectoryEntry& dirEnt) -> void
+            [&entry](const DirectoryEntry& dirEnt) -> void
             {
-              MaterialPtr material = drawable->m_mesh->m_material;
-              material->m_vertexShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-              material->m_vertexShader->Init();
-              material->m_dirty = true;
+              entry->m_vertexShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
+              entry->m_vertexShader->Init();
+              entry->m_dirty = true;
             }
           );
 
@@ -333,12 +347,11 @@ namespace ToolKit
           (
             UI::m_codeIcon->m_textureId,
             entry->m_fragmetShader->m_file,
-            [&drawable](const DirectoryEntry& dirEnt) -> void
+            [&entry](const DirectoryEntry& dirEnt) -> void
             {
-              MaterialPtr material = drawable->m_mesh->m_material;
-              material->m_fragmetShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-              material->m_fragmetShader->Init();
-              material->m_dirty = true;
+              entry->m_fragmetShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
+              entry->m_fragmetShader->Init();
+              entry->m_dirty = true;
             }
           );
           ImGui::TreePop();
@@ -403,18 +416,21 @@ namespace ToolKit
           ImGui::TreePop();
         }
 
-        DropSubZone
-        (
-          UI::m_materialIcon->m_textureId,
-          entry->m_file,
-          [&drawable](const DirectoryEntry& dirEnt) -> void
-          {
-            MeshPtr mesh = drawable->m_mesh;
-            mesh->m_material = GetMaterialManager()->Create<Material>(dirEnt.GetFullPath());
-            mesh->m_material->Init();
-            mesh->m_dirty = true;
-          }
-        );
+        if (entityMod)
+        {
+          DropSubZone
+          (
+            UI::m_materialIcon->m_textureId,
+            entry->m_file,
+            [&drawable](const DirectoryEntry& dirEnt) -> void
+            {
+              MeshPtr mesh = drawable->m_mesh;
+              mesh->m_material = GetMaterialManager()->Create<Material>(dirEnt.GetFullPath());
+              mesh->m_material->Init();
+              mesh->m_dirty = true;
+            }
+          );
+        }
       }
     }
 
@@ -450,7 +466,7 @@ namespace ToolKit
         Entity* curr = g_app->m_scene->GetCurrentSelection();
         if (curr == nullptr)
         {
-          ImGui::Text("Select an Entity");
+          ImGui::Text("Select an entity");
         }
         else
         {
@@ -483,6 +499,62 @@ namespace ToolKit
     {
     }
 
-  }
+    template<typename T>
+    inline T* PropInspector::GetView()
+    {
+      for (View* v : m_views)
+      {
+        if (T* cv = dynamic_cast<T*> (v))
+        {
+          return cv;
+        }
+      }
+
+      assert(false && "Invalid View type queried");
+      return nullptr;
+    }
+
+    MaterialInspector::MaterialInspector(XmlNode* node)
+      : MaterialInspector()
+    {
+    }
+
+    MaterialInspector::MaterialInspector()
+    {
+      m_view = new MaterialView();
+    }
+
+    MaterialInspector::~MaterialInspector()
+    {
+      SafeDel(m_view);
+    }
+
+    void MaterialInspector::Show()
+    {
+      if (ImGui::Begin(m_name.c_str(), &m_visible))
+      {
+        if (m_material == nullptr)
+        {
+          ImGui::Text("Select a material");
+        }
+        else
+        {
+          m_view->m_material = m_material;
+          m_view->Show();
+        }
+      }
+      ImGui::End();
+    }
+
+    Window::Type MaterialInspector::GetType() const
+    {
+      return Type::MaterialInspector;
+    }
+
+    void MaterialInspector::DispatchSignals() const
+    {
+    }
+
+}
 }
 
