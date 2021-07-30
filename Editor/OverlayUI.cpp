@@ -426,6 +426,7 @@ namespace ToolKit
         }
 
         g_app->m_snapsEnabled = UI::ToggleButton((void*)(intptr_t)UI::m_snapIcon->m_textureId, ImVec2(16, 16), g_app->m_snapsEnabled);
+        UI::HelpMarker(LOC + m_owner->m_name, "Grid snaping\nRight click for options");
 
         if (ImGui::BeginPopupContextItem("##SnapMenu"))
         {

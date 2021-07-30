@@ -36,9 +36,16 @@ namespace ToolKit
       void Iterate();
       int Exist(const String& file);
 
+    protected:
+      void ShowContextForMaterial(DirectoryEntry* entry);
+      void ShowContextForMesh(DirectoryEntry* entry);
+      void ShowGenericContext();
+
     private:
       FolderWindow* m_parent = nullptr;
       String m_path;
+      bool m_dirty = false;
+      ImVec2 m_contextBtnSize = ImVec2(75, 20);
 
     public:
       bool m_currRoot = false; // Indicates this is a root folder (one level under Resources) and currently selected in the FolderWindow.
