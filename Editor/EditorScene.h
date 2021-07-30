@@ -29,6 +29,10 @@ namespace ToolKit
       uint GetSelectedEntityCount() const;
       Entity* GetCurrentSelection() const;
 
+      // Resource operations
+      bool IsMaterialInUse(const MaterialPtr& material) const;
+      bool IsMeshInUse(const MeshPtr& mesh) const;
+
       // Entity operations.
       virtual Entity* RemoveEntity(EntityId id) override;
       virtual void Destroy() override;
