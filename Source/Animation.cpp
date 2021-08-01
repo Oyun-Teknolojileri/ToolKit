@@ -13,9 +13,11 @@ namespace ToolKit
 
   Animation::Animation()
   {
+    m_type = ResourceType::Animation;
   }
 
   Animation::Animation(String file)
+    : Animation()
   {
     m_file = file;
   }
@@ -272,6 +274,15 @@ namespace ToolKit
     }
 
     return -1;
+  }
+
+  AnimationManager::AnimationManager()
+  {
+    m_type = ResourceType::Animation;
+  }
+
+  AnimationManager::~AnimationManager()
+  {
   }
 
 }

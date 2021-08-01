@@ -2,16 +2,24 @@
 #include "OutlinerWindow.h"
 #include "GlobalDef.h"
 #include "Mod.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
+    OutlinerWindow::OutlinerWindow(XmlNode* node)
+    {
+      DeSerialize(nullptr, node);
+    }
 
     OutlinerWindow::OutlinerWindow()
     {
+    }
 
+    OutlinerWindow::~OutlinerWindow()
+    {
     }
 
     // Recursively show entity hierarchy & update via drag drop.
@@ -25,7 +33,7 @@ namespace ToolKit
         | ImGuiTreeNodeFlags_SpanAvailWidth;
 
       ImGuiTreeNodeFlags nodeFlags = baseFlags;
-      if (g_app->m_scene.IsSelected(e->m_id))
+      if (g_app->m_scene->IsSelected(e->m_id))
       {
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
       }
@@ -36,19 +44,19 @@ namespace ToolKit
         {
           if (ImGui::GetIO().KeyShift)
           {
-            if (g_app->m_scene.IsSelected(e->m_id))
+            if (g_app->m_scene->IsSelected(e->m_id))
             {
-              g_app->m_scene.RemoveFromSelection(e->m_id);
+              g_app->m_scene->RemoveFromSelection(e->m_id);
             }
             else
             {
-              g_app->m_scene.AddToSelection(e->m_id, true);
+              g_app->m_scene->AddToSelection(e->m_id, true);
             }
           }
           else
           {
-            g_app->m_scene.ClearSelection();
-            g_app->m_scene.AddToSelection(e->m_id, false);
+            g_app->m_scene->ClearSelection();
+            g_app->m_scene->AddToSelection(e->m_id, false);
           }
         }
 
@@ -90,7 +98,7 @@ namespace ToolKit
               if (childNtt->m_node->m_children.empty())
               {
                 nodeFlags = baseFlags;
-                if (g_app->m_scene.IsSelected(childNtt->m_id))
+                if (g_app->m_scene->IsSelected(childNtt->m_id))
                 {
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
                 }
@@ -102,7 +110,7 @@ namespace ToolKit
               else
               {
                 nodeFlags = baseFlags;
-                if (g_app->m_scene.IsSelected(childNtt->m_id))
+                if (g_app->m_scene->IsSelected(childNtt->m_id))
                 {
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
                 }
@@ -142,8 +150,6 @@ namespace ToolKit
     {
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        HandleStates();
-
         g_parent = NULL_ENTITY;
         g_child = NULL_ENTITY;
 
@@ -156,13 +162,13 @@ namespace ToolKit
             {
               IM_ASSERT(payload->DataSize == sizeof(EntityId*));
               g_child = *(EntityId*)payload->Data;
-              Entity* child = g_app->m_scene.GetEntity(g_child);
+              Entity* child = g_app->m_scene->GetEntity(g_child);
               child->m_node->OrphanSelf(true);
             }
             ImGui::EndDragDropTarget();
           }
 
-          const EntityRawPtrArray& ntties = g_app->m_scene.GetEntities();
+          const EntityRawPtrArray& ntties = g_app->m_scene->GetEntities();
           EntityRawPtrArray roots;
           GetRootEntities(ntties, roots);
 
@@ -179,11 +185,11 @@ namespace ToolKit
       // Update hierarchy if there is a change.
       if (g_child != NULL_ENTITY)
       {
-        Entity* child = g_app->m_scene.GetEntity(g_child);
+        Entity* child = g_app->m_scene->GetEntity(g_child);
         child->m_node->OrphanSelf(true);
         if (g_parent != NULL_ENTITY)
         {
-          Entity* parent = g_app->m_scene.GetEntity(g_parent);
+          Entity* parent = g_app->m_scene->GetEntity(g_parent);
           parent->m_node->AddChild(child->m_node, true);
         }
       }

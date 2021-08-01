@@ -22,9 +22,11 @@ namespace ToolKit
     Billboard(const Settings& settings);
 
     virtual void LookAt(class Camera* cam, float windowHeight);
-    virtual Billboard* GetCopy() const override;
-    virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
+
+  protected:
+    virtual Entity* GetCopy(Entity* copyTo) const override;
+    virtual Entity* GetInstance(Entity* copyTo) const override;
 
   public:
     Settings m_settings;
@@ -51,11 +53,13 @@ namespace ToolKit
     Cube(bool genDef = true);
     Cube(const Params& params);
 
-    virtual Cube* GetCopy() const override;
-    virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+  protected:
+    virtual Entity* GetCopy(Entity* copyTo) const override;
+    virtual Entity* GetInstance(Entity* copyTo) const override;
 
   private:
     void Generate();
@@ -66,9 +70,11 @@ namespace ToolKit
   public:
     Quad(bool genDef = true);
 
-    virtual Quad* GetCopy() const override;
-    virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
+
+  protected:
+    virtual Entity* GetCopy(Entity* copyTo) const override;
+    virtual Entity* GetInstance(Entity* copyTo) const override;
 
   private:
     void Generate();
@@ -94,11 +100,13 @@ namespace ToolKit
     Sphere(bool genDef = true);
     Sphere(const Params& params);
 
-    virtual Sphere* GetCopy() const override;
-    virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+  protected:
+    virtual Entity* GetCopy(Entity* copyTo) const override;
+    virtual Entity* GetInstance(Entity* copyTo) const override;
 
   private:
     void Generate();
@@ -131,10 +139,13 @@ namespace ToolKit
     Cone(const Params& params);
 
     virtual Cone* GetCopy() const override;
-    virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+  protected:
+    virtual Entity* GetCopy(Entity* copyTo) const override;
+    virtual Entity* GetInstance(Entity* copyTo) const override;
 
   private:
     void Generate();
@@ -145,10 +156,11 @@ namespace ToolKit
   public:
     Arrow2d(bool genDef = true);
     Arrow2d(AxisLabel label); // X - Y - Z.
-
-    virtual Arrow2d* GetCopy() const override;
-    virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
+
+  protected:
+    virtual Entity* GetCopy(Entity* copyTo) const override;
+    virtual Entity* GetInstance(Entity* copyTo) const override;
 
   private:
     void Generate();
@@ -159,15 +171,15 @@ namespace ToolKit
 
   class LineBatch : public Drawable
   {
-    LineBatch(); // For copy.
-
   public:
+    LineBatch();
     LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
 
-    virtual LineBatch* GetCopy() const override;
-    virtual void GetCopy(Entity* copyTo) const override;
     virtual EntityType GetType() const override;
     void Generate(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
+
+  protected:
+    virtual Entity* GetCopy(Entity* copyTo) const override;
   };
 
 }

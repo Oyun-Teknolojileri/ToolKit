@@ -57,12 +57,16 @@ namespace ToolKit
     const String g_saveMesh("SaveMesh");
     void SaveMesh(TagArgArray tagArgs);
 
+    const String g_showSelectionBoundary("ShowSelectionBoundary");
+    void ShowSelectionBoundary(TagArgArray tagArgs);
+
     // Command errors
     const String g_noValidEntity("No valid entity");
 
     class ConsoleWindow : public Window
     {
     public:
+      ConsoleWindow(XmlNode* node);
       ConsoleWindow();
       virtual ~ConsoleWindow();
       virtual void Show() override;
@@ -96,8 +100,8 @@ namespace ToolKit
       StringArray m_commands;
       std::unordered_map<String, std::function<void(TagArgArray&)>> m_commandExecutors;
 
-      std::vector < String> m_history;
-      int m_historyPos; // -1: new line, 0..History.Size-1 browsing history.
+      std::vector <String> m_history;
+      int m_historyPos = -1; // -1: new line, 0..History.Size-1 browsing history.
 
       // ImGui Helpers.
       ImGuiTextFilter m_filter;

@@ -73,6 +73,7 @@ namespace ToolKit
             // Set defaults
             SDL_GL_SetSwapInterval(0);
             glClearColor(0.2f, 0.2f, 0.2f, 1.0);
+            glPointSize(5.0f);
 
             glEnable(GL_CULL_FACE);
             glEnable(GL_DEPTH_TEST);
@@ -121,6 +122,16 @@ namespace ToolKit
         {
           g_app->OnResize(e.window.data1, e.window.data2);
         }
+
+        if (e.window.event == SDL_WINDOWEVENT_MAXIMIZED)
+        {
+          g_app->m_windowMaximized = true;
+        }
+
+        if (e.window.event == SDL_WINDOWEVENT_RESTORED)
+        {
+          g_app->m_windowMaximized = false;
+        }
       }
 
       if (e.type == SDL_DROPFILE)
@@ -152,6 +163,21 @@ namespace ToolKit
       _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
       Init();
+
+      // Restore window.
+      uint appWidth = g_app->m_renderer->m_windowWidth;
+      uint appHeight = g_app->m_renderer->m_windowHeight;
+
+      if (appWidth != width || appHeight != height)
+      {
+        SDL_SetWindowSize(g_window, appWidth, appHeight);
+        SDL_SetWindowPosition(g_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+      }
+
+      if (g_app->m_windowMaximized)
+      {
+        SDL_MaximizeWindow(g_window);
+      }
 
       // Continue with editor.
       float lastTime = GetMilliSeconds();

@@ -68,8 +68,11 @@ namespace ToolKit
     float m_prevTime = 0.0f;
   };
 
-  class SpriteSheetManager : public ResourceManager<SpriteSheet>
+  class SpriteSheetManager : public ResourceManager
   {
+  public:
+    SpriteSheetManager();
+    virtual ~SpriteSheetManager();
   };
 
 }

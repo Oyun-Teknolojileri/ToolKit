@@ -7,12 +7,18 @@ namespace ToolKit
   namespace Editor
   {
 
-    struct DirectoryEntry
+    class DirectoryEntry
     {
+    public:
+      String GetFullPath() const;
+      ResourceManager* GetManager() const;
+      void GenerateThumbnail();
+      RenderTargetPtr GetThumbnail() const;
+
+    public:
       String m_ext;
       String m_fileName;
       String m_rootPath;
-      RenderTargetPtr m_thumbNail = nullptr;
       bool m_isDirectory = false;
     };
 
@@ -29,37 +35,49 @@ namespace ToolKit
       const String& GetPath() const;
       void Iterate();
       int Exist(const String& file);
-      void GenerateThumbNail(DirectoryEntry& entry);
+
+    protected:
+      void ShowContextForMaterial(DirectoryEntry* entry);
+      void ShowContextForMesh(DirectoryEntry* entry);
+      void ShowGenericContext();
 
     private:
       FolderWindow* m_parent = nullptr;
-      std::vector<DirectoryEntry> m_entiries;
       String m_path;
+      bool m_dirty = false;
+      ImVec2 m_contextBtnSize = ImVec2(75, 20);
 
     public:
       bool m_currRoot = false; // Indicates this is a root folder (one level under Resources) and currently selected in the FolderWindow.
-      bool m_visible = true;
+      bool m_visible = false;
       bool m_onlyNativeTypes = true;
-      static Vec2 m_iconSize;
-      Vec2 m_thumbnailSize = Vec2(300.0f, 300.0f);
+      Vec2 m_iconSize = Vec2(95.0f);
+      std::vector<DirectoryEntry> m_entiries;
       String m_folder;
     };
 
     class FolderWindow : public Window
     {
     public:
+      FolderWindow(XmlNode* node);
       FolderWindow();
+      virtual ~FolderWindow();
       virtual void Show() override;
       virtual Type GetType() const override;
-      void Iterate(const String& path);
+      void Iterate(const String& path, bool clear);
       void UpdateContent();
       void AddEntry(const FolderView& view);
       FolderView& GetView(int indx);
       int Exist(const String& folder);
+      bool GetFileEntry(const String& fullPath, DirectoryEntry& entry);
+
+      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
+      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
     private:
       std::vector<FolderView> m_entiries;
-      String m_path;
+      int m_activeFolder = -1;
+      bool m_showStructure = true;
     };
 
   }

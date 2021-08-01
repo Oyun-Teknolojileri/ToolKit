@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Node.h"
 #include "MathUtil.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -16,9 +17,9 @@ namespace ToolKit
   Node::~Node()
   {
     OrphanSelf(true);
-    for (Node* child : m_children)
+    for (int i = (int)m_children.size() - 1; i >= 0; i--)
     {
-      Orphan(child, true);
+      Orphan(m_children[i], true);
     }
   }
 
@@ -449,7 +450,7 @@ namespace ToolKit
     }
   }
 
-  ToolKit::Mat4 Node::GetLocalTransform() const
+  Mat4 Node::GetLocalTransform() const
   {
     Mat4 ts, rt, scl;
     scl = glm::scale(scl, m_scale);

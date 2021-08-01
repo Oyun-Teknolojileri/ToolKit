@@ -4,6 +4,8 @@
 #include "FolderWindow.h"
 #include "GlobalDef.h"
 #include "Gizmo.h"
+#include "PropInspector.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 #include <filesystem>
@@ -12,7 +14,118 @@ namespace ToolKit
 {
   namespace Editor
   {
-    Vec2 FolderView::m_iconSize = Vec2(95.0f);
+
+    String DirectoryEntry::GetFullPath() const
+    {
+      return ConcatPaths({ m_rootPath, m_fileName + m_ext });
+    }
+
+    ResourceManager* DirectoryEntry::GetManager() const
+    {
+      if (m_ext == ANIM)
+      {
+        return GetAnimationManager();
+      }
+      else if (m_ext == AUDIO)
+      {
+        return GetAudioManager();
+      }
+      else if (m_ext == MATERIAL)
+      {
+        return GetMaterialManager();
+      }
+      else if (m_ext == MESH)
+      {
+        return GetMeshManager();
+      }
+      else if (m_ext == SHADER)
+      {
+        return GetShaderManager();
+      }
+      else if (SupportedImageFormat(m_ext))
+      {
+        return GetTextureManager();
+      }
+
+      return nullptr;
+    }
+
+    void DirectoryEntry::GenerateThumbnail()
+    {
+      const Vec2& thumbSize = g_app->m_thumbnailSize;
+      auto renderThumbFn = [this, &thumbSize](Camera* cam, Drawable* dw) -> void
+      {
+        RenderTarget* thumb = new RenderTarget((uint)thumbSize.x, (uint)thumbSize.y);
+        thumb->Init();
+        g_app->m_renderer->SwapRenderTarget(&thumb);
+        g_app->m_renderer->Render(dw, cam, g_app->m_sceneLights);
+        g_app->m_renderer->SwapRenderTarget(&thumb, false);
+        g_app->m_thumbnailCache[GetFullPath()] = RenderTargetPtr(thumb);
+      };
+
+      if (m_ext == MESH)
+      {
+        Drawable dw;
+        String fullpath = m_rootPath + GetPathSeparator() + m_fileName + m_ext;
+        dw.m_mesh = GetMeshManager()->Create<Mesh>(fullpath);
+        dw.m_mesh->Init(false);
+
+        // Tight fit a frustum to a bounding sphere
+        // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
+        BoundingBox bb = dw.GetAABB();
+        Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
+        float r = glm::distance(geoCenter, bb.max) * 1.1f; // 10% safezone.
+        float a = glm::radians(45.0f);
+        float d = r / glm::tan(a / 2.0f);
+
+        Vec3 eye = geoCenter + glm::normalize(Vec3(1.0f)) * d;
+
+        Camera cam;
+        cam.SetLens(a, thumbSize.x, thumbSize.y);
+        cam.m_node->SetTranslation(eye);
+        cam.LookAt(geoCenter);
+
+        renderThumbFn(&cam, &dw);
+      }
+      else if (m_ext == MATERIAL)
+      {
+        Sphere ball;
+        String fullpath = m_rootPath + GetPathSeparator() + m_fileName + m_ext;
+        ball.m_mesh->m_material = GetMaterialManager()->Create<Material>(fullpath);
+        ball.m_mesh->Init(false);
+
+        Camera cam;
+        cam.SetLens(glm::half_pi<float>(), thumbSize.x, thumbSize.y);
+        cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 1.5f));
+
+        renderThumbFn(&cam, &ball);
+      }
+      else if (SupportedImageFormat(m_ext))
+      {
+        Quad frame;
+        String fullpath = m_rootPath + GetPathSeparator() + m_fileName + m_ext;
+        frame.m_mesh->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+        frame.m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(fullpath);
+        frame.m_mesh->m_material->m_diffuseTexture->Init(false);
+
+        Camera cam;
+        cam.SetLens(glm::half_pi<float>(), thumbSize.x, thumbSize.y);
+        cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 0.5f));
+
+        renderThumbFn(&cam, &frame);
+      }
+    }
+
+    RenderTargetPtr DirectoryEntry::GetThumbnail() const
+    {
+      String fullPath = GetFullPath();
+      if (g_app->m_thumbnailCache.find(fullPath) != g_app->m_thumbnailCache.end())
+      {
+        return g_app->m_thumbnailCache[fullPath];
+      }
+
+      return nullptr;
+    }
 
     FolderView::FolderView()
     {
@@ -33,13 +146,19 @@ namespace ToolKit
 
       if (ImGui::BeginTabItem(m_folder.c_str(), visCheck))
       {
+        if (m_dirty)
+        {
+          Iterate();
+          m_dirty = false;
+        }
+
         ImGuiIO io = ImGui::GetIO();
         static float wheel = io.MouseWheel;
         float delta = io.MouseWheel - wheel;
 
         const float icMin = 50.0f;
         const float icMax = 300.0f;
-        if (io.KeyCtrl)
+        if (io.KeyCtrl && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
         {
           m_iconSize += Vec2(delta) * 15.0f;
           if (m_iconSize.x < icMin)
@@ -68,6 +187,17 @@ namespace ToolKit
 
           bool flipRenderTarget = false;
           uint iconId = UI::m_fileIcon->m_textureId;
+
+          auto genThumbFn = [&flipRenderTarget, &iconId, &de, this]() -> void
+          {
+            if (de.GetThumbnail() == nullptr)
+            {
+              de.GenerateThumbnail();
+            }
+            iconId = de.GetThumbnail()->m_textureId;
+            flipRenderTarget = true;
+          };
+
           if (de.m_isDirectory)
           {
             iconId = UI::m_folderIcon->m_textureId;
@@ -78,12 +208,7 @@ namespace ToolKit
           }
           else if (de.m_ext == MESH)
           {
-            if (de.m_thumbNail == nullptr)
-            {
-              GenerateThumbNail(de);
-            }
-            iconId = de.m_thumbNail->m_textureId;
-            flipRenderTarget = true;
+            genThumbFn();
           }
           else if (de.m_ext == ANIM)
           {
@@ -107,27 +232,11 @@ namespace ToolKit
           }
           else if (de.m_ext == MATERIAL)
           {
-            iconId = UI::m_materialIcon->m_textureId;
+            genThumbFn();
           }
-          else if (de.m_ext == PNG)
+          else if (SupportedImageFormat(de.m_ext))
           {
-            iconId = UI::m_imageIcon->m_textureId;
-          }
-          else if (de.m_ext == JPEG)
-          {
-            iconId = UI::m_imageIcon->m_textureId;
-          }
-          else if (de.m_ext == TGA)
-          {
-            iconId = UI::m_imageIcon->m_textureId;
-          }
-          else if (de.m_ext == BMP)
-          {
-            iconId = UI::m_imageIcon->m_textureId;
-          }
-          else if (de.m_ext == PSD)
-          {
-            iconId = UI::m_imageIcon->m_textureId;
+            genThumbFn();
           }
           else
           {
@@ -139,13 +248,31 @@ namespace ToolKit
 
           ImGui::PushID(i);
           ImGui::BeginGroup();
-          if (flipRenderTarget)
+          ImVec2 texCoords = flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
+
+          if (ImGui::ImageButton((void*)(intptr_t)iconId, m_iconSize, ImVec2(0.0f, 0.0f), texCoords))
           {
-            ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
+            ResourceManager* rm = de.GetManager();
+            if (rm && rm->m_type == ResourceType::Material)
+            {
+              MaterialInspector* mi = g_app->GetMaterialInspector();
+              mi->m_material = rm->Create<Material>(de.GetFullPath());
+            }
+          }
+
+          // Handle context menu based on path.
+          String path = m_path + GetPathSeparatorAsStr();
+          if (path.find(MaterialPath("")) != String::npos)
+          {
+            ShowContextForMaterial(&de);
+          }
+          else if (path.find(MeshPath("")) != String::npos)
+          {
+            ShowContextForMesh(&de);
           }
           else
           {
-            ImGui::ImageButton((void*)(intptr_t)iconId, GLM2IMVEC(m_iconSize));
+            ShowGenericContext();
           }
 
           if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
@@ -175,18 +302,21 @@ namespace ToolKit
           }
 
           String fullName = de.m_fileName + de.m_ext;
-          if (ImGui::IsItemHovered())
-          {
-            ImGui::SetTooltip(fullName.c_str());
-          }
+          UI::HelpMarker(LOC + fullName, fullName.c_str());
 
           if (!de.m_isDirectory)
           {
             if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
             {
               ImGui::SetDragDropPayload("BrowserDragZone", &de, sizeof(DirectoryEntry));
-              //ImGui::Text("Copy %s", fullName.c_str());
-              ImGui::SetTooltip("Copy %s", fullName.c_str());
+              if (io.KeyShift)
+              {
+                ImGui::SetTooltip("Copy %s", fullName.c_str());
+              }
+              else
+              {
+                ImGui::SetTooltip("Instantiate %s", fullName.c_str());
+              }
               ImGui::EndDragDropSource();
             }
           }
@@ -252,40 +382,198 @@ namespace ToolKit
       return -1;
     }
 
-    void FolderView::GenerateThumbNail(DirectoryEntry& entry)
+    void FolderView::ShowContextForMaterial(DirectoryEntry* entry)
     {
-      if (entry.m_ext == MESH)
+      auto menuItemsFn = [entry, this](std::vector<bool> show) -> void
       {
-        Drawable dw;
-        String fullpath = entry.m_rootPath + GetPathSeparator() + entry.m_fileName + entry.m_ext;
-        dw.m_mesh = Main::GetInstance()->m_meshMan.Create(fullpath);
-        dw.m_mesh->Init(false);
+        if (show[0] && ImGui::Button("Crate", m_contextBtnSize))
+        {
+          UI::m_strInputWindow.m_name = "Material Name##NwMat";
+          UI::m_strInputWindow.m_inputVal = "New Material";
+          UI::m_strInputWindow.m_inputText = "Name";
+          UI::m_strInputWindow.m_hint = "New material name";
+          UI::m_strInputWindow.SetVisibility(true);
+          UI::m_strInputWindow.m_taskFn = [entry, this](const String& val)
+          {
+            MaterialPtr mat = GetMaterialManager()->GetCopyOfSolidMaterial();
+            mat->m_name = val;
+            String path, ext, fullPath = entry->GetFullPath();
+            DecomposePath(fullPath, &path, nullptr, &ext);
+            mat->m_file = ConcatPaths({ path, val + ext });
+            if (CheckFile(mat->m_file))
+            {
+              g_app->GetConsole()->AddLog("Can't create. A material with the same name exist", ConsoleWindow::LogType::Error);
+            }
+            else
+            {
+              mat->Save(true);
+              m_dirty = true;
+            }
+          };
+          ImGui::CloseCurrentPopup();
+        }
 
-        // Tight fit a frustum to a bounding sphere
-        // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
-        BoundingBox bb = dw.GetAABB();
-        Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
-        float r = glm::distance(geoCenter, bb.max) * 1.1f; // 10% safezone.
-        float a = glm::radians(45.0f);
-        float d = r / glm::tan(a / 2.0f);
-        
-        Vec3 eye = geoCenter + glm::normalize(Vec3(1.0f)) * d;
+        if (entry)
+        {
+          if (show[1] && ImGui::Button("Copy", m_contextBtnSize))
+          {
+            if (ResourceManager* rm = entry->GetManager())
+            {
+              if (Material* mat = rm->Create<Material>(entry->GetFullPath())->GetCopy())
+              {
+                mat->Save(true);
+                SafeDel(mat);
+                m_dirty = true;
+              }
+            }
 
-        Camera cam;
-        cam.SetLens(a, m_thumbnailSize.x, m_thumbnailSize.y);
-        cam.m_node->SetTranslation(eye);
-        cam.LookAt(geoCenter);
+            ImGui::CloseCurrentPopup();
+          }
 
-        RenderTarget* thumb = new RenderTarget((uint)m_thumbnailSize.x, (uint)m_thumbnailSize.y);
-        thumb->Init();
-        g_app->m_renderer->SwapRenderTarget(&thumb);
-        g_app->m_renderer->Render(&dw, &cam, g_app->m_sceneLights);
-        g_app->m_renderer->SwapRenderTarget(&thumb, false);
-        entry.m_thumbNail = RenderTargetPtr(thumb);
+          if (show[2] && ImGui::Button("Delete", m_contextBtnSize))
+          {
+            if (ResourceManager* rm = entry->GetManager())
+            {
+              if (MaterialPtr mat = rm->Create<Material>(entry->GetFullPath()))
+              {
+                if (g_app->m_scene->IsMaterialInUse(mat))
+                {
+                  g_app->GetConsole()->AddLog("Can't delete. Material is in use", ConsoleWindow::LogType::Error);
+                }
+                else
+                {
+                  std::filesystem::remove(entry->GetFullPath());
+                  m_dirty = true;
+                }
+              }
+            }
+
+            ImGui::CloseCurrentPopup();
+          }
+
+          if (show[3] && ImGui::Button("Reload", m_contextBtnSize))
+          {
+            if (ResourceManager* rm = entry->GetManager())
+            {
+              if (MaterialPtr mat = rm->Create<Material>(entry->GetFullPath()))
+              {
+                mat->Reload();
+                entry->GenerateThumbnail();
+              }
+            }
+
+            ImGui::CloseCurrentPopup();
+          }
+
+          if (show[4] && ImGui::Button("Refresh", m_contextBtnSize))
+          {
+            m_dirty = true;
+            ImGui::CloseCurrentPopup();
+          }
+        }
+      };
+
+      if (ImGui::BeginPopupContextItem())
+      {
+        menuItemsFn({true, true, true, true, true});
+        ImGui::EndPopup();
+      }
+      
+      if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
+      {
+        menuItemsFn({ true, false, false, false, true });
+        ImGui::EndPopup();
       }
     }
 
+    void FolderView::ShowContextForMesh(DirectoryEntry* entry)
+    {
+      auto menuItemsFn = [entry, this](std::vector<bool> show) -> void
+      {
+        if (entry)
+        {
+          if (show[0] && ImGui::Button("Copy", m_contextBtnSize))
+          {
+            if (ResourceManager* rm = entry->GetManager())
+            {
+              if (Mesh* res = rm->Create<Mesh>(entry->GetFullPath())->GetCopy())
+              {
+                res->Save(true);
+                SafeDel(res);
+                m_dirty = true;
+              }
+            }
+
+            ImGui::CloseCurrentPopup();
+          }
+
+          if (show[1] && ImGui::Button("Delete", m_contextBtnSize))
+          {
+            if (ResourceManager* rm = entry->GetManager())
+            {
+              if (MeshPtr res = rm->Create<Mesh>(entry->GetFullPath()))
+              {
+                if (g_app->m_scene->IsMeshInUse(res))
+                {
+                  g_app->GetConsole()->AddLog("Can't delete. Resource is in use", ConsoleWindow::LogType::Error);
+                }
+                else
+                {
+                  std::filesystem::remove(entry->GetFullPath());
+                  m_dirty = true;
+                }
+              }
+            }
+
+            ImGui::CloseCurrentPopup();
+          }
+
+          if (show[2] && ImGui::Button("Refresh", m_contextBtnSize))
+          {
+            m_dirty = true;
+            ImGui::CloseCurrentPopup();
+          }
+        }
+      };
+
+      if (ImGui::BeginPopupContextItem())
+      {
+        menuItemsFn({ true, true, true });
+        ImGui::EndPopup();
+      }
+
+      if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
+      {
+        menuItemsFn({ false, false, true });
+        ImGui::EndPopup();
+      }
+    }
+
+    void FolderView::ShowGenericContext()
+    {
+      if (ImGui::BeginPopupContextWindow())
+      {
+        if (ImGui::Button("Refresh", m_contextBtnSize))
+        {
+          m_dirty = true;
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+      }
+    }
+
+    FolderWindow::FolderWindow(XmlNode* node)
+    {
+      DeSerialize(nullptr, node);
+      Iterate(ResourcePath(), true);
+    }
+
     FolderWindow::FolderWindow()
+    {
+    }
+
+    FolderWindow::~FolderWindow()
     {
     }
 
@@ -293,48 +581,72 @@ namespace ToolKit
     {
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        HandleStates();
-
         auto IsRootFn = [](const String& path)
         {
           return std::count(path.begin(), path.end(), GetPathSeparator()) == 2;
         };
 
-        // Show Resource folder structure.
-        ImGui::PushID("##FolderStructure");
-        ImGui::BeginGroup();
-        ImGui::TextUnformatted("Resources");
-        ImGui::BeginChild("##Folders", ImVec2(130, 0), true);
-        static int selectedFolder = -1;
-        for (int i = 0; i < (int)m_entiries.size(); i++)
+        if (m_showStructure)
         {
-          if (!IsRootFn(m_entiries[i].GetPath()))
+          // Show Resource folder structure.
+          ImGui::PushID("##FolderStructure");
+          ImGui::BeginGroup();
+
+          ImGui::TextUnformatted("Resources");
+
+          ImGui::SameLine();
+          if (ImGui::Button("O"))
           {
-            continue;
+            m_showStructure = !m_showStructure;
           }
 
-          bool currSel = false;
-          if (selectedFolder == i)
+          ImGui::BeginChild("##Folders", ImVec2(130, 0), true);
+          for (int i = 0; i < (int)m_entiries.size(); i++)
           {
-            currSel = true;
+            if (!IsRootFn(m_entiries[i].GetPath()))
+            {
+              continue;
+            }
+
+            bool currSel = false;
+            if (m_activeFolder == i)
+            {
+              currSel = true;
+            }
+
+            currSel = UI::ToggleButton
+            (
+              m_entiries[i].m_folder,
+              ImVec2(100, 25),
+              currSel
+            );
+
+            // Selection switch.
+            if (currSel)
+            {
+              if (i != m_activeFolder)
+              {
+                for (FolderView& view : m_entiries)
+                {
+                  view.m_visible = false;
+                }
+              }
+
+              m_activeFolder = i;
+            }
           }
-
-          currSel = UI::ToggleButton
-          (
-            m_entiries[i].m_folder,
-            ImVec2(100, 25),
-            currSel
-          );
-
-          // Selection switch.
-          if (currSel)
+          ImGui::EndChild();
+          
+          ImGui::EndGroup();
+          ImGui::PopID();
+        }
+        else
+        {
+          if (ImGui::Button("-"))
           {
-            selectedFolder = (int)i;
+            m_showStructure = !m_showStructure;
           }
         }
-        ImGui::EndChild();
-        ImGui::EndGroup();
-        ImGui::PopID();
 
         ImGui::SameLine();
 
@@ -342,21 +654,29 @@ namespace ToolKit
         ImGui::BeginGroup();
         if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_NoTooltip | ImGuiTabBarFlags_AutoSelectNewTabs))
         {
+          String currRootPath; 
+          auto IsDescendentFn = [&currRootPath](String candidate) -> bool
+          {
+            return !currRootPath.empty() && candidate.find(currRootPath) != std::string::npos;
+          };
+
           for (int i = 0; i < (int)m_entiries.size(); i++)
           {
-            m_entiries[i].m_currRoot = i == selectedFolder;
-            if (IsRootFn(m_entiries[i].GetPath()))
+            String candidate = m_entiries[i].GetPath();
+            if (m_entiries[i].m_currRoot = (i == m_activeFolder))
             {
-              if (!m_entiries[i].m_currRoot)
-              {
-                // Show only current root folder and all sub folders.
-                continue;
-              }
+              currRootPath = candidate;
             }
-            m_entiries[i].Show();
+            
+            // Show only current root folder or descendents.
+            if (m_entiries[i].m_currRoot || IsDescendentFn(candidate))
+            {
+              m_entiries[i].Show();
+            }
           }
           ImGui::EndTabBar();
         }
+
         ImGui::EndGroup();
         ImGui::PopID();
       }
@@ -369,11 +689,15 @@ namespace ToolKit
       return Window::Type::Browser;
     }
 
-    void FolderWindow::Iterate(const String& path)
+    void FolderWindow::Iterate(const String& path, bool clear)
     {
       using namespace std::filesystem;
 
-      m_entiries.clear();
+      if (clear)
+      {
+        m_entiries.clear();
+      }
+      
       for (const directory_entry& e : directory_iterator(path))
       {
         if (e.is_directory())
@@ -382,6 +706,7 @@ namespace ToolKit
           view.SetPath(e.path().u8string());
           view.Iterate();
           m_entiries.push_back(view);
+          Iterate(view.GetPath(), false);
         }
       }
     }
@@ -418,6 +743,45 @@ namespace ToolKit
       }
 
       return -1;
+    }
+
+    bool FolderWindow::GetFileEntry(const String& fullPath, DirectoryEntry& entry)
+    {
+      String path, name, ext;
+      DecomposePath(fullPath, &path, &name, &ext);
+      int viewIndx = Exist(path);
+      if (viewIndx != -1)
+      {
+        int dirEntry = m_entiries[viewIndx].Exist(name);
+        if (dirEntry != -1)
+        {
+          entry = m_entiries[viewIndx].m_entiries[dirEntry];
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    void FolderWindow::Serialize(XmlDocument* doc, XmlNode* parent) const
+    {
+      Window::Serialize(doc, parent);
+      XmlNode* node = parent->last_node();
+
+      XmlNode* folder = doc->allocate_node(rapidxml::node_element, "FolderWindow");
+      node->append_node(folder);
+      WriteAttr(folder, doc, "activeFolder", std::to_string(m_activeFolder));
+      WriteAttr(folder, doc, "showStructure", std::to_string(m_showStructure));
+    }
+
+    void FolderWindow::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    {
+      Window::DeSerialize(doc, parent);
+      if (XmlNode* node = parent->first_node("FolderWindow"))
+      {
+        ReadAttr(node, "activeFolder", m_activeFolder);
+        ReadAttr(node, "showStructure", m_showStructure);
+      }
     }
 
   }

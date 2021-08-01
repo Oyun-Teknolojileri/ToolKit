@@ -8,10 +8,10 @@
 
 namespace rapidxml
 {
-  template<class Ch = char> class xml_document;
-  template<class Ch = char> class xml_node;
-  template<class Ch = char> class xml_attribute;
-  template<class Ch = char> class file;
+  template<class Ch> class xml_document;
+  template<class Ch> class xml_node;
+  template<class Ch> class xml_attribute;
+  template<class Ch> class file;
 }
 
 namespace ToolKit
@@ -27,6 +27,7 @@ namespace ToolKit
   typedef unsigned long NodeId;
   typedef unsigned long SceneId;
   typedef const int SignalId;
+  typedef std::shared_ptr<class Resource> ResourcePtr;
   typedef std::string String;
   typedef std::vector<String> StringArray;
   typedef glm::ivec2 IVec2;
@@ -36,10 +37,13 @@ namespace ToolKit
   typedef std::vector<Vec3> Vec3Array;
   typedef glm::vec4 Vec4;
   typedef std::vector<Vec4> Vec4Array;
+  typedef glm::uvec4 UVec4;
   typedef glm::mat4 Mat4;
   typedef glm::mat3 Mat3;
   typedef glm::quat Quaternion;
+  typedef std::shared_ptr<class Animation> AnimationPtr;
   typedef std::shared_ptr<class Material> MaterialPtr;
+  typedef std::shared_ptr<class CubeMap> CubeMapPtr;
   typedef std::shared_ptr<class Texture> TexturePtr;
   typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;
   typedef std::shared_ptr<class SpriteSheet> SpriteSheetPtr;
@@ -48,6 +52,7 @@ namespace ToolKit
   typedef std::vector<ShaderPtr> ShaderPtrArray;
   typedef std::shared_ptr<class Program> ProgramPtr;
   typedef std::shared_ptr<class SkinMesh> SkinMeshPtr;
+  typedef std::shared_ptr<class Scene> ScenePtr;
   typedef std::vector<MeshPtr> MeshPtrArray;
   typedef std::vector<class Mesh*> MeshRawPtrArray;
   typedef std::vector<const class Mesh*> MeshRawCPtrArray;
@@ -58,10 +63,10 @@ namespace ToolKit
   typedef std::vector<class Node*> NodePtrArray;
   typedef std::vector<class Vertex> VertexArray;
   typedef std::vector<class Face> FaceArray;
-  typedef rapidxml::xml_document<> XmlDocument;
-  typedef rapidxml::xml_node<> XmlNode;
-  typedef rapidxml::xml_attribute<> XmlAttribute;
-  typedef rapidxml::file<> XmlFile;
+  typedef rapidxml::xml_document<char> XmlDocument;
+  typedef rapidxml::xml_node<char> XmlNode;
+  typedef rapidxml::xml_attribute<char> XmlAttribute;
+  typedef rapidxml::file<char> XmlFile;
 
   static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
   static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);
@@ -73,7 +78,8 @@ namespace ToolKit
 
   // Supported file formats.
   static const String FBX(".fbx");
-  static const String glTF(".glb");
+  static const String GLTF(".gltf");
+  static const String GLB(".glb");
   static const String OBJ(".obj");
   static const String PNG(".png");
   static const String JPG(".jpg");

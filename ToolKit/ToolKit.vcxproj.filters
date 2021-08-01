@@ -93,6 +93,9 @@
     <ClInclude Include="..\Source\Serialize.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Scene.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Animation.cpp">
@@ -159,6 +162,15 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\ParameterBlock.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\ResourceManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Resource.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Scene.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

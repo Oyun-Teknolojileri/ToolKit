@@ -56,8 +56,11 @@ namespace ToolKit
     State m_state = State::Play;
   };
 
-  class AnimationManager : public ResourceManager <Animation>
+  class AnimationManager : public ResourceManager
   {
+  public:
+    AnimationManager();
+    virtual ~AnimationManager();
   };
 
   typedef std::pair<Entity*, Animation*> AnimRecord;

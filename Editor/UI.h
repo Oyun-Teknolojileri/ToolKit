@@ -2,6 +2,7 @@
 
 #include "ImGui/imgui.h"
 #include "Types.h"
+#include "Serialize.h"
 #include <functional>
 
 namespace ToolKit
@@ -10,7 +11,7 @@ namespace ToolKit
 
   namespace Editor
   {
-    class Window
+    class Window : public Serializable
     {
     public:
       enum class Type
@@ -20,7 +21,8 @@ namespace ToolKit
         InputPopup,
         Browser,
         Outliner,
-        Inspector
+        Inspector,
+        MaterialInspector
       };
 
     public:
@@ -39,6 +41,9 @@ namespace ToolKit
       // System calls.
       virtual void DispatchSignals() const;
 
+      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
+      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+
     protected:
       // Internal window handling.
       void HandleStates();
@@ -52,6 +57,11 @@ namespace ToolKit
 
     public:
       String m_name;
+      uint m_id;
+
+    private:
+      // Internal unique id generator.
+      static uint m_baseId;
     };
 
     class StringInputWindow : public Window
@@ -72,6 +82,7 @@ namespace ToolKit
     {
     public:
       YesNoWindow(const String& name, const String& msg = "");
+      YesNoWindow(const String& name, const String& yesBtnText, const String& noBtnText, const String& msg, bool showCancel);
       virtual void Show() override;
       virtual Type GetType() const override { return Window::Type::InputPopup; }
 
@@ -79,6 +90,9 @@ namespace ToolKit
       std::function<void()> m_yesCallback;
       std::function<void()> m_noCallback;
       String m_msg;
+      String m_yesText;
+      String m_noText;
+      bool m_showCancel = false;
     };
 
     class UI
@@ -95,7 +109,7 @@ namespace ToolKit
       static void ShowMenuWindows();
       static void ShowImportWindow();
       static void ShowSearchForFilesWindow();
-      static void HelpMarker(const char* desc, float* elapsedHoverTime);
+      static void HelpMarker(const String& key, const char* desc, float wait = m_hoverTimeForHelp);
       static void ShowNewSceneWindow();
 
       // Custom widgets.

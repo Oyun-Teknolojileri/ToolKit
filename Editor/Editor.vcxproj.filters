@@ -63,9 +63,6 @@
     <ClCompile Include="Gizmo.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="TransformMod.cpp">
       <Filter>Mods</Filter>
     </ClCompile>
@@ -86,6 +83,9 @@
     </ClCompile>
     <ClCompile Include="PropInspector.cpp">
       <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorScene.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -137,9 +137,6 @@
     <ClInclude Include="App.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="TransformMod.h">
       <Filter>Mods</Filter>
     </ClInclude>
@@ -157,6 +154,9 @@
     </ClInclude>
     <ClInclude Include="PropInspector.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorScene.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

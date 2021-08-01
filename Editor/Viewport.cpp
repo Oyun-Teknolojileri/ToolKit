@@ -14,6 +14,7 @@
 #include "ConsoleWindow.h"
 #include "Gizmo.h"
 #include "Mod.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -24,6 +25,24 @@ namespace ToolKit
     uint Viewport::m_nextId = 1;
     OverlayMods* Viewport::m_overlayMods = nullptr;
     OverlayViewportOptions* Viewport::m_overlayOptions = nullptr;
+
+    Viewport::Viewport(XmlNode* node)
+    {
+      DeSerialize(nullptr, node);
+
+      m_viewportImage = new RenderTarget((uint)m_width, (uint)m_height);
+      m_viewportImage->Init();
+
+      if (m_overlayMods == nullptr)
+      {
+        m_overlayMods = new OverlayMods(this);
+      }
+
+      if (m_overlayOptions == nullptr)
+      {
+        m_overlayOptions = new OverlayViewportOptions(this);
+      }
+    }
 
     Viewport::Viewport(float width, float height)
       : m_width(width), m_height(height)
@@ -111,6 +130,74 @@ namespace ToolKit
           }
         }
 
+        m_mouseHover = ImGui::IsWindowHovered();
+
+        ImVec2 pos = m_wndPos;
+        pos.x += m_width - 70.0f;
+        pos.y += m_wndContentAreaSize.y - 20.0f;
+        String fps = "Fps: " + std::to_string(g_app->m_fps);
+        ImGui::GetWindowDrawList()->AddText(pos, IM_COL32(255, 255, 0, 255), fps.c_str());
+
+        // Process draw commands.
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+        for (auto command : m_drawCommands)
+        {
+          command(drawList);
+        }
+        m_drawCommands.clear();
+
+        // AssetBrowser drop handling.
+        if (ImGui::BeginDragDropTarget())
+        {
+          if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
+          {
+            IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
+            DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
+
+            if (entry.m_ext == MESH)
+            {
+              String path = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
+              
+              Drawable* dwMesh = new Drawable();
+              if (io.KeyShift)
+              {
+                dwMesh->m_mesh.reset(GetMeshManager()->Create<Mesh>(path)->GetCopy());
+              }
+              else
+              {
+                dwMesh->m_mesh = GetMeshManager()->Create<Mesh>(path);
+              }
+              
+              dwMesh->m_mesh->Init(false);
+              Ray ray = RayFromMousePosition();
+              Vec3 pos = PointOnRay(ray, 5.0f);
+              g_app->m_grid->HitTest(ray, pos);
+              dwMesh->m_node->SetTranslation(pos);
+              g_app->m_scene->AddEntity(dwMesh);
+              g_app->m_scene->AddToSelection(dwMesh->m_id, false);
+              SetActive();
+            }
+            else if (entry.m_ext == SCENE)
+            {
+              YesNoWindow* importOptionWnd = new YesNoWindow("Open Scene", "Open", "Merge", "Open or merge the scene ?", true);
+              importOptionWnd->m_yesCallback = [entry]() ->void
+              {
+                String fullPath = entry.GetFullPath();
+                g_app->OpenScene(fullPath);
+              };
+
+              importOptionWnd->m_noCallback = [entry]() -> void
+              {
+                String fullPath = entry.GetFullPath();
+                g_app->MergeScene(fullPath);
+              };
+
+              UI::m_volatileWindows.push_back(importOptionWnd);
+            }
+          }
+          ImGui::EndDragDropTarget();
+        }
+
         if (g_app->m_showOverlayUI)
         {
           if (IsActive() || g_app->m_showOverlayUIAlways)
@@ -129,83 +216,6 @@ namespace ToolKit
           }
         }
 
-        m_mouseHover = ImGui::IsWindowHovered();
-
-        ImVec2 pos = GLM2IMVEC(m_wndPos);
-        pos.x += m_width - 70.0f;
-        pos.y += m_wndContentAreaSize.y - 20.0f;
-        String fps = "Fps: " + std::to_string(g_app->m_fps);
-        ImGui::GetWindowDrawList()->AddText(pos, IM_COL32(255, 255, 0, 255), fps.c_str());
-
-        // Process draw commands.
-        ImDrawList* drawList = ImGui::GetWindowDrawList();
-        for (auto command : m_drawCommands)
-        {
-          command(drawList);
-        }
-        m_drawCommands.clear();
-
-        // AssetBrowser drop handling.
-        ImGui::Dummy(GLM2IMVEC(m_wndContentAreaSize));
-        if (ImGui::BeginDragDropTarget())
-        {
-          if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
-          {
-            IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
-            DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
-
-            if (entry.m_ext == MESH)
-            {
-              String path = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
-              Drawable* dwMesh = new Drawable();
-              dwMesh->m_mesh = GetMeshManager()->Create(path);
-              dwMesh->m_mesh->Init(false);
-              Ray ray = RayFromMousePosition();
-              Vec3 pos = PointOnRay(ray, 5.0f);
-              g_app->m_grid->HitTest(ray, pos);
-              dwMesh->m_node->SetTranslation(pos);
-              g_app->m_scene.AddEntity(dwMesh);
-              g_app->m_scene.AddToSelection(dwMesh->m_id, false);
-              SetActive();
-            }
-            else if (entry.m_ext == SCENE)
-            {
-              // Merge the scene.
-              String fullPath = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
-              XmlFile file(fullPath.c_str());
-              XmlDocument doc;
-              doc.parse<0>(file.data());
-
-              const EntityRawPtrArray& ntties = g_app->m_scene.GetEntities();
-              size_t lastSize = ntties.size();
-              g_app->m_scene.DeSerialize(&doc, nullptr);
-              size_t thisSize = ntties.size();
-
-              if (lastSize < thisSize)
-              {
-                Drawable* master = new Drawable();
-                master->m_name = entry.m_fileName;
-                g_app->m_scene.AddEntity(master);
-
-                for (size_t i = lastSize; i < thisSize; i++)
-                {
-                  Entity* e = ntties[i];
-                  if (e->IsDrawable())
-                  {
-                    Drawable* dw = static_cast<Drawable*> (e);
-                    dw->m_mesh->Init(false);
-                    if (dw->m_node->m_parent == nullptr)
-                    {
-                      master->m_node->AddChild(dw->m_node);
-                    }
-                  }
-                }
-              }
-
-            }
-          }
-          ImGui::EndDragDropTarget();
-        }
       }
       ImGui::End();
     }
@@ -336,7 +346,7 @@ namespace ToolKit
         if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
         {
           XmlDocument doc;
-          g_app->m_scene.Serialize(&doc, nullptr);
+          g_app->m_scene->Serialize(&doc, nullptr);
         }
       }
 
@@ -419,6 +429,35 @@ namespace ToolKit
       Vec2 vp = pnt - m_wndPos; // In window space.
       vp.y = m_wndContentAreaSize.y - vp.y; // In viewport space.
       return vp;
+    }
+
+    void Viewport::Serialize(XmlDocument* doc, XmlNode* parent) const
+    {
+      Window::Serialize(doc, parent);
+      XmlNode* node = doc->allocate_node(rapidxml::node_element, "Viewport");
+
+      WriteAttr(node, doc, "width", std::to_string(m_width));
+      WriteAttr(node, doc, "height", std::to_string(m_height));
+      WriteAttr(node, doc, "orthographic", std::to_string((int)m_orthographic));
+      WriteAttr(node, doc, "alignment", std::to_string((int)m_cameraAlignment));
+      m_camera->Serialize(doc, node);
+
+      XmlNode* wnd = parent->last_node();
+      wnd->append_node(node);
+    }
+
+    void Viewport::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    {
+      Window::DeSerialize(doc, parent);
+
+      if (XmlNode* node = parent->first_node("Viewport"))
+      {
+        ReadAttr(node, "width", m_width);
+        ReadAttr(node, "height", m_height);
+        ReadAttr(node, "orthographic", m_orthographic);
+        ReadAttr(node, "alignment", m_cameraAlignment);
+        m_camera = new Camera(node->first_node("E"));
+      }
     }
 
     void Viewport::FpsNavigationMode(float deltaTime)
@@ -534,7 +573,7 @@ namespace ToolKit
           if (!hitFound)
           {
             Ray orbitRay = RayFromMousePosition();
-            Scene::PickData pd = g_app->m_scene.PickObject(orbitRay);
+            EditorScene::PickData pd = g_app->m_scene->PickObject(orbitRay);
 
             if (pd.entity == nullptr)
             {

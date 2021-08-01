@@ -4,6 +4,7 @@
 #include "Material.h"
 #include "Texture.h"
 #include "Skeleton.h"
+#include "Util.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
 #include "DebugNew.h"
@@ -16,12 +17,13 @@ namespace ToolKit
   Mesh::Mesh()
   {
     m_material = std::make_shared<Material>();
+    m_type = ResourceType::Mesh;
   }
 
   Mesh::Mesh(String file)
+    : Mesh()
   {
     m_file = file;
-    m_material = std::make_shared<Material>();
   }
 
   Mesh::~Mesh()
@@ -43,7 +45,7 @@ namespace ToolKit
       ConstructFaces();
     }
 
-    m_material->Init();
+    m_material->Init(flushClientSideArray);
 
     for (MeshPtr mesh : m_subMeshes)
     {
@@ -79,8 +81,18 @@ namespace ToolKit
     XmlDocument doc;
     doc.parse<0>(file.data());
 
-    XmlNode* node = doc.first_node("meshContainer");
-    DeSerialize(&doc, node);
+    if (XmlNode* node = doc.first_node("meshContainer"))
+    {
+      DeSerialize(&doc, node);
+      m_loaded = true;
+    }
+  }
+
+  void Mesh::Save(bool onlyIfDirty)
+  {
+    // Force save if child is dirty.
+    Resource::Save(!m_dirty && !m_material->m_dirty);
+    m_material->Save(onlyIfDirty);
   }
 
   Mesh* Mesh::GetCopy()
@@ -116,7 +128,7 @@ namespace ToolKit
     cpy->m_material = MaterialPtr(m_material->GetCopy());
     cpy->m_aabb = m_aabb;
 
-    cpy->m_file = m_file;
+    cpy->m_file = CreateCopyFileFullPath(m_file);
     cpy->m_initiated = m_initiated;
     cpy->m_loaded = m_loaded;
 
@@ -372,11 +384,11 @@ namespace ToolKit
 
       if (CheckFile(MaterialPath(matFile)))
       {
-        mesh->m_material = GetMaterialManager()->Create(MaterialPath(matFile));
+        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath(matFile));
       }
       else
       {
-        mesh->m_material = GetMaterialManager()->Create(MaterialPath("default.material"));
+        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("default.material"));
       }
 
       XmlNode* vertex = node->first_node("vertices");
@@ -454,13 +466,18 @@ namespace ToolKit
   }
 
   SkinMesh::SkinMesh()
+    : Mesh()
   {
     m_skeleton = new Skeleton();
+    m_type = ResourceType::SkinMesh;
   }
 
   SkinMesh::SkinMesh(String file)
-    : Mesh(file)
+    : Mesh()
   {
+    m_file = file;
+    m_type = ResourceType::SkinMesh;
+
     String skelFile = file.substr(0, file.find_last_of("."));
     skelFile += ".skeleton";
 
@@ -510,6 +527,8 @@ namespace ToolKit
       return;
     }
 
+    m_aabb = BoundingBox();
+
     SkinMesh* mesh = this;
     for (node = node->first_node("skinMesh"); node; node = node->next_sibling("skinMesh"))
     {
@@ -524,11 +543,11 @@ namespace ToolKit
 
       if (CheckFile(MaterialPath(matFile)))
       {
-        mesh->m_material = GetMaterialManager()->Create(MaterialPath(matFile));
+        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath(matFile));
       }
       else
       {
-        mesh->m_material = GetMaterialManager()->Create(MaterialPath("default.material"));
+        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("default.material"));
       }
 
       XmlNode* vertex = node->first_node("vertices");
@@ -536,6 +555,8 @@ namespace ToolKit
       {
         SkinVertex vd;
         ReadVec(v->first_node("p"), vd.pos);
+        UpdateAABB(vd.pos);
+
         ReadVec(v->first_node("n"), vd.norm);
         ReadVec(v->first_node("t"), vd.tex);
         ReadVec(v->first_node("bt"), vd.btan);
@@ -586,6 +607,15 @@ namespace ToolKit
     {
       m_clientSideVertices.clear();
     }
+  }
+
+  MeshManager::MeshManager()
+  {
+    m_type = ResourceType::Mesh;
+  }
+
+  MeshManager::~MeshManager()
+  {
   }
 
 }

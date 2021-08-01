@@ -4,6 +4,7 @@
 #include "ToolKit.h"
 #include "Skeleton.h"
 #include "MathUtil.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -58,18 +59,85 @@ namespace ToolKit
 
   Entity* Entity::GetCopy() const
   {
-    Entity* cpy = new Entity();
-    GetCopy(cpy);
-
-    return cpy;
+    EntityType t = GetType();
+    Entity* e = CreateByType(t);
+    return GetCopy(e);
   }
 
-  void Entity::GetCopy(Entity* copyTo) const
+  Entity* Entity::GetCopy(Entity* copyTo) const
+  {
+    // This just copies the node, other contents should be copied by the descendent.
+    assert(copyTo->GetType() == GetType());
+    SafeDel(copyTo->m_node);
+    copyTo->m_node = m_node->GetCopy();
+    copyTo->m_node->m_entity = copyTo;
+
+    return copyTo;
+  }
+
+  Entity* Entity::GetInstance() const
+  {
+    EntityType t = GetType();
+    Entity* e = CreateByType(t);
+    return GetInstance(e);
+  }
+
+  Entity* Entity::GetInstance(Entity* copyTo) const
   {
     assert(copyTo->GetType() == GetType());
     SafeDel(copyTo->m_node);
     copyTo->m_node = m_node->GetCopy();
     copyTo->m_node->m_entity = copyTo;
+
+    return copyTo;
+  }
+
+  Entity* Entity::CreateByType(EntityType t) const
+  {
+    Entity* e = nullptr;
+    switch (GetType())
+    {
+    case  EntityType::Entity_Base:
+      e = new Entity();
+      break;
+    case  EntityType::Entity_AudioSource:
+      e = new AudioSource();
+      break;
+    case  EntityType::Entity_Billboard:
+      e = new Billboard(Billboard::Settings());
+      break;
+    case  EntityType::Entity_Cube:
+      e = new Cube(false);
+      break;
+    case  EntityType::Entity_Quad:
+      e = new Quad(false);
+      break;
+    case  EntityType::Entity_Sphere:
+      e = new Sphere(false);
+      break;
+    case  EntityType::Etity_Arrow:
+      e = new Arrow2d(false);
+      break;
+    case  EntityType::Entity_LineBatch:
+      e = new LineBatch();
+      break;
+    case  EntityType::Entity_Cone:
+      e = new Cone(false);
+      break;
+    case  EntityType::Entity_Drawable:
+      e = new Drawable();
+      break;
+    case  EntityType::Entity_SpriteAnim:
+    case  EntityType::Entity_Surface:
+    case  EntityType::Entity_Light:
+    case  EntityType::Entity_Camera:
+    case  EntityType::Entity_Directional:
+    default:
+      assert(false);
+      break;
+    }
+
+    return e;
   }
 
   void Entity::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -98,39 +166,22 @@ namespace ToolKit
 
   void Entity::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
-    XmlNode* nttNode = nullptr;
+    XmlNode* node = nullptr;
     if (parent != nullptr)
     {
-      nttNode = parent;
+      node = parent;
     }
     else
     {
-      nttNode = doc->first_node(XmlEntityElement.c_str());
+      node = doc->first_node(XmlEntityElement.c_str());
     }
 
-    if (XmlAttribute* attr = nttNode->first_attribute(XmlEntityIdAttr.c_str()))
-    {
-      String val = attr->value();
-      m_id = std::atoi(val.c_str());
-    }
+    ReadAttr(node, XmlEntityIdAttr, *(uint*)&m_id);
+    ReadAttr(node, XmlParentEntityIdAttr, *(uint*)&_parentId);
+    ReadAttr(node, XmlEntityNameAttr, m_name);
+    ReadAttr(node, XmlEntityTagAttr, m_tag);
 
-    if (XmlAttribute* attr = nttNode->first_attribute(XmlParentEntityIdAttr.c_str()))
-    {
-      String val = attr->value();
-      _parentId = std::atoi(val.c_str());
-    }
-
-    if (XmlAttribute* attr = nttNode->first_attribute(XmlEntityNameAttr.c_str()))
-    {
-      m_name = attr->value();
-    }
-
-    if (XmlAttribute* attr = nttNode->first_attribute(XmlEntityTagAttr.c_str()))
-    {
-      m_tag = attr->value();
-    }
-
-    if (XmlNode* transformNode = nttNode->first_node(XmlNodeElement.c_str()))
+    if (XmlNode* transformNode = node->first_node(XmlNodeElement.c_str()))
     {
       m_node->DeSerialize(doc, transformNode);
     }

@@ -19,9 +19,6 @@
 #include "DebugNew.h"
 
 #include <filesystem>
-#include <cstdlib>
-
-//#define TK_SAMPLE_SCENE
 
 namespace ToolKit
 {
@@ -30,13 +27,6 @@ namespace ToolKit
 
     App::App(int windowWidth, int windowHeight)
     {
-      m_suzanne = nullptr;
-      m_knight = nullptr;
-      m_knightRunAnim = nullptr;
-      m_q1 = nullptr;
-      m_q2 = nullptr;
-      m_q3 = nullptr;
-      m_q4 = nullptr;
       m_cursor = nullptr;
       m_lightMaster = nullptr;
       m_renderer = new Renderer();
@@ -54,59 +44,7 @@ namespace ToolKit
 
     void App::Init()
     {
-#ifdef TK_SAMPLE_SCENE
-      m_suzanne = new Drawable();
-      m_suzanne->m_node->SetTranslation({ 0.0f, 0.0f, -5.0f });
-      m_suzanne->m_node->SetOrientation(glm::angleAxis(-glm::half_pi<float>(), X_AXIS));
-      Mesh* szm = GetMeshManager()->CreateDerived<Mesh>(MeshPath("suzanne.mesh"))->GetCopy();
-      szm->Init(false);
-      m_suzanne->m_mesh = MeshPtr(szm);
-      m_scene.AddEntity(m_suzanne);
-
-      // https://t-allen-studios.itch.io/low-poly-saxon-warrior
-      m_knight = new Drawable();
-      m_knight->m_mesh = GetSkinMeshManager()->Create(MeshPath("Knight.skinMesh"));
-      m_knight->m_node->SetScale({ 0.01f, 0.01f, 0.01f });
-      m_knight->m_node->SetTranslation({ 0.0f, 0.0f, 5.0f });
-      m_scene.AddEntity(m_knight);
-
-      m_knightRunAnim = GetAnimationManager()->Create(AnimationPath("Knight_Armature_Run.anim"));
-      m_knightRunAnim->m_loop = true;
-      GetAnimationPlayer()->AddRecord(m_knight, m_knightRunAnim.get());
-
-      MaterialPtr normalMat = GetMaterialManager()->Create(MaterialPath("objectNormal.material"));
-
-      m_q1 = new Cube();
-      m_q1->m_mesh->m_material = normalMat;
-      m_q1->m_mesh->Init(false);
-      m_q1->m_node->SetTranslation({ 2.0f, 0.0f, 0.0f });
-      m_q1->m_node->Rotate(glm::angleAxis(glm::half_pi<float>(), Y_AXIS), TransformationSpace::TS_LOCAL);
-      m_q1->m_node->Rotate(glm::angleAxis(glm::half_pi<float>(), Z_AXIS), TransformationSpace::TS_LOCAL);
-      m_scene.AddEntity(m_q1);
-
-      m_q2 = new Cube();
-      m_q2->m_mesh->m_material = normalMat;
-      m_q2->m_mesh->Init(false);
-      m_q2->m_node->SetTranslation({ 2.0f, 0.0f, 2.0f });
-      m_q2->m_node->SetOrientation(glm::angleAxis(glm::half_pi<float>(), Y_AXIS));
-      m_scene.AddEntity(m_q2);
-
-      m_q3 = new Cone({ 1.0f, 1.0f, 30, 30 });
-      m_q3->m_mesh->m_material = normalMat;
-      m_q3->m_mesh->Init(false);
-      m_q3->m_node->Scale({ 0.3f, 1.0f, 0.3f });
-      m_q3->m_node->SetTranslation({ 2.0f, 0.0f, 0.0f });
-      m_scene.AddEntity(m_q3);
-
-      m_q1->m_node->AddChild(m_q2->m_node);
-      m_q2->m_node->AddChild(m_q3->m_node);
-
-      m_q4 = new Cube();
-      m_q4->m_mesh->m_material = normalMat;
-      m_q4->m_mesh->Init(false);
-      m_q4->m_node->SetTranslation({ 4.0f, 0.0f, 0.0f });
-      m_scene.AddEntity(m_q4);
-#endif
+      m_scene = std::make_shared<EditorScene>(ScenePath("New Scene" + SCENE));
 
       m_cursor = new Cursor();
       m_origin = new Axis3d();
@@ -145,39 +83,52 @@ namespace ToolKit
       light->Yaw(glm::radians(-140.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
+      
+      // Set last window layout.
+      if (CheckFile("..//Resources//Editor.settings") && !m_onNewScene)
+      {
+        DeSerialize(nullptr, nullptr);
+      }
+      else
+      {
+        // Default UI
+        
+        // Perspective.
+        Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+        vp->m_name = "Perspective";
+        vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
+        vp->m_camera->LookAt(Vec3(0.0f));
+        m_windows.push_back(vp);
 
-      // UI.
-      // Perspective.
-      Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
-      vp->m_name = "Perspective";
-      vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
-      vp->m_camera->LookAt(Vec3(0.0f));
-      m_windows.push_back(vp);
+        // Orthographic.
+        vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+        vp->m_name = "Orthographic";
+        vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
+        vp->m_camera->Pitch(glm::radians(-90.0f));
+        vp->m_cameraAlignment = 1;
+        vp->m_orthographic = true;
+        m_windows.push_back(vp);
 
-      // Orthographic.
-      vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
-      vp->m_name = "Orthographic";
-      vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
-      vp->m_camera->Pitch(glm::radians(-90.0f));
-      vp->m_cameraAlignment = 1;
-      vp->m_orthographic = true;
-      m_windows.push_back(vp);
+        ConsoleWindow* console = new ConsoleWindow();
+        m_windows.push_back(console);
 
-      ConsoleWindow* console = new ConsoleWindow();
-      m_windows.push_back(console);
+        FolderWindow* assetBrowser = new FolderWindow();
+        assetBrowser->m_name = g_assetBrowserStr;
+        assetBrowser->Iterate(ResourcePath(), true);
+        m_windows.push_back(assetBrowser);
 
-      FolderWindow* assetBrowser = new FolderWindow();
-      assetBrowser->m_name = g_assetBrowserStr;
-      assetBrowser->Iterate(ResourcePath());
-      m_windows.push_back(assetBrowser);
+        OutlinerWindow* outliner = new OutlinerWindow();
+        outliner->m_name = g_outlinerStr;
+        m_windows.push_back(outliner);
 
-      OutlinerWindow* outliner = new OutlinerWindow();
-      outliner->m_name = g_outlinerStr;
-      m_windows.push_back(outliner);
+        PropInspector* inspector = new PropInspector();
+        inspector->m_name = g_propInspector;
+        m_windows.push_back(inspector);
 
-      PropInspector* inspector = new PropInspector();
-      inspector->m_name = g_propInspector;
-      m_windows.push_back(inspector);
+        MaterialInspector* matInspect = new MaterialInspector();
+        matInspect->m_name = g_matInspector;
+        m_windows.push_back(matInspect);
+      }
 
       UI::InitIcons();
     }
@@ -194,7 +145,7 @@ namespace ToolKit
       SafeDel(Viewport::m_overlayMods);
       SafeDel(Viewport::m_overlayOptions);
 
-      m_scene.Destroy();
+      m_scene->Destroy();
 
       // Editor objects.
       SafeDel(m_grid);
@@ -247,7 +198,7 @@ namespace ToolKit
 
         m_renderer->SetRenderTarget(vp->m_viewportImage);
 
-        for (Entity* ntt : m_scene.GetEntities())
+        for (Entity* ntt : m_scene->GetEntities())
         {
           if (ntt->IsDrawable())
           {
@@ -321,7 +272,7 @@ namespace ToolKit
       UI::ShowUI();
     }
 
-    void App::OnResize(int width, int height)
+    void App::OnResize(uint width, uint height)
     {
       m_renderer->m_windowWidth = width;
       m_renderer->m_windowHeight = height;
@@ -330,26 +281,27 @@ namespace ToolKit
 
     void App::OnNewScene(const String& name)
     {
+      m_onNewScene = true;
+
       Destroy();
       Init();
-      m_scene.m_name = name;
-      m_scene.m_newScene = true;
+      m_scene = std::make_shared<EditorScene>(ScenePath(name + SCENE));
+      m_scene->m_newScene = true;
     }
 
     void App::OnSaveScene()
     {
       auto saveFn = []() -> void
       {
-        XmlDocument doc;
-        g_app->m_scene.Serialize(&doc, nullptr);
-        g_app->m_scene.m_newScene = false;
+        g_app->m_scene->Save(false);
         g_app->GetAssetBrowser()->UpdateContent();
       };
 
-      String sceneName = m_scene.m_name + SCENE;
-      if (m_scene.m_newScene && CheckFile(ScenePath(sceneName)))
+      // File existance check.
+      String fullPath = m_scene->m_file;
+      if (m_scene->m_newScene && CheckFile(fullPath))
       {
-        String msg = "Scene " + sceneName + " exist on the disk.\nOverride the existing scene ?";
+        String msg = "Scene " + fullPath + " exist on the disk.\nOverride the existing scene ?";
         YesNoWindow* overrideScene = new YesNoWindow("Override existing file##OvrdScn", msg);
         overrideScene->m_yesCallback = [&saveFn]()
         {
@@ -375,8 +327,9 @@ namespace ToolKit
       if (!processing)
       {
         YesNoWindow* reallyQuit = new YesNoWindow("Quiting... Are you sure?##ClsApp");
-        reallyQuit->m_yesCallback = []()
+        reallyQuit->m_yesCallback = [this]()
         {
+          Serialize(nullptr, nullptr);
           g_running = false;
         };
 
@@ -397,7 +350,7 @@ namespace ToolKit
         if (ConsoleWindow* con = GetConsole())
         {
           con->AddLog("Import failed: " + fullPath, ConsoleWindow::LogType::Error);
-          con->AddLog("File format is not supported.\nSuported formats are fbx, glb, obj.", ConsoleWindow::LogType::Error);
+          con->AddLog("File format is not supported.\nSuported formats are fbx, glb, gltf, obj.", ConsoleWindow::LogType::Error);
         }
         return -1;
       }
@@ -428,7 +381,7 @@ namespace ToolKit
         String cmd = "Import \"";
         if (!subDir.empty())
         {
-          cmd += finalPath + "\" -t \".\\" + subDir;
+          cmd += finalPath + "\" -t \"" + subDir;
         }
         else
         {
@@ -572,11 +525,12 @@ namespace ToolKit
           MeshPtr mesh;
           if (ext == SKINMESH)
           {
-            mesh = GetSkinMeshManager()->Create(meshFile);
+            assert(false);
+            //mesh = GetSkinMeshManager()->Create(meshFile);
           }
           else
           {
-            mesh = GetMeshManager()->Create(meshFile);
+            mesh = GetMeshManager()->Create<Mesh>(meshFile);
           }
 
           if (FolderWindow* browser = GetAssetBrowser())
@@ -605,23 +559,8 @@ namespace ToolKit
     {
       String ext;
       DecomposePath(fullPath, nullptr, nullptr, &ext);
-
-      if (ext == ".fbx")
-      {
-        return true;
-      }
-
-      if (ext == ".glb")
-      {
-        return true;
-      }
-
-      if (ext == ".gltf")
-      {
-        return true;
-      }
-
-      if (ext == ".obj")
+      
+      if (SupportedMeshFormat(ext))
       {
         return true;
       }
@@ -633,6 +572,28 @@ namespace ToolKit
       }
 
       return false;
+    }
+
+    void App::OpenScene(const String& fullPath)
+    {
+      m_scene->Destroy();
+      m_scene = GetSceneManager()->Create<EditorScene>(fullPath);
+      m_scene->Load(); // Make sure its loaded.
+      m_scene->Init(false);
+      m_scene->m_newScene = false;
+    }
+
+    void App::MergeScene(const String& fullPath)
+    {
+      ScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
+      scene->Load();
+      scene->Init(false);
+
+      EntityRawPtrArray newNtts = scene->GetEntities();
+      for (Entity* e : newNtts)
+      {
+        g_app->m_scene->AddEntity(e);
+      }
     }
 
     Viewport* App::GetActiveViewport()
@@ -694,6 +655,11 @@ namespace ToolKit
       return GetWindow<PropInspector>(g_propInspector);
     }
 
+    MaterialInspector* App::GetMaterialInspector()
+    {
+      return GetWindow<MaterialInspector>(g_matInspector);
+    }
+
     template<typename T>
     T* App::GetWindow(const String& name)
     {
@@ -714,7 +680,7 @@ namespace ToolKit
 
     void App::RenderSelected(Viewport* vp)
     {
-      if (m_scene.GetSelectedEntityCount() == 0)
+      if (m_scene->GetSelectedEntityCount() == 0)
       {
         return;
       }
@@ -742,7 +708,7 @@ namespace ToolKit
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
         glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        ShaderPtr solidColor = GetShaderManager()->Create(ShaderPath("unlitColorFrag.shader"));
+        ShaderPtr solidColor = GetShaderManager()->Create<Shader>(ShaderPath("unlitColorFrag.shader"));
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
 
@@ -750,13 +716,13 @@ namespace ToolKit
 
         // Dilate.
         glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
-        ShaderPtr dilate = GetShaderManager()->Create(ShaderPath("dilateFrag.shader"));
+        ShaderPtr dilate = GetShaderManager()->Create<Shader>(ShaderPath("dilateFrag.shader"));
         dilate->SetShaderParameter("Color", color);
         m_renderer->DrawFullQuad(dilate);
       };
 
       EntityRawPtrArray selecteds;
-      m_scene.GetSelectedEntities(selecteds);
+      m_scene->GetSelectedEntities(selecteds);
       Entity* primary = selecteds.back();
 
       selecteds.pop_back();
@@ -765,6 +731,115 @@ namespace ToolKit
       selecteds.clear();
       selecteds.push_back(primary);
       RenderFn(selecteds, g_selectHighLightPrimaryColor);
+
+      if (m_showSelectionBoundary && primary->IsDrawable())
+      {
+        Drawable* dw = static_cast<Drawable*> (primary);
+        m_perFrameDebugObjects.push_back(GenerateBoundingVolumeGeometry(dw->GetAABB(true)));
+      }
+    }
+
+    void App::Serialize(XmlDocument* doc, XmlNode* parent) const
+    {
+      std::ofstream file;
+      String fileName = "..//Resources//Editor.settings";
+
+      file.open(fileName.c_str(), std::ios::out);
+      if (file.is_open())
+      {
+        XmlDocument appDoc;
+        XmlNode* app = appDoc.allocate_node(rapidxml::node_element, "App");
+        appDoc.append_node(app);
+        for (Window* w : m_windows)
+        {
+          w->Serialize(&appDoc, app);
+        }
+
+        if (!m_scene->m_newScene)
+        {
+          WriteAttr(app, &appDoc, "scene", m_scene->m_name);
+        }
+
+        WriteAttr(app, &appDoc, "width", std::to_string(m_renderer->m_windowWidth));
+        WriteAttr(app, &appDoc, "height", std::to_string(m_renderer->m_windowHeight));
+        WriteAttr(app, &appDoc, "maximized", std::to_string(m_windowMaximized));
+
+        std::string xml;
+        rapidxml::print(std::back_inserter(xml), appDoc, 0);
+
+        file << xml;
+        file.close();
+        appDoc.clear();
+      }
+    }
+
+    void App::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    {
+      XmlFile file("..//Resources//Editor.settings");
+      XmlDocument appDoc;
+      appDoc.parse<0>(file.data());
+
+      if (XmlNode* root = appDoc.first_node("App"))
+      {
+        // Windows
+        XmlNode* wndNode = root->first_node("Window");
+        do 
+        {
+          int type;
+          ReadAttr(wndNode, "type", type);
+
+          Window* wnd = nullptr;
+          switch ((Window::Type)type)
+          {
+          case Window::Type::Viewport:
+            wnd = new Viewport(wndNode);
+            break;
+          case Window::Type::Console:
+            wnd = new ConsoleWindow(wndNode);
+            break;
+          case Window::Type::Outliner:
+            wnd = new OutlinerWindow(wndNode);
+            break;
+          case Window::Type::Browser:
+            wnd = new FolderWindow(wndNode);
+            break;
+          case Window::Type::Inspector:
+            wnd = new PropInspector(wndNode);
+            break;
+          case Window::Type::MaterialInspector:
+            wnd = new MaterialInspector(wndNode);
+            break;
+          default:
+            assert(false);
+            break;
+          }
+
+          if (wnd)
+          {
+            m_windows.push_back(wnd);
+          }
+        } while (wndNode = wndNode->next_sibling("Window"));
+
+        String scene;
+        ReadAttr(root, "scene", scene);
+        if (!scene.empty())
+        {
+          String fullPath = ScenePath(scene + SCENE);
+          OpenScene(fullPath);
+        }
+
+        uint width = 0;
+        ReadAttr(root, "width", width);
+        uint height = 0;
+        ReadAttr(root, "height", height);
+
+        if (width > 0 && height > 0)
+        {
+          OnResize(width, height);
+        }
+
+        ReadAttr(root, "maximized", m_windowMaximized);
+      }
     }
 
   }

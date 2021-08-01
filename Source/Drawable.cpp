@@ -4,6 +4,7 @@
 #include "Material.h"
 #include "ToolKit.h"
 #include "Node.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -52,27 +53,31 @@ namespace ToolKit
     return bb;
   }
 
-  Drawable* Drawable::GetCopy() const
-  {
-    Drawable* cpy = new Drawable();
-    GetCopy(cpy);
-
-    return cpy;
-  }
-
-  void Drawable::GetCopy(Entity* copyTo) const
+  Entity* Drawable::GetCopy(Entity* copyTo) const
   {
     Entity::GetCopy(copyTo);
     Drawable* ntt = static_cast<Drawable*> (copyTo);
     ntt->m_mesh = MeshPtr(m_mesh->GetCopy());
+    return ntt;
   }
 
   void Drawable::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Entity::Serialize(doc, parent);
     XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlMeshElement.c_str());
-    node->append_attribute(doc->allocate_attribute(XmlFileAttr.c_str(), m_mesh->m_file.c_str()));
+
+    String relPath = GetRelativeResourcePath(m_mesh->m_file);
+    
+    node->append_attribute
+    (
+      doc->allocate_attribute
+      (
+        XmlFileAttr.c_str(),
+        doc->allocate_string(relPath.c_str())
+      )
+    );
     parent->last_node()->append_node(node);
+    m_mesh->Save(true);
   }
 
   void Drawable::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -82,8 +87,45 @@ namespace ToolKit
     {
       XmlAttribute* attr = meshNode->first_attribute(XmlFileAttr.c_str());
       String filePath = MeshPath(attr->value());
-      m_mesh = GetMeshManager()->Create(filePath);
+      m_mesh = GetMeshManager()->Create<Mesh>(filePath);
     }
+  }
+
+  bool Drawable::IsMaterialInUse(const MaterialPtr& mat) const
+  {
+    if (mat)
+    {
+      MeshRawCPtrArray meshes;
+      m_mesh->GetAllMeshes(meshes);
+      for (const Mesh* m : meshes)
+      {
+        if (mat == m->m_material)
+        {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  bool Drawable::IsMeshInUse(const MeshPtr& mesh) const
+  {
+    if (mesh)
+    {
+      return m_mesh == mesh;
+    }
+
+    return false;
+  }
+
+  Entity* Drawable::GetInstance(Entity* copyTo) const
+  {
+    Entity::GetInstance(copyTo);
+    Drawable* instance = dynamic_cast<Drawable*> (copyTo);
+    instance->m_mesh = m_mesh;
+
+    return instance;
   }
 
 }

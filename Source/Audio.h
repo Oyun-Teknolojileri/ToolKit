@@ -10,6 +10,7 @@ namespace ToolKit
   class Audio : public Resource
   {
   public:
+    Audio();
     Audio(String file);
     ~Audio();
 
@@ -21,11 +22,13 @@ namespace ToolKit
     uint m_buffer;
   };
 
-  class AudioManager : public ResourceManager<Audio>
+  class AudioManager : public ResourceManager
   {
   public:
-    void Init();
-    void Uninit();
+    AudioManager();
+    virtual ~AudioManager();
+    virtual void Init() override;
+    virtual void Uninit() override;
 
   public:
     void* m_device = nullptr;

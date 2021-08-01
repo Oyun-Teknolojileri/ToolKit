@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ToolKit.h"
-#include "Scene.h"
+#include "EditorScene.h"
 
 namespace ToolKit
 {
@@ -22,10 +22,11 @@ namespace ToolKit
     class FolderWindow;
     class OutlinerWindow;
     class PropInspector;
+    class MaterialInspector;
     class Window;
     class Gizmo;
 
-    class App
+    class App : Serializable
     {
     public:
       App(int windowWidth, int windowHeight);
@@ -34,7 +35,7 @@ namespace ToolKit
       void Init();
       void Destroy();
       void Frame(float deltaTime);
-      void OnResize(int width, int height);
+      void OnResize(uint width, uint height);
       void OnNewScene(const String& name);
       void OnSaveScene();
       void OnQuit();
@@ -42,6 +43,8 @@ namespace ToolKit
       // Import facilities.
       int Import(const String& fullPath, const String& subDir, bool overwrite);
       bool CanImport(const String& fullPath);
+      void OpenScene(const String& fullPath);
+      void MergeScene(const String& fullPath);
 
       Viewport* GetActiveViewport(); // Returns open and active viewport or nullptr.
       Viewport* GetViewport(const String& name);
@@ -49,6 +52,7 @@ namespace ToolKit
       FolderWindow* GetAssetBrowser();
       OutlinerWindow* GetOutliner();
       PropInspector* GetPropInspector();
+      MaterialInspector* GetMaterialInspector();
 
       template<typename T>
       T* GetWindow(const String& name);
@@ -56,8 +60,11 @@ namespace ToolKit
       // Quick selected render implementation.
       void RenderSelected(Viewport* vp);
 
+      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
     public:
-      Scene m_scene;
+      EditorScenePtr m_scene;
 
       // UI elements.
       std::vector<Window*> m_windows;
@@ -67,6 +74,8 @@ namespace ToolKit
       float m_mouseSensitivity = 0.5f;
       MaterialPtr m_highLightMaterial;
       MaterialPtr m_highLightSecondaryMaterial;
+      Vec2 m_thumbnailSize = Vec2(300.0f, 300.0f);
+      std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
 
       // Editor objects.
       Grid* m_grid;
@@ -86,6 +95,8 @@ namespace ToolKit
       bool m_showOverlayUI = true;
       bool m_showOverlayUIAlways = true;
       bool m_importSlient = false;
+      bool m_showSelectionBoundary = false;
+      bool m_windowMaximized = false;
       TransformationSpace m_transformSpace = TransformationSpace::TS_WORLD;
 
       // Snap settings.
@@ -98,13 +109,7 @@ namespace ToolKit
       Renderer* m_renderer;
 
     private:
-      Drawable* m_suzanne;
-      Drawable* m_knight;
-      std::shared_ptr<Animation> m_knightRunAnim;
-      Cube* m_q1;
-      Cube* m_q2;
-      Cone* m_q3;
-      Cube* m_q4;
+      bool m_onNewScene = false;
     };
 
   }

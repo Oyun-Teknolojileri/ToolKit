@@ -52,6 +52,7 @@ namespace ToolKit
   class RenderTarget : public Texture
   {
   public:
+    RenderTarget();
     RenderTarget(uint widht, uint height, bool depthStencil = true);
     virtual ~RenderTarget();
 
@@ -67,8 +68,11 @@ namespace ToolKit
     bool m_depthStencil;
   };
 
-  class TextureManager : public ResourceManager<Texture>
+  class TextureManager : public ResourceManager
   {
+  public:
+    TextureManager();
+    virtual ~TextureManager();
   };
 
 }

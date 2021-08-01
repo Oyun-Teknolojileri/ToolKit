@@ -76,8 +76,8 @@ namespace ToolKit
     object->m_mesh->Init();
     SetProjectViewModel(object, cam);
 
-    static ShaderPtr skinShader = GetShaderManager()->Create(ShaderPath("defaultSkin.shader"));
-    static ShaderPtr fragShader = GetShaderManager()->Create(ShaderPath("defaultFragment.shader"));
+    static ShaderPtr skinShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultSkin.shader"));
+    static ShaderPtr fragShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader"));
     static ProgramPtr skinProg = CreateProgram(skinShader, fragShader);
     BindProgram(skinProg);
     FeedUniforms(skinProg);
@@ -116,8 +116,8 @@ namespace ToolKit
 
   void Renderer::Render2d(Surface* object, glm::ivec2 screenDimensions)
   {
-    static ShaderPtr vertexShader = GetShaderManager()->Create(ShaderPath("defaultVertex.shader"));
-    static ShaderPtr fragShader = GetShaderManager()->Create(ShaderPath("unlitFrag.shader"));
+    static ShaderPtr vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader"));
+    static ShaderPtr fragShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader"));
     static ProgramPtr prog = CreateProgram(vertexShader, fragShader);
     BindProgram(prog);
 
@@ -264,7 +264,7 @@ namespace ToolKit
 
   void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
   {
-    static ShaderPtr fullQuadVert = GetShaderManager()->Create(ShaderPath("fullQuadVert.shader"));
+    static ShaderPtr fullQuadVert = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader"));
     static MaterialPtr material = std::make_shared<Material>();
     material->UnInit();
 

@@ -8,8 +8,9 @@
 #include "Node.h"
 #include "Directional.h"
 #include "Viewport.h"
-#include "DebugNew.h"
 #include "TransformMod.h"
+#include "util.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -74,11 +75,17 @@ namespace ToolKit
 
       if (!g_app->m_showPickingDebug)
       {
-        g_app->m_scene.RemoveEntity(StatePickingBase::m_dbgArrow->m_id);
-        StatePickingBase::m_dbgArrow = nullptr;
+        if (StatePickingBase::m_dbgArrow)
+        {
+          g_app->m_scene->RemoveEntity(StatePickingBase::m_dbgArrow->m_id);
+          StatePickingBase::m_dbgArrow = nullptr;
+        }
 
-        g_app->m_scene.RemoveEntity(StatePickingBase::m_dbgFrustum->m_id);
-        StatePickingBase::m_dbgFrustum = nullptr;
+        if (StatePickingBase::m_dbgFrustum)
+        {
+          g_app->m_scene->RemoveEntity(StatePickingBase::m_dbgFrustum->m_id);
+          StatePickingBase::m_dbgFrustum = nullptr;
+        }
       }
     }
 
@@ -99,7 +106,7 @@ namespace ToolKit
 
     void TransformInternal(TagArgArray tagArgs, bool set)
     {
-      Entity* e = g_app->m_scene.GetCurrentSelection();
+      Entity* e = g_app->m_scene->GetCurrentSelection();
       if (e == nullptr)
       {
         return;
@@ -274,7 +281,7 @@ namespace ToolKit
 
     void GetTransformExec(TagArgArray tagArgs)
     {
-      Entity* e = g_app->m_scene.GetCurrentSelection();
+      Entity* e = g_app->m_scene->GetCurrentSelection();
       if (e != nullptr)
       {
         auto PrintTransform = [e](TransformationSpace ts) -> void
@@ -374,7 +381,7 @@ namespace ToolKit
 
       String args = tagArgs.front().second.front();
 
-      g_app->m_scene.SelectByTag(args);
+      g_app->m_scene->SelectByTag(args);
     }
 
     void LookAt(TagArgArray tagArgs)
@@ -406,7 +413,7 @@ namespace ToolKit
     {
       // Caviate: A reload is neded since hardware buffers are not updated.
       // After refreshing hardware buffers, transforms of the entity can be set to identity.
-      if (Drawable* e = dynamic_cast<Drawable*> (g_app->m_scene.GetCurrentSelection()))
+      if (Drawable* e = dynamic_cast<Drawable*> (g_app->m_scene->GetCurrentSelection()))
       {
         Mat4 ts = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
         MeshRawPtrArray meshes;
@@ -424,7 +431,7 @@ namespace ToolKit
 
     void SaveMesh(TagArgArray tagArgs)
     {
-      if (Drawable* e = dynamic_cast<Drawable*> (g_app->m_scene.GetCurrentSelection()))
+      if (Drawable* e = dynamic_cast<Drawable*> (g_app->m_scene->GetCurrentSelection()))
       {
         TagArgArray::const_iterator nameTag = GetTag("n", tagArgs);
         String fileName = e->m_mesh->m_file;
@@ -459,11 +466,22 @@ namespace ToolKit
       }
     }
 
+    void ShowSelectionBoundary(TagArgArray tagArgs)
+    {
+      BoolCheck(tagArgs, &g_app->m_showSelectionBoundary);
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
     static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
     static char* Strdup(const char* str) { size_t len = strlen(str) + 1; void* buf = malloc(len); IM_ASSERT(buf); return (char*)memcpy(buf, (const void*)str, len); }
     static void Strtrim(char* str) { char* str_end = str + strlen(str); while (str_end > str && str_end[-1] == ' ') str_end--; *str_end = 0; }
+
+    ConsoleWindow::ConsoleWindow(XmlNode* node)
+      : ConsoleWindow()
+    {
+      DeSerialize(nullptr, node);
+    }
 
     ConsoleWindow::ConsoleWindow()
     {
@@ -481,6 +499,7 @@ namespace ToolKit
       CreateCommand(g_lookAt, LookAt);
       CreateCommand(g_applyTransformToMesh, ApplyTransformToMesh);
       CreateCommand(g_saveMesh, SaveMesh);
+      CreateCommand(g_showSelectionBoundary, ShowSelectionBoundary);
     }
 
     ConsoleWindow::~ConsoleWindow()
@@ -492,8 +511,6 @@ namespace ToolKit
       //ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Once);
       if (ImGui::Begin(g_consoleStr.c_str(), &m_visible))
       {
-        HandleStates();
-
         // Output window.
         const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
         ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar);
@@ -506,25 +523,29 @@ namespace ToolKit
             continue;
           }
 
+          String lineNum = std::to_string(i) + ":  ";
+          ImGui::TextUnformatted(lineNum.c_str());
+          ImGui::SameLine();
+
           bool pop_color = false;
           if (strstr(item, g_errorStr.c_str()))
           {
-            ImGui::PushStyleColor(ImGuiCol_Text, GLM4IMVEC(g_consoleErrorColor));
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleErrorColor);
             pop_color = true;
           }
           else if (strstr(item, g_commandStr.c_str()))
           {
-            ImGui::PushStyleColor(ImGuiCol_Text, GLM4IMVEC(g_consoleCommandColor));
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleCommandColor);
             pop_color = true;
           }
           else if (strstr(item, g_warningStr.c_str()))
           {
-            ImGui::PushStyleColor(ImGuiCol_Text, GLM4IMVEC(g_consoleWarningColor));
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleWarningColor);
             pop_color = true;
           }
           else // Than its a memo.
           {
-            ImGui::PushStyleColor(ImGuiCol_Text, GLM4IMVEC(g_consoleMemoColor));
+            ImGui::PushStyleColor(ImGuiCol_Text, g_consoleMemoColor);
             pop_color = true;
           }
 
@@ -560,7 +581,8 @@ namespace ToolKit
         }
 
         ImGui::PushItemWidth(width);
-        if (
+        if 
+        (
           ImGui::InputText
           (
             "##Input",
@@ -570,7 +592,7 @@ namespace ToolKit
             [](ImGuiInputTextCallbackData* data)->int { return ((ConsoleWindow*)(data->UserData))->TextEditCallback(data); },
             (void*)this
           )
-          )
+        )
         {
           char* s = inputBuff;
           Strtrim(s);

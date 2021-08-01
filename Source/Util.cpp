@@ -4,8 +4,10 @@
 #include "Primative.h"
 #include "DebugNew.h"
 
+#include <cstdarg>
 #include <fstream>
 #include <filesystem>
+#include <algorithm>
 
 namespace ToolKit
 {
@@ -20,15 +22,11 @@ namespace ToolKit
       XmlAttribute* attr = node->first_attribute(letters + i, 1);
       if constexpr (std::is_integral_v<T::value_type>)
       {
-        val[i] = std::atoi(attr->value());
+        val[i] = (int)std::atoi(attr->value());
       }
-      else if (std::is_floating_point_v<T::value_type>)
+      else if constexpr (std::is_floating_point_v<T::value_type>)
       {
         val[i] = (float)std::atof(attr->value());
-      }
-      else
-      {
-        assert(false);
       }
     }
   }
@@ -38,7 +36,7 @@ namespace ToolKit
   template void ReadVec(XmlNode* node, glm::ivec3& val);
   template void ReadVec(XmlNode* node, Quaternion& val);
   template void ReadVec(XmlNode* node, Vec4& val);
-  template void ReadVec(XmlNode* node, glm::uvec4& val);
+  template void ReadVec(XmlNode* node, UVec4& val);
 
   template<typename T>
   void WriteVec(XmlNode* node, XmlDocument* doc, const T& val)
@@ -56,23 +54,6 @@ namespace ToolKit
   template void WriteVec(XmlNode* node, XmlDocument* doc, const Vec4& val);
   template void WriteVec(XmlNode* node, XmlDocument* doc, const Quaternion& val);
 
-  template<typename T>
-  T ReadAttr(XmlNode* node, const String& name)
-  {
-    if (XmlAttribute* attr = node->first_attribute(name.c_str()))
-    {
-      return (T)std::atoi(attr->value());
-    }
-
-    return (T)0;
-  }
-
-  template Byte ReadAttr<Byte>(XmlNode* node, const String& name);
-  template UByte ReadAttr<UByte>(XmlNode* node, const String& name);
-  template int ReadAttr<int>(XmlNode* node, const String& name);
-  template uint ReadAttr<uint>(XmlNode* node, const String& name);
-  template float ReadAttr<float>(XmlNode* node, const String& name);
-
   void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val)
   {
     node->append_attribute
@@ -85,13 +66,90 @@ namespace ToolKit
     );
   }
 
+  template<typename T>
+  T ReadVal(XmlNode* node, const String& name)
+  {
+    if (XmlAttribute* attr = node->first_attribute(name.c_str()))
+    {
+      if constexpr (std::is_integral_v<T>)
+      {
+        return (int)std::atoi(attr->value());
+      }
+      else if constexpr (std::is_floating_point_v<T>)
+      {
+        return (float)std::atof(attr->value());
+      }
+    }
+
+    return 0;
+  }
+
+  void ReadAttr(XmlNode* node, const String& name, bool& val)
+  {
+    val = ReadVal<bool>(node, name);
+  }
+
+  void ReadAttr(XmlNode* node, const String& name, float& val)
+  {
+    val = ReadVal<float>(node, name);
+  }
+
+  void ReadAttr(XmlNode* node, const String& name, int& val)
+  {
+    val = ReadVal<int>(node, name);
+  }
+
+  void ReadAttr(XmlNode* node, const String& name, uint& val)
+  {
+    val = ReadVal<uint>(node, name);
+  }
+
+  void ReadAttr(XmlNode* node, const String& name, Byte& val)
+  {
+    val = ReadVal<Byte>(node, name);
+  }
+
+  void ReadAttr(XmlNode* node, const String& name, UByte& val)
+  {
+    val = ReadVal<UByte>(node, name);
+  }
+
+  void ReadAttr(XmlNode* node, const String& name, String& val)
+  {
+    if (XmlAttribute* attr = node->first_attribute(name.c_str()))
+    {
+      val = attr->value();
+    }
+  }
+
   bool CheckFile(const String& path)
   {
     std::ifstream f(path.c_str());
     return f.good();
   }
 
-  void DecomposePath(const String fullPath, String* path, String* name, String* ext)
+  String CreateCopyFileFullPath(const String& fullPath)
+  {
+    String cpyPath;
+    if (!fullPath.empty())
+    {
+      String path, name, ext;
+      DecomposePath(fullPath, &path, &name, &ext);
+      cpyPath = ConcatPaths({ path, name + "_copy" + ext });
+      if (CheckFile(cpyPath))
+      {
+        int i = 1;
+        do
+        {
+          cpyPath = ConcatPaths({ path, name + "_copy(" + std::to_string(i++) + ")" + ext });
+        } while (CheckFile(cpyPath));
+      }
+    }
+
+    return cpyPath;
+  }
+
+  void DecomposePath(const String& fullPath, String* path, String* name, String* ext)
   {
     String normal = fullPath;
     NormalizePath(normal);
@@ -122,6 +180,209 @@ namespace ToolKit
     ReplaceStringInPlace(path, "/", "\\");
   }
 
+  String ConcatPaths(const StringArray& entries)
+  {
+    String path;
+    if (entries.empty())
+    {
+      return path;
+    }
+
+    for (size_t i = 0; i < entries.size() - 1; i++)
+    {
+      path += entries[i] + GetPathSeparatorAsStr();
+    }
+
+    return path + entries.back();
+  }
+
+  ResourceType GetResourceType(const String& ext)
+  {
+    if (ext == MESH || ext == SKINMESH || SupportedMeshFormat(ext))
+    {
+      return ResourceType::Mesh;
+    }
+
+    if (ext == ANIM)
+    {
+      return ResourceType::Animation;
+    }
+
+    if (ext == MATERIAL)
+    {
+      return ResourceType::Material;
+    }
+
+    if (SupportedImageFormat(ext))
+    {
+      return ResourceType::Texture;
+    }
+
+    if (ext == SHADER)
+    {
+      return ResourceType::Shader;
+    }
+
+    if (ext == AUDIO)
+    {
+      return ResourceType::Audio;
+    }
+
+    assert(false);
+    return ResourceType::Base;
+  }
+
+  String GetTypeString(ResourceType type)
+  {
+    switch (type)
+    {
+    case ResourceType::Base:
+      return "Base";
+      break;
+    case ResourceType::Animation:
+      return "Animation";
+      break;
+    case ResourceType::Audio:
+      return "Audio";
+      break;
+    case ResourceType::Material:
+      return "Material";
+      break;
+    case ResourceType::Mesh:
+      return "Mesh";
+      break;
+    case ResourceType::Shader:
+      return "Shader";
+      break;
+    case ResourceType::SkinMesh:
+      return "SkinMesh";
+      break;
+    case ResourceType::SpriteSheet:
+      return "SpriteSheet";
+      break;
+    case ResourceType::Texture:
+      return "Texture";
+      break;
+    case ResourceType::CubeMap:
+      return "CubeMap";
+      break;
+    case ResourceType::RenderTarget:
+      return "RenderTarget";
+      break;
+    case ResourceType::Scene:
+      return "Scene";
+      break;
+    default:
+      assert(false);
+      break;
+    }
+
+    return String();
+  }
+
+  String GetExtFromType(ResourceType type)
+  {
+    switch (type)
+    {
+    case ResourceType::Base:
+      break;
+    case ResourceType::Animation:
+      return ANIM;
+      break;
+    case ResourceType::Audio:
+      return AUDIO;
+      break;
+    case ResourceType::Material:
+      return MATERIAL;
+      break;
+    case ResourceType::Mesh:
+      return MESH;
+      break;
+    case ResourceType::Shader:
+      return SHADER;
+      break;
+    case ResourceType::SkinMesh:
+      return SKINMESH;
+      break;
+    case ResourceType::SpriteSheet:
+      assert(false);
+      break;
+    case ResourceType::Texture:
+      assert(false);
+      break;
+    case ResourceType::CubeMap:
+      assert(false);
+      break;
+    case ResourceType::RenderTarget:
+      assert(false);
+      break;
+    case ResourceType::Scene:
+      return SCENE;
+      break;
+    default:
+      assert(false);
+      break;
+    }
+    
+    return String();
+  }
+
+  String GetResourcePath(ResourceType type)
+  {
+    String path;
+    switch (type)
+    {
+    case ResourceType::Base:
+      break;
+    case ResourceType::Animation:
+      path = AnimationPath("");
+      break;
+    case ResourceType::Audio:
+      path = AudioPath("");
+      break;
+    case ResourceType::Material:
+      path = MaterialPath("");
+      break;
+    case ResourceType::Mesh:
+    case ResourceType::SkinMesh:
+      path = MeshPath("");
+      break;
+    case ResourceType::Shader:
+      path = ShaderPath("");
+      break;
+    case ResourceType::SpriteSheet:
+      path = SpritePath("");
+      break;
+    case ResourceType::Texture:
+    case ResourceType::CubeMap:
+      path = TexturePath("");
+      break;
+    case ResourceType::RenderTarget:
+      break;
+    default:
+      assert(false);
+      break;
+    }
+
+    return path;
+  }
+
+  String GetRelativeResourcePath(const String& fullPath)
+  {
+    String ext;
+    DecomposePath(fullPath, nullptr, nullptr, &ext);
+    ResourceType type = GetResourceType(ext);
+    String path = GetResourcePath(type);
+
+    size_t pos = fullPath.find(path);
+    if (pos != String::npos)
+    {
+      return fullPath.substr(pos + path.size());
+    }
+    
+    return fullPath;
+  }
+
   char GetPathSeparator()
   {
     return '\\';
@@ -130,6 +391,18 @@ namespace ToolKit
   String GetPathSeparatorAsStr()
   {
     return String() + GetPathSeparator();
+  }
+
+  bool SupportedImageFormat(const String& ext) 
+  {
+    static String supportedFormats(PNG + JPG + JPEG + TGA + BMP + PSD);
+    return supportedFormats.find(ToLower(ext)) != String::npos;
+  }
+
+  bool SupportedMeshFormat(const String& ext)
+  {
+    static String supportedFormats(FBX + GLB + GLTF + OBJ);
+    return supportedFormats.find(ToLower(ext)) != String::npos;
   }
 
   // split a string into multiple sub strings, based on a separator string
@@ -214,36 +487,34 @@ namespace ToolKit
     return obj;
   }
 
-  ToolKit::LineBatch* GenerateBoundingVolumeGeometry(const BoundingBox& box, Mat4* transform)
+  LineBatch* GenerateBoundingVolumeGeometry(const BoundingBox& box, Mat4* transform)
   {
-    Vec3 scale = box.max - box.min;
-    Cube cube(scale);
+    Vec3Array corners;
+    GetCorners(box, corners);
 
     std::vector<Vec3> vertices =
     {
-      Vec3(-0.5f, 0.5f, 0.5f) * scale, // FTL.
-      Vec3(-0.5f, -0.5f, 0.5f) * scale, // FBL.
-      Vec3(0.5f, -0.5f, 0.5f) * scale, // FBR.
-      Vec3(0.5f, 0.5f, 0.5f) * scale, // FTR.
-      Vec3(-0.5f, 0.5f, 0.5f) * scale, // FTL.
-      Vec3(-0.5f, 0.5f, -0.5f) * scale, // BTL.
-      Vec3(-0.5f, -0.5f, -0.5f) * scale, // BBL.
-      Vec3(0.5f, -0.5f, -0.5f) * scale, // BBR.
-      Vec3(0.5f, 0.5f, -0.5f) * scale, // BTR.
-      Vec3(-0.5f, 0.5f, -0.5f) * scale, // BTL.
-      Vec3(0.5f, 0.5f, -0.5f) * scale, // BTR.
-      Vec3(0.5f, 0.5f, 0.5f) * scale, // FTR.
-      Vec3(0.5f, -0.5f, 0.5f) * scale, // FBR.
-      Vec3(0.5f, -0.5f, -0.5f) * scale, // BBR.
-      Vec3(-0.5f, -0.5f, -0.5f) * scale, // BBL.
-      Vec3(-0.5f, -0.5f, 0.5f) * scale // FBL.
+      corners[0], // FTL
+      corners[3], // FBL
+      corners[2], // FBR
+      corners[1], // FTR
+      corners[0], // FTL
+      corners[4], // BTL
+      corners[7], // BBL
+      corners[6], // BBR
+      corners[5], // BTR
+      corners[4], // BTL
+      corners[5], // BTR
+      corners[1], // FTR
+      corners[2], // FBR
+      corners[6], // BBR
+      corners[7], // BBL
+      corners[3] // FBL
     };
 
-    Vec3 mid = (box.min + box.max) * 0.5f;
-    for (Vec3& v : vertices)
+    if (transform != nullptr)
     {
-      v += mid;
-      if (transform != nullptr)
+      for (Vec3& v : vertices)
       {
         v = *transform * Vec4(v, 1.0f);
       }
@@ -313,6 +584,13 @@ namespace ToolKit
     {
       RootsOnly(entities, roots, e);
     }
+  }
+
+  String ToLower(const String& str)
+  {
+    String lwr = str;
+    transform(lwr.begin(), lwr.end(), lwr.begin(), ::tolower);
+    return lwr;
   }
 
 }

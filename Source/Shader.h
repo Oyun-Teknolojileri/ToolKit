@@ -30,11 +30,14 @@ namespace ToolKit
     virtual void UnInit() override;
     void SetShaderParameter(String param, const ParameterVariant& val);
 
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+
   public:
     std::unordered_map<String, ParameterVariant> m_shaderParams;
 
     String m_tag;
-    GLuint m_type = GL_VERTEX_SHADER;
+    GLuint m_shaderType = GL_VERTEX_SHADER;
     GLuint m_shaderHandle = 0;
     std::vector<Uniform> m_uniforms;
     String m_source;
@@ -53,10 +56,12 @@ namespace ToolKit
     ShaderPtrArray m_shaders;
   };
 
-  class ShaderManager : public ResourceManager<Shader>
+  class ShaderManager : public ResourceManager
   {
   public:
-    void Init();
+    ShaderManager();
+    virtual ~ShaderManager();
+    virtual void Init() override;
   };
 
 }

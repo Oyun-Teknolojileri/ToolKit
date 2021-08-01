@@ -18,13 +18,15 @@ namespace ToolKit
     // UI Strings
     const String g_consoleStr("Console");
     const String g_viewportStr("Viewport");
-    const String g_assetBrowserStr("AssetBrowser");
+    const String g_assetBrowserStr("Asset Browser");
     const String g_outlinerStr("Outliner");
-    const String g_propInspector("Inspector");
+    const String g_propInspector("Property Inspector");
+    const String g_matInspector("Material Inspector");
     const String g_memoStr("");
     const String g_errorStr("[Err] ");
     const String g_warningStr("[Wrn] ");
     const String g_commandStr("# ");
+    const String g_newSceneStr("New Scene");
 
     // Colors and materials.
     const String g_gridMaterialName("TK_EDITOR_GRID");
@@ -53,9 +55,6 @@ namespace ToolKit
       return ms / 1000.0f;
     }
 
-    #define GLM2IMVEC(v) *reinterpret_cast<const ImVec2*>(&v)
-    #define GLM4IMVEC(v) *reinterpret_cast<const ImVec4*>(&v)
-    #define IMVEC2GLM(v) *reinterpret_cast<const glm::vec2*>(&v)
     #define Convert2ImGuiTexture(TexturePtr) (void*)(intptr_t)(TexturePtr->m_textureId)
   }
 }

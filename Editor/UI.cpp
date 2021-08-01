@@ -16,6 +16,7 @@
 #include "OverlayUI.h"
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -31,6 +32,7 @@ namespace ToolKit
     UI::SearchFile UI::SearchFileData;
     StringInputWindow UI::m_strInputWindow;
     std::vector<Window*> UI::m_volatileWindows;
+    uint Window::m_baseId = 0; // unused id.
 
     // Icons
     TexturePtr UI::m_selectIcn;
@@ -62,6 +64,7 @@ namespace ToolKit
       ImGuiIO& io = ImGui::GetIO();
       io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
       io.ConfigWindowsMoveFromTitleBarOnly = true;
+      io.Fonts->AddFontFromFileTTF(FontPath("Junicode.ttf").c_str(), 16);
 
       ImGui_ImplSDL2_InitForOpenGL(g_window, g_context);
       ImGui_ImplOpenGL3_Init("#version 300 es");
@@ -126,49 +129,49 @@ namespace ToolKit
 
     void UI::InitIcons()
     {
-      m_selectIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/select.png"));
+      m_selectIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/select.png"));
       m_selectIcn->Init();
-      m_cursorIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/cursor.png"));
+      m_cursorIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/cursor.png"));
       m_cursorIcn->Init();
-      m_moveIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/move.png"));
+      m_moveIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/move.png"));
       m_moveIcn->Init();
-      m_rotateIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/rotate.png"));
+      m_rotateIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/rotate.png"));
       m_rotateIcn->Init();
-      m_scaleIcn = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/scale.png"));
+      m_scaleIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/scale.png"));
       m_scaleIcn->Init();
-      m_snapIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/snap.png"));
+      m_snapIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/snap.png"));
       m_snapIcon->Init();
-      m_audioIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/audio.png"));
+      m_audioIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/audio.png"));
       m_audioIcon->Init();
-      m_cameraIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/camera.png"));
+      m_cameraIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/camera.png"));
       m_cameraIcon->Init();
-      m_clipIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/clip.png"));
+      m_clipIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/clip.png"));
       m_clipIcon->Init();
-      m_fileIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/file.png"));
+      m_fileIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/file.png"));
       m_fileIcon->Init();
-      m_folderIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/folder.png"));
+      m_folderIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/folder.png"));
       m_folderIcon->Init();
-      m_imageIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/image.png"));
+      m_imageIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/image.png"));
       m_imageIcon->Init();
-      m_lightIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/light.png"));
+      m_lightIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/light.png"));
       m_lightIcon->Init();
-      m_materialIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/material.png"));
+      m_materialIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/material.png"));
       m_materialIcon->Init();
-      m_meshIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/mesh.png"));
+      m_meshIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/mesh.png"));
       m_meshIcon->Init();
-      m_armatureIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/armature.png"));
+      m_armatureIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/armature.png"));
       m_armatureIcon->Init();
-      m_codeIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/code.png"));
+      m_codeIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/code.png"));
       m_codeIcon->Init();
-      m_boneIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/bone.png"));
+      m_boneIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/bone.png"));
       m_boneIcon->Init();
-      m_worldIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/world.png"));
+      m_worldIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/world.png"));
       m_worldIcon->Init();
-      m_axisIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/axis.png"));
+      m_axisIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/axis.png"));
       m_axisIcon->Init();
 
       // Set application Icon.
-      m_appIcon = Main::GetInstance()->m_textureMan.Create(TexturePath("Icons/app.png"));
+      m_appIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/app.png"));
       m_appIcon->Init(false);
       SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(m_appIcon->m_image, m_appIcon->m_width, m_appIcon->m_height, 8, m_appIcon->m_width * 4, SDL_PIXELFORMAT_ABGR8888);
       SDL_SetWindowIcon(g_window, surface);
@@ -181,8 +184,16 @@ namespace ToolKit
       style->WindowRounding = 5.3f;
       style->GrabRounding = style->FrameRounding = 2.3f;
       style->ScrollbarRounding = 5.0f;
-      style->FrameBorderSize = 1.0f;
       style->ItemSpacing.y = 6.5f;
+
+      //style->WindowPadding = ImVec2(2.0f, 2.0f);
+      style->WindowBorderSize = 0.0f;
+      style->ChildBorderSize = 0.0f;
+      style->PopupBorderSize = 0.0f;
+      style->FrameBorderSize = 0.0f;
+      style->TabBorderSize = 0.0f;
+      style->WindowTitleAlign = ImVec2(0.5f, 0.5f);
+      style->WindowMenuButtonPosition = ImGuiDir_Right;
 
       style->Colors[ImGuiCol_Text] = { 0.73333335f, 0.73333335f, 0.73333335f, 1.00f };
       style->Colors[ImGuiCol_TextDisabled] = { 0.34509805f, 0.34509805f, 0.34509805f, 1.00f };
@@ -304,10 +315,10 @@ namespace ToolKit
 
     void UI::ShowMenuFile()
     {
-      if (ImGui::MenuItem("NewScene"))
+      if (ImGui::MenuItem(g_newSceneStr.c_str()))
       {
         m_strInputWindow.m_name = "NewScene##NwScn1";
-        m_strInputWindow.m_inputVal = "NewScene";
+        m_strInputWindow.m_inputVal = g_newSceneStr;
         m_strInputWindow.m_inputText = "Name";
         m_strInputWindow.m_hint = "Scene name";
         m_strInputWindow.SetVisibility(true);
@@ -330,7 +341,11 @@ namespace ToolKit
         m_strInputWindow.SetVisibility(true);
         m_strInputWindow.m_taskFn = [](const String& val)
         {
-          g_app->m_scene.m_name = val;
+          String path;
+          DecomposePath(g_app->m_scene->m_file, &path, nullptr, nullptr);
+          String fullPath = ConcatPaths({ path, val + SCENE });
+          g_app->m_scene->m_file = fullPath;
+          g_app->m_scene->m_name = val;
           g_app->OnSaveScene();
         };
       }
@@ -343,33 +358,37 @@ namespace ToolKit
 
     void UI::ShowMenuWindows()
     {
-      if (ImGui::BeginMenu("Viewport"))
+      auto handleMultiWindowFn = [](Window::Type windowType) -> void
       {
         for (int i = (int)g_app->m_windows.size() - 1; i >= 0; i--)
         {
           Window* wnd = g_app->m_windows[i];
-          if (wnd->GetType() != Window::Type::Viewport)
+          if (wnd->GetType() != windowType)
           {
             continue;
           }
 
-          Viewport* vp = static_cast<Viewport*> (wnd);
-          if (ImGui::MenuItem(vp->m_name.c_str(), nullptr, false, !vp->IsVisible()))
+          if (ImGui::MenuItem(wnd->m_name.c_str(), nullptr, false, !wnd->IsVisible()))
           {
-            vp->SetVisibility(true);
+            wnd->SetVisibility(true);
           }
 
-          if (vp->IsVisible())
+          if (wnd->IsVisible())
           {
             ImGui::SameLine();
             if (ImGui::Button("x"))
             {
               g_app->m_windows.erase(g_app->m_windows.begin() + i);
-              SafeDel(vp);
+              SafeDel(wnd);
               continue;
             }
           }
         }
+      };
+
+      if (ImGui::BeginMenu("Viewport"))
+      {
+        handleMultiWindowFn(Window::Type::Viewport);
 
         if (ImGui::MenuItem("Add Viewport", "Alt+V"))
         {
@@ -384,9 +403,19 @@ namespace ToolKit
         g_app->GetConsole()->SetVisibility(true);
       }
 
-      if (ImGui::MenuItem("Resource Window", "Alt+B", nullptr, !g_app->GetAssetBrowser()->IsVisible()))
+      if (ImGui::BeginMenu("Resource Window"))
       {
-        g_app->GetAssetBrowser()->SetVisibility(true);
+        handleMultiWindowFn(Window::Type::Browser);
+
+        if (ImGui::MenuItem("Add Browser", "Alt+B"))
+        {
+          FolderWindow* wnd = new FolderWindow();
+          wnd->m_name = g_assetBrowserStr + "##" + std::to_string(wnd->m_id);
+          wnd->Iterate(ResourcePath(), true);
+          g_app->m_windows.push_back(wnd);
+        }
+
+        ImGui::EndMenu();
       }
 
       if (ImGui::MenuItem("Outliner Window", "Alt+O", nullptr, !g_app->GetOutliner()->IsVisible()))
@@ -397,6 +426,11 @@ namespace ToolKit
       if (ImGui::MenuItem("Property Inspector", "Alt+P", nullptr, !g_app->GetPropInspector()->IsVisible()))
       {
         g_app->GetPropInspector()->SetVisibility(true);
+      }
+
+      if (ImGui::MenuItem("Material Inspector", "Alt+R", nullptr, !g_app->GetMaterialInspector()->IsVisible()))
+      {
+        g_app->GetMaterialInspector()->SetVisibility(true);
       }
 
       ImGui::Separator();
@@ -608,12 +642,19 @@ namespace ToolKit
       }
     }
 
-    void UI::HelpMarker(const char* desc, float* elapsedHoverTime)
+    void UI::HelpMarker(const String& key, const char* desc, float wait)
     {
+      static std::unordered_map<String, float> helpTimers;
+      if (helpTimers.find(key) == helpTimers.end())
+      {
+        helpTimers[key] = 0.0f;
+      }
+      float* elapsedHoverTime = &helpTimers[key];
+
       if (ImGui::IsItemHovered())
       {
         *elapsedHoverTime += ImGui::GetIO().DeltaTime;
-        if (UI::m_hoverTimeForHelp > *elapsedHoverTime)
+        if (wait > *elapsedHoverTime)
         {
           return;
         }
@@ -624,7 +665,7 @@ namespace ToolKit
         ImGui::PopTextWrapPos();
         ImGui::EndTooltip();
       }
-      else
+      else if (*elapsedHoverTime > 0.0f)
       {
         *elapsedHoverTime = 0.0f;
       }
@@ -637,12 +678,12 @@ namespace ToolKit
         return;
       }
 
-      ImGui::OpenPopup("NewScene");
-      if (ImGui::BeginPopupModal("NewScene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+      ImGui::OpenPopup(g_newSceneStr.c_str());
+      if (ImGui::BeginPopupModal(g_newSceneStr.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
       {
         static String sceneName;
 
-        ImGui::InputTextWithHint("Name", "NewScene", &sceneName);
+        ImGui::InputTextWithHint("Name", g_newSceneStr.c_str(), &sceneName);
         ImGui::SetItemDefaultFocus();
 
         if (ImGui::Button("OK", ImVec2(120, 0)))
@@ -717,6 +758,7 @@ namespace ToolKit
 
     Window::Window()
     {
+      m_id = ++m_baseId;
     }
 
     Window::~Window()
@@ -752,6 +794,42 @@ namespace ToolKit
     {
     }
 
+    void Window::Serialize(XmlDocument* doc, XmlNode* parent) const
+    {
+      XmlNode* node = doc->allocate_node(rapidxml::node_element, "Window");
+      if (parent != nullptr)
+      {
+        parent->append_node(node);
+      }
+      else
+      {
+        doc->append_node(node);
+      }
+
+      WriteAttr(node, doc, "name", m_name);
+      WriteAttr(node, doc, "id", std::to_string(m_id));
+      WriteAttr(node, doc, "type", std::to_string((int)GetType()));
+      WriteAttr(node, doc, "visible", std::to_string((int)m_visible));
+    }
+
+    void Window::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    {
+      XmlNode* node = nullptr;
+      if (parent != nullptr)
+      {
+        node = parent;
+      }
+      else
+      {
+        node = doc->first_node("Window");
+      }
+
+      ReadAttr(node, "name", m_name);
+      ReadAttr(node, "id", m_id);
+      // Type is determined by the corrsesponding constructor.
+      ReadAttr(node, "visible", m_visible);
+    }
+
     void Window::HandleStates()
     {
       ImGui::GetIO().WantCaptureMouse = true;
@@ -763,6 +841,16 @@ namespace ToolKit
 
       if ((rightClick || leftClick || middleClick) && m_mouseHover) // Activate with any click.
       {
+        if 
+        (
+          ImGui::IsMouseDragging(ImGuiMouseButton_Left) ||
+          ImGui::IsMouseDragging(ImGuiMouseButton_Right) ||
+          ImGui::IsMouseDragging(ImGuiMouseButton_Middle)
+        )
+        {
+          return;
+        }
+
         if (!m_active)
         {
           ImGui::SetWindowFocus();
@@ -831,6 +919,15 @@ namespace ToolKit
       m_msg = msg;
     }
 
+    YesNoWindow::YesNoWindow(const String& name, const String& yesBtnText, const String& noBtnText, const String& msg, bool showCancel)
+    {
+      m_name = name;
+      m_yesText = yesBtnText;
+      m_noText = noBtnText;
+      m_msg = msg;
+      m_showCancel = showCancel;
+    }
+
     void YesNoWindow::Show()
     {
       if (!m_visible)
@@ -846,7 +943,7 @@ namespace ToolKit
           ImGui::Text(m_msg.c_str());
         }
 
-        if (ImGui::Button("Yes", ImVec2(120, 0)))
+        if (ImGui::Button(m_yesText.empty() ? "Yes" : m_yesText.c_str(), ImVec2(120, 0)))
         {
           m_visible = false;
           m_yesCallback();
@@ -854,11 +951,22 @@ namespace ToolKit
         }
         ImGui::SetItemDefaultFocus();
         ImGui::SameLine();
-        if (ImGui::Button("No", ImVec2(120, 0)))
+
+        if (ImGui::Button(m_noText.empty() ? "No" : m_noText.c_str(), ImVec2(120, 0)))
         {
           m_visible = false;
           m_noCallback();
           ImGui::CloseCurrentPopup();
+        }
+
+        if (m_showCancel)
+        {
+          ImGui::SameLine();
+          if (ImGui::Button("Cancel", ImVec2(120, 0)))
+          {
+            m_visible = false;
+            ImGui::CloseCurrentPopup();
+          }
         }
 
         ImGui::EndPopup();

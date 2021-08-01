@@ -63,19 +63,22 @@ namespace ToolKit
     }
   }
 
-  Billboard* Billboard::GetCopy() const
-  {
-    Billboard* cpy = new Billboard(m_settings);
-    GetCopy(cpy);
-    return cpy;
-  }
-
-  void Billboard::GetCopy(Entity* copyTo) const
+  Entity* Billboard::GetCopy(Entity* copyTo) const
   {
     Drawable::GetCopy(copyTo);
     Billboard* ntt = static_cast<Billboard*> (copyTo);
     ntt->m_settings = m_settings;
     ntt->m_worldLocation = m_worldLocation;
+    return ntt;
+  }
+
+  Entity* Billboard::GetInstance(Entity* copyTo) const
+  {
+    Drawable::GetInstance(copyTo);
+    Billboard* instance = static_cast<Billboard*> (copyTo);
+    instance->m_settings = m_settings;
+    instance->m_worldLocation = m_worldLocation;
+    return nullptr;
   }
 
   EntityType Billboard::GetType() const
@@ -97,16 +100,9 @@ namespace ToolKit
     Generate();
   }
 
-  Cube* Cube::GetCopy() const
+  Entity* Cube::GetCopy(Entity* copyTo) const
   {
-    Cube* cpy = new Cube(false);
-    GetCopy(cpy);
-    return cpy;
-  }
-
-  void Cube::GetCopy(Entity* copyTo) const
-  {
-    Drawable::GetCopy(copyTo);
+    return Drawable::GetCopy(copyTo);
   }
 
   EntityType Cube::GetType() const
@@ -125,6 +121,15 @@ namespace ToolKit
     Entity::DeSerialize(doc, parent);
     m_params.DeSerialize(doc, parent);
     Generate();
+  }
+
+  Entity* Cube::GetInstance(Entity* copyTo) const
+  {
+    Drawable::GetInstance(copyTo);
+    Cube* instance = static_cast<Cube*> (copyTo);
+    instance->m_params = m_params;
+
+    return instance;
   }
 
   void Cube::Generate()
@@ -290,21 +295,22 @@ namespace ToolKit
     }
   }
 
-  Quad* Quad::GetCopy() const
+  Entity* Quad::GetCopy(Entity* copyTo) const
   {
-    Quad* cpy = new Quad(false);
-    GetCopy(cpy);
-    return cpy;
-  }
-
-  void Quad::GetCopy(Entity* copyTo) const
-  {
-    Drawable::GetCopy(copyTo);
+    return Drawable::GetCopy(copyTo);
   }
 
   EntityType Quad::GetType() const
   {
     return EntityType::Entity_Quad;
+  }
+
+  Entity* Quad::GetInstance(Entity* copyTo) const
+  {
+    Drawable::GetInstance(copyTo);
+    Quad* instance = static_cast<Quad*> (copyTo);
+
+    return instance;
   }
 
   void Quad::Generate()
@@ -314,7 +320,7 @@ namespace ToolKit
 
     // Front
     vertices[0].pos = Vec3(-0.5f, 0.5f, 0.0f);
-    vertices[0].tex = Vec2(0.0f, 1.0f);
+    vertices[0].tex = Vec2(0.0f, -1.0f);
     vertices[0].norm = Vec3(0.0f, 0.0f, 1.0f);
     vertices[0].btan = Vec3(0.0f, 1.0f, 0.0f);
 
@@ -329,7 +335,7 @@ namespace ToolKit
     vertices[2].btan = Vec3(0.0f, 1.0f, 0.0f);
 
     vertices[3].pos = Vec3(0.5f, 0.5f, 0.0f);
-    vertices[3].tex = Vec2(1.0f, 1.0f);
+    vertices[3].tex = Vec2(1.0f, -1.0f);
     vertices[3].norm = Vec3(0.0f, 0.0f, 1.0f);
     vertices[3].btan = Vec3(0.0f, 1.0f, 0.0f);
 
@@ -357,16 +363,12 @@ namespace ToolKit
     Generate();
   }
 
-  Sphere* Sphere::GetCopy() const
-  {
-    Sphere* cpy = new Sphere(false);
-    GetCopy(cpy);
-    return cpy;
-  }
-
-  void Sphere::GetCopy(Entity* copyTo) const
+  Entity* Sphere::GetCopy(Entity* copyTo) const
   {
     Drawable::GetCopy(copyTo);
+    Sphere* ntt = static_cast<Sphere*> (copyTo);
+    ntt->m_params = m_params;
+    return ntt;
   }
 
   EntityType Sphere::GetType() const
@@ -446,6 +448,14 @@ namespace ToolKit
     Entity::DeSerialize(doc, parent);
     m_params.DeSerialize(doc, parent);
     Generate();
+  }
+
+  Entity* Sphere::GetInstance(Entity* copyTo) const
+  {
+    Drawable::GetInstance(copyTo);
+    Sphere* instance = static_cast<Sphere*> (copyTo);
+    instance->m_params = m_params;
+    return instance;
   }
 
   Cone::Cone(bool genDef)
@@ -554,7 +564,7 @@ namespace ToolKit
     m_mesh->m_clientSideVertices = vertices;
     m_mesh->m_indexCount = (uint)indices.size();
     m_mesh->m_clientSideIndices = indices;
-    m_mesh->m_material = GetMaterialManager()->Create(MaterialPath("default.material"));
+    m_mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("default.material"));
 
     m_mesh->CalculateAABoundingBox();
     m_mesh->ConstructFaces();
@@ -567,9 +577,12 @@ namespace ToolKit
     return cpy;
   }
 
-  void Cone::GetCopy(Entity* copyTo) const
+  Entity* Cone::GetCopy(Entity* copyTo) const
   {
     Drawable::GetCopy(copyTo);
+    Cone* ntt = static_cast<Cone*> (copyTo);
+    ntt->m_params = m_params;
+    return ntt;
   }
 
   EntityType Cone::GetType() const
@@ -590,6 +603,14 @@ namespace ToolKit
     Generate();
   }
 
+  Entity* Cone::GetInstance(Entity* copyTo) const
+  {
+    Drawable::GetInstance(copyTo);
+    Cone* instance = static_cast<Cone*> (copyTo);
+    instance->m_params = m_params;
+    return instance;
+  }
+
   Arrow2d::Arrow2d(bool genDef)
   {
     m_label = AxisLabel::X;
@@ -606,18 +627,21 @@ namespace ToolKit
     Generate();
   }
 
-  Arrow2d* Arrow2d::GetCopy() const
-  {
-    Arrow2d* cpy = new Arrow2d(false);
-    GetCopy(cpy);
-    return cpy;
-  }
-
-  void Arrow2d::GetCopy(Entity* copyTo) const
+  Entity* Arrow2d::GetCopy(Entity* copyTo) const
   {
     Drawable::GetCopy(copyTo);
     Arrow2d* ntt = static_cast<Arrow2d*> (copyTo);
     ntt->m_label = m_label;
+
+    return ntt;
+  }
+
+  Entity* Arrow2d::GetInstance(Entity* copyTo) const
+  {
+    Drawable::GetInstance(copyTo);
+    Arrow2d* instance = static_cast<Arrow2d*> (copyTo);
+    instance->m_label = m_label;
+    return instance;
   }
 
   EntityType Arrow2d::GetType() const
@@ -685,16 +709,9 @@ namespace ToolKit
   {
   }
 
-  LineBatch* LineBatch::GetCopy() const
+  Entity* LineBatch::GetCopy(Entity* copyTo) const
   {
-    LineBatch* cpy = new LineBatch();
-    GetCopy(cpy);
-    return cpy;
-  }
-
-  void LineBatch::GetCopy(Entity* copyTo) const
-  {
-    Drawable::GetCopy(copyTo);
+    return Drawable::GetCopy(copyTo);
   }
 
   EntityType LineBatch::GetType() const
