@@ -73,6 +73,22 @@ ToolKit comes with a Visual Studio solution. The solution has been created with 
 
 Currently, ToolKit can only be build for Windows. However it has been tested for web builds and can generate web outputs with Emscripten. The second platfrom that it gives output will be web. ToolKit does not have any Windows dependency and can be build for  Mac-Os and Linux. Each os. should provide a convinient workflow by providing a code editor and well established compile system. For this reason Mac & Linux won't be handled until a stable release published.
 
+### Web Platform
+
+This branch is not stable & in active development.
+- Install emscripten, download ninja and place it in, emsdk / upstream / emscripten. 
+- In the ToolKit directory, create a Build directory. 
+- Enter Build. Open cmd and Run "emcmake cmake -S .."
+- Than run ninja
+- Install chrome canary
+- Install chrome C/C++ DevTools Support (Dwarf)
+- From the developer tools settings (wheel icon *)
+- Preferences / Sources / Check: "Enable javascript source maps"
+- Experiments /  Check: "WebAssembly Debugging: Enable DWARF support"
+- Go to ToolKit / Bin open cmd run "emrun SpaceShooter.html --browser chrome_canary
+
+You can see the c++ code, call stack, local - global scope and set break points.
+
 ## Dependencies
 - stb_image - MIT 
 - SDL 2.0 - Zlib

@@ -1,10 +1,10 @@
 #include "SDL.h"
-#include <Windows.h>
 #include "ToolKit.h"
 #include "App.h"
-#include "DebugNew.h"
 #include "SDL_ttf.h"
 #include "Audio.h"
+#include "GL/glew.h"
+#include "DebugNew.h"
 #include <ctime>
 #include <ratio>
 #include <chrono>
@@ -105,8 +105,8 @@ void Init()
   else
   {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
     SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -126,7 +126,7 @@ void Init()
       else
       {
         // Init glew
-        glewExperimental = TRUE;
+        //glewExperimental = GL_TRUE;
         GLenum err = glewInit();
         if (GLEW_OK != err)
         {
@@ -179,7 +179,9 @@ unsigned long GetMilliSeconds()
 
 int main(int argc, char* argv[])
 {
+#ifndef __clang__
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 
   Init();
 

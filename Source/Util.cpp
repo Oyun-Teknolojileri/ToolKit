@@ -20,11 +20,11 @@ namespace ToolKit
     for (int i = 0; i < limit; i++)
     {
       XmlAttribute* attr = node->first_attribute(letters + i, 1);
-      if constexpr (std::is_integral_v<T::value_type>)
+      if constexpr (std::is_integral_v<typename T::value_type>)
       {
         val[i] = (int)std::atoi(attr->value());
       }
-      else if constexpr (std::is_floating_point_v<T::value_type>)
+      else if constexpr (std::is_floating_point_v<typename T::value_type>)
       {
         val[i] = (float)std::atof(attr->value());
       }
