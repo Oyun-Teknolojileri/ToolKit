@@ -1,8 +1,9 @@
 #include "App.h"
 #include "SDL.h"
-#include "SDL_ttf.h"
-#include <chrono>
 #include "DebugNew.h"
+#include <chrono>
+
+using namespace ToolKit;
 
 // Setup.
 const char* appName = "$safeprojectname$";
@@ -54,9 +55,6 @@ void Init()
           return;
         }
 
-        if (TTF_Init() == -1)
-          return;
-
         // Set defaults
         SDL_GL_SetSwapInterval(1);
         glEnable(GL_CULL_FACE);
@@ -88,7 +86,6 @@ void Exit()
   SafeDel(g_app);
 
   SDL_DestroyWindow(g_window);
-  TTF_Quit();
   SDL_Quit();
 }
 
