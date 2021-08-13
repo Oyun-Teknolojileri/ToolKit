@@ -14,6 +14,14 @@ namespace ToolKit
 {
   namespace Editor
   {
+    DirectoryEntry::DirectoryEntry()
+    {
+    }
+
+    DirectoryEntry::DirectoryEntry(const String& fullPath)
+    {
+      DecomposePath(fullPath, &m_rootPath, &m_fileName, &m_ext);
+    }
 
     String DirectoryEntry::GetFullPath() const
     {
@@ -50,17 +58,46 @@ namespace ToolKit
       return nullptr;
     }
 
-    void DirectoryEntry::GenerateThumbnail()
+    void DirectoryEntry::GenerateThumbnail() const
     {
       const Vec2& thumbSize = g_app->m_thumbnailSize;
       auto renderThumbFn = [this, &thumbSize](Camera* cam, Drawable* dw) -> void
       {
-        RenderTarget* thumb = new RenderTarget((uint)thumbSize.x, (uint)thumbSize.y);
-        thumb->Init();
+        RenderTarget* thumb = nullptr;
+        RenderTargetPtr thumbPtr = nullptr;
+        String fullPath = GetFullPath();
+        
+        if (g_app->m_thumbnailCache.find(fullPath) != g_app->m_thumbnailCache.end())
+        {
+          thumbPtr = g_app->m_thumbnailCache[fullPath];
+          if 
+          (
+            thumbPtr->m_width - (int)thumbSize.x == 0 &&
+            thumbPtr->m_height - (int)thumbSize.y == 0
+          )
+          {
+            thumb = thumbPtr.get();
+          }
+        }
+
+        if (thumb == nullptr)
+        {
+          thumbPtr = std::make_shared<RenderTarget>((uint)thumbSize.x, (uint)thumbSize.y);
+          thumb = thumbPtr.get();
+          thumb->Init();
+        }
+        
         g_app->m_renderer->SwapRenderTarget(&thumb);
-        g_app->m_renderer->Render(dw, cam, g_app->m_sceneLights);
+        
+        Light light;
+        light.m_node->SetTranslation({ 5.0f, 5.0f, 5.0f });
+        light.LookAt(Vec3());
+
+        LightRawPtrArray lights = { &light };
+
+        g_app->m_renderer->Render(dw, cam, lights);
         g_app->m_renderer->SwapRenderTarget(&thumb, false);
-        g_app->m_thumbnailCache[GetFullPath()] = RenderTargetPtr(thumb);
+        g_app->m_thumbnailCache[GetFullPath()] = thumbPtr;
       };
 
       if (m_ext == MESH)
@@ -90,7 +127,7 @@ namespace ToolKit
       else if (m_ext == MATERIAL)
       {
         Sphere ball;
-        String fullpath = m_rootPath + GetPathSeparator() + m_fileName + m_ext;
+        String fullpath = GetFullPath();
         ball.m_mesh->m_material = GetMaterialManager()->Create<Material>(fullpath);
         ball.m_mesh->Init(false);
 
