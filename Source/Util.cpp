@@ -154,7 +154,7 @@ namespace ToolKit
     String normal = fullPath;
     NormalizePath(normal);
 
-    size_t ind1 = normal.find_last_of('\\');
+    size_t ind1 = normal.find_last_of(GetPathSeparator());
     if (path != nullptr)
     {
       *path = normal.substr(0, ind1);
@@ -177,7 +177,11 @@ namespace ToolKit
 
   void NormalizePath(String& path)
   {
+#ifndef __clang__
     ReplaceStringInPlace(path, "/", "\\");
+#else
+    ReplaceStringInPlace(path, "\\", "/");
+#endif
   }
 
   String ConcatPaths(const StringArray& entries)
@@ -383,9 +387,13 @@ namespace ToolKit
     return fullPath;
   }
 
-  char GetPathSeparator()
+  constexpr char GetPathSeparator()
   {
+#ifndef __clang__
     return '\\';
+#else
+    return '/';
+#endif
   }
 
   String GetPathSeparatorAsStr()

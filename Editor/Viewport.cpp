@@ -156,7 +156,7 @@ namespace ToolKit
 
             if (entry.m_ext == MESH)
             {
-              String path = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
+              String path = ConcatPaths({ entry.m_rootPath, entry.m_fileName + entry.m_ext });
               
               Drawable* dwMesh = new Drawable();
               if (io.KeyShift)

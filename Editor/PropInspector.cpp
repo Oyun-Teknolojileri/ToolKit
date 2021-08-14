@@ -299,7 +299,7 @@ namespace ToolKit
         if (ImGui::TreeNode("Textures"))
         {
           ImGui::LabelText("##diffTexture", "Diffuse Texture: ");
-          String target = "\\";
+          String target = GetPathSeparatorAsStr();
           if (entry->m_diffuseTexture)
           {
             target = entry->m_diffuseTexture->m_file;

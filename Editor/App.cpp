@@ -359,13 +359,13 @@ namespace ToolKit
       if (CheckFile(fullPath))
       {
         // Set the execute path.
-        std::filesystem::path path = pathBck.u8string() + "\\..\\Utils\\Import";
+        std::filesystem::path path = pathBck.u8string() + ConcatPaths({".", "..", "Utils", "Import"});
         std::filesystem::current_path(path);
 
         std::filesystem::path cpyDir = ".";
         if (!subDir.empty())
         {
-          cpyDir += '\\' + subDir;
+          cpyDir += GetPathSeparator() + subDir;
           std::filesystem::create_directories(cpyDir);
         }
 
@@ -427,7 +427,7 @@ namespace ToolKit
                 {
                   String name, ext;
                   DecomposePath(missingFile, nullptr, &name, &ext);
-                  String missingFullPath = searchPath + '\\' + name + ext;
+                  String missingFullPath = ConcatPaths({ searchPath, name + ext });
                   if (CheckFile(missingFullPath))
                   {
                     numFound++;
@@ -454,7 +454,8 @@ namespace ToolKit
             {
               String ext;
               DecomposePath(line, nullptr, nullptr, &ext);
-              if (line.rfind(".\\") == 0)
+              const String selfDir = '.' + GetPathSeparatorAsStr();
+              if (line.rfind(selfDir) == 0)
               {
                 line = line.substr(2, -1);
               }
@@ -499,7 +500,7 @@ namespace ToolKit
                 fullPath = MaterialPath(line);
               }
 
-              fullPath = "..\\" + fullPath; // Resource dir is one more level up.
+              fullPath = ConcatPaths({ "..", fullPath }); // Resource dir is one more level up.
 
               String path, name;
               DecomposePath(fullPath, &path, &name, &ext);
@@ -742,7 +743,7 @@ namespace ToolKit
     void App::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
       std::ofstream file;
-      String fileName = "..//Resources//Editor.settings";
+      String fileName = ConcatPaths({ ResourcePath(), "Editor.settings"});
 
       file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
@@ -775,7 +776,9 @@ namespace ToolKit
 
     void App::DeSerialize(XmlDocument* doc, XmlNode* parent)
     {
-      XmlFile file("..//Resources//Editor.settings");
+      String settingsFile = ConcatPaths({ ResourcePath(), "Editor.settings" });
+      XmlFile file(settingsFile.c_str());
+
       XmlDocument appDoc;
       appDoc.parse<0>(file.data());
 

@@ -128,76 +128,71 @@ namespace ToolKit
 
   String ResourcePath()
   {
+
+#ifndef __clang__
     return "..\\Resources";
+#else
+    return "./Resources";
+#endif
   }
 
   String TexturePath(const String& file)
   {
-    String path = "..\\Resources\\Textures\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(), "Textures", file });
     return path;
   }
 
   String MeshPath(const String& file)
   {
-    String path = "..\\Resources\\Meshes\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(), "Meshes", file });
     return path;
   }
 
   String FontPath(const String& file)
   {
-    String path = "..\\Resources\\Fonts\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(), "Fonts", file });
     return path;
   }
 
   String SpritePath(const String& file)
   {
-    String path = "..\\Resources\\Sprites\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(), "Sprites", file });
     return path;
   }
 
   String AudioPath(const String& file)
   {
-    String path = "..\\Resources\\Audio\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(), "Audio", file });
     return path;
   }
 
   String AnimationPath(const String& file)
   {
-    String path = "..\\Resources\\Meshes\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(), "Meshes", file });
     return path;
   }
 
   String SkeletonPath(const String& file)
   {
-    String path = "..\\Resources\\Meshes\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(), "Meshes", file });
     return path;
   }
 
   String ShaderPath(const String& file)
   {
-    String path = "..\\Resources\\Shaders\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(), "Shaders", file });
     return path;
   }
 
   String MaterialPath(const String& file)
   {
-    String path = "..\\Resources\\Materials\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(), "Materials", file });
     return path;
   }
 
   String ScenePath(const String& file)
   {
-    String path = "..\\Resources\\Scenes\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(), "Scenes", file });
     return path;
   }
 
