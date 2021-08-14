@@ -17,5 +17,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Bin")
 add_executable(SpaceShooter ${SOURCES})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O0 -g")
-set_target_properties(SpaceShooter PROPERTIES LINK_FLAGS "-o SpaceShooter.html --preload-file ../Resources -s USE_WEBGL2=1 -s USE_GLFW=3 -s USE_SDL=2")
+set_target_properties(SpaceShooter PROPERTIES LINK_FLAGS "-o SpaceShooter.html --preload-file ../Resources -s ALLOW_MEMORY_GROWTH=1 -s USE_WEBGL2=1 -s USE_GLFW=3 -s USE_SDL=2 -s USE_SDL_TTF=2")
 target_link_libraries(SpaceShooter ToolKit)

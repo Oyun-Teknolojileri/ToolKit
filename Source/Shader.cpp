@@ -58,7 +58,19 @@ namespace ToolKit
       return;
     }
 
-    const char* str = m_source.c_str();
+    // Start with #version
+    const char* str = nullptr;
+    size_t loc = m_source.find("#version");
+    if (loc != String::npos)
+    {
+      m_source = m_source.substr(loc);
+      str = m_source.c_str();
+    }
+    else
+    {
+      str = m_source.c_str();
+    }
+
     glShaderSource(m_shaderHandle, 1, &str, nullptr);
     glCompileShader(m_shaderHandle);
 
@@ -66,7 +78,6 @@ namespace ToolKit
     glGetShaderiv(m_shaderHandle, GL_COMPILE_STATUS, &compiled);
     if (!compiled)
     {
-      assert(compiled);
       GLint infoLen = 0;
       glGetShaderiv(m_shaderHandle, GL_INFO_LOG_LENGTH, &infoLen);
       if (infoLen > 1)
@@ -78,6 +89,7 @@ namespace ToolKit
         SafeDelArray(log);
       }
 
+      assert(compiled);
       glDeleteShader(m_shaderHandle);
       return;
     }
