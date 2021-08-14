@@ -132,7 +132,12 @@ namespace ToolKit
 #ifndef __clang__
     return "..\\Resources";
 #else
+#ifdef __EMSCRIPTEN__
+    // Remapping for accessing packed resources.
     return "./Resources";
+#else 
+    return "../Resources";
+#endif
 #endif
   }
 
