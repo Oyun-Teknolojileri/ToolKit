@@ -38,7 +38,7 @@ namespace ToolKit
   String GetResourcePath(ResourceType type);
   
   String GetRelativeResourcePath(const String& fullPath);
-  constexpr char GetPathSeparator();
+  char GetPathSeparator();
   String GetPathSeparatorAsStr();
   bool SupportedImageFormat(const String& ext);
   bool SupportedMeshFormat(const String& ext);

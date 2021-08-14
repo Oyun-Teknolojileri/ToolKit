@@ -21,8 +21,8 @@ namespace ToolKit
     virtual Material* GetCopy() override;
     RenderState* GetRenderState();
 
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   public:
     CubeMapPtr m_cubeMap;

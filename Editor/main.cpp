@@ -1,12 +1,13 @@
 #include "stdafx.h"
 
 #include "App.h"
-#include "SDL.h"
 #include "Types.h"
 #include "Mod.h"
 #include "UI.h"
-#include "ImGui/imgui_impl_sdl.h"
 #include "DebugNew.h"
+
+#include "ImGui/imgui_impl_sdl.h"
+#include "SDL.h"
 
 #include <stdio.h>
 #include <chrono>
@@ -160,7 +161,9 @@ namespace ToolKit
 
     int ToolKit_Main(int argc, char* argv[])
     {
+#ifndef __clang__
       _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 
       Init();
 

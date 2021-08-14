@@ -91,7 +91,7 @@ namespace ToolKit
     virtual bool IsSkinned() const override;
 
   protected:
-    virtual void InitVertices(bool flush);
+    virtual void InitVertices(bool flush) override;
 
   public:
     std::vector<SkinVertex> m_clientSideVertices;

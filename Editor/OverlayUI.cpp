@@ -407,7 +407,6 @@ namespace ToolKit
 
         // Snap button.
         ImGui::SameLine(0, spacing);
-        static float hoverTimeSnapBtn = 0.0f;
 
         // Auto snap.
         static bool autoSnapActivated = false;

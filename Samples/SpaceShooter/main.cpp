@@ -186,8 +186,6 @@ uint fps = 1000 / 60;
 void AppLoop()
 {
   SDL_Event e;
-  currentTime;
-
   while (SDL_PollEvent(&e))
   {
     ProcessEvent(e);

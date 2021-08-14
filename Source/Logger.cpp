@@ -28,7 +28,7 @@ namespace ToolKit
   {
 #ifdef __EMSCRIPTEN__
     String emLog = message + "\n";
-    printf(emLog.c_str());
+    printf("%s", emLog.c_str());
 #endif
     m_logFile << message << std::endl;
   }

@@ -203,7 +203,7 @@ namespace ToolKit
     Entity* EditorScene::RemoveEntity(EntityId id)
     {
       Entity* removed = nullptr;
-      if (removed = Scene::RemoveEntity(id))
+      if ((removed = Scene::RemoveEntity(id)))
       {
         RemoveFromSelection(removed->m_id);
       }

@@ -821,7 +821,7 @@ namespace ToolKit
           {
             m_windows.push_back(wnd);
           }
-        } while (wndNode = wndNode->next_sibling("Window"));
+        } while ((wndNode = wndNode->next_sibling("Window")));
 
         String scene;
         ReadAttr(root, "scene", scene);

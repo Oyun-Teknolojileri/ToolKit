@@ -56,11 +56,8 @@ namespace ToolKit
     unsigned char* data;
 
     try {
-#ifndef __clang__
-      fopen_s(&soundFile, filename.c_str(), "rb");
-#else
       soundFile = fopen(filename.c_str(), "rb");
-#endif
+
       if (!soundFile)
         throw (filename);
 

@@ -387,7 +387,7 @@ namespace ToolKit
     return fullPath;
   }
 
-  constexpr char GetPathSeparator()
+  char GetPathSeparator()
   {
 #ifndef __clang__
     return '\\';

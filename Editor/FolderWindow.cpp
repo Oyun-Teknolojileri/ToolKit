@@ -174,7 +174,7 @@ namespace ToolKit
 
         if (ImGui::IsItemHovered())
         {
-          ImGui::SetTooltip(m_path.c_str());
+          ImGui::SetTooltip("%s", m_path.c_str());
         }
 
         ImGui::BeginChild("##Content", ImVec2(0, 0), true);
@@ -188,7 +188,7 @@ namespace ToolKit
           bool flipRenderTarget = false;
           uint iconId = UI::m_fileIcon->m_textureId;
 
-          auto genThumbFn = [&flipRenderTarget, &iconId, &de, this]() -> void
+          auto genThumbFn = [&flipRenderTarget, &iconId, &de]() -> void
           {
             if (de.GetThumbnail() == nullptr)
             {
@@ -322,7 +322,7 @@ namespace ToolKit
           }
 
           ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
-          ImGui::TextWrapped(de.m_fileName.c_str());
+          ImGui::TextWrapped("%s", de.m_fileName.c_str());
           ImGui::PopTextWrapPos();
           ImGui::EndGroup();
           ImGui::PopID();
@@ -663,7 +663,7 @@ namespace ToolKit
           for (int i = 0; i < (int)m_entiries.size(); i++)
           {
             String candidate = m_entiries[i].GetPath();
-            if (m_entiries[i].m_currRoot = (i == m_activeFolder))
+            if ((m_entiries[i].m_currRoot = (i == m_activeFolder)))
             {
               currRootPath = candidate;
             }

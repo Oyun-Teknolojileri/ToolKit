@@ -30,7 +30,7 @@ namespace ToolKit
     {
     public:
       App(int windowWidth, int windowHeight);
-      ~App();
+      virtual ~App();
 
       void Init();
       void Destroy();
