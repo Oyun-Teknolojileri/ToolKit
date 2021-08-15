@@ -31,7 +31,7 @@
 			{
 				for (int j = -R; j <= R; j++)
 				{
-					c = texture(u_texture, yFlip + (vec2(i, j) / g_textureSize));
+					c = texture(u_texture, yFlip + (vec2(i, j) / g_textureSize)).r;
 					if (c == 0.0)
 					{
 						// If anything in the kernel is 0, this pixel will be colored.

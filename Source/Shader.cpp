@@ -85,6 +85,8 @@ namespace ToolKit
         char* log = new char[infoLen];
         glGetShaderInfoLog(m_shaderHandle, infoLen, nullptr, log);
         Logger::GetInstance()->Log(log);
+        Logger::GetInstance()->Log(m_file);
+        Logger::GetInstance()->Log(str);
 
         SafeDelArray(log);
       }

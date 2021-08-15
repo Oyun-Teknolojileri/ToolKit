@@ -61,6 +61,7 @@ namespace ToolKit
     {
       IMGUI_CHECKVERSION();
       ImGui::CreateContext();
+      ImGui::LoadIniSettingsFromDisk("./imgui.ini");
       ImGuiIO& io = ImGui::GetIO();
       io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
       io.ConfigWindowsMoveFromTitleBarOnly = true;
