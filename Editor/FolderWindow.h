@@ -73,8 +73,8 @@ namespace ToolKit
       int Exist(const String& folder);
       bool GetFileEntry(const String& fullPath, DirectoryEntry& entry);
 
-      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     private:
       std::vector<FolderView> m_entiries;

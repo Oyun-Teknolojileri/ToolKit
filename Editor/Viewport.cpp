@@ -113,7 +113,6 @@ namespace ToolKit
           {
             ImGui::Image((void*)(intptr_t)m_viewportImage->m_textureId, ImVec2(m_width, m_height), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
 
-            ImVec2 currSize = ImGui::GetContentRegionMax();
             if (m_wndContentAreaSize.x != m_width || m_wndContentAreaSize.y != m_height)
             {
               OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
@@ -156,7 +155,7 @@ namespace ToolKit
 
             if (entry.m_ext == MESH)
             {
-              String path = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
+              String path = ConcatPaths({ entry.m_rootPath, entry.m_fileName + entry.m_ext });
               
               Drawable* dwMesh = new Drawable();
               if (io.KeyShift)

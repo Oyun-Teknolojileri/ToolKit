@@ -23,15 +23,15 @@ namespace ToolKit
   public:
     Shader();
     Shader(String file);
-    ~Shader();
+    virtual ~Shader();
 
     virtual void Load() override;
     virtual void Init(bool flushClientSideArray = true) override;
     virtual void UnInit() override;
     void SetShaderParameter(String param, const ParameterVariant& val);
 
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   public:
     std::unordered_map<String, ParameterVariant> m_shaderParams;

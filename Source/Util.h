@@ -30,10 +30,13 @@ namespace ToolKit
   void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
   void NormalizePath(String& path);
   String ConcatPaths(const StringArray& entries);
-  enum class ResourceType GetResourceType(const String& ext);
-  String GetTypeString(enum class ResourceType type);
-  String GetExtFromType(enum class ResourceType type);
-  String GetResourcePath(enum class ResourceType type);
+  
+  enum class ResourceType;
+  ResourceType GetResourceType(const String& ext);
+  String GetTypeString(ResourceType type);
+  String GetExtFromType(ResourceType type);
+  String GetResourcePath(ResourceType type);
+  
   String GetRelativeResourcePath(const String& fullPath);
   char GetPathSeparator();
   String GetPathSeparatorAsStr();

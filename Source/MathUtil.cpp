@@ -303,10 +303,11 @@ namespace ToolKit
     mesh->GetAllMeshes(meshes);
     float closestPickedDistance = FLT_MAX;
     bool hit = false;
-    std::mutex updateHit;
 
     for (Mesh* const mesh : meshes)
     {
+#ifndef __clang__
+      std::mutex updateHit;
       std::for_each
       (
         std::execution::par_unseq,
@@ -327,6 +328,9 @@ namespace ToolKit
           }
         }
       );
+#else
+      // Alternative parallel for imp goes here.
+#endif
     }
 
     return hit;

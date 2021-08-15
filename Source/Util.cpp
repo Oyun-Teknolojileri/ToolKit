@@ -20,11 +20,11 @@ namespace ToolKit
     for (int i = 0; i < limit; i++)
     {
       XmlAttribute* attr = node->first_attribute(letters + i, 1);
-      if constexpr (std::is_integral_v<T::value_type>)
+      if constexpr (std::is_integral_v<typename T::value_type>)
       {
         val[i] = (int)std::atoi(attr->value());
       }
-      else if constexpr (std::is_floating_point_v<T::value_type>)
+      else if constexpr (std::is_floating_point_v<typename T::value_type>)
       {
         val[i] = (float)std::atof(attr->value());
       }
@@ -154,7 +154,7 @@ namespace ToolKit
     String normal = fullPath;
     NormalizePath(normal);
 
-    size_t ind1 = normal.find_last_of('\\');
+    size_t ind1 = normal.find_last_of(GetPathSeparator());
     if (path != nullptr)
     {
       *path = normal.substr(0, ind1);
@@ -177,7 +177,11 @@ namespace ToolKit
 
   void NormalizePath(String& path)
   {
+#ifndef __clang__
     ReplaceStringInPlace(path, "/", "\\");
+#else
+    ReplaceStringInPlace(path, "\\", "/");
+#endif
   }
 
   String ConcatPaths(const StringArray& entries)
@@ -385,7 +389,11 @@ namespace ToolKit
 
   char GetPathSeparator()
   {
+#ifndef __clang__
     return '\\';
+#else
+    return '/';
+#endif
   }
 
   String GetPathSeparatorAsStr()

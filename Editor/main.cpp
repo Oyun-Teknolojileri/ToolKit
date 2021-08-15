@@ -1,12 +1,13 @@
 #include "stdafx.h"
 
 #include "App.h"
-#include "SDL.h"
 #include "Types.h"
 #include "Mod.h"
 #include "UI.h"
-#include "ImGui/imgui_impl_sdl.h"
 #include "DebugNew.h"
+
+#include "ImGui/imgui_impl_sdl.h"
+#include "SDL.h"
 
 #include <stdio.h>
 #include <chrono>
@@ -42,7 +43,7 @@ namespace ToolKit
       else
       {
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
         g_window = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
@@ -158,9 +159,74 @@ namespace ToolKit
       }
     }
 
+    struct Timing
+    {
+      Timing()
+      {
+        lastTime = GetMilliSeconds();
+        currentTime = 0.0f;
+        deltaTime = 1000.0f / fps;
+        frameCount = 0;
+        timeAccum = 0.0f;
+      }
+
+      float lastTime = 0.0f;
+      float currentTime = 0.0f;
+      float deltaTime = 0.0f;
+      float timeAccum = 0.0f;
+      int frameCount = 0;
+    };
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+    void Emsc_Loop(void* args)
+    {
+      Timing* timer = static_cast<Timing*> (args);
+      SDL_Event sdlEvent;
+      while (SDL_PollEvent(&sdlEvent))
+      {
+        ProcessEvent(sdlEvent);
+      }
+
+      timer->currentTime = GetMilliSeconds();
+      if (timer->currentTime > timer->lastTime + timer->deltaTime)
+      {
+        // Update & Render
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        g_app->Frame(timer->currentTime - timer->lastTime);
+        SDL_GL_SwapWindow(g_window);
+
+        timer->frameCount++;
+        timer->timeAccum += timer->currentTime - timer->lastTime;
+        if (timer->timeAccum >= 1000.0f)
+        {
+          g_app->m_fps = timer->frameCount;
+          timer->timeAccum = 0;
+          timer->frameCount = 0;
+        }
+
+        timer->lastTime = timer->currentTime;
+      }
+    }
+
+    int ToolKit_Main_Emsc(int argc, char* argv[])
+    {
+      Init();
+
+      SDL_MaximizeWindow(g_window);
+
+      static Timing timer;
+      emscripten_set_main_loop_arg(Emsc_Loop, reinterpret_cast<void*> (&timer), 0, 1);
+
+      return 0;
+    }
+#endif
+
     int ToolKit_Main(int argc, char* argv[])
     {
+#ifndef __clang__
       _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 
       Init();
 
@@ -180,12 +246,7 @@ namespace ToolKit
       }
 
       // Continue with editor.
-      float lastTime = GetMilliSeconds();
-      float currentTime;
-      float deltaTime = 1000.0f / fps;
-      int frameCount = 0;
-      float timeAccum = 0.0f;
-
+      std::shared_ptr<Timing> timer = std::make_shared<Timing>();
       while (g_running)
       {
         SDL_Event sdlEvent;
@@ -194,24 +255,24 @@ namespace ToolKit
           ProcessEvent(sdlEvent);
         }
 
-        currentTime = GetMilliSeconds();
-        if (currentTime > lastTime + deltaTime)
+        timer->currentTime = GetMilliSeconds();
+        if (timer->currentTime > timer->lastTime + timer->deltaTime)
         {
           // Update & Render
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-          g_app->Frame(currentTime - lastTime);
+          g_app->Frame(timer->currentTime - timer->lastTime);
           SDL_GL_SwapWindow(g_window);
 
-          frameCount++;
-          timeAccum += currentTime - lastTime;
-          if (timeAccum >= 1000.0f)
+          timer->frameCount++;
+          timer->timeAccum += timer->currentTime - timer->lastTime;
+          if (timer->timeAccum >= 1000.0f)
           {
-            g_app->m_fps = frameCount;
-            timeAccum = 0;
-            frameCount = 0;
+            g_app->m_fps = timer->frameCount;
+            timer->timeAccum = 0;
+            timer->frameCount = 0;
           }
 
-          lastTime = currentTime;
+          timer->lastTime = timer->currentTime;
         }
 #ifndef TK_PROFILE
         else
@@ -231,5 +292,9 @@ namespace ToolKit
 
 int main(int argc, char* argv[])
 {
+#ifdef __EMSCRIPTEN__
+  return ToolKit::Editor::ToolKit_Main_Emsc(argc, argv);
+#else
   return ToolKit::Editor::ToolKit_Main(argc, argv);
+#endif
 }

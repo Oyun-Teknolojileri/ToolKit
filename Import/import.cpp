@@ -70,11 +70,29 @@ unordered_map<string, BoneNode> g_skeletonMap;
 const aiScene* g_scene = nullptr;
 static unsigned int g_lastId = 1;
 
+constexpr char GetPathSeparator()
+{
+#ifndef __clang__
+  return '\\';
+#else
+  return '/';
+#endif
+}
+
+void NormalizePath(string& path)
+{
+#ifndef __clang__
+  std::replace(path.begin(), path.end(), '/', '\\');
+#else
+  std::replace(path.begin(), path.end(), '\\', '/');
+#endif
+}
+
 void TrunckToFileName(string& fullPath)
 {
-  std::replace(fullPath.begin(), fullPath.end(), '/', '\\');
+  NormalizePath(fullPath);
 
-  size_t i = fullPath.find_last_of('\\');
+  size_t i = fullPath.find_last_of(GetPathSeparator());
   if (i != string::npos)
   {
     fullPath = fullPath.substr(i + 1);
@@ -83,23 +101,23 @@ void TrunckToFileName(string& fullPath)
 
 void Decompose(string fullPath, string& path, string& name)
 {
-  std::replace(fullPath.begin(), fullPath.end(), '/', '\\');
+  NormalizePath(fullPath);
   path = "";
 
-  size_t i = fullPath.find_last_of('\\');
+  size_t i = fullPath.find_last_of(GetPathSeparator());
   if (i != string::npos)
   {
-    path = fullPath.substr(0, fullPath.find_last_of('\\') + 1);
+    path = fullPath.substr(0, fullPath.find_last_of(GetPathSeparator()) + 1);
   }
 
-  name = fullPath.substr(fullPath.find_last_of('\\') + 1);
+  name = fullPath.substr(fullPath.find_last_of(GetPathSeparator()) + 1);
   name = name.substr(0, name.find_last_of('.'));
 }
 
 string GetTextureName(const aiTexture* texture, unsigned int i)
 {
   string name = texture->mFilename.C_Str();
-  std::replace(name.begin(), name.end(), '/', '\\');
+  NormalizePath(name);
 
   if (name.empty() || name[0] == '*')
   {

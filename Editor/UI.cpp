@@ -61,6 +61,7 @@ namespace ToolKit
     {
       IMGUI_CHECKVERSION();
       ImGui::CreateContext();
+      ImGui::LoadIniSettingsFromDisk("./imgui.ini");
       ImGuiIO& io = ImGui::GetIO();
       io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
       io.ConfigWindowsMoveFromTitleBarOnly = true;
@@ -475,7 +476,7 @@ namespace ToolKit
         ImGui::Text("Import file: \n\n");
         for (size_t i = 0; i < ImportData.files.size(); i++)
         {
-          ImGui::Text(ImportData.files[i].c_str());
+          ImGui::Text("%s", ImportData.files[i].c_str());
         }
         ImGui::Separator();
 
@@ -498,7 +499,7 @@ namespace ToolKit
           ImGui::Text("Fallowing imports failed due to:\nFile format is not supported.\nSuported formats are fbx, glb, obj.");
           for (String& file : fails)
           {
-            ImGui::Text(file.c_str());
+            ImGui::Text("%s", file.c_str());
           }
           ImGui::Separator();
         }
@@ -518,7 +519,7 @@ namespace ToolKit
           if (ImportData.files.size() > 1)
           {
             std::fstream importList;
-            load = "..\\Utils\\Import\\importList.txt";
+            load = ConcatPaths({ "..", "Utils", "Import", "importList.txt" });
             importList.open(load, std::ios::out);
             if (importList.is_open())
             {
@@ -593,7 +594,7 @@ namespace ToolKit
         for (size_t i = 0; i < SearchFileData.missingFiles.size(); i++)
         {
           String* s = &SearchFileData.missingFiles[i];
-          ImGui::Text(s->c_str());
+          ImGui::Text("%s", s->c_str());
         }
 
         int itemCnt = (int)SearchFileData.searchPaths.size();
@@ -940,7 +941,7 @@ namespace ToolKit
       {
         if (!m_msg.empty())
         {
-          ImGui::Text(m_msg.c_str());
+          ImGui::Text("%s", m_msg.c_str());
         }
 
         if (ImGui::Button(m_yesText.empty() ? "Yes" : m_yesText.c_str(), ImVec2(120, 0)))

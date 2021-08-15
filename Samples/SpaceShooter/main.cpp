@@ -1,10 +1,10 @@
 #include "SDL.h"
-#include <Windows.h>
 #include "ToolKit.h"
 #include "App.h"
-#include "DebugNew.h"
 #include "SDL_ttf.h"
 #include "Audio.h"
+#include "GL/glew.h"
+#include "DebugNew.h"
 #include <ctime>
 #include <ratio>
 #include <chrono>
@@ -126,7 +126,7 @@ void Init()
       else
       {
         // Init glew
-        glewExperimental = TRUE;
+        //glewExperimental = GL_TRUE;
         GLenum err = glewInit();
         if (GLEW_OK != err)
         {
@@ -177,12 +177,62 @@ unsigned long GetMilliSeconds()
   return (unsigned long)(time_span.count() * 1000.0);
 }
 
-int main(int argc, char* argv[])
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+
+uint lastTime = 0, currentTime = 0;
+uint fps = 1000 / 60;
+
+void AppLoop()
 {
-  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+  SDL_Event e;
+  while (SDL_PollEvent(&e))
+  {
+    ProcessEvent(e);
+  }
 
-  Init();
+  currentTime = GetMilliSeconds();
+  if (currentTime > lastTime + fps)
+  {
+    // Key handlings
+    const Uint8* state = SDL_GetKeyboardState(nullptr);
+    if (state[SDL_SCANCODE_W])
+      g_app->m_cam.Translate(glm::vec3(0, 0, -0.1));
 
+    if (state[SDL_SCANCODE_S])
+      g_app->m_cam.Translate(glm::vec3(0, 0, 0.1));
+
+    if (state[SDL_SCANCODE_D])
+      g_app->m_cam.Translate(glm::vec3(0.1, 0, 0));
+
+    if (state[SDL_SCANCODE_A])
+      g_app->m_cam.Translate(glm::vec3(-0.1, 0, 0));
+
+    // Auto fire
+    int fireRate = 1000 / g_app->m_spaceShip->m_fireRate;
+    {
+      static int lastFireTime = 0;
+      if (currentTime > (uint)(lastFireTime + fireRate))
+      {
+        for (auto entry : g_app->m_spaceShip->m_fireLocs)
+          g_app->m_projectileManager.FireProjectile(entry->GetTranslation(TransformationSpace::TS_WORLD));
+        lastFireTime = currentTime;
+        if (!g_app->m_shipGone)
+          AudioPlayer::Play(&g_app->m_lazerShotSource);
+      }
+    }
+
+    // Render
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    g_app->Frame(currentTime - lastTime);
+    SDL_GL_SwapWindow(g_window);
+
+    lastTime = currentTime;
+  }
+}
+#else
+void AppLoop()
+{
   SDL_Event e;
   uint lastTime = GetMilliSeconds();
   uint currentTime;
@@ -237,8 +287,23 @@ int main(int argc, char* argv[])
       SDL_Delay(10);
     }
   }
+}
+#endif
 
+int main(int argc, char* argv[])
+{
+#ifndef __clang__
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
+  Init();
+
+#ifdef __EMSCRIPTEN__
+  emscripten_set_main_loop(AppLoop, 0, 1);
+#else
+  AppLoop();
   Exit();
+#endif
 
   return 0;
 }

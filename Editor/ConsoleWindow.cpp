@@ -9,7 +9,7 @@
 #include "Directional.h"
 #include "Viewport.h"
 #include "TransformMod.h"
-#include "util.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -474,7 +474,6 @@ namespace ToolKit
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
     static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
-    static char* Strdup(const char* str) { size_t len = strlen(str) + 1; void* buf = malloc(len); IM_ASSERT(buf); return (char*)memcpy(buf, (const void*)str, len); }
     static void Strtrim(char* str) { char* str_end = str + strlen(str); while (str_end > str && str_end[-1] == ' ') str_end--; *str_end = 0; }
 
     ConsoleWindow::ConsoleWindow(XmlNode* node)
@@ -600,7 +599,7 @@ namespace ToolKit
           {
             ExecCommand(s);
           }
-          strcpy_s(s, sizeof(inputBuff), "");
+          strcpy(s, "");
           reclaimFocus = true;
         }
         else
@@ -694,7 +693,7 @@ namespace ToolKit
       }
       else
       {
-        sprintf_s(buffer, sizeof(buffer), "Unknown command: '%s'\n", cmd.c_str());
+        sprintf(buffer, "Unknown command: '%s'\n", cmd.c_str());
         AddLog(buffer, LogType::Error);
       }
 
@@ -758,7 +757,6 @@ namespace ToolKit
       Split(args, "--", splits);
 
       // Preserve all spaces in text.
-      const char spaceSub = (char)26;
       for (String& arg : splits)
       {
         StringArray values;
@@ -817,7 +815,7 @@ namespace ToolKit
         if (candidates.empty())
         {
           // No match
-          sprintf_s(buffer, sizeof(buffer), "No match for \"%.*s\"!\n", (int)(word_end - word_start), word_start);
+          sprintf(buffer, "No match for \"%.*s\"!\n", (int)(word_end - word_start), word_start);
           AddLog(buffer);
         }
         else if (candidates.size() == 1)
@@ -861,7 +859,7 @@ namespace ToolKit
           AddLog("Possible matches:\n");
           for (size_t i = 0; i < candidates.size(); i++)
           {
-            sprintf_s(buffer, sizeof(buffer), "- %s\n", candidates[i].c_str());
+            sprintf(buffer, "- %s\n", candidates[i].c_str());
             AddLog(buffer);
           }
         }

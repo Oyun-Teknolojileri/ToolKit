@@ -26,6 +26,10 @@ namespace ToolKit
 
   void Logger::Log(const std::string& message)
   {
+#ifdef __EMSCRIPTEN__
+    String emLog = message + "\n";
+    printf("%s", emLog.c_str());
+#endif
     m_logFile << message << std::endl;
   }
 

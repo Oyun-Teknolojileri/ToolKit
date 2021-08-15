@@ -20,10 +20,10 @@ namespace ToolKit
     Scene(String file);
     virtual ~Scene();
 
-    virtual void Load();
-    virtual void Save(bool onlyIfDirty);
-    virtual void Init(bool flushClientSideArray = true);
-    virtual void UnInit();
+    virtual void Load() override;
+    virtual void Save(bool onlyIfDirty) override;
+    virtual void Init(bool flushClientSideArray = true) override;
+    virtual void UnInit() override;
 
     // Scene queries.
     PickData PickObject(Ray ray, const EntityIdArray& ignoreList = EntityIdArray()) const;
@@ -39,8 +39,8 @@ namespace ToolKit
     virtual void Destroy();
 
     // Serialization.
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   protected:
     EntityRawPtrArray m_entitites;

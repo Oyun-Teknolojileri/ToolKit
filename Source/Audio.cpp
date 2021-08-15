@@ -56,7 +56,8 @@ namespace ToolKit
     unsigned char* data;
 
     try {
-      fopen_s(&soundFile, filename.c_str(), "rb");
+      soundFile = fopen(filename.c_str(), "rb");
+
       if (!soundFile)
         throw (filename);
 

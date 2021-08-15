@@ -62,7 +62,7 @@ namespace ToolKit
         ImGui::TableNextColumn();
 
         String fullPath = dirEnt.GetFullPath();
-        ImGui::Text(fullPath.c_str());
+        ImGui::Text("%s", fullPath.c_str());
         UI::HelpMarker(LOC + file, fullPath.c_str(), 0.1f);
 
         ImGui::TableNextRow();
@@ -239,14 +239,14 @@ namespace ToolKit
 
           ImGui::Text("Face count:");
           ImGui::TableNextColumn();
-          ImGui::Text("%d", entry->m_faces.size());
+          ImGui::Text("%d", (uint)entry->m_faces.size());
 
           ImGui::TableNextRow();
           ImGui::TableNextColumn();
 
           ImGui::Text("Vertex count:");
           ImGui::TableNextColumn();
-          ImGui::Text("%d", entry->m_clientSideVertices.size());
+          ImGui::Text("%d", (uint)entry->m_clientSideVertices.size());
 
           ImGui::EndTable();
         }
@@ -276,7 +276,7 @@ namespace ToolKit
       MaterialPtr entry;
 
       bool entityMod = true;
-      if (entry = m_material)
+      if ((entry = m_material))
       {
         entityMod = false;
       }
@@ -306,7 +306,7 @@ namespace ToolKit
         if (ImGui::TreeNode("Textures"))
         {
           ImGui::LabelText("##diffTexture", "Diffuse Texture: ");
-          String target = "\\";
+          String target = GetPathSeparatorAsStr();
           if (entry->m_diffuseTexture)
           {
             target = entry->m_diffuseTexture->m_file;
@@ -482,7 +482,6 @@ namespace ToolKit
 
           if (curr->IsDrawable())
           {
-            Drawable* dw = static_cast<Drawable*> (curr);
             MeshView* mev = GetView<MeshView>();
             mev->m_entity = curr;
             mev->Show();

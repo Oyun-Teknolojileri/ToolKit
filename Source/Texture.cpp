@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Texture.h"
 #define STB_IMAGE_IMPLEMENTATION
-#include "Stb/stb_image.h"
+#include "stb/stb_image.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -31,7 +31,7 @@ namespace ToolKit
       return;
     }
 
-    if (m_image = stbi_load(m_file.c_str(), &m_width, &m_height, &m_bytePP, 4))
+    if ((m_image = stbi_load(m_file.c_str(), &m_width, &m_height, &m_bytePP, 4)))
     {
       m_loaded = true;
     }
@@ -141,7 +141,7 @@ namespace ToolKit
       }
 
       String name = file + postfix;
-      if (m_images[i] = stbi_load(name.c_str(), &m_width, &m_height, &m_bytePP, 0))
+      if ((m_images[i] = stbi_load(name.c_str(), &m_width, &m_height, &m_bytePP, 0)))
       {
         Logger::GetInstance()->Log("Missing file: " + name);
         Logger::GetInstance()->Log("Cube map loading requires additional 5 png files with postfix \"nx py ny pz nz\".");

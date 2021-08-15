@@ -1,3 +1,5 @@
+
+
 # ToolKit
 
 ToolKit is a 3d editor & interactive application development platform. It allows users to create 3d scenes and bring in the interactivity via C++ plug-ins.
@@ -25,25 +27,21 @@ Bringing like minded people together around a project outputs invaluable assets 
 - It provides you an exceptional CV.
 
 ## Editor High Lights
-- All required functionalites for scene reation, manipuation, save & load.
+- All required functionalites for scene creation, manipuation, save & load.
 - All required utilities for Asset management. Create / Save / Refresh / Browse resource directories.
-- Multiple Prespective & Orthog views.
+- Multiple Prespective & Orthographic views.
 - Scene outliner to observe / interact entities in the scene.
 - Entity inspector & interactive resource manipulation trough the inspector.
 - Import whole scenes from various programs & formats including sketchfab, blender, glb, fbx ...
-- 3d editor is capable of importing various models via drag & drop from desktop.
-- Multiple perspective view ports and an orthographic view port.
-- Create materials, manipulate and assign materials to objects.
-- Console window along with usefull scene inspection commands and eash command creation.
+- Console window along with usefull scene inspection commands and easy command creation.
 
 ![Editor Footage](https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_21.gif?raw=true "Editor")
 ![Another Editor Footage](https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_22.gif?raw=true "Editor")
 ## Engine High Lights
 
 - Default fragment & vertex shaders and ability to create custom shaders for materials.
-- Sprite Sheets & Sprite Animation support.
-- Key frame animation support.
-- Skeletal animation support.
+- Sprite Sheets & Sprite Animation.
+- Skeletal animation & Key frame animation.
 - Resource serialization & deserialization to xml format.
 - Scene management.
 
@@ -58,7 +56,7 @@ ToolKit comes with a Visual Studio solution. The solution has been created with 
 - In the Solution Explorer, right click the solution "ToolKit"
 - Add -> New Project
 - Search for ToolKitProject and select it
-- Fallow the instructions, this will create a new blak project
+- Fallow the instructions, this will create a new blank project
 
 ### Projects in the solution
 
@@ -73,7 +71,23 @@ ToolKit comes with a Visual Studio solution. The solution has been created with 
 
 ## Platforms
 
-Currently, ToolKit can only create builds for Windows. However it has been tested for web builds and can generate web outputs with emsicripten. The second platfrom that it gives output will be web. Project does not have any Windows dependency and can be build for  Mac-Os. & Linux. Each os. should provide a convinient workflow by providing a code editor and compiling routine. For this reason Mac & Linux won't be handled until a stable release published.
+Currently, ToolKit can only be build for Windows. However it has been tested for web builds and can generate web outputs with Emscripten. The second platfrom that it gives output will be web. ToolKit does not have any Windows dependency and can be build for  Mac-Os and Linux. Each os. should provide a convinient workflow by providing a code editor and well established compile system. For this reason Mac & Linux won't be handled until a stable release published.
+
+### Web Platform
+
+This branch is not stable & in active development.
+- Install emscripten, download ninja and place it in, emsdk / upstream / emscripten. 
+- In the ToolKit directory, create a Build directory. 
+- Enter Build. Open cmd and Run "emcmake cmake -S .."
+- Than run ninja
+- Install chrome canary
+- Install chrome C/C++ DevTools Support (Dwarf)
+- From the developer tools settings (wheel icon *)
+- Preferences / Sources / Check: "Enable javascript source maps"
+- Experiments /  Check: "WebAssembly Debugging: Enable DWARF support"
+- Go to ToolKit / Bin open cmd run "emrun SpaceShooter.html --browser chrome_canary
+
+You can see the c++ code, call stack, local - global scope and set break points.
 
 ## Dependencies
 - stb_image - MIT 
@@ -89,7 +103,7 @@ Currently, ToolKit can only create builds for Windows. However it has been teste
 ## Roadmap
 
 ### Renderer
-- Currently I am using Opengl ES 2.0 along with Sdl. I have not isolate renderer from the underlying api. That is, renderer, texture, mesh ect ... making direct calls to the Opengl. This isolation is needed. 
+- Currently I am using Opengl ES 2.0 along with Sdl. I have not isolated renderer from the underlying api. That is, renderer, texture, mesh ect ... makes direct calls to the Opengl. This isolation is needed. 
   - (**Open - contatc me please**)
 - Forward renderer. 
   - Sort objects to minimize redundant state changes.
