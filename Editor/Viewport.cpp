@@ -564,8 +564,10 @@ namespace ToolKit
           }
         }
 
-        static bool hitFound = false;
         static Vec3 orbitPnt;
+        static bool hitFound = false;
+        static float dist = 0.0f;
+        Camera::CamData dat = m_camera->GetData();
         if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
         {
           // Figure out orbiting point.
@@ -586,23 +588,33 @@ namespace ToolKit
               orbitPnt = pd.pickPos;
             }
             hitFound = true;
+            dist = glm::distance(orbitPnt, dat.pos);
           }
 
           // Orbit around it.
-          float x = ImGui::GetIO().MouseDelta.x;
-          float y = ImGui::GetIO().MouseDelta.y;
+          ImGuiIO& io = ImGui::GetIO();
+          float x = io.MouseDelta.x;
+          float y = io.MouseDelta.y;
           Vec3 r = m_camera->GetRight();
           Vec3 u = m_camera->GetUp();
 
-          if (ImGui::GetIO().KeyShift)
+          if (io.KeyShift)
           {
-            Vec3 sum = r * -x + u * y;
+            // Reflect window space mouse delta to image plane. 
+            Vec3 deltaOnImagePlane = glm::unProject
+            (
+              // Here, mouse delta is transformed to viewport center.
+              Vec3(x + m_width * 0.5f, y + m_height * 0.5f, 0.0f),
+              Mat4(),
+              dat.projection,
+              Vec4(0.0f, 0.0f, m_width, m_height)
+            );
 
-            Camera::CamData dat = m_camera->GetData();
-            float dist = glm::distance(orbitPnt, dat.pos);
-            float speed = 0.1f * glm::sqrt(dist);
-            float displace = speed * MilisecToSec(deltaTime);
-            m_camera->m_node->Translate(sum * displace, TransformationSpace::TS_WORLD);
+            // Thales ! Reflect imageplane displacement to world space.
+            Vec3 deltaOnWorld = deltaOnImagePlane * dist / dat.nearDist;
+
+            Vec3 displace = r * -deltaOnWorld.x + u * deltaOnWorld.y;
+            m_camera->m_node->Translate(displace, TransformationSpace::TS_WORLD);
           }
           else
           {
@@ -637,6 +649,7 @@ namespace ToolKit
         if (!ImGui::IsMouseDown(ImGuiMouseButton_Middle))
         {
           hitFound = false;
+          dist = 0.0f;
         }
       }
     }
