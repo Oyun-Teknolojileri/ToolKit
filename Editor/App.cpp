@@ -688,15 +688,22 @@ namespace ToolKit
 
       auto RenderFn = [this, vp](const EntityRawPtrArray& selection, const Vec3& color)
       {
-        glEnable(GL_STENCIL_TEST);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-        glStencilFunc(GL_ALWAYS, 1, 0xFF);
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        if (selection.empty())
+        {
+          return;
+        }
 
         RenderTarget stencilMask((int)vp->m_width, (int)vp->m_height);
         stencilMask.Init();
 
-        m_renderer->SetRenderTarget(&stencilMask);
+        m_renderer->SetRenderTarget(&stencilMask, true, { 0.0f, 0.0f, 0.0f, 1.0 });
+
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_STENCIL_TEST);
+        glStencilMask(0xFF);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
         for (Entity* ntt : selection)
         {
@@ -712,6 +719,8 @@ namespace ToolKit
         ShaderPtr solidColor = GetShaderManager()->Create<Shader>(ShaderPath("unlitColorFrag.shader"));
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
+        glEnable(GL_DEPTH_TEST);
+        glStencilMask(0x00);
 
         m_renderer->SetRenderTarget(vp->m_viewportImage, false);
 

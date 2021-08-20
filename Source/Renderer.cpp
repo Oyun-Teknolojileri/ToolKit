@@ -229,7 +229,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetRenderTarget(RenderTarget* renderTarget, bool clear)
+  void Renderer::SetRenderTarget(RenderTarget* renderTarget, bool clear, const Vec4& color)
   {
     if (m_renderTarget == renderTarget)
     {
@@ -241,9 +241,19 @@ namespace ToolKit
       glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->m_frameBufferId);
       glViewport(0, 0, renderTarget->m_width, renderTarget->m_height);
 
+      if (glm::all(glm::epsilonNotEqual(color, m_bgColor, 0.001f)))
+      {
+        glClearColor(color.r, color.g, color.b, color.a);
+      }
+
       if (clear)
       {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+      }
+
+      if (glm::all(glm::epsilonNotEqual(color, m_bgColor, 0.001f)))
+      {
+        glClearColor(m_bgColor.r, m_bgColor.g, m_bgColor.b, m_bgColor.a);
       }
     }
     else
@@ -255,11 +265,11 @@ namespace ToolKit
     m_renderTarget = renderTarget;
   }
 
-  void Renderer::SwapRenderTarget(RenderTarget** renderTarget, bool clear)
+  void Renderer::SwapRenderTarget(RenderTarget** renderTarget, bool clear, const Vec4& color)
   {
     RenderTarget* tmp = *renderTarget;
     *renderTarget = m_renderTarget;
-    SetRenderTarget(tmp, clear);
+    SetRenderTarget(tmp, clear, color);
   }
 
   void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
