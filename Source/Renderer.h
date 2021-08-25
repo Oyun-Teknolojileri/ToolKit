@@ -51,6 +51,7 @@ namespace ToolKit
     uint m_windowWidth = 0;
     uint m_windowHeight = 0;
     Vec4 m_bgColor = { 0.2f, 0.2f, 0.2f, 1.0f };
+    MaterialPtr m_overrideMat = nullptr;
 
   private:
     GLuint m_currentProgram = 0;

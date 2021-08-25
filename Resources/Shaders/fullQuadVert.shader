@@ -6,9 +6,9 @@
 		precision highp float;
 
 		// Fixed Attributes.
-		in vec3 vPosition;
-		in vec3 vNormal;
-		in vec2 vTexture;
+		layout (location = 0) in vec3 vPosition;
+		layout (location = 1) in vec3 vNormal;
+		layout (location = 2) in vec2 vTexture;
 
 		out vec3 v_pos;
 		out vec3 v_normal;
@@ -18,7 +18,9 @@
 		{
 		  v_texture = vTexture;
 		  v_normal = vNormal;
-		  gl_Position = vec4(vPosition.xy * 2.0, -1.0, 1.0);
+		  v_pos.xy = vPosition.xy * 2.0;
+		  v_pos.z = 0.0;
+		  gl_Position = vec4(v_pos, 1.0);
 		}
 	-->
 	</source>

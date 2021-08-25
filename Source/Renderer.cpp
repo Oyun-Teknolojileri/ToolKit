@@ -44,6 +44,10 @@ namespace ToolKit
     for (Mesh* mesh : g_meshCollector)
     {
       m_mat = mesh->m_material.get();
+      if (m_overrideMat)
+      {
+        m_mat = m_overrideMat.get();
+      }
 
       ProgramPtr prg = CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmetShader);
       BindProgram(prg);

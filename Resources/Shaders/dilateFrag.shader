@@ -17,7 +17,7 @@
 		
 		void main()
 		{
-			vec2 yFlip = vec2(v_texture.x, -v_texture.y);
+			vec2 yFlip = vec2(v_texture.x, v_texture.y);
 			float c = texture(u_texture, yFlip).r;
 			if (c == 0.0)
 			{

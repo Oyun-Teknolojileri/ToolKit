@@ -698,11 +698,10 @@ namespace ToolKit
 
         m_renderer->SetRenderTarget(&stencilMask, true, { 0.0f, 0.0f, 0.0f, 1.0 });
 
-        glDisable(GL_DEPTH_TEST);
         glEnable(GL_STENCIL_TEST);
         glStencilMask(0xFF);
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
         for (Entity* ntt : selection)
@@ -715,12 +714,11 @@ namespace ToolKit
 
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilFunc(GL_NOTEQUAL, 0xFF, 0xFF);
+        glStencilMask(0x00);
         ShaderPtr solidColor = GetShaderManager()->Create<Shader>(ShaderPath("unlitColorFrag.shader"));
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
-        glEnable(GL_DEPTH_TEST);
-        glStencilMask(0x00);
 
         m_renderer->SetRenderTarget(vp->m_viewportImage, false);
 
