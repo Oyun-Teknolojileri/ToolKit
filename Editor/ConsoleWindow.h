@@ -60,6 +60,9 @@ namespace ToolKit
     const String g_showSelectionBoundary("ShowSelectionBoundary");
     void ShowSelectionBoundary(TagArgArray tagArgs);
 
+    const String g_showGraphicsApiLogs("ShowGraphicsApiLogs");
+    void ShowGraphicsApiLogs(TagArgArray tagArgs);
+
     // Command errors
     const String g_noValidEntity("No valid entity");
 

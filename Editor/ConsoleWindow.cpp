@@ -51,6 +51,7 @@ namespace ToolKit
       {
         return;
       }
+
       if (tagArgs.front().second.empty())
       {
         return;
@@ -471,6 +472,22 @@ namespace ToolKit
       BoolCheck(tagArgs, &g_app->m_showSelectionBoundary);
     }
 
+    void ShowGraphicsApiLogs(TagArgArray tagArgs)
+    {
+      if (tagArgs.empty())
+      {
+        return;
+      }
+
+      if (tagArgs.front().second.empty())
+      {
+        return;
+      }
+
+      String lvl = tagArgs.front().second.front();
+      g_app->m_showGraphicsApiErrors = std::atoi(lvl.c_str());
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
     static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
@@ -499,6 +516,7 @@ namespace ToolKit
       CreateCommand(g_applyTransformToMesh, ApplyTransformToMesh);
       CreateCommand(g_saveMesh, SaveMesh);
       CreateCommand(g_showSelectionBoundary, ShowSelectionBoundary);
+      CreateCommand(g_showGraphicsApiLogs, ShowGraphicsApiLogs);
     }
 
     ConsoleWindow::~ConsoleWindow()
@@ -631,33 +649,46 @@ namespace ToolKit
 
     void ConsoleWindow::AddLog(const String& log, LogType type)
     {
-      String prefixed;
+      String prefix;
       switch (type)
       {
       case LogType::Error:
-        prefixed = g_errorStr + log;
+        prefix = g_errorStr;
         break;
       case LogType::Warning:
-        prefixed = g_warningStr + log;
+        prefix = g_warningStr;
         break;
       case LogType::Command:
-        prefixed = g_commandStr + log;
+        prefix = g_commandStr;
         break;
       case LogType::Memo:
       default:
-        prefixed = g_memoStr + log;
+        prefix = g_memoStr;
         break;
       }
 
-      m_items.push_back(prefixed);
-      m_scrollToBottom = true;
+      AddLog(log, prefix);
     }
 
     void ConsoleWindow::AddLog(const String& log, const String& tag)
     {
-      String prefixed = "[" + tag + "] " + log;
+      String prefixed;
+      if (tag.empty()) 
+      {
+        prefixed = log;
+      }
+      else
+      {
+        prefixed = "[" + tag + "] " + log;
+      }
+       
       m_items.push_back(prefixed);
       m_scrollToBottom = true;
+
+      if (m_items.size() > 1024)
+      {
+        ClearLog();
+      }
     }
 
     void ConsoleWindow::ClearLog()

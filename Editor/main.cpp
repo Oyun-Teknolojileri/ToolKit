@@ -4,10 +4,14 @@
 #include "Types.h"
 #include "Mod.h"
 #include "UI.h"
-#include "DebugNew.h"
+#include "ConsoleWindow.h"
 
 #include "ImGui/imgui_impl_sdl.h"
 #include "SDL.h"
+
+#include "../Source/Common/GlErrorReporter.h"
+
+#include "DebugNew.h"
 
 #include <stdio.h>
 #include <chrono>
@@ -46,6 +50,8 @@ namespace ToolKit
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+
         g_window = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
         if (g_window == nullptr)
         {
@@ -69,6 +75,12 @@ namespace ToolKit
               return;
             }
 
+            if (glDebugMessageCallbackARB != NULL) {
+              glEnable(GL_DEBUG_OUTPUT);
+              glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+              glDebugMessageCallbackARB(&GLDebugMessageCallback, nullptr);
+            }
+
             Main::GetInstance()->Init();
 
             // Set defaults
@@ -82,8 +94,33 @@ namespace ToolKit
             g_app = new App(width, height);
             g_app->Init();
 
-            // Init UI
-            UI::Init();
+            GlErrorReporter::Report = [](const std::string& msg) -> void {
+              static Byte state = g_app->m_showGraphicsApiErrors;
+              if (state != g_app->m_showGraphicsApiErrors)
+              {
+                state = g_app->m_showGraphicsApiErrors;
+                if (state == 1)
+                {
+                  glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
+                  glDebugMessageControl
+                  (
+                    GL_DEBUG_SOURCE_API,
+                    GL_DEBUG_TYPE_ERROR,
+                    GL_DEBUG_SEVERITY_HIGH,
+                    0, NULL, GL_TRUE
+                  );
+                }
+                else if (state >= 2)
+                {
+                  glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+                }
+              }
+
+              if (g_app->m_showGraphicsApiErrors)
+              {
+                g_app->GetConsole()->AddLog(msg, ConsoleWindow::LogType::Error);
+              }
+            };
           }
         }
       }
@@ -258,7 +295,7 @@ namespace ToolKit
         if (timer->currentTime > timer->lastTime + timer->deltaTime)
         {
           // Update & Render
-          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
           g_app->Frame(timer->currentTime - timer->lastTime);
           SDL_GL_SwapWindow(g_window);
 

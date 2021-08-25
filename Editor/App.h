@@ -97,6 +97,7 @@ namespace ToolKit
       bool m_importSlient = false;
       bool m_showSelectionBoundary = false;
       bool m_windowMaximized = false;
+      Byte m_showGraphicsApiErrors = 0;
       TransformationSpace m_transformSpace = TransformationSpace::TS_WORLD;
 
       // Snap settings.

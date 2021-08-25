@@ -130,7 +130,7 @@ namespace ToolKit
         m_windows.push_back(matInspect);
       }
 
-      UI::InitIcons();
+      UI::Init();
     }
 
     void App::Destroy()
