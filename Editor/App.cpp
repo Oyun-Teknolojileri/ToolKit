@@ -88,6 +88,15 @@ namespace ToolKit
       if (CheckFile("..//Resources//Editor.settings") && !m_onNewScene)
       {
         DeSerialize(nullptr, nullptr);
+
+        // Restore window.
+        SDL_SetWindowSize(g_window, m_renderer->m_windowWidth, m_renderer->m_windowHeight);
+        SDL_SetWindowPosition(g_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
+        if (m_windowMaximized)
+        {
+          SDL_MaximizeWindow(g_window);
+        }
       }
       else
       {
@@ -704,6 +713,10 @@ namespace ToolKit
         glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
+        // webgl create problem with depth only drawing with textures.
+        static MaterialPtr solidMat = GetMaterialManager()->GetCopyOfSolidMaterial();
+        m_renderer->m_overrideMat = solidMat;
+
         for (Entity* ntt : selection)
         {
           if (ntt->IsDrawable())
@@ -711,6 +724,8 @@ namespace ToolKit
             m_renderer->Render(static_cast<Drawable*> (ntt), vp->m_camera);
           }
         }
+
+        m_renderer->m_overrideMat = nullptr;
 
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 

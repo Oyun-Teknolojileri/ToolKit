@@ -306,7 +306,7 @@ namespace ToolKit
 
     for (Mesh* const mesh : meshes)
     {
-#ifndef __clang__
+#ifndef __EMSCRIPTEN__
       std::mutex updateHit;
       std::for_each
       (
@@ -329,7 +329,19 @@ namespace ToolKit
         }
       );
 #else
-      // Alternative parallel for imp goes here.
+      for (const Face& face : mesh->m_faces)
+      {
+        float dist = FLT_MAX;
+        if (RayTriangleIntersection(ray, face.vertices[0]->pos, face.vertices[1]->pos, face.vertices[2]->pos, dist))
+        {
+          if (dist < closestPickedDistance && t >= 0.0f)
+          {
+            t = dist;
+            closestPickedDistance = dist;
+            hit = true;
+          }
+        }
+      }
 #endif
     }
 
