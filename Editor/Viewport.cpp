@@ -617,6 +617,10 @@ namespace ToolKit
 
             // Thales ! Reflect imageplane displacement to world space.
             Vec3 deltaOnWorld = deltaOnImagePlane * dist / dat.nearDist;
+            if (m_camera->IsOrtographic())
+            {
+              deltaOnWorld = deltaOnImagePlane;
+            }
 
             Vec3 displace = r * -deltaOnWorld.x + u * deltaOnWorld.y;
             m_camera->m_node->Translate(displace, TransformationSpace::TS_WORLD);
