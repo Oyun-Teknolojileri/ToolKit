@@ -62,6 +62,9 @@ namespace ToolKit
     m_vboVertexId = 0;
     m_vboIndexId = 0;
 
+    glDeleteVertexArrays(1, &m_vaoId);
+    m_vaoId = 0;
+
     for (MeshPtr& subMesh : m_subMeshes)
     {
       subMesh = nullptr;
@@ -424,9 +427,13 @@ namespace ToolKit
   void Mesh::InitVertices(bool flush)
   {
     glDeleteBuffers(1, &m_vboVertexId);
+    glDeleteVertexArrays(1, &m_vaoId);
 
     if (!m_clientSideVertices.empty())
     {
+      glGenVertexArrays(1, &m_vaoId);
+      glBindVertexArray(m_vaoId);
+
       glGenBuffers(1, &m_vboVertexId);
       glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
       glBufferData(GL_ARRAY_BUFFER, GetVertexSize() * m_clientSideVertices.size(), m_clientSideVertices.data(), GL_STATIC_DRAW);

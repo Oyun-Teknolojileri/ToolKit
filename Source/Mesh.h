@@ -58,6 +58,7 @@ namespace ToolKit
     std::vector<uint> m_clientSideIndices;
     GLuint m_vboVertexId = 0;
     GLuint m_vboIndexId = 0;
+    GLuint m_vaoId = 0;
     uint m_vertexCount = 0;
     uint m_indexCount = 0;
     MaterialPtr m_material;

@@ -56,6 +56,7 @@ namespace ToolKit
       RenderState* rs = m_mat->GetRenderState();
       SetRenderState(rs);
 
+      glBindVertexArray(mesh->m_vaoId);
       glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
       SetVertexLayout(VertexLayout::Mesh);
 
