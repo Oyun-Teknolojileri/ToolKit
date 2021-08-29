@@ -40,6 +40,10 @@ namespace ToolKit
       void OnSaveScene();
       void OnQuit();
 
+      // UI
+      void ResetUI();
+      void DeleteWindows();
+
       // Import facilities.
       int Import(const String& fullPath, const String& subDir, bool overwrite);
       bool CanImport(const String& fullPath);

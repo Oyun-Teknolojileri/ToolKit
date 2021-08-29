@@ -18,8 +18,6 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
-#else
-#define ENABLE_GL_DEBUG
 #endif
 
 namespace ToolKit
@@ -57,7 +55,7 @@ namespace ToolKit
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-#ifdef ENABLE_GL_DEBUG
+#ifdef TK_DEBUG
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
 
@@ -84,7 +82,8 @@ namespace ToolKit
               return;
             }
 
-#ifdef ENABLE_GL_DEBUG
+#ifndef __EMSCRIPTEN__
+#ifdef TK_DEBUG
             if (glDebugMessageCallbackARB != NULL) 
             {
               glEnable(GL_DEBUG_OUTPUT);
@@ -121,8 +120,10 @@ namespace ToolKit
               }
             };
 #endif
+#endif
 
             Main::GetInstance()->Init();
+            UI::Init();
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);
@@ -282,7 +283,9 @@ namespace ToolKit
 int main(int argc, char* argv[])
 {
 #ifndef __EMSCRIPTEN__
+#ifdef TK_DEBUG
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 #endif
 
   return ToolKit::Editor::ToolKit_Main(argc, argv);

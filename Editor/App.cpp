@@ -85,7 +85,7 @@ namespace ToolKit
       m_sceneLights.push_back(light);
       
       // Set last window layout.
-      if (CheckFile("..//Resources//Editor.settings") && !m_onNewScene)
+      if (CheckFile(ConcatPaths({ ResourcePath(), "Editor.settings" })) && !m_onNewScene)
       {
         DeSerialize(nullptr, nullptr);
 
@@ -97,62 +97,19 @@ namespace ToolKit
         {
           SDL_MaximizeWindow(g_window);
         }
+
+        UI::InitSettings();
       }
       else
       {
-        // Default UI
-        
-        // Perspective.
-        Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
-        vp->m_name = "Perspective";
-        vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
-        vp->m_camera->LookAt(Vec3(0.0f));
-        m_windows.push_back(vp);
-
-        // Orthographic.
-        vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
-        vp->m_name = "Orthographic";
-        vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
-        vp->m_camera->Pitch(glm::radians(-90.0f));
-        vp->m_cameraAlignment = 1;
-        vp->m_orthographic = true;
-        m_windows.push_back(vp);
-
-        ConsoleWindow* console = new ConsoleWindow();
-        m_windows.push_back(console);
-
-        FolderWindow* assetBrowser = new FolderWindow();
-        assetBrowser->m_name = g_assetBrowserStr;
-        assetBrowser->Iterate(ResourcePath(), true);
-        m_windows.push_back(assetBrowser);
-
-        OutlinerWindow* outliner = new OutlinerWindow();
-        outliner->m_name = g_outlinerStr;
-        m_windows.push_back(outliner);
-
-        PropInspector* inspector = new PropInspector();
-        inspector->m_name = g_propInspector;
-        m_windows.push_back(inspector);
-
-        MaterialInspector* matInspect = new MaterialInspector();
-        matInspect->m_name = g_matInspector;
-        m_windows.push_back(matInspect);
+        ResetUI();
       }
-
-      UI::Init();
     }
 
     void App::Destroy()
     {
       // UI.
-      for (Window* wnd : m_windows)
-      {
-        SafeDel(wnd);
-      }
-      m_windows.clear();
-
-      SafeDel(Viewport::m_overlayMods);
-      SafeDel(Viewport::m_overlayOptions);
+      DeleteWindows();
 
       m_scene->Destroy();
 
@@ -350,6 +307,74 @@ namespace ToolKit
         UI::m_volatileWindows.push_back(reallyQuit);
         processing = true;
       }
+    }
+
+    void App::ResetUI()
+    {      
+      DeleteWindows();
+      if (CheckFile(ConcatPaths({ ResourcePath(), "default.settings" })))
+      {
+        // Try reading defaults.
+        String settingsFile = ConcatPaths({ ResourcePath(), "default.settings" });
+        std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
+        
+        std::shared_ptr<XmlDocument> lclDoc = std::make_shared<XmlDocument>();
+        lclDoc->parse<0>(lclFile->data());
+        DeSerialize(lclDoc.get(), nullptr);
+
+        settingsFile = ConcatPaths({ ResourcePath(), "defaultUI.ini" });
+        ImGui::LoadIniSettingsFromDisk(settingsFile.c_str());
+      }
+      else
+      {
+        // Perspective.
+        Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+        vp->m_name = "Perspective";
+        vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
+        vp->m_camera->LookAt(Vec3(0.0f));
+        m_windows.push_back(vp);
+
+        // Orthographic.
+        vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+        vp->m_name = "Orthographic";
+        vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
+        vp->m_camera->Pitch(glm::radians(-90.0f));
+        vp->m_cameraAlignment = 1;
+        vp->m_orthographic = true;
+        m_windows.push_back(vp);
+
+        ConsoleWindow* console = new ConsoleWindow();
+        m_windows.push_back(console);
+
+        FolderWindow* assetBrowser = new FolderWindow();
+        assetBrowser->m_name = g_assetBrowserStr;
+        assetBrowser->Iterate(ResourcePath(), true);
+        m_windows.push_back(assetBrowser);
+
+        OutlinerWindow* outliner = new OutlinerWindow();
+        outliner->m_name = g_outlinerStr;
+        m_windows.push_back(outliner);
+
+        PropInspector* inspector = new PropInspector();
+        inspector->m_name = g_propInspector;
+        m_windows.push_back(inspector);
+
+        MaterialInspector* matInspect = new MaterialInspector();
+        matInspect->m_name = g_matInspector;
+        m_windows.push_back(matInspect);
+      }
+    }
+
+    void App::DeleteWindows()
+    {
+      for (Window* wnd : m_windows)
+      {
+        SafeDel(wnd);
+      }
+      m_windows.clear();
+
+      SafeDel(Viewport::m_overlayMods);
+      SafeDel(Viewport::m_overlayOptions);
     }
 
     int App::Import(const String& fullPath, const String& subDir, bool overwrite)
@@ -798,13 +823,21 @@ namespace ToolKit
 
     void App::DeSerialize(XmlDocument* doc, XmlNode* parent)
     {
-      String settingsFile = ConcatPaths({ ResourcePath(), "Editor.settings" });
-      XmlFile file(settingsFile.c_str());
+      XmlFile* lclFile = nullptr;
+      XmlDocument* lclDoc = nullptr;
 
-      XmlDocument appDoc;
-      appDoc.parse<0>(file.data());
+      if (doc == nullptr)
+      {
+        String settingsFile = ConcatPaths({ ResourcePath(), "Editor.settings" });
+        lclFile = new XmlFile(settingsFile.c_str());
 
-      if (XmlNode* root = appDoc.first_node("App"))
+        lclDoc = new XmlDocument();
+        lclDoc->parse<0>(lclFile->data());
+        doc = lclDoc;
+      }
+
+
+      if (XmlNode* root = doc->first_node("App"))
       {
         // Windows
         XmlNode* wndNode = root->first_node("Window");
@@ -865,6 +898,9 @@ namespace ToolKit
 
         ReadAttr(root, "maximized", m_windowMaximized);
       }
+
+      SafeDel(lclDoc);
+      SafeDel(lclFile);
     }
 
   }

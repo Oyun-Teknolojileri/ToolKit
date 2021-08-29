@@ -33,6 +33,7 @@ namespace ToolKit
     StringInputWindow UI::m_strInputWindow;
     std::vector<Window*> UI::m_volatileWindows;
     uint Window::m_baseId = 0; // unused id.
+    std::vector<std::function<void()>> UI::m_postponedActions;
 
     // Icons
     TexturePtr UI::m_selectIcn;
@@ -61,7 +62,7 @@ namespace ToolKit
     {
       IMGUI_CHECKVERSION();
       ImGui::CreateContext();
-      ImGui::LoadIniSettingsFromDisk("./imgui.ini");
+
       ImGuiIO& io = ImGui::GetIO();
       io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
       io.ConfigWindowsMoveFromTitleBarOnly = true;
@@ -237,6 +238,23 @@ namespace ToolKit
       style->Colors[ImGuiCol_TextSelectedBg] = { 0.18431373f, 0.39607847f, 0.79215693f, 0.90f };
     }
 
+    void UI::InitSettings()
+    {
+      String path = "./imgui.ini";
+      if (CheckFile(path))
+      {
+        ImGui::LoadIniSettingsFromDisk(path.c_str());
+      }
+      else
+      {
+        path = ConcatPaths({ ResourcePath(), "defaultUI.ini" });
+        if (CheckFile(path))
+        {
+          ImGui::LoadIniSettingsFromDisk(path.c_str());
+        }
+      }
+    }
+
     void UI::ShowUI()
     {
       ImGui_ImplOpenGL3_NewFrame();
@@ -292,6 +310,12 @@ namespace ToolKit
       ImGui::UpdatePlatformWindows();
       ImGui::RenderPlatformWindowsDefault();
       SDL_GL_MakeCurrent(g_window, g_context);
+
+      for (auto& action : m_postponedActions)
+      {
+        action();
+      }
+      m_postponedActions.clear();
     }
 
     void UI::ShowAppMainMenuBar()
@@ -399,11 +423,6 @@ namespace ToolKit
         ImGui::EndMenu();
       }
 
-      if (ImGui::MenuItem("Console Window", "Alt+C", nullptr, !g_app->GetConsole()->IsVisible()))
-      {
-        g_app->GetConsole()->SetVisibility(true);
-      }
-
       if (ImGui::BeginMenu("Resource Window"))
       {
         handleMultiWindowFn(Window::Type::Browser);
@@ -417,6 +436,13 @@ namespace ToolKit
         }
 
         ImGui::EndMenu();
+      }
+
+      ImGui::Separator();
+
+      if (ImGui::MenuItem("Console Window", "Alt+C", nullptr, !g_app->GetConsole()->IsVisible()))
+      {
+        g_app->GetConsole()->SetVisibility(true);
       }
 
       if (ImGui::MenuItem("Outliner Window", "Alt+O", nullptr, !g_app->GetOutliner()->IsVisible()))
@@ -436,6 +462,20 @@ namespace ToolKit
 
       ImGui::Separator();
 
+      if (ImGui::MenuItem("Reset Layout"))
+      {
+        m_postponedActions.push_back
+        (
+          []() -> void
+          {
+            g_app->ResetUI();
+          }
+        );
+      }
+
+#ifdef TK_DEBUG
+      ImGui::Separator();
+
       if (!m_windowMenushowMetrics)
       {
         if (ImGui::MenuItem("Show Metrics", "Alt+M"))
@@ -451,6 +491,7 @@ namespace ToolKit
           m_imguiSampleWindow = true;
         }
       }
+#endif
     }
 
     void UI::ShowImportWindow()

@@ -103,6 +103,7 @@ namespace ToolKit
       static void InitDocking();
       static void InitIcons();
       static void InitTheme();
+      static void InitSettings();
       static void ShowUI();
       static void ShowAppMainMenuBar();
       static void ShowMenuFile();
@@ -141,6 +142,9 @@ namespace ToolKit
         StringArray missingFiles;
         StringArray searchPaths;
       } SearchFileData;
+
+      // Some actions needed to be run after ui rendered.
+      static std::vector<std::function<void()>> m_postponedActions;
 
       // Toolbar Icons.
       static TexturePtr m_selectIcn;

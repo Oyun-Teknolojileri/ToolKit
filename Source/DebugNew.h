@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef SKIP_TK_DEBUG_NEW
-  #ifdef _DEBUG
+  #ifdef TK_DEBUG
     #define _CRTDBG_MAP_ALLOC
     #include <cstdlib>
     #include <crtdbg.h>
