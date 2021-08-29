@@ -2,6 +2,7 @@
 # if you don't want spesific files to be counted, get them from verbose.txt and paste here.
 # For example uncommet below.
 # ../Source/ToolKit.cpp
+../Source/Common/
 ../Import/assimp/
 ../Import/lodepng.h
 ../Import/lodepng.cpp
