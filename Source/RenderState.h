@@ -27,6 +27,13 @@ namespace ToolKit
     Back
   };
 
+  enum class VertexLayout
+  {
+    None,
+    Mesh,
+    SkinMesh
+  };
+
   struct RenderState
   {
     CullingType cullMode = CullingType::Back;
@@ -38,6 +45,7 @@ namespace ToolKit
     GLuint cubeMap = 0;
     bool cubeMapInUse = false;
     float lineWidth = 1.0f;
+    VertexLayout vertexLayout = VertexLayout::None;
   };
 
 }

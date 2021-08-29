@@ -489,6 +489,11 @@ namespace ToolKit
 
   void Renderer::SetVertexLayout(VertexLayout layout)
   {
+    if (m_renderState.vertexLayout == layout)
+    {
+      return;
+    }
+
     if (layout == VertexLayout::None)
     {
       for (int i = 0; i < 6; i++)
