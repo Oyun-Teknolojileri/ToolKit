@@ -19,7 +19,7 @@
 		  v_texture = vTexture;
 		  v_normal = vNormal;
 		  v_pos.xy = vPosition.xy * 2.0;
-		  v_pos.z = 0.0;
+		  v_pos.z = -1.0;
 		  gl_Position = vec4(v_pos, 1.0);
 		}
 	-->
