@@ -85,13 +85,15 @@ namespace ToolKit
             }
 
 #ifdef ENABLE_GL_DEBUG
-            if (glDebugMessageCallbackARB != NULL) {
+            if (glDebugMessageCallbackARB != NULL) 
+            {
               glEnable(GL_DEBUG_OUTPUT);
               glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
               glDebugMessageCallbackARB(&GLDebugMessageCallback, nullptr);
             }
 
-            GlErrorReporter::Report = [](const std::string& msg) -> void {
+            GlErrorReporter::Report = [](const std::string& msg) -> void 
+            {
               static Byte state = g_app->m_showGraphicsApiErrors;
               if (state != g_app->m_showGraphicsApiErrors)
               {
