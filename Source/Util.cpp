@@ -124,8 +124,7 @@ namespace ToolKit
 
   bool CheckFile(const String& path)
   {
-    std::ifstream f(path.c_str());
-    return f.good();
+    return std::filesystem::exists(path);
   }
 
   String CreateCopyFileFullPath(const String& fullPath)

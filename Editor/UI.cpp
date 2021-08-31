@@ -30,7 +30,6 @@ namespace ToolKit
     float UI::m_hoverTimeForHelp = 1.0f;
     UI::Import UI::ImportData;
     UI::SearchFile UI::SearchFileData;
-    StringInputWindow UI::m_strInputWindow;
     std::vector<Window*> UI::m_volatileWindows;
     uint Window::m_baseId = 0; // unused id.
     std::vector<std::function<void()>> UI::m_postponedActions;
@@ -286,8 +285,6 @@ namespace ToolKit
       ShowSearchForFilesWindow();
       ShowNewSceneWindow();
 
-      m_strInputWindow.Show();
-
       // Show & Destroy if not visible.
       for (int i = (int)m_volatileWindows.size() - 1; i > -1; i--)
       {
@@ -342,12 +339,11 @@ namespace ToolKit
     {
       if (ImGui::MenuItem(g_newSceneStr.c_str()))
       {
-        m_strInputWindow.m_name = "NewScene##NwScn1";
-        m_strInputWindow.m_inputVal = g_newSceneStr;
-        m_strInputWindow.m_inputText = "Name";
-        m_strInputWindow.m_hint = "Scene name";
-        m_strInputWindow.SetVisibility(true);
-        m_strInputWindow.m_taskFn = [](const String& val)
+        StringInputWindow* inputWnd = new StringInputWindow("NewScene##NwScn1", true);
+        inputWnd->m_inputVal = g_newSceneStr;
+        inputWnd->m_inputLabel = "Name";
+        inputWnd->m_hint = "Scene name";
+        inputWnd->m_taskFn = [](const String& val)
         {
           g_app->OnNewScene(val);
         };
@@ -360,11 +356,10 @@ namespace ToolKit
 
       if (ImGui::MenuItem("SaveAs"))
       {
-        m_strInputWindow.m_name = "SaveScene##SvScn1";
-        m_strInputWindow.m_inputText = "Name";
-        m_strInputWindow.m_hint = "Scene name";
-        m_strInputWindow.SetVisibility(true);
-        m_strInputWindow.m_taskFn = [](const String& val)
+        StringInputWindow* inputWnd = new StringInputWindow("SaveScene##SvScn1", true);
+        inputWnd->m_inputLabel = "Name";
+        inputWnd->m_hint = "Scene name";
+        inputWnd->m_taskFn = [](const String& val)
         {
           String path;
           DecomposePath(g_app->m_scene->m_file, &path, nullptr, nullptr);
@@ -915,9 +910,11 @@ namespace ToolKit
       ImGui::SetWindowFocus();
     }
 
-    StringInputWindow::StringInputWindow()
+    StringInputWindow::StringInputWindow(const String& name, bool showCancel)
     {
-      m_visible = false;
+      m_name = name;
+      m_showCancel = showCancel;
+      UI::m_volatileWindows.push_back(this);
     }
 
     void StringInputWindow::Show()
@@ -934,7 +931,7 @@ namespace ToolKit
         {
           ImGui::SetKeyboardFocusHere();
         }
-        ImGui::InputTextWithHint(m_inputText.c_str(), m_hint.c_str(), &m_inputVal);
+        ImGui::InputTextWithHint(m_inputLabel.c_str(), m_hint.c_str(), &m_inputVal);
 
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {
@@ -943,12 +940,16 @@ namespace ToolKit
           m_inputVal.clear();
           ImGui::CloseCurrentPopup();
         }
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+
+        if (m_showCancel)
         {
-          m_visible = false;
-          m_inputVal.clear();
-          ImGui::CloseCurrentPopup();
+          ImGui::SameLine();
+          if (ImGui::Button("Cancel", ImVec2(120, 0)))
+          {
+            m_visible = false;
+            m_inputVal.clear();
+            ImGui::CloseCurrentPopup();
+          }
         }
 
         ImGui::EndPopup();

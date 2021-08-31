@@ -67,15 +67,18 @@ namespace ToolKit
     class StringInputWindow : public Window
     {
     public:
-      StringInputWindow();
+      StringInputWindow(const String& name, bool showCancel);
       virtual void Show() override;
       virtual Type GetType() const override { return Window::Type::InputPopup; }
 
     public:
       std::function<void(const String& val)> m_taskFn;
       String m_inputVal;
-      String m_inputText;
+      String m_inputLabel;
       String m_hint;
+
+    private:
+      bool m_showCancel;
     };
 
     class YesNoWindow : public Window
@@ -122,7 +125,6 @@ namespace ToolKit
       static bool m_imguiSampleWindow;
       static bool m_windowMenushowMetrics;
       static float m_hoverTimeForHelp;
-      static StringInputWindow m_strInputWindow;
 
       // Volatile windows. (Pop-ups etc.)
       static std::vector<Window*> m_volatileWindows;

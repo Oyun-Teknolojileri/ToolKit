@@ -104,6 +104,19 @@ namespace ToolKit
       {
         ResetUI();
       }
+
+      if (m_workspace.empty() || !CheckFile(m_workspace))
+      {
+        StringInputWindow* wsDir = new StringInputWindow("Set Workspace Directory##SetWsdir", false);
+        wsDir->m_hint = "User/Documents/ToolKit";
+        wsDir->m_inputLabel = "Workspace Directory";
+        wsDir->m_name = "Set Workspace Directory";
+        wsDir->m_taskFn = [](const String& val) -> void
+        {
+          String cmd = "SetWorkspaceDir --path \"" + val + "\"";
+          g_app->GetConsole()->ExecCommand(cmd);
+        };
+      }
     }
 
     void App::Destroy()

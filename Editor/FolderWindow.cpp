@@ -425,12 +425,11 @@ namespace ToolKit
       {
         if (show[0] && ImGui::Button("Crate", m_contextBtnSize))
         {
-          UI::m_strInputWindow.m_name = "Material Name##NwMat";
-          UI::m_strInputWindow.m_inputVal = "New Material";
-          UI::m_strInputWindow.m_inputText = "Name";
-          UI::m_strInputWindow.m_hint = "New material name";
-          UI::m_strInputWindow.SetVisibility(true);
-          UI::m_strInputWindow.m_taskFn = [entry, this](const String& val)
+          StringInputWindow* inputWnd = new StringInputWindow("Material Name##NwMat", true);
+          inputWnd->m_inputVal = "New Material";
+          inputWnd->m_inputLabel = "Name";
+          inputWnd->m_hint = "New material name";
+          inputWnd->m_taskFn = [entry, this](const String& val)
           {
             MaterialPtr mat = GetMaterialManager()->GetCopyOfSolidMaterial();
             mat->m_name = val;

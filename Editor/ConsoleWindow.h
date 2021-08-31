@@ -63,6 +63,9 @@ namespace ToolKit
     const String g_showGraphicsApiLogs("ShowGraphicsApiLogs");
     void ShowGraphicsApiLogs(TagArgArray tagArgs);
 
+    const String g_setWorkspaceDir("SetWorkspaceDir");
+    void SetWorkspaceDir(TagArgArray tagArgs);
+
     // Command errors
     const String g_noValidEntity("No valid entity");
 

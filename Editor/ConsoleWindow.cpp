@@ -12,6 +12,8 @@
 #include "Util.h"
 #include "DebugNew.h"
 
+#include <filesystem>
+
 namespace ToolKit
 {
   namespace Editor
@@ -488,6 +490,34 @@ namespace ToolKit
       g_app->m_showGraphicsApiErrors = std::atoi(lvl.c_str());
     }
 
+    void SetWorkspaceDir(TagArgArray tagArgs)
+    {
+      TagArgArray::const_iterator pathTag = GetTag("path", tagArgs);
+      if (pathTag != tagArgs.end())
+      {
+        String path = pathTag->second.front();
+        String manUpMsg = "You can manually update workspace directory in 'yourInstallment/ToolKit/Resources/default.settings'";
+        if (CheckFile(path) && std::filesystem::is_directory(path))
+        {
+          g_app->m_workspace = path;
+
+          String info = "Your Workspace directry set to: " + path + "\n" + manUpMsg;
+          g_app->GetConsole()->AddLog(info, ConsoleWindow::LogType::Memo);
+
+          // Try updating default.settings.
+
+        }
+        else
+        {
+          String err = "There is a problem creating workspace directory with the given path.";
+          err.append("Projects will be saved in your installment folder.\n");
+          err += manUpMsg;
+
+          g_app->GetConsole()->AddLog(err, ConsoleWindow::LogType::Error);
+        }
+      }
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
     static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
@@ -517,6 +547,7 @@ namespace ToolKit
       CreateCommand(g_saveMesh, SaveMesh);
       CreateCommand(g_showSelectionBoundary, ShowSelectionBoundary);
       CreateCommand(g_showGraphicsApiLogs, ShowGraphicsApiLogs);
+      CreateCommand(g_setWorkspaceDir, SetWorkspaceDir);
     }
 
     ConsoleWindow::~ConsoleWindow()
