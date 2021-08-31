@@ -790,7 +790,7 @@ namespace ToolKit
     void App::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
       std::ofstream file;
-      String fileName = ConcatPaths({ ResourcePath(), "Editor.settings"});
+      String fileName = ConcatPaths({ ResourcePath(), "Editor.settings" });
 
       file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
@@ -798,19 +798,34 @@ namespace ToolKit
         XmlDocument appDoc;
         XmlNode* app = appDoc.allocate_node(rapidxml::node_element, "App");
         appDoc.append_node(app);
+
+        XmlNode* settings = appDoc.allocate_node(rapidxml::node_element, "Settings");
+        
+        XmlNode* setNode = appDoc.allocate_node(rapidxml::node_element, "Size");
+        WriteAttr(setNode, &appDoc, "width", std::to_string(m_renderer->m_windowWidth));
+        WriteAttr(setNode, &appDoc, "height", std::to_string(m_renderer->m_windowHeight));
+        WriteAttr(setNode, &appDoc, "maximized", std::to_string(m_windowMaximized));
+        settings->append_node(setNode);
+
+        setNode = appDoc.allocate_node(rapidxml::node_element, "Workspace");
+        WriteAttr(setNode, &appDoc, "path", m_workspace);
+        settings->append_node(setNode);
+
+        setNode = appDoc.allocate_node(rapidxml::node_element, "Project");
+        WriteAttr(setNode, &appDoc, "name", m_project);
+        settings->append_node(setNode);
+
+        if (!m_scene->m_newScene)
+        {
+          WriteAttr(setNode, &appDoc, "scene", m_scene->m_name);
+        }
+
+        app->append_node(settings);
+
         for (Window* w : m_windows)
         {
           w->Serialize(&appDoc, app);
         }
-
-        if (!m_scene->m_newScene)
-        {
-          WriteAttr(app, &appDoc, "scene", m_scene->m_name);
-        }
-
-        WriteAttr(app, &appDoc, "width", std::to_string(m_renderer->m_windowWidth));
-        WriteAttr(app, &appDoc, "height", std::to_string(m_renderer->m_windowHeight));
-        WriteAttr(app, &appDoc, "maximized", std::to_string(m_windowMaximized));
 
         std::string xml;
         rapidxml::print(std::back_inserter(xml), appDoc, 0);
@@ -836,9 +851,38 @@ namespace ToolKit
         doc = lclDoc;
       }
 
-
       if (XmlNode* root = doc->first_node("App"))
       {
+        // Settings
+        if (XmlNode* settings = root->first_node("Settings"))
+        {
+          XmlNode* setNode = settings->first_node("Size");
+          uint width = 0;
+          ReadAttr(setNode, "width", width);
+          uint height = 0;
+          ReadAttr(setNode, "height", height);
+          ReadAttr(setNode, "maximized", m_windowMaximized);
+
+          if (width > 0 && height > 0)
+          {
+            OnResize(width, height);
+          }
+
+          setNode = settings->first_node("Workspace");
+          ReadAttr(setNode, "path", m_workspace);
+
+          setNode = settings->first_node("Project");
+          ReadAttr(setNode, "name", m_project);
+          
+          String scene;
+          ReadAttr(setNode, "scene", scene);
+          if (!scene.empty())
+          {
+            String fullPath = ScenePath(scene + SCENE);
+            OpenScene(fullPath);
+          }
+        }
+
         // Windows
         XmlNode* wndNode = root->first_node("Window");
         do 
@@ -877,26 +921,6 @@ namespace ToolKit
             m_windows.push_back(wnd);
           }
         } while ((wndNode = wndNode->next_sibling("Window")));
-
-        String scene;
-        ReadAttr(root, "scene", scene);
-        if (!scene.empty())
-        {
-          String fullPath = ScenePath(scene + SCENE);
-          OpenScene(fullPath);
-        }
-
-        uint width = 0;
-        ReadAttr(root, "width", width);
-        uint height = 0;
-        ReadAttr(root, "height", height);
-
-        if (width > 0 && height > 0)
-        {
-          OnResize(width, height);
-        }
-
-        ReadAttr(root, "maximized", m_windowMaximized);
       }
 
       SafeDel(lclDoc);

@@ -103,6 +103,8 @@ namespace ToolKit
       bool m_windowMaximized = false;
       Byte m_showGraphicsApiErrors = 0;
       TransformationSpace m_transformSpace = TransformationSpace::TS_WORLD;
+      String m_workspace;
+      String m_project;
 
       // Snap settings.
       bool m_snapsEnabled = false; // Delta transforms.
