@@ -40,6 +40,11 @@ namespace ToolKit
       void OnSaveScene();
       void OnQuit();
 
+      // Workspace
+      XmlNode* GetWorkspaceNode(XmlDocBundle& bundle);
+      String GetWorkspace();
+      bool SetWorkspace(const String& path);
+
       // UI
       void ResetUI();
       void DeleteWindows();

@@ -63,10 +63,17 @@ namespace ToolKit
   typedef std::vector<class Node*> NodePtrArray;
   typedef std::vector<class Vertex> VertexArray;
   typedef std::vector<class Face> FaceArray;
-  typedef rapidxml::xml_document<char> XmlDocument;
   typedef rapidxml::xml_node<char> XmlNode;
   typedef rapidxml::xml_attribute<char> XmlAttribute;
+  typedef rapidxml::xml_document<char> XmlDocument;
+  typedef std::shared_ptr<XmlDocument> XmlDocumentPtr;
   typedef rapidxml::file<char> XmlFile;
+  typedef std::shared_ptr<XmlFile> XmlFilePtr;
+  struct XmlDocBundle
+  {
+    XmlDocumentPtr doc;
+    XmlFilePtr file;
+  };
 
   static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
   static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);

@@ -23,6 +23,7 @@ namespace ToolKit
   void ReadAttr(XmlNode* node, const String& name, Byte& val);
   void ReadAttr(XmlNode* node, const String& name, UByte& val);
   void ReadAttr(XmlNode* node, const String& name, String& val);
+  XmlNode* Query(XmlDocument* doc, const StringArray& path);
 
   // File path operations
   bool CheckFile(const String& path);

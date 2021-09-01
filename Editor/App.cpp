@@ -105,7 +105,12 @@ namespace ToolKit
         ResetUI();
       }
 
-      if (m_workspace.empty() || !CheckFile(m_workspace))
+      if (m_workspace.empty())
+      {
+        m_workspace = GetWorkspace();
+      }
+
+      if (!CheckFile(m_workspace))
       {
         StringInputWindow* wsDir = new StringInputWindow("Set Workspace Directory##SetWsdir", false);
         wsDir->m_hint = "User/Documents/ToolKit";
@@ -322,6 +327,74 @@ namespace ToolKit
       }
     }
 
+    XmlNode* App::GetWorkspaceNode(XmlDocBundle& bundle)
+    {
+      String settingsFile = ConcatPaths({ ResourcePath(), "default.settings" });
+      if (CheckFile(settingsFile))
+      {
+        std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
+        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+        lclDoc->parse<0>(lclFile->data());
+
+        bundle.doc = lclDoc;
+        bundle.file = lclFile;
+
+        StringArray path = { "App", "Settings", "Workspace" };
+        return Query(lclDoc.get(), path);
+      }
+
+      return nullptr;
+    }
+
+    String App::GetWorkspace()
+    {
+      String path;
+      XmlDocBundle docBundle;
+      if (XmlNode* node = GetWorkspaceNode(docBundle))
+      {
+        ReadAttr(node, "path", path);
+      }
+
+      return path;
+    }
+
+    bool App::SetWorkspace(const String& path)
+    {
+      XmlDocBundle docBundle;
+      if (XmlNode* node = GetWorkspaceNode(docBundle))
+      {     
+        std::ofstream file;
+        String settingsPath = ConcatPaths({ ResourcePath(), "default.settings" });
+
+        file.open(settingsPath.c_str(), std::ios::out);
+        if (file.is_open())
+        {
+          m_workspace = path;
+          if (XmlAttribute* attr = node->first_attribute("path"))
+          {
+            attr->value
+            (
+              docBundle.doc->allocate_string(path.c_str(), 0)
+            );
+          }
+          else
+          {
+            WriteAttr(node, docBundle.doc.get(), "path", path);
+          }
+
+          String xml;
+          rapidxml::print(std::back_inserter(xml), *docBundle.doc.get());
+
+          file << xml;
+          file.close();
+          
+          return true;
+        }
+      }
+      
+      return false;
+    }
+
     void App::ResetUI()
     {      
       DeleteWindows();
@@ -331,7 +404,7 @@ namespace ToolKit
         String settingsFile = ConcatPaths({ ResourcePath(), "default.settings" });
         std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
         
-        std::shared_ptr<XmlDocument> lclDoc = std::make_shared<XmlDocument>();
+        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
         DeSerialize(lclDoc.get(), nullptr);
 

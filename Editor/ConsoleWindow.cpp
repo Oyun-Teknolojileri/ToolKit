@@ -499,22 +499,20 @@ namespace ToolKit
         String manUpMsg = "You can manually update workspace directory in 'yourInstallment/ToolKit/Resources/default.settings'";
         if (CheckFile(path) && std::filesystem::is_directory(path))
         {
-          g_app->m_workspace = path;
-
-          String info = "Your Workspace directry set to: " + path + "\n" + manUpMsg;
-          g_app->GetConsole()->AddLog(info, ConsoleWindow::LogType::Memo);
-
-          // Try updating default.settings.
-
+          // Try updating default.settings
+          if (g_app->SetWorkspace(path))
+          {
+            String info = "Your Workspace directry set to: " + path + "\n" + manUpMsg;
+            g_app->GetConsole()->AddLog(info, ConsoleWindow::LogType::Memo);
+            return;
+          }
         }
-        else
-        {
-          String err = "There is a problem creating workspace directory with the given path.";
-          err.append("Projects will be saved in your installment folder.\n");
-          err += manUpMsg;
 
-          g_app->GetConsole()->AddLog(err, ConsoleWindow::LogType::Error);
-        }
+        String err = "There is a problem in creating workspace directory with the given path.";
+        err.append(" Projects will be saved in your installment folder.\n");
+        err += manUpMsg;
+
+        g_app->GetConsole()->AddLog(err, ConsoleWindow::LogType::Error);
       }
     }
 

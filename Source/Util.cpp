@@ -122,6 +122,22 @@ namespace ToolKit
     }
   }
 
+  XmlNode* Query(XmlDocument* doc, const StringArray& path)
+  {
+    XmlNode* node = doc->first_node(path.front().c_str());
+    for (size_t i = 1; i < path.size(); i++)
+    {
+      if (node == nullptr)
+      {
+        return nullptr;
+      }
+
+      node = node->first_node(path[i].c_str());
+    }
+
+    return node;
+  }
+
   bool CheckFile(const String& path)
   {
     return std::filesystem::exists(path);
