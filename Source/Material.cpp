@@ -278,7 +278,7 @@ namespace ToolKit
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png"));
     material->Init();
 
-    m_storage[MaterialPath("default.material")] = MaterialPtr(material);
+    m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
 
     material = new Material();
     material->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader"));
@@ -286,41 +286,41 @@ namespace ToolKit
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png"));
     material->Init();
 
-    m_storage[MaterialPath("unlit.material")] = MaterialPtr(material);
+    m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
 
     material = new Material();
     material->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader"));
     material->m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("solidColorFrag.shader"));
     material->Init();
 
-    m_storage[MaterialPath("solid.material")] = MaterialPtr(material);
+    m_storage[MaterialPath("solid.material", true)] = MaterialPtr(material);
 
     material = new Material();
     material->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader"));
     material->m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitColorFrag.shader"));
     material->Init();
 
-    m_storage[MaterialPath("unlitSolid.material")] = MaterialPtr(material);
+    m_storage[MaterialPath("unlitSolid.material", true)] = MaterialPtr(material);
   }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()
   {
-    return MaterialPtr(static_cast<Material*> (m_storage[MaterialPath("unlit.material")]->GetCopy()));
+    return MaterialPtr(static_cast<Material*> (m_storage[MaterialPath("unlit.material", true)]->GetCopy()));
   }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial()
   {
-    return MaterialPtr(static_cast<Material*> (m_storage[MaterialPath("unlitSolid.material")]->GetCopy()));
+    return MaterialPtr(static_cast<Material*> (m_storage[MaterialPath("unlitSolid.material", true)]->GetCopy()));
   }
 
   MaterialPtr MaterialManager::GetCopyOfSolidMaterial()
   {
-    return MaterialPtr(static_cast<Material*> (m_storage[MaterialPath("solid.material")]->GetCopy()));
+    return MaterialPtr(static_cast<Material*> (m_storage[MaterialPath("solid.material", true)]->GetCopy()));
   }
 
   MaterialPtr MaterialManager::GetCopyOfDefaultMaterial()
   {
-    return MaterialPtr(static_cast<Material*> (m_storage[MaterialPath("default.material")]->GetCopy()));
+    return MaterialPtr(static_cast<Material*> (m_storage[MaterialPath("default.material", true)]->GetCopy()));
   }
 
 }

@@ -87,6 +87,7 @@
     <ClCompile Include="EditorScene.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Workspace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -156,6 +157,9 @@
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="EditorScene.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Workspace.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

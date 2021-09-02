@@ -52,6 +52,7 @@ namespace ToolKit
     SceneManager m_sceneManager;
 
     bool m_initiated = false;
+    String m_resourceRoot;
   };
 
   AnimationManager* GetAnimationManager();
@@ -65,16 +66,17 @@ namespace ToolKit
   SceneManager* GetSceneManager();
   ResourceManager* GetResourceManager(ResourceType type);
 
-  String ResourcePath();
-  String TexturePath(const String& file);
-  String MeshPath(const String& file);
-  String FontPath(const String& file);
-  String SpritePath(const String& file);
-  String AudioPath(const String& file);
-  String AnimationPath(const String& file);
-  String SkeletonPath(const String& file);
-  String ShaderPath(const String& file);
-  String MaterialPath(const String& file);
-  String ScenePath(const String& file);
+  String DefaultPath();
+  String ResourcePath(bool def = false);
+  String TexturePath(const String& file, bool def = false);
+  String MeshPath(const String& file, bool def = false);
+  String FontPath(const String& file, bool def = false);
+  String SpritePath(const String& file, bool def = false);
+  String AudioPath(const String& file, bool def = false);
+  String AnimationPath(const String& file, bool def = false);
+  String SkeletonPath(const String& file, bool def = false);
+  String ShaderPath(const String& file, bool def = false);
+  String MaterialPath(const String& file, bool def = false);
+  String ScenePath(const String& file, bool def = false);
 
 }

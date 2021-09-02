@@ -1,8 +1,6 @@
 <App>
 	<Settings>
 		<Size width="1280" height="720" maximized="0"/>
-		<Workspace path=""/>
-		<Project name="" scene=""/>
 	</Settings>
 	<Window name="Perspective" id="2" type="0" visible="1">
 		<Viewport width="542.000000" height="660.000000" orthographic="0" alignment="0">

@@ -246,7 +246,7 @@ namespace ToolKit
       }
       else
       {
-        path = ConcatPaths({ ResourcePath(), "defaultUI.ini" });
+        path = ConcatPaths({ DefaultPath(), "defaultUI.ini" });
         if (CheckFile(path))
         {
           ImGui::LoadIniSettingsFromDisk(path.c_str());
@@ -337,6 +337,30 @@ namespace ToolKit
 
     void UI::ShowMenuFile()
     {
+
+      if (ImGui::BeginMenu("Projects"))
+      {
+        for (const Project& p : g_app->m_workspace.m_projects)
+        {
+          if (ImGui::MenuItem(p.name.c_str()))
+          {
+            g_app->m_workspace.SetActiveProject(p);
+            String root = g_app->m_workspace.GetResourceRoot();
+
+            // Update resource views.
+            for (Window* wnd : g_app->m_windows)
+            {
+              if (wnd->GetType() == Window::Type::Browser)
+              {
+                FolderWindow* fw = static_cast<FolderWindow*> (wnd);
+                fw->Iterate(root, true);
+              }
+            }
+          }
+        }
+        ImGui::EndMenu();
+      }
+
       if (ImGui::MenuItem(g_newSceneStr.c_str()))
       {
         StringInputWindow* inputWnd = new StringInputWindow("NewScene##NwScn1", true);

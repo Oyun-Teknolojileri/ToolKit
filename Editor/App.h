@@ -2,6 +2,7 @@
 
 #include "ToolKit.h"
 #include "EditorScene.h"
+#include "Workspace.h"
 
 namespace ToolKit
 {
@@ -40,20 +41,19 @@ namespace ToolKit
       void OnSaveScene();
       void OnQuit();
 
-      // Workspace
-      XmlNode* GetWorkspaceNode(XmlDocBundle& bundle);
-      String GetWorkspace();
-      bool SetWorkspace(const String& path);
-
       // UI
       void ResetUI();
       void DeleteWindows();
+      void CreateWindows(XmlNode* parent);
 
       // Import facilities.
       int Import(const String& fullPath, const String& subDir, bool overwrite);
       bool CanImport(const String& fullPath);
+
+      // Workspace
       void OpenScene(const String& fullPath);
       void MergeScene(const String& fullPath);
+      void ApplyProjectSettings(bool setDefaults);
 
       Viewport* GetActiveViewport(); // Returns open and active viewport or nullptr.
       Viewport* GetViewport(const String& name);
@@ -108,8 +108,7 @@ namespace ToolKit
       bool m_windowMaximized = false;
       Byte m_showGraphicsApiErrors = 0;
       TransformationSpace m_transformSpace = TransformationSpace::TS_WORLD;
-      String m_workspace;
-      String m_project;
+      Workspace m_workspace;
 
       // Snap settings.
       bool m_snapsEnabled = false; // Delta transforms.

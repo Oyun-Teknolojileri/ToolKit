@@ -391,7 +391,7 @@ namespace ToolKit
       }
       else
       {
-        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("default.material"));
+        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("default.material", true));
       }
 
       XmlNode* vertex = node->first_node("vertices");

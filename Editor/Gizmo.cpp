@@ -40,7 +40,7 @@ namespace ToolKit
 
       meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
       meshPtr->m_material->UnInit();
-      meshPtr->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("Icons/cursor4k.png"));
+      meshPtr->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath(ConcatPaths({ "Icons", "cursor4k.png" }), true));
       meshPtr->m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
       meshPtr->m_material->Init();
 

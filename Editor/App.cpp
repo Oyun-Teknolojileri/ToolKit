@@ -26,6 +26,7 @@ namespace ToolKit
   {
 
     App::App(int windowWidth, int windowHeight)
+      : m_workspace(this)
     {
       m_cursor = nullptr;
       m_lightMaster = nullptr;
@@ -44,8 +45,6 @@ namespace ToolKit
 
     void App::Init()
     {
-      m_scene = std::make_shared<EditorScene>(ScenePath("New Scene" + SCENE));
-
       m_cursor = new Cursor();
       m_origin = new Axis3d();
       m_grid = new Grid(100);
@@ -84,33 +83,11 @@ namespace ToolKit
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
       
-      // Set last window layout.
-      if (CheckFile(ConcatPaths({ ResourcePath(), "Editor.settings" })) && !m_onNewScene)
-      {
-        DeSerialize(nullptr, nullptr);
+      m_workspace.Init();
+      m_scene = std::make_shared<EditorScene>(ScenePath("New Scene" + SCENE));
 
-        // Restore window.
-        SDL_SetWindowSize(g_window, m_renderer->m_windowWidth, m_renderer->m_windowHeight);
-        SDL_SetWindowPosition(g_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-
-        if (m_windowMaximized)
-        {
-          SDL_MaximizeWindow(g_window);
-        }
-
-        UI::InitSettings();
-      }
-      else
-      {
-        ResetUI();
-      }
-
-      if (m_workspace.empty())
-      {
-        m_workspace = GetWorkspace();
-      }
-
-      if (!CheckFile(m_workspace))
+      ApplyProjectSettings(m_onNewScene);
+      if (!CheckFile(m_workspace.GetActiveWorkspace()))
       {
         StringInputWindow* wsDir = new StringInputWindow("Set Workspace Directory##SetWsdir", false);
         wsDir->m_hint = "User/Documents/ToolKit";
@@ -121,6 +98,10 @@ namespace ToolKit
           String cmd = "SetWorkspaceDir --path \"" + val + "\"";
           g_app->GetConsole()->ExecCommand(cmd);
         };
+      }
+      else
+      {
+        m_workspace.RefreshProjects();
       }
     }
 
@@ -313,6 +294,7 @@ namespace ToolKit
         YesNoWindow* reallyQuit = new YesNoWindow("Quiting... Are you sure?##ClsApp");
         reallyQuit->m_yesCallback = [this]()
         {
+          m_workspace.Serialize(nullptr, nullptr);
           Serialize(nullptr, nullptr);
           g_running = false;
         };
@@ -327,88 +309,22 @@ namespace ToolKit
       }
     }
 
-    XmlNode* App::GetWorkspaceNode(XmlDocBundle& bundle)
-    {
-      String settingsFile = ConcatPaths({ ResourcePath(), "default.settings" });
-      if (CheckFile(settingsFile))
-      {
-        std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
-        lclDoc->parse<0>(lclFile->data());
-
-        bundle.doc = lclDoc;
-        bundle.file = lclFile;
-
-        StringArray path = { "App", "Settings", "Workspace" };
-        return Query(lclDoc.get(), path);
-      }
-
-      return nullptr;
-    }
-
-    String App::GetWorkspace()
-    {
-      String path;
-      XmlDocBundle docBundle;
-      if (XmlNode* node = GetWorkspaceNode(docBundle))
-      {
-        ReadAttr(node, "path", path);
-      }
-
-      return path;
-    }
-
-    bool App::SetWorkspace(const String& path)
-    {
-      XmlDocBundle docBundle;
-      if (XmlNode* node = GetWorkspaceNode(docBundle))
-      {     
-        std::ofstream file;
-        String settingsPath = ConcatPaths({ ResourcePath(), "default.settings" });
-
-        file.open(settingsPath.c_str(), std::ios::out);
-        if (file.is_open())
-        {
-          m_workspace = path;
-          if (XmlAttribute* attr = node->first_attribute("path"))
-          {
-            attr->value
-            (
-              docBundle.doc->allocate_string(path.c_str(), 0)
-            );
-          }
-          else
-          {
-            WriteAttr(node, docBundle.doc.get(), "path", path);
-          }
-
-          String xml;
-          rapidxml::print(std::back_inserter(xml), *docBundle.doc.get());
-
-          file << xml;
-          file.close();
-          
-          return true;
-        }
-      }
-      
-      return false;
-    }
-
     void App::ResetUI()
     {      
       DeleteWindows();
-      if (CheckFile(ConcatPaths({ ResourcePath(), "default.settings" })))
+      if (CheckFile(ConcatPaths({ DefaultPath(), "default.settings" })))
       {
         // Try reading defaults.
-        String settingsFile = ConcatPaths({ ResourcePath(), "default.settings" });
+        String settingsFile = ConcatPaths({ DefaultPath(), "default.settings" });
         std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
         
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
-        DeSerialize(lclDoc.get(), nullptr);
+        
+        XmlNode* app = Query(lclDoc.get(), { "App" });
+        CreateWindows(app);
 
-        settingsFile = ConcatPaths({ ResourcePath(), "defaultUI.ini" });
+        settingsFile = ConcatPaths({ DefaultPath(), "defaultUI.ini" });
         ImGui::LoadIniSettingsFromDisk(settingsFile.c_str());
       }
       else
@@ -461,6 +377,49 @@ namespace ToolKit
 
       SafeDel(Viewport::m_overlayMods);
       SafeDel(Viewport::m_overlayOptions);
+    }
+
+    void App::CreateWindows(XmlNode* parent)
+    {
+      if (XmlNode* wndNode = parent->first_node("Window"))
+      {
+        do
+        {
+          int type;
+          ReadAttr(wndNode, "type", type);
+
+          Window* wnd = nullptr;
+          switch ((Window::Type)type)
+          {
+          case Window::Type::Viewport:
+            wnd = new Viewport(wndNode);
+            break;
+          case Window::Type::Console:
+            wnd = new ConsoleWindow(wndNode);
+            break;
+          case Window::Type::Outliner:
+            wnd = new OutlinerWindow(wndNode);
+            break;
+          case Window::Type::Browser:
+            wnd = new FolderWindow(wndNode);
+            break;
+          case Window::Type::Inspector:
+            wnd = new PropInspector(wndNode);
+            break;
+          case Window::Type::MaterialInspector:
+            wnd = new MaterialInspector(wndNode);
+            break;
+          default:
+            assert(false);
+            break;
+          }
+
+          if (wnd)
+          {
+            m_windows.push_back(wnd);
+          }
+        } while ((wndNode = wndNode->next_sibling("Window")));
+      }
     }
 
     int App::Import(const String& fullPath, const String& subDir, bool overwrite)
@@ -717,6 +676,29 @@ namespace ToolKit
       }
     }
 
+    void App::ApplyProjectSettings(bool setDefaults)
+    {
+      if (CheckFile(ConcatPaths({ ResourcePath(), "Editor.settings" })) && !setDefaults)
+      {
+        DeSerialize(nullptr, nullptr);
+
+        // Restore window.
+        SDL_SetWindowSize(g_window, m_renderer->m_windowWidth, m_renderer->m_windowHeight);
+        SDL_SetWindowPosition(g_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
+        if (m_windowMaximized)
+        {
+          SDL_MaximizeWindow(g_window);
+        }
+
+        UI::InitSettings();
+      }
+      else
+      {
+        ResetUI();
+      }
+    }
+
     Viewport* App::GetActiveViewport()
     {
       for (Window* wnd : m_windows)
@@ -842,7 +824,7 @@ namespace ToolKit
 
         glStencilFunc(GL_NOTEQUAL, 0xFF, 0xFF);
         glStencilMask(0x00);
-        ShaderPtr solidColor = GetShaderManager()->Create<Shader>(ShaderPath("unlitColorFrag.shader"));
+        ShaderPtr solidColor = GetShaderManager()->Create<Shader>(ShaderPath("unlitColorFrag.shader", true));
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
 
@@ -850,7 +832,7 @@ namespace ToolKit
 
         // Dilate.
         glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
-        ShaderPtr dilate = GetShaderManager()->Create<Shader>(ShaderPath("dilateFrag.shader"));
+        ShaderPtr dilate = GetShaderManager()->Create<Shader>(ShaderPath("dilateFrag.shader", true));
         dilate->SetShaderParameter("Color", color);
         m_renderer->DrawFullQuad(dilate);
       };
@@ -875,142 +857,84 @@ namespace ToolKit
 
     void App::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
+      m_workspace.Serialize(nullptr, nullptr);
+
       std::ofstream file;
       String fileName = ConcatPaths({ ResourcePath(), "Editor.settings" });
 
       file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
       {
-        XmlDocument appDoc;
-        XmlNode* app = appDoc.allocate_node(rapidxml::node_element, "App");
-        appDoc.append_node(app);
+        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument> ();
+        XmlNode* app = lclDoc->allocate_node(rapidxml::node_element, "App");
+        lclDoc->append_node(app);
 
-        XmlNode* settings = appDoc.allocate_node(rapidxml::node_element, "Settings");
-        
-        XmlNode* setNode = appDoc.allocate_node(rapidxml::node_element, "Size");
-        WriteAttr(setNode, &appDoc, "width", std::to_string(m_renderer->m_windowWidth));
-        WriteAttr(setNode, &appDoc, "height", std::to_string(m_renderer->m_windowHeight));
-        WriteAttr(setNode, &appDoc, "maximized", std::to_string(m_windowMaximized));
-        settings->append_node(setNode);
-
-        setNode = appDoc.allocate_node(rapidxml::node_element, "Workspace");
-        WriteAttr(setNode, &appDoc, "path", m_workspace);
-        settings->append_node(setNode);
-
-        setNode = appDoc.allocate_node(rapidxml::node_element, "Project");
-        WriteAttr(setNode, &appDoc, "name", m_project);
-        settings->append_node(setNode);
-
-        if (!m_scene->m_newScene)
-        {
-          WriteAttr(setNode, &appDoc, "scene", m_scene->m_name);
-        }
-
+        XmlNode* settings = lclDoc->allocate_node(rapidxml::node_element, "Settings");
         app->append_node(settings);
+
+        XmlNode* setNode = lclDoc->allocate_node(rapidxml::node_element, "Size");
+        WriteAttr(setNode, lclDoc.get(), "width", std::to_string(m_renderer->m_windowWidth));
+        WriteAttr(setNode, lclDoc.get(), "height", std::to_string(m_renderer->m_windowHeight));
+        WriteAttr(setNode, lclDoc.get(), "maximized", std::to_string(m_windowMaximized));
+        settings->append_node(setNode);
 
         for (Window* w : m_windows)
         {
-          w->Serialize(&appDoc, app);
+          w->Serialize(lclDoc.get(), app);
         }
 
         std::string xml;
-        rapidxml::print(std::back_inserter(xml), appDoc, 0);
+        rapidxml::print(std::back_inserter(xml), *lclDoc, 0);
 
         file << xml;
         file.close();
-        appDoc.clear();
+        lclDoc->clear();
       }
     }
 
     void App::DeSerialize(XmlDocument* doc, XmlNode* parent)
     {
-      XmlFile* lclFile = nullptr;
-      XmlDocument* lclDoc = nullptr;
+      XmlFilePtr lclFile = nullptr;
+      XmlDocumentPtr lclDoc = nullptr;
 
       if (doc == nullptr)
       {
         String settingsFile = ConcatPaths({ ResourcePath(), "Editor.settings" });
-        lclFile = new XmlFile(settingsFile.c_str());
+        lclFile = std::make_shared<XmlFile> (settingsFile.c_str());
 
-        lclDoc = new XmlDocument();
+        lclDoc = std::make_shared<XmlDocument> ();
         lclDoc->parse<0>(lclFile->data());
-        doc = lclDoc;
+        doc = lclDoc.get();
       }
 
       if (XmlNode* root = doc->first_node("App"))
-      {
-        // Settings
+      {        
         if (XmlNode* settings = root->first_node("Settings"))
         {
-          XmlNode* setNode = settings->first_node("Size");
-          uint width = 0;
-          ReadAttr(setNode, "width", width);
-          uint height = 0;
-          ReadAttr(setNode, "height", height);
-          ReadAttr(setNode, "maximized", m_windowMaximized);
-
-          if (width > 0 && height > 0)
+          if (XmlNode* setNode = settings->first_node("Size"))
           {
-            OnResize(width, height);
-          }
+            uint width = 0;
+            ReadAttr(setNode, "width", width);
+            uint height = 0;
+            ReadAttr(setNode, "height", height);
+            ReadAttr(setNode, "maximized", m_windowMaximized);
 
-          setNode = settings->first_node("Workspace");
-          ReadAttr(setNode, "path", m_workspace);
-
-          setNode = settings->first_node("Project");
-          ReadAttr(setNode, "name", m_project);
-          
-          String scene;
-          ReadAttr(setNode, "scene", scene);
-          if (!scene.empty())
-          {
-            String fullPath = ScenePath(scene + SCENE);
-            OpenScene(fullPath);
+            if (width > 0 && height > 0)
+            {
+              OnResize(width, height);
+            }
           }
         }
 
-        // Windows
-        XmlNode* wndNode = root->first_node("Window");
-        do 
-        {
-          int type;
-          ReadAttr(wndNode, "type", type);
-
-          Window* wnd = nullptr;
-          switch ((Window::Type)type)
-          {
-          case Window::Type::Viewport:
-            wnd = new Viewport(wndNode);
-            break;
-          case Window::Type::Console:
-            wnd = new ConsoleWindow(wndNode);
-            break;
-          case Window::Type::Outliner:
-            wnd = new OutlinerWindow(wndNode);
-            break;
-          case Window::Type::Browser:
-            wnd = new FolderWindow(wndNode);
-            break;
-          case Window::Type::Inspector:
-            wnd = new PropInspector(wndNode);
-            break;
-          case Window::Type::MaterialInspector:
-            wnd = new MaterialInspector(wndNode);
-            break;
-          default:
-            assert(false);
-            break;
-          }
-
-          if (wnd)
-          {
-            m_windows.push_back(wnd);
-          }
-        } while ((wndNode = wndNode->next_sibling("Window")));
+        CreateWindows(root);
       }
 
-      SafeDel(lclDoc);
-      SafeDel(lclFile);
+      String scene = m_workspace.GetActiveProject().scene;
+      if (!scene.empty())
+      {
+        String fullPath = ScenePath(scene + SCENE);
+        OpenScene(fullPath);
+      }
     }
 
   }

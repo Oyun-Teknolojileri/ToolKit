@@ -500,7 +500,7 @@ namespace ToolKit
         if (CheckFile(path) && std::filesystem::is_directory(path))
         {
           // Try updating default.settings
-          if (g_app->SetWorkspace(path))
+          if (g_app->m_workspace.SetDefaultWorkspace(path))
           {
             String info = "Your Workspace directry set to: " + path + "\n" + manUpMsg;
             g_app->GetConsole()->AddLog(info, ConsoleWindow::LogType::Memo);

@@ -619,7 +619,14 @@ namespace ToolKit
       {
         auto IsRootFn = [](const String& path)
         {
-          return std::count(path.begin(), path.end(), GetPathSeparator()) == 2;
+          size_t lastSep = path.find_last_of(GetPathSeparator());
+          if (lastSep != String::npos)
+          {
+            String root = path.substr(0, lastSep);
+            return root == ResourcePath();
+          }
+
+          return false;
         };
 
         if (m_showStructure)
