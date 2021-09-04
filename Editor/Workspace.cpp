@@ -58,7 +58,7 @@ namespace ToolKit
       if (XmlNode* node = GetDefaultWorkspaceNode(docBundle))
       {
         std::ofstream file;
-        String settingsPath = ConcatPaths({ ResourcePath(), "default.settings" });
+        String settingsPath = ConcatPaths({ DefaultPath(), "workspace.settings" });
 
         file.open(settingsPath.c_str(), std::ios::out);
         if (file.is_open())

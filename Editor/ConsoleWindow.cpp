@@ -496,7 +496,7 @@ namespace ToolKit
       if (pathTag != tagArgs.end())
       {
         String path = pathTag->second.front();
-        String manUpMsg = "You can manually update workspace directory in 'yourInstallment/ToolKit/Resources/default.settings'";
+        String manUpMsg = "You can manually update workspace directory in 'yourInstallment/ToolKit/Resources/workspace.settings'";
         if (CheckFile(path) && std::filesystem::is_directory(path))
         {
           // Try updating default.settings
