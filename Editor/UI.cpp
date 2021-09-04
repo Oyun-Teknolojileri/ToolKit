@@ -340,6 +340,12 @@ namespace ToolKit
 
       if (ImGui::BeginMenu("Projects"))
       {
+        if (ImGui::MenuItem("New"))
+        {
+          // TODO
+        }
+
+        ImGui::Separator();
         for (const Project& p : g_app->m_workspace.m_projects)
         {
           if (ImGui::MenuItem(p.name.c_str()))
@@ -361,37 +367,42 @@ namespace ToolKit
         ImGui::EndMenu();
       }
 
-      if (ImGui::MenuItem(g_newSceneStr.c_str()))
+      if (ImGui::BeginMenu("Scene"))
       {
-        StringInputWindow* inputWnd = new StringInputWindow("NewScene##NwScn1", true);
-        inputWnd->m_inputVal = g_newSceneStr;
-        inputWnd->m_inputLabel = "Name";
-        inputWnd->m_hint = "Scene name";
-        inputWnd->m_taskFn = [](const String& val)
+        if (ImGui::MenuItem("New"))
         {
-          g_app->OnNewScene(val);
-        };
-      }
+          StringInputWindow* inputWnd = new StringInputWindow("NewScene##NwScn1", true);
+          inputWnd->m_inputVal = g_newSceneStr;
+          inputWnd->m_inputLabel = "Name";
+          inputWnd->m_hint = "Scene name";
+          inputWnd->m_taskFn = [](const String& val)
+          {
+            g_app->OnNewScene(val);
+          };
+        }
 
-      if (ImGui::MenuItem("Save", "Ctrl+S"))
-      {
-        g_app->OnSaveScene();
-      }
-
-      if (ImGui::MenuItem("SaveAs"))
-      {
-        StringInputWindow* inputWnd = new StringInputWindow("SaveScene##SvScn1", true);
-        inputWnd->m_inputLabel = "Name";
-        inputWnd->m_hint = "Scene name";
-        inputWnd->m_taskFn = [](const String& val)
+        ImGui::Separator();
+        if (ImGui::MenuItem("Save", "Ctrl+S"))
         {
-          String path;
-          DecomposePath(g_app->m_scene->m_file, &path, nullptr, nullptr);
-          String fullPath = ConcatPaths({ path, val + SCENE });
-          g_app->m_scene->m_file = fullPath;
-          g_app->m_scene->m_name = val;
           g_app->OnSaveScene();
-        };
+        }
+
+        if (ImGui::MenuItem("SaveAs"))
+        {
+          StringInputWindow* inputWnd = new StringInputWindow("SaveScene##SvScn1", true);
+          inputWnd->m_inputLabel = "Name";
+          inputWnd->m_hint = "Scene name";
+          inputWnd->m_taskFn = [](const String& val)
+          {
+            String path;
+            DecomposePath(g_app->m_scene->m_file, &path, nullptr, nullptr);
+            String fullPath = ConcatPaths({ path, val + SCENE });
+            g_app->m_scene->m_file = fullPath;
+            g_app->m_scene->m_name = val;
+            g_app->OnSaveScene();
+          };
+        }
+        ImGui::EndMenu();
       }
 
       if (ImGui::MenuItem("Quit", "Alt+F4"))
