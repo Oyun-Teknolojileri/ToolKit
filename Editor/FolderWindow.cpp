@@ -640,6 +640,17 @@ namespace ToolKit
           return false;
         };
 
+        if
+        (
+          !g_app->m_workspace.GetActiveWorkspace().empty() &&
+          g_app->m_workspace.GetActiveProject().name.empty()
+        )
+        {
+          ImGui::Text("Load a project.");
+          ImGui::End();
+          return;
+        }
+
         if (m_showStructure)
         {
           // Show Resource folder structure.
