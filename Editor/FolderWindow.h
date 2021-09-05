@@ -37,6 +37,7 @@ namespace ToolKit
       const String& GetPath() const;
       void Iterate();
       int Exist(const String& file);
+      void ShowContextMenu(DirectoryEntry* entry = nullptr);
 
     protected:
       void ShowContextForMaterial(DirectoryEntry* entry);

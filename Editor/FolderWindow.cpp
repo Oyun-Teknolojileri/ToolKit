@@ -215,160 +215,156 @@ namespace ToolKit
         }
 
         ImGui::BeginChild("##Content", ImVec2(0, 0), true);
-        for (int i = 0; i < (int)m_entiries.size(); i++)
+
+        // Handle context menu based on path.
+        if (m_entiries.empty())
         {
-          ImGuiStyle& style = ImGui::GetStyle();
-          float visX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-
-          DirectoryEntry& de = m_entiries[i];
-
-          bool flipRenderTarget = false;
-          uint iconId = UI::m_fileIcon->m_textureId;
-
-          auto genThumbFn = [&flipRenderTarget, &iconId, &de]() -> void
+          ShowContextMenu();
+        }
+        else
+        {
+          for (int i = 0; i < (int)m_entiries.size(); i++)
           {
-            if (de.GetThumbnail() == nullptr)
+            ImGuiStyle& style = ImGui::GetStyle();
+            float visX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+
+            DirectoryEntry& dirEnt = m_entiries[i];
+
+            bool flipRenderTarget = false;
+            uint iconId = UI::m_fileIcon->m_textureId;
+
+            auto genThumbFn = [&flipRenderTarget, &iconId, &dirEnt]() -> void
             {
-              de.GenerateThumbnail();
-            }
-            iconId = de.GetThumbnail()->m_textureId;
-            flipRenderTarget = true;
-          };
-
-          if (de.m_isDirectory)
-          {
-            iconId = UI::m_folderIcon->m_textureId;
-          }
-          else if (de.m_ext == SCENE)
-          {
-            iconId = UI::m_worldIcon->m_textureId;
-          }
-          else if (de.m_ext == MESH)
-          {
-            genThumbFn();
-          }
-          else if (de.m_ext == ANIM)
-          {
-            iconId = UI::m_clipIcon->m_textureId;
-          }
-          else if (de.m_ext == SKINMESH)
-          {
-            iconId = UI::m_armatureIcon->m_textureId;
-          }
-          else if (de.m_ext == AUDIO)
-          {
-            iconId = UI::m_audioIcon->m_textureId;
-          }
-          else if (de.m_ext == SHADER)
-          {
-            iconId = UI::m_codeIcon->m_textureId;
-          }
-          else if (de.m_ext == SKELETON)
-          {
-            iconId = UI::m_boneIcon->m_textureId;
-          }
-          else if (de.m_ext == MATERIAL)
-          {
-            genThumbFn();
-          }
-          else if (SupportedImageFormat(de.m_ext))
-          {
-            genThumbFn();
-          }
-          else
-          {
-            if (m_onlyNativeTypes)
-            {
-              continue;
-            }
-          }
-
-          ImGui::PushID(i);
-          ImGui::BeginGroup();
-          ImVec2 texCoords = flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
-
-          if (ImGui::ImageButton((void*)(intptr_t)iconId, m_iconSize, ImVec2(0.0f, 0.0f), texCoords))
-          {
-            ResourceManager* rm = de.GetManager();
-            if (rm && rm->m_type == ResourceType::Material)
-            {
-              MaterialInspector* mi = g_app->GetMaterialInspector();
-              mi->m_material = rm->Create<Material>(de.GetFullPath());
-            }
-          }
-
-          // Handle context menu based on path.
-          String path = m_path + GetPathSeparatorAsStr();
-          if (path.find(MaterialPath("")) != String::npos)
-          {
-            ShowContextForMaterial(&de);
-          }
-          else if (path.find(MeshPath("")) != String::npos)
-          {
-            ShowContextForMesh(&de);
-          }
-          else
-          {
-            ShowGenericContext();
-          }
-
-          if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-          {
-            if (ImGui::IsItemHovered())
-            {
-              if (de.m_isDirectory)
+              if (dirEnt.GetThumbnail() == nullptr)
               {
-                if (m_parent != nullptr)
+                dirEnt.GenerateThumbnail();
+              }
+              iconId = dirEnt.GetThumbnail()->m_textureId;
+              flipRenderTarget = true;
+            };
+
+            if (dirEnt.m_isDirectory)
+            {
+              iconId = UI::m_folderIcon->m_textureId;
+            }
+            else if (dirEnt.m_ext == SCENE)
+            {
+              iconId = UI::m_worldIcon->m_textureId;
+            }
+            else if (dirEnt.m_ext == MESH)
+            {
+              genThumbFn();
+            }
+            else if (dirEnt.m_ext == ANIM)
+            {
+              iconId = UI::m_clipIcon->m_textureId;
+            }
+            else if (dirEnt.m_ext == SKINMESH)
+            {
+              iconId = UI::m_armatureIcon->m_textureId;
+            }
+            else if (dirEnt.m_ext == AUDIO)
+            {
+              iconId = UI::m_audioIcon->m_textureId;
+            }
+            else if (dirEnt.m_ext == SHADER)
+            {
+              iconId = UI::m_codeIcon->m_textureId;
+            }
+            else if (dirEnt.m_ext == SKELETON)
+            {
+              iconId = UI::m_boneIcon->m_textureId;
+            }
+            else if (dirEnt.m_ext == MATERIAL)
+            {
+              genThumbFn();
+            }
+            else if (SupportedImageFormat(dirEnt.m_ext))
+            {
+              genThumbFn();
+            }
+            else
+            {
+              if (m_onlyNativeTypes)
+              {
+                continue;
+              }
+            }
+
+            ImGui::PushID(i);
+            ImGui::BeginGroup();
+            ImVec2 texCoords = flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
+
+            if (ImGui::ImageButton((void*)(intptr_t)iconId, m_iconSize, ImVec2(0.0f, 0.0f), texCoords))
+            {
+              ResourceManager* rm = dirEnt.GetManager();
+              if (rm && rm->m_type == ResourceType::Material)
+              {
+                MaterialInspector* mi = g_app->GetMaterialInspector();
+                mi->m_material = rm->Create<Material>(dirEnt.GetFullPath());
+              }
+            }
+
+            ShowContextMenu(&dirEnt);
+
+            if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+            {
+              if (ImGui::IsItemHovered())
+              {
+                if (dirEnt.m_isDirectory)
                 {
-                  String path = de.m_rootPath + GetPathSeparator() + de.m_fileName;
-                  int indx = m_parent->Exist(path);
-                  if (indx == -1)
+                  if (m_parent != nullptr)
                   {
-                    FolderView view(m_parent);
-                    view.SetPath(path);
-                    view.Iterate();
-                    m_parent->AddEntry(view);
-                  }
-                  else
-                  {
-                    m_parent->GetView(indx).m_visible = true;
+                    String path = dirEnt.m_rootPath + GetPathSeparator() + dirEnt.m_fileName;
+                    int indx = m_parent->Exist(path);
+                    if (indx == -1)
+                    {
+                      FolderView view(m_parent);
+                      view.SetPath(path);
+                      view.Iterate();
+                      m_parent->AddEntry(view);
+                    }
+                    else
+                    {
+                      m_parent->GetView(indx).m_visible = true;
+                    }
                   }
                 }
               }
             }
-          }
 
-          String fullName = de.m_fileName + de.m_ext;
-          UI::HelpMarker(LOC + fullName, fullName.c_str());
+            String fullName = dirEnt.m_fileName + dirEnt.m_ext;
+            UI::HelpMarker(LOC + fullName, fullName.c_str());
 
-          if (!de.m_isDirectory)
-          {
-            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+            if (!dirEnt.m_isDirectory)
             {
-              ImGui::SetDragDropPayload("BrowserDragZone", &de, sizeof(DirectoryEntry));
-              if (io.KeyShift)
+              if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
               {
-                ImGui::SetTooltip("Copy %s", fullName.c_str());
+                ImGui::SetDragDropPayload("BrowserDragZone", &dirEnt, sizeof(DirectoryEntry));
+                if (io.KeyShift)
+                {
+                  ImGui::SetTooltip("Copy %s", fullName.c_str());
+                }
+                else
+                {
+                  ImGui::SetTooltip("Instantiate %s", fullName.c_str());
+                }
+                ImGui::EndDragDropSource();
               }
-              else
-              {
-                ImGui::SetTooltip("Instantiate %s", fullName.c_str());
-              }
-              ImGui::EndDragDropSource();
             }
-          }
 
-          ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
-          ImGui::TextWrapped("%s", de.m_fileName.c_str());
-          ImGui::PopTextWrapPos();
-          ImGui::EndGroup();
-          ImGui::PopID();
+            ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
+            ImGui::TextWrapped("%s", dirEnt.m_fileName.c_str());
+            ImGui::PopTextWrapPos();
+            ImGui::EndGroup();
+            ImGui::PopID();
 
-          float lastBtnX2 = ImGui::GetItemRectMax().x;
-          float nextBtnX2 = lastBtnX2 + style.ItemSpacing.x + m_iconSize.x;
-          if (nextBtnX2 < visX2)
-          {
-            ImGui::SameLine();
+            float lastBtnX2 = ImGui::GetItemRectMax().x;
+            float nextBtnX2 = lastBtnX2 + style.ItemSpacing.x + m_iconSize.x;
+            if (nextBtnX2 < visX2)
+            {
+              ImGui::SameLine();
+            }
           }
         }
         ImGui::EndChild();
@@ -419,6 +415,23 @@ namespace ToolKit
       return -1;
     }
 
+    void FolderView::ShowContextMenu(DirectoryEntry* entry)
+    {
+      String path = m_path + GetPathSeparatorAsStr();
+      if (path.find(MaterialPath("")) != String::npos)
+      {
+        ShowContextForMaterial(entry);
+      }
+      else if (path.find(MeshPath("")) != String::npos)
+      {
+        ShowContextForMesh(entry);
+      }
+      else
+      {
+        ShowGenericContext();
+      }
+    }
+
     void FolderView::ShowContextForMaterial(DirectoryEntry* entry)
     {
       auto menuItemsFn = [entry, this](std::vector<bool> show) -> void
@@ -429,13 +442,11 @@ namespace ToolKit
           inputWnd->m_inputVal = "New Material";
           inputWnd->m_inputLabel = "Name";
           inputWnd->m_hint = "New material name";
-          inputWnd->m_taskFn = [entry, this](const String& val)
+          inputWnd->m_taskFn = [this](const String& val)
           {
             MaterialPtr mat = GetMaterialManager()->GetCopyOfSolidMaterial();
             mat->m_name = val;
-            String path, ext, fullPath = entry->GetFullPath();
-            DecomposePath(fullPath, &path, nullptr, &ext);
-            mat->m_file = ConcatPaths({ path, val + ext });
+            mat->m_file = ConcatPaths({ m_path, val + MATERIAL });
             if (CheckFile(mat->m_file))
             {
               g_app->GetConsole()->AddLog("Can't create. A material with the same name exist", ConsoleWindow::LogType::Error);
@@ -500,18 +511,18 @@ namespace ToolKit
 
             ImGui::CloseCurrentPopup();
           }
+        }
 
-          if (show[4] && ImGui::Button("Refresh", m_contextBtnSize))
-          {
-            m_dirty = true;
-            ImGui::CloseCurrentPopup();
-          }
+        if (show[4] && ImGui::Button("Refresh", m_contextBtnSize))
+        {
+          m_dirty = true;
+          ImGui::CloseCurrentPopup();
         }
       };
 
       if (ImGui::BeginPopupContextItem())
       {
-        menuItemsFn({true, true, true, true, true});
+        menuItemsFn({ true, true, true, true, true });
         ImGui::EndPopup();
       }
       
@@ -563,12 +574,12 @@ namespace ToolKit
 
             ImGui::CloseCurrentPopup();
           }
+        }
 
-          if (show[2] && ImGui::Button("Refresh", m_contextBtnSize))
-          {
-            m_dirty = true;
-            ImGui::CloseCurrentPopup();
-          }
+        if (show[2] && ImGui::Button("Refresh", m_contextBtnSize))
+        {
+          m_dirty = true;
+          ImGui::CloseCurrentPopup();
         }
       };
 
@@ -638,7 +649,7 @@ namespace ToolKit
           ImGui::TextUnformatted("Resources");
 
           ImGui::SameLine();
-          if (ImGui::Button("O"))
+          if (ImGui::Button("<<"))
           {
             m_showStructure = !m_showStructure;
           }
@@ -685,7 +696,7 @@ namespace ToolKit
         }
         else
         {
-          if (ImGui::Button("-"))
+          if (ImGui::Button(">>"))
           {
             m_showStructure = !m_showStructure;
           }
@@ -705,16 +716,17 @@ namespace ToolKit
 
           for (int i = 0; i < (int)m_entiries.size(); i++)
           {
-            String candidate = m_entiries[i].GetPath();
-            if ((m_entiries[i].m_currRoot = (i == m_activeFolder)))
+            FolderView& view = m_entiries[i];
+            String candidate = view.GetPath();
+            if ((view.m_currRoot = (i == m_activeFolder)))
             {
               currRootPath = candidate;
             }
             
             // Show only current root folder or descendents.
-            if (m_entiries[i].m_currRoot || IsDescendentFn(candidate))
+            if (view.m_currRoot || IsDescendentFn(candidate))
             {
-              m_entiries[i].Show();
+              view.Show();
             }
           }
           ImGui::EndTabBar();
