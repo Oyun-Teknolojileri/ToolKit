@@ -1,6 +1,6 @@
 <meshContainer>
   <mesh>
-    <material name="solidColor.material"/>
+    <material name="./../Resources/Materials/solidColor.material"/>
     <vertices>
       <v>
         <p x="0.468750" y="-0.757813" z="0.242188"/>

@@ -1,6 +1,6 @@
 <meshContainer>
   <mesh>
-    <material name="projectile.material"/>
+    <material name="./../Resources/Materials/projectile.material"/>
     <vertices>
       <v>
         <p x="0.002469" y="0.004938" z="0.000000"/>

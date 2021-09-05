@@ -385,13 +385,13 @@ namespace ToolKit
       XmlNode* materialNode = node->first_node("material");
       String matFile = materialNode->first_attribute("name")->value();
 
-      if (CheckFile(MaterialPath(matFile)))
+      if (CheckFile(matFile))
       {
-        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath(matFile));
+        mesh->m_material = GetMaterialManager()->Create<Material> (matFile);
       }
       else
       {
-        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("default.material", true));
+        mesh->m_material = GetMaterialManager()->Create<Material> (MaterialPath("default.material", true));
       }
 
       XmlNode* vertex = node->first_node("vertices");
@@ -548,13 +548,13 @@ namespace ToolKit
       XmlNode* materialNode = node->first_node("material");
       String matFile = materialNode->first_attribute("name")->value();
 
-      if (CheckFile(MaterialPath(matFile)))
+      if (CheckFile(matFile))
       {
-        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath(matFile));
+        mesh->m_material = GetMaterialManager()->Create<Material> (matFile);
       }
       else
       {
-        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("default.material"));
+        mesh->m_material = GetMaterialManager()->Create<Material> (MaterialPath("default.material", true));
       }
 
       XmlNode* vertex = node->first_node("vertices");
