@@ -38,7 +38,6 @@ namespace ToolKit
   String GetExtFromType(ResourceType type);
   String GetResourcePath(ResourceType type);
   
-  String GetRelativeResourcePath(const String& fullPath);
   char GetPathSeparator();
   String GetPathSeparatorAsStr();
   bool SupportedImageFormat(const String& ext);

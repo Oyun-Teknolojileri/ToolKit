@@ -268,16 +268,13 @@ namespace ToolKit
       );
       meshNode->append_node(material);
 
-      String fname = mesh->m_material->m_file;
-      String name, ext;
-      DecomposePath(fname, nullptr, &name, &ext);
-      fname = name + ext;
-      if (fname.empty())
+      String matPath = mesh->m_material->m_file;
+      if (matPath.empty())
       {
-        fname = "default.material";
+        matPath = MaterialPath("default.material", true);
       }
 
-      XmlAttribute* nameAttr = doc->allocate_attribute("name", doc->allocate_string(fname.c_str()));
+      XmlAttribute* nameAttr = doc->allocate_attribute("name", doc->allocate_string(matPath.c_str()));
       material->append_attribute(nameAttr);
 
       XmlNode* vertices = doc->allocate_node

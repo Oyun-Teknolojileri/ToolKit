@@ -170,7 +170,7 @@ namespace ToolKit
       );
       container->append_node(node);
 
-      String file = GetRelativeResourcePath(m_diffuseTexture->m_file);
+      String file = m_diffuseTexture->m_file;
       WriteAttr(node, doc, "name", file);
     }
 
@@ -183,7 +183,7 @@ namespace ToolKit
       );
       container->append_node(node);
 
-      String file = GetRelativeResourcePath(m_cubeMap->m_file);
+      String file = m_cubeMap->m_file;
       WriteAttr(node, doc, "name", file);
     }
 

@@ -386,22 +386,6 @@ namespace ToolKit
     return path;
   }
 
-  String GetRelativeResourcePath(const String& fullPath)
-  {
-    String ext;
-    DecomposePath(fullPath, nullptr, nullptr, &ext);
-    ResourceType type = GetResourceType(ext);
-    String path = GetResourcePath(type);
-
-    size_t pos = fullPath.find(path);
-    if (pos != String::npos)
-    {
-      return fullPath.substr(pos + path.size());
-    }
-    
-    return fullPath;
-  }
-
   char GetPathSeparator()
   {
 #ifndef __clang__
