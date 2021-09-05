@@ -124,12 +124,21 @@ namespace ToolKit
   {
     if (m_diffuseTexture)
     {
+      m_renderState.diffuseTextureInUse = true;
       m_renderState.diffuseTexture = m_diffuseTexture->m_textureId;
+    }
+    else
+    {
+      m_renderState.diffuseTextureInUse = false;
     }
 
     if (m_cubeMap)
     {
       m_renderState.cubeMap = m_cubeMap->m_textureId;
+    }
+    else
+    {
+      m_renderState.cubeMap = false;
     }
 
     return &m_renderState;

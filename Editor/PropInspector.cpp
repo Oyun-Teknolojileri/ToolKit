@@ -321,7 +321,7 @@ namespace ToolKit
               // Switch from solid color material to default for texturing.
               if (entry->m_diffuseTexture == nullptr)
               {
-                entry->m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader"));
+                entry->m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader", true));
                 entry->m_fragmetShader->Init();
               }
               entry->m_diffuseTexture = GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
