@@ -54,7 +54,7 @@ namespace ToolKit
       bool m_currRoot = false; // Indicates this is a root folder (one level under Resources) and currently selected in the FolderWindow.
       bool m_visible = false;
       bool m_onlyNativeTypes = true;
-      Vec2 m_iconSize = Vec2(95.0f);
+      Vec2 m_iconSize = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entiries;
       String m_folder;
     };

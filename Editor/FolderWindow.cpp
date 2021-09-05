@@ -870,7 +870,7 @@ namespace ToolKit
           {
             String path;
             ReadAttr(view, "path", path);
-            Vec2 val(95.0f);
+            Vec2 val(50.0f);
             if (XmlNode* setting = view->first_node("IconSize"))
             {
               ReadVec(setting, val);
