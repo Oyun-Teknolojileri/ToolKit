@@ -769,7 +769,13 @@ namespace ToolKit
         if (e.is_directory())
         {
           FolderView view(this);
-          view.SetPath(e.path().u8string());
+          String path = e.path().u8string();
+          view.SetPath(path);
+          if (m_viewSettings.find(path) != m_viewSettings.end())
+          {
+            view.m_iconSize = m_viewSettings[path];
+          }
+
           view.Iterate();
           m_entiries.push_back(view);
           Iterate(view.GetPath(), false);
@@ -838,6 +844,16 @@ namespace ToolKit
       node->append_node(folder);
       WriteAttr(folder, doc, "activeFolder", std::to_string(m_activeFolder));
       WriteAttr(folder, doc, "showStructure", std::to_string(m_showStructure));
+
+      for (const FolderView& view : m_entiries)
+      {
+        XmlNode* viewNode = doc->allocate_node(rapidxml::node_element, "FolderView");
+        WriteAttr(viewNode, doc, "path", view.GetPath());
+        folder->append_node(viewNode);
+        XmlNode* setting = doc->allocate_node(rapidxml::node_element, "IconSize");
+        WriteVec(setting, doc, view.m_iconSize);
+        viewNode->append_node(setting);
+      }
     }
 
     void FolderWindow::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -847,6 +863,21 @@ namespace ToolKit
       {
         ReadAttr(node, "activeFolder", m_activeFolder);
         ReadAttr(node, "showStructure", m_showStructure);
+
+        if (XmlNode* view = node->first_node("FolderView"))
+        {
+          do
+          {
+            String path;
+            ReadAttr(view, "path", path);
+            Vec2 val(95.0f);
+            if (XmlNode* setting = view->first_node("IconSize"))
+            {
+              ReadVec(setting, val);
+            }
+            m_viewSettings[path] = val;
+          } while (view = view->next_sibling("FolderView"));
+        }
       }
     }
 

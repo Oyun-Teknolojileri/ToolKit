@@ -78,6 +78,7 @@ namespace ToolKit
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     private:
+      std::unordered_map<String, Vec2> m_viewSettings;
       std::vector<FolderView> m_entiries;
       int m_activeFolder = -1;
       bool m_showStructure = true;
