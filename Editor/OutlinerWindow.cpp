@@ -38,7 +38,7 @@ namespace ToolKit
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
       }
 
-      auto SetItemStateFn = [](Entity* e)
+      auto SetItemStateFn = [](Entity* e) -> void
       {
         if (ImGui::IsItemClicked())
         {

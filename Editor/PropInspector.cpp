@@ -121,7 +121,7 @@ namespace ToolKit
         QDUDecomposition(ts, rotate, scale, shear);
 
         static TransformAction* dragMem = nullptr;
-        const auto saveDragMemFn = [this]()
+        const auto saveDragMemFn = [this]() -> void
         {
           if (dragMem == nullptr)
           {

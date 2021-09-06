@@ -168,7 +168,7 @@ namespace ToolKit
         return;
       }
 
-      auto ShowAddMenuFn = []()
+      auto ShowAddMenuFn = []() -> void
       {
         if (ImGui::BeginMenu("Mesh"))
         {

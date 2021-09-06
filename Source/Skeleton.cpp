@@ -41,22 +41,16 @@ namespace ToolKit
 
   void Skeleton::Init(bool flushClientSideArray)
   {
-    /*
-    if (m_initiated)
-      return;
-
-    for (auto bone : m_bones)
-      bone->m_inverseWorldMatrix = glm::inverse(bone->m_node->GetTransform(TransformationSpace::TS_WORLD));
-
-    m_initiated = true;
-    */
   }
 
   void Skeleton::UnInit()
   {
     SafeDel(m_node);
-    for (auto bone : m_bones)
+    for (Bone* bone : m_bones)
+    {
       SafeDel(bone);
+    }
+      
     m_bones.clear();
     m_initiated = false;
   }
@@ -69,10 +63,14 @@ namespace ToolKit
 
     XmlNode* node = doc.first_node("skeleton");
     if (node == nullptr)
+    {
       return;
+    }
 
     for (node = node->first_node("bone"); node; node = node->next_sibling())
+    {
       Traverse(node, nullptr);
+    }
 
     m_loaded = true;
   }

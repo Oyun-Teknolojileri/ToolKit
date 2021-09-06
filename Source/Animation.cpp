@@ -60,11 +60,13 @@ namespace ToolKit
   void Animation::GetCurrentPose(Skeleton* skeleton)
   {
     if (m_keys.empty())
+    {
       return;
+    }
 
     float ratio;
     int key1, key2;
-    for (auto bone : skeleton->m_bones)
+    for (Bone* bone : skeleton->m_bones)
     {
       auto entry = m_keys.find(bone->m_name);
       if (entry == m_keys.end())
@@ -202,7 +204,7 @@ namespace ToolKit
   {
     int index = 0;
     std::vector<int> removeList;
-    for (auto record : m_records)
+    for (const AnimRecord& record : m_records)
     {
       if (record.second->m_state == Animation::State::Pause)
       {

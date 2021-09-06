@@ -37,7 +37,7 @@ namespace ToolKit
     if (FetchEntries())
     {
       m_spriteSheet = GetTextureManager()->Create<Texture>(SpritePath(m_imageFile));
-      for (auto entry : m_entries)
+      for (const SpriteEntry& entry : m_entries)
       {
         Surface* surface = new Surface(m_spriteSheet, entry);
         m_sprites[entry.name] = surface;

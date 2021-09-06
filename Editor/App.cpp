@@ -801,7 +801,7 @@ namespace ToolKit
         return;
       }
 
-      auto RenderFn = [this, vp](const EntityRawPtrArray& selection, const Vec3& color)
+      auto RenderFn = [this, vp](const EntityRawPtrArray& selection, const Vec3& color) -> void
       {
         if (selection.empty())
         {

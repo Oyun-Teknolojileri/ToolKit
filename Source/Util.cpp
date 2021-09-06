@@ -555,7 +555,7 @@ namespace ToolKit
 
   void RootsOnly(const EntityRawPtrArray& entities, EntityRawPtrArray& roots, Entity* child)
   {
-    auto AddUnique = [&roots](Entity* e)
+    auto AddUnique = [&roots](Entity* e) -> void
     {
       assert(e != nullptr);
 
