@@ -346,22 +346,11 @@ namespace ToolKit
         }
 
         ImGui::Separator();
-        for (const Project& p : g_app->m_workspace.m_projects)
+        for (const Project& project : g_app->m_workspace.m_projects)
         {
-          if (ImGui::MenuItem(p.name.c_str()))
+          if (ImGui::MenuItem(project.name.c_str()))
           {
-            g_app->m_workspace.SetActiveProject(p);
-            String root = g_app->m_workspace.GetResourceRoot();
-
-            // Update resource views.
-            for (Window* wnd : g_app->m_windows)
-            {
-              if (wnd->GetType() == Window::Type::Browser)
-              {
-                FolderWindow* fw = static_cast<FolderWindow*> (wnd);
-                fw->Iterate(root, true);
-              }
-            }
+            g_app->OpenProject(project);
           }
         }
         ImGui::EndMenu();

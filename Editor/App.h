@@ -54,6 +54,7 @@ namespace ToolKit
       void OpenScene(const String& fullPath);
       void MergeScene(const String& fullPath);
       void ApplyProjectSettings(bool setDefaults);
+      void OpenProject(const Project& project);
 
       Viewport* GetActiveViewport(); // Returns open and active viewport or nullptr.
       Viewport* GetViewport(const String& name);

@@ -182,7 +182,6 @@ namespace ToolKit
       }
 
       XmlFilePtr lclFile = std::make_shared<XmlFile> (settingsFile.c_str());
-
       XmlDocumentPtr lclDoc = std::make_shared<XmlDocument> ();
       lclDoc->parse<0>(lclFile->data());
 

@@ -251,7 +251,7 @@ namespace ToolKit
       Destroy();
       Init();
       m_scene = std::make_shared<EditorScene>(ScenePath(name + SCENE));
-      m_scene->m_newScene = true;
+      m_onNewScene = false;
     }
 
     void App::OnSaveScene()
@@ -697,6 +697,19 @@ namespace ToolKit
       {
         ResetUI();
       }
+    }
+
+    void App::OpenProject(const Project& project)
+    {
+      UI::m_postponedActions.push_back
+      (
+        [this, project]() -> void
+        {
+          m_workspace.SetActiveProject(project);
+          m_workspace.Serialize(nullptr, nullptr);
+          OnNewScene("New Scene");
+        }
+      );
     }
 
     Viewport* App::GetActiveViewport()
