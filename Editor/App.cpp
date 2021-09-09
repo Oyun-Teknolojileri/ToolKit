@@ -309,6 +309,32 @@ namespace ToolKit
       }
     }
 
+    void App::OnNewProject(const String& name)
+    {
+      if (m_workspace.GetActiveWorkspace().empty())
+      {
+        GetConsole()->AddLog("No workspace. Project can't be created.", ConsoleWindow::LogType::Error);
+        return;
+      }
+
+      String fullPath = ConcatPaths({ m_workspace.GetActiveWorkspace(), name });
+      if (CheckFile(fullPath))
+      {
+        GetConsole()->AddLog("Project already exist.", ConsoleWindow::LogType::Error);
+        return;
+      }
+
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Audio" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Fonts" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Materials" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Meshes" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Scenes" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Shaders" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Sprites" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Textures" }));
+      OpenProject({ name, "" });
+    }
+
     void App::ResetUI()
     {      
       DeleteWindows();

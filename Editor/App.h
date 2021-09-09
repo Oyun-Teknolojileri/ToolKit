@@ -40,6 +40,7 @@ namespace ToolKit
       void OnNewScene(const String& name);
       void OnSaveScene();
       void OnQuit();
+      void OnNewProject(const String& name);
 
       // UI
       void ResetUI();

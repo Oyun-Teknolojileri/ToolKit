@@ -345,7 +345,14 @@ namespace ToolKit
       {
         if (ImGui::MenuItem("New"))
         {
-          // TODO
+          StringInputWindow* inputWnd = new StringInputWindow("NewProject", true);
+          inputWnd->m_inputVal = "New Project";
+          inputWnd->m_inputLabel = "Name";
+          inputWnd->m_hint = "Project name";
+          inputWnd->m_taskFn = [](const String& val)
+          {
+            g_app->OnNewProject(val);
+          };
         }
 
         ImGui::Separator();
