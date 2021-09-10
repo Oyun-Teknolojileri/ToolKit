@@ -605,11 +605,9 @@ namespace ToolKit
                 fullPath = MaterialPath(line);
               }
 
-              fullPath = ConcatPaths({ "..", fullPath }); // Resource dir is one more level up.
-
               String path, name;
               DecomposePath(fullPath, &path, &name, &ext);
-              std::filesystem::create_directory(path);
+              std::filesystem::create_directories(path);
               std::filesystem::copy
               (
                 line, fullPath,

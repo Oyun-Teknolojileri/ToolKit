@@ -380,7 +380,7 @@ namespace ToolKit
       }
 
       XmlNode* materialNode = node->first_node("material");
-      String matFile = materialNode->first_attribute("name")->value();
+      String matFile = MaterialPath(materialNode->first_attribute("name")->value());
 
       if (CheckFile(matFile))
       {

@@ -215,6 +215,26 @@ namespace ToolKit
     return path + entries.back();
   }
 
+  String GetRelativeResourcePath(const String& path)
+  {
+    String root = Main::GetInstance()->m_resourceRoot;
+    size_t exist = path.find(root);
+    if (exist != String::npos)
+    {
+      String rel = path.substr(root.length() + 1);
+      // Extract the root layer. Mesh, Texture ect...
+      exist = rel.find(GetPathSeparator());
+      if (exist)
+      {
+        rel = rel.substr(exist + 1);
+      }
+
+      return rel;
+    }
+
+    return path;
+  }
+
   ResourceType GetResourceType(const String& ext)
   {
     if (ext == MESH || ext == SKINMESH || SupportedMeshFormat(ext))

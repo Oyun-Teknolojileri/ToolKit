@@ -77,7 +77,7 @@ namespace ToolKit
     }
     else
     {
-      m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader"));
+      m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
       m_vertexShader->Init();
     }
 
@@ -89,11 +89,11 @@ namespace ToolKit
     {
       if (m_diffuseTexture)
       {
-        m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader"));
+        m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader", true));
       }
       else
       {
-        m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("solidColorFrag.shader"));
+        m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("solidColorFrag.shader", true));
       }
       
       m_fragmetShader->Init();
@@ -233,17 +233,17 @@ namespace ToolKit
       if (String("diffuseTexture").compare(node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute("name");
-        m_diffuseTexture = GetTextureManager()->Create<Texture>(attr->value());
+        m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath(attr->value()));
       }
       else if (String("cubeMap").compare(node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute("name");
-        m_cubeMap = GetTextureManager()->Create<CubeMap>(attr->value());
+        m_cubeMap = GetTextureManager()->Create<CubeMap>(TexturePath(attr->value()));
       }
       else if (String("shader").compare(node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute("name");
-        ShaderPtr shader = GetShaderManager()->Create<Shader>(attr->value());
+        ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath(attr->value()));
         if (shader->m_shaderType == GL_VERTEX_SHADER)
         {
           m_vertexShader = shader;

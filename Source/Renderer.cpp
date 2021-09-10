@@ -113,8 +113,8 @@ namespace ToolKit
 
   void Renderer::Render2d(Surface* object, glm::ivec2 screenDimensions)
   {
-    static ShaderPtr vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader"));
-    static ShaderPtr fragShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader"));
+    static ShaderPtr vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
+    static ShaderPtr fragShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     static ProgramPtr prog = CreateProgram(vertexShader, fragShader);
     BindProgram(prog);
 

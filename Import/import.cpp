@@ -7,14 +7,16 @@
 #include <algorithm>
 #include <string>
 #include <assert.h>
+#include <filesystem>
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 #include "assimp/DefaultLogger.hpp"
-#include "lodepng.h"
-#include <filesystem>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 using namespace std;
+namespace fs = std::filesystem;
 
 struct Pnt3D
 {
@@ -197,7 +199,7 @@ void PrintAnims_(const aiScene* scene, string file)
 
 void PrintMaterial_(const aiScene* scene, string filePath, string origin)
 {
-  filesystem::path pathOrg = filesystem::path(origin).parent_path();
+  fs::path pathOrg = fs::path(origin).parent_path();
 
   for (unsigned int i = 0; i < scene->mNumMaterials; i++)
   {
@@ -221,12 +223,10 @@ void PrintMaterial_(const aiScene* scene, string filePath, string origin)
       material->GetTexture(aiTextureType_DIFFUSE, 0, &texture);
 
       string tName = texture.C_Str();
-      filesystem::path nextPath = pathOrg;
-      tName = filesystem::canonical(nextPath.append(tName)).u8string();
-      string outName = filesystem::path(tName).filename().u8string();
-      string textPath = filePath + outName;
+      bool embedded = false;
       if (!tName.empty() && tName[0] == '*') // Embedded texture.
       {
+        embedded = true;
         string indxPart = tName.substr(1);
         unsigned int tIndx = atoi(indxPart.c_str());
         if (scene->mNumTextures > tIndx)
@@ -235,14 +235,30 @@ void PrintMaterial_(const aiScene* scene, string filePath, string origin)
           tName = GetTextureName(t, tIndx);
         }
       }
-      else
+
+      string textPath = filePath + tName;    
+      if (!embedded)
       {
         // Try copying texture.
+        fs::path fullPath = pathOrg;
+        fullPath.append(tName);
+        fullPath = fullPath.lexically_normal();
+
         ifstream isGoodFile;
-        isGoodFile.open(tName, ios::binary | ios::in);
+        isGoodFile.open(fullPath, ios::binary | ios::in);
         if (isGoodFile.good())
         {
-          filesystem::copy(tName, textPath, std::filesystem::copy_options::overwrite_existing);
+          fs::path target = fs::path(textPath).lexically_normal();
+          if (target.has_parent_path())
+          {
+            fs::path dir = target.parent_path();
+            if (!fs::exists(dir))
+            {
+              fs::create_directories(dir);
+            }
+          }
+          
+          fs::copy(fullPath, target, fs::copy_options::overwrite_existing);
         }
         isGoodFile.close();
       }
@@ -433,7 +449,7 @@ void PrintMesh_(const aiScene* scene, string filePath)
   AddToUsedFiles(fullPath);
 
   ofstream file(fullPath, ios::out);
-  file << "<S>\n";
+  file << "<S name=\"" + path + name + "\">\n";
 
   // Add Meshes.
   SearchMesh(file, scene, filePath, scene->mRootNode, -1);
@@ -602,11 +618,11 @@ void PrintTextures_(const aiScene* scene, string filePath)
   {
     for (unsigned int i = 0; i < scene->mNumTextures; i++)
     {
-      aiTexture* t = scene->mTextures[i];
-      string embId = GetTextureName(t, i);
+      aiTexture* texture = scene->mTextures[i];
+      string embId = GetTextureName(texture, i);
 
       // Compressed.
-      if (scene->mTextures[i]->mHeight == 0)
+      if (texture->mHeight == 0)
       {
         ofstream file(filePath + embId, fstream::out | std::fstream::binary);
         assert(file.good());
@@ -615,8 +631,8 @@ void PrintTextures_(const aiScene* scene, string filePath)
       }
       else
       {
-        unsigned char* buffer = (unsigned char*)scene->mTextures[i]->pcData;
-        lodepng::encode(filePath, buffer, scene->mTextures[i]->mWidth, scene->mTextures[i]->mHeight);
+        unsigned char* buffer = (unsigned char*)texture->pcData;
+        stbi_write_png(filePath.c_str(), texture->mWidth, texture->mHeight, 4, buffer, texture->mWidth * 4);
       }
     }
   }
@@ -642,7 +658,7 @@ int main(int argc, char* argv[])
 
       if (arg == "-t")
       {
-        dest = filesystem::path(argv[i + 1]).append("").u8string();
+        dest = fs::path(argv[i + 1]).append("").u8string();
       }
 
       if (arg == "-s")
@@ -654,7 +670,7 @@ int main(int argc, char* argv[])
 
     if (!dest.empty())
     {
-      std::filesystem::create_directories(dest);
+      fs::create_directories(dest);
     }
 
     string ext = file.substr(file.find_last_of("."));
@@ -698,7 +714,7 @@ int main(int argc, char* argv[])
       }
       g_scene = scene;
 
-      filesystem::path pathToProcess = file;
+      fs::path pathToProcess = file;
       string fileName = pathToProcess.filename().u8string();
       string destFile = dest + fileName;
 

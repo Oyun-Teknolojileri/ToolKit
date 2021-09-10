@@ -66,7 +66,7 @@ namespace ToolKit
     Entity::Serialize(doc, parent);
     XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlMeshElement.c_str());
 
-    String relPath = m_mesh->m_file;
+    String relPath = GetRelativeResourcePath(m_mesh->m_file);
     
     node->append_attribute
     (
@@ -87,7 +87,7 @@ namespace ToolKit
     {
       XmlAttribute* attr = meshNode->first_attribute(XmlFileAttr.c_str());
       String filePath = attr->value();
-      m_mesh = GetMeshManager()->Create<Mesh>(filePath);
+      m_mesh = GetMeshManager()->Create<Mesh>(MeshPath(filePath));
     }
   }
 

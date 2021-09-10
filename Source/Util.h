@@ -31,7 +31,8 @@ namespace ToolKit
   void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
   void NormalizePath(String& path);
   String ConcatPaths(const StringArray& entries);
-  
+  String GetRelativeResourcePath(const String& path);
+
   enum class ResourceType;
   ResourceType GetResourceType(const String& ext);
   String GetTypeString(ResourceType type);
