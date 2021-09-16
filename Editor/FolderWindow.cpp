@@ -103,7 +103,7 @@ namespace ToolKit
       if (m_ext == MESH)
       {
         Drawable dw;
-        String fullpath = m_rootPath + GetPathSeparator() + m_fileName + m_ext;
+        String fullpath = ConcatPaths({ m_rootPath, m_fileName + m_ext });
         dw.m_mesh = GetMeshManager()->Create<Mesh>(fullpath);
         dw.m_mesh->Init(false);
 
@@ -315,7 +315,7 @@ namespace ToolKit
                 {
                   if (m_parent != nullptr)
                   {
-                    String path = dirEnt.m_rootPath + GetPathSeparator() + dirEnt.m_fileName;
+                    String path = ConcatPaths({ dirEnt.m_rootPath, dirEnt.m_fileName });
                     int indx = m_parent->Exist(path);
                     if (indx == -1)
                     {
@@ -354,7 +354,16 @@ namespace ToolKit
             }
 
             ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
-            ImGui::TextWrapped("%s", dirEnt.m_fileName.c_str());
+            size_t charLim = (size_t)(m_iconSize.x * 0.1f);
+            if (dirEnt.m_fileName.size() > charLim)
+            {
+              String shorten = dirEnt.m_fileName.substr(0, charLim) + "...";
+              ImGui::TextWrapped("%s", shorten.c_str());
+            }
+            else
+            {
+              ImGui::TextWrapped("%s", dirEnt.m_fileName.c_str());
+            }
             ImGui::PopTextWrapPos();
             ImGui::EndGroup();
             ImGui::PopID();

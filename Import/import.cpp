@@ -227,7 +227,9 @@ void PrintMaterial_(const aiScene* scene, string filePath, string origin)
         }
       }
 
-      string textPath = fs::path(filePath + tName).lexically_normal().u8string();
+      string fileName = tName;
+      TrunckToFileName(fileName);
+      string textPath = fs::path(filePath + fileName).lexically_normal().u8string();
       if (!embedded)
       {
         // Try copying texture.
@@ -373,7 +375,7 @@ void SearchMesh(ofstream& sceneFile, const aiScene* scene, string filePath, aiNo
 
     string fileName = std::string(node->mName.C_Str());
     ClearForbidden(fileName);
-    meshPath = path + name + "_" + fileName + "." + tag;
+    meshPath = path + fileName + "." + tag;
     AddToUsedFiles(meshPath);
 
     ofstream file(meshPath, ios::out);
