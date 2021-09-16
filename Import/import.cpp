@@ -72,33 +72,24 @@ unordered_map<string, BoneNode> g_skeletonMap;
 const aiScene* g_scene = nullptr;
 static unsigned int g_lastId = 1;
 
-constexpr char GetPathSeparator()
+char GetPathSeparator()
 {
-#ifndef __clang__
-  return '\\';
-#else
-  return '/';
-#endif
+  static char sep = '/';
+  const wchar_t pref = fs::path::preferred_separator;
+  wcstombs(&sep, &pref, 1);
+  return sep;
 }
 
 void NormalizePath(string& path)
 {
-#ifndef __clang__
-  std::replace(path.begin(), path.end(), '/', '\\');
-#else
-  std::replace(path.begin(), path.end(), '\\', '/');
-#endif
+  fs::path patify = path;
+  path = patify.lexically_normal().u8string();
 }
 
 void TrunckToFileName(string& fullPath)
 {
-  NormalizePath(fullPath);
-
-  size_t i = fullPath.find_last_of(GetPathSeparator());
-  if (i != string::npos)
-  {
-    fullPath = fullPath.substr(i + 1);
-  }
+  fs::path patify = fullPath;
+  fullPath = patify.filename().u8string();
 }
 
 void Decompose(string fullPath, string& path, string& name)
@@ -236,7 +227,7 @@ void PrintMaterial_(const aiScene* scene, string filePath, string origin)
         }
       }
 
-      string textPath = filePath + tName;    
+      string textPath = fs::path(filePath + tName).lexically_normal().u8string();
       if (!embedded)
       {
         // Try copying texture.
@@ -248,7 +239,7 @@ void PrintMaterial_(const aiScene* scene, string filePath, string origin)
         isGoodFile.open(fullPath, ios::binary | ios::in);
         if (isGoodFile.good())
         {
-          fs::path target = fs::path(textPath).lexically_normal();
+          fs::path target = fs::path(textPath);
           if (target.has_parent_path())
           {
             fs::path dir = target.parent_path();
