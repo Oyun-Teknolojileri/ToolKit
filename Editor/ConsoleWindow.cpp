@@ -366,7 +366,7 @@ namespace ToolKit
       }
     }
 
-    void SetImportSlient(TagArgArray tagArgs)
+    void ImportSlient(TagArgArray tagArgs)
     {
       BoolCheck(tagArgs, &g_app->m_importSlient);
     }
@@ -538,7 +538,7 @@ namespace ToolKit
       CreateCommand(g_transformCmd, TransformExec);
       CreateCommand(g_getTransformCmd, GetTransformExec);
       CreateCommand(g_setTransformOrientationCmd, SetTransformOrientationExec);
-      CreateCommand(g_importSlientCmd, SetImportSlient);
+      CreateCommand(g_importSlientCmd, ImportSlient);
       CreateCommand(g_selectByTag, SelectByTag);
       CreateCommand(g_lookAt, LookAt);
       CreateCommand(g_applyTransformToMesh, ApplyTransformToMesh);

@@ -525,19 +525,37 @@ namespace ToolKit
 
     void UI::ShowImportWindow()
     {
-      if (!ImportData.showImportWindow)
+      static String load;
+      if (!ImportData.showImportWindow || ImportData.files.empty())
       {
+        load.clear();
         return;
+      }
+      
+      if (load.empty())
+      {
+        std::fstream importList;
+        load = ConcatPaths({ "..", "Utils", "Import", "importList.txt" });
+        importList.open(load, std::ios::out);
+        if (importList.is_open())
+        {
+          for (String& file : ImportData.files)
+          {
+            if (g_app->CanImport(file))
+            {
+              importList << file + "\n";
+            }
+          }
+        }
       }
 
       if (g_app->m_importSlient)
       {
-        for (size_t i = 0; i < ImportData.files.size(); i++)
-        {
-          g_app->Import(ImportData.files[i], ImportData.subDir, ImportData.overwrite);
-        }
+        g_app->Import(load, ImportData.subDir, ImportData.overwrite);
+        load.clear();
         ImportData.files.clear();
         ImportData.showImportWindow = false;
+        return;
       }
 
       ImGui::OpenPopup("Import");
@@ -585,28 +603,6 @@ namespace ToolKit
 
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {
-          String load;
-          if (ImportData.files.size() > 1)
-          {
-            std::fstream importList;
-            load = ConcatPaths({ "..", "Utils", "Import", "importList.txt" });
-            importList.open(load, std::ios::out);
-            if (importList.is_open())
-            {
-              for (String& file : ImportData.files)
-              {
-                if (g_app->CanImport(file))
-                {
-                  importList << file + "\n";
-                }
-              }
-            }
-          }
-          else
-          {
-            load = ImportData.files.front();
-          }
-
           if (g_app->Import(load, ImportData.subDir, ImportData.overwrite) == -1)
           {
             // Fall back to search.
@@ -615,6 +611,7 @@ namespace ToolKit
             return;
           }
 
+          load.clear();
           fails.clear();
           ImportData.files.clear();
           ImportData.showImportWindow = false;
@@ -624,6 +621,7 @@ namespace ToolKit
         ImGui::SameLine();
         if (ImGui::Button("Cancel", ImVec2(120, 0)))
         {
+          load.clear();
           fails.clear();
           ImportData.files.clear();
           ImportData.showImportWindow = false;
