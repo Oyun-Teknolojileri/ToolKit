@@ -1,4 +1,4 @@
 <material>
-  <diffuseTexture name = "./../Resources/Textures/crate.png"/>
-  <shader name = "./../Resources/Shaders/unlitFrag.shader"/>
+  <diffuseTexture name = "crate.png"/>
+  <shader name = "unlitFrag.shader"/>
 </material>

@@ -1,6 +1,6 @@
 <meshContainer>
   <mesh>
-    <material name="./../Resources/Materials/pillBlue.material"/>
+    <material name="pillBlue.material"/>
     <vertices>
       <v>
         <p x="0.000000" y="1.133301" z="-0.000000"/>

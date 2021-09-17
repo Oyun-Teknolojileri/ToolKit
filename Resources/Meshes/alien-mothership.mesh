@@ -1,6 +1,6 @@
 <meshContainer>
   <mesh>
-    <material name="./../Resources/Materials/alien-mothership.material"/>
+    <material name="alien-mothership.material"/>
     <vertices>
       <v>
         <p x="-0.302340" y="0.213387" z="-2.292198"/>

@@ -1,6 +1,6 @@
 <meshContainer>
   <skinMesh>
-    <material name="./../Resources/Materials/Knight_Material.material"/>
+    <material name="Knight_Material.material"/>
     <vertices>
       <v>
         <p x="0.036192" y="0.114863" z="1.001624"/>

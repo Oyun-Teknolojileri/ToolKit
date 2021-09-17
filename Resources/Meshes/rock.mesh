@@ -1,6 +1,6 @@
 <meshContainer>
   <mesh>
-    <material name="./../Resources/Materials/rock.material"/>
+    <material name="rock.material"/>
     <vertices>
       <v>
         <p x="-0.422800" y="0.910900" z="0.469500"/>
