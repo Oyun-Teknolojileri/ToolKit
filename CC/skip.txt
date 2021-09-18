@@ -4,7 +4,6 @@
 # ../Source/ToolKit.cpp
 ../Source/Common/
 ../Import/assimp/
-../Import/lodepng.h
-../Import/lodepng.cpp
+../Import/stb_image_write.h
 ../Template/
 ../Samples/
