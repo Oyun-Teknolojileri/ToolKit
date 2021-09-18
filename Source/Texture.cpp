@@ -256,10 +256,14 @@ namespace ToolKit
   void RenderTarget::Init(bool flushClientSideArray)
   {
     if (m_initiated)
+    {
       return;
+    }
 
     if (m_width <= 0 || m_height <= 0)
+    {
       return;
+    }
 
     // Create frame buffer color texture
     glGenTextures(1, &m_textureId);
