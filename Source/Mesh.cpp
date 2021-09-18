@@ -134,8 +134,7 @@ namespace ToolKit
     cpy->m_material = MaterialPtr(m_material->GetCopy());
     cpy->m_aabb = m_aabb;
 
-    String filePath = CreateCopyFileFullPath(m_file);
-    cpy->m_file = GetRelativeResourcePath(filePath);
+    cpy->m_file = CreateCopyFileFullPath(m_file);
     cpy->m_initiated = m_initiated;
     cpy->m_loaded = m_loaded;
 
