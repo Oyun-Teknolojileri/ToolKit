@@ -217,14 +217,23 @@ namespace ToolKit
 
   String GetRelativeResourcePath(const String& path)
   {
+    // Check workspace relativity.
     String root = Main::GetInstance()->m_resourceRoot;
     size_t exist = path.find(root);
+
+    // Check install path relativity.
+    if (exist == String::npos)
+    {
+      root = ResourcePath(true);
+      exist = path.find(root, 0);
+    }
+
     if (exist != String::npos)
     {
       String rel = path.substr(root.length() + 1);
       // Extract the root layer. Mesh, Texture ect...
       exist = rel.find(GetPathSeparator());
-      if (exist)
+      if (exist != String::npos)
       {
         rel = rel.substr(exist + 1);
       }

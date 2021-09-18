@@ -170,7 +170,7 @@ namespace ToolKit
       );
       container->append_node(node);
 
-      String file = m_diffuseTexture->m_file;
+      String file = GetRelativeResourcePath(m_diffuseTexture->m_file);
       WriteAttr(node, doc, "name", file);
     }
 
@@ -183,7 +183,7 @@ namespace ToolKit
       );
       container->append_node(node);
 
-      String file = m_cubeMap->m_file;
+      String file = GetRelativeResourcePath(m_cubeMap->m_file);
       WriteAttr(node, doc, "name", file);
     }
 
@@ -196,7 +196,8 @@ namespace ToolKit
       );
       container->append_node(node);
 
-      WriteAttr(node, doc, "name", m_vertexShader->m_file);
+      String file = GetRelativeResourcePath(m_vertexShader->m_file);
+      WriteAttr(node, doc, "name", file);
     }
 
     if (m_fragmetShader)
@@ -208,7 +209,8 @@ namespace ToolKit
       );
       container->append_node(node);
 
-      WriteAttr(node, doc, "name", m_fragmetShader->m_file);
+      String file = GetRelativeResourcePath(m_fragmetShader->m_file);
+      WriteAttr(node, doc, "name", file);
     }
 
     XmlNode* node = doc->allocate_node

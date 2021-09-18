@@ -271,7 +271,7 @@ namespace ToolKit
       );
       meshNode->append_node(material);
 
-      String matPath = mesh->m_material->m_file;
+      String matPath = GetRelativeResourcePath(mesh->m_material->m_file);
       if (matPath.empty())
       {
         matPath = MaterialPath("default.material", true);
