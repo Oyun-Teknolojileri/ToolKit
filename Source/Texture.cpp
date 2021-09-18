@@ -50,6 +50,10 @@ namespace ToolKit
     }
 
     glGenTextures(1, &m_textureId);
+
+    GLint currId;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
+
     glBindTexture(GL_TEXTURE_2D, m_textureId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image);
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -68,6 +72,7 @@ namespace ToolKit
       Clear();
     }
 
+    glBindTexture(GL_TEXTURE_2D, currId);
     m_initiated = true;
   }
 
@@ -259,6 +264,9 @@ namespace ToolKit
     // Create frame buffer color texture
     glGenTextures(1, &m_textureId);
 
+    GLint currId;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
+
     glBindTexture(GL_TEXTURE_2D, m_textureId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -298,6 +306,8 @@ namespace ToolKit
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glBindTexture(GL_TEXTURE_2D, currId);
   }
 
   void RenderTarget::UnInit()
