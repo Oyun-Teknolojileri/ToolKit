@@ -114,7 +114,8 @@ namespace ToolKit
 
     if (!m_file.empty())
     {
-      cpyMat->m_file = CreateCopyFileFullPath(m_file);
+      String filePath = CreateCopyFileFullPath(m_file);
+      cpyMat->m_file = GetRelativeResourcePath(filePath);
     }
 
     return cpyMat;

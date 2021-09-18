@@ -110,6 +110,9 @@ namespace ToolKit
     // Copy video memory.
     if (m_vertexCount > 0)
     {
+      glGenVertexArrays(1, &cpy->m_vaoId);
+      glBindVertexArray(cpy->m_vaoId);
+
       glGenBuffers(1, &cpy->m_vboVertexId);
       glBindBuffer(GL_COPY_WRITE_BUFFER, cpy->m_vboVertexId);
       glBindBuffer(GL_COPY_READ_BUFFER, m_vboVertexId);
@@ -131,7 +134,8 @@ namespace ToolKit
     cpy->m_material = MaterialPtr(m_material->GetCopy());
     cpy->m_aabb = m_aabb;
 
-    cpy->m_file = CreateCopyFileFullPath(m_file);
+    String filePath = CreateCopyFileFullPath(m_file);
+    cpy->m_file = GetRelativeResourcePath(filePath);
     cpy->m_initiated = m_initiated;
     cpy->m_loaded = m_loaded;
 
