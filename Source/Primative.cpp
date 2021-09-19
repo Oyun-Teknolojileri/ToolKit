@@ -320,7 +320,7 @@ namespace ToolKit
 
     // Front
     vertices[0].pos = Vec3(-0.5f, 0.5f, 0.0f);
-    vertices[0].tex = Vec2(0.0f, -1.0f);
+    vertices[0].tex = Vec2(0.0f, 1.0f);
     vertices[0].norm = Vec3(0.0f, 0.0f, 1.0f);
     vertices[0].btan = Vec3(0.0f, 1.0f, 0.0f);
 
@@ -335,7 +335,7 @@ namespace ToolKit
     vertices[2].btan = Vec3(0.0f, 1.0f, 0.0f);
 
     vertices[3].pos = Vec3(0.5f, 0.5f, 0.0f);
-    vertices[3].tex = Vec2(1.0f, -1.0f);
+    vertices[3].tex = Vec2(1.0f, 1.0f);
     vertices[3].norm = Vec3(0.0f, 0.0f, 1.0f);
     vertices[3].btan = Vec3(0.0f, 1.0f, 0.0f);
 
@@ -564,7 +564,7 @@ namespace ToolKit
     m_mesh->m_clientSideVertices = vertices;
     m_mesh->m_indexCount = (uint)indices.size();
     m_mesh->m_clientSideIndices = indices;
-    m_mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("default.material"));
+    m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
     m_mesh->CalculateAABoundingBox();
     m_mesh->ConstructFaces();

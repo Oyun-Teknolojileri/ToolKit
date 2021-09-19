@@ -24,19 +24,20 @@ Bringing like minded people together around a project outputs invaluable assets 
 - It teaches you your limits and to be passionate.
 - It teaches you to enjoy the road, not the destination.
 - It teaches you to accept imperfect.
-- It provides you an exceptional CV.
 
 ## Editor High Lights
 - All required functionalites for scene creation, manipuation, save & load.
 - All required utilities for Asset management. Create / Save / Refresh / Browse resource directories.
+- Support having a workspace & multiple projects.
 - Multiple Prespective & Orthographic views.
 - Scene outliner to observe / interact entities in the scene.
 - Entity inspector & interactive resource manipulation trough the inspector.
 - Import whole scenes from various programs & formats including sketchfab, blender, glb, fbx ...
 - Console window along with usefull scene inspection commands and easy command creation.
 
-![Editor Footage](https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_21.gif?raw=true "Editor")
-![Another Editor Footage](https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_22.gif?raw=true "Editor")
+![Editor Footage 1](https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_21.gif?raw=true "Editor")
+![Editor Footage 2](https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_22.gif?raw=true "Editor")
+![Editor Footage 3](https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_23.jpeg?raw=true "Editor")
 ## Engine High Lights
 
 - Default fragment & vertex shaders and ability to create custom shaders for materials.
@@ -73,6 +74,22 @@ ToolKit comes with a Visual Studio solution. The solution has been created with 
 
 Currently, ToolKit can only be build for Windows. However it has been tested for web builds and can generate web outputs with Emscripten. The second platfrom that it gives output will be web. ToolKit does not have any Windows dependency and can be build for  Mac-Os and Linux. Each os. should provide a convinient workflow by providing a code editor and well established compile system. For this reason Mac & Linux won't be handled until a stable release published.
 
+### Web Platform
+
+This feature is not stable & in active development.
+- Install emscripten, download ninja and place it in, emsdk / upstream / emscripten. 
+- In the ToolKit directory, create a Build directory. 
+- Enter Build. Open cmd and Run "emcmake cmake -S .."
+- Than run ninja
+- Install chrome
+- Install chrome C/C++ DevTools Support (Dwarf)
+- From the developer tools settings (wheel icon *)
+- Preferences / Sources / Check: "Enable javascript source maps"
+- Experiments /  Check: "WebAssembly Debugging: Enable DWARF support"
+- Go to ToolKit / Bin open cmd run "emrun SpaceShooter.html --browser chrome
+
+You can see the c++ code, call stack, local - global scope and set break points.
+
 ## Dependencies
 - stb_image - MIT 
 - SDL 2.0 - Zlib
@@ -88,7 +105,6 @@ Currently, ToolKit can only be build for Windows. However it has been tested for
 
 ### Renderer
 - Currently I am using Opengl ES 2.0 along with Sdl. I have not isolated renderer from the underlying api. That is, renderer, texture, mesh ect ... makes direct calls to the Opengl. This isolation is needed. 
-  - (**Open - contatc me please**)
 - Forward renderer. 
   - Sort objects to minimize redundant state changes.
   - Support transparency by sorting objects by depth.
@@ -99,13 +115,11 @@ Currently, ToolKit can only be build for Windows. However it has been tested for
   - Simple shadow maps for directional lights.
   - Allow, pick 8 lights per object.
   - Point, spot, directional light entities for the editor.
-  - (**Open - contact me please**)
 
 ### Scene manager
  - Implement Non-uniform octree scene patitioning.
  - Implement frustum culling.
  - Update picking queries to utilze octree.
- - (**Open - contact me please**)
 
 ### Editor
 - Editor Improvements
@@ -113,17 +127,14 @@ Currently, ToolKit can only be build for Windows. However it has been tested for
   - Viewport orbit view improvements.
   - Sound & Image import with drag & drop.
   - Asset viewer improvements.
-  - (**Open - contact me please**)
 - Game Plug-In
   - Play - pause - stop the current scene which require, compiling & loading of the game play plugin and run it within editor. 
-  - (**In Progress**)
 
 ### Engine
 - Play 3d sound.
 - Play background sound.
 - Replace openal with  MojoAL.
 - Create sound entity for the editor.
-  - (**Open - contact me please**)
 
 ## Final Words
 

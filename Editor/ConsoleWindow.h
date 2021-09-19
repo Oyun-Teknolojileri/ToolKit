@@ -42,8 +42,8 @@ namespace ToolKit
     const String g_setTransformOrientationCmd("SetTransformOrientation");
     void SetTransformOrientationExec(TagArgArray tagArgs);
 
-    const String g_importSlientCmd("SetImportSlient");
-    void SetImportSlient(TagArgArray tagArgs);
+    const String g_importSlientCmd("ImportSlient");
+    void ImportSlient(TagArgArray tagArgs);
 
     const String g_selectByTag("SelectByTag");
     void SelectByTag(TagArgArray tagArgs);
@@ -59,6 +59,12 @@ namespace ToolKit
 
     const String g_showSelectionBoundary("ShowSelectionBoundary");
     void ShowSelectionBoundary(TagArgArray tagArgs);
+
+    const String g_showGraphicsApiLogs("ShowGraphicsApiLogs");
+    void ShowGraphicsApiLogs(TagArgArray tagArgs);
+
+    const String g_setWorkspaceDir("SetWorkspaceDir");
+    void SetWorkspaceDir(TagArgArray tagArgs);
 
     // Command errors
     const String g_noValidEntity("No valid entity");

@@ -9,8 +9,10 @@
 #include "Directional.h"
 #include "Viewport.h"
 #include "TransformMod.h"
-#include "util.h"
+#include "Util.h"
 #include "DebugNew.h"
+
+#include <filesystem>
 
 namespace ToolKit
 {
@@ -51,6 +53,7 @@ namespace ToolKit
       {
         return;
       }
+
       if (tagArgs.front().second.empty())
       {
         return;
@@ -363,7 +366,7 @@ namespace ToolKit
       }
     }
 
-    void SetImportSlient(TagArgArray tagArgs)
+    void ImportSlient(TagArgArray tagArgs)
     {
       BoolCheck(tagArgs, &g_app->m_importSlient);
     }
@@ -471,10 +474,51 @@ namespace ToolKit
       BoolCheck(tagArgs, &g_app->m_showSelectionBoundary);
     }
 
+    void ShowGraphicsApiLogs(TagArgArray tagArgs)
+    {
+      if (tagArgs.empty())
+      {
+        return;
+      }
+
+      if (tagArgs.front().second.empty())
+      {
+        return;
+      }
+
+      String lvl = tagArgs.front().second.front();
+      g_app->m_showGraphicsApiErrors = std::atoi(lvl.c_str());
+    }
+
+    void SetWorkspaceDir(TagArgArray tagArgs)
+    {
+      TagArgArray::const_iterator pathTag = GetTag("path", tagArgs);
+      if (pathTag != tagArgs.end())
+      {
+        String path = pathTag->second.front();
+        String manUpMsg = "You can manually update workspace directory in 'yourInstallment/ToolKit/Resources/workspace.settings'";
+        if (CheckFile(path) && std::filesystem::is_directory(path))
+        {
+          // Try updating default.settings
+          if (g_app->m_workspace.SetDefaultWorkspace(path))
+          {
+            String info = "Your Workspace directry set to: " + path + "\n" + manUpMsg;
+            g_app->GetConsole()->AddLog(info, ConsoleWindow::LogType::Memo);
+            return;
+          }
+        }
+
+        String err = "There is a problem in creating workspace directory with the given path.";
+        err.append(" Projects will be saved in your installment folder.\n");
+        err += manUpMsg;
+
+        g_app->GetConsole()->AddLog(err, ConsoleWindow::LogType::Error);
+      }
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
     static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
-    static char* Strdup(const char* str) { size_t len = strlen(str) + 1; void* buf = malloc(len); IM_ASSERT(buf); return (char*)memcpy(buf, (const void*)str, len); }
     static void Strtrim(char* str) { char* str_end = str + strlen(str); while (str_end > str && str_end[-1] == ' ') str_end--; *str_end = 0; }
 
     ConsoleWindow::ConsoleWindow(XmlNode* node)
@@ -494,12 +538,14 @@ namespace ToolKit
       CreateCommand(g_transformCmd, TransformExec);
       CreateCommand(g_getTransformCmd, GetTransformExec);
       CreateCommand(g_setTransformOrientationCmd, SetTransformOrientationExec);
-      CreateCommand(g_importSlientCmd, SetImportSlient);
+      CreateCommand(g_importSlientCmd, ImportSlient);
       CreateCommand(g_selectByTag, SelectByTag);
       CreateCommand(g_lookAt, LookAt);
       CreateCommand(g_applyTransformToMesh, ApplyTransformToMesh);
       CreateCommand(g_saveMesh, SaveMesh);
       CreateCommand(g_showSelectionBoundary, ShowSelectionBoundary);
+      CreateCommand(g_showGraphicsApiLogs, ShowGraphicsApiLogs);
+      CreateCommand(g_setWorkspaceDir, SetWorkspaceDir);
     }
 
     ConsoleWindow::~ConsoleWindow()
@@ -512,8 +558,8 @@ namespace ToolKit
       if (ImGui::Begin(g_consoleStr.c_str(), &m_visible))
       {
         // Output window.
-        const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-        ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar);
+        const float footerHeightReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+        ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeightReserve), false, ImGuiWindowFlags_HorizontalScrollbar);
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
         for (size_t i = 0; i < m_items.size(); i++)
         {
@@ -600,7 +646,7 @@ namespace ToolKit
           {
             ExecCommand(s);
           }
-          strcpy_s(s, sizeof(inputBuff), "");
+          strcpy(s, "");
           reclaimFocus = true;
         }
         else
@@ -632,33 +678,46 @@ namespace ToolKit
 
     void ConsoleWindow::AddLog(const String& log, LogType type)
     {
-      String prefixed;
+      String prefix;
       switch (type)
       {
       case LogType::Error:
-        prefixed = g_errorStr + log;
+        prefix = g_errorStr;
         break;
       case LogType::Warning:
-        prefixed = g_warningStr + log;
+        prefix = g_warningStr;
         break;
       case LogType::Command:
-        prefixed = g_commandStr + log;
+        prefix = g_commandStr;
         break;
       case LogType::Memo:
       default:
-        prefixed = g_memoStr + log;
+        prefix = g_memoStr;
         break;
       }
 
-      m_items.push_back(prefixed);
-      m_scrollToBottom = true;
+      AddLog(log, prefix);
     }
 
     void ConsoleWindow::AddLog(const String& log, const String& tag)
     {
-      String prefixed = "[" + tag + "] " + log;
+      String prefixed;
+      if (tag.empty()) 
+      {
+        prefixed = log;
+      }
+      else
+      {
+        prefixed = "[" + tag + "] " + log;
+      }
+       
       m_items.push_back(prefixed);
       m_scrollToBottom = true;
+
+      if (m_items.size() > 1024)
+      {
+        ClearLog();
+      }
     }
 
     void ConsoleWindow::ClearLog()
@@ -694,7 +753,7 @@ namespace ToolKit
       }
       else
       {
-        sprintf_s(buffer, sizeof(buffer), "Unknown command: '%s'\n", cmd.c_str());
+        sprintf(buffer, "Unknown command: '%s'\n", cmd.c_str());
         AddLog(buffer, LogType::Error);
       }
 
@@ -758,7 +817,6 @@ namespace ToolKit
       Split(args, "--", splits);
 
       // Preserve all spaces in text.
-      const char spaceSub = (char)26;
       for (String& arg : splits)
       {
         StringArray values;
@@ -817,7 +875,7 @@ namespace ToolKit
         if (candidates.empty())
         {
           // No match
-          sprintf_s(buffer, sizeof(buffer), "No match for \"%.*s\"!\n", (int)(word_end - word_start), word_start);
+          sprintf(buffer, "No match for \"%.*s\"!\n", (int)(word_end - word_start), word_start);
           AddLog(buffer);
         }
         else if (candidates.size() == 1)
@@ -861,7 +919,7 @@ namespace ToolKit
           AddLog("Possible matches:\n");
           for (size_t i = 0; i < candidates.size(); i++)
           {
-            sprintf_s(buffer, sizeof(buffer), "- %s\n", candidates[i].c_str());
+            sprintf(buffer, "- %s\n", candidates[i].c_str());
             AddLog(buffer);
           }
         }

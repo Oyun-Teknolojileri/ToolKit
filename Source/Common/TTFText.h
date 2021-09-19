@@ -77,9 +77,7 @@ private:
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    GLenum err = glGetError();
     glTexImage2D(GL_TEXTURE_2D, 0, format, m_sdlSurface->w, m_sdlSurface->h, 0, format, GL_UNSIGNED_BYTE, m_sdlSurface->pixels);
-    err = glGetError();
 
     std::shared_ptr<ToolKit::Texture> texPtr(new ToolKit::Texture());
     texPtr->m_textureId = textureId;

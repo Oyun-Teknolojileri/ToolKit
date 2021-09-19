@@ -58,7 +58,19 @@ namespace ToolKit
       return;
     }
 
-    const char* str = m_source.c_str();
+    // Start with #version
+    const char* str = nullptr;
+    size_t loc = m_source.find("#version");
+    if (loc != String::npos)
+    {
+      m_source = m_source.substr(loc);
+      str = m_source.c_str();
+    }
+    else
+    {
+      str = m_source.c_str();
+    }
+
     glShaderSource(m_shaderHandle, 1, &str, nullptr);
     glCompileShader(m_shaderHandle);
 
@@ -66,7 +78,6 @@ namespace ToolKit
     glGetShaderiv(m_shaderHandle, GL_COMPILE_STATUS, &compiled);
     if (!compiled)
     {
-      assert(compiled);
       GLint infoLen = 0;
       glGetShaderiv(m_shaderHandle, GL_INFO_LOG_LENGTH, &infoLen);
       if (infoLen > 1)
@@ -74,10 +85,13 @@ namespace ToolKit
         char* log = new char[infoLen];
         glGetShaderInfoLog(m_shaderHandle, infoLen, nullptr, log);
         Logger::GetInstance()->Log(log);
+        Logger::GetInstance()->Log(m_file);
+        Logger::GetInstance()->Log(str);
 
         SafeDelArray(log);
       }
 
+      assert(compiled);
       glDeleteShader(m_shaderHandle);
       return;
     }
@@ -293,45 +307,6 @@ namespace ToolKit
   void ShaderManager::Init()
   {
     ResourceManager::Init();
-
-    char skinShaderStr[] =
-      "#version 300 es\n"
-      "struct Bone"
-      "{"
-      "   mat4 transform;"
-      "   mat4 bindPose;"
-      "};"
-      "in vec3 vPosition;"
-      "in vec3 vNormal;"
-      "in vec2 vTexture;"
-      "in vec3 vBiTan;"
-      "in uvec4 vBones;"
-      "in vec4 vWeights;"
-      "uniform mat4 ProjectViewModel;"
-      "uniform Bone bones[64];"
-      "out vec3 v_pos;"
-      "out vec3 v_normal;"
-      "out vec2 v_texture;"
-      "out vec3 v_bitan;"
-      "void main()"
-      "{"
-      "   gl_Position = bones[vBones.x].transform * bones[vBones.x].bindPose * vec4(vPosition, 1.0) * vWeights.x;"
-      "   gl_Position += bones[vBones.y].transform * bones[vBones.y].bindPose * vec4(vPosition, 1.0) * vWeights.y;"
-      "   gl_Position += bones[vBones.z].transform * bones[vBones.z].bindPose * vec4(vPosition, 1.0) * vWeights.z;"
-      "   gl_Position += bones[vBones.w].transform * bones[vBones.w].bindPose * vec4(vPosition, 1.0) * vWeights.w;"
-      "   v_pos = gl_Position.xyz;"
-      "   gl_Position = ProjectViewModel * gl_Position;"
-      "   v_texture = vTexture;"
-      "   v_normal = vNormal;"
-      "   v_bitan = vBiTan;"
-      "}";
-
-    ShaderPtr skin = std::make_shared<Shader>();
-    skin->m_source = skinShaderStr;
-    skin->m_uniforms.push_back(Uniform::PROJECT_MODEL_VIEW);
-    skin->Init();
-
-    m_storage[ShaderPath("defaultSkin.shader")] = skin;
   }
 
 }

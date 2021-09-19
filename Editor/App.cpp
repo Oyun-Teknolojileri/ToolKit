@@ -26,6 +26,7 @@ namespace ToolKit
   {
 
     App::App(int windowWidth, int windowHeight)
+      : m_workspace(this)
     {
       m_cursor = nullptr;
       m_lightMaster = nullptr;
@@ -44,8 +45,6 @@ namespace ToolKit
 
     void App::Init()
     {
-      m_scene = std::make_shared<EditorScene>(ScenePath("New Scene" + SCENE));
-
       m_cursor = new Cursor();
       m_origin = new Axis3d();
       m_grid = new Grid(100);
@@ -84,66 +83,32 @@ namespace ToolKit
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
       
-      // Set last window layout.
-      if (CheckFile("..//Resources//Editor.settings") && !m_onNewScene)
+      m_workspace.Init();
+      m_scene = std::make_shared<EditorScene>(ScenePath("New Scene" + SCENE));
+
+      ApplyProjectSettings(m_onNewScene);
+      if (!CheckFile(m_workspace.GetActiveWorkspace()))
       {
-        DeSerialize(nullptr, nullptr);
+        StringInputWindow* wsDir = new StringInputWindow("Set Workspace Directory##SetWsdir", false);
+        wsDir->m_hint = "User/Documents/ToolKit";
+        wsDir->m_inputLabel = "Workspace Directory";
+        wsDir->m_name = "Set Workspace Directory";
+        wsDir->m_taskFn = [](const String& val) -> void
+        {
+          String cmd = "SetWorkspaceDir --path \"" + val + "\"";
+          g_app->GetConsole()->ExecCommand(cmd);
+        };
       }
       else
       {
-        // Default UI
-        
-        // Perspective.
-        Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
-        vp->m_name = "Perspective";
-        vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
-        vp->m_camera->LookAt(Vec3(0.0f));
-        m_windows.push_back(vp);
-
-        // Orthographic.
-        vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
-        vp->m_name = "Orthographic";
-        vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
-        vp->m_camera->Pitch(glm::radians(-90.0f));
-        vp->m_cameraAlignment = 1;
-        vp->m_orthographic = true;
-        m_windows.push_back(vp);
-
-        ConsoleWindow* console = new ConsoleWindow();
-        m_windows.push_back(console);
-
-        FolderWindow* assetBrowser = new FolderWindow();
-        assetBrowser->m_name = g_assetBrowserStr;
-        assetBrowser->Iterate(ResourcePath(), true);
-        m_windows.push_back(assetBrowser);
-
-        OutlinerWindow* outliner = new OutlinerWindow();
-        outliner->m_name = g_outlinerStr;
-        m_windows.push_back(outliner);
-
-        PropInspector* inspector = new PropInspector();
-        inspector->m_name = g_propInspector;
-        m_windows.push_back(inspector);
-
-        MaterialInspector* matInspect = new MaterialInspector();
-        matInspect->m_name = g_matInspector;
-        m_windows.push_back(matInspect);
+        m_workspace.RefreshProjects();
       }
-
-      UI::InitIcons();
     }
 
     void App::Destroy()
     {
       // UI.
-      for (Window* wnd : m_windows)
-      {
-        SafeDel(wnd);
-      }
-      m_windows.clear();
-
-      SafeDel(Viewport::m_overlayMods);
-      SafeDel(Viewport::m_overlayOptions);
+      DeleteWindows();
 
       m_scene->Destroy();
 
@@ -286,7 +251,7 @@ namespace ToolKit
       Destroy();
       Init();
       m_scene = std::make_shared<EditorScene>(ScenePath(name + SCENE));
-      m_scene->m_newScene = true;
+      m_onNewScene = false;
     }
 
     void App::OnSaveScene()
@@ -329,6 +294,7 @@ namespace ToolKit
         YesNoWindow* reallyQuit = new YesNoWindow("Quiting... Are you sure?##ClsApp");
         reallyQuit->m_yesCallback = [this]()
         {
+          m_workspace.Serialize(nullptr, nullptr);
           Serialize(nullptr, nullptr);
           g_running = false;
         };
@@ -340,6 +306,145 @@ namespace ToolKit
 
         UI::m_volatileWindows.push_back(reallyQuit);
         processing = true;
+      }
+    }
+
+    void App::OnNewProject(const String& name)
+    {
+      if (m_workspace.GetActiveWorkspace().empty())
+      {
+        GetConsole()->AddLog("No workspace. Project can't be created.", ConsoleWindow::LogType::Error);
+        return;
+      }
+
+      String fullPath = ConcatPaths({ m_workspace.GetActiveWorkspace(), name });
+      if (CheckFile(fullPath))
+      {
+        GetConsole()->AddLog("Project already exist.", ConsoleWindow::LogType::Error);
+        return;
+      }
+
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Audio" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Fonts" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Materials" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Meshes" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Scenes" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Shaders" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Sprites" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Textures" }));
+      OpenProject({ name, "" });
+    }
+
+    void App::ResetUI()
+    {      
+      DeleteWindows();
+      if (CheckFile(ConcatPaths({ DefaultPath(), "default.settings" })))
+      {
+        // Try reading defaults.
+        String settingsFile = ConcatPaths({ DefaultPath(), "default.settings" });
+        std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
+        
+        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
+        lclDoc->parse<0>(lclFile->data());
+        
+        XmlNode* app = Query(lclDoc.get(), { "App" });
+        CreateWindows(app);
+
+        settingsFile = ConcatPaths({ DefaultPath(), "defaultUI.ini" });
+        ImGui::LoadIniSettingsFromDisk(settingsFile.c_str());
+      }
+      else
+      {
+        // Perspective.
+        Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+        vp->m_name = "Perspective";
+        vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
+        vp->m_camera->LookAt(Vec3(0.0f));
+        m_windows.push_back(vp);
+
+        // Orthographic.
+        vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+        vp->m_name = "Orthographic";
+        vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
+        vp->m_camera->Pitch(glm::radians(-90.0f));
+        vp->m_cameraAlignment = 1;
+        vp->m_orthographic = true;
+        m_windows.push_back(vp);
+
+        ConsoleWindow* console = new ConsoleWindow();
+        m_windows.push_back(console);
+
+        FolderWindow* assetBrowser = new FolderWindow();
+        assetBrowser->m_name = g_assetBrowserStr;
+        assetBrowser->Iterate(ResourcePath(), true);
+        m_windows.push_back(assetBrowser);
+
+        OutlinerWindow* outliner = new OutlinerWindow();
+        outliner->m_name = g_outlinerStr;
+        m_windows.push_back(outliner);
+
+        PropInspector* inspector = new PropInspector();
+        inspector->m_name = g_propInspector;
+        m_windows.push_back(inspector);
+
+        MaterialInspector* matInspect = new MaterialInspector();
+        matInspect->m_name = g_matInspector;
+        m_windows.push_back(matInspect);
+      }
+    }
+
+    void App::DeleteWindows()
+    {
+      for (Window* wnd : m_windows)
+      {
+        SafeDel(wnd);
+      }
+      m_windows.clear();
+
+      SafeDel(Viewport::m_overlayMods);
+      SafeDel(Viewport::m_overlayOptions);
+    }
+
+    void App::CreateWindows(XmlNode* parent)
+    {
+      if (XmlNode* wndNode = parent->first_node("Window"))
+      {
+        do
+        {
+          int type;
+          ReadAttr(wndNode, "type", type);
+
+          Window* wnd = nullptr;
+          switch ((Window::Type)type)
+          {
+          case Window::Type::Viewport:
+            wnd = new Viewport(wndNode);
+            break;
+          case Window::Type::Console:
+            wnd = new ConsoleWindow(wndNode);
+            break;
+          case Window::Type::Outliner:
+            wnd = new OutlinerWindow(wndNode);
+            break;
+          case Window::Type::Browser:
+            wnd = new FolderWindow(wndNode);
+            break;
+          case Window::Type::Inspector:
+            wnd = new PropInspector(wndNode);
+            break;
+          case Window::Type::MaterialInspector:
+            wnd = new MaterialInspector(wndNode);
+            break;
+          default:
+            assert(false);
+            break;
+          }
+
+          if (wnd)
+          {
+            m_windows.push_back(wnd);
+          }
+        } while ((wndNode = wndNode->next_sibling("Window")));
       }
     }
 
@@ -359,13 +464,13 @@ namespace ToolKit
       if (CheckFile(fullPath))
       {
         // Set the execute path.
-        std::filesystem::path path = pathBck.u8string() + "\\..\\Utils\\Import";
+        std::filesystem::path path = pathBck.u8string() + ConcatPaths({".", "..", "Utils", "Import"});
         std::filesystem::current_path(path);
 
         std::filesystem::path cpyDir = ".";
         if (!subDir.empty())
         {
-          cpyDir += '\\' + subDir;
+          cpyDir += GetPathSeparator() + subDir;
           std::filesystem::create_directories(cpyDir);
         }
 
@@ -427,7 +532,7 @@ namespace ToolKit
                 {
                   String name, ext;
                   DecomposePath(missingFile, nullptr, &name, &ext);
-                  String missingFullPath = searchPath + '\\' + name + ext;
+                  String missingFullPath = ConcatPaths({ searchPath, name + ext });
                   if (CheckFile(missingFullPath))
                   {
                     numFound++;
@@ -454,7 +559,8 @@ namespace ToolKit
             {
               String ext;
               DecomposePath(line, nullptr, nullptr, &ext);
-              if (line.rfind(".\\") == 0)
+              const String selfDir = '.' + GetPathSeparatorAsStr();
+              if (line.rfind(selfDir) == 0)
               {
                 line = line.substr(2, -1);
               }
@@ -499,11 +605,9 @@ namespace ToolKit
                 fullPath = MaterialPath(line);
               }
 
-              fullPath = "..\\" + fullPath; // Resource dir is one more level up.
-
               String path, name;
               DecomposePath(fullPath, &path, &name, &ext);
-              std::filesystem::create_directory(path);
+              std::filesystem::create_directories(path);
               std::filesystem::copy
               (
                 line, fullPath,
@@ -596,6 +700,42 @@ namespace ToolKit
       }
     }
 
+    void App::ApplyProjectSettings(bool setDefaults)
+    {
+      if (CheckFile(ConcatPaths({ ResourcePath(), "Editor.settings" })) && !setDefaults)
+      {
+        DeSerialize(nullptr, nullptr);
+
+        // Restore window.
+        SDL_SetWindowSize(g_window, m_renderer->m_windowWidth, m_renderer->m_windowHeight);
+        SDL_SetWindowPosition(g_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
+        if (m_windowMaximized)
+        {
+          SDL_MaximizeWindow(g_window);
+        }
+
+        UI::InitSettings();
+      }
+      else
+      {
+        ResetUI();
+      }
+    }
+
+    void App::OpenProject(const Project& project)
+    {
+      UI::m_postponedActions.push_back
+      (
+        [this, project]() -> void
+        {
+          m_workspace.SetActiveProject(project);
+          m_workspace.Serialize(nullptr, nullptr);
+          OnNewScene("New Scene");
+        }
+      );
+    }
+
     Viewport* App::GetActiveViewport()
     {
       for (Window* wnd : m_windows)
@@ -685,17 +825,27 @@ namespace ToolKit
         return;
       }
 
-      auto RenderFn = [this, vp](const EntityRawPtrArray& selection, const Vec3& color)
+      auto RenderFn = [this, vp](const EntityRawPtrArray& selection, const Vec3& color) -> void
       {
-        glEnable(GL_STENCIL_TEST);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-        glStencilFunc(GL_ALWAYS, 1, 0xFF);
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        if (selection.empty())
+        {
+          return;
+        }
 
         RenderTarget stencilMask((int)vp->m_width, (int)vp->m_height);
         stencilMask.Init();
 
-        m_renderer->SetRenderTarget(&stencilMask);
+        m_renderer->SetRenderTarget(&stencilMask, true, { 0.0f, 0.0f, 0.0f, 1.0 });
+
+        glEnable(GL_STENCIL_TEST);
+        glStencilMask(0xFF);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);
+        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+        // webgl create problem with depth only drawing with textures.
+        static MaterialPtr solidMat = GetMaterialManager()->GetCopyOfSolidMaterial();
+        m_renderer->m_overrideMat = solidMat;
 
         for (Entity* ntt : selection)
         {
@@ -705,10 +855,13 @@ namespace ToolKit
           }
         }
 
+        m_renderer->m_overrideMat = nullptr;
+
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        ShaderPtr solidColor = GetShaderManager()->Create<Shader>(ShaderPath("unlitColorFrag.shader"));
+        glStencilFunc(GL_NOTEQUAL, 0xFF, 0xFF);
+        glStencilMask(0x00);
+        ShaderPtr solidColor = GetShaderManager()->Create<Shader>(ShaderPath("unlitColorFrag.shader", true));
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
 
@@ -716,7 +869,7 @@ namespace ToolKit
 
         // Dilate.
         glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
-        ShaderPtr dilate = GetShaderManager()->Create<Shader>(ShaderPath("dilateFrag.shader"));
+        ShaderPtr dilate = GetShaderManager()->Create<Shader>(ShaderPath("dilateFrag.shader", true));
         dilate->SetShaderParameter("Color", color);
         m_renderer->DrawFullQuad(dilate);
       };
@@ -741,104 +894,83 @@ namespace ToolKit
 
     void App::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
+      m_workspace.Serialize(nullptr, nullptr);
+
       std::ofstream file;
-      String fileName = "..//Resources//Editor.settings";
+      String fileName = ConcatPaths({ ResourcePath(), "Editor.settings" });
 
       file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
       {
-        XmlDocument appDoc;
-        XmlNode* app = appDoc.allocate_node(rapidxml::node_element, "App");
-        appDoc.append_node(app);
+        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument> ();
+        XmlNode* app = lclDoc->allocate_node(rapidxml::node_element, "App");
+        lclDoc->append_node(app);
+
+        XmlNode* settings = lclDoc->allocate_node(rapidxml::node_element, "Settings");
+        app->append_node(settings);
+
+        XmlNode* setNode = lclDoc->allocate_node(rapidxml::node_element, "Size");
+        WriteAttr(setNode, lclDoc.get(), "width", std::to_string(m_renderer->m_windowWidth));
+        WriteAttr(setNode, lclDoc.get(), "height", std::to_string(m_renderer->m_windowHeight));
+        WriteAttr(setNode, lclDoc.get(), "maximized", std::to_string(m_windowMaximized));
+        settings->append_node(setNode);
+
         for (Window* w : m_windows)
         {
-          w->Serialize(&appDoc, app);
+          w->Serialize(lclDoc.get(), app);
         }
-
-        if (!m_scene->m_newScene)
-        {
-          WriteAttr(app, &appDoc, "scene", m_scene->m_name);
-        }
-
-        WriteAttr(app, &appDoc, "width", std::to_string(m_renderer->m_windowWidth));
-        WriteAttr(app, &appDoc, "height", std::to_string(m_renderer->m_windowHeight));
-        WriteAttr(app, &appDoc, "maximized", std::to_string(m_windowMaximized));
 
         std::string xml;
-        rapidxml::print(std::back_inserter(xml), appDoc, 0);
+        rapidxml::print(std::back_inserter(xml), *lclDoc, 0);
 
         file << xml;
         file.close();
-        appDoc.clear();
+        lclDoc->clear();
       }
     }
 
     void App::DeSerialize(XmlDocument* doc, XmlNode* parent)
     {
-      XmlFile file("..//Resources//Editor.settings");
-      XmlDocument appDoc;
-      appDoc.parse<0>(file.data());
+      XmlFilePtr lclFile = nullptr;
+      XmlDocumentPtr lclDoc = nullptr;
 
-      if (XmlNode* root = appDoc.first_node("App"))
+      if (doc == nullptr)
       {
-        // Windows
-        XmlNode* wndNode = root->first_node("Window");
-        do 
+        String settingsFile = ConcatPaths({ ResourcePath(), "Editor.settings" });
+        lclFile = std::make_shared<XmlFile> (settingsFile.c_str());
+
+        lclDoc = std::make_shared<XmlDocument> ();
+        lclDoc->parse<0>(lclFile->data());
+        doc = lclDoc.get();
+      }
+
+      if (XmlNode* root = doc->first_node("App"))
+      {        
+        if (XmlNode* settings = root->first_node("Settings"))
         {
-          int type;
-          ReadAttr(wndNode, "type", type);
-
-          Window* wnd = nullptr;
-          switch ((Window::Type)type)
+          if (XmlNode* setNode = settings->first_node("Size"))
           {
-          case Window::Type::Viewport:
-            wnd = new Viewport(wndNode);
-            break;
-          case Window::Type::Console:
-            wnd = new ConsoleWindow(wndNode);
-            break;
-          case Window::Type::Outliner:
-            wnd = new OutlinerWindow(wndNode);
-            break;
-          case Window::Type::Browser:
-            wnd = new FolderWindow(wndNode);
-            break;
-          case Window::Type::Inspector:
-            wnd = new PropInspector(wndNode);
-            break;
-          case Window::Type::MaterialInspector:
-            wnd = new MaterialInspector(wndNode);
-            break;
-          default:
-            assert(false);
-            break;
-          }
+            uint width = 0;
+            ReadAttr(setNode, "width", width);
+            uint height = 0;
+            ReadAttr(setNode, "height", height);
+            ReadAttr(setNode, "maximized", m_windowMaximized);
 
-          if (wnd)
-          {
-            m_windows.push_back(wnd);
+            if (width > 0 && height > 0)
+            {
+              OnResize(width, height);
+            }
           }
-        } while (wndNode = wndNode->next_sibling("Window"));
-
-        String scene;
-        ReadAttr(root, "scene", scene);
-        if (!scene.empty())
-        {
-          String fullPath = ScenePath(scene + SCENE);
-          OpenScene(fullPath);
         }
 
-        uint width = 0;
-        ReadAttr(root, "width", width);
-        uint height = 0;
-        ReadAttr(root, "height", height);
+        CreateWindows(root);
+      }
 
-        if (width > 0 && height > 0)
-        {
-          OnResize(width, height);
-        }
-
-        ReadAttr(root, "maximized", m_windowMaximized);
+      String scene = m_workspace.GetActiveProject().scene;
+      if (!scene.empty())
+      {
+        String fullPath = ScenePath(scene + SCENE);
+        OpenScene(fullPath);
       }
     }
 

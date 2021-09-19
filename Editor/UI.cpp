@@ -30,9 +30,9 @@ namespace ToolKit
     float UI::m_hoverTimeForHelp = 1.0f;
     UI::Import UI::ImportData;
     UI::SearchFile UI::SearchFileData;
-    StringInputWindow UI::m_strInputWindow;
     std::vector<Window*> UI::m_volatileWindows;
     uint Window::m_baseId = 0; // unused id.
+    std::vector<std::function<void()>> UI::m_postponedActions;
 
     // Icons
     TexturePtr UI::m_selectIcn;
@@ -61,6 +61,7 @@ namespace ToolKit
     {
       IMGUI_CHECKVERSION();
       ImGui::CreateContext();
+
       ImGuiIO& io = ImGui::GetIO();
       io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
       io.ConfigWindowsMoveFromTitleBarOnly = true;
@@ -89,12 +90,11 @@ namespace ToolKit
 
     void UI::InitDocking()
     {
-      static bool opt_fullscreen_persistant = true;
-      bool opt_fullscreen = opt_fullscreen_persistant;
-      static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+      bool optFullScreen = true;
+      static ImGuiDockNodeFlags dockFlags = ImGuiDockNodeFlags_None;
 
-      ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-      if (opt_fullscreen)
+      ImGuiWindowFlags wndFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+      if (optFullScreen)
       {
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->Pos);
@@ -102,26 +102,30 @@ namespace ToolKit
         ImGui::SetNextWindowViewport(viewport->ID);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        wndFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        wndFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
       }
 
-      if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-        window_flags |= ImGuiWindowFlags_NoBackground;
+      if (dockFlags & ImGuiDockNodeFlags_PassthruCentralNode)
+      {
+        wndFlags |= ImGuiWindowFlags_NoBackground;
+      }
 
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-      ImGui::Begin("DockSpace Demo", nullptr, window_flags);
+      ImGui::Begin("DockSpace Demo", nullptr, wndFlags);
       ImGui::PopStyleVar();
 
-      if (opt_fullscreen)
+      if (optFullScreen)
+      {
         ImGui::PopStyleVar(2);
+      }
 
       // DockSpace
       ImGuiIO& io = ImGui::GetIO();
       if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
       {
         ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockFlags);
       }
 
       ImGui::End();
@@ -129,49 +133,49 @@ namespace ToolKit
 
     void UI::InitIcons()
     {
-      m_selectIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/select.png"));
+      m_selectIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/select.png", true));
       m_selectIcn->Init();
-      m_cursorIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/cursor.png"));
+      m_cursorIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/cursor.png", true));
       m_cursorIcn->Init();
-      m_moveIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/move.png"));
+      m_moveIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/move.png", true));
       m_moveIcn->Init();
-      m_rotateIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/rotate.png"));
+      m_rotateIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/rotate.png", true));
       m_rotateIcn->Init();
-      m_scaleIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/scale.png"));
+      m_scaleIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/scale.png", true));
       m_scaleIcn->Init();
-      m_snapIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/snap.png"));
+      m_snapIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/snap.png", true));
       m_snapIcon->Init();
-      m_audioIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/audio.png"));
+      m_audioIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/audio.png", true));
       m_audioIcon->Init();
-      m_cameraIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/camera.png"));
+      m_cameraIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/camera.png", true));
       m_cameraIcon->Init();
-      m_clipIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/clip.png"));
+      m_clipIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/clip.png", true));
       m_clipIcon->Init();
-      m_fileIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/file.png"));
+      m_fileIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/file.png", true));
       m_fileIcon->Init();
-      m_folderIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/folder.png"));
+      m_folderIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/folder.png", true));
       m_folderIcon->Init();
-      m_imageIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/image.png"));
+      m_imageIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/image.png", true));
       m_imageIcon->Init();
-      m_lightIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/light.png"));
+      m_lightIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/light.png", true));
       m_lightIcon->Init();
-      m_materialIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/material.png"));
+      m_materialIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/material.png", true));
       m_materialIcon->Init();
-      m_meshIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/mesh.png"));
+      m_meshIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/mesh.png", true));
       m_meshIcon->Init();
-      m_armatureIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/armature.png"));
+      m_armatureIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/armature.png", true));
       m_armatureIcon->Init();
-      m_codeIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/code.png"));
+      m_codeIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/code.png", true));
       m_codeIcon->Init();
-      m_boneIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/bone.png"));
+      m_boneIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/bone.png", true));
       m_boneIcon->Init();
-      m_worldIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/world.png"));
+      m_worldIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/world.png", true));
       m_worldIcon->Init();
-      m_axisIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/axis.png"));
+      m_axisIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/axis.png", true));
       m_axisIcon->Init();
 
       // Set application Icon.
-      m_appIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/app.png"));
+      m_appIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/app.png", true));
       m_appIcon->Init(false);
       SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(m_appIcon->m_image, m_appIcon->m_width, m_appIcon->m_height, 8, m_appIcon->m_width * 4, SDL_PIXELFORMAT_ABGR8888);
       SDL_SetWindowIcon(g_window, surface);
@@ -236,6 +240,23 @@ namespace ToolKit
       style->Colors[ImGuiCol_TextSelectedBg] = { 0.18431373f, 0.39607847f, 0.79215693f, 0.90f };
     }
 
+    void UI::InitSettings()
+    {
+      String path = "./imgui.ini";
+      if (CheckFile(path))
+      {
+        ImGui::LoadIniSettingsFromDisk(path.c_str());
+      }
+      else
+      {
+        path = ConcatPaths({ DefaultPath(), "defaultUI.ini" });
+        if (CheckFile(path))
+        {
+          ImGui::LoadIniSettingsFromDisk(path.c_str());
+        }
+      }
+    }
+
     void UI::ShowUI()
     {
       ImGui_ImplOpenGL3_NewFrame();
@@ -267,8 +288,6 @@ namespace ToolKit
       ShowSearchForFilesWindow();
       ShowNewSceneWindow();
 
-      m_strInputWindow.Show();
-
       // Show & Destroy if not visible.
       for (int i = (int)m_volatileWindows.size() - 1; i > -1; i--)
       {
@@ -291,6 +310,12 @@ namespace ToolKit
       ImGui::UpdatePlatformWindows();
       ImGui::RenderPlatformWindowsDefault();
       SDL_GL_MakeCurrent(g_window, g_context);
+
+      for (auto& action : m_postponedActions)
+      {
+        action();
+      }
+      m_postponedActions.clear();
     }
 
     void UI::ShowAppMainMenuBar()
@@ -315,39 +340,68 @@ namespace ToolKit
 
     void UI::ShowMenuFile()
     {
-      if (ImGui::MenuItem(g_newSceneStr.c_str()))
+
+      if (ImGui::BeginMenu("Projects"))
       {
-        m_strInputWindow.m_name = "NewScene##NwScn1";
-        m_strInputWindow.m_inputVal = g_newSceneStr;
-        m_strInputWindow.m_inputText = "Name";
-        m_strInputWindow.m_hint = "Scene name";
-        m_strInputWindow.SetVisibility(true);
-        m_strInputWindow.m_taskFn = [](const String& val)
+        if (ImGui::MenuItem("New"))
         {
-          g_app->OnNewScene(val);
-        };
+          StringInputWindow* inputWnd = new StringInputWindow("NewProject", true);
+          inputWnd->m_inputVal = "New Project";
+          inputWnd->m_inputLabel = "Name";
+          inputWnd->m_hint = "Project name";
+          inputWnd->m_taskFn = [](const String& val)
+          {
+            g_app->OnNewProject(val);
+          };
+        }
+
+        ImGui::Separator();
+        for (const Project& project : g_app->m_workspace.m_projects)
+        {
+          if (ImGui::MenuItem(project.name.c_str()))
+          {
+            g_app->OpenProject(project);
+          }
+        }
+        ImGui::EndMenu();
       }
 
-      if (ImGui::MenuItem("Save", "Ctrl+S"))
+      if (ImGui::BeginMenu("Scene"))
       {
-        g_app->OnSaveScene();
-      }
-
-      if (ImGui::MenuItem("SaveAs"))
-      {
-        m_strInputWindow.m_name = "SaveScene##SvScn1";
-        m_strInputWindow.m_inputText = "Name";
-        m_strInputWindow.m_hint = "Scene name";
-        m_strInputWindow.SetVisibility(true);
-        m_strInputWindow.m_taskFn = [](const String& val)
+        if (ImGui::MenuItem("New"))
         {
-          String path;
-          DecomposePath(g_app->m_scene->m_file, &path, nullptr, nullptr);
-          String fullPath = ConcatPaths({ path, val + SCENE });
-          g_app->m_scene->m_file = fullPath;
-          g_app->m_scene->m_name = val;
+          StringInputWindow* inputWnd = new StringInputWindow("NewScene##NwScn1", true);
+          inputWnd->m_inputVal = g_newSceneStr;
+          inputWnd->m_inputLabel = "Name";
+          inputWnd->m_hint = "Scene name";
+          inputWnd->m_taskFn = [](const String& val)
+          {
+            g_app->OnNewScene(val);
+          };
+        }
+
+        ImGui::Separator();
+        if (ImGui::MenuItem("Save", "Ctrl+S"))
+        {
           g_app->OnSaveScene();
-        };
+        }
+
+        if (ImGui::MenuItem("SaveAs"))
+        {
+          StringInputWindow* inputWnd = new StringInputWindow("SaveScene##SvScn1", true);
+          inputWnd->m_inputLabel = "Name";
+          inputWnd->m_hint = "Scene name";
+          inputWnd->m_taskFn = [](const String& val)
+          {
+            String path;
+            DecomposePath(g_app->m_scene->m_file, &path, nullptr, nullptr);
+            String fullPath = ConcatPaths({ path, val + SCENE });
+            g_app->m_scene->m_file = fullPath;
+            g_app->m_scene->m_name = val;
+            g_app->OnSaveScene();
+          };
+        }
+        ImGui::EndMenu();
       }
 
       if (ImGui::MenuItem("Quit", "Alt+F4"))
@@ -398,11 +452,6 @@ namespace ToolKit
         ImGui::EndMenu();
       }
 
-      if (ImGui::MenuItem("Console Window", "Alt+C", nullptr, !g_app->GetConsole()->IsVisible()))
-      {
-        g_app->GetConsole()->SetVisibility(true);
-      }
-
       if (ImGui::BeginMenu("Resource Window"))
       {
         handleMultiWindowFn(Window::Type::Browser);
@@ -416,6 +465,13 @@ namespace ToolKit
         }
 
         ImGui::EndMenu();
+      }
+
+      ImGui::Separator();
+
+      if (ImGui::MenuItem("Console Window", "Alt+C", nullptr, !g_app->GetConsole()->IsVisible()))
+      {
+        g_app->GetConsole()->SetVisibility(true);
       }
 
       if (ImGui::MenuItem("Outliner Window", "Alt+O", nullptr, !g_app->GetOutliner()->IsVisible()))
@@ -435,6 +491,20 @@ namespace ToolKit
 
       ImGui::Separator();
 
+      if (ImGui::MenuItem("Reset Layout"))
+      {
+        m_postponedActions.push_back
+        (
+          []() -> void
+          {
+            g_app->ResetUI();
+          }
+        );
+      }
+
+#ifdef TK_DEBUG
+      ImGui::Separator();
+
       if (!m_windowMenushowMetrics)
       {
         if (ImGui::MenuItem("Show Metrics", "Alt+M"))
@@ -450,23 +520,42 @@ namespace ToolKit
           m_imguiSampleWindow = true;
         }
       }
+#endif
     }
 
     void UI::ShowImportWindow()
     {
-      if (!ImportData.showImportWindow)
+      static String load;
+      if (!ImportData.showImportWindow || ImportData.files.empty())
       {
+        load.clear();
         return;
+      }
+      
+      if (load.empty())
+      {
+        std::fstream importList;
+        load = ConcatPaths({ "..", "Utils", "Import", "importList.txt" });
+        importList.open(load, std::ios::out);
+        if (importList.is_open())
+        {
+          for (String& file : ImportData.files)
+          {
+            if (g_app->CanImport(file))
+            {
+              importList << file + "\n";
+            }
+          }
+        }
       }
 
       if (g_app->m_importSlient)
       {
-        for (size_t i = 0; i < ImportData.files.size(); i++)
-        {
-          g_app->Import(ImportData.files[i], ImportData.subDir, ImportData.overwrite);
-        }
+        g_app->Import(load, ImportData.subDir, ImportData.overwrite);
+        load.clear();
         ImportData.files.clear();
         ImportData.showImportWindow = false;
+        return;
       }
 
       ImGui::OpenPopup("Import");
@@ -475,7 +564,7 @@ namespace ToolKit
         ImGui::Text("Import file: \n\n");
         for (size_t i = 0; i < ImportData.files.size(); i++)
         {
-          ImGui::Text(ImportData.files[i].c_str());
+          ImGui::Text("%s", ImportData.files[i].c_str());
         }
         ImGui::Separator();
 
@@ -498,7 +587,7 @@ namespace ToolKit
           ImGui::Text("Fallowing imports failed due to:\nFile format is not supported.\nSuported formats are fbx, glb, obj.");
           for (String& file : fails)
           {
-            ImGui::Text(file.c_str());
+            ImGui::Text("%s", file.c_str());
           }
           ImGui::Separator();
         }
@@ -514,28 +603,6 @@ namespace ToolKit
 
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {
-          String load;
-          if (ImportData.files.size() > 1)
-          {
-            std::fstream importList;
-            load = "..\\Utils\\Import\\importList.txt";
-            importList.open(load, std::ios::out);
-            if (importList.is_open())
-            {
-              for (String& file : ImportData.files)
-              {
-                if (g_app->CanImport(file))
-                {
-                  importList << file + "\n";
-                }
-              }
-            }
-          }
-          else
-          {
-            load = ImportData.files.front();
-          }
-
           if (g_app->Import(load, ImportData.subDir, ImportData.overwrite) == -1)
           {
             // Fall back to search.
@@ -544,6 +611,7 @@ namespace ToolKit
             return;
           }
 
+          load.clear();
           fails.clear();
           ImportData.files.clear();
           ImportData.showImportWindow = false;
@@ -553,6 +621,7 @@ namespace ToolKit
         ImGui::SameLine();
         if (ImGui::Button("Cancel", ImVec2(120, 0)))
         {
+          load.clear();
           fails.clear();
           ImportData.files.clear();
           ImportData.showImportWindow = false;
@@ -593,7 +662,7 @@ namespace ToolKit
         for (size_t i = 0; i < SearchFileData.missingFiles.size(); i++)
         {
           String* s = &SearchFileData.missingFiles[i];
-          ImGui::Text(s->c_str());
+          ImGui::Text("%s", s->c_str());
         }
 
         int itemCnt = (int)SearchFileData.searchPaths.size();
@@ -873,9 +942,11 @@ namespace ToolKit
       ImGui::SetWindowFocus();
     }
 
-    StringInputWindow::StringInputWindow()
+    StringInputWindow::StringInputWindow(const String& name, bool showCancel)
     {
-      m_visible = false;
+      m_name = name;
+      m_showCancel = showCancel;
+      UI::m_volatileWindows.push_back(this);
     }
 
     void StringInputWindow::Show()
@@ -892,7 +963,7 @@ namespace ToolKit
         {
           ImGui::SetKeyboardFocusHere();
         }
-        ImGui::InputTextWithHint(m_inputText.c_str(), m_hint.c_str(), &m_inputVal);
+        ImGui::InputTextWithHint(m_inputLabel.c_str(), m_hint.c_str(), &m_inputVal);
 
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {
@@ -901,12 +972,16 @@ namespace ToolKit
           m_inputVal.clear();
           ImGui::CloseCurrentPopup();
         }
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+
+        if (m_showCancel)
         {
-          m_visible = false;
-          m_inputVal.clear();
-          ImGui::CloseCurrentPopup();
+          ImGui::SameLine();
+          if (ImGui::Button("Cancel", ImVec2(120, 0)))
+          {
+            m_visible = false;
+            m_inputVal.clear();
+            ImGui::CloseCurrentPopup();
+          }
         }
 
         ImGui::EndPopup();
@@ -940,7 +1015,7 @@ namespace ToolKit
       {
         if (!m_msg.empty())
         {
-          ImGui::Text(m_msg.c_str());
+          ImGui::Text("%s", m_msg.c_str());
         }
 
         if (ImGui::Button(m_yesText.empty() ? "Yes" : m_yesText.c_str(), ImVec2(120, 0)))

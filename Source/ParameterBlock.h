@@ -25,6 +25,7 @@ namespace ToolKit
     };
 
     ParameterVariant() { SetVar(0); }
+    virtual ~ParameterVariant() { }
     ParameterVariant(Byte var) { SetVar(var); }
     ParameterVariant(UByte var) { SetVar(var); }
     ParameterVariant(float var) { SetVar(var); }

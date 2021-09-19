@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Texture.h"
 #define STB_IMAGE_IMPLEMENTATION
-#include "Stb/stb_image.h"
+#include "stb/stb_image.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -31,7 +31,7 @@ namespace ToolKit
       return;
     }
 
-    if (m_image = stbi_load(m_file.c_str(), &m_width, &m_height, &m_bytePP, 4))
+    if ((m_image = stbi_load(m_file.c_str(), &m_width, &m_height, &m_bytePP, 4)))
     {
       m_loaded = true;
     }
@@ -50,6 +50,10 @@ namespace ToolKit
     }
 
     glGenTextures(1, &m_textureId);
+
+    GLint currId;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
+
     glBindTexture(GL_TEXTURE_2D, m_textureId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image);
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -68,6 +72,7 @@ namespace ToolKit
       Clear();
     }
 
+    glBindTexture(GL_TEXTURE_2D, currId);
     m_initiated = true;
   }
 
@@ -141,7 +146,7 @@ namespace ToolKit
       }
 
       String name = file + postfix;
-      if (m_images[i] = stbi_load(name.c_str(), &m_width, &m_height, &m_bytePP, 0))
+      if ((m_images[i] = stbi_load(name.c_str(), &m_width, &m_height, &m_bytePP, 0)))
       {
         Logger::GetInstance()->Log("Missing file: " + name);
         Logger::GetInstance()->Log("Cube map loading requires additional 5 png files with postfix \"nx py ny pz nz\".");
@@ -251,13 +256,20 @@ namespace ToolKit
   void RenderTarget::Init(bool flushClientSideArray)
   {
     if (m_initiated)
+    {
       return;
+    }
 
     if (m_width <= 0 || m_height <= 0)
+    {
       return;
+    }
 
     // Create frame buffer color texture
     glGenTextures(1, &m_textureId);
+
+    GLint currId;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
 
     glBindTexture(GL_TEXTURE_2D, m_textureId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -296,7 +308,10 @@ namespace ToolKit
       m_initiated = true;
     }
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glBindTexture(GL_TEXTURE_2D, currId);
   }
 
   void RenderTarget::UnInit()

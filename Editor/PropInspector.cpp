@@ -62,7 +62,7 @@ namespace ToolKit
         ImGui::TableNextColumn();
 
         String fullPath = dirEnt.GetFullPath();
-        ImGui::Text(fullPath.c_str());
+        ImGui::Text("%s", fullPath.c_str());
         UI::HelpMarker(LOC + file, fullPath.c_str(), 0.1f);
 
         ImGui::TableNextRow();
@@ -121,7 +121,7 @@ namespace ToolKit
         QDUDecomposition(ts, rotate, scale, shear);
 
         static TransformAction* dragMem = nullptr;
-        const auto saveDragMemFn = [this]()
+        const auto saveDragMemFn = [this]() -> void
         {
           if (dragMem == nullptr)
           {
@@ -239,14 +239,14 @@ namespace ToolKit
 
           ImGui::Text("Face count:");
           ImGui::TableNextColumn();
-          ImGui::Text("%d", entry->m_faces.size());
+          ImGui::Text("%d", (uint)entry->m_faces.size());
 
           ImGui::TableNextRow();
           ImGui::TableNextColumn();
 
           ImGui::Text("Vertex count:");
           ImGui::TableNextColumn();
-          ImGui::Text("%d", entry->m_clientSideVertices.size());
+          ImGui::Text("%d", (uint)entry->m_clientSideVertices.size());
 
           ImGui::EndTable();
         }
@@ -276,7 +276,7 @@ namespace ToolKit
       MaterialPtr entry;
 
       bool entityMod = true;
-      if (entry = m_material)
+      if ((entry = m_material))
       {
         entityMod = false;
       }
@@ -289,17 +289,24 @@ namespace ToolKit
         entry = drawable->m_mesh->m_material;
       }
 
+      auto updateThumbFn = [&entry]() -> void
+      {
+        DirectoryEntry dirEnt(entry->m_file);
+        dirEnt.GenerateThumbnail();
+        entry->m_dirty = true;
+      };
+
       if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
       {
         if (ImGui::ColorEdit3("MatColor##1", (float*)&entry->m_color))
         {
-          entry->m_dirty = true;
+          updateThumbFn();
         }
 
         if (ImGui::TreeNode("Textures"))
         {
           ImGui::LabelText("##diffTexture", "Diffuse Texture: ");
-          String target = "\\";
+          String target = GetPathSeparatorAsStr();
           if (entry->m_diffuseTexture)
           {
             target = entry->m_diffuseTexture->m_file;
@@ -309,18 +316,17 @@ namespace ToolKit
           (
             UI::m_imageIcon->m_textureId,
             target,
-            [&drawable](const DirectoryEntry& dirEnt) -> void
+            [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
             {
-              MaterialPtr material = drawable->m_mesh->m_material;
-
               // Switch from solid color material to default for texturing.
-              if (material->m_diffuseTexture == nullptr)
+              if (entry->m_diffuseTexture == nullptr)
               {
-                drawable->m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
+                entry->m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader", true));
+                entry->m_fragmetShader->Init();
               }
-              material->m_diffuseTexture = GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
-              material->m_diffuseTexture->Init();
-              material->m_dirty = true;
+              entry->m_diffuseTexture = GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
+              entry->m_diffuseTexture->Init();
+              updateThumbFn();
             }
           );
 
@@ -334,11 +340,11 @@ namespace ToolKit
           (
             UI::m_codeIcon->m_textureId,
             entry->m_vertexShader->m_file,
-            [&entry](const DirectoryEntry& dirEnt) -> void
+            [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
             {
               entry->m_vertexShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
               entry->m_vertexShader->Init();
-              entry->m_dirty = true;
+              updateThumbFn();
             }
           );
 
@@ -347,11 +353,11 @@ namespace ToolKit
           (
             UI::m_codeIcon->m_textureId,
             entry->m_fragmetShader->m_file,
-            [&entry](const DirectoryEntry& dirEnt) -> void
+            [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
             {
               entry->m_fragmetShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
               entry->m_fragmetShader->Init();
-              entry->m_dirty = true;
+              updateThumbFn();
             }
           );
           ImGui::TreePop();
@@ -476,7 +482,6 @@ namespace ToolKit
 
           if (curr->IsDrawable())
           {
-            Drawable* dw = static_cast<Drawable*> (curr);
             MeshView* mev = GetView<MeshView>();
             mev->m_entity = curr;
             mev->Show();

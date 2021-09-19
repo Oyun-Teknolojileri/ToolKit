@@ -44,6 +44,10 @@ namespace ToolKit
     for (Mesh* mesh : g_meshCollector)
     {
       m_mat = mesh->m_material.get();
+      if (m_overrideMat)
+      {
+        m_mat = m_overrideMat.get();
+      }
 
       ProgramPtr prg = CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmetShader);
       BindProgram(prg);
@@ -52,6 +56,7 @@ namespace ToolKit
       RenderState* rs = m_mat->GetRenderState();
       SetRenderState(rs);
 
+      glBindVertexArray(mesh->m_vaoId);
       glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
       SetVertexLayout(VertexLayout::Mesh);
 
@@ -59,15 +64,11 @@ namespace ToolKit
       {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
         glDrawElements((GLenum)rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
       }
       else
       {
         glDrawArrays((GLenum)rs->drawType, 0, mesh->m_vertexCount);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
       }
-
-      SetVertexLayout(VertexLayout::None);
     }
   }
 
@@ -107,17 +108,13 @@ namespace ToolKit
 
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
       glDrawElements((GLenum)rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
-
-      glBindBuffer(GL_ARRAY_BUFFER, 0);
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-      SetVertexLayout(VertexLayout::None);
     }
   }
 
   void Renderer::Render2d(Surface* object, glm::ivec2 screenDimensions)
   {
-    static ShaderPtr vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader"));
-    static ShaderPtr fragShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader"));
+    static ShaderPtr vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
+    static ShaderPtr fragShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     static ProgramPtr prog = CreateProgram(vertexShader, fragShader);
     BindProgram(prog);
 
@@ -229,7 +226,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetRenderTarget(RenderTarget* renderTarget, bool clear)
+  void Renderer::SetRenderTarget(RenderTarget* renderTarget, bool clear, const Vec4& color)
   {
     if (m_renderTarget == renderTarget)
     {
@@ -241,9 +238,19 @@ namespace ToolKit
       glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->m_frameBufferId);
       glViewport(0, 0, renderTarget->m_width, renderTarget->m_height);
 
+      if (glm::all(glm::epsilonNotEqual(color, m_bgColor, 0.001f)))
+      {
+        glClearColor(color.r, color.g, color.b, color.a);
+      }
+
       if (clear)
       {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+      }
+
+      if (glm::all(glm::epsilonNotEqual(color, m_bgColor, 0.001f)))
+      {
+        glClearColor(m_bgColor.r, m_bgColor.g, m_bgColor.b, m_bgColor.a);
       }
     }
     else
@@ -255,16 +262,16 @@ namespace ToolKit
     m_renderTarget = renderTarget;
   }
 
-  void Renderer::SwapRenderTarget(RenderTarget** renderTarget, bool clear)
+  void Renderer::SwapRenderTarget(RenderTarget** renderTarget, bool clear, const Vec4& color)
   {
     RenderTarget* tmp = *renderTarget;
     *renderTarget = m_renderTarget;
-    SetRenderTarget(tmp, clear);
+    SetRenderTarget(tmp, clear, color);
   }
 
   void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
   {
-    static ShaderPtr fullQuadVert = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader"));
+    static ShaderPtr fullQuadVert = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
     static MaterialPtr material = std::make_shared<Material>();
     material->UnInit();
 
@@ -475,6 +482,11 @@ namespace ToolKit
 
   void Renderer::SetVertexLayout(VertexLayout layout)
   {
+    if (m_renderState.vertexLayout == layout)
+    {
+      return;
+    }
+
     if (layout == VertexLayout::None)
     {
       for (int i = 0; i < 6; i++)

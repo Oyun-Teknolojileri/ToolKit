@@ -45,7 +45,7 @@ namespace ToolKit
           return nullptr;
         }
 
-        ResourcePtr resource = std::make_shared<T>(file);
+        std::shared_ptr<T> resource = std::make_shared<T>(file);
 
         resource->Load();
         m_storage[file] = resource;

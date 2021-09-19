@@ -23,6 +23,7 @@ namespace ToolKit
   void ReadAttr(XmlNode* node, const String& name, Byte& val);
   void ReadAttr(XmlNode* node, const String& name, UByte& val);
   void ReadAttr(XmlNode* node, const String& name, String& val);
+  XmlNode* Query(XmlDocument* doc, const StringArray& path);
 
   // File path operations
   bool CheckFile(const String& path);
@@ -30,11 +31,14 @@ namespace ToolKit
   void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
   void NormalizePath(String& path);
   String ConcatPaths(const StringArray& entries);
-  enum class ResourceType GetResourceType(const String& ext);
-  String GetTypeString(enum class ResourceType type);
-  String GetExtFromType(enum class ResourceType type);
-  String GetResourcePath(enum class ResourceType type);
-  String GetRelativeResourcePath(const String& fullPath);
+  String GetRelativeResourcePath(const String& path);
+
+  enum class ResourceType;
+  ResourceType GetResourceType(const String& ext);
+  String GetTypeString(ResourceType type);
+  String GetExtFromType(ResourceType type);
+  String GetResourcePath(ResourceType type);
+  
   char GetPathSeparator();
   String GetPathSeparatorAsStr();
   bool SupportedImageFormat(const String& ext);

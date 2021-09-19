@@ -113,7 +113,6 @@ namespace ToolKit
           {
             ImGui::Image((void*)(intptr_t)m_viewportImage->m_textureId, ImVec2(m_width, m_height), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
 
-            ImVec2 currSize = ImGui::GetContentRegionMax();
             if (m_wndContentAreaSize.x != m_width || m_wndContentAreaSize.y != m_height)
             {
               OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
@@ -156,7 +155,7 @@ namespace ToolKit
 
             if (entry.m_ext == MESH)
             {
-              String path = entry.m_rootPath + "\\" + entry.m_fileName + entry.m_ext;
+              String path = ConcatPaths({ entry.m_rootPath, entry.m_fileName + entry.m_ext });
               
               Drawable* dwMesh = new Drawable();
               if (io.KeyShift)
@@ -467,22 +466,28 @@ namespace ToolKit
         // Mouse is right clicked
         if (ImGui::IsMouseDown(ImGuiMouseButton_Right))
         {
+          ImGuiIO& io = ImGui::GetIO();
+          IVec2 absMousePos = { io.MousePos.x, io.MousePos.y };
+
           // Handle relative mouse hack.
           if (m_relMouseModBegin)
           {
             m_relMouseModBegin = false;
-            SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);
+            m_mousePosBegin = absMousePos;
           }
 
           ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-          glm::ivec2 mp;
-          SDL_GetGlobalMouseState(&mp.x, &mp.y);
-          mp = mp - m_mousePosBegin;
+          IVec2 delta = absMousePos - m_mousePosBegin;
+
+#ifdef __EMSCRIPTEN__
+          m_mousePosBegin = absMousePos; // No relative mouse hack.
+#else
           SDL_WarpMouseGlobal(m_mousePosBegin.x, m_mousePosBegin.y);
           // End of relative mouse hack.
+#endif
 
-          m_camera->Pitch(-glm::radians(mp.y * g_app->m_mouseSensitivity));
-          m_camera->RotateOnUpVector(-glm::radians(mp.x * g_app->m_mouseSensitivity));
+          m_camera->Pitch(-glm::radians(delta.y * g_app->m_mouseSensitivity));
+          m_camera->RotateOnUpVector(-glm::radians(delta.x * g_app->m_mouseSensitivity));
 
           Vec3 dir, up, right;
           dir = -Z_AXIS;
@@ -492,7 +497,6 @@ namespace ToolKit
           float speed = g_app->m_camSpeed;
 
           Vec3 move;
-          ImGuiIO& io = ImGui::GetIO();
           if (io.KeysDown[SDL_SCANCODE_A])
           {
             move += -right;
@@ -565,8 +569,10 @@ namespace ToolKit
           }
         }
 
-        static bool hitFound = false;
         static Vec3 orbitPnt;
+        static bool hitFound = false;
+        static float dist = 0.0f;
+        Camera::CamData dat = m_camera->GetData();
         if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
         {
           // Figure out orbiting point.
@@ -587,23 +593,37 @@ namespace ToolKit
               orbitPnt = pd.pickPos;
             }
             hitFound = true;
+            dist = glm::distance(orbitPnt, dat.pos);
           }
 
           // Orbit around it.
-          float x = ImGui::GetIO().MouseDelta.x;
-          float y = ImGui::GetIO().MouseDelta.y;
+          ImGuiIO& io = ImGui::GetIO();
+          float x = io.MouseDelta.x;
+          float y = io.MouseDelta.y;
           Vec3 r = m_camera->GetRight();
           Vec3 u = m_camera->GetUp();
 
-          if (ImGui::GetIO().KeyShift)
+          if (io.KeyShift)
           {
-            Vec3 sum = r * -x + u * y;
+            // Reflect window space mouse delta to image plane. 
+            Vec3 deltaOnImagePlane = glm::unProject
+            (
+              // Here, mouse delta is transformed to viewport center.
+              Vec3(x + m_width * 0.5f, y + m_height * 0.5f, 0.0f),
+              Mat4(),
+              dat.projection,
+              Vec4(0.0f, 0.0f, m_width, m_height)
+            );
 
-            Camera::CamData dat = m_camera->GetData();
-            float dist = glm::distance(orbitPnt, dat.pos);
-            float speed = 0.1f * glm::sqrt(dist);
-            float displace = speed * MilisecToSec(deltaTime);
-            m_camera->m_node->Translate(sum * displace, TransformationSpace::TS_WORLD);
+            // Thales ! Reflect imageplane displacement to world space.
+            Vec3 deltaOnWorld = deltaOnImagePlane * dist / dat.nearDist;
+            if (m_camera->IsOrtographic())
+            {
+              deltaOnWorld = deltaOnImagePlane;
+            }
+
+            Vec3 displace = r * -deltaOnWorld.x + u * deltaOnWorld.y;
+            m_camera->m_node->Translate(displace, TransformationSpace::TS_WORLD);
           }
           else
           {
@@ -638,6 +658,7 @@ namespace ToolKit
         if (!ImGui::IsMouseDown(ImGuiMouseButton_Middle))
         {
           hitFound = false;
+          dist = 0.0f;
         }
       }
     }

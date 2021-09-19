@@ -238,7 +238,7 @@ namespace ToolKit
       virtual void TransitionOut(State* nextState) override;
       virtual void Update(float deltaTime) override;
       virtual String Signaled(SignalId signal) override;
-      virtual String GetType() { return StateType::StateDuplicate; };
+      virtual String GetType() override { return StateType::StateDuplicate; };
     };
 
     // Mods

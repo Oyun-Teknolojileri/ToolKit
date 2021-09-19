@@ -1,19 +1,25 @@
 #include "stdafx.h"
 
 #include "App.h"
-#include "SDL.h"
 #include "Types.h"
 #include "Mod.h"
 #include "UI.h"
+#include "ConsoleWindow.h"
+
 #include "ImGui/imgui_impl_sdl.h"
+#include "SDL.h"
+
+#include "../Source/Common/GlErrorReporter.h"
+
 #include "DebugNew.h"
 
 #include <stdio.h>
 #include <chrono>
 
-// #define TK_PROFILE
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
-// Global handles.
 namespace ToolKit
 {
   namespace Editor
@@ -27,11 +33,7 @@ namespace ToolKit
     const char* appName = "ToolKit";
     const int width = 1280;
     const int height = 720;
-#ifdef TK_PROFILE
-    const uint fps = 5000;
-#else
     const uint fps = 120;
-#endif
 
     void Init()
     {
@@ -41,9 +43,23 @@ namespace ToolKit
       }
       else
       {
+#ifdef __EMSCRIPTEN__
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#else
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#endif
+
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+#ifdef TK_DEBUG
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
 
         g_window = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
         if (g_window == nullptr)
@@ -68,11 +84,51 @@ namespace ToolKit
               return;
             }
 
+#ifndef __EMSCRIPTEN__
+#ifdef TK_DEBUG
+            if (glDebugMessageCallbackARB != NULL) 
+            {
+              glEnable(GL_DEBUG_OUTPUT);
+              glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+              glDebugMessageCallbackARB(&GLDebugMessageCallback, nullptr);
+            }
+
+            GlErrorReporter::Report = [](const std::string& msg) -> void 
+            {
+              static Byte state = g_app->m_showGraphicsApiErrors;
+              if (state != g_app->m_showGraphicsApiErrors)
+              {
+                state = g_app->m_showGraphicsApiErrors;
+                if (state == 1)
+                {
+                  glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
+                  glDebugMessageControl
+                  (
+                    GL_DEBUG_SOURCE_API,
+                    GL_DEBUG_TYPE_ERROR,
+                    GL_DEBUG_SEVERITY_HIGH,
+                    0, NULL, GL_TRUE
+                  );
+                }
+                else if (state >= 2)
+                {
+                  glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+                }
+              }
+
+              if (g_app->m_showGraphicsApiErrors)
+              {
+                g_app->GetConsole()->AddLog(msg, ConsoleWindow::LogType::Error);
+              }
+            };
+#endif
+#endif
+
             Main::GetInstance()->Init();
+            UI::Init();
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);
-            glClearColor(0.2f, 0.2f, 0.2f, 1.0);
             glPointSize(5.0f);
 
             glEnable(GL_CULL_FACE);
@@ -81,9 +137,6 @@ namespace ToolKit
             // Init app
             g_app = new App(width, height);
             g_app->Init();
-
-            // Init UI
-            UI::Init();
           }
         }
       }
@@ -158,35 +211,31 @@ namespace ToolKit
       }
     }
 
-    int ToolKit_Main(int argc, char* argv[])
+    struct Timing
     {
-      _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
-      Init();
-
-      // Restore window.
-      uint appWidth = g_app->m_renderer->m_windowWidth;
-      uint appHeight = g_app->m_renderer->m_windowHeight;
-
-      if (appWidth != width || appHeight != height)
+      Timing()
       {
-        SDL_SetWindowSize(g_window, appWidth, appHeight);
-        SDL_SetWindowPosition(g_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        lastTime = GetMilliSeconds();
+        currentTime = 0.0f;
+        deltaTime = 1000.0f / fps;
+        frameCount = 0;
+        timeAccum = 0.0f;
       }
 
-      if (g_app->m_windowMaximized)
-      {
-        SDL_MaximizeWindow(g_window);
-      }
-
-      // Continue with editor.
-      float lastTime = GetMilliSeconds();
-      float currentTime;
-      float deltaTime = 1000.0f / fps;
-      int frameCount = 0;
+      float lastTime = 0.0f;
+      float currentTime = 0.0f;
+      float deltaTime = 0.0f;
       float timeAccum = 0.0f;
+      int frameCount = 0;
+    };
 
+    void TK_Loop(void* args)
+    {
+      Timing* timer = static_cast<Timing*> (args);
+
+#ifndef __EMSCRIPTEN__
       while (g_running)
+#endif
       {
         SDL_Event sdlEvent;
         while (SDL_PollEvent(&sdlEvent))
@@ -194,35 +243,39 @@ namespace ToolKit
           ProcessEvent(sdlEvent);
         }
 
-        currentTime = GetMilliSeconds();
-        if (currentTime > lastTime + deltaTime)
+        timer->currentTime = GetMilliSeconds();
+        if (timer->currentTime > timer->lastTime + timer->deltaTime)
         {
-          // Update & Render
-          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-          g_app->Frame(currentTime - lastTime);
+          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+          g_app->Frame(timer->currentTime - timer->lastTime);
           SDL_GL_SwapWindow(g_window);
 
-          frameCount++;
-          timeAccum += currentTime - lastTime;
-          if (timeAccum >= 1000.0f)
+          timer->frameCount++;
+          timer->timeAccum += timer->currentTime - timer->lastTime;
+          if (timer->timeAccum >= 1000.0f)
           {
-            g_app->m_fps = frameCount;
-            timeAccum = 0;
-            frameCount = 0;
+            g_app->m_fps = timer->frameCount;
+            timer->timeAccum = 0;
+            timer->frameCount = 0;
           }
 
-          lastTime = currentTime;
+          timer->lastTime = timer->currentTime;
         }
-#ifndef TK_PROFILE
-        else
-        {
-          SDL_Delay(10);
-        }
-#endif
       }
+    }
+
+    int ToolKit_Main(int argc, char* argv[])
+    {
+      Init();
+
+      static Timing timer;
+#ifdef __EMSCRIPTEN__
+      emscripten_set_main_loop_arg(TK_Loop, reinterpret_cast<void*> (&timer), 0, 1);
+#else
+      TK_Loop(reinterpret_cast<void*> (&timer));
+#endif
 
       Exit();
-
       return 0;
     }
 
@@ -231,5 +284,11 @@ namespace ToolKit
 
 int main(int argc, char* argv[])
 {
+#ifndef __EMSCRIPTEN__
+#ifdef TK_DEBUG
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+#endif
+
   return ToolKit::Editor::ToolKit_Main(argc, argv);
 }

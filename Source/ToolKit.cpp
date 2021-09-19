@@ -126,78 +126,83 @@ namespace ToolKit
     return nullptr;
   }
 
-  String ResourcePath()
+  String DefaultPath()
   {
-    return "..\\Resources";
+    static String def = ConcatPaths({ ".", "..", "Resources" });
+    return def;
   }
 
-  String TexturePath(const String& file)
+  String ResourcePath(bool def)
   {
-    String path = "..\\Resources\\Textures\\";
-    path += file;
+    if (!def)
+    {
+      String& path = Main::GetInstance()->m_resourceRoot;
+      if (!path.empty())
+      {
+        return path;
+      }
+    }
+
+    return DefaultPath();
+  }
+
+  String TexturePath(const String& file, bool def)
+  {
+    String path = ConcatPaths({ ResourcePath(def), "Textures", file });
     return path;
   }
 
-  String MeshPath(const String& file)
+  String MeshPath(const String& file, bool def)
   {
-    String path = "..\\Resources\\Meshes\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(def), "Meshes", file });
     return path;
   }
 
-  String FontPath(const String& file)
+  String FontPath(const String& file, bool def)
   {
-    String path = "..\\Resources\\Fonts\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(def), "Fonts", file });
     return path;
   }
 
-  String SpritePath(const String& file)
+  String SpritePath(const String& file, bool def)
   {
-    String path = "..\\Resources\\Sprites\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(def), "Sprites", file });
     return path;
   }
 
-  String AudioPath(const String& file)
+  String AudioPath(const String& file, bool def)
   {
-    String path = "..\\Resources\\Audio\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(def), "Audio", file });
     return path;
   }
 
-  String AnimationPath(const String& file)
+  String AnimationPath(const String& file, bool def)
   {
-    String path = "..\\Resources\\Meshes\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(def), "Meshes", file });
     return path;
   }
 
-  String SkeletonPath(const String& file)
+  String SkeletonPath(const String& file, bool def)
   {
-    String path = "..\\Resources\\Meshes\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(def), "Meshes", file });
     return path;
   }
 
-  String ShaderPath(const String& file)
+  String ShaderPath(const String& file, bool def)
   {
-    String path = "..\\Resources\\Shaders\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(def), "Shaders", file });
     return path;
   }
 
-  String MaterialPath(const String& file)
+  String MaterialPath(const String& file, bool def)
   {
-    String path = "..\\Resources\\Materials\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(def), "Materials", file });
     return path;
   }
 
-  String ScenePath(const String& file)
+  String ScenePath(const String& file, bool def)
   {
-    String path = "..\\Resources\\Scenes\\";
-    path += file;
+    String path = ConcatPaths({ ResourcePath(def), "Scenes", file });
     return path;
   }
 

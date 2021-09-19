@@ -20,11 +20,11 @@ namespace ToolKit
     for (int i = 0; i < limit; i++)
     {
       XmlAttribute* attr = node->first_attribute(letters + i, 1);
-      if constexpr (std::is_integral_v<T::value_type>)
+      if constexpr (std::is_integral_v<typename T::value_type>)
       {
         val[i] = (int)std::atoi(attr->value());
       }
-      else if constexpr (std::is_floating_point_v<T::value_type>)
+      else if constexpr (std::is_floating_point_v<typename T::value_type>)
       {
         val[i] = (float)std::atof(attr->value());
       }
@@ -122,10 +122,25 @@ namespace ToolKit
     }
   }
 
+  XmlNode* Query(XmlDocument* doc, const StringArray& path)
+  {
+    XmlNode* node = doc->first_node(path.front().c_str());
+    for (size_t i = 1; i < path.size(); i++)
+    {
+      if (node == nullptr)
+      {
+        return nullptr;
+      }
+
+      node = node->first_node(path[i].c_str());
+    }
+
+    return node;
+  }
+
   bool CheckFile(const String& path)
   {
-    std::ifstream f(path.c_str());
-    return f.good();
+    return std::filesystem::exists(path);
   }
 
   String CreateCopyFileFullPath(const String& fullPath)
@@ -154,7 +169,7 @@ namespace ToolKit
     String normal = fullPath;
     NormalizePath(normal);
 
-    size_t ind1 = normal.find_last_of('\\');
+    size_t ind1 = normal.find_last_of(GetPathSeparator());
     if (path != nullptr)
     {
       *path = normal.substr(0, ind1);
@@ -177,7 +192,11 @@ namespace ToolKit
 
   void NormalizePath(String& path)
   {
+#ifndef __clang__
     ReplaceStringInPlace(path, "/", "\\");
+#else
+    ReplaceStringInPlace(path, "\\", "/");
+#endif
   }
 
   String ConcatPaths(const StringArray& entries)
@@ -194,6 +213,35 @@ namespace ToolKit
     }
 
     return path + entries.back();
+  }
+
+  String GetRelativeResourcePath(const String& path)
+  {
+    // Check workspace relativity.
+    String root = Main::GetInstance()->m_resourceRoot;
+    size_t exist = path.find(root);
+
+    // Check install path relativity.
+    if (exist == String::npos)
+    {
+      root = ResourcePath(true);
+      exist = path.find(root, 0);
+    }
+
+    if (exist != String::npos)
+    {
+      String rel = path.substr(root.length() + 1);
+      // Extract the root layer. Mesh, Texture ect...
+      exist = rel.find(GetPathSeparator());
+      if (exist != String::npos)
+      {
+        rel = rel.substr(exist + 1);
+      }
+
+      return rel;
+    }
+
+    return path;
   }
 
   ResourceType GetResourceType(const String& ext)
@@ -367,25 +415,13 @@ namespace ToolKit
     return path;
   }
 
-  String GetRelativeResourcePath(const String& fullPath)
-  {
-    String ext;
-    DecomposePath(fullPath, nullptr, nullptr, &ext);
-    ResourceType type = GetResourceType(ext);
-    String path = GetResourcePath(type);
-
-    size_t pos = fullPath.find(path);
-    if (pos != String::npos)
-    {
-      return fullPath.substr(pos + path.size());
-    }
-    
-    return fullPath;
-  }
-
   char GetPathSeparator()
   {
+#ifndef __clang__
     return '\\';
+#else
+    return '/';
+#endif
   }
 
   String GetPathSeparatorAsStr()
@@ -548,7 +584,7 @@ namespace ToolKit
 
   void RootsOnly(const EntityRawPtrArray& entities, EntityRawPtrArray& roots, Entity* child)
   {
-    auto AddUnique = [&roots](Entity* e)
+    auto AddUnique = [&roots](Entity* e) -> void
     {
       assert(e != nullptr);
 

@@ -27,8 +27,8 @@ namespace ToolKit
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
     void SetRenderState(const RenderState* const state);
-    void SetRenderTarget(RenderTarget* renderTarget, bool clear = true);
-    void SwapRenderTarget(RenderTarget** renderTarget, bool clear = true);
+    void SetRenderTarget(RenderTarget* renderTarget, bool clear = true, const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f });
+    void SwapRenderTarget(RenderTarget** renderTarget, bool clear = true, const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f });
     void DrawFullQuad(ShaderPtr fragmentShader);
 
   private:
@@ -37,19 +37,14 @@ namespace ToolKit
     void LinkProgram(GLuint program, GLuint vertexP, GLuint fragmentP);
     ProgramPtr CreateProgram(ShaderPtr vertex, ShaderPtr fragment);
     void FeedUniforms(ProgramPtr program);
-
-    enum class VertexLayout
-    {
-      None,
-      Mesh,
-      SkinMesh
-    };
     void SetVertexLayout(VertexLayout layout);
 
   public:
     uint m_frameCount = 0;
     uint m_windowWidth = 0;
     uint m_windowHeight = 0;
+    Vec4 m_bgColor = { 0.2f, 0.2f, 0.2f, 1.0f };
+    MaterialPtr m_overrideMat = nullptr;
 
   private:
     GLuint m_currentProgram = 0;

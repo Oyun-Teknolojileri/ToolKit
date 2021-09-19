@@ -67,15 +67,18 @@ namespace ToolKit
     class StringInputWindow : public Window
     {
     public:
-      StringInputWindow();
+      StringInputWindow(const String& name, bool showCancel);
       virtual void Show() override;
       virtual Type GetType() const override { return Window::Type::InputPopup; }
 
     public:
       std::function<void(const String& val)> m_taskFn;
       String m_inputVal;
-      String m_inputText;
+      String m_inputLabel;
       String m_hint;
+
+    private:
+      bool m_showCancel;
     };
 
     class YesNoWindow : public Window
@@ -103,6 +106,7 @@ namespace ToolKit
       static void InitDocking();
       static void InitIcons();
       static void InitTheme();
+      static void InitSettings();
       static void ShowUI();
       static void ShowAppMainMenuBar();
       static void ShowMenuFile();
@@ -121,7 +125,6 @@ namespace ToolKit
       static bool m_imguiSampleWindow;
       static bool m_windowMenushowMetrics;
       static float m_hoverTimeForHelp;
-      static StringInputWindow m_strInputWindow;
 
       // Volatile windows. (Pop-ups etc.)
       static std::vector<Window*> m_volatileWindows;
@@ -141,6 +144,9 @@ namespace ToolKit
         StringArray missingFiles;
         StringArray searchPaths;
       } SearchFileData;
+
+      // Some actions needed to be run after ui rendered.
+      static std::vector<std::function<void()>> m_postponedActions;
 
       // Toolbar Icons.
       static TexturePtr m_selectIcn;

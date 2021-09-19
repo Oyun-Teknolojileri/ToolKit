@@ -10,9 +10,11 @@ namespace ToolKit
     class DirectoryEntry
     {
     public:
+      DirectoryEntry();
+      DirectoryEntry(const String& fullPath);
       String GetFullPath() const;
       ResourceManager* GetManager() const;
-      void GenerateThumbnail();
+      void GenerateThumbnail() const;
       RenderTargetPtr GetThumbnail() const;
 
     public:
@@ -35,6 +37,7 @@ namespace ToolKit
       const String& GetPath() const;
       void Iterate();
       int Exist(const String& file);
+      void ShowContextMenu(DirectoryEntry* entry = nullptr);
 
     protected:
       void ShowContextForMaterial(DirectoryEntry* entry);
@@ -51,7 +54,7 @@ namespace ToolKit
       bool m_currRoot = false; // Indicates this is a root folder (one level under Resources) and currently selected in the FolderWindow.
       bool m_visible = false;
       bool m_onlyNativeTypes = true;
-      Vec2 m_iconSize = Vec2(95.0f);
+      Vec2 m_iconSize = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entiries;
       String m_folder;
     };
@@ -71,10 +74,11 @@ namespace ToolKit
       int Exist(const String& folder);
       bool GetFileEntry(const String& fullPath, DirectoryEntry& entry);
 
-      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     private:
+      std::unordered_map<String, Vec2> m_viewSettings;
       std::vector<FolderView> m_entiries;
       int m_activeFolder = -1;
       bool m_showStructure = true;

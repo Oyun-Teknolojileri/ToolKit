@@ -168,7 +168,7 @@ namespace ToolKit
         return;
       }
 
-      auto ShowAddMenuFn = []()
+      auto ShowAddMenuFn = []() -> void
       {
         if (ImGui::BeginMenu("Mesh"))
         {
@@ -184,14 +184,11 @@ namespace ToolKit
             cube->m_mesh->Init(false);
             g_app->m_scene->AddEntity(cube);
           }
-          if (ImGui::MenuItem("UV Sphere"))
+          if (ImGui::MenuItem("Sphere"))
           {
             Sphere* sphere = new Sphere();
             sphere->m_mesh->Init(false);
             g_app->m_scene->AddEntity(sphere);
-          }
-          if (ImGui::MenuItem("Cylinder"))
-          {
           }
           if (ImGui::MenuItem("Cone"))
           {
@@ -202,44 +199,9 @@ namespace ToolKit
           if (ImGui::MenuItem("Monkey"))
           {
             Drawable* suzanne = new Drawable();
-            suzanne->m_mesh = GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh"));
+            suzanne->m_mesh = GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh", true));
             suzanne->m_mesh->Init(false);
             g_app->m_scene->AddEntity(suzanne);
-          }
-          ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Light"))
-        {
-          if (ImGui::MenuItem("Point"))
-          {
-          }
-          if (ImGui::MenuItem("Sun"))
-          {
-          }
-          if (ImGui::MenuItem("Spot"))
-          {
-          }
-          if (ImGui::MenuItem("Area"))
-          {
-          }
-          ImGui::EndMenu();
-        }
-        if (ImGui::MenuItem("Camera"))
-        {
-        }
-        if (ImGui::MenuItem("Speaker"))
-        {
-        }
-        if (ImGui::BeginMenu("Light Probe"))
-        {
-          if (ImGui::MenuItem("Reflection Cubemap"))
-          {
-          }
-          if (ImGui::MenuItem("Reflection Plane"))
-          {
-          }
-          if (ImGui::MenuItem("Irradiance Volume"))
-          {
           }
           ImGui::EndMenu();
         }
@@ -407,7 +369,6 @@ namespace ToolKit
 
         // Snap button.
         ImGui::SameLine(0, spacing);
-        static float hoverTimeSnapBtn = 0.0f;
 
         // Auto snap.
         static bool autoSnapActivated = false;

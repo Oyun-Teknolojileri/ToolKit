@@ -20,6 +20,7 @@ namespace ToolKit
     Vec3 GetDir() const;
     Vec3 GetUp() const;
     Vec3 GetRight() const;
+    void LookAt(Vec3 target);
 
     virtual EntityType GetType() const override;
 
@@ -52,7 +53,6 @@ namespace ToolKit
     void SetLens(float aspect, float left, float right, float bottom, float top, float near, float far);
     Mat4 GetViewMatrix() const;
     bool IsOrtographic() const;
-    void LookAt(Vec3 target);
 
     CamData GetData() const;
     virtual EntityType GetType() const override;

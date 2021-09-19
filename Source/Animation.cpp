@@ -53,18 +53,20 @@ namespace ToolKit
     Key k2 = keys[key2];
     node->m_translation = Interpolate(k1.m_position, k2.m_position, ratio);
     node->m_orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
-    node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio), TransformationSpace::TS_LOCAL;
+    node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
     node->SetChildrenDirty();
   }
 
   void Animation::GetCurrentPose(Skeleton* skeleton)
   {
     if (m_keys.empty())
+    {
       return;
+    }
 
     float ratio;
     int key1, key2;
-    for (auto bone : skeleton->m_bones)
+    for (Bone* bone : skeleton->m_bones)
     {
       auto entry = m_keys.find(bone->m_name);
       if (entry == m_keys.end())
@@ -90,7 +92,7 @@ namespace ToolKit
       Key k2 = entry->second[key2];
       bone->m_node->m_translation = Interpolate(k1.m_position, k2.m_position, ratio);
       bone->m_node->m_orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
-      bone->m_node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio), TransformationSpace::TS_LOCAL;
+      bone->m_node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
       bone->m_node->SetChildrenDirty();
     }
   }
@@ -202,7 +204,7 @@ namespace ToolKit
   {
     int index = 0;
     std::vector<int> removeList;
-    for (auto record : m_records)
+    for (const AnimRecord& record : m_records)
     {
       if (record.second->m_state == Animation::State::Pause)
       {

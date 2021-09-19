@@ -1,10 +1,14 @@
 #pragma once
-#pragma message("Compiling precompiled headers.\n")
 
+#ifndef __clang__
+#pragma message("Compiling precompiled headers.\n")
+#define GLM_FORCE_MESSAGES 
+#endif
+
+// 
 // GLM
 #define GLM_FORCE_CTOR_INIT
 #define GLM_FORCE_SWIZZLE
-#define GLM_FORCE_MESSAGES 
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include "glm/glm.hpp"

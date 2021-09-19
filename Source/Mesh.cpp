@@ -62,6 +62,9 @@ namespace ToolKit
     m_vboVertexId = 0;
     m_vboIndexId = 0;
 
+    glDeleteVertexArrays(1, &m_vaoId);
+    m_vaoId = 0;
+
     for (MeshPtr& subMesh : m_subMeshes)
     {
       subMesh = nullptr;
@@ -107,6 +110,9 @@ namespace ToolKit
     // Copy video memory.
     if (m_vertexCount > 0)
     {
+      glGenVertexArrays(1, &cpy->m_vaoId);
+      glBindVertexArray(cpy->m_vaoId);
+
       glGenBuffers(1, &cpy->m_vboVertexId);
       glBindBuffer(GL_COPY_WRITE_BUFFER, cpy->m_vboVertexId);
       glBindBuffer(GL_COPY_READ_BUFFER, m_vboVertexId);
@@ -265,16 +271,13 @@ namespace ToolKit
       );
       meshNode->append_node(material);
 
-      String fname = mesh->m_material->m_file;
-      String name, ext;
-      DecomposePath(fname, nullptr, &name, &ext);
-      fname = name + ext;
-      if (fname.empty())
+      String matPath = GetRelativeResourcePath(mesh->m_material->m_file);
+      if (matPath.empty())
       {
-        fname = "default.material";
+        matPath = MaterialPath("default.material", true);
       }
 
-      XmlAttribute* nameAttr = doc->allocate_attribute("name", doc->allocate_string(fname.c_str()));
+      XmlAttribute* nameAttr = doc->allocate_attribute("name", doc->allocate_string(matPath.c_str()));
       material->append_attribute(nameAttr);
 
       XmlNode* vertices = doc->allocate_node
@@ -380,15 +383,15 @@ namespace ToolKit
       }
 
       XmlNode* materialNode = node->first_node("material");
-      String matFile = materialNode->first_attribute("name")->value();
+      String matFile = MaterialPath(materialNode->first_attribute("name")->value());
 
-      if (CheckFile(MaterialPath(matFile)))
+      if (CheckFile(matFile))
       {
-        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath(matFile));
+        mesh->m_material = GetMaterialManager()->Create<Material> (matFile);
       }
       else
       {
-        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("default.material"));
+        mesh->m_material = GetMaterialManager()->Create<Material> (MaterialPath("default.material", true));
       }
 
       XmlNode* vertex = node->first_node("vertices");
@@ -424,9 +427,13 @@ namespace ToolKit
   void Mesh::InitVertices(bool flush)
   {
     glDeleteBuffers(1, &m_vboVertexId);
+    glDeleteVertexArrays(1, &m_vaoId);
 
     if (!m_clientSideVertices.empty())
     {
+      glGenVertexArrays(1, &m_vaoId);
+      glBindVertexArray(m_vaoId);
+
       glGenBuffers(1, &m_vboVertexId);
       glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
       glBufferData(GL_ARRAY_BUFFER, GetVertexSize() * m_clientSideVertices.size(), m_clientSideVertices.data(), GL_STATIC_DRAW);
@@ -541,13 +548,13 @@ namespace ToolKit
       XmlNode* materialNode = node->first_node("material");
       String matFile = materialNode->first_attribute("name")->value();
 
-      if (CheckFile(MaterialPath(matFile)))
+      if (CheckFile(matFile))
       {
-        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath(matFile));
+        mesh->m_material = GetMaterialManager()->Create<Material> (matFile);
       }
       else
       {
-        mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("default.material"));
+        mesh->m_material = GetMaterialManager()->Create<Material> (MaterialPath("default.material", true));
       }
 
       XmlNode* vertex = node->first_node("vertices");
