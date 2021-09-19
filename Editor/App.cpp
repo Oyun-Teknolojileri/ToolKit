@@ -103,6 +103,15 @@ namespace ToolKit
       {
         m_workspace.RefreshProjects();
       }
+
+      // Register plugin reporter.
+      GetPluginManager()->m_reporterFn = [](const String& msg) -> void
+      {
+        if (ConsoleWindow* console = g_app->GetConsole())
+        {
+          console->AddLog(msg, "plugin");
+        }
+      };
     }
 
     void App::Destroy()

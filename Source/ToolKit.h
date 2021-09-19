@@ -17,6 +17,7 @@
 #include "Surface.h"
 #include "Texture.h"
 #include "Scene.h"
+#include "PluginManager.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -65,6 +66,7 @@ namespace ToolKit
   TextureManager* GetTextureManager();
   SceneManager* GetSceneManager();
   ResourceManager* GetResourceManager(ResourceType type);
+  PluginManager* GetPluginManager();
 
   String DefaultPath();
   String ResourcePath(bool def = false);

@@ -14,6 +14,8 @@ namespace ToolKit
   void Main::Init()
   {
     Logger::GetInstance()->Log("ToolKit Initialization");
+    PluginManager::GetInstance()->Init();
+    
     m_animationMan.Init();
     m_textureMan.Init();
     m_meshMan.Init();
@@ -28,6 +30,8 @@ namespace ToolKit
 
   void Main::Uninit()
   {
+    PluginManager::GetInstance()->UnInit();
+
     m_animationPlayer.m_records.clear();
     m_animationMan.Uninit();
     m_textureMan.Uninit();
@@ -124,6 +128,11 @@ namespace ToolKit
     }
 
     return nullptr;
+  }
+
+  PluginManager* GetPluginManager()
+  {
+    return PluginManager::GetInstance();
   }
 
   String DefaultPath()

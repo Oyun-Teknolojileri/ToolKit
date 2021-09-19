@@ -516,6 +516,22 @@ namespace ToolKit
       }
     }
 
+    void LoadPlugin(TagArgArray tagArgs)
+    {
+      if (tagArgs.empty())
+      {
+        return;
+      }
+      if (tagArgs.front().second.empty())
+      {
+        return;
+      }
+
+      String plugin = tagArgs.front().second.front();
+      GetPluginManager()->Unload();
+      GetPluginManager()->Load(plugin);
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
     static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
@@ -546,6 +562,7 @@ namespace ToolKit
       CreateCommand(g_showSelectionBoundary, ShowSelectionBoundary);
       CreateCommand(g_showGraphicsApiLogs, ShowGraphicsApiLogs);
       CreateCommand(g_setWorkspaceDir, SetWorkspaceDir);
+      CreateCommand(g_loadPlugin, LoadPlugin);
     }
 
     ConsoleWindow::~ConsoleWindow()

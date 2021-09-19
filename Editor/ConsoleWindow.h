@@ -66,6 +66,9 @@ namespace ToolKit
     const String g_setWorkspaceDir("SetWorkspaceDir");
     void SetWorkspaceDir(TagArgArray tagArgs);
 
+    const String g_loadPlugin("LoadPlugin");
+    void LoadPlugin(TagArgArray tagArgs);
+
     // Command errors
     const String g_noValidEntity("No valid entity");
 

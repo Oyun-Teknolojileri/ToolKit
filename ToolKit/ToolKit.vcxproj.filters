@@ -96,6 +96,12 @@
     <ClInclude Include="..\Source\Scene.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Plugin.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\PluginManager.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Animation.cpp">
@@ -171,6 +177,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Scene.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\PluginManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
