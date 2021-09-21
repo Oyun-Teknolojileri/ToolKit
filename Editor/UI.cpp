@@ -692,10 +692,7 @@ namespace ToolKit
 
         if (ImGui::Button("Search", ImVec2(120, 0)))
         {
-          for (size_t i = 0; i < ImportData.files.size(); i++)
-          {
-            g_app->Import(ImportData.files[i], ImportData.subDir, ImportData.overwrite);
-          }
+          g_app->Import("", ImportData.subDir, ImportData.overwrite);
           ImportData.files.clear();
           ImGui::CloseCurrentPopup();
         }
@@ -704,6 +701,7 @@ namespace ToolKit
         if (ImGui::Button("Abort", ImVec2(120, 0)))
         {
           ImportData.files.clear();
+          SearchFileData.missingFiles.clear();
           SearchFileData.showSearchFileWindow = false;
           ImGui::CloseCurrentPopup();
         }

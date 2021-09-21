@@ -230,7 +230,7 @@ void PrintMaterial_(const aiScene* scene, string filePath, string origin)
       string fileName = tName;
       TrunckToFileName(fileName);
       string textPath = fs::path(filePath + fileName).lexically_normal().u8string();
-      if (!embedded)
+      if (!embedded && !std::filesystem::exists(textPath))
       {
         // Try copying texture.
         fs::path fullPath = pathOrg;
@@ -661,6 +661,7 @@ int main(int argc, char* argv[])
       }
     }
 
+    dest = fs::path(dest).lexically_normal().u8string();
     if (!dest.empty())
     {
       fs::create_directories(dest);

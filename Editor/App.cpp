@@ -459,7 +459,8 @@ namespace ToolKit
 
     int App::Import(const String& fullPath, const String& subDir, bool overwrite)
     {
-      if (!CanImport(fullPath))
+      bool doSearch = !UI::SearchFileData.missingFiles.empty();
+      if (!CanImport(fullPath) && !doSearch)
       {
         if (ConsoleWindow* con = GetConsole())
         {
@@ -469,48 +470,55 @@ namespace ToolKit
         return -1;
       }
 
+      bool importFileExist = CheckFile(fullPath);
+
+      // Set the execute path.
       std::filesystem::path pathBck = std::filesystem::current_path();
-      if (CheckFile(fullPath))
+      std::filesystem::path path = pathBck.u8string() + ConcatPaths({ ".", "..", "Utils", "Import" });
+      std::filesystem::current_path(path);
+      
+      std::filesystem::path cpyDir = ".";
+      if (!subDir.empty())
       {
-        // Set the execute path.
-        std::filesystem::path path = pathBck.u8string() + ConcatPaths({".", "..", "Utils", "Import"});
-        std::filesystem::current_path(path);
+        cpyDir += GetPathSeparator() + subDir;
+      }
 
-        std::filesystem::path cpyDir = ".";
-        if (!subDir.empty())
+      // Try reimport after search paths provided.
+      bool reImport = doSearch || UI::SearchFileData.showSearchFileWindow;
+      if (importFileExist || reImport)
+      {
+        int result = -1; // execution result.
+        if (!doSearch)
         {
-          cpyDir += GetPathSeparator() + subDir;
-          std::filesystem::create_directories(cpyDir);
+          String name, ext;
+          DecomposePath(fullPath, nullptr, &name, &ext);
+          String finalPath = fullPath;
+
+          if (name == "importList" && ext == ".txt")
+          {
+            finalPath = "importList.txt";
+          }
+
+          String cmd = "Import \"";
+          if (!subDir.empty())
+          {
+            cmd += finalPath + "\" -t \"" + subDir;
+          }
+          else
+          {
+            cmd += finalPath;
+          }
+
+          cmd += "\" -s " + std::to_string(UI::ImportData.scale);
+
+          // Execute command
+          result = std::system(cmd.c_str());
+          assert(result != -1);
         }
-
-        String name, ext;
-        DecomposePath(fullPath, nullptr, &name, &ext);
-        String finalPath = fullPath;
-
-        if (name == "importList" && ext == ".txt")
-        {
-          finalPath = "importList.txt";
-        }
-
-        String cmd = "Import \"";
-        if (!subDir.empty())
-        {
-          cmd += finalPath + "\" -t \"" + subDir;
-        }
-        else
-        {
-          cmd += finalPath;
-        }
-
-        cmd += "\" -s " + std::to_string(UI::ImportData.scale);
-
-        // Execute command
-        int result = std::system(cmd.c_str());
-        assert(result != -1);
 
         // Move assets.
         String meshFile;
-        if (result != -1)
+        if (result != -1 || doSearch)
         {
           std::ifstream copyList("out.txt");
           if (copyList.is_open())
@@ -559,6 +567,10 @@ namespace ToolKit
                 // Retry.
                 UI::SearchFileData.missingFiles = missingFiles;
                 goto Retry;
+              }
+              else
+              {
+                UI::SearchFileData.missingFiles.clear();
               }
             }
 
@@ -653,7 +665,7 @@ namespace ToolKit
         }
 
         UI::SearchFileData.showSearchFileWindow = false;
-        return result;
+        return 0;
       }
       else
       {
