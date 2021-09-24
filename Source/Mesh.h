@@ -36,7 +36,6 @@ namespace ToolKit
     virtual void UnInit() override;
     virtual void Load() override;
     virtual void Save(bool onlyIfDirty) override;
-    virtual Mesh* GetCopy() override;
     virtual int GetVertexSize() const;
     virtual bool IsSkinned() const;
     void CalculateAABoundingBox();
@@ -52,6 +51,9 @@ namespace ToolKit
     virtual void InitVertices(bool flush);
     virtual void InitIndices(bool flush);
     void UpdateAABB(const Vec3& v);
+
+  private:
+    virtual Mesh* GetCopy() override;
 
   public:
     VertexArray m_clientSideVertices;

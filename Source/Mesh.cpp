@@ -131,7 +131,7 @@ namespace ToolKit
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
     }
 
-    cpy->m_material = MaterialPtr(m_material->GetCopy());
+    cpy->m_material = m_material->Copy<Material>();
     cpy->m_aabb = m_aabb;
 
     cpy->m_file = CreateCopyFileFullPath(m_file);
@@ -140,7 +140,7 @@ namespace ToolKit
 
     for (MeshPtr child : m_subMeshes)
     {
-      MeshPtr ccpy = MeshPtr(child->GetCopy());
+      MeshPtr ccpy = child->Copy<Mesh>();
       cpy->m_subMeshes.push_back(ccpy);
     }
 

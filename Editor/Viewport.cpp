@@ -160,7 +160,8 @@ namespace ToolKit
               Drawable* dwMesh = new Drawable();
               if (io.KeyShift)
               {
-                dwMesh->m_mesh.reset(GetMeshManager()->Create<Mesh>(path)->GetCopy());
+                MeshPtr mesh = GetMeshManager()->Create<Mesh>(path);
+                dwMesh->m_mesh = mesh->Copy<Mesh>();
               }
               else
               {

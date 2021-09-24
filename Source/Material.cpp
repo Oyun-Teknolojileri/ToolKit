@@ -316,22 +316,22 @@ namespace ToolKit
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()
   {
-    return MaterialPtr(static_cast<Material*> (m_storage[MaterialPath("unlit.material", true)]->GetCopy()));
+    return m_storage[MaterialPath("unlit.material", true)]->Copy<Material>();
   }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial()
   {
-    return MaterialPtr(static_cast<Material*> (m_storage[MaterialPath("unlitSolid.material", true)]->GetCopy()));
+    return m_storage[MaterialPath("unlitSolid.material", true)]->Copy<Material>();
   }
 
   MaterialPtr MaterialManager::GetCopyOfSolidMaterial()
   {
-    return MaterialPtr(static_cast<Material*> (m_storage[MaterialPath("solid.material", true)]->GetCopy()));
+    return m_storage[MaterialPath("solid.material", true)]->Copy<Material>();
   }
 
   MaterialPtr MaterialManager::GetCopyOfDefaultMaterial()
   {
-    return MaterialPtr(static_cast<Material*> (m_storage[MaterialPath("default.material", true)]->GetCopy()));
+    return m_storage[MaterialPath("default.material", true)]->Copy<Material>();
   }
 
 }

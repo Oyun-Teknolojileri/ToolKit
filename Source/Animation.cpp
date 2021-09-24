@@ -156,11 +156,6 @@ namespace ToolKit
     m_initiated = false;
   }
 
-  Animation* Animation::GetCopy()
-  {
-    return new Animation(*this);
-  }
-
   void Animation::GetNearestKeys(const std::vector<Key>& keys, int& key1, int& key2, float& ratio)
   {
     // Find nearset keys.

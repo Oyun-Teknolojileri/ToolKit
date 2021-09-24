@@ -57,7 +57,7 @@ namespace ToolKit
   {
     Entity::GetCopy(copyTo);
     Drawable* ntt = static_cast<Drawable*> (copyTo);
-    ntt->m_mesh = MeshPtr(m_mesh->GetCopy());
+    ntt->m_mesh = m_mesh->Copy<Mesh>();
     return ntt;
   }
 

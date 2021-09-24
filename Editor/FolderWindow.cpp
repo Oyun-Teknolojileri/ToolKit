@@ -478,12 +478,10 @@ namespace ToolKit
           {
             if (ResourceManager* rm = entry->GetManager())
             {
-              if (Material* mat = rm->Create<Material>(entry->GetFullPath())->GetCopy())
-              {
-                mat->Save(true);
-                SafeDel(mat);
-                m_dirty = true;
-              }
+              String path = entry->GetFullPath();
+              MaterialPtr resource = rm->Create<Material>(path)->Copy<Material>();
+              resource->Save(true);
+              m_dirty = true;
             }
 
             ImGui::CloseCurrentPopup();
@@ -555,12 +553,10 @@ namespace ToolKit
           {
             if (ResourceManager* rm = entry->GetManager())
             {
-              if (Mesh* res = rm->Create<Mesh>(entry->GetFullPath())->GetCopy())
-              {
-                res->Save(true);
-                SafeDel(res);
-                m_dirty = true;
-              }
+              String path = entry->GetFullPath();
+              MeshPtr resource = rm->Create<Mesh>(path)->Copy<Mesh>();
+              resource->Save(true);
+              m_dirty = true;
             }
 
             ImGui::CloseCurrentPopup();

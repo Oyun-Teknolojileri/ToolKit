@@ -18,11 +18,13 @@ namespace ToolKit
     virtual void Save(bool onlyIfDirty) override;
     virtual void Init(bool flushClientSideArray = true) override;
     virtual void UnInit() override;
-    virtual Material* GetCopy() override;
     RenderState* GetRenderState();
 
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+  private:
+    virtual Material* GetCopy() override;
 
   public:
     CubeMapPtr m_cubeMap;

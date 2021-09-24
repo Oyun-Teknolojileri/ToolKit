@@ -51,11 +51,11 @@ namespace ToolKit
       m_grid->m_mesh->Init(false);
 
       MaterialPtr solidColorMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-      m_highLightMaterial = MaterialPtr(solidColorMaterial->GetCopy());
+      m_highLightMaterial = solidColorMaterial->Copy<Material>();
       m_highLightMaterial->m_color = g_selectHighLightPrimaryColor;
       m_highLightMaterial->GetRenderState()->cullMode = CullingType::Front;
 
-      m_highLightSecondaryMaterial = MaterialPtr(solidColorMaterial->GetCopy());
+      m_highLightSecondaryMaterial = solidColorMaterial->Copy<Material>();
       m_highLightSecondaryMaterial->m_color = g_selectHighLightSecondaryColor;
       m_highLightSecondaryMaterial->GetRenderState()->cullMode = CullingType::Front;
 

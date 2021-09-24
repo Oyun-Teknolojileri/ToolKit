@@ -40,7 +40,6 @@ namespace ToolKit
     m_audioMan.Uninit();
     m_shaderMan.Uninit();
     m_materialManager.Uninit();
-    m_materialManager.Uninit();
     m_sceneManager.Uninit();
 
     m_initiated = false;
