@@ -30,6 +30,7 @@ namespace ToolKit
   public:
     virtual void Init();
     virtual void Uninit();
+    virtual void Manage(const ResourcePtr& resource);
     virtual ~ResourceManager();
 
     template<typename T>

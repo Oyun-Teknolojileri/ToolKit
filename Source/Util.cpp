@@ -222,10 +222,12 @@ namespace ToolKit
     size_t exist = path.find(root);
 
     // Check install path relativity.
+    bool toolKit = false;
     if (exist == String::npos)
     {
       root = ResourcePath(true);
       exist = path.find(root, 0);
+      toolKit = true;
     }
 
     if (exist != String::npos)
@@ -236,6 +238,12 @@ namespace ToolKit
       if (exist != String::npos)
       {
         rel = rel.substr(exist + 1);
+      }
+
+      if (toolKit)
+      {
+        // Any relative path starting with ToolKit root directory will be search in the default path.
+        rel = ConcatPaths({ "ToolKit", rel });
       }
 
       return rel;

@@ -453,17 +453,20 @@ namespace ToolKit
           inputWnd->m_hint = "New material name";
           inputWnd->m_taskFn = [this](const String& val)
           {
-            MaterialPtr mat = GetMaterialManager()->GetCopyOfSolidMaterial();
-            mat->m_name = val;
-            mat->m_file = ConcatPaths({ m_path, val + MATERIAL });
-            if (CheckFile(mat->m_file))
+            String file = ConcatPaths({ m_path, val + MATERIAL });
+            if (CheckFile(file))
             {
               g_app->GetConsole()->AddLog("Can't create. A material with the same name exist", ConsoleWindow::LogType::Error);
             }
             else
             {
-              mat->Save(true);
+              MaterialManager* man = GetMaterialManager();
+              MaterialPtr mat = man->GetCopyOfSolidMaterial();
+              mat->m_name = val;
+              mat->m_file = file;
               m_dirty = true;
+              mat->Save(true);
+              man->Manage(mat);
             }
           };
           ImGui::CloseCurrentPopup();

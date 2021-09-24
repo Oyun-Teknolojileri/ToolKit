@@ -26,6 +26,18 @@ namespace ToolKit
     m_storage.clear();
   }
 
+  void ResourceManager::Manage(const ResourcePtr& resource)
+  {
+    bool sane = !resource->m_file.empty();
+    sane |= Exist(resource->m_file);
+    sane |= m_type == resource->m_type;
+    assert(sane && "Sanity checks must hold.");
+    if (sane)
+    {
+      m_storage[resource->m_file] = resource;
+    }
+  }
+
   ResourceManager::~ResourceManager()
   {
     assert(m_storage.size() == 0); // Uninitialize all resources before exit.
