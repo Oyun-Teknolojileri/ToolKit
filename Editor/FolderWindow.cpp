@@ -189,6 +189,7 @@ namespace ToolKit
           m_dirty = false;
         }
 
+        // Handle Item Icon size.
         ImGuiIO io = ImGui::GetIO();
         static float wheel = io.MouseWheel;
         float delta = io.MouseWheel - wheel;
@@ -209,26 +210,35 @@ namespace ToolKit
           }
         }
 
+        // Show Tab path.
         if (ImGui::IsItemHovered())
         {
           ImGui::SetTooltip("%s", m_path.c_str());
         }
 
-        ImGui::BeginChild("##Content", ImVec2(0, 0), true);
+        // Start drawing folder items.
+        const float footerHeightReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+        ImGui::BeginChild("##Content", ImVec2(0, -footerHeightReserve), true);
 
-        // Handle context menu based on path.
         if (m_entiries.empty())
         {
+          // Handle context menu based on path / content type of the folder.
           ShowContextMenu();
         }
         else
         {
+          // Draw folder items.
           for (int i = 0; i < (int)m_entiries.size(); i++)
           {
+            // Prepare Item Icon.
             ImGuiStyle& style = ImGui::GetStyle();
             float visX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
             DirectoryEntry& dirEnt = m_entiries[i];
+            if (!m_filter.PassFilter(dirEnt.m_fileName.c_str()))
+            {
+              continue;
+            }
 
             bool flipRenderTarget = false;
             uint iconId = UI::m_fileIcon->m_textureId;
@@ -295,6 +305,7 @@ namespace ToolKit
             ImGui::BeginGroup();
             ImVec2 texCoords = flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
 
+            // Draw Item Icon.
             if (ImGui::ImageButton((void*)(intptr_t)iconId, m_iconSize, ImVec2(0.0f, 0.0f), texCoords))
             {
               ResourceManager* rm = dirEnt.GetManager();
@@ -305,8 +316,10 @@ namespace ToolKit
               }
             }
 
+            // Handle context menu.
             ShowContextMenu(&dirEnt);
 
+            // Handle if item is directory.
             if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
             {
               if (ImGui::IsItemHovered())
@@ -333,9 +346,11 @@ namespace ToolKit
               }
             }
 
+            // Handle mouse hover tips.
             String fullName = dirEnt.m_fileName + dirEnt.m_ext;
             UI::HelpMarker(LOC + fullName, fullName.c_str());
 
+            // Handle drag - drop to scene / inspector.
             if (!dirEnt.m_isDirectory)
             {
               if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
@@ -353,6 +368,7 @@ namespace ToolKit
               }
             }
 
+            // Handle Item sub text.
             ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
             size_t charLim = (size_t)(m_iconSize.x * 0.1f);
             if (dirEnt.m_fileName.size() > charLim)
@@ -368,6 +384,7 @@ namespace ToolKit
             ImGui::EndGroup();
             ImGui::PopID();
 
+            // Handle next column / row.
             float lastBtnX2 = ImGui::GetItemRectMax().x;
             float nextBtnX2 = lastBtnX2 + style.ItemSpacing.x + m_iconSize.x;
             if (nextBtnX2 < visX2)
@@ -375,8 +392,17 @@ namespace ToolKit
               ImGui::SameLine();
             }
           }
-        }
+        } // Tab item handling ends.
         ImGui::EndChild();
+
+        // Handle searchbar.
+        ImGui::Separator();
+        ImGui::Text("Filter: ");
+        ImGui::SameLine();
+
+        float width = ImGui::GetWindowContentRegionWidth() * 0.25f;
+        m_filter.Draw("##Filter", width);
+
         ImGui::EndTabItem();
       }
     }

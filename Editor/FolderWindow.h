@@ -44,12 +44,6 @@ namespace ToolKit
       void ShowContextForMesh(DirectoryEntry* entry);
       void ShowGenericContext();
 
-    private:
-      FolderWindow* m_parent = nullptr;
-      String m_path;
-      bool m_dirty = false;
-      ImVec2 m_contextBtnSize = ImVec2(75, 20);
-
     public:
       bool m_currRoot = false; // Indicates this is a root folder (one level under Resources) and currently selected in the FolderWindow.
       bool m_visible = false;
@@ -57,6 +51,13 @@ namespace ToolKit
       Vec2 m_iconSize = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entiries;
       String m_folder;
+
+    private:
+      FolderWindow* m_parent = nullptr;
+      String m_path;
+      bool m_dirty = false;
+      ImVec2 m_contextBtnSize = ImVec2(75, 20);
+      ImGuiTextFilter m_filter;
     };
 
     class FolderWindow : public Window
