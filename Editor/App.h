@@ -79,6 +79,7 @@ namespace ToolKit
 
       // UI elements.
       std::vector<Window*> m_windows;
+      String m_statusMsg;
 
       // Editor variables.
       float m_camSpeed = 8.0; // Meters per sec.

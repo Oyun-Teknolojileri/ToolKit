@@ -60,8 +60,7 @@ namespace ToolKit
       Vec2 m_wndContentAreaSize;
       bool m_orthographic = false;
 
-      static class OverlayMods* m_overlayMods;
-      static class OverlayViewportOptions* m_overlayOptions;
+      static std::vector<class OverlayUI*> m_overlays;
       bool m_mouseOverOverlay = false;
       int m_cameraAlignment = 0; // 0: perspective, 1: top, 2: front, 3:left.
 

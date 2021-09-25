@@ -33,6 +33,7 @@ namespace ToolKit
       m_renderer = new Renderer();
       m_renderer->m_windowWidth = windowWidth;
       m_renderer->m_windowHeight = windowHeight;
+      m_statusMsg = "OK";
     }
 
     App::~App()
@@ -410,8 +411,10 @@ namespace ToolKit
       }
       m_windows.clear();
 
-      SafeDel(Viewport::m_overlayMods);
-      SafeDel(Viewport::m_overlayOptions);
+      for (size_t i = 0; i < Viewport::m_overlays.size(); i++)
+      {
+        SafeDel(Viewport::m_overlays[i]);
+      }
     }
 
     void App::CreateWindows(XmlNode* parent)
@@ -705,6 +708,7 @@ namespace ToolKit
       m_scene = GetSceneManager()->Create<EditorScene>(fullPath);
       m_scene->Load(); // Make sure its loaded.
       m_scene->Init(false);
+      m_workspace.SetScene(m_scene->m_name);
       m_scene->m_newScene = false;
     }
 

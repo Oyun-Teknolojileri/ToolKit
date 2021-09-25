@@ -403,8 +403,69 @@ namespace ToolKit
 
         ImGui::EndChildFrame();
       }
-
     }
 
-  }
+    // StatusBar
+    //////////////////////////////////////////////////////////////////////////
+
+    StatusBar::StatusBar(Viewport* owner)
+      : OverlayUI(owner)
+    {
+    }
+
+    void StatusBar::Show()
+    {
+      // Status bar.
+      ImVec2 overlaySize;
+      overlaySize.x = m_owner->m_width - 2;
+      overlaySize.y = 24;
+      ImVec2 pos = m_owner->m_wndPos;
+      ImVec2 wndPadding = ImGui::GetStyle().WindowPadding;
+
+      pos.x += 1;
+      pos.y += m_owner->m_height - wndPadding.y - 16.0f;
+      ImGui::SetNextWindowPos(pos);
+      ImGui::SetNextWindowBgAlpha(0.65f);
+      if
+        (
+          ImGui::BeginChildFrame
+          (
+            ImGui::GetID("ProjectInfo"),
+            overlaySize,
+            ImGuiWindowFlags_NoMove
+            | ImGuiWindowFlags_NoTitleBar
+            | ImGuiWindowFlags_NoScrollbar
+            | ImGuiWindowFlags_NoScrollWithMouse
+          )
+          )
+      {
+        String info = "Status: ";
+        ImGui::Text(info.c_str());
+
+        // Inject status.
+        ImGui::SameLine();
+        ImGui::Text(g_app->m_statusMsg.c_str());
+
+        // Draw Projcet Info.
+        Project prj = g_app->m_workspace.GetActiveProject();
+        info = "Project: " + prj.name + "Scene: " + prj.scene;
+        pos = ImGui::CalcTextSize(info.c_str());
+
+        ImGui::SameLine((m_owner->m_width - pos.x) * 0.5f);
+        info = "Project: " + prj.name;
+        ImGui::BulletText(info.c_str());
+        ImGui::SameLine();
+        info = "Scene: " + prj.scene;
+        ImGui::BulletText(info.c_str());
+
+        // Draw Fps.
+        String fps = "Fps: " + std::to_string(g_app->m_fps);
+        ImGui::SameLine(m_owner->m_width - 70.0f);
+        ImGui::Text(fps.c_str());
+
+        ImGui::EndChildFrame();
+      }
+    }
+
+}
 }

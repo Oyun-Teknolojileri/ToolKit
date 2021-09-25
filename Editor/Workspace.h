@@ -30,6 +30,7 @@ namespace ToolKit
       String GetActiveWorkspace();
       Project GetActiveProject();
       void SetActiveProject(const Project& project);
+      void SetScene(const String& scene);
 
       void RefreshProjects();
 

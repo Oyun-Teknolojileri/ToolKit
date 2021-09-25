@@ -23,8 +23,30 @@ namespace ToolKit
   {
 
     uint Viewport::m_nextId = 1;
-    OverlayMods* Viewport::m_overlayMods = nullptr;
-    OverlayViewportOptions* Viewport::m_overlayOptions = nullptr;
+    std::vector<OverlayUI*> Viewport::m_overlays = { nullptr, nullptr, nullptr };
+
+    void InitOverlays(Viewport* viewport)
+    {
+      for (int i = 0; i < 3; i++)
+      {
+        OverlayUI** overlay = &Viewport::m_overlays[i];
+        if (*overlay == nullptr)
+        {
+          switch (i)
+          {
+          case 0:
+            *overlay = new OverlayMods(viewport);
+            break;
+          case 1:
+            *overlay = new OverlayViewportOptions(viewport);
+            break;
+          case 2:
+            *overlay = new StatusBar(viewport);
+            break;
+          }
+        }
+      }
+    }
 
     Viewport::Viewport(XmlNode* node)
     {
@@ -32,16 +54,7 @@ namespace ToolKit
 
       m_viewportImage = new RenderTarget((uint)m_width, (uint)m_height);
       m_viewportImage->Init();
-
-      if (m_overlayMods == nullptr)
-      {
-        m_overlayMods = new OverlayMods(this);
-      }
-
-      if (m_overlayOptions == nullptr)
-      {
-        m_overlayOptions = new OverlayViewportOptions(this);
-      }
+      InitOverlays(this);
     }
 
     Viewport::Viewport(float width, float height)
@@ -52,16 +65,7 @@ namespace ToolKit
       m_viewportImage = new RenderTarget((uint)width, (uint)height);
       m_viewportImage->Init();
       m_name = g_viewportStr + " " + std::to_string(m_nextId++);
-
-      if (m_overlayMods == nullptr)
-      {
-        m_overlayMods = new OverlayMods(this);
-      }
-
-      if (m_overlayOptions == nullptr)
-      {
-        m_overlayOptions = new OverlayViewportOptions(this);
-      }
+      InitOverlays(this);
     }
 
     Viewport::~Viewport()
@@ -131,12 +135,6 @@ namespace ToolKit
 
         m_mouseHover = ImGui::IsWindowHovered();
 
-        ImVec2 pos = m_wndPos;
-        pos.x += m_width - 70.0f;
-        pos.y += m_wndContentAreaSize.y - 20.0f;
-        String fps = "Fps: " + std::to_string(g_app->m_fps);
-        ImGui::GetWindowDrawList()->AddText(pos, IM_COL32(255, 255, 0, 255), fps.c_str());
-
         // Process draw commands.
         ImDrawList* drawList = ImGui::GetWindowDrawList();
         for (auto command : m_drawCommands)
@@ -202,16 +200,13 @@ namespace ToolKit
         {
           if (IsActive() || g_app->m_showOverlayUIAlways)
           {
-            if (m_overlayMods != nullptr)
+            for (OverlayUI* overlay : m_overlays)
             {
-              m_overlayMods->m_owner = this;
-              m_overlayMods->Show();
-            }
-
-            if (m_overlayOptions != nullptr)
-            {
-              m_overlayOptions->m_owner = this;
-              m_overlayOptions->Show();
+              if (overlay)
+              {
+                overlay->m_owner = this;
+                overlay->Show();
+              }
             }
           }
         }

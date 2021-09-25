@@ -121,6 +121,11 @@ namespace ToolKit
       Main::GetInstance()->m_resourceRoot = GetResourceRoot();
     }
 
+    void Workspace::SetScene(const String& scene)
+    {
+      m_activeProject.scene = scene;
+    }
+
     void Workspace::RefreshProjects()
     {
       m_projects.clear();

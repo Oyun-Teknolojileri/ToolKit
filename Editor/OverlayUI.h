@@ -36,5 +36,12 @@ namespace ToolKit
       virtual void Show() override;
     };
 
+    class StatusBar : public OverlayUI
+    {
+    public:
+      StatusBar(Viewport* owner);
+      virtual void Show() override;
+    };
+
   }
 }
