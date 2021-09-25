@@ -22,7 +22,12 @@ namespace ToolKit
     template<typename T>
     std::shared_ptr<T> Copy()
     {
-      return std::shared_ptr<T>(static_cast<T*> (GetCopy()));
+      std::shared_ptr<T> resource = std::shared_ptr<T>(static_cast<T*> (GetCopy()));
+      if (ResourceManager* manager = GetResourceManager(resource->m_type))
+      {
+        manager->Manage(resource);
+      }
+      return resource;
     }
 
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;

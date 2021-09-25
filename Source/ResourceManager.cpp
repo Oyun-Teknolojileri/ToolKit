@@ -29,9 +29,8 @@ namespace ToolKit
   void ResourceManager::Manage(const ResourcePtr& resource)
   {
     bool sane = !resource->m_file.empty();
-    sane |= Exist(resource->m_file);
-    sane |= m_type == resource->m_type;
-    assert(sane && "Sanity checks must hold.");
+    sane &= !Exist(resource->m_file);
+    sane &= m_type == resource->m_type;
     if (sane)
     {
       m_storage[resource->m_file] = resource;
