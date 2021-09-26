@@ -12,7 +12,7 @@
 #include "Material.h"
 #include "Primative.h"
 #include "GlobalDef.h"
-#include "Viewport.h"
+#include "EditorViewport.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -351,7 +351,7 @@ namespace ToolKit
     {
       t = TK_FLT_MAX;
 
-      if (Viewport* vp = g_app->GetActiveViewport())
+      if (EditorViewport* vp = g_app->GetActiveViewport())
       {
         for (size_t i = 1; i < m_mesh->m_clientSideVertices.size(); i++)
         {

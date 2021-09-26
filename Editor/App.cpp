@@ -3,7 +3,7 @@
 #include "App.h"
 #include "Renderer.h"
 #include "UI.h"
-#include "Viewport.h"
+#include "EditorViewport.h"
 #include "Primative.h"
 #include "Node.h"
 #include "GlobalDef.h"
@@ -141,7 +141,7 @@ namespace ToolKit
     {
       // Update Plugin
       GamePlugin* plugin = GetPluginManager()->m_plugin;
-      Viewport* persVp = GetWindow<Viewport>("Perspective");
+      EditorViewport* persVp = GetWindow<EditorViewport>("Perspective");
       if (plugin)
       {
         // Draw gameplugin strictly on the perspective.
@@ -184,7 +184,7 @@ namespace ToolKit
 
         wnd->DispatchSignals();
 
-        Viewport* vp = static_cast<Viewport*> (wnd);
+        EditorViewport* vp = static_cast<EditorViewport*> (wnd);
         vp->Update(deltaTime);
 
         // Adjust scene lights.
@@ -388,14 +388,14 @@ namespace ToolKit
       else
       {
         // Perspective.
-        Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+        EditorViewport* vp = new EditorViewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
         vp->m_name = "Perspective";
         vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
         vp->m_camera->LookAt(Vec3(0.0f));
         m_windows.push_back(vp);
 
         // Orthographic.
-        vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+        vp = new EditorViewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
         vp->m_name = "Orthographic";
         vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
         vp->m_camera->Pitch(glm::radians(-90.0f));
@@ -433,9 +433,9 @@ namespace ToolKit
       }
       m_windows.clear();
 
-      for (size_t i = 0; i < Viewport::m_overlays.size(); i++)
+      for (size_t i = 0; i < EditorViewport::m_overlays.size(); i++)
       {
-        SafeDel(Viewport::m_overlays[i]);
+        SafeDel(EditorViewport::m_overlays[i]);
       }
     }
 
@@ -452,7 +452,7 @@ namespace ToolKit
           switch ((Window::Type)type)
           {
           case Window::Type::Viewport:
-            wnd = new Viewport(wndNode);
+            wnd = new EditorViewport(wndNode);
             break;
           case Window::Type::Console:
             wnd = new ConsoleWindow(wndNode);
@@ -783,7 +783,7 @@ namespace ToolKit
       );
     }
 
-    Viewport* App::GetActiveViewport()
+    EditorViewport* App::GetActiveViewport()
     {
       for (Window* wnd : m_windows)
       {
@@ -794,20 +794,20 @@ namespace ToolKit
 
         if (wnd->IsActive() && wnd->IsVisible())
         {
-          return static_cast<Viewport*> (wnd);
+          return static_cast<EditorViewport*> (wnd);
         }
       }
 
       return nullptr;
     }
 
-    Viewport* App::GetViewport(const String& name)
+    EditorViewport* App::GetViewport(const String& name)
     {
       for (Window* wnd : m_windows)
       {
         if (wnd->m_name == name)
         {
-          return dynamic_cast<Viewport*> (wnd);
+          return dynamic_cast<EditorViewport*> (wnd);
         }
       }
 
@@ -865,7 +865,7 @@ namespace ToolKit
       return nullptr;
     }
 
-    void App::RenderSelected(Viewport* vp)
+    void App::RenderSelected(EditorViewport* vp)
     {
       if (m_scene->GetSelectedEntityCount() == 0)
       {

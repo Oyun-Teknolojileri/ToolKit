@@ -7,7 +7,7 @@
 #include "Entity.h"
 #include "Node.h"
 #include "Directional.h"
-#include "Viewport.h"
+#include "EditorViewport.h"
 #include "TransformMod.h"
 #include "Util.h"
 #include "DebugNew.h"
@@ -233,7 +233,7 @@ namespace ToolKit
           return;
         }
 
-        if (Viewport* vp = g_app->GetViewport(viewportTag->second[0]))
+        if (EditorViewport* vp = g_app->GetViewport(viewportTag->second[0]))
         {
           if (Camera* c = vp->m_camera)
           {
@@ -404,7 +404,7 @@ namespace ToolKit
 
         Vec3 target;
         ParseVec(target, targetTag);
-        Viewport* vp = g_app->GetViewport("Perspective");
+        EditorViewport* vp = g_app->GetViewport("Perspective");
         if (vp)
         {
           vp->m_camera->LookAt(target);

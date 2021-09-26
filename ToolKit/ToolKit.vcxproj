@@ -123,6 +123,7 @@
     <ClInclude Include="..\Source\Texture.h" />
     <ClInclude Include="..\Source\Types.h" />
     <ClInclude Include="..\Source\Util.h" />
+    <ClInclude Include="..\Source\Viewport.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\ParameterBlock.cpp" />
@@ -211,6 +212,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\Source\Viewport.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

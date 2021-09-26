@@ -3,7 +3,7 @@
 #include "Gizmo.h"
 #include "GlobalDef.h"
 #include "Node.h"
-#include "Viewport.h"
+#include "EditorViewport.h"
 #include "ConsoleWindow.h"
 #include "Directional.h"
 #include "Util.h"
@@ -124,7 +124,7 @@ namespace ToolKit
       Entity* e = g_app->m_scene->GetCurrentSelection();
       if (e != nullptr)
       {
-        Viewport* vp = g_app->GetActiveViewport();
+        EditorViewport* vp = g_app->GetActiveViewport();
         if (vp == nullptr)
         {
           return; // Console commands may put the process here whit out active viewport.
@@ -171,7 +171,7 @@ namespace ToolKit
     {
       if (signal == BaseMod::m_leftMouseBtnDownSgnl)
       {
-        Viewport* vp = g_app->GetActiveViewport();
+        EditorViewport* vp = g_app->GetActiveViewport();
         if (vp != nullptr)
         {
           m_mouseData[0] = vp->GetLastMousePosScreenSpace();
@@ -241,7 +241,7 @@ namespace ToolKit
 
           if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
           {
-            if (Viewport* vp = g_app->GetActiveViewport())
+            if (EditorViewport* vp = g_app->GetActiveViewport())
             {
               float t;
               PlaneEquation axisPlane = PlaneFrom(p, axis);
@@ -265,7 +265,7 @@ namespace ToolKit
       else
       {
         // Linear intersection plane.
-        Viewport* vp = g_app->GetActiveViewport();
+        EditorViewport* vp = g_app->GetActiveViewport();
         Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         Vec3 gizmOrg = m_gizmo->m_worldLocation;
         Vec3 dir = glm::normalize(camOrg - gizmOrg);
@@ -316,7 +316,7 @@ namespace ToolKit
 
         if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
         {
-          if (Viewport* vp = g_app->GetActiveViewport())
+          if (EditorViewport* vp = g_app->GetActiveViewport())
           {
             float t;
             PlaneEquation axisPlane = PlaneFrom(p, axis);
@@ -422,7 +422,7 @@ namespace ToolKit
 
     void StateTransformTo::CalculateDelta()
     {
-      Viewport* vp = g_app->GetActiveViewport();
+      EditorViewport* vp = g_app->GetActiveViewport();
       m_mouseData[1] = vp->GetLastMousePosScreenSpace();
 
       float t;

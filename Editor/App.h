@@ -15,7 +15,7 @@ namespace ToolKit
 
   namespace Editor
   {
-    class Viewport;
+    class EditorViewport;
     class Grid;
     class Axis3d;
     class Cursor;
@@ -57,8 +57,8 @@ namespace ToolKit
       void ApplyProjectSettings(bool setDefaults);
       void OpenProject(const Project& project);
 
-      Viewport* GetActiveViewport(); // Returns open and active viewport or nullptr.
-      Viewport* GetViewport(const String& name);
+      EditorViewport* GetActiveViewport(); // Returns open and active viewport or nullptr.
+      EditorViewport* GetViewport(const String& name);
       ConsoleWindow* GetConsole();
       FolderWindow* GetAssetBrowser();
       OutlinerWindow* GetOutliner();
@@ -69,7 +69,7 @@ namespace ToolKit
       T* GetWindow(const String& name);
 
       // Quick selected render implementation.
-      void RenderSelected(Viewport* vp);
+      void RenderSelected(EditorViewport* vp);
 
       virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;

@@ -7,7 +7,7 @@
 #include "ImGui/imgui_stdlib.h"
 
 #include "App.h"
-#include "Viewport.h"
+#include "EditorViewport.h"
 #include "SDL.h"
 #include "GlobalDef.h"
 #include "Mod.h"
@@ -446,7 +446,7 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Add Viewport", "Alt+V"))
         {
-          Viewport* vp = new Viewport(640, 480);
+          EditorViewport* vp = new EditorViewport(640, 480);
           g_app->m_windows.push_back(vp);
         }
         ImGui::EndMenu();

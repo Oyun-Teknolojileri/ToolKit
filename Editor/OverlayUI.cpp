@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "OverlayUI.h"
-#include "Viewport.h"
+#include "EditorViewport.h"
 #include "GlobalDef.h"
 #include "Mod.h"
 #include "ConsoleWindow.h"
@@ -12,7 +12,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    OverlayUI::OverlayUI(Viewport* owner)
+    OverlayUI::OverlayUI(EditorViewport* owner)
     {
       m_owner = owner;
     }
@@ -35,7 +35,7 @@ namespace ToolKit
     // OverlayMods
     //////////////////////////////////////////////////////////////////////////
 
-    OverlayMods::OverlayMods(Viewport* owner)
+    OverlayMods::OverlayMods(EditorViewport* owner)
       : OverlayUI(owner)
     {
     }
@@ -155,7 +155,7 @@ namespace ToolKit
     // OverlayViewportOptions
     //////////////////////////////////////////////////////////////////////////
 
-    OverlayViewportOptions::OverlayViewportOptions(Viewport* owner)
+    OverlayViewportOptions::OverlayViewportOptions(EditorViewport* owner)
       : OverlayUI(owner)
     {
     }
@@ -408,7 +408,7 @@ namespace ToolKit
     // StatusBar
     //////////////////////////////////////////////////////////////////////////
 
-    StatusBar::StatusBar(Viewport* owner)
+    StatusBar::StatusBar(EditorViewport* owner)
       : OverlayUI(owner)
     {
     }

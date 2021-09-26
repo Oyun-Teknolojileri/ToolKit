@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "Viewport.h"
+#include "EditorViewport.h"
 #include "Directional.h"
 #include "Renderer.h"
 #include "App.h"
@@ -22,14 +22,13 @@ namespace ToolKit
   namespace Editor
   {
 
-    uint Viewport::m_nextId = 1;
-    std::vector<OverlayUI*> Viewport::m_overlays = { nullptr, nullptr, nullptr };
+    std::vector<OverlayUI*> EditorViewport::m_overlays = { nullptr, nullptr, nullptr };
 
-    void InitOverlays(Viewport* viewport)
+    void InitOverlays(EditorViewport* viewport)
     {
       for (int i = 0; i < 3; i++)
       {
-        OverlayUI** overlay = &Viewport::m_overlays[i];
+        OverlayUI** overlay = &EditorViewport::m_overlays[i];
         if (*overlay == nullptr)
         {
           switch (i)
@@ -48,7 +47,7 @@ namespace ToolKit
       }
     }
 
-    Viewport::Viewport(XmlNode* node)
+    EditorViewport::EditorViewport(XmlNode* node)
     {
       DeSerialize(nullptr, node);
 
@@ -57,24 +56,18 @@ namespace ToolKit
       InitOverlays(this);
     }
 
-    Viewport::Viewport(float width, float height)
-      : m_width(width), m_height(height)
+    EditorViewport::EditorViewport(float width, float height)
+      : Viewport(width, height)
     {
-      m_camera = new Camera();
-      m_camera->SetLens(glm::quarter_pi<float>(), width, height);
-      m_viewportImage = new RenderTarget((uint)width, (uint)height);
-      m_viewportImage->Init();
-      m_name = g_viewportStr + " " + std::to_string(m_nextId++);
+      m_name = g_viewportStr + " " + std::to_string(m_id);
       InitOverlays(this);
     }
 
-    Viewport::~Viewport()
+    EditorViewport::~EditorViewport()
     {
-      SafeDel(m_camera);
-      SafeDel(m_viewportImage);
     }
 
-    void Viewport::Show()
+    void EditorViewport::Show()
     {
       m_mouseOverOverlay = false;
 
@@ -215,7 +208,7 @@ namespace ToolKit
       ImGui::End();
     }
 
-    void Viewport::Update(float deltaTime)
+    void EditorViewport::Update(float deltaTime)
     {
       if (!IsActive())
       {
@@ -228,36 +221,17 @@ namespace ToolKit
       OrbitPanMod(deltaTime);
     }
 
-    void Viewport::OnResize(float width, float height)
-    {
-      m_width = width;
-      m_height = height;
-      if (m_orthographic)
-      {
-        m_camera->SetLens(width / height, -10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
-      }
-      else
-      {
-        m_camera->SetLens(m_camera->GetData().fov, width, height);
-      }
-
-      m_viewportImage->UnInit();
-      m_viewportImage->m_width = (uint)width;
-      m_viewportImage->m_height = (uint)height;
-      m_viewportImage->Init();
-    }
-
-    Window::Type Viewport::GetType() const
+    Window::Type EditorViewport::GetType() const
     {
       return Type::Viewport;
     }
 
-    bool Viewport::IsViewportQueriable()
+    bool EditorViewport::IsViewportQueriable()
     {
       return m_mouseOverContentArea && m_mouseHover && m_active && m_visible && m_relMouseModBegin;
     }
 
-    void Viewport::DispatchSignals() const
+    void EditorViewport::DispatchSignals() const
     {
       if (!CanDispatchSignals() || m_mouseOverOverlay)
       {
@@ -340,8 +314,9 @@ namespace ToolKit
       {
         if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
         {
-          XmlDocument doc;
-          g_app->m_scene->Serialize(&doc, nullptr);
+          XmlDocument* doc = new XmlDocument();
+          g_app->m_scene->Serialize(doc, nullptr);
+          SafeDel(doc);
         }
       }
 
@@ -365,68 +340,7 @@ namespace ToolKit
       }
     }
 
-    Ray Viewport::RayFromMousePosition()
-    {
-      return RayFromScreenSpacePoint(GetLastMousePosScreenSpace());
-    }
-
-    Ray Viewport::RayFromScreenSpacePoint(const Vec2& pnt)
-    {
-      Vec2 mcInVs = TransformScreenToViewportSpace(pnt);
-
-      Ray ray;
-      ray.position = TransformViewportToWorldSpace(mcInVs);
-      if (m_camera->IsOrtographic())
-      {
-        ray.direction = m_camera->GetDir();
-      }
-      else
-      {
-        ray.direction = glm::normalize(ray.position - m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD));
-      }
-
-      return ray;
-    }
-
-    Vec3 Viewport::GetLastMousePosWorldSpace()
-    {
-      return TransformViewportToWorldSpace(GetLastMousePosViewportSpace());
-    }
-
-    Vec2 Viewport::GetLastMousePosViewportSpace()
-    {
-      Vec2 screenPoint = m_lastMousePosRelContentArea;
-      screenPoint.y = m_wndContentAreaSize.y - screenPoint.y; // Imgui Window origin Top - Left to OpenGL window origin Bottom - Left
-
-      return screenPoint;
-    }
-
-    Vec2 Viewport::GetLastMousePosScreenSpace()
-    {
-      Vec2 screenPoint = GetLastMousePosViewportSpace();
-      screenPoint.y = m_wndContentAreaSize.y - screenPoint.y; // Bring it back from opengl (BottomLeft) to Imgui (TopLeft) system.
-
-      return m_wndPos + screenPoint; // Move it from window space to screen space.
-    }
-
-    Vec3 Viewport::TransformViewportToWorldSpace(const Vec2& pnt)
-    {
-      Vec3 screenPoint = Vec3(pnt, 0.0f);
-
-      Mat4 view = m_camera->GetViewMatrix();
-      Mat4 project = m_camera->GetData().projection;
-
-      return glm::unProject(screenPoint, view, project, Vec4(0.0f, 0.0f, m_width, m_height));
-    }
-
-    Vec2 Viewport::TransformScreenToViewportSpace(const Vec2& pnt)
-    {
-      Vec2 vp = pnt - m_wndPos; // In window space.
-      vp.y = m_wndContentAreaSize.y - vp.y; // In viewport space.
-      return vp;
-    }
-
-    void Viewport::Serialize(XmlDocument* doc, XmlNode* parent) const
+    void EditorViewport::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
       Window::Serialize(doc, parent);
       XmlNode* node = doc->allocate_node(rapidxml::node_element, "Viewport");
@@ -441,7 +355,7 @@ namespace ToolKit
       wnd->append_node(node);
     }
 
-    void Viewport::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    void EditorViewport::DeSerialize(XmlDocument* doc, XmlNode* parent)
     {
       Window::DeSerialize(doc, parent);
 
@@ -455,7 +369,7 @@ namespace ToolKit
       }
     }
 
-    void Viewport::FpsNavigationMode(float deltaTime)
+    void EditorViewport::FpsNavigationMode(float deltaTime)
     {
       if (m_camera && !m_camera->IsOrtographic())
       {
@@ -541,7 +455,7 @@ namespace ToolKit
       }
     }
 
-    void Viewport::OrbitPanMod(float deltaTime)
+    void EditorViewport::OrbitPanMod(float deltaTime)
     {
       if (m_camera)
       {
