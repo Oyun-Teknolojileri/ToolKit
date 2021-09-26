@@ -12,8 +12,6 @@ namespace ToolKit
 {
   Viewport::Viewport()
   {
-    m_width = 640.0f;
-    m_height = 480.0f;
   }
 
   Viewport::Viewport(float width, float height)

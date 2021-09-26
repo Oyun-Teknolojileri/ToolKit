@@ -38,8 +38,8 @@ namespace ToolKit
 
     // Window properties.
     Vec2 m_wndPos;
-    float m_width;
-    float m_height;
+    float m_width = 640.0f;
+    float m_height = 480.0f;
 
   protected:
     // States.
