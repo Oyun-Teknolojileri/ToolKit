@@ -14,8 +14,8 @@ namespace ToolKit
   void Main::Init()
   {
     Logger::GetInstance()->Log("ToolKit Initialization");
-    PluginManager::GetInstance()->Init();
     
+    m_pluginManager.Init();
     m_animationMan.Init();
     m_textureMan.Init();
     m_meshMan.Init();
@@ -30,8 +30,7 @@ namespace ToolKit
 
   void Main::Uninit()
   {
-    PluginManager::GetInstance()->UnInit();
-
+    m_pluginManager.UnInit();
     m_animationPlayer.m_records.clear();
     m_animationMan.Uninit();
     m_textureMan.Uninit();
@@ -99,6 +98,11 @@ namespace ToolKit
     return &Main::GetInstance()->m_sceneManager;
   }
 
+  PluginManager* GetPluginManager()
+  {
+    return &Main::GetInstance()->m_pluginManager;
+  }
+
   ResourceManager* GetResourceManager(ResourceType type)
   {
     switch (type)
@@ -127,11 +131,6 @@ namespace ToolKit
     }
 
     return nullptr;
-  }
-
-  PluginManager* GetPluginManager()
-  {
-    return PluginManager::GetInstance();
   }
 
   String DefaultPath()

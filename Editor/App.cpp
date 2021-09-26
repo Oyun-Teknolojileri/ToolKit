@@ -30,7 +30,7 @@ namespace ToolKit
     {
       m_cursor = nullptr;
       m_lightMaster = nullptr;
-      m_renderer = new Renderer();
+      m_renderer = &Main::GetInstance()->m_renderer;
       m_renderer->m_windowWidth = windowWidth;
       m_renderer->m_windowHeight = windowHeight;
       m_statusMsg = "OK";
@@ -39,9 +39,6 @@ namespace ToolKit
     App::~App()
     {
       Destroy();
-
-      // Engine components.
-      SafeDel(m_renderer);
     }
 
     void App::Init()
@@ -142,6 +139,21 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
+      // Update Plugin
+      GamePlugin* plugin = GetPluginManager()->m_plugin;
+      Viewport* persVp = GetWindow<Viewport>("Perspective");
+      if (plugin)
+      {
+        // Draw gameplugin strictly on the perspective.
+        if (persVp)
+        {
+          RenderTarget* rt = persVp->m_viewportImage;
+          m_renderer->SwapRenderTarget(&rt);
+          plugin->Frame(deltaTime);
+          m_renderer->SwapRenderTarget(&rt);
+        }
+      }
+
       // Update animations.
       GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
 
@@ -159,6 +171,15 @@ namespace ToolKit
         if (wnd->GetType() != Window::Type::Viewport)
         {
           continue;
+        }
+
+        // Skip perspective. Its get drawn in the plugin.
+        if (plugin && persVp)
+        {
+          if (wnd->m_id == persVp->m_id)
+          {
+            continue;
+          }
         }
 
         wnd->DispatchSignals();
@@ -261,6 +282,7 @@ namespace ToolKit
       Destroy();
       Init();
       m_scene = std::make_shared<EditorScene>(ScenePath(name + SCENE));
+      m_workspace.SetScene(m_scene->m_name);
       m_onNewScene = false;
     }
 

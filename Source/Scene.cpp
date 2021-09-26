@@ -352,4 +352,16 @@ namespace ToolKit
   {
   }
 
+  void SceneManager::Init()
+  {
+    m_currentScene = nullptr;
+    ResourceManager::Init();
+  }
+
+  void SceneManager::Uninit()
+  {
+    m_currentScene = nullptr;
+    ResourceManager::Uninit();
+  }
+
 }

@@ -51,6 +51,8 @@ namespace ToolKit
     SpriteSheetManager m_spriteSheetMan;
     TextureManager m_textureMan;
     SceneManager m_sceneManager;
+    PluginManager m_pluginManager;
+    Renderer m_renderer;
 
     bool m_initiated = false;
     String m_resourceRoot;
@@ -65,8 +67,8 @@ namespace ToolKit
   SpriteSheetManager* GetSpriteSheetManager();
   TextureManager* GetTextureManager();
   SceneManager* GetSceneManager();
-  ResourceManager* GetResourceManager(ResourceType type);
   PluginManager* GetPluginManager();
+  ResourceManager* GetResourceManager(ResourceType type);
 
   String DefaultPath();
   String ResourcePath(bool def = false);

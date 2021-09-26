@@ -6,8 +6,6 @@
 
 namespace ToolKit
 {
-  PluginManager* PluginManager::m_instance = nullptr;
-
 #ifdef _WIN32
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
@@ -66,10 +64,7 @@ namespace ToolKit
     }
   }
 #else 
-  PluginManager::~PluginManager()
-  {
-}
-  // Win32 implementation end.
+  PluginManager::~PluginManager() { }
   void PluginManager::Load(const String& name) { }
   void PluginManager::Unload() { }
 #endif
@@ -85,19 +80,16 @@ namespace ToolKit
   void PluginManager::UnInit()
   {
     Unload();
-    SafeDel(m_instance);
   }
 
-  PluginManager* PluginManager::GetInstance()
+  PluginManager::PluginManager() 
   {
-    if (m_instance == nullptr)
-    {
-      m_instance = new PluginManager();
-    }
-
-    return m_instance;
+    m_plugin = nullptr;
   }
 
-  PluginManager::PluginManager() { }
-  PluginManager::~PluginManager() { }
+  PluginManager::~PluginManager() 
+  {
+    UnInit();
+  }
+
 }

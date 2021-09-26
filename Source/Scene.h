@@ -51,6 +51,11 @@ namespace ToolKit
   public:
     SceneManager();
     virtual ~SceneManager();
+    virtual void Init() override;
+    virtual void Uninit() override;
+
+  public:
+    ScenePtr m_currentScene;
   };
 
 }
