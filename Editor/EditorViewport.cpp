@@ -347,7 +347,6 @@ namespace ToolKit
 
       WriteAttr(node, doc, "width", std::to_string(m_width));
       WriteAttr(node, doc, "height", std::to_string(m_height));
-      WriteAttr(node, doc, "orthographic", std::to_string((int)m_orthographic));
       WriteAttr(node, doc, "alignment", std::to_string((int)m_cameraAlignment));
       m_camera->Serialize(doc, node);
 
@@ -363,7 +362,6 @@ namespace ToolKit
       {
         ReadAttr(node, "width", m_width);
         ReadAttr(node, "height", m_height);
-        ReadAttr(node, "orthographic", m_orthographic);
         ReadAttr(node, "alignment", m_cameraAlignment);
         m_camera = new Camera(node->first_node("E"));
       }

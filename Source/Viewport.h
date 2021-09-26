@@ -40,7 +40,6 @@ namespace ToolKit
     Vec2 m_wndPos;
     float m_width;
     float m_height;
-    bool m_orthographic = false;
 
   protected:
     // States.
