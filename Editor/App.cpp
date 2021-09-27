@@ -149,7 +149,7 @@ namespace ToolKit
         {
           RenderTarget* rt = persVp->m_viewportImage;
           m_renderer->SwapRenderTarget(&rt);
-          plugin->Frame(deltaTime);
+          plugin->Frame(deltaTime, persVp);
           m_renderer->SwapRenderTarget(&rt);
         }
       }

@@ -17,13 +17,11 @@ union SDL_Event;
 
 namespace ToolKit
 {
-  class Main;
-
   struct GamePlugin
   {
-    virtual void Init(Main* master) = 0;
+    virtual void Init(class Main* master) = 0;
     virtual void Destroy() = 0;
-    virtual void Frame(float deltaTime) = 0;
+    virtual void Frame(float deltaTime, class Viewport* viewport) = 0;
     virtual void Event(SDL_Event event) = 0;
   };
 

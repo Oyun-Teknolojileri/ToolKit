@@ -32,7 +32,6 @@ namespace ToolKit
     void OnResize(float width, float height);
 
   public:
-    // ToolKit bindings.
     Camera* m_camera = nullptr;
     RenderTarget* m_viewportImage = nullptr;
 
