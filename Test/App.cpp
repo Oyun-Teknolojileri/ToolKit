@@ -44,26 +44,23 @@ namespace ToolKit
 
   void Game::Frame(float deltaTime, Viewport* viewport)
   {
-    ScenePtr scene = GetScene();
-    if (!scene)
+    // Update engine bindings.
+    m_viewport = viewport;
+    m_scene = GetScene();
+
+    if (!m_scene)
     {
       m_main->m_pluginManager.m_reporterFn("There is not a current scene. Skipping the frame.");
       return;
     }
 
-    const EntityRawPtrArray& entities = scene->GetEntities();
+    const EntityRawPtrArray& entities = m_scene->GetEntities();
     for (Entity* ntt : entities)
     {
       if (ntt->IsDrawable())
       {
         Drawable* dw = static_cast<Drawable*> (ntt);
         m_main->m_renderer.Render(dw, viewport->m_camera, m_sceneLights);
-        Ray ray = viewport->RayFromMousePosition();
-        Scene::PickData pd = scene->PickObject(ray);
-        if (pd.entity)
-        {
-          m_main->m_pluginManager.m_reporterFn("Picked from plugin: " + pd.entity->m_name);
-        }
       } 
     }
   }
@@ -74,6 +71,15 @@ namespace ToolKit
 
   void Game::Event(SDL_Event event)
   {
+    switch (event.type)
+    {
+    case SDL_MOUSEBUTTONDOWN:
+      if (event.button.button == SDL_BUTTON_LEFT)
+      {
+        CheckPlayerMove();
+      }
+      break;
+    }
   }
 
   ScenePtr Game::GetScene()
@@ -85,6 +91,32 @@ namespace ToolKit
     }
 
     return scene;
+  }
+
+  void Game::CheckPlayerMove()
+  {
+    EntityRawPtrArray playerTags = m_scene->GetByTag("player");
+    if (playerTags.empty())
+    {
+      return;
+    }
+
+    Entity* player = playerTags.front();
+    Vec3 pCenter = player->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+
+    Ray ray = m_viewport->RayFromMousePosition();
+    Scene::PickData pd = m_scene->PickObject(ray);
+    if (pd.entity)
+    {
+      if (pd.entity->m_tag == "grnd")
+      {
+        Drawable* ground = static_cast<Drawable*> (pd.entity);
+        BoundingBox bb = ground->GetAABB(true);
+        
+        // Move player.
+        player->m_node->SetTranslation(bb.GetCenter(), TransformationSpace::TS_WORLD);
+      }
+    }
   }
 
 }

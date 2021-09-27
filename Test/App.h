@@ -18,6 +18,9 @@ namespace ToolKit
     // Plugin functions
     ScenePtr GetScene();
 
+    // Game logic
+    void CheckPlayerMove();
+
   public:
     // ToolKit Bindings.
     Main* m_main = nullptr;
@@ -25,6 +28,7 @@ namespace ToolKit
     // Plugin objects.
     ScenePtr m_scene;
     Camera* m_cam = nullptr;
+    Viewport* m_viewport = nullptr;
 
     // 3 point lighting system.
     Node* m_lightMaster = nullptr;

@@ -19,6 +19,11 @@ namespace ToolKit
   {
     Vec3 min = Vec3(FLT_MAX);
     Vec3 max = Vec3(-FLT_MAX);
+
+    Vec3 GetCenter()
+    {
+      return min + (max - min) * 0.5f;
+    }
   };
 
   struct Ray

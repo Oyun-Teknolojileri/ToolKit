@@ -169,6 +169,11 @@ namespace ToolKit
     {
       ImGui_ImplSDL2_ProcessEvent(&e);
 
+      if (GamePlugin* plugin = GetPluginManager()->m_plugin)
+      {
+        plugin->Event(e);
+      }
+
       if (e.type == SDL_WINDOWEVENT)
       {
         if (e.window.event == SDL_WINDOWEVENT_RESIZED)
