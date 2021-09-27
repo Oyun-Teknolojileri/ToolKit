@@ -20,6 +20,7 @@ namespace ToolKit
 
     // Game logic
     void CheckPlayerMove();
+    void IconAnim(float deltaTime);
 
   public:
     // ToolKit Bindings.

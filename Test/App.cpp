@@ -2,6 +2,7 @@
 #include "SDL.h"
 #include "Viewport.h"
 #include "PluginManager.h"
+#include "Util.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -63,6 +64,8 @@ namespace ToolKit
         m_main->m_renderer.Render(dw, viewport->m_camera, m_sceneLights);
       } 
     }
+
+    IconAnim(deltaTime);
   }
 
   void Game::Resize(int width, int height)
@@ -104,8 +107,12 @@ namespace ToolKit
     Entity* player = playerTags.front();
     Vec3 pCenter = player->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
+    EntityIdArray ignoreList;
+    EntityRawPtrArray icons = m_scene->GetByTag("icn");
+    ToEntityIdArray(ignoreList, icons);
+
     Ray ray = m_viewport->RayFromMousePosition();
-    Scene::PickData pd = m_scene->PickObject(ray);
+    Scene::PickData pd = m_scene->PickObject(ray, ignoreList);
     if (pd.entity)
     {
       if (pd.entity->m_tag == "grnd")
@@ -116,6 +123,38 @@ namespace ToolKit
         // Move player.
         player->m_node->SetTranslation(bb.GetCenter(), TransformationSpace::TS_WORLD);
       }
+    }
+  }
+
+  void Game::IconAnim(float deltaTime)
+  {
+    static float elapsedTime = 0.0f;
+    static float distSign = 1.0f;
+
+    // Animation parameters.
+    const float animTime = 500.0f;
+    const float totalDist = 1.0f;
+    const float totalRotation = 900.0f;
+
+    // Derived constants.
+    float lineerSpeed = totalDist / animTime;
+    float angularSpeed = glm::radians(totalRotation / animTime);
+
+    if (elapsedTime < animTime)
+    {
+      EntityRawPtrArray icons = m_scene->GetByTag("icn");
+      for (Entity* icn : icons)
+      {
+        icn->m_node->Translate(Vec3(lineerSpeed * distSign));
+        icn->m_node->Rotate(glm::angleAxis(angularSpeed, Y_AXIS));
+      }
+
+      elapsedTime += deltaTime;
+    }
+    else
+    {
+      elapsedTime = 0.0f;
+      distSign *= -1.0f;
     }
   }
 
