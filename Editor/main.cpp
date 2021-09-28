@@ -167,7 +167,8 @@ namespace ToolKit
 
     void ProcessEvent(SDL_Event e)
     {
-      ImGui_ImplSDL2_ProcessEvent(&e);
+      // If message doesn't ment to be processed in imgui, set this to true.
+      bool skipImgui = false;
 
       if (GamePlugin* plugin = GetPluginManager()->m_plugin)
       {
@@ -210,9 +211,21 @@ namespace ToolKit
         case SDLK_ESCAPE:
           g_app->OnQuit();
           break;
+        case SDLK_s:
+          if (SDL_GetModState() & KMOD_LCTRL)
+          {
+            g_app->OnSaveScene();
+            skipImgui = true;
+          }
+          break;
         default:
           break;
         }
+      }
+
+      if (!skipImgui)
+      {
+        ImGui_ImplSDL2_ProcessEvent(&e);
       }
     }
 

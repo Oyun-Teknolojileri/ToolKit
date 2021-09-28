@@ -291,6 +291,7 @@ namespace ToolKit
       auto saveFn = []() -> void
       {
         g_app->m_scene->Save(false);
+        g_app->m_statusMsg = "Scene saved";
         g_app->GetAssetBrowser()->UpdateContent();
       };
 

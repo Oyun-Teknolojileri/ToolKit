@@ -200,6 +200,12 @@ namespace ToolKit
       return false;
     }
 
+    void EditorScene::Save(bool onlyIfDirty)
+    {
+      Scene::Save(onlyIfDirty);
+      m_newScene = false;
+    }
+
     Entity* EditorScene::RemoveEntity(EntityId id)
     {
       Entity* removed = nullptr;

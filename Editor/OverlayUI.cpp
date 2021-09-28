@@ -437,10 +437,33 @@ namespace ToolKit
             | ImGuiWindowFlags_NoScrollbar
             | ImGuiWindowFlags_NoScrollWithMouse
           )
-          )
+        )
       {
         String info = "Status: ";
         ImGui::Text(info.c_str());
+
+        // If the status message has changed.
+        static String prevMsg = g_app->m_statusMsg;
+        if (g_app->m_statusMsg != "OK")
+        {
+          // Hold msg for 3 sec. before switching to OK.
+          static float elapsedTime = 0.0f;
+          elapsedTime += ImGui::GetIO().DeltaTime;
+
+          // For overlapping message updates, 
+          // always reset timer for the last event.
+          if (prevMsg != g_app->m_statusMsg)
+          {
+            elapsedTime = 0.0f;
+            prevMsg = g_app->m_statusMsg;
+          }
+
+          if (elapsedTime > 3)
+          {
+            elapsedTime = 0.0f;
+            g_app->m_statusMsg = "OK";
+          }
+        }
 
         // Inject status.
         ImGui::SameLine();
