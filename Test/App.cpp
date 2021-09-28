@@ -40,6 +40,14 @@ namespace ToolKit
 
   void Game::Destroy()
   {
+    for (Entity* ntt : m_sceneLights)
+    {
+      delete ntt;
+    }
+
+    m_sceneLights.clear();
+    SafeDel(m_cam);
+    SafeDel(m_lightMaster);
   }
 
   void Game::Frame(float deltaTime, Viewport* viewport)

@@ -321,6 +321,13 @@ namespace ToolKit
 
     void App::OnQuit()
     {
+      if (GamePlugin* plugin = GetPluginManager()->m_plugin)
+      {
+        GetPluginManager()->Unload();
+        m_statusMsg = "Plugin stopped";
+        return;
+      }
+
       static bool processing = false;
       if (!processing)
       {
