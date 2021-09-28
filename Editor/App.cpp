@@ -253,7 +253,7 @@ namespace ToolKit
         }
 
         float orthScl = 1.0f;
-        if (vp->m_orthographic)
+        if (vp->IsOrthographic())
         {
           // Magic scale to match Billboards in perspective view with ortoghrapic view.
           orthScl = 1.6f;
@@ -397,10 +397,10 @@ namespace ToolKit
         // Orthographic.
         vp = new EditorViewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
         vp->m_name = "Orthographic";
+        vp->m_camera->SetLens(glm::half_pi<float>(), 10, 10, 10, 10, 1, 1000);
         vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
         vp->m_camera->Pitch(glm::radians(-90.0f));
         vp->m_cameraAlignment = 1;
-        vp->m_orthographic = true;
         m_windows.push_back(vp);
 
         ConsoleWindow* console = new ConsoleWindow();

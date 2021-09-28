@@ -118,4 +118,14 @@ namespace ToolKit
     return vp;
   }
 
+  bool Viewport::IsOrthographic()
+  {
+    if (m_camera)
+    {
+      return m_camera->IsOrtographic();
+    }
+
+    return false;
+  }
+
 }

@@ -26,6 +26,7 @@ namespace ToolKit
     virtual Vec2 GetLastMousePosScreenSpace();
     virtual Vec3 TransformViewportToWorldSpace(const Vec2& pnt);
     virtual Vec2 TransformScreenToViewportSpace(const Vec2& pnt);
+    bool IsOrthographic();
 
   protected:
     // Internal window handling.
