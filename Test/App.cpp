@@ -103,6 +103,11 @@ namespace ToolKit
 
   void Game::CheckPlayerMove()
   {
+    if (m_scene == nullptr)
+    {
+      return;
+    }
+
     EntityRawPtrArray playerTags = m_scene->GetByTag("player");
     if (playerTags.empty())
     {

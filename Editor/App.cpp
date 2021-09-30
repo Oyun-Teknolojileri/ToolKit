@@ -16,6 +16,7 @@
 #include "FolderWindow.h"
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
+#include "PluginWindow.h"
 #include "DebugNew.h"
 
 #include <filesystem>
@@ -142,7 +143,7 @@ namespace ToolKit
       // Update Plugin
       GamePlugin* plugin = GetPluginManager()->m_plugin;
       EditorViewport* persVp = GetWindow<EditorViewport>("Perspective");
-      if (plugin)
+      if (plugin && m_gameMod == GameMod::Playing)
       {
         // Draw gameplugin strictly on the perspective.
         if (persVp)
@@ -321,10 +322,9 @@ namespace ToolKit
 
     void App::OnQuit()
     {
-      if (GamePlugin* plugin = GetPluginManager()->m_plugin)
+      if (m_gameMod != GameMod::Stop)
       {
-        GetPluginManager()->Unload();
-        m_statusMsg = "Plugin stopped";
+        SetGameMod(GameMod::Stop);
         return;
       }
 
@@ -373,6 +373,40 @@ namespace ToolKit
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Sprites" }));
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Textures" }));
       OpenProject({ name, "" });
+    }
+
+    void App::SetGameMod(GameMod mod)
+    {
+      if (mod == m_gameMod)
+      {
+        return;
+      }
+
+      if (mod == GameMod::Playing)
+      {
+        if (GetPluginManager()->Load(m_workspace.GetActiveProject().name))
+        {
+          m_statusMsg = "Game is playing";
+          m_gameMod = mod;
+        }
+        else
+        {
+          GetConsole()->AddLog("Expecting a game plugin with the same name of the project.", ConsoleWindow::LogType::Error);
+        }
+      }
+
+      if (mod == GameMod::Paused)
+      {
+        m_statusMsg = "Game is paused";
+        m_gameMod = mod;
+      }
+
+      if (mod == GameMod::Stop)
+      {
+        GetPluginManager()->Unload();
+        m_statusMsg = "Game is stopped";
+        m_gameMod = mod;
+      }
     }
 
     void App::ResetUI()
@@ -476,6 +510,9 @@ namespace ToolKit
             break;
           case Window::Type::MaterialInspector:
             wnd = new MaterialInspector(wndNode);
+            break;
+          case Window::Type::PluginWindow:
+            wnd = new PluginWindow(wndNode);
             break;
           default:
             assert(false);
@@ -853,24 +890,6 @@ namespace ToolKit
     MaterialInspector* App::GetMaterialInspector()
     {
       return GetWindow<MaterialInspector>(g_matInspector);
-    }
-
-    template<typename T>
-    T* App::GetWindow(const String& name)
-    {
-      for (Window* wnd : m_windows)
-      {
-        T* casted = dynamic_cast<T*> (wnd);
-        if (casted)
-        {
-          if (casted->m_name == name)
-          {
-            return casted;
-          }
-        }
-      }
-
-      return nullptr;
     }
 
     void App::RenderSelected(EditorViewport* vp)

@@ -3,6 +3,7 @@
 #include "ToolKit.h"
 #include "EditorScene.h"
 #include "Workspace.h"
+#include "GlobalDef.h"
 
 namespace ToolKit
 {
@@ -30,6 +31,14 @@ namespace ToolKit
     class App : Serializable
     {
     public:
+      enum class GameMod
+      {
+        Playing,
+        Paused,
+        Stop
+      };
+
+    public:
       App(int windowWidth, int windowHeight);
       virtual ~App();
 
@@ -41,6 +50,7 @@ namespace ToolKit
       void OnSaveScene();
       void OnQuit();
       void OnNewProject(const String& name);
+      void SetGameMod(GameMod mod);
 
       // UI
       void ResetUI();
@@ -57,7 +67,7 @@ namespace ToolKit
       void ApplyProjectSettings(bool setDefaults);
       void OpenProject(const Project& project);
 
-      EditorViewport* GetActiveViewport(); // Returns open and active viewport or nullptr.
+      EditorViewport* GetActiveViewport();
       EditorViewport* GetViewport(const String& name);
       ConsoleWindow* GetConsole();
       FolderWindow* GetAssetBrowser();
@@ -66,7 +76,22 @@ namespace ToolKit
       MaterialInspector* GetMaterialInspector();
 
       template<typename T>
-      T* GetWindow(const String& name);
+      T* GetWindow(const String& name)
+      {
+        for (Window* wnd : m_windows)
+        {
+          T* casted = dynamic_cast<T*> (wnd);
+          if (casted)
+          {
+            if (casted->m_name == name)
+            {
+              return casted;
+            }
+          }
+        }
+
+        return nullptr;
+      }
 
       // Quick selected render implementation.
       void RenderSelected(EditorViewport* vp);
@@ -112,6 +137,7 @@ namespace ToolKit
       Byte m_showGraphicsApiErrors = 0;
       TransformationSpace m_transformSpace = TransformationSpace::TS_WORLD;
       Workspace m_workspace;
+      GameMod m_gameMod = GameMod::Stop;
 
       // Snap settings.
       bool m_snapsEnabled = false; // Delta transforms.

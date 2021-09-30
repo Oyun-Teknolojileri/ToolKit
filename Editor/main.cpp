@@ -172,7 +172,10 @@ namespace ToolKit
 
       if (GamePlugin* plugin = GetPluginManager()->m_plugin)
       {
-        plugin->Event(e);
+        if (g_app->m_gameMod == App::GameMod::Playing)
+        {
+          plugin->Event(e);
+        }
       }
 
       if (e.type == SDL_WINDOWEVENT)

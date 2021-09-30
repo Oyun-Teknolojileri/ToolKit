@@ -38,9 +38,6 @@ namespace ToolKit
   private:
     Main();
 
-  private:
-    static Main m_instance;
-
   public:
     AnimationManager m_animationMan;
     AnimationPlayer m_animationPlayer;

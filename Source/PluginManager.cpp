@@ -15,11 +15,10 @@ namespace ToolKit
 
   typedef ToolKit::GamePlugin* (__cdecl* TKPROC)();
 
-  void PluginManager::Load(const String& name)
+  bool PluginManager::Load(const String& name)
   {
     HINSTANCE hinstLib;
     TKPROC ProcAdd;
-    BOOL fRunTimeLinkSuccess = FALSE;
 
     String dllName = name;
 #ifdef TK_DEBUG
@@ -37,16 +36,17 @@ namespace ToolKit
 
       if (NULL != ProcAdd)
       {
-        fRunTimeLinkSuccess = TRUE;
         m_plugin = (ProcAdd)();
         m_plugin->Init(ToolKit::Main::GetInstance());
+        return true;
+      }
+      else 
+      {
+        m_reporterFn("Can not load plugin module " + dllName);
       }
     }
 
-    if (!fRunTimeLinkSuccess)
-    {
-      m_reporterFn("Can not load plugin module " + dllName);
-    }
+    return false;
   }
 
   void PluginManager::Unload()
@@ -65,7 +65,7 @@ namespace ToolKit
   }
 #else 
   PluginManager::~PluginManager() { }
-  void PluginManager::Load(const String& name) { }
+  bool PluginManager::Load(const String& name) { return false; }
   void PluginManager::Unload() { }
 #endif
 
