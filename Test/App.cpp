@@ -41,6 +41,14 @@ namespace ToolKit
 
   void Game::Destroy()
   {
+    for (Entity* ntt : m_sceneLights)
+    {
+      delete ntt;
+    }
+
+    m_sceneLights.clear();
+    SafeDel(m_cam);
+    SafeDel(m_lightMaster);
   }
 
   void Game::Frame(float deltaTime, Viewport* viewport)
@@ -98,6 +106,11 @@ namespace ToolKit
 
   void Game::CheckPlayerMove()
   {
+    if (m_scene == nullptr)
+    {
+      return;
+    }
+
     EntityRawPtrArray playerTags = m_scene->GetByTag("player");
     if (playerTags.empty())
     {

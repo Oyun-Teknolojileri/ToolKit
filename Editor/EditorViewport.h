@@ -39,7 +39,6 @@ namespace ToolKit
       static std::vector<class OverlayUI*> m_overlays;
       bool m_mouseOverOverlay = false;
       int m_cameraAlignment = 0; // 0: perspective, 1: top, 2: front, 3:left.
-      bool m_orthographic = false;
 
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;

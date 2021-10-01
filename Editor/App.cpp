@@ -16,6 +16,7 @@
 #include "FolderWindow.h"
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
+#include "PluginWindow.h"
 #include "DebugNew.h"
 
 #include <filesystem>
@@ -142,7 +143,7 @@ namespace ToolKit
       // Update Plugin
       GamePlugin* plugin = GetPluginManager()->m_plugin;
       EditorViewport* persVp = GetWindow<EditorViewport>("Perspective");
-      if (plugin)
+      if (plugin && m_gameMod == GameMod::Playing)
       {
         // Draw gameplugin strictly on the perspective.
         if (persVp)
@@ -253,7 +254,7 @@ namespace ToolKit
         }
 
         float orthScl = 1.0f;
-        if (vp->m_orthographic)
+        if (vp->IsOrthographic())
         {
           // Magic scale to match Billboards in perspective view with ortoghrapic view.
           orthScl = 1.6f;
@@ -291,6 +292,7 @@ namespace ToolKit
       auto saveFn = []() -> void
       {
         g_app->m_scene->Save(false);
+        g_app->m_statusMsg = "Scene saved";
         g_app->GetAssetBrowser()->UpdateContent();
       };
 
@@ -320,6 +322,12 @@ namespace ToolKit
 
     void App::OnQuit()
     {
+      if (m_gameMod != GameMod::Stop)
+      {
+        SetGameMod(GameMod::Stop);
+        return;
+      }
+
       static bool processing = false;
       if (!processing)
       {
@@ -367,6 +375,40 @@ namespace ToolKit
       OpenProject({ name, "" });
     }
 
+    void App::SetGameMod(GameMod mod)
+    {
+      if (mod == m_gameMod)
+      {
+        return;
+      }
+
+      if (mod == GameMod::Playing)
+      {
+        if (GetPluginManager()->Load(m_workspace.GetActiveProject().name))
+        {
+          m_statusMsg = "Game is playing";
+          m_gameMod = mod;
+        }
+        else
+        {
+          GetConsole()->AddLog("Expecting a game plugin with the same name of the project.", ConsoleWindow::LogType::Error);
+        }
+      }
+
+      if (mod == GameMod::Paused)
+      {
+        m_statusMsg = "Game is paused";
+        m_gameMod = mod;
+      }
+
+      if (mod == GameMod::Stop)
+      {
+        GetPluginManager()->Unload();
+        m_statusMsg = "Game is stopped";
+        m_gameMod = mod;
+      }
+    }
+
     void App::ResetUI()
     {      
       DeleteWindows();
@@ -397,10 +439,10 @@ namespace ToolKit
         // Orthographic.
         vp = new EditorViewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
         vp->m_name = "Orthographic";
+        vp->m_camera->SetLens(glm::half_pi<float>(), 10, 10, 10, 10, 1, 1000);
         vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
         vp->m_camera->Pitch(glm::radians(-90.0f));
         vp->m_cameraAlignment = 1;
-        vp->m_orthographic = true;
         m_windows.push_back(vp);
 
         ConsoleWindow* console = new ConsoleWindow();
@@ -468,6 +510,9 @@ namespace ToolKit
             break;
           case Window::Type::MaterialInspector:
             wnd = new MaterialInspector(wndNode);
+            break;
+          case Window::Type::PluginWindow:
+            wnd = new PluginWindow(wndNode);
             break;
           default:
             assert(false);
@@ -845,24 +890,6 @@ namespace ToolKit
     MaterialInspector* App::GetMaterialInspector()
     {
       return GetWindow<MaterialInspector>(g_matInspector);
-    }
-
-    template<typename T>
-    T* App::GetWindow(const String& name)
-    {
-      for (Window* wnd : m_windows)
-      {
-        T* casted = dynamic_cast<T*> (wnd);
-        if (casted)
-        {
-          if (casted->m_name == name)
-          {
-            return casted;
-          }
-        }
-      }
-
-      return nullptr;
     }
 
     void App::RenderSelected(EditorViewport* vp)

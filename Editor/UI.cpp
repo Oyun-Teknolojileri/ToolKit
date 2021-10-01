@@ -17,6 +17,7 @@
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
 #include "Util.h"
+#include "PluginWindow.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -56,6 +57,9 @@ namespace ToolKit
     TexturePtr UI::m_boneIcon;
     TexturePtr UI::m_worldIcon;
     TexturePtr UI::m_axisIcon;
+    TexturePtr UI::m_playIcon;
+    TexturePtr UI::m_pauseIcon;
+    TexturePtr UI::m_stopIcon;
 
     void UI::Init()
     {
@@ -173,6 +177,12 @@ namespace ToolKit
       m_worldIcon->Init();
       m_axisIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/axis.png", true));
       m_axisIcon->Init();
+      m_playIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/play.png", true));
+      m_playIcon->Init();
+      m_pauseIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/pause.png", true));
+      m_pauseIcon->Init();
+      m_stopIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/stop.png", true));
+      m_stopIcon->Init();
 
       // Set application Icon.
       m_appIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/app.png", true));
@@ -487,6 +497,14 @@ namespace ToolKit
       if (ImGui::MenuItem("Material Inspector", "Alt+R", nullptr, !g_app->GetMaterialInspector()->IsVisible()))
       {
         g_app->GetMaterialInspector()->SetVisibility(true);
+      }
+
+      if (PluginWindow* wnd = g_app->GetWindow<PluginWindow>("Plugin"))
+      {
+        if (ImGui::MenuItem("Plugin Window", "", nullptr, !wnd->IsVisible()))
+        {
+          wnd->SetVisibility(true);
+        }
       }
 
       ImGui::Separator();

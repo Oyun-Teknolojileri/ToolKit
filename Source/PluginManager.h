@@ -14,7 +14,7 @@ namespace ToolKit
 
     void Init();
     void UnInit();
-    void Load(const String& plugin);
+    bool Load(const String& plugin);
     void Unload();
 
   public:

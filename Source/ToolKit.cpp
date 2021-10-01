@@ -5,8 +5,6 @@
 namespace ToolKit
 {
 
-  Main Main::m_instance;
-
   Main::~Main()
   {
   }
@@ -50,7 +48,8 @@ namespace ToolKit
 
   Main* Main::GetInstance()
   {
-    return &m_instance;
+    static Main instance;
+    return &instance;
   }
 
   AnimationManager* GetAnimationManager()
