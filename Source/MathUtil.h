@@ -96,6 +96,14 @@ namespace ToolKit
   Vec3 ToCartesian(float r, float zenith, float azimuth);
   Quaternion RotationTo(Vec3 a, Vec3 b); // Returns quaternion wich rotates a on to b.
 
+  // Comparison
+  //////////////////////////////////////////
+  template<typename T>
+  bool VecAllEqual(const T& a, const T& b)
+  {
+    return glm::all(glm::equal<T>(a, b));
+  }
+
   // Numberic operations
   //////////////////////////////////////////
   template<typename T>

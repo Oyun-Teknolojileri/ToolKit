@@ -382,7 +382,7 @@ namespace ToolKit
       // Calculate scaled rad due to window aspect. (billboard prop.)
       Vec3 rad(r);
       rad = m_params.scale * rad;
-      assert(glm::all(glm::equal(rad, rad.xxx())) && "Uniform scale expected.");
+      assert(VecAllEqual(rad, rad.xxx()) && "Uniform scale expected.");
 
       maskSphere.radius = rad.x;
 
