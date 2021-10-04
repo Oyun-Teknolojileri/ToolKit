@@ -660,6 +660,7 @@ namespace ToolKit
 
     void FolderWindow::Show()
     {
+      ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiCond_Once);
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         auto IsRootFn = [](const String& path)

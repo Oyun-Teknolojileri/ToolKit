@@ -432,21 +432,26 @@ namespace ToolKit
             continue;
           }
 
-          if (ImGui::MenuItem(wnd->m_name.c_str(), nullptr, false, !wnd->IsVisible()))
+          String sId = "menuId" + std::to_string(i);
+          ImGui::PushID(sId.c_str());
+          ImGui::BeginGroup();
+          bool vis = wnd->IsVisible();
+          if (ImGui::Checkbox(wnd->m_name.c_str(), &vis))
           {
-            wnd->SetVisibility(true);
+            wnd->SetVisibility(vis);
           }
 
-          if (wnd->IsVisible())
+          float width = ImGui::CalcItemWidth();
+          width -= 50;
+
+          ImGui::SameLine(width);
+          if (ImGui::Button("x"))
           {
-            ImGui::SameLine();
-            if (ImGui::Button("x"))
-            {
-              g_app->m_windows.erase(g_app->m_windows.begin() + i);
-              SafeDel(wnd);
-              continue;
-            }
+            g_app->m_windows.erase(g_app->m_windows.begin() + i);
+            SafeDel(wnd);
           }
+          ImGui::EndGroup();
+          ImGui::PopID();
         }
       };
 
@@ -469,7 +474,7 @@ namespace ToolKit
         if (ImGui::MenuItem("Add Browser", "Alt+B"))
         {
           FolderWindow* wnd = new FolderWindow();
-          wnd->m_name = g_assetBrowserStr + "##" + std::to_string(wnd->m_id);
+          wnd->m_name = g_assetBrowserStr + " " + std::to_string(wnd->m_id);
           wnd->Iterate(ResourcePath(), true);
           g_app->m_windows.push_back(wnd);
         }
