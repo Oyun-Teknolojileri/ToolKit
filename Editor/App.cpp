@@ -378,6 +378,11 @@ namespace ToolKit
 
       if (mod == GameMod::Playing)
       {
+        if (m_gameMod == GameMod::Stop)
+        {
+          m_scene->Save(true);
+        }
+
         if (GetPluginManager()->Load(m_workspace.GetActiveProject().name))
         {
           m_statusMsg = "Game is playing";
@@ -400,6 +405,7 @@ namespace ToolKit
         GetPluginManager()->Unload();
         m_statusMsg = "Game is stopped";
         m_gameMod = mod;
+        OpenScene(m_scene->m_file);
       }
     }
 
