@@ -140,21 +140,6 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
-      // Update Plugin
-      GamePlugin* plugin = GetPluginManager()->m_plugin;
-      EditorViewport* persVp = GetWindow<EditorViewport>("Perspective");
-      if (plugin && m_gameMod == GameMod::Playing)
-      {
-        // Draw gameplugin strictly on the perspective.
-        if (persVp)
-        {
-          RenderTarget* rt = persVp->m_viewportImage;
-          m_renderer->SwapRenderTarget(&rt);
-          plugin->Frame(deltaTime, persVp);
-          m_renderer->SwapRenderTarget(&rt);
-        }
-      }
-
       // Update animations.
       GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
 
@@ -174,11 +159,20 @@ namespace ToolKit
           continue;
         }
 
-        // Skip perspective. Its get drawn in the plugin.
-        if (plugin && persVp)
+        // Plugin drawing.
+        if (m_gameMod != GameMod::Stop)
         {
-          if (wnd->m_id == persVp->m_id)
+          if (wnd->m_name == "Perspective")
           {
+            if (GamePlugin* plugin = GetPluginManager()->m_plugin)
+            {
+              EditorViewport* perspective = GetWindow<EditorViewport>("Perspective");
+              RenderTarget* rt = perspective->m_viewportImage;
+              m_renderer->SwapRenderTarget(&rt);
+              plugin->Frame(deltaTime, perspective);
+              m_renderer->SwapRenderTarget(&rt);
+            }
+
             continue;
           }
         }

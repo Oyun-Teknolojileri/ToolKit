@@ -193,14 +193,24 @@ namespace ToolKit
         {
           if (IsActive() || g_app->m_showOverlayUIAlways)
           {
-            for (OverlayUI* overlay : m_overlays)
+            bool onPlugin = false;
+            if (m_name == "Perspective" && g_app->m_gameMod != App::GameMod::Stop)
             {
-              if (overlay)
+              onPlugin = true;
+            }
+
+            if (!onPlugin)
+            {
+              for (OverlayUI* overlay : m_overlays)
               {
-                overlay->m_owner = this;
-                overlay->Show();
+                if (overlay)
+                {
+                  overlay->m_owner = this;
+                  overlay->Show();
+                }
               }
             }
+
           }
         }
 
