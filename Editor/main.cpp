@@ -27,7 +27,8 @@ namespace ToolKit
     bool g_running = true;
     SDL_Window* g_window = nullptr;
     SDL_GLContext g_context = nullptr;
-    App* g_app;
+    App* g_app = nullptr;
+    Main* g_proxy = nullptr;
 
     // Setup.
     const char* appName = "ToolKit";
@@ -123,7 +124,8 @@ namespace ToolKit
             };
 #endif
 #endif
-
+            g_proxy = new Main();
+            Main::SetProxy(g_proxy);
             Main::GetInstance()->Init();
             UI::Init();
 
@@ -160,6 +162,7 @@ namespace ToolKit
 
       UI::UnInit();
       Main::GetInstance()->Uninit();
+      SafeDel(g_proxy);
 
       SDL_DestroyWindow(g_window);
       SDL_Quit();

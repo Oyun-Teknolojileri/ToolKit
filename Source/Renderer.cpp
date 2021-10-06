@@ -323,7 +323,7 @@ namespace ToolKit
       {
         char* log = new char[infoLen];
         glGetProgramInfoLog(program, infoLen, nullptr, log);
-        Logger::GetInstance()->Log(log);
+        GetLogger()->Log(log);
 
         SafeDelArray(log);
       }

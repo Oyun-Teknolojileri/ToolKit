@@ -8,9 +8,9 @@
 namespace ToolKit
 {
 
-  void Game::Init(ToolKit::Main* master)
+  void Game::Init(Main* master)
   {
-    m_main = master;
+    Main::SetProxy(master);
 
     // Lights and camera.
     m_lightMaster = new Node();
@@ -59,7 +59,8 @@ namespace ToolKit
 
     if (!m_scene)
     {
-      m_main->m_pluginManager.m_reporterFn("There is not a current scene. Skipping the frame.");
+      
+      GetPluginManager()->m_reporterFn("There is not a current scene. Skipping the frame.");
       return;
     }
 
@@ -69,7 +70,7 @@ namespace ToolKit
       if (ntt->IsDrawable())
       {
         Drawable* dw = static_cast<Drawable*> (ntt);
-        m_main->m_renderer.Render(dw, viewport->m_camera, m_sceneLights);
+        GetRenderer()->Render(dw, viewport->m_camera, m_sceneLights);
       } 
     }
 
@@ -96,7 +97,7 @@ namespace ToolKit
   ScenePtr Game::GetScene()
   {
     ScenePtr scene = nullptr;
-    if (SceneManager* sceneMgr = &m_main->m_sceneManager)
+    if (SceneManager* sceneMgr = GetSceneManager())
     {
       scene = sceneMgr->m_currentScene;
     }

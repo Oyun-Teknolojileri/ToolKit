@@ -3,11 +3,14 @@
 #include "Types.h"
 #include "Util.h"
 #include "Logger.h"
+
 #include <unordered_map>
 #include <memory>
 
 namespace ToolKit
 {
+
+  extern class Logger* GetLogger();
 
   enum class ResourceType
   {
@@ -41,7 +44,7 @@ namespace ToolKit
         bool fileCheck = CheckFile(file);
         if (!fileCheck)
         {
-          Logger::GetInstance()->Log("Missing: " + file);
+          GetLogger()->Log("Missing: " + file);
           assert(fileCheck);
           return nullptr;
         }

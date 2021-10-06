@@ -37,7 +37,7 @@ namespace ToolKit
       if (NULL != ProcAdd)
       {
         m_plugin = (ProcAdd)();
-        m_plugin->Init(ToolKit::Main::GetInstance());
+        m_plugin->Init(Main::GetInstance());
         return true;
       }
       else 
@@ -73,7 +73,7 @@ namespace ToolKit
   {
     m_reporterFn = [](const String& msg) -> void
     {
-      Logger::GetInstance()->Log(msg);
+      GetLogger()->Log(msg);
     };
   }
 

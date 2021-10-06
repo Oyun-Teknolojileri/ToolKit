@@ -117,7 +117,7 @@ namespace ToolKit
     size_t pos = m_file.find("px.png");
     if (pos == String::npos)
     {
-      Logger::GetInstance()->Log("Inappropriate postfix. Looking for \"px.png\": " + m_file);
+      GetLogger()->Log("Inappropriate postfix. Looking for \"px.png\": " + m_file);
       return;
     }
 
@@ -148,8 +148,8 @@ namespace ToolKit
       String name = file + postfix;
       if ((m_images[i] = stbi_load(name.c_str(), &m_width, &m_height, &m_bytePP, 0)))
       {
-        Logger::GetInstance()->Log("Missing file: " + name);
-        Logger::GetInstance()->Log("Cube map loading requires additional 5 png files with postfix \"nx py ny pz nz\".");
+        GetLogger()->Log("Missing file: " + name);
+        GetLogger()->Log("Cube map loading requires additional 5 png files with postfix \"nx py ny pz nz\".");
         m_loaded = false;
 
         Clear();

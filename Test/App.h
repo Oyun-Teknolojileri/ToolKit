@@ -9,7 +9,7 @@ namespace ToolKit
   class Game : public GamePlugin
   {
   public:
-    void Init(ToolKit::Main* master);
+    void Init(Main* master);
     void Destroy();
     void Frame(float deltaTime, Viewport* viewport);
     void Resize(int width, int height);
@@ -22,10 +22,7 @@ namespace ToolKit
     void CheckPlayerMove();
     void IconAnim(float deltaTime);
 
-  public:
-    // ToolKit Bindings.
-    Main* m_main = nullptr;
-    
+  public:    
     // Plugin objects.
     ScenePtr m_scene;
     Camera* m_cam = nullptr;

@@ -31,7 +31,7 @@ namespace ToolKit
     {
       m_cursor = nullptr;
       m_lightMaster = nullptr;
-      m_renderer = &Main::GetInstance()->m_renderer;
+      m_renderer = Main::GetInstance()->m_renderer;
       m_renderer->m_windowWidth = windowWidth;
       m_renderer->m_windowHeight = windowHeight;
       m_statusMsg = "OK";
