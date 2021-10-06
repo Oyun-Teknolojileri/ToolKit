@@ -171,6 +171,9 @@
     <ClInclude Include="OverlayUI.h" />
     <ClInclude Include="EditorViewport.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Editor.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

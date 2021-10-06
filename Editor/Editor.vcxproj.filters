@@ -90,7 +90,9 @@
     <ClCompile Include="EditorViewport.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="PluginWindow.cpp" />
+    <ClCompile Include="PluginWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -168,5 +170,8 @@
     <ClInclude Include="PluginWindow.h">
       <Filter>UI</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Editor.rc" />
   </ItemGroup>
 </Project>

@@ -122,7 +122,7 @@ namespace ToolKit
     Vec3 pCenter = player->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
     EntityIdArray ignoreList;
-    EntityRawPtrArray icons = m_scene->GetByTag("icn");
+    EntityRawPtrArray icons = m_scene->GetByTag("pickup");
     ToEntityIdArray(ignoreList, icons);
 
     Ray ray = m_viewport->RayFromMousePosition();
@@ -143,24 +143,46 @@ namespace ToolKit
   void Game::IconAnim(float deltaTime)
   {
     static float elapsedTime = 0.0f;
-    static float distSign = 1.0f;
 
     // Animation parameters.
-    const float animTime = 500.0f;
-    const float totalDist = 1.0f;
-    const float totalRotation = 900.0f;
+    const float animTime = 1000.0f; // Time unit is milli seconds.
+
+    const float upperLimit = 2.0f;
+    const float lowerLimit = 0.65f;
+
+    const float totalDist = upperLimit - lowerLimit;
+    const float totalRotation = 180.0f;
 
     // Derived constants.
     float lineerSpeed = totalDist / animTime;
     float angularSpeed = glm::radians(totalRotation / animTime);
 
+    static std::unordered_map<EntityId, float> switches;
+
     if (elapsedTime < animTime)
     {
-      EntityRawPtrArray icons = m_scene->GetByTag("icn");
+      EntityRawPtrArray icons = m_scene->GetByTag("pickup");
       for (Entity* icn : icons)
       {
-        icn->m_node->Translate(Vec3(lineerSpeed * distSign));
-        icn->m_node->Rotate(glm::angleAxis(angularSpeed, Y_AXIS));
+        Vec3 ts = icn->m_node->GetTranslation();
+        if (switches.find(icn->m_id) == switches.end())
+        {
+          switches[icn->m_id] = 1.0f;
+        }
+
+        if (ts.y > upperLimit)
+        {
+          switches[icn->m_id] = -1.0f;
+        }
+        if (ts.y < lowerLimit)
+        {
+          switches[icn->m_id] = 1.0f;
+        }
+
+        float delta = deltaTime * lineerSpeed * switches[icn->m_id];
+        icn->m_node->Translate(Vec3(0.0f, delta, 0.0f));
+        delta = deltaTime * angularSpeed;
+        icn->m_node->Rotate(glm::angleAxis(delta, Y_AXIS));
       }
 
       elapsedTime += deltaTime;
@@ -168,7 +190,6 @@ namespace ToolKit
     else
     {
       elapsedTime = 0.0f;
-      distSign *= -1.0f;
     }
   }
 
