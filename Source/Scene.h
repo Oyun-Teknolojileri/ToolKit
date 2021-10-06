@@ -2,6 +2,7 @@
 
 #include "Resource.h"
 #include "MathUtil.h"
+#include <functional>
 
 namespace ToolKit
 {
@@ -34,6 +35,7 @@ namespace ToolKit
     void AddEntity(Entity* entity);
     const EntityRawPtrArray& GetEntities() const;
     EntityRawPtrArray GetByTag(const String& tag);
+    EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
 
     virtual Entity* RemoveEntity(EntityId id);
     virtual void Destroy();

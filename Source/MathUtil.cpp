@@ -224,6 +224,13 @@ namespace ToolKit
     return dist < (sphereRadius + sphereRadius2);
   }
 
+  bool BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2)
+  {
+    return (box1.min.x <= box2.max.x && box1.max.x >= box2.min.x) &&
+      (box1.min.y <= box2.max.y && box1.max.y >= box2.min.y) &&
+      (box1.min.z <= box2.max.z && box1.max.z >= box2.min.z);
+  }
+
   // https://gamedev.stackexchange.com/questions/18436/most-efficient-aabb-vs-ray-collision-algorithms
   bool RayBoxIntersection(const Ray& ray, const BoundingBox& box, float& t)
   {

@@ -12,7 +12,6 @@ namespace ToolKit
     void Init(Main* master);
     void Destroy();
     void Frame(float deltaTime, Viewport* viewport);
-    void Resize(int width, int height);
     void Event(SDL_Event event);
 
     // Plugin functions
@@ -20,6 +19,7 @@ namespace ToolKit
 
     // Game logic
     void CheckPlayerMove();
+    void CheckPickups();
     void IconAnim(float deltaTime);
 
   public:    

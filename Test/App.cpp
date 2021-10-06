@@ -59,8 +59,6 @@ namespace ToolKit
 
     if (!m_scene)
     {
-      
-      GetPluginManager()->m_reporterFn("There is not a current scene. Skipping the frame.");
       return;
     }
 
@@ -75,10 +73,7 @@ namespace ToolKit
     }
 
     IconAnim(deltaTime);
-  }
-
-  void Game::Resize(int width, int height)
-  {
+    CheckPickups();
   }
 
   void Game::Event(SDL_Event event)
@@ -124,6 +119,22 @@ namespace ToolKit
     EntityIdArray ignoreList;
     EntityRawPtrArray icons = m_scene->GetByTag("pickup");
     ToEntityIdArray(ignoreList, icons);
+    ignoreList.push_back(player->m_id);
+
+    EntityRawPtrArray ntties = m_scene->Filter
+    (
+      [](Entity* e) -> bool 
+      {
+        return e->m_name == "grnd_2" && e->m_tag == "grnd";
+      }
+    );
+
+    if (!ntties.empty())
+    {
+      ignoreList.push_back(ntties.front()->m_id);
+    }
+
+    auto ee = std::find_if(ntties.begin(), ntties.end(), [](Entity* e) -> bool { if (e->m_name == "grnd_2") return true; return false; });
 
     Ray ray = m_viewport->RayFromMousePosition();
     Scene::PickData pd = m_scene->PickObject(ray, ignoreList);
@@ -136,6 +147,28 @@ namespace ToolKit
         
         // Move player.
         player->m_node->SetTranslation(bb.GetCenter(), TransformationSpace::TS_WORLD);
+      }
+    }
+  }
+
+  void Game::CheckPickups()
+  {
+    EntityRawPtrArray pickups = m_scene->GetByTag("pickup");
+    EntityRawPtrArray playerTags = m_scene->GetByTag("player");
+    if (playerTags.empty())
+    {
+      return;
+    }
+    Entity* player = playerTags.front();
+
+    for (Entity* pickup : pickups)
+    {
+      BoundingBox a = pickup->GetAABB(true);
+      BoundingBox b = player->GetAABB(true);
+      if (BoxBoxIntersection(a, b))
+      {
+        GetScene()->RemoveEntity(pickup->m_id);
+        SafeDel(pickup);
       }
     }
   }

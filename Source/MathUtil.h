@@ -70,6 +70,7 @@ namespace ToolKit
 
   bool SpherePointIntersection(const Vec3& spherePos, float sphereRadius, const Vec3& vertex);
   bool SphereSphereIntersection(const Vec3& spherePos, float sphereRadius, const Vec3& spherePos2, float sphereRadius2);
+  bool BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2);
   bool RayBoxIntersection(const Ray& ray, const BoundingBox& box, float& t);
   bool RayTriangleIntersection(const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t);
   bool RayMeshIntersection(class Mesh* const mesh, const Ray& ray, float& t);

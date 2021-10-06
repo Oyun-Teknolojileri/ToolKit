@@ -243,6 +243,13 @@ namespace ToolKit
     return arrayByTag;
   }
 
+  EntityRawPtrArray Scene::Filter(std::function<bool(Entity*)> filter)
+  {
+    EntityRawPtrArray filtered;
+    std::copy_if(m_entitites.begin(), m_entitites.end(), std::back_inserter(filtered), filter);
+    return filtered;
+  }
+
   void Scene::Destroy()
   {
     for (Entity* ntt : m_entitites)
