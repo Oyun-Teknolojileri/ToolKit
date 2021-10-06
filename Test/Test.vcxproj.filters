@@ -14,5 +14,8 @@
     <ClCompile Include="App.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

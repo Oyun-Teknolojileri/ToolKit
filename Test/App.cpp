@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "App.h"
 #include "SDL.h"
 #include "Viewport.h"
@@ -141,10 +142,47 @@ namespace ToolKit
     if (pd.entity)
     {
       if (pd.entity->m_tag == "grnd")
-      {
+      {        
+        Quaternion rot = player->m_node->GetOrientation();
+        Vec3 fdir = glm::normalize(rot * Z_AXIS);
+        Vec3 rdir = glm::normalize(glm::cross(fdir, Y_AXIS));
+
         Drawable* ground = static_cast<Drawable*> (pd.entity);
         BoundingBox bb = ground->GetAABB(true);
+        float dia = glm::compMax(bb.max - bb.min);
+        Vec3 playerPos = player->m_node->GetTranslation();
+        if (glm::distance(playerPos, bb.GetCenter()) > dia)
+        {
+          return;
+        }
+
+        Vec3 target = glm::normalize(bb.GetCenter() - playerPos);
+
+        float front = glm::dot(fdir, target);
+        float right = glm::dot(rdir, target); 
         
+        float angle = 0.0f;
+        if (glm::epsilonEqual(front, 1.0f, 0.001f))
+        {
+          angle = 0.0f;
+        }
+        else if (front < -0.001f)
+        {
+          angle = glm::pi<float>();
+        }
+
+        if (glm::epsilonEqual(right, 1.0f, 0.001f))
+        {
+          angle = -glm::half_pi<float>();
+        }
+        else if (right < -0.001f)
+        {
+          angle = glm::half_pi<float>();
+        }
+
+        Quaternion q = glm::angleAxis(angle, Y_AXIS);
+        player->m_node->Rotate(q);
+
         // Move player.
         player->m_node->SetTranslation(bb.GetCenter(), TransformationSpace::TS_WORLD);
       }
