@@ -37,7 +37,7 @@ namespace ToolKit
     virtual ~ResourceManager();
 
     template<typename T>
-    std::shared_ptr<T> Create(String file)
+    std::shared_ptr<T> Create(const String& file)
     {
       if (!Exist(file))
       {
@@ -59,6 +59,7 @@ namespace ToolKit
     }
 
     bool Exist(String file);
+    ResourcePtr Remove(const String& file);
 
   public:
     std::unordered_map<String, ResourcePtr> m_storage;

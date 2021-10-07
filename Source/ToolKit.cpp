@@ -178,6 +178,8 @@ namespace ToolKit
     case ResourceType::CubeMap:
     case ResourceType::RenderTarget:
       return GetTextureManager();
+    case ResourceType::Scene:
+      return GetSceneManager();
     case ResourceType::Base:
     default:
       assert(false);

@@ -217,9 +217,9 @@ namespace ToolKit
       return removed;
     }
 
-    void EditorScene::Destroy()
+    void EditorScene::Destroy(bool removeResources)
     {
-      Scene::Destroy();
+      Scene::Destroy(removeResources);
       m_selectedEntities.clear();
     }
 

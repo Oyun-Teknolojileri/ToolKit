@@ -22,6 +22,7 @@ namespace ToolKit
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     virtual bool IsMaterialInUse(const MaterialPtr& mat) const;
     virtual bool IsMeshInUse(const MeshPtr& mesh) const;
+    virtual void RemoveResources() override;
 
   protected:
     virtual Entity* GetCopy(Entity* copyTo) const override;

@@ -119,6 +119,11 @@ namespace ToolKit
     return false;
   }
 
+  void Drawable::RemoveResources()
+  {
+    GetMeshManager()->Remove(m_mesh->m_file);
+  }
+
   Entity* Drawable::GetInstance(Entity* copyTo) const
   {
     Entity::GetInstance(copyTo);

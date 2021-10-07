@@ -71,6 +71,8 @@ namespace ToolKit
     SafeDel(copyTo->m_node);
     copyTo->m_node = m_node->GetCopy();
     copyTo->m_node->m_entity = copyTo;
+    copyTo->m_name = m_name;
+    copyTo->m_tag = m_tag;
 
     return copyTo;
   }
@@ -88,6 +90,8 @@ namespace ToolKit
     SafeDel(copyTo->m_node);
     copyTo->m_node = m_node->GetCopy();
     copyTo->m_node->m_entity = copyTo;
+    copyTo->m_name = m_name;
+    copyTo->m_tag = m_tag;
 
     return copyTo;
   }
@@ -185,6 +189,11 @@ namespace ToolKit
     {
       m_node->DeSerialize(doc, transformNode);
     }
+  }
+
+  void Entity::RemoveResources()
+  {
+    assert(false && "Not implemented");
   }
 
 }

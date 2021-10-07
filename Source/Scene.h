@@ -38,11 +38,14 @@ namespace ToolKit
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
 
     virtual Entity* RemoveEntity(EntityId id);
-    virtual void Destroy();
+    virtual void Destroy(bool removeResources);
 
     // Serialization.
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+  private:
+    virtual Scene* GetCopy() override;
 
   protected:
     EntityRawPtrArray m_entitites;

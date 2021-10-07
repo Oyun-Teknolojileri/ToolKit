@@ -36,7 +36,7 @@ namespace ToolKit
 
       // Entity operations.
       virtual Entity* RemoveEntity(EntityId id) override;
-      virtual void Destroy() override;
+      virtual void Destroy(bool removeResources) override;
       void GetSelectedEntities(EntityRawPtrArray& entities) const;
       void GetSelectedEntities(EntityIdArray& entities) const;
       void SelectByTag(const String& tag);

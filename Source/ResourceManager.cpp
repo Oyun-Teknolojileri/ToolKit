@@ -46,4 +46,18 @@ namespace ToolKit
   {
     return m_storage.find(file) != m_storage.end();
   }
+
+  ResourcePtr ResourceManager::Remove(const String& file)
+  {
+    ResourcePtr resource = nullptr;
+    auto mapItr = m_storage.find(file);
+    if (mapItr  != m_storage.end())
+    {
+      resource = mapItr->second;
+      m_storage.erase(file);
+    }
+
+    return resource;
+  }
+
 }

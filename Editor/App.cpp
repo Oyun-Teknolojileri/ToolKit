@@ -118,7 +118,7 @@ namespace ToolKit
       // UI.
       DeleteWindows();
 
-      m_scene->Destroy();
+      m_scene->Destroy(false);
 
       // Editor objects.
       SafeDel(m_grid);
@@ -380,7 +380,9 @@ namespace ToolKit
       {
         if (m_gameMod == GameMod::Stop)
         {
-          m_scene->Save(true);
+          // Create a copy of the current scene for the game mod.
+          ScenePtr gameScene = m_scene->Copy<Scene>();
+          GetSceneManager()->m_currentScene = gameScene;
         }
 
         if (GetPluginManager()->Load(m_workspace.GetActiveProject().name))
@@ -405,7 +407,11 @@ namespace ToolKit
         GetPluginManager()->Unload();
         m_statusMsg = "Game is stopped";
         m_gameMod = mod;
-        OpenScene(m_scene->m_file);
+
+        // Set the editor scene back.
+        ScenePtr gameScene = GetSceneManager()->m_currentScene;
+        gameScene->Destroy(true);
+        GetSceneManager()->m_currentScene = m_scene;
       }
     }
 
@@ -771,7 +777,7 @@ namespace ToolKit
 
     void App::OpenScene(const String& fullPath)
     {
-      m_scene->Destroy();
+      m_scene->Destroy(false);
       m_scene = GetSceneManager()->Create<EditorScene>(fullPath);
       m_scene->Load(); // Make sure its loaded.
       m_scene->Init(false);

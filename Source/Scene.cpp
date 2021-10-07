@@ -21,7 +21,7 @@ namespace ToolKit
 
   Scene::~Scene()
   {
-    Destroy();
+    Destroy(false);
   }
 
   void Scene::Load()
@@ -98,7 +98,7 @@ namespace ToolKit
 
   void Scene::UnInit()
   {
-    Destroy();
+    Destroy(false);
   }
 
   Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList) const
@@ -250,16 +250,36 @@ namespace ToolKit
     return filtered;
   }
 
-  void Scene::Destroy()
+  void Scene::Destroy(bool removeResources)
   {
     for (Entity* ntt : m_entitites)
     {
+      if (removeResources)
+      {
+        ntt->RemoveResources();
+      }
+
       SafeDel(ntt);
     }
     m_entitites.clear();
 
     m_loaded = false;
     m_initiated = false;
+  }
+
+  Scene* Scene::GetCopy()
+  {
+    Scene* cpyScene = new Scene();
+    cpyScene->m_name = m_name + "_cpy";
+
+    cpyScene->m_entitites.reserve(m_entitites.size());
+    for (Entity* ntt : m_entitites)
+    {
+      Entity* cpyNtt = ntt->GetCopy();
+      cpyScene->m_entitites.push_back(cpyNtt);
+    }
+
+    return cpyScene;
   }
 
   void Scene::Serialize(XmlDocument* doc, XmlNode* parent) const

@@ -40,6 +40,7 @@ namespace ToolKit
     virtual Entity* GetInstance() const;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+    virtual void RemoveResources();
 
   protected:
     virtual Entity* GetCopy(Entity* copyTo) const;
