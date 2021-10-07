@@ -17,8 +17,9 @@ union SDL_Event;
 
 namespace ToolKit
 {
-  struct GamePlugin
+  class GamePlugin
   {
+  public:
     virtual void Init(class Main* master) = 0;
     virtual void Destroy() = 0;
     virtual void Frame(float deltaTime, class Viewport* viewport) = 0;

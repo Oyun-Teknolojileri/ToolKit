@@ -50,6 +50,8 @@ namespace ToolKit
     m_sceneLights.clear();
     SafeDel(m_cam);
     SafeDel(m_lightMaster);
+
+    delete this;
   }
 
   void Game::Frame(float deltaTime, Viewport* viewport)

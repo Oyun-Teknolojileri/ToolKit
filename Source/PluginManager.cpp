@@ -54,7 +54,7 @@ namespace ToolKit
     if (m_plugin)
     {
       m_plugin->Destroy();
-      SafeDel(m_plugin);
+      m_plugin = nullptr;
     }
 
     if (m_moduleHandle)
