@@ -77,6 +77,7 @@ namespace ToolKit
 
     IconAnim(deltaTime);
     CheckPickups();
+    CheckEnemyMove();
   }
 
   void Game::Event(SDL_Event event)
@@ -103,6 +104,17 @@ namespace ToolKit
     return scene;
   }
 
+  Entity* Game::GetPlayer()
+  {
+    EntityRawPtrArray playerTags = m_scene->GetByTag("player");
+    if (playerTags.empty())
+    {
+      return nullptr;
+    }
+
+    return playerTags.front();
+  }
+
   void Game::CheckPlayerMove()
   {
     if (m_scene == nullptr)
@@ -110,34 +122,13 @@ namespace ToolKit
       return;
     }
 
-    EntityRawPtrArray playerTags = m_scene->GetByTag("player");
-    if (playerTags.empty())
-    {
-      return;
-    }
-
-    Entity* player = playerTags.front();
+    Entity* player = GetPlayer();
     Vec3 pCenter = player->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
     EntityIdArray ignoreList;
     EntityRawPtrArray icons = m_scene->GetByTag("pickup");
     ToEntityIdArray(ignoreList, icons);
     ignoreList.push_back(player->m_id);
-
-    EntityRawPtrArray ntties = m_scene->Filter
-    (
-      [](Entity* e) -> bool 
-      {
-        return e->m_name == "grnd_2" && e->m_tag == "grnd";
-      }
-    );
-
-    if (!ntties.empty())
-    {
-      ignoreList.push_back(ntties.front()->m_id);
-    }
-
-    auto ee = std::find_if(ntties.begin(), ntties.end(), [](Entity* e) -> bool { if (e->m_name == "grnd_2") return true; return false; });
 
     Ray ray = m_viewport->RayFromMousePosition();
     Scene::PickData pd = m_scene->PickObject(ray, ignoreList);
@@ -187,6 +178,30 @@ namespace ToolKit
 
         // Move player.
         player->m_node->SetTranslation(bb.GetCenter(), TransformationSpace::TS_WORLD);
+      }
+    }
+  }
+
+  void Game::CheckEnemyMove()
+  {
+    EntityRawPtrArray enemies = m_scene->GetByTag("foo");
+    for (Entity* foo : enemies)
+    {
+      Mat4 ts = foo->m_node->GetTransform();
+      Vec3 fdir = glm::normalize(glm::column(ts, 2));
+      BoundingBox fb = foo->GetAABB(true);
+      
+      Mat4 next = glm::translate(Mat4(), fdir * 2.0f);
+      TransformAABB(fb, next);
+      if (Entity* player = GetPlayer())
+      {
+        BoundingBox pb = player->GetAABB(true);
+        if (BoxBoxIntersection(fb, pb))
+        {
+          Vec3 pp = player->m_node->GetTranslation();
+          foo->m_node->SetTranslation(pp);
+          player->m_node->Translate(fdir * 3.0f);
+        }
       }
     }
   }

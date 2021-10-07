@@ -16,9 +16,11 @@ namespace ToolKit
 
     // Plugin functions
     ScenePtr GetScene();
+    Entity* GetPlayer();
 
     // Game logic
     void CheckPlayerMove();
+    void CheckEnemyMove();
     void CheckPickups();
     void IconAnim(float deltaTime);
 
@@ -27,6 +29,7 @@ namespace ToolKit
     ScenePtr m_scene;
     Camera* m_cam = nullptr;
     Viewport* m_viewport = nullptr;
+    const float m_blockSize = 2.0f; // Size of the ground blocks.
 
     // 3 point lighting system.
     Node* m_lightMaster = nullptr;
