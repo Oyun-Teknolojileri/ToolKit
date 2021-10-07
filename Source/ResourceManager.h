@@ -31,10 +31,14 @@ namespace ToolKit
   class ResourceManager
   {
   public:
+    ResourceManager();
+    virtual ~ResourceManager();
     virtual void Init();
     virtual void Uninit();
     virtual void Manage(const ResourcePtr& resource);
-    virtual ~ResourceManager();
+
+    ResourceManager(ResourceManager const&) = delete;
+    void operator=(ResourceManager const&) = delete;
 
     template<typename T>
     std::shared_ptr<T> Create(const String& file)

@@ -15,6 +15,15 @@
 
 namespace ToolKit
 {
+  ResourceManager::ResourceManager()
+  {
+  }
+
+  ResourceManager::~ResourceManager()
+  {
+    assert(m_storage.size() == 0); // Uninitialize all resources before exit.
+  }
+
   void ResourceManager::Init()
   {
     GetLogger()->Log("Initiating manager " + GetTypeString(m_type));
@@ -35,11 +44,6 @@ namespace ToolKit
     {
       m_storage[resource->m_file] = resource;
     }
-  }
-
-  ResourceManager::~ResourceManager()
-  {
-    assert(m_storage.size() == 0); // Uninitialize all resources before exit.
   }
 
   bool ResourceManager::Exist(String file)
