@@ -23,6 +23,8 @@ namespace ToolKit
     void CheckEnemyMove();
     void CheckPickups();
     void IconAnim(float deltaTime);
+    BoundingBox GetForwardBB(Entity* ntt);
+    Vec3 GetForwardDir(Entity* ntt);
 
   public:    
     // Plugin objects.
@@ -34,6 +36,8 @@ namespace ToolKit
     // 3 point lighting system.
     Node* m_lightMaster = nullptr;
     LightRawPtrArray m_sceneLights; // { 0:key 1:fill, 2:back }
+
+    bool m_gameOver = false;
   };
 
 }

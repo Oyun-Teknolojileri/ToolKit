@@ -76,8 +76,11 @@ namespace ToolKit
     }
 
     IconAnim(deltaTime);
-    CheckPickups();
-    CheckEnemyMove();
+    if (!m_gameOver)
+    {
+      CheckPickups();
+      CheckEnemyMove();
+    }
   }
 
   void Game::Event(SDL_Event event)
@@ -178,6 +181,16 @@ namespace ToolKit
 
         // Move player.
         player->m_node->SetTranslation(bb.GetCenter(), TransformationSpace::TS_WORLD);
+        BoundingBox pb = player->GetAABB(true);
+        EntityRawPtrArray foos = m_scene->GetByTag("foo");
+        for (Entity* foo : foos)
+        {
+          BoundingBox fb = foo->GetAABB(true);
+          if (BoxBoxIntersection(fb, pb))
+          {
+            foo->m_node->Translate(Y_AXIS * 2.0f);
+          }
+        }
       }
     }
   }
@@ -187,21 +200,17 @@ namespace ToolKit
     EntityRawPtrArray enemies = m_scene->GetByTag("foo");
     for (Entity* foo : enemies)
     {
-      Mat4 ts = foo->m_node->GetTransform();
-      Vec3 fdir = glm::normalize(glm::column(ts, 2));
-      fdir = glm::round(fdir);
-      BoundingBox fb = foo->GetAABB(true);
-      
-      Mat4 next = glm::translate(Mat4(), fdir * 2.0f);
-      TransformAABB(fb, next);
+      BoundingBox fb = GetForwardBB(foo);
       if (Entity* player = GetPlayer())
       {
         BoundingBox pb = player->GetAABB(true);
         if (BoxBoxIntersection(fb, pb))
         {
-          Vec3 pp = player->m_node->GetTranslation();
+          Vec3 fdir = GetForwardDir(foo);
           foo->m_node->Translate(fdir * m_blockSize);
-          player->m_node->Translate(fdir * 4.0f);
+          player->m_node->Translate(fdir * 2.0f);
+          m_gameOver = true;
+          return;
         }
       }
     }
@@ -280,6 +289,25 @@ namespace ToolKit
     {
       elapsedTime = 0.0f;
     }
+  }
+
+  BoundingBox Game::GetForwardBB(Entity* ntt)
+  {
+    Vec3 fdir = GetForwardDir(ntt);
+    fdir = glm::round(fdir);
+    BoundingBox fb = ntt->GetAABB(true);
+
+    Mat4 next = glm::translate(Mat4(), fdir);
+    TransformAABB(fb, next);
+
+    return fb;
+  }
+
+  Vec3 Game::GetForwardDir(Entity* ntt)
+  {
+    Mat4 ts = ntt->m_node->GetTransform();
+    Vec3 fdir = glm::normalize(glm::column(ts, 2));
+    return fdir;
   }
 
 }
