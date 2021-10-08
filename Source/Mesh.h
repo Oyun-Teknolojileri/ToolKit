@@ -52,8 +52,8 @@ namespace ToolKit
     virtual void InitIndices(bool flush);
     void UpdateAABB(const Vec3& v);
 
-  private:
-    virtual Mesh* GetCopy() override;
+  protected:
+    virtual void CopyTo(Resource* other) override;
 
   public:
     VertexArray m_clientSideVertices;

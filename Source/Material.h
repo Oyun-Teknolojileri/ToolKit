@@ -24,7 +24,7 @@ namespace ToolKit
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   private:
-    virtual Material* GetCopy() override;
+    virtual void CopyTo(Resource* other) override;
 
   public:
     CubeMapPtr m_cubeMap;

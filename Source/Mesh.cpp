@@ -98,9 +98,10 @@ namespace ToolKit
     m_material->Save(onlyIfDirty);
   }
 
-  Mesh* Mesh::GetCopy()
+  void Mesh::CopyTo(Resource* other)
   {
-    Mesh* cpy = new Mesh();
+    Resource::CopyTo(other);
+    Mesh* cpy = static_cast<Mesh*> (other);
     cpy->m_clientSideVertices = m_clientSideVertices;
     cpy->m_vertexCount = m_vertexCount;
     cpy->m_clientSideIndices = m_clientSideIndices;
@@ -134,17 +135,11 @@ namespace ToolKit
     cpy->m_material = m_material->Copy<Material>();
     cpy->m_aabb = m_aabb;
 
-    cpy->m_file = CreateCopyFileFullPath(m_file);
-    cpy->m_initiated = m_initiated;
-    cpy->m_loaded = m_loaded;
-
     for (MeshPtr child : m_subMeshes)
     {
       MeshPtr ccpy = child->Copy<Mesh>();
       cpy->m_subMeshes.push_back(ccpy);
     }
-
-    return cpy;
   }
 
   int Mesh::GetVertexSize() const

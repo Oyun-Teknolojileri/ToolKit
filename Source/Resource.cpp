@@ -55,10 +55,17 @@ namespace ToolKit
     }
   }
 
-  Resource* Resource::GetCopy() 
+  void Resource::CopyTo(Resource* other) 
   { 
-    assert(false && "Not implemented"); 
-    return nullptr; 
+    assert(other->m_type == m_type);
+    if (!m_file.empty())
+    {
+      m_file = CreateCopyFileFullPath(m_file);
+    }
+    other->m_name = m_name;
+    other->m_dirty = m_dirty;
+    other->m_loaded = m_loaded;
+    other->m_initiated = m_initiated;
   }
 
   void Resource::Serialize(XmlDocument* doc, XmlNode* parent) const

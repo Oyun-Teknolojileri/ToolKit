@@ -244,5 +244,12 @@ namespace ToolKit
       AddToSelection(GetByTag(tag), false);
     }
 
+    void EditorScene::CopyTo(Resource* other)
+    {
+      Scene::CopyTo(other);
+      EditorScene* cpy = static_cast<EditorScene*> (other);
+      cpy->m_newScene = true;
+    }
+
   }
 }

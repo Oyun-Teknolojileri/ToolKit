@@ -381,8 +381,9 @@ namespace ToolKit
         if (m_gameMod == GameMod::Stop)
         {
           // Create a copy of the current scene for the game mod.
-          ScenePtr gameScene = m_scene->Copy<Scene>();
-          GetSceneManager()->m_currentScene = gameScene;
+          m_swapScene = m_scene->Copy<EditorScene>();
+          m_swapScene.swap(m_scene);
+          GetSceneManager()->m_currentScene = m_scene;
         }
 
         if (GetPluginManager()->Load(m_workspace.GetActiveProject().name))
@@ -409,9 +410,10 @@ namespace ToolKit
         m_gameMod = mod;
 
         // Set the editor scene back.
-        ScenePtr gameScene = GetSceneManager()->m_currentScene;
-        gameScene->Destroy(true);
+        m_scene->Destroy(true);
+        m_swapScene.swap(m_scene);
         GetSceneManager()->m_currentScene = m_scene;
+        m_swapScene = nullptr;
       }
     }
 

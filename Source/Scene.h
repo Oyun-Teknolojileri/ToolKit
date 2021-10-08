@@ -44,8 +44,8 @@ namespace ToolKit
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-  private:
-    virtual Scene* GetCopy() override;
+  protected:
+    virtual void CopyTo(Resource* other) override;
 
   protected:
     EntityRawPtrArray m_entitites;

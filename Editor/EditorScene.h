@@ -41,6 +41,9 @@ namespace ToolKit
       void GetSelectedEntities(EntityIdArray& entities) const;
       void SelectByTag(const String& tag);
 
+    private:
+      virtual void CopyTo(Resource* other) override;
+
     public:
       bool m_newScene; // Indicates if this is created via new scene. That is not saved on the disk.
 

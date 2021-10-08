@@ -150,6 +150,7 @@ namespace ToolKit
 
     private:
       bool m_onNewScene = false;
+      EditorScenePtr m_swapScene;
     };
 
   }

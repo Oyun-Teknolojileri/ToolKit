@@ -107,17 +107,16 @@ namespace ToolKit
     m_initiated = false;
   }
 
-  Material* Material::GetCopy()
+  void Material::CopyTo(Resource* other)
   {
-    Material* cpyMat = new Material(*this);
-    cpyMat->m_dirty = true;
-
-    if (!m_file.empty())
-    {
-      cpyMat->m_file = CreateCopyFileFullPath(m_file);
-    }
-
-    return cpyMat;
+    Resource::CopyTo(other);
+    Material* cpy = static_cast<Material*> (other);
+    cpy->m_cubeMap = m_cubeMap;
+    cpy->m_diffuseTexture = m_diffuseTexture;
+    cpy->m_vertexShader = m_vertexShader;
+    cpy->m_fragmetShader = m_fragmetShader;
+    cpy->m_color = m_color;
+    cpy->m_dirty = true;
   }
 
   RenderState* Material::GetRenderState()

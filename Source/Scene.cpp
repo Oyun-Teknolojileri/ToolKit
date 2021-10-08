@@ -267,19 +267,18 @@ namespace ToolKit
     m_initiated = false;
   }
 
-  Scene* Scene::GetCopy()
+  void Scene::CopyTo(Resource* other)
   {
-    Scene* cpyScene = new Scene();
-    cpyScene->m_name = m_name + "_cpy";
+    Resource::CopyTo(other);
+    Scene* cpy = static_cast<Scene*> (other);
+    cpy->m_name = m_name + "_cpy";
 
-    cpyScene->m_entitites.reserve(m_entitites.size());
+    cpy->m_entitites.reserve(m_entitites.size());
     for (Entity* ntt : m_entitites)
     {
       Entity* cpyNtt = ntt->GetCopy();
-      cpyScene->m_entitites.push_back(cpyNtt);
+      cpy->m_entitites.push_back(cpyNtt);
     }
-
-    return cpyScene;
   }
 
   void Scene::Serialize(XmlDocument* doc, XmlNode* parent) const
