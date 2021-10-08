@@ -38,7 +38,7 @@ namespace ToolKit
 
 }
 
-extern "C" TK_GAME_API ToolKit::Game * __stdcall GetInstance()
+extern "C" TK_GAME_API ToolKit::Game * __stdcall CreateInstance()
 {
   return new ToolKit::Game();
 }

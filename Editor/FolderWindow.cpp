@@ -663,6 +663,8 @@ namespace ToolKit
       ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiCond_Once);
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
+        HandleStates();
+
         auto IsRootFn = [](const String& path)
         {
           size_t lastSep = path.find_last_of(GetPathSeparator());

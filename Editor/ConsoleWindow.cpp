@@ -574,6 +574,8 @@ namespace ToolKit
       //ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Once);
       if (ImGui::Begin(g_consoleStr.c_str(), &m_visible))
       {
+        HandleStates();
+
         // Output window.
         const float footerHeightReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
         ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeightReserve), false, ImGuiWindowFlags_HorizontalScrollbar);

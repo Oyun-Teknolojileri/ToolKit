@@ -67,6 +67,8 @@ namespace ToolKit
       void ApplyProjectSettings(bool setDefaults);
       void OpenProject(const Project& project);
 
+      // UI
+      Window* GetActiveWindow();
       EditorViewport* GetActiveViewport();
       EditorViewport* GetViewport(const String& name);
       ConsoleWindow* GetConsole();

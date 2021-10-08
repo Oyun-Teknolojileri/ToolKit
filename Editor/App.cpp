@@ -836,6 +836,19 @@ namespace ToolKit
       );
     }
 
+    Window* App::GetActiveWindow()
+    {
+      for (Window* wnd : m_windows)
+      {
+        if (wnd->IsActive() && wnd->IsVisible())
+        {
+          return wnd;
+        }
+      }
+
+      return nullptr;
+    }
+
     EditorViewport* App::GetActiveViewport()
     {
       for (Window* wnd : m_windows)

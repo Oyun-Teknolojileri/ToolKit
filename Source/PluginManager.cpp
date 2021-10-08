@@ -32,7 +32,7 @@ namespace ToolKit
     if (hinstLib != NULL)
     {
       m_moduleHandle = (void*)hinstLib;
-      ProcAdd = (TKPROC)GetProcAddress(hinstLib, "GetInstance");
+      ProcAdd = (TKPROC)GetProcAddress(hinstLib, "CreateInstance");
 
       if (NULL != ProcAdd)
       {
@@ -42,8 +42,12 @@ namespace ToolKit
       }
       else 
       {
-        m_reporterFn("Can not load plugin module " + dllName);
+        m_reporterFn("Can not find CreateInstance() in the plugin.");
       }
+    }
+    else
+    {
+      m_reporterFn("Can not load plugin " + dllName);
     }
 
     return false;

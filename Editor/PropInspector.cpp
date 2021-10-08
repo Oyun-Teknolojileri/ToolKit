@@ -443,6 +443,8 @@ namespace ToolKit
     {
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
+        HandleStates();
+
         Entity* curr = g_app->m_scene->GetCurrentSelection();
         if (curr == nullptr)
         {
@@ -513,6 +515,8 @@ namespace ToolKit
     {
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
+        HandleStates();
+
         if (m_material == nullptr)
         {
           ImGui::Text("Select a material");

@@ -760,6 +760,11 @@ namespace ToolKit
 
     void StateDeletePick::Update(float deltaTime)
     {
+      if (g_app->GetActiveWindow()->GetType() != Window::Type::Viewport)
+      {
+        return;
+      }
+
       EntityRawPtrArray deleteList;
       g_app->m_scene->GetSelectedEntities(deleteList);
       if (!deleteList.empty())
@@ -823,7 +828,7 @@ namespace ToolKit
 
     String StateDuplicate::Signaled(SignalId signal)
     {
-      return "";
+      return StateType::Null;
     }
 
     // Mods
