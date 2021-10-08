@@ -60,7 +60,7 @@ namespace ToolKit
     assert(other->m_type == m_type);
     if (!m_file.empty())
     {
-      m_file = CreateCopyFileFullPath(m_file);
+      other->m_file = CreateCopyFileFullPath(m_file);
     }
     other->m_name = m_name;
     other->m_dirty = m_dirty;

@@ -189,6 +189,7 @@ namespace ToolKit
     {
       Mat4 ts = foo->m_node->GetTransform();
       Vec3 fdir = glm::normalize(glm::column(ts, 2));
+      fdir = glm::round(fdir);
       BoundingBox fb = foo->GetAABB(true);
       
       Mat4 next = glm::translate(Mat4(), fdir * 2.0f);
@@ -199,8 +200,8 @@ namespace ToolKit
         if (BoxBoxIntersection(fb, pb))
         {
           Vec3 pp = player->m_node->GetTranslation();
-          foo->m_node->SetTranslation(pp);
-          player->m_node->Translate(fdir * 3.0f);
+          foo->m_node->Translate(fdir * m_blockSize);
+          player->m_node->Translate(fdir * 4.0f);
         }
       }
     }
