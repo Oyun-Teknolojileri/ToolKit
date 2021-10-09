@@ -237,6 +237,7 @@ namespace ToolKit
 
       int cornerCount = 60;
       std::vector<Vec3> corners;
+      corners.reserve(cornerCount + 1);
 
       float deltaAngle = glm::two_pi<float>() / cornerCount;
       for (int i = 0; i < cornerCount; i++)
@@ -247,13 +248,13 @@ namespace ToolKit
         switch (params.axis)
         {
         case AxisLabel::X:
-          corners[i] = corners[i].yzx;
+          corners[i] = corners[i].zyx;
           break;
         case AxisLabel::Y:
           corners[i] = corners[i].xzy;
           break;
         case AxisLabel::Z:
-          corners[i] = corners[i].xzy;
+          //corners[i] = corners[i].yzx;
           break;
         default:
           assert(false);
@@ -266,24 +267,8 @@ namespace ToolKit
       m_mesh = circle.m_mesh;
       circle.m_mesh = nullptr;
 
-      for (Vertex& v : m_mesh->m_clientSideVertices)
-      {
-        switch (params.axis)
-        {
-        case AxisLabel::X:
-          v.pos = v.pos.yxz;
-          break;
-        case AxisLabel::Z:
-          v.pos = v.pos.zxy;
-          break;
-        case AxisLabel::Y:
-        default:
-          break;
-        }
-      }
-
       // Guide line.
-      if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
+      /*if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
         int axisIndx = (int)m_params.axis % 3;
         Vec3 axis = m_params.normals[axisIndx];
@@ -318,57 +303,66 @@ namespace ToolKit
         LineBatch guide(pnts, g_gizmoColor[axisIndx], DrawType::Line, 1.0f);
         m_mesh->m_subMeshes.push_back(guide.m_mesh);
         guide.m_mesh = nullptr;
-      }
+      }*/
     }
 
     bool PolarHandle::HitTest(const Ray& ray, float& t) const
     {
       t = TK_FLT_MAX;
 
-      if (EditorViewport* vp = g_app->GetActiveViewport())
-      {
-        for (size_t i = 1; i < m_mesh->m_clientSideVertices.size(); i++)
-        {
-          Vec3& v1 = m_mesh->m_clientSideVertices[i - 1].pos;
-          Vec3& v2 = m_mesh->m_clientSideVertices[i].pos;
-          Vec3 mid = m_params.scale * (v1 + v2) * 0.5f + m_params.translate;
-          BoundingBox bb =
-          {
-            mid - Vec3(0.05f),
-            mid + Vec3(0.05f)
-          };
+      Mat4 sc = glm::scale(Mat4(), m_params.scale);
+      Mat4 rt = Mat4(m_params.normals);
+      Mat4 ts = glm::translate(Mat4(), m_params.translate);
+      Mat4 transform = ts * rt * sc;
+      Mat4 its = glm::inverse(transform);
 
-          float tInt;
-          if (RayBoxIntersection(ray, bb, tInt))
+      Ray rayInObj;
+      rayInObj.position = its * Vec4(ray.position, 1.0f);
+      rayInObj.direction = its * Vec4(ray.direction, 0.0f);
+
+      for (size_t i = 1; i < m_mesh->m_clientSideVertices.size(); i++)
+      {
+        Vec3& v1 = m_mesh->m_clientSideVertices[i - 1].pos;
+        Vec3& v2 = m_mesh->m_clientSideVertices[i].pos;
+        Vec3 mid = (v1 + v2) * 0.5f;
+        BoundingBox bb =
+        {
+          mid - Vec3(0.05f),
+          mid + Vec3(0.05f)
+        };
+
+        //g_app->m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(bb, &ts));
+
+        float tInt;
+        if (RayBoxIntersection(rayInObj, bb, tInt))
+        {
+          if (tInt < t)
           {
-            if (tInt < t)
-            {
-              t = tInt;
-            }
+            t = tInt;
           }
         }
       }
 
-      // Prevent back face selection by masking.
-      float maskDist, r = 0.95f;
-      BoundingSphere maskSphere = { m_params.translate, r };
-
-      // Calculate scaled rad due to window aspect. (billboard prop.)
-      Vec3 rad(r);
-      rad = m_params.scale * rad;
-      //assert(VecAllEqual(rad, rad.xxx()) && "Uniform scale expected.");
-
-      maskSphere.radius = rad.x;
-
-      if (RaySphereIntersection(ray, maskSphere, maskDist))
+      // No box hit.
+      if (t == TK_FLT_MAX)
       {
-        if (maskDist < t)
+        return false;
+      }
+
+      // Prevent back face selection by masking.
+      float maskDist;
+      BoundingSphere maskSphere;
+      maskSphere.radius = 0.95f;
+
+      if (RaySphereIntersection(rayInObj, maskSphere, maskDist))
+      {
+        if (maskDist * 2.0f < t)
         {
           return false;
         }
       }
 
-      return t != TK_FLT_MAX;
+      return true;
     }
 
     // QuadHandle
@@ -571,7 +565,6 @@ namespace ToolKit
           m_lastHovered = AxisLabel::None;
         }
 
-        p.normals = m_normalVectors;
         p.axis = axis;
         if (IsGrabbed(p.axis))
         {
@@ -660,6 +653,7 @@ namespace ToolKit
     void PolarGizmo::Update(float deltaTime)
     {
       GizmoHandle::Params p;
+      p.normals = m_normalVectors;
       Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
       DecomposeMatrix(ts, &p.translate, nullptr, &p.scale);
 
@@ -684,7 +678,6 @@ namespace ToolKit
           m_lastHovered = AxisLabel::None;
         }
 
-        p.normals = m_normalVectors;
         p.axis = (AxisLabel)i;
         if (IsGrabbed(p.axis))
         {
@@ -698,10 +691,11 @@ namespace ToolKit
         m_handles[i]->Generate(p);
       }
 
-      m_mesh = m_handles[0]->m_mesh;
-      m_mesh->m_subMeshes.push_back(m_handles[1]->m_mesh);
-      m_mesh->m_subMeshes.push_back(m_handles[2]->m_mesh);
-      m_mesh->Init(false); // Vertices needed for intersection test.
+      m_mesh = std::make_shared<Mesh>();
+      for (int i = 0; i < m_handles.size(); i++)
+      {
+        m_mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+      }
     }
 
     void PolarGizmo::Render(Renderer* renderer, Camera* cam)
