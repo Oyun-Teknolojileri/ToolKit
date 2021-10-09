@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "App.h"
 #include "Gizmo.h"
 #include "ToolKit.h"
 #include "Node.h"
@@ -12,6 +13,7 @@
 #include "Material.h"
 #include "Primative.h"
 #include "GlobalDef.h"
+#include "ConsoleWindow.h"
 #include "EditorViewport.h"
 #include "DebugNew.h"
 
@@ -445,7 +447,18 @@ namespace ToolKit
 
     bool QuadHandle::HitTest(const Ray& ray, float& t) const
     {
-      return RayMeshIntersection(m_mesh.get(), ray, t);
+      Mat4 sc = glm::scale(Mat4(), m_params.scale);
+      Mat4 rt = Mat4(m_params.normals);
+      Mat4 ts = glm::translate(Mat4(), m_params.translate);
+      Mat4 transform = ts * rt * sc;
+      Mat4 its = glm::inverse(transform);
+
+      Ray rayInObj;
+      rayInObj.position = its * Vec4(ray.position, 1.0f);
+      rayInObj.direction = its * Vec4(ray.direction, 0.0f);
+
+      m_mesh->CalculateAABB();
+      return RayBoxIntersection(rayInObj, m_mesh->m_aabb, t);
     }
 
     // Gizmo
