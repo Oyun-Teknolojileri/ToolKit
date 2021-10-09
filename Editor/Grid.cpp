@@ -98,7 +98,7 @@ namespace ToolKit
         m_mesh->m_subMeshes.push_back(mesh);
       }
 
-      m_mesh->CalculateAABoundingBox();
+      m_mesh->CalculateAABB();
     }
 
     bool Grid::HitTest(const Ray& ray, Vec3& pos)

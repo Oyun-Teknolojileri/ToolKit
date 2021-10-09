@@ -152,7 +152,7 @@ namespace ToolKit
     return false;
   }
 
-  void Mesh::CalculateAABoundingBox()
+  void Mesh::CalculateAABB()
   {
     if (m_clientSideVertices.empty())
     {

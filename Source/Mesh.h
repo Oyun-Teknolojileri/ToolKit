@@ -38,7 +38,7 @@ namespace ToolKit
     virtual void Save(bool onlyIfDirty) override;
     virtual int GetVertexSize() const;
     virtual bool IsSkinned() const;
-    void CalculateAABoundingBox();
+    void CalculateAABB();
     void GetAllMeshes(MeshRawPtrArray& meshes);
     void GetAllMeshes(MeshRawCPtrArray& meshes) const;
     void ConstructFaces();

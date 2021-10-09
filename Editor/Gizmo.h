@@ -62,12 +62,17 @@ namespace ToolKit
     public:
       MeshPtr m_mesh;
       Vec3 m_tangentDir;
-
-    protected:
       Params m_params;
     };
 
     class PolarHandle : public GizmoHandle
+    {
+    public:
+      virtual void Generate(const Params& params) override;
+      virtual bool HitTest(const Ray& ray, float& t) const override;
+    };
+
+    class QuadHandle : public GizmoHandle
     {
     public:
       virtual void Generate(const Params& params) override;
@@ -117,6 +122,8 @@ namespace ToolKit
     public:
       MoveGizmo();
       virtual ~MoveGizmo();
+
+      virtual void Update(float deltaTime) override;
     };
 
     class ScaleGizmo : public LinearGizmo

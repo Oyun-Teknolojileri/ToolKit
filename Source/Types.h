@@ -143,9 +143,10 @@ namespace ToolKit
     X,
     Y,
     Z,
-    XY,
-    YZ,
-    ZX
+    // Mod3 gives plane normal .
+    YZ, // YZ(3) % 3 = X(0)
+    ZX, // ZX(4) % 3 = Y(1)
+    XY // XY(5) % 3 = Z(2)
   };
 
   static const float TK_FLT_MAX = std::numeric_limits<float>::max();

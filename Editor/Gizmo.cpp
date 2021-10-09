@@ -77,7 +77,7 @@ namespace ToolKit
       m_mesh->m_clientSideVertices = vertices;
       m_mesh->m_material = newMaterial;
 
-      m_mesh->CalculateAABoundingBox();
+      m_mesh->CalculateAABB();
     }
 
     Axis3d::Axis3d()
@@ -137,7 +137,7 @@ namespace ToolKit
       m_params = params;
 
       // Object is oriented in world space, translated to world space while rendering.
-      Vec3 dir = params.normals[(int)params.axis];
+      Vec3 dir = params.normals[(int)params.axis % 3];
       std::vector<Vec3> pnts =
       {
         dir * params.toeTip.x,
@@ -212,7 +212,7 @@ namespace ToolKit
     bool GizmoHandle::HitTest(const Ray& ray, float& t) const
     {
       // Hit test done in object space bounding boxes. Ray is transformed to object space.
-      Vec3 dir = m_params.normals[(int)m_params.axis];
+      Vec3 dir = m_params.normals[(int)m_params.axis % 3];
       Mat4 ts = glm::toMat4(RotationTo(AXIS[1], dir));
       ts = glm::scale(ts, m_params.scale);
       ts[3].xyz = m_params.translate;
@@ -397,6 +397,57 @@ namespace ToolKit
       return t != TK_FLT_MAX;
     }
 
+    // QuadHandle
+    //////////////////////////////////////////////////////////////////////////
+
+    void QuadHandle::Generate(const Params& params)
+    {
+      m_params = params;
+
+      Quad solid;
+      MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      material->m_color = params.color;
+      material->GetRenderState()->cullMode = CullingType::TwoSided;
+
+      solid.m_mesh->m_material = material;
+      m_mesh = solid.m_mesh;
+      solid.m_mesh = nullptr;
+      float scale = 0.25f;
+
+      for (Vertex& v : m_mesh->m_clientSideVertices)
+      {
+        v.pos.y += params.toeTip.y;
+
+        switch (params.axis)
+        {
+        case AxisLabel::XY:
+          v.pos *= scale;
+          v.pos.x += 0.75f * scale;
+          v.pos.xy += Vec2(0.5f * scale);
+          break;
+        case AxisLabel::YZ:
+          v.pos = v.pos.zyx * scale;
+          v.pos.z += 0.75f * scale;
+          v.pos.yz += Vec2(0.5f * scale);
+          break;
+        case AxisLabel::ZX:
+          v.pos = v.pos.xzy * scale;
+          v.pos.x += 0.75f * scale;
+          v.pos.zx += Vec2(0.5f * scale);
+          break;
+        default:
+          break;
+        }
+
+        v.pos = params.normals * v.pos;
+      }
+    }
+
+    bool QuadHandle::HitTest(const Ray& ray, float& t) const
+    {
+      return RayMeshIntersection(m_mesh.get(), ray, t);
+    }
+
     // Gizmo
     //////////////////////////////////////////////////////////////////////////
 
@@ -494,6 +545,9 @@ namespace ToolKit
         new GizmoHandle(),
         new GizmoHandle()
       };
+      m_handles[0]->m_params.axis = AxisLabel::X;
+      m_handles[1]->m_params.axis = AxisLabel::Y;
+      m_handles[2]->m_params.axis = AxisLabel::Z;
 
       Update(0.0f);
     }
@@ -506,29 +560,31 @@ namespace ToolKit
     {
       GizmoHandle::Params p = GetParam();
 
-      for (int i = 0; i < 3; i++)
+      for (int i = 0; i < (int)m_handles.size(); i++)
       {
-        if (m_grabbedAxis == (AxisLabel)i)
+        GizmoHandle* handle = m_handles[i];
+        AxisLabel axis = handle->m_params.axis;
+        if (m_grabbedAxis == axis)
         {
           p.color = g_selectHighLightPrimaryColor;
         }
         else
         {
-          p.color = g_gizmoColor[i];
+          p.color = g_gizmoColor[(int)axis % 3];
         }
 
-        if (IsLocked((AxisLabel)i))
+        if (IsLocked(axis))
         {
           p.color = g_gizmoLocked;
         }
-        else if (m_lastHovered == (AxisLabel)i)
+        else if (m_lastHovered == axis)
         {
           p.color = g_selectHighLightSecondaryColor;
           m_lastHovered = AxisLabel::None;
         }
 
         p.normals = m_normalVectors;
-        p.axis = (AxisLabel)i;
+        p.axis = axis;
         if (IsGrabbed(p.axis))
         {
           p.grabPnt = m_grabPoint;
@@ -538,12 +594,14 @@ namespace ToolKit
           p.grabPnt = Vec3();
         }
 
-        m_handles[i]->Generate(p);
+        handle->Generate(p);
       }
 
       m_mesh = m_handles[0]->m_mesh;
-      m_mesh->m_subMeshes.push_back(m_handles[1]->m_mesh);
-      m_mesh->m_subMeshes.push_back(m_handles[2]->m_mesh);
+      for (int i = 1; i < m_handles.size(); i++)
+      {
+        m_mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+      }
     }
 
     GizmoHandle::Params LinearGizmo::GetParam() const
@@ -564,10 +622,22 @@ namespace ToolKit
 
     MoveGizmo::MoveGizmo()
     {
+      for (int i = 3; i < 6; i++)
+      {
+        m_handles.push_back(new QuadHandle());
+        m_handles[i]->m_params.axis = (AxisLabel)i;
+      }
+
+      Update(0.0);
     }
 
     MoveGizmo::~MoveGizmo()
     {
+    }
+
+    void MoveGizmo::Update(float deltaTime)
+    {
+      LinearGizmo::Update(deltaTime);
     }
 
     ScaleGizmo::ScaleGizmo()
