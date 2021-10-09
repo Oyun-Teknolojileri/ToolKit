@@ -531,7 +531,7 @@ namespace ToolKit
     return obj;
   }
 
-  LineBatch* GenerateBoundingVolumeGeometry(const BoundingBox& box, Mat4* transform)
+  LineBatch* CreateBoundingBoxDebugObject(const BoundingBox& box, const Mat4* transform)
   {
     Vec3Array corners;
     GetCorners(box, corners);

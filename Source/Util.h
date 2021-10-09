@@ -49,7 +49,7 @@ namespace ToolKit
   void ReplaceStringInPlace(String& subject, const String& search, const String& replace);
   class LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size);
   class LineBatch* CreateLineDebugObject(const Vec3Array& corners);
-  class LineBatch* GenerateBoundingVolumeGeometry(const BoundingBox& box, Mat4* transform = nullptr);
+  class LineBatch* CreateBoundingBoxDebugObject(const BoundingBox& box, const Mat4* transform = nullptr);
   void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray);
   bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots);

@@ -983,7 +983,7 @@ namespace ToolKit
       if (m_showSelectionBoundary && primary->IsDrawable())
       {
         Drawable* dw = static_cast<Drawable*> (primary);
-        m_perFrameDebugObjects.push_back(GenerateBoundingVolumeGeometry(dw->GetAABB(true)));
+        m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(dw->GetAABB(true)));
       }
     }
 

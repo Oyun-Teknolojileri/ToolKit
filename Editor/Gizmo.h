@@ -94,6 +94,8 @@ namespace ToolKit
       void Grab(AxisLabel axis);
       AxisLabel GetGrabbedAxis() const;
 
+      virtual void LookAt(class Camera* cam, float windowHeight) override;
+
     public:
       Vec3 m_grabPoint;
       Mat3 m_normalVectors;

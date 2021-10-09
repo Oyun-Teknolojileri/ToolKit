@@ -154,16 +154,10 @@ namespace ToolKit
 
   void Mesh::CalculateAABB()
   {
-    if (m_clientSideVertices.empty())
-    {
-      return;
-    }
-
     m_aabb = BoundingBox();
 
     MeshRawPtrArray meshes;
     GetAllMeshes(meshes);
-
     for (size_t i = 0; i < meshes.size(); i++)
     {
       Mesh* m = meshes[i];

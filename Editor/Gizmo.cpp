@@ -138,16 +138,17 @@ namespace ToolKit
     {
       m_params = params;
 
-      // Object is oriented in world space, translated to world space while rendering.
-      Vec3 dir = params.normals[(int)params.axis % 3];
+      Vec3 dir = AXIS[(int)params.axis % 3];
       std::vector<Vec3> pnts =
       {
         dir * params.toeTip.x,
         dir * params.toeTip.y
       };
 
+      m_mesh = std::make_shared<Mesh>();
+
       LineBatch line(pnts, params.color, DrawType::Line, 2.0f);
-      m_mesh = line.m_mesh;
+      m_mesh->m_subMeshes.push_back(line.m_mesh);
       line.m_mesh = nullptr;
 
       MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
@@ -173,11 +174,10 @@ namespace ToolKit
         return;
       }
 
-      MeshPtr m = m_mesh->m_subMeshes.back();
-      for (Vertex& v : m->m_clientSideVertices)
+      MeshPtr mesh = m_mesh->m_subMeshes.back();
+      for (Vertex& v : mesh->m_clientSideVertices)
       {
         v.pos.y += params.toeTip.y;
-
         switch (params.axis)
         {
         case AxisLabel::X:
@@ -190,11 +190,7 @@ namespace ToolKit
         default:
           break;
         }
-
-        v.pos = params.normals * v.pos;
       }
-
-      assert(m_mesh->m_subMeshes.size() == 1);
 
       // Guide line.
       /*if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
@@ -227,6 +223,11 @@ namespace ToolKit
       rayInObj.direction = its * Vec4(ray.direction, 0.0f);
 
       m_mesh->CalculateAABB();
+      
+
+     auto dvol = CreateBoundingBoxDebugObject(m_mesh->m_aabb, &ts);
+      g_app->m_perFrameDebugObjects.push_back(dvol);
+
       return RayBoxIntersection(rayInObj, m_mesh->m_aabb, t);
     }
 
@@ -234,7 +235,6 @@ namespace ToolKit
     {
       m_params = params;
 
-      // Object is oriented in world space, translated to world space while rendering.
       int cornerCount = 60;
       std::vector<Vec3> corners;
 
@@ -280,14 +280,13 @@ namespace ToolKit
         default:
           break;
         }
-
-        v.pos = params.normals * v.pos;
       }
 
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
-        Vec3 axis = m_params.normals[(int)m_params.axis];
+        int axisIndx = (int)m_params.axis % 3;
+        Vec3 axis = m_params.normals[axisIndx];
 
         // Neighbor points for parallel line.
         Vec3 p1 = glm::angleAxis(0.0001f, axis) * params.grabPnt;
@@ -298,9 +297,8 @@ namespace ToolKit
         std::vector<Vec3> pnts;
 
         // Arrow heads.
-        Arrow2d head(m_params.axis);
-        int axisInd = (int)m_params.axis;
-        Quaternion q = RotationTo(AXIS[axisInd], dir);
+        Arrow2d head((AxisLabel)axisIndx);
+        Quaternion q = RotationTo(AXIS[axisIndx], dir);
 
         for (Vertex& v : head.m_mesh->m_clientSideVertices)
         {
@@ -317,7 +315,7 @@ namespace ToolKit
         pnts.push_back(m_params.grabPnt + dir * 999.0f);
         pnts.push_back(m_params.grabPnt - dir * 999.0f);
 
-        LineBatch guide(pnts, g_gizmoColor[axisInd], DrawType::Line, 1.0f);
+        LineBatch guide(pnts, g_gizmoColor[axisIndx], DrawType::Line, 1.0f);
         m_mesh->m_subMeshes.push_back(guide.m_mesh);
         guide.m_mesh = nullptr;
       }
@@ -358,7 +356,7 @@ namespace ToolKit
       // Calculate scaled rad due to window aspect. (billboard prop.)
       Vec3 rad(r);
       rad = m_params.scale * rad;
-      assert(VecAllEqual(rad, rad.xxx()) && "Uniform scale expected.");
+      //assert(VecAllEqual(rad, rad.xxx()) && "Uniform scale expected.");
 
       maskSphere.radius = rad.x;
 
@@ -393,7 +391,6 @@ namespace ToolKit
       for (Vertex& v : m_mesh->m_clientSideVertices)
       {
         v.pos.y += params.toeTip.y;
-
         switch (params.axis)
         {
         case AxisLabel::XY:
@@ -414,8 +411,6 @@ namespace ToolKit
         default:
           break;
         }
-
-        v.pos = params.normals * v.pos;
       }
     }
 
@@ -518,6 +513,12 @@ namespace ToolKit
     AxisLabel Gizmo::GetGrabbedAxis() const
     {
       return m_grabbedAxis;
+    }
+
+    void Gizmo::LookAt(Camera* cam, float windowHeight)
+    {
+      Billboard::LookAt(cam, windowHeight);
+      m_node->SetOrientation(glm::toQuat(m_normalVectors));
     }
 
     // LinearGizmo
