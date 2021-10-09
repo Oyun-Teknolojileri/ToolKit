@@ -194,8 +194,10 @@ namespace ToolKit
         v.pos = params.normals * v.pos;
       }
 
+      assert(m_mesh->m_subMeshes.size() == 1);
+
       // Guide line.
-      if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
+      /*if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
         int axisInd = (int)m_params.axis;
         Vec3 axis = m_params.normals[axisInd];
@@ -208,52 +210,24 @@ namespace ToolKit
         LineBatch guide(pnts, g_gizmoColor[axisInd], DrawType::Line, 1.0f);
         m_mesh->m_subMeshes.push_back(guide.m_mesh);
         guide.m_mesh = nullptr;
-      }
+      }*/
     }
 
     bool GizmoHandle::HitTest(const Ray& ray, float& t) const
     {
       // Hit test done in object space bounding boxes. Ray is transformed to object space.
-      Vec3 dir = m_params.normals[(int)m_params.axis % 3];
-      Mat4 ts = glm::toMat4(RotationTo(AXIS[1], dir));
-      ts = glm::scale(ts, m_params.scale);
-      ts[3].xyz = m_params.translate;
-
-      Mat4 its = glm::inverse(ts);
+      Mat4 sc = glm::scale(Mat4(), m_params.scale);
+      Mat4 rt = Mat4(m_params.normals);
+      Mat4 ts = glm::translate(Mat4(), m_params.translate);
+      Mat4 transform = ts * rt * sc;
+      Mat4 its = glm::inverse(transform);
 
       Ray rayInObj;
       rayInObj.position = its * Vec4(ray.position, 1.0f);
       rayInObj.direction = its * Vec4(ray.direction, 0.0f);
 
-      // Check for line.
-      float scaleUp = 1.5f; // Extra grab space than solids holds.
-      BoundingBox hitBox;
-      hitBox.min.x = -0.05f * scaleUp;
-      hitBox.min.y = m_params.toeTip.x;
-      hitBox.min.z = -0.05f * scaleUp;
-      hitBox.max.x = 0.05f * scaleUp;
-      hitBox.max.y = m_params.toeTip.y;
-      hitBox.max.z = 0.05f * scaleUp;
-
-      if (RayBoxIntersection(rayInObj, hitBox, t))
-      {
-        return true;
-      }
-
-      // Check for solid.
-      hitBox.min.x = -m_params.solidDim.x * 0.5f * scaleUp;
-      hitBox.min.y = m_params.toeTip.y;
-      hitBox.min.z = -m_params.solidDim.z * 0.5f * scaleUp;
-      hitBox.max.x = m_params.solidDim.x * 0.5f * scaleUp;
-      hitBox.max.y = m_params.toeTip.y + m_params.solidDim.y * scaleUp;
-      hitBox.max.z = m_params.solidDim.z * 0.5f * scaleUp;
-
-      if (RayBoxIntersection(rayInObj, hitBox, t))
-      {
-        return true;
-      }
-
-      return false;
+      m_mesh->CalculateAABB();
+      return RayBoxIntersection(rayInObj, m_mesh->m_aabb, t);
     }
 
     void PolarHandle::Generate(const Params& params)
@@ -610,8 +584,8 @@ namespace ToolKit
         handle->Generate(p);
       }
 
-      m_mesh = m_handles[0]->m_mesh;
-      for (int i = 1; i < m_handles.size(); i++)
+      m_mesh = std::make_shared<Mesh>();
+      for (int i = 0; i < m_handles.size(); i++)
       {
         m_mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
@@ -646,11 +620,6 @@ namespace ToolKit
 
     MoveGizmo::~MoveGizmo()
     {
-    }
-
-    void MoveGizmo::Update(float deltaTime)
-    {
-      LinearGizmo::Update(deltaTime);
     }
 
     ScaleGizmo::ScaleGizmo()

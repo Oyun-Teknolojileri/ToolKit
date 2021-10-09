@@ -60,9 +60,9 @@ namespace ToolKit
       virtual bool HitTest(const Ray& ray, float& t) const;
 
     public:
-      MeshPtr m_mesh;
       Vec3 m_tangentDir;
       Params m_params;
+      MeshPtr m_mesh;
     };
 
     class PolarHandle : public GizmoHandle
@@ -122,8 +122,6 @@ namespace ToolKit
     public:
       MoveGizmo();
       virtual ~MoveGizmo();
-
-      virtual void Update(float deltaTime) override;
     };
 
     class ScaleGizmo : public LinearGizmo
