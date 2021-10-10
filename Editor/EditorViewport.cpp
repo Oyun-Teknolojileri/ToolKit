@@ -494,23 +494,33 @@ namespace ToolKit
         if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
         {
           // Figure out orbiting point.
-          if (!hitFound)
+          Entity* currEntity = g_app->m_scene->GetCurrentSelection();
+          if (currEntity == nullptr)
           {
-            Ray orbitRay = RayFromMousePosition();
-            EditorScene::PickData pd = g_app->m_scene->PickObject(orbitRay);
+            if (!hitFound)
+            {
+              Ray orbitRay = RayFromMousePosition();
+              EditorScene::PickData pd = g_app->m_scene->PickObject(orbitRay);
 
-            if (pd.entity == nullptr)
-            {
-              if (!g_app->m_grid->HitTest(orbitRay, orbitPnt))
+              if (pd.entity == nullptr)
               {
-                orbitPnt = PointOnRay(orbitRay, 5.0f);
+                if (!g_app->m_grid->HitTest(orbitRay, orbitPnt))
+                {
+                  orbitPnt = PointOnRay(orbitRay, 5.0f);
+                }
               }
+              else
+              {
+                orbitPnt = pd.pickPos;
+              }
+              hitFound = true;
+              dist = glm::distance(orbitPnt, dat.pos);
             }
-            else
-            {
-              orbitPnt = pd.pickPos;
-            }
+          }
+          else
+          {
             hitFound = true;
+            orbitPnt = currEntity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
             dist = glm::distance(orbitPnt, dat.pos);
           }
 
