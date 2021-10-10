@@ -133,6 +133,7 @@ namespace ToolKit
         Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         Vec3 gizmOrg = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         Vec3 dir = glm::normalize(camOrg - gizmOrg);
+        m_gizmo->m_initialPoint = gizmOrg;
 
         float safetyMeasure = glm::abs(glm::cos(glm::radians(5.0f)));
         AxisLabel axisLabes[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };

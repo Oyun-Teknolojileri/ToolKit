@@ -396,14 +396,18 @@ namespace ToolKit
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
+        g_app->GetConsole()->AddLog(glm::to_string(params.initialPnt));
+        Mat4 its = glm::inverse(GetTransform());
+        Vec3 glcl = its * Vec4(params.initialPnt, 1.0f);
+
         LineBatch* guides[3];
         for (int i = 0; i < 3; i++)
         {
           guides[i] = new LineBatch
           (
             {
-              params.normals[i] * 999.0f,
-              params.normals[i] * -999.0f
+              glcl + params.normals[i] * 999.0f,
+              glcl + params.normals[i] * -999.0f
             },
             g_gizmoColor[i],
             DrawType::Line, 
@@ -533,6 +537,18 @@ namespace ToolKit
       m_node->SetOrientation(glm::toQuat(m_normalVectors));
     }
 
+    GizmoHandle::Params Gizmo::GetParam() const
+    {
+      GizmoHandle::Params p;
+      p.normals = m_normalVectors;
+      p.worldLoc = m_worldLocation;
+      p.initialPnt = m_initialPoint;
+      Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
+      DecomposeMatrix(ts, &p.translate, nullptr, &p.scale);
+
+      return p;
+    }
+
     // LinearGizmo
     //////////////////////////////////////////////////////////////////////////
 
@@ -610,6 +626,7 @@ namespace ToolKit
       GizmoHandle::Params p;
       p.normals = m_normalVectors;
       p.worldLoc = m_worldLocation;
+      p.initialPnt = m_initialPoint;
       Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
       DecomposeMatrix(ts, &p.translate, nullptr, &p.scale);
 
@@ -671,11 +688,7 @@ namespace ToolKit
 
     void PolarGizmo::Update(float deltaTime)
     {
-      GizmoHandle::Params p;
-      p.normals = m_normalVectors;
-      p.worldLoc = m_worldLocation;
-      Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
-      DecomposeMatrix(ts, &p.translate, nullptr, &p.scale);
+      GizmoHandle::Params p = GetParam();
 
       for (int i = 0; i < 3; i++)
       {

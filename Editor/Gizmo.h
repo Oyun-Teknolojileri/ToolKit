@@ -42,6 +42,7 @@ namespace ToolKit
         // Worldspace data.
         Vec3 worldLoc;
         Vec3 grabPnt;
+        Vec3 initialPnt;
         Mat3 normals;
         // Billboard values.
         Vec3 scale;
@@ -99,8 +100,12 @@ namespace ToolKit
 
       virtual void LookAt(class Camera* cam, float windowHeight) override;
 
+    protected:
+      virtual GizmoHandle::Params GetParam() const;
+
     public:
       Vec3 m_grabPoint;
+      Vec3 m_initialPoint;
       Mat3 m_normalVectors;
       AxisLabel m_lastHovered;
       std::vector<GizmoHandle*> m_handles;
@@ -119,7 +124,7 @@ namespace ToolKit
       virtual void Update(float deltaTime) override;
 
     protected:
-      virtual GizmoHandle::Params GetParam() const;
+      virtual GizmoHandle::Params GetParam() const override;
     };
 
     class MoveGizmo : public LinearGizmo
