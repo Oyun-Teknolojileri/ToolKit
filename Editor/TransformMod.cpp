@@ -188,8 +188,8 @@ namespace ToolKit
         }
         else
         {
-          CalculateGrabPoint();
           CalculateIntersectionPlane();
+          CalculateGrabPoint();
         }
       }
 
@@ -307,30 +307,16 @@ namespace ToolKit
 
     void StateTransformBegin::CalculateGrabPoint()
     {
-      if ((int)m_gizmo->GetGrabbedAxis() < 3)
+      assert(m_gizmo->GetGrabbedAxis() != AxisLabel::None);
+      m_gizmo->m_grabPoint = Vec3();
+
+      if (EditorViewport* vp = g_app->GetActiveViewport())
       {
-        assert(m_gizmo->GetGrabbedAxis() != AxisLabel::None);
-
-        Vec3 p = m_gizmo->m_worldLocation;
-        Vec3 axis = GetGrabbedAxis(0);
-
-        if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
+        float t;
+        Ray ray = vp->RayFromMousePosition();
+        if (LinePlaneIntersection(ray, m_intersectionPlane, t))
         {
-          if (EditorViewport* vp = g_app->GetActiveViewport())
-          {
-            float t;
-            PlaneEquation axisPlane = PlaneFrom(p, axis);
-            Ray ray = vp->RayFromMousePosition();
-            if (LinePlaneIntersection(ray, axisPlane, t))
-            {
-              Vec3 intersectPnt = PointOnRay(ray, t);
-              pg->m_grabPoint = glm::normalize(intersectPnt - p);
-            }
-          }
-        }
-        else
-        {
-          m_gizmo->m_grabPoint = axis;
+          m_gizmo->m_grabPoint = PointOnRay(ray, t);
         }
       }
     }

@@ -39,11 +39,13 @@ namespace ToolKit
 
       struct Params
       {
-        // Transform.
+        // Worldspace data.
+        Vec3 worldLoc;
         Vec3 grabPnt;
+        Mat3 normals;
+        // Billboard values.
         Vec3 scale;
         Vec3 translate;
-        Mat3 normals;
         // Geometry.
         AxisLabel axis;
         Vec3 toeTip;
@@ -58,6 +60,7 @@ namespace ToolKit
 
       virtual void Generate(const Params& params);
       virtual bool HitTest(const Ray& ray, float& t) const;
+      Mat4 GetTransform() const;
 
     public:
       Vec3 m_tangentDir;
