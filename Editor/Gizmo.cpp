@@ -394,7 +394,9 @@ namespace ToolKit
       }
 
       // Guide line.
-      if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
+      // Gizmo updates later, transform modes uses previous frame's locatin.
+      // Fix Node Set - Get - Apply transfroms before.
+      /*if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
         Mat4 its = glm::inverse(GetTransform());
         Vec3 glcl = its * Vec4(params.initialPnt, 1.0f);
@@ -426,7 +428,7 @@ namespace ToolKit
         {
           SafeDel(guides[i]);
         }
-      }
+      }*/
     }
 
     bool QuadHandle::HitTest(const Ray& ray, float& t) const
