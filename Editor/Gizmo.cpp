@@ -405,8 +405,8 @@ namespace ToolKit
           guides[i] = new LineBatch
           (
             {
-              glcl + params.normals[i] * 999.0f,
-              glcl + params.normals[i] * -999.0f
+              glcl + AXIS[i] * 999.0f,
+              glcl + AXIS[i] * -999.0f
             },
             g_gizmoColor[i],
             DrawType::Line, 
