@@ -342,7 +342,7 @@ namespace ToolKit
 
       if (RaySphereIntersection(rayInObj, maskSphere, maskDist))
       {
-        if (maskDist * 2.0f < t)
+        if (maskDist < t)
         {
           return false;
         }
