@@ -556,7 +556,14 @@ namespace ToolKit
         }
         else
         {
-          e->m_node->Translate(delta, space);
+          if (IsPlaneMod())
+          {
+            e->m_node->Translate(delta, TransformationSpace::TS_WORLD);
+          }
+          else
+          {
+            e->m_node->Translate(delta, space);
+          }
         }
       }
       break;

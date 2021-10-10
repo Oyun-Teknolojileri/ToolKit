@@ -155,5 +155,9 @@ namespace ToolKit
       EditorScenePtr m_swapScene;
     };
 
+    extern void DebugMessage(const String& msg);
+    extern void DebugCube(const Vec3& p, float size = 0.01f);
+    extern void DebugLineStrip(const Vec3Array& pnts);
+
   }
 }

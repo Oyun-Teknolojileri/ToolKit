@@ -1069,5 +1069,32 @@ namespace ToolKit
       }
     }
 
+    void DebugMessage(const String& msg)
+    {
+      g_app->GetConsole()->AddLog(msg, "Debug");
+    }
+
+    void DebugCube(const Vec3& p, float size)
+    {
+      g_app->m_perFrameDebugObjects.push_back
+      (
+        CreateBoundingBoxDebugObject
+        (
+          {
+            p - Vec3(size),
+            p + Vec3(size)
+          }
+        )
+      );
+    }
+
+    void DebugLineStrip(const Vec3Array& pnts)
+    {
+      g_app->m_perFrameDebugObjects.push_back
+      (
+        CreateLineDebugObject(pnts)
+      );
+    }
+
   }
 }
