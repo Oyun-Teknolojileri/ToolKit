@@ -366,7 +366,8 @@ namespace ToolKit
       solid.m_mesh->m_material = material;
       m_mesh = solid.m_mesh;
       solid.m_mesh = nullptr;
-      float scale = 0.25f;
+      float scale = 0.15f;
+      float offset = 2.0f;
 
       for (Vertex& v : m_mesh->m_clientSideVertices)
       {
@@ -376,17 +377,17 @@ namespace ToolKit
         case AxisLabel::XY:
           v.pos *= scale;
           v.pos.x += 0.75f * scale;
-          v.pos.xy += Vec2(0.5f * scale);
+          v.pos.xy += Vec2(offset * scale);
           break;
         case AxisLabel::YZ:
           v.pos = v.pos.zyx * scale;
           v.pos.z += 0.75f * scale;
-          v.pos.yz += Vec2(0.5f * scale);
+          v.pos.yz += Vec2(offset * scale);
           break;
         case AxisLabel::ZX:
           v.pos = v.pos.xzy * scale;
           v.pos.x += 0.75f * scale;
-          v.pos.zx += Vec2(0.5f * scale);
+          v.pos.zx += Vec2(offset * scale);
           break;
         default:
           break;
@@ -618,6 +619,7 @@ namespace ToolKit
       {
         m_mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
+      m_mesh->Init(false);
     }
 
     GizmoHandle::Params LinearGizmo::GetParam() const
