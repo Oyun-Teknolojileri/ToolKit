@@ -396,7 +396,6 @@ namespace ToolKit
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
-        g_app->GetConsole()->AddLog(glm::to_string(params.initialPnt));
         Mat4 its = glm::inverse(GetTransform());
         Vec3 glcl = its * Vec4(params.initialPnt, 1.0f);
 
