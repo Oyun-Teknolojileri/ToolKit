@@ -379,6 +379,7 @@ namespace ToolKit
 
       m_delta = Vec3(0.0f);
       m_deltaAccum = Vec3(0.0f);
+      m_initialLoc = g_app->m_scene->GetCurrentSelection()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
     }
 
     void StateTransformTo::TransitionOut(State* prevState)
@@ -495,52 +496,26 @@ namespace ToolKit
         }
       }
 
-      Vec3 target = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-
-      // Snap
-      m_deltaAccum += delta;
-      if (g_app->m_snapsEnabled)
-      {
-        for (int i = 0; i < 3; i++)
-        {
-          if (glm::abs(m_deltaAccum[i]) > g_app->m_moveDelta)
-          {
-            target[i] += g_app->m_moveDelta * glm::sign(m_deltaAccum[i]);
-            m_deltaAccum[i] = 0.0f;
-          }
-        }
-      }
-      else
-      {
-        target += delta;
-      }
-
-      if (g_app->m_snapToGrid)
-      {
-        if (VecAllEqual(delta, Vec3(0.0f)))
-        {
-          static int elapsedFrame = 0;
-          elapsedFrame++;
-
-          float sec = elapsedFrame * (1.0f / g_app->m_fps); // approximately elapsed sec.
-          if (sec > 0.5f)
-          {
-            float gridMinSpace = 0.25f;
-
-            target.x = glm::round(target.x / gridMinSpace) * gridMinSpace;
-            target.z = glm::round(target.z / gridMinSpace) * gridMinSpace;
-            elapsedFrame = 0;
-          }
-        }
-      }
-
-      m_deltaAccum += delta;
-
       TransformationSpace space = g_app->m_transformSpace;
       switch (m_type)
       {
       case TransformType::Translate:
       {
+        m_deltaAccum += delta;
+        Vec3 target = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+
+        // Snap for pos.
+        if (g_app->m_snapsEnabled)
+        {
+          target = m_initialLoc + m_deltaAccum;
+          float spacing = g_app->m_moveDelta;
+          target = glm::round(target / spacing) * spacing;
+        }
+        else
+        {
+          target += delta;
+        }
+
         e->m_node->SetTranslation(target, TransformationSpace::TS_WORLD);
       }
       break;
@@ -559,8 +534,16 @@ namespace ToolKit
       break;
       case TransformType::Scale:
       {
-        Vec3 scale = e->m_node->GetScale();
-        e->m_node->SetScale(scale + delta);
+        // Transfer world space delta to local axis.
+        int axisIndx = (int)m_gizmo->GetGrabbedAxis();
+        Vec3 target = AXIS[axisIndx] * glm::length(delta);
+        target *= glm::sign(glm::dot(delta, m_gizmo->m_normalVectors[axisIndx]));
+
+        Vec3 scale = e->m_node->GetScale() + target;
+        if (glm::all(glm::greaterThan(scale, Vec3(0.0f))))
+        {
+          e->m_node->SetScale(scale);
+        }
       }
       break;
       }

@@ -396,8 +396,6 @@ namespace ToolKit
           ImGui::InputFloat("Rotate delta", &g_app->m_rotateDelta, 0.0f, 0.0f, "%.2f");
           ImGui::InputFloat("Scale delta", &g_app->m_scaleDelta, 0.0f, 0.0f, "%.2f");
           ImGui::PopItemWidth();
-          ImGui::Checkbox("Snap to grid", &g_app->m_snapToGrid);
-
           ImGui::EndPopup();
         }
 

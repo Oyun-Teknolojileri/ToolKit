@@ -312,14 +312,6 @@ namespace ToolKit
         }
       }
 
-      if (io.KeysDown[SDL_SCANCODE_1] && io.KeyCtrl)
-      {
-        if (io.KeysDownDuration[SDL_SCANCODE_1] == 0.0f)
-        {
-          g_app->m_snapToGrid = !g_app->m_snapToGrid;
-        }
-      }
-
       if (io.KeyCtrl && io.KeysDown[SDL_SCANCODE_S])
       {
         if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)

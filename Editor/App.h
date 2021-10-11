@@ -143,7 +143,6 @@ namespace ToolKit
 
       // Snap settings.
       bool m_snapsEnabled = false; // Delta transforms.
-      bool m_snapToGrid = false; // Jump to grid junctions.
       float m_moveDelta = 0.25f;
       float m_rotateDelta = 15.0f;
       float m_scaleDelta = 0.5f;
