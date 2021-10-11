@@ -378,6 +378,7 @@ namespace ToolKit
       }
 
       m_delta = Vec3(0.0f);
+      m_deltaAccum = Vec3(0.0f);
     }
 
     void StateTransformTo::TransitionOut(State* prevState)
@@ -453,50 +454,10 @@ namespace ToolKit
           }
           else
           {
-            Vec3 projAxis = GetGrabbedAxis(0);
-            Vec3 g2p = p - m_gizmo->m_worldLocation;
-            Vec3 g2p0 = p0 - m_gizmo->m_worldLocation;
-            float intsDst = glm::dot(projAxis, g2p0);
-            float projDst = glm::dot(projAxis, g2p);
-            float delta = projDst - intsDst;
-            if (g_app->m_snapsEnabled || g_app->m_snapToGrid)
-            {
-              deltaAccum += glm::abs(delta);
-              float barrier = g_app->m_moveDelta;
-              if (g_app->m_snapToGrid)
-              {
-                barrier = glm::max(barrier, 0.25f);
-              }
-
-              if (deltaAccum > barrier)
-              {
-                switch (m_type)
-                {
-                case TransformType::Translate:
-                  delta = g_app->m_moveDelta * glm::sign(delta);
-                  break;
-                case TransformType::Scale:
-                  delta = g_app->m_scaleDelta * glm::sign(delta);
-                  break;
-                default:
-                  assert(false);
-                }
-                deltaAccum = 0.0f;
-              }
-              else
-              {
-                delta = 0.0f;
-              }
-            }
-
-            if (glm::isnan(deltaAccum))
-            {
-              assert(false && "Nan is not expected.");
-              deltaAccum = 0.0f;
-            }
-
-            Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
-            m_delta = moveAxis * delta;
+            AxisLabel axis = m_gizmo->GetGrabbedAxis();
+            Vec3 dir = m_gizmo->m_normalVectors[(int)axis];
+            dir = glm::normalize(dir);
+            m_delta = glm::dot(dir, p - p0) * dir;
           }
         }
       }
@@ -534,37 +495,32 @@ namespace ToolKit
         }
       }
 
+      m_deltaAccum += delta;
+      
+      // Snap
+      m_deltaAccum += delta;
+      float gridMinSpace = 0.25f;
+
+      DebugMessage(glm::to_string(delta));
+      Vec3 snapedPos = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      if (glm::abs(m_deltaAccum.x) > gridMinSpace)
+      {
+        snapedPos.x = int(snapedPos.x / gridMinSpace) * gridMinSpace + gridMinSpace * glm::sign(m_deltaAccum.x);
+        m_deltaAccum.x = 0.0f;
+      }
+
+      if (glm::abs(m_deltaAccum.z) > gridMinSpace)
+      {
+        snapedPos.z = int(snapedPos.z / gridMinSpace) * gridMinSpace + gridMinSpace * glm::sign(m_deltaAccum.z);
+        m_deltaAccum.z = 0.0f;
+      }
+
       TransformationSpace space = g_app->m_transformSpace;
       switch (m_type)
       {
       case TransformType::Translate:
       {
-        if (g_app->m_snapToGrid)
-        {
-          const float gridMinSpace = 0.25f;
-          Vec3 currPos = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-          Vec3 targetPos = currPos + delta;
-
-          int x = (int)(targetPos.x / gridMinSpace);
-          targetPos.x = x * gridMinSpace;
-
-          int z = (int)(targetPos.z / gridMinSpace);
-          targetPos.z = z * gridMinSpace;
-
-          Vec3 delAdjst = targetPos - currPos;
-          e->m_node->Translate(delAdjst, space);
-        }
-        else
-        {
-          if (IsPlaneMod())
-          {
-            e->m_node->Translate(delta, TransformationSpace::TS_WORLD);
-          }
-          else
-          {
-            e->m_node->Translate(delta, space);
-          }
-        }
+        e->m_node->SetTranslation(snapedPos, TransformationSpace::TS_WORLD);
       }
       break;
       case TransformType::Rotate:

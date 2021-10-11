@@ -83,6 +83,7 @@ namespace ToolKit
 
     public:
       Vec3 m_delta;
+      Vec3 m_deltaAccum;
     };
 
     class StateTransformEnd : public StateTransformBase
