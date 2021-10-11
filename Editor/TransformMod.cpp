@@ -495,32 +495,53 @@ namespace ToolKit
         }
       }
 
-      m_deltaAccum += delta;
-      
+      Vec3 target = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+
       // Snap
       m_deltaAccum += delta;
-      float gridMinSpace = 0.25f;
-
-      DebugMessage(glm::to_string(delta));
-      Vec3 snapedPos = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-      if (glm::abs(m_deltaAccum.x) > gridMinSpace)
+      if (g_app->m_snapsEnabled)
       {
-        snapedPos.x = int(snapedPos.x / gridMinSpace) * gridMinSpace + gridMinSpace * glm::sign(m_deltaAccum.x);
-        m_deltaAccum.x = 0.0f;
+        for (int i = 0; i < 3; i++)
+        {
+          if (glm::abs(m_deltaAccum[i]) > g_app->m_moveDelta)
+          {
+            target[i] += g_app->m_moveDelta * glm::sign(m_deltaAccum[i]);
+            m_deltaAccum[i] = 0.0f;
+          }
+        }
+      }
+      else
+      {
+        target += delta;
       }
 
-      if (glm::abs(m_deltaAccum.z) > gridMinSpace)
+      if (g_app->m_snapToGrid)
       {
-        snapedPos.z = int(snapedPos.z / gridMinSpace) * gridMinSpace + gridMinSpace * glm::sign(m_deltaAccum.z);
-        m_deltaAccum.z = 0.0f;
+        if (VecAllEqual(delta, Vec3(0.0f)))
+        {
+          static int elapsedFrame = 0;
+          elapsedFrame++;
+
+          float sec = elapsedFrame * (1.0f / g_app->m_fps); // approximately elapsed sec.
+          if (sec > 0.5f)
+          {
+            float gridMinSpace = 0.25f;
+
+            target.x = glm::round(target.x / gridMinSpace) * gridMinSpace;
+            target.z = glm::round(target.z / gridMinSpace) * gridMinSpace;
+            elapsedFrame = 0;
+          }
+        }
       }
+
+      m_deltaAccum += delta;
 
       TransformationSpace space = g_app->m_transformSpace;
       switch (m_type)
       {
       case TransformType::Translate:
       {
-        e->m_node->SetTranslation(snapedPos, TransformationSpace::TS_WORLD);
+        e->m_node->SetTranslation(target, TransformationSpace::TS_WORLD);
       }
       break;
       case TransformType::Rotate:
