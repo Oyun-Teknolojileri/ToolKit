@@ -425,46 +425,12 @@ namespace ToolKit
         ray = vp->RayFromScreenSpacePoint(m_mouseData[0]);
         LinePlaneIntersection(ray, m_intersectionPlane, t);
         Vec3 p0 = PointOnRay(ray, t);
-
-        static float deltaAccum = 0.0f;
-        if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
-        {
-          int axisInd = (int)m_gizmo->GetGrabbedAxis();
-          Vec3 projAxis = pg->m_handles[axisInd]->m_tangentDir;
-          float delta = glm::dot(projAxis, p - p0);
-          if (g_app->m_snapsEnabled)
-          {
-            deltaAccum += glm::abs(delta);
-            if (deltaAccum > glm::radians(g_app->m_rotateDelta))
-            {
-              delta = glm::radians(g_app->m_rotateDelta) * glm::sign(delta);
-              deltaAccum = 0.0f;
-            }
-            else
-            {
-              delta = 0.0f;
-            }
-          }
-          m_delta = AXIS[axisInd] * delta;
-        }
-        else
-        {
-          if (IsPlaneMod())
-          {
-            m_delta = p - p0;
-          }
-          else
-          {
-            AxisLabel axis = m_gizmo->GetGrabbedAxis();
-            Vec3 dir = m_gizmo->m_normalVectors[(int)axis];
-            dir = glm::normalize(dir);
-            m_delta = glm::dot(dir, p - p0) * dir;
-          }
-        }
+        m_delta = p - p0;
       }
       else
       {
         assert(false && "Intersection expected.");
+        m_delta = Vec3();
       }
 
       std::swap(m_mouseData[0], m_mouseData[1]);
@@ -479,73 +445,32 @@ namespace ToolKit
       NodePtrArray parents;
 
       // Make all selecteds child of current & store their original parents.
-      //if (roots.size() > 1)
+      for (Entity* ntt : roots)
       {
-        for (Entity* ntt : roots)
-        {
-          parents.push_back(ntt->m_node->m_parent);
-          ntt->m_node->OrphanSelf(true);
-        }
+        parents.push_back(ntt->m_node->m_parent);
+        ntt->m_node->OrphanSelf(true);
+      }
 
-        for (Entity* ntt : roots)
+      for (Entity* ntt : roots)
+      {
+        if (ntt != e)
         {
-          if (ntt != e)
-          {
-            e->m_node->AddChild(ntt->m_node, true);
-          }
+          e->m_node->AddChild(ntt->m_node, true);
         }
       }
 
-      TransformationSpace space = g_app->m_transformSpace;
-      switch (m_type)
+      // Apply transform.
+      if (m_type == TransformType::Translate)
       {
-      case TransformType::Translate:
-      {
-        m_deltaAccum += delta;
-        Vec3 target = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-
-        // Snap for pos.
-        if (g_app->m_snapsEnabled)
-        {
-          target = m_initialLoc + m_deltaAccum;
-          float spacing = g_app->m_moveDelta;
-          target = glm::round(target / spacing) * spacing;
-        }
-        else
-        {
-          target += delta;
-        }
-
-        e->m_node->SetTranslation(target, TransformationSpace::TS_WORLD);
+        Translate(e);
       }
-      break;
-      case TransformType::Rotate:
+      else if (m_type == TransformType::Rotate)
       {
-        float angle = glm::length(delta);
-        if (glm::equal(angle, 0.0f))
-        {
-          break;
-        }
-
-        Vec3 axis = delta / angle;
-        Quaternion rotation = glm::angleAxis(angle, axis);
-        e->m_node->Rotate(rotation, space);
+        Rotate(e);
       }
-      break;
-      case TransformType::Scale:
+      else if (m_type == TransformType::Scale)
       {
-        // Transfer world space delta to local axis.
-        int axisIndx = (int)m_gizmo->GetGrabbedAxis();
-        Vec3 target = AXIS[axisIndx] * glm::length(delta);
-        target *= glm::sign(glm::dot(delta, m_gizmo->m_normalVectors[axisIndx]));
-
-        Vec3 scale = e->m_node->GetScale() + target;
-        if (glm::all(glm::greaterThan(scale, Vec3(0.0f))))
-        {
-          e->m_node->SetScale(scale);
-        }
-      }
-      break;
+        Scale(e);
       }
 
       // Set original parents back.
@@ -557,6 +482,63 @@ namespace ToolKit
         {
           parent->AddChild(roots[i]->m_node, true);
         }
+      }
+    }
+
+    void StateTransformTo::Translate(Entity* ntt)
+    {
+      Vec3 delta = m_delta;
+      if (!IsPlaneMod())
+      {
+        AxisLabel axis = m_gizmo->GetGrabbedAxis();
+        Vec3 dir = m_gizmo->m_normalVectors[(int)axis];
+        dir = glm::normalize(dir);
+        delta = glm::dot(dir, m_delta) * dir;
+      }
+
+      m_deltaAccum += delta;
+      Vec3 target = ntt->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+
+      // Snap for pos.
+      if (g_app->m_snapsEnabled)
+      {
+        target = m_initialLoc + m_deltaAccum;
+        float spacing = g_app->m_moveDelta;
+        target = glm::round(target / spacing) * spacing;
+      }
+      else
+      {
+        target += delta;
+      }
+
+      ntt->m_node->SetTranslation(target, TransformationSpace::TS_WORLD);
+    }
+
+    void StateTransformTo::Rotate(Entity* ntt)
+    {
+      PolarGizmo* pg = static_cast<PolarGizmo*> (m_gizmo);
+      int axisInd = (int)m_gizmo->GetGrabbedAxis();
+      Vec3 projAxis = pg->m_handles[axisInd]->m_tangentDir;
+      float delta = glm::dot(projAxis, m_delta);
+
+      if (glm::equal(delta, 0.0f) == false)
+      {
+        Quaternion rotation = glm::angleAxis(delta, m_gizmo->m_normalVectors[axisInd]);
+        ntt->m_node->Rotate(rotation, TransformationSpace::TS_WORLD);
+      }
+    }
+
+    void StateTransformTo::Scale(Entity* ntt)
+    {
+      // Transfer world space delta to local axis.
+      int axisIndx = (int)m_gizmo->GetGrabbedAxis();
+      Vec3 target = AXIS[axisIndx] * glm::length(m_delta);
+      target *= glm::sign(glm::dot(m_delta, m_gizmo->m_normalVectors[axisIndx]));
+
+      Vec3 scale = ntt->m_node->GetScale() + target;
+      if (glm::all(glm::greaterThan(scale, Vec3(0.0f))))
+      {
+        ntt->m_node->SetScale(scale);
       }
     }
 

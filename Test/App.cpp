@@ -130,7 +130,9 @@ namespace ToolKit
 
     EntityIdArray ignoreList;
     EntityRawPtrArray icons = m_scene->GetByTag("pickup");
-    ToEntityIdArray(ignoreList, icons);
+    EntityRawPtrArray foos = m_scene->GetByTag("foo");
+    ToEntityIdArray(ignoreList, foos);
+
     ignoreList.push_back(player->m_id);
 
     Ray ray = m_viewport->RayFromMousePosition();
@@ -208,7 +210,7 @@ namespace ToolKit
         {
           Vec3 fdir = GetForwardDir(foo);
           foo->m_node->Translate(fdir * m_blockSize);
-          player->m_node->Translate(fdir * 2.0f);
+          player->m_node->Translate(Y_AXIS * 2.0f);
           m_gameOver = true;
           return;
         }
