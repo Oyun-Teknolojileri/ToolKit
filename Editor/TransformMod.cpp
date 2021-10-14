@@ -521,7 +521,20 @@ namespace ToolKit
       Vec3 projAxis = pg->m_handles[axisInd]->m_tangentDir;
       float delta = glm::dot(projAxis, m_delta);
 
-      if (glm::equal(delta, 0.0f) == false)
+      m_deltaAccum.x += delta;
+      float spacing = glm::radians(g_app->m_rotateDelta);
+      if (g_app->m_snapsEnabled)
+      {
+        if (glm::abs(m_deltaAccum.x) < spacing)
+        {
+          return;
+        }
+
+        delta = glm::round(m_deltaAccum.x / spacing) * spacing;
+      }
+
+      m_deltaAccum.x = 0.0f;
+      if (glm::notEqual(delta, 0.0f))
       {
         Quaternion rotation = glm::angleAxis(delta, m_gizmo->m_normalVectors[axisInd]);
         ntt->m_node->Rotate(rotation, TransformationSpace::TS_WORLD);
