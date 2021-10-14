@@ -530,13 +530,34 @@ namespace ToolKit
 
     void StateTransformTo::Scale(Entity* ntt)
     {
+      float delta = glm::length(m_delta);
+      m_deltaAccum.x += delta;
+
+      float spacing = g_app->m_scaleDelta;
+      if (g_app->m_snapsEnabled)
+      {
+        if (m_deltaAccum.x < spacing)
+        {
+          return;
+        }
+      }
+
+      delta = m_deltaAccum.x;
+      m_deltaAccum.x = 0;
+
       // Transfer world space delta to local axis.
       int axisIndx = (int)m_gizmo->GetGrabbedAxis();
-      Vec3 target = AXIS[axisIndx] * glm::length(m_delta);
+      Vec3 target = AXIS[axisIndx] * delta;
       target *= glm::sign(glm::dot(m_delta, m_gizmo->m_normalVectors[axisIndx]));
 
       Vec3 scale = ntt->m_node->GetScale() + target;
-      if (glm::all(glm::greaterThan(scale, Vec3(0.0f))))
+
+      if (g_app->m_snapsEnabled)
+      {
+        scale[axisIndx] = glm::round(scale[axisIndx] / spacing) * spacing;
+      }
+
+      if (glm::all(glm::notEqual(scale, Vec3(0.0f))))
       {
         ntt->m_node->SetScale(scale);
       }

@@ -1074,6 +1074,11 @@ namespace ToolKit
       g_app->GetConsole()->AddLog(msg, "Debug");
     }
 
+    void DebugMessage(const Vec3& vec)
+    {
+      g_app->GetConsole()->AddLog(glm::to_string(vec), "Debug");
+    }
+
     void DebugCube(const Vec3& p, float size)
     {
       g_app->m_perFrameDebugObjects.push_back

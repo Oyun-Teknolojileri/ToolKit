@@ -977,6 +977,14 @@ namespace ToolKit
         return;
       }
 
+      ImGuiIO& io = ImGui::GetIO();
+      ImGui::SetNextWindowPos
+      (
+        ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
+        ImGuiCond_Once,
+        ImVec2(0.5f, 0.5f)
+      );
+
       ImGui::OpenPopup(m_name.c_str());
       if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
       {
@@ -1030,6 +1038,14 @@ namespace ToolKit
       {
         return;
       }
+
+      ImGuiIO& io = ImGui::GetIO();
+      ImGui::SetNextWindowPos
+      (
+        ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
+        ImGuiCond_Once,
+        ImVec2(0.5f, 0.5f)
+      );
 
       ImGui::OpenPopup(m_name.c_str());
       if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
