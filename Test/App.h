@@ -31,6 +31,7 @@ namespace ToolKit
     ScenePtr m_scene;
     Camera* m_cam = nullptr;
     Viewport* m_viewport = nullptr;
+    Animation* m_anim = nullptr;
     const float m_blockSize = 2.0f; // Size of the ground blocks.
 
     // 3 point lighting system.

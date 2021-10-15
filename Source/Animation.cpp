@@ -39,12 +39,12 @@ namespace ToolKit
     std::vector<Key>& keys = m_keys.begin()->second;
     GetNearestKeys(keys, key1, key2, ratio);
 
-    if ((int)keys.size() <= key1)
+    if ((int)keys.size() <= key1 || key1 == -1)
     {
       return;
     }
 
-    if ((int)keys.size() <= key2)
+    if ((int)keys.size() <= key2 || key2 == -1)
     {
       return;
     }

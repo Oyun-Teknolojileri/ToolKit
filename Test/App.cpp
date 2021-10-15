@@ -38,6 +38,17 @@ namespace ToolKit
     m_cam->m_node->SetTranslation({ 5.0f, 5.0f, 5.0f });
     m_cam->LookAt({ 0.0f, 0.0f, 0.0f });
     m_cam->m_node->AddChild(m_lightMaster);
+
+    // try loading anim
+    m_anim = new Animation(AnimationPath(ConcatPaths({ "anim", "TorusAction.anim" })));
+    m_anim->Load();
+    m_anim->m_loop = true;
+    EntityRawPtrArray root = GetScene()->GetByTag("anim");
+    if (!root.empty())
+    {
+      Entity* ntt = root.front();
+      GetAnimationPlayer()->AddRecord(ntt, m_anim);
+    }
   }
 
   void Game::Destroy()

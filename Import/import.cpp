@@ -71,6 +71,7 @@ void ClearForbidden(std::string& str)
 unordered_map<string, BoneNode> g_skeletonMap;
 const aiScene* g_scene = nullptr;
 static unsigned int g_lastId = 1;
+std::string g_currentExt;
 
 char GetPathSeparator()
 {
@@ -163,7 +164,12 @@ void PrintAnims_(const aiScene* scene, string file)
     assert(oFile.good());
 
     double fps = anim->mTicksPerSecond == 0 ? 24.0 : anim->mTicksPerSecond;
-    oFile << "<anim fps=\"" + to_string(fps) + "\" duration=\"" + to_string(anim->mDuration / fps) + "\">\n";
+    double duration = anim->mDuration / fps;
+    if (g_currentExt == ".glb")
+    {
+      duration = anim->mDuration / 1000.0f;
+    }
+    oFile << "<anim fps=\"" + to_string(fps) + "\" duration=\"" + to_string(duration) + "\">\n";
 
     for (unsigned int j = 0; j < anim->mNumChannels; j++)
     {
@@ -171,7 +177,13 @@ void PrintAnims_(const aiScene* scene, string file)
       oFile << "  <node name=\"" + string(nodeAnim->mNodeName.C_Str()) + "\">\n";
       for (unsigned int k = 0; k < nodeAnim->mNumPositionKeys; k++)
       {
-        oFile << "    <key frame=\"" + to_string((int)(nodeAnim->mPositionKeys[k].mTime)) + "\">\n";
+        int key = (int)round(nodeAnim->mPositionKeys[k].mTime);
+        if (g_currentExt == ".glb")
+        {
+          key = (int)round(fps * nodeAnim->mPositionKeys[k].mTime / 1000.0f);
+        }
+
+        oFile << "    <key frame=\"" + to_string(key) + "\">\n";
         aiVector3D t = nodeAnim->mPositionKeys[k].mValue;
         oFile << "      <translation x=\"" + to_string(t.x) + "\" y=\"" + to_string(t.y) + "\" z=\"" + to_string(t.z) + "\"/>\n";
         aiQuaternion r = nodeAnim->mRotationKeys[k].mValue;
@@ -710,6 +722,8 @@ int main(int argc, char* argv[])
 
       fs::path pathToProcess = file;
       string fileName = pathToProcess.filename().u8string();
+
+      g_currentExt = pathToProcess.extension().u8string();
       string destFile = dest + fileName;
 
       PrintSkeleton_(scene, destFile);
