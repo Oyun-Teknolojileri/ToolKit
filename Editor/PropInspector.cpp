@@ -107,13 +107,13 @@ namespace ToolKit
       }
 
       // Entity View
-      if (ImGui::CollapsingHeader("Basics"))
+      if (ImGui::CollapsingHeader("Entity", ImGuiTreeNodeFlags_DefaultOpen))
       {
         ImGui::InputText("Name", &m_entity->m_name);
         ImGui::InputText("Tag", &m_entity->m_tag);
       }
 
-      if (ImGui::CollapsingHeader("Transforms"))
+      if (ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen))
       {
         Mat3 rotate;
         Vec3 scale, shear;
@@ -195,6 +195,17 @@ namespace ToolKit
         {
           m_entity->m_node->SetInheritScaleDeep(m_entity->m_node->m_inheritScale);
         }
+
+        ImGui::Separator();
+
+        BoundingBox bb = m_entity->GetAABB(true);
+        Vec3 dim = bb.max - bb.min;
+        ImGui::Text("Bounding box dimentions:");
+        ImGui::Text("x: %.2f", dim.x);
+        ImGui::SameLine();
+        ImGui::Text("\ty: %.2f", dim.y);
+        ImGui::SameLine();
+        ImGui::Text("\tz: %.2f", dim.z);
       }
     }
 

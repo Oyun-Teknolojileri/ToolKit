@@ -39,15 +39,18 @@ namespace ToolKit
     m_cam->LookAt({ 0.0f, 0.0f, 0.0f });
     m_cam->m_node->AddChild(m_lightMaster);
 
-    // try loading anim
-    m_anim = new Animation(AnimationPath(ConcatPaths({ "anim", "TorusAction.anim" })));
-    m_anim->Load();
-    m_anim->m_loop = true;
-    EntityRawPtrArray root = GetScene()->GetByTag("anim");
-    if (!root.empty())
+    // Create tracks.
+    m_forward = new Animation(AnimationPath(ConcatPaths({ "anim", "player_forward.anim" })));
+    m_forward->Load();
+    if (Entity* player = GetPlayer())
     {
-      Entity* ntt = root.front();
-      GetAnimationPlayer()->AddRecord(ntt, m_anim);
+      m_playerMove = { player, m_forward };
+
+      // Scene copy doesn't preserve enttiy child relation. Fix it.
+      if (Entity* playerGround = GetPlayerGround())
+      {
+        playerGround->m_node->AddChild(player->m_node, true);
+      }
     }
   }
 
@@ -62,6 +65,15 @@ namespace ToolKit
     SafeDel(m_cam);
     SafeDel(m_lightMaster);
 
+    EntityRawPtrArray root = GetScene()->GetByTag("anim");
+    if (!root.empty())
+    {
+      Entity* ntt = root.front();
+      GetAnimationPlayer()->RemoveRecord(ntt, m_forward);
+    }
+
+    SafeDel(m_forward);
+
     delete this;
   }
 
@@ -70,6 +82,7 @@ namespace ToolKit
     // Update engine bindings.
     m_viewport = viewport;
     m_scene = GetScene();
+    m_onAnim = GetAnimationPlayer()->Exist(m_playerMove) != -1;
 
     if (!m_scene)
     {
@@ -91,6 +104,11 @@ namespace ToolKit
     {
       CheckPickups();
       CheckEnemyMove();
+    }
+
+    if (!m_onAnim)
+    {
+      UpdateGroundLoc();
     }
   }
 
@@ -120,7 +138,7 @@ namespace ToolKit
 
   Entity* Game::GetPlayer()
   {
-    EntityRawPtrArray playerTags = m_scene->GetByTag("player");
+    EntityRawPtrArray playerTags = GetScene()->GetByTag("player");
     if (playerTags.empty())
     {
       return nullptr;
@@ -129,15 +147,37 @@ namespace ToolKit
     return playerTags.front();
   }
 
+  Entity* Game::GetPlayerGround()
+  {
+    EntityRawPtrArray pgArray = GetScene()->GetByTag("pg");
+    if (!pgArray.empty())
+    {
+      return pgArray.front();
+    }
+
+    return nullptr;
+  }
+
   void Game::CheckPlayerMove()
   {
-    if (m_scene == nullptr)
+    Entity* player = GetPlayer();
+    if (player == nullptr)
     {
       return;
     }
 
-    Entity* player = GetPlayer();
-    Vec3 pCenter = player->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+    Node* playerGround = player->m_node->m_parent;
+    if (playerGround == nullptr)
+    {
+      return;
+    }
+
+    if (m_scene == nullptr || m_onAnim)
+    {
+      return;
+    }
+
+    Vec3 pCenter = playerGround->GetTranslation(TransformationSpace::TS_WORLD);
 
     EntityIdArray ignoreList;
     EntityRawPtrArray icons = m_scene->GetByTag("pickup");
@@ -152,48 +192,63 @@ namespace ToolKit
     {
       if (pd.entity->m_tag == "grnd")
       {        
-        Quaternion rot = player->m_node->GetOrientation();
+        Quaternion rot = playerGround->GetOrientation();
         Vec3 fdir = glm::normalize(rot * Z_AXIS);
         Vec3 rdir = glm::normalize(glm::cross(fdir, Y_AXIS));
 
         Drawable* ground = static_cast<Drawable*> (pd.entity);
         BoundingBox bb = ground->GetAABB(true);
+        Vec3 bbc = bb.GetCenter();
         float dia = glm::compMax(bb.max - bb.min);
-        Vec3 playerPos = player->m_node->GetTranslation();
-        if (glm::distance(playerPos, bb.GetCenter()) > dia)
+        Vec3 playerPos = playerGround->GetTranslation(TransformationSpace::TS_WORLD);
+        bbc.y = playerPos.y;
+        float dist = glm::distance(playerPos, bbc);
+        if (dist > dia * 1.1f || dist < 0.1f)
         {
           return;
         }
 
-        Vec3 target = glm::normalize(bb.GetCenter() - playerPos);
+        Vec3 target = glm::normalize(bbc - playerPos);
 
         float front = glm::dot(fdir, target);
         float right = glm::dot(rdir, target); 
+        GetPluginManager()->m_reporterFn("front " + std::to_string(front));
+        GetPluginManager()->m_reporterFn("right " + std::to_string(right));
         
         float angle = 0.0f;
-        if (glm::epsilonEqual(front, 1.0f, 0.001f))
+        if (glm::abs(front) > glm::abs(right))
         {
-          angle = 0.0f;
+          // Front back check.
+          if (glm::epsilonEqual(front, 1.0f, 0.001f))
+          {
+            angle = 0.0f;
+          }
+          else
+          {
+            angle = glm::pi<float>();
+          }
         }
-        else if (front < -0.001f)
+        else
         {
-          angle = glm::pi<float>();
-        }
-
-        if (glm::epsilonEqual(right, 1.0f, 0.001f))
-        {
-          angle = -glm::half_pi<float>();
-        }
-        else if (right < -0.001f)
-        {
-          angle = glm::half_pi<float>();
+          // Right left check.
+          if (glm::epsilonEqual(right, 1.0f, 0.001f))
+          {
+            angle = -glm::half_pi<float>();
+          }
+          else
+          {
+            angle = glm::half_pi<float>();
+          }
         }
 
         Quaternion q = glm::angleAxis(angle, Y_AXIS);
-        player->m_node->Rotate(q);
+        playerGround->Rotate(q);
 
         // Move player.
-        player->m_node->SetTranslation(bb.GetCenter(), TransformationSpace::TS_WORLD);
+        m_playerMove.second->m_state = Animation::State::Play;
+        GetAnimationPlayer()->AddRecord(m_playerMove);
+
+        //playerGround->SetTranslation(target, TransformationSpace::TS_WORLD);
         BoundingBox pb = player->GetAABB(true);
         EntityRawPtrArray foos = m_scene->GetByTag("foo");
         for (Entity* foo : foos)
@@ -321,6 +376,27 @@ namespace ToolKit
     Mat4 ts = ntt->m_node->GetTransform();
     Vec3 fdir = glm::normalize(glm::column(ts, 2));
     return fdir;
+  }
+
+  void Game::UpdateGroundLoc()
+  {
+    Entity* player = GetPlayer();
+    if (player == nullptr)
+    {
+      return;
+    }
+
+    Node* playerGround = player->m_node->m_parent;
+    if (playerGround == nullptr)
+    {
+      return;
+    }
+
+    playerGround->Orphan(player->m_node, true);
+    Vec3 pos = player->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+    pos.y = playerGround->GetTranslation(TransformationSpace::TS_WORLD).y;
+    playerGround->SetTranslation(pos);
+    playerGround->AddChild(player->m_node, true);
   }
 
 }

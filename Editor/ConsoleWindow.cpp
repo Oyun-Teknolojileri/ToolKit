@@ -425,6 +425,7 @@ namespace ToolKit
         {
           m->ApplyTransform(ts);
         }
+        g_app->m_statusMsg = "Transforms applied to " + e->m_name;
       }
       else
       {

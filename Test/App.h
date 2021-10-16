@@ -17,6 +17,7 @@ namespace ToolKit
     // Plugin functions
     ScenePtr GetScene();
     Entity* GetPlayer();
+    Entity* GetPlayerGround();
 
     // Game logic
     void CheckPlayerMove();
@@ -26,12 +27,15 @@ namespace ToolKit
     BoundingBox GetForwardBB(Entity* ntt);
     Vec3 GetForwardDir(Entity* ntt);
 
+    void UpdateGroundLoc();
+
   public:    
     // Plugin objects.
     ScenePtr m_scene;
     Camera* m_cam = nullptr;
     Viewport* m_viewport = nullptr;
-    Animation* m_anim = nullptr;
+    Animation* m_forward = nullptr;
+    AnimRecord m_playerMove;
     const float m_blockSize = 2.0f; // Size of the ground blocks.
 
     // 3 point lighting system.
@@ -39,6 +43,7 @@ namespace ToolKit
     LightRawPtrArray m_sceneLights; // { 0:key 1:fill, 2:back }
 
     bool m_gameOver = false;
+    bool m_onAnim = false;
   };
 
 }

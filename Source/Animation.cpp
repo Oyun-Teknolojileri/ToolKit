@@ -178,21 +178,31 @@ namespace ToolKit
     }
   }
 
+  void AnimationPlayer::AddRecord(const AnimRecord& rec)
+  {
+    if (Exist(rec) == -1)
+    {
+      m_records.push_back(rec);
+    }
+  }
+
   void AnimationPlayer::AddRecord(Entity* entity, Animation* anim)
   {
-    if (Exist({ entity, anim }) == -1)
+    AddRecord({ entity, anim });
+  }
+
+  void AnimationPlayer::RemoveRecord(const AnimRecord& rec)
+  {
+    int indx = Exist(rec);
+    if (indx != -1)
     {
-      m_records.push_back(AnimRecord(entity, anim));
+      m_records.erase(m_records.begin() + indx);
     }
   }
 
   void AnimationPlayer::RemoveRecord(Entity* entity, Animation* anim)
   {
-    int indx = Exist({ entity, anim });
-    if (indx != -1)
-    {
-      m_records.erase(m_records.begin() + indx);
-    }
+    RemoveRecord({ entity, anim });
   }
 
   void AnimationPlayer::Update(float deltaTimeSec)
