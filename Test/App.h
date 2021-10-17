@@ -24,7 +24,6 @@ namespace ToolKit
     void CheckEnemyMove();
     void CheckPickups();
     void IconAnim(float deltaTime);
-    BoundingBox GetForwardBB(Entity* ntt);
     BoundingBox GetForwardBB(Node* node);
     Vec3 GetForwardDir(Entity* ntt);
 

@@ -101,15 +101,15 @@ namespace ToolKit
     }
 
     IconAnim(deltaTime);
-    if (!m_gameOver)
-    {
-      CheckPickups();
-      CheckEnemyMove();
-    }
 
     if (!m_onAnim)
     {
       UpdateGroundPos();
+      if (!m_gameOver)
+      {
+        CheckEnemyMove();
+        CheckPickups();
+      }
     }
   }
 
@@ -251,13 +251,10 @@ namespace ToolKit
           pickedGroundPos + Vec3(m_blockSize * 0.5f, m_blockSize, m_blockSize * 0.5f)
         };
 
-        GetPluginManager()->m_reporterFn("ground pos " + glm::to_string(pickedGroundPos));
-
         EntityRawPtrArray foos = m_scene->GetByTag("foo");
         for (Entity* foo : foos)
         {
           Vec3 fooPos = foo->GetAABB(true).GetCenter();
-          GetPluginManager()->m_reporterFn("foo pos " + glm::to_string(fooPos));
           if (BoxPointIntersection(groundBb, fooPos))
           {
             foo->m_node->Translate(Y_AXIS * 2.0f);
@@ -269,21 +266,26 @@ namespace ToolKit
 
   void Game::CheckEnemyMove()
   {
+    Entity* player = GetPlayer();
+    if (player == nullptr)
+    {
+      return;
+    }
+
+    Vec3 playerGround = player->m_node->m_parent->GetTranslation(TransformationSpace::TS_WORLD);
+    GetPluginManager()->m_reporterFn("player ground " + glm::to_string(playerGround));
     EntityRawPtrArray enemies = m_scene->GetByTag("foo");
     for (Entity* foo : enemies)
     {
-      BoundingBox fb = GetForwardBB(foo);
-      if (Entity* player = GetPlayer())
+      BoundingBox fooBox = GetForwardBB(foo->m_node);
+      GetPluginManager()->m_reporterFn("foo  " + glm::to_string(fooBox.GetCenter()));
+      if (BoxPointIntersection(fooBox, playerGround))
       {
-        BoundingBox pb = player->GetAABB(true);
-        if (BoxBoxIntersection(fb, pb))
-        {
-          Vec3 fdir = GetForwardDir(foo);
-          foo->m_node->Translate(fdir * m_blockSize);
-          player->m_node->Translate(Y_AXIS * 2.0f);
-          m_gameOver = true;
-          return;
-        }
+        Vec3 fdir = GetForwardDir(foo);
+        foo->m_node->Translate(fdir * m_blockSize);
+        player->m_node->Translate(Y_AXIS * 2.0f);
+        m_gameOver = true;
+        return;
       }
     }
   }
@@ -363,29 +365,20 @@ namespace ToolKit
     }
   }
 
-  BoundingBox Game::GetForwardBB(Entity* ntt)
-  {
-    Vec3 fdir = GetForwardDir(ntt);
-    fdir = glm::round(fdir);
-    BoundingBox fb = ntt->GetAABB(true);
-
-    Mat4 next = glm::translate(Mat4(), fdir);
-    TransformAABB(fb, next);
-
-    return fb;
-  }
-
   BoundingBox Game::GetForwardBB(Node* node)
   {
     Mat4 ts = node->GetTransform(TransformationSpace::TS_WORLD);
     Vec3 pos = glm::column(ts, 3);
     Vec3 dir = glm::column(ts, 2);
     dir = glm::normalize(dir);
+    
+    pos += dir * m_blockSize;
+    pos.y = 0.0f;
 
     BoundingBox bb =
     {
-      pos - Vec3(m_blockSize, 0.0f, m_blockSize),
-      pos + Vec3(m_blockSize)
+      pos - Vec3(m_blockSize * 0.5f, 0.0f, m_blockSize * 0.5f),
+      pos + Vec3(m_blockSize * 0.5f)
     };
     
     return bb;
