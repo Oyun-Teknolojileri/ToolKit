@@ -108,7 +108,7 @@ namespace ToolKit
 
     if (!m_onAnim)
     {
-      UpdateGroundLoc();
+      UpdateGroundPos();
     }
   }
 
@@ -177,41 +177,40 @@ namespace ToolKit
       return;
     }
 
-    Vec3 pCenter = playerGround->GetTranslation(TransformationSpace::TS_WORLD);
-
     EntityIdArray ignoreList;
-    EntityRawPtrArray icons = m_scene->GetByTag("pickup");
     EntityRawPtrArray foos = m_scene->GetByTag("foo");
     ToEntityIdArray(ignoreList, foos);
+    EntityRawPtrArray pickups = m_scene->GetByTag("pickup");
+    ToEntityIdArray(ignoreList, pickups);
 
     ignoreList.push_back(player->m_id);
 
     Ray ray = m_viewport->RayFromMousePosition();
-    Scene::PickData pd = m_scene->PickObject(ray, ignoreList);
-    if (pd.entity)
+    Scene::PickData pickData = m_scene->PickObject(ray, ignoreList);
+    if (pickData.entity)
     {
-      if (pd.entity->m_tag == "grnd")
-      {        
-        Quaternion rot = playerGround->GetOrientation();
-        Vec3 fdir = glm::normalize(rot * Z_AXIS);
-        Vec3 rdir = glm::normalize(glm::cross(fdir, Y_AXIS));
+      if (pickData.entity->m_tag == "grnd")
+      {
+        Quaternion currentOrientation = playerGround->GetOrientation();
+        Vec3 forwardDir = glm::normalize(currentOrientation * Z_AXIS);
+        Vec3 rightDir = glm::normalize(glm::cross(forwardDir, Y_AXIS));
 
-        Drawable* ground = static_cast<Drawable*> (pd.entity);
-        BoundingBox bb = ground->GetAABB(true);
-        Vec3 bbc = bb.GetCenter();
-        float dia = glm::compMax(bb.max - bb.min);
-        Vec3 playerPos = playerGround->GetTranslation(TransformationSpace::TS_WORLD);
-        bbc.y = playerPos.y;
-        float dist = glm::distance(playerPos, bbc);
+        Drawable* ground = static_cast<Drawable*> (pickData.entity);
+        BoundingBox groundBb = ground->GetAABB(true);
+        Vec3 groundPos = groundBb.GetCenter();
+        float dia = glm::compMax(groundBb.max - groundBb.min);
+        Vec3 playerGroundPos = playerGround->GetTranslation(TransformationSpace::TS_WORLD);
+        groundPos.y = playerGroundPos.y;
+        float dist = glm::distance(playerGroundPos, groundPos);
         if (dist > dia * 1.1f || dist < 0.1f)
         {
           return;
         }
 
-        Vec3 target = glm::normalize(bbc - playerPos);
+        Vec3 targetDir = glm::normalize(groundPos - playerGroundPos);
 
-        float front = glm::dot(fdir, target);
-        float right = glm::dot(rdir, target); 
+        float front = glm::dot(forwardDir, targetDir);
+        float right = glm::dot(rightDir, targetDir); 
         GetPluginManager()->m_reporterFn("front " + std::to_string(front));
         GetPluginManager()->m_reporterFn("right " + std::to_string(right));
         
@@ -241,15 +240,18 @@ namespace ToolKit
           }
         }
 
-        Quaternion q = glm::angleAxis(angle, Y_AXIS);
-        playerGround->Rotate(q);
+        Quaternion targetRotation = glm::angleAxis(angle, Y_AXIS);
+        playerGround->Rotate(targetRotation);
 
         // Move player.
         m_playerMove.second->m_state = Animation::State::Play;
         GetAnimationPlayer()->AddRecord(m_playerMove);
 
-        //playerGround->SetTranslation(target, TransformationSpace::TS_WORLD);
-        BoundingBox pb = player->GetAABB(true);
+        BoundingBox pb = GetForwardBB(playerGround);
+        Vec2 dp = pb.GetCenter().xz;
+        GetPluginManager()->m_reporterFn("This " + glm::to_string(dp));
+        //dp = pCenter.xz;
+        GetPluginManager()->m_reporterFn("Next " + glm::to_string(dp));
         EntityRawPtrArray foos = m_scene->GetByTag("foo");
         for (Entity* foo : foos)
         {
@@ -371,6 +373,22 @@ namespace ToolKit
     return fb;
   }
 
+  BoundingBox Game::GetForwardBB(Node* node)
+  {
+    Mat4 ts = node->GetTransform(TransformationSpace::TS_WORLD);
+    Vec3 pos = glm::column(ts, 3);
+    Vec3 dir = glm::column(ts, 2);
+    dir = glm::normalize(dir);
+
+    BoundingBox bb =
+    {
+      pos - Vec3(m_blockSize, 0.0f, m_blockSize),
+      pos + Vec3(m_blockSize)
+    };
+    
+    return bb;
+  }
+
   Vec3 Game::GetForwardDir(Entity* ntt)
   {
     Mat4 ts = ntt->m_node->GetTransform();
@@ -378,7 +396,7 @@ namespace ToolKit
     return fdir;
   }
 
-  void Game::UpdateGroundLoc()
+  void Game::UpdateGroundPos()
   {
     Entity* player = GetPlayer();
     if (player == nullptr)

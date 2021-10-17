@@ -25,9 +25,10 @@ namespace ToolKit
     void CheckPickups();
     void IconAnim(float deltaTime);
     BoundingBox GetForwardBB(Entity* ntt);
+    BoundingBox GetForwardBB(Node* node);
     Vec3 GetForwardDir(Entity* ntt);
 
-    void UpdateGroundLoc();
+    void UpdateGroundPos();
 
   public:    
     // Plugin objects.
