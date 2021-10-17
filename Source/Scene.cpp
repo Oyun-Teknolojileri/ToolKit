@@ -319,50 +319,8 @@ namespace ToolKit
     for (node = root->first_node(XmlEntityElement.c_str()); node; node = node->next_sibling(XmlEntityElement.c_str()))
     {
       XmlAttribute* typeAttr = node->first_attribute(XmlEntityTypeAttr.c_str());
-      EntityType et = (EntityType)std::atoi(typeAttr->value());
-      Entity* ntt = nullptr;
-      switch (et)
-      {
-      case EntityType::Entity_Base:
-        ntt = new Entity(); // Empty entities are used for transform hierarchy.
-        break;
-      case EntityType::Entity_AudioSource:
-        continue;
-      case EntityType::Entity_Billboard:
-        break;
-      case EntityType::Entity_Cube:
-        ntt = new Cube(false);
-        break;
-      case EntityType::Entity_Quad:
-        ntt = new Quad(false);
-        break;
-      case EntityType::Entity_Sphere:
-        ntt = new Sphere(false);
-        break;
-      case EntityType::Etity_Arrow:
-        ntt = new Arrow2d(false);
-        break;
-      case EntityType::Entity_LineBatch:
-        break;
-      case EntityType::Entity_Cone:
-        ntt = new Cone(false);
-        break;
-      case EntityType::Entity_Drawable:
-        ntt = new Drawable();
-        break;
-      case EntityType::Entity_SpriteAnim:
-      case EntityType::Entity_Surface:
-        continue;
-      case EntityType::Entity_Light:
-        break;
-      case EntityType::Entity_Camera:
-        break;
-      case EntityType::Entity_Directional:
-        continue;
-      default:
-        assert(false);
-        continue;
-      }
+      EntityType t = (EntityType)std::atoi(typeAttr->value());
+      Entity* ntt = Entity::CreateByType(t);
 
       ntt->DeSerialize(doc, node);
       m_entitites.push_back(ntt);

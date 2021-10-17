@@ -49,7 +49,8 @@ namespace ToolKit
       // Scene copy doesn't preserve enttiy child relation. Fix it.
       if (Entity* playerGround = GetPlayerGround())
       {
-        playerGround->m_node->AddChild(player->m_node, true);
+        player->m_node->OrphanSelf();
+        playerGround->m_node->AddChild(player->m_node);
       }
     }
   }
@@ -197,17 +198,17 @@ namespace ToolKit
 
         Drawable* ground = static_cast<Drawable*> (pickData.entity);
         BoundingBox groundBb = ground->GetAABB(true);
-        Vec3 groundPos = groundBb.GetCenter();
+        Vec3 pickedGroundPos = groundBb.GetCenter();
         float dia = glm::compMax(groundBb.max - groundBb.min);
         Vec3 playerGroundPos = playerGround->GetTranslation(TransformationSpace::TS_WORLD);
-        groundPos.y = playerGroundPos.y;
-        float dist = glm::distance(playerGroundPos, groundPos);
+        pickedGroundPos.y = playerGroundPos.y;
+        float dist = glm::distance(playerGroundPos, pickedGroundPos);
         if (dist > dia * 1.1f || dist < 0.1f)
         {
           return;
         }
 
-        Vec3 targetDir = glm::normalize(groundPos - playerGroundPos);
+        Vec3 targetDir = glm::normalize(pickedGroundPos - playerGroundPos);
 
         float front = glm::dot(forwardDir, targetDir);
         float right = glm::dot(rightDir, targetDir); 
@@ -247,16 +248,17 @@ namespace ToolKit
         m_playerMove.second->m_state = Animation::State::Play;
         GetAnimationPlayer()->AddRecord(m_playerMove);
 
-        BoundingBox pb = GetForwardBB(playerGround);
-        Vec2 dp = pb.GetCenter().xz;
-        GetPluginManager()->m_reporterFn("This " + glm::to_string(dp));
-        //dp = pCenter.xz;
-        GetPluginManager()->m_reporterFn("Next " + glm::to_string(dp));
+        groundBb =
+        {
+          pickedGroundPos + Vec3(m_blockSize * 0.5f),
+          pickedGroundPos - Vec3(m_blockSize * 0.5f, 0.0f, m_blockSize * 0.5f)
+        };
+
         EntityRawPtrArray foos = m_scene->GetByTag("foo");
         for (Entity* foo : foos)
         {
-          BoundingBox fb = foo->GetAABB(true);
-          if (BoxBoxIntersection(fb, pb))
+          Vec3 fooPos = foo->GetAABB(true).GetCenter();
+          if (BoxPointIntersection(groundBb, fooPos))
           {
             foo->m_node->Translate(Y_AXIS * 2.0f);
           }

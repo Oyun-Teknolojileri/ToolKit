@@ -23,7 +23,8 @@ namespace ToolKit
     Entity_Surface,
     Entity_Light,
     Entity_Camera,
-    Entity_Directional
+    Entity_Directional,
+    Entity_Node
   };
 
   class Entity
@@ -42,12 +43,11 @@ namespace ToolKit
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
     virtual void RemoveResources();
 
+    static Entity* CreateByType(EntityType t);
+
   protected:
     virtual Entity* GetCopy(Entity* copyTo) const;
     virtual Entity* GetInstance(Entity* copyTo) const;
-
-  private:
-    Entity* CreateByType(EntityType t) const;
 
   public:
     Node* m_node;
@@ -60,6 +60,15 @@ namespace ToolKit
 
   private:
     static EntityId m_lastId;
+  };
+
+  class EntityNode : public Entity
+  {
+  public:
+    EntityNode() {}
+    virtual ~EntityNode() {}
+    virtual EntityType GetType() const override { return EntityType::Entity_Node; }
+    virtual void RemoveResources() override {}
   };
 
 }

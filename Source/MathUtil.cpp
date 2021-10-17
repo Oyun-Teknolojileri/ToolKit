@@ -231,6 +231,20 @@ namespace ToolKit
       (box1.min.z <= box2.max.z && box1.max.z >= box2.min.z);
   }
 
+  bool BoxPointIntersection(const BoundingBox& box, const Vec3& point)
+  {
+    // Not accept point on bounding box cases.
+    if (glm::all(glm::greaterThan(box.max, point)))
+    {
+      if (glm::all(glm::lessThan(box.min, point)))
+      {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
   // https://gamedev.stackexchange.com/questions/18436/most-efficient-aabb-vs-ray-collision-algorithms
   bool RayBoxIntersection(const Ray& ray, const BoundingBox& box, float& t)
   {

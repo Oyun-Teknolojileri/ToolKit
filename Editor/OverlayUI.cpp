@@ -205,6 +205,12 @@ namespace ToolKit
           }
           ImGui::EndMenu();
         }
+        ImGui::Separator();
+        if (ImGui::MenuItem("Node"))
+        {
+          Entity* node = Entity::CreateByType(EntityType::Entity_Node);
+          g_app->m_scene->AddEntity(node);
+        }
       };
 
       ImVec2 overlaySize(320, 30);

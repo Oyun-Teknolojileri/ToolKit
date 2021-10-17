@@ -96,46 +96,49 @@ namespace ToolKit
     return copyTo;
   }
 
-  Entity* Entity::CreateByType(EntityType t) const
+  Entity* Entity::CreateByType(EntityType t)
   {
     Entity* e = nullptr;
-    switch (GetType())
+    switch (t)
     {
-    case  EntityType::Entity_Base:
+    case EntityType::Entity_Base:
       e = new Entity();
       break;
-    case  EntityType::Entity_AudioSource:
+    case EntityType::Entity_Node:
+      e = new EntityNode();
+      break;
+    case EntityType::Entity_AudioSource:
       e = new AudioSource();
       break;
-    case  EntityType::Entity_Billboard:
+    case EntityType::Entity_Billboard:
       e = new Billboard(Billboard::Settings());
       break;
-    case  EntityType::Entity_Cube:
+    case EntityType::Entity_Cube:
       e = new Cube(false);
       break;
-    case  EntityType::Entity_Quad:
+    case EntityType::Entity_Quad:
       e = new Quad(false);
       break;
-    case  EntityType::Entity_Sphere:
+    case EntityType::Entity_Sphere:
       e = new Sphere(false);
       break;
-    case  EntityType::Etity_Arrow:
+    case EntityType::Etity_Arrow:
       e = new Arrow2d(false);
       break;
-    case  EntityType::Entity_LineBatch:
+    case EntityType::Entity_LineBatch:
       e = new LineBatch();
       break;
-    case  EntityType::Entity_Cone:
+    case EntityType::Entity_Cone:
       e = new Cone(false);
       break;
-    case  EntityType::Entity_Drawable:
+    case EntityType::Entity_Drawable:
       e = new Drawable();
       break;
-    case  EntityType::Entity_SpriteAnim:
-    case  EntityType::Entity_Surface:
-    case  EntityType::Entity_Light:
-    case  EntityType::Entity_Camera:
-    case  EntityType::Entity_Directional:
+    case EntityType::Entity_SpriteAnim:
+    case EntityType::Entity_Surface:
+    case EntityType::Entity_Light:
+    case EntityType::Entity_Camera:
+    case EntityType::Entity_Directional:
     default:
       assert(false);
       break;
