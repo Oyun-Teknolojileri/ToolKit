@@ -209,11 +209,8 @@ namespace ToolKit
         }
 
         Vec3 targetDir = glm::normalize(pickedGroundPos - playerGroundPos);
-
         float front = glm::dot(forwardDir, targetDir);
         float right = glm::dot(rightDir, targetDir); 
-        GetPluginManager()->m_reporterFn("front " + std::to_string(front));
-        GetPluginManager()->m_reporterFn("right " + std::to_string(right));
         
         float angle = 0.0f;
         if (glm::abs(front) > glm::abs(right))
@@ -250,14 +247,17 @@ namespace ToolKit
 
         groundBb =
         {
-          pickedGroundPos + Vec3(m_blockSize * 0.5f),
-          pickedGroundPos - Vec3(m_blockSize * 0.5f, 0.0f, m_blockSize * 0.5f)
+          pickedGroundPos - Vec3(m_blockSize * 0.5f, 0.0f, m_blockSize * 0.5f),
+          pickedGroundPos + Vec3(m_blockSize * 0.5f, m_blockSize, m_blockSize * 0.5f)
         };
+
+        GetPluginManager()->m_reporterFn("ground pos " + glm::to_string(pickedGroundPos));
 
         EntityRawPtrArray foos = m_scene->GetByTag("foo");
         for (Entity* foo : foos)
         {
           Vec3 fooPos = foo->GetAABB(true).GetCenter();
+          GetPluginManager()->m_reporterFn("foo pos " + glm::to_string(fooPos));
           if (BoxPointIntersection(groundBb, fooPos))
           {
             foo->m_node->Translate(Y_AXIS * 2.0f);
