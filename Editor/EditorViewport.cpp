@@ -369,6 +369,19 @@ namespace ToolKit
       }
     }
 
+    void EditorViewport::OnResize(float width, float height)
+    {
+      Viewport::OnResize(width, height);
+      if (m_camera->IsOrtographic())
+      {
+        Camera::CamData dat = m_camera->GetData();
+        float distToCenter = glm::distance(Vec3(), dat.pos);
+
+        float hDist = distToCenter * 10.0f / 500.0f;
+        m_camera->SetLens(dat.aspect, -hDist, hDist, -hDist, hDist, 0.01f, 1000.0f);
+      }
+    }
+
     void EditorViewport::FpsNavigationMode(float deltaTime)
     {
       if (m_camera && !m_camera->IsOrtographic())

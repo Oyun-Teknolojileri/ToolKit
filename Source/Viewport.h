@@ -30,7 +30,7 @@ namespace ToolKit
 
   protected:
     // Internal window handling.
-    void OnResize(float width, float height);
+    virtual void OnResize(float width, float height);
 
   public:
     Camera* m_camera = nullptr;
