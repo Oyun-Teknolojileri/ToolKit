@@ -5,7 +5,7 @@ namespace ToolKit
 {
   void Game::Init(Main* master)
   {
-    m_main = master;
+    Main::SetProxy(master);
   }
 
   void Game::Destroy()
