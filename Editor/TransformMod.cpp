@@ -684,6 +684,16 @@ namespace ToolKit
     {
       BaseMod::Update(deltaTime);
 
+      // Set transform of the gizmo with respecto active vieport.
+      // Important for proper picking.
+      if (m_gizmo != nullptr)
+      {
+        if (EditorViewport* vp = g_app->GetActiveViewport())
+        {
+          m_gizmo->LookAt(vp->m_camera, vp->m_height);
+        }
+      }
+
       if (m_stateMachine->m_currentState->ThisIsA<StateEndPick>())
       {
         StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);

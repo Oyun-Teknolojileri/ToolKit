@@ -232,8 +232,7 @@ namespace ToolKit
         m_origin->LookAt(cam, vp->m_height);
         m_renderer->Render(m_origin, cam);
 
-        // Only draw gizmo in active viewport.
-        if (m_gizmo != nullptr && vp->IsActive())
+        if (m_gizmo != nullptr)
         {
           m_gizmo->LookAt(cam, vp->m_height);
           glClear(GL_DEPTH_BUFFER_BIT);
