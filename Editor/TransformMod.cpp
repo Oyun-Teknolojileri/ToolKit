@@ -682,8 +682,6 @@ namespace ToolKit
 
     void TransformMod::Update(float deltaTime)
     {
-      BaseMod::Update(deltaTime);
-
       // Set transform of the gizmo with respecto active vieport.
       // Important for proper picking.
       if (m_gizmo != nullptr)
@@ -693,6 +691,8 @@ namespace ToolKit
           m_gizmo->LookAt(vp->m_camera, vp->m_height);
         }
       }
+
+      BaseMod::Update(deltaTime);
 
       if (m_stateMachine->m_currentState->ThisIsA<StateEndPick>())
       {
