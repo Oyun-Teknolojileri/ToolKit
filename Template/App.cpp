@@ -3,6 +3,7 @@
 
 namespace ToolKit
 {
+
   void Game::Init(Main* master)
   {
     Main::SetProxy(master);
@@ -12,15 +13,12 @@ namespace ToolKit
   {
   }
 
-  void Game::Frame(float deltaTime)
-  {
-  }
-
-  void Game::Resize(int width, int height)
+  void Game::Frame(float deltaTime, class Viewport* viewport)
   {
   }
 
   void Game::Event(SDL_Event event)
   {
   }
+
 }

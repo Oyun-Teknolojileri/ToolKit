@@ -9,11 +9,10 @@ namespace ToolKit
   class Game : public GamePlugin
   {
   public:
-    void Init(Main* master);
-    void Destroy();
-    void Frame(float deltaTime);
-    void Resize(int width, int height);
-    void Event(SDL_Event event);
+    virtual void Init(class Main* master);
+    virtual void Destroy();
+    virtual void Frame(float deltaTime, class Viewport* viewport);
+    virtual void Event(SDL_Event event);
   };
 
 }
