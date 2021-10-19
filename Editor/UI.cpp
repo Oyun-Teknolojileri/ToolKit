@@ -69,7 +69,7 @@ namespace ToolKit
       ImGuiIO& io = ImGui::GetIO();
       io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
       io.ConfigWindowsMoveFromTitleBarOnly = true;
-      io.Fonts->AddFontFromFileTTF(FontPath("Junicode.ttf").c_str(), 16);
+      io.Fonts->AddFontFromFileTTF(FontPath("bmonofont-i18n.ttf").c_str(), 16);
 
       ImGui_ImplSDL2_InitForOpenGL(g_window, g_context);
       ImGui_ImplOpenGL3_Init("#version 300 es");
