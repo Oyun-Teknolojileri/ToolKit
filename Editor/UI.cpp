@@ -69,7 +69,26 @@ namespace ToolKit
       ImGuiIO& io = ImGui::GetIO();
       io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
       io.ConfigWindowsMoveFromTitleBarOnly = true;
-      io.Fonts->AddFontFromFileTTF(FontPath("bmonofont-i18n.ttf").c_str(), 16);
+
+      // Handle font loading.
+      static const ImWchar utf8TR[] = 
+      {
+        0x0020, 0x00FF,
+        0x00c7, 0x00c7,
+        0x00e7, 0x00e7,
+        0x011e, 0x011e,
+        0x011f, 0x011f,
+        0x0130, 0x0130,
+        0x0131, 0x0131,
+        0x00d6, 0x00d6,
+        0x00f6, 0x00f6,
+        0x015e, 0x015e,
+        0x015f, 0x015f,
+        0x00dc, 0x00dc,
+        0x00fc, 0x00fc,
+        0 
+      };
+      io.Fonts->AddFontFromFileTTF(FontPath("bmonofont-i18n.ttf").c_str(), 16, nullptr, utf8TR);
 
       ImGui_ImplSDL2_InitForOpenGL(g_window, g_context);
       ImGui_ImplOpenGL3_Init("#version 300 es");
