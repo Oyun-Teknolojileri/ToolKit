@@ -21,6 +21,7 @@
 
 #include <filesystem>
 #include <iostream>
+#include <sstream>
 
 namespace ToolKit
 {
@@ -368,7 +369,7 @@ namespace ToolKit
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Textures" }));
 
       // Create project files.
-      String codePath = ConcatPaths({ fullPath, "Resources", "Codes" });
+      String codePath = ConcatPaths({ fullPath, "Codes" });
       std::filesystem::create_directories(codePath);
       String source[3] = { "../Template/App.h", "../Template/App.cpp", "../Template/CMakeLists.txt" };
 
@@ -381,20 +382,28 @@ namespace ToolKit
         );
       }
 
-      // Batch file for cmake.
-      String buildPath = ConcatPaths({ codePath, "build" });
-      std::filesystem::create_directories(buildPath);
+      // Update cmake.
+      String currentPath = std::filesystem::current_path().parent_path().u8string();
+      UnixifyPath(currentPath);
 
-      std::filesystem::path currentPath = std::filesystem::current_path();
-      String cmd = "cmake -S .. -DPROJECT_NAME:STRING=" + m_workspace.GetActiveProject().name;
-      cmd += " -DTOOLKIT_DIR:STRING=" + currentPath.parent_path().u8string();
-
-      std::ofstream projectBat;
-      projectBat.open(ConcatPaths({ buildPath, "GenerateProjectFiles.bat" }));
-      if (projectBat.is_open())
+      std::fstream cmakelist;
+      cmakelist.open(ConcatPaths({ codePath, "CMakeLists.txt" }), std::ios::in);
+      if (cmakelist.is_open())
       {
-        projectBat << cmd;
-        projectBat.close();
+        std::stringstream buffer;
+        buffer << cmakelist.rdbuf();
+        String content = buffer.str();
+        ReplaceStringInPlace(content, "__projectname__", name);
+        ReplaceStringInPlace(content, "__tkdir__", currentPath);
+        cmakelist.close();
+
+        // Override the content.
+        cmakelist.open(ConcatPaths({ codePath, "CMakeLists.txt" }), std::ios::out | std::ios::trunc);
+        if (cmakelist.is_open())
+        {
+          cmakelist << content;
+          cmakelist.close();
+        }
       }
 
       OpenProject({ name, "" });
@@ -417,7 +426,8 @@ namespace ToolKit
           GetSceneManager()->m_currentScene = m_scene;
         }
 
-        if (GetPluginManager()->Load(m_workspace.GetActiveProject().name))
+        String pluginPath = m_workspace.GetPluginPath();
+        if (GetPluginManager()->Load(pluginPath))
         {
           m_statusMsg = "Game is playing";
           m_gameMod = mod;

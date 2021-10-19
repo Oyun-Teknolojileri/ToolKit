@@ -60,6 +60,7 @@ namespace ToolKit
     TexturePtr UI::m_playIcon;
     TexturePtr UI::m_pauseIcon;
     TexturePtr UI::m_stopIcon;
+    TexturePtr UI::m_vsCodeIcon;
 
     void UI::Init()
     {
@@ -202,13 +203,8 @@ namespace ToolKit
       m_pauseIcon->Init();
       m_stopIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/stop.png", true));
       m_stopIcon->Init();
-
-      // Set application Icon.
-      m_appIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/app.png", true));
-      m_appIcon->Init(false);
-      SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(m_appIcon->m_image, m_appIcon->m_width, m_appIcon->m_height, 8, m_appIcon->m_width * 4, SDL_PIXELFORMAT_ABGR8888);
-      SDL_SetWindowIcon(g_window, surface);
-      SDL_FreeSurface(surface);
+      m_vsCodeIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/vscode.png", true));
+      m_vsCodeIcon->Init();
     }
 
     void UI::InitTheme()

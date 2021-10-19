@@ -11,6 +11,7 @@ namespace ToolKit
 
   void Game::Destroy()
   {
+    delete this;
   }
 
   void Game::Frame(float deltaTime, class Viewport* viewport)

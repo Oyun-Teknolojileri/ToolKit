@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
-set(PROJECT_NAME "Game" CACHE STRING "What is the project name ?")
-set(TOOLKIT_DIR "" CACHE FILEPATH "Path to ToolKit source directory")
+set(PROJECT_NAME "__projectname__" CACHE STRING "What is the project name ?")
+set(TOOLKIT_DIR "__tkdir__" CACHE FILEPATH "Where is the ToolKit source directory ?")
 
 project (${PROJECT_NAME})
 
@@ -33,8 +33,8 @@ include_directories(
 set(SOURCE App.cpp)
 set(HEADERS App.h)
 
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${TOOLKIT_DIR}/Bin")
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${TOOLKIT_DIR}/Bin")
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/Bin")
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/Bin")
 
 add_library(${PROJECT_NAME} SHARED  ${SOURCE} ${HEADERS})
 

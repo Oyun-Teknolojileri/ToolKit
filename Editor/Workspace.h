@@ -26,6 +26,8 @@ namespace ToolKit
       bool SetDefaultWorkspace(const String& path);
       
       // Accessors to workspace
+      String GetCodePath();
+      String GetPluginPath();
       String GetResourceRoot();
       String GetActiveWorkspace();
       Project GetActiveProject();

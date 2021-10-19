@@ -30,6 +30,7 @@ namespace ToolKit
   String CreateCopyFileFullPath(const String& fullPath);
   void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
   void NormalizePath(String& path);
+  void UnixifyPath(String& path);
   String ConcatPaths(const StringArray& entries);
   String GetRelativeResourcePath(const String& path);
 

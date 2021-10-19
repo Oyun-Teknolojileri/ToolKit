@@ -199,6 +199,11 @@ namespace ToolKit
 #endif
   }
 
+  void UnixifyPath(String& path)
+  {
+    ReplaceStringInPlace(path, "\\", "/");
+  }
+
   String ConcatPaths(const StringArray& entries)
   {
     String path;
