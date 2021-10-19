@@ -20,6 +20,7 @@
 #include "DebugNew.h"
 
 #include <filesystem>
+#include <iostream>
 
 namespace ToolKit
 {
@@ -365,6 +366,37 @@ namespace ToolKit
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Shaders" }));
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Sprites" }));
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Textures" }));
+
+      // Create project files.
+      String codePath = ConcatPaths({ fullPath, "Resources", "Codes" });
+      std::filesystem::create_directories(codePath);
+      String source[3] = { "../Template/App.h", "../Template/App.cpp", "../Template/CMakeLists.txt" };
+
+      for (int i = 0; i < 3; i++)
+      {
+        std::filesystem::copy
+        (
+          source[i], codePath,
+          std::filesystem::copy_options::overwrite_existing
+        );
+      }
+
+      // Batch file for cmake.
+      String buildPath = ConcatPaths({ codePath, "build" });
+      std::filesystem::create_directories(buildPath);
+
+      std::filesystem::path currentPath = std::filesystem::current_path();
+      String cmd = "cmake -S .. -DPROJECT_NAME:STRING=" + m_workspace.GetActiveProject().name;
+      cmd += " -DTOOLKIT_DIR:STRING=" + currentPath.parent_path().u8string();
+
+      std::ofstream projectBat;
+      projectBat.open(ConcatPaths({ buildPath, "GenerateProjectFiles.bat" }));
+      if (projectBat.is_open())
+      {
+        projectBat << cmd;
+        projectBat.close();
+      }
+
       OpenProject({ name, "" });
     }
 
