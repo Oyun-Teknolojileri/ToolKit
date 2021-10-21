@@ -147,8 +147,7 @@ namespace ToolKit
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
-
-      if (Window* wnd = GetOutliner())
+      for (Window* wnd : m_windows)
       {
         wnd->DispatchSignals();
       }
@@ -178,8 +177,6 @@ namespace ToolKit
             continue;
           }
         }
-
-        wnd->DispatchSignals();
 
         EditorViewport* vp = static_cast<EditorViewport*> (wnd);
         vp->Update(deltaTime);
