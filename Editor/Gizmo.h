@@ -39,11 +39,14 @@ namespace ToolKit
 
       struct Params
       {
-        // Transform.
+        // Worldspace data.
+        Vec3 worldLoc;
         Vec3 grabPnt;
+        Vec3 initialPnt;
+        Mat3 normals;
+        // Billboard values.
         Vec3 scale;
         Vec3 translate;
-        Mat3 normals;
         // Geometry.
         AxisLabel axis;
         Vec3 toeTip;
@@ -58,16 +61,22 @@ namespace ToolKit
 
       virtual void Generate(const Params& params);
       virtual bool HitTest(const Ray& ray, float& t) const;
+      Mat4 GetTransform() const;
 
     public:
-      MeshPtr m_mesh;
       Vec3 m_tangentDir;
-
-    protected:
       Params m_params;
+      MeshPtr m_mesh;
     };
 
     class PolarHandle : public GizmoHandle
+    {
+    public:
+      virtual void Generate(const Params& params) override;
+      virtual bool HitTest(const Ray& ray, float& t) const override;
+    };
+
+    class QuadHandle : public GizmoHandle
     {
     public:
       virtual void Generate(const Params& params) override;
@@ -89,8 +98,14 @@ namespace ToolKit
       void Grab(AxisLabel axis);
       AxisLabel GetGrabbedAxis() const;
 
+      virtual void LookAt(class Camera* cam, float windowHeight) override;
+
+    protected:
+      virtual GizmoHandle::Params GetParam() const;
+
     public:
       Vec3 m_grabPoint;
+      Vec3 m_initialPoint;
       Mat3 m_normalVectors;
       AxisLabel m_lastHovered;
       std::vector<GizmoHandle*> m_handles;
@@ -109,7 +124,7 @@ namespace ToolKit
       virtual void Update(float deltaTime) override;
 
     protected:
-      virtual GizmoHandle::Params GetParam() const;
+      virtual GizmoHandle::Params GetParam() const override;
     };
 
     class MoveGizmo : public LinearGizmo

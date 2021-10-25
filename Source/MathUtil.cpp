@@ -224,6 +224,27 @@ namespace ToolKit
     return dist < (sphereRadius + sphereRadius2);
   }
 
+  bool BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2)
+  {
+    return (box1.min.x <= box2.max.x && box1.max.x >= box2.min.x) &&
+      (box1.min.y <= box2.max.y && box1.max.y >= box2.min.y) &&
+      (box1.min.z <= box2.max.z && box1.max.z >= box2.min.z);
+  }
+
+  bool BoxPointIntersection(const BoundingBox& box, const Vec3& point)
+  {
+    // Not accept point on bounding box cases.
+    if (glm::all(glm::greaterThan(box.max, point)))
+    {
+      if (glm::all(glm::lessThan(box.min, point)))
+      {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
   // https://gamedev.stackexchange.com/questions/18436/most-efficient-aabb-vs-ray-collision-algorithms
   bool RayBoxIntersection(const Ray& ray, const BoundingBox& box, float& t)
   {
@@ -418,38 +439,24 @@ namespace ToolKit
     return false;
   }
 
-  // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
+  // https://gist.github.com/wwwtyro/beecc31d65d1004f5a9d
   bool RaySphereIntersection(const Ray& ray, const BoundingSphere& sphere, float& t)
   {
-    Vec3 l = sphere.pos - ray.position;
-    float tca = glm::dot(l, ray.direction);
-    float d2 = glm::dot(l, l) - tca * tca;
+    Vec3 r0 = ray.position;
+    Vec3 rd = ray.direction;
+    Vec3 s0 = sphere.pos;
+    float sr = sphere.radius;
 
-    float radius2 = sphere.radius * sphere.radius;
-    if (d2 > radius2)
+    float a = glm::dot(rd, rd);
+    Vec3 s0_r0 = r0 - s0;
+    float b = 2.0f * glm::dot(rd, s0_r0);
+    float c = glm::dot(s0_r0, s0_r0) - (sr * sr);
+    if (b * b - 4.0f * a * c < 0.0f)
     {
       return false;
     }
 
-    float thc = sqrt(radius2 - d2);
-    float t0 = tca - thc;
-    float t1 = tca + thc;
-
-    if (t0 > t1)
-    {
-      std::swap(t0, t1);
-    }
-
-    if (t0 < 0)
-    {
-      t0 = t1; // if t0 is negative, let's use t1 instead 
-      if (t0 < 0)
-      {
-        return false; // both t0 and t1 are negative 
-      }
-    }
-
-    t = t0;
+    t = (-b - glm::sqrt((b * b) - 4.0f * a * c)) / (2.0f * a);
     return true;
   }
 

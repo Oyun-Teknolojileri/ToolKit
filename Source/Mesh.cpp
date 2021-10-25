@@ -98,9 +98,10 @@ namespace ToolKit
     m_material->Save(onlyIfDirty);
   }
 
-  Mesh* Mesh::GetCopy()
+  void Mesh::CopyTo(Resource* other)
   {
-    Mesh* cpy = new Mesh();
+    Resource::CopyTo(other);
+    Mesh* cpy = static_cast<Mesh*> (other);
     cpy->m_clientSideVertices = m_clientSideVertices;
     cpy->m_vertexCount = m_vertexCount;
     cpy->m_clientSideIndices = m_clientSideIndices;
@@ -131,20 +132,14 @@ namespace ToolKit
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
     }
 
-    cpy->m_material = MaterialPtr(m_material->GetCopy());
+    cpy->m_material = m_material->Copy<Material>();
     cpy->m_aabb = m_aabb;
-
-    cpy->m_file = CreateCopyFileFullPath(m_file);
-    cpy->m_initiated = m_initiated;
-    cpy->m_loaded = m_loaded;
 
     for (MeshPtr child : m_subMeshes)
     {
-      MeshPtr ccpy = MeshPtr(child->GetCopy());
+      MeshPtr ccpy = child->Copy<Mesh>();
       cpy->m_subMeshes.push_back(ccpy);
     }
-
-    return cpy;
   }
 
   int Mesh::GetVertexSize() const
@@ -157,18 +152,12 @@ namespace ToolKit
     return false;
   }
 
-  void Mesh::CalculateAABoundingBox()
+  void Mesh::CalculateAABB()
   {
-    if (m_clientSideVertices.empty())
-    {
-      return;
-    }
-
     m_aabb = BoundingBox();
 
     MeshRawPtrArray meshes;
     GetAllMeshes(meshes);
-
     for (size_t i = 0; i < meshes.size(); i++)
     {
       Mesh* m = meshes[i];

@@ -3,7 +3,7 @@
 #include "Gizmo.h"
 #include "GlobalDef.h"
 #include "Node.h"
-#include "Viewport.h"
+#include "EditorViewport.h"
 #include "ConsoleWindow.h"
 #include "Directional.h"
 #include "Util.h"
@@ -124,7 +124,7 @@ namespace ToolKit
       Entity* e = g_app->m_scene->GetCurrentSelection();
       if (e != nullptr)
       {
-        Viewport* vp = g_app->GetActiveViewport();
+        EditorViewport* vp = g_app->GetActiveViewport();
         if (vp == nullptr)
         {
           return; // Console commands may put the process here whit out active viewport.
@@ -133,6 +133,7 @@ namespace ToolKit
         Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         Vec3 gizmOrg = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         Vec3 dir = glm::normalize(camOrg - gizmOrg);
+        m_gizmo->m_initialPoint = gizmOrg;
 
         float safetyMeasure = glm::abs(glm::cos(glm::radians(5.0f)));
         AxisLabel axisLabes[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
@@ -171,7 +172,7 @@ namespace ToolKit
     {
       if (signal == BaseMod::m_leftMouseBtnDownSgnl)
       {
-        Viewport* vp = g_app->GetActiveViewport();
+        EditorViewport* vp = g_app->GetActiveViewport();
         if (vp != nullptr)
         {
           m_mouseData[0] = vp->GetLastMousePosScreenSpace();
@@ -188,8 +189,8 @@ namespace ToolKit
         }
         else
         {
-          CalculateGrabPoint();
           CalculateIntersectionPlane();
+          CalculateGrabPoint();
         }
       }
 
@@ -241,7 +242,7 @@ namespace ToolKit
 
           if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
           {
-            if (Viewport* vp = g_app->GetActiveViewport())
+            if (EditorViewport* vp = g_app->GetActiveViewport())
             {
               float t;
               PlaneEquation axisPlane = PlaneFrom(p, axis);
@@ -265,7 +266,7 @@ namespace ToolKit
       else
       {
         // Linear intersection plane.
-        Viewport* vp = g_app->GetActiveViewport();
+        EditorViewport* vp = g_app->GetActiveViewport();
         Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         Vec3 gizmOrg = m_gizmo->m_worldLocation;
         Vec3 dir = glm::normalize(camOrg - gizmOrg);
@@ -307,30 +308,16 @@ namespace ToolKit
 
     void StateTransformBegin::CalculateGrabPoint()
     {
-      if ((int)m_gizmo->GetGrabbedAxis() < 3)
+      assert(m_gizmo->GetGrabbedAxis() != AxisLabel::None);
+      m_gizmo->m_grabPoint = Vec3();
+
+      if (EditorViewport* vp = g_app->GetActiveViewport())
       {
-        assert(m_gizmo->GetGrabbedAxis() != AxisLabel::None);
-
-        Vec3 p = m_gizmo->m_worldLocation;
-        Vec3 axis = GetGrabbedAxis(0);
-
-        if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
+        float t;
+        Ray ray = vp->RayFromMousePosition();
+        if (LinePlaneIntersection(ray, m_intersectionPlane, t))
         {
-          if (Viewport* vp = g_app->GetActiveViewport())
-          {
-            float t;
-            PlaneEquation axisPlane = PlaneFrom(p, axis);
-            Ray ray = vp->RayFromMousePosition();
-            if (LinePlaneIntersection(ray, axisPlane, t))
-            {
-              Vec3 intersectPnt = PointOnRay(ray, t);
-              pg->m_grabPoint = glm::normalize(intersectPnt - p);
-            }
-          }
-        }
-        else
-        {
-          m_gizmo->m_grabPoint = axis;
+          m_gizmo->m_grabPoint = PointOnRay(ray, t);
         }
       }
     }
@@ -391,6 +378,8 @@ namespace ToolKit
       }
 
       m_delta = Vec3(0.0f);
+      m_deltaAccum = Vec3(0.0f);
+      m_initialLoc = g_app->m_scene->GetCurrentSelection()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
     }
 
     void StateTransformTo::TransitionOut(State* prevState)
@@ -422,7 +411,7 @@ namespace ToolKit
 
     void StateTransformTo::CalculateDelta()
     {
-      Viewport* vp = g_app->GetActiveViewport();
+      EditorViewport* vp = g_app->GetActiveViewport();
       m_mouseData[1] = vp->GetLastMousePosScreenSpace();
 
       float t;
@@ -436,86 +425,12 @@ namespace ToolKit
         ray = vp->RayFromScreenSpacePoint(m_mouseData[0]);
         LinePlaneIntersection(ray, m_intersectionPlane, t);
         Vec3 p0 = PointOnRay(ray, t);
-
-        static float deltaAccum = 0.0f;
-        if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
-        {
-          int axisInd = (int)m_gizmo->GetGrabbedAxis();
-          Vec3 projAxis = pg->m_handles[axisInd]->m_tangentDir;
-          float delta = glm::dot(projAxis, p - p0);
-          if (g_app->m_snapsEnabled)
-          {
-            deltaAccum += glm::abs(delta);
-            if (deltaAccum > glm::radians(g_app->m_rotateDelta))
-            {
-              delta = glm::radians(g_app->m_rotateDelta) * glm::sign(delta);
-              deltaAccum = 0.0f;
-            }
-            else
-            {
-              delta = 0.0f;
-            }
-          }
-          m_delta = AXIS[axisInd] * delta;
-        }
-        else
-        {
-          if (IsPlaneMod())
-          {
-            m_delta = p - p0;
-          }
-          else
-          {
-            Vec3 projAxis = GetGrabbedAxis(0);
-            Vec3 g2p = p - m_gizmo->m_worldLocation;
-            Vec3 g2p0 = p0 - m_gizmo->m_worldLocation;
-            float intsDst = glm::dot(projAxis, g2p0);
-            float projDst = glm::dot(projAxis, g2p);
-            float delta = projDst - intsDst;
-            if (g_app->m_snapsEnabled || g_app->m_snapToGrid)
-            {
-              deltaAccum += glm::abs(delta);
-              float barrier = g_app->m_moveDelta;
-              if (g_app->m_snapToGrid)
-              {
-                barrier = glm::max(barrier, 0.25f);
-              }
-
-              if (deltaAccum > barrier)
-              {
-                switch (m_type)
-                {
-                case TransformType::Translate:
-                  delta = g_app->m_moveDelta * glm::sign(delta);
-                  break;
-                case TransformType::Scale:
-                  delta = g_app->m_scaleDelta * glm::sign(delta);
-                  break;
-                default:
-                  assert(false);
-                }
-                deltaAccum = 0.0f;
-              }
-              else
-              {
-                delta = 0.0f;
-              }
-            }
-
-            if (glm::isnan(deltaAccum))
-            {
-              assert(false && "Nan is not expected.");
-              deltaAccum = 0.0f;
-            }
-
-            Vec3 moveAxis = AXIS[(int)m_gizmo->GetGrabbedAxis()];
-            m_delta = moveAxis * delta;
-          }
-        }
+        m_delta = p - p0;
       }
       else
       {
         assert(false && "Intersection expected.");
+        m_delta = Vec3();
       }
 
       std::swap(m_mouseData[0], m_mouseData[1]);
@@ -530,68 +445,32 @@ namespace ToolKit
       NodePtrArray parents;
 
       // Make all selecteds child of current & store their original parents.
-      //if (roots.size() > 1)
+      for (Entity* ntt : roots)
       {
-        for (Entity* ntt : roots)
-        {
-          parents.push_back(ntt->m_node->m_parent);
-          ntt->m_node->OrphanSelf(true);
-        }
+        parents.push_back(ntt->m_node->m_parent);
+        ntt->m_node->OrphanSelf(true);
+      }
 
-        for (Entity* ntt : roots)
+      for (Entity* ntt : roots)
+      {
+        if (ntt != e)
         {
-          if (ntt != e)
-          {
-            e->m_node->AddChild(ntt->m_node, true);
-          }
+          e->m_node->AddChild(ntt->m_node, true);
         }
       }
 
-      TransformationSpace space = g_app->m_transformSpace;
-      switch (m_type)
+      // Apply transform.
+      if (m_type == TransformType::Translate)
       {
-      case TransformType::Translate:
-      {
-        if (g_app->m_snapToGrid)
-        {
-          const float gridMinSpace = 0.25f;
-          Vec3 currPos = e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-          Vec3 targetPos = currPos + delta;
-
-          int x = (int)(targetPos.x / gridMinSpace);
-          targetPos.x = x * gridMinSpace;
-
-          int z = (int)(targetPos.z / gridMinSpace);
-          targetPos.z = z * gridMinSpace;
-
-          Vec3 delAdjst = targetPos - currPos;
-          e->m_node->Translate(delAdjst, space);
-        }
-        else
-        {
-          e->m_node->Translate(delta, space);
-        }
+        Translate(e);
       }
-      break;
-      case TransformType::Rotate:
+      else if (m_type == TransformType::Rotate)
       {
-        float angle = glm::length(delta);
-        if (glm::equal(angle, 0.0f))
-        {
-          break;
-        }
-
-        Vec3 axis = delta / angle;
-        Quaternion rotation = glm::angleAxis(angle, axis);
-        e->m_node->Rotate(rotation, space);
+        Rotate(e);
       }
-      break;
-      case TransformType::Scale:
+      else if (m_type == TransformType::Scale)
       {
-        Vec3 scale = e->m_node->GetScale();
-        e->m_node->SetScale(scale + delta);
-      }
-      break;
+        Scale(e);
       }
 
       // Set original parents back.
@@ -603,6 +482,97 @@ namespace ToolKit
         {
           parent->AddChild(roots[i]->m_node, true);
         }
+      }
+    }
+
+    void StateTransformTo::Translate(Entity* ntt)
+    {
+      Vec3 delta = m_delta;
+      if (!IsPlaneMod())
+      {
+        AxisLabel axis = m_gizmo->GetGrabbedAxis();
+        Vec3 dir = m_gizmo->m_normalVectors[(int)axis];
+        dir = glm::normalize(dir);
+        delta = glm::dot(dir, m_delta) * dir;
+      }
+
+      m_deltaAccum += delta;
+      Vec3 target = ntt->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+
+      // Snap for pos.
+      if (g_app->m_snapsEnabled)
+      {
+        target = m_initialLoc + m_deltaAccum;
+        float spacing = g_app->m_moveDelta;
+        target = glm::round(target / spacing) * spacing;
+      }
+      else
+      {
+        target += delta;
+      }
+
+      ntt->m_node->SetTranslation(target, TransformationSpace::TS_WORLD);
+    }
+
+    void StateTransformTo::Rotate(Entity* ntt)
+    {
+      PolarGizmo* pg = static_cast<PolarGizmo*> (m_gizmo);
+      int axisInd = (int)m_gizmo->GetGrabbedAxis();
+      Vec3 projAxis = pg->m_handles[axisInd]->m_tangentDir;
+      float delta = glm::dot(projAxis, m_delta);
+
+      m_deltaAccum.x += delta;
+      float spacing = glm::radians(g_app->m_rotateDelta);
+      if (g_app->m_snapsEnabled)
+      {
+        if (glm::abs(m_deltaAccum.x) < spacing)
+        {
+          return;
+        }
+
+        delta = glm::round(m_deltaAccum.x / spacing) * spacing;
+      }
+
+      m_deltaAccum.x = 0.0f;
+      if (glm::notEqual(delta, 0.0f))
+      {
+        Quaternion rotation = glm::angleAxis(delta, m_gizmo->m_normalVectors[axisInd]);
+        ntt->m_node->Rotate(rotation, TransformationSpace::TS_WORLD);
+      }
+    }
+
+    void StateTransformTo::Scale(Entity* ntt)
+    {
+      float delta = glm::length(m_delta);
+      m_deltaAccum.x += delta;
+
+      float spacing = g_app->m_scaleDelta;
+      if (g_app->m_snapsEnabled)
+      {
+        if (m_deltaAccum.x < spacing)
+        {
+          return;
+        }
+      }
+
+      delta = m_deltaAccum.x;
+      m_deltaAccum.x = 0;
+
+      // Transfer world space delta to local axis.
+      int axisIndx = (int)m_gizmo->GetGrabbedAxis();
+      Vec3 target = AXIS[axisIndx] * delta;
+      target *= glm::sign(glm::dot(m_delta, m_gizmo->m_normalVectors[axisIndx]));
+
+      Vec3 scale = ntt->m_node->GetScale() + target;
+
+      if (g_app->m_snapsEnabled)
+      {
+        scale[axisIndx] = glm::round(scale[axisIndx] / spacing) * spacing;
+      }
+
+      if (glm::all(glm::notEqual(scale, Vec3(0.0f))))
+      {
+        ntt->m_node->SetScale(scale);
       }
     }
 
@@ -712,6 +682,16 @@ namespace ToolKit
 
     void TransformMod::Update(float deltaTime)
     {
+      // Set transform of the gizmo with respecto active vieport.
+      // Important for proper picking.
+      if (m_gizmo != nullptr)
+      {
+        if (EditorViewport* vp = g_app->GetActiveViewport())
+        {
+          m_gizmo->LookAt(vp->m_camera, vp->m_height);
+        }
+      }
+
       BaseMod::Update(deltaTime);
 
       if (m_stateMachine->m_currentState->ThisIsA<StateEndPick>())

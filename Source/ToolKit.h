@@ -17,6 +17,7 @@
 #include "Surface.h"
 #include "Texture.h"
 #include "Scene.h"
+#include "PluginManager.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -25,6 +26,7 @@ namespace ToolKit
   class Main
   {
   public:
+    Main();
     virtual ~Main();
 
     Main(Main const&) = delete;
@@ -33,28 +35,32 @@ namespace ToolKit
     virtual void Init();
     virtual void Uninit();
     static Main* GetInstance();
-
-  private:
-    Main();
-
-  private:
-    static Main m_instance;
+    static void SetProxy(Main* proxy);
 
   public:
-    AnimationManager m_animationMan;
-    AnimationPlayer m_animationPlayer;
-    AudioManager m_audioMan;
-    MaterialManager m_materialManager;
-    MeshManager m_meshMan;
-    ShaderManager m_shaderMan;
-    SpriteSheetManager m_spriteSheetMan;
-    TextureManager m_textureMan;
-    SceneManager m_sceneManager;
+    AnimationManager* m_animationMan = nullptr;
+    AnimationPlayer* m_animationPlayer = nullptr;
+    AudioManager* m_audioMan = nullptr;
+    MaterialManager* m_materialManager = nullptr;
+    MeshManager* m_meshMan = nullptr;
+    ShaderManager* m_shaderMan = nullptr;
+    SpriteSheetManager* m_spriteSheetMan = nullptr;
+    TextureManager* m_textureMan = nullptr;
+    SceneManager* m_sceneManager = nullptr;
+    PluginManager* m_pluginManager = nullptr;
+    Renderer* m_renderer = nullptr;
+    Logger* m_logger = nullptr;
 
     bool m_initiated = false;
     String m_resourceRoot;
+
+  private:
+    static Main* m_proxy;
   };
 
+  // Accessors.
+  Logger* GetLogger();
+  Renderer* GetRenderer();
   AnimationManager* GetAnimationManager();
   AnimationPlayer* GetAnimationPlayer();
   AudioManager* GetAudioManager();
@@ -64,6 +70,7 @@ namespace ToolKit
   SpriteSheetManager* GetSpriteSheetManager();
   TextureManager* GetTextureManager();
   SceneManager* GetSceneManager();
+  PluginManager* GetPluginManager();
   ResourceManager* GetResourceManager(ResourceType type);
 
   String DefaultPath();

@@ -116,7 +116,7 @@ namespace ToolKit
 
     if (m_ortographic)
     {
-      SetLens(m_aspect, m_left, m_right, m_top, m_bottom, m_near, m_far);
+      SetLens(m_aspect, m_left, m_right, m_bottom, m_top, m_near, m_far);
     }
     else
     {

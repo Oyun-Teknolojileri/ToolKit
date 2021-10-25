@@ -1,37 +1,23 @@
 #pragma once
 
 #include "ToolKit.h"
+#include "Plugin.h"
 
-namespace $safeprojectname$
+namespace ToolKit
 {
-  using namespace ToolKit;
-  using namespace glm;
-  using namespace std;
 
-  class App
+  class Game : public GamePlugin
   {
   public:
-    App(int windowWidth, int windowHeight)
-      : m_windowWidth(windowWidth), m_windowHeight(windowHeight)
-    {
-      Main::GetInstance()->Init();
-    }
-
-    ~App()
-    {
-      Main::GetInstance()->Uninit();
-    }
-
-    void Init()
-    {
-    }
-
-    void Frame(int deltaTime)
-    {
-    }
-
-  private:
-    int m_windowWidth;
-    int m_windowHeight;
+    virtual void Init(class Main* master);
+    virtual void Destroy();
+    virtual void Frame(float deltaTime, class Viewport* viewport);
+    virtual void Event(SDL_Event event);
   };
+
+}
+
+extern "C" TK_GAME_API ToolKit::Game* __stdcall CreateInstance()
+{
+  return new ToolKit::Game();
 }

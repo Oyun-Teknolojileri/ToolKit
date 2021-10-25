@@ -107,21 +107,22 @@ namespace ToolKit
       }
 
       // Entity View
-      if (ImGui::CollapsingHeader("Basics"))
+      if (ImGui::CollapsingHeader("Entity", ImGuiTreeNodeFlags_DefaultOpen))
       {
         ImGui::InputText("Name", &m_entity->m_name);
         ImGui::InputText("Tag", &m_entity->m_tag);
       }
 
-      if (ImGui::CollapsingHeader("Transforms"))
+      if (ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen))
       {
         Mat3 rotate;
         Vec3 scale, shear;
         Mat4 ts = m_entity->m_node->GetTransform(g_app->m_transformSpace);
         QDUDecomposition(ts, rotate, scale, shear);
 
+        // Continous edit utils.
         static TransformAction* dragMem = nullptr;
-        const auto saveDragMemFn = [this]() -> void
+        const auto saveDragMemFn = [this] () -> void
         {
           if (dragMem == nullptr)
           {
@@ -129,41 +130,32 @@ namespace ToolKit
           }
         };
 
+        const auto saveTransformActionFn = [this]() -> void
+        {
+          if (ImGui::IsItemDeactivatedAfterEdit())
+          {
+            ActionManager::GetInstance()->AddAction(dragMem);
+            dragMem = nullptr;
+          }
+        };
+
         TransformationSpace space = g_app->m_transformSpace;
         Vec3 translate = glm::column(ts, 3);
-        if
-          (
-            ImGui::DragFloat3("Translate", &translate[0], 0.25f) &&
-            (
-              ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0.1f) ||
-              ImGui::IsItemDeactivatedAfterEdit()
-            )
-          )
+        if (ImGui::DragFloat3("Translate", &translate[0], 0.25f))
         {
-          if (ImGui::IsMouseDragging(0, 0.25f))
-          {
-            saveDragMemFn();
-          }
-          else
-          {
-            ActionManager::GetInstance()->AddAction(new TransformAction(m_entity));
-          }
-
+          saveDragMemFn();
           m_entity->m_node->SetTranslation(translate, space);
         }
+
+        saveTransformActionFn();
 
         Quaternion q0 = glm::toQuat(rotate);
         Vec3 eularXYZ = glm::eulerAngles(q0);
         Vec3 degrees = glm::degrees(eularXYZ);
-        if
-          (
-            ImGui::DragFloat3("Rotate", &degrees[0], 0.25f) &&
-            (
-              ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0.1f) ||
-              ImGui::IsItemDeactivatedAfterEdit()
-            )
-          )
+        if (ImGui::DragFloat3("Rotate", &degrees[0], 0.25f))
         {
+          saveDragMemFn();
+
           Vec3 eular = glm::radians(degrees);
           Vec3 change = eular - eularXYZ;
 
@@ -179,48 +171,41 @@ namespace ToolKit
           Quaternion q = qz * qy * qx;
 
           if (isDrag)
-          {
-            saveDragMemFn();
+          {   
             m_entity->m_node->Rotate(q, space);
           }
           else
           {
-            ActionManager::GetInstance()->AddAction(new TransformAction(m_entity));
             m_entity->m_node->SetOrientation(q, space);
           }
         }
 
+        saveTransformActionFn();
+
         scale = m_entity->m_node->GetScale();
-        if
-          (
-            ImGui::DragFloat3("Scale", &scale[0], 0.25f) &&
-            (
-              ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0.1f) ||
-              ImGui::IsItemDeactivatedAfterEdit()
-            )
-          )
+        if (ImGui::DragFloat3("Scale", &scale[0], 0.25f))
         {
-          if (ImGui::IsMouseDragging(0, 0.25f))
-          {
-            saveDragMemFn();
-          }
-          else
-          {
-            ActionManager::GetInstance()->AddAction(new TransformAction(m_entity));
-          }
+          saveDragMemFn();
           m_entity->m_node->SetScale(scale);
         }
+
+        saveTransformActionFn();
 
         if (ImGui::Checkbox("Inherit Scale", &m_entity->m_node->m_inheritScale))
         {
           m_entity->m_node->SetInheritScaleDeep(m_entity->m_node->m_inheritScale);
         }
 
-        if (dragMem && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-        {
-          ActionManager::GetInstance()->AddAction(dragMem);
-          dragMem = nullptr;
-        }
+        ImGui::Separator();
+
+        BoundingBox bb = m_entity->GetAABB(true);
+        Vec3 dim = bb.max - bb.min;
+        ImGui::Text("Bounding box dimentions:");
+        ImGui::Text("x: %.2f", dim.x);
+        ImGui::SameLine();
+        ImGui::Text("\ty: %.2f", dim.y);
+        ImGui::SameLine();
+        ImGui::Text("\tz: %.2f", dim.z);
       }
     }
 
@@ -469,6 +454,8 @@ namespace ToolKit
     {
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
+        HandleStates();
+
         Entity* curr = g_app->m_scene->GetCurrentSelection();
         if (curr == nullptr)
         {
@@ -539,6 +526,8 @@ namespace ToolKit
     {
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
+        HandleStates();
+
         if (m_material == nullptr)
         {
           ImGui::Text("Select a material");

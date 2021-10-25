@@ -80,9 +80,14 @@ namespace ToolKit
     private:
       void CalculateDelta();
       void Transform(const Vec3& delta);
+      void Translate(Entity* ntt);
+      void Rotate(Entity* ntt);
+      void Scale(Entity* ntt);
 
     public:
       Vec3 m_delta;
+      Vec3 m_deltaAccum;
+      Vec3 m_initialLoc;
     };
 
     class StateTransformEnd : public StateTransformBase

@@ -3,6 +3,7 @@
 #include "ToolKit.h"
 #include "EditorScene.h"
 #include "Workspace.h"
+#include "GlobalDef.h"
 
 namespace ToolKit
 {
@@ -15,7 +16,7 @@ namespace ToolKit
 
   namespace Editor
   {
-    class Viewport;
+    class EditorViewport;
     class Grid;
     class Axis3d;
     class Cursor;
@@ -30,6 +31,14 @@ namespace ToolKit
     class App : Serializable
     {
     public:
+      enum class GameMod
+      {
+        Playing,
+        Paused,
+        Stop
+      };
+
+    public:
       App(int windowWidth, int windowHeight);
       virtual ~App();
 
@@ -41,6 +50,7 @@ namespace ToolKit
       void OnSaveScene();
       void OnQuit();
       void OnNewProject(const String& name);
+      void SetGameMod(GameMod mod);
 
       // UI
       void ResetUI();
@@ -57,8 +67,10 @@ namespace ToolKit
       void ApplyProjectSettings(bool setDefaults);
       void OpenProject(const Project& project);
 
-      Viewport* GetActiveViewport(); // Returns open and active viewport or nullptr.
-      Viewport* GetViewport(const String& name);
+      // UI
+      Window* GetActiveWindow();
+      EditorViewport* GetActiveViewport();
+      EditorViewport* GetViewport(const String& name);
       ConsoleWindow* GetConsole();
       FolderWindow* GetAssetBrowser();
       OutlinerWindow* GetOutliner();
@@ -66,10 +78,25 @@ namespace ToolKit
       MaterialInspector* GetMaterialInspector();
 
       template<typename T>
-      T* GetWindow(const String& name);
+      T* GetWindow(const String& name)
+      {
+        for (Window* wnd : m_windows)
+        {
+          T* casted = dynamic_cast<T*> (wnd);
+          if (casted)
+          {
+            if (casted->m_name == name)
+            {
+              return casted;
+            }
+          }
+        }
+
+        return nullptr;
+      }
 
       // Quick selected render implementation.
-      void RenderSelected(Viewport* vp);
+      void RenderSelected(EditorViewport* vp);
 
       virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
@@ -79,6 +106,7 @@ namespace ToolKit
 
       // UI elements.
       std::vector<Window*> m_windows;
+      String m_statusMsg;
 
       // Editor variables.
       float m_camSpeed = 8.0; // Meters per sec.
@@ -111,10 +139,10 @@ namespace ToolKit
       Byte m_showGraphicsApiErrors = 0;
       TransformationSpace m_transformSpace = TransformationSpace::TS_WORLD;
       Workspace m_workspace;
+      GameMod m_gameMod = GameMod::Stop;
 
       // Snap settings.
       bool m_snapsEnabled = false; // Delta transforms.
-      bool m_snapToGrid = false; // Jump to grid junctions.
       float m_moveDelta = 0.25f;
       float m_rotateDelta = 15.0f;
       float m_scaleDelta = 0.5f;
@@ -123,7 +151,13 @@ namespace ToolKit
 
     private:
       bool m_onNewScene = false;
+      EditorScenePtr m_swapScene;
     };
+
+    extern void DebugMessage(const String& msg);
+    extern void DebugMessage(const Vec3& vec);
+    extern void DebugCube(const Vec3& p, float size = 0.01f);
+    extern void DebugLineStrip(const Vec3Array& pnts);
 
   }
 }

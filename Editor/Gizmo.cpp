@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "App.h"
 #include "Gizmo.h"
 #include "ToolKit.h"
 #include "Node.h"
@@ -12,7 +13,8 @@
 #include "Material.h"
 #include "Primative.h"
 #include "GlobalDef.h"
-#include "Viewport.h"
+#include "ConsoleWindow.h"
+#include "EditorViewport.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -77,7 +79,7 @@ namespace ToolKit
       m_mesh->m_clientSideVertices = vertices;
       m_mesh->m_material = newMaterial;
 
-      m_mesh->CalculateAABoundingBox();
+      m_mesh->CalculateAABB();
     }
 
     Axis3d::Axis3d()
@@ -136,16 +138,17 @@ namespace ToolKit
     {
       m_params = params;
 
-      // Object is oriented in world space, translated to world space while rendering.
-      Vec3 dir = params.normals[(int)params.axis];
+      Vec3 dir = AXIS[(int)params.axis % 3];
       std::vector<Vec3> pnts =
       {
         dir * params.toeTip.x,
         dir * params.toeTip.y
       };
 
+      m_mesh = std::make_shared<Mesh>();
+
       LineBatch line(pnts, params.color, DrawType::Line, 2.0f);
-      m_mesh = line.m_mesh;
+      m_mesh->m_subMeshes.push_back(line.m_mesh);
       line.m_mesh = nullptr;
 
       MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
@@ -171,11 +174,10 @@ namespace ToolKit
         return;
       }
 
-      MeshPtr m = m_mesh->m_subMeshes.back();
-      for (Vertex& v : m->m_clientSideVertices)
+      MeshPtr mesh = m_mesh->m_subMeshes.back();
+      for (Vertex& v : mesh->m_clientSideVertices)
       {
         v.pos.y += params.toeTip.y;
-
         switch (params.axis)
         {
         case AxisLabel::X:
@@ -188,22 +190,20 @@ namespace ToolKit
         default:
           break;
         }
-
-        v.pos = params.normals * v.pos;
       }
 
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
         int axisInd = (int)m_params.axis;
-        Vec3 axis = m_params.normals[axisInd];
-        std::vector<Vec3> pnts =
+        Vec3 axis = AXIS[axisInd];
+        Vec3Array pnts =
         {
           axis * 999.0f,
           axis * -999.0f
         };
 
-        LineBatch guide(pnts, g_gizmoColor[axisInd], DrawType::Line, 1.0f);
+        LineBatch guide(pnts, g_gizmoColor[axisInd % 3], DrawType::Line, 1.0f);
         m_mesh->m_subMeshes.push_back(guide.m_mesh);
         guide.m_mesh = nullptr;
       }
@@ -211,56 +211,35 @@ namespace ToolKit
 
     bool GizmoHandle::HitTest(const Ray& ray, float& t) const
     {
-      // Hit test done in object space bounding boxes. Ray is transformed to object space.
-      Vec3 dir = m_params.normals[(int)m_params.axis];
-      Mat4 ts = glm::toMat4(RotationTo(AXIS[1], dir));
-      ts = glm::scale(ts, m_params.scale);
-      ts[3].xyz = m_params.translate;
-
-      Mat4 its = glm::inverse(ts);
+      // Hit test done in object space bounding boxes.
+      Mat4 transform = GetTransform();
+      Mat4 its = glm::inverse(transform);
 
       Ray rayInObj;
       rayInObj.position = its * Vec4(ray.position, 1.0f);
       rayInObj.direction = its * Vec4(ray.direction, 0.0f);
 
-      // Check for line.
-      float scaleUp = 1.5f; // Extra grab space than solids holds.
-      BoundingBox hitBox;
-      hitBox.min.x = -0.05f * scaleUp;
-      hitBox.min.y = m_params.toeTip.x;
-      hitBox.min.z = -0.05f * scaleUp;
-      hitBox.max.x = 0.05f * scaleUp;
-      hitBox.max.y = m_params.toeTip.y;
-      hitBox.max.z = 0.05f * scaleUp;
+      m_mesh->CalculateAABB();
+      return RayBoxIntersection(rayInObj, m_mesh->m_aabb, t);
+    }
 
-      if (RayBoxIntersection(rayInObj, hitBox, t))
-      {
-        return true;
-      }
+    Mat4 GizmoHandle::GetTransform() const
+    {
+      Mat4 sc = glm::scale(Mat4(), m_params.scale);
+      Mat4 rt = Mat4(m_params.normals);
+      Mat4 ts = glm::translate(Mat4(), m_params.translate);
+      Mat4 transform = ts * rt * sc;
 
-      // Check for solid.
-      hitBox.min.x = -m_params.solidDim.x * 0.5f * scaleUp;
-      hitBox.min.y = m_params.toeTip.y;
-      hitBox.min.z = -m_params.solidDim.z * 0.5f * scaleUp;
-      hitBox.max.x = m_params.solidDim.x * 0.5f * scaleUp;
-      hitBox.max.y = m_params.toeTip.y + m_params.solidDim.y * scaleUp;
-      hitBox.max.z = m_params.solidDim.z * 0.5f * scaleUp;
-
-      if (RayBoxIntersection(rayInObj, hitBox, t))
-      {
-        return true;
-      }
-
-      return false;
+      return transform;
     }
 
     void PolarHandle::Generate(const Params& params)
     {
       m_params = params;
 
-      // Object is oriented in world space, translated to world space while rendering.
       int cornerCount = 60;
       std::vector<Vec3> corners;
+      corners.reserve(cornerCount + 1);
 
       float deltaAngle = glm::two_pi<float>() / cornerCount;
       for (int i = 0; i < cornerCount; i++)
@@ -271,13 +250,12 @@ namespace ToolKit
         switch (params.axis)
         {
         case AxisLabel::X:
-          corners[i] = corners[i].yzx;
+          corners[i] = corners[i].zyx;
           break;
         case AxisLabel::Y:
           corners[i] = corners[i].xzy;
           break;
         case AxisLabel::Z:
-          corners[i] = corners[i].xzy;
           break;
         default:
           assert(false);
@@ -290,58 +268,27 @@ namespace ToolKit
       m_mesh = circle.m_mesh;
       circle.m_mesh = nullptr;
 
-      for (Vertex& v : m_mesh->m_clientSideVertices)
-      {
-        switch (params.axis)
-        {
-        case AxisLabel::X:
-          v.pos = v.pos.yxz;
-          break;
-        case AxisLabel::Z:
-          v.pos = v.pos.zxy;
-          break;
-        case AxisLabel::Y:
-        default:
-          break;
-        }
-
-        v.pos = params.normals * v.pos;
-      }
-
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
-        Vec3 axis = m_params.normals[(int)m_params.axis];
+        // Bring the grab point to object space.
+        Vec3 glcl = params.grabPnt - params.worldLoc;
+        glcl = glm::normalize(glm::inverse(params.normals) * glcl);
+
+        int axisIndx = (int)params.axis;
+        Vec3 axis = AXIS[axisIndx];
 
         // Neighbor points for parallel line.
-        Vec3 p1 = glm::angleAxis(0.0001f, axis) * params.grabPnt;
-        Vec3 p2 = glm::angleAxis(-0.0001f, axis) * params.grabPnt;
+        Vec3 p1 = glm::normalize(glm::angleAxis(0.0001f, axis) * glcl);
+        Vec3 p2 = glm::normalize(glm::angleAxis(-0.0001f, axis) * glcl);
         Vec3 dir = glm::normalize(p1 - p2);
-        m_tangentDir = dir;
+        m_tangentDir = glm::normalize(params.normals * dir);
 
-        std::vector<Vec3> pnts;
+        Vec3Array pnts;
+        pnts.push_back(glcl + dir * 999.0f);
+        pnts.push_back(glcl - dir * 999.0f);
 
-        // Arrow heads.
-        Arrow2d head(m_params.axis);
-        int axisInd = (int)m_params.axis;
-        Quaternion q = RotationTo(AXIS[axisInd], dir);
-
-        for (Vertex& v : head.m_mesh->m_clientSideVertices)
-        {
-          Vec3 v1 = q * (v.pos * 0.5f) + m_params.grabPnt;
-          pnts.push_back(v1);
-        }
-
-        for (Vertex& v : head.m_mesh->m_clientSideVertices)
-        {
-          Vec3 v1 = q * (-v.pos * 0.5f) + m_params.grabPnt;
-          pnts.push_back(v1);
-        }
-
-        pnts.push_back(m_params.grabPnt + dir * 999.0f);
-        pnts.push_back(m_params.grabPnt - dir * 999.0f);
-
-        LineBatch guide(pnts, g_gizmoColor[axisInd], DrawType::Line, 1.0f);
+        LineBatch guide(pnts, g_gizmoColor[axisIndx], DrawType::Line, 1.0f);
         m_mesh->m_subMeshes.push_back(guide.m_mesh);
         guide.m_mesh = nullptr;
       }
@@ -351,42 +298,49 @@ namespace ToolKit
     {
       t = TK_FLT_MAX;
 
-      if (Viewport* vp = g_app->GetActiveViewport())
-      {
-        for (size_t i = 1; i < m_mesh->m_clientSideVertices.size(); i++)
-        {
-          Vec3& v1 = m_mesh->m_clientSideVertices[i - 1].pos;
-          Vec3& v2 = m_mesh->m_clientSideVertices[i].pos;
-          Vec3 mid = m_params.scale * (v1 + v2) * 0.5f + m_params.translate;
-          BoundingBox bb =
-          {
-            mid - Vec3(0.05f),
-            mid + Vec3(0.05f)
-          };
+      Mat4 sc = glm::scale(Mat4(), m_params.scale);
+      Mat4 rt = Mat4(m_params.normals);
+      Mat4 ts = glm::translate(Mat4(), m_params.translate);
+      Mat4 transform = ts * rt * sc;
+      Mat4 its = glm::inverse(transform);
 
-          float tInt;
-          if (RayBoxIntersection(ray, bb, tInt))
+      Ray rayInObj;
+      rayInObj.position = its * Vec4(ray.position, 1.0f);
+      rayInObj.direction = its * Vec4(ray.direction, 0.0f);
+
+      for (size_t i = 1; i < m_mesh->m_clientSideVertices.size(); i++)
+      {
+        Vec3& v1 = m_mesh->m_clientSideVertices[i - 1].pos;
+        Vec3& v2 = m_mesh->m_clientSideVertices[i].pos;
+        Vec3 mid = (v1 + v2) * 0.5f;
+        BoundingBox bb =
+        {
+          mid - Vec3(0.05f),
+          mid + Vec3(0.05f)
+        };
+
+        float tInt;
+        if (RayBoxIntersection(rayInObj, bb, tInt))
+        {
+          if (tInt < t)
           {
-            if (tInt < t)
-            {
-              t = tInt;
-            }
+            t = tInt;
           }
         }
       }
 
+      // No box hit.
+      if (t == TK_FLT_MAX)
+      {
+        return false;
+      }
+
       // Prevent back face selection by masking.
-      float maskDist, r = 0.95f;
-      BoundingSphere maskSphere = { m_params.translate, r };
+      float maskDist;
+      BoundingSphere maskSphere;
+      maskSphere.radius = 0.95f;
 
-      // Calculate scaled rad due to window aspect. (billboard prop.)
-      Vec3 rad(r);
-      rad = m_params.scale * rad;
-      assert(glm::all(glm::equal(rad, rad.xxx())) && "Uniform scale expected.");
-
-      maskSphere.radius = rad.x;
-
-      if (RaySphereIntersection(ray, maskSphere, maskDist))
+      if (RaySphereIntersection(rayInObj, maskSphere, maskDist))
       {
         if (maskDist < t)
         {
@@ -394,7 +348,104 @@ namespace ToolKit
         }
       }
 
-      return t != TK_FLT_MAX;
+      return true;
+    }
+
+    // QuadHandle
+    //////////////////////////////////////////////////////////////////////////
+
+    void QuadHandle::Generate(const Params& params)
+    {
+      m_params = params;
+
+      Quad solid;
+      MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      material->m_color = params.color;
+      material->GetRenderState()->cullMode = CullingType::TwoSided;
+
+      solid.m_mesh->m_material = material;
+      m_mesh = solid.m_mesh;
+      solid.m_mesh = nullptr;
+      float scale = 0.15f;
+      float offset = 2.0f;
+
+      for (Vertex& v : m_mesh->m_clientSideVertices)
+      {
+        v.pos.y += params.toeTip.y;
+        switch (params.axis)
+        {
+        case AxisLabel::XY:
+          v.pos *= scale;
+          v.pos.x += 0.75f * scale;
+          v.pos.xy += Vec2(offset * scale);
+          break;
+        case AxisLabel::YZ:
+          v.pos = v.pos.zyx * scale;
+          v.pos.z += 0.75f * scale;
+          v.pos.yz += Vec2(offset * scale);
+          break;
+        case AxisLabel::ZX:
+          v.pos = v.pos.xzy * scale;
+          v.pos.x += 0.75f * scale;
+          v.pos.zx += Vec2(offset * scale);
+          break;
+        default:
+          break;
+        }
+      }
+
+      // Guide line.
+      // Gizmo updates later, transform modes uses previous frame's locatin.
+      // Fix Node Set - Get - Apply transfroms before.
+      /*if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
+      {
+        Mat4 its = glm::inverse(GetTransform());
+        Vec3 glcl = its * Vec4(params.initialPnt, 1.0f);
+
+        LineBatch* guides[3];
+        for (int i = 0; i < 3; i++)
+        {
+          guides[i] = new LineBatch
+          (
+            {
+              glcl + AXIS[i] * 999.0f,
+              glcl + AXIS[i] * -999.0f
+            },
+            g_gizmoColor[i],
+            DrawType::Line, 
+            1.0f
+          );
+        }
+
+        int next = (((int)(params.axis) % 3) + 1) % 3;
+        m_mesh->m_subMeshes.push_back(guides[next]->m_mesh);
+        guides[next]->m_mesh = nullptr;
+
+        next = (next + 1) % 3;
+        m_mesh->m_subMeshes.push_back(guides[next]->m_mesh);
+        guides[next]->m_mesh = nullptr;
+
+        for (int i = 0; i < 3; i++)
+        {
+          SafeDel(guides[i]);
+        }
+      }*/
+    }
+
+    bool QuadHandle::HitTest(const Ray& ray, float& t) const
+    {
+      Mat4 sc = glm::scale(Mat4(), m_params.scale);
+      Mat4 rt = Mat4(m_params.normals);
+      Mat4 ts = glm::translate(Mat4(), m_params.translate);
+      Mat4 transform = ts * rt * sc;
+      Mat4 its = glm::inverse(transform);
+
+      Ray rayInObj;
+      rayInObj.position = its * Vec4(ray.position, 1.0f);
+      rayInObj.direction = its * Vec4(ray.direction, 0.0f);
+
+      m_mesh->CalculateAABB();
+      return RayBoxIntersection(rayInObj, m_mesh->m_aabb, t);
     }
 
     // Gizmo
@@ -482,6 +533,24 @@ namespace ToolKit
       return m_grabbedAxis;
     }
 
+    void Gizmo::LookAt(Camera* cam, float windowHeight)
+    {
+      Billboard::LookAt(cam, windowHeight);
+      m_node->SetOrientation(glm::toQuat(m_normalVectors));
+    }
+
+    GizmoHandle::Params Gizmo::GetParam() const
+    {
+      GizmoHandle::Params p;
+      p.normals = m_normalVectors;
+      p.worldLoc = m_worldLocation;
+      p.initialPnt = m_initialPoint;
+      Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
+      DecomposeMatrix(ts, &p.translate, nullptr, &p.scale);
+
+      return p;
+    }
+
     // LinearGizmo
     //////////////////////////////////////////////////////////////////////////
 
@@ -494,6 +563,9 @@ namespace ToolKit
         new GizmoHandle(),
         new GizmoHandle()
       };
+      m_handles[0]->m_params.axis = AxisLabel::X;
+      m_handles[1]->m_params.axis = AxisLabel::Y;
+      m_handles[2]->m_params.axis = AxisLabel::Z;
 
       Update(0.0f);
     }
@@ -506,29 +578,30 @@ namespace ToolKit
     {
       GizmoHandle::Params p = GetParam();
 
-      for (int i = 0; i < 3; i++)
+      for (int i = 0; i < (int)m_handles.size(); i++)
       {
-        if (m_grabbedAxis == (AxisLabel)i)
+        GizmoHandle* handle = m_handles[i];
+        AxisLabel axis = handle->m_params.axis;
+        if (m_grabbedAxis == axis)
         {
           p.color = g_selectHighLightPrimaryColor;
         }
         else
         {
-          p.color = g_gizmoColor[i];
+          p.color = g_gizmoColor[(int)axis % 3];
         }
 
-        if (IsLocked((AxisLabel)i))
+        if (IsLocked(axis))
         {
           p.color = g_gizmoLocked;
         }
-        else if (m_lastHovered == (AxisLabel)i)
+        else if (m_lastHovered == axis)
         {
           p.color = g_selectHighLightSecondaryColor;
           m_lastHovered = AxisLabel::None;
         }
 
-        p.normals = m_normalVectors;
-        p.axis = (AxisLabel)i;
+        p.axis = axis;
         if (IsGrabbed(p.axis))
         {
           p.grabPnt = m_grabPoint;
@@ -538,12 +611,15 @@ namespace ToolKit
           p.grabPnt = Vec3();
         }
 
-        m_handles[i]->Generate(p);
+        handle->Generate(p);
       }
 
-      m_mesh = m_handles[0]->m_mesh;
-      m_mesh->m_subMeshes.push_back(m_handles[1]->m_mesh);
-      m_mesh->m_subMeshes.push_back(m_handles[2]->m_mesh);
+      m_mesh = std::make_shared<Mesh>();
+      for (int i = 0; i < m_handles.size(); i++)
+      {
+        m_mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+      }
+      m_mesh->Init(false);
     }
 
     GizmoHandle::Params LinearGizmo::GetParam() const
@@ -552,6 +628,8 @@ namespace ToolKit
 
       GizmoHandle::Params p;
       p.normals = m_normalVectors;
+      p.worldLoc = m_worldLocation;
+      p.initialPnt = m_initialPoint;
       Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
       DecomposeMatrix(ts, &p.translate, nullptr, &p.scale);
 
@@ -564,6 +642,13 @@ namespace ToolKit
 
     MoveGizmo::MoveGizmo()
     {
+      for (int i = 3; i < 6; i++)
+      {
+        m_handles.push_back(new QuadHandle());
+        m_handles[i]->m_params.axis = (AxisLabel)i;
+      }
+
+      Update(0.0);
     }
 
     MoveGizmo::~MoveGizmo()
@@ -606,9 +691,7 @@ namespace ToolKit
 
     void PolarGizmo::Update(float deltaTime)
     {
-      GizmoHandle::Params p;
-      Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
-      DecomposeMatrix(ts, &p.translate, nullptr, &p.scale);
+      GizmoHandle::Params p = GetParam();
 
       for (int i = 0; i < 3; i++)
       {
@@ -631,7 +714,6 @@ namespace ToolKit
           m_lastHovered = AxisLabel::None;
         }
 
-        p.normals = m_normalVectors;
         p.axis = (AxisLabel)i;
         if (IsGrabbed(p.axis))
         {
@@ -645,10 +727,11 @@ namespace ToolKit
         m_handles[i]->Generate(p);
       }
 
-      m_mesh = m_handles[0]->m_mesh;
-      m_mesh->m_subMeshes.push_back(m_handles[1]->m_mesh);
-      m_mesh->m_subMeshes.push_back(m_handles[2]->m_mesh);
-      m_mesh->Init(false); // Vertices needed for intersection test.
+      m_mesh = std::make_shared<Mesh>();
+      for (int i = 0; i < m_handles.size(); i++)
+      {
+        m_mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+      }
     }
 
     void PolarGizmo::Render(Renderer* renderer, Camera* cam)

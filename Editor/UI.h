@@ -22,7 +22,8 @@ namespace ToolKit
         Browser,
         Outliner,
         Inspector,
-        MaterialInspector
+        MaterialInspector,
+        PluginWindow
       };
 
     public:
@@ -170,6 +171,10 @@ namespace ToolKit
       static TexturePtr m_boneIcon;
       static TexturePtr m_worldIcon;
       static TexturePtr m_axisIcon;
+      static TexturePtr m_playIcon;
+      static TexturePtr m_pauseIcon;
+      static TexturePtr m_stopIcon;
+      static TexturePtr m_vsCodeIcon;
     };
   }
 }

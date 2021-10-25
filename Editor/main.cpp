@@ -27,7 +27,8 @@ namespace ToolKit
     bool g_running = true;
     SDL_Window* g_window = nullptr;
     SDL_GLContext g_context = nullptr;
-    App* g_app;
+    App* g_app = nullptr;
+    Main* g_proxy = nullptr;
 
     // Setup.
     const char* appName = "ToolKit";
@@ -123,7 +124,8 @@ namespace ToolKit
             };
 #endif
 #endif
-
+            g_proxy = new Main();
+            Main::SetProxy(g_proxy);
             Main::GetInstance()->Init();
             UI::Init();
 
@@ -160,6 +162,7 @@ namespace ToolKit
 
       UI::UnInit();
       Main::GetInstance()->Uninit();
+      SafeDel(g_proxy);
 
       SDL_DestroyWindow(g_window);
       SDL_Quit();
@@ -167,7 +170,16 @@ namespace ToolKit
 
     void ProcessEvent(SDL_Event e)
     {
-      ImGui_ImplSDL2_ProcessEvent(&e);
+      // If message doesn't ment to be processed in imgui, set this to true.
+      bool skipImgui = false;
+
+      if (GamePlugin* plugin = GetPluginManager()->m_plugin)
+      {
+        if (g_app->m_gameMod == App::GameMod::Playing)
+        {
+          plugin->Event(e);
+        }
+      }
 
       if (e.type == SDL_WINDOWEVENT)
       {
@@ -205,9 +217,21 @@ namespace ToolKit
         case SDLK_ESCAPE:
           g_app->OnQuit();
           break;
+        case SDLK_s:
+          if (SDL_GetModState() & KMOD_LCTRL)
+          {
+            g_app->OnSaveScene();
+            skipImgui = true;
+          }
+          break;
         default:
           break;
         }
+      }
+
+      if (!skipImgui)
+      {
+        ImGui_ImplSDL2_ProcessEvent(&e);
       }
     }
 

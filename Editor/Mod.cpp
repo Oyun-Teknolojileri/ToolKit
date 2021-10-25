@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Mod.h"
 #include "GlobalDef.h"
-#include "Viewport.h"
+#include "EditorViewport.h"
 #include "Node.h"
 #include "Primative.h"
 #include "Grid.h"
@@ -550,7 +550,7 @@ namespace ToolKit
     {
       if (signal == BaseMod::m_leftMouseBtnDownSgnl)
       {
-        Viewport* vp = g_app->GetActiveViewport();
+        EditorViewport* vp = g_app->GetActiveViewport();
         if (vp != nullptr)
         {
           m_mouseData[0] = vp->GetLastMousePosScreenSpace();
@@ -559,7 +559,7 @@ namespace ToolKit
 
       if (signal == BaseMod::m_leftMouseBtnUpSgnl)
       {
-        Viewport* vp = g_app->GetActiveViewport();
+        EditorViewport* vp = g_app->GetActiveViewport();
         if (vp != nullptr)
         {
           m_mouseData[0] = vp->GetLastMousePosScreenSpace();
@@ -608,7 +608,7 @@ namespace ToolKit
       if (signal == BaseMod::m_leftMouseBtnUpSgnl)
       {
         // Frustum - AABB test.
-        Viewport* vp = g_app->GetActiveViewport();
+        EditorViewport* vp = g_app->GetActiveViewport();
         if (vp != nullptr)
         {
           Camera* cam = vp->m_camera;
@@ -713,7 +713,7 @@ namespace ToolKit
 
       if (signal == BaseMod::m_leftMouseBtnDragSgnl)
       {
-        Viewport* vp = g_app->GetActiveViewport();
+        EditorViewport* vp = g_app->GetActiveViewport();
         if (vp != nullptr)
         {
           m_mouseData[1] = vp->GetLastMousePosScreenSpace();
@@ -760,6 +760,11 @@ namespace ToolKit
 
     void StateDeletePick::Update(float deltaTime)
     {
+      if (g_app->GetActiveWindow()->GetType() != Window::Type::Viewport)
+      {
+        return;
+      }
+
       EntityRawPtrArray deleteList;
       g_app->m_scene->GetSelectedEntities(deleteList);
       if (!deleteList.empty())
@@ -823,7 +828,7 @@ namespace ToolKit
 
     String StateDuplicate::Signaled(SignalId signal)
     {
-      return "";
+      return StateType::Null;
     }
 
     // Mods

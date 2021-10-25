@@ -7,7 +7,7 @@
 #include "Entity.h"
 #include "Node.h"
 #include "Directional.h"
-#include "Viewport.h"
+#include "EditorViewport.h"
 #include "TransformMod.h"
 #include "Util.h"
 #include "DebugNew.h"
@@ -233,7 +233,7 @@ namespace ToolKit
           return;
         }
 
-        if (Viewport* vp = g_app->GetViewport(viewportTag->second[0]))
+        if (EditorViewport* vp = g_app->GetViewport(viewportTag->second[0]))
         {
           if (Camera* c = vp->m_camera)
           {
@@ -404,7 +404,7 @@ namespace ToolKit
 
         Vec3 target;
         ParseVec(target, targetTag);
-        Viewport* vp = g_app->GetViewport("Perspective");
+        EditorViewport* vp = g_app->GetViewport("Perspective");
         if (vp)
         {
           vp->m_camera->LookAt(target);
@@ -425,6 +425,7 @@ namespace ToolKit
         {
           m->ApplyTransform(ts);
         }
+        g_app->m_statusMsg = "Transforms applied to " + e->m_name;
       }
       else
       {
@@ -516,6 +517,22 @@ namespace ToolKit
       }
     }
 
+    void LoadPlugin(TagArgArray tagArgs)
+    {
+      if (tagArgs.empty())
+      {
+        return;
+      }
+      if (tagArgs.front().second.empty())
+      {
+        return;
+      }
+
+      String plugin = tagArgs.front().second.front();
+      GetPluginManager()->Unload();
+      GetPluginManager()->Load(plugin);
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
     static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
@@ -546,6 +563,7 @@ namespace ToolKit
       CreateCommand(g_showSelectionBoundary, ShowSelectionBoundary);
       CreateCommand(g_showGraphicsApiLogs, ShowGraphicsApiLogs);
       CreateCommand(g_setWorkspaceDir, SetWorkspaceDir);
+      CreateCommand(g_loadPlugin, LoadPlugin);
     }
 
     ConsoleWindow::~ConsoleWindow()
@@ -557,6 +575,8 @@ namespace ToolKit
       //ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Once);
       if (ImGui::Begin(g_consoleStr.c_str(), &m_visible))
       {
+        HandleStates();
+
         // Output window.
         const float footerHeightReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
         ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeightReserve), false, ImGuiWindowFlags_HorizontalScrollbar);

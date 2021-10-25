@@ -3,7 +3,7 @@
 #include "App.h"
 #include "Renderer.h"
 #include "UI.h"
-#include "Viewport.h"
+#include "EditorViewport.h"
 #include "Primative.h"
 #include "Node.h"
 #include "GlobalDef.h"
@@ -16,9 +16,12 @@
 #include "FolderWindow.h"
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
+#include "PluginWindow.h"
 #include "DebugNew.h"
 
 #include <filesystem>
+#include <iostream>
+#include <sstream>
 
 namespace ToolKit
 {
@@ -30,17 +33,15 @@ namespace ToolKit
     {
       m_cursor = nullptr;
       m_lightMaster = nullptr;
-      m_renderer = new Renderer();
+      m_renderer = Main::GetInstance()->m_renderer;
       m_renderer->m_windowWidth = windowWidth;
       m_renderer->m_windowHeight = windowHeight;
+      m_statusMsg = "OK";
     }
 
     App::~App()
     {
       Destroy();
-
-      // Engine components.
-      SafeDel(m_renderer);
     }
 
     void App::Init()
@@ -51,11 +52,11 @@ namespace ToolKit
       m_grid->m_mesh->Init(false);
 
       MaterialPtr solidColorMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-      m_highLightMaterial = MaterialPtr(solidColorMaterial->GetCopy());
+      m_highLightMaterial = solidColorMaterial->Copy<Material>();
       m_highLightMaterial->m_color = g_selectHighLightPrimaryColor;
       m_highLightMaterial->GetRenderState()->cullMode = CullingType::Front;
 
-      m_highLightSecondaryMaterial = MaterialPtr(solidColorMaterial->GetCopy());
+      m_highLightSecondaryMaterial = solidColorMaterial->Copy<Material>();
       m_highLightSecondaryMaterial->m_color = g_selectHighLightSecondaryColor;
       m_highLightSecondaryMaterial->GetRenderState()->cullMode = CullingType::Front;
 
@@ -103,6 +104,15 @@ namespace ToolKit
       {
         m_workspace.RefreshProjects();
       }
+
+      // Register plugin reporter.
+      GetPluginManager()->m_reporterFn = [](const String& msg) -> void
+      {
+        if (ConsoleWindow* console = g_app->GetConsole())
+        {
+          console->AddLog(msg, "plugin");
+        }
+      };
     }
 
     void App::Destroy()
@@ -110,7 +120,7 @@ namespace ToolKit
       // UI.
       DeleteWindows();
 
-      m_scene->Destroy();
+      m_scene->Destroy(false);
 
       // Editor objects.
       SafeDel(m_grid);
@@ -137,8 +147,7 @@ namespace ToolKit
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
-
-      if (Window* wnd = GetOutliner())
+      for (Window* wnd : m_windows)
       {
         wnd->DispatchSignals();
       }
@@ -151,9 +160,25 @@ namespace ToolKit
           continue;
         }
 
-        wnd->DispatchSignals();
+        // Plugin drawing.
+        if (m_gameMod != GameMod::Stop)
+        {
+          if (wnd->m_name == "Perspective")
+          {
+            if (GamePlugin* plugin = GetPluginManager()->m_plugin)
+            {
+              EditorViewport* perspective = GetWindow<EditorViewport>("Perspective");
+              RenderTarget* rt = perspective->m_viewportImage;
+              m_renderer->SwapRenderTarget(&rt);
+              plugin->Frame(deltaTime, perspective);
+              m_renderer->SwapRenderTarget(&rt);
+            }
 
-        Viewport* vp = static_cast<Viewport*> (wnd);
+            continue;
+          }
+        }
+
+        EditorViewport* vp = static_cast<EditorViewport*> (wnd);
         vp->Update(deltaTime);
 
         // Adjust scene lights.
@@ -206,8 +231,7 @@ namespace ToolKit
         m_origin->LookAt(cam, vp->m_height);
         m_renderer->Render(m_origin, cam);
 
-        // Only draw gizmo in active viewport.
-        if (m_gizmo != nullptr && vp->IsActive())
+        if (m_gizmo != nullptr)
         {
           m_gizmo->LookAt(cam, vp->m_height);
           glClear(GL_DEPTH_BUFFER_BIT);
@@ -222,7 +246,7 @@ namespace ToolKit
         }
 
         float orthScl = 1.0f;
-        if (vp->m_orthographic)
+        if (vp->IsOrthographic())
         {
           // Magic scale to match Billboards in perspective view with ortoghrapic view.
           orthScl = 1.6f;
@@ -251,6 +275,7 @@ namespace ToolKit
       Destroy();
       Init();
       m_scene = std::make_shared<EditorScene>(ScenePath(name + SCENE));
+      m_workspace.SetScene(m_scene->m_name);
       m_onNewScene = false;
     }
 
@@ -259,6 +284,7 @@ namespace ToolKit
       auto saveFn = []() -> void
       {
         g_app->m_scene->Save(false);
+        g_app->m_statusMsg = "Scene saved";
         g_app->GetAssetBrowser()->UpdateContent();
       };
 
@@ -288,6 +314,12 @@ namespace ToolKit
 
     void App::OnQuit()
     {
+      if (m_gameMod != GameMod::Stop)
+      {
+        SetGameMod(GameMod::Stop);
+        return;
+      }
+
       static bool processing = false;
       if (!processing)
       {
@@ -332,7 +364,95 @@ namespace ToolKit
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Shaders" }));
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Sprites" }));
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Textures" }));
+
+      // Create project files.
+      String codePath = ConcatPaths({ fullPath, "Codes" });
+      std::filesystem::create_directories(codePath);
+      String source[3] = { "../Template/App.h", "../Template/App.cpp", "../Template/CMakeLists.txt" };
+
+      for (int i = 0; i < 3; i++)
+      {
+        std::filesystem::copy
+        (
+          source[i], codePath,
+          std::filesystem::copy_options::overwrite_existing
+        );
+      }
+
+      // Update cmake.
+      String currentPath = std::filesystem::current_path().parent_path().u8string();
+      UnixifyPath(currentPath);
+
+      std::fstream cmakelist;
+      cmakelist.open(ConcatPaths({ codePath, "CMakeLists.txt" }), std::ios::in);
+      if (cmakelist.is_open())
+      {
+        std::stringstream buffer;
+        buffer << cmakelist.rdbuf();
+        String content = buffer.str();
+        ReplaceStringInPlace(content, "__projectname__", name);
+        ReplaceStringInPlace(content, "__tkdir__", currentPath);
+        cmakelist.close();
+
+        // Override the content.
+        cmakelist.open(ConcatPaths({ codePath, "CMakeLists.txt" }), std::ios::out | std::ios::trunc);
+        if (cmakelist.is_open())
+        {
+          cmakelist << content;
+          cmakelist.close();
+        }
+      }
+
       OpenProject({ name, "" });
+    }
+
+    void App::SetGameMod(GameMod mod)
+    {
+      if (mod == m_gameMod)
+      {
+        return;
+      }
+
+      if (mod == GameMod::Playing)
+      {
+        if (m_gameMod == GameMod::Stop)
+        {
+          // Create a copy of the current scene for the game mod.
+          m_swapScene = m_scene->Copy<EditorScene>();
+          m_swapScene.swap(m_scene);
+          GetSceneManager()->m_currentScene = m_scene;
+        }
+
+        String pluginPath = m_workspace.GetPluginPath();
+        if (GetPluginManager()->Load(pluginPath))
+        {
+          m_statusMsg = "Game is playing";
+          m_gameMod = mod;
+        }
+        else
+        {
+          GetConsole()->AddLog("Expecting a game plugin with the same name of the project.", ConsoleWindow::LogType::Error);
+        }
+      }
+
+      if (mod == GameMod::Paused)
+      {
+        m_statusMsg = "Game is paused";
+        m_gameMod = mod;
+      }
+
+      if (mod == GameMod::Stop)
+      {
+        GetPluginManager()->Unload();
+        m_statusMsg = "Game is stopped";
+        m_gameMod = mod;
+
+        // Set the editor scene back.
+        m_scene->Destroy(true);
+        m_swapScene.swap(m_scene);
+        GetSceneManager()->m_currentScene = m_scene;
+        m_swapScene = nullptr;
+      }
     }
 
     void App::ResetUI()
@@ -356,19 +476,19 @@ namespace ToolKit
       else
       {
         // Perspective.
-        Viewport* vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+        EditorViewport* vp = new EditorViewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
         vp->m_name = "Perspective";
         vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
         vp->m_camera->LookAt(Vec3(0.0f));
         m_windows.push_back(vp);
 
         // Orthographic.
-        vp = new Viewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+        vp = new EditorViewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
         vp->m_name = "Orthographic";
+        vp->m_camera->SetLens(glm::half_pi<float>(), 10, 10, 10, 10, 1, 1000);
         vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
         vp->m_camera->Pitch(glm::radians(-90.0f));
         vp->m_cameraAlignment = 1;
-        vp->m_orthographic = true;
         m_windows.push_back(vp);
 
         ConsoleWindow* console = new ConsoleWindow();
@@ -401,8 +521,10 @@ namespace ToolKit
       }
       m_windows.clear();
 
-      SafeDel(Viewport::m_overlayMods);
-      SafeDel(Viewport::m_overlayOptions);
+      for (size_t i = 0; i < EditorViewport::m_overlays.size(); i++)
+      {
+        SafeDel(EditorViewport::m_overlays[i]);
+      }
     }
 
     void App::CreateWindows(XmlNode* parent)
@@ -418,7 +540,7 @@ namespace ToolKit
           switch ((Window::Type)type)
           {
           case Window::Type::Viewport:
-            wnd = new Viewport(wndNode);
+            wnd = new EditorViewport(wndNode);
             break;
           case Window::Type::Console:
             wnd = new ConsoleWindow(wndNode);
@@ -435,6 +557,9 @@ namespace ToolKit
           case Window::Type::MaterialInspector:
             wnd = new MaterialInspector(wndNode);
             break;
+          case Window::Type::PluginWindow:
+            wnd = new PluginWindow(wndNode);
+            break;
           default:
             assert(false);
             break;
@@ -450,7 +575,8 @@ namespace ToolKit
 
     int App::Import(const String& fullPath, const String& subDir, bool overwrite)
     {
-      if (!CanImport(fullPath))
+      bool doSearch = !UI::SearchFileData.missingFiles.empty();
+      if (!CanImport(fullPath) && !doSearch)
       {
         if (ConsoleWindow* con = GetConsole())
         {
@@ -460,48 +586,55 @@ namespace ToolKit
         return -1;
       }
 
+      bool importFileExist = CheckFile(fullPath);
+
+      // Set the execute path.
       std::filesystem::path pathBck = std::filesystem::current_path();
-      if (CheckFile(fullPath))
+      std::filesystem::path path = pathBck.u8string() + ConcatPaths({ ".", "..", "Utils", "Import" });
+      std::filesystem::current_path(path);
+      
+      std::filesystem::path cpyDir = ".";
+      if (!subDir.empty())
       {
-        // Set the execute path.
-        std::filesystem::path path = pathBck.u8string() + ConcatPaths({".", "..", "Utils", "Import"});
-        std::filesystem::current_path(path);
+        cpyDir += GetPathSeparator() + subDir;
+      }
 
-        std::filesystem::path cpyDir = ".";
-        if (!subDir.empty())
+      // Try reimport after search paths provided.
+      bool reImport = doSearch || UI::SearchFileData.showSearchFileWindow;
+      if (importFileExist || reImport)
+      {
+        int result = -1; // execution result.
+        if (!doSearch)
         {
-          cpyDir += GetPathSeparator() + subDir;
-          std::filesystem::create_directories(cpyDir);
+          String name, ext;
+          DecomposePath(fullPath, nullptr, &name, &ext);
+          String finalPath = fullPath;
+
+          if (name == "importList" && ext == ".txt")
+          {
+            finalPath = "importList.txt";
+          }
+
+          String cmd = "Import \"";
+          if (!subDir.empty())
+          {
+            cmd += finalPath + "\" -t \"" + subDir;
+          }
+          else
+          {
+            cmd += finalPath;
+          }
+
+          cmd += "\" -s " + std::to_string(UI::ImportData.scale);
+
+          // Execute command
+          result = std::system(cmd.c_str());
+          assert(result != -1);
         }
-
-        String name, ext;
-        DecomposePath(fullPath, nullptr, &name, &ext);
-        String finalPath = fullPath;
-
-        if (name == "importList" && ext == ".txt")
-        {
-          finalPath = "importList.txt";
-        }
-
-        String cmd = "Import \"";
-        if (!subDir.empty())
-        {
-          cmd += finalPath + "\" -t \"" + subDir;
-        }
-        else
-        {
-          cmd += finalPath;
-        }
-
-        cmd += "\" -s " + std::to_string(UI::ImportData.scale);
-
-        // Execute command
-        int result = std::system(cmd.c_str());
-        assert(result != -1);
 
         // Move assets.
         String meshFile;
-        if (result != -1)
+        if (result != -1 || doSearch)
         {
           std::ifstream copyList("out.txt");
           if (copyList.is_open())
@@ -550,6 +683,10 @@ namespace ToolKit
                 // Retry.
                 UI::SearchFileData.missingFiles = missingFiles;
                 goto Retry;
+              }
+              else
+              {
+                UI::SearchFileData.missingFiles.clear();
               }
             }
 
@@ -644,7 +781,7 @@ namespace ToolKit
         }
 
         UI::SearchFileData.showSearchFileWindow = false;
-        return result;
+        return 0;
       }
       else
       {
@@ -680,10 +817,11 @@ namespace ToolKit
 
     void App::OpenScene(const String& fullPath)
     {
-      m_scene->Destroy();
+      m_scene->Destroy(false);
       m_scene = GetSceneManager()->Create<EditorScene>(fullPath);
       m_scene->Load(); // Make sure its loaded.
       m_scene->Init(false);
+      m_workspace.SetScene(m_scene->m_name);
       m_scene->m_newScene = false;
     }
 
@@ -736,7 +874,20 @@ namespace ToolKit
       );
     }
 
-    Viewport* App::GetActiveViewport()
+    Window* App::GetActiveWindow()
+    {
+      for (Window* wnd : m_windows)
+      {
+        if (wnd->IsActive() && wnd->IsVisible())
+        {
+          return wnd;
+        }
+      }
+
+      return nullptr;
+    }
+
+    EditorViewport* App::GetActiveViewport()
     {
       for (Window* wnd : m_windows)
       {
@@ -747,20 +898,20 @@ namespace ToolKit
 
         if (wnd->IsActive() && wnd->IsVisible())
         {
-          return static_cast<Viewport*> (wnd);
+          return static_cast<EditorViewport*> (wnd);
         }
       }
 
       return nullptr;
     }
 
-    Viewport* App::GetViewport(const String& name)
+    EditorViewport* App::GetViewport(const String& name)
     {
       for (Window* wnd : m_windows)
       {
         if (wnd->m_name == name)
         {
-          return dynamic_cast<Viewport*> (wnd);
+          return dynamic_cast<EditorViewport*> (wnd);
         }
       }
 
@@ -800,25 +951,7 @@ namespace ToolKit
       return GetWindow<MaterialInspector>(g_matInspector);
     }
 
-    template<typename T>
-    T* App::GetWindow(const String& name)
-    {
-      for (Window* wnd : m_windows)
-      {
-        T* casted = dynamic_cast<T*> (wnd);
-        if (casted)
-        {
-          if (casted->m_name == name)
-          {
-            return casted;
-          }
-        }
-      }
-
-      return nullptr;
-    }
-
-    void App::RenderSelected(Viewport* vp)
+    void App::RenderSelected(EditorViewport* vp)
     {
       if (m_scene->GetSelectedEntityCount() == 0)
       {
@@ -888,7 +1021,7 @@ namespace ToolKit
       if (m_showSelectionBoundary && primary->IsDrawable())
       {
         Drawable* dw = static_cast<Drawable*> (primary);
-        m_perFrameDebugObjects.push_back(GenerateBoundingVolumeGeometry(dw->GetAABB(true)));
+        m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(dw->GetAABB(true)));
       }
     }
 
@@ -972,6 +1105,38 @@ namespace ToolKit
         String fullPath = ScenePath(scene + SCENE);
         OpenScene(fullPath);
       }
+    }
+
+    void DebugMessage(const String& msg)
+    {
+      g_app->GetConsole()->AddLog(msg, "Debug");
+    }
+
+    void DebugMessage(const Vec3& vec)
+    {
+      g_app->GetConsole()->AddLog(glm::to_string(vec), "Debug");
+    }
+
+    void DebugCube(const Vec3& p, float size)
+    {
+      g_app->m_perFrameDebugObjects.push_back
+      (
+        CreateBoundingBoxDebugObject
+        (
+          {
+            p - Vec3(size),
+            p + Vec3(size)
+          }
+        )
+      );
+    }
+
+    void DebugLineStrip(const Vec3Array& pnts)
+    {
+      g_app->m_perFrameDebugObjects.push_back
+      (
+        CreateLineDebugObject(pnts)
+      );
     }
 
   }

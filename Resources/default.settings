@@ -33,5 +33,6 @@
 	<Window name="Outliner" id="6" type="4" visible="1"/>
 	<Window name="Property Inspector" id="7" type="5" visible="1"/>
 	<Window name="Material Inspector" id="8" type="6" visible="1"/>
+	<Window name="Plugin" id="9" type="7" visible="1"/>
 </App>
 

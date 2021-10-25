@@ -18,10 +18,25 @@ namespace ToolKit
 
     virtual void Init(bool flushClientSideArray = true) = 0;
     virtual void UnInit() = 0;
-    virtual Resource* GetCopy();
+    
+    template<typename T>
+    std::shared_ptr<T> Copy()
+    {
+      T* cpy = new T();
+      CopyTo(cpy);
+      std::shared_ptr<T> resource = std::shared_ptr<T> (cpy);
+      if (ResourceManager* manager = GetResourceManager(resource->m_type))
+      {
+        manager->Manage(resource);
+      }
+      return resource;
+    }
 
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+
+  protected:
+    virtual void CopyTo(Resource* other);
 
   public:
     String m_file;

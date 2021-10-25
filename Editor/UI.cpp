@@ -7,7 +7,7 @@
 #include "ImGui/imgui_stdlib.h"
 
 #include "App.h"
-#include "Viewport.h"
+#include "EditorViewport.h"
 #include "SDL.h"
 #include "GlobalDef.h"
 #include "Mod.h"
@@ -17,6 +17,7 @@
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
 #include "Util.h"
+#include "PluginWindow.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -56,6 +57,10 @@ namespace ToolKit
     TexturePtr UI::m_boneIcon;
     TexturePtr UI::m_worldIcon;
     TexturePtr UI::m_axisIcon;
+    TexturePtr UI::m_playIcon;
+    TexturePtr UI::m_pauseIcon;
+    TexturePtr UI::m_stopIcon;
+    TexturePtr UI::m_vsCodeIcon;
 
     void UI::Init()
     {
@@ -65,7 +70,26 @@ namespace ToolKit
       ImGuiIO& io = ImGui::GetIO();
       io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
       io.ConfigWindowsMoveFromTitleBarOnly = true;
-      io.Fonts->AddFontFromFileTTF(FontPath("Junicode.ttf").c_str(), 16);
+
+      // Handle font loading.
+      static const ImWchar utf8TR[] = 
+      {
+        0x0020, 0x00FF,
+        0x00c7, 0x00c7,
+        0x00e7, 0x00e7,
+        0x011e, 0x011e,
+        0x011f, 0x011f,
+        0x0130, 0x0130,
+        0x0131, 0x0131,
+        0x00d6, 0x00d6,
+        0x00f6, 0x00f6,
+        0x015e, 0x015e,
+        0x015f, 0x015f,
+        0x00dc, 0x00dc,
+        0x00fc, 0x00fc,
+        0 
+      };
+      io.Fonts->AddFontFromFileTTF(FontPath("bmonofont-i18n.ttf").c_str(), 16, nullptr, utf8TR);
 
       ImGui_ImplSDL2_InitForOpenGL(g_window, g_context);
       ImGui_ImplOpenGL3_Init("#version 300 es");
@@ -173,13 +197,14 @@ namespace ToolKit
       m_worldIcon->Init();
       m_axisIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/axis.png", true));
       m_axisIcon->Init();
-
-      // Set application Icon.
-      m_appIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/app.png", true));
-      m_appIcon->Init(false);
-      SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(m_appIcon->m_image, m_appIcon->m_width, m_appIcon->m_height, 8, m_appIcon->m_width * 4, SDL_PIXELFORMAT_ABGR8888);
-      SDL_SetWindowIcon(g_window, surface);
-      SDL_FreeSurface(surface);
+      m_playIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/play.png", true));
+      m_playIcon->Init();
+      m_pauseIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/pause.png", true));
+      m_pauseIcon->Init();
+      m_stopIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/stop.png", true));
+      m_stopIcon->Init();
+      m_vsCodeIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/vscode.png", true));
+      m_vsCodeIcon->Init();
     }
 
     void UI::InitTheme()
@@ -422,21 +447,26 @@ namespace ToolKit
             continue;
           }
 
-          if (ImGui::MenuItem(wnd->m_name.c_str(), nullptr, false, !wnd->IsVisible()))
+          String sId = "menuId" + std::to_string(i);
+          ImGui::PushID(sId.c_str());
+          ImGui::BeginGroup();
+          bool vis = wnd->IsVisible();
+          if (ImGui::Checkbox(wnd->m_name.c_str(), &vis))
           {
-            wnd->SetVisibility(true);
+            wnd->SetVisibility(vis);
           }
 
-          if (wnd->IsVisible())
+          float width = ImGui::CalcItemWidth();
+          width -= 50;
+
+          ImGui::SameLine(width);
+          if (ImGui::Button("x"))
           {
-            ImGui::SameLine();
-            if (ImGui::Button("x"))
-            {
-              g_app->m_windows.erase(g_app->m_windows.begin() + i);
-              SafeDel(wnd);
-              continue;
-            }
+            g_app->m_windows.erase(g_app->m_windows.begin() + i);
+            SafeDel(wnd);
           }
+          ImGui::EndGroup();
+          ImGui::PopID();
         }
       };
 
@@ -446,7 +476,7 @@ namespace ToolKit
 
         if (ImGui::MenuItem("Add Viewport", "Alt+V"))
         {
-          Viewport* vp = new Viewport(640, 480);
+          EditorViewport* vp = new EditorViewport(640, 480);
           g_app->m_windows.push_back(vp);
         }
         ImGui::EndMenu();
@@ -459,7 +489,7 @@ namespace ToolKit
         if (ImGui::MenuItem("Add Browser", "Alt+B"))
         {
           FolderWindow* wnd = new FolderWindow();
-          wnd->m_name = g_assetBrowserStr + "##" + std::to_string(wnd->m_id);
+          wnd->m_name = g_assetBrowserStr + " " + std::to_string(wnd->m_id);
           wnd->Iterate(ResourcePath(), true);
           g_app->m_windows.push_back(wnd);
         }
@@ -487,6 +517,14 @@ namespace ToolKit
       if (ImGui::MenuItem("Material Inspector", "Alt+R", nullptr, !g_app->GetMaterialInspector()->IsVisible()))
       {
         g_app->GetMaterialInspector()->SetVisibility(true);
+      }
+
+      if (PluginWindow* wnd = g_app->GetWindow<PluginWindow>("Plugin"))
+      {
+        if (ImGui::MenuItem("Plugin Window", "", nullptr, !wnd->IsVisible()))
+        {
+          wnd->SetVisibility(true);
+        }
       }
 
       ImGui::Separator();
@@ -692,10 +730,7 @@ namespace ToolKit
 
         if (ImGui::Button("Search", ImVec2(120, 0)))
         {
-          for (size_t i = 0; i < ImportData.files.size(); i++)
-          {
-            g_app->Import(ImportData.files[i], ImportData.subDir, ImportData.overwrite);
-          }
+          g_app->Import("", ImportData.subDir, ImportData.overwrite);
           ImportData.files.clear();
           ImGui::CloseCurrentPopup();
         }
@@ -704,6 +739,7 @@ namespace ToolKit
         if (ImGui::Button("Abort", ImVec2(120, 0)))
         {
           ImportData.files.clear();
+          SearchFileData.missingFiles.clear();
           SearchFileData.showSearchFileWindow = false;
           ImGui::CloseCurrentPopup();
         }
@@ -956,6 +992,14 @@ namespace ToolKit
         return;
       }
 
+      ImGuiIO& io = ImGui::GetIO();
+      ImGui::SetNextWindowPos
+      (
+        ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
+        ImGuiCond_Once,
+        ImVec2(0.5f, 0.5f)
+      );
+
       ImGui::OpenPopup(m_name.c_str());
       if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
       {
@@ -1009,6 +1053,14 @@ namespace ToolKit
       {
         return;
       }
+
+      ImGuiIO& io = ImGui::GetIO();
+      ImGui::SetNextWindowPos
+      (
+        ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
+        ImGuiCond_Once,
+        ImVec2(0.5f, 0.5f)
+      );
 
       ImGui::OpenPopup(m_name.c_str());
       if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))

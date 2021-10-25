@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "Types.h"
 #include <fstream>
 
 namespace ToolKit
@@ -9,13 +10,11 @@ namespace ToolKit
   class Logger
   {
   public:
+    Logger();
     ~Logger();
-    static Logger* GetInstance();
-    void Log(const std::string& message);
+    void Log(const String& message);
 
   private:
-    Logger();
-    static Logger m_logger;
     std::ofstream m_logFile;
   };
 

@@ -3,11 +3,14 @@
 #include "Types.h"
 #include "Util.h"
 #include "Logger.h"
+
 #include <unordered_map>
 #include <memory>
 
 namespace ToolKit
 {
+
+  extern class Logger* GetLogger();
 
   enum class ResourceType
   {
@@ -28,19 +31,24 @@ namespace ToolKit
   class ResourceManager
   {
   public:
+    ResourceManager();
+    virtual ~ResourceManager();
     virtual void Init();
     virtual void Uninit();
-    virtual ~ResourceManager();
+    virtual void Manage(const ResourcePtr& resource);
+
+    ResourceManager(ResourceManager const&) = delete;
+    void operator=(ResourceManager const&) = delete;
 
     template<typename T>
-    std::shared_ptr<T> Create(String file)
+    std::shared_ptr<T> Create(const String& file)
     {
       if (!Exist(file))
       {
         bool fileCheck = CheckFile(file);
         if (!fileCheck)
         {
-          Logger::GetInstance()->Log("Missing: " + file);
+          GetLogger()->Log("Missing: " + file);
           assert(fileCheck);
           return nullptr;
         }
@@ -55,6 +63,7 @@ namespace ToolKit
     }
 
     bool Exist(String file);
+    ResourcePtr Remove(const String& file);
 
   public:
     std::unordered_map<String, ResourcePtr> m_storage;

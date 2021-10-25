@@ -283,7 +283,7 @@ namespace ToolKit
     m_mesh->m_indexCount = (uint)m_mesh->m_clientSideIndices.size();
     m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
-    m_mesh->CalculateAABoundingBox();
+    m_mesh->CalculateAABB();
     m_mesh->ConstructFaces();
   }
 
@@ -345,7 +345,7 @@ namespace ToolKit
     m_mesh->m_clientSideIndices = { 0,1,2,0,2,3 };
     m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
-    m_mesh->CalculateAABoundingBox();
+    m_mesh->CalculateAABB();
     m_mesh->ConstructFaces();
   }
 
@@ -433,7 +433,7 @@ namespace ToolKit
     m_mesh->m_clientSideIndices = indices;
     m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
-    m_mesh->CalculateAABoundingBox();
+    m_mesh->CalculateAABB();
     m_mesh->ConstructFaces();
   }
 
@@ -566,7 +566,7 @@ namespace ToolKit
     m_mesh->m_clientSideIndices = indices;
     m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
-    m_mesh->CalculateAABoundingBox();
+    m_mesh->CalculateAABB();
     m_mesh->ConstructFaces();
   }
 
@@ -692,7 +692,7 @@ namespace ToolKit
     m_mesh->m_clientSideVertices = vertices;
     m_mesh->m_material = newMaterial;
 
-    m_mesh->CalculateAABoundingBox();
+    m_mesh->CalculateAABB();
     m_mesh->ConstructFaces();
   }
 
@@ -736,7 +736,7 @@ namespace ToolKit
     m_mesh->m_material->m_color = color;
     m_mesh->m_material->GetRenderState()->lineWidth = lineWidth;
 
-    m_mesh->CalculateAABoundingBox();
+    m_mesh->CalculateAABB();
   }
 
 }

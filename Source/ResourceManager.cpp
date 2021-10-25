@@ -15,15 +15,8 @@
 
 namespace ToolKit
 {
-  void ResourceManager::Init()
+  ResourceManager::ResourceManager()
   {
-    Logger::GetInstance()->Log("Initiating manager " + GetTypeString(m_type));
-  }
-
-  void ResourceManager::Uninit()
-  {
-    Logger::GetInstance()->Log("Uninitiating manager " + GetTypeString(m_type));
-    m_storage.clear();
   }
 
   ResourceManager::~ResourceManager()
@@ -31,8 +24,44 @@ namespace ToolKit
     assert(m_storage.size() == 0); // Uninitialize all resources before exit.
   }
 
+  void ResourceManager::Init()
+  {
+    GetLogger()->Log("Initiating manager " + GetTypeString(m_type));
+  }
+
+  void ResourceManager::Uninit()
+  {
+    GetLogger()->Log("Uninitiating manager " + GetTypeString(m_type));
+    m_storage.clear();
+  }
+
+  void ResourceManager::Manage(const ResourcePtr& resource)
+  {
+    bool sane = !resource->m_file.empty();
+    sane &= !Exist(resource->m_file);
+    sane &= m_type == resource->m_type;
+    if (sane)
+    {
+      m_storage[resource->m_file] = resource;
+    }
+  }
+
   bool ResourceManager::Exist(String file)
   {
     return m_storage.find(file) != m_storage.end();
   }
+
+  ResourcePtr ResourceManager::Remove(const String& file)
+  {
+    ResourcePtr resource = nullptr;
+    auto mapItr = m_storage.find(file);
+    if (mapItr  != m_storage.end())
+    {
+      resource = mapItr->second;
+      m_storage.erase(file);
+    }
+
+    return resource;
+  }
+
 }

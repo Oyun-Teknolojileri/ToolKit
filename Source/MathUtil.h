@@ -19,6 +19,11 @@ namespace ToolKit
   {
     Vec3 min = Vec3(FLT_MAX);
     Vec3 max = Vec3(-FLT_MAX);
+
+    Vec3 GetCenter()
+    {
+      return min + (max - min) * 0.5f;
+    }
   };
 
   struct Ray
@@ -65,6 +70,8 @@ namespace ToolKit
 
   bool SpherePointIntersection(const Vec3& spherePos, float sphereRadius, const Vec3& vertex);
   bool SphereSphereIntersection(const Vec3& spherePos, float sphereRadius, const Vec3& spherePos2, float sphereRadius2);
+  bool BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2);
+  bool BoxPointIntersection(const BoundingBox& box, const Vec3& point);
   bool RayBoxIntersection(const Ray& ray, const BoundingBox& box, float& t);
   bool RayTriangleIntersection(const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t);
   bool RayMeshIntersection(class Mesh* const mesh, const Ray& ray, float& t);
@@ -90,6 +97,14 @@ namespace ToolKit
   void ToSpherical(Vec3 p, float& r, float& zenith, float& azimuth);
   Vec3 ToCartesian(float r, float zenith, float azimuth);
   Quaternion RotationTo(Vec3 a, Vec3 b); // Returns quaternion wich rotates a on to b.
+
+  // Comparison
+  //////////////////////////////////////////
+  template<typename T>
+  bool VecAllEqual(const T& a, const T& b)
+  {
+    return glm::all(glm::equal<T>(a, b));
+  }
 
   // Numberic operations
   //////////////////////////////////////////

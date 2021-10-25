@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "OverlayUI.h"
-#include "Viewport.h"
+#include "EditorViewport.h"
 #include "GlobalDef.h"
 #include "Mod.h"
 #include "ConsoleWindow.h"
@@ -12,7 +12,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    OverlayUI::OverlayUI(Viewport* owner)
+    OverlayUI::OverlayUI(EditorViewport* owner)
     {
       m_owner = owner;
     }
@@ -35,7 +35,7 @@ namespace ToolKit
     // OverlayMods
     //////////////////////////////////////////////////////////////////////////
 
-    OverlayMods::OverlayMods(Viewport* owner)
+    OverlayMods::OverlayMods(EditorViewport* owner)
       : OverlayUI(owner)
     {
     }
@@ -155,7 +155,7 @@ namespace ToolKit
     // OverlayViewportOptions
     //////////////////////////////////////////////////////////////////////////
 
-    OverlayViewportOptions::OverlayViewportOptions(Viewport* owner)
+    OverlayViewportOptions::OverlayViewportOptions(EditorViewport* owner)
       : OverlayUI(owner)
     {
     }
@@ -204,6 +204,12 @@ namespace ToolKit
             g_app->m_scene->AddEntity(suzanne);
           }
           ImGui::EndMenu();
+        }
+        ImGui::Separator();
+        if (ImGui::MenuItem("Node"))
+        {
+          Entity* node = Entity::CreateByType(EntityType::Entity_Node);
+          g_app->m_scene->AddEntity(node);
         }
       };
 
@@ -396,15 +402,97 @@ namespace ToolKit
           ImGui::InputFloat("Rotate delta", &g_app->m_rotateDelta, 0.0f, 0.0f, "%.2f");
           ImGui::InputFloat("Scale delta", &g_app->m_scaleDelta, 0.0f, 0.0f, "%.2f");
           ImGui::PopItemWidth();
-          ImGui::Checkbox("Snap to grid", &g_app->m_snapToGrid);
-
           ImGui::EndPopup();
         }
 
         ImGui::EndChildFrame();
       }
-
     }
 
-  }
+    // StatusBar
+    //////////////////////////////////////////////////////////////////////////
+
+    StatusBar::StatusBar(EditorViewport* owner)
+      : OverlayUI(owner)
+    {
+    }
+
+    void StatusBar::Show()
+    {
+      // Status bar.
+      ImVec2 overlaySize;
+      overlaySize.x = m_owner->m_width - 2;
+      overlaySize.y = 24;
+      ImVec2 pos = m_owner->m_wndPos;
+      ImVec2 wndPadding = ImGui::GetStyle().WindowPadding;
+
+      pos.x += 1;
+      pos.y += m_owner->m_height - wndPadding.y - 16.0f;
+      ImGui::SetNextWindowPos(pos);
+      ImGui::SetNextWindowBgAlpha(0.65f);
+      if
+        (
+          ImGui::BeginChildFrame
+          (
+            ImGui::GetID("ProjectInfo"),
+            overlaySize,
+            ImGuiWindowFlags_NoMove
+            | ImGuiWindowFlags_NoTitleBar
+            | ImGuiWindowFlags_NoScrollbar
+            | ImGuiWindowFlags_NoScrollWithMouse
+          )
+        )
+      {
+        String info = "Status: ";
+        ImGui::Text(info.c_str());
+
+        // If the status message has changed.
+        static String prevMsg = g_app->m_statusMsg;
+        if (g_app->m_statusMsg != "OK")
+        {
+          // Hold msg for 3 sec. before switching to OK.
+          static float elapsedTime = 0.0f;
+          elapsedTime += ImGui::GetIO().DeltaTime;
+
+          // For overlapping message updates, 
+          // always reset timer for the last event.
+          if (prevMsg != g_app->m_statusMsg)
+          {
+            elapsedTime = 0.0f;
+            prevMsg = g_app->m_statusMsg;
+          }
+
+          if (elapsedTime > 3)
+          {
+            elapsedTime = 0.0f;
+            g_app->m_statusMsg = "OK";
+          }
+        }
+
+        // Inject status.
+        ImGui::SameLine();
+        ImGui::Text(g_app->m_statusMsg.c_str());
+
+        // Draw Projcet Info.
+        Project prj = g_app->m_workspace.GetActiveProject();
+        info = "Project: " + prj.name + "Scene: " + prj.scene;
+        pos = ImGui::CalcTextSize(info.c_str());
+
+        ImGui::SameLine((m_owner->m_width - pos.x) * 0.5f);
+        info = "Project: " + prj.name;
+        ImGui::BulletText(info.c_str());
+        ImGui::SameLine();
+        info = "Scene: " + prj.scene;
+        ImGui::BulletText(info.c_str());
+
+        // Draw Fps.
+        String fps = "Fps: " + std::to_string(g_app->m_fps);
+        ImGui::SameLine(m_owner->m_width - 70.0f);
+        ImGui::Text(fps.c_str());
+
+        ImGui::EndChildFrame();
+      }
+    }
+
+}
 }

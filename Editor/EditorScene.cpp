@@ -200,6 +200,12 @@ namespace ToolKit
       return false;
     }
 
+    void EditorScene::Save(bool onlyIfDirty)
+    {
+      Scene::Save(onlyIfDirty);
+      m_newScene = false;
+    }
+
     Entity* EditorScene::RemoveEntity(EntityId id)
     {
       Entity* removed = nullptr;
@@ -211,9 +217,9 @@ namespace ToolKit
       return removed;
     }
 
-    void EditorScene::Destroy()
+    void EditorScene::Destroy(bool removeResources)
     {
-      Scene::Destroy();
+      Scene::Destroy(removeResources);
       m_selectedEntities.clear();
     }
 
@@ -236,6 +242,13 @@ namespace ToolKit
     void EditorScene::SelectByTag(const String& tag)
     {
       AddToSelection(GetByTag(tag), false);
+    }
+
+    void EditorScene::CopyTo(Resource* other)
+    {
+      Scene::CopyTo(other);
+      EditorScene* cpy = static_cast<EditorScene*> (other);
+      cpy->m_newScene = true;
     }
 
   }

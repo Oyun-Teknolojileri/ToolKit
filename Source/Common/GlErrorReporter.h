@@ -14,7 +14,7 @@ public:
 
 // Override it as you see fit. This lambda will be called with the opengl error message.
 GlErrorReporter::ReportFnPtr GlErrorReporter::Report = [](const std::string& msg) -> void {
-  ToolKit::Logger::GetInstance()->Log(msg);
+  ToolKit::GetLogger()->Log(msg);
 };
 
 // https://gist.github.com/liam-middlebrook/c52b069e4be2d87a6d2f

@@ -33,8 +33,6 @@ namespace ToolKit
     virtual void Load() override;
     virtual void Init(bool flushClientSideArray = true) override;
     virtual void UnInit() override;
-    virtual Animation* GetCopy() override;
-
 
   private:
     void GetNearestKeys(const std::vector<Key>& keys, int& key1, int& key2, float& ratio); // Finds nearest keys and ratio to current time.
@@ -48,7 +46,7 @@ namespace ToolKit
       Stop
     };
 
-    std::unordered_map<String, std::vector<Key> > m_keys;
+    std::unordered_map<String, std::vector<Key>> m_keys;
     float m_fps = 30.0f;
     float m_currentTime = 0.0f; // Seconds
     float m_duration = 0.0f;
@@ -68,7 +66,9 @@ namespace ToolKit
   class AnimationPlayer
   {
   public:
+    void AddRecord(const AnimRecord& rec);
     void AddRecord(Entity* entity, Animation* anim);
+    void RemoveRecord(const AnimRecord& rec);
     void RemoveRecord(Entity* entity, Animation* anim);
     void Update(float deltaTimeSec);
     int Exist(const AnimRecord& recrod) const; // -1 For not exist. Otherwise the record index.

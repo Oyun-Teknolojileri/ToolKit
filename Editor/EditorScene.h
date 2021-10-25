@@ -32,13 +32,17 @@ namespace ToolKit
       // Resource operations
       bool IsMaterialInUse(const MaterialPtr& material) const;
       bool IsMeshInUse(const MeshPtr& mesh) const;
+      virtual void Save(bool onlyIfDirty) override;
 
       // Entity operations.
       virtual Entity* RemoveEntity(EntityId id) override;
-      virtual void Destroy() override;
+      virtual void Destroy(bool removeResources) override;
       void GetSelectedEntities(EntityRawPtrArray& entities) const;
       void GetSelectedEntities(EntityIdArray& entities) const;
       void SelectByTag(const String& tag);
+
+    private:
+      virtual void CopyTo(Resource* other) override;
 
     public:
       bool m_newScene; // Indicates if this is created via new scene. That is not saved on the disk.

@@ -2,6 +2,7 @@
 
 #include "Resource.h"
 #include "MathUtil.h"
+#include <functional>
 
 namespace ToolKit
 {
@@ -34,13 +35,17 @@ namespace ToolKit
     void AddEntity(Entity* entity);
     const EntityRawPtrArray& GetEntities() const;
     EntityRawPtrArray GetByTag(const String& tag);
+    EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
 
     virtual Entity* RemoveEntity(EntityId id);
-    virtual void Destroy();
+    virtual void Destroy(bool removeResources);
 
     // Serialization.
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+  protected:
+    virtual void CopyTo(Resource* other) override;
 
   protected:
     EntityRawPtrArray m_entitites;
@@ -51,6 +56,11 @@ namespace ToolKit
   public:
     SceneManager();
     virtual ~SceneManager();
+    virtual void Init() override;
+    virtual void Uninit() override;
+
+  public:
+    ScenePtr m_currentScene;
   };
 
 }

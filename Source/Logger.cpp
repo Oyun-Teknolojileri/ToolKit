@@ -6,8 +6,6 @@
 namespace ToolKit
 {
 
-  Logger Logger::m_logger;
-
   Logger::Logger()
   {
     m_logFile.open("Log.txt", std::ios::out);
@@ -17,11 +15,6 @@ namespace ToolKit
   Logger::~Logger()
   {
     m_logFile.close();
-  }
-
-  Logger* Logger::GetInstance()
-  {
-    return &m_logger;
   }
 
   void Logger::Log(const std::string& message)

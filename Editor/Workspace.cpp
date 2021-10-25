@@ -90,6 +90,35 @@ namespace ToolKit
       return false;
     }
 
+    String Workspace::GetCodePath()
+    {
+      String codePath = ConcatPaths
+      (
+        {
+          GetActiveWorkspace(),
+          m_activeProject.name,
+          "Codes"
+        }
+      );
+
+      return codePath;
+    }
+
+    String Workspace::GetPluginPath()
+    {
+      String codePath = GetCodePath();
+      String pluginPath = ConcatPaths
+      (
+        {
+          codePath,
+          "Bin",
+          m_activeProject.name
+        }
+      );
+
+      return pluginPath;
+    }
+
     String Workspace::GetResourceRoot()
     {
       if (m_activeProject.name.empty())
@@ -119,6 +148,12 @@ namespace ToolKit
     {
       m_activeProject = project;
       Main::GetInstance()->m_resourceRoot = GetResourceRoot();
+    }
+
+    void Workspace::SetScene(const String& scene)
+    {
+      m_activeProject.scene = scene;
+      GetSceneManager()->m_currentScene = m_app->m_scene;
     }
 
     void Workspace::RefreshProjects()

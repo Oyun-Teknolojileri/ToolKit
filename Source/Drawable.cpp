@@ -57,7 +57,7 @@ namespace ToolKit
   {
     Entity::GetCopy(copyTo);
     Drawable* ntt = static_cast<Drawable*> (copyTo);
-    ntt->m_mesh = MeshPtr(m_mesh->GetCopy());
+    ntt->m_mesh = m_mesh->Copy<Mesh>();
     return ntt;
   }
 
@@ -117,6 +117,11 @@ namespace ToolKit
     }
 
     return false;
+  }
+
+  void Drawable::RemoveResources()
+  {
+    GetMeshManager()->Remove(m_mesh->m_file);
   }
 
   Entity* Drawable::GetInstance(Entity* copyTo) const

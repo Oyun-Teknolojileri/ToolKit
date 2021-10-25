@@ -21,7 +21,7 @@ namespace ToolKit
 
   Scene::~Scene()
   {
-    Destroy();
+    Destroy(false);
   }
 
   void Scene::Load()
@@ -98,7 +98,7 @@ namespace ToolKit
 
   void Scene::UnInit()
   {
-    Destroy();
+    Destroy(false);
   }
 
   Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList) const
@@ -243,16 +243,42 @@ namespace ToolKit
     return arrayByTag;
   }
 
-  void Scene::Destroy()
+  EntityRawPtrArray Scene::Filter(std::function<bool(Entity*)> filter)
+  {
+    EntityRawPtrArray filtered;
+    std::copy_if(m_entitites.begin(), m_entitites.end(), std::back_inserter(filtered), filter);
+    return filtered;
+  }
+
+  void Scene::Destroy(bool removeResources)
   {
     for (Entity* ntt : m_entitites)
     {
+      if (removeResources)
+      {
+        ntt->RemoveResources();
+      }
+
       SafeDel(ntt);
     }
     m_entitites.clear();
 
     m_loaded = false;
     m_initiated = false;
+  }
+
+  void Scene::CopyTo(Resource* other)
+  {
+    Resource::CopyTo(other);
+    Scene* cpy = static_cast<Scene*> (other);
+    cpy->m_name = m_name + "_cpy";
+
+    cpy->m_entitites.reserve(m_entitites.size());
+    for (Entity* ntt : m_entitites)
+    {
+      Entity* cpyNtt = ntt->GetCopy();
+      cpy->m_entitites.push_back(cpyNtt);
+    }
   }
 
   void Scene::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -293,50 +319,8 @@ namespace ToolKit
     for (node = root->first_node(XmlEntityElement.c_str()); node; node = node->next_sibling(XmlEntityElement.c_str()))
     {
       XmlAttribute* typeAttr = node->first_attribute(XmlEntityTypeAttr.c_str());
-      EntityType et = (EntityType)std::atoi(typeAttr->value());
-      Entity* ntt = nullptr;
-      switch (et)
-      {
-      case EntityType::Entity_Base:
-        ntt = new Entity(); // Empty entities are used for transform hierarchy.
-        break;
-      case EntityType::Entity_AudioSource:
-        continue;
-      case EntityType::Entity_Billboard:
-        break;
-      case EntityType::Entity_Cube:
-        ntt = new Cube(false);
-        break;
-      case EntityType::Entity_Quad:
-        ntt = new Quad(false);
-        break;
-      case EntityType::Entity_Sphere:
-        ntt = new Sphere(false);
-        break;
-      case EntityType::Etity_Arrow:
-        ntt = new Arrow2d(false);
-        break;
-      case EntityType::Entity_LineBatch:
-        break;
-      case EntityType::Entity_Cone:
-        ntt = new Cone(false);
-        break;
-      case EntityType::Entity_Drawable:
-        ntt = new Drawable();
-        break;
-      case EntityType::Entity_SpriteAnim:
-      case EntityType::Entity_Surface:
-        continue;
-      case EntityType::Entity_Light:
-        break;
-      case EntityType::Entity_Camera:
-        break;
-      case EntityType::Entity_Directional:
-        continue;
-      default:
-        assert(false);
-        continue;
-      }
+      EntityType t = (EntityType)std::atoi(typeAttr->value());
+      Entity* ntt = Entity::CreateByType(t);
 
       ntt->DeSerialize(doc, node);
       m_entitites.push_back(ntt);
@@ -350,6 +334,18 @@ namespace ToolKit
 
   SceneManager::~SceneManager()
   {
+  }
+
+  void SceneManager::Init()
+  {
+    m_currentScene = nullptr;
+    ResourceManager::Init();
+  }
+
+  void SceneManager::Uninit()
+  {
+    m_currentScene = nullptr;
+    ResourceManager::Uninit();
   }
 
 }

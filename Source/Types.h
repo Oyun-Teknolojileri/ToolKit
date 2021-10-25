@@ -19,6 +19,7 @@ namespace ToolKit
 #define SafeDel(ptr) { delete ptr; ptr = nullptr; };
 #define SafeDelArray(ptr) { delete[] ptr; ptr = nullptr; };
 
+  // Primitive types.
   typedef char Byte;
   typedef unsigned char UByte;
   typedef unsigned int uint;
@@ -41,6 +42,8 @@ namespace ToolKit
   typedef glm::mat4 Mat4;
   typedef glm::mat3 Mat3;
   typedef glm::quat Quaternion;
+
+  // Resource types.
   typedef std::shared_ptr<class Animation> AnimationPtr;
   typedef std::shared_ptr<class Material> MaterialPtr;
   typedef std::shared_ptr<class CubeMap> CubeMapPtr;
@@ -75,6 +78,10 @@ namespace ToolKit
     XmlFilePtr file;
   };
 
+  // Enitiy types.
+  typedef std::shared_ptr<class Camera> CameraPtr;
+
+  // Vector declerations.
   static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
   static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);
   static const Vec3 Z_AXIS = Vec3(0.0f, 0.0f, 1.0f);
@@ -136,9 +143,10 @@ namespace ToolKit
     X,
     Y,
     Z,
-    XY,
-    YZ,
-    ZX
+    // Mod3 gives plane normal .
+    YZ, // YZ(3) % 3 = X(0)
+    ZX, // ZX(4) % 3 = Y(1)
+    XY // XY(5) % 3 = Z(2)
   };
 
   static const float TK_FLT_MAX = std::numeric_limits<float>::max();

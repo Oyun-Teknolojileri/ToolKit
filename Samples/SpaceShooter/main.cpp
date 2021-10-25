@@ -137,7 +137,8 @@ void Init()
         if (TTF_Init() == -1)
           return;
 
-        Main::GetInstance()->Init();
+        Main* instance = new Main();
+        Main::SetProxy(instance);
 
         // Set defaults
         SDL_GL_SetSwapInterval(1);
