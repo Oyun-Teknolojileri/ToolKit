@@ -183,7 +183,8 @@ namespace ToolKit
           }
         }
 
-        if (m_gizmo->IsGrabbed(AxisLabel::None))
+        Entity* e = g_app->m_scene->GetCurrentSelection();
+        if (m_gizmo->IsGrabbed(AxisLabel::None) || e == nullptr)
         {
           return StateType::StateBeginPick;
         }
