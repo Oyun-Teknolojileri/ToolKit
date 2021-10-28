@@ -18,6 +18,7 @@
 #include "Texture.h"
 #include "Scene.h"
 #include "PluginManager.h"
+#include "Events.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -53,6 +54,7 @@ namespace ToolKit
 
     bool m_initiated = false;
     String m_resourceRoot;
+    EventPool m_eventPool;
 
   private:
     static Main* m_proxy;

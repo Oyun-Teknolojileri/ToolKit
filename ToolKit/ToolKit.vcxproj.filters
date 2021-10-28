@@ -105,6 +105,9 @@
     <ClInclude Include="..\Source\Viewport.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Events.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Animation.cpp">

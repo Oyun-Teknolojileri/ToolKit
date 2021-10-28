@@ -5,12 +5,10 @@
 #include "Mod.h"
 #include "UI.h"
 #include "ConsoleWindow.h"
-
+#include "Common/GlErrorReporter.h"
+#include "Common/SDLEventPool.h"
 #include "ImGui/imgui_impl_sdl.h"
 #include "SDL.h"
-
-#include "../Source/Common/GlErrorReporter.h"
-
 #include "DebugNew.h"
 
 #include <stdio.h>
@@ -168,7 +166,7 @@ namespace ToolKit
       SDL_Quit();
     }
 
-    void ProcessEvent(SDL_Event e)
+    void ProcessEvent(const SDL_Event& e)
     {
       // If message doesn't ment to be processed in imgui, set this to true.
       bool skipImgui = false;
@@ -264,6 +262,7 @@ namespace ToolKit
         SDL_Event sdlEvent;
         while (SDL_PollEvent(&sdlEvent))
         {
+          PoolEvent(sdlEvent);
           ProcessEvent(sdlEvent);
         }
 
@@ -285,6 +284,8 @@ namespace ToolKit
 
           timer->lastTime = timer->currentTime;
         }
+
+        ClearPool();
       }
     }
 

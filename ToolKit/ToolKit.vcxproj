@@ -91,6 +91,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\Events.h" />
     <ClInclude Include="..\Source\GlobalCache.h" />
     <ClInclude Include="..\Source\ParameterBlock.h" />
     <ClInclude Include="..\Source\Plugin.h" />

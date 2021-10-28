@@ -78,6 +78,8 @@ namespace ToolKit
     XmlFilePtr file;
   };
 
+  typedef std::vector<class Event*> EventPool;
+
   // Enitiy types.
   typedef std::shared_ptr<class Camera> CameraPtr;
 
@@ -150,5 +152,6 @@ namespace ToolKit
   };
 
   static const float TK_FLT_MAX = std::numeric_limits<float>::max();
+  static const int TK_INT_MAX = std::numeric_limits<int>::max();
 
 }
