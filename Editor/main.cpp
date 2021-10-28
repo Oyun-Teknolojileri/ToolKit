@@ -171,14 +171,6 @@ namespace ToolKit
       // If message doesn't ment to be processed in imgui, set this to true.
       bool skipImgui = false;
 
-      if (GamePlugin* plugin = GetPluginManager()->m_plugin)
-      {
-        if (g_app->m_gameMod == App::GameMod::Playing)
-        {
-          plugin->Event(e);
-        }
-      }
-
       if (e.type == SDL_WINDOWEVENT)
       {
         if (e.window.event == SDL_WINDOWEVENT_RESIZED)
