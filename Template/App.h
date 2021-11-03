@@ -12,12 +12,11 @@ namespace ToolKit
     virtual void Init(class Main* master);
     virtual void Destroy();
     virtual void Frame(float deltaTime, class Viewport* viewport);
-    virtual void Event(SDL_Event event);
   };
 
 }
 
-extern "C" TK_GAME_API ToolKit::Game* __stdcall CreateInstance()
+extern "C" TK_GAME_API ToolKit::Game* TK_STDCAL CreateInstance()
 {
   return new ToolKit::Game();
 }

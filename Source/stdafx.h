@@ -27,7 +27,7 @@
 #include "glm/gtx/component_wise.hpp"
 #include "glm/gtx/euler_angles.hpp"
 
-// LoadPng
+// Stb
 #include "stb/stb_image.h"
 
 // Glew
@@ -43,6 +43,7 @@
 #endif 
 
 #include "Logger.h"
+#include "Events.h"
 
 // STL
 #include <algorithm>
