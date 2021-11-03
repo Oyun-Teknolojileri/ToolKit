@@ -4,6 +4,8 @@
 
 ToolKit is a 3d editor & interactive application development platform. It allows users to create 3d scenes and bring in the interactivity via C++ plug-ins.
 
+![Editor Footage 1](https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_21.gif?raw=true "Editor")
+
 ## Motivation
 
 ### Simplicity
@@ -16,15 +18,6 @@ This project has a unique goal which is keeping all the source code under 30k li
 
 Bringing like minded people together around a project outputs invaluable assets as one can observe from projects like Blender & Godot. So the project's motivation is to bring people together who after uniqueness, simplicity, modernitiy and colloborative effort to create someting exceptional.
 
-### Self Development
-
-- While working on the ToolKit, you'll learn all about new frameworks, improvements in the language and tecniques used in the industry. 
-- Working on ToolKit keeps your ability to learn, adapt to new things and accept the change.
-- It teaches you all about project planning and using resources efficiently.
-- It teaches you your limits and to be passionate.
-- It teaches you to enjoy the road, not the destination.
-- It teaches you to accept imperfect.
-
 ## Editor High Lights
 - All required functionalites for scene creation, manipuation, save & load.
 - All required utilities for Asset management. Create / Save / Refresh / Browse resource directories.
@@ -35,9 +28,6 @@ Bringing like minded people together around a project outputs invaluable assets 
 - Import whole scenes from various programs & formats including sketchfab, blender, glb, fbx ...
 - Console window along with usefull scene inspection commands and easy command creation.
 
-![Editor Footage 1](https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_21.gif?raw=true "Editor")
-![Editor Footage 2](https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_22.gif?raw=true "Editor")
-![Editor Footage 3](https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_23.jpeg?raw=true "Editor")
 ## Engine High Lights
 
 - Default fragment & vertex shaders and ability to create custom shaders for materials.
@@ -46,7 +36,6 @@ Bringing like minded people together around a project outputs invaluable assets 
 - Resource serialization & deserialization to xml format.
 - Scene management.
 
-![Game Sample](https://github.com/afraidofdark/ToolKit/blob/master/yes_10.gif?raw=true "Game")
 ## Build & Run
 
 ToolKit comes with a Visual Studio solution. The solution has been created with Visual Studio 2019 community. All the required dependencies are in the project as prebuilt for Windows 10. 
@@ -58,6 +47,8 @@ ToolKit comes with a Visual Studio solution. The solution has been created with 
 - Add -> New Project
 - Search for ToolKitProject and select it
 - Fallow the instructions, this will create a new blank project
+
+This way allows you to build an application entierly from scrach using the ToolKit engine. Alternatively you can use the editor to create an interactivity plugins and publish the product as a web project or executable.
 
 ### Projects in the solution
 
@@ -72,7 +63,13 @@ ToolKit comes with a Visual Studio solution. The solution has been created with 
 
 ## Platforms
 
-Currently, ToolKit can only be build for Windows. However it has been tested for web builds and can generate web outputs with Emscripten. The second platfrom that it gives output will be web. ToolKit does not have any Windows dependency and can be build for  Mac-Os and Linux. Each os. should provide a convinient workflow by providing a code editor and well established compile system. For this reason Mac & Linux won't be handled until a stable release published.
+ToolKit does not have any windows dependency and can be build for linux and mac easily. However my main OS is Windows, compiling from source and publishing the created apps will be done from Windows and I don't have any plans to support other OS anytime soon.
+ToolKit can pubish for:
+
+- Windows executable
+- Web html + .wasm or .js
+
+Although it's possible, publishing to these platforms are not streamlined, still a lot of manual configuration and building is needed. Publishing for Android is on the way.
 
 ### Web Platform
 
@@ -122,22 +119,21 @@ You can see the c++ code, call stack, local - global scope and set break points.
  - Update picking queries to utilze octree.
 
 ### Editor
-- Editor Improvements
-  - Transform gizmo improvements.
-  - Viewport orbit view improvements.
-  - Sound & Image import with drag & drop.
-  - Asset viewer improvements.
-- Game Plug-In
-  - Play - pause - stop the current scene which require, compiling & loading of the game play plugin and run it within editor. 
+ - Editor plugins for enhencing the editor capabilities.
+ - Create sound entity for the editor.
 
 ### Engine
+- Implement Entity Component System.
 - Play 3d sound.
-- Play background sound.
 - Replace openal with  MojoAL.
-- Create sound entity for the editor.
+
+### Platform
+- Publish menu for Windows And Web.
+- Android support.
+- FireBase for mobile monetization and mobile backend.
 
 ## Final Words
 
-Project is in active development and I am planing to use it in my current and feature projects. Feel free to play around with it and get in touch with me.
+Project is in active development. Feel free to play around with it and get in touch with me.
 
 Enjoy!
