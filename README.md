@@ -1,10 +1,6 @@
-
-
 # ToolKit
 
-ToolKit is a 3d editor & interactive application development platform. It allows users to create 3d scenes and bring in the interactivity via C++ plug-ins.
-
-![Editor Footage 1](https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_21.gif?raw=true "Editor")
+<img align="left" width="48" height="48" src="https://github.com/afraidofdark/ToolKit/blob/master/Resources/Textures/Icons/app.png?raw=true">ToolKit is a 3d editor & interactive application development platform. It allows users to create 3d scenes and bring in the interactivity via C++ plug-ins.
 
 ## Motivation
 
@@ -36,6 +32,10 @@ Bringing like minded people together around a project outputs invaluable assets 
 - Resource serialization & deserialization to xml format.
 - Scene management.
 
+<p align="center">
+  <img width="600" height="338" src="https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_21.gif?raw=true">
+</p>
+
 ## Build & Run
 
 ToolKit comes with a Visual Studio solution. The solution has been created with Visual Studio 2019 community. All the required dependencies are in the project as prebuilt for Windows 10. 
@@ -48,7 +48,7 @@ ToolKit comes with a Visual Studio solution. The solution has been created with 
 - Search for ToolKitProject and select it
 - Fallow the instructions, this will create a new blank project
 
-This way allows you to build an application entierly from scrach using the ToolKit engine. Alternatively you can use the editor to create an interactivity plugins and publish the product as a web project or executable.
+This way allows you to build an application entierly from scrach using the ToolKit engine. Alternatively you can use the ToolKit editor to create an interactivity plugin and publish the product as a web project or executable.
 
 ### Projects in the solution
 
@@ -63,7 +63,7 @@ This way allows you to build an application entierly from scrach using the ToolK
 
 ## Platforms
 
-ToolKit does not have any windows dependency and can be build for linux and mac easily. However my main OS is Windows, compiling from source and publishing the created apps will be done from Windows and I don't have any plans to support other OS anytime soon.
+ToolKit does not have any Windows dependency and can be build for Linux and Mac easily. However my main OS is Windows, compiling from source and publishing the created apps will be done from Windows and I don't have any plans to support other OS anytime soon.
 ToolKit can pubish for:
 
 - Windows executable
