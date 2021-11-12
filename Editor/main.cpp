@@ -263,6 +263,7 @@ namespace ToolKit
         {
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
           g_app->Frame(timer->currentTime - timer->lastTime);
+          ClearPool(); // Clear after consumption.
           SDL_GL_SwapWindow(g_window);
 
           timer->frameCount++;
@@ -276,8 +277,6 @@ namespace ToolKit
 
           timer->lastTime = timer->currentTime;
         }
-
-        ClearPool();
       }
     }
 
