@@ -156,6 +156,18 @@ namespace ToolKit
     m_initiated = false;
   }
 
+  void Animation::CopyTo(Resource* other)
+  {
+    Resource::CopyTo(other);
+    Animation* cpy = static_cast<Animation*> (other);
+    cpy->m_keys = m_keys;
+    cpy->m_fps = m_fps;
+    cpy->m_currentTime = m_currentTime;
+    cpy->m_duration = m_duration;
+    cpy->m_loop = m_loop;
+    cpy->m_state = m_state;
+  }
+
   void Animation::GetNearestKeys(const std::vector<Key>& keys, int& key1, int& key2, float& ratio)
   {
     // Find nearset keys.
