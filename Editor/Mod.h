@@ -199,7 +199,7 @@ namespace ToolKit
     class StateBeginPick : public StatePickingBase
     {
     public:
-      virtual void Update(float deltaTime) override;
+      virtual SignalId Update(float deltaTime) override;
       virtual String Signaled(SignalId signal) override;
       virtual String GetType() override { return StateType::StateBeginPick; }
     };
@@ -207,7 +207,7 @@ namespace ToolKit
     class StateBeginBoxPick : public StatePickingBase
     {
     public:
-      virtual void Update(float deltaTime) override;
+      virtual SignalId Update(float deltaTime) override;
       virtual String Signaled(SignalId signal) override;
       virtual String GetType() override { return StateType::StateBeginBoxPick; }
 
@@ -218,7 +218,7 @@ namespace ToolKit
     class StateEndPick : public StatePickingBase
     {
     public:
-      virtual void Update(float deltaTime) override;
+      virtual SignalId Update(float deltaTime) override;
       virtual String Signaled(SignalId signal) override;
       virtual String GetType() override { return StateType::StateEndPick; }
     };
@@ -226,7 +226,7 @@ namespace ToolKit
     class StateDeletePick : public StatePickingBase
     {
     public:
-      virtual void Update(float deltaTime) override;
+      virtual SignalId Update(float deltaTime) override;
       virtual String Signaled(SignalId signal) override;
       virtual String GetType() override { return StateType::StateDeletePick; }
     };
@@ -236,7 +236,7 @@ namespace ToolKit
     public:
       virtual void TransitionIn(State* prevState) override;
       virtual void TransitionOut(State* nextState) override;
-      virtual void Update(float deltaTime) override;
+      virtual SignalId Update(float deltaTime) override;
       virtual String Signaled(SignalId signal) override;
       virtual String GetType() override { return StateType::StateDuplicate; };
     };

@@ -542,8 +542,9 @@ namespace ToolKit
       }
     }
 
-    void StateBeginPick::Update(float deltaTime)
+    SignalId StateBeginPick::Update(float deltaTime)
     {
+      return NullSignal;
     }
 
     String StateBeginPick::Signaled(SignalId signal)
@@ -599,8 +600,9 @@ namespace ToolKit
       return StateType::Null;
     }
 
-    void StateBeginBoxPick::Update(float deltaTime)
+    SignalId StateBeginBoxPick::Update(float deltaTime)
     {
+      return NullSignal;
     }
 
     String StateBeginBoxPick::Signaled(SignalId signal)
@@ -749,8 +751,9 @@ namespace ToolKit
       }
     }
 
-    void StateEndPick::Update(float deltaTime)
+    SignalId StateEndPick::Update(float deltaTime)
     {
+      return NullSignal;
     }
 
     String StateEndPick::Signaled(SignalId signal)
@@ -758,11 +761,11 @@ namespace ToolKit
       return StateType::Null;
     }
 
-    void StateDeletePick::Update(float deltaTime)
+    SignalId StateDeletePick::Update(float deltaTime)
     {
       if (g_app->GetActiveWindow()->GetType() != Window::Type::Viewport)
       {
-        return;
+        return NullSignal;
       }
 
       EntityRawPtrArray deleteList;
@@ -780,6 +783,8 @@ namespace ToolKit
         }
         ActionManager::GetInstance()->GroupLastActions((int)deleteList.size());
       }
+
+      return NullSignal;
     }
 
     String StateDeletePick::Signaled(SignalId signal)
@@ -822,8 +827,9 @@ namespace ToolKit
     {
     }
 
-    void StateDuplicate::Update(float deltaTime)
+    SignalId StateDuplicate::Update(float deltaTime)
     {
+      return NullSignal;
     }
 
     String StateDuplicate::Signaled(SignalId signal)

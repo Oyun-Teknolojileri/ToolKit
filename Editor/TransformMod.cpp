@@ -24,12 +24,12 @@ namespace ToolKit
       m_mouseData.resize(2);
     }
 
-    void StateTransformBase::Update(float deltaTime)
+    SignalId StateTransformBase::Update(float deltaTime)
     {
       if (g_app->m_scene->GetSelectedEntityCount() == 0)
       {
         g_app->m_gizmo = nullptr;
-        return;
+        return NullSignal;
       }
 
       Entity* e = g_app->m_scene->GetCurrentSelection();
@@ -41,6 +41,7 @@ namespace ToolKit
       }
 
       m_gizmo->Update(deltaTime);
+      return NullSignal;
     }
 
     void StateTransformBase::TransitionIn(State* prevState)
@@ -115,7 +116,7 @@ namespace ToolKit
       }
     }
 
-    void StateTransformBegin::Update(float deltaTime)
+    SignalId StateTransformBegin::Update(float deltaTime)
     {
       StateTransformBase::Update(deltaTime); // Update gizmo's loc & view.
 
@@ -127,7 +128,7 @@ namespace ToolKit
         EditorViewport* vp = g_app->GetActiveViewport();
         if (vp == nullptr)
         {
-          return; // Console commands may put the process here whit out active viewport.
+          return NullSignal; // Console commands may put the process here whit out active viewport.
         }
 
         Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
@@ -166,6 +167,8 @@ namespace ToolKit
           }
         }
       }
+
+      return NullSignal;
     }
 
     String StateTransformBegin::Signaled(SignalId signal)
@@ -389,10 +392,12 @@ namespace ToolKit
       m_gizmo->m_grabPoint = Vec3();
     }
 
-    void StateTransformTo::Update(float deltaTime)
+    SignalId StateTransformTo::Update(float deltaTime)
     {
       Transform(m_delta);
       StateTransformBase::Update(deltaTime);
+
+      return NullSignal;
     }
 
     String StateTransformTo::Signaled(SignalId signal)
@@ -591,9 +596,10 @@ namespace ToolKit
       }
     }
 
-    void StateTransformEnd::Update(float deltaTime)
+    SignalId StateTransformEnd::Update(float deltaTime)
     {
       StateTransformBase::Update(deltaTime);
+      return NullSignal;
     }
 
     String StateTransformEnd::Signaled(SignalId signal)

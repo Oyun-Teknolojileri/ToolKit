@@ -20,7 +20,7 @@ namespace ToolKit
 
     public:
       StateTransformBase();
-      virtual void Update(float deltaTime) override;
+      virtual SignalId Update(float deltaTime) override;
       virtual void TransitionIn(State* prevState) override;
       virtual void TransitionOut(State* nextState) override;
 
@@ -42,7 +42,7 @@ namespace ToolKit
       virtual void TransitionIn(State* prevState) override;
       virtual void TransitionOut(State* nextState) override;
 
-      virtual void Update(float deltaTime) override;
+      virtual SignalId Update(float deltaTime) override;
       virtual String Signaled(SignalId signal) override;
       virtual String GetType() override { return StateType::StateTransformBegin; }
 
@@ -73,7 +73,7 @@ namespace ToolKit
     public:
       virtual void TransitionIn(State* prevState) override;
       virtual void TransitionOut(State* prevState) override;
-      virtual void Update(float deltaTime) override;
+      virtual SignalId Update(float deltaTime) override;
       virtual String Signaled(SignalId signal) override;
       virtual String GetType() override { return StateType::StateTransformTo; }
 
@@ -94,7 +94,7 @@ namespace ToolKit
     {
     public:
       virtual void TransitionOut(State* nextState) override;
-      virtual void Update(float deltaTime) override;
+      virtual SignalId Update(float deltaTime) override;
       virtual String Signaled(SignalId signal) override;
       virtual String GetType() override { return StateType::StateTransformEnd; }
     };

@@ -76,7 +76,11 @@ namespace ToolKit
   {
     if (m_currentState != nullptr)
     {
-      m_currentState->Update(deltaTime);
+      SignalId selfSig = m_currentState->Update(deltaTime);
+      if (selfSig != State::NullSignal)
+      {
+        Signal(selfSig);
+      }
     }
   }
 
