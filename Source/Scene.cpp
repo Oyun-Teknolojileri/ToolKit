@@ -274,10 +274,12 @@ namespace ToolKit
     cpy->m_name = m_name + "_cpy";
 
     cpy->m_entitites.reserve(m_entitites.size());
-    for (Entity* ntt : m_entitites)
+    EntityRawPtrArray roots;
+    GetRootEntities(m_entitites, roots);
+
+    for (Entity* ntt : roots)
     {
-      Entity* cpyNtt = ntt->GetCopy();
-      cpy->m_entitites.push_back(cpyNtt);
+      DeepCopy(ntt, cpy->m_entitites);
     }
   }
 

@@ -25,7 +25,7 @@ namespace ToolKit
   void ReadAttr(XmlNode* node, const String& name, String& val);
   XmlNode* Query(XmlDocument* doc, const StringArray& path);
 
-  // File path operations
+  // File path operations.
   bool CheckFile(const String& path);
   String CreateCopyFileFullPath(const String& fullPath);
   void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
@@ -45,16 +45,21 @@ namespace ToolKit
   bool SupportedImageFormat(const String& ext);
   bool SupportedMeshFormat(const String& ext);
 
-  // String operations
+  // String operations.
   void Split(const String& s, const String& sep, StringArray& v);
   void ReplaceStringInPlace(String& subject, const String& search, const String& replace);
+  String ToLower(const String& str);
+
+  // Debug geometries.
   class LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size);
   class LineBatch* CreateLineDebugObject(const Vec3Array& corners);
   class LineBatch* CreateBoundingBoxDebugObject(const BoundingBox& box, const Mat4* transform = nullptr);
+
+  // Entity operations.
   void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray);
   bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots);
-  String ToLower(const String& str);
+  void DeepCopy(Entity* parent, EntityRawPtrArray& copies); // copies: First one is the copy root, fallowings are attached children.
 
   template<typename T>
   void pop_front(std::vector<T>& vec)

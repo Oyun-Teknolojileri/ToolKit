@@ -238,15 +238,12 @@ namespace ToolKit
 
   Node* Node::GetCopy() const
   {
+    // Does not preserve parent / child relation
+    // Look at Util/DeepCopy for preserving hierarchy.
     Node* node = new Node();
-    if (m_parent != nullptr)
-    {
-      m_parent->AddChild(node);
-    }
 
     node->m_inheritScale = m_inheritScale;
     node->m_inheritOnlyTranslate = m_inheritOnlyTranslate;
-    // m_children // No Copy.
     node->m_translation = m_translation;
     node->m_orientation = m_orientation;
     node->m_scale = m_scale;

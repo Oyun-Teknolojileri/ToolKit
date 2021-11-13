@@ -505,6 +505,13 @@ namespace ToolKit
     }
   }
 
+  String ToLower(const String& str)
+  {
+    String lwr = str;
+    transform(lwr.begin(), lwr.end(), lwr.begin(), ::tolower);
+    return lwr;
+  }
+
   LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size)
   {
     // Searching perpendicular axes on the plane.
@@ -635,11 +642,19 @@ namespace ToolKit
     }
   }
 
-  String ToLower(const String& str)
+  void DeepCopy(Entity* root, EntityRawPtrArray& copies)
   {
-    String lwr = str;
-    transform(lwr.begin(), lwr.end(), lwr.begin(), ::tolower);
-    return lwr;
+    Entity* cpy = root->GetCopy();
+    copies.push_back(cpy);
+
+    for (Node* node : root->m_node->m_children)
+    {
+      if (node->m_entity)
+      {
+        DeepCopy(node->m_entity, copies);
+        cpy->m_node->AddChild(copies.back()->m_node);
+      }
+    }
   }
 
 }
