@@ -57,7 +57,7 @@ namespace ToolKit
     return aabb;
   }
 
-  Entity* Entity::GetCopy() const
+  Entity* Entity::Copy() const
   {
     EntityType t = GetType();
     Entity* e = CreateByType(t);
@@ -69,7 +69,7 @@ namespace ToolKit
     // This just copies the node, other contents should be copied by the descendent.
     assert(copyTo->GetType() == GetType());
     SafeDel(copyTo->m_node);
-    copyTo->m_node = m_node->GetCopy();
+    copyTo->m_node = m_node->Copy();
     copyTo->m_node->m_entity = copyTo;
     copyTo->m_name = m_name;
     copyTo->m_tag = m_tag;
@@ -88,7 +88,7 @@ namespace ToolKit
   {
     assert(copyTo->GetType() == GetType());
     SafeDel(copyTo->m_node);
-    copyTo->m_node = m_node->GetCopy();
+    copyTo->m_node = m_node->Copy();
     copyTo->m_node->m_entity = copyTo;
     copyTo->m_name = m_name;
     copyTo->m_tag = m_tag;

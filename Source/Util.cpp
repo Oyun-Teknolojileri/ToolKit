@@ -644,7 +644,7 @@ namespace ToolKit
 
   void DeepCopy(Entity* root, EntityRawPtrArray& copies)
   {
-    Entity* cpy = root->GetCopy();
+    Entity* cpy = root->Copy();
     copies.push_back(cpy);
 
     for (Node* node : root->m_node->m_children)

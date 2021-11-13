@@ -38,7 +38,7 @@ namespace ToolKit
     void Orphan(Node* child, bool preserveTransform = false);
     void OrphanSelf(bool preserveWorldTransform = false);
     Node* GetRoot() const;
-    Node* GetCopy() const;
+    Node* Copy() const;
     void Serialize(XmlDocument* doc, XmlNode* parent) const;
     void DeSerialize(XmlDocument* doc, XmlNode* parent);
     void SetInheritScaleDeep(bool val);

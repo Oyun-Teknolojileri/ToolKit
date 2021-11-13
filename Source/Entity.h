@@ -37,7 +37,7 @@ namespace ToolKit
     virtual EntityType GetType() const;
     virtual void SetPose(Animation* anim);
     virtual struct BoundingBox GetAABB(bool inWorld = false) const;
-    virtual Entity* GetCopy() const;
+    virtual Entity* Copy() const;
     virtual Entity* GetInstance() const;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);

@@ -138,7 +138,6 @@ namespace ToolKit
     Cone(bool genDef = true);
     Cone(const Params& params);
 
-    virtual Cone* GetCopy() const override;
     virtual EntityType GetType() const override;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;

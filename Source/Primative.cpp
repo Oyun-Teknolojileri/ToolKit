@@ -515,7 +515,7 @@ namespace ToolKit
           indices.push_back(offset + nSegBase + 2);
           indices.push_back(offset);
           indices.push_back(offset + nSegBase + 1);
-          indices.push_back(offset + nSegBase + +2); // Is this valid "nSegBase + +2" ??
+          indices.push_back(offset + nSegBase + 2);
           indices.push_back(offset + 1);
           indices.push_back(offset);
         }
@@ -568,13 +568,6 @@ namespace ToolKit
 
     m_mesh->CalculateAABB();
     m_mesh->ConstructFaces();
-  }
-
-  Cone* Cone::GetCopy() const
-  {
-    Cone* cpy = new Cone(false);
-    GetCopy(cpy);
-    return cpy;
   }
 
   Entity* Cone::GetCopy(Entity* copyTo) const

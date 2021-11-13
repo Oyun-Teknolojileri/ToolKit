@@ -236,7 +236,7 @@ namespace ToolKit
     return m_parent->GetRoot();
   }
 
-  Node* Node::GetCopy() const
+  Node* Node::Copy() const
   {
     // Does not preserve parent / child relation
     // Look at Util/DeepCopy for preserving hierarchy.

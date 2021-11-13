@@ -810,7 +810,7 @@ namespace ToolKit
           Entity* duplicate = nullptr;
           if (copy)
           {
-            duplicate = e->GetCopy();
+            duplicate = e->Copy();
           }
           else
           {
