@@ -104,6 +104,11 @@ namespace ToolKit
 
   void Animation::Load()
   {
+    if (m_loaded)
+    {
+      return;
+    }
+
     XmlFile file(m_file.c_str());
     XmlDocument doc;
     doc.parse<0>(file.data());
