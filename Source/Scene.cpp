@@ -224,6 +224,14 @@ namespace ToolKit
     return removed;
   }
 
+  void Scene::RemoveEntity(const EntityRawPtrArray& entities)
+  {
+    for (Entity* ntt : entities)
+    {
+      RemoveEntity(ntt->m_id);
+    }
+  }
+
   const EntityRawPtrArray& Scene::GetEntities() const
   {
     return m_entitites;

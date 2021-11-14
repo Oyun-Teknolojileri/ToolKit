@@ -38,6 +38,7 @@ namespace ToolKit
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
 
     virtual Entity* RemoveEntity(EntityId id);
+    virtual void RemoveEntity(const EntityRawPtrArray& entities);
     virtual void Destroy(bool removeResources);
 
     // Serialization.
