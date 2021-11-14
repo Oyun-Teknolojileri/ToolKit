@@ -34,6 +34,8 @@ namespace ToolKit
     virtual void Init(bool flushClientSideArray = true) override;
     virtual void UnInit() override;
 
+    void Reverse();
+
   protected:
     virtual void CopyTo(Resource* other) override;
 
@@ -49,7 +51,7 @@ namespace ToolKit
       Stop
     };
 
-    std::unordered_map<String, std::vector<Key>> m_keys;
+    std::unordered_map<String, std::vector<Key>> m_keys; // Bone - Key.
     float m_fps = 30.0f;
     float m_currentTime = 0.0f; // Seconds
     float m_duration = 0.0f;

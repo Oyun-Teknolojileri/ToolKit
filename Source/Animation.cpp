@@ -161,6 +161,20 @@ namespace ToolKit
     m_initiated = false;
   }
 
+  void Animation::Reverse()
+  {
+    for (auto& keys : m_keys)
+    {
+      int len = (int)m_keys[keys.first].size() - 1;
+      int lim = len / 2;
+      for (int i = 0; i < lim; i++)
+      {
+        std::swap(m_keys[keys.first][i], m_keys[keys.first][len - i]);
+        std::swap(m_keys[keys.first][i].m_frame, m_keys[keys.first][len - i].m_frame);
+      }
+    }
+  }
+
   void Animation::CopyTo(Resource* other)
   {
     Resource::CopyTo(other);
