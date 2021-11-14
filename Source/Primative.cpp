@@ -313,6 +313,17 @@ namespace ToolKit
     return instance;
   }
 
+  void Quad::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+    Entity::Serialize(doc, parent);
+  }
+
+  void Quad::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    Entity::DeSerialize(doc, parent);
+    Generate();
+  }
+
   void Quad::Generate()
   {
     VertexArray vertices;

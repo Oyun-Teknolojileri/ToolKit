@@ -75,6 +75,8 @@ namespace ToolKit
   protected:
     virtual Entity* GetCopy(Entity* copyTo) const override;
     virtual Entity* GetInstance(Entity* copyTo) const override;
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   private:
     void Generate();
