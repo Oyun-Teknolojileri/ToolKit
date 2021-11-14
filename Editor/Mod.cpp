@@ -804,22 +804,30 @@ namespace ToolKit
           ActionManager::GetInstance()->BeginActionGroup();
         }
 
+        EntityRawPtrArray selectedRoots;
+        GetRootEntities(selecteds, selectedRoots);
+
         bool copy = ImGui::GetIO().KeyShift;
-        for (Entity* e : selecteds)
+        EntityRawPtrArray copies;
+        for (Entity* ntt : selectedRoots)
         {
-          Entity* duplicate = nullptr;
           if (copy)
           {
-            duplicate = e->Copy();
+            DeepCopy(ntt, copies);
           }
           else
           {
-            duplicate = e->GetInstance();
+            DeepInstantiate(ntt, copies);
           }
-          ActionManager::GetInstance()->AddAction(new CreateAction(duplicate));
-          g_app->m_scene->AddToSelection(duplicate->m_id, true);
+
+          for (Entity* cpy : copies)
+          {
+            ActionManager::GetInstance()->AddAction(new CreateAction(cpy));
+          }
+          
+          g_app->m_scene->AddToSelection(copies.front()->m_id, true);
         }
-        ActionManager::GetInstance()->GroupLastActions((int)selecteds.size());
+        ActionManager::GetInstance()->GroupLastActions((int)copies.size());
       }
     }
 

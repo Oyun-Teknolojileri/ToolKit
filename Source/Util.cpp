@@ -657,4 +657,19 @@ namespace ToolKit
     }
   }
 
+  void DeepInstantiate(Entity* root, EntityRawPtrArray& instances)
+  {
+    Entity* cpy = root->GetInstance();
+    instances.push_back(cpy);
+
+    for (Node* node : root->m_node->m_children)
+    {
+      if (node->m_entity)
+      {
+        DeepInstantiate(node->m_entity, instances);
+        cpy->m_node->AddChild(instances.back()->m_node);
+      }
+    }
+  }
+
 }
