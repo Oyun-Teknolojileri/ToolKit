@@ -126,6 +126,26 @@ namespace ToolKit
 
         // Other editor and game entity plugins.
         ImGui::Separator();
+
+        float iWidth = ImGui::CalcItemWidth();
+        
+        ImGui::Checkbox("Run in window", &g_app->m_runWindowed);
+        if (ImGui::BeginTable("EmuSet", 4, ImGuiTableFlags_SizingFixedFit))
+        {
+          ImGui::TableNextRow();
+          ImGui::TableSetColumnIndex(0);
+          ImGui::Text("Width: ");
+          ImGui::TableSetColumnIndex(1);
+          ImGui::SetNextItemWidth(100.0f);
+          ImGui::InputFloat("##w", &g_app->m_playWidth, 0, 0, "%.0f");
+          ImGui::TableSetColumnIndex(2);
+          ImGui::Text("Height: ");
+          ImGui::TableSetColumnIndex(3);
+          ImGui::SetNextItemWidth(100.0f);
+          ImGui::InputFloat("##h", &g_app->m_playHeight, 0, 0, "%.0f");
+
+          ImGui::EndTable();
+        }
       }
 
       ImGui::End();

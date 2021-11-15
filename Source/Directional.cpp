@@ -233,6 +233,25 @@ namespace ToolKit
     }
   }
 
+  Entity* Camera::GetCopy(Entity* copyTo) const
+  {
+    Directional::GetCopy(copyTo);
+
+    Camera* cpy = static_cast<Camera*> (copyTo);
+    cpy->m_fov = m_fov;
+    cpy->m_aspect = m_aspect;
+    cpy->m_near = m_near;
+    cpy->m_far = m_far;
+    cpy->m_height = m_height;
+    cpy->m_left = m_left;
+    cpy->m_right = m_right;
+    cpy->m_bottom = m_bottom;
+    cpy->m_ortographic = m_ortographic;
+    cpy->m_projection = m_projection;
+
+    return cpy;
+  }
+
   Light::Light()
   {
     m_color = Vec3(1.0f, 1.0f, 1.0f);

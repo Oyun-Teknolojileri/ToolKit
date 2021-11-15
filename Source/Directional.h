@@ -60,6 +60,9 @@ namespace ToolKit
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+  protected:
+    virtual Entity* GetCopy(Entity* copyTo) const;
+
   private:
     float m_fov = 1.0f;
     float m_aspect = 1.0f;

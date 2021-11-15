@@ -115,6 +115,12 @@ namespace ToolKit
       MaterialPtr m_highLightSecondaryMaterial;
       Vec2 m_thumbnailSize = Vec2(300.0f, 300.0f);
       std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
+      
+      // Emulator settings.
+      bool m_runWindowed = false;
+      float m_playWidth = 640.0f;
+      float m_playHeight = 480.0f;
+      EditorViewport* m_playWindow = nullptr;
 
       // Editor objects.
       Grid* m_grid;

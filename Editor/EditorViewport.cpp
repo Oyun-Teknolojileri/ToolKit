@@ -199,6 +199,11 @@ namespace ToolKit
               onPlugin = true;
             }
 
+            if (m_name == "GamePlay")
+            {
+              onPlugin = true;
+            }
+
             if (!onPlugin)
             {
               for (OverlayUI* overlay : m_overlays)

@@ -86,14 +86,7 @@ namespace ToolKit
 
   Entity* Entity::GetInstance(Entity* copyTo) const
   {
-    assert(copyTo->GetType() == GetType());
-    SafeDel(copyTo->m_node);
-    copyTo->m_node = m_node->Copy();
-    copyTo->m_node->m_entity = copyTo;
-    copyTo->m_name = m_name;
-    copyTo->m_tag = m_tag;
-
-    return copyTo;
+    return GetCopy(copyTo);
   }
 
   Entity* Entity::CreateByType(EntityType t)
@@ -134,10 +127,12 @@ namespace ToolKit
     case EntityType::Entity_Drawable:
       e = new Drawable();
       break;
+    case EntityType::Entity_Camera:
+      e = new Camera();
+      break;
     case EntityType::Entity_SpriteAnim:
     case EntityType::Entity_Surface:
     case EntityType::Entity_Light:
-    case EntityType::Entity_Camera:
     case EntityType::Entity_Directional:
     default:
       assert(false);

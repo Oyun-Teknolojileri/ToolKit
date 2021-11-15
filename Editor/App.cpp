@@ -163,19 +163,40 @@ namespace ToolKit
         // Plugin drawing.
         if (m_gameMod != GameMod::Stop)
         {
-          if (wnd->m_name == "Perspective")
+          if (GamePlugin* plugin = GetPluginManager()->m_plugin)
           {
-            if (GamePlugin* plugin = GetPluginManager()->m_plugin)
+            EditorViewport* plugWindow = GetWindow<EditorViewport>("Perspective");
+            if (m_runWindowed)
             {
-              EditorViewport* perspective = GetWindow<EditorViewport>("Perspective");
-              RenderTarget* rt = perspective->m_viewportImage;
-              m_renderer->SwapRenderTarget(&rt);
-              plugin->Frame(deltaTime, perspective);
-              m_renderer->SwapRenderTarget(&rt);
+              Camera* cam = plugWindow->m_camera;
+
+              m_playWindow->SetVisibility(true);
+              plugWindow = m_playWindow;
+
+              SafeDel(plugWindow->m_camera);
+              plugWindow->m_camera = static_cast<Camera*> (cam->Copy());
+
+              if
+              (
+                glm::epsilonNotEqual(m_playWidth, plugWindow->m_width, 0.01f),
+                glm::epsilonNotEqual(m_playWidth, plugWindow->m_height, 0.01f)
+              )
+              {
+                plugWindow->OnResize(m_playWidth, m_playHeight);
+              }
             }
 
-            continue;
+            RenderTarget* rt = plugWindow->m_viewportImage;
+            m_renderer->SwapRenderTarget(&rt);
+            plugin->Frame(deltaTime, plugWindow);
+            m_renderer->SwapRenderTarget(&rt);
           }
+
+          continue;
+        }
+        else
+        {
+          m_playWindow->SetVisibility(false);
         }
 
         EditorViewport* vp = static_cast<EditorViewport*> (wnd);
@@ -525,6 +546,8 @@ namespace ToolKit
       {
         SafeDel(EditorViewport::m_overlays[i]);
       }
+
+      SafeDel(m_playWindow);
     }
 
     void App::CreateWindows(XmlNode* parent)
@@ -571,6 +594,11 @@ namespace ToolKit
           }
         } while ((wndNode = wndNode->next_sibling("Window")));
       }
+
+      // Create a gameplay window.
+      m_playWindow = new EditorViewport(m_playWidth, m_playHeight);
+      m_playWindow->SetVisibility(false);
+      m_playWindow->m_name = "GamePlay";
     }
 
     int App::Import(const String& fullPath, const String& subDir, bool overwrite)

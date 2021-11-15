@@ -29,8 +29,7 @@ namespace ToolKit
       virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-    protected:
-      void OnResize(float width, float height) override;
+      virtual void OnResize(float width, float height) override;
 
     private:
       // Mods.
