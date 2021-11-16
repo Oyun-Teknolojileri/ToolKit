@@ -153,10 +153,10 @@ namespace ToolKit
       }
 
       // Draw PlayWindow
-      if (m_gameMod != GameMod::Stop && m_runWindowed)
+      bool drawPlay = m_gameMod != GameMod::Stop && m_runWindowed;
+      m_playWindow->SetVisibility(drawPlay);
+      if (drawPlay)
       {
-        m_playWindow->SetVisibility(true);
-
         Mat4 camTs = GetWindow<EditorViewport>("Perspective")->m_camera->m_node->GetTransform(TransformationSpace::TS_WORLD);
         m_playWindow->m_camera->m_node->SetTransform(camTs);
 
