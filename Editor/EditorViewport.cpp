@@ -196,7 +196,11 @@ namespace ToolKit
             bool onPlugin = false;
             if (m_name == "Perspective" && g_app->m_gameMod != App::GameMod::Stop)
             {
-              onPlugin = true;
+              if (!g_app->m_runWindowed)
+              {
+                // Game is being drawn on perspective. Hide overlays.
+                onPlugin = true;
+              }
             }
 
             if (m_name == "PlayWindow")
