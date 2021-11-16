@@ -72,7 +72,7 @@ namespace ToolKit
       m_mouseOverOverlay = false;
 
       ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
-      if (ImGui::Begin(m_name.c_str(), &m_visible, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+      if (ImGui::Begin(m_name.c_str(), &m_visible, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | m_additionalWindowFlags))
       {
         HandleStates();
 

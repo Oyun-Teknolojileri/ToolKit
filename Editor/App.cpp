@@ -152,6 +152,22 @@ namespace ToolKit
         wnd->DispatchSignals();
       }
 
+      // Draw PlayWindow
+      if (m_gameMod != GameMod::Stop && m_runWindowed)
+      {
+        m_playWindow->SetVisibility(true);
+
+        Mat4 camTs = GetWindow<EditorViewport>("Perspective")->m_camera->m_node->GetTransform(TransformationSpace::TS_WORLD);
+        m_playWindow->m_camera->m_node->SetTransform(camTs);
+
+        m_renderer->SwapRenderTarget(&m_playWindow->m_viewportImage);
+        if (GamePlugin* plugin = GetPluginManager()->m_plugin)
+        {
+          plugin->Frame(deltaTime, m_playWindow);
+        }
+        m_renderer->SwapRenderTarget(&m_playWindow->m_viewportImage);
+      }
+
       // Update Viewports.
       for (Window* wnd : m_windows)
       {
@@ -163,40 +179,17 @@ namespace ToolKit
         // Plugin drawing.
         if (m_gameMod != GameMod::Stop)
         {
-          if (GamePlugin* plugin = GetPluginManager()->m_plugin)
+          if (!m_runWindowed && wnd->m_name == "Perspective")
           {
-            auto renderFn = [this, &plugin, &deltaTime](Viewport* vp) -> void
+            if (GamePlugin* plugin = GetPluginManager()->m_plugin)
             {
-              RenderTarget* rt = vp->m_viewportImage;
-              m_renderer->SwapRenderTarget(&rt);
-              plugin->Frame(deltaTime, vp);
-              m_renderer->SwapRenderTarget(&rt);
-            };
-
-            EditorViewport* plugWindow = GetWindow<EditorViewport>("Perspective");
-            if (wnd->m_name == "PlayWindow" && m_runWindowed)
-            {
-              Camera* cam = plugWindow->m_camera;
-              plugWindow = GetWindow<EditorViewport>("PlayWindow");
-
-              SafeDel(plugWindow->m_camera);
-              plugWindow->m_camera = static_cast<Camera*> (cam->Copy());
-
-              if
-              (
-                glm::epsilonNotEqual(m_playWidth, plugWindow->m_width, 0.01f),
-                glm::epsilonNotEqual(m_playWidth, plugWindow->m_height, 0.01f)
-              )
+              EditorViewport* perspective = GetWindow<EditorViewport>("Perspective");
+              m_renderer->SwapRenderTarget(&perspective->m_viewportImage);
+              if (GamePlugin* plugin = GetPluginManager()->m_plugin)
               {
-                plugWindow->OnResize(m_playWidth, m_playHeight);
+                plugin->Frame(deltaTime, perspective);
               }
-
-              renderFn(plugWindow);
-              continue;
-            }
-            else if (wnd->m_name == "Perspective")
-            {
-              renderFn(plugWindow);
+              m_renderer->SwapRenderTarget(&perspective->m_viewportImage);
               continue;
             }
           }
@@ -455,10 +448,7 @@ namespace ToolKit
 
           if (m_runWindowed)
           {
-            if (EditorViewport* playWindow = GetWindow<EditorViewport>("PlayWindow"))
-            {
-              playWindow->SetVisibility(true);
-            }
+            m_playWindow->SetVisibility(true);
           }
         }
         else
@@ -485,10 +475,7 @@ namespace ToolKit
         GetSceneManager()->m_currentScene = m_scene;
         m_swapScene = nullptr;
 
-        if (EditorViewport* playWindow = GetWindow<EditorViewport>("PlayWindow"))
-        {
-          playWindow->SetVisibility(false);
-        }
+        m_playWindow->SetVisibility(false);
       }
     }
 
@@ -562,6 +549,8 @@ namespace ToolKit
       {
         SafeDel(EditorViewport::m_overlays[i]);
       }
+
+      SafeDel(m_playWindow);
     }
 
     void App::CreateWindows(XmlNode* parent)
@@ -610,10 +599,10 @@ namespace ToolKit
       }
 
       // Create a PlayWindow window.
-      EditorViewport* playWindow = new EditorViewport(m_playWidth, m_playHeight);
-      playWindow->SetVisibility(false);
-      playWindow->m_name = "PlayWindow";
-      m_windows.push_back(playWindow);
+      m_playWindow = new EditorViewport(m_playWidth, m_playHeight);
+      m_playWindow->m_name = "PlayWindow";
+      m_playWindow->m_additionalWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse;
+      m_playWindow->SetVisibility(false);
     }
 
     int App::Import(const String& fullPath, const String& subDir, bool overwrite)
