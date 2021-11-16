@@ -394,25 +394,21 @@ namespace ToolKit
         // Mouse is right clicked
         if (ImGui::IsMouseDown(ImGuiMouseButton_Right))
         {
-          ImGuiIO& io = ImGui::GetIO();
-          IVec2 absMousePos = { io.MousePos.x, io.MousePos.y };
+          ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 
           // Handle relative mouse hack.
           if (m_relMouseModBegin)
           {
             m_relMouseModBegin = false;
-            m_mousePosBegin = absMousePos;
+            SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);
           }
 
-          ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+          IVec2 absMousePos;
+          SDL_GetGlobalMouseState(&absMousePos.x, &absMousePos.y);
           IVec2 delta = absMousePos - m_mousePosBegin;
 
-#ifdef __EMSCRIPTEN__
-          m_mousePosBegin = absMousePos; // No relative mouse hack.
-#else
           SDL_WarpMouseGlobal(m_mousePosBegin.x, m_mousePosBegin.y);
           // End of relative mouse hack.
-#endif
 
           m_camera->Pitch(-glm::radians(delta.y * g_app->m_mouseSensitivity));
           m_camera->RotateOnUpVector(-glm::radians(delta.x * g_app->m_mouseSensitivity));
@@ -425,6 +421,7 @@ namespace ToolKit
           float speed = g_app->m_camSpeed;
 
           Vec3 move;
+          ImGuiIO& io = ImGui::GetIO();
           if (io.KeysDown[SDL_SCANCODE_A])
           {
             move += -right;
