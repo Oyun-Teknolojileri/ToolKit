@@ -165,13 +165,19 @@ namespace ToolKit
         {
           if (GamePlugin* plugin = GetPluginManager()->m_plugin)
           {
+            auto renderFn = [this, &plugin, &deltaTime](Viewport* vp) -> void
+            {
+              RenderTarget* rt = vp->m_viewportImage;
+              m_renderer->SwapRenderTarget(&rt);
+              plugin->Frame(deltaTime, vp);
+              m_renderer->SwapRenderTarget(&rt);
+            };
+
             EditorViewport* plugWindow = GetWindow<EditorViewport>("Perspective");
-            if (m_runWindowed)
+            if (wnd->m_name == "PlayWindow" && m_runWindowed)
             {
               Camera* cam = plugWindow->m_camera;
-
-              m_playWindow->SetVisibility(true);
-              plugWindow = m_playWindow;
+              plugWindow = GetWindow<EditorViewport>("PlayWindow");
 
               SafeDel(plugWindow->m_camera);
               plugWindow->m_camera = static_cast<Camera*> (cam->Copy());
@@ -184,19 +190,16 @@ namespace ToolKit
               {
                 plugWindow->OnResize(m_playWidth, m_playHeight);
               }
+
+              renderFn(plugWindow);
+              continue;
             }
-
-            RenderTarget* rt = plugWindow->m_viewportImage;
-            m_renderer->SwapRenderTarget(&rt);
-            plugin->Frame(deltaTime, plugWindow);
-            m_renderer->SwapRenderTarget(&rt);
+            else if (wnd->m_name == "Perspective")
+            {
+              renderFn(plugWindow);
+              continue;
+            }
           }
-
-          continue;
-        }
-        else
-        {
-          m_playWindow->SetVisibility(false);
         }
 
         EditorViewport* vp = static_cast<EditorViewport*> (wnd);
@@ -449,6 +452,14 @@ namespace ToolKit
         {
           m_statusMsg = "Game is playing";
           m_gameMod = mod;
+
+          if (m_runWindowed)
+          {
+            if (EditorViewport* playWindow = GetWindow<EditorViewport>("PlayWindow"))
+            {
+              playWindow->SetVisibility(true);
+            }
+          }
         }
         else
         {
@@ -473,6 +484,11 @@ namespace ToolKit
         m_swapScene.swap(m_scene);
         GetSceneManager()->m_currentScene = m_scene;
         m_swapScene = nullptr;
+
+        if (EditorViewport* playWindow = GetWindow<EditorViewport>("PlayWindow"))
+        {
+          playWindow->SetVisibility(false);
+        }
       }
     }
 
@@ -546,8 +562,6 @@ namespace ToolKit
       {
         SafeDel(EditorViewport::m_overlays[i]);
       }
-
-      SafeDel(m_playWindow);
     }
 
     void App::CreateWindows(XmlNode* parent)
@@ -595,10 +609,11 @@ namespace ToolKit
         } while ((wndNode = wndNode->next_sibling("Window")));
       }
 
-      // Create a gameplay window.
-      m_playWindow = new EditorViewport(m_playWidth, m_playHeight);
-      m_playWindow->SetVisibility(false);
-      m_playWindow->m_name = "GamePlay";
+      // Create a PlayWindow window.
+      EditorViewport* playWindow = new EditorViewport(m_playWidth, m_playHeight);
+      playWindow->SetVisibility(false);
+      playWindow->m_name = "PlayWindow";
+      m_windows.push_back(playWindow);
     }
 
     int App::Import(const String& fullPath, const String& subDir, bool overwrite)

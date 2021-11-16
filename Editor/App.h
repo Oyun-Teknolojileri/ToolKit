@@ -120,7 +120,6 @@ namespace ToolKit
       bool m_runWindowed = false;
       float m_playWidth = 640.0f;
       float m_playHeight = 480.0f;
-      EditorViewport* m_playWindow = nullptr;
 
       // Editor objects.
       Grid* m_grid;

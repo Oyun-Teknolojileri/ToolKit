@@ -299,11 +299,6 @@ namespace ToolKit
         }
       }
 
-      if (g_app->m_playWindow->IsVisible())
-      {
-        g_app->m_playWindow->Show();
-      }
-
       if (m_imguiSampleWindow)
       {
         ImGui::ShowDemoWindow(&m_imguiSampleWindow);

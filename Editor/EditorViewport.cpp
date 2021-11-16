@@ -199,7 +199,7 @@ namespace ToolKit
               onPlugin = true;
             }
 
-            if (m_name == "GamePlay")
+            if (m_name == "PlayWindow")
             {
               onPlugin = true;
             }
