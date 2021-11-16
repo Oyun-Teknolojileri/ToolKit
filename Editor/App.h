@@ -95,8 +95,8 @@ namespace ToolKit
         return nullptr;
       }
 
-      // Quick selected render implementation.
-      void RenderSelected(EditorViewport* vp);
+      void RenderSelected(EditorViewport* vp); // Quick selected render implementation.
+      void DrawPlayWindow(float deltaTime);
 
       virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;

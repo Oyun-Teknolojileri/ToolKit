@@ -152,21 +152,7 @@ namespace ToolKit
         wnd->DispatchSignals();
       }
 
-      // Draw PlayWindow
-      bool drawPlay = m_gameMod != GameMod::Stop && m_runWindowed;
-      m_playWindow->SetVisibility(drawPlay);
-      if (drawPlay)
-      {
-        Mat4 camTs = GetWindow<EditorViewport>("Perspective")->m_camera->m_node->GetTransform(TransformationSpace::TS_WORLD);
-        m_playWindow->m_camera->m_node->SetTransform(camTs);
-
-        m_renderer->SwapRenderTarget(&m_playWindow->m_viewportImage);
-        if (GamePlugin* plugin = GetPluginManager()->m_plugin)
-        {
-          plugin->Frame(deltaTime, m_playWindow);
-        }
-        m_renderer->SwapRenderTarget(&m_playWindow->m_viewportImage);
-      }
+      DrawPlayWindow(deltaTime);
 
       // Update Viewports.
       for (Window* wnd : m_windows)
@@ -176,22 +162,12 @@ namespace ToolKit
           continue;
         }
 
-        // Plugin drawing.
-        if (m_gameMod != GameMod::Stop)
+        // PlayWindow is drawn on perspective. Thus, skip perspective.
+        if (m_gameMod != GameMod::Stop && !m_runWindowed)
         {
-          if (!m_runWindowed && wnd->m_name == "Perspective")
+          if (wnd->m_name == "Perspective")
           {
-            if (GamePlugin* plugin = GetPluginManager()->m_plugin)
-            {
-              EditorViewport* perspective = GetWindow<EditorViewport>("Perspective");
-              m_renderer->SwapRenderTarget(&perspective->m_viewportImage);
-              if (GamePlugin* plugin = GetPluginManager()->m_plugin)
-              {
-                plugin->Frame(deltaTime, perspective);
-              }
-              m_renderer->SwapRenderTarget(&perspective->m_viewportImage);
-              continue;
-            }
+            continue;
           }
         }
 
@@ -1054,6 +1030,28 @@ namespace ToolKit
       {
         Drawable* dw = static_cast<Drawable*> (primary);
         m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(dw->GetAABB(true)));
+      }
+    }
+
+    void App::DrawPlayWindow(float deltaTime)
+    {
+      if (GamePlugin* plugin = GetPluginManager()->m_plugin)
+      {
+        if (m_gameMod != GameMod::Stop)
+        {
+          m_playWindow->SetVisibility(m_runWindowed);
+
+          EditorViewport* playWindow = GetWindow<EditorViewport>("Perspective");
+          if (m_runWindowed)
+          {
+            Mat4 camTs = playWindow->m_camera->m_node->GetTransform(TransformationSpace::TS_WORLD);
+            m_playWindow->m_camera->m_node->SetTransform(camTs);
+            playWindow = m_playWindow;
+          }
+          m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
+          plugin->Frame(deltaTime, playWindow);
+          m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
+        }
       }
     }
 
