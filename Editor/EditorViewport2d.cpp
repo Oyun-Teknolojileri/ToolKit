@@ -267,8 +267,8 @@ namespace ToolKit
         {
           // Orbit around it.
           ImGuiIO& io = ImGui::GetIO();
-          float x = -io.MouseDelta.x;
-          float y = io.MouseDelta.y;
+          float x = -io.MouseDelta.x * m_zoom;
+          float y = io.MouseDelta.y * m_zoom;
 
           Vec3 displace = X_AXIS * x + Y_AXIS * y;
           m_camera->m_node->Translate(displace, TransformationSpace::TS_WORLD);
@@ -278,8 +278,8 @@ namespace ToolKit
 
     void EditorViewport2d::AdjustZoom(float z)
     {
-      m_zoom += z;
-      m_zoom = glm::max(0.0001f, m_zoom);
+      m_zoom += z * 0.1f;
+      m_zoom = glm::max(0.001f, m_zoom);
       m_camera->SetLens
       (
         1.0f,
