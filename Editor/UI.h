@@ -23,7 +23,8 @@ namespace ToolKit
         Outliner,
         Inspector,
         MaterialInspector,
-        PluginWindow
+        PluginWindow,
+        Viewport2d
       };
 
     public:

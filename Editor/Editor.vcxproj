@@ -93,6 +93,7 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="ConsoleWindow.cpp" />
+    <ClCompile Include="EditorViewport2d.cpp" />
     <ClCompile Include="FolderWindow.cpp" />
     <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="Grid.cpp" />
@@ -147,6 +148,7 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="ConsoleWindow.h" />
+    <ClInclude Include="EditorViewport2d.h" />
     <ClInclude Include="FolderWindow.h" />
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="GlobalDef.h" />

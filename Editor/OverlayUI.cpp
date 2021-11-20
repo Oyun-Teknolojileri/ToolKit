@@ -206,6 +206,19 @@ namespace ToolKit
           ImGui::EndMenu();
         }
         ImGui::Separator();
+
+        if (ImGui::BeginMenu("2D UI"))
+        {
+          if (ImGui::MenuItem("Surface"))
+          {
+            Surface* suface = new Surface({ 100.0f, 30.0f });
+            suface->m_mesh->Init(false);
+            g_app->m_scene->AddEntity(suface);
+          }
+          ImGui::EndMenu();
+        }
+
+        ImGui::Separator();
         if (ImGui::MenuItem("Node"))
         {
           Entity* node = Entity::CreateByType(EntityType::Entity_Node);

@@ -13,6 +13,7 @@ namespace ToolKit
   {
     m_mesh->m_material->m_diffuseTexture = texture;
     m_pivotOffset = pivotOffset;
+    SetSizeFromTexture();
     CreateQuat();
     AssignTexture();
   }
@@ -20,6 +21,7 @@ namespace ToolKit
   Surface::Surface(TexturePtr texture, const SpriteEntry& entry)
   {
     m_mesh->m_material->m_diffuseTexture = texture;
+    SetSizeFromTexture();
     CreateQuat(entry);
     AssignTexture();
   }
@@ -28,6 +30,16 @@ namespace ToolKit
   {
     m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(textureFile);
     m_pivotOffset = pivotOffset;
+    SetSizeFromTexture();
+    CreateQuat();
+    AssignTexture();
+  }
+
+  Surface::Surface(const Vec2& size, const Vec2& offset)
+  {
+    m_size = size;
+    m_pivotOffset = offset;
+    m_mesh->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
     CreateQuat();
     AssignTexture();
   }
@@ -106,6 +118,15 @@ namespace ToolKit
     vertices[5].tex = Vec2(textureRect.x, 1.0f - (textureRect.y + textureRect.height));
 
     m_mesh->m_clientSideVertices = vertices;
+  }
+
+  void Surface::SetSizeFromTexture()
+  {
+    m_size =
+    {
+      m_mesh->m_material->m_diffuseTexture->m_width,
+      m_mesh->m_material->m_diffuseTexture->m_height
+    };
   }
 
 }

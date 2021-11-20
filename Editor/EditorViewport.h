@@ -31,7 +31,7 @@ namespace ToolKit
 
       virtual void OnResize(float width, float height) override;
 
-    private:
+    protected:
       // Mods.
       void FpsNavigationMode(float deltaTime);
       void OrbitPanMod(float deltaTime);
