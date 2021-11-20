@@ -279,7 +279,7 @@ namespace ToolKit
     void EditorViewport2d::AdjustZoom(float z)
     {
       m_zoom += z * 0.1f;
-      m_zoom = glm::max(0.001f, m_zoom);
+      m_zoom = glm::max(0.1f, m_zoom);
       m_camera->SetLens
       (
         1.0f,
