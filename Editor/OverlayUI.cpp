@@ -500,9 +500,8 @@ namespace ToolKit
         String fps = "Fps: " + std::to_string(g_app->m_fps);
         ImGui::SameLine(m_owner->m_width - 70.0f);
         ImGui::Text(fps.c_str());
-
-        ImGui::EndChildFrame();
       }
+      ImGui::EndChildFrame();
     }
 
 }
