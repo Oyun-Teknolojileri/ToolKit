@@ -50,14 +50,14 @@ namespace ToolKit
         g_app->m_playHeight
       };
 
-      ImGui::SetNextWindowSize(size);
+      ImGui::SetNextWindowSize(size, ImGuiCond_Once);
       if 
       (
         ImGui::Begin
         (
           m_name.c_str(), 
           &m_visible, 
-          ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoDocking
+          ImGuiWindowFlags_NoScrollWithMouse
         )
       )
       {
@@ -282,7 +282,7 @@ namespace ToolKit
       m_zoom = glm::max(0.1f, m_zoom);
       m_camera->SetLens
       (
-        1.0f,
+        m_width / m_height,
         m_canvasSize.x * m_zoom * -0.5f,
         m_canvasSize.x * m_zoom * 0.5f,
         m_canvasSize.y * m_zoom * -0.5f,
