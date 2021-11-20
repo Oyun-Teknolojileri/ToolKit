@@ -44,8 +44,8 @@ namespace ToolKit
     {
       ImVec2 overlaySize(48, 260);
       const float padding = 5.0f;
-      ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding, m_owner->m_wndPos.y + padding);
-      ImGui::SetNextWindowPos(window_pos);
+      Vec2 wndPos = Vec2(m_owner->m_wndPos.x + padding, m_owner->m_wndPos.y + padding) + m_scroll;
+      ImGui::SetNextWindowPos(wndPos);
       ImGui::SetNextWindowBgAlpha(0.65f);
       if (ImGui::BeginChildFrame(ImGui::GetID("Navigation"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
       {
@@ -228,8 +228,8 @@ namespace ToolKit
       ImVec2 overlaySize(320, 30);
 
       const float padding = 5.0f;
-      ImVec2 window_pos = ImVec2(m_owner->m_wndPos.x + padding + 52, m_owner->m_wndPos.y + padding);
-      ImGui::SetNextWindowPos(window_pos);
+      Vec2 wndPos = Vec2(m_owner->m_wndPos.x + padding + 52, m_owner->m_wndPos.y + padding) + m_scroll;
+      ImGui::SetNextWindowPos(wndPos);
       ImGui::SetNextWindowBgAlpha(0.65f);
       if 
       (
@@ -434,12 +434,12 @@ namespace ToolKit
       ImVec2 overlaySize;
       overlaySize.x = m_owner->m_width - 2;
       overlaySize.y = 24;
-      ImVec2 pos = m_owner->m_wndPos;
-      ImVec2 wndPadding = ImGui::GetStyle().WindowPadding;
+      Vec2 pos = m_owner->m_wndPos;
+      Vec2 wndPadding = ImGui::GetStyle().WindowPadding;
 
       pos.x += 1;
       pos.y += m_owner->m_height - wndPadding.y - 16.0f;
-      ImGui::SetNextWindowPos(pos);
+      ImGui::SetNextWindowPos(pos + m_scroll);
       ImGui::SetNextWindowBgAlpha(0.65f);
       if
         (

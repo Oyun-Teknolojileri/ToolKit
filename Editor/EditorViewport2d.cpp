@@ -46,8 +46,8 @@ namespace ToolKit
 
       Vec2 size =
       {
-        g_app->m_playWidth,
-        g_app->m_playHeight
+        g_app->m_playWidth * 1.1f,
+        g_app->m_playHeight * 1.1f
       };
 
       ImGui::SetNextWindowSize(size, ImGuiCond_Once);
@@ -57,15 +57,15 @@ namespace ToolKit
         (
           m_name.c_str(), 
           &m_visible, 
-          ImGuiWindowFlags_NoScrollWithMouse
+          ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_HorizontalScrollbar
         )
       )
       {
         HandleStates();
 
         // Content area size
-        ImVec2 vMin = ImGui::GetWindowContentRegionMin();
-        ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+        Vec2 vMin = ImGui::GetWindowContentRegionMin();
+        Vec2 vMax = ImGui::GetWindowContentRegionMax();
 
         vMin.x += ImGui::GetWindowPos().x;
         vMin.y += ImGui::GetWindowPos().y;
@@ -91,24 +91,40 @@ namespace ToolKit
         m_lastMousePosRelContentArea.x = (int)(absMousePos.x - vMin.x);
         m_lastMousePosRelContentArea.y = (int)(absMousePos.y - vMin.y);
 
+        Vec2 scroll(ImGui::GetScrollX(), ImGui::GetScrollY());
         if (!ImGui::IsWindowCollapsed())
         {
           if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
           {
-            ImGui::Image((void*)(intptr_t)m_viewportImage->m_textureId, ImVec2(m_width, m_height), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
-
-            if (m_wndContentAreaSize.x != m_width || m_wndContentAreaSize.y != m_height)
+            // Draw canvas.
+            if 
+            (
+              m_canvasSize.x != g_app->m_playWidth ||
+              m_canvasSize.x != g_app->m_playHeight
+            )
             {
-              OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
+              GetGlobalCanvasSize();
             }
 
+            Vec2 wndSize = ImGui::GetWindowSize();
+            ImGui::SetCursorPos((wndSize - m_canvasSize) * 0.5f);
+            ImGui::BeginChildFrame
+            (
+              ImGui::GetID("canvas"),
+              m_canvasSize,
+              ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse
+            );
+            ImGui::Image(Convert2ImGuiTexture(m_viewportImage), m_canvasSize, ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
+            ImGui::EndChildFrame();
+
+            // Draw borders.
             if (IsActive())
             {
-              ImGui::GetWindowDrawList()->AddRect(vMin, vMax, IM_COL32(255, 255, 0, 255));
+              ImGui::GetWindowDrawList()->AddRect(vMin + scroll, vMax + scroll, IM_COL32(255, 255, 0, 255));
             }
             else
             {
-              ImGui::GetWindowDrawList()->AddRect(vMin, vMax, IM_COL32(128, 128, 128, 255));
+              ImGui::GetWindowDrawList()->AddRect(vMin + scroll, vMax + scroll, IM_COL32(128, 128, 128, 255));
             }
           }
         }
@@ -201,8 +217,10 @@ namespace ToolKit
               {
                 if (overlay)
                 {
+                  overlay->m_scroll = scroll;
                   overlay->m_owner = this;
                   overlay->Show();
+                  overlay->m_scroll = Vec2();
                 }
               }
             }
