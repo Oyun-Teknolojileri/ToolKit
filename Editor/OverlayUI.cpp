@@ -147,9 +147,8 @@ namespace ToolKit
 
         ImGui::SameLine(0, spacing); 
         UI::HelpMarker(LOC + m_owner->m_name, "Camera speed m/s\n");
-
-        ImGui::EndChildFrame();
       }
+      ImGui::EndChildFrame();
     }
 
     // OverlayViewportOptions
@@ -417,9 +416,8 @@ namespace ToolKit
           ImGui::PopItemWidth();
           ImGui::EndPopup();
         }
-
-        ImGui::EndChildFrame();
       }
+      ImGui::EndChildFrame();
     }
 
     // StatusBar
