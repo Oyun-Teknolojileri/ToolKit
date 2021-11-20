@@ -61,8 +61,8 @@ namespace ToolKit
 
   void Surface::CreateQuat()
   {
-    float width = (float)m_mesh->m_material->m_diffuseTexture->m_width;
-    float height = (float)m_mesh->m_material->m_diffuseTexture->m_height;
+    float width = m_size.x;
+    float height = m_size.y;
     float depth = 0;
     Vec2 absOffset = Vec2(m_pivotOffset.x * width, m_pivotOffset.y * height);
 

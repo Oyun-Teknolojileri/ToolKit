@@ -25,11 +25,15 @@ namespace ToolKit
     EditorViewport2d::EditorViewport2d(XmlNode* node)
       : EditorViewport(node)
     {
+      GetGlobalCanvasSize();
+      Init2dCam();
     }
 
     EditorViewport2d::EditorViewport2d(float width, float height)
       : EditorViewport(width, height)
     {
+      GetGlobalCanvasSize();
+      Init2dCam();
     }
 
     EditorViewport2d::~EditorViewport2d()
@@ -49,9 +53,12 @@ namespace ToolKit
       ImGui::SetNextWindowSize(size);
       if 
       (
-        ImGui::Begin(m_name.c_str(), 
-        &m_visible, 
-        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoDocking)
+        ImGui::Begin
+        (
+          m_name.c_str(), 
+          &m_visible, 
+          ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoDocking
+        )
       )
       {
         HandleStates();
@@ -220,23 +227,32 @@ namespace ToolKit
         return;
       }
 
-      OrbitPanMod(deltaTime);
+      PanZoom(deltaTime);
     }
 
     void EditorViewport2d::OnResize(float width, float height)
     {
       Viewport::OnResize(width, height);
-      if (m_camera->IsOrtographic())
-      {
-        Camera::CamData dat = m_camera->GetData();
-        float distToCenter = glm::distance(Vec3(), dat.pos);
-
-        float hDist = distToCenter * 10.0f / 500.0f;
-        m_camera->SetLens(dat.aspect, -hDist, hDist, -hDist, hDist, 0.01f, 1000.0f);
-      }
+      AdjustZoom(0.0f);
     }
 
-    void EditorViewport2d::OrbitPanMod(float deltaTime)
+    void EditorViewport2d::Init2dCam()
+    {
+      m_zoom = 1.0f;
+      m_camera->m_node->SetTranslation(Z_AXIS * 10.0f);
+      AdjustZoom(0.0f);
+    }
+
+    void EditorViewport2d::GetGlobalCanvasSize()
+    {
+      m_canvasSize =
+      {
+        g_app->m_playWidth,
+        g_app->m_playHeight
+      };
+    }
+
+    void EditorViewport2d::PanZoom(float deltaTime)
     {
       if (m_camera)
       {
@@ -244,124 +260,36 @@ namespace ToolKit
         if (m_mouseOverContentArea)
         {
           float zoom = ImGui::GetIO().MouseWheel;
-          if (m_camera->IsOrtographic())
-          {
-            m_camera->Translate(Vec3(0.0f, 0.0f, -zoom * 10.0f));
-
-            Camera::CamData dat = m_camera->GetData();
-            float distToCenter = glm::distance(Vec3(), dat.pos);
-
-            float hDist = distToCenter * 10.0f / 500.0f;
-            m_camera->SetLens(dat.aspect, -hDist, hDist, -hDist, hDist, 0.01f, 1000.0f);
-          }
-          else
-          {
-            m_camera->Translate(Vec3(0.0f, 0.0f, -zoom));
-          }
+          AdjustZoom(zoom);
         }
 
-        static Vec3 orbitPnt;
-        static bool hitFound = false;
-        static float dist = 0.0f;
-        Camera::CamData dat = m_camera->GetData();
         if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
         {
-          // Figure out orbiting point.
-          Entity* currEntity = g_app->m_scene->GetCurrentSelection();
-          if (currEntity == nullptr)
-          {
-            if (!hitFound)
-            {
-              Ray orbitRay = RayFromMousePosition();
-              EditorScene::PickData pd = g_app->m_scene->PickObject(orbitRay);
-
-              if (pd.entity == nullptr)
-              {
-                if (!g_app->m_grid->HitTest(orbitRay, orbitPnt))
-                {
-                  orbitPnt = PointOnRay(orbitRay, 5.0f);
-                }
-              }
-              else
-              {
-                orbitPnt = pd.pickPos;
-              }
-              hitFound = true;
-              dist = glm::distance(orbitPnt, dat.pos);
-            }
-          }
-          else
-          {
-            hitFound = true;
-            orbitPnt = currEntity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-            dist = glm::distance(orbitPnt, dat.pos);
-          }
-
           // Orbit around it.
           ImGuiIO& io = ImGui::GetIO();
-          float x = io.MouseDelta.x;
+          float x = -io.MouseDelta.x;
           float y = io.MouseDelta.y;
-          Vec3 r = m_camera->GetRight();
-          Vec3 u = m_camera->GetUp();
 
-          if (io.KeyShift)
-          {
-            // Reflect window space mouse delta to image plane. 
-            Vec3 deltaOnImagePlane = glm::unProject
-            (
-              // Here, mouse delta is transformed to viewport center.
-              Vec3(x + m_width * 0.5f, y + m_height * 0.5f, 0.0f),
-              Mat4(),
-              dat.projection,
-              Vec4(0.0f, 0.0f, m_width, m_height)
-            );
-
-            // Thales ! Reflect imageplane displacement to world space.
-            Vec3 deltaOnWorld = deltaOnImagePlane * dist / dat.nearDist;
-            if (m_camera->IsOrtographic())
-            {
-              deltaOnWorld = deltaOnImagePlane;
-            }
-
-            Vec3 displace = r * -deltaOnWorld.x + u * deltaOnWorld.y;
-            m_camera->m_node->Translate(displace, TransformationSpace::TS_WORLD);
-          }
-          else
-          {
-            if (m_cameraAlignment != 0)
-            {
-              if (m_cameraAlignment == 1)
-              {
-                orbitPnt.y = 0.0f;
-              }
-              else if (m_cameraAlignment == 2)
-              {
-                orbitPnt.z = 0.0f;
-              }
-              else if (m_cameraAlignment == 3)
-              {
-                orbitPnt.x = 0.0f;
-              }
-            }
-
-            Mat4 camTs = m_camera->m_node->GetTransform(TransformationSpace::TS_WORLD);
-            Mat4 ts = glm::translate(Mat4(), orbitPnt);
-            Mat4 its = glm::translate(Mat4(), -orbitPnt);
-            Quaternion qx = glm::angleAxis(-glm::radians(y * g_app->m_mouseSensitivity), r);
-            Quaternion qy = glm::angleAxis(-glm::radians(x * g_app->m_mouseSensitivity), Y_AXIS);
-
-            camTs = ts * glm::toMat4(qy * qx) * its * camTs;
-            m_camera->m_node->SetTransform(camTs, TransformationSpace::TS_WORLD);
-            m_cameraAlignment = 0;
-          }
-        }
-
-        if (!ImGui::IsMouseDown(ImGuiMouseButton_Middle))
-        {
-          hitFound = false;
-          dist = 0.0f;
+          Vec3 displace = X_AXIS * x + Y_AXIS * y;
+          m_camera->m_node->Translate(displace, TransformationSpace::TS_WORLD);
         }
       }
+    }
+
+    void EditorViewport2d::AdjustZoom(float z)
+    {
+      m_zoom += z;
+      m_zoom = glm::max(0.0001f, m_zoom);
+      m_camera->SetLens
+      (
+        1.0f,
+        m_canvasSize.x * m_zoom * -0.5f,
+        m_canvasSize.x * m_zoom * 0.5f,
+        m_canvasSize.y * m_zoom * -0.5f,
+        m_canvasSize.y * m_zoom * 0.5f,
+        0.01f,
+        1000.0f
+      );
     }
 
   }

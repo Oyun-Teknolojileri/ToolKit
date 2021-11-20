@@ -27,8 +27,14 @@ namespace ToolKit
       virtual void OnResize(float width, float height) override;
 
     private:
-      // Mods.
-      void OrbitPanMod(float deltaTime);
+      void Init2dCam();
+      void GetGlobalCanvasSize();
+      void PanZoom(float deltaTime);
+      void AdjustZoom(float z);
+
+    private:
+      Vec2 m_canvasSize;
+      float m_zoom;
     };
 
   }

@@ -17,6 +17,7 @@
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
 #include "PluginWindow.h"
+#include "EditorViewport2d.h"
 #include "DebugNew.h"
 
 #include <filesystem>
@@ -157,7 +158,11 @@ namespace ToolKit
       // Update Viewports.
       for (Window* wnd : m_windows)
       {
-        if (wnd->GetType() != Window::Type::Viewport)
+        if 
+        (
+          wnd->GetType() != Window::Type::Viewport &&
+          wnd->GetType() != Window::Type::Viewport2d
+        )
         {
           continue;
         }
@@ -562,6 +567,9 @@ namespace ToolKit
           case Window::Type::PluginWindow:
             wnd = new PluginWindow(wndNode);
             break;
+          case Window::Type::Viewport2d:
+            wnd = new EditorViewport2d(wndNode);
+            break;
           default:
             assert(false);
             break;
@@ -579,6 +587,13 @@ namespace ToolKit
       m_playWindow->m_name = "PlayWindow";
       m_playWindow->m_additionalWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse;
       m_playWindow->SetVisibility(false);
+
+      if (GetViewport("Layout") == nullptr)
+      {
+        EditorViewport2d* layoutViewpot = new EditorViewport2d(m_playWidth, m_playHeight);
+        layoutViewpot->m_name = "Layout";
+        m_windows.push_back(layoutViewpot);
+      }
     }
 
     int App::Import(const String& fullPath, const String& subDir, bool overwrite)
