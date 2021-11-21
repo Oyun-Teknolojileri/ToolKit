@@ -96,7 +96,7 @@ namespace ToolKit
         {
           if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
           {
-            // Draw canvas.
+            // Resize canvas.
             if 
             (
               m_canvasSize.x != g_app->m_playWidth ||
@@ -104,6 +104,16 @@ namespace ToolKit
             )
             {
               GetGlobalCanvasSize();
+            }
+
+            // Resize window.
+            if
+            (
+              m_wndContentAreaSize.x != m_width ||
+              m_wndContentAreaSize.y != m_height
+            )
+            {
+              OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
             }
 
             Vec2 wndSize = ImGui::GetWindowSize();
