@@ -62,182 +62,11 @@ namespace ToolKit
       )
       {
         HandleStates();
-
-        // Content area size
-        Vec2 vMin = ImGui::GetWindowContentRegionMin();
-        Vec2 vMax = ImGui::GetWindowContentRegionMax();
-
-        vMin.x += ImGui::GetWindowPos().x;
-        vMin.y += ImGui::GetWindowPos().y;
-        vMax.x += ImGui::GetWindowPos().x;
-        vMax.y += ImGui::GetWindowPos().y;
-
-        m_wndPos.x = vMin.x;
-        m_wndPos.y = vMin.y;
-
-        m_wndContentAreaSize = Vec2(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
-
-        ImGuiIO& io = ImGui::GetIO();
-        ImVec2 absMousePos = io.MousePos;
-        m_mouseOverContentArea = false;
-        if (vMin.x < absMousePos.x && vMax.x > absMousePos.x)
-        {
-          if (vMin.y < absMousePos.y && vMax.y > absMousePos.y)
-          {
-            m_mouseOverContentArea = true;
-          }
-        }
-
-        m_lastMousePosRelContentArea.x = (int)(absMousePos.x - vMin.x);
-        m_lastMousePosRelContentArea.y = (int)(absMousePos.y - vMin.y);
-
-        Vec2 scroll(ImGui::GetScrollX(), ImGui::GetScrollY());
-        if (!ImGui::IsWindowCollapsed())
-        {
-          if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
-          {
-            // Resize canvas.
-            if 
-            (
-              m_canvasSize.x != g_app->m_playWidth ||
-              m_canvasSize.x != g_app->m_playHeight
-            )
-            {
-              GetGlobalCanvasSize();
-            }
-
-            // Resize window.
-            if
-            (
-              m_wndContentAreaSize.x != m_width ||
-              m_wndContentAreaSize.y != m_height
-            )
-            {
-              OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
-            }
-
-            Vec2 wndSize = ImGui::GetWindowSize();
-            ImGui::SetCursorPos((wndSize - m_canvasSize) * 0.5f);
-            ImGui::BeginChildFrame
-            (
-              ImGui::GetID("canvas"),
-              m_canvasSize,
-              ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse
-            );
-            ImGui::Image(Convert2ImGuiTexture(m_viewportImage), m_canvasSize, ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
-            ImGui::EndChildFrame();
-
-            // Draw borders.
-            if (IsActive())
-            {
-              ImGui::GetWindowDrawList()->AddRect(vMin + scroll, vMax + scroll, IM_COL32(255, 255, 0, 255));
-            }
-            else
-            {
-              ImGui::GetWindowDrawList()->AddRect(vMin + scroll, vMax + scroll, IM_COL32(128, 128, 128, 255));
-            }
-          }
-        }
-
-        m_mouseHover = ImGui::IsWindowHovered();
-
-        // Process draw commands.
-        ImDrawList* drawList = ImGui::GetWindowDrawList();
-        for (auto command : m_drawCommands)
-        {
-          command(drawList);
-        }
-        m_drawCommands.clear();
-
-        // AssetBrowser drop handling.
-        if (ImGui::BeginDragDropTarget())
-        {
-          if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
-          {
-            IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
-            DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
-
-            if (entry.m_ext == MESH)
-            {
-              String path = ConcatPaths({ entry.m_rootPath, entry.m_fileName + entry.m_ext });
-              
-              Drawable* dwMesh = new Drawable();
-              if (io.KeyShift)
-              {
-                MeshPtr mesh = GetMeshManager()->Create<Mesh>(path);
-                dwMesh->m_mesh = mesh->Copy<Mesh>();
-              }
-              else
-              {
-                dwMesh->m_mesh = GetMeshManager()->Create<Mesh>(path);
-              }
-              
-              dwMesh->m_mesh->Init(false);
-              Ray ray = RayFromMousePosition();
-              Vec3 pos = PointOnRay(ray, 5.0f);
-              g_app->m_grid->HitTest(ray, pos);
-              dwMesh->m_node->SetTranslation(pos);
-              g_app->m_scene->AddEntity(dwMesh);
-              g_app->m_scene->AddToSelection(dwMesh->m_id, false);
-              SetActive();
-            }
-            else if (entry.m_ext == SCENE)
-            {
-              YesNoWindow* importOptionWnd = new YesNoWindow("Open Scene", "Open", "Merge", "Open or merge the scene ?", true);
-              importOptionWnd->m_yesCallback = [entry]() ->void
-              {
-                String fullPath = entry.GetFullPath();
-                g_app->OpenScene(fullPath);
-              };
-
-              importOptionWnd->m_noCallback = [entry]() -> void
-              {
-                String fullPath = entry.GetFullPath();
-                g_app->MergeScene(fullPath);
-              };
-
-              UI::m_volatileWindows.push_back(importOptionWnd);
-            }
-          }
-          ImGui::EndDragDropTarget();
-        }
-
-        if (g_app->m_showOverlayUI)
-        {
-          if (IsActive() || g_app->m_showOverlayUIAlways)
-          {
-            bool onPlugin = false;
-            if (m_name == "Perspective" && g_app->m_gameMod != App::GameMod::Stop)
-            {
-              if (!g_app->m_runWindowed)
-              {
-                // Game is being drawn on perspective. Hide overlays.
-                onPlugin = true;
-              }
-            }
-
-            if (m_name == "PlayWindow")
-            {
-              onPlugin = true;
-            }
-
-            if (!onPlugin)
-            {
-              for (OverlayUI* overlay : m_overlays)
-              {
-                if (overlay)
-                {
-                  overlay->m_scroll = scroll;
-                  overlay->m_owner = this;
-                  overlay->Show();
-                  overlay->m_scroll = Vec2();
-                }
-              }
-            }
-
-          }
-        }
-
+        UpdateContentArea();
+        UpdateWindow();
+        DrawCommands();
+        HandleDrop();
+        DrawOverlays();
       }
       ImGui::End();
     }
@@ -262,6 +91,200 @@ namespace ToolKit
     {
       Viewport::OnResize(width, height);
       AdjustZoom(0.0f);
+    }
+
+    void EditorViewport2d::UpdateContentArea()
+    {
+      // Content area size
+      m_contentAreaMin = ImGui::GetWindowContentRegionMin();
+      m_contentAreaMax = ImGui::GetWindowContentRegionMax();
+
+      m_contentAreaMin.x += ImGui::GetWindowPos().x;
+      m_contentAreaMin.y += ImGui::GetWindowPos().y;
+      m_contentAreaMax.x += ImGui::GetWindowPos().x;
+      m_contentAreaMax.y += ImGui::GetWindowPos().y;
+
+      m_wndPos.x = m_contentAreaMin.x;
+      m_wndPos.y = m_contentAreaMin.y;
+
+      m_wndContentAreaSize = Vec2
+      (
+        glm::abs(m_contentAreaMax.x - m_contentAreaMin.x),
+        glm::abs(m_contentAreaMax.y - m_contentAreaMin.y)
+      );
+
+      ImGuiIO& io = ImGui::GetIO();
+      ImVec2 absMousePos = io.MousePos;
+      m_mouseOverContentArea = false;
+      if 
+      (
+        m_contentAreaMin.x < absMousePos.x &&
+        m_contentAreaMax.x > absMousePos.x
+      )
+      {
+        if 
+        (
+          m_contentAreaMin.y < absMousePos.y &&
+          m_contentAreaMax.y > absMousePos.y
+        )
+        {
+          m_mouseOverContentArea = true;
+        }
+      }
+
+      m_lastMousePosRelContentArea.x = (int)(absMousePos.x - m_contentAreaMin.x);
+      m_lastMousePosRelContentArea.y = (int)(absMousePos.y - m_contentAreaMin.y);
+    }
+
+    void EditorViewport2d::UpdateWindow()
+    {
+      if (!ImGui::IsWindowCollapsed())
+      {
+        m_scroll = Vec2(ImGui::GetScrollX(), ImGui::GetScrollY());
+        if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
+        {
+          // Resize canvas.
+          if
+          (
+            m_canvasSize.x != g_app->m_playWidth ||
+            m_canvasSize.x != g_app->m_playHeight
+          )
+          {
+            GetGlobalCanvasSize();
+          }
+
+          // Resize window.
+          if
+          (
+            m_wndContentAreaSize.x != m_width ||
+            m_wndContentAreaSize.y != m_height
+          )
+          {
+            OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
+          }
+
+          Vec2 wndSize = ImGui::GetWindowSize();
+          ImGui::SetCursorPos((wndSize - m_canvasSize) * 0.5f);
+          ImGui::BeginChildFrame
+          (
+            ImGui::GetID("canvas"),
+            m_canvasSize,
+            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse
+          );
+          ImGui::Image(Convert2ImGuiTexture(m_viewportImage), m_canvasSize, ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
+          ImGui::EndChildFrame();
+
+          // Draw borders.
+          if (IsActive())
+          {
+            ImGui::GetWindowDrawList()->AddRect
+            (
+              m_contentAreaMin + m_scroll,
+              m_contentAreaMax + m_scroll,
+              IM_COL32(255, 255, 0, 255)
+            );
+          }
+          else
+          {
+            ImGui::GetWindowDrawList()->AddRect
+            (
+              m_contentAreaMin + m_scroll,
+              m_contentAreaMax + m_scroll,
+              IM_COL32(128, 128, 128, 255)
+            );
+          }
+        }
+      }
+
+      m_mouseHover = ImGui::IsWindowHovered();
+    }
+
+    void EditorViewport2d::DrawCommands()
+    {
+      // Process draw commands.
+      ImDrawList* drawList = ImGui::GetWindowDrawList();
+      for (auto command : m_drawCommands)
+      {
+        command(drawList);
+      }
+      m_drawCommands.clear();
+    }
+
+    void EditorViewport2d::HandleDrop()
+    {
+      // AssetBrowser drop handling.
+      if (ImGui::BeginDragDropTarget())
+      {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
+        {
+          IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
+          DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
+
+          if (entry.m_ext == MESH)
+          {
+            String path = ConcatPaths({ entry.m_rootPath, entry.m_fileName + entry.m_ext });
+
+            ImGuiIO& io = ImGui::GetIO();
+            Drawable* dwMesh = new Drawable();
+            if (io.KeyShift)
+            {
+              MeshPtr mesh = GetMeshManager()->Create<Mesh>(path);
+              dwMesh->m_mesh = mesh->Copy<Mesh>();
+            }
+            else
+            {
+              dwMesh->m_mesh = GetMeshManager()->Create<Mesh>(path);
+            }
+
+            dwMesh->m_mesh->Init(false);
+            Ray ray = RayFromMousePosition();
+            Vec3 pos = PointOnRay(ray, 5.0f);
+            g_app->m_grid->HitTest(ray, pos);
+            dwMesh->m_node->SetTranslation(pos);
+            g_app->m_scene->AddEntity(dwMesh);
+            g_app->m_scene->AddToSelection(dwMesh->m_id, false);
+            SetActive();
+          }
+          else if (entry.m_ext == SCENE)
+          {
+            YesNoWindow* importOptionWnd = new YesNoWindow("Open Scene", "Open", "Merge", "Open or merge the scene ?", true);
+            importOptionWnd->m_yesCallback = [entry]() ->void
+            {
+              String fullPath = entry.GetFullPath();
+              g_app->OpenScene(fullPath);
+            };
+
+            importOptionWnd->m_noCallback = [entry]() -> void
+            {
+              String fullPath = entry.GetFullPath();
+              g_app->MergeScene(fullPath);
+            };
+
+            UI::m_volatileWindows.push_back(importOptionWnd);
+          }
+        }
+        ImGui::EndDragDropTarget();
+      }
+    }
+
+    void EditorViewport2d::DrawOverlays()
+    {
+      if (g_app->m_showOverlayUI)
+      {
+        if (IsActive() || g_app->m_showOverlayUIAlways)
+        {
+          for (OverlayUI* overlay : m_overlays)
+          {
+            if (overlay)
+            {
+              overlay->m_scroll = m_scroll;
+              overlay->m_owner = this;
+              overlay->Show();
+              overlay->m_scroll = Vec2();
+            }
+          }
+        }
+      }
     }
 
     void EditorViewport2d::Init2dCam()

@@ -26,6 +26,13 @@ namespace ToolKit
       virtual void Update(float deltaTime) override;
       virtual void OnResize(float width, float height) override;
 
+    protected:
+      void UpdateContentArea();
+      void UpdateWindow();
+      void DrawCommands();
+      void HandleDrop();
+      void DrawOverlays();
+
     private:
       void Init2dCam();
       void GetGlobalCanvasSize();
@@ -35,6 +42,9 @@ namespace ToolKit
     private:
       Vec2 m_canvasSize;
       float m_zoom;
+      Vec2 m_contentAreaMin;
+      Vec2 m_contentAreaMax;
+      Vec2 m_scroll;
     };
 
   }
