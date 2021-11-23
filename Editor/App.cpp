@@ -167,6 +167,11 @@ namespace ToolKit
           continue;
         }
 
+        if (!wnd->IsVisible())
+        {
+          continue;
+        }
+
         // PlayWindow is drawn on perspective. Thus, skip perspective.
         if (m_gameMod != GameMod::Stop && !m_runWindowed)
         {
@@ -1160,6 +1165,18 @@ namespace ToolKit
     void DebugMessage(const Vec3& vec)
     {
       g_app->GetConsole()->AddLog(glm::to_string(vec), "Debug");
+    }
+
+    void DebugMessage(const char* msg, ...)
+    {
+      va_list args;
+      va_start(args, msg);
+      
+      static char buff[2048];
+      vsprintf(buff, msg, args);
+      DebugMessage(String(buff));
+
+      va_end(args);
     }
 
     void DebugCube(const Vec3& p, float size)
