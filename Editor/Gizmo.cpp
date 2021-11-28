@@ -23,7 +23,7 @@ namespace ToolKit
   {
 
     Cursor::Cursor()
-      : Billboard({ true, 10.0f, 400.0f })
+      : Billboard({ true, 10.0f, 60.0f })
     {
       Generate();
     }
@@ -83,7 +83,7 @@ namespace ToolKit
     }
 
     Axis3d::Axis3d()
-      : Billboard({ false, 10.0f, 400.0f })
+      : Billboard({ false, 10.0f, 60.0f })
     {
       Generate();
     }
@@ -555,7 +555,7 @@ namespace ToolKit
     //////////////////////////////////////////////////////////////////////////
 
     LinearGizmo::LinearGizmo()
-      : Gizmo({ false, 6.0f, 400.0f })
+      : Gizmo({ false, 6.0f, 60.0f })
     {
       m_handles =
       {
@@ -673,7 +673,7 @@ namespace ToolKit
     }
 
     PolarGizmo::PolarGizmo()
-      : Gizmo({ false, 6.0f, 400.0f })
+      : Gizmo({ false, 6.0f, 60.0f })
     {
       m_handles =
       {

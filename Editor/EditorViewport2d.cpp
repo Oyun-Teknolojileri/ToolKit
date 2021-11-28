@@ -333,7 +333,7 @@ namespace ToolKit
       m_zoom = glm::max(0.1f, m_zoom);
       m_camera->SetLens
       (
-        m_width / m_height,
+        1.0f,
         m_canvasSize.x * m_zoom * -0.5f,
         m_canvasSize.x * m_zoom * 0.5f,
         m_canvasSize.y * m_zoom * -0.5f,

@@ -231,12 +231,13 @@ namespace ToolKit
         }
         m_renderer->Render(m_grid, cam);
 
-        m_origin->LookAt(cam, vp->m_height);
+        m_origin->LookAt(cam, vp->m_zoom);
         m_renderer->Render(m_origin, cam);
 
         if (m_gizmo != nullptr)
         {
-          m_gizmo->LookAt(cam, vp->m_height);
+          m_gizmo->LookAt(cam, vp->m_zoom);
+          
           glClear(GL_DEPTH_BUFFER_BIT);
           if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
           {
@@ -248,13 +249,7 @@ namespace ToolKit
           }
         }
 
-        float orthScl = 1.0f;
-        if (vp->IsOrthographic())
-        {
-          // Magic scale to match Billboards in perspective view with ortoghrapic view.
-          orthScl = 1.6f;
-        }
-        m_cursor->LookAt(cam, vp->m_height * orthScl);
+        m_cursor->LookAt(cam, vp->m_zoom);
         m_renderer->Render(m_cursor, cam);
       }
 

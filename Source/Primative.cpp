@@ -15,7 +15,7 @@ namespace ToolKit
   {
   }
 
-  void Billboard::LookAt(Camera* cam, float windowHeight)
+  void Billboard::LookAt(Camera* cam, float scale)
   {
     Camera::CamData data = cam->GetData();
 
@@ -28,10 +28,7 @@ namespace ToolKit
 
         if (m_settings.heightInScreenSpace > 0.0f)
         {
-          float distToCenter = glm::distance(Vec3(), data.pos);
-          float dCompansate = distToCenter * 4.0f / 500.0f;
-          float hCompansate = m_settings.heightInScreenSpace / windowHeight;
-          m_node->SetScale(Vec3(dCompansate * hCompansate)); // Compensate shrinkage due to height changes.
+          m_node->SetScale(Vec3(m_settings.heightInScreenSpace * scale));
         }
       }
       else
@@ -51,7 +48,8 @@ namespace ToolKit
 
         if (m_settings.heightInScreenSpace > 0.0f)
         {
-          m_node->SetScale(Vec3(m_settings.heightInScreenSpace / data.height)); // Compensate shrinkage due to height changes.
+          float magicScale = 6.0f;
+          m_node->SetScale(Vec3(magicScale * m_settings.heightInScreenSpace / data.height)); // Compensate shrinkage due to height changes.
         }
       }
 

@@ -39,9 +39,10 @@ namespace ToolKit
       void PanZoom(float deltaTime);
       void AdjustZoom(float z);
 
-    private:
+    public:
       Vec2 m_canvasSize;
-      float m_zoom;
+    
+    private:
       Vec2 m_contentAreaMin;
       Vec2 m_contentAreaMax;
       Vec2 m_scroll;
