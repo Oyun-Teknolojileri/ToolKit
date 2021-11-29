@@ -26,6 +26,12 @@ namespace ToolKit
       virtual void Update(float deltaTime) override;
       virtual void OnResize(float width, float height) override;
 
+      // Viewport Overrides.
+      virtual Vec2 GetLastMousePosViewportSpace() override;
+      virtual Vec2 GetLastMousePosScreenSpace() override;
+      virtual Vec3 TransformViewportToWorldSpace(const Vec2& pnt) override;
+      virtual Vec2 TransformScreenToViewportSpace(const Vec2& pnt) override;
+
     protected:
       void UpdateContentArea();
       void UpdateWindow();
@@ -41,8 +47,9 @@ namespace ToolKit
 
     public:
       Vec2 m_canvasSize;
-    
+
     private:
+      Vec2 m_canvasPos;
       Vec2 m_contentAreaMin;
       Vec2 m_contentAreaMax;
       Vec2 m_scroll;

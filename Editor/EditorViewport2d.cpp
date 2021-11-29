@@ -61,9 +61,9 @@ namespace ToolKit
         )
       )
       {
-        HandleStates();
         UpdateContentArea();
         UpdateWindow();
+        HandleStates();
         DrawCommands();
         HandleDrop();
         DrawOverlays();
@@ -89,8 +89,49 @@ namespace ToolKit
 
     void EditorViewport2d::OnResize(float width, float height)
     {
-      Viewport::OnResize(width, height);
+      m_width = width;
+      m_height = height;
+
+      m_viewportImage->UnInit();
+      m_viewportImage->m_width = (uint)m_canvasSize.x;
+      m_viewportImage->m_height = (uint)m_canvasSize.y;
+      m_viewportImage->Init();
+
       AdjustZoom(0.0f);
+    }
+
+    Vec2 EditorViewport2d::GetLastMousePosViewportSpace()
+    {
+      Vec2 screenPoint = m_lastMousePosRelContentArea - IVec2(m_canvasPos); // Convert relative to canvas.
+      screenPoint.y = m_canvasSize.y - screenPoint.y; // Convert to viewport.
+
+      return screenPoint;
+    }
+
+    Vec2 EditorViewport2d::GetLastMousePosScreenSpace()
+    {
+      Vec2 viewportPoint = GetLastMousePosViewportSpace();
+      viewportPoint.y = m_canvasSize.y - viewportPoint.y;
+      Vec2 screenPoint = m_wndPos + m_canvasPos + viewportPoint;
+      return screenPoint;
+    }
+
+    Vec3 EditorViewport2d::TransformViewportToWorldSpace(const Vec2& pnt)
+    {
+      Vec3 screenPoint = Vec3(pnt, 0.0f);
+
+      Mat4 view = m_camera->GetViewMatrix();
+      Mat4 project = m_camera->GetData().projection;
+
+      return glm::unProject(screenPoint, view, project, Vec4(0.0f, 0.0f, m_canvasSize.x, m_canvasSize.y));
+    }
+
+    Vec2 EditorViewport2d::TransformScreenToViewportSpace(const Vec2& pnt)
+    {
+      Vec2 vp = pnt - m_contentAreaMin - m_canvasPos; // In canvas space.
+      vp.y = m_canvasSize.y - vp.y; // In viewport space.
+
+      return vp;
     }
 
     void EditorViewport2d::UpdateContentArea()
@@ -171,6 +212,9 @@ namespace ToolKit
             m_canvasSize,
             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse
           );
+          m_canvasPos = ImGui::GetWindowPos();
+          m_canvasPos -= m_contentAreaMin; // Convert relative to content area.
+
           ImGui::Image(Convert2ImGuiTexture(m_viewportImage), m_canvasSize, ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
           ImGui::EndChildFrame();
 

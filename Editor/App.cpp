@@ -914,7 +914,11 @@ namespace ToolKit
     {
       for (Window* wnd : m_windows)
       {
-        if (wnd->GetType() != Window::Type::Viewport)
+        if 
+        (
+          wnd->GetType() != Window::Type::Viewport &&
+          wnd->GetType() != Window::Type::Viewport2d
+        )
         {
           continue;
         }

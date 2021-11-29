@@ -18,6 +18,13 @@ namespace ToolKit
     // Update internal states. Window provider should fill this in.
     virtual void Update(float deltaTime) = 0;
 
+    /*
+    * Screen space is the mouse coordinates gathered from imgui. Origin is top-left.
+    * Viewport space is the drawing area spesific 2d opengl coordinates. Origin is bottom left.
+    * World space means the screen space coordinates are converted to viewport coordinates then 
+    * unprojected into 3d coordinate space.
+    */
+
     // Utility Functions.
     Ray RayFromMousePosition();
     Ray RayFromScreenSpacePoint(const Vec2& pnt);

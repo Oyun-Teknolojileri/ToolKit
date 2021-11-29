@@ -79,9 +79,6 @@ namespace ToolKit
   Vec2 Viewport::GetLastMousePosViewportSpace()
   {
     Vec2 screenPoint = m_lastMousePosRelContentArea;
-
-    // Bring it back from opengl (BottomLeft) to Imgui (TopLeft) system.
-    // Other UI tools may override space conversion.
     screenPoint.y = m_wndContentAreaSize.y - screenPoint.y;
 
     return screenPoint;
@@ -90,9 +87,6 @@ namespace ToolKit
   Vec2 Viewport::GetLastMousePosScreenSpace()
   {
     Vec2 screenPoint = GetLastMousePosViewportSpace();
-
-    // Bring it back from opengl (BottomLeft) to Imgui (TopLeft) system.
-    // Other UI tools may override space conversion.
     screenPoint.y = m_wndContentAreaSize.y - screenPoint.y;
 
     return m_wndPos + screenPoint;
@@ -111,9 +105,6 @@ namespace ToolKit
   Vec2 Viewport::TransformScreenToViewportSpace(const Vec2& pnt)
   {
     Vec2 vp = pnt - m_wndPos; // In window space.
-    
-    // Bring it back from opengl (BottomLeft) to Imgui (TopLeft) system.
-    // Other UI tools may override space conversion.
     vp.y = m_wndContentAreaSize.y - vp.y; // In viewport space.
     return vp;
   }
