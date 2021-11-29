@@ -195,6 +195,11 @@ namespace ToolKit
   void Mesh::ConstructFaces()
   {
     size_t triCnt = m_clientSideIndices.size() / 3;
+    if (m_clientSideIndices.empty())
+    {
+      triCnt = m_clientSideVertices.size() / 3;
+    }
+
     m_faces.resize(triCnt);
     for (size_t i = 0; i < triCnt; i++)
     {
