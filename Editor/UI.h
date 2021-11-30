@@ -105,7 +105,7 @@ namespace ToolKit
     public:
       static void Init();
       static void UnInit();
-      static void InitDocking();
+      static void ShowDock();
       static void InitIcons();
       static void InitTheme();
       static void InitSettings();

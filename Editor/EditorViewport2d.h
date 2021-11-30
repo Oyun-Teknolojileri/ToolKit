@@ -38,12 +38,12 @@ namespace ToolKit
       void DrawCommands();
       void HandleDrop();
       void DrawOverlays();
+      virtual void AdjustZoom(float delta) override;
 
     private:
       void Init2dCam();
       void GetGlobalCanvasSize();
       void PanZoom(float deltaTime);
-      void AdjustZoom(float z);
 
     public:
       Vec2 m_canvasSize;

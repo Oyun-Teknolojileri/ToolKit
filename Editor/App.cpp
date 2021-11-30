@@ -175,7 +175,7 @@ namespace ToolKit
         // PlayWindow is drawn on perspective. Thus, skip perspective.
         if (m_gameMod != GameMod::Stop && !m_runWindowed)
         {
-          if (wnd->m_name == "Perspective")
+          if (wnd->m_name == g_3dViewport)
           {
             continue;
           }
@@ -467,18 +467,22 @@ namespace ToolKit
       }
       else
       {
-        // Perspective.
+        // 3d viewport.
         EditorViewport* vp = new EditorViewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
-        vp->m_name = "Perspective";
+        vp->m_name = g_3dViewport;
         vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
         vp->m_camera->LookAt(Vec3(0.0f));
         m_windows.push_back(vp);
 
-        // Orthographic.
+        vp = new EditorViewport2d(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
+        vp->m_name = g_2dViewport;
+        vp->m_camera->m_node->SetTranslation(Z_AXIS);
+        m_windows.push_back(vp);
+
+        // Isometric viewport.
         vp = new EditorViewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
-        vp->m_name = "Orthographic";
-        vp->m_camera->SetLens(glm::half_pi<float>(), 10, 10, 10, 10, 1, 1000);
-        vp->m_camera->m_node->SetTranslation({ 0.0f, 500.0f, 0.0f });
+        vp->m_name = g_IsoViewport;
+        vp->m_camera->m_node->SetTranslation({ 0.0f, 10.0f, 0.0f });
         vp->m_camera->Pitch(glm::radians(-90.0f));
         vp->m_cameraAlignment = 1;
         m_windows.push_back(vp);
@@ -502,7 +506,12 @@ namespace ToolKit
         MaterialInspector* matInspect = new MaterialInspector();
         matInspect->m_name = g_matInspector;
         m_windows.push_back(matInspect);
+
+        PluginWindow* plugWindow = new PluginWindow();
+        m_windows.push_back(plugWindow);
       }
+
+      CreateSimulationWindow();
     }
 
     void App::DeleteWindows()
@@ -569,18 +578,7 @@ namespace ToolKit
         } while ((wndNode = wndNode->next_sibling("Window")));
       }
 
-      // Create a PlayWindow window.
-      m_playWindow = new EditorViewport(m_playWidth, m_playHeight);
-      m_playWindow->m_name = "PlayWindow";
-      m_playWindow->m_additionalWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse;
-      m_playWindow->SetVisibility(false);
-
-      if (GetViewport("Layout") == nullptr)
-      {
-        EditorViewport2d* layoutViewpot = new EditorViewport2d(m_playWidth, m_playHeight);
-        layoutViewpot->m_name = "Layout";
-        m_windows.push_back(layoutViewpot);
-      }
+      CreateSimulationWindow();
     }
 
     int App::Import(const String& fullPath, const String& subDir, bool overwrite)
@@ -1047,7 +1045,7 @@ namespace ToolKit
         {
           m_playWindow->SetVisibility(m_runWindowed);
 
-          EditorViewport* playWindow = GetWindow<EditorViewport>("Perspective");
+          EditorViewport* playWindow = GetWindow<EditorViewport>(g_3dViewport);
           if (m_runWindowed)
           {
             Mat4 camTs = playWindow->m_camera->m_node->GetTransform(TransformationSpace::TS_WORLD);
@@ -1141,6 +1139,14 @@ namespace ToolKit
         String fullPath = ScenePath(scene + SCENE);
         OpenScene(fullPath);
       }
+    }
+
+    void App::CreateSimulationWindow()
+    {
+      m_playWindow = new EditorViewport(m_playWidth, m_playHeight);
+      m_playWindow->m_name = g_simulationViewport;
+      m_playWindow->m_additionalWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse;
+      m_playWindow->SetVisibility(false);
     }
 
     void DebugMessage(const String& msg)

@@ -198,16 +198,16 @@ namespace ToolKit
           if (IsActive() || g_app->m_showOverlayUIAlways)
           {
             bool onPlugin = false;
-            if (m_name == "Perspective" && g_app->m_gameMod != App::GameMod::Stop)
+            if (m_name == g_3dViewport && g_app->m_gameMod != App::GameMod::Stop)
             {
               if (!g_app->m_runWindowed)
               {
-                // Game is being drawn on perspective. Hide overlays.
+                // Game is being drawn on 3d viewport. Hide overlays.
                 onPlugin = true;
               }
             }
 
-            if (m_name == "PlayWindow")
+            if (m_name == g_simulationViewport)
             {
               onPlugin = true;
             }
@@ -582,32 +582,6 @@ namespace ToolKit
           hitFound = false;
           dist = 0.0f;
         }
-      }
-    }
-
-    void EditorViewport::AdjustZoom(float z)
-    {
-      m_zoom -= z * 0.1f;
-      m_zoom = glm::max(m_zoom, 0.01f);
-
-      float viewScale = 1.0f;
-      if (m_camera->IsOrtographic())
-      {
-        Camera::CamData dat = m_camera->GetData();
-        m_camera->SetLens
-        (
-          1.0f,
-          viewScale * -m_zoom * m_width * 0.5f,
-          viewScale * m_zoom * m_width * 0.5f,
-          viewScale * -m_zoom * m_height * 0.5f,
-          viewScale * m_zoom * m_height * 0.5f,
-          0.01f,
-          1000.0f
-        );
-      }
-      else
-      {
-        m_camera->Translate(Vec3(0.0f, 0.0f, -z));
       }
     }
 

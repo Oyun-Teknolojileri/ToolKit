@@ -38,6 +38,7 @@ namespace ToolKit
   protected:
     // Internal window handling.
     virtual void OnResize(float width, float height);
+    virtual void AdjustZoom(float delta);
 
   public:
     Camera* m_camera = nullptr;
@@ -47,6 +48,7 @@ namespace ToolKit
     Vec2 m_wndPos;
     float m_width = 640.0f;
     float m_height = 480.0f;
+    float m_zoom = 1.0f;
 
   protected:
     // States.
@@ -54,6 +56,7 @@ namespace ToolKit
     Vec2 m_wndContentAreaSize;
     IVec2 m_mousePosBegin;
     IVec2 m_lastMousePosRelContentArea;
+    float m_zoomScale = 0.01f;
   };
 
 }

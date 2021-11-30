@@ -27,6 +27,11 @@ namespace ToolKit
     const String g_warningStr("Wrn");
     const String g_commandStr("#");
     const String g_newSceneStr("New Scene");
+    const String g_2dViewport("2D");
+    const String g_3dViewport("3D");
+    const String g_IsoViewport("ISO");
+    const String g_simulationViewport("Simulation");
+    const String g_pluginWindow("Plugin");
 
     // Colors and materials.
     const String g_gridMaterialName("TK_EDITOR_GRID");

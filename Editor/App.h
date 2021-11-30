@@ -101,6 +101,9 @@ namespace ToolKit
       virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+    private:
+      void CreateSimulationWindow();
+
     public:
       EditorScenePtr m_scene;
 

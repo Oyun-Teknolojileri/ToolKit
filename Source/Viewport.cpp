@@ -48,6 +48,31 @@ namespace ToolKit
     m_viewportImage->Init();
   }
 
+  void Viewport::AdjustZoom(float delta)
+  {
+    m_zoom -= delta * m_zoomScale;
+    m_zoom = glm::max(m_zoom, 0.01f);
+
+    if (m_camera->IsOrtographic())
+    {
+      Camera::CamData dat = m_camera->GetData();
+      m_camera->SetLens
+      (
+        1.0f,
+        -m_zoom * m_width * 0.5f,
+        m_zoom * m_width * 0.5f,
+        -m_zoom * m_height * 0.5f,
+        m_zoom * m_height * 0.5f,
+        0.01f,
+        1000.0f
+      );
+    }
+    else
+    {
+      m_camera->Translate(Vec3(0.0f, 0.0f, -delta));
+    }
+  }
+
   Ray Viewport::RayFromMousePosition()
   {
     return RayFromScreenSpacePoint(GetLastMousePosScreenSpace());

@@ -404,7 +404,7 @@ namespace ToolKit
 
         Vec3 target;
         ParseVec(target, targetTag);
-        EditorViewport* vp = g_app->GetViewport("Perspective");
+        EditorViewport* vp = g_app->GetViewport(g_3dViewport);
         if (vp)
         {
           vp->m_camera->LookAt(target);

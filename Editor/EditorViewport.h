@@ -35,7 +35,6 @@ namespace ToolKit
       // Mods.
       void FpsNavigationMode(float deltaTime);
       void OrbitPanMod(float deltaTime);
-      void AdjustZoom(float z);
 
     public:
       // Window properties.
@@ -43,7 +42,6 @@ namespace ToolKit
       bool m_mouseOverOverlay = false;
       int m_cameraAlignment = 0; // 0: perspective, 1: top, 2: front, 3:left.
       int m_additionalWindowFlags = 0;
-      float m_zoom = 1.0f;
 
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;

@@ -331,6 +331,22 @@ namespace ToolKit
       }
     }
 
+    void EditorViewport2d::AdjustZoom(float delta)
+    {
+      m_zoom -= delta * 0.1f;
+      m_zoom = glm::max(0.1f, m_zoom);
+      m_camera->SetLens
+      (
+        1.0f,
+        m_canvasSize.x * m_zoom * -0.5f,
+        m_canvasSize.x * m_zoom * 0.5f,
+        m_canvasSize.y * m_zoom * -0.5f,
+        m_canvasSize.y * m_zoom * 0.5f,
+        0.01f,
+        1000.0f
+      );
+    }
+
     void EditorViewport2d::Init2dCam()
     {
       m_zoom = 1.0f;
@@ -369,22 +385,6 @@ namespace ToolKit
           m_camera->m_node->Translate(displace, TransformationSpace::TS_WORLD);
         }
       }
-    }
-
-    void EditorViewport2d::AdjustZoom(float z)
-    {
-      m_zoom += z * 0.1f;
-      m_zoom = glm::max(0.1f, m_zoom);
-      m_camera->SetLens
-      (
-        1.0f,
-        m_canvasSize.x * m_zoom * -0.5f,
-        m_canvasSize.x * m_zoom * 0.5f,
-        m_canvasSize.y * m_zoom * -0.5f,
-        m_canvasSize.y * m_zoom * 0.5f,
-        0.01f,
-        1000.0f
-      );
     }
 
   }

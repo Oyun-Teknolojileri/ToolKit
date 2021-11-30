@@ -112,7 +112,7 @@ namespace ToolKit
       ImGui::DestroyContext();
     }
 
-    void UI::InitDocking()
+    void UI::ShowDock()
     {
       bool optFullScreen = true;
       static ImGuiDockNodeFlags dockFlags = ImGuiDockNodeFlags_None;
@@ -136,7 +136,7 @@ namespace ToolKit
       }
 
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-      ImGui::Begin("DockSpace Demo", nullptr, wndFlags);
+      ImGui::Begin("MainDock", nullptr, wndFlags);
       ImGui::PopStyleVar();
 
       if (optFullScreen)
@@ -148,8 +148,8 @@ namespace ToolKit
       ImGuiIO& io = ImGui::GetIO();
       if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
       {
-        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockFlags);
+        ImGuiID dockId = ImGui::GetID("MainDockSpace");
+        ImGui::DockSpace(dockId, ImVec2(0.0f, 0.0f), dockFlags);
       }
 
       ImGui::End();
@@ -288,7 +288,7 @@ namespace ToolKit
       ImGui_ImplSDL2_NewFrame(g_window);
       ImGui::NewFrame();
 
-      InitDocking();
+      ShowDock();
       ShowAppMainMenuBar();
 
       for (Window* wnd : g_app->m_windows)
