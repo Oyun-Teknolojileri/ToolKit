@@ -385,14 +385,7 @@ namespace ToolKit
     void EditorViewport::OnResize(float width, float height)
     {
       Viewport::OnResize(width, height);
-      if (m_camera->IsOrtographic())
-      {
-        Camera::CamData dat = m_camera->GetData();
-        float distToCenter = glm::distance(Vec3(), dat.pos);
-
-        float hDist = distToCenter * 10.0f / 500.0f;
-        m_camera->SetLens(dat.aspect, -hDist, hDist, -hDist, hDist, 0.01f, 1000.0f);
-      }
+      AdjustZoom(0.0f);
     }
 
     void EditorViewport::FpsNavigationMode(float deltaTime)
@@ -485,29 +478,7 @@ namespace ToolKit
         // Adjust zoom always.
         if (m_mouseOverContentArea)
         {
-          float zoom = ImGui::GetIO().MouseWheel;
-          m_zoom -= zoom * 0.1f;
-          m_zoom = glm::max(m_zoom, 0.01f);
-          
-          float viewScale = 1.0f;
-          if (m_camera->IsOrtographic())
-          {
-            Camera::CamData dat = m_camera->GetData();
-            m_camera->SetLens
-            (
-              1.0f,
-              viewScale * -m_zoom * m_width * 0.5f,
-              viewScale * m_zoom * m_width * 0.5f,
-              viewScale  * -m_zoom * m_height * 0.5f,
-              viewScale * m_zoom * m_height * 0.5f,
-              0.01f,
-              1000.0f
-            );
-          }
-          else
-          {
-            m_camera->Translate(Vec3(0.0f, 0.0f, -zoom));
-          }
+          AdjustZoom(ImGui::GetIO().MouseWheel);
         }
 
         static Vec3 orbitPnt;
@@ -611,6 +582,32 @@ namespace ToolKit
           hitFound = false;
           dist = 0.0f;
         }
+      }
+    }
+
+    void EditorViewport::AdjustZoom(float z)
+    {
+      m_zoom -= z * 0.1f;
+      m_zoom = glm::max(m_zoom, 0.01f);
+
+      float viewScale = 1.0f;
+      if (m_camera->IsOrtographic())
+      {
+        Camera::CamData dat = m_camera->GetData();
+        m_camera->SetLens
+        (
+          1.0f,
+          viewScale * -m_zoom * m_width * 0.5f,
+          viewScale * m_zoom * m_width * 0.5f,
+          viewScale * -m_zoom * m_height * 0.5f,
+          viewScale * m_zoom * m_height * 0.5f,
+          0.01f,
+          1000.0f
+        );
+      }
+      else
+      {
+        m_camera->Translate(Vec3(0.0f, 0.0f, -z));
       }
     }
 

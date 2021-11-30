@@ -198,7 +198,7 @@ namespace ToolKit
             if (ntt->GetType() == EntityType::Entity_Billboard)
             {
               Billboard* billboard = static_cast<Billboard*> (ntt);
-              billboard->LookAt(cam, vp->m_height);
+              billboard->LookAt(cam, vp->m_zoom);
             }
 
             m_renderer->Render(static_cast<Drawable*> (ntt), cam, m_sceneLights);
@@ -217,20 +217,7 @@ namespace ToolKit
           m_perFrameDebugObjects.clear();
         }
 
-        // Scale grid spacing.
-        if (cam->IsOrtographic())
-        {
-          Vec3 pos = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-          float dist = glm::distance(Vec3(), pos);
-          float scale = glm::max(1.0f, glm::trunc(dist / 100.0f));
-          m_grid->Resize(500, 1.0f / scale);
-        }
-        else
-        {
-          m_grid->Resize(500, 1.0f);
-        }
         m_renderer->Render(m_grid, cam);
-
         m_origin->LookAt(cam, vp->m_zoom);
         m_renderer->Render(m_origin, cam);
 

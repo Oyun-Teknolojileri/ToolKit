@@ -35,6 +35,7 @@ namespace ToolKit
       // Mods.
       void FpsNavigationMode(float deltaTime);
       void OrbitPanMod(float deltaTime);
+      void AdjustZoom(float z);
 
     public:
       // Window properties.
