@@ -474,6 +474,7 @@ namespace ToolKit
         vp->m_camera->LookAt(Vec3(0.0f));
         m_windows.push_back(vp);
 
+        // 2d viewport.
         vp = new EditorViewport2d(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
         vp->m_name = g_2dViewport;
         vp->m_camera->m_node->SetTranslation(Z_AXIS);
@@ -483,6 +484,8 @@ namespace ToolKit
         vp = new EditorViewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
         vp->m_name = g_IsoViewport;
         vp->m_camera->m_node->SetTranslation({ 0.0f, 10.0f, 0.0f });
+        vp->m_camera->SetLens(1.0f, -10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
+        vp->m_zoom = 0.02f;
         vp->m_camera->Pitch(glm::radians(-90.0f));
         vp->m_cameraAlignment = 1;
         m_windows.push_back(vp);
@@ -509,9 +512,9 @@ namespace ToolKit
 
         PluginWindow* plugWindow = new PluginWindow();
         m_windows.push_back(plugWindow);
-      }
 
-      CreateSimulationWindow();
+        CreateSimulationWindow();
+      }
     }
 
     void App::DeleteWindows()

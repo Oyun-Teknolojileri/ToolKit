@@ -246,7 +246,7 @@ namespace ToolKit
                 node->SetOrientation(ws, TransformationSpace::TS_WORLD);
                 if (c->IsOrtographic())
                 {
-                  node->SetTranslation(Vec3(0.0f, 500.0f, 0.0f), TransformationSpace::TS_WORLD);
+                  node->SetTranslation(Vec3(0.0f, 10.0f, 0.0f), TransformationSpace::TS_WORLD);
                 }
               }
 
@@ -255,7 +255,7 @@ namespace ToolKit
                 node->SetOrientation(Quaternion());
                 if (c->IsOrtographic())
                 {
-                  node->SetTranslation(Vec3(0.0f, 0.0f, 500.0f), TransformationSpace::TS_WORLD);
+                  node->SetTranslation(Vec3(0.0f, 0.0f, 10.0f), TransformationSpace::TS_WORLD);
                 }
               }
 
@@ -265,7 +265,7 @@ namespace ToolKit
                 node->SetOrientation(ws, TransformationSpace::TS_WORLD);
                 if (c->IsOrtographic())
                 {
-                  node->SetTranslation(Vec3(-500.0f, 0.0f, 0.0f), TransformationSpace::TS_WORLD);
+                  node->SetTranslation(Vec3(-10.0f, 0.0f, 0.0f), TransformationSpace::TS_WORLD);
                 }
               }
             }

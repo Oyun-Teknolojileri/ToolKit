@@ -56,7 +56,6 @@ namespace ToolKit
     Vec2 m_wndContentAreaSize;
     IVec2 m_mousePosBegin;
     IVec2 m_lastMousePosRelContentArea;
-    float m_zoomScale = 0.01f;
   };
 
 }

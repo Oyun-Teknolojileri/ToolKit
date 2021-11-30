@@ -478,7 +478,11 @@ namespace ToolKit
         // Adjust zoom always.
         if (m_mouseOverContentArea)
         {
-          AdjustZoom(ImGui::GetIO().MouseWheel);
+          float delta = ImGui::GetIO().MouseWheel;
+          if (glm::notEqual<float>(delta, 0.0f))
+          {
+            AdjustZoom(delta);
+          }
         }
 
         static Vec3 orbitPnt;
@@ -582,6 +586,28 @@ namespace ToolKit
           hitFound = false;
           dist = 0.0f;
         }
+      }
+    }
+
+    void EditorViewport::AdjustZoom(float delta)
+    {
+      m_camera->Translate(Vec3(0.0f, 0.0f, -delta));
+      if (m_camera->IsOrtographic())
+      {
+        // Magic zoom.
+        Camera::CamData dat = m_camera->GetData();
+        float dist = glm::distance(Vec3(), dat.pos);
+        m_zoom = dist / 600.0f;
+        m_camera->SetLens
+        (
+          1.0f,
+          -m_zoom * m_width * 0.5f,
+          m_zoom * m_width * 0.5f,
+          -m_zoom * m_height * 0.5f,
+          m_zoom * m_height * 0.5f,
+          0.1f,
+          1000.0f
+        );
       }
     }
 
