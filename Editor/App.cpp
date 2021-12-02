@@ -153,7 +153,7 @@ namespace ToolKit
         wnd->DispatchSignals();
       }
 
-      DrawPlayWindow(deltaTime);
+      ShowPlayWindow(deltaTime);
 
       // Update Viewports.
       for (Window* wnd : m_windows)
@@ -221,20 +221,7 @@ namespace ToolKit
         m_origin->LookAt(cam, vp->m_zoom);
         m_renderer->Render(m_origin, cam);
 
-        if (m_gizmo != nullptr)
-        {
-          m_gizmo->LookAt(cam, vp->m_zoom);
-          
-          glClear(GL_DEPTH_BUFFER_BIT);
-          if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
-          {
-            pg->Render(m_renderer, cam);
-          }
-          else
-          {
-            m_renderer->Render(m_gizmo, cam);
-          }
-        }
+        RenderGizmo(vp, m_gizmo);
 
         m_cursor->LookAt(cam, vp->m_zoom);
         m_renderer->Render(m_cursor, cam);
@@ -966,21 +953,21 @@ namespace ToolKit
       return GetWindow<MaterialInspector>(g_matInspector);
     }
 
-    void App::RenderSelected(EditorViewport* vp)
+    void App::RenderSelected(EditorViewport* viewport)
     {
       if (m_scene->GetSelectedEntityCount() == 0)
       {
         return;
       }
 
-      auto RenderFn = [this, vp](const EntityRawPtrArray& selection, const Vec3& color) -> void
+      auto RenderFn = [this, viewport](const EntityRawPtrArray& selection, const Vec3& color) -> void
       {
         if (selection.empty())
         {
           return;
         }
 
-        RenderTarget stencilMask((int)vp->m_width, (int)vp->m_height);
+        RenderTarget stencilMask((int)viewport->m_width, (int)viewport->m_height);
         stencilMask.Init();
 
         m_renderer->SetRenderTarget(&stencilMask, true, { 0.0f, 0.0f, 0.0f, 1.0 });
@@ -999,7 +986,7 @@ namespace ToolKit
         {
           if (ntt->IsDrawable())
           {
-            m_renderer->Render(static_cast<Drawable*> (ntt), vp->m_camera);
+            m_renderer->Render(static_cast<Drawable*> (ntt), viewport->m_camera);
           }
         }
 
@@ -1013,7 +1000,7 @@ namespace ToolKit
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
 
-        m_renderer->SetRenderTarget(vp->m_viewportImage, false);
+        m_renderer->SetRenderTarget(viewport->m_viewportImage, false);
 
         // Dilate.
         glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
@@ -1040,7 +1027,22 @@ namespace ToolKit
       }
     }
 
-    void App::DrawPlayWindow(float deltaTime)
+    void App::RenderGizmo(EditorViewport* viewport, Gizmo* gizmo)
+    {
+      gizmo->LookAt(viewport->m_camera, viewport->m_zoom);
+
+      glClear(GL_DEPTH_BUFFER_BIT);
+      if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (gizmo))
+      {
+        pg->Render(m_renderer, viewport->m_camera);
+      }
+      else
+      {
+        m_renderer->Render(gizmo, viewport->m_camera);
+      }
+    }
+
+    void App::ShowPlayWindow(float deltaTime)
     {
       if (GamePlugin* plugin = GetPluginManager()->m_plugin)
       {
