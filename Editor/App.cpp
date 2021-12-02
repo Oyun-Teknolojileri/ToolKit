@@ -145,88 +145,50 @@ namespace ToolKit
     {
       // Update animations.
       GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
-
+      
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
+      std::vector<EditorViewport*> viewports;
       for (Window* wnd : m_windows)
       {
         wnd->DispatchSignals();
+        if (EditorViewport* vp = dynamic_cast<EditorViewport*> (wnd))
+        {
+          viewports.push_back(vp);
+        }
       }
 
       ShowPlayWindow(deltaTime);
 
-      // Update Viewports.
-      for (Window* wnd : m_windows)
+      // Render Viewports.
+      for (EditorViewport* viewport : viewports)
       {
-        if 
-        (
-          wnd->GetType() != Window::Type::Viewport &&
-          wnd->GetType() != Window::Type::Viewport2d
-        )
-        {
-          continue;
-        }
-
-        if (!wnd->IsVisible())
-        {
-          continue;
-        }
-
         // PlayWindow is drawn on perspective. Thus, skip perspective.
         if (m_gameMod != GameMod::Stop && !m_runWindowed)
         {
-          if (wnd->m_name == g_3dViewport)
+          if (viewport->m_name == g_3dViewport)
           {
             continue;
           }
         }
 
-        EditorViewport* vp = static_cast<EditorViewport*> (wnd);
-        vp->Update(deltaTime);
+        viewport->Update(deltaTime);
+        viewport->Render(this);
 
-        // Adjust scene lights.
-        Camera* cam = vp->m_camera;
-        m_lightMaster->OrphanSelf();
-        cam->m_node->AddChild(m_lightMaster);
-
-        m_renderer->SetRenderTarget(vp->m_viewportImage);
-
-        for (Entity* ntt : m_scene->GetEntities())
-        {
-          if (ntt->IsDrawable())
-          {
-            if (ntt->GetType() == EntityType::Entity_Billboard)
-            {
-              Billboard* billboard = static_cast<Billboard*> (ntt);
-              billboard->LookAt(cam, vp->m_zoom);
-            }
-
-            m_renderer->Render(static_cast<Drawable*> (ntt), cam, m_sceneLights);
-          }
-        }
-
-        RenderSelected(vp);
-
+        // Render debug objects.
         if (!m_perFrameDebugObjects.empty())
         {
-          for (Drawable* d : m_perFrameDebugObjects)
+          for (Drawable* dbgObj : m_perFrameDebugObjects)
           {
-            m_renderer->Render(d, cam);
-            SafeDel(d);
+            m_renderer->Render(dbgObj, viewport->m_camera);
+            SafeDel(dbgObj);
           }
           m_perFrameDebugObjects.clear();
         }
-
-        m_renderer->Render(m_grid, cam);
-        m_origin->LookAt(cam, vp->m_zoom);
-        m_renderer->Render(m_origin, cam);
-
-        RenderGizmo(vp, m_gizmo);
-
-        m_cursor->LookAt(cam, vp->m_zoom);
-        m_renderer->Render(m_cursor, cam);
       }
 
+      // Viewports set their own render target.
+      // Set the app framebuffer back for UI.
       m_renderer->SetRenderTarget(nullptr);
 
       // Render UI.
@@ -1029,6 +991,11 @@ namespace ToolKit
 
     void App::RenderGizmo(EditorViewport* viewport, Gizmo* gizmo)
     {
+      if (gizmo == nullptr)
+      {
+        return;
+      }
+
       gizmo->LookAt(viewport->m_camera, viewport->m_zoom);
 
       glClear(GL_DEPTH_BUFFER_BIT);
