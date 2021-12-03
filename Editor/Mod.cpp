@@ -36,9 +36,7 @@ namespace ToolKit
     DeleteAction::DeleteAction(Entity* ntt)
     {
       m_ntt = ntt;
-      g_app->m_scene->RemoveEntity(ntt->m_id);
-      m_actionComitted = true;
-      HandleAnimRecords(ntt);
+      Redo();
     }
 
     DeleteAction::~DeleteAction()
@@ -54,15 +52,31 @@ namespace ToolKit
       assert(m_ntt != nullptr);
 
       g_app->m_scene->AddEntity(m_ntt);
+      if (m_parentId != NULL_ENTITY)
+      {
+        if (Entity* pEntt = g_app->m_scene->GetEntity(m_parentId))
+        {
+          pEntt->m_node->AddChild(m_ntt->m_node);
+        }
+      }
+
       m_actionComitted = false;
       HandleAnimRecords(m_ntt);
     }
 
     void DeleteAction::Redo()
     {
+      if (Node* pNode = m_ntt->m_node->m_parent)
+      {
+        if (pNode->m_entity)
+        {
+          m_parentId = pNode->m_entity->m_id;
+        }
+        pNode->Orphan(m_ntt->m_node);
+      }
+
       g_app->m_scene->RemoveEntity(m_ntt->m_id);
       m_actionComitted = true;
-      HandleAnimRecords(m_ntt);
     }
 
     void DeleteAction::HandleAnimRecords(Entity* ntt)

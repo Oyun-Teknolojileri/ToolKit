@@ -39,6 +39,8 @@ namespace ToolKit
 
     private:
       Entity* m_ntt;
+      EntityId m_parentId;
+      EntityIdArray m_children;
       std::vector<AnimRecord> m_records;
       bool m_actionComitted;
     };
