@@ -107,7 +107,6 @@ namespace ToolKit
 
     public:
       EditorScenePtr m_scene;
-      EditorScenePtr m_scene2d;
 
       // UI elements.
       std::vector<Window*> m_windows;

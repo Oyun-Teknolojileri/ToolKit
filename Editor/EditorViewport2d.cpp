@@ -143,7 +143,15 @@ namespace ToolKit
 
       // Render entities.
       app->m_renderer->SetRenderTarget(m_viewportImage);
-      for (Entity* ntt : app->m_scene2d->GetEntities())
+      EntityRawPtrArray surfaces = app->m_scene->Filter
+      (
+        [](Entity* ntt) -> bool 
+        { 
+          return ntt->GetType() == EntityType::Entity_Surface;
+        }
+      );
+
+      for (Entity* ntt : surfaces)
       {
         if (ntt->IsDrawable())
         {

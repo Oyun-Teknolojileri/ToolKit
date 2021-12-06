@@ -212,7 +212,7 @@ namespace ToolKit
           {
             Surface* suface = new Surface({ 100.0f, 30.0f });
             suface->m_mesh->Init(false);
-            g_app->m_scene2d->AddEntity(suface);
+            g_app->m_scene->AddEntity(suface);
           }
           ImGui::EndMenu();
         }

@@ -8,6 +8,9 @@
 
 namespace ToolKit
 {
+  Surface::Surface()
+  {
+  }
 
   Surface::Surface(TexturePtr texture, const Vec2& pivotOffset)
   {
@@ -51,6 +54,16 @@ namespace ToolKit
   EntityType Surface::GetType() const
   {
     return EntityType::Entity_Surface;
+  }
+
+  Entity* Surface::GetCopy(Entity* copyTo) const
+  {
+    Drawable::GetCopy(copyTo);
+    Surface* cpy = static_cast<Surface*> (copyTo);
+    cpy->m_size = m_size;
+    cpy->m_pivotOffset = m_pivotOffset;
+
+    return cpy;
   }
 
   void Surface::AssignTexture()

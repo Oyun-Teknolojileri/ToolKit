@@ -12,6 +12,8 @@ namespace ToolKit
 
   namespace Editor
   {
+    class App;
+
     class EditorViewport : public Viewport, public Window
     {
     public:

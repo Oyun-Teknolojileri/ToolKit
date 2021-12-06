@@ -12,6 +12,7 @@ namespace ToolKit
   class Surface : public Drawable
   {
   public:
+    Surface();
     Surface(TexturePtr texture, const Vec2& pivotOffset);
     Surface(TexturePtr texture, const SpriteEntry& entry);
     Surface(const String& textureFile, const Vec2& pivotOffset);
@@ -19,6 +20,9 @@ namespace ToolKit
     virtual ~Surface();
 
     virtual EntityType GetType() const override;
+
+  protected:
+    virtual Entity* GetCopy(Entity* copyTo) const override;
 
   private:
     void AssignTexture();

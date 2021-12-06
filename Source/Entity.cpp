@@ -130,8 +130,10 @@ namespace ToolKit
     case EntityType::Entity_Camera:
       e = new Camera();
       break;
-    case EntityType::Entity_SpriteAnim:
     case EntityType::Entity_Surface:
+      e = new Surface();
+      break;
+    case EntityType::Entity_SpriteAnim:
     case EntityType::Entity_Light:
     case EntityType::Entity_Directional:
     default:
