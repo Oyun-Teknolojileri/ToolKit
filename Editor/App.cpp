@@ -87,6 +87,7 @@ namespace ToolKit
       
       m_workspace.Init();
       m_scene = std::make_shared<EditorScene>(ScenePath("New Scene" + SCENE));
+      m_scene2d = std::make_shared<EditorScene>(ScenePath("New Layer" + SCENE));
 
       ApplyProjectSettings(m_onNewScene);
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
