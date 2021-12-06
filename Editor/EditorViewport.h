@@ -26,10 +26,13 @@ namespace ToolKit
       bool IsViewportQueriable();
       virtual void DispatchSignals() const override;
 
+      // Viewport overrides.
       virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-
       virtual void OnResize(float width, float height) override;
+
+      // Editor functions
+      virtual void Render(App* app);
 
     protected:
       // Mods.

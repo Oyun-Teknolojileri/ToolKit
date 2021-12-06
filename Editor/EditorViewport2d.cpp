@@ -134,6 +134,34 @@ namespace ToolKit
       return vp;
     }
 
+    void EditorViewport2d::Render(App* app)
+    {
+      if (!IsVisible())
+      {
+        return;
+      }
+
+      // Render entities.
+      app->m_renderer->SetRenderTarget(m_viewportImage);
+      for (Entity* ntt : app->m_scene2d->GetEntities())
+      {
+        if (ntt->IsDrawable())
+        {
+          app->m_renderer->Render
+          (
+            static_cast<Drawable*> (ntt),
+            m_camera,
+            { &m_forwardLight }
+          );
+        }
+      }
+
+      app->RenderSelected(this);
+
+      // Render gizmo.
+      app->RenderGizmo(this, app->m_gizmo);
+    }
+
     void EditorViewport2d::UpdateContentArea()
     {
       // Content area size
@@ -352,6 +380,9 @@ namespace ToolKit
       m_zoom = 1.0f;
       m_camera->m_node->SetTranslation(Z_AXIS * 10.0f);
       AdjustZoom(0.0f);
+
+      m_forwardLight.Translate(Vec3(Z_AXIS));
+      m_forwardLight.LookAt(Vec3());
     }
 
     void EditorViewport2d::GetGlobalCanvasSize()

@@ -388,6 +388,53 @@ namespace ToolKit
       AdjustZoom(0.0f);
     }
 
+    void EditorViewport::Render(App* app)
+    {
+      if (!IsVisible())
+      {
+        return;
+      }
+
+      // Adjust scene lights.
+      app->m_lightMaster->OrphanSelf();
+      m_camera->m_node->AddChild(app->m_lightMaster);
+
+      // Render entities.
+      app->m_renderer->SetRenderTarget(m_viewportImage);
+      for (Entity* ntt : app->m_scene->GetEntities())
+      {
+        if (ntt->IsDrawable())
+        {
+          if (ntt->GetType() == EntityType::Entity_Billboard)
+          {
+            Billboard* billboard = static_cast<Billboard*> (ntt);
+            billboard->LookAt(m_camera, m_zoom);
+          }
+
+          app->m_renderer->Render
+          (
+            static_cast<Drawable*> (ntt),
+            m_camera,
+            app->m_sceneLights
+          );
+        }
+      }
+
+      app->RenderSelected(this);
+
+      // Render fixed scene objects.
+      app->m_renderer->Render(app->m_grid, m_camera);
+
+      app->m_origin->LookAt(m_camera, m_zoom);
+      app->m_renderer->Render(app->m_origin, m_camera);
+
+      app->m_cursor->LookAt(m_camera, m_zoom);
+      app->m_renderer->Render(app->m_cursor, m_camera);
+
+      // Render gizmo.
+      app->RenderGizmo(this, app->m_gizmo);
+    }
+
     void EditorViewport::FpsNavigationMode(float deltaTime)
     {
       if (m_camera && !m_camera->IsOrtographic())

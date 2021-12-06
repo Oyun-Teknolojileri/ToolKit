@@ -32,6 +32,9 @@ namespace ToolKit
       virtual Vec3 TransformViewportToWorldSpace(const Vec2& pnt) override;
       virtual Vec2 TransformScreenToViewportSpace(const Vec2& pnt) override;
 
+      // Editor overrides.
+      virtual void Render(App* app) override;
+
     protected:
       void UpdateContentArea();
       void UpdateWindow();
@@ -53,6 +56,7 @@ namespace ToolKit
       Vec2 m_contentAreaMin;
       Vec2 m_contentAreaMax;
       Vec2 m_scroll;
+      Light m_forwardLight;
     };
 
   }

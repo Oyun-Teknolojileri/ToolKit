@@ -95,8 +95,9 @@ namespace ToolKit
         return nullptr;
       }
 
-      void RenderSelected(EditorViewport* vp); // Quick selected render implementation.
-      void DrawPlayWindow(float deltaTime);
+      void RenderSelected(EditorViewport* viewport); // Quick selected render implementation.
+      void RenderGizmo(EditorViewport* viewport, Gizmo* gizmo);
+      void ShowPlayWindow(float deltaTime);
 
       virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
@@ -106,6 +107,7 @@ namespace ToolKit
 
     public:
       EditorScenePtr m_scene;
+      EditorScenePtr m_scene2d;
 
       // UI elements.
       std::vector<Window*> m_windows;
