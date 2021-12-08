@@ -512,6 +512,20 @@ namespace ToolKit
     return lwr;
   }
 
+  String Format(const char* msg, ...)
+  {
+    va_list args;
+    va_start(args, msg);
+
+    static char buff[2048];
+    vsprintf(buff, msg, args);
+    String msgFormatted(buff);
+
+    va_end(args);
+
+    return msgFormatted;
+  }
+
   LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size)
   {
     // Searching perpendicular axes on the plane.

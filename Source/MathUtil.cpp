@@ -615,10 +615,4 @@ namespace ToolKit
     return glm::angleAxis(rad, axis);
   }
 
-  template<typename T>
-  T SetPrecision(const T& val, int nDecimal)
-  {
-      return glm::ceil(val * glm::pow(10.0f, (float)nDecimal) - 0.4999999999999f) / glm::pow(10.0f, (float)nDecimal);
-  }
-
 }

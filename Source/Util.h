@@ -49,6 +49,7 @@ namespace ToolKit
   void Split(const String& s, const String& sep, StringArray& v);
   void ReplaceStringInPlace(String& subject, const String& search, const String& replace);
   String ToLower(const String& str);
+  String Format(const char* msg, ...);
 
   // Debug geometries.
   class LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size);
