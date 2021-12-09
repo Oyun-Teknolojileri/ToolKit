@@ -929,7 +929,9 @@ namespace ToolKit
           return;
         }
 
-        RenderTarget stencilMask((int)viewport->m_width, (int)viewport->m_height);
+        RenderTargetSettigs rtSet;
+        rtSet.warpS = rtSet.warpT = GL_CLAMP_TO_EDGE;
+        RenderTarget stencilMask((int)viewport->m_width, (int)viewport->m_height, rtSet);
         stencilMask.Init();
 
         m_renderer->SetRenderTarget(&stencilMask, true, { 0.0f, 0.0f, 0.0f, 1.0 });
@@ -964,11 +966,17 @@ namespace ToolKit
 
         m_renderer->SetRenderTarget(viewport->m_viewportImage, false);
 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
         // Dilate.
         glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
         ShaderPtr dilate = GetShaderManager()->Create<Shader>(ShaderPath("dilateFrag.shader", true));
         dilate->SetShaderParameter("Color", color);
         m_renderer->DrawFullQuad(dilate);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
       };
 
       EntityRawPtrArray selecteds;

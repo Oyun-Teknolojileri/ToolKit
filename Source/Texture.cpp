@@ -234,14 +234,14 @@ namespace ToolKit
     m_type = ResourceType::RenderTarget;
   }
 
-  RenderTarget::RenderTarget(uint width, uint height, bool depthStencil)
+  RenderTarget::RenderTarget(uint width, uint height, const RenderTargetSettigs& settings)
     : RenderTarget()
   {
     m_width = width;
     m_height = height;
     m_frameBufferId = 0;
     m_depthBufferId = 0;
-    m_depthStencil = depthStencil;
+    m_settings = settings;
   }
 
   RenderTarget::~RenderTarget()
@@ -270,10 +270,12 @@ namespace ToolKit
 
     GLint currId;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
-
     glBindTexture(GL_TEXTURE_2D, m_textureId);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_settings.warpS);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_settings.warpT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_settings.minFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_settings.magFilter);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     glGenFramebuffers(1, &m_frameBufferId);
@@ -282,7 +284,7 @@ namespace ToolKit
     // Attach 2D texture to this FBO
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureId, 0);
 
-    if (m_depthStencil)
+    if (m_settings.depthStencil)
     {
       glGenRenderbuffers(1, &m_depthBufferId);
       glBindRenderbuffer(GL_RENDERBUFFER, m_depthBufferId);

@@ -49,11 +49,21 @@ namespace ToolKit
     std::vector<uint8*> m_images;
   };
 
+  class RenderTargetSettigs
+  {
+  public:
+    bool depthStencil = true;
+    int warpS = GL_REPEAT;
+    int warpT = GL_REPEAT;
+    int minFilter = GL_NEAREST;
+    int magFilter = GL_NEAREST;
+  };
+
   class RenderTarget : public Texture
   {
   public:
     RenderTarget();
-    RenderTarget(uint widht, uint height, bool depthStencil = true);
+    RenderTarget(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
     virtual ~RenderTarget();
 
     virtual void Load() override;
@@ -65,7 +75,7 @@ namespace ToolKit
     GLuint m_depthBufferId;
 
   private:
-    bool m_depthStencil;
+    RenderTargetSettigs m_settings;
   };
 
   class TextureManager : public ResourceManager
