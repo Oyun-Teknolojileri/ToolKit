@@ -384,6 +384,7 @@ namespace ToolKit
       m_delta = Vec3(0.0f);
       m_deltaAccum = Vec3(0.0f);
       m_initialLoc = g_app->m_scene->GetCurrentSelection()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      SDL_GetGlobalMouseState(&m_mouseInitialLoc.x, &m_mouseInitialLoc.y);
     }
 
     void StateTransformTo::TransitionOut(State* prevState)
@@ -396,7 +397,7 @@ namespace ToolKit
     {
       Transform(m_delta);
       StateTransformBase::Update(deltaTime);
-
+      ImGui::SetMouseCursor(ImGuiMouseCursor_None);
       return NullSignal;
     }
 
@@ -417,11 +418,17 @@ namespace ToolKit
 
     void StateTransformTo::CalculateDelta()
     {
-      EditorViewport* vp = g_app->GetActiveViewport();
-      m_mouseData[1] = vp->GetLastMousePosScreenSpace();
+      // Calculate delta.
+      IVec2 mouseLoc;
+      SDL_GetGlobalMouseState(&mouseLoc.x, &mouseLoc.y);
+      m_mouseData[1] = m_mouseData[0] + Vec2(mouseLoc - m_mouseInitialLoc);
+
+      // Warp mouse move.
+      SDL_WarpMouseGlobal(m_mouseInitialLoc.x, m_mouseInitialLoc.y);
 
       float t;
-      Ray ray = vp->RayFromMousePosition();
+      EditorViewport* vp = g_app->GetActiveViewport();
+      Ray ray = vp->RayFromScreenSpacePoint(m_mouseData[1]);
       if (LinePlaneIntersection(ray, m_intersectionPlane, t))
       {
         // This point.

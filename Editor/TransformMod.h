@@ -88,6 +88,9 @@ namespace ToolKit
       Vec3 m_delta;
       Vec3 m_deltaAccum;
       Vec3 m_initialLoc;
+
+    private:
+      IVec2 m_mouseInitialLoc;
     };
 
     class StateTransformEnd : public StateTransformBase
