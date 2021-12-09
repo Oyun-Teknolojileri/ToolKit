@@ -391,6 +391,9 @@ namespace ToolKit
     {
       StateTransformBase::TransitionOut(prevState);
       m_gizmo->m_grabPoint = Vec3();
+
+      // Set the mouse position roughly.
+      SDL_WarpMouseGlobal((int)m_mouseData[1].x, (int)m_mouseData[1].y);
     }
 
     SignalId StateTransformTo::Update(float deltaTime)
