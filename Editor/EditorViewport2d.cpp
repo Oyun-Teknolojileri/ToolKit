@@ -242,17 +242,21 @@ namespace ToolKit
 
           Vec2 wndSize = ImGui::GetWindowSize();
           ImGui::SetCursorPos((wndSize - m_canvasSize) * 0.5f);
+          ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+          ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+          ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
           ImGui::BeginChildFrame
           (
             ImGui::GetID("canvas"),
             m_canvasSize,
-            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse
+            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysUseWindowPadding
           );
           m_canvasPos = ImGui::GetWindowPos();
           m_canvasPos -= m_contentAreaMin; // Convert relative to content area.
 
           ImGui::Image(Convert2ImGuiTexture(m_viewportImage), m_canvasSize, ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
           ImGui::EndChildFrame();
+          ImGui::PopStyleVar(3);
 
           // Draw borders.
           if (IsActive())
