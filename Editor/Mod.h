@@ -201,6 +201,7 @@ namespace ToolKit
     class StateBeginPick : public StatePickingBase
     {
     public:
+      virtual void TransitionIn(State* prevState) override;
       virtual SignalId Update(float deltaTime) override;
       virtual String Signaled(SignalId signal) override;
       virtual String GetType() override { return StateType::StateBeginPick; }

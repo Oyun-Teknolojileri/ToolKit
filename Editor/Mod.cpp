@@ -556,6 +556,39 @@ namespace ToolKit
       }
     }
 
+    void StateBeginPick::TransitionIn(State* prevState)
+    {
+      // Construct the ignore list.
+      m_ignoreList.clear();
+      EntityRawPtrArray ignores;
+      EditorViewport* vp = g_app->GetActiveViewport();
+
+      if (vp->GetType() == Window::Type::Viewport)
+      {
+        ignores = g_app->m_scene->Filter
+        (
+          [](Entity* ntt) -> bool 
+          {
+            return ntt->GetType() == EntityType::Entity_Surface;
+          }
+        );
+      }
+
+      if (vp->GetType() == Window::Type::Viewport2d)
+      {
+        ignores = g_app->m_scene->Filter
+        (
+          [](Entity* ntt) -> bool
+          {
+            return ntt->GetType() != EntityType::Entity_Surface;
+          }
+        );
+      }
+
+      ToEntityIdArray(m_ignoreList, ignores);
+      m_ignoreList.push_back(g_app->m_grid->m_id);
+    }
+
     SignalId StateBeginPick::Update(float deltaTime)
     {
       return NullSignal;
@@ -871,7 +904,6 @@ namespace ToolKit
     {
       StateBeginPick* initialState = new StateBeginPick();
       m_stateMachine->m_currentState = initialState;
-      initialState->m_ignoreList = { g_app->m_grid->m_id };
 
       m_stateMachine->PushState(initialState);
       m_stateMachine->PushState(new StateBeginBoxPick());
