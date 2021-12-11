@@ -25,7 +25,7 @@ namespace ToolKit
       virtual void Show() override;
       virtual Type GetType() const override;
       virtual void Update(float deltaTime) override;
-      bool IsViewportQueriable();
+      bool IsViewportQueriable() const;
       virtual void DispatchSignals() const override;
 
       // Viewport overrides.
@@ -35,6 +35,7 @@ namespace ToolKit
 
       // Editor functions
       virtual void Render(App* app);
+      virtual void GetContentAreaScreenCoordinates(Vec2& min, Vec2& max) const;
 
     protected:
       // Mods.

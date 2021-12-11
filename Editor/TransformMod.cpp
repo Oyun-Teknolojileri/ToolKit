@@ -401,6 +401,24 @@ namespace ToolKit
       Transform(m_delta);
       StateTransformBase::Update(deltaTime);
       ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+      if (EditorViewport* vp = g_app->GetActiveViewport())
+      {
+        Vec2 contentMin, contentMax;
+        vp->GetContentAreaScreenCoordinates(contentMin, contentMax);
+
+        auto drawMoveCursorFn = [this, contentMin, contentMax](ImDrawList* drawList) -> void
+        {
+          // Clamp the mouse pos.
+          Vec2 pos = m_mouseData[1];
+          pos = glm::clamp(pos, contentMin, contentMax);
+
+          // Draw cursor.
+          Vec2 size(28.0f);
+          drawList->AddImage(Convert2ImGuiTexture(UI::m_moveIcn), pos - size * 0.5f, pos + size * 0.5f);
+        };
+
+        vp->m_drawCommands.push_back(drawMoveCursorFn);
+      }
       return NullSignal;
     }
 

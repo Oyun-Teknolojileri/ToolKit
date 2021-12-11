@@ -249,7 +249,7 @@ namespace ToolKit
       return Type::Viewport;
     }
 
-    bool EditorViewport::IsViewportQueriable()
+    bool EditorViewport::IsViewportQueriable() const
     {
       return m_mouseOverContentArea && m_mouseHover && m_active && m_visible && m_relMouseModBegin;
     }
@@ -441,6 +441,12 @@ namespace ToolKit
 
       // Render gizmo.
       app->RenderGizmo(this, app->m_gizmo);
+    }
+
+    void EditorViewport::GetContentAreaScreenCoordinates(Vec2& min, Vec2& max) const
+    {
+      min = m_wndPos;
+      max = m_wndPos + m_wndContentAreaSize;
     }
 
     void EditorViewport::FpsNavigationMode(float deltaTime)

@@ -170,6 +170,12 @@ namespace ToolKit
       app->RenderGizmo(this, app->m_gizmo);
     }
 
+    void EditorViewport2d::GetContentAreaScreenCoordinates(Vec2& min, Vec2& max) const
+    {
+      min = m_canvasPos + m_wndPos;
+      max = min + m_canvasSize;
+    }
+
     void EditorViewport2d::UpdateContentArea()
     {
       // Content area size
