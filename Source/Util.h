@@ -61,7 +61,7 @@ namespace ToolKit
   bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots);
   Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies); // copies: First one is the copy root, fallowings are attached children.
-  void DeepInstantiate(Entity* root, EntityRawPtrArray& instances);
+  Entity* DeepInstantiate(Entity* root, EntityRawPtrArray& instances);
 
   template<typename T>
   void pop_front(std::vector<T>& vec)

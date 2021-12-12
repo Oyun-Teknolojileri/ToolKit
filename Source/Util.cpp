@@ -675,7 +675,7 @@ namespace ToolKit
     return cpy;
   }
 
-  void DeepInstantiate(Entity* root, EntityRawPtrArray& instances)
+  Entity* DeepInstantiate(Entity* root, EntityRawPtrArray& instances)
   {
     Entity* cpy = root->GetInstance();
     instances.push_back(cpy);
@@ -684,10 +684,14 @@ namespace ToolKit
     {
       if (node->m_entity)
       {
-        DeepInstantiate(node->m_entity, instances);
-        cpy->m_node->AddChild(instances.back()->m_node);
+        if (Entity* sub = DeepInstantiate(node->m_entity, instances))
+        {
+          cpy->m_node->AddChild(sub->m_node);
+        }
       }
     }
+
+    return cpy;
   }
 
 }
