@@ -656,7 +656,7 @@ namespace ToolKit
     }
   }
 
-  void DeepCopy(Entity* root, EntityRawPtrArray& copies)
+  Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies)
   {
     Entity* cpy = root->Copy();
     copies.push_back(cpy);
@@ -665,10 +665,14 @@ namespace ToolKit
     {
       if (node->m_entity)
       {
-        DeepCopy(node->m_entity, copies);
-        cpy->m_node->AddChild(copies.back()->m_node);
+        if (Entity* sub = DeepCopy(node->m_entity, copies))
+        {
+          cpy->m_node->AddChild(sub->m_node);
+        }
       }
     }
+
+    return cpy;
   }
 
   void DeepInstantiate(Entity* root, EntityRawPtrArray& instances)

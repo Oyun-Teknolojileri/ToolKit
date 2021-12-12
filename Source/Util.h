@@ -60,7 +60,7 @@ namespace ToolKit
   void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray);
   bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots);
-  void DeepCopy(Entity* root, EntityRawPtrArray& copies); // copies: First one is the copy root, fallowings are attached children.
+  Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies); // copies: First one is the copy root, fallowings are attached children.
   void DeepInstantiate(Entity* root, EntityRawPtrArray& instances);
 
   template<typename T>
