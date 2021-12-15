@@ -20,6 +20,9 @@ namespace ToolKit
       EditorScene(const String& file);
       virtual ~EditorScene();
 
+      // Scene overrides.
+      virtual void AddEntity(Entity* entity) override;
+
       // Selection operations.
       bool IsSelected(EntityId id) const;
       void RemoveFromSelection(EntityId id);

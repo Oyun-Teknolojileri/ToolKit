@@ -32,7 +32,7 @@ namespace ToolKit
 
     // Entity operations.
     Entity* GetEntity(EntityId id) const;
-    void AddEntity(Entity* entity);
+    virtual void AddEntity(Entity* entity);
     const EntityRawPtrArray& GetEntities() const;
     EntityRawPtrArray GetByTag(const String& tag);
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);

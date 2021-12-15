@@ -32,6 +32,31 @@ namespace ToolKit
     {
     }
 
+    void EditorScene::AddEntity(Entity* entity)
+    {
+      // Make layer assignment.
+      if (entity->m_node->m_parent == nullptr)
+      {
+        if (entity->GetType() == EntityType::Entity_Surface)
+        {
+          m_fixedLayerNodes[1]->m_node->AddChild(entity->m_node);
+        }
+        else
+        {
+          if 
+          (
+            entity->m_id != FixedLayerIds[0] &&
+            entity->m_id != FixedLayerIds[1]
+          )
+          {
+            m_fixedLayerNodes[0]->m_node->AddChild(entity->m_node);
+          }
+        }
+      }
+
+      Scene::AddEntity(entity);
+    }
+
     bool EditorScene::IsSelected(EntityId id) const
     {
       return std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id) != m_selectedEntities.end();
