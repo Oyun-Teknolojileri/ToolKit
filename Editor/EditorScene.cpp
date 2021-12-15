@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "EditorScene.h"
 #include "Util.h"
+#include "GlobalDef.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -11,6 +12,14 @@ namespace ToolKit
     EditorScene::EditorScene()
     {
       m_newScene = true;
+      m_fixedLayerNodes.reserve(2);
+      for (int i = 0; i < 2; i++)
+      {
+        EntityNode* layerNode = new EntityNode(FixedLayerNames[i]);
+        layerNode->m_id = FixedLayerIds[i];
+        m_fixedLayerNodes.push_back(layerNode);
+        AddEntity(layerNode);
+      }
     }
 
     EditorScene::EditorScene(const String& file)
@@ -204,6 +213,29 @@ namespace ToolKit
     {
       Scene::Save(onlyIfDirty);
       m_newScene = false;
+    }
+
+    void EditorScene::Load()
+    {
+      for (int i = 0; i < 2; i++)
+      {
+        RemoveEntity(FixedLayerIds[i]);
+      }
+
+      Scene::Load();
+
+      for (int i = 0; i < 2; i++)
+      {
+        if (Entity* node = GetEntity(FixedLayerIds[i]))
+        {
+          SafeDel(m_fixedLayerNodes[i]);
+          m_fixedLayerNodes[i] = node;
+        }
+        else
+        {
+          AddEntity(m_fixedLayerNodes[i]);
+        }
+      }
     }
 
     Entity* EditorScene::RemoveEntity(EntityId id)

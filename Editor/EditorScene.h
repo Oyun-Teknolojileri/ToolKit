@@ -10,6 +10,9 @@ namespace ToolKit
 
     typedef std::shared_ptr<class EditorScene> EditorScenePtr;
 
+    const static EntityId FixedLayerIds[2] = { 1, 2 };
+    const static String FixedLayerNames[2] = { "3d Layer", "2d Layer" };
+
     class EditorScene : public Scene
     {
     public:
@@ -33,6 +36,7 @@ namespace ToolKit
       bool IsMaterialInUse(const MaterialPtr& material) const;
       bool IsMeshInUse(const MeshPtr& mesh) const;
       virtual void Save(bool onlyIfDirty) override;
+      virtual void Load() override;
 
       // Entity operations.
       virtual Entity* RemoveEntity(EntityId id) override;
@@ -46,6 +50,7 @@ namespace ToolKit
 
     public:
       bool m_newScene; // Indicates if this is created via new scene. That is not saved on the disk.
+      EntityRawPtrArray m_fixedLayerNodes; // Using entity nodes to group entities.
 
     private:
       EntityIdArray m_selectedEntities;

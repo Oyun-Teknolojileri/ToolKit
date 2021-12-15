@@ -66,6 +66,7 @@ namespace ToolKit
   {
   public:
     EntityNode() {}
+    EntityNode(const String& name) { m_name = name; }
     virtual ~EntityNode() {}
     virtual EntityType GetType() const override { return EntityType::Entity_Node; }
     virtual void RemoveResources() override {}
