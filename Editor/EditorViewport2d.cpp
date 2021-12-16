@@ -251,6 +251,11 @@ namespace ToolKit
           ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
           ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
           ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+
+          ImDrawList* dw = ImGui::GetWindowDrawList();
+          dw->ChannelsSplit(2);
+          dw->ChannelsSetCurrent(1);
+
           ImGui::BeginChildFrame
           (
             ImGui::GetID("canvas"),
@@ -258,11 +263,33 @@ namespace ToolKit
             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysUseWindowPadding
           );
           m_canvasPos = ImGui::GetWindowPos();
-          m_canvasPos -= m_contentAreaMin; // Convert relative to content area.
-
           ImGui::Image(Convert2ImGuiTexture(m_viewportImage), m_canvasSize, ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
+
+          dw->ChannelsSetCurrent(0);
+
+          // Draw grid.
+          float stepDist = 20.0f;
+          int yRep = (int)(m_canvasSize.x / stepDist);
+          int xRep = (int)(m_canvasSize.y / stepDist);
+          for (int i = 1; i < xRep; i++)
+          {
+            ImVec2 p0(m_canvasPos.x, m_canvasPos.y + stepDist * i);
+            ImVec2 p1(m_canvasPos.x + m_canvasSize.x, m_canvasPos.y + stepDist * i);
+            dw->AddLine(p0, p1, ImGui::GetColorU32(ImVec4(0.5f, 0.5f, 0.5f, 0.5f)));
+
+            for (int j = 1; j < yRep; j++)
+            {
+              ImVec2 p0(m_canvasPos.x + stepDist * j, m_canvasPos.y);
+              ImVec2 p1(m_canvasPos.x + stepDist * j, m_canvasPos.y + m_canvasSize.y);
+              dw->AddLine(p0, p1, ImGui::GetColorU32(ImVec4(0.5f, 0.5f, 0.5f, 0.5f)));
+            }
+          }
+
+          m_canvasPos -= m_contentAreaMin; // Convert relative to content area.
           ImGui::EndChildFrame();
           ImGui::PopStyleVar(3);
+
+          dw->ChannelsMerge();
 
           // Draw borders.
           if (IsActive())
@@ -292,7 +319,7 @@ namespace ToolKit
     void EditorViewport2d::DrawCommands()
     {
       // Process draw commands.
-      ImDrawList* drawList = ImGui::GetWindowDrawList();
+      ImDrawList* drawList = ImGui::GetForegroundDrawList();
       for (auto command : m_drawCommands)
       {
         command(drawList);
@@ -375,6 +402,10 @@ namespace ToolKit
           }
         }
       }
+    }
+
+    void EditorViewport2d::DrawCanvasToolBar()
+    {
     }
 
     void EditorViewport2d::AdjustZoom(float delta)

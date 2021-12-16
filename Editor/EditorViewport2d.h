@@ -42,6 +42,7 @@ namespace ToolKit
       void DrawCommands();
       void HandleDrop();
       void DrawOverlays();
+      void DrawCanvasToolBar();
       virtual void AdjustZoom(float delta) override;
 
     private:
