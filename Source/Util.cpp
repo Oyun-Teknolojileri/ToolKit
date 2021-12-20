@@ -138,6 +138,44 @@ namespace ToolKit
     return node;
   }
 
+  void WriteMaterial(XmlNode* parent, XmlDocument* doc, const String& file)
+  {
+    XmlNode* material = doc->allocate_node
+    (
+      rapidxml::node_type::node_element,
+      "material"
+    );
+    parent->append_node(material);
+
+    String matPath = GetRelativeResourcePath(file);
+    if (matPath.empty())
+    {
+      matPath = MaterialPath("default.material", true);
+    }
+
+    XmlAttribute* nameAttr = doc->allocate_attribute("name", doc->allocate_string(matPath.c_str()));
+    material->append_attribute(nameAttr);
+  }
+
+  MaterialPtr ReadMaterial(XmlNode* parent)
+  {
+    if (XmlNode* materialNode = parent->first_node("material"))
+    {
+      String matFile = MaterialPath(materialNode->first_attribute("name")->value());
+
+      if (CheckFile(matFile))
+      {
+        return GetMaterialManager()->Create<Material>(matFile);
+      }
+      else
+      {
+        return GetMaterialManager()->Create<Material>(MaterialPath("default.material", true));
+      }
+    }
+
+    return nullptr;
+  }
+
   bool CheckFile(const String& path)
   {
     return std::filesystem::exists(path);

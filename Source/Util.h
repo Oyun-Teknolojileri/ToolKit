@@ -25,6 +25,9 @@ namespace ToolKit
   void ReadAttr(XmlNode* node, const String& name, String& val);
   XmlNode* Query(XmlDocument* doc, const StringArray& path);
 
+  void WriteMaterial(XmlNode* parent, XmlDocument* doc, const String& file);
+  MaterialPtr ReadMaterial(XmlNode* parent);
+
   // File path operations.
   bool CheckFile(const String& path);
   String CreateCopyFileFullPath(const String& fullPath);

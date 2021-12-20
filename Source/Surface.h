@@ -20,6 +20,8 @@ namespace ToolKit
     virtual ~Surface();
 
     virtual EntityType GetType() const override;
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   protected:
     virtual Entity* GetCopy(Entity* copyTo) const override;

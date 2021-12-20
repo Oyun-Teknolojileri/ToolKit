@@ -257,22 +257,7 @@ namespace ToolKit
         "mesh"
       );
       container->append_node(meshNode);
-
-      XmlNode* material = doc->allocate_node
-      (
-        rapidxml::node_type::node_element,
-        "material"
-      );
-      meshNode->append_node(material);
-
-      String matPath = GetRelativeResourcePath(mesh->m_material->m_file);
-      if (matPath.empty())
-      {
-        matPath = MaterialPath("default.material", true);
-      }
-
-      XmlAttribute* nameAttr = doc->allocate_attribute("name", doc->allocate_string(matPath.c_str()));
-      material->append_attribute(nameAttr);
+      WriteMaterial(meshNode, doc, mesh->m_material->m_file);
 
       XmlNode* vertices = doc->allocate_node
       (
@@ -376,17 +361,7 @@ namespace ToolKit
         m_subMeshes.push_back(MeshPtr(mesh));
       }
 
-      XmlNode* materialNode = node->first_node("material");
-      String matFile = MaterialPath(materialNode->first_attribute("name")->value());
-
-      if (CheckFile(matFile))
-      {
-        mesh->m_material = GetMaterialManager()->Create<Material> (matFile);
-      }
-      else
-      {
-        mesh->m_material = GetMaterialManager()->Create<Material> (MaterialPath("default.material", true));
-      }
+      mesh->m_material = ReadMaterial(node);
 
       XmlNode* vertex = node->first_node("vertices");
       for (XmlNode* v = vertex->first_node("v"); v; v = v->next_sibling())

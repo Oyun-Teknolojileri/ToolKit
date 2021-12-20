@@ -209,6 +209,7 @@ namespace ToolKit
       Destroy();
       Init();
       m_scene = std::make_shared<EditorScene>(ScenePath(name + SCENE));
+      m_scene->m_name = name;
       m_workspace.SetScene(m_scene->m_name);
       m_onNewScene = false;
     }

@@ -56,6 +56,40 @@ namespace ToolKit
     return EntityType::Entity_Surface;
   }
 
+  void Surface::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+    Entity::Serialize(doc, parent);
+    XmlNode* nttNode = parent->last_node();
+    XmlNode* prop = doc->allocate_node
+    (
+      rapidxml::node_type::node_element,
+      "Size"
+    );
+    nttNode->append_node(prop);
+    WriteVec(prop, doc, m_size);
+
+    prop = doc->allocate_node
+    (
+      rapidxml::node_type::node_element,
+      "Offset"
+    );
+    nttNode->append_node(prop);
+    WriteVec(prop, doc, m_pivotOffset);
+
+    WriteMaterial(nttNode, doc, m_mesh->m_material->m_file);
+  }
+
+  void Surface::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    Entity::DeSerialize(doc, parent);
+    XmlNode* prop = parent->first_node("Size");
+    ReadVec<Vec2>(prop, m_size);
+    prop = parent->first_node("Offset");
+    ReadVec<Vec2>(prop, m_pivotOffset);
+    CreateQuat();
+    m_mesh->m_material = ReadMaterial(parent);
+  }
+
   Entity* Surface::GetCopy(Entity* copyTo) const
   {
     Drawable::GetCopy(copyTo);
@@ -69,7 +103,7 @@ namespace ToolKit
   void Surface::AssignTexture()
   {
     m_mesh->m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-    m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
+    m_mesh->m_material->GetRenderState()->depthTestEnabled = true;
   }
 
   void Surface::CreateQuat()
