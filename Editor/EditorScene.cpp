@@ -29,6 +29,7 @@ namespace ToolKit
       : EditorScene()
     {
       m_file = file;
+      m_newScene = false;
     }
 
     EditorScene::~EditorScene()
@@ -245,6 +246,11 @@ namespace ToolKit
 
     void EditorScene::Load()
     {
+      if (m_loaded)
+      {
+        return;
+      }
+
       for (int i = 0; i < 2; i++)
       {
         RemoveEntity(FixedLayerIds[i]);
@@ -280,6 +286,7 @@ namespace ToolKit
     void EditorScene::Destroy(bool removeResources)
     {
       Scene::Destroy(removeResources);
+      m_fixedLayerNodes = { nullptr, nullptr };
       m_selectedEntities.clear();
     }
 

@@ -783,7 +783,6 @@ namespace ToolKit
       m_scene->Load(); // Make sure its loaded.
       m_scene->Init(false);
       m_workspace.SetScene(m_scene->m_name);
-      m_scene->m_newScene = false;
     }
 
     void App::MergeScene(const String& fullPath)

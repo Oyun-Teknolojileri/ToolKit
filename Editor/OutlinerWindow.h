@@ -20,6 +20,7 @@ namespace ToolKit
       bool DrawHeader(const String& text, uint id, ImGuiTreeNodeFlags flags, TexturePtr icon);
       bool DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags);
       void ShowNode(Entity* e);
+      void SetItemState(Entity* e);
     };
   }
 }

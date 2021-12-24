@@ -39,59 +39,15 @@ namespace ToolKit
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
       }
 
-      auto SetItemStateFn = [](Entity* e) -> void
-      {
-        if (ImGui::IsItemClicked())
-        {
-          if (ImGui::GetIO().KeyShift)
-          {
-            if (g_app->m_scene->IsSelected(e->m_id))
-            {
-              g_app->m_scene->RemoveFromSelection(e->m_id);
-            }
-            else
-            {
-              g_app->m_scene->AddToSelection(e->m_id, true);
-            }
-          }
-          else
-          {
-            g_app->m_scene->ClearSelection();
-            g_app->m_scene->AddToSelection(e->m_id, false);
-          }
-        }
-
-        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
-        {
-          ImGui::SetDragDropPayload("HierarcyChange", &e->m_id, sizeof(EntityId*));
-          ImGui::Text("Drop on the new parent.");
-          ImGui::EndDragDropSource();
-        }
-
-        if (ImGui::BeginDragDropTarget())
-        {
-          if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
-          {
-            IM_ASSERT(payload->DataSize == sizeof(EntityId*));
-            g_child = *(EntityId*)payload->Data;
-            g_parent = e->m_id;
-          }
-          ImGui::EndDragDropTarget();
-        }
-      };
-
       if (e->m_node->m_children.empty())
       {
         nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
         DrawHeader(e, nodeFlags);
-
-        SetItemStateFn(e);
       }
       else
       {
         if (DrawHeader(e, nodeFlags))
         {
-          SetItemStateFn(e);
           for (Node* n : e->m_node->m_children)
           {
             Entity* childNtt = n->m_entity;
@@ -107,7 +63,6 @@ namespace ToolKit
 
                 nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
                 DrawHeader(childNtt, nodeFlags);
-                SetItemStateFn(childNtt);
               }
               else
               {
@@ -119,7 +74,6 @@ namespace ToolKit
 
                 if (DrawHeader(childNtt, nodeFlags))
                 {
-                  SetItemStateFn(childNtt);
                   for (Node* deepChildNode : childNtt->m_node->m_children)
                   {
                     Entity* deepChild = deepChildNode->m_entity;
@@ -131,20 +85,53 @@ namespace ToolKit
 
                   ImGui::TreePop();
                 }
-                else
-                {
-                  SetItemStateFn(childNtt);
-                }
               }
             }
           }
 
           ImGui::TreePop();
         }
+      }
+    }
+
+    void OutlinerWindow::SetItemState(Entity* e)
+    {
+      if (ImGui::IsItemClicked())
+      {
+        if (ImGui::GetIO().KeyShift)
+        {
+          if (g_app->m_scene->IsSelected(e->m_id))
+          {
+            g_app->m_scene->RemoveFromSelection(e->m_id);
+          }
+          else
+          {
+            g_app->m_scene->AddToSelection(e->m_id, true);
+          }
+        }
         else
         {
-          SetItemStateFn(e);
+          g_app->m_scene->ClearSelection();
+          g_app->m_scene->AddToSelection(e->m_id, false);
         }
+      }
+
+      if (ImGui::BeginDragDropSource())
+      {
+        ImGui::SetDragDropPayload("HierarcyChange", &e->m_id, sizeof(EntityId*));
+        ImGui::Text("Drop on the new parent.");
+        ImGui::EndDragDropSource();
+      }
+
+      if (ImGui::BeginDragDropTarget())
+      {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
+        {
+          IM_ASSERT(payload->DataSize == sizeof(EntityId*));
+          g_child = *(EntityId*)payload->Data;
+          g_parent = e->m_id;
+        }
+        ImGui::EndDragDropTarget();
       }
     }
 
@@ -233,6 +220,8 @@ namespace ToolKit
     {
       const String sId = "##" + std::to_string(ntt->m_id);
       bool isOpen = ImGui::TreeNodeEx(sId.c_str(), flags);
+
+      SetItemState(ntt);
 
       TexturePtr icon = nullptr;
       EntityType eType = ntt->GetType();
