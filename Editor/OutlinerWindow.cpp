@@ -209,15 +209,7 @@ namespace ToolKit
 
     void OutlinerWindow::DispatchSignals() const
     {
-      ImGuiIO& io = ImGui::GetIO();
-
-      if (io.KeysDown[io.KeyMap[ImGuiKey_Delete]])
-      {
-        if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Delete]] == 0.0f)
-        {
-          ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
-        }
-      }
+      ModShortCutSignals();
     }
 
     bool OutlinerWindow::DrawHeader(const String& text, uint id, ImGuiTreeNodeFlags flags, TexturePtr icon)

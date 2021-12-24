@@ -104,9 +104,7 @@ namespace ToolKit
         }
 
         ImGui::PopStyleColor(3);
-
         ImGui::SameLine();
-
         
         if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_vsCodeIcon), ImVec2(btnWidth, btnWidth)))
         {

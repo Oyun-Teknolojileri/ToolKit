@@ -489,6 +489,7 @@ namespace ToolKit
 
     void PropInspector::DispatchSignals() const
     {
+      ModShortCutSignals();
     }
 
     template<typename T>
@@ -548,6 +549,7 @@ namespace ToolKit
 
     void MaterialInspector::DispatchSignals() const
     {
+      ModShortCutSignals();
     }
 
 }

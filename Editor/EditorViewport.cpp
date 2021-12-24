@@ -285,74 +285,7 @@ namespace ToolKit
         }
       }
 
-      if (io.KeysDown[SDL_SCANCODE_D] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
-      {
-        if (io.KeysDownDuration[SDL_SCANCODE_D] == 0.0f)
-        {
-          ModManager::GetInstance()->DispatchSignal(BaseMod::m_duplicate);
-        }
-      }
-
-      if (io.KeysDown[SDL_SCANCODE_B] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
-      {
-        if (io.KeysDownDuration[SDL_SCANCODE_B] == 0.0f)
-        {
-          ModManager::GetInstance()->SetMod(true, ModId::Select);
-        }
-      }
-
-      if (io.KeysDown[SDL_SCANCODE_S] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
-      {
-        if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
-        {
-          ModManager::GetInstance()->SetMod(true, ModId::Scale);
-        }
-      }
-
-      if (io.KeysDown[SDL_SCANCODE_R] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
-      {
-        if (io.KeysDownDuration[SDL_SCANCODE_R] == 0.0f)
-        {
-          ModManager::GetInstance()->SetMod(true, ModId::Rotate);
-        }
-      }
-
-      if (io.KeysDown[SDL_SCANCODE_G] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
-      {
-        if (io.KeysDownDuration[SDL_SCANCODE_G] == 0.0f)
-        {
-          ModManager::GetInstance()->SetMod(true, ModId::Move);
-        }
-      }
-
-      if (io.KeyCtrl && io.KeysDown[SDL_SCANCODE_S])
-      {
-        if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
-        {
-          XmlDocument* doc = new XmlDocument();
-          g_app->m_scene->Serialize(doc, nullptr);
-          SafeDel(doc);
-        }
-      }
-
-      // Undo - Redo.
-      if (io.KeysDown[io.KeyMap[ImGuiKey_Z]])
-      {
-        if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Z]] == 0.0f)
-        {
-          if (io.KeyCtrl)
-          {
-            if (io.KeyShift)
-            {
-              ActionManager::GetInstance()->Redo();
-            }
-            else
-            {
-              ActionManager::GetInstance()->Undo();
-            }
-          }
-        }
-      }
+      ModShortCutSignals();
     }
 
     void EditorViewport::Serialize(XmlDocument* doc, XmlNode* parent) const
