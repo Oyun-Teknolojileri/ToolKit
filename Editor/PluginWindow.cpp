@@ -2,6 +2,8 @@
 #include "PluginWindow.h"
 #include "GlobalDef.h"
 #include "ConsoleWindow.h"
+#include "App.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {

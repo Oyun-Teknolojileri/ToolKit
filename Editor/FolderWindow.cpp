@@ -6,6 +6,7 @@
 #include "Gizmo.h"
 #include "PropInspector.h"
 #include "Util.h"
+#include "App.h"
 #include "DebugNew.h"
 
 #include <filesystem>

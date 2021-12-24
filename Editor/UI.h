@@ -176,6 +176,8 @@ namespace ToolKit
       static TexturePtr m_pauseIcon;
       static TexturePtr m_stopIcon;
       static TexturePtr m_vsCodeIcon;
+      static TexturePtr m_collectionIcon;
+      static TexturePtr m_arrowsIcon;
     };
   }
 }

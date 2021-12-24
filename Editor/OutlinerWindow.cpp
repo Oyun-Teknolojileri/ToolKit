@@ -25,7 +25,8 @@ namespace ToolKit
     // Recursively show entity hierarchy & update via drag drop.
     EntityId g_parent = NULL_ENTITY;
     EntityId g_child = NULL_ENTITY;
-    void ShowNode(Entity* e)
+
+    void OutlinerWindow::ShowNode(Entity* e)
     {
       static ImGuiTreeNodeFlags baseFlags
         = ImGuiTreeNodeFlags_OpenOnArrow
@@ -60,7 +61,7 @@ namespace ToolKit
           }
         }
 
-        if (ImGui::BeginDragDropSource())
+        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
         {
           ImGui::SetDragDropPayload("HierarcyChange", &e->m_id, sizeof(EntityId*));
           ImGui::Text("Drop on the new parent.");
@@ -82,12 +83,13 @@ namespace ToolKit
       if (e->m_node->m_children.empty())
       {
         nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-        ImGui::TreeNodeEx(e->m_name.c_str(), nodeFlags);
+        DrawHeader(e, nodeFlags);
+
         SetItemStateFn(e);
       }
       else
       {
-        if (ImGui::TreeNodeEx(e->m_name.c_str(), nodeFlags))
+        if (DrawHeader(e, nodeFlags))
         {
           SetItemStateFn(e);
           for (Node* n : e->m_node->m_children)
@@ -104,7 +106,7 @@ namespace ToolKit
                 }
 
                 nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-                ImGui::TreeNodeEx(childNtt->m_name.c_str(), nodeFlags);
+                DrawHeader(childNtt, nodeFlags);
                 SetItemStateFn(childNtt);
               }
               else
@@ -115,7 +117,7 @@ namespace ToolKit
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
                 }
 
-                if (ImGui::TreeNodeEx(childNtt->m_name.c_str(), nodeFlags))
+                if (DrawHeader(childNtt, nodeFlags))
                 {
                   SetItemStateFn(childNtt);
                   for (Node* deepChildNode : childNtt->m_node->m_children)
@@ -148,6 +150,8 @@ namespace ToolKit
 
     void OutlinerWindow::Show()
     {
+      ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 4.0f);
+
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         HandleStates();
@@ -155,7 +159,7 @@ namespace ToolKit
         g_parent = NULL_ENTITY;
         g_child = NULL_ENTITY;
 
-        if (ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen))
+        if (DrawHeader("Scene", 0, ImGuiTreeNodeFlags_DefaultOpen, UI::m_collectionIcon))
         {
           // Orphan in this case.
           if (ImGui::BeginDragDropTarget())
@@ -173,8 +177,6 @@ namespace ToolKit
           const EntityRawPtrArray& ntties = g_app->m_scene->GetEntities();
           EntityRawPtrArray roots;
           GetRootEntities(ntties, roots);
-
-          ImGui::Unindent(ImGui::GetTreeNodeToLabelSpacing());
 
           for (Entity* e : roots)
           {
@@ -196,6 +198,7 @@ namespace ToolKit
         }
       }
 
+      ImGui::PopStyleVar();
       ImGui::End();
     }
 
@@ -215,6 +218,54 @@ namespace ToolKit
           ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
         }
       }
+    }
+
+    bool OutlinerWindow::DrawHeader(const String& text, uint id, ImGuiTreeNodeFlags flags, TexturePtr icon)
+    {
+      const String sId = "##" + std::to_string(id);
+      bool isOpen = ImGui::TreeNodeEx(sId.c_str(), flags);
+
+      if (icon)
+      {
+        ImGui::SameLine();
+        ImGui::Image(Convert2ImGuiTexture(icon), ImVec2(20.0f, 20.0f));
+      }
+
+      ImGui::SameLine();
+      ImGui::Text(text.c_str());
+
+      return isOpen;
+    }
+
+    bool OutlinerWindow::DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags)
+    {
+      const String sId = "##" + std::to_string(ntt->m_id);
+      bool isOpen = ImGui::TreeNodeEx(sId.c_str(), flags);
+
+      TexturePtr icon = nullptr;
+      EntityType eType = ntt->GetType();
+      if (eType == EntityType::Entity_Node)
+      {
+        if (ntt->m_id == g_2dLayerId || ntt->m_id == g_3dLayerId)
+        {
+          icon = UI::m_collectionIcon;
+        }
+        else
+        {
+          icon = UI::m_arrowsIcon;
+        }
+      }
+
+      if (icon)
+      {
+        ImGui::SameLine();
+        ImGui::Image(Convert2ImGuiTexture(icon), ImVec2(20.0f, 20.0f));
+      }
+
+      ImGui::SameLine();
+      ImGui::Text(ntt->m_name.c_str());
+
+      return isOpen;
     }
 
   }

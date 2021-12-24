@@ -24,7 +24,6 @@ namespace ToolKit
 {
   namespace Editor
   {
-
     bool UI::m_windowMenushowMetrics = false;
     bool UI::m_imguiSampleWindow = false;
     bool UI::m_showNewSceneWindow = false;
@@ -61,6 +60,8 @@ namespace ToolKit
     TexturePtr UI::m_pauseIcon;
     TexturePtr UI::m_stopIcon;
     TexturePtr UI::m_vsCodeIcon;
+    TexturePtr UI::m_collectionIcon;
+    TexturePtr UI::m_arrowsIcon;
 
     void UI::Init()
     {
@@ -205,6 +206,10 @@ namespace ToolKit
       m_stopIcon->Init();
       m_vsCodeIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/vscode.png", true));
       m_vsCodeIcon->Init();
+      m_collectionIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/collection.png", true));
+      m_collectionIcon->Init();
+      m_arrowsIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/arrows.png", true));
+      m_arrowsIcon->Init();
     }
 
     void UI::InitTheme()

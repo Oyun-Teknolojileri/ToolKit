@@ -8,11 +8,6 @@ namespace ToolKit
   namespace Editor
   {
 
-    typedef std::shared_ptr<class EditorScene> EditorScenePtr;
-
-    const static EntityId FixedLayerIds[2] = { 1, 2 };
-    const static String FixedLayerNames[2] = { "3d Layer", "2d Layer" };
-
     class EditorScene : public Scene
     {
     public:

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SDL.h"
-#include "App.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -12,7 +11,7 @@ namespace ToolKit
     // Handles.
     extern SDL_Window* g_window;
     extern SDL_GLContext g_context;
-    extern Editor::App* g_app;
+    extern class App* g_app;
     extern bool g_running;
 
     // UI Strings
@@ -28,7 +27,9 @@ namespace ToolKit
     const String g_commandStr("#");
     const String g_newSceneStr("New Scene");
     const String g_2dViewport("2D");
+    const String g_2dLayerStr("2D Layer");
     const String g_3dViewport("3D");
+    const String g_3dLayerStr("3D Layer");
     const String g_IsoViewport("ISO");
     const String g_simulationViewport("Simulation");
     const String g_pluginWindow("Plugin");
@@ -53,6 +54,11 @@ namespace ToolKit
 
     // Editor settings.
     const size_t g_maxUndoCount = 50;
+    const EntityId g_3dLayerId = 1;
+    const EntityId g_2dLayerId = 2;
+
+    // Editor types.
+    typedef std::shared_ptr<class EditorScene> EditorScenePtr;
 
     // Utility functions.		
     inline float MilisecToSec(float ms)

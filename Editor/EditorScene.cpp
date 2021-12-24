@@ -9,6 +9,9 @@ namespace ToolKit
   namespace Editor
   {
 
+    const EntityId FixedLayerIds[2] = { g_3dLayerId, g_2dLayerId };
+    const String FixedLayerNames[2] = { g_3dLayerStr, g_2dLayerStr };
+
     EditorScene::EditorScene()
     {
       m_newScene = true;
