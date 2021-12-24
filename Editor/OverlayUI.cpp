@@ -47,7 +47,24 @@ namespace ToolKit
       Vec2 wndPos = Vec2(m_owner->m_wndPos.x + padding, m_owner->m_wndPos.y + padding) + m_scroll;
       ImGui::SetNextWindowPos(wndPos);
       ImGui::SetNextWindowBgAlpha(0.65f);
-      if (ImGui::BeginChildFrame(ImGui::GetID("Navigation"), overlaySize, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+      if 
+      (
+        ImGui::BeginChildFrame
+        (
+          ImGui::GetID("Navigation"),
+          overlaySize, 
+          ImGuiWindowFlags_NoMove 
+          | ImGuiWindowFlags_NoDocking 
+          | ImGuiWindowFlags_NoTitleBar 
+          | ImGuiWindowFlags_NoResize 
+          | ImGuiWindowFlags_AlwaysAutoResize 
+          | ImGuiWindowFlags_NoSavedSettings 
+          | ImGuiWindowFlags_NoFocusOnAppearing 
+          | ImGuiWindowFlags_NoNav 
+          | ImGuiWindowFlags_NoScrollbar 
+          | ImGuiWindowFlags_NoScrollWithMouse
+        )
+      )
       {
         SetOwnerState();
 

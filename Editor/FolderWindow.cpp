@@ -354,7 +354,7 @@ namespace ToolKit
             // Handle drag - drop to scene / inspector.
             if (!dirEnt.m_isDirectory)
             {
-              if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+              if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
               {
                 ImGui::SetDragDropPayload("BrowserDragZone", &dirEnt, sizeof(DirectoryEntry));
                 if (io.KeyShift)
