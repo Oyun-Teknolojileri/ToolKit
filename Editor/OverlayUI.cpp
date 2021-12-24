@@ -42,11 +42,12 @@ namespace ToolKit
 
     void OverlayMods::Show()
     {
-      ImVec2 overlaySize(48, 260);
       const float padding = 5.0f;
       Vec2 wndPos = Vec2(m_owner->m_wndPos.x + padding, m_owner->m_wndPos.y + padding) + m_scroll;
       ImGui::SetNextWindowPos(wndPos);
       ImGui::SetNextWindowBgAlpha(0.65f);
+     
+      ImVec2 overlaySize(48, 260);
       if 
       (
         ImGui::BeginChildFrame
@@ -244,9 +245,11 @@ namespace ToolKit
 
       ImVec2 overlaySize(320, 30);
 
-      const float padding = 5.0f;
-      Vec2 wndPos = Vec2(m_owner->m_wndPos.x + padding + 52, m_owner->m_wndPos.y + padding) + m_scroll;
-      ImGui::SetNextWindowPos(wndPos);
+      // Center the toolbar.
+      float width = ImGui::GetWindowContentRegionWidth();
+      float offset = (width - overlaySize.x) * 0.5f;
+      ImGui::SameLine(offset);
+
       ImGui::SetNextWindowBgAlpha(0.65f);
       if 
       (
