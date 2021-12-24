@@ -92,6 +92,11 @@ namespace ToolKit
       m_width = width;
       m_height = height;
 
+      m_viewportImage->UnInit();
+      m_viewportImage->m_width = (uint)m_canvasSize.x;
+      m_viewportImage->m_height = (uint)m_canvasSize.y;
+      m_viewportImage->Init();
+
       AdjustZoom(0.0f);
     }
 
@@ -199,6 +204,8 @@ namespace ToolKit
         glm::abs(m_contentAreaMax.y - m_contentAreaMin.y)
       );
 
+      m_canvasSize = m_wndContentAreaSize * 0.8f;
+
       ImGuiIO& io = ImGui::GetIO();
       ImVec2 absMousePos = io.MousePos;
       m_mouseOverContentArea = false;
@@ -229,14 +236,14 @@ namespace ToolKit
         m_scroll = Vec2(ImGui::GetScrollX(), ImGui::GetScrollY());
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
-          // Resize canvas.
+          // Resize layout.
           if
           (
-            glm::notEqual(m_canvasSize.x, g_app->m_playWidth) ||
-            glm::notEqual(m_canvasSize.y, g_app->m_playHeight)
+            glm::notEqual(m_layoutSize.x, g_app->m_playWidth) ||
+            glm::notEqual(m_layoutSize.y, g_app->m_playHeight)
           )
           {
-            UpdateCanvasSize();
+            GenerateGrid();
           }
 
           // Resize window.
@@ -463,26 +470,29 @@ namespace ToolKit
 
     void EditorViewport2d::GenerateGrid()
     {
+      m_layoutSize = { g_app->m_playWidth, g_app->m_playHeight };
+
       float stepDist = 20.0f;
-      int yRep = (int)(m_canvasSize.x / stepDist);
-      int xRep = (int)(m_canvasSize.y / stepDist);
+      int yRep = (int)(m_layoutSize.x / stepDist);
+      int xRep = (int)(m_layoutSize.y / stepDist);
+      int total = xRep * yRep * 2;
 
       Vec3Array linePnts;
-      linePnts.reserve(xRep * yRep * (int)2);
+      linePnts.reserve(total);
       const float depth = -1.0f;
 
-      Vec2 origin = { m_canvasSize.x * -0.5f, m_canvasSize.y * -0.5f };
+      Vec2 origin = { m_layoutSize.x * -0.5f, m_layoutSize.y * -0.5f };
       for (int i = 1; i < xRep; i++)
       {
         Vec3 p0(origin.x, origin.y + stepDist * i, depth);
-        Vec3 p1(m_canvasSize.x * 0.5f, origin.y + stepDist * i, depth);
+        Vec3 p1(m_layoutSize.x * 0.5f, origin.y + stepDist * i, depth);
         linePnts.push_back(p0);
         linePnts.push_back(p1);
 
         for (int j = 1; j < yRep; j++)
         {
           Vec3 p0(origin.x + stepDist * j, origin.y, depth);
-          Vec3 p1(origin.x + stepDist * j, origin.y + m_canvasSize.y, depth);
+          Vec3 p1(origin.x + stepDist * j, origin.y + m_layoutSize.y, depth);
           linePnts.push_back(p0);
           linePnts.push_back(p1);
         }

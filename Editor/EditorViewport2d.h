@@ -51,14 +51,16 @@ namespace ToolKit
       void PanZoom(float deltaTime);
       void GenerateGrid();
 
-    public:
-      Vec2 m_canvasSize;
-
     private:
+      Vec2 m_canvasSize;
       Vec2 m_canvasPos;
+
       Vec2 m_contentAreaMin;
       Vec2 m_contentAreaMax;
       Vec2 m_scroll;
+
+      Vec2 m_layoutSize;
+
       Light m_forwardLight;
       LineBatch m_grid;
     };
