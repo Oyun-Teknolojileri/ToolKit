@@ -700,10 +700,6 @@ namespace ToolKit
 
   LineBatch::LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
   {
-    MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-    newMaterial->GetRenderState()->drawType = t;
-    m_mesh->m_material = newMaterial;
-
     Generate(linePnts, color, t, lineWidth);
   }
 
@@ -727,6 +723,8 @@ namespace ToolKit
     vertices.resize(linePnts.size());
 
     m_mesh->UnInit();
+    m_mesh->m_material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+    m_mesh->m_material->GetRenderState()->drawType = t;
 
     for (size_t i = 0; i < linePnts.size(); i++)
     {

@@ -25,14 +25,14 @@ namespace ToolKit
     EditorViewport2d::EditorViewport2d(XmlNode* node)
       : EditorViewport(node)
     {
-      GetGlobalCanvasSize();
+      UpdateCanvasSize();
       Init2dCam();
     }
 
     EditorViewport2d::EditorViewport2d(float width, float height)
       : EditorViewport(width, height)
     {
-      GetGlobalCanvasSize();
+      UpdateCanvasSize();
       Init2dCam();
     }
 
@@ -91,11 +91,6 @@ namespace ToolKit
     {
       m_width = width;
       m_height = height;
-
-      m_viewportImage->UnInit();
-      m_viewportImage->m_width = (uint)m_canvasSize.x;
-      m_viewportImage->m_height = (uint)m_canvasSize.y;
-      m_viewportImage->Init();
 
       AdjustZoom(0.0f);
     }
@@ -166,6 +161,14 @@ namespace ToolKit
 
       app->RenderSelected(this);
 
+      // Render grid.
+      app->m_renderer->Render
+      (
+        static_cast<Drawable*> (&m_grid),
+        m_camera,
+        { &m_forwardLight }
+      );
+
       // Render gizmo.
       app->RenderGizmo(this, app->m_gizmo);
     }
@@ -229,18 +232,18 @@ namespace ToolKit
           // Resize canvas.
           if
           (
-            m_canvasSize.x != g_app->m_playWidth ||
-            m_canvasSize.x != g_app->m_playHeight
+            glm::notEqual(m_canvasSize.x, g_app->m_playWidth) ||
+            glm::notEqual(m_canvasSize.y, g_app->m_playHeight)
           )
           {
-            GetGlobalCanvasSize();
+            UpdateCanvasSize();
           }
 
           // Resize window.
           if
           (
-            m_wndContentAreaSize.x != m_width ||
-            m_wndContentAreaSize.y != m_height
+            glm::notEqual(m_wndContentAreaSize.x, m_width) ||
+            glm::notEqual(m_wndContentAreaSize.y, m_height)
           )
           {
             OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
@@ -260,30 +263,14 @@ namespace ToolKit
           (
             ImGui::GetID("canvas"),
             m_canvasSize,
-            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysUseWindowPadding
+            ImGuiWindowFlags_NoScrollbar | 
+            ImGuiWindowFlags_NoScrollWithMouse | 
+            ImGuiWindowFlags_AlwaysUseWindowPadding
           );
           m_canvasPos = ImGui::GetWindowPos();
           ImGui::Image(Convert2ImGuiTexture(m_viewportImage), m_canvasSize, ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
 
           dw->ChannelsSetCurrent(0);
-
-          // Draw grid.
-          float stepDist = 20.0f;
-          int yRep = (int)(m_canvasSize.x / stepDist);
-          int xRep = (int)(m_canvasSize.y / stepDist);
-          for (int i = 1; i < xRep; i++)
-          {
-            ImVec2 p0(m_canvasPos.x, m_canvasPos.y + stepDist * i);
-            ImVec2 p1(m_canvasPos.x + m_canvasSize.x, m_canvasPos.y + stepDist * i);
-            dw->AddLine(p0, p1, ImGui::GetColorU32(ImVec4(0.5f, 0.5f, 0.5f, 0.5f)));
-
-            for (int j = 1; j < yRep; j++)
-            {
-              ImVec2 p0(m_canvasPos.x + stepDist * j, m_canvasPos.y);
-              ImVec2 p1(m_canvasPos.x + stepDist * j, m_canvasPos.y + m_canvasSize.y);
-              dw->AddLine(p0, p1, ImGui::GetColorU32(ImVec4(0.5f, 0.5f, 0.5f, 0.5f)));
-            }
-          }
 
           m_canvasPos -= m_contentAreaMin; // Convert relative to content area.
           ImGui::EndChildFrame();
@@ -434,13 +421,20 @@ namespace ToolKit
       m_forwardLight.LookAt(Vec3());
     }
 
-    void EditorViewport2d::GetGlobalCanvasSize()
+    void EditorViewport2d::UpdateCanvasSize()
     {
       m_canvasSize =
       {
         g_app->m_playWidth,
         g_app->m_playHeight
       };
+
+      m_viewportImage->UnInit();
+      m_viewportImage->m_width = (uint)m_canvasSize.x;
+      m_viewportImage->m_height = (uint)m_canvasSize.y;
+      m_viewportImage->Init();
+
+      GenerateGrid();
     }
 
     void EditorViewport2d::PanZoom(float deltaTime)
@@ -465,6 +459,36 @@ namespace ToolKit
           m_camera->m_node->Translate(displace, TransformationSpace::TS_WORLD);
         }
       }
+    }
+
+    void EditorViewport2d::GenerateGrid()
+    {
+      float stepDist = 20.0f;
+      int yRep = (int)(m_canvasSize.x / stepDist);
+      int xRep = (int)(m_canvasSize.y / stepDist);
+
+      Vec3Array linePnts;
+      linePnts.reserve(xRep * yRep * (int)2);
+      const float depth = -1.0f;
+
+      Vec2 origin = { m_canvasSize.x * -0.5f, m_canvasSize.y * -0.5f };
+      for (int i = 1; i < xRep; i++)
+      {
+        Vec3 p0(origin.x, origin.y + stepDist * i, depth);
+        Vec3 p1(m_canvasSize.x * 0.5f, origin.y + stepDist * i, depth);
+        linePnts.push_back(p0);
+        linePnts.push_back(p1);
+
+        for (int j = 1; j < yRep; j++)
+        {
+          Vec3 p0(origin.x + stepDist * j, origin.y, depth);
+          Vec3 p1(origin.x + stepDist * j, origin.y + m_canvasSize.y, depth);
+          linePnts.push_back(p0);
+          linePnts.push_back(p1);
+        }
+      }
+
+      m_grid.Generate(linePnts, Vec3(0.5f), DrawType::Line);
     }
 
   }

@@ -47,8 +47,9 @@ namespace ToolKit
 
     private:
       void Init2dCam();
-      void GetGlobalCanvasSize();
+      void UpdateCanvasSize();
       void PanZoom(float deltaTime);
+      void GenerateGrid();
 
     public:
       Vec2 m_canvasSize;
@@ -59,6 +60,7 @@ namespace ToolKit
       Vec2 m_contentAreaMax;
       Vec2 m_scroll;
       Light m_forwardLight;
+      LineBatch m_grid;
     };
 
   }

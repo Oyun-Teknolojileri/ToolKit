@@ -130,6 +130,7 @@ namespace ToolKit
     vertices[5].tex = Vec2(0.0f, 0.0f);
 
     m_mesh->m_clientSideVertices = vertices;
+    m_mesh->CalculateAABB();
   }
 
   void Surface::CreateQuat(const SpriteEntry& val)
@@ -165,6 +166,7 @@ namespace ToolKit
     vertices[5].tex = Vec2(textureRect.x, 1.0f - (textureRect.y + textureRect.height));
 
     m_mesh->m_clientSideVertices = vertices;
+    m_mesh->CalculateAABB();
   }
 
   void Surface::SetSizeFromTexture()
