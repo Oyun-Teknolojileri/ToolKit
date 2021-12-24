@@ -263,14 +263,17 @@ namespace ToolKit
       {
         SetOwnerState();
 
-        ImGui::Image(Convert2ImGuiTexture(UI::m_worldIcon), ImVec2(20.0f, 20.0f));
-        ImGui::SameLine();
+        ImGui::BeginTable("##SettingsBar", 7, ImGuiTableFlags_SizingStretchProp);
+        ImGui::TableNextRow();
 
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Image(Convert2ImGuiTexture(UI::m_worldIcon), ImVec2(20.0f, 20.0f));
+
+        ImGui::TableSetColumnIndex(1);
         if (ImGui::Button("Add"))
         {
           ImGui::OpenPopup("##AddMenu");
         }
-        ImGui::SameLine();
 
         if (ImGui::BeginPopup("##AddMenu"))
         {
@@ -278,14 +281,15 @@ namespace ToolKit
           ImGui::EndPopup();
         }
 
+        ImGui::TableSetColumnIndex(2);
         ImGui::Image(Convert2ImGuiTexture(UI::m_cameraIcon), ImVec2(20.0f, 20.0f));
-        ImGui::SameLine();
 
         // Camera alignment combo.
         const char* itemsCam[] = { "Free", "Top", "Front", "Left" };
         int currentItemCam = m_owner->m_cameraAlignment;
         bool change = false;
 
+        ImGui::TableSetColumnIndex(3);
         ImGui::PushItemWidth(72);
         if (ImGui::BeginCombo("##VC", itemsCam[currentItemCam], ImGuiComboFlags_None))
         {
@@ -337,11 +341,10 @@ namespace ToolKit
             g_app->GetConsole()->ExecCommand(cmd);
           }
         }
-        ImGui::SameLine();
         UI::HelpMarker(LOC + m_owner->m_name, "Camera Orientation\n");
 
+        ImGui::TableSetColumnIndex(4);
         ImGui::Image(Convert2ImGuiTexture(UI::m_axisIcon), ImVec2(20.0f, 20.0f));
-        ImGui::SameLine();
 
         // Transform orientation combo.
         ImGuiStyle& style = ImGui::GetStyle();
@@ -351,6 +354,7 @@ namespace ToolKit
         static int currentItemOrient = 0;
 
         change = false;
+        ImGui::TableSetColumnIndex(5);
         ImGui::PushItemWidth(72);
         if (ImGui::BeginCombo("##TRS", itemsOrient[currentItemOrient], ImGuiComboFlags_None))
         {
@@ -395,15 +399,7 @@ namespace ToolKit
           String cmd = "SetTransformOrientation " + ts;
           g_app->GetConsole()->ExecCommand(cmd);
         }
-
-        ImGui::SameLine(0, spacing); 
         UI::HelpMarker(LOC + m_owner->m_name, "Transform orientations\n");
-
-        // Snap Bar.
-        ImGui::Separator();
-
-        // Snap button.
-        ImGui::SameLine(0, spacing);
 
         // Auto snap.
         static bool autoSnapActivated = false;
@@ -421,6 +417,7 @@ namespace ToolKit
           g_app->m_snapsEnabled = false;
         }
 
+        ImGui::TableSetColumnIndex(6);
         g_app->m_snapsEnabled = UI::ToggleButton((void*)(intptr_t)UI::m_snapIcon->m_textureId, ImVec2(16, 16), g_app->m_snapsEnabled);
         UI::HelpMarker(LOC + m_owner->m_name, "Grid snaping\nRight click for options");
 
@@ -433,6 +430,8 @@ namespace ToolKit
           ImGui::PopItemWidth();
           ImGui::EndPopup();
         }
+
+        ImGui::EndTable();
       }
       ImGui::EndChildFrame();
     }

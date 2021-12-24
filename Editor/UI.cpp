@@ -226,6 +226,7 @@ namespace ToolKit
       style->PopupBorderSize = 0.0f;
       style->FrameBorderSize = 0.0f;
       style->TabBorderSize = 0.0f;
+      style->PopupRounding = 5.0f;
       style->WindowTitleAlign = ImVec2(0.5f, 0.5f);
       style->WindowMenuButtonPosition = ImGuiDir_Right;
 
