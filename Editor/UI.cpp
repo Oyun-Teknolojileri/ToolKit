@@ -62,6 +62,7 @@ namespace ToolKit
     TexturePtr UI::m_vsCodeIcon;
     TexturePtr UI::m_collectionIcon;
     TexturePtr UI::m_arrowsIcon;
+    TexturePtr UI::m_lockIcon;
 
     void UI::Init()
     {
@@ -210,6 +211,8 @@ namespace ToolKit
       m_collectionIcon->Init();
       m_arrowsIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/arrows.png", true));
       m_arrowsIcon->Init();
+      m_lockIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/locked.png", true));
+      m_lockIcon->Init();
     }
 
     void UI::InitTheme()

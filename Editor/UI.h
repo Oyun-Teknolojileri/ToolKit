@@ -179,6 +179,7 @@ namespace ToolKit
       static TexturePtr m_vsCodeIcon;
       static TexturePtr m_collectionIcon;
       static TexturePtr m_arrowsIcon;
+      static TexturePtr m_lockIcon;
     };
   }
 }

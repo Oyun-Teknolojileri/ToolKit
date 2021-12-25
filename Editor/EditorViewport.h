@@ -49,6 +49,7 @@ namespace ToolKit
       bool m_mouseOverOverlay = false;
       int m_cameraAlignment = 0; // 0: perspective, 1: top, 2: front, 3:left.
       int m_additionalWindowFlags = 0;
+      bool m_orbitLock = false;
 
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;

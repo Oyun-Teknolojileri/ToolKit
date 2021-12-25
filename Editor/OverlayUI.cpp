@@ -243,7 +243,7 @@ namespace ToolKit
         }
       };
 
-      ImVec2 overlaySize(320, 30);
+      ImVec2 overlaySize(360, 30);
 
       // Center the toolbar.
       float width = ImGui::GetWindowContentRegionWidth();
@@ -266,7 +266,7 @@ namespace ToolKit
       {
         SetOwnerState();
 
-        ImGui::BeginTable("##SettingsBar", 7, ImGuiTableFlags_SizingStretchProp);
+        ImGui::BeginTable("##SettingsBar", 8, ImGuiTableFlags_SizingStretchProp);
         ImGui::TableNextRow();
 
         ImGui::TableSetColumnIndex(0);
@@ -287,12 +287,16 @@ namespace ToolKit
         ImGui::TableSetColumnIndex(2);
         ImGui::Image(Convert2ImGuiTexture(UI::m_cameraIcon), ImVec2(20.0f, 20.0f));
 
+        ImGui::TableSetColumnIndex(3);
+        m_owner->m_orbitLock = UI::ToggleButton(Convert2ImGuiTexture(UI::m_lockIcon), ImVec2(16.0f, 16.0f), m_owner->m_orbitLock);
+        UI::HelpMarker(LOC + m_owner->m_name, "Lock Camera Alignment\nMiddle button drag doesn't orbit.\nOnly panning allowed.");
+
         // Camera alignment combo.
         const char* itemsCam[] = { "Free", "Top", "Front", "Left" };
         int currentItemCam = m_owner->m_cameraAlignment;
         bool change = false;
 
-        ImGui::TableSetColumnIndex(3);
+        ImGui::TableSetColumnIndex(4);
         ImGui::PushItemWidth(72);
         if (ImGui::BeginCombo("##VC", itemsCam[currentItemCam], ImGuiComboFlags_None))
         {
@@ -346,7 +350,7 @@ namespace ToolKit
         }
         UI::HelpMarker(LOC + m_owner->m_name, "Camera Orientation\n");
 
-        ImGui::TableSetColumnIndex(4);
+        ImGui::TableSetColumnIndex(5);
         ImGui::Image(Convert2ImGuiTexture(UI::m_axisIcon), ImVec2(20.0f, 20.0f));
 
         // Transform orientation combo.
@@ -357,7 +361,7 @@ namespace ToolKit
         static int currentItemOrient = 0;
 
         change = false;
-        ImGui::TableSetColumnIndex(5);
+        ImGui::TableSetColumnIndex(6);
         ImGui::PushItemWidth(72);
         if (ImGui::BeginCombo("##TRS", itemsOrient[currentItemOrient], ImGuiComboFlags_None))
         {
@@ -420,7 +424,7 @@ namespace ToolKit
           g_app->m_snapsEnabled = false;
         }
 
-        ImGui::TableSetColumnIndex(6);
+        ImGui::TableSetColumnIndex(7);
         g_app->m_snapsEnabled = UI::ToggleButton((void*)(intptr_t)UI::m_snapIcon->m_textureId, ImVec2(16, 16), g_app->m_snapsEnabled);
         UI::HelpMarker(LOC + m_owner->m_name, "Grid snaping\nRight click for options");
 

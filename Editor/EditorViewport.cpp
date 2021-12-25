@@ -296,6 +296,7 @@ namespace ToolKit
       WriteAttr(node, doc, "width", std::to_string(m_width));
       WriteAttr(node, doc, "height", std::to_string(m_height));
       WriteAttr(node, doc, "alignment", std::to_string((int)m_cameraAlignment));
+      WriteAttr(node, doc, "lock", std::to_string((int)m_orbitLock));
       m_camera->Serialize(doc, node);
 
       XmlNode* wnd = parent->last_node();
@@ -311,6 +312,7 @@ namespace ToolKit
         ReadAttr(node, "width", m_width);
         ReadAttr(node, "height", m_height);
         ReadAttr(node, "alignment", m_cameraAlignment);
+        ReadAttr(node, "lock", m_orbitLock);
         m_camera = new Camera(node->first_node("E"));
       }
     }
@@ -523,7 +525,7 @@ namespace ToolKit
           Vec3 r = m_camera->GetRight();
           Vec3 u = m_camera->GetUp();
 
-          if (io.KeyShift)
+          if (io.KeyShift || m_orbitLock)
           {
             // Reflect window space mouse delta to image plane. 
             Vec3 deltaOnImagePlane = glm::unProject

@@ -438,6 +438,7 @@ namespace ToolKit
         vp->m_zoom = 0.02f;
         vp->m_camera->Pitch(glm::radians(-90.0f));
         vp->m_cameraAlignment = 1;
+        vp->m_orbitLock = true;
         m_windows.push_back(vp);
 
         ConsoleWindow* console = new ConsoleWindow();
