@@ -295,6 +295,11 @@ namespace ToolKit
     return path;
   }
 
+  String CreatePathFromResourceType(const String& file, ResourceType type)
+  {
+    return GetResourcePath(type) + file;
+  }
+
   ResourceType GetResourceType(const String& ext)
   {
     if (ext == MESH || ext == SKINMESH || SupportedMeshFormat(ext))

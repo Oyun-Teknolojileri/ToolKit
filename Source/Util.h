@@ -36,8 +36,8 @@ namespace ToolKit
   void UnixifyPath(String& path);
   String ConcatPaths(const StringArray& entries);
   String GetRelativeResourcePath(const String& path);
-
   enum class ResourceType;
+  String CreatePathFromResourceType(const String& file, ResourceType type);
   ResourceType GetResourceType(const String& ext);
   String GetTypeString(ResourceType type);
   String GetExtFromType(ResourceType type);
@@ -68,7 +68,6 @@ namespace ToolKit
   Entity* DeepInstantiate(Entity* root, EntityRawPtrArray& instances);
 
   // Vector operations.
-
   int IndexOf(Entity* ntt, const EntityRawPtrArray& entities);
 
   template<typename T>

@@ -816,6 +816,7 @@ namespace ToolKit
       if // Stop text edit deletes to remove entities.
       (
         activeType != Window::Type::Viewport 
+        && activeType != Window::Type::Viewport2d
         && activeType != Window::Type::Outliner
       )
       {

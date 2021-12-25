@@ -76,6 +76,7 @@ namespace ToolKit
     nttNode->append_node(prop);
     WriteVec(prop, doc, m_pivotOffset);
 
+    m_mesh->m_material->Save(true);
     WriteMaterial(nttNode, doc, m_mesh->m_material->m_file);
   }
 

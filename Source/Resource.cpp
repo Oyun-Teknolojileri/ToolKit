@@ -24,14 +24,14 @@ namespace ToolKit
       return;
     }
 
-    String fileName = m_file;
-    if (fileName.empty())
+    if (m_file.empty())
     {
-      fileName = m_name + GetExtFromType(m_type);
+      m_file = m_name + GetExtFromType(m_type);
+      m_file = CreatePathFromResourceType(m_file, m_type);
     }
 
     std::ofstream file;
-    file.open(fileName.c_str(), std::ios::out);
+    file.open(m_file.c_str(), std::ios::out);
     if (file.is_open())
     {
       XmlDocument doc;
