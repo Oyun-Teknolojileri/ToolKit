@@ -694,6 +694,18 @@ namespace ToolKit
     }
   }
 
+  void GetParents(const Entity* ntt, EntityRawPtrArray& parents)
+  {
+    if (Node* pNode = ntt->m_node->m_parent)
+    {
+      if (Entity* parent = pNode->m_entity)
+      {
+        parents.push_back(parent);
+        GetParents(parent, parents);
+      }
+    }
+  }
+
   Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies)
   {
     Entity* cpy = root->Copy();
@@ -730,6 +742,17 @@ namespace ToolKit
     }
 
     return cpy;
+  }
+
+  int IndexOf(Entity* ntt, const EntityRawPtrArray& entities)
+  {
+    EntityRawPtrArray::const_iterator it = std::find(entities.begin(), entities.end(), ntt);
+    if (it != entities.end())
+    {
+      return (int)(it - entities.begin());
+    }
+
+    return -1;
   }
 
 }

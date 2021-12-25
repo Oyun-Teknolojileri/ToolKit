@@ -199,6 +199,12 @@ namespace ToolKit
       ModShortCutSignals();
     }
 
+    void OutlinerWindow::Focus(Entity* ntt)
+    {
+      m_nttFocusPath.push_back(ntt);
+      GetParents(ntt, m_nttFocusPath);
+    }
+
     bool OutlinerWindow::DrawHeader(const String& text, uint id, ImGuiTreeNodeFlags flags, TexturePtr icon)
     {
       const String sId = "##" + std::to_string(id);
@@ -218,8 +224,26 @@ namespace ToolKit
 
     bool OutlinerWindow::DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags)
     {
+      bool focusToItem = false;
+      if (int size = (int)m_nttFocusPath.size())
+      {
+        int focusIndx = IndexOf(ntt, m_nttFocusPath);
+        if (focusIndx != -1)
+        {
+          ImGui::SetNextItemOpen(true);
+        }
+
+        focusToItem = focusIndx == 0;
+      }
+
       const String sId = "##" + std::to_string(ntt->m_id);
       bool isOpen = ImGui::TreeNodeEx(sId.c_str(), flags);
+      
+      if (focusToItem)
+      {
+        ImGui::SetScrollHereY();
+        m_nttFocusPath.clear();
+      }
 
       SetItemState(ntt);
 

@@ -1055,6 +1055,21 @@ namespace ToolKit
         }
       }
 
+      if (io.KeysDown[SDL_SCANCODE_F])
+      {
+        if (io.KeysDownDuration[SDL_SCANCODE_F] == 0.0f)
+        {
+          if (Window* wnd = g_app->GetOutliner())
+          {
+            if (Entity* ntt = g_app->m_scene->GetCurrentSelection())
+            {
+              OutlinerWindow* outliner = static_cast<OutlinerWindow*> (wnd);
+              outliner->Focus(ntt);
+            }
+          }
+        }
+      }
+
       // Undo - Redo.
       if (io.KeysDown[io.KeyMap[ImGuiKey_Z]])
       {

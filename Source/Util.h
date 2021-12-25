@@ -63,8 +63,13 @@ namespace ToolKit
   void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray);
   bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots);
+  void GetParents(const Entity* ntt, EntityRawPtrArray& parents);
   Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies); // copies: First one is the copy root, fallowings are attached children.
   Entity* DeepInstantiate(Entity* root, EntityRawPtrArray& instances);
+
+  // Vector operations.
+
+  int IndexOf(Entity* ntt, const EntityRawPtrArray& entities);
 
   template<typename T>
   void pop_front(std::vector<T>& vec)
