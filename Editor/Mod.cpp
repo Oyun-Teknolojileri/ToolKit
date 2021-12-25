@@ -56,6 +56,7 @@ namespace ToolKit
       {
         if (Entity* pEntt = g_app->m_scene->GetEntity(m_parentId))
         {
+          m_ntt->m_node->OrphanSelf();
           pEntt->m_node->AddChild(m_ntt->m_node);
         }
       }
@@ -561,28 +562,29 @@ namespace ToolKit
       // Construct the ignore list.
       m_ignoreList.clear();
       EntityRawPtrArray ignores;
-      EditorViewport* vp = g_app->GetActiveViewport();
-
-      if (vp->GetType() == Window::Type::Viewport)
+      if (EditorViewport* vp = g_app->GetActiveViewport())
       {
-        ignores = g_app->m_scene->Filter
-        (
-          [](Entity* ntt) -> bool 
-          {
-            return ntt->GetType() == EntityType::Entity_Surface;
-          }
-        );
-      }
+        if (vp->GetType() == Window::Type::Viewport)
+        {
+          ignores = g_app->m_scene->Filter
+          (
+            [](Entity* ntt) -> bool
+            {
+              return ntt->GetType() == EntityType::Entity_Surface;
+            }
+          );
+        }
 
-      if (vp->GetType() == Window::Type::Viewport2d)
-      {
-        ignores = g_app->m_scene->Filter
-        (
-          [](Entity* ntt) -> bool
-          {
-            return ntt->GetType() != EntityType::Entity_Surface;
-          }
-        );
+        if (vp->GetType() == Window::Type::Viewport2d)
+        {
+          ignores = g_app->m_scene->Filter
+          (
+            [](Entity* ntt) -> bool
+            {
+              return ntt->GetType() != EntityType::Entity_Surface;
+            }
+          );
+        }
       }
 
       ToEntityIdArray(m_ignoreList, ignores);
@@ -810,7 +812,12 @@ namespace ToolKit
 
     SignalId StateDeletePick::Update(float deltaTime)
     {
-      if (g_app->GetActiveWindow()->GetType() != Window::Type::Viewport)
+      Window::Type activeType = g_app->GetActiveWindow()->GetType();
+      if // Stop text edit deletes to remove entities.
+      (
+        activeType != Window::Type::Viewport 
+        && activeType != Window::Type::Outliner
+      )
       {
         return NullSignal;
       }
