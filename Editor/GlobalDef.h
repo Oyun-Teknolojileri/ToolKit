@@ -26,11 +26,11 @@ namespace ToolKit
     const String g_warningStr("Wrn");
     const String g_commandStr("#");
     const String g_newSceneStr("New Scene");
-    const String g_2dViewport("2D");
+    const String g_2dViewport("2D View");
     const String g_2dLayerStr("2D Layer");
-    const String g_3dViewport("3D");
+    const String g_3dViewport("3D View");
     const String g_3dLayerStr("3D Layer");
-    const String g_IsoViewport("ISO");
+    const String g_IsoViewport("ISO View");
     const String g_simulationViewport("Simulation");
     const String g_pluginWindow("Plugin");
 
