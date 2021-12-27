@@ -439,6 +439,7 @@ namespace ToolKit
       m_views.push_back(new EntityView());
       m_views.push_back(new MaterialView());
       m_views.push_back(new MeshView());
+      m_views.push_back(new SurfaceView());
     }
 
     PropInspector::~PropInspector()
@@ -476,6 +477,13 @@ namespace ToolKit
             MaterialView* mav = GetView <MaterialView>();
             mav->m_entity = curr;
             mav->Show();
+          }
+
+          if (curr->GetType() == EntityType::Entity_Surface)
+          {
+            View* view = GetView<SurfaceView>();
+            view->m_entity = curr;
+            view->Show();
           }
         }
       }
@@ -552,6 +560,55 @@ namespace ToolKit
       ModShortCutSignals();
     }
 
-}
+    void SurfaceView::Show()
+    {
+      if (m_entity->GetType() != EntityType::Entity_Surface)
+      {
+        return;
+      }
+      Surface* entry = static_cast<Surface*> (m_entity);
+
+      if (ImGui::CollapsingHeader("Surface", ImGuiTreeNodeFlags_DefaultOpen))
+      {
+        if (ImGui::BeginTable("##SurfaceProps", 2))
+        {
+          ImGui::TableNextRow();
+          ImGui::TableNextColumn();
+
+          ImGui::Text("Size: ");
+          ImGui::TableNextColumn();
+          ImGui::InputFloat2("##Size", (float*)&entry->m_size);
+
+          ImGui::TableNextRow();
+          ImGui::TableNextColumn();
+          ImGui::Text("Offset: ");
+          ImGui::TableNextColumn();
+          ImGui::InputFloat2("##Offset", (float*)&entry->m_pivotOffset);
+
+          ImGui::EndTable();
+        }
+
+        MaterialPtr mat = entry->m_mesh->m_material;
+        DropSubZone
+        (
+          UI::m_meshIcon->m_textureId,
+          mat->m_file,
+          [this](const DirectoryEntry& dirEnt) -> void
+          {
+            if (m_entity && m_entity->IsDrawable())
+            {
+              if (m_entity->GetType() == EntityType::Entity_Surface)
+              {
+                Surface* surface = static_cast<Surface*> (m_entity);
+                MaterialPtr mat = surface->m_mesh->m_material;
+                mat->m_diffuseTexture = GetResourceManager(ResourceType::Texture)->Create<Texture>(dirEnt.GetFullPath());
+              }
+            }
+          }
+        );
+      }
+    }
+
+  }
 }
 
