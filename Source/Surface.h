@@ -29,7 +29,6 @@ namespace ToolKit
     virtual Entity* GetCopy(Entity* copyTo) const override;
 
   private:
-    void AssignTexture();
     void CreateQuat();
     void CreateQuat(const SpriteEntry& val);
     void SetSizeFromTexture();

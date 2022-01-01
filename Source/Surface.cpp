@@ -10,41 +10,44 @@ namespace ToolKit
 {
   Surface::Surface()
   {
+    MaterialPtr mat = GetMaterialManager()->GetCopyOfUnlitMaterial();
+    mat->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+    mat->GetRenderState()->depthTestEnabled = true;
+    m_mesh->m_material = mat;
   }
 
   Surface::Surface(TexturePtr texture, const Vec2& pivotOffset)
+    : Surface()
   {
     m_mesh->m_material->m_diffuseTexture = texture;
     m_pivotOffset = pivotOffset;
     SetSizeFromTexture();
     CreateQuat();
-    AssignTexture();
   }
 
   Surface::Surface(TexturePtr texture, const SpriteEntry& entry)
+    : Surface()
   {
     m_mesh->m_material->m_diffuseTexture = texture;
     SetSizeFromTexture();
     CreateQuat(entry);
-    AssignTexture();
   }
 
   Surface::Surface(const String& textureFile, const Vec2& pivotOffset)
+    : Surface()
   {
     m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(textureFile);
     m_pivotOffset = pivotOffset;
     SetSizeFromTexture();
     CreateQuat();
-    AssignTexture();
   }
 
   Surface::Surface(const Vec2& size, const Vec2& offset)
+    : Surface()
   {
     m_size = size;
     m_pivotOffset = offset;
-    m_mesh->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
     CreateQuat();
-    AssignTexture();
   }
 
   Surface::~Surface()
@@ -76,6 +79,10 @@ namespace ToolKit
     nttNode->append_node(prop);
     WriteVec(prop, doc, m_pivotOffset);
 
+    if (m_mesh->m_material->m_file.empty())
+    {
+      m_mesh->m_material->m_name = m_name;
+    }
     m_mesh->m_material->Save(true);
     WriteMaterial(nttNode, doc, m_mesh->m_material->m_file);
   }
@@ -111,12 +118,6 @@ namespace ToolKit
     cpy->m_pivotOffset = m_pivotOffset;
 
     return cpy;
-  }
-
-  void Surface::AssignTexture()
-  {
-    m_mesh->m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-    m_mesh->m_material->GetRenderState()->depthTestEnabled = true;
   }
 
   void Surface::CreateQuat()
