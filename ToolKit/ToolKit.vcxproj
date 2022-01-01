@@ -129,6 +129,7 @@
   <ItemGroup>
     <ClCompile Include="..\Source\ParameterBlock.cpp" />
     <ClCompile Include="..\Source\PluginManager.cpp" />
+    <ClCompile Include="..\Source\RenderState.cpp" />
     <ClCompile Include="..\Source\Resource.cpp" />
     <ClCompile Include="..\Source\ResourceManager.cpp" />
     <ClCompile Include="..\Source\Scene.cpp" />

@@ -219,6 +219,8 @@ namespace ToolKit
     );
     container->append_node(node);
     WriteVec(node, doc, m_color);
+
+    m_renderState.Serialize(doc, container);
   }
 
   void Material::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -261,6 +263,10 @@ namespace ToolKit
       else if (String("color").compare(node->name()) == 0)
       {
         ReadVec(node, m_color);
+      }
+      else if (String("renderState").compare(node->name()) == 0)
+      {
+        m_renderState.DeSerialize(doc, parent);
       }
       else
       {

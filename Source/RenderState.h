@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GL\glew.h"
+#include "Serialize.h"
 
 namespace ToolKit
 {
@@ -34,8 +35,13 @@ namespace ToolKit
     SkinMesh
   };
 
-  struct RenderState
+  class RenderState : public Serializable
   {
+  public:
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+
+  public:
     CullingType cullMode = CullingType::Back;
     bool depthTestEnabled = true;
     BlendFunction blendFunction = BlendFunction::NONE;

@@ -191,5 +191,8 @@
     <ClCompile Include="..\Source\Viewport.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\RenderState.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

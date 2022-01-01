@@ -354,12 +354,14 @@ namespace ToolKit
           if (ImGui::Combo("Cull mode", &cullMode, "Two Sided\0Front\0Back"))
           {
             entry->GetRenderState()->cullMode = (CullingType)cullMode;
+            entry->m_dirty = true;
           }
 
           int blendMode = (int)entry->GetRenderState()->blendFunction;
           if (ImGui::Combo("Blend mode", &blendMode, "None\0Alpha Blending"))
           {
             entry->GetRenderState()->blendFunction = (BlendFunction)blendMode;
+            entry->m_dirty = true;
           }
 
           int drawType = -1;
@@ -402,6 +404,8 @@ namespace ToolKit
               entry->GetRenderState()->drawType = DrawType::Point;
               break;
             }
+
+            entry->m_dirty = true;
           }
 
           ImGui::TreePop();
