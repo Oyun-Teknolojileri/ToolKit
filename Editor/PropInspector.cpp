@@ -570,42 +570,43 @@ namespace ToolKit
 
       if (ImGui::CollapsingHeader("Surface", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        if (ImGui::BeginTable("##SurfaceProps", 2))
+        if (ImGui::BeginTable("##SurfaceProps", 2, ImGuiTableFlags_SizingFixedSame))
         {
+          ImGui::TableSetupColumn("##size");
+          ImGui::TableSetupColumn("##offset", ImGuiTableColumnFlags_WidthStretch);
+
           ImGui::TableNextRow();
           ImGui::TableNextColumn();
 
           ImGui::Text("Size: ");
           ImGui::TableNextColumn();
+
           ImGui::InputFloat2("##Size", (float*)&entry->m_size);
+          if (ImGui::IsItemDeactivatedAfterEdit())
+          {
+            entry->UpdateGeometry(false);
+          }
 
           ImGui::TableNextRow();
           ImGui::TableNextColumn();
+
           ImGui::Text("Offset: ");
           ImGui::TableNextColumn();
+
           ImGui::InputFloat2("##Offset", (float*)&entry->m_pivotOffset);
+          if (ImGui::IsItemDeactivatedAfterEdit())
+          {
+            entry->UpdateGeometry(false);
+          }
 
           ImGui::EndTable();
-        }
 
-        MaterialPtr mat = entry->m_mesh->m_material;
-        DropSubZone
-        (
-          UI::m_meshIcon->m_textureId,
-          mat->m_file,
-          [this](const DirectoryEntry& dirEnt) -> void
+          const char* text = "Update Size By Texture";
+          if (ImGui::Button(text))
           {
-            if (m_entity && m_entity->IsDrawable())
-            {
-              if (m_entity->GetType() == EntityType::Entity_Surface)
-              {
-                Surface* surface = static_cast<Surface*> (m_entity);
-                MaterialPtr mat = surface->m_mesh->m_material;
-                mat->m_diffuseTexture = GetResourceManager(ResourceType::Texture)->Create<Texture>(dirEnt.GetFullPath());
-              }
-            }
+            entry->UpdateGeometry(true);
           }
-        );
+        }
       }
     }
 

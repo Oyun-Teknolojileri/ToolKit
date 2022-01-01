@@ -538,7 +538,26 @@ namespace ToolKit
       {
         target = m_initialLoc + m_deltaAccum;
         float spacing = g_app->m_moveDelta;
-        target = glm::round(target / spacing) * spacing;
+        Vec3 snapped = glm::round(target / spacing) * spacing;
+
+        // Apply axis lock.
+        AxisLabel grabbedAxis = m_gizmo->GetGrabbedAxis();
+        switch (grabbedAxis)
+        {
+        case AxisLabel::X:
+        case AxisLabel::Y:
+        case AxisLabel::Z:
+          target[(int)grabbedAxis] = snapped[(int)grabbedAxis];
+          break;
+        case AxisLabel::YZ:
+        case AxisLabel::ZX:
+        case AxisLabel::XY:
+          snapped[(int)grabbedAxis % 3] = target[(int)grabbedAxis % 3];
+          target = snapped;
+          break;
+        default:
+          break;
+        }
       }
       else
       {

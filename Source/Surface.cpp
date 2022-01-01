@@ -91,6 +91,18 @@ namespace ToolKit
     m_mesh->m_material = ReadMaterial(parent);
   }
 
+  void Surface::UpdateGeometry(bool byTexture)
+  {
+    if (byTexture)
+    {
+      SetSizeFromTexture();
+    }
+
+    m_mesh->UnInit();
+    CreateQuat();
+    m_mesh->Init();
+  }
+
   Entity* Surface::GetCopy(Entity* copyTo) const
   {
     Drawable::GetCopy(copyTo);

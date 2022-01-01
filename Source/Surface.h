@@ -23,6 +23,8 @@ namespace ToolKit
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+    void UpdateGeometry(bool byTexture); // To reflect the size & pivot changes, this function regenerates the geometry.
+
   protected:
     virtual Entity* GetCopy(Entity* copyTo) const override;
 
