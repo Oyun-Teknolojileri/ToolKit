@@ -2,6 +2,7 @@
 #include "EditorScene.h"
 #include "Util.h"
 #include "GlobalDef.h"
+#include "EditorViewport.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -38,24 +39,44 @@ namespace ToolKit
 
     void EditorScene::AddEntity(Entity* entity)
     {
-      // Make layer assignment.
-      if (entity->m_node->m_parent == nullptr)
+      auto isFixedLayerFn = [](Entity* entity) -> bool
       {
+        return entity->m_id == FixedLayerIds[0] || entity->m_id == FixedLayerIds[1];
+      };
+
+      // Make layer assignment.
+      if 
+      (
+        entity->m_node->m_parent == nullptr &&
+        !isFixedLayerFn(entity)
+      )
+      {
+        int layerIndex = 0;
         if (entity->GetType() == EntityType::Entity_Surface)
         {
+          layerIndex = 1;
           m_fixedLayerNodes[1]->m_node->AddChild(entity->m_node);
+        }
+        else if (entity->GetType() == EntityType::Entity_Node)
+        {
+          if (EditorViewport* vp = g_app->GetActiveViewport())
+          {
+            if (vp->GetType() == Window::Type::Viewport2d)
+            {
+              layerIndex = 1;
+            }
+            else
+            {
+              layerIndex = 0;
+            }
+          }
         }
         else
         {
-          if 
-          (
-            entity->m_id != FixedLayerIds[0] &&
-            entity->m_id != FixedLayerIds[1]
-          )
-          {
-            m_fixedLayerNodes[0]->m_node->AddChild(entity->m_node);
-          }
+          layerIndex = 0;
         }
+
+        m_fixedLayerNodes[layerIndex]->m_node->AddChild(entity->m_node);
       }
 
       Scene::AddEntity(entity);
