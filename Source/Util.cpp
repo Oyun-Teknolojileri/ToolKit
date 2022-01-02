@@ -711,6 +711,24 @@ namespace ToolKit
     }
   }
 
+  void GetChildren(const Entity* ntt, EntityRawPtrArray& children)
+  {
+    if (ntt == nullptr)
+    {
+      return;
+    }
+
+    for (Node* childNode : ntt->m_node->m_children)
+    {
+      Entity* child = childNode->m_entity;
+      if (child)
+      {
+        children.push_back(child);
+        GetChildren(child, children);
+      }
+    }
+  }
+
   Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies)
   {
     Entity* cpy = root->Copy();

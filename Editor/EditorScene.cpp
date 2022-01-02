@@ -230,7 +230,7 @@ namespace ToolKit
 
     bool EditorScene::IsMaterialInUse(const MaterialPtr& material) const
     {
-      for (Entity* ntt : m_entitites)
+      for (Entity* ntt : m_entities)
       {
         if (ntt->IsDrawable())
         {
@@ -246,7 +246,7 @@ namespace ToolKit
 
     bool EditorScene::IsMeshInUse(const MeshPtr& mesh) const
     {
-      for (Entity* ntt : m_entitites)
+      for (Entity* ntt : m_entities)
       {
         if (ntt->IsDrawable())
         {
@@ -335,9 +335,41 @@ namespace ToolKit
 
     void EditorScene::CopyTo(Resource* other)
     {
-      Scene::CopyTo(other);
+      // Clear fixed layers.
       EditorScene* cpy = static_cast<EditorScene*> (other);
+      assert(cpy->m_entities.size() == 2 && "Update default layers.");
+
+      for (int i = 0; i < 2; i++)
+      {
+        delete cpy->m_entities[i];
+      }
+      cpy->m_entities.clear();
+      cpy->m_fixedLayerNodes.clear();
+
+      // Copy.
+      Scene::CopyTo(cpy);
       cpy->m_newScene = true;
+
+      // Update fixed layers.
+      cpy->m_fixedLayerNodes = cpy->Filter
+      (
+        [](Entity* e) -> bool
+        {
+          if (e->m_name == g_2dLayerStr)
+          {
+            e->m_id = g_2dLayerId;
+            return true;
+          }
+
+          if (e->m_name == g_3dLayerStr)
+          {
+            e->m_id = g_3dLayerId;
+            return true;
+          }
+
+          return false;
+        }
+      );
     }
 
   }

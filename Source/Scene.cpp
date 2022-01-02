@@ -38,7 +38,7 @@ namespace ToolKit
     DeSerialize(&sceneDoc, nullptr);
 
     // Update parent - child relation for entities.
-    for (Entity* e : m_entitites)
+    for (Entity* e : m_entities)
     {
       if (e->_parentId != 0)
       {
@@ -107,7 +107,7 @@ namespace ToolKit
     pd.pickPos = ray.position + ray.direction * 5.0f;
 
     float closestPickedDistance = FLT_MAX;
-    for (Entity* e : m_entitites)
+    for (Entity* e : m_entities)
     {
       if (!e->IsDrawable())
       {
@@ -157,7 +157,7 @@ namespace ToolKit
 
   void Scene::PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const EntityIdArray& ignoreList, bool pickPartiallyInside) const
   {
-    for (Entity* e : m_entitites)
+    for (Entity* e : m_entities)
     {
       if (!e->IsDrawable())
       {
@@ -191,7 +191,7 @@ namespace ToolKit
 
   Entity* Scene::GetEntity(EntityId id) const
   {
-    for (Entity* e : m_entitites)
+    for (Entity* e : m_entities)
     {
       if (e->m_id == id)
       {
@@ -205,18 +205,18 @@ namespace ToolKit
   void Scene::AddEntity(Entity* entity)
   {
     assert(GetEntity(entity->m_id) == nullptr && "Entity is already in the scene.");
-    m_entitites.push_back(entity);
+    m_entities.push_back(entity);
   }
 
   Entity* Scene::RemoveEntity(EntityId id)
   {
     Entity* removed = nullptr;
-    for (int i = (int)m_entitites.size() - 1; i >= 0; i--)
+    for (int i = (int)m_entities.size() - 1; i >= 0; i--)
     {
-      if (m_entitites[i]->m_id == id)
+      if (m_entities[i]->m_id == id)
       {
-        removed = m_entitites[i];
-        m_entitites.erase(m_entitites.begin() + i);
+        removed = m_entities[i];
+        m_entities.erase(m_entities.begin() + i);
         break;
       }
     }
@@ -234,13 +234,13 @@ namespace ToolKit
 
   const EntityRawPtrArray& Scene::GetEntities() const
   {
-    return m_entitites;
+    return m_entities;
   }
 
   EntityRawPtrArray Scene::GetByTag(const String& tag)
   {
     EntityRawPtrArray arrayByTag;
-    for (Entity* e : m_entitites)
+    for (Entity* e : m_entities)
     {
       if (e->m_tag == tag)
       {
@@ -254,13 +254,13 @@ namespace ToolKit
   EntityRawPtrArray Scene::Filter(std::function<bool(Entity*)> filter)
   {
     EntityRawPtrArray filtered;
-    std::copy_if(m_entitites.begin(), m_entitites.end(), std::back_inserter(filtered), filter);
+    std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(filtered), filter);
     return filtered;
   }
 
   void Scene::Destroy(bool removeResources)
   {
-    for (Entity* ntt : m_entitites)
+    for (Entity* ntt : m_entities)
     {
       if (removeResources)
       {
@@ -269,7 +269,7 @@ namespace ToolKit
 
       SafeDel(ntt);
     }
-    m_entitites.clear();
+    m_entities.clear();
 
     m_loaded = false;
     m_initiated = false;
@@ -281,13 +281,13 @@ namespace ToolKit
     Scene* cpy = static_cast<Scene*> (other);
     cpy->m_name = m_name + "_cpy";
 
-    cpy->m_entitites.reserve(m_entitites.size());
+    cpy->m_entities.reserve(m_entities.size());
     EntityRawPtrArray roots;
-    GetRootEntities(m_entitites, roots);
+    GetRootEntities(m_entities, roots);
 
     for (Entity* ntt : roots)
     {
-      DeepCopy(ntt, cpy->m_entitites);
+      DeepCopy(ntt, cpy->m_entities);
     }
   }
 
@@ -305,7 +305,7 @@ namespace ToolKit
       doc->append_node(scene);
     }
 
-    for (Entity* ntt : m_entitites)
+    for (Entity* ntt : m_entities)
     {
       ntt->Serialize(doc, scene);
     }
@@ -333,7 +333,7 @@ namespace ToolKit
       Entity* ntt = Entity::CreateByType(t);
 
       ntt->DeSerialize(doc, node);
-      m_entitites.push_back(ntt);
+      m_entities.push_back(ntt);
     }
   }
 

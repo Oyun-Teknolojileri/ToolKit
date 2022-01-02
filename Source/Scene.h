@@ -49,7 +49,7 @@ namespace ToolKit
     virtual void CopyTo(Resource* other) override;
 
   protected:
-    EntityRawPtrArray m_entitites;
+    EntityRawPtrArray m_entities;
   };
 
   class SceneManager : public ResourceManager
