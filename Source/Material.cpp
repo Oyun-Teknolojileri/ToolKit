@@ -116,6 +116,7 @@ namespace ToolKit
     cpy->m_vertexShader = m_vertexShader;
     cpy->m_fragmetShader = m_fragmetShader;
     cpy->m_color = m_color;
+    cpy->m_renderState = m_renderState;
     cpy->m_dirty = true;
   }
 
