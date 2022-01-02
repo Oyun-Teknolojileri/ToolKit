@@ -3,6 +3,7 @@
 #include "Util.h"
 #include "GlobalDef.h"
 #include "EditorViewport.h"
+#include "App.h"
 #include "DebugNew.h"
 
 namespace ToolKit
