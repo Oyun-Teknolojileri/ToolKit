@@ -40,8 +40,8 @@ namespace ToolKit
     Vec2 m_pivotOffset;
 
     // Event Callbacks.
-    std::function<void(Event*)> m_onMouseOver = nullptr;
-    std::function<void(Event*)> m_onMouseClick = nullptr;
+    std::function<void(Event*, Entity*)> m_onMouseOver = nullptr;
+    std::function<void(Event*, Entity*)> m_onMouseClick = nullptr;
   };
 
   class Viewport;

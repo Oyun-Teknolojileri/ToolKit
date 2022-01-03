@@ -224,7 +224,7 @@ namespace ToolKit
           {
             if (CheckMouseOver(surface, e, vp))
             {
-              surface->m_onMouseOver(e);
+              surface->m_onMouseOver(e, ntt);
             }
           }
 
@@ -232,7 +232,7 @@ namespace ToolKit
           {
             if (CheckMouseClick(surface, e, vp))
             {
-              surface->m_onMouseClick(e);
+              surface->m_onMouseClick(e, ntt);
             }
           }
         }
@@ -253,19 +253,15 @@ namespace ToolKit
 
   bool SurfaceObserver::CheckMouseOver(Surface* surface, Event* e, Viewport* vp)
   {
-    if (e->m_type != Event::EventType::Mouse)
+    if (e->m_type == Event::EventType::Mouse)
     {
-      MouseEvent* me = static_cast<MouseEvent*> (e);
-      if (me->m_action == EventAction::LeftClick)
-      {
-        BoundingBox box = surface->GetAABB(true);
-        Ray ray = vp->RayFromMousePosition();
+      BoundingBox box = surface->GetAABB(true);
+      Ray ray = vp->RayFromMousePosition();
 
-        float t = 0.0f;
-        if (RayBoxIntersection(ray, box, t))
-        {
-          return true;
-        }
+      float t = 0.0f;
+      if (RayBoxIntersection(ray, box, t))
+      {
+        return true;
       }
     }
 
