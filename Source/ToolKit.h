@@ -51,6 +51,7 @@ namespace ToolKit
     PluginManager* m_pluginManager = nullptr;
     Renderer* m_renderer = nullptr;
     Logger* m_logger = nullptr;
+    SurfaceObserver* m_surfaceObserver = nullptr;
 
     bool m_initiated = false;
     String m_resourceRoot;
@@ -74,6 +75,7 @@ namespace ToolKit
   SceneManager* GetSceneManager();
   PluginManager* GetPluginManager();
   ResourceManager* GetResourceManager(ResourceType type);
+  SurfaceObserver* GetSurfaceObserver();
 
   String DefaultPath();
   String ResourcePath(bool def = false);

@@ -4,7 +4,9 @@
 #include "Drawable.h"
 #include "MathUtil.h"
 #include "Resource.h"
+#include "Events.h"
 #include <vector>
+#include <functional>
 
 namespace ToolKit
 {
@@ -36,6 +38,25 @@ namespace ToolKit
   public:
     Vec2 m_size;
     Vec2 m_pivotOffset;
+
+    // Event Callbacks.
+    std::function<void(Event*)> m_onMouseOver = nullptr;
+    std::function<void(Event*)> m_onMouseClick = nullptr;
+  };
+
+  class Viewport;
+  class SurfaceObserver
+  {
+  public:
+    void SetRoot(Entity* root);
+    void Update(float deltaTimeSec, Viewport* vp);
+
+  private:
+    bool CheckMouseClick(Surface* surface, Event* e, Viewport* vp);
+    bool CheckMouseOver(Surface* surface, Event* e, Viewport* vp);
+
+  private:
+    Entity* m_root = nullptr;
   };
 
 }

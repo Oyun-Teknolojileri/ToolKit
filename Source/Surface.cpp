@@ -4,6 +4,7 @@
 #include "Texture.h"
 #include "Material.h"
 #include "Node.h"
+#include "Viewport.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -190,6 +191,85 @@ namespace ToolKit
       m_mesh->m_material->m_diffuseTexture->m_width,
       m_mesh->m_material->m_diffuseTexture->m_height
     };
+  }
+
+  // SurfaceObserver
+  //////////////////////////////////////////
+
+  void SurfaceObserver::SetRoot(Entity* root)
+  {
+    m_root = root;
+  }
+
+  void SurfaceObserver::Update(float deltaTimeSec, Viewport* vp)
+  {
+    EntityRawPtrArray entities;
+    GetChildren(m_root, entities);
+
+    const EventPool& events = Main::GetInstance()->m_eventPool;
+    if (entities.empty() || events.empty())
+    {
+      return;
+    }
+
+    for (Entity* ntt : entities)
+    {
+      // Process events.
+      for (Event* e : events)
+      {
+        if (ntt->GetType() == EntityType::Entity_Surface)
+        {
+          Surface* surface = static_cast<Surface*> (ntt);
+          if (surface->m_onMouseOver)
+          {
+            if (CheckMouseOver(surface, e, vp))
+            {
+              surface->m_onMouseOver(e);
+            }
+          }
+
+          if (surface->m_onMouseClick)
+          {
+            if (CheckMouseClick(surface, e, vp))
+            {
+              surface->m_onMouseClick(e);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  bool SurfaceObserver::CheckMouseClick(Surface* surface, Event* e, Viewport* vp)
+  {
+    if (CheckMouseOver(surface, e, vp))
+    {
+      MouseEvent* me = static_cast<MouseEvent*> (e);
+      return me->m_action == EventAction::LeftClick;
+    }
+
+    return false;
+  }
+
+  bool SurfaceObserver::CheckMouseOver(Surface* surface, Event* e, Viewport* vp)
+  {
+    if (e->m_type != Event::EventType::Mouse)
+    {
+      MouseEvent* me = static_cast<MouseEvent*> (e);
+      if (me->m_action == EventAction::LeftClick)
+      {
+        BoundingBox box = surface->GetAABB(true);
+        Ray ray = vp->RayFromMousePosition();
+
+        float t = 0.0f;
+        if (RayBoxIntersection(ray, box, t))
+        {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
 }

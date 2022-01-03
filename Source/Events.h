@@ -40,7 +40,7 @@ namespace ToolKit
 
   public:
     int m_keyCode = 0;
-    int m_mode = 0;
+    int m_mode = 0; // Or combination of key modifiers.
   };
 
   class MouseEvent : public Event
@@ -52,7 +52,7 @@ namespace ToolKit
     }
 
   public:
-    bool m_release = false;
+    bool m_release = false; // If true mouse button is up else down.
     int absolute[2] = { 0, 0 }; // x, y.
     int relative[2] = { 0, 0 }; // x, y.
     int scroll[2] = { 0, 0 }; // x, y.
