@@ -220,6 +220,7 @@ namespace ToolKit
         if (ntt->GetType() == EntityType::Entity_Surface)
         {
           Surface* surface = static_cast<Surface*> (ntt);
+
           if (surface->m_onMouseOver)
           {
             if (CheckMouseOver(surface, e, vp))
@@ -235,6 +236,25 @@ namespace ToolKit
               surface->m_onMouseClick(e, ntt);
             }
           }
+
+          if (surface->m_onMouseEnter)
+          {
+            if (CheckMouseEnter(surface, e, vp))
+            {
+              surface->m_onMouseEnter(e, ntt);
+            }
+          }
+
+          if (surface->m_onMouseExit)
+          {
+            if (CheckMouseExit(surface, e, vp))
+            {
+              surface->m_onMouseExit(e, ntt);
+            }
+          }
+
+          // Update post states.
+          surface->m_mouseOverPrev = CheckMouseOver(surface, e, vp);
         }
       }
     }
@@ -260,6 +280,32 @@ namespace ToolKit
 
       float t = 0.0f;
       if (RayBoxIntersection(ray, box, t))
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool SurfaceObserver::CheckMouseEnter(Surface* surface, Event* e, Viewport* vp)
+  {
+    if (!surface->m_mouseOverPrev)
+    {
+      if (CheckMouseOver(surface, e, vp))
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool SurfaceObserver::CheckMouseExit(Surface* surface, Event* e, Viewport* vp)
+  {
+    if (surface->m_mouseOverPrev)
+    {
+      if (!CheckMouseOver(surface, e, vp))
       {
         return true;
       }

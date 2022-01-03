@@ -39,7 +39,12 @@ namespace ToolKit
     Vec2 m_size;
     Vec2 m_pivotOffset;
 
+    // UI states.
+    bool m_mouseOverPrev = false;
+
     // Event Callbacks.
+    std::function<void(Event*, Entity*)> m_onMouseEnter = nullptr;
+    std::function<void(Event*, Entity*)> m_onMouseExit = nullptr;
     std::function<void(Event*, Entity*)> m_onMouseOver = nullptr;
     std::function<void(Event*, Entity*)> m_onMouseClick = nullptr;
   };
@@ -54,6 +59,8 @@ namespace ToolKit
   private:
     bool CheckMouseClick(Surface* surface, Event* e, Viewport* vp);
     bool CheckMouseOver(Surface* surface, Event* e, Viewport* vp);
+    bool CheckMouseEnter(Surface* surface, Event* e, Viewport* vp);
+    bool CheckMouseExit(Surface* surface, Event* e, Viewport* vp);
 
   private:
     Entity* m_root = nullptr;
