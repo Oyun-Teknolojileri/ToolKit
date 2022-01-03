@@ -35,7 +35,7 @@ namespace ToolKit
     m_height = height;
     if (m_camera->IsOrtographic())
     {
-      m_camera->SetLens(width / height, -10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
+      m_camera->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
     }
     else
     {
@@ -58,7 +58,6 @@ namespace ToolKit
     {
       m_camera->SetLens
       (
-        1.0f,
         -m_zoom * m_width * 0.5f,
         m_zoom * m_width * 0.5f,
         -m_zoom * m_height * 0.5f,

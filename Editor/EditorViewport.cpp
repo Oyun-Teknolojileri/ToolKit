@@ -596,7 +596,6 @@ namespace ToolKit
         m_zoom = dist / 600.0f;
         m_camera->SetLens
         (
-          1.0f,
           -m_zoom * m_width * 0.5f,
           m_zoom * m_width * 0.5f,
           -m_zoom * m_height * 0.5f,

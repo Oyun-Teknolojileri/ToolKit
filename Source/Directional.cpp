@@ -116,7 +116,7 @@ namespace ToolKit
 
     if (m_ortographic)
     {
-      SetLens(m_aspect, m_left, m_right, m_bottom, m_top, m_near, m_far);
+      SetLens(m_left, m_right, m_bottom, m_top, m_near, m_far);
     }
     else
     {
@@ -149,15 +149,15 @@ namespace ToolKit
     m_ortographic = false;
   }
 
-  void Camera::SetLens(float aspect, float left, float right, float bottom, float top, float near, float far)
+  void Camera::SetLens(float left, float right, float bottom, float top, float near, float far)
   {
-    m_projection = glm::ortho(left * aspect, right * aspect, bottom, top, near, far);
+    m_projection = glm::ortho(left, right, bottom, top, near, far);
     m_left = left;
     m_right = right;
     m_top = top;
     m_bottom = bottom;
     m_fov = 0.0f;
-    m_aspect = aspect;
+    m_aspect = 1.0f;
     m_near = near;
     m_far = far;
     m_height = top - bottom;

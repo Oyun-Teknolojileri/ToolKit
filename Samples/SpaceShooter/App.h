@@ -42,8 +42,7 @@ public:
     srand((int)time(0)); // Seed
 
     float wide = 15.0f;
-    m_cam.SetLens((float)m_windowWidth / (float)m_windowHeight, -wide, wide, -wide, wide, 1.0f, 1000.0f);
-    //m_cam.SetLens(glm::radians(90.0f), 640.0f, 768.0f, 1.0f, 100.0f);
+    m_cam.SetLens(-wide, wide, -wide, wide, 1.0f, 1000.0f);
     m_cam.Translate(Vec3(0.0f, 10.0f, 0.0f));
     m_cam.Pitch(glm::radians(-90.0f));
 

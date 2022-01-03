@@ -434,7 +434,7 @@ namespace ToolKit
         vp = new EditorViewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
         vp->m_name = g_IsoViewport;
         vp->m_camera->m_node->SetTranslation({ 0.0f, 10.0f, 0.0f });
-        vp->m_camera->SetLens(1.0f, -10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
+        vp->m_camera->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
         vp->m_zoom = 0.02f;
         vp->m_camera->Pitch(glm::radians(-90.0f));
         vp->m_cameraAlignment = 1;
