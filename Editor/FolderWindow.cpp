@@ -140,17 +140,29 @@ namespace ToolKit
       }
       else if (SupportedImageFormat(m_ext))
       {
-        Quad frame;
         String fullpath = m_rootPath + GetPathSeparator() + m_fileName + m_ext;
-        frame.m_mesh->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-        frame.m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(fullpath);
-        frame.m_mesh->m_material->m_diffuseTexture->Init(false);
+        TexturePtr texture = GetTextureManager()->Create<Texture>(fullpath);
+        float maxDim = (float)glm::max(texture->m_width, texture->m_height);
+        float w = (texture->m_width / maxDim) * thumbSize.x;
+        float h = (texture->m_height / maxDim) * thumbSize.y;
+        
+        Surface surface(Vec2(w, h));
+        surface.m_mesh->m_material->m_diffuseTexture = texture;
+        surface.m_mesh->Init(false);
 
         Camera cam;
-        cam.SetLens(glm::half_pi<float>(), thumbSize.x, thumbSize.y);
-        cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 0.5f));
+        cam.SetLens
+        (
+          w * -0.5f,
+          w * 0.5f,
+          h * -0.5f,
+          h * 0.5f,
+          0.01f,
+          1000.0f
+        );
+        cam.Translate(Vec3(0.0f, 0.0f, 10.0f));
 
-        renderThumbFn(&cam, &frame);
+        renderThumbFn(&cam, &surface);
       }
     }
 

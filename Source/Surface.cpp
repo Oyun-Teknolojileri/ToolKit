@@ -12,6 +12,7 @@ namespace ToolKit
   Surface::Surface()
   {
     MaterialPtr mat = GetMaterialManager()->GetCopyOfUnlitMaterial();
+    mat->UnInit();
     mat->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
     mat->GetRenderState()->depthTestEnabled = true;
     m_mesh->m_material = mat;
