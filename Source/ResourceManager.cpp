@@ -9,6 +9,7 @@
 #include "SpriteSheet.h"
 #include "Texture.h"
 #include "Scene.h"
+#include "ToolKit.h"
 #include "DebugNew.h"
 
 #include <string>
@@ -62,6 +63,19 @@ namespace ToolKit
     }
 
     return resource;
+  }
+
+  bool ResourceManager::IsSane(const String& file)
+  {
+    bool fileCheck = CheckFile(file);
+    if (!fileCheck)
+    {
+      GetLogger()->Log("Missing: " + file);
+      assert(fileCheck);
+      return false;
+    }
+
+    return true;
   }
 
 }

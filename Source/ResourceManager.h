@@ -10,8 +10,6 @@
 namespace ToolKit
 {
 
-  extern class Logger* GetLogger();
-
   enum class ResourceType
   {
     Base,
@@ -45,11 +43,8 @@ namespace ToolKit
     {
       if (!Exist(file))
       {
-        bool fileCheck = CheckFile(file);
-        if (!fileCheck)
+        if (!IsSane(file))
         {
-          GetLogger()->Log("Missing: " + file);
-          assert(fileCheck);
           return nullptr;
         }
 
@@ -64,6 +59,9 @@ namespace ToolKit
 
     bool Exist(String file);
     ResourcePtr Remove(const String& file);
+
+  private:
+    bool IsSane(const String& file);
 
   public:
     std::unordered_map<String, ResourcePtr> m_storage;
