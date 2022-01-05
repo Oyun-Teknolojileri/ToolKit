@@ -84,6 +84,7 @@ namespace ToolKit
         reg->m_plugin = (ProcAdd)();
         reg->m_plugin->Init(Main::GetInstance());
         reg->m_loaded = true;
+        reg->m_file = dllName;
         return true;
       }
       else 
