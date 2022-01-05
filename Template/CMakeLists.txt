@@ -30,15 +30,15 @@ include_directories(
 	"${CMAKE_SOURCE_DIR}"
 )
 
-set(SOURCE App.cpp PlayerController.cpp EnemyController.cpp GameUtil.cpp MainUI.h)
-set(HEADERS App.h PlayerController.h EnemyController.h GameUtil.h MainUI.cpp)
+set(SOURCE GameApp.cpp PlayerController.cpp EnemyController.cpp GameUtil.cpp MainUI.h)
+set(HEADERS GameApp.h PlayerController.h EnemyController.h GameUtil.h MainUI.cpp)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/Bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/Bin")
 
 add_library(${PROJECT_NAME} SHARED  ${SOURCE} ${HEADERS})
 
-set (
+set(
   PCH
  "${TOOLKIT_DIR}/Dependency/glm/glm.hpp"
  "${TOOLKIT_DIR}/Dependency/glm/gtc/epsilon.hpp"
@@ -59,3 +59,8 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH})
 target_link_libraries(${PROJECT_NAME} debug ToolKit_d)
 target_link_libraries(${PROJECT_NAME} optimized ToolKit)
 target_link_libraries(${PROJECT_NAME} glew32 OpenGL32 OpenAL32)
+
+#For hotreload rename the previous output
+set(dll $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
+set(pdb $<SHELL_PATH:$<TARGET_PDB_FILE:${PROJECT_NAME}>>)
+add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -Ddll=${dll} -Dpdb=${pdb} -P ${CMAKE_SOURCE_DIR}/CMakeHotReload.cmake)

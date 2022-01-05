@@ -50,13 +50,10 @@ namespace ToolKit
       {
         // Get file creation time.
         String cTime = GetWriteTime(dllName);
-        if (reg->m_lastWriteTime == cTime)
+        if (reg->m_lastWriteTime != cTime)
         {
-          m_reporterFn("Plugin is already loaded and up-to-date.");
-          return false;
-        }
-        else
-        {
+          m_reporterFn("A new version of the plugin has been found.");
+
           // Reload.
           Unload(reg->m_file);
           if (reg->m_module)
