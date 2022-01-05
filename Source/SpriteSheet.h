@@ -73,6 +73,7 @@ namespace ToolKit
   public:
     SpriteSheetManager();
     virtual ~SpriteSheetManager();
+    virtual bool CanStore(ResourceType t);
   };
 
 }

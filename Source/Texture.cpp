@@ -334,4 +334,19 @@ namespace ToolKit
   {
   }
 
+  bool TextureManager::CanStore(ResourceType t)
+  {
+    if
+    (
+      t == ResourceType::Texture
+      || t == ResourceType::CubeMap
+      || t == ResourceType::RenderTarget
+    )
+    {
+      return true;
+    }
+
+    return false;
+  }
+
 }

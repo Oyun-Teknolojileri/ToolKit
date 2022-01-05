@@ -358,4 +358,9 @@ namespace ToolKit
     ResourceManager::Uninit();
   }
 
+  bool SceneManager::CanStore(ResourceType t)
+  {
+    return t == ResourceType::Scene;
+  }
+
 }

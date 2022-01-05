@@ -34,6 +34,7 @@ namespace ToolKit
     virtual void Init();
     virtual void Uninit();
     virtual void Manage(const ResourcePtr& resource);
+    virtual bool CanStore(ResourceType t) = 0;
 
     ResourceManager(ResourceManager const&) = delete;
     void operator=(ResourceManager const&) = delete;

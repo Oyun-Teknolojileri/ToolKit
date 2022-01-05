@@ -83,6 +83,7 @@ namespace ToolKit
   public:
     TextureManager();
     virtual ~TextureManager();
+    virtual bool CanStore(ResourceType t);
   };
 
 }

@@ -201,8 +201,14 @@ namespace ToolKit
   void AudioManager::Uninit()
   {
     alcDestroyContext((ALCcontext*)m_context);
+
     alcCloseDevice((ALCdevice*)m_device);
     ResourceManager::Uninit();
+  }
+
+  bool AudioManager::CanStore(ResourceType t)
+  {
+    return t == ResourceType::Audio;
   }
 
   AudioSource::AudioSource()

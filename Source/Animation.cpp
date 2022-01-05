@@ -323,4 +323,9 @@ namespace ToolKit
   {
   }
 
+  bool AnimationManager::CanStore(ResourceType t)
+  {
+    return t == ResourceType::Animation;
+  }
+
 }

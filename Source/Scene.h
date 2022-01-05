@@ -59,6 +59,7 @@ namespace ToolKit
     virtual ~SceneManager();
     virtual void Init() override;
     virtual void Uninit() override;
+    virtual bool CanStore(ResourceType t);
 
   public:
     ScenePtr m_currentScene;

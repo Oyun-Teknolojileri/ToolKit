@@ -43,6 +43,7 @@ namespace ToolKit
     MaterialManager();
     virtual ~MaterialManager();
     virtual void Init() override;
+    virtual bool CanStore(ResourceType t);
 
     MaterialPtr GetCopyOfUnlitMaterial();
     MaterialPtr GetCopyOfUnlitColorMaterial();

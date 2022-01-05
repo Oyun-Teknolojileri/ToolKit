@@ -62,6 +62,7 @@ namespace ToolKit
     ShaderManager();
     virtual ~ShaderManager();
     virtual void Init() override;
+    virtual bool CanStore(ResourceType t);
   };
 
 }

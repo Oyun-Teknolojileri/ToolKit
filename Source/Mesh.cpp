@@ -594,4 +594,18 @@ namespace ToolKit
   {
   }
 
+  bool MeshManager::CanStore(ResourceType t)
+  {
+    if
+    (
+      t == ResourceType::Mesh
+      || t == ResourceType::SkinMesh
+    )
+    {
+      return true;
+    }
+
+    return false;
+  }
+
 }

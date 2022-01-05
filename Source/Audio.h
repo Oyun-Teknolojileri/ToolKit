@@ -29,6 +29,7 @@ namespace ToolKit
     virtual ~AudioManager();
     virtual void Init() override;
     virtual void Uninit() override;
+    virtual bool CanStore(ResourceType t);
 
   public:
     void* m_device = nullptr;

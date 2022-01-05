@@ -216,4 +216,9 @@ namespace ToolKit
   {
   }
 
+  bool SpriteSheetManager::CanStore(ResourceType t)
+  {
+    return t == ResourceType::SpriteSheet;
+  }
+
 }

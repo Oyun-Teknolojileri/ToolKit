@@ -320,6 +320,11 @@ namespace ToolKit
     m_storage[MaterialPath("unlitSolid.material", true)] = MaterialPtr(material);
   }
 
+  bool MaterialManager::CanStore(ResourceType t)
+  {
+      return t == ResourceType::Material;
+  }
+
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()
   {
     return m_storage[MaterialPath("unlit.material", true)]->Copy<Material>();

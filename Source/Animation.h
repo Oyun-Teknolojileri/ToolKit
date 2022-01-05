@@ -64,6 +64,8 @@ namespace ToolKit
   public:
     AnimationManager();
     virtual ~AnimationManager();
+    virtual bool CanStore(ResourceType t);
+
   };
 
   typedef std::pair<Entity*, Animation*> AnimRecord;

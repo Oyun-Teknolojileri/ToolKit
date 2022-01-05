@@ -309,4 +309,9 @@ namespace ToolKit
     ResourceManager::Init();
   }
 
+  bool ShaderManager::CanStore(ResourceType t)
+  {
+    return t == ResourceType::Shader;
+  }
+
 }

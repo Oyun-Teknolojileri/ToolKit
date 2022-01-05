@@ -106,6 +106,7 @@ namespace ToolKit
   public:
     MeshManager();
     virtual ~MeshManager();
+    virtual bool CanStore(ResourceType t);
   };
 
 }
