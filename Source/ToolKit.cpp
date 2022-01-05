@@ -69,7 +69,6 @@ namespace ToolKit
   {
     m_logger->Log("ToolKit Unitialization");
 
-    m_pluginManager->UnInit();
     m_animationPlayer->m_records.clear();
     m_animationMan->Uninit();
     m_textureMan->Uninit();
@@ -79,6 +78,9 @@ namespace ToolKit
     m_shaderMan->Uninit();
     m_materialManager->Uninit();
     m_sceneManager->Uninit();
+
+    // After all the resources, we can safely free modules.
+    m_pluginManager->UnInit();
 
     m_initiated = false;
   }

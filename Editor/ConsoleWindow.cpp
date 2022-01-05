@@ -529,7 +529,6 @@ namespace ToolKit
       }
 
       String plugin = tagArgs.front().second.front();
-      GetPluginManager()->Unload();
       GetPluginManager()->Load(plugin);
     }
 

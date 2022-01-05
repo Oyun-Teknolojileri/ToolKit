@@ -383,7 +383,7 @@ namespace ToolKit
 
       if (mod == GameMod::Stop)
       {
-        GetPluginManager()->Unload();
+        GetPluginManager()->UnloadGamePlugin();
         m_statusMsg = "Game is stopped";
         m_gameMod = mod;
 
@@ -1020,7 +1020,7 @@ namespace ToolKit
 
     void App::ShowPlayWindow(float deltaTime)
     {
-      if (GamePlugin* plugin = GetPluginManager()->m_plugin)
+      if (GamePlugin* plugin = GetPluginManager()->GetGamePlugin())
       {
         if (m_gameMod != GameMod::Stop)
         {
