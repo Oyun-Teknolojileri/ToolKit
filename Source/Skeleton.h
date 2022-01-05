@@ -6,7 +6,7 @@ namespace ToolKit
 {
   class Node;
 
-  class Bone
+  class TK_API Bone
   {
   public:
     Bone(String name);
@@ -18,7 +18,7 @@ namespace ToolKit
     Mat4 m_inverseWorldMatrix;
   };
 
-  class Skeleton : public Resource
+  class TK_API Skeleton : public Resource
   {
   public:
     Skeleton();

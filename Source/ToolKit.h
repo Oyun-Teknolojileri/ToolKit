@@ -24,7 +24,7 @@
 namespace ToolKit
 {
 
-  class Main
+  class TK_API Main
   {
   public:
     Main();
@@ -62,32 +62,32 @@ namespace ToolKit
   };
 
   // Accessors.
-  Logger* GetLogger();
-  Renderer* GetRenderer();
-  AnimationManager* GetAnimationManager();
-  AnimationPlayer* GetAnimationPlayer();
-  AudioManager* GetAudioManager();
-  MaterialManager* GetMaterialManager();
-  MeshManager* GetMeshManager();
-  ShaderManager* GetShaderManager();
-  SpriteSheetManager* GetSpriteSheetManager();
-  TextureManager* GetTextureManager();
-  SceneManager* GetSceneManager();
-  PluginManager* GetPluginManager();
-  ResourceManager* GetResourceManager(ResourceType type);
-  SurfaceObserver* GetSurfaceObserver();
+  TK_API Logger* GetLogger();
+  TK_API Renderer* GetRenderer();
+  TK_API AnimationManager* GetAnimationManager();
+  TK_API AnimationPlayer* GetAnimationPlayer();
+  TK_API AudioManager* GetAudioManager();
+  TK_API MaterialManager* GetMaterialManager();
+  TK_API MeshManager* GetMeshManager();
+  TK_API ShaderManager* GetShaderManager();
+  TK_API SpriteSheetManager* GetSpriteSheetManager();
+  TK_API TextureManager* GetTextureManager();
+  TK_API SceneManager* GetSceneManager();
+  TK_API PluginManager* GetPluginManager();
+  TK_API ResourceManager* GetResourceManager(ResourceType type);
+  TK_API SurfaceObserver* GetSurfaceObserver();
 
-  String DefaultPath();
-  String ResourcePath(bool def = false);
-  String TexturePath(const String& file, bool def = false);
-  String MeshPath(const String& file, bool def = false);
-  String FontPath(const String& file, bool def = false);
-  String SpritePath(const String& file, bool def = false);
-  String AudioPath(const String& file, bool def = false);
-  String AnimationPath(const String& file, bool def = false);
-  String SkeletonPath(const String& file, bool def = false);
-  String ShaderPath(const String& file, bool def = false);
-  String MaterialPath(const String& file, bool def = false);
-  String ScenePath(const String& file, bool def = false);
+  TK_API String DefaultPath();
+  TK_API String ResourcePath(bool def = false);
+  TK_API String TexturePath(const String& file, bool def = false);
+  TK_API String MeshPath(const String& file, bool def = false);
+  TK_API String FontPath(const String& file, bool def = false);
+  TK_API String SpritePath(const String& file, bool def = false);
+  TK_API String AudioPath(const String& file, bool def = false);
+  TK_API String AnimationPath(const String& file, bool def = false);
+  TK_API String SkeletonPath(const String& file, bool def = false);
+  TK_API String ShaderPath(const String& file, bool def = false);
+  TK_API String MaterialPath(const String& file, bool def = false);
+  TK_API String ScenePath(const String& file, bool def = false);
 
 }

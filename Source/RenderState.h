@@ -35,7 +35,7 @@ namespace ToolKit
     SkinMesh
   };
 
-  class RenderState : public Serializable
+  class TK_API RenderState : public Serializable
   {
   public:
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;

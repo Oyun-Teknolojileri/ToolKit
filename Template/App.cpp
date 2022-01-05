@@ -1,6 +1,11 @@
 #include "App.h"
 #include "SDL.h"
 
+extern "C" TK_GAME_API ToolKit::Game * TK_STDCAL CreateInstance()
+{
+  return new ToolKit::Game();
+}
+
 namespace ToolKit
 {
 

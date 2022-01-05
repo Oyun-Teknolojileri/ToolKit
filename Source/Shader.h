@@ -18,7 +18,7 @@ namespace ToolKit
     FRAME_COUNT
   };
 
-  class Shader : public Resource
+  class TK_API Shader : public Resource
   {
   public:
     Shader();
@@ -43,7 +43,7 @@ namespace ToolKit
     String m_source;
   };
 
-  class Program
+  class TK_API Program
   {
   public:
     Program();
@@ -56,7 +56,7 @@ namespace ToolKit
     ShaderPtrArray m_shaders;
   };
 
-  class ShaderManager : public ResourceManager
+  class TK_API ShaderManager : public ResourceManager
   {
   public:
     ShaderManager();

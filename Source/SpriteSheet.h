@@ -19,7 +19,7 @@ namespace ToolKit
     Rect<int> rectangle;
   };
 
-  class SpriteSheet : public Resource
+  class TK_API SpriteSheet : public Resource
   {
   public:
     SpriteSheet();
@@ -44,7 +44,7 @@ namespace ToolKit
     std::unordered_map<String, Surface*> m_sprites;
   };
 
-  class SpriteAnimation : public Drawable
+  class TK_API SpriteAnimation : public Drawable
   {
   public:
     SpriteAnimation();
@@ -68,7 +68,7 @@ namespace ToolKit
     float m_prevTime = 0.0f;
   };
 
-  class SpriteSheetManager : public ResourceManager
+  class TK_API SpriteSheetManager : public ResourceManager
   {
   public:
     SpriteSheetManager();

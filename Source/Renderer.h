@@ -17,7 +17,7 @@ namespace ToolKit
   class Material;
   class RenderTarget;
 
-  class Renderer
+  class TK_API Renderer
   {
   public:
     Renderer();

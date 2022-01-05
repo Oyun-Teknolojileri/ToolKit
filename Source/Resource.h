@@ -7,7 +7,7 @@
 namespace ToolKit
 {
 
-  class Resource : public Serializable
+  class TK_API Resource : public Serializable
   {
   public:
     Resource();

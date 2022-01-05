@@ -26,7 +26,7 @@ namespace ToolKit
     Scene
   };
 
-  class ResourceManager
+  class TK_API ResourceManager
   {
   public:
     ResourceManager();

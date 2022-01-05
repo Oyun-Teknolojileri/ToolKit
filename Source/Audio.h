@@ -7,7 +7,7 @@
 namespace ToolKit
 {
 
-  class Audio : public Resource
+  class TK_API Audio : public Resource
   {
   public:
     Audio();
@@ -22,7 +22,7 @@ namespace ToolKit
     uint m_buffer;
   };
 
-  class AudioManager : public ResourceManager
+  class TK_API AudioManager : public ResourceManager
   {
   public:
     AudioManager();
@@ -36,7 +36,7 @@ namespace ToolKit
     void* m_context = nullptr;
   };
 
-  class AudioSource : public Entity
+  class TK_API AudioSource : public Entity
   {
   public:
     AudioSource();
@@ -52,7 +52,7 @@ namespace ToolKit
     uint m_source = 0;
   };
 
-  class AudioPlayer
+  class TK_API AudioPlayer
   {
   public:
     static void Play(AudioSource* source);

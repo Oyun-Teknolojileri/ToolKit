@@ -5,7 +5,7 @@
 
 namespace ToolKit
 {
-  class Directional : public Entity
+  class TK_API Directional : public Entity
   {
   public:
     Directional();
@@ -28,7 +28,7 @@ namespace ToolKit
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override {};
   };
 
-  class Camera : public Directional
+  class TK_API Camera : public Directional
   {
   public:
     struct CamData
@@ -78,7 +78,7 @@ namespace ToolKit
     Mat4 m_projection;
   };
 
-  class Light : public Directional
+  class TK_API Light : public Directional
   {
   public:
     struct LightData

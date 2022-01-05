@@ -5,7 +5,7 @@
 namespace ToolKit
 {
 
-  class Drawable : public Entity
+  class TK_API Drawable : public Entity
   {
   public:
     using Entity::GetCopy;

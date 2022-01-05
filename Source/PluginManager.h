@@ -6,7 +6,7 @@
 
 namespace ToolKit
 {
-  class PluginManager
+  class TK_API PluginManager
   {
   public:
     PluginManager();

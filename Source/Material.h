@@ -7,7 +7,7 @@
 namespace ToolKit
 {
 
-  class Material : public Resource
+  class TK_API Material : public Resource
   {
   public:
     Material();
@@ -37,7 +37,7 @@ namespace ToolKit
     RenderState m_renderState;
   };
 
-  class MaterialManager : public ResourceManager
+  class TK_API MaterialManager : public ResourceManager
   {
   public:
     MaterialManager();

@@ -7,7 +7,7 @@
 namespace ToolKit
 {
 
-  class Logger
+  class TK_API Logger
   {
   public:
     Logger();

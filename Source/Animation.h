@@ -19,7 +19,7 @@ namespace ToolKit
     Vec3 m_scale;
   };
 
-  class Animation : public Resource
+  class TK_API Animation : public Resource
   {
   public:
     Animation();
@@ -59,7 +59,7 @@ namespace ToolKit
     State m_state = State::Play;
   };
 
-  class AnimationManager : public ResourceManager
+  class TK_API AnimationManager : public ResourceManager
   {
   public:
     AnimationManager();
@@ -68,9 +68,7 @@ namespace ToolKit
 
   };
 
-  typedef std::pair<Entity*, Animation*> AnimRecord;
-
-  class AnimationPlayer
+  class TK_API AnimationPlayer
   {
   public:
     void AddRecord(const AnimRecord& rec);

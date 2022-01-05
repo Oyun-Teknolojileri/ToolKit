@@ -16,7 +16,7 @@ namespace ToolKit
     Scroll
   };
 
-  class Event 
+  class TK_API Event
   {
   public:
     enum class EventType
@@ -30,7 +30,7 @@ namespace ToolKit
     EventAction m_action = EventAction::Null;
   };
 
-  class KeyboardEvent : public Event
+  class TK_API KeyboardEvent : public Event
   {
   public:
     KeyboardEvent()
@@ -43,7 +43,7 @@ namespace ToolKit
     int m_mode = 0; // Or combination of key modifiers.
   };
 
-  class MouseEvent : public Event
+  class TK_API MouseEvent : public Event
   {
   public:
     MouseEvent()

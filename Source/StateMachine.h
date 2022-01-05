@@ -5,7 +5,7 @@
 namespace ToolKit
 {
 
-  class State
+  class TK_API State
   {
   public:
     State();
@@ -24,7 +24,7 @@ namespace ToolKit
     static SignalId NullSignal = -1; // StateMachine does not take any action.
   };
 
-  class StateMachine
+  class TK_API StateMachine
   {
   public:
     StateMachine();

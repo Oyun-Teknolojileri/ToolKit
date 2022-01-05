@@ -11,7 +11,7 @@
 namespace ToolKit
 {
 
-  class Surface : public Drawable
+  class TK_API Surface : public Drawable
   {
   public:
     Surface();
@@ -50,7 +50,7 @@ namespace ToolKit
   };
 
   class Viewport;
-  class SurfaceObserver
+  class TK_API SurfaceObserver
   {
   public:
     void SetRoot(Entity* root);

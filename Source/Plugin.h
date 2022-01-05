@@ -1,15 +1,13 @@
 #pragma once
 
+#ifdef _WIN32 // Windows.
+  #define TK_GAME_API __declspec(dllexport)
+#else // Other OS.
+  #define TK_GAME_API
+#endif
+
 namespace ToolKit
 {
-
-  #ifdef _WIN32
-    #define TK_GAME_API __declspec(dllexport)
-    #define TK_STDCAL __stdcall
-  #else
-    #define TK_GAME_API
-    #define TK_STDCAL
-  #endif
 
   class GamePlugin
   {

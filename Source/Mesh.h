@@ -25,7 +25,7 @@ namespace ToolKit
     Vertex* vertices[3];
   };
 
-  class Mesh : public Resource
+  class TK_API Mesh : public Resource
   {
   public:
     Mesh();
@@ -79,7 +79,7 @@ namespace ToolKit
     Vec4 weights;
   };
 
-  class SkinMesh : public Mesh
+  class TK_API SkinMesh : public Mesh
   {
   public:
     SkinMesh();
@@ -101,7 +101,7 @@ namespace ToolKit
     class Skeleton* m_skeleton;
   };
 
-  class MeshManager : public ResourceManager
+  class TK_API MeshManager : public ResourceManager
   {
   public:
     MeshManager();

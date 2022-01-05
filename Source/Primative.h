@@ -6,7 +6,7 @@
 namespace ToolKit
 {
 
-  class Billboard : public Drawable
+  class TK_API Billboard : public Drawable
   {
   public:
     struct Settings
@@ -33,7 +33,7 @@ namespace ToolKit
     Vec3 m_worldLocation;
   };
 
-  class Cube final : public Drawable
+  class TK_API Cube final : public Drawable
   {
   public:
     class Params : public ParameterBlock
@@ -65,7 +65,7 @@ namespace ToolKit
     void Generate();
   };
 
-  class Quad final : public Drawable
+  class TK_API Quad final : public Drawable
   {
   public:
     Quad(bool genDef = true);
@@ -82,7 +82,7 @@ namespace ToolKit
     void Generate();
   };
 
-  class Sphere final : public Drawable
+  class TK_API Sphere final : public Drawable
   {
   public:
     class Params : public ParameterBlock
@@ -114,7 +114,7 @@ namespace ToolKit
     void Generate();
   };
 
-  class Cone : public Drawable
+  class TK_API Cone : public Drawable
   {
   public:
     class Params : public ParameterBlock
@@ -152,7 +152,7 @@ namespace ToolKit
     void Generate();
   };
 
-  class Arrow2d : public Drawable
+  class TK_API Arrow2d : public Drawable
   {
   public:
     Arrow2d(bool genDef = true);
@@ -170,7 +170,7 @@ namespace ToolKit
     AxisLabel m_label;
   };
 
-  class LineBatch : public Drawable
+  class TK_API LineBatch : public Drawable
   {
   public:
     LineBatch();

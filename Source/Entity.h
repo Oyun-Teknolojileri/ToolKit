@@ -27,7 +27,7 @@ namespace ToolKit
     Entity_Node
   };
 
-  class Entity
+  class TK_API Entity
   {
   public:
     Entity();
@@ -62,7 +62,7 @@ namespace ToolKit
     static EntityId m_lastId;
   };
 
-  class EntityNode : public Entity
+  class TK_API EntityNode : public Entity
   {
   public:
     EntityNode() {}

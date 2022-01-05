@@ -7,7 +7,7 @@
 namespace ToolKit
 {
 
-  class ParameterVariant : public Serializable
+  class TK_API ParameterVariant : public Serializable
   {
   public:
     enum class VariantType
@@ -58,7 +58,7 @@ namespace ToolKit
     VariantType m_type;
   };
 
-  class ParameterBlock : public Serializable
+  class TK_API ParameterBlock : public Serializable
   {
   public:
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;

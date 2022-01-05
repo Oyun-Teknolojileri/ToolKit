@@ -12,7 +12,7 @@ namespace ToolKit
     TS_LOCAL
   };
 
-  class Node
+  class TK_API Node
   {
     friend class Animation;
     friend class Skeleton;

@@ -6,6 +6,26 @@
 #include <string>
 #include <memory>
 
+#ifdef _WIN32 // Windows.
+  #define TK_STDCAL __stdcall
+  #ifdef TK_DLL_EXPORT // Dyamic binding.
+    #define TK_API __declspec(dllexport)
+  #elif TK_DLL_IMPORT
+    #define TK_API __declspec(dllimport)
+  #else // Static binding.
+    #define TK_API
+  #endif
+#else // Other OS.
+  #define TK_API
+  #define TK_STDCAL
+#endif
+
+#define SafeDel(ptr) { delete ptr; ptr = nullptr; };
+#define SafeDelArray(ptr) { delete[] ptr; ptr = nullptr; };
+
+// std template types require dll interface.
+#pragma warning( disable: 4251 )
+
 namespace rapidxml
 {
   template<class Ch> class xml_document;
@@ -16,8 +36,6 @@ namespace rapidxml
 
 namespace ToolKit
 {
-#define SafeDel(ptr) { delete ptr; ptr = nullptr; };
-#define SafeDelArray(ptr) { delete[] ptr; ptr = nullptr; };
 
   // Primitive types.
   typedef char Byte;
@@ -79,6 +97,7 @@ namespace ToolKit
   };
 
   typedef std::vector<class Event*> EventPool;
+  typedef std::pair<Entity*, Animation*> AnimRecord;
 
   // Enitiy types.
   typedef std::shared_ptr<class Camera> CameraPtr;

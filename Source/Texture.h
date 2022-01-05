@@ -9,7 +9,7 @@
 namespace ToolKit
 {
 
-  class Texture : public Resource
+  class TK_API Texture : public Resource
   {
   public:
     Texture();
@@ -31,7 +31,7 @@ namespace ToolKit
     uint8* m_image = nullptr;
   };
 
-  class CubeMap : public Texture
+  class TK_API CubeMap : public Texture
   {
   public:
     CubeMap();
@@ -59,7 +59,7 @@ namespace ToolKit
     int magFilter = GL_NEAREST;
   };
 
-  class RenderTarget : public Texture
+  class TK_API RenderTarget : public Texture
   {
   public:
     RenderTarget();
@@ -78,7 +78,7 @@ namespace ToolKit
     RenderTargetSettigs m_settings;
   };
 
-  class TextureManager : public ResourceManager
+  class TK_API TextureManager : public ResourceManager
   {
   public:
     TextureManager();

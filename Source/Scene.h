@@ -7,7 +7,7 @@
 namespace ToolKit
 {
 
-  class Scene : public Resource
+  class TK_API Scene : public Resource
   {
   public:
     struct PickData
@@ -52,7 +52,7 @@ namespace ToolKit
     EntityRawPtrArray m_entities;
   };
 
-  class SceneManager : public ResourceManager
+  class TK_API SceneManager : public ResourceManager
   {
   public:
     SceneManager();

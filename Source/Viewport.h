@@ -8,7 +8,7 @@ namespace ToolKit
   class Camera;
   class RenderTarget;
 
-  class Viewport
+  class TK_API Viewport
   {
   public:
     Viewport();
