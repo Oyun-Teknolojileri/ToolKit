@@ -18,6 +18,16 @@ namespace ToolKit
   #undef near
   #undef far
 
+  String GetWriteTime(const String& file)
+  {
+    WIN32_FILE_ATTRIBUTE_DATA attrData;
+    GetFileAttributesEx(file.c_str(), GetFileExInfoStandard, &attrData);
+    String time = std::to_string(attrData.ftLastWriteTime.dwHighDateTime) +
+      std::to_string(attrData.ftLastWriteTime.dwLowDateTime);
+
+    return time;
+  }
+
   bool PluginManager::Load(const String& file)
   {
     HINSTANCE hinstLib;
@@ -36,15 +46,11 @@ namespace ToolKit
     if (reg = GetRegister(dllName))
     {
       // Unload if dirty
-      if (reg->m_loaded)
+      if (!reg->m_loaded)
       {
-        // Get file creation time.  
-        WIN32_FILE_ATTRIBUTE_DATA attrData;
-        GetFileAttributesEx(dllName.c_str(), GetFileExInfoStandard, &attrData);
-        String created = std::to_string(attrData.ftLastWriteTime.dwHighDateTime) +
-          std::to_string(attrData.ftLastWriteTime.dwLowDateTime);
-
-        if (reg->m_lastWriteTime == created)
+        // Get file creation time.
+        String cTime = GetWriteTime(dllName);
+        if (reg->m_lastWriteTime == cTime)
         {
           m_reporterFn("Plugin is already loaded and up-to-date.");
           return false;
@@ -58,8 +64,6 @@ namespace ToolKit
             FreeLibrary((HINSTANCE)reg->m_module);
           }
         }
-
-        reg->m_lastWriteTime = created;
       }
     }
     else
@@ -85,6 +89,7 @@ namespace ToolKit
         reg->m_plugin->Init(Main::GetInstance());
         reg->m_loaded = true;
         reg->m_file = dllName;
+        reg->m_lastWriteTime = GetWriteTime(dllName);
         return true;
       }
       else 
