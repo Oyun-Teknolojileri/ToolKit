@@ -30,8 +30,8 @@ include_directories(
 	"${CMAKE_SOURCE_DIR}"
 )
 
-set(SOURCE GameApp.cpp PlayerController.cpp EnemyController.cpp GameUtil.cpp MainUI.h)
-set(HEADERS GameApp.h PlayerController.h EnemyController.h GameUtil.h MainUI.cpp)
+set(SOURCE App.cpp)
+set(HEADERS App.h)
 
 set(OUTDIR "${CMAKE_SOURCE_DIR}/Bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${OUTDIR})
