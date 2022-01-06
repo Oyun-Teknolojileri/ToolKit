@@ -1030,6 +1030,11 @@ namespace ToolKit
     {
       if (GamePlugin* plugin = GetPluginManager()->GetGamePlugin())
       {
+        if (plugin->m_quit)
+        {
+          SetGameMod(GameMod::Stop);
+        }
+
         if (m_gameMod != GameMod::Stop)
         {
           m_playWindow->SetVisibility(m_runWindowed);

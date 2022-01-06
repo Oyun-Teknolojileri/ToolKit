@@ -32,6 +32,9 @@ namespace ToolKit
   public:
     virtual void Frame(float deltaTime, class Viewport* viewport) = 0;
     PluginType GetType() { return PluginType::Game; }
+
+  public:
+    bool m_quit = false; // Set this flag true to stop gameplay.
   };
 
 }
