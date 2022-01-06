@@ -1,14 +1,17 @@
-message("Hot Reloading !")
+#make temp dir
+if(NOT EXISTS ${tmp})
+  file(MAKE_DIRECTORY ${tmp})
+endif()
 
-string(RANDOM LENGTH 5 fukusima)
-message(${fukusima})
+#random name for old dll & pdb
+string(RANDOM LENGTH 5 rnd)
 
 #try removing current file.
 if(EXISTS ${dll})
   file(REMOVE ${dll})
   if(EXISTS ${dll})
-    #or rename it.
-    file(RENAME ${dll} "${fukusima}x")
+    #or rename - move it.
+    file(RENAME ${dll} "${tmp}/${rnd}.dll")
   endif()  
 endif()
 
@@ -16,6 +19,6 @@ endif()
 if(EXISTS ${pdb})
   file(REMOVE ${pdb})
   if(EXISTS ${pdb})
-    file(RENAME ${pdb} "${fukusima}y")
+    file(RENAME ${pdb} "${tmp}/${rnd}.pdb")
   endif()  
 endif()

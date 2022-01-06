@@ -303,9 +303,17 @@ namespace ToolKit
       // Create project files.
       String codePath = ConcatPaths({ fullPath, "Codes" });
       std::filesystem::create_directories(codePath);
-      String source[3] = { "../Template/App.h", "../Template/App.cpp", "../Template/CMakeLists.txt" };
+      
+      constexpr int count = 4;
+      String source[count] = 
+      { 
+        "../Template/App.h",
+        "../Template/App.cpp",
+        "../Template/CMakeLists.txt",
+        "../CMakeHotReload.cmake"
+      };
 
-      for (int i = 0; i < 3; i++)
+      for (int i = 0; i < count; i++)
       {
         std::filesystem::copy
         (

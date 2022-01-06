@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
-set(PROJECT_NAME "ThiefGo" CACHE STRING "What is the project name ?")
-set(TOOLKIT_DIR "C:/Users/afrai/source/repos/ToolKit" CACHE FILEPATH "Where is the ToolKit source directory ?")
+set(PROJECT_NAME "__projectname__" CACHE STRING "What is the project name ?")
+set(TOOLKIT_DIR "__tkdir__" CACHE FILEPATH "Where is the ToolKit source directory ?")
 
 project (${PROJECT_NAME})
 
@@ -33,8 +33,9 @@ include_directories(
 set(SOURCE GameApp.cpp PlayerController.cpp EnemyController.cpp GameUtil.cpp MainUI.h)
 set(HEADERS GameApp.h PlayerController.h EnemyController.h GameUtil.h MainUI.cpp)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/Bin")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/Bin")
+set(OUTDIR "${CMAKE_SOURCE_DIR}/Bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${OUTDIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${OUTDIR})
 
 add_library(${PROJECT_NAME} SHARED  ${SOURCE} ${HEADERS})
 
@@ -61,6 +62,6 @@ target_link_libraries(${PROJECT_NAME} optimized ToolKit)
 target_link_libraries(${PROJECT_NAME} glew32 OpenGL32 OpenAL32)
 
 #For hotreload rename the previous output
-set(dll $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
-set(pdb $<SHELL_PATH:$<TARGET_PDB_FILE:${PROJECT_NAME}>>)
-add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -Ddll=${dll} -Dpdb=${pdb} -P ${CMAKE_SOURCE_DIR}/CMakeHotReload.cmake)
+set(DLL $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
+set(PDB $<SHELL_PATH:$<TARGET_PDB_FILE:${PROJECT_NAME}>>)
+add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -Ddll=${DLL} -Dpdb=${PDB} -Dtmp="${OUTDIR}/tmp" -P "${CMAKE_SOURCE_DIR}/CMakeHotReload.cmake")
