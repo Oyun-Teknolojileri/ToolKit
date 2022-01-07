@@ -799,11 +799,7 @@ namespace ToolKit
       ScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
       scene->Load();
       scene->Init(false);
-
       m_scene->Merge(scene);
-
-      scene->RemoveAllEntities();
-      GetSceneManager()->Remove(scene->m_file);
     }
 
     void App::ApplyProjectSettings(bool setDefaults)

@@ -113,6 +113,9 @@ namespace ToolKit
 
       AddEntity(ntt); // Insert into this scene.
     }
+
+    other->RemoveAllEntities();
+    GetSceneManager()->Remove(other->m_file);
   }
 
   Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList) const
@@ -261,9 +264,15 @@ namespace ToolKit
     EntityRawPtrArray arrayByTag;
     for (Entity* e : m_entities)
     {
-      if (e->m_tag == tag)
+      StringArray tokens;
+      Split(e->m_tag, ".", tokens);
+
+      for (const String& token : tokens)
       {
-        arrayByTag.push_back(e);
+        if (token == tag)
+        {
+          arrayByTag.push_back(e);
+        }
       }
     }
 

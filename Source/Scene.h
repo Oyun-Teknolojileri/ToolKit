@@ -25,7 +25,7 @@ namespace ToolKit
     virtual void Save(bool onlyIfDirty) override;
     virtual void Init(bool flushClientSideArray = true) override;
     virtual void UnInit() override;
-    virtual void Merge(ScenePtr other);
+    virtual void Merge(ScenePtr other); // Merges entities from the other scene and wipeouts the other scene.
 
     // Scene queries.
     PickData PickObject(Ray ray, const EntityIdArray& ignoreList = EntityIdArray()) const;
