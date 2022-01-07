@@ -487,6 +487,7 @@ namespace ToolKit
       if (ImGui::BeginMenu("Viewport"))
       {
         handleMultiWindowFn(Window::Type::Viewport);
+        handleMultiWindowFn(Window::Type::Viewport2d);
 
         if (ImGui::MenuItem("Add Viewport", "Alt+V"))
         {
