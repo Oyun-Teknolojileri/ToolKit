@@ -257,6 +257,7 @@ namespace ToolKit
               view.Refresh();
             }
           }
+          ImGui::CloseCurrentPopup();
         }
 
         ImGui::EndPopup();
