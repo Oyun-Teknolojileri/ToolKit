@@ -800,11 +800,10 @@ namespace ToolKit
       scene->Load();
       scene->Init(false);
 
-      EntityRawPtrArray newNtts = scene->GetEntities();
-      for (Entity* e : newNtts)
-      {
-        g_app->m_scene->AddEntity(e);
-      }
+      m_scene->Merge(scene);
+
+      scene->RemoveAllEntities();
+      GetSceneManager()->Remove(scene->m_file);
     }
 
     void App::ApplyProjectSettings(bool setDefaults)

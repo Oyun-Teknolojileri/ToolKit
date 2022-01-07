@@ -101,6 +101,20 @@ namespace ToolKit
     Destroy(false);
   }
 
+  void Scene::Merge(ScenePtr other)
+  {
+    Entity lastId;
+    const EntityRawPtrArray& entities = other->GetEntities();
+    for (Entity* ntt : entities)
+    {
+      // Update ids to prevent collision.
+      ntt->m_id += lastId.m_id;
+      ntt->_parentId += lastId.m_id;
+
+      AddEntity(ntt); // Insert into this scene.
+    }
+  }
+
   Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList) const
   {
     PickData pd;
@@ -230,6 +244,11 @@ namespace ToolKit
     {
       RemoveEntity(ntt->m_id);
     }
+  }
+
+  void Scene::RemoveAllEntities()
+  {
+    m_entities.clear();
   }
 
   const EntityRawPtrArray& Scene::GetEntities() const

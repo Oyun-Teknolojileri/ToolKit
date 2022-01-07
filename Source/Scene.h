@@ -25,6 +25,7 @@ namespace ToolKit
     virtual void Save(bool onlyIfDirty) override;
     virtual void Init(bool flushClientSideArray = true) override;
     virtual void UnInit() override;
+    virtual void Merge(ScenePtr other);
 
     // Scene queries.
     PickData PickObject(Ray ray, const EntityIdArray& ignoreList = EntityIdArray()) const;
@@ -39,6 +40,7 @@ namespace ToolKit
 
     virtual Entity* RemoveEntity(EntityId id);
     virtual void RemoveEntity(const EntityRawPtrArray& entities);
+    virtual void RemoveAllEntities();
     virtual void Destroy(bool removeResources);
 
     // Serialization.
