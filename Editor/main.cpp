@@ -204,8 +204,29 @@ namespace ToolKit
       {
         switch (e.key.keysym.sym)
         {
+        case SDLK_F5:
+          if
+          (
+            g_app->m_gameMod == App::GameMod::Playing ||
+            g_app->m_gameMod == App::GameMod::Paused
+          )
+          {
+            g_app->SetGameMod(App::GameMod::Stop);
+          }
+          else
+          {
+            g_app->SetGameMod(App::GameMod::Playing);
+          }
+          break;
         case SDLK_ESCAPE:
-          g_app->OnQuit();
+          if
+          (
+            g_app->m_gameMod != App::GameMod::Playing &&
+            g_app->m_gameMod != App::GameMod::Paused
+          )
+          {
+            g_app->OnQuit();
+          }
           break;
         case SDLK_s:
           if (SDL_GetModState() & KMOD_LCTRL)
