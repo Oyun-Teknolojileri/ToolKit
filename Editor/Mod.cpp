@@ -823,8 +823,24 @@ namespace ToolKit
         return NullSignal;
       }
 
+      // Gather the selection hierarchy.
       EntityRawPtrArray deleteList;
       g_app->m_scene->GetSelectedEntities(deleteList);
+
+      EntityRawPtrArray roots;
+      GetRootEntities(deleteList, roots);
+
+      deleteList.clear();
+      for (Entity* e : roots)
+      {
+        // Gather hierarchy from parent to child.
+        deleteList.push_back(e);
+        GetChildren(e, deleteList);
+      }
+
+      // Revert to recover hierarchies.
+      std::reverse(deleteList.begin(), deleteList.end());
+
       if (!deleteList.empty())
       {
         if (deleteList.size() > 1)

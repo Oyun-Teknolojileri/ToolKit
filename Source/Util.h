@@ -66,7 +66,7 @@ namespace ToolKit
   TK_API bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   TK_API void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots);
   TK_API void GetParents(const Entity* ntt, EntityRawPtrArray& parents);
-  TK_API void GetChildren(const Entity* ntt, EntityRawPtrArray& children);
+  TK_API void GetChildren(const Entity* ntt, EntityRawPtrArray& children); // Gather hiearchy from parent (indx 0) to child (indx end). Revert the array for child to parent.
   TK_API Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies); // copies: First one is the copy root, fallowings are attached children.
   TK_API Entity* DeepInstantiate(Entity* root, EntityRawPtrArray& instances);
 
