@@ -3,6 +3,7 @@
 #include "GlobalDef.h"
 #include "Mod.h"
 #include "Util.h"
+#include "FolderWindow.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -239,6 +240,28 @@ namespace ToolKit
       const String sId = "##" + std::to_string(ntt->m_id);
       bool isOpen = ImGui::TreeNodeEx(sId.c_str(), flags);
       
+      if (ImGui::BeginPopupContextItem())
+      {
+        if (ImGui::Button("SaveAsPrefab"))
+        {
+          GetSceneManager()->m_currentScene->SavePrefab(ntt);
+          if (FolderWindow* browser = g_app->GetAssetBrowser())
+          {
+            String folderPath, fullPath = PrefabPath(""); 
+            DecomposePath(fullPath, &folderPath, nullptr, nullptr);
+
+            int indx = browser->Exist(folderPath);
+            if (indx != -1)
+            {
+              FolderView& view = browser->GetView(indx);
+              view.Refresh();
+            }
+          }
+        }
+
+        ImGui::EndPopup();
+      }
+
       if (focusToItem)
       {
         ImGui::SetScrollHereY();

@@ -38,6 +38,7 @@ namespace ToolKit
       void Iterate();
       int Exist(const String& file);
       void ShowContextMenu(DirectoryEntry* entry = nullptr);
+      void Refresh();
 
     protected:
       void ShowContextForMaterial(DirectoryEntry* entry);

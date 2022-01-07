@@ -42,6 +42,7 @@ namespace ToolKit
     virtual void RemoveEntity(const EntityRawPtrArray& entities);
     virtual void RemoveAllEntities();
     virtual void Destroy(bool removeResources);
+    virtual void SavePrefab(Entity* entity);
 
     // Serialization.
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;

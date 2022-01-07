@@ -303,6 +303,27 @@ namespace ToolKit
     m_initiated = false;
   }
 
+  void Scene::SavePrefab(Entity* entity)
+  {
+    // Assign a default node.
+    Node* prevNode = entity->m_node;
+    entity->m_node = new Node(); 
+    entity->m_node->m_children = prevNode->m_children;
+
+    // Construct prefab.
+    Scene prefab;
+    prefab.AddEntity(entity);
+    GetChildren(entity, prefab.m_entities);
+    prefab.m_file = PrefabPath(entity->m_name + SCENE);
+    prefab.Save(false);
+    prefab.m_entities.clear();
+
+    // Restore the old node.
+    entity->m_node->m_children.clear();
+    SafeDel(entity->m_node);
+    entity->m_node = prevNode;
+  }
+
   void Scene::CopyTo(Resource* other)
   {
     Resource::CopyTo(other);

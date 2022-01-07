@@ -89,5 +89,6 @@ namespace ToolKit
   TK_API String ShaderPath(const String& file, bool def = false);
   TK_API String MaterialPath(const String& file, bool def = false);
   TK_API String ScenePath(const String& file, bool def = false);
+  TK_API String PrefabPath(const String& file, bool def = false);
 
 }

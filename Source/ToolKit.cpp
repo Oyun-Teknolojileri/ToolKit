@@ -293,4 +293,9 @@ namespace ToolKit
     return ProcessPath(file, "Scenes", def);
   }
 
+  String PrefabPath(const String& file, bool def)
+  {
+    return ProcessPath(file, "Prefabs", def);
+  }
+
 }

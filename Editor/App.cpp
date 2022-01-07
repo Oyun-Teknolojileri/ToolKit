@@ -296,6 +296,7 @@ namespace ToolKit
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Materials" }));
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Meshes" }));
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Scenes" }));
+      std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Prefabs" }));
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Shaders" }));
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Sprites" }));
       std::filesystem::create_directories(ConcatPaths({ fullPath, "Resources", "Textures" }));

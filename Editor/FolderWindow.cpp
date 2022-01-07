@@ -480,6 +480,11 @@ namespace ToolKit
       }
     }
 
+    void FolderView::Refresh()
+    {
+      m_dirty = true;
+    }
+
     void FolderView::ShowContextForMaterial(DirectoryEntry* entry)
     {
       auto menuItemsFn = [entry, this](std::vector<bool> show) -> void
