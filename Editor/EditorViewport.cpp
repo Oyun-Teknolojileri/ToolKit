@@ -336,13 +336,7 @@ namespace ToolKit
 
       // Render entities.
       app->m_renderer->SetRenderTarget(m_viewportImage);
-      EntityRawPtrArray ntties = app->m_scene->Filter
-      (
-        [](Entity* ntt) -> bool
-        {
-          return ntt->GetType() != EntityType::Entity_Surface;
-        }
-      );
+      EntityRawPtrArray ntties = app->m_scene->GetEntities();
 
       for (Entity* ntt : ntties)
       {

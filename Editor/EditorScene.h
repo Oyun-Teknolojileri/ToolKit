@@ -15,9 +15,6 @@ namespace ToolKit
       EditorScene(const String& file);
       virtual ~EditorScene();
 
-      // Scene overrides.
-      virtual void AddEntity(Entity* entity) override;
-
       // Selection operations.
       bool IsSelected(EntityId id) const;
       void RemoveFromSelection(EntityId id);
@@ -34,7 +31,6 @@ namespace ToolKit
       bool IsMaterialInUse(const MaterialPtr& material) const;
       bool IsMeshInUse(const MeshPtr& mesh) const;
       virtual void Save(bool onlyIfDirty) override;
-      virtual void Load() override;
 
       // Entity operations.
       virtual Entity* RemoveEntity(EntityId id) override;
@@ -48,7 +44,6 @@ namespace ToolKit
 
     public:
       bool m_newScene; // Indicates if this is created via new scene. That is not saved on the disk.
-      EntityRawPtrArray m_fixedLayerNodes; // Using entity nodes to group entities.
 
     private:
       EntityIdArray m_selectedEntities;

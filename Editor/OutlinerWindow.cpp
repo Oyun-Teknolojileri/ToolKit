@@ -251,14 +251,7 @@ namespace ToolKit
       EntityType eType = ntt->GetType();
       if (eType == EntityType::Entity_Node)
       {
-        if (ntt->m_id == g_2dLayerId || ntt->m_id == g_3dLayerId)
-        {
-          icon = UI::m_collectionIcon;
-        }
-        else
-        {
-          icon = UI::m_arrowsIcon;
-        }
+        icon = UI::m_arrowsIcon;
       }
 
       if (icon)

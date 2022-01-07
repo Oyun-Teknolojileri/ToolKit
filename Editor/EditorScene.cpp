@@ -11,20 +11,9 @@ namespace ToolKit
   namespace Editor
   {
 
-    const EntityId FixedLayerIds[2] = { g_3dLayerId, g_2dLayerId };
-    const String FixedLayerNames[2] = { g_3dLayerStr, g_2dLayerStr };
-
     EditorScene::EditorScene()
     {
       m_newScene = true;
-      m_fixedLayerNodes.reserve(2);
-      for (int i = 0; i < 2; i++)
-      {
-        EntityNode* layerNode = new EntityNode(FixedLayerNames[i]);
-        layerNode->m_id = FixedLayerIds[i];
-        m_fixedLayerNodes.push_back(layerNode);
-        AddEntity(layerNode);
-      }
     }
 
     EditorScene::EditorScene(const String& file)
@@ -36,51 +25,6 @@ namespace ToolKit
 
     EditorScene::~EditorScene()
     {
-    }
-
-    void EditorScene::AddEntity(Entity* entity)
-    {
-      auto isFixedLayerFn = [](Entity* entity) -> bool
-      {
-        return entity->m_id == FixedLayerIds[0] || entity->m_id == FixedLayerIds[1];
-      };
-
-      // Make layer assignment.
-      if 
-      (
-        entity->m_node->m_parent == nullptr &&
-        !isFixedLayerFn(entity)
-      )
-      {
-        int layerIndex = 0;
-        if (entity->GetType() == EntityType::Entity_Surface)
-        {
-          layerIndex = 1;
-          m_fixedLayerNodes[1]->m_node->AddChild(entity->m_node);
-        }
-        else if (entity->GetType() == EntityType::Entity_Node)
-        {
-          if (EditorViewport* vp = g_app->GetActiveViewport())
-          {
-            if (vp->GetType() == Window::Type::Viewport2d)
-            {
-              layerIndex = 1;
-            }
-            else
-            {
-              layerIndex = 0;
-            }
-          }
-        }
-        else
-        {
-          layerIndex = 0;
-        }
-
-        m_fixedLayerNodes[layerIndex]->m_node->AddChild(entity->m_node);
-      }
-
-      Scene::AddEntity(entity);
     }
 
     bool EditorScene::IsSelected(EntityId id) const
@@ -266,34 +210,6 @@ namespace ToolKit
       m_newScene = false;
     }
 
-    void EditorScene::Load()
-    {
-      if (m_loaded)
-      {
-        return;
-      }
-
-      for (int i = 0; i < 2; i++)
-      {
-        RemoveEntity(FixedLayerIds[i]);
-      }
-
-      Scene::Load();
-
-      for (int i = 0; i < 2; i++)
-      {
-        if (Entity* node = GetEntity(FixedLayerIds[i]))
-        {
-          SafeDel(m_fixedLayerNodes[i]);
-          m_fixedLayerNodes[i] = node;
-        }
-        else
-        {
-          AddEntity(m_fixedLayerNodes[i]);
-        }
-      }
-    }
-
     Entity* EditorScene::RemoveEntity(EntityId id)
     {
       Entity* removed = nullptr;
@@ -308,7 +224,6 @@ namespace ToolKit
     void EditorScene::Destroy(bool removeResources)
     {
       Scene::Destroy(removeResources);
-      m_fixedLayerNodes = { nullptr, nullptr };
       m_selectedEntities.clear();
     }
 
@@ -337,39 +252,8 @@ namespace ToolKit
     {
       // Clear fixed layers.
       EditorScene* cpy = static_cast<EditorScene*> (other);
-      assert(cpy->m_entities.size() == 2 && "Update default layers.");
-
-      for (int i = 0; i < 2; i++)
-      {
-        delete cpy->m_entities[i];
-      }
-      cpy->m_entities.clear();
-      cpy->m_fixedLayerNodes.clear();
-
-      // Copy.
       Scene::CopyTo(cpy);
       cpy->m_newScene = true;
-
-      // Update fixed layers.
-      cpy->m_fixedLayerNodes = cpy->Filter
-      (
-        [](Entity* e) -> bool
-        {
-          if (e->m_name == g_2dLayerStr)
-          {
-            e->m_id = g_2dLayerId;
-            return true;
-          }
-
-          if (e->m_name == g_3dLayerStr)
-          {
-            e->m_id = g_3dLayerId;
-            return true;
-          }
-
-          return false;
-        }
-      );
     }
 
   }
