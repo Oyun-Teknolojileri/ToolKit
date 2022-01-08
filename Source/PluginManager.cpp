@@ -158,7 +158,7 @@ namespace ToolKit
 
     static char buff[2048];
     vsprintf(buff, msg, args);
-    m_reporterFn(msg);
+    m_reporterFn(buff);
 
     va_end(args);
   }
