@@ -161,7 +161,6 @@ namespace ToolKit
 
     private:
       bool m_onNewScene = false;
-      EditorScenePtr m_swapScene;
     };
 
     extern void DebugMessage(const String& msg);

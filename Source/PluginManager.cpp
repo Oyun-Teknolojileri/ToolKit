@@ -142,7 +142,7 @@ namespace ToolKit
 
     /*
     * Just destroy the plugin.
-    * Sinces may create objects, upon free,
+    * Scenes may create objects, upon free,
     * they can leave dangling pointers.
     * To be on the safe side, unload every module on exit.
     */
