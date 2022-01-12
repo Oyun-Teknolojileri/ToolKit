@@ -35,6 +35,7 @@ namespace ToolKit
     Entity* GetEntity(EntityId id) const;
     virtual void AddEntity(Entity* entity);
     const EntityRawPtrArray& GetEntities() const;
+    Entity* GetFirstEntityByName(const String& name);
     EntityRawPtrArray GetByTag(const String& tag);
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
 

@@ -259,6 +259,18 @@ namespace ToolKit
     return m_entities;
   }
 
+  Entity* Scene::GetFirstEntityByName(const String& name)
+  {
+    for (Entity* e : m_entities)
+    {
+      if (e->m_name == name)
+      {
+        return e;
+      }
+    }
+    return nullptr;
+  }
+
   EntityRawPtrArray Scene::GetByTag(const String& tag)
   {
     EntityRawPtrArray arrayByTag;
