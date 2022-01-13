@@ -32,7 +32,9 @@ namespace ToolKit
       static ImGuiTreeNodeFlags baseFlags
         = ImGuiTreeNodeFlags_OpenOnArrow
         | ImGuiTreeNodeFlags_OpenOnDoubleClick
-        | ImGuiTreeNodeFlags_SpanAvailWidth;
+        | ImGuiTreeNodeFlags_SpanAvailWidth
+        | ImGuiTreeNodeFlags_AllowItemOverlap
+        | ImGuiTreeNodeFlags_FramePadding;
 
       ImGuiTreeNodeFlags nodeFlags = baseFlags;
       if (g_app->m_scene->IsSelected(e->m_id))
@@ -286,6 +288,26 @@ namespace ToolKit
 
       ImGui::SameLine();
       ImGui::Text(ntt->m_name.c_str());
+      
+      // Hiearchy visibility.
+      if (eType == EntityType::Entity_Node)
+      {
+        float offset = ImGui::GetContentRegionAvailWidth() - 20.0f;
+        ImGui::SameLine(offset);
+        icon = ntt->m_visible ? UI::m_visibleIcon : UI::m_invisibleIcon;
+
+        // Texture only toggle button.
+        ImGui::PushID(ntt->m_id);
+        ImGui::PushStyleColor(ImGuiCol_Button, Vec4());
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Vec4());
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, Vec4());
+        if (ImGui::ImageButton(Convert2ImGuiTexture(icon), ImVec2(15.0f, 15.0f)))
+        {
+          ntt->SetVisibility(!ntt->m_visible, true);
+        }
+        ImGui::PopStyleColor(3);
+        ImGui::PopID();
+      }
 
       return isOpen;
     }

@@ -42,6 +42,7 @@ namespace ToolKit
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
     virtual void RemoveResources();
+    void SetVisibility(bool vis, bool deep);
 
     static Entity* CreateByType(EntityType t);
 
@@ -54,6 +55,7 @@ namespace ToolKit
     EntityId m_id;
     String m_name;
     String m_tag;
+    bool m_visible;
 
     // Internal use only, Helper ID for entity deserialization.
     EntityId _parentId;

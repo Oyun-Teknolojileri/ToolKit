@@ -180,6 +180,8 @@ namespace ToolKit
       static TexturePtr m_collectionIcon;
       static TexturePtr m_arrowsIcon;
       static TexturePtr m_lockIcon;
+      static TexturePtr m_visibleIcon;
+      static TexturePtr m_invisibleIcon;
     };
   }
 }

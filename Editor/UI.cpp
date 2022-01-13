@@ -63,6 +63,8 @@ namespace ToolKit
     TexturePtr UI::m_collectionIcon;
     TexturePtr UI::m_arrowsIcon;
     TexturePtr UI::m_lockIcon;
+    TexturePtr UI::m_visibleIcon;
+    TexturePtr UI::m_invisibleIcon;
 
     void UI::Init()
     {
@@ -213,6 +215,10 @@ namespace ToolKit
       m_arrowsIcon->Init();
       m_lockIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/locked.png", true));
       m_lockIcon->Init();
+      m_visibleIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/visible.png", true));
+      m_visibleIcon->Init();
+      m_invisibleIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/invisible.png", true));
+      m_invisibleIcon->Init();
     }
 
     void UI::InitTheme()

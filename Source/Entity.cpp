@@ -18,6 +18,7 @@ namespace ToolKit
     m_node->m_entity = this;
     m_id = m_lastId++;
     m_name = "Entity_" + std::to_string(m_id);
+    m_visible = true;
     _parentId = 0;
   }
 
@@ -194,6 +195,20 @@ namespace ToolKit
   void Entity::RemoveResources()
   {
     assert(false && "Not implemented");
+  }
+
+  void Entity::SetVisibility(bool vis, bool deep)
+  {
+    m_visible = vis;
+    if (deep)
+    {
+      EntityRawPtrArray children;
+      GetChildren(this, children);
+      for (Entity* c : children)
+      {
+        c->SetVisibility(vis, true);
+      }
+    }
   }
 
 }
