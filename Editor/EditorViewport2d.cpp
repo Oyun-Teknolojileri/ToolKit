@@ -153,7 +153,7 @@ namespace ToolKit
 
       for (Entity* ntt : surfaces)
       {
-        if (ntt->IsDrawable())
+        if (ntt->IsDrawable() && ntt->m_visible)
         {
           app->m_renderer->Render
           (

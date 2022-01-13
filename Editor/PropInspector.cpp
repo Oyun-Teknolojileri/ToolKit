@@ -111,6 +111,7 @@ namespace ToolKit
       {
         ImGui::InputText("Name", &m_entity->m_name);
         ImGui::InputText("Tag", &m_entity->m_tag);
+        ImGui::Checkbox("Visible", &m_entity->m_visible);
       }
 
       if (ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen))
