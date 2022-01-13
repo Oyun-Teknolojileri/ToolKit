@@ -39,7 +39,7 @@ namespace ToolKit
     if (XmlNode* container = parent->first_node("renderState"))
     {
       ReadAttr(container, "cullMode", *(int*)&cullMode);
-      ReadAttr(container, "depthTestEnabled", *(int*)&depthTestEnabled);
+      ReadAttr(container, "depthTest", *(int*)&depthTestEnabled);
       ReadAttr(container, "blendFunction", *(int*)&blendFunction);
       ReadAttr(container, "drawType", *(int*)&drawType);
       ReadAttr(container, "vertexLayout", *(int*)&vertexLayout);
