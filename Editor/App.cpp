@@ -87,6 +87,7 @@ namespace ToolKit
       
       m_workspace.Init();
       m_scene = std::make_shared<EditorScene>(ScenePath("New Scene" + SCENE));
+      m_scene->m_newScene = true;
 
       ApplyProjectSettings(m_onNewScene);
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
@@ -311,7 +312,7 @@ namespace ToolKit
         "../Template/App.h",
         "../Template/App.cpp",
         "../Template/CMakeLists.txt",
-        "../CMakeHotReload.cmake"
+        "../Template/CMakeHotReload.cmake"
       };
 
       for (int i = 0; i < count; i++)
@@ -1120,7 +1121,7 @@ namespace ToolKit
       String scene = m_workspace.GetActiveProject().scene;
       if (!scene.empty())
       {
-        String fullPath = ScenePath(scene + SCENE);
+        String fullPath = ScenePath(scene);
         OpenScene(fullPath);
       }
     }

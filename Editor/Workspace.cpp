@@ -194,9 +194,15 @@ namespace ToolKit
         WriteAttr(setNode, lclDoc.get(), "name", m_activeProject.name);
         settings->append_node(setNode);
 
-        if (!m_app->m_scene->m_newScene)
+        if (GetSceneManager()->Exist(m_app->m_scene->m_file))
         {
-          WriteAttr(setNode, lclDoc.get(), "scene", m_app->m_scene->m_name);
+          String file = m_app->m_scene->m_file;
+          String prefabPath = PrefabPath(m_app->m_scene->m_name + SCENE);
+          if (file.find(prefabPath) == String::npos) // Don't save prefabs as current scene.
+          {
+            String scenePath = GetRelativeResourcePath(m_app->m_scene->m_file);
+            WriteAttr(setNode, lclDoc.get(), "scene", scenePath);
+          }
         }
 
         std::string xml;

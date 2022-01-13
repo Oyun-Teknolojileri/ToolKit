@@ -326,7 +326,9 @@ namespace ToolKit
     Scene prefab;
     prefab.AddEntity(entity);
     GetChildren(entity, prefab.m_entities);
-    prefab.m_file = PrefabPath(entity->m_name + SCENE);
+    String name = entity->m_name + SCENE;
+    prefab.m_file = PrefabPath(name);
+    prefab.m_name = name;
     prefab.Save(false);
     prefab.m_entities.clear();
 
