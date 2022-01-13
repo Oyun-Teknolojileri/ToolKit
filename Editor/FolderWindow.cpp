@@ -194,7 +194,9 @@ namespace ToolKit
         visCheck = &m_visible;
       }
 
-      if (ImGui::BeginTabItem(m_folder.c_str(), visCheck))
+      ImGuiTabItemFlags flags = m_activateNext ? ImGuiTabItemFlags_SetSelected : 0;
+      m_activateNext = false;
+      if (ImGui::BeginTabItem(m_folder.c_str(), visCheck, flags))
       {
         if (m_dirty)
         {
@@ -352,7 +354,9 @@ namespace ToolKit
                     }
                     else
                     {
-                      m_parent->GetView(indx).m_visible = true;
+                      FolderView& view = m_parent->GetView(indx);
+                      view.m_visible = true;
+                      view.m_activateNext = true;
                     }
                   }
                 }

@@ -57,6 +57,7 @@ namespace ToolKit
       FolderWindow* m_parent = nullptr;
       String m_path;
       bool m_dirty = false;
+      bool m_activateNext = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
       ImGuiTextFilter m_filter;
     };
