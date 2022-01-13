@@ -140,7 +140,7 @@ namespace ToolKit
 
     void OutlinerWindow::Show()
     {
-      ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 4.0f);
+      ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 6.0f);
 
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
