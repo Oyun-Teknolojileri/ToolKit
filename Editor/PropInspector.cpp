@@ -408,6 +408,13 @@ namespace ToolKit
             entry->m_dirty = true;
           }
 
+          bool depthTest = entry->GetRenderState()->depthTestEnabled;
+          if (ImGui::Checkbox("Enable depth test", &depthTest))
+          {
+            entry->GetRenderState()->depthTestEnabled = depthTest;
+            entry->m_dirty = true;
+          }
+
           ImGui::TreePop();
         }
 
