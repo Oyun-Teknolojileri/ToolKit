@@ -74,6 +74,7 @@ namespace ToolKit
     copyTo->m_node->m_entity = copyTo;
     copyTo->m_name = m_name;
     copyTo->m_tag = m_tag;
+    copyTo->m_visible = m_visible;
 
     return copyTo;
   }
@@ -166,6 +167,7 @@ namespace ToolKit
     WriteAttr(node, doc, XmlEntityNameAttr, m_name);
     WriteAttr(node, doc, XmlEntityTagAttr, m_tag);
     WriteAttr(node, doc, XmlEntityTypeAttr, std::to_string((int)GetType()));
+    WriteAttr(node, doc, XmlEntityVisAttr, std::to_string(m_visible));
     m_node->Serialize(doc, node);
   }
 
@@ -185,6 +187,7 @@ namespace ToolKit
     ReadAttr(node, XmlParentEntityIdAttr, *(uint*)&_parentId);
     ReadAttr(node, XmlEntityNameAttr, m_name);
     ReadAttr(node, XmlEntityTagAttr, m_tag);
+    ReadAttr(node, XmlEntityVisAttr, m_visible);
 
     if (XmlNode* transformNode = node->first_node(XmlNodeElement.c_str()))
     {

@@ -136,17 +136,18 @@ namespace ToolKit
   static const EntityId NULL_ENTITY = 0;
 
   // Xml file IO.
-  const static String XmlEntityElement("E");
-  const static String XmlEntityIdAttr("i");
-  const static String XmlParentEntityIdAttr("pi");
-  const static String XmlEntityNameAttr("n");
-  const static String XmlEntityTagAttr("ta");
-  const static String XmlEntityTypeAttr("t");
-  const static String XmlSceneElement("S");
-  const static String XmlParamterElement("P");
-  const static String XmlParamterValAttr("v");
-  const static String XmlParamterTypeAttr("t");
-  const static String XmlParamBlockElement("PB");
+  static const String XmlEntityElement("E");
+  static const String XmlEntityIdAttr("i");
+  static const String XmlParentEntityIdAttr("pi");
+  static const String XmlEntityNameAttr("n");
+  static const String XmlEntityTagAttr("ta");
+  static const String XmlEntityTypeAttr("t");
+  static const String XmlEntityVisAttr("vi");
+  static const String XmlSceneElement("S");
+  static const String XmlParamterElement("P");
+  static const String XmlParamterValAttr("v");
+  static const String XmlParamterTypeAttr("t");
+  static const String XmlParamBlockElement("PB");
   static const String XmlMeshElement("M");
   static const String XmlFileAttr("f");
   static const String XmlNodeElement("N");

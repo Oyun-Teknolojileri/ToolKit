@@ -340,7 +340,7 @@ namespace ToolKit
 
       for (Entity* ntt : ntties)
       {
-        if (ntt->IsDrawable())
+        if (ntt->IsDrawable() && ntt->m_visible)
         {
           if (ntt->GetType() == EntityType::Entity_Billboard)
           {
