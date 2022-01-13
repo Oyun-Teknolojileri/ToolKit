@@ -196,8 +196,11 @@ namespace ToolKit
 
       ImGuiTabItemFlags flags = m_activateNext ? ImGuiTabItemFlags_SetSelected : 0;
       m_activateNext = false;
+      m_active = false;
       if (ImGui::BeginTabItem(m_folder.c_str(), visCheck, flags))
       {
+        m_active = true;
+
         if (m_dirty)
         {
           Iterate();
@@ -830,9 +833,13 @@ namespace ToolKit
           FolderView view(this);
           String path = e.path().u8string();
           view.SetPath(path);
+
           if (m_viewSettings.find(path) != m_viewSettings.end())
           {
-            view.m_iconSize = m_viewSettings[path];
+            ViewSettings vs = m_viewSettings[path];
+            view.m_iconSize = vs.size;
+            view.m_visible = vs.visible;
+            view.m_activateNext = vs.active;
           }
 
           view.Iterate();
@@ -908,6 +915,8 @@ namespace ToolKit
       {
         XmlNode* viewNode = doc->allocate_node(rapidxml::node_element, "FolderView");
         WriteAttr(viewNode, doc, "path", view.GetPath());
+        WriteAttr(viewNode, doc, "vis", std::to_string(view.m_visible));
+        WriteAttr(viewNode, doc, "active", std::to_string(view.m_active));
         folder->append_node(viewNode);
         XmlNode* setting = doc->allocate_node(rapidxml::node_element, "IconSize");
         WriteVec(setting, doc, view.m_iconSize);
@@ -929,12 +938,21 @@ namespace ToolKit
           {
             String path;
             ReadAttr(view, "path", path);
-            Vec2 val(50.0f);
+
+            ViewSettings vs;
+            vs.visible = false;
+            ReadAttr(view, "vis", vs.visible);
+
+            vs.active = false;
+            ReadAttr(view, "active", vs.active);
+
+            vs.size = Vec2(50.0f);
             if (XmlNode* setting = view->first_node("IconSize"))
             {
-              ReadVec(setting, val);
+              ReadVec(setting, vs.size);
             }
-            m_viewSettings[path] = val;
+
+            m_viewSettings[path] = vs;
           } while (view = view->next_sibling("FolderView"));
         }
       }

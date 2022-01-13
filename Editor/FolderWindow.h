@@ -47,7 +47,9 @@ namespace ToolKit
 
     public:
       bool m_currRoot = false; // Indicates this is a root folder (one level under Resources) and currently selected in the FolderWindow.
-      bool m_visible = false;
+      bool m_visible = false; // States if the tab is visible. Doesnt necesserly mean active, its just a tab in the FolderView.
+      bool m_active = false; // Active tab, whose content is being displayed.
+      bool m_activateNext = false; // Always false. When set to true, actives the view and becomes false again.
       bool m_onlyNativeTypes = true;
       Vec2 m_iconSize = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entiries;
@@ -57,7 +59,6 @@ namespace ToolKit
       FolderWindow* m_parent = nullptr;
       String m_path;
       bool m_dirty = false;
-      bool m_activateNext = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
       ImGuiTextFilter m_filter;
     };
@@ -81,7 +82,14 @@ namespace ToolKit
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     private:
-      std::unordered_map<String, Vec2> m_viewSettings;
+      struct ViewSettings
+      {
+        Vec2 size;
+        bool visible;
+        bool active;
+      };
+
+      std::unordered_map<String, ViewSettings> m_viewSettings;
       std::vector<FolderView> m_entiries;
       int m_activeFolder = -1;
       bool m_showStructure = true;
