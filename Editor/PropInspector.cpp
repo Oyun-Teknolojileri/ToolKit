@@ -17,7 +17,7 @@ namespace ToolKit
     // View
     //////////////////////////////////////////////////////////////////////////
     
-    void View::DropZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction)
+    void View::DropZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction, const String& dropName)
     {
       DirectoryEntry dirEnt;
       bool fileExist = g_app->GetAssetBrowser()->GetFileEntry(file, dirEnt);
@@ -43,6 +43,11 @@ namespace ToolKit
       {
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
+
+        if (!dropName.empty())
+        {
+          ImGui::Text(dropName.c_str());
+        }
 
         ImGui::Image((void*)(intptr_t)iconId, ImVec2(48.0f, 48.0f), ImVec2(0.0f, 0.0f), texCoords);
 
@@ -618,7 +623,71 @@ namespace ToolKit
           {
             entry->UpdateGeometry(true);
           }
+
+          // Show additions.
+          ShowButton();
         }
+      }
+    }
+
+    void SurfaceView::ShowButton()
+    {
+      if (Button* button = dynamic_cast<Button*> (m_entity))
+      {
+        ImGui::Text("Button");
+        ImGui::Separator();
+
+        String file = "\\button image.";
+        if (button->m_buttonImage)
+        {
+          file = button->m_buttonImage->m_file;
+        }
+
+        DropZone
+        (
+          UI::m_imageIcon->m_textureId,
+          file,
+          [this](const DirectoryEntry& dirEnt) -> void
+          {
+            if (m_entity && m_entity->IsDrawable())
+            {
+              if (Button* button = dynamic_cast<Button*> (m_entity))
+              {
+                TexturePtr texture = GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
+                texture->Init(false);
+                button->m_buttonImage = texture;
+                button->m_mesh->m_material->m_diffuseTexture = texture;
+                button->UpdateGeometry(true);
+              }
+            }
+          },
+          "Button Image"
+        );
+
+        file = "\\mouse over image.";
+        if (button->m_mouseOverImage)
+        {
+          file = button->m_mouseOverImage->m_file;
+        }
+
+        DropZone
+        (
+          UI::m_imageIcon->m_textureId,
+          file,
+          [this](const DirectoryEntry& dirEnt) -> void
+          {
+            if (m_entity && m_entity->IsDrawable())
+            {
+              if (Button* button = dynamic_cast<Button*> (m_entity))
+              {
+                TexturePtr texture = GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
+                texture->Init(false);
+                button->m_mouseOverImage = texture;
+              }
+            }
+          },
+          "Mouse Hover Image"
+        );
       }
     }
 

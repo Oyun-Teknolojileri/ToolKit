@@ -9,7 +9,7 @@ namespace ToolKit
 
   enum class EntityType
   {
-    Entity_Base,
+    Entity_Base, // Order is important. Don't change for backward compatable scene files.
     Entity_AudioSource,
     Entity_Billboard,
     Entity_Cube,

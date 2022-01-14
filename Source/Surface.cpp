@@ -221,41 +221,39 @@ namespace ToolKit
         if (ntt->GetType() == EntityType::Entity_Surface)
         {
           Surface* surface = static_cast<Surface*> (ntt);
+          bool mouseOverPrev = surface->m_mouseOver;
 
-          if (surface->m_onMouseOver)
+          if (surface->m_mouseOver = CheckMouseOver(surface, e, vp))
           {
-            if (CheckMouseOver(surface, e, vp))
+            if (surface->m_onMouseOver)
             {
               surface->m_onMouseOver(e, ntt);
             }
           }
 
-          if (surface->m_onMouseClick)
+          if (surface->m_mouseClicked = CheckMouseClick(surface, e, vp))
           {
-            if (CheckMouseClick(surface, e, vp))
+            if (surface->m_onMouseClick)
             {
               surface->m_onMouseClick(e, ntt);
             }
           }
 
-          if (surface->m_onMouseEnter)
+          if (!mouseOverPrev && surface->m_mouseOver)
           {
-            if (CheckMouseEnter(surface, e, vp))
+            if (surface->m_onMouseEnter)
             {
               surface->m_onMouseEnter(e, ntt);
             }
           }
 
-          if (surface->m_onMouseExit)
+          if (mouseOverPrev && !surface->m_mouseOver)
           {
-            if (CheckMouseExit(surface, e, vp))
+            if (surface->m_onMouseExit)
             {
               surface->m_onMouseExit(e, ntt);
             }
           }
-
-          // Update post states.
-          surface->m_mouseOverPrev = CheckMouseOver(surface, e, vp);
         }
       }
     }
@@ -289,30 +287,52 @@ namespace ToolKit
     return false;
   }
 
-  bool SurfaceObserver::CheckMouseEnter(Surface* surface, Event* e, Viewport* vp)
+  Button::Button()
   {
-    if (!surface->m_mouseOverPrev)
-    {
-      if (CheckMouseOver(surface, e, vp))
-      {
-        return true;
-      }
-    }
-
-    return false;
+    OverrideCallbacks();
   }
 
-  bool SurfaceObserver::CheckMouseExit(Surface* surface, Event* e, Viewport* vp)
+  Button::Button(const Vec2& size)
+    : Surface(size)
   {
-    if (surface->m_mouseOverPrev)
-    {
-      if (!CheckMouseOver(surface, e, vp))
-      {
-        return true;
-      }
-    }
+    OverrideCallbacks();
+  }
 
-    return false;
+  Button::Button(const TexturePtr& buttonImage, const TexturePtr& mouseOverImage)
+    : Surface(buttonImage, Vec2())
+  {
+    m_buttonImage = buttonImage;
+    m_mouseOverImage = mouseOverImage;
+    OverrideCallbacks();
+  }
+
+  Button::~Button()
+  {
+  }
+
+  void Button::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+    assert(false && "Fill this.");
+  }
+
+  void Button::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    assert(false && "Fill this.");
+  }
+
+  void Button::OverrideCallbacks()
+  {
+    m_onMouseEnterLocal = [this](Event* e, Entity* ntt) -> void
+    {
+      m_mesh->m_material->m_diffuseTexture = m_mouseOverImage;
+    };
+    m_onMouseEnter = m_onMouseEnterLocal;
+
+    m_onMouseExitLocal = [this](Event* e, Entity* ntt) -> void
+    {
+      m_mesh->m_material->m_diffuseTexture = m_buttonImage;
+    };
+    m_onMouseExit = m_onMouseExitLocal;
   }
 
 }

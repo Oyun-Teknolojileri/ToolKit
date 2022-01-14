@@ -15,7 +15,7 @@ namespace ToolKit
       virtual ~View() {}
       virtual void Show() = 0;
 
-      void DropZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction);
+      void DropZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction, const String& dropName = "");
       void DropSubZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction);
 
     public:
@@ -56,6 +56,7 @@ namespace ToolKit
       SurfaceView() { m_viewID = 4; }
       virtual ~SurfaceView() {}
       virtual void Show() override;
+      void ShowButton();
     };
 
     class PropInspector : public Window

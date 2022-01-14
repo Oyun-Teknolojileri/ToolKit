@@ -232,6 +232,13 @@ namespace ToolKit
             suface->m_mesh->Init(false);
             g_app->m_scene->AddEntity(suface);
           }
+
+          if (ImGui::MenuItem("Button"))
+          {
+            Surface* suface = new Button(Vec2(100.0f, 30.0f));
+            suface->m_mesh->Init(false);
+            g_app->m_scene->AddEntity(suface);
+          }
           ImGui::EndMenu();
         }
 

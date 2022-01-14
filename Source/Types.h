@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <functional>
 
 #ifdef _WIN32 // Windows.
   #define TK_STDCAL __stdcall
@@ -101,6 +102,10 @@ namespace ToolKit
 
   // Enitiy types.
   typedef std::shared_ptr<class Camera> CameraPtr;
+  typedef std::shared_ptr<class Surface> SurfacePtr;
+
+  // Callbacks.
+  typedef std::function<void(class Event*, class Entity*)> SurfaceEventCallback;
 
   // Vector declerations.
   static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);

@@ -5,6 +5,7 @@
 #include "MathUtil.h"
 #include "Resource.h"
 #include "Events.h"
+#include "Types.h"
 #include <vector>
 #include <functional>
 
@@ -40,13 +41,37 @@ namespace ToolKit
     Vec2 m_pivotOffset;
 
     // UI states.
-    bool m_mouseOverPrev = false;
+    bool m_mouseOver = false;
+    bool m_mouseClicked = false;
 
     // Event Callbacks.
-    std::function<void(Event*, Entity*)> m_onMouseEnter = nullptr;
-    std::function<void(Event*, Entity*)> m_onMouseExit = nullptr;
-    std::function<void(Event*, Entity*)> m_onMouseOver = nullptr;
+    SurfaceEventCallback m_onMouseEnter = nullptr;
+    SurfaceEventCallback m_onMouseExit = nullptr;
+    SurfaceEventCallback m_onMouseOver = nullptr;
     std::function<void(Event*, Entity*)> m_onMouseClick = nullptr;
+  };
+
+  class TK_API Button : public Surface
+  {
+  public:
+    Button();
+    Button(const Vec2& size);
+    Button(const TexturePtr& buttonImage, const TexturePtr& mouseOverImage);
+    virtual ~Button();
+
+    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+  public:
+    TexturePtr m_mouseOverImage;
+    TexturePtr m_buttonImage;
+
+  private:
+    void OverrideCallbacks();
+
+  protected:
+    SurfaceEventCallback m_onMouseEnterLocal;
+    SurfaceEventCallback m_onMouseExitLocal;
   };
 
   class Viewport;
@@ -59,8 +84,6 @@ namespace ToolKit
   private:
     bool CheckMouseClick(Surface* surface, Event* e, Viewport* vp);
     bool CheckMouseOver(Surface* surface, Event* e, Viewport* vp);
-    bool CheckMouseEnter(Surface* surface, Event* e, Viewport* vp);
-    bool CheckMouseExit(Surface* surface, Event* e, Viewport* vp);
 
   private:
     Entity* m_root = nullptr;
