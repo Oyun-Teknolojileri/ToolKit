@@ -570,7 +570,7 @@ namespace ToolKit
           (
             [](Entity* ntt) -> bool
             {
-              return ntt->GetType() == EntityType::Entity_Surface;
+              return ntt->IsSurfaceInstance();
             }
           );
         }
@@ -581,7 +581,7 @@ namespace ToolKit
           (
             [](Entity* ntt) -> bool
             {
-              return ntt->GetType() != EntityType::Entity_Surface;
+              return !ntt->IsSurfaceInstance();
             }
           );
         }

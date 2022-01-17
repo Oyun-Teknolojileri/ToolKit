@@ -58,7 +58,7 @@ namespace ToolKit
     Button(const Vec2& size);
     Button(const TexturePtr& buttonImage, const TexturePtr& mouseOverImage);
     virtual ~Button();
-
+    virtual EntityType GetType() const override;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 

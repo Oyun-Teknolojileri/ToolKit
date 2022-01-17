@@ -310,14 +310,69 @@ namespace ToolKit
   {
   }
 
+  EntityType Button::GetType() const
+  {
+    return EntityType::Entity_Button;
+  }
+
   void Button::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    assert(false && "Fill this.");
+    Surface::Serialize(doc, parent);
+    if (!m_mouseOverImage && !m_buttonImage)
+    {
+      return;
+    }
+
+    XmlNode* node = doc->allocate_node(rapidxml::node_element, "Button");
+    if (m_mouseOverImage)
+    {
+      String relPath = GetRelativeResourcePath(m_mouseOverImage->m_file);
+      node->append_attribute
+      (
+        doc->allocate_attribute
+        (
+          "mouseOverImage",
+          doc->allocate_string(relPath.c_str())
+        )
+      );
+    }
+
+    if (m_buttonImage)
+    {
+      String relPath = GetRelativeResourcePath(m_buttonImage->m_file);
+      node->append_attribute
+      (
+        doc->allocate_attribute
+        (
+          "buttonImage",
+          doc->allocate_string(relPath.c_str())
+        )
+      );
+    }
+
+    parent->last_node()->append_node(node);
   }
 
   void Button::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
-    assert(false && "Fill this.");
+    Surface::DeSerialize(doc, parent);
+    if (XmlNode* buttonNode = parent->first_node("Button"))
+    {
+      String image;
+      ReadAttr(buttonNode, "mouseOverImage", image);
+      if (!image.empty())
+      {
+        String path = TexturePath(image);
+        m_mouseOverImage = GetTextureManager()->Create<Texture>(path);
+      }
+
+      ReadAttr(buttonNode, "buttonImage", image);
+      if (!image.empty())
+      {
+        String path = TexturePath(image);
+        m_buttonImage = GetTextureManager()->Create<Texture>(path);
+      }
+    }
   }
 
   void Button::OverrideCallbacks()

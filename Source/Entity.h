@@ -24,7 +24,8 @@ namespace ToolKit
     Entity_Light,
     Entity_Camera,
     Entity_Directional,
-    Entity_Node
+    Entity_Node,
+    Entity_Button
   };
 
   class TK_API Entity
@@ -43,6 +44,7 @@ namespace ToolKit
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
     virtual void RemoveResources();
     void SetVisibility(bool vis, bool deep);
+    bool IsSurfaceInstance();
 
     static Entity* CreateByType(EntityType t);
 

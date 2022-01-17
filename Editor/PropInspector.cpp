@@ -496,7 +496,7 @@ namespace ToolKit
             mav->Show();
           }
 
-          if (curr->GetType() == EntityType::Entity_Surface)
+          if (curr->IsSurfaceInstance())
           {
             View* view = GetView<SurfaceView>();
             view->m_entity = curr;
@@ -579,12 +579,12 @@ namespace ToolKit
 
     void SurfaceView::Show()
     {
-      if (m_entity->GetType() != EntityType::Entity_Surface)
+      if (!m_entity->IsSurfaceInstance())
       {
         return;
       }
-      Surface* entry = static_cast<Surface*> (m_entity);
 
+      Surface* entry = static_cast<Surface*> (m_entity);
       if (ImGui::CollapsingHeader("Surface", ImGuiTreeNodeFlags_DefaultOpen))
       {
         if (ImGui::BeginTable("##SurfaceProps", 2, ImGuiTableFlags_SizingFixedSame))
@@ -632,8 +632,9 @@ namespace ToolKit
 
     void SurfaceView::ShowButton()
     {
-      if (Button* button = dynamic_cast<Button*> (m_entity))
+      if (m_entity->GetType() == EntityType::Entity_Button)
       {
+        Button* button = dynamic_cast<Button*> (m_entity);
         ImGui::Text("Button");
         ImGui::Separator();
 
@@ -651,8 +652,9 @@ namespace ToolKit
           {
             if (m_entity && m_entity->IsDrawable())
             {
-              if (Button* button = dynamic_cast<Button*> (m_entity))
+              if (m_entity->GetType() == EntityType::Entity_Button)
               {
+                Button* button = dynamic_cast<Button*> (m_entity);
                 TexturePtr texture = GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
                 texture->Init(false);
                 button->m_buttonImage = texture;
@@ -661,7 +663,7 @@ namespace ToolKit
               }
             }
           },
-          "Button Image"
+          "Button Image:"
         );
 
         file = "\\mouse over image.";
@@ -678,15 +680,16 @@ namespace ToolKit
           {
             if (m_entity && m_entity->IsDrawable())
             {
-              if (Button* button = dynamic_cast<Button*> (m_entity))
+              if (m_entity->GetType() == EntityType::Entity_Button)
               {
+                Button* button = dynamic_cast<Button*> (m_entity);
                 TexturePtr texture = GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
                 texture->Init(false);
                 button->m_mouseOverImage = texture;
               }
             }
           },
-          "Mouse Hover Image"
+          "Mouse Hover Image:"
         );
       }
     }
