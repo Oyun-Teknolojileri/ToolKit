@@ -66,12 +66,12 @@ namespace ToolKit
     TexturePtr m_mouseOverImage;
     TexturePtr m_buttonImage;
 
-  private:
-    void OverrideCallbacks();
-
-  protected:
+    // Local events.
     SurfaceEventCallback m_onMouseEnterLocal;
     SurfaceEventCallback m_onMouseExitLocal;
+
+  private:
+    void OverrideCallbacks();
   };
 
   class Viewport;

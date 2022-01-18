@@ -218,7 +218,7 @@ namespace ToolKit
       // Process events.
       for (Event* e : events)
       {
-        if (ntt->GetType() == EntityType::Entity_Surface)
+        if (ntt->IsSurfaceInstance())
         {
           Surface* surface = static_cast<Surface*> (ntt);
           bool mouseOverPrev = surface->m_mouseOver;
