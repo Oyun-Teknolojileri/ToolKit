@@ -9,7 +9,6 @@ namespace ToolKit
 
   Texture::Texture()
   {
-    m_type = ResourceType::Texture;
     m_textureId = 0;
   }
 
@@ -92,7 +91,6 @@ namespace ToolKit
   CubeMap::CubeMap()
     : Texture()
   {
-    m_type = ResourceType::CubeMap;
   }
 
   CubeMap::CubeMap(String file)
@@ -231,7 +229,6 @@ namespace ToolKit
   RenderTarget::RenderTarget()
     : Texture()
   {
-    m_type = ResourceType::RenderTarget;
   }
 
   RenderTarget::RenderTarget(uint width, uint height, const RenderTargetSettigs& settings)
@@ -347,6 +344,27 @@ namespace ToolKit
     }
 
     return false;
+  }
+
+  ResourcePtr TextureManager::CreateLocal(ResourceType type)
+  {
+    Texture* tex = nullptr;
+    switch (type)
+    {
+    case ResourceType::Texture:
+      tex = new Texture();
+      break;
+    case ResourceType::CubeMap:
+      tex = new CubeMap();
+      break;
+    case ResourceType::RenderTarget:
+      tex = new RenderTarget();
+      break;
+    default:
+      assert(false);
+      break;
+    }
+      return ResourcePtr(tex);
   }
 
 }

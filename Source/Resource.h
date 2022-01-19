@@ -7,6 +7,10 @@
 namespace ToolKit
 {
 
+#define TKResouceType(type) \
+  static ResourceType GetType() { return ResourceType::type; } \
+  ResourceType m_type = ResourceType::type;
+
   class TK_API Resource : public Serializable
   {
   public:
@@ -22,9 +26,8 @@ namespace ToolKit
     template<typename T>
     std::shared_ptr<T> Copy()
     {
-      T* cpy = new T();
-      CopyTo(cpy);
-      std::shared_ptr<T> resource = std::shared_ptr<T> (cpy);
+      std::shared_ptr<T> resource = std::make_shared<T>();
+      CopyTo(resource.get()); 
       if (ResourceManager* manager = GetResourceManager(resource->m_type))
       {
         manager->Manage(resource);

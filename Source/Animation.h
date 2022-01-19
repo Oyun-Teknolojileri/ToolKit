@@ -22,6 +22,8 @@ namespace ToolKit
   class TK_API Animation : public Resource
   {
   public:
+    TKResouceType(Animation)
+
     Animation();
     Animation(String file);
     ~Animation();
@@ -65,7 +67,7 @@ namespace ToolKit
     AnimationManager();
     virtual ~AnimationManager();
     virtual bool CanStore(ResourceType t);
-
+    virtual ResourcePtr CreateLocal(ResourceType type);
   };
 
   class TK_API AnimationPlayer

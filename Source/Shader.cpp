@@ -14,7 +14,6 @@ namespace ToolKit
 
   Shader::Shader()
   {
-    m_type = ResourceType::Shader;
   }
 
   Shader::Shader(String file)
@@ -312,6 +311,11 @@ namespace ToolKit
   bool ShaderManager::CanStore(ResourceType t)
   {
     return t == ResourceType::Shader;
+  }
+
+  ResourcePtr ShaderManager::CreateLocal(ResourceType type)
+  {
+    return ResourcePtr(new Shader());
   }
 
 }

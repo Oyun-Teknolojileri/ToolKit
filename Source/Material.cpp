@@ -12,7 +12,6 @@ namespace ToolKit
   Material::Material()
   {
     m_color = Vec3(1.0f);
-    m_type = ResourceType::Material;
   }
 
   Material::Material(String file)
@@ -323,6 +322,11 @@ namespace ToolKit
   bool MaterialManager::CanStore(ResourceType t)
   {
       return t == ResourceType::Material;
+  }
+
+  ResourcePtr MaterialManager::CreateLocal(ResourceType type)
+  {
+    return ResourcePtr(new Material());
   }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()

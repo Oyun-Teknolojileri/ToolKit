@@ -26,6 +26,7 @@ namespace ToolKit
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+    virtual void ResetCallbacks();
     void UpdateGeometry(bool byTexture); // To reflect the size & pivot changes, this function regenerates the geometry.
 
   protected:
@@ -48,7 +49,7 @@ namespace ToolKit
     SurfaceEventCallback m_onMouseEnter = nullptr;
     SurfaceEventCallback m_onMouseExit = nullptr;
     SurfaceEventCallback m_onMouseOver = nullptr;
-    std::function<void(Event*, Entity*)> m_onMouseClick = nullptr;
+    SurfaceEventCallback m_onMouseClick = nullptr;
   };
 
   class TK_API Button : public Surface
@@ -61,6 +62,7 @@ namespace ToolKit
     virtual EntityType GetType() const override;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    virtual void ResetCallbacks() override;
 
   public:
     TexturePtr m_mouseOverImage;
@@ -69,9 +71,6 @@ namespace ToolKit
     // Local events.
     SurfaceEventCallback m_onMouseEnterLocal;
     SurfaceEventCallback m_onMouseExitLocal;
-
-  private:
-    void OverrideCallbacks();
   };
 
   class Viewport;

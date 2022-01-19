@@ -10,6 +10,8 @@ namespace ToolKit
   class TK_API Material : public Resource
   {
   public:
+    TKResouceType(Material)
+
     Material();
     Material(String file);
     ~Material();
@@ -44,6 +46,7 @@ namespace ToolKit
     virtual ~MaterialManager();
     virtual void Init() override;
     virtual bool CanStore(ResourceType t);
+    virtual ResourcePtr CreateLocal(ResourceType type);
 
     MaterialPtr GetCopyOfUnlitMaterial();
     MaterialPtr GetCopyOfUnlitColorMaterial();

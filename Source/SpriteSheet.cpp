@@ -13,7 +13,6 @@ namespace ToolKit
 
   SpriteSheet::SpriteSheet()
   {
-    m_type = ResourceType::SpriteSheet;
   }
 
   SpriteSheet::SpriteSheet(String file)
@@ -219,6 +218,11 @@ namespace ToolKit
   bool SpriteSheetManager::CanStore(ResourceType t)
   {
     return t == ResourceType::SpriteSheet;
+  }
+
+  ResourcePtr SpriteSheetManager::CreateLocal(ResourceType type)
+  {
+    return ResourcePtr(new SpriteSheet());
   }
 
 }

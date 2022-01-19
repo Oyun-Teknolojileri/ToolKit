@@ -48,5 +48,14 @@ namespace ToolKit
     private:
       EntityIdArray m_selectedEntities;
     };
+
+    class EditorSceneManager : public SceneManager
+    {
+    public:
+      EditorSceneManager();
+      virtual ~EditorSceneManager();
+      virtual ResourcePtr CreateLocal(ResourceType type) override;
+    };
+
   }
 }

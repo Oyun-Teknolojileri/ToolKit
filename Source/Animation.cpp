@@ -13,7 +13,6 @@ namespace ToolKit
 
   Animation::Animation()
   {
-    m_type = ResourceType::Animation;
   }
 
   Animation::Animation(String file)
@@ -326,6 +325,11 @@ namespace ToolKit
   bool AnimationManager::CanStore(ResourceType t)
   {
     return t == ResourceType::Animation;
+  }
+
+  ResourcePtr AnimationManager::CreateLocal(ResourceType type)
+  {
+    return ResourcePtr(new Animation());
   }
 
 }

@@ -149,7 +149,6 @@ namespace ToolKit
 
   Audio::Audio()
   {
-    m_type = ResourceType::Audio;
   }
 
   Audio::Audio(String file)
@@ -209,6 +208,11 @@ namespace ToolKit
   bool AudioManager::CanStore(ResourceType t)
   {
     return t == ResourceType::Audio;
+  }
+
+  ResourcePtr AudioManager::CreateLocal(ResourceType type)
+  {
+    return ResourcePtr(new Audio());
   }
 
   AudioSource::AudioSource()

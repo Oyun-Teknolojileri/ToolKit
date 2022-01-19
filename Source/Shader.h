@@ -21,6 +21,8 @@ namespace ToolKit
   class TK_API Shader : public Resource
   {
   public:
+    TKResouceType(Shader)
+
     Shader();
     Shader(String file);
     virtual ~Shader();
@@ -63,6 +65,7 @@ namespace ToolKit
     virtual ~ShaderManager();
     virtual void Init() override;
     virtual bool CanStore(ResourceType t);
+    virtual ResourcePtr CreateLocal(ResourceType type);
   };
 
 }

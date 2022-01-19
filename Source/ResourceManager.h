@@ -23,7 +23,8 @@ namespace ToolKit
     Texture,
     CubeMap,
     RenderTarget,
-    Scene
+    Scene,
+    Skeleton
   };
 
   class TK_API ResourceManager
@@ -49,8 +50,8 @@ namespace ToolKit
           return nullptr;
         }
 
-        std::shared_ptr<T> resource = std::make_shared<T>(file);
-
+        std::shared_ptr<T> resource = std::static_pointer_cast<T> (CreateLocal(T::GetType()));
+        resource->m_file = file;
         resource->Load();
         m_storage[file] = resource;
       }
@@ -60,6 +61,7 @@ namespace ToolKit
 
     bool Exist(String file);
     ResourcePtr Remove(const String& file);
+    virtual ResourcePtr CreateLocal(ResourceType type) = 0;
 
   private:
     bool IsSane(const String& file);

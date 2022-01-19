@@ -256,5 +256,18 @@ namespace ToolKit
       cpy->m_newScene = true;
     }
 
+    EditorSceneManager::EditorSceneManager() 
+    {
+    }
+
+    EditorSceneManager::~EditorSceneManager() 
+    {
+    }
+
+    ResourcePtr EditorSceneManager::CreateLocal(ResourceType type)
+    {
+      return ResourcePtr(new EditorScene());
+    }
+
   }
 }

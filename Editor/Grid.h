@@ -8,6 +8,7 @@ namespace ToolKit
 
   namespace Editor
   {
+
     class Grid : public Drawable
     {
     public:
@@ -19,5 +20,7 @@ namespace ToolKit
       uint m_size; // m^2 size of the grid.
       MaterialPtr m_material;
     };
+
   }
+
 }

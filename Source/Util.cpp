@@ -767,6 +767,16 @@ namespace ToolKit
     return cpy;
   }
 
+  TK_API void* TKMalloc(size_t sz)
+  {
+      return malloc(sz);
+  }
+
+  TK_API void TKFree(void* m)
+  {
+    free(m);
+  }
+
   int IndexOf(Entity* ntt, const EntityRawPtrArray& entities)
   {
     EntityRawPtrArray::const_iterator it = std::find(entities.begin(), entities.end(), ntt);

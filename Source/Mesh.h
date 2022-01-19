@@ -28,6 +28,8 @@ namespace ToolKit
   class TK_API Mesh : public Resource
   {
   public:
+    TKResouceType(Mesh)
+
     Mesh();
     Mesh(String file);
     virtual ~Mesh();
@@ -82,6 +84,8 @@ namespace ToolKit
   class TK_API SkinMesh : public Mesh
   {
   public:
+    TKResouceType(SkinMesh)
+
     SkinMesh();
     SkinMesh(String file);
     ~SkinMesh();
@@ -107,6 +111,7 @@ namespace ToolKit
     MeshManager();
     virtual ~MeshManager();
     virtual bool CanStore(ResourceType t);
+    virtual ResourcePtr CreateLocal(ResourceType type);
   };
 
 }

@@ -10,7 +10,6 @@ namespace ToolKit
   Scene::Scene()
   {
     m_name = "New Scene";
-    m_type = ResourceType::Scene;
   }
 
   Scene::Scene(String file)
@@ -424,6 +423,11 @@ namespace ToolKit
   bool SceneManager::CanStore(ResourceType t)
   {
     return t == ResourceType::Scene;
+  }
+
+  ResourcePtr SceneManager::CreateLocal(ResourceType type)
+  {
+    return ResourcePtr(new Scene());
   }
 
 }

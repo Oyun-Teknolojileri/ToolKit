@@ -70,6 +70,10 @@ namespace ToolKit
   TK_API Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies); // copies: First one is the copy root, fallowings are attached children.
   TK_API Entity* DeepInstantiate(Entity* root, EntityRawPtrArray& instances);
 
+  // Memory operations.
+  TK_API void* TKMalloc(size_t sz); // Usefull to force plugin modules to allocate from main toolkit module.
+  TK_API void TKFree(void* m); // Use in combination with TKMalloc to free from main toolkit module.
+
   // Vector operations.
   TK_API int IndexOf(Entity* ntt, const EntityRawPtrArray& entities);
 

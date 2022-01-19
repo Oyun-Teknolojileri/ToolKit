@@ -123,6 +123,11 @@ namespace ToolKit
 #endif
 #endif
             g_proxy = new Main();
+
+            // Override SceneManager.
+            SafeDel(g_proxy->m_sceneManager);
+            g_proxy->m_sceneManager = new EditorSceneManager();
+
             Main::SetProxy(g_proxy);
             Main::GetInstance()->Init();
             UI::Init();

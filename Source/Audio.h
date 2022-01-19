@@ -10,6 +10,8 @@ namespace ToolKit
   class TK_API Audio : public Resource
   {
   public:
+    TKResouceType(Audio)
+
     Audio();
     Audio(String file);
     ~Audio();
@@ -30,6 +32,7 @@ namespace ToolKit
     virtual void Init() override;
     virtual void Uninit() override;
     virtual bool CanStore(ResourceType t);
+    virtual ResourcePtr CreateLocal(ResourceType type);
 
   public:
     void* m_device = nullptr;

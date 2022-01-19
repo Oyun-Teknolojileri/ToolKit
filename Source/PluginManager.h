@@ -23,13 +23,13 @@ namespace ToolKit
     ~PluginManager();
 
     // Platform dependent functions.
-    void UnInit();
     bool Load(const String& file); // Auto reloads if the dll is dirty.
-    
+    void Unload(const String& file);
+
     // No platform dependency.
     void Init();
+    void UnInit();
     PluginRegister* GetRegister(const String& file);
-    void Unload(const String& file);
     void Report(const char* msg, ...);
 
     // Shorts for game plugin.

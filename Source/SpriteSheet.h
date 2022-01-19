@@ -22,6 +22,8 @@ namespace ToolKit
   class TK_API SpriteSheet : public Resource
   {
   public:
+    TKResouceType(SpriteSheet)
+
     SpriteSheet();
     SpriteSheet(String file);
     ~SpriteSheet();
@@ -74,6 +76,7 @@ namespace ToolKit
     SpriteSheetManager();
     virtual ~SpriteSheetManager();
     virtual bool CanStore(ResourceType t);
+    virtual ResourcePtr CreateLocal(ResourceType type);
   };
 
 }

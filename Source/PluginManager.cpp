@@ -112,11 +112,6 @@ namespace ToolKit
     for (PluginRegister& reg : m_storage)
     {
       Unload(reg.m_file);
-      if (reg.m_module)
-      {
-        FreeLibrary((HINSTANCE)reg.m_module);
-      }
-      reg.m_module = nullptr;
     }
 
     m_storage.clear();
@@ -140,15 +135,16 @@ namespace ToolKit
       return;
     }
 
-    /*
-    * Just destroy the plugin.
-    * Scenes may create objects, upon free,
-    * they can leave dangling pointers.
-    * To be on the safe side, unload every module on exit.
-    */
     reg->m_plugin->Destroy();
-    reg->m_loaded = false;
     reg->m_plugin = nullptr;
+
+    if (reg->m_module)
+    {
+      FreeLibrary((HINSTANCE)reg->m_module);
+      reg->m_module = nullptr;
+    }
+
+    reg->m_loaded = false;
   }
 
   void PluginManager::Report(const char* msg, ...)

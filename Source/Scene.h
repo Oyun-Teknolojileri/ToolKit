@@ -17,6 +17,8 @@ namespace ToolKit
     };
 
   public:
+    TKResouceType(Scene)
+
     Scene();
     Scene(String file);
     virtual ~Scene();
@@ -64,6 +66,7 @@ namespace ToolKit
     virtual void Init() override;
     virtual void Uninit() override;
     virtual bool CanStore(ResourceType t);
+    virtual ResourcePtr CreateLocal(ResourceType type);
 
   public:
     ScenePtr m_currentScene;

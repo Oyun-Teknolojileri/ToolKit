@@ -122,6 +122,14 @@ namespace ToolKit
     return cpy;
   }
 
+  void Surface::ResetCallbacks()
+  {
+    m_onMouseEnter = nullptr;
+    m_onMouseExit = nullptr;
+    m_onMouseOver = nullptr;
+    m_onMouseClick = nullptr;
+  }
+
   void Surface::CreateQuat()
   {
     float width = m_size.x;
@@ -289,13 +297,13 @@ namespace ToolKit
 
   Button::Button()
   {
-    OverrideCallbacks();
+    ResetCallbacks();
   }
 
   Button::Button(const Vec2& size)
     : Surface(size)
   {
-    OverrideCallbacks();
+    ResetCallbacks();
   }
 
   Button::Button(const TexturePtr& buttonImage, const TexturePtr& mouseOverImage)
@@ -303,7 +311,7 @@ namespace ToolKit
   {
     m_buttonImage = buttonImage;
     m_mouseOverImage = mouseOverImage;
-    OverrideCallbacks();
+    ResetCallbacks();
   }
 
   Button::~Button()
@@ -375,8 +383,10 @@ namespace ToolKit
     }
   }
 
-  void Button::OverrideCallbacks()
+  void Button::ResetCallbacks()
   {
+    Surface::ResetCallbacks();
+
     m_onMouseEnterLocal = [this](Event* e, Entity* ntt) -> void
     {
       m_mesh->m_material->m_diffuseTexture = m_mouseOverImage;

@@ -12,6 +12,8 @@ namespace ToolKit
   class TK_API Texture : public Resource
   {
   public:
+    TKResouceType(Texture)
+
     Texture();
     Texture(String file);
     virtual ~Texture();
@@ -34,6 +36,8 @@ namespace ToolKit
   class TK_API CubeMap : public Texture
   {
   public:
+    TKResouceType(CubeMap)
+
     CubeMap();
     CubeMap(String file);
     ~CubeMap();
@@ -62,6 +66,8 @@ namespace ToolKit
   class TK_API RenderTarget : public Texture
   {
   public:
+    TKResouceType(RenderTarget)
+
     RenderTarget();
     RenderTarget(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
     virtual ~RenderTarget();
@@ -84,6 +90,7 @@ namespace ToolKit
     TextureManager();
     virtual ~TextureManager();
     virtual bool CanStore(ResourceType t);
+    virtual ResourcePtr CreateLocal(ResourceType type);
   };
 
 }

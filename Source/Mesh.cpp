@@ -17,7 +17,6 @@ namespace ToolKit
   Mesh::Mesh()
   {
     m_material = std::make_shared<Material>();
-    m_type = ResourceType::Mesh;
   }
 
   Mesh::Mesh(String file)
@@ -445,7 +444,6 @@ namespace ToolKit
     : Mesh()
   {
     m_skeleton = new Skeleton();
-    m_type = ResourceType::SkinMesh;
   }
 
   SkinMesh::SkinMesh(String file)
@@ -606,6 +604,24 @@ namespace ToolKit
     }
 
     return false;
+  }
+
+  ResourcePtr MeshManager::CreateLocal(ResourceType type)
+  {
+    Mesh* res = nullptr;
+    switch (type)
+    {
+    case ResourceType::Mesh:
+      res = new Mesh();
+      break;
+    case ResourceType::SkinMesh:
+      res = new SkinMesh();
+      break;
+    default:
+      assert(false);
+      break;
+    }
+    return ResourcePtr(res);
   }
 
 }
