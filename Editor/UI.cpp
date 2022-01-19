@@ -223,11 +223,14 @@ namespace ToolKit
 
     void UI::InitTheme()
     {
+      ImGui::SetColorEditOptions(ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoOptions);
+
       ImGuiStyle* style = &ImGui::GetStyle();
       style->WindowRounding = 5.3f;
       style->GrabRounding = style->FrameRounding = 2.3f;
       style->ScrollbarRounding = 5.0f;
       style->ItemSpacing.y = 6.5f;
+      style->ColorButtonPosition = ImGuiDir_Left;
 
       //style->WindowPadding = ImVec2(2.0f, 2.0f);
       style->WindowBorderSize = 0.0f;

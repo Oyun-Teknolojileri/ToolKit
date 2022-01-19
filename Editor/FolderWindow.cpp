@@ -719,6 +719,7 @@ namespace ToolKit
           ImGui::PushID("##FolderStructure");
           ImGui::BeginGroup();
 
+          ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
           ImGui::TextUnformatted("Resources");
 
           ImGui::SameLine();
@@ -764,6 +765,7 @@ namespace ToolKit
           }
           ImGui::EndChild();
           
+          ImGui::PopStyleVar();
           ImGui::EndGroup();
           ImGui::PopID();
         }

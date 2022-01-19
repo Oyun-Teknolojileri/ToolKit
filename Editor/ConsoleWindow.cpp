@@ -571,13 +571,13 @@ namespace ToolKit
 
     void ConsoleWindow::Show()
     {
-      //ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Once);
       if (ImGui::Begin(g_consoleStr.c_str(), &m_visible))
       {
         HandleStates();
 
         // Output window.
-        const float footerHeightReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+        ImGuiStyle& style = ImGui::GetStyle();
+        const float footerHeightReserve = style.ItemSpacing.y + ImGui::GetFrameHeightWithSpacing() + 2;
         ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeightReserve), false, ImGuiWindowFlags_HorizontalScrollbar);
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
         for (size_t i = 0; i < m_items.size(); i++)
@@ -632,13 +632,23 @@ namespace ToolKit
 
         ImGui::Separator();
 
+        ImGui::BeginTable("##cmd", 5, ImGuiTableFlags_SizingFixedFit);
+        ImGui::TableSetupColumn("##cmdtxt");
+        ImGui::TableSetupColumn("##cmd");
+        ImGui::TableSetupColumn("##flttxt");
+        ImGui::TableSetupColumn("##flt", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("##clr");
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+
         ImGui::Text("Command: ");
-        ImGui::SameLine();
+        ImGui::TableNextColumn();
 
         // Command window.
         static bool reclaimFocus = false;
         static char inputBuff[256];
-        float width = ImGui::GetWindowContentRegionWidth() * 0.4f;
+        float width = ImGui::GetWindowContentRegionWidth() * 0.3f;
 
         if (reclaimFocus)
         {
@@ -673,19 +683,20 @@ namespace ToolKit
           reclaimFocus = false;
         }
         ImGui::PopItemWidth();
-        ImGui::SameLine();
+        ImGui::TableNextColumn();
 
         // Search bar.
         ImGui::Text("Filter: ");
-        ImGui::SameLine();
+        ImGui::TableNextColumn();
 
-        m_filter.Draw("##Filter", width * 0.5f);
-        ImGui::SameLine();
+        m_filter.Draw("##Filter", width * 0.8f);
+        ImGui::TableNextColumn();
 
         if (ImGui::Button("Clear"))
         {
           m_items.clear();
         }
+        ImGui::EndTable();
       }
       ImGui::End();
     }
