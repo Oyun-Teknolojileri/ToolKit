@@ -11,8 +11,6 @@
   #define TK_STDCAL __stdcall
   #ifdef TK_DLL_EXPORT // Dyamic binding.
     #define TK_API __declspec(dllexport)
-  #elif TK_DLL_IMPORT
-    #define TK_API __declspec(dllimport)
   #else // Static binding.
     #define TK_API
   #endif
