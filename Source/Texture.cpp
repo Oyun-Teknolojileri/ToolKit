@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Texture.h"
+#include "ToolKit.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 #include "DebugNew.h"

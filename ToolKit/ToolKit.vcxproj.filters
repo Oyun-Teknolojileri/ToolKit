@@ -108,6 +108,9 @@
     <ClInclude Include="..\Source\Events.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\SurfaceObserver.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Animation.cpp">
@@ -192,6 +195,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\RenderState.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\SurfaceObserver.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

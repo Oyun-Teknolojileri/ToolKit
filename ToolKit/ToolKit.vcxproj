@@ -99,6 +99,7 @@
     <ClInclude Include="..\Source\Scene.h" />
     <ClInclude Include="..\Source\Serialize.h" />
     <ClInclude Include="..\Source\StateMachine.h" />
+    <ClInclude Include="..\Source\SurfaceObserver.h" />
     <ClInclude Include="..\Source\ToolKit.h" />
     <ClInclude Include="..\Source\Animation.h" />
     <ClInclude Include="..\Source\Audio.h" />
@@ -134,6 +135,7 @@
     <ClCompile Include="..\Source\ResourceManager.cpp" />
     <ClCompile Include="..\Source\Scene.cpp" />
     <ClCompile Include="..\Source\StateMachine.cpp" />
+    <ClCompile Include="..\Source\SurfaceObserver.cpp" />
     <ClCompile Include="..\Source\ToolKit.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
