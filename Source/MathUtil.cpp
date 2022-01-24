@@ -603,16 +603,40 @@ namespace ToolKit
     a = glm::normalize(a);
     b = glm::normalize(b);
 
+    Vec3 axis;
     float d = glm::dot(a, b);
-    if (glm::equal(d, 1.0f))
+    if (glm::equal<float>(d, 1.0f))
     {
-      return Quaternion(); // Vectors are aligned.
+      return Quaternion(); // Vectors are colinear.
+    }
+    else if (glm::equal<float>(d, -1.0f)) // Vectors are oposite, align them.
+    {
+      axis = Orthogonal(a);
+    }
+    else
+    {
+      axis = glm::normalize(glm::cross(a, b));
     }
 
     float rad = glm::acos(d);
-    Vec3 axis = glm::normalize(glm::cross(a, b));
-
     return glm::angleAxis(rad, axis);
+  }
+
+  // Converted from OgreVector3.h perpendicular()
+  TK_API Vec3 Orthogonal(const Vec3& v)
+  {
+    static const float fSquareZero = (float)(1e-06 * 1e-06);
+    Vec3 perp = glm::cross(v, X_AXIS);
+    // Check length
+    if (glm::length2(perp) < fSquareZero)
+    {
+      /* This vector is the Y axis multiplied by a scalar, so we have
+      to use another axis.
+      */
+      perp = glm::cross(v, Y_AXIS);
+    }
+
+    return glm::normalize(perp);
   }
 
 }

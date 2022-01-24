@@ -97,6 +97,7 @@ namespace ToolKit
   TK_API void ToSpherical(Vec3 p, float& r, float& zenith, float& azimuth);
   TK_API Vec3 ToCartesian(float r, float zenith, float azimuth);
   TK_API Quaternion RotationTo(Vec3 a, Vec3 b); // Returns quaternion wich rotates a on to b.
+  TK_API Vec3 Orthogonal(const Vec3& v); // Retruns an orthogonal vector to v.
 
   // Comparison
   //////////////////////////////////////////
