@@ -30,8 +30,8 @@ include_directories(
 	"${CMAKE_SOURCE_DIR}"
 )
 
-set(SOURCE App.cpp)
-set(HEADERS App.h)
+set(SOURCE Game.cpp)
+set(HEADERS Game.h)
 
 set(OUTDIR "${CMAKE_SOURCE_DIR}/Bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${OUTDIR})

@@ -1,5 +1,4 @@
-#include "App.h"
-#include "SDL.h"
+#include "Game.h"
 
 extern "C" TK_GAME_API ToolKit::Game * TK_STDCAL CreateInstance()
 {
@@ -20,10 +19,6 @@ namespace ToolKit
   }
 
   void Game::Frame(float deltaTime, class Viewport* viewport)
-  {
-  }
-
-  void Game::Event(SDL_Event event)
   {
   }
 

@@ -309,8 +309,8 @@ namespace ToolKit
       constexpr int count = 4;
       String source[count] = 
       { 
-        "../Template/App.h",
-        "../Template/App.cpp",
+        "../Template/Game.h",
+        "../Template/Game.cpp",
         "../Template/CMakeLists.txt",
         "../Template/CMakeHotReload.cmake"
       };
