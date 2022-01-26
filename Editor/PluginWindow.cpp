@@ -111,7 +111,7 @@ namespace ToolKit
           String codePath = g_app->m_workspace.GetCodePath();
           if (CheckFile(codePath))
           {
-            String cmd = "code " + codePath;
+            String cmd = "code \"" + codePath + "\"";
             int result = std::system(cmd.c_str());
             if (result != 0)
             {
