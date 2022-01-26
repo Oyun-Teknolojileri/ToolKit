@@ -9,7 +9,6 @@ namespace ToolKit
   Logger::Logger()
   {
     m_logFile.open("Log.txt", std::ios::out);
-    assert(m_logFile.good());
   }
 
   Logger::~Logger()
