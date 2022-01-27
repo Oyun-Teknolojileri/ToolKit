@@ -290,6 +290,12 @@ namespace ToolKit
     return arrayByTag;
   }
 
+  Entity* Scene::GetFirstByTag(const String& tag)
+  {
+    EntityRawPtrArray res = GetByTag(tag);
+    return res.empty() ? nullptr : res.front();
+  }
+
   EntityRawPtrArray Scene::Filter(std::function<bool(Entity*)> filter)
   {
     EntityRawPtrArray filtered;
