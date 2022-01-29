@@ -43,6 +43,7 @@ namespace ToolKit
     protected:
       void ShowContextForMaterial(DirectoryEntry* entry);
       void ShowContextForMesh(DirectoryEntry* entry);
+      void ShowContextForScene(DirectoryEntry* entry);
       void ShowGenericContext();
 
     public:

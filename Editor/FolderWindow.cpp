@@ -55,6 +55,10 @@ namespace ToolKit
       {
         return GetTextureManager();
       }
+      else if (m_ext == SCENE)
+      {
+        return GetSceneManager();
+      }
 
       return nullptr;
     }
@@ -481,6 +485,10 @@ namespace ToolKit
       {
         ShowContextForMesh(entry);
       }
+      else if (path.find(ScenePath("")) != String::npos)
+      {
+        ShowContextForScene(entry);
+      }
       else
       {
         ShowGenericContext();
@@ -651,6 +659,94 @@ namespace ToolKit
       if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
       {
         menuItemsFn({ false, false, true });
+        ImGui::EndPopup();
+      }
+    }
+
+    void FolderView::ShowContextForScene(DirectoryEntry* entry)
+    {
+      auto menuItemsFn = [entry, this](std::vector<bool> show) -> void
+      {
+        if (entry)
+        {
+          if (show[0] && ImGui::Button("Copy", m_contextBtnSize))
+          {
+            if (ResourceManager* rm = entry->GetManager())
+            {
+              String path = entry->GetFullPath();
+              ScenePtr resource = rm->Create<Scene>(path)->Copy<Scene>();
+              resource->Save(true);
+              m_dirty = true;
+            }
+
+            ImGui::CloseCurrentPopup();
+          }
+
+          if (show[1] && ImGui::Button("Delete", m_contextBtnSize))
+          {
+            if (ResourceManager* rm = entry->GetManager())
+            {
+              if (ScenePtr res = rm->Create<Scene>(entry->GetFullPath()))
+              {
+                std::filesystem::remove(entry->GetFullPath());
+                m_dirty = true;
+              }
+            }
+
+            ImGui::CloseCurrentPopup();
+          }
+
+          if (show[2] && ImGui::Button("Rename", m_contextBtnSize))
+          {
+            if (ResourceManager* rm = entry->GetManager())
+            {
+              if (ScenePtr res = rm->Create<Scene>(entry->GetFullPath()))
+              { 
+                StringInputWindow* inputWnd = new StringInputWindow("Scene Name##NwScnName", true);
+
+                String oldName, oldFile = res->m_file;
+                DecomposePath(oldFile, nullptr, &oldName, nullptr);
+
+                inputWnd->m_inputVal = oldName;
+                inputWnd->m_inputLabel = "New Name";
+                inputWnd->m_hint = "New name";
+
+                inputWnd->m_taskFn = [this, oldFile](const String& val)
+                {
+                  String file = ConcatPaths({ m_path, val + SCENE });
+                  if (CheckFile(file))
+                  {
+                    g_app->GetConsole()->AddLog("Can't rename. A scene with the same name exist", ConsoleWindow::LogType::Error);
+                  }
+                  else
+                  {
+                    std::filesystem::rename(oldFile, file);
+                    m_dirty = true;
+                  }
+                };
+              }
+            }
+
+            ImGui::CloseCurrentPopup();
+          }
+        }
+
+        if (show[3] && ImGui::Button("Refresh", m_contextBtnSize))
+        {
+          m_dirty = true;
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      if (ImGui::BeginPopupContextItem())
+      {
+        menuItemsFn({ true, true, true, false });
+        ImGui::EndPopup();
+      }
+
+      if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
+      {
+        menuItemsFn({ false, false, false, true });
         ImGui::EndPopup();
       }
     }
