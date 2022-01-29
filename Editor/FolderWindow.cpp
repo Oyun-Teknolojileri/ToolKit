@@ -489,6 +489,10 @@ namespace ToolKit
       {
         ShowContextForScene(entry);
       }
+      else if (path.find(PrefabPath("")) != String::npos)
+      {
+        ShowContextForScene(entry);
+      }
       else
       {
         ShowGenericContext();
