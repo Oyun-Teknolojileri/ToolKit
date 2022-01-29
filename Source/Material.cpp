@@ -45,8 +45,15 @@ namespace ToolKit
   void Material::Save(bool onlyIfDirty)
   {
     Resource::Save(onlyIfDirty);
-    m_vertexShader->Save(onlyIfDirty);
-    m_fragmetShader->Save(onlyIfDirty);
+    if (m_vertexShader)
+    {
+      m_vertexShader->Save(onlyIfDirty);
+    }
+
+    if (m_fragmetShader)
+    {
+      m_fragmetShader->Save(onlyIfDirty);
+    }
   }
 
   void Material::Init(bool flushClientSideArray)

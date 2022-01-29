@@ -40,7 +40,7 @@ namespace ToolKit
   {
     bool sane = !resource->m_file.empty();
     sane &= !Exist(resource->m_file);
-    sane &= CanStore(resource->m_type);
+    sane &= CanStore(resource->GetType());
 
     if (sane)
     {

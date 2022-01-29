@@ -450,7 +450,6 @@ namespace ToolKit
     : Mesh()
   {
     m_file = file;
-    m_type = ResourceType::SkinMesh;
 
     String skelFile = file.substr(0, file.find_last_of("."));
     skelFile += ".skeleton";

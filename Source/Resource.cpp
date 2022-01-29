@@ -26,8 +26,8 @@ namespace ToolKit
 
     if (m_file.empty())
     {
-      m_file = m_name + GetExtFromType(m_type);
-      m_file = CreatePathFromResourceType(m_file, m_type);
+      m_file = m_name + GetExtFromType(GetType());
+      m_file = CreatePathFromResourceType(m_file, GetType());
     }
 
     std::ofstream file;
@@ -57,7 +57,7 @@ namespace ToolKit
 
   void Resource::CopyTo(Resource* other) 
   { 
-    assert(other->m_type == m_type);
+    assert(other->GetType() == GetType());
     if (!m_file.empty())
     {
       other->m_file = CreateCopyFileFullPath(m_file);
@@ -66,6 +66,11 @@ namespace ToolKit
     other->m_dirty = m_dirty;
     other->m_loaded = m_loaded;
     other->m_initiated = m_initiated;
+  }
+
+  ResourceType Resource::GetType()
+  {
+    return ResourceType::Base;
   }
 
   void Resource::Serialize(XmlDocument* doc, XmlNode* parent) const

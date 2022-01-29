@@ -8,8 +8,8 @@ namespace ToolKit
 {
 
 #define TKResouceType(type) \
-  static ResourceType GetType() { return ResourceType::type; } \
-  ResourceType m_type = ResourceType::type;
+  static ResourceType GetTypeStatic() { return ResourceType::type; } \
+  virtual ResourceType GetType() { return ResourceType::type; }
 
   class TK_API Resource : public Serializable
   {
@@ -28,13 +28,13 @@ namespace ToolKit
     {
       std::shared_ptr<T> resource = std::make_shared<T>();
       CopyTo(resource.get()); 
-      if (ResourceManager* manager = GetResourceManager(resource->m_type))
+      if (ResourceManager* manager = GetResourceManager(T::GetTypeStatic()))
       {
         manager->Manage(resource);
       }
       return resource;
     }
-
+    virtual ResourceType GetType();
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
@@ -48,7 +48,6 @@ namespace ToolKit
     bool m_dirty = false;
     bool m_loaded = false;
     bool m_initiated = false;
-    ResourceType m_type = ResourceType::Base;
 
   private:
     static EntityId m_handle;
