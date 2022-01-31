@@ -335,8 +335,8 @@ namespace ToolKit
         std::stringstream buffer;
         buffer << cmakelist.rdbuf();
         String content = buffer.str();
-        ReplaceStringInPlace(content, "__projectname__", name);
-        ReplaceStringInPlace(content, "__tkdir__", currentPath);
+        ReplaceFirstStringInPlace(content, "__projectname__", name);
+        ReplaceFirstStringInPlace(content, "__tkdir__", currentPath);
         cmakelist.close();
 
         // Override the content.

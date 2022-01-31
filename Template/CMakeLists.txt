@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 3.0.0)
 set(PROJECT_NAME "__projectname__" CACHE STRING "What is the project name ?")
 set(TOOLKIT_DIR "__tkdir__" CACHE FILEPATH "Where is the ToolKit source directory ?")
 
+#if not a path is provided, try fetching it from the path file.
+if("${TOOLKIT_DIR}" STREQUAL "__tkdir__")
+	file (STRINGS "Path.txt" TOOLKIT_DIR)
+endif()
+
 string(REPLACE " " "-" PROJECT_NAME ${PROJECT_NAME})
 project (${PROJECT_NAME})
 

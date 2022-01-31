@@ -51,7 +51,8 @@ namespace ToolKit
 
   // String operations.
   TK_API void Split(const String& s, const String& sep, StringArray& v);
-  TK_API void ReplaceStringInPlace(String& subject, const String& search, const String& replace);
+  TK_API void ReplaceStringInPlace(String& subject, const String& search, const String& replace); // Replace all occurances of a string in another string.
+  TK_API void ReplaceFirstStringInPlace(String& subject, const String& search, const String& replace); // Replace first occurances of a string in another string.
   TK_API String ToLower(const String& str);
   TK_API String Format(const char* msg, ...);
 

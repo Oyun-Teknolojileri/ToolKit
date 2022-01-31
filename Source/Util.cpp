@@ -548,6 +548,14 @@ namespace ToolKit
     }
   }
 
+  TK_API void ReplaceFirstStringInPlace(String& subject, const String& search, const String& replace)
+  {
+    size_t pos = 0;
+    if ((pos = subject.find(search, pos)) != std::string::npos) {
+      subject.replace(pos, search.length(), replace);
+    }
+  }
+
   String ToLower(const String& str)
   {
     String lwr = str;
