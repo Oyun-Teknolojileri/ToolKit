@@ -298,14 +298,10 @@ namespace ToolKit
 
         // Texture only toggle button.
         ImGui::PushID(ntt->m_id);
-        ImGui::PushStyleColor(ImGuiCol_Button, Vec4());
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Vec4());
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, Vec4());
-        if (ImGui::ImageButton(Convert2ImGuiTexture(icon), ImVec2(15.0f, 15.0f)))
+        if (UI::ImageButtonDecorless(icon->m_textureId, ImVec2(15.0f, 15.0f), false))
         {
           ntt->SetVisibility(!ntt->m_visible, true);
         }
-        ImGui::PopStyleColor(3);
         ImGui::PopID();
       }
 

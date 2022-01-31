@@ -73,7 +73,7 @@ namespace ToolKit
         bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Select;
         ModManager::GetInstance()->SetMod
         (
-          UI::ToggleButton((void*)(intptr_t)UI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          UI::ToggleButton(UI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Select
         );
         UI::HelpMarker(LOC + m_owner->m_name, "Select Box\nSelect items using box selection.");
@@ -82,7 +82,7 @@ namespace ToolKit
         isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Cursor;
         ModManager::GetInstance()->SetMod
         (
-          UI::ToggleButton((void*)(intptr_t)UI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          UI::ToggleButton(UI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Cursor
         );
         UI::HelpMarker(LOC + m_owner->m_name, "Cursor\nSet the cursor location.");
@@ -92,7 +92,7 @@ namespace ToolKit
         isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Move;
         ModManager::GetInstance()->SetMod
         (
-          UI::ToggleButton((void*)(intptr_t)UI::m_moveIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          UI::ToggleButton(UI::m_moveIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Move
         );
         UI::HelpMarker(LOC + m_owner->m_name, "Move\nMove selected items.");
@@ -101,7 +101,7 @@ namespace ToolKit
         isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Rotate;
         ModManager::GetInstance()->SetMod
         (
-          UI::ToggleButton((void*)(intptr_t)UI::m_rotateIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          UI::ToggleButton(UI::m_rotateIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Rotate
         );
         UI::HelpMarker(LOC + m_owner->m_name, "Rotate\nRotate selected items.");
@@ -110,7 +110,7 @@ namespace ToolKit
         isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Scale;
         ModManager::GetInstance()->SetMod
         (
-          UI::ToggleButton((void*)(intptr_t)UI::m_scaleIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          UI::ToggleButton(UI::m_scaleIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Scale
         );
         UI::HelpMarker(LOC + m_owner->m_name, "Scale\nScale (resize) selected items.");
@@ -295,7 +295,7 @@ namespace ToolKit
         ImGui::Image(Convert2ImGuiTexture(UI::m_cameraIcon), ImVec2(20.0f, 20.0f));
 
         ImGui::TableSetColumnIndex(3);
-        m_owner->m_orbitLock = UI::ToggleButton(Convert2ImGuiTexture(UI::m_lockIcon), ImVec2(16.0f, 16.0f), m_owner->m_orbitLock);
+        m_owner->m_orbitLock = UI::ToggleButton(UI::m_lockIcon->m_textureId, ImVec2(16.0f, 16.0f), m_owner->m_orbitLock);
         UI::HelpMarker(LOC + m_owner->m_name, "Lock Camera Alignment\nMiddle button drag doesn't orbit.\nOnly panning allowed.");
 
         // Camera alignment combo.
@@ -432,7 +432,7 @@ namespace ToolKit
         }
 
         ImGui::TableSetColumnIndex(7);
-        g_app->m_snapsEnabled = UI::ToggleButton((void*)(intptr_t)UI::m_snapIcon->m_textureId, ImVec2(16, 16), g_app->m_snapsEnabled);
+        g_app->m_snapsEnabled = UI::ToggleButton(UI::m_snapIcon->m_textureId, ImVec2(16, 16), g_app->m_snapsEnabled);
         UI::HelpMarker(LOC + m_owner->m_name, "Grid snaping\nRight click for options");
 
         if (ImGui::BeginPopupContextItem("##SnapMenu"))
@@ -514,22 +514,29 @@ namespace ToolKit
         ImGui::SameLine();
         ImGui::Text(g_app->m_statusMsg.c_str());
 
-        // Draw Projcet Info.
-        Project prj = g_app->m_workspace.GetActiveProject();
-        info = "Project: " + prj.name + "Scene: " + prj.scene;
-        pos = ImGui::CalcTextSize(info.c_str());
+        ImVec2 msgSize = ImGui::CalcTextSize(g_app->m_statusMsg.c_str());
+        float wndWidth = ImGui::GetWindowContentRegionWidth();
 
-        ImGui::SameLine((m_owner->m_width - pos.x) * 0.5f);
-        info = "Project: " + prj.name;
-        ImGui::BulletText(info.c_str());
-        ImGui::SameLine();
-        info = "Scene: " + prj.scene;
-        ImGui::BulletText(info.c_str());
+        // If there is enough space for info.
+        if (wndWidth * 0.3f > msgSize.x)
+        {
+          // Draw Projcet Info.
+          Project prj = g_app->m_workspace.GetActiveProject();
+          info = "Project: " + prj.name + "Scene: " + prj.scene;
+          pos = ImGui::CalcTextSize(info.c_str());
 
-        // Draw Fps.
-        String fps = "Fps: " + std::to_string(g_app->m_fps);
-        ImGui::SameLine(m_owner->m_width - 70.0f);
-        ImGui::Text(fps.c_str());
+          ImGui::SameLine((m_owner->m_width - pos.x) * 0.5f);
+          info = "Project: " + prj.name;
+          ImGui::BulletText(info.c_str());
+          ImGui::SameLine();
+          info = "Scene: " + prj.scene;
+          ImGui::BulletText(info.c_str());
+
+          // Draw Fps.
+          String fps = "Fps: " + std::to_string(g_app->m_fps);
+          ImGui::SameLine(m_owner->m_width - 70.0f);
+          ImGui::Text(fps.c_str());
+        }
       }
       ImGui::EndChildFrame();
     }

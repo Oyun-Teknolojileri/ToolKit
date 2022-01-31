@@ -377,19 +377,22 @@ namespace ToolKit
             // Handle drag - drop to scene / inspector.
             if (!dirEnt.m_isDirectory)
             {
+              ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
               if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
               {
-                ImGui::SetDragDropPayload("BrowserDragZone", &dirEnt, sizeof(DirectoryEntry));
+                ImGui::SetDragDropPayload("BrowserDragZone", &dirEnt, sizeof(DirectoryEntry));                
+                ImGui::ImageButton((void*)(intptr_t)iconId, m_iconSize, ImVec2(0.0f, 0.0f), texCoords);
                 if (io.KeyShift)
                 {
-                  ImGui::SetTooltip("Copy %s", fullName.c_str());
+                  g_app->m_statusMsg = "Copy " + fullName;
                 }
                 else
                 {
-                  ImGui::SetTooltip("Instantiate %s", fullName.c_str());
+                  g_app->m_statusMsg = "Instantiate " + fullName;
                 }
                 ImGui::EndDragDropSource();
               }
+              ImGui::PopStyleColor();
             }
 
             // Handle Item sub text.

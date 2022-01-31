@@ -833,7 +833,19 @@ namespace ToolKit
       }
     }
 
-    bool UI::ToggleButton(ImTextureID user_texture_id, const ImVec2& size, bool pushState)
+    bool UI::ImageButtonDecorless(uint textureID, const ImVec2& size, bool flipImage)
+    {
+      ImGui::PushStyleColor(ImGuiCol_Button, Vec4());
+      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Vec4());
+      ImGui::PushStyleColor(ImGuiCol_ButtonActive, Vec4());
+      ImVec2 texCoords = flipImage ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
+      bool res = ImGui::ImageButton((void*)(intptr_t)textureID, size, ImVec2(0.0f, 0.0f), texCoords);
+      ImGui::PopStyleColor(3);
+
+      return res;
+    }
+
+    bool UI::ToggleButton(uint textureID, const ImVec2& size, bool pushState)
     {
       ImGuiStyle& style = ImGui::GetStyle();
       if (pushState)
@@ -845,7 +857,7 @@ namespace ToolKit
       }
 
       bool newPushState = pushState;
-      if (ImGui::ImageButton((void*)(intptr_t)user_texture_id, size))
+      if (ImGui::ImageButton((void*)(intptr_t)textureID, size))
       {
         newPushState = !pushState; // If pressed toggle.
       }
