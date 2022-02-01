@@ -183,9 +183,11 @@ namespace ToolKit
 
     FolderView::FolderView()
     {
+      CreateItemActions();
     }
 
     FolderView::FolderView(class FolderWindow* parent)
+      : FolderView()
     {
       m_parent = parent;
     }
@@ -672,96 +674,19 @@ namespace ToolKit
 
     void FolderView::ShowContextForScene(DirectoryEntry* entry)
     {
-      auto menuItemsFn = [entry, this](std::vector<bool> show) -> void
+      if (ImGui::BeginPopupContextWindow())
       {
         if (entry)
         {
-          if (show[0] && ImGui::Button("Copy", m_contextBtnSize))
-          {
-            if (ResourceManager* rm = entry->GetManager())
-            {
-              String path = entry->GetFullPath();
-              ScenePtr resource = rm->Create<Scene>(path)->Copy<Scene>();
-              resource->Save(true);
-              m_dirty = true;
-            }
-
-            ImGui::CloseCurrentPopup();
-          }
-
-          if (show[1] && ImGui::Button("Delete", m_contextBtnSize))
-          {
-            if (entry->m_isDirectory)
-            {
-              std::filesystem::remove_all(entry->GetFullPath());
-              m_dirty = true;
-            }
-            else
-            {
-              if (ResourceManager* rm = entry->GetManager())
-              {
-                if (ScenePtr res = rm->Create<Scene>(entry->GetFullPath()))
-                {
-                  std::filesystem::remove(entry->GetFullPath());
-                  m_dirty = true;
-                }
-              }
-            }
-
-            ImGui::CloseCurrentPopup();
-          }
-
-          if (show[2] && ImGui::Button("Rename", m_contextBtnSize))
-          {
-            if (ResourceManager* rm = entry->GetManager())
-            {
-              if (ScenePtr res = rm->Create<Scene>(entry->GetFullPath()))
-              { 
-                StringInputWindow* inputWnd = new StringInputWindow("Scene Name##NwScnName", true);
-
-                String oldName, oldFile = res->m_file;
-                DecomposePath(oldFile, nullptr, &oldName, nullptr);
-
-                inputWnd->m_inputVal = oldName;
-                inputWnd->m_inputLabel = "New Name";
-                inputWnd->m_hint = "New name";
-
-                inputWnd->m_taskFn = [this, oldFile](const String& val)
-                {
-                  String file = ConcatPaths({ m_path, val + SCENE });
-                  if (CheckFile(file))
-                  {
-                    g_app->GetConsole()->AddLog("Can't rename. A scene with the same name exist", ConsoleWindow::LogType::Error);
-                  }
-                  else
-                  {
-                    std::filesystem::rename(oldFile, file);
-                    m_dirty = true;
-                  }
-                };
-              }
-            }
-
-            ImGui::CloseCurrentPopup();
-          }
+          m_itemActions["Scene/Copy"](entry);
+          m_itemActions["Scene/Rename"](entry);
+          m_itemActions["Scene/Delete"](entry);
         }
-
-        if (show[3] && ImGui::Button("Refresh", m_contextBtnSize))
+        else
         {
-          m_dirty = true;
-          ImGui::CloseCurrentPopup();
+          m_itemActions["Refresh"](nullptr);
         }
-      };
 
-      if (ImGui::BeginPopupContextItem())
-      {
-        menuItemsFn({ true, true, true, false });
-        ImGui::EndPopup();
-      }
-
-      if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
-      {
-        menuItemsFn({ false, false, false, true });
         ImGui::EndPopup();
       }
     }
@@ -778,6 +703,136 @@ namespace ToolKit
 
         ImGui::EndPopup();
       }
+    }
+
+    void FolderView::CreateItemActions()
+    {
+      auto getSelfFn = []() -> FolderView*
+      {
+        // Always fetch the active view for self.
+        FolderView* self = nullptr;
+        if (FolderWindow* folder = g_app->GetAssetBrowser())
+        {
+          self = folder->GetActiveView();
+        }
+
+        return self;
+      };
+
+      // Refresh.
+      m_itemActions["Refresh"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+        FolderView* self = getSelfFn();
+        if (self == nullptr)
+        {
+          return;
+        }
+
+        if (ImGui::Button("Refresh", self->m_contextBtnSize))
+        {
+          self->m_dirty = true;
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      // Scene/Rename
+      m_itemActions["Scene/Rename"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+        FolderView* self = getSelfFn();
+        if (self == nullptr)
+        {
+          return;
+        }
+
+        if (ImGui::Button("Rename", self->m_contextBtnSize))
+        {
+          if (ResourceManager* rm = entry->GetManager())
+          {
+            if (ScenePtr res = rm->Create<Scene>(entry->GetFullPath()))
+            {
+              StringInputWindow* inputWnd = new StringInputWindow("Scene Name##NwScnName", true);
+
+              String oldName, oldFile = res->m_file;
+              DecomposePath(oldFile, nullptr, &oldName, nullptr);
+
+              inputWnd->m_inputVal = oldName;
+              inputWnd->m_inputLabel = "New Name";
+              inputWnd->m_hint = "New name";
+
+              inputWnd->m_taskFn = [self, oldFile](const String& val)
+              {
+                String file = ConcatPaths({ self->m_path, val + SCENE });
+                if (CheckFile(file))
+                {
+                  g_app->GetConsole()->AddLog("Can't rename. A scene with the same name exist", ConsoleWindow::LogType::Error);
+                }
+                else
+                {
+                  std::filesystem::rename(oldFile, file);
+                  self->m_dirty = true;
+                }
+              };
+            }
+          }
+
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      // Scene/Delete
+      m_itemActions["Scene/Delete"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+        FolderView* self = getSelfFn();
+        if (self == nullptr)
+        {
+          return;
+        }
+
+        if (ImGui::Button("Delete", self->m_contextBtnSize))
+        {
+          if (entry->m_isDirectory)
+          {
+            std::filesystem::remove_all(entry->GetFullPath());
+            self->m_dirty = true;
+          }
+          else
+          {
+            if (ResourceManager* rm = entry->GetManager())
+            {
+              if (ScenePtr res = rm->Create<Scene>(entry->GetFullPath()))
+              {
+                std::filesystem::remove(entry->GetFullPath());
+                self->m_dirty = true;
+              }
+            }
+          }
+
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      m_itemActions["Scene/Copy"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+        FolderView* self = getSelfFn();
+        if (self == nullptr)
+        {
+          return;
+        }
+
+        if (ImGui::Button("Copy", self->m_contextBtnSize))
+        {
+          if (ResourceManager* rm = entry->GetManager())
+          {
+            String path = entry->GetFullPath();
+            ScenePtr resource = rm->Create<Scene>(path)->Copy<Scene>();
+            resource->Save(true);
+            self->m_dirty = true;
+          }
+
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
     }
 
     FolderWindow::FolderWindow(XmlNode* node)
@@ -981,6 +1036,16 @@ namespace ToolKit
     FolderView& FolderWindow::GetView(int indx)
     {
       return m_entiries[indx];
+    }
+
+    FolderView* FolderWindow::GetActiveView()
+    {
+      if (m_activeFolder == -1)
+      {
+        return nullptr;
+      }
+
+      return &GetView(m_activeFolder);
     }
 
     int FolderWindow::Exist(const String& folder)

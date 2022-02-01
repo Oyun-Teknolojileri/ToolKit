@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UI.h"
+#include <functional>
 
 namespace ToolKit
 {
@@ -40,11 +41,12 @@ namespace ToolKit
       void ShowContextMenu(DirectoryEntry* entry = nullptr);
       void Refresh();
 
-    protected:
+    private:
       void ShowContextForMaterial(DirectoryEntry* entry);
       void ShowContextForMesh(DirectoryEntry* entry);
       void ShowContextForScene(DirectoryEntry* entry);
       void ShowGenericContext();
+      void CreateItemActions();
 
     public:
       bool m_currRoot = false; // Indicates this is a root folder (one level under Resources) and currently selected in the FolderWindow.
@@ -62,6 +64,7 @@ namespace ToolKit
       bool m_dirty = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
       ImGuiTextFilter m_filter;
+      std::unordered_map <String, std::function<void(DirectoryEntry*)>> m_itemActions;
     };
 
     class FolderWindow : public Window
@@ -76,6 +79,7 @@ namespace ToolKit
       void UpdateContent();
       void AddEntry(const FolderView& view);
       FolderView& GetView(int indx);
+      FolderView* GetActiveView();
       int Exist(const String& folder);
       bool GetFileEntry(const String& fullPath, DirectoryEntry& entry);
 
