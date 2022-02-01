@@ -691,12 +691,20 @@ namespace ToolKit
 
           if (show[1] && ImGui::Button("Delete", m_contextBtnSize))
           {
-            if (ResourceManager* rm = entry->GetManager())
+            if (entry->m_isDirectory)
             {
-              if (ScenePtr res = rm->Create<Scene>(entry->GetFullPath()))
+              std::filesystem::remove_all(entry->GetFullPath());
+              m_dirty = true;
+            }
+            else
+            {
+              if (ResourceManager* rm = entry->GetManager())
               {
-                std::filesystem::remove(entry->GetFullPath());
-                m_dirty = true;
+                if (ScenePtr res = rm->Create<Scene>(entry->GetFullPath()))
+                {
+                  std::filesystem::remove(entry->GetFullPath());
+                  m_dirty = true;
+                }
               }
             }
 
