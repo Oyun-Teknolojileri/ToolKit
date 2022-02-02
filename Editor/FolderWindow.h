@@ -79,7 +79,7 @@ namespace ToolKit
       void UpdateContent();
       void AddEntry(const FolderView& view);
       FolderView& GetView(int indx);
-      FolderView* GetActiveView();
+      FolderView* GetActiveView(bool deep); // Returns root level active view, if deep is true, returns sub-active / visible view.
       int Exist(const String& folder);
       bool GetFileEntry(const String& fullPath, DirectoryEntry& entry);
 

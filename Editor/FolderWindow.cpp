@@ -613,7 +613,7 @@ namespace ToolKit
         FolderView* self = nullptr;
         if (FolderWindow* folder = g_app->GetAssetBrowser())
         {
-          self = folder->GetActiveView();
+          self = folder->GetActiveView(true);
         }
 
         return self;
@@ -1157,11 +1157,31 @@ namespace ToolKit
       return m_entiries[indx];
     }
 
-    FolderView* FolderWindow::GetActiveView()
+    FolderView* FolderWindow::GetActiveView(bool deep)
     {
       if (m_activeFolder == -1)
       {
         return nullptr;
+      }
+
+      if (deep)
+      {
+        FolderView& rootView = GetView(m_activeFolder);
+        for (DirectoryEntry& dirEnt : rootView.m_entiries)
+        {
+          if (dirEnt.m_isDirectory)
+          {
+            int subDirIndx = Exist(dirEnt.GetFullPath());
+            if (subDirIndx != -1)
+            {
+              FolderView& view = m_entiries[subDirIndx];
+              if (view.m_active && view.m_visible)
+              {
+                return &view;
+              }
+            }
+          }
+        }
       }
 
       return &GetView(m_activeFolder);
