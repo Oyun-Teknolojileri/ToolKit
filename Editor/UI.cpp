@@ -1144,7 +1144,14 @@ namespace ToolKit
         {
           ImGui::SetKeyboardFocusHere();
         }
-        ImGui::InputTextWithHint(m_inputLabel.c_str(), m_hint.c_str(), &m_inputVal);
+
+        ImGui::InputTextWithHint
+        (
+          m_inputLabel.c_str(),
+          m_hint.c_str(),
+          &m_inputVal,
+          ImGuiInputTextFlags_AutoSelectAll
+        );
 
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {

@@ -665,7 +665,14 @@ namespace ToolKit
         ImGui::EndPopup();
       }
 
-      if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
+      if
+      (
+        ImGui::BeginPopupContextWindow
+        (
+          nullptr, 
+          ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
+        )
+      )
       {
         menuItemsFn({ false, false, true });
         ImGui::EndPopup();
@@ -674,19 +681,25 @@ namespace ToolKit
 
     void FolderView::ShowContextForScene(DirectoryEntry* entry)
     {
-      if (ImGui::BeginPopupContextWindow())
+      if (ImGui::BeginPopupContextItem())
       {
-        if (entry)
-        {
-          m_itemActions["Scene/Copy"](entry);
-          m_itemActions["Scene/Rename"](entry);
-          m_itemActions["Scene/Delete"](entry);
-        }
-        else
-        {
-          m_itemActions["Refresh"](nullptr);
-        }
+        m_itemActions["Scene/Copy"](entry);
+        m_itemActions["Scene/Rename"](entry);
+        m_itemActions["Scene/Delete"](entry);
 
+        ImGui::EndPopup();
+      }
+
+      if
+      (
+        ImGui::BeginPopupContextWindow
+        (
+          nullptr,
+          ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
+        )
+      )
+      {
+        m_itemActions["Refresh"](nullptr);
         ImGui::EndPopup();
       }
     }
