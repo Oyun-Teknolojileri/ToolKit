@@ -487,6 +487,11 @@ namespace ToolKit
 
   bool SupportedImageFormat(const String& ext) 
   {
+    if (ext.empty())
+    {
+      return false;
+    }
+
     static String supportedFormats(PNG + JPG + JPEG + TGA + BMP + PSD);
     return supportedFormats.find(ToLower(ext)) != String::npos;
   }

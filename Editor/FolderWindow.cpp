@@ -530,6 +530,7 @@ namespace ToolKit
       )
       {
         m_itemActions["Material/Create"](nullptr);
+        m_itemActions["MakeDir"](nullptr);
         m_itemActions["Refresh"](nullptr);
         ImGui::EndPopup();
       }
@@ -554,6 +555,7 @@ namespace ToolKit
         )
       )
       {
+        m_itemActions["MakeDir"](nullptr);
         m_itemActions["Refresh"](nullptr);
         ImGui::EndPopup();
       }
@@ -579,6 +581,7 @@ namespace ToolKit
         )
       )
       {
+        m_itemActions["MakeDir"](nullptr);
         m_itemActions["Refresh"](nullptr);
         ImGui::EndPopup();
       }
@@ -586,8 +589,16 @@ namespace ToolKit
 
     void FolderView::ShowGenericContext()
     {
-      if (ImGui::BeginPopupContextWindow())
+      if
+      (
+        ImGui::BeginPopupContextWindow
+        (
+          nullptr,
+          ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
+        )
+      )
       {
+        m_itemActions["MakeDir"](nullptr);
         m_itemActions["Refresh"](nullptr);
 
         ImGui::EndPopup();
@@ -606,6 +617,43 @@ namespace ToolKit
         }
 
         return self;
+      };
+
+      auto deleteDirFn = [](FolderView* view, const String& path) -> void
+      {
+        std::error_code ec;
+        std::filesystem::remove(path, ec);
+        if (ec)
+        {
+          g_app->m_statusMsg = ec.message();
+        }
+        view->m_dirty = true;
+      };
+
+      // MakeDir.
+      m_itemActions["MakeDir"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+        FolderView* self = getSelfFn();
+        if (self == nullptr)
+        {
+          return;
+        }
+
+        if (ImGui::Button("Make Dir", self->m_contextBtnSize))
+        {
+          StringInputWindow* inputWnd = new StringInputWindow("New Directory##NwDirName", true);
+          inputWnd->m_inputLabel = "Name";
+          inputWnd->m_hint = "Directory Name";
+
+          inputWnd->m_taskFn = [self](const String& val)
+          {
+            String file = ConcatPaths({ self->m_path, val });
+            std::filesystem::create_directories(file);
+            self->m_dirty = true;
+          };
+
+          ImGui::CloseCurrentPopup();
+        }
       };
 
       // Refresh.
@@ -669,7 +717,7 @@ namespace ToolKit
       };
 
       // Scene/Delete
-      m_itemActions["Scene/Delete"] = [getSelfFn](DirectoryEntry* entry) -> void
+      m_itemActions["Scene/Delete"] = [getSelfFn, deleteDirFn](DirectoryEntry* entry) -> void
       {
         FolderView* self = getSelfFn();
         if (self == nullptr)
@@ -681,8 +729,7 @@ namespace ToolKit
         {
           if (entry->m_isDirectory)
           {
-            std::filesystem::remove_all(entry->GetFullPath());
-            self->m_dirty = true;
+            deleteDirFn(self, entry->GetFullPath());
           }
           else
           {
@@ -747,7 +794,7 @@ namespace ToolKit
       };
 
       // Mesh/Delete
-      m_itemActions["Mesh/Delete"] = [getSelfFn](DirectoryEntry* entry) -> void
+      m_itemActions["Mesh/Delete"] = [getSelfFn, deleteDirFn](DirectoryEntry* entry) -> void
       {
         FolderView* self = getSelfFn();
         if (self == nullptr)
@@ -757,18 +804,25 @@ namespace ToolKit
 
         if (ImGui::Button("Delete", self->m_contextBtnSize))
         {
-          if (ResourceManager* rm = entry->GetManager())
+          if (entry->m_isDirectory)
           {
-            if (MeshPtr res = rm->Create<Mesh>(entry->GetFullPath()))
+            deleteDirFn(self, entry->GetFullPath());
+          }
+          else
+          {
+            if (ResourceManager* rm = entry->GetManager())
             {
-              if (g_app->m_scene->IsMeshInUse(res))
+              if (MeshPtr res = rm->Create<Mesh>(entry->GetFullPath()))
               {
-                g_app->GetConsole()->AddLog("Can't delete. Resource is in use", ConsoleWindow::LogType::Error);
-              }
-              else
-              {
-                std::filesystem::remove(entry->GetFullPath());
-                self->m_dirty = true;
+                if (g_app->m_scene->IsMeshInUse(res))
+                {
+                  g_app->GetConsole()->AddLog("Can't delete. Resource is in use", ConsoleWindow::LogType::Error);
+                }
+                else
+                {
+                  std::filesystem::remove(entry->GetFullPath());
+                  self->m_dirty = true;
+                }
               }
             }
           }
@@ -838,7 +892,7 @@ namespace ToolKit
       };
 
       // Material/Delete
-      m_itemActions["Material/Delete"] = [getSelfFn](DirectoryEntry* entry) -> void
+      m_itemActions["Material/Delete"] = [getSelfFn, deleteDirFn](DirectoryEntry* entry) -> void
       {
         FolderView* self = getSelfFn();
         if (self == nullptr)
@@ -848,18 +902,25 @@ namespace ToolKit
 
         if (ImGui::Button("Delete", self->m_contextBtnSize))
         {
-          if (ResourceManager* rm = entry->GetManager())
+          if (entry->m_isDirectory)
           {
-            if (MaterialPtr mat = rm->Create<Material>(entry->GetFullPath()))
+            deleteDirFn(self, entry->GetFullPath());
+          }
+          else
+          {
+            if (ResourceManager* rm = entry->GetManager())
             {
-              if (g_app->m_scene->IsMaterialInUse(mat))
+              if (MaterialPtr mat = rm->Create<Material>(entry->GetFullPath()))
               {
-                g_app->GetConsole()->AddLog("Can't delete. Material is in use", ConsoleWindow::LogType::Error);
-              }
-              else
-              {
-                std::filesystem::remove(entry->GetFullPath());
-                self->m_dirty = true;
+                if (g_app->m_scene->IsMaterialInUse(mat))
+                {
+                  g_app->GetConsole()->AddLog("Can't delete. Material is in use", ConsoleWindow::LogType::Error);
+                }
+                else
+                {
+                  std::filesystem::remove(entry->GetFullPath());
+                  self->m_dirty = true;
+                }
               }
             }
           }
