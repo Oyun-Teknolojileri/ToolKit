@@ -511,157 +511,12 @@ namespace ToolKit
 
     void FolderView::ShowContextForMaterial(DirectoryEntry* entry)
     {
-      auto menuItemsFn = [entry, this](std::vector<bool> show) -> void
-      {
-        if (show[0] && ImGui::Button("Crate", m_contextBtnSize))
-        {
-          StringInputWindow* inputWnd = new StringInputWindow("Material Name##NwMat", true);
-          inputWnd->m_inputVal = "New Material";
-          inputWnd->m_inputLabel = "Name";
-          inputWnd->m_hint = "New material name";
-          inputWnd->m_taskFn = [this](const String& val)
-          {
-            String file = ConcatPaths({ m_path, val + MATERIAL });
-            if (CheckFile(file))
-            {
-              g_app->GetConsole()->AddLog("Can't create. A material with the same name exist", ConsoleWindow::LogType::Error);
-            }
-            else
-            {
-              MaterialManager* man = GetMaterialManager();
-              MaterialPtr mat = man->GetCopyOfSolidMaterial();
-              mat->m_name = val;
-              mat->m_file = file;
-              m_dirty = true;
-              mat->Save(true);
-              man->Manage(mat);
-            }
-          };
-          ImGui::CloseCurrentPopup();
-        }
-
-        if (entry)
-        {
-          if (show[1] && ImGui::Button("Copy", m_contextBtnSize))
-          {
-            if (ResourceManager* rm = entry->GetManager())
-            {
-              String path = entry->GetFullPath();
-              MaterialPtr resource = rm->Create<Material>(path)->Copy<Material>();
-              resource->Save(true);
-              m_dirty = true;
-            }
-
-            ImGui::CloseCurrentPopup();
-          }
-
-          if (show[2] && ImGui::Button("Delete", m_contextBtnSize))
-          {
-            if (ResourceManager* rm = entry->GetManager())
-            {
-              if (MaterialPtr mat = rm->Create<Material>(entry->GetFullPath()))
-              {
-                if (g_app->m_scene->IsMaterialInUse(mat))
-                {
-                  g_app->GetConsole()->AddLog("Can't delete. Material is in use", ConsoleWindow::LogType::Error);
-                }
-                else
-                {
-                  std::filesystem::remove(entry->GetFullPath());
-                  m_dirty = true;
-                }
-              }
-            }
-
-            ImGui::CloseCurrentPopup();
-          }
-
-          if (show[3] && ImGui::Button("Reload", m_contextBtnSize))
-          {
-            if (ResourceManager* rm = entry->GetManager())
-            {
-              if (MaterialPtr mat = rm->Create<Material>(entry->GetFullPath()))
-              {
-                mat->Reload();
-                entry->GenerateThumbnail();
-              }
-            }
-
-            ImGui::CloseCurrentPopup();
-          }
-        }
-
-        if (show[4] && ImGui::Button("Refresh", m_contextBtnSize))
-        {
-          m_dirty = true;
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
       if (ImGui::BeginPopupContextItem())
       {
-        menuItemsFn({ true, true, true, true, true });
-        ImGui::EndPopup();
-      }
-      
-      if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
-      {
-        menuItemsFn({ true, false, false, false, true });
-        ImGui::EndPopup();
-      }
-    }
+        m_itemActions["Material/Copy"](entry);
+        m_itemActions["Material/Delete"](entry);
+        m_itemActions["Material/Reload"](entry);
 
-    void FolderView::ShowContextForMesh(DirectoryEntry* entry)
-    {
-      auto menuItemsFn = [entry, this](std::vector<bool> show) -> void
-      {
-        if (entry)
-        {
-          if (show[0] && ImGui::Button("Copy", m_contextBtnSize))
-          {
-            if (ResourceManager* rm = entry->GetManager())
-            {
-              String path = entry->GetFullPath();
-              MeshPtr resource = rm->Create<Mesh>(path)->Copy<Mesh>();
-              resource->Save(true);
-              m_dirty = true;
-            }
-
-            ImGui::CloseCurrentPopup();
-          }
-
-          if (show[1] && ImGui::Button("Delete", m_contextBtnSize))
-          {
-            if (ResourceManager* rm = entry->GetManager())
-            {
-              if (MeshPtr res = rm->Create<Mesh>(entry->GetFullPath()))
-              {
-                if (g_app->m_scene->IsMeshInUse(res))
-                {
-                  g_app->GetConsole()->AddLog("Can't delete. Resource is in use", ConsoleWindow::LogType::Error);
-                }
-                else
-                {
-                  std::filesystem::remove(entry->GetFullPath());
-                  m_dirty = true;
-                }
-              }
-            }
-
-            ImGui::CloseCurrentPopup();
-          }
-        }
-
-        if (show[2] && ImGui::Button("Refresh", m_contextBtnSize))
-        {
-          m_dirty = true;
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      if (ImGui::BeginPopupContextItem())
-      {
-        menuItemsFn({ true, true, true });
         ImGui::EndPopup();
       }
 
@@ -669,12 +524,37 @@ namespace ToolKit
       (
         ImGui::BeginPopupContextWindow
         (
-          nullptr, 
+          nullptr,
           ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
         )
       )
       {
-        menuItemsFn({ false, false, true });
+        m_itemActions["Material/Create"](nullptr);
+        m_itemActions["Refresh"](nullptr);
+        ImGui::EndPopup();
+      }
+    }
+
+    void FolderView::ShowContextForMesh(DirectoryEntry* entry)
+    {
+      if (ImGui::BeginPopupContextItem())
+      {
+        m_itemActions["Mesh/Copy"](entry);
+        m_itemActions["Mesh/Delete"](entry);
+
+        ImGui::EndPopup();
+      }
+
+      if
+      (
+        ImGui::BeginPopupContextWindow
+        (
+          nullptr,
+          ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
+        )
+      )
+      {
+        m_itemActions["Refresh"](nullptr);
         ImGui::EndPopup();
       }
     }
@@ -708,11 +588,7 @@ namespace ToolKit
     {
       if (ImGui::BeginPopupContextWindow())
       {
-        if (ImGui::Button("Refresh", m_contextBtnSize))
-        {
-          m_dirty = true;
-          ImGui::CloseCurrentPopup();
-        }
+        m_itemActions["Refresh"](nullptr);
 
         ImGui::EndPopup();
       }
@@ -824,6 +700,7 @@ namespace ToolKit
         }
       };
 
+      // Scene/Copy
       m_itemActions["Scene/Copy"] = [getSelfFn](DirectoryEntry* entry) -> void
       {
         FolderView* self = getSelfFn();
@@ -846,6 +723,174 @@ namespace ToolKit
         }
       };
 
+      // Mesh/Copy
+      m_itemActions["Mesh/Copy"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+        FolderView* self = getSelfFn();
+        if (self == nullptr)
+        {
+          return;
+        }
+
+        if (ImGui::Button("Copy", self->m_contextBtnSize))
+        {
+          if (ResourceManager* rm = entry->GetManager())
+          {
+            String path = entry->GetFullPath();
+            MeshPtr resource = rm->Create<Mesh>(path)->Copy<Mesh>();
+            resource->Save(true);
+            self->m_dirty = true;
+          }
+
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      // Mesh/Delete
+      m_itemActions["Mesh/Delete"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+        FolderView* self = getSelfFn();
+        if (self == nullptr)
+        {
+          return;
+        }
+
+        if (ImGui::Button("Delete", self->m_contextBtnSize))
+        {
+          if (ResourceManager* rm = entry->GetManager())
+          {
+            if (MeshPtr res = rm->Create<Mesh>(entry->GetFullPath()))
+            {
+              if (g_app->m_scene->IsMeshInUse(res))
+              {
+                g_app->GetConsole()->AddLog("Can't delete. Resource is in use", ConsoleWindow::LogType::Error);
+              }
+              else
+              {
+                std::filesystem::remove(entry->GetFullPath());
+                self->m_dirty = true;
+              }
+            }
+          }
+
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      // Material/Create
+      m_itemActions["Material/Create"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+        FolderView* self = getSelfFn();
+        if (self == nullptr)
+        {
+          return;
+        }
+
+        if (ImGui::Button("Crate", self->m_contextBtnSize))
+        {
+          StringInputWindow* inputWnd = new StringInputWindow("Material Name##NwMat", true);
+          inputWnd->m_inputVal = "New Material";
+          inputWnd->m_inputLabel = "Name";
+          inputWnd->m_hint = "New material name";
+          inputWnd->m_taskFn = [self](const String& val)
+          {
+            String file = ConcatPaths({ self->m_path, val + MATERIAL });
+            if (CheckFile(file))
+            {
+              g_app->GetConsole()->AddLog("Can't create. A material with the same name exist", ConsoleWindow::LogType::Error);
+            }
+            else
+            {
+              MaterialManager* man = GetMaterialManager();
+              MaterialPtr mat = man->GetCopyOfSolidMaterial();
+              mat->m_name = val;
+              mat->m_file = file;
+              self->m_dirty = true;
+              mat->Save(true);
+              man->Manage(mat);
+            }
+          };
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      // Material/Copy
+      m_itemActions["Material/Copy"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+        FolderView* self = getSelfFn();
+        if (self == nullptr)
+        {
+          return;
+        }
+
+        if (ImGui::Button("Copy", self->m_contextBtnSize))
+        {
+          if (ResourceManager* rm = entry->GetManager())
+          {
+            String path = entry->GetFullPath();
+            MaterialPtr resource = rm->Create<Material>(path)->Copy<Material>();
+            resource->Save(true);
+            self->m_dirty = true;
+          }
+
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      // Material/Delete
+      m_itemActions["Material/Delete"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+        FolderView* self = getSelfFn();
+        if (self == nullptr)
+        {
+          return;
+        }
+
+        if (ImGui::Button("Delete", self->m_contextBtnSize))
+        {
+          if (ResourceManager* rm = entry->GetManager())
+          {
+            if (MaterialPtr mat = rm->Create<Material>(entry->GetFullPath()))
+            {
+              if (g_app->m_scene->IsMaterialInUse(mat))
+              {
+                g_app->GetConsole()->AddLog("Can't delete. Material is in use", ConsoleWindow::LogType::Error);
+              }
+              else
+              {
+                std::filesystem::remove(entry->GetFullPath());
+                self->m_dirty = true;
+              }
+            }
+          }
+
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      // Material/Reload
+      m_itemActions["Material/Reload"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+        FolderView* self = getSelfFn();
+        if (self == nullptr)
+        {
+          return;
+        }
+
+        if (ImGui::Button("Reload", self->m_contextBtnSize))
+        {
+          if (ResourceManager* rm = entry->GetManager())
+          {
+            if (MaterialPtr mat = rm->Create<Material>(entry->GetFullPath()))
+            {
+              mat->Reload();
+              entry->GenerateThumbnail();
+            }
+          }
+
+          ImGui::CloseCurrentPopup();
+        }
+      };
     }
 
     FolderWindow::FolderWindow(XmlNode* node)
