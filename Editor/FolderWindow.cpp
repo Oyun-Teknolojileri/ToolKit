@@ -530,7 +530,7 @@ namespace ToolKit
       )
       {
         m_itemActions["Material/Create"](nullptr);
-        m_itemActions["MakeDir"](nullptr);
+        m_itemActions["FileSystem/MakeDir"](nullptr);
         m_itemActions["Refresh"](nullptr);
         ImGui::EndPopup();
       }
@@ -555,7 +555,7 @@ namespace ToolKit
         )
       )
       {
-        m_itemActions["MakeDir"](nullptr);
+        m_itemActions["FileSystem/MakeDir"](nullptr);
         m_itemActions["Refresh"](nullptr);
         ImGui::EndPopup();
       }
@@ -565,9 +565,9 @@ namespace ToolKit
     {
       if (ImGui::BeginPopupContextItem())
       {
-        m_itemActions["Scene/Copy"](entry);
-        m_itemActions["Scene/Rename"](entry);
-        m_itemActions["Scene/Delete"](entry);
+        m_itemActions["FileSystem/Copy"](entry);
+        m_itemActions["FileSystem/Rename"](entry);
+        m_itemActions["FileSystem/Delete"](entry);
 
         ImGui::EndPopup();
       }
@@ -581,7 +581,7 @@ namespace ToolKit
         )
       )
       {
-        m_itemActions["MakeDir"](nullptr);
+        m_itemActions["FileSystem/MakeDir"](nullptr);
         m_itemActions["Refresh"](nullptr);
         ImGui::EndPopup();
       }
@@ -598,7 +598,7 @@ namespace ToolKit
         )
       )
       {
-        m_itemActions["MakeDir"](nullptr);
+        m_itemActions["FileSystem/MakeDir"](nullptr);
         m_itemActions["Refresh"](nullptr);
 
         ImGui::EndPopup();
@@ -630,32 +630,6 @@ namespace ToolKit
         view->m_dirty = true;
       };
 
-      // MakeDir.
-      m_itemActions["MakeDir"] = [getSelfFn](DirectoryEntry* entry) -> void
-      {
-        FolderView* self = getSelfFn();
-        if (self == nullptr)
-        {
-          return;
-        }
-
-        if (ImGui::Button("Make Dir", self->m_contextBtnSize))
-        {
-          StringInputWindow* inputWnd = new StringInputWindow("New Directory##NwDirName", true);
-          inputWnd->m_inputLabel = "Name";
-          inputWnd->m_hint = "Directory Name";
-
-          inputWnd->m_taskFn = [self](const String& val)
-          {
-            String file = ConcatPaths({ self->m_path, val });
-            std::filesystem::create_directories(file);
-            self->m_dirty = true;
-          };
-
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
       // Refresh.
       m_itemActions["Refresh"] = [getSelfFn](DirectoryEntry* entry) -> void
       {
@@ -672,8 +646,34 @@ namespace ToolKit
         }
       };
 
-      // Scene/Rename
-      m_itemActions["Scene/Rename"] = [getSelfFn](DirectoryEntry* entry) -> void
+      // FileSystem/MakeDir.
+      m_itemActions["FileSystem/MakeDir"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+        FolderView* self = getSelfFn();
+        if (self == nullptr)
+        {
+          return;
+        }
+
+        if (ImGui::Button("MakeDir", self->m_contextBtnSize))
+        {
+          StringInputWindow* inputWnd = new StringInputWindow("New Directory##NwDirName", true);
+          inputWnd->m_inputLabel = "Name";
+          inputWnd->m_hint = "Directory name...";
+
+          inputWnd->m_taskFn = [self](const String& val)
+          {
+            String file = ConcatPaths({ self->m_path, val });
+            std::filesystem::create_directories(file);
+            self->m_dirty = true;
+          };
+
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      // FileSystem/Rename.
+      m_itemActions["FileSystem/Rename"] = [getSelfFn](DirectoryEntry* entry) -> void
       {
         FolderView* self = getSelfFn();
         if (self == nullptr)
@@ -687,21 +687,24 @@ namespace ToolKit
           {
             if (ScenePtr res = rm->Create<Scene>(entry->GetFullPath()))
             {
-              StringInputWindow* inputWnd = new StringInputWindow("Scene Name##NwScnName", true);
+              StringInputWindow* inputWnd = new StringInputWindow("New Name##NwName", true);
 
               String oldName, oldFile = res->m_file;
               DecomposePath(oldFile, nullptr, &oldName, nullptr);
 
               inputWnd->m_inputVal = oldName;
               inputWnd->m_inputLabel = "New Name";
-              inputWnd->m_hint = "New name";
+              inputWnd->m_hint = "New name...";
 
               inputWnd->m_taskFn = [self, oldFile](const String& val)
               {
-                String file = ConcatPaths({ self->m_path, val + SCENE });
+                String ext;
+                DecomposePath(oldFile, nullptr, nullptr, &ext);
+
+                String file = ConcatPaths({ self->m_path, val + ext });
                 if (CheckFile(file))
                 {
-                  g_app->GetConsole()->AddLog("Can't rename. A scene with the same name exist", ConsoleWindow::LogType::Error);
+                  g_app->GetConsole()->AddLog("Can't rename. A file with the same name exist", ConsoleWindow::LogType::Error);
                 }
                 else
                 {
@@ -716,8 +719,8 @@ namespace ToolKit
         }
       };
 
-      // Scene/Delete
-      m_itemActions["Scene/Delete"] = [getSelfFn, deleteDirFn](DirectoryEntry* entry) -> void
+      // FileSystem/Delete.
+      m_itemActions["FileSystem/Delete"] = [getSelfFn, deleteDirFn](DirectoryEntry* entry) -> void
       {
         FolderView* self = getSelfFn();
         if (self == nullptr)
@@ -735,20 +738,19 @@ namespace ToolKit
           {
             if (ResourceManager* rm = entry->GetManager())
             {
-              if (ScenePtr res = rm->Create<Scene>(entry->GetFullPath()))
-              {
-                std::filesystem::remove(entry->GetFullPath());
-                self->m_dirty = true;
-              }
+              rm->Remove(entry->GetFullPath());
             }
+
+            std::filesystem::remove(entry->GetFullPath());
+            self->m_dirty = true;
           }
 
           ImGui::CloseCurrentPopup();
         }
       };
 
-      // Scene/Copy
-      m_itemActions["Scene/Copy"] = [getSelfFn](DirectoryEntry* entry) -> void
+      // FileSystem/Copy.
+      m_itemActions["FileSystem/Copy"] = [getSelfFn](DirectoryEntry* entry) -> void
       {
         FolderView* self = getSelfFn();
         if (self == nullptr)
@@ -758,42 +760,16 @@ namespace ToolKit
 
         if (ImGui::Button("Copy", self->m_contextBtnSize))
         {
-          if (ResourceManager* rm = entry->GetManager())
-          {
-            String path = entry->GetFullPath();
-            ScenePtr resource = rm->Create<Scene>(path)->Copy<Scene>();
-            resource->Save(true);
-            self->m_dirty = true;
-          }
+          String fullPath = entry->GetFullPath();
+          String cpyPath = CreateCopyFileFullPath(fullPath);
+          std::filesystem::copy(fullPath, cpyPath);
 
+          self->m_dirty = true;
           ImGui::CloseCurrentPopup();
         }
       };
 
-      // Mesh/Copy
-      m_itemActions["Mesh/Copy"] = [getSelfFn](DirectoryEntry* entry) -> void
-      {
-        FolderView* self = getSelfFn();
-        if (self == nullptr)
-        {
-          return;
-        }
-
-        if (ImGui::Button("Copy", self->m_contextBtnSize))
-        {
-          if (ResourceManager* rm = entry->GetManager())
-          {
-            String path = entry->GetFullPath();
-            MeshPtr resource = rm->Create<Mesh>(path)->Copy<Mesh>();
-            resource->Save(true);
-            self->m_dirty = true;
-          }
-
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      // Mesh/Delete
+      // Mesh/Delete.
       m_itemActions["Mesh/Delete"] = [getSelfFn, deleteDirFn](DirectoryEntry* entry) -> void
       {
         FolderView* self = getSelfFn();
@@ -831,7 +807,7 @@ namespace ToolKit
         }
       };
 
-      // Material/Create
+      // Material/Create.
       m_itemActions["Material/Create"] = [getSelfFn](DirectoryEntry* entry) -> void
       {
         FolderView* self = getSelfFn();
@@ -868,30 +844,7 @@ namespace ToolKit
         }
       };
 
-      // Material/Copy
-      m_itemActions["Material/Copy"] = [getSelfFn](DirectoryEntry* entry) -> void
-      {
-        FolderView* self = getSelfFn();
-        if (self == nullptr)
-        {
-          return;
-        }
-
-        if (ImGui::Button("Copy", self->m_contextBtnSize))
-        {
-          if (ResourceManager* rm = entry->GetManager())
-          {
-            String path = entry->GetFullPath();
-            MaterialPtr resource = rm->Create<Material>(path)->Copy<Material>();
-            resource->Save(true);
-            self->m_dirty = true;
-          }
-
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      // Material/Delete
+      // Material/Delete.
       m_itemActions["Material/Delete"] = [getSelfFn, deleteDirFn](DirectoryEntry* entry) -> void
       {
         FolderView* self = getSelfFn();
@@ -929,7 +882,7 @@ namespace ToolKit
         }
       };
 
-      // Material/Reload
+      // Material/Reload.
       m_itemActions["Material/Reload"] = [getSelfFn](DirectoryEntry* entry) -> void
       {
         FolderView* self = getSelfFn();
