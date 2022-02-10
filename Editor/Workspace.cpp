@@ -197,8 +197,9 @@ namespace ToolKit
         if (GetSceneManager()->Exist(m_app->m_scene->m_file))
         {
           String file = m_app->m_scene->m_file;
-          String prefabPath = PrefabPath(m_app->m_scene->m_name + SCENE);
-          if (file.find(prefabPath) == String::npos) // Don't save prefabs as current scene.
+          String sceneRoot = ScenePath("");
+          // Don't save anything as current scene, if its not in scene root folder.
+          if (file.find(sceneRoot) != String::npos)
           {
             String scenePath = GetRelativeResourcePath(m_app->m_scene->m_file);
             WriteAttr(setNode, lclDoc.get(), "scene", scenePath);
