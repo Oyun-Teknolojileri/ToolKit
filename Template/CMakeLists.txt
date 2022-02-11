@@ -8,6 +8,9 @@ if("${TOOLKIT_DIR}" STREQUAL "__tkdir__")
 	file (STRINGS "Path.txt" TOOLKIT_DIR)
 endif()
 
+#Store original output name
+set(DLL_NAME ${PROJECT_NAME})
+
 string(REPLACE " " "-" PROJECT_NAME ${PROJECT_NAME})
 project (${PROJECT_NAME})
 
@@ -66,6 +69,9 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH})
 target_link_libraries(${PROJECT_NAME} debug ToolKit_d)
 target_link_libraries(${PROJECT_NAME} optimized ToolKit)
 target_link_libraries(${PROJECT_NAME} glew32 OpenGL32 OpenAL32)
+
+#Set original output name
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${DLL_NAME})
 
 #For hotreload rename the previous output
 set(DLL $<SHELL_PATH:$<TARGET_FILE:${PROJECT_NAME}>>)
