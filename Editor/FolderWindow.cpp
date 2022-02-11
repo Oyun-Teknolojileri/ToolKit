@@ -673,6 +673,7 @@ namespace ToolKit
       };
 
       // FileSystem/Rename.
+      // This is scene spesific rename ... fix it.
       m_itemActions["FileSystem/Rename"] = [getSelfFn](DirectoryEntry* entry) -> void
       {
         FolderView* self = getSelfFn();

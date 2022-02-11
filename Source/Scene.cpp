@@ -362,7 +362,11 @@ namespace ToolKit
   void Scene::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* scene = doc->allocate_node(rapidxml::node_element, XmlSceneElement.c_str());
-    WriteAttr(scene, doc, "name", m_name.c_str());
+    
+    // Match scene name with saved file.
+    String name;
+    DecomposePath(m_file, nullptr, &name, nullptr);
+    WriteAttr(scene, doc, "name", name.c_str());
 
     if (parent != nullptr)
     {
@@ -391,7 +395,8 @@ namespace ToolKit
       root = doc->first_node(XmlSceneElement.c_str());
     }
 
-    ReadAttr(root, "name", m_name);
+    // Match scene name with file name.
+    DecomposePath(m_file, nullptr, &m_name, nullptr);
 
     XmlNode* node = nullptr;
     for (node = root->first_node(XmlEntityElement.c_str()); node; node = node->next_sibling(XmlEntityElement.c_str()))

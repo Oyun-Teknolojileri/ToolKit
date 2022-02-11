@@ -138,6 +138,26 @@ namespace ToolKit
     return node;
   }
 
+  TK_API bool UpdateAttribute(XmlDocument* doc, const StringArray& path, const String& attribute, const String& val)
+  {
+    if (XmlNode* node = Query(doc, path))
+    {
+      if (XmlAttribute* attr = node->first_attribute(attribute.c_str()))
+      {
+        node->value(val.c_str());
+      }
+      else
+      {
+        XmlAttribute* newAttr = doc->allocate_attribute(attribute.c_str(), val.c_str());
+        node->append_attribute(newAttr);
+      }
+
+      return true;
+    }
+
+    return false;
+  }
+
   void WriteMaterial(XmlNode* parent, XmlDocument* doc, const String& file)
   {
     XmlNode* material = doc->allocate_node
