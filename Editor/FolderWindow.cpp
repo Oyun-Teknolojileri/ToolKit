@@ -581,6 +581,7 @@ namespace ToolKit
         )
       )
       {
+        m_itemActions["Scene/Create"](entry);
         m_itemActions["FileSystem/MakeDir"](nullptr);
         m_itemActions["Refresh"](nullptr);
         ImGui::EndPopup();
@@ -804,6 +805,39 @@ namespace ToolKit
             }
           }
 
+          ImGui::CloseCurrentPopup();
+        }
+      };
+
+      // Scene/Create.
+      m_itemActions["Scene/Create"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+        FolderView* self = getSelfFn();
+        if (self == nullptr)
+        {
+          return;
+        }
+
+        if (ImGui::Button("Crate", self->m_contextBtnSize))
+        {
+          StringInputWindow* inputWnd = new StringInputWindow("Scene Name##ScnMat", true);
+          inputWnd->m_inputVal = "New Scene";
+          inputWnd->m_inputLabel = "Name";
+          inputWnd->m_hint = "New scene name...";
+          inputWnd->m_taskFn = [self](const String& val)
+          {
+            String file = ConcatPaths({ self->m_path, val + SCENE });
+            if (CheckFile(file))
+            {
+              g_app->GetConsole()->AddLog("Can't create. A scene with the same name exist", ConsoleWindow::LogType::Error);
+            }
+            else
+            {
+              ScenePtr scene = std::make_shared<Scene>(file);
+              scene->Save(false);
+              self->m_dirty = true;
+            }
+          };
           ImGui::CloseCurrentPopup();
         }
       };
