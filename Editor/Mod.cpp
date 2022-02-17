@@ -878,10 +878,11 @@ namespace ToolKit
         EntityRawPtrArray selectedRoots;
         GetRootEntities(selecteds, selectedRoots);
 
+        int cpyCount = 0;
         bool copy = ImGui::GetIO().KeyShift;
-        EntityRawPtrArray copies;
         for (Entity* ntt : selectedRoots)
         {
+          EntityRawPtrArray copies;
           if (copy)
           {
             DeepCopy(ntt, copies);
@@ -897,8 +898,9 @@ namespace ToolKit
           }
           
           g_app->m_scene->AddToSelection(copies.front()->m_id, true);
+          cpyCount += (int)copies.size();
         }
-        ActionManager::GetInstance()->GroupLastActions((int)copies.size());
+        ActionManager::GetInstance()->GroupLastActions(cpyCount);
       }
     }
 
