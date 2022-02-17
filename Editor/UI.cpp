@@ -1014,7 +1014,7 @@ namespace ToolKit
       ImGui::SetWindowFocus();
     }
 
-    void Window::ModShortCutSignals() const
+    void Window::ModShortCutSignals(const IntArray& mask) const
     {
       if (!CanDispatchSignals())
       {
@@ -1022,7 +1022,7 @@ namespace ToolKit
       }
 
       ImGuiIO& io = ImGui::GetIO();
-      if (io.KeysDown[io.KeyMap[ImGuiKey_Delete]])
+      if (io.KeysDown[io.KeyMap[ImGuiKey_Delete]] && !Exist(mask, SDL_SCANCODE_DELETE))
       {
         if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Delete]] == 0.0f)
         {
@@ -1030,7 +1030,12 @@ namespace ToolKit
         }
       }
 
-      if (io.KeysDown[SDL_SCANCODE_D] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+      if 
+      (
+        io.KeysDown[SDL_SCANCODE_D] && 
+        !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+        !Exist(mask, SDL_SCANCODE_D)
+      )
       {
         if (io.KeysDownDuration[SDL_SCANCODE_D] == 0.0f)
         {
@@ -1038,7 +1043,7 @@ namespace ToolKit
         }
       }
 
-      if (io.KeysDown[SDL_SCANCODE_B] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+      if (io.KeysDown[SDL_SCANCODE_B] && !Exist(mask, SDL_SCANCODE_B))
       {
         if (io.KeysDownDuration[SDL_SCANCODE_B] == 0.0f)
         {
@@ -1046,7 +1051,12 @@ namespace ToolKit
         }
       }
 
-      if (io.KeysDown[SDL_SCANCODE_S] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+      if 
+      (
+        io.KeysDown[SDL_SCANCODE_S] && 
+        !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+        !Exist(mask, SDL_SCANCODE_S)
+      )
       {
         if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
         {
@@ -1054,7 +1064,7 @@ namespace ToolKit
         }
       }
 
-      if (io.KeysDown[SDL_SCANCODE_R] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+      if (io.KeysDown[SDL_SCANCODE_R] && !Exist(mask, SDL_SCANCODE_R))
       {
         if (io.KeysDownDuration[SDL_SCANCODE_R] == 0.0f)
         {
@@ -1062,7 +1072,7 @@ namespace ToolKit
         }
       }
 
-      if (io.KeysDown[SDL_SCANCODE_G] && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+      if (io.KeysDown[SDL_SCANCODE_G] && !Exist(mask, SDL_SCANCODE_G))
       {
         if (io.KeysDownDuration[SDL_SCANCODE_G] == 0.0f)
         {
@@ -1070,7 +1080,12 @@ namespace ToolKit
         }
       }
 
-      if (io.KeyCtrl && io.KeysDown[SDL_SCANCODE_S])
+      if 
+      (
+        io.KeyCtrl && 
+        io.KeysDown[SDL_SCANCODE_S] && 
+        !Exist(mask, SDL_SCANCODE_F)
+      )
       {
         if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
         {
@@ -1080,7 +1095,7 @@ namespace ToolKit
         }
       }
 
-      if (io.KeysDown[SDL_SCANCODE_F])
+      if (io.KeysDown[SDL_SCANCODE_F] && !Exist(mask, SDL_SCANCODE_F))
       {
         if (io.KeysDownDuration[SDL_SCANCODE_F] == 0.0f)
         {
@@ -1096,7 +1111,7 @@ namespace ToolKit
       }
 
       // Undo - Redo.
-      if (io.KeysDown[io.KeyMap[ImGuiKey_Z]])
+      if (io.KeysDown[io.KeyMap[ImGuiKey_Z]] && !Exist(mask, SDL_SCANCODE_Z))
       {
         if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Z]] == 0.0f)
         {

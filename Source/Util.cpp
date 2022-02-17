@@ -821,4 +821,17 @@ namespace ToolKit
     return -1;
   }
 
+  TK_API bool Exist(const IntArray& vec, int val)
+  {
+    for (int v : vec)
+    {
+      if (v == val)
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
 }

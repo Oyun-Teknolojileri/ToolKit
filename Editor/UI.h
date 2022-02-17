@@ -50,7 +50,7 @@ namespace ToolKit
       // Internal window handling.
       void HandleStates();
       void SetActive();
-      void ModShortCutSignals() const;
+      void ModShortCutSignals(const IntArray& mask = {}) const;
 
     protected:
       // States.

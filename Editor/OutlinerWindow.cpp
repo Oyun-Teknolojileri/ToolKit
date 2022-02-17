@@ -199,7 +199,7 @@ namespace ToolKit
 
     void OutlinerWindow::DispatchSignals() const
     {
-      ModShortCutSignals();
+      ModShortCutSignals({ SDL_SCANCODE_D });
     }
 
     void OutlinerWindow::Focus(Entity* ntt)

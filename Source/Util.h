@@ -79,6 +79,7 @@ namespace ToolKit
 
   // Vector operations.
   TK_API int IndexOf(Entity* ntt, const EntityRawPtrArray& entities);
+  TK_API bool Exist(const IntArray& vec, int val);
 
   template<typename T>
   void pop_front(std::vector<T>& vec)

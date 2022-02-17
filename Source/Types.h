@@ -59,6 +59,7 @@ namespace ToolKit
   typedef glm::mat4 Mat4;
   typedef glm::mat3 Mat3;
   typedef glm::quat Quaternion;
+  typedef std::vector<int> IntArray;
 
   // Resource types.
   typedef std::shared_ptr<class Animation> AnimationPtr;
