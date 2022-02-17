@@ -513,7 +513,7 @@ namespace ToolKit
     {
       if (ImGui::BeginPopupContextItem())
       {
-        m_itemActions["Material/Copy"](entry);
+        m_itemActions["FileSystem/Copy"](entry);
         m_itemActions["Material/Delete"](entry);
         m_itemActions["Material/Reload"](entry);
 
