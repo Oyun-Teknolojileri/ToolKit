@@ -349,6 +349,10 @@ namespace ToolKit
           SafeDel(wnd);
           m_volatileWindows.erase(m_volatileWindows.begin() + i);
         }
+
+        // Always serve the last popup. Imgui popups are modal.
+        // This break gives us the ability to serve last arriving modal.
+        break;
       }
 
       ImGui::Render();

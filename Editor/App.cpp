@@ -256,8 +256,7 @@ namespace ToolKit
         return;
       }
 
-      static bool processing = false;
-      if (!processing)
+      if (!m_onQuit)
       {
         YesNoWindow* reallyQuit = new YesNoWindow("Quiting... Are you sure?##ClsApp");
         reallyQuit->m_yesCallback = [this]()
@@ -267,13 +266,13 @@ namespace ToolKit
           g_running = false;
         };
 
-        reallyQuit->m_noCallback = []()
+        reallyQuit->m_noCallback = [this]()
         {
-          processing = false;
+          m_onQuit = false;
         };
 
         UI::m_volatileWindows.push_back(reallyQuit);
-        processing = true;
+        m_onQuit = true;
       }
     }
 
