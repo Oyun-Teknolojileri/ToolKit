@@ -234,11 +234,8 @@ namespace ToolKit
           }
         }
 
-        // Show Tab path.
-        if (ImGui::IsItemHovered())
-        {
-          ImGui::SetTooltip("%s", m_path.c_str());
-        }
+        // Item dropped to tab.
+        MoveTo(m_path);
 
         // Start drawing folder items.
         const float footerHeightReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
@@ -397,6 +394,12 @@ namespace ToolKit
               ImGui::PopStyleColor();
             }
 
+            // Make directories drop target for resources.
+            if (dirEnt.m_isDirectory)
+            {
+              MoveTo(ConcatPaths({ dirEnt.m_rootPath, dirEnt.m_fileName }));
+            }
+
             // Handle Item sub text.
             ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
             size_t charLim = (size_t)(m_iconSize.x * 0.1f);
@@ -540,7 +543,7 @@ namespace ToolKit
     {
       if (ImGui::BeginPopupContextItem())
       {
-        m_itemActions["Mesh/Copy"](entry);
+        m_itemActions["FileSystem/Copy"](entry);
         m_itemActions["Mesh/Delete"](entry);
 
         ImGui::EndPopup();
@@ -940,6 +943,44 @@ namespace ToolKit
           ImGui::CloseCurrentPopup();
         }
       };
+    }
+
+    void FolderView::MoveTo(const String& dst)
+    {
+      if (ImGui::BeginDragDropTarget())
+      {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
+        {
+          IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
+          DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
+          String newPath = ConcatPaths({ dst, entry.m_fileName + entry.m_ext });
+
+          std::error_code ec;
+          std::filesystem::rename(entry.GetFullPath(), newPath, ec);
+          if (ec)
+          {
+            g_app->m_statusMsg = ec.message();
+          }
+          else
+          {
+            // Update src & dst views.
+            String src = entry.m_rootPath;
+            if (src == m_path) 
+            {
+              // Item moved across tabs.
+              src = dst;
+            }
+
+            int indx = m_parent->Exist(src);
+            if (indx != -1)
+            {
+              m_parent->GetView(indx).m_dirty = true;
+            }
+            m_dirty = true;
+          }
+        }
+        ImGui::EndDragDropTarget();
+      }
     }
 
     FolderWindow::FolderWindow(XmlNode* node)

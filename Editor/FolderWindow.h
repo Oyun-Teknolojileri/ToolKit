@@ -47,6 +47,7 @@ namespace ToolKit
       void ShowContextForScene(DirectoryEntry* entry);
       void ShowGenericContext();
       void CreateItemActions();
+      void MoveTo(const String& dst); // Imgui Drop target.
 
     public:
       bool m_currRoot = false; // Indicates this is a root folder (one level under Resources) and currently selected in the FolderWindow.
