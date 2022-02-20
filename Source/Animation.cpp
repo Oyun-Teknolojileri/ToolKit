@@ -18,7 +18,7 @@ namespace ToolKit
   Animation::Animation(String file)
     : Animation()
   {
-    m_file = file;
+    SetFile(file);
   }
 
   Animation::~Animation()
@@ -108,7 +108,7 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file(m_file.c_str());
+    XmlFile file(GetFile().c_str());
     XmlDocument doc;
     doc.parse<0>(file.data());
 

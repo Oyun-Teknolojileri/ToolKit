@@ -18,7 +18,7 @@ namespace ToolKit
   SpriteSheet::SpriteSheet(String file)
     : SpriteSheet()
   {
-    m_file = file;
+    SetFile(file);
   }
 
   SpriteSheet::~SpriteSheet()
@@ -72,7 +72,7 @@ namespace ToolKit
 
   bool SpriteSheet::FetchEntries()
   {
-    XmlFile file(m_file.c_str());
+    XmlFile file(GetFile().c_str());
     XmlDocument doc;
     doc.parse<0>(file.data());
 

@@ -154,7 +154,7 @@ namespace ToolKit
   Audio::Audio(String file)
     : Audio()
   {
-    m_file = file;
+    SetFile(file);
   }
 
   Audio::~Audio()
@@ -170,7 +170,7 @@ namespace ToolKit
   {
     ALsizei tmp1, tmp2;
     ALenum tmp3;
-    loadWavFile(m_file.c_str(), &m_buffer, &tmp1, &tmp2, &tmp3);
+    loadWavFile(GetFile().c_str(), &m_buffer, &tmp1, &tmp2, &tmp3);
     m_loaded = true;
   }
 

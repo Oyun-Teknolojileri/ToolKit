@@ -194,14 +194,14 @@ namespace ToolKit
         WriteAttr(setNode, lclDoc.get(), "name", m_activeProject.name);
         settings->append_node(setNode);
 
-        if (GetSceneManager()->Exist(m_app->m_scene->m_file))
+        if (GetSceneManager()->Exist(m_app->m_scene->GetFile()))
         {
-          String file = m_app->m_scene->m_file;
+          String file = m_app->m_scene->GetFile();
           String sceneRoot = ScenePath("");
           // Don't save anything as current scene, if its not in scene root folder.
           if (file.find(sceneRoot) != String::npos)
           {
-            String scenePath = GetRelativeResourcePath(m_app->m_scene->m_file);
+            String scenePath = GetRelativeResourcePath(m_app->m_scene->GetFile());
             WriteAttr(setNode, lclDoc.get(), "scene", scenePath);
           }
         }

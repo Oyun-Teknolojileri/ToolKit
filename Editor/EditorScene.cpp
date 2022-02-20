@@ -19,7 +19,7 @@ namespace ToolKit
     EditorScene::EditorScene(const String& file)
       : EditorScene()
     {
-      m_file = file;
+      SetFile(file);
       m_newScene = false;
     }
 

@@ -38,11 +38,13 @@ namespace ToolKit
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
+    String GetFile() const;
+    void SetFile(const String& file);
+
   protected:
     virtual void CopyTo(Resource* other);
 
   public:
-    String m_file;
     String m_name;
     EntityId m_id;
     bool m_dirty = false;
@@ -50,6 +52,7 @@ namespace ToolKit
     bool m_initiated = false;
 
   private:
+    String m_file;
     static EntityId m_handle;
   };
 

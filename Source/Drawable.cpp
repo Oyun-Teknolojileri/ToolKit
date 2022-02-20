@@ -66,7 +66,7 @@ namespace ToolKit
     Entity::Serialize(doc, parent);
     XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlMeshElement.c_str());
 
-    String relPath = GetRelativeResourcePath(m_mesh->m_file);
+    String relPath = GetRelativeResourcePath(m_mesh->GetFile());
     
     node->append_attribute
     (
@@ -121,7 +121,7 @@ namespace ToolKit
 
   void Drawable::RemoveResources()
   {
-    GetMeshManager()->Remove(m_mesh->m_file);
+    GetMeshManager()->Remove(m_mesh->GetFile());
   }
 
   Entity* Drawable::GetInstance(Entity* copyTo) const

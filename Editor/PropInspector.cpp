@@ -245,7 +245,7 @@ namespace ToolKit
         DropSubZone
         (
           UI::m_meshIcon->m_textureId,
-          entry->m_file,
+          entry->GetFile(),
           [this](const DirectoryEntry& dirEnt) -> void
           {
             if (m_entity && m_entity->IsDrawable())
@@ -282,7 +282,7 @@ namespace ToolKit
 
       auto updateThumbFn = [&entry]() -> void
       {
-        DirectoryEntry dirEnt(entry->m_file);
+        DirectoryEntry dirEnt(entry->GetFile());
         dirEnt.GenerateThumbnail();
         entry->m_dirty = true;
       };
@@ -300,7 +300,7 @@ namespace ToolKit
           String target = GetPathSeparatorAsStr();
           if (entry->m_diffuseTexture)
           {
-            target = entry->m_diffuseTexture->m_file;
+            target = entry->m_diffuseTexture->GetFile();
           }
 
           DropZone
@@ -330,7 +330,7 @@ namespace ToolKit
           DropZone
           (
             UI::m_codeIcon->m_textureId,
-            entry->m_vertexShader->m_file,
+            entry->m_vertexShader->GetFile(),
             [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
             {
               entry->m_vertexShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
@@ -343,7 +343,7 @@ namespace ToolKit
           DropZone
           (
             UI::m_codeIcon->m_textureId,
-            entry->m_fragmetShader->m_file,
+            entry->m_fragmetShader->GetFile(),
             [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
             {
               entry->m_fragmetShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
@@ -429,7 +429,7 @@ namespace ToolKit
           DropSubZone
           (
             UI::m_materialIcon->m_textureId,
-            entry->m_file,
+            entry->GetFile(),
             [&drawable](const DirectoryEntry& dirEnt) -> void
             {
               MeshPtr mesh = drawable->m_mesh;
@@ -641,7 +641,7 @@ namespace ToolKit
         String file = "\\button image.";
         if (button->m_buttonImage)
         {
-          file = button->m_buttonImage->m_file;
+          file = button->m_buttonImage->GetFile();
         }
 
         DropZone
@@ -669,7 +669,7 @@ namespace ToolKit
         file = "\\mouse over image.";
         if (button->m_mouseOverImage)
         {
-          file = button->m_mouseOverImage->m_file;
+          file = button->m_mouseOverImage->GetFile();
         }
 
         DropZone

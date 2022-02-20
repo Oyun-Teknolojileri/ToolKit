@@ -81,12 +81,13 @@ namespace ToolKit
     nttNode->append_node(prop);
     WriteVec(prop, doc, m_pivotOffset);
 
-    if (m_mesh->m_material->m_file.empty())
+    String matFile = m_mesh->m_material->GetFile();
+    if (matFile.empty())
     {
       m_mesh->m_material->m_name = m_name;
     }
     m_mesh->m_material->Save(true);
-    WriteMaterial(nttNode, doc, m_mesh->m_material->m_file);
+    WriteMaterial(nttNode, doc, matFile);
   }
 
   void Surface::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -245,7 +246,7 @@ namespace ToolKit
     XmlNode* node = doc->allocate_node(rapidxml::node_element, "Button");
     if (m_mouseOverImage)
     {
-      String relPath = GetRelativeResourcePath(m_mouseOverImage->m_file);
+      String relPath = GetRelativeResourcePath(m_mouseOverImage->GetFile());
       node->append_attribute
       (
         doc->allocate_attribute
@@ -258,7 +259,7 @@ namespace ToolKit
 
     if (m_buttonImage)
     {
-      String relPath = GetRelativeResourcePath(m_buttonImage->m_file);
+      String relPath = GetRelativeResourcePath(m_buttonImage->GetFile());
       node->append_attribute
       (
         doc->allocate_attribute

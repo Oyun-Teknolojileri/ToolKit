@@ -17,7 +17,7 @@ namespace ToolKit
   Material::Material(String file)
     : Material()
   {
-    m_file = file;
+    SetFile(file);
   }
 
   Material::~Material()
@@ -32,7 +32,7 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file(m_file.c_str());
+    XmlFile file(GetFile().c_str());
     XmlDocument doc;
     doc.parse<0>(file.data());
     
@@ -176,7 +176,7 @@ namespace ToolKit
       );
       container->append_node(node);
 
-      String file = GetRelativeResourcePath(m_diffuseTexture->m_file);
+      String file = GetRelativeResourcePath(m_diffuseTexture->GetFile());
       WriteAttr(node, doc, "name", file);
     }
 
@@ -189,7 +189,7 @@ namespace ToolKit
       );
       container->append_node(node);
 
-      String file = GetRelativeResourcePath(m_cubeMap->m_file);
+      String file = GetRelativeResourcePath(m_cubeMap->GetFile());
       WriteAttr(node, doc, "name", file);
     }
 
@@ -202,7 +202,7 @@ namespace ToolKit
       );
       container->append_node(node);
 
-      String file = GetRelativeResourcePath(m_vertexShader->m_file);
+      String file = GetRelativeResourcePath(m_vertexShader->GetFile());
       WriteAttr(node, doc, "name", file);
     }
 
@@ -215,7 +215,7 @@ namespace ToolKit
       );
       container->append_node(node);
 
-      String file = GetRelativeResourcePath(m_fragmetShader->m_file);
+      String file = GetRelativeResourcePath(m_fragmetShader->GetFile());
       WriteAttr(node, doc, "name", file);
     }
 

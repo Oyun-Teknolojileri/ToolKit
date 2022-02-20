@@ -51,7 +51,7 @@ namespace ToolKit
         }
 
         std::shared_ptr<T> resource = std::static_pointer_cast<T> (CreateLocal(T::GetTypeStatic()));
-        resource->m_file = file;
+        resource->SetFile(file);
         resource->Load();
         m_storage[file] = resource;
       }
