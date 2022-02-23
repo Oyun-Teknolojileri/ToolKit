@@ -10,7 +10,7 @@
 namespace ToolKit
 {
 
-  EntityId Entity::m_lastId = 1000; // 0 is null entity id.
+  ULongID Entity::m_lastId = 1000; // 0 is null entity id.
 
   Entity::Entity()
   {

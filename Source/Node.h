@@ -52,7 +52,7 @@ namespace ToolKit
     void SetChildrenDirty();
 
   public:
-    NodeId m_id;
+    ULongID m_id;
     Node* m_parent = nullptr;
     Entity* m_entity = nullptr;
     bool m_inheritScale = false;
@@ -63,7 +63,7 @@ namespace ToolKit
     Vec3 m_translation;
     Quaternion m_orientation;
     Vec3 m_scale = Vec3(1.0f);
-    static NodeId m_nextId;
+    static ULongID m_nextId;
 
     Mat4 m_parentCache;
     bool m_dirty = true; // Hint for child to update its parent cache.

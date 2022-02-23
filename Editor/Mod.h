@@ -39,7 +39,7 @@ namespace ToolKit
 
     private:
       Entity* m_ntt;
-      EntityId m_parentId;
+      ULongID m_parentId;
       EntityIdArray m_children;
       std::vector<AnimRecord> m_records;
       bool m_actionComitted;
@@ -184,7 +184,7 @@ namespace ToolKit
       StatePickingBase();
       virtual void TransitionIn(State* prevState) override;
       virtual void TransitionOut(State* nextState) override;
-      bool IsIgnored(EntityId id);
+      bool IsIgnored(ULongID id);
       void PickDataToEntityId(EntityIdArray& ids);
 
     public:

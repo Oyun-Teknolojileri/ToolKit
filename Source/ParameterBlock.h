@@ -12,8 +12,8 @@ namespace ToolKit
   public:
     enum class VariantType
     {
-      Byte,
-      UByte,
+      byte,
+      ubyte,
       Float,
       Int,
       UInt,
@@ -26,8 +26,8 @@ namespace ToolKit
 
     ParameterVariant() { SetVar(0); }
     virtual ~ParameterVariant() { }
-    ParameterVariant(Byte var) { SetVar(var); }
-    ParameterVariant(UByte var) { SetVar(var); }
+    ParameterVariant(byte var) { SetVar(var); }
+    ParameterVariant(ubyte var) { SetVar(var); }
     ParameterVariant(float var) { SetVar(var); }
     ParameterVariant(int var) { SetVar(var); }
     ParameterVariant(uint var) { SetVar(var); }
@@ -39,8 +39,8 @@ namespace ToolKit
 
     VariantType GetType() const { return m_type; }
     template<typename T> const T& GetVar() const { return std::get<T>(m_var); }
-    void SetVar(Byte var) { m_type = VariantType::Byte; m_var = var; }
-    void SetVar(UByte var) { m_type = VariantType::UByte; m_var = var; }
+    void SetVar(byte var) { m_type = VariantType::byte; m_var = var; }
+    void SetVar(ubyte var) { m_type = VariantType::ubyte; m_var = var; }
     void SetVar(float var) { m_type = VariantType::Float; m_var = var; }
     void SetVar(int var) { m_type = VariantType::Int; m_var = var; }
     void SetVar(uint var) { m_type = VariantType::UInt; m_var = var; }
@@ -54,7 +54,7 @@ namespace ToolKit
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   private:
-    std::variant<Byte, UByte, float, int, uint, Vec3, Vec4, Mat3, Mat4, String> m_var;
+    std::variant<byte, ubyte, float, int, uint, Vec3, Vec4, Mat3, Mat4, String> m_var;
     VariantType m_type;
   };
 

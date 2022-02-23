@@ -24,8 +24,8 @@ namespace ToolKit
     }
 
     // Recursively show entity hierarchy & update via drag drop.
-    EntityId g_parent = NULL_ENTITY;
-    EntityId g_child = NULL_ENTITY;
+    ULongID g_parent = NULL_ENTITY;
+    ULongID g_child = NULL_ENTITY;
 
     void OutlinerWindow::ShowNode(Entity* e)
     {
@@ -121,7 +121,7 @@ namespace ToolKit
 
       if (ImGui::BeginDragDropSource())
       {
-        ImGui::SetDragDropPayload("HierarcyChange", &e->m_id, sizeof(EntityId*));
+        ImGui::SetDragDropPayload("HierarcyChange", &e->m_id, sizeof(ULongID*));
         ImGui::Text("Drop on the new parent.");
         ImGui::EndDragDropSource();
       }
@@ -130,8 +130,8 @@ namespace ToolKit
       {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
         {
-          IM_ASSERT(payload->DataSize == sizeof(EntityId*));
-          g_child = *(EntityId*)payload->Data;
+          IM_ASSERT(payload->DataSize == sizeof(ULongID*));
+          g_child = *(ULongID*)payload->Data;
           g_parent = e->m_id;
         }
         ImGui::EndDragDropTarget();
@@ -156,8 +156,8 @@ namespace ToolKit
           {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
             {
-              IM_ASSERT(payload->DataSize == sizeof(EntityId*));
-              g_child = *(EntityId*)payload->Data;
+              IM_ASSERT(payload->DataSize == sizeof(ULongID*));
+              g_child = *(ULongID*)payload->Data;
               Entity* child = g_app->m_scene->GetEntity(g_child);
               child->m_node->OrphanSelf(true);
             }

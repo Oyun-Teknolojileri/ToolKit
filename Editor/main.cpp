@@ -94,7 +94,7 @@ namespace ToolKit
 
             GlErrorReporter::Report = [](const std::string& msg) -> void 
             {
-              static Byte state = g_app->m_showGraphicsApiErrors;
+              static byte state = g_app->m_showGraphicsApiErrors;
               if (state != g_app->m_showGraphicsApiErrors)
               {
                 state = g_app->m_showGraphicsApiErrors;

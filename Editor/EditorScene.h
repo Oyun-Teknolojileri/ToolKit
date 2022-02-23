@@ -16,14 +16,14 @@ namespace ToolKit
       virtual ~EditorScene();
 
       // Selection operations.
-      bool IsSelected(EntityId id) const;
-      void RemoveFromSelection(EntityId id);
+      bool IsSelected(ULongID id) const;
+      void RemoveFromSelection(ULongID id);
       void AddToSelection(const EntityIdArray& entities, bool additive);
       void AddToSelection(const EntityRawPtrArray& entities, bool additive);
-      void AddToSelection(EntityId id, bool additive);
+      void AddToSelection(ULongID id, bool additive);
       void ClearSelection();
-      bool IsCurrentSelection(EntityId id) const;
-      void MakeCurrentSelection(EntityId id, bool ifExist); // Makes the entity current selection. ifExist true, only works if the entity exist in the selection. Otherwise adds entity to selection list and selects it.
+      bool IsCurrentSelection(ULongID id) const;
+      void MakeCurrentSelection(ULongID id, bool ifExist); // Makes the entity current selection. ifExist true, only works if the entity exist in the selection. Otherwise adds entity to selection list and selects it.
       uint GetSelectedEntityCount() const;
       Entity* GetCurrentSelection() const;
 
@@ -33,7 +33,7 @@ namespace ToolKit
       virtual void Save(bool onlyIfDirty) override;
 
       // Entity operations.
-      virtual Entity* RemoveEntity(EntityId id) override;
+      virtual Entity* RemoveEntity(ULongID id) override;
       virtual void Destroy(bool removeResources) override;
       void GetSelectedEntities(EntityRawPtrArray& entities) const;
       void GetSelectedEntities(EntityIdArray& entities) const;

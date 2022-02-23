@@ -54,16 +54,16 @@ namespace ToolKit
 
   public:
     Node* m_node;
-    EntityId m_id;
+    ULongID m_id;
     String m_name;
     String m_tag;
     bool m_visible;
 
     // Internal use only, Helper ID for entity deserialization.
-    EntityId _parentId;
+    ULongID _parentId;
 
   private:
-    static EntityId m_lastId;
+    static ULongID m_lastId;
   };
 
   class TK_API EntityNode : public Entity

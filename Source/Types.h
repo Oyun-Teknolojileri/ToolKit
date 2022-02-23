@@ -37,13 +37,11 @@ namespace ToolKit
 {
 
   // Primitive types.
-  typedef char Byte;
-  typedef unsigned char UByte;
+  typedef char byte;
+  typedef unsigned char ubyte;
   typedef unsigned int uint;
   typedef unsigned char uint8;
-  typedef unsigned long EntityId;
-  typedef unsigned long NodeId;
-  typedef unsigned long SceneId;
+  typedef unsigned long ULongID;
   typedef const int SignalId;
   typedef std::shared_ptr<class Resource> ResourcePtr;
   typedef std::string String;
@@ -80,7 +78,7 @@ namespace ToolKit
   typedef std::vector<class Entity*> EntityRawPtrArray;
   typedef std::vector<class Light*> LightRawPtrArray;
   typedef std::vector<std::shared_ptr<class Entity>> EntityPtrArray;
-  typedef std::vector<EntityId> EntityIdArray;
+  typedef std::vector<ULongID> EntityIdArray;
   typedef std::vector<class Node*> NodePtrArray;
   typedef std::vector<class Vertex> VertexArray;
   typedef std::vector<class Face> FaceArray;
@@ -137,7 +135,7 @@ namespace ToolKit
   static const String SHADER(".shader");
   static const String AUDIO(".wav");
 
-  static const EntityId NULL_ENTITY = 0;
+  static const ULongID NULL_ENTITY = 0;
 
   // Xml file IO.
   static const String XmlEntityElement("E");

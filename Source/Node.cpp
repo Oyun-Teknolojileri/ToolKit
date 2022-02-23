@@ -7,7 +7,7 @@
 namespace ToolKit
 {
 
-  NodeId Node::m_nextId = 0;
+  ULongID Node::m_nextId = 0;
 
   Node::Node()
   {

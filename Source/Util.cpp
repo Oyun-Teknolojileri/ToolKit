@@ -104,14 +104,14 @@ namespace ToolKit
     val = ReadVal<uint>(node, name);
   }
 
-  void ReadAttr(XmlNode* node, const String& name, Byte& val)
+  void ReadAttr(XmlNode* node, const String& name, byte& val)
   {
-    val = ReadVal<Byte>(node, name);
+    val = ReadVal<byte>(node, name);
   }
 
-  void ReadAttr(XmlNode* node, const String& name, UByte& val)
+  void ReadAttr(XmlNode* node, const String& name, ubyte& val)
   {
-    val = ReadVal<UByte>(node, name);
+    val = ReadVal<ubyte>(node, name);
   }
 
   void ReadAttr(XmlNode* node, const String& name, String& val)

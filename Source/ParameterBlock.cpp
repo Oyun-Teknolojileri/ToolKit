@@ -14,14 +14,14 @@ namespace ToolKit
 
     switch (m_type)
     {
-    case VariantType::Byte:
+    case VariantType::byte:
     {
-      WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(GetVar<Byte>()));
+      WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(GetVar<byte>()));
     }
     break;
-    case VariantType::UByte:
+    case VariantType::ubyte:
     {
-      WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(GetVar<UByte>()));
+      WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(GetVar<ubyte>()));
     }
     break;
     case VariantType::Float:
@@ -79,16 +79,16 @@ namespace ToolKit
 
     switch (m_type)
     {
-    case VariantType::Byte:
+    case VariantType::byte:
     {
-      Byte val(0);
+      byte val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
       m_var = val;
     }
     break;
-    case VariantType::UByte:
+    case VariantType::ubyte:
     {
-      UByte val(0);
+      ubyte val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
       m_var = val;
     }

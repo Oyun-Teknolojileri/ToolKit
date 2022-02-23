@@ -44,13 +44,13 @@ namespace ToolKit
   public:
     String m_file;
     String m_name;
-    EntityId m_id;
+    ULongID m_id;
     bool m_dirty = false;
     bool m_loaded = false;
     bool m_initiated = false;
 
   private:
-    static EntityId m_handle;
+    static ULongID m_handle;
   };
 
 }

@@ -205,7 +205,7 @@ namespace ToolKit
     }
   }
 
-  Entity* Scene::GetEntity(EntityId id) const
+  Entity* Scene::GetEntity(ULongID id) const
   {
     for (Entity* e : m_entities)
     {
@@ -224,7 +224,7 @@ namespace ToolKit
     m_entities.push_back(entity);
   }
 
-  Entity* Scene::RemoveEntity(EntityId id)
+  Entity* Scene::RemoveEntity(ULongID id)
   {
     Entity* removed = nullptr;
     for (int i = (int)m_entities.size() - 1; i >= 0; i--)

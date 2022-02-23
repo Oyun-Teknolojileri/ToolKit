@@ -34,7 +34,7 @@ namespace ToolKit
     void PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const EntityIdArray& ignoreList = EntityIdArray(), bool pickPartiallyInside = true) const;
 
     // Entity operations.
-    Entity* GetEntity(EntityId id) const;
+    Entity* GetEntity(ULongID id) const;
     virtual void AddEntity(Entity* entity);
     const EntityRawPtrArray& GetEntities() const;
     Entity* GetFirstEntityByName(const String& name);
@@ -42,7 +42,7 @@ namespace ToolKit
     Entity* GetFirstByTag(const String& tag);
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
 
-    virtual Entity* RemoveEntity(EntityId id);
+    virtual Entity* RemoveEntity(ULongID id);
     virtual void RemoveEntity(const EntityRawPtrArray& entities);
     virtual void RemoveAllEntities();
     virtual void Destroy(bool removeResources);

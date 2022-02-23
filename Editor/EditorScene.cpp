@@ -27,12 +27,12 @@ namespace ToolKit
     {
     }
 
-    bool EditorScene::IsSelected(EntityId id) const
+    bool EditorScene::IsSelected(ULongID id) const
     {
       return std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id) != m_selectedEntities.end();
     }
 
-    void EditorScene::RemoveFromSelection(EntityId id)
+    void EditorScene::RemoveFromSelection(ULongID id)
     {
       auto nttIt = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
       if (nttIt != m_selectedEntities.end())
@@ -41,7 +41,7 @@ namespace ToolKit
       }
     }
 
-    void EditorScene::AddToSelection(EntityId id, bool additive)
+    void EditorScene::AddToSelection(ULongID id, bool additive)
     {
       assert(!IsSelected(id));
       if (!additive)
@@ -53,10 +53,10 @@ namespace ToolKit
 
     void EditorScene::AddToSelection(const EntityIdArray& entities, bool additive)
     {
-      EntityId currentId = NULL_ENTITY;
+      ULongID currentId = NULL_ENTITY;
       if (entities.size() > 1)
       {
-        for (const EntityId& id : entities)
+        for (const ULongID& id : entities)
         {
           if (id != NULL_ENTITY)
           {
@@ -74,7 +74,7 @@ namespace ToolKit
         ClearSelection();
       }
 
-      for (const EntityId& id : entities)
+      for (const ULongID& id : entities)
       {
         if (id == NULL_ENTITY)
         {
@@ -131,7 +131,7 @@ namespace ToolKit
       m_selectedEntities.clear();
     }
 
-    bool EditorScene::IsCurrentSelection(EntityId id) const
+    bool EditorScene::IsCurrentSelection(ULongID id) const
     {
       if (!m_selectedEntities.empty())
       {
@@ -141,7 +141,7 @@ namespace ToolKit
       return false;
     }
 
-    void EditorScene::MakeCurrentSelection(EntityId id, bool ifExist)
+    void EditorScene::MakeCurrentSelection(ULongID id, bool ifExist)
     {
       EntityIdArray::iterator itr = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
       if (itr != m_selectedEntities.end())
@@ -210,7 +210,7 @@ namespace ToolKit
       m_newScene = false;
     }
 
-    Entity* EditorScene::RemoveEntity(EntityId id)
+    Entity* EditorScene::RemoveEntity(ULongID id)
     {
       Entity* removed = nullptr;
       if ((removed = Scene::RemoveEntity(id)))
@@ -229,7 +229,7 @@ namespace ToolKit
 
     void EditorScene::GetSelectedEntities(EntityRawPtrArray& entities) const
     {
-      for (EntityId id : m_selectedEntities)
+      for (ULongID id : m_selectedEntities)
       {
         Entity* e = GetEntity(id);
         assert(e);
