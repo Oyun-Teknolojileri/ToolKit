@@ -295,15 +295,9 @@ namespace ToolKit
   {
     ResourceManager::Init();
 
+    Create<Material>(MaterialPath("default.material", true));
+
     Material* material = new Material();
-    material->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    material->m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader", true));
-    material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
-    material->Init();
-
-    m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
-
-    material = new Material();
     material->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
@@ -334,6 +328,11 @@ namespace ToolKit
   ResourcePtr MaterialManager::CreateLocal(ResourceType type)
   {
     return ResourcePtr(new Material());
+  }
+
+  String MaterialManager::GetDefaultResource(ResourceType type)
+  {
+    return MaterialPath("default.material", true);
   }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()

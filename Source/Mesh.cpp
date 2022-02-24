@@ -623,4 +623,9 @@ namespace ToolKit
     return ResourcePtr(res);
   }
 
+  String MeshManager::GetDefaultResource(ResourceType type)
+  {
+    return MeshPath("Suzanne.mesh", true);
+  }
+
 }

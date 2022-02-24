@@ -47,6 +47,8 @@ namespace ToolKit
 
     void App::Init()
     {
+      AssignManagerReporters();
+
       m_cursor = new Cursor();
       m_origin = new Axis3d();
       m_grid = new Grid(100);
@@ -106,15 +108,6 @@ namespace ToolKit
       {
         m_workspace.RefreshProjects();
       }
-
-      // Register plugin reporter.
-      GetPluginManager()->m_reporterFn = [](const String& msg) -> void
-      {
-        if (ConsoleWindow* console = g_app->GetConsole())
-        {
-          console->AddLog(msg, "plugin");
-        }
-      };
     }
 
     void App::Destroy()
@@ -1131,6 +1124,23 @@ namespace ToolKit
       m_playWindow->m_name = g_simulationViewport;
       m_playWindow->m_additionalWindowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse;
       m_playWindow->SetVisibility(false);
+    }
+
+    void App::AssignManagerReporters()
+    {
+      // Register manager reporters
+      auto genericReporterFn = [](String msg) -> void
+      {
+        if (ConsoleWindow* console = g_app->GetConsole())
+        {
+          console->AddLog(msg);
+        }
+      };
+
+      GetPluginManager()->m_reporterFn = genericReporterFn;
+      GetMeshManager()->m_reporterFn = genericReporterFn;
+      GetTextureManager()->m_reporterFn = genericReporterFn;
+      GetMaterialManager()->m_reporterFn = genericReporterFn;
     }
 
     void DebugMessage(const String& msg)

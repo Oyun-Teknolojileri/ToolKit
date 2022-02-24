@@ -48,6 +48,11 @@ namespace ToolKit
     }
   }
 
+  String ResourceManager::GetDefaultResource(ResourceType type)
+  {
+    return String();
+  }
+
   bool ResourceManager::Exist(String file)
   {
     return m_storage.find(file) != m_storage.end();
@@ -66,17 +71,24 @@ namespace ToolKit
     return resource;
   }
 
-  bool ResourceManager::IsSane(const String& file)
+  void ResourceManager::Report(const char* msg, ...)
   {
-    bool fileCheck = CheckFile(file);
-    if (!fileCheck)
+    va_list args;
+    va_start(args, msg);
+
+    static char buff[2048];
+    vsprintf(buff, msg, args);
+    
+    if (m_reporterFn)
     {
-      GetLogger()->Log("Missing: " + file);
-      assert(fileCheck);
-      return false;
+      m_reporterFn(buff);
+    }
+    else
+    {
+      GetLogger()->Log(buff);
     }
 
-    return true;
+    va_end(args);
   }
 
 }

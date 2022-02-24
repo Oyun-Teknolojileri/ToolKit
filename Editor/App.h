@@ -104,6 +104,7 @@ namespace ToolKit
 
     private:
       void CreateSimulationWindow();
+      void AssignManagerReporters();
 
     public:
       EditorScenePtr m_scene;

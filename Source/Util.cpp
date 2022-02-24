@@ -182,15 +182,7 @@ namespace ToolKit
     if (XmlNode* materialNode = parent->first_node("material"))
     {
       String matFile = MaterialPath(materialNode->first_attribute("name")->value());
-
-      if (CheckFile(matFile))
-      {
-        return GetMaterialManager()->Create<Material>(matFile);
-      }
-      else
-      {
-        return GetMaterialManager()->Create<Material>(MaterialPath("default.material", true));
-      }
+      return GetMaterialManager()->Create<Material>(matFile);
     }
 
     return nullptr;

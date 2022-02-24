@@ -49,6 +49,9 @@ namespace ToolKit
     bool m_loaded = false;
     bool m_initiated = false;
 
+    // Internal usage.
+    String _missingFile;
+
   private:
     static EntityId m_handle;
   };

@@ -47,6 +47,7 @@ namespace ToolKit
     virtual void Init() override;
     virtual bool CanStore(ResourceType t);
     virtual ResourcePtr CreateLocal(ResourceType type);
+    virtual String GetDefaultResource(ResourceType type) override;
 
     MaterialPtr GetCopyOfUnlitMaterial();
     MaterialPtr GetCopyOfUnlitColorMaterial();

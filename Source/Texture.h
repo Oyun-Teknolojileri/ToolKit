@@ -91,6 +91,7 @@ namespace ToolKit
     virtual ~TextureManager();
     virtual bool CanStore(ResourceType t);
     virtual ResourcePtr CreateLocal(ResourceType type);
+    virtual String GetDefaultResource(ResourceType type) override;
   };
 
 }
