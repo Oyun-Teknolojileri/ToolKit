@@ -233,97 +233,39 @@ namespace ToolKit
 
   void Mesh::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* container = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      "meshContainer"
-    );
-
-    if (parent != nullptr)
-    {
-      parent->append_node(container);
-    }
-    else
-    {
-      doc->append_node(container);
-    }
+    XmlNode* container = CreateXmlNode(doc, "meshContainer", parent);
 
     auto writeMeshFn = [container, doc](const Mesh* mesh) -> void
     {
-      XmlNode* meshNode = doc->allocate_node
-      (
-        rapidxml::node_type::node_element,
-        "mesh"
-      );
-      container->append_node(meshNode);
+      XmlNode* meshNode = CreateXmlNode(doc, "mesh", container);
       WriteMaterial(meshNode, doc, mesh->m_material->m_file);
 
-      XmlNode* vertices = doc->allocate_node
-      (
-        rapidxml::node_type::node_element,
-        "vertices"
-      );
-      meshNode->append_node(vertices);
+      XmlNode* vertices = CreateXmlNode(doc, "vertices", meshNode);
 
       // Serialize vertex
       for (const Vertex& v : mesh->m_clientSideVertices)
       {
-        XmlNode* vNod = doc->allocate_node
-        (
-          rapidxml::node_type::node_element,
-          "v"
-        );
-        vertices->append_node(vNod);
-
-        XmlNode* p = doc->allocate_node
-        (
-          rapidxml::node_type::node_element,
-          "p"
-        );
-        vNod->append_node(p);
+        XmlNode* vNod = CreateXmlNode(doc, "v", vertices);
+        
+        XmlNode* p = CreateXmlNode(doc, "p", vNod);
         WriteVec(p, doc, v.pos);
 
-        XmlNode* n = doc->allocate_node
-        (
-          rapidxml::node_type::node_element,
-          "n"
-        );
-        vNod->append_node(n);
+        XmlNode* n = CreateXmlNode(doc, "n", vNod);
         WriteVec(n, doc, v.norm);
 
-        XmlNode* t = doc->allocate_node
-        (
-          rapidxml::node_type::node_element,
-          "t"
-        );
-        vNod->append_node(t);
+        XmlNode* t = CreateXmlNode(doc, "t", vNod);
         WriteVec(t, doc, v.tex);
 
-        XmlNode* bt = doc->allocate_node
-        (
-          rapidxml::node_type::node_element,
-          "bt"
-        );
-        vNod->append_node(bt);
+        XmlNode* bt = CreateXmlNode(doc, "bt", vNod);
         WriteVec(bt, doc, v.btan);
       }
 
       // Serialize faces
-      XmlNode* faces = doc->allocate_node
-      (
-        rapidxml::node_type::node_element,
-        "faces"
-      );
-      meshNode->append_node(faces);
+      XmlNode* faces = CreateXmlNode(doc, "faces", meshNode);
 
       for (size_t i = 0; i < mesh->m_clientSideIndices.size() / 3; i++)
       {
-        XmlNode* f = doc->allocate_node
-        (
-          rapidxml::node_type::node_element,
-          "f"
-        );
-        faces->append_node(f);
+        XmlNode* f = CreateXmlNode(doc, "f", faces);
 
         WriteAttr(f, doc, "x", std::to_string(mesh->m_clientSideIndices[i * 3]));
         WriteAttr(f, doc, "y", std::to_string(mesh->m_clientSideIndices[i * 3 + 1]));

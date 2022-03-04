@@ -26,6 +26,7 @@ namespace ToolKit
   TK_API void ReadAttr(XmlNode* node, const String& name, String& val);
   TK_API XmlNode* Query(XmlDocument* doc, const StringArray& path);
   TK_API bool UpdateAttribute(XmlDocument* doc, const StringArray& path, const String& attribute, const String& val); // Updates or inject the attribute with val. Returns true if successfull.
+  TK_API XmlNode* CreateXmlNode(XmlDocument* doc, const String& name, XmlNode* parent = nullptr); // Create an xml node with given name. Append it to parent if not null else append it to doc.
 
   TK_API void WriteMaterial(XmlNode* parent, XmlDocument* doc, const String& file);
   TK_API MaterialPtr ReadMaterial(XmlNode* parent);
