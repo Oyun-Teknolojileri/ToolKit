@@ -117,26 +117,8 @@ namespace ToolKit
 
   void Shader::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* container = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      "shader"
-    );
-
-    if (parent != nullptr)
-    {
-      parent->append_node(container);
-    }
-    else
-    {
-      doc->append_node(container);
-    }
-
-    XmlNode* node = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      "type"
-    );
+    XmlNode* container = CreateXmlNode(doc, "shader", parent);
+    XmlNode* node = CreateXmlNode(doc, "type", container);
     container->append_node(node);
 
     if (m_shaderType == GL_VERTEX_SHADER)
@@ -150,12 +132,7 @@ namespace ToolKit
 
     for (Uniform ui : m_uniforms)
     {
-      XmlNode* node = doc->allocate_node
-      (
-        rapidxml::node_type::node_element,
-        "uniform"
-      );
-      container->append_node(node);
+      XmlNode* node = CreateXmlNode(doc, "uniform", container);
 
       String name;
       switch (ui)
@@ -189,13 +166,7 @@ namespace ToolKit
       WriteAttr(node, doc, "name", name);
     }
 
-    XmlNode* src = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      "source"
-    );
-    container->append_node(src);
-
+    XmlNode* src = CreateXmlNode(doc, "source", container);
     XmlNode* srcInput = doc->allocate_node
     (
       rapidxml::node_type::node_comment

@@ -152,79 +152,37 @@ namespace ToolKit
 
   void Material::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* container = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      "material"
-    );
-
-    if (parent != nullptr)
-    {
-      parent->append_node(container);
-    }
-    else
-    {
-      doc->append_node(container);
-    }
+    XmlNode* container = CreateXmlNode(doc, "material", parent);
 
     if (m_diffuseTexture)
     {
-      XmlNode* node = doc->allocate_node
-      (
-        rapidxml::node_type::node_element,
-        "diffuseTexture"
-      );
-      container->append_node(node);
-
+      XmlNode* node = CreateXmlNode(doc, "diffuseTexture", container);
       String file = GetRelativeResourcePath(m_diffuseTexture->m_file);
       WriteAttr(node, doc, "name", file);
     }
 
     if (m_cubeMap)
     {
-      XmlNode* node = doc->allocate_node
-      (
-        rapidxml::node_type::node_element,
-        "cubeMap"
-      );
-      container->append_node(node);
-
+      XmlNode* node = CreateXmlNode(doc, "cubeMap", container);
       String file = GetRelativeResourcePath(m_cubeMap->m_file);
       WriteAttr(node, doc, "name", file);
     }
 
     if (m_vertexShader)
     {
-      XmlNode* node = doc->allocate_node
-      (
-        rapidxml::node_type::node_element,
-        "shader"
-      );
-      container->append_node(node);
-
+      XmlNode* node = CreateXmlNode(doc, "shader", container);
       String file = GetRelativeResourcePath(m_vertexShader->m_file);
       WriteAttr(node, doc, "name", file);
     }
 
     if (m_fragmetShader)
     {
-      XmlNode* node = doc->allocate_node
-      (
-        rapidxml::node_type::node_element,
-        "shader"
-      );
-      container->append_node(node);
-
+      XmlNode* node = CreateXmlNode(doc, "shader", container);
       String file = GetRelativeResourcePath(m_fragmetShader->m_file);
       WriteAttr(node, doc, "name", file);
     }
 
-    XmlNode* node = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      "color"
-    );
-    container->append_node(node);
+    XmlNode* node = CreateXmlNode(doc, "color", container);
     WriteVec(node, doc, m_color);
 
     m_renderState.Serialize(doc, container);
@@ -240,17 +198,17 @@ namespace ToolKit
     XmlNode* rootNode = parent;
     for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
     {
-      if (String("diffuseTexture").compare(node->name()) == 0)
+      if (strcmp("diffuseTexture", node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute("name");
         m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath(attr->value()));
       }
-      else if (String("cubeMap").compare(node->name()) == 0)
+      else if (strcmp("cubeMap", node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute("name");
         m_cubeMap = GetTextureManager()->Create<CubeMap>(TexturePath(attr->value()));
       }
-      else if (String("shader").compare(node->name()) == 0)
+      else if (strcmp("shader", node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute("name");
         ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath(attr->value()));
@@ -267,11 +225,11 @@ namespace ToolKit
           assert(false);
         }
       }
-      else if (String("color").compare(node->name()) == 0)
+      else if (strcmp("color", node->name()) == 0)
       {
         ReadVec(node, m_color);
       }
-      else if (String("renderState").compare(node->name()) == 0)
+      else if (strcmp("renderState", node->name()) == 0)
       {
         m_renderState.DeSerialize(doc, parent);
       }
