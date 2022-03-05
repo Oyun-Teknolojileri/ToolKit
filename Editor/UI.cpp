@@ -449,6 +449,9 @@ namespace ToolKit
       {
         g_app->OnQuit();
       }
+
+      ImGui::Separator();
+      ImGui::Text("v%d.%d.%d", 0, 3, 3);
     }
 
     void UI::ShowMenuWindows()
