@@ -185,14 +185,14 @@ namespace ToolKit
     XmlNode* rootNode = parent;
     for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
     {
-      if (String("type").compare(node->name()) == 0)
+      if (strcmp("type", node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute("name");
-        if (String("vertexShader").compare(attr->value()) == 0)
+        if (strcmp("vertexShader", attr->value()) == 0)
         {
           m_shaderType = GL_VERTEX_SHADER;
         }
-        else if (String("fragmentShader").compare(attr->value()) == 0)
+        else if (strcmp("fragmentShader", attr->value()) == 0)
         {
           m_shaderType = GL_FRAGMENT_SHADER;
         }
@@ -202,34 +202,34 @@ namespace ToolKit
         }
       }
 
-      if (String("uniform").compare(node->name()) == 0)
+      if (strcmp("uniform", node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute();
-        if (String("ProjectViewModel").compare(attr->value()) == 0)
+        if (strcmp("ProjectViewModel", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::PROJECT_MODEL_VIEW);
         }
-        else if (String("Model").compare(attr->value()) == 0)
+        else if (strcmp("Model", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::MODEL);
         }
-        else if (String("InverseTransModel").compare(attr->value()) == 0)
+        else if (strcmp("InverseTransModel", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::INV_TR_MODEL);
         }
-        else if (String("LightData").compare(attr->value()) == 0)
+        else if (strcmp("LightData", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::LIGHT_DATA);
         }
-        else if (String("CamData").compare(attr->value()) == 0)
+        else if (strcmp("CamData", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::CAM_DATA);
         }
-        else if (String("Color").compare(attr->value()) == 0)
+        else if (strcmp("Color", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::COLOR);
         }
-        else if (String("FrameCount").compare(attr->value()) == 0)
+        else if (strcmp("FrameCount", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::FRAME_COUNT);
         }
@@ -239,7 +239,7 @@ namespace ToolKit
         }
       }
 
-      if (String("source").compare(node->name()) == 0)
+      if (strcmp("source", node->name()) == 0)
       {
         m_source = node->first_node()->value();
       }
