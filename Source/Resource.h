@@ -9,7 +9,7 @@ namespace ToolKit
 
 #define TKResouceType(type) \
   static ResourceType GetTypeStatic() { return ResourceType::type; } \
-  virtual ResourceType GetType() { return ResourceType::type; }
+  virtual ResourceType GetType() const { return ResourceType::type; }
 
   class TK_API Resource : public Serializable
   {
@@ -34,7 +34,7 @@ namespace ToolKit
       }
       return resource;
     }
-    virtual ResourceType GetType();
+    virtual ResourceType GetType() const;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 

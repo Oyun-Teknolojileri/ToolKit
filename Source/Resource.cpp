@@ -68,7 +68,7 @@ namespace ToolKit
     other->m_initiated = m_initiated;
   }
 
-  ResourceType Resource::GetType()
+  ResourceType Resource::GetType() const
   {
     return ResourceType::Base;
   }
