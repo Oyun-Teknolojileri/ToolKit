@@ -562,7 +562,18 @@ namespace ToolKit
 
     void PropInspector::DispatchSignals() const
     {
-      ModShortCutSignals({ SDL_SCANCODE_DELETE });
+      ModShortCutSignals
+      (
+        { 
+          SDL_SCANCODE_DELETE,
+          SDL_SCANCODE_D,
+          SDL_SCANCODE_F,
+          SDL_SCANCODE_R,
+          SDL_SCANCODE_G,
+          SDL_SCANCODE_B,
+          SDL_SCANCODE_S
+        }
+      );
     }
 
     template<typename T>
