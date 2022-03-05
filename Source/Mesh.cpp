@@ -238,7 +238,7 @@ namespace ToolKit
     auto writeMeshFn = [container, doc](const Mesh* mesh) -> void
     {
       XmlNode* meshNode = CreateXmlNode(doc, "mesh", container);
-      WriteMaterial(meshNode, doc, mesh->m_material->m_file);
+      WriteMaterial(meshNode, doc, mesh->m_material->GetSerializeFile());
 
       XmlNode* vertices = CreateXmlNode(doc, "vertices", meshNode);
 

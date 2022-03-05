@@ -35,6 +35,7 @@ namespace ToolKit
       return resource;
     }
     virtual ResourceType GetType() const;
+    const String& GetSerializeFile(); // Returns _missingFile if not empty to prevent override actual resource file. Always call this if you are in Serialize function.
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 

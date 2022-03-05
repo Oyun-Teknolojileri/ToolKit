@@ -157,28 +157,28 @@ namespace ToolKit
     if (m_diffuseTexture)
     {
       XmlNode* node = CreateXmlNode(doc, "diffuseTexture", container);
-      String file = GetRelativeResourcePath(m_diffuseTexture->m_file);
+      String file = GetRelativeResourcePath(m_diffuseTexture->GetSerializeFile());
       WriteAttr(node, doc, "name", file);
     }
 
     if (m_cubeMap)
     {
       XmlNode* node = CreateXmlNode(doc, "cubeMap", container);
-      String file = GetRelativeResourcePath(m_cubeMap->m_file);
+      String file = GetRelativeResourcePath(m_cubeMap->GetSerializeFile());
       WriteAttr(node, doc, "name", file);
     }
 
     if (m_vertexShader)
     {
       XmlNode* node = CreateXmlNode(doc, "shader", container);
-      String file = GetRelativeResourcePath(m_vertexShader->m_file);
+      String file = GetRelativeResourcePath(m_vertexShader->GetSerializeFile());
       WriteAttr(node, doc, "name", file);
     }
 
     if (m_fragmetShader)
     {
       XmlNode* node = CreateXmlNode(doc, "shader", container);
-      String file = GetRelativeResourcePath(m_fragmetShader->m_file);
+      String file = GetRelativeResourcePath(m_fragmetShader->GetSerializeFile());
       WriteAttr(node, doc, "name", file);
     }
 
