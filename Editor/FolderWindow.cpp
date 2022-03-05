@@ -694,7 +694,7 @@ namespace ToolKit
             {
               StringInputWindow* inputWnd = new StringInputWindow("New Name##NwName", true);
 
-              String oldName, oldFile = res->m_file;
+              String oldName, oldFile = res->GetFile();
               DecomposePath(oldFile, nullptr, &oldName, nullptr);
 
               inputWnd->m_inputVal = oldName;
@@ -872,7 +872,7 @@ namespace ToolKit
               MaterialManager* man = GetMaterialManager();
               MaterialPtr mat = man->GetCopyOfSolidMaterial();
               mat->m_name = val;
-              mat->m_file = file;
+              mat->SetFile(file);
               self->m_dirty = true;
               mat->Save(true);
               man->Manage(mat);

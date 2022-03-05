@@ -438,7 +438,7 @@ namespace ToolKit
       if (Drawable* e = dynamic_cast<Drawable*> (g_app->m_scene->GetCurrentSelection()))
       {
         TagArgArray::const_iterator nameTag = GetTag("n", tagArgs);
-        String fileName = e->m_mesh->m_file;
+        String fileName = e->m_mesh->GetFile();
         if (fileName.empty())
         {
           fileName = MeshPath(e->m_name + MESH);

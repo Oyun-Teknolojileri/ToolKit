@@ -16,7 +16,7 @@ namespace ToolKit
   Texture::Texture(String file)
     : Texture()
   {
-    m_file = file;
+    SetFile(file);
   }
 
   Texture::~Texture()
@@ -31,7 +31,7 @@ namespace ToolKit
       return;
     }
 
-    if ((m_image = stbi_load(m_file.c_str(), &m_width, &m_height, &m_bytePP, 4)))
+    if ((m_image = stbi_load(GetFile().c_str(), &m_width, &m_height, &m_bytePP, 4)))
     {
       m_loaded = true;
     }
@@ -97,7 +97,7 @@ namespace ToolKit
   CubeMap::CubeMap(String file)
     : Texture()
   {
-    m_file = file;
+    SetFile(file);
   }
 
   CubeMap::~CubeMap()
@@ -113,14 +113,15 @@ namespace ToolKit
     }
 
     m_images.resize(6);
-    size_t pos = m_file.find("px.png");
+    String fullPath = GetFile();
+    size_t pos = fullPath.find("px.png");
     if (pos == String::npos)
     {
-      GetLogger()->Log("Inappropriate postfix. Looking for \"px.png\": " + m_file);
+      GetLogger()->Log("Inappropriate postfix. Looking for \"px.png\": " + fullPath);
       return;
     }
 
-    String file = m_file.substr(0, pos);
+    String file = fullPath.substr(0, pos);
 
     for (int i = 0; i < 6; i++)
     {

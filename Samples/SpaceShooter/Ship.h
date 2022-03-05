@@ -16,7 +16,7 @@ class Ship : public Drawable
 public:
   Ship()
   {
-    m_mesh->m_file = MeshPath("alien-mothership.mesh");
+    m_mesh->SetFile(MeshPath("alien-mothership.mesh"));
     m_mesh->Load();
     m_mesh->Init(false);
 

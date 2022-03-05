@@ -19,7 +19,7 @@ namespace ToolKit
   Shader::Shader(String file)
     : Shader()
   {
-    m_file = file;
+    SetFile(file);
   }
 
   Shader::~Shader()
@@ -34,7 +34,7 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file(m_file.c_str());
+    XmlFile file(GetFile().c_str());
     XmlDocument doc;
     doc.parse<rapidxml::parse_full>(file.data());
     if (XmlNode* rootNode = doc.first_node("shader"))
@@ -84,7 +84,7 @@ namespace ToolKit
         char* log = new char[infoLen];
         glGetShaderInfoLog(m_shaderHandle, infoLen, nullptr, log);
         GetLogger()->Log(log);
-        GetLogger()->Log(m_file);
+        GetLogger()->Log(GetFile());
         GetLogger()->Log(str);
 
         SafeDelArray(log);

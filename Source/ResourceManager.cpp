@@ -38,13 +38,14 @@ namespace ToolKit
 
   void ResourceManager::Manage(const ResourcePtr& resource)
   {
-    bool sane = !resource->m_file.empty();
-    sane &= !Exist(resource->m_file);
+    String file = resource->GetFile();
+    bool sane = !file.empty();
+    sane &= !Exist(file);
     sane &= CanStore(resource->GetType());
 
     if (sane)
     {
-      m_storage[resource->m_file] = resource;
+      m_storage[file] = resource;
     }
   }
 

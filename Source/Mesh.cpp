@@ -22,7 +22,7 @@ namespace ToolKit
   Mesh::Mesh(String file)
     : Mesh()
   {
-    m_file = file;
+    SetFile(file);
   }
 
   Mesh::~Mesh()
@@ -79,7 +79,7 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file(m_file.c_str());
+    XmlFile file(GetFile().c_str());
     XmlDocument doc;
     doc.parse<0>(file.data());
 
@@ -391,7 +391,7 @@ namespace ToolKit
   SkinMesh::SkinMesh(String file)
     : Mesh()
   {
-    m_file = file;
+    SetFile(file);
 
     String skelFile = file.substr(0, file.find_last_of("."));
     skelFile += ".skeleton";
@@ -431,7 +431,7 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file(m_file.c_str());
+    XmlFile file(GetFile().c_str());
     XmlDocument doc;
     doc.parse<0>(file.data());
 

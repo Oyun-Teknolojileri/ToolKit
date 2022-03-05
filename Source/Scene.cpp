@@ -15,7 +15,7 @@ namespace ToolKit
   Scene::Scene(String file)
     : Scene()
   {
-    m_file = file;
+    SetFile(file);
   }
 
   Scene::~Scene()
@@ -30,7 +30,7 @@ namespace ToolKit
       return;
     }
 
-    XmlFile sceneFile(m_file.c_str());
+    XmlFile sceneFile(GetFile().c_str());
     XmlDocument sceneDoc;
     sceneDoc.parse<0>(sceneFile.data());
 
@@ -54,8 +54,8 @@ namespace ToolKit
 
   void Scene::Save(bool onlyIfDirty)
   {
-    String fullPath = m_file;
-    if (m_file.empty())
+    String fullPath = GetFile();
+    if (fullPath.empty())
     {
       fullPath = ScenePath(m_name + SCENE);
     }
@@ -114,7 +114,7 @@ namespace ToolKit
     }
 
     other->RemoveAllEntities();
-    GetSceneManager()->Remove(other->m_file);
+    GetSceneManager()->Remove(other->GetFile());
   }
 
   Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList) const
@@ -332,7 +332,7 @@ namespace ToolKit
     prefab.AddEntity(entity);
     GetChildren(entity, prefab.m_entities);
     String name = entity->m_name + SCENE;
-    prefab.m_file = PrefabPath(name);
+    SetFile(PrefabPath(name));
     prefab.m_name = name;
     prefab.Save(false);
     prefab.m_entities.clear();
@@ -365,7 +365,7 @@ namespace ToolKit
 
     // Match scene name with saved file.
     String name;
-    DecomposePath(m_file, nullptr, &name, nullptr);
+    DecomposePath(GetFile(), nullptr, &name, nullptr);
     WriteAttr(scene, doc, "name", name.c_str());
 
     for (Entity* ntt : m_entities)
@@ -387,7 +387,7 @@ namespace ToolKit
     }
 
     // Match scene name with file name.
-    DecomposePath(m_file, nullptr, &m_name, nullptr);
+    DecomposePath(GetFile(), nullptr, &m_name, nullptr);
 
     XmlNode* node = nullptr;
     for (node = root->first_node(XmlEntityElement.c_str()); node; node = node->next_sibling(XmlEntityElement.c_str()))

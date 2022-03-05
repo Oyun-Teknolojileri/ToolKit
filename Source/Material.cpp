@@ -17,7 +17,7 @@ namespace ToolKit
   Material::Material(String file)
     : Material()
   {
-    m_file = file;
+    SetFile(file);
   }
 
   Material::~Material()
@@ -32,7 +32,7 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file(m_file.c_str());
+    XmlFile file(GetFile().c_str());
     XmlDocument doc;
     doc.parse<0>(file.data());
     

@@ -93,4 +93,14 @@ namespace ToolKit
     assert(false && "Not implemented");
   }
 
+  String Resource::GetFile() const
+  {
+    return m_file;
+  }
+
+  void Resource::SetFile(const String& file)
+  {
+    m_file = file;
+  }
+
 }

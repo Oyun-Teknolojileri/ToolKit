@@ -121,7 +121,7 @@ public:
     MeshPtr meshCopy = MeshPtr(new Mesh());
     meshCopy->m_clientSideIndices = m_pillObj->m_clientSideIndices;
     meshCopy->m_clientSideVertices = m_pillObj->m_clientSideVertices;
-    meshCopy->m_file = m_pillObj->m_file;
+    meshCopy->SetFile(m_pillObj->GetFile());
     meshCopy->Init();
 
     PowerUp* pop = new T(meshCopy);

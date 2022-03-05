@@ -39,11 +39,13 @@ namespace ToolKit
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
+    String GetFile() const;
+    void SetFile(const String& file);
+
   protected:
     virtual void CopyTo(Resource* other);
 
   public:
-    String m_file;
     String m_name;
     ULongID m_id;
     bool m_dirty = false;
@@ -54,6 +56,7 @@ namespace ToolKit
     String _missingFile;
 
   private:
+    String m_file;
     static ULongID m_handle;
   };
 

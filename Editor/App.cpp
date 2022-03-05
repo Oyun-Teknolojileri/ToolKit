@@ -225,7 +225,7 @@ namespace ToolKit
       };
 
       // File existance check.
-      String fullPath = m_scene->m_file;
+      String fullPath = m_scene->GetFile();
       if (m_scene->m_newScene && CheckFile(fullPath))
       {
         String msg = "Scene " + fullPath + " exist on the disk.\nOverride the existing scene ?";

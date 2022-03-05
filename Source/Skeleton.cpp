@@ -30,7 +30,7 @@ namespace ToolKit
 
   Skeleton::Skeleton(String file)
   {
-    m_file = file;
+    SetFile(file);
     m_node = new Node();
   }
 
@@ -57,7 +57,7 @@ namespace ToolKit
 
   void Skeleton::Load()
   {
-    XmlFile file(m_file.c_str());
+    XmlFile file(GetFile().c_str());
     XmlDocument doc;
     doc.parse<0>(file.data());
 

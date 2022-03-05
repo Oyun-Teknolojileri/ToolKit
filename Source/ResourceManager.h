@@ -63,7 +63,7 @@ namespace ToolKit
         }
         else
         {
-          resource->m_file = file;
+          resource->SetFile(file);
         }
         
         resource->Load();
