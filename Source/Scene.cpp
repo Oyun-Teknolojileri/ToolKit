@@ -361,21 +361,12 @@ namespace ToolKit
 
   void Scene::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* scene = doc->allocate_node(rapidxml::node_element, XmlSceneElement.c_str());
-    
+    XmlNode* scene = CreateXmlNode(doc, XmlSceneElement, parent);
+
     // Match scene name with saved file.
     String name;
     DecomposePath(m_file, nullptr, &name, nullptr);
     WriteAttr(scene, doc, "name", name.c_str());
-
-    if (parent != nullptr)
-    {
-      parent->append_node(scene);
-    }
-    else
-    {
-      doc->append_node(scene);
-    }
 
     for (Entity* ntt : m_entities)
     {
@@ -439,6 +430,11 @@ namespace ToolKit
   ResourcePtr SceneManager::CreateLocal(ResourceType type)
   {
     return ResourcePtr(new Scene());
+  }
+
+  String SceneManager::GetDefaultResource(ResourceType type)
+  {
+    return ScenePath("Sample.scene", true);
   }
 
 }

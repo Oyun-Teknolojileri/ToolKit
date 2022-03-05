@@ -9,7 +9,7 @@ namespace ToolKit
 
 #define TKResouceType(type) \
   static ResourceType GetTypeStatic() { return ResourceType::type; } \
-  virtual ResourceType GetType() { return ResourceType::type; }
+  virtual ResourceType GetType() const { return ResourceType::type; }
 
   class TK_API Resource : public Serializable
   {
@@ -34,7 +34,8 @@ namespace ToolKit
       }
       return resource;
     }
-    virtual ResourceType GetType();
+    virtual ResourceType GetType() const;
+    const String& GetSerializeFile(); // Returns _missingFile if not empty to prevent override actual resource file. Always call this if you are in Serialize function.
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
@@ -48,6 +49,9 @@ namespace ToolKit
     bool m_dirty = false;
     bool m_loaded = false;
     bool m_initiated = false;
+
+    // Internal usage.
+    String _missingFile;
 
   private:
     static ULongID m_handle;

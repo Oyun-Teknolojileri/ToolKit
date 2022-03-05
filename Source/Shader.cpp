@@ -117,26 +117,8 @@ namespace ToolKit
 
   void Shader::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* container = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      "shader"
-    );
-
-    if (parent != nullptr)
-    {
-      parent->append_node(container);
-    }
-    else
-    {
-      doc->append_node(container);
-    }
-
-    XmlNode* node = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      "type"
-    );
+    XmlNode* container = CreateXmlNode(doc, "shader", parent);
+    XmlNode* node = CreateXmlNode(doc, "type", container);
     container->append_node(node);
 
     if (m_shaderType == GL_VERTEX_SHADER)
@@ -150,12 +132,7 @@ namespace ToolKit
 
     for (Uniform ui : m_uniforms)
     {
-      XmlNode* node = doc->allocate_node
-      (
-        rapidxml::node_type::node_element,
-        "uniform"
-      );
-      container->append_node(node);
+      XmlNode* node = CreateXmlNode(doc, "uniform", container);
 
       String name;
       switch (ui)
@@ -189,13 +166,7 @@ namespace ToolKit
       WriteAttr(node, doc, "name", name);
     }
 
-    XmlNode* src = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      "source"
-    );
-    container->append_node(src);
-
+    XmlNode* src = CreateXmlNode(doc, "source", container);
     XmlNode* srcInput = doc->allocate_node
     (
       rapidxml::node_type::node_comment
@@ -214,14 +185,14 @@ namespace ToolKit
     XmlNode* rootNode = parent;
     for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
     {
-      if (String("type").compare(node->name()) == 0)
+      if (strcmp("type", node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute("name");
-        if (String("vertexShader").compare(attr->value()) == 0)
+        if (strcmp("vertexShader", attr->value()) == 0)
         {
           m_shaderType = GL_VERTEX_SHADER;
         }
-        else if (String("fragmentShader").compare(attr->value()) == 0)
+        else if (strcmp("fragmentShader", attr->value()) == 0)
         {
           m_shaderType = GL_FRAGMENT_SHADER;
         }
@@ -231,34 +202,34 @@ namespace ToolKit
         }
       }
 
-      if (String("uniform").compare(node->name()) == 0)
+      if (strcmp("uniform", node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute();
-        if (String("ProjectViewModel").compare(attr->value()) == 0)
+        if (strcmp("ProjectViewModel", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::PROJECT_MODEL_VIEW);
         }
-        else if (String("Model").compare(attr->value()) == 0)
+        else if (strcmp("Model", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::MODEL);
         }
-        else if (String("InverseTransModel").compare(attr->value()) == 0)
+        else if (strcmp("InverseTransModel", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::INV_TR_MODEL);
         }
-        else if (String("LightData").compare(attr->value()) == 0)
+        else if (strcmp("LightData", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::LIGHT_DATA);
         }
-        else if (String("CamData").compare(attr->value()) == 0)
+        else if (strcmp("CamData", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::CAM_DATA);
         }
-        else if (String("Color").compare(attr->value()) == 0)
+        else if (strcmp("Color", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::COLOR);
         }
-        else if (String("FrameCount").compare(attr->value()) == 0)
+        else if (strcmp("FrameCount", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::FRAME_COUNT);
         }
@@ -268,7 +239,7 @@ namespace ToolKit
         }
       }
 
-      if (String("source").compare(node->name()) == 0)
+      if (strcmp("source", node->name()) == 0)
       {
         m_source = node->first_node()->value();
       }

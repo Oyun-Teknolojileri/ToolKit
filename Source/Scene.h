@@ -68,6 +68,7 @@ namespace ToolKit
     virtual void Uninit() override;
     virtual bool CanStore(ResourceType t);
     virtual ResourcePtr CreateLocal(ResourceType type);
+    virtual String GetDefaultResource(ResourceType type) override;
 
   public:
     ScenePtr m_currentScene;

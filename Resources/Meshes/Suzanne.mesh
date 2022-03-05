@@ -1,6 +1,6 @@
 <meshContainer>
 	<mesh>
-		<material name=".\..\Resources\Materials\default.material"/>
+		<material name="ToolKit\default.material"/>
 		<vertices>
 			<v>
 				<p x="0.468750" y="0.242188" z="0.757813"/>

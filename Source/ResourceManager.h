@@ -36,6 +36,7 @@ namespace ToolKit
     virtual void Uninit();
     virtual void Manage(const ResourcePtr& resource);
     virtual bool CanStore(ResourceType t) = 0;
+    virtual String GetDefaultResource(ResourceType type);
 
     ResourceManager(ResourceManager const&) = delete;
     void operator=(ResourceManager const&) = delete;
@@ -45,13 +46,26 @@ namespace ToolKit
     {
       if (!Exist(file))
       {
-        if (!IsSane(file))
-        {
-          return nullptr;
-        }
-
         std::shared_ptr<T> resource = std::static_pointer_cast<T> (CreateLocal(T::GetTypeStatic()));
-        resource->m_file = file;
+        if (!CheckFile(file))
+        {
+          String def = GetDefaultResource(T::GetTypeStatic());
+          if (!CheckFile(def))
+          {
+            assert(0 && "No default resource !");
+            return nullptr;
+          }
+
+          String rel = GetRelativeResourcePath(file);
+          Report("%s is missing. Using default resource.", rel.c_str());
+          resource->m_file = def;
+          resource->_missingFile = file;
+        }
+        else
+        {
+          resource->m_file = file;
+        }
+        
         resource->Load();
         m_storage[file] = resource;
       }
@@ -63,10 +77,11 @@ namespace ToolKit
     ResourcePtr Remove(const String& file);
     virtual ResourcePtr CreateLocal(ResourceType type) = 0;
 
-  private:
-    bool IsSane(const String& file);
+  protected:
+    void Report(const char* msg, ...);
 
   public:
+    std::function<void(const String&)> m_reporterFn = nullptr; // Log callback, if provided messages passed to callback.
     std::unordered_map<String, ResourcePtr> m_storage;
     ResourceType m_type = ResourceType::Base;
   };

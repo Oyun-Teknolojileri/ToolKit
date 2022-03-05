@@ -119,6 +119,53 @@ namespace ToolKit
         ImGui::Checkbox("Visible", &m_entity->m_visible);
       }
 
+      // Missing data reporter.
+      if (m_entity->IsDrawable())
+      {
+        Drawable* dw = static_cast<Drawable*> (m_entity);
+        MeshPtr mesh = dw->m_mesh;
+
+        StringArray missingData;
+        MeshRawCPtrArray meshes;
+        mesh->GetAllMeshes(meshes);
+
+        for (const Mesh* subMesh : meshes)
+        {
+          if (!subMesh->_missingFile.empty())
+          {
+            missingData.push_back(subMesh->_missingFile);
+          }
+
+          if (MaterialPtr mat = subMesh->m_material)
+          {
+            if (!mat->_missingFile.empty())
+            {
+              missingData.push_back(mat->_missingFile);
+            }
+
+            if (TexturePtr tex = mat->m_diffuseTexture)
+            {
+              if (!tex->_missingFile.empty())
+              {
+                missingData.push_back(tex->_missingFile);
+              }
+            }
+          }
+        }
+
+        if (!missingData.empty())
+        {
+          ImGui::Text("Missing Data: ");
+          ImGui::Separator();
+          ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+          for (const String& data : missingData)
+          {
+            ImGui::Text(data.c_str());
+          }
+          ImGui::PopStyleColor();
+        }
+      }
+
       if (ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen))
       {
         Mat3 rotate;
@@ -213,6 +260,7 @@ namespace ToolKit
         ImGui::SameLine();
         ImGui::Text("\tz: %.2f", dim.z);
       }
+
     }
 
     // MeshView

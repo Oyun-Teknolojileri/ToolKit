@@ -158,6 +158,29 @@ namespace ToolKit
     return false;
   }
 
+  TK_API XmlNode* CreateXmlNode(XmlDocument* doc, const String& name, XmlNode* parent)
+  {
+    assert(doc);
+
+    char* str = doc->allocate_string(name.c_str());
+    XmlNode* node = doc->allocate_node
+    (
+      rapidxml::node_type::node_element,
+      str
+    );
+
+    if (parent)
+    {
+      parent->append_node(node);
+    }
+    else
+    {
+      doc->append_node(node);
+    }
+    
+    return node;
+  }
+
   void WriteMaterial(XmlNode* parent, XmlDocument* doc, const String& file)
   {
     XmlNode* material = doc->allocate_node
@@ -182,15 +205,7 @@ namespace ToolKit
     if (XmlNode* materialNode = parent->first_node("material"))
     {
       String matFile = MaterialPath(materialNode->first_attribute("name")->value());
-
-      if (CheckFile(matFile))
-      {
-        return GetMaterialManager()->Create<Material>(matFile);
-      }
-      else
-      {
-        return GetMaterialManager()->Create<Material>(MaterialPath("default.material", true));
-      }
+      return GetMaterialManager()->Create<Material>(matFile);
     }
 
     return nullptr;

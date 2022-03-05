@@ -68,7 +68,17 @@ namespace ToolKit
     other->m_initiated = m_initiated;
   }
 
-  ResourceType Resource::GetType()
+  const String& Resource::GetSerializeFile()
+  {
+    if (_missingFile.empty())
+    {
+      return m_file;
+    }
+
+    return _missingFile;
+  }
+
+  ResourceType Resource::GetType() const
   {
     return ResourceType::Base;
   }

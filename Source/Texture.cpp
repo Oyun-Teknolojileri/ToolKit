@@ -368,4 +368,9 @@ namespace ToolKit
       return ResourcePtr(tex);
   }
 
+  String TextureManager::GetDefaultResource(ResourceType type)
+  {
+    return TexturePath("default.png", true);
+  }
+
 }
