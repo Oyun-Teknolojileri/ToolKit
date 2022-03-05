@@ -484,129 +484,55 @@ namespace ToolKit
 
     void FolderView::ShowContextMenu(DirectoryEntry* entry)
     {
+      StringArray commands;
       String path = m_path + GetPathSeparatorAsStr();
       if (path.find(MaterialPath("")) != String::npos)
       {
-        ShowContextForMaterial(entry);
-      }
-      else if (path.find(MeshPath("")) != String::npos)
-      {
-        ShowContextForMesh(entry);
+        commands.push_back("Material/Create");
       }
       else if (path.find(ScenePath("")) != String::npos)
       {
-        ShowContextForScene(entry);
+        commands.push_back("Scene/Create");
       }
       else if (path.find(PrefabPath("")) != String::npos)
       {
-        ShowContextForScene(entry);
+        commands.push_back("Scene/Create");
       }
-      else
+
+      if (ImGui::BeginPopupContextItem())
       {
-        ShowGenericContext();
+        m_itemActions["FileSystem/Copy"](entry);
+        m_itemActions["FileSystem/Delete"](entry);
+        m_itemActions["FileSystem/Rename"](entry);
+
+        ImGui::EndPopup();
       }
+
+      if
+      (
+        ImGui::BeginPopupContextWindow
+        (
+          nullptr,
+          ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
+        )
+      )
+      {
+        for (const String& cmd : commands)
+        {
+          m_itemActions[cmd](entry);
+        }
+
+        m_itemActions["FileSystem/MakeDir"](nullptr);
+        m_itemActions["Refresh"](nullptr);
+
+        ImGui::EndPopup();
+      }
+
     }
 
     void FolderView::Refresh()
     {
       m_dirty = true;
-    }
-
-    void FolderView::ShowContextForMaterial(DirectoryEntry* entry)
-    {
-      if (ImGui::BeginPopupContextItem())
-      {
-        m_itemActions["FileSystem/Copy"](entry);
-        m_itemActions["Material/Delete"](entry);
-        m_itemActions["Material/Reload"](entry);
-
-        ImGui::EndPopup();
-      }
-
-      if
-      (
-        ImGui::BeginPopupContextWindow
-        (
-          nullptr,
-          ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
-        )
-      )
-      {
-        m_itemActions["Material/Create"](nullptr);
-        m_itemActions["FileSystem/MakeDir"](nullptr);
-        m_itemActions["Refresh"](nullptr);
-        ImGui::EndPopup();
-      }
-    }
-
-    void FolderView::ShowContextForMesh(DirectoryEntry* entry)
-    {
-      if (ImGui::BeginPopupContextItem())
-      {
-        m_itemActions["FileSystem/Copy"](entry);
-        m_itemActions["Mesh/Delete"](entry);
-
-        ImGui::EndPopup();
-      }
-
-      if
-      (
-        ImGui::BeginPopupContextWindow
-        (
-          nullptr,
-          ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
-        )
-      )
-      {
-        m_itemActions["FileSystem/MakeDir"](nullptr);
-        m_itemActions["Refresh"](nullptr);
-        ImGui::EndPopup();
-      }
-    }
-
-    void FolderView::ShowContextForScene(DirectoryEntry* entry)
-    {
-      if (ImGui::BeginPopupContextItem())
-      {
-        m_itemActions["FileSystem/Copy"](entry);
-        m_itemActions["FileSystem/Rename"](entry);
-        m_itemActions["FileSystem/Delete"](entry);
-
-        ImGui::EndPopup();
-      }
-
-      if
-      (
-        ImGui::BeginPopupContextWindow
-        (
-          nullptr,
-          ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
-        )
-      )
-      {
-        m_itemActions["Scene/Create"](entry);
-        m_itemActions["FileSystem/MakeDir"](nullptr);
-        m_itemActions["Refresh"](nullptr);
-        ImGui::EndPopup();
-      }
-    }
-
-    void FolderView::ShowGenericContext()
-    {
-      if
-      (
-        ImGui::BeginPopupContextWindow
-        (
-          nullptr,
-          ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
-        )
-      )
-      {
-        m_itemActions["FileSystem/MakeDir"](nullptr);
-        m_itemActions["Refresh"](nullptr);
-
-        ImGui::EndPopup();
-      }
     }
 
     void FolderView::CreateItemActions()
@@ -677,7 +603,6 @@ namespace ToolKit
       };
 
       // FileSystem/Rename.
-      // This is scene spesific rename ... fix it.
       m_itemActions["FileSystem/Rename"] = [getSelfFn](DirectoryEntry* entry) -> void
       {
         FolderView* self = getSelfFn();
@@ -690,34 +615,31 @@ namespace ToolKit
         {
           if (ResourceManager* rm = entry->GetManager())
           {
-            if (ScenePtr res = rm->Create<Scene>(entry->GetFullPath()))
+            String oldName;
+            String oldFile = entry->GetFullPath();
+            DecomposePath(oldFile, nullptr, &oldName, nullptr);
+
+            StringInputWindow* inputWnd = new StringInputWindow("New Name##NwName", true);
+            inputWnd->m_inputVal = oldName;
+            inputWnd->m_inputLabel = "New Name";
+            inputWnd->m_hint = "New name...";
+
+            inputWnd->m_taskFn = [self, oldFile](const String& val)
             {
-              StringInputWindow* inputWnd = new StringInputWindow("New Name##NwName", true);
+              String path, ext;
+              DecomposePath(oldFile, &path, nullptr, &ext);
 
-              String oldName, oldFile = res->GetFile();
-              DecomposePath(oldFile, nullptr, &oldName, nullptr);
-
-              inputWnd->m_inputVal = oldName;
-              inputWnd->m_inputLabel = "New Name";
-              inputWnd->m_hint = "New name...";
-
-              inputWnd->m_taskFn = [self, oldFile](const String& val)
+              String file = ConcatPaths({ path, val + ext });
+              if (CheckFile(file))
               {
-                String ext;
-                DecomposePath(oldFile, nullptr, nullptr, &ext);
-
-                String file = ConcatPaths({ self->m_path, val + ext });
-                if (CheckFile(file))
-                {
-                  g_app->GetConsole()->AddLog("Can't rename. A file with the same name exist", ConsoleWindow::LogType::Error);
-                }
-                else
-                {
-                  std::filesystem::rename(oldFile, file);
-                  self->m_dirty = true;
-                }
-              };
-            }
+                g_app->GetConsole()->AddLog("Can't rename. A file with the same name exist", ConsoleWindow::LogType::Error);
+              }
+              else
+              {
+                std::filesystem::rename(oldFile, file);
+                self->m_dirty = true;
+              }
+            };
           }
 
           ImGui::CloseCurrentPopup();
@@ -770,44 +692,6 @@ namespace ToolKit
           std::filesystem::copy(fullPath, cpyPath);
 
           self->m_dirty = true;
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      // Mesh/Delete.
-      m_itemActions["Mesh/Delete"] = [getSelfFn, deleteDirFn](DirectoryEntry* entry) -> void
-      {
-        FolderView* self = getSelfFn();
-        if (self == nullptr)
-        {
-          return;
-        }
-
-        if (ImGui::Button("Delete", self->m_contextBtnSize))
-        {
-          if (entry->m_isDirectory)
-          {
-            deleteDirFn(self, entry->GetFullPath());
-          }
-          else
-          {
-            if (ResourceManager* rm = entry->GetManager())
-            {
-              if (MeshPtr res = rm->Create<Mesh>(entry->GetFullPath()))
-              {
-                if (g_app->m_scene->IsMeshInUse(res))
-                {
-                  g_app->GetConsole()->AddLog("Can't delete. Resource is in use", ConsoleWindow::LogType::Error);
-                }
-                else
-                {
-                  std::filesystem::remove(entry->GetFullPath());
-                  self->m_dirty = true;
-                }
-              }
-            }
-          }
-
           ImGui::CloseCurrentPopup();
         }
       };
@@ -878,68 +762,6 @@ namespace ToolKit
               man->Manage(mat);
             }
           };
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      // Material/Delete.
-      m_itemActions["Material/Delete"] = [getSelfFn, deleteDirFn](DirectoryEntry* entry) -> void
-      {
-        FolderView* self = getSelfFn();
-        if (self == nullptr)
-        {
-          return;
-        }
-
-        if (ImGui::Button("Delete", self->m_contextBtnSize))
-        {
-          if (entry->m_isDirectory)
-          {
-            deleteDirFn(self, entry->GetFullPath());
-          }
-          else
-          {
-            if (ResourceManager* rm = entry->GetManager())
-            {
-              if (MaterialPtr mat = rm->Create<Material>(entry->GetFullPath()))
-              {
-                if (g_app->m_scene->IsMaterialInUse(mat))
-                {
-                  g_app->GetConsole()->AddLog("Can't delete. Material is in use", ConsoleWindow::LogType::Error);
-                }
-                else
-                {
-                  std::filesystem::remove(entry->GetFullPath());
-                  self->m_dirty = true;
-                }
-              }
-            }
-          }
-
-          ImGui::CloseCurrentPopup();
-        }
-      };
-
-      // Material/Reload.
-      m_itemActions["Material/Reload"] = [getSelfFn](DirectoryEntry* entry) -> void
-      {
-        FolderView* self = getSelfFn();
-        if (self == nullptr)
-        {
-          return;
-        }
-
-        if (ImGui::Button("Reload", self->m_contextBtnSize))
-        {
-          if (ResourceManager* rm = entry->GetManager())
-          {
-            if (MaterialPtr mat = rm->Create<Material>(entry->GetFullPath()))
-            {
-              mat->Reload();
-              entry->GenerateThumbnail();
-            }
-          }
-
           ImGui::CloseCurrentPopup();
         }
       };

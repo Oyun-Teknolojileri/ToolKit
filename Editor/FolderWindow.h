@@ -42,10 +42,6 @@ namespace ToolKit
       void Refresh();
 
     private:
-      void ShowContextForMaterial(DirectoryEntry* entry);
-      void ShowContextForMesh(DirectoryEntry* entry);
-      void ShowContextForScene(DirectoryEntry* entry);
-      void ShowGenericContext();
       void CreateItemActions();
       void MoveTo(const String& dst); // Imgui Drop target.
 
