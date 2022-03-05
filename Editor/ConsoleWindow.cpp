@@ -592,30 +592,30 @@ namespace ToolKit
           ImGui::TextUnformatted(lineNum.c_str());
           ImGui::SameLine();
 
-          bool pop_color = false;
+          bool popColor = false;
           if (strstr(item, g_errorStr.c_str()))
           {
             ImGui::PushStyleColor(ImGuiCol_Text, g_consoleErrorColor);
-            pop_color = true;
+            popColor = true;
           }
           else if (strstr(item, g_commandStr.c_str()))
           {
             ImGui::PushStyleColor(ImGuiCol_Text, g_consoleCommandColor);
-            pop_color = true;
+            popColor = true;
           }
           else if (strstr(item, g_warningStr.c_str()))
           {
             ImGui::PushStyleColor(ImGuiCol_Text, g_consoleWarningColor);
-            pop_color = true;
+            popColor = true;
           }
           else // Than its a memo.
           {
             ImGui::PushStyleColor(ImGuiCol_Text, g_consoleMemoColor);
-            pop_color = true;
+            popColor = true;
           }
 
           ImGui::TextUnformatted(item);
-          if (pop_color)
+          if (popColor)
           {
             ImGui::PopStyleColor();
           }
@@ -650,11 +650,6 @@ namespace ToolKit
         static char inputBuff[256];
         float width = ImGui::GetWindowContentRegionWidth() * 0.3f;
 
-        if (reclaimFocus)
-        {
-          ImGui::SetKeyboardFocusHere();
-        }
-
         ImGui::PushItemWidth(width);
         if 
         (
@@ -664,7 +659,10 @@ namespace ToolKit
             inputBuff,
             IM_ARRAYSIZE(inputBuff),
             ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
-            [](ImGuiInputTextCallbackData* data)->int { return ((ConsoleWindow*)(data->UserData))->TextEditCallback(data); },
+            [] (ImGuiInputTextCallbackData* data)-> int 
+            { 
+              return ((ConsoleWindow*)(data->UserData))->TextEditCallback(data); 
+            },
             (void*)this
           )
         )
@@ -678,11 +676,18 @@ namespace ToolKit
           strcpy(s, "");
           reclaimFocus = true;
         }
-        else
+        
+ 
+
+        ImGui::PopItemWidth();
+
+        if (reclaimFocus)
         {
+          ImGui::SetKeyboardFocusHere(0);
+          ImGui::SetKeyboardFocusHere(-1);
           reclaimFocus = false;
         }
-        ImGui::PopItemWidth();
+
         ImGui::TableNextColumn();
 
         // Search bar.
