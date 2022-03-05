@@ -440,18 +440,7 @@ namespace ToolKit
 
         if (ImGui::MenuItem("SaveAs"))
         {
-          StringInputWindow* inputWnd = new StringInputWindow("SaveScene##SvScn1", true);
-          inputWnd->m_inputLabel = "Name";
-          inputWnd->m_hint = "Scene name";
-          inputWnd->m_taskFn = [](const String& val)
-          {
-            String path;
-            DecomposePath(g_app->m_scene->m_file, &path, nullptr, nullptr);
-            String fullPath = ConcatPaths({ path, val + SCENE });
-            g_app->m_scene->m_file = fullPath;
-            g_app->m_scene->m_name = val;
-            g_app->OnSaveScene();
-          };
+          g_app->OnSaveAsScene();
         }
         ImGui::EndMenu();
       }

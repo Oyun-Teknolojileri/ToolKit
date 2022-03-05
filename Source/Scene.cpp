@@ -432,4 +432,9 @@ namespace ToolKit
     return ResourcePtr(new Scene());
   }
 
+  String SceneManager::GetDefaultResource(ResourceType type)
+  {
+    return ScenePath("Sample.scene", true);
+  }
+
 }

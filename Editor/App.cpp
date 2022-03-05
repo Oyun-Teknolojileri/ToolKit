@@ -210,6 +210,13 @@ namespace ToolKit
 
     void App::OnSaveScene()
     {
+      // Prevent overriding default scene.
+      if (GetSceneManager()->GetDefaultResource(ResourceType::Scene) == m_scene->m_file)
+      {
+        m_scene->m_file = ScenePath("New Scene" + SCENE);
+        return OnSaveAsScene();
+      }
+
       auto saveFn = []() -> void
       {
         g_app->m_scene->Save(false);
@@ -239,6 +246,22 @@ namespace ToolKit
       {
         saveFn();
       }
+    }
+
+    void App::OnSaveAsScene()
+    {
+      StringInputWindow* inputWnd = new StringInputWindow("SaveScene##SvScn1", true);
+      inputWnd->m_inputLabel = "Name";
+      inputWnd->m_hint = "Scene name";
+      inputWnd->m_taskFn = [](const String& val)
+      {
+        String path;
+        DecomposePath(g_app->m_scene->m_file, &path, nullptr, nullptr);
+        String fullPath = ConcatPaths({ path, val + SCENE });
+        g_app->m_scene->m_file = fullPath;
+        g_app->m_scene->m_name = val;
+        g_app->OnSaveScene();
+      };
     }
 
     void App::OnQuit()
@@ -1141,6 +1164,7 @@ namespace ToolKit
       GetMeshManager()->m_reporterFn = genericReporterFn;
       GetTextureManager()->m_reporterFn = genericReporterFn;
       GetMaterialManager()->m_reporterFn = genericReporterFn;
+      GetSceneManager()->m_reporterFn = genericReporterFn;
     }
 
     void DebugMessage(const String& msg)

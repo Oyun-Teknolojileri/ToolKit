@@ -48,11 +48,12 @@ namespace ToolKit
       void OnResize(uint width, uint height);
       void OnNewScene(const String& name);
       void OnSaveScene();
+      void OnSaveAsScene();
       void OnQuit();
       void OnNewProject(const String& name);
       void SetGameMod(GameMod mod);
 
-      // UI
+      // UI.
       void ResetUI();
       void DeleteWindows();
       void CreateWindows(XmlNode* parent);
@@ -61,7 +62,7 @@ namespace ToolKit
       int Import(const String& fullPath, const String& subDir, bool overwrite);
       bool CanImport(const String& fullPath);
 
-      // Workspace
+      // Workspace.
       void OpenScene(const String& fullPath);
       void MergeScene(const String& fullPath);
       void ApplyProjectSettings(bool setDefaults);
