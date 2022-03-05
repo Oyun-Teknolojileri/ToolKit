@@ -211,9 +211,9 @@ namespace ToolKit
     void App::OnSaveScene()
     {
       // Prevent overriding default scene.
-      if (GetSceneManager()->GetDefaultResource(ResourceType::Scene) == m_scene->m_file)
+      if (GetSceneManager()->GetDefaultResource(ResourceType::Scene) == m_scene->GetFile())
       {
-        m_scene->m_file = ScenePath("New Scene" + SCENE);
+        m_scene->SetFile(ScenePath("New Scene" + SCENE));
         return OnSaveAsScene();
       }
 
@@ -256,9 +256,9 @@ namespace ToolKit
       inputWnd->m_taskFn = [](const String& val)
       {
         String path;
-        DecomposePath(g_app->m_scene->m_file, &path, nullptr, nullptr);
+        DecomposePath(g_app->m_scene->GetFile(), &path, nullptr, nullptr);
         String fullPath = ConcatPaths({ path, val + SCENE });
-        g_app->m_scene->m_file = fullPath;
+        g_app->m_scene->SetFile(fullPath);
         g_app->m_scene->m_name = val;
         g_app->OnSaveScene();
       };

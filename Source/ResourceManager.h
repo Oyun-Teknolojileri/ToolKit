@@ -58,7 +58,7 @@ namespace ToolKit
 
           String rel = GetRelativeResourcePath(file);
           Report("%s is missing. Using default resource.", rel.c_str());
-          resource->m_file = def;
+          resource->SetFile(def);
           resource->_missingFile = file;
         }
         else
