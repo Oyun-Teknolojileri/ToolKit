@@ -11,6 +11,7 @@ namespace ToolKit
   {
     XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlParamterElement.c_str());
     WriteAttr(node, doc, XmlParamterTypeAttr, std::to_string((int)m_type));
+    WriteAttr(node, doc, "name", m_name);
 
     switch (m_type)
     {
@@ -76,6 +77,7 @@ namespace ToolKit
 
     XmlAttribute* attr = parent->first_attribute(XmlParamterTypeAttr.c_str());
     m_type = (VariantType)std::atoi(attr->value());
+    ReadAttr(parent, "name", m_name);
 
     switch (m_type)
     {

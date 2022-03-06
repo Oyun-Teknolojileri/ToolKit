@@ -126,8 +126,6 @@ namespace ToolKit
 
         // Other editor and game entity plugins.
         ImGui::Separator();
-
-        float iWidth = ImGui::CalcItemWidth();
         
         ImGui::Checkbox("Run in window", &g_app->m_runWindowed);
         if (ImGui::BeginTable("EmuSet", 4, ImGuiTableFlags_SizingFixedFit))

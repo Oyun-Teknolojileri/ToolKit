@@ -53,6 +53,9 @@ namespace ToolKit
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+  public:
+    String m_name;
+
   private:
     std::variant<byte, ubyte, float, int, uint, Vec3, Vec4, Mat3, Mat4, String> m_var;
     VariantType m_type;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+#include "ParameterBlock.h"
 
 namespace ToolKit
 {
@@ -58,6 +59,7 @@ namespace ToolKit
     String m_name;
     String m_tag;
     bool m_visible;
+    ParameterBlock m_customData;
 
     // Internal use only, Helper ID for entity deserialization.
     ULongID _parentId;

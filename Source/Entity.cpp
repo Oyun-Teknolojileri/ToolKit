@@ -172,6 +172,7 @@ namespace ToolKit
     WriteAttr(node, doc, XmlEntityTypeAttr, std::to_string((int)GetType()));
     WriteAttr(node, doc, XmlEntityVisAttr, std::to_string(m_visible));
     m_node->Serialize(doc, node);
+    m_customData.Serialize(doc, parent);
   }
 
   void Entity::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -196,6 +197,7 @@ namespace ToolKit
     {
       m_node->DeSerialize(doc, transformNode);
     }
+    m_customData.DeSerialize(doc, parent);
   }
 
   void Entity::RemoveResources()

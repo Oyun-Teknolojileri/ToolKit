@@ -261,6 +261,128 @@ namespace ToolKit
         ImGui::Text("\tz: %.2f", dim.z);
       }
 
+      if (ImGui::CollapsingHeader("Custom Data", ImGuiTreeNodeFlags_DefaultOpen))
+      {
+        if (ImGui::BeginTable("##CustomData", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedSame))
+        {
+          ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 150.0f);
+          ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+          ImGui::TableHeadersRow();
+
+          ImGui::TableNextRow();
+          ImGui::TableNextColumn();
+
+          int i = 0;
+          for (ParameterVariant& var : m_entity->m_customData.m_variants)
+          {
+            String pNameId = "##Name" + std::to_string(i++);
+
+            static char nameBuff[1024];
+            ImGui::InputText(pNameId.c_str(), nameBuff, sizeof(nameBuff));
+            if (ImGui::IsItemDeactivatedAfterEdit())
+            {
+              var.m_name = nameBuff;
+            }
+            ImGui::TableNextColumn();
+
+            String pId = "##" + std::to_string(i++);
+            switch (var.GetType())
+            {
+              case ParameterVariant::VariantType::String:
+              {
+                static char buff[1024];
+                String str = var.GetVar<String>();
+                strcpy_s(buff, sizeof(buff), str.c_str());
+                ImGui::InputText(pId.c_str(), buff, sizeof(buff));
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                  var.SetVar(buff);
+                }
+              }
+              break;
+              case ParameterVariant::VariantType::Int:
+              {
+                int val = var.GetVar<int>();
+                ImGui::InputInt(pId.c_str(), &val);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                  var.SetVar(val);
+                }
+              }
+              break;
+              case ParameterVariant::VariantType::Float:
+              {
+                float val = var.GetVar<float>();
+                ImGui::InputFloat(pId.c_str(), &val);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                  var.SetVar(val);
+                }
+              }
+              break;
+              case ParameterVariant::VariantType::Vec3:
+              {
+                Vec3 val = var.GetVar<Vec3>();
+                ImGui::InputFloat3(pId.c_str(), &val[0]);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                  var.SetVar(val);
+                }
+              }
+              break;
+            }
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+          }
+          ImGui::EndTable();
+
+          ImGui::Separator();
+
+          static bool addInAction = false;
+          if (addInAction)
+          {
+            int dataType = 0;
+            if (ImGui::Combo("##NewCustData", &dataType, "String\0Int\0Float\0Vec3"))
+            {
+              switch (dataType)
+              {
+              case 0:
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(""));
+                addInAction = false;
+                break;
+              case 1:
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(0));
+                addInAction = false;
+                break;
+              case 2:
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(0.0f));
+                addInAction = false;
+                break;
+              case 3:
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(Vec3()));
+                addInAction = false;
+                break;
+              }
+            }
+          }
+
+          Vec2 min = ImGui::GetWindowContentRegionMin();
+          Vec2 max = ImGui::GetWindowContentRegionMax();
+          Vec2 size = max - min;
+
+          ImGui::AlignTextToFramePadding();
+          ImVec2 tsize = ImGui::CalcTextSize("Add Custom Data");
+          float offset = (size.x - tsize.x) * 0.5f;
+          ImGui::Indent(offset);
+
+          if (ImGui::Button("Add Custom Data"))
+          {
+            addInAction = true;
+          }
+
+          ImGui::Indent(-offset);
+        }
+      }
     }
 
     // MeshView

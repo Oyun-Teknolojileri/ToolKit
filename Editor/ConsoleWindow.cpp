@@ -677,13 +677,10 @@ namespace ToolKit
           reclaimFocus = true;
         }
         
- 
-
         ImGui::PopItemWidth();
 
         if (reclaimFocus)
         {
-          ImGui::SetKeyboardFocusHere(0);
           ImGui::SetKeyboardFocusHere(-1);
           reclaimFocus = false;
         }
