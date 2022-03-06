@@ -202,10 +202,9 @@ namespace ToolKit
 
       ImGuiTabItemFlags flags = m_activateNext ? ImGuiTabItemFlags_SetSelected : 0;
       m_activateNext = false;
-      m_active = false;
       if (ImGui::BeginTabItem(m_folder.c_str(), visCheck, flags))
       {
-        m_active = true;
+        m_parent->SetActiveView(this);
 
         if (m_dirty)
         {
@@ -1018,24 +1017,29 @@ namespace ToolKit
       if (deep)
       {
         FolderView& rootView = GetView(m_activeFolder);
-        for (DirectoryEntry& dirEnt : rootView.m_entiries)
+        for (FolderView& view : m_entiries)
         {
-          if (dirEnt.m_isDirectory)
+          if (view.m_active && view.m_visible)
           {
-            int subDirIndx = Exist(dirEnt.GetFullPath());
-            if (subDirIndx != -1)
-            {
-              FolderView& view = m_entiries[subDirIndx];
-              if (view.m_active && view.m_visible)
-              {
-                return &view;
-              }
-            }
+            return &view;
           }
         }
       }
 
       return &GetView(m_activeFolder);
+    }
+
+    void FolderWindow::SetActiveView(FolderView* view)
+    {
+      int viewIndx = Exist(view->GetPath());
+      if (viewIndx != -1)
+      {
+        for (FolderView& view : m_entiries)
+        {
+          view.m_active = false;
+        }
+        m_entiries[viewIndx].m_active = true;
+      }
     }
 
     int FolderWindow::Exist(const String& folder)
