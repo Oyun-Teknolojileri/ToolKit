@@ -302,6 +302,13 @@ namespace ToolKit
                 var.SetVar(buff);
               }
               break;
+              case ParameterVariant::VariantType::byte:
+              {
+                bool val = (bool)var.GetVar<byte>();
+                ImGui::Checkbox(pId.c_str(), &val);
+                var.SetVar((byte)val);
+              }
+              break;
               case ParameterVariant::VariantType::Int:
               {
                 int val = var.GetVar<int>();
@@ -362,7 +369,7 @@ namespace ToolKit
           if (addInAction)
           {
             int dataType = 0;
-            if (ImGui::Combo("##NewCustData", &dataType, "...\0String\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4"))
+            if (ImGui::Combo("##NewCustData", &dataType, "...\0String\0Boolean\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4"))
             {
               switch (dataType)
               {
@@ -371,26 +378,30 @@ namespace ToolKit
                 addInAction = false;
                 break;
               case 2:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(0));
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(byte(0)));
                 addInAction = false;
                 break;
               case 3:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(0.0f));
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(0));
                 addInAction = false;
                 break;
               case 4:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(Vec3()));
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(0.0f));
                 addInAction = false;
                 break;
               case 5:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(Vec4()));
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(Vec3()));
                 addInAction = false;
                 break;
               case 6:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(Mat3()));
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(Vec4()));
                 addInAction = false;
                 break;
               case 7:
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(Mat3()));
+                addInAction = false;
+                break;
+              case 8:
                 m_entity->m_customData.m_variants.push_back(ParameterVariant(Mat4()));
                 addInAction = false;
                 break;
