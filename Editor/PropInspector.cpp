@@ -263,10 +263,11 @@ namespace ToolKit
 
       if (ImGui::CollapsingHeader("Custom Data", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        if (ImGui::BeginTable("##CustomData", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedSame))
+        if (ImGui::BeginTable("##CustomData", 3, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedSame))
         {
           ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 150.0f);
           ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+          ImGui::TableSetupColumn("##Remove", ImGuiTableColumnFlags_WidthFixed);
           ImGui::TableHeadersRow();
 
           ImGui::TableSetColumnIndex(0);
@@ -275,13 +276,15 @@ namespace ToolKit
           ImGui::TableSetColumnIndex(1);
           ImGui::PushItemWidth(-FLT_MIN);
 
-          for (size_t i = 0; i < m_entity->m_customData.m_variants.size(); i++)
+          ParameterBlock& cData = m_entity->m_customData;
+          int remove = -1;
+          for (size_t i = 0; i < cData.m_variants.size(); i++)
           {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
 
             ImGui::PushID((int)i);
-            ParameterVariant& var = m_entity->m_customData.m_variants[i];
+            ParameterVariant& var = cData.m_variants[i];
             static char buff[1024];
             strcpy_s(buff, sizeof(buff), var.m_name.c_str());
 
@@ -367,8 +370,23 @@ namespace ToolKit
               break;
             }
 
+            ImGui::TableSetColumnIndex(2);
+            if (ImGui::Button("X"))
+            {
+              remove = (int)i;
+            }
+
             ImGui::PopID();
           }
+
+          // Apply remove.
+          if (remove != -1)
+          {
+            ParameterVariant& var = cData.m_variants[remove];
+            g_app->m_statusMsg = Format("Parameter %d: %s removed.", remove + 1, var.m_name.c_str());
+            cData.m_variants.erase(cData.m_variants.begin() + remove);
+          }
+
           ImGui::EndTable();
           ImGui::Separator();
 

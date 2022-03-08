@@ -332,7 +332,7 @@ namespace ToolKit
     prefab.AddEntity(entity);
     GetChildren(entity, prefab.m_entities);
     String name = entity->m_name + SCENE;
-    SetFile(PrefabPath(name));
+    prefab.SetFile(PrefabPath(name));
     prefab.m_name = name;
     prefab.Save(false);
     prefab.m_entities.clear();
