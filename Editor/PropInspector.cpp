@@ -323,6 +323,33 @@ namespace ToolKit
                 var.SetVar(val);
               }
               break;
+              case ParameterVariant::VariantType::Vec4:
+              {
+                Vec4 val = var.GetVar<Vec4>();
+                ImGui::InputFloat4(pId.c_str(), &val[0]);
+                var.SetVar(val);
+              }
+              break;
+              case ParameterVariant::VariantType::Mat3:
+              {
+                Mat3 val = var.GetVar<Mat3>();
+                for (int i = 0; i < 3; i++)
+                {
+                  ImGui::InputFloat3(pId.c_str(), &glm::row(val, i)[0]);
+                  var.SetVar(val);
+                }
+              }
+              break;
+              case ParameterVariant::VariantType::Mat4:
+              {
+                Mat4 val = var.GetVar<Mat4>();
+                for (int i = 0; i < 4; i++)
+                {
+                  ImGui::InputFloat4(pId.c_str(), &glm::row(val, i)[0]);
+                  var.SetVar(val);
+                }
+              }
+              break;
             }
 
             ImGui::PopID();
@@ -330,33 +357,47 @@ namespace ToolKit
           ImGui::EndTable();
           ImGui::Separator();
 
+          ImGui::PushItemWidth(150);
           static bool addInAction = false;
           if (addInAction)
           {
             int dataType = 0;
-            if (ImGui::Combo("##NewCustData", &dataType, "String\0Int\0Float\0Vec3"))
+            if (ImGui::Combo("##NewCustData", &dataType, "...\0String\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4"))
             {
               switch (dataType)
               {
-              case 0:
+              case 1:
                 m_entity->m_customData.m_variants.push_back(ParameterVariant(""));
                 addInAction = false;
                 break;
-              case 1:
+              case 2:
                 m_entity->m_customData.m_variants.push_back(ParameterVariant(0));
                 addInAction = false;
                 break;
-              case 2:
+              case 3:
                 m_entity->m_customData.m_variants.push_back(ParameterVariant(0.0f));
                 addInAction = false;
                 break;
-              case 3:
+              case 4:
                 m_entity->m_customData.m_variants.push_back(ParameterVariant(Vec3()));
+                addInAction = false;
+                break;
+              case 5:
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(Vec4()));
+                addInAction = false;
+                break;
+              case 6:
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(Mat3()));
+                addInAction = false;
+                break;
+              case 7:
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(Mat4()));
                 addInAction = false;
                 break;
               }
             }
           }
+          ImGui::PopItemWidth();
 
           Vec2 min = ImGui::GetWindowContentRegionMin();
           Vec2 max = ImGui::GetWindowContentRegionMax();
