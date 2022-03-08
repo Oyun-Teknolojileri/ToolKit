@@ -339,20 +339,28 @@ namespace ToolKit
               break;
               case ParameterVariant::VariantType::Mat3:
               {
+                Vec3 vec;
                 Mat3 val = var.GetVar<Mat3>();
-                for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 3; j++)
                 {
-                  ImGui::InputFloat3(pId.c_str(), &glm::row(val, i)[0]);
+                  pId += std::to_string(j);
+                  vec = glm::row(val, j);
+                  ImGui::InputFloat3(pId.c_str(), &vec[0]);
+                  val = glm::row(val, j, vec);
                   var.SetVar(val);
                 }
               }
               break;
               case ParameterVariant::VariantType::Mat4:
               {
+                Vec4 vec;
                 Mat4 val = var.GetVar<Mat4>();
-                for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
                 {
-                  ImGui::InputFloat4(pId.c_str(), &glm::row(val, i)[0]);
+                  pId += std::to_string(j);
+                  vec = glm::row(val, j);
+                  ImGui::InputFloat4(pId.c_str(), &vec[0]);
+                  val = glm::row(val, j, vec);
                   var.SetVar(val);
                 }
               }

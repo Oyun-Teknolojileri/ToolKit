@@ -151,16 +151,7 @@ namespace ToolKit
 
   void Entity::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlEntityElement.c_str());
-    if (parent != nullptr)
-    {
-      parent->append_node(node);
-    }
-    else
-    {
-      doc->append_node(node);
-    }
-
+    XmlNode* node = CreateXmlNode(doc, XmlEntityElement, parent);
     WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(m_id));
     if (m_node->m_parent && m_node->m_parent->m_entity)
     {
@@ -172,7 +163,7 @@ namespace ToolKit
     WriteAttr(node, doc, XmlEntityTypeAttr, std::to_string((int)GetType()));
     WriteAttr(node, doc, XmlEntityVisAttr, std::to_string(m_visible));
     m_node->Serialize(doc, node);
-    m_customData.Serialize(doc, parent);
+    m_customData.Serialize(doc, node);
   }
 
   void Entity::DeSerialize(XmlDocument* doc, XmlNode* parent)

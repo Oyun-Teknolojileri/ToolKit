@@ -67,7 +67,6 @@ namespace ToolKit
     XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlMeshElement.c_str());
 
     String relPath = GetRelativeResourcePath(m_mesh->GetSerializeFile());
-    
     node->append_attribute
     (
       doc->allocate_attribute
@@ -76,6 +75,7 @@ namespace ToolKit
         doc->allocate_string(relPath.c_str())
       )
     );
+
     parent->last_node()->append_node(node);
     m_mesh->Save(true);
   }

@@ -51,9 +51,25 @@ namespace ToolKit
     }
     break;
     case VariantType::Mat3:
+    {
+      Mat3 val = GetVar<Mat3>();
+      for (int i = 0; i < 3; i++)
+      {
+        XmlNode* row = CreateXmlNode(doc, "row", node);
+        WriteVec(row, doc, glm::row(val, i));
+      }
+    }
+    break;
     case VariantType::Mat4:
-      assert(false && "Not implemented.");
-      break;
+    {
+      Mat4 val = GetVar<Mat4>();
+      for (int i = 0; i < 4; i++)
+      {
+        XmlNode* row = CreateXmlNode(doc, "row", node);
+        WriteVec(row, doc, glm::row(val, i));
+      }
+    }
+    break;
     case VariantType::String:
     {
       WriteAttr(node, doc, XmlParamterValAttr.c_str(), GetVar<String>());
@@ -130,11 +146,41 @@ namespace ToolKit
       m_var = var;
     }
     break;
-    case VariantType::Mat3:
-    case VariantType::Mat4:
     case VariantType::String:
-      assert(false && "Not implemented.");
-      break;
+    {
+      String val;
+      ReadAttr(parent, XmlParamterValAttr, val);
+      m_var = val;
+    }
+    break;
+    case VariantType::Mat3:
+    {
+      Mat3 val;
+      Vec3 vec;
+      XmlNode* row = parent->first_node();
+      for (int i = 0; i < 3; i++)
+      {
+        ReadVec<Vec3>(row, vec);
+        val = glm::row(val, i, vec);
+        row = row->next_sibling();
+      }
+      m_var = val;
+    }
+    break;
+    case VariantType::Mat4:
+    {
+      Mat4 val;
+      Vec4 vec;
+      XmlNode* row = parent->first_node();
+      for (int i = 0; i < 4; i++)
+      {
+        ReadVec<Vec4>(row, vec);
+        val = glm::row(val, i, vec);
+        row = row->next_sibling();
+      }
+      m_var = val;
+    }
+    break;
     default:
       assert(false && "Invalid type.");
       break;
