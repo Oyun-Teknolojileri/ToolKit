@@ -269,73 +269,65 @@ namespace ToolKit
           ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
           ImGui::TableHeadersRow();
 
-          ImGui::TableNextRow();
-          ImGui::TableNextColumn();
+          ImGui::TableSetColumnIndex(0);
+          ImGui::PushItemWidth(-FLT_MIN);
 
-          int i = 0;
-          for (ParameterVariant& var : m_entity->m_customData.m_variants)
+          ImGui::TableSetColumnIndex(1);
+          ImGui::PushItemWidth(-FLT_MIN);
+
+          for (size_t i = 0; i < m_entity->m_customData.m_variants.size(); i++)
           {
-            String pNameId = "##Name" + std::to_string(i++);
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
 
-            static char nameBuff[1024];
-            ImGui::InputText(pNameId.c_str(), nameBuff, sizeof(nameBuff));
-            if (ImGui::IsItemDeactivatedAfterEdit())
-            {
-              var.m_name = nameBuff;
-            }
-            ImGui::TableNextColumn();
+            ImGui::PushID((int)i);
+            ParameterVariant& var = m_entity->m_customData.m_variants[i];
+            static char buff[1024];
+            strcpy_s(buff, sizeof(buff), var.m_name.c_str());
 
-            String pId = "##" + std::to_string(i++);
+            String pNameId = "##Name" + std::to_string(i);
+            ImGui::InputText(pNameId.c_str(), buff, sizeof(buff));
+            var.m_name = buff;
+
+            ImGui::TableSetColumnIndex(1);
+
+            String pId = "##" + std::to_string(i);
             switch (var.GetType())
             {
               case ParameterVariant::VariantType::String:
               {
-                static char buff[1024];
                 String str = var.GetVar<String>();
                 strcpy_s(buff, sizeof(buff), str.c_str());
                 ImGui::InputText(pId.c_str(), buff, sizeof(buff));
-                if (ImGui::IsItemDeactivatedAfterEdit())
-                {
-                  var.SetVar(buff);
-                }
+                var.SetVar(buff);
               }
               break;
               case ParameterVariant::VariantType::Int:
               {
                 int val = var.GetVar<int>();
                 ImGui::InputInt(pId.c_str(), &val);
-                if (ImGui::IsItemDeactivatedAfterEdit())
-                {
-                  var.SetVar(val);
-                }
+                var.SetVar(val);
               }
               break;
               case ParameterVariant::VariantType::Float:
               {
                 float val = var.GetVar<float>();
                 ImGui::InputFloat(pId.c_str(), &val);
-                if (ImGui::IsItemDeactivatedAfterEdit())
-                {
-                  var.SetVar(val);
-                }
+                var.SetVar(val);
               }
               break;
               case ParameterVariant::VariantType::Vec3:
               {
                 Vec3 val = var.GetVar<Vec3>();
                 ImGui::InputFloat3(pId.c_str(), &val[0]);
-                if (ImGui::IsItemDeactivatedAfterEdit())
-                {
-                  var.SetVar(val);
-                }
+                var.SetVar(val);
               }
               break;
             }
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
+
+            ImGui::PopID();
           }
           ImGui::EndTable();
-
           ImGui::Separator();
 
           static bool addInAction = false;

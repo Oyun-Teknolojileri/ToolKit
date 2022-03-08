@@ -54,7 +54,7 @@ namespace ToolKit
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   public:
-    String m_name;
+    String m_name = "Var";
 
   private:
     std::variant<byte, ubyte, float, int, uint, Vec3, Vec4, Mat3, Mat4, String> m_var;
