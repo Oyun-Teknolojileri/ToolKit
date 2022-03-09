@@ -265,9 +265,20 @@ namespace ToolKit
       {
         if (ImGui::BeginTable("##CustomData", 3, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedSame))
         {
-          ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 150.0f);
+          Vec2 xSize = ImGui::CalcTextSize("Name");
+          xSize *= 3.0f;
+          ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, xSize.x);
           ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-          ImGui::TableSetupColumn("##Remove", ImGuiTableColumnFlags_WidthFixed);
+         
+          xSize = ImGui::CalcTextSize("X");
+          xSize *= 2.5f;
+          ImGui::TableSetupColumn
+          (
+            "##Remove",
+            ImGuiTableColumnFlags_WidthFixed,
+            xSize.x
+          );
+
           ImGui::TableHeadersRow();
 
           ImGui::TableSetColumnIndex(0);
