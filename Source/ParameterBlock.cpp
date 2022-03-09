@@ -15,6 +15,11 @@ namespace ToolKit
 
     switch (m_type)
     {
+    case VariantType::Bool:
+    {
+      WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(GetVar<bool>()));
+    }
+    break;
     case VariantType::byte:
     {
       WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(GetVar<byte>()));
@@ -97,6 +102,13 @@ namespace ToolKit
 
     switch (m_type)
     {
+    case VariantType::Bool:
+    {
+      bool val(false);
+      ReadAttr(parent, XmlParamterValAttr, val);
+      m_var = val;
+    }
+    break;
     case VariantType::byte:
     {
       byte val(0);
@@ -208,6 +220,31 @@ namespace ToolKit
         var.DeSerialize(doc, param);
         m_variants.push_back(var);
         param = param->next_sibling();
+      }
+    }
+  }
+
+  bool ParameterBlock::GetFirst(const String& name, ParameterVariant& var)
+  {
+    for (ParameterVariant& v : m_variants)
+    {
+      if (v.m_name == name)
+      {
+        var = v;
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  void ParameterBlock::Get(const String& name, ParameterVariantArray& variants)
+  {
+    for (ParameterVariant& v : m_variants)
+    {
+      if (v.m_name == name)
+      {
+        variants.push_back(v);
       }
     }
   }

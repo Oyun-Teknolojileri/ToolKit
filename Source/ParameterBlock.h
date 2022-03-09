@@ -12,6 +12,7 @@ namespace ToolKit
   public:
     enum class VariantType
     {
+      Bool,
       byte,
       ubyte,
       Float,
@@ -26,6 +27,7 @@ namespace ToolKit
 
     ParameterVariant() { SetVar(0); }
     virtual ~ParameterVariant() { }
+    ParameterVariant(bool var) { SetVar(var); }
     ParameterVariant(byte var) { SetVar(var); }
     ParameterVariant(ubyte var) { SetVar(var); }
     ParameterVariant(float var) { SetVar(var); }
@@ -39,6 +41,7 @@ namespace ToolKit
 
     VariantType GetType() const { return m_type; }
     template<typename T> const T& GetVar() const { return std::get<T>(m_var); }
+    void SetVar(bool var) { m_type = VariantType::Bool; m_var = var; }
     void SetVar(byte var) { m_type = VariantType::byte; m_var = var; }
     void SetVar(ubyte var) { m_type = VariantType::ubyte; m_var = var; }
     void SetVar(float var) { m_type = VariantType::Float; m_var = var; }
@@ -57,7 +60,7 @@ namespace ToolKit
     String m_name = "Var";
 
   private:
-    std::variant<byte, ubyte, float, int, uint, Vec3, Vec4, Mat3, Mat4, String> m_var;
+    std::variant<bool, byte, ubyte, float, int, uint, Vec3, Vec4, Mat3, Mat4, String> m_var;
     VariantType m_type;
   };
 
@@ -72,8 +75,14 @@ namespace ToolKit
       return m_variants[indx];
     }
 
+    // Returns the first variant which matches the name.
+    bool GetFirst(const String& name, ParameterVariant& var);
+
+    // Collects all the variants which matches the name.
+    void Get(const String& name, ParameterVariantArray& variants);
+
   public:
-    std::vector<ParameterVariant> m_variants;
+    ParameterVariantArray m_variants;
   };
 
 }

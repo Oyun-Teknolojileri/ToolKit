@@ -316,11 +316,11 @@ namespace ToolKit
                 var.SetVar(buff);
               }
               break;
-              case ParameterVariant::VariantType::byte:
+              case ParameterVariant::VariantType::Bool:
               {
-                bool val = (bool)var.GetVar<byte>();
+                bool val = var.GetVar<bool>();
                 ImGui::Checkbox(pId.c_str(), &val);
-                var.SetVar((byte)val);
+                var.SetVar(val);
               }
               break;
               case ParameterVariant::VariantType::Int:
@@ -415,7 +415,7 @@ namespace ToolKit
                 addInAction = false;
                 break;
               case 2:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(byte(0)));
+                m_entity->m_customData.m_variants.push_back(ParameterVariant(false));
                 addInAction = false;
                 break;
               case 3:
