@@ -75,6 +75,7 @@ namespace ToolKit
     copyTo->m_name = m_name;
     copyTo->m_tag = m_tag;
     copyTo->m_visible = m_visible;
+    copyTo->m_customData = m_customData;
 
     return copyTo;
   }
