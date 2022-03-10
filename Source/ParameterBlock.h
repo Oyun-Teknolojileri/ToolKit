@@ -38,6 +38,7 @@ namespace ToolKit
     ParameterVariant(const Mat3& var) { SetVar(var); }
     ParameterVariant(const Mat4& var) { SetVar(var); }
     ParameterVariant(const String& var) { SetVar(var); }
+    ParameterVariant(const char* var) { SetVar(var); }
 
     VariantType GetType() const { return m_type; }
     template<typename T> const T& GetVar() const { return std::get<T>(m_var); }
@@ -52,6 +53,7 @@ namespace ToolKit
     void SetVar(const Mat3& var) { m_type = VariantType::Mat3; m_var = var; }
     void SetVar(const Mat4& var) { m_type = VariantType::Mat4; m_var = var; }
     void SetVar(const String& var) { m_type = VariantType::String; m_var = var; }
+    void SetVar(const char* var) { m_type = VariantType::String; m_var = String(var); }
 
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;

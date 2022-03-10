@@ -411,35 +411,35 @@ namespace ToolKit
               switch (dataType)
               {
               case 1:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(""));
+                m_entity->m_customData.m_variants.push_back("");
                 addInAction = false;
                 break;
               case 2:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(false));
+                m_entity->m_customData.m_variants.push_back(false);
                 addInAction = false;
                 break;
               case 3:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(0));
+                m_entity->m_customData.m_variants.push_back(0);
                 addInAction = false;
                 break;
               case 4:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(0.0f));
+                m_entity->m_customData.m_variants.push_back(0.0f);
                 addInAction = false;
                 break;
               case 5:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(Vec3()));
+                m_entity->m_customData.m_variants.push_back(Vec3());
                 addInAction = false;
                 break;
               case 6:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(Vec4()));
+                m_entity->m_customData.m_variants.push_back(Vec4());
                 addInAction = false;
                 break;
               case 7:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(Mat3()));
+                m_entity->m_customData.m_variants.push_back(Mat3());
                 addInAction = false;
                 break;
               case 8:
-                m_entity->m_customData.m_variants.push_back(ParameterVariant(Mat4()));
+                m_entity->m_customData.m_variants.push_back(Mat4());
                 addInAction = false;
                 break;
               }
