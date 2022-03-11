@@ -28,6 +28,11 @@ namespace ToolKit
 
   void Animation::GetCurrentPose(Node* node)
   {
+    GetPose(node, m_currentTime);
+  }
+
+  void Animation::GetPose(Node* node, float time)
+  {
     if (m_keys.empty())
     {
       return;
@@ -36,7 +41,7 @@ namespace ToolKit
     float ratio;
     int key1, key2;
     std::vector<Key>& keys = m_keys.begin()->second;
-    GetNearestKeys(keys, key1, key2, ratio);
+    GetNearestKeys(keys, key1, key2, ratio, time);
 
     if ((int)keys.size() <= key1 || key1 == -1)
     {
@@ -56,6 +61,11 @@ namespace ToolKit
     node->SetChildrenDirty();
   }
 
+  void Animation::GetPose(Node* node, int frame)
+  {
+    GetPose(node, frame * 1.0f / m_fps);
+  }
+
   void Animation::GetCurrentPose(Skeleton* skeleton)
   {
     if (m_keys.empty())
@@ -73,7 +83,7 @@ namespace ToolKit
         continue;
       }
 
-      GetNearestKeys(entry->second, key1, key2, ratio);
+      GetNearestKeys(entry->second, key1, key2, ratio, m_currentTime);
 
       // Sanity checks
       int keySize = (int)entry->second.size();
@@ -186,21 +196,51 @@ namespace ToolKit
     cpy->m_state = m_state;
   }
 
-  void Animation::GetNearestKeys(const std::vector<Key>& keys, int& key1, int& key2, float& ratio)
+  void Animation::GetNearestKeys(const std::vector<Key>& keys, int& key1, int& key2, float& ratio, float t)
   {
     // Find nearset keys.
     key1 = -1;
     key2 = -1;
-    ratio = 0;
+    ratio = 0.0f;
 
+    assert(keys.empty() != true && "Animation can't be empty !");
+
+    // Check boundary cases.
+    if ((int)keys.size() == 1)
+    {
+      key1 = 0;
+      key2 = 0;
+      return;
+    }
+
+    // Current time is earliear than earliest time in the animation.
+    float boundaryTime = keys.front().m_frame * 1.0f / m_fps;
+    if (boundaryTime > t)
+    {
+      key1 = 0;
+      key2 = 1;
+      return;
+    }
+
+    // Current time is later than the latest time in the animation.
+    boundaryTime = keys.back().m_frame * 1.0f / m_fps;
+    if (t > boundaryTime)
+    {
+      key2 = (int)(keys.size() - 1);
+      key1 = key2 - 1;
+      ratio = 1.0f;
+      return;
+    }
+
+    // Current time is in between keyframes. Rote interpolation ratio and nearest keys.
     for (int i = 1; i < (int)keys.size(); i++)
     {
       float keyTime2 = keys[i].m_frame * 1.0f / m_fps;
       float keyTime1 = keys[i - 1].m_frame * 1.0f / m_fps;
 
-      if (m_currentTime >= keyTime1 && keyTime2 >= m_currentTime)
+      if (t >= keyTime1 && keyTime2 >= t)
       {
-        ratio = (m_currentTime - keyTime1) / (keyTime2 - keyTime1);
+        ratio = (t - keyTime1) / (keyTime2 - keyTime1);
         key1 = i - 1;
         key2 = i;
         return;

@@ -28,7 +28,9 @@ namespace ToolKit
     Animation(String file);
     ~Animation();
 
-    void GetCurrentPose(Node* node); // interpolate keys based on time.
+    void GetCurrentPose(Node* node); // Set the Node's tranform from the animation based on m_currentTime.
+    void GetPose(Node* node, float time); // Set the Node's tranform from the animation based on time.
+    void GetPose(Node* node, int frame);
     void GetCurrentPose(Skeleton* skeleton);
     float GetDuration();
 
@@ -36,13 +38,13 @@ namespace ToolKit
     virtual void Init(bool flushClientSideArray = true) override;
     virtual void UnInit() override;
 
-    void Reverse();
+    void Reverse(); // Reverse the animation.
 
   protected:
     virtual void CopyTo(Resource* other) override;
 
   private:
-    void GetNearestKeys(const std::vector<Key>& keys, int& key1, int& key2, float& ratio); // Finds nearest keys and ratio to current time.
+    void GetNearestKeys(const std::vector<Key>& keys, int& key1, int& key2, float& ratio, float t); // Finds nearest keys and interpolation ratio for current time.
 
   public:
     enum class State
