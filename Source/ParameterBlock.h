@@ -12,7 +12,6 @@ namespace ToolKit
   public:
     enum class VariantType
     {
-      Bool,
       byte,
       ubyte,
       Float,
@@ -22,7 +21,8 @@ namespace ToolKit
       Vec4,
       Mat3,
       Mat4,
-      String
+      String,
+      Bool
     };
 
     ParameterVariant() { SetVar(0); }
