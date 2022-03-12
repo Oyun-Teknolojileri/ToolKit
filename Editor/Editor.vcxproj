@@ -93,6 +93,7 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="ConsoleWindow.cpp" />
+    <ClCompile Include="EditorCamera.cpp" />
     <ClCompile Include="EditorViewport2d.cpp" />
     <ClCompile Include="FolderWindow.cpp" />
     <ClCompile Include="Gizmo.cpp" />

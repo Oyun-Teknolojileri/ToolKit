@@ -8,10 +8,11 @@ namespace ToolKit
   namespace Editor
   {
 
-    class EditorCamera : public Camera
+    class EditorCamera : public Entity
     {
     public:
-
+      EditorCamera();
+      virtual ~EditorCamera();
     };
 
   }
