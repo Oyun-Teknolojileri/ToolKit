@@ -44,6 +44,7 @@
 
 #include "Logger.h"
 #include "Events.h"
+#include "Serialize.h"
 
 // STL
 #include <algorithm>

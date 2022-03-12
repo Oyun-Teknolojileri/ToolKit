@@ -67,7 +67,8 @@ namespace ToolKit
           }
           else
           {
-            m_mat = GetMaterialManager()->GetCopyOfDefaultMaterial().get();
+            MaterialPtr defMat = GetMaterialManager()->GetCopyOfDefaultMaterial();
+            m_mat = defMat.get();
           }
         }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Directional.h"
+#include "Component.h"
 
 namespace ToolKit
 {
@@ -17,9 +18,6 @@ namespace ToolKit
 
     private:
       void GenerateFrustum();
-
-    public:
-      MeshPtr m_mesh; // Frustum gizmo.
     };
 
   }

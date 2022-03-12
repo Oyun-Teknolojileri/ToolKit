@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "EditorCamera.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -9,7 +10,8 @@ namespace ToolKit
 
     EditorCamera::EditorCamera()
     {
-
+      MeshComponent* meshCom = new MeshComponent();
+      AddComponent(meshCom);
     }
 
     EditorCamera::~EditorCamera()
@@ -46,8 +48,10 @@ namespace ToolKit
         corners[3], corners[0]
       };
 
+      MeshComponent* mc = static_cast<MeshComponent*> (GetFirstComponent(ComponentType::Component_Mesh));
+      
       LineBatch fs(lines, Vec3(), DrawType::Line);
-      m_mesh = fs.m_mesh;
+      mc->m_mesh = fs.m_mesh;
       fs.m_mesh = nullptr;
 
       // Triangle part.
@@ -67,8 +71,8 @@ namespace ToolKit
       mesh->CalculateAABB();
       mesh->ConstructFaces();
 
-      m_mesh->m_subMeshes.push_back(mesh);
-      m_mesh->Init();
+      mc->m_mesh->m_subMeshes.push_back(mesh);
+      mc->m_mesh->Init();
     }
 
   }

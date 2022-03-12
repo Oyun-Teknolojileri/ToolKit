@@ -12,7 +12,7 @@ namespace ToolKit
     Component_Mesh
   };
 
-  class Component : public Serializable
+  class TK_API Component : public Serializable
   {
   public:
     Component();
@@ -26,9 +26,11 @@ namespace ToolKit
     static ULongID m_handle;
   };
 
-  class MeshComponent : public Component
+  class TK_API MeshComponent : public Component
   {
   public:
+    MeshComponent();
+    virtual ~MeshComponent();
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
