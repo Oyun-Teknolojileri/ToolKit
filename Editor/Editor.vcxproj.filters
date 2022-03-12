@@ -176,6 +176,9 @@
     <ClInclude Include="EditorViewport2d.h">
       <Filter>UI</Filter>
     </ClInclude>
+    <ClInclude Include="EditorCamera.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />

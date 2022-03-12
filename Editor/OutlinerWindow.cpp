@@ -24,8 +24,8 @@ namespace ToolKit
     }
 
     // Recursively show entity hierarchy & update via drag drop.
-    ULongID g_parent = NULL_ENTITY;
-    ULongID g_child = NULL_ENTITY;
+    ULongID g_parent = NULL_HANDLE;
+    ULongID g_child = NULL_HANDLE;
 
     void OutlinerWindow::ShowNode(Entity* e)
     {
@@ -146,8 +146,8 @@ namespace ToolKit
       {
         HandleStates();
 
-        g_parent = NULL_ENTITY;
-        g_child = NULL_ENTITY;
+        g_parent = NULL_HANDLE;
+        g_child = NULL_HANDLE;
 
         if (DrawHeader("Scene", 0, ImGuiTreeNodeFlags_DefaultOpen, UI::m_collectionIcon))
         {
@@ -177,11 +177,11 @@ namespace ToolKit
       }
 
       // Update hierarchy if there is a change.
-      if (g_child != NULL_ENTITY)
+      if (g_child != NULL_HANDLE)
       {
         Entity* child = g_app->m_scene->GetEntity(g_child);
         child->m_node->OrphanSelf(true);
-        if (g_parent != NULL_ENTITY)
+        if (g_parent != NULL_HANDLE)
         {
           Entity* parent = g_app->m_scene->GetEntity(g_parent);
           parent->m_node->AddChild(child->m_node, true);

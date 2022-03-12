@@ -148,6 +148,7 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="ConsoleWindow.h" />
+    <ClInclude Include="EditorCamera.h" />
     <ClInclude Include="EditorViewport2d.h" />
     <ClInclude Include="FolderWindow.h" />
     <ClInclude Include="Gizmo.h" />

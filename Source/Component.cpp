@@ -1,0 +1,21 @@
+#pragma once
+
+#include "stdafx.h"
+#include "Component.h"
+
+namespace ToolKit
+{
+
+  ULongID Component::m_handle = NULL_HANDLE;
+
+  Component::Component()
+  {
+    m_id = ++m_handle;
+    m_type = ComponentType::Component_Base;
+  }
+
+  Component::~Component()
+  {
+  }
+
+}

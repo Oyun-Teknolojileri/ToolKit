@@ -53,12 +53,12 @@ namespace ToolKit
 
     void EditorScene::AddToSelection(const EntityIdArray& entities, bool additive)
     {
-      ULongID currentId = NULL_ENTITY;
+      ULongID currentId = NULL_HANDLE;
       if (entities.size() > 1)
       {
         for (const ULongID& id : entities)
         {
-          if (id != NULL_ENTITY)
+          if (id != NULL_HANDLE)
           {
             if (IsCurrentSelection(id))
             {
@@ -76,7 +76,7 @@ namespace ToolKit
 
       for (const ULongID& id : entities)
       {
-        if (id == NULL_ENTITY)
+        if (id == NULL_HANDLE)
         {
           continue;
         }

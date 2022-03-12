@@ -4,7 +4,7 @@
 
 namespace ToolKit
 {
-  ULongID Resource::m_handle = NULL_ENTITY;
+  ULongID Resource::m_handle = NULL_HANDLE;
 
   Resource::Resource()
   {

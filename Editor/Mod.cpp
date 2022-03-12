@@ -52,7 +52,7 @@ namespace ToolKit
       assert(m_ntt != nullptr);
 
       g_app->m_scene->AddEntity(m_ntt);
-      if (m_parentId != NULL_ENTITY)
+      if (m_parentId != NULL_HANDLE)
       {
         if (Entity* pEntt = g_app->m_scene->GetEntity(m_parentId))
         {
@@ -552,7 +552,7 @@ namespace ToolKit
         }
         else
         {
-          ids.push_back(NULL_ENTITY);
+          ids.push_back(NULL_HANDLE);
         }
       }
     }

@@ -2,6 +2,7 @@
 
 #include "Types.h"
 #include "ParameterBlock.h"
+#include "Component.h"
 
 namespace ToolKit
 {
@@ -49,6 +50,12 @@ namespace ToolKit
 
     static Entity* CreateByType(EntityType t);
 
+    // Component functionalities.
+    void AddComponent(Component* component);
+    void GetComponent(ComponentType type, ComponentArray& components);
+    Component* GetComponent(ULongID id);
+    Component* GetFirstComponent(ComponentType type);
+
   protected:
     virtual Entity* GetCopy(Entity* copyTo) const;
     virtual Entity* GetInstance(Entity* copyTo) const;
@@ -60,6 +67,7 @@ namespace ToolKit
     String m_tag;
     bool m_visible;
     ParameterBlock m_customData;
+    ComponentArray m_components;
 
     // Internal use only, Helper ID for entity deserialization.
     ULongID _parentId;

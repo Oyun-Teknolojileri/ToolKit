@@ -10,7 +10,7 @@
 namespace ToolKit
 {
 
-  ULongID Entity::m_lastId = 1000; // 0 is null entity id.
+  ULongID Entity::m_lastId = 1000; // 0 is null entity id. Preserve previous ID slots for internal use.
 
   Entity::Entity()
   {
@@ -148,6 +148,48 @@ namespace ToolKit
     }
 
     return e;
+  }
+
+  void Entity::AddComponent(Component* component)
+  {
+    assert(GetComponent(component->m_id) == nullptr && "Component has already been added.");
+  }
+
+  void Entity::GetComponent(ComponentType type, ComponentArray& components)
+  {
+    for (Component* com : m_components)
+    {
+      if (com->m_type == type)
+      {
+        components.push_back(com);
+      }
+    }
+  }
+
+  Component* Entity::GetComponent(ULongID id)
+  {
+    for (Component* com : m_components)
+    {
+      if (com->m_id == id)
+      {
+        return com;
+      }
+    }
+
+    return nullptr;
+  }
+
+  Component* Entity::GetFirstComponent(ComponentType type)
+  {
+    for (Component* com : m_components)
+    {
+      if (com->m_type == type)
+      {
+        return com;
+      }
+    }
+
+    return nullptr;
   }
 
   void Entity::Serialize(XmlDocument* doc, XmlNode* parent) const

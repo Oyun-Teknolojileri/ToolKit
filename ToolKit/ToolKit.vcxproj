@@ -91,6 +91,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\Component.h" />
     <ClInclude Include="..\Source\Events.h" />
     <ClInclude Include="..\Source\GlobalCache.h" />
     <ClInclude Include="..\Source\ParameterBlock.h" />
@@ -128,6 +129,7 @@
     <ClInclude Include="..\Source\Viewport.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Source\Component.cpp" />
     <ClCompile Include="..\Source\ParameterBlock.cpp" />
     <ClCompile Include="..\Source\PluginManager.cpp" />
     <ClCompile Include="..\Source\RenderState.cpp" />

@@ -82,6 +82,7 @@ namespace ToolKit
   typedef std::vector<class Node*> NodePtrArray;
   typedef std::vector<class Vertex> VertexArray;
   typedef std::vector<class Face> FaceArray;
+  typedef std::vector<class Component*> ComponentArray;
   typedef std::vector<class ParameterVariant> ParameterVariantArray;
   typedef rapidxml::xml_node<char> XmlNode;
   typedef rapidxml::xml_attribute<char> XmlAttribute;
@@ -136,7 +137,7 @@ namespace ToolKit
   static const String SHADER(".shader");
   static const String AUDIO(".wav");
 
-  static const ULongID NULL_ENTITY = 0;
+  static const ULongID NULL_HANDLE = 0;
 
   // Xml file IO.
   static const String XmlEntityElement("E");
