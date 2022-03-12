@@ -340,7 +340,14 @@ namespace ToolKit
 
       for (Entity* ntt : ntties)
       {
-        if (ntt->IsDrawable() && ntt->m_visible)
+        if 
+        (
+          (
+            ntt->IsDrawable() || 
+            ntt->GetFirstComponent(ComponentType::Component_Mesh)
+          ) && 
+          ntt->m_visible
+        )
         {
           if (ntt->GetType() == EntityType::Entity_Billboard)
           {
@@ -350,7 +357,7 @@ namespace ToolKit
 
           app->m_renderer->Render
           (
-            static_cast<Drawable*> (ntt),
+            ntt,
             m_camera,
             app->m_sceneLights
           );

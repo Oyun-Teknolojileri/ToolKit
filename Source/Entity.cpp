@@ -153,6 +153,7 @@ namespace ToolKit
   void Entity::AddComponent(Component* component)
   {
     assert(GetComponent(component->m_id) == nullptr && "Component has already been added.");
+    m_components.push_back(component);
   }
 
   void Entity::GetComponent(ComponentType type, ComponentArray& components) const

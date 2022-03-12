@@ -15,6 +15,8 @@ namespace ToolKit
       EditorScene(const String& file);
       virtual ~EditorScene();
 
+      virtual void Load() override;
+
       // Selection operations.
       bool IsSelected(ULongID id) const;
       void RemoveFromSelection(ULongID id);

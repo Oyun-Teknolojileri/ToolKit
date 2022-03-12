@@ -5,6 +5,7 @@
 #include "GlobalDef.h"
 #include "Mod.h"
 #include "ConsoleWindow.h"
+#include "EditorCamera.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -246,6 +247,12 @@ namespace ToolKit
         if (ImGui::MenuItem("Node"))
         {
           Entity* node = Entity::CreateByType(EntityType::Entity_Node);
+          g_app->m_scene->AddEntity(node);
+        }
+
+        if (ImGui::MenuItem("Camera"))
+        {
+          Entity* node = new EditorCamera();
           g_app->m_scene->AddEntity(node);
         }
       };

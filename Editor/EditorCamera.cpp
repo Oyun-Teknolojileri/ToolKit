@@ -12,6 +12,7 @@ namespace ToolKit
     {
       MeshComponent* meshCom = new MeshComponent();
       AddComponent(meshCom);
+      GenerateFrustum();
     }
 
     EditorCamera::~EditorCamera()
@@ -21,7 +22,7 @@ namespace ToolKit
 
     bool EditorCamera::IsDrawable() const
     {
-      return true;
+      return false;
     }
 
     void EditorCamera::GenerateFrustum()
@@ -58,15 +59,17 @@ namespace ToolKit
       VertexArray vertices;
       vertices.resize(3);
 
-      vertices[0].pos = Vec3(-0.5f, 0.5f, 0.0f);
-      vertices[1].pos = Vec3(-0.5f, -0.5f, 0.0f);
-      vertices[2].pos = Vec3(0.5f, -0.5f, 0.0f);
+      vertices[0].pos = Vec3(-0.3f, 0.35f, 1.6f);
+      vertices[1].pos = Vec3(0.3f, 0.35f, 1.6f);
+      vertices[2].pos = Vec3(0.0f, 0.65f, 1.6f);
 
       MeshPtr mesh = std::make_shared<Mesh>();
       mesh->m_vertexCount = (uint)vertices.size();
       mesh->m_clientSideVertices = vertices;
       mesh->m_material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       mesh->m_material->m_color = Vec3();
+      mesh->m_material->m_color = Vec3();
+      mesh->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
 
       mesh->CalculateAABB();
       mesh->ConstructFaces();

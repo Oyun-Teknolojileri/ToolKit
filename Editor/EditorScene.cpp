@@ -4,6 +4,7 @@
 #include "GlobalDef.h"
 #include "EditorViewport.h"
 #include "App.h"
+#include "EditorCamera.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -25,6 +26,25 @@ namespace ToolKit
 
     EditorScene::~EditorScene()
     {
+    }
+
+    void EditorScene::Load()
+    {
+      Scene::Load();
+
+      for (int i = (int)m_entities.size() - 1; i > -1; i--)
+      {
+        Entity* ntt = m_entities[i];
+
+        // Replace cameras with EditorCamera.
+        if (ntt->GetType() == EntityType::Entity_Camera)
+        {
+          EditorCamera* cam = new EditorCamera();
+          ntt->GetCopy(cam);
+          SafeDel(ntt);
+          m_entities[i] = cam;
+        }
+      }
     }
 
     bool EditorScene::IsSelected(ULongID id) const

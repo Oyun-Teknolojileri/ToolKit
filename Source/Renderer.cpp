@@ -26,6 +26,20 @@ namespace ToolKit
 
   void Renderer::Render(Entity* ntt, Camera* cam, const LightRawPtrArray& lights)
   {
+    // TODO: Drawable spesific Render will be removed.
+    // For now, just redirect.
+    if (ntt->m_components.empty())
+    {
+      Render
+      (
+        static_cast<Drawable*> (ntt),
+        cam,
+        lights
+      );
+
+      return;
+    }
+
     ComponentArray components;
     ntt->GetComponent(ComponentType::Component_Mesh, components);
 

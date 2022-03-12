@@ -20,6 +20,7 @@ namespace ToolKit
 
   MeshComponent::MeshComponent()
   {
+    m_type = ComponentType::Component_Mesh;
   }
 
   MeshComponent::~MeshComponent()

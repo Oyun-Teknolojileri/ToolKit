@@ -56,7 +56,7 @@ namespace ToolKit
     Component* GetComponent(ULongID id) const;
     Component* GetFirstComponent(ComponentType type) const;
 
-  protected:
+  //protected:
     virtual Entity* GetCopy(Entity* copyTo) const;
     virtual Entity* GetInstance(Entity* copyTo) const;
 
