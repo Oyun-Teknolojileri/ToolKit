@@ -155,7 +155,7 @@ namespace ToolKit
     assert(GetComponent(component->m_id) == nullptr && "Component has already been added.");
   }
 
-  void Entity::GetComponent(ComponentType type, ComponentArray& components)
+  void Entity::GetComponent(ComponentType type, ComponentArray& components) const
   {
     for (Component* com : m_components)
     {
@@ -166,7 +166,7 @@ namespace ToolKit
     }
   }
 
-  Component* Entity::GetComponent(ULongID id)
+  Component* Entity::GetComponent(ULongID id) const
   {
     for (Component* com : m_components)
     {
@@ -179,7 +179,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  Component* Entity::GetFirstComponent(ComponentType type)
+  Component* Entity::GetFirstComponent(ComponentType type) const
   {
     for (Component* com : m_components)
     {

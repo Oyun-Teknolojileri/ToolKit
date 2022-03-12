@@ -52,9 +52,9 @@ namespace ToolKit
 
     // Component functionalities.
     void AddComponent(Component* component);
-    void GetComponent(ComponentType type, ComponentArray& components);
-    Component* GetComponent(ULongID id);
-    Component* GetFirstComponent(ComponentType type);
+    void GetComponent(ComponentType type, ComponentArray& components) const;
+    Component* GetComponent(ULongID id) const;
+    Component* GetFirstComponent(ComponentType type) const;
 
   protected:
     virtual Entity* GetCopy(Entity* copyTo) const;

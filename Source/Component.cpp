@@ -18,4 +18,12 @@ namespace ToolKit
   {
   }
 
+  void MeshComponent::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+  }
+
+  void MeshComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+  }
+
 }

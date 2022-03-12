@@ -22,6 +22,7 @@ namespace ToolKit
   public:
     Renderer();
     ~Renderer();
+    void Render(Entity* ntt, Camera* cam, const LightRawPtrArray& lights = LightRawPtrArray());
     void Render(Drawable* object, Camera* cam, const LightRawPtrArray& lights = LightRawPtrArray());
     void RenderSkinned(Drawable* object, Camera* cam);
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
@@ -32,7 +33,7 @@ namespace ToolKit
     void DrawFullQuad(ShaderPtr fragmentShader);
 
   private:
-    void SetProjectViewModel(Drawable* object, Camera* cam);
+    void SetProjectViewModel(Entity* object, Camera* cam);
     void BindProgram(ProgramPtr program);
     void LinkProgram(GLuint program, GLuint vertexP, GLuint fragmentP);
     ProgramPtr CreateProgram(ShaderPtr vertex, ShaderPtr fragment);

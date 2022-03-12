@@ -24,6 +24,78 @@ namespace ToolKit
   {
   }
 
+  void Renderer::Render(Entity* ntt, Camera* cam, const LightRawPtrArray& lights)
+  {
+    ComponentArray components;
+    ntt->GetComponent(ComponentType::Component_Mesh, components);
+
+    if (components.empty())
+    {
+      return;
+    }
+
+    m_cam = cam;
+    m_lights = lights;
+    SetProjectViewModel(ntt, cam);
+
+    for (Component* com : components)
+    {
+      MeshComponent* meshComp = static_cast<MeshComponent*>(com);
+      if (meshComp->m_mesh == nullptr)
+      {
+        continue;
+      }
+
+      MeshRawPtrArray meshCollector;
+      meshComp->m_mesh->GetAllMeshes(meshCollector);
+
+      for (Mesh* mesh : meshCollector)
+      {
+        if (m_overrideMat)
+        {
+          m_mat = m_overrideMat.get();
+        }
+        else
+        {
+          if (meshComp->m_material != nullptr)
+          {
+            m_mat = meshComp->m_material.get();
+          }
+          else if (mesh->m_material != nullptr)
+          {
+            m_mat = mesh->m_material.get();
+          }
+          else
+          {
+            m_mat = GetMaterialManager()->GetCopyOfDefaultMaterial().get();
+          }
+        }
+
+        ProgramPtr prg = CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmetShader);
+        BindProgram(prg);
+        FeedUniforms(prg);
+
+        RenderState* rs = m_mat->GetRenderState();
+        SetRenderState(rs);
+
+        glBindVertexArray(mesh->m_vaoId);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
+        SetVertexLayout(VertexLayout::Mesh);
+
+        if (mesh->m_indexCount != 0)
+        {
+          glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
+          glDrawElements((GLenum)rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
+        }
+        else
+        {
+          glDrawArrays((GLenum)rs->drawType, 0, mesh->m_vertexCount);
+        }
+      }
+
+    }
+  }
+
   void Renderer::Render(Drawable* object, Camera* cam, const LightRawPtrArray& lights)
   {
     if (object->m_mesh->IsSkinned())
@@ -287,7 +359,7 @@ namespace ToolKit
     Render(&quad, &dummy);
   }
 
-  void Renderer::SetProjectViewModel(Drawable* object, Camera* cam)
+  void Renderer::SetProjectViewModel(Entity* object, Camera* cam)
   {
     m_view = cam->GetViewMatrix();
     m_project = cam->GetData().projection;
