@@ -20,8 +20,6 @@ namespace ToolKit
     virtual struct BoundingBox GetAABB(bool inWorld = false) const override;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-    virtual bool IsMaterialInUse(const MaterialPtr& mat) const;
-    virtual bool IsMeshInUse(const MeshPtr& mesh) const;
     virtual void RemoveResources() override;
 
   protected:

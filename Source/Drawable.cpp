@@ -91,34 +91,6 @@ namespace ToolKit
     }
   }
 
-  bool Drawable::IsMaterialInUse(const MaterialPtr& mat) const
-  {
-    if (mat)
-    {
-      MeshRawCPtrArray meshes;
-      m_mesh->GetAllMeshes(meshes);
-      for (const Mesh* m : meshes)
-      {
-        if (mat == m->m_material)
-        {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  bool Drawable::IsMeshInUse(const MeshPtr& mesh) const
-  {
-    if (mesh)
-    {
-      return m_mesh == mesh;
-    }
-
-    return false;
-  }
-
   void Drawable::RemoveResources()
   {
     GetMeshManager()->Remove(m_mesh->GetFile());

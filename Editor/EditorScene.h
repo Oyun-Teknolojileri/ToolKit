@@ -30,8 +30,6 @@ namespace ToolKit
       Entity* GetCurrentSelection() const;
 
       // Resource operations
-      bool IsMaterialInUse(const MaterialPtr& material) const;
-      bool IsMeshInUse(const MeshPtr& mesh) const;
       virtual void Save(bool onlyIfDirty) override;
 
       // Entity operations.

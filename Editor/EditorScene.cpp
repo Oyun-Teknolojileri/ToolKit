@@ -192,38 +192,6 @@ namespace ToolKit
       return nullptr;
     }
 
-    bool EditorScene::IsMaterialInUse(const MaterialPtr& material) const
-    {
-      for (Entity* ntt : m_entities)
-      {
-        if (ntt->IsDrawable())
-        {
-          if (static_cast<Drawable*> (ntt)->IsMaterialInUse(material))
-          {
-            return true;
-          }
-        }
-      }
-
-      return false;
-    }
-
-    bool EditorScene::IsMeshInUse(const MeshPtr& mesh) const
-    {
-      for (Entity* ntt : m_entities)
-      {
-        if (ntt->IsDrawable())
-        {
-          if (static_cast<Drawable*> (ntt)->IsMeshInUse(mesh))
-          {
-            return true;
-          }
-        }
-      }
-
-      return false;
-    }
-
     void EditorScene::Save(bool onlyIfDirty)
     {
       Scene::Save(onlyIfDirty);
