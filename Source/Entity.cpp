@@ -25,6 +25,12 @@ namespace ToolKit
   Entity::~Entity()
   {
     SafeDel(m_node);
+
+    for (Component* com : m_components)
+    {
+      SafeDel(com);
+    }
+    m_components.clear();
   }
 
   bool Entity::IsDrawable() const
