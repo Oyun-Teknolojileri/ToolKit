@@ -193,32 +193,36 @@ namespace ToolKit
           if (ImGui::MenuItem("Plane"))
           {
             Quad* plane = new Quad();
-            plane->m_mesh->Init(false);
+            plane->GetMesh()->Init(false);
             g_app->m_scene->AddEntity(plane);
           }
           if (ImGui::MenuItem("Cube"))
           {
             Cube* cube = new Cube();
-            cube->m_mesh->Init(false);
+            cube->GetMesh()->Init(false);
             g_app->m_scene->AddEntity(cube);
           }
           if (ImGui::MenuItem("Sphere"))
           {
             Sphere* sphere = new Sphere();
-            sphere->m_mesh->Init(false);
+            sphere->GetMesh()->Init(false);
             g_app->m_scene->AddEntity(sphere);
           }
           if (ImGui::MenuItem("Cone"))
           {
             Cone* cone = new Cone({ 1.0f, 1.0f, 30, 30 });
-            cone->m_mesh->Init(false);
+            cone->GetMesh()->Init(false);
             g_app->m_scene->AddEntity(cone);
           }
           if (ImGui::MenuItem("Monkey"))
           {
             Drawable* suzanne = new Drawable();
-            suzanne->m_mesh = GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh", true));
-            suzanne->m_mesh->Init(false);
+            suzanne->SetMesh
+            (
+              GetMeshManager()->Create<Mesh>(MeshPath("suzanne.mesh", true))
+            );
+
+            suzanne->GetMesh()->Init(false);
             g_app->m_scene->AddEntity(suzanne);
           }
           ImGui::EndMenu();
@@ -230,14 +234,14 @@ namespace ToolKit
           if (ImGui::MenuItem("Surface"))
           {
             Surface* suface = new Surface(Vec2(100.0f, 30.0f), Vec2 (0.0f, 0.0f));
-            suface->m_mesh->Init(false);
+            suface->GetMesh()->Init(false);
             g_app->m_scene->AddEntity(suface);
           }
 
           if (ImGui::MenuItem("Button"))
           {
             Surface* suface = new Button(Vec2(100.0f, 30.0f));
-            suface->m_mesh->Init(false);
+            suface->GetMesh()->Init(false);
             g_app->m_scene->AddEntity(suface);
           }
           ImGui::EndMenu();

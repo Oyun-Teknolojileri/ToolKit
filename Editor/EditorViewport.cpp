@@ -156,14 +156,14 @@ namespace ToolKit
               if (io.KeyShift)
               {
                 MeshPtr mesh = GetMeshManager()->Create<Mesh>(path);
-                dwMesh->m_mesh = mesh->Copy<Mesh>();
+                dwMesh->SetMesh(mesh->Copy<Mesh>());
               }
               else
               {
-                dwMesh->m_mesh = GetMeshManager()->Create<Mesh>(path);
+                dwMesh->SetMesh(GetMeshManager()->Create<Mesh>(path));
               }
               
-              dwMesh->m_mesh->Init(false);
+              dwMesh->GetMesh()->Init(false);
               Ray ray = RayFromMousePosition();
               Vec3 pos = PointOnRay(ray, 5.0f);
               g_app->m_grid->HitTest(ray, pos);
@@ -340,14 +340,7 @@ namespace ToolKit
 
       for (Entity* ntt : ntties)
       {
-        if 
-        (
-          (
-            ntt->IsDrawable() || 
-            ntt->GetFirstComponent(ComponentType::Component_Mesh)
-          ) && 
-          ntt->m_visible
-        )
+        if (ntt->IsDrawable() && ntt->m_visible)
         {
           if (ntt->GetType() == EntityType::Entity_Billboard)
           {
@@ -357,7 +350,7 @@ namespace ToolKit
 
           app->m_renderer->Render
           (
-            ntt,
+            static_cast<Drawable*> (ntt),
             m_camera,
             app->m_sceneLights
           );

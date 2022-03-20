@@ -55,7 +55,7 @@ namespace ToolKit
 
     for (auto entry : m_sprites)
     {
-      entry.second->m_mesh->Init(flushClientSideArray);
+      entry.second->GetMesh()->Init(flushClientSideArray);
     }
 
     m_initiated = true;

@@ -15,13 +15,13 @@ namespace ToolKit
     mat->UnInit();
     mat->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
     mat->GetRenderState()->depthTestEnabled = true;
-    m_mesh->m_material = mat;
+    GetMesh()->m_material = mat;
   }
 
   Surface::Surface(TexturePtr texture, const Vec2& pivotOffset)
     : Surface()
   {
-    m_mesh->m_material->m_diffuseTexture = texture;
+    GetMesh()->m_material->m_diffuseTexture = texture;
     m_pivotOffset = pivotOffset;
     SetSizeFromTexture();
     CreateQuat();
@@ -30,7 +30,7 @@ namespace ToolKit
   Surface::Surface(TexturePtr texture, const SpriteEntry& entry)
     : Surface()
   {
-    m_mesh->m_material->m_diffuseTexture = texture;
+    GetMesh()->m_material->m_diffuseTexture = texture;
     SetSizeFromTexture();
     CreateQuat(entry);
   }
@@ -38,7 +38,7 @@ namespace ToolKit
   Surface::Surface(const String& textureFile, const Vec2& pivotOffset)
     : Surface()
   {
-    m_mesh->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(textureFile);
+    GetMesh()->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(textureFile);
     m_pivotOffset = pivotOffset;
     SetSizeFromTexture();
     CreateQuat();
@@ -81,12 +81,13 @@ namespace ToolKit
     nttNode->append_node(prop);
     WriteVec(prop, doc, m_pivotOffset);
 
-    String matFile = m_mesh->m_material->GetFile();
+    MeshPtr mesh = GetMesh();
+    String matFile = mesh->m_material->GetFile();
     if (matFile.empty())
     {
-      m_mesh->m_material->m_name = m_name;
+      mesh->m_material->m_name = m_name;
     }
-    m_mesh->m_material->Save(true);
+    mesh->m_material->Save(true);
     WriteMaterial(nttNode, doc, matFile);
   }
 
@@ -98,7 +99,7 @@ namespace ToolKit
     prop = parent->first_node("Offset");
     ReadVec<Vec2>(prop, m_pivotOffset);
     CreateQuat();
-    m_mesh->m_material = ReadMaterial(parent);
+    GetMesh()->m_material = ReadMaterial(parent);
   }
 
   void Surface::UpdateGeometry(bool byTexture)
@@ -108,9 +109,10 @@ namespace ToolKit
       SetSizeFromTexture();
     }
 
-    m_mesh->UnInit();
+    MeshPtr mesh = GetMesh();
+    mesh->UnInit();
     CreateQuat();
-    m_mesh->Init();
+    mesh->Init();
   }
 
   Entity* Surface::GetCopy(Entity* copyTo) const
@@ -154,14 +156,16 @@ namespace ToolKit
     vertices[5].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
     vertices[5].tex = Vec2(0.0f, 0.0f);
 
-    m_mesh->m_clientSideVertices = vertices;
-    m_mesh->CalculateAABB();
+    MeshPtr mesh = GetMesh();
+    mesh->m_clientSideVertices = vertices;
+    mesh->CalculateAABB();
   }
 
   void Surface::CreateQuat(const SpriteEntry& val)
   {
-    float imageWidth = (float)m_mesh->m_material->m_diffuseTexture->m_width;
-    float imageHeight = (float)m_mesh->m_material->m_diffuseTexture->m_height;
+    MeshPtr& mesh = GetMesh();
+    float imageWidth = (float)mesh->m_material->m_diffuseTexture->m_width;
+    float imageHeight = (float)mesh->m_material->m_diffuseTexture->m_height;
 
     Rect<float> textureRect;
     textureRect.x = (float)val.rectangle.x / (float)imageWidth;
@@ -190,16 +194,17 @@ namespace ToolKit
     vertices[5].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
     vertices[5].tex = Vec2(textureRect.x, 1.0f - (textureRect.y + textureRect.height));
 
-    m_mesh->m_clientSideVertices = vertices;
-    m_mesh->CalculateAABB();
+    mesh->m_clientSideVertices = vertices;
+    mesh->CalculateAABB();
   }
 
   void Surface::SetSizeFromTexture()
   {
+    MeshPtr& mesh = GetMesh();
     m_size =
     {
-      m_mesh->m_material->m_diffuseTexture->m_width,
-      m_mesh->m_material->m_diffuseTexture->m_height
+      mesh->m_material->m_diffuseTexture->m_width,
+      mesh->m_material->m_diffuseTexture->m_height
     };
   }
 
@@ -301,13 +306,13 @@ namespace ToolKit
 
     m_onMouseEnterLocal = [this](Event* e, Entity* ntt) -> void
     {
-      m_mesh->m_material->m_diffuseTexture = m_mouseOverImage;
+      GetMesh()->m_material->m_diffuseTexture = m_mouseOverImage;
     };
     m_onMouseEnter = m_onMouseEnterLocal;
 
     m_onMouseExitLocal = [this](Event* e, Entity* ntt) -> void
     {
-      m_mesh->m_material->m_diffuseTexture = m_buttonImage;
+      GetMesh()->m_material->m_diffuseTexture = m_buttonImage;
     };
     m_onMouseExit = m_onMouseExitLocal;
   }

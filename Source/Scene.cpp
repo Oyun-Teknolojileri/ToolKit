@@ -88,7 +88,7 @@ namespace ToolKit
     {
       if (ntt->IsDrawable())
       {
-        static_cast<Drawable*> (ntt)->m_mesh->Init(flushClientSideArray);
+        static_cast<Drawable*> (ntt)->GetMesh()->Init(flushClientSideArray);
       }
     }
 
@@ -146,16 +146,18 @@ namespace ToolKit
       if (RayBoxIntersection(rayInObjectSpace, dw->GetAABB(), dist))
       {
         bool hit = true;
-        if (dw->m_mesh->m_clientSideVertices.size() == dw->m_mesh->m_vertexCount)
+        MeshPtr mesh = dw->GetMesh();
+        if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount)
         {
           // Per polygon check if data exist.
           float meshDist = 0.0f;
-          hit = RayMeshIntersection(dw->m_mesh.get(), rayInObjectSpace, meshDist);
+          hit = RayMeshIntersection(mesh.get(), rayInObjectSpace, meshDist);
           if (hit)
           {
             dist = meshDist;
           }
         }
+
         if (hit)
         {
           if (dist < closestPickedDistance && dist > 0.0f)

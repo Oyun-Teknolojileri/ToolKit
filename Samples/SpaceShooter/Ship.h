@@ -16,9 +16,10 @@ class Ship : public Drawable
 public:
   Ship()
   {
-    m_mesh->SetFile(MeshPath("alien-mothership.mesh"));
-    m_mesh->Load();
-    m_mesh->Init(false);
+    MeshPtr& mesh = GetMesh();
+    mesh->SetFile(MeshPath("alien-mothership.mesh"));
+    mesh->Load();
+    mesh->Init(false);
 
     // Create fire locations
     m_leftFireLoc.SetTranslation({ -1.0143f, 0.0173f, -0.7783f });
@@ -38,9 +39,10 @@ public:
   bool CheckShipSphereCollision(Vec3 pos, float radius)
   {
     Mat4 transform = m_node->GetTransform(TransformationSpace::TS_WORLD);
-    for (int i = 0; i < (int)m_mesh->m_clientSideVertices.size(); i++)
+    MeshPtr& mesh = GetMesh();
+    for (int i = 0; i < (int)mesh->m_clientSideVertices.size(); i++)
     {
-      Vec3 vertex = m_mesh->m_clientSideVertices[i].pos;
+      Vec3 vertex = mesh->m_clientSideVertices[i].pos;
       vertex = (transform * glm::vec4(vertex, 1.0f));
       if (SpherePointIntersection(pos, radius, vertex))
         return true;

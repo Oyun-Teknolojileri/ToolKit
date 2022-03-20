@@ -340,14 +340,14 @@ namespace ToolKit
             if (io.KeyShift)
             {
               MeshPtr mesh = GetMeshManager()->Create<Mesh>(path);
-              dwMesh->m_mesh = mesh->Copy<Mesh>();
+              dwMesh->SetMesh(mesh->Copy<Mesh>());
             }
             else
             {
-              dwMesh->m_mesh = GetMeshManager()->Create<Mesh>(path);
+              dwMesh->SetMesh(GetMeshManager()->Create<Mesh>(path));
             }
 
-            dwMesh->m_mesh->Init(false);
+            dwMesh->GetMesh()->Init(false);
             Ray ray = RayFromMousePosition();
             Vec3 pos = PointOnRay(ray, 5.0f);
             g_app->m_grid->HitTest(ray, pos);

@@ -52,13 +52,41 @@ namespace ToolKit
 
     // Component functionalities.
     void AddComponent(Component* component);
-    void GetComponent(ComponentType type, ComponentArray& components) const;
-    Component* GetComponent(ULongID id) const;
-    Component* GetFirstComponent(ComponentType type) const;
+
+    template<typename T>
+    std::shared_ptr<T> GetComponent() const
+    {
+      for (const ComponentPtr& com : m_components)
+      {
+        if (com->GetType() == T::GetTypeStatic())
+        {
+          return std::reinterpret_pointer_cast<T> (com);
+        }
+      }
+
+      return nullptr;
+    }
+
+    template<typename T>
+    void GetComponent(std::vector<std::shared_ptr<T>> components) const
+    {
+      for (const ComponentPtr& com : m_components)
+      {
+        if (com->GetType() == T::GetTypeStatic())
+        {
+          components.push_back(std::static_pointer_cast<T> (com));
+        }
+      }
+    }
+
+    ComponentPtr GetComponent(ULongID id) const;
 
   //protected:
     virtual Entity* GetCopy(Entity* copyTo) const;
     virtual Entity* GetInstance(Entity* copyTo) const;
+
+  private:
+    void WeakCopy(Entity* copyTo) const;
 
   public:
     Node* m_node;
@@ -67,7 +95,7 @@ namespace ToolKit
     String m_tag;
     bool m_visible;
     ParameterBlock m_customData;
-    ComponentArray m_components;
+    ComponentPtrArray m_components;
 
     // Internal use only, Helper ID for entity deserialization.
     ULongID _parentId;

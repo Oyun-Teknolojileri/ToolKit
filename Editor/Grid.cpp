@@ -39,7 +39,8 @@ namespace ToolKit
 
     void Grid::Resize(uint size, float gridSpaceScale)
     {
-      m_mesh->UnInit();
+      MeshPtr& parentMesh = GetMesh();
+      parentMesh->UnInit();
       float scale = (float)m_size * 0.5f;
 
       Vec3Array offsets =
@@ -53,7 +54,7 @@ namespace ToolKit
       for (int i = 0; i < 4; i++)
       {
         Quad quad;
-        MeshPtr mesh = quad.m_mesh;
+        MeshPtr& mesh = quad.GetMesh();
         for (int j = 0; j < 4; j++)
         {
           mesh->m_clientSideVertices[j].pos = (mesh->m_clientSideVertices[j].pos * scale).xzy + offsets[i];
@@ -63,11 +64,11 @@ namespace ToolKit
         mesh->m_material = m_material;
         if (i == 0)
         {
-          m_mesh = mesh;
+          SetMesh(mesh);
         }
         else
         {
-          m_mesh->m_subMeshes.push_back(mesh);
+          parentMesh->m_subMeshes.push_back(mesh);
         }
       }
 
@@ -89,16 +90,16 @@ namespace ToolKit
         }
 
         Quad quad;
-        MeshPtr mesh = quad.m_mesh;
+        MeshPtr& mesh = quad.GetMesh();
         for (int j = 0; j < 4; j++)
         {
           mesh->m_clientSideVertices[j].pos = (mesh->m_clientSideVertices[j].pos * ls).xzy;
         }
         mesh->m_material = solidMat;
-        m_mesh->m_subMeshes.push_back(mesh);
+        parentMesh->m_subMeshes.push_back(mesh);
       }
 
-      m_mesh->CalculateAABB();
+      parentMesh->CalculateAABB();
     }
 
     bool Grid::HitTest(const Ray& ray, Vec3& pos)

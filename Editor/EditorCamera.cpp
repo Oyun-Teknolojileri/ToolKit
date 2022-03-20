@@ -49,11 +49,9 @@ namespace ToolKit
         corners[3], corners[0]
       };
 
-      MeshComponent* mc = static_cast<MeshComponent*> (GetFirstComponent(ComponentType::Component_Mesh));
-      
-      LineBatch fs(lines, Vec3(), DrawType::Line);
-      mc->m_mesh = fs.m_mesh;
-      fs.m_mesh = nullptr;
+      MeshComponentPtr camMeshComp = GetComponent<MeshComponent>();
+      LineBatch frusta(lines, Vec3(), DrawType::Line);
+      camMeshComp->m_mesh = frusta.GetComponent<MeshComponent>()->m_mesh;
 
       // Triangle part.
       VertexArray vertices;
@@ -63,19 +61,19 @@ namespace ToolKit
       vertices[1].pos = Vec3(0.3f, 0.35f, 1.6f);
       vertices[2].pos = Vec3(0.0f, 0.65f, 1.6f);
 
-      MeshPtr mesh = std::make_shared<Mesh>();
-      mesh->m_vertexCount = (uint)vertices.size();
-      mesh->m_clientSideVertices = vertices;
-      mesh->m_material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-      mesh->m_material->m_color = Vec3();
-      mesh->m_material->m_color = Vec3();
-      mesh->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
+      MeshPtr subMesh = std::make_shared<Mesh>();
+      subMesh->m_vertexCount = (uint)vertices.size();
+      subMesh->m_clientSideVertices = vertices;
+      subMesh->m_material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      subMesh->m_material->m_color = Vec3();
+      subMesh->m_material->m_color = Vec3();
+      subMesh->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
 
-      mesh->CalculateAABB();
-      mesh->ConstructFaces();
+      subMesh->CalculateAABB();
+      subMesh->ConstructFaces();
 
-      mc->m_mesh->m_subMeshes.push_back(mesh);
-      mc->m_mesh->Init();
+      camMeshComp->m_mesh->m_subMeshes.push_back(subMesh);
+      camMeshComp->Init(false);
     }
 
   }

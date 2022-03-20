@@ -275,14 +275,15 @@ namespace ToolKit
     vertices[35].tex = Vec2(1.0f, 0.0f);
     vertices[35].norm = Vec3(0.0f, -1.0f, 0.0f);
 
-    m_mesh->m_vertexCount = (uint)vertices.size();
-    m_mesh->m_clientSideVertices = vertices;
-    m_mesh->m_clientSideIndices = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35 };
-    m_mesh->m_indexCount = (uint)m_mesh->m_clientSideIndices.size();
-    m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    MeshPtr mesh = GetMesh();
+    mesh->m_vertexCount = (uint)vertices.size();
+    mesh->m_clientSideVertices = vertices;
+    mesh->m_clientSideIndices = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35 };
+    mesh->m_indexCount = (uint)mesh->m_clientSideIndices.size();
+    mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
-    m_mesh->CalculateAABB();
-    m_mesh->ConstructFaces();
+    mesh->CalculateAABB();
+    mesh->ConstructFaces();
   }
 
   Quad::Quad(bool genDef)
@@ -348,14 +349,15 @@ namespace ToolKit
     vertices[3].norm = Vec3(0.0f, 0.0f, 1.0f);
     vertices[3].btan = Vec3(0.0f, 1.0f, 0.0f);
 
-    m_mesh->m_vertexCount = (uint)vertices.size();
-    m_mesh->m_clientSideVertices = vertices;
-    m_mesh->m_indexCount = 6;
-    m_mesh->m_clientSideIndices = { 0,1,2,0,2,3 };
-    m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    MeshPtr mesh = GetMesh();
+    mesh->m_vertexCount = (uint)vertices.size();
+    mesh->m_clientSideVertices = vertices;
+    mesh->m_indexCount = 6;
+    mesh->m_clientSideIndices = { 0,1,2,0,2,3 };
+    mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
-    m_mesh->CalculateAABB();
-    m_mesh->ConstructFaces();
+    mesh->CalculateAABB();
+    mesh->ConstructFaces();
   }
 
   Sphere::Sphere(bool genDef)
@@ -436,14 +438,15 @@ namespace ToolKit
       } // end for seg
     } // end for ring
 
-    m_mesh->m_vertexCount = (uint)vertices.size();
-    m_mesh->m_clientSideVertices = vertices;
-    m_mesh->m_indexCount = (uint)indices.size();
-    m_mesh->m_clientSideIndices = indices;
-    m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    MeshPtr mesh = GetMesh();
+    mesh->m_vertexCount = (uint)vertices.size();
+    mesh->m_clientSideVertices = vertices;
+    mesh->m_indexCount = (uint)indices.size();
+    mesh->m_clientSideIndices = indices;
+    mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
-    m_mesh->CalculateAABB();
-    m_mesh->ConstructFaces();
+    mesh->CalculateAABB();
+    mesh->ConstructFaces();
   }
 
   void Sphere::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -569,14 +572,15 @@ namespace ToolKit
       offset++;
     }
 
-    m_mesh->m_vertexCount = (uint)vertices.size();
-    m_mesh->m_clientSideVertices = vertices;
-    m_mesh->m_indexCount = (uint)indices.size();
-    m_mesh->m_clientSideIndices = indices;
-    m_mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    MeshPtr mesh = GetMesh();
+    mesh->m_vertexCount = (uint)vertices.size();
+    mesh->m_clientSideVertices = vertices;
+    mesh->m_indexCount = (uint)indices.size();
+    mesh->m_clientSideIndices = indices;
+    mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
-    m_mesh->CalculateAABB();
-    m_mesh->ConstructFaces();
+    mesh->CalculateAABB();
+    mesh->ConstructFaces();
   }
 
   Entity* Cone::GetCopy(Entity* copyTo) const
@@ -690,12 +694,13 @@ namespace ToolKit
       vertices[i].pos = rotation * vertices[i].pos;
     }
 
-    m_mesh->m_vertexCount = (uint)vertices.size();
-    m_mesh->m_clientSideVertices = vertices;
-    m_mesh->m_material = newMaterial;
+    MeshPtr mesh = GetMesh();
+    mesh->m_vertexCount = (uint)vertices.size();
+    mesh->m_clientSideVertices = vertices;
+    mesh->m_material = newMaterial;
 
-    m_mesh->CalculateAABB();
-    m_mesh->ConstructFaces();
+    mesh->CalculateAABB();
+    mesh->ConstructFaces();
   }
 
   LineBatch::LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
@@ -722,21 +727,22 @@ namespace ToolKit
     VertexArray vertices;
     vertices.resize(linePnts.size());
 
-    m_mesh->UnInit();
-    m_mesh->m_material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-    m_mesh->m_material->GetRenderState()->drawType = t;
+    MeshPtr mesh = GetMesh();
+    mesh->UnInit();
+    mesh->m_material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+    mesh->m_material->GetRenderState()->drawType = t;
 
     for (size_t i = 0; i < linePnts.size(); i++)
     {
       vertices[i].pos = linePnts[i];
     }
 
-    m_mesh->m_vertexCount = (uint)vertices.size();
-    m_mesh->m_clientSideVertices = vertices;
-    m_mesh->m_material->m_color = color;
-    m_mesh->m_material->GetRenderState()->lineWidth = lineWidth;
+    mesh->m_vertexCount = (uint)vertices.size();
+    mesh->m_clientSideVertices = vertices;
+    mesh->m_material->m_color = color;
+    mesh->m_material->GetRenderState()->lineWidth = lineWidth;
 
-    m_mesh->CalculateAABB();
+    mesh->CalculateAABB();
   }
 
 }

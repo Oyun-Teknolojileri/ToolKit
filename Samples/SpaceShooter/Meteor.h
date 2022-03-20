@@ -14,7 +14,7 @@ public:
 
   Meteor()
   {
-    m_mesh = GetMeshManager()->Create<Mesh>(MeshPath("rock.mesh"));
+    SetMesh(GetMeshManager()->Create<Mesh>(MeshPath("rock.mesh")));
   }
 
   float m_collisionRadius = 1.3f;

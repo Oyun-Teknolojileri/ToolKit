@@ -82,7 +82,6 @@ namespace ToolKit
   typedef std::vector<class Node*> NodePtrArray;
   typedef std::vector<class Vertex> VertexArray;
   typedef std::vector<class Face> FaceArray;
-  typedef std::vector<class Component*> ComponentArray;
   typedef std::vector<class ParameterVariant> ParameterVariantArray;
   typedef rapidxml::xml_node<char> XmlNode;
   typedef rapidxml::xml_attribute<char> XmlAttribute;
@@ -98,6 +97,11 @@ namespace ToolKit
 
   typedef std::vector<class Event*> EventPool;
   typedef std::pair<Entity*, Animation*> AnimRecord;
+
+  // Components.
+  typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
+  typedef std::shared_ptr<class Component> ComponentPtr;
+  typedef std::vector<ComponentPtr> ComponentPtrArray;
 
   // Enitiy types.
   typedef std::shared_ptr<class Camera> CameraPtr;

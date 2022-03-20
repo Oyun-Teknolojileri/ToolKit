@@ -123,7 +123,7 @@ namespace ToolKit
       if (m_entity->IsDrawable())
       {
         Drawable* dw = static_cast<Drawable*> (m_entity);
-        MeshPtr mesh = dw->m_mesh;
+        MeshPtr& mesh = dw->GetMesh();
 
         StringArray missingData;
         MeshRawCPtrArray meshes;
@@ -471,7 +471,7 @@ namespace ToolKit
 
     void MeshView::Show()
     {
-      MeshPtr entry = static_cast<Drawable*> (m_entity)->m_mesh;
+      MeshPtr& entry = static_cast<Drawable*> (m_entity)->GetMesh();
       if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen))
       {
         if (ImGui::BeginTable("##MeshStats", 2))
@@ -502,7 +502,10 @@ namespace ToolKit
             if (m_entity && m_entity->IsDrawable())
             {
               Drawable* dw = static_cast<Drawable*> (m_entity);
-              dw->m_mesh = GetResourceManager(ResourceType::Mesh)->Create<Mesh>(dirEnt.GetFullPath());
+              dw->SetMesh
+              (
+                GetResourceManager(ResourceType::Mesh)->Create<Mesh>(dirEnt.GetFullPath())
+              );
             }
           }
         );
@@ -528,7 +531,7 @@ namespace ToolKit
         {
           return;
         }
-        entry = drawable->m_mesh->m_material;
+        entry = drawable->GetMesh()->m_material;
       }
 
       auto updateThumbFn = [&entry]() -> void
@@ -683,7 +686,7 @@ namespace ToolKit
             entry->GetFile(),
             [&drawable](const DirectoryEntry& dirEnt) -> void
             {
-              MeshPtr mesh = drawable->m_mesh;
+              MeshPtr& mesh = drawable->GetMesh();
               mesh->m_material = GetMaterialManager()->Create<Material>(dirEnt.GetFullPath());
               mesh->m_material->Init();
               mesh->m_dirty = true;
@@ -920,7 +923,7 @@ namespace ToolKit
                 TexturePtr texture = GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
                 texture->Init(false);
                 button->m_buttonImage = texture;
-                button->m_mesh->m_material->m_diffuseTexture = texture;
+                button->GetMesh()->m_material->m_diffuseTexture = texture;
                 button->UpdateGeometry(true);
               }
             }

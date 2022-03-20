@@ -5,6 +5,7 @@
 #include "ToolKit.h"
 #include "Node.h"
 #include "Util.h"
+#include "Component.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -12,7 +13,9 @@ namespace ToolKit
 
   Drawable::Drawable()
   {
-    m_mesh = std::make_shared<Mesh>();
+    MeshComponent* mc = new MeshComponent();
+    mc->m_mesh = std::make_shared<Mesh>();
+    AddComponent(mc);
   }
 
   Drawable::~Drawable()
@@ -31,9 +34,10 @@ namespace ToolKit
 
   void Drawable::SetPose(Animation* anim)
   {
-    if (m_mesh->IsSkinned())
+    MeshPtr mesh = GetMesh();
+    if (mesh->IsSkinned())
     {
-      Skeleton* skeleton = ((SkinMesh*)m_mesh.get())->m_skeleton;
+      Skeleton* skeleton = ((SkinMesh*)mesh.get())->m_skeleton;
       anim->GetCurrentPose(skeleton);
     }
     else
@@ -44,7 +48,7 @@ namespace ToolKit
 
   BoundingBox Drawable::GetAABB(bool inWorld) const
   {
-    BoundingBox bb = m_mesh->m_aabb;
+    BoundingBox bb = GetMesh()->m_aabb;
     if (inWorld)
     {
       TransformAABB(bb, m_node->GetTransform(TransformationSpace::TS_WORLD));
@@ -55,10 +59,12 @@ namespace ToolKit
 
   Entity* Drawable::GetCopy(Entity* copyTo) const
   {
-    Entity::GetCopy(copyTo);
-    Drawable* ntt = static_cast<Drawable*> (copyTo);
-    ntt->m_mesh = m_mesh->Copy<Mesh>();
-    return ntt;
+    return Entity::GetCopy(copyTo);
+  }
+
+  Entity* Drawable::GetInstance(Entity* copyTo) const
+  {
+    return Entity::GetInstance(copyTo);
   }
 
   void Drawable::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -66,7 +72,7 @@ namespace ToolKit
     Entity::Serialize(doc, parent);
     XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlMeshElement.c_str());
 
-    String relPath = GetRelativeResourcePath(m_mesh->GetSerializeFile());
+    String relPath = GetRelativeResourcePath(GetMesh()->GetSerializeFile());
     node->append_attribute
     (
       doc->allocate_attribute
@@ -77,7 +83,7 @@ namespace ToolKit
     );
 
     parent->last_node()->append_node(node);
-    m_mesh->Save(true);
+    GetMesh()->Save(true);
   }
 
   void Drawable::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -87,22 +93,26 @@ namespace ToolKit
     {
       XmlAttribute* attr = meshNode->first_attribute(XmlFileAttr.c_str());
       String filePath = attr->value();
-      m_mesh = GetMeshManager()->Create<Mesh>(MeshPath(filePath));
+      MeshPtr mesh = GetMeshManager()->Create<Mesh>(MeshPath(filePath));
+      SetMesh(mesh);
     }
   }
 
   void Drawable::RemoveResources()
   {
-    GetMeshManager()->Remove(m_mesh->GetFile());
+    GetMeshManager()->Remove(GetMesh()->GetFile());
   }
 
-  Entity* Drawable::GetInstance(Entity* copyTo) const
+  MeshPtr& Drawable::GetMesh() const
   {
-    Entity::GetInstance(copyTo);
-    Drawable* instance = dynamic_cast<Drawable*> (copyTo);
-    instance->m_mesh = m_mesh;
+    MeshComponentPtr meshComp = GetComponent<MeshComponent>();
+    return meshComp->m_mesh;
+  }
 
-    return instance;
+  void Drawable::SetMesh(const MeshPtr& mesh)
+  {
+    MeshComponentPtr meshComp = GetComponent<MeshComponent>();
+    meshComp->m_mesh = mesh;
   }
 
 }

@@ -17,7 +17,7 @@ public:
 
   PowerUp(MeshPtr pillObj)
   {
-    m_mesh = pillObj;
+    SetMesh(pillObj);
     Vec3 wt = Vec3(glm::linearRand(-10.0f, 10.0f), 0.0f, glm::linearRand(0.0f, -10.0f));
     m_node->SetTranslation(wt, TransformationSpace::TS_WORLD);
   }
@@ -40,8 +40,9 @@ public:
   FireRate2X(MeshPtr pillObj)
     : PowerUp(pillObj)
   {
-    m_mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("pillBlue.material"));
-    m_mesh->m_material->Init();
+    MeshPtr& mesh = GetMesh();
+    mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("pillBlue.material"));
+    mesh->m_material->Init();
     m_duration = 30;
   }
 
@@ -66,8 +67,9 @@ public:
   ForPower(MeshPtr pillObj)
     : PowerUp(pillObj)
   {
-    m_mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("pillRed.material"));
-    m_mesh->m_material->Init();
+    MeshPtr& mesh = GetMesh();
+    mesh->m_material = GetMaterialManager()->Create<Material>(MaterialPath("pillRed.material"));
+    mesh->m_material->Init();
     m_duration = 30;
   }
 

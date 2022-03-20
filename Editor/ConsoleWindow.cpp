@@ -420,7 +420,7 @@ namespace ToolKit
       {
         Mat4 ts = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
         MeshRawPtrArray meshes;
-        e->m_mesh->GetAllMeshes(meshes);
+        e->GetMesh()->GetAllMeshes(meshes);
         for (Mesh* m : meshes)
         {
           m->ApplyTransform(ts);
@@ -438,7 +438,7 @@ namespace ToolKit
       if (Drawable* e = dynamic_cast<Drawable*> (g_app->m_scene->GetCurrentSelection()))
       {
         TagArgArray::const_iterator nameTag = GetTag("n", tagArgs);
-        String fileName = e->m_mesh->GetFile();
+        String fileName = e->GetMesh()->GetFile();
         if (fileName.empty())
         {
           fileName = MeshPath(e->m_name + MESH);
@@ -454,7 +454,7 @@ namespace ToolKit
         if (file.is_open())
         {
           XmlDocument doc;
-          e->m_mesh->Serialize(&doc, nullptr);
+          e->GetMesh()->Serialize(&doc, nullptr);
           std::string xml;
           rapidxml::print(std::back_inserter(xml), doc, 0);
 

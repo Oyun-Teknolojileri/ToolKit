@@ -2,6 +2,8 @@
 
 #include "stdafx.h"
 #include "Component.h"
+#include "Mesh.h"
+#include "Material.h"
 
 namespace ToolKit
 {
@@ -11,16 +13,19 @@ namespace ToolKit
   Component::Component()
   {
     m_id = ++m_handle;
-    m_type = ComponentType::Component_Base;
   }
 
   Component::~Component()
   {
   }
 
+  ComponentType Component::GetType() const
+  {
+    return ComponentType::Base;
+  }
+
   MeshComponent::MeshComponent()
   {
-    m_type = ComponentType::Component_Mesh;
   }
 
   MeshComponent::~MeshComponent()
@@ -33,6 +38,33 @@ namespace ToolKit
 
   void MeshComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
+  }
+
+  ComponentPtr MeshComponent::Copy()
+  {
+    MeshComponentPtr mc;
+
+    // If expensive copies needed, do it explicitly.
+    mc->m_mesh = m_mesh;
+    if (m_material)
+    {
+      mc->m_material = m_material->Copy<Material>();
+    }
+
+    return mc;
+  }
+
+  void MeshComponent::Init(bool flushClientSideArray)
+  {
+    if (m_mesh)
+    {
+      m_mesh->Init(flushClientSideArray);
+    }
+
+    if (m_material)
+    {
+      m_material->Init(flushClientSideArray);
+    }
   }
 
 }

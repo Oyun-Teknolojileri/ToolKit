@@ -114,7 +114,7 @@ namespace ToolKit
     void Generate();
   };
 
-  class TK_API Cone : public Drawable
+  class TK_API Cone final : public Drawable
   {
   public:
     class Params : public ParameterBlock
@@ -152,7 +152,7 @@ namespace ToolKit
     void Generate();
   };
 
-  class TK_API Arrow2d : public Drawable
+  class TK_API Arrow2d final : public Drawable
   {
   public:
     Arrow2d(bool genDef = true);
@@ -170,7 +170,7 @@ namespace ToolKit
     AxisLabel m_label;
   };
 
-  class TK_API LineBatch : public Drawable
+  class TK_API LineBatch final : public Drawable
   {
   public:
     LineBatch();

@@ -109,8 +109,10 @@ namespace ToolKit
       {
         Drawable dw;
         String fullpath = ConcatPaths({ m_rootPath, m_fileName + m_ext });
-        dw.m_mesh = GetMeshManager()->Create<Mesh>(fullpath);
-        dw.m_mesh->Init(false);
+
+        MeshPtr mesh = GetMeshManager()->Create<Mesh>(fullpath);
+        mesh->Init(false);
+        dw.SetMesh(mesh);
 
         // Tight fit a frustum to a bounding sphere
         // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
@@ -133,8 +135,9 @@ namespace ToolKit
       {
         Sphere ball;
         String fullpath = GetFullPath();
-        ball.m_mesh->m_material = GetMaterialManager()->Create<Material>(fullpath);
-        ball.m_mesh->Init(false);
+        MeshPtr& mesh = ball.GetMesh();
+        mesh->m_material = GetMaterialManager()->Create<Material>(fullpath);
+        mesh->Init(false);
 
         Camera cam;
         cam.SetLens(glm::half_pi<float>(), thumbSize.x, thumbSize.y);
@@ -151,8 +154,9 @@ namespace ToolKit
         float h = (texture->m_height / maxDim) * thumbSize.y;
         
         Surface surface(Vec2(w, h));
-        surface.m_mesh->m_material->m_diffuseTexture = texture;
-        surface.m_mesh->Init(false);
+        MeshPtr& mesh = surface.GetMesh();
+        mesh->m_material->m_diffuseTexture = texture;
+        mesh->Init(false);
 
         Camera cam;
         cam.SetLens

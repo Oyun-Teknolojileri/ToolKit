@@ -24,111 +24,25 @@ namespace ToolKit
   {
   }
 
-  void Renderer::Render(Entity* ntt, Camera* cam, const LightRawPtrArray& lights)
-  {
-    // TODO: Drawable spesific Render will be removed.
-    // For now, just redirect.
-    if (ntt->m_components.empty())
-    {
-      Render
-      (
-        static_cast<Drawable*> (ntt),
-        cam,
-        lights
-      );
-
-      return;
-    }
-
-    ComponentArray components;
-    ntt->GetComponent(ComponentType::Component_Mesh, components);
-
-    if (components.empty())
-    {
-      return;
-    }
-
-    m_cam = cam;
-    m_lights = lights;
-    SetProjectViewModel(ntt, cam);
-
-    for (Component* com : components)
-    {
-      MeshComponent* meshComp = static_cast<MeshComponent*>(com);
-      if (meshComp->m_mesh == nullptr)
-      {
-        continue;
-      }
-
-      MeshRawPtrArray meshCollector;
-      meshComp->m_mesh->GetAllMeshes(meshCollector);
-
-      for (Mesh* mesh : meshCollector)
-      {
-        if (m_overrideMat)
-        {
-          m_mat = m_overrideMat.get();
-        }
-        else
-        {
-          if (meshComp->m_material != nullptr)
-          {
-            m_mat = meshComp->m_material.get();
-          }
-          else if (mesh->m_material != nullptr)
-          {
-            m_mat = mesh->m_material.get();
-          }
-          else
-          {
-            MaterialPtr defMat = GetMaterialManager()->GetCopyOfDefaultMaterial();
-            m_mat = defMat.get();
-          }
-        }
-
-        ProgramPtr prg = CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmetShader);
-        BindProgram(prg);
-        FeedUniforms(prg);
-
-        RenderState* rs = m_mat->GetRenderState();
-        SetRenderState(rs);
-
-        glBindVertexArray(mesh->m_vaoId);
-        glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
-        SetVertexLayout(VertexLayout::Mesh);
-
-        if (mesh->m_indexCount != 0)
-        {
-          glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-          glDrawElements((GLenum)rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
-        }
-        else
-        {
-          glDrawArrays((GLenum)rs->drawType, 0, mesh->m_vertexCount);
-        }
-      }
-
-    }
-  }
-
   void Renderer::Render(Drawable* object, Camera* cam, const LightRawPtrArray& lights)
   {
-    if (object->m_mesh->IsSkinned())
+    MeshPtr mesh = object->GetMesh();
+    if (mesh->IsSkinned())
     {
       RenderSkinned(object, cam);
       return;
     }
 
-    object->m_mesh->Init();
+    mesh->Init();
 
-    g_meshCollector.clear();
-    object->m_mesh->GetAllMeshes(g_meshCollector);
+    MeshRawPtrArray meshCollector;
+    mesh->GetAllMeshes(meshCollector);
 
     m_cam = cam;
     m_lights = lights;
     SetProjectViewModel(object, cam);
 
-    for (Mesh* mesh : g_meshCollector)
+    for (Mesh* mesh : meshCollector)
     {
       m_mat = mesh->m_material.get();
       if (m_overrideMat)
@@ -161,7 +75,8 @@ namespace ToolKit
 
   void Renderer::RenderSkinned(Drawable* object, Camera* cam)
   {
-    object->m_mesh->Init();
+    MeshPtr mesh = object->GetMesh();
+    mesh->Init();
     SetProjectViewModel(object, cam);
 
     static ShaderPtr skinShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultSkin.shader"));
@@ -170,7 +85,7 @@ namespace ToolKit
     BindProgram(skinProg);
     FeedUniforms(skinProg);
 
-    Skeleton* skeleton = static_cast<SkinMesh*> (object->m_mesh.get())->m_skeleton;
+    Skeleton* skeleton = static_cast<SkinMesh*> (mesh.get())->m_skeleton;
     for (int i = 0; i < (int)skeleton->m_bones.size(); i++)
     {
       Bone* bone = skeleton->m_bones[i];;
@@ -182,10 +97,10 @@ namespace ToolKit
       glUniformMatrix4fv(loc, 1, false, (float*)&bone->m_inverseWorldMatrix);
     }
 
-    g_meshCollector.clear();
-    object->m_mesh->GetAllMeshes(g_meshCollector);
+    MeshRawPtrArray meshCollector;
+    mesh->GetAllMeshes(meshCollector);
 
-    for (Mesh* mesh : g_meshCollector)
+    for (Mesh* mesh : meshCollector)
     {
       RenderState* rs = mesh->m_material->GetRenderState();
       SetRenderState(rs);
@@ -205,8 +120,9 @@ namespace ToolKit
     static ProgramPtr prog = CreateProgram(vertexShader, fragShader);
     BindProgram(prog);
 
-    object->m_mesh->Init();
-    RenderState* rs = object->m_mesh->m_material->GetRenderState();
+    MeshPtr mesh = object->GetMesh();
+    mesh->Init();
+    RenderState* rs = mesh->m_material->GetRenderState();
     SetRenderState(rs);
 
     GLint pvloc = glGetUniformLocation(prog->m_handle, "ProjectViewModel");
@@ -214,10 +130,10 @@ namespace ToolKit
     Mat4 mul = pm * object->m_node->GetTransform(TransformationSpace::TS_WORLD);
     glUniformMatrix4fv(pvloc, 1, false, (float*)&mul);
 
-    glBindBuffer(GL_ARRAY_BUFFER, object->m_mesh->m_vboVertexId);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
     SetVertexLayout(VertexLayout::Mesh);
 
-    glDrawArrays((GLenum)rs->drawType, 0, object->m_mesh->m_vertexCount);
+    glDrawArrays((GLenum)rs->drawType, 0, mesh->m_vertexCount);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     SetVertexLayout(VertexLayout::None);
@@ -367,7 +283,7 @@ namespace ToolKit
     material->Init();
 
     static Quad quad;
-    quad.m_mesh->m_material = material;
+    quad.GetMesh()->m_material = material;
 
     static Camera dummy;
 

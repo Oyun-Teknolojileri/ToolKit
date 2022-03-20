@@ -34,11 +34,12 @@ namespace ToolKit
 
     void Cursor::Generate()
     {
-      m_mesh->UnInit();
+      MeshPtr& parentMesh = GetMesh();
+      parentMesh->UnInit();
 
       // Billboard
       Quad quad;
-      MeshPtr meshPtr = quad.m_mesh;
+      MeshPtr& meshPtr = quad.GetMesh();
 
       meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
       meshPtr->m_material->UnInit();
@@ -47,7 +48,7 @@ namespace ToolKit
       meshPtr->m_material->Init();
 
       meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
-      m_mesh->m_subMeshes.push_back(meshPtr);
+      parentMesh->m_subMeshes.push_back(meshPtr);
 
       // Lines
       VertexArray vertices;
@@ -76,10 +77,10 @@ namespace ToolKit
       newMaterial->GetRenderState()->drawType = DrawType::Line;
       newMaterial->GetRenderState()->depthTestEnabled = false;
 
-      m_mesh->m_clientSideVertices = vertices;
-      m_mesh->m_material = newMaterial;
+      parentMesh->m_clientSideVertices = vertices;
+      parentMesh->m_material = newMaterial;
 
-      m_mesh->CalculateAABB();
+      parentMesh->CalculateAABB();
     }
 
     Axis3d::Axis3d()
@@ -111,14 +112,15 @@ namespace ToolKit
         }
 
         Arrow2d arrow(t);
-        arrow.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
+        MeshPtr& mesh = arrow.GetMesh();
+        mesh->m_material->GetRenderState()->depthTestEnabled = false;
         if (i == 0)
         {
-          m_mesh = arrow.m_mesh;
+          SetMesh(mesh);
         }
         else
         {
-          m_mesh->m_subMeshes.push_back(arrow.m_mesh);
+          GetMesh()->m_subMeshes.push_back(mesh);
         }
       }
     }
@@ -148,8 +150,7 @@ namespace ToolKit
       m_mesh = std::make_shared<Mesh>();
 
       LineBatch line(pnts, params.color, DrawType::Line, 2.0f);
-      m_mesh->m_subMeshes.push_back(line.m_mesh);
-      line.m_mesh = nullptr;
+      m_mesh->m_subMeshes.push_back(line.GetMesh());
 
       MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       material->m_color = params.color;
@@ -157,16 +158,16 @@ namespace ToolKit
       if (params.type == SolidType::Cube)
       {
         Cube solid(params.solidDim);
-        solid.m_mesh->m_material = material;
-        m_mesh->m_subMeshes.push_back(solid.m_mesh);
-        solid.m_mesh = nullptr;
+        MeshPtr& mesh = solid.GetMesh();
+        mesh->m_material = material;
+        m_mesh->m_subMeshes.push_back(mesh);
       }
       else if (params.type == SolidType::Cone)
       {
         Cone solid({ params.solidDim.y, params.solidDim.x, 10, 10 });
-        solid.m_mesh->m_material = material;
-        m_mesh->m_subMeshes.push_back(solid.m_mesh);
-        solid.m_mesh = nullptr;
+        MeshPtr& mesh = solid.GetMesh();
+        mesh->m_material = material;
+        m_mesh->m_subMeshes.push_back(mesh);
       }
       else
       {
@@ -204,8 +205,7 @@ namespace ToolKit
         };
 
         LineBatch guide(pnts, g_gizmoColor[axisInd % 3], DrawType::Line, 1.0f);
-        m_mesh->m_subMeshes.push_back(guide.m_mesh);
-        guide.m_mesh = nullptr;
+        m_mesh->m_subMeshes.push_back(guide.GetMesh());
       }
     }
 
@@ -265,8 +265,7 @@ namespace ToolKit
       corners.push_back(corners.front());
 
       LineBatch circle(corners, params.color, DrawType::LineStrip, 4.0f);
-      m_mesh = circle.m_mesh;
-      circle.m_mesh = nullptr;
+      m_mesh = circle.GetMesh();
 
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
@@ -289,8 +288,7 @@ namespace ToolKit
         pnts.push_back(glcl - dir * 999.0f);
 
         LineBatch guide(pnts, g_gizmoColor[axisIndx], DrawType::Line, 1.0f);
-        m_mesh->m_subMeshes.push_back(guide.m_mesh);
-        guide.m_mesh = nullptr;
+        m_mesh->m_subMeshes.push_back(guide.GetMesh());
       }
     }
 
@@ -363,9 +361,10 @@ namespace ToolKit
       material->m_color = params.color;
       material->GetRenderState()->cullMode = CullingType::TwoSided;
 
-      solid.m_mesh->m_material = material;
-      m_mesh = solid.m_mesh;
-      solid.m_mesh = nullptr;
+      MeshPtr& mesh = solid.GetMesh();
+      mesh->m_material = material;
+      m_mesh = mesh;
+
       float scale = 0.15f;
       float offset = 2.0f;
 
@@ -614,12 +613,13 @@ namespace ToolKit
         handle->Generate(p);
       }
 
-      m_mesh = std::make_shared<Mesh>();
+      MeshPtr mesh = std::make_shared<Mesh>();
       for (int i = 0; i < m_handles.size(); i++)
       {
-        m_mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+        mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
-      m_mesh->Init(false);
+      mesh->Init(false);
+      SetMesh(mesh);
     }
 
     GizmoHandle::Params LinearGizmo::GetParam() const
@@ -727,11 +727,13 @@ namespace ToolKit
         m_handles[i]->Generate(p);
       }
 
-      m_mesh = std::make_shared<Mesh>();
+      MeshPtr mesh = std::make_shared<Mesh>();
       for (int i = 0; i < m_handles.size(); i++)
       {
-        m_mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+        mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
+
+      SetMesh(mesh);
     }
 
     void PolarGizmo::Render(Renderer* renderer, Camera* cam)
@@ -741,7 +743,7 @@ namespace ToolKit
       if (sphere == nullptr)
       {
         sphere = std::make_shared<Sphere>(1.0f);
-        sphere->m_mesh->m_material->GetRenderState()->cullMode = CullingType::Front;
+        sphere->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::Front;
       }
 
       *sphere->m_node = *m_node;

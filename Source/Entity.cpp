@@ -25,11 +25,6 @@ namespace ToolKit
   Entity::~Entity()
   {
     SafeDel(m_node);
-
-    for (Component* com : m_components)
-    {
-      SafeDel(com);
-    }
     m_components.clear();
   }
 
@@ -73,15 +68,13 @@ namespace ToolKit
 
   Entity* Entity::GetCopy(Entity* copyTo) const
   {
-    // This just copies the node, other contents should be copied by the descendent.
-    assert(copyTo->GetType() == GetType());
-    SafeDel(copyTo->m_node);
-    copyTo->m_node = m_node->Copy();
-    copyTo->m_node->m_entity = copyTo;
-    copyTo->m_name = m_name;
-    copyTo->m_tag = m_tag;
-    copyTo->m_visible = m_visible;
-    copyTo->m_customData = m_customData;
+    WeakCopy(copyTo);
+
+    copyTo->m_components.clear();
+    for (const ComponentPtr& com : m_components)
+    {
+      copyTo->m_components.push_back(com->Copy());
+    }
 
     return copyTo;
   }
@@ -95,7 +88,22 @@ namespace ToolKit
 
   Entity* Entity::GetInstance(Entity* copyTo) const
   {
-    return GetCopy(copyTo);
+    WeakCopy(copyTo);
+    return copyTo;
+  }
+
+  void Entity::WeakCopy(Entity* copyTo) const
+  {
+    assert(copyTo->GetType() == GetType());
+    SafeDel(copyTo->m_node);
+    copyTo->m_node = m_node->Copy();
+    copyTo->m_node->m_entity = copyTo;
+    copyTo->m_name = m_name;
+    copyTo->m_tag = m_tag;
+    copyTo->m_visible = m_visible;
+    copyTo->m_customData = m_customData;
+    copyTo->m_components.clear();
+    copyTo->m_components = m_components;
   }
 
   Entity* Entity::CreateByType(EntityType t)
@@ -159,38 +167,14 @@ namespace ToolKit
   void Entity::AddComponent(Component* component)
   {
     assert(GetComponent(component->m_id) == nullptr && "Component has already been added.");
-    m_components.push_back(component);
+    m_components.push_back(ComponentPtr(component));
   }
 
-  void Entity::GetComponent(ComponentType type, ComponentArray& components) const
+  ComponentPtr Entity::GetComponent(ULongID id) const
   {
-    for (Component* com : m_components)
-    {
-      if (com->m_type == type)
-      {
-        components.push_back(com);
-      }
-    }
-  }
-
-  Component* Entity::GetComponent(ULongID id) const
-  {
-    for (Component* com : m_components)
+    for (const ComponentPtr& com : m_components)
     {
       if (com->m_id == id)
-      {
-        return com;
-      }
-    }
-
-    return nullptr;
-  }
-
-  Component* Entity::GetFirstComponent(ComponentType type) const
-  {
-    for (Component* com : m_components)
-    {
-      if (com->m_type == type)
       {
         return com;
       }

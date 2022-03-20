@@ -19,7 +19,7 @@ namespace ToolKit
     m_material = std::make_shared<Material>();
   }
 
-  Mesh::Mesh(String file)
+  Mesh::Mesh(const String& file)
     : Mesh()
   {
     SetFile(file);
@@ -388,7 +388,7 @@ namespace ToolKit
     m_skeleton = new Skeleton();
   }
 
-  SkinMesh::SkinMesh(String file)
+  SkinMesh::SkinMesh(const String& file)
     : Mesh()
   {
     SetFile(file);

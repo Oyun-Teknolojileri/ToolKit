@@ -6,33 +6,45 @@
 namespace ToolKit
 {
 
+#define TKComponentType(type) \
+  static ComponentType GetTypeStatic() { return ComponentType::type; } \
+  virtual ComponentType GetType() const { return ComponentType::type; }
+
   enum class ComponentType
   {
-    Component_Base,
-    Component_Mesh
+    Base,
+    MeshComponent
   };
 
   class TK_API Component : public Serializable
   {
   public:
     Component();
-    virtual  ~Component();
+    virtual ~Component();
+    virtual ComponentType GetType() const;
+    virtual ComponentPtr Copy() = 0;
 
   public:
     ULongID m_id;
-    ComponentType m_type;
 
   private:
     static ULongID m_handle;
   };
 
+  typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
+
   class TK_API MeshComponent : public Component
   {
   public:
+    TKComponentType(MeshComponent);
+
     MeshComponent();
     virtual ~MeshComponent();
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    virtual ComponentPtr Copy();
+
+    void Init(bool flushClientSideArray);
 
   public:
     MeshPtr m_mesh;

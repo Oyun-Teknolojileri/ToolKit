@@ -31,7 +31,7 @@ namespace ToolKit
     TKResouceType(Mesh)
 
     Mesh();
-    Mesh(String file);
+    Mesh(const String& file);
     virtual ~Mesh();
 
     virtual void Init(bool flushClientSideArray = true) override;
@@ -87,7 +87,7 @@ namespace ToolKit
     TKResouceType(SkinMesh)
 
     SkinMesh();
-    SkinMesh(String file);
+    SkinMesh(const String& file);
     ~SkinMesh();
 
     virtual void Init(bool flushClientSideArray = true) override;

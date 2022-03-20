@@ -14,7 +14,7 @@ class Projectile : public Drawable
 public:
   Projectile(Vec3 pos)
   {
-    m_mesh = GetMeshManager()->Create<Mesh>(MeshPath("projectile.mesh"));
+    SetMesh(GetMeshManager()->Create<Mesh>(MeshPath("projectile.mesh")));
     m_node->SetTranslation(pos);
   }
 };

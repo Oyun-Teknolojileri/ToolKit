@@ -65,15 +65,15 @@ public:
     m_spaceShip->m_node->Translate(Vec3(4, 0, 4));
 
     m_crosshair = new Surface(TexturePath("crosshair.png"), glm::vec2(0.5f, 0.5f));
-    m_crosshair->m_mesh->Init();
+    m_crosshair->GetMesh()->Init();
 
     m_sscp = glm::ivec2(m_windowWidth / 2, m_windowHeight / 2);
     m_crosshair->m_node->Translate(Vec3(m_sscp.x, m_sscp.y, 0));
 
-    m_backGround.m_mesh = GetMeshManager()->Create<Mesh>(MeshPath("earthBg.mesh"));
-    m_paralaxLayer.m_mesh = GetMeshManager()->Create<Mesh>(MeshPath("starParalaxLayer.mesh"));
-    m_paralaxLayer.m_mesh->m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-    m_paralaxLayer.m_mesh->m_material->GetRenderState()->depthTestEnabled = false;
+    m_backGround.GetMesh() = GetMeshManager()->Create<Mesh>(MeshPath("earthBg.mesh"));
+    m_paralaxLayer.GetMesh() = GetMeshManager()->Create<Mesh>(MeshPath("starParalaxLayer.mesh"));
+    m_paralaxLayer.GetMesh()->m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+    m_paralaxLayer.GetMesh()->m_material->GetRenderState()->depthTestEnabled = false;
 
     m_lazerShotWav = GetAudioManager()->Create<Audio>(AudioPath("lazerShot.wav"));
     m_lazerShotSource.AttachAudio(m_lazerShotWav);

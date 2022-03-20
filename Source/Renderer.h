@@ -22,7 +22,6 @@ namespace ToolKit
   public:
     Renderer();
     ~Renderer();
-    void Render(Entity* ntt, Camera* cam, const LightRawPtrArray& lights = LightRawPtrArray());
     void Render(Drawable* object, Camera* cam, const LightRawPtrArray& lights = LightRawPtrArray());
     void RenderSkinned(Drawable* object, Camera* cam);
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
