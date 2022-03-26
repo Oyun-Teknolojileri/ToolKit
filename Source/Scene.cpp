@@ -88,7 +88,12 @@ namespace ToolKit
     {
       if (ntt->IsDrawable())
       {
-        static_cast<Drawable*> (ntt)->GetMesh()->Init(flushClientSideArray);
+        MeshComponentPtrArray meshes;
+        ntt->GetComponent<MeshComponent>(meshes);
+        for (MeshComponentPtr& mesh : meshes)
+        {
+          mesh->Init(flushClientSideArray);
+        }
       }
     }
 
@@ -123,48 +128,55 @@ namespace ToolKit
     pd.pickPos = ray.position + ray.direction * 5.0f;
 
     float closestPickedDistance = FLT_MAX;
-    for (Entity* e : m_entities)
+    for (Entity* ntt : m_entities)
     {
-      if (!e->IsDrawable())
+      if (!ntt->IsDrawable())
       {
         continue;
       }
 
-      if (std::find(ignoreList.begin(), ignoreList.end(), e->m_id) != ignoreList.end())
+      if (std::find(ignoreList.begin(), ignoreList.end(), ntt->m_id) != ignoreList.end())
       {
         continue;
       }
 
       Ray rayInObjectSpace = ray;
-      Mat4 ts = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
+      Mat4 ts = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
       Mat4 its = glm::inverse(ts);
       rayInObjectSpace.position = its * Vec4(ray.position, 1.0f);
       rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
 
       float dist = 0;
-      Drawable* dw = static_cast<Drawable*>(e);
-      if (RayBoxIntersection(rayInObjectSpace, dw->GetAABB(), dist))
+      if (RayBoxIntersection(rayInObjectSpace, ntt->GetAABB(), dist))
       {
         bool hit = true;
-        MeshPtr mesh = dw->GetMesh();
-        if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount)
+
+        // Collect meshes.
+        MeshComponentPtrArray meshes;
+        ntt->GetComponent<MeshComponent>(meshes);
+
+        for (MeshComponentPtr& meshCmp : meshes)
         {
-          // Per polygon check if data exist.
-          float meshDist = 0.0f;
-          hit = RayMeshIntersection(mesh.get(), rayInObjectSpace, meshDist);
+          MeshPtr mesh = meshCmp->m_mesh;
+          if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount)
+          {
+            // Per polygon check if data exist.
+            float meshDist = 0.0f;
+            hit = RayMeshIntersection(mesh.get(), rayInObjectSpace, meshDist);
+            if (hit)
+            {
+              dist = meshDist;
+            }
+          }
+
           if (hit)
           {
-            dist = meshDist;
-          }
-        }
-
-        if (hit)
-        {
-          if (dist < closestPickedDistance && dist > 0.0f)
-          {
-            pd.entity = e;
-            pd.pickPos = ray.position + ray.direction * dist;
-            closestPickedDistance = dist;
+            if (dist < closestPickedDistance && dist > 0.0f)
+            {
+              pd.entity = ntt;
+              pd.pickPos = ray.position + ray.direction * dist;
+              closestPickedDistance = dist;
+            }
           }
         }
       }
