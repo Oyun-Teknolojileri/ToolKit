@@ -24,53 +24,60 @@ namespace ToolKit
   {
   }
 
-  void Renderer::Render(Drawable* object, Camera* cam, const LightRawPtrArray& lights)
+  void Renderer::Render(Entity* ntt, Camera* cam, const LightRawPtrArray& lights)
   {
-    MeshPtr mesh = object->GetMesh();
-    if (mesh->IsSkinned())
+    MeshComponentPtrArray meshComponents;
+    ntt->GetComponent<MeshComponent>(meshComponents);
+
+    for (MeshComponentPtr meshCom : meshComponents)
     {
-      RenderSkinned(object, cam);
-      return;
+      MeshPtr mesh = meshCom->m_mesh;
+      if (mesh->IsSkinned())
+      {
+        RenderSkinned(static_cast<Drawable*> (ntt), cam);
+        return;
+      }
+
+      mesh->Init();
+
+      MeshRawPtrArray meshCollector;
+      mesh->GetAllMeshes(meshCollector);
+
+      m_cam = cam;
+      m_lights = lights;
+      SetProjectViewModel(ntt, cam);
+
+      for (Mesh* mesh : meshCollector)
+      {
+        m_mat = mesh->m_material.get();
+        if (m_overrideMat)
+        {
+          m_mat = m_overrideMat.get();
+        }
+
+        ProgramPtr prg = CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmetShader);
+        BindProgram(prg);
+        FeedUniforms(prg);
+
+        RenderState* rs = m_mat->GetRenderState();
+        SetRenderState(rs);
+
+        glBindVertexArray(mesh->m_vaoId);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
+        SetVertexLayout(VertexLayout::Mesh);
+
+        if (mesh->m_indexCount != 0)
+        {
+          glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
+          glDrawElements((GLenum)rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
+        }
+        else
+        {
+          glDrawArrays((GLenum)rs->drawType, 0, mesh->m_vertexCount);
+        }
+      }
     }
 
-    mesh->Init();
-
-    MeshRawPtrArray meshCollector;
-    mesh->GetAllMeshes(meshCollector);
-
-    m_cam = cam;
-    m_lights = lights;
-    SetProjectViewModel(object, cam);
-
-    for (Mesh* mesh : meshCollector)
-    {
-      m_mat = mesh->m_material.get();
-      if (m_overrideMat)
-      {
-        m_mat = m_overrideMat.get();
-      }
-
-      ProgramPtr prg = CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmetShader);
-      BindProgram(prg);
-      FeedUniforms(prg);
-
-      RenderState* rs = m_mat->GetRenderState();
-      SetRenderState(rs);
-
-      glBindVertexArray(mesh->m_vaoId);
-      glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
-      SetVertexLayout(VertexLayout::Mesh);
-
-      if (mesh->m_indexCount != 0)
-      {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-        glDrawElements((GLenum)rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
-      }
-      else
-      {
-        glDrawArrays((GLenum)rs->drawType, 0, mesh->m_vertexCount);
-      }
-    }
   }
 
   void Renderer::RenderSkinned(Drawable* object, Camera* cam)
@@ -290,11 +297,11 @@ namespace ToolKit
     Render(&quad, &dummy);
   }
 
-  void Renderer::SetProjectViewModel(Entity* object, Camera* cam)
+  void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)
   {
     m_view = cam->GetViewMatrix();
     m_project = cam->GetData().projection;
-    m_model = object->m_node->GetTransform(TransformationSpace::TS_WORLD);
+    m_model = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
   }
 
   void Renderer::BindProgram(ProgramPtr program)

@@ -157,7 +157,7 @@ namespace ToolKit
         {
           app->m_renderer->Render
           (
-            static_cast<Drawable*> (ntt),
+            ntt,
             m_camera,
             { &m_forwardLight }
           );
@@ -169,7 +169,7 @@ namespace ToolKit
       // Render grid.
       app->m_renderer->Render
       (
-        static_cast<Drawable*> (&m_grid),
+        &m_grid,
         m_camera,
         { &m_forwardLight }
       );

@@ -966,7 +966,7 @@ namespace ToolKit
         {
           if (ntt->IsDrawable())
           {
-            m_renderer->Render(static_cast<Drawable*> (ntt), viewport->m_camera);
+            m_renderer->Render(ntt, viewport->m_camera);
           }
         }
 
@@ -1008,8 +1008,7 @@ namespace ToolKit
 
       if (m_showSelectionBoundary && primary->IsDrawable())
       {
-        Drawable* dw = static_cast<Drawable*> (primary);
-        m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(dw->GetAABB(true)));
+        m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(primary->GetAABB(true)));
       }
     }
 

@@ -350,7 +350,7 @@ namespace ToolKit
 
           app->m_renderer->Render
           (
-            static_cast<Drawable*> (ntt),
+            ntt,
             m_camera,
             app->m_sceneLights
           );
