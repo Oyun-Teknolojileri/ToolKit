@@ -100,6 +100,7 @@ namespace ToolKit
 
   // Components.
   typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
+  typedef std::vector<MeshComponentPtr> MeshComponentPtrArray;
   typedef std::shared_ptr<class Component> ComponentPtr;
   typedef std::vector<ComponentPtr> ComponentPtrArray;
 
@@ -110,7 +111,7 @@ namespace ToolKit
   // Callbacks.
   typedef std::function<void(class Event*, class Entity*)> SurfaceEventCallback;
 
-  // Vector declerations.
+  // Math Vector declerations.
   static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
   static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);
   static const Vec3 Z_AXIS = Vec3(0.0f, 0.0f, 1.0f);
@@ -118,6 +119,7 @@ namespace ToolKit
   static const Vec3 YZ_AXIS = Vec3(0.0f, 1.0f, 1.0f);
   static const Vec3 ZX_AXIS = Vec3(1.0f, 0.0f, 1.0f);
   static const Vec3 AXIS[6] = { X_AXIS, Y_AXIS, Z_AXIS, XY_AXIS, YZ_AXIS, ZX_AXIS };
+  struct BoundingBox;
 
   // Supported file formats.
   static const String FBX(".fbx");

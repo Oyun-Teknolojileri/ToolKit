@@ -168,7 +168,7 @@ namespace ToolKit
       for (size_t j = 0; j < m->m_clientSideVertices.size(); j++)
       {
         Vertex& v = m->m_clientSideVertices[j];
-        UpdateAABB(v.pos);
+        m_aabb.UpdateBoundary(v.pos);
       }
     }
   }
@@ -309,7 +309,7 @@ namespace ToolKit
       {
         Vertex vd;
         ReadVec(v->first_node("p"), vd.pos);
-        UpdateAABB(vd.pos);
+        m_aabb.UpdateBoundary(vd.pos);
 
         ReadVec(v->first_node("n"), vd.norm);
         ReadVec(v->first_node("t"), vd.tex);
@@ -374,12 +374,6 @@ namespace ToolKit
     {
       m_clientSideIndices.clear();
     }
-  }
-
-  void Mesh::UpdateAABB(const Vec3& v)
-  {
-    m_aabb.max = glm::max(m_aabb.max, v);
-    m_aabb.min = glm::min(m_aabb.min, v);
   }
 
   SkinMesh::SkinMesh()
@@ -470,7 +464,7 @@ namespace ToolKit
       {
         SkinVertex vd;
         ReadVec(v->first_node("p"), vd.pos);
-        UpdateAABB(vd.pos);
+        m_aabb.UpdateBoundary(vd.pos);
 
         ReadVec(v->first_node("n"), vd.norm);
         ReadVec(v->first_node("t"), vd.tex);

@@ -52,7 +52,6 @@ namespace ToolKit
   protected:
     virtual void InitVertices(bool flush);
     virtual void InitIndices(bool flush);
-    void UpdateAABB(const Vec3& v);
 
   protected:
     virtual void CopyTo(Resource* other) override;

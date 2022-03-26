@@ -68,7 +68,7 @@ namespace ToolKit
     }
 
     template<typename T>
-    void GetComponent(std::vector<std::shared_ptr<T>> components) const
+    void GetComponent(std::vector<std::shared_ptr<T>>& components) const
     {
       for (const ComponentPtr& com : m_components)
       {

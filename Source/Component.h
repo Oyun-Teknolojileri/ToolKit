@@ -43,6 +43,7 @@ namespace ToolKit
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     virtual ComponentPtr Copy();
+    BoundingBox GetAABB();
 
     void Init(bool flushClientSideArray);
 

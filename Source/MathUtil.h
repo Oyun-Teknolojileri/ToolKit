@@ -24,6 +24,12 @@ namespace ToolKit
     {
       return min + (max - min) * 0.5f;
     }
+
+    void UpdateBoundary(const Vec3& v)
+    {
+      max = glm::max(max, v);
+      min = glm::min(min, v);
+    }
   };
 
   struct Ray

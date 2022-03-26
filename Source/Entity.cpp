@@ -47,9 +47,25 @@ namespace ToolKit
   {
     BoundingBox aabb;
 
-    // Unit aabb.
-    aabb.min = Vec3(0.5f, 0.5f, 0.5f);
-    aabb.max = Vec3(-0.5f, -0.5f, -0.5f);
+    MeshComponentPtrArray meshCmps;
+    GetComponent<MeshComponent>(meshCmps);
+
+    if (meshCmps.empty())
+    {
+      // Unit aabb.
+      aabb.min = Vec3(0.5f, 0.5f, 0.5f);
+      aabb.max = Vec3(-0.5f, -0.5f, -0.5f);
+    }
+    else
+    {
+      BoundingBox cmpAABB;
+      for (MeshComponentPtr& cmp : meshCmps)
+      {
+        cmpAABB = cmp->GetAABB();
+        aabb.UpdateBoundary(cmpAABB.max);
+        aabb.UpdateBoundary(cmpAABB.min);
+      }
+    }
 
     if (inWorld)
     {

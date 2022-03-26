@@ -22,7 +22,7 @@ namespace ToolKit
 
     bool EditorCamera::IsDrawable() const
     {
-      return false;
+      return true;
     }
 
     void EditorCamera::GenerateFrustum()
@@ -36,15 +36,32 @@ namespace ToolKit
         Vec3(-0.5f, -0.3f, 1.6f),
       };
 
+      // Below is a tricky frustum construction.
+      // I am forcing to create triangles to use in ray/triangle intersection in picking.
+      // At the same time, not causing additional lines for frustom drawing.
+
       Vec3 eye;
       Vec3Array lines =
       {
         eye, corners[0],
+        corners[1], corners[1], // Triangle widhout line.
+        corners[1], corners[1],
+        
         eye, corners[1],
+        corners[2], corners[2],
+        corners[2], corners[2],
+
         eye, corners[2],
+        corners[3], corners[3],
+        corners[3], corners[3],
+        
         eye, corners[3],
+        corners[0], corners[0],
+        corners[0], corners[0],
+        
         corners[0], corners[1],
         corners[1], corners[2],
+        corners[3], corners[3],
         corners[2], corners[3],
         corners[3], corners[0]
       };
@@ -68,11 +85,10 @@ namespace ToolKit
       subMesh->m_material->m_color = Vec3();
       subMesh->m_material->m_color = Vec3();
       subMesh->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
-
-      subMesh->CalculateAABB();
       subMesh->ConstructFaces();
 
       camMeshComp->m_mesh->m_subMeshes.push_back(subMesh);
+      camMeshComp->m_mesh->CalculateAABB();
       camMeshComp->Init(false);
     }
 

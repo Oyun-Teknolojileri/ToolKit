@@ -959,6 +959,7 @@ namespace ToolKit
 
         // webgl create problem with depth only drawing with textures.
         static MaterialPtr solidMat = GetMaterialManager()->GetCopyOfSolidMaterial();
+        solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
         m_renderer->m_overrideMat = solidMat;
 
         for (Entity* ntt : selection)

@@ -54,6 +54,11 @@ namespace ToolKit
     return mc;
   }
 
+  BoundingBox MeshComponent::GetAABB()
+  {
+    return m_mesh->m_aabb;
+  }
+
   void MeshComponent::Init(bool flushClientSideArray)
   {
     if (m_mesh)
