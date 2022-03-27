@@ -54,6 +54,9 @@ namespace ToolKit
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;
 
+    protected:
+      CameraPtr m_attachedCamera = nullptr;
+
     private:
       // States.
       bool m_relMouseModBegin = true;

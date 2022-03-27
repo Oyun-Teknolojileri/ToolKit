@@ -235,7 +235,7 @@ namespace ToolKit
 
         if (EditorViewport* vp = g_app->GetViewport(viewportTag->second[0]))
         {
-          if (Camera* c = vp->m_camera)
+          if (Camera* c = vp->GetCamera())
           {
             if (viewportTag->second.size() == 2)
             {
@@ -407,7 +407,7 @@ namespace ToolKit
         EditorViewport* vp = g_app->GetViewport(g_3dViewport);
         if (vp)
         {
-          vp->m_camera->LookAt(target);
+          vp->GetCamera()->LookAt(target);
         }
       }
     }

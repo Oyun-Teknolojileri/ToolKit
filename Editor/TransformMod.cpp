@@ -131,7 +131,7 @@ namespace ToolKit
           return NullSignal; // Console commands may put the process here whit out active viewport.
         }
 
-        Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        Vec3 camOrg = vp->GetCamera()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         Vec3 gizmOrg = m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         Vec3 dir = glm::normalize(camOrg - gizmOrg);
         m_gizmo->m_initialPoint = gizmOrg;
@@ -271,7 +271,7 @@ namespace ToolKit
       {
         // Linear intersection plane.
         EditorViewport* vp = g_app->GetActiveViewport();
-        Vec3 camOrg = vp->m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        Vec3 camOrg = vp->GetCamera()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         Vec3 gizmOrg = m_gizmo->m_worldLocation;
         Vec3 dir = glm::normalize(camOrg - gizmOrg);
 
@@ -742,7 +742,7 @@ namespace ToolKit
       {
         if (EditorViewport* vp = g_app->GetActiveViewport())
         {
-          m_gizmo->LookAt(vp->m_camera, vp->m_zoom);
+          m_gizmo->LookAt(vp->GetCamera(), vp->m_zoom);
         }
       }
 

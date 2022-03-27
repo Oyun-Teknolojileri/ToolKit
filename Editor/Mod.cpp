@@ -662,7 +662,7 @@ namespace ToolKit
         EditorViewport* vp = g_app->GetActiveViewport();
         if (vp != nullptr)
         {
-          Camera* cam = vp->m_camera;
+          Camera* cam = vp->GetCamera();
 
           Vec2 rect[4];
           GetMouseRect(rect[0], rect[2]);

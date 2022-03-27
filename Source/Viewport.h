@@ -34,6 +34,7 @@ namespace ToolKit
     virtual Vec3 TransformViewportToWorldSpace(const Vec2& pnt);
     virtual Vec2 TransformScreenToViewportSpace(const Vec2& pnt);
     bool IsOrthographic();
+    Camera* GetCamera();
 
   protected:
     // Internal window handling.
@@ -41,7 +42,6 @@ namespace ToolKit
     virtual void AdjustZoom(float delta);
 
   public:
-    Camera* m_camera = nullptr;
     RenderTarget* m_viewportImage = nullptr;
 
     // Window properties.
@@ -51,6 +51,8 @@ namespace ToolKit
     float m_zoom = 1.0f;
 
   protected:
+    Camera* m_camera = nullptr;
+
     // States.
     bool m_mouseOverContentArea = false;
     Vec2 m_wndContentAreaSize;

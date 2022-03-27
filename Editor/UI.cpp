@@ -451,7 +451,7 @@ namespace ToolKit
       }
 
       ImGui::Separator();
-      ImGui::Text("v%d.%d.%d", 0, 3, 5);
+      ImGui::Text("v%d.%d.%d", 0, 3, 6);
     }
 
     void UI::ShowMenuWindows()

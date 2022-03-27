@@ -139,4 +139,9 @@ namespace ToolKit
     return false;
   }
 
+  Camera* Viewport::GetCamera()
+  {
+    return m_camera;
+  }
+
 }

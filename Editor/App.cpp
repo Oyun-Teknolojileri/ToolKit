@@ -174,7 +174,7 @@ namespace ToolKit
         {
           for (Drawable* dbgObj : m_perFrameDebugObjects)
           {
-            m_renderer->Render(dbgObj, viewport->m_camera);
+            m_renderer->Render(dbgObj, viewport->GetCamera());
             SafeDel(dbgObj);
           }
           m_perFrameDebugObjects.clear();
@@ -439,23 +439,23 @@ namespace ToolKit
         // 3d viewport.
         EditorViewport* vp = new EditorViewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
         vp->m_name = g_3dViewport;
-        vp->m_camera->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
-        vp->m_camera->LookAt(Vec3(0.0f));
+        vp->GetCamera()->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
+        vp->GetCamera()->LookAt(Vec3(0.0f));
         m_windows.push_back(vp);
 
         // 2d viewport.
         vp = new EditorViewport2d(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
         vp->m_name = g_2dViewport;
-        vp->m_camera->m_node->SetTranslation(Z_AXIS);
+        vp->GetCamera()->m_node->SetTranslation(Z_AXIS);
         m_windows.push_back(vp);
 
         // Isometric viewport.
         vp = new EditorViewport(m_renderer->m_windowWidth * 0.8f, m_renderer->m_windowHeight * 0.8f);
         vp->m_name = g_IsoViewport;
-        vp->m_camera->m_node->SetTranslation({ 0.0f, 10.0f, 0.0f });
-        vp->m_camera->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
+        vp->GetCamera()->m_node->SetTranslation({ 0.0f, 10.0f, 0.0f });
+        vp->GetCamera()->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
         vp->m_zoom = 0.02f;
-        vp->m_camera->Pitch(glm::radians(-90.0f));
+        vp->GetCamera()->Pitch(glm::radians(-90.0f));
         vp->m_cameraAlignment = 1;
         vp->m_orbitLock = true;
         m_windows.push_back(vp);
@@ -966,7 +966,7 @@ namespace ToolKit
         {
           if (ntt->IsDrawable())
           {
-            m_renderer->Render(ntt, viewport->m_camera);
+            m_renderer->Render(ntt, viewport->GetCamera());
           }
         }
 
@@ -1019,16 +1019,16 @@ namespace ToolKit
         return;
       }
 
-      gizmo->LookAt(viewport->m_camera, viewport->m_zoom);
+      gizmo->LookAt(viewport->GetCamera(), viewport->m_zoom);
 
       glClear(GL_DEPTH_BUFFER_BIT);
       if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (gizmo))
       {
-        pg->Render(m_renderer, viewport->m_camera);
+        pg->Render(m_renderer, viewport->GetCamera());
       }
       else
       {
-        m_renderer->Render(gizmo, viewport->m_camera);
+        m_renderer->Render(gizmo, viewport->GetCamera());
       }
     }
 
@@ -1048,8 +1048,8 @@ namespace ToolKit
           EditorViewport* playWindow = GetWindow<EditorViewport>(g_3dViewport);
           if (m_runWindowed)
           {
-            Mat4 camTs = playWindow->m_camera->m_node->GetTransform(TransformationSpace::TS_WORLD);
-            m_playWindow->m_camera->m_node->SetTransform(camTs);
+            Mat4 camTs = playWindow->GetCamera()->m_node->GetTransform(TransformationSpace::TS_WORLD);
+            m_playWindow->GetCamera()->m_node->SetTransform(camTs);
             playWindow = m_playWindow;
           }
           m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
