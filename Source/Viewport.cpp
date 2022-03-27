@@ -139,9 +139,14 @@ namespace ToolKit
     return false;
   }
 
-  Camera* Viewport::GetCamera()
+  Camera* Viewport::GetCamera() const
   {
     return m_camera;
+  }
+
+  void Viewport::SetCamera(Camera* cam)
+  {
+    m_camera = cam;
   }
 
 }

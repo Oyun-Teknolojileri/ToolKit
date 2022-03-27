@@ -433,7 +433,7 @@ namespace ToolKit
       }
       if (translation != nullptr)
       {
-        *translation = Vec3();
+        *translation = ZERO;
       }
       if (orientation != nullptr)
       {

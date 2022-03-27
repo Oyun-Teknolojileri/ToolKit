@@ -607,7 +607,7 @@ namespace ToolKit
         }
         else
         {
-          p.grabPnt = Vec3();
+          p.grabPnt = ZERO;
         }
 
         handle->Generate(p);
@@ -721,7 +721,7 @@ namespace ToolKit
         }
         else
         {
-          p.grabPnt = Vec3();
+          p.grabPnt = ZERO;
         }
 
         m_handles[i]->Generate(p);

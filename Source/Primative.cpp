@@ -517,7 +517,7 @@ namespace ToolKit
           Vec3(x0, i * deltaHeight, z0),
           q * refNormal,
           Vec2(j / (float)nSegBase, i / (float)nSegHeight),
-          Vec3() // btan missing.
+          ZERO // btan missing.
         };
 
         vertices.push_back(v);
@@ -541,10 +541,10 @@ namespace ToolKit
 
     Vertex v
     {
-      Vec3(),
+      ZERO,
       -Y_AXIS,
       Y_AXIS,
-      Vec3() // btan missing.
+      ZERO // btan missing.
     };
     vertices.push_back(v);
 
@@ -559,7 +559,7 @@ namespace ToolKit
         Vec3(x0, 0.0f, z0),
         -Y_AXIS,
         Vec2(j / (float)nSegBase, 0.0f),
-        Vec3() // btan missing.
+        ZERO // btan missing.
       };
       vertices.push_back(v);
 

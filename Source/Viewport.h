@@ -34,7 +34,8 @@ namespace ToolKit
     virtual Vec3 TransformViewportToWorldSpace(const Vec2& pnt);
     virtual Vec2 TransformScreenToViewportSpace(const Vec2& pnt);
     bool IsOrthographic();
-    Camera* GetCamera();
+    virtual Camera* GetCamera() const;
+    virtual void SetCamera(Camera* cam);
 
   protected:
     // Internal window handling.
@@ -50,14 +51,14 @@ namespace ToolKit
     float m_height = 480.0f;
     float m_zoom = 1.0f;
 
-  protected:
-    Camera* m_camera = nullptr;
-
     // States.
     bool m_mouseOverContentArea = false;
     Vec2 m_wndContentAreaSize;
     IVec2 m_mousePosBegin;
     IVec2 m_lastMousePosRelContentArea;
+
+  private:
+    Camera* m_camera = nullptr;
   };
 
 }

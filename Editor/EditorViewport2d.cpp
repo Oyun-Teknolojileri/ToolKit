@@ -120,8 +120,8 @@ namespace ToolKit
     {
       Vec3 screenPoint = Vec3(pnt, 0.0f);
 
-      Mat4 view = m_camera->GetViewMatrix();
-      Mat4 project = m_camera->GetData().projection;
+      Mat4 view = GetCamera()->GetViewMatrix();
+      Mat4 project = GetCamera()->GetData().projection;
 
       return glm::unProject(screenPoint, view, project, Vec4(0.0f, 0.0f, m_canvasSize.x, m_canvasSize.y));
     }
@@ -158,7 +158,7 @@ namespace ToolKit
           app->m_renderer->Render
           (
             ntt,
-            m_camera,
+            GetCamera(),
             { &m_forwardLight }
           );
         }
@@ -170,7 +170,7 @@ namespace ToolKit
       app->m_renderer->Render
       (
         &m_grid,
-        m_camera,
+        GetCamera(),
         { &m_forwardLight }
       );
 
@@ -406,7 +406,7 @@ namespace ToolKit
     {
       m_zoom -= delta * 0.1f;
       m_zoom = glm::max(0.1f, m_zoom);
-      m_camera->SetLens
+      GetCamera()->SetLens
       (
         m_canvasSize.x * m_zoom * -0.5f,
         m_canvasSize.x * m_zoom * 0.5f,
@@ -420,11 +420,11 @@ namespace ToolKit
     void EditorViewport2d::Init2dCam()
     {
       m_zoom = 1.0f;
-      m_camera->m_node->SetTranslation(Z_AXIS * 10.0f);
+      GetCamera()->m_node->SetTranslation(Z_AXIS * 10.0f);
       AdjustZoom(0.0f);
 
-      m_forwardLight.Translate(Vec3(Z_AXIS));
-      m_forwardLight.LookAt(Vec3());
+      m_forwardLight.Translate(Z_AXIS);
+      m_forwardLight.LookAt(ZERO);
     }
 
     void EditorViewport2d::UpdateCanvasSize()
@@ -445,7 +445,8 @@ namespace ToolKit
 
     void EditorViewport2d::PanZoom(float deltaTime)
     {
-      if (m_camera)
+      Camera* cam = GetCamera();
+      if (cam)
       {
         // Adjust zoom always.
         if (m_mouseOverContentArea)
@@ -462,7 +463,7 @@ namespace ToolKit
           float y = io.MouseDelta.y * m_zoom;
 
           Vec3 displace = X_AXIS * x + Y_AXIS * y;
-          m_camera->m_node->Translate(displace, TransformationSpace::TS_WORLD);
+          cam->m_node->Translate(displace, TransformationSpace::TS_WORLD);
         }
       }
     }

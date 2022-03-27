@@ -96,7 +96,7 @@ namespace ToolKit
         
         Light light;
         light.m_node->SetTranslation({ 5.0f, 5.0f, 5.0f });
-        light.LookAt(Vec3());
+        light.LookAt(ZERO);
 
         LightRawPtrArray lights = { &light };
 

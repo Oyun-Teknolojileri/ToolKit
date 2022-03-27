@@ -201,7 +201,7 @@ namespace ToolKit
       if (signal == BaseMod::m_leftMouseBtnUpSgnl)
       {
         m_gizmo->Grab(AxisLabel::None);
-        m_gizmo->m_grabPoint = Vec3();
+        m_gizmo->m_grabPoint = ZERO;
       }
 
       if (signal == BaseMod::m_leftMouseBtnDragSgnl)
@@ -313,7 +313,7 @@ namespace ToolKit
     void StateTransformBegin::CalculateGrabPoint()
     {
       assert(m_gizmo->GetGrabbedAxis() != AxisLabel::None);
-      m_gizmo->m_grabPoint = Vec3();
+      m_gizmo->m_grabPoint = ZERO;
 
       if (EditorViewport* vp = g_app->GetActiveViewport())
       {
@@ -381,8 +381,8 @@ namespace ToolKit
         ActionManager::GetInstance()->GroupLastActions((int)entities.size());
       }
 
-      m_delta = Vec3(0.0f);
-      m_deltaAccum = Vec3(0.0f);
+      m_delta = ZERO;
+      m_deltaAccum = ZERO;
       m_initialLoc = g_app->m_scene->GetCurrentSelection()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
       SDL_GetGlobalMouseState(&m_mouseInitialLoc.x, &m_mouseInitialLoc.y);
     }
@@ -390,7 +390,7 @@ namespace ToolKit
     void StateTransformTo::TransitionOut(State* prevState)
     {
       StateTransformBase::TransitionOut(prevState);
-      m_gizmo->m_grabPoint = Vec3();
+      m_gizmo->m_grabPoint = ZERO;
 
       // Set the mouse position roughly.
       SDL_WarpMouseGlobal((int)m_mouseData[1].x, (int)m_mouseData[1].y);
@@ -464,7 +464,7 @@ namespace ToolKit
       else
       {
         assert(false && "Intersection expected.");
-        m_delta = Vec3();
+        m_delta = ZERO;
       }
 
       std::swap(m_mouseData[0], m_mouseData[1]);

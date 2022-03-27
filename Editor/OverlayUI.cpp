@@ -310,7 +310,7 @@ namespace ToolKit
         UI::HelpMarker(LOC + m_owner->m_name, "Lock Camera Alignment\nMiddle button drag doesn't orbit.\nOnly panning allowed.");
 
         // Camera alignment combo.
-        const char* itemsCam[] = { "Free", "Top", "Front", "Left" };
+        const char* itemsCam[] = { "Free", "Top", "Front", "Left", "User" };
         int currentItemCam = m_owner->m_cameraAlignment;
         bool change = false;
 
@@ -320,8 +320,8 @@ namespace ToolKit
         {
           for (int n = 0; n < IM_ARRAYSIZE(itemsCam); n++)
           {
-            bool is_selected = (currentItemCam == n);
-            if (ImGui::Selectable(itemsCam[n], is_selected))
+            bool isSelected = (currentItemCam == n);
+            if (ImGui::Selectable(itemsCam[n], isSelected))
             {
               if (currentItemCam != n)
               {
@@ -331,7 +331,7 @@ namespace ToolKit
               m_owner->m_cameraAlignment = currentItemCam;
             }
 
-            if (is_selected)
+            if (isSelected)
             {
               ImGui::SetItemDefaultFocus();
             }
@@ -354,16 +354,49 @@ namespace ToolKit
           case 3:
             view = "left";
             break;
+          case 4:
+            view = "user";
+            break;
           case 0:
           default:
             view = "free";
             break;
           }
 
-          if (view != "free")
+          if (view == "user")
           {
-            String cmd = "SetCameraTransform --v \"" + m_owner->m_name + "\" " + view;
-            g_app->GetConsole()->ExecCommand(cmd);
+            bool noCamera = true;
+            if (Entity* cam = g_app->m_scene->GetCurrentSelection())
+            {
+              if (cam->GetType() == EntityType::Entity_Camera)
+              {
+                if (EditorViewport* vp = g_app->GetActiveViewport())
+                {
+                  vp->AttachCamera(cam->m_id);
+                  noCamera = false;
+                }
+              }
+            }
+            
+            if (noCamera)
+            {
+              g_app->m_statusMsg = "Operation Failed !";
+              g_app->GetConsole()->AddLog("No camera selected.\nSelect a camera from the scene.", ConsoleWindow::LogType::Error);
+            }
+          }
+          else
+          {
+            if (EditorViewport* vp = g_app->GetActiveViewport())
+            {
+              vp->AttachCamera(NULL_HANDLE);
+            }
+
+            if (view != "free")
+            {
+              m_owner->m_cameraAlignment = 0; // Rollback to free.
+              String cmd = "SetCameraTransform --v \"" + m_owner->m_name + "\" " + view;
+              g_app->GetConsole()->ExecCommand(cmd);
+            }
           }
         }
         UI::HelpMarker(LOC + m_owner->m_name, "Camera Orientation\n");

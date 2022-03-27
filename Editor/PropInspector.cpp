@@ -427,7 +427,7 @@ namespace ToolKit
                 addInAction = false;
                 break;
               case 5:
-                m_entity->m_customData.m_variants.push_back(Vec3());
+                m_entity->m_customData.m_variants.push_back(ZERO);
                 addInAction = false;
                 break;
               case 6:

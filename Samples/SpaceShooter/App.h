@@ -96,7 +96,7 @@ public:
   {
     glm::mat4 view = m_cam.GetViewMatrix();
     glm::mat4 project = m_cam.GetData().projection;
-    Vec3 screenPos = glm::project(Vec3(), view * model, project, glm::vec4(0.0f, 0.0f, m_windowWidth, m_windowHeight));
+    Vec3 screenPos = glm::project(ZERO, view * model, project, glm::vec4(0.0f, 0.0f, m_windowWidth, m_windowHeight));
     return glm::ivec2(screenPos.x, screenPos.y);
   }
 
@@ -376,7 +376,7 @@ public:
     m_powerUpManager.m_onGoingPowerUps.clear();
 
     m_score = 0;
-    m_spaceShip->m_node->SetTranslation(Vec3());
+    m_spaceShip->m_node->SetTranslation(ZERO);
   }
 
   Camera m_cam;

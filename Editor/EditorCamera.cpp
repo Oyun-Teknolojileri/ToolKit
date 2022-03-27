@@ -67,7 +67,7 @@ namespace ToolKit
       };
 
       MeshComponentPtr camMeshComp = GetComponent<MeshComponent>();
-      LineBatch frusta(lines, Vec3(), DrawType::Line);
+      LineBatch frusta(lines, ZERO, DrawType::Line);
       camMeshComp->m_mesh = frusta.GetComponent<MeshComponent>()->m_mesh;
 
       // Triangle part.
@@ -82,8 +82,8 @@ namespace ToolKit
       subMesh->m_vertexCount = (uint)vertices.size();
       subMesh->m_clientSideVertices = vertices;
       subMesh->m_material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-      subMesh->m_material->m_color = Vec3();
-      subMesh->m_material->m_color = Vec3();
+      subMesh->m_material->m_color = ZERO;
+      subMesh->m_material->m_color = ZERO;
       subMesh->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
       subMesh->ConstructFaces();
 

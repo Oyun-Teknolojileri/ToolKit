@@ -297,7 +297,7 @@ namespace ToolKit
       WriteAttr(node, doc, "height", std::to_string(m_height));
       WriteAttr(node, doc, "alignment", std::to_string((int)m_cameraAlignment));
       WriteAttr(node, doc, "lock", std::to_string((int)m_orbitLock));
-      m_camera->Serialize(doc, node);
+      GetCamera()->Serialize(doc, node);
 
       XmlNode* wnd = parent->last_node();
       wnd->append_node(node);
@@ -313,7 +313,7 @@ namespace ToolKit
         ReadAttr(node, "height", m_height);
         ReadAttr(node, "alignment", m_cameraAlignment);
         ReadAttr(node, "lock", m_orbitLock);
-        m_camera = new Camera(node->first_node("E"));
+        SetCamera(new Camera(node->first_node("E")));
       }
     }
 
@@ -330,9 +330,11 @@ namespace ToolKit
         return;
       }
 
+      Camera* cam = GetCamera();
+
       // Adjust scene lights.
       app->m_lightMaster->OrphanSelf();
-      m_camera->m_node->AddChild(app->m_lightMaster);
+      cam->m_node->AddChild(app->m_lightMaster);
 
       // Render entities.
       app->m_renderer->SetRenderTarget(m_viewportImage);
@@ -345,13 +347,13 @@ namespace ToolKit
           if (ntt->GetType() == EntityType::Entity_Billboard)
           {
             Billboard* billboard = static_cast<Billboard*> (ntt);
-            billboard->LookAt(m_camera, m_zoom);
+            billboard->LookAt(cam, m_zoom);
           }
 
           app->m_renderer->Render
           (
             ntt,
-            m_camera,
+            cam,
             app->m_sceneLights
           );
         }
@@ -360,13 +362,13 @@ namespace ToolKit
       app->RenderSelected(this);
 
       // Render fixed scene objects.
-      app->m_renderer->Render(app->m_grid, m_camera);
+      app->m_renderer->Render(app->m_grid, cam);
 
-      app->m_origin->LookAt(m_camera, m_zoom);
-      app->m_renderer->Render(app->m_origin, m_camera);
+      app->m_origin->LookAt(cam, m_zoom);
+      app->m_renderer->Render(app->m_origin, cam);
 
-      app->m_cursor->LookAt(m_camera, m_zoom);
-      app->m_renderer->Render(app->m_cursor, m_camera);
+      app->m_cursor->LookAt(cam, m_zoom);
+      app->m_renderer->Render(app->m_cursor, cam);
 
       // Render gizmo.
       app->RenderGizmo(this, app->m_gizmo);
@@ -378,9 +380,27 @@ namespace ToolKit
       max = m_wndPos + m_wndContentAreaSize;
     }
 
+    Camera* EditorViewport::GetCamera() const
+    {
+      Camera* cam = static_cast<Camera*> (g_app->m_scene->GetEntity(m_attachedCamera));
+      return cam ? cam : Viewport::GetCamera();
+    }
+
+    void EditorViewport::SetCamera(Camera* cam)
+    {
+      Viewport::SetCamera(cam);
+      m_attachedCamera = NULL_HANDLE;
+    }
+
+    void EditorViewport::AttachCamera(ULongID camId)
+    {
+      m_attachedCamera = camId;
+    }
+
     void EditorViewport::FpsNavigationMode(float deltaTime)
     {
-      if (m_camera && !m_camera->IsOrtographic())
+      Camera* cam = GetCamera();
+      if (cam && !cam->IsOrtographic())
       {
         // Mouse is right clicked
         if (ImGui::IsMouseDown(ImGuiMouseButton_Right))
@@ -401,8 +421,8 @@ namespace ToolKit
           SDL_WarpMouseGlobal(m_mousePosBegin.x, m_mousePosBegin.y);
           // End of relative mouse hack.
 
-          m_camera->Pitch(-glm::radians(delta.y * g_app->m_mouseSensitivity));
-          m_camera->RotateOnUpVector(-glm::radians(delta.x * g_app->m_mouseSensitivity));
+          cam->Pitch(-glm::radians(delta.y * g_app->m_mouseSensitivity));
+          cam->RotateOnUpVector(-glm::radians(delta.x * g_app->m_mouseSensitivity));
 
           Vec3 dir, up, right;
           dir = -Z_AXIS;
@@ -449,7 +469,7 @@ namespace ToolKit
             move = normalize(move);
           }
 
-          m_camera->Translate(move * displace);
+          cam->Translate(move * displace);
         }
         else
         {
@@ -463,7 +483,8 @@ namespace ToolKit
 
     void EditorViewport::OrbitPanMod(float deltaTime)
     {
-      if (m_camera)
+      Camera* cam = GetCamera();
+      if (cam)
       {
         // Adjust zoom always.
         if (m_mouseOverContentArea)
@@ -478,7 +499,7 @@ namespace ToolKit
         static Vec3 orbitPnt;
         static bool hitFound = false;
         static float dist = 0.0f;
-        Camera::CamData dat = m_camera->GetData();
+        Camera::CamData dat = cam->GetData();
         if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
         {
           // Figure out orbiting point.
@@ -516,8 +537,8 @@ namespace ToolKit
           ImGuiIO& io = ImGui::GetIO();
           float x = io.MouseDelta.x;
           float y = io.MouseDelta.y;
-          Vec3 r = m_camera->GetRight();
-          Vec3 u = m_camera->GetUp();
+          Vec3 r = cam->GetRight();
+          Vec3 u = cam->GetUp();
 
           if (io.KeyShift || m_orbitLock)
           {
@@ -533,13 +554,13 @@ namespace ToolKit
 
             // Thales ! Reflect imageplane displacement to world space.
             Vec3 deltaOnWorld = deltaOnImagePlane * dist / dat.nearDist;
-            if (m_camera->IsOrtographic())
+            if (cam->IsOrtographic())
             {
               deltaOnWorld = deltaOnImagePlane;
             }
 
             Vec3 displace = r * -deltaOnWorld.x + u * deltaOnWorld.y;
-            m_camera->m_node->Translate(displace, TransformationSpace::TS_WORLD);
+            cam->m_node->Translate(displace, TransformationSpace::TS_WORLD);
           }
           else
           {
@@ -559,14 +580,14 @@ namespace ToolKit
               }
             }
 
-            Mat4 camTs = m_camera->m_node->GetTransform(TransformationSpace::TS_WORLD);
+            Mat4 camTs = cam->m_node->GetTransform(TransformationSpace::TS_WORLD);
             Mat4 ts = glm::translate(Mat4(), orbitPnt);
             Mat4 its = glm::translate(Mat4(), -orbitPnt);
             Quaternion qx = glm::angleAxis(-glm::radians(y * g_app->m_mouseSensitivity), r);
             Quaternion qy = glm::angleAxis(-glm::radians(x * g_app->m_mouseSensitivity), Y_AXIS);
 
             camTs = ts * glm::toMat4(qy * qx) * its * camTs;
-            m_camera->m_node->SetTransform(camTs, TransformationSpace::TS_WORLD);
+            cam->m_node->SetTransform(camTs, TransformationSpace::TS_WORLD);
             m_cameraAlignment = 0;
           }
         }
@@ -581,14 +602,15 @@ namespace ToolKit
 
     void EditorViewport::AdjustZoom(float delta)
     {
-      m_camera->Translate(Vec3(0.0f, 0.0f, -delta));
-      if (m_camera->IsOrtographic())
+      Camera* cam = GetCamera();
+      cam->Translate(Vec3(0.0f, 0.0f, -delta));
+      if (cam->IsOrtographic())
       {
         // Magic zoom.
-        Camera::CamData dat = m_camera->GetData();
-        float dist = glm::distance(Vec3(), dat.pos);
+        Camera::CamData dat = cam->GetData();
+        float dist = glm::distance(ZERO, dat.pos);
         m_zoom = dist / 600.0f;
-        m_camera->SetLens
+        cam->SetLens
         (
           -m_zoom * m_width * 0.5f,
           m_zoom * m_width * 0.5f,

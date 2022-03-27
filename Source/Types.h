@@ -112,6 +112,7 @@ namespace ToolKit
   typedef std::function<void(class Event*, class Entity*)> SurfaceEventCallback;
 
   // Math Vector declerations.
+  static const Vec3 ZERO = Vec3(0.0f);
   static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
   static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);
   static const Vec3 Z_AXIS = Vec3(0.0f, 0.0f, 1.0f);
