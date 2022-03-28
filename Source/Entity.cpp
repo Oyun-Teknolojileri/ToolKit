@@ -95,7 +95,7 @@ namespace ToolKit
     return other;
   }
 
-  Entity* Entity::GetInstance() const
+  Entity* Entity::Instantiate() const
   {
     EntityType t = GetType();
     Entity* e = CreateByType(t);

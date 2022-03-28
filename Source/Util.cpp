@@ -798,7 +798,7 @@ namespace ToolKit
 
   Entity* DeepInstantiate(Entity* root, EntityRawPtrArray& instances)
   {
-    Entity* cpy = root->GetInstance();
+    Entity* cpy = root->Instantiate();
     instances.push_back(cpy);
 
     for (Node* node : root->m_node->m_children)
