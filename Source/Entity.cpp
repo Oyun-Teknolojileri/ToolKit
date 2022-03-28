@@ -108,18 +108,17 @@ namespace ToolKit
     return other;
   }
 
-  void Entity::WeakCopy(Entity* copyTo) const
+  void Entity::WeakCopy(Entity* other) const
   {
-    assert(copyTo->GetType() == GetType());
-    SafeDel(copyTo->m_node);
-    copyTo->m_node = m_node->Copy();
-    copyTo->m_node->m_entity = copyTo;
-    copyTo->m_name = m_name;
-    copyTo->m_tag = m_tag;
-    copyTo->m_visible = m_visible;
-    copyTo->m_customData = m_customData;
-    copyTo->m_components.clear();
-    copyTo->m_components = m_components;
+    assert(other->GetType() == GetType());
+    SafeDel(other->m_node);
+    other->m_node = m_node->Copy();
+    other->m_node->m_entity = other;
+    other->m_name = m_name;
+    other->m_tag = m_tag;
+    other->m_visible = m_visible;
+    other->m_customData = m_customData;
+    other->m_components = m_components;
   }
 
   Entity* Entity::CreateByType(EntityType t)

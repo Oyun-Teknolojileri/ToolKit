@@ -86,7 +86,7 @@ namespace ToolKit
     virtual Entity* InstantiateTo(Entity* other) const;
 
   private:
-    void WeakCopy(Entity* copyTo) const;
+    void WeakCopy(Entity* other) const;
 
   public:
     Node* m_node;
