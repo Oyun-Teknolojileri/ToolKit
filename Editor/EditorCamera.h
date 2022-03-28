@@ -13,6 +13,7 @@ namespace ToolKit
     {
     public:
       EditorCamera();
+      EditorCamera(const EditorCamera* cam);
       virtual ~EditorCamera();
       virtual bool IsDrawable() const override;
 

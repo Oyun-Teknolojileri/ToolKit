@@ -81,7 +81,7 @@ namespace ToolKit
 
     ComponentPtr GetComponent(ULongID id) const;
 
-  //protected:
+  protected:
     virtual Entity* CopyTo(Entity* other) const;
     virtual Entity* InstantiateTo(Entity* other) const;
 

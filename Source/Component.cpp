@@ -42,7 +42,7 @@ namespace ToolKit
 
   ComponentPtr MeshComponent::Copy()
   {
-    MeshComponentPtr mc;
+    MeshComponentPtr mc = std::make_shared<MeshComponent>();
 
     // If expensive copies needed, do it explicitly.
     mc->m_mesh = m_mesh;

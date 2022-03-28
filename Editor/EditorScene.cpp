@@ -39,10 +39,11 @@ namespace ToolKit
         // Replace cameras with EditorCamera.
         if (ntt->GetType() == EntityType::Entity_Camera)
         {
-          EditorCamera* cam = new EditorCamera();
-          ntt->CopyTo(cam);
-          SafeDel(ntt);
+          // Cheating here just to copy the Camera entity into EditorCamera.
+          EditorCamera* upCasted = static_cast<EditorCamera*> (ntt);
+          EditorCamera* cam = new EditorCamera(upCasted);
           m_entities[i] = cam;
+          SafeDel(ntt);
         }
       }
     }

@@ -10,14 +10,17 @@ namespace ToolKit
 
     EditorCamera::EditorCamera()
     {
-      MeshComponent* meshCom = new MeshComponent();
-      AddComponent(meshCom);
+      AddComponent(new MeshComponent());
       GenerateFrustum();
+    }
+
+    EditorCamera::EditorCamera(const EditorCamera* cam)
+    {
+      cam->CopyTo(this);
     }
 
     EditorCamera::~EditorCamera()
     {
-
     }
 
     bool EditorCamera::IsDrawable() const
