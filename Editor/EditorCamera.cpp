@@ -30,10 +30,10 @@ namespace ToolKit
       // Line frustum.
       Vec3Array corners =
       {
-        Vec3(-0.5f, 0.3f, 1.6f),
-        Vec3(0.5f, 0.3f, 1.6f),
-        Vec3(0.5f, -0.3f, 1.6f),
-        Vec3(-0.5f, -0.3f, 1.6f),
+        Vec3(-0.5f, 0.3f, -1.6f),
+        Vec3(0.5f, 0.3f, -1.6f),
+        Vec3(0.5f, -0.3f, -1.6f),
+        Vec3(-0.5f, -0.3f, -1.6f),
       };
 
       // Below is a tricky frustum construction.
@@ -74,9 +74,9 @@ namespace ToolKit
       VertexArray vertices;
       vertices.resize(3);
 
-      vertices[0].pos = Vec3(-0.3f, 0.35f, 1.6f);
-      vertices[1].pos = Vec3(0.3f, 0.35f, 1.6f);
-      vertices[2].pos = Vec3(0.0f, 0.65f, 1.6f);
+      vertices[0].pos = Vec3(-0.3f, 0.35f, -1.6f);
+      vertices[1].pos = Vec3(0.3f, 0.35f, -1.6f);
+      vertices[2].pos = Vec3(0.0f, 0.65f, -1.6f);
 
       MeshPtr subMesh = std::make_shared<Mesh>();
       subMesh->m_vertexCount = (uint)vertices.size();
