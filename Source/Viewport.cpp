@@ -18,6 +18,7 @@ namespace ToolKit
 
   void ViewportBase::SetCamera(Camera* cam)
   {
+    SafeDel(m_camera);
     m_camera = cam;
   }
 
