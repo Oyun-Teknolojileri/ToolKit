@@ -238,9 +238,9 @@ namespace ToolKit
     }
   }
 
-  Entity* Camera::GetCopy(Entity* copyTo) const
+  Entity* Camera::CopyTo(Entity* copyTo) const
   {
-    Directional::GetCopy(copyTo);
+    Directional::CopyTo(copyTo);
 
     Camera* cpy = static_cast<Camera*> (copyTo);
     cpy->m_fov = m_fov;

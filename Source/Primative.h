@@ -25,8 +25,8 @@ namespace ToolKit
     virtual EntityType GetType() const override;
 
   protected:
-    virtual Entity* GetCopy(Entity* copyTo) const override;
-    virtual Entity* GetInstance(Entity* copyTo) const override;
+    virtual Entity* CopyTo(Entity* copyTo) const override;
+    virtual Entity* InstantiateTo(Entity* copyTo) const override;
 
   public:
     Settings m_settings;
@@ -58,8 +58,8 @@ namespace ToolKit
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   protected:
-    virtual Entity* GetCopy(Entity* copyTo) const override;
-    virtual Entity* GetInstance(Entity* copyTo) const override;
+    virtual Entity* CopyTo(Entity* copyTo) const override;
+    virtual Entity* InstantiateTo(Entity* copyTo) const override;
 
   private:
     void Generate();
@@ -73,8 +73,8 @@ namespace ToolKit
     virtual EntityType GetType() const override;
 
   protected:
-    virtual Entity* GetCopy(Entity* copyTo) const override;
-    virtual Entity* GetInstance(Entity* copyTo) const override;
+    virtual Entity* CopyTo(Entity* copyTo) const override;
+    virtual Entity* InstantiateTo(Entity* copyTo) const override;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
@@ -107,8 +107,8 @@ namespace ToolKit
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   protected:
-    virtual Entity* GetCopy(Entity* copyTo) const override;
-    virtual Entity* GetInstance(Entity* copyTo) const override;
+    virtual Entity* CopyTo(Entity* copyTo) const override;
+    virtual Entity* InstantiateTo(Entity* copyTo) const override;
 
   private:
     void Generate();
@@ -145,8 +145,8 @@ namespace ToolKit
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   protected:
-    virtual Entity* GetCopy(Entity* copyTo) const override;
-    virtual Entity* GetInstance(Entity* copyTo) const override;
+    virtual Entity* CopyTo(Entity* copyTo) const override;
+    virtual Entity* InstantiateTo(Entity* copyTo) const override;
 
   private:
     void Generate();
@@ -160,8 +160,8 @@ namespace ToolKit
     virtual EntityType GetType() const override;
 
   protected:
-    virtual Entity* GetCopy(Entity* copyTo) const override;
-    virtual Entity* GetInstance(Entity* copyTo) const override;
+    virtual Entity* CopyTo(Entity* copyTo) const override;
+    virtual Entity* InstantiateTo(Entity* copyTo) const override;
 
   private:
     void Generate();
@@ -180,7 +180,7 @@ namespace ToolKit
     void Generate(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth = 1.0f);
 
   protected:
-    virtual Entity* GetCopy(Entity* copyTo) const override;
+    virtual Entity* CopyTo(Entity* copyTo) const override;
   };
 
 }

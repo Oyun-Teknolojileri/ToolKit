@@ -30,7 +30,7 @@ namespace ToolKit
     void UpdateGeometry(bool byTexture); // To reflect the size & pivot changes, this function regenerates the geometry.
 
   protected:
-    virtual Entity* GetCopy(Entity* copyTo) const override;
+    virtual Entity* CopyTo(Entity* copyTo) const override;
 
   private:
     void CreateQuat();

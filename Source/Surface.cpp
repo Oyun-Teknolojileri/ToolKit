@@ -115,9 +115,9 @@ namespace ToolKit
     mesh->Init();
   }
 
-  Entity* Surface::GetCopy(Entity* copyTo) const
+  Entity* Surface::CopyTo(Entity* copyTo) const
   {
-    Drawable::GetCopy(copyTo);
+    Drawable::CopyTo(copyTo);
     Surface* cpy = static_cast<Surface*> (copyTo);
     cpy->m_size = m_size;
     cpy->m_pivotOffset = m_pivotOffset;

@@ -79,33 +79,33 @@ namespace ToolKit
   {
     EntityType t = GetType();
     Entity* e = CreateByType(t);
-    return GetCopy(e);
+    return CopyTo(e);
   }
 
-  Entity* Entity::GetCopy(Entity* copyTo) const
+  Entity* Entity::CopyTo(Entity* other) const
   {
-    WeakCopy(copyTo);
+    WeakCopy(other);
 
-    copyTo->m_components.clear();
+    other->m_components.clear();
     for (const ComponentPtr& com : m_components)
     {
-      copyTo->m_components.push_back(com->Copy());
+      other->m_components.push_back(com->Copy());
     }
 
-    return copyTo;
+    return other;
   }
 
   Entity* Entity::GetInstance() const
   {
     EntityType t = GetType();
     Entity* e = CreateByType(t);
-    return GetInstance(e);
+    return InstantiateTo(e);
   }
 
-  Entity* Entity::GetInstance(Entity* copyTo) const
+  Entity* Entity::InstantiateTo(Entity* other) const
   {
-    WeakCopy(copyTo);
-    return copyTo;
+    WeakCopy(other);
+    return other;
   }
 
   void Entity::WeakCopy(Entity* copyTo) const

@@ -57,14 +57,14 @@ namespace ToolKit
     return bb;
   }
 
-  Entity* Drawable::GetCopy(Entity* copyTo) const
+  Entity* Drawable::CopyTo(Entity* copyTo) const
   {
-    return Entity::GetCopy(copyTo);
+    return Entity::CopyTo(copyTo);
   }
 
-  Entity* Drawable::GetInstance(Entity* copyTo) const
+  Entity* Drawable::InstantiateTo(Entity* copyTo) const
   {
-    return Entity::GetInstance(copyTo);
+    return Entity::InstantiateTo(copyTo);
   }
 
   void Drawable::Serialize(XmlDocument* doc, XmlNode* parent) const

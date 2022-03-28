@@ -61,18 +61,18 @@ namespace ToolKit
     }
   }
 
-  Entity* Billboard::GetCopy(Entity* copyTo) const
+  Entity* Billboard::CopyTo(Entity* copyTo) const
   {
-    Drawable::GetCopy(copyTo);
+    Drawable::CopyTo(copyTo);
     Billboard* ntt = static_cast<Billboard*> (copyTo);
     ntt->m_settings = m_settings;
     ntt->m_worldLocation = m_worldLocation;
     return ntt;
   }
 
-  Entity* Billboard::GetInstance(Entity* copyTo) const
+  Entity* Billboard::InstantiateTo(Entity* copyTo) const
   {
-    Drawable::GetInstance(copyTo);
+    Drawable::InstantiateTo(copyTo);
     Billboard* instance = static_cast<Billboard*> (copyTo);
     instance->m_settings = m_settings;
     instance->m_worldLocation = m_worldLocation;
@@ -98,9 +98,9 @@ namespace ToolKit
     Generate();
   }
 
-  Entity* Cube::GetCopy(Entity* copyTo) const
+  Entity* Cube::CopyTo(Entity* copyTo) const
   {
-    return Drawable::GetCopy(copyTo);
+    return Drawable::CopyTo(copyTo);
   }
 
   EntityType Cube::GetType() const
@@ -121,9 +121,9 @@ namespace ToolKit
     Generate();
   }
 
-  Entity* Cube::GetInstance(Entity* copyTo) const
+  Entity* Cube::InstantiateTo(Entity* copyTo) const
   {
-    Drawable::GetInstance(copyTo);
+    Drawable::InstantiateTo(copyTo);
     Cube* instance = static_cast<Cube*> (copyTo);
     instance->m_params = m_params;
 
@@ -294,9 +294,9 @@ namespace ToolKit
     }
   }
 
-  Entity* Quad::GetCopy(Entity* copyTo) const
+  Entity* Quad::CopyTo(Entity* copyTo) const
   {
-    return Drawable::GetCopy(copyTo);
+    return Drawable::CopyTo(copyTo);
   }
 
   EntityType Quad::GetType() const
@@ -304,9 +304,9 @@ namespace ToolKit
     return EntityType::Entity_Quad;
   }
 
-  Entity* Quad::GetInstance(Entity* copyTo) const
+  Entity* Quad::InstantiateTo(Entity* copyTo) const
   {
-    Drawable::GetInstance(copyTo);
+    Drawable::InstantiateTo(copyTo);
     Quad* instance = static_cast<Quad*> (copyTo);
 
     return instance;
@@ -374,9 +374,9 @@ namespace ToolKit
     Generate();
   }
 
-  Entity* Sphere::GetCopy(Entity* copyTo) const
+  Entity* Sphere::CopyTo(Entity* copyTo) const
   {
-    Drawable::GetCopy(copyTo);
+    Drawable::CopyTo(copyTo);
     Sphere* ntt = static_cast<Sphere*> (copyTo);
     ntt->m_params = m_params;
     return ntt;
@@ -462,9 +462,9 @@ namespace ToolKit
     Generate();
   }
 
-  Entity* Sphere::GetInstance(Entity* copyTo) const
+  Entity* Sphere::InstantiateTo(Entity* copyTo) const
   {
-    Drawable::GetInstance(copyTo);
+    Drawable::InstantiateTo(copyTo);
     Sphere* instance = static_cast<Sphere*> (copyTo);
     instance->m_params = m_params;
     return instance;
@@ -583,9 +583,9 @@ namespace ToolKit
     mesh->ConstructFaces();
   }
 
-  Entity* Cone::GetCopy(Entity* copyTo) const
+  Entity* Cone::CopyTo(Entity* copyTo) const
   {
-    Drawable::GetCopy(copyTo);
+    Drawable::CopyTo(copyTo);
     Cone* ntt = static_cast<Cone*> (copyTo);
     ntt->m_params = m_params;
     return ntt;
@@ -609,9 +609,9 @@ namespace ToolKit
     Generate();
   }
 
-  Entity* Cone::GetInstance(Entity* copyTo) const
+  Entity* Cone::InstantiateTo(Entity* copyTo) const
   {
-    Drawable::GetInstance(copyTo);
+    Drawable::InstantiateTo(copyTo);
     Cone* instance = static_cast<Cone*> (copyTo);
     instance->m_params = m_params;
     return instance;
@@ -633,18 +633,18 @@ namespace ToolKit
     Generate();
   }
 
-  Entity* Arrow2d::GetCopy(Entity* copyTo) const
+  Entity* Arrow2d::CopyTo(Entity* copyTo) const
   {
-    Drawable::GetCopy(copyTo);
+    Drawable::CopyTo(copyTo);
     Arrow2d* ntt = static_cast<Arrow2d*> (copyTo);
     ntt->m_label = m_label;
 
     return ntt;
   }
 
-  Entity* Arrow2d::GetInstance(Entity* copyTo) const
+  Entity* Arrow2d::InstantiateTo(Entity* copyTo) const
   {
-    Drawable::GetInstance(copyTo);
+    Drawable::InstantiateTo(copyTo);
     Arrow2d* instance = static_cast<Arrow2d*> (copyTo);
     instance->m_label = m_label;
     return instance;
@@ -712,9 +712,9 @@ namespace ToolKit
   {
   }
 
-  Entity* LineBatch::GetCopy(Entity* copyTo) const
+  Entity* LineBatch::CopyTo(Entity* copyTo) const
   {
-    return Drawable::GetCopy(copyTo);
+    return Drawable::CopyTo(copyTo);
   }
 
   EntityType LineBatch::GetType() const

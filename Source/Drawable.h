@@ -22,8 +22,8 @@ namespace ToolKit
     void SetMesh(const MeshPtr& mesh);
 
   protected:
-    virtual Entity* GetCopy(Entity* copyTo) const override;
-    virtual Entity* GetInstance(Entity* copyTo) const override;
+    virtual Entity* CopyTo(Entity* copyTo) const override;
+    virtual Entity* InstantiateTo(Entity* copyTo) const override;
   };
 
 }

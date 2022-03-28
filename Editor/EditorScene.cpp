@@ -40,7 +40,7 @@ namespace ToolKit
         if (ntt->GetType() == EntityType::Entity_Camera)
         {
           EditorCamera* cam = new EditorCamera();
-          ntt->GetCopy(cam);
+          ntt->CopyTo(cam);
           SafeDel(ntt);
           m_entities[i] = cam;
         }

@@ -62,7 +62,7 @@ namespace ToolKit
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   protected:
-    virtual Entity* GetCopy(Entity* copyTo) const;
+    virtual Entity* CopyTo(Entity* copyTo) const;
 
   private:
     float m_fov = 1.0f;

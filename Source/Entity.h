@@ -82,8 +82,8 @@ namespace ToolKit
     ComponentPtr GetComponent(ULongID id) const;
 
   //protected:
-    virtual Entity* GetCopy(Entity* copyTo) const;
-    virtual Entity* GetInstance(Entity* copyTo) const;
+    virtual Entity* CopyTo(Entity* other) const;
+    virtual Entity* InstantiateTo(Entity* other) const;
 
   private:
     void WeakCopy(Entity* copyTo) const;
