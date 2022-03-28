@@ -10,6 +10,27 @@
 
 namespace ToolKit
 {
+
+  Camera* ViewportBase::GetCamera() const
+  {
+    return m_camera;
+  }
+
+  void ViewportBase::SetCamera(Camera* cam)
+  {
+    m_camera = cam;
+  }
+
+  ViewportBase::ViewportBase()
+  {
+    m_camera = new Camera();
+  }
+
+  ViewportBase::~ViewportBase()
+  {
+    SafeDel(m_camera);
+  }
+
   Viewport::Viewport()
   {
   }
@@ -17,15 +38,13 @@ namespace ToolKit
   Viewport::Viewport(float width, float height)
     : m_width(width), m_height(height)
   {
-    m_camera = new Camera();
-    m_camera->SetLens(glm::quarter_pi<float>(), width, height);
+    GetCamera()->SetLens(glm::quarter_pi<float>(), width, height);
     m_viewportImage = new RenderTarget((uint)width, (uint)height);
     m_viewportImage->Init();
   }
 
   Viewport::~Viewport()
   {
-    SafeDel(m_camera);
     SafeDel(m_viewportImage);
   }
 
@@ -33,13 +52,15 @@ namespace ToolKit
   {
     m_width = width;
     m_height = height;
-    if (m_camera->IsOrtographic())
+
+    Camera* cam = GetCamera();
+    if (cam->IsOrtographic())
     {
-      m_camera->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
+      cam->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
     }
     else
     {
-      m_camera->SetLens(m_camera->GetData().fov, width, height);
+      cam->SetLens(cam->GetData().fov, width, height);
     }
 
     m_viewportImage->UnInit();
@@ -53,10 +74,11 @@ namespace ToolKit
     m_zoom -= delta;
     m_zoom = glm::max(m_zoom, 0.01f);
 
-    m_camera->Translate(Vec3(0.0f, 0.0f, -delta));
-    if (m_camera->IsOrtographic())
+    Camera* cam = GetCamera();
+    cam->Translate(Vec3(0.0f, 0.0f, -delta));
+    if (cam->IsOrtographic())
     {
-      m_camera->SetLens
+      cam->SetLens
       (
         -m_zoom * m_width * 0.5f,
         m_zoom * m_width * 0.5f,
@@ -79,13 +101,15 @@ namespace ToolKit
 
     Ray ray;
     ray.position = TransformViewportToWorldSpace(mcInVs);
-    if (m_camera->IsOrtographic())
+
+    Camera* cam = GetCamera();
+    if (cam->IsOrtographic())
     {
-      ray.direction = m_camera->GetDir();
+      ray.direction = cam->GetDir();
     }
     else
     {
-      ray.direction = glm::normalize(ray.position - m_camera->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+      ray.direction = glm::normalize(ray.position - cam->m_node->GetTranslation(TransformationSpace::TS_WORLD));
     }
 
     return ray;
@@ -116,8 +140,9 @@ namespace ToolKit
   {
     Vec3 screenPoint = Vec3(pnt, 0.0f);
 
-    Mat4 view = m_camera->GetViewMatrix();
-    Mat4 project = m_camera->GetData().projection;
+    Camera* cam = GetCamera();
+    Mat4 view = cam->GetViewMatrix();
+    Mat4 project = cam->GetProjectionMatrix();
 
     return glm::unProject(screenPoint, view, project, Vec4(0.0f, 0.0f, m_width, m_height));
   }
@@ -131,22 +156,12 @@ namespace ToolKit
 
   bool Viewport::IsOrthographic()
   {
-    if (m_camera)
+    if (Camera* cam = GetCamera())
     {
-      return m_camera->IsOrtographic();
+      return cam->IsOrtographic();
     }
 
     return false;
-  }
-
-  Camera* Viewport::GetCamera() const
-  {
-    return m_camera;
-  }
-
-  void Viewport::SetCamera(Camera* cam)
-  {
-    m_camera = cam;
   }
 
 }

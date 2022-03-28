@@ -8,7 +8,19 @@ namespace ToolKit
   class Camera;
   class RenderTarget;
 
-  class TK_API Viewport
+  class TK_API ViewportBase
+  {
+  public:
+    ViewportBase();
+    virtual ~ViewportBase();
+    virtual Camera* GetCamera() const;
+    virtual void SetCamera(Camera* cam);
+
+  private:
+    Camera* m_camera = nullptr;
+  };
+
+  class TK_API Viewport : public ViewportBase
   {
   public:
     Viewport();
@@ -34,8 +46,6 @@ namespace ToolKit
     virtual Vec3 TransformViewportToWorldSpace(const Vec2& pnt);
     virtual Vec2 TransformScreenToViewportSpace(const Vec2& pnt);
     bool IsOrthographic();
-    virtual Camera* GetCamera() const;
-    virtual void SetCamera(Camera* cam);
 
   protected:
     // Internal window handling.
@@ -56,9 +66,6 @@ namespace ToolKit
     Vec2 m_wndContentAreaSize;
     IVec2 m_mousePosBegin;
     IVec2 m_lastMousePosRelContentArea;
-
-  private:
-    Camera* m_camera = nullptr;
   };
 
 }
