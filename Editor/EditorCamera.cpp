@@ -17,6 +17,11 @@ namespace ToolKit
     EditorCamera::EditorCamera(const EditorCamera* cam)
     {
       cam->CopyTo(this);
+
+      // Recreate frustum.
+      m_components.clear();
+      AddComponent(new MeshComponent());
+      GenerateFrustum();
     }
 
     EditorCamera::~EditorCamera()
