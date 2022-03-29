@@ -456,7 +456,7 @@ namespace ToolKit
         vp->GetCamera()->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
         vp->m_zoom = 0.02f;
         vp->GetCamera()->Pitch(glm::radians(-90.0f));
-        vp->m_cameraAlignment = 1;
+        vp->m_cameraAlignment = CameraAlignment::Top;
         vp->m_orbitLock = true;
         m_windows.push_back(vp);
 

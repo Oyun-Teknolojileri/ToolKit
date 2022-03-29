@@ -12,7 +12,14 @@ namespace ToolKit
 
   namespace Editor
   {
-    class App;
+    enum class CameraAlignment
+    {
+      Free,
+      Top,
+      Front,
+      Left,
+      User
+    };
 
     class EditorViewport : public Viewport, public Window
     {
@@ -34,7 +41,7 @@ namespace ToolKit
       virtual void OnResize(float width, float height) override;
 
       // Editor functions
-      virtual void Render(App* app);
+      virtual void Render(class App* app);
       virtual void GetContentAreaScreenCoordinates(Vec2& min, Vec2& max) const;
       virtual Camera* GetCamera() const override;
       virtual void SetCamera(Camera* cam) override;
@@ -50,7 +57,7 @@ namespace ToolKit
       // Window properties.
       static std::vector<class OverlayUI*> m_overlays;
       bool m_mouseOverOverlay = false;
-      int m_cameraAlignment = 0; // 0: perspective, 1: top, 2: front, 3:left.
+      CameraAlignment m_cameraAlignment = CameraAlignment::Free;
       int m_additionalWindowFlags = 0;
       bool m_orbitLock = false;
 

@@ -311,7 +311,7 @@ namespace ToolKit
       {
         ReadAttr(node, "width", m_width);
         ReadAttr(node, "height", m_height);
-        ReadAttr(node, "alignment", m_cameraAlignment);
+        ReadAttr(node, "alignment", *((int*)&m_cameraAlignment));
         ReadAttr(node, "lock", m_orbitLock);
         SetCamera(new Camera(node->first_node("E")));
       }
@@ -420,6 +420,14 @@ namespace ToolKit
 
           SDL_WarpMouseGlobal(m_mousePosBegin.x, m_mousePosBegin.y);
           // End of relative mouse hack.
+
+          if (!VecAllEqual<IVec2>(delta, glm::zero<IVec2>()))
+          {
+            if (m_cameraAlignment != CameraAlignment::User)
+            {
+              m_cameraAlignment = CameraAlignment::Free;
+            }
+          }
 
           cam->Pitch(-glm::radians(delta.y * g_app->m_mouseSensitivity));
           cam->RotateOnUpVector(-glm::radians(delta.x * g_app->m_mouseSensitivity));
@@ -564,17 +572,17 @@ namespace ToolKit
           }
           else
           {
-            if (m_cameraAlignment != 0)
+            if (m_cameraAlignment != CameraAlignment::Free)
             {
-              if (m_cameraAlignment == 1)
+              if (m_cameraAlignment == CameraAlignment::Top)
               {
                 orbitPnt.y = 0.0f;
               }
-              else if (m_cameraAlignment == 2)
+              else if (m_cameraAlignment == CameraAlignment::Front)
               {
                 orbitPnt.z = 0.0f;
               }
-              else if (m_cameraAlignment == 3)
+              else if (m_cameraAlignment == CameraAlignment::Left)
               {
                 orbitPnt.x = 0.0f;
               }
@@ -588,7 +596,11 @@ namespace ToolKit
 
             camTs = ts * glm::toMat4(qy * qx) * its * camTs;
             cam->m_node->SetTransform(camTs, TransformationSpace::TS_WORLD);
-            m_cameraAlignment = 0;
+
+            if (m_cameraAlignment != CameraAlignment::User)
+            {
+              m_cameraAlignment = CameraAlignment::Free;
+            }
           }
         }
 

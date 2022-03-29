@@ -311,7 +311,8 @@ namespace ToolKit
 
         // Camera alignment combo.
         const char* itemsCam[] = { "Free", "Top", "Front", "Left", "User" };
-        int currentItemCam = m_owner->m_cameraAlignment;
+        int currentItemCam = (int)m_owner->m_cameraAlignment;
+        CameraAlignment rollBack = m_owner->m_cameraAlignment;
         bool change = false;
 
         ImGui::TableSetColumnIndex(4);
@@ -328,7 +329,7 @@ namespace ToolKit
                 change = true;
               }
               currentItemCam = n;
-              m_owner->m_cameraAlignment = currentItemCam;
+              m_owner->m_cameraAlignment = (CameraAlignment)currentItemCam;
             }
 
             if (isSelected)
@@ -343,27 +344,27 @@ namespace ToolKit
         if (change)
         {
           String view;
-          switch (currentItemCam)
+          switch ((CameraAlignment)currentItemCam)
           {
-          case 1:
-            view = "top";
+          case CameraAlignment::Top:
+            view = "Top";
             break;
-          case 2:
-            view = "front";
+          case CameraAlignment::Front:
+            view = "Front";
             break;
-          case 3:
-            view = "left";
+          case CameraAlignment::Left:
+            view = "Left";
             break;
-          case 4:
-            view = "user";
+          case CameraAlignment::User:
+            view = "User";
             break;
-          case 0:
+          case CameraAlignment::Free:
           default:
-            view = "free";
+            view = "Free";
             break;
           }
 
-          if (view == "user")
+          if (view == "User")
           {
             bool noCamera = true;
             if (Entity* cam = g_app->m_scene->GetCurrentSelection())
@@ -380,6 +381,7 @@ namespace ToolKit
             
             if (noCamera)
             {
+              m_owner->m_cameraAlignment = rollBack;
               g_app->m_statusMsg = "Operation Failed !";
               g_app->GetConsole()->AddLog("No camera selected.\nSelect a camera from the scene.", ConsoleWindow::LogType::Error);
             }
@@ -391,9 +393,9 @@ namespace ToolKit
               vp->AttachCamera(NULL_HANDLE);
             }
 
-            if (view != "free")
+            if (view != "Free")
             {
-              m_owner->m_cameraAlignment = 0; // Rollback to free.
+              m_owner->m_cameraAlignment = CameraAlignment::Free;
               String cmd = "SetCameraTransform --v \"" + m_owner->m_name + "\" " + view;
               g_app->GetConsole()->ExecCommand(cmd);
             }

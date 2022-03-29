@@ -240,8 +240,9 @@ namespace ToolKit
             if (viewportTag->second.size() == 2)
             {
               Node* node = c->m_node;
-              if (viewportTag->second[1] == "top")
+              if (viewportTag->second[1] == "Top")
               {
+                vp->m_cameraAlignment = CameraAlignment::Top;
                 Quaternion ws = glm::angleAxis(glm::pi<float>(), -Y_AXIS) * glm::angleAxis(glm::half_pi<float>(), X_AXIS) * glm::angleAxis(glm::pi<float>(), Y_AXIS);
                 node->SetOrientation(ws, TransformationSpace::TS_WORLD);
                 if (c->IsOrtographic())
@@ -250,8 +251,9 @@ namespace ToolKit
                 }
               }
 
-              if (viewportTag->second[1] == "front")
+              if (viewportTag->second[1] == "Front")
               {
+                vp->m_cameraAlignment = CameraAlignment::Front;
                 node->SetOrientation(Quaternion());
                 if (c->IsOrtographic())
                 {
@@ -259,8 +261,9 @@ namespace ToolKit
                 }
               }
 
-              if (viewportTag->second[1] == "left")
+              if (viewportTag->second[1] == "Left")
               {
+                vp->m_cameraAlignment = CameraAlignment::Left;
                 Quaternion ws = glm::angleAxis(glm::half_pi<float>(), -Y_AXIS);
                 node->SetOrientation(ws, TransformationSpace::TS_WORLD);
                 if (c->IsOrtographic())
