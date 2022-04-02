@@ -1028,7 +1028,7 @@ namespace ToolKit
 
       if 
       (
-        io.KeyCtrl &&
+        io.KeyCtrl || io.KeyShift &&
         io.KeysDown[SDL_SCANCODE_D] && 
         !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
         !Exist(mask, SDL_SCANCODE_D)

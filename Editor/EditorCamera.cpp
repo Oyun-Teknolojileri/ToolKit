@@ -33,6 +33,18 @@ namespace ToolKit
       return true;
     }
 
+    Entity* EditorCamera::Copy() const
+    {
+      EditorCamera* cpy = new EditorCamera();
+      return Camera::CopyTo(cpy);
+    }
+
+    Entity* EditorCamera::Instantiate() const
+    {
+      EditorCamera* instance = new EditorCamera();
+      return InstantiateTo(instance);
+    }
+
     void EditorCamera::GenerateFrustum()
     {
       // Line frustum.

@@ -16,6 +16,8 @@ namespace ToolKit
       EditorCamera(const EditorCamera* cam);
       virtual ~EditorCamera();
       virtual bool IsDrawable() const override;
+      virtual Entity* Copy() const override;
+      virtual Entity* Instantiate() const override;
 
     private:
       void GenerateFrustum();
