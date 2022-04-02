@@ -51,6 +51,7 @@ namespace ToolKit
     // Internal window handling.
     virtual void OnResize(float width, float height);
     virtual void AdjustZoom(float delta);
+    virtual void UpdateCameraLens(float width, float height);
 
   public:
     RenderTarget* m_viewportImage = nullptr;

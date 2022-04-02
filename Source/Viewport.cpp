@@ -54,16 +54,8 @@ namespace ToolKit
     m_width = width;
     m_height = height;
 
-    Camera* cam = GetCamera();
-    if (cam->IsOrtographic())
-    {
-      cam->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
-    }
-    else
-    {
-      cam->SetLens(cam->GetData().fov, width, height);
-    }
-
+    UpdateCameraLens(width, height);
+    
     m_viewportImage->UnInit();
     m_viewportImage->m_width = (uint)width;
     m_viewportImage->m_height = (uint)height;
@@ -88,6 +80,19 @@ namespace ToolKit
         0.01f,
         1000.0f
       );
+    }
+  }
+
+  void Viewport::UpdateCameraLens(float width, float height)
+  {
+    Camera* cam = GetCamera();
+    if (cam->IsOrtographic())
+    {
+      cam->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
+    }
+    else
+    {
+      cam->SetLens(cam->GetData().fov, width, height);
     }
   }
 
