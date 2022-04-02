@@ -300,7 +300,7 @@ namespace ToolKit
   void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)
   {
     m_view = cam->GetViewMatrix();
-    m_project = cam->GetData().projection;
+    m_project = cam->GetProjectionMatrix();
     m_model = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
   }
 
