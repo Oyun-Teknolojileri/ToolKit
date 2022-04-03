@@ -69,8 +69,11 @@ namespace ToolKit
     virtual bool CanStore(ResourceType t);
     virtual ResourcePtr CreateLocal(ResourceType type);
     virtual String GetDefaultResource(ResourceType type) override;
+    
+    ScenePtr GetCurrentScene();
+    void SetCurrentScene(const ScenePtr& scene);
 
-  public:
+  private:
     ScenePtr m_currentScene;
   };
 

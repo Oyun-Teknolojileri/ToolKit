@@ -153,7 +153,7 @@ namespace ToolKit
     void Workspace::SetScene(const String& scene)
     {
       m_activeProject.scene = scene;
-      GetSceneManager()->m_currentScene = m_app->m_scene;
+      GetSceneManager()->SetCurrentScene(m_app->m_scene);
     }
 
     void Workspace::RefreshProjects()

@@ -246,7 +246,7 @@ namespace ToolKit
       {
         if (ImGui::Button("SaveAsPrefab"))
         {
-          GetSceneManager()->m_currentScene->SavePrefab(ntt);
+          GetSceneManager()->GetCurrentScene()->SavePrefab(ntt);
           if (FolderWindow* browser = g_app->GetAssetBrowser())
           {
             String folderPath, fullPath = PrefabPath(""); 

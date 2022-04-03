@@ -451,4 +451,15 @@ namespace ToolKit
     return ScenePath("Sample.scene", true);
   }
 
+  ScenePtr SceneManager::GetCurrentScene()
+  {
+    return m_currentScene;
+  }
+
+  void SceneManager::SetCurrentScene(const ScenePtr& scene)
+  {
+    assert(Exist(scene->GetFile()));
+    m_currentScene = scene;
+  }
+
 }
