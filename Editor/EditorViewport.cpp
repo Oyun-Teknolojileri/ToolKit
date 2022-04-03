@@ -393,12 +393,6 @@ namespace ToolKit
       m_attachedCamera = NULL_HANDLE;
     }
 
-    void EditorViewport::AttachCamera(ULongID camId)
-    {
-      m_attachedCamera = camId;
-      UpdateCameraLens(m_width, m_height);
-    }
-
     void EditorViewport::FpsNavigationMode(float deltaTime)
     {
       Camera* cam = GetCamera();

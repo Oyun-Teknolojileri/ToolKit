@@ -46,6 +46,7 @@ namespace ToolKit
     virtual Vec3 TransformViewportToWorldSpace(const Vec2& pnt);
     virtual Vec2 TransformScreenToViewportSpace(const Vec2& pnt);
     bool IsOrthographic();
+    virtual void AttachCamera(ULongID camID); // Attach a camera from the scene.
 
   protected:
     // Internal window handling.
@@ -67,6 +68,9 @@ namespace ToolKit
     Vec2 m_wndContentAreaSize;
     IVec2 m_mousePosBegin;
     IVec2 m_lastMousePosRelContentArea;
+
+  protected:
+    ULongID m_attachedCamera = NULL_HANDLE;
   };
 
 }

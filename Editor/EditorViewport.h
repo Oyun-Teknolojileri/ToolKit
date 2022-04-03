@@ -45,7 +45,6 @@ namespace ToolKit
       virtual void GetContentAreaScreenCoordinates(Vec2& min, Vec2& max) const;
       virtual Camera* GetCamera() const override;
       virtual void SetCamera(Camera* cam) override;
-      void AttachCamera(ULongID camID); // Attach a camera from the scene.
 
     protected:
       // Mods.
@@ -63,9 +62,6 @@ namespace ToolKit
 
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;
-
-    protected:
-      ULongID m_attachedCamera = NULL_HANDLE;
 
     private:
       // States.

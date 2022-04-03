@@ -170,4 +170,10 @@ namespace ToolKit
     return false;
   }
 
+  void Viewport::AttachCamera(ULongID camId)
+  {
+    m_attachedCamera = camId;
+    UpdateCameraLens(m_width, m_height);
+  }
+
 }
