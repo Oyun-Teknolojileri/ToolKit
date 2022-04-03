@@ -88,7 +88,11 @@ namespace ToolKit
       m_sceneLights.push_back(light);
       
       m_workspace.Init();
-      CreateAndSetNewScene("New Scene");
+      String sceneName = "New Scene" + SCENE;
+      EditorScenePtr scene = std::make_shared<EditorScene>(ScenePath(sceneName));
+      scene->m_name = sceneName;
+      scene->m_newScene = true;
+      SetCurrentScene(scene);
 
       ApplyProjectSettings(m_onNewScene);
       if (!CheckFile(m_workspace.GetActiveWorkspace()))

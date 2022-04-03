@@ -458,7 +458,6 @@ namespace ToolKit
 
   void SceneManager::SetCurrentScene(const ScenePtr& scene)
   {
-    assert(Exist(scene->GetFile()));
     m_currentScene = scene;
   }
 
