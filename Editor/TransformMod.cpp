@@ -26,13 +26,14 @@ namespace ToolKit
 
     SignalId StateTransformBase::Update(float deltaTime)
     {
-      if (g_app->m_scene->GetSelectedEntityCount() == 0)
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      if (currScene->GetSelectedEntityCount() == 0)
       {
         g_app->m_gizmo = nullptr;
         return NullSignal;
       }
 
-      Entity* e = g_app->m_scene->GetCurrentSelection();
+      Entity* e = currScene->GetCurrentSelection();
       if (e != nullptr)
       {
         // Get world location as gizmo origin.
@@ -64,7 +65,7 @@ namespace ToolKit
     {
       if (g_app->m_gizmo == nullptr)
       {
-        Entity* e = g_app->m_scene->GetCurrentSelection();
+        Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
         if (e != nullptr)
         {
           g_app->m_gizmo = m_gizmo;
@@ -122,7 +123,7 @@ namespace ToolKit
 
       MakeSureGizmoIsValid();
 
-      Entity* e = g_app->m_scene->GetCurrentSelection();
+      Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
       if (e != nullptr)
       {
         EditorViewport* vp = g_app->GetActiveViewport();
@@ -186,7 +187,7 @@ namespace ToolKit
           }
         }
 
-        Entity* e = g_app->m_scene->GetCurrentSelection();
+        Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
         if (m_gizmo->IsGrabbed(AxisLabel::None) || e == nullptr)
         {
           return StateType::StateBeginPick;
@@ -206,7 +207,7 @@ namespace ToolKit
 
       if (signal == BaseMod::m_leftMouseBtnDragSgnl)
       {
-        Entity* e = g_app->m_scene->GetCurrentSelection();
+        Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
         if (e == nullptr)
         {
           return StateType::Null;
@@ -365,7 +366,8 @@ namespace ToolKit
       StateTransformBase::TransitionIn(prevState);
 
       EntityRawPtrArray entities, selecteds;
-      g_app->m_scene->GetSelectedEntities(selecteds);
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      currScene->GetSelectedEntities(selecteds);
       GetRootEntities(selecteds, entities);
       if (!entities.empty())
       {
@@ -383,7 +385,7 @@ namespace ToolKit
 
       m_delta = ZERO;
       m_deltaAccum = ZERO;
-      m_initialLoc = g_app->m_scene->GetCurrentSelection()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      m_initialLoc = currScene->GetCurrentSelection()->m_node->GetTranslation(TransformationSpace::TS_WORLD);
       SDL_GetGlobalMouseState(&m_mouseInitialLoc.x, &m_mouseInitialLoc.y);
     }
 
@@ -473,9 +475,10 @@ namespace ToolKit
     void StateTransformTo::Transform(const Vec3& delta)
     {
       EntityRawPtrArray roots;
-      g_app->m_scene->GetSelectedEntities(roots);
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      currScene->GetSelectedEntities(roots);
 
-      Entity* e = g_app->m_scene->GetCurrentSelection();
+      Entity* e = currScene->GetCurrentSelection();
       NodePtrArray parents;
 
       // Make all selecteds child of current & store their original parents.
@@ -754,7 +757,7 @@ namespace ToolKit
 
         EntityIdArray entities;
         endPick->PickDataToEntityId(entities);
-        g_app->m_scene->AddToSelection(entities, ImGui::GetIO().KeyShift);
+        g_app->GetCurrentScene()->AddToSelection(entities, ImGui::GetIO().KeyShift);
 
         ModManager::GetInstance()->DispatchSignal(m_backToStart);
       }

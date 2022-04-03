@@ -51,10 +51,11 @@ namespace ToolKit
     {
       assert(m_ntt != nullptr);
 
-      g_app->m_scene->AddEntity(m_ntt);
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      currScene->AddEntity(m_ntt);
       if (m_parentId != NULL_HANDLE)
       {
-        if (Entity* pEntt = g_app->m_scene->GetEntity(m_parentId))
+        if (Entity* pEntt = currScene->GetEntity(m_parentId))
         {
           m_ntt->m_node->OrphanSelf();
           pEntt->m_node->AddChild(m_ntt->m_node);
@@ -76,7 +77,7 @@ namespace ToolKit
         pNode->Orphan(m_ntt->m_node);
       }
 
-      g_app->m_scene->RemoveEntity(m_ntt->m_id);
+      g_app->GetCurrentScene()->RemoveEntity(m_ntt->m_id);
       m_actionComitted = true;
     }
 
@@ -121,8 +122,9 @@ namespace ToolKit
     {
       m_ntt = ntt;
       m_actionComitted = true;
-      g_app->m_scene->GetSelectedEntities(m_selecteds);
-      g_app->m_scene->AddEntity(ntt);
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      currScene->GetSelectedEntities(m_selecteds);
+      currScene->AddEntity(ntt);
     }
 
     CreateAction::~CreateAction()
@@ -136,22 +138,23 @@ namespace ToolKit
     void CreateAction::Undo()
     {
       SwapSelection();
-      g_app->m_scene->RemoveEntity(m_ntt->m_id);
+      g_app->GetCurrentScene()->RemoveEntity(m_ntt->m_id);
       m_actionComitted = false;
     }
 
     void CreateAction::Redo()
     {
       SwapSelection();
-      g_app->m_scene->AddEntity(m_ntt);
+      g_app->GetCurrentScene()->AddEntity(m_ntt);
       m_actionComitted = true;
     }
 
     void CreateAction::SwapSelection()
     {
       EntityIdArray selection;
-      g_app->m_scene->GetSelectedEntities(selection);
-      g_app->m_scene->AddToSelection(m_selecteds, false);
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      currScene->GetSelectedEntities(selection);
+      currScene->AddToSelection(m_selecteds, false);
       std::swap(m_selecteds, selection);
     }
 
@@ -566,7 +569,7 @@ namespace ToolKit
       {
         if (vp->GetType() == Window::Type::Viewport)
         {
-          ignores = g_app->m_scene->Filter
+          ignores = g_app->GetCurrentScene()->Filter
           (
             [](Entity* ntt) -> bool
             {
@@ -577,7 +580,7 @@ namespace ToolKit
 
         if (vp->GetType() == Window::Type::Viewport2d)
         {
-          ignores = g_app->m_scene->Filter
+          ignores = g_app->GetCurrentScene()->Filter
           (
             [](Entity* ntt) -> bool
             {
@@ -615,7 +618,8 @@ namespace ToolKit
           m_mouseData[0] = vp->GetLastMousePosScreenSpace();
 
           Ray ray = vp->RayFromMousePosition();
-          EditorScene::PickData pd = g_app->m_scene->PickObject(ray, m_ignoreList);
+          EditorScenePtr currScene = g_app->GetCurrentScene();
+          EditorScene::PickData pd = currScene->PickObject(ray, m_ignoreList);
           m_pickData.push_back(pd);
 
           if (g_app->m_showPickingDebug)
@@ -625,7 +629,7 @@ namespace ToolKit
             {
               m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
               m_ignoreList.push_back(m_dbgArrow->m_id);
-              g_app->m_scene->AddEntity(m_dbgArrow.get());
+              currScene->AddEntity(m_dbgArrow.get());
             }
 
             m_dbgArrow->m_node->SetTranslation(ray.position);
@@ -723,7 +727,8 @@ namespace ToolKit
 
           // Perform picking.
           std::vector<EditorScene::PickData> ntties;
-          g_app->m_scene->PickObject(frustum, ntties, m_ignoreList);
+          EditorScenePtr currScene = g_app->GetCurrentScene();
+          currScene->PickObject(frustum, ntties, m_ignoreList);
           m_pickData.insert(m_pickData.end(), ntties.begin(), ntties.end());
 
           // Debug draw the picking frustum.
@@ -750,7 +755,7 @@ namespace ToolKit
             {
               m_dbgFrustum = std::shared_ptr<LineBatch>(new LineBatch(corners, X_AXIS, DrawType::Line));
               m_ignoreList.push_back(m_dbgFrustum->m_id);
-              g_app->m_scene->AddEntity(m_dbgFrustum.get());
+              currScene->AddEntity(m_dbgFrustum.get());
             }
             else
             {
@@ -825,7 +830,7 @@ namespace ToolKit
 
       // Gather the selection hierarchy.
       EntityRawPtrArray deleteList;
-      g_app->m_scene->GetSelectedEntities(deleteList);
+      g_app->GetCurrentScene()->GetSelectedEntities(deleteList);
 
       EntityRawPtrArray roots;
       GetRootEntities(deleteList, roots);
@@ -866,10 +871,11 @@ namespace ToolKit
     void StateDuplicate::TransitionIn(State* prevState)
     {
       EntityRawPtrArray selecteds;
-      g_app->m_scene->GetSelectedEntities(selecteds);
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      currScene->GetSelectedEntities(selecteds);
       if (!selecteds.empty())
       {
-        g_app->m_scene->ClearSelection();
+        currScene->ClearSelection();
         if (selecteds.size() > 1)
         {
           ActionManager::GetInstance()->BeginActionGroup();
@@ -897,7 +903,7 @@ namespace ToolKit
             ActionManager::GetInstance()->AddAction(new CreateAction(cpy));
           }
           
-          g_app->m_scene->AddToSelection(copies.front()->m_id, true);
+          currScene->AddToSelection(copies.front()->m_id, true);
           cpyCount += (int)copies.size();
         }
         ActionManager::GetInstance()->GroupLastActions(cpyCount);
@@ -952,7 +958,7 @@ namespace ToolKit
         StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
         EntityIdArray entities;
         endPick->PickDataToEntityId(entities);
-        g_app->m_scene->AddToSelection(entities, ImGui::GetIO().KeyShift);
+        g_app->GetCurrentScene()->AddToSelection(entities, ImGui::GetIO().KeyShift);
 
         ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
       }

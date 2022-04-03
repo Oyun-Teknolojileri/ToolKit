@@ -88,8 +88,7 @@ namespace ToolKit
       m_sceneLights.push_back(light);
       
       m_workspace.Init();
-      m_scene = std::make_shared<EditorScene>(ScenePath("New Scene" + SCENE));
-      m_scene->m_newScene = true;
+      CreateAndSetNewScene("New Scene");
 
       ApplyProjectSettings(m_onNewScene);
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
@@ -115,7 +114,7 @@ namespace ToolKit
       // UI.
       DeleteWindows();
 
-      m_scene->Destroy(false);
+      GetCurrentScene()->Destroy(false);
 
       // Editor objects.
       SafeDel(m_grid);
@@ -202,31 +201,31 @@ namespace ToolKit
 
       Destroy();
       Init();
-      m_scene = std::make_shared<EditorScene>(ScenePath(name + SCENE));
-      m_scene->m_name = name;
-      m_workspace.SetScene(m_scene->m_name);
+      CreateAndSetNewScene(name);
+      m_workspace.SetScene(name);
       m_onNewScene = false;
     }
 
     void App::OnSaveScene()
     {
       // Prevent overriding default scene.
-      if (GetSceneManager()->GetDefaultResource(ResourceType::Scene) == m_scene->GetFile())
+      EditorScenePtr currScene = GetCurrentScene();
+      if (GetSceneManager()->GetDefaultResource(ResourceType::Scene) == currScene->GetFile())
       {
-        m_scene->SetFile(ScenePath("New Scene" + SCENE));
+        currScene->SetFile(ScenePath("New Scene" + SCENE));
         return OnSaveAsScene();
       }
 
       auto saveFn = []() -> void
       {
-        g_app->m_scene->Save(false);
+        g_app->GetCurrentScene()->Save(false);
         g_app->m_statusMsg = "Scene saved";
         g_app->GetAssetBrowser()->UpdateContent();
       };
 
       // File existance check.
-      String fullPath = m_scene->GetFile();
-      if (m_scene->m_newScene && CheckFile(fullPath))
+      String fullPath = currScene->GetFile();
+      if (currScene->m_newScene && CheckFile(fullPath))
       {
         String msg = "Scene " + fullPath + " exist on the disk.\nOverride the existing scene ?";
         YesNoWindow* overrideScene = new YesNoWindow("Override existing file##OvrdScn", msg);
@@ -256,10 +255,11 @@ namespace ToolKit
       inputWnd->m_taskFn = [](const String& val)
       {
         String path;
-        DecomposePath(g_app->m_scene->GetFile(), &path, nullptr, nullptr);
+        EditorScenePtr currScene = g_app->GetCurrentScene();
+        DecomposePath(currScene->GetFile(), &path, nullptr, nullptr);
         String fullPath = ConcatPaths({ path, val + SCENE });
-        g_app->m_scene->SetFile(fullPath);
-        g_app->m_scene->m_name = val;
+        currScene->SetFile(fullPath);
+        currScene->m_name = val;
         g_app->OnSaveScene();
       };
     }
@@ -378,7 +378,7 @@ namespace ToolKit
         if (m_gameMod == GameMod::Stop)
         {
           // Save to catch any changes in the editor.
-          m_scene->Save(true);
+          GetCurrentScene()->Save(true);
         }
 
         String pluginPath = m_workspace.GetPluginPath();
@@ -411,9 +411,24 @@ namespace ToolKit
         m_gameMod = mod;
 
         // Set the editor scene back.
-        m_scene->Reload();
+        GetCurrentScene()->Reload();
         m_playWindow->SetVisibility(false);
       }
+    }
+
+    EditorScenePtr App::GetCurrentScene()
+    {
+      EditorScenePtr eScn = std::static_pointer_cast<EditorScene> 
+      (
+        GetSceneManager()->GetCurrentScene()
+      );
+
+      return eScn;
+    }
+
+    void App::SetCurrentScene(const EditorScenePtr& scene)
+    {
+      GetSceneManager()->SetCurrentScene(scene);
     }
 
     void App::ResetUI()
@@ -798,11 +813,12 @@ namespace ToolKit
 
     void App::OpenScene(const String& fullPath)
     {
-      m_scene->Destroy(false);
-      m_scene = GetSceneManager()->Create<EditorScene>(fullPath);
-      m_scene->Load(); // Make sure its loaded.
-      m_scene->Init(false);
-      m_workspace.SetScene(m_scene->m_name);
+      GetCurrentScene()->Destroy(false);
+      EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
+      SetCurrentScene(scene);
+      scene->Load(); // Make sure its loaded.
+      scene->Init(false);
+      m_workspace.SetScene(scene->m_name);
     }
 
     void App::MergeScene(const String& fullPath)
@@ -810,7 +826,7 @@ namespace ToolKit
       ScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
       scene->Load();
       scene->Init(false);
-      m_scene->Merge(scene);
+      GetCurrentScene()->Merge(scene);
     }
 
     void App::ApplyProjectSettings(bool setDefaults)
@@ -932,7 +948,7 @@ namespace ToolKit
 
     void App::RenderSelected(EditorViewport* viewport)
     {
-      if (m_scene->GetSelectedEntityCount() == 0)
+      if (GetCurrentScene()->GetSelectedEntityCount() == 0)
       {
         return;
       }
@@ -996,7 +1012,7 @@ namespace ToolKit
       };
 
       EntityRawPtrArray selecteds;
-      m_scene->GetSelectedEntities(selecteds);
+      GetCurrentScene()->GetSelectedEntities(selecteds);
       Entity* primary = selecteds.back();
 
       selecteds.pop_back();
@@ -1165,6 +1181,15 @@ namespace ToolKit
       GetTextureManager()->m_reporterFn = genericReporterFn;
       GetMaterialManager()->m_reporterFn = genericReporterFn;
       GetSceneManager()->m_reporterFn = genericReporterFn;
+    }
+
+    void App::CreateAndSetNewScene(const String& name)
+    {
+      EditorScenePtr scene = std::make_shared<EditorScene>(ScenePath(name + SCENE));
+      scene->m_name = name;
+      scene->m_newScene = true;
+      GetSceneManager()->Manage(scene);
+      SetCurrentScene(scene);
     }
 
     void DebugMessage(const String& msg)

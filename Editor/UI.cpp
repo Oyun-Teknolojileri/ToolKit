@@ -1077,6 +1077,7 @@ namespace ToolKit
         }
       }
 
+      EditorScenePtr currSecne = g_app->GetCurrentScene();
       if 
       (
         io.KeyCtrl && 
@@ -1087,7 +1088,7 @@ namespace ToolKit
         if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
         {
           XmlDocument* doc = new XmlDocument();
-          g_app->m_scene->Serialize(doc, nullptr);
+          currSecne->Serialize(doc, nullptr);
           SafeDel(doc);
         }
       }
@@ -1098,7 +1099,7 @@ namespace ToolKit
         {
           if (Window* wnd = g_app->GetOutliner())
           {
-            if (Entity* ntt = g_app->m_scene->GetCurrentSelection())
+            if (Entity* ntt = currSecne->GetCurrentSelection())
             {
               OutlinerWindow* outliner = static_cast<OutlinerWindow*> (wnd);
               outliner->Focus(ntt);

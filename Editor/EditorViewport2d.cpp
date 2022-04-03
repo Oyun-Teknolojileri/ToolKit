@@ -143,7 +143,7 @@ namespace ToolKit
 
       // Render entities.
       app->m_renderer->SetRenderTarget(m_viewportImage);
-      EntityRawPtrArray surfaces = app->m_scene->Filter
+      EntityRawPtrArray surfaces = app->GetCurrentScene()->Filter
       (
         [](Entity* ntt) -> bool 
         { 
@@ -352,8 +352,9 @@ namespace ToolKit
             Vec3 pos = PointOnRay(ray, 5.0f);
             g_app->m_grid->HitTest(ray, pos);
             dwMesh->m_node->SetTranslation(pos);
-            g_app->m_scene->AddEntity(dwMesh);
-            g_app->m_scene->AddToSelection(dwMesh->m_id, false);
+            EditorScenePtr currScene = g_app->GetCurrentScene();
+            currScene->AddEntity(dwMesh);
+            currScene->AddToSelection(dwMesh->m_id, false);
             SetActive();
           }
           else if (entry.m_ext == SCENE)

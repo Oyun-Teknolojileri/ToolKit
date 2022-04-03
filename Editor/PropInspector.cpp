@@ -728,7 +728,7 @@ namespace ToolKit
       {
         HandleStates();
 
-        Entity* curr = g_app->m_scene->GetCurrentSelection();
+        Entity* curr = g_app->GetCurrentScene()->GetCurrentSelection();
         if (curr == nullptr)
         {
           ImGui::Text("Select an entity");

@@ -188,31 +188,32 @@ namespace ToolKit
 
       auto ShowAddMenuFn = []() -> void
       {
+        EditorScenePtr currScene = g_app->GetCurrentScene();
         if (ImGui::BeginMenu("Mesh"))
         {
           if (ImGui::MenuItem("Plane"))
           {
             Quad* plane = new Quad();
             plane->GetMesh()->Init(false);
-            g_app->m_scene->AddEntity(plane);
+            currScene->AddEntity(plane);
           }
           if (ImGui::MenuItem("Cube"))
           {
             Cube* cube = new Cube();
             cube->GetMesh()->Init(false);
-            g_app->m_scene->AddEntity(cube);
+            currScene->AddEntity(cube);
           }
           if (ImGui::MenuItem("Sphere"))
           {
             Sphere* sphere = new Sphere();
             sphere->GetMesh()->Init(false);
-            g_app->m_scene->AddEntity(sphere);
+            currScene->AddEntity(sphere);
           }
           if (ImGui::MenuItem("Cone"))
           {
             Cone* cone = new Cone({ 1.0f, 1.0f, 30, 30 });
             cone->GetMesh()->Init(false);
-            g_app->m_scene->AddEntity(cone);
+            currScene->AddEntity(cone);
           }
           if (ImGui::MenuItem("Monkey"))
           {
@@ -223,7 +224,7 @@ namespace ToolKit
             );
 
             suzanne->GetMesh()->Init(false);
-            g_app->m_scene->AddEntity(suzanne);
+            currScene->AddEntity(suzanne);
           }
           ImGui::EndMenu();
         }
@@ -235,14 +236,14 @@ namespace ToolKit
           {
             Surface* suface = new Surface(Vec2(100.0f, 30.0f), Vec2 (0.0f, 0.0f));
             suface->GetMesh()->Init(false);
-            g_app->m_scene->AddEntity(suface);
+            currScene->AddEntity(suface);
           }
 
           if (ImGui::MenuItem("Button"))
           {
             Surface* suface = new Button(Vec2(100.0f, 30.0f));
             suface->GetMesh()->Init(false);
-            g_app->m_scene->AddEntity(suface);
+            currScene->AddEntity(suface);
           }
           ImGui::EndMenu();
         }
@@ -251,13 +252,13 @@ namespace ToolKit
         if (ImGui::MenuItem("Node"))
         {
           Entity* node = Entity::CreateByType(EntityType::Entity_Node);
-          g_app->m_scene->AddEntity(node);
+          currScene->AddEntity(node);
         }
 
         if (ImGui::MenuItem("Camera"))
         {
           Entity* node = new EditorCamera();
-          g_app->m_scene->AddEntity(node);
+          currScene->AddEntity(node);
         }
       };
 
@@ -367,7 +368,7 @@ namespace ToolKit
           if (view == "User")
           {
             bool noCamera = true;
-            if (Entity* cam = g_app->m_scene->GetCurrentSelection())
+            if (Entity* cam = g_app->GetCurrentScene()->GetCurrentSelection())
             {
               if (cam->GetType() == EntityType::Entity_Camera)
               {

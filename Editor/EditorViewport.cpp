@@ -168,8 +168,9 @@ namespace ToolKit
               Vec3 pos = PointOnRay(ray, 5.0f);
               g_app->m_grid->HitTest(ray, pos);
               dwMesh->m_node->SetTranslation(pos);
-              g_app->m_scene->AddEntity(dwMesh);
-              g_app->m_scene->AddToSelection(dwMesh->m_id, false);
+              EditorScenePtr currScene = g_app->GetCurrentScene();
+              currScene->AddEntity(dwMesh);
+              currScene->AddToSelection(dwMesh->m_id, false);
               SetActive();
             }
             else if (entry.m_ext == SCENE)
@@ -338,7 +339,7 @@ namespace ToolKit
 
       // Render entities.
       app->m_renderer->SetRenderTarget(m_viewportImage);
-      EntityRawPtrArray ntties = app->m_scene->GetEntities();
+      EntityRawPtrArray ntties = app->GetCurrentScene()->GetEntities();
 
       for (Entity* ntt : ntties)
       {
@@ -382,7 +383,10 @@ namespace ToolKit
 
     Camera* EditorViewport::GetCamera() const
     {
-      Camera* cam = static_cast<Camera*> (g_app->m_scene->GetEntity(m_attachedCamera));
+      Camera* cam = static_cast<Camera*> 
+      (
+        g_app->GetCurrentScene()->GetEntity(m_attachedCamera)
+      );
       return cam ? cam : Viewport::GetCamera();
     }
 
@@ -507,13 +511,14 @@ namespace ToolKit
         if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
         {
           // Figure out orbiting point.
-          Entity* currEntity = g_app->m_scene->GetCurrentSelection();
+          EditorScenePtr currScene = g_app->GetCurrentScene();
+          Entity* currEntity = currScene->GetCurrentSelection();
           if (currEntity == nullptr)
           {
             if (!hitFound)
             {
               Ray orbitRay = RayFromMousePosition();
-              EditorScene::PickData pd = g_app->m_scene->PickObject(orbitRay);
+              EditorScene::PickData pd = currScene->PickObject(orbitRay);
 
               if (pd.entity == nullptr)
               {

@@ -52,6 +52,8 @@ namespace ToolKit
       void OnQuit();
       void OnNewProject(const String& name);
       void SetGameMod(GameMod mod);
+      EditorScenePtr GetCurrentScene();
+      void SetCurrentScene(const EditorScenePtr& scene);
 
       // UI.
       void ResetUI();
@@ -106,10 +108,9 @@ namespace ToolKit
     private:
       void CreateSimulationWindow();
       void AssignManagerReporters();
+      void CreateAndSetNewScene(const String& name);
 
     public:
-      EditorScenePtr m_scene;
-
       // UI elements.
       std::vector<Window*> m_windows;
       String m_statusMsg;

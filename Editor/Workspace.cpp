@@ -153,7 +153,6 @@ namespace ToolKit
     void Workspace::SetScene(const String& scene)
     {
       m_activeProject.scene = scene;
-      GetSceneManager()->SetCurrentScene(m_app->m_scene);
     }
 
     void Workspace::RefreshProjects()
@@ -194,14 +193,14 @@ namespace ToolKit
         WriteAttr(setNode, lclDoc.get(), "name", m_activeProject.name);
         settings->append_node(setNode);
 
-        if (GetSceneManager()->Exist(m_app->m_scene->GetFile()))
+        String sceneFile = m_app->GetCurrentScene()->GetFile();
+        if (GetSceneManager()->Exist(sceneFile))
         {
-          String file = m_app->m_scene->GetFile();
           String sceneRoot = ScenePath("");
           // Don't save anything as current scene, if its not in scene root folder.
-          if (file.find(sceneRoot) != String::npos)
+          if (sceneFile.find(sceneRoot) != String::npos)
           {
-            String scenePath = GetRelativeResourcePath(m_app->m_scene->GetFile());
+            String scenePath = GetRelativeResourcePath(sceneFile);
             WriteAttr(setNode, lclDoc.get(), "scene", scenePath);
           }
         }

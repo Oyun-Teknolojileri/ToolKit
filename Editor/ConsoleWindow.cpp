@@ -78,15 +78,16 @@ namespace ToolKit
 
       if (!g_app->m_showPickingDebug)
       {
+        EditorScenePtr currScene = g_app->GetCurrentScene();
         if (StatePickingBase::m_dbgArrow)
         {
-          g_app->m_scene->RemoveEntity(StatePickingBase::m_dbgArrow->m_id);
+          currScene->RemoveEntity(StatePickingBase::m_dbgArrow->m_id);
           StatePickingBase::m_dbgArrow = nullptr;
         }
 
         if (StatePickingBase::m_dbgFrustum)
         {
-          g_app->m_scene->RemoveEntity(StatePickingBase::m_dbgFrustum->m_id);
+          currScene->RemoveEntity(StatePickingBase::m_dbgFrustum->m_id);
           StatePickingBase::m_dbgFrustum = nullptr;
         }
       }
@@ -109,7 +110,7 @@ namespace ToolKit
 
     void TransformInternal(TagArgArray tagArgs, bool set)
     {
-      Entity* e = g_app->m_scene->GetCurrentSelection();
+      Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
       if (e == nullptr)
       {
         return;
@@ -287,7 +288,7 @@ namespace ToolKit
 
     void GetTransformExec(TagArgArray tagArgs)
     {
-      Entity* e = g_app->m_scene->GetCurrentSelection();
+      Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
       if (e != nullptr)
       {
         auto PrintTransform = [e](TransformationSpace ts) -> void
@@ -387,7 +388,7 @@ namespace ToolKit
 
       String args = tagArgs.front().second.front();
 
-      g_app->m_scene->SelectByTag(args);
+      g_app->GetCurrentScene()->SelectByTag(args);
     }
 
     void LookAt(TagArgArray tagArgs)
@@ -419,7 +420,13 @@ namespace ToolKit
     {
       // Caviate: A reload is neded since hardware buffers are not updated.
       // After refreshing hardware buffers, transforms of the entity can be set to identity.
-      if (Drawable* e = dynamic_cast<Drawable*> (g_app->m_scene->GetCurrentSelection()))
+      if 
+      (
+        Drawable* e = dynamic_cast<Drawable*> 
+        (
+          g_app->GetCurrentScene()->GetCurrentSelection()
+        )
+      )
       {
         Mat4 ts = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
         MeshRawPtrArray meshes;
@@ -438,7 +445,13 @@ namespace ToolKit
 
     void SaveMesh(TagArgArray tagArgs)
     {
-      if (Drawable* e = dynamic_cast<Drawable*> (g_app->m_scene->GetCurrentSelection()))
+      if 
+      (
+        Drawable* e = dynamic_cast<Drawable*> 
+        (
+          g_app->GetCurrentScene()->GetCurrentSelection()
+        )
+      )
       {
         TagArgArray::const_iterator nameTag = GetTag("n", tagArgs);
         String fileName = e->GetMesh()->GetFile();

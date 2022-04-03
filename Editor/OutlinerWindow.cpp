@@ -37,7 +37,8 @@ namespace ToolKit
         | ImGuiTreeNodeFlags_FramePadding;
 
       ImGuiTreeNodeFlags nodeFlags = baseFlags;
-      if (g_app->m_scene->IsSelected(e->m_id))
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      if (currScene->IsSelected(e->m_id))
       {
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
       }
@@ -59,7 +60,7 @@ namespace ToolKit
               if (childNtt->m_node->m_children.empty())
               {
                 nodeFlags = baseFlags;
-                if (g_app->m_scene->IsSelected(childNtt->m_id))
+                if (currScene->IsSelected(childNtt->m_id))
                 {
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
                 }
@@ -70,7 +71,7 @@ namespace ToolKit
               else
               {
                 nodeFlags = baseFlags;
-                if (g_app->m_scene->IsSelected(childNtt->m_id))
+                if (currScene->IsSelected(childNtt->m_id))
                 {
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
                 }
@@ -101,21 +102,22 @@ namespace ToolKit
     {
       if (ImGui::IsItemClicked())
       {
+        EditorScenePtr currScene = g_app->GetCurrentScene();
         if (ImGui::GetIO().KeyShift)
         {
-          if (g_app->m_scene->IsSelected(e->m_id))
+          if (currScene->IsSelected(e->m_id))
           {
-            g_app->m_scene->RemoveFromSelection(e->m_id);
+            currScene->RemoveFromSelection(e->m_id);
           }
           else
           {
-            g_app->m_scene->AddToSelection(e->m_id, true);
+            currScene->AddToSelection(e->m_id, true);
           }
         }
         else
         {
-          g_app->m_scene->ClearSelection();
-          g_app->m_scene->AddToSelection(e->m_id, false);
+          currScene->ClearSelection();
+          currScene->AddToSelection(e->m_id, false);
         }
       }
 
@@ -140,8 +142,8 @@ namespace ToolKit
 
     void OutlinerWindow::Show()
     {
+      EditorScenePtr currScene = g_app->GetCurrentScene();
       ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 6.0f);
-
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         HandleStates();
@@ -158,13 +160,13 @@ namespace ToolKit
             {
               IM_ASSERT(payload->DataSize == sizeof(ULongID*));
               g_child = *(ULongID*)payload->Data;
-              Entity* child = g_app->m_scene->GetEntity(g_child);
+              Entity* child = currScene->GetEntity(g_child);
               child->m_node->OrphanSelf(true);
             }
             ImGui::EndDragDropTarget();
           }
 
-          const EntityRawPtrArray& ntties = g_app->m_scene->GetEntities();
+          const EntityRawPtrArray& ntties = currScene->GetEntities();
           EntityRawPtrArray roots;
           GetRootEntities(ntties, roots);
 
@@ -179,11 +181,11 @@ namespace ToolKit
       // Update hierarchy if there is a change.
       if (g_child != NULL_HANDLE)
       {
-        Entity* child = g_app->m_scene->GetEntity(g_child);
+        Entity* child = currScene->GetEntity(g_child);
         child->m_node->OrphanSelf(true);
         if (g_parent != NULL_HANDLE)
         {
-          Entity* parent = g_app->m_scene->GetEntity(g_parent);
+          Entity* parent = currScene->GetEntity(g_parent);
           parent->m_node->AddChild(child->m_node, true);
         }
       }
