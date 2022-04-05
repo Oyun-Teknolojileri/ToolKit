@@ -527,6 +527,7 @@ namespace ToolKit
 
         m_itemActions["FileSystem/MakeDir"](nullptr);
         m_itemActions["Refresh"](nullptr);
+        m_itemActions["FileSystem/CopyPath"](nullptr);
 
         ImGui::EndPopup();
       }
@@ -561,6 +562,30 @@ namespace ToolKit
           g_app->m_statusMsg = ec.message();
         }
         view->m_dirty = true;
+      };
+
+      // Copy file path.
+      m_itemActions["FileSystem/CopyPath"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+          FolderView* self = getSelfFn();
+          if (self == nullptr)
+          {
+              return;
+          }
+
+          if (ImGui::Button("CopyPath", self->m_contextBtnSize))
+          {
+              int copied = SDL_SetClipboardText(self->m_path.c_str());
+              if (copied < 0)
+              {
+                  // Error
+                  g_app->GetConsole()->AddLog
+                  (
+                   "Could not copy the folder path to clipboard",
+                   ConsoleWindow::LogType::Error
+                  );
+              }
+          }
       };
 
       // Refresh.
