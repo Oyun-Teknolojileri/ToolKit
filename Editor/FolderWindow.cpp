@@ -585,6 +585,7 @@ namespace ToolKit
                    ConsoleWindow::LogType::Error
                   );
               }
+              ImGui::CloseCurrentPopup();
           }
       };
 
