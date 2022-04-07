@@ -459,6 +459,10 @@ namespace ToolKit
     {
       using namespace std::filesystem;
 
+      // Temporary vectors that holds DirectoryEntry's
+      std::vector<DirectoryEntry> m_temp_dirs;
+      std::vector<DirectoryEntry> m_temp_files;
+
       m_entiries.clear();
       for (const directory_entry& e : directory_iterator(m_path))
       {
@@ -468,8 +472,23 @@ namespace ToolKit
         de.m_fileName = e.path().stem().u8string();
         de.m_ext = e.path().filename().extension().u8string();
 
-        m_entiries.push_back(de);
+        
+        if (de.m_isDirectory)
+        {
+          m_temp_dirs.push_back(de);
+        }
+        else
+        {
+          m_temp_files.push_back(de);
+        }
       }
+
+      // Folder first, files next
+      for (int i = 0; i < (int)m_temp_dirs.size(); i++)
+        m_entiries.push_back(m_temp_dirs[i]);
+
+      for (int i = 0; i < (int)m_temp_files.size(); i++)
+        m_entiries.push_back(m_temp_files[i]);
     }
 
     int FolderView::Exist(const String& file)
