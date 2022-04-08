@@ -65,6 +65,7 @@ namespace ToolKit
     TexturePtr UI::m_lockIcon;
     TexturePtr UI::m_visibleIcon;
     TexturePtr UI::m_invisibleIcon;
+    TexturePtr UI::m_viewZoomIcon;
 
     void UI::Init()
     {
@@ -219,6 +220,8 @@ namespace ToolKit
       m_visibleIcon->Init();
       m_invisibleIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/invisible.png", true));
       m_invisibleIcon->Init();
+      m_viewZoomIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/viewzoom.png", true));
+      m_viewZoomIcon->Init();
     }
 
     void UI::InitTheme()

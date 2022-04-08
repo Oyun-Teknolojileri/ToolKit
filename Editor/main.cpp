@@ -160,15 +160,15 @@ namespace ToolKit
 
     void Exit()
     {
-      g_running = false;
-      SafeDel(g_app);
-
       UI::UnInit();
+      SafeDel(g_app);
       Main::GetInstance()->Uninit();
       SafeDel(g_proxy);
 
       SDL_DestroyWindow(g_window);
       SDL_Quit();
+
+      g_running = false;
     }
 
     void ProcessEvent(const SDL_Event& e)

@@ -40,6 +40,7 @@ namespace ToolKit
       int Exist(const String& file);
       void ShowContextMenu(DirectoryEntry* entry = nullptr);
       void Refresh();
+      float GetThumbnailZoomPercent(float thumbnailZoom);
 
     private:
       void CreateItemActions();
@@ -62,6 +63,9 @@ namespace ToolKit
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
       ImGuiTextFilter m_filter;
       std::unordered_map <String, std::function<void(DirectoryEntry*)>> m_itemActions;
+
+      // If you change this value, change the calculaton of thumbnail zoom
+      const float m_thumbnailMaxZoom = 300.f;
     };
 
     class FolderWindow : public Window

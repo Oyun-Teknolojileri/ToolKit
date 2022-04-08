@@ -218,24 +218,27 @@ namespace ToolKit
 
         // Handle Item Icon size.
         ImGuiIO io = ImGui::GetIO();
-        static float wheel = io.MouseWheel;
-        float delta = io.MouseWheel - wheel;
+        float delta = io.MouseWheel;
 
-        const float icMin = 50.0f;
-        const float icMax = 300.0f;
+        static float thumbnailZoom = m_thumbnailMaxZoom / 6.f; // Initial zoom value
+
+        // Zoom in and out
         if (io.KeyCtrl && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
         {
-          m_iconSize += Vec2(delta) * 15.0f;
-          if (m_iconSize.x < icMin)
-          {
-            m_iconSize = Vec2(icMin);
-          }
-
-          if (m_iconSize.x > icMax)
-          {
-            m_iconSize = Vec2(icMax);
-          }
+          thumbnailZoom += delta * 10.0f;
         }
+
+        // Clamp icon size
+        if (thumbnailZoom < m_thumbnailMaxZoom / 6.f)
+        {
+          thumbnailZoom = m_thumbnailMaxZoom / 6.f;
+        }
+        if (thumbnailZoom > m_thumbnailMaxZoom)
+        {
+          thumbnailZoom = m_thumbnailMaxZoom;
+        }
+
+        m_iconSize.xy = Vec2(thumbnailZoom);
 
         // Item dropped to tab.
         MoveTo(m_path);
@@ -430,13 +433,53 @@ namespace ToolKit
         } // Tab item handling ends.
         ImGui::EndChild();
 
-        // Handle searchbar.
-        ImGui::Separator();
-        ImGui::Text("Filter: ");
-        ImGui::SameLine();
+        ImGui::BeginTable("##FilterZoom", 4, ImGuiTableFlags_SizingFixedFit);
 
+        ImGui::TableSetupColumn("##flttxt");
+        ImGui::TableSetupColumn("##flt", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("##zoom");
+        ImGui::TableSetupColumn("##tglzoom");
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+
+        // Handle searchbar.
+        ImGui::Text("Filter: ");
+        ImGui::TableNextColumn();
         float width = ImGui::GetWindowContentRegionWidth() * 0.25f;
         m_filter.Draw("##Filter", width);
+        
+        // Zoom amount
+        ImGui::TableNextColumn();
+        ImGui::Text("%%%.0f", GetThumbnailZoomPercent(thumbnailZoom));
+        // Tooltips
+        UI::HelpMarker(LOC, "Ctrl + mouse scroll to adjust thumbnail size.");
+
+        // Zoom toggle button
+        ImGui::TableNextColumn();
+        
+        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_viewZoomIcon), ImVec2(20.0f, 20.0f)))
+        {
+          // Toggle zoom
+          
+          if (thumbnailZoom == m_thumbnailMaxZoom) 
+          {
+            // Small
+            thumbnailZoom = m_thumbnailMaxZoom / 6.f;
+          }
+          else if (thumbnailZoom >= m_thumbnailMaxZoom * 0.5833f) // (7/12 ~ 0.5833)
+          {
+            // Big
+            thumbnailZoom = m_thumbnailMaxZoom;
+          }
+          else if (thumbnailZoom >= m_thumbnailMaxZoom / 6.f) 
+          {
+            // Medium
+            thumbnailZoom = m_thumbnailMaxZoom * 0.5833f; // (7/12 ~ 0.5833)
+          }
+        }
+
+        ImGui::EndTable();
 
         ImGui::EndTabItem();
       }
@@ -556,6 +599,13 @@ namespace ToolKit
     void FolderView::Refresh()
     {
       m_dirty = true;
+    }
+
+    float FolderView::GetThumbnailZoomPercent(float thumbnailZoom)
+    {
+      float percent = (thumbnailZoom * 0.36f) - 8.f;
+
+      return percent;
     }
 
     void FolderView::CreateItemActions()
