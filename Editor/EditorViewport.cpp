@@ -72,162 +72,23 @@ namespace ToolKit
       m_mouseOverOverlay = false;
 
       ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
-      if (ImGui::Begin(m_name.c_str(), &m_visible, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | m_additionalWindowFlags))
+
+      if 
+      (
+        ImGui::Begin
+        (
+          m_name.c_str(),
+          &m_visible,
+          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | m_additionalWindowFlags
+        )
+      )
       {
+        UpdateContentArea();
+        UpdateWindow();
         HandleStates();
-
-        // Content area size
-        ImVec2 vMin = ImGui::GetWindowContentRegionMin();
-        ImVec2 vMax = ImGui::GetWindowContentRegionMax();
-
-        vMin.x += ImGui::GetWindowPos().x;
-        vMin.y += ImGui::GetWindowPos().y;
-        vMax.x += ImGui::GetWindowPos().x;
-        vMax.y += ImGui::GetWindowPos().y;
-
-        m_wndPos.x = vMin.x;
-        m_wndPos.y = vMin.y;
-
-        m_wndContentAreaSize = Vec2(glm::abs(vMax.x - vMin.x), glm::abs(vMax.y - vMin.y));
-
-        ImGuiIO& io = ImGui::GetIO();
-        ImVec2 absMousePos = io.MousePos;
-        m_mouseOverContentArea = false;
-        if (vMin.x < absMousePos.x && vMax.x > absMousePos.x)
-        {
-          if (vMin.y < absMousePos.y && vMax.y > absMousePos.y)
-          {
-            m_mouseOverContentArea = true;
-          }
-        }
-
-        m_lastMousePosRelContentArea.x = (int)(absMousePos.x - vMin.x);
-        m_lastMousePosRelContentArea.y = (int)(absMousePos.y - vMin.y);
-
-        if (!ImGui::IsWindowCollapsed())
-        {
-          if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
-          {
-            ImGui::Image((void*)(intptr_t)m_viewportImage->m_textureId, ImVec2(m_width, m_height), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
-
-            if 
-            (
-              m_wndContentAreaSize.x != m_width || 
-              m_wndContentAreaSize.y != m_height
-            )
-            {
-              OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
-            }
-
-            if (IsActive())
-            {
-              ImGui::GetWindowDrawList()->AddRect(vMin, vMax, IM_COL32(255, 255, 0, 255));
-            }
-            else
-            {
-              ImGui::GetWindowDrawList()->AddRect(vMin, vMax, IM_COL32(128, 128, 128, 255));
-            }
-          }
-        }
-
-        m_mouseHover = ImGui::IsWindowHovered();
-
-        // Process draw commands.
-        ImDrawList* drawList = ImGui::GetWindowDrawList();
-        for (auto command : m_drawCommands)
-        {
-          command(drawList);
-        }
-        m_drawCommands.clear();
-
-        // AssetBrowser drop handling.
-        if (ImGui::BeginDragDropTarget())
-        {
-          if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
-          {
-            IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
-            DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
-
-            if (entry.m_ext == MESH)
-            {
-              String path = ConcatPaths({ entry.m_rootPath, entry.m_fileName + entry.m_ext });
-              
-              Drawable* dwMesh = new Drawable();
-              if (io.KeyShift)
-              {
-                MeshPtr mesh = GetMeshManager()->Create<Mesh>(path);
-                dwMesh->SetMesh(mesh->Copy<Mesh>());
-              }
-              else
-              {
-                dwMesh->SetMesh(GetMeshManager()->Create<Mesh>(path));
-              }
-              
-              dwMesh->GetMesh()->Init(false);
-              Ray ray = RayFromMousePosition();
-              Vec3 pos = PointOnRay(ray, 5.0f);
-              g_app->m_grid->HitTest(ray, pos);
-              dwMesh->m_node->SetTranslation(pos);
-              EditorScenePtr currScene = g_app->GetCurrentScene();
-              currScene->AddEntity(dwMesh);
-              currScene->AddToSelection(dwMesh->m_id, false);
-              SetActive();
-            }
-            else if (entry.m_ext == SCENE)
-            {
-              YesNoWindow* importOptionWnd = new YesNoWindow("Open Scene", "Open", "Merge", "Open or merge the scene ?", true);
-              importOptionWnd->m_yesCallback = [entry]() ->void
-              {
-                String fullPath = entry.GetFullPath();
-                g_app->OpenScene(fullPath);
-              };
-
-              importOptionWnd->m_noCallback = [entry]() -> void
-              {
-                String fullPath = entry.GetFullPath();
-                g_app->MergeScene(fullPath);
-              };
-
-              UI::m_volatileWindows.push_back(importOptionWnd);
-            }
-          }
-          ImGui::EndDragDropTarget();
-        }
-
-        if (g_app->m_showOverlayUI)
-        {
-          if (IsActive() || g_app->m_showOverlayUIAlways)
-          {
-            bool onPlugin = false;
-            if (m_name == g_3dViewport && g_app->m_gameMod != App::GameMod::Stop)
-            {
-              if (!g_app->m_runWindowed)
-              {
-                // Game is being drawn on 3d viewport. Hide overlays.
-                onPlugin = true;
-              }
-            }
-
-            if (m_name == g_simulationViewport)
-            {
-              onPlugin = true;
-            }
-
-            if (!onPlugin)
-            {
-              for (OverlayUI* overlay : m_overlays)
-              {
-                if (overlay)
-                {
-                  overlay->m_owner = this;
-                  overlay->Show();
-                }
-              }
-            }
-
-          }
-        }
-
+        DrawCommands();
+        HandleDrop();
+        DrawOverlays();
       }
       ImGui::End();
     }
@@ -395,6 +256,83 @@ namespace ToolKit
       Viewport::SetCamera(cam);
       UpdateCameraLens(m_width, m_height);
       m_attachedCamera = NULL_HANDLE;
+    }
+
+    void EditorViewport::UpdateContentArea()
+    {
+      // Content area size
+      m_contentAreaMin = ImGui::GetWindowContentRegionMin();
+      m_contentAreaMax = ImGui::GetWindowContentRegionMax();
+
+      m_contentAreaMin.x += ImGui::GetWindowPos().x;
+      m_contentAreaMin.y += ImGui::GetWindowPos().y;
+      m_contentAreaMax.x += ImGui::GetWindowPos().x;
+      m_contentAreaMax.y += ImGui::GetWindowPos().y;
+
+      m_wndPos.x = m_contentAreaMin.x;
+      m_wndPos.y = m_contentAreaMin.y;
+
+      m_wndContentAreaSize = Vec2
+      (
+        glm::abs(m_contentAreaMax.x - m_contentAreaMin.x),
+        glm::abs(m_contentAreaMax.y - m_contentAreaMin.y)
+      );
+
+      ImGuiIO& io = ImGui::GetIO();
+      ImVec2 absMousePos = io.MousePos;
+      m_mouseOverContentArea = false;
+      if (m_contentAreaMin.x < absMousePos.x && m_contentAreaMax.x > absMousePos.x)
+      {
+        if (m_contentAreaMin.y < absMousePos.y && m_contentAreaMax.y > absMousePos.y)
+        {
+          m_mouseOverContentArea = true;
+        }
+      }
+
+      m_lastMousePosRelContentArea.x = (int)(absMousePos.x - m_contentAreaMin.x);
+      m_lastMousePosRelContentArea.y = (int)(absMousePos.y - m_contentAreaMin.y);
+    }
+
+    void EditorViewport::UpdateWindow()
+    {
+      if (!ImGui::IsWindowCollapsed())
+      {
+        if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
+        {
+          ImGui::Image((void*)(intptr_t)m_viewportImage->m_textureId, ImVec2(m_width, m_height), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
+
+          if
+            (
+              m_wndContentAreaSize.x != m_width ||
+              m_wndContentAreaSize.y != m_height
+              )
+          {
+            OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
+          }
+
+          if (IsActive())
+          {
+            ImGui::GetWindowDrawList()->AddRect(m_contentAreaMin, m_contentAreaMax, IM_COL32(255, 255, 0, 255));
+          }
+          else
+          {
+            ImGui::GetWindowDrawList()->AddRect(m_contentAreaMin, m_contentAreaMax, IM_COL32(128, 128, 128, 255));
+          }
+        }
+      }
+
+      m_mouseHover = ImGui::IsWindowHovered();
+    }
+
+    void EditorViewport::DrawCommands()
+    {
+      // Process draw commands.
+      ImDrawList* drawList = ImGui::GetWindowDrawList();
+      for (auto command : m_drawCommands)
+      {
+        command(drawList);
+      }
+      m_drawCommands.clear();
     }
 
     void EditorViewport::FpsNavigationMode(float deltaTime)
@@ -635,5 +573,218 @@ namespace ToolKit
       }
     }
 
+    void EditorViewport::HandleDrop()
+    {
+      ImGuiIO& io = ImGui::GetIO();
+
+      // Current scene
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+
+      // Asset drag and drop loading variables
+      static Drawable* boundingBox = nullptr;
+      static bool meshLoaded = false;
+      static bool meshAddedToScene = false;
+      static Drawable* dwMesh = nullptr;
+
+      // AssetBrowser drop handling.
+      if (ImGui::BeginDragDropTarget())
+      {
+        // Check if the drag object is a mesh
+        const ImGuiPayload* dragPayload = ImGui::GetDragDropPayload();
+        IM_ASSERT(dragPayload->DataSize == sizeof(DirectoryEntry));
+        DirectoryEntry dragEntry = *(const DirectoryEntry*)dragPayload->Data;
+
+        Vec3 lastDragMeshPos = Vec3(0.0f);
+        if (dragEntry.m_ext == MESH)
+        {
+          // Load mesh
+          LoadDragMesh(meshLoaded, dragEntry, io, &dwMesh, &boundingBox, currScene);
+
+          // Show bounding box
+          lastDragMeshPos = CalculateDragMeshPosition(meshLoaded, currScene, &boundingBox);
+        }
+
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
+        {
+          IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
+          DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
+
+          if (entry.m_ext == MESH)
+          {
+            // Translate mesh to correct position
+            dwMesh->m_node->SetTranslation(lastDragMeshPos, TransformationSpace::TS_WORLD);
+
+            // Add mesh to the scene
+            currScene->AddEntity(dwMesh);
+            currScene->AddToSelection(dwMesh->m_id, false);
+            SetActive();
+
+            meshAddedToScene = true;
+          }
+          else if (entry.m_ext == SCENE)
+          {
+            YesNoWindow* importOptionWnd = new YesNoWindow("Open Scene", "Open", "Merge", "Open or merge the scene ?", true);
+            importOptionWnd->m_yesCallback = [entry]() ->void
+            {
+              String fullPath = entry.GetFullPath();
+              g_app->OpenScene(fullPath);
+            };
+
+            importOptionWnd->m_noCallback = [entry]() -> void
+            {
+              String fullPath = entry.GetFullPath();
+              g_app->MergeScene(fullPath);
+            };
+
+            UI::m_volatileWindows.push_back(importOptionWnd);
+          }
+        }
+
+        ImGui::EndDragDropTarget();
+      }
+      
+      HandleDropMesh(meshLoaded, meshAddedToScene, currScene, &dwMesh, &boundingBox);
+    }
+
+    void EditorViewport::DrawOverlays()
+    {
+      if (g_app->m_showOverlayUI)
+      {
+        if (IsActive() || g_app->m_showOverlayUIAlways)
+        {
+          bool onPlugin = false;
+          if (m_name == g_3dViewport && g_app->m_gameMod != App::GameMod::Stop)
+          {
+            if (!g_app->m_runWindowed)
+            {
+              // Game is being drawn on 3d viewport. Hide overlays.
+              onPlugin = true;
+            }
+          }
+
+          if (m_name == g_simulationViewport)
+          {
+            onPlugin = true;
+          }
+
+          if (!onPlugin)
+          {
+            for (OverlayUI* overlay : m_overlays)
+            {
+              if (overlay)
+              {
+                overlay->m_owner = this;
+                overlay->Show();
+              }
+            }
+          }
+        }
+      }
+    }
+
+    void EditorViewport::LoadDragMesh
+    (
+      bool& meshLoaded,
+      DirectoryEntry dragEntry,
+      ImGuiIO io, 
+      Drawable** dwMesh,
+      Drawable** boundingBox, 
+      EditorScenePtr currScene
+    )
+    {
+      if (!meshLoaded)
+      {
+        // Load mesh once
+        String path = ConcatPaths({ dragEntry.m_rootPath, dragEntry.m_fileName + dragEntry.m_ext });
+        *dwMesh = new Drawable();
+        if (io.KeyShift)
+        {
+          MeshPtr mesh = GetMeshManager()->Create<Mesh>(path);
+          (*dwMesh)->SetMesh(mesh->Copy<Mesh>());
+        }
+        else
+        {
+          (*dwMesh)->SetMesh(GetMeshManager()->Create<Mesh>(path));
+        }
+        (*dwMesh)->GetMesh()->Init(false);
+
+        // Load bounding box once
+        *boundingBox = CreateBoundingBoxDebugObject((*dwMesh)->GetAABB(true));
+
+        // Add bounding box to the scene
+        currScene->AddEntity(*boundingBox);
+
+        meshLoaded = true;
+      }
+    }
+
+    Vec3 EditorViewport::CalculateDragMeshPosition
+    (
+      bool& meshLoaded,
+      EditorScenePtr currScene, 
+      Drawable** boundingBox
+    )
+    {
+      Vec3 lastDragMeshPos = Vec3(0.0f);
+
+      // Find the point of the curser in 3D coordinates
+      Ray ray = RayFromMousePosition();
+      EntityIdArray ignoreList;
+      if (meshLoaded)
+      {
+        ignoreList.push_back((*boundingBox)->m_id);
+      }
+      EditorScene::PickData pd = currScene->PickObject(ray, ignoreList);
+      bool meshFound = false;
+      if (pd.entity != nullptr)
+      {
+        meshFound = true;
+      }
+
+      // Translate bounding box to correct place
+      if (meshFound)
+      {
+        lastDragMeshPos = pd.pickPos;
+      }
+      else
+      {
+        // Locate the mesh to grid
+        Ray ray = RayFromMousePosition();
+        lastDragMeshPos = PointOnRay(ray, 5.0f);
+        g_app->m_grid->HitTest(ray, lastDragMeshPos);
+      }
+      (*boundingBox)->m_node->SetTranslation(lastDragMeshPos, TransformationSpace::TS_WORLD);
+
+      return lastDragMeshPos;
+    }
+
+    void EditorViewport::HandleDropMesh
+    (
+      bool& meshLoaded, 
+      bool& meshAddedToScene,
+      EditorScenePtr currScene,
+      Drawable** dwMesh,
+      Drawable** boundingBox
+    )
+    {
+      if (meshLoaded && !ImGui::IsMouseDragging(0))
+      {
+        // Remove debug bounding box mesh from scene
+        currScene->RemoveEntity((*boundingBox)->m_id);
+        meshLoaded = false;
+
+        if (!meshAddedToScene)
+        {
+          SafeDel(*dwMesh);
+        }
+        else
+        {
+          meshAddedToScene = false;
+        }
+
+        // Unload bounding box mesh
+        SafeDel(*boundingBox);
+      }
+    }
   }
 }

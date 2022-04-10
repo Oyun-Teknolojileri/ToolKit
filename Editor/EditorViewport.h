@@ -3,6 +3,7 @@
 #include "ToolKit.h"
 #include "Viewport.h"
 #include "UI.h"
+#include "GlobalDef.h"
 #include <functional>
 
 namespace ToolKit
@@ -12,6 +13,8 @@ namespace ToolKit
 
   namespace Editor
   {
+    class DirectoryEntry;
+
     enum class CameraAlignment
     {
       Free,
@@ -47,10 +50,41 @@ namespace ToolKit
       virtual void SetCamera(Camera* cam) override;
 
     protected:
+      void UpdateContentArea();
+      void UpdateWindow();
+      void DrawCommands();
+      void HandleDrop();
+      void DrawOverlays();
+
       // Mods.
       void FpsNavigationMode(float deltaTime);
       void OrbitPanMod(float deltaTime);
       virtual void AdjustZoom(float delta) override;
+
+    private:
+      void LoadDragMesh
+      (
+        bool& meshLoaded, 
+        DirectoryEntry dragEntry,
+        ImGuiIO io,
+        Drawable** dwMesh,
+        Drawable** boundingBox,
+        EditorScenePtr currScene
+      );
+      Vec3 CalculateDragMeshPosition
+      (
+        bool& meshLoaded,
+        EditorScenePtr currScene,
+        Drawable** boundingBox
+      );
+      void HandleDropMesh
+      (
+        bool& meshLoaded,
+        bool& meshAddedToScene, 
+        EditorScenePtr currScene,
+        Drawable** dwMesh, 
+        Drawable** boundingBox
+      );
 
     public:
       // Window properties.
@@ -62,6 +96,10 @@ namespace ToolKit
 
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;
+
+    protected:
+      Vec2 m_contentAreaMin;
+      Vec2 m_contentAreaMax;
 
     private:
       // States.

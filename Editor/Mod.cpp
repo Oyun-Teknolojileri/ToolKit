@@ -625,6 +625,7 @@ namespace ToolKit
           if (g_app->m_showPickingDebug)
           {
             g_app->m_cursor->m_worldLocation = pd.pickPos;
+
             if (m_dbgArrow == nullptr)
             {
               m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
