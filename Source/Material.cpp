@@ -212,11 +212,11 @@ namespace ToolKit
       {
         XmlAttribute* attr = node->first_attribute("name");
         ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath(attr->value()));
-        if (shader->m_shaderType == GL_VERTEX_SHADER)
+        if (shader->m_shaderType == GraphicTypes::VertexShader)
         {
           m_vertexShader = shader;
         }
-        else if (shader->m_shaderType == GL_FRAGMENT_SHADER)
+        else if (shader->m_shaderType == GraphicTypes::FragmentShader)
         {
           m_fragmetShader = shader;
         }

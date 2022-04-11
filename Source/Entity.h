@@ -3,6 +3,7 @@
 #include "Types.h"
 #include "ParameterBlock.h"
 #include "Component.h"
+#include "Serialize.h"
 
 namespace ToolKit
 {
@@ -30,7 +31,7 @@ namespace ToolKit
     Entity_Button
   };
 
-  class TK_API Entity
+  class TK_API Entity : public Serializable
   {
   public:
     Entity();
@@ -84,6 +85,7 @@ namespace ToolKit
   protected:
     virtual Entity* CopyTo(Entity* other) const;
     virtual Entity* InstantiateTo(Entity* other) const;
+    virtual void ParameterConstructor();
 
   private:
     void WeakCopy(Entity* other) const;
@@ -94,7 +96,8 @@ namespace ToolKit
     String m_name;
     String m_tag;
     bool m_visible;
-    ParameterBlock m_customData;
+    ParameterBlock m_localData; // Entitie's own data.
+    ParameterBlock m_customData; // Users can define variables from editor.
     ComponentPtrArray m_components;
 
     // Internal use only, Helper ID for entity deserialization.

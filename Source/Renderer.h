@@ -34,7 +34,7 @@ namespace ToolKit
   private:
     void SetProjectViewModel(Entity* ntt, Camera* cam);
     void BindProgram(ProgramPtr program);
-    void LinkProgram(GLuint program, GLuint vertexP, GLuint fragmentP);
+    void LinkProgram(uint program, uint vertexP, uint fragmentP);
     ProgramPtr CreateProgram(ShaderPtr vertex, ShaderPtr fragment);
     void FeedUniforms(ProgramPtr program);
     void SetVertexLayout(VertexLayout layout);
@@ -47,7 +47,7 @@ namespace ToolKit
     MaterialPtr m_overrideMat = nullptr;
 
   private:
-    GLuint m_currentProgram = 0;
+    uint m_currentProgram = 0;
     Mat4 m_project;
     Mat4 m_view;
     Mat4 m_model;

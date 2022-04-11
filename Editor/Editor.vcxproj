@@ -22,7 +22,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
-    <EnableUnitySupport>true</EnableUnitySupport>
+    <EnableUnitySupport>false</EnableUnitySupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -155,6 +155,7 @@
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="GlobalDef.h" />
     <ClInclude Include="Grid.h" />
+    <ClInclude Include="ImGui\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="PluginWindow.h" />
     <ClInclude Include="Workspace.h" />
     <ClInclude Include="ImGui\imconfig.h" />

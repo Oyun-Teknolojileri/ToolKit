@@ -3,7 +3,6 @@
 #include "Types.h"
 #include "Resource.h"
 #include "ResourceManager.h"
-#include "GL\glew.h"
 #include <vector>
 
 namespace ToolKit
@@ -26,7 +25,7 @@ namespace ToolKit
     virtual void Clear();
 
   public:
-    GLuint m_textureId = 0;
+    uint m_textureId = 0;
     int m_width = 0;
     int m_height = 0;
     int m_bytePP = 0;
@@ -57,10 +56,10 @@ namespace ToolKit
   {
   public:
     bool depthStencil = true;
-    int warpS = GL_REPEAT;
-    int warpT = GL_REPEAT;
-    int minFilter = GL_NEAREST;
-    int magFilter = GL_NEAREST;
+    GraphicTypes warpS = GraphicTypes::UVRepeat;
+    GraphicTypes warpT = GraphicTypes::UVRepeat;
+    GraphicTypes minFilter = GraphicTypes::SampleNearest;
+    GraphicTypes magFilter = GraphicTypes::SampleNearest;
   };
 
   class TK_API RenderTarget : public Texture
@@ -77,8 +76,8 @@ namespace ToolKit
     virtual void UnInit() override;
 
   public:
-    GLuint m_frameBufferId;
-    GLuint m_depthBufferId;
+    uint m_frameBufferId;
+    uint m_depthBufferId;
 
   private:
     RenderTargetSettigs m_settings;

@@ -15,6 +15,7 @@
 #include "GlobalDef.h"
 #include "ConsoleWindow.h"
 #include "EditorViewport.h"
+#include "GL/glew.h"
 #include "DebugNew.h"
 
 namespace ToolKit

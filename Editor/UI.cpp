@@ -1,11 +1,6 @@
 #include "stdafx.h"
 
 #include "UI.h"
-
-#include "ImGui/imgui_impl_sdl.h"
-#include "ImGui/imgui_impl_opengl3.h"
-#include "ImGui/imgui_stdlib.h"
-
 #include "App.h"
 #include "EditorViewport.h"
 #include "SDL.h"
@@ -18,6 +13,11 @@
 #include "PropInspector.h"
 #include "Util.h"
 #include "PluginWindow.h"
+
+#include "ImGui/imgui_stdlib.h"
+#include "Imgui/imgui_impl_sdl.h"
+#include "Imgui/imgui_impl_opengl3.h"
+
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -241,7 +241,7 @@ namespace ToolKit
       style->PopupBorderSize = 0.0f;
       style->FrameBorderSize = 0.0f;
       style->TabBorderSize = 0.0f;
-      style->PopupRounding = 5.0f;
+      style->PopupRounding = 0.0f;
       style->WindowTitleAlign = ImVec2(0.5f, 0.5f);
       style->WindowMenuButtonPosition = ImGuiDir_Right;
 
@@ -249,7 +249,7 @@ namespace ToolKit
       style->Colors[ImGuiCol_TextDisabled] = { 0.34509805f, 0.34509805f, 0.34509805f, 1.00f };
       style->Colors[ImGuiCol_WindowBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.94f };
       style->Colors[ImGuiCol_ChildBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.00f };
-      style->Colors[ImGuiCol_PopupBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.94f };
+      style->Colors[ImGuiCol_PopupBg] = { 0.13f, 0.13f, 0.13f, 0.94f };
       style->Colors[ImGuiCol_Border] = { 0.33333334f, 0.33333334f, 0.33333334f, 0.50f };
       style->Colors[ImGuiCol_BorderShadow] = { 0.15686275f, 0.15686275f, 0.15686275f, 0.00f };
       style->Colors[ImGuiCol_FrameBg] = { 0.16862746f, 0.16862746f, 0.16862746f, 0.54f };
@@ -305,10 +305,6 @@ namespace ToolKit
 
     void UI::ShowUI()
     {
-      ImGui_ImplOpenGL3_NewFrame();
-      ImGui_ImplSDL2_NewFrame(g_window);
-      ImGui::NewFrame();
-
       ShowDock();
       ShowAppMainMenuBar();
 
@@ -357,7 +353,17 @@ namespace ToolKit
         // This break gives us the ability to serve last arriving modal.
         break;
       }
+    }
 
+    void UI::BeginUI()
+    {
+      ImGui_ImplOpenGL3_NewFrame();
+      ImGui_ImplSDL2_NewFrame(g_window);
+      ImGui::NewFrame();
+    }
+
+    void UI::EndUI()
+    {
       ImGui::Render();
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
       ImGui::EndFrame();
@@ -366,6 +372,7 @@ namespace ToolKit
       ImGui::RenderPlatformWindowsDefault();
       SDL_GL_MakeCurrent(g_window, g_context);
 
+      // UI deferred functions.
       for (auto& action : m_postponedActions)
       {
         action();
@@ -832,7 +839,7 @@ namespace ToolKit
       }
     }
 
-    bool UI::ImageButtonDecorless(uint textureID, const ImVec2& size, bool flipImage)
+    bool UI::ImageButtonDecorless(uint textureID, const Vec2& size, bool flipImage)
     {
       ImGui::PushStyleColor(ImGuiCol_Button, Vec4());
       ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Vec4());
@@ -844,7 +851,7 @@ namespace ToolKit
       return res;
     }
 
-    bool UI::ToggleButton(uint textureID, const ImVec2& size, bool pushState)
+    bool UI::ToggleButton(uint textureID, const Vec2& size, bool pushState)
     {
       ImGuiStyle& style = ImGui::GetStyle();
       if (pushState)
@@ -870,7 +877,7 @@ namespace ToolKit
       return newPushState;
     }
 
-    bool UI::ToggleButton(const String& text, const ImVec2& size, bool pushState)
+    bool UI::ToggleButton(const String& text, const Vec2& size, bool pushState)
     {
       ImGuiStyle& style = ImGui::GetStyle();
       if (pushState)
@@ -1020,112 +1027,111 @@ namespace ToolKit
         return;
       }
 
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.KeysDown[io.KeyMap[ImGuiKey_Delete]] && !Exist(mask, SDL_SCANCODE_DELETE))
+      if 
+      (
+        ImGui::IsKeyPressed(ImGuiKey_Delete, false) &&
+        !Exist(mask, ImGuiKey_Delete)
+      )
       {
-        if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Delete]] == 0.0f)
-        {
-          ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
-        }
+        ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
       }
 
       if 
       (
-        io.KeyCtrl || io.KeyShift &&
-        io.KeysDown[SDL_SCANCODE_D] && 
+        (
+          ImGui::IsKeyDown(ImGuiKey_ModCtrl) || 
+          ImGui::IsKeyDown(ImGuiKey_ModShift)
+        ) &&
+        ImGui::IsKeyPressed(ImGuiKey_D, false) &&
         !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-        !Exist(mask, SDL_SCANCODE_D)
+        !Exist(mask, ImGuiKey_D)
       )
       {
-        if (io.KeysDownDuration[SDL_SCANCODE_D] == 0.0f)
-        {
-          ModManager::GetInstance()->DispatchSignal(BaseMod::m_duplicate);
-        }
-      }
-
-      if (io.KeysDown[SDL_SCANCODE_B] && !Exist(mask, SDL_SCANCODE_B))
-      {
-        if (io.KeysDownDuration[SDL_SCANCODE_B] == 0.0f)
-        {
-          ModManager::GetInstance()->SetMod(true, ModId::Select);
-        }
+        ModManager::GetInstance()->DispatchSignal(BaseMod::m_duplicate);
       }
 
       if 
       (
-        io.KeysDown[SDL_SCANCODE_S] && 
-        !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-        !Exist(mask, SDL_SCANCODE_S)
+        ImGui::IsKeyPressed(ImGuiKey_B, false) &&
+        !Exist(mask, ImGuiKey_B)
       )
       {
-        if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
-        {
-          ModManager::GetInstance()->SetMod(true, ModId::Scale);
-        }
+        ModManager::GetInstance()->SetMod(true, ModId::Select);
       }
 
-      if (io.KeysDown[SDL_SCANCODE_R] && !Exist(mask, SDL_SCANCODE_R))
+      if 
+      (
+        ImGui::IsKeyPressed(ImGuiKey_S, false) &&
+        !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+        !Exist(mask, ImGuiKey_S)
+      )
       {
-        if (io.KeysDownDuration[SDL_SCANCODE_R] == 0.0f)
-        {
-          ModManager::GetInstance()->SetMod(true, ModId::Rotate);
-        }
+        ModManager::GetInstance()->SetMod(true, ModId::Scale);
       }
 
-      if (io.KeysDown[SDL_SCANCODE_G] && !Exist(mask, SDL_SCANCODE_G))
+      if 
+      (
+        ImGui::IsKeyPressed(ImGuiKey_R, false) &&
+        !Exist(mask, ImGuiKey_R)
+      )
       {
-        if (io.KeysDownDuration[SDL_SCANCODE_G] == 0.0f)
-        {
-          ModManager::GetInstance()->SetMod(true, ModId::Move);
-        }
+        ModManager::GetInstance()->SetMod(true, ModId::Rotate);
+      }
+
+      if 
+      (
+        ImGui::IsKeyPressed(ImGuiKey_G, false) &&
+        !Exist(mask, ImGuiKey_G)
+      )
+      {
+        ModManager::GetInstance()->SetMod(true, ModId::Move);
       }
 
       EditorScenePtr currSecne = g_app->GetCurrentScene();
       if 
       (
-        io.KeyCtrl && 
-        io.KeysDown[SDL_SCANCODE_S] && 
-        !Exist(mask, SDL_SCANCODE_F)
+        ImGui::IsKeyDown(ImGuiKey_ModCtrl) &&
+        ImGui::IsKeyPressed(ImGuiKey_S, false) &&
+        !Exist(mask, ImGuiKey_S)
       )
       {
-        if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
-        {
-          XmlDocument* doc = new XmlDocument();
-          currSecne->Serialize(doc, nullptr);
-          SafeDel(doc);
-        }
+        XmlDocument* doc = new XmlDocument();
+        currSecne->Serialize(doc, nullptr);
+        SafeDel(doc);
       }
 
-      if (io.KeysDown[SDL_SCANCODE_F] && !Exist(mask, SDL_SCANCODE_F))
+      if 
+      (
+        ImGui::IsKeyPressed(ImGuiKey_F, false) &&
+        !Exist(mask, ImGuiKey_F)
+      )
       {
-        if (io.KeysDownDuration[SDL_SCANCODE_F] == 0.0f)
+        if (Window* wnd = g_app->GetOutliner())
         {
-          if (Window* wnd = g_app->GetOutliner())
+          if (Entity* ntt = currSecne->GetCurrentSelection())
           {
-            if (Entity* ntt = currSecne->GetCurrentSelection())
-            {
-              OutlinerWindow* outliner = static_cast<OutlinerWindow*> (wnd);
-              outliner->Focus(ntt);
-            }
+            OutlinerWindow* outliner = static_cast<OutlinerWindow*> (wnd);
+            outliner->Focus(ntt);
           }
         }
       }
 
       // Undo - Redo.
-      if (io.KeysDown[io.KeyMap[ImGuiKey_Z]] && !Exist(mask, SDL_SCANCODE_Z))
+      if 
+      (
+        ImGui::IsKeyPressed(ImGuiKey_Z, false) &&
+        !Exist(mask, ImGuiKey_Z)
+      )
       {
-        if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Z]] == 0.0f)
+        if (ImGui::IsKeyDown(ImGuiKey_ModCtrl))
         {
-          if (io.KeyCtrl)
+          if (ImGui::IsKeyDown(ImGuiKey_ModShift))
           {
-            if (io.KeyShift)
-            {
-              ActionManager::GetInstance()->Redo();
-            }
-            else
-            {
-              ActionManager::GetInstance()->Undo();
-            }
+            ActionManager::GetInstance()->Redo();
+          }
+          else
+          {
+            ActionManager::GetInstance()->Undo();
           }
         }
       }

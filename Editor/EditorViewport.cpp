@@ -123,13 +123,12 @@ namespace ToolKit
         return;
       }
 
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.MouseClicked[ImGuiMouseButton_Left])
+      if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
       {
         ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnDownSgnl);
       }
 
-      if (io.MouseReleased[ImGuiMouseButton_Left])
+      if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
       {
         ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnUpSgnl);
       }
@@ -139,12 +138,9 @@ namespace ToolKit
         ModManager::GetInstance()->DispatchSignal(BaseMod::m_leftMouseBtnDragSgnl);
       }
 
-      if (io.KeysDown[io.KeyMap[ImGuiKey_Delete]])
+      if (ImGui::IsKeyPressed(ImGuiKey_Delete, false))
       {
-        if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Delete]] == 0.0f)
-        {
-          ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
-        }
+        ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
       }
 
       ModShortCutSignals();
@@ -302,10 +298,10 @@ namespace ToolKit
           ImGui::Image((void*)(intptr_t)m_viewportImage->m_textureId, ImVec2(m_width, m_height), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
 
           if
-            (
-              m_wndContentAreaSize.x != m_width ||
-              m_wndContentAreaSize.y != m_height
-              )
+          (
+            m_wndContentAreaSize.x != m_width ||
+            m_wndContentAreaSize.y != m_height
+          )
           {
             OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
           }
@@ -378,33 +374,32 @@ namespace ToolKit
           float speed = g_app->m_camSpeed;
 
           Vec3 move;
-          ImGuiIO& io = ImGui::GetIO();
-          if (io.KeysDown[SDL_SCANCODE_A])
+          if (ImGui::IsKeyDown(ImGuiKey_A))
           {
             move += -right;
           }
 
-          if (io.KeysDown[SDL_SCANCODE_D])
+          if (ImGui::IsKeyDown(ImGuiKey_D))
           {
             move += right;
           }
 
-          if (io.KeysDown[SDL_SCANCODE_W])
+          if (ImGui::IsKeyDown(ImGuiKey_W))
           {
             move += dir;
           }
 
-          if (io.KeysDown[SDL_SCANCODE_S])
+          if (ImGui::IsKeyDown(ImGuiKey_S))
           {
             move += -dir;
           }
 
-          if (io.KeysDown[SDL_SCANCODE_PAGEUP])
+          if (ImGui::IsKeyDown(ImGuiKey_PageUp))
           {
             move += up;
           }
 
-          if (io.KeysDown[SDL_SCANCODE_PAGEDOWN])
+          if (ImGui::IsKeyDown(ImGuiKey_PageDown))
           {
             move += -up;
           }
@@ -433,9 +428,10 @@ namespace ToolKit
       if (cam)
       {
         // Adjust zoom always.
+        ImGuiIO& io = ImGui::GetIO();
         if (m_mouseOverContentArea)
         {
-          float delta = ImGui::GetIO().MouseWheel;
+          float delta = io.MouseWheel;
           if (glm::notEqual<float>(delta, 0.0f))
           {
             AdjustZoom(delta);
@@ -481,7 +477,6 @@ namespace ToolKit
           }
 
           // Orbit around it.
-          ImGuiIO& io = ImGui::GetIO();
           float x = io.MouseDelta.x;
           float y = io.MouseDelta.y;
           Vec3 r = cam->GetRight();
@@ -752,13 +747,9 @@ namespace ToolKit
 
       // Change drop mode with space key
       static bool boxMode = false;
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.KeysDown[io.KeyMap[ImGuiKey_Space]])
+      if (ImGui::IsKeyPressed(ImGuiKey_Space, false))
       {
-        if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Space]] == 0.0f)
-        {
-          boxMode = !boxMode;
-        }
+        boxMode = !boxMode;
       }
 
       if (meshFound && boxMode)

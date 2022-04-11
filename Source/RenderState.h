@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GL\glew.h"
 #include "Serialize.h"
 
 namespace ToolKit
@@ -14,11 +13,11 @@ namespace ToolKit
 
   enum class DrawType
   {
-    Triangle = GL_TRIANGLES,
-    Line = GL_LINES,
-    LineStrip = GL_LINE_STRIP,
-    LineLoop = GL_LINE_LOOP,
-    Point = GL_POINTS
+    Triangle = (int)GraphicTypes::DrawTypeTriangle,
+    Line = (int)GraphicTypes::DrawTypeLines,
+    LineStrip = (int)GraphicTypes::DrawTypeLineStrip,
+    LineLoop = (int)GraphicTypes::DrawTypeLineLoop,
+    Point = (int)GraphicTypes::DrawTypePoints
   };
 
   enum class CullingType
@@ -46,9 +45,9 @@ namespace ToolKit
     bool depthTestEnabled = true;
     BlendFunction blendFunction = BlendFunction::NONE;
     DrawType drawType = DrawType::Triangle;
-    GLuint diffuseTexture = 0;
+    uint diffuseTexture = 0;
     bool diffuseTextureInUse = false;
-    GLuint cubeMap = 0;
+    uint cubeMap = 0;
     bool cubeMapInUse = false;
     float lineWidth = 1.0f;
     VertexLayout vertexLayout = VertexLayout::None;

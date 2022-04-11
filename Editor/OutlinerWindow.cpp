@@ -246,7 +246,7 @@ namespace ToolKit
       
       if (ImGui::BeginPopupContextItem())
       {
-        if (ImGui::Button("SaveAsPrefab"))
+        if (ImGui::MenuItem("SaveAsPrefab"))
         {
           GetSceneManager()->GetCurrentScene()->SavePrefab(ntt);
           if (FolderWindow* browser = g_app->GetAssetBrowser())
@@ -294,7 +294,7 @@ namespace ToolKit
       // Hiearchy visibility.
       if (eType == EntityType::Entity_Node)
       {
-        float offset = ImGui::GetContentRegionAvailWidth() - 20.0f;
+        float offset = ImGui::GetContentRegionAvail().x - 20.0f;
         ImGui::SameLine(offset);
         icon = ntt->m_visible ? UI::m_visibleIcon : UI::m_invisibleIcon;
 

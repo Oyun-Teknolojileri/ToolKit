@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+#include "Serialize.h"
 
 namespace ToolKit
 {
@@ -12,7 +13,7 @@ namespace ToolKit
     TS_LOCAL
   };
 
-  class TK_API Node
+  class TK_API Node : public Serializable
   {
     friend class Animation;
     friend class Skeleton;

@@ -9,6 +9,7 @@
 #include "Surface.h"
 #include "Skeleton.h"
 #include "GlobalCache.h"
+#include "GL/glew.h"
 #include "DebugNew.h"
 
 namespace ToolKit

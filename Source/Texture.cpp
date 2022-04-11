@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Texture.h"
 #include "ToolKit.h"
+#include "GL/glew.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 #include "DebugNew.h"
@@ -60,7 +61,7 @@ namespace ToolKit
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    if (GLEW_EXT_texture_filter_anisotropic)
+    if (GL_EXT_texture_filter_anisotropic)
     {
       float aniso = 0.0f;
       glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
@@ -271,10 +272,10 @@ namespace ToolKit
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_settings.warpS);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_settings.warpT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_settings.minFilter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_settings.magFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)m_settings.warpS);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)m_settings.warpT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)m_settings.minFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)m_settings.magFilter);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     glGenFramebuffers(1, &m_frameBufferId);

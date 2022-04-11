@@ -5,6 +5,7 @@
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
 #include "rapidxml_print.hpp"
+#include "GL/glew.h"
 #include "DebugNew.h"
 
 #include <vector>
@@ -51,7 +52,7 @@ namespace ToolKit
       return;
     }
 
-    m_shaderHandle = glCreateShader(m_shaderType);
+    m_shaderHandle = glCreateShader((GLenum)m_shaderType);
     if (m_shaderHandle == 0)
     {
       return;
@@ -121,11 +122,11 @@ namespace ToolKit
     XmlNode* node = CreateXmlNode(doc, "type", container);
     container->append_node(node);
 
-    if (m_shaderType == GL_VERTEX_SHADER)
+    if (m_shaderType == GraphicTypes::VertexShader)
     {
       WriteAttr(node, doc, "name", "fragmentShader");
     }
-    else if (m_shaderType == GL_FRAGMENT_SHADER)
+    else if (m_shaderType == GraphicTypes::FragmentShader)
     {
       WriteAttr(node, doc, "name", "vertexShader");
     }
@@ -190,11 +191,11 @@ namespace ToolKit
         XmlAttribute* attr = node->first_attribute("name");
         if (strcmp("vertexShader", attr->value()) == 0)
         {
-          m_shaderType = GL_VERTEX_SHADER;
+          m_shaderType = GraphicTypes::VertexShader;
         }
         else if (strcmp("fragmentShader", attr->value()) == 0)
         {
-          m_shaderType = GL_FRAGMENT_SHADER;
+          m_shaderType = GraphicTypes::FragmentShader;
         }
         else
         {

@@ -20,6 +20,8 @@ namespace ToolKit
     m_name = "Entity_" + std::to_string(m_id);
     m_visible = true;
     _parentId = 0;
+
+    ParameterConstructor();
   }
 
   Entity::~Entity()
@@ -106,6 +108,32 @@ namespace ToolKit
   {
     WeakCopy(other);
     return other;
+  }
+
+  void Entity::ParameterConstructor()
+  {
+    m_localData.m_variants.reserve(3);
+    VariantCategory category = { "Meta", 100 };
+    ParameterVariant var;
+    ULongID id = ++m_lastId;
+    var.m_category = category;
+    var.m_name = "Id";
+    var.m_exposed = true;
+    var.m_editable = false;
+    var = id;
+    m_localData.Add(var);
+
+    var.m_name = "Name";
+    var.m_exposed = true;
+    var.m_editable = true;
+    var = "Entity_" + std::to_string(id);
+    m_localData.Add(var);
+
+    var.m_name = "Tag";
+    var.m_exposed = true;
+    var.m_editable = true;
+    var = "";
+    m_localData.Add(var);
   }
 
   void Entity::WeakCopy(Entity* other) const

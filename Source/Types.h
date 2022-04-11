@@ -58,6 +58,7 @@ namespace ToolKit
   typedef glm::mat3 Mat3;
   typedef glm::quat Quaternion;
   typedef std::vector<int> IntArray;
+  typedef std::vector<struct VariantCategory> VariantCategoryArray;
 
   // Resource types.
   typedef std::shared_ptr<class Animation> AnimationPtr;
@@ -184,5 +185,20 @@ namespace ToolKit
 
   static const float TK_FLT_MAX = std::numeric_limits<float>::max();
   static const int TK_INT_MAX = std::numeric_limits<int>::max();
+
+  // Graphics Api Type Overrides.
+  enum class GraphicTypes
+  {
+    VertexShader = 0x8B31,
+    FragmentShader = 0x8B30,
+    UVRepeat = 0x2901,
+    UVClampToEdge = 0x812F,
+    SampleNearest = 0x2600,
+    DrawTypeTriangle = 0x0004,
+    DrawTypeLines = 0x0001,
+    DrawTypeLineStrip = 0x0003,
+    DrawTypeLineLoop = 0x0002,
+    DrawTypePoints = 0x0000
+  };
 
 }

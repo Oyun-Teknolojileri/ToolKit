@@ -17,6 +17,31 @@ namespace ToolKit
     // View
     //////////////////////////////////////////////////////////////////////////
     
+    void View::ShowVariant(ParameterVariant& var)
+    {
+      if (!var.m_exposed)
+      {
+        return;
+      }
+
+      ImGui::BeginDisabled(!var.m_editable);
+
+      switch (var.GetType())
+      {
+      case ParameterVariant::VariantType::Bool:
+      {
+        bool val = var.GetVar<bool>();
+        ImGui::Checkbox(var.m_name.c_str(), &val);
+        var.SetVar(val);
+      }
+        break;
+      default:
+        break;
+      }
+
+      ImGui::EndDisabled();
+    }
+
     void View::DropZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction, const String& dropName)
     {
       DirectoryEntry dirEnt;
@@ -462,6 +487,28 @@ namespace ToolKit
           }
 
           ImGui::Indent(-offset);
+        }
+      }
+    }
+
+    void EntityView::ShowVariants()
+    {
+      ParameterBlock& localData = m_entity->m_localData;
+      
+      VariantCategoryArray categories;
+      localData.GetCategories(categories, true);
+
+      for (VariantCategory& category : categories)
+      {
+        if (ImGui::CollapsingHeader(category.Name.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+        {
+          ParameterVariantArray vars;
+          localData.GetByCategory(category.Name, vars);
+
+          for (ParameterVariant& var : vars)
+          {
+            ShowVariant(var);
+          }
         }
       }
     }

@@ -642,7 +642,7 @@ namespace ToolKit
               return;
           }
 
-          if (ImGui::Button("CopyPath", self->m_contextBtnSize))
+          if (ImGui::MenuItem("CopyPath"))
           {
               int copied = SDL_SetClipboardText(self->m_path.c_str());
               if (copied < 0)
@@ -667,7 +667,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("Refresh", self->m_contextBtnSize))
+        if (ImGui::MenuItem("Refresh"))
         {
           self->m_dirty = true;
           ImGui::CloseCurrentPopup();
@@ -683,7 +683,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("MakeDir", self->m_contextBtnSize))
+        if (ImGui::MenuItem("MakeDir"))
         {
           StringInputWindow* inputWnd = new StringInputWindow("New Directory##NwDirName", true);
           inputWnd->m_inputLabel = "Name";
@@ -709,7 +709,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("Rename", self->m_contextBtnSize))
+        if (ImGui::MenuItem("Rename"))
         {
           if (ResourceManager* rm = entry->GetManager())
           {
@@ -753,7 +753,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("Delete", self->m_contextBtnSize))
+        if (ImGui::MenuItem("Delete"))
         {
           if (entry->m_isDirectory)
           {
@@ -783,7 +783,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("Copy", self->m_contextBtnSize))
+        if (ImGui::MenuItem("Copy"))
         {
           String fullPath = entry->GetFullPath();
           String cpyPath = CreateCopyFileFullPath(fullPath);
@@ -803,7 +803,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("Crate", self->m_contextBtnSize))
+        if (ImGui::MenuItem("Crate"))
         {
           StringInputWindow* inputWnd = new StringInputWindow("Scene Name##ScnMat", true);
           inputWnd->m_inputVal = "New Scene";
@@ -836,7 +836,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("Crate", self->m_contextBtnSize))
+        if (ImGui::MenuItem("Crate"))
         {
           StringInputWindow* inputWnd = new StringInputWindow("Material Name##NwMat", true);
           inputWnd->m_inputVal = "New Material";

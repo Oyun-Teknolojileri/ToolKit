@@ -1,7 +1,7 @@
 #pragma once
 
 #include  <string>
-#include "GL\glew.h"
+#include "GLES3/gl32.h"
 #include "SDL_ttf.h"
 #include "Mesh.h"
 #include "Material.h"
@@ -55,7 +55,7 @@ private:
     glBindTexture(GL_TEXTURE_2D, textureId);
 
     GLint format = GL_RGBA;
-    Uint8 colors = m_sdlSurface->format->BytesPerPixel;
+    /*Uint8 colors = m_sdlSurface->format->BytesPerPixel;
     if (colors == 4)
     {
       if (m_sdlSurface->format->Rmask != 0x000000ff)
@@ -67,10 +67,14 @@ private:
     else
     {
       if (m_sdlSurface->format->Rmask == 0x000000ff)
+      {
         format = GL_RGB;
+      }
       else
+      {
         format = GL_BGR;
-    }
+      }
+    }*/
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

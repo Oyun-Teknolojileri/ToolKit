@@ -12,6 +12,10 @@ namespace ToolKit
     XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlParamterElement.c_str());
     WriteAttr(node, doc, XmlParamterTypeAttr, std::to_string((int)m_type));
     WriteAttr(node, doc, "name", m_name);
+    WriteAttr(node, doc, "category", m_category.Name);
+    WriteAttr(node, doc, "priority", std::to_string(m_category.Priority));
+    WriteAttr(node, doc, "exposed", std::to_string(m_exposed));
+    WriteAttr(node, doc, "editable", std::to_string(m_editable));
 
     switch (m_type)
     {
@@ -99,6 +103,10 @@ namespace ToolKit
     XmlAttribute* attr = parent->first_attribute(XmlParamterTypeAttr.c_str());
     m_type = (VariantType)std::atoi(attr->value());
     ReadAttr(parent, "name", m_name);
+    ReadAttr(parent, "category", m_category.Name);
+    ReadAttr(parent, "priority", m_category.Priority);
+    ReadAttr(parent, "exposed", m_exposed);
+    ReadAttr(parent, "editable", m_editable);
 
     switch (m_type)
     {
@@ -224,7 +232,42 @@ namespace ToolKit
     }
   }
 
-  bool ParameterBlock::GetFirst(const String& name, ParameterVariant& var)
+  void ParameterBlock::GetCategories(VariantCategoryArray& categories, bool sortDesc)
+  {
+    categories.clear();
+    std::unordered_map<String, int> categoryMap;
+    for (ParameterVariant& var : m_variants)
+    {
+      if (categoryMap.find(var.m_category.Name) == categoryMap.end())
+      {
+        categoryMap[var.m_category.Name] = var.m_category.Priority;
+        categories.push_back(var.m_category);
+      }
+    }
+
+    std::sort
+    (
+      categories.begin(),
+      categories.end(),
+      [](VariantCategory& a, VariantCategory& b) -> bool
+      {
+        return a.Priority > b.Priority;
+      }
+    );
+  }
+
+  void ParameterBlock::GetByCategory(const String& category, ParameterVariantArray& variants)
+  {
+    for (ParameterVariant& v : m_variants)
+    {
+      if (v.m_category.Name == category)
+      {
+        variants.push_back(v);
+      }
+    }
+  }
+
+  bool ParameterBlock::GetFirstByName(const String& name, ParameterVariant& var)
   {
     for (ParameterVariant& v : m_variants)
     {
@@ -238,7 +281,7 @@ namespace ToolKit
     return false;
   }
 
-  void ParameterBlock::Get(const String& name, ParameterVariantArray& variants)
+  void ParameterBlock::GetByName(const String& name, ParameterVariantArray& variants)
   {
     for (ParameterVariant& v : m_variants)
     {

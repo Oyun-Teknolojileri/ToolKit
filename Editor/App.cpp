@@ -18,6 +18,7 @@
 #include "PropInspector.h"
 #include "PluginWindow.h"
 #include "EditorViewport2d.h"
+#include "GL/glew.h"
 #include "DebugNew.h"
 
 #include <filesystem>
@@ -140,6 +141,9 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
+      UI::BeginUI();
+      UI::ShowUI();
+
       // Update animations.
       GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
       
@@ -189,7 +193,7 @@ namespace ToolKit
       m_renderer->SetRenderTarget(nullptr);
 
       // Render UI.
-      UI::ShowUI();
+      UI::EndUI();
     }
 
     void App::OnResize(uint width, uint height)
@@ -965,7 +969,7 @@ namespace ToolKit
         }
 
         RenderTargetSettigs rtSet;
-        rtSet.warpS = rtSet.warpT = GL_CLAMP_TO_EDGE;
+        rtSet.warpS = rtSet.warpT = GraphicTypes::UVClampToEdge;
         RenderTarget stencilMask((int)viewport->m_width, (int)viewport->m_height, rtSet);
         stencilMask.Init();
 
@@ -1002,8 +1006,8 @@ namespace ToolKit
 
         m_renderer->SetRenderTarget(viewport->m_viewportImage, false);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         // Dilate.
         glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);

@@ -7,9 +7,9 @@
 #include "Util.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
-#include "DebugNew.h"
-
+#include "GL/glew.h"
 #include <unordered_map>
+#include "DebugNew.h"
 
 namespace ToolKit
 {

@@ -7,6 +7,8 @@
 namespace ToolKit
 {
 
+  extern TK_API ResourceManager* GetResourceManager(ResourceType type);
+
 #define TKResouceType(type) \
   static ResourceType GetTypeStatic() { return ResourceType::type; } \
   virtual ResourceType GetType() const { return ResourceType::type; }

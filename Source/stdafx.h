@@ -30,17 +30,9 @@
 // Stb
 #include "stb/stb_image.h"
 
-// Glew
-#include "GL/glew.h"
-
 // RapidXml
 #include "rapidxml_ext.h"
 #include "rapidxml_utils.hpp"
-
-#ifdef TK_EDITOR
-  // ImGui
-  #include "ImGui/imgui.h"
-#endif 
 
 #include "Logger.h"
 #include "Events.h"

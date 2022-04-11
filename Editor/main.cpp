@@ -1,5 +1,4 @@
 #include "stdafx.h"
-
 #include "App.h"
 #include "Types.h"
 #include "Mod.h"
@@ -8,7 +7,11 @@
 #include "Common/GlErrorReporter.h"
 #include "Common/SDLEventPool.h"
 #include "ImGui/imgui_impl_sdl.h"
+#include "GL/glew.h"
+
 #include "SDL.h"
+#include "SDL_opengl.h"
+
 #include "DebugNew.h"
 
 #include <stdio.h>
@@ -85,11 +88,11 @@ namespace ToolKit
 
 #ifndef __EMSCRIPTEN__
 #ifdef TK_DEBUG
-            if (glDebugMessageCallbackARB != NULL) 
+            if (glDebugMessageCallback != NULL) 
             {
               glEnable(GL_DEBUG_OUTPUT);
               glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-              glDebugMessageCallbackARB(&GLDebugMessageCallback, nullptr);
+              glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
             }
 
             GlErrorReporter::Report = [](const std::string& msg) -> void 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ToolKit.h"
-#include "GL\glew.h"
+#include "GL/glew.h"
 
 #include <string>
 #include <functional>
@@ -18,7 +18,7 @@ GlErrorReporter::ReportFnPtr GlErrorReporter::Report = [](const std::string& msg
 };
 
 // https://gist.github.com/liam-middlebrook/c52b069e4be2d87a6d2f
-void GLAPIENTRY GLDebugMessageCallback
+void GLDebugMessageCallback
 (
   GLenum source,
   GLenum type,

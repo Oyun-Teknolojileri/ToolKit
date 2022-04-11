@@ -22,7 +22,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
-    <EnableUnitySupport>true</EnableUnitySupport>
+    <EnableUnitySupport>false</EnableUnitySupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -46,13 +46,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\Bin\</OutDir>
     <IncludePath>$(SolutionDir)Source;$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\Glew\lib\Release\x64;$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\\Glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\Bin\</OutDir>
     <IncludePath>$(SolutionDir)Source;$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\Glew\lib\Release\x64;$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\\Glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -68,7 +68,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>SDL2main.lib;SDL2.lib;OpenGL32.lib;glew32.lib;SDL2_ttf.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;glew32.lib;OpenGL32.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

@@ -39,8 +39,8 @@ namespace ToolKit
     std::unordered_map<String, ParameterVariant> m_shaderParams;
 
     String m_tag;
-    GLuint m_shaderType = GL_VERTEX_SHADER;
-    GLuint m_shaderHandle = 0;
+    GraphicTypes m_shaderType = GraphicTypes::VertexShader;
+    uint m_shaderHandle = 0;
     std::vector<Uniform> m_uniforms;
     String m_source;
   };
@@ -53,7 +53,7 @@ namespace ToolKit
     ~Program();
 
   public:
-    GLuint m_handle = 0;
+    uint m_handle = 0;
     String m_tag;
     ShaderPtrArray m_shaders;
   };
