@@ -739,11 +739,6 @@ namespace ToolKit
       if (pd.entity != nullptr)
       {
         meshFound = true;
-      }
-
-      // Translate bounding box to correct place
-      if (meshFound)
-      {
         lastDragMeshPos = pd.pickPos;
       }
       else
@@ -753,7 +748,26 @@ namespace ToolKit
         lastDragMeshPos = PointOnRay(ray, 5.0f);
         g_app->m_grid->HitTest(ray, lastDragMeshPos);
       }
+
+      // Change drop mode with space key
+      static bool boxMode = false;
+      ImGuiIO& io = ImGui::GetIO();
+      if (io.KeysDown[io.KeyMap[ImGuiKey_Space]])
+      {
+        if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Space]] == 0.0f)
+        {
+          boxMode = !boxMode;
+        }
+      }
+
+      if (meshFound && boxMode)
+      {
+        // Assuming the origin of the mesh is at the bottom
+        lastDragMeshPos.y = static_cast<Drawable*>(pd.entity)->GetAABB(true).max.y;
+      }
+
       (*boundingBox)->m_node->SetTranslation(lastDragMeshPos, TransformationSpace::TS_WORLD);
+
 
       return lastDragMeshPos;
     }
