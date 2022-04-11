@@ -75,6 +75,7 @@ namespace ToolKit
       (
         bool& meshLoaded,
         EditorScenePtr currScene,
+        Drawable* dwMesh,
         Drawable** boundingBox
       );
       void HandleDropMesh

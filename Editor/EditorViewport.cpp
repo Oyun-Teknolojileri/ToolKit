@@ -601,7 +601,7 @@ namespace ToolKit
           LoadDragMesh(meshLoaded, dragEntry, io, &dwMesh, &boundingBox, currScene);
 
           // Show bounding box
-          lastDragMeshPos = CalculateDragMeshPosition(meshLoaded, currScene, &boundingBox);
+          lastDragMeshPos = CalculateDragMeshPosition(meshLoaded, currScene, dwMesh, &boundingBox);
         }
 
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
@@ -722,6 +722,7 @@ namespace ToolKit
     (
       bool& meshLoaded,
       EditorScenePtr currScene, 
+      Drawable* dwMesh, 
       Drawable** boundingBox
     )
     {
@@ -762,12 +763,16 @@ namespace ToolKit
 
       if (meshFound && boxMode)
       {
-        // Assuming the origin of the mesh is at the bottom
-        lastDragMeshPos.y = static_cast<Drawable*>(pd.entity)->GetAABB(true).max.y;
+        float firstY = lastDragMeshPos.y;
+        lastDragMeshPos.y -= dwMesh->GetAABB(false).min.y;
+
+        if (firstY > lastDragMeshPos.y)
+        {
+          lastDragMeshPos.y = firstY;
+        }
       }
 
       (*boundingBox)->m_node->SetTranslation(lastDragMeshPos, TransformationSpace::TS_WORLD);
-
 
       return lastDragMeshPos;
     }
