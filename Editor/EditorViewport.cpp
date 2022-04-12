@@ -586,7 +586,10 @@ namespace ToolKit
       {
         // Check if the drag object is a mesh
         const ImGuiPayload* dragPayload = ImGui::GetDragDropPayload();
-        IM_ASSERT(dragPayload->DataSize == sizeof(DirectoryEntry));
+        if (dragPayload->DataSize != sizeof(DirectoryEntry))
+        {
+          return;
+        }
         DirectoryEntry dragEntry = *(const DirectoryEntry*)dragPayload->Data;
 
         Vec3 lastDragMeshPos = Vec3(0.0f);
