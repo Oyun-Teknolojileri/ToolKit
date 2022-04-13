@@ -250,7 +250,7 @@ namespace ToolKit
     void EditorViewport::SetCamera(Camera* cam)
     {
       Viewport::SetCamera(cam);
-      UpdateCameraLens(m_width, m_height);
+      AdjustZoom(0.0f);
       m_attachedCamera = NULL_HANDLE;
     }
 
