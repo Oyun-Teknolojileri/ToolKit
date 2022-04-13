@@ -515,6 +515,11 @@ namespace ToolKit
         de.m_fileName = e.path().stem().u8string();
         de.m_ext = e.path().filename().extension().u8string();
 
+        // Do not show hidden files
+        if (de.m_fileName.size() > 1 && de.m_fileName[0] == '.')
+        {
+          continue;
+        }
         
         if (de.m_isDirectory)
         {
@@ -522,6 +527,7 @@ namespace ToolKit
         }
         else
         {
+
           m_temp_files.push_back(de);
         }
       }

@@ -162,13 +162,19 @@ namespace ToolKit
       {
         if (dir.is_directory())
         {
-          Project project = 
-          { 
-            dir.path().filename().u8string(),
-            ""
-          };
+          std::string dirName = dir.path().filename().u8string();
 
-          m_projects.push_back(project);
+          // Hide hidden folders
+          if (dirName.size() > 1 && dirName[0] != '.')
+          {
+            Project project =
+            {
+              dirName,
+              ""
+            };
+
+            m_projects.push_back(project);
+          }
         }
       }
     }
