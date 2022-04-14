@@ -135,17 +135,18 @@ namespace ToolKit
       {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
         {
-          IM_ASSERT(payload->DataSize == 0);
-          
           // Change the selected files hierarchy
           EntityRawPtrArray selected;
           currScene->GetSelectedEntities(selected);
+
           for (int i = 0; i < selected.size(); i++)
           {
-            g_child.push_back(selected[i]->m_id);
+            if (selected[i]->m_id != e->m_id)
+            {
+              g_child.push_back(selected[i]->m_id);
+            }
           }
           g_parent = e->m_id;
-
         }
         ImGui::EndDragDropTarget();
       }
@@ -159,9 +160,6 @@ namespace ToolKit
       {
         HandleStates();
 
-        g_parent = NULL_HANDLE;
-        g_child.clear();
-
         if (DrawHeader("Scene", 0, ImGuiTreeNodeFlags_DefaultOpen, UI::m_collectionIcon))
         {
           // Orphan in this case.
@@ -169,15 +167,17 @@ namespace ToolKit
           {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
             {
-              IM_ASSERT(payload->DataSize == sizeof(ULongID*));
-              g_child.push_back(*(ULongID*)payload->Data);
-              
-              for (int i = 0; i < g_child.size(); i++)
+              EntityRawPtrArray selected;
+              currScene->GetSelectedEntities(selected);
+
+              for (int i = 0; i < selected.size(); i++)
               {
-                Entity* child = currScene->GetEntity(g_child[i]);
-                child->m_node->OrphanSelf(true);
+                if (selected[i]->m_id != NULL_HANDLE)
+                {
+                  g_child.push_back(selected[i]->m_id);
+                }
               }
-              g_child.clear();
+              g_parent = NULL_HANDLE;
             }
             ImGui::EndDragDropTarget();
           }
@@ -195,16 +195,21 @@ namespace ToolKit
       }
 
       // Update hierarchy if there is a change.
-      for (int i = 0; i < g_child.size(); i++)
+      std::vector<ULongID>::iterator it = g_child.begin();
+      while (it != g_child.end())
       {
-        Entity* child = currScene->GetEntity(g_child[i]);
+        Entity* child = currScene->GetEntity(*it);
         child->m_node->OrphanSelf(true);
+
         if (g_parent != NULL_HANDLE)
         {
           Entity* parent = currScene->GetEntity(g_parent);
           parent->m_node->AddChild(child->m_node, true);
         }
+        it = g_child.erase(it);
       }
+
+      g_parent = NULL_HANDLE;
 
       ImGui::PopStyleVar();
       ImGui::End();
