@@ -26,17 +26,16 @@ namespace ToolKit
     // Recursively show entity hierarchy & update via drag drop.
     ULongID g_parent = NULL_HANDLE;
     std::vector<ULongID> g_child;
+    static ImGuiTreeNodeFlags g_baseNodeFlags
+      = ImGuiTreeNodeFlags_OpenOnArrow
+      | ImGuiTreeNodeFlags_OpenOnDoubleClick
+      | ImGuiTreeNodeFlags_SpanAvailWidth
+      | ImGuiTreeNodeFlags_AllowItemOverlap
+      | ImGuiTreeNodeFlags_FramePadding;
 
     void OutlinerWindow::ShowNode(Entity* e)
     {
-      static ImGuiTreeNodeFlags baseFlags
-        = ImGuiTreeNodeFlags_OpenOnArrow
-        | ImGuiTreeNodeFlags_OpenOnDoubleClick
-        | ImGuiTreeNodeFlags_SpanAvailWidth
-        | ImGuiTreeNodeFlags_AllowItemOverlap
-        | ImGuiTreeNodeFlags_FramePadding;
-
-      ImGuiTreeNodeFlags nodeFlags = baseFlags;
+      ImGuiTreeNodeFlags nodeFlags = g_baseNodeFlags;
       EditorScenePtr currScene = g_app->GetCurrentScene();
       if (currScene->IsSelected(e->m_id))
       {
@@ -59,7 +58,7 @@ namespace ToolKit
             {
               if (childNtt->m_node->m_children.empty())
               {
-                nodeFlags = baseFlags;
+                nodeFlags = g_baseNodeFlags;
                 if (currScene->IsSelected(childNtt->m_id))
                 {
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
@@ -70,7 +69,7 @@ namespace ToolKit
               }
               else
               {
-                nodeFlags = baseFlags;
+                nodeFlags = g_baseNodeFlags;
                 if (currScene->IsSelected(childNtt->m_id))
                 {
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
@@ -160,28 +159,8 @@ namespace ToolKit
       {
         HandleStates();
 
-        if (DrawHeader("Scene", 0, ImGuiTreeNodeFlags_DefaultOpen, UI::m_collectionIcon))
+        if (DrawRootHeader("Scene", 0, g_baseNodeFlags | ImGuiTreeNodeFlags_DefaultOpen, UI::m_collectionIcon))
         {
-          // Orphan in this case.
-          if (ImGui::BeginDragDropTarget())
-          {
-            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
-            {
-              EntityRawPtrArray selected;
-              currScene->GetSelectedEntities(selected);
-
-              for (int i = 0; i < selected.size(); i++)
-              {
-                if (selected[i]->m_id != NULL_HANDLE)
-                {
-                  g_child.push_back(selected[i]->m_id);
-                }
-              }
-              g_parent = NULL_HANDLE;
-            }
-            ImGui::EndDragDropTarget();
-          }
-
           const EntityRawPtrArray& ntties = currScene->GetEntities();
           EntityRawPtrArray roots;
           GetRootEntities(ntties, roots);
@@ -231,10 +210,31 @@ namespace ToolKit
       GetParents(ntt, m_nttFocusPath);
     }
 
-    bool OutlinerWindow::DrawHeader(const String& text, uint id, ImGuiTreeNodeFlags flags, TexturePtr icon)
+    bool OutlinerWindow::DrawRootHeader(const String& rootName, uint id, ImGuiTreeNodeFlags flags, TexturePtr icon)
     {
       const String sId = "##" + std::to_string(id);
       bool isOpen = ImGui::TreeNodeEx(sId.c_str(), flags);
+
+      // Orphan in this case.
+      if (ImGui::BeginDragDropTarget())
+      {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
+        {
+          EntityRawPtrArray selected;
+          EditorScenePtr currScene = g_app->GetCurrentScene();
+          currScene->GetSelectedEntities(selected);
+
+          for (int i = 0; i < selected.size(); i++)
+          {
+            if (selected[i]->m_id != NULL_HANDLE)
+            {
+              g_child.push_back(selected[i]->m_id);
+            }
+          }
+          g_parent = NULL_HANDLE;
+        }
+        ImGui::EndDragDropTarget();
+      }
 
       if (icon)
       {
@@ -243,7 +243,7 @@ namespace ToolKit
       }
 
       ImGui::SameLine();
-      ImGui::Text(text.c_str());
+      ImGui::Text(rootName.c_str());
 
       return isOpen;
     }
