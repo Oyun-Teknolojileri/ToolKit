@@ -2,12 +2,14 @@
 
 #include "UI.h"
 
+
 namespace ToolKit
 {
   namespace Editor
   {
     class OutlinerWindow : public Window
     {
+      
     public:
       OutlinerWindow(XmlNode* node);
       OutlinerWindow();

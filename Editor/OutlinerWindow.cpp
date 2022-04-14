@@ -25,7 +25,7 @@ namespace ToolKit
 
     // Recursively show entity hierarchy & update via drag drop.
     ULongID g_parent = NULL_HANDLE;
-    ULongID g_child = NULL_HANDLE;
+    std::vector<ULongID> g_child;
 
     void OutlinerWindow::ShowNode(Entity* e)
     {
@@ -100,9 +100,10 @@ namespace ToolKit
 
     void OutlinerWindow::SetItemState(Entity* e)
     {
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+
       if (ImGui::IsItemClicked())
       {
-        EditorScenePtr currScene = g_app->GetCurrentScene();
         if (ImGui::GetIO().KeyShift)
         {
           if (currScene->IsSelected(e->m_id))
@@ -116,14 +117,16 @@ namespace ToolKit
         }
         else
         {
-          currScene->ClearSelection();
-          currScene->AddToSelection(e->m_id, false);
+          if (!currScene->IsSelected(e->m_id))
+          {
+            currScene->AddToSelection(e->m_id, false);
+          }
         }
       }
 
       if (ImGui::BeginDragDropSource())
-      {
-        ImGui::SetDragDropPayload("HierarcyChange", &e->m_id, sizeof(ULongID*));
+      { 
+        ImGui::SetDragDropPayload("HierarcyChange", nullptr, 0);
         ImGui::Text("Drop on the new parent.");
         ImGui::EndDragDropSource();
       }
@@ -132,9 +135,17 @@ namespace ToolKit
       {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
         {
-          IM_ASSERT(payload->DataSize == sizeof(ULongID*));
-          g_child = *(ULongID*)payload->Data;
+          IM_ASSERT(payload->DataSize == 0);
+          
+          // Change the selected files hierarchy
+          EntityRawPtrArray selected;
+          currScene->GetSelectedEntities(selected);
+          for (int i = 0; i < selected.size(); i++)
+          {
+            g_child.push_back(selected[i]->m_id);
+          }
           g_parent = e->m_id;
+
         }
         ImGui::EndDragDropTarget();
       }
@@ -149,7 +160,7 @@ namespace ToolKit
         HandleStates();
 
         g_parent = NULL_HANDLE;
-        g_child = NULL_HANDLE;
+        g_child.clear();
 
         if (DrawHeader("Scene", 0, ImGuiTreeNodeFlags_DefaultOpen, UI::m_collectionIcon))
         {
@@ -159,9 +170,14 @@ namespace ToolKit
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
             {
               IM_ASSERT(payload->DataSize == sizeof(ULongID*));
-              g_child = *(ULongID*)payload->Data;
-              Entity* child = currScene->GetEntity(g_child);
-              child->m_node->OrphanSelf(true);
+              g_child.push_back(*(ULongID*)payload->Data);
+              
+              for (int i = 0; i < g_child.size(); i++)
+              {
+                Entity* child = currScene->GetEntity(g_child[i]);
+                child->m_node->OrphanSelf(true);
+              }
+              g_child.clear();
             }
             ImGui::EndDragDropTarget();
           }
@@ -179,9 +195,9 @@ namespace ToolKit
       }
 
       // Update hierarchy if there is a change.
-      if (g_child != NULL_HANDLE)
+      for (int i = 0; i < g_child.size(); i++)
       {
-        Entity* child = currScene->GetEntity(g_child);
+        Entity* child = currScene->GetEntity(g_child[i]);
         child->m_node->OrphanSelf(true);
         if (g_parent != NULL_HANDLE)
         {
