@@ -907,6 +907,10 @@ namespace ToolKit
           currScene->AddToSelection(copies.front()->m_id, true);
           cpyCount += (int)copies.size();
         }
+
+        // Status info
+        g_app->m_statusMsg = std::to_string(cpyCount) + " entities are copied.";
+
         ActionManager::GetInstance()->GroupLastActions(cpyCount);
       }
     }
