@@ -362,7 +362,7 @@ namespace ToolKit
           SafeDel(prevMod);
           m_modStack.pop_back();
         }
-
+        
         static String modNameDbg;
         BaseMod* nextMod = nullptr;
         switch (mod)
@@ -408,6 +408,18 @@ namespace ToolKit
             }
           }
         }
+
+        /*
+        * If the state is changed while the previous state is being actively used
+        * (in StateTransitionTo state), delete the last function pointers from the array,
+        * since the function parameters are not valid anymore.
+        */
+        EditorViewport* vp = g_app->GetActiveViewport();
+        if (vp == nullptr)
+        {
+          return;
+        }
+        vp->m_drawCommands.clear();
       }
     }
 
