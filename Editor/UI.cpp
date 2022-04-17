@@ -65,6 +65,8 @@ namespace ToolKit
     TexturePtr UI::m_lockIcon;
     TexturePtr UI::m_visibleIcon;
     TexturePtr UI::m_invisibleIcon;
+    TexturePtr UI::m_lockedIcon;
+    TexturePtr UI::m_unlockedIcon;
     TexturePtr UI::m_viewZoomIcon;
 
     void UI::Init()
@@ -77,7 +79,7 @@ namespace ToolKit
       io.ConfigWindowsMoveFromTitleBarOnly = true;
 
       // Handle font loading.
-      static const ImWchar utf8TR[] = 
+      static const ImWchar utf8TR[] =
       {
         0x0020, 0x00FF,
         0x00c7, 0x00c7,
@@ -92,7 +94,7 @@ namespace ToolKit
         0x015f, 0x015f,
         0x00dc, 0x00dc,
         0x00fc, 0x00fc,
-        0 
+        0
       };
       io.Fonts->AddFontFromFileTTF(FontPath("bmonofont-i18n.ttf").c_str(), 16, nullptr, utf8TR);
 
@@ -162,45 +164,45 @@ namespace ToolKit
 
     void UI::InitIcons()
     {
-      m_selectIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/select.png", true));
+      m_selectIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/select.png", true));
       m_selectIcn->Init();
-      m_cursorIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/cursor.png", true));
+      m_cursorIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/cursor.png", true));
       m_cursorIcn->Init();
-      m_moveIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/move.png", true));
+      m_moveIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/move.png", true));
       m_moveIcn->Init();
-      m_rotateIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/rotate.png", true));
+      m_rotateIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/rotate.png", true));
       m_rotateIcn->Init();
-      m_scaleIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/scale.png", true));
+      m_scaleIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/scale.png", true));
       m_scaleIcn->Init();
-      m_snapIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/snap.png", true));
+      m_snapIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/snap.png", true));
       m_snapIcon->Init();
-      m_audioIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/audio.png", true));
+      m_audioIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/audio.png", true));
       m_audioIcon->Init();
-      m_cameraIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/camera.png", true));
+      m_cameraIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/camera.png", true));
       m_cameraIcon->Init();
-      m_clipIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/clip.png", true));
+      m_clipIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/clip.png", true));
       m_clipIcon->Init();
-      m_fileIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/file.png", true));
+      m_fileIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/file.png", true));
       m_fileIcon->Init();
-      m_folderIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/folder.png", true));
+      m_folderIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/folder.png", true));
       m_folderIcon->Init();
-      m_imageIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/image.png", true));
+      m_imageIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/image.png", true));
       m_imageIcon->Init();
-      m_lightIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/light.png", true));
+      m_lightIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/light.png", true));
       m_lightIcon->Init();
-      m_materialIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/material.png", true));
+      m_materialIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/material.png", true));
       m_materialIcon->Init();
-      m_meshIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/mesh.png", true));
+      m_meshIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/mesh.png", true));
       m_meshIcon->Init();
-      m_armatureIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/armature.png", true));
+      m_armatureIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/armature.png", true));
       m_armatureIcon->Init();
-      m_codeIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/code.png", true));
+      m_codeIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/code.png", true));
       m_codeIcon->Init();
-      m_boneIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/bone.png", true));
+      m_boneIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/bone.png", true));
       m_boneIcon->Init();
-      m_worldIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/world.png", true));
+      m_worldIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/world.png", true));
       m_worldIcon->Init();
-      m_axisIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/axis.png", true));
+      m_axisIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/axis.png", true));
       m_axisIcon->Init();
       m_playIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/play.png", true));
       m_playIcon->Init();
@@ -220,6 +222,10 @@ namespace ToolKit
       m_visibleIcon->Init();
       m_invisibleIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/invisible.png", true));
       m_invisibleIcon->Init();
+      m_lockedIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/small_locked.png", true));
+      m_lockedIcon->Init();
+      m_unlockedIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/small_unlocked.png", true));
+      m_unlockedIcon->Init();
       m_viewZoomIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/viewzoom.png", true));
       m_viewZoomIcon->Init();
     }
@@ -599,7 +605,7 @@ namespace ToolKit
         load.clear();
         return;
       }
-      
+
       if (load.empty())
       {
         std::fstream importList;
@@ -988,12 +994,12 @@ namespace ToolKit
 
       if ((rightClick || leftClick || middleClick) && m_mouseHover) // Activate with any click.
       {
-        if 
-        (
-          ImGui::IsMouseDragging(ImGuiMouseButton_Left) ||
-          ImGui::IsMouseDragging(ImGuiMouseButton_Right) ||
-          ImGui::IsMouseDragging(ImGuiMouseButton_Middle)
-        )
+        if
+          (
+            ImGui::IsMouseDragging(ImGuiMouseButton_Left) ||
+            ImGui::IsMouseDragging(ImGuiMouseButton_Right) ||
+            ImGui::IsMouseDragging(ImGuiMouseButton_Middle)
+            )
         {
           return;
         }
@@ -1027,84 +1033,84 @@ namespace ToolKit
         return;
       }
 
-      if 
-      (
-        ImGui::IsKeyPressed(ImGuiKey_Delete, false) &&
-        !Exist(mask, ImGuiKey_Delete)
-      )
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_Delete, false) &&
+          !Exist(mask, ImGuiKey_Delete)
+          )
       {
         ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
       }
 
-      if 
-      (
+      if
         (
-          ImGui::IsKeyDown(ImGuiKey_ModCtrl) || 
-          ImGui::IsKeyDown(ImGuiKey_ModShift)
-        ) &&
-        ImGui::IsKeyPressed(ImGuiKey_D, false) &&
-        !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-        !Exist(mask, ImGuiKey_D)
-      )
+          (
+            ImGui::IsKeyDown(ImGuiKey_ModCtrl) ||
+            ImGui::IsKeyDown(ImGuiKey_ModShift)
+            ) &&
+          ImGui::IsKeyPressed(ImGuiKey_D, false) &&
+          !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+          !Exist(mask, ImGuiKey_D)
+          )
       {
         ModManager::GetInstance()->DispatchSignal(BaseMod::m_duplicate);
       }
 
-      if 
-      (
-        ImGui::IsKeyPressed(ImGuiKey_B, false) &&
-        !Exist(mask, ImGuiKey_B)
-      )
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_B, false) &&
+          !Exist(mask, ImGuiKey_B)
+          )
       {
         ModManager::GetInstance()->SetMod(true, ModId::Select);
       }
 
-      if 
-      (
-        ImGui::IsKeyPressed(ImGuiKey_S, false) &&
-        !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-        !Exist(mask, ImGuiKey_S)
-      )
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_S, false) &&
+          !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+          !Exist(mask, ImGuiKey_S)
+          )
       {
         ModManager::GetInstance()->SetMod(true, ModId::Scale);
       }
 
-      if 
-      (
-        ImGui::IsKeyPressed(ImGuiKey_R, false) &&
-        !Exist(mask, ImGuiKey_R)
-      )
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_R, false) &&
+          !Exist(mask, ImGuiKey_R)
+          )
       {
         ModManager::GetInstance()->SetMod(true, ModId::Rotate);
       }
 
-      if 
-      (
-        ImGui::IsKeyPressed(ImGuiKey_G, false) &&
-        !Exist(mask, ImGuiKey_G)
-      )
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_G, false) &&
+          !Exist(mask, ImGuiKey_G)
+          )
       {
         ModManager::GetInstance()->SetMod(true, ModId::Move);
       }
 
       EditorScenePtr currSecne = g_app->GetCurrentScene();
-      if 
-      (
-        ImGui::IsKeyDown(ImGuiKey_ModCtrl) &&
-        ImGui::IsKeyPressed(ImGuiKey_S, false) &&
-        !Exist(mask, ImGuiKey_S)
-      )
+      if
+        (
+          ImGui::IsKeyDown(ImGuiKey_ModCtrl) &&
+          ImGui::IsKeyPressed(ImGuiKey_S, false) &&
+          !Exist(mask, ImGuiKey_S)
+          )
       {
         XmlDocument* doc = new XmlDocument();
         currSecne->Serialize(doc, nullptr);
         SafeDel(doc);
       }
 
-      if 
-      (
-        ImGui::IsKeyPressed(ImGuiKey_F, false) &&
-        !Exist(mask, ImGuiKey_F)
-      )
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_F, false) &&
+          !Exist(mask, ImGuiKey_F)
+          )
       {
         if (Window* wnd = g_app->GetOutliner())
         {
@@ -1117,11 +1123,11 @@ namespace ToolKit
       }
 
       // Undo - Redo.
-      if 
-      (
-        ImGui::IsKeyPressed(ImGuiKey_Z, false) &&
-        !Exist(mask, ImGuiKey_Z)
-      )
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_Z, false) &&
+          !Exist(mask, ImGuiKey_Z)
+          )
       {
         if (ImGui::IsKeyDown(ImGuiKey_ModCtrl))
         {

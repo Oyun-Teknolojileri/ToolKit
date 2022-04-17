@@ -16,7 +16,7 @@ namespace ToolKit
 
     // View
     //////////////////////////////////////////////////////////////////////////
-    
+
     void View::ShowVariant(ParameterVariant& var)
     {
       if (!var.m_exposed)
@@ -57,7 +57,7 @@ namespace ToolKit
       else if (fileExist)
       {
         dirEnt.GenerateThumbnail();
-        
+
         if (RenderTargetPtr thumb = dirEnt.GetThumbnail())
         {
           iconId = thumb->m_textureId;
@@ -142,6 +142,7 @@ namespace ToolKit
         ImGui::InputText("Name", &m_entity->m_name);
         ImGui::InputText("Tag", &m_entity->m_tag);
         ImGui::Checkbox("Visible", &m_entity->m_visible);
+        ImGui::Checkbox("Transform Lock", &m_entity->m_transformLocked);
       }
 
       // Missing data reporter.
@@ -200,7 +201,7 @@ namespace ToolKit
 
         // Continous edit utils.
         static TransformAction* dragMem = nullptr;
-        const auto saveDragMemFn = [this] () -> void
+        const auto saveDragMemFn = [this]() -> void
         {
           if (dragMem == nullptr)
           {
@@ -249,7 +250,7 @@ namespace ToolKit
           Quaternion q = qz * qy * qx;
 
           if (isDrag)
-          {   
+          {
             m_entity->m_node->Rotate(q, space);
           }
           else
@@ -294,7 +295,7 @@ namespace ToolKit
           xSize *= 3.0f;
           ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, xSize.x);
           ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-         
+
           xSize = ImGui::CalcTextSize("X");
           xSize *= 2.5f;
           ImGui::TableSetupColumn
@@ -333,77 +334,77 @@ namespace ToolKit
             String pId = "##" + std::to_string(i);
             switch (var.GetType())
             {
-              case ParameterVariant::VariantType::String:
+            case ParameterVariant::VariantType::String:
+            {
+              String str = var.GetVar<String>();
+              strcpy_s(buff, sizeof(buff), str.c_str());
+              ImGui::InputText(pId.c_str(), buff, sizeof(buff));
+              var.SetVar(buff);
+            }
+            break;
+            case ParameterVariant::VariantType::Bool:
+            {
+              bool val = var.GetVar<bool>();
+              ImGui::Checkbox(pId.c_str(), &val);
+              var.SetVar(val);
+            }
+            break;
+            case ParameterVariant::VariantType::Int:
+            {
+              int val = var.GetVar<int>();
+              ImGui::InputInt(pId.c_str(), &val);
+              var.SetVar(val);
+            }
+            break;
+            case ParameterVariant::VariantType::Float:
+            {
+              float val = var.GetVar<float>();
+              ImGui::InputFloat(pId.c_str(), &val);
+              var.SetVar(val);
+            }
+            break;
+            case ParameterVariant::VariantType::Vec3:
+            {
+              Vec3 val = var.GetVar<Vec3>();
+              ImGui::InputFloat3(pId.c_str(), &val[0]);
+              var.SetVar(val);
+            }
+            break;
+            case ParameterVariant::VariantType::Vec4:
+            {
+              Vec4 val = var.GetVar<Vec4>();
+              ImGui::InputFloat4(pId.c_str(), &val[0]);
+              var.SetVar(val);
+            }
+            break;
+            case ParameterVariant::VariantType::Mat3:
+            {
+              Vec3 vec;
+              Mat3 val = var.GetVar<Mat3>();
+              for (int j = 0; j < 3; j++)
               {
-                String str = var.GetVar<String>();
-                strcpy_s(buff, sizeof(buff), str.c_str());
-                ImGui::InputText(pId.c_str(), buff, sizeof(buff));
-                var.SetVar(buff);
-              }
-              break;
-              case ParameterVariant::VariantType::Bool:
-              {
-                bool val = var.GetVar<bool>();
-                ImGui::Checkbox(pId.c_str(), &val);
+                pId += std::to_string(j);
+                vec = glm::row(val, j);
+                ImGui::InputFloat3(pId.c_str(), &vec[0]);
+                val = glm::row(val, j, vec);
                 var.SetVar(val);
               }
-              break;
-              case ParameterVariant::VariantType::Int:
+            }
+            break;
+            case ParameterVariant::VariantType::Mat4:
+            {
+              Vec4 vec;
+              Mat4 val = var.GetVar<Mat4>();
+              for (int j = 0; j < 4; j++)
               {
-                int val = var.GetVar<int>();
-                ImGui::InputInt(pId.c_str(), &val);
+                pId += std::to_string(j);
+                vec = glm::row(val, j);
+                ImGui::InputFloat4(pId.c_str(), &vec[0]);
+                val = glm::row(val, j, vec);
                 var.SetVar(val);
               }
-              break;
-              case ParameterVariant::VariantType::Float:
-              {
-                float val = var.GetVar<float>();
-                ImGui::InputFloat(pId.c_str(), &val);
-                var.SetVar(val);
-              }
-              break;
-              case ParameterVariant::VariantType::Vec3:
-              {
-                Vec3 val = var.GetVar<Vec3>();
-                ImGui::InputFloat3(pId.c_str(), &val[0]);
-                var.SetVar(val);
-              }
-              break;
-              case ParameterVariant::VariantType::Vec4:
-              {
-                Vec4 val = var.GetVar<Vec4>();
-                ImGui::InputFloat4(pId.c_str(), &val[0]);
-                var.SetVar(val);
-              }
-              break;
-              case ParameterVariant::VariantType::Mat3:
-              {
-                Vec3 vec;
-                Mat3 val = var.GetVar<Mat3>();
-                for (int j = 0; j < 3; j++)
-                {
-                  pId += std::to_string(j);
-                  vec = glm::row(val, j);
-                  ImGui::InputFloat3(pId.c_str(), &vec[0]);
-                  val = glm::row(val, j, vec);
-                  var.SetVar(val);
-                }
-              }
-              break;
-              case ParameterVariant::VariantType::Mat4:
-              {
-                Vec4 vec;
-                Mat4 val = var.GetVar<Mat4>();
-                for (int j = 0; j < 4; j++)
-                {
-                  pId += std::to_string(j);
-                  vec = glm::row(val, j);
-                  ImGui::InputFloat4(pId.c_str(), &vec[0]);
-                  val = glm::row(val, j, vec);
-                  var.SetVar(val);
-                }
-              }
-              break;
+            }
+            break;
             }
 
             ImGui::TableSetColumnIndex(2);
@@ -494,7 +495,7 @@ namespace ToolKit
     void EntityView::ShowVariants()
     {
       ParameterBlock& localData = m_entity->m_localData;
-      
+
       VariantCategoryArray categories;
       localData.GetCategories(categories, true);
 
@@ -817,7 +818,7 @@ namespace ToolKit
     {
       ModShortCutSignals
       (
-        { 
+        {
           SDL_SCANCODE_DELETE,
           SDL_SCANCODE_D,
           SDL_SCANCODE_F,

@@ -19,6 +19,7 @@ namespace ToolKit
     m_id = m_lastId++;
     m_name = "Entity_" + std::to_string(m_id);
     m_visible = true;
+    m_transformLocked = false;
     _parentId = 0;
 
     ParameterConstructor();
@@ -112,7 +113,7 @@ namespace ToolKit
 
   void Entity::ParameterConstructor()
   {
-    m_localData.m_variants.reserve(3);
+    m_localData.m_variants.reserve(4);
     VariantCategory category = { "Meta", 100 };
     ParameterVariant var;
     ULongID id = ++m_lastId;
@@ -134,6 +135,12 @@ namespace ToolKit
     var.m_editable = true;
     var = "";
     m_localData.Add(var);
+
+    var.m_name = "Transfrom Lock";
+    var.m_exposed = true;
+    var.m_editable = true;
+    var = m_transformLocked;
+    m_localData.Add(var);
   }
 
   void Entity::WeakCopy(Entity* other) const
@@ -145,6 +152,7 @@ namespace ToolKit
     other->m_name = m_name;
     other->m_tag = m_tag;
     other->m_visible = m_visible;
+    other->m_transformLocked = m_transformLocked;
     other->m_customData = m_customData;
     other->m_components = m_components;
   }
@@ -234,11 +242,12 @@ namespace ToolKit
     {
       WriteAttr(node, doc, XmlParentEntityIdAttr, std::to_string(m_node->m_parent->m_entity->m_id));
     }
-    
+
     WriteAttr(node, doc, XmlEntityNameAttr, m_name);
     WriteAttr(node, doc, XmlEntityTagAttr, m_tag);
     WriteAttr(node, doc, XmlEntityTypeAttr, std::to_string((int)GetType()));
     WriteAttr(node, doc, XmlEntityVisAttr, std::to_string(m_visible));
+    WriteAttr(node, doc, XmlEntityTrLockAttr, std::to_string(m_transformLocked));
     m_node->Serialize(doc, node);
     m_customData.Serialize(doc, node);
   }
@@ -260,6 +269,7 @@ namespace ToolKit
     ReadAttr(node, XmlEntityNameAttr, m_name);
     ReadAttr(node, XmlEntityTagAttr, m_tag);
     ReadAttr(node, XmlEntityVisAttr, m_visible);
+    ReadAttr(node, XmlEntityTrLockAttr, m_transformLocked);
 
     if (XmlNode* transformNode = node->first_node(XmlNodeElement.c_str()))
     {
@@ -283,6 +293,20 @@ namespace ToolKit
       for (Entity* c : children)
       {
         c->SetVisibility(vis, true);
+      }
+    }
+  }
+
+  void Entity::SetTransformLock(bool lock, bool deep)
+  {
+    m_transformLocked = lock;
+    if (deep)
+    {
+      EntityRawPtrArray children;
+      GetChildren(this, children);
+      for (Entity* c : children)
+      {
+        c->SetTransformLock(lock, true);
       }
     }
   }

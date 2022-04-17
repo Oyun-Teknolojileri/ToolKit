@@ -186,6 +186,8 @@ namespace ToolKit
       static TexturePtr m_lockIcon;
       static TexturePtr m_visibleIcon;
       static TexturePtr m_invisibleIcon;
+      static TexturePtr m_lockedIcon;
+      static TexturePtr m_unlockedIcon;
       static TexturePtr m_viewZoomIcon;
     };
   }

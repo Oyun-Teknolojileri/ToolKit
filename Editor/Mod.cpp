@@ -231,6 +231,11 @@ namespace ToolKit
 
     void ActionManager::GroupLastActions(int n)
     {
+      if (n == 0)
+      {
+        return;
+      }
+
       // Sanity Checks.
       assert(m_stackPointer == (int)m_actionStack.size() - 1 && "Call grouping right after add.");
       if (n >= (int)m_actionStack.size() && !m_actionGrouping)
@@ -362,7 +367,7 @@ namespace ToolKit
           SafeDel(prevMod);
           m_modStack.pop_back();
         }
-        
+
         static String modNameDbg;
         BaseMod* nextMod = nullptr;
         switch (mod)
@@ -832,11 +837,11 @@ namespace ToolKit
     {
       Window::Type activeType = g_app->GetActiveWindow()->GetType();
       if // Stop text edit deletes to remove entities.
-      (
-        activeType != Window::Type::Viewport 
-        && activeType != Window::Type::Viewport2d
-        && activeType != Window::Type::Outliner
-      )
+        (
+          activeType != Window::Type::Viewport
+          && activeType != Window::Type::Viewport2d
+          && activeType != Window::Type::Outliner
+        )
       {
         return NullSignal;
       }
@@ -915,7 +920,7 @@ namespace ToolKit
           {
             ActionManager::GetInstance()->AddAction(new CreateAction(cpy));
           }
-          
+
           currScene->AddToSelection(copies.front()->m_id, true);
           cpyCount += (int)copies.size();
         }
@@ -944,8 +949,8 @@ namespace ToolKit
     // Mods
     //////////////////////////////////////////////////////////////////////////
 
-    SelectMod::SelectMod() 
-      : BaseMod(ModId::Select) 
+    SelectMod::SelectMod()
+      : BaseMod(ModId::Select)
     {
     }
 
@@ -986,9 +991,9 @@ namespace ToolKit
       }
     }
 
-    CursorMod::CursorMod() 
+    CursorMod::CursorMod()
       : BaseMod(ModId::Cursor)
-    { 
+    {
     }
 
     void CursorMod::Init()

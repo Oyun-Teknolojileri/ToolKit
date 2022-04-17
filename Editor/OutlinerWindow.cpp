@@ -124,7 +124,7 @@ namespace ToolKit
       }
 
       if (ImGui::BeginDragDropSource())
-      { 
+      {
         ImGui::SetDragDropPayload("HierarcyChange", nullptr, 0);
         ImGui::Text("Drop on the new parent.");
         ImGui::EndDragDropSource();
@@ -264,7 +264,7 @@ namespace ToolKit
 
       const String sId = "##" + std::to_string(ntt->m_id);
       bool isOpen = ImGui::TreeNodeEx(sId.c_str(), flags);
-      
+
       if (ImGui::BeginPopupContextItem())
       {
         if (ImGui::MenuItem("SaveAsPrefab"))
@@ -272,7 +272,7 @@ namespace ToolKit
           GetSceneManager()->GetCurrentScene()->SavePrefab(ntt);
           if (FolderWindow* browser = g_app->GetAssetBrowser())
           {
-            String folderPath, fullPath = PrefabPath(""); 
+            String folderPath, fullPath = PrefabPath("");
             DecomposePath(fullPath, &folderPath, nullptr, nullptr);
 
             int indx = browser->Exist(folderPath);
@@ -311,22 +311,32 @@ namespace ToolKit
 
       ImGui::SameLine();
       ImGui::Text(ntt->m_name.c_str());
-      
-      // Hiearchy visibility.
-      if (eType == EntityType::Entity_Node)
-      {
-        float offset = ImGui::GetContentRegionAvail().x - 20.0f;
-        ImGui::SameLine(offset);
-        icon = ntt->m_visible ? UI::m_visibleIcon : UI::m_invisibleIcon;
 
-        // Texture only toggle button.
-        ImGui::PushID(ntt->m_id);
-        if (UI::ImageButtonDecorless(icon->m_textureId, ImVec2(15.0f, 15.0f), false))
-        {
-          ntt->SetVisibility(!ntt->m_visible, true);
-        }
-        ImGui::PopID();
+      // Hiearchy visibility
+      float offset = ImGui::GetContentRegionAvail().x - 30.0f;
+      ImGui::SameLine(offset);
+      icon = ntt->m_visible ? UI::m_visibleIcon : UI::m_invisibleIcon;
+
+      // Texture only toggle button.
+      ImGui::PushID(ntt->m_id);
+      if (UI::ImageButtonDecorless(icon->m_textureId, ImVec2(15.0f, 15.0f), false))
+      {
+        ntt->SetVisibility(!ntt->m_visible, true);
       }
+      ImGui::PopID();
+
+      offset = ImGui::GetContentRegionAvail().x - 10.0f;
+      ImGui::SameLine(offset);
+      icon = ntt->m_transformLocked ? UI::m_lockedIcon : UI::m_unlockedIcon;
+
+      // Texture only toggle button.
+      ImGui::PushID(ntt->m_id);
+      if (UI::ImageButtonDecorless(icon->m_textureId, ImVec2(15.0f, 15.0f), false))
+      {
+        ntt->SetTransformLock(!ntt->m_transformLocked, true);
+      }
+
+      ImGui::PopID();
 
       return isOpen;
     }

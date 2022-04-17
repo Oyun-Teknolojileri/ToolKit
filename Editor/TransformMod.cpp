@@ -376,11 +376,18 @@ namespace ToolKit
           ActionManager::GetInstance()->BeginActionGroup();
         }
 
+        int actionEntityCount = 0;
         for (Entity* ntt : entities)
         {
+          if (ntt->m_transformLocked)
+          {
+            continue;
+          }
+
+          actionEntityCount++;
           ActionManager::GetInstance()->AddAction(new TransformAction(ntt));
         }
-        ActionManager::GetInstance()->GroupLastActions((int)entities.size());
+        ActionManager::GetInstance()->GroupLastActions(actionEntityCount);
       }
 
       m_delta = ZERO;
@@ -497,17 +504,25 @@ namespace ToolKit
       }
 
       // Apply transform.
-      if (m_type == TransformType::Translate)
+      if (!e->m_transformLocked)
       {
-        Translate(e);
+        if (m_type == TransformType::Translate)
+        {
+          Translate(e);
+        }
+        else if (m_type == TransformType::Rotate)
+        {
+          Rotate(e);
+        }
+        else if (m_type == TransformType::Scale)
+        {
+          Scale(e);
+        }
       }
-      else if (m_type == TransformType::Rotate)
+      else
       {
-        Rotate(e);
-      }
-      else if (m_type == TransformType::Scale)
-      {
-        Scale(e);
+        // Warn user
+        g_app->m_statusMsg = "Attempt to transform a locked object";
       }
 
       // Set original parents back.

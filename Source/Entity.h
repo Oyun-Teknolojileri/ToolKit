@@ -47,6 +47,7 @@ namespace ToolKit
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
     virtual void RemoveResources();
     void SetVisibility(bool vis, bool deep);
+    void SetTransformLock(bool vis, bool deep);
     bool IsSurfaceInstance();
 
     static Entity* CreateByType(EntityType t);
@@ -96,6 +97,7 @@ namespace ToolKit
     String m_name;
     String m_tag;
     bool m_visible;
+    bool m_transformLocked;
     ParameterBlock m_localData; // Entitie's own data.
     ParameterBlock m_customData; // Users can define variables from editor.
     ComponentPtrArray m_components;
