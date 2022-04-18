@@ -436,9 +436,14 @@ namespace ToolKit
           if (m_mat == nullptr)
             return;
 
-          Vec3 color = m_mat->m_color;
+          Vec4 color = Vec4(m_mat->m_color, m_mat->m_alpha);
+          if (m_mat->GetRenderState()->blendFunction != BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
+          {
+            color.a = 1.0f;
+          }
+          
           GLint loc = glGetUniformLocation(program->m_handle, "Color");
-          glUniform3fv(loc, 1, &color.x);
+          glUniform4fv(loc, 1, &color.x);
         }
         break;
         case Uniform::FRAME_COUNT:

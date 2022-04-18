@@ -43,8 +43,8 @@ namespace ToolKit
     const std::vector<Vec3> g_gizmoColor = { g_gizmoRed, g_gizmoGreen, g_gizmoBlue };
     const Vec4 g_selectBoxWindowColor = Vec4(0.4f, 0.4f, 0.4f, 0.4f);
     const Vec4 g_selectBoxBorderColor = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    const Vec3 g_selectHighLightPrimaryColor = Vec3(1.0f, 0.627f, 0.156f);
-    const Vec3 g_selectHighLightSecondaryColor = Vec3(0.898f, 0.352f, 0.031f);
+    const Vec4 g_selectHighLightPrimaryColor = Vec4(1.0f, 0.627f, 0.156f, 1.0f);
+    const Vec4 g_selectHighLightSecondaryColor = Vec4(0.898f, 0.352f, 0.031f, 1.0f);
     const Vec4 g_consoleErrorColor = Vec4(1.0f, 0.4f, 0.4f, 1.0f);
     const Vec4 g_consoleCommandColor = Vec4(1.0f, 0.8f, 0.6f, 1.0f);
     const Vec4 g_consoleWarningColor = Vec4(0.3f, 0.8f, 0.3f, 1.0f);

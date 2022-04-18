@@ -151,6 +151,36 @@ namespace ToolKit
         }
       );
 
+      // Get blended surfaces
+      EntityRawPtrArray blendedEntities;
+      EntityRawPtrArray::iterator it = surfaces.begin();
+      while (it != surfaces.end())
+      {
+        Drawable* dw = static_cast<Drawable*>((*it));
+        BlendFunction blend = dw->GetMesh()->m_material->GetRenderState()->blendFunction;
+        if ((*it)->IsDrawable() && (*it)->m_visible && (int)blend)
+        {
+          blendedEntities.push_back((*it));
+          it = surfaces.erase(it);
+        }
+        else
+        {
+          ++it;
+        }
+      }
+
+      // Sort transparent entities
+      auto sortFn = [](Entity* nt1, Entity* nt2) -> bool
+      {
+        float first = nt1->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
+        float second = nt2->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
+
+        return first < second;
+      };
+
+      std::stable_sort(blendedEntities.begin(), blendedEntities.end(), sortFn);
+
+      // Render opaque drawables
       for (Entity* ntt : surfaces)
       {
         if (ntt->IsDrawable() && ntt->m_visible)
@@ -162,6 +192,17 @@ namespace ToolKit
             { &m_forwardLight }
           );
         }
+      }
+
+      // Render non-opaques drawables
+      for (Entity* ntt : blendedEntities)
+      {
+        app->m_renderer->Render
+        (
+          ntt,
+          GetCamera(),
+          { &m_forwardLight }
+        );
       }
 
       app->RenderSelected(this);
@@ -501,6 +542,5 @@ namespace ToolKit
 
       m_grid.Generate(linePnts, Vec3(0.5f), DrawType::Line);
     }
-
   }
 }

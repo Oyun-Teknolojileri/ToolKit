@@ -12,6 +12,7 @@ namespace ToolKit
   Material::Material()
   {
     m_color = Vec3(1.0f);
+    m_alpha = 1.0f;
   }
 
   Material::Material(String file)
@@ -122,6 +123,7 @@ namespace ToolKit
     cpy->m_vertexShader = m_vertexShader;
     cpy->m_fragmetShader = m_fragmetShader;
     cpy->m_color = m_color;
+    cpy->m_alpha = m_alpha;
     cpy->m_renderState = m_renderState;
     cpy->m_dirty = true;
   }
@@ -185,6 +187,9 @@ namespace ToolKit
     XmlNode* node = CreateXmlNode(doc, "color", container);
     WriteVec(node, doc, m_color);
 
+    node = CreateXmlNode(doc, "alpha", container);
+    WriteAttr(node, doc, "name", std::to_string(m_alpha));
+
     m_renderState.Serialize(doc, container);
   }
 
@@ -228,6 +233,10 @@ namespace ToolKit
       else if (strcmp("color", node->name()) == 0)
       {
         ReadVec(node, m_color);
+      }
+      else if (strcmp("alpha", node->name()) == 0)
+      {
+        ReadAttr(node, "name", m_alpha);
       }
       else if (strcmp("renderState", node->name()) == 0)
       {

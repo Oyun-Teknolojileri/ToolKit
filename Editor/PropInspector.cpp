@@ -591,8 +591,11 @@ namespace ToolKit
 
       if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        if (ImGui::ColorEdit3("MatColor##1", (float*)&entry->m_color))
+        Vec4 col = Vec4(entry->m_color, entry->m_alpha);
+        if (ImGui::ColorEdit4("MatColor##1", &col.x))
         {
+          entry->m_color = col.xyz;
+          entry->m_alpha = col.a;
           updateThumbFn();
         }
 

@@ -118,8 +118,6 @@ namespace ToolKit
       // Editor variables.
       float m_camSpeed = 8.0; // Meters per sec.
       float m_mouseSensitivity = 0.5f;
-      MaterialPtr m_highLightMaterial;
-      MaterialPtr m_highLightSecondaryMaterial;
       Vec2 m_thumbnailSize = Vec2(300.0f, 300.0f);
       std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
       

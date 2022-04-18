@@ -198,6 +198,41 @@ namespace ToolKit
       app->m_renderer->SetRenderTarget(m_viewportImage);
       EntityRawPtrArray ntties = app->GetCurrentScene()->GetEntities();
 
+      // Get transparent objects
+      EntityRawPtrArray blendedEntities;
+      EntityRawPtrArray::iterator it = ntties.begin();
+      while (it != ntties.end())
+      {
+        Drawable* dw = dynamic_cast<Drawable*>((*it));
+        if (dw == NULL)
+        {
+          ++it;
+          continue;
+        }
+        BlendFunction blend = dw->GetMesh()->m_material->GetRenderState()->blendFunction;
+        if ((*it)->IsDrawable() && (*it)->m_visible && (int)blend)
+        {
+          blendedEntities.push_back((*it));
+          it = ntties.erase(it);
+        }
+        else
+        {
+          ++it;
+        }
+      }
+
+      // Sort transparent entities
+      auto sortFn = [cam](Entity* nt1, Entity* nt2) -> bool
+      {
+        Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        float first = glm::length(nt1->GetAABB(true).GetCenter() - camLoc);
+        float second = glm::length(nt2->GetAABB(true).GetCenter() - camLoc);
+        return second < first;
+      };
+
+      std::stable_sort(blendedEntities.begin(), blendedEntities.end(), sortFn);
+
+      // Render opaque objects
       for (Entity* ntt : ntties)
       {
         if (ntt->IsDrawable() && ntt->m_visible)
@@ -208,6 +243,52 @@ namespace ToolKit
             billboard->LookAt(cam, m_zoom);
           }
 
+          app->m_renderer->Render
+          (
+            ntt,
+            cam,
+            app->m_sceneLights
+          );
+        }
+      }
+
+      // Render non-opaque entities
+      for (Entity* ntt : blendedEntities)
+      {
+        Drawable* dw = dynamic_cast<Drawable*>(ntt);
+        if (dw == NULL)
+        {
+          continue;
+        }
+
+        if (ntt->GetType() == EntityType::Entity_Billboard)
+        {
+          Billboard* billboard = static_cast<Billboard*> (ntt);
+          billboard->LookAt(cam, m_zoom);
+        }
+
+        // For two sided materials, first render back of transparent objects then render front
+        if (dw->GetMesh()->m_material->GetRenderState()->cullMode == CullingType::TwoSided)
+        {
+          dw->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::Front;
+          app->m_renderer->Render
+          (
+            ntt,
+            cam,
+            app->m_sceneLights
+          );
+
+          dw->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::Back;
+          app->m_renderer->Render
+          (
+            ntt,
+            cam,
+            app->m_sceneLights
+          );
+          dw->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
+        }
+        else
+        {
           app->m_renderer->Render
           (
             ntt,

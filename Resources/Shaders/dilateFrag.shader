@@ -5,7 +5,7 @@
 		#version 300 es
 		precision mediump float;
 		
-		uniform vec3 Color;
+		uniform vec4 Color;
 		uniform sampler2D u_texture;
 		
 		in vec2 v_texture;
@@ -34,7 +34,7 @@
 					if (c == 0.0)
 					{
 						// If anything in the kernel is 0, this pixel will be colored.
-						o_fragColor = vec4(Color, 1.0);
+						o_fragColor = vec4(Color.xyz, 1.0);
 						return;
 					}
 				}

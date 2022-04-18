@@ -55,15 +55,6 @@ namespace ToolKit
       m_grid = new Grid(100);
       m_grid->GetMesh()->Init(false);
 
-      MaterialPtr solidColorMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-      m_highLightMaterial = solidColorMaterial->Copy<Material>();
-      m_highLightMaterial->m_color = g_selectHighLightPrimaryColor;
-      m_highLightMaterial->GetRenderState()->cullMode = CullingType::Front;
-
-      m_highLightSecondaryMaterial = solidColorMaterial->Copy<Material>();
-      m_highLightSecondaryMaterial->m_color = g_selectHighLightSecondaryColor;
-      m_highLightSecondaryMaterial->GetRenderState()->cullMode = CullingType::Front;
-
       ModManager::GetInstance()->Init();
       ModManager::GetInstance()->SetMod(true, ModId::Select);
       ActionManager::GetInstance()->Init();
@@ -961,7 +952,7 @@ namespace ToolKit
         return;
       }
 
-      auto RenderFn = [this, viewport](const EntityRawPtrArray& selection, const Vec3& color) -> void
+      auto RenderFn = [this, viewport](const EntityRawPtrArray& selection, const Vec4& color) -> void
       {
         if (selection.empty())
         {
