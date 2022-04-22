@@ -100,7 +100,6 @@
     <ClInclude Include="..\Source\Scene.h" />
     <ClInclude Include="..\Source\Serialize.h" />
     <ClInclude Include="..\Source\StateMachine.h" />
-    <ClInclude Include="..\Source\SurfaceObserver.h" />
     <ClInclude Include="..\Source\ToolKit.h" />
     <ClInclude Include="..\Source\Animation.h" />
     <ClInclude Include="..\Source\Audio.h" />
@@ -125,6 +124,7 @@
     <ClInclude Include="..\Source\Surface.h" />
     <ClInclude Include="..\Source\Texture.h" />
     <ClInclude Include="..\Source\Types.h" />
+    <ClInclude Include="..\Source\UIManager.h" />
     <ClInclude Include="..\Source\Util.h" />
     <ClInclude Include="..\Source\Viewport.h" />
   </ItemGroup>
@@ -137,7 +137,6 @@
     <ClCompile Include="..\Source\ResourceManager.cpp" />
     <ClCompile Include="..\Source\Scene.cpp" />
     <ClCompile Include="..\Source\StateMachine.cpp" />
-    <ClCompile Include="..\Source\SurfaceObserver.cpp" />
     <ClCompile Include="..\Source\ToolKit.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
@@ -214,6 +213,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\Source\UIManager.cpp" />
     <ClCompile Include="..\Source\Util.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>

@@ -108,10 +108,10 @@
     <ClInclude Include="..\Source\Events.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\SurfaceObserver.h">
+    <ClInclude Include="..\Source\Component.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Component.h">
+    <ClInclude Include="..\Source\UIManager.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
@@ -200,10 +200,10 @@
     <ClCompile Include="..\Source\RenderState.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\SurfaceObserver.cpp">
+    <ClCompile Include="..\Source\Component.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\Component.cpp">
+    <ClCompile Include="..\Source\UIManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

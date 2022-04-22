@@ -15,11 +15,11 @@
 #include "SpriteSheet.h"
 #include "StateMachine.h"
 #include "Surface.h"
-#include "SurfaceObserver.h"
 #include "Texture.h"
 #include "Scene.h"
 #include "PluginManager.h"
 #include "Events.h"
+#include "UIManager.h"
 #include "Types.h"
 
 namespace ToolKit
@@ -52,7 +52,7 @@ namespace ToolKit
     PluginManager* m_pluginManager = nullptr;
     Renderer* m_renderer = nullptr;
     Logger* m_logger = nullptr;
-    SurfaceObserver* m_surfaceObserver = nullptr;
+    UIManager* m_uiManager = nullptr;
 
     bool m_initiated = false;
     String m_resourceRoot;
@@ -76,7 +76,7 @@ namespace ToolKit
   TK_API SceneManager* GetSceneManager();
   TK_API PluginManager* GetPluginManager();
   TK_API ResourceManager* GetResourceManager(ResourceType type);
-  TK_API SurfaceObserver* GetSurfaceObserver();
+  TK_API UIManager* GetUIManager();
 
   TK_API String DefaultPath();
   TK_API String ResourcePath(bool def = false);

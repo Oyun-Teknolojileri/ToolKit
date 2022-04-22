@@ -22,7 +22,7 @@ namespace ToolKit
     m_shaderMan = new ShaderManager();
     m_materialManager = new MaterialManager();
     m_sceneManager = new SceneManager();
-    m_surfaceObserver = new SurfaceObserver();
+    m_uiManager = new UIManager();
 
     m_logger->Log("Main Constructed");
   }
@@ -42,7 +42,7 @@ namespace ToolKit
     SafeDel(m_shaderMan);
     SafeDel(m_materialManager);
     SafeDel(m_sceneManager);
-    SafeDel(m_surfaceObserver);
+    SafeDel(m_uiManager);
 
     m_logger->Log("Main Deconstructed");
     SafeDel(m_logger);
@@ -193,9 +193,9 @@ namespace ToolKit
     return nullptr;
   }
 
-  SurfaceObserver* GetSurfaceObserver()
+  UIManager* GetUIManager()
   {
-    return Main::GetInstance()->m_surfaceObserver;
+    return Main::GetInstance()->m_uiManager;
   }
 
   String DefaultPath()

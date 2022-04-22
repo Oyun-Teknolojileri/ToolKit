@@ -90,7 +90,9 @@ namespace ToolKit
   typedef std::shared_ptr<XmlDocument> XmlDocumentPtr;
   typedef rapidxml::file<char> XmlFile;
   typedef std::shared_ptr<XmlFile> XmlFilePtr;
-  struct XmlDocBundle
+  typedef std::vector<class UILayer*> UILayerPtrArray;
+  
+   struct XmlDocBundle
   {
     XmlDocumentPtr doc;
     XmlFilePtr file;
