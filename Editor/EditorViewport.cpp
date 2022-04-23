@@ -16,6 +16,7 @@
 #include "Mod.h"
 #include "Util.h"
 #include "DebugNew.h"
+#include <algorithm>
 
 namespace ToolKit
 {
@@ -198,6 +199,25 @@ namespace ToolKit
       app->m_renderer->SetRenderTarget(m_viewportImage);
       EntityRawPtrArray ntties = app->GetCurrentScene()->GetEntities();
 
+      Mat4 pr = cam->GetProjectionMatrix();
+      Mat4 v = cam->GetViewMatrix();
+      Frustum frustum = ExtractFrustum(pr * v , false);
+
+      // Frustum check
+      for (Entity* ntt : ntties)
+      {
+        IntersectResult res = FrustumBoxIntersection(frustum, ntt->GetAABB(true));
+        if (res == IntersectResult::Outside)
+        {
+          auto delFn = [](Entity* ntt) -> bool
+          {
+            return true;
+          };
+
+          ntties.erase(std::remove_if(ntties.begin(), ntties.end(), delFn));
+        }
+      }
+
       // Get transparent objects
       EntityRawPtrArray blendedEntities;
       EntityRawPtrArray::iterator it = ntties.begin();
@@ -213,6 +233,7 @@ namespace ToolKit
         if ((*it)->IsDrawable() && (*it)->m_visible && (int)blend)
         {
           blendedEntities.push_back((*it));
+          SafeDel((*it));
           it = ntties.erase(it);
         }
         else

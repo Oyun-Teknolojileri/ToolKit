@@ -62,7 +62,7 @@ namespace ToolKit
   TK_API bool IsAffine(const Mat4& transform);
   TK_API void QDUDecomposition(const Mat3& transform, Mat3& kQ, Vec3& kD, Vec3& kU);
   TK_API void ExtractAxes(const Mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize = true);
-  TK_API Frustum ExtractFrustum(const Mat4& projectViewModel);
+  TK_API Frustum ExtractFrustum(const Mat4& projectViewModel, bool normalize);
 
   // Intersections
   //////////////////////////////////////////

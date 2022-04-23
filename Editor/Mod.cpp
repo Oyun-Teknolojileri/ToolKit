@@ -693,7 +693,7 @@ namespace ToolKit
           rect[1].y = rect[0].y;
           rect[3].x = rect[0].x;
           rect[3].y = rect[2].y;
-
+          
           std::vector<Ray> rays;
           std::vector<Vec3> rect3d;
 
@@ -725,24 +725,25 @@ namespace ToolKit
           // Frustum from 8 points.
           Frustum frustum;
           std::vector<Vec3> planePnts;
-          planePnts = { rect3d[0], rect3d[4], rect3d[3] }; // Left plane.
+          planePnts = { rect3d[0], rect3d[7], rect3d[4] }; // Left plane.
           frustum.planes[0] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[1], rect3d[2], rect3d[5] }; // Right plane.
+          planePnts = { rect3d[5], rect3d[6], rect3d[1] }; // Right plane.
           frustum.planes[1] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[0], rect3d[1], rect3d[4] }; // Top plane.
+          planePnts = { rect3d[4], rect3d[5], rect3d[0] }; // Top plane.
           frustum.planes[2] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[2], rect3d[7], rect3d[6] }; // Bottom plane.
+          //planePnts = { rect3d[2], rect3d[7], rect3d[6] }; // Bottom plane.
+          planePnts = { rect3d[3], rect3d[6], rect3d[7] }; // Bottom plane.
           frustum.planes[3] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[0], rect3d[2], rect3d[1] }; // Near plane.
+          planePnts = { rect3d[0], rect3d[1], rect3d[3] }; // Near plane.
           frustum.planes[4] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[4], rect3d[5], rect3d[6] }; // Far plane.
+          planePnts = { rect3d[7], rect3d[5], rect3d[4] }; // Far plane.
           frustum.planes[5] = PlaneFrom(planePnts.data());
-
+          
           // Perform picking.
           std::vector<EditorScene::PickData> ntties;
           EditorScenePtr currScene = g_app->GetCurrentScene();
@@ -780,6 +781,7 @@ namespace ToolKit
               m_dbgFrustum->Generate(corners, X_AXIS, DrawType::Line);
             }
           }
+          
         }
 
         return StateType::StateEndPick;

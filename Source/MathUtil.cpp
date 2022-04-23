@@ -162,51 +162,61 @@ namespace ToolKit
     }
   }
 
+  /*
+  * If the given matrix is projection matrix, then the algorithm gives the clipping planes in view space
+  * If the matrix is projection * view,then the algorithm gives the clipping planes in world space
+  * If the matrix is projection * view * model, then the algorithm gives the clipping planes in model space
+  */
   // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
-  Frustum ExtractFrustum(const Mat4& projectViewModel)
+  Frustum ExtractFrustum(const Mat4& _projectViewModel, bool normalize)
   {
+    Mat4 projectViewModel = glm::transpose(_projectViewModel);
+
     Frustum frustum;
 
     // Left clipping plane
-    frustum.planes[0].normal.x = projectViewModel[3][0] + projectViewModel[0][0];
-    frustum.planes[0].normal.y = projectViewModel[3][1] + projectViewModel[0][1];
-    frustum.planes[0].normal.z = projectViewModel[3][2] + projectViewModel[0][2];
-    frustum.planes[0].d = projectViewModel[3][3] + projectViewModel[0][3];
+    frustum.planes[4].normal.x = projectViewModel[3][0] + projectViewModel[0][0];
+    frustum.planes[4].normal.y = projectViewModel[3][1] + projectViewModel[0][1];
+    frustum.planes[4].normal.z = projectViewModel[3][2] + projectViewModel[0][2];
+    frustum.planes[4].d = projectViewModel[3][3] + projectViewModel[0][3];
 
     // Right clipping plane
-    frustum.planes[1].normal.x = projectViewModel[3][0] - projectViewModel[0][0];
-    frustum.planes[1].normal.y = projectViewModel[3][1] - projectViewModel[0][1];
-    frustum.planes[1].normal.z = projectViewModel[3][2] - projectViewModel[0][2];
-    frustum.planes[1].d = projectViewModel[3][3] - projectViewModel[0][3];
+    frustum.planes[5].normal.x = projectViewModel[3][0] - projectViewModel[0][0];
+    frustum.planes[5].normal.y = projectViewModel[3][1] - projectViewModel[0][1];
+    frustum.planes[5].normal.z = projectViewModel[3][2] - projectViewModel[0][2];
+    frustum.planes[5].d = projectViewModel[3][3] - projectViewModel[0][3];
 
     // Top clipping plane
-    frustum.planes[2].normal.x = projectViewModel[3][0] + projectViewModel[1][0];
-    frustum.planes[2].normal.y = projectViewModel[3][1] + projectViewModel[1][1];
-    frustum.planes[2].normal.z = projectViewModel[3][2] + projectViewModel[1][2];
-    frustum.planes[2].d = projectViewModel[3][3] + projectViewModel[1][3];
+    frustum.planes[2].normal.x = projectViewModel[3][0] - projectViewModel[1][0];
+    frustum.planes[2].normal.y = projectViewModel[3][1] - projectViewModel[1][1];
+    frustum.planes[2].normal.z = projectViewModel[3][2] - projectViewModel[1][2];
+    frustum.planes[2].d = projectViewModel[3][3] - projectViewModel[1][3];
 
     // Bottom clipping plane
-    frustum.planes[3].normal.x = projectViewModel[3][0] - projectViewModel[1][0];
-    frustum.planes[3].normal.y = projectViewModel[3][1] - projectViewModel[1][1];
-    frustum.planes[3].normal.z = projectViewModel[3][2] - projectViewModel[1][2];
-    frustum.planes[3].d = projectViewModel[3][3] - projectViewModel[1][3];
+    frustum.planes[3].normal.x = projectViewModel[3][0] + projectViewModel[1][0];
+    frustum.planes[3].normal.y = projectViewModel[3][1] + projectViewModel[1][1];
+    frustum.planes[3].normal.z = projectViewModel[3][2] + projectViewModel[1][2];
+    frustum.planes[3].d = projectViewModel[3][3] + projectViewModel[1][3];
 
     // Near clipping plane
-    frustum.planes[4].normal.x = projectViewModel[3][0] + projectViewModel[2][0];
-    frustum.planes[4].normal.y = projectViewModel[3][1] + projectViewModel[2][1];
-    frustum.planes[4].normal.z = projectViewModel[3][2] + projectViewModel[2][2];
-    frustum.planes[4].d = projectViewModel[3][3] + projectViewModel[2][3];
+    frustum.planes[0].normal.x = projectViewModel[3][0] + projectViewModel[2][0];
+    frustum.planes[0].normal.y = projectViewModel[3][1] + projectViewModel[2][1];
+    frustum.planes[0].normal.z = projectViewModel[3][2] + projectViewModel[2][2];
+    frustum.planes[0].d = projectViewModel[3][3] + projectViewModel[2][3];
 
     // Far clipping plane
-    frustum.planes[5].normal.x = projectViewModel[3][0] - projectViewModel[2][0];
-    frustum.planes[5].normal.y = projectViewModel[3][1] - projectViewModel[2][1];
-    frustum.planes[5].normal.z = projectViewModel[3][2] - projectViewModel[2][2];
-    frustum.planes[5].d = projectViewModel[3][3] - projectViewModel[2][3];
+    frustum.planes[1].normal.x = projectViewModel[3][0] - projectViewModel[2][0];
+    frustum.planes[1].normal.y = projectViewModel[3][1] - projectViewModel[2][1];
+    frustum.planes[1].normal.z = projectViewModel[3][2] - projectViewModel[2][2];
+    frustum.planes[1].d = projectViewModel[3][3] - projectViewModel[2][3];
 
     // Normalize the plane equations, if requested
-    for (int i = 0; i < 6; i++)
+    if (normalize)
     {
-      NormalizePlaneEquation(frustum.planes[i]);
+      for (int i = 0; i < 6; i++)
+      {
+        NormalizePlaneEquation(frustum.planes[i]);
+      }
     }
 
     return frustum;
@@ -369,7 +379,12 @@ namespace ToolKit
     return hit;
   }
 
-  // https://gist.github.com/Kinwailo/d9a07f98d8511206182e50acda4fbc9b
+  /*
+  * When the plane equation is not normalized, the distance of a point to the plane:
+  * If distance < 0 , then the point p lies in the negative halfspace.
+  * If distance = 0 , then the point p lies in the plane.
+  * If distance > 0 , then the point p lies in the positive halfspace.
+  */
   IntersectResult FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box)
   {
     Vec3 vmin, vmax;
@@ -380,45 +395,57 @@ namespace ToolKit
       // X axis.
       if (frustum.planes[i].normal.x > 0)
       {
-        vmin.x = box.min.x;
-        vmax.x = box.max.x;
+        vmin.x = box.max.x;
+        vmax.x = box.min.x;
       }
       else
       {
-        vmin.x = box.max.x;
-        vmax.x = box.min.x;
+        vmin.x = box.min.x;
+        vmax.x = box.max.x;
       }
 
       // Y axis.
       if (frustum.planes[i].normal.y > 0)
       {
-        vmin.y = box.min.y;
-        vmax.y = box.max.y;
+        vmin.y = box.max.y;
+        vmax.y = box.min.y;
       }
       else
       {
-        vmin.y = box.max.y;
-        vmax.y = box.min.y;
+        vmin.y = box.min.y;
+        vmax.y = box.max.y;
       }
 
       // Z axis.
       if (frustum.planes[i].normal.z > 0)
       {
-        vmin.z = box.min.z;
-        vmax.z = box.max.z;
-      }
-      else
-      {
         vmin.z = box.max.z;
         vmax.z = box.min.z;
       }
+      else
+      {
+        vmin.z = box.min.z;
+        vmax.z = box.max.z;
+      }
 
-      if (glm::dot(frustum.planes[i].normal, vmin) + frustum.planes[i].d > 0)
+      float distmin = glm::dot(frustum.planes[i].normal, vmin) + frustum.planes[i].d;
+      if (distmin > 0)
+      {
+        float distmax = glm::dot(frustum.planes[i].normal, vmax) + frustum.planes[i].d;
+        if (distmax <= 0)
+        {
+          res = IntersectResult::Intersect;
+        }
+        else
+        {
+          res = IntersectResult::Inside;
+        }
+      }
+      else if (distmin < 0)
       {
         return IntersectResult::Outside;
       }
-
-      if (glm::dot(frustum.planes[i].normal, vmax) + frustum.planes[i].d >= 0)
+      else
       {
         res = IntersectResult::Intersect;
       }
@@ -426,7 +453,7 @@ namespace ToolKit
 
     return res;
   }
-
+  
   bool RayPlaneIntersection(const Ray& ray, const PlaneEquation& plane, float& t)
   {
     float denom = glm::dot(ray.direction, plane.normal);
