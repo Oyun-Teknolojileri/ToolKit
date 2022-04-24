@@ -86,15 +86,19 @@ namespace ToolKit
 
   Cube::Cube(bool genDef)
   {
+    ParameterConstructor();
+
     if (genDef)
     {
       Generate();
     }
   }
 
-  Cube::Cube(const Params& params)
-    : m_params(params)
+  Cube::Cube(const Vec3& scale)
   {
+    ParameterConstructor();
+
+    Scale() = scale;
     Generate();
   }
 
@@ -111,13 +115,11 @@ namespace ToolKit
   void Cube::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Entity::Serialize(doc, parent);
-    m_params.Serialize(doc, parent->last_node());
   }
 
   void Cube::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     Entity::DeSerialize(doc, parent);
-    m_params.DeSerialize(doc, parent);
     Generate();
   }
 
@@ -125,9 +127,12 @@ namespace ToolKit
   {
     Drawable::InstantiateTo(copyTo);
     Cube* instance = static_cast<Cube*> (copyTo);
-    instance->m_params = m_params;
-
     return instance;
+  }
+
+  void Cube::ParameterConstructor()
+  {
+    Scale_Define(Vec3(1.0f));
   }
 
   void Cube::Generate()
@@ -135,7 +140,7 @@ namespace ToolKit
     VertexArray vertices;
     vertices.resize(36);
 
-    const Vec3& scale = m_params.m_variants[0].GetVar<Vec3>();
+    const Vec3& scale = ScaleC();
 
     Vec3 corners[8]
     {
@@ -308,7 +313,6 @@ namespace ToolKit
   {
     Drawable::InstantiateTo(copyTo);
     Quad* instance = static_cast<Quad*> (copyTo);
-
     return instance;
   }
 
@@ -362,15 +366,17 @@ namespace ToolKit
 
   Sphere::Sphere(bool genDef)
   {
+    ParameterConstructor();
+
     if (genDef)
     {
       Generate();
     }
   }
 
-  Sphere::Sphere(const Params& params)
-    : m_params(params)
+  Sphere::Sphere(float radius)
   {
+    ParameterConstructor();
     Generate();
   }
 
@@ -378,7 +384,6 @@ namespace ToolKit
   {
     Drawable::CopyTo(copyTo);
     Sphere* ntt = static_cast<Sphere*> (copyTo);
-    ntt->m_params = m_params;
     return ntt;
   }
 
@@ -389,7 +394,7 @@ namespace ToolKit
 
   void Sphere::Generate()
   {
-    const float r = m_params[0].GetVar<float>();
+    const float r = Radius();
     const int nRings = 32;
     const int nSegments = 32;
 
@@ -452,13 +457,11 @@ namespace ToolKit
   void Sphere::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Entity::Serialize(doc, parent);
-    m_params.Serialize(doc, parent->last_node());
   }
 
   void Sphere::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     Entity::DeSerialize(doc, parent);
-    m_params.DeSerialize(doc, parent);
     Generate();
   }
 
@@ -466,21 +469,30 @@ namespace ToolKit
   {
     Drawable::InstantiateTo(copyTo);
     Sphere* instance = static_cast<Sphere*> (copyTo);
-    instance->m_params = m_params;
     return instance;
+  }
+
+  void Sphere::ParameterConstructor()
+  {
+    Radius_Define(1.0f);
   }
 
   Cone::Cone(bool genDef)
   {
+    ParameterConstructor();
     if (genDef)
     {
       Generate();
     }
   }
 
-  Cone::Cone(const Params& params)
-    : m_params(params)
+  Cone::Cone(float height, float radius, int segBase, int segHeight)
   {
+    ParameterConstructor();
+    Height() = height;
+    Radius() = radius;
+    SegBase() = segBase;
+    SegHeight() = segHeight;
     Generate();
   }
 
@@ -490,10 +502,10 @@ namespace ToolKit
     VertexArray vertices;
     std::vector<uint> indices;
 
-    float height = m_params[0].GetVar<float>();
-    float radius = m_params[1].GetVar<float>();
-    int nSegBase = m_params[2].GetVar<int>();
-    int nSegHeight = m_params[3].GetVar<int>();
+    float height = Height();
+    float radius = Radius();
+    int nSegBase = SegBase();
+    int nSegHeight = SegHeight();
 
     float deltaAngle = (glm::two_pi<float>() / nSegBase);
     float deltaHeight = height / nSegHeight;
@@ -587,7 +599,6 @@ namespace ToolKit
   {
     Drawable::CopyTo(copyTo);
     Cone* ntt = static_cast<Cone*> (copyTo);
-    ntt->m_params = m_params;
     return ntt;
   }
 
@@ -599,13 +610,11 @@ namespace ToolKit
   void Cone::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Entity::Serialize(doc, parent);
-    m_params.Serialize(doc, parent->last_node());
   }
 
   void Cone::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     Entity::DeSerialize(doc, parent);
-    m_params.DeSerialize(doc, parent);
     Generate();
   }
 
@@ -613,8 +622,15 @@ namespace ToolKit
   {
     Drawable::InstantiateTo(copyTo);
     Cone* instance = static_cast<Cone*> (copyTo);
-    instance->m_params = m_params;
     return instance;
+  }
+
+  void Cone::ParameterConstructor()
+  {
+    Height_Define(1.0f);
+    Radius_Define(1.0f);
+    SegBase_Define(30);
+    SegHeight_Define(20);
   }
 
   Arrow2d::Arrow2d(bool genDef)

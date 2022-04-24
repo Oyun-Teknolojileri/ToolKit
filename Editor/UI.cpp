@@ -467,7 +467,7 @@ namespace ToolKit
       }
 
       ImGui::Separator();
-      ImGui::Text("v%d.%d.%d", 0, 3, 6);
+      ImGui::Text("%s", TKVersionStr);
     }
 
     void UI::ShowMenuWindows()
@@ -940,7 +940,7 @@ namespace ToolKit
 
     bool Window::CanDispatchSignals() const
     {
-      return m_active & m_visible & m_mouseHover;
+      return m_active && m_visible && m_mouseHover;
     }
 
     void Window::DispatchSignals() const
@@ -1181,6 +1181,21 @@ namespace ToolKit
           ImGuiInputTextFlags_AutoSelectAll
         );
 
+        // Center buttons.
+        ImGui::BeginTable("##FilterZoom", m_showCancel ? 4 : 3, ImGuiTableFlags_SizingFixedFit);
+
+        ImGui::TableSetupColumn("##spaceL", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("##ok");
+        if (m_showCancel)
+        {
+          ImGui::TableSetupColumn("##cancel");
+        }
+        ImGui::TableSetupColumn("##spaceR", ImGuiTableColumnFlags_WidthStretch);
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TableNextColumn();
+
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {
           m_visible = false;
@@ -1191,7 +1206,7 @@ namespace ToolKit
 
         if (m_showCancel)
         {
-          ImGui::SameLine();
+          ImGui::TableNextColumn();
           if (ImGui::Button("Cancel", ImVec2(120, 0)))
           {
             m_visible = false;
@@ -1200,6 +1215,7 @@ namespace ToolKit
           }
         }
 
+        ImGui::EndTable();
         ImGui::EndPopup();
       }
     }
@@ -1242,6 +1258,22 @@ namespace ToolKit
           ImGui::Text("%s", m_msg.c_str());
         }
 
+        // Center buttons.
+        ImGui::BeginTable("##FilterZoom", m_showCancel ? 5 : 4, ImGuiTableFlags_SizingFixedFit);
+
+        ImGui::TableSetupColumn("##spaceL", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("##yes");
+        ImGui::TableSetupColumn("##no");
+        if (m_showCancel)
+        {
+          ImGui::TableSetupColumn("##cancel");
+        }
+        ImGui::TableSetupColumn("##spaceR", ImGuiTableColumnFlags_WidthStretch);
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TableNextColumn();
+
         if (ImGui::Button(m_yesText.empty() ? "Yes" : m_yesText.c_str(), ImVec2(120, 0)))
         {
           m_visible = false;
@@ -1249,7 +1281,7 @@ namespace ToolKit
           ImGui::CloseCurrentPopup();
         }
         ImGui::SetItemDefaultFocus();
-        ImGui::SameLine();
+        ImGui::TableNextColumn();
 
         if (ImGui::Button(m_noText.empty() ? "No" : m_noText.c_str(), ImVec2(120, 0)))
         {
@@ -1260,7 +1292,7 @@ namespace ToolKit
 
         if (m_showCancel)
         {
-          ImGui::SameLine();
+          ImGui::TableNextColumn();
           if (ImGui::Button("Cancel", ImVec2(120, 0)))
           {
             m_visible = false;
@@ -1268,6 +1300,7 @@ namespace ToolKit
           }
         }
 
+        ImGui::EndTable();
         ImGui::EndPopup();
       }
     }

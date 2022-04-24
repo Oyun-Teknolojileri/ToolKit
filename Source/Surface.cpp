@@ -85,7 +85,7 @@ namespace ToolKit
     String matFile = mesh->m_material->GetFile();
     if (matFile.empty())
     {
-      mesh->m_material->m_name = m_name;
+      mesh->m_material->m_name = NameC();
     }
     mesh->m_material->Save(true);
     WriteMaterial(nttNode, doc, matFile);

@@ -51,12 +51,14 @@ namespace ToolKit
     // Serialization.
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    ULongID GetBiggestEntityId(); // Used to avoid Id collision during scene merges.
 
   protected:
     virtual void CopyTo(Resource* other) override;
 
   protected:
     EntityRawPtrArray m_entities;
+    String m_version;
   };
 
   class TK_API SceneManager : public ResourceManager

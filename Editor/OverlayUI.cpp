@@ -77,7 +77,7 @@ namespace ToolKit
           UI::ToggleButton(UI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Select
         );
-        UI::HelpMarker(LOC + m_owner->m_name, "Select Box\nSelect items using box selection.");
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Select Box\nSelect items using box selection.");
 
         // Cursor button.
         isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Cursor;
@@ -86,7 +86,7 @@ namespace ToolKit
           UI::ToggleButton(UI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Cursor
         );
-        UI::HelpMarker(LOC + m_owner->m_name, "Cursor\nSet the cursor location.");
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Cursor\nSet the cursor location.");
         ImGui::Separator();
 
         // Move button.
@@ -96,7 +96,7 @@ namespace ToolKit
           UI::ToggleButton(UI::m_moveIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Move
         );
-        UI::HelpMarker(LOC + m_owner->m_name, "Move\nMove selected items.");
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Move\nMove selected items.");
 
         // Rotate button.
         isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Rotate;
@@ -105,7 +105,7 @@ namespace ToolKit
           UI::ToggleButton(UI::m_rotateIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Rotate
         );
-        UI::HelpMarker(LOC + m_owner->m_name, "Rotate\nRotate selected items.");
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Rotate\nRotate selected items.");
 
         // Scale button.
         isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Scale;
@@ -114,7 +114,7 @@ namespace ToolKit
           UI::ToggleButton(UI::m_scaleIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
           ModId::Scale
         );
-        UI::HelpMarker(LOC + m_owner->m_name, "Scale\nScale (resize) selected items.");
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Scale\nScale (resize) selected items.");
         ImGui::Separator();
 
         const char* items[] = { "1", "2", "4", "8", "16" };
@@ -165,7 +165,7 @@ namespace ToolKit
         float spacing = style.ItemInnerSpacing.x;
 
         ImGui::SameLine(0, spacing); 
-        UI::HelpMarker(LOC + m_owner->m_name, "Camera speed m/s\n");
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Camera speed m/s\n");
       }
       ImGui::EndChildFrame();
     }
@@ -308,7 +308,7 @@ namespace ToolKit
 
         ImGui::TableSetColumnIndex(3);
         m_owner->m_orbitLock = UI::ToggleButton(UI::m_lockIcon->m_textureId, ImVec2(16.0f, 16.0f), m_owner->m_orbitLock);
-        UI::HelpMarker(LOC + m_owner->m_name, "Lock Camera Alignment\nMiddle button drag doesn't orbit.\nOnly panning allowed.");
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Lock Camera Alignment\nMiddle button drag doesn't orbit.\nOnly panning allowed.");
 
         // Camera alignment combo.
         const char* itemsCam[] = { "Free", "Top", "Front", "Left", "User" };
@@ -374,7 +374,7 @@ namespace ToolKit
               {
                 if (EditorViewport* vp = g_app->GetActiveViewport())
                 {
-                  vp->AttachCamera(cam->m_id);
+                  vp->AttachCamera(cam->Id());
                   noCamera = false;
                 }
               }
@@ -402,7 +402,7 @@ namespace ToolKit
             }
           }
         }
-        UI::HelpMarker(LOC + m_owner->m_name, "Camera Orientation\n");
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Camera Orientation\n");
 
         ImGui::TableSetColumnIndex(5);
         ImGui::Image(Convert2ImGuiTexture(UI::m_axisIcon), ImVec2(20.0f, 20.0f));
@@ -460,7 +460,7 @@ namespace ToolKit
           String cmd = "SetTransformOrientation " + ts;
           g_app->GetConsole()->ExecCommand(cmd);
         }
-        UI::HelpMarker(LOC + m_owner->m_name, "Transform orientations\n");
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Transform orientations\n");
 
         // Auto snap.
         static bool autoSnapActivated = false;
@@ -480,7 +480,7 @@ namespace ToolKit
 
         ImGui::TableSetColumnIndex(7);
         g_app->m_snapsEnabled = UI::ToggleButton(UI::m_snapIcon->m_textureId, ImVec2(16, 16), g_app->m_snapsEnabled);
-        UI::HelpMarker(LOC + m_owner->m_name, "Grid snaping\nRight click for options");
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Grid snaping\nRight click for options");
 
         if (ImGui::BeginPopupContextItem("##SnapMenu"))
         {

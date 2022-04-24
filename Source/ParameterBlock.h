@@ -3,6 +3,24 @@
 #include "Types.h"
 #include "Serialize.h"
 #include <variant>
+#include <unordered_map>
+
+#define TKDeclareParam(Class, Name, Category, Priority, Exposed, Editable) \
+  private: size_t Name##_Index; \
+  private: inline void Name##_Define(ParameterVariant var) { \
+    var.m_name = #Name; \
+    var.m_category = { #Category, Priority }; \
+    var.m_exposed = Exposed; \
+    var.m_editable = Editable; \
+    Name##_Index = m_localData.m_variants.size(); \
+    m_localData.Add(var); \
+  } \
+  public: inline Class& Name() { \
+   return m_localData[Name##_Index].GetVar<Class>(); \
+  } \
+  public: inline const Class& Name##C() const { \
+   return m_localData[Name##_Index].GetCVar<Class>(); \
+  }
 
 namespace ToolKit
 {
@@ -13,7 +31,21 @@ namespace ToolKit
     int Priority;
   };
 
-  class TK_API ParameterVariant : public Serializable
+  static VariantCategory CustomDataCategory = { "Custom Data", 0 };
+
+  class TK_API ParameterVariantBase : public Serializable
+  {
+  public:
+    ParameterVariantBase();
+
+  public:
+    ULongID m_id;
+
+  private:
+    static ULongID m_handle;
+  };
+
+  class TK_API ParameterVariant : public ParameterVariantBase
   {
   public:
     enum class VariantType
@@ -32,51 +64,86 @@ namespace ToolKit
       ULongID
     };
 
-    ParameterVariant() { SetVar(0); }
-    virtual ~ParameterVariant() { }
-    ParameterVariant(bool var) { SetVar(var); }
-    ParameterVariant(byte var) { SetVar(var); }
-    ParameterVariant(ubyte var) { SetVar(var); }
-    ParameterVariant(float var) { SetVar(var); }
-    ParameterVariant(int var) { SetVar(var); }
-    ParameterVariant(uint var) { SetVar(var); }
-    ParameterVariant(const Vec3& var) { SetVar(var); }
-    ParameterVariant(const Vec4& var) { SetVar(var); }
-    ParameterVariant(const Mat3& var) { SetVar(var); }
-    ParameterVariant(const Mat4& var) { SetVar(var); }
-    ParameterVariant(const String& var) { SetVar(var); }
-    ParameterVariant(const char* var) { SetVar(var); }
-    ParameterVariant(const ULongID& var) { SetVar(var); }
+    ParameterVariant();
+    ~ParameterVariant();
+    ParameterVariant(bool var);
+    ParameterVariant(byte var);
+    ParameterVariant(ubyte var);
+    ParameterVariant(float var);
+    ParameterVariant(int var);
+    ParameterVariant(uint var);
+    ParameterVariant(const Vec3& var);
+    ParameterVariant(const Vec4& var);
+    ParameterVariant(const Mat3& var);
+    ParameterVariant(const Mat4& var);
+    ParameterVariant(const String& var);
+    ParameterVariant(const char* var);
+    ParameterVariant(const ULongID& var);
 
-    VariantType GetType() const { return m_type; }
-    template<typename T> const T& GetVar() const { return std::get<T>(m_var); }
-    void SetVar(bool var) { m_type = VariantType::Bool; m_var = var; }
-    void SetVar(byte var) { m_type = VariantType::byte; m_var = var; }
-    void SetVar(ubyte var) { m_type = VariantType::ubyte; m_var = var; }
-    void SetVar(float var) { m_type = VariantType::Float; m_var = var; }
-    void SetVar(int var) { m_type = VariantType::Int; m_var = var; }
-    void SetVar(uint var) { m_type = VariantType::UInt; m_var = var; }
-    void SetVar(const Vec3& var) { m_type = VariantType::Vec3; m_var = var; }
-    void SetVar(const Vec4& var) { m_type = VariantType::Vec4; m_var = var; }
-    void SetVar(const Mat3& var) { m_type = VariantType::Mat3; m_var = var; }
-    void SetVar(const Mat4& var) { m_type = VariantType::Mat4; m_var = var; }
-    void SetVar(const String& var) { m_type = VariantType::String; m_var = var; }
-    void SetVar(const char* var) { m_type = VariantType::String; m_var = String(var); }
-    void SetVar(const ULongID& var) { m_type = VariantType::ULongID; m_var = var; }
+    VariantType GetType() const;
+    
+    template<typename T> 
+    T& GetVar()
+    {
+      return std::get<T>(m_var);
+    }
+
+    template<typename T>
+    const T& GetCVar() const
+    {
+      return std::get<T>(m_var);
+    }
+
+    template<typename T> 
+    T* GetVarPtr()
+    {
+      return &std::get<T>(m_var);
+    }
+
+    ParameterVariant& operator= (bool var);
+    ParameterVariant& operator= (byte var);
+    ParameterVariant& operator= (ubyte var);
+    ParameterVariant& operator= (float var);
+    ParameterVariant& operator= (int var);
+    ParameterVariant& operator= (uint var);
+    ParameterVariant& operator= (const Vec3& var);
+    ParameterVariant& operator= (const Vec4& var);
+    ParameterVariant& operator= (const Mat3& var);
+    ParameterVariant& operator= (const Mat4& var);
+    ParameterVariant& operator= (const String& var);
+    ParameterVariant& operator= (const char* var);
+    ParameterVariant& operator= (const ULongID& var);
 
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
   public:
-    String m_name = "Var";
-    bool m_exposed = false; // Is this variant exposed to editor.
-    bool m_editable = false; // Is the variable can be edited from editor.
+    bool m_exposed; // Is this variant exposed to editor.
+    bool m_editable; // Is the variable can be edited from editor.
+
     // Parameters will be shown under the category in the Inspector.
     // The higher the priority the earlier it will be displayed in the Inspector.
-    VariantCategory m_category = { "Default", 0 };
+    VariantCategory m_category;
+    String m_name;
+
   private:
-    std::variant<bool, byte, ubyte, float, int, uint, Vec3, Vec4, Mat3, Mat4, String, ULongID> m_var;
-    VariantType m_type;
+    std::variant
+    <
+    bool,
+    byte,
+    ubyte,
+    float,
+    int,
+    uint,
+    Vec3,
+    Vec4,
+    Mat3,
+    Mat4,
+    String,
+    ULongID
+    > m_var;
+
+    VariantType m_type = VariantType::Int;
   };
 
   class TK_API ParameterBlock : public Serializable
@@ -85,21 +152,17 @@ namespace ToolKit
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+    ParameterVariant& operator [](size_t index);
+    const ParameterVariant& operator [](size_t index) const;
 
-    // Collection utilities.
-    ParameterVariant& operator [](int indx)
-    {
-      return m_variants[indx];
-    }
-
-    void Add(const ParameterVariant& var) { m_variants.push_back(var); }
+    void Add(const ParameterVariant& var);
+    void Remove(ULongID id);
     void GetCategories(VariantCategoryArray& categories, bool sortDesc);
-    void GetByCategory(const String& category, ParameterVariantArray& variants);
-    bool GetFirstByName(const String& name, ParameterVariant& var);
-    void GetByName(const String& name, ParameterVariantArray& variants);
+    void GetByCategory(const String& category, ParameterVariantRawPtrArray& variants);
 
   public:
     ParameterVariantArray m_variants;
   };
 
+  static const ParameterVariant NullParam;
 }

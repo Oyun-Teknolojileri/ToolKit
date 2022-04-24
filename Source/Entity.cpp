@@ -14,15 +14,11 @@ namespace ToolKit
 
   Entity::Entity()
   {
+    ParameterConstructor();
+
     m_node = new Node();
     m_node->m_entity = this;
-    m_id = m_lastId++;
-    m_name = "Entity_" + std::to_string(m_id);
-    m_visible = true;
-    m_transformLocked = false;
     _parentId = 0;
-
-    ParameterConstructor();
   }
 
   Entity::~Entity()
@@ -113,34 +109,14 @@ namespace ToolKit
 
   void Entity::ParameterConstructor()
   {
-    m_localData.m_variants.reserve(4);
-    VariantCategory category = { "Meta", 100 };
-    ParameterVariant var;
-    ULongID id = ++m_lastId;
-    var.m_category = category;
-    var.m_name = "Id";
-    var.m_exposed = true;
-    var.m_editable = false;
-    var = id;
-    m_localData.Add(var);
+    m_localData.m_variants.reserve(5);
+    ULongID id = m_lastId++;
 
-    var.m_name = "Name";
-    var.m_exposed = true;
-    var.m_editable = true;
-    var = "Entity_" + std::to_string(id);
-    m_localData.Add(var);
-
-    var.m_name = "Tag";
-    var.m_exposed = true;
-    var.m_editable = true;
-    var = "";
-    m_localData.Add(var);
-
-    var.m_name = "Transfrom Lock";
-    var.m_exposed = true;
-    var.m_editable = true;
-    var = m_transformLocked;
-    m_localData.Add(var);
+    Id_Define(id);
+    Name_Define("Entity_" + std::to_string(id));
+    Tag_Define("Tag");
+    Visible_Define(true);
+    TransformLock_Define(false);
   }
 
   void Entity::WeakCopy(Entity* other) const
@@ -149,11 +125,12 @@ namespace ToolKit
     SafeDel(other->m_node);
     other->m_node = m_node->Copy();
     other->m_node->m_entity = other;
-    other->m_name = m_name;
-    other->m_tag = m_tag;
-    other->m_visible = m_visible;
-    other->m_transformLocked = m_transformLocked;
-    other->m_customData = m_customData;
+
+    // Preserve Ids.
+    ULongID id = other->Id();
+    other->m_localData = m_localData;
+    other->Id() = id;
+
     other->m_components = m_components;
   }
 
@@ -237,19 +214,21 @@ namespace ToolKit
   void Entity::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = CreateXmlNode(doc, XmlEntityElement, parent);
-    WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(m_id));
+    WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(IdC()));
     if (m_node->m_parent && m_node->m_parent->m_entity)
     {
-      WriteAttr(node, doc, XmlParentEntityIdAttr, std::to_string(m_node->m_parent->m_entity->m_id));
+      WriteAttr
+      (
+        node,
+        doc,
+        XmlParentEntityIdAttr,
+        std::to_string(m_node->m_parent->m_entity->IdC())
+      );
     }
 
-    WriteAttr(node, doc, XmlEntityNameAttr, m_name);
-    WriteAttr(node, doc, XmlEntityTagAttr, m_tag);
     WriteAttr(node, doc, XmlEntityTypeAttr, std::to_string((int)GetType()));
-    WriteAttr(node, doc, XmlEntityVisAttr, std::to_string(m_visible));
-    WriteAttr(node, doc, XmlEntityTrLockAttr, std::to_string(m_transformLocked));
     m_node->Serialize(doc, node);
-    m_customData.Serialize(doc, node);
+    m_localData.Serialize(doc, node);
   }
 
   void Entity::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -264,18 +243,14 @@ namespace ToolKit
       node = doc->first_node(XmlEntityElement.c_str());
     }
 
-    ReadAttr(node, XmlEntityIdAttr, *(uint*)&m_id);
-    ReadAttr(node, XmlParentEntityIdAttr, *(uint*)&_parentId);
-    ReadAttr(node, XmlEntityNameAttr, m_name);
-    ReadAttr(node, XmlEntityTagAttr, m_tag);
-    ReadAttr(node, XmlEntityVisAttr, m_visible);
-    ReadAttr(node, XmlEntityTrLockAttr, m_transformLocked);
+    ReadAttr(node, XmlParentEntityIdAttr, _parentId);
 
     if (XmlNode* transformNode = node->first_node(XmlNodeElement.c_str()))
     {
       m_node->DeSerialize(doc, transformNode);
     }
-    m_customData.DeSerialize(doc, parent);
+
+    m_localData.DeSerialize(doc, parent);
   }
 
   void Entity::RemoveResources()
@@ -285,7 +260,7 @@ namespace ToolKit
 
   void Entity::SetVisibility(bool vis, bool deep)
   {
-    m_visible = vis;
+    Visible() = vis;
     if (deep)
     {
       EntityRawPtrArray children;
@@ -299,7 +274,7 @@ namespace ToolKit
 
   void Entity::SetTransformLock(bool lock, bool deep)
   {
-    m_transformLocked = lock;
+    TransformLock() = lock;
     if (deep)
     {
       EntityRawPtrArray children;

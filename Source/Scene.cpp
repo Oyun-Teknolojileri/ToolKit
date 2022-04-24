@@ -107,13 +107,13 @@ namespace ToolKit
 
   void Scene::Merge(ScenePtr other)
   {
-    Entity lastId;
+    ULongID bigId = GetBiggestEntityId() + 1;
     const EntityRawPtrArray& entities = other->GetEntities();
     for (Entity* ntt : entities)
     {
       // Update ids to prevent collision.
-      ntt->m_id += lastId.m_id;
-      ntt->_parentId += lastId.m_id;
+      ntt->Id() += bigId;
+      ntt->_parentId += bigId;
 
       AddEntity(ntt); // Insert into this scene.
     }
@@ -135,7 +135,7 @@ namespace ToolKit
         continue;
       }
 
-      if (std::find(ignoreList.begin(), ignoreList.end(), ntt->m_id) != ignoreList.end())
+      if (std::find(ignoreList.begin(), ignoreList.end(), ntt->Id()) != ignoreList.end())
       {
         continue;
       }
@@ -194,7 +194,7 @@ namespace ToolKit
         continue;
       }
 
-      if (std::find(ignoreList.begin(), ignoreList.end(), e->m_id) != ignoreList.end())
+      if (std::find(ignoreList.begin(), ignoreList.end(), e->Id()) != ignoreList.end())
       {
         continue;
       }
@@ -223,7 +223,7 @@ namespace ToolKit
   {
     for (Entity* e : m_entities)
     {
-      if (e->m_id == id)
+      if (e->Id() == id)
       {
         return e;
       }
@@ -234,7 +234,7 @@ namespace ToolKit
 
   void Scene::AddEntity(Entity* entity)
   {
-    assert(GetEntity(entity->m_id) == nullptr && "Entity is already in the scene.");
+    assert(GetEntity(entity->Id()) == nullptr && "Entity is already in the scene.");
     m_entities.push_back(entity);
   }
 
@@ -243,7 +243,7 @@ namespace ToolKit
     Entity* removed = nullptr;
     for (int i = (int)m_entities.size() - 1; i >= 0; i--)
     {
-      if (m_entities[i]->m_id == id)
+      if (m_entities[i]->Id() == id)
       {
         removed = m_entities[i];
         m_entities.erase(m_entities.begin() + i);
@@ -258,7 +258,7 @@ namespace ToolKit
   {
     for (Entity* ntt : entities)
     {
-      RemoveEntity(ntt->m_id);
+      RemoveEntity(ntt->Id());
     }
   }
 
@@ -276,7 +276,7 @@ namespace ToolKit
   {
     for (Entity* e : m_entities)
     {
-      if (e->m_name == name)
+      if (e->Name() == name)
       {
         return e;
       }
@@ -290,7 +290,7 @@ namespace ToolKit
     for (Entity* e : m_entities)
     {
       StringArray tokens;
-      Split(e->m_tag, ".", tokens);
+      Split(e->Tag(), ".", tokens);
 
       for (const String& token : tokens)
       {
@@ -345,7 +345,7 @@ namespace ToolKit
     Scene prefab;
     prefab.AddEntity(entity);
     GetChildren(entity, prefab.m_entities);
-    String name = entity->m_name + SCENE;
+    String name = entity->Name() + SCENE;
     prefab.SetFile(PrefabPath(name));
     prefab.m_name = name;
     prefab.Save(false);
@@ -380,6 +380,7 @@ namespace ToolKit
     // Match scene name with saved file.
     String name;
     DecomposePath(GetFile(), nullptr, &name, nullptr);
+    WriteAttr(scene, doc, "version", TKVersionStr); // Always write the current version.
     WriteAttr(scene, doc, "name", name.c_str());
 
     for (Entity* ntt : m_entities)
@@ -402,6 +403,7 @@ namespace ToolKit
 
     // Match scene name with file name.
     DecomposePath(GetFile(), nullptr, &m_name, nullptr);
+    ReadAttr(root, "version", m_version);
 
     XmlNode* node = nullptr;
     for (node = root->first_node(XmlEntityElement.c_str()); node; node = node->next_sibling(XmlEntityElement.c_str()))
@@ -413,6 +415,17 @@ namespace ToolKit
       ntt->DeSerialize(doc, node);
       m_entities.push_back(ntt);
     }
+  }
+
+  ULongID Scene::GetBiggestEntityId()
+  {
+    ULongID lastId = 0;
+    for (Entity* ntt : m_entities)
+    {
+      lastId = glm::max(lastId, ntt->Id());
+    }
+
+    return lastId;
   }
 
   SceneManager::SceneManager()

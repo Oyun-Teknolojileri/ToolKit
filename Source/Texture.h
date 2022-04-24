@@ -52,14 +52,14 @@ namespace ToolKit
     std::vector<uint8*> m_images;
   };
 
-  class RenderTargetSettigs
+  struct RenderTargetSettigs
   {
-  public:
-    bool depthStencil = true;
-    GraphicTypes warpS = GraphicTypes::UVRepeat;
-    GraphicTypes warpT = GraphicTypes::UVRepeat;
-    GraphicTypes minFilter = GraphicTypes::SampleNearest;
-    GraphicTypes magFilter = GraphicTypes::SampleNearest;
+    byte Msaa = 0;
+    bool DepthStencil = true;
+    GraphicTypes WarpS = GraphicTypes::UVRepeat;
+    GraphicTypes WarpT = GraphicTypes::UVRepeat;
+    GraphicTypes MinFilter = GraphicTypes::SampleNearest;
+    GraphicTypes MagFilter = GraphicTypes::SampleNearest;
   };
 
   class TK_API RenderTarget : public Texture
@@ -74,10 +74,12 @@ namespace ToolKit
     virtual void Load() override;
     virtual void Init(bool flushClientSideArray = true) override;
     virtual void UnInit() override;
+    void Reconstrcut(uint width, uint height, const RenderTargetSettigs& settings);
+    const RenderTargetSettigs& GetSettings() const;
 
   public:
-    uint m_frameBufferId;
-    uint m_depthBufferId;
+    uint m_frameBufferId = 0;
+    uint m_depthBufferId = 0;
 
   private:
     RenderTargetSettigs m_settings;

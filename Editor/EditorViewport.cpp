@@ -51,9 +51,7 @@ namespace ToolKit
     EditorViewport::EditorViewport(XmlNode* node)
     {
       DeSerialize(nullptr, node);
-
-      m_viewportImage = new RenderTarget((uint)m_width, (uint)m_height);
-      m_viewportImage->Init();
+      ResetViewportImage(GetRenderTargetSettings());
       InitOverlays(this);
     }
 
@@ -204,19 +202,19 @@ namespace ToolKit
       Frustum frustum = ExtractFrustum(pr * v , false);
 
       // Frustum check
-      for (Entity* ntt : ntties)
+      auto delFn = [frustum](Entity* ntt) -> bool
       {
         IntersectResult res = FrustumBoxIntersection(frustum, ntt->GetAABB(true));
         if (res == IntersectResult::Outside)
         {
-          auto delFn = [](Entity* ntt) -> bool
-          {
-            return true;
-          };
-
-          ntties.erase(std::remove_if(ntties.begin(), ntties.end(), delFn));
+          return true;
         }
-      }
+        else
+        {
+          return false;
+        }
+      };
+      ntties.erase(std::remove_if(ntties.begin(), ntties.end(), delFn), ntties.end());
 
       // Get transparent objects
       EntityRawPtrArray blendedEntities;
@@ -224,16 +222,15 @@ namespace ToolKit
       while (it != ntties.end())
       {
         Drawable* dw = dynamic_cast<Drawable*>((*it));
-        if (dw == NULL)
+        if (dw == nullptr)
         {
           ++it;
           continue;
         }
         BlendFunction blend = dw->GetMesh()->m_material->GetRenderState()->blendFunction;
-        if ((*it)->IsDrawable() && (*it)->m_visible && (int)blend)
+        if ((*it)->IsDrawable() && (*it)->Visible() && (int)blend)
         {
           blendedEntities.push_back((*it));
-          SafeDel((*it));
           it = ntties.erase(it);
         }
         else
@@ -243,11 +240,13 @@ namespace ToolKit
       }
 
       // Sort transparent entities
-      auto sortFn = [cam](Entity* nt1, Entity* nt2) -> bool
+      auto sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool
       {
         Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        float first = glm::length(nt1->GetAABB(true).GetCenter() - camLoc);
-        float second = glm::length(nt2->GetAABB(true).GetCenter() - camLoc);
+        BoundingBox bb1 = ntt1->GetAABB(true);
+        float first = glm::length2(bb1.GetCenter() - camLoc);
+        BoundingBox bb2 = ntt2->GetAABB(true);
+        float second = glm::length2(bb2.GetCenter() - camLoc);
         return second < first;
       };
 
@@ -256,7 +255,7 @@ namespace ToolKit
       // Render opaque objects
       for (Entity* ntt : ntties)
       {
-        if (ntt->IsDrawable() && ntt->m_visible)
+        if (ntt->IsDrawable() && ntt->Visible())
         {
           if (ntt->GetType() == EntityType::Entity_Billboard)
           {
@@ -277,7 +276,7 @@ namespace ToolKit
       for (Entity* ntt : blendedEntities)
       {
         Drawable* dw = dynamic_cast<Drawable*>(ntt);
-        if (dw == NULL)
+        if (dw == nullptr)
         {
           continue;
         }
@@ -356,6 +355,13 @@ namespace ToolKit
       m_attachedCamera = NULL_HANDLE;
     }
 
+    RenderTargetSettigs EditorViewport::GetRenderTargetSettings()
+    {
+      RenderTargetSettigs sets;
+      sets.Msaa = 8;
+      return sets;
+    }
+
     void EditorViewport::UpdateContentArea()
     {
       // Content area size
@@ -397,7 +403,13 @@ namespace ToolKit
       {
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
-          ImGui::Image((void*)(intptr_t)m_viewportImage->m_textureId, ImVec2(m_width, m_height), ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
+          ImGui::Image
+          (
+            Convert2ImGuiTexture(m_viewportImage),
+            Vec2(m_width, m_height),
+            Vec2(0.0f, 0.0f),
+            Vec2(1.0f, -1.0f)
+          );
 
           if
           (
@@ -664,7 +676,7 @@ namespace ToolKit
           m_zoom * m_width * 0.5f,
           -m_zoom * m_height * 0.5f,
           m_zoom * m_height * 0.5f,
-          0.1f,
+          0.5f,
           1000.0f
         );
       }
@@ -716,7 +728,7 @@ namespace ToolKit
 
             // Add mesh to the scene
             currScene->AddEntity(dwMesh);
-            currScene->AddToSelection(dwMesh->m_id, false);
+            currScene->AddToSelection(dwMesh->Id(), false);
             SetActive();
 
             meshAddedToScene = true;
@@ -833,7 +845,7 @@ namespace ToolKit
       EntityIdArray ignoreList;
       if (meshLoaded)
       {
-        ignoreList.push_back((*boundingBox)->m_id);
+        ignoreList.push_back((*boundingBox)->Id());
       }
       EditorScene::PickData pd = currScene->PickObject(ray, ignoreList);
       bool meshFound = false;
@@ -885,7 +897,7 @@ namespace ToolKit
       if (meshLoaded && !ImGui::IsMouseDragging(0))
       {
         // Remove debug bounding box mesh from scene
-        currScene->RemoveEntity((*boundingBox)->m_id);
+        currScene->RemoveEntity((*boundingBox)->Id());
         meshLoaded = false;
 
         if (!meshAddedToScene)

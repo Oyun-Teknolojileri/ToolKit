@@ -14,7 +14,7 @@ namespace ToolKit
 			(
 				[&layerName](Entity* e) -> bool
 				{
-					return e->m_name == layerName;
+					return e->Name() == layerName;
 				}
 			);
 			if (layers.empty())
@@ -32,15 +32,15 @@ namespace ToolKit
 		m_lastCamEntity = vp->GetCamera();
 		m_cam = cam;
 		m_viewport = vp;
-		vp->AttachCamera(cam->m_id);
+		vp->AttachCamera(cam->Id());
 		if (SceneManager* sceneMngr = GetSceneManager())
 		{
 			ScenePtr currScene = sceneMngr->GetCurrentScene();
 			currScene->AddEntity(cam);
 		}
 		UpdateSurfaces(vp);
-		vp->AttachCamera(m_lastCamEntity->m_id);
-		UILayer::PostUpdate();
+		vp->AttachCamera(m_lastCamEntity->Id());
+		PostUpdate();
 	}
 
 	void UILayer::PostUpdate()
@@ -48,7 +48,7 @@ namespace ToolKit
 		if (SceneManager* sceneMngr = GetSceneManager())
 		{
 			ScenePtr currScene = sceneMngr->GetCurrentScene();
-			currScene->RemoveEntity(m_cam->m_id);
+			currScene->RemoveEntity(m_cam->Id());
 		}
 	}
 
@@ -73,13 +73,13 @@ namespace ToolKit
 			  halfWidth,
 			  -halfHeight,
 			  halfHeight,
-			  0.01f,
+			  0.5f,
 			  1000.0f
 			);
 			
 			for (Entity* ntt : allEntities)
 			{
-				if (ntt->m_visible && ntt->GetComponent<MeshComponent>())
+				if (ntt->Visible() && ntt->GetComponent<MeshComponent>())
 				{
 					GetRenderer()->Render(ntt, m_cam);
 				}
@@ -95,7 +95,7 @@ namespace ToolKit
 			(
 				[&](Entity* e) -> bool
 				{
-					return e->m_name == entityName;
+					return e->Name() == entityName;
 				}
 			);
 		

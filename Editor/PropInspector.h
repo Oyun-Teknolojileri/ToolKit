@@ -14,7 +14,7 @@ namespace ToolKit
     public:
       virtual ~View() {}
       virtual void Show() = 0;
-      virtual void ShowVariant(ParameterVariant& var);
+      virtual void ShowVariant(ParameterVariant* var);
 
       void DropZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction, const String& dropName = "");
       void DropSubZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction);
@@ -31,6 +31,9 @@ namespace ToolKit
       virtual ~EntityView() {}
       virtual void Show();
       virtual void ShowVariants();
+
+    protected:
+      void ShowCustomData();
     };
 
     class MeshView : public View

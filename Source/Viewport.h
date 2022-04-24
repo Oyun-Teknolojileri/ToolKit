@@ -53,6 +53,8 @@ namespace ToolKit
     virtual void OnResize(float width, float height);
     virtual void AdjustZoom(float delta);
     virtual void UpdateCameraLens(float width, float height);
+    virtual RenderTargetSettigs GetRenderTargetSettings(); // Override this to alter render target creation.
+    void ResetViewportImage(const RenderTargetSettigs& settings);
 
   public:
     RenderTarget* m_viewportImage = nullptr;

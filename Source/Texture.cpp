@@ -32,7 +32,17 @@ namespace ToolKit
       return;
     }
 
-    if ((m_image = stbi_load(GetFile().c_str(), &m_width, &m_height, &m_bytePP, 4)))
+    if 
+    (
+      m_image = stbi_load
+      (
+        GetFile().c_str(),
+        &m_width,
+        &m_height,
+        &m_bytePP,
+        4
+      )
+    )
     {
       m_loaded = true;
     }
@@ -265,40 +275,65 @@ namespace ToolKit
       return;
     }
 
+    GLint currId; // Don't override the current render target.
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
+    
     // Create frame buffer color texture
     glGenTextures(1, &m_textureId);
-
-    GLint currId;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)m_settings.warpS);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)m_settings.warpT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)m_settings.minFilter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)m_settings.magFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)m_settings.WarpS);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)m_settings.WarpT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)m_settings.MinFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)m_settings.MagFilter);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     glGenFramebuffers(1, &m_frameBufferId);
     glBindFramebuffer(GL_FRAMEBUFFER, m_frameBufferId);
 
     // Attach 2D texture to this FBO
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureId, 0);
+    bool msaaRTunsupported = false;
+    if (glFramebufferTexture2DMultisampleEXT == nullptr)
+    {
+      msaaRTunsupported = true;
+      
+      static bool notReported = true;
+      if (notReported)
+      {
+        GetLogger()->Log("Unsupported Extension: glFramebufferTexture2DMultisampleEXT");
+        notReported = false;
+      }
+    }
 
-    if (m_settings.depthStencil)
+    bool goForMsaa = m_settings.Msaa > 0 && !msaaRTunsupported;
+    if (goForMsaa)
+    {
+      glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureId, 0, m_settings.Msaa);
+    }
+    else
+    {
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureId, 0);
+    }
+
+    if (m_settings.DepthStencil)
     {
       glGenRenderbuffers(1, &m_depthBufferId);
       glBindRenderbuffer(GL_RENDERBUFFER, m_depthBufferId);
-      glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
+
+      if (goForMsaa)
+      {
+        glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_settings.Msaa, GL_DEPTH24_STENCIL8, m_width, m_height);
+      }
+      else
+      {
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
+      }
 
       // Attach depth buffer to FBO
       glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthBufferId);
     }
 
-    GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(1, DrawBuffers);
-
-    GLenum stat = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
-    if (stat != GL_FRAMEBUFFER_COMPLETE)
+    if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
       m_initiated = false;
       glDeleteTextures(1, &m_textureId);
@@ -311,9 +346,9 @@ namespace ToolKit
     }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glBindTexture(GL_TEXTURE_2D, currId);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // Restore backbuffer.
+    glBindTexture(GL_TEXTURE_2D, currId); // Restore previous render target.
   }
 
   void RenderTarget::UnInit()
@@ -323,6 +358,20 @@ namespace ToolKit
     glDeleteFramebuffers(1, &m_frameBufferId);
     glDeleteRenderbuffers(1, &m_depthBufferId);
     m_initiated = false;
+  }
+
+  void RenderTarget::Reconstrcut(uint width, uint height, const RenderTargetSettigs& settings)
+  {
+    UnInit();
+    m_width = width;
+    m_height = height;
+    m_settings = settings;
+    Init();
+  }
+
+  const RenderTargetSettigs& RenderTarget::GetSettings() const
+  {
+    return m_settings;
   }
 
   TextureManager::TextureManager()

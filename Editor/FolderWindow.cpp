@@ -119,7 +119,7 @@ namespace ToolKit
         BoundingBox bb = dw.GetAABB();
         Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
         float r = glm::distance(geoCenter, bb.max) * 1.1f; // 10% safezone.
-        float a = glm::radians(45.0f);
+        constexpr float a = glm::radians(45.0f);
         float d = r / glm::tan(a / 2.0f);
 
         Vec3 eye = geoCenter + glm::normalize(Vec3(1.0f)) * d;
@@ -377,7 +377,7 @@ namespace ToolKit
 
             // Handle mouse hover tips.
             String fullName = dirEnt.m_fileName + dirEnt.m_ext;
-            UI::HelpMarker(LOC + fullName, fullName.c_str());
+            UI::HelpMarker(TKLoc + fullName, fullName.c_str());
 
             // Handle drag - drop to scene / inspector.
             if (!dirEnt.m_isDirectory)
@@ -453,7 +453,7 @@ namespace ToolKit
         ImGui::TableNextColumn();
         ImGui::Text("%%%.0f", GetThumbnailZoomPercent(thumbnailZoom));
         // Tooltips
-        UI::HelpMarker(LOC, "Ctrl + mouse scroll to adjust thumbnail size.");
+        UI::HelpMarker(TKLoc, "Ctrl + mouse scroll to adjust thumbnail size.");
 
         // Zoom toggle button
         ImGui::TableNextColumn();

@@ -50,6 +50,8 @@ namespace ToolKit
       virtual void SetCamera(Camera* cam) override;
 
     protected:
+      virtual RenderTargetSettigs GetRenderTargetSettings() override;
+
       void UpdateContentArea();
       void UpdateWindow();
       void DrawCommands();

@@ -36,30 +36,20 @@ namespace ToolKit
   class TK_API Cube final : public Drawable
   {
   public:
-    class Params : public ParameterBlock
-    {
-    public:
-      Params()
-      {
-        m_variants.push_back(Vec3(1.0f));
-      }
-      Params(const Vec3& scale)
-      {
-        m_variants.push_back(scale);
-      }
-    } m_params;
-
-  public:
     Cube(bool genDef = true);
-    Cube(const Params& params);
+    Cube(const Vec3& scale);
 
     virtual EntityType GetType() const override;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+  public:
+    TKDeclareParam(Vec3, Scale, Geometry, 90, true, true);
+
   protected:
     virtual Entity* CopyTo(Entity* copyTo) const override;
     virtual Entity* InstantiateTo(Entity* copyTo) const override;
+    void ParameterConstructor();
 
   private:
     void Generate();
@@ -85,22 +75,8 @@ namespace ToolKit
   class TK_API Sphere final : public Drawable
   {
   public:
-    class Params : public ParameterBlock
-    {
-    public:
-      Params()
-      {
-        m_variants.push_back(1.0f);
-      }
-      Params(float rad)
-      {
-        m_variants.push_back(rad);
-      }
-    } m_params;
-
-  public:
     Sphere(bool genDef = true);
-    Sphere(const Params& params);
+    Sphere(float radius);
 
     virtual EntityType GetType() const override;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
@@ -109,36 +85,20 @@ namespace ToolKit
   protected:
     virtual Entity* CopyTo(Entity* copyTo) const override;
     virtual Entity* InstantiateTo(Entity* copyTo) const override;
+    void ParameterConstructor();
 
   private:
     void Generate();
+
+  public:
+    TKDeclareParam(float, Radius, Geometry, 90, true, true);
   };
 
   class TK_API Cone final : public Drawable
   {
   public:
-    class Params : public ParameterBlock
-    {
-    public:
-      Params()
-      {
-        m_variants.push_back(1.0f);
-        m_variants.push_back(1.0f);
-        m_variants.push_back(30);
-        m_variants.push_back(20);
-      }
-      Params(float height, float rad, int nSegBase, int nSegHeight)
-      {
-        m_variants.push_back(height);
-        m_variants.push_back(rad);
-        m_variants.push_back(nSegBase);
-        m_variants.push_back(nSegHeight);
-      }
-    } m_params;
-
-  public:
     Cone(bool genDef = true);
-    Cone(const Params& params);
+    Cone(float height, float radius, int segBase, int segHeight);
 
     virtual EntityType GetType() const override;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
@@ -147,9 +107,16 @@ namespace ToolKit
   protected:
     virtual Entity* CopyTo(Entity* copyTo) const override;
     virtual Entity* InstantiateTo(Entity* copyTo) const override;
+    void ParameterConstructor();
 
   private:
     void Generate();
+
+  public:
+    TKDeclareParam(float, Height, Geometry, 90, true, true);
+    TKDeclareParam(float, Radius, Geometry, 90, true, true);
+    TKDeclareParam(int, SegBase, Geometry, 90, true, true);
+    TKDeclareParam(int, SegHeight, Geometry, 90, true, true);
   };
 
   class TK_API Arrow2d final : public Drawable

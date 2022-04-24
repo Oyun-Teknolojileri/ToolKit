@@ -1,4 +1,0 @@
-<material>
-  <diffuseTexture name = "Rock_6_d.png"/>
-  <shader name = "unlitFrag.shader"/>
-</material>

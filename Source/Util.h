@@ -21,6 +21,7 @@ namespace ToolKit
   TK_API void ReadAttr(XmlNode* node, const String& name, float& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, int& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, uint& val);
+  TK_API void ReadAttr(XmlNode* node, const String& name, ULongID& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, byte& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, ubyte& val);
   TK_API void ReadAttr(XmlNode* node, const String& name, String& val);

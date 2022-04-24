@@ -1,4 +1,0 @@
-<material>
-  <diffuseTexture name = "earth2.png"/>
-  <shader name = "unlitFrag.shader"/>
-</material>

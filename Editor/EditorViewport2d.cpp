@@ -158,7 +158,7 @@ namespace ToolKit
       {
         Drawable* dw = static_cast<Drawable*>((*it));
         BlendFunction blend = dw->GetMesh()->m_material->GetRenderState()->blendFunction;
-        if ((*it)->IsDrawable() && (*it)->m_visible && (int)blend)
+        if ((*it)->IsDrawable() && (*it)->Visible() && (int)blend)
         {
           blendedEntities.push_back((*it));
           it = surfaces.erase(it);
@@ -183,7 +183,7 @@ namespace ToolKit
       // Render opaque drawables
       for (Entity* ntt : surfaces)
       {
-        if (ntt->IsDrawable() && ntt->m_visible)
+        if (ntt->IsDrawable() && ntt->Visible())
         {
           app->m_renderer->Render
           (
@@ -395,7 +395,7 @@ namespace ToolKit
             dwMesh->m_node->SetTranslation(pos);
             EditorScenePtr currScene = g_app->GetCurrentScene();
             currScene->AddEntity(dwMesh);
-            currScene->AddToSelection(dwMesh->m_id, false);
+            currScene->AddToSelection(dwMesh->Id(), false);
             SetActive();
           }
           else if (entry.m_ext == SCENE)

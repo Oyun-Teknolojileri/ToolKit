@@ -135,7 +135,7 @@ namespace ToolKit
 
   void Camera::SetLens(float fov, float width, float height)
   {
-    SetLens(fov, width, height, 0.01f, 1000.0f);
+    SetLens(fov, width, height, 0.5f, 1000.0f);
   }
 
   void Camera::SetLens(float fov, float width, float height, float near, float far)

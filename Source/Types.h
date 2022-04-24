@@ -22,6 +22,10 @@
 #define SafeDel(ptr) { delete ptr; ptr = nullptr; };
 #define SafeDelArray(ptr) { delete[] ptr; ptr = nullptr; };
 
+#define TKStringify(x) #x
+#define TKToString(x) TKStringify(x)
+#define TKLoc __FILE__ ":" TKToString(__LINE__)
+
 // std template types require dll interface.
 #pragma warning( disable: 4251 )
 
@@ -84,6 +88,7 @@ namespace ToolKit
   typedef std::vector<class Vertex> VertexArray;
   typedef std::vector<class Face> FaceArray;
   typedef std::vector<class ParameterVariant> ParameterVariantArray;
+  typedef std::vector<class ParameterVariant*> ParameterVariantRawPtrArray;
   typedef rapidxml::xml_node<char> XmlNode;
   typedef rapidxml::xml_attribute<char> XmlAttribute;
   typedef rapidxml::xml_document<char> XmlDocument;
@@ -203,5 +208,7 @@ namespace ToolKit
     DrawTypeLineLoop = 0x0002,
     DrawTypePoints = 0x0000
   };
+
+  static const char* TKVersionStr = "v0.3.7";
 
 }

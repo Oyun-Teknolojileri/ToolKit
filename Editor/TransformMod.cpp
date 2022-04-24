@@ -110,9 +110,9 @@ namespace ToolKit
         StateBeginPick* baseNext = static_cast<StateBeginPick*> (nextState);
         baseNext->m_mouseData = m_mouseData;
 
-        if (!baseNext->IsIgnored(m_gizmo->m_id))
+        if (!baseNext->IsIgnored(m_gizmo->Id()))
         {
-          baseNext->m_ignoreList.push_back(m_gizmo->m_id);
+          baseNext->m_ignoreList.push_back(m_gizmo->Id());
         }
       }
     }
@@ -379,7 +379,7 @@ namespace ToolKit
         int actionEntityCount = 0;
         for (Entity* ntt : entities)
         {
-          if (ntt->m_transformLocked)
+          if (ntt->TransformLock())
           {
             continue;
           }
@@ -504,7 +504,7 @@ namespace ToolKit
       }
 
       // Apply transform.
-      if (!e->m_transformLocked)
+      if (!e->TransformLock())
       {
         if (m_type == TransformType::Translate)
         {

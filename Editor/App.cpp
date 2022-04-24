@@ -960,7 +960,7 @@ namespace ToolKit
         }
 
         RenderTargetSettigs rtSet;
-        rtSet.warpS = rtSet.warpT = GraphicTypes::UVClampToEdge;
+        rtSet.WarpS = rtSet.WarpT = GraphicTypes::UVClampToEdge;
         RenderTarget stencilMask((int)viewport->m_width, (int)viewport->m_height, rtSet);
         stencilMask.Init();
 

@@ -37,7 +37,7 @@ namespace ToolKit
     {
       ImGuiTreeNodeFlags nodeFlags = g_baseNodeFlags;
       EditorScenePtr currScene = g_app->GetCurrentScene();
-      if (currScene->IsSelected(e->m_id))
+      if (currScene->IsSelected(e->Id()))
       {
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
       }
@@ -59,7 +59,7 @@ namespace ToolKit
               if (childNtt->m_node->m_children.empty())
               {
                 nodeFlags = g_baseNodeFlags;
-                if (currScene->IsSelected(childNtt->m_id))
+                if (currScene->IsSelected(childNtt->Id()))
                 {
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
                 }
@@ -70,7 +70,7 @@ namespace ToolKit
               else
               {
                 nodeFlags = g_baseNodeFlags;
-                if (currScene->IsSelected(childNtt->m_id))
+                if (currScene->IsSelected(childNtt->Id()))
                 {
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
                 }
@@ -105,20 +105,20 @@ namespace ToolKit
       {
         if (ImGui::GetIO().KeyShift)
         {
-          if (currScene->IsSelected(e->m_id))
+          if (currScene->IsSelected(e->Id()))
           {
-            currScene->RemoveFromSelection(e->m_id);
+            currScene->RemoveFromSelection(e->Id());
           }
           else
           {
-            currScene->AddToSelection(e->m_id, true);
+            currScene->AddToSelection(e->Id(), true);
           }
         }
         else
         {
-          if (!currScene->IsSelected(e->m_id))
+          if (!currScene->IsSelected(e->Id()))
           {
-            currScene->AddToSelection(e->m_id, false);
+            currScene->AddToSelection(e->Id(), false);
           }
         }
       }
@@ -140,12 +140,12 @@ namespace ToolKit
 
           for (int i = 0; i < selected.size(); i++)
           {
-            if (selected[i]->m_id != e->m_id)
+            if (selected[i]->Id() != e->Id())
             {
-              g_child.push_back(selected[i]->m_id);
+              g_child.push_back(selected[i]->Id());
             }
           }
-          g_parent = e->m_id;
+          g_parent = e->Id();
         }
         ImGui::EndDragDropTarget();
       }
@@ -226,9 +226,9 @@ namespace ToolKit
 
           for (int i = 0; i < selected.size(); i++)
           {
-            if (selected[i]->m_id != NULL_HANDLE)
+            if (selected[i]->Id() != NULL_HANDLE)
             {
-              g_child.push_back(selected[i]->m_id);
+              g_child.push_back(selected[i]->Id());
             }
           }
           g_parent = NULL_HANDLE;
@@ -262,7 +262,7 @@ namespace ToolKit
         focusToItem = focusIndx == 0;
       }
 
-      const String sId = "##" + std::to_string(ntt->m_id);
+      const String sId = "##" + std::to_string(ntt->Id());
       bool isOpen = ImGui::TreeNodeEx(sId.c_str(), flags);
 
       if (ImGui::BeginPopupContextItem())
@@ -310,30 +310,30 @@ namespace ToolKit
       }
 
       ImGui::SameLine();
-      ImGui::Text(ntt->m_name.c_str());
+      ImGui::Text(ntt->Name().c_str());
 
       // Hiearchy visibility
       float offset = ImGui::GetContentRegionAvail().x - 30.0f;
       ImGui::SameLine(offset);
-      icon = ntt->m_visible ? UI::m_visibleIcon : UI::m_invisibleIcon;
+      icon = ntt->Visible() ? UI::m_visibleIcon : UI::m_invisibleIcon;
 
       // Texture only toggle button.
-      ImGui::PushID(ntt->m_id);
+      ImGui::PushID(ntt->Id());
       if (UI::ImageButtonDecorless(icon->m_textureId, ImVec2(15.0f, 15.0f), false))
       {
-        ntt->SetVisibility(!ntt->m_visible, true);
+        ntt->SetVisibility(!ntt->Visible(), true);
       }
       ImGui::PopID();
 
       offset = ImGui::GetContentRegionAvail().x - 10.0f;
       ImGui::SameLine(offset);
-      icon = ntt->m_transformLocked ? UI::m_lockedIcon : UI::m_unlockedIcon;
+      icon = ntt->TransformLock() ? UI::m_lockedIcon : UI::m_unlockedIcon;
 
       // Texture only toggle button.
-      ImGui::PushID(ntt->m_id);
+      ImGui::PushID(ntt->Id());
       if (UI::ImageButtonDecorless(icon->m_textureId, ImVec2(15.0f, 15.0f), false))
       {
-        ntt->SetTransformLock(!ntt->m_transformLocked, true);
+        ntt->SetTransformLock(!ntt->TransformLock(), true);
       }
 
       ImGui::PopID();

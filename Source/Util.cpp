@@ -104,6 +104,11 @@ namespace ToolKit
     val = ReadVal<uint>(node, name);
   }
 
+  void ReadAttr(XmlNode* node, const String& name, ULongID& val)
+  {
+    val = ReadVal<ULongID>(node, name);
+  }
+
   void ReadAttr(XmlNode* node, const String& name, byte& val)
   {
     val = ReadVal<byte>(node, name);
@@ -690,7 +695,7 @@ namespace ToolKit
     idArray.reserve(ptrArray.size());
     for (Entity* ntt : ptrArray)
     {
-      idArray.push_back(ntt->m_id);
+      idArray.push_back(ntt->Id());
     }
   }
 

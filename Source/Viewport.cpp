@@ -40,8 +40,7 @@ namespace ToolKit
     : m_width(width), m_height(height)
   {
     GetCamera()->SetLens(glm::quarter_pi<float>(), width, height);
-    m_viewportImage = new RenderTarget((uint)width, (uint)height);
-    m_viewportImage->Init();
+    ResetViewportImage(GetRenderTargetSettings());
   }
 
   Viewport::~Viewport()
@@ -54,12 +53,8 @@ namespace ToolKit
     m_width = width;
     m_height = height;
 
-    UpdateCameraLens(width, height);
-    
-    m_viewportImage->UnInit();
-    m_viewportImage->m_width = (uint)width;
-    m_viewportImage->m_height = (uint)height;
-    m_viewportImage->Init();
+    UpdateCameraLens(m_width, m_height);
+    ResetViewportImage(GetRenderTargetSettings());
   }
 
   void Viewport::AdjustZoom(float delta)
@@ -77,7 +72,7 @@ namespace ToolKit
         m_zoom * m_width * 0.5f,
         -m_zoom * m_height * 0.5f,
         m_zoom * m_height * 0.5f,
-        0.01f,
+        0.5f,
         1000.0f
       );
     }
@@ -93,6 +88,24 @@ namespace ToolKit
     else
     {
       cam->SetLens(cam->GetData().fov, width, height);
+    }
+  }
+
+  RenderTargetSettigs Viewport::GetRenderTargetSettings()
+  {
+    return RenderTargetSettigs();
+  }
+
+  void Viewport::ResetViewportImage(const RenderTargetSettigs& settings)
+  {
+    if (m_viewportImage)
+    {
+      m_viewportImage->Reconstrcut((uint)m_width, (uint)m_height, settings);
+    }
+    else
+    {
+      m_viewportImage = new RenderTarget((uint)m_width, (uint)m_height, settings);
+      m_viewportImage->Init();
     }
   }
 
