@@ -14,7 +14,6 @@ namespace ToolKit
 		virtual void Init() = 0;
 		virtual void Uninit() = 0;
 		virtual void Update(float deltaTime, Camera* cam, Viewport* vp);
-		virtual void PostUpdate();
 		virtual void Render(Viewport* vp);
 		Entity* FetchEntity(const String& entityName);
 		Entity* GetLayer(const String& layerName);

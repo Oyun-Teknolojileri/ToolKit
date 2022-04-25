@@ -10,21 +10,9 @@ namespace ToolKit
 	{
 		if (m_layout)
 		{
-			EntityRawPtrArray layers = m_layout->Filter
-			(
-				[&layerName](Entity* e) -> bool
-				{
-					return e->Name() == layerName;
-				}
-			);
-
-			if (layers.empty())
-			{
-				return nullptr;
-			}
-
-			return layers.front();
+			return m_layout->GetFirstEntityByName(layerName);
 		}
+
 		return nullptr;
 	}
 
@@ -43,11 +31,7 @@ namespace ToolKit
 
 		UpdateSurfaces(vp);
 		vp->AttachCamera(m_lastCamEntity->Id());
-		PostUpdate();
-	}
-
-	void UILayer::PostUpdate()
-	{
+		
 		if (SceneManager* sceneMngr = GetSceneManager())
 		{
 			ScenePtr currScene = sceneMngr->GetCurrentScene();
