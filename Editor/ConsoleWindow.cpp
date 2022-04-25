@@ -516,7 +516,7 @@ namespace ToolKit
         String manUpMsg = "You can manually update workspace directory in 'yourInstallment/ToolKit/Resources/workspace.settings'";
         if (CheckFile(path) && std::filesystem::is_directory(path))
         {
-          // Try updating default.settings
+          // Try updating workspace.settings
           if (g_app->m_workspace.SetDefaultWorkspace(path))
           {
             String info = "Your Workspace directry set to: " + path + "\n" + manUpMsg;

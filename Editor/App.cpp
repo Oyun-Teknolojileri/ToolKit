@@ -433,10 +433,10 @@ namespace ToolKit
     void App::ResetUI()
     {      
       DeleteWindows();
-      if (CheckFile(ConcatPaths({ DefaultPath(), "default.settings" })))
+      if (CheckFile(ConcatPaths({ DefaultPath(), "Editor.settings" })))
       {
         // Try reading defaults.
-        String settingsFile = ConcatPaths({ DefaultPath(), "default.settings" });
+        String settingsFile = ConcatPaths({ DefaultPath(), "Editor.settings" });
         std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
         
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
