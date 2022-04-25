@@ -7,6 +7,7 @@
 
 namespace ToolKit
 {
+
 	class TK_API UILayer
 	{
 	public:

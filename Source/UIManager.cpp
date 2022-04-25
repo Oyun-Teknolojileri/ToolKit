@@ -17,6 +17,7 @@ namespace ToolKit
 					return e->Name() == layerName;
 				}
 			);
+
 			if (layers.empty())
 			{
 				return nullptr;
@@ -33,11 +34,13 @@ namespace ToolKit
 		m_cam = cam;
 		m_viewport = vp;
 		vp->AttachCamera(cam->Id());
+
 		if (SceneManager* sceneMngr = GetSceneManager())
 		{
 			ScenePtr currScene = sceneMngr->GetCurrentScene();
 			currScene->AddEntity(cam);
 		}
+
 		UpdateSurfaces(vp);
 		vp->AttachCamera(m_lastCamEntity->Id());
 		PostUpdate();
@@ -93,7 +96,7 @@ namespace ToolKit
 		{
 			EntityRawPtrArray fetch = m_layout->Filter
 			(
-				[&](Entity* e) -> bool
+				[&entityName](Entity* e) -> bool
 				{
 					return e->Name() == entityName;
 				}
@@ -105,6 +108,92 @@ namespace ToolKit
 			}
 		}
 		return nullptr;
+	}
+
+	bool UILayer::CheckMouseClick(Surface* surface, Event* e, Viewport* vp)
+	{
+		if (CheckMouseOver(surface, e, vp))
+		{
+			MouseEvent* me = static_cast<MouseEvent*> (e);
+			return me->m_action == EventAction::LeftClick;
+		}
+
+		return false;
+	}
+
+	bool UILayer::CheckMouseOver(Surface* surface, Event* e, Viewport* vp)
+	{
+		if (e->m_type == Event::EventType::Mouse)
+		{
+			BoundingBox box = surface->GetAABB(true);
+			Ray ray = vp->RayFromMousePosition();
+
+			float t = 0.0f;
+			if (RayBoxIntersection(ray, box, t))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void UILayer::UpdateSurfaces(Viewport* vp)
+	{
+		Entity* rootEntity = this->m_layout->GetFirstEntityByName(m_layerName);
+		EntityRawPtrArray entities;
+		GetChildren(rootEntity, entities);
+		const EventPool& events = Main::GetInstance()->m_eventPool;
+		if (entities.empty() || events.empty())
+		{
+			return;
+		}
+
+		for (Entity* ntt : entities)
+		{
+			// Process events.
+			for (Event* e : events)
+			{
+				if (ntt->IsSurfaceInstance())
+				{
+					Surface* surface = static_cast<Surface*> (ntt);
+					bool mouseOverPrev = surface->m_mouseOver;
+
+					if (surface->m_mouseOver = CheckMouseOver(surface, e, vp))
+					{
+						if (surface->m_onMouseOver)
+						{
+							surface->m_onMouseOver(e, ntt);
+						}
+					}
+
+					if (surface->m_mouseClicked = CheckMouseClick(surface, e, vp))
+					{
+						if (surface->m_onMouseClick)
+						{
+							surface->m_onMouseClick(e, ntt);
+						}
+					}
+
+					if (!mouseOverPrev && surface->m_mouseOver)
+					{
+						if (surface->m_onMouseEnter)
+						{
+							surface->m_onMouseEnter(e, ntt);
+						}
+					}
+
+					if (mouseOverPrev && !surface->m_mouseOver)
+					{
+						if (surface->m_onMouseExit)
+						{
+							surface->m_onMouseExit(e, ntt);
+						}
+					}
+
+				}
+			}
+		}
+
 	}
 
 	void UIManager::SetRootLayer(UILayer* newRootLayer)
@@ -177,85 +266,4 @@ namespace ToolKit
 		}
 	}
 
-	bool UILayer::CheckMouseClick(Surface* surface, Event* e, Viewport* vp)
-	{
-		if (CheckMouseOver(surface, e, vp))
-		{
-			MouseEvent* me = static_cast<MouseEvent*> (e);
-			return me->m_action == EventAction::LeftClick;
-		}
-		return false;
-	}
-
-	bool UILayer::CheckMouseOver(Surface* surface, Event* e, Viewport* vp)
-	{
-		if (e->m_type == Event::EventType::Mouse)
-		{
-			BoundingBox box = surface->GetAABB(true);
-			Ray ray = vp->RayFromMousePosition();
-
-			float t = 0.0f;
-			if (RayBoxIntersection(ray, box, t))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	void UILayer::UpdateSurfaces(Viewport* vp)
-	{
-			Entity* rootEntity = this->m_layout->GetFirstEntityByName(m_layerName);
-			EntityRawPtrArray entities;
-			GetChildren(rootEntity, entities);
-			const EventPool& events = Main::GetInstance()->m_eventPool;
-			if (entities.empty() || events.empty())
-			{
-				return;
-			}
-			for (Entity* ntt : entities)
-			{
-				// Process events.
-				for (Event* e : events)
-				{
-					if (ntt->IsSurfaceInstance())
-					{
-						Surface* surface = static_cast<Surface*> (ntt);
-						bool mouseOverPrev = surface->m_mouseOver;
-
-						if (surface->m_mouseOver = CheckMouseOver(surface, e, vp))
-						{
-							if (surface->m_onMouseOver)
-							{
-								surface->m_onMouseOver(e, ntt);
-							}
-						}
-
-						if (surface->m_mouseClicked = CheckMouseClick(surface, e, vp))
-						{
-							if (surface->m_onMouseClick)
-							{
-								surface->m_onMouseClick(e, ntt);
-							}
-						}
-
-						if (!mouseOverPrev && surface->m_mouseOver)
-						{
-							if (surface->m_onMouseEnter)
-							{
-								surface->m_onMouseEnter(e, ntt);
-							}
-						}
-
-						if (mouseOverPrev && !surface->m_mouseOver)
-						{
-							if (surface->m_onMouseExit)
-							{
-								surface->m_onMouseExit(e, ntt);
-							}
-						}
-					}
-				}
-			}
-	}
 }
