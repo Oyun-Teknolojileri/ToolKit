@@ -101,6 +101,7 @@ namespace ToolKit
         LightRawPtrArray lights = { &light };
 
         g_app->m_renderer->Render(dw, cam, lights);
+
         g_app->m_renderer->SwapRenderTarget(&thumb, false);
         g_app->m_thumbnailCache[GetFullPath()] = thumbPtr;
       };

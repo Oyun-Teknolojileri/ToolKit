@@ -34,7 +34,6 @@ namespace ToolKit
       : m_workspace(this)
     {
       m_cursor = nullptr;
-      m_lightMaster = nullptr;
       m_renderer = Main::GetInstance()->m_renderer;
       m_renderer->m_windowWidth = windowWidth;
       m_renderer->m_windowHeight = windowHeight;
@@ -54,10 +53,7 @@ namespace ToolKit
       m_origin = new Axis3d();
       m_grid = new Grid(100);
       m_grid->GetMesh()->Init(false);
-
-      ModManager::GetInstance()->Init();
-      ModManager::GetInstance()->SetMod(true, ModId::Select);
-      ActionManager::GetInstance()->Init();
+      Generate2dGrid();
 
       // Lights and camera.
       m_lightMaster = new Node();
@@ -78,6 +74,10 @@ namespace ToolKit
       light->Yaw(glm::radians(-140.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
+
+      ModManager::GetInstance()->Init();
+      ModManager::GetInstance()->SetMod(true, ModId::Select);
+      ActionManager::GetInstance()->Init();
       
       m_workspace.Init();
       String sceneName = "New Scene" + SCENE;
@@ -116,12 +116,12 @@ namespace ToolKit
       SafeDel(m_grid);
       SafeDel(m_origin);
       SafeDel(m_cursor);
-      SafeDel(m_lightMaster);
+
       for (int i = 0; i < 3; i++)
       {
         SafeDel(m_sceneLights[i]);
       }
-      assert(m_sceneLights.size() == 3);
+      SafeDel(m_lightMaster);
       m_sceneLights.clear();
 
       GetAnimationPlayer()->m_records.clear();
@@ -132,6 +132,9 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
+      // Add editor light
+      GetCurrentScene()->GetCamera()->m_node->AddChild(m_lightMaster);
+
       UI::BeginUI();
       UI::ShowUI();
 
@@ -165,18 +168,48 @@ namespace ToolKit
         }
 
         viewport->Update(deltaTime);
-        viewport->Render(this);
+
+        if (viewport->IsVisible())
+        {
+          m_renderer->RenderScene(GetCurrentScene().get(), viewport, m_sceneLights);
+
+          Camera* cam = viewport->GetCamera();;
+
+          // Render fixed scene objects.
+          if (viewport->GetType() == Window::Type::Viewport2d)
+          {
+            m_renderer->Render(&m_2dGrid, cam);
+          }
+          else
+          {
+            m_renderer->Render(m_grid, cam);
+
+            m_origin->LookAt(cam, viewport->m_zoom);
+            m_renderer->Render(m_origin, cam);
+
+            m_cursor->LookAt(cam, viewport->m_zoom);
+            m_renderer->Render(m_cursor, cam);
+          }
+
+          // Render gizmo.
+          RenderGizmo(viewport, m_gizmo);
+        }
 
         // Render debug objects.
         if (!m_perFrameDebugObjects.empty())
         {
           for (Drawable* dbgObj : m_perFrameDebugObjects)
           {
-            m_renderer->Render(dbgObj, viewport->GetCamera());
+            m_renderer->Render(dbgObj, GetCurrentScene()->GetCamera());
             SafeDel(dbgObj);
           }
           m_perFrameDebugObjects.clear();
         }
+      }
+
+      for (EditorViewport* viewport : viewports)
+      {
+        RenderSelected(viewport);
       }
 
       // Viewports set their own render target.
@@ -185,6 +218,9 @@ namespace ToolKit
 
       // Render UI.
       UI::EndUI();
+
+      // Remove editor lights
+      m_lightMaster->OrphanSelf();
     }
 
     void App::OnResize(uint width, uint height)
@@ -817,6 +853,10 @@ namespace ToolKit
       SetCurrentScene(scene);
       scene->Load(); // Make sure its loaded.
       scene->Init(false);
+      
+      // Editor light retransfrom according to new camera
+      m_lightMaster->SetTransform(scene->GetCamera()->m_node->GetTransform(TransformationSpace::TS_LOCAL));
+
       m_workspace.SetScene(scene->m_name);
     }
 
@@ -1020,7 +1060,7 @@ namespace ToolKit
       selecteds.clear();
       selecteds.push_back(primary);
       RenderFn(selecteds, g_selectHighLightPrimaryColor);
-
+      
       if (m_showSelectionBoundary && primary->IsDrawable())
       {
         m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(primary->GetAABB(true)));
@@ -1043,7 +1083,11 @@ namespace ToolKit
       }
       else
       {
-        m_renderer->Render(gizmo, viewport->GetCamera());
+        Entity* nttGizmo = dynamic_cast<Entity*>(gizmo);
+        if (nttGizmo != nullptr) 
+        {
+          m_renderer->Render(gizmo, viewport->GetCamera());
+        }
       }
     }
 
@@ -1189,6 +1233,39 @@ namespace ToolKit
       scene->m_newScene = true;
       GetSceneManager()->Manage(scene);
       SetCurrentScene(scene);
+    }
+
+    void App::Generate2dGrid()
+    {
+      Vec2 layoutSize = { g_app->m_playWidth, g_app->m_playHeight };
+
+      float stepDist = 20.0f;
+      int yRep = (int)(layoutSize.x / stepDist);
+      int xRep = (int)(layoutSize.y / stepDist);
+      int total = xRep * yRep * 2;
+
+      Vec3Array linePnts;
+      linePnts.reserve(total);
+      const float depth = -1.0f;
+
+      Vec2 origin = { layoutSize.x * -0.5f, layoutSize.y * -0.5f };
+      for (int i = 1; i < xRep; i++)
+      {
+        Vec3 p0(origin.x, origin.y + stepDist * i, depth);
+        Vec3 p1(layoutSize.x * 0.5f, origin.y + stepDist * i, depth);
+        linePnts.push_back(p0);
+        linePnts.push_back(p1);
+
+        for (int j = 1; j < yRep; j++)
+        {
+          Vec3 p0(origin.x + stepDist * j, origin.y, depth);
+          Vec3 p1(origin.x + stepDist * j, origin.y + layoutSize.y, depth);
+          linePnts.push_back(p0);
+          linePnts.push_back(p1);
+        }
+      }
+
+      m_2dGrid.Generate(linePnts, Vec3(0.5f), DrawType::Line);
     }
 
     void DebugMessage(const String& msg)

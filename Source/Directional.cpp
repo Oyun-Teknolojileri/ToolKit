@@ -175,6 +175,11 @@ namespace ToolKit
     return m_projection;
   }
 
+  void Camera::SetProjectionMatrix(Mat4 proj)
+  {
+    m_projection = proj;
+  }
+
   bool Camera::IsOrtographic() const
   {
     return m_ortographic;

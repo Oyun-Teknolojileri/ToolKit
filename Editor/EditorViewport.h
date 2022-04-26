@@ -44,9 +44,7 @@ namespace ToolKit
       virtual void OnResize(float width, float height) override;
 
       // Editor functions
-      virtual void Render(class App* app);
       virtual void GetContentAreaScreenCoordinates(Vec2& min, Vec2& max) const;
-      virtual Camera* GetCamera() const override;
       virtual void SetCamera(Camera* cam) override;
 
     protected:

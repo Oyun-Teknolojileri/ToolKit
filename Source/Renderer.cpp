@@ -11,10 +11,10 @@
 #include "GlobalCache.h"
 #include "GL/glew.h"
 #include "DebugNew.h"
+#include "Viewport.h"
 
 namespace ToolKit
 {
-
 #define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
 
   Renderer::Renderer()
@@ -23,6 +23,139 @@ namespace ToolKit
 
   Renderer::~Renderer()
   {
+  }
+
+  void Renderer::RenderScene(Scene* scene, Viewport* viewport, LightRawPtrArray editor_lights)
+  {
+    Camera* cam = viewport->GetCamera();
+    EntityRawPtrArray entites = scene->GetEntities();
+
+    SetRenderTarget(viewport->m_viewportImage);
+
+    scene->SetCamera(viewport->GetCamera());
+
+    // Frustum cull
+    Mat4 pr = cam->GetProjectionMatrix();
+    Mat4 v = cam->GetViewMatrix();
+    Frustum frustum = ExtractFrustum(pr * v, false);
+
+    auto delFn = [frustum](Entity* ntt) -> bool
+    {
+      IntersectResult res = FrustumBoxIntersection(frustum, ntt->GetAABB(true));
+      if (res == IntersectResult::Outside)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    };
+    entites.erase(std::remove_if(entites.begin(), entites.end(), delFn), entites.end());
+    
+    // Get transparent objects
+    EntityRawPtrArray blendedEntities;
+    
+    auto delTrFn = [&blendedEntities](Entity* ntt) -> bool
+    {
+      if (ntt->GetType() == EntityType::Entity_Node)
+      {
+        return false;
+      }
+
+      MeshComponentPtr ms = ntt->GetComponent<MeshComponent>();
+      if (ms == nullptr)
+      {
+        return false;
+      }
+
+      BlendFunction blend = ms->m_mesh->m_material->GetRenderState()->blendFunction;
+      if (ntt->IsDrawable() && ntt->Visible() && (int)blend)
+      {
+        blendedEntities.push_back(ntt);
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    };
+    entites.erase(std::remove_if(entites.begin(), entites.end(), delTrFn), entites.end());
+    
+    
+    // Sort transparent entities
+    if (cam->IsOrtographic())
+    {
+      auto sortFn = [](Entity* nt1, Entity* nt2) -> bool
+      {
+        float first = nt1->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
+        float second = nt2->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
+
+        return first < second;
+      };
+
+      std::stable_sort(blendedEntities.begin(), blendedEntities.end(), sortFn);
+    }
+    else
+    {
+      auto sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool
+      {
+        Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        BoundingBox bb1 = ntt1->GetAABB(true);
+        float first = glm::length2(bb1.GetCenter() - camLoc);
+        BoundingBox bb2 = ntt2->GetAABB(true);
+        float second = glm::length2(bb2.GetCenter() - camLoc);
+        return second < first;
+      };
+      std::stable_sort(blendedEntities.begin(), blendedEntities.end(), sortFn);
+    }
+
+    // Render opaque objects
+    for (Entity* ntt : entites)
+    {
+      if (ntt->IsDrawable() && ntt->Visible())
+      {
+        if (ntt->GetType() == EntityType::Entity_Billboard)
+        {
+          Billboard* billboard = static_cast<Billboard*> (ntt);
+          billboard->LookAt(cam, viewport->m_zoom);
+        }
+
+        Render(ntt, cam, editor_lights);
+      }
+    }
+
+    // Render non-opaque entities
+    for (Entity* ntt : blendedEntities)
+    {
+      Drawable* dw = dynamic_cast<Drawable*>(ntt);
+      if (dw == nullptr)
+      {
+        continue;
+      }
+
+      if (ntt->GetType() == EntityType::Entity_Billboard)
+      {
+        Billboard* billboard = static_cast<Billboard*> (ntt);
+        billboard->LookAt(cam, viewport->m_zoom);
+      }
+
+      // For two sided materials, first render back of transparent objects then render front
+      if (dw->GetMesh()->m_material->GetRenderState()->cullMode == CullingType::TwoSided)
+      {
+        dw->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::Front;
+        Render(ntt, cam, editor_lights);
+
+        dw->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::Back;
+        Render(ntt, cam, editor_lights);
+
+        dw->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
+      }
+      else
+      {
+        Render(ntt, cam, editor_lights);
+      }
+    }
   }
 
   void Renderer::Render(Entity* ntt, Camera* cam, const LightRawPtrArray& lights)
@@ -51,7 +184,7 @@ namespace ToolKit
       for (Mesh* mesh : meshCollector)
       {
         m_mat = mesh->m_material.get();
-        if (m_overrideMat)
+        if (m_overrideMat != nullptr)
         {
           m_mat = m_overrideMat.get();
         }
@@ -78,7 +211,6 @@ namespace ToolKit
         }
       }
     }
-
   }
 
   void Renderer::RenderSkinned(Drawable* object, Camera* cam)
@@ -557,5 +689,4 @@ namespace ToolKit
       glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
     }
   }
-
 }

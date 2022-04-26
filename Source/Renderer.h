@@ -15,23 +15,39 @@ namespace ToolKit
   class SpriteAnimation;
   class Shader;
   class Material;
+  class Viewport;
   class RenderTarget;
+  class Renderer;
+
+  struct RenderTechnique
+  {
+    std::function<void(Renderer*)> Render;
+    int priority = 0;
+  };
+
+  struct RenderJob
+  {
+    Entity* entity;
+    RenderTechnique technique;
+  };
 
   class TK_API Renderer
   {
   public:
     Renderer();
     ~Renderer();
+    void RenderScene(Scene* scene, Viewport* viewport, LightRawPtrArray editor_lights);
     void Render(Entity* ntt, Camera* cam, const LightRawPtrArray& lights = LightRawPtrArray());
-    void RenderSkinned(Drawable* object, Camera* cam);
-    void Render2d(Surface* object, glm::ivec2 screenDimensions);
-    void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
     void SetRenderState(const RenderState* const state);
     void SetRenderTarget(RenderTarget* renderTarget, bool clear = true, const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f });
     void SwapRenderTarget(RenderTarget** renderTarget, bool clear = true, const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f });
     void DrawFullQuad(ShaderPtr fragmentShader);
 
   private:
+    void RenderSkinned(Drawable* object, Camera* cam);
+    void Render2d(Surface* object, glm::ivec2 screenDimensions);
+    void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
+
     void SetProjectViewModel(Entity* ntt, Camera* cam);
     void BindProgram(ProgramPtr program);
     void LinkProgram(uint program, uint vertexP, uint fragmentP);

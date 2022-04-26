@@ -13,6 +13,7 @@ namespace ToolKit
   {
 
     EditorScene::EditorScene()
+      : Scene()
     {
       m_newScene = true;
     }

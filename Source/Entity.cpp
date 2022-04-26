@@ -24,6 +24,7 @@ namespace ToolKit
   Entity::~Entity()
   {
     SafeDel(m_node);
+
     m_components.clear();
   }
 

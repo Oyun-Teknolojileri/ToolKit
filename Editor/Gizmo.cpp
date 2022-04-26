@@ -756,7 +756,5 @@ namespace ToolKit
       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       renderer->Render(this, cam);
     }
-
   }
-
 }

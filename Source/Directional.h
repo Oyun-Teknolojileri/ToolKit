@@ -53,6 +53,7 @@ namespace ToolKit
     void SetLens(float left, float right, float bottom, float top, float near, float far);
     Mat4 GetViewMatrix() const;
     Mat4 GetProjectionMatrix() const;
+    void SetProjectionMatrix(Mat4 proj);
     bool IsOrtographic() const;
 
     CamData GetData() const;

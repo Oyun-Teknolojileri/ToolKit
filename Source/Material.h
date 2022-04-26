@@ -3,6 +3,7 @@
 #include "RenderState.h"
 #include "Resource.h"
 #include "ResourceManager.h"
+#include "Renderer.h"
 
 namespace ToolKit
 {
@@ -35,6 +36,8 @@ namespace ToolKit
     ShaderPtr m_fragmetShader;
     Vec3 m_color;
     float m_alpha;
+
+    RenderTechnique m_renderTechnique;
 
   private:
     RenderState m_renderState;

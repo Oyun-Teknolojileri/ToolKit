@@ -134,91 +134,6 @@ namespace ToolKit
       return vp;
     }
 
-    void EditorViewport2d::Render(App* app)
-    {
-      if (!IsVisible())
-      {
-        return;
-      }
-
-      // Render entities.
-      app->m_renderer->SetRenderTarget(m_viewportImage);
-      EntityRawPtrArray surfaces = app->GetCurrentScene()->Filter
-      (
-        [](Entity* ntt) -> bool 
-        { 
-          return ntt->IsSurfaceInstance();
-        }
-      );
-
-      // Get blended surfaces
-      EntityRawPtrArray blendedEntities;
-      EntityRawPtrArray::iterator it = surfaces.begin();
-      while (it != surfaces.end())
-      {
-        Drawable* dw = static_cast<Drawable*>((*it));
-        BlendFunction blend = dw->GetMesh()->m_material->GetRenderState()->blendFunction;
-        if ((*it)->IsDrawable() && (*it)->Visible() && (int)blend)
-        {
-          blendedEntities.push_back((*it));
-          it = surfaces.erase(it);
-        }
-        else
-        {
-          ++it;
-        }
-      }
-
-      // Sort transparent entities
-      auto sortFn = [](Entity* nt1, Entity* nt2) -> bool
-      {
-        float first = nt1->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
-        float second = nt2->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
-
-        return first < second;
-      };
-
-      std::stable_sort(blendedEntities.begin(), blendedEntities.end(), sortFn);
-
-      // Render opaque drawables
-      for (Entity* ntt : surfaces)
-      {
-        if (ntt->IsDrawable() && ntt->Visible())
-        {
-          app->m_renderer->Render
-          (
-            ntt,
-            GetCamera(),
-            { &m_forwardLight }
-          );
-        }
-      }
-
-      // Render non-opaques drawables
-      for (Entity* ntt : blendedEntities)
-      {
-        app->m_renderer->Render
-        (
-          ntt,
-          GetCamera(),
-          { &m_forwardLight }
-        );
-      }
-
-      app->RenderSelected(this);
-
-      // Render grid.
-      app->m_renderer->Render
-      (
-        &m_grid,
-        GetCamera(),
-        { &m_forwardLight }
-      );
-
-      // Render gizmo.
-      app->RenderGizmo(this, app->m_gizmo);
-    }
-
     void EditorViewport2d::GetContentAreaScreenCoordinates(Vec2& min, Vec2& max) const
     {
       min = m_canvasPos + m_wndPos;
@@ -464,9 +379,6 @@ namespace ToolKit
       m_zoom = 1.0f;
       GetCamera()->m_node->SetTranslation(Z_AXIS * 10.0f);
       AdjustZoom(0.0f);
-
-      m_forwardLight.Translate(Z_AXIS);
-      m_forwardLight.LookAt(ZERO);
     }
 
     void EditorViewport2d::UpdateCanvasSize()
