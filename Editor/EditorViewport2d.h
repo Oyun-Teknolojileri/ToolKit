@@ -33,8 +33,7 @@ namespace ToolKit
       virtual Vec2 TransformScreenToViewportSpace(const Vec2& pnt) override;
 
       // Editor overrides.
-      virtual void Render(App* app) override;
-      virtual void GetContentAreaScreenCoordinates(Vec2& min, Vec2& max) const override; // Consider Canvas as the content area.
+      virtual void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const; // Consider Canvas as the content area.
 
     protected:
       void UpdateContentArea();

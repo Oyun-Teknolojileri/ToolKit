@@ -26,7 +26,7 @@
 
 		uniform _LightData LightData;
 		uniform _CamData CamData;
-		uniform vec3 Color;
+		uniform vec4 Color;
 
 		in vec3 v_pos;
 		in vec3 v_normal;
@@ -60,8 +60,8 @@
 
 				irradiance += (ambient + diffuse + specular) * LightData.intensity[i];
 			}
-
-			fragColor = vec4(irradiance, 1.0) * vec4(Color, 1.0f);
+			
+			fragColor = vec4(irradiance * Color.xyz, Color.a);
 		}
 	-->
 	</source>

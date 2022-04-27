@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "TransformMod.h"
 #include "Gizmo.h"
 #include "GlobalDef.h"
@@ -110,9 +109,9 @@ namespace ToolKit
         StateBeginPick* baseNext = static_cast<StateBeginPick*> (nextState);
         baseNext->m_mouseData = m_mouseData;
 
-        if (!baseNext->IsIgnored(m_gizmo->m_id))
+        if (!baseNext->IsIgnored(m_gizmo->Id()))
         {
-          baseNext->m_ignoreList.push_back(m_gizmo->m_id);
+          baseNext->m_ignoreList.push_back(m_gizmo->Id());
         }
       }
     }
@@ -376,11 +375,18 @@ namespace ToolKit
           ActionManager::GetInstance()->BeginActionGroup();
         }
 
+        int actionEntityCount = 0;
         for (Entity* ntt : entities)
         {
+          if (ntt->TransformLock())
+          {
+            continue;
+          }
+
+          actionEntityCount++;
           ActionManager::GetInstance()->AddAction(new TransformAction(ntt));
         }
-        ActionManager::GetInstance()->GroupLastActions((int)entities.size());
+        ActionManager::GetInstance()->GroupLastActions(actionEntityCount);
       }
 
       m_delta = ZERO;
@@ -406,7 +412,7 @@ namespace ToolKit
       if (EditorViewport* vp = g_app->GetActiveViewport())
       {
         Vec2 contentMin, contentMax;
-        vp->GetContentAreaScreenCoordinates(contentMin, contentMax);
+        vp->GetContentAreaScreenCoordinates(&contentMin, &contentMax);
 
         auto drawMoveCursorFn = [this, contentMin, contentMax](ImDrawList* drawList) -> void
         {
@@ -497,17 +503,25 @@ namespace ToolKit
       }
 
       // Apply transform.
-      if (m_type == TransformType::Translate)
+      if (!e->TransformLock())
       {
-        Translate(e);
+        if (m_type == TransformType::Translate)
+        {
+          Translate(e);
+        }
+        else if (m_type == TransformType::Rotate)
+        {
+          Rotate(e);
+        }
+        else if (m_type == TransformType::Scale)
+        {
+          Scale(e);
+        }
       }
-      else if (m_type == TransformType::Rotate)
+      else
       {
-        Rotate(e);
-      }
-      else if (m_type == TransformType::Scale)
-      {
-        Scale(e);
+        // Warn user
+        g_app->m_statusMsg = "Attempt to transform a locked object";
       }
 
       // Set original parents back.

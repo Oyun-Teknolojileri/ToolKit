@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "ConsoleWindow.h"
 #include "FolderWindow.h"
 #include "GlobalDef.h"
@@ -101,6 +99,7 @@ namespace ToolKit
         LightRawPtrArray lights = { &light };
 
         g_app->m_renderer->Render(dw, cam, lights);
+
         g_app->m_renderer->SwapRenderTarget(&thumb, false);
         g_app->m_thumbnailCache[GetFullPath()] = thumbPtr;
       };
@@ -119,7 +118,7 @@ namespace ToolKit
         BoundingBox bb = dw.GetAABB();
         Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
         float r = glm::distance(geoCenter, bb.max) * 1.1f; // 10% safezone.
-        float a = glm::radians(45.0f);
+        constexpr float a = glm::radians(45.0f);
         float d = r / glm::tan(a / 2.0f);
 
         Vec3 eye = geoCenter + glm::normalize(Vec3(1.0f)) * d;
@@ -218,24 +217,27 @@ namespace ToolKit
 
         // Handle Item Icon size.
         ImGuiIO io = ImGui::GetIO();
-        static float wheel = io.MouseWheel;
-        float delta = io.MouseWheel - wheel;
+        float delta = io.MouseWheel;
 
-        const float icMin = 50.0f;
-        const float icMax = 300.0f;
+        static float thumbnailZoom = m_thumbnailMaxZoom / 6.f; // Initial zoom value
+
+        // Zoom in and out
         if (io.KeyCtrl && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
         {
-          m_iconSize += Vec2(delta) * 15.0f;
-          if (m_iconSize.x < icMin)
-          {
-            m_iconSize = Vec2(icMin);
-          }
-
-          if (m_iconSize.x > icMax)
-          {
-            m_iconSize = Vec2(icMax);
-          }
+          thumbnailZoom += delta * 10.0f;
         }
+
+        // Clamp icon size
+        if (thumbnailZoom < m_thumbnailMaxZoom / 6.f)
+        {
+          thumbnailZoom = m_thumbnailMaxZoom / 6.f;
+        }
+        if (thumbnailZoom > m_thumbnailMaxZoom)
+        {
+          thumbnailZoom = m_thumbnailMaxZoom;
+        }
+
+        m_iconSize.xy = Vec2(thumbnailZoom);
 
         // Item dropped to tab.
         MoveTo(m_path);
@@ -374,7 +376,7 @@ namespace ToolKit
 
             // Handle mouse hover tips.
             String fullName = dirEnt.m_fileName + dirEnt.m_ext;
-            UI::HelpMarker(LOC + fullName, fullName.c_str());
+            UI::HelpMarker(TKLoc + fullName, fullName.c_str());
 
             // Handle drag - drop to scene / inspector.
             if (!dirEnt.m_isDirectory)
@@ -430,13 +432,53 @@ namespace ToolKit
         } // Tab item handling ends.
         ImGui::EndChild();
 
-        // Handle searchbar.
-        ImGui::Separator();
-        ImGui::Text("Filter: ");
-        ImGui::SameLine();
+        ImGui::BeginTable("##FilterZoom", 4, ImGuiTableFlags_SizingFixedFit);
 
+        ImGui::TableSetupColumn("##flttxt");
+        ImGui::TableSetupColumn("##flt", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("##zoom");
+        ImGui::TableSetupColumn("##tglzoom");
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+
+        // Handle searchbar.
+        ImGui::Text("Filter: ");
+        ImGui::TableNextColumn();
         float width = ImGui::GetWindowContentRegionWidth() * 0.25f;
         m_filter.Draw("##Filter", width);
+        
+        // Zoom amount
+        ImGui::TableNextColumn();
+        ImGui::Text("%%%.0f", GetThumbnailZoomPercent(thumbnailZoom));
+        // Tooltips
+        UI::HelpMarker(TKLoc, "Ctrl + mouse scroll to adjust thumbnail size.");
+
+        // Zoom toggle button
+        ImGui::TableNextColumn();
+        
+        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_viewZoomIcon), ImVec2(20.0f, 20.0f)))
+        {
+          // Toggle zoom
+          
+          if (thumbnailZoom == m_thumbnailMaxZoom) 
+          {
+            // Small
+            thumbnailZoom = m_thumbnailMaxZoom / 6.f;
+          }
+          else if (thumbnailZoom >= m_thumbnailMaxZoom * 0.5833f) // (7/12 ~ 0.5833)
+          {
+            // Big
+            thumbnailZoom = m_thumbnailMaxZoom;
+          }
+          else if (thumbnailZoom >= m_thumbnailMaxZoom / 6.f) 
+          {
+            // Medium
+            thumbnailZoom = m_thumbnailMaxZoom * 0.5833f; // (7/12 ~ 0.5833)
+          }
+        }
+
+        ImGui::EndTable();
 
         ImGui::EndTabItem();
       }
@@ -459,6 +501,10 @@ namespace ToolKit
     {
       using namespace std::filesystem;
 
+      // Temporary vectors that holds DirectoryEntry's
+      std::vector<DirectoryEntry> m_temp_dirs;
+      std::vector<DirectoryEntry> m_temp_files;
+
       m_entiries.clear();
       for (const directory_entry& e : directory_iterator(m_path))
       {
@@ -468,8 +514,29 @@ namespace ToolKit
         de.m_fileName = e.path().stem().u8string();
         de.m_ext = e.path().filename().extension().u8string();
 
-        m_entiries.push_back(de);
+        // Do not show hidden files
+        if (de.m_fileName.size() > 1 && de.m_fileName[0] == '.')
+        {
+          continue;
+        }
+        
+        if (de.m_isDirectory)
+        {
+          m_temp_dirs.push_back(de);
+        }
+        else
+        {
+
+          m_temp_files.push_back(de);
+        }
       }
+
+      // Folder first, files next
+      for (int i = 0; i < (int)m_temp_dirs.size(); i++)
+        m_entiries.push_back(m_temp_dirs[i]);
+
+      for (int i = 0; i < (int)m_temp_files.size(); i++)
+        m_entiries.push_back(m_temp_files[i]);
     }
 
     int FolderView::Exist(const String& file)
@@ -527,6 +594,7 @@ namespace ToolKit
 
         m_itemActions["FileSystem/MakeDir"](nullptr);
         m_itemActions["Refresh"](nullptr);
+        m_itemActions["FileSystem/CopyPath"](nullptr);
 
         ImGui::EndPopup();
       }
@@ -536,6 +604,13 @@ namespace ToolKit
     void FolderView::Refresh()
     {
       m_dirty = true;
+    }
+
+    float FolderView::GetThumbnailZoomPercent(float thumbnailZoom)
+    {
+      float percent = (thumbnailZoom * 0.36f) - 8.f;
+
+      return percent;
     }
 
     void FolderView::CreateItemActions()
@@ -563,6 +638,31 @@ namespace ToolKit
         view->m_dirty = true;
       };
 
+      // Copy file path.
+      m_itemActions["FileSystem/CopyPath"] = [getSelfFn](DirectoryEntry* entry) -> void
+      {
+          FolderView* self = getSelfFn();
+          if (self == nullptr)
+          {
+              return;
+          }
+
+          if (ImGui::MenuItem("CopyPath"))
+          {
+              int copied = SDL_SetClipboardText(self->m_path.c_str());
+              if (copied < 0)
+              {
+                  // Error
+                  g_app->GetConsole()->AddLog
+                  (
+                   "Could not copy the folder path to clipboard",
+                   ConsoleWindow::LogType::Error
+                  );
+              }
+              ImGui::CloseCurrentPopup();
+          }
+      };
+
       // Refresh.
       m_itemActions["Refresh"] = [getSelfFn](DirectoryEntry* entry) -> void
       {
@@ -572,7 +672,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("Refresh", self->m_contextBtnSize))
+        if (ImGui::MenuItem("Refresh"))
         {
           self->m_dirty = true;
           ImGui::CloseCurrentPopup();
@@ -588,7 +688,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("MakeDir", self->m_contextBtnSize))
+        if (ImGui::MenuItem("MakeDir"))
         {
           StringInputWindow* inputWnd = new StringInputWindow("New Directory##NwDirName", true);
           inputWnd->m_inputLabel = "Name";
@@ -614,7 +714,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("Rename", self->m_contextBtnSize))
+        if (ImGui::MenuItem("Rename"))
         {
           if (ResourceManager* rm = entry->GetManager())
           {
@@ -658,7 +758,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("Delete", self->m_contextBtnSize))
+        if (ImGui::MenuItem("Delete"))
         {
           if (entry->m_isDirectory)
           {
@@ -688,7 +788,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("Copy", self->m_contextBtnSize))
+        if (ImGui::MenuItem("Copy"))
         {
           String fullPath = entry->GetFullPath();
           String cpyPath = CreateCopyFileFullPath(fullPath);
@@ -708,7 +808,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("Crate", self->m_contextBtnSize))
+        if (ImGui::MenuItem("Crate"))
         {
           StringInputWindow* inputWnd = new StringInputWindow("Scene Name##ScnMat", true);
           inputWnd->m_inputVal = "New Scene";
@@ -741,7 +841,7 @@ namespace ToolKit
           return;
         }
 
-        if (ImGui::Button("Crate", self->m_contextBtnSize))
+        if (ImGui::MenuItem("Crate"))
         {
           StringInputWindow* inputWnd = new StringInputWindow("Material Name##NwMat", true);
           inputWnd->m_inputVal = "New Material";

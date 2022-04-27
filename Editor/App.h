@@ -109,17 +109,16 @@ namespace ToolKit
       void CreateSimulationWindow();
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
+      void Generate2dGrid();
 
     public:
       // UI elements.
       std::vector<Window*> m_windows;
       String m_statusMsg;
-
+      
       // Editor variables.
       float m_camSpeed = 8.0; // Meters per sec.
       float m_mouseSensitivity = 0.5f;
-      MaterialPtr m_highLightMaterial;
-      MaterialPtr m_highLightSecondaryMaterial;
       Vec2 m_thumbnailSize = Vec2(300.0f, 300.0f);
       std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
       
@@ -131,13 +130,14 @@ namespace ToolKit
 
       // Editor objects.
       Grid* m_grid;
+      LineBatch m_2dGrid;
       Axis3d* m_origin;
       Cursor* m_cursor;
       Gizmo* m_gizmo = nullptr;
       std::vector<Drawable*> m_perFrameDebugObjects;
 
       // 3 point lighting system.
-      Node* m_lightMaster;
+      Node* m_lightMaster = nullptr;
       LightRawPtrArray m_sceneLights; // { 0:key 1:fill, 2:back }
 
       // Editor states.
@@ -163,6 +163,7 @@ namespace ToolKit
       Renderer* m_renderer;
 
     private:
+
       // Internal states.
       bool m_onNewScene = false;
       bool m_onQuit = false;

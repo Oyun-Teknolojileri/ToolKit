@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "EditorScene.h"
 #include "Util.h"
 #include "GlobalDef.h"
@@ -13,6 +12,7 @@ namespace ToolKit
   {
 
     EditorScene::EditorScene()
+      : Scene()
     {
       m_newScene = true;
     }
@@ -204,7 +204,7 @@ namespace ToolKit
       Entity* removed = nullptr;
       if ((removed = Scene::RemoveEntity(id)))
       {
-        RemoveFromSelection(removed->m_id);
+        RemoveFromSelection(removed->Id());
       }
 
       return removed;

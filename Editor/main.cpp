@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "App.h"
 #include "Types.h"
 #include "Mod.h"
@@ -8,7 +6,11 @@
 #include "Common/GlErrorReporter.h"
 #include "Common/SDLEventPool.h"
 #include "ImGui/imgui_impl_sdl.h"
+#include "GL/glew.h"
+
 #include "SDL.h"
+#include "SDL_opengl.h"
+
 #include "DebugNew.h"
 
 #include <stdio.h>
@@ -85,16 +87,22 @@ namespace ToolKit
 
 #ifndef __EMSCRIPTEN__
 #ifdef TK_DEBUG
-            if (glDebugMessageCallbackARB != NULL) 
+            if (glDebugMessageCallback != NULL) 
             {
               glEnable(GL_DEBUG_OUTPUT);
               glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-              glDebugMessageCallbackARB(&GLDebugMessageCallback, nullptr);
+              glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
             }
 
             GlErrorReporter::Report = [](const std::string& msg) -> void 
             {
               static byte state = g_app->m_showGraphicsApiErrors;
+
+              if (g_app == nullptr)
+              {
+                return;
+              }
+
               if (state != g_app->m_showGraphicsApiErrors)
               {
                 state = g_app->m_showGraphicsApiErrors;
@@ -160,15 +168,15 @@ namespace ToolKit
 
     void Exit()
     {
-      g_running = false;
-      SafeDel(g_app);
-
       UI::UnInit();
+      SafeDel(g_app);
       Main::GetInstance()->Uninit();
       SafeDel(g_proxy);
 
       SDL_DestroyWindow(g_window);
       SDL_Quit();
+
+      g_running = false;
     }
 
     void ProcessEvent(const SDL_Event& e)

@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "EditorViewport2d.h"
 #include "Directional.h"
 #include "Renderer.h"
@@ -134,54 +132,10 @@ namespace ToolKit
       return vp;
     }
 
-    void EditorViewport2d::Render(App* app)
+    void EditorViewport2d::GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const
     {
-      if (!IsVisible())
-      {
-        return;
-      }
-
-      // Render entities.
-      app->m_renderer->SetRenderTarget(m_viewportImage);
-      EntityRawPtrArray surfaces = app->GetCurrentScene()->Filter
-      (
-        [](Entity* ntt) -> bool 
-        { 
-          return ntt->IsSurfaceInstance();
-        }
-      );
-
-      for (Entity* ntt : surfaces)
-      {
-        if (ntt->IsDrawable() && ntt->m_visible)
-        {
-          app->m_renderer->Render
-          (
-            ntt,
-            GetCamera(),
-            { &m_forwardLight }
-          );
-        }
-      }
-
-      app->RenderSelected(this);
-
-      // Render grid.
-      app->m_renderer->Render
-      (
-        &m_grid,
-        GetCamera(),
-        { &m_forwardLight }
-      );
-
-      // Render gizmo.
-      app->RenderGizmo(this, app->m_gizmo);
-    }
-
-    void EditorViewport2d::GetContentAreaScreenCoordinates(Vec2& min, Vec2& max) const
-    {
-      min = m_canvasPos + m_wndPos;
-      max = min + m_canvasSize;
+      *min = m_canvasPos + m_wndPos;
+      *max = *min + m_canvasSize;
     }
 
     void EditorViewport2d::UpdateContentArea()
@@ -354,7 +308,7 @@ namespace ToolKit
             dwMesh->m_node->SetTranslation(pos);
             EditorScenePtr currScene = g_app->GetCurrentScene();
             currScene->AddEntity(dwMesh);
-            currScene->AddToSelection(dwMesh->m_id, false);
+            currScene->AddToSelection(dwMesh->Id(), false);
             SetActive();
           }
           else if (entry.m_ext == SCENE)
@@ -423,9 +377,6 @@ namespace ToolKit
       m_zoom = 1.0f;
       GetCamera()->m_node->SetTranslation(Z_AXIS * 10.0f);
       AdjustZoom(0.0f);
-
-      m_forwardLight.Translate(Z_AXIS);
-      m_forwardLight.LookAt(ZERO);
     }
 
     void EditorViewport2d::UpdateCanvasSize()
@@ -501,6 +452,5 @@ namespace ToolKit
 
       m_grid.Generate(linePnts, Vec3(0.5f), DrawType::Line);
     }
-
   }
 }

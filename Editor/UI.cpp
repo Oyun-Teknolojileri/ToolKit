@@ -1,11 +1,4 @@
-#include "stdafx.h"
-
 #include "UI.h"
-
-#include "ImGui/imgui_impl_sdl.h"
-#include "ImGui/imgui_impl_opengl3.h"
-#include "ImGui/imgui_stdlib.h"
-
 #include "App.h"
 #include "EditorViewport.h"
 #include "SDL.h"
@@ -18,6 +11,11 @@
 #include "PropInspector.h"
 #include "Util.h"
 #include "PluginWindow.h"
+
+#include "ImGui/imgui_stdlib.h"
+#include "Imgui/imgui_impl_sdl.h"
+#include "Imgui/imgui_impl_opengl3.h"
+
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -65,6 +63,9 @@ namespace ToolKit
     TexturePtr UI::m_lockIcon;
     TexturePtr UI::m_visibleIcon;
     TexturePtr UI::m_invisibleIcon;
+    TexturePtr UI::m_lockedIcon;
+    TexturePtr UI::m_unlockedIcon;
+    TexturePtr UI::m_viewZoomIcon;
 
     void UI::Init()
     {
@@ -76,7 +77,7 @@ namespace ToolKit
       io.ConfigWindowsMoveFromTitleBarOnly = true;
 
       // Handle font loading.
-      static const ImWchar utf8TR[] = 
+      static const ImWchar utf8TR[] =
       {
         0x0020, 0x00FF,
         0x00c7, 0x00c7,
@@ -91,7 +92,7 @@ namespace ToolKit
         0x015f, 0x015f,
         0x00dc, 0x00dc,
         0x00fc, 0x00fc,
-        0 
+        0
       };
       io.Fonts->AddFontFromFileTTF(FontPath("bmonofont-i18n.ttf").c_str(), 16, nullptr, utf8TR);
 
@@ -161,45 +162,45 @@ namespace ToolKit
 
     void UI::InitIcons()
     {
-      m_selectIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/select.png", true));
+      m_selectIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/select.png", true));
       m_selectIcn->Init();
-      m_cursorIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/cursor.png", true));
+      m_cursorIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/cursor.png", true));
       m_cursorIcn->Init();
-      m_moveIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/move.png", true));
+      m_moveIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/move.png", true));
       m_moveIcn->Init();
-      m_rotateIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/rotate.png", true));
+      m_rotateIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/rotate.png", true));
       m_rotateIcn->Init();
-      m_scaleIcn =  GetTextureManager()->Create<Texture>(TexturePath("Icons/scale.png", true));
+      m_scaleIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/scale.png", true));
       m_scaleIcn->Init();
-      m_snapIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/snap.png", true));
+      m_snapIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/snap.png", true));
       m_snapIcon->Init();
-      m_audioIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/audio.png", true));
+      m_audioIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/audio.png", true));
       m_audioIcon->Init();
-      m_cameraIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/camera.png", true));
+      m_cameraIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/camera.png", true));
       m_cameraIcon->Init();
-      m_clipIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/clip.png", true));
+      m_clipIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/clip.png", true));
       m_clipIcon->Init();
-      m_fileIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/file.png", true));
+      m_fileIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/file.png", true));
       m_fileIcon->Init();
-      m_folderIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/folder.png", true));
+      m_folderIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/folder.png", true));
       m_folderIcon->Init();
-      m_imageIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/image.png", true));
+      m_imageIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/image.png", true));
       m_imageIcon->Init();
-      m_lightIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/light.png", true));
+      m_lightIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/light.png", true));
       m_lightIcon->Init();
-      m_materialIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/material.png", true));
+      m_materialIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/material.png", true));
       m_materialIcon->Init();
-      m_meshIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/mesh.png", true));
+      m_meshIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/mesh.png", true));
       m_meshIcon->Init();
-      m_armatureIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/armature.png", true));
+      m_armatureIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/armature.png", true));
       m_armatureIcon->Init();
-      m_codeIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/code.png", true));
+      m_codeIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/code.png", true));
       m_codeIcon->Init();
-      m_boneIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/bone.png", true));
+      m_boneIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/bone.png", true));
       m_boneIcon->Init();
-      m_worldIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/world.png", true));
+      m_worldIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/world.png", true));
       m_worldIcon->Init();
-      m_axisIcon =  GetTextureManager()->Create<Texture>(TexturePath("Icons/axis.png", true));
+      m_axisIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/axis.png", true));
       m_axisIcon->Init();
       m_playIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/play.png", true));
       m_playIcon->Init();
@@ -219,6 +220,12 @@ namespace ToolKit
       m_visibleIcon->Init();
       m_invisibleIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/invisible.png", true));
       m_invisibleIcon->Init();
+      m_lockedIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/small_locked.png", true));
+      m_lockedIcon->Init();
+      m_unlockedIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/small_unlocked.png", true));
+      m_unlockedIcon->Init();
+      m_viewZoomIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/viewzoom.png", true));
+      m_viewZoomIcon->Init();
     }
 
     void UI::InitTheme()
@@ -238,7 +245,7 @@ namespace ToolKit
       style->PopupBorderSize = 0.0f;
       style->FrameBorderSize = 0.0f;
       style->TabBorderSize = 0.0f;
-      style->PopupRounding = 5.0f;
+      style->PopupRounding = 0.0f;
       style->WindowTitleAlign = ImVec2(0.5f, 0.5f);
       style->WindowMenuButtonPosition = ImGuiDir_Right;
 
@@ -246,7 +253,7 @@ namespace ToolKit
       style->Colors[ImGuiCol_TextDisabled] = { 0.34509805f, 0.34509805f, 0.34509805f, 1.00f };
       style->Colors[ImGuiCol_WindowBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.94f };
       style->Colors[ImGuiCol_ChildBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.00f };
-      style->Colors[ImGuiCol_PopupBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.94f };
+      style->Colors[ImGuiCol_PopupBg] = { 0.13f, 0.13f, 0.13f, 0.94f };
       style->Colors[ImGuiCol_Border] = { 0.33333334f, 0.33333334f, 0.33333334f, 0.50f };
       style->Colors[ImGuiCol_BorderShadow] = { 0.15686275f, 0.15686275f, 0.15686275f, 0.00f };
       style->Colors[ImGuiCol_FrameBg] = { 0.16862746f, 0.16862746f, 0.16862746f, 0.54f };
@@ -302,10 +309,6 @@ namespace ToolKit
 
     void UI::ShowUI()
     {
-      ImGui_ImplOpenGL3_NewFrame();
-      ImGui_ImplSDL2_NewFrame(g_window);
-      ImGui::NewFrame();
-
       ShowDock();
       ShowAppMainMenuBar();
 
@@ -354,7 +357,17 @@ namespace ToolKit
         // This break gives us the ability to serve last arriving modal.
         break;
       }
+    }
 
+    void UI::BeginUI()
+    {
+      ImGui_ImplOpenGL3_NewFrame();
+      ImGui_ImplSDL2_NewFrame(g_window);
+      ImGui::NewFrame();
+    }
+
+    void UI::EndUI()
+    {
       ImGui::Render();
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
       ImGui::EndFrame();
@@ -363,6 +376,7 @@ namespace ToolKit
       ImGui::RenderPlatformWindowsDefault();
       SDL_GL_MakeCurrent(g_window, g_context);
 
+      // UI deferred functions.
       for (auto& action : m_postponedActions)
       {
         action();
@@ -451,7 +465,7 @@ namespace ToolKit
       }
 
       ImGui::Separator();
-      ImGui::Text("v%d.%d.%d", 0, 3, 6);
+      ImGui::Text("%s", TKVersionStr);
     }
 
     void UI::ShowMenuWindows()
@@ -589,7 +603,7 @@ namespace ToolKit
         load.clear();
         return;
       }
-      
+
       if (load.empty())
       {
         std::fstream importList;
@@ -829,7 +843,7 @@ namespace ToolKit
       }
     }
 
-    bool UI::ImageButtonDecorless(uint textureID, const ImVec2& size, bool flipImage)
+    bool UI::ImageButtonDecorless(uint textureID, const Vec2& size, bool flipImage)
     {
       ImGui::PushStyleColor(ImGuiCol_Button, Vec4());
       ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Vec4());
@@ -841,7 +855,7 @@ namespace ToolKit
       return res;
     }
 
-    bool UI::ToggleButton(uint textureID, const ImVec2& size, bool pushState)
+    bool UI::ToggleButton(uint textureID, const Vec2& size, bool pushState)
     {
       ImGuiStyle& style = ImGui::GetStyle();
       if (pushState)
@@ -867,7 +881,7 @@ namespace ToolKit
       return newPushState;
     }
 
-    bool UI::ToggleButton(const String& text, const ImVec2& size, bool pushState)
+    bool UI::ToggleButton(const String& text, const Vec2& size, bool pushState)
     {
       ImGuiStyle& style = ImGui::GetStyle();
       if (pushState)
@@ -924,7 +938,7 @@ namespace ToolKit
 
     bool Window::CanDispatchSignals() const
     {
-      return m_active & m_visible & m_mouseHover;
+      return m_active && m_visible && m_mouseHover;
     }
 
     void Window::DispatchSignals() const
@@ -978,12 +992,12 @@ namespace ToolKit
 
       if ((rightClick || leftClick || middleClick) && m_mouseHover) // Activate with any click.
       {
-        if 
-        (
-          ImGui::IsMouseDragging(ImGuiMouseButton_Left) ||
-          ImGui::IsMouseDragging(ImGuiMouseButton_Right) ||
-          ImGui::IsMouseDragging(ImGuiMouseButton_Middle)
-        )
+        if
+          (
+            ImGui::IsMouseDragging(ImGuiMouseButton_Left) ||
+            ImGui::IsMouseDragging(ImGuiMouseButton_Right) ||
+            ImGui::IsMouseDragging(ImGuiMouseButton_Middle)
+            )
         {
           return;
         }
@@ -1017,112 +1031,111 @@ namespace ToolKit
         return;
       }
 
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.KeysDown[io.KeyMap[ImGuiKey_Delete]] && !Exist(mask, SDL_SCANCODE_DELETE))
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_Delete, false) &&
+          !Exist(mask, ImGuiKey_Delete)
+          )
       {
-        if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Delete]] == 0.0f)
-        {
-          ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
-        }
+        ModManager::GetInstance()->DispatchSignal(BaseMod::m_delete);
       }
 
-      if 
-      (
-        io.KeyCtrl || io.KeyShift &&
-        io.KeysDown[SDL_SCANCODE_D] && 
-        !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-        !Exist(mask, SDL_SCANCODE_D)
-      )
+      if
+        (
+          (
+            ImGui::IsKeyDown(ImGuiKey_ModCtrl) ||
+            ImGui::IsKeyDown(ImGuiKey_ModShift)
+            ) &&
+          ImGui::IsKeyPressed(ImGuiKey_D, false) &&
+          !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+          !Exist(mask, ImGuiKey_D)
+          )
       {
-        if (io.KeysDownDuration[SDL_SCANCODE_D] == 0.0f)
-        {
-          ModManager::GetInstance()->DispatchSignal(BaseMod::m_duplicate);
-        }
+        ModManager::GetInstance()->DispatchSignal(BaseMod::m_duplicate);
       }
 
-      if (io.KeysDown[SDL_SCANCODE_B] && !Exist(mask, SDL_SCANCODE_B))
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_B, false) &&
+          !Exist(mask, ImGuiKey_B)
+          )
       {
-        if (io.KeysDownDuration[SDL_SCANCODE_B] == 0.0f)
-        {
-          ModManager::GetInstance()->SetMod(true, ModId::Select);
-        }
+        ModManager::GetInstance()->SetMod(true, ModId::Select);
       }
 
-      if 
-      (
-        io.KeysDown[SDL_SCANCODE_S] && 
-        !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-        !Exist(mask, SDL_SCANCODE_S)
-      )
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_S, false) &&
+          !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+          !Exist(mask, ImGuiKey_S)
+          )
       {
-        if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
-        {
-          ModManager::GetInstance()->SetMod(true, ModId::Scale);
-        }
+        ModManager::GetInstance()->SetMod(true, ModId::Scale);
       }
 
-      if (io.KeysDown[SDL_SCANCODE_R] && !Exist(mask, SDL_SCANCODE_R))
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_R, false) &&
+          !Exist(mask, ImGuiKey_R)
+          )
       {
-        if (io.KeysDownDuration[SDL_SCANCODE_R] == 0.0f)
-        {
-          ModManager::GetInstance()->SetMod(true, ModId::Rotate);
-        }
+        ModManager::GetInstance()->SetMod(true, ModId::Rotate);
       }
 
-      if (io.KeysDown[SDL_SCANCODE_G] && !Exist(mask, SDL_SCANCODE_G))
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_G, false) &&
+          !Exist(mask, ImGuiKey_G)
+          )
       {
-        if (io.KeysDownDuration[SDL_SCANCODE_G] == 0.0f)
-        {
-          ModManager::GetInstance()->SetMod(true, ModId::Move);
-        }
+        ModManager::GetInstance()->SetMod(true, ModId::Move);
       }
 
       EditorScenePtr currSecne = g_app->GetCurrentScene();
-      if 
-      (
-        io.KeyCtrl && 
-        io.KeysDown[SDL_SCANCODE_S] && 
-        !Exist(mask, SDL_SCANCODE_F)
-      )
+      if
+        (
+          ImGui::IsKeyDown(ImGuiKey_ModCtrl) &&
+          ImGui::IsKeyPressed(ImGuiKey_S, false) &&
+          !Exist(mask, ImGuiKey_S)
+          )
       {
-        if (io.KeysDownDuration[SDL_SCANCODE_S] == 0.0f)
-        {
-          XmlDocument* doc = new XmlDocument();
-          currSecne->Serialize(doc, nullptr);
-          SafeDel(doc);
-        }
+        XmlDocument* doc = new XmlDocument();
+        currSecne->Serialize(doc, nullptr);
+        SafeDel(doc);
       }
 
-      if (io.KeysDown[SDL_SCANCODE_F] && !Exist(mask, SDL_SCANCODE_F))
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_F, false) &&
+          !Exist(mask, ImGuiKey_F)
+          )
       {
-        if (io.KeysDownDuration[SDL_SCANCODE_F] == 0.0f)
+        if (Window* wnd = g_app->GetOutliner())
         {
-          if (Window* wnd = g_app->GetOutliner())
+          if (Entity* ntt = currSecne->GetCurrentSelection())
           {
-            if (Entity* ntt = currSecne->GetCurrentSelection())
-            {
-              OutlinerWindow* outliner = static_cast<OutlinerWindow*> (wnd);
-              outliner->Focus(ntt);
-            }
+            OutlinerWindow* outliner = static_cast<OutlinerWindow*> (wnd);
+            outliner->Focus(ntt);
           }
         }
       }
 
       // Undo - Redo.
-      if (io.KeysDown[io.KeyMap[ImGuiKey_Z]] && !Exist(mask, SDL_SCANCODE_Z))
+      if
+        (
+          ImGui::IsKeyPressed(ImGuiKey_Z, false) &&
+          !Exist(mask, ImGuiKey_Z)
+          )
       {
-        if (io.KeysDownDuration[io.KeyMap[ImGuiKey_Z]] == 0.0f)
+        if (ImGui::IsKeyDown(ImGuiKey_ModCtrl))
         {
-          if (io.KeyCtrl)
+          if (ImGui::IsKeyDown(ImGuiKey_ModShift))
           {
-            if (io.KeyShift)
-            {
-              ActionManager::GetInstance()->Redo();
-            }
-            else
-            {
-              ActionManager::GetInstance()->Undo();
-            }
+            ActionManager::GetInstance()->Redo();
+          }
+          else
+          {
+            ActionManager::GetInstance()->Undo();
           }
         }
       }
@@ -1166,6 +1179,21 @@ namespace ToolKit
           ImGuiInputTextFlags_AutoSelectAll
         );
 
+        // Center buttons.
+        ImGui::BeginTable("##FilterZoom", m_showCancel ? 4 : 3, ImGuiTableFlags_SizingFixedFit);
+
+        ImGui::TableSetupColumn("##spaceL", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("##ok");
+        if (m_showCancel)
+        {
+          ImGui::TableSetupColumn("##cancel");
+        }
+        ImGui::TableSetupColumn("##spaceR", ImGuiTableColumnFlags_WidthStretch);
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TableNextColumn();
+
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {
           m_visible = false;
@@ -1176,7 +1204,7 @@ namespace ToolKit
 
         if (m_showCancel)
         {
-          ImGui::SameLine();
+          ImGui::TableNextColumn();
           if (ImGui::Button("Cancel", ImVec2(120, 0)))
           {
             m_visible = false;
@@ -1185,6 +1213,7 @@ namespace ToolKit
           }
         }
 
+        ImGui::EndTable();
         ImGui::EndPopup();
       }
     }
@@ -1227,6 +1256,22 @@ namespace ToolKit
           ImGui::Text("%s", m_msg.c_str());
         }
 
+        // Center buttons.
+        ImGui::BeginTable("##FilterZoom", m_showCancel ? 5 : 4, ImGuiTableFlags_SizingFixedFit);
+
+        ImGui::TableSetupColumn("##spaceL", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("##yes");
+        ImGui::TableSetupColumn("##no");
+        if (m_showCancel)
+        {
+          ImGui::TableSetupColumn("##cancel");
+        }
+        ImGui::TableSetupColumn("##spaceR", ImGuiTableColumnFlags_WidthStretch);
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TableNextColumn();
+
         if (ImGui::Button(m_yesText.empty() ? "Yes" : m_yesText.c_str(), ImVec2(120, 0)))
         {
           m_visible = false;
@@ -1234,7 +1279,7 @@ namespace ToolKit
           ImGui::CloseCurrentPopup();
         }
         ImGui::SetItemDefaultFocus();
-        ImGui::SameLine();
+        ImGui::TableNextColumn();
 
         if (ImGui::Button(m_noText.empty() ? "No" : m_noText.c_str(), ImVec2(120, 0)))
         {
@@ -1245,7 +1290,7 @@ namespace ToolKit
 
         if (m_showCancel)
         {
-          ImGui::SameLine();
+          ImGui::TableNextColumn();
           if (ImGui::Button("Cancel", ImVec2(120, 0)))
           {
             m_visible = false;
@@ -1253,6 +1298,7 @@ namespace ToolKit
           }
         }
 
+        ImGui::EndTable();
         ImGui::EndPopup();
       }
     }

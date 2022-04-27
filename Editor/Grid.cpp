@@ -1,7 +1,3 @@
-#include "stdafx.h"
-
-#include "ImGui/imgui.h"
-
 #include "Grid.h"
 #include "GlobalDef.h"
 #include "ToolKit.h"
@@ -121,6 +117,5 @@ namespace ToolKit
 
       return false;
     }
-
   }
 }

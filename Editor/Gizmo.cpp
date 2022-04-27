@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "App.h"
 #include "Gizmo.h"
 #include "ToolKit.h"
@@ -15,6 +13,7 @@
 #include "GlobalDef.h"
 #include "ConsoleWindow.h"
 #include "EditorViewport.h"
+#include "GL/glew.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -755,7 +754,5 @@ namespace ToolKit
       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       renderer->Render(this, cam);
     }
-
   }
-
 }

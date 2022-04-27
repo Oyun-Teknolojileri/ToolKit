@@ -10,6 +10,79 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="Directional.cpp" />
+    <ClCompile Include="Drawable.cpp" />
+    <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="MathUtil.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Node.cpp" />
+    <ClCompile Include="ParameterBlock.cpp" />
+    <ClCompile Include="PluginManager.cpp" />
+    <ClCompile Include="Primative.cpp" />
+    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RenderState.cpp" />
+    <ClCompile Include="Resource.cpp" />
+    <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Skeleton.cpp" />
+    <ClCompile Include="SpriteSheet.cpp" />
+    <ClCompile Include="StateMachine.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Surface.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="ToolKit.cpp" />
+    <ClCompile Include="UIManager.cpp" />
+    <ClCompile Include="Util.cpp" />
+    <ClCompile Include="Viewport.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Animation.h" />
+    <ClInclude Include="Audio.h" />
+    <ClInclude Include="Component.h" />
+    <ClInclude Include="DebugNew.h" />
+    <ClInclude Include="Directional.h" />
+    <ClInclude Include="Drawable.h" />
+    <ClInclude Include="Entity.h" />
+    <ClInclude Include="Events.h" />
+    <ClInclude Include="GlobalCache.h" />
+    <ClInclude Include="Logger.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="MathUtil.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Node.h" />
+    <ClInclude Include="ParameterBlock.h" />
+    <ClInclude Include="Plugin.h" />
+    <ClInclude Include="PluginManager.h" />
+    <ClInclude Include="Primative.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RenderState.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Serialize.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="Skeleton.h" />
+    <ClInclude Include="SpriteSheet.h" />
+    <ClInclude Include="StateMachine.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Surface.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="ToolKit.h" />
+    <ClInclude Include="Types.h" />
+    <ClInclude Include="UIManager.h" />
+    <ClInclude Include="Util.h" />
+    <ClInclude Include="Viewport.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{85523A06-924E-4B9D-B95C-411CB388936B}</ProjectGuid>
@@ -20,14 +93,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
-    <EnableUnitySupport>true</EnableUnitySupport>
+    <EnableUnitySupport>false</EnableUnitySupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
@@ -45,14 +118,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(SolutionDir)Source;$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\Glew\lib\Release\x64;$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\\Glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(SolutionDir)Source;$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\Glew\lib\Release\x64;$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\\Glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -65,10 +138,11 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <IncludeInUnityFile>true</IncludeInUnityFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/FI "stdafx.h" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>SDL2main.lib;SDL2.lib;OpenGL32.lib;glew32.lib;SDL2_ttf.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;glew32.lib;OpenGL32.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -82,6 +156,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;TK_DLL_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/FI "stdafx.h" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -90,136 +165,6 @@
       <AdditionalDependencies>SDL2main.lib;SDL2.lib;OpenGL32.lib;glew32.lib;SDL2_ttf.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\Source\Component.h" />
-    <ClInclude Include="..\Source\Events.h" />
-    <ClInclude Include="..\Source\GlobalCache.h" />
-    <ClInclude Include="..\Source\ParameterBlock.h" />
-    <ClInclude Include="..\Source\Plugin.h" />
-    <ClInclude Include="..\Source\PluginManager.h" />
-    <ClInclude Include="..\Source\Scene.h" />
-    <ClInclude Include="..\Source\Serialize.h" />
-    <ClInclude Include="..\Source\StateMachine.h" />
-    <ClInclude Include="..\Source\SurfaceObserver.h" />
-    <ClInclude Include="..\Source\ToolKit.h" />
-    <ClInclude Include="..\Source\Animation.h" />
-    <ClInclude Include="..\Source\Audio.h" />
-    <ClInclude Include="..\Source\DebugNew.h" />
-    <ClInclude Include="..\Source\Directional.h" />
-    <ClInclude Include="..\Source\Drawable.h" />
-    <ClInclude Include="..\Source\Entity.h" />
-    <ClInclude Include="..\Source\Logger.h" />
-    <ClInclude Include="..\Source\Material.h" />
-    <ClInclude Include="..\Source\MathUtil.h" />
-    <ClInclude Include="..\Source\Mesh.h" />
-    <ClInclude Include="..\Source\Node.h" />
-    <ClInclude Include="..\Source\Primative.h" />
-    <ClInclude Include="..\Source\Renderer.h" />
-    <ClInclude Include="..\Source\RenderState.h" />
-    <ClInclude Include="..\Source\Resource.h" />
-    <ClInclude Include="..\Source\ResourceManager.h" />
-    <ClInclude Include="..\Source\Shader.h" />
-    <ClInclude Include="..\Source\Skeleton.h" />
-    <ClInclude Include="..\Source\SpriteSheet.h" />
-    <ClInclude Include="..\Source\stdafx.h" />
-    <ClInclude Include="..\Source\Surface.h" />
-    <ClInclude Include="..\Source\Texture.h" />
-    <ClInclude Include="..\Source\Types.h" />
-    <ClInclude Include="..\Source\Util.h" />
-    <ClInclude Include="..\Source\Viewport.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\Source\Component.cpp" />
-    <ClCompile Include="..\Source\ParameterBlock.cpp" />
-    <ClCompile Include="..\Source\PluginManager.cpp" />
-    <ClCompile Include="..\Source\RenderState.cpp" />
-    <ClCompile Include="..\Source\Resource.cpp" />
-    <ClCompile Include="..\Source\ResourceManager.cpp" />
-    <ClCompile Include="..\Source\Scene.cpp" />
-    <ClCompile Include="..\Source\StateMachine.cpp" />
-    <ClCompile Include="..\Source\SurfaceObserver.cpp" />
-    <ClCompile Include="..\Source\ToolKit.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Animation.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Audio.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Directional.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Drawable.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Entity.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Logger.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Material.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\MathUtil.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Mesh.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Node.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Primative.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Renderer.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Shader.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Skeleton.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\SpriteSheet.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Surface.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Texture.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Util.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\Source\Viewport.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

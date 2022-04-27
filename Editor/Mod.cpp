@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Mod.h"
 #include "GlobalDef.h"
 #include "EditorViewport.h"
@@ -72,12 +71,12 @@ namespace ToolKit
       {
         if (pNode->m_entity)
         {
-          m_parentId = pNode->m_entity->m_id;
+          m_parentId = pNode->m_entity->Id();
         }
         pNode->Orphan(m_ntt->m_node);
       }
 
-      g_app->GetCurrentScene()->RemoveEntity(m_ntt->m_id);
+      g_app->GetCurrentScene()->RemoveEntity(m_ntt->Id());
       m_actionComitted = true;
     }
 
@@ -138,7 +137,7 @@ namespace ToolKit
     void CreateAction::Undo()
     {
       SwapSelection();
-      g_app->GetCurrentScene()->RemoveEntity(m_ntt->m_id);
+      g_app->GetCurrentScene()->RemoveEntity(m_ntt->Id());
       m_actionComitted = false;
     }
 
@@ -231,6 +230,11 @@ namespace ToolKit
 
     void ActionManager::GroupLastActions(int n)
     {
+      if (n == 0)
+      {
+        return;
+      }
+
       // Sanity Checks.
       assert(m_stackPointer == (int)m_actionStack.size() - 1 && "Call grouping right after add.");
       if (n >= (int)m_actionStack.size() && !m_actionGrouping)
@@ -408,6 +412,18 @@ namespace ToolKit
             }
           }
         }
+
+        /*
+        * If the state is changed while the previous state is being actively used
+        * (in StateTransitionTo state), delete the last function pointers from the array,
+        * since the function parameters are not valid anymore.
+        */
+        EditorViewport* vp = g_app->GetActiveViewport();
+        if (vp == nullptr)
+        {
+          return;
+        }
+        vp->m_drawCommands.clear();
       }
     }
 
@@ -551,7 +567,7 @@ namespace ToolKit
       {
         if (pd.entity != nullptr)
         {
-          ids.push_back(pd.entity->m_id);
+          ids.push_back(pd.entity->Id());
         }
         else
         {
@@ -591,7 +607,7 @@ namespace ToolKit
       }
 
       ToEntityIdArray(m_ignoreList, ignores);
-      m_ignoreList.push_back(g_app->m_grid->m_id);
+      m_ignoreList.push_back(g_app->m_grid->Id());
     }
 
     SignalId StateBeginPick::Update(float deltaTime)
@@ -625,10 +641,11 @@ namespace ToolKit
           if (g_app->m_showPickingDebug)
           {
             g_app->m_cursor->m_worldLocation = pd.pickPos;
+
             if (m_dbgArrow == nullptr)
             {
               m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
-              m_ignoreList.push_back(m_dbgArrow->m_id);
+              m_ignoreList.push_back(m_dbgArrow->Id());
               currScene->AddEntity(m_dbgArrow.get());
             }
 
@@ -675,7 +692,7 @@ namespace ToolKit
           rect[1].y = rect[0].y;
           rect[3].x = rect[0].x;
           rect[3].y = rect[2].y;
-
+          
           std::vector<Ray> rays;
           std::vector<Vec3> rect3d;
 
@@ -707,24 +724,25 @@ namespace ToolKit
           // Frustum from 8 points.
           Frustum frustum;
           std::vector<Vec3> planePnts;
-          planePnts = { rect3d[0], rect3d[4], rect3d[3] }; // Left plane.
+          planePnts = { rect3d[0], rect3d[7], rect3d[4] }; // Left plane.
           frustum.planes[0] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[1], rect3d[2], rect3d[5] }; // Right plane.
+          planePnts = { rect3d[5], rect3d[6], rect3d[1] }; // Right plane.
           frustum.planes[1] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[0], rect3d[1], rect3d[4] }; // Top plane.
+          planePnts = { rect3d[4], rect3d[5], rect3d[0] }; // Top plane.
           frustum.planes[2] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[2], rect3d[7], rect3d[6] }; // Bottom plane.
+          //planePnts = { rect3d[2], rect3d[7], rect3d[6] }; // Bottom plane.
+          planePnts = { rect3d[3], rect3d[6], rect3d[7] }; // Bottom plane.
           frustum.planes[3] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[0], rect3d[2], rect3d[1] }; // Near plane.
+          planePnts = { rect3d[0], rect3d[1], rect3d[3] }; // Near plane.
           frustum.planes[4] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[4], rect3d[5], rect3d[6] }; // Far plane.
+          planePnts = { rect3d[7], rect3d[5], rect3d[4] }; // Far plane.
           frustum.planes[5] = PlaneFrom(planePnts.data());
-
+          
           // Perform picking.
           std::vector<EditorScene::PickData> ntties;
           EditorScenePtr currScene = g_app->GetCurrentScene();
@@ -754,7 +772,7 @@ namespace ToolKit
             if (m_dbgFrustum == nullptr)
             {
               m_dbgFrustum = std::shared_ptr<LineBatch>(new LineBatch(corners, X_AXIS, DrawType::Line));
-              m_ignoreList.push_back(m_dbgFrustum->m_id);
+              m_ignoreList.push_back(m_dbgFrustum->Id());
               currScene->AddEntity(m_dbgFrustum.get());
             }
             else
@@ -762,6 +780,7 @@ namespace ToolKit
               m_dbgFrustum->Generate(corners, X_AXIS, DrawType::Line);
             }
           }
+          
         }
 
         return StateType::StateEndPick;
@@ -819,11 +838,11 @@ namespace ToolKit
     {
       Window::Type activeType = g_app->GetActiveWindow()->GetType();
       if // Stop text edit deletes to remove entities.
-      (
-        activeType != Window::Type::Viewport 
-        && activeType != Window::Type::Viewport2d
-        && activeType != Window::Type::Outliner
-      )
+        (
+          activeType != Window::Type::Viewport
+          && activeType != Window::Type::Viewport2d
+          && activeType != Window::Type::Outliner
+        )
       {
         return NullSignal;
       }
@@ -902,10 +921,14 @@ namespace ToolKit
           {
             ActionManager::GetInstance()->AddAction(new CreateAction(cpy));
           }
-          
-          currScene->AddToSelection(copies.front()->m_id, true);
+
+          currScene->AddToSelection(copies.front()->Id(), true);
           cpyCount += (int)copies.size();
         }
+
+        // Status info
+        g_app->m_statusMsg = std::to_string(cpyCount) + " entities are copied.";
+
         ActionManager::GetInstance()->GroupLastActions(cpyCount);
       }
     }
@@ -927,8 +950,8 @@ namespace ToolKit
     // Mods
     //////////////////////////////////////////////////////////////////////////
 
-    SelectMod::SelectMod() 
-      : BaseMod(ModId::Select) 
+    SelectMod::SelectMod()
+      : BaseMod(ModId::Select)
     {
     }
 
@@ -969,9 +992,9 @@ namespace ToolKit
       }
     }
 
-    CursorMod::CursorMod() 
+    CursorMod::CursorMod()
       : BaseMod(ModId::Cursor)
-    { 
+    {
     }
 
     void CursorMod::Init()

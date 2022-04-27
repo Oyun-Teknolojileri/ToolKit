@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "OutlinerWindow.h"
 #include "GlobalDef.h"
 #include "Mod.h"
@@ -25,20 +24,19 @@ namespace ToolKit
 
     // Recursively show entity hierarchy & update via drag drop.
     ULongID g_parent = NULL_HANDLE;
-    ULongID g_child = NULL_HANDLE;
+    std::vector<ULongID> g_child;
+    static ImGuiTreeNodeFlags g_baseNodeFlags
+      = ImGuiTreeNodeFlags_OpenOnArrow
+      | ImGuiTreeNodeFlags_OpenOnDoubleClick
+      | ImGuiTreeNodeFlags_SpanAvailWidth
+      | ImGuiTreeNodeFlags_AllowItemOverlap
+      | ImGuiTreeNodeFlags_FramePadding;
 
     void OutlinerWindow::ShowNode(Entity* e)
     {
-      static ImGuiTreeNodeFlags baseFlags
-        = ImGuiTreeNodeFlags_OpenOnArrow
-        | ImGuiTreeNodeFlags_OpenOnDoubleClick
-        | ImGuiTreeNodeFlags_SpanAvailWidth
-        | ImGuiTreeNodeFlags_AllowItemOverlap
-        | ImGuiTreeNodeFlags_FramePadding;
-
-      ImGuiTreeNodeFlags nodeFlags = baseFlags;
+      ImGuiTreeNodeFlags nodeFlags = g_baseNodeFlags;
       EditorScenePtr currScene = g_app->GetCurrentScene();
-      if (currScene->IsSelected(e->m_id))
+      if (currScene->IsSelected(e->Id()))
       {
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
       }
@@ -59,8 +57,8 @@ namespace ToolKit
             {
               if (childNtt->m_node->m_children.empty())
               {
-                nodeFlags = baseFlags;
-                if (currScene->IsSelected(childNtt->m_id))
+                nodeFlags = g_baseNodeFlags;
+                if (currScene->IsSelected(childNtt->Id()))
                 {
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
                 }
@@ -70,8 +68,8 @@ namespace ToolKit
               }
               else
               {
-                nodeFlags = baseFlags;
-                if (currScene->IsSelected(childNtt->m_id))
+                nodeFlags = g_baseNodeFlags;
+                if (currScene->IsSelected(childNtt->Id()))
                 {
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
                 }
@@ -100,30 +98,33 @@ namespace ToolKit
 
     void OutlinerWindow::SetItemState(Entity* e)
     {
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+
       if (ImGui::IsItemClicked())
       {
-        EditorScenePtr currScene = g_app->GetCurrentScene();
         if (ImGui::GetIO().KeyShift)
         {
-          if (currScene->IsSelected(e->m_id))
+          if (currScene->IsSelected(e->Id()))
           {
-            currScene->RemoveFromSelection(e->m_id);
+            currScene->RemoveFromSelection(e->Id());
           }
           else
           {
-            currScene->AddToSelection(e->m_id, true);
+            currScene->AddToSelection(e->Id(), true);
           }
         }
         else
         {
-          currScene->ClearSelection();
-          currScene->AddToSelection(e->m_id, false);
+          if (!currScene->IsSelected(e->Id()))
+          {
+            currScene->AddToSelection(e->Id(), false);
+          }
         }
       }
 
       if (ImGui::BeginDragDropSource())
       {
-        ImGui::SetDragDropPayload("HierarcyChange", &e->m_id, sizeof(ULongID*));
+        ImGui::SetDragDropPayload("HierarcyChange", nullptr, 0);
         ImGui::Text("Drop on the new parent.");
         ImGui::EndDragDropSource();
       }
@@ -132,9 +133,18 @@ namespace ToolKit
       {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
         {
-          IM_ASSERT(payload->DataSize == sizeof(ULongID*));
-          g_child = *(ULongID*)payload->Data;
-          g_parent = e->m_id;
+          // Change the selected files hierarchy
+          EntityRawPtrArray selected;
+          currScene->GetSelectedEntities(selected);
+
+          for (int i = 0; i < selected.size(); i++)
+          {
+            if (selected[i]->Id() != e->Id())
+            {
+              g_child.push_back(selected[i]->Id());
+            }
+          }
+          g_parent = e->Id();
         }
         ImGui::EndDragDropTarget();
       }
@@ -148,24 +158,8 @@ namespace ToolKit
       {
         HandleStates();
 
-        g_parent = NULL_HANDLE;
-        g_child = NULL_HANDLE;
-
-        if (DrawHeader("Scene", 0, ImGuiTreeNodeFlags_DefaultOpen, UI::m_collectionIcon))
+        if (DrawRootHeader("Scene", 0, g_baseNodeFlags | ImGuiTreeNodeFlags_DefaultOpen, UI::m_collectionIcon))
         {
-          // Orphan in this case.
-          if (ImGui::BeginDragDropTarget())
-          {
-            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
-            {
-              IM_ASSERT(payload->DataSize == sizeof(ULongID*));
-              g_child = *(ULongID*)payload->Data;
-              Entity* child = currScene->GetEntity(g_child);
-              child->m_node->OrphanSelf(true);
-            }
-            ImGui::EndDragDropTarget();
-          }
-
           const EntityRawPtrArray& ntties = currScene->GetEntities();
           EntityRawPtrArray roots;
           GetRootEntities(ntties, roots);
@@ -179,16 +173,21 @@ namespace ToolKit
       }
 
       // Update hierarchy if there is a change.
-      if (g_child != NULL_HANDLE)
+      std::vector<ULongID>::iterator it = g_child.begin();
+      while (it != g_child.end())
       {
-        Entity* child = currScene->GetEntity(g_child);
+        Entity* child = currScene->GetEntity(*it);
         child->m_node->OrphanSelf(true);
+
         if (g_parent != NULL_HANDLE)
         {
           Entity* parent = currScene->GetEntity(g_parent);
           parent->m_node->AddChild(child->m_node, true);
         }
+        it = g_child.erase(it);
       }
+
+      g_parent = NULL_HANDLE;
 
       ImGui::PopStyleVar();
       ImGui::End();
@@ -210,10 +209,31 @@ namespace ToolKit
       GetParents(ntt, m_nttFocusPath);
     }
 
-    bool OutlinerWindow::DrawHeader(const String& text, uint id, ImGuiTreeNodeFlags flags, TexturePtr icon)
+    bool OutlinerWindow::DrawRootHeader(const String& rootName, uint id, ImGuiTreeNodeFlags flags, TexturePtr icon)
     {
       const String sId = "##" + std::to_string(id);
       bool isOpen = ImGui::TreeNodeEx(sId.c_str(), flags);
+
+      // Orphan in this case.
+      if (ImGui::BeginDragDropTarget())
+      {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
+        {
+          EntityRawPtrArray selected;
+          EditorScenePtr currScene = g_app->GetCurrentScene();
+          currScene->GetSelectedEntities(selected);
+
+          for (int i = 0; i < selected.size(); i++)
+          {
+            if (selected[i]->Id() != NULL_HANDLE)
+            {
+              g_child.push_back(selected[i]->Id());
+            }
+          }
+          g_parent = NULL_HANDLE;
+        }
+        ImGui::EndDragDropTarget();
+      }
 
       if (icon)
       {
@@ -222,7 +242,7 @@ namespace ToolKit
       }
 
       ImGui::SameLine();
-      ImGui::Text(text.c_str());
+      ImGui::Text(rootName.c_str());
 
       return isOpen;
     }
@@ -241,17 +261,17 @@ namespace ToolKit
         focusToItem = focusIndx == 0;
       }
 
-      const String sId = "##" + std::to_string(ntt->m_id);
+      const String sId = "##" + std::to_string(ntt->Id());
       bool isOpen = ImGui::TreeNodeEx(sId.c_str(), flags);
-      
+
       if (ImGui::BeginPopupContextItem())
       {
-        if (ImGui::Button("SaveAsPrefab"))
+        if (ImGui::MenuItem("SaveAsPrefab"))
         {
           GetSceneManager()->GetCurrentScene()->SavePrefab(ntt);
           if (FolderWindow* browser = g_app->GetAssetBrowser())
           {
-            String folderPath, fullPath = PrefabPath(""); 
+            String folderPath, fullPath = PrefabPath("");
             DecomposePath(fullPath, &folderPath, nullptr, nullptr);
 
             int indx = browser->Exist(folderPath);
@@ -289,23 +309,33 @@ namespace ToolKit
       }
 
       ImGui::SameLine();
-      ImGui::Text(ntt->m_name.c_str());
-      
-      // Hiearchy visibility.
-      if (eType == EntityType::Entity_Node)
-      {
-        float offset = ImGui::GetContentRegionAvailWidth() - 20.0f;
-        ImGui::SameLine(offset);
-        icon = ntt->m_visible ? UI::m_visibleIcon : UI::m_invisibleIcon;
+      ImGui::Text(ntt->Name().c_str());
 
-        // Texture only toggle button.
-        ImGui::PushID(ntt->m_id);
-        if (UI::ImageButtonDecorless(icon->m_textureId, ImVec2(15.0f, 15.0f), false))
-        {
-          ntt->SetVisibility(!ntt->m_visible, true);
-        }
-        ImGui::PopID();
+      // Hiearchy visibility
+      float offset = ImGui::GetContentRegionAvail().x - 30.0f;
+      ImGui::SameLine(offset);
+      icon = ntt->Visible() ? UI::m_visibleIcon : UI::m_invisibleIcon;
+
+      // Texture only toggle button.
+      ImGui::PushID(ntt->Id());
+      if (UI::ImageButtonDecorless(icon->m_textureId, ImVec2(15.0f, 15.0f), false))
+      {
+        ntt->SetVisibility(!ntt->Visible(), true);
       }
+      ImGui::PopID();
+
+      offset = ImGui::GetContentRegionAvail().x - 10.0f;
+      ImGui::SameLine(offset);
+      icon = ntt->TransformLock() ? UI::m_lockedIcon : UI::m_unlockedIcon;
+
+      // Texture only toggle button.
+      ImGui::PushID(ntt->Id());
+      if (UI::ImageButtonDecorless(icon->m_textureId, ImVec2(15.0f, 15.0f), false))
+      {
+        ntt->SetTransformLock(!ntt->TransformLock(), true);
+      }
+
+      ImGui::PopID();
 
       return isOpen;
     }

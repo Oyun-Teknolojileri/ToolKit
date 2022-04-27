@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "ConsoleWindow.h"
 #include "GlobalDef.h"
 #include "Primative.h"
@@ -81,13 +79,13 @@ namespace ToolKit
         EditorScenePtr currScene = g_app->GetCurrentScene();
         if (StatePickingBase::m_dbgArrow)
         {
-          currScene->RemoveEntity(StatePickingBase::m_dbgArrow->m_id);
+          currScene->RemoveEntity(StatePickingBase::m_dbgArrow->Id());
           StatePickingBase::m_dbgArrow = nullptr;
         }
 
         if (StatePickingBase::m_dbgFrustum)
         {
-          currScene->RemoveEntity(StatePickingBase::m_dbgFrustum->m_id);
+          currScene->RemoveEntity(StatePickingBase::m_dbgFrustum->Id());
           StatePickingBase::m_dbgFrustum = nullptr;
         }
       }
@@ -422,20 +420,20 @@ namespace ToolKit
       // After refreshing hardware buffers, transforms of the entity can be set to identity.
       if 
       (
-        Drawable* e = dynamic_cast<Drawable*> 
+        Drawable* ntt = dynamic_cast<Drawable*> 
         (
           g_app->GetCurrentScene()->GetCurrentSelection()
         )
       )
       {
-        Mat4 ts = e->m_node->GetTransform(TransformationSpace::TS_WORLD);
+        Mat4 ts = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
         MeshRawPtrArray meshes;
-        e->GetMesh()->GetAllMeshes(meshes);
-        for (Mesh* m : meshes)
+        ntt->GetMesh()->GetAllMeshes(meshes);
+        for (Mesh* mesh : meshes)
         {
-          m->ApplyTransform(ts);
+          mesh->ApplyTransform(ts);
         }
-        g_app->m_statusMsg = "Transforms applied to " + e->m_name;
+        g_app->m_statusMsg = "Transforms applied to " + ntt->Name();
       }
       else
       {
@@ -447,17 +445,17 @@ namespace ToolKit
     {
       if 
       (
-        Drawable* e = dynamic_cast<Drawable*> 
+        Drawable* ntt = dynamic_cast<Drawable*> 
         (
           g_app->GetCurrentScene()->GetCurrentSelection()
         )
       )
       {
         TagArgArray::const_iterator nameTag = GetTag("n", tagArgs);
-        String fileName = e->GetMesh()->GetFile();
+        String fileName = ntt->GetMesh()->GetFile();
         if (fileName.empty())
         {
-          fileName = MeshPath(e->m_name + MESH);
+          fileName = MeshPath(ntt->Name() + MESH);
         }
 
         if (nameTag != tagArgs.end())
@@ -470,7 +468,7 @@ namespace ToolKit
         if (file.is_open())
         {
           XmlDocument doc;
-          e->GetMesh()->Serialize(&doc, nullptr);
+          ntt->GetMesh()->Serialize(&doc, nullptr);
           std::string xml;
           rapidxml::print(std::back_inserter(xml), doc, 0);
 
@@ -516,7 +514,7 @@ namespace ToolKit
         String manUpMsg = "You can manually update workspace directory in 'yourInstallment/ToolKit/Resources/workspace.settings'";
         if (CheckFile(path) && std::filesystem::is_directory(path))
         {
-          // Try updating default.settings
+          // Try updating workspace.settings
           if (g_app->m_workspace.SetDefaultWorkspace(path))
           {
             String info = "Your Workspace directry set to: " + path + "\n" + manUpMsg;

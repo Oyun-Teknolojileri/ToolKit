@@ -14,7 +14,7 @@ set(DLL_NAME ${PROJECT_NAME})
 string(REPLACE " " "-" PROJECT_NAME ${PROJECT_NAME})
 project (${PROJECT_NAME})
 
-if(NOT EXISTS ${TOOLKIT_DIR}/Source/ToolKit.h)
+if(NOT EXISTS ${TOOLKIT_DIR}/ToolKit/ToolKit.h)
   message(SEND_ERROR "Can't find ToolKit.h in ${TOOLKIT_DIR}")
 endif()
 
@@ -29,7 +29,7 @@ link_directories("${TOOLKIT_DIR}/Dependency/OpenAL/libs/Win64")
 link_directories("${TOOLKIT_DIR}/Dependency/Glew/lib/Release/x64")
 
 include_directories(
-	"${TOOLKIT_DIR}/Source"
+	"${TOOLKIT_DIR}/ToolKit"
 	"${TOOLKIT_DIR}/Dependency"
 	"${TOOLKIT_DIR}/Dependency/Glew/include"
 	"${TOOLKIT_DIR}/Dependency/SDL2/include"

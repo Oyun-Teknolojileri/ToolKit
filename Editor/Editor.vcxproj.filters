@@ -182,6 +182,9 @@
     <ClInclude Include="EditorCamera.h">
       <Filter>Entities</Filter>
     </ClInclude>
+    <ClInclude Include="ImGui\imgui_impl_opengl3_loader.h">
+      <Filter>UI\ImGui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ImGui/imgui.h"
+
 #include "Types.h"
 #include "Serialize.h"
 #include <functional>
@@ -111,6 +112,8 @@ namespace ToolKit
       static void InitTheme();
       static void InitSettings();
       static void ShowUI();
+      static void BeginUI();
+      static void EndUI();
       static void ShowAppMainMenuBar();
       static void ShowMenuFile();
       static void ShowMenuWindows();
@@ -120,9 +123,9 @@ namespace ToolKit
       static void ShowNewSceneWindow();
 
       // Custom widgets.
-      static bool ImageButtonDecorless(uint textureID, const ImVec2& size, bool flipImage);
-      static bool ToggleButton(uint textureID, const ImVec2& size, bool pushState);
-      static bool ToggleButton(const String& text, const ImVec2& size, bool pushState);
+      static bool ImageButtonDecorless(uint textureID, const Vec2& size, bool flipImage);
+      static bool ToggleButton(uint textureID, const Vec2& size, bool pushState);
+      static bool ToggleButton(const String& text, const Vec2& size, bool pushState);
 
     public:
       static bool m_showNewSceneWindow;
@@ -183,6 +186,9 @@ namespace ToolKit
       static TexturePtr m_lockIcon;
       static TexturePtr m_visibleIcon;
       static TexturePtr m_invisibleIcon;
+      static TexturePtr m_lockedIcon;
+      static TexturePtr m_unlockedIcon;
+      static TexturePtr m_viewZoomIcon;
     };
   }
 }
