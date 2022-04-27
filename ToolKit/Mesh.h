@@ -1,17 +1,19 @@
 #pragma once
 
+#include <memory>
+#include <vector>
 #include "Types.h"
 #include "Resource.h"
 #include "ResourceManager.h"
 #include "MathUtil.h"
-#include <memory>
+
 
 namespace ToolKit
 {
 
   class Vertex
   {
-  public:
+   public:
     Vec3 pos;
     Vec3 norm;
     Vec2 tex;
@@ -20,23 +22,23 @@ namespace ToolKit
 
   class Face
   {
-  public:
+   public:
     Vertex* vertices[3];
   };
 
   class TK_API Mesh : public Resource
   {
-  public:
+   public:
     TKResouceType(Mesh)
 
     Mesh();
-    Mesh(const String& file);
+    explicit Mesh(const String& file);
     virtual ~Mesh();
 
-    virtual void Init(bool flushClientSideArray = true) override;
-    virtual void UnInit() override;
-    virtual void Load() override;
-    virtual void Save(bool onlyIfDirty) override;
+    void Init(bool flushClientSideArray = true) override;
+    void UnInit() override;
+    void Load() override;
+    void Save(bool onlyIfDirty) override;
     virtual int GetVertexSize() const;
     virtual bool IsSkinned() const;
     void CalculateAABB();
@@ -45,17 +47,19 @@ namespace ToolKit
     void ConstructFaces();
     void ApplyTransform(const Mat4& transform);
 
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void SetMaterial(MaterialPtr material);
 
-  protected:
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+   protected:
     virtual void InitVertices(bool flush);
     virtual void InitIndices(bool flush);
 
-  protected:
-    virtual void CopyTo(Resource* other) override;
+   protected:
+    void CopyTo(Resource* other) override;
 
-  public:
+   public:
     VertexArray m_clientSideVertices;
     std::vector<uint> m_clientSideIndices;
     uint m_vboVertexId = 0;
@@ -68,44 +72,44 @@ namespace ToolKit
     BoundingBox m_aabb;
     FaceArray m_faces;
 
-  private:
+   private:
     MeshRawPtrArray m_allMeshes;
   };
 
   class SkinVertex : public Vertex
   {
-  public:
+   public:
     UVec4 bones;
     Vec4 weights;
   };
 
   class TK_API SkinMesh : public Mesh
   {
-  public:
+   public:
     TKResouceType(SkinMesh)
 
     SkinMesh();
-    SkinMesh(const String& file);
+    explicit SkinMesh(const String& file);
     ~SkinMesh();
 
-    virtual void Init(bool flushClientSideArray = true) override;
-    virtual void UnInit() override;
-    virtual void Load() override;
+    void Init(bool flushClientSideArray = true) override;
+    void UnInit() override;
+    void Load() override;
 
-    virtual int GetVertexSize() const override;
-    virtual bool IsSkinned() const override;
+    int GetVertexSize() const override;
+    bool IsSkinned() const override;
 
-  protected:
-    virtual void InitVertices(bool flush) override;
+   protected:
+    void InitVertices(bool flush) override;
 
-  public:
+   public:
     std::vector<SkinVertex> m_clientSideVertices;
     class Skeleton* m_skeleton;
   };
 
   class TK_API MeshManager : public ResourceManager
   {
-  public:
+   public:
     MeshManager();
     virtual ~MeshManager();
     virtual bool CanStore(ResourceType t);
@@ -113,4 +117,4 @@ namespace ToolKit
     virtual String GetDefaultResource(ResourceType type);
   };
 
-}
+}  // namespace ToolKit

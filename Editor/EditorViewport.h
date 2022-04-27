@@ -1,10 +1,12 @@
 #pragma once
 
+#include <vector>
+#include <functional>
 #include "ToolKit.h"
 #include "Viewport.h"
 #include "UI.h"
 #include "GlobalDef.h"
-#include <functional>
+
 
 namespace ToolKit
 {
@@ -26,29 +28,29 @@ namespace ToolKit
 
     class EditorViewport : public Viewport, public Window
     {
-    public:
-      EditorViewport(XmlNode* node);
+     public:
+      explicit EditorViewport(XmlNode * node);
       EditorViewport(float width, float height);
       virtual ~EditorViewport();
 
       // Window Overrides.
-      virtual void Show() override;
-      virtual Type GetType() const override;
-      virtual void Update(float deltaTime) override;
+      void Show() override;
+      Type GetType() const override;
+      void Update(float deltaTime) override;
       bool IsViewportQueriable() const;
-      virtual void DispatchSignals() const override;
+      void DispatchSignals() const override;
 
       // Viewport overrides.
-      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-      virtual void OnResize(float width, float height) override;
+      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+      void OnResize(float width, float height) override;
 
       // Editor functions
-      virtual void GetContentAreaScreenCoordinates(Vec2& min, Vec2& max) const;
-      virtual void SetCamera(Camera* cam) override;
+      void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const;
+      void SetCamera(Camera* cam) override;
 
-    protected:
-      virtual RenderTargetSettigs GetRenderTargetSettings() override;
+     protected:
+      RenderTargetSettigs GetRenderTargetSettings() override;
 
       void UpdateContentArea();
       void UpdateWindow();
@@ -59,12 +61,12 @@ namespace ToolKit
       // Mods.
       void FpsNavigationMode(float deltaTime);
       void OrbitPanMod(float deltaTime);
-      virtual void AdjustZoom(float delta) override;
+      void AdjustZoom(float delta) override;
 
-    private:
+     private:
       void LoadDragMesh
       (
-        bool& meshLoaded, 
+        bool& meshLoaded,
         DirectoryEntry dragEntry,
         ImGuiIO io,
         Drawable** dwMesh,
@@ -81,13 +83,13 @@ namespace ToolKit
       void HandleDropMesh
       (
         bool& meshLoaded,
-        bool& meshAddedToScene, 
+        bool& meshAddedToScene,
         EditorScenePtr currScene,
-        Drawable** dwMesh, 
+        Drawable** dwMesh,
         Drawable** boundingBox
       );
 
-    public:
+     public:
       // Window properties.
       static std::vector<class OverlayUI*> m_overlays;
       bool m_mouseOverOverlay = false;
@@ -98,14 +100,14 @@ namespace ToolKit
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;
 
-    protected:
+     protected:
       Vec2 m_contentAreaMin;
       Vec2 m_contentAreaMax;
 
-    private:
+     private:
       // States.
       bool m_relMouseModBegin = true;
     };
 
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

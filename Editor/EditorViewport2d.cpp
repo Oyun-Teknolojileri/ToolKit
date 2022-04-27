@@ -132,10 +132,10 @@ namespace ToolKit
       return vp;
     }
 
-    void EditorViewport2d::GetContentAreaScreenCoordinates(Vec2& min, Vec2& max) const
+    void EditorViewport2d::GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const
     {
-      min = m_canvasPos + m_wndPos;
-      max = min + m_canvasSize;
+      *min = m_canvasPos + m_wndPos;
+      *max = *min + m_canvasSize;
     }
 
     void EditorViewport2d::UpdateContentArea()

@@ -412,7 +412,7 @@ namespace ToolKit
       if (EditorViewport* vp = g_app->GetActiveViewport())
       {
         Vec2 contentMin, contentMax;
-        vp->GetContentAreaScreenCoordinates(contentMin, contentMax);
+        vp->GetContentAreaScreenCoordinates(&contentMin, &contentMax);
 
         auto drawMoveCursorFn = [this, contentMin, contentMax](ImDrawList* drawList) -> void
         {

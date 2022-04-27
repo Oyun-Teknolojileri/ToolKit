@@ -1,14 +1,15 @@
+#include <unordered_map>
 #include "ToolKit.h"
 #include "Mesh.h"
 #include "Material.h"
 #include "Texture.h"
 #include "Skeleton.h"
 #include "Util.h"
-#include "rapidxml.hpp"
-#include "rapidxml_utils.hpp"
+#include <rapidxml.hpp>
+#include <rapidxml_utils.hpp>
 #include "GL/glew.h"
-#include <unordered_map>
 #include "DebugNew.h"
+
 
 namespace ToolKit
 {
@@ -117,7 +118,14 @@ namespace ToolKit
       glBindBuffer(GL_COPY_READ_BUFFER, m_vboVertexId);
       uint size = GetVertexSize() * m_vertexCount;
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
-      glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
+      glCopyBufferSubData
+      (
+        GL_COPY_READ_BUFFER,
+        GL_COPY_WRITE_BUFFER,
+        0,
+        0,
+        size
+      );
     }
 
     if (m_indexCount > 0)
@@ -127,7 +135,14 @@ namespace ToolKit
       glBindBuffer(GL_COPY_READ_BUFFER, m_vboIndexId);
       uint size = sizeof(uint) * m_indexCount;
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
-      glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
+      glCopyBufferSubData
+      (
+        GL_COPY_READ_BUFFER,
+        GL_COPY_WRITE_BUFFER,
+        0,
+        0,
+        size
+      );
     }
 
     cpy->m_material = m_material->Copy<Material>();
@@ -230,6 +245,15 @@ namespace ToolKit
     }
   }
 
+  void Mesh::SetMaterial(MaterialPtr material)
+  {
+    m_material = material;
+    m_material->Init(false);
+    m_dirty = true;
+    Save(true);
+    m_dirty = false;
+  }
+
   void Mesh::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "meshContainer", parent);
@@ -245,7 +269,7 @@ namespace ToolKit
       for (const Vertex& v : mesh->m_clientSideVertices)
       {
         XmlNode* vNod = CreateXmlNode(doc, "v", vertices);
-        
+
         XmlNode* p = CreateXmlNode(doc, "p", vNod);
         WriteVec(p, doc, v.pos);
 
@@ -266,9 +290,27 @@ namespace ToolKit
       {
         XmlNode* f = CreateXmlNode(doc, "f", faces);
 
-        WriteAttr(f, doc, "x", std::to_string(mesh->m_clientSideIndices[i * 3]));
-        WriteAttr(f, doc, "y", std::to_string(mesh->m_clientSideIndices[i * 3 + 1]));
-        WriteAttr(f, doc, "z", std::to_string(mesh->m_clientSideIndices[i * 3 + 2]));
+        WriteAttr
+        (
+          f,
+          doc,
+          "x",
+          std::to_string(mesh->m_clientSideIndices[i * 3])
+        );
+        WriteAttr
+        (
+          f,
+          doc,
+          "y",
+          std::to_string(mesh->m_clientSideIndices[i * 3 + 1])
+        );
+        WriteAttr
+        (
+          f,
+          doc,
+          "z",
+          std::to_string(mesh->m_clientSideIndices[i * 3 + 2])
+        );
       }
     };
 
@@ -293,7 +335,12 @@ namespace ToolKit
 
     Mesh* mesh = this;
     XmlNode* node = parent;
-    for (node = node->first_node("mesh"); node; node = node->next_sibling("mesh"))
+    for
+    (
+      node = node->first_node("mesh");
+      node;
+      node = node->next_sibling("mesh")
+    )
     {
       if (mesh == nullptr)
       {
@@ -327,8 +374,8 @@ namespace ToolKit
       }
 
       mesh->m_loaded = true;
-      mesh->m_vertexCount = (int)mesh->m_clientSideVertices.size();
-      mesh->m_indexCount = (int)mesh->m_clientSideIndices.size();
+      mesh->m_vertexCount = static_cast<int>(mesh->m_clientSideVertices.size());
+      mesh->m_indexCount = static_cast<int>(mesh->m_clientSideIndices.size());
       mesh = nullptr;
     }
   }
@@ -345,7 +392,12 @@ namespace ToolKit
 
       glGenBuffers(1, &m_vboVertexId);
       glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
-      glBufferData(GL_ARRAY_BUFFER, GetVertexSize() * m_clientSideVertices.size(), m_clientSideVertices.data(), GL_STATIC_DRAW);
+      glBufferData
+      (
+        GL_ARRAY_BUFFER,
+        GetVertexSize() * m_clientSideVertices.size(),
+        m_clientSideVertices.data(), GL_STATIC_DRAW
+      );
       m_vertexCount = (uint)m_clientSideVertices.size();
     }
 
@@ -364,7 +416,13 @@ namespace ToolKit
     {
       glGenBuffers(1, &m_vboIndexId);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vboIndexId);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * m_clientSideIndices.size(), m_clientSideIndices.data(), GL_STATIC_DRAW);
+      glBufferData
+      (
+        GL_ELEMENT_ARRAY_BUFFER,
+        sizeof(uint) * m_clientSideIndices.size(),
+        m_clientSideIndices.data(),
+        GL_STATIC_DRAW
+      );
       m_indexCount = (uint)m_clientSideIndices.size();
     }
 
@@ -438,7 +496,12 @@ namespace ToolKit
     m_aabb = BoundingBox();
 
     SkinMesh* mesh = this;
-    for (node = node->first_node("skinMesh"); node; node = node->next_sibling("skinMesh"))
+    for
+    (
+      node = node->first_node("skinMesh");
+      node;
+      node = node->next_sibling("skinMesh")
+    )
     {
       if (mesh == nullptr)
       {
@@ -455,7 +518,10 @@ namespace ToolKit
       }
       else
       {
-        mesh->m_material = GetMaterialManager()->Create<Material> (MaterialPath("default.material", true));
+        mesh->m_material = GetMaterialManager()->Create<Material>
+        (
+          MaterialPath("default.material", true)
+        );
       }
 
       XmlNode* vertex = node->first_node("vertices");
@@ -507,7 +573,13 @@ namespace ToolKit
     {
       glGenBuffers(1, &m_vboVertexId);
       glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
-      glBufferData(GL_ARRAY_BUFFER, GetVertexSize() * m_clientSideVertices.size(), m_clientSideVertices.data(), GL_STATIC_DRAW);
+      glBufferData
+      (
+        GL_ARRAY_BUFFER,
+        GetVertexSize() * m_clientSideVertices.size(),
+        m_clientSideVertices.data(),
+        GL_STATIC_DRAW
+      );
       m_vertexCount = (uint)m_clientSideVertices.size();
     }
 
@@ -563,4 +635,4 @@ namespace ToolKit
     return MeshPath("Suzanne.mesh", true);
   }
 
-}
+}  // namespace ToolKit
