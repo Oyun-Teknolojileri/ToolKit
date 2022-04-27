@@ -171,7 +171,7 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
-          m_renderer->RenderScene(GetCurrentScene().get(), viewport, m_sceneLights);
+          m_renderer->RenderScene(GetCurrentScene(), viewport, m_sceneLights);
 
           Camera* cam = viewport->GetCamera();;
 

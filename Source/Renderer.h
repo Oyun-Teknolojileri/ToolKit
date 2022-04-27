@@ -36,7 +36,7 @@ namespace ToolKit
   public:
     Renderer();
     ~Renderer();
-    void RenderScene(Scene* scene, Viewport* viewport, LightRawPtrArray editor_lights);
+    void RenderScene(const ScenePtr& scene, Viewport* viewport, LightRawPtrArray editor_lights);
     void Render(Entity* ntt, Camera* cam, const LightRawPtrArray& lights = LightRawPtrArray());
     void SetRenderState(const RenderState* const state);
     void SetRenderTarget(RenderTarget* renderTarget, bool clear = true, const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f });

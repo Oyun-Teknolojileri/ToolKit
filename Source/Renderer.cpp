@@ -25,7 +25,7 @@ namespace ToolKit
   {
   }
 
-  void Renderer::RenderScene(Scene* scene, Viewport* viewport, LightRawPtrArray editor_lights)
+  void Renderer::RenderScene(const ScenePtr& scene, Viewport* viewport, LightRawPtrArray editorLights)
   {
     Camera* cam = viewport->GetCamera();
     EntityRawPtrArray entites = scene->GetEntities();
@@ -121,7 +121,7 @@ namespace ToolKit
           billboard->LookAt(cam, viewport->m_zoom);
         }
 
-        Render(ntt, cam, editor_lights);
+        Render(ntt, cam, editorLights);
       }
     }
 
@@ -144,16 +144,16 @@ namespace ToolKit
       if (dw->GetMesh()->m_material->GetRenderState()->cullMode == CullingType::TwoSided)
       {
         dw->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::Front;
-        Render(ntt, cam, editor_lights);
+        Render(ntt, cam, editorLights);
 
         dw->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::Back;
-        Render(ntt, cam, editor_lights);
+        Render(ntt, cam, editorLights);
 
         dw->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
       }
       else
       {
-        Render(ntt, cam, editor_lights);
+        Render(ntt, cam, editorLights);
       }
     }
   }
