@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "Types.h"
 #include "Serialize.h"
 
@@ -18,16 +19,16 @@ namespace ToolKit
 
   class TK_API Component : public Serializable
   {
-  public:
+   public:
     Component();
     virtual ~Component();
     virtual ComponentType GetType() const;
     virtual ComponentPtr Copy() = 0;
 
-  public:
+   public:
     ULongID m_id;
 
-  private:
+   private:
     static ULongID m_handle;
   };
 
@@ -35,21 +36,21 @@ namespace ToolKit
 
   class TK_API MeshComponent : public Component
   {
-  public:
+   public:
     TKComponentType(MeshComponent);
 
     MeshComponent();
     virtual ~MeshComponent();
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     virtual ComponentPtr Copy();
     BoundingBox GetAABB();
 
     void Init(bool flushClientSideArray);
 
-  public:
+   public:
     MeshPtr m_mesh;
     MaterialPtr m_material;
   };
 
-}
+}  // namespace ToolKit

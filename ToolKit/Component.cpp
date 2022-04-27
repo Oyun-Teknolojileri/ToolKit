@@ -71,4 +71,4 @@ namespace ToolKit
     }
   }
 
-}
+}  // namespace ToolKit
