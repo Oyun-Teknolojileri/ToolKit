@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Workspace.h"
 #include "App.h"
 #include "DebugNew.h"

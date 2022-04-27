@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "EditorScene.h"
 #include "Util.h"
 #include "GlobalDef.h"

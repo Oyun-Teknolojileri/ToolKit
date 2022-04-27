@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "PluginWindow.h"
 #include "GlobalDef.h"
 #include "ConsoleWindow.h"

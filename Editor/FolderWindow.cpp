@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "ConsoleWindow.h"
 #include "FolderWindow.h"
 #include "GlobalDef.h"

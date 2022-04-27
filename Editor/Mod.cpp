@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Mod.h"
 #include "GlobalDef.h"
 #include "EditorViewport.h"

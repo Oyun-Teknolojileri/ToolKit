@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "OverlayUI.h"
 #include "EditorViewport.h"
 #include "GlobalDef.h"

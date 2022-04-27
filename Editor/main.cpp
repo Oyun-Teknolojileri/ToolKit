@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "App.h"
 #include "Types.h"
 #include "Mod.h"

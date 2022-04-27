@@ -41,7 +41,7 @@ namespace ToolKit
       Entity* m_ntt;
       ULongID m_parentId;
       EntityIdArray m_children;
-      std::vector<AnimRecord> m_records;
+      AnimRecordArray m_records;
       bool m_actionComitted;
     };
 

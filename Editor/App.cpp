@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "App.h"
 #include "Renderer.h"
 #include "UI.h"

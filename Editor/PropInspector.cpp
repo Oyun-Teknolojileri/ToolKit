@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "PropInspector.h"
 #include "GlobalDef.h"
 #include "Util.h"

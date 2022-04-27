@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "OutlinerWindow.h"
 #include "GlobalDef.h"
 #include "Mod.h"

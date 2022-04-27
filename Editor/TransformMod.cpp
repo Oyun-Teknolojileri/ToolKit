@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "TransformMod.h"
 #include "Gizmo.h"
 #include "GlobalDef.h"

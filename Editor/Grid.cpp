@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "Grid.h"
 #include "GlobalDef.h"
 #include "ToolKit.h"

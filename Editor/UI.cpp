@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "UI.h"
 #include "App.h"
 #include "EditorViewport.h"

@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "ConsoleWindow.h"
 #include "GlobalDef.h"
 #include "Primative.h"
