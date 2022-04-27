@@ -72,9 +72,9 @@ namespace ToolKit
     void GetNearestKeys
     (
       const KeyArray& keys,
-      int* key1,
-      int* key2,
-      float* ratio,
+      int& key1,
+      int& key2,
+      float& ratio,
       float t
     );
 

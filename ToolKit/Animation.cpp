@@ -45,7 +45,7 @@ namespace ToolKit
     float ratio;
     int key1, key2;
     std::vector<Key>& keys = m_keys.begin()->second;
-    GetNearestKeys(keys, &key1, &key2, &ratio, time);
+    GetNearestKeys(keys, key1, key2, ratio, time);
 
     int keySize = static_cast<int> (keys.size());
     if (keys.size() <= key1 || key1 == -1)
@@ -88,7 +88,7 @@ namespace ToolKit
         continue;
       }
 
-      GetNearestKeys(entry->second, &key1, &key2, &ratio, m_currentTime);
+      GetNearestKeys(entry->second, key1, key2, ratio, m_currentTime);
 
       // Sanity checks
       int keySize = static_cast<int> (entry->second.size());
@@ -234,16 +234,16 @@ namespace ToolKit
   void Animation::GetNearestKeys
   (
     const KeyArray& keys,
-    int* key1,
-    int* key2,
-    float* ratio,
+    int& key1,
+    int& key2,
+    float& ratio,
     float t
   )
   {
     // Find nearset keys.
-    *key1 = -1;
-    *key2 = -1;
-    *ratio = 0.0f;
+    key1 = -1;
+    key2 = -1;
+    ratio = 0.0f;
 
     assert(keys.empty() != true && "Animation can't be empty !");
 
@@ -260,8 +260,8 @@ namespace ToolKit
     float boundaryTime = keys.front().m_frame * 1.0f / m_fps;
     if (boundaryTime > t)
     {
-      *key1 = 0;
-      *key2 = 1;
+      key1 = 0;
+      key2 = 1;
       return;
     }
 
@@ -269,9 +269,9 @@ namespace ToolKit
     boundaryTime = keys.back().m_frame * 1.0f / m_fps;
     if (t > boundaryTime)
     {
-      *key2 = keySize - 1;
-      *key1 = *key2 - 1;
-      *ratio = 1.0f;
+      key2 = keySize - 1;
+      key1 = key2 - 1;
+      ratio = 1.0f;
       return;
     }
 
@@ -284,9 +284,9 @@ namespace ToolKit
 
       if (t >= keyTime1 && keyTime2 >= t)
       {
-        *ratio = (t - keyTime1) / (keyTime2 - keyTime1);
-        *key1 = i - 1;
-        *key2 = i;
+        ratio = (t - keyTime1) / (keyTime2 - keyTime1);
+        key1 = i - 1;
+        key2 = i;
         return;
       }
     }
