@@ -35,42 +35,6 @@ namespace ToolKit
     GetPose(node, m_currentTime);
   }
 
-  void Animation::GetPose(Node* node, float time)
-  {
-    if (m_keys.empty())
-    {
-      return;
-    }
-
-    float ratio;
-    int key1, key2;
-    std::vector<Key>& keys = m_keys.begin()->second;
-    GetNearestKeys(keys, key1, key2, ratio, time);
-
-    int keySize = static_cast<int> (keys.size());
-    if (keys.size() <= key1 || key1 == -1)
-    {
-      return;
-    }
-
-    if (keys.size() <= key2 || key2 == -1)
-    {
-      return;
-    }
-
-    Key k1 = keys[key1];
-    Key k2 = keys[key2];
-    node->m_translation = Interpolate(k1.m_position, k2.m_position, ratio);
-    node->m_orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
-    node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
-    node->SetChildrenDirty();
-  }
-
-  void Animation::GetPose(Node* node, int frame)
-  {
-    GetPose(node, frame * 1.0f / m_fps);
-  }
-
   void Animation::GetCurrentPose(Skeleton* skeleton)
   {
     if (m_keys.empty())
@@ -123,9 +87,40 @@ namespace ToolKit
     }
   }
 
-  float Animation::GetDuration()
+  void Animation::GetPose(Node* node, float time)
   {
-    return m_duration;
+    if (m_keys.empty())
+    {
+      return;
+    }
+
+    float ratio;
+    int key1, key2;
+    std::vector<Key>& keys = m_keys.begin()->second;
+    GetNearestKeys(keys, key1, key2, ratio, time);
+
+    int keySize = static_cast<int> (keys.size());
+    if (keys.size() <= key1 || key1 == -1)
+    {
+      return;
+    }
+
+    if (keys.size() <= key2 || key2 == -1)
+    {
+      return;
+    }
+
+    Key k1 = keys[key1];
+    Key k2 = keys[key2];
+    node->m_translation = Interpolate(k1.m_position, k2.m_position, ratio);
+    node->m_orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
+    node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
+    node->SetChildrenDirty();
+  }
+
+  void Animation::GetPose(Node* node, int frame)
+  {
+    GetPose(node, frame * 1.0f / m_fps);
   }
 
   void Animation::Load()
@@ -190,11 +185,13 @@ namespace ToolKit
 
   void Animation::Init(bool flushClientSideArray)
   {
+    m_initiated = true;
   }
 
   void Animation::UnInit()
   {
     m_initiated = false;
+    m_keys.clear();
   }
 
   void Animation::Reverse()
@@ -334,7 +331,7 @@ namespace ToolKit
       if (state == Animation::State::Play)
       {
         float thisTime = record.second->m_currentTime + deltaTimeSec;
-        float duration = record.second->GetDuration();
+        float duration = record.second->m_duration;
 
         if (record.second->m_loop)
         {
