@@ -12,8 +12,8 @@
 #include "Resource.h"
 #include "ResourceManager.h"
 #include "Entity.h"
-#include "Mesh.h"
 #include "Node.h"
+#include "Skeleton.h"
 
 /**
 * Base name space for all the ToolKit functionalities.
