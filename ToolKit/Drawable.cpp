@@ -1,10 +1,14 @@
 #include "Drawable.h"
+
+#include <memory>
+
 #include "Mesh.h"
 #include "Material.h"
 #include "ToolKit.h"
 #include "Node.h"
 #include "Util.h"
 #include "Component.h"
+#include "Skeleton.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -36,7 +40,8 @@ namespace ToolKit
     MeshPtr mesh = GetMesh();
     if (mesh->IsSkinned())
     {
-      Skeleton* skeleton = ((SkinMesh*)mesh.get())->m_skeleton;
+      SkinMesh* skinMesh = static_cast<SkinMesh*> (mesh.get());
+      Skeleton* skeleton = skinMesh->m_skeleton;
       anim->GetCurrentPose(skeleton);
     }
     else
@@ -69,7 +74,11 @@ namespace ToolKit
   void Drawable::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Entity::Serialize(doc, parent);
-    XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlMeshElement.c_str());
+    XmlNode* node = doc->allocate_node
+    (
+      rapidxml::node_element,
+      XmlMeshElement.c_str()
+    );
 
     String relPath = GetRelativeResourcePath(GetMesh()->GetSerializeFile());
     node->append_attribute
@@ -114,4 +123,5 @@ namespace ToolKit
     meshComp->m_mesh = mesh;
   }
 
-}
+}  // namespace ToolKit
+

@@ -7,7 +7,7 @@ namespace ToolKit
 
   class TK_API Drawable : public Entity
   {
-  public:
+   public:
     Drawable();
     virtual ~Drawable();
     bool IsDrawable() const override;
@@ -17,11 +17,11 @@ namespace ToolKit
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     void RemoveResources() override;
-    
+
     MeshPtr& GetMesh() const;
     void SetMesh(const MeshPtr& mesh);
 
-  protected:
+   protected:
     using Entity::ParameterConstructor;
 
     Entity* CopyTo(Entity* copyTo) const override;
