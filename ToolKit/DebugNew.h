@@ -3,8 +3,8 @@
 #ifndef SKIP_TK_DEBUG_NEW
   #ifdef TK_DEBUG
     #define _CRTDBG_MAP_ALLOC
-    #include <cstdlib>
     #include <crtdbg.h>
+    #include <cstdlib>
     #define TK_DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
   #endif
 

@@ -7,7 +7,7 @@ namespace ToolKit
 {
   class TK_API Directional : public Entity
   {
-  public:
+   public:
     Directional();
     virtual ~Directional();
 
@@ -22,15 +22,15 @@ namespace ToolKit
     Vec3 GetRight() const;
     void LookAt(Vec3 target);
 
-    virtual EntityType GetType() const override;
+    EntityType GetType() const override;
 
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override {};
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override {};
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override {};
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override {};
   };
 
   class TK_API Camera : public Directional
   {
-  public:
+   public:
     struct CamData
     {
       Vec3 pos;
@@ -43,29 +43,37 @@ namespace ToolKit
       bool ortographic;
     };
 
-  public:
-    Camera(XmlNode* node);
+   public:
+    explicit Camera(XmlNode* node);
     Camera();
     ~Camera();
 
     void SetLens(float fov, float width, float height);
     void SetLens(float fov, float width, float height, float near, float far);
-    void SetLens(float left, float right, float bottom, float top, float near, float far);
+    void SetLens
+    (
+      float left,
+      float right,
+      float bottom,
+      float top,
+      float near,
+      float far
+    );
     Mat4 GetViewMatrix() const;
     Mat4 GetProjectionMatrix() const;
     void SetProjectionMatrix(Mat4 proj);
     bool IsOrtographic() const;
 
     CamData GetData() const;
-    virtual EntityType GetType() const override;
+    EntityType GetType() const override;
 
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-  protected:
-    virtual Entity* CopyTo(Entity* copyTo) const override;
+   protected:
+    Entity* CopyTo(Entity* copyTo) const override;
 
-  private:
+   private:
     float m_fov = 1.0f;
     float m_aspect = 1.0f;
     float m_near = 0.01f;
@@ -81,7 +89,7 @@ namespace ToolKit
 
   class TK_API Light : public Directional
   {
-  public:
+   public:
     struct LightData
     {
       Vec3 pos;
@@ -90,16 +98,17 @@ namespace ToolKit
       float intensity;
     };
 
-  public:
+   public:
     Light();
     virtual ~Light();
 
     LightData GetData() const;
-    virtual EntityType GetType() const override;
+    EntityType GetType() const override;
 
-  public:
+   public:
     Vec3 m_color;
     float m_intensity;
   };
 
-}
+}  // namespace ToolKit
+

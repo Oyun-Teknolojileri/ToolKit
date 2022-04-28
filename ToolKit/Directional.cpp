@@ -39,7 +39,15 @@ namespace ToolKit
 
   void Directional::RotateOnUpVector(float angle)
   {
-    m_node->Rotate(glm::angleAxis(angle, Vec3(0.0f, 1.0f, 0.0f)), TransformationSpace::TS_WORLD);
+    m_node->Rotate
+    (
+      glm::angleAxis
+      (
+        angle,
+        Vec3(0.0f, 1.0f, 0.0f)
+      ),
+      TransformationSpace::TS_WORLD
+    );
   }
 
   void Directional::GetLocalAxis(Vec3& dir, Vec3& up, Vec3& right) const
@@ -72,10 +80,10 @@ namespace ToolKit
   {
     Vec3 eye = m_node->GetTranslation(TransformationSpace::TS_WORLD);
     Vec3 tdir = target - eye;
-    tdir.y = 0.0f; // project on xz
+    tdir.y = 0.0f;  // project on xz
     tdir = glm::normalize(tdir);
     Vec3 dir = GetDir();
-    dir.y = 0.0f; // project on xz
+    dir.y = 0.0f;  // project on xz
     dir = glm::normalize(dir);
 
     if (glm::all(glm::epsilonEqual(tdir, dir, { 0.01f, 0.01f, 0.01f })))
@@ -137,7 +145,14 @@ namespace ToolKit
     SetLens(fov, width, height, 0.5f, 1000.0f);
   }
 
-  void Camera::SetLens(float fov, float width, float height, float near, float far)
+  void Camera::SetLens
+  (
+    float fov,
+    float width,
+    float height,
+    float near,
+    float far
+  )
   {
     m_projection = glm::perspectiveFov(fov, width, height, near, far);
     m_fov = fov;
@@ -148,7 +163,15 @@ namespace ToolKit
     m_ortographic = false;
   }
 
-  void Camera::SetLens(float left, float right, float bottom, float top, float near, float far)
+  void Camera::SetLens
+  (
+    float left,
+    float right,
+    float bottom,
+    float top,
+    float near,
+    float far
+  )
   {
     m_projection = glm::ortho(left, right, bottom, top, near, far);
     m_left = left;
@@ -208,7 +231,7 @@ namespace ToolKit
   {
     Entity::Serialize(doc, parent);
     parent = parent->last_node();
-    
+
     XmlNode* node = doc->allocate_node(rapidxml::node_element, "Camera");
     parent->append_node(node);
 
@@ -287,4 +310,5 @@ namespace ToolKit
     return EntityType::Entity_Light;
   }
 
-}
+}  // namespace ToolKit
+
