@@ -47,6 +47,7 @@ namespace ToolKit
 
       // Editor functions
       void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const;
+      Camera* GetCamera() const override;
       void SetCamera(Camera* cam) override;
 
      protected:

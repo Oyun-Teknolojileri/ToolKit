@@ -1,4 +1,7 @@
 #include "Viewport.h"
+
+#include <algorithm>
+
 #include "Directional.h"
 #include "Renderer.h"
 #include "Node.h"
@@ -102,7 +105,12 @@ namespace ToolKit
     }
     else
     {
-      m_viewportImage = new RenderTarget((uint)m_width, (uint)m_height, settings);
+      m_viewportImage = new RenderTarget
+      (
+        (uint)m_width,
+        (uint)m_height,
+        settings
+      );
       m_viewportImage->Init();
     }
   }
@@ -126,7 +134,13 @@ namespace ToolKit
     }
     else
     {
-      ray.direction = glm::normalize(ray.position - cam->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+      ray.direction = glm::normalize
+      (
+        ray.position - cam->m_node->GetTranslation
+        (
+          TransformationSpace::TS_WORLD
+        )
+      );
     }
 
     return ray;
@@ -161,13 +175,19 @@ namespace ToolKit
     Mat4 view = cam->GetViewMatrix();
     Mat4 project = cam->GetProjectionMatrix();
 
-    return glm::unProject(screenPoint, view, project, Vec4(0.0f, 0.0f, m_width, m_height));
+    return glm::unProject
+    (
+      screenPoint,
+      view,
+      project,
+      Vec4(0.0f, 0.0f, m_width, m_height)
+    );
   }
 
   Vec2 Viewport::TransformScreenToViewportSpace(const Vec2& pnt)
   {
-    Vec2 vp = pnt - m_wndPos; // In window space.
-    vp.y = m_wndContentAreaSize.y - vp.y; // In viewport space.
+    Vec2 vp = pnt - m_wndPos;  // In window space.
+    vp.y = m_wndContentAreaSize.y - vp.y;  // In viewport space.
     return vp;
   }
 
@@ -187,4 +207,4 @@ namespace ToolKit
     UpdateCameraLens(m_width, m_height);
   }
 
-}
+}  // namespace ToolKit
