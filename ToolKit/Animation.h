@@ -1,7 +1,7 @@
 #pragma once
 
 /**
-* @file Header for Animation, AnimationManager, AnimationPlayer
+* @file Animation.h Header for Animation, AnimationManager, AnimationPlayer
 * and related structures.
 */
 
