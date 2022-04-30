@@ -24,7 +24,12 @@ namespace ToolKit
   {
   }
 
-  void Renderer::RenderScene(const ScenePtr& scene, Viewport* viewport, LightRawPtrArray editorLights)
+  void Renderer::RenderScene
+  (
+    const ScenePtr& scene,
+    Viewport* viewport,
+    LightRawPtrArray editorLights
+  )
   {
     Camera* cam = viewport->GetCamera();
     EntityRawPtrArray entites = scene->GetEntities();
@@ -40,7 +45,11 @@ namespace ToolKit
 
     auto delFn = [frustum](Entity* ntt) -> bool
     {
-      IntersectResult res = FrustumBoxIntersection(frustum, ntt->GetAABB(true));
+      IntersectResult res = FrustumBoxIntersection
+      (
+        frustum,
+        ntt->GetAABB(true)
+      );
       if (res == IntersectResult::Outside)
       {
         return true;
@@ -50,11 +59,14 @@ namespace ToolKit
         return false;
       }
     };
-    entites.erase(std::remove_if(entites.begin(), entites.end(), delFn), entites.end());
-    
+    entites.erase
+    (
+      std::remove_if(entites.begin(), entites.end(), delFn), entites.end()
+    );
+
     // Get transparent objects
     EntityRawPtrArray blendedEntities;
-    
+
     auto delTrFn = [&blendedEntities](Entity* ntt) -> bool
     {
       if (ntt->GetType() == EntityType::Entity_Node)
@@ -68,8 +80,9 @@ namespace ToolKit
         return false;
       }
 
-      BlendFunction blend = ms->m_mesh->m_material->GetRenderState()->blendFunction;
-      if (ntt->IsDrawable() && ntt->Visible() && (int)blend)
+      BlendFunction blend
+      = ms->m_mesh->m_material->GetRenderState()->blendFunction;
+      if (ntt->IsDrawable() && ntt->Visible() && static_cast<int>(blend))
       {
         blendedEntities.push_back(ntt);
         return true;
@@ -79,16 +92,24 @@ namespace ToolKit
         return false;
       }
     };
-    entites.erase(std::remove_if(entites.begin(), entites.end(), delTrFn), entites.end());
-    
-    
+    entites.erase
+    (
+      std::remove_if(entites.begin(), entites.end(), delTrFn), entites.end()
+    );
+
     // Sort transparent entities
     if (cam->IsOrtographic())
     {
       auto sortFn = [](Entity* nt1, Entity* nt2) -> bool
       {
-        float first = nt1->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
-        float second = nt2->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
+        float first = nt1->m_node->GetTranslation
+        (
+          TransformationSpace::TS_WORLD
+        ).z;
+        float second = nt2->m_node->GetTranslation
+        (
+          TransformationSpace::TS_WORLD
+        ).z;
 
         return first < second;
       };
@@ -99,7 +120,10 @@ namespace ToolKit
     {
       auto sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool
       {
-        Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        Vec3 camLoc = cam->m_node->GetTranslation
+        (
+          TransformationSpace::TS_WORLD
+        );
         BoundingBox bb1 = ntt1->GetAABB(true);
         float first = glm::length2(bb1.GetCenter() - camLoc);
         BoundingBox bb2 = ntt2->GetAABB(true);
@@ -139,16 +163,24 @@ namespace ToolKit
         billboard->LookAt(cam, viewport->m_zoom);
       }
 
-      // For two sided materials, first render back of transparent objects then render front
-      if (dw->GetMesh()->m_material->GetRenderState()->cullMode == CullingType::TwoSided)
+      // For two sided materials,
+      // first render back of transparent objects then render front
+      if
+      (
+        dw->GetMesh()->m_material->GetRenderState()->cullMode
+        == CullingType::TwoSided
+      )
       {
-        dw->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::Front;
+        dw->GetMesh()->m_material->GetRenderState()->cullMode
+        = CullingType::Front;
         Render(ntt, cam, editorLights);
 
-        dw->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::Back;
+        dw->GetMesh()->m_material->GetRenderState()->cullMode
+        = CullingType::Back;
         Render(ntt, cam, editorLights);
 
-        dw->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
+        dw->GetMesh()->m_material->GetRenderState()->cullMode
+        = CullingType::TwoSided;
       }
       else
       {
@@ -157,7 +189,55 @@ namespace ToolKit
     }
   }
 
-  void Renderer::Render(Entity* ntt, Camera* cam, const LightRawPtrArray& lights)
+  /**
+  * Renders given UILayer's to given Viewport.
+  * @param uiLayers UILayer pointer array that will be rendered.
+  * @param viewport Viewport that UILayer's are going to rendered with.
+  */
+  void Renderer::RenderUI(const UILayerPtrArray& uiLayers, Viewport* viewport)
+  {
+    if (uiLayers[0] == nullptr)
+    {
+      return;
+    }
+
+    for (UILayer* layer : uiLayers)
+    {
+      if (Entity* rootNode = layer->GetLayer(layer->m_layerName))
+      {
+        EntityRawPtrArray allEntities;
+        GetChildren(rootNode, allEntities);
+
+        float halfWidth = viewport->m_width * 0.5f;
+        float halfHeight = viewport->m_height * 0.5f;
+
+        layer->m_cam->SetLens
+        (
+          -halfWidth,
+          halfWidth,
+          -halfHeight,
+          halfHeight,
+          0.5f,
+          1000.0f
+        );
+
+        for (Entity* ntt : allEntities)
+        {
+          if (ntt->Visible() && ntt->GetComponent<MeshComponent>())
+          {
+            Render(ntt, layer->m_cam);
+          }
+        }
+      }
+    }
+  }
+
+  void Renderer::Render
+  (
+    Entity* ntt,
+    Camera* cam,
+    const LightRawPtrArray& lights
+  )
   {
     MeshComponentPtrArray meshComponents;
     ntt->GetComponent<MeshComponent>(meshComponents);
@@ -188,7 +268,11 @@ namespace ToolKit
           m_mat = m_overrideMat.get();
         }
 
-        ProgramPtr prg = CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmetShader);
+        ProgramPtr prg = CreateProgram
+        (
+          m_mat->m_vertexShader,
+          m_mat->m_fragmetShader
+        );
         BindProgram(prg);
         FeedUniforms(prg);
 
@@ -202,7 +286,13 @@ namespace ToolKit
         if (mesh->m_indexCount != 0)
         {
           glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-          glDrawElements((GLenum)rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
+          glDrawElements
+          (
+            (GLenum)rs->drawType,
+            mesh->m_indexCount,
+            GL_UNSIGNED_INT,
+            nullptr
+          );
         }
         else
         {
@@ -218,22 +308,45 @@ namespace ToolKit
     mesh->Init();
     SetProjectViewModel(object, cam);
 
-    static ShaderPtr skinShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultSkin.shader"));
-    static ShaderPtr fragShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader"));
+    static ShaderPtr skinShader = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("defaultSkin.shader")
+    );
+    static ShaderPtr fragShader = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("defaultFragment.shader")
+    );
     static ProgramPtr skinProg = CreateProgram(skinShader, fragShader);
     BindProgram(skinProg);
     FeedUniforms(skinProg);
 
     Skeleton* skeleton = static_cast<SkinMesh*> (mesh.get())->m_skeleton;
-    for (int i = 0; i < (int)skeleton->m_bones.size(); i++)
+    for (int i = 0; i < static_cast<int>(skeleton->m_bones.size()); i++)
     {
       Bone* bone = skeleton->m_bones[i];;
-      GLint loc = glGetUniformLocation(skinProg->m_handle, g_boneTransformStrCache[i].c_str());
-      Mat4 transform = bone->m_node->GetTransform(TransformationSpace::TS_WORLD);
+      GLint loc = glGetUniformLocation
+      (
+        skinProg->m_handle,
+        g_boneTransformStrCache[i].c_str()
+      );
+      Mat4 transform = bone->m_node->GetTransform
+      (
+        TransformationSpace::TS_WORLD
+      );
       glUniformMatrix4fv(loc, 1, false, &transform[0][0]);
 
-      loc = glGetUniformLocation(skinProg->m_handle, g_boneBindPosStrCache[i].c_str());
-      glUniformMatrix4fv(loc, 1, false, (float*)&bone->m_inverseWorldMatrix);
+      loc = glGetUniformLocation
+      (
+        skinProg->m_handle,
+        g_boneBindPosStrCache[i].c_str()
+      );
+      glUniformMatrix4fv
+      (
+        loc,
+        1,
+        false,
+        reinterpret_cast<float*>(&bone->m_inverseWorldMatrix)
+      );
     }
 
     MeshRawPtrArray meshCollector;
@@ -248,14 +361,26 @@ namespace ToolKit
       SetVertexLayout(VertexLayout::SkinMesh);
 
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-      glDrawElements((GLenum)rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
+      glDrawElements
+      (
+        (GLenum)rs->drawType,
+        mesh->m_indexCount,
+        GL_UNSIGNED_INT,
+        nullptr
+      );
     }
   }
 
   void Renderer::Render2d(Surface* object, glm::ivec2 screenDimensions)
   {
-    static ShaderPtr vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    static ShaderPtr fragShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
+    static ShaderPtr vertexShader = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("defaultVertex.shader", true)
+    );
+    static ShaderPtr fragShader = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("unlitFrag.shader", true)
+    );
     static ProgramPtr prog = CreateProgram(vertexShader, fragShader);
     BindProgram(prog);
 
@@ -265,9 +390,20 @@ namespace ToolKit
     SetRenderState(rs);
 
     GLint pvloc = glGetUniformLocation(prog->m_handle, "ProjectViewModel");
-    Mat4 pm = glm::ortho(0.0f, (float)screenDimensions.x, 0.0f, (float)screenDimensions.y, 0.0f, 100.0f);
-    Mat4 mul = pm * object->m_node->GetTransform(TransformationSpace::TS_WORLD);
-    glUniformMatrix4fv(pvloc, 1, false, (float*)&mul);
+    Mat4 pm = glm::ortho
+    (
+      0.0f,
+      static_cast<float>(screenDimensions.x),
+      0.0f,
+      static_cast<float>(screenDimensions.y),
+      0.0f,
+      100.0f
+    );
+    Mat4 mul = pm * object->m_node->GetTransform
+    (
+      TransformationSpace::TS_WORLD
+    );
+    glUniformMatrix4fv(pvloc, 1, false, reinterpret_cast<float*>(&mul));
 
     glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
     SetVertexLayout(VertexLayout::Mesh);
@@ -349,7 +485,12 @@ namespace ToolKit
       m_renderState.blendFunction = state->blendFunction;
     }
 
-    if (m_renderState.diffuseTexture != state->diffuseTexture && state->diffuseTextureInUse)
+    if
+    (
+      m_renderState.diffuseTexture
+      != state->diffuseTexture
+      && state->diffuseTextureInUse
+    )
     {
       m_renderState.diffuseTexture = state->diffuseTexture;
       glBindTexture(GL_TEXTURE_2D, m_renderState.diffuseTexture);
@@ -368,7 +509,12 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetRenderTarget(RenderTarget* renderTarget, bool clear, const Vec4& color)
+  void Renderer::SetRenderTarget
+  (
+    RenderTarget* renderTarget,
+    bool clear,
+    const Vec4& color
+  )
   {
     if (m_renderTarget == renderTarget)
     {
@@ -387,7 +533,12 @@ namespace ToolKit
 
       if (clear)
       {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glClear
+        (
+          GL_COLOR_BUFFER_BIT
+          | GL_DEPTH_BUFFER_BIT
+          | GL_STENCIL_BUFFER_BIT
+        );
       }
 
       if (glm::all(glm::epsilonNotEqual(color, m_bgColor, 0.001f)))
@@ -404,7 +555,12 @@ namespace ToolKit
     m_renderTarget = renderTarget;
   }
 
-  void Renderer::SwapRenderTarget(RenderTarget** renderTarget, bool clear, const Vec4& color)
+  void Renderer::SwapRenderTarget
+  (
+    RenderTarget** renderTarget,
+    bool clear,
+    const Vec4& color
+  )
   {
     RenderTarget* tmp = *renderTarget;
     *renderTarget = m_renderTarget;
@@ -413,7 +569,10 @@ namespace ToolKit
 
   void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
   {
-    static ShaderPtr fullQuadVert = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
+    static ShaderPtr fullQuadVert = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("fullQuadVert.shader", true)
+    );
     static MaterialPtr material = std::make_shared<Material>();
     material->UnInit();
 
@@ -485,7 +644,12 @@ namespace ToolKit
     {
       ProgramPtr program = std::make_shared<Program>(vertex, fragment);
       program->m_handle = glCreateProgram();
-      LinkProgram(program->m_handle, vertex->m_shaderHandle, fragment->m_shaderHandle);
+      LinkProgram
+      (
+        program->m_handle,
+        vertex->m_shaderHandle,
+        fragment->m_shaderHandle
+      );
       m_programs[program->m_tag] = program;
     }
 
@@ -496,7 +660,6 @@ namespace ToolKit
   {
     for (ShaderPtr shader : program->m_shaders)
     {
-
       // Built-in variables.
       for (Uniform uni : shader->m_uniforms)
       {
@@ -504,7 +667,11 @@ namespace ToolKit
         {
         case Uniform::PROJECT_MODEL_VIEW:
         {
-          GLint loc = glGetUniformLocation(program->m_handle, "ProjectViewModel");
+          GLint loc = glGetUniformLocation
+          (
+            program->m_handle,
+            "ProjectViewModel"
+          );
           Mat4 mul = m_project * m_view * m_model;
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
@@ -517,7 +684,11 @@ namespace ToolKit
         break;
         case Uniform::INV_TR_MODEL:
         {
-          GLint loc = glGetUniformLocation(program->m_handle, "InverseTransModel");
+          GLint loc = glGetUniformLocation
+          (
+            program->m_handle,
+            "InverseTransModel"
+          );
           Mat4 invTrModel = glm::transpose(glm::inverse(m_model));
           glUniformMatrix4fv(loc, 1, false, &invTrModel[0][0]);
         }
@@ -536,18 +707,38 @@ namespace ToolKit
           {
             Light::LightData data = m_lights[i]->GetData();
 
-            GLint loc = glGetUniformLocation(program->m_handle, g_lightPosStrCache[i].c_str());
+            GLint loc = glGetUniformLocation
+            (
+              program->m_handle,
+              g_lightPosStrCache[i].c_str()
+            );
             glUniform3fv(loc, 1, &data.pos.x);
-            loc = glGetUniformLocation(program->m_handle, g_lightDirStrCache[i].c_str());
+            loc = glGetUniformLocation
+            (
+              program->m_handle,
+              g_lightDirStrCache[i].c_str()
+            );
             glUniform3fv(loc, 1, &data.dir.x);
-            loc = glGetUniformLocation(program->m_handle, g_lightColorStrCache[i].c_str());
+            loc = glGetUniformLocation
+            (
+              program->m_handle,
+              g_lightColorStrCache[i].c_str()
+            );
             glUniform3fv(loc, 1, &data.color.x);
-            loc = glGetUniformLocation(program->m_handle, g_lightIntensityStrCache[i].c_str());
+            loc = glGetUniformLocation
+            (
+              program->m_handle,
+              g_lightIntensityStrCache[i].c_str()
+            );
             glUniform1f(loc, data.intensity);
           }
 
-          GLint loc = glGetUniformLocation(program->m_handle, "LightData.activeCount");
-          glUniform1i(loc, (int)m_lights.size());
+          GLint loc = glGetUniformLocation
+          (
+            program->m_handle,
+            "LightData.activeCount"
+          );
+          glUniform1i(loc, static_cast<int>(m_lights.size()));
         }
         break;
         case Uniform::CAM_DATA:
@@ -568,11 +759,15 @@ namespace ToolKit
             return;
 
           Vec4 color = Vec4(m_mat->m_color, m_mat->m_alpha);
-          if (m_mat->GetRenderState()->blendFunction != BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
+          if
+          (
+            m_mat->GetRenderState()->blendFunction
+            != BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA
+          )
           {
             color.a = 1.0f;
           }
-          
+
           GLint loc = glGetUniformLocation(program->m_handle, "Color");
           glUniform4fv(loc, 1, &color.x);
         }
@@ -607,23 +802,44 @@ namespace ToolKit
           glUniform1i(loc, var.second.GetVar<int>());
           break;
         case ParameterVariant::VariantType::Vec3:
-          glUniform3fv(loc, 1, (float*)&var.second.GetVar<Vec3>());
+          glUniform3fv
+          (
+            loc,
+            1,
+            reinterpret_cast<float*>(&var.second.GetVar<Vec3>())
+          );
           break;
         case ParameterVariant::VariantType::Vec4:
-          glUniform4fv(loc, 1, (float*)&var.second.GetVar<Vec4>());
+          glUniform4fv
+          (
+            loc,
+            1,
+            reinterpret_cast<float*>(&var.second.GetVar<Vec4>())
+          );
           break;
         case ParameterVariant::VariantType::Mat3:
-          glUniformMatrix3fv(loc, 1, false, (float*)&var.second.GetVar<Mat3>());
+          glUniformMatrix3fv
+          (
+            loc,
+            1,
+            false,
+            reinterpret_cast<float*>(&var.second.GetVar<Mat3>())
+          );
           break;
         case ParameterVariant::VariantType::Mat4:
-          glUniformMatrix4fv(loc, 1, false, (float*)&var.second.GetVar<Mat4>());
+          glUniformMatrix4fv
+          (
+            loc,
+            1,
+            false,
+            reinterpret_cast<float*>(&var.second.GetVar<Mat4>())
+          );
           break;
         default:
           assert(false && "Invalid type.");
           break;
         }
       }
-
     }
   }
 
@@ -645,47 +861,98 @@ namespace ToolKit
     if (layout == VertexLayout::Mesh)
     {
       GLuint offset = 0;
-      glEnableVertexAttribArray(0); // Vertex
-      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+      glEnableVertexAttribArray(0);  // Vertex
+      glVertexAttribPointer
+      (
+        0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0
+      );
       offset += 3 * sizeof(float);
 
-      glEnableVertexAttribArray(1); // Normal
-      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
+      glEnableVertexAttribArray(1);  // Normal
+      glVertexAttribPointer
+      (
+        1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset)
+      );
       offset += 3 * sizeof(float);
 
-      glEnableVertexAttribArray(2); // Texture
-      glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
+      glEnableVertexAttribArray(2);  // Texture
+      glVertexAttribPointer
+      (
+        2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset)
+      );
       offset += 2 * sizeof(float);
 
-      glEnableVertexAttribArray(3); // BiTangent
-      glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
+      glEnableVertexAttribArray(3);  // BiTangent
+      glVertexAttribPointer
+      (
+        3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset)
+      );
     }
 
     if (layout == VertexLayout::SkinMesh)
     {
       GLuint offset = 0;
-      glEnableVertexAttribArray(0); // Vertex
+      glEnableVertexAttribArray(0);  // Vertex
       glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), 0);
       offset += 3 * sizeof(float);
 
-      glEnableVertexAttribArray(1); // Normal
-      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      glEnableVertexAttribArray(1);  // Normal
+      glVertexAttribPointer
+      (
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(SkinVertex),
+        BUFFER_OFFSET(offset)
+      );
       offset += 3 * sizeof(float);
 
-      glEnableVertexAttribArray(2); // Texture
-      glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      glEnableVertexAttribArray(2);  // Texture
+      glVertexAttribPointer
+      (
+        2,
+        2,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(SkinVertex),
+        BUFFER_OFFSET(offset)
+      );
       offset += 2 * sizeof(float);
 
-      glEnableVertexAttribArray(3); // BiTangent
-      glVertexAttribIPointer(3, 3, GL_UNSIGNED_INT, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      glEnableVertexAttribArray(3);  // BiTangent
+      glVertexAttribIPointer
+      (
+        3,
+        3,
+        GL_UNSIGNED_INT,
+        sizeof(SkinVertex),
+        BUFFER_OFFSET(offset)
+      );
       offset += 3 * sizeof(uint);
 
-      glEnableVertexAttribArray(4); // Bones
-      glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      glEnableVertexAttribArray(4);  // Bones
+      glVertexAttribPointer
+      (
+        4,
+        4,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(SkinVertex),
+        BUFFER_OFFSET(offset)
+      );
       offset += 4 * sizeof(float);
 
-      glEnableVertexAttribArray(5); // Weights
-      glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      glEnableVertexAttribArray(5);  // Weights
+      glVertexAttribPointer
+      (
+        5,
+        4,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(SkinVertex),
+        BUFFER_OFFSET(offset)
+      );
     }
   }
-}
+}  // namespace ToolKit

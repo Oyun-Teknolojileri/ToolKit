@@ -1,9 +1,11 @@
 #pragma once
 
-#include "Types.h"
-#include "RenderState.h"
 #include <memory>
 #include <unordered_map>
+
+#include "Types.h"
+#include "RenderState.h"
+
 
 namespace ToolKit
 {
@@ -33,17 +35,38 @@ namespace ToolKit
 
   class TK_API Renderer
   {
-  public:
+   public:
     Renderer();
     ~Renderer();
-    void RenderScene(const ScenePtr& scene, Viewport* viewport, LightRawPtrArray editor_lights);
-    void Render(Entity* ntt, Camera* cam, const LightRawPtrArray& lights = LightRawPtrArray());
+    void RenderScene
+    (
+      const ScenePtr& scene,
+      Viewport* viewport,
+      LightRawPtrArray editor_lights
+    );
+    void RenderUI(const UILayerPtrArray& uiLayers, Viewport* viewport);
+    void Render
+    (
+      Entity* ntt,
+      Camera* cam,
+      const LightRawPtrArray& lights = LightRawPtrArray()
+    );
     void SetRenderState(const RenderState* const state);
-    void SetRenderTarget(RenderTarget* renderTarget, bool clear = true, const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f });
-    void SwapRenderTarget(RenderTarget** renderTarget, bool clear = true, const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f });
+    void SetRenderTarget
+    (
+      RenderTarget* renderTarget,
+      bool clear = true,
+      const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f }
+    );
+    void SwapRenderTarget
+    (
+      RenderTarget** renderTarget,
+      bool clear = true,
+      const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f }
+    );
     void DrawFullQuad(ShaderPtr fragmentShader);
 
-  private:
+   private:
     void RenderSkinned(Drawable* object, Camera* cam);
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
@@ -55,14 +78,14 @@ namespace ToolKit
     void FeedUniforms(ProgramPtr program);
     void SetVertexLayout(VertexLayout layout);
 
-  public:
+   public:
     uint m_frameCount = 0;
     uint m_windowWidth = 0;
     uint m_windowHeight = 0;
     Vec4 m_bgColor = { 0.2f, 0.2f, 0.2f, 1.0f };
     MaterialPtr m_overrideMat = nullptr;
 
-  private:
+   private:
     uint m_currentProgram = 0;
     Mat4 m_project;
     Mat4 m_view;
@@ -76,4 +99,4 @@ namespace ToolKit
     RenderState m_renderState;
   };
 
-}
+}  // namespace ToolKit

@@ -1280,6 +1280,7 @@ namespace ToolKit
           }
           m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
           plugin->Frame(deltaTime, playWindow);
+          m_renderer->RenderUI(GetUIManager()->GetCurrentLayers(), playWindow);
           m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
         }
       }
