@@ -1,26 +1,34 @@
 #pragma once
 
-#include "glm/glm.hpp"
-#include "glm/gtc/quaternion.hpp"
+/**
+* @file Forward declerations for frequenty used common ToolKit classes and
+* relatled structures.
+*/
+
 #include <vector>
 #include <string>
 #include <memory>
 #include <functional>
+#include <limits>
+#include <utility>
 
-#ifdef _WIN32 // Windows.
-  #define TK_STDCAL __stdcall
-  #ifdef TK_DLL_EXPORT // Dyamic binding.
-    #define TK_API __declspec(dllexport)
-  #else // Static binding.
-    #define TK_API
-  #endif
-#else // Other OS.
-  #define TK_API
-  #define TK_STDCAL
+#include "glm/glm.hpp"
+#include "glm/gtc/quaternion.hpp"
+
+#ifdef _WIN32  // Windows.
+#define TK_STDCAL __stdcall
+#ifdef TK_DLL_EXPORT  // Dyamic binding.
+#define TK_API __declspec(dllexport)
+#else  // Static binding.
+#define TK_API
+#endif
+#else  // Other OS.
+#define TK_API
+#define TK_STDCAL
 #endif
 
-#define SafeDel(ptr) { delete ptr; ptr = nullptr; };
-#define SafeDelArray(ptr) { delete[] ptr; ptr = nullptr; };
+#define SafeDel(ptr) { delete ptr; ptr = nullptr; }
+#define SafeDelArray(ptr) { delete[] ptr; ptr = nullptr; }
 
 #define TKStringify(x) #x
 #define TKToString(x) TKStringify(x)
@@ -29,6 +37,7 @@
 // std template types require dll interface.
 #pragma warning( disable: 4251 )
 
+/// @cond
 namespace rapidxml
 {
   template<class Ch> class xml_document;
@@ -36,6 +45,7 @@ namespace rapidxml
   template<class Ch> class xml_attribute;
   template<class Ch> class file;
 }
+/// @endcond
 
 namespace ToolKit
 {
@@ -43,10 +53,10 @@ namespace ToolKit
   // Primitive types.
   typedef char byte;
   typedef unsigned char ubyte;
-  typedef unsigned int uint;
-  typedef unsigned char uint8;
-  typedef unsigned long ULongID;
-  typedef const int SignalId;
+  typedef uint32_t uint;
+  typedef uint8_t uint8;
+  typedef uint64_t ULongID;
+  typedef const int16_t SignalId;
   typedef std::shared_ptr<class Resource> ResourcePtr;
   typedef std::string String;
   typedef std::vector<String> StringArray;
@@ -96,7 +106,7 @@ namespace ToolKit
   typedef rapidxml::file<char> XmlFile;
   typedef std::shared_ptr<XmlFile> XmlFilePtr;
   typedef std::vector<class UILayer*> UILayerPtrArray;
-  
+
   struct XmlDocBundle
   {
     XmlDocumentPtr doc;
@@ -117,7 +127,8 @@ namespace ToolKit
   typedef std::shared_ptr<class Surface> SurfacePtr;
 
   // Callbacks.
-  typedef std::function<void(class Event*, class Entity*)> SurfaceEventCallback;
+  typedef std::function<void(class Event*, class Entity*)>
+    SurfaceEventCallback;
 
   // Math Vector declerations.
   static const Vec3 ZERO = Vec3(0.0f);
@@ -127,7 +138,15 @@ namespace ToolKit
   static const Vec3 XY_AXIS = Vec3(1.0f, 1.0f, 0.0f);
   static const Vec3 YZ_AXIS = Vec3(0.0f, 1.0f, 1.0f);
   static const Vec3 ZX_AXIS = Vec3(1.0f, 0.0f, 1.0f);
-  static const Vec3 AXIS[6] = { X_AXIS, Y_AXIS, Z_AXIS, XY_AXIS, YZ_AXIS, ZX_AXIS };
+  static const Vec3 AXIS[6] =
+  {
+    X_AXIS,
+    Y_AXIS,
+    Z_AXIS,
+    XY_AXIS,
+    YZ_AXIS,
+    ZX_AXIS
+  };
   struct BoundingBox;
 
   // Supported file formats.
@@ -181,14 +200,14 @@ namespace ToolKit
 
   enum class AxisLabel
   {
-    None = -1, // Order matters. Don't change.
+    None = -1,  // Order matters. Don't change.
     X,
     Y,
     Z,
     // Mod3 gives plane normal .
-    YZ, // YZ(3) % 3 = X(0)
-    ZX, // ZX(4) % 3 = Y(1)
-    XY // XY(5) % 3 = Z(2)
+    YZ,  // YZ(3) % 3 = X(0)
+    ZX,  // ZX(4) % 3 = Y(1)
+    XY  // XY(5) % 3 = Z(2)
   };
 
   static const float TK_FLT_MAX = std::numeric_limits<float>::max();
@@ -209,6 +228,6 @@ namespace ToolKit
     DrawTypePoints = 0x0000
   };
 
-  static const char* TKVersionStr = "v0.3.7";
+  static const char* TKVersionStr = "v0.3.8";
 
-}
+}  // namespace ToolKit
