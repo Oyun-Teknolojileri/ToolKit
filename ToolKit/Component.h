@@ -9,6 +9,7 @@
 
 #include "Types.h"
 #include "Serialize.h"
+#include "ParameterBlock.h"
 
 namespace ToolKit
 {
@@ -66,6 +67,7 @@ namespace ToolKit
 
    public:
     ULongID m_id;  //!< Unique id of the component for the current runtime.
+    ParameterBlock m_localData;  //!< Component local data.
 
    private:
     static ULongID m_handle;  //!< Base id. Each new component increments 1.

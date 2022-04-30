@@ -12,6 +12,10 @@ namespace ToolKit
     m_id = ++m_handle;
   }
 
+  ParameterVariantBase::~ParameterVariantBase()
+  {
+  }
+
   ParameterVariant::ParameterVariant()
   {
     *this = 0;
@@ -80,7 +84,7 @@ namespace ToolKit
     *this = var;
   }
 
-  ParameterVariant::ParameterVariant(const ULongID& var)
+  ParameterVariant::ParameterVariant(ULongID& var)
   {
     *this = var;
   }
@@ -92,99 +96,111 @@ namespace ToolKit
 
   ParameterVariant& ParameterVariant::operator= (bool var)
   {
-    m_type = VariantType::Bool; 
+    m_type = VariantType::Bool;
     m_var = var;
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (byte var)
   {
-    m_type = VariantType::byte; 
+    m_type = VariantType::byte;
     m_var = var;
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (ubyte var)
   {
-    m_type = VariantType::ubyte; 
+    m_type = VariantType::ubyte;
     m_var = var;
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (float var)
   {
-    m_type = VariantType::Float; 
+    m_type = VariantType::Float;
     m_var = var;
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (int var)
   {
-    m_type = VariantType::Int; 
+    m_type = VariantType::Int;
     m_var = var;
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (uint var)
   {
-    m_type = VariantType::UInt; 
+    m_type = VariantType::UInt;
     m_var = var;
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (const Vec3& var)
   {
-    m_type = VariantType::Vec3; 
+    m_type = VariantType::Vec3;
     m_var = var;
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (const Vec4& var)
   {
-    m_type = VariantType::Vec4; 
+    m_type = VariantType::Vec4;
     m_var = var;
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (const Mat3& var)
   {
-    m_type = VariantType::Mat3; 
+    m_type = VariantType::Mat3;
     m_var = var;
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (const Mat4& var)
   {
-    m_type = VariantType::Mat4; 
+    m_type = VariantType::Mat4;
     m_var = var;
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (const String& var)
   {
-    m_type = VariantType::String; 
+    m_type = VariantType::String;
     m_var = var;
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (const char* var)
   {
-    m_type = VariantType::String; 
+    m_type = VariantType::String;
     m_var = String(var);
     return *this;
   }
 
-  ParameterVariant& ParameterVariant::operator= (const ULongID& var)
+  ParameterVariant& ParameterVariant::operator= (ULongID var)
   {
-    m_type = VariantType::ULongID; 
+    m_type = VariantType::ULongID;
     m_var = var;
     return *this;
   }
 
   void ParameterVariant::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlParamterElement.c_str());
-    WriteAttr(node, doc, XmlParamterTypeAttr, std::to_string((int)m_type));
+    XmlNode* node = doc->allocate_node
+    (
+      rapidxml::node_element,
+      XmlParamterElement.c_str()
+    );
+
+    WriteAttr
+    (
+      node,
+      doc,
+      XmlParamterTypeAttr,
+      std::to_string(static_cast<int> (m_type))
+    );
+
     WriteAttr(node, doc, "name", m_name);
     WriteAttr(node, doc, "category", m_category.Name);
     WriteAttr(node, doc, "priority", std::to_string(m_category.Priority));
@@ -193,75 +209,117 @@ namespace ToolKit
 
     switch (m_type)
     {
-    case VariantType::Bool:
-    {
-      WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(GetCVar<bool>()));
-    }
-    break;
-    case VariantType::byte:
-    {
-      WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(GetCVar<byte>()));
-    }
-    break;
-    case VariantType::ubyte:
-    {
-      WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(GetCVar<ubyte>()));
-    }
-    break;
-    case VariantType::Float:
-    {
-      WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(GetCVar<float>()));
-    }
-    break;
-    case VariantType::Int:
-    {
-      WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(GetCVar<int>()));
-    }
-    break;
-    case VariantType::UInt:
-    {
-      WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(GetCVar<uint>()));
-    }
-    break;
-    case VariantType::Vec3:
-    {
-      WriteVec(node, doc, GetCVar<Vec3>());
-    }
-    break;
-    case VariantType::Vec4:
-    {
-      WriteVec(node, doc, GetCVar<Vec4>());
-    }
-    break;
-    case VariantType::Mat3:
-    {
-      const Mat3& val = GetCVar<Mat3>();
-      for (int i = 0; i < 3; i++)
+      case VariantType::Bool:
       {
-        XmlNode* row = CreateXmlNode(doc, "row", node);
-        WriteVec(row, doc, glm::row(val, i));
+        WriteAttr
+        (
+          node,
+          doc,
+          XmlParamterValAttr.c_str(),
+          std::to_string(GetCVar<bool>())
+        );
       }
-    }
-    break;
-    case VariantType::Mat4:
-    {
-      const Mat4& val = GetCVar<Mat4>();
-      for (int i = 0; i < 4; i++)
-      {
-        XmlNode* row = CreateXmlNode(doc, "row", node);
-        WriteVec(row, doc, glm::row(val, i));
-      }
-    }
-    break;
-    case VariantType::String:
-    {
-      WriteAttr(node, doc, XmlParamterValAttr.c_str(), GetCVar<String>());
-    }
-    break;
-    case VariantType::ULongID:
-      WriteAttr(node, doc, XmlParamterValAttr.c_str(), std::to_string(GetCVar<ULongID>()));
       break;
-    default:
+      case VariantType::byte:
+      {
+        WriteAttr
+        (
+          node,
+          doc,
+          XmlParamterValAttr.c_str(),
+          std::to_string(GetCVar<byte>())
+        );
+      }
+      break;
+      case VariantType::ubyte:
+      {
+        WriteAttr
+        (
+          node,
+          doc,
+          XmlParamterValAttr.c_str(),
+          std::to_string(GetCVar<ubyte>())
+        );
+      }
+      break;
+      case VariantType::Float:
+      {
+        WriteAttr
+        (
+          node,
+          doc,
+          XmlParamterValAttr.c_str(),
+          std::to_string(GetCVar<float>())
+        );
+      }
+      break;
+      case VariantType::Int:
+      {
+        WriteAttr
+        (
+          node,
+          doc,
+          XmlParamterValAttr.c_str(),
+          std::to_string(GetCVar<int>())
+        );
+      }
+      break;
+      case VariantType::UInt:
+      {
+        WriteAttr
+        (
+          node,
+          doc,
+          XmlParamterValAttr.c_str(),
+          std::to_string(GetCVar<uint>())
+        );
+      }
+      break;
+      case VariantType::Vec3:
+      {
+        WriteVec(node, doc, GetCVar<Vec3>());
+      }
+      break;
+      case VariantType::Vec4:
+      {
+        WriteVec(node, doc, GetCVar<Vec4>());
+      }
+      break;
+      case VariantType::Mat3:
+      {
+        const Mat3& val = GetCVar<Mat3>();
+        for (int i = 0; i < 3; i++)
+        {
+          XmlNode* row = CreateXmlNode(doc, "row", node);
+          WriteVec(row, doc, glm::row(val, i));
+        }
+      }
+      break;
+      case VariantType::Mat4:
+      {
+        const Mat4& val = GetCVar<Mat4>();
+        for (int i = 0; i < 4; i++)
+        {
+          XmlNode* row = CreateXmlNode(doc, "row", node);
+          WriteVec(row, doc, glm::row(val, i));
+        }
+      }
+      break;
+      case VariantType::String:
+      {
+        WriteAttr(node, doc, XmlParamterValAttr.c_str(), GetCVar<String>());
+      }
+      break;
+      case VariantType::ULongID:
+      WriteAttr
+      (
+        node,
+        doc,
+        XmlParamterValAttr.c_str(),
+        std::to_string(GetCVar<ULongID>())
+      );
+      break;
+      default:
       assert(false && "Invalid type.");
       break;
     }
@@ -282,118 +340,110 @@ namespace ToolKit
     ReadAttr(parent, "name", m_name);
     ReadAttr(parent, "category", m_category.Name);
     ReadAttr(parent, "priority", m_category.Priority);
-
-
-    // Custom Parameter Fix. TODO REMOVE AFTER UPDATING EACH SCENE
-    if (m_category.Name.empty())
-    {
-      m_category = CustomDataCategory;
-    }
-
     ReadAttr(parent, "exposed", m_exposed);
     ReadAttr(parent, "editable", m_editable);
 
     switch (m_type)
     {
-    case VariantType::Bool:
-    {
-      bool val(false);
-      ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
-    }
-    break;
-    case VariantType::byte:
-    {
-      byte val(0);
-      ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
-    }
-    break;
-    case VariantType::ubyte:
-    {
-      ubyte val(0);
-      ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
-    }
-    break;
-    case VariantType::Float:
-    {
-      float val(0);
-      ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
-    }
-    break;
-    case VariantType::Int:
-    {
-      int val(0);
-      ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
-    }
-    break;
-    case VariantType::UInt:
-    {
-      int val(0);
-      ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
-    }
-    break;
-    case VariantType::Vec3:
-    {
-      Vec3 var;
-      ReadVec(parent, var);
-      m_var = var;
-    }
-    break;
-    case VariantType::Vec4:
-    {
-      Vec4 var;
-      ReadVec(parent, var);
-      m_var = var;
-    }
-    break;
-    case VariantType::String:
-    {
-      String val;
-      ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
-    }
-    break;
-    case VariantType::Mat3:
-    {
-      Mat3 val;
-      Vec3 vec;
-      XmlNode* row = parent->first_node();
-      for (int i = 0; i < 3; i++)
+      case VariantType::Bool:
       {
-        ReadVec<Vec3>(row, vec);
-        val = glm::row(val, i, vec);
-        row = row->next_sibling();
+        bool val(false);
+        ReadAttr(parent, XmlParamterValAttr, val);
+        m_var = val;
       }
-      m_var = val;
-    }
-    break;
-    case VariantType::Mat4:
-    {
-      Mat4 val;
-      Vec4 vec;
-      XmlNode* row = parent->first_node();
-      for (int i = 0; i < 4; i++)
+      break;
+      case VariantType::byte:
       {
-        ReadVec<Vec4>(row, vec);
-        val = glm::row(val, i, vec);
-        row = row->next_sibling();
+        byte val(0);
+        ReadAttr(parent, XmlParamterValAttr, val);
+        m_var = val;
       }
-      m_var = val;
-    }
-    break;
-    case VariantType::ULongID:
-    {
-      ULongID val(0);
-      ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
-    }
-    break;
-    default:
+      break;
+      case VariantType::ubyte:
+      {
+        ubyte val(0);
+        ReadAttr(parent, XmlParamterValAttr, val);
+        m_var = val;
+      }
+      break;
+      case VariantType::Float:
+      {
+        float val(0);
+        ReadAttr(parent, XmlParamterValAttr, val);
+        m_var = val;
+      }
+      break;
+      case VariantType::Int:
+      {
+        int val(0);
+        ReadAttr(parent, XmlParamterValAttr, val);
+        m_var = val;
+      }
+      break;
+      case VariantType::UInt:
+      {
+        int val(0);
+        ReadAttr(parent, XmlParamterValAttr, val);
+        m_var = val;
+      }
+      break;
+      case VariantType::Vec3:
+      {
+        Vec3 var;
+        ReadVec(parent, var);
+        m_var = var;
+      }
+      break;
+      case VariantType::Vec4:
+      {
+        Vec4 var;
+        ReadVec(parent, var);
+        m_var = var;
+      }
+      break;
+      case VariantType::String:
+      {
+        String val;
+        ReadAttr(parent, XmlParamterValAttr, val);
+        m_var = val;
+      }
+      break;
+      case VariantType::Mat3:
+      {
+        Mat3 val;
+        Vec3 vec;
+        XmlNode* row = parent->first_node();
+        for (int i = 0; i < 3; i++)
+        {
+          ReadVec<Vec3>(row, vec);
+          val = glm::row(val, i, vec);
+          row = row->next_sibling();
+        }
+        m_var = val;
+      }
+      break;
+      case VariantType::Mat4:
+      {
+        Mat4 val;
+        Vec4 vec;
+        XmlNode* row = parent->first_node();
+        for (int i = 0; i < 4; i++)
+        {
+          ReadVec<Vec4>(row, vec);
+          val = glm::row(val, i, vec);
+          row = row->next_sibling();
+        }
+        m_var = val;
+      }
+      break;
+      case VariantType::ULongID:
+      {
+        ULongID val(0);
+        ReadAttr(parent, XmlParamterValAttr, val);
+        m_var = val;
+      }
+      break;
+      default:
       assert(false && "Invalid type.");
       break;
     }
@@ -401,7 +451,12 @@ namespace ToolKit
 
   void ParameterBlock::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* blockNode = doc->allocate_node(rapidxml::node_element, XmlParamBlockElement.c_str());
+    XmlNode* blockNode = doc->allocate_node
+    (
+      rapidxml::node_element,
+      XmlParamBlockElement.c_str()
+    );
+
     for (const ParameterVariant& var : m_variants)
     {
       var.Serialize(doc, blockNode);
@@ -436,8 +491,8 @@ namespace ToolKit
     return m_variants[index];
   }
 
-  void ParameterBlock::Add(const ParameterVariant& var) 
-  { 
+  void ParameterBlock::Add(const ParameterVariant& var)
+  {
     m_variants.push_back(var);
   }
 
@@ -453,7 +508,11 @@ namespace ToolKit
     }
   }
 
-  void ParameterBlock::GetCategories(VariantCategoryArray& categories, bool sortDesc)
+  void ParameterBlock::GetCategories
+  (
+    VariantCategoryArray& categories,
+    bool sortDesc
+  )
   {
     categories.clear();
     std::unordered_map<String, bool> isCategoryAdded;
@@ -478,7 +537,11 @@ namespace ToolKit
     );
   }
 
-  void ParameterBlock::GetByCategory(const String& category, ParameterVariantRawPtrArray& variants)
+  void ParameterBlock::GetByCategory
+  (
+    const String& category,
+    ParameterVariantRawPtrArray& variants
+  )
   {
     for (ParameterVariant& var : m_variants)
     {
@@ -489,5 +552,4 @@ namespace ToolKit
     }
   }
 
-}
-
+}  // namespace ToolKit

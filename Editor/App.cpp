@@ -85,9 +85,9 @@ namespace ToolKit
       m_workspace.Init();
       String sceneName = "New Scene" + SCENE;
       EditorScenePtr scene = std::make_shared<EditorScene>
-      (
+        (
         ScenePath(sceneName)
-      );
+        );
       scene->m_name = sceneName;
       scene->m_newScene = true;
       SetCurrentScene(scene);
@@ -259,10 +259,10 @@ namespace ToolKit
       // Prevent overriding default scene.
       EditorScenePtr currScene = GetCurrentScene();
       if
-      (
+        (
         GetSceneManager()->GetDefaultResource(ResourceType::Scene)
-          == currScene->GetFile()
-      )
+        == currScene->GetFile()
+        )
       {
         currScene->SetFile(ScenePath("New Scene" + SCENE));
         return OnSaveAsScene();
@@ -538,9 +538,9 @@ namespace ToolKit
     EditorScenePtr App::GetCurrentScene()
     {
       EditorScenePtr eScn = std::static_pointer_cast<EditorScene>
-      (
+        (
         GetSceneManager()->GetCurrentScene()
-      );
+        );
 
       return eScn;
     }
@@ -561,9 +561,9 @@ namespace ToolKit
           { DefaultPath(), "Editor.settings" }
         );
         std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>
-        (
+          (
           settingsFile.c_str()
-        );
+          );
 
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
@@ -667,31 +667,31 @@ namespace ToolKit
           Window* wnd = nullptr;
           switch ((Window::Type)type)
           {
-          case Window::Type::Viewport:
+            case Window::Type::Viewport:
             wnd = new EditorViewport(wndNode);
             break;
-          case Window::Type::Console:
+            case Window::Type::Console:
             wnd = new ConsoleWindow(wndNode);
             break;
-          case Window::Type::Outliner:
+            case Window::Type::Outliner:
             wnd = new OutlinerWindow(wndNode);
             break;
-          case Window::Type::Browser:
+            case Window::Type::Browser:
             wnd = new FolderWindow(wndNode);
             break;
-          case Window::Type::Inspector:
+            case Window::Type::Inspector:
             wnd = new PropInspector(wndNode);
             break;
-          case Window::Type::MaterialInspector:
+            case Window::Type::MaterialInspector:
             wnd = new MaterialInspector(wndNode);
             break;
-          case Window::Type::PluginWindow:
+            case Window::Type::PluginWindow:
             wnd = new PluginWindow(wndNode);
             break;
-          case Window::Type::Viewport2d:
+            case Window::Type::Viewport2d:
             wnd = new EditorViewport2d(wndNode);
             break;
-          default:
+            default:
             assert(false);
             break;
           }
@@ -882,14 +882,14 @@ namespace ToolKit
               }
 
               if
-              (
+                (
                 ext == PNG ||
                 ext == JPG ||
                 ext == JPEG ||
                 ext == TGA ||
                 ext == BMP ||
                 ext == PSD
-              )
+                )
               {
                 fullPath = TexturePath(line);
               }
@@ -945,10 +945,10 @@ namespace ToolKit
         goto Fail;
       }
 
-    Retry:
+Retry:
       UI::SearchFileData.showSearchFileWindow = true;
 
-    Fail:
+Fail:
       std::filesystem::current_path(pathBck);
       return -1;
     }
@@ -1000,10 +1000,10 @@ namespace ToolKit
     void App::ApplyProjectSettings(bool setDefaults)
     {
       if
-      (
+        (
         CheckFile(ConcatPaths({ ResourcePath(), "Editor.settings" }))
         && !setDefaults
-      )
+        )
       {
         DeSerialize(nullptr, nullptr);
 
@@ -1065,10 +1065,10 @@ namespace ToolKit
       for (Window* wnd : m_windows)
       {
         if
-        (
+          (
           wnd->GetType() != Window::Type::Viewport &&
           wnd->GetType() != Window::Type::Viewport2d
-        )
+          )
         {
           continue;
         }
@@ -1168,7 +1168,7 @@ namespace ToolKit
 
         // webgl create problem with depth only drawing with textures.
         static MaterialPtr solidMat =
-        GetMaterialManager()->GetCopyOfSolidMaterial();
+          GetMaterialManager()->GetCopyOfSolidMaterial();
         solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
         m_renderer->m_overrideMat = solidMat;
 
@@ -1187,9 +1187,9 @@ namespace ToolKit
         glStencilFunc(GL_NOTEQUAL, 0xFF, 0xFF);
         glStencilMask(0x00);
         ShaderPtr solidColor = GetShaderManager()->Create<Shader>
-        (
+          (
           ShaderPath("unlitColorFrag.shader", true)
-        );
+          );
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
 
@@ -1201,10 +1201,10 @@ namespace ToolKit
         // Dilate.
         glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
         ShaderPtr dilate = GetShaderManager()->Create<Shader>
-        (
+          (
           ShaderPath("dilateFrag.shader", true)
-        );
-        dilate->SetShaderParameter("Color", color);
+          );
+        dilate->SetShaderParameter("Color", ParameterVariant(color));
         m_renderer->DrawFullQuad(dilate);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -1296,7 +1296,7 @@ namespace ToolKit
       file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
       {
-        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument> ();
+        XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         XmlNode* app = lclDoc->allocate_node(rapidxml::node_element, "App");
         lclDoc->append_node(app);
 
@@ -1360,9 +1360,8 @@ namespace ToolKit
         (
           { ResourcePath(), "Editor.settings" }
         );
-        lclFile = std::make_shared<XmlFile> (settingsFile.c_str());
-
-        lclDoc = std::make_shared<XmlDocument> ();
+        lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
+        lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
         doc = lclDoc.get();
       }
@@ -1432,6 +1431,7 @@ namespace ToolKit
       (
         ScenePath(name + SCENE)
       );
+
       scene->m_name = name;
       scene->m_newScene = true;
       GetSceneManager()->Manage(scene);

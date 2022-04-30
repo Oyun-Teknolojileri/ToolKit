@@ -1,18 +1,22 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+
 #include "Types.h"
 #include "ParameterBlock.h"
 #include "Component.h"
+#include "Node.h"
+#include "Animation.h"
 #include "Serialize.h"
 
 namespace ToolKit
 {
-  class Node;
-  class Animation;
 
   enum class EntityType
   {
-    Entity_Base, // Order is important. Don't change for backward compatable scene files.
+    // Order is important. Don't change for backward comparable scene files.
+    Entity_Base,
     Entity_AudioSource,
     Entity_Billboard,
     Entity_Cube,
@@ -33,7 +37,7 @@ namespace ToolKit
 
   class TK_API Entity : public Serializable
   {
-  public:
+   public:
     Entity();
     virtual ~Entity();
 
@@ -83,40 +87,45 @@ namespace ToolKit
 
     ComponentPtr GetComponent(ULongID id) const;
 
-  protected:
+   protected:
     virtual Entity* CopyTo(Entity* other) const;
     virtual Entity* InstantiateTo(Entity* other) const;
     void ParameterConstructor();
 
-  private:
+   private:
     void WeakCopy(Entity* other) const;
 
-  public:
-    TKDeclareParam(ULongID, Id, Meta, 100, true, false);
-    TKDeclareParam(String, Name, Meta, 100, true, true);
-    TKDeclareParam(String, Tag, Meta, 100, true, true);
-    TKDeclareParam(bool, Visible, Meta, 100, true, true);
-    TKDeclareParam(bool, TransformLock, Meta, 100, true, true);
+   public:
+    TKDeclareParam(ULongID, Id);
+    TKDeclareParam(String, Name);
+    TKDeclareParam(String, Tag);
+    TKDeclareParam(bool, Visible);
+    TKDeclareParam(bool, TransformLock);
 
     Node* m_node;
-    ParameterBlock m_localData; // Entitie's own data.
+    ParameterBlock m_localData;  // Entity's own data.
     ComponentPtrArray m_components;
 
-    // Internal use only, Helper ID for entity deserialization.
+    /**
+    * Internally used variable.
+    * Helper ID for entity De serialization. Points to parent of the entity.
+    */
     ULongID _parentId;
 
-  private:
+   private:
     static ULongID m_lastId;
   };
 
   class TK_API EntityNode : public Entity
   {
-  public:
-    EntityNode() {}
-    EntityNode(const String& name) { Name() = name; }
-    virtual ~EntityNode() {}
-    virtual EntityType GetType() const override { return EntityType::Entity_Node; }
-    virtual void RemoveResources() override {}
+   public:
+    EntityNode();
+    explicit EntityNode(const String& name);
+    virtual ~EntityNode();
+
+    EntityType GetType() const override;
+    void RemoveResources() override;
   };
 
-}
+}  // namespace ToolKit
+

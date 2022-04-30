@@ -9,7 +9,8 @@
 namespace ToolKit
 {
 
-  ULongID Entity::m_lastId = 1000; // 0 is null entity id. Preserve previous ID slots for internal use.
+  // 0 is null entity id. Preserve previous ID slots for internal use.
+  ULongID Entity::m_lastId = 1000;
 
   Entity::Entity()
   {
@@ -112,11 +113,11 @@ namespace ToolKit
     m_localData.m_variants.reserve(5);
     ULongID id = m_lastId++;
 
-    Id_Define(id);
-    Name_Define("Entity_" + std::to_string(id));
-    Tag_Define("Tag");
-    Visible_Define(true);
-    TransformLock_Define(false);
+    Id_Define(id, "Meta", 100, true, false);
+    Name_Define("Entity_" + std::to_string(id), "Meta", 100, true, true);
+    Tag_Define("Tag", "Meta", 100, true, true);
+    Visible_Define(true, "Meta", 100, true, true);
+    TransformLock_Define(false, "Meta", 100, true, true);
   }
 
   void Entity::WeakCopy(Entity* other) const
@@ -139,52 +140,52 @@ namespace ToolKit
     Entity* e = nullptr;
     switch (t)
     {
-    case EntityType::Entity_Base:
+      case EntityType::Entity_Base:
       e = new Entity();
       break;
-    case EntityType::Entity_Node:
+      case EntityType::Entity_Node:
       e = new EntityNode();
       break;
-    case EntityType::Entity_AudioSource:
+      case EntityType::Entity_AudioSource:
       e = new AudioSource();
       break;
-    case EntityType::Entity_Billboard:
+      case EntityType::Entity_Billboard:
       e = new Billboard(Billboard::Settings());
       break;
-    case EntityType::Entity_Cube:
+      case EntityType::Entity_Cube:
       e = new Cube(false);
       break;
-    case EntityType::Entity_Quad:
+      case EntityType::Entity_Quad:
       e = new Quad(false);
       break;
-    case EntityType::Entity_Sphere:
+      case EntityType::Entity_Sphere:
       e = new Sphere(false);
       break;
-    case EntityType::Etity_Arrow:
+      case EntityType::Etity_Arrow:
       e = new Arrow2d(false);
       break;
-    case EntityType::Entity_LineBatch:
+      case EntityType::Entity_LineBatch:
       e = new LineBatch();
       break;
-    case EntityType::Entity_Cone:
+      case EntityType::Entity_Cone:
       e = new Cone(false);
       break;
-    case EntityType::Entity_Drawable:
+      case EntityType::Entity_Drawable:
       e = new Drawable();
       break;
-    case EntityType::Entity_Camera:
+      case EntityType::Entity_Camera:
       e = new Camera();
       break;
-    case EntityType::Entity_Surface:
+      case EntityType::Entity_Surface:
       e = new Surface();
       break;
-    case EntityType::Entity_Button:
+      case EntityType::Entity_Button:
       e = new Button();
       break;
-    case EntityType::Entity_SpriteAnim:
-    case EntityType::Entity_Light:
-    case EntityType::Entity_Directional:
-    default:
+      case EntityType::Entity_SpriteAnim:
+      case EntityType::Entity_Light:
+      case EntityType::Entity_Directional:
+      default:
       assert(false);
       break;
     }
@@ -194,7 +195,12 @@ namespace ToolKit
 
   void Entity::AddComponent(Component* component)
   {
-    assert(GetComponent(component->m_id) == nullptr && "Component has already been added.");
+    assert
+    (
+      GetComponent(component->m_id) == nullptr &&
+      "Component has already been added."
+    );
+
     m_components.push_back(ComponentPtr(component));
   }
 
@@ -226,7 +232,14 @@ namespace ToolKit
       );
     }
 
-    WriteAttr(node, doc, XmlEntityTypeAttr, std::to_string((int)GetType()));
+    WriteAttr
+    (
+      node,
+      doc,
+      XmlEntityTypeAttr,
+      std::to_string(static_cast<int> (GetType()))
+    );
+
     m_node->Serialize(doc, node);
     m_localData.Serialize(doc, node);
   }
@@ -289,8 +302,32 @@ namespace ToolKit
   bool Entity::IsSurfaceInstance()
   {
     EntityType t = GetType();
-    return t == EntityType::Entity_Surface ||
+    return
+      t == EntityType::Entity_Surface ||
       t == EntityType::Entity_Button;
   }
 
-}
+  EntityNode::EntityNode()
+  {
+  }
+
+  EntityNode::EntityNode(const String& name)
+  {
+    Name() = name;
+  }
+
+  EntityNode::~EntityNode()
+  {
+  }
+
+  EntityType EntityNode::GetType() const
+  {
+    return EntityType::Entity_Node;
+  }
+
+  void EntityNode::RemoveResources()
+  {
+  }
+
+}  // namespace ToolKit
+

@@ -1,4 +1,7 @@
 #include "Primative.h"
+
+#include <vector>
+
 #include "Mesh.h"
 #include "ToolKit.h"
 #include "MathUtil.h"
@@ -33,28 +36,43 @@ namespace ToolKit
       else
       {
         Vec3 cdir = cam->GetDir();
-        Vec3 camWorldPos = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        Vec3 camWorldPos = cam->m_node->GetTranslation
+        (
+          TransformationSpace::TS_WORLD
+        );
+
         Vec3 dir = glm::normalize(m_worldLocation - camWorldPos);
 
-        float radialToPlanarDistance = 1.0f / glm::dot(cdir, dir); // Always place at the same distance from the near plane.
+        // Always place at the same distance from the near plane.
+        float radialToPlanarDistance = 1.0f / glm::dot(cdir, dir);
         if (radialToPlanarDistance < 0)
         {
           return;
         }
 
-        Vec3 billWorldPos = camWorldPos + dir * m_settings.distanceToCamera * radialToPlanarDistance;
+        Vec3 billWorldPos = camWorldPos + dir *
+          m_settings.distanceToCamera *
+          radialToPlanarDistance;
+
         m_node->SetTranslation(billWorldPos, TransformationSpace::TS_WORLD);
 
         if (m_settings.heightInScreenSpace > 0.0f)
         {
           float magicScale = 6.0f;
-          m_node->SetScale(Vec3(magicScale * m_settings.heightInScreenSpace / data.height)); // Compensate shrinkage due to height changes.
+          m_node->SetScale
+          (
+            Vec3(magicScale * m_settings.heightInScreenSpace / data.height)
+          );  // Compensate shrinkage due to height changes.
         }
       }
 
       if (m_settings.lookAtCamera)
       {
-        Quaternion camOrientation = cam->m_node->GetOrientation(TransformationSpace::TS_WORLD);
+        Quaternion camOrientation = cam->m_node->GetOrientation
+        (
+          TransformationSpace::TS_WORLD
+        );
+
         m_node->SetOrientation(camOrientation, TransformationSpace::TS_WORLD);
       }
     }
@@ -131,7 +149,7 @@ namespace ToolKit
 
   void Cube::ParameterConstructor()
   {
-    Scale_Define(Vec3(1.0f));
+    Scale_Define(Vec3(1.0f), "Geometry", 90, true, true);
   }
 
   void Cube::Generate()
@@ -143,14 +161,14 @@ namespace ToolKit
 
     Vec3 corners[8]
     {
-      Vec3(-0.5f, 0.5f, 0.5f) * scale, // FTL.
-      Vec3(-0.5f, -0.5f, 0.5f) * scale, // FBL.
-      Vec3(0.5f, -0.5f, 0.5f) * scale, // FBR.
-      Vec3(0.5f, 0.5f, 0.5f) * scale, // FTR.
-      Vec3(-0.5f, 0.5f, -0.5f) * scale, // BTL.
-      Vec3(-0.5f, -0.5f, -0.5f) * scale, // BBL.
-      Vec3(0.5f, -0.5f, -0.5f) * scale, // BBR.
-      Vec3(0.5f, 0.5f, -0.5f) * scale, // BTR.
+      Vec3(-0.5f, 0.5f, 0.5f) * scale,  // FTL.
+      Vec3(-0.5f, -0.5f, 0.5f) * scale,  // FBL.
+      Vec3(0.5f, -0.5f, 0.5f) * scale,  // FBR.
+      Vec3(0.5f, 0.5f, 0.5f) * scale,  // FTR.
+      Vec3(-0.5f, 0.5f, -0.5f) * scale,  // BTL.
+      Vec3(-0.5f, -0.5f, -0.5f) * scale,  // BBL.
+      Vec3(0.5f, -0.5f, -0.5f) * scale,  // BBR.
+      Vec3(0.5f, 0.5f, -0.5f) * scale,  // BTR.
     };
 
     // Front
@@ -282,7 +300,10 @@ namespace ToolKit
     MeshPtr mesh = GetMesh();
     mesh->m_vertexCount = (uint)vertices.size();
     mesh->m_clientSideVertices = vertices;
-    mesh->m_clientSideIndices = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35 };
+    mesh->m_clientSideIndices = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+      14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+      32, 33, 34, 35 };
+
     mesh->m_indexCount = (uint)mesh->m_clientSideIndices.size();
     mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
@@ -356,7 +377,7 @@ namespace ToolKit
     mesh->m_vertexCount = (uint)vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount = 6;
-    mesh->m_clientSideIndices = { 0,1,2,0,2,3 };
+    mesh->m_clientSideIndices = { 0, 1, 2, 0, 2, 3 };
     mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
     mesh->CalculateAABB();
@@ -402,7 +423,7 @@ namespace ToolKit
 
     constexpr float fDeltaRingAngle = (glm::pi<float>() / nRings);
     constexpr float fDeltaSegAngle = (glm::two_pi<float>() / nSegments);
-    unsigned short wVerticeIndex = 0;
+    int16_t wVerticeIndex = 0;
 
     // Generate the group of rings for the sphere
     for (int ring = 0; ring <= nRings; ring++)
@@ -420,11 +441,20 @@ namespace ToolKit
         Vertex v;
         v.pos = Vec3(x0, y0, z0);
         v.norm = Vec3(x0, y0, z0);
-        v.tex = Vec2((float)seg / (float)nSegments, (float)ring / (float)nRings);
+        v.tex = Vec2
+        (
+          static_cast<float> (seg) / static_cast<float> (nSegments),
+          static_cast<float> (ring) / static_cast<float> (nRings)
+        );
 
         float r2, zenith, azimuth;
         ToSpherical(v.pos, r2, zenith, azimuth);
-        v.btan = Vec3(r * glm::cos(zenith) * glm::sin(azimuth), -r * glm::sin(zenith), r * glm::cos(zenith) * glm::cos(azimuth));
+        v.btan = Vec3
+        (
+          r * glm::cos(zenith) * glm::sin(azimuth),
+          -r * glm::sin(zenith),
+          r * glm::cos(zenith) * glm::cos(azimuth)
+        );
 
         vertices.push_back(v);
 
@@ -439,8 +469,8 @@ namespace ToolKit
           indices.push_back(wVerticeIndex);
           wVerticeIndex++;
         }
-      } // end for seg
-    } // end for ring
+      }  // end for seg
+    }  // end for ring
 
     MeshPtr mesh = GetMesh();
     mesh->m_vertexCount = (uint)vertices.size();
@@ -473,7 +503,7 @@ namespace ToolKit
 
   void Sphere::ParameterConstructor()
   {
-    Radius_Define(1.0f);
+    Radius_Define(1.0f, "Geometry", 90, true, true);
   }
 
   Cone::Cone(bool genDef)
@@ -515,7 +545,7 @@ namespace ToolKit
 
     for (int i = 0; i <= nSegHeight; i++)
     {
-      float r0 = radius * (1 - i / (float)nSegHeight);
+      float r0 = radius * (1 - i /  static_cast<float> (nSegHeight));
       for (int j = 0; j <= nSegBase; j++)
       {
         float x0 = r0 * glm::cos(j * deltaAngle);
@@ -527,8 +557,12 @@ namespace ToolKit
         {
           Vec3(x0, i * deltaHeight, z0),
           q * refNormal,
-          Vec2(j / (float)nSegBase, i / (float)nSegHeight),
-          ZERO // btan missing.
+          Vec2
+          (
+            j / static_cast<float> (nSegBase),
+            i / static_cast<float> (nSegHeight)
+          ),
+          ZERO  // btan missing.
         };
 
         vertices.push_back(v);
@@ -547,7 +581,7 @@ namespace ToolKit
       }
     }
 
-    //low cap
+    // low cap
     int centerIndex = offset;
 
     Vertex v
@@ -555,7 +589,7 @@ namespace ToolKit
       ZERO,
       -Y_AXIS,
       Y_AXIS,
-      ZERO // btan missing.
+      ZERO  // btan missing.
     };
     vertices.push_back(v);
 
@@ -569,8 +603,8 @@ namespace ToolKit
       {
         Vec3(x0, 0.0f, z0),
         -Y_AXIS,
-        Vec2(j / (float)nSegBase, 0.0f),
-        ZERO // btan missing.
+        Vec2(j / static_cast<float> (nSegBase), 0.0f),
+        ZERO  // btan missing.
       };
       vertices.push_back(v);
 
@@ -626,10 +660,10 @@ namespace ToolKit
 
   void Cone::ParameterConstructor()
   {
-    Height_Define(1.0f);
-    Radius_Define(1.0f);
-    SegBase_Define(30);
-    SegHeight_Define(20);
+    Height_Define(1.0f, "Geometry", 90, true, true);
+    Radius_Define(1.0f, "Geometry", 90, true, true);
+    SegBase_Define(30, "Geometry", 90, true, true);
+    SegHeight_Define(20, "Geometry", 90, true, true);
   }
 
   Arrow2d::Arrow2d(bool genDef)
@@ -687,20 +721,20 @@ namespace ToolKit
     vertices[6].pos = Vec3(1.0f, 0.0f, 0.0f);
     vertices[7].pos = Vec3(0.8f, -0.2f, 0.0f);
 
-    MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-    newMaterial->GetRenderState()->drawType = DrawType::Line;
-    newMaterial->m_color = Vec3(0.89f, 0.239f, 0.341f);
+    MaterialPtr newMat = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+    newMat->GetRenderState()->drawType = DrawType::Line;
+    newMat->m_color = Vec3(0.89f, 0.239f, 0.341f);
 
     Quaternion rotation;
     if (m_label == AxisLabel::Y)
     {
-      newMaterial->m_color = Vec3(0.537f, 0.831f, 0.07f);
+      newMat->m_color = Vec3(0.537f, 0.831f, 0.07f);
       rotation = glm::angleAxis(glm::half_pi<float>(), Z_AXIS);
     }
 
     if (m_label == AxisLabel::Z)
     {
-      newMaterial->m_color = Vec3(0.196f, 0.541f, 0.905f);
+      newMat->m_color = Vec3(0.196f, 0.541f, 0.905f);
       rotation = glm::angleAxis(-glm::half_pi<float>(), Y_AXIS);
     }
 
@@ -712,13 +746,19 @@ namespace ToolKit
     MeshPtr mesh = GetMesh();
     mesh->m_vertexCount = (uint)vertices.size();
     mesh->m_clientSideVertices = vertices;
-    mesh->m_material = newMaterial;
+    mesh->m_material = newMat;
 
     mesh->CalculateAABB();
     mesh->ConstructFaces();
   }
 
-  LineBatch::LineBatch(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
+  LineBatch::LineBatch
+  (
+    const Vec3Array& linePnts,
+    const Vec3& color,
+    DrawType t,
+    float lineWidth
+  )
   {
     Generate(linePnts, color, t, lineWidth);
   }
@@ -737,7 +777,13 @@ namespace ToolKit
     return EntityType::Entity_LineBatch;
   }
 
-  void LineBatch::Generate(const Vec3Array& linePnts, const Vec3& color, DrawType t, float lineWidth)
+  void LineBatch::Generate
+  (
+    const Vec3Array& linePnts,
+    const Vec3& color,
+    DrawType t,
+    float lineWidth
+  )
   {
     VertexArray vertices;
     vertices.resize(linePnts.size());
@@ -760,4 +806,4 @@ namespace ToolKit
     mesh->CalculateAABB();
   }
 
-}
+}  // namespace ToolKit
