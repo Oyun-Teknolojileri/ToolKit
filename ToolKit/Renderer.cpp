@@ -32,161 +32,20 @@ namespace ToolKit
   )
   {
     Camera* cam = viewport->GetCamera();
-    EntityRawPtrArray entites = scene->GetEntities();
+    EntityRawPtrArray entities = scene->GetEntities();
 
     SetRenderTarget(viewport->m_viewportImage);
 
     scene->SetCamera(viewport->GetCamera());
 
-    // Frustum cull
-    Mat4 pr = cam->GetProjectionMatrix();
-    Mat4 v = cam->GetViewMatrix();
-    Frustum frustum = ExtractFrustum(pr * v, false);
+    FrustumCull(entities, cam);
 
-    auto delFn = [frustum](Entity* ntt) -> bool
-    {
-      IntersectResult res = FrustumBoxIntersection
-      (
-        frustum,
-        ntt->GetAABB(true)
-      );
-      if (res == IntersectResult::Outside)
-      {
-        return true;
-      }
-      else
-      {
-        return false;
-      }
-    };
-    entites.erase
-    (
-      std::remove_if(entites.begin(), entites.end(), delFn), entites.end()
-    );
-
-    // Get transparent objects
     EntityRawPtrArray blendedEntities;
+    GetTransparentEntites(entities, blendedEntities);
 
-    auto delTrFn = [&blendedEntities](Entity* ntt) -> bool
-    {
-      if (ntt->GetType() == EntityType::Entity_Node)
-      {
-        return false;
-      }
+    RenderOpaque(entities, cam, viewport->m_zoom, editorLights);
 
-      MeshComponentPtr ms = ntt->GetComponent<MeshComponent>();
-      if (ms == nullptr)
-      {
-        return false;
-      }
-
-      BlendFunction blend
-      = ms->m_mesh->m_material->GetRenderState()->blendFunction;
-      if (ntt->IsDrawable() && ntt->Visible() && static_cast<int>(blend))
-      {
-        blendedEntities.push_back(ntt);
-        return true;
-      }
-      else
-      {
-        return false;
-      }
-    };
-    entites.erase
-    (
-      std::remove_if(entites.begin(), entites.end(), delTrFn), entites.end()
-    );
-
-    // Sort transparent entities
-    if (cam->IsOrtographic())
-    {
-      auto sortFn = [](Entity* nt1, Entity* nt2) -> bool
-      {
-        float first = nt1->m_node->GetTranslation
-        (
-          TransformationSpace::TS_WORLD
-        ).z;
-        float second = nt2->m_node->GetTranslation
-        (
-          TransformationSpace::TS_WORLD
-        ).z;
-
-        return first < second;
-      };
-
-      std::stable_sort(blendedEntities.begin(), blendedEntities.end(), sortFn);
-    }
-    else
-    {
-      auto sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool
-      {
-        Vec3 camLoc = cam->m_node->GetTranslation
-        (
-          TransformationSpace::TS_WORLD
-        );
-        BoundingBox bb1 = ntt1->GetAABB(true);
-        float first = glm::length2(bb1.GetCenter() - camLoc);
-        BoundingBox bb2 = ntt2->GetAABB(true);
-        float second = glm::length2(bb2.GetCenter() - camLoc);
-        return second < first;
-      };
-      std::stable_sort(blendedEntities.begin(), blendedEntities.end(), sortFn);
-    }
-
-    // Render opaque objects
-    for (Entity* ntt : entites)
-    {
-      if (ntt->IsDrawable() && ntt->Visible())
-      {
-        if (ntt->GetType() == EntityType::Entity_Billboard)
-        {
-          Billboard* billboard = static_cast<Billboard*> (ntt);
-          billboard->LookAt(cam, viewport->m_zoom);
-        }
-
-        Render(ntt, cam, editorLights);
-      }
-    }
-
-    // Render non-opaque entities
-    for (Entity* ntt : blendedEntities)
-    {
-      Drawable* dw = dynamic_cast<Drawable*>(ntt);
-      if (dw == nullptr)
-      {
-        continue;
-      }
-
-      if (ntt->GetType() == EntityType::Entity_Billboard)
-      {
-        Billboard* billboard = static_cast<Billboard*> (ntt);
-        billboard->LookAt(cam, viewport->m_zoom);
-      }
-
-      // For two sided materials,
-      // first render back of transparent objects then render front
-      if
-      (
-        dw->GetMesh()->m_material->GetRenderState()->cullMode
-        == CullingType::TwoSided
-      )
-      {
-        dw->GetMesh()->m_material->GetRenderState()->cullMode
-        = CullingType::Front;
-        Render(ntt, cam, editorLights);
-
-        dw->GetMesh()->m_material->GetRenderState()->cullMode
-        = CullingType::Back;
-        Render(ntt, cam, editorLights);
-
-        dw->GetMesh()->m_material->GetRenderState()->cullMode
-        = CullingType::TwoSided;
-      }
-      else
-      {
-        Render(ntt, cam, editorLights);
-      }
-    }
+    RenderTransparent(blendedEntities, cam, viewport->m_zoom, editorLights);
   }
 
   /**
@@ -221,13 +80,14 @@ namespace ToolKit
           1000.0f
         );
 
-        for (Entity* ntt : allEntities)
-        {
-          if (ntt->Visible() && ntt->GetComponent<MeshComponent>())
-          {
-            Render(ntt, layer->m_cam);
-          }
-        }
+        FrustumCull(allEntities, layer->m_cam);
+
+        EntityRawPtrArray blendedEntities;
+        GetTransparentEntites(allEntities, blendedEntities);
+
+        RenderOpaque(allEntities, layer->m_cam, viewport->m_zoom);
+
+        RenderTransparent(blendedEntities, layer->m_cam, viewport->m_zoom);
       }
     }
   }
@@ -586,6 +446,181 @@ namespace ToolKit
     static Camera dummy;
 
     Render(&quad, &dummy);
+  }
+
+  void Renderer::FrustumCull(EntityRawPtrArray& entities, Camera* camera)
+  {
+    // Frustum cull
+    Mat4 pr = camera->GetProjectionMatrix();
+    Mat4 v = camera->GetViewMatrix();
+    Frustum frustum = ExtractFrustum(pr * v, false);
+
+    auto delFn = [frustum](Entity* ntt) -> bool
+    {
+      IntersectResult res = FrustumBoxIntersection
+      (
+        frustum,
+        ntt->GetAABB(true)
+      );
+      if (res == IntersectResult::Outside)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    };
+    entities.erase
+    (
+      std::remove_if(entities.begin(), entities.end(), delFn), entities.end()
+    );
+  }
+
+  void Renderer::GetTransparentEntites
+  (
+    EntityRawPtrArray& entities,
+    EntityRawPtrArray& blendedEntities
+  )
+  {
+    auto delTrFn = [&blendedEntities](Entity* ntt) -> bool
+    {
+      if (ntt->GetType() == EntityType::Entity_Node)
+      {
+        return false;
+      }
+
+      MeshComponentPtr ms = ntt->GetComponent<MeshComponent>();
+      if (ms == nullptr)
+      {
+        return false;
+      }
+
+      BlendFunction blend
+        = ms->m_mesh->m_material->GetRenderState()->blendFunction;
+      if (ntt->IsDrawable() && ntt->Visible() && static_cast<int>(blend))
+      {
+        blendedEntities.push_back(ntt);
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    };
+    entities.erase
+    (
+      std::remove_if(entities.begin(), entities.end(), delTrFn), entities.end()
+    );
+  }
+
+  void Renderer::RenderOpaque
+  (
+    EntityRawPtrArray entities,
+    Camera* cam,
+    float zoom,
+    const LightRawPtrArray& editorLights
+  )
+  {
+    // Render opaque objects
+    for (Entity* ntt : entities)
+    {
+      if (ntt->IsDrawable() && ntt->Visible())
+      {
+        if (ntt->GetType() == EntityType::Entity_Billboard)
+        {
+          Billboard* billboard = static_cast<Billboard*> (ntt);
+          billboard->LookAt(cam, zoom);
+        }
+
+        Render(ntt, cam, editorLights);
+      }
+    }
+  }
+
+  void Renderer::RenderTransparent
+  (
+    EntityRawPtrArray entities,
+    Camera* cam,
+    float zoom,
+    const LightRawPtrArray& editorLights
+  )
+  {
+    // Sort transparent entities
+    if (cam->IsOrtographic())
+    {
+      auto sortFn = [](Entity* nt1, Entity* nt2) -> bool
+      {
+        float first = nt1->m_node->GetTranslation
+        (
+          TransformationSpace::TS_WORLD
+        ).z;
+        float second = nt2->m_node->GetTranslation
+        (
+          TransformationSpace::TS_WORLD
+        ).z;
+
+        return first < second;
+      };
+
+      std::stable_sort(entities.begin(), entities.end(), sortFn);
+    }
+    else
+    {
+      auto sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool
+      {
+        Vec3 camLoc = cam->m_node->GetTranslation
+        (
+          TransformationSpace::TS_WORLD
+        );
+        BoundingBox bb1 = ntt1->GetAABB(true);
+        float first = glm::length2(bb1.GetCenter() - camLoc);
+        BoundingBox bb2 = ntt2->GetAABB(true);
+        float second = glm::length2(bb2.GetCenter() - camLoc);
+        return second < first;
+      };
+      std::stable_sort(entities.begin(), entities.end(), sortFn);
+    }
+
+    // Render non-opaque entities
+    for (Entity* ntt : entities)
+    {
+      Drawable* dw = static_cast<Drawable*>(ntt);
+      if (dw == nullptr)
+      {
+        continue;
+      }
+
+      if (ntt->GetType() == EntityType::Entity_Billboard)
+      {
+        Billboard* billboard = static_cast<Billboard*> (ntt);
+        billboard->LookAt(cam, zoom);
+      }
+
+      // For two sided materials,
+      // first render back of transparent objects then render front
+      if
+        (
+        dw->GetMesh()->m_material->GetRenderState()->cullMode
+        == CullingType::TwoSided
+        )
+      {
+        dw->GetMesh()->m_material->GetRenderState()->cullMode
+          = CullingType::Front;
+        Render(ntt, cam, editorLights);
+
+        dw->GetMesh()->m_material->GetRenderState()->cullMode
+          = CullingType::Back;
+        Render(ntt, cam, editorLights);
+
+        dw->GetMesh()->m_material->GetRenderState()->cullMode
+          = CullingType::TwoSided;
+      }
+      else
+      {
+        Render(ntt, cam, editorLights);
+      }
+    }
   }
 
   void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)

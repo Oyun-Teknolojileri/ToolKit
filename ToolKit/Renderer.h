@@ -67,6 +67,53 @@ namespace ToolKit
     void DrawFullQuad(ShaderPtr fragmentShader);
 
    private:
+    /**
+    * Removes the entites that are outside of the camera.
+    * @param entities All entites.
+    * @param camera Camera that is being used for generating frustum.
+    */
+    void FrustumCull(EntityRawPtrArray& entities, Camera* camera);
+
+    /**
+    * Extracts blended entites from given entity array.
+    * @param entities Entity array that the transparents will extracted from.
+    * @param blendedEntities Entity array that are going to be filled with transparents.
+    */
+    void GetTransparentEntites
+    (
+      EntityRawPtrArray& entities,
+      EntityRawPtrArray& blendedEntities
+    );
+
+    /**
+    * Renders the entites immidately. No sorting applied.
+    * @param entities All entities to render.
+    * @param cam Camera for rendering.
+    * @param zoom Zoom amount of camera.
+    * @param editorLights All lights.
+    */
+    void RenderOpaque
+    (
+      EntityRawPtrArray entities,
+      Camera* cam,
+      float zoom,
+      const LightRawPtrArray& editorLights = LightRawPtrArray()
+    );
+
+    /**
+    * Sorts and renders entities. For double-sided blended entites first render back, than renders front.
+    * @param entities All entities to render.
+    * @param cam Camera for rendering.
+    * @param zoom Zoom amount of camera.
+    * @param editorLights All lights.
+    */
+    void RenderTransparent
+    (
+      EntityRawPtrArray entities,
+      Camera* cam,
+      float zoom,
+      const LightRawPtrArray& editorLights = LightRawPtrArray()
+    );
     void RenderSkinned(Drawable* object, Camera* cam);
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
