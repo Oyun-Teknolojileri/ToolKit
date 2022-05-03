@@ -116,7 +116,9 @@ namespace ToolKit
       Mat4,
       String,
       Bool,
-      ULongID
+      ULongID,
+      MeshPtr,
+      MaterialPtr
     };
 
     /**
@@ -193,6 +195,16 @@ namespace ToolKit
     * Constructs ULongID type variant.
     */
     explicit ParameterVariant(ULongID& var);
+
+    /**
+    * Constructs MeshPtr type variant.
+    */
+    explicit ParameterVariant(const MeshPtr& var);
+
+    /**
+    * Constructs MaterialPtr type variant.
+    */
+    explicit ParameterVariant(const MaterialPtr& var);
 
     /**
     * Used to retrieve VariantType of the variant.
@@ -298,6 +310,16 @@ namespace ToolKit
     ParameterVariant& operator= (ULongID var);
 
     /**
+    * Assign a MeshPtr to the value of the variant.
+    */
+    ParameterVariant& operator= (const MeshPtr& var);
+
+    /**
+    * Assign a MaterialPtr to the value of the variant.
+    */
+    ParameterVariant& operator= (const MaterialPtr& var);
+
+    /**
     * Serializes the variant to the xml document.
     * @param doc The xml document object to serialize to.
     * @param parent The parent xml node to serialize to.
@@ -346,7 +368,9 @@ namespace ToolKit
       Mat3,
       Mat4,
       String,
-      ULongID
+      ULongID,
+      MeshPtr,
+      MaterialPtr
       > m_var;  //!< The variant that hold the actual data.
 
     VariantType m_type = VariantType::Int;  //!< Type of the variant.

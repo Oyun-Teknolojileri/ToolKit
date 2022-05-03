@@ -13,7 +13,7 @@ namespace ToolKit
    public:
     TKResouceType(Material)
 
-    Material();
+      Material();
     explicit Material(String file);
     ~Material();
 
@@ -47,8 +47,8 @@ namespace ToolKit
     MaterialManager();
     virtual ~MaterialManager();
     void Init() override;
-    virtual bool CanStore(ResourceType t);
-    virtual ResourcePtr CreateLocal(ResourceType type);
+    bool CanStore(ResourceType t) override;
+    ResourcePtr CreateLocal(ResourceType type) override;
     String GetDefaultResource(ResourceType type) override;
 
     MaterialPtr GetCopyOfUnlitMaterial();

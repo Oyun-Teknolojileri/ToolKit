@@ -1,4 +1,7 @@
 #include "Shader.h"
+
+#include <vector>
+
 #include "ToolKit.h"
 #include "Util.h"
 #include "rapidxml.hpp"
@@ -6,8 +9,6 @@
 #include "rapidxml_print.hpp"
 #include "GL/glew.h"
 #include "DebugNew.h"
-
-#include <vector>
 
 namespace ToolKit
 {
@@ -137,28 +138,28 @@ namespace ToolKit
       String name;
       switch (ui)
       {
-      case Uniform::PROJECT_MODEL_VIEW:
+        case Uniform::PROJECT_MODEL_VIEW:
         name = "ProjectViewModel";
         break;
-      case Uniform::MODEL:
+        case Uniform::MODEL:
         name = "Model";
         break;
-      case Uniform::INV_TR_MODEL:
+        case Uniform::INV_TR_MODEL:
         name = "InverseTransModel";
         break;
-      case Uniform::LIGHT_DATA:
+        case Uniform::LIGHT_DATA:
         name = "LightData";
         break;
-      case Uniform::CAM_DATA:
+        case Uniform::CAM_DATA:
         name = "CamData";
         break;
-      case Uniform::COLOR:
+        case Uniform::COLOR:
         name = "Color";
         break;
-      case Uniform::FRAME_COUNT:
+        case Uniform::FRAME_COUNT:
         name = "FrameCount";
         break;
-      default:
+        default:
         assert(false && "unknown uniform");
         break;
       }
@@ -183,7 +184,12 @@ namespace ToolKit
     }
 
     XmlNode* rootNode = parent;
-    for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
+    for
+    (
+      XmlNode* node = rootNode->first_node();
+      node;
+      node = node->next_sibling()
+    )
     {
       if (strcmp("type", node->name()) == 0)
       {
@@ -289,4 +295,4 @@ namespace ToolKit
     return ResourcePtr(new Shader());
   }
 
-}
+}  // namespace ToolKit

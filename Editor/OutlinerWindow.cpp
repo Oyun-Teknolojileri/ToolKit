@@ -1,4 +1,7 @@
 #include "OutlinerWindow.h"
+
+#include <vector>
+
 #include "GlobalDef.h"
 #include "Mod.h"
 #include "Util.h"
@@ -43,7 +46,8 @@ namespace ToolKit
 
       if (e->m_node->m_children.empty())
       {
-        nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        nodeFlags |= ImGuiTreeNodeFlags_Leaf |
+          ImGuiTreeNodeFlags_NoTreePushOnOpen;
         DrawHeader(e, nodeFlags);
       }
       else
@@ -63,7 +67,8 @@ namespace ToolKit
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
                 }
 
-                nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                nodeFlags |= ImGuiTreeNodeFlags_Leaf |
+                  ImGuiTreeNodeFlags_NoTreePushOnOpen;
                 DrawHeader(childNtt, nodeFlags);
               }
               else
@@ -131,7 +136,11 @@ namespace ToolKit
 
       if (ImGui::BeginDragDropTarget())
       {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
+        if
+        (
+          const ImGuiPayload* payload =
+          ImGui::AcceptDragDropPayload("HierarcyChange")
+        )
         {
           // Change the selected files hierarchy
           EntityRawPtrArray selected;
@@ -158,7 +167,16 @@ namespace ToolKit
       {
         HandleStates();
 
-        if (DrawRootHeader("Scene", 0, g_baseNodeFlags | ImGuiTreeNodeFlags_DefaultOpen, UI::m_collectionIcon))
+        if
+        (
+          DrawRootHeader
+          (
+            "Scene",
+            0,
+            g_baseNodeFlags | ImGuiTreeNodeFlags_DefaultOpen,
+            UI::m_collectionIcon
+          )
+        )
         {
           const EntityRawPtrArray& ntties = currScene->GetEntities();
           EntityRawPtrArray roots;
@@ -209,7 +227,13 @@ namespace ToolKit
       GetParents(ntt, m_nttFocusPath);
     }
 
-    bool OutlinerWindow::DrawRootHeader(const String& rootName, uint id, ImGuiTreeNodeFlags flags, TexturePtr icon)
+    bool OutlinerWindow::DrawRootHeader
+    (
+      const String& rootName,
+      uint id,
+      ImGuiTreeNodeFlags flags,
+      TexturePtr icon
+    )
     {
       const String sId = "##" + std::to_string(id);
       bool isOpen = ImGui::TreeNodeEx(sId.c_str(), flags);
@@ -217,7 +241,11 @@ namespace ToolKit
       // Orphan in this case.
       if (ImGui::BeginDragDropTarget())
       {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HierarcyChange"))
+        if
+        (
+          const ImGuiPayload* payload =
+          ImGui::AcceptDragDropPayload("HierarcyChange")
+        )
         {
           EntityRawPtrArray selected;
           EditorScenePtr currScene = g_app->GetCurrentScene();
@@ -250,7 +278,7 @@ namespace ToolKit
     bool OutlinerWindow::DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags)
     {
       bool focusToItem = false;
-      if (int size = (int)m_nttFocusPath.size())
+      if (!m_nttFocusPath.empty())
       {
         int focusIndx = IndexOf(ntt, m_nttFocusPath);
         if (focusIndx != -1)
@@ -317,8 +345,16 @@ namespace ToolKit
       icon = ntt->Visible() ? UI::m_visibleIcon : UI::m_invisibleIcon;
 
       // Texture only toggle button.
-      ImGui::PushID(ntt->Id());
-      if (UI::ImageButtonDecorless(icon->m_textureId, ImVec2(15.0f, 15.0f), false))
+      ImGui::PushID(static_cast<int> (ntt->Id()));
+      if
+      (
+        UI::ImageButtonDecorless
+        (
+          icon->m_textureId,
+          ImVec2(15.0f, 15.0f),
+          false
+        )
+      )
       {
         ntt->SetVisibility(!ntt->Visible(), true);
       }
@@ -329,8 +365,16 @@ namespace ToolKit
       icon = ntt->TransformLock() ? UI::m_lockedIcon : UI::m_unlockedIcon;
 
       // Texture only toggle button.
-      ImGui::PushID(ntt->Id());
-      if (UI::ImageButtonDecorless(icon->m_textureId, ImVec2(15.0f, 15.0f), false))
+      ImGui::PushID(static_cast<int> (ntt->Id()));
+      if
+      (
+        UI::ImageButtonDecorless
+        (
+          icon->m_textureId,
+          ImVec2(15.0f, 15.0f),
+          false
+        )
+      )
       {
         ntt->SetTransformLock(!ntt->TransformLock(), true);
       }
@@ -340,5 +384,5 @@ namespace ToolKit
       return isOpen;
     }
 
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

@@ -171,7 +171,7 @@ namespace ToolKit
 
         for (MeshComponentPtr& meshCmp : meshes)
         {
-          MeshPtr mesh = meshCmp->m_mesh;
+          MeshPtr mesh = meshCmp->Mesh();
           if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount)
           {
             // Per polygon check if data exist.
@@ -259,7 +259,7 @@ namespace ToolKit
   void Scene::AddEntity(Entity* entity)
   {
     assert(GetEntity(entity->Id()) ==
-    nullptr && "Entity is already in the scene.");
+      nullptr && "Entity is already in the scene.");
     m_entities.push_back(entity);
   }
 
@@ -480,7 +480,10 @@ namespace ToolKit
       node = node->next_sibling(XmlEntityElement.c_str())
     )
     {
-      XmlAttribute* typeAttr = node->first_attribute(XmlEntityTypeAttr.c_str());
+      XmlAttribute* typeAttr = node->first_attribute
+      (
+        XmlEntityTypeAttr.c_str()
+      );
       EntityType t = (EntityType)std::atoi(typeAttr->value());
       Entity* ntt = Entity::CreateByType(t);
 

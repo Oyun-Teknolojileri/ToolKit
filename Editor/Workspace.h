@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "ToolKit.h"
 #include "Serialize.h"
 
@@ -7,6 +9,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     struct Project
     {
       String name;
@@ -16,15 +19,15 @@ namespace ToolKit
     class App;
     class Workspace : public Serializable
     {
-    public:
-      Workspace(App* app);
+     public:
+      explicit Workspace(App* app);
       void Init();
 
       // Defaults read / writes to installment directory.
       XmlNode* GetDefaultWorkspaceNode(XmlDocBundle& bundle);
       String GetDefaultWorkspace();
       bool SetDefaultWorkspace(const String& path);
-      
+
       // Accessors to workspace
       String GetCodePath();
       String GetPluginPath();
@@ -36,17 +39,18 @@ namespace ToolKit
 
       void RefreshProjects();
 
-      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-    public:
+     public:
       std::vector<Project> m_projects;
 
-    private:
+     private:
       App* m_app = nullptr;
       String m_activeWorkspace;
       Project m_activeProject;
     };
 
-  }
-}
+  }  // namespace Editor
+
+}  // namespace ToolKit

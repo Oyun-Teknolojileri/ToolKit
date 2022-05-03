@@ -11,18 +11,19 @@ namespace ToolKit
 
     class EditorCamera : public Camera
     {
-    public:
+     public:
       EditorCamera();
-      EditorCamera(const EditorCamera* cam);
+      explicit EditorCamera(const EditorCamera* cam);
       virtual ~EditorCamera();
-      virtual bool IsDrawable() const override;
-      virtual Entity* Copy() const override;
-      virtual Entity* Instantiate() const override;
+      bool IsDrawable() const override;
+      Entity* Copy() const override;
+      Entity* Instantiate() const override;
 
-    private:
+     private:
       void GenerateFrustum();
     };
 
-  }
+  }  // namespace Editor
 
-}
+}  // namespace ToolKit
+

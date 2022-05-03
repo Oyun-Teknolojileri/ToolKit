@@ -104,7 +104,7 @@ namespace ToolKit
 
     for (MeshComponentPtr meshCom : meshComponents)
     {
-      MeshPtr mesh = meshCom->m_mesh;
+      MeshPtr mesh = meshCom->Mesh();
       if (mesh->IsSkinned())
       {
         RenderSkinned(static_cast<Drawable*> (ntt), cam);
@@ -497,7 +497,7 @@ namespace ToolKit
       }
 
       BlendFunction blend
-        = ms->m_mesh->m_material->GetRenderState()->blendFunction;
+        = ms->Mesh()->m_material->GetRenderState()->blendFunction;
       if (ntt->IsDrawable() && ntt->Visible() && static_cast<int>(blend))
       {
         blendedEntities.push_back(ntt);

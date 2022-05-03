@@ -10,21 +10,21 @@ namespace ToolKit
 
   class TK_API Texture : public Resource
   {
-  public:
+   public:
     TKResouceType(Texture)
 
     Texture();
-    Texture(String file);
+    explicit Texture(String file);
     virtual ~Texture();
 
-    virtual void Load() override;
-    virtual void Init(bool flushClientSideArray = true) override;
-    virtual void UnInit() override;
+    void Load() override;
+    void Init(bool flushClientSideArray = true) override;
+    void UnInit() override;
 
-  protected:
+   protected:
     virtual void Clear();
 
-  public:
+   public:
     uint m_textureId = 0;
     int m_width = 0;
     int m_height = 0;
@@ -34,21 +34,21 @@ namespace ToolKit
 
   class TK_API CubeMap : public Texture
   {
-  public:
+   public:
     TKResouceType(CubeMap)
 
     CubeMap();
-    CubeMap(String file);
+    explicit CubeMap(String file);
     ~CubeMap();
 
-    virtual void Load() override;
-    virtual void Init(bool flushClientSideArray = true) override;
-    virtual void UnInit() override;
+    void Load() override;
+    void Init(bool flushClientSideArray = true) override;
+    void UnInit() override;
 
-  protected:
-    virtual void Clear() override;
+   protected:
+    void Clear() override;
 
-  public:
+   public:
     std::vector<uint8*> m_images;
   };
 
@@ -64,35 +64,45 @@ namespace ToolKit
 
   class TK_API RenderTarget : public Texture
   {
-  public:
+   public:
     TKResouceType(RenderTarget)
 
     RenderTarget();
-    RenderTarget(uint widht, uint height, const RenderTargetSettigs& settings = RenderTargetSettigs());
+    RenderTarget
+    (
+      uint widht,
+      uint height,
+      const RenderTargetSettigs& settings = RenderTargetSettigs()
+    );
     virtual ~RenderTarget();
 
-    virtual void Load() override;
-    virtual void Init(bool flushClientSideArray = true) override;
-    virtual void UnInit() override;
-    void Reconstrcut(uint width, uint height, const RenderTargetSettigs& settings);
+    void Load() override;
+    void Init(bool flushClientSideArray = true) override;
+    void UnInit() override;
+    void Reconstrcut
+    (
+      uint width,
+      uint height,
+      const RenderTargetSettigs& settings
+    );
     const RenderTargetSettigs& GetSettings() const;
 
-  public:
+   public:
     uint m_frameBufferId = 0;
     uint m_depthBufferId = 0;
 
-  private:
+   private:
     RenderTargetSettigs m_settings;
   };
 
   class TK_API TextureManager : public ResourceManager
   {
-  public:
+   public:
     TextureManager();
     virtual ~TextureManager();
-    virtual bool CanStore(ResourceType t);
-    virtual ResourcePtr CreateLocal(ResourceType type);
-    virtual String GetDefaultResource(ResourceType type) override;
+    bool CanStore(ResourceType t) override;
+    ResourcePtr CreateLocal(ResourceType type) override;
+    String GetDefaultResource(ResourceType type) override;
   };
 
-}
+}  // namespace ToolKit

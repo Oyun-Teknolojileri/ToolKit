@@ -1,4 +1,7 @@
 #include "EditorCamera.h"
+
+#include <memory>
+
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -56,16 +59,17 @@ namespace ToolKit
       };
 
       // Below is a tricky frustum construction.
-      // I am forcing to create triangles to use in ray/triangle intersection in picking.
+      // I am forcing to create triangles to use in ray/triangle intersection
+      // in picking.
       // At the same time, not causing additional lines for frustom drawing.
 
       Vec3 eye;
       Vec3Array lines =
       {
         eye, corners[0],
-        corners[1], corners[1], // Triangle widhout line.
+        corners[1], corners[1],  // Triangle widhout line.
         corners[1], corners[1],
-        
+
         eye, corners[1],
         corners[2], corners[2],
         corners[2], corners[2],
@@ -73,11 +77,11 @@ namespace ToolKit
         eye, corners[2],
         corners[3], corners[3],
         corners[3], corners[3],
-        
+
         eye, corners[3],
         corners[0], corners[0],
         corners[0], corners[0],
-        
+
         corners[0], corners[1],
         corners[1], corners[2],
         corners[3], corners[3],
@@ -87,7 +91,7 @@ namespace ToolKit
 
       MeshComponentPtr camMeshComp = GetComponent<MeshComponent>();
       LineBatch frusta(lines, ZERO, DrawType::Line);
-      camMeshComp->m_mesh = frusta.GetComponent<MeshComponent>()->m_mesh;
+      camMeshComp->Mesh() = frusta.GetComponent<MeshComponent>()->Mesh();
 
       // Triangle part.
       VertexArray vertices;
@@ -106,11 +110,12 @@ namespace ToolKit
       subMesh->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
       subMesh->ConstructFaces();
 
-      camMeshComp->m_mesh->m_subMeshes.push_back(subMesh);
-      camMeshComp->m_mesh->CalculateAABB();
+      camMeshComp->Mesh()->m_subMeshes.push_back(subMesh);
+      camMeshComp->Mesh()->CalculateAABB();
       camMeshComp->Init(false);
     }
 
-  }
+  }  // namespace Editor
 
-}
+}  // namespace ToolKit
+

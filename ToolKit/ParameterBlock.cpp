@@ -1,5 +1,6 @@
 #include "ParameterBlock.h"
 #include "Util.h"
+#include "Mesh.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -85,6 +86,16 @@ namespace ToolKit
   }
 
   ParameterVariant::ParameterVariant(ULongID& var)
+  {
+    *this = var;
+  }
+
+  ParameterVariant::ParameterVariant(const MeshPtr& var)
+  {
+    *this = var;
+  }
+
+  ParameterVariant::ParameterVariant(const MaterialPtr& var)
   {
     *this = var;
   }
@@ -183,6 +194,20 @@ namespace ToolKit
     m_type = VariantType::ULongID;
     m_var = var;
     return *this;
+  }
+
+  ParameterVariant& ParameterVariant::operator=(const MeshPtr& var)
+  {
+      m_type = VariantType::MeshPtr;
+      m_var = var;
+      return *this;
+  }
+
+  ParameterVariant& ParameterVariant::operator=(const MaterialPtr& var)
+  {
+      m_type = VariantType::MaterialPtr;
+      m_var = var;
+      return *this;
   }
 
   void ParameterVariant::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -318,6 +343,20 @@ namespace ToolKit
         XmlParamterValAttr.c_str(),
         std::to_string(GetCVar<ULongID>())
       );
+      break;
+      case VariantType::MeshPtr:
+      case VariantType::MaterialPtr:
+      {
+        ResourcePtr resPtr = std::static_pointer_cast<Resource>
+        (
+          GetCVar<MeshPtr>()
+        );
+
+        if (resPtr)
+        {
+          resPtr->SerializeRef(doc, node);
+        }
+      }
       break;
       default:
       assert(false && "Invalid type.");

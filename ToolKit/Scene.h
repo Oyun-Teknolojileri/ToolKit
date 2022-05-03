@@ -92,8 +92,8 @@ namespace ToolKit
     virtual ~SceneManager();
     void Init() override;
     void Uninit() override;
-    virtual bool CanStore(ResourceType t);
-    virtual ResourcePtr CreateLocal(ResourceType type);
+    bool CanStore(ResourceType t) override;
+    ResourcePtr CreateLocal(ResourceType type) override;
     String GetDefaultResource(ResourceType type) override;
 
     ScenePtr GetCurrentScene();

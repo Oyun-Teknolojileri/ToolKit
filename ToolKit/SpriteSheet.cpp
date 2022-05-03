@@ -11,6 +11,7 @@ namespace ToolKit
 {
 
   SpriteSheet::SpriteSheet()
+    : m_imageWidth(0), m_imageHeight(0)
   {
   }
 
@@ -34,7 +35,10 @@ namespace ToolKit
 
     if (FetchEntries())
     {
-      m_spriteSheet = GetTextureManager()->Create<Texture>(SpritePath(m_imageFile));
+      m_spriteSheet = GetTextureManager()->Create<Texture>
+        (
+          SpritePath(m_imageFile)
+        );
       for (const SpriteEntry& entry : m_entries)
       {
         Surface* surface = new Surface(m_spriteSheet, entry);
@@ -106,11 +110,15 @@ namespace ToolKit
 
       attr = node->first_attribute("px");
       if (attr != nullptr)
-        entry.offset.x = (float)std::atof(attr->value());
+      {
+        entry.offset.x = static_cast<float> (std::atof(attr->value()));
+      }
 
       attr = node->first_attribute("py");
       if (attr != nullptr)
-        entry.offset.y = (float)std::atof(attr->value());
+      {
+        entry.offset.y = static_cast<float> (std::atof(attr->value()));
+      }
 
       m_entries.push_back(entry);
     }
@@ -174,11 +182,11 @@ namespace ToolKit
       }
       else
       {
-        for (int curr = 0; curr < (int)m_frames.size(); curr++)
+        for (size_t curr = 0; curr < m_frames.size(); curr++)
         {
           if (m_currentFrame.compare(m_frames[curr]) == 0)
           {
-            if (curr + 1 < (int)m_frames.size())
+            if (curr + 1 < m_frames.size())
             {
               m_currentFrame = m_frames[curr + 1];
               break;
@@ -224,4 +232,5 @@ namespace ToolKit
     return ResourcePtr(new SpriteSheet());
   }
 
-}
+}  // namespace ToolKit
+

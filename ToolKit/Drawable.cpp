@@ -16,9 +16,7 @@ namespace ToolKit
 
   Drawable::Drawable()
   {
-    MeshComponent* mc = new MeshComponent();
-    mc->m_mesh = std::make_shared<Mesh>();
-    AddComponent(mc);
+    AddComponent(new MeshComponent());
   }
 
   Drawable::~Drawable()
@@ -114,13 +112,13 @@ namespace ToolKit
   MeshPtr& Drawable::GetMesh() const
   {
     MeshComponentPtr meshComp = GetComponent<MeshComponent>();
-    return meshComp->m_mesh;
+    return meshComp->Mesh();
   }
 
   void Drawable::SetMesh(const MeshPtr& mesh)
   {
     MeshComponentPtr meshComp = GetComponent<MeshComponent>();
-    meshComp->m_mesh = mesh;
+    meshComp->Mesh() = mesh;
   }
 
 }  // namespace ToolKit

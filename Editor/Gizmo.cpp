@@ -847,9 +847,9 @@ namespace ToolKit
       m_pnts.resize(2);
       m_line = new LineBatch();
 
-      GetComponent<MeshComponent>()->m_mesh = m_line->GetMesh();
+      GetComponent<MeshComponent>()->Mesh() = m_line->GetMesh();
 
-      MeshPtr mesh = GetComponent<MeshComponent>()->m_mesh;
+      MeshPtr mesh = GetComponent<MeshComponent>()->Mesh();
 
       mesh->m_material->Init();
 
@@ -1013,7 +1013,7 @@ namespace ToolKit
         DrawType::LineStrip, 1.0f
       );
 
-      MeshPtr mp = GetComponent<MeshComponent>()->m_mesh;
+      MeshPtr mp = GetComponent<MeshComponent>()->Mesh();
       mp->m_subMeshes.push_back(m_innerCircle->GetMesh());
       mp->m_subMeshes.push_back(m_outerCircle->GetMesh());
       mp->m_subMeshes[0]->m_material->Init();
