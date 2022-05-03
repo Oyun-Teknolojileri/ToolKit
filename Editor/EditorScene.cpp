@@ -32,7 +32,7 @@ namespace ToolKit
     {
       Scene::Load();
 
-      for (int i = (int)m_entities.size() - 1; i > -1; i--)
+      for (int i = static_cast<int>(m_entities.size()) - 1; i > -1; i--)
       {
         Entity* ntt = m_entities[i];
 
@@ -45,17 +45,59 @@ namespace ToolKit
           m_entities[i] = cam;
           SafeDel(ntt);
         }
+        // Replace lights with EditorLights
+        else if (ntt->GetType() == EntityType::Entity_Light)
+        {
+          Light* el = static_cast<Light*>(ntt);
+          int type = el->m_lightData.type;
+
+          if (type == 1)  // Directional light
+          {
+            EditorDirectionalLight* upCasted =
+            reinterpret_cast<EditorDirectionalLight*> (ntt);
+            EditorDirectionalLight* light =
+            new EditorDirectionalLight(upCasted);
+            m_entities[i] = light;
+            SafeDel(ntt);
+          }
+          else if (type == 2)  // Point light
+          {
+            EditorPointLight* upCasted =
+            reinterpret_cast<EditorPointLight*> (ntt);
+            EditorPointLight* light = new EditorPointLight(upCasted);
+            m_entities[i] = light;
+            SafeDel(ntt);
+          }
+          else if (type == 3)  // Spot light
+          {
+            EditorSpotLight* upCasted =
+            reinterpret_cast<EditorSpotLight*> (ntt);
+            EditorSpotLight* light = new EditorSpotLight(upCasted);
+            m_entities[i] = light;
+            SafeDel(ntt);
+          }
+        }
       }
     }
 
     bool EditorScene::IsSelected(ULongID id) const
     {
-      return std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id) != m_selectedEntities.end();
+      return std::find
+      (
+        m_selectedEntities.begin(),
+        m_selectedEntities.end(),
+        id
+      ) != m_selectedEntities.end();
     }
 
     void EditorScene::RemoveFromSelection(ULongID id)
     {
-      auto nttIt = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
+      auto nttIt = std::find
+      (
+        m_selectedEntities.begin(),
+        m_selectedEntities.end(),
+        id
+      );
       if (nttIt != m_selectedEntities.end())
       {
         m_selectedEntities.erase(nttIt);
@@ -72,7 +114,11 @@ namespace ToolKit
       m_selectedEntities.push_back(id);
     }
 
-    void EditorScene::AddToSelection(const EntityIdArray& entities, bool additive)
+    void EditorScene::AddToSelection
+    (
+      const EntityIdArray& entities,
+      bool additive
+    )
     {
       ULongID currentId = NULL_HANDLE;
       if (entities.size() > 1)
@@ -107,7 +153,7 @@ namespace ToolKit
         {
           AddToSelection(id, true);
         }
-        else // Add, make current or toggle selection.
+        else  // Add, make current or toggle selection.
         {
           if (IsSelected(id))
           {
@@ -140,7 +186,11 @@ namespace ToolKit
       MakeCurrentSelection(currentId, true);
     }
 
-    void EditorScene::AddToSelection(const EntityRawPtrArray& entities, bool additive)
+    void EditorScene::AddToSelection
+    (
+      const EntityRawPtrArray& entities,
+      bool additive
+    )
     {
       EntityIdArray ids;
       ToEntityIdArray(ids, entities);
@@ -164,7 +214,11 @@ namespace ToolKit
 
     void EditorScene::MakeCurrentSelection(ULongID id, bool ifExist)
     {
-      EntityIdArray::iterator itr = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
+      EntityIdArray::iterator itr = std::find
+      (
+        m_selectedEntities.begin(),
+        m_selectedEntities.end(), id
+      );
       if (itr != m_selectedEntities.end())
       {
         std::iter_swap(itr, m_selectedEntities.end() - 1);
@@ -245,11 +299,11 @@ namespace ToolKit
       cpy->m_newScene = true;
     }
 
-    EditorSceneManager::EditorSceneManager() 
+    EditorSceneManager::EditorSceneManager()
     {
     }
 
-    EditorSceneManager::~EditorSceneManager() 
+    EditorSceneManager::~EditorSceneManager()
     {
     }
 
@@ -258,5 +312,5 @@ namespace ToolKit
       return ResourcePtr(new EditorScene());
     }
 
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

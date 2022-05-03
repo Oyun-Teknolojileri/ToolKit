@@ -5,6 +5,7 @@
 #include "ConsoleWindow.h"
 #include "EditorCamera.h"
 #include "DebugNew.h"
+#include "EditorLight.h"
 
 namespace ToolKit
 {
@@ -42,26 +43,30 @@ namespace ToolKit
     void OverlayMods::Show()
     {
       const float padding = 5.0f;
-      Vec2 wndPos = Vec2(m_owner->m_wndPos.x + padding, m_owner->m_wndPos.y + padding) + m_scroll;
+      Vec2 wndPos = Vec2
+      (
+        m_owner->m_wndPos.x + padding,
+        m_owner->m_wndPos.y + padding
+      ) + m_scroll;
       ImGui::SetNextWindowPos(wndPos);
       ImGui::SetNextWindowBgAlpha(0.65f);
-     
+
       ImVec2 overlaySize(48, 260);
-      if 
+      if
       (
         ImGui::BeginChildFrame
         (
           ImGui::GetID("Navigation"),
-          overlaySize, 
-          ImGuiWindowFlags_NoMove 
-          | ImGuiWindowFlags_NoDocking 
-          | ImGuiWindowFlags_NoTitleBar 
-          | ImGuiWindowFlags_NoResize 
-          | ImGuiWindowFlags_AlwaysAutoResize 
-          | ImGuiWindowFlags_NoSavedSettings 
-          | ImGuiWindowFlags_NoFocusOnAppearing 
-          | ImGuiWindowFlags_NoNav 
-          | ImGuiWindowFlags_NoScrollbar 
+          overlaySize,
+          ImGuiWindowFlags_NoMove
+          | ImGuiWindowFlags_NoDocking
+          | ImGuiWindowFlags_NoTitleBar
+          | ImGuiWindowFlags_NoResize
+          | ImGuiWindowFlags_AlwaysAutoResize
+          | ImGuiWindowFlags_NoSavedSettings
+          | ImGuiWindowFlags_NoFocusOnAppearing
+          | ImGuiWindowFlags_NoNav
+          | ImGuiWindowFlags_NoScrollbar
           | ImGuiWindowFlags_NoScrollWithMouse
         )
       )
@@ -69,56 +74,104 @@ namespace ToolKit
         SetOwnerState();
 
         // Select button.
-        bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Select;
+        bool isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id
+        == ModId::Select;
         ModManager::GetInstance()->SetMod
         (
-          UI::ToggleButton(UI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          UI::ToggleButton
+          (
+            UI::m_selectIcn->m_textureId,
+            ImVec2(32, 32),
+            isCurrentMod
+          ) && !isCurrentMod,
           ModId::Select
         );
-        UI::HelpMarker(TKLoc + m_owner->m_name, "Select Box\nSelect items using box selection.");
+        UI::HelpMarker
+        (
+          TKLoc + m_owner->m_name,
+          "Select Box\nSelect items using box selection."
+        );
 
         // Cursor button.
-        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Cursor;
+        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id
+        == ModId::Cursor;
         ModManager::GetInstance()->SetMod
         (
-          UI::ToggleButton(UI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          UI::ToggleButton
+          (
+            UI::m_cursorIcn->m_textureId,
+            ImVec2(32, 32),
+            isCurrentMod
+          ) && !isCurrentMod,
           ModId::Cursor
         );
-        UI::HelpMarker(TKLoc + m_owner->m_name, "Cursor\nSet the cursor location.");
+        UI::HelpMarker
+        (
+          TKLoc + m_owner->m_name,
+          "Cursor\nSet the cursor location."
+        );
         ImGui::Separator();
 
         // Move button.
-        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Move;
+        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id
+        == ModId::Move;
         ModManager::GetInstance()->SetMod
         (
-          UI::ToggleButton(UI::m_moveIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          UI::ToggleButton
+          (
+            UI::m_moveIcn->m_textureId,
+            ImVec2(32, 32),
+            isCurrentMod
+          ) && !isCurrentMod,
           ModId::Move
         );
         UI::HelpMarker(TKLoc + m_owner->m_name, "Move\nMove selected items.");
 
         // Rotate button.
-        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Rotate;
+        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id
+        == ModId::Rotate;
         ModManager::GetInstance()->SetMod
         (
-          UI::ToggleButton(UI::m_rotateIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          UI::ToggleButton
+          (
+            UI::m_rotateIcn->m_textureId,
+            ImVec2(32, 32),
+            isCurrentMod
+          ) && !isCurrentMod,
           ModId::Rotate
         );
-        UI::HelpMarker(TKLoc + m_owner->m_name, "Rotate\nRotate selected items.");
+        UI::HelpMarker
+        (
+          TKLoc + m_owner->m_name,
+          "Rotate\nRotate selected items."
+        );
 
         // Scale button.
-        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Scale;
+        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id
+        == ModId::Scale;
         ModManager::GetInstance()->SetMod
         (
-          UI::ToggleButton(UI::m_scaleIcn->m_textureId, ImVec2(32, 32), isCurrentMod) && !isCurrentMod,
+          UI::ToggleButton
+          (
+            UI::m_scaleIcn->m_textureId, ImVec2(32, 32),
+            isCurrentMod
+          ) && !isCurrentMod,
           ModId::Scale
         );
-        UI::HelpMarker(TKLoc + m_owner->m_name, "Scale\nScale (resize) selected items.");
+        UI::HelpMarker
+        (
+          TKLoc + m_owner->m_name,
+          "Scale\nScale (resize) selected items."
+        );
         ImGui::Separator();
 
         const char* items[] = { "1", "2", "4", "8", "16" };
-        static int current_item = 3; // Also the default.
+        static int current_item = 3;  // Also the default.
         ImGui::PushItemWidth(40);
-        if (ImGui::BeginCombo("##CS", items[current_item], ImGuiComboFlags_None))
+        if
+        (
+          ImGui::BeginCombo("##CS", items[current_item], ImGuiComboFlags_None)
+        )
         {
           for (int n = 0; n < IM_ARRAYSIZE(items); n++)
           {
@@ -162,7 +215,7 @@ namespace ToolKit
         ImGuiStyle& style = ImGui::GetStyle();
         float spacing = style.ItemInnerSpacing.x;
 
-        ImGui::SameLine(0, spacing); 
+        ImGui::SameLine(0, spacing);
         UI::HelpMarker(TKLoc + m_owner->m_name, "Camera speed m/s\n");
       }
       ImGui::EndChildFrame();
@@ -232,7 +285,11 @@ namespace ToolKit
         {
           if (ImGui::MenuItem("Surface"))
           {
-            Surface* suface = new Surface(Vec2(100.0f, 30.0f), Vec2 (0.0f, 0.0f));
+            Surface* suface = new Surface
+            (
+              Vec2(100.0f, 30.0f),
+              Vec2 (0.0f, 0.0f)
+            );
             suface->GetMesh()->Init(false);
             currScene->AddEntity(suface);
           }
@@ -258,6 +315,31 @@ namespace ToolKit
           Entity* node = new EditorCamera();
           currScene->AddEntity(node);
         }
+
+        if (ImGui::BeginMenu("Light"))
+        {
+          if (ImGui::MenuItem("Sun"))
+          {
+            Entity* node = new EditorDirectionalLight();
+            node->Name() = "Sun";
+            currScene->AddEntity(node);
+          }
+
+          if (ImGui::MenuItem("Point"))
+          {
+            Entity* node = new EditorPointLight();
+            node->Name() = "PointLight";
+            currScene->AddEntity(node);
+          }
+
+          if (ImGui::MenuItem("Spot"))
+          {
+            Entity* node = new EditorSpotLight();
+            node->Name() = "SpotLight";
+            currScene->AddEntity(node);
+          }
+          ImGui::EndMenu();
+        }
       };
 
       ImVec2 overlaySize(360, 30);
@@ -268,7 +350,7 @@ namespace ToolKit
       ImGui::SameLine(offset);
 
       ImGui::SetNextWindowBgAlpha(0.65f);
-      if 
+      if
       (
         ImGui::BeginChildFrame
         (
@@ -283,11 +365,20 @@ namespace ToolKit
       {
         SetOwnerState();
 
-        ImGui::BeginTable("##SettingsBar", 8, ImGuiTableFlags_SizingStretchProp);
+        ImGui::BeginTable
+        (
+          "##SettingsBar",
+          8,
+          ImGuiTableFlags_SizingStretchProp
+        );
         ImGui::TableNextRow();
 
         ImGui::TableSetColumnIndex(0);
-        ImGui::Image(Convert2ImGuiTexture(UI::m_worldIcon), ImVec2(20.0f, 20.0f));
+        ImGui::Image
+        (
+          Convert2ImGuiTexture(UI::m_worldIcon),
+          ImVec2(20.0f, 20.0f)
+        );
 
         ImGui::TableSetColumnIndex(1);
         if (ImGui::Button("Add"))
@@ -302,21 +393,43 @@ namespace ToolKit
         }
 
         ImGui::TableSetColumnIndex(2);
-        ImGui::Image(Convert2ImGuiTexture(UI::m_cameraIcon), ImVec2(20.0f, 20.0f));
+        ImGui::Image
+        (
+          Convert2ImGuiTexture(UI::m_cameraIcon),
+          ImVec2(20.0f, 20.0f)
+        );
 
         ImGui::TableSetColumnIndex(3);
-        m_owner->m_orbitLock = UI::ToggleButton(UI::m_lockIcon->m_textureId, ImVec2(16.0f, 16.0f), m_owner->m_orbitLock);
-        UI::HelpMarker(TKLoc + m_owner->m_name, "Lock Camera Alignment\nMiddle button drag doesn't orbit.\nOnly panning allowed.");
+        m_owner->m_orbitLock = UI::ToggleButton
+        (
+          UI::m_lockIcon->m_textureId,
+          ImVec2(16.0f, 16.0f),
+          m_owner->m_orbitLock
+        );
+        UI::HelpMarker
+        (
+          TKLoc + m_owner->m_name,
+          "Lock Camera Alignment\nMiddle button drag doesn't orbit."
+          "\nOnly panning allowed."
+        );
 
         // Camera alignment combo.
         const char* itemsCam[] = { "Free", "Top", "Front", "Left", "User" };
-        int currentItemCam = (int)m_owner->m_cameraAlignment;
+        int currentItemCam = static_cast<int>(m_owner->m_cameraAlignment);
         CameraAlignment rollBack = m_owner->m_cameraAlignment;
         bool change = false;
 
         ImGui::TableSetColumnIndex(4);
         ImGui::PushItemWidth(72);
-        if (ImGui::BeginCombo("##VC", itemsCam[currentItemCam], ImGuiComboFlags_None))
+        if
+        (
+          ImGui::BeginCombo
+          (
+          "##VC",
+          itemsCam[currentItemCam],
+          ImGuiComboFlags_None
+          )
+        )
         {
           for (int n = 0; n < IM_ARRAYSIZE(itemsCam); n++)
           {
@@ -377,12 +490,16 @@ namespace ToolKit
                 }
               }
             }
-            
+
             if (noCamera)
             {
               m_owner->m_cameraAlignment = rollBack;
               g_app->m_statusMsg = "Operation Failed !";
-              g_app->GetConsole()->AddLog("No camera selected.\nSelect a camera from the scene.", ConsoleWindow::LogType::Error);
+              g_app->GetConsole()->AddLog
+              (
+                "No camera selected.\nSelect a camera from the scene.",
+                ConsoleWindow::LogType::Error
+              );
             }
           }
           else
@@ -395,7 +512,8 @@ namespace ToolKit
             if (view != "Free")
             {
               m_owner->m_cameraAlignment = CameraAlignment::Free;
-              String cmd = "SetCameraTransform --v \"" + m_owner->m_name + "\" " + view;
+              String cmd = "SetCameraTransform --v \"" + m_owner->m_name
+              + "\" " + view;
               g_app->GetConsole()->ExecCommand(cmd);
             }
           }
@@ -403,7 +521,11 @@ namespace ToolKit
         UI::HelpMarker(TKLoc + m_owner->m_name, "Camera Orientation\n");
 
         ImGui::TableSetColumnIndex(5);
-        ImGui::Image(Convert2ImGuiTexture(UI::m_axisIcon), ImVec2(20.0f, 20.0f));
+        ImGui::Image
+        (
+          Convert2ImGuiTexture(UI::m_axisIcon),
+          ImVec2(20.0f, 20.0f)
+        );
 
         // Transform orientation combo.
         ImGuiStyle& style = ImGui::GetStyle();
@@ -415,7 +537,12 @@ namespace ToolKit
         change = false;
         ImGui::TableSetColumnIndex(6);
         ImGui::PushItemWidth(72);
-        if (ImGui::BeginCombo("##TRS", itemsOrient[currentItemOrient], ImGuiComboFlags_None))
+        if
+        (
+          ImGui::BeginCombo("##TRS",
+          itemsOrient[currentItemOrient],
+          ImGuiComboFlags_None)
+        )
         {
           for (int n = 0; n < IM_ARRAYSIZE(itemsOrient); n++)
           {
@@ -477,15 +604,45 @@ namespace ToolKit
         }
 
         ImGui::TableSetColumnIndex(7);
-        g_app->m_snapsEnabled = UI::ToggleButton(UI::m_snapIcon->m_textureId, ImVec2(16, 16), g_app->m_snapsEnabled);
-        UI::HelpMarker(TKLoc + m_owner->m_name, "Grid snaping\nRight click for options");
+        g_app->m_snapsEnabled = UI::ToggleButton
+        (
+          UI::m_snapIcon->m_textureId,
+          ImVec2(16, 16),
+          g_app->m_snapsEnabled
+        );
+        UI::HelpMarker
+        (
+          TKLoc + m_owner->m_name,
+          "Grid snaping\nRight click for options"
+        );
 
         if (ImGui::BeginPopupContextItem("##SnapMenu"))
         {
           ImGui::PushItemWidth(75);
-          ImGui::InputFloat("Move delta", &g_app->m_moveDelta, 0.0f, 0.0f, "%.2f");
-          ImGui::InputFloat("Rotate delta", &g_app->m_rotateDelta, 0.0f, 0.0f, "%.2f");
-          ImGui::InputFloat("Scale delta", &g_app->m_scaleDelta, 0.0f, 0.0f, "%.2f");
+          ImGui::InputFloat
+          (
+            "Move delta",
+            &g_app->m_moveDelta,
+            0.0f,
+            0.0f,
+            "%.2f"
+          );
+          ImGui::InputFloat
+          (
+            "Rotate delta",
+            &g_app->m_rotateDelta,
+            0.0f,
+            0.0f,
+            "%.2f"
+          );
+          ImGui::InputFloat
+          (
+            "Scale delta",
+            &g_app->m_scaleDelta,
+            0.0f,
+            0.0f,
+            "%.2f"
+          );
           ImGui::PopItemWidth();
           ImGui::EndPopup();
         }
@@ -517,17 +674,17 @@ namespace ToolKit
       ImGui::SetNextWindowPos(pos + m_scroll);
       ImGui::SetNextWindowBgAlpha(0.65f);
       if
+      (
+        ImGui::BeginChildFrame
         (
-          ImGui::BeginChildFrame
-          (
-            ImGui::GetID("ProjectInfo"),
-            overlaySize,
-            ImGuiWindowFlags_NoMove
-            | ImGuiWindowFlags_NoTitleBar
-            | ImGuiWindowFlags_NoScrollbar
-            | ImGuiWindowFlags_NoScrollWithMouse
-          )
+          ImGui::GetID("ProjectInfo"),
+          overlaySize,
+          ImGuiWindowFlags_NoMove
+          | ImGuiWindowFlags_NoTitleBar
+          | ImGuiWindowFlags_NoScrollbar
+          | ImGuiWindowFlags_NoScrollWithMouse
         )
+      )
       {
         String info = "Status: ";
         ImGui::Text(info.c_str());
@@ -540,7 +697,7 @@ namespace ToolKit
           static float elapsedTime = 0.0f;
           elapsedTime += ImGui::GetIO().DeltaTime;
 
-          // For overlapping message updates, 
+          // For overlapping message updates,
           // always reset timer for the last event.
           if (prevMsg != g_app->m_statusMsg)
           {
@@ -586,5 +743,5 @@ namespace ToolKit
       ImGui::EndChildFrame();
     }
 
-}
-}
+  }  // namespace Editor
+}  // namespace ToolKit

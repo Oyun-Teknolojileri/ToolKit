@@ -99,6 +99,9 @@
     <ClCompile Include="EditorCamera.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
+    <ClCompile Include="EditorLight.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -184,6 +187,9 @@
     </ClInclude>
     <ClInclude Include="ImGui\imgui_impl_opengl3_loader.h">
       <Filter>UI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorLight.h">
+      <Filter>Entities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

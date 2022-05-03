@@ -283,32 +283,4 @@ namespace ToolKit
 
     return cpy;
   }
-
-  Light::Light()
-  {
-    m_color = Vec3(1.0f, 1.0f, 1.0f);
-    m_intensity = 1.0f;
-  }
-
-  Light::~Light()
-  {
-  }
-
-  Light::LightData Light::GetData() const
-  {
-    LightData data;
-    data.dir = GetDir();
-    data.pos = m_node->GetTranslation(TransformationSpace::TS_WORLD);
-    data.color = m_color;
-    data.intensity = m_intensity;
-
-    return data;
-  }
-
-  EntityType Light::GetType() const
-  {
-    return EntityType::Entity_Light;
-  }
-
 }  // namespace ToolKit
-

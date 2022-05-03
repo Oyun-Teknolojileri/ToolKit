@@ -64,10 +64,7 @@ namespace ToolKit
     glDeleteVertexArrays(1, &m_vaoId);
     m_vaoId = 0;
 
-    for (MeshPtr& subMesh : m_subMeshes)
-    {
-      subMesh = nullptr;
-    }
+    m_subMeshes.clear();
 
     m_initiated = false;
   }

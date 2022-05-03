@@ -1,42 +1,58 @@
 #pragma once
 
+#include <vector>
+#include <functional>
+
 #include "Resource.h"
 #include "MathUtil.h"
-#include <functional>
+#include "Light.h"
+#include "Types.h"
 
 namespace ToolKit
 {
 
   class TK_API Scene : public Resource
   {
-  public:
+   public:
     struct PickData
     {
       Vec3 pickPos;
       Entity* entity = nullptr;
     };
 
-  public:
+   public:
     TKResouceType(Scene)
 
     Scene();
-    Scene(String file);
+    explicit Scene(String file);
     virtual ~Scene();
 
-    virtual void Load() override;
-    virtual void Save(bool onlyIfDirty) override;
-    virtual void Init(bool flushClientSideArray = true) override;
-    virtual void UnInit() override;
-    virtual void Merge(ScenePtr other); // Merges entities from the other scene and wipeouts the other scene.
+    void Load() override;
+    void Save(bool onlyIfDirty) override;
+    void Init(bool flushClientSideArray = true) override;
+    void UnInit() override;
+    // Merges entities from the other scene and wipeouts the other scene.
+    virtual void Merge(ScenePtr other);
 
     // Scene queries.
-    PickData PickObject(Ray ray, const EntityIdArray& ignoreList = EntityIdArray()) const;
-    void PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const EntityIdArray& ignoreList = EntityIdArray(), bool pickPartiallyInside = true) const;
+    PickData PickObject
+    (
+      Ray ray,
+      const EntityIdArray& ignoreList = EntityIdArray()
+    ) const;
+    void PickObject
+    (
+      const Frustum& frustum,
+      std::vector<PickData>& pickedObjects,
+      const EntityIdArray& ignoreList = EntityIdArray(),
+      bool pickPartiallyInside = true
+    ) const;
 
     // Entity operations.
     Entity* GetEntity(ULongID id) const;
     virtual void AddEntity(Entity* entity);
     const EntityRawPtrArray& GetEntities() const;
+    const LightRawPtrArray GetLights() const;
     Entity* GetFirstEntityByName(const String& name);
     EntityRawPtrArray GetByTag(const String& tag);
     Entity* GetFirstByTag(const String& tag);
@@ -53,37 +69,38 @@ namespace ToolKit
     virtual void ClearEntities();
 
     // Serialization.
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-    ULongID GetBiggestEntityId(); // Used to avoid Id collision during scene merges.
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    // Used to avoid Id collision during scene merges.
+    ULongID GetBiggestEntityId();
 
-  protected:
-    virtual void CopyTo(Resource* other) override;
+   protected:
+    void CopyTo(Resource* other) override;
 
-  protected:
+   protected:
     EntityRawPtrArray m_entities;
     String m_version;
 
-  private:
+   private:
     Camera* m_camera = nullptr;
   };
 
   class TK_API SceneManager : public ResourceManager
   {
-  public:
+   public:
     SceneManager();
     virtual ~SceneManager();
-    virtual void Init() override;
-    virtual void Uninit() override;
+    void Init() override;
+    void Uninit() override;
     virtual bool CanStore(ResourceType t);
     virtual ResourcePtr CreateLocal(ResourceType type);
-    virtual String GetDefaultResource(ResourceType type) override;
-    
+    String GetDefaultResource(ResourceType type) override;
+
     ScenePtr GetCurrentScene();
     void SetCurrentScene(const ScenePtr& scene);
 
-  private:
+   private:
     ScenePtr m_currentScene;
   };
 
-}
+}  // namespace ToolKit

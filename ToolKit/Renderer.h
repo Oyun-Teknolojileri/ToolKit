@@ -5,6 +5,7 @@
 
 #include "Types.h"
 #include "RenderState.h"
+#include "Light.h"
 
 
 namespace ToolKit
@@ -12,7 +13,6 @@ namespace ToolKit
 
   class Drawable;
   class Camera;
-  class Light;
   class Surface;
   class SpriteAnimation;
   class Shader;
@@ -20,18 +20,7 @@ namespace ToolKit
   class Viewport;
   class RenderTarget;
   class Renderer;
-
-  struct RenderTechnique
-  {
-    std::function<void(Renderer*)> Render;
-    int priority = 0;
-  };
-
-  struct RenderJob
-  {
-    Entity* entity;
-    RenderTechnique technique;
-  };
+  class DirectionalLight;
 
   class TK_API Renderer
   {
@@ -42,14 +31,15 @@ namespace ToolKit
     (
       const ScenePtr& scene,
       Viewport* viewport,
-      LightRawPtrArray editor_lights
+      DirectionalLightRawPtrArray editor_lights
     );
     void RenderUI(const UILayerPtrArray& uiLayers, Viewport* viewport);
     void Render
     (
       Entity* ntt,
       Camera* cam,
-      const LightRawPtrArray& lights = LightRawPtrArray()
+      const DirectionalLightRawPtrArray& editorLights =
+      DirectionalLightRawPtrArray()
     );
     void SetRenderState(const RenderState* const state);
     void SetRenderTarget
@@ -97,7 +87,8 @@ namespace ToolKit
       EntityRawPtrArray entities,
       Camera* cam,
       float zoom,
-      const LightRawPtrArray& editorLights = LightRawPtrArray()
+      const DirectionalLightRawPtrArray& editorLights =
+      DirectionalLightRawPtrArray()
     );
 
     /**
@@ -112,7 +103,8 @@ namespace ToolKit
       EntityRawPtrArray entities,
       Camera* cam,
       float zoom,
-      const LightRawPtrArray& editorLights = LightRawPtrArray()
+      const DirectionalLightRawPtrArray& editorLights =
+      DirectionalLightRawPtrArray()
     );
     void RenderSkinned(Drawable* object, Camera* cam);
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
@@ -137,7 +129,7 @@ namespace ToolKit
     Mat4 m_project;
     Mat4 m_view;
     Mat4 m_model;
-    LightRawPtrArray m_lights;
+    DirectionalLightRawPtrArray m_lights;
     Camera* m_cam = nullptr;
     Material* m_mat = nullptr;
     RenderTarget* m_renderTarget = nullptr;

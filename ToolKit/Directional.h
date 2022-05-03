@@ -86,29 +86,4 @@ namespace ToolKit
     bool m_ortographic = false;
     Mat4 m_projection;
   };
-
-  class TK_API Light : public Directional
-  {
-   public:
-    struct LightData
-    {
-      Vec3 pos;
-      Vec3 dir;
-      Vec3 color;
-      float intensity;
-    };
-
-   public:
-    Light();
-    virtual ~Light();
-
-    LightData GetData() const;
-    EntityType GetType() const override;
-
-   public:
-    Vec3 m_color;
-    float m_intensity;
-  };
-
 }  // namespace ToolKit
-

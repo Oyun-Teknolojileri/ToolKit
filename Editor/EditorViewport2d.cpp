@@ -14,6 +14,9 @@
 #include "Mod.h"
 #include "Util.h"
 #include "DebugNew.h"
+#include "Light.h"
+
+#include <algorithm>
 
 namespace ToolKit
 {
@@ -49,13 +52,14 @@ namespace ToolKit
       };
 
       ImGui::SetNextWindowSize(size, ImGuiCond_Once);
-      if 
+      if
       (
         ImGui::Begin
         (
-          m_name.c_str(), 
-          &m_visible, 
-          ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_HorizontalScrollbar
+          m_name.c_str(),
+          &m_visible,
+          ImGuiWindowFlags_NoScrollWithMouse
+          | ImGuiWindowFlags_HorizontalScrollbar
         )
       )
       {
@@ -100,8 +104,9 @@ namespace ToolKit
 
     Vec2 EditorViewport2d::GetLastMousePosViewportSpace()
     {
-      Vec2 screenPoint = m_lastMousePosRelContentArea - IVec2(m_canvasPos); // Convert relative to canvas.
-      screenPoint.y = m_canvasSize.y - screenPoint.y; // Convert to viewport.
+      // Convert relative to canvas.
+      Vec2 screenPoint = m_lastMousePosRelContentArea - IVec2(m_canvasPos);
+      screenPoint.y = m_canvasSize.y - screenPoint.y;  // Convert to viewport.
 
       return screenPoint;
     }
@@ -121,18 +126,27 @@ namespace ToolKit
       Mat4 view = GetCamera()->GetViewMatrix();
       Mat4 project = GetCamera()->GetData().projection;
 
-      return glm::unProject(screenPoint, view, project, Vec4(0.0f, 0.0f, m_canvasSize.x, m_canvasSize.y));
+      return glm::unProject
+      (
+        screenPoint,
+        view, project,
+        Vec4(0.0f, 0.0f, m_canvasSize.x, m_canvasSize.y)
+      );
     }
 
     Vec2 EditorViewport2d::TransformScreenToViewportSpace(const Vec2& pnt)
     {
-      Vec2 vp = pnt - m_contentAreaMin - m_canvasPos; // In canvas space.
-      vp.y = m_canvasSize.y - vp.y; // In viewport space.
+      Vec2 vp = pnt - m_contentAreaMin - m_canvasPos;  // In canvas space.
+      vp.y = m_canvasSize.y - vp.y;  // In viewport space.
 
       return vp;
     }
 
-    void EditorViewport2d::GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const
+    void EditorViewport2d::GetContentAreaScreenCoordinates
+    (
+      Vec2* min,
+      Vec2* max
+    ) const
     {
       *min = m_canvasPos + m_wndPos;
       *max = *min + m_canvasSize;
@@ -163,13 +177,13 @@ namespace ToolKit
       ImGuiIO& io = ImGui::GetIO();
       ImVec2 absMousePos = io.MousePos;
       m_mouseOverContentArea = false;
-      if 
+      if
       (
         m_contentAreaMin.x < absMousePos.x &&
         m_contentAreaMax.x > absMousePos.x
       )
       {
-        if 
+        if
         (
           m_contentAreaMin.y < absMousePos.y &&
           m_contentAreaMax.y > absMousePos.y
@@ -179,8 +193,10 @@ namespace ToolKit
         }
       }
 
-      m_lastMousePosRelContentArea.x = (int)(absMousePos.x - m_contentAreaMin.x);
-      m_lastMousePosRelContentArea.y = (int)(absMousePos.y - m_contentAreaMin.y);
+      m_lastMousePosRelContentArea.x =
+      static_cast<int>(absMousePos.x - m_contentAreaMin.x);
+      m_lastMousePosRelContentArea.y =
+      static_cast<int>(absMousePos.y - m_contentAreaMin.y);
     }
 
     void EditorViewport2d::UpdateWindow()
@@ -190,16 +206,6 @@ namespace ToolKit
         m_scroll = Vec2(ImGui::GetScrollX(), ImGui::GetScrollY());
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
-          // Resize layout.
-          if
-          (
-            glm::notEqual(m_layoutSize.x, g_app->m_playWidth) ||
-            glm::notEqual(m_layoutSize.y, g_app->m_playHeight)
-          )
-          {
-            GenerateGrid();
-          }
-
           // Resize window.
           if
           (
@@ -224,16 +230,22 @@ namespace ToolKit
           (
             ImGui::GetID("canvas"),
             m_canvasSize,
-            ImGuiWindowFlags_NoScrollbar | 
-            ImGuiWindowFlags_NoScrollWithMouse | 
+            ImGuiWindowFlags_NoScrollbar |
+            ImGuiWindowFlags_NoScrollWithMouse |
             ImGuiWindowFlags_AlwaysUseWindowPadding
           );
           m_canvasPos = ImGui::GetWindowPos();
-          ImGui::Image(Convert2ImGuiTexture(m_viewportImage), m_canvasSize, ImVec2(0.0f, 0.0f), ImVec2(1.0f, -1.0f));
+          ImGui::Image
+          (
+            Convert2ImGuiTexture(m_viewportImage),
+            m_canvasSize,
+            ImVec2(0.0f, 0.0f),
+            ImVec2(1.0f, -1.0f)
+          );
 
           dw->ChannelsSetCurrent(0);
 
-          m_canvasPos -= m_contentAreaMin; // Convert relative to content area.
+          m_canvasPos -= m_contentAreaMin;  // Convert relative to content area.
           ImGui::EndChildFrame();
           ImGui::PopStyleVar(3);
 
@@ -280,14 +292,21 @@ namespace ToolKit
       // AssetBrowser drop handling.
       if (ImGui::BeginDragDropTarget())
       {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
+        if
+        (
+          const ImGuiPayload* payload =
+          ImGui::AcceptDragDropPayload("BrowserDragZone")
+        )
         {
           IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
           DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
 
           if (entry.m_ext == MESH)
           {
-            String path = ConcatPaths({ entry.m_rootPath, entry.m_fileName + entry.m_ext });
+            String path = ConcatPaths
+            (
+              { entry.m_rootPath, entry.m_fileName + entry.m_ext }
+            );
 
             ImGuiIO& io = ImGui::GetIO();
             Drawable* dwMesh = new Drawable();
@@ -313,7 +332,14 @@ namespace ToolKit
           }
           else if (entry.m_ext == SCENE)
           {
-            YesNoWindow* importOptionWnd = new YesNoWindow("Open Scene", "Open", "Merge", "Open or merge the scene ?", true);
+            YesNoWindow* importOptionWnd = new YesNoWindow
+            (
+              "Open Scene",
+              "Open",
+              "Merge",
+              "Open or merge the scene ?",
+              true
+            );
             importOptionWnd->m_yesCallback = [entry]() ->void
             {
               String fullPath = entry.GetFullPath();
@@ -391,8 +417,6 @@ namespace ToolKit
       m_viewportImage->m_width = (uint)m_canvasSize.x;
       m_viewportImage->m_height = (uint)m_canvasSize.y;
       m_viewportImage->Init();
-
-      GenerateGrid();
     }
 
     void EditorViewport2d::PanZoom(float deltaTime)
@@ -419,38 +443,5 @@ namespace ToolKit
         }
       }
     }
-
-    void EditorViewport2d::GenerateGrid()
-    {
-      m_layoutSize = { g_app->m_playWidth, g_app->m_playHeight };
-
-      float stepDist = 20.0f;
-      int yRep = (int)(m_layoutSize.x / stepDist);
-      int xRep = (int)(m_layoutSize.y / stepDist);
-      int total = xRep * yRep * 2;
-
-      Vec3Array linePnts;
-      linePnts.reserve(total);
-      const float depth = -1.0f;
-
-      Vec2 origin = { m_layoutSize.x * -0.5f, m_layoutSize.y * -0.5f };
-      for (int i = 1; i < xRep; i++)
-      {
-        Vec3 p0(origin.x, origin.y + stepDist * i, depth);
-        Vec3 p1(m_layoutSize.x * 0.5f, origin.y + stepDist * i, depth);
-        linePnts.push_back(p0);
-        linePnts.push_back(p1);
-
-        for (int j = 1; j < yRep; j++)
-        {
-          Vec3 p0(origin.x + stepDist * j, origin.y, depth);
-          Vec3 p1(origin.x + stepDist * j, origin.y + m_layoutSize.y, depth);
-          linePnts.push_back(p0);
-          linePnts.push_back(p1);
-        }
-      }
-
-      m_grid.Generate(linePnts, Vec3(0.5f), DrawType::Line);
-    }
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

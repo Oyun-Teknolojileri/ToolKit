@@ -28,7 +28,7 @@ namespace ToolKit
   (
     const ScenePtr& scene,
     Viewport* viewport,
-    LightRawPtrArray editorLights
+    DirectionalLightRawPtrArray editorLights
   )
   {
     Camera* cam = viewport->GetCamera();
@@ -96,7 +96,7 @@ namespace ToolKit
   (
     Entity* ntt,
     Camera* cam,
-    const LightRawPtrArray& lights
+    const DirectionalLightRawPtrArray& lights
   )
   {
     MeshComponentPtrArray meshComponents;
@@ -519,7 +519,7 @@ namespace ToolKit
     EntityRawPtrArray entities,
     Camera* cam,
     float zoom,
-    const LightRawPtrArray& editorLights
+    const DirectionalLightRawPtrArray& editorLights
   )
   {
     // Render opaque objects
@@ -543,7 +543,7 @@ namespace ToolKit
     EntityRawPtrArray entities,
     Camera* cam,
     float zoom,
-    const LightRawPtrArray& editorLights
+    const DirectionalLightRawPtrArray& editorLights
   )
   {
     // Sort transparent entities
@@ -740,32 +740,38 @@ namespace ToolKit
 
           for (size_t i = 0; i < lsize; i++)
           {
-            Light::LightData data = m_lights[i]->GetData();
+            Vec3 pos = m_lights[i]->m_node->GetTranslation
+            (
+              TransformationSpace::TS_WORLD
+            );
+            Vec3 dir = m_lights[i]->GetDirection();
+            Vec3 color = m_lights[i]->m_lightData.color;
+            float intensity = m_lights[i]->m_lightData.intensity;
 
             GLint loc = glGetUniformLocation
             (
               program->m_handle,
               g_lightPosStrCache[i].c_str()
             );
-            glUniform3fv(loc, 1, &data.pos.x);
+            glUniform3fv(loc, 1, &pos.x);
             loc = glGetUniformLocation
             (
               program->m_handle,
               g_lightDirStrCache[i].c_str()
             );
-            glUniform3fv(loc, 1, &data.dir.x);
+            glUniform3fv(loc, 1, &dir.x);
             loc = glGetUniformLocation
             (
               program->m_handle,
               g_lightColorStrCache[i].c_str()
             );
-            glUniform3fv(loc, 1, &data.color.x);
+            glUniform3fv(loc, 1, &color.x);
             loc = glGetUniformLocation
             (
               program->m_handle,
               g_lightIntensityStrCache[i].c_str()
             );
-            glUniform1f(loc, data.intensity);
+            glUniform1f(loc, intensity);
           }
 
           GLint loc = glGetUniformLocation

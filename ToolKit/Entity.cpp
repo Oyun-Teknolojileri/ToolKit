@@ -5,6 +5,7 @@
 #include "MathUtil.h"
 #include "Util.h"
 #include "DebugNew.h"
+#include "Light.h"
 
 namespace ToolKit
 {
@@ -182,8 +183,10 @@ namespace ToolKit
       case EntityType::Entity_Button:
       e = new Button();
       break;
-      case EntityType::Entity_SpriteAnim:
       case EntityType::Entity_Light:
+      e = new Light();
+      break;
+      case EntityType::Entity_SpriteAnim:
       case EntityType::Entity_Directional:
       default:
       assert(false);
