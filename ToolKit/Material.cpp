@@ -35,7 +35,7 @@ namespace ToolKit
     XmlFile file(GetFile().c_str());
     XmlDocument doc;
     doc.parse<0>(file.data());
-    
+
     XmlNode* rootNode = doc.first_node("material");
     DeSerialize(&doc, rootNode);
 
@@ -83,7 +83,10 @@ namespace ToolKit
     }
     else
     {
-      m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
+      m_vertexShader = GetShaderManager()->Create<Shader>
+        (
+          ShaderPath("defaultVertex.shader", true)
+        );
       m_vertexShader->Init();
     }
 
@@ -95,13 +98,19 @@ namespace ToolKit
     {
       if (m_diffuseTexture)
       {
-        m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader", true));
+        m_fragmetShader = GetShaderManager()->Create<Shader>
+          (
+            ShaderPath("defaultFragment.shader", true)
+          );
       }
       else
       {
-        m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("solidColorFrag.shader", true));
+        m_fragmetShader = GetShaderManager()->Create<Shader>
+          (
+            ShaderPath("solidColorFrag.shader", true)
+          );
       }
-      
+
       m_fragmetShader->Init();
     }
 
@@ -158,7 +167,10 @@ namespace ToolKit
     if (m_diffuseTexture)
     {
       XmlNode* node = CreateXmlNode(doc, "diffuseTexture", container);
-      String file = GetRelativeResourcePath(m_diffuseTexture->GetSerializeFile());
+      String file = GetRelativeResourcePath
+      (
+        m_diffuseTexture->GetSerializeFile()
+      );
       WriteAttr(node, doc, "name", file);
     }
 
@@ -172,14 +184,20 @@ namespace ToolKit
     if (m_vertexShader)
     {
       XmlNode* node = CreateXmlNode(doc, "shader", container);
-      String file = GetRelativeResourcePath(m_vertexShader->GetSerializeFile());
+      String file = GetRelativeResourcePath
+      (
+          m_vertexShader->GetSerializeFile()
+      );
       WriteAttr(node, doc, "name", file);
     }
 
     if (m_fragmetShader)
     {
       XmlNode* node = CreateXmlNode(doc, "shader", container);
-      String file = GetRelativeResourcePath(m_fragmetShader->GetSerializeFile());
+      String file = GetRelativeResourcePath
+      (
+        m_fragmetShader->GetSerializeFile()
+      );
       WriteAttr(node, doc, "name", file);
     }
 
@@ -200,22 +218,34 @@ namespace ToolKit
     }
 
     XmlNode* rootNode = parent;
-    for (XmlNode* node = rootNode->first_node(); node; node = node->next_sibling())
+    for
+    (
+      XmlNode* node = rootNode->first_node(); node; node = node->next_sibling()
+    )
     {
       if (strcmp("diffuseTexture", node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute("name");
-        m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath(attr->value()));
+        m_diffuseTexture = GetTextureManager()->Create<Texture>
+          (
+            TexturePath(attr->value())
+          );
       }
       else if (strcmp("cubeMap", node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute("name");
-        m_cubeMap = GetTextureManager()->Create<CubeMap>(TexturePath(attr->value()));
+        m_cubeMap = GetTextureManager()->Create<CubeMap>
+          (
+            TexturePath(attr->value())
+          );
       }
       else if (strcmp("shader", node->name()) == 0)
       {
         XmlAttribute* attr = node->first_attribute("name");
-        ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath(attr->value()));
+        ShaderPtr shader = GetShaderManager()->Create<Shader>
+          (
+            ShaderPath(attr->value())
+          );
         if (shader->m_shaderType == GraphicTypes::VertexShader)
         {
           m_vertexShader = shader;
@@ -262,39 +292,72 @@ namespace ToolKit
     ResourceManager::Init();
 
     Material* material = new Material();
-    material->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    material->m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader", true));
-    material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
+    material->m_vertexShader = GetShaderManager()->Create<Shader>
+      (
+        ShaderPath("defaultVertex.shader", true)
+      );
+    material->m_fragmetShader = GetShaderManager()->Create<Shader>
+      (
+        ShaderPath("defaultFragment.shader", true)
+      );
+    material->m_diffuseTexture = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("default.png", true)
+      );
     material->Init();
 
     m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
 
     material = new Material();
-    material->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    material->m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
-    material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
+    material->m_vertexShader = GetShaderManager()->Create<Shader>
+      (
+        ShaderPath("defaultVertex.shader", true)
+      );
+    material->m_fragmetShader = GetShaderManager()->Create<Shader>
+      (
+        ShaderPath("unlitFrag.shader", true)
+      );
+    material->m_diffuseTexture = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("default.png", true)
+      );
     material->Init();
 
     m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
 
     material = new Material();
-    material->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    material->m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("solidColorFrag.shader", true));
+    material->m_vertexShader = GetShaderManager()->Create<Shader>
+      (
+        ShaderPath("defaultVertex.shader", true)
+      );
+    material->m_fragmetShader = GetShaderManager()->Create<Shader>
+      (
+        ShaderPath("solidColorFrag.shader", true)
+      );
     material->Init();
 
     m_storage[MaterialPath("solid.material", true)] = MaterialPtr(material);
 
     material = new Material();
-    material->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    material->m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitColorFrag.shader", true));
+    material->m_vertexShader = GetShaderManager()->Create<Shader>
+      (
+        ShaderPath("defaultVertex.shader", true)
+      );
+    material->m_fragmetShader = GetShaderManager()->Create<Shader>
+      (
+        ShaderPath("unlitColorFrag.shader", true)
+      );
     material->Init();
 
-    m_storage[MaterialPath("unlitSolid.material", true)] = MaterialPtr(material);
+    m_storage
+      [
+        MaterialPath("unlitSolid.material", true)
+      ] = MaterialPtr(material);
   }
 
   bool MaterialManager::CanStore(ResourceType t)
   {
-      return t == ResourceType::Material;
+    return t == ResourceType::Material;
   }
 
   ResourcePtr MaterialManager::CreateLocal(ResourceType type)
@@ -314,7 +377,10 @@ namespace ToolKit
 
   MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial()
   {
-    return m_storage[MaterialPath("unlitSolid.material", true)]->Copy<Material>();
+    return m_storage
+      [
+        MaterialPath("unlitSolid.material", true)
+      ]->Copy<Material>();
   }
 
   MaterialPtr MaterialManager::GetCopyOfSolidMaterial()
@@ -327,4 +393,5 @@ namespace ToolKit
     return m_storage[MaterialPath("default.material", true)]->Copy<Material>();
   }
 
-}
+}  // namespace ToolKit
+

@@ -2,6 +2,8 @@
 
 #include "ToolKit.h"
 #include "Scene.h"
+#include "EditorLight.h"
+#include "Types.h"
 
 namespace ToolKit
 {
@@ -10,12 +12,12 @@ namespace ToolKit
 
     class EditorScene : public Scene
     {
-    public:
+     public:
       EditorScene();
-      EditorScene(const String& file);
+      explicit EditorScene(const String& file);
       virtual ~EditorScene();
 
-      virtual void Load() override;
+      void Load() override;
 
       // Selection operations.
       bool IsSelected(ULongID id) const;
@@ -25,37 +27,43 @@ namespace ToolKit
       void AddToSelection(ULongID id, bool additive);
       void ClearSelection();
       bool IsCurrentSelection(ULongID id) const;
-      void MakeCurrentSelection(ULongID id, bool ifExist); // Makes the entity current selection. ifExist true, only works if the entity exist in the selection. Otherwise adds entity to selection list and selects it.
+      // Makes the entity current selection. ifExist true,
+      void MakeCurrentSelection(ULongID id, bool ifExist);
+
+      // only works if the entity exist in the selection.
+      // Otherwise adds entity to selection list and selects it.
       uint GetSelectedEntityCount() const;
       Entity* GetCurrentSelection() const;
 
       // Resource operations
-      virtual void Save(bool onlyIfDirty) override;
+      void Save(bool onlyIfDirty) override;
 
       // Entity operations.
-      virtual Entity* RemoveEntity(ULongID id) override;
-      virtual void Destroy(bool removeResources) override;
+      Entity* RemoveEntity(ULongID id) override;
+      void Destroy(bool removeResources) override;
       void GetSelectedEntities(EntityRawPtrArray& entities) const;
       void GetSelectedEntities(EntityIdArray& entities) const;
       void SelectByTag(const String& tag);
 
-    private:
-      virtual void CopyTo(Resource* other) override;
+     private:
+      void CopyTo(Resource* other) override;
 
-    public:
-      bool m_newScene; // Indicates if this is created via new scene. That is not saved on the disk.
+     public:
+       // Indicates if this is created via new scene.
+       // That is not saved on the disk.
+      bool m_newScene;
 
-    private:
+     private:
       EntityIdArray m_selectedEntities;
     };
 
     class EditorSceneManager : public SceneManager
     {
-    public:
+     public:
       EditorSceneManager();
       virtual ~EditorSceneManager();
-      virtual ResourcePtr CreateLocal(ResourceType type) override;
+      ResourcePtr CreateLocal(ResourceType type) override;
     };
 
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

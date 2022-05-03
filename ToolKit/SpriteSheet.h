@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <unordered_map>
+
 #include "MathUtil.h"
 #include "Drawable.h"
 #include "Resource.h"
@@ -21,43 +24,43 @@ namespace ToolKit
 
   class TK_API SpriteSheet : public Resource
   {
-  public:
+   public:
     TKResouceType(SpriteSheet)
 
     SpriteSheet();
-    SpriteSheet(String file);
+    explicit SpriteSheet(String file);
     ~SpriteSheet();
 
-    virtual void Load() override;
-    virtual void Init(bool flushClientSideArray = true) override;
-    virtual void UnInit() override;
+    void Load() override;
+    void Init(bool flushClientSideArray = true) override;
+    void UnInit() override;
 
-  private:
+   private:
     bool FetchEntries();
 
-  public:
+   public:
     TexturePtr m_spriteSheet;
     std::vector<SpriteEntry> m_entries;
     String m_imageFile;
     int m_imageWidth;
     int m_imageHeight;
 
-  public:
+   public:
     std::unordered_map<String, Surface*> m_sprites;
   };
 
   class TK_API SpriteAnimation : public Drawable
   {
-  public:
+   public:
     SpriteAnimation();
-    SpriteAnimation(SpriteSheetPtr spriteSheet);
+    explicit SpriteAnimation(SpriteSheetPtr spriteSheet);
     ~SpriteAnimation();
 
     virtual EntityType GetType() const;
     Surface* GetCurrentSurface();
     void Update(float deltaTime);
 
-  public:
+   public:
     float m_animFps = 23.4f;
     bool m_looping = false;
     bool m_animationStoped = false;
@@ -65,18 +68,18 @@ namespace ToolKit
     SpriteSheetPtr m_sheet;
     String m_currentFrame;
 
-  private:
-    float m_currentTime = 0.0f; // Seconds
+   private:
+    float m_currentTime = 0.0f;  // Seconds
     float m_prevTime = 0.0f;
   };
 
   class TK_API SpriteSheetManager : public ResourceManager
   {
-  public:
+   public:
     SpriteSheetManager();
     virtual ~SpriteSheetManager();
-    virtual bool CanStore(ResourceType t);
-    virtual ResourcePtr CreateLocal(ResourceType type);
+    bool CanStore(ResourceType t) override;
+    ResourcePtr CreateLocal(ResourceType type) override;
   };
 
-}
+}  // namespace ToolKit

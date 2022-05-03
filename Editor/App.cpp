@@ -7,6 +7,7 @@
 #include <string>
 #include <memory>
 
+#include "Gizmo.h"
 #include "Renderer.h"
 #include "UI.h"
 #include "EditorViewport.h"
@@ -18,7 +19,6 @@
 #include "Directional.h"
 #include "Mod.h"
 #include "ConsoleWindow.h"
-#include "Gizmo.h"
 #include "FolderWindow.h"
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
@@ -52,6 +52,10 @@ namespace ToolKit
     {
       AssignManagerReporters();
 
+      m_pointLightBillboard = new LightBillboard(LightType::LightPoint);
+      m_directionalLightBillboard =
+      new LightBillboard(LightType::LightDirectional);
+      m_spotLightGizmo = new SpotLightGizmo();
       m_cursor = new Cursor();
       m_origin = new Axis3d();
       m_grid = new Grid(100);
@@ -61,19 +65,19 @@ namespace ToolKit
       // Lights and camera.
       m_lightMaster = new Node();
 
-      Light* light = new Light();
+      DirectionalLight* light = new DirectionalLight();
       light->Yaw(glm::radians(-45.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
-      light = new Light();
-      light->m_intensity = 0.5f;
+      light = new DirectionalLight();
+      light->m_lightData.intensity = 0.5f;
       light->Yaw(glm::radians(60.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
-      light = new Light();
-      light->m_intensity = 0.3f;
+      light = new DirectionalLight();
+      light->m_lightData.intensity = 0.3f;
       light->Yaw(glm::radians(-140.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
@@ -85,9 +89,9 @@ namespace ToolKit
       m_workspace.Init();
       String sceneName = "New Scene" + SCENE;
       EditorScenePtr scene = std::make_shared<EditorScene>
-        (
+      (
         ScenePath(sceneName)
-        );
+      );
       scene->m_name = sceneName;
       scene->m_newScene = true;
       SetCurrentScene(scene);
@@ -138,6 +142,11 @@ namespace ToolKit
 
       ModManager::GetInstance()->UnInit();
       ActionManager::GetInstance()->UnInit();
+
+      // Light gizmos
+      SafeDel(m_pointLightBillboard);
+      SafeDel(m_directionalLightBillboard);
+      SafeDel(m_spotLightGizmo);
     }
 
     void App::Frame(float deltaTime)
@@ -164,6 +173,8 @@ namespace ToolKit
       }
 
       ShowPlayWindow(deltaTime);
+
+      LightRawPtrArray allLights = GetCurrentScene()->GetLights();
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -202,7 +213,7 @@ namespace ToolKit
           }
 
           // Render gizmo.
-          RenderGizmo(viewport, m_gizmo);
+          RenderGizmo(viewport, m_gizmo, allLights);
         }
 
         // Render debug objects.
@@ -1231,8 +1242,50 @@ Fail:
       }
     }
 
-    void App::RenderGizmo(EditorViewport* viewport, Gizmo* gizmo)
+    void App::RenderGizmo
+    (
+      EditorViewport* viewport,
+      Gizmo* gizmo,
+      LightRawPtrArray& allLights
+    )
     {
+      // Light gizmos
+      for (Light* light : allLights)
+      {
+        // Spot light gizmo
+        if (light->m_lightData.type == 3)
+        {
+          m_spotLightGizmo->RenderGizmo
+          (
+            m_renderer,
+            viewport,
+            static_cast<DirectionalLight*>(light)
+          );
+        }
+
+        if (light->m_lightData.type == 1)  // Directional light
+        {
+          m_directionalLightBillboard->RenderBillboard
+          (
+            m_renderer,
+            viewport,
+            light
+          );
+        }
+        // Point
+        else if (
+          light->m_lightData.type == 2 || light->m_lightData.type == 3
+          )
+        {
+          m_pointLightBillboard->RenderBillboard
+          (
+            m_renderer,
+            viewport,
+            light
+          );
+        }
+      }
+
       if (gizmo == nullptr)
       {
         return;

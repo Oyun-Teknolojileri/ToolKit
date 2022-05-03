@@ -165,8 +165,8 @@ namespace ToolKit
    public:
     AnimationManager();
     virtual ~AnimationManager();
-    virtual bool CanStore(ResourceType t);
-    virtual ResourcePtr CreateLocal(ResourceType type);
+    bool CanStore(ResourceType t) override;
+    ResourcePtr CreateLocal(ResourceType type) override;
   };
 
   /**

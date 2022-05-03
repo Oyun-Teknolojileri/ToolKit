@@ -1,4 +1,6 @@
 #include "Resource.h"
+
+#include <string>
 #include "Util.h"
 
 namespace ToolKit
@@ -54,8 +56,8 @@ namespace ToolKit
     }
   }
 
-  void Resource::CopyTo(Resource* other) 
-  { 
+  void Resource::CopyTo(Resource* other)
+  {
     assert(other->GetType() == GetType());
     if (!m_file.empty())
     {
@@ -82,6 +84,21 @@ namespace ToolKit
     assert(false && "Not implemented");
   }
 
+  void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent)
+  {
+    XmlNode* refNode = CreateXmlNode(doc, "ResourceRef", parent);
+    WriteAttr
+    (
+      refNode, doc, "Type",
+      std::to_string
+      (
+        static_cast<int> (GetType())
+      )
+    );
+
+    WriteAttr(refNode, doc, "File", GetFile());
+  }
+
   String Resource::GetFile() const
   {
     return m_file;
@@ -102,4 +119,4 @@ namespace ToolKit
     m_file = file;
   }
 
-}
+}  // namespace ToolKit

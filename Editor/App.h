@@ -1,9 +1,14 @@
 #pragma once
 
+#include <unordered_map>
+#include <vector>
+
 #include "ToolKit.h"
 #include "EditorScene.h"
 #include "Workspace.h"
 #include "GlobalDef.h"
+#include "Light.h"
+
 
 namespace ToolKit
 {
@@ -13,6 +18,7 @@ namespace ToolKit
   class Sphere;
   class Camera;
   class Animation;
+  class Billboard;
 
   namespace Editor
   {
@@ -27,10 +33,12 @@ namespace ToolKit
     class MaterialInspector;
     class Window;
     class Gizmo;
+    class LightBillboard;
+    class SpotLightGizmo;
 
     class App : Serializable
     {
-    public:
+     public:
       enum class GameMod
       {
         Playing,
@@ -38,7 +46,7 @@ namespace ToolKit
         Stop
       };
 
-    public:
+     public:
       App(int windowWidth, int windowHeight);
       virtual ~App();
 
@@ -98,30 +106,36 @@ namespace ToolKit
         return nullptr;
       }
 
-      void RenderSelected(EditorViewport* viewport); // Quick selected render implementation.
-      void RenderGizmo(EditorViewport* viewport, Gizmo* gizmo);
+      // Quick selected render implementation.
+      void RenderSelected(EditorViewport* viewport);
+      void RenderGizmo
+      (
+        EditorViewport* viewport,
+        Gizmo* gizmo,
+        LightRawPtrArray& allLights
+      );
       void ShowPlayWindow(float deltaTime);
 
-      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-    private:
+     private:
       void CreateSimulationWindow();
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
       void Generate2dGrid();
 
-    public:
+     public:
       // UI elements.
       std::vector<Window*> m_windows;
       String m_statusMsg;
-      
+
       // Editor variables.
-      float m_camSpeed = 8.0; // Meters per sec.
+      float m_camSpeed = 8.0;  // Meters per sec.
       float m_mouseSensitivity = 0.5f;
       Vec2 m_thumbnailSize = Vec2(300.0f, 300.0f);
       std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
-      
+
       // Emulator settings.
       bool m_runWindowed = false;
       float m_playWidth = 640.0f;
@@ -133,12 +147,15 @@ namespace ToolKit
       LineBatch m_2dGrid;
       Axis3d* m_origin;
       Cursor* m_cursor;
+      SpotLightGizmo* m_spotLightGizmo;
+      LightBillboard* m_pointLightBillboard;
+      LightBillboard* m_directionalLightBillboard;
       Gizmo* m_gizmo = nullptr;
       std::vector<Drawable*> m_perFrameDebugObjects;
 
       // 3 point lighting system.
       Node* m_lightMaster = nullptr;
-      LightRawPtrArray m_sceneLights; // { 0:key 1:fill, 2:back }
+      DirectionalLightRawPtrArray m_sceneLights;  // { 0:key 1:fill, 2:back }
 
       // Editor states.
       int m_fps = 0;
@@ -155,15 +172,14 @@ namespace ToolKit
       GameMod m_gameMod = GameMod::Stop;
 
       // Snap settings.
-      bool m_snapsEnabled = false; // Delta transforms.
+      bool m_snapsEnabled = false;  // Delta transforms.
       float m_moveDelta = 0.25f;
       float m_rotateDelta = 15.0f;
       float m_scaleDelta = 0.5f;
 
       Renderer* m_renderer;
 
-    private:
-
+     private:
       // Internal states.
       bool m_onNewScene = false;
       bool m_onQuit = false;
@@ -175,5 +191,5 @@ namespace ToolKit
     extern void DebugCube(const Vec3& p, float size = 0.01f);
     extern void DebugLineStrip(const Vec3Array& pnts);
 
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

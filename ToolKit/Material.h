@@ -10,26 +10,26 @@ namespace ToolKit
 
   class TK_API Material : public Resource
   {
-  public:
+   public:
     TKResouceType(Material)
 
-    Material();
-    Material(String file);
+      Material();
+    explicit Material(String file);
     ~Material();
 
-    virtual void Load() override;
-    virtual void Save(bool onlyIfDirty) override;
-    virtual void Init(bool flushClientSideArray = true) override;
-    virtual void UnInit() override;
+    void Load() override;
+    void Save(bool onlyIfDirty) override;
+    void Init(bool flushClientSideArray = true) override;
+    void UnInit() override;
     RenderState* GetRenderState();
 
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-  private:
-    virtual void CopyTo(Resource* other) override;
+   private:
+    void CopyTo(Resource* other) override;
 
-  public:
+   public:
     CubeMapPtr m_cubeMap;
     TexturePtr m_diffuseTexture;
     ShaderPtr m_vertexShader;
@@ -37,21 +37,19 @@ namespace ToolKit
     Vec3 m_color;
     float m_alpha;
 
-    RenderTechnique m_renderTechnique;
-
-  private:
+   private:
     RenderState m_renderState;
   };
 
   class TK_API MaterialManager : public ResourceManager
   {
-  public:
+   public:
     MaterialManager();
     virtual ~MaterialManager();
-    virtual void Init() override;
-    virtual bool CanStore(ResourceType t);
-    virtual ResourcePtr CreateLocal(ResourceType type);
-    virtual String GetDefaultResource(ResourceType type) override;
+    void Init() override;
+    bool CanStore(ResourceType t) override;
+    ResourcePtr CreateLocal(ResourceType type) override;
+    String GetDefaultResource(ResourceType type) override;
 
     MaterialPtr GetCopyOfUnlitMaterial();
     MaterialPtr GetCopyOfUnlitColorMaterial();
@@ -59,4 +57,4 @@ namespace ToolKit
     MaterialPtr GetCopyOfDefaultMaterial();
   };
 
-}
+}  // namespace ToolKit

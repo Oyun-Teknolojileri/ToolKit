@@ -1,5 +1,10 @@
-#include "ToolKit.h"
 #include "Scene.h"
+
+#include <string>
+#include <vector>
+#include <algorithm>
+
+#include "ToolKit.h"
 #include "Util.h"
 #include "DebugNew.h"
 
@@ -67,7 +72,7 @@ namespace ToolKit
     {
       XmlDocument doc;
       Serialize(&doc, nullptr);
-      
+
       std::string xml;
       rapidxml::print(std::back_inserter(xml), doc, 0);
 
@@ -116,14 +121,18 @@ namespace ToolKit
       ntt->Id() += bigId;
       ntt->_parentId += bigId;
 
-      AddEntity(ntt); // Insert into this scene.
+      AddEntity(ntt);  // Insert into this scene.
     }
 
     other->RemoveAllEntities();
     GetSceneManager()->Remove(other->GetFile());
   }
 
-  Scene::PickData Scene::PickObject(Ray ray, const EntityIdArray& ignoreList) const
+  Scene::PickData Scene::PickObject
+  (
+    Ray ray,
+    const EntityIdArray& ignoreList
+  ) const
   {
     PickData pd;
     pd.pickPos = ray.position + ray.direction * 5.0f;
@@ -136,7 +145,11 @@ namespace ToolKit
         continue;
       }
 
-      if (std::find(ignoreList.begin(), ignoreList.end(), ntt->Id()) != ignoreList.end())
+      if
+      (
+        std::find(ignoreList.begin(), ignoreList.end(), ntt->Id())
+        != ignoreList.end()
+      )
       {
         continue;
       }
@@ -158,7 +171,7 @@ namespace ToolKit
 
         for (MeshComponentPtr& meshCmp : meshes)
         {
-          MeshPtr mesh = meshCmp->m_mesh;
+          MeshPtr mesh = meshCmp->Mesh();
           if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount)
           {
             // Per polygon check if data exist.
@@ -186,7 +199,13 @@ namespace ToolKit
     return pd;
   }
 
-  void Scene::PickObject(const Frustum& frustum, std::vector<PickData>& pickedObjects, const EntityIdArray& ignoreList, bool pickPartiallyInside) const
+  void Scene::PickObject
+  (
+    const Frustum& frustum,
+    std::vector<PickData>& pickedObjects,
+    const EntityIdArray& ignoreList,
+    bool pickPartiallyInside
+  ) const
   {
     for (Entity* e : m_entities)
     {
@@ -195,7 +214,11 @@ namespace ToolKit
         continue;
       }
 
-      if (std::find(ignoreList.begin(), ignoreList.end(), e->Id()) != ignoreList.end())
+      if
+      (
+        std::find(ignoreList.begin(), ignoreList.end(), e->Id()) !=
+        ignoreList.end()
+      )
       {
         continue;
       }
@@ -235,14 +258,15 @@ namespace ToolKit
 
   void Scene::AddEntity(Entity* entity)
   {
-    assert(GetEntity(entity->Id()) == nullptr && "Entity is already in the scene.");
+    assert(GetEntity(entity->Id()) ==
+      nullptr && "Entity is already in the scene.");
     m_entities.push_back(entity);
   }
 
   Entity* Scene::RemoveEntity(ULongID id)
   {
     Entity* removed = nullptr;
-    for (int i = (int)m_entities.size() - 1; i >= 0; i--)
+    for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; i--)
     {
       if (m_entities[i]->Id() == id)
       {
@@ -271,6 +295,20 @@ namespace ToolKit
   const EntityRawPtrArray& Scene::GetEntities() const
   {
     return m_entities;
+  }
+
+  const LightRawPtrArray Scene::GetLights() const
+  {
+    LightRawPtrArray lights;
+    for (Entity* ntt : m_entities)
+    {
+      if (ntt->GetType() == EntityType::Entity_Light)
+      {
+        lights.push_back(static_cast<Light*>(ntt));
+      }
+    }
+
+    return lights;
   }
 
   Entity* Scene::GetFirstEntityByName(const String& name)
@@ -314,7 +352,13 @@ namespace ToolKit
   EntityRawPtrArray Scene::Filter(std::function<bool(Entity*)> filter)
   {
     EntityRawPtrArray filtered;
-    std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(filtered), filter);
+    std::copy_if
+    (
+      m_entities.begin(),
+      m_entities.end(),
+      std::back_inserter(filtered),
+      filter
+    );
     return filtered;
   }
 
@@ -367,7 +411,11 @@ namespace ToolKit
   {
     // Copy camera
     m_camera->SetProjectionMatrix(cam->GetProjectionMatrix());
-    m_camera->m_node->SetTransform(cam->m_node->GetTransform(TransformationSpace::TS_WORLD), TransformationSpace::TS_WORLD);
+    m_camera->m_node->SetTransform
+    (
+      cam->m_node->GetTransform(TransformationSpace::TS_WORLD),
+      TransformationSpace::TS_WORLD
+    );
   }
 
   void Scene::ClearEntities()
@@ -398,7 +446,8 @@ namespace ToolKit
     // Match scene name with saved file.
     String name;
     DecomposePath(GetFile(), nullptr, &name, nullptr);
-    WriteAttr(scene, doc, "version", TKVersionStr); // Always write the current version.
+    // Always write the current version.
+    WriteAttr(scene, doc, "version", TKVersionStr);
     WriteAttr(scene, doc, "name", name.c_str());
 
     for (Entity* ntt : m_entities)
@@ -424,9 +473,17 @@ namespace ToolKit
     ReadAttr(root, "version", m_version);
 
     XmlNode* node = nullptr;
-    for (node = root->first_node(XmlEntityElement.c_str()); node; node = node->next_sibling(XmlEntityElement.c_str()))
+    for
+    (
+      node = root->first_node(XmlEntityElement.c_str());
+      node;
+      node = node->next_sibling(XmlEntityElement.c_str())
+    )
     {
-      XmlAttribute* typeAttr = node->first_attribute(XmlEntityTypeAttr.c_str());
+      XmlAttribute* typeAttr = node->first_attribute
+      (
+        XmlEntityTypeAttr.c_str()
+      );
       EntityType t = (EntityType)std::atoi(typeAttr->value());
       Entity* ntt = Entity::CreateByType(t);
 
@@ -492,4 +549,4 @@ namespace ToolKit
     m_currentScene = scene;
   }
 
-}
+}  // namespace ToolKit

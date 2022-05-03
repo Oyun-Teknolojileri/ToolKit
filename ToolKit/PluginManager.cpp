@@ -9,13 +9,13 @@ namespace ToolKit
   typedef ToolKit::GamePlugin* (__cdecl* TKPROC)();
 
 #ifdef _WIN32
-  #define NOMINMAX
-  #define WIN32_LEAN_AND_MEAN
-  #include <Windows.h>
-  #include <fileapi.h>
-  
-  #undef near
-  #undef far
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <fileapi.h>
+
+#undef near
+#undef far
 
   String GetWriteTime(const String& file)
   {
@@ -33,11 +33,11 @@ namespace ToolKit
     TKPROC ProcAdd;
 
     String dllName = file;
-#ifdef TK_DEBUG
+  #ifdef TK_DEBUG
     dllName += "_d.dll";
-#else
+  #else
     dllName += ".dll";
-#endif
+  #endif
 
     // Check the register.
     bool newRegAdded = false;
@@ -76,7 +76,7 @@ namespace ToolKit
 
     if (hinstLib != NULL)
     {
-      reg->m_module = (void*)hinstLib;
+      reg->m_module = reinterpret_cast<void*> (hinstLib);
       ProcAdd = (TKPROC)GetProcAddress(hinstLib, "CreateInstance");
 
       if (ProcAdd != NULL)
@@ -88,7 +88,7 @@ namespace ToolKit
         reg->m_lastWriteTime = GetWriteTime(dllName);
         return true;
       }
-      else 
+      else
       {
         m_reporterFn("Can not find CreateInstance() in the plugin.");
       }
@@ -116,20 +116,15 @@ namespace ToolKit
     m_storage.clear();
   }
 
-#else 
-  bool PluginManager::Load(const String& name) { return false; }
-  void PluginManager::UnInit() {}
-#endif
-
   void PluginManager::Unload(const String& file)
   {
     PluginRegister* reg = GetRegister(file);
-    if 
-    (
-      reg == nullptr 
-      || reg->m_plugin == nullptr 
+    if
+      (
+      reg == nullptr
+      || reg->m_plugin == nullptr
       || !reg->m_loaded
-    )
+      )
     {
       return;
     }
@@ -145,6 +140,18 @@ namespace ToolKit
 
     reg->m_loaded = false;
   }
+#else
+  bool PluginManager::Load(const String& name)
+  {
+    return false;
+  }
+  void PluginManager::UnInit()
+  {
+  }
+  void PluginManager::Unload(const String& file)
+  {
+  }
+#endif
 
   void PluginManager::Report(const char* msg, ...)
   {
@@ -210,12 +217,12 @@ namespace ToolKit
     return nullptr;
   }
 
-  PluginManager::PluginManager() 
+  PluginManager::PluginManager()
   {
   }
 
-  PluginManager::~PluginManager() 
+  PluginManager::~PluginManager()
   {
   }
 
-}
+}  // namespace ToolKit

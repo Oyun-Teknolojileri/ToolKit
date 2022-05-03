@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Component.h"
 #include "Mesh.h"
 #include "Material.h"
@@ -23,8 +21,43 @@ namespace ToolKit
     return ComponentType::Base;
   }
 
+  void Component::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* componentNode = CreateXmlNode(doc, "Component", parent);
+    WriteAttr
+    (
+      componentNode, doc, "t", std::to_string
+      (
+        static_cast<int> (GetType())
+      )
+    );
+
+    m_localData.Serialize(doc, componentNode);
+  }
+
+  void Component::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+  }
+
   MeshComponent::MeshComponent()
   {
+    Mesh_Define
+    (
+      std::make_shared<ToolKit::Mesh>(),
+      MeshComponentCategory.Name,
+      MeshComponentCategory.Priority,
+      true,
+      true
+    );
+
+    Material_Define
+    (
+      std::make_shared<ToolKit::Material>(),
+      MeshComponentCategory.Name,
+      MeshComponentCategory.Priority,
+      true,
+      true
+    );
   }
 
   MeshComponent::~MeshComponent()
@@ -42,12 +75,11 @@ namespace ToolKit
   ComponentPtr MeshComponent::Copy()
   {
     MeshComponentPtr mc = std::make_shared<MeshComponent>();
-
-    // If expensive copies needed, do it explicitly.
-    mc->m_mesh = m_mesh;
-    if (m_material)
+    mc->m_localData = m_localData;
+    if (Material())
     {
-      mc->m_material = m_material->Copy<Material>();
+      // Deep copy declarative resources.
+      Material() = Material()->Copy<ToolKit::Material>();
     }
 
     return mc;
@@ -55,19 +87,19 @@ namespace ToolKit
 
   BoundingBox MeshComponent::GetAABB()
   {
-    return m_mesh->m_aabb;
+    return Mesh()->m_aabb;
   }
 
   void MeshComponent::Init(bool flushClientSideArray)
   {
-    if (m_mesh)
+    if (Mesh())
     {
-      m_mesh->Init(flushClientSideArray);
+      Mesh()->Init(flushClientSideArray);
     }
 
-    if (m_material)
+    if (Material())
     {
-      m_material->Init(flushClientSideArray);
+      Material()->Init(flushClientSideArray);
     }
   }
 

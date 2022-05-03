@@ -11,6 +11,8 @@ namespace ToolKit
   class TK_API UILayer
   {
    public:
+    UILayer();
+    virtual ~UILayer();
     virtual void Init() = 0;
     virtual void Uninit() = 0;
     virtual void Update(float deltaTime, Camera* cam, Viewport* vp);

@@ -15,42 +15,42 @@ namespace ToolKit
 
     class EditorViewport2d : public EditorViewport
     {
-    public:
-      EditorViewport2d(XmlNode* node);
+     public:
+      explicit EditorViewport2d(XmlNode* node);
       EditorViewport2d(float width, float height);
       virtual ~EditorViewport2d();
 
       // Window Overrides.
-      virtual void Show() override;
-      virtual Type GetType() const override;
-      virtual void Update(float deltaTime) override;
-      virtual void OnResize(float width, float height) override;
+      void Show() override;
+      Type GetType() const override;
+      void Update(float deltaTime) override;
+      void OnResize(float width, float height) override;
 
       // Viewport Overrides.
-      virtual Vec2 GetLastMousePosViewportSpace() override;
-      virtual Vec2 GetLastMousePosScreenSpace() override;
-      virtual Vec3 TransformViewportToWorldSpace(const Vec2& pnt) override;
-      virtual Vec2 TransformScreenToViewportSpace(const Vec2& pnt) override;
+      Vec2 GetLastMousePosViewportSpace() override;
+      Vec2 GetLastMousePosScreenSpace() override;
+      Vec3 TransformViewportToWorldSpace(const Vec2& pnt) override;
+      Vec2 TransformScreenToViewportSpace(const Vec2& pnt) override;
 
       // Editor overrides.
-      virtual void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const; // Consider Canvas as the content area.
+      // Consider Canvas as the content area.
+      virtual void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const;
 
-    protected:
+     protected:
       void UpdateContentArea();
       void UpdateWindow();
       void DrawCommands();
       void HandleDrop();
       void DrawOverlays();
       void DrawCanvasToolBar();
-      virtual void AdjustZoom(float delta) override;
+      void AdjustZoom(float delta) override;
 
-    private:
+     private:
       void Init2dCam();
       void UpdateCanvasSize();
       void PanZoom(float deltaTime);
-      void GenerateGrid();
 
-    private:
+     private:
       Vec2 m_canvasSize;
       Vec2 m_canvasPos;
 
@@ -60,10 +60,10 @@ namespace ToolKit
 
       Vec2 m_layoutSize;
 
-      Light m_forwardLight;
+      DirectionalLight m_forwardLight;
       LineBatch m_grid;
     };
 
-  }
+  }  // namespace Editor
 
-}
+}  // namespace ToolKit

@@ -1,7 +1,12 @@
 #pragma once
 
+#include <vector>
+
 #include "Primative.h"
 #include "MathUtil.h"
+#include "Light.h"
+#include "Renderer.h"
+#include "Viewport.h"
 
 namespace ToolKit
 {
@@ -9,27 +14,27 @@ namespace ToolKit
   {
     class Cursor : public Billboard
     {
-    public:
+     public:
       Cursor();
       virtual ~Cursor();
 
-    private:
+     private:
       void Generate();
     };
 
     class Axis3d : public Billboard
     {
-    public:
+     public:
       Axis3d();
       virtual ~Axis3d();
 
-    private:
+     private:
       void Generate();
     };
 
     class GizmoHandle
     {
-    public:
+     public:
       enum class SolidType
       {
         Cube,
@@ -55,7 +60,7 @@ namespace ToolKit
         SolidType type;
       };
 
-    public:
+     public:
       GizmoHandle();
       virtual ~GizmoHandle();
 
@@ -63,7 +68,7 @@ namespace ToolKit
       virtual bool HitTest(const Ray& ray, float& t) const;
       Mat4 GetTransform() const;
 
-    public:
+     public:
       Vec3 m_tangentDir;
       Params m_params;
       MeshPtr m_mesh;
@@ -71,22 +76,22 @@ namespace ToolKit
 
     class PolarHandle : public GizmoHandle
     {
-    public:
-      virtual void Generate(const Params& params) override;
-      virtual bool HitTest(const Ray& ray, float& t) const override;
+     public:
+      void Generate(const Params& params) override;
+      bool HitTest(const Ray& ray, float& t) const override;
     };
 
     class QuadHandle : public GizmoHandle
     {
-    public:
-      virtual void Generate(const Params& params) override;
-      virtual bool HitTest(const Ray& ray, float& t) const override;
+     public:
+      void Generate(const Params& params) override;
+      bool HitTest(const Ray& ray, float& t) const override;
     };
 
     class Gizmo : public Billboard
     {
-    public:
-      Gizmo(const Billboard::Settings& set);
+     public:
+      explicit Gizmo(const Billboard::Settings& set);
       virtual ~Gizmo();
 
       virtual AxisLabel HitTest(const Ray& ray) const;
@@ -98,60 +103,106 @@ namespace ToolKit
       void Grab(AxisLabel axis);
       AxisLabel GetGrabbedAxis() const;
 
-      virtual void LookAt(class Camera* cam, float windowHeight) override;
+      void LookAt(class Camera* cam, float windowHeight) override;
 
-    protected:
+     protected:
       virtual GizmoHandle::Params GetParam() const;
 
-    public:
+     public:
       Vec3 m_grabPoint;
       Vec3 m_initialPoint;
       Mat3 m_normalVectors;
       AxisLabel m_lastHovered;
       std::vector<GizmoHandle*> m_handles;
 
-    protected:
+     protected:
       std::vector<AxisLabel> m_lockedAxis;
       AxisLabel m_grabbedAxis;
     };
 
     class LinearGizmo : public Gizmo
     {
-    public:
+     public:
       LinearGizmo();
       virtual ~LinearGizmo();
 
-      virtual void Update(float deltaTime) override;
+      void Update(float deltaTime) override;
 
-    protected:
-      virtual GizmoHandle::Params GetParam() const override;
+     protected:
+      GizmoHandle::Params GetParam() const override;
     };
 
     class MoveGizmo : public LinearGizmo
     {
-    public:
+     public:
       MoveGizmo();
       virtual ~MoveGizmo();
     };
 
     class ScaleGizmo : public LinearGizmo
     {
-    public:
+     public:
       ScaleGizmo();
       virtual ~ScaleGizmo();
 
-    protected:
-      virtual GizmoHandle::Params GetParam() const override;
+     protected:
+      GizmoHandle::Params GetParam() const override;
     };
 
     class PolarGizmo : public Gizmo
     {
-    public:
+     public:
       PolarGizmo();
       virtual ~PolarGizmo();
 
-      virtual void Update(float deltaTime) override;
+      void Update(float deltaTime) override;
       void Render(Renderer* renderer, Camera* cam);
     };
-  }
-}
+
+    class LightBillboard : public Billboard
+    {
+     public:
+      explicit LightBillboard(LightType lightType);
+      ~LightBillboard();
+
+      void RenderBillboard
+      (
+        Renderer* renderer,
+        Viewport* viewport,
+        Light* light
+      );
+
+     protected:
+      LightBillboard();
+    };
+
+    class SpotLightGizmo : public Billboard
+    {
+     public:
+      SpotLightGizmo();
+      ~SpotLightGizmo();
+
+      void RenderGizmo
+      (
+        Renderer* renderer,
+        Viewport* viewport,
+        DirectionalLight* light
+      );
+
+     private:
+      LineBatch* m_line;
+      LineBatch* m_innerCircle;
+      LineBatch* m_outerCircle;
+      LineBatch* m_coneLines;
+
+      int m_circleVertexCount;
+      Vec3Array m_pnts;
+      Vec3Array m_innerCirclePnts;
+      Vec3Array m_outerCirclePnts;
+      Vec3Array m_conePnts;
+      Mat4 m_identityMatrix;
+      Mat4 m_rot;
+    };
+
+  }  // namespace Editor
+}  // namespace ToolKit

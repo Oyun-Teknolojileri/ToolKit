@@ -88,7 +88,7 @@ namespace ToolKit
    public:
     TKResouceType(SkinMesh)
 
-    SkinMesh();
+      SkinMesh();
     explicit SkinMesh(const String& file);
     ~SkinMesh();
 
@@ -112,9 +112,9 @@ namespace ToolKit
    public:
     MeshManager();
     virtual ~MeshManager();
-    virtual bool CanStore(ResourceType t);
-    virtual ResourcePtr CreateLocal(ResourceType type);
-    virtual String GetDefaultResource(ResourceType type);
+    bool CanStore(ResourceType t) override;
+    ResourcePtr CreateLocal(ResourceType type) override;
+    String GetDefaultResource(ResourceType type) override;
   };
 
 }  // namespace ToolKit

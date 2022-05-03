@@ -17,6 +17,7 @@
     <ClCompile Include="Directional.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MathUtil.cpp" />
@@ -55,6 +56,7 @@
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="GlobalCache.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MathUtil.h" />

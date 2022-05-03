@@ -1,8 +1,10 @@
 #pragma once
 
+#include <functional>
+#include <vector>
+
 #include "Types.h"
 #include "Plugin.h"
-#include <functional>
 
 namespace ToolKit
 {
@@ -18,12 +20,12 @@ namespace ToolKit
 
   class TK_API PluginManager
   {
-  public:
+   public:
     PluginManager();
     ~PluginManager();
 
     // Platform dependent functions.
-    bool Load(const String& file); // Auto reloads if the dll is dirty.
+    bool Load(const String& file);  // Auto reloads if the dll is dirty.
     void Unload(const String& file);
 
     // No platform dependency.
@@ -36,12 +38,12 @@ namespace ToolKit
     GamePlugin* GetGamePlugin();
     void UnloadGamePlugin();
 
-  private:
+   private:
     PluginRegister* GetGameRegister();
 
-  public:
+   public:
     std::vector<PluginRegister> m_storage;
     std::function<void(const String&)> m_reporterFn;
   };
 
-}
+}  // namespace ToolKit

@@ -734,7 +734,7 @@ namespace ToolKit
                 (
                   path
                 );
-                ms->m_mesh->SetMaterial(material);
+                ms->Mesh()->SetMaterial(material);
               }
             }
           }

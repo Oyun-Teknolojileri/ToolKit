@@ -1,5 +1,10 @@
-#include "App.h"
+
 #include "Gizmo.h"
+
+#include <vector>
+#include <memory>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "ToolKit.h"
 #include "Node.h"
 #include "Surface.h"
@@ -42,8 +47,13 @@ namespace ToolKit
 
       meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
       meshPtr->m_material->UnInit();
-      meshPtr->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath(ConcatPaths({ "Icons", "cursor4k.png" }), true));
-      meshPtr->m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+      meshPtr->m_material->m_diffuseTexture =
+      GetTextureManager()->Create<Texture>
+      (
+        TexturePath(ConcatPaths({ "Icons", "cursor4k.png" }), true)
+      );
+      meshPtr->m_material->GetRenderState()->blendFunction =
+      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
       meshPtr->m_material->Init();
 
       meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
@@ -71,7 +81,8 @@ namespace ToolKit
       vertices[10].pos.y = -0.3f;
       vertices[11].pos.y = -0.7f;
 
-      MaterialPtr newMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      MaterialPtr newMaterial =
+      GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       newMaterial->m_color = Vec3(0.1f, 0.1f, 0.1f);
       newMaterial->GetRenderState()->drawType = DrawType::Line;
       newMaterial->GetRenderState()->depthTestEnabled = false;
@@ -139,7 +150,7 @@ namespace ToolKit
     {
       m_params = params;
 
-      Vec3 dir = AXIS[(int)params.axis % 3];
+      Vec3 dir = AXIS[static_cast<int>(params.axis) % 3];
       std::vector<Vec3> pnts =
       {
         dir * params.toeTip.x,
@@ -151,7 +162,8 @@ namespace ToolKit
       LineBatch line(pnts, params.color, DrawType::Line, 2.0f);
       m_mesh->m_subMeshes.push_back(line.GetMesh());
 
-      MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      MaterialPtr material =
+      GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       material->m_color = params.color;
 
       if (params.type == SolidType::Cube)
@@ -195,7 +207,7 @@ namespace ToolKit
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
-        int axisInd = (int)m_params.axis;
+        int axisInd = static_cast<int>(m_params.axis);
         Vec3 axis = AXIS[axisInd];
         Vec3Array pnts =
         {
@@ -273,7 +285,7 @@ namespace ToolKit
         Vec3 glcl = params.grabPnt - params.worldLoc;
         glcl = glm::normalize(glm::inverse(params.normals) * glcl);
 
-        int axisIndx = (int)params.axis;
+        int axisIndx = static_cast<int>(params.axis);
         Vec3 axis = AXIS[axisIndx];
 
         // Neighbor points for parallel line.
@@ -356,7 +368,8 @@ namespace ToolKit
       m_params = params;
 
       Quad solid;
-      MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      MaterialPtr material =
+      GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       material->m_color = params.color;
       material->GetRenderState()->cullMode = CullingType::TwoSided;
 
@@ -484,7 +497,12 @@ namespace ToolKit
 
     bool Gizmo::IsLocked(AxisLabel axis) const
     {
-      return std::find(m_lockedAxis.begin(), m_lockedAxis.end(), axis) != m_lockedAxis.end();
+      return std::find
+      (
+        m_lockedAxis.begin(),
+        m_lockedAxis.end(),
+        axis
+      ) != m_lockedAxis.end();
     }
 
     void Gizmo::Lock(AxisLabel axis)
@@ -500,7 +518,13 @@ namespace ToolKit
     {
       m_lockedAxis.erase
       (
-        std::remove(m_lockedAxis.begin(), m_lockedAxis.end(), axis), m_lockedAxis.end()
+        std::remove
+        (
+          m_lockedAxis.begin(),
+          m_lockedAxis.end(),
+          axis
+        ),
+        m_lockedAxis.end()
       );
     }
 
@@ -576,7 +600,7 @@ namespace ToolKit
     {
       GizmoHandle::Params p = GetParam();
 
-      for (int i = 0; i < (int)m_handles.size(); i++)
+      for (int i = 0; i < static_cast<int>(m_handles.size()); i++)
       {
         GizmoHandle* handle = m_handles[i];
         AxisLabel axis = handle->m_params.axis;
@@ -586,7 +610,7 @@ namespace ToolKit
         }
         else
         {
-          p.color = g_gizmoColor[(int)axis % 3];
+          p.color = g_gizmoColor[static_cast<int>(axis) % 3];
         }
 
         if (IsLocked(axis))
@@ -742,7 +766,8 @@ namespace ToolKit
       if (sphere == nullptr)
       {
         sphere = std::make_shared<Sphere>(1.0f);
-        sphere->GetMesh()->m_material->GetRenderState()->cullMode = CullingType::Front;
+        sphere->GetMesh()->m_material->GetRenderState()->cullMode =
+        CullingType::Front;
       }
 
       *sphere->m_node = *m_node;
@@ -754,5 +779,262 @@ namespace ToolKit
       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       renderer->Render(this, cam);
     }
-  }
-}
+
+    LightBillboard::LightBillboard(LightType lightType)
+      : Billboard({ true, 10.0f, 60.0f })
+    {
+      String path = "";
+      if (lightType == LightType::LightDirectional)
+      {
+        path = ConcatPaths({ "Icons", "light_sun.png" });
+      }
+      else
+      {
+        path = ConcatPaths({ "Icons", "light_point.png" });
+      }
+
+      MeshPtr& parentMesh = GetMesh();
+      parentMesh->UnInit();
+
+      // Billboard
+      Quad quad;
+      MeshPtr& meshPtr = quad.GetMesh();
+
+      meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      meshPtr->m_material->UnInit();
+      meshPtr->m_material->m_diffuseTexture =
+      GetTextureManager()->Create<Texture>(TexturePath(path, true));
+      meshPtr->m_material->GetRenderState()->blendFunction =
+      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+      meshPtr->m_material->Init();
+      parentMesh->m_subMeshes.push_back(meshPtr);
+    }
+
+    LightBillboard::~LightBillboard()
+    {
+    }
+
+    void LightBillboard::RenderBillboard
+    (
+      Renderer* renderer,
+      Viewport* viewport,
+      Light* light
+    )
+    {
+      // Translate billboard
+      m_worldLocation =
+      light->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+
+      // Rotate billboard
+      LookAt(viewport->GetCamera(), viewport->m_zoom);
+
+      // Render billboard
+      renderer->Render(this, viewport->GetCamera());
+    }
+
+    LightBillboard::LightBillboard()
+      : Billboard({ true, 10.0f, 60.0f })
+    {
+    }
+
+    SpotLightGizmo::SpotLightGizmo()
+      : Billboard({ false, 10.0f, 60.0f })
+    {
+      m_circleVertexCount = 36;
+      m_identityMatrix = Mat4(1.0f);
+      m_rot = Mat4(1.0f);
+
+      m_pnts.resize(2);
+      m_line = new LineBatch();
+
+      GetComponent<MeshComponent>()->Mesh() = m_line->GetMesh();
+
+      MeshPtr mesh = GetComponent<MeshComponent>()->Mesh();
+
+      mesh->m_material->Init();
+
+      m_innerCirclePnts.resize(m_circleVertexCount + 1);
+      m_outerCirclePnts.resize(m_circleVertexCount + 1);
+      m_innerCircle = new LineBatch();
+      m_outerCircle = new LineBatch();
+
+      mesh->m_subMeshes.push_back(m_innerCircle->GetMesh());
+      mesh->m_subMeshes[0]->m_material->Init();
+      mesh->m_subMeshes.push_back(m_outerCircle->GetMesh());
+      mesh->m_subMeshes[1]->m_material->Init();
+
+      m_conePnts.resize(2 * (m_circleVertexCount / 4));
+      m_coneLines = new LineBatch();
+
+      mesh->m_subMeshes.push_back(m_coneLines->GetMesh());
+      mesh->m_subMeshes[2]->m_material->Init();
+    }
+
+    SpotLightGizmo::~SpotLightGizmo()
+    {
+      SafeDel(m_innerCircle);
+      SafeDel(m_outerCircle);
+      SafeDel(m_coneLines);
+
+      GetMesh()->UnInit();
+      SafeDel(m_line);
+    }
+
+    void SpotLightGizmo::RenderGizmo
+    (
+      Renderer* renderer,
+      Viewport* viewport,
+      DirectionalLight* light
+    )
+    {
+      // Middle line
+      Vec3 d = light->GetDirection();
+      float r = light->m_lightData.radius;
+      m_pnts[0] = Vec3
+      (
+        light->m_node->GetTranslation(TransformationSpace::TS_WORLD)
+      );
+      m_pnts[1] = Vec3
+      (
+        light->m_node->GetTranslation(TransformationSpace::TS_WORLD)
+        + d * r * 2.25f
+      );
+      m_line->Generate(m_pnts, Vec3(0.0f), DrawType::Line, 1.0f);
+
+      // Calculating circles
+      int zeroCount = 0;
+      if (d.x == 0.0f)
+      {
+        zeroCount++;
+      }
+      if (d.y == 0.0f)
+      {
+        zeroCount++;
+      }
+      if (d.z == 0.0f)
+      {
+        zeroCount++;
+      }
+
+      Vec3 per;
+      if (zeroCount == 0)
+      {
+        per.z = 0.0f;
+        per.x = -d.y;
+        per.y = d.x;
+      }
+      else if (zeroCount == 1)
+      {
+        if (d.x == 0.0f)
+        {
+          per.x = 0.0f;
+          per.y = -d.z;
+          per.z = d.y;
+        }
+        else if (d.y == 0.0f)
+        {
+          per.y = 0.0f;
+          per.x = -d.z;
+          per.z = d.x;
+        }
+        else
+        {
+          per.z = 0.0f;
+          per.y = -d.x;
+          per.x = d.y;
+        }
+      }
+      else if (zeroCount == 2)
+      {
+        if (d.x == 0.0f && d.y == 0.0f)
+        {
+          per.x = 1.0f;
+          per.y = 0.0f;
+          per.z = 0.0f;
+        }
+        else if (d.x == 0.0f && d.z == 0.0f)
+        {
+          per.x = 1.0f;
+          per.y = 0.0f;
+          per.z = 0.0f;
+        }
+        else
+        {
+          per.x = 0.0f;
+          per.y = 1.0f;
+          per.z = 0.0f;
+        }
+      }
+      per = glm::normalize(per);
+
+      Vec3 normD = glm::normalize(d);
+      d = normD * r;
+
+      float innerCircleRadius = r
+      * glm::tan(light->m_lightData.innerAngle / 2);
+      float outerCircleRadius = r
+      * glm::tan(light->m_lightData.outerAngle / 2);
+
+      Vec3 lp = light->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      Vec3 inStartPoint = lp + d + per * innerCircleRadius;
+      Vec3 outStartPoint = lp + d + per * outerCircleRadius;
+      m_innerCirclePnts[0] = inStartPoint;
+      m_outerCirclePnts[0] = outStartPoint;
+
+      float deltaAngle = glm::two_pi<float>() / m_circleVertexCount;
+      m_rot = Mat4(1.0f);
+      for (int i = 1; i < m_circleVertexCount + 1; i++)
+      {
+        // Inner circle vertices
+        inStartPoint -= lp;
+        m_rot = glm::rotate(m_identityMatrix, deltaAngle, normD);
+        inStartPoint = Vec3(m_rot * Vec4(inStartPoint, 1.0f));
+        inStartPoint += lp;
+        m_innerCirclePnts[i] = inStartPoint;
+
+        // Outer circle outStartPoint
+        outStartPoint -= lp;
+        m_rot = glm::rotate(m_identityMatrix, deltaAngle, normD);
+        outStartPoint = Vec3(m_rot * Vec4(outStartPoint, 1.0f));
+        outStartPoint += lp;
+        m_outerCirclePnts[i] = outStartPoint;
+      }
+
+      m_innerCircle->Generate
+      (
+        m_innerCirclePnts,
+        Vec3(0.15f),
+        DrawType::LineStrip, 1.0f
+      );
+      m_outerCircle->Generate
+      (
+        m_outerCirclePnts,
+        Vec3(0.15f),
+        DrawType::LineStrip, 1.0f
+      );
+
+      MeshPtr mp = GetComponent<MeshComponent>()->Mesh();
+      mp->m_subMeshes.push_back(m_innerCircle->GetMesh());
+      mp->m_subMeshes.push_back(m_outerCircle->GetMesh());
+      mp->m_subMeshes[0]->m_material->Init();
+      mp->m_subMeshes[1]->m_material->Init();
+
+      // Cone
+      int coneIndex = 0;
+      for (int i = 0; i < m_circleVertexCount; i += 4)
+      {
+        m_conePnts[coneIndex] = lp;
+        m_conePnts[coneIndex + 1] = m_outerCirclePnts[i];
+        coneIndex += 2;
+      }
+
+      m_coneLines->Generate(m_conePnts, Vec3(0.15f), DrawType::Line, 1.0f);
+
+      mp->m_subMeshes.push_back(m_coneLines->GetMesh());
+      mp->m_subMeshes[2]->m_material->Init();
+
+      // Render gizmo
+      renderer->Render(this, viewport->GetCamera());
+    }
+  }  // namespace Editor
+}  // namespace ToolKit

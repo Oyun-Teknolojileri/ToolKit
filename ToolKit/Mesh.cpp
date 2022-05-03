@@ -1,15 +1,16 @@
-#include <unordered_map>
-#include "ToolKit.h"
 #include "Mesh.h"
+
+#include <unordered_map>
+
+#include <rapidxml.hpp>
+#include <rapidxml_utils.hpp>
+#include "ToolKit.h"
 #include "Material.h"
 #include "Texture.h"
 #include "Skeleton.h"
 #include "Util.h"
-#include <rapidxml.hpp>
-#include <rapidxml_utils.hpp>
 #include "GL/glew.h"
 #include "DebugNew.h"
-
 
 namespace ToolKit
 {
@@ -64,10 +65,7 @@ namespace ToolKit
     glDeleteVertexArrays(1, &m_vaoId);
     m_vaoId = 0;
 
-    for (MeshPtr& subMesh : m_subMeshes)
-    {
-      subMesh = nullptr;
-    }
+    m_subMeshes.clear();
 
     m_initiated = false;
   }

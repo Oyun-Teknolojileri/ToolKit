@@ -24,10 +24,13 @@
 
 namespace ToolKit
 {
+  class SceneManager;
+  class Renderer;
+  class MaterialManager;
 
   class TK_API Main
   {
-  public:
+   public:
     Main();
     virtual ~Main();
 
@@ -39,7 +42,7 @@ namespace ToolKit
     static Main* GetInstance();
     static void SetProxy(Main* proxy);
 
-  public:
+   public:
     AnimationManager* m_animationMan = nullptr;
     AnimationPlayer* m_animationPlayer = nullptr;
     AudioManager* m_audioMan = nullptr;
@@ -58,7 +61,7 @@ namespace ToolKit
     String m_resourceRoot;
     EventPool m_eventPool;
 
-  private:
+   private:
     static Main* m_proxy;
   };
 
@@ -92,4 +95,4 @@ namespace ToolKit
   TK_API String ScenePath(const String& file, bool def = false);
   TK_API String PrefabPath(const String& file, bool def = false);
 
-}
+}  // namespace ToolKit

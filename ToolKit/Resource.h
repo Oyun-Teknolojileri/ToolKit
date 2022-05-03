@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "Types.h"
 #include "ResourceManager.h"
 #include "Serialize.h"
@@ -11,11 +13,11 @@ namespace ToolKit
 
 #define TKResouceType(type) \
   static ResourceType GetTypeStatic() { return ResourceType::type; } \
-  virtual ResourceType GetType() const { return ResourceType::type; }
+  ResourceType GetType() const override { return ResourceType::type; }
 
   class TK_API Resource : public Serializable
   {
-  public:
+   public:
     Resource();
     virtual ~Resource();
     virtual void Load() = 0;
@@ -24,12 +26,12 @@ namespace ToolKit
 
     virtual void Init(bool flushClientSideArray = true) = 0;
     virtual void UnInit() = 0;
-    
+
     template<typename T>
     std::shared_ptr<T> Copy()
     {
       std::shared_ptr<T> resource = std::make_shared<T>();
-      CopyTo(resource.get()); 
+      CopyTo(resource.get());
       if (ResourceManager* manager = GetResourceManager(T::GetTypeStatic()))
       {
         manager->Manage(resource);
@@ -39,15 +41,21 @@ namespace ToolKit
     virtual ResourceType GetType() const;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+    void SerializeRef(XmlDocument* doc, XmlNode* parent);
 
     String GetFile() const;
-    const String& GetSerializeFile(); // Returns _missingFile if not empty to prevent override actual resource file. Always call this if you are in Serialize function.
+    /**
+    * Returns _missingFile if not empty to prevent override actual resource 
+    * file. 
+    * Always call this if you are in Serialize function.
+    */
+    const String& GetSerializeFile();
     void SetFile(const String& file);
 
-  protected:
+   protected:
     virtual void CopyTo(Resource* other);
 
-  public:
+   public:
     String m_name;
     ULongID m_id;
     bool m_dirty = false;
@@ -57,9 +65,9 @@ namespace ToolKit
     // Internal usage.
     String _missingFile;
 
-  private:
+   private:
     String m_file;
     static ULongID m_handle;
   };
 
-}
+}  // namespace ToolKit
