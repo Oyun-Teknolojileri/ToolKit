@@ -38,8 +38,8 @@ namespace ToolKit
 
     EntityType GetType() const override;
     virtual LightType GetLightType() const;
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
    public:
     LightData m_lightData;

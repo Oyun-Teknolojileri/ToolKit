@@ -8,6 +8,14 @@
 
 namespace ToolKit
 {
+  UILayer::UILayer()
+  {
+  }
+
+  UILayer::~UILayer()
+  {
+  }
+
   Entity* UILayer::GetLayer(const String& layerName)
   {
     if (m_layout)
