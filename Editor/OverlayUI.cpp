@@ -320,23 +320,26 @@ namespace ToolKit
         {
           if (ImGui::MenuItem("Sun"))
           {
-            Entity* node = new EditorDirectionalLight();
-            node->Name() = "Sun";
-            currScene->AddEntity(node);
+            EditorDirectionalLight* light = new EditorDirectionalLight();
+            light->Init();
+            light->Name() = "Sun";
+            currScene->AddEntity(static_cast<Entity*>(light));
           }
 
           if (ImGui::MenuItem("Point"))
           {
-            Entity* node = new EditorPointLight();
-            node->Name() = "PointLight";
-            currScene->AddEntity(node);
+            EditorPointLight* light = new EditorPointLight();
+            light->Init();
+            light->Name() = "PointLight";
+            currScene->AddEntity(static_cast<Entity*>(light));
           }
 
           if (ImGui::MenuItem("Spot"))
           {
-            Entity* node = new EditorSpotLight();
-            node->Name() = "SpotLight";
-            currScene->AddEntity(node);
+            EditorSpotLight* light = new EditorSpotLight();
+            light->Init();
+            light->Name() = "SpotLight";
+            currScene->AddEntity(static_cast<Entity*>(light));
           }
           ImGui::EndMenu();
         }

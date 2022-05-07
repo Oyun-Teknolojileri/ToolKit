@@ -1,10 +1,12 @@
 
 #include "EditorLight.h"
 
+#include <memory>
 #include <string>
 
 #include "Material.h"
 #include "Texture.h"
+#include "App.h"
 
 
 namespace ToolKit
@@ -21,10 +23,15 @@ namespace ToolKit
     )
     {
       light->CopyTo(this);
+      m_lightData = light->m_lightData;
     }
 
     EditorDirectionalLight::~EditorDirectionalLight()
     {
+      if (m_initialized)
+      {
+        m_initialized = false;
+      }
     }
 
     Entity* ToolKit::Editor::EditorDirectionalLight::Copy() const
@@ -39,6 +46,33 @@ namespace ToolKit
       return InstantiateTo(instance);
     }
 
+    bool EditorDirectionalLight::IsDrawable() const
+    {
+      return true;
+    }
+
+    void EditorDirectionalLight::Init()
+    {
+      if (m_initialized)
+      {
+        return;
+      }
+
+      m_initialized = true;
+
+      m_components.clear();
+
+      // Light sphere
+      std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.3f);
+
+      MeshComponent* mc = new MeshComponent();
+      mc->Mesh() = sphere->GetMesh();
+      mc->Mesh()->m_material =
+      GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      mc->Mesh()->CalculateAABB();
+      AddComponent(mc);
+    }
+
     EditorPointLight::EditorPointLight()
     {
     }
@@ -46,10 +80,15 @@ namespace ToolKit
     EditorPointLight::EditorPointLight(const EditorPointLight* light)
     {
       light->CopyTo(this);
+      m_lightData = light->m_lightData;
     }
 
     EditorPointLight::~EditorPointLight()
     {
+      if (m_initialized)
+      {
+        m_initialized = false;
+      }
     }
 
     Entity* EditorPointLight::Copy() const
@@ -64,6 +103,33 @@ namespace ToolKit
       return InstantiateTo(instance);
     }
 
+    bool EditorPointLight::IsDrawable() const
+    {
+      return true;
+    }
+
+    void EditorPointLight::Init()
+    {
+      if (m_initialized)
+      {
+        return;
+      }
+
+      m_initialized = true;
+
+      m_components.clear();
+
+      // Light sphere
+      std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.3f);
+
+      MeshComponent* mc = new MeshComponent();
+      mc->Mesh() = sphere->GetMesh();
+      mc->Mesh()->m_material =
+      GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      mc->Mesh()->CalculateAABB();
+      AddComponent(mc);
+    }
+
     EditorSpotLight::EditorSpotLight()
     {
     }
@@ -71,10 +137,17 @@ namespace ToolKit
     EditorSpotLight::EditorSpotLight(const EditorSpotLight* light)
     {
       light->CopyTo(this);
+      m_lightData = light->m_lightData;
     }
 
     EditorSpotLight::~EditorSpotLight()
     {
+      if (m_initialized)
+      {
+        m_initialized = false;
+
+        SafeDel(m_gizmo);
+      }
     }
 
     Entity* EditorSpotLight::Copy() const
@@ -89,6 +162,42 @@ namespace ToolKit
       return InstantiateTo(instance);
     }
 
+    bool EditorSpotLight::IsDrawable() const
+    {
+      return true;
+    }
+
+    void EditorSpotLight::Init()
+    {
+      if (m_initialized)
+      {
+        return;
+      }
+
+      m_initialized = true;
+
+      m_components.clear();
+
+      // Light sphere
+      std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.3f);
+
+      MeshComponent* mc = new MeshComponent();
+      mc->Mesh() = sphere->GetMesh();
+      mc->Mesh()->m_material =
+      GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      mc->Mesh()->CalculateAABB();
+      AddComponent(mc);
+
+      // Gizmo
+      m_gizmo = new SpotLightGizmo(this);
+
+      int i = 0;
+      for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
+      {
+        mc->Mesh()->m_subMeshes.push_back(lb->GetMesh());
+        mc->Mesh()->m_subMeshes[i]->m_material->Init();
+        i++;
+      }
+    }
   }  // namespace Editor
 }  // namespace ToolKit
-

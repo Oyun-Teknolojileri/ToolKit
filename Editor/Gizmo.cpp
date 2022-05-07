@@ -13,7 +13,6 @@
 #include "Material.h"
 #include "Texture.h"
 #include "RenderState.h"
-#include "Material.h"
 #include "Primative.h"
 #include "GlobalDef.h"
 #include "ConsoleWindow.h"
@@ -837,69 +836,66 @@ namespace ToolKit
     {
     }
 
-    SpotLightGizmo::SpotLightGizmo()
-      : Billboard({ false, 10.0f, 60.0f })
+    SpotLightGizmo::SpotLightGizmo(SpotLight* light)
     {
       m_circleVertexCount = 36;
       m_identityMatrix = Mat4(1.0f);
       m_rot = Mat4(1.0f);
 
+      m_gizmoLineBatches.resize(4);
+
       m_pnts.resize(2);
-      m_line = new LineBatch();
+      m_gizmoLineBatches[0] = new LineBatch();
 
-      GetComponent<MeshComponent>()->Mesh() = m_line->GetMesh();
+      MeshComponent* mc = new MeshComponent();
+      mc->Mesh() = m_gizmoLineBatches[0]->GetMesh();
+      mc->Mesh()->m_material->Init();
+      AddComponent(mc);
 
-      MeshPtr mesh = GetComponent<MeshComponent>()->Mesh();
+      MeshPtr mesh = mc->Mesh();
 
       mesh->m_material->Init();
 
       m_innerCirclePnts.resize(m_circleVertexCount + 1);
       m_outerCirclePnts.resize(m_circleVertexCount + 1);
-      m_innerCircle = new LineBatch();
-      m_outerCircle = new LineBatch();
-
-      mesh->m_subMeshes.push_back(m_innerCircle->GetMesh());
-      mesh->m_subMeshes[0]->m_material->Init();
-      mesh->m_subMeshes.push_back(m_outerCircle->GetMesh());
-      mesh->m_subMeshes[1]->m_material->Init();
-
       m_conePnts.resize(2 * (m_circleVertexCount / 4));
-      m_coneLines = new LineBatch();
+      m_gizmoLineBatches[1] = new LineBatch();
+      m_gizmoLineBatches[2] = new LineBatch();
+      m_gizmoLineBatches[3] = new LineBatch();
 
-      mesh->m_subMeshes.push_back(m_coneLines->GetMesh());
+      mesh->m_subMeshes.push_back(m_gizmoLineBatches[1]->GetMesh());
+      mesh->m_subMeshes.push_back(m_gizmoLineBatches[2]->GetMesh());
+      mesh->m_subMeshes.push_back(m_gizmoLineBatches[3]->GetMesh());
+      mesh->m_subMeshes[0]->m_material->Init();
+      mesh->m_subMeshes[1]->m_material->Init();
       mesh->m_subMeshes[2]->m_material->Init();
+
+      UpdateGizmo(light);
     }
 
     SpotLightGizmo::~SpotLightGizmo()
     {
-      SafeDel(m_innerCircle);
-      SafeDel(m_outerCircle);
-      SafeDel(m_coneLines);
-
-      GetMesh()->UnInit();
-      SafeDel(m_line);
+      for (LineBatch* lb : m_gizmoLineBatches)
+      {
+        SafeDel(lb);
+      }
+      m_gizmoLineBatches.clear();
     }
 
-    void SpotLightGizmo::RenderGizmo
-    (
-      Renderer* renderer,
-      Viewport* viewport,
-      DirectionalLight* light
-    )
+    void SpotLightGizmo::UpdateGizmo(SpotLight* light)
     {
       // Middle line
       Vec3 d = light->GetDirection();
       float r = light->m_lightData.radius;
       m_pnts[0] = Vec3
       (
-        light->m_node->GetTranslation(TransformationSpace::TS_WORLD)
+        ZERO
       );
       m_pnts[1] = Vec3
       (
-        light->m_node->GetTranslation(TransformationSpace::TS_WORLD)
-        + d * r * 2.25f
+        d * r * 2.25f
       );
-      m_line->Generate(m_pnts, Vec3(0.0f), DrawType::Line, 1.0f);
+      m_gizmoLineBatches[0]->Generate(m_pnts, Vec3(0.0f), DrawType::Line, 1.0f);
 
       // Calculating circles
       int zeroCount = 0;
@@ -975,9 +971,8 @@ namespace ToolKit
       float outerCircleRadius = r
       * glm::tan(light->m_lightData.outerAngle / 2);
 
-      Vec3 lp = light->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-      Vec3 inStartPoint = lp + d + per * innerCircleRadius;
-      Vec3 outStartPoint = lp + d + per * outerCircleRadius;
+      Vec3 inStartPoint = d + per * innerCircleRadius;
+      Vec3 outStartPoint = d + per * outerCircleRadius;
       m_innerCirclePnts[0] = inStartPoint;
       m_outerCirclePnts[0] = outStartPoint;
 
@@ -986,55 +981,50 @@ namespace ToolKit
       for (int i = 1; i < m_circleVertexCount + 1; i++)
       {
         // Inner circle vertices
-        inStartPoint -= lp;
         m_rot = glm::rotate(m_identityMatrix, deltaAngle, normD);
         inStartPoint = Vec3(m_rot * Vec4(inStartPoint, 1.0f));
-        inStartPoint += lp;
         m_innerCirclePnts[i] = inStartPoint;
 
-        // Outer circle outStartPoint
-        outStartPoint -= lp;
+        // Outer circle vertices
         m_rot = glm::rotate(m_identityMatrix, deltaAngle, normD);
         outStartPoint = Vec3(m_rot * Vec4(outStartPoint, 1.0f));
-        outStartPoint += lp;
         m_outerCirclePnts[i] = outStartPoint;
       }
 
-      m_innerCircle->Generate
+      m_gizmoLineBatches[1]->Generate
       (
         m_innerCirclePnts,
         Vec3(0.15f),
         DrawType::LineStrip, 1.0f
       );
-      m_outerCircle->Generate
+      m_gizmoLineBatches[2]->Generate
       (
         m_outerCirclePnts,
         Vec3(0.15f),
         DrawType::LineStrip, 1.0f
       );
 
-      MeshPtr mp = GetComponent<MeshComponent>()->Mesh();
-      mp->m_subMeshes.push_back(m_innerCircle->GetMesh());
-      mp->m_subMeshes.push_back(m_outerCircle->GetMesh());
-      mp->m_subMeshes[0]->m_material->Init();
-      mp->m_subMeshes[1]->m_material->Init();
-
       // Cone
       int coneIndex = 0;
       for (int i = 0; i < m_circleVertexCount; i += 4)
       {
-        m_conePnts[coneIndex] = lp;
+        m_conePnts[coneIndex] = ZERO;;
         m_conePnts[coneIndex + 1] = m_outerCirclePnts[i];
         coneIndex += 2;
       }
 
-      m_coneLines->Generate(m_conePnts, Vec3(0.15f), DrawType::Line, 1.0f);
+      m_gizmoLineBatches[3]->Generate
+      (
+        m_conePnts,
+        Vec3(0.15f),
+        DrawType::Line,
+        1.0f
+      );
+    }
 
-      mp->m_subMeshes.push_back(m_coneLines->GetMesh());
-      mp->m_subMeshes[2]->m_material->Init();
-
-      // Render gizmo
-      renderer->Render(this, viewport->GetCamera());
+    std::vector<LineBatch*> SpotLightGizmo::GetGizmoLineBatches()
+    {
+      return m_gizmoLineBatches;
     }
   }  // namespace Editor
 }  // namespace ToolKit

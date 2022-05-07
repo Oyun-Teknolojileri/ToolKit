@@ -94,7 +94,7 @@ namespace ToolKit
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
     Entity* InstantiateTo(Entity* copyTo) const override;
-    void ParameterConstructor();
+    void ParameterConstructor(float radius);
 
    private:
     void Generate();

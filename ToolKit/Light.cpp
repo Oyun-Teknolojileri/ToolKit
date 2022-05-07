@@ -62,6 +62,10 @@ namespace ToolKit
     }
   }
 
+  void Light::Init()
+  {
+  }
+
   DirectionalLight::DirectionalLight()
   {
     m_lightData.type = 1;

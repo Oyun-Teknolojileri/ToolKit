@@ -52,10 +52,6 @@ namespace ToolKit
     {
       AssignManagerReporters();
 
-      m_pointLightBillboard = new LightBillboard(LightType::LightPoint);
-      m_directionalLightBillboard =
-      new LightBillboard(LightType::LightDirectional);
-      m_spotLightGizmo = new SpotLightGizmo();
       m_cursor = new Cursor();
       m_origin = new Axis3d();
       m_grid = new Grid(100);
@@ -142,11 +138,6 @@ namespace ToolKit
 
       ModManager::GetInstance()->UnInit();
       ActionManager::GetInstance()->UnInit();
-
-      // Light gizmos
-      SafeDel(m_pointLightBillboard);
-      SafeDel(m_directionalLightBillboard);
-      SafeDel(m_spotLightGizmo);
     }
 
     void App::Frame(float deltaTime)
@@ -159,6 +150,8 @@ namespace ToolKit
 
       // Update animations.
       GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
+
+      LightRawPtrArray allLights = GetCurrentScene()->GetLights();
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
@@ -173,8 +166,6 @@ namespace ToolKit
       }
 
       ShowPlayWindow(deltaTime);
-
-      LightRawPtrArray allLights = GetCurrentScene()->GetLights();
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -1179,7 +1170,7 @@ Fail:
 
         // webgl create problem with depth only drawing with textures.
         static MaterialPtr solidMat =
-          GetMaterialManager()->GetCopyOfSolidMaterial();
+        GetMaterialManager()->GetCopyOfSolidMaterial();
         solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
         m_renderer->m_overrideMat = solidMat;
 
@@ -1198,9 +1189,9 @@ Fail:
         glStencilFunc(GL_NOTEQUAL, 0xFF, 0xFF);
         glStencilMask(0x00);
         ShaderPtr solidColor = GetShaderManager()->Create<Shader>
-          (
+        (
           ShaderPath("unlitColorFrag.shader", true)
-          );
+        );
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
 
@@ -1212,9 +1203,9 @@ Fail:
         // Dilate.
         glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
         ShaderPtr dilate = GetShaderManager()->Create<Shader>
-          (
+        (
           ShaderPath("dilateFrag.shader", true)
-          );
+        );
         dilate->SetShaderParameter("Color", ParameterVariant(color));
         m_renderer->DrawFullQuad(dilate);
 
@@ -1249,43 +1240,6 @@ Fail:
       LightRawPtrArray& allLights
     )
     {
-      // Light gizmos
-      for (Light* light : allLights)
-      {
-        // Spot light gizmo
-        if (light->m_lightData.type == 3)
-        {
-          m_spotLightGizmo->RenderGizmo
-          (
-            m_renderer,
-            viewport,
-            static_cast<DirectionalLight*>(light)
-          );
-        }
-
-        if (light->m_lightData.type == 1)  // Directional light
-        {
-          m_directionalLightBillboard->RenderBillboard
-          (
-            m_renderer,
-            viewport,
-            light
-          );
-        }
-        // Point
-        else if (
-          light->m_lightData.type == 2 || light->m_lightData.type == 3
-          )
-        {
-          m_pointLightBillboard->RenderBillboard
-          (
-            m_renderer,
-            viewport,
-            light
-          );
-        }
-      }
-
       if (gizmo == nullptr)
       {
         return;

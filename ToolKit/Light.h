@@ -10,8 +10,6 @@
 
 namespace ToolKit
 {
-  class Billboard;
-
   enum class LightType
   {
     LightBase,
@@ -41,8 +39,13 @@ namespace ToolKit
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+    virtual void Init();
+
    public:
     LightData m_lightData;
+
+   protected:
+    bool m_initialized = false;
   };
 
   class TK_API DirectionalLight : public Light
