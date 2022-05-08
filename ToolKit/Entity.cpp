@@ -111,7 +111,7 @@ namespace ToolKit
 
   void Entity::ParameterConstructor()
   {
-    m_localData.m_variants.reserve(5);
+    m_localData.m_variants.reserve(6);
     ULongID id = m_lastId++;
 
     Id_Define(id, "Meta", 100, true, false);

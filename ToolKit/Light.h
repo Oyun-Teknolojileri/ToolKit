@@ -18,16 +18,6 @@ namespace ToolKit
     LightSpot
   };
 
-  struct LightData
-  {
-    int type = -1;
-    Vec3 color = ZERO;
-    float intensity = -1.0f;
-    float radius = -1.0f;
-    float outerAngle = -1.0f;
-    float innerAngle = -1.0f;
-  };
-
   class TK_API Light : public Entity
   {
    public:
@@ -42,7 +32,9 @@ namespace ToolKit
     virtual void Init();
 
    public:
-    LightData m_lightData;
+    TKDeclareParam(float, LightType);
+    TKDeclareParam(Vec3, Color);
+    TKDeclareParam(float, Intensity);
 
    protected:
     bool m_initialized = false;
@@ -51,19 +43,10 @@ namespace ToolKit
   class TK_API DirectionalLight : public Light
   {
    public:
-     DirectionalLight();
-     virtual ~DirectionalLight() {}
+    DirectionalLight();
+    virtual ~DirectionalLight() {}
 
-     // Directional functions
-     LightType GetLightType() const override;
-     Vec3 GetDirection();
-     void Pitch(float angle);
-     void Yaw(float angle);
-     void Roll(float angle);
-     void RotateOnUpVector(float angle);
-     Vec3 GetUp() const;
-     Vec3 GetRight() const;
-     void LookAt(Vec3 target);
+    ToolKit::LightType GetLightType() const override;
   };
 
   class TK_API PointLight : public Light
@@ -72,7 +55,10 @@ namespace ToolKit
     PointLight();
     virtual ~PointLight() {}
 
-    LightType GetLightType() const override;
+    ToolKit::LightType GetLightType() const override;
+
+   public:
+    TKDeclareParam(float, Radius);
   };
 
   class TK_API SpotLight : public Light
@@ -81,16 +67,12 @@ namespace ToolKit
     SpotLight();
     virtual ~SpotLight() {}
 
-    // Directional functions
-    LightType GetLightType() const override;
-    Vec3 GetDirection();
-    void Pitch(float angle);
-    void Yaw(float angle);
-    void Roll(float angle);
-    void RotateOnUpVector(float angle);
-    Vec3 GetUp() const;
-    Vec3 GetRight() const;
-    void LookAt(Vec3 target);
+    ToolKit::LightType GetLightType() const override;
+
+   public:
+    TKDeclareParam(float, Radius);
+    TKDeclareParam(float, OuterAngle);
+    TKDeclareParam(float, InnerAngle);
   };
 
 }  // namespace ToolKit

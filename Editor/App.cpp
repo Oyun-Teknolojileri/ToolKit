@@ -62,19 +62,19 @@ namespace ToolKit
       m_lightMaster = new Node();
 
       DirectionalLight* light = new DirectionalLight();
-      light->Yaw(glm::radians(-45.0f));
+      light->GetComponent<DirectionalComponent>()->Yaw(glm::radians(-45.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->m_lightData.intensity = 0.5f;
-      light->Yaw(glm::radians(60.0f));
+      light->Intensity() = 0.5f;
+      light->GetComponent<DirectionalComponent>()->Yaw(glm::radians(60.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->m_lightData.intensity = 0.3f;
-      light->Yaw(glm::radians(-140.0f));
+      light->Intensity() = 0.3f;
+      light->GetComponent<DirectionalComponent>()->Yaw(glm::radians(-140.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 

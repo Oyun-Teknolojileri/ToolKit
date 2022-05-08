@@ -14,6 +14,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+    class DirectionalLightGimzo;
     class SpotLightGizmo;
 
     class EditorDirectionalLight : public DirectionalLight
@@ -28,6 +29,9 @@ namespace ToolKit
       bool IsDrawable() const override;
 
       void Init() override;
+
+     private:
+       DirectionalLightGizmo* m_gizmo;
     };
 
     class EditorPointLight : public PointLight

@@ -744,9 +744,10 @@ namespace ToolKit
             (
               TransformationSpace::TS_WORLD
             );
-            Vec3 dir = m_lights[i]->GetDirection();
-            Vec3 color = m_lights[i]->m_lightData.color;
-            float intensity = m_lights[i]->m_lightData.intensity;
+            Vec3 dir =
+            m_lights[i]->GetComponent<DirectionalComponent>()->GetDirection();
+            Vec3 color = m_lights[i]->Color();
+            float intensity = m_lights[i]->Intensity();
 
             GLint loc = glGetUniformLocation
             (

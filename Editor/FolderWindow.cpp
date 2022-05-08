@@ -108,7 +108,7 @@ namespace ToolKit
 
         DirectionalLight light;
         light.m_node->SetTranslation({ 5.0f, 5.0f, 5.0f });
-        light.LookAt(ZERO);
+        light.GetComponent<DirectionalComponent>()->LookAt(ZERO);
 
         DirectionalLightRawPtrArray lights = { &light };
 

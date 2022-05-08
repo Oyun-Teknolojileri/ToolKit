@@ -49,7 +49,7 @@ namespace ToolKit
         else if (ntt->GetType() == EntityType::Entity_Light)
         {
           Light* el = reinterpret_cast<Light*>(ntt);
-          int type = el->m_lightData.type;
+          int type = el->LightType();
 
           if (type == 1)  // Directional light
           {

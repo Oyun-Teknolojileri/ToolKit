@@ -197,5 +197,20 @@ namespace ToolKit
       Mat4 m_identityMatrix;
       Mat4 m_rot;
     };
+
+    class DirectionalLightGizmo : public Entity
+    {
+     public:
+      explicit DirectionalLightGizmo(DirectionalLight* light);
+      ~DirectionalLightGizmo();
+
+      void UpdateGizmo(DirectionalLight* light);
+      std::vector<LineBatch*> GetGizmoLineBatches();
+
+     private:
+      std::vector<LineBatch*> m_gizmoLineBatches;
+
+      Vec3Array m_pnts;
+    };
   }  // namespace Editor
 }  // namespace ToolKit

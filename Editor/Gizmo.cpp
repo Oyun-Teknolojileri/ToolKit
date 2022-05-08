@@ -854,8 +854,6 @@ namespace ToolKit
 
       MeshPtr mesh = mc->Mesh();
 
-      mesh->m_material->Init();
-
       m_innerCirclePnts.resize(m_circleVertexCount + 1);
       m_outerCirclePnts.resize(m_circleVertexCount + 1);
       m_conePnts.resize(2 * (m_circleVertexCount / 4));
@@ -885,8 +883,8 @@ namespace ToolKit
     void SpotLightGizmo::UpdateGizmo(SpotLight* light)
     {
       // Middle line
-      Vec3 d = light->GetDirection();
-      float r = light->m_lightData.radius;
+      Vec3 d = light->GetComponent<DirectionalComponent>()->GetDirection();
+      float r = light->Radius();
       m_pnts[0] = Vec3
       (
         ZERO
@@ -963,13 +961,12 @@ namespace ToolKit
       }
       per = glm::normalize(per);
 
-      Vec3 normD = glm::normalize(d);
-      d = normD * r;
+      d = d * r;
 
       float innerCircleRadius = r
-      * glm::tan(light->m_lightData.innerAngle / 2);
+      * glm::tan(glm::radians(light->InnerAngle() / 2));
       float outerCircleRadius = r
-      * glm::tan(light->m_lightData.outerAngle / 2);
+      * glm::tan(glm::radians(light->OuterAngle() / 2));
 
       Vec3 inStartPoint = d + per * innerCircleRadius;
       Vec3 outStartPoint = d + per * outerCircleRadius;
@@ -981,12 +978,12 @@ namespace ToolKit
       for (int i = 1; i < m_circleVertexCount + 1; i++)
       {
         // Inner circle vertices
-        m_rot = glm::rotate(m_identityMatrix, deltaAngle, normD);
+        m_rot = glm::rotate(m_identityMatrix, deltaAngle, d);
         inStartPoint = Vec3(m_rot * Vec4(inStartPoint, 1.0f));
         m_innerCirclePnts[i] = inStartPoint;
 
         // Outer circle vertices
-        m_rot = glm::rotate(m_identityMatrix, deltaAngle, normD);
+        m_rot = glm::rotate(m_identityMatrix, deltaAngle, d);
         outStartPoint = Vec3(m_rot * Vec4(outStartPoint, 1.0f));
         m_outerCirclePnts[i] = outStartPoint;
       }
@@ -1026,5 +1023,57 @@ namespace ToolKit
     {
       return m_gizmoLineBatches;
     }
+
+
+    DirectionalLightGizmo::DirectionalLightGizmo(DirectionalLight* light)
+    {
+      m_gizmoLineBatches.resize(1);
+      m_pnts.resize(2);
+      m_gizmoLineBatches[0] = new LineBatch();
+
+      MeshComponent* mc = new MeshComponent();
+      mc->Mesh() = m_gizmoLineBatches[0]->GetMesh();
+      mc->Mesh()->m_material->Init();
+      AddComponent(mc);
+
+      UpdateGizmo(light);
+    }
+
+    DirectionalLightGizmo::~DirectionalLightGizmo()
+    {
+      for (LineBatch* lb : m_gizmoLineBatches)
+      {
+        SafeDel(lb);
+      }
+      m_gizmoLineBatches.clear();
+    }
+
+    void DirectionalLightGizmo::UpdateGizmo(DirectionalLight* light)
+    {
+      // Middle line
+      Vec3 d = light->GetComponent<DirectionalComponent>()->GetDirection();
+      Vec3 norm = glm::normalize(d);
+      m_pnts[0] = Vec3
+      (
+        ZERO
+      );
+      m_pnts[1] = Vec3
+      (
+        d * 10.0f
+      );
+      m_gizmoLineBatches[0]->Generate
+      (
+        m_pnts,
+        Vec3(0.0f),
+        DrawType::Line,
+        1.0f
+      );
+    }
+
+    std::vector<LineBatch*> DirectionalLightGizmo::GetGizmoLineBatches()
+    {
+      return m_gizmoLineBatches;
+    }
+
   }  // namespace Editor
 }  // namespace ToolKit

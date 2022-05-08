@@ -23,7 +23,8 @@ namespace ToolKit
     )
     {
       light->CopyTo(this);
-      m_lightData = light->m_lightData;
+
+      AddComponent(new DirectionalComponent(this));
     }
 
     EditorDirectionalLight::~EditorDirectionalLight()
@@ -31,6 +32,8 @@ namespace ToolKit
       if (m_initialized)
       {
         m_initialized = false;
+
+        SafeDel(m_gizmo);
       }
     }
 
@@ -60,10 +63,8 @@ namespace ToolKit
 
       m_initialized = true;
 
-      m_components.clear();
-
       // Light sphere
-      std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.3f);
+      std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.1f);
 
       MeshComponent* mc = new MeshComponent();
       mc->Mesh() = sphere->GetMesh();
@@ -71,6 +72,16 @@ namespace ToolKit
       GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       mc->Mesh()->CalculateAABB();
       AddComponent(mc);
+
+      // Directional light gizmo
+      m_gizmo = new DirectionalLightGizmo(this);
+      int i = 0;
+      for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
+      {
+        mc->Mesh()->m_subMeshes.push_back(lb->GetMesh());
+        mc->Mesh()->m_subMeshes[i]->m_material->Init();
+        i++;
+      }
     }
 
     EditorPointLight::EditorPointLight()
@@ -80,7 +91,6 @@ namespace ToolKit
     EditorPointLight::EditorPointLight(const EditorPointLight* light)
     {
       light->CopyTo(this);
-      m_lightData = light->m_lightData;
     }
 
     EditorPointLight::~EditorPointLight()
@@ -117,10 +127,8 @@ namespace ToolKit
 
       m_initialized = true;
 
-      m_components.clear();
-
       // Light sphere
-      std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.3f);
+      std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.1f);
 
       MeshComponent* mc = new MeshComponent();
       mc->Mesh() = sphere->GetMesh();
@@ -137,7 +145,8 @@ namespace ToolKit
     EditorSpotLight::EditorSpotLight(const EditorSpotLight* light)
     {
       light->CopyTo(this);
-      m_lightData = light->m_lightData;
+
+      AddComponent(new DirectionalComponent(this));
     }
 
     EditorSpotLight::~EditorSpotLight()
@@ -176,10 +185,8 @@ namespace ToolKit
 
       m_initialized = true;
 
-      m_components.clear();
-
       // Light sphere
-      std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.3f);
+      std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.1f);
 
       MeshComponent* mc = new MeshComponent();
       mc->Mesh() = sphere->GetMesh();
