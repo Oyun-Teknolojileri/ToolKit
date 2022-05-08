@@ -38,6 +38,7 @@ namespace ToolKit
   TK_API void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
   TK_API void NormalizePath(String& path);
   TK_API void UnixifyPath(String& path);
+  TK_API void DosifyPath(String& path);
   TK_API String ConcatPaths(const StringArray& entries);
   TK_API String GetRelativeResourcePath(const String& path);
   
@@ -57,6 +58,7 @@ namespace ToolKit
   TK_API void Split(const String& s, const String& sep, StringArray& v);
   TK_API void ReplaceStringInPlace(String& subject, const String& search, const String& replace); // Replace all occurances of a string in another string.
   TK_API void ReplaceFirstStringInPlace(String& subject, const String& search, const String& replace); // Replace first occurances of a string in another string.
+  TK_API void ReplaceCharInPlace(String& subject, const char search, const char replace);
   TK_API String ToLower(const String& str);
   TK_API String Format(const char* msg, ...);
 

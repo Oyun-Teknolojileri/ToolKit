@@ -87,6 +87,10 @@ namespace ToolKit
       BoundingBox box = surface->GetAABB(true);
       Ray ray = vp->RayFromMousePosition();
 
+      GetLogger()->Log("bbmin: " + glm::to_string(box.min));
+      GetLogger()->Log("bbmax: " + glm::to_string(box.max));
+      GetLogger()->Log("rpos: " + glm::to_string(ray.position));
+
       float t = 0.0f;
       if (RayBoxIntersection(ray, box, t))
       {
@@ -98,7 +102,7 @@ namespace ToolKit
 
   void UILayer::UpdateSurfaces(Viewport* vp)
   {
-    Entity* rootEntity = this->m_layout->GetFirstEntityByName(m_layerName);
+    Entity* rootEntity = m_layout->GetFirstEntityByName(m_layerName);
     EntityRawPtrArray entities;
     GetChildren(rootEntity, entities);
     const EventPool& events = Main::GetInstance()->m_eventPool;

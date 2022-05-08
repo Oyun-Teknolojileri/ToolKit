@@ -77,7 +77,9 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file(GetFile().c_str());
+    String path = GetFile();
+    NormalizePath(path);
+    XmlFile file(path.c_str());
     XmlDocument doc;
     doc.parse<0>(file.data());
 
@@ -480,7 +482,9 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file(GetFile().c_str());
+    String path = GetFile();
+    NormalizePath(path);
+    XmlFile file(path.c_str());
     XmlDocument doc;
     doc.parse<0>(file.data());
 
@@ -509,6 +513,7 @@ namespace ToolKit
 
       XmlNode* materialNode = node->first_node("material");
       String matFile = materialNode->first_attribute("name")->value();
+      NormalizePath(matFile);
 
       if (CheckFile(matFile))
       {

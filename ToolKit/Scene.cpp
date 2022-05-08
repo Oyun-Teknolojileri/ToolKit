@@ -36,7 +36,10 @@ namespace ToolKit
       return;
     }
 
-    XmlFile sceneFile(GetFile().c_str());
+    String path = GetFile();
+    NormalizePath(path);
+
+    XmlFile sceneFile(path.c_str());
     XmlDocument sceneDoc;
     sceneDoc.parse<0>(sceneFile.data());
 
@@ -469,7 +472,10 @@ namespace ToolKit
     }
 
     // Match scene name with file name.
-    DecomposePath(GetFile(), nullptr, &m_name, nullptr);
+    String path = GetFile();
+    NormalizePath(path);
+
+    DecomposePath(path, nullptr, &m_name, nullptr);
     ReadAttr(root, "version", m_version);
 
     XmlNode* node = nullptr;
