@@ -14,6 +14,23 @@ namespace ToolKit
 
   Camera* ViewportBase::GetCamera() const
   {
+    if (m_attachedCamera != NULL_HANDLE)
+    {
+      if (ScenePtr currScene = GetSceneManager()->GetCurrentScene())
+      {
+        if 
+        (
+          Camera* cam = static_cast<Camera*> 
+          (
+            currScene->GetEntity(m_attachedCamera)
+          )
+        )
+        {
+          return cam;
+        }
+      }
+    }
+
     return m_camera;
   }
 
@@ -21,6 +38,7 @@ namespace ToolKit
   {
     SafeDel(m_camera);
     m_camera = cam;
+    m_attachedCamera = cam->Id();
   }
 
   ViewportBase::ViewportBase()

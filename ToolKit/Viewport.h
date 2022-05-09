@@ -42,10 +42,16 @@ namespace ToolKit
     */
     virtual void SetCamera(Camera* cam);
 
+   protected:
+    /**
+    * Id of Camera that is attached to Viewport.
+    */
+    ULongID m_attachedCamera = NULL_HANDLE;
+
    private:
-   /**
-   * Camera that the viewport has.
-   */
+    /**
+    * Camera that the viewport has.
+    */
     Camera* m_camera = nullptr;
   };
 
@@ -55,9 +61,9 @@ namespace ToolKit
   class TK_API Viewport : public ViewportBase
   {
    public:
-   /**
-   * Empty constructor.
-   */
+    /**
+    * Empty constructor.
+    */
     Viewport();
 
     /**
@@ -192,10 +198,6 @@ namespace ToolKit
     bool m_mouseOverContentArea = false;
     Vec2 m_wndContentAreaSize;
     IVec2 m_lastMousePosRelContentArea;
-
-   protected:
-    ULongID m_attachedCamera = NULL_HANDLE;
-    //!< Id of Camera that is attached to Viewport.
   };
 
 }  // namespace ToolKit
