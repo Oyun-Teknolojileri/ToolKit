@@ -192,7 +192,6 @@ namespace ToolKit
         {
           m_renderer->RenderScene(GetCurrentScene(), viewport, m_sceneLights);
 
-
           // Render fixed scene objects.
           if (viewport->GetType() == Window::Type::Viewport2d)
           {
