@@ -21,9 +21,9 @@ namespace ToolKit
   class TK_API ViewportBase
   {
    public:
-   /**
-   * Constructor initializes Camera object that viewport has.
-   */
+    /**
+    * Constructor initializes Camera object that viewport has.
+    */
     ViewportBase();
 
     /**

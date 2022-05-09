@@ -14,7 +14,6 @@ namespace ToolKit
   Scene::Scene()
   {
     m_name = "New Scene";
-    m_camera = new Camera();
   }
 
   Scene::Scene(String file)
@@ -25,7 +24,6 @@ namespace ToolKit
 
   Scene::~Scene()
   {
-    SafeDel(m_camera);
     Destroy(false);
   }
 
@@ -403,22 +401,6 @@ namespace ToolKit
     entity->m_node->m_children.clear();
     SafeDel(entity->m_node);
     entity->m_node = prevNode;
-  }
-
-  Camera* Scene::GetCamera()
-  {
-    return m_camera;
-  }
-
-  void Scene::SetCamera(Camera* cam)
-  {
-    // Copy camera
-    m_camera->SetProjectionMatrix(cam->GetProjectionMatrix());
-    m_camera->m_node->SetTransform
-    (
-      cam->m_node->GetTransform(TransformationSpace::TS_WORLD),
-      TransformationSpace::TS_WORLD
-    );
   }
 
   void Scene::ClearEntities()

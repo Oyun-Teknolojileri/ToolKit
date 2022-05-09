@@ -36,8 +36,6 @@ namespace ToolKit
 
     SetRenderTarget(viewport->m_viewportImage);
 
-    scene->SetCamera(viewport->GetCamera());
-
     FrustumCull(entities, cam);
 
     EntityRawPtrArray blendedEntities;

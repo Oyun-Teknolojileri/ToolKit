@@ -151,9 +151,6 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
-      // Add editor light
-      GetCurrentScene()->GetCamera()->m_node->AddChild(m_lightMaster);
-
       UI::BeginUI();
       UI::ShowUI();
 
@@ -189,12 +186,12 @@ namespace ToolKit
         }
 
         viewport->Update(deltaTime);
+        Camera* cam = viewport->GetCamera();
 
         if (viewport->IsVisible())
         {
           m_renderer->RenderScene(GetCurrentScene(), viewport, m_sceneLights);
 
-          Camera* cam = viewport->GetCamera();;
 
           // Render fixed scene objects.
           if (viewport->GetType() == Window::Type::Viewport2d)
@@ -221,7 +218,7 @@ namespace ToolKit
         {
           for (Drawable* dbgObj : m_perFrameDebugObjects)
           {
-            m_renderer->Render(dbgObj, GetCurrentScene()->GetCamera());
+            m_renderer->Render(dbgObj, cam);
             SafeDel(dbgObj);
           }
           m_perFrameDebugObjects.clear();
@@ -990,13 +987,6 @@ Fail:
       SetCurrentScene(scene);
       scene->Load();  // Make sure its loaded.
       scene->Init(false);
-
-      // Editor light retransfrom according to new camera
-      m_lightMaster->SetTransform
-      (
-        scene->GetCamera()->m_node->GetTransform(TransformationSpace::TS_LOCAL)
-      );
-
       m_workspace.SetScene(scene->m_name);
     }
 
