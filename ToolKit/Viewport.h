@@ -191,7 +191,6 @@ namespace ToolKit
     // States.
     bool m_mouseOverContentArea = false;
     Vec2 m_wndContentAreaSize;
-    IVec2 m_mousePosBegin;
     IVec2 m_lastMousePosRelContentArea;
 
    protected:

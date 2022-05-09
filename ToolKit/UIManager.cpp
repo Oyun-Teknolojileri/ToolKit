@@ -8,6 +8,7 @@
 
 namespace ToolKit
 {
+
   UILayer::UILayer()
   {
   }
@@ -86,10 +87,6 @@ namespace ToolKit
     {
       BoundingBox box = surface->GetAABB(true);
       Ray ray = vp->RayFromMousePosition();
-
-      GetLogger()->Log("bbmin: " + glm::to_string(box.min));
-      GetLogger()->Log("bbmax: " + glm::to_string(box.max));
-      GetLogger()->Log("rpos: " + glm::to_string(ray.position));
 
       float t = 0.0f;
       if (RayBoxIntersection(ray, box, t))
@@ -223,4 +220,5 @@ namespace ToolKit
       layer->Update(deltaTime, layer->m_cam, vp);
     }
   }
+
 }  // namespace ToolKit

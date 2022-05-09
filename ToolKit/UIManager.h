@@ -35,10 +35,6 @@ namespace ToolKit
   class TK_API UIManager
   {
    public:
-    UILayer* m_rootLayer;
-    UILayerPtrArray m_childLayers;
-    UILayerPtrArray m_allLayers;
-
     void SetRootLayer(UILayer* newRootLayer);
     void AddChildLayer(UILayer* newChildLayer);
     void RemoveChildLayer(String layerName);
@@ -46,6 +42,11 @@ namespace ToolKit
     UILayerPtrArray GetCurrentLayers();
 
     void UpdateLayers(float deltaTime, Viewport* vp);
+
+   public:
+    UILayer* m_rootLayer = nullptr;
+    UILayerPtrArray m_childLayers;
+    UILayerPtrArray m_allLayers;
   };
 
 }  // namespace ToolKit

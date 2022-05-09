@@ -104,6 +104,7 @@ namespace ToolKit
      protected:
       Vec2 m_contentAreaMin;
       Vec2 m_contentAreaMax;
+      IVec2 m_mousePosBegin;
 
      private:
       // States.
