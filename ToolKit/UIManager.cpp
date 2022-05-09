@@ -29,11 +29,15 @@ namespace ToolKit
 
   void UILayer::Update(float deltaTime, Camera* cam, Viewport* vp)
   {
-    m_lastCamEntity = vp->GetCamera();
     m_cam = cam;
     m_viewport = vp;
+    m_lastCamEntity = vp->GetCamera();
     vp->AttachCamera(cam->Id());
 
+    // Add update camera (cam) to scene, AttachCamera - GetCamera
+    // routines will search the in the scene.
+    // Make sure this is the very first thing before accessing viewport
+    // cameras.
     if (SceneManager* sceneMngr = GetSceneManager())
     {
       ScenePtr currScene = sceneMngr->GetCurrentScene();
@@ -100,9 +104,10 @@ namespace ToolKit
   void UILayer::UpdateSurfaces(Viewport* vp)
   {
     Entity* rootEntity = m_layout->GetFirstEntityByName(m_layerName);
+
     EntityRawPtrArray entities;
     GetChildren(rootEntity, entities);
-    const EventPool& events = Main::GetInstance()->m_eventPool;
+    EventPool& events = Main::GetInstance()->m_eventPool;
     if (entities.empty() || events.empty())
     {
       return;
@@ -209,12 +214,14 @@ namespace ToolKit
     {
       return;
     }
+
     m_rootLayer->Update(deltaTime, m_rootLayer->m_cam, vp);
 
     if (m_childLayers.size() < 1)
     {
       return;
     }
+
     for (UILayer* layer : m_childLayers)
     {
       layer->Update(deltaTime, layer->m_cam, vp);

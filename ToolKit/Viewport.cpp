@@ -135,7 +135,8 @@ namespace ToolKit
 
   Ray Viewport::RayFromMousePosition()
   {
-    return RayFromScreenSpacePoint(GetLastMousePosScreenSpace());
+    Vec2 ssp = GetLastMousePosScreenSpace();
+    return RayFromScreenSpacePoint(ssp);
   }
 
   Ray Viewport::RayFromScreenSpacePoint(const Vec2& pnt)
