@@ -424,7 +424,7 @@ namespace ToolKit
             move += -up;
           }
 
-          float displace = speed * MilisecToSec(deltaTime);
+          float displace = speed * MillisecToSec(deltaTime);
           if (length(move) > 0.0f)
           {
             move = normalize(move);

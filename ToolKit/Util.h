@@ -85,6 +85,10 @@ namespace ToolKit
   TK_API int IndexOf(Entity* ntt, const EntityRawPtrArray& entities);
   TK_API bool Exist(const IntArray& vec, int val);
 
+  // Time.
+  TK_API float MillisecToSec(float ms);
+  TK_API float GetElapsedMilliSeconds(); // Returns elapsed time from the ToolKit Init.
+
   template<typename T>
   void pop_front(std::vector<T>& vec)
   {

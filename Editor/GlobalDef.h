@@ -56,12 +56,6 @@ namespace ToolKit
     // Editor types.
     typedef std::shared_ptr<class EditorScene> EditorScenePtr;
 
-    // Utility functions.		
-    inline float MilisecToSec(float ms)
-    {
-      return ms / 1000.0f;
-    }
-
     #define Convert2ImGuiTexture(TexturePtr) (void*)(intptr_t)(TexturePtr->m_textureId)
   }
 }

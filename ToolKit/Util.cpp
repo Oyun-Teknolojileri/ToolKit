@@ -873,4 +873,20 @@ namespace ToolKit
     return false;
   }
 
+  float MillisecToSec(float ms)
+  {
+    return ms / 1000.0f;
+  }
+
+  float GetElapsedMilliSeconds()
+  {
+    using namespace std::chrono;
+
+    static high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    duration<double> timeSpan = duration_cast<duration<double>>(t2 - t1);
+
+    return (float)(timeSpan.count() * 1000.0);
+  }
+
 }

@@ -155,7 +155,7 @@ namespace ToolKit
       UI::ShowUI();
 
       // Update animations.
-      GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
+      GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);

@@ -155,17 +155,6 @@ namespace ToolKit
       }
     }
 
-    float GetMilliSeconds()
-    {
-      using namespace std::chrono;
-
-      static high_resolution_clock::time_point t1 = high_resolution_clock::now();
-      high_resolution_clock::time_point t2 = high_resolution_clock::now();
-      duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-
-      return (float)(time_span.count() * 1000.0);
-    }
-
     void Exit()
     {
       UI::UnInit();
@@ -263,7 +252,7 @@ namespace ToolKit
     {
       Timing()
       {
-        lastTime = GetMilliSeconds();
+        lastTime = GetElapsedMilliSeconds();
         currentTime = 0.0f;
         deltaTime = 1000.0f / fps;
         frameCount = 0;
@@ -292,7 +281,7 @@ namespace ToolKit
           ProcessEvent(sdlEvent);
         }
 
-        timer->currentTime = GetMilliSeconds();
+        timer->currentTime = GetElapsedMilliSeconds();
         if (timer->currentTime > timer->lastTime + timer->deltaTime)
         {
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
