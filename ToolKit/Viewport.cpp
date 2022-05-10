@@ -64,7 +64,11 @@ namespace ToolKit
     m_zoom = glm::max(m_zoom, 0.01f);
 
     Camera* cam = GetCamera();
-    cam->Translate(Vec3(0.0f, 0.0f, -delta));
+    cam->m_node->Translate
+    (
+      Vec3(0.0f, 0.0f, -delta),
+      TransformationSpace::TS_LOCAL
+    );
     if (cam->IsOrtographic())
     {
       cam->SetLens
@@ -130,7 +134,7 @@ namespace ToolKit
     Camera* cam = GetCamera();
     if (cam->IsOrtographic())
     {
-      ray.direction = cam->GetDir();
+      ray.direction = cam->GetComponent<DirectionComponent>()->GetDirection();
     }
     else
     {

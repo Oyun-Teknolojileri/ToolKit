@@ -745,7 +745,7 @@ namespace ToolKit
               TransformationSpace::TS_WORLD
             );
             Vec3 dir =
-            m_lights[i]->GetComponent<DirectionalComponent>()->GetDirection();
+            m_lights[i]->GetComponent<DirectionComponent>()->GetDirection();
             Vec3 color = m_lights[i]->Color();
             float intensity = m_lights[i]->Intensity();
 

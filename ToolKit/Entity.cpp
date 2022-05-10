@@ -121,7 +121,7 @@ namespace ToolKit
     TransformLock_Define(false, "Meta", 100, true, true);
   }
 
-  void Entity::WeakCopy(Entity* other) const
+  void Entity::WeakCopy(Entity* other, bool copyComponents) const
   {
     assert(other->GetType() == GetType());
     SafeDel(other->m_node);
@@ -133,7 +133,10 @@ namespace ToolKit
     other->m_localData = m_localData;
     other->Id() = id;
 
-    other->m_components = m_components;
+    if (copyComponents)
+    {
+      other->m_components = m_components;
+    }
   }
 
   Entity* Entity::CreateByType(EntityType t)

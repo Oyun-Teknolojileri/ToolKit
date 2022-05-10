@@ -29,9 +29,11 @@ namespace ToolKit
       bool IsDrawable() const override;
 
       void Init() override;
+      void EnableGizmo(bool enable) override;
 
      private:
-       DirectionalLightGizmo* m_gizmo;
+       DirectionalLightGizmo* m_gizmo = nullptr;
+       MeshComponent* m_gizmoMC = nullptr;
     };
 
     class EditorPointLight : public PointLight
@@ -60,6 +62,7 @@ namespace ToolKit
       bool IsDrawable() const override;
 
       void Init() override;
+      void EnableGizmo(bool enable) override;
 
      private:
       SpotLightGizmo* m_gizmo = nullptr;

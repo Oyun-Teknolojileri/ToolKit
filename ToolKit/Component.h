@@ -30,7 +30,7 @@ namespace ToolKit
   {
     Base,
     MeshComponent,
-    DirectionalComponent
+    DirectionComponent
   };
 
   /**
@@ -96,11 +96,11 @@ namespace ToolKit
     90
   };
 
-  typedef std::shared_ptr<class DirectionalComponent> DirectionalComponentPtr;
+  typedef std::shared_ptr<class DirectionComponent> DirectionComponentPtr;
 
-  static VariantCategory DirectionalComponentCategory
+  static VariantCategory DirectionComponentCategory
   {
-    "Directional Component",
+    "Direction Component",
     10
   };
 
@@ -163,14 +163,14 @@ namespace ToolKit
     TKDeclareParam(MaterialPtr, Material);
   };
 
-  class TK_API DirectionalComponent: public Component
+  class TK_API DirectionComponent: public Component
   {
    public:
-    TKComponentType(DirectionalComponent);
+    TKComponentType(DirectionComponent);
 
-    explicit DirectionalComponent(Entity* entity);
+    explicit DirectionComponent(Entity* entity);
 
-    virtual ~DirectionalComponent();
+    virtual ~DirectionComponent();
 
     ComponentPtr Copy() override;
 
@@ -188,7 +188,7 @@ namespace ToolKit
      Entity* m_entity = nullptr;
 
    private:
-    DirectionalComponent();
+     DirectionComponent();
   };
 
 }  // namespace ToolKit

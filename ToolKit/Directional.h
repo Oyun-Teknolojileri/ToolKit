@@ -5,30 +5,7 @@
 
 namespace ToolKit
 {
-  class TK_API Directional : public Entity
-  {
-   public:
-    Directional();
-    virtual ~Directional();
-
-    void Pitch(float angle);
-    void Yaw(float angle);
-    void Roll(float angle);
-    void Translate(Vec3 pos);
-    void RotateOnUpVector(float angle);
-    void GetLocalAxis(Vec3& dir, Vec3& up, Vec3& right) const;
-    Vec3 GetDir() const;
-    Vec3 GetUp() const;
-    Vec3 GetRight() const;
-    void LookAt(Vec3 target);
-
-    EntityType GetType() const override;
-
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override {};
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override {};
-  };
-
-  class TK_API Camera : public Directional
+  class TK_API Camera : public Entity
   {
    public:
     struct CamData

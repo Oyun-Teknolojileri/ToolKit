@@ -62,19 +62,19 @@ namespace ToolKit
       m_lightMaster = new Node();
 
       DirectionalLight* light = new DirectionalLight();
-      light->GetComponent<DirectionalComponent>()->Yaw(glm::radians(-45.0f));
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-45.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
       light->Intensity() = 0.5f;
-      light->GetComponent<DirectionalComponent>()->Yaw(glm::radians(60.0f));
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(60.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
       light->Intensity() = 0.3f;
-      light->GetComponent<DirectionalComponent>()->Yaw(glm::radians(-140.0f));
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-140.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
@@ -151,8 +151,6 @@ namespace ToolKit
       // Update animations.
       GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
 
-      LightRawPtrArray allLights = GetCurrentScene()->GetLights();
-
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
       std::vector<EditorViewport*> viewports;
@@ -166,6 +164,31 @@ namespace ToolKit
       }
 
       ShowPlayWindow(deltaTime);
+
+      // Selected entities
+      EntityRawPtrArray selecteds;
+      GetCurrentScene()->GetSelectedEntities(selecteds);
+
+      LightRawPtrArray allLights = GetCurrentScene()->GetLights();
+
+      // Enable light gizmos
+      for (Light* light : allLights)
+      {
+        bool found = false;
+        for (Entity* entity : selecteds)
+        {
+          if (light->Id() == entity->Id())
+          {
+            light->EnableGizmo(true);
+            found = true;
+            break;
+          }
+        }
+        if (!found)
+        {
+          light->EnableGizmo(false);
+        }
+      }
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -204,7 +227,7 @@ namespace ToolKit
           }
 
           // Render gizmo.
-          RenderGizmo(viewport, m_gizmo, allLights);
+          RenderGizmo(viewport, m_gizmo);
         }
 
         // Render debug objects.
@@ -223,7 +246,7 @@ namespace ToolKit
       {
         for (EditorViewport* viewport : viewports)
         {
-          RenderSelected(viewport);
+          RenderSelected(viewport, selecteds);
         }
       }
 
@@ -586,7 +609,10 @@ namespace ToolKit
         );
         vp->m_name = g_3dViewport;
         vp->GetCamera()->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
-        vp->GetCamera()->LookAt(Vec3(0.0f));
+        vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt
+        (
+          Vec3(0.0f)
+        );
         m_windows.push_back(vp);
 
         // 2d viewport.
@@ -609,7 +635,10 @@ namespace ToolKit
         vp->GetCamera()->m_node->SetTranslation({ 0.0f, 10.0f, 0.0f });
         vp->GetCamera()->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
         vp->m_zoom = 0.02f;
-        vp->GetCamera()->Pitch(glm::radians(-90.0f));
+        vp->GetCamera()->GetComponent<DirectionComponent>()->Pitch
+        (
+          glm::radians(-90.0f)
+        );
         vp->m_cameraAlignment = CameraAlignment::Top;
         vp->m_orbitLock = true;
         m_windows.push_back(vp);
@@ -979,7 +1008,6 @@ Fail:
       GetCurrentScene()->Destroy(false);
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
       SetCurrentScene(scene);
-      scene->Load();  // Make sure its loaded.
       scene->Init(false);
 
       // Editor light retransfrom according to new camera
@@ -1130,7 +1158,11 @@ Fail:
       return GetWindow<MaterialInspector>(g_matInspector);
     }
 
-    void App::RenderSelected(EditorViewport* viewport)
+    void App::RenderSelected
+    (
+      EditorViewport* viewport,
+      EntityRawPtrArray selecteds
+    )
     {
       if (GetCurrentScene()->GetSelectedEntityCount() == 0)
       {
@@ -1178,7 +1210,17 @@ Fail:
         {
           if (ntt->IsDrawable())
           {
-            m_renderer->Render(ntt, viewport->GetCamera());
+            if (ntt->GetType() == EntityType::Entity_Light)
+            {
+              Light* light = static_cast<Light*>(ntt);
+              light->EnableGizmo(false);
+              m_renderer->Render(ntt, viewport->GetCamera());
+              light->EnableGizmo(true);
+            }
+            else
+            {
+              m_renderer->Render(ntt, viewport->GetCamera());
+            }
           }
         }
 
@@ -1213,8 +1255,6 @@ Fail:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
       };
 
-      EntityRawPtrArray selecteds;
-      GetCurrentScene()->GetSelectedEntities(selecteds);
       Entity* primary = selecteds.back();
 
       selecteds.pop_back();
@@ -1236,8 +1276,7 @@ Fail:
     void App::RenderGizmo
     (
       EditorViewport* viewport,
-      Gizmo* gizmo,
-      LightRawPtrArray& allLights
+      Gizmo* gizmo
     )
     {
       if (gizmo == nullptr)

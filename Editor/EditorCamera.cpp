@@ -21,7 +21,6 @@ namespace ToolKit
       cam->CopyTo(this);
 
       // Recreate frustum.
-      m_components.clear();
       AddComponent(new MeshComponent());
       GenerateFrustum();
     }
@@ -44,7 +43,9 @@ namespace ToolKit
     Entity* EditorCamera::Instantiate() const
     {
       EditorCamera* instance = new EditorCamera();
-      return InstantiateTo(instance);
+      WeakCopy(instance, false);
+      instance->AddComponent(new DirectionComponent(instance));
+      return instance;
     }
 
     void EditorCamera::GenerateFrustum()

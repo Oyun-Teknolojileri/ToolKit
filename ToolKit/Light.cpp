@@ -44,11 +44,15 @@ namespace ToolKit
   {
   }
 
+  void Light::EnableGizmo(bool enable)
+  {
+  }
+
   DirectionalLight::DirectionalLight()
   {
     LightType() = 1;
 
-    AddComponent(new DirectionalComponent(this));
+    AddComponent(new DirectionComponent(this));
   }
 
   LightType DirectionalLight::GetLightType() const
@@ -75,10 +79,10 @@ namespace ToolKit
 
     LightType() = 3;
     Radius_Define(10.0f, "Light", 90, true, true);
-    OuterAngle_Define(30.0f, "Light", 90, true, true);
-    InnerAngle_Define(35.0f, "Light", 90, true, true);
+    OuterAngle_Define(35.0f, "Light", 90, true, true);
+    InnerAngle_Define(30.0f, "Light", 90, true, true);
 
-    AddComponent(new DirectionalComponent(this));
+    AddComponent(new DirectionComponent(this));
   }
 
   LightType SpotLight::GetLightType() const

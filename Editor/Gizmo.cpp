@@ -779,63 +779,6 @@ namespace ToolKit
       renderer->Render(this, cam);
     }
 
-    LightBillboard::LightBillboard(LightType lightType)
-      : Billboard({ true, 10.0f, 60.0f })
-    {
-      String path = "";
-      if (lightType == LightType::LightDirectional)
-      {
-        path = ConcatPaths({ "Icons", "light_sun.png" });
-      }
-      else
-      {
-        path = ConcatPaths({ "Icons", "light_point.png" });
-      }
-
-      MeshPtr& parentMesh = GetMesh();
-      parentMesh->UnInit();
-
-      // Billboard
-      Quad quad;
-      MeshPtr& meshPtr = quad.GetMesh();
-
-      meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-      meshPtr->m_material->UnInit();
-      meshPtr->m_material->m_diffuseTexture =
-      GetTextureManager()->Create<Texture>(TexturePath(path, true));
-      meshPtr->m_material->GetRenderState()->blendFunction =
-      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-      meshPtr->m_material->Init();
-      parentMesh->m_subMeshes.push_back(meshPtr);
-    }
-
-    LightBillboard::~LightBillboard()
-    {
-    }
-
-    void LightBillboard::RenderBillboard
-    (
-      Renderer* renderer,
-      Viewport* viewport,
-      Light* light
-    )
-    {
-      // Translate billboard
-      m_worldLocation =
-      light->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-
-      // Rotate billboard
-      LookAt(viewport->GetCamera(), viewport->m_zoom);
-
-      // Render billboard
-      renderer->Render(this, viewport->GetCamera());
-    }
-
-    LightBillboard::LightBillboard()
-      : Billboard({ true, 10.0f, 60.0f })
-    {
-    }
-
     SpotLightGizmo::SpotLightGizmo(SpotLight* light)
     {
       m_circleVertexCount = 36;
@@ -867,8 +810,6 @@ namespace ToolKit
       mesh->m_subMeshes[0]->m_material->Init();
       mesh->m_subMeshes[1]->m_material->Init();
       mesh->m_subMeshes[2]->m_material->Init();
-
-      UpdateGizmo(light);
     }
 
     SpotLightGizmo::~SpotLightGizmo()
@@ -880,10 +821,10 @@ namespace ToolKit
       m_gizmoLineBatches.clear();
     }
 
-    void SpotLightGizmo::UpdateGizmo(SpotLight* light)
+    void SpotLightGizmo::InitGizmo(SpotLight* light)
     {
       // Middle line
-      Vec3 d = light->GetComponent<DirectionalComponent>()->GetDirection();
+      Vec3 d = light->GetComponent<DirectionComponent>()->GetDirection();
       float r = light->Radius();
       m_pnts[0] = Vec3
       (
@@ -1024,7 +965,6 @@ namespace ToolKit
       return m_gizmoLineBatches;
     }
 
-
     DirectionalLightGizmo::DirectionalLightGizmo(DirectionalLight* light)
     {
       m_gizmoLineBatches.resize(1);
@@ -1035,8 +975,6 @@ namespace ToolKit
       mc->Mesh() = m_gizmoLineBatches[0]->GetMesh();
       mc->Mesh()->m_material->Init();
       AddComponent(mc);
-
-      UpdateGizmo(light);
     }
 
     DirectionalLightGizmo::~DirectionalLightGizmo()
@@ -1048,10 +986,10 @@ namespace ToolKit
       m_gizmoLineBatches.clear();
     }
 
-    void DirectionalLightGizmo::UpdateGizmo(DirectionalLight* light)
+    void DirectionalLightGizmo::InitGizmo(DirectionalLight* light)
     {
       // Middle line
-      Vec3 d = light->GetComponent<DirectionalComponent>()->GetDirection();
+      Vec3 d = light->GetComponent<DirectionComponent>()->GetDirection();
       Vec3 norm = glm::normalize(d);
       m_pnts[0] = Vec3
       (

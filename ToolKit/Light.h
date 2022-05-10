@@ -30,6 +30,7 @@ namespace ToolKit
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     virtual void Init();
+    virtual void EnableGizmo(bool enable);
 
    public:
     TKDeclareParam(float, LightType);
@@ -38,6 +39,7 @@ namespace ToolKit
 
    protected:
     bool m_initialized = false;
+    bool m_gizmoActive = false;
   };
 
   class TK_API DirectionalLight : public Light

@@ -1,4 +1,10 @@
 #include "Mod.h"
+
+#include <utility>
+#include <vector>
+#include <memory>
+#include <algorithm>
+
 #include "GlobalDef.h"
 #include "EditorViewport.h"
 #include "Node.h"
@@ -194,7 +200,7 @@ namespace ToolKit
     {
       if (m_stackPointer > -1)
       {
-        if (m_stackPointer < (int)m_actionStack.size() - 1)
+        if (m_stackPointer < static_cast<int>(m_actionStack.size()) - 1)
         {
           // All actions above stack pointer are invalidated.
           for (size_t i = m_stackPointer + 1; i < m_actionStack.size(); i++)
@@ -203,7 +209,11 @@ namespace ToolKit
             SafeDel(a);
           }
 
-          m_actionStack.erase(m_actionStack.begin() + m_stackPointer + 1, m_actionStack.end());
+          m_actionStack.erase
+          (
+            m_actionStack.begin() + m_stackPointer + 1,
+            m_actionStack.end()
+          );
         }
       }
       else
@@ -225,7 +235,7 @@ namespace ToolKit
 
         pop_front(m_actionStack);
       }
-      m_stackPointer = (int)m_actionStack.size() - 1;
+      m_stackPointer = static_cast<int>(m_actionStack.size()) - 1;
     }
 
     void ActionManager::GroupLastActions(int n)
@@ -236,23 +246,31 @@ namespace ToolKit
       }
 
       // Sanity Checks.
-      assert(m_stackPointer == (int)m_actionStack.size() - 1 && "Call grouping right after add.");
-      if (n >= (int)m_actionStack.size() && !m_actionGrouping)
+      assert(m_stackPointer == static_cast<int>(m_actionStack.size()) - 1
+      && "Call grouping right after add.");
+      if (n >= static_cast<int>(m_actionStack.size()) && !m_actionGrouping)
       {
-        assert((int)m_actionStack.size() >= n && "We can't stack more than we have. Try using BeginActionGroup() to pass a series of action as a group");
+        assert(static_cast<int>(m_actionStack.size()) >=
+        n
+        && "We can't stack more than we have. Try using BeginActionGroup()"
+        " to pass a series of action as a group");
         return;
       }
 
-      int begIndx = (int)m_actionStack.size() - n;
+      int begIndx = static_cast<int>(m_actionStack.size()) - n;
       Action* root = m_actionStack[begIndx++];
       root->m_group.reserve(n - 1);
-      for (int i = begIndx; i < (int)m_actionStack.size(); i++)
+      for (int i = begIndx; i < static_cast<int>(m_actionStack.size()); i++)
       {
         root->m_group.push_back(m_actionStack[i]);
       }
 
-      m_actionStack.erase(m_actionStack.begin() + begIndx, m_actionStack.end());
-      m_stackPointer = (int)m_actionStack.size() - 1;
+      m_actionStack.erase
+      (
+        m_actionStack.begin() + begIndx,
+        m_actionStack.end()
+      );
+      m_stackPointer = static_cast<int>(m_actionStack.size()) - 1;
       m_actionGrouping = false;
     }
 
@@ -284,7 +302,12 @@ namespace ToolKit
           Action* action = m_actionStack[m_stackPointer];
 
           // Undo in reverse order.
-          for (int i = (int)action->m_group.size() - 1; i > -1; i--)
+          for
+          (
+            int i = static_cast<int>(action->m_group.size()) - 1;
+            i > -1;
+            i--
+          )
           {
             action->m_group[i]->Undo();
           }
@@ -301,7 +324,7 @@ namespace ToolKit
         return;
       }
 
-      if (m_stackPointer < (int)m_actionStack.size() - 1)
+      if (m_stackPointer < static_cast<int>(m_actionStack.size()) - 1)
       {
         Action* action = m_actionStack[m_stackPointer + 1];
         action->Redo();
@@ -414,9 +437,10 @@ namespace ToolKit
         }
 
         /*
-        * If the state is changed while the previous state is being actively used
-        * (in StateTransitionTo state), delete the last function pointers from the array,
-        * since the function parameters are not valid anymore.
+        * If the state is changed while the previous state is being actively
+        *  used (in StateTransitionTo state), delete the last function
+        * pointers from the array, since the function
+        * parameters are not valid anymore.
         */
         EditorViewport* vp = g_app->GetActiveViewport();
         if (vp == nullptr)
@@ -501,7 +525,8 @@ namespace ToolKit
           {
             if (ConsoleWindow* consol = g_app->GetConsole())
             {
-              String log = "\t" + prevStateDbg->GetType() + " -> " + nextState->GetType();
+              String log = "\t" + prevStateDbg->GetType() + " -> "
+              + nextState->GetType();
               consol->AddLog(log, "ModDbg");
             }
           }
@@ -542,7 +567,11 @@ namespace ToolKit
 
     void StatePickingBase::TransitionOut(State* nextState)
     {
-      if (StatePickingBase* baseState = dynamic_cast<StatePickingBase*> (nextState))
+      if
+      (
+        StatePickingBase* baseState =
+        dynamic_cast<StatePickingBase*> (nextState)
+      )
       {
         baseState->m_ignoreList = m_ignoreList;
         baseState->m_mouseData = m_mouseData;
@@ -558,7 +587,12 @@ namespace ToolKit
 
     bool StatePickingBase::IsIgnored(ULongID id)
     {
-      return std::find(m_ignoreList.begin(), m_ignoreList.end(), id) != m_ignoreList.end();
+      return std::find
+      (
+        m_ignoreList.begin(),
+        m_ignoreList.end(),
+        id
+      ) != m_ignoreList.end();
     }
 
     void StatePickingBase::PickDataToEntityId(EntityIdArray& ids)
@@ -650,7 +684,10 @@ namespace ToolKit
             }
 
             m_dbgArrow->m_node->SetTranslation(ray.position);
-            m_dbgArrow->m_node->SetOrientation(RotationTo(X_AXIS, ray.direction));
+            m_dbgArrow->m_node->SetOrientation
+            (
+              RotationTo(X_AXIS, ray.direction)
+            );
           }
 
           return StateType::StateEndPick;
@@ -692,12 +729,15 @@ namespace ToolKit
           rect[1].y = rect[0].y;
           rect[3].x = rect[0].x;
           rect[3].y = rect[2].y;
-          
+
           std::vector<Ray> rays;
           std::vector<Vec3> rect3d;
 
           // Front rectangle.
-          Vec3 lensLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+          Vec3 lensLoc = cam->m_node->GetTranslation
+          (
+            TransformationSpace::TS_WORLD
+          );
           for (int i = 0; i < 4; i++)
           {
             Vec2 p = vp->TransformScreenToViewportSpace(rect[i]);
@@ -705,7 +745,13 @@ namespace ToolKit
             rect3d.push_back(p0);
             if (cam->IsOrtographic())
             {
-              rays.push_back({ lensLoc, cam->GetDir() });
+              rays.push_back
+              (
+                {
+                  lensLoc,
+                  cam->GetComponent<DirectionComponent>()->GetDirection()
+                }
+              );
             }
             else
             {
@@ -724,25 +770,24 @@ namespace ToolKit
           // Frustum from 8 points.
           Frustum frustum;
           std::vector<Vec3> planePnts;
-          planePnts = { rect3d[0], rect3d[7], rect3d[4] }; // Left plane.
+          planePnts = { rect3d[0], rect3d[7], rect3d[4] };  // Left plane.
           frustum.planes[0] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[5], rect3d[6], rect3d[1] }; // Right plane.
+          planePnts = { rect3d[5], rect3d[6], rect3d[1] };  // Right plane.
           frustum.planes[1] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[4], rect3d[5], rect3d[0] }; // Top plane.
+          planePnts = { rect3d[4], rect3d[5], rect3d[0] };  // Top plane.
           frustum.planes[2] = PlaneFrom(planePnts.data());
 
-          //planePnts = { rect3d[2], rect3d[7], rect3d[6] }; // Bottom plane.
-          planePnts = { rect3d[3], rect3d[6], rect3d[7] }; // Bottom plane.
+          planePnts = { rect3d[3], rect3d[6], rect3d[7] };  // Bottom plane.
           frustum.planes[3] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[0], rect3d[1], rect3d[3] }; // Near plane.
+          planePnts = { rect3d[0], rect3d[1], rect3d[3] };  // Near plane.
           frustum.planes[4] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[7], rect3d[5], rect3d[4] }; // Far plane.
+          planePnts = { rect3d[7], rect3d[5], rect3d[4] };  // Far plane.
           frustum.planes[5] = PlaneFrom(planePnts.data());
-          
+
           // Perform picking.
           std::vector<EditorScene::PickData> ntties;
           EditorScenePtr currScene = g_app->GetCurrentScene();
@@ -754,7 +799,8 @@ namespace ToolKit
           {
             std::vector<Vec3> corners =
             {
-              rect3d[0], rect3d[1], rect3d[1], rect3d[2], rect3d[2], rect3d[3], rect3d[3], rect3d[0],
+              rect3d[0], rect3d[1], rect3d[1], rect3d[2], rect3d[2],
+              rect3d[3], rect3d[3], rect3d[0],
               rect3d[0], rect3d[0] + rays[0].direction * depth,
               rect3d[1], rect3d[1] + rays[1].direction * depth,
               rect3d[2], rect3d[2] + rays[2].direction * depth,
@@ -771,7 +817,10 @@ namespace ToolKit
 
             if (m_dbgFrustum == nullptr)
             {
-              m_dbgFrustum = std::shared_ptr<LineBatch>(new LineBatch(corners, X_AXIS, DrawType::Line));
+              m_dbgFrustum = std::shared_ptr<LineBatch>
+              (
+                new LineBatch(corners, X_AXIS, DrawType::Line)
+              );
               m_ignoreList.push_back(m_dbgFrustum->Id());
               currScene->AddEntity(m_dbgFrustum.get());
             }
@@ -780,7 +829,6 @@ namespace ToolKit
               m_dbgFrustum->Generate(corners, X_AXIS, DrawType::Line);
             }
           }
-          
         }
 
         return StateType::StateEndPick;
@@ -837,7 +885,7 @@ namespace ToolKit
     SignalId StateDeletePick::Update(float deltaTime)
     {
       Window::Type activeType = g_app->GetActiveWindow()->GetType();
-      if // Stop text edit deletes to remove entities.
+      if  // Stop text edit deletes to remove entities.
         (
           activeType != Window::Type::Viewport
           && activeType != Window::Type::Viewport2d
@@ -876,7 +924,10 @@ namespace ToolKit
         {
           ActionManager::GetInstance()->AddAction(new DeleteAction(e));
         }
-        ActionManager::GetInstance()->GroupLastActions((int)deleteList.size());
+        ActionManager::GetInstance()->GroupLastActions
+        (
+          static_cast<int>(deleteList.size())
+        );
       }
 
       return NullSignal;
@@ -923,11 +974,12 @@ namespace ToolKit
           }
 
           currScene->AddToSelection(copies.front()->Id(), true);
-          cpyCount += (int)copies.size();
+          cpyCount += static_cast<int>(copies.size());
         }
 
         // Status info
-        g_app->m_statusMsg = std::to_string(cpyCount) + " entities are copied.";
+        g_app->m_statusMsg = std::to_string(cpyCount)
+        + " entities are copied.";
 
         ActionManager::GetInstance()->GroupLastActions(cpyCount);
       }
@@ -978,15 +1030,23 @@ namespace ToolKit
 
       if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick)
       {
-        StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
+        StateEndPick* endPick =
+        static_cast<StateEndPick*>(m_stateMachine->m_currentState);
         EntityIdArray entities;
         endPick->PickDataToEntityId(entities);
-        g_app->GetCurrentScene()->AddToSelection(entities, ImGui::GetIO().KeyShift);
+        g_app->GetCurrentScene()->AddToSelection
+        (
+          entities,
+          ImGui::GetIO().KeyShift
+        );
 
         ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
       }
 
-      if (m_stateMachine->m_currentState->GetType() == StateType::StateDeletePick)
+      if
+      (
+        m_stateMachine->m_currentState->GetType() == StateType::StateDeletePick
+      )
       {
         ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
       }
@@ -1014,13 +1074,13 @@ namespace ToolKit
 
       if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick)
       {
-        StateEndPick* endPick = static_cast<StateEndPick*> (m_stateMachine->m_currentState);
+        StateEndPick* endPick =
+        static_cast<StateEndPick*>(m_stateMachine->m_currentState);
         EditorScene::PickData& pd = endPick->m_pickData.back();
         g_app->m_cursor->m_worldLocation = pd.pickPos;
 
         m_stateMachine->Signal(BaseMod::m_backToStart);
       }
     }
-
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

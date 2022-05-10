@@ -103,48 +103,48 @@ namespace ToolKit
     }
   }
 
-  DirectionalComponent::DirectionalComponent(Entity* entity)
+  DirectionComponent::DirectionComponent(Entity* entity)
   {
     m_entity = entity;
   }
 
-  DirectionalComponent::~DirectionalComponent()
+  DirectionComponent::~DirectionComponent()
   {
   }
 
-  ComponentPtr DirectionalComponent::Copy()
+  ComponentPtr DirectionComponent::Copy()
   {
-    DirectionalComponentPtr dc =
-    std::make_shared<DirectionalComponent>(m_entity);
+    DirectionComponentPtr dc =
+    std::make_shared<DirectionComponent>(m_entity);
     return dc;
   }
 
-  Vec3 DirectionalComponent::GetDirection()
+  Vec3 DirectionComponent::GetDirection()
   {
     Mat4 transform =
     m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
     return -glm::column(transform, 2);
   }
 
-  void DirectionalComponent::Pitch(float angle)
+  void DirectionComponent::Pitch(float angle)
   {
     Quaternion q = glm::angleAxis(angle, Vec3(1.0f, 0.0f, 0.0f));
     m_entity->m_node->Rotate(q, TransformationSpace::TS_LOCAL);
   }
 
-  void DirectionalComponent::Yaw(float angle)
+  void DirectionComponent::Yaw(float angle)
   {
     Quaternion q = glm::angleAxis(angle, Vec3(0.0f, 1.0f, 0.0f));
     m_entity->m_node->Rotate(q, TransformationSpace::TS_LOCAL);
   }
 
-  void DirectionalComponent::Roll(float angle)
+  void DirectionComponent::Roll(float angle)
   {
     Quaternion q = glm::angleAxis(angle, Vec3(0.0f, 0.0f, 1.0f));
     m_entity->m_node->Rotate(q, TransformationSpace::TS_LOCAL);
   }
 
-  void DirectionalComponent::RotateOnUpVector(float angle)
+  void DirectionComponent::RotateOnUpVector(float angle)
   {
     m_entity->m_node->Rotate
     (
@@ -157,21 +157,21 @@ namespace ToolKit
     );
   }
 
-  Vec3 DirectionalComponent::GetUp() const
+  Vec3 DirectionComponent::GetUp() const
   {
     Mat4 transform =
     m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
     return glm::column(transform, 1);
   }
 
-  Vec3 DirectionalComponent::GetRight() const
+  Vec3 DirectionComponent::GetRight() const
   {
     Mat4 transform =
     m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
     return glm::column(transform, 0);
   }
 
-  void DirectionalComponent::LookAt(Vec3 target)
+  void DirectionComponent::LookAt(Vec3 target)
   {
     Vec3 eye = m_entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
     Vec3 tdir = target - eye;

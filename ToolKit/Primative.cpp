@@ -35,7 +35,7 @@ namespace ToolKit
       }
       else
       {
-        Vec3 cdir = cam->GetDir();
+        Vec3 cdir = cam->GetComponent<DirectionComponent>()->GetDirection();
         Vec3 camWorldPos = cam->m_node->GetTranslation
         (
           TransformationSpace::TS_WORLD

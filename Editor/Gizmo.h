@@ -159,30 +159,13 @@ namespace ToolKit
       void Render(Renderer* renderer, Camera* cam);
     };
 
-    class LightBillboard : public Billboard
-    {
-     public:
-      explicit LightBillboard(LightType lightType);
-      ~LightBillboard();
-
-      void RenderBillboard
-      (
-        Renderer* renderer,
-        Viewport* viewport,
-        Light* light
-      );
-
-     protected:
-      LightBillboard();
-    };
-
     class SpotLightGizmo : public Entity
     {
      public:
       explicit SpotLightGizmo(SpotLight* light);
       ~SpotLightGizmo();
 
-      void UpdateGizmo(SpotLight* light);
+      void InitGizmo(SpotLight* light);
 
       std::vector<LineBatch*> GetGizmoLineBatches();
 
@@ -204,7 +187,7 @@ namespace ToolKit
       explicit DirectionalLightGizmo(DirectionalLight* light);
       ~DirectionalLightGizmo();
 
-      void UpdateGizmo(DirectionalLight* light);
+      void InitGizmo(DirectionalLight* light);
       std::vector<LineBatch*> GetGizmoLineBatches();
 
      private:

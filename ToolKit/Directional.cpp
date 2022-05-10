@@ -5,118 +5,6 @@
 
 namespace ToolKit
 {
-
-  Directional::Directional()
-  {
-  }
-
-  Directional::~Directional()
-  {
-  }
-
-  void Directional::Pitch(float angle)
-  {
-    Quaternion q = glm::angleAxis(angle, Vec3(1.0f, 0.0f, 0.0f));
-    m_node->Rotate(q, TransformationSpace::TS_LOCAL);
-  }
-
-  void Directional::Yaw(float angle)
-  {
-    Quaternion q = glm::angleAxis(angle, Vec3(0.0f, 1.0f, 0.0f));
-    m_node->Rotate(q, TransformationSpace::TS_LOCAL);
-  }
-
-  void Directional::Roll(float angle)
-  {
-    Quaternion q = glm::angleAxis(angle, Vec3(0.0f, 0.0f, 1.0f));
-    m_node->Rotate(q, TransformationSpace::TS_LOCAL);
-  }
-
-  void Directional::Translate(Vec3 pos)
-  {
-    m_node->Translate(pos, TransformationSpace::TS_LOCAL);
-  }
-
-  void Directional::RotateOnUpVector(float angle)
-  {
-    m_node->Rotate
-    (
-      glm::angleAxis
-      (
-        angle,
-        Vec3(0.0f, 1.0f, 0.0f)
-      ),
-      TransformationSpace::TS_WORLD
-    );
-  }
-
-  void Directional::GetLocalAxis(Vec3& dir, Vec3& up, Vec3& right) const
-  {
-    Mat4 transform = m_node->GetTransform(TransformationSpace::TS_WORLD);
-    right = glm::column(transform, 0);
-    up = glm::column(transform, 1);
-    dir = -glm::column(transform, 2);
-  }
-
-  Vec3 Directional::GetDir() const
-  {
-    Mat4 transform = m_node->GetTransform(TransformationSpace::TS_WORLD);
-    return -glm::column(transform, 2);
-  }
-
-  Vec3 Directional::GetUp() const
-  {
-    Mat4 transform = m_node->GetTransform(TransformationSpace::TS_WORLD);
-    return glm::column(transform, 1);
-  }
-
-  Vec3 Directional::GetRight() const
-  {
-    Mat4 transform = m_node->GetTransform(TransformationSpace::TS_WORLD);
-    return glm::column(transform, 0);
-  }
-
-  void Directional::LookAt(Vec3 target)
-  {
-    Vec3 eye = m_node->GetTranslation(TransformationSpace::TS_WORLD);
-    Vec3 tdir = target - eye;
-    tdir.y = 0.0f;  // project on xz
-    tdir = glm::normalize(tdir);
-    Vec3 dir = GetDir();
-    dir.y = 0.0f;  // project on xz
-    dir = glm::normalize(dir);
-
-    if (glm::all(glm::epsilonEqual(tdir, dir, { 0.01f, 0.01f, 0.01f })))
-    {
-      return;
-    }
-
-    Vec3 rotAxis = glm::normalize(glm::cross(dir, tdir));
-    float yaw = glm::acos(glm::dot(tdir, dir));
-
-    yaw *= glm::sign(glm::dot(Y_AXIS, rotAxis));
-    RotateOnUpVector(yaw);
-
-    tdir = target - eye;
-    tdir = glm::normalize(tdir);
-    dir = glm::normalize(GetDir());
-    rotAxis = glm::normalize(glm::cross(dir, tdir));
-    float pitch = glm::acos(glm::dot(tdir, dir));
-    pitch *= glm::sign(glm::dot(GetRight(), rotAxis));
-    Pitch(pitch);
-
-    // Check upside down case
-    if (glm::dot(GetUp(), Y_AXIS) < 0.0f)
-    {
-      Roll(glm::pi<float>());
-    }
-  }
-
-  EntityType Directional::GetType() const
-  {
-    return EntityType::Entity_Directional;
-  }
-
   Camera::Camera(XmlNode* node)
   {
     DeSerialize(nullptr, node);
@@ -129,11 +17,15 @@ namespace ToolKit
     {
       SetLens(m_fov, m_aspect * m_height, m_height);
     }
+
+    AddComponent(new DirectionComponent(this));
   }
 
   Camera::Camera()
   {
     SetLens(glm::radians(90.0f), 640.0f, 480.0f, 0.01f, 1000.0f);
+
+    AddComponent(new DirectionComponent(this));
   }
 
   Camera::~Camera()
@@ -210,7 +102,7 @@ namespace ToolKit
   Camera::CamData Camera::GetData() const
   {
     CamData data;
-    data.dir = GetDir();
+    data.dir = GetComponent<DirectionComponent>()->GetDirection();
     data.pos = m_node->GetTranslation(TransformationSpace::TS_WORLD);
     data.projection = m_projection;
     data.fov = m_fov;
@@ -267,8 +159,7 @@ namespace ToolKit
 
   Entity* Camera::CopyTo(Entity* copyTo) const
   {
-    Directional::CopyTo(copyTo);
-
+    WeakCopy(copyTo, false);
     Camera* cpy = static_cast<Camera*> (copyTo);
     cpy->m_fov = m_fov;
     cpy->m_aspect = m_aspect;
@@ -280,6 +171,7 @@ namespace ToolKit
     cpy->m_bottom = m_bottom;
     cpy->m_ortographic = m_ortographic;
     cpy->m_projection = m_projection;
+    cpy->AddComponent(new DirectionComponent(cpy));
 
     return cpy;
   }

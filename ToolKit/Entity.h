@@ -91,9 +91,7 @@ namespace ToolKit
     virtual Entity* CopyTo(Entity* other) const;
     virtual Entity* InstantiateTo(Entity* other) const;
     void ParameterConstructor();
-
-   private:
-    void WeakCopy(Entity* other) const;
+    void WeakCopy(Entity* other, bool copyComponents = true) const;
 
    public:
     TKDeclareParam(ULongID, Id);
