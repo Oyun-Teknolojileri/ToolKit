@@ -10,12 +10,24 @@
 
 namespace ToolKit
 {
+  class Billboard;
+
   enum class LightType
   {
     LightBase,
     LightPoint,
     LightDirectional,
     LightSpot
+  };
+
+  struct LightData
+  {
+    int type = -1;
+    Vec3 color = ZERO;
+    float intensity = -1.0f;
+    float radius = -1.0f;
+    float outerAngle = -1.0f;
+    float innerAngle = -1.0f;
   };
 
   class TK_API Light : public Entity
@@ -45,8 +57,8 @@ namespace ToolKit
   class TK_API DirectionalLight : public Light
   {
    public:
-    DirectionalLight();
-    virtual ~DirectionalLight() {}
+     DirectionalLight();
+     virtual ~DirectionalLight() {}
 
     ToolKit::LightType GetLightType() const override;
   };

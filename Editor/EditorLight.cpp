@@ -37,7 +37,7 @@ namespace ToolKit
         m_initialized = false;
 
         SafeDel(m_gizmo);
-      }
+    }
     }
 
     Entity* EditorDirectionalLight::Copy() const
@@ -195,7 +195,7 @@ namespace ToolKit
         m_initialized = false;
 
         SafeDel(m_gizmo);
-      }
+    }
     }
 
     Entity* EditorSpotLight::Copy() const
@@ -265,7 +265,7 @@ namespace ToolKit
           }
 
           m_gizmoActive = true;
-        }
+    }
         else
         {
           // Remove submeshes from mesh component
@@ -278,3 +278,4 @@ namespace ToolKit
     }
   }  // namespace Editor
 }  // namespace ToolKit
+

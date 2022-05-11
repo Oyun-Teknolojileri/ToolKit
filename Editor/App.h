@@ -33,6 +33,8 @@ namespace ToolKit
     class MaterialInspector;
     class Window;
     class Gizmo;
+    class LightBillboard;
+    class SpotLightGizmo;
 
     class App : Serializable
     {
@@ -148,6 +150,9 @@ namespace ToolKit
       LineBatch m_2dGrid;
       Axis3d* m_origin;
       Cursor* m_cursor;
+      SpotLightGizmo* m_spotLightGizmo;
+      LightBillboard* m_pointLightBillboard;
+      LightBillboard* m_directionalLightBillboard;
       Gizmo* m_gizmo = nullptr;
       std::vector<Drawable*> m_perFrameDebugObjects;
 

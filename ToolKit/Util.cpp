@@ -142,7 +142,7 @@ namespace ToolKit
     return node;
   }
 
-  TK_API bool UpdateAttribute(XmlDocument* doc, const StringArray& path, const String& attribute, const String& val)
+  bool UpdateAttribute(XmlDocument* doc, const StringArray& path, const String& attribute, const String& val)
   {
     if (XmlNode* node = Query(doc, path))
     {
@@ -162,7 +162,7 @@ namespace ToolKit
     return false;
   }
 
-  TK_API XmlNode* CreateXmlNode(XmlDocument* doc, const String& name, XmlNode* parent)
+  XmlNode* CreateXmlNode(XmlDocument* doc, const String& name, XmlNode* parent)
   {
     assert(doc);
 
@@ -208,7 +208,9 @@ namespace ToolKit
   {
     if (XmlNode* materialNode = parent->first_node("material"))
     {
-      String matFile = MaterialPath(materialNode->first_attribute("name")->value());
+      String path = materialNode->first_attribute("name")->value();
+      NormalizePath(path);
+      String matFile = MaterialPath(path);
       return GetMaterialManager()->Create<Material>(matFile);
     }
 
@@ -269,16 +271,21 @@ namespace ToolKit
 
   void NormalizePath(String& path)
   {
-#ifndef __clang__
-    ReplaceStringInPlace(path, "/", "\\");
+#ifdef __EMSCRIPTEN__
+    UnixifyPath(path);
 #else
-    ReplaceStringInPlace(path, "\\", "/");
+    DosifyPath(path);
 #endif
   }
 
   void UnixifyPath(String& path)
   {
-    ReplaceStringInPlace(path, "\\", "/");
+    ReplaceCharInPlace(path, '\\', '/');
+  }
+
+  void DosifyPath(String& path)
+  {
+    ReplaceCharInPlace(path, '/', '\\');
   }
 
   String ConcatPaths(const StringArray& entries)
@@ -512,7 +519,7 @@ namespace ToolKit
 
   char GetPathSeparator()
   {
-#ifndef __clang__
+#ifndef __EMSCRIPTEN__
     return '\\';
 #else
     return '/';
@@ -586,17 +593,30 @@ namespace ToolKit
   void ReplaceStringInPlace(String& subject, const String& search, const String& replace)
   {
     size_t pos = 0;
-    while ((pos = subject.find(search, pos)) != std::string::npos) {
+    while ((pos = subject.find(search, pos)) != std::string::npos)
+    {
       subject.replace(pos, search.length(), replace);
       pos += replace.length();
     }
   }
 
-  TK_API void ReplaceFirstStringInPlace(String& subject, const String& search, const String& replace)
+  void ReplaceFirstStringInPlace(String& subject, const String& search, const String& replace)
   {
     size_t pos = 0;
-    if ((pos = subject.find(search, pos)) != std::string::npos) {
+    if ((pos = subject.find(search, pos)) != std::string::npos) 
+    {
       subject.replace(pos, search.length(), replace);
+    }
+  }
+
+  void ReplaceCharInPlace(String& subject, const char search, const char replace)
+  {
+    for (char& ch : subject)
+    {
+      if (ch == search)
+      {
+        ch = replace;
+      }
     }
   }
 
@@ -819,12 +839,12 @@ namespace ToolKit
     return cpy;
   }
 
-  TK_API void* TKMalloc(size_t sz)
+  void* TKMalloc(size_t sz)
   {
       return malloc(sz);
   }
 
-  TK_API void TKFree(void* m)
+  void TKFree(void* m)
   {
     free(m);
   }
@@ -840,7 +860,7 @@ namespace ToolKit
     return -1;
   }
 
-  TK_API bool Exist(const IntArray& vec, int val)
+  bool Exist(const IntArray& vec, int val)
   {
     for (int v : vec)
     {
@@ -851,6 +871,22 @@ namespace ToolKit
     }
 
     return false;
+  }
+
+  float MillisecToSec(float ms)
+  {
+    return ms / 1000.0f;
+  }
+
+  float GetElapsedMilliSeconds()
+  {
+    using namespace std::chrono;
+
+    static high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    duration<double> timeSpan = duration_cast<duration<double>>(t2 - t1);
+
+    return (float)(timeSpan.count() * 1000.0);
   }
 
 }

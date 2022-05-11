@@ -123,8 +123,9 @@ namespace ToolKit
     {
       Vec3 screenPoint = Vec3(pnt, 0.0f);
 
-      Mat4 view = GetCamera()->GetViewMatrix();
-      Mat4 project = GetCamera()->GetData().projection;
+      Camera* cam = GetCamera();
+      Mat4 view = cam->GetViewMatrix();
+      Mat4 project = cam->GetProjectionMatrix();
 
       return glm::unProject
       (

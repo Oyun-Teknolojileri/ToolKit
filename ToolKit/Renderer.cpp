@@ -36,8 +36,6 @@ namespace ToolKit
 
     SetRenderTarget(viewport->m_viewportImage);
 
-    scene->SetCamera(viewport->GetCamera());
-
     FrustumCull(entities, cam);
 
     EntityRawPtrArray blendedEntities;
@@ -497,7 +495,7 @@ namespace ToolKit
       }
 
       BlendFunction blend
-      = ms->Mesh()->m_material->GetRenderState()->blendFunction;
+        = ms->Mesh()->m_material->GetRenderState()->blendFunction;
       if (ntt->IsDrawable() && ntt->Visible() && static_cast<int>(blend))
       {
         blendedEntities.push_back(ntt);

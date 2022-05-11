@@ -142,14 +142,11 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
-      // Add editor light
-      GetCurrentScene()->GetCamera()->m_node->AddChild(m_lightMaster);
-
       UI::BeginUI();
       UI::ShowUI();
 
       // Update animations.
-      GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
+      GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
@@ -193,6 +190,11 @@ namespace ToolKit
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
       {
+        // Update scene lights for the current view.
+        Camera* viewCam = viewport->GetCamera();
+        m_lightMaster->OrphanSelf();
+        viewCam->m_node->AddChild(m_lightMaster);
+
         // PlayWindow is drawn on perspective. Thus, skip perspective.
         if (m_gameMod != GameMod::Stop && !m_runWindowed)
         {
@@ -235,7 +237,7 @@ namespace ToolKit
         {
           for (Drawable* dbgObj : m_perFrameDebugObjects)
           {
-            m_renderer->Render(dbgObj, GetCurrentScene()->GetCamera());
+            m_renderer->Render(dbgObj, viewCam);
             SafeDel(dbgObj);
           }
           m_perFrameDebugObjects.clear();
@@ -1009,12 +1011,6 @@ Fail:
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
       SetCurrentScene(scene);
       scene->Init(false);
-
-      // Editor light retransfrom according to new camera
-      m_lightMaster->SetTransform
-      (
-        scene->GetCamera()->m_node->GetTransform(TransformationSpace::TS_LOCAL)
-      );
 
       m_workspace.SetScene(scene->m_name);
     }

@@ -228,20 +228,10 @@ namespace ToolKit
       *max = m_wndPos + m_wndContentAreaSize;
     }
 
-    Camera* EditorViewport::GetCamera() const
-    {
-      Camera* cam = static_cast<Camera*>
-      (
-        g_app->GetCurrentScene()->GetEntity(m_attachedCamera)
-      );
-      return cam ? cam : Viewport::GetCamera();
-    }
-
     void EditorViewport::SetCamera(Camera* cam)
     {
       Viewport::SetCamera(cam);
       AdjustZoom(0.0f);
-      m_attachedCamera = cam->Id();
     }
 
     RenderTargetSettigs EditorViewport::GetRenderTargetSettings()
@@ -437,7 +427,7 @@ namespace ToolKit
             move += -up;
           }
 
-          float displace = speed * MilisecToSec(deltaTime);
+          float displace = speed * MillisecToSec(deltaTime);
           if (length(move) > 0.0f)
           {
             move = normalize(move);

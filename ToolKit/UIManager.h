@@ -26,8 +26,8 @@ namespace ToolKit
 
    public:
     String m_layerName;  // Should be the name of root entity of layout.
-    ScenePtr m_layout = nullptr;
     Camera* m_cam = nullptr;
+    ScenePtr m_layout = nullptr;
     Viewport* m_viewport = nullptr;
     Camera* m_lastCamEntity = nullptr;
   };
@@ -35,10 +35,6 @@ namespace ToolKit
   class TK_API UIManager
   {
    public:
-    UILayer* m_rootLayer;
-    UILayerPtrArray m_childLayers;
-    UILayerPtrArray m_allLayers;
-
     void SetRootLayer(UILayer* newRootLayer);
     void AddChildLayer(UILayer* newChildLayer);
     void RemoveChildLayer(String layerName);
@@ -46,7 +42,11 @@ namespace ToolKit
     UILayerPtrArray GetCurrentLayers();
 
     void UpdateLayers(float deltaTime, Viewport* vp);
+
+   public:
+    UILayer* m_rootLayer = nullptr;
+    UILayerPtrArray m_childLayers;
+    UILayerPtrArray m_allLayers;
   };
 
 }  // namespace ToolKit
-

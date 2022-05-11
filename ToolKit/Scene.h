@@ -63,9 +63,6 @@ namespace ToolKit
     virtual void RemoveAllEntities();
     virtual void Destroy(bool removeResources);
     virtual void SavePrefab(Entity* entity);
-
-    virtual Camera* GetCamera();
-    virtual void SetCamera(Camera* cam);
     virtual void ClearEntities();
 
     // Serialization.
@@ -80,9 +77,6 @@ namespace ToolKit
    protected:
     EntityRawPtrArray m_entities;
     String m_version;
-
-   private:
-    Camera* m_camera = nullptr;
   };
 
   class TK_API SceneManager : public ResourceManager

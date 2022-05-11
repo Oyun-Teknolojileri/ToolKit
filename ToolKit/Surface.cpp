@@ -287,6 +287,7 @@ namespace ToolKit
       if (!image.empty())
       {
         String path = TexturePath(image);
+        NormalizePath(path);
         m_mouseOverImage = GetTextureManager()->Create<Texture>(path);
       }
 
@@ -294,6 +295,7 @@ namespace ToolKit
       if (!image.empty())
       {
         String path = TexturePath(image);
+        NormalizePath(path);
         m_buttonImage = GetTextureManager()->Create<Texture>(path);
       }
     }

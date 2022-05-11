@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef __clang__
+#ifndef __EMSCRIPTEN__
 #pragma message("Compiling precompiled headers.\n")
 #define GLM_FORCE_MESSAGES 
 #endif
