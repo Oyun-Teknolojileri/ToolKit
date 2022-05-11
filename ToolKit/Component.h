@@ -10,7 +10,6 @@
 #include "ParameterBlock.h"
 #include "Serialize.h"
 #include "Types.h"
-#include "Entity.h"
 
 namespace ToolKit
 {
