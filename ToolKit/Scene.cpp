@@ -14,7 +14,6 @@ namespace ToolKit
   Scene::Scene()
   {
     m_name = "New Scene";
-    m_camera = new Camera();
   }
 
   Scene::Scene(String file)
@@ -25,7 +24,6 @@ namespace ToolKit
 
   Scene::~Scene()
   {
-    SafeDel(m_camera);
     Destroy(false);
   }
 
@@ -36,7 +34,10 @@ namespace ToolKit
       return;
     }
 
-    XmlFile sceneFile(GetFile().c_str());
+    String path = GetFile();
+    NormalizePath(path);
+
+    XmlFile sceneFile(path.c_str());
     XmlDocument sceneDoc;
     sceneDoc.parse<0>(sceneFile.data());
 
@@ -402,22 +403,6 @@ namespace ToolKit
     entity->m_node = prevNode;
   }
 
-  Camera* Scene::GetCamera()
-  {
-    return m_camera;
-  }
-
-  void Scene::SetCamera(Camera* cam)
-  {
-    // Copy camera
-    m_camera->SetProjectionMatrix(cam->GetProjectionMatrix());
-    m_camera->m_node->SetTransform
-    (
-      cam->m_node->GetTransform(TransformationSpace::TS_WORLD),
-      TransformationSpace::TS_WORLD
-    );
-  }
-
   void Scene::ClearEntities()
   {
     m_entities.clear();
@@ -469,7 +454,10 @@ namespace ToolKit
     }
 
     // Match scene name with file name.
-    DecomposePath(GetFile(), nullptr, &m_name, nullptr);
+    String path = GetFile();
+    NormalizePath(path);
+
+    DecomposePath(path, nullptr, &m_name, nullptr);
     ReadAttr(root, "version", m_version);
 
     XmlNode* node = nullptr;

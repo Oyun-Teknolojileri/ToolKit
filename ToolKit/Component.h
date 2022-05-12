@@ -28,7 +28,8 @@ namespace ToolKit
   enum class ComponentType
   {
     Base,
-    MeshComponent
+    MeshComponent,
+    DirectionComponent
   };
 
   /**
@@ -94,6 +95,14 @@ namespace ToolKit
     90
   };
 
+  typedef std::shared_ptr<class DirectionComponent> DirectionComponentPtr;
+
+  static VariantCategory DirectionComponentCategory
+  {
+    "Direction Component",
+    10
+  };
+
   class TK_API MeshComponent : public Component
   {
    public:
@@ -151,6 +160,34 @@ namespace ToolKit
      * within the Mesh.
      */
     TKDeclareParam(MaterialPtr, Material);
+  };
+
+  class TK_API DirectionComponent: public Component
+  {
+   public:
+    TKComponentType(DirectionComponent);
+
+    explicit DirectionComponent(Entity* entity);
+
+    virtual ~DirectionComponent();
+
+    ComponentPtr Copy() override;
+
+    // Directional functions
+    Vec3 GetDirection();
+    void Pitch(float angle);
+    void Yaw(float angle);
+    void Roll(float angle);
+    void RotateOnUpVector(float angle);
+    Vec3 GetUp() const;
+    Vec3 GetRight() const;
+    void LookAt(Vec3 target);
+
+   public:
+     Entity* m_entity = nullptr;
+
+   private:
+     DirectionComponent();
   };
 
 }  // namespace ToolKit

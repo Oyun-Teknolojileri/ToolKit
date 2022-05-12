@@ -49,8 +49,11 @@ namespace ToolKit
 
   void Main::Init()
   {
+    // Start Timer.
+    GetElapsedMilliSeconds();
+
     m_logger->Log("ToolKit Initialization");
-    
+
     m_pluginManager->Init();
     m_animationMan->Init();
     m_textureMan->Init();
@@ -297,4 +300,5 @@ namespace ToolKit
     return ProcessPath(file, "Prefabs", def);
   }
 
-}
+}  //  namespace ToolKit
+

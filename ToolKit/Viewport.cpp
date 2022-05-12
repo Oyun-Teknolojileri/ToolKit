@@ -14,6 +14,23 @@ namespace ToolKit
 
   Camera* ViewportBase::GetCamera() const
   {
+    if (m_attachedCamera != NULL_HANDLE)
+    {
+      if (ScenePtr currScene = GetSceneManager()->GetCurrentScene())
+      {
+        if
+        (
+          Camera* cam = static_cast<Camera*>
+          (
+            currScene->GetEntity(m_attachedCamera)
+          )
+        )
+        {
+          return cam;
+        }
+      }
+    }
+
     return m_camera;
   }
 
@@ -21,6 +38,7 @@ namespace ToolKit
   {
     SafeDel(m_camera);
     m_camera = cam;
+    m_attachedCamera = cam->Id();
   }
 
   ViewportBase::ViewportBase()
@@ -64,7 +82,11 @@ namespace ToolKit
     m_zoom = glm::max(m_zoom, 0.01f);
 
     Camera* cam = GetCamera();
-    cam->Translate(Vec3(0.0f, 0.0f, -delta));
+    cam->m_node->Translate
+    (
+      Vec3(0.0f, 0.0f, -delta),
+      TransformationSpace::TS_LOCAL
+    );
     if (cam->IsOrtographic())
     {
       cam->SetLens
@@ -117,7 +139,8 @@ namespace ToolKit
 
   Ray Viewport::RayFromMousePosition()
   {
-    return RayFromScreenSpacePoint(GetLastMousePosScreenSpace());
+    Vec2 ssp = GetLastMousePosScreenSpace();
+    return RayFromScreenSpacePoint(ssp);
   }
 
   Ray Viewport::RayFromScreenSpacePoint(const Vec2& pnt)
@@ -130,7 +153,7 @@ namespace ToolKit
     Camera* cam = GetCamera();
     if (cam->IsOrtographic())
     {
-      ray.direction = cam->GetDir();
+      ray.direction = cam->GetComponent<DirectionComponent>()->GetDirection();
     }
     else
     {

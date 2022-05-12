@@ -52,10 +52,6 @@ namespace ToolKit
     {
       AssignManagerReporters();
 
-      m_pointLightBillboard = new LightBillboard(LightType::LightPoint);
-      m_directionalLightBillboard =
-      new LightBillboard(LightType::LightDirectional);
-      m_spotLightGizmo = new SpotLightGizmo();
       m_cursor = new Cursor();
       m_origin = new Axis3d();
       m_grid = new Grid(100);
@@ -66,19 +62,19 @@ namespace ToolKit
       m_lightMaster = new Node();
 
       DirectionalLight* light = new DirectionalLight();
-      light->Yaw(glm::radians(-45.0f));
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-45.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->m_lightData.intensity = 0.5f;
-      light->Yaw(glm::radians(60.0f));
+      light->Intensity() = 0.5f;
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(60.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->m_lightData.intensity = 0.3f;
-      light->Yaw(glm::radians(-140.0f));
+      light->Intensity() = 0.3f;
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-140.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
@@ -142,23 +138,15 @@ namespace ToolKit
 
       ModManager::GetInstance()->UnInit();
       ActionManager::GetInstance()->UnInit();
-
-      // Light gizmos
-      SafeDel(m_pointLightBillboard);
-      SafeDel(m_directionalLightBillboard);
-      SafeDel(m_spotLightGizmo);
     }
 
     void App::Frame(float deltaTime)
     {
-      // Add editor light
-      GetCurrentScene()->GetCamera()->m_node->AddChild(m_lightMaster);
-
       UI::BeginUI();
       UI::ShowUI();
 
       // Update animations.
-      GetAnimationPlayer()->Update(MilisecToSec(deltaTime));
+      GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
@@ -174,11 +162,39 @@ namespace ToolKit
 
       ShowPlayWindow(deltaTime);
 
+      // Selected entities
+      EntityRawPtrArray selecteds;
+      GetCurrentScene()->GetSelectedEntities(selecteds);
+
       LightRawPtrArray allLights = GetCurrentScene()->GetLights();
+
+      // Enable light gizmos
+      for (Light* light : allLights)
+      {
+        bool found = false;
+        for (Entity* entity : selecteds)
+        {
+          if (light->Id() == entity->Id())
+          {
+            light->EnableGizmo(true);
+            found = true;
+            break;
+          }
+        }
+        if (!found)
+        {
+          light->EnableGizmo(false);
+        }
+      }
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
       {
+        // Update scene lights for the current view.
+        Camera* viewCam = viewport->GetCamera();
+        m_lightMaster->OrphanSelf();
+        viewCam->m_node->AddChild(m_lightMaster);
+
         // PlayWindow is drawn on perspective. Thus, skip perspective.
         if (m_gameMod != GameMod::Stop && !m_runWindowed)
         {
@@ -213,7 +229,7 @@ namespace ToolKit
           }
 
           // Render gizmo.
-          RenderGizmo(viewport, m_gizmo, allLights);
+          RenderGizmo(viewport, m_gizmo);
         }
 
         // Render debug objects.
@@ -221,7 +237,7 @@ namespace ToolKit
         {
           for (Drawable* dbgObj : m_perFrameDebugObjects)
           {
-            m_renderer->Render(dbgObj, GetCurrentScene()->GetCamera());
+            m_renderer->Render(dbgObj, viewCam);
             SafeDel(dbgObj);
           }
           m_perFrameDebugObjects.clear();
@@ -232,7 +248,7 @@ namespace ToolKit
       {
         for (EditorViewport* viewport : viewports)
         {
-          RenderSelected(viewport);
+          RenderSelected(viewport, selecteds);
         }
       }
 
@@ -595,7 +611,10 @@ namespace ToolKit
         );
         vp->m_name = g_3dViewport;
         vp->GetCamera()->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
-        vp->GetCamera()->LookAt(Vec3(0.0f));
+        vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt
+        (
+          Vec3(0.0f)
+        );
         m_windows.push_back(vp);
 
         // 2d viewport.
@@ -618,7 +637,10 @@ namespace ToolKit
         vp->GetCamera()->m_node->SetTranslation({ 0.0f, 10.0f, 0.0f });
         vp->GetCamera()->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
         vp->m_zoom = 0.02f;
-        vp->GetCamera()->Pitch(glm::radians(-90.0f));
+        vp->GetCamera()->GetComponent<DirectionComponent>()->Pitch
+        (
+          glm::radians(-90.0f)
+        );
         vp->m_cameraAlignment = CameraAlignment::Top;
         vp->m_orbitLock = true;
         m_windows.push_back(vp);
@@ -988,14 +1010,7 @@ Fail:
       GetCurrentScene()->Destroy(false);
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
       SetCurrentScene(scene);
-      scene->Load();  // Make sure its loaded.
       scene->Init(false);
-
-      // Editor light retransfrom according to new camera
-      m_lightMaster->SetTransform
-      (
-        scene->GetCamera()->m_node->GetTransform(TransformationSpace::TS_LOCAL)
-      );
 
       m_workspace.SetScene(scene->m_name);
     }
@@ -1139,7 +1154,11 @@ Fail:
       return GetWindow<MaterialInspector>(g_matInspector);
     }
 
-    void App::RenderSelected(EditorViewport* viewport)
+    void App::RenderSelected
+    (
+      EditorViewport* viewport,
+      EntityRawPtrArray selecteds
+    )
     {
       if (GetCurrentScene()->GetSelectedEntityCount() == 0)
       {
@@ -1179,7 +1198,7 @@ Fail:
 
         // webgl create problem with depth only drawing with textures.
         static MaterialPtr solidMat =
-          GetMaterialManager()->GetCopyOfSolidMaterial();
+        GetMaterialManager()->GetCopyOfSolidMaterial();
         solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
         m_renderer->m_overrideMat = solidMat;
 
@@ -1187,7 +1206,17 @@ Fail:
         {
           if (ntt->IsDrawable())
           {
-            m_renderer->Render(ntt, viewport->GetCamera());
+            if (ntt->GetType() == EntityType::Entity_Light)
+            {
+              Light* light = static_cast<Light*>(ntt);
+              light->EnableGizmo(false);
+              m_renderer->Render(ntt, viewport->GetCamera());
+              light->EnableGizmo(true);
+            }
+            else
+            {
+              m_renderer->Render(ntt, viewport->GetCamera());
+            }
           }
         }
 
@@ -1198,9 +1227,9 @@ Fail:
         glStencilFunc(GL_NOTEQUAL, 0xFF, 0xFF);
         glStencilMask(0x00);
         ShaderPtr solidColor = GetShaderManager()->Create<Shader>
-          (
+        (
           ShaderPath("unlitColorFrag.shader", true)
-          );
+        );
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
 
@@ -1212,9 +1241,9 @@ Fail:
         // Dilate.
         glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
         ShaderPtr dilate = GetShaderManager()->Create<Shader>
-          (
+        (
           ShaderPath("dilateFrag.shader", true)
-          );
+        );
         dilate->SetShaderParameter("Color", ParameterVariant(color));
         m_renderer->DrawFullQuad(dilate);
 
@@ -1222,8 +1251,6 @@ Fail:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
       };
 
-      EntityRawPtrArray selecteds;
-      GetCurrentScene()->GetSelectedEntities(selecteds);
       Entity* primary = selecteds.back();
 
       selecteds.pop_back();
@@ -1245,47 +1272,9 @@ Fail:
     void App::RenderGizmo
     (
       EditorViewport* viewport,
-      Gizmo* gizmo,
-      LightRawPtrArray& allLights
+      Gizmo* gizmo
     )
     {
-      // Light gizmos
-      for (Light* light : allLights)
-      {
-        // Spot light gizmo
-        if (light->m_lightData.type == 3)
-        {
-          m_spotLightGizmo->RenderGizmo
-          (
-            m_renderer,
-            viewport,
-            static_cast<DirectionalLight*>(light)
-          );
-        }
-
-        if (light->m_lightData.type == 1)  // Directional light
-        {
-          m_directionalLightBillboard->RenderBillboard
-          (
-            m_renderer,
-            viewport,
-            light
-          );
-        }
-        // Point
-        else if (
-          light->m_lightData.type == 2 || light->m_lightData.type == 3
-          )
-        {
-          m_pointLightBillboard->RenderBillboard
-          (
-            m_renderer,
-            viewport,
-            light
-          );
-        }
-      }
-
       if (gizmo == nullptr)
       {
         return;

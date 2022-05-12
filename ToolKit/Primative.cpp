@@ -35,7 +35,7 @@ namespace ToolKit
       }
       else
       {
-        Vec3 cdir = cam->GetDir();
+        Vec3 cdir = cam->GetComponent<DirectionComponent>()->GetDirection();
         Vec3 camWorldPos = cam->m_node->GetTranslation
         (
           TransformationSpace::TS_WORLD
@@ -386,7 +386,7 @@ namespace ToolKit
 
   Sphere::Sphere(bool genDef)
   {
-    ParameterConstructor();
+    ParameterConstructor(1.0f);
 
     if (genDef)
     {
@@ -396,7 +396,7 @@ namespace ToolKit
 
   Sphere::Sphere(float radius)
   {
-    ParameterConstructor();
+    ParameterConstructor(radius);
     Generate();
   }
 
@@ -501,9 +501,9 @@ namespace ToolKit
     return instance;
   }
 
-  void Sphere::ParameterConstructor()
+  void Sphere::ParameterConstructor(float radius)
   {
-    Radius_Define(1.0f, "Geometry", 90, true, true);
+    Radius_Define(radius, "Geometry", 90, true, true);
   }
 
   Cone::Cone(bool genDef)

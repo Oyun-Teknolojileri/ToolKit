@@ -15,7 +15,7 @@ namespace ToolKit
 
     // View
     //////////////////////////////////////////////////////////////////////////
-    
+
     void View::ShowVariant(ParameterVariant* var)
     {
       if (!var->m_exposed)
@@ -59,7 +59,12 @@ namespace ToolKit
         break;
         case ParameterVariant::VariantType::ULongID:
         {
-          ImGui::InputScalar(var->m_name.c_str(), ImGuiDataType_U32, var->GetVarPtr<ULongID>());
+          ImGui::InputScalar
+          (
+            var->m_name.c_str(),
+            ImGuiDataType_U32,
+            var->GetVarPtr<ULongID>()
+          );
         }
         break;
       default:
@@ -69,7 +74,13 @@ namespace ToolKit
       ImGui::EndDisabled();
     }
 
-    void View::DropZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction, const String& dropName)
+    void View::DropZone
+    (
+      uint fallbackIcon,
+      const String& file,
+      std::function<void(const DirectoryEntry& entry)> dropAction,
+      const String& dropName
+    )
     {
       DirectoryEntry dirEnt;
       bool fileExist = g_app->GetAssetBrowser()->GetFileEntry(file, dirEnt);
@@ -101,11 +112,21 @@ namespace ToolKit
           ImGui::Text(dropName.c_str());
         }
 
-        ImGui::Image((void*)(intptr_t)iconId, ImVec2(48.0f, 48.0f), ImVec2(0.0f, 0.0f), texCoords);
+        ImGui::Image
+        (
+          reinterpret_cast<void*>((intptr_t)iconId),
+          ImVec2(48.0f, 48.0f),
+          ImVec2(0.0f, 0.0f),
+          texCoords
+        );
 
         if (ImGui::BeginDragDropTarget())
         {
-          if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BrowserDragZone"))
+          if
+          (
+            const ImGuiPayload* payload =
+            ImGui::AcceptDragDropPayload("BrowserDragZone")
+          )
           {
             IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
             DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
@@ -142,7 +163,12 @@ namespace ToolKit
       }
     }
 
-    void View::DropSubZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction)
+    void View::DropSubZone
+    (
+      uint fallbackIcon,
+      const String& file,
+      std::function<void(const DirectoryEntry& entry)> dropAction
+    )
     {
       String uid = "Resource##" + std::to_string(m_viewID);
       if (ImGui::TreeNode(uid.c_str()))
@@ -212,7 +238,10 @@ namespace ToolKit
         }
       }
 
-      if (ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen))
+      if
+      (
+        ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen)
+      )
       {
         Mat3 rotate;
         Vec3 scale, shear;
@@ -290,9 +319,15 @@ namespace ToolKit
 
         saveTransformActionFn();
 
-        if (ImGui::Checkbox("Inherit Scale", &m_entity->m_node->m_inheritScale))
+        if
+        (
+          ImGui::Checkbox("Inherit Scale", &m_entity->m_node->m_inheritScale)
+        )
         {
-          m_entity->m_node->SetInheritScaleDeep(m_entity->m_node->m_inheritScale);
+          m_entity->m_node->SetInheritScaleDeep
+          (
+            m_entity->m_node->m_inheritScale
+          );
         }
 
         ImGui::Separator();
@@ -324,7 +359,14 @@ namespace ToolKit
           continue;
         }
 
-        if (ImGui::CollapsingHeader(category.Name.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+        if
+        (
+          ImGui::CollapsingHeader
+          (
+            category.Name.c_str(),
+            ImGuiTreeNodeFlags_DefaultOpen
+          )
+        )
         {
           ParameterVariantRawPtrArray vars;
           localData.GetByCategory(category.Name, vars);
@@ -339,13 +381,29 @@ namespace ToolKit
 
     void EntityView::ShowCustomData()
     {
-      if (ImGui::CollapsingHeader("Custom Data", ImGuiTreeNodeFlags_DefaultOpen))
+      if
+      (
+        ImGui::CollapsingHeader("Custom Data", ImGuiTreeNodeFlags_DefaultOpen)
+      )
       {
-        if (ImGui::BeginTable("##CustomData", 3, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedSame))
+        if
+        (
+          ImGui::BeginTable
+          (
+            "##CustomData",
+            3,
+            ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedSame
+          )
+        )
         {
           Vec2 xSize = ImGui::CalcTextSize("Name");
           xSize *= 3.0f;
-          ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, xSize.x);
+          ImGui::TableSetupColumn
+          (
+            "Name",
+            ImGuiTableColumnFlags_WidthFixed,
+            xSize.x
+          );
           ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
           xSize = ImGui::CalcTextSize("X");
@@ -366,7 +424,11 @@ namespace ToolKit
           ImGui::PushItemWidth(-FLT_MIN);
 
           ParameterVariantRawPtrArray customParams;
-          m_entity->m_localData.GetByCategory(CustomDataCategory.Name, customParams);
+          m_entity->m_localData.GetByCategory
+          (
+            CustomDataCategory.Name,
+            customParams
+          );
 
           ParameterVariant* remove = nullptr;
           for (size_t i = 0; i < customParams.size(); i++)
@@ -374,7 +436,7 @@ namespace ToolKit
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
 
-            ImGui::PushID((int)i);
+            ImGui::PushID(static_cast<int>(i));
             ParameterVariant* var = customParams[i];
             static char buff[1024];
             strcpy_s(buff, sizeof(buff), var->m_name.c_str());
@@ -452,7 +514,8 @@ namespace ToolKit
             if (ImGui::Button("X"))
             {
               remove = customParams[i];
-              g_app->m_statusMsg = Format("Parameter %d: %s removed.", i + 1, var->m_name.c_str());
+              g_app->m_statusMsg =
+              Format("Parameter %d: %s removed.", i + 1, var->m_name.c_str());
             }
 
             ImGui::PopID();
@@ -471,10 +534,18 @@ namespace ToolKit
           if (addInAction)
           {
             int dataType = 0;
-            if (ImGui::Combo("##NewCustData", &dataType, "...\0String\0Boolean\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4"))
+            if
+            (
+              ImGui::Combo
+              (
+                "##NewCustData",
+                &dataType,
+                "...\0String\0Boolean\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4")
+              )
             {
               ParameterVariant customVar;
-              customVar.m_exposed = false; // This makes them only visible in Custom Data dropdown.
+              // This makes them only visible in Custom Data dropdown.
+              customVar.m_exposed = false;
               customVar.m_editable = true;
               customVar.m_category = CustomDataCategory;
 
@@ -576,7 +647,10 @@ namespace ToolKit
               Drawable* dw = static_cast<Drawable*> (m_entity);
               dw->SetMesh
               (
-                GetResourceManager(ResourceType::Mesh)->Create<Mesh>(dirEnt.GetFullPath())
+                GetResourceManager(ResourceType::Mesh)->Create<Mesh>
+                (
+                  dirEnt.GetFullPath()
+                )
               );
             }
           }
@@ -641,10 +715,15 @@ namespace ToolKit
               // Switch from solid color material to default for texturing.
               if (entry->m_diffuseTexture == nullptr)
               {
-                entry->m_fragmetShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader", true));
+                entry->m_fragmetShader =
+                GetShaderManager()->Create<Shader>
+                (
+                  ShaderPath("defaultFragment.shader", true)
+                );
                 entry->m_fragmetShader->Init();
               }
-              entry->m_diffuseTexture = GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
+              entry->m_diffuseTexture =
+              GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
               entry->m_diffuseTexture->Init();
               updateThumbFn();
             }
@@ -662,7 +741,12 @@ namespace ToolKit
             entry->m_vertexShader->GetFile(),
             [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
             {
-              entry->m_vertexShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
+              if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
+              {
+                return;
+              }
+              entry->m_vertexShader =
+              GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
               entry->m_vertexShader->Init();
               updateThumbFn();
             }
@@ -675,7 +759,8 @@ namespace ToolKit
             entry->m_fragmetShader->GetFile(),
             [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
             {
-              entry->m_fragmetShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
+              entry->m_fragmetShader =
+              GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
               entry->m_fragmetShader->Init();
               updateThumbFn();
             }
@@ -685,14 +770,15 @@ namespace ToolKit
 
         if (ImGui::TreeNode("Render State"))
         {
-          int cullMode = (int)entry->GetRenderState()->cullMode;
+          int cullMode = static_cast<int>(entry->GetRenderState()->cullMode);
           if (ImGui::Combo("Cull mode", &cullMode, "Two Sided\0Front\0Back"))
           {
             entry->GetRenderState()->cullMode = (CullingType)cullMode;
             entry->m_dirty = true;
           }
 
-          int blendMode = (int)entry->GetRenderState()->blendFunction;
+          int blendMode =
+          static_cast<int>(entry->GetRenderState()->blendFunction);
           if (ImGui::Combo("Blend mode", &blendMode, "None\0Alpha Blending"))
           {
             entry->GetRenderState()->blendFunction = (BlendFunction)blendMode;
@@ -719,7 +805,15 @@ namespace ToolKit
             break;
           }
 
-          if (ImGui::Combo("Draw mode", &drawType, "Triangle\0Line\0Line Strip\0Line Loop\0Point"))
+          if
+          (
+            ImGui::Combo
+            (
+              "Draw mode",
+              &drawType,
+              "Triangle\0Line\0Line Strip\0Line Loop\0Point"
+            )
+          )
           {
             switch (drawType)
             {
@@ -762,7 +856,12 @@ namespace ToolKit
             [&drawable](const DirectoryEntry& dirEnt) -> void
             {
               MeshPtr& mesh = drawable->GetMesh();
-              mesh->m_material = GetMaterialManager()->Create<Material>(dirEnt.GetFullPath());
+              if (strcmp(dirEnt.m_ext.c_str(), ".material") != 0)
+              {
+                return;
+              }
+              mesh->m_material =
+              GetMaterialManager()->Create<Material>(dirEnt.GetFullPath());
               mesh->m_material->Init();
               mesh->m_dirty = true;
             }
@@ -927,10 +1026,22 @@ namespace ToolKit
       Surface* entry = static_cast<Surface*> (m_entity);
       if (ImGui::CollapsingHeader("Surface", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        if (ImGui::BeginTable("##SurfaceProps", 2, ImGuiTableFlags_SizingFixedSame))
+        if
+        (
+          ImGui::BeginTable
+          (
+            "##SurfaceProps",
+            2,
+            ImGuiTableFlags_SizingFixedSame
+          )
+        )
         {
           ImGui::TableSetupColumn("##size");
-          ImGui::TableSetupColumn("##offset", ImGuiTableColumnFlags_WidthStretch);
+          ImGui::TableSetupColumn
+          (
+            "##offset",
+            ImGuiTableColumnFlags_WidthStretch
+          );
 
           ImGui::TableNextRow();
           ImGui::TableNextColumn();
@@ -938,7 +1049,11 @@ namespace ToolKit
           ImGui::Text("Size: ");
           ImGui::TableNextColumn();
 
-          ImGui::InputFloat2("##Size", (float*)&entry->m_size);
+          ImGui::InputFloat2
+          (
+            "##Size",
+            reinterpret_cast<float*>(&entry->m_size)
+          );
           if (ImGui::IsItemDeactivatedAfterEdit())
           {
             entry->UpdateGeometry(false);
@@ -950,7 +1065,11 @@ namespace ToolKit
           ImGui::Text("Offset: ");
           ImGui::TableNextColumn();
 
-          ImGui::InputFloat2("##Offset", (float*)&entry->m_pivotOffset);
+          ImGui::InputFloat2
+          (
+            "##Offset",
+            reinterpret_cast<float*>(&entry->m_pivotOffset)
+          );
           if (ImGui::IsItemDeactivatedAfterEdit())
           {
             entry->UpdateGeometry(false);
@@ -995,7 +1114,8 @@ namespace ToolKit
               if (m_entity->GetType() == EntityType::Entity_Button)
               {
                 Button* button = dynamic_cast<Button*> (m_entity);
-                TexturePtr texture = GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
+                TexturePtr texture =
+                GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
                 texture->Init(false);
                 button->m_buttonImage = texture;
                 button->GetMesh()->m_material->m_diffuseTexture = texture;
@@ -1023,7 +1143,8 @@ namespace ToolKit
               if (m_entity->GetType() == EntityType::Entity_Button)
               {
                 Button* button = dynamic_cast<Button*> (m_entity);
-                TexturePtr texture = GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
+                TexturePtr texture =
+                GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
                 texture->Init(false);
                 button->m_mouseOverImage = texture;
               }
@@ -1034,6 +1155,6 @@ namespace ToolKit
       }
     }
 
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit
 

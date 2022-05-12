@@ -1,17 +1,22 @@
 #pragma once
 
+#include <vector>
 #include <string>
 
 #include "ToolKit.h"
 #include "Light.h"
 #include "Types.h"
 #include "Primative.h"
+#include "Gizmo.h"
 
 
 namespace ToolKit
 {
   namespace Editor
   {
+    class DirectionalLightGimzo;
+    class SpotLightGizmo;
+
     class EditorDirectionalLight : public DirectionalLight
     {
      public:
@@ -21,6 +26,14 @@ namespace ToolKit
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
+      bool IsDrawable() const override;
+
+      void Init() override;
+      void EnableGizmo(bool enable) override;
+
+     private:
+       DirectionalLightGizmo* m_gizmo = nullptr;
+       MeshComponent* m_gizmoMC = nullptr;
     };
 
     class EditorPointLight : public PointLight
@@ -32,6 +45,9 @@ namespace ToolKit
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
+      bool IsDrawable() const override;
+
+      void Init() override;
     };
 
     class EditorSpotLight : public SpotLight
@@ -43,6 +59,13 @@ namespace ToolKit
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
+      bool IsDrawable() const override;
+
+      void Init() override;
+      void EnableGizmo(bool enable) override;
+
+     private:
+      SpotLightGizmo* m_gizmo = nullptr;
     };
   }  // namespace Editor
 }  // namespace ToolKit

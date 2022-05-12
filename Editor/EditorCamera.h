@@ -5,10 +5,8 @@
 
 namespace ToolKit
 {
-
   namespace Editor
   {
-
     class EditorCamera : public Camera
     {
      public:
@@ -22,8 +20,5 @@ namespace ToolKit
      private:
       void GenerateFrustum();
     };
-
   }  // namespace Editor
-
 }  // namespace ToolKit
-

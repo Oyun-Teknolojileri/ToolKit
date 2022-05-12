@@ -107,12 +107,15 @@ namespace ToolKit
       }
 
       // Quick selected render implementation.
-      void RenderSelected(EditorViewport* viewport);
+      void RenderSelected
+      (
+        EditorViewport* viewport,
+        EntityRawPtrArray selecteds
+      );
       void RenderGizmo
       (
         EditorViewport* viewport,
-        Gizmo* gizmo,
-        LightRawPtrArray& allLights
+        Gizmo* gizmo
       );
       void ShowPlayWindow(float deltaTime);
 

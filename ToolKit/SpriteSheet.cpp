@@ -36,9 +36,9 @@ namespace ToolKit
     if (FetchEntries())
     {
       m_spriteSheet = GetTextureManager()->Create<Texture>
-        (
-          SpritePath(m_imageFile)
-        );
+      (
+        SpritePath(m_imageFile)
+      );
       for (const SpriteEntry& entry : m_entries)
       {
         Surface* surface = new Surface(m_spriteSheet, entry);
@@ -87,6 +87,7 @@ namespace ToolKit
 
     XmlAttribute* attr = node->first_attribute("name");
     m_imageFile = attr->value();
+    NormalizePath(m_imageFile);
 
     attr = node->first_attribute("w");
     m_imageWidth = std::atoi(attr->value());

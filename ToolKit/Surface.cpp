@@ -12,7 +12,9 @@ namespace ToolKit
   {
     MaterialPtr mat = GetMaterialManager()->GetCopyOfUnlitMaterial();
     mat->UnInit();
-    mat->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+    mat->GetRenderState()->blendFunction =
+      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+
     mat->GetRenderState()->depthTestEnabled = true;
     GetMesh()->m_material = mat;
   }
@@ -37,7 +39,9 @@ namespace ToolKit
   Surface::Surface(const String& textureFile, const Vec2& pivotOffset)
     : Surface()
   {
-    GetMesh()->m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(textureFile);
+    GetMesh()->m_material->m_diffuseTexture =
+      GetTextureManager()->Create<Texture>(textureFile);
+
     m_pivotOffset = pivotOffset;
     SetSizeFromTexture();
     CreateQuat();
@@ -163,35 +167,81 @@ namespace ToolKit
   void Surface::CreateQuat(const SpriteEntry& val)
   {
     MeshPtr& mesh = GetMesh();
-    float imageWidth = (float)mesh->m_material->m_diffuseTexture->m_width;
-    float imageHeight = (float)mesh->m_material->m_diffuseTexture->m_height;
+    float imageWidth = static_cast<float>
+    (
+      mesh->m_material->m_diffuseTexture->m_width
+    );
+
+    float imageHeight = static_cast<float>
+    (
+      mesh->m_material->m_diffuseTexture->m_height
+    );
 
     Rect<float> textureRect;
-    textureRect.x = (float)val.rectangle.x / (float)imageWidth;
-    textureRect.height = ((float)val.rectangle.height / (float)imageHeight);
-    textureRect.y = 1.0f - ((float)val.rectangle.y / (float)imageHeight) - textureRect.height;
-    textureRect.width = (float)val.rectangle.width / (float)imageWidth;
+    textureRect.x = static_cast<float> (val.rectangle.x) /
+    static_cast<float> (imageWidth);
+
+    textureRect.height =
+    (
+      static_cast<float> (val.rectangle.height) /
+      static_cast<float> (imageHeight)
+    );
+
+    textureRect.y = 1.0f -
+    (
+      static_cast<float> (val.rectangle.y) / static_cast<float> (imageHeight)
+    ) - textureRect.height;
+
+    textureRect.width = static_cast<float> (val.rectangle.width) /
+      static_cast<float> (imageWidth);
 
     float depth = 0.0f;
-    float width = (float)val.rectangle.width;
-    float height = (float)val.rectangle.height;
-    Vec2 absOffset = Vec2(val.offset.x * val.rectangle.width, val.offset.y * val.rectangle.height);
+    float width = static_cast<float> (val.rectangle.width);
+    float height = static_cast<float> (val.rectangle.height);
+    Vec2 absOffset = Vec2
+    (
+      val.offset.x * val.rectangle.width,
+      val.offset.y * val.rectangle.height
+    );
 
     VertexArray vertices;
     vertices.resize(6);
     vertices[0].pos = Vec3(-absOffset.x, -absOffset.y, depth);
     vertices[0].tex = Vec2(textureRect.x, 1.0f - textureRect.y);
     vertices[1].pos = Vec3(width - absOffset.x, -absOffset.y, depth);
-    vertices[1].tex = Vec2(textureRect.x + textureRect.width, 1.0f - textureRect.y);
+    vertices[1].tex = Vec2
+    (
+      textureRect.x + textureRect.width,
+      1.0f - textureRect.y
+    );
+
     vertices[2].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
-    vertices[2].tex = Vec2(textureRect.x, 1.0f - (textureRect.y + textureRect.height));
+    vertices[2].tex = Vec2
+    (
+      textureRect.x,
+      1.0f - (textureRect.y + textureRect.height)
+    );
 
     vertices[3].pos = Vec3(width - absOffset.x, -absOffset.y, depth);
-    vertices[3].tex = Vec2(textureRect.x + textureRect.width, 1.0f - textureRect.y);
+    vertices[3].tex = Vec2
+    (
+      textureRect.x + textureRect.width,
+      1.0f - textureRect.y
+    );
+
     vertices[4].pos = Vec3(width - absOffset.x, height - absOffset.y, depth);
-    vertices[4].tex = Vec2(textureRect.x + textureRect.width, 1.0f - (textureRect.y + textureRect.height));
+    vertices[4].tex = Vec2
+    (
+      textureRect.x + textureRect.width,
+      1.0f - (textureRect.y + textureRect.height)
+    );
+
     vertices[5].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
-    vertices[5].tex = Vec2(textureRect.x, 1.0f - (textureRect.y + textureRect.height));
+    vertices[5].tex = Vec2
+    (
+      textureRect.x,
+      1.0f - (textureRect.y + textureRect.height)
+    );
 
     mesh->m_clientSideVertices = vertices;
     mesh->CalculateAABB();
@@ -210,7 +260,6 @@ namespace ToolKit
   // Button
   //////////////////////////////////////////
 
-
   Button::Button()
   {
     ResetCallbacks();
@@ -222,7 +271,11 @@ namespace ToolKit
     ResetCallbacks();
   }
 
-  Button::Button(const TexturePtr& buttonImage, const TexturePtr& mouseOverImage)
+  Button::Button
+  (
+    const TexturePtr& buttonImage,
+    const TexturePtr& mouseOverImage
+  )
     : Surface(buttonImage, Vec2())
   {
     m_buttonImage = buttonImage;
@@ -287,6 +340,7 @@ namespace ToolKit
       if (!image.empty())
       {
         String path = TexturePath(image);
+        NormalizePath(path);
         m_mouseOverImage = GetTextureManager()->Create<Texture>(path);
       }
 
@@ -294,6 +348,7 @@ namespace ToolKit
       if (!image.empty())
       {
         String path = TexturePath(image);
+        NormalizePath(path);
         m_buttonImage = GetTextureManager()->Create<Texture>(path);
       }
     }
@@ -316,4 +371,5 @@ namespace ToolKit
     m_onMouseExit = m_onMouseExitLocal;
   }
 
-}
+}  // namespace ToolKit
+

@@ -41,8 +41,17 @@ namespace ToolKit
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+    virtual void Init();
+    virtual void EnableGizmo(bool enable);
+
    public:
-    LightData m_lightData;
+    TKDeclareParam(int, LightType);
+    TKDeclareParam(Vec3, Color);
+    TKDeclareParam(float, Intensity);
+
+   protected:
+    bool m_initialized = false;
+    bool m_gizmoActive = false;
   };
 
   class TK_API DirectionalLight : public Light
@@ -51,16 +60,7 @@ namespace ToolKit
      DirectionalLight();
      virtual ~DirectionalLight() {}
 
-     // Directional functions
-     LightType GetLightType() const override;
-     Vec3 GetDirection();
-     void Pitch(float angle);
-     void Yaw(float angle);
-     void Roll(float angle);
-     void RotateOnUpVector(float angle);
-     Vec3 GetUp() const;
-     Vec3 GetRight() const;
-     void LookAt(Vec3 target);
+    ToolKit::LightType GetLightType() const override;
   };
 
   class TK_API PointLight : public Light
@@ -69,7 +69,10 @@ namespace ToolKit
     PointLight();
     virtual ~PointLight() {}
 
-    LightType GetLightType() const override;
+    ToolKit::LightType GetLightType() const override;
+
+   public:
+    TKDeclareParam(float, Radius);
   };
 
   class TK_API SpotLight : public Light
@@ -78,16 +81,12 @@ namespace ToolKit
     SpotLight();
     virtual ~SpotLight() {}
 
-    // Directional functions
-    LightType GetLightType() const override;
-    Vec3 GetDirection();
-    void Pitch(float angle);
-    void Yaw(float angle);
-    void Roll(float angle);
-    void RotateOnUpVector(float angle);
-    Vec3 GetUp() const;
-    Vec3 GetRight() const;
-    void LookAt(Vec3 target);
+    ToolKit::LightType GetLightType() const override;
+
+   public:
+    TKDeclareParam(float, Radius);
+    TKDeclareParam(float, OuterAngle);
+    TKDeclareParam(float, InnerAngle);
   };
 
 }  // namespace ToolKit

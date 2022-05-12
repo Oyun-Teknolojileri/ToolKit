@@ -1,10 +1,14 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+
 #include "SDL.h"
 #include "Types.h"
 
 namespace ToolKit
 {
+
   namespace Editor
   {
 
@@ -40,11 +44,16 @@ namespace ToolKit
     const Vec3 g_gizmoGreen = Vec3(0.537f, 0.831f, 0.07f);
     const Vec3 g_gizmoBlue = Vec3(0.196f, 0.541f, 0.905f);
     const Vec3 g_gizmoLocked = Vec3(0.3f);
-    const std::vector<Vec3> g_gizmoColor = { g_gizmoRed, g_gizmoGreen, g_gizmoBlue };
+    const std::vector<Vec3> g_gizmoColor =
+    { g_gizmoRed, g_gizmoGreen, g_gizmoBlue };
+
     const Vec4 g_selectBoxWindowColor = Vec4(0.4f, 0.4f, 0.4f, 0.4f);
     const Vec4 g_selectBoxBorderColor = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    const Vec4 g_selectHighLightPrimaryColor = Vec4(1.0f, 0.627f, 0.156f, 1.0f);
-    const Vec4 g_selectHighLightSecondaryColor = Vec4(0.898f, 0.352f, 0.031f, 1.0f);
+    const Vec4 g_selectHighLightPrimaryColor =
+      Vec4(1.0f, 0.627f, 0.156f, 1.0f);
+    const Vec4 g_selectHighLightSecondaryColor =
+      Vec4(0.898f, 0.352f, 0.031f, 1.0f);
+
     const Vec4 g_consoleErrorColor = Vec4(1.0f, 0.4f, 0.4f, 1.0f);
     const Vec4 g_consoleCommandColor = Vec4(1.0f, 0.8f, 0.6f, 1.0f);
     const Vec4 g_consoleWarningColor = Vec4(0.3f, 0.8f, 0.3f, 1.0f);
@@ -56,12 +65,7 @@ namespace ToolKit
     // Editor types.
     typedef std::shared_ptr<class EditorScene> EditorScenePtr;
 
-    // Utility functions.		
-    inline float MilisecToSec(float ms)
-    {
-      return ms / 1000.0f;
-    }
+    #define Convert2ImGuiTexture(TexturePtr) (void*)(intptr_t)(TexturePtr->m_textureId)  // NOLINT
+  }  // namespace Editor
 
-    #define Convert2ImGuiTexture(TexturePtr) (void*)(intptr_t)(TexturePtr->m_textureId)
-  }
-}
+}  // namespace ToolKit

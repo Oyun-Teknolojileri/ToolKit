@@ -14,7 +14,7 @@ namespace ToolKit
 
   class TK_API Surface : public Drawable
   {
-  public:
+   public:
     Surface();
     Surface(TexturePtr texture, const Vec2& pivotOffset);
     Surface(TexturePtr texture, const SpriteEntry& entry);
@@ -22,22 +22,24 @@ namespace ToolKit
     Surface(const Vec2& size, const Vec2& offset = { 0.5f, 0.5f });
     virtual ~Surface();
 
-    virtual EntityType GetType() const override;
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    EntityType GetType() const override;
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     virtual void ResetCallbacks();
-    void UpdateGeometry(bool byTexture); // To reflect the size & pivot changes, this function regenerates the geometry.
+    //  To reflect the size & pivot changes,
+    //  this function regenerates the geometry.
+    void UpdateGeometry(bool byTexture);
 
-  protected:
-    virtual Entity* CopyTo(Entity* copyTo) const override;
+   protected:
+    Entity* CopyTo(Entity* copyTo) const override;
 
-  private:
+   private:
     void CreateQuat();
     void CreateQuat(const SpriteEntry& val);
     void SetSizeFromTexture();
 
-  public:
+   public:
     Vec2 m_size;
     Vec2 m_pivotOffset;
 
@@ -54,17 +56,17 @@ namespace ToolKit
 
   class TK_API Button : public Surface
   {
-  public:
+   public:
     Button();
-    Button(const Vec2& size);
+    explicit Button(const Vec2& size);
     Button(const TexturePtr& buttonImage, const TexturePtr& mouseOverImage);
     virtual ~Button();
-    virtual EntityType GetType() const override;
-    virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-    virtual void ResetCallbacks() override;
+    EntityType GetType() const override;
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void ResetCallbacks() override;
 
-  public:
+   public:
     TexturePtr m_mouseOverImage;
     TexturePtr m_buttonImage;
 
@@ -73,7 +75,4 @@ namespace ToolKit
     SurfaceEventCallback m_onMouseExitLocal;
   };
 
-  class Viewport;
-
-
-}
+}  //  namespace ToolKit

@@ -228,20 +228,10 @@ namespace ToolKit
       *max = m_wndPos + m_wndContentAreaSize;
     }
 
-    Camera* EditorViewport::GetCamera() const
-    {
-      Camera* cam = static_cast<Camera*>
-      (
-        g_app->GetCurrentScene()->GetEntity(m_attachedCamera)
-      );
-      return cam ? cam : Viewport::GetCamera();
-    }
-
     void EditorViewport::SetCamera(Camera* cam)
     {
       Viewport::SetCamera(cam);
       AdjustZoom(0.0f);
-      m_attachedCamera = cam->Id();
     }
 
     RenderTargetSettigs EditorViewport::GetRenderTargetSettings()
@@ -390,8 +380,11 @@ namespace ToolKit
             }
           }
 
-          cam->Pitch(-glm::radians(delta.y * g_app->m_mouseSensitivity));
-          cam->RotateOnUpVector
+          cam->GetComponent<DirectionComponent>()->Pitch
+          (
+            -glm::radians(delta.y * g_app->m_mouseSensitivity)
+          );
+          cam->GetComponent<DirectionComponent>()->RotateOnUpVector
           (
             -glm::radians(delta.x * g_app->m_mouseSensitivity)
           );
@@ -434,13 +427,17 @@ namespace ToolKit
             move += -up;
           }
 
-          float displace = speed * MilisecToSec(deltaTime);
+          float displace = speed * MillisecToSec(deltaTime);
           if (length(move) > 0.0f)
           {
             move = normalize(move);
           }
 
-          cam->Translate(move * displace);
+          cam->m_node->Translate
+          (
+            move * displace,
+            TransformationSpace::TS_LOCAL
+          );
         }
         else
         {
@@ -512,8 +509,8 @@ namespace ToolKit
           // Orbit around it.
           float x = io.MouseDelta.x;
           float y = io.MouseDelta.y;
-          Vec3 r = cam->GetRight();
-          Vec3 u = cam->GetUp();
+          Vec3 r = cam->GetComponent<DirectionComponent>()->GetRight();
+          Vec3 u = cam->GetComponent<DirectionComponent>()->GetUp();
 
           if (io.KeyShift || m_orbitLock)
           {
@@ -593,7 +590,11 @@ namespace ToolKit
     void EditorViewport::AdjustZoom(float delta)
     {
       Camera* cam = GetCamera();
-      cam->Translate(Vec3(0.0f, 0.0f, -delta));
+      cam->m_node->Translate
+      (
+        Vec3(0.0f, 0.0f, -delta),
+        TransformationSpace::TS_LOCAL
+      );
       if (cam->IsOrtographic())
       {
         // Magic zoom.

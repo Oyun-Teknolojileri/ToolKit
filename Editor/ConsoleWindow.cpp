@@ -1,4 +1,10 @@
 #include "ConsoleWindow.h"
+
+#include <filesystem>
+#include <algorithm>
+#include <string>
+#include <utility>
+
 #include "GlobalDef.h"
 #include "Primative.h"
 #include "Mod.h"
@@ -10,7 +16,6 @@
 #include "Util.h"
 #include "DebugNew.h"
 
-#include <filesystem>
 
 namespace ToolKit
 {
@@ -19,7 +24,12 @@ namespace ToolKit
 
     TagArgArray::const_iterator GetTag(String tag, const TagArgArray& tagArgs)
     {
-      for (TagArgArray::const_iterator ta = tagArgs.cbegin(); ta != tagArgs.cend(); ta++)
+      for
+      (
+        TagArgArray::const_iterator ta = tagArgs.cbegin();
+        ta != tagArgs.cend();
+        ta++
+      )
       {
         if (ta->first == tag)
         {
@@ -37,10 +47,10 @@ namespace ToolKit
 
     void ParseVec(Vec3& vec, TagArgCIt tagIt)
     {
-      int maxIndx = glm::min((int)tagIt->second.size(), 3);
+      int maxIndx = glm::min(static_cast<int>(tagIt->second.size()), 3);
       for (int i = 0; i < maxIndx; i++)
       {
-        vec[i] = (float)std::atof(tagIt->second[i].c_str());
+        vec[i] = static_cast<float>(std::atof(tagIt->second[i].c_str()));
       }
     }
 
@@ -157,10 +167,10 @@ namespace ToolKit
         }
 
         Vec3 transfrom;
-        int maxIndx = glm::min((int)args.size(), 3);
+        int maxIndx = glm::min(static_cast<int>(args.size()), 3);
         for (int i = 0; i < maxIndx; i++)
         {
-          transfrom[i] = (float)std::atof(args[i].c_str());
+          transfrom[i] = static_cast<float>(std::atof(args[i].c_str()));
         }
 
         if (tag == "r")
@@ -205,7 +215,7 @@ namespace ToolKit
           actionApplied = true;
         }
       }
-      
+
       if (!actionApplied)
       {
         ActionManager::GetInstance()->RemoveLastAction();
@@ -227,7 +237,7 @@ namespace ToolKit
       TagArgArray::const_iterator viewportTag = GetTag("v", tagArgs);
       if (viewportTag != tagArgs.end())
       {
-        if (viewportTag->second.empty()) // Tag cant be empty.
+        if (viewportTag->second.empty())  // Tag cant be empty.
         {
           return;
         }
@@ -242,11 +252,17 @@ namespace ToolKit
               if (viewportTag->second[1] == "Top")
               {
                 vp->m_cameraAlignment = CameraAlignment::Top;
-                Quaternion ws = glm::angleAxis(glm::pi<float>(), -Y_AXIS) * glm::angleAxis(glm::half_pi<float>(), X_AXIS) * glm::angleAxis(glm::pi<float>(), Y_AXIS);
+                Quaternion ws = glm::angleAxis(glm::pi<float>(), -Y_AXIS)
+                * glm::angleAxis(glm::half_pi<float>(), X_AXIS)
+                * glm::angleAxis(glm::pi<float>(), Y_AXIS);
                 node->SetOrientation(ws, TransformationSpace::TS_WORLD);
                 if (c->IsOrtographic())
                 {
-                  node->SetTranslation(Vec3(0.0f, 10.0f, 0.0f), TransformationSpace::TS_WORLD);
+                  node->SetTranslation
+                  (
+                    Vec3(0.0f, 10.0f, 0.0f),
+                    TransformationSpace::TS_WORLD
+                  );
                 }
               }
 
@@ -256,7 +272,11 @@ namespace ToolKit
                 node->SetOrientation(Quaternion());
                 if (c->IsOrtographic())
                 {
-                  node->SetTranslation(Vec3(0.0f, 0.0f, 10.0f), TransformationSpace::TS_WORLD);
+                  node->SetTranslation
+                  (
+                    Vec3(0.0f, 0.0f, 10.0f),
+                    TransformationSpace::TS_WORLD
+                  );
                 }
               }
 
@@ -267,7 +287,11 @@ namespace ToolKit
                 node->SetOrientation(ws, TransformationSpace::TS_WORLD);
                 if (c->IsOrtographic())
                 {
-                  node->SetTranslation(Vec3(-10.0f, 0.0f, 0.0f), TransformationSpace::TS_WORLD);
+                  node->SetTranslation
+                  (
+                    Vec3(-10.0f, 0.0f, 0.0f),
+                    TransformationSpace::TS_WORLD
+                  );
                 }
               }
             }
@@ -277,7 +301,11 @@ namespace ToolKit
             {
               Vec3 translate;
               ParseVec(translate, translateTag);
-              c->m_node->SetTranslation(translate, TransformationSpace::TS_WORLD);
+              c->m_node->SetTranslation
+              (
+                translate,
+                TransformationSpace::TS_WORLD
+              );
             }
           }
         }
@@ -394,7 +422,7 @@ namespace ToolKit
       TagArgArray::const_iterator targetTag = GetTag("t", tagArgs);
       if (targetTag != tagArgs.end())
       {
-        if (targetTag->second.empty()) // Tag cant be empty.
+        if (targetTag->second.empty())  // Tag cant be empty.
         {
           return;
         }
@@ -409,7 +437,7 @@ namespace ToolKit
         EditorViewport* vp = g_app->GetViewport(g_3dViewport);
         if (vp)
         {
-          vp->GetCamera()->LookAt(target);
+          vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt(target);
         }
       }
     }
@@ -417,10 +445,11 @@ namespace ToolKit
     void ApplyTransformToMesh(TagArgArray tagArgs)
     {
       // Caviate: A reload is neded since hardware buffers are not updated.
-      // After refreshing hardware buffers, transforms of the entity can be set to identity.
-      if 
+      // After refreshing hardware buffers,
+      // transforms of the entity can be set to identity.
+      if
       (
-        Drawable* ntt = dynamic_cast<Drawable*> 
+        Drawable* ntt = dynamic_cast<Drawable*>
         (
           g_app->GetCurrentScene()->GetCurrentSelection()
         )
@@ -437,15 +466,19 @@ namespace ToolKit
       }
       else
       {
-        g_app->GetConsole()->AddLog(g_noValidEntity, ConsoleWindow::LogType::Error);
+        g_app->GetConsole()->AddLog
+        (
+          g_noValidEntity,
+          ConsoleWindow::LogType::Error
+        );
       }
     }
 
     void SaveMesh(TagArgArray tagArgs)
     {
-      if 
+      if
       (
-        Drawable* ntt = dynamic_cast<Drawable*> 
+        Drawable* ntt = dynamic_cast<Drawable*>
         (
           g_app->GetCurrentScene()->GetCurrentSelection()
         )
@@ -480,7 +513,11 @@ namespace ToolKit
       }
       else
       {
-        g_app->GetConsole()->AddLog(g_noValidEntity, ConsoleWindow::LogType::Error);
+        g_app->GetConsole()->AddLog
+        (
+          g_noValidEntity,
+          ConsoleWindow::LogType::Error
+        );
       }
     }
 
@@ -511,19 +548,24 @@ namespace ToolKit
       if (pathTag != tagArgs.end())
       {
         String path = pathTag->second.front();
-        String manUpMsg = "You can manually update workspace directory in 'yourInstallment/ToolKit/Resources/workspace.settings'";
+        String manUpMsg =
+        "You can manually update workspace directory in"
+        " 'yourInstallment/ToolKit/Resources/workspace.settings'";
         if (CheckFile(path) && std::filesystem::is_directory(path))
         {
           // Try updating workspace.settings
           if (g_app->m_workspace.SetDefaultWorkspace(path))
           {
-            String info = "Your Workspace directry set to: " + path + "\n" + manUpMsg;
+            String info = "Your Workspace directry set to: "
+            + path + "\n" + manUpMsg;
             g_app->GetConsole()->AddLog(info, ConsoleWindow::LogType::Memo);
             return;
           }
         }
 
-        String err = "There is a problem in creating workspace directory with the given path.";
+        String err =
+        "There is a problem in creating workspace "
+        "directory with the given path.";
         err.append(" Projects will be saved in your installment folder.\n");
         err += manUpMsg;
 
@@ -547,9 +589,35 @@ namespace ToolKit
     }
 
     // ImGui ripoff. Portable helpers.
-    static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
-    static int Strnicmp(const char* str1, const char* str2, int n) { int d = 0; while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; n--; } return d; }
-    static void Strtrim(char* str) { char* str_end = str + strlen(str); while (str_end > str && str_end[-1] == ' ') str_end--; *str_end = 0; }
+    static int Stricmp(const char* str1, const char* str2)
+    {
+      int d;
+      while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1)
+      {
+        str1++;
+        str2++;
+      }
+      return d;
+    }
+    static int Strnicmp(const char* str1, const char* str2, int n)
+    {
+      int d = 0;
+      while (n > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1)
+      {
+        str1++;
+        str2++;
+        n--;
+      }
+      return d;
+    }
+    static void Strtrim(char* str)
+    {
+      char* str_end = str + strlen(str);
+      while (str_end > str && str_end[-1] == ' ')
+      {
+        str_end--; *str_end = 0;
+      }
+    }
 
     ConsoleWindow::ConsoleWindow(XmlNode* node)
       : ConsoleWindow()
@@ -591,8 +659,15 @@ namespace ToolKit
 
         // Output window.
         ImGuiStyle& style = ImGui::GetStyle();
-        const float footerHeightReserve = style.ItemSpacing.y + ImGui::GetFrameHeightWithSpacing() + 2;
-        ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeightReserve), false, ImGuiWindowFlags_HorizontalScrollbar);
+        const float footerHeightReserve =
+        style.ItemSpacing.y + ImGui::GetFrameHeightWithSpacing() + 2;
+        ImGui::BeginChild
+        (
+          "ScrollingRegion",
+          ImVec2(0, -footerHeightReserve),
+          false,
+          ImGuiWindowFlags_HorizontalScrollbar
+        );
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
         for (size_t i = 0; i < m_items.size(); i++)
         {
@@ -622,7 +697,7 @@ namespace ToolKit
             ImGui::PushStyleColor(ImGuiCol_Text, g_consoleWarningColor);
             popColor = true;
           }
-          else // Than its a memo.
+          else  // Than its a memo.
           {
             ImGui::PushStyleColor(ImGuiCol_Text, g_consoleMemoColor);
             popColor = true;
@@ -665,19 +740,22 @@ namespace ToolKit
         float width = ImGui::GetWindowContentRegionWidth() * 0.3f;
 
         ImGui::PushItemWidth(width);
-        if 
+        if
         (
           ImGui::InputText
           (
             "##Input",
             inputBuff,
             IM_ARRAYSIZE(inputBuff),
-            ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
-            [] (ImGuiInputTextCallbackData* data)-> int 
-            { 
-              return ((ConsoleWindow*)(data->UserData))->TextEditCallback(data); 
+            ImGuiInputTextFlags_EnterReturnsTrue
+            | ImGuiInputTextFlags_CallbackCompletion
+            | ImGuiInputTextFlags_CallbackHistory,
+            [] (ImGuiInputTextCallbackData* data)-> int
+            {
+              return (reinterpret_cast<ConsoleWindow*>(data->UserData))->
+              TextEditCallback(data);
             },
-            (void*)this
+          reinterpret_cast<void*>(this)
           )
         )
         {
@@ -687,10 +765,10 @@ namespace ToolKit
           {
             ExecCommand(s);
           }
-          strcpy(s, "");
+          snprintf(s, static_cast<size_t>(1), "");
           reclaimFocus = true;
         }
-        
+
         ImGui::PopItemWidth();
 
         if (reclaimFocus)
@@ -748,7 +826,7 @@ namespace ToolKit
     void ConsoleWindow::AddLog(const String& log, const String& tag)
     {
       String prefixed;
-      if (tag.empty()) 
+      if (tag.empty())
       {
         prefixed = log;
       }
@@ -756,7 +834,7 @@ namespace ToolKit
       {
         prefixed = "[" + tag + "] " + log;
       }
-       
+
       m_items.push_back(prefixed);
       m_scrollToBottom = true;
 
@@ -778,9 +856,10 @@ namespace ToolKit
       TagArgArray tagArgs;
       ParseCommandLine(commandLine, cmd, tagArgs);
 
-      // Insert into history. First find match and delete it so it can be pushed to the back. This isn't trying to be smart or optimal.
+      // Insert into history. First find match and delete it so it
+      // can be pushed to the back. This isn't trying to be smart or optimal.
       m_historyPos = -1;
-      for (int i = (int)m_history.size() - 1; i >= 0; i--)
+      for (int i = static_cast<int>(m_history.size()) - 1; i >= 0; i--)
       {
         if (Stricmp(m_history[i].c_str(), commandLine.c_str()) == 0)
         {
@@ -799,7 +878,8 @@ namespace ToolKit
       }
       else
       {
-        sprintf(buffer, "Unknown command: '%s'\n", cmd.c_str());
+        size_t len = static_cast<int>(cmd.length());
+        snprintf(buffer, len + 20 + 1, "Unknown command: '%s'\n", cmd.c_str());
         AddLog(buffer, LogType::Error);
       }
 
@@ -809,7 +889,7 @@ namespace ToolKit
     void SplitPreserveText(const String& s, const String& sep, StringArray& v)
     {
       String arg = s;
-      const char spaceSub = (char)26;
+      const char spaceSub = static_cast<char>(26);
 
       size_t indx = arg.find_first_of('"');
       size_t indx2 = arg.find_first_of('"', indx + 1);
@@ -826,7 +906,12 @@ namespace ToolKit
       {
         val.erase
         (
-          std::remove_if(val.begin(), val.end(), [](char c) { return c == '"'; }),
+          std::remove_if
+          (
+            val.begin(),
+            val.end(),
+            [](char c) { return c == '"'; }
+          ),
           val.end()
         );
 
@@ -834,7 +919,12 @@ namespace ToolKit
       }
     }
 
-    void ConsoleWindow::ParseCommandLine(String commandLine, String& command, TagArgArray& tagArgs)
+    void ConsoleWindow::ParseCommandLine
+    (
+      String commandLine,
+      String& command,
+      TagArgArray& tagArgs
+    )
     {
       String args;
       size_t indx = commandLine.find_first_of(" ");
@@ -912,7 +1002,15 @@ namespace ToolKit
         StringArray candidates;
         for (size_t i = 0; i < m_commands.size(); i++)
         {
-          if (Strnicmp(m_commands[i].c_str(), word_start, (int)(word_end - word_start)) == 0)
+          if
+          (
+            Strnicmp
+            (
+              m_commands[i].c_str(),
+              word_start,
+              static_cast<int>(word_end - word_start)
+            ) == 0
+          )
           {
             candidates.push_back(m_commands[i]);
           }
@@ -921,25 +1019,44 @@ namespace ToolKit
         if (candidates.empty())
         {
           // No match
-          sprintf(buffer, "No match for \"%.*s\"!\n", (int)(word_end - word_start), word_start);
+          sprintf
+          (
+            buffer,
+            "No match for \"%.*s\"!\n",
+            static_cast<int>(word_end - word_start),
+            word_start
+          );
           AddLog(buffer);
         }
         else if (candidates.size() == 1)
         {
-          // Single match. Delete the beginning of the word and replace it entirely so we've got nice casing
-          data->DeleteChars((int)(word_start - data->Buf), (int)(word_end - word_start));
+          // Single match. Delete the beginning of the word and
+          // replace it entirely so we've got nice casing
+          data->DeleteChars
+          (
+            static_cast<int>(word_start - data->Buf),
+            static_cast<int>(word_end - word_start)
+          );
           data->InsertChars(data->CursorPos, candidates[0].c_str());
           data->InsertChars(data->CursorPos, " ");
         }
         else
         {
-          // Multiple matches. Complete as much as we can, so inputing "C" will complete to "CL" and display "CLEAR" and "CLASSIFY"
-          int match_len = (int)(word_end - word_start);
+          // Multiple matches. Complete as much as we can,
+          // so inputing "C" will complete to "CL" and display
+          // "CLEAR" and "CLASSIFY"
+          int match_len = static_cast<int>(word_end - word_start);
           for (;;)
           {
             int c = 0;
             bool all_candidates_matches = true;
-            for (size_t i = 0; i < candidates.size() && all_candidates_matches; i++)
+            for
+            (
+              size_t i = 0;
+              i < candidates.size() && all_candidates_matches;
+              i++
+            )
+            {
               if (i == 0)
               {
                 c = toupper(candidates[i][match_len]);
@@ -948,6 +1065,7 @@ namespace ToolKit
               {
                 all_candidates_matches = false;
               }
+            }
             if (!all_candidates_matches)
             {
               break;
@@ -957,15 +1075,25 @@ namespace ToolKit
 
           if (match_len > 0)
           {
-            data->DeleteChars((int)(word_start - data->Buf), (int)(word_end - word_start));
-            data->InsertChars(data->CursorPos, candidates[0].c_str(), candidates[0].c_str() + match_len);
+            data->DeleteChars
+            (
+              static_cast<int>(word_start - data->Buf),
+              static_cast<int>(word_end - word_start)
+            );
+            data->InsertChars
+            (
+              data->CursorPos,
+              candidates[0].c_str(),
+              candidates[0].c_str() + match_len
+            );
           }
 
           // List matches
           AddLog("Possible matches:\n");
           for (size_t i = 0; i < candidates.size(); i++)
           {
-            sprintf(buffer, "- %s\n", candidates[i].c_str());
+            size_t len = candidates[i].length();
+            snprintf(buffer, len + 3 + 1, "- %s\n", candidates[i].c_str());
             AddLog(buffer);
           }
         }
@@ -979,7 +1107,7 @@ namespace ToolKit
         {
           if (m_historyPos == -1)
           {
-            m_historyPos = (int)m_history.size() - 1;
+            m_historyPos = static_cast<int>(m_history.size()) - 1;
           }
           else if (m_historyPos > 0)
           {
@@ -997,10 +1125,12 @@ namespace ToolKit
           }
         }
 
-        // A better implementation would preserve the data on the current input line along with cursor position.
+        // A better implementation would preserve the data on
+        // the current input line along with cursor position.
         if (prev_history_pos != m_historyPos)
         {
-          const char* history_str = (m_historyPos >= 0) ? m_history[m_historyPos].c_str() : "";
+          const char* history_str =
+          (m_historyPos >= 0) ? m_history[m_historyPos].c_str() : "";
           data->DeleteChars(0, data->BufTextLen);
           data->InsertChars(0, history_str);
         }
@@ -1010,11 +1140,15 @@ namespace ToolKit
       return 0;
     }
 
-    void ConsoleWindow::CreateCommand(const String& command, std::function<void(TagArgArray)> executor)
+    void ConsoleWindow::CreateCommand
+    (
+      const String& command,
+      std::function<void(TagArgArray)> executor
+    )
     {
       m_commands.push_back(command);
       m_commandExecutors[command] = executor;
     }
 
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

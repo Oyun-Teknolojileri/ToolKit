@@ -231,6 +231,6 @@ namespace ToolKit
     DrawTypePoints = 0x0000
   };
 
-  static const char* TKVersionStr = "v0.3.8";
+  static const char* TKVersionStr = "v0.3.9";
 
 }  // namespace ToolKit

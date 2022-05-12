@@ -1,12 +1,14 @@
 #include "Util.h"
-#include "rapidxml.hpp"
-#include "Primative.h"
-#include "DebugNew.h"
 
+#include <string>
 #include <cstdarg>
 #include <fstream>
 #include <filesystem>
 #include <algorithm>
+
+#include "rapidxml.hpp"
+#include "Primative.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -21,11 +23,11 @@ namespace ToolKit
       XmlAttribute* attr = node->first_attribute(letters + i, 1);
       if constexpr (std::is_integral_v<typename T::value_type>)
       {
-        val[i] = (int)std::atoi(attr->value());
+        val[i] = static_cast<int> (std::atoi(attr->value()));
       }
       else if constexpr (std::is_floating_point_v<typename T::value_type>)
       {
-        val[i] = (float)std::atof(attr->value());
+        val[i] = static_cast<float> (std::atof(attr->value()));
       }
     }
   }
@@ -48,12 +50,30 @@ namespace ToolKit
     }
   }
 
-  template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const Vec2& val);
-  template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const Vec3& val);
-  template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const Vec4& val);
-  template TK_API void WriteVec(XmlNode* node, XmlDocument* doc, const Quaternion& val);
+  template TK_API void WriteVec
+  (
+    XmlNode* node, XmlDocument* doc, const Vec2& val
+  );
+  template TK_API void WriteVec
+  (
+    XmlNode* node, XmlDocument* doc, const Vec3& val
+  );
+  template TK_API void WriteVec
+  (
+    XmlNode* node, XmlDocument* doc, const Vec4& val
+  );
+  template TK_API void WriteVec
+  (
+    XmlNode* node, XmlDocument* doc, const Quaternion& val
+  );
 
-  void WriteAttr(XmlNode* node, XmlDocument* doc, const String& name, const String& val)
+  void WriteAttr
+  (
+    XmlNode* node,
+    XmlDocument* doc,
+    const String& name,
+    const String& val
+  )
   {
     node->append_attribute
     (
@@ -72,11 +92,11 @@ namespace ToolKit
     {
       if constexpr (std::is_integral_v<T>)
       {
-        return (int)std::atoi(attr->value());
+        return static_cast<int> (std::atoi(attr->value()));
       }
       else if constexpr (std::is_floating_point_v<T>)
       {
-        return (float)std::atof(attr->value());
+        return static_cast<float> (std::atof(attr->value()));
       }
     }
 
@@ -142,7 +162,13 @@ namespace ToolKit
     return node;
   }
 
-  TK_API bool UpdateAttribute(XmlDocument* doc, const StringArray& path, const String& attribute, const String& val)
+  bool UpdateAttribute
+  (
+    XmlDocument* doc,
+    const StringArray& path,
+    const String& attribute,
+    const String& val
+  )
   {
     if (XmlNode* node = Query(doc, path))
     {
@@ -152,7 +178,11 @@ namespace ToolKit
       }
       else
       {
-        XmlAttribute* newAttr = doc->allocate_attribute(attribute.c_str(), val.c_str());
+        XmlAttribute* newAttr = doc->allocate_attribute
+        (
+          attribute.c_str(),
+          val.c_str()
+        );
         node->append_attribute(newAttr);
       }
 
@@ -162,7 +192,7 @@ namespace ToolKit
     return false;
   }
 
-  TK_API XmlNode* CreateXmlNode(XmlDocument* doc, const String& name, XmlNode* parent)
+  XmlNode* CreateXmlNode(XmlDocument* doc, const String& name, XmlNode* parent)
   {
     assert(doc);
 
@@ -181,7 +211,7 @@ namespace ToolKit
     {
       doc->append_node(node);
     }
-    
+
     return node;
   }
 
@@ -200,7 +230,11 @@ namespace ToolKit
       matPath = MaterialPath("default.material", true);
     }
 
-    XmlAttribute* nameAttr = doc->allocate_attribute("name", doc->allocate_string(matPath.c_str()));
+    XmlAttribute* nameAttr = doc->allocate_attribute
+    (
+      "name",
+      doc->allocate_string(matPath.c_str())
+    );
     material->append_attribute(nameAttr);
   }
 
@@ -208,7 +242,9 @@ namespace ToolKit
   {
     if (XmlNode* materialNode = parent->first_node("material"))
     {
-      String matFile = MaterialPath(materialNode->first_attribute("name")->value());
+      String path = materialNode->first_attribute("name")->value();
+      NormalizePath(path);
+      String matFile = MaterialPath(path);
       return GetMaterialManager()->Create<Material>(matFile);
     }
 
@@ -233,7 +269,10 @@ namespace ToolKit
         int i = 1;
         do
         {
-          cpyPath = ConcatPaths({ path, name + "_copy(" + std::to_string(i++) + ")" + ext });
+          cpyPath = ConcatPaths
+          (
+            { path, name + "_copy(" + std::to_string(i++) + ")" + ext }
+          );
         } while (CheckFile(cpyPath));
       }
     }
@@ -241,7 +280,13 @@ namespace ToolKit
     return cpyPath;
   }
 
-  void DecomposePath(const String& fullPath, String* path, String* name, String* ext)
+  void DecomposePath
+  (
+    const String& fullPath,
+    String* path,
+    String* name,
+    String* ext
+  )
   {
     String normal = fullPath;
     NormalizePath(normal);
@@ -269,16 +314,21 @@ namespace ToolKit
 
   void NormalizePath(String& path)
   {
-#ifndef __clang__
-    ReplaceStringInPlace(path, "/", "\\");
+#ifdef __EMSCRIPTEN__
+    UnixifyPath(path);
 #else
-    ReplaceStringInPlace(path, "\\", "/");
+    DosifyPath(path);
 #endif
   }
 
   void UnixifyPath(String& path)
   {
-    ReplaceStringInPlace(path, "\\", "/");
+    ReplaceCharInPlace(path, '\\', '/');
+  }
+
+  void DosifyPath(String& path)
+  {
+    ReplaceCharInPlace(path, '/', '\\');
   }
 
   String ConcatPaths(const StringArray& entries)
@@ -324,7 +374,8 @@ namespace ToolKit
 
       if (toolKit)
       {
-        // Any relative path starting with ToolKit root directory will be search in the default path.
+        //  Any relative path starting with ToolKit root directory
+        //  will be search in the default path.
         rel = ConcatPaths({ "ToolKit", rel });
       }
 
@@ -466,7 +517,7 @@ namespace ToolKit
       assert(false);
       break;
     }
-    
+
     return String();
   }
 
@@ -512,7 +563,7 @@ namespace ToolKit
 
   char GetPathSeparator()
   {
-#ifndef __clang__
+#ifndef __EMSCRIPTEN__
     return '\\';
 #else
     return '/';
@@ -524,7 +575,7 @@ namespace ToolKit
     return String() + GetPathSeparator();
   }
 
-  bool SupportedImageFormat(const String& ext) 
+  bool SupportedImageFormat(const String& ext)
   {
     if (ext.empty())
     {
@@ -544,7 +595,7 @@ namespace ToolKit
   // split a string into multiple sub strings, based on a separator string
   // for example, if separator="::",
   // s = "abc::def xy::st:" -> "abc", "def xy" and "st:",
-  // https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c?page=2&tab=votes#tab-top
+  // https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c?page=2&tab=votes#tab-top // NOLINT
   void Split(const String& s, const String& sep, StringArray& v)
   {
     typedef String::const_iterator iter;
@@ -583,20 +634,48 @@ namespace ToolKit
   }
 
   // https://stackoverflow.com/questions/5878775/how-to-find-and-replace-string
-  void ReplaceStringInPlace(String& subject, const String& search, const String& replace)
+  void ReplaceStringInPlace
+  (
+    String& subject,
+    const String& search,
+    const String& replace
+  )
   {
     size_t pos = 0;
-    while ((pos = subject.find(search, pos)) != std::string::npos) {
+    while ((pos = subject.find(search, pos)) != std::string::npos)
+    {
       subject.replace(pos, search.length(), replace);
       pos += replace.length();
     }
   }
 
-  TK_API void ReplaceFirstStringInPlace(String& subject, const String& search, const String& replace)
+  void ReplaceFirstStringInPlace
+  (
+    String& subject,
+    const String& search,
+    const String& replace
+  )
   {
     size_t pos = 0;
-    if ((pos = subject.find(search, pos)) != std::string::npos) {
+    if ((pos = subject.find(search, pos)) != std::string::npos)
+    {
       subject.replace(pos, search.length(), replace);
+    }
+  }
+
+  void ReplaceCharInPlace
+  (
+    String& subject,
+    const char search,
+    const char replace
+  )
+  {
+    for (char& ch : subject)
+    {
+      if (ch == search)
+      {
+        ch = replace;
+      }
     }
   }
 
@@ -652,29 +731,33 @@ namespace ToolKit
     return obj;
   }
 
-  LineBatch* CreateBoundingBoxDebugObject(const BoundingBox& box, const Mat4* transform)
+  LineBatch* CreateBoundingBoxDebugObject
+  (
+    const BoundingBox& box,
+    const Mat4* transform
+  )
   {
     Vec3Array corners;
     GetCorners(box, corners);
 
     std::vector<Vec3> vertices =
     {
-      corners[0], // FTL
-      corners[3], // FBL
-      corners[2], // FBR
-      corners[1], // FTR
-      corners[0], // FTL
-      corners[4], // BTL
-      corners[7], // BBL
-      corners[6], // BBR
-      corners[5], // BTR
-      corners[4], // BTL
-      corners[5], // BTR
-      corners[1], // FTR
-      corners[2], // FBR
-      corners[6], // BBR
-      corners[7], // BBL
-      corners[3] // FBL
+      corners[0],  // FTL
+      corners[3],  // FBL
+      corners[2],  // FBR
+      corners[1],  // FTR
+      corners[0],  // FTL
+      corners[4],  // BTL
+      corners[7],  // BBL
+      corners[6],  // BBR
+      corners[5],  // BTR
+      corners[4],  // BTL
+      corners[5],  // BTR
+      corners[1],  // FTR
+      corners[2],  // FBR
+      corners[6],  // BBR
+      corners[7],  // BBL
+      corners[3]  // FBL
     };
 
     if (transform != nullptr)
@@ -685,11 +768,21 @@ namespace ToolKit
       }
     }
 
-    LineBatch* lineForm = new LineBatch(vertices, X_AXIS, DrawType::LineStrip, 2.0f);
+    LineBatch* lineForm = new LineBatch
+    (
+      vertices,
+      X_AXIS,
+      DrawType::LineStrip,
+      2.0f
+    );
     return lineForm;
   }
 
-  void ToEntityIdArray(EntityIdArray& idArray, const EntityRawPtrArray& ptrArray)
+  void ToEntityIdArray
+  (
+    EntityIdArray& idArray,
+    const EntityRawPtrArray& ptrArray
+  )
   {
     idArray.reserve(ptrArray.size());
     for (Entity* ntt : ptrArray)
@@ -711,12 +804,16 @@ namespace ToolKit
     return false;
   }
 
-  void RootsOnly(const EntityRawPtrArray& entities, EntityRawPtrArray& roots, Entity* child)
+  void RootsOnly
+  (
+    const EntityRawPtrArray& entities,
+    EntityRawPtrArray& roots,
+    Entity* child
+  )
   {
     auto AddUnique = [&roots](Entity* e) -> void
     {
       assert(e != nullptr);
-
       bool unique = std::find(roots.begin(), roots.end(), e) == roots.end();
       if (unique)
       {
@@ -728,7 +825,15 @@ namespace ToolKit
     if (parent != nullptr)
     {
       Entity* parentEntity = parent->m_entity;
-      if (std::find(entities.begin(), entities.end(), parentEntity) != entities.end())
+      if
+      (
+        std::find
+        (
+          entities.begin(),
+        entities.end(),
+        parentEntity
+        ) != entities.end()
+      )
       {
         RootsOnly(entities, roots, parentEntity);
       }
@@ -743,7 +848,11 @@ namespace ToolKit
     }
   }
 
-  void GetRootEntities(const EntityRawPtrArray& entities, EntityRawPtrArray& roots)
+  void GetRootEntities
+  (
+    const EntityRawPtrArray& entities,
+    EntityRawPtrArray& roots
+  )
   {
     for (Entity* e : entities)
     {
@@ -819,28 +928,34 @@ namespace ToolKit
     return cpy;
   }
 
-  TK_API void* TKMalloc(size_t sz)
+  void* TKMalloc(size_t sz)
   {
-      return malloc(sz);
+    return malloc(sz);
   }
 
-  TK_API void TKFree(void* m)
+  void TKFree(void* m)
   {
     free(m);
   }
 
   int IndexOf(Entity* ntt, const EntityRawPtrArray& entities)
   {
-    EntityRawPtrArray::const_iterator it = std::find(entities.begin(), entities.end(), ntt);
+    EntityRawPtrArray::const_iterator it = std::find
+    (
+      entities.begin(),
+      entities.end(),
+      ntt
+    );
+
     if (it != entities.end())
     {
-      return (int)(it - entities.begin());
+      return static_cast<int> (it - entities.begin());
     }
 
     return -1;
   }
 
-  TK_API bool Exist(const IntArray& vec, int val)
+  bool Exist(const IntArray& vec, int val)
   {
     for (int v : vec)
     {
@@ -853,4 +968,24 @@ namespace ToolKit
     return false;
   }
 
-}
+  float MillisecToSec(float ms)
+  {
+    return ms / 1000.0f;
+  }
+
+  float GetElapsedMilliSeconds()
+  {
+    namespace ch = std::chrono;
+    static ch::high_resolution_clock::time_point t1 =
+      ch::high_resolution_clock::now();
+
+    ch::high_resolution_clock::time_point t2 =
+      ch::high_resolution_clock::now();
+
+    ch::duration<double> timeSpan =
+      ch::duration_cast<ch::duration<double>> (t2 - t1);
+
+    return static_cast<float>(timeSpan.count() * 1000.0);
+  }
+
+}  //  namespace ToolKit

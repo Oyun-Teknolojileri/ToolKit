@@ -48,8 +48,8 @@ namespace ToolKit
         // Replace lights with EditorLights
         else if (ntt->GetType() == EntityType::Entity_Light)
         {
-          Light* el = static_cast<Light*>(ntt);
-          int type = el->m_lightData.type;
+          Light* el = reinterpret_cast<Light*>(ntt);
+          int type = el->LightType();
 
           if (type == 1)  // Directional light
           {
@@ -57,6 +57,7 @@ namespace ToolKit
             reinterpret_cast<EditorDirectionalLight*> (ntt);
             EditorDirectionalLight* light =
             new EditorDirectionalLight(upCasted);
+            light->Init();
             m_entities[i] = light;
             SafeDel(ntt);
           }
@@ -65,6 +66,7 @@ namespace ToolKit
             EditorPointLight* upCasted =
             reinterpret_cast<EditorPointLight*> (ntt);
             EditorPointLight* light = new EditorPointLight(upCasted);
+            light->Init();
             m_entities[i] = light;
             SafeDel(ntt);
           }
@@ -73,6 +75,7 @@ namespace ToolKit
             EditorSpotLight* upCasted =
             reinterpret_cast<EditorSpotLight*> (ntt);
             EditorSpotLight* light = new EditorSpotLight(upCasted);
+            light->Init();
             m_entities[i] = light;
             SafeDel(ntt);
           }

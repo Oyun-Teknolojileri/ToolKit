@@ -108,7 +108,7 @@ namespace ToolKit
 
         DirectionalLight light;
         light.m_node->SetTranslation({ 5.0f, 5.0f, 5.0f });
-        light.LookAt(ZERO);
+        light.GetComponent<DirectionComponent>()->LookAt(ZERO);
 
         DirectionalLightRawPtrArray lights = { &light };
 
@@ -140,7 +140,7 @@ namespace ToolKit
         Camera cam;
         cam.SetLens(a, thumbSize.x, thumbSize.y);
         cam.m_node->SetTranslation(eye);
-        cam.LookAt(geoCenter);
+        cam.GetComponent<DirectionComponent>()->LookAt(geoCenter);
 
         renderThumbFn(&cam, &dw);
       }
@@ -184,7 +184,11 @@ namespace ToolKit
           0.01f,
           1000.0f
         );
-        cam.Translate(Vec3(0.0f, 0.0f, 10.0f));
+        cam.m_node->Translate
+        (
+          Vec3(0.0f, 0.0f, 10.0f),
+          TransformationSpace::TS_LOCAL
+        );
 
         renderThumbFn(&cam, &surface);
       }

@@ -159,41 +159,18 @@ namespace ToolKit
       void Render(Renderer* renderer, Camera* cam);
     };
 
-    class LightBillboard : public Billboard
+    class SpotLightGizmo : public Entity
     {
      public:
-      explicit LightBillboard(LightType lightType);
-      ~LightBillboard();
-
-      void RenderBillboard
-      (
-        Renderer* renderer,
-        Viewport* viewport,
-        Light* light
-      );
-
-     protected:
-      LightBillboard();
-    };
-
-    class SpotLightGizmo : public Billboard
-    {
-     public:
-      SpotLightGizmo();
+      explicit SpotLightGizmo(SpotLight* light);
       ~SpotLightGizmo();
 
-      void RenderGizmo
-      (
-        Renderer* renderer,
-        Viewport* viewport,
-        DirectionalLight* light
-      );
+      void InitGizmo(SpotLight* light);
+
+      std::vector<LineBatch*> GetGizmoLineBatches();
 
      private:
-      LineBatch* m_line;
-      LineBatch* m_innerCircle;
-      LineBatch* m_outerCircle;
-      LineBatch* m_coneLines;
+      std::vector<LineBatch*> m_gizmoLineBatches;
 
       int m_circleVertexCount;
       Vec3Array m_pnts;
@@ -204,5 +181,19 @@ namespace ToolKit
       Mat4 m_rot;
     };
 
+    class DirectionalLightGizmo : public Entity
+    {
+     public:
+      explicit DirectionalLightGizmo(DirectionalLight* light);
+      ~DirectionalLightGizmo();
+
+      void InitGizmo(DirectionalLight* light);
+      std::vector<LineBatch*> GetGizmoLineBatches();
+
+     private:
+      std::vector<LineBatch*> m_gizmoLineBatches;
+
+      Vec3Array m_pnts;
+    };
   }  // namespace Editor
 }  // namespace ToolKit

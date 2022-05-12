@@ -1,4 +1,8 @@
 #include "App.h"
+
+#include <stdio.h>
+#include <chrono>
+
 #include "Types.h"
 #include "Mod.h"
 #include "UI.h"
@@ -13,17 +17,12 @@
 
 #include "DebugNew.h"
 
-#include <stdio.h>
-#include <chrono>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#endif
-
 namespace ToolKit
 {
+
   namespace Editor
   {
+
     bool g_running = true;
     SDL_Window* g_window = nullptr;
     SDL_GLContext g_context = nullptr;
@@ -36,6 +35,68 @@ namespace ToolKit
     const int height = 720;
     const uint fps = 120;
 
+    void GlDebugReportInit()
+    {
+      if (glDebugMessageCallback != NULL)
+      {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
+      }
+
+      GlErrorReporter::Report = [](const std::string& msg) -> void
+      {
+        static byte state = g_app->m_showGraphicsApiErrors;
+
+        if (g_app == nullptr)
+        {
+          return;
+        }
+
+        if (state != g_app->m_showGraphicsApiErrors)
+        {
+          state = g_app->m_showGraphicsApiErrors;
+
+          if (state == 1)
+          {
+            glDebugMessageControl
+            (
+              GL_DONT_CARE,
+              GL_DONT_CARE,
+              GL_DONT_CARE,
+              0,
+              NULL, GL_FALSE
+            );
+
+            glDebugMessageControl
+            (
+              GL_DEBUG_SOURCE_API,
+              GL_DEBUG_TYPE_ERROR,
+              GL_DEBUG_SEVERITY_HIGH,
+              0, NULL, GL_TRUE
+            );
+          }
+          else if (state >= 2)
+          {
+            glDebugMessageControl
+            (
+              GL_DONT_CARE,
+              GL_DONT_CARE,
+              GL_DONT_CARE,
+              0,
+              NULL,
+              GL_TRUE
+            );
+          }
+        }
+
+        if (g_app->m_showGraphicsApiErrors)
+        {
+          g_app->GetConsole()->AddLog(msg, ConsoleWindow::LogType::Error);
+        }
+      };
+    }
+
     void Init()
     {
       if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0)
@@ -44,15 +105,14 @@ namespace ToolKit
       }
       else
       {
-#ifdef __EMSCRIPTEN__
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#else
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute
+        (
+          SDL_GL_CONTEXT_PROFILE_MASK,
+          SDL_GL_CONTEXT_PROFILE_CORE
+        );
+
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-#endif
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -62,7 +122,19 @@ namespace ToolKit
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
 
-        g_window = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+        g_window = SDL_CreateWindow
+        (
+          appName,
+          SDL_WINDOWPOS_UNDEFINED,
+          SDL_WINDOWPOS_UNDEFINED,
+          width,
+          height,
+          SDL_WINDOW_OPENGL |
+          SDL_WINDOW_RESIZABLE |
+          SDL_WINDOW_SHOWN |
+          SDL_WINDOW_ALLOW_HIGHDPI
+        );
+
         if (g_window == nullptr)
         {
           g_running = false;
@@ -76,7 +148,7 @@ namespace ToolKit
           }
           else
           {
-            // Init glew
+            //  Init glew
             glewExperimental = true;
             GLenum err = glewInit();
             if (GLEW_OK != err)
@@ -85,50 +157,8 @@ namespace ToolKit
               return;
             }
 
-#ifndef __EMSCRIPTEN__
 #ifdef TK_DEBUG
-            if (glDebugMessageCallback != NULL) 
-            {
-              glEnable(GL_DEBUG_OUTPUT);
-              glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-              glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
-            }
-
-            GlErrorReporter::Report = [](const std::string& msg) -> void 
-            {
-              static byte state = g_app->m_showGraphicsApiErrors;
-
-              if (g_app == nullptr)
-              {
-                return;
-              }
-
-              if (state != g_app->m_showGraphicsApiErrors)
-              {
-                state = g_app->m_showGraphicsApiErrors;
-                if (state == 1)
-                {
-                  glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
-                  glDebugMessageControl
-                  (
-                    GL_DEBUG_SOURCE_API,
-                    GL_DEBUG_TYPE_ERROR,
-                    GL_DEBUG_SEVERITY_HIGH,
-                    0, NULL, GL_TRUE
-                  );
-                }
-                else if (state >= 2)
-                {
-                  glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
-                }
-              }
-
-              if (g_app->m_showGraphicsApiErrors)
-              {
-                g_app->GetConsole()->AddLog(msg, ConsoleWindow::LogType::Error);
-              }
-            };
-#endif
+            GlDebugReportInit();
 #endif
             g_proxy = new Main();
 
@@ -155,17 +185,6 @@ namespace ToolKit
       }
     }
 
-    float GetMilliSeconds()
-    {
-      using namespace std::chrono;
-
-      static high_resolution_clock::time_point t1 = high_resolution_clock::now();
-      high_resolution_clock::time_point t2 = high_resolution_clock::now();
-      duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-
-      return (float)(time_span.count() * 1000.0);
-    }
-
     void Exit()
     {
       UI::UnInit();
@@ -181,7 +200,7 @@ namespace ToolKit
 
     void ProcessEvent(const SDL_Event& e)
     {
-      // If message doesn't ment to be processed in imgui, set this to true.
+      //  If message doesn't meant to be processed in imgui, set this to true.
       bool skipImgui = false;
 
       if (e.type == SDL_WINDOWEVENT)
@@ -263,7 +282,7 @@ namespace ToolKit
     {
       Timing()
       {
-        lastTime = GetMilliSeconds();
+        lastTime = GetElapsedMilliSeconds();
         currentTime = 0.0f;
         deltaTime = 1000.0f / fps;
         frameCount = 0;
@@ -281,9 +300,7 @@ namespace ToolKit
     {
       Timing* timer = static_cast<Timing*> (args);
 
-#ifndef __EMSCRIPTEN__
       while (g_running)
-#endif
       {
         SDL_Event sdlEvent;
         while (SDL_PollEvent(&sdlEvent))
@@ -292,12 +309,18 @@ namespace ToolKit
           ProcessEvent(sdlEvent);
         }
 
-        timer->currentTime = GetMilliSeconds();
+        timer->currentTime = GetElapsedMilliSeconds();
         if (timer->currentTime > timer->lastTime + timer->deltaTime)
         {
-          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+          glClear
+          (
+            GL_COLOR_BUFFER_BIT |
+            GL_DEPTH_BUFFER_BIT |
+            GL_STENCIL_BUFFER_BIT
+          );
+
           g_app->Frame(timer->currentTime - timer->lastTime);
-          ClearPool(); // Clear after consumption.
+          ClearPool();  // Clear after consumption.
           SDL_GL_SwapWindow(g_window);
 
           timer->frameCount++;
@@ -319,25 +342,19 @@ namespace ToolKit
       Init();
 
       static Timing timer;
-#ifdef __EMSCRIPTEN__
-      emscripten_set_main_loop_arg(TK_Loop, reinterpret_cast<void*> (&timer), 0, 1);
-#else
       TK_Loop(reinterpret_cast<void*> (&timer));
-#endif
 
       Exit();
       return 0;
     }
 
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit
 
 int main(int argc, char* argv[])
 {
-#ifndef __EMSCRIPTEN__
 #ifdef TK_DEBUG
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif
 #endif
 
   return ToolKit::Editor::ToolKit_Main(argc, argv);
