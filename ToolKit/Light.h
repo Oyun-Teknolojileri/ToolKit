@@ -45,7 +45,7 @@ namespace ToolKit
     virtual void EnableGizmo(bool enable);
 
    public:
-    TKDeclareParam(float, LightType);
+    TKDeclareParam(int, LightType);
     TKDeclareParam(Vec3, Color);
     TKDeclareParam(float, Intensity);
 

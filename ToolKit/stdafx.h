@@ -1,11 +1,16 @@
 #pragma once
 
+// STL
+#include <assert.h>
+#include <algorithm>
+#include <unordered_map>
+#include <vector>
+
 #ifndef __EMSCRIPTEN__
 #pragma message("Compiling precompiled headers.\n")
-#define GLM_FORCE_MESSAGES 
+#define GLM_FORCE_MESSAGES
 #endif
 
-// 
 // GLM
 #define GLM_FORCE_CTOR_INIT
 #define GLM_FORCE_SWIZZLE
@@ -37,9 +42,3 @@
 #include "Logger.h"
 #include "Events.h"
 #include "Serialize.h"
-
-// STL
-#include <algorithm>
-#include <assert.h>
-#include <unordered_map>
-#include <vector>

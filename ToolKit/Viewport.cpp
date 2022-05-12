@@ -18,9 +18,9 @@ namespace ToolKit
     {
       if (ScenePtr currScene = GetSceneManager()->GetCurrentScene())
       {
-        if 
+        if
         (
-          Camera* cam = static_cast<Camera*> 
+          Camera* cam = static_cast<Camera*>
           (
             currScene->GetEntity(m_attachedCamera)
           )
