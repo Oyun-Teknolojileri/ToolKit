@@ -2,6 +2,9 @@
 
 #include <memory>
 
+#include "Primative.h"
+#include "Mesh.h"
+#include "ToolKit.h"
 #include "DebugNew.h"
 
 namespace ToolKit

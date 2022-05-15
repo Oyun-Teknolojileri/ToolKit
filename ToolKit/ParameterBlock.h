@@ -83,9 +83,6 @@ namespace ToolKit
 
    public:
     ULongID m_id;  //!< Unique id for the current runtime.
-
-   private:
-    static ULongID m_handle;
   };
 
   /**

@@ -8,6 +8,7 @@
 
 #include "rapidxml.hpp"
 #include "Primative.h"
+#include "ToolKit.h"
 #include "DebugNew.h"
 
 namespace ToolKit

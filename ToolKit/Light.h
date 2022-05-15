@@ -2,15 +2,12 @@
 
 #include <string>
 
-#include "ToolKit.h"
 #include "Entity.h"
 #include "Types.h"
 #include "Primative.h"
 
-
 namespace ToolKit
 {
-  class Billboard;
 
   enum class LightType
   {

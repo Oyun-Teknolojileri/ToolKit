@@ -15,9 +15,6 @@
 #include "Node.h"
 #include "Skeleton.h"
 
-/**
-* Base name space for all the ToolKit functionalities.
-*/
 namespace ToolKit
 {
 

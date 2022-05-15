@@ -1,0 +1,1 @@
+emcmake cmake -DTK_CXX_EXTRA:STRING="-O3" -S .. && ninja & pause

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "ToolKit.h"
+#include "Types.h"
+#include "Drawable.h"
+#include "RenderState.h"
 #include "ParameterBlock.h"
 
 namespace ToolKit

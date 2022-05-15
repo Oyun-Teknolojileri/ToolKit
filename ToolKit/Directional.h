@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ToolKit.h"
+#include "Types.h"
 #include "Entity.h"
 
 namespace ToolKit

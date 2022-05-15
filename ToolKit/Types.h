@@ -17,7 +17,7 @@
 
 #ifdef _WIN32  // Windows.
 #define TK_STDCAL __stdcall
-#ifdef TK_DLL_EXPORT  // Dyamic binding.
+#ifdef TK_DLL_EXPORT  // Dynamic binding.
 #define TK_API __declspec(dllexport)
 #else  // Static binding.
 #define TK_API

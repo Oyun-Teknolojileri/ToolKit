@@ -1,8 +1,20 @@
 #include "ToolKit.h"
+
+#include <algorithm>
 #include "DebugNew.h"
 
 namespace ToolKit
 {
+
+  ULongID HandleManager::GetNextHandle()
+  {
+    return ++m_baseHandle;
+  }
+
+  void HandleManager::SetMaxHandle(ULongID val)
+  {
+    m_baseHandle = glm::max(m_baseHandle, val);
+  }
 
   Main* Main::m_proxy = nullptr;
 
@@ -198,6 +210,11 @@ namespace ToolKit
   UIManager* GetUIManager()
   {
     return Main::GetInstance()->m_uiManager;
+  }
+
+  HandleManager* GetHandleManager()
+  {
+    return &Main::GetInstance()->m_handleManager;
   }
 
   String DefaultPath()

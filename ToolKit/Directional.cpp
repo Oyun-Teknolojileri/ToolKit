@@ -102,7 +102,10 @@ namespace ToolKit
   Camera::CamData Camera::GetData() const
   {
     CamData data;
-    data.dir = GetComponent<DirectionComponent>()->GetDirection();
+    DirectionComponentPtr dcp = GetComponent<DirectionComponent>();
+    assert(dcp);
+    data.dir = dcp->GetDirection();
+
     data.pos = m_node->GetTranslation(TransformationSpace::TS_WORLD);
     data.projection = m_projection;
     data.fov = m_fov;

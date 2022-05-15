@@ -4,6 +4,7 @@
 #include "Material.h"
 #include "Node.h"
 #include "Viewport.h"
+#include "ToolKit.h"
 #include "DebugNew.h"
 
 namespace ToolKit

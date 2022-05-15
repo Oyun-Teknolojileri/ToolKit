@@ -10,9 +10,6 @@
 namespace ToolKit
 {
 
-  // 0 is null entity id. Preserve previous ID slots for internal use.
-  ULongID Entity::m_lastId = 1000;
-
   Entity::Entity()
   {
     ParameterConstructor();
@@ -112,7 +109,7 @@ namespace ToolKit
   void Entity::ParameterConstructor()
   {
     m_localData.m_variants.reserve(6);
-    ULongID id = m_lastId++;
+    ULongID id = GetHandleManager()->GetNextHandle();
 
     Id_Define(id, "Meta", 100, true, false);
     Name_Define("Entity_" + std::to_string(id), "Meta", 100, true, true);

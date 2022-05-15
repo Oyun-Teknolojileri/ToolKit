@@ -4,17 +4,15 @@
 * @file Header for ViewportBase, Viewport and related structures.
 */
 
-#include "ToolKit.h"
+#include "Types.h"
 #include "MathUtil.h"
+#include "Texture.h"
 
 /**
 * Base name space for all the ToolKit functionalities.
 */
 namespace ToolKit
 {
-  class Camera;
-  class RenderTarget;
-  struct RenderTargetSettigs;
 
   /**
   * Base class for Viewport class. Holds Camera object that viewport has.

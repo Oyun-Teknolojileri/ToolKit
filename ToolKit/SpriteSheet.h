@@ -11,10 +11,6 @@
 namespace ToolKit
 {
 
-  class Texture;
-  class Vertex;
-  class Surface;
-
   struct SpriteEntry
   {
     String name;

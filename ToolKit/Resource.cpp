@@ -2,20 +2,19 @@
 
 #include <string>
 #include "Util.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {
-  ULongID Resource::m_handle = NULL_HANDLE;
 
   Resource::Resource()
   {
-    m_id = ++m_handle;
+    m_id = GetHandleManager()->GetNextHandle();
     m_name = "Resource_" + std::to_string(m_id);
   }
 
   Resource::~Resource()
   {
-    // Nothing to do.
   }
 
   void Resource::Save(bool onlyIfDirty)

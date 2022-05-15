@@ -6,21 +6,11 @@
 #include "Types.h"
 #include "RenderState.h"
 #include "Light.h"
-
+#include "Viewport.h"
+#include "SpriteSheet.h"
 
 namespace ToolKit
 {
-
-  class Drawable;
-  class Camera;
-  class Surface;
-  class SpriteAnimation;
-  class Shader;
-  class Material;
-  class Viewport;
-  class RenderTarget;
-  class Renderer;
-  class DirectionalLight;
 
   class TK_API Renderer
   {

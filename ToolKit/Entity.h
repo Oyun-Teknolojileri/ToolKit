@@ -109,9 +109,6 @@ namespace ToolKit
     * Helper ID for entity De serialization. Points to parent of the entity.
     */
     ULongID _parentId;
-
-   private:
-    static ULongID m_lastId;
   };
 
   class TK_API EntityNode : public Entity

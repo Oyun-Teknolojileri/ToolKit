@@ -8,9 +8,13 @@
 #include "Surface.h"
 #include "Skeleton.h"
 #include "GlobalCache.h"
+#include "Viewport.h"
+#include "Scene.h"
+#include "UIManager.h"
+#include "Shader.h"
+#include "ToolKit.h"
 #include "GL/glew.h"
 #include "DebugNew.h"
-#include "Viewport.h"
 
 namespace ToolKit
 {

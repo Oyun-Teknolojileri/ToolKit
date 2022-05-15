@@ -1,22 +1,21 @@
 #include "Node.h"
 #include "MathUtil.h"
 #include "Util.h"
+#include "ToolKit.h"
 #include "DebugNew.h"
 
 namespace ToolKit
 {
 
-  ULongID Node::m_nextId = 0;
-
   Node::Node()
   {
-    m_id = ++m_nextId;
+    m_id = GetHandleManager()->GetNextHandle();
   }
 
   Node::~Node()
   {
     OrphanSelf(true);
-    for (int i = (int)m_children.size() - 1; i >= 0; i--)
+    for (int i = static_cast<int> (m_children.size()) - 1; i >= 0; i--)
     {
       Orphan(m_children[i], true);
     }
@@ -49,28 +48,56 @@ namespace ToolKit
     m_scale *= val;
   }
 
-  void Node::Transform(const Mat4& val, TransformationSpace space, bool noScale)
+  void Node::Transform
+  (
+    const Mat4& val,
+    TransformationSpace space,
+    bool noScale
+  )
   {
     Vec3 tmpScl = m_scale;
     if (noScale)
     {
       m_scale = Vec3(1.0f);
-    } 
-    TransformImp(val, space, &m_translation, &m_orientation, noScale ? nullptr : &m_scale);
+    }
+
+    TransformImp
+    (
+      val,
+      space,
+      &m_translation,
+      &m_orientation,
+      noScale ? nullptr : &m_scale
+    );
+
     if (noScale)
     {
       m_scale = tmpScl;
     }
   }
 
-  void Node::SetTransform(const Mat4& val, TransformationSpace space, bool noScale)
+  void Node::SetTransform
+  (
+    const Mat4& val,
+    TransformationSpace space,
+    bool noScale
+  )
   {
     Vec3 tmpScl = m_scale;
     if (noScale)
     {
       m_scale = Vec3(1.0f);
     }
-    SetTransformImp(val, space, &m_translation, &m_orientation, noScale ? nullptr : &m_scale);
+
+    SetTransformImp
+    (
+      val,
+      space,
+      &m_translation,
+      &m_orientation,
+      noScale ? nullptr : &m_scale
+    );
+
     if (noScale)
     {
       m_scale = tmpScl;
@@ -156,17 +183,17 @@ namespace ToolKit
     Mat3 axes;
     switch (space)
     {
-    case TransformationSpace::TS_WORLD:
+      case TransformationSpace::TS_WORLD:
       break;
-    case TransformationSpace::TS_PARENT:
+      case TransformationSpace::TS_PARENT:
       if (m_parent != nullptr)
       {
         axes = m_parent->GetTransform(TransformationSpace::TS_WORLD);
       }
       break;
-    case TransformationSpace::TS_LOCAL:
+      case TransformationSpace::TS_LOCAL:
       axes = GetTransform(TransformationSpace::TS_WORLD);
-    default:
+      default:
       break;
     }
 
@@ -190,7 +217,7 @@ namespace ToolKit
     child->SetChildrenDirty();
 
     if (preserveTransform)
-    {  
+    {
       child->SetTransform(ts, TransformationSpace::TS_WORLD);
     }
   }
@@ -252,37 +279,44 @@ namespace ToolKit
 
   void Node::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* node = doc->allocate_node(rapidxml::node_element, XmlNodeElement.c_str());
-    if (parent != nullptr)
-    {
-      parent->append_node(node);
-    }
-    else
-    {
-      doc->append_node(node);
-    }
-
+    XmlNode* node = CreateXmlNode(doc, XmlNodeElement, parent);
     WriteAttr(node, doc, XmlNodeIdAttr, std::to_string(m_id));
 
     if (m_parent != nullptr)
     {
-      WriteAttr(node, doc, XmlNodeParentIdAttr, std::to_string(m_parent->m_id));
+      WriteAttr
+      (
+        node,
+        doc,
+        XmlNodeParentIdAttr,
+        std::to_string(m_parent->m_id)
+      );
     }
 
-    WriteAttr(node, doc, XmlNodeInheritScaleAttr, std::to_string((int)m_inheritScale));
-    WriteAttr(node, doc, XmlNodeInheritTranslateOnlyAttr, std::to_string((int)m_inheritOnlyTranslate));
+    WriteAttr
+    (
+      node,
+      doc,
+      XmlNodeInheritScaleAttr,
+      std::to_string(static_cast<int> (m_inheritScale))
+    );
 
-    XmlNode* tNode = doc->allocate_node(rapidxml::node_element, XmlTranslateElement.c_str());
+    WriteAttr
+    (
+      node,
+      doc,
+      XmlNodeInheritTranslateOnlyAttr,
+      std::to_string(static_cast<int> (m_inheritOnlyTranslate))
+    );
+
+    XmlNode* tNode = CreateXmlNode(doc, XmlTranslateElement, node);
     WriteVec(tNode, doc, m_translation);
-    node->append_node(tNode);
 
-    tNode = doc->allocate_node(rapidxml::node_element, XmlRotateElement.c_str());
+    tNode = CreateXmlNode(doc, XmlRotateElement, tNode);
     WriteVec(tNode, doc, m_orientation);
-    node->append_node(tNode);
 
-    tNode = doc->allocate_node(rapidxml::node_element, XmlScaleElement.c_str());
+    tNode = CreateXmlNode(doc, XmlScaleElement, tNode);
     WriteVec(tNode, doc, m_scale);
-    node->append_node(tNode);
   }
 
   void Node::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -300,23 +334,34 @@ namespace ToolKit
       m_id = std::atoi(val.c_str());
     }
 
-    if (XmlAttribute* pid = node->first_attribute(XmlNodeParentIdAttr.c_str()))
+    if
+    (
+      XmlAttribute* pid = node->first_attribute(XmlNodeParentIdAttr.c_str())
+    )
     {
       String val = pid->value();
       // Node look up from parent ...
       // It's being handled in scene deserialize.
     }
 
-    if (XmlAttribute* attr = node->first_attribute(XmlNodeInheritScaleAttr.c_str()))
+    if
+    (
+      XmlAttribute* attr =
+      node->first_attribute(XmlNodeInheritScaleAttr.c_str())
+    )
     {
       String val = attr->value();
-      m_inheritScale = (bool)std::atoi(val.c_str());
+      m_inheritScale = static_cast<bool> (std::atoi(val.c_str()));
     }
 
-    if (XmlAttribute* attr = node->first_attribute(XmlNodeInheritTranslateOnlyAttr.c_str()))
+    if
+    (
+      XmlAttribute* attr =
+      node->first_attribute(XmlNodeInheritTranslateOnlyAttr.c_str())
+    )
     {
       String val = attr->value();
-      m_inheritOnlyTranslate = (bool)std::atoi(val.c_str());
+      m_inheritOnlyTranslate = static_cast<bool> (std::atoi(val.c_str()));
     }
 
     if (XmlNode* n = node->first_node(XmlTranslateElement.c_str()))
@@ -344,19 +389,26 @@ namespace ToolKit
     }
   }
 
-  void Node::TransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale)
+  void Node::TransformImp
+  (
+    const Mat4& val,
+    TransformationSpace space,
+    Vec3* translation,
+    Quaternion* orientation,
+    Vec3* scale
+  )
   {
     Mat4 ps, ts;
     ps = GetParentTransform();
     switch (space)
     {
-    case TransformationSpace::TS_WORLD:
+      case TransformationSpace::TS_WORLD:
       ts = glm::inverse(ps) * val * ps * GetLocalTransform();
       break;
-    case TransformationSpace::TS_PARENT:
+      case TransformationSpace::TS_PARENT:
       ts = val * GetLocalTransform();
       break;
-    case TransformationSpace::TS_LOCAL:
+      case TransformationSpace::TS_LOCAL:
       ts = GetLocalTransform() * val;
       break;
     }
@@ -365,22 +417,29 @@ namespace ToolKit
     SetChildrenDirty();
   }
 
-  void Node::SetTransformImp(const Mat4& val, TransformationSpace space, Vec3* translation, Quaternion* orientation, Vec3* scale)
+  void Node::SetTransformImp
+  (
+    const Mat4& val,
+    TransformationSpace space,
+    Vec3* translation,
+    Quaternion* orientation,
+    Vec3* scale
+  )
   {
     Mat4 ts;
     switch (space)
     {
-    case TransformationSpace::TS_WORLD:
+      case TransformationSpace::TS_WORLD:
       if (m_parent != nullptr)
       {
         Mat4 ps = GetParentTransform();
         ts = glm::inverse(ps) * val;
         break;
-      } // Fall trough.
-    case TransformationSpace::TS_PARENT:
+      }  // Fall trough.
+      case TransformationSpace::TS_PARENT:
       ts = val;
       break;
-    case TransformationSpace::TS_LOCAL:
+      case TransformationSpace::TS_LOCAL:
       Transform(val, TransformationSpace::TS_LOCAL);
       return;
     }
@@ -389,11 +448,18 @@ namespace ToolKit
     SetChildrenDirty();
   }
 
-  void Node::GetTransformImp(TransformationSpace space, Mat4* transform, Vec3* translation, Quaternion* orientation, Vec3* scale)
+  void Node::GetTransformImp
+  (
+    TransformationSpace space,
+    Mat4* transform,
+    Vec3* translation,
+    Quaternion* orientation,
+    Vec3* scale
+  )
   {
     switch (space)
     {
-    case TransformationSpace::TS_WORLD:
+      case TransformationSpace::TS_WORLD:
       if (m_parent != nullptr)
       {
         Mat4 ts = GetLocalTransform();
@@ -405,8 +471,8 @@ namespace ToolKit
         }
         DecomposeMatrix(ts, translation, orientation, scale);
         break;
-      } // Fall trough.
-    case TransformationSpace::TS_PARENT:
+      }  // Fall trough.
+      case TransformationSpace::TS_PARENT:
       if (transform != nullptr)
       {
         *transform = GetLocalTransform();
@@ -424,8 +490,8 @@ namespace ToolKit
         *scale = m_scale;
       }
       break;
-    case TransformationSpace::TS_LOCAL:
-    default:
+      case TransformationSpace::TS_LOCAL:
+      default:
       if (transform != nullptr)
       {
         *transform = Mat4();
@@ -497,4 +563,4 @@ namespace ToolKit
     }
   }
 
-}
+}  // namespace ToolKit

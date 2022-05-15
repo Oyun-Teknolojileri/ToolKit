@@ -36,7 +36,8 @@ namespace ToolKit
     String query = m_currentState->Signaled(signal);
     if (query.empty())
     {
-      // If the signal is not processed in the current state, check links for hijack.
+      // If the signal is not processed in the current state
+      // check links for hijack.
       auto link = m_currentState->m_links.find(signal);
       if (link != m_currentState->m_links.end())
       {
@@ -67,7 +68,8 @@ namespace ToolKit
 
   void StateMachine::PushState(State* state)
   {
-    assert(m_states.find(state->GetType()) == m_states.end()); // Make sure states are unique.
+    // Make sure states are unique.
+    assert(m_states.find(state->GetType()) == m_states.end());
     m_states[state->GetType()] = state;
   }
 
@@ -83,4 +85,4 @@ namespace ToolKit
     }
   }
 
-}
+}  // namespace ToolKit

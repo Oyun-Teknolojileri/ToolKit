@@ -49,7 +49,7 @@ namespace ToolKit
     {
       SafeDel(bone);
     }
-      
+
     m_bones.clear();
     m_initiated = false;
   }
@@ -90,10 +90,12 @@ namespace ToolKit
 
   int Skeleton::GetBoneIndex(String bone)
   {
-    for (int i = 0; i < (int)m_bones.size(); i++)
+    for (size_t i = 0; i < m_bones.size(); i++)
     {
       if (m_bones[i]->m_name.compare(bone) == 0)
-        return i;
+      {
+        return static_cast<int> (i);
+      }
     }
 
     return -1;
@@ -103,7 +105,9 @@ namespace ToolKit
   {
     int index = GetBoneIndex(bone);
     if (index == -1)
+    {
       return nullptr;
+    }
     return m_bones[index];
   }
 
@@ -157,10 +161,15 @@ namespace ToolKit
 
     AddBone(bone, parent);
 
-    for (subNode = node->first_node("bone"); subNode; subNode = subNode->next_sibling())
+    for
+    (
+      subNode = node->first_node("bone");
+      subNode;
+      subNode = subNode->next_sibling()
+    )
     {
       Traverse(subNode, bone);
     }
   }
 
-}
+}  // namespace ToolKit

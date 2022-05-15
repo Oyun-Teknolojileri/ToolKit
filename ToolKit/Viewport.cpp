@@ -7,6 +7,7 @@
 #include "Node.h"
 #include "Primative.h"
 #include "Util.h"
+#include "ToolKit.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -26,6 +27,7 @@ namespace ToolKit
           )
         )
         {
+          assert(cam->GetType() == EntityType::Entity_Camera);
           return cam;
         }
       }

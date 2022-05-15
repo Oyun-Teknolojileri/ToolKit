@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+* @file ToolKit.h Header for Main, the manager class to access all the 
+* functionalities of the ToolKit framework.
+*/
+
 #include "Animation.h"
 #include "Audio.h"
 #include "Directional.h"
@@ -20,13 +25,41 @@
 #include "PluginManager.h"
 #include "Events.h"
 #include "UIManager.h"
+#include "Scene.h"
+#include "Renderer.h"
+#include "Material.h"
 #include "Types.h"
 
+
+/**
+* Base name space for all the ToolKit functionalities.
+*/
 namespace ToolKit
 {
-  class SceneManager;
-  class Renderer;
-  class MaterialManager;
+
+  /**
+  * A class that Provides a unique handle when needed.
+  */
+  class TK_API HandleManager
+  {
+   public:
+    /**
+    * Creates a handle that has not been allocated within the current runtime.
+    * Increments the m_baseHandle by one.
+    * @return A unique handle for the current runtime.
+    */
+    ULongID GetNextHandle();
+
+    /**
+    * This function allows to set the m_baseHandle to maximum of
+    * val and m_baseHandle. That is m_baseHandle = max(m_baseHandle, val).
+    * @param val The value to compare with current handle.
+    */
+    void SetMaxHandle(ULongID val);
+
+   private:
+    ULongID m_baseHandle = 1000;  //!< Starting value of the handles.
+  };
 
   class TK_API Main
   {
@@ -56,6 +89,7 @@ namespace ToolKit
     Renderer* m_renderer = nullptr;
     Logger* m_logger = nullptr;
     UIManager* m_uiManager = nullptr;
+    HandleManager m_handleManager;
 
     bool m_initiated = false;
     String m_resourceRoot;
@@ -80,6 +114,7 @@ namespace ToolKit
   TK_API PluginManager* GetPluginManager();
   TK_API ResourceManager* GetResourceManager(ResourceType type);
   TK_API UIManager* GetUIManager();
+  TK_API HandleManager* GetHandleManager();
 
   TK_API String DefaultPath();
   TK_API String ResourcePath(bool def = false);

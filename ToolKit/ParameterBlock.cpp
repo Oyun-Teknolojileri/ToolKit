@@ -1,16 +1,15 @@
 #include "ParameterBlock.h"
 #include "Util.h"
 #include "Mesh.h"
+#include "ToolKit.h"
 #include "DebugNew.h"
 
 namespace ToolKit
 {
 
-  ULongID ParameterVariantBase::m_handle = 0;
-
   ParameterVariantBase::ParameterVariantBase()
   {
-    m_id = ++m_handle;
+    m_id = GetHandleManager()->GetNextHandle();
   }
 
   ParameterVariantBase::~ParameterVariantBase()

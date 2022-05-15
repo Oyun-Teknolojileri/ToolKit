@@ -1,18 +1,18 @@
 #pragma once
 
+#include <vector>
 #include "Resource.h"
 
 namespace ToolKit
 {
-  class Node;
 
   class TK_API Bone
   {
-  public:
-    Bone(String name);
+   public:
+    explicit Bone(String name);
     ~Bone();
 
-  public:
+   public:
     String m_name;
     Node* m_node;
     Mat4 m_inverseWorldMatrix;
@@ -20,27 +20,27 @@ namespace ToolKit
 
   class TK_API Skeleton : public Resource
   {
-  public:
+   public:
     TKResouceType(Skeleton)
 
     Skeleton();
-    Skeleton(String file);
+    explicit Skeleton(String file);
     ~Skeleton();
 
-    virtual void Init(bool flushClientSideArray = true) override;
-    virtual void UnInit() override;
-    virtual void Load() override;
+    void Init(bool flushClientSideArray = true) override;
+    void UnInit() override;
+    void Load() override;
 
     void AddBone(Bone* bone, Bone* parent = nullptr);
     int GetBoneIndex(String bone);
     Bone* GetBone(String bone);
 
-  private:
+   private:
     void Traverse(XmlNode* node, Bone* parent);
 
-  public:
+   public:
     Node* m_node;
     std::vector<Bone*> m_bones;
   };
 
-}
+}  // namespace ToolKit

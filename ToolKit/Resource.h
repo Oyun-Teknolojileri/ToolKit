@@ -67,7 +67,6 @@ namespace ToolKit
 
    private:
     String m_file;
-    static ULongID m_handle;
   };
 
 }  // namespace ToolKit
