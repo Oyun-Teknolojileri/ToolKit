@@ -312,10 +312,10 @@ namespace ToolKit
     XmlNode* tNode = CreateXmlNode(doc, XmlTranslateElement, node);
     WriteVec(tNode, doc, m_translation);
 
-    tNode = CreateXmlNode(doc, XmlRotateElement, tNode);
+    tNode = CreateXmlNode(doc, XmlRotateElement, node);
     WriteVec(tNode, doc, m_orientation);
 
-    tNode = CreateXmlNode(doc, XmlScaleElement, tNode);
+    tNode = CreateXmlNode(doc, XmlScaleElement, node);
     WriteVec(tNode, doc, m_scale);
   }
 
