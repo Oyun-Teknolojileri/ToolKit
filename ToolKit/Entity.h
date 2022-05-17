@@ -43,7 +43,7 @@ namespace ToolKit
 
     virtual bool IsDrawable() const;
     virtual EntityType GetType() const;
-    virtual void SetPose(Animation* anim);
+    virtual void SetPose(const AnimationPtr& anim, float time);
     virtual struct BoundingBox GetAABB(bool inWorld = false) const;
     virtual Entity* Copy() const;
     virtual Entity* Instantiate() const;

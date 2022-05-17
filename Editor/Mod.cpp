@@ -95,9 +95,9 @@ namespace ToolKit
         (
           GetAnimationPlayer()->m_records.begin(),
           GetAnimationPlayer()->m_records.end(),
-          [this, ntt](const AnimRecord& record)
+          [this, ntt](AnimRecord* record)
           {
-            if (ntt == record.first)
+            if (ntt == record->m_entity)
             {
               m_records.push_back(record);
               return true;

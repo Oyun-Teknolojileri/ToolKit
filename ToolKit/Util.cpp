@@ -467,6 +467,8 @@ namespace ToolKit
     case ResourceType::Scene:
       return "Scene";
       break;
+    case ResourceType::Skeleton:
+      return "Skeleton";
     default:
       assert(false);
       break;

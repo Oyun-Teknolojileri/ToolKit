@@ -104,7 +104,7 @@ namespace ToolKit
 
    public:
     std::vector<SkinVertex> m_clientSideVertices;
-    class Skeleton* m_skeleton;
+    SkeletonPtr m_skeleton;
   };
 
   class TK_API MeshManager : public ResourceManager

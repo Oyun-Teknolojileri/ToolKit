@@ -43,4 +43,13 @@ namespace ToolKit
     std::vector<Bone*> m_bones;
   };
 
+  class TK_API SkeletonManager : public ResourceManager
+  {
+   public:
+    SkeletonManager();
+    virtual ~SkeletonManager();
+    bool CanStore(ResourceType t) override;
+    ResourcePtr CreateLocal(ResourceType type) override;
+  };
+
 }  // namespace ToolKit

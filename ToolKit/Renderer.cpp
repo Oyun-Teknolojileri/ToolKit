@@ -182,7 +182,7 @@ namespace ToolKit
     BindProgram(skinProg);
     FeedUniforms(skinProg);
 
-    Skeleton* skeleton = static_cast<SkinMesh*> (mesh.get())->m_skeleton;
+    SkeletonPtr skeleton = static_cast<SkinMesh*> (mesh.get())->m_skeleton;
     for (int i = 0; i < static_cast<int>(skeleton->m_bones.size()); i++)
     {
       Bone* bone = skeleton->m_bones[i];;

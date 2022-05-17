@@ -82,6 +82,7 @@ namespace ToolKit
   typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;
   typedef std::shared_ptr<class SpriteSheet> SpriteSheetPtr;
   typedef std::shared_ptr<class Mesh> MeshPtr;
+  typedef std::shared_ptr<class Skeleton> SkeletonPtr;
   typedef std::shared_ptr<class Shader> ShaderPtr;
   typedef std::vector<ShaderPtr> ShaderPtrArray;
   typedef std::shared_ptr<class Program> ProgramPtr;
@@ -117,7 +118,6 @@ namespace ToolKit
   };
 
   typedef std::vector<class Event*> EventPool;
-  typedef std::pair<Entity*, Animation*> AnimRecord;
 
   // Components.
   typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;

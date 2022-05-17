@@ -9,6 +9,7 @@
 #include "rapidxml_utils.hpp"
 #include "Util.h"
 #include "Skeleton.h"
+#include "ToolKit.h"
 #include "DebugNew.h"
 
 
@@ -30,12 +31,38 @@ namespace ToolKit
     UnInit();
   }
 
-  void Animation::GetCurrentPose(Node* node)
+  void Animation::GetPose(Node* node, float time)
   {
-    GetPose(node, m_currentTime);
+    if (m_keys.empty())
+    {
+      return;
+    }
+
+    float ratio;
+    int key1, key2;
+    std::vector<Key>& keys = m_keys.begin()->second;
+    GetNearestKeys(keys, key1, key2, ratio, time);
+
+    int keySize = static_cast<int> (keys.size());
+    if (keys.size() <= key1 || key1 == -1)
+    {
+      return;
+    }
+
+    if (keys.size() <= key2 || key2 == -1)
+    {
+      return;
+    }
+
+    Key k1 = keys[key1];
+    Key k2 = keys[key2];
+    node->m_translation = Interpolate(k1.m_position, k2.m_position, ratio);
+    node->m_orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
+    node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
+    node->SetChildrenDirty();
   }
 
-  void Animation::GetCurrentPose(Skeleton* skeleton)
+  void Animation::GetPose(const SkeletonPtr& skeleton, float time)
   {
     if (m_keys.empty())
     {
@@ -52,7 +79,7 @@ namespace ToolKit
         continue;
       }
 
-      GetNearestKeys(entry->second, key1, key2, ratio, m_currentTime);
+      GetNearestKeys(entry->second, key1, key2, ratio, time);
 
       // Sanity checks
       int keySize = static_cast<int> (entry->second.size());
@@ -85,37 +112,6 @@ namespace ToolKit
       bone->m_node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
       bone->m_node->SetChildrenDirty();
     }
-  }
-
-  void Animation::GetPose(Node* node, float time)
-  {
-    if (m_keys.empty())
-    {
-      return;
-    }
-
-    float ratio;
-    int key1, key2;
-    std::vector<Key>& keys = m_keys.begin()->second;
-    GetNearestKeys(keys, key1, key2, ratio, time);
-
-    int keySize = static_cast<int> (keys.size());
-    if (keys.size() <= key1 || key1 == -1)
-    {
-      return;
-    }
-
-    if (keys.size() <= key2 || key2 == -1)
-    {
-      return;
-    }
-
-    Key k1 = keys[key1];
-    Key k2 = keys[key2];
-    node->m_translation = Interpolate(k1.m_position, k2.m_position, ratio);
-    node->m_orientation = glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
-    node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
-    node->SetChildrenDirty();
   }
 
   void Animation::GetPose(Node* node, int frame)
@@ -222,10 +218,7 @@ namespace ToolKit
     Animation* cpy = static_cast<Animation*> (other);
     cpy->m_keys = m_keys;
     cpy->m_fps = m_fps;
-    cpy->m_currentTime = m_currentTime;
     cpy->m_duration = m_duration;
-    cpy->m_loop = m_loop;
-    cpy->m_state = m_state;
   }
 
   void Animation::GetNearestKeys
@@ -289,83 +282,89 @@ namespace ToolKit
     }
   }
 
-  void AnimationPlayer::AddRecord(const AnimRecord& rec)
+  AnimRecord::AnimRecord()
   {
-    if (Exist(rec) == -1)
-    {
-      m_records.push_back(rec);
-    }
   }
 
-  void AnimationPlayer::AddRecord(Entity* entity, Animation* anim)
+  AnimRecord::AnimRecord(Entity* entity, const AnimationPtr& anim)
+    : m_entity(entity), m_animation(anim)
   {
-    AddRecord({ entity, anim });
+    m_id = GetHandleManager()->GetNextHandle();
+  }
+
+  void AnimationPlayer::AddRecord(AnimRecord* rec)
+  {
+    m_records.push_back(rec);
   }
 
   void AnimationPlayer::RemoveRecord(const AnimRecord& rec)
   {
-    int indx = Exist(rec);
+    RemoveRecord(rec.m_id);
+  }
+
+  void AnimationPlayer::RemoveRecord(ULongID id)
+  {
+    int indx = Exist(id);
     if (indx != -1)
     {
       m_records.erase(m_records.begin() + indx);
     }
   }
 
-  void AnimationPlayer::RemoveRecord(Entity* entity, Animation* anim)
-  {
-    RemoveRecord({ entity, anim });
-  }
-
   void AnimationPlayer::Update(float deltaTimeSec)
   {
     int index = 0;
     std::vector<int> removeList;
-    for (const AnimRecord& record : m_records)
+    for (AnimRecord* record : m_records)
     {
-      if (record.second->m_state == Animation::State::Pause)
+      if (record->m_state == AnimRecord::State::Pause)
       {
         continue;
       }
 
-      Animation::State state = record.second->m_state;
-      if (state == Animation::State::Play)
+      AnimRecord::State state = record->m_state;
+      if (state == AnimRecord::State::Play)
       {
-        float thisTime = record.second->m_currentTime + deltaTimeSec;
-        float duration = record.second->m_duration;
+        float thisTime = record->m_currentTime + deltaTimeSec;
+        float duration = record->m_animation->m_duration;
 
-        if (record.second->m_loop)
+        if (record->m_loop)
         {
           if (thisTime > duration)
           {
-            record.second->m_currentTime = 0.0f;
+            record->m_currentTime = 0.0f;
           }
         }
         else
         {
           if (thisTime > duration)
           {
-            record.second->m_state = Animation::State::Stop;
+            record->m_state = AnimRecord::State::Stop;
           }
         }
       }
 
-      if (state == Animation::State::Rewind || state == Animation::State::Stop)
+      if
+      (
+        state == AnimRecord::State::Rewind ||
+        state == AnimRecord::State::Stop
+      )
       {
-        record.second->m_currentTime = 0;
+        record->m_currentTime = 0;
       }
       else
       {
-        record.second->m_currentTime += deltaTimeSec;
+        record->m_currentTime += deltaTimeSec;
       }
 
-      record.first->SetPose(record.second);
+      record->m_entity->SetPose(record->m_animation, record->m_currentTime);
 
-      if (state == Animation::State::Rewind)
+      if (state == AnimRecord::State::Rewind)
       {
-        record.second->m_state = Animation::State::Play;
+        record->m_state = AnimRecord::State::Play;
       }
 
-      if (state == Animation::State::Stop)
+      if (state == AnimRecord::State::Stop)
       {
         removeList.push_back(index);
       }
@@ -379,16 +378,14 @@ namespace ToolKit
     }
   }
 
-  int AnimationPlayer::Exist(const AnimRecord& record) const
+  int AnimationPlayer::Exist(ULongID id) const
   {
-    int index = 0;
-    for (const AnimRecord& rec : m_records)
+    for (size_t i = 0; i < m_records.size(); i++)
     {
-      if (rec.first == record.first && rec.second == record.second)
+      if (m_records[i]->m_id == id)
       {
-        return index;
+        return static_cast<int> (i);
       }
-      index++;
     }
 
     return -1;

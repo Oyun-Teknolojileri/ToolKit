@@ -33,18 +33,18 @@ namespace ToolKit
     return EntityType::Entity_Drawable;
   }
 
-  void Drawable::SetPose(Animation* anim)
+  void Drawable::SetPose(const AnimationPtr& anim, float time)
   {
     MeshPtr mesh = GetMesh();
     if (mesh->IsSkinned())
     {
       SkinMesh* skinMesh = static_cast<SkinMesh*> (mesh.get());
-      Skeleton* skeleton = skinMesh->m_skeleton;
-      anim->GetCurrentPose(skeleton);
+      SkeletonPtr skeleton = skinMesh->m_skeleton;
+      anim->GetPose(skeleton, time);
     }
     else
     {
-      anim->GetCurrentPose(m_node);
+      anim->GetPose(m_node, time);
     }
   }
 

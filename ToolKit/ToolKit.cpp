@@ -34,6 +34,7 @@ namespace ToolKit
     m_materialManager = new MaterialManager();
     m_sceneManager = new SceneManager();
     m_uiManager = new UIManager();
+    m_skeletonManager = new SkeletonManager();
 
     m_logger->Log("Main Constructed");
   }
@@ -54,6 +55,7 @@ namespace ToolKit
     SafeDel(m_materialManager);
     SafeDel(m_sceneManager);
     SafeDel(m_uiManager);
+    SafeDel(m_skeletonManager);
 
     m_logger->Log("Main Deconstructed");
     SafeDel(m_logger);
@@ -75,6 +77,7 @@ namespace ToolKit
     m_shaderMan->Init();
     m_materialManager->Init();
     m_sceneManager->Init();
+    m_skeletonManager->Init();
 
     m_initiated = true;
   }
@@ -92,6 +95,7 @@ namespace ToolKit
     m_shaderMan->Uninit();
     m_materialManager->Uninit();
     m_sceneManager->Uninit();
+    m_skeletonManager->Uninit();
 
     // After all the resources, we can safely free modules.
     m_pluginManager->UnInit();
@@ -215,6 +219,11 @@ namespace ToolKit
   HandleManager* GetHandleManager()
   {
     return &Main::GetInstance()->m_handleManager;
+  }
+
+  TK_API SkeletonManager* GetSkeletonManager()
+  {
+    return Main::GetInstance()->m_skeletonManager;
   }
 
   String DefaultPath()

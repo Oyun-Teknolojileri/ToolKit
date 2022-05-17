@@ -1,4 +1,7 @@
 #include "Skeleton.h"
+
+#include <memory>
+
 #include "Node.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
@@ -170,6 +173,37 @@ namespace ToolKit
     {
       Traverse(subNode, bone);
     }
+  }
+
+  SkeletonManager::SkeletonManager()
+  {
+    m_type = ResourceType::Skeleton;
+  }
+
+  SkeletonManager::~SkeletonManager()
+  {
+  }
+
+  bool SkeletonManager::CanStore(ResourceType t)
+  {
+    if (t == ResourceType::Skeleton)
+    {
+      return true;
+    }
+
+    return false;
+  }
+
+  ResourcePtr SkeletonManager::CreateLocal(ResourceType type)
+  {
+    ResourcePtr res;
+    if (type == ResourceType::Skeleton)
+    {
+      res = std::make_shared<Skeleton> ();
+    }
+
+    assert(res != nullptr);
+    return res;
   }
 
 }  // namespace ToolKit

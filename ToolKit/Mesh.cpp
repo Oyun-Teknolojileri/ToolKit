@@ -436,7 +436,6 @@ namespace ToolKit
   SkinMesh::SkinMesh()
     : Mesh()
   {
-    m_skeleton = new Skeleton();
   }
 
   SkinMesh::SkinMesh(const String& file)
@@ -447,7 +446,7 @@ namespace ToolKit
     String skelFile = file.substr(0, file.find_last_of("."));
     skelFile += ".skeleton";
 
-    m_skeleton = new Skeleton(skelFile);
+    m_skeleton = GetSkeletonManager()->Create<Skeleton>(skelFile);
   }
 
   SkinMesh::~SkinMesh()
@@ -463,7 +462,6 @@ namespace ToolKit
 
   void SkinMesh::UnInit()
   {
-    SafeDel(m_skeleton);
     m_initiated = false;
   }
 

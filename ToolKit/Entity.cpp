@@ -36,9 +36,9 @@ namespace ToolKit
     return EntityType::Entity_Base;
   }
 
-  void Entity::SetPose(Animation* anim)
+  void Entity::SetPose(const AnimationPtr& anim, float time)
   {
-    anim->GetCurrentPose(m_node);
+    anim->GetPose(m_node, time);
   }
 
   struct BoundingBox Entity::GetAABB(bool inWorld) const
