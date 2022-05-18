@@ -181,7 +181,7 @@ namespace ToolKit
     dir.y = 0.0f;  // project on xz
     dir = glm::normalize(dir);
 
-    if (glm::all(glm::epsilonEqual(tdir, dir, { 0.01f, 0.01f, 0.01f })))
+    if (glm::all(glm::epsilonEqual(tdir, dir, { 0.0001f, 0.0001f, 0.0001f })))
     {
       return;
     }
