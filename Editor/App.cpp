@@ -1313,11 +1313,15 @@ Fail:
           EditorViewport* playWindow = GetWindow<EditorViewport>(g_3dViewport);
           if (m_runWindowed)
           {
-            Mat4 camTs = playWindow->GetCamera()->m_node->GetTransform
-            (
-              TransformationSpace::TS_WORLD
-            );
-            m_playWindow->GetCamera()->m_node->SetTransform(camTs);
+            if (m_windowCamLoad)
+            {
+              Mat4 camTs = playWindow->GetCamera()->m_node->GetTransform
+              (
+                TransformationSpace::TS_WORLD
+              );
+              m_playWindow->GetCamera()->m_node->SetTransform(camTs);
+              m_windowCamLoad = false;
+            }
             playWindow = m_playWindow;
           }
           m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);

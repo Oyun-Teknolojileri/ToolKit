@@ -186,6 +186,8 @@ namespace ToolKit
       // Internal states.
       bool m_onNewScene = false;
       bool m_onQuit = false;
+
+      bool m_windowCamLoad = true;
     };
 
     extern void DebugMessage(const String& msg);
