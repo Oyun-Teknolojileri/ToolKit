@@ -23,7 +23,7 @@ namespace ToolKit
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
      private:
-      bool checkBoxDisabled = false;
+      bool m_simulationModeDisabled = false;
     };
 
   }  // namespace Editor

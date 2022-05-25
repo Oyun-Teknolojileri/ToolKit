@@ -118,7 +118,7 @@ namespace ToolKit
             )
           )
           {
-            checkBoxDisabled = true;
+            m_simulationModeDisabled = true;
             g_app->SetGameMod(App::GameMod::Playing);
           }
 
@@ -156,7 +156,7 @@ namespace ToolKit
         {
           if (g_app->m_gameMod != App::GameMod::Stop)
           {
-            checkBoxDisabled = false;
+            m_simulationModeDisabled = false;
             g_app->SetGameMod(App::GameMod::Stop);
           }
         }
@@ -201,9 +201,9 @@ namespace ToolKit
         // Other editor and game entity plugins.
         ImGui::Separator();
 
-        if (checkBoxDisabled)
+        if (m_simulationModeDisabled)
         {
-          ImGui::BeginDisabled(checkBoxDisabled);
+          ImGui::BeginDisabled(m_simulationModeDisabled);
           ImGui::Checkbox("Run in window", &g_app->m_runWindowed);
           ImGui::EndDisabled();
         }
