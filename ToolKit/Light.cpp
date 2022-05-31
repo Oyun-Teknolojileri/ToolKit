@@ -44,10 +44,6 @@ namespace ToolKit
   {
   }
 
-  void Light::EnableGizmo(bool enable)
-  {
-  }
-
   DirectionalLight::DirectionalLight()
   {
     LightType() = 1;

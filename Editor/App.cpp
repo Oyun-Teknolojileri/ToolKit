@@ -176,14 +176,28 @@ namespace ToolKit
         {
           if (light->Id() == entity->Id())
           {
-            light->EnableGizmo(true);
+            if (light->GetLightType() == LightType::LightDirectional)
+            {
+              static_cast<EditorDirectionalLight*>(light)->EnableGizmo(true);
+            }
+            else if (light->GetLightType() == LightType::LightSpot)
+            {
+              static_cast<EditorSpotLight*>(light)->EnableGizmo(true);
+            }
             found = true;
             break;
           }
         }
         if (!found)
         {
-          light->EnableGizmo(false);
+          if (light->GetLightType() == LightType::LightDirectional)
+          {
+            static_cast<EditorDirectionalLight*>(light)->EnableGizmo(false);
+          }
+          else if (light->GetLightType() == LightType::LightSpot)
+          {
+            static_cast<EditorSpotLight*>(light)->EnableGizmo(false);
+          }
         }
       }
 
@@ -1209,9 +1223,24 @@ Fail:
             if (ntt->GetType() == EntityType::Entity_Light)
             {
               Light* light = static_cast<Light*>(ntt);
-              light->EnableGizmo(false);
+
+              if (light->GetLightType() == LightType::LightDirectional)
+              {
+                static_cast<EditorDirectionalLight*>(light)->EnableGizmo(false);
+              }
+              else if (light->GetLightType() == LightType::LightSpot)
+              {
+                static_cast<EditorSpotLight*>(light)->EnableGizmo(false);
+              }
               m_renderer->Render(ntt, viewport->GetCamera());
-              light->EnableGizmo(true);
+              if (light->GetLightType() == LightType::LightDirectional)
+              {
+                static_cast<EditorDirectionalLight*>(light)->EnableGizmo(true);
+              }
+              else if (light->GetLightType() == LightType::LightSpot)
+              {
+                static_cast<EditorSpotLight*>(light)->EnableGizmo(true);
+              }
             }
             else
             {

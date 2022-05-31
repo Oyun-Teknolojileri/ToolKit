@@ -17,16 +17,6 @@ namespace ToolKit
     LightSpot
   };
 
-  struct LightData
-  {
-    int type = -1;
-    Vec3 color = ZERO;
-    float intensity = -1.0f;
-    float radius = -1.0f;
-    float outerAngle = -1.0f;
-    float innerAngle = -1.0f;
-  };
-
   class TK_API Light : public Entity
   {
    public:
@@ -39,7 +29,6 @@ namespace ToolKit
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     virtual void Init();
-    virtual void EnableGizmo(bool enable);
 
    public:
     TKDeclareParam(int, LightType);
@@ -48,7 +37,6 @@ namespace ToolKit
 
    protected:
     bool m_initialized = false;
-    bool m_gizmoActive = false;
   };
 
   class TK_API DirectionalLight : public Light
