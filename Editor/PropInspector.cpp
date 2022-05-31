@@ -743,6 +743,7 @@ namespace ToolKit
             {
               if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
               {
+                g_app->m_statusMsg = "An imported shader file expected!";
                 return;
               }
               entry->m_vertexShader =
@@ -858,6 +859,7 @@ namespace ToolKit
               MeshPtr& mesh = drawable->GetMesh();
               if (strcmp(dirEnt.m_ext.c_str(), ".material") != 0)
               {
+                g_app->m_statusMsg = "An imported material file expected!";
                 return;
               }
               mesh->m_material =
