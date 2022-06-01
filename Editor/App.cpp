@@ -1022,6 +1022,7 @@ Fail:
     void App::OpenScene(const String& fullPath)
     {
       GetCurrentScene()->Destroy(false);
+      GetSceneManager()->Remove(GetCurrentScene()->GetFile());
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
       SetCurrentScene(scene);
       scene->Init(false);
