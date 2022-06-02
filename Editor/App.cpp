@@ -62,19 +62,29 @@ namespace ToolKit
       m_lightMaster = new Node();
 
       DirectionalLight* light = new DirectionalLight();
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-45.0f));
+      light->Color() = Vec3(0.267f);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(180.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->Intensity() = 0.5f;
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(60.0f));
+      light->Color() = Vec3(0.55f);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->Intensity() = 0.3f;
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-140.0f));
+      light->Color() = Vec3(0.15f);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
+      m_lightMaster->AddChild(light->m_node);
+      m_sceneLights.push_back(light);
+
+      light = new DirectionalLight();
+      light->Color() = Vec3(0.1f);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
@@ -127,9 +137,9 @@ namespace ToolKit
       SafeDel(m_origin);
       SafeDel(m_cursor);
 
-      for (int i = 0; i < 3; i++)
+      for (Light* light : m_sceneLights)
       {
-        SafeDel(m_sceneLights[i]);
+        SafeDel(light);
       }
       SafeDel(m_lightMaster);
       m_sceneLights.clear();
