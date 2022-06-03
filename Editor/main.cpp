@@ -92,7 +92,7 @@ namespace ToolKit
 
         if (g_app->m_showGraphicsApiErrors)
         {
-          g_app->GetConsole()->AddLog(msg, ConsoleWindow::LogType::Error);
+          g_app->GetConsole()->AddLog(msg, LogType::Error);
         }
       };
     }

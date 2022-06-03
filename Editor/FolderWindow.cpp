@@ -729,7 +729,7 @@ namespace ToolKit
                   g_app->GetConsole()->AddLog
                   (
                    "Could not copy the folder path to clipboard",
-                   ConsoleWindow::LogType::Error
+                   LogType::Error
                   );
               }
               ImGui::CloseCurrentPopup();
@@ -815,7 +815,7 @@ namespace ToolKit
                 g_app->GetConsole()->AddLog
                 (
                   "Can't rename. A file with the same name exist",
-                  ConsoleWindow::LogType::Error
+                  LogType::Error
                 );
               }
               else
@@ -907,7 +907,7 @@ namespace ToolKit
               g_app->GetConsole()->AddLog
               (
                 "Can't create. A scene with the same name exist",
-                ConsoleWindow::LogType::Error
+                LogType::Error
               );
             }
             else
@@ -949,7 +949,7 @@ namespace ToolKit
               g_app->GetConsole()->AddLog
               (
                 "Can't create. A material with the same name exist",
-                ConsoleWindow::LogType::Error
+                LogType::Error
               );
             }
             else

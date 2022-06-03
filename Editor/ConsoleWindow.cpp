@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include "Logger.h"
 #include "GlobalDef.h"
 #include "Primative.h"
 #include "Mod.h"
@@ -469,7 +470,7 @@ namespace ToolKit
         g_app->GetConsole()->AddLog
         (
           g_noValidEntity,
-          ConsoleWindow::LogType::Error
+          LogType::Error
         );
       }
     }
@@ -516,7 +517,7 @@ namespace ToolKit
         g_app->GetConsole()->AddLog
         (
           g_noValidEntity,
-          ConsoleWindow::LogType::Error
+          LogType::Error
         );
       }
     }
@@ -558,7 +559,7 @@ namespace ToolKit
           {
             String info = "Your Workspace directry set to: "
             + path + "\n" + manUpMsg;
-            g_app->GetConsole()->AddLog(info, ConsoleWindow::LogType::Memo);
+            g_app->GetConsole()->AddLog(info, LogType::Memo);
             return;
           }
         }
@@ -569,7 +570,7 @@ namespace ToolKit
         err.append(" Projects will be saved in your installment folder.\n");
         err += manUpMsg;
 
-        g_app->GetConsole()->AddLog(err, ConsoleWindow::LogType::Error);
+        g_app->GetConsole()->AddLog(err, LogType::Error);
       }
     }
 

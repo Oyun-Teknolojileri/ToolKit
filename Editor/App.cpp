@@ -352,7 +352,7 @@ namespace ToolKit
           (
             "Scene has not been saved.\n"
             "A scene with the same name exist. Use File->SaveAs.",
-            ConsoleWindow::LogType::Error
+            LogType::Error
           );
         };
 
@@ -423,7 +423,7 @@ namespace ToolKit
         GetConsole()->AddLog
         (
           "No workspace. Project can't be created.",
-          ConsoleWindow::LogType::Error
+          LogType::Error
         );
         return;
       }
@@ -437,7 +437,7 @@ namespace ToolKit
         GetConsole()->AddLog
         (
           "Project already exist.",
-          ConsoleWindow::LogType::Error
+          LogType::Error
         );
         return;
       }
@@ -567,7 +567,7 @@ namespace ToolKit
           GetConsole()->AddLog
           (
             "Expecting a game plugin with the same name of the project.",
-            ConsoleWindow::LogType::Error
+            LogType::Error
           );
         }
       }
@@ -782,13 +782,13 @@ namespace ToolKit
           con->AddLog
           (
             "Import failed: " + fullPath,
-            ConsoleWindow::LogType::Error
+            LogType::Error
           );
           con->AddLog
           (
             "File format is not supported.\n"
             "Suported formats are fbx, glb, gltf, obj.",
-            ConsoleWindow::LogType::Error
+            LogType::Error
           );
         }
         return -1;
@@ -867,7 +867,7 @@ namespace ToolKit
                 g_app->GetConsole()->AddLog
                 (
                   "Import: " + fullPath + " failed.",
-                  ConsoleWindow::LogType::Error
+                  LogType::Error
                 );
                 goto Fail;
               }
@@ -1500,19 +1500,14 @@ Fail:
     void App::AssignManagerReporters()
     {
       // Register manager reporters
-      auto genericReporterFn = [](String msg) -> void
+      auto genericReporterFn = [](LogType logType, String msg) -> void
       {
         if (ConsoleWindow* console = g_app->GetConsole())
         {
-          console->AddLog(msg);
+          console->AddLog(msg, logType);
         }
       };
-
-      GetPluginManager()->m_reporterFn = genericReporterFn;
-      GetMeshManager()->m_reporterFn = genericReporterFn;
-      GetTextureManager()->m_reporterFn = genericReporterFn;
-      GetMaterialManager()->m_reporterFn = genericReporterFn;
-      GetSceneManager()->m_reporterFn = genericReporterFn;
+      GetLogger()->SetWriteConsoleFn(genericReporterFn);
     }
 
     void App::CreateAndSetNewScene(const String& name)

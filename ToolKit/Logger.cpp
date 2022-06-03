@@ -15,7 +15,7 @@ namespace ToolKit
     m_logFile.close();
   }
 
-  void Logger::Log(const std::string& message)
+  void Logger::Log(const String& message)
   {
 #ifdef __EMSCRIPTEN__
     String emLog = message + "\n";
@@ -24,4 +24,20 @@ namespace ToolKit
     m_logFile << message << std::endl;
   }
 
-}
+  void Logger::SetWriteConsoleFn(std::function<void(LogType, String)> fn)
+  {
+    m_writeConsoleFn = fn;
+  }
+
+  void Logger::WriteConsole(LogType logType, const char* msg, ...)
+  {
+    va_list args;
+    va_start(args, msg);
+
+    static char buff[2048];
+    vsprintf(buff, msg, args);
+    m_writeConsoleFn(logType, String(buff));
+
+    va_end(args);
+  }
+}  // namespace ToolKit

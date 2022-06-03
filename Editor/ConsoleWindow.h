@@ -1,8 +1,13 @@
 #pragma once
 
 #include "ToolKit.h"
-#include "UI.h"
+
 #include <functional>
+#include <utility>
+#include <unordered_map>
+#include <vector>
+
+#include "UI.h"
 
 namespace ToolKit
 {
@@ -74,46 +79,49 @@ namespace ToolKit
 
     class ConsoleWindow : public Window
     {
-    public:
-      ConsoleWindow(XmlNode* node);
+     public:
+      explicit ConsoleWindow(XmlNode* node);
       ConsoleWindow();
       virtual ~ConsoleWindow();
-      virtual void Show() override;
-      virtual Type GetType() const override;
+      void Show() override;
+      Type GetType() const override;
 
-      // Functions.
-      enum class LogType
-      {
-        Memo,
-        Error,
-        Warning,
-        Command
-      };
       void AddLog(const String& log, LogType type = LogType::Memo);
       void AddLog(const String& log, const String& tag);
       void ClearLog();
       void ExecCommand(const String& commandLine);
-      void ParseCommandLine(String commandLine, String& command, TagArgArray& tagArgs);
+      void ParseCommandLine
+      (
+        String commandLine,
+        String& command,
+        TagArgArray& tagArgs
+      );
 
-    private:
+     private:
       // Command line word processing. Auto-complete and history lookups.
       int TextEditCallback(ImGuiInputTextCallbackData* data);
-      void CreateCommand(const String& command, std::function<void(TagArgArray)> executor);
+      void CreateCommand
+      (
+        const String& command,
+        std::function<void(TagArgArray)> executor
+      );
 
-    private:
+     private:
       // States.
       bool m_scrollToBottom = false;
 
       // Buffers.
       StringArray m_items;
       StringArray m_commands;
-      std::unordered_map<String, std::function<void(TagArgArray&)>> m_commandExecutors;
+      std::unordered_map<String, std::function<void(TagArgArray&)>>
+      m_commandExecutors;
 
       std::vector <String> m_history;
-      int m_historyPos = -1; // -1: new line, 0..History.Size-1 browsing history.
+      // -1: new line, 0..History.Size-1 browsing history.
+      int m_historyPos = -1;
 
       // ImGui Helpers.
       ImGuiTextFilter m_filter;
     };
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

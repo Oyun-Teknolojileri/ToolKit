@@ -501,7 +501,7 @@ namespace ToolKit
               g_app->GetConsole()->AddLog
               (
                 "No camera selected.\nSelect a camera from the scene.",
-                ConsoleWindow::LogType::Error
+                LogType::Error
               );
             }
           }
