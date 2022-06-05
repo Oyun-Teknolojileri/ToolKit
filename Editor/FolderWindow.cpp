@@ -110,7 +110,7 @@ namespace ToolKit
         light.m_node->SetTranslation({ 5.0f, 5.0f, 5.0f });
         light.GetComponent<DirectionComponent>()->LookAt(ZERO);
 
-        DirectionalLightRawPtrArray lights = { &light };
+        LightRawPtrArray lights = { &light };
 
         g_app->m_renderer->Render(dw, cam, lights);
 

@@ -158,7 +158,7 @@ namespace ToolKit
 
       // 3 point lighting system.
       Node* m_lightMaster = nullptr;
-      DirectionalLightRawPtrArray m_sceneLights;  // { 0:key 1:fill, 2:back }
+      LightRawPtrArray m_sceneLights;  // { 0:key 1:fill, 2:back }
 
       // Editor states.
       int m_fps = 0;

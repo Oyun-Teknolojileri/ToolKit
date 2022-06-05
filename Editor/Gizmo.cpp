@@ -824,7 +824,7 @@ namespace ToolKit
     void SpotLightGizmo::InitGizmo(SpotLight* light)
     {
       // Middle line
-      Vec3 d = light->GetComponent<DirectionComponent>()->GetDirection();
+      Vec3 d = Vec3(0.0f, 0.0f, -1.0f);
       float r = light->Radius();
       m_pnts[0] = Vec3
       (
@@ -989,7 +989,7 @@ namespace ToolKit
     void DirectionalLightGizmo::InitGizmo(DirectionalLight* light)
     {
       // Middle line
-      Vec3 d = light->GetComponent<DirectionComponent>()->GetDirection();
+      Vec3 d = Vec3(0.0f, 0.0f, -1.0f);
       Vec3 norm = glm::normalize(d);
       m_pnts[0] = Vec3
       (

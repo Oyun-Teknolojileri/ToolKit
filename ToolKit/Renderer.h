@@ -21,15 +21,15 @@ namespace ToolKit
     (
       const ScenePtr& scene,
       Viewport* viewport,
-      DirectionalLightRawPtrArray editor_lights
+      LightRawPtrArray editor_lights
     );
     void RenderUI(const UILayerPtrArray& uiLayers, Viewport* viewport);
     void Render
     (
       Entity* ntt,
       Camera* cam,
-      const DirectionalLightRawPtrArray& editorLights =
-      DirectionalLightRawPtrArray()
+      const LightRawPtrArray& editorLights =
+      LightRawPtrArray()
     );
     void SetRenderState(const RenderState* const state);
     void SetRenderTarget
@@ -77,8 +77,8 @@ namespace ToolKit
       EntityRawPtrArray entities,
       Camera* cam,
       float zoom,
-      const DirectionalLightRawPtrArray& editorLights =
-      DirectionalLightRawPtrArray()
+      const LightRawPtrArray& editorLights =
+      LightRawPtrArray()
     );
 
     /**
@@ -93,18 +93,24 @@ namespace ToolKit
       EntityRawPtrArray entities,
       Camera* cam,
       float zoom,
-      const DirectionalLightRawPtrArray& editorLights =
-      DirectionalLightRawPtrArray()
+      const LightRawPtrArray& editorLights =
+      LightRawPtrArray()
     );
     void RenderSkinned(Drawable* object, Camera* cam);
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
 
+    LightRawPtrArray GetBestLights
+    (
+      Entity* entity,
+      const LightRawPtrArray& lights
+    );
     void SetProjectViewModel(Entity* ntt, Camera* cam);
     void BindProgram(ProgramPtr program);
     void LinkProgram(uint program, uint vertexP, uint fragmentP);
     ProgramPtr CreateProgram(ShaderPtr vertex, ShaderPtr fragment);
     void FeedUniforms(ProgramPtr program);
+    void FeedLightUniforms(ProgramPtr program);
     void SetVertexLayout(VertexLayout layout);
 
    public:
@@ -119,7 +125,8 @@ namespace ToolKit
     Mat4 m_project;
     Mat4 m_view;
     Mat4 m_model;
-    DirectionalLightRawPtrArray m_lights;
+    LightRawPtrArray m_lights;
+    size_t m_maxLightsPerObject = 12;
     Camera* m_cam = nullptr;
     Material* m_mat = nullptr;
     RenderTarget* m_renderTarget = nullptr;
