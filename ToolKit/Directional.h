@@ -21,9 +21,9 @@ namespace ToolKit
     };
 
    public:
-    explicit Camera(XmlNode* node);
     Camera();
-    ~Camera();
+    explicit Camera(XmlNode* node);
+    virtual ~Camera();
 
     void SetLens(float fov, float width, float height);
     void SetLens(float fov, float width, float height, float near, float far);

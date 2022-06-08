@@ -641,7 +641,7 @@ namespace ToolKit
     // Find the end of directional lights
     for (int i = 0; i < lights.size(); i++)
     {
-      if(lights[i]->GetLightType() == LightType::LightDirectional)
+      if(lights[i]->GetLightType() == LightTypeEnum::LightDirectional)
       {
         bestLights.push_back(lights[i]);
       }
@@ -652,11 +652,11 @@ namespace ToolKit
     {
       {
         float radius;
-        if (lights[i]->GetLightType() == LightType::LightPoint)
+        if (lights[i]->GetLightType() == LightTypeEnum::LightPoint)
         {
           radius = static_cast<PointLight*>(lights[i])->Radius();
         }
-        else if (lights[i]->GetLightType() == LightType::LightSpot)
+        else if (lights[i]->GetLightType() == LightTypeEnum::LightSpot)
         {
           radius = static_cast<SpotLight*>(lights[i])->Radius();
         }
@@ -915,10 +915,10 @@ namespace ToolKit
     {
       Light* currLight = m_lights[i];
 
-      LightType type = currLight->GetLightType();
+      LightTypeEnum type = currLight->GetLightType();
 
       // Point light uniforms
-      if (type == LightType::LightPoint)
+      if (type == LightTypeEnum::LightPoint)
       {
         Vec3 color = currLight->Color();
         float intensity = currLight->Intensity();
@@ -960,7 +960,7 @@ namespace ToolKit
         glUniform1f(loc, radius);
       }
       // Directional light uniforms
-      else if (type == LightType::LightDirectional)
+      else if (type == LightTypeEnum::LightDirectional)
       {
         Vec3 color = currLight->Color();
         float intensity = currLight->Intensity();
@@ -993,7 +993,7 @@ namespace ToolKit
         glUniform3fv(loc, 1, &dir.x);
       }
       // Spot light uniforms
-      else if (type == LightType::LightSpot)
+      else if (type == LightTypeEnum::LightSpot)
       {
         Vec3 color = currLight->Color();
         float intensity = currLight->Intensity();

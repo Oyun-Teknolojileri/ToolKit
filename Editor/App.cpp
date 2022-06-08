@@ -190,11 +190,11 @@ namespace ToolKit
         {
           if (light->Id() == entity->Id())
           {
-            if (light->GetLightType() == LightType::LightDirectional)
+            if (light->GetLightType() == LightTypeEnum::LightDirectional)
             {
               static_cast<EditorDirectionalLight*>(light)->EnableGizmo(true);
             }
-            else if (light->GetLightType() == LightType::LightSpot)
+            else if (light->GetLightType() == LightTypeEnum::LightSpot)
             {
               static_cast<EditorSpotLight*>(light)->EnableGizmo(true);
             }
@@ -204,11 +204,11 @@ namespace ToolKit
         }
         if (!found)
         {
-          if (light->GetLightType() == LightType::LightDirectional)
+          if (light->GetLightType() == LightTypeEnum::LightDirectional)
           {
             static_cast<EditorDirectionalLight*>(light)->EnableGizmo(false);
           }
-          else if (light->GetLightType() == LightType::LightSpot)
+          else if (light->GetLightType() == LightTypeEnum::LightSpot)
           {
             static_cast<EditorSpotLight*>(light)->EnableGizmo(false);
           }
@@ -228,11 +228,11 @@ namespace ToolKit
       {
         return
         (
-          light1->GetLightType() == LightType::LightDirectional
+          light1->GetLightType() == LightTypeEnum::LightDirectional
           &&
           (
-            light2->GetLightType() == LightType::LightSpot
-            || light2->GetLightType() == LightType::LightPoint
+            light2->GetLightType() == LightTypeEnum::LightSpot
+            || light2->GetLightType() == LightTypeEnum::LightPoint
           )
         );
       };
@@ -1078,10 +1078,13 @@ Fail:
     void App::ApplyProjectSettings(bool setDefaults)
     {
       if
+      (
+        CheckFile
         (
-        CheckFile(ConcatPaths({ ResourcePath(), "Editor.settings" }))
-        && !setDefaults
+          ConcatPaths({ ResourcePath(), "Editor.settings" })
         )
+        && !setDefaults
+      )
       {
         DeSerialize(nullptr, nullptr);
 
@@ -1143,10 +1146,10 @@ Fail:
       for (Window* wnd : m_windows)
       {
         if
-          (
+        (
           wnd->GetType() != Window::Type::Viewport &&
           wnd->GetType() != Window::Type::Viewport2d
-          )
+        )
         {
           continue;
         }
@@ -1262,20 +1265,20 @@ Fail:
             {
               Light* light = static_cast<Light*>(ntt);
 
-              if (light->GetLightType() == LightType::LightDirectional)
+              if (light->GetLightType() == LightTypeEnum::LightDirectional)
               {
                 static_cast<EditorDirectionalLight*>(light)->EnableGizmo(false);
               }
-              else if (light->GetLightType() == LightType::LightSpot)
+              else if (light->GetLightType() == LightTypeEnum::LightSpot)
               {
                 static_cast<EditorSpotLight*>(light)->EnableGizmo(false);
               }
               m_renderer->Render(ntt, viewport->GetCamera());
-              if (light->GetLightType() == LightType::LightDirectional)
+              if (light->GetLightType() == LightTypeEnum::LightDirectional)
               {
                 static_cast<EditorDirectionalLight*>(light)->EnableGizmo(true);
               }
-              else if (light->GetLightType() == LightType::LightSpot)
+              else if (light->GetLightType() == LightTypeEnum::LightSpot)
               {
                 static_cast<EditorSpotLight*>(light)->EnableGizmo(true);
               }

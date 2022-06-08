@@ -72,37 +72,12 @@ namespace ToolKit
   void Drawable::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Entity::Serialize(doc, parent);
-    XmlNode* node = doc->allocate_node
-    (
-      rapidxml::node_element,
-      XmlMeshElement.c_str()
-    );
-
-    String relPath = GetRelativeResourcePath(GetMesh()->GetSerializeFile());
-    node->append_attribute
-    (
-      doc->allocate_attribute
-      (
-        XmlFileAttr.c_str(),
-        doc->allocate_string(relPath.c_str())
-      )
-    );
-
-    parent->last_node()->append_node(node);
-    GetMesh()->Save(true);
   }
 
   void Drawable::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
+    ClearComponents();
     Entity::DeSerialize(doc, parent);
-    if (XmlNode* meshNode = parent->first_node(XmlMeshElement.c_str()))
-    {
-      XmlAttribute* attr = meshNode->first_attribute(XmlFileAttr.c_str());
-      String filePath = attr->value();
-      NormalizePath(filePath);
-      MeshPtr mesh = GetMeshManager()->Create<Mesh>(MeshPath(filePath));
-      SetMesh(mesh);
-    }
   }
 
   void Drawable::RemoveResources()

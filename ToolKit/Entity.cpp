@@ -4,8 +4,8 @@
 #include "Skeleton.h"
 #include "MathUtil.h"
 #include "Util.h"
-#include "DebugNew.h"
 #include "Light.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -22,8 +22,7 @@ namespace ToolKit
   Entity::~Entity()
   {
     SafeDel(m_node);
-
-    m_components.clear();
+    ClearComponents();
   }
 
   bool Entity::IsDrawable() const
@@ -80,11 +79,16 @@ namespace ToolKit
     return CopyTo(e);
   }
 
+  void Entity::ClearComponents()
+  {
+    m_components.clear();
+  }
+
   Entity* Entity::CopyTo(Entity* other) const
   {
     WeakCopy(other);
 
-    other->m_components.clear();
+    other->ClearComponents();
     for (const ComponentPtr& com : m_components)
     {
       other->m_components.push_back(com->Copy());
@@ -111,11 +115,45 @@ namespace ToolKit
     m_localData.m_variants.reserve(6);
     ULongID id = GetHandleManager()->GetNextHandle();
 
-    Id_Define(id, "Meta", 100, true, false);
-    Name_Define("Entity_" + std::to_string(id), "Meta", 100, true, true);
-    Tag_Define("Tag", "Meta", 100, true, true);
-    Visible_Define(true, "Meta", 100, true, true);
-    TransformLock_Define(false, "Meta", 100, true, true);
+    Id_Define
+    (
+      id,
+      EntityCategory.Name,
+      EntityCategory.Priority,
+      true, false
+    );
+
+    Name_Define
+    (
+      "Entity_" + std::to_string(id),
+      EntityCategory.Name,
+      EntityCategory.Priority,
+      true, true
+    );
+
+    Tag_Define
+    (
+      "Tag",
+      EntityCategory.Name,
+      EntityCategory.Priority,
+      true, true
+    );
+
+    Visible_Define
+    (
+      true,
+      EntityCategory.Name,
+      EntityCategory.Priority,
+      true, true
+    );
+
+    TransformLock_Define
+    (
+      false,
+      EntityCategory.Name,
+      EntityCategory.Priority,
+      true, true
+    );
   }
 
   void Entity::WeakCopy(Entity* other, bool copyComponents) const
@@ -204,7 +242,20 @@ namespace ToolKit
       "Component has already been added."
     );
 
+    component->m_entity = this;
     m_components.push_back(ComponentPtr(component));
+  }
+
+  void Entity::RemoveComponent(ULongID componentId)
+  {
+    for (size_t i = 0; i < m_components.size(); i++)
+    {
+      if (m_components[i]->m_id == componentId)
+      {
+        m_components.erase(m_components.begin() + i);
+        return;
+      }
+    }
   }
 
   ComponentPtr Entity::GetComponent(ULongID id) const
@@ -245,6 +296,12 @@ namespace ToolKit
 
     m_node->Serialize(doc, node);
     m_localData.Serialize(doc, node);
+
+    XmlNode* compNode = CreateXmlNode(doc, "Components", node);
+    for (const ComponentPtr& cmp : m_components)
+    {
+      cmp->Serialize(doc, compNode);
+    }
   }
 
   void Entity::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -267,6 +324,25 @@ namespace ToolKit
     }
 
     m_localData.DeSerialize(doc, parent);
+
+    if (XmlNode* components = node->first_node("Components"))
+    {
+      XmlNode* comNode = components->first_node(XmlComponent.c_str());
+      while (comNode)
+      {
+        int type = -1;
+        ReadAttr(comNode, XmlParamterTypeAttr, type);
+        Component* com = Component::CreateByType
+        (
+          static_cast<ComponentType> (type)
+        );
+
+        com->DeSerialize(doc, comNode);
+        AddComponent(com);
+
+        comNode = comNode->next_sibling();
+      }
+    }
   }
 
   void Entity::RemoveResources()
@@ -333,4 +409,3 @@ namespace ToolKit
   }
 
 }  // namespace ToolKit
-

@@ -17,6 +17,11 @@
 					<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" v="1"/>
 					<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" v="0"/>
 				</PB>
+				<Components>
+					<Component t="2">
+						<PB/>
+					</Component>
+				</Components>
 				<Camera fov="0.785398" aspect="0.979940" near="0.500000" far="1000.000000" height="997.000000" ortographic="0" left="10.000000" right="10.000000" top="10.000000" bottom="10.000000"/>
 			</E>
 		</Viewport>
@@ -36,6 +41,11 @@
 					<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" v="1"/>
 					<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" v="0"/>
 				</PB>
+				<Components>
+					<Component t="2">
+						<PB/>
+					</Component>
+				</Components>
 				<Camera fov="0.000000" aspect="1.000000" near="0.010000" far="1000.000000" height="480.000000" ortographic="1" left="-320.000000" right="320.000000" top="240.000000" bottom="-240.000000"/>
 			</E>
 		</Viewport>
@@ -55,6 +65,11 @@
 					<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" v="1"/>
 					<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" v="0"/>
 				</PB>
+				<Components>
+					<Component t="2">
+						<PB/>
+					</Component>
+				</Components>
 				<Camera fov="0.000000" aspect="1.000000" near="0.500000" far="1000.000000" height="6.350000" ortographic="1" left="-3.941667" right="3.941667" top="3.175000" bottom="-3.175000"/>
 			</E>
 		</Viewport>

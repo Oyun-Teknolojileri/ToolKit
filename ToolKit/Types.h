@@ -200,6 +200,8 @@ namespace ToolKit
   static const String XmlTranslateElement("T");
   static const String XmlRotateElement("R");
   static const String XmlScaleElement("S");
+  static const String XmlResRefElement("ResourceRef");
+  static const String XmlComponent("Component");
 
   enum class AxisLabel
   {

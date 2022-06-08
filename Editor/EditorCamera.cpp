@@ -47,7 +47,6 @@ namespace ToolKit
     {
       EditorCamera* instance = new EditorCamera();
       WeakCopy(instance, false);
-      instance->AddComponent(new DirectionComponent(instance));
       return instance;
     }
 

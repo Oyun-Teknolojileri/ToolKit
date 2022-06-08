@@ -1,4 +1,7 @@
 #include "ParameterBlock.h"
+
+#include <memory>
+
 #include "Util.h"
 #include "Mesh.h"
 #include "ToolKit.h"
@@ -231,6 +234,7 @@ namespace ToolKit
     WriteAttr(node, doc, "exposed", std::to_string(m_exposed));
     WriteAttr(node, doc, "editable", std::to_string(m_editable));
 
+    // Serialize data.
     switch (m_type)
     {
       case VariantType::Bool:
@@ -344,16 +348,20 @@ namespace ToolKit
       );
       break;
       case VariantType::MeshPtr:
+      {
+        MeshPtr res = GetCVar<MeshPtr>();
+        if (res && !res->IsDynamic())
+        {
+          res->SerializeRef(doc, node);
+        }
+      }
+      break;
       case VariantType::MaterialPtr:
       {
-        ResourcePtr resPtr = std::static_pointer_cast<Resource>
-        (
-          GetCVar<MeshPtr>()
-        );
-
-        if (resPtr)
+        MaterialPtr res = GetCVar<MaterialPtr>();
+        if (res && !res->IsDynamic())
         {
-          resPtr->SerializeRef(doc, node);
+          res->SerializeRef(doc, node);
         }
       }
       break;
@@ -479,6 +487,34 @@ namespace ToolKit
         ULongID val(0);
         ReadAttr(parent, XmlParamterValAttr, val);
         m_var = val;
+      }
+      break;
+      case VariantType::MeshPtr:
+      {
+        String file = Resource::DeserializeRef(parent);
+        if (file.empty())
+        {
+          m_var = std::make_shared<Mesh>();
+        }
+        else
+        {
+          file = MeshPath(file);
+          m_var = GetMeshManager()->Create<Mesh>(file);
+        }
+      }
+      break;
+      case VariantType::MaterialPtr:
+      {
+        String file = Resource::DeserializeRef(parent);
+        if (file.empty())
+        {
+          m_var = std::make_shared<Material>();
+        }
+        else
+        {
+          file = MaterialPath(file);
+          m_var = GetMaterialManager()->Create<Material>(file);
+        }
       }
       break;
       default:

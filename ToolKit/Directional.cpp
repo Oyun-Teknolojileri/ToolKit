@@ -5,9 +5,13 @@
 
 namespace ToolKit
 {
+
   Camera::Camera(XmlNode* node)
   {
     DeSerialize(nullptr, node);
+
+    DirectionComponentPtr dCom = GetComponent<DirectionComponent>();
+    dCom->m_entity = this;
 
     if (m_ortographic)
     {
@@ -17,14 +21,11 @@ namespace ToolKit
     {
       SetLens(m_fov, m_aspect * m_height, m_height);
     }
-
-    AddComponent(new DirectionComponent(this));
   }
 
   Camera::Camera()
   {
     SetLens(glm::radians(90.0f), 640.0f, 480.0f, 0.01f, 1000.0f);
-
     AddComponent(new DirectionComponent(this));
   }
 
@@ -127,8 +128,7 @@ namespace ToolKit
     Entity::Serialize(doc, parent);
     parent = parent->last_node();
 
-    XmlNode* node = doc->allocate_node(rapidxml::node_element, "Camera");
-    parent->append_node(node);
+    XmlNode* node = CreateXmlNode(doc, "Camera", parent);
 
     WriteAttr(node, doc, "fov", std::to_string(m_fov));
     WriteAttr(node, doc, "aspect", std::to_string(m_aspect));
@@ -144,6 +144,7 @@ namespace ToolKit
 
   void Camera::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
+    ClearComponents();
     Entity::DeSerialize(doc, parent);
     if (XmlNode* node = parent->first_node("Camera"))
     {
@@ -174,8 +175,10 @@ namespace ToolKit
     cpy->m_bottom = m_bottom;
     cpy->m_ortographic = m_ortographic;
     cpy->m_projection = m_projection;
+    cpy->ClearComponents();
     cpy->AddComponent(new DirectionComponent(cpy));
 
     return cpy;
   }
+
 }  // namespace ToolKit

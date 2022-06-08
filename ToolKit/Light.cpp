@@ -25,9 +25,9 @@ namespace ToolKit
     return EntityType::Entity_Light;
   }
 
-  LightType Light::GetLightType() const
+  LightTypeEnum Light::GetLightType() const
   {
-    return LightType::LightBase;
+    return LightTypeEnum::LightBase;
   }
 
   void Light::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -37,6 +37,7 @@ namespace ToolKit
 
   void Light::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
+    ClearComponents();  // Read from file.
     Entity::DeSerialize(doc, parent);
   }
 
@@ -51,9 +52,9 @@ namespace ToolKit
     AddComponent(new DirectionComponent(this));
   }
 
-  LightType DirectionalLight::GetLightType() const
+  LightTypeEnum DirectionalLight::GetLightType() const
   {
-    return LightType::LightDirectional;
+    return LightTypeEnum::LightDirectional;
   }
 
   PointLight::PointLight()
@@ -64,9 +65,9 @@ namespace ToolKit
     Radius_Define(50.0f, "Light", 90, true, true);
   }
 
-  LightType PointLight::GetLightType() const
+  LightTypeEnum PointLight::GetLightType() const
   {
-    return LightType::LightPoint;
+    return LightTypeEnum::LightPoint;
   }
 
   SpotLight::SpotLight()
@@ -81,8 +82,8 @@ namespace ToolKit
     AddComponent(new DirectionComponent(this));
   }
 
-  LightType SpotLight::GetLightType() const
+  LightTypeEnum SpotLight::GetLightType() const
   {
-    return LightType::LightSpot;
+    return LightTypeEnum::LightSpot;
   }
 }  // namespace ToolKit
