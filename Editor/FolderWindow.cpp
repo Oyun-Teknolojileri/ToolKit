@@ -433,7 +433,10 @@ namespace ToolKit
               );
               if
               (
-                ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)
+                ImGui::BeginDragDropSource
+                (
+                  ImGuiDragDropFlags_SourceAllowNullID
+                )
               )
               {
                 ImGui::SetDragDropPayload
@@ -1037,7 +1040,10 @@ namespace ToolKit
           if (lastSep != String::npos)
           {
             String root = path.substr(0, lastSep);
-            return root == ResourcePath();
+            String end = path.substr(lastSep, path.size());
+            static String test = String(1, GetPathSeparator())
+            + String("Engine");
+            return root == ResourcePath() || !end.compare(test);
           }
 
           return false;
@@ -1173,7 +1179,7 @@ namespace ToolKit
       return Window::Type::Browser;
     }
 
-    void FolderWindow::Iterate(const String& path, bool clear)
+    void FolderWindow::Iterate(const String& path, bool clear, bool addEngine)
     {
       if (clear)
       {
@@ -1191,6 +1197,10 @@ namespace ToolKit
           FolderView view(this);
           String path = e.path().u8string();
           view.SetPath(path);
+          if (!view.m_folder.compare("Engine"))
+          {
+            continue;
+          }
 
           if (m_viewSettings.find(path) != m_viewSettings.end())
           {
@@ -1202,8 +1212,27 @@ namespace ToolKit
 
           view.Iterate();
           m_entiries.push_back(view);
-          Iterate(view.GetPath(), false);
+          Iterate(view.GetPath(), false, false);
         }
+      }
+
+      if (addEngine)
+      {
+        // Engine folder
+        FolderView view(this);
+        view.SetPath(DefaultAbsolutePath());
+
+        if (m_viewSettings.find(path) != m_viewSettings.end())
+        {
+          ViewSettings vs = m_viewSettings[path];
+          view.m_iconSize = vs.size;
+          view.m_visible = vs.visible;
+          view.m_activateNext = vs.active;
+        }
+
+        view.Iterate();
+        m_entiries.push_back(view);
+        Iterate(view.GetPath(), false, false);
       }
     }
 

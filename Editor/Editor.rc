@@ -1,2 +1,2 @@
 #define MAIN_ICON 102
-MAIN_ICON ICON "../Resources/Textures/Icons/app.ico"
+MAIN_ICON ICON "../Resources/Engine/Textures/Icons/app.ico"

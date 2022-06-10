@@ -119,6 +119,7 @@ namespace ToolKit
   TK_API SkeletonManager* GetSkeletonManager();
 
   TK_API String DefaultPath();
+  TK_API String DefaultAbsolutePath();
   TK_API String ResourcePath(bool def = false);
   TK_API String TexturePath(const String& file, bool def = false);
   TK_API String MeshPath(const String& file, bool def = false);

@@ -1,6 +1,9 @@
 #include "ToolKit.h"
 
 #include <algorithm>
+#include <filesystem>
+#include <string>
+
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -226,10 +229,24 @@ namespace ToolKit
     return Main::GetInstance()->m_skeletonManager;
   }
 
+  String DefaultAbsolutePath()
+  {
+    static String cur = std::filesystem::current_path().string();
+    static StringArray splits;
+    Split(cur, GetPathSeparatorAsStr(), splits);
+    splits.erase(splits.end() - 1);
+    splits.push_back("Resources");
+    splits.push_back("Engine");
+    static String res = ConcatPaths(splits);
+
+    return res;
+  }
+
   String DefaultPath()
   {
-    static String def = ConcatPaths({ ".", "..", "Resources" });
-    return def;
+    static String res = ConcatPaths({ ".", "..", "Resources", "Engine" });
+
+    return res;
   }
 
   String ResourcePath(bool def)
@@ -327,4 +344,3 @@ namespace ToolKit
   }
 
 }  //  namespace ToolKit
-
