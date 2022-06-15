@@ -99,6 +99,9 @@
     <ClCompile Include="Light.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="FileManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h">
@@ -210,6 +213,9 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Light.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="FileManager.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

@@ -41,7 +41,22 @@ namespace ToolKit
     virtual ResourceType GetType() const;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
+
+    /**
+    * Outputs file path and the resource type to an xml node. Xml node name is
+    * ResourceRef and xml node has Type attribute for resource type enum and
+    * File for resource path.
+    * @param doc Xml document to append the reference node.
+    * @param parent Xml Node to append the reference.
+    */
     void SerializeRef(XmlDocument* doc, XmlNode* parent);
+
+    /**
+    * Extracts the File attribute from the ResourceRef Xml Node.
+    * @param parent Parent xml node that contains reference node.
+    * @returns File path to the resource to be referenced.
+    */
+    static String DeserializeRef(XmlNode* parent);
 
     String GetFile() const;
     /**
@@ -51,6 +66,13 @@ namespace ToolKit
     */
     const String& GetSerializeFile();
     void SetFile(const String& file);
+
+    /**
+    * A resource is considered to be dynamic if it does not have a file.
+    * This states that the object has been created on the runtime.
+    * @returns Returns true if resource does not have a file path.
+    */
+    bool IsDynamic();
 
    protected:
     virtual void CopyTo(Resource* other);

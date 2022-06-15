@@ -35,6 +35,12 @@ namespace ToolKit
     Entity_Button
   };
 
+  static VariantCategory EntityCategory
+  {
+    "Meta",
+    100
+  };
+
   class TK_API Entity : public Serializable
   {
    public:
@@ -58,6 +64,12 @@ namespace ToolKit
 
     // Component functionalities.
     void AddComponent(Component* component);
+
+    /**
+    * Remove the given component from the m_components.
+    * @param componentId Id of the component tobe removed.
+    */
+    void RemoveComponent(ULongID componentId);
 
     template<typename T>
     std::shared_ptr<T> GetComponent() const
@@ -86,6 +98,11 @@ namespace ToolKit
     }
 
     ComponentPtr GetComponent(ULongID id) const;
+
+    /**
+    * Removes all components from the entity.
+    */
+    void ClearComponents();
 
    protected:
     virtual Entity* CopyTo(Entity* other) const;
@@ -123,4 +140,3 @@ namespace ToolKit
   };
 
 }  // namespace ToolKit
-

@@ -13,6 +13,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     EditorDirectionalLight::EditorDirectionalLight()
     {
       m_gizmo = new DirectionalLightGizmo(this);
@@ -24,9 +25,6 @@ namespace ToolKit
     )
     {
       light->CopyTo(this);
-
-      AddComponent(new DirectionComponent(this));
-
       m_gizmo = new DirectionalLightGizmo(this);
     }
 
@@ -35,9 +33,8 @@ namespace ToolKit
       if (m_initialized)
       {
         m_initialized = false;
-
         SafeDel(m_gizmo);
-    }
+      }
     }
 
     Entity* EditorDirectionalLight::Copy() const
@@ -182,9 +179,6 @@ namespace ToolKit
     EditorSpotLight::EditorSpotLight(const EditorSpotLight* light)
     {
       light->CopyTo(this);
-
-      AddComponent(new DirectionComponent(this));
-
       m_gizmo = new SpotLightGizmo(this);
     }
 
@@ -193,9 +187,8 @@ namespace ToolKit
       if (m_initialized)
       {
         m_initialized = false;
-
         SafeDel(m_gizmo);
-    }
+      }
     }
 
     Entity* EditorSpotLight::Copy() const
@@ -227,7 +220,6 @@ namespace ToolKit
       }
 
       m_initialized = true;
-
       m_gizmo->InitGizmo(this);
 
       // Light sphere
@@ -265,7 +257,7 @@ namespace ToolKit
           }
 
           m_gizmoActive = true;
-    }
+        }
         else
         {
           // Remove submeshes from mesh component
@@ -276,6 +268,7 @@ namespace ToolKit
         }
       }
     }
+
   }  // namespace Editor
 }  // namespace ToolKit
 

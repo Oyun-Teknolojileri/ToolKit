@@ -184,7 +184,7 @@ namespace ToolKit
               (
                 "Visual Studio Code can't be started. "
                 "Make sure it is installed.",
-                ConsoleWindow::LogType::Error
+                LogType::Error
               );
             }
           }
@@ -193,7 +193,7 @@ namespace ToolKit
             g_app->GetConsole()->AddLog
             (
               "There is not a vaild code folder.",
-              ConsoleWindow::LogType::Error
+              LogType::Error
             );
           }
         }

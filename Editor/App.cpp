@@ -62,19 +62,33 @@ namespace ToolKit
       m_lightMaster = new Node();
 
       DirectionalLight* light = new DirectionalLight();
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-45.0f));
+      light->Color() = Vec3(0.267f);
+      light->Intensity() = 1.5f;
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(180.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->Intensity() = 0.5f;
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(60.0f));
+      light->Color() = Vec3(0.55f);
+      light->Intensity() = 1.5f;
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->Intensity() = 0.3f;
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-140.0f));
+      light->Color() = Vec3(0.15f);
+      light->Intensity() = 1.5f;
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
+      m_lightMaster->AddChild(light->m_node);
+      m_sceneLights.push_back(light);
+
+      light = new DirectionalLight();
+      light->Color() = Vec3(0.1f);
+      light->Intensity() = 1.5f;
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
@@ -127,9 +141,9 @@ namespace ToolKit
       SafeDel(m_origin);
       SafeDel(m_cursor);
 
-      for (int i = 0; i < 3; i++)
+      for (Light* light : m_sceneLights)
       {
-        SafeDel(m_sceneLights[i]);
+        SafeDel(light);
       }
       SafeDel(m_lightMaster);
       m_sceneLights.clear();
@@ -176,11 +190,11 @@ namespace ToolKit
         {
           if (light->Id() == entity->Id())
           {
-            if (light->GetLightType() == LightType::LightDirectional)
+            if (light->GetLightType() == LightTypeEnum::LightDirectional)
             {
               static_cast<EditorDirectionalLight*>(light)->EnableGizmo(true);
             }
-            else if (light->GetLightType() == LightType::LightSpot)
+            else if (light->GetLightType() == LightTypeEnum::LightSpot)
             {
               static_cast<EditorSpotLight*>(light)->EnableGizmo(true);
             }
@@ -190,16 +204,39 @@ namespace ToolKit
         }
         if (!found)
         {
-          if (light->GetLightType() == LightType::LightDirectional)
+          if (light->GetLightType() == LightTypeEnum::LightDirectional)
           {
             static_cast<EditorDirectionalLight*>(light)->EnableGizmo(false);
           }
-          else if (light->GetLightType() == LightType::LightSpot)
+          else if (light->GetLightType() == LightTypeEnum::LightSpot)
           {
             static_cast<EditorSpotLight*>(light)->EnableGizmo(false);
           }
         }
       }
+
+      // Take all lights in an array
+      LightRawPtrArray gameLights = GetCurrentScene()->GetLights();
+      gameLights.insert
+      (
+        gameLights.end(),
+        m_sceneLights.begin(),
+        m_sceneLights.end()
+      );
+      // Sort lights by type
+      auto lightSortFn = [](Light* light1, Light* light2) -> bool
+      {
+        return
+        (
+          light1->GetLightType() == LightTypeEnum::LightDirectional
+          &&
+          (
+            light2->GetLightType() == LightTypeEnum::LightSpot
+            || light2->GetLightType() == LightTypeEnum::LightPoint
+          )
+        );
+      };
+      std::stable_sort(gameLights.begin(), gameLights.end(), lightSortFn);
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -222,7 +259,7 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
-          m_renderer->RenderScene(GetCurrentScene(), viewport, m_sceneLights);
+          m_renderer->RenderScene(GetCurrentScene(), viewport, gameLights);
 
           Camera* cam = viewport->GetCamera();;
 
@@ -338,7 +375,7 @@ namespace ToolKit
           (
             "Scene has not been saved.\n"
             "A scene with the same name exist. Use File->SaveAs.",
-            ConsoleWindow::LogType::Error
+            LogType::Error
           );
         };
 
@@ -409,7 +446,7 @@ namespace ToolKit
         GetConsole()->AddLog
         (
           "No workspace. Project can't be created.",
-          ConsoleWindow::LogType::Error
+          LogType::Error
         );
         return;
       }
@@ -423,7 +460,7 @@ namespace ToolKit
         GetConsole()->AddLog
         (
           "Project already exist.",
-          ConsoleWindow::LogType::Error
+          LogType::Error
         );
         return;
       }
@@ -553,7 +590,7 @@ namespace ToolKit
           GetConsole()->AddLog
           (
             "Expecting a game plugin with the same name of the project.",
-            ConsoleWindow::LogType::Error
+            LogType::Error
           );
         }
       }
@@ -768,13 +805,13 @@ namespace ToolKit
           con->AddLog
           (
             "Import failed: " + fullPath,
-            ConsoleWindow::LogType::Error
+            LogType::Error
           );
           con->AddLog
           (
             "File format is not supported.\n"
             "Suported formats are fbx, glb, gltf, obj.",
-            ConsoleWindow::LogType::Error
+            LogType::Error
           );
         }
         return -1;
@@ -853,7 +890,7 @@ namespace ToolKit
                 g_app->GetConsole()->AddLog
                 (
                   "Import: " + fullPath + " failed.",
-                  ConsoleWindow::LogType::Error
+                  LogType::Error
                 );
                 goto Fail;
               }
@@ -1041,10 +1078,13 @@ Fail:
     void App::ApplyProjectSettings(bool setDefaults)
     {
       if
+      (
+        CheckFile
         (
-        CheckFile(ConcatPaths({ ResourcePath(), "Editor.settings" }))
-        && !setDefaults
+          ConcatPaths({ ResourcePath(), "Editor.settings" })
         )
+        && !setDefaults
+      )
       {
         DeSerialize(nullptr, nullptr);
 
@@ -1088,6 +1128,28 @@ Fail:
       );
     }
 
+    void App::PackResources()
+    {
+      String projectName = m_workspace.GetActiveProject().name;
+      if (projectName.empty())
+      {
+        GetLogger()->WriteConsole(LogType::Error, "No project is loaded!");
+        return;
+      }
+
+      String path = ConcatPaths
+      (
+        {
+          m_workspace.GetActiveWorkspace(),
+          projectName,
+          "Resources",
+          "Scenes"
+        }
+      );
+
+      GetFileManager()->PackResources(path);
+    }
+
     Window* App::GetActiveWindow()
     {
       for (Window* wnd : m_windows)
@@ -1106,10 +1168,10 @@ Fail:
       for (Window* wnd : m_windows)
       {
         if
-          (
+        (
           wnd->GetType() != Window::Type::Viewport &&
           wnd->GetType() != Window::Type::Viewport2d
-          )
+        )
         {
           continue;
         }
@@ -1225,20 +1287,20 @@ Fail:
             {
               Light* light = static_cast<Light*>(ntt);
 
-              if (light->GetLightType() == LightType::LightDirectional)
+              if (light->GetLightType() == LightTypeEnum::LightDirectional)
               {
                 static_cast<EditorDirectionalLight*>(light)->EnableGizmo(false);
               }
-              else if (light->GetLightType() == LightType::LightSpot)
+              else if (light->GetLightType() == LightTypeEnum::LightSpot)
               {
                 static_cast<EditorSpotLight*>(light)->EnableGizmo(false);
               }
               m_renderer->Render(ntt, viewport->GetCamera());
-              if (light->GetLightType() == LightType::LightDirectional)
+              if (light->GetLightType() == LightTypeEnum::LightDirectional)
               {
                 static_cast<EditorDirectionalLight*>(light)->EnableGizmo(true);
               }
-              else if (light->GetLightType() == LightType::LightSpot)
+              else if (light->GetLightType() == LightTypeEnum::LightSpot)
               {
                 static_cast<EditorSpotLight*>(light)->EnableGizmo(true);
               }
@@ -1486,19 +1548,14 @@ Fail:
     void App::AssignManagerReporters()
     {
       // Register manager reporters
-      auto genericReporterFn = [](String msg) -> void
+      auto genericReporterFn = [](LogType logType, String msg) -> void
       {
         if (ConsoleWindow* console = g_app->GetConsole())
         {
-          console->AddLog(msg);
+          console->AddLog(msg, logType);
         }
       };
-
-      GetPluginManager()->m_reporterFn = genericReporterFn;
-      GetMeshManager()->m_reporterFn = genericReporterFn;
-      GetTextureManager()->m_reporterFn = genericReporterFn;
-      GetMaterialManager()->m_reporterFn = genericReporterFn;
-      GetSceneManager()->m_reporterFn = genericReporterFn;
+      GetLogger()->SetWriteConsoleFn(genericReporterFn);
     }
 
     void App::CreateAndSetNewScene(const String& name)

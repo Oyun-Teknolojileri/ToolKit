@@ -45,13 +45,13 @@ namespace ToolKit
           m_entities[i] = cam;
           SafeDel(ntt);
         }
-        // Replace lights with EditorLights
         else if (ntt->GetType() == EntityType::Entity_Light)
         {
+          // Replace lights with EditorLights
           Light* el = reinterpret_cast<Light*>(ntt);
-          int type = el->LightType();
+          LightTypeEnum type = static_cast<LightTypeEnum> (el->LightType());
 
-          if (type == 1)  // Directional light
+          if (type == LightTypeEnum::LightDirectional)
           {
             EditorDirectionalLight* upCasted =
             reinterpret_cast<EditorDirectionalLight*> (ntt);
@@ -61,7 +61,7 @@ namespace ToolKit
             m_entities[i] = light;
             SafeDel(ntt);
           }
-          else if (type == 2)  // Point light
+          else if (type == LightTypeEnum::LightPoint)
           {
             EditorPointLight* upCasted =
             reinterpret_cast<EditorPointLight*> (ntt);
@@ -70,7 +70,7 @@ namespace ToolKit
             m_entities[i] = light;
             SafeDel(ntt);
           }
-          else if (type == 3)  // Spot light
+          else if (type == LightTypeEnum::LightSpot)
           {
             EditorSpotLight* upCasted =
             reinterpret_cast<EditorSpotLight*> (ntt);

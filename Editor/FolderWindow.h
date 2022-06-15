@@ -1,7 +1,11 @@
 #pragma once
 
 #include "UI.h"
+
 #include <functional>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace ToolKit
 {
@@ -10,15 +14,15 @@ namespace ToolKit
 
     class DirectoryEntry
     {
-    public:
+     public:
       DirectoryEntry();
-      DirectoryEntry(const String& fullPath);
+      explicit DirectoryEntry(const String& fullPath);
       String GetFullPath() const;
       ResourceManager* GetManager() const;
       void GenerateThumbnail() const;
       RenderTargetPtr GetThumbnail() const;
 
-    public:
+     public:
       String m_ext;
       String m_fileName;
       String m_rootPath;
@@ -29,9 +33,9 @@ namespace ToolKit
 
     class FolderView
     {
-    public:
+     public:
       FolderView();
-      FolderView(FolderWindow* parent);
+      explicit FolderView(FolderWindow* parent);
 
       void Show();
       void SetPath(const String& path);
@@ -42,27 +46,34 @@ namespace ToolKit
       void Refresh();
       float GetThumbnailZoomPercent(float thumbnailZoom);
 
-    private:
+     private:
       void CreateItemActions();
-      void MoveTo(const String& dst); // Imgui Drop target.
+      void MoveTo(const String& dst);  // Imgui Drop target.
 
-    public:
-      bool m_currRoot = false; // Indicates this is a root folder (one level under Resources) and currently selected in the FolderWindow.
-      bool m_visible = false; // States if the tab is visible. Doesnt necesserly mean active, its just a tab in the FolderView.
-      bool m_active = false; // Active tab, whose content is being displayed.
-      bool m_activateNext = false; // Always false. When set to true, actives the view and becomes false again.
+     public:
+      // Indicates this is a root folder (one level under Resources)
+      // and currently selected in the FolderWindow.
+      bool m_currRoot = false;
+      // States if the tab is visible.
+      // Doesnt necesserly mean active, its just a tab in the FolderView.
+      bool m_visible = false;
+      bool m_active = false;  // Active tab, whose content is being displayed.
+      // Always false. When set to true,
+      // actives the view and becomes false again.
+      bool m_activateNext = false;
       bool m_onlyNativeTypes = true;
       Vec2 m_iconSize = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entiries;
       String m_folder;
 
-    private:
+     private:
       FolderWindow* m_parent = nullptr;
       String m_path;
       bool m_dirty = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
       ImGuiTextFilter m_filter;
-      std::unordered_map <String, std::function<void(DirectoryEntry*)>> m_itemActions;
+      std::unordered_map
+      <String, std::function<void(DirectoryEntry*)>> m_itemActions;
 
       // If you change this value, change the calculaton of thumbnail zoom
       const float m_thumbnailMaxZoom = 300.f;
@@ -70,25 +81,27 @@ namespace ToolKit
 
     class FolderWindow : public Window
     {
-    public:
-      FolderWindow(XmlNode* node);
+     public:
+      explicit FolderWindow(XmlNode* node);
       FolderWindow();
       virtual ~FolderWindow();
-      virtual void Show() override;
-      virtual Type GetType() const override;
-      void Iterate(const String& path, bool clear);
+      void Show() override;
+      Type GetType() const override;
+      void Iterate(const String& path, bool clear, bool addEngine = true);
       void UpdateContent();
       void AddEntry(const FolderView& view);
       FolderView& GetView(int indx);
-      FolderView* GetActiveView(bool deep); // Returns root level active view, if deep is true, returns sub-active / visible view.
+      // Returns root level active view, if deep is true,
+      // returns sub-active / visible view.
+      FolderView* GetActiveView(bool deep);
       void SetActiveView(FolderView* view);
       int Exist(const String& folder);
       bool GetFileEntry(const String& fullPath, DirectoryEntry& entry);
 
-      virtual void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-      virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-    private:
+     private:
       struct ViewSettings
       {
         Vec2 size;
@@ -101,6 +114,5 @@ namespace ToolKit
       int m_activeFolder = -1;
       bool m_showStructure = true;
     };
-
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

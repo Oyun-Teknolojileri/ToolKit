@@ -79,9 +79,12 @@ namespace ToolKit
      */
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+    static Component* CreateByType(ComponentType t);
+
    public:
     ULongID m_id;  //!< Unique id of the component for the current runtime.
     ParameterBlock m_localData;  //!< Component local data.
+    Entity* m_entity = nullptr;
   };
 
   typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
@@ -90,14 +93,6 @@ namespace ToolKit
   {
     "Mesh Component",
     90
-  };
-
-  typedef std::shared_ptr<class DirectionComponent> DirectionComponentPtr;
-
-  static VariantCategory DirectionComponentCategory
-  {
-    "Direction Component",
-    10
   };
 
   class TK_API MeshComponent : public Component
@@ -119,17 +114,6 @@ namespace ToolKit
     virtual ~MeshComponent();
 
     /**
-     * Serializes the MeshComponent to the xml document. If parent is not null
-     * appends this component to the parent node.
-     */
-    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-
-    /**
-     * De serialize the MeshComponent from given xml node and document.
-     */
-    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-
-    /**
      * Creates a copy of the MeshComponent. Contained Mesh does not get
      * copied but referenced. However Material is copied and will be serialized
      * to the scene if the containing Entity gets serialized.
@@ -148,6 +132,13 @@ namespace ToolKit
      */
     void Init(bool flushClientSideArray);
 
+    /**
+    * Overrides default serialization to avoid saving dynamically created
+    * resources. Because dynamic resources are created from scratch
+    * in every runtime.
+    */
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+
    public:
     TKDeclareParam(MeshPtr, Mesh);  //!< Component's Mesh resource.
 
@@ -159,13 +150,21 @@ namespace ToolKit
     TKDeclareParam(MaterialPtr, Material);
   };
 
+  typedef std::shared_ptr<class DirectionComponent> DirectionComponentPtr;
+
+  static VariantCategory DirectionComponentCategory
+  {
+    "Direction Component",
+    10
+  };
+
   class TK_API DirectionComponent: public Component
   {
    public:
     TKComponentType(DirectionComponent);
 
+    DirectionComponent();
     explicit DirectionComponent(Entity* entity);
-
     virtual ~DirectionComponent();
 
     ComponentPtr Copy() override;
@@ -179,12 +178,6 @@ namespace ToolKit
     Vec3 GetUp() const;
     Vec3 GetRight() const;
     void LookAt(Vec3 target);
-
-   public:
-     Entity* m_entity = nullptr;
-
-   private:
-     DirectionComponent();
   };
 
 }  // namespace ToolKit

@@ -9,7 +9,6 @@
 #include "GlobalDef.h"
 #include "Light.h"
 
-
 namespace ToolKit
 {
   class Renderer;
@@ -77,6 +76,7 @@ namespace ToolKit
       void MergeScene(const String& fullPath);
       void ApplyProjectSettings(bool setDefaults);
       void OpenProject(const Project& project);
+      void PackResources();
 
       // UI
       Window* GetActiveWindow();
@@ -158,7 +158,7 @@ namespace ToolKit
 
       // 3 point lighting system.
       Node* m_lightMaster = nullptr;
-      DirectionalLightRawPtrArray m_sceneLights;  // { 0:key 1:fill, 2:back }
+      LightRawPtrArray m_sceneLights;  // { 0:key 1:fill, 2:back }
 
       // Editor states.
       int m_fps = 0;

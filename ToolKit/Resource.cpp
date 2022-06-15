@@ -55,6 +55,11 @@ namespace ToolKit
     }
   }
 
+  bool Resource::IsDynamic()
+  {
+    return GetFile().empty();
+  }
+
   void Resource::CopyTo(Resource* other)
   {
     assert(other->GetType() == GetType());
@@ -85,7 +90,7 @@ namespace ToolKit
 
   void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent)
   {
-    XmlNode* refNode = CreateXmlNode(doc, "ResourceRef", parent);
+    XmlNode* refNode = CreateXmlNode(doc, XmlResRefElement, parent);
     WriteAttr
     (
       refNode, doc, "Type",
@@ -95,7 +100,20 @@ namespace ToolKit
       )
     );
 
-    WriteAttr(refNode, doc, "File", GetFile());
+    String file = GetSerializeFile();
+    file = GetRelativeResourcePath(file);
+    WriteAttr(refNode, doc, "File", file);
+  }
+
+  String Resource::DeserializeRef(XmlNode* parent)
+  {
+    String val;
+    if (XmlNode* refNode = parent->first_node(XmlResRefElement.c_str()))
+    {
+      ReadAttr(refNode, "File", val);
+      NormalizePath(val);
+    }
+    return val;
   }
 
   String Resource::GetFile() const

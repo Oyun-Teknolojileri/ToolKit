@@ -23,10 +23,10 @@ namespace ToolKit
 
   void Component::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* componentNode = CreateXmlNode(doc, "Component", parent);
+    XmlNode* componentNode = CreateXmlNode(doc, XmlComponent, parent);
     WriteAttr
     (
-      componentNode, doc, "t", std::to_string
+      componentNode, doc, XmlParamterTypeAttr, std::to_string
       (
         static_cast<int> (GetType())
       )
@@ -37,6 +37,25 @@ namespace ToolKit
 
   void Component::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
+    m_localData.DeSerialize(doc, parent);
+  }
+
+  Component* Component::CreateByType(ComponentType t)
+  {
+    switch (t)
+    {
+      case ComponentType::MeshComponent:
+        return new MeshComponent();
+      break;
+      case ComponentType::DirectionComponent:
+        return new DirectionComponent();
+      break;
+      case ComponentType::Base:
+      default:
+        assert(false && "Unsupported component type");
+      break;
+    }
+    return nullptr;
   }
 
   MeshComponent::MeshComponent()
@@ -61,14 +80,6 @@ namespace ToolKit
   }
 
   MeshComponent::~MeshComponent()
-  {
-  }
-
-  void MeshComponent::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-  }
-
-  void MeshComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
   }
 
@@ -101,6 +112,18 @@ namespace ToolKit
     {
       Material()->Init(flushClientSideArray);
     }
+  }
+
+  void MeshComponent::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+    if (!MeshC()->IsDynamic())
+    {
+      Component::Serialize(doc, parent);
+    }
+  }
+
+  DirectionComponent::DirectionComponent()
+  {
   }
 
   DirectionComponent::DirectionComponent(Entity* entity)
@@ -150,9 +173,9 @@ namespace ToolKit
     (
       glm::angleAxis
       (
-      angle,
-      Vec3(0.0f, 1.0f, 0.0f)
-    ),
+        angle,
+        Vec3(0.0f, 1.0f, 0.0f)
+      ),
       TransformationSpace::TS_WORLD
     );
   }
@@ -206,4 +229,5 @@ namespace ToolKit
       Roll(glm::pi<float>());
     }
   }
+
 }  // namespace ToolKit

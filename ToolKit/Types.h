@@ -11,6 +11,8 @@
 #include <functional>
 #include <limits>
 #include <utility>
+#include <set>
+#include <filesystem>
 
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
@@ -60,6 +62,7 @@ namespace ToolKit
   typedef std::shared_ptr<class Resource> ResourcePtr;
   typedef std::string String;
   typedef std::vector<String> StringArray;
+  typedef std::set<std::string> UniqueStringArray;
   typedef glm::ivec2 IVec2;
   typedef glm::vec2 Vec2;
   typedef std::vector<Vec2> Vec2Array;
@@ -118,6 +121,9 @@ namespace ToolKit
   };
 
   typedef std::vector<class Event*> EventPool;
+
+  // Filesystem variable types
+  typedef std::filesystem::path Path;
 
   // Components.
   typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
@@ -200,6 +206,8 @@ namespace ToolKit
   static const String XmlTranslateElement("T");
   static const String XmlRotateElement("R");
   static const String XmlScaleElement("S");
+  static const String XmlResRefElement("ResourceRef");
+  static const String XmlComponent("Component");
 
   enum class AxisLabel
   {
@@ -231,6 +239,6 @@ namespace ToolKit
     DrawTypePoints = 0x0000
   };
 
-  static const char* TKVersionStr = "v0.3.10";
+  static const char* TKVersionStr = "v0.3.11";
 
 }  // namespace ToolKit

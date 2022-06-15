@@ -13,7 +13,7 @@ namespace ToolKit
    public:
     TKResouceType(Material)
 
-      Material();
+    Material();
     explicit Material(String file);
     ~Material();
 
