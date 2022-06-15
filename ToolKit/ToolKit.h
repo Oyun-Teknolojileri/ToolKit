@@ -30,6 +30,7 @@
 #include "Material.h"
 #include "Types.h"
 #include "Skeleton.h"
+#include "FileManager.h"
 
 /**
 * Base name space for all the ToolKit functionalities.
@@ -91,6 +92,7 @@ namespace ToolKit
     UIManager* m_uiManager = nullptr;
     SkeletonManager* m_skeletonManager = nullptr;
     HandleManager m_handleManager;
+    FileManager* m_fileManager = nullptr;
 
     bool m_initiated = false;
     String m_resourceRoot;
@@ -117,6 +119,7 @@ namespace ToolKit
   TK_API UIManager* GetUIManager();
   TK_API HandleManager* GetHandleManager();
   TK_API SkeletonManager* GetSkeletonManager();
+  TK_API FileManager* GetFileManager();
 
   TK_API String DefaultPath();
   TK_API String DefaultAbsolutePath();

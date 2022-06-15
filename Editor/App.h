@@ -9,7 +9,6 @@
 #include "GlobalDef.h"
 #include "Light.h"
 
-
 namespace ToolKit
 {
   class Renderer;
@@ -77,6 +76,7 @@ namespace ToolKit
       void MergeScene(const String& fullPath);
       void ApplyProjectSettings(bool setDefaults);
       void OpenProject(const Project& project);
+      void PackResources();
 
       // UI
       Window* GetActiveWindow();

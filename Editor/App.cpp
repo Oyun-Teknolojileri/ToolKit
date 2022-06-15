@@ -1128,6 +1128,28 @@ Fail:
       );
     }
 
+    void App::PackResources()
+    {
+      String projectName = m_workspace.GetActiveProject().name;
+      if (projectName.empty())
+      {
+        GetLogger()->WriteConsole(LogType::Error, "No project is loaded!");
+        return;
+      }
+
+      String path = ConcatPaths
+      (
+        {
+          m_workspace.GetActiveWorkspace(),
+          projectName,
+          "Resources",
+          "Scenes"
+        }
+      );
+
+      GetFileManager()->PackResources(path);
+    }
+
     Window* App::GetActiveWindow()
     {
       for (Window* wnd : m_windows)

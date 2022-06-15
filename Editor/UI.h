@@ -1,10 +1,12 @@
 #pragma once
 
-#include "ImGui/imgui.h"
+#include <vector>
+#include <functional>
 
+#include "ImGui/imgui.h"
 #include "Types.h"
 #include "Serialize.h"
-#include <functional>
+
 
 namespace ToolKit
 {
@@ -14,7 +16,7 @@ namespace ToolKit
   {
     class Window : public Serializable
     {
-    public:
+     public:
       enum class Type
       {
         Viewport,
@@ -28,7 +30,7 @@ namespace ToolKit
         Viewport2d
       };
 
-    public:
+     public:
       Window();
       virtual ~Window();
       virtual void Show() = 0;
@@ -39,7 +41,7 @@ namespace ToolKit
       bool IsActive() const;
       bool IsVisible() const;
       bool MouseHovers() const;
-      bool CanDispatchSignals() const; // If active & visible & mouse hovers.
+      bool CanDispatchSignals() const;  // If active & visible & mouse hovers.
 
       // System calls.
       virtual void DispatchSignals() const;
@@ -47,53 +49,60 @@ namespace ToolKit
       virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
-    protected:
+     protected:
       // Internal window handling.
       void HandleStates();
       void SetActive();
       void ModShortCutSignals(const IntArray& mask = {}) const;
 
-    protected:
+     protected:
       // States.
       bool m_visible = true;
       bool m_active = false;
       bool m_mouseHover = false;
 
-    public:
+     public:
       String m_name;
       uint m_id;
 
-    private:
+     private:
       // Internal unique id generator.
       static uint m_baseId;
     };
 
     class StringInputWindow : public Window
     {
-    public:
+     public:
       StringInputWindow(const String& name, bool showCancel);
-      virtual void Show() override;
-      virtual Type GetType() const override { return Window::Type::InputPopup; }
+      void Show() override;
+      Type GetType() const override { return Window::Type::InputPopup; }
 
-    public:
+     public:
       std::function<void(const String& val)> m_taskFn;
       String m_inputVal;
       String m_inputLabel;
       String m_hint;
 
-    private:
+     private:
       bool m_showCancel;
     };
 
     class YesNoWindow : public Window
     {
-    public:
-      YesNoWindow(const String& name, const String& msg = "");
-      YesNoWindow(const String& name, const String& yesBtnText, const String& noBtnText, const String& msg, bool showCancel);
-      virtual void Show() override;
-      virtual Type GetType() const override { return Window::Type::InputPopup; }
+     public:
+      explicit YesNoWindow(const String& name, const String& msg = "");
+      YesNoWindow
+      (
+        const String& name,
+        const String& yesBtnText,
+        const String& noBtnText,
+        const String& msg,
+        bool showCancel
+      );
+      void Show() override;
+      Type GetType() const override { return Window::Type::InputPopup; }
 
-    public:
+     public:
       std::function<void()> m_yesCallback;
       std::function<void()> m_noCallback;
       String m_msg;
@@ -104,7 +113,7 @@ namespace ToolKit
 
     class UI
     {
-    public:
+     public:
       static void Init();
       static void UnInit();
       static void ShowDock();
@@ -117,17 +126,38 @@ namespace ToolKit
       static void ShowAppMainMenuBar();
       static void ShowMenuFile();
       static void ShowMenuWindows();
+      static void ShowMenuProjects();
       static void ShowImportWindow();
       static void ShowSearchForFilesWindow();
-      static void HelpMarker(const String& key, const char* desc, float wait = m_hoverTimeForHelp);
+      static void HelpMarker
+      (
+        const String& key,
+        const char* desc,
+        float wait = m_hoverTimeForHelp
+      );
       static void ShowNewSceneWindow();
 
       // Custom widgets.
-      static bool ImageButtonDecorless(uint textureID, const Vec2& size, bool flipImage);
-      static bool ToggleButton(uint textureID, const Vec2& size, bool pushState);
-      static bool ToggleButton(const String& text, const Vec2& size, bool pushState);
+      static bool ImageButtonDecorless
+      (
+        uint textureID,
+        const Vec2& size,
+        bool flipImage
+      );
+      static bool ToggleButton
+      (
+        uint textureID,
+        const Vec2& size,
+        bool pushState
+      );
+      static bool ToggleButton
+      (
+       const String& text,
+        const Vec2& size,
+        bool pushState
+      );
 
-    public:
+     public:
       static bool m_showNewSceneWindow;
       static bool m_imguiSampleWindow;
       static bool m_windowMenushowMetrics;
@@ -190,5 +220,5 @@ namespace ToolKit
       static TexturePtr m_unlockedIcon;
       static TexturePtr m_viewZoomIcon;
     };
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

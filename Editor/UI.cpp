@@ -1,4 +1,10 @@
+
 #include "UI.h"
+
+#include <vector>
+#include <algorithm>
+#include <unordered_map>
+
 #include "App.h"
 #include "EditorViewport.h"
 #include "SDL.h"
@@ -11,7 +17,6 @@
 #include "PropInspector.h"
 #include "Util.h"
 #include "PluginWindow.h"
-
 #include "ImGui/imgui_stdlib.h"
 #include "Imgui/imgui_impl_sdl.h"
 #include "Imgui/imgui_impl_opengl3.h"
@@ -29,7 +34,7 @@ namespace ToolKit
     UI::Import UI::ImportData;
     UI::SearchFile UI::SearchFileData;
     std::vector<Window*> UI::m_volatileWindows;
-    uint Window::m_baseId = 0; // unused id.
+    uint Window::m_baseId = 0;  // unused id.
     std::vector<std::function<void()>> UI::m_postponedActions;
 
     // Icons
@@ -73,7 +78,8 @@ namespace ToolKit
       ImGui::CreateContext();
 
       ImGuiIO& io = ImGui::GetIO();
-      io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
+      io.ConfigFlags |= ImGuiConfigFlags_DockingEnable
+      | ImGuiConfigFlags_ViewportsEnable;
       io.ConfigWindowsMoveFromTitleBarOnly = true;
 
       // Handle font loading.
@@ -94,7 +100,10 @@ namespace ToolKit
         0x00fc, 0x00fc,
         0
       };
-      io.Fonts->AddFontFromFileTTF(FontPath("bmonofont-i18n.ttf").c_str(), 16, nullptr, utf8TR);
+      io.Fonts->AddFontFromFileTTF
+      (
+        FontPath("bmonofont-i18n.ttf").c_str(), 16, nullptr, utf8TR
+      );
 
       ImGui_ImplSDL2_InitForOpenGL(g_window, g_context);
       ImGui_ImplOpenGL3_Init("#version 300 es");
@@ -122,7 +131,8 @@ namespace ToolKit
       bool optFullScreen = true;
       static ImGuiDockNodeFlags dockFlags = ImGuiDockNodeFlags_None;
 
-      ImGuiWindowFlags wndFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+      ImGuiWindowFlags wndFlags = ImGuiWindowFlags_MenuBar
+      | ImGuiWindowFlags_NoDocking;
       if (optFullScreen)
       {
         ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -131,8 +141,10 @@ namespace ToolKit
         ImGui::SetNextWindowViewport(viewport->ID);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        wndFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-        wndFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        wndFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
+        | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        wndFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus
+        | ImGuiWindowFlags_NoNavFocus;
       }
 
       if (dockFlags & ImGuiDockNodeFlags_PassthruCentralNode)
@@ -162,75 +174,175 @@ namespace ToolKit
 
     void UI::InitIcons()
     {
-      m_selectIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/select.png", true));
+      m_selectIcn = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/select.png", true)
+      );
       m_selectIcn->Init();
-      m_cursorIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/cursor.png", true));
+      m_cursorIcn = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/cursor.png", true)
+      );
       m_cursorIcn->Init();
-      m_moveIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/move.png", true));
+      m_moveIcn = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/move.png", true)
+      );
       m_moveIcn->Init();
-      m_rotateIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/rotate.png", true));
+      m_rotateIcn = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/rotate.png", true)
+      );
       m_rotateIcn->Init();
-      m_scaleIcn = GetTextureManager()->Create<Texture>(TexturePath("Icons/scale.png", true));
+      m_scaleIcn = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/scale.png", true)
+      );
       m_scaleIcn->Init();
-      m_snapIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/snap.png", true));
+      m_snapIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/snap.png", true)
+      );
       m_snapIcon->Init();
-      m_audioIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/audio.png", true));
+      m_audioIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/audio.png", true)
+      );
       m_audioIcon->Init();
-      m_cameraIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/camera.png", true));
+      m_cameraIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/camera.png", true)
+      );
       m_cameraIcon->Init();
-      m_clipIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/clip.png", true));
+      m_clipIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/clip.png", true)
+      );
       m_clipIcon->Init();
-      m_fileIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/file.png", true));
+      m_fileIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/file.png", true)
+      );
       m_fileIcon->Init();
-      m_folderIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/folder.png", true));
+      m_folderIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/folder.png", true)
+      );
       m_folderIcon->Init();
-      m_imageIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/image.png", true));
+      m_imageIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/image.png", true)
+      );
       m_imageIcon->Init();
-      m_lightIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/light.png", true));
+      m_lightIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/light.png", true)
+      );
       m_lightIcon->Init();
-      m_materialIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/material.png", true));
+      m_materialIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/material.png", true)
+      );
       m_materialIcon->Init();
-      m_meshIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/mesh.png", true));
+      m_meshIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/mesh.png", true)
+      );
       m_meshIcon->Init();
-      m_armatureIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/armature.png", true));
+      m_armatureIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/armature.png", true)
+      );
       m_armatureIcon->Init();
-      m_codeIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/code.png", true));
+      m_codeIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/code.png", true)
+      );
       m_codeIcon->Init();
-      m_boneIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/bone.png", true));
+      m_boneIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/bone.png", true)
+      );
       m_boneIcon->Init();
-      m_worldIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/world.png", true));
+      m_worldIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/world.png", true)
+      );
       m_worldIcon->Init();
-      m_axisIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/axis.png", true));
+      m_axisIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/axis.png", true)
+      );
       m_axisIcon->Init();
-      m_playIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/play.png", true));
+      m_playIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/play.png", true)
+      );
       m_playIcon->Init();
-      m_pauseIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/pause.png", true));
+      m_pauseIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/pause.png", true)
+      );
       m_pauseIcon->Init();
-      m_stopIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/stop.png", true));
+      m_stopIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/stop.png", true)
+      );
       m_stopIcon->Init();
-      m_vsCodeIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/vscode.png", true));
+      m_vsCodeIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/vscode.png", true)
+      );
       m_vsCodeIcon->Init();
-      m_collectionIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/collection.png", true));
+      m_collectionIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/collection.png", true)
+      );
       m_collectionIcon->Init();
-      m_arrowsIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/arrows.png", true));
+      m_arrowsIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/arrows.png", true)
+      );
       m_arrowsIcon->Init();
-      m_lockIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/locked.png", true));
+      m_lockIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/locked.png", true)
+      );
       m_lockIcon->Init();
-      m_visibleIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/visible.png", true));
+      m_visibleIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/visible.png", true)
+      );
       m_visibleIcon->Init();
-      m_invisibleIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/invisible.png", true));
+      m_invisibleIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/invisible.png", true)
+      );
       m_invisibleIcon->Init();
-      m_lockedIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/small_locked.png", true));
+      m_lockedIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/small_locked.png", true)
+      );
       m_lockedIcon->Init();
-      m_unlockedIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/small_unlocked.png", true));
+      m_unlockedIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/small_unlocked.png", true)
+      );
       m_unlockedIcon->Init();
-      m_viewZoomIcon = GetTextureManager()->Create<Texture>(TexturePath("Icons/viewzoom.png", true));
+      m_viewZoomIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/viewzoom.png", true)
+      );
       m_viewZoomIcon->Init();
     }
 
     void UI::InitTheme()
     {
-      ImGui::SetColorEditOptions(ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoOptions);
+      ImGui::SetColorEditOptions
+      (
+        ImGuiColorEditFlags_PickerHueWheel
+        | ImGuiColorEditFlags_NoOptions
+      );
 
       ImGuiStyle* style = &ImGui::GetStyle();
       style->WindowRounding = 5.3f;
@@ -239,7 +351,7 @@ namespace ToolKit
       style->ItemSpacing.y = 6.5f;
       style->ColorButtonPosition = ImGuiDir_Left;
 
-      //style->WindowPadding = ImVec2(2.0f, 2.0f);
+      // style->WindowPadding = ImVec2(2.0f, 2.0f);
       style->WindowBorderSize = 0.0f;
       style->ChildBorderSize = 0.0f;
       style->PopupBorderSize = 0.0f;
@@ -249,45 +361,255 @@ namespace ToolKit
       style->WindowTitleAlign = ImVec2(0.5f, 0.5f);
       style->WindowMenuButtonPosition = ImGuiDir_Right;
 
-      style->Colors[ImGuiCol_Text] = { 0.73333335f, 0.73333335f, 0.73333335f, 1.00f };
-      style->Colors[ImGuiCol_TextDisabled] = { 0.34509805f, 0.34509805f, 0.34509805f, 1.00f };
-      style->Colors[ImGuiCol_WindowBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.94f };
-      style->Colors[ImGuiCol_ChildBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.00f };
+      style->Colors[ImGuiCol_Text] =
+      {
+        0.73333335f,
+        0.73333335f,
+        0.73333335f,
+        1.00f
+      };
+      style->Colors[ImGuiCol_TextDisabled] =
+      {
+        0.34509805f,
+        0.34509805f,
+        0.34509805f,
+        1.00f
+      };
+      style->Colors[ImGuiCol_WindowBg] =
+      {
+        0.23529413f,
+        0.24705884f,
+        0.25490198f,
+        0.94f
+      };
+      style->Colors[ImGuiCol_ChildBg] =
+      {
+        0.23529413f,
+        0.24705884f,
+        0.25490198f,
+        0.00f
+      };
       style->Colors[ImGuiCol_PopupBg] = { 0.13f, 0.13f, 0.13f, 0.94f };
-      style->Colors[ImGuiCol_Border] = { 0.33333334f, 0.33333334f, 0.33333334f, 0.50f };
-      style->Colors[ImGuiCol_BorderShadow] = { 0.15686275f, 0.15686275f, 0.15686275f, 0.00f };
-      style->Colors[ImGuiCol_FrameBg] = { 0.16862746f, 0.16862746f, 0.16862746f, 0.54f };
-      style->Colors[ImGuiCol_FrameBgHovered] = { 0.453125f, 0.67578125f, 0.99609375f, 0.67f };
-      style->Colors[ImGuiCol_FrameBgActive] = { 0.47058827f, 0.47058827f, 0.47058827f, 0.67f };
+      style->Colors[ImGuiCol_Border] =
+      {
+        0.33333334f,
+        0.33333334f,
+        0.33333334f,
+        0.50f
+      };
+      style->Colors[ImGuiCol_BorderShadow] =
+      {
+        0.15686275f,
+        0.15686275f,
+        0.15686275f,
+        0.00f
+      };
+      style->Colors[ImGuiCol_FrameBg] =
+      {
+        0.16862746f,
+        0.16862746f,
+        0.16862746f,
+        0.54f
+      };
+      style->Colors[ImGuiCol_FrameBgHovered] =
+      {
+        0.453125f,
+        0.67578125f,
+        0.99609375f,
+        0.67f
+      };
+      style->Colors[ImGuiCol_FrameBgActive] =
+      {
+        0.47058827f,
+        0.47058827f,
+        0.47058827f,
+        0.67f
+      };
       style->Colors[ImGuiCol_TitleBg] = { 0.04f, 0.04f, 0.04f, 1.00f };
-      style->Colors[ImGuiCol_TitleBgCollapsed] = { 0.16f, 0.29f, 0.48f, 1.00f };
+      style->Colors[ImGuiCol_TitleBgCollapsed] =
+      {
+        0.16f,
+        0.29f,
+        0.48f,
+        1.00f
+      };
       style->Colors[ImGuiCol_TitleBgActive] = { 0.00f, 0.00f, 0.00f, 0.51f };
-      style->Colors[ImGuiCol_MenuBarBg] = { 0.27058825f, 0.28627452f, 0.2901961f, 0.80f };
-      style->Colors[ImGuiCol_ScrollbarBg] = { 0.27058825f, 0.28627452f, 0.2901961f, 0.60f };
-      style->Colors[ImGuiCol_ScrollbarGrab] = { 0.21960786f, 0.30980393f, 0.41960788f, 0.51f };
-      style->Colors[ImGuiCol_ScrollbarGrabHovered] = { 0.21960786f, 0.30980393f, 0.41960788f, 1.00f };
-      style->Colors[ImGuiCol_ScrollbarGrabActive] = { 0.13725491f, 0.19215688f, 0.2627451f, 0.91f };
-      // style->Colors[ImGuiCol_ComboBg]               = {0.1f, 0.1f, 0.1f, 0.99f};
-      style->Colors[ImGuiCol_CheckMark] = { 0.90f, 0.90f, 0.90f, 0.83f };
-      style->Colors[ImGuiCol_SliderGrab] = { 0.70f, 0.70f, 0.70f, 0.62f };
-      style->Colors[ImGuiCol_SliderGrabActive] = { 0.30f, 0.30f, 0.30f, 0.84f };
-      style->Colors[ImGuiCol_Button] = { 0.33333334f, 0.3529412f, 0.36078432f, 0.49f };
-      style->Colors[ImGuiCol_ButtonHovered] = { 0.21960786f, 0.30980393f, 0.41960788f, 1.00f };
-      style->Colors[ImGuiCol_ButtonActive] = { 0.13725491f, 0.19215688f, 0.2627451f, 1.00f };
-      style->Colors[ImGuiCol_Header] = { 0.33333334f, 0.3529412f, 0.36078432f, 0.53f };
-      style->Colors[ImGuiCol_HeaderHovered] = { 0.453125f, 0.67578125f, 0.99609375f, 0.67f };
-      style->Colors[ImGuiCol_HeaderActive] = { 0.47058827f, 0.47058827f, 0.47058827f, 0.67f };
-      style->Colors[ImGuiCol_Separator] = { 0.31640625f, 0.31640625f, 0.31640625f, 1.00f };
-      style->Colors[ImGuiCol_SeparatorHovered] = { 0.31640625f, 0.31640625f, 0.31640625f, 1.00f };
-      style->Colors[ImGuiCol_SeparatorActive] = { 0.31640625f, 0.31640625f, 0.31640625f, 1.00f };
-      style->Colors[ImGuiCol_ResizeGrip] = { 1.00f, 1.00f, 1.00f, 0.85f };
-      style->Colors[ImGuiCol_ResizeGripHovered] = { 1.00f, 1.00f, 1.00f, 0.60f };
-      style->Colors[ImGuiCol_ResizeGripActive] = { 1.00f, 1.00f, 1.00f, 0.90f };
-      style->Colors[ImGuiCol_PlotLines] = { 0.61f, 0.61f, 0.61f, 1.00f };
-      style->Colors[ImGuiCol_PlotLinesHovered] = { 1.00f, 0.43f, 0.35f, 1.00f };
-      style->Colors[ImGuiCol_PlotHistogram] = { 0.90f, 0.70f, 0.00f, 1.00f };
-      style->Colors[ImGuiCol_PlotHistogramHovered] = { 1.00f, 0.60f, 0.00f, 1.00f };
-      style->Colors[ImGuiCol_TextSelectedBg] = { 0.18431373f, 0.39607847f, 0.79215693f, 0.90f };
+      style->Colors[ImGuiCol_MenuBarBg] =
+      {
+        0.27058825f,
+        0.28627452f,
+        0.2901961f,
+        0.80f
+      };
+      style->Colors[ImGuiCol_ScrollbarBg] =
+      {
+        0.27058825f,
+        0.28627452f,
+        0.2901961f,
+        0.60f
+      };
+      style->Colors[ImGuiCol_ScrollbarGrab] =
+      {
+        0.21960786f,
+        0.30980393f,
+        0.41960788f,
+        0.51f
+      };
+      style->Colors[ImGuiCol_ScrollbarGrabHovered] =
+      {
+        0.21960786f,
+        0.30980393f,
+        0.41960788f,
+        1.00f
+      };
+      style->Colors[ImGuiCol_ScrollbarGrabActive] =
+      {
+        0.13725491f,
+        0.19215688f,
+        0.2627451f,
+        0.91f
+      };
+      // style->Colors[ImGuiCol_ComboBg] = {0.1f, 0.1f, 0.1f, 0.99f};
+      style->Colors[ImGuiCol_CheckMark] =
+      {
+        0.90f,
+        0.90f,
+        0.90f,
+        0.83f
+      };
+      style->Colors[ImGuiCol_SliderGrab] =
+      {
+        0.70f,
+        0.70f,
+        0.70f,
+        0.62f
+      };
+      style->Colors[ImGuiCol_SliderGrabActive] =
+      {
+        0.30f,
+        0.30f,
+        0.30f,
+        0.84f
+      };
+      style->Colors[ImGuiCol_Button] =
+      {
+        0.33333334f,
+        0.3529412f,
+        0.36078432f,
+        0.49f
+      };
+      style->Colors[ImGuiCol_ButtonHovered] =
+      {
+        0.21960786f,
+        0.30980393f,
+        0.41960788f,
+        1.00f
+      };
+      style->Colors[ImGuiCol_ButtonActive] =
+      {
+        0.13725491f,
+        0.19215688f,
+        0.2627451f,
+        1.00f
+      };
+      style->Colors[ImGuiCol_Header] =
+      {
+        0.33333334f,
+        0.3529412f,
+        0.36078432f,
+        0.53f
+      };
+      style->Colors[ImGuiCol_HeaderHovered] =
+      {
+        0.453125f,
+        0.67578125f,
+        0.99609375f,
+        0.67f
+      };
+      style->Colors[ImGuiCol_HeaderActive] =
+      {
+        0.47058827f,
+        0.47058827f,
+        0.47058827f,
+        0.67f
+      };
+      style->Colors[ImGuiCol_Separator] =
+      {
+        0.31640625f,
+        0.31640625f,
+        0.31640625f,
+        1.00f
+      };
+      style->Colors[ImGuiCol_SeparatorHovered] =
+      {
+        0.31640625f,
+        0.31640625f,
+        0.31640625f,
+        1.00f
+      };
+      style->Colors[ImGuiCol_SeparatorActive] =
+      {
+        0.31640625f,
+        0.31640625f,
+        0.31640625f,
+        1.00f
+      };
+      style->Colors[ImGuiCol_ResizeGrip] =
+      {
+        1.00f,
+        1.00f,
+        1.00f,
+        0.85f
+      };
+      style->Colors[ImGuiCol_ResizeGripHovered] =
+      {
+        1.00f,
+        1.00f,
+        1.00f,
+        0.60f
+      };
+      style->Colors[ImGuiCol_ResizeGripActive] =
+      {
+        1.00f,
+        1.00f,
+        1.00f,
+        0.90f
+      };
+      style->Colors[ImGuiCol_PlotLines] =
+      {
+        0.61f,
+        0.61f,
+        0.61f,
+        1.00f
+      };
+      style->Colors[ImGuiCol_PlotLinesHovered] =
+      {
+        1.00f,
+        0.43f,
+        0.35f,
+        1.00f
+      };
+      style->Colors[ImGuiCol_PlotHistogram] =
+      {
+        0.90f,
+        0.70f,
+        0.00f,
+        1.00f
+      };
+      style->Colors[ImGuiCol_PlotHistogramHovered] =
+      {
+        1.00f,
+        0.60f,
+        0.00f,
+        1.00f
+      };
+      style->Colors[ImGuiCol_TextSelectedBg] =
+      {
+        0.18431373f,
+        0.39607847f,
+        0.79215693f,
+        0.90f
+      };
     }
 
     void UI::InitSettings()
@@ -340,7 +662,7 @@ namespace ToolKit
       ShowNewSceneWindow();
 
       // Show & Destroy if not visible.
-      for (int i = (int)m_volatileWindows.size() - 1; i > -1; i--)
+      for (int i = static_cast<int>(m_volatileWindows.size()) - 1; i > -1; i--)
       {
         Window* wnd = m_volatileWindows[i];
         if (wnd->IsVisible())
@@ -400,43 +722,24 @@ namespace ToolKit
           ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu("Projects"))
+        {
+          ShowMenuProjects();
+          ImGui::EndMenu();
+        }
+
         ImGui::EndMainMenuBar();
       }
     }
 
     void UI::ShowMenuFile()
     {
-
-      if (ImGui::BeginMenu("Projects"))
-      {
-        if (ImGui::MenuItem("New"))
-        {
-          StringInputWindow* inputWnd = new StringInputWindow("NewProject", true);
-          inputWnd->m_inputVal = "New Project";
-          inputWnd->m_inputLabel = "Name";
-          inputWnd->m_hint = "Project name";
-          inputWnd->m_taskFn = [](const String& val)
-          {
-            g_app->OnNewProject(val);
-          };
-        }
-
-        ImGui::Separator();
-        for (const Project& project : g_app->m_workspace.m_projects)
-        {
-          if (ImGui::MenuItem(project.name.c_str()))
-          {
-            g_app->OpenProject(project);
-          }
-        }
-        ImGui::EndMenu();
-      }
-
       if (ImGui::BeginMenu("Scene"))
       {
         if (ImGui::MenuItem("New"))
         {
-          StringInputWindow* inputWnd = new StringInputWindow("NewScene##NwScn1", true);
+          StringInputWindow* inputWnd =
+          new StringInputWindow("NewScene##NwScn1", true);
           inputWnd->m_inputVal = g_newSceneStr;
           inputWnd->m_inputLabel = "Name";
           inputWnd->m_hint = "Scene name";
@@ -472,7 +775,12 @@ namespace ToolKit
     {
       auto handleMultiWindowFn = [](Window::Type windowType) -> void
       {
-        for (int i = (int)g_app->m_windows.size() - 1; i >= 0; i--)
+        for
+        (
+          int i = static_cast<int>(g_app->m_windows.size()) - 1;
+          i >= 0;
+          i--
+        )
         {
           Window* wnd = g_app->m_windows[i];
           if (wnd->GetType() != windowType)
@@ -533,22 +841,58 @@ namespace ToolKit
 
       ImGui::Separator();
 
-      if (ImGui::MenuItem("Console Window", "Alt+C", nullptr, !g_app->GetConsole()->IsVisible()))
+      if
+      (
+        ImGui::MenuItem
+        (
+          "Console Window",
+          "Alt+C",
+          nullptr,
+          !g_app->GetConsole()->IsVisible()
+        )
+      )
       {
         g_app->GetConsole()->SetVisibility(true);
       }
 
-      if (ImGui::MenuItem("Outliner Window", "Alt+O", nullptr, !g_app->GetOutliner()->IsVisible()))
+      if
+      (
+        ImGui::MenuItem
+        (
+          "Outliner Window",
+          "Alt+O",
+          nullptr,
+          !g_app->GetOutliner()->IsVisible()
+        )
+      )
       {
         g_app->GetOutliner()->SetVisibility(true);
       }
 
-      if (ImGui::MenuItem("Property Inspector", "Alt+P", nullptr, !g_app->GetPropInspector()->IsVisible()))
+      if
+      (
+        ImGui::MenuItem
+        (
+          "Property Inspector",
+          "Alt+P",
+          nullptr,
+          !g_app->GetPropInspector()->IsVisible()
+        )
+      )
       {
         g_app->GetPropInspector()->SetVisibility(true);
       }
 
-      if (ImGui::MenuItem("Material Inspector", "Alt+R", nullptr, !g_app->GetMaterialInspector()->IsVisible()))
+      if
+      (
+        ImGui::MenuItem
+        (
+          "Material Inspector",
+          "Alt+R",
+          nullptr,
+          !g_app->GetMaterialInspector()->IsVisible()
+        )
+      )
       {
         g_app->GetMaterialInspector()->SetVisibility(true);
       }
@@ -595,6 +939,36 @@ namespace ToolKit
 #endif
     }
 
+    void UI::ShowMenuProjects()
+    {
+      if (ImGui::MenuItem("New"))
+      {
+        StringInputWindow* inputWnd =
+        new StringInputWindow("NewProject", true);
+        inputWnd->m_inputVal = "New Project";
+        inputWnd->m_inputLabel = "Name";
+        inputWnd->m_hint = "Project name";
+        inputWnd->m_taskFn = [](const String& val)
+        {
+          g_app->OnNewProject(val);
+        };
+      }
+
+      if (ImGui::MenuItem("Pack Project"))
+      {
+        g_app->PackResources();
+      }
+      ImGui::Separator();
+
+      for (const Project& project : g_app->m_workspace.m_projects)
+      {
+        if (ImGui::MenuItem(project.name.c_str()))
+        {
+          g_app->OpenProject(project);
+        }
+      }
+    }
+
     void UI::ShowImportWindow()
     {
       static String load;
@@ -631,7 +1005,15 @@ namespace ToolKit
       }
 
       ImGui::OpenPopup("Import");
-      if (ImGui::BeginPopupModal("Import", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+      if
+      (
+        ImGui::BeginPopupModal
+        (
+          "Import",
+          NULL,
+          ImGuiWindowFlags_AlwaysAutoResize
+        )
+      )
       {
         ImGui::Text("Import file: \n\n");
         for (size_t i = 0; i < ImportData.files.size(); i++)
@@ -643,7 +1025,12 @@ namespace ToolKit
         static StringArray fails;
         if (!ImportData.files.empty() && fails.empty())
         {
-          for (int i = (int)ImportData.files.size() - 1; i >= 0; i--)
+          for
+          (
+            int i = static_cast<int>(ImportData.files.size()) - 1;
+            i >= 0;
+            i--
+          )
           {
             bool canImp = g_app->CanImport(ImportData.files[i]);
             if (!canImp)
@@ -656,7 +1043,11 @@ namespace ToolKit
 
         if (!fails.empty())
         {
-          ImGui::Text("Fallowing imports failed due to:\nFile format is not supported.\nSuported formats are fbx, glb, obj.");
+          ImGui::Text
+          (
+            "Fallowing imports failed due to:\nFile format is"
+            " not supported.\nSuported formats are fbx, glb, obj."
+          );
           for (String& file : fails)
           {
             ImGui::Text("%s", file.c_str());
@@ -675,7 +1066,10 @@ namespace ToolKit
 
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {
-          if (g_app->Import(load, ImportData.subDir, ImportData.overwrite) == -1)
+          if
+          (
+            g_app->Import(load, ImportData.subDir, ImportData.overwrite) == -1
+          )
           {
             // Fall back to search.
             ImGui::EndPopup();
@@ -712,7 +1106,15 @@ namespace ToolKit
       }
 
       ImGui::OpenPopup("SearchFile");
-      if (ImGui::BeginPopupModal("SearchFile", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+      if
+      (
+        ImGui::BeginPopupModal
+        (
+          "SearchFile",
+          NULL,
+          ImGuiWindowFlags_AlwaysAutoResize
+        )
+      )
       {
         static String buffer;
         float maxSize = 400.0f;
@@ -737,7 +1139,7 @@ namespace ToolKit
           ImGui::Text("%s", s->c_str());
         }
 
-        int itemCnt = (int)SearchFileData.searchPaths.size();
+        int itemCnt = static_cast<int>(SearchFileData.searchPaths.size());
         const char** items = new const char* [itemCnt];
         for (int i = 0; i < itemCnt; i++)
         {
@@ -758,7 +1160,10 @@ namespace ToolKit
         {
           if (currItem < itemCnt)
           {
-            SearchFileData.searchPaths.erase(SearchFileData.searchPaths.begin() + currItem);
+            SearchFileData.searchPaths.erase
+            (
+              SearchFileData.searchPaths.begin() + currItem
+            );
           }
         }
 
@@ -818,7 +1223,15 @@ namespace ToolKit
       }
 
       ImGui::OpenPopup(g_newSceneStr.c_str());
-      if (ImGui::BeginPopupModal(g_newSceneStr.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
+      if
+      (
+        ImGui::BeginPopupModal
+        (
+          g_newSceneStr.c_str(),
+          NULL,
+          ImGuiWindowFlags_AlwaysAutoResize
+        )
+      )
       {
         static String sceneName;
 
@@ -831,7 +1244,7 @@ namespace ToolKit
           m_showNewSceneWindow = false;
           ImGui::CloseCurrentPopup();
         }
-        //ImGui::SetItemDefaultFocus();
+        // ImGui::SetItemDefaultFocus();
         ImGui::SameLine();
         if (ImGui::Button("Cancel", ImVec2(120, 0)))
         {
@@ -843,13 +1256,24 @@ namespace ToolKit
       }
     }
 
-    bool UI::ImageButtonDecorless(uint textureID, const Vec2& size, bool flipImage)
+    bool UI::ImageButtonDecorless
+    (
+      uint textureID,
+      const Vec2& size,
+      bool flipImage
+    )
     {
       ImGui::PushStyleColor(ImGuiCol_Button, Vec4());
       ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Vec4());
       ImGui::PushStyleColor(ImGuiCol_ButtonActive, Vec4());
       ImVec2 texCoords = flipImage ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
-      bool res = ImGui::ImageButton((void*)(intptr_t)textureID, size, ImVec2(0.0f, 0.0f), texCoords);
+      bool res = ImGui::ImageButton
+      (
+        reinterpret_cast<void*>((intptr_t)textureID),
+        size,
+        ImVec2(0.0f, 0.0f),
+        texCoords
+      );
       ImGui::PopStyleColor(3);
 
       return res;
@@ -861,15 +1285,34 @@ namespace ToolKit
       if (pushState)
       {
         ImGui::PushID(1);
-        ImGui::PushStyleColor(ImGuiCol_Button, style.Colors[ImGuiCol_ButtonHovered]);
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_ButtonHovered]);
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, style.Colors[ImGuiCol_ButtonHovered]);
+        ImGui::PushStyleColor
+        (
+          ImGuiCol_Button,
+          style.Colors[ImGuiCol_ButtonHovered]
+        );
+        ImGui::PushStyleColor
+        (
+          ImGuiCol_ButtonHovered,
+          style.Colors[ImGuiCol_ButtonHovered]
+        );
+        ImGui::PushStyleColor
+        (
+          ImGuiCol_ButtonActive,
+          style.Colors[ImGuiCol_ButtonHovered]
+        );
       }
 
       bool newPushState = pushState;
-      if (ImGui::ImageButton((void*)(intptr_t)textureID, size))
+      if
+      (
+        ImGui::ImageButton
+        (
+          reinterpret_cast<void*>((intptr_t)textureID),
+          size
+        )
+      )
       {
-        newPushState = !pushState; // If pressed toggle.
+        newPushState = !pushState;  // If pressed toggle.
       }
 
       if (pushState)
@@ -887,15 +1330,27 @@ namespace ToolKit
       if (pushState)
       {
         ImGui::PushID(1);
-        ImGui::PushStyleColor(ImGuiCol_Button, style.Colors[ImGuiCol_ButtonHovered]);
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_ButtonHovered]);
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, style.Colors[ImGuiCol_ButtonHovered]);
+        ImGui::PushStyleColor
+        (
+          ImGuiCol_Button,
+          style.Colors[ImGuiCol_ButtonHovered]
+        );
+        ImGui::PushStyleColor
+        (
+          ImGuiCol_ButtonHovered,
+          style.Colors[ImGuiCol_ButtonHovered]
+        );
+        ImGui::PushStyleColor
+        (
+          ImGuiCol_ButtonActive,
+          style.Colors[ImGuiCol_ButtonHovered]
+        );
       }
 
       bool newPushState = pushState;
       if (ImGui::Button(text.c_str(), size))
       {
-        newPushState = !pushState; // If pressed toggle.
+        newPushState = !pushState;  // If pressed toggle.
       }
 
       if (pushState)
@@ -959,8 +1414,20 @@ namespace ToolKit
 
       WriteAttr(node, doc, "name", m_name);
       WriteAttr(node, doc, "id", std::to_string(m_id));
-      WriteAttr(node, doc, "type", std::to_string((int)GetType()));
-      WriteAttr(node, doc, "visible", std::to_string((int)m_visible));
+      WriteAttr
+      (
+        node,
+        doc,
+        "type",
+        std::to_string(static_cast<int>(GetType()))
+      );
+      WriteAttr
+      (
+        node,
+        doc,
+        "visible",
+        std::to_string(static_cast<int>(m_visible))
+      );
     }
 
     void Window::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -985,12 +1452,17 @@ namespace ToolKit
     {
       ImGui::GetIO().WantCaptureMouse = true;
 
-      m_mouseHover = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByPopup);
+      m_mouseHover = ImGui::IsWindowHovered
+      (
+        ImGuiHoveredFlags_RootAndChildWindows
+        | ImGuiHoveredFlags_AllowWhenBlockedByPopup
+      );
       bool rightClick = ImGui::IsMouseDown(ImGuiMouseButton_Right);
       bool leftClick = ImGui::IsMouseDown(ImGuiMouseButton_Left);
       bool middleClick = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
 
-      if ((rightClick || leftClick || middleClick) && m_mouseHover) // Activate with any click.
+      // Activate with any click.
+      if ((rightClick || leftClick || middleClick) && m_mouseHover)
       {
         if
           (
@@ -1164,7 +1636,15 @@ namespace ToolKit
       );
 
       ImGui::OpenPopup(m_name.c_str());
-      if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
+      if
+      (
+        ImGui::BeginPopupModal
+        (
+          m_name.c_str(),
+          NULL,
+          ImGuiWindowFlags_AlwaysAutoResize
+        )
+      )
       {
         if (ImGui::IsWindowAppearing())
         {
@@ -1180,15 +1660,27 @@ namespace ToolKit
         );
 
         // Center buttons.
-        ImGui::BeginTable("##FilterZoom", m_showCancel ? 4 : 3, ImGuiTableFlags_SizingFixedFit);
+        ImGui::BeginTable
+        (
+          "##FilterZoom", m_showCancel ? 4 : 3,
+          ImGuiTableFlags_SizingFixedFit
+        );
 
-        ImGui::TableSetupColumn("##spaceL", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn
+        (
+          "##spaceL",
+          ImGuiTableColumnFlags_WidthStretch
+        );
         ImGui::TableSetupColumn("##ok");
         if (m_showCancel)
         {
           ImGui::TableSetupColumn("##cancel");
         }
-        ImGui::TableSetupColumn("##spaceR", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn
+        (
+          "##spaceR",
+          ImGuiTableColumnFlags_WidthStretch
+        );
 
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
@@ -1224,7 +1716,14 @@ namespace ToolKit
       m_msg = msg;
     }
 
-    YesNoWindow::YesNoWindow(const String& name, const String& yesBtnText, const String& noBtnText, const String& msg, bool showCancel)
+    YesNoWindow::YesNoWindow
+    (
+      const String& name,
+      const String& yesBtnText,
+      const String& noBtnText,
+      const String& msg,
+      bool showCancel
+    )
     {
       m_name = name;
       m_yesText = yesBtnText;
@@ -1249,7 +1748,15 @@ namespace ToolKit
       );
 
       ImGui::OpenPopup(m_name.c_str());
-      if (ImGui::BeginPopupModal(m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
+      if
+      (
+        ImGui::BeginPopupModal
+        (
+          m_name.c_str(),
+          NULL,
+          ImGuiWindowFlags_AlwaysAutoResize
+        )
+      )
       {
         if (!m_msg.empty())
         {
@@ -1257,22 +1764,42 @@ namespace ToolKit
         }
 
         // Center buttons.
-        ImGui::BeginTable("##FilterZoom", m_showCancel ? 5 : 4, ImGuiTableFlags_SizingFixedFit);
+        ImGui::BeginTable
+        (
+          "##FilterZoom",
+          m_showCancel ? 5 : 4,
+          ImGuiTableFlags_SizingFixedFit
+        );
 
-        ImGui::TableSetupColumn("##spaceL", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn
+        (
+          "##spaceL",
+          ImGuiTableColumnFlags_WidthStretch
+        );
         ImGui::TableSetupColumn("##yes");
         ImGui::TableSetupColumn("##no");
         if (m_showCancel)
         {
           ImGui::TableSetupColumn("##cancel");
         }
-        ImGui::TableSetupColumn("##spaceR", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn
+        (
+          "##spaceR",
+          ImGuiTableColumnFlags_WidthStretch
+        );
 
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
         ImGui::TableNextColumn();
 
-        if (ImGui::Button(m_yesText.empty() ? "Yes" : m_yesText.c_str(), ImVec2(120, 0)))
+        if
+        (
+          ImGui::Button
+          (
+            m_yesText.empty() ? "Yes" : m_yesText.c_str(),
+            ImVec2(120, 0)
+          )
+        )
         {
           m_visible = false;
           m_yesCallback();
@@ -1281,7 +1808,14 @@ namespace ToolKit
         ImGui::SetItemDefaultFocus();
         ImGui::TableNextColumn();
 
-        if (ImGui::Button(m_noText.empty() ? "No" : m_noText.c_str(), ImVec2(120, 0)))
+        if
+        (
+          ImGui::Button
+          (
+            m_noText.empty() ? "No" : m_noText.c_str(),
+            ImVec2(120, 0)
+          )
+        )
         {
           m_visible = false;
           m_noCallback();
@@ -1303,5 +1837,5 @@ namespace ToolKit
       }
     }
 
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

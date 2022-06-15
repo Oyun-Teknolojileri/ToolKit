@@ -38,6 +38,7 @@ namespace ToolKit
     m_sceneManager = new SceneManager();
     m_uiManager = new UIManager();
     m_skeletonManager = new SkeletonManager();
+    m_fileManager = new FileManager();
 
     m_logger->Log("Main Constructed");
   }
@@ -59,6 +60,7 @@ namespace ToolKit
     SafeDel(m_sceneManager);
     SafeDel(m_uiManager);
     SafeDel(m_skeletonManager);
+    SafeDel(m_fileManager);
 
     m_logger->Log("Main Deconstructed");
     SafeDel(m_logger);
@@ -227,6 +229,11 @@ namespace ToolKit
   TK_API SkeletonManager* GetSkeletonManager()
   {
     return Main::GetInstance()->m_skeletonManager;
+  }
+
+  TK_API FileManager* GetFileManager()
+  {
+    return Main::GetInstance()->m_fileManager;
   }
 
   String DefaultAbsolutePath()
