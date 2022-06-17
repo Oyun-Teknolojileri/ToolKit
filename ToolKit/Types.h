@@ -62,7 +62,7 @@ namespace ToolKit
   typedef std::shared_ptr<class Resource> ResourcePtr;
   typedef std::string String;
   typedef std::vector<String> StringArray;
-  typedef std::set<std::string> UniqueStringArray;
+  typedef std::set<std::string> StringSet;
   typedef glm::ivec2 IVec2;
   typedef glm::vec2 Vec2;
   typedef std::vector<Vec2> Vec2Array;

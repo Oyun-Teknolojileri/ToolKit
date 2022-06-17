@@ -27,6 +27,8 @@ add_compile_definitions(TK_DLL_IMPORT)
 link_directories("${TOOLKIT_DIR}/Bin")
 link_directories("${TOOLKIT_DIR}/Dependency/OpenAL/libs/Win64")
 link_directories("${TOOLKIT_DIR}/Dependency/Glew/lib/Release/x64")
+link_directories("${TOOLKIT_DIR}/Dependency/zlib/lib")
+link_directories("${TOOLKIT_DIR}/Dependency/Minizip/lib")
 
 include_directories(
 	"${TOOLKIT_DIR}/ToolKit"
@@ -36,6 +38,8 @@ include_directories(
 	"${TOOLKIT_DIR}/Dependency/OpenAL/include"
 	"${TOOLKIT_DIR}/Dependency/RapidXml"
 	"${TOOLKIT_DIR}/Dependency/stb"
+  "${TOOLKIT_DIR}/Dependency/zlib/include"
+  "${TOOLKIT_DIR}/Dependency/Minizip/include"
 	"${CMAKE_SOURCE_DIR}"
 )
 
@@ -68,7 +72,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH})
 
 target_link_libraries(${PROJECT_NAME} debug ToolKit_d)
 target_link_libraries(${PROJECT_NAME} optimized ToolKit)
-target_link_libraries(${PROJECT_NAME} glew32 OpenGL32 OpenAL32)
+target_link_libraries(${PROJECT_NAME} glew32 OpenGL32 OpenAL32 zlib Minizip)
 
 #Set original output name
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${DLL_NAME})
