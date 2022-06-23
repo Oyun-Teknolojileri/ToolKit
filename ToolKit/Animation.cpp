@@ -126,7 +126,7 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file(GetFile().c_str());
+    XmlFile file = GetFileManager()->GetXmlFile(GetFile());
     XmlDocument doc;
     doc.parse<0>(file.data());
 

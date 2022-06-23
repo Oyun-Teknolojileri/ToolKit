@@ -1,8 +1,6 @@
 #include "Texture.h"
 #include "ToolKit.h"
 #include "GL/glew.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb/stb_image.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -33,9 +31,9 @@ namespace ToolKit
 
     if
     (
-      m_image = stbi_load
+      m_image = GetFileManager()->GetImageFile
       (
-        GetFile().c_str(),
+        GetFile(),
         &m_width,
         &m_height,
         &m_bytePP,
@@ -178,9 +176,9 @@ namespace ToolKit
       if
       (
         (
-          m_images[i] = stbi_load
+          m_images[i] = GetFileManager()->GetImageFile
           (
-            name.c_str(),
+            name,
             &m_width,
             &m_height,
             &m_bytePP,

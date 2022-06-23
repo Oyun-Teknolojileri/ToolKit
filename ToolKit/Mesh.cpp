@@ -79,7 +79,7 @@ namespace ToolKit
 
     String path = GetFile();
     NormalizePath(path);
-    XmlFile file(path.c_str());
+    XmlFile file = GetFileManager()->GetXmlFile(path);
     XmlDocument doc;
     doc.parse<0>(file.data());
 
@@ -482,7 +482,7 @@ namespace ToolKit
 
     String path = GetFile();
     NormalizePath(path);
-    XmlFile file(path.c_str());
+    XmlFile file = GetFileManager()->GetXmlFile(path);
     XmlDocument doc;
     doc.parse<0>(file.data());
 

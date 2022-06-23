@@ -1,14 +1,94 @@
 
 #include "FileManager.h"
 
+#include <string.h>
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <iostream>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
 #include "ToolKit.h"
 
 namespace ToolKit
 {
+  XmlFile FileManager::GetXmlFile(const String& path)
+  {
+    String pakPath = ConcatPaths({ ResourcePath(), "..", "MinResources.pak" });
+
+    // Get relative path from Resources directory
+    String relativePath = GetRelativeResourcesPath(path);
+    if (relativePath.empty())
+    {
+      return nullptr;
+    }
+    const char* relativePathC = relativePath.c_str();
+
+    zipFile zfile = unzOpen(pakPath.c_str());
+
+    if (zfile)
+    {
+      GenerateOffsetTableForPakFiles(zfile);
+
+      XmlFile file = ReadXmlFileFromZip(zfile, relativePathC, path.c_str());
+      unzClose(zfile);
+      return file;
+    }
+    else
+    {
+      // Zip pak not found, read from file at default path
+      XmlFile file = XmlFile(path.c_str());
+      return file;
+    }
+  }
+
+  uint8* FileManager::GetImageFile
+  (
+    const String& path,
+    int* x,
+    int* y,
+    int* comp,
+    int reqComp
+  )
+  {
+    String pakPath = ConcatPaths({ ResourcePath(), "..", "MinResources.pak" });
+
+    // Get relative path from Resources directory
+    String relativePath = GetRelativeResourcesPath(path);
+    if (relativePath.empty())
+    {
+      return nullptr;
+    }
+    const char* relativePathC = relativePath.c_str();
+
+    zipFile zfile = unzOpen(pakPath.c_str());
+
+    if (zfile)
+    {
+      GenerateOffsetTableForPakFiles(zfile);
+
+      uint8* img = ReadImageFileFromZip
+      (
+        zfile,
+        relativePathC,
+        path.c_str(),
+        x,
+        y,
+        comp,
+        reqComp
+      );
+      unzClose(zfile);
+      return img;
+    }
+    else
+    {
+      // Zip pak not found
+      uint8* img = stbi_load(path.c_str(), x, y, comp, reqComp);
+      return img;
+    }
+  }
+
   void FileManager::PackResources(const String& path)
   {
     // Load all scenes once in order to fill resource managers
@@ -25,7 +105,7 @@ namespace ToolKit
     }
     else
     {
-      GetLogger()->WriteConsole(LogType::Warning, "Resources packed.");
+      GetLogger()->WriteConsole(LogType::Memo, "Resources packed.");
     }
   }
 
@@ -152,7 +232,6 @@ namespace ToolKit
       if (!AddFileToZip(zFile, path.c_str()))
       {
         GetLogger()->WriteConsole(LogType::Error, "Error adding file to zip.");
-        return false;
       }
     }
 
@@ -213,7 +292,7 @@ namespace ToolKit
       NULL,
       Z_DEFLATED,
       Z_DEFAULT_COMPRESSION,
-      (flen > 0xffffffff) ? 1 : 0
+      0
     );
     if (ret != ZIP_OK)
     {
@@ -222,15 +301,15 @@ namespace ToolKit
       return false;
     }
 
-    char* file_data = reinterpret_cast<char*>
+    char* fileData = reinterpret_cast<char*>
     (
       malloc((flen + 1) * static_cast<unsigned int>(sizeof(char)))
     );
-    red = fread(file_data, flen, 1, f);
+    red = fread(fileData, flen, 1, f);
     ret = zipWriteInFileInZip
     (
       zfile,
-      file_data,
+      fileData,
       static_cast<unsigned int>(red * flen)
     );
     if (ret != ZIP_OK)
@@ -240,7 +319,7 @@ namespace ToolKit
       return false;
     }
 
-    free(file_data);
+    free(fileData);
     fclose(f);
     zipCloseFileInZip(zfile);
 
@@ -275,5 +354,410 @@ namespace ToolKit
 
       allPaths.insert(entry.path().string());
     }
+  }
+
+  String FileManager::GetRelativeResourcesPath(const String& path)
+  {
+    String filenameStr = String(path);
+    size_t index = filenameStr.find("Resources");
+    if (index != String::npos)
+    {
+      constexpr int length = sizeof("Resources");
+      filenameStr = filenameStr.substr(index + length);
+      return filenameStr;
+    }
+    else
+    {
+      GetLogger()->WriteConsole
+      (
+        LogType::Error,
+        "Resource is not under resources path: %s",
+        path
+      );
+      return "";
+    }
+  }
+
+  XmlFile FileManager::ReadXmlFileFromZip
+  (
+    zipFile zfile,
+    const char* relativePath,
+    const char* path
+  )
+  {
+    // Check offset map of file
+    ZPOS64_T offset = m_zipFilesOffsetTable[relativePath];
+    if (offset != 0)
+    {
+      if (unzSetOffset64(zfile, offset) == UNZ_OK)
+      {
+        if (unzOpenCurrentFile(zfile) == UNZ_OK)
+        {
+          unz_file_info fileInfo;
+          memset(&fileInfo, 0, sizeof(unz_file_info));
+
+          if
+          (
+            unzGetCurrentFileInfo
+            (
+              zfile,
+              &fileInfo,
+              NULL,
+              0,
+              NULL,
+              0,
+              NULL,
+              0
+            ) == UNZ_OK
+          )
+          {
+            XmlFile file = CreateXmlFileFromZip
+            (
+              zfile,
+              relativePath,
+              static_cast<unsigned int>(fileInfo.uncompressed_size)
+            );
+            return file;
+          }
+        }
+      }
+      else
+      {
+        GetLogger()->Log("TestComesHere2");
+      }
+    }
+
+    // If the file is not found in offset map, go over zip files
+    if (unzGoToFirstFile(zfile) == UNZ_OK)
+    {
+      // Iterate over file info's
+      do
+      {
+        if (unzOpenCurrentFile(zfile) == UNZ_OK)
+        {
+          unz_file_info fileInfo;
+          memset(&fileInfo, 0, sizeof(unz_file_info));
+
+          if
+          (
+            unzGetCurrentFileInfo
+            (
+              zfile,
+              &fileInfo,
+              NULL,
+              0,
+              NULL,
+              0,
+              NULL,
+              0
+            ) == UNZ_OK
+          )
+          {
+            // Get file info
+            char* filename = new char[fileInfo.size_filename + 1]();
+            unzGetCurrentFileInfo
+            (
+              zfile,
+              &fileInfo,
+              filename,
+              fileInfo.size_filename + 1,
+              NULL,
+              0,
+              NULL,
+              0
+            );
+            filename[fileInfo.size_filename] = '\0';
+
+            if (strcmp(filename, relativePath))
+            {
+              delete[] filename;
+              unzCloseCurrentFile(zfile);
+              continue;
+            }
+
+            XmlFile file = CreateXmlFileFromZip
+            (
+              zfile,
+              filename,
+              static_cast<unsigned int>(fileInfo.uncompressed_size)
+            );
+
+            delete[] filename;
+
+            return file;
+          }
+
+          unzCloseCurrentFile(zfile);
+        }
+      } while (unzGoToNextFile(zfile) == UNZ_OK);
+    }
+
+    return XmlFile(path);
+  }
+
+  uint8* FileManager::ReadImageFileFromZip
+  (
+    zipFile zfile,
+    const char* relativePath,
+    const char* path,
+    int* x,
+    int* y,
+    int* comp,
+    int reqComp
+  )
+  {
+    // Check offset map of file
+    ZPOS64_T offset = m_zipFilesOffsetTable[relativePath];
+    if (offset != 0)
+    {
+      if (unzSetOffset64(zfile, offset) == UNZ_OK)
+      {
+        if (unzOpenCurrentFile(zfile) == UNZ_OK)
+        {
+          unz_file_info fileInfo;
+          memset(&fileInfo, 0, sizeof(unz_file_info));
+
+          if
+          (
+            unzGetCurrentFileInfo
+            (
+              zfile,
+              &fileInfo,
+              NULL,
+              0,
+              NULL,
+              0,
+              NULL,
+              0
+            ) == UNZ_OK
+          )
+          {
+            uint8* img = CreateImageFileFromZip
+            (
+              zfile,
+              relativePath,
+              static_cast<unsigned int>(fileInfo.uncompressed_size),
+              x,
+              y,
+              comp,
+              reqComp
+            );
+            return img;
+          }
+        }
+      }
+      else
+      {
+        GetLogger()->Log("TestComesHere1");
+      }
+    }
+
+    // If the file is not found in offset map, go over zip files
+    if (unzGoToFirstFile(zfile) == UNZ_OK)
+    {
+      // Iterate over file info's
+      do
+      {
+        if (unzOpenCurrentFile(zfile) == UNZ_OK)
+        {
+          unz_file_info fileInfo;
+          memset(&fileInfo, 0, sizeof(unz_file_info));
+
+          if
+          (
+            unzGetCurrentFileInfo
+            (
+              zfile,
+              &fileInfo,
+              NULL,
+              0,
+              NULL,
+              0,
+              NULL,
+              0
+            ) == UNZ_OK
+          )
+          {
+            // Get file info
+            char* filename = new char[fileInfo.size_filename + 1]();
+            unzGetCurrentFileInfo
+            (
+              zfile,
+              &fileInfo,
+              filename,
+              fileInfo.size_filename + 1,
+              NULL,
+              0,
+              NULL,
+              0
+            );
+            filename[fileInfo.size_filename] = '\0';
+
+            if (strcmp(filename, relativePath))
+            {
+              delete[] filename;
+              unzCloseCurrentFile(zfile);
+              continue;
+            }
+
+            // Read file
+            uint8* img = CreateImageFileFromZip
+            (
+              zfile,
+              filename,
+              static_cast<unsigned int>(fileInfo.uncompressed_size),
+              x,
+              y,
+              comp,
+              reqComp
+            );
+
+            delete[] filename;
+
+            return img;
+          }
+
+          unzCloseCurrentFile(zfile);
+        }
+      } while (unzGoToNextFile(zfile) == UNZ_OK);
+    }
+
+    return stbi_load(path, x, y, comp, reqComp);
+  }
+
+  XmlFile FileManager::CreateXmlFileFromZip
+  (
+    zipFile zfile,
+    const char* filename,
+    unsigned int filesize
+  )
+  {
+    // Read file
+    char* fileBuffer = new char[filesize]();
+    int readBytes = unzReadCurrentFile(zfile, fileBuffer, filesize);
+    if (readBytes < 0)
+    {
+      GetLogger()->Log
+      (
+        "Error reading compressed file: " + String(filename)
+      );
+      GetLogger()->WriteConsole
+      (
+        LogType::Error,
+        "Error reading compressed file: %s",
+        filename
+      );
+    }
+
+    // Create XmlFile object
+    _streambuf sbuf(fileBuffer, fileBuffer + filesize);
+    std::basic_istream<char> stream(&sbuf);
+    XmlFile file(stream);
+
+    delete[] fileBuffer;
+
+    return file;
+  }
+
+  uint8* FileManager::CreateImageFileFromZip
+  (
+    zipFile zfile,
+    const char* filename,
+    unsigned int filesize,
+    int* x,
+    int* y,
+    int* comp,
+    int reqComp
+  )
+  {
+    unsigned char* fileBuffer = new unsigned char[filesize]();
+    int readBytes = unzReadCurrentFile(zfile, fileBuffer, filesize);
+    if (readBytes < 0)
+    {
+      GetLogger()->Log
+      (
+        "Error reading compressed file: " + String(filename)
+      );
+      GetLogger()->WriteConsole
+      (
+        LogType::Error,
+        "Error reading compressed file: %s",
+        filename
+      );
+    }
+
+    // Load image
+    uint8* img = stbi_load_from_memory
+    (
+      fileBuffer,
+      filesize,
+      x,
+      y,
+      comp,
+      reqComp
+    );
+
+    delete[] fileBuffer;
+
+    return img;
+  }
+
+  void FileManager::GenerateOffsetTableForPakFiles(zipFile zfile)
+  {
+    if (m_offsetTableCreated)
+    {
+      return;
+    }
+
+    if (unzGoToFirstFile(zfile) == UNZ_OK)
+    {
+      do
+      {
+        if (unzOpenCurrentFile(zfile) == UNZ_OK)
+        {
+          unz_file_info fileInfo;
+          memset(&fileInfo, 0, sizeof(unz_file_info));
+
+          if
+          (
+            unzGetCurrentFileInfo
+            (
+              zfile,
+              &fileInfo,
+              NULL,
+              0,
+              NULL,
+              0,
+              NULL,
+              0
+            ) == UNZ_OK
+          )
+          {
+            // Get file name
+            char* filename = new char[fileInfo.size_filename + 1]();
+            unzGetCurrentFileInfo
+            (
+              zfile,
+              &fileInfo,
+              filename,
+              fileInfo.size_filename + 1,
+              NULL,
+              0,
+              NULL,
+              0
+            );
+            filename[fileInfo.size_filename] = '\0';
+
+            ZPOS64_T offset = unzGetOffset64(zfile);
+
+            m_zipFilesOffsetTable[filename] = offset;
+
+            delete[] filename;
+          }
+        }
+      } while (unzGoToNextFile(zfile) == UNZ_OK);
+    }
+
+    m_offsetTableCreated = true;
   }
 }  // namespace ToolKit

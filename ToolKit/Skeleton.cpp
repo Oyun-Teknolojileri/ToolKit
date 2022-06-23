@@ -7,6 +7,7 @@
 #include "rapidxml_utils.hpp"
 #include "Util.h"
 #include "DebugNew.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -59,7 +60,7 @@ namespace ToolKit
 
   void Skeleton::Load()
   {
-    XmlFile file(GetFile().c_str());
+    XmlFile file = GetFileManager()->GetXmlFile(GetFile());
     XmlDocument doc;
     doc.parse<0>(file.data());
 

@@ -45,6 +45,7 @@ namespace ToolKit
 
     EditorViewport2d::~EditorViewport2d()
     {
+      delete m_2dViewOptions;
     }
 
     void EditorViewport2d::Show()

@@ -35,7 +35,7 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file(GetFile().c_str());
+    XmlFile file = GetFileManager()->GetXmlFile(GetFile());
     XmlDocument doc;
     doc.parse<rapidxml::parse_full>(file.data());
     if (XmlNode* rootNode = doc.first_node("shader"))

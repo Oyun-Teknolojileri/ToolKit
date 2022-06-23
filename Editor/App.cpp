@@ -137,6 +137,7 @@ namespace ToolKit
       GetCurrentScene()->Destroy(false);
 
       // Editor objects.
+      SafeDel(m_2dGrid);
       SafeDel(m_grid);
       SafeDel(m_origin);
       SafeDel(m_cursor);
