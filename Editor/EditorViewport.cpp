@@ -30,6 +30,7 @@ namespace ToolKit
       nullptr,
       nullptr
     };
+    Vec3 EditorViewport::m_snapDeltas3DView = Vec3(0.25f, 45.0f, 0.25f);
 
     void InitOverlays(EditorViewport* viewport)
     {
@@ -96,6 +97,12 @@ namespace ToolKit
         DrawCommands();
         HandleDrop();
         DrawOverlays();
+        if (m_mouseOverContentArea && g_app->m_snapsEnabled)
+        {
+          g_app->m_moveDelta = m_snapDeltas3DView.x;
+          g_app->m_rotateDelta = m_snapDeltas3DView.y;
+          g_app->m_scaleDelta = m_snapDeltas3DView.z;
+        }
       }
       ImGui::End();
     }

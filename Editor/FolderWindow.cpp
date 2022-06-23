@@ -516,7 +516,7 @@ namespace ToolKit
 
         // Zoom amount
         ImGui::TableNextColumn();
-        ImGui::Text("%%%.0f", GetThumbnailZoomPercent(thumbnailZoom));
+        ImGui::Text("%.0f%%", GetThumbnailZoomPercent(thumbnailZoom));
         // Tooltips
         UI::HelpMarker(TKLoc, "Ctrl + mouse scroll to adjust thumbnail size.");
 

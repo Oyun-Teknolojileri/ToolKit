@@ -22,12 +22,18 @@ namespace ToolKit
 {
   namespace Editor
   {
+    Overlay2DViewportOptions* m_2dViewOptions = nullptr;
+    Vec3 EditorViewport2d::m_snapDeltas2DView = Vec3(0.25f, 45.0f, 0.25f);
 
     EditorViewport2d::EditorViewport2d(XmlNode* node)
       : EditorViewport(node)
     {
       UpdateCanvasSize();
       Init2dCam();
+      if (!m_2dViewOptions)
+      {
+        m_2dViewOptions = new Overlay2DViewportOptions(this);
+      }
     }
 
     EditorViewport2d::EditorViewport2d(float width, float height)
@@ -69,6 +75,12 @@ namespace ToolKit
         DrawCommands();
         HandleDrop();
         DrawOverlays();
+        if (m_mouseOverContentArea && g_app->m_snapsEnabled)
+        {
+          g_app->m_moveDelta = m_snapDeltas2DView.x;
+          g_app->m_rotateDelta = m_snapDeltas2DView.y;
+          g_app->m_scaleDelta = m_snapDeltas2DView.z;
+        }
       }
       ImGui::End();
     }
@@ -99,7 +111,7 @@ namespace ToolKit
       m_viewportImage->m_height = (uint)m_canvasSize.y;
       m_viewportImage->Init();
 
-      AdjustZoom(0.0f);
+      AdjustZoom(FLT_MIN);
     }
 
     Vec2 EditorViewport2d::GetLastMousePosViewportSpace()
@@ -366,8 +378,19 @@ namespace ToolKit
       {
         if (IsActive() || g_app->m_showOverlayUIAlways)
         {
-          for (OverlayUI* overlay : m_overlays)
+          // Draw all overlays except 3DViewportOptions!
+          for (uint32_t i = 0; i < m_overlays.size(); i++)
           {
+            if (i == 1)
+            {
+              m_2dViewOptions->m_scroll = m_scroll;
+              m_2dViewOptions->m_owner = this;
+              m_2dViewOptions->Show();
+              m_2dViewOptions->m_scroll = Vec2();
+              continue;
+            }
+
+            OverlayUI* overlay = m_overlays[i];
             if (overlay)
             {
               overlay->m_scroll = m_scroll;
@@ -386,8 +409,50 @@ namespace ToolKit
 
     void EditorViewport2d::AdjustZoom(float delta)
     {
-      m_zoom -= delta * 0.1f;
-      m_zoom = glm::max(0.1f, m_zoom);
+      if (delta == 0.0f && 100.0f / m_zoomPercentage == m_zoom)
+      {
+        return;
+      }
+      // 0.0f and FLT_MIN can be used to update lens,
+      // so don't change percentage because of 0.0f or FLT_MIN
+      if (delta != 0.0f && delta != FLT_MIN)
+      {
+        int8_t change = (delta < 0) ? (-1) : (1);
+        if (change > 0)
+        {
+          if (m_zoomPercentage == 800)
+          {
+            GetLogger()->WriteConsole(LogType::Warning,
+              "2DViewport's max zoom level is 800!");
+            return;
+          }
+          if (m_zoomPercentage >= 100)
+          {
+            m_zoomPercentage += 100;
+          }
+          else if (m_zoomPercentage < 100)
+          {
+            m_zoomPercentage *= 2;
+          }
+        }
+        else
+        {
+          if (m_zoomPercentage > 100)
+          {
+            m_zoomPercentage -= 100;
+          }
+          else if (m_zoomPercentage <= 100 && m_zoomPercentage > 13)
+          {
+            m_zoomPercentage /= 2;
+          }
+          else
+          {
+            GetLogger()->WriteConsole(LogType::Warning,
+              "2DViewport's min zoom level is 12.5!");
+          }
+        }
+      }
+      m_zoom = 100.0f / m_zoomPercentage;
       GetCamera()->SetLens
       (
         m_canvasSize.x * m_zoom * -0.5f,
@@ -403,7 +468,7 @@ namespace ToolKit
     {
       m_zoom = 1.0f;
       GetCamera()->m_node->SetTranslation(Z_AXIS * 10.0f);
-      AdjustZoom(0.0f);
+      AdjustZoom(FLT_MIN);
     }
 
     void EditorViewport2d::UpdateCanvasSize()
@@ -425,6 +490,9 @@ namespace ToolKit
       Camera* cam = GetCamera();
       if (cam)
       {
+        g_app->m_2dGrid->Resize(
+          m_gridWholeSize,
+          AxisLabel::XY, 0.25f * (1.0f / m_gridCellSizeByPixel));
         // Adjust zoom always.
         if (m_mouseOverContentArea)
         {

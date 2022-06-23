@@ -219,6 +219,7 @@ namespace ToolKit
       static TexturePtr m_lockedIcon;
       static TexturePtr m_unlockedIcon;
       static TexturePtr m_viewZoomIcon;
+      static TexturePtr m_gridIcon;
     };
   }  // namespace Editor
 }  // namespace ToolKit

@@ -71,6 +71,7 @@ namespace ToolKit
     TexturePtr UI::m_lockedIcon;
     TexturePtr UI::m_unlockedIcon;
     TexturePtr UI::m_viewZoomIcon;
+    TexturePtr UI::m_gridIcon;
 
     void UI::Init()
     {
@@ -334,6 +335,11 @@ namespace ToolKit
         TexturePath("Icons/viewzoom.png", true)
       );
       m_viewZoomIcon->Init();
+      m_gridIcon = GetTextureManager()->Create<Texture>
+        (
+        TexturePath("Icons/grid.png", true)
+        );
+      m_gridIcon->Init();
     }
 
     void UI::InitTheme()

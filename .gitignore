@@ -35,3 +35,6 @@
 /Editor/editor.aps
 /Resources/Engine/workspace.settings
 /Web
+Resources/Engine/workspace.settings
+.editorconfig
+/build

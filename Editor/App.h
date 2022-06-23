@@ -147,7 +147,7 @@ namespace ToolKit
 
       // Editor objects.
       Grid* m_grid;
-      LineBatch m_2dGrid;
+      Grid* m_2dGrid;
       Axis3d* m_origin;
       Cursor* m_cursor;
       SpotLightGizmo* m_spotLightGizmo;

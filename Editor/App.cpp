@@ -54,7 +54,7 @@ namespace ToolKit
 
       m_cursor = new Cursor();
       m_origin = new Axis3d();
-      m_grid = new Grid(100);
+      m_grid = new Grid(UVec2(100));
       m_grid->GetMesh()->Init(false);
       Generate2dGrid();
 
@@ -266,7 +266,7 @@ namespace ToolKit
           // Render fixed scene objects.
           if (viewport->GetType() == Window::Type::Viewport2d)
           {
-            m_renderer->Render(&m_2dGrid, cam);
+            m_renderer->Render(m_2dGrid, cam);
           }
           else
           {
@@ -1573,35 +1573,10 @@ Fail:
 
     void App::Generate2dGrid()
     {
-      Vec2 layoutSize = { g_app->m_playWidth, g_app->m_playHeight };
-
-      float stepDist = 20.0f;
-      int yRep = static_cast<int>(layoutSize.x / stepDist);
-      int xRep = static_cast<int>(layoutSize.y / stepDist);
-      int total = xRep * yRep * 2;
-
-      Vec3Array linePnts;
-      linePnts.reserve(total);
-      const float depth = -1.0f;
-
-      Vec2 origin = { layoutSize.x * -0.5f, layoutSize.y * -0.5f };
-      for (int i = 1; i < xRep; i++)
-      {
-        Vec3 p0(origin.x, origin.y + stepDist * i, depth);
-        Vec3 p1(layoutSize.x * 0.5f, origin.y + stepDist * i, depth);
-        linePnts.push_back(p0);
-        linePnts.push_back(p1);
-
-        for (int j = 1; j < yRep; j++)
-        {
-          Vec3 p0(origin.x + stepDist * j, origin.y, depth);
-          Vec3 p1(origin.x + stepDist * j, origin.y + layoutSize.y, depth);
-          linePnts.push_back(p0);
-          linePnts.push_back(p1);
-        }
-      }
-
-      m_2dGrid.Generate(linePnts, Vec3(0.5f), DrawType::Line);
+      m_2dGrid = new Grid(glm::uvec2(g_app->m_playWidth, g_app->m_playHeight));
+      m_2dGrid->Resize(
+        UVec2(g_app->m_playWidth, g_app->m_playHeight),
+        AxisLabel::XY, 0.0025f * 10);  // Generate grid cells 10 x 10
     }
 
     void DebugMessage(const String& msg)
