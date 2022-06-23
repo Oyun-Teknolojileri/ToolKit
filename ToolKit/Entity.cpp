@@ -91,7 +91,7 @@ namespace ToolKit
     other->ClearComponents();
     for (const ComponentPtr& com : m_components)
     {
-      other->m_components.push_back(com->Copy());
+      other->m_components.push_back(com->Copy(other));
     }
 
     return other;

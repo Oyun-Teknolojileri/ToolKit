@@ -119,11 +119,13 @@ namespace ToolKit
 
     EditorPointLight::EditorPointLight()
     {
+      m_gizmo = new PointLightGizmo(this);
     }
 
     EditorPointLight::EditorPointLight(const EditorPointLight* light)
     {
       light->CopyTo(this);
+      m_gizmo = new PointLightGizmo(this);
     }
 
     EditorPointLight::~EditorPointLight()
@@ -131,19 +133,24 @@ namespace ToolKit
       if (m_initialized)
       {
         m_initialized = false;
+        SafeDel(m_gizmo);
       }
     }
 
     Entity* EditorPointLight::Copy() const
     {
       EditorPointLight* cpy = new EditorPointLight();
-      return CopyTo(cpy);
+      WeakCopy(cpy, false);
+      cpy->Init();
+      return cpy;
     }
 
     Entity* EditorPointLight::Instantiate() const
     {
       EditorPointLight* instance = new EditorPointLight();
-      return InstantiateTo(instance);
+      WeakCopy(instance, false);
+      instance->Init();
+      return instance;
     }
 
     bool EditorPointLight::IsDrawable() const
@@ -169,6 +176,45 @@ namespace ToolKit
       GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       mc->Mesh()->CalculateAABB();
       AddComponent(mc);
+
+      m_gizmo->InitGizmo(this);
+
+      // Gizmo
+      for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
+      {
+        MeshPtr mesh = lb->GetMesh();
+        mesh->Init();
+        mc->Mesh()->m_subMeshes.push_back(mesh);
+      }
+
+      m_gizmoActive = true;
+    }
+
+    void EditorPointLight::EnableGizmo(bool enable)
+    {
+      if (enable != m_gizmoActive)
+      {
+        if (enable)
+        {
+          // Add submeshes to mesh component
+          MeshComponentPtr mc = GetComponent<MeshComponent>();
+
+          for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
+          {
+            mc->Mesh()->m_subMeshes.push_back(lb->GetMesh());
+          }
+
+          m_gizmoActive = true;
+        }
+        else
+        {
+          // Remove submeshes from mesh component
+          MeshComponentPtr mc = GetComponent<MeshComponent>();
+          mc->Mesh()->m_subMeshes.clear();
+
+          m_gizmoActive = false;
+        }
+      }
     }
 
     EditorSpotLight::EditorSpotLight()

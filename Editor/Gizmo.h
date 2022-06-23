@@ -195,5 +195,24 @@ namespace ToolKit
 
       Vec3Array m_pnts;
     };
+
+    class PointLightGizmo : public Entity
+    {
+     public:
+      explicit PointLightGizmo(PointLight* light);
+      ~PointLightGizmo();
+
+      void InitGizmo(PointLight* light);
+      std::vector<LineBatch*> GetGizmoLineBatches();
+
+     private:
+      std::vector<LineBatch*> m_gizmoLineBatches;
+
+      int m_circleVertexCount = 30;
+      Vec3Array m_circlePnts1;
+      Vec3Array m_circlePnts2;
+      Vec3Array m_circlePnts3;
+    };
+
   }  // namespace Editor
 }  // namespace ToolKit

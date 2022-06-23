@@ -65,7 +65,7 @@ namespace ToolKit
      * Base class take care of cloning ParameterBlock of the Component.
      * @return Copy of the component.
      */
-    virtual ComponentPtr Copy() = 0;
+    virtual ComponentPtr Copy(Entity* ntt) = 0;
 
     /**
      * Serializes the Component's ParameterBlock to the xml document.
@@ -119,7 +119,7 @@ namespace ToolKit
      * to the scene if the containing Entity gets serialized.
      * @return Copy of the MeshComponent.
      */
-    ComponentPtr Copy() override;
+    ComponentPtr Copy(Entity* ntt) override;
 
     /**
      * Gets the bounding box of the contained Mesh.
@@ -167,7 +167,7 @@ namespace ToolKit
     explicit DirectionComponent(Entity* entity);
     virtual ~DirectionComponent();
 
-    ComponentPtr Copy() override;
+    ComponentPtr Copy(Entity* ntt) override;
 
     // Directional functions
     Vec3 GetDirection();

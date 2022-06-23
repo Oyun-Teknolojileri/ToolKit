@@ -49,9 +49,9 @@ namespace ToolKit
         {
           // Replace lights with EditorLights
           Light* el = reinterpret_cast<Light*>(ntt);
-          LightTypeEnum type = static_cast<LightTypeEnum> (el->LightType());
+          int type = el->LightType();
 
-          if (type == LightTypeEnum::LightDirectional)
+          if (type == 1)  // Directional light
           {
             EditorDirectionalLight* upCasted =
             reinterpret_cast<EditorDirectionalLight*> (ntt);
@@ -61,7 +61,7 @@ namespace ToolKit
             m_entities[i] = light;
             SafeDel(ntt);
           }
-          else if (type == LightTypeEnum::LightPoint)
+          else if (type == 2)  // Point light
           {
             EditorPointLight* upCasted =
             reinterpret_cast<EditorPointLight*> (ntt);
@@ -70,7 +70,7 @@ namespace ToolKit
             m_entities[i] = light;
             SafeDel(ntt);
           }
-          else if (type == LightTypeEnum::LightSpot)
+          else if (type == 3)  // Spot light
           {
             EditorSpotLight* upCasted =
             reinterpret_cast<EditorSpotLight*> (ntt);

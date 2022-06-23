@@ -6,6 +6,7 @@
 #include "Mesh.h"
 #include "ToolKit.h"
 #include "DebugNew.h"
+#include "GlobalDef.h"
 
 namespace ToolKit
 {
@@ -93,7 +94,7 @@ namespace ToolKit
       };
 
       MeshComponentPtr camMeshComp = GetComponent<MeshComponent>();
-      LineBatch frusta(lines, ZERO, DrawType::Line);
+      LineBatch frusta(lines, g_cameraGizmoColor, DrawType::Line);
       camMeshComp->Mesh() = frusta.GetComponent<MeshComponent>()->Mesh();
 
       // Triangle part.

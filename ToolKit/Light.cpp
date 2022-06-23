@@ -62,7 +62,7 @@ namespace ToolKit
     m_localData.m_variants.reserve(m_localData.m_variants.size() + 1);
 
     LightType() = 2;
-    Radius_Define(50.0f, "Light", 90, true, true);
+    Radius_Define(3.0f, "Light", 90, true, true);
   }
 
   LightTypeEnum PointLight::GetLightType() const

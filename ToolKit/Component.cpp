@@ -83,9 +83,10 @@ namespace ToolKit
   {
   }
 
-  ComponentPtr MeshComponent::Copy()
+  ComponentPtr MeshComponent::Copy(Entity* ntt)
   {
     MeshComponentPtr mc = std::make_shared<MeshComponent>();
+    mc->m_entity = ntt;
     mc->m_localData = m_localData;
     if (Material())
     {
@@ -135,10 +136,11 @@ namespace ToolKit
   {
   }
 
-  ComponentPtr DirectionComponent::Copy()
+  ComponentPtr DirectionComponent::Copy(Entity* ntt)
   {
     DirectionComponentPtr dc =
     std::make_shared<DirectionComponent>(m_entity);
+    dc->m_entity = ntt;
     return dc;
   }
 

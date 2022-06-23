@@ -964,8 +964,8 @@ namespace ToolKit
       {
         Vec3 color = currLight->Color();
         float intensity = currLight->Intensity();
-        Vec3 dir =
-        currLight->GetComponent<DirectionComponent>()->GetDirection();
+        Vec3 dir = static_cast<DirectionalLight*>(currLight)->
+        GetComponent<DirectionComponent>()->GetDirection();
 
         GLuint loc = glGetUniformLocation
         (
@@ -1001,22 +1001,17 @@ namespace ToolKit
         (
           TransformationSpace::TS_WORLD
         );
+        SpotLight* spotLight = static_cast<SpotLight*>(currLight);
         Vec3 dir =
-        currLight->GetComponent<DirectionComponent>()->GetDirection();
-        float radius = static_cast<SpotLight*>(currLight)->Radius();
+        spotLight->GetComponent<DirectionComponent>()->GetDirection();
+        float radius = spotLight->Radius();
         float outAngle = glm::cos
         (
-          glm::radians
-          (
-            static_cast<SpotLight*>(currLight)->OuterAngle() / 2.0f
-          )
+          glm::radians(spotLight->OuterAngle() / 2.0f)
         );
         float innAngle = glm::cos
         (
-          glm::radians
-          (
-            static_cast<SpotLight*>(currLight)->InnerAngle() / 2.0f
-          )
+          glm::radians(spotLight->InnerAngle() / 2.0f)
         );
 
         GLuint loc = glGetUniformLocation

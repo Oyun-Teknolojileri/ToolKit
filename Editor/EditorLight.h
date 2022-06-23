@@ -48,6 +48,11 @@ namespace ToolKit
       bool IsDrawable() const override;
 
       void Init() override;
+      void EnableGizmo(bool enable);
+
+     private:
+      PointLightGizmo* m_gizmo = nullptr;
+      bool m_gizmoActive = false;
     };
 
     class EditorSpotLight : public SpotLight

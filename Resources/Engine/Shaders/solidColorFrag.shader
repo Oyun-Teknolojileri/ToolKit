@@ -55,7 +55,7 @@
 				vec3 ambient = vec3(0.0);
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
-				if (LightData.type[i] == 1) // Point light
+				if (LightData.type[i] == 2) // Point light
 				{
 					vec3 fragToLight = LightData.pos[i] - v_pos;
 
@@ -98,7 +98,7 @@
 					diffuse  *= attenuation * radiusCheck;
 					specular *= attenuation * radiusCheck;
 				}
-				else if (LightData.type[i] == 2) // Directional light
+				else if (LightData.type[i] == 1) // Directional light
 				{
 					vec3 l = -LightData.dir[i];
 

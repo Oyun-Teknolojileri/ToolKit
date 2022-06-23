@@ -8,13 +8,12 @@
 
 namespace ToolKit
 {
-
   enum class LightTypeEnum
   {
-    LightBase,
-    LightPoint,
-    LightDirectional,
-    LightSpot
+    LightBase = 0,
+    LightDirectional = 1,
+    LightPoint = 2,
+    LightSpot = 3
   };
 
   class TK_API Light : public Entity
