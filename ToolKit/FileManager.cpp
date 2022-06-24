@@ -1,8 +1,8 @@
 
 #include "FileManager.h"
 
-
 #include <string.h>
+#include <fstream>
 #include <string>
 #include <unordered_map>
 #include <memory>
@@ -14,6 +14,14 @@
 
 namespace ToolKit
 {
+  FileManager::~FileManager()
+  {
+    if (m_zfile)
+    {
+      unzClose(m_zfile);
+    }
+  }
+
   XmlFile FileManager::GetXmlFile(const String& path)
   {
     String pakPath = ConcatPaths({ ResourcePath(), "..", "MinResources.pak" });
@@ -26,20 +34,23 @@ namespace ToolKit
     }
     const char* relativePathC = relativePath.c_str();
 
-    zipFile zfile = unzOpen(pakPath.c_str());
-
-    if (zfile)
+    if (!m_zfile)
     {
-      GenerateOffsetTableForPakFiles(zfile);
+      m_zfile = unzOpen(pakPath.c_str());
+    }
 
-      XmlFile file = ReadXmlFileFromZip(zfile, relativePathC, path.c_str());
-      unzClose(zfile);
+    if (m_zfile)
+    {
+      GenerateOffsetTableForPakFiles(m_zfile);
+      XmlFile file = ReadXmlFileFromZip(m_zfile, relativePathC, path.c_str());
+
       return file;
     }
     else
     {
       // Zip pak not found, read from file at default path
       XmlFile file = XmlFile(path.c_str());
+
       return file;
     }
   }
@@ -63,15 +74,18 @@ namespace ToolKit
     }
     const char* relativePathC = relativePath.c_str();
 
-    zipFile zfile = unzOpen(pakPath.c_str());
-
-    if (zfile)
+    if (!m_zfile)
     {
-      GenerateOffsetTableForPakFiles(zfile);
+      m_zfile = unzOpen(pakPath.c_str());
+    }
+
+    if (m_zfile)
+    {
+      GenerateOffsetTableForPakFiles(m_zfile);
 
       uint8* img = ReadImageFileFromZip
       (
-        zfile,
+        m_zfile,
         relativePathC,
         path.c_str(),
         x,
@@ -79,13 +93,14 @@ namespace ToolKit
         comp,
         reqComp
       );
-      unzClose(zfile);
+
       return img;
     }
     else
     {
       // Zip pak not found
       uint8* img = stbi_load(path.c_str(), x, y, comp, reqComp);
+
       return img;
     }
   }
@@ -259,9 +274,15 @@ namespace ToolKit
       return false;
     }
 
-    fseek(f, 0, SEEK_END);
-    flen = ftell(f);
-    rewind(f);
+    // Get length of the file
+    std::basic_ifstream<char> stream(filename, std::ios::binary);
+    if (!stream)
+    {
+      return false;
+    }
+    stream.unsetf(std::ios::skipws);
+    stream.seekg(0, std::ios::end);  // Determine stream size
+    flen = stream.tellg();
 
     String filenameStr = String(filename);
     size_t index = filenameStr.find("Resources");
@@ -304,14 +325,14 @@ namespace ToolKit
 
     char* fileData = reinterpret_cast<char*>
     (
-      malloc((flen + 1) * static_cast<unsigned int>(sizeof(char)))
+      malloc((flen + 1) * static_cast<uint>(sizeof(char)))
     );
     red = fread(fileData, flen, 1, f);
     ret = zipWriteInFileInZip
     (
       zfile,
       fileData,
-      static_cast<unsigned int>(red * flen)
+      static_cast<uint>(red * flen)
     );
     if (ret != ZIP_OK)
     {
@@ -416,15 +437,11 @@ namespace ToolKit
             (
               zfile,
               relativePath,
-              static_cast<unsigned int>(fileInfo.uncompressed_size)
+              static_cast<uint>(fileInfo.uncompressed_size)
             );
             return file;
           }
         }
-      }
-      else
-      {
-        GetLogger()->Log("TestComesHere2");
       }
     }
 
@@ -480,7 +497,7 @@ namespace ToolKit
             (
               zfile,
               filename,
-              static_cast<unsigned int>(fileInfo.uncompressed_size)
+              static_cast<uint>(fileInfo.uncompressed_size)
             );
 
             delete[] filename;
@@ -537,7 +554,7 @@ namespace ToolKit
             (
               zfile,
               relativePath,
-              static_cast<unsigned int>(fileInfo.uncompressed_size),
+              static_cast<uint>(fileInfo.uncompressed_size),
               x,
               y,
               comp,
@@ -546,10 +563,6 @@ namespace ToolKit
             return img;
           }
         }
-      }
-      else
-      {
-        GetLogger()->Log("TestComesHere1");
       }
     }
 
@@ -606,7 +619,7 @@ namespace ToolKit
             (
               zfile,
               filename,
-              static_cast<unsigned int>(fileInfo.uncompressed_size),
+              static_cast<uint>(fileInfo.uncompressed_size),
               x,
               y,
               comp,
@@ -630,12 +643,12 @@ namespace ToolKit
   (
     zipFile zfile,
     const char* filename,
-    unsigned int filesize
+    uint filesize
   )
   {
     // Read file
     char* fileBuffer = new char[filesize]();
-    int readBytes = unzReadCurrentFile(zfile, fileBuffer, filesize);
+    uint readBytes = unzReadCurrentFile(zfile, fileBuffer, filesize);
     if (readBytes < 0)
     {
       GetLogger()->Log
@@ -651,9 +664,7 @@ namespace ToolKit
     }
 
     // Create XmlFile object
-    _streambuf sbuf(fileBuffer, fileBuffer + filesize);
-    std::basic_istream<char> stream(&sbuf);
-    XmlFile file(stream);
+    XmlFile file(fileBuffer, readBytes);
 
     delete[] fileBuffer;
 
@@ -664,7 +675,7 @@ namespace ToolKit
   (
     zipFile zfile,
     const char* filename,
-    unsigned int filesize,
+    uint filesize,
     int* x,
     int* y,
     int* comp,
@@ -672,7 +683,7 @@ namespace ToolKit
   )
   {
     unsigned char* fileBuffer = new unsigned char[filesize]();
-    int readBytes = unzReadCurrentFile(zfile, fileBuffer, filesize);
+    uint readBytes = unzReadCurrentFile(zfile, fileBuffer, filesize);
     if (readBytes < 0)
     {
       GetLogger()->Log

@@ -14,6 +14,8 @@ namespace ToolKit
   class TK_API FileManager
   {
    public:
+    ~FileManager();
+
     XmlFile GetXmlFile(const String& path);
     uint8* GetImageFile
     (
@@ -24,6 +26,9 @@ namespace ToolKit
       int reqComp
     );
     void PackResources(const String& path);
+
+    void ResetTimers();
+    void LogTimers();
 
    private:
     void LoadAllScenes(const String& path);
@@ -56,13 +61,13 @@ namespace ToolKit
     (
       zipFile zfile,
       const char* filename,
-      unsigned int filesize
+      uint filesize
     );
     uint8* CreateImageFileFromZip
     (
       zipFile zfile,
       const char* filename,
-      unsigned int filesize,
+      uint filesize,
       int* x,
       int* y,
       int* comp,
@@ -75,6 +80,7 @@ namespace ToolKit
     StringSet allPaths;
     std::unordered_map<String, ZPOS64_T> m_zipFilesOffsetTable;
     bool m_offsetTableCreated = false;
+    zipFile m_zfile;
 
     struct _streambuf : std::streambuf
     {
