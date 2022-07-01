@@ -63,7 +63,7 @@ namespace rapidxml
         file(const char* buffer, unsigned int size)
         {
           m_data.reserve(size + 1);
-          m_data = std::vector<char>(buffer, buffer + size);
+          m_data = std::vector<char>(buffer, buffer + size + 1);
           m_data[size] = 0;
         }
         

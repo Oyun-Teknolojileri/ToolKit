@@ -1,11 +1,11 @@
 #pragma once
 
+#include <unordered_map>
+#include <memory>
+
 #include "Types.h"
 #include "Util.h"
 #include "Logger.h"
-
-#include <unordered_map>
-#include <memory>
 
 namespace ToolKit
 {
@@ -29,7 +29,7 @@ namespace ToolKit
 
   class TK_API ResourceManager
   {
-  public:
+   public:
     ResourceManager();
     virtual ~ResourceManager();
     virtual void Init();
@@ -46,7 +46,10 @@ namespace ToolKit
     {
       if (!Exist(file))
       {
-        std::shared_ptr<T> resource = std::static_pointer_cast<T> (CreateLocal(T::GetTypeStatic()));
+        std::shared_ptr<T> resource = std::static_pointer_cast<T>
+        (
+          CreateLocal(T::GetTypeStatic())
+        );
         if (!CheckFile(file))
         {
           String def = GetDefaultResource(T::GetTypeStatic());
@@ -65,7 +68,7 @@ namespace ToolKit
         {
           resource->SetFile(file);
         }
-        
+
         resource->Load();
         m_storage[file] = resource;
       }
@@ -77,13 +80,14 @@ namespace ToolKit
     ResourcePtr Remove(const String& file);
     virtual ResourcePtr CreateLocal(ResourceType type) = 0;
 
-  protected:
+   protected:
     void Report(const char* msg, ...);
 
-  public:
-    std::function<void(const String&)> m_reporterFn = nullptr; // Log callback, if provided messages passed to callback.
+   public:
+     // Log callback, if provided messages passed to callback.
+    std::function<void(const String&)> m_reporterFn = nullptr;
     std::unordered_map<String, ResourcePtr> m_storage;
     ResourceType m_type = ResourceType::Base;
   };
 
-}
+}  // namespace ToolKit

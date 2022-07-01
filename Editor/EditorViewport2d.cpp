@@ -1,4 +1,7 @@
 #include "EditorViewport2d.h"
+
+#include <algorithm>
+
 #include "Directional.h"
 #include "Renderer.h"
 #include "App.h"
@@ -15,8 +18,7 @@
 #include "Util.h"
 #include "DebugNew.h"
 #include "Light.h"
-
-#include <algorithm>
+#include "FileManager.h"
 
 namespace ToolKit
 {

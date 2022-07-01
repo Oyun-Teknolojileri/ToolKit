@@ -16,7 +16,7 @@ namespace ToolKit
    public:
     ~FileManager();
 
-    XmlFile GetXmlFile(const String& path);
+    XmlFile GetXmlFile(const String& filePath);
     uint8* GetImageFile
     (
       const String& path,
@@ -27,8 +27,7 @@ namespace ToolKit
     );
     void PackResources(const String& path);
 
-    void ResetTimers();
-    void LogTimers();
+    bool CheckFileFromResources(const String& path);
 
    private:
     void LoadAllScenes(const String& path);
@@ -40,17 +39,17 @@ namespace ToolKit
     void GetAnimationPaths(const String& path);
     void GetScenePaths(const String& path);
 
-    String GetRelativeResourcesPath(const String& path);
+    void GetRelativeResourcesPath(String& path);
     XmlFile ReadXmlFileFromZip
     (
       zipFile zfile,
-      const char* relativePath,
+      const String& relativePath,
       const char* path
     );
     uint8* ReadImageFileFromZip
     (
       zipFile zfile,
-      const char* relativePath,
+      const String& relativePath,
       const char* path,
       int* x,
       int* y,
@@ -60,13 +59,13 @@ namespace ToolKit
     XmlFile CreateXmlFileFromZip
     (
       zipFile zfile,
-      const char* filename,
+      const String& filename,
       uint filesize
     );
     uint8* CreateImageFileFromZip
     (
       zipFile zfile,
-      const char* filename,
+      const String& filename,
       uint filesize,
       int* x,
       int* y,
@@ -74,7 +73,8 @@ namespace ToolKit
       int reqComp
     );
 
-    void GenerateOffsetTableForPakFiles(zipFile zfile);
+    void GenerateOffsetTableForPakFiles();
+    bool IsFileInPak(const String& filename);
 
    private:
     StringSet allPaths;

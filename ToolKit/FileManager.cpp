@@ -22,17 +22,13 @@ namespace ToolKit
     }
   }
 
-  XmlFile FileManager::GetXmlFile(const String& path)
+  XmlFile FileManager::GetXmlFile(const String& filePath)
   {
     String pakPath = ConcatPaths({ ResourcePath(), "..", "MinResources.pak" });
 
     // Get relative path from Resources directory
-    String relativePath = GetRelativeResourcesPath(path);
-    if (relativePath.empty())
-    {
-      return nullptr;
-    }
-    const char* relativePathC = relativePath.c_str();
+    String relativePath = filePath;
+    GetRelativeResourcesPath(relativePath);
 
     if (!m_zfile)
     {
@@ -41,15 +37,21 @@ namespace ToolKit
 
     if (m_zfile)
     {
-      GenerateOffsetTableForPakFiles(m_zfile);
-      XmlFile file = ReadXmlFileFromZip(m_zfile, relativePathC, path.c_str());
+      GenerateOffsetTableForPakFiles();
+
+      XmlFile file = ReadXmlFileFromZip
+      (
+        m_zfile,
+        relativePath,
+        filePath.c_str()
+      );
 
       return file;
     }
     else
     {
       // Zip pak not found, read from file at default path
-      XmlFile file = XmlFile(path.c_str());
+      XmlFile file = XmlFile(filePath.c_str());
 
       return file;
     }
@@ -67,7 +69,8 @@ namespace ToolKit
     String pakPath = ConcatPaths({ ResourcePath(), "..", "MinResources.pak" });
 
     // Get relative path from Resources directory
-    String relativePath = GetRelativeResourcesPath(path);
+    String relativePath = path;
+    GetRelativeResourcesPath(relativePath);
     if (relativePath.empty())
     {
       return nullptr;
@@ -81,7 +84,7 @@ namespace ToolKit
 
     if (m_zfile)
     {
-      GenerateOffsetTableForPakFiles(m_zfile);
+      GenerateOffsetTableForPakFiles();
 
       uint8* img = ReadImageFileFromZip
       (
@@ -123,6 +126,18 @@ namespace ToolKit
     {
       GetLogger()->WriteConsole(LogType::Memo, "Resources packed.");
     }
+  }
+
+  bool FileManager::CheckFileFromResources(const String& path)
+  {
+    if (!Main::GetInstance()->m_resourceRoot.empty())
+    {
+      GenerateOffsetTableForPakFiles();
+    }
+
+    String relativePath = path;
+    GetRelativeResourcesPath(relativePath);
+    return std::filesystem::exists(path) || IsFileInPak(relativePath);
   }
 
   void FileManager::LoadAllScenes(const String& path)
@@ -378,37 +393,27 @@ namespace ToolKit
     }
   }
 
-  String FileManager::GetRelativeResourcesPath(const String& path)
+  void FileManager::GetRelativeResourcesPath(String& path)
   {
-    String filenameStr = String(path);
-    size_t index = filenameStr.find("Resources");
+    size_t index = path.find("Resources");
     if (index != String::npos)
     {
       constexpr int length = sizeof("Resources");
-      filenameStr = filenameStr.substr(index + length);
-      return filenameStr;
-    }
-    else
-    {
-      GetLogger()->WriteConsole
-      (
-        LogType::Error,
-        "Resource is not under resources path: %s",
-        path
-      );
-      return "";
+      path = path.substr(index + length);
     }
   }
 
   XmlFile FileManager::ReadXmlFileFromZip
   (
     zipFile zfile,
-    const char* relativePath,
+    const String& relativePath,
     const char* path
   )
   {
     // Check offset map of file
-    ZPOS64_T offset = m_zipFilesOffsetTable[relativePath];
+    String unixifiedPath = relativePath;
+    UnixifyPath(unixifiedPath);
+    ZPOS64_T offset = m_zipFilesOffsetTable[unixifiedPath];
     if (offset != 0)
     {
       if (unzSetOffset64(zfile, offset) == UNZ_OK)
@@ -486,9 +491,9 @@ namespace ToolKit
             );
             filename[fileInfo.size_filename] = '\0';
 
-            if (strcmp(filename, relativePath))
+            if (strcmp(filename, relativePath.c_str()))
             {
-              delete[] filename;
+              SafeDelArray(filename);
               unzCloseCurrentFile(zfile);
               continue;
             }
@@ -500,7 +505,7 @@ namespace ToolKit
               static_cast<uint>(fileInfo.uncompressed_size)
             );
 
-            delete[] filename;
+            SafeDelArray(filename);
 
             return file;
           }
@@ -516,7 +521,7 @@ namespace ToolKit
   uint8* FileManager::ReadImageFileFromZip
   (
     zipFile zfile,
-    const char* relativePath,
+    const String& relativePath,
     const char* path,
     int* x,
     int* y,
@@ -525,7 +530,9 @@ namespace ToolKit
   )
   {
     // Check offset map of file
-    ZPOS64_T offset = m_zipFilesOffsetTable[relativePath];
+    String unixifiedPath = relativePath;
+    UnixifyPath(unixifiedPath);
+    ZPOS64_T offset = m_zipFilesOffsetTable[unixifiedPath];
     if (offset != 0)
     {
       if (unzSetOffset64(zfile, offset) == UNZ_OK)
@@ -607,9 +614,9 @@ namespace ToolKit
             );
             filename[fileInfo.size_filename] = '\0';
 
-            if (strcmp(filename, relativePath))
+            if (strcmp(filename, relativePath.c_str()))
             {
-              delete[] filename;
+              SafeDelArray(filename);
               unzCloseCurrentFile(zfile);
               continue;
             }
@@ -626,7 +633,7 @@ namespace ToolKit
               reqComp
             );
 
-            delete[] filename;
+            SafeDelArray(filename);
 
             return img;
           }
@@ -642,7 +649,7 @@ namespace ToolKit
   XmlFile FileManager::CreateXmlFileFromZip
   (
     zipFile zfile,
-    const char* filename,
+    const String& filename,
     uint filesize
   )
   {
@@ -653,20 +660,20 @@ namespace ToolKit
     {
       GetLogger()->Log
       (
-        "Error reading compressed file: " + String(filename)
+        "Error reading compressed file: " + filename
       );
       GetLogger()->WriteConsole
       (
         LogType::Error,
         "Error reading compressed file: %s",
-        filename
+        filename.c_str()
       );
     }
 
     // Create XmlFile object
     XmlFile file(fileBuffer, readBytes);
 
-    delete[] fileBuffer;
+    SafeDelArray(fileBuffer);
 
     return file;
   }
@@ -674,7 +681,7 @@ namespace ToolKit
   uint8* FileManager::CreateImageFileFromZip
   (
     zipFile zfile,
-    const char* filename,
+    const String& filename,
     uint filesize,
     int* x,
     int* y,
@@ -688,13 +695,13 @@ namespace ToolKit
     {
       GetLogger()->Log
       (
-        "Error reading compressed file: " + String(filename)
+        "Error reading compressed file: " + filename
       );
       GetLogger()->WriteConsole
       (
         LogType::Error,
         "Error reading compressed file: %s",
-        filename
+        filename.c_str()
       );
     }
 
@@ -709,23 +716,30 @@ namespace ToolKit
       reqComp
     );
 
-    delete[] fileBuffer;
+    SafeDelArray(fileBuffer);
 
     return img;
   }
 
-  void FileManager::GenerateOffsetTableForPakFiles(zipFile zfile)
+  void FileManager::GenerateOffsetTableForPakFiles()
   {
     if (m_offsetTableCreated)
     {
       return;
     }
 
-    if (unzGoToFirstFile(zfile) == UNZ_OK)
+    String pakPath = ConcatPaths({ ResourcePath(), "..", "MinResources.pak" });
+
+    if (!m_zfile)
+    {
+      m_zfile = unzOpen(pakPath.c_str());
+    }
+
+    if (unzGoToFirstFile(m_zfile) == UNZ_OK)
     {
       do
       {
-        if (unzOpenCurrentFile(zfile) == UNZ_OK)
+        if (unzOpenCurrentFile(m_zfile) == UNZ_OK)
         {
           unz_file_info fileInfo;
           memset(&fileInfo, 0, sizeof(unz_file_info));
@@ -734,7 +748,7 @@ namespace ToolKit
           (
             unzGetCurrentFileInfo
             (
-              zfile,
+              m_zfile,
               &fileInfo,
               NULL,
               0,
@@ -749,7 +763,7 @@ namespace ToolKit
             char* filename = new char[fileInfo.size_filename + 1]();
             unzGetCurrentFileInfo
             (
-              zfile,
+              m_zfile,
               &fileInfo,
               filename,
               fileInfo.size_filename + 1,
@@ -760,16 +774,34 @@ namespace ToolKit
             );
             filename[fileInfo.size_filename] = '\0';
 
-            ZPOS64_T offset = unzGetOffset64(zfile);
+            ZPOS64_T offset = unzGetOffset64(m_zfile);
 
-            m_zipFilesOffsetTable[filename] = offset;
+            // Unixfy the path
+            String filenameStr(filename);
+            UnixifyPath(filenameStr);
 
-            delete[] filename;
+            m_zipFilesOffsetTable[filenameStr.c_str()] = offset;
+
+            SafeDelArray(filename);
           }
         }
-      } while (unzGoToNextFile(zfile) == UNZ_OK);
+      } while (unzGoToNextFile(m_zfile) == UNZ_OK);
     }
 
     m_offsetTableCreated = true;
+  }
+
+  bool FileManager::IsFileInPak(const String& filename)
+  {
+    if
+    (
+      m_zipFilesOffsetTable.find(filename.c_str())
+      == m_zipFilesOffsetTable.end()
+    )
+    {
+      return false;
+    }
+
+    return true;
   }
 }  // namespace ToolKit

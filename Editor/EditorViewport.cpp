@@ -17,6 +17,7 @@
 #include "Mod.h"
 #include "Util.h"
 #include "DebugNew.h"
+#include "FileManager.h"
 
 
 namespace ToolKit
