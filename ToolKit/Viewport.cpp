@@ -2,7 +2,8 @@
 
 #include <algorithm>
 
-#include "Directional.h"
+#include "Camera.h"
+#include "DirectionComponent.h"
 #include "Renderer.h"
 #include "Node.h"
 #include "Primative.h"

@@ -1,6 +1,7 @@
 
 #include "Light.h"
 #include "Component.h"
+#include "DirectionComponent.h"
 
 #include <string>
 

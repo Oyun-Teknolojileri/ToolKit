@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "Directional.h"
+#include "Camera.h"
 #include "Renderer.h"
 #include "App.h"
 #include "GlobalDef.h"
@@ -16,6 +16,7 @@
 #include "Gizmo.h"
 #include "Mod.h"
 #include "Util.h"
+#include "DirectionComponent.h"
 #include "DebugNew.h"
 #include "FileManager.h"
 
@@ -629,7 +630,7 @@ namespace ToolKit
       EditorScenePtr currScene = g_app->GetCurrentScene();
 
       // Asset drag and drop loading variables
-      static Drawable* boundingBox = nullptr;
+      static LineBatch* boundingBox = nullptr;
       static bool meshLoaded = false;
       static bool meshAddedToScene = false;
       static Drawable* dwMesh = nullptr;
@@ -804,7 +805,7 @@ namespace ToolKit
       DirectoryEntry dragEntry,
       ImGuiIO io,
       Drawable** dwMesh,
-      Drawable** boundingBox,
+      LineBatch** boundingBox,
       EditorScenePtr currScene
     )
     {
@@ -842,7 +843,7 @@ namespace ToolKit
       bool& meshLoaded,
       EditorScenePtr currScene,
       Drawable* dwMesh,
-      Drawable** boundingBox
+      LineBatch** boundingBox
     )
     {
       Vec3 lastDragMeshPos = Vec3(0.0f);
@@ -902,7 +903,7 @@ namespace ToolKit
       bool& meshAddedToScene,
       EditorScenePtr currScene,
       Drawable** dwMesh,
-      Drawable** boundingBox
+      LineBatch** boundingBox
     )
     {
       if (meshLoaded && !ImGui::IsMouseDragging(0))

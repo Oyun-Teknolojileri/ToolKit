@@ -12,10 +12,10 @@
 #include "Serialize.h"
 
 /**
-* @def TKDeclareParam(Class, Name) Auto generated code for declaring accessing
-* local data for container Class.
+* @def TKDeclareParam(Class, Name) Auto generates the code for accessing and 
+* serialization of local data in the container Class.
 * Any class which needs managed ParameterBlocks must declare
-* ParameterBlock m_localData object. For each ParameterVariant, this macro
+* ParameterBlock m_localData member. For each ParameterVariant, this macro
 * can be utilized to generate access methods for the corresponding
 * ParameterVariant.
 * @param Class One of the supported types by ParameterVariant.
@@ -41,10 +41,33 @@
   } \
   public: inline const Class& Name##C() const { \
     return m_localData[Name##_Index].GetCVar<Class>(); \
+  } \
+  public: inline size_t Name##Index() { \
+    return Name##_Index; \
   }
 
 namespace ToolKit
 {
+
+  typedef
+  std::variant
+    <
+    bool,
+    byte,
+    ubyte,
+    float,
+    int,
+    uint,
+    Vec2,
+    Vec3,
+    Vec4,
+    Mat3,
+    Mat4,
+    String,
+    ULongID,
+    MeshPtr,
+    MaterialPtr
+    > Value;
 
   /**
   * The category to group / access / sort and display the ParameterVariant.
@@ -102,6 +125,7 @@ namespace ToolKit
     */
     enum class VariantType
     {
+      // Order is important. Don't change it.
       byte,
       ubyte,
       Float,
@@ -115,7 +139,8 @@ namespace ToolKit
       Bool,
       ULongID,
       MeshPtr,
-      MaterialPtr
+      MaterialPtr,
+      Vec2
     };
 
     /**
@@ -157,6 +182,11 @@ namespace ToolKit
     * Constructs uint type variant.
     */
     explicit ParameterVariant(uint var);
+
+    /**
+    * Constructs Vec2 type variant.
+    */
+    explicit ParameterVariant(const Vec2& var);
 
     /**
     * Constructs Vec3 type variant.
@@ -272,6 +302,11 @@ namespace ToolKit
     ParameterVariant& operator= (uint var);
 
     /**
+    * Assign a Vec2 to the value of the variant.
+    */
+    ParameterVariant& operator= (const Vec2& var);
+
+    /**
     * Assign a Vec3 to the value of the variant.
     */
     ParameterVariant& operator= (const Vec3& var);
@@ -351,24 +386,26 @@ namespace ToolKit
     VariantCategory m_category;
     String m_name;  //<! Name of the variant.
 
+    /**
+    * Callback function for value changes. This function gets called before
+    * new value set.
+    */
+    std::function<void(Value& oldVal, Value& newVal)> m_onValueChangedFn;
+
    private:
-    std::variant
-      <
-      bool,
-      byte,
-      ubyte,
-      float,
-      int,
-      uint,
-      Vec3,
-      Vec4,
-      Mat3,
-      Mat4,
-      String,
-      ULongID,
-      MeshPtr,
-      MaterialPtr
-      > m_var;  //!< The variant that hold the actual data.
+    template<typename T>
+    void AsignVal(T& val)
+    {
+      Value newVal = val;
+      if (m_onValueChangedFn)
+      {
+        m_onValueChangedFn(m_var, newVal);
+      }
+      m_var = newVal;
+    }
+
+   private:
+    Value m_var;  //!< The variant that hold the actual data.
 
     VariantType m_type = VariantType::Int;  //!< Type of the variant.
   };
@@ -423,8 +460,15 @@ namespace ToolKit
     * descending order by request.
     * @param categories An array to return unique categories.
     * @param sortDesc Sorts the categories by priority in descending order.
+    * @param filterByExpose Filters out categories which does not contains any
+    * exposed Variants.
     */
-    void GetCategories(VariantCategoryArray& categories, bool sortDesc);
+    void GetCategories
+    (
+      VariantCategoryArray& categories,
+      bool sortDesc,
+      bool filterByExpose
+    );
 
     /**
     * Collects every variant by the given category.

@@ -5,6 +5,7 @@
 #include "Primative.h"
 #include "Mesh.h"
 #include "ToolKit.h"
+#include "ResourceComponent.h"
 #include "DebugNew.h"
 #include "GlobalDef.h"
 

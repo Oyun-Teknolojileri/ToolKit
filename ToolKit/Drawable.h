@@ -5,7 +5,10 @@
 namespace ToolKit
 {
 
-  class TK_API Drawable : public Entity
+  // Deprecated.
+  // Still exist for backward compatibility. If you need a drawable object
+  // consider adding a MeshComponent to an entity.
+  class TK_API Drawable final : public Entity
   {
    public:
     Drawable();

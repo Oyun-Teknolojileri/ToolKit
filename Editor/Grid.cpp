@@ -13,6 +13,8 @@ namespace ToolKit
 
     Grid::Grid(UVec2 size)
     {
+      AddComponent(new MeshComponent());
+
       // Create grid material.
       if (!GetMaterialManager()->Exist(g_gridMaterialName))
       {
@@ -66,7 +68,7 @@ namespace ToolKit
           axises[0] = true; axises[2] = true;
         }
       }
-      MeshPtr& parentMesh = GetMesh();
+      MeshPtr& parentMesh = GetMeshComponent()->Mesh();
       parentMesh->UnInit();
       glm::vec2 scale = glm::vec2(m_size) * glm::vec2(0.5f);
 
@@ -81,7 +83,7 @@ namespace ToolKit
       for (int i = 0; i < 4; i++)
       {
         Quad quad;
-        MeshPtr& mesh = quad.GetMesh();
+        MeshPtr& mesh = quad.GetMeshComponent()->Mesh();
         for (int j = 0; j < 4; j++)
         {
           ToolKit::Vertex& clientVertex = mesh->m_clientSideVertices[j];
@@ -114,7 +116,7 @@ namespace ToolKit
         mesh->m_material = m_material;
         if (i == 0)
         {
-          SetMesh(mesh);
+          GetMeshComponent()->Mesh() = mesh;
         }
         else
         {
@@ -173,7 +175,7 @@ namespace ToolKit
         }
 
         Quad quad;
-        MeshPtr& mesh = quad.GetMesh();
+        MeshPtr& mesh = quad.GetMeshComponent()->Mesh();
         for (int j = 0; j < 4; j++)
         {
           Vertex& clientVertex = mesh->m_clientSideVertices[j];

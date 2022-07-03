@@ -1368,6 +1368,39 @@ namespace ToolKit
       return newPushState;
     }
 
+    float g_centeredTextOffset = 0.0f;
+    bool UI::BeginCenteredTextButton(const String& text, const String& id)
+    {
+      assert
+      (
+        g_centeredTextOffset == 0.0f &&
+        "Begin / End CenteredTextButton mismatch !"
+      );
+
+      Vec2 min = ImGui::GetWindowContentRegionMin();
+      Vec2 max = ImGui::GetWindowContentRegionMax();
+      Vec2 size = max - min;
+
+      ImGui::AlignTextToFramePadding();
+      ImVec2 tSize = ImGui::CalcTextSize(text.c_str());
+      g_centeredTextOffset = (size.x - tSize.x) * 0.5f;
+      ImGui::Indent(g_centeredTextOffset);
+
+      String buttonText = text;
+      if (!id.empty())
+      {
+        buttonText += "##" + id;
+      }
+
+      return ImGui::Button(buttonText.c_str());
+    }
+
+    void UI::EndCenteredTextButton()
+    {
+      ImGui::Indent(-g_centeredTextOffset);
+      g_centeredTextOffset = 0.0f;
+    }
+
     Window::Window()
     {
       m_id = ++m_baseId;

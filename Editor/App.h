@@ -154,7 +154,7 @@ namespace ToolKit
       LightBillboard* m_pointLightBillboard;
       LightBillboard* m_directionalLightBillboard;
       Gizmo* m_gizmo = nullptr;
-      std::vector<Drawable*> m_perFrameDebugObjects;
+      std::vector<Entity*> m_perFrameDebugObjects;
 
       // 3 point lighting system.
       Node* m_lightMaster = nullptr;

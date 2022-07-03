@@ -6,6 +6,8 @@
 
 #include "ToolKit.h"
 #include "Util.h"
+#include "Component.h"
+#include "ResourceComponent.h"
 #include "DebugNew.h"
 
 namespace ToolKit

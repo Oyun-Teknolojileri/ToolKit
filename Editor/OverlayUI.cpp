@@ -4,9 +4,9 @@
 #include "Mod.h"
 #include "ConsoleWindow.h"
 #include "EditorCamera.h"
-#include "DebugNew.h"
 #include "EditorLight.h"
 #include "EditorViewport2d.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -246,25 +246,25 @@ namespace ToolKit
           if (ImGui::MenuItem("Plane"))
           {
             Quad* plane = new Quad();
-            plane->GetMesh()->Init(false);
+            plane->GetMeshComponent()->Init(false);
             currScene->AddEntity(plane);
           }
           if (ImGui::MenuItem("Cube"))
           {
             Cube* cube = new Cube();
-            cube->GetMesh()->Init(false);
+            cube->GetMeshComponent()->Init(false);
             currScene->AddEntity(cube);
           }
           if (ImGui::MenuItem("Sphere"))
           {
             Sphere* sphere = new Sphere();
-            sphere->GetMesh()->Init(false);
+            sphere->GetMeshComponent()->Init(false);
             currScene->AddEntity(sphere);
           }
           if (ImGui::MenuItem("Cone"))
           {
             Cone* cone = new Cone({ 1.0f, 1.0f, 30, 30 });
-            cone->GetMesh()->Init(false);
+            cone->GetMeshComponent()->Init(false);
             currScene->AddEntity(cone);
           }
           if (ImGui::MenuItem("Monkey"))
@@ -291,14 +291,14 @@ namespace ToolKit
               Vec2(100.0f, 30.0f),
               Vec2 (0.0f, 0.0f)
             );
-            suface->GetMesh()->Init(false);
+            suface->GetMeshComponent()->Init(false);
             currScene->AddEntity(suface);
           }
 
           if (ImGui::MenuItem("Button"))
           {
             Surface* suface = new Button(Vec2(100.0f, 30.0f));
-            suface->GetMesh()->Init(false);
+            suface->GetMeshComponent()->Init(false);
             currScene->AddEntity(suface);
           }
           ImGui::EndMenu();
@@ -668,269 +668,290 @@ namespace ToolKit
 
     void Overlay2DViewportOptions::Show()
     {
-        assert(m_owner);
-        if (m_owner == nullptr)
+      assert(m_owner);
+      if (m_owner == nullptr)
+      {
+        return;
+      }
+
+      auto ShowAddMenuFn = []() -> void
+      {
+        EditorScenePtr currScene = g_app->GetCurrentScene();
+
+        if (ImGui::MenuItem("Surface"))
         {
-            return;
+          Surface* suface = new Surface
+          (
+            Vec2(100.0f, 30.0f),
+            Vec2(0.0f, 0.0f)
+          );
+          suface->GetMeshComponent()->Init(false);
+          currScene->AddEntity(suface);
         }
 
-        auto ShowAddMenuFn = []() -> void
+        if (ImGui::MenuItem("Button"))
         {
-            EditorScenePtr currScene = g_app->GetCurrentScene();
+          Surface* suface = new Button(Vec2(100.0f, 30.0f));
+          suface->GetMeshComponent()->Init(false);
+          currScene->AddEntity(suface);
+        }
 
-            if (ImGui::MenuItem("Surface"))
-            {
-                Surface* suface = new Surface
-                (
-                    Vec2(100.0f, 30.0f),
-                    Vec2(0.0f, 0.0f)
-                );
-                suface->GetMesh()->Init(false);
-                currScene->AddEntity(suface);
-            }
+        ImGui::Separator();
+        if (ImGui::MenuItem("Node"))
+        {
+          Entity* node = Entity::CreateByType(EntityType::Entity_Node);
+          currScene->AddEntity(node);
+        }
+      };
 
-            if (ImGui::MenuItem("Button"))
-            {
-                Surface* suface = new Button(Vec2(100.0f, 30.0f));
-                suface->GetMesh()->Init(false);
-                currScene->AddEntity(suface);
-            }
+      ImVec2 overlaySize(300, 30);
 
+      // Center the toolbar.
+      float width = ImGui::GetWindowContentRegionWidth();
+      float offset = (width - overlaySize.x) * 0.5f;
+      ImGui::SameLine(offset);
 
-            ImGui::Separator();
-            if (ImGui::MenuItem("Node"))
-            {
-                Entity* node = Entity::CreateByType(EntityType::Entity_Node);
-                currScene->AddEntity(node);
-            }
-        };
+      ImGui::SetNextWindowBgAlpha(0.65f);
+      if
+      (
+        ImGui::BeginChildFrame
+        (
+          ImGui::GetID("ViewportOptions"),
+          overlaySize,
+          ImGuiWindowFlags_NoMove
+          | ImGuiWindowFlags_NoTitleBar
+          | ImGuiWindowFlags_NoScrollbar
+          | ImGuiWindowFlags_NoScrollWithMouse
+        )
+      )
+      {
+        SetOwnerState();
 
-        ImVec2 overlaySize(300, 30);
+        ImGui::BeginTable
+        (
+          "##SettingsBar",
+          8,
+          ImGuiTableFlags_SizingStretchProp
+        );
+        ImGui::TableNextRow();
 
-        // Center the toolbar.
-        float width = ImGui::GetWindowContentRegionWidth();
-        float offset = (width - overlaySize.x) * 0.5f;
-        ImGui::SameLine(offset);
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Image
+        (
+          Convert2ImGuiTexture(UI::m_worldIcon),
+          ImVec2(20.0f, 20.0f)
+        );
 
-        ImGui::SetNextWindowBgAlpha(0.65f);
+        ImGui::TableSetColumnIndex(1);
+        if (ImGui::Button("Add"))
+        {
+          ImGui::OpenPopup("##AddMenu");
+        }
+
+        if (ImGui::BeginPopup("##AddMenu"))
+        {
+          ShowAddMenuFn();
+          ImGui::EndPopup();
+        }
+
+        ImGui::TableSetColumnIndex(2);
+        ImGui::Image
+        (
+          Convert2ImGuiTexture(UI::m_axisIcon),
+          ImVec2(20.0f, 20.0f)
+        );
+
+        // Transform orientation combo.
+        ImGuiStyle& style = ImGui::GetStyle();
+        // float spacing = style.ItemInnerSpacing.x;
+
+        const char* itemsOrient[] = { "World", "Parent", "Local" };
+        static int currentItemOrient = 0;
+
+        static bool change = false;
+        ImGui::TableSetColumnIndex(3);
+        ImGui::PushItemWidth(72);
         if
-            (
-            ImGui::BeginChildFrame
-            (
-            ImGui::GetID("ViewportOptions"),
-            overlaySize,
-            ImGuiWindowFlags_NoMove
-            | ImGuiWindowFlags_NoTitleBar
-            | ImGuiWindowFlags_NoScrollbar
-            | ImGuiWindowFlags_NoScrollWithMouse
-            )
-            )
+        (
+          ImGui::BeginCombo("##TRS",
+          itemsOrient[currentItemOrient],
+          ImGuiComboFlags_None)
+        )
         {
-            SetOwnerState();
-
-            ImGui::BeginTable
-            (
-                "##SettingsBar",
-                8,
-                ImGuiTableFlags_SizingStretchProp
-            );
-            ImGui::TableNextRow();
-
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Image
-            (
-                Convert2ImGuiTexture(UI::m_worldIcon),
-                ImVec2(20.0f, 20.0f)
-            );
-
-            ImGui::TableSetColumnIndex(1);
-            if (ImGui::Button("Add"))
+          for (int n = 0; n < IM_ARRAYSIZE(itemsOrient); n++)
+          {
+            bool is_selected = (currentItemOrient == n);
+            if (ImGui::Selectable(itemsOrient[n], is_selected))
             {
-                ImGui::OpenPopup("##AddMenu");
+              if (currentItemOrient != n)
+              {
+                change = true;
+              }
+              currentItemOrient = n;
             }
 
-            if (ImGui::BeginPopup("##AddMenu"))
+            if (is_selected)
             {
-                ShowAddMenuFn();
-                ImGui::EndPopup();
+              ImGui::SetItemDefaultFocus();
             }
-
-
-            ImGui::TableSetColumnIndex(2);
-            ImGui::Image
-            (
-                Convert2ImGuiTexture(UI::m_axisIcon),
-                ImVec2(20.0f, 20.0f)
-            );
-
-            // Transform orientation combo.
-            ImGuiStyle& style = ImGui::GetStyle();
-            // float spacing = style.ItemInnerSpacing.x;
-
-            const char* itemsOrient[] = { "World", "Parent", "Local" };
-            static int currentItemOrient = 0;
-
-            static bool change = false;
-            ImGui::TableSetColumnIndex(3);
-            ImGui::PushItemWidth(72);
-            if
-                (
-                ImGui::BeginCombo("##TRS",
-                itemsOrient[currentItemOrient],
-                ImGuiComboFlags_None)
-                )
-            {
-                for (int n = 0; n < IM_ARRAYSIZE(itemsOrient); n++)
-                {
-                    bool is_selected = (currentItemOrient == n);
-                    if (ImGui::Selectable(itemsOrient[n], is_selected))
-                    {
-                        if (currentItemOrient != n)
-                        {
-                            change = true;
-                        }
-                        currentItemOrient = n;
-                    }
-
-                    if (is_selected)
-                    {
-                        ImGui::SetItemDefaultFocus();
-                    }
-                }
-                ImGui::EndCombo();
-            }
-            ImGui::PopItemWidth();
-
-            if (change)
-            {
-                String ts;
-                switch (currentItemOrient)
-                {
-                    case 1:
-                    ts = "parent";
-                    break;
-                    case 2:
-                    ts = "local";
-                    break;
-                    case 0:
-                    default:
-                    ts = "world";
-                    break;
-                }
-
-                String cmd = "SetTransformOrientation " + ts;
-                g_app->GetConsole()->ExecCommand(cmd);
-            }
-            UI::HelpMarker(TKLoc + m_owner->m_name, "Transform orientations\n");
-
-            // Auto snap.
-            static bool autoSnapActivated = false;
-            if (ImGui::GetIO().KeyCtrl)
-            {
-                if (!g_app->m_snapsEnabled)
-                {
-                    autoSnapActivated = true;
-                    g_app->m_snapsEnabled = true;
-                }
-            }
-            else if (autoSnapActivated)
-            {
-                autoSnapActivated = false;
-                g_app->m_snapsEnabled = false;
-            }
-
-            ImGui::TableSetColumnIndex(4);
-            g_app->m_snapsEnabled = UI::ToggleButton
-            (
-                UI::m_snapIcon->m_textureId,
-                ImVec2(16, 16),
-                g_app->m_snapsEnabled
-            );
-            UI::HelpMarker
-            (
-                TKLoc + m_owner->m_name,
-                "Grid snaping\nRight click for options"
-            );
-
-            if (ImGui::BeginPopupContextItem("##SnapMenu"))
-            {
-                ImGui::PushItemWidth(75);
-                EditorViewport2d* editorViewport =
-                  reinterpret_cast<EditorViewport2d*>(m_owner);
-                ImGui::InputFloat
-                (
-                    "Move delta",
-                    &editorViewport->m_snapDeltas2DView.x,
-                    0.0f,
-                    0.0f,
-                    "%.2f"
-                );
-                ImGui::InputFloat
-                (
-                    "Rotate delta",
-                  &editorViewport->m_snapDeltas2DView.y,
-                    0.0f,
-                    0.0f,
-                    "%.2f"
-                );
-                ImGui::InputFloat
-                (
-                    "Scale delta",
-                  &editorViewport->m_snapDeltas2DView.z,
-                    0.0f,
-                    0.0f,
-                    "%.2f"
-                );
-                ImGui::PopItemWidth();
-                ImGui::EndPopup();
-            }
-
-            EditorViewport2d* editorViewport =
-              reinterpret_cast<EditorViewport2d*>(m_owner);
-            ImGui::TableSetColumnIndex(5);
-            if (
-              ImGui::ImageButton
-              (
-              Convert2ImGuiTexture(UI::m_viewZoomIcon),
-              ImVec2(16, 16)
-              ))
-            {
-              editorViewport->m_zoomPercentage = 100;
-            }
-            UI::HelpMarker(
-              TKLoc + m_owner->m_name,
-              "Reset Zoom");
-            ImGui::TableSetColumnIndex(6);
-            ImGui::Text("%u%%", uint32_t(editorViewport->m_zoomPercentage));
-            ImGui::TableSetColumnIndex(7);
-            ImGui::Image(
-              (ImTextureID)UI::m_gridIcon->m_textureId, ImVec2(20, 20));
-            UI::HelpMarker
-            (
-              TKLoc + m_owner->m_name,
-              "Set grid cell size"
-            );
-
-            if (ImGui::BeginPopupContextItem("##GridMenu"))
-            {
-              ImGui::PushItemWidth(75);
-              EditorViewport2d* editorViewport =
-                reinterpret_cast<EditorViewport2d*>(m_owner);
-              static constexpr uint16_t cellSizeStep = 5, gridSizeStep = 0;
-              ImGui::InputScalar
-              (
-                "Cell Size",
-                ImGuiDataType_U16, &editorViewport->m_gridCellSizeByPixel,
-                &cellSizeStep
-              );
-              ImGui::InputInt2("Grid Size",
-                reinterpret_cast<int*>(& editorViewport->m_gridWholeSize));
-              ImGui::PopItemWidth();
-              ImGui::EndPopup();
-            }
-            ImGui::EndTable();
+          }
+          ImGui::EndCombo();
         }
-        ImGui::EndChildFrame();
+        ImGui::PopItemWidth();
+
+        if (change)
+        {
+          String ts;
+          switch (currentItemOrient)
+          {
+            case 1:
+            ts = "parent";
+            break;
+            case 2:
+            ts = "local";
+            break;
+            case 0:
+            default:
+            ts = "world";
+            break;
+          }
+
+          String cmd = "SetTransformOrientation " + ts;
+          g_app->GetConsole()->ExecCommand(cmd);
+        }
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Transform orientations\n");
+
+        // Auto snap.
+        static bool autoSnapActivated = false;
+        if (ImGui::GetIO().KeyCtrl)
+        {
+          if (!g_app->m_snapsEnabled)
+          {
+            autoSnapActivated = true;
+            g_app->m_snapsEnabled = true;
+          }
+        }
+        else if (autoSnapActivated)
+        {
+          autoSnapActivated = false;
+          g_app->m_snapsEnabled = false;
+        }
+
+        ImGui::TableSetColumnIndex(4);
+        g_app->m_snapsEnabled = UI::ToggleButton
+        (
+          UI::m_snapIcon->m_textureId,
+          ImVec2(16, 16),
+          g_app->m_snapsEnabled
+        );
+
+        UI::HelpMarker
+        (
+          TKLoc + m_owner->m_name,
+          "Grid snaping\nRight click for options"
+        );
+
+        if (ImGui::BeginPopupContextItem("##SnapMenu"))
+        {
+          ImGui::PushItemWidth(75);
+          EditorViewport2d* editorViewport =
+            reinterpret_cast<EditorViewport2d*>(m_owner);
+
+          ImGui::InputFloat
+          (
+            "Move delta",
+            &editorViewport->m_snapDeltas2DView.x,
+            0.0f,
+            0.0f,
+            "%.2f"
+          );
+
+          ImGui::InputFloat
+          (
+            "Rotate delta",
+            &editorViewport->m_snapDeltas2DView.y,
+            0.0f,
+            0.0f,
+            "%.2f"
+          );
+
+          ImGui::InputFloat
+          (
+            "Scale delta",
+            &editorViewport->m_snapDeltas2DView.z,
+            0.0f,
+            0.0f,
+            "%.2f"
+          );
+
+          ImGui::PopItemWidth();
+          ImGui::EndPopup();
+        }
+
+        EditorViewport2d* editorViewport =
+          reinterpret_cast<EditorViewport2d*>(m_owner);
+        ImGui::TableSetColumnIndex(5);
+
+        if
+        (
+          ImGui::ImageButton
+          (
+            Convert2ImGuiTexture(UI::m_viewZoomIcon),
+            ImVec2(16, 16)
+          )
+        )
+        {
+          editorViewport->m_zoomPercentage = 100;
+        }
+
+        UI::HelpMarker
+        (
+          TKLoc + m_owner->m_name,
+          "Reset Zoom"
+        );
+
+        ImGui::TableSetColumnIndex(6);
+        ImGui::Text("%u%%", uint32_t(editorViewport->m_zoomPercentage));
+        ImGui::TableSetColumnIndex(7);
+
+        ImGui::Image
+        (
+          Convert2ImGuiTexture(UI::m_gridIcon),
+          ImVec2(20, 20)
+        );
+
+        UI::HelpMarker
+        (
+          TKLoc + m_owner->m_name,
+          "Set grid cell size"
+        );
+
+        if (ImGui::BeginPopupContextItem("##GridMenu"))
+        {
+          ImGui::PushItemWidth(75);
+          EditorViewport2d* editorViewport =
+            reinterpret_cast<EditorViewport2d*>(m_owner);
+          static constexpr uint16_t cellSizeStep = 5, gridSizeStep = 0;
+
+          ImGui::InputScalar
+          (
+            "Cell Size",
+            ImGuiDataType_U16, &editorViewport->m_gridCellSizeByPixel,
+            &cellSizeStep
+          );
+
+          ImGui::InputInt2
+          (
+            "Grid Size",
+            reinterpret_cast<int*>(&editorViewport->m_gridWholeSize)
+          );
+
+          ImGui::PopItemWidth();
+          ImGui::EndPopup();
+        }
+        ImGui::EndTable();
+      }
+      ImGui::EndChildFrame();
     }
 
     // StatusBar

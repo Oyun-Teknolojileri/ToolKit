@@ -10,11 +10,12 @@
 #include "Node.h"
 #include "Primative.h"
 #include "Grid.h"
-#include "Directional.h"
+#include "Camera.h"
 #include "Gizmo.h"
 #include "TransformMod.h"
 #include "ConsoleWindow.h"
 #include "Util.h"
+#include "DirectionComponent.h"
 #include "DebugNew.h"
 
 namespace ToolKit

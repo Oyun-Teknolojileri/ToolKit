@@ -5,7 +5,7 @@
 #include "Mesh.h"
 #include "Drawable.h"
 #include "Texture.h"
-#include "Directional.h"
+#include "Camera.h"
 #include "Node.h"
 #include "Material.h"
 #include "Surface.h"
@@ -16,6 +16,8 @@
 #include "UIManager.h"
 #include "Shader.h"
 #include "ToolKit.h"
+#include "DirectionComponent.h"
+#include "ResourceComponent.h"
 #include "GL/glew.h"
 #include "DebugNew.h"
 
@@ -107,6 +109,15 @@ namespace ToolKit
     MeshComponentPtrArray meshComponents;
     ntt->GetComponent<MeshComponent>(meshComponents);
 
+    MaterialPtr nttMat;
+    if (MaterialComponentPtr matCom = ntt->GetComponent<MaterialComponent>())
+    {
+      if (nttMat = matCom->Material())
+      {
+        nttMat->Init();
+      }
+    }
+
     for (MeshComponentPtr meshCom : meshComponents)
     {
       MeshPtr mesh = meshCom->Mesh();
@@ -127,10 +138,13 @@ namespace ToolKit
 
       for (Mesh* mesh : meshCollector)
       {
-        m_mat = mesh->m_material.get();
         if (m_overrideMat != nullptr)
         {
           m_mat = m_overrideMat.get();
+        }
+        else
+        {
+          m_mat = nttMat ? nttMat.get() : mesh->m_material.get();
         }
 
         ProgramPtr prg = CreateProgram
@@ -249,8 +263,9 @@ namespace ToolKit
     static ProgramPtr prog = CreateProgram(vertexShader, fragShader);
     BindProgram(prog);
 
-    MeshPtr mesh = object->GetMesh();
+    MeshPtr mesh = object->GetMeshComponent()->Mesh();
     mesh->Init();
+
     RenderState* rs = mesh->m_material->GetRenderState();
     SetRenderState(rs);
 
@@ -264,10 +279,12 @@ namespace ToolKit
       0.0f,
       100.0f
     );
+
     Mat4 mul = pm * object->m_node->GetTransform
     (
       TransformationSpace::TS_WORLD
     );
+
     glUniformMatrix4fv(pvloc, 1, false, reinterpret_cast<float*>(&mul));
 
     glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
@@ -446,11 +463,10 @@ namespace ToolKit
     material->Init();
 
     static Quad quad;
-    quad.GetMesh()->m_material = material;
+    quad.GetMeshComponent()->Mesh()->m_material = material;
 
-    static Camera dummy;
-
-    Render(&quad, &dummy);
+    static Camera quadCam;
+    Render(&quad, &quadCam);
   }
 
   void Renderer::FrustumCull(EntityRawPtrArray& entities, Camera* camera)

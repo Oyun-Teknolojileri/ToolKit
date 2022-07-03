@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Viewport.h"
-#include "Directional.h"
+#include "Camera.h"
 #include "Surface.h"
 #include "Events.h"
 #include "Types.h"

@@ -8,6 +8,7 @@
 #include "Types.h"
 #include "Primative.h"
 #include "Gizmo.h"
+#include "ResourceComponent.h"
 
 
 namespace ToolKit

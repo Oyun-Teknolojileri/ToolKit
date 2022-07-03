@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Directional.h"
-#include "Component.h"
+#include "Camera.h"
 
 namespace ToolKit
 {

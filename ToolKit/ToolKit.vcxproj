@@ -14,7 +14,8 @@
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="Component.cpp" />
-    <ClCompile Include="Directional.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DirectionComponent.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="FileManager.cpp" />
@@ -30,6 +31,7 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="Resource.cpp" />
+    <ClCompile Include="ResourceComponent.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -52,7 +54,8 @@
     <ClInclude Include="Audio.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="DebugNew.h" />
-    <ClInclude Include="Directional.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="DirectionComponent.h" />
     <ClInclude Include="Drawable.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Events.h" />
@@ -71,6 +74,7 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderState.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="ResourceComponent.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Serialize.h" />

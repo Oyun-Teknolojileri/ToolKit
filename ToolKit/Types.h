@@ -126,12 +126,6 @@ namespace ToolKit
   // Filesystem variable types
   typedef std::filesystem::path Path;
 
-  // Components.
-  typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
-  typedef std::vector<MeshComponentPtr> MeshComponentPtrArray;
-  typedef std::shared_ptr<class Component> ComponentPtr;
-  typedef std::vector<ComponentPtr> ComponentPtrArray;
-
   // Enitiy types.
   typedef std::shared_ptr<class Camera> CameraPtr;
   typedef std::shared_ptr<class Surface> SurfacePtr;

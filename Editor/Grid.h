@@ -7,7 +7,8 @@ namespace ToolKit
 {
   namespace Editor
   {
-    class Grid : public Drawable
+
+    class Grid : public Entity
     {
      public:
       explicit Grid(UVec2 size);

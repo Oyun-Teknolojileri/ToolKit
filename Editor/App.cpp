@@ -16,7 +16,7 @@
 #include "GlobalDef.h"
 #include "OverlayUI.h"
 #include "Grid.h"
-#include "Directional.h"
+#include "Camera.h"
 #include "Mod.h"
 #include "ConsoleWindow.h"
 #include "FolderWindow.h"
@@ -24,6 +24,7 @@
 #include "PropInspector.h"
 #include "PluginWindow.h"
 #include "EditorViewport2d.h"
+#include "DirectionComponent.h"
 #include "GL/glew.h"
 #include "DebugNew.h"
 
@@ -55,7 +56,7 @@ namespace ToolKit
       m_cursor = new Cursor();
       m_origin = new Axis3d();
       m_grid = new Grid(UVec2(100));
-      m_grid->GetMesh()->Init(false);
+      m_grid->GetMeshComponent()->Init(false);
       Generate2dGrid();
 
       // Lights and camera.
@@ -148,6 +149,12 @@ namespace ToolKit
       }
       SafeDel(m_lightMaster);
       m_sceneLights.clear();
+
+      for (Entity* dbgObj : m_perFrameDebugObjects)
+      {
+        SafeDel(dbgObj);
+      }
+      m_perFrameDebugObjects.clear();
 
       GetAnimationPlayer()->m_records.clear();
 
@@ -295,7 +302,7 @@ namespace ToolKit
         // Render debug objects.
         if (!m_perFrameDebugObjects.empty())
         {
-          for (Drawable* dbgObj : m_perFrameDebugObjects)
+          for (Entity* dbgObj : m_perFrameDebugObjects)
           {
             m_renderer->Render(dbgObj, viewCam);
             SafeDel(dbgObj);

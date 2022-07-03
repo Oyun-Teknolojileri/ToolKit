@@ -3,7 +3,7 @@
 #include <vector>
 #include <functional>
 
-#include "Drawable.h"
+#include "Entity.h"
 #include "MathUtil.h"
 #include "Resource.h"
 #include "Events.h"
@@ -13,7 +13,13 @@
 namespace ToolKit
 {
 
-  class TK_API Surface : public Drawable
+  static VariantCategory SurfaceCategory
+  {
+    "Surface",
+    90
+  };
+
+  class TK_API Surface : public Entity
   {
    public:
     Surface();
@@ -33,6 +39,9 @@ namespace ToolKit
     void UpdateGeometry(bool byTexture);
 
    protected:
+    void ComponentConstructor();
+    void ParameterConstructor();
+    void ParameterEventConstructor();
     Entity* CopyTo(Entity* copyTo) const override;
 
    private:
@@ -41,8 +50,9 @@ namespace ToolKit
     void SetSizeFromTexture();
 
    public:
-    Vec2 m_size;
-    Vec2 m_pivotOffset;
+    TKDeclareParam(Vec2, Size);
+    TKDeclareParam(Vec2, PivotOffset);
+    TKDeclareParam(MaterialPtr, Material);
 
     // UI states.
     bool m_mouseOver = false;

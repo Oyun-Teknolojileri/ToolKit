@@ -5,8 +5,9 @@
 #include "Mesh.h"
 #include "ToolKit.h"
 #include "MathUtil.h"
-#include "Directional.h"
+#include "DirectionComponent.h"
 #include "Node.h"
+#include "ResourceComponent.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -15,6 +16,7 @@ namespace ToolKit
   Billboard::Billboard(const Settings& settings)
     : m_settings(settings)
   {
+    AddComponent(new MeshComponent());
   }
 
   void Billboard::LookAt(Camera* cam, float scale)
@@ -80,7 +82,7 @@ namespace ToolKit
 
   Entity* Billboard::CopyTo(Entity* copyTo) const
   {
-    Drawable::CopyTo(copyTo);
+    Entity::CopyTo(copyTo);
     Billboard* ntt = static_cast<Billboard*> (copyTo);
     ntt->m_settings = m_settings;
     ntt->m_worldLocation = m_worldLocation;
@@ -89,7 +91,7 @@ namespace ToolKit
 
   Entity* Billboard::InstantiateTo(Entity* copyTo) const
   {
-    Drawable::InstantiateTo(copyTo);
+    Entity::InstantiateTo(copyTo);
     Billboard* instance = static_cast<Billboard*> (copyTo);
     instance->m_settings = m_settings;
     instance->m_worldLocation = m_worldLocation;
@@ -121,7 +123,7 @@ namespace ToolKit
 
   Entity* Cube::CopyTo(Entity* copyTo) const
   {
-    return Drawable::CopyTo(copyTo);
+    return Entity::CopyTo(copyTo);
   }
 
   EntityType Cube::GetType() const
@@ -142,13 +144,14 @@ namespace ToolKit
 
   Entity* Cube::InstantiateTo(Entity* copyTo) const
   {
-    Drawable::InstantiateTo(copyTo);
+    Entity::InstantiateTo(copyTo);
     Cube* instance = static_cast<Cube*> (copyTo);
     return instance;
   }
 
   void Cube::ParameterConstructor()
   {
+    AddComponent(new MeshComponent());
     Scale_Define(Vec3(1.0f), "Geometry", 90, true, true);
   }
 
@@ -297,7 +300,7 @@ namespace ToolKit
     vertices[35].tex = Vec2(1.0f, 0.0f);
     vertices[35].norm = Vec3(0.0f, -1.0f, 0.0f);
 
-    MeshPtr mesh = GetMesh();
+    MeshPtr mesh = GetComponent<MeshComponent>()->Mesh();
     mesh->m_vertexCount = (uint)vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_clientSideIndices = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
@@ -313,6 +316,7 @@ namespace ToolKit
 
   Quad::Quad(bool genDef)
   {
+    AddComponent(new MeshComponent());
     if (genDef)
     {
       Generate();
@@ -321,7 +325,7 @@ namespace ToolKit
 
   Entity* Quad::CopyTo(Entity* copyTo) const
   {
-    return Drawable::CopyTo(copyTo);
+    return Entity::CopyTo(copyTo);
   }
 
   EntityType Quad::GetType() const
@@ -331,7 +335,7 @@ namespace ToolKit
 
   Entity* Quad::InstantiateTo(Entity* copyTo) const
   {
-    Drawable::InstantiateTo(copyTo);
+    Entity::InstantiateTo(copyTo);
     Quad* instance = static_cast<Quad*> (copyTo);
     return instance;
   }
@@ -373,7 +377,7 @@ namespace ToolKit
     vertices[3].norm = Vec3(0.0f, 0.0f, 1.0f);
     vertices[3].btan = Vec3(0.0f, 1.0f, 0.0f);
 
-    MeshPtr mesh = GetMesh();
+    MeshPtr mesh = GetMeshComponent()->Mesh();
     mesh->m_vertexCount = (uint)vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount = 6;
@@ -402,7 +406,7 @@ namespace ToolKit
 
   Entity* Sphere::CopyTo(Entity* copyTo) const
   {
-    Drawable::CopyTo(copyTo);
+    Entity::CopyTo(copyTo);
     Sphere* ntt = static_cast<Sphere*> (copyTo);
     return ntt;
   }
@@ -472,7 +476,7 @@ namespace ToolKit
       }  // end for seg
     }  // end for ring
 
-    MeshPtr mesh = GetMesh();
+    MeshPtr mesh = GetMeshComponent()->Mesh();
     mesh->m_vertexCount = (uint)vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount = (uint)indices.size();
@@ -496,18 +500,20 @@ namespace ToolKit
 
   Entity* Sphere::InstantiateTo(Entity* copyTo) const
   {
-    Drawable::InstantiateTo(copyTo);
+    Entity::InstantiateTo(copyTo);
     Sphere* instance = static_cast<Sphere*> (copyTo);
     return instance;
   }
 
   void Sphere::ParameterConstructor(float radius)
   {
+    AddComponent(new MeshComponent());
     Radius_Define(radius, "Geometry", 90, true, true);
   }
 
   Cone::Cone(bool genDef)
   {
+    AddComponent(new MeshComponent());
     ParameterConstructor();
     if (genDef)
     {
@@ -517,6 +523,7 @@ namespace ToolKit
 
   Cone::Cone(float height, float radius, int segBase, int segHeight)
   {
+    AddComponent(new MeshComponent());
     ParameterConstructor();
     Height() = height;
     Radius() = radius;
@@ -617,7 +624,7 @@ namespace ToolKit
       offset++;
     }
 
-    MeshPtr mesh = GetMesh();
+    MeshPtr mesh = GetComponent<MeshComponent>()->Mesh();
     mesh->m_vertexCount = (uint)vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount = (uint)indices.size();
@@ -630,7 +637,7 @@ namespace ToolKit
 
   Entity* Cone::CopyTo(Entity* copyTo) const
   {
-    Drawable::CopyTo(copyTo);
+    Entity::CopyTo(copyTo);
     Cone* ntt = static_cast<Cone*> (copyTo);
     return ntt;
   }
@@ -653,7 +660,7 @@ namespace ToolKit
 
   Entity* Cone::InstantiateTo(Entity* copyTo) const
   {
-    Drawable::InstantiateTo(copyTo);
+    Entity::InstantiateTo(copyTo);
     Cone* instance = static_cast<Cone*> (copyTo);
     return instance;
   }
@@ -668,6 +675,7 @@ namespace ToolKit
 
   Arrow2d::Arrow2d(bool genDef)
   {
+    AddComponent(new MeshComponent());
     m_label = AxisLabel::X;
 
     if (genDef)
@@ -679,12 +687,13 @@ namespace ToolKit
   Arrow2d::Arrow2d(AxisLabel label)
     : m_label(label)
   {
+    AddComponent(new MeshComponent());
     Generate();
   }
 
   Entity* Arrow2d::CopyTo(Entity* copyTo) const
   {
-    Drawable::CopyTo(copyTo);
+    Entity::CopyTo(copyTo);
     Arrow2d* ntt = static_cast<Arrow2d*> (copyTo);
     ntt->m_label = m_label;
 
@@ -693,7 +702,7 @@ namespace ToolKit
 
   Entity* Arrow2d::InstantiateTo(Entity* copyTo) const
   {
-    Drawable::InstantiateTo(copyTo);
+    Entity::InstantiateTo(copyTo);
     Arrow2d* instance = static_cast<Arrow2d*> (copyTo);
     instance->m_label = m_label;
     return instance;
@@ -743,13 +752,13 @@ namespace ToolKit
       vertices[i].pos = rotation * vertices[i].pos;
     }
 
-    MeshPtr mesh = GetMesh();
-    mesh->m_vertexCount = (uint)vertices.size();
-    mesh->m_clientSideVertices = vertices;
-    mesh->m_material = newMat;
+    MeshComponentPtr mesh = GetComponent<MeshComponent>();
+    mesh->Mesh()->m_vertexCount = (uint)vertices.size();
+    mesh->Mesh()->m_clientSideVertices = vertices;
+    mesh->Mesh()->m_material = newMat;
 
-    mesh->CalculateAABB();
-    mesh->ConstructFaces();
+    mesh->Mesh()->CalculateAABB();
+    mesh->Mesh()->ConstructFaces();
   }
 
   LineBatch::LineBatch
@@ -760,16 +769,18 @@ namespace ToolKit
     float lineWidth
   )
   {
+    AddComponent(new MeshComponent());
     Generate(linePnts, color, t, lineWidth);
   }
 
   LineBatch::LineBatch()
   {
+    AddComponent(new MeshComponent());
   }
 
   Entity* LineBatch::CopyTo(Entity* copyTo) const
   {
-    return Drawable::CopyTo(copyTo);
+    return Entity::CopyTo(copyTo);
   }
 
   EntityType LineBatch::GetType() const
@@ -788,7 +799,7 @@ namespace ToolKit
     VertexArray vertices;
     vertices.resize(linePnts.size());
 
-    MeshPtr mesh = GetMesh();
+    MeshPtr mesh = GetComponent<MeshComponent>()->Mesh();
     mesh->UnInit();
     mesh->m_material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
     mesh->m_material->GetRenderState()->drawType = t;

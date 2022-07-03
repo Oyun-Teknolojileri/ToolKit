@@ -5,6 +5,7 @@
 #include "MathUtil.h"
 #include "Util.h"
 #include "Light.h"
+#include "ResourceComponent.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -27,7 +28,7 @@ namespace ToolKit
 
   bool Entity::IsDrawable() const
   {
-    return false;
+    return GetComponent<MeshComponent>() != nullptr;
   }
 
   EntityType Entity::GetType() const
@@ -133,7 +134,7 @@ namespace ToolKit
 
     Tag_Define
     (
-      "Tag",
+      "",
       EntityCategory.Name,
       EntityCategory.Priority,
       true, true
@@ -246,6 +247,16 @@ namespace ToolKit
     m_components.push_back(ComponentPtr(component));
   }
 
+  MeshComponentPtr Entity::GetMeshComponent()
+  {
+    return GetComponent<MeshComponent>();
+  }
+
+  MaterialComponentPtr Entity::GetMaterialComponent()
+  {
+    return GetComponent<MaterialComponent>();
+  }
+
   void Entity::RemoveComponent(ULongID componentId)
   {
     for (size_t i = 0; i < m_components.size(); i++)
@@ -325,6 +336,7 @@ namespace ToolKit
 
     m_localData.DeSerialize(doc, parent);
 
+    ClearComponents();
     if (XmlNode* components = node->first_node("Components"))
     {
       XmlNode* comNode = components->first_node(XmlComponent.c_str());

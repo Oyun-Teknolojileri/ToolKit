@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "Mesh.h"
+#include "ResourceComponent.h"
 #include "Material.h"
 #include "ToolKit.h"
 #include "Node.h"
@@ -76,7 +77,6 @@ namespace ToolKit
 
   void Drawable::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
-    ClearComponents();
     Entity::DeSerialize(doc, parent);
   }
 

@@ -1,28 +1,28 @@
 # ToolKit
 
-<img align="left" width="48" height="48" src="https://github.com/afraidofdark/ToolKit/blob/master/Resources/Textures/Icons/app.png?raw=true">ToolKit is a 3d editor & interactive application development platform. It allows users to create 3d scenes and bring in the interactivity via C++ plug-ins.
+<img align="left" width="48" height="48" src="https://github.com/afraidofdark/ToolKit/blob/master/Resources/Engine/Textures/Icons/app.png?raw=true">ToolKit is a 3d editor & interactive application development platform. It allows users to create 3d scenes and bring in the interactivity via C++ plug-ins.
 
 ## Motivation
 
 ### Simplicity
 
-Most games, projects using Unity, UE4 or even Godot, don't need all those tools and functionalities. Having a far simple game engine, increases your comprehansion of the framework & tools, wich in return gives you more freedom to do things your way. This approach may not be suitable for professional game studios, however it is very suitable for indies whom after unique projects.
+Most games, projects using Unity, UE4 or even Godot, don't need all those tools and functionalities. Having a far simple game engine, increases your comprehension of the framework & tools, which in return gives you more freedom to do things your way. This approach may not be suitable for professional game studios, however it is very suitable for indies whom after unique projects.
 
-This project has a unique goal which is keeping all the source code under 30k lines of code excluding dependencies. Instead of adding more capabilites, tools and getting more complicated, ToolKit will be oriented towards simplicity, performance and being/staying modern.
+This project has a unique goal which is keeping all the source code under 30k lines of code excluding dependencies. Instead of adding more capabilities, tools and getting more complicated, ToolKit will be oriented towards simplicity, performance and being/staying modern.
 
 ### Community
 
-Bringing like minded people together around a project outputs invaluable assets as one can observe from projects like Blender & Godot. So the project's motivation is to bring people together who after uniqueness, simplicity, modernitiy and colloborative effort to create someting exceptional.
+Bringing like minded people together around a project outputs invaluable assets as one can observe from projects like Blender & Godot. So the project's motivation is to bring people together who after uniqueness, simplicity, modernity and collaborative effort to create something exceptional.
 
 ## Editor High Lights
-- All required functionalites for scene creation, manipuation, save & load.
+- All required functionalities for scene creation, manipulation, save & load.
 - All required utilities for Asset management. Create / Save / Refresh / Browse resource directories.
 - Support having a workspace & multiple projects.
-- Multiple Prespective & Orthographic views.
+- Multiple Perspective & Orthographic views.
 - Scene outliner to observe / interact entities in the scene.
 - Entity inspector & interactive resource manipulation trough the inspector.
 - Import whole scenes from various programs & formats including sketchfab, blender, glb, fbx ...
-- Console window along with usefull scene inspection commands and easy command creation.
+- Console window along with useful scene inspection commands and easy command creation.
 
 ## Engine High Lights
 
@@ -48,13 +48,13 @@ ToolKit comes with a Visual Studio solution. The solution has been created with 
 - Search for ToolKitProject and select it
 - Fallow the instructions, this will create a new blank project
 
-This way allows you to build an application entierly from scrach using the ToolKit engine. Alternatively you can use the ToolKit editor to create an interactivity plugin and publish the product as a web project or executable.
+This way allows you to build an application entirely from scratch using the ToolKit engine. Alternatively you can use the ToolKit editor to create an interactivity plugin and publish the product as a web project or executable.
 
 ### Projects in the solution
 
 #### Engine
 - *ToolKit project* is the engine it self.
-- *Editor project* is the 3d editor to create conent for your projects.
+- *Editor project* is the 3d editor to create content for your projects.
 - *Import project* is the executable that Editor is utilizing for importing the resources for projects.
 
 #### Sample
@@ -91,46 +91,11 @@ You can see the c++ code, call stack, local - global scope and set break points.
 - stb_image - MIT 
 - SDL 2.0 - Zlib
 - rapidxml - MIT
-- openal-soft - LGPL (Dynamicyl linked)
+- openal-soft - LGPL (Dynamically linked)
 - glm - MIT
 - glew - BSD, MIT
 - Dear imgui - MIT
 - Assimp - BSD
-- lodepng - Zlib
-
-## Roadmap
-
-### Renderer
-- Currently I am using Opengl ES 2.0 along with Sdl. I have not isolated renderer from the underlying api. That is, renderer, texture, mesh ect ... makes direct calls to the Opengl. This isolation is needed. 
-- Forward renderer. 
-  - Sort objects to minimize redundant state changes.
-  - Support transparency by sorting objects by depth.
-  - Support double sided transparent objects.
-  - Dynamic batch small objects in polygon size.
-  - Utilize instantiate for bigger objects in polygon size.
-  - Environment lighting trough global light probe.
-  - Simple shadow maps for directional lights.
-  - Allow, pick 8 lights per object.
-  - Point, spot, directional light entities for the editor.
-
-### Scene manager
- - Implement Non-uniform octree scene patitioning.
- - Implement frustum culling.
- - Update picking queries to utilze octree.
-
-### Editor
- - Editor plugins for enhencing the editor capabilities.
- - Create sound entity for the editor.
-
-### Engine
-- Implement Entity Component System.
-- Play 3d sound.
-- Replace openal with  MojoAL.
-
-### Platform
-- Publish menu for Windows And Web.
-- Android support.
-- FireBase for mobile monetization and mobile backend.
 
 ## Final Words
 

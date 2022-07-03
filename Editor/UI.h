@@ -156,6 +156,12 @@ namespace ToolKit
         const Vec2& size,
         bool pushState
       );
+      static bool BeginCenteredTextButton
+      (
+        const String& text,
+        const String& id = ""
+      );
+      static void EndCenteredTextButton();
 
      public:
       static bool m_showNewSceneWindow;

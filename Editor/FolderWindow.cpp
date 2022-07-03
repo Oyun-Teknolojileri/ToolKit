@@ -5,8 +5,9 @@
 #include "PropInspector.h"
 #include "Util.h"
 #include "App.h"
-#include "DebugNew.h"
 #include "Light.h"
+#include "DirectionComponent.h"
+#include "DebugNew.h"
 
 #include <filesystem>
 #include <vector>
@@ -70,7 +71,7 @@ namespace ToolKit
     {
       const Vec2& thumbSize = g_app->m_thumbnailSize;
       auto renderThumbFn =
-      [this, &thumbSize](Camera* cam, Drawable* dw) -> void
+      [this, &thumbSize](Camera* cam, Entity* obj) -> void
       {
         RenderTarget* thumb = nullptr;
         RenderTargetPtr thumbPtr = nullptr;
@@ -112,7 +113,7 @@ namespace ToolKit
 
         LightRawPtrArray lights = { &light };
 
-        g_app->m_renderer->Render(dw, cam, lights);
+        g_app->m_renderer->Render(obj, cam, lights);
 
         g_app->m_renderer->SwapRenderTarget(&thumb, false);
         g_app->m_thumbnailCache[GetFullPath()] = thumbPtr;
@@ -148,7 +149,7 @@ namespace ToolKit
       {
         Sphere ball;
         String fullpath = GetFullPath();
-        MeshPtr& mesh = ball.GetMesh();
+        MeshPtr& mesh = ball.GetMeshComponent()->Mesh();
         mesh->m_material = GetMaterialManager()->Create<Material>(fullpath);
         mesh->Init(false);
 
@@ -170,7 +171,7 @@ namespace ToolKit
         float h = (texture->m_height / maxDim) * thumbSize.y;
 
         Surface surface(Vec2(w, h));
-        MeshPtr& mesh = surface.GetMesh();
+        MeshPtr& mesh = surface.GetMeshComponent()->Mesh();
         mesh->m_material->m_diffuseTexture = texture;
         mesh->Init(false);
 

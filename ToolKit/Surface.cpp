@@ -11,20 +11,16 @@ namespace ToolKit
 {
   Surface::Surface()
   {
-    MaterialPtr mat = GetMaterialManager()->GetCopyOfUnlitMaterial();
-    mat->UnInit();
-    mat->GetRenderState()->blendFunction =
-      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-
-    mat->GetRenderState()->depthTestEnabled = true;
-    GetMesh()->m_material = mat;
+    ComponentConstructor();
+    ParameterConstructor();
+    ParameterEventConstructor();
   }
 
   Surface::Surface(TexturePtr texture, const Vec2& pivotOffset)
     : Surface()
   {
-    GetMesh()->m_material->m_diffuseTexture = texture;
-    m_pivotOffset = pivotOffset;
+    GetMeshComponent()->Mesh()->m_material->m_diffuseTexture = texture;
+    PivotOffset() = pivotOffset;
     SetSizeFromTexture();
     CreateQuat();
   }
@@ -32,7 +28,7 @@ namespace ToolKit
   Surface::Surface(TexturePtr texture, const SpriteEntry& entry)
     : Surface()
   {
-    GetMesh()->m_material->m_diffuseTexture = texture;
+    GetMeshComponent()->Mesh()->m_material->m_diffuseTexture = texture;
     SetSizeFromTexture();
     CreateQuat(entry);
   }
@@ -40,10 +36,10 @@ namespace ToolKit
   Surface::Surface(const String& textureFile, const Vec2& pivotOffset)
     : Surface()
   {
-    GetMesh()->m_material->m_diffuseTexture =
+    GetMeshComponent()->Mesh()->m_material->m_diffuseTexture =
       GetTextureManager()->Create<Texture>(textureFile);
 
-    m_pivotOffset = pivotOffset;
+    PivotOffset() = pivotOffset;
     SetSizeFromTexture();
     CreateQuat();
   }
@@ -51,8 +47,8 @@ namespace ToolKit
   Surface::Surface(const Vec2& size, const Vec2& offset)
     : Surface()
   {
-    m_size = size;
-    m_pivotOffset = offset;
+    Size() = size;
+    PivotOffset() = offset;
     CreateQuat();
   }
 
@@ -68,42 +64,13 @@ namespace ToolKit
   void Surface::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Entity::Serialize(doc, parent);
-    XmlNode* nttNode = parent->last_node();
-    XmlNode* prop = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      "Size"
-    );
-    nttNode->append_node(prop);
-    WriteVec(prop, doc, m_size);
-
-    prop = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      "Offset"
-    );
-    nttNode->append_node(prop);
-    WriteVec(prop, doc, m_pivotOffset);
-
-    MeshPtr mesh = GetMesh();
-    String matFile = mesh->m_material->GetFile();
-    if (matFile.empty())
-    {
-      mesh->m_material->m_name = NameC();
-    }
-    mesh->m_material->Save(true);
-    WriteMaterial(nttNode, doc, matFile);
   }
 
   void Surface::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     Entity::DeSerialize(doc, parent);
-    XmlNode* prop = parent->first_node("Size");
-    ReadVec<Vec2>(prop, m_size);
-    prop = parent->first_node("Offset");
-    ReadVec<Vec2>(prop, m_pivotOffset);
+    ParameterEventConstructor();
     CreateQuat();
-    GetMesh()->m_material = ReadMaterial(parent);
   }
 
   void Surface::UpdateGeometry(bool byTexture)
@@ -113,19 +80,93 @@ namespace ToolKit
       SetSizeFromTexture();
     }
 
-    MeshPtr mesh = GetMesh();
+    MeshPtr mesh = GetMeshComponent()->Mesh();
     mesh->UnInit();
     CreateQuat();
     mesh->Init();
   }
 
+  void Surface::ComponentConstructor()
+  {
+    MeshComponent* meshComponent = new MeshComponent();
+    meshComponent->m_localData[meshComponent->MeshIndex()].m_exposed = false;
+    AddComponent(meshComponent);
+
+    MaterialComponent* materialComponent = new MaterialComponent();
+    materialComponent->m_localData
+    [
+      materialComponent->MaterialIndex()
+    ].m_exposed = false;
+
+    MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+    material->UnInit();
+    material->GetRenderState()->blendFunction =
+      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+    material->GetRenderState()->depthTestEnabled = true;
+
+    materialComponent->Material() = material;
+
+    AddComponent(materialComponent);
+  }
+
+  void Surface::ParameterConstructor()
+  {
+    Size_Define
+    (
+      { 150.0f, 50.0f },
+      SurfaceCategory.Name,
+      SurfaceCategory.Priority,
+      true,
+      true
+    );
+
+    PivotOffset_Define
+    (
+      { 0.5f, 0.5f },
+      SurfaceCategory.Name,
+      SurfaceCategory.Priority,
+      true,
+      true
+    );
+
+    Material_Define
+    (
+      GetMaterialComponent()->Material(),
+      SurfaceCategory.Name,
+      SurfaceCategory.Priority,
+      true,
+      true
+    );
+  }
+
+  void Surface::ParameterEventConstructor()
+  {
+    m_localData[Size_Index].m_onValueChangedFn =
+      [this](Value& oldVal, Value& newVal) -> void
+    {
+      Size() = std::get<Vec2>(newVal);
+      UpdateGeometry(false);
+    };
+
+    m_localData[PivotOffset_Index].m_onValueChangedFn =
+      [this](Value& oldVal, Value& newVal) -> void
+    {
+      PivotOffset() = std::get<Vec2>(newVal);
+      UpdateGeometry(false);
+    };
+
+    m_localData[Material_Index].m_onValueChangedFn =
+      [this](Value& oldVal, Value& newVal) -> void
+    {
+      GetMaterialComponent()->Material() = std::get<MaterialPtr>(newVal);
+      UpdateGeometry(true);
+    };
+  }
+
   Entity* Surface::CopyTo(Entity* copyTo) const
   {
-    Drawable::CopyTo(copyTo);
+    Entity::CopyTo(copyTo);
     Surface* cpy = static_cast<Surface*> (copyTo);
-    cpy->m_size = m_size;
-    cpy->m_pivotOffset = m_pivotOffset;
-
     return cpy;
   }
 
@@ -139,10 +180,10 @@ namespace ToolKit
 
   void Surface::CreateQuat()
   {
-    float width = m_size.x;
-    float height = m_size.y;
+    float width = Size().x;
+    float height = Size().y;
     float depth = 0;
-    Vec2 absOffset = Vec2(m_pivotOffset.x * width, m_pivotOffset.y * height);
+    Vec2 absOffset = Vec2(PivotOffset().x * width, PivotOffset().y * height);
 
     VertexArray vertices;
     vertices.resize(6);
@@ -160,14 +201,16 @@ namespace ToolKit
     vertices[5].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
     vertices[5].tex = Vec2(0.0f, 0.0f);
 
-    MeshPtr mesh = GetMesh();
+    MeshPtr mesh = GetMeshComponent()->Mesh();
     mesh->m_clientSideVertices = vertices;
     mesh->CalculateAABB();
   }
 
   void Surface::CreateQuat(const SpriteEntry& val)
   {
-    MeshPtr& mesh = GetMesh();
+    assert(false && "Old function needs to be re factored.");
+
+    MeshPtr& mesh = GetMeshComponent()->Mesh();
     float imageWidth = static_cast<float>
     (
       mesh->m_material->m_diffuseTexture->m_width
@@ -250,12 +293,12 @@ namespace ToolKit
 
   void Surface::SetSizeFromTexture()
   {
-    MeshPtr& mesh = GetMesh();
-    m_size =
-    {
-      mesh->m_material->m_diffuseTexture->m_width,
-      mesh->m_material->m_diffuseTexture->m_height
-    };
+    Size() =
+    Vec2
+    (
+      Material()->m_diffuseTexture->m_width,
+      Material()->m_diffuseTexture->m_height
+    );
   }
 
   // Button
@@ -361,13 +404,15 @@ namespace ToolKit
 
     m_onMouseEnterLocal = [this](Event* e, Entity* ntt) -> void
     {
-      GetMesh()->m_material->m_diffuseTexture = m_mouseOverImage;
+      GetMeshComponent()->Mesh()->
+        m_material->m_diffuseTexture = m_mouseOverImage;
     };
     m_onMouseEnter = m_onMouseEnterLocal;
 
     m_onMouseExitLocal = [this](Event* e, Entity* ntt) -> void
     {
-      GetMesh()->m_material->m_diffuseTexture = m_buttonImage;
+      GetMeshComponent()->Mesh()->
+        m_material->m_diffuseTexture = m_buttonImage;
     };
     m_onMouseExit = m_onMouseExitLocal;
   }
