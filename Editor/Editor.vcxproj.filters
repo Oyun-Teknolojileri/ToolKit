@@ -102,6 +102,9 @@
     <ClCompile Include="EditorLight.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
+    <ClCompile Include="PublishManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -190,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="EditorLight.h">
       <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="PublishManager.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

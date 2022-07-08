@@ -703,6 +703,20 @@ namespace ToolKit
     return msgFormatted;
   }
 
+  String Trim(const std::string& str, const String& whitespace)
+  {
+    const size_t strBegin = str.find_first_not_of(whitespace);
+    if (strBegin == std::string::npos)
+    {
+      return "";  // no content
+    }
+
+    const size_t strEnd = str.find_last_not_of(whitespace);
+    const size_t strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
+  }
+
   LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size)
   {
     // Searching perpendicular axes on the plane.

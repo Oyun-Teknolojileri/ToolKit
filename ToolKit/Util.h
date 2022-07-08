@@ -5,6 +5,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <string>
 #include <vector>
 
 namespace ToolKit
@@ -124,6 +125,7 @@ namespace ToolKit
 
   TK_API String ToLower(const String& str);
   TK_API String Format(const char* msg, ...);
+  TK_API String Trim(const std::string& str, const String& whitespace = " \t");
 
   // Debug geometries.
   ///////////////////////////////////////////////////////

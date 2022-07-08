@@ -947,7 +947,7 @@ namespace ToolKit
 
     void UI::ShowMenuProjects()
     {
-      if (ImGui::MenuItem("New"))
+      if (ImGui::MenuItem("New Project"))
       {
         StringInputWindow* inputWnd =
         new StringInputWindow("NewProject", true);
@@ -960,19 +960,52 @@ namespace ToolKit
         };
       }
 
-      if (ImGui::MenuItem("Pack Project"))
+      if (ImGui::BeginMenu("Open Project"))
       {
-        g_app->PackResources();
+        for (const Project& project : g_app->m_workspace.m_projects)
+        {
+          if (ImGui::MenuItem(project.name.c_str()))
+          {
+            g_app->OpenProject(project);
+          }
+        }
+        ImGui::EndMenu();
       }
-      ImGui::Separator();
 
+      if (ImGui::BeginMenu("Publish"))
+      {
+        if (ImGui::MenuItem("Web"))
+        {
+          g_app->m_publishManager->Publish(PublishPlatform::Web);
+        }
+
+        ImGui::EndMenu();
+      }
+
+      /*
       for (const Project& project : g_app->m_workspace.m_projects)
       {
-        if (ImGui::MenuItem(project.name.c_str()))
+        if (ImGui::BeginMenu(project.name.c_str()))
         {
-          g_app->OpenProject(project);
+          if (ImGui::MenuItem("Open"))
+          {
+            g_app->OpenProject(project);
+          }
+          
+          if (ImGui::BeginMenu("Publish"))
+          {
+            if (ImGui::MenuItem("Web"))
+            {
+              // TODO go on
+            }
+
+            ImGui::EndMenu();
+          }
+
+          ImGui::EndMenu();
         }
       }
+      */
     }
 
     void UI::ShowImportWindow()

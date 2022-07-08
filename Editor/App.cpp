@@ -128,6 +128,8 @@ namespace ToolKit
       {
         m_workspace.RefreshProjects();
       }
+
+      m_publishManager = new PublishManager();
     }
 
     void App::Destroy()
@@ -136,6 +138,8 @@ namespace ToolKit
       DeleteWindows();
 
       GetCurrentScene()->Destroy(false);
+
+      SafeDel(m_publishManager);
 
       // Editor objects.
       SafeDel(m_2dGrid);

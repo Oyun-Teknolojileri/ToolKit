@@ -113,6 +113,7 @@
     <ClCompile Include="OutlinerWindow.cpp" />
     <ClCompile Include="PluginWindow.cpp" />
     <ClCompile Include="PropInspector.cpp" />
+    <ClCompile Include="PublishManager.cpp" />
     <ClCompile Include="TransformMod.cpp" />
     <ClCompile Include="EditorScene.cpp" />
     <ClCompile Include="UI.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="Grid.h" />
     <ClInclude Include="ImGui\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="PluginWindow.h" />
+    <ClInclude Include="PublishManager.h" />
     <ClInclude Include="Workspace.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />

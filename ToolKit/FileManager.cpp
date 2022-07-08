@@ -110,6 +110,17 @@ namespace ToolKit
 
   void FileManager::PackResources(const String& path)
   {
+    String zipName = ConcatPaths({ ResourcePath(), "..", "MinResources.pak" });
+    if (std::filesystem::exists(zipName.c_str()))
+    {
+      if (m_zfile)
+      {
+        unzClose(m_zfile);
+        m_zfile = nullptr;
+      }
+      std::filesystem::remove(zipName.c_str());
+    }
+
     // Load all scenes once in order to fill resource managers
     LoadAllScenes(path);
 
@@ -117,7 +128,7 @@ namespace ToolKit
     GetAllUsedResourcePaths(path);
 
     // Zip used resources
-    if (!ZipPack())
+    if (!ZipPack(zipName))
     {
       // Error
       GetLogger()->WriteConsole(LogType::Error, "Error zipping.");
@@ -186,7 +197,7 @@ namespace ToolKit
         absolutePath = ConcatPaths({ DefaultAbsolutePath(), absolutePath});
       }
 
-      allPaths.insert(absolutePath);
+      m_allPaths.insert(absolutePath);
     }
 
     // Meshes
@@ -202,7 +213,7 @@ namespace ToolKit
         absolutePath = ConcatPaths({ DefaultAbsolutePath(), absolutePath });
       }
 
-      allPaths.insert(absolutePath);
+      m_allPaths.insert(absolutePath);
     }
 
     // Shaders
@@ -218,7 +229,7 @@ namespace ToolKit
         absolutePath = ConcatPaths({ DefaultAbsolutePath(), absolutePath });
       }
 
-      allPaths.insert(absolutePath);
+      m_allPaths.insert(absolutePath);
     }
 
     // Textures
@@ -234,7 +245,7 @@ namespace ToolKit
         absolutePath = ConcatPaths({ DefaultAbsolutePath(), absolutePath });
       }
 
-      allPaths.insert(absolutePath);
+      m_allPaths.insert(absolutePath);
     }
 
     // Animations
@@ -243,11 +254,13 @@ namespace ToolKit
 
     // Scenes
     GetScenePaths(path);
+
+    // Extra files that the use provided
+    GetExtraFilePaths(path);
   }
 
-  bool FileManager::ZipPack()
+  bool FileManager::ZipPack(const String& zipName)
   {
-    String zipName = ConcatPaths({ ResourcePath(), "..", "MinResources.pak" });
     zipFile zFile = zipOpen64(zipName.c_str(), 0);
 
     if (zFile == NULL)
@@ -258,7 +271,7 @@ namespace ToolKit
     }
 
     // Add files to zip
-    for (String path : allPaths)
+    for (String path : m_allPaths)
     {
       if (!AddFileToZip(zFile, path.c_str()))
       {
@@ -374,7 +387,7 @@ namespace ToolKit
         continue;
       }
 
-      allPaths.insert(entry.path().string());
+      m_allPaths.insert(entry.path().string());
     }
   }
 
@@ -389,8 +402,40 @@ namespace ToolKit
         continue;
       }
 
-      allPaths.insert(entry.path().string());
+      m_allPaths.insert(entry.path().string());
     }
+  }
+
+  void FileManager::GetExtraFilePaths(const String& path)
+  {
+    String extrFilesPathStr = ConcatPaths({ path, "..", "ExtraFiles.txt" });
+    const char* extrFilesPath = extrFilesPathStr.c_str();
+    if (!std::filesystem::exists(extrFilesPath))
+    {
+      GetLogger()->Log("'ExtraFiles.txt' is not found in resources path.");
+      GetLogger()->WriteConsole
+      (
+        LogType::Warning,
+        "'ExtraFiles.txt' is not found in resources path."
+      );
+      return;
+    }
+
+    // Open file and read
+    String line;
+    std::fstream file(extrFilesPath);
+    while (std::getline(file, line))
+    {
+      line = Trim(line);
+      if (line[0] == '#')  // Comment
+      {
+        continue;
+      }
+
+      m_allPaths.insert(ConcatPaths({ ResourcePath(), line }));
+    }
+
+    file.close();
   }
 
   void FileManager::GetRelativeResourcesPath(String& path)

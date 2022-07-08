@@ -8,6 +8,7 @@
 #include "Workspace.h"
 #include "GlobalDef.h"
 #include "Light.h"
+#include "PublishManager.h"
 
 namespace ToolKit
 {
@@ -34,6 +35,7 @@ namespace ToolKit
     class Gizmo;
     class LightBillboard;
     class SpotLightGizmo;
+    class PublishManager;
 
     class App : Serializable
     {
@@ -172,6 +174,7 @@ namespace ToolKit
       byte m_showGraphicsApiErrors = 0;
       TransformationSpace m_transformSpace = TransformationSpace::TS_WORLD;
       Workspace m_workspace;
+      PublishManager* m_publishManager = nullptr;
       GameMod m_gameMod = GameMod::Stop;
 
       // Snap settings.

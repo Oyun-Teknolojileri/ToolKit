@@ -33,11 +33,12 @@ namespace ToolKit
     void LoadAllScenes(const String& path);
     void GetAllUsedResourcePaths(const String& path);
 
-    bool ZipPack();
+    bool ZipPack(const String& zipName);
     bool AddFileToZip(zipFile zfile, const char* filename);
 
     void GetAnimationPaths(const String& path);
     void GetScenePaths(const String& path);
+    void GetExtraFilePaths(const String& path);
 
     void GetRelativeResourcesPath(String& path);
     XmlFile ReadXmlFileFromZip
@@ -77,10 +78,10 @@ namespace ToolKit
     bool IsFileInPak(const String& filename);
 
    private:
-    StringSet allPaths;
+    StringSet m_allPaths;
     std::unordered_map<String, ZPOS64_T> m_zipFilesOffsetTable;
     bool m_offsetTableCreated = false;
-    zipFile m_zfile;
+    zipFile m_zfile = nullptr;
 
     struct _streambuf : std::streambuf
     {
