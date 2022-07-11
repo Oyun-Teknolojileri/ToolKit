@@ -120,7 +120,8 @@ namespace ToolKit
     for (Entity* ntt : entities)
     {
       // Update ids to prevent collision.
-      ntt->Id() += bigId;
+      ULongID id = ntt->GetIdVal();
+      ntt->SetIdVal(id + bigId);
       ntt->_parentId += bigId;
 
       AddEntity(ntt);  // Insert into this scene.
@@ -149,7 +150,7 @@ namespace ToolKit
 
       if
       (
-        std::find(ignoreList.begin(), ignoreList.end(), ntt->Id())
+        std::find(ignoreList.begin(), ignoreList.end(), ntt->GetIdVal())
         != ignoreList.end()
       )
       {
@@ -173,7 +174,7 @@ namespace ToolKit
 
         for (MeshComponentPtr& meshCmp : meshes)
         {
-          MeshPtr mesh = meshCmp->Mesh();
+          MeshPtr mesh = meshCmp->GetMeshVal();
           if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount)
           {
             // Per polygon check if data exist.
@@ -218,8 +219,12 @@ namespace ToolKit
 
       if
       (
-        std::find(ignoreList.begin(), ignoreList.end(), e->Id()) !=
-        ignoreList.end()
+        std::find
+        (
+          ignoreList.begin(),
+          ignoreList.end(),
+          e->GetIdVal()
+        ) != ignoreList.end()
       )
       {
         continue;
@@ -249,7 +254,7 @@ namespace ToolKit
   {
     for (Entity* e : m_entities)
     {
-      if (e->Id() == id)
+      if (e->GetIdVal() == id)
       {
         return e;
       }
@@ -260,8 +265,11 @@ namespace ToolKit
 
   void Scene::AddEntity(Entity* entity)
   {
-    assert(GetEntity(entity->Id()) ==
-      nullptr && "Entity is already in the scene.");
+    assert
+    (
+      GetEntity(entity->GetIdVal()) == nullptr &&
+      "Entity is already in the scene."
+    );
     m_entities.push_back(entity);
   }
 
@@ -270,7 +278,7 @@ namespace ToolKit
     Entity* removed = nullptr;
     for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; i--)
     {
-      if (m_entities[i]->Id() == id)
+      if (m_entities[i]->GetIdVal() == id)
       {
         removed = m_entities[i];
         m_entities.erase(m_entities.begin() + i);
@@ -285,7 +293,7 @@ namespace ToolKit
   {
     for (Entity* ntt : entities)
     {
-      RemoveEntity(ntt->Id());
+      RemoveEntity(ntt->GetIdVal());
     }
   }
 
@@ -317,7 +325,7 @@ namespace ToolKit
   {
     for (Entity* e : m_entities)
     {
-      if (e->Name() == name)
+      if (e->GetNameVal() == name)
       {
         return e;
       }
@@ -331,7 +339,7 @@ namespace ToolKit
     for (Entity* e : m_entities)
     {
       StringArray tokens;
-      Split(e->Tag(), ".", tokens);
+      Split(e->GetTagVal(), ".", tokens);
 
       for (const String& token : tokens)
       {
@@ -392,7 +400,7 @@ namespace ToolKit
     Scene prefab;
     prefab.AddEntity(entity);
     GetChildren(entity, prefab.m_entities);
-    String name = entity->Name() + SCENE;
+    String name = entity->GetNameVal() + SCENE;
     prefab.SetFile(PrefabPath(name));
     prefab.m_name = name;
     prefab.Save(false);
@@ -486,7 +494,7 @@ namespace ToolKit
     ULongID lastId = 0;
     for (Entity* ntt : m_entities)
     {
-      lastId = glm::max(lastId, ntt->Id());
+      lastId = glm::max(lastId, ntt->GetIdVal());
     }
 
     return lastId;

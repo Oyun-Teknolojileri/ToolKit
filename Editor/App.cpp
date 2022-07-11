@@ -63,31 +63,31 @@ namespace ToolKit
       m_lightMaster = new Node();
 
       DirectionalLight* light = new DirectionalLight();
-      light->Color() = Vec3(0.267f);
-      light->Intensity() = 1.5f;
+      light->SetColorVal(Vec3(0.267f));
+      light->SetIntensityVal(1.5f);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(180.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->Color() = Vec3(0.55f);
-      light->Intensity() = 1.5f;
+      light->SetColorVal(Vec3(0.55f));
+      light->SetIntensityVal(1.5f);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->Color() = Vec3(0.15f);
-      light->Intensity() = 1.5f;
+      light->SetColorVal(Vec3(0.15f));
+      light->SetIntensityVal(1.5f);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->Color() = Vec3(0.1f);
-      light->Intensity() = 1.5f;
+      light->SetColorVal(Vec3(0.1f));
+      light->SetIntensityVal(1.5f);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
       m_lightMaster->AddChild(light->m_node);
@@ -200,7 +200,7 @@ namespace ToolKit
         bool found = false;
         for (Entity* entity : selecteds)
         {
-          if (light->Id() == entity->Id())
+          if (light->GetIdVal() == entity->GetIdVal())
           {
             if (light->GetLightType() == LightTypeEnum::LightDirectional)
             {

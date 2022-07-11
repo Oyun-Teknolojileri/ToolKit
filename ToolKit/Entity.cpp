@@ -165,9 +165,9 @@ namespace ToolKit
     other->m_node->m_entity = other;
 
     // Preserve Ids.
-    ULongID id = other->Id();
+    ULongID id = other->GetIdVal();
     other->m_localData = m_localData;
-    other->Id() = id;
+    other->SetIdVal(id);
 
     if (copyComponents)
     {
@@ -285,7 +285,7 @@ namespace ToolKit
   void Entity::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = CreateXmlNode(doc, XmlEntityElement, parent);
-    WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(IdC()));
+    WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(GetIdVal()));
     if (m_node->m_parent && m_node->m_parent->m_entity)
     {
       WriteAttr
@@ -293,7 +293,7 @@ namespace ToolKit
         node,
         doc,
         XmlParentEntityIdAttr,
-        std::to_string(m_node->m_parent->m_entity->IdC())
+        std::to_string(m_node->m_parent->m_entity->GetIdVal())
       );
     }
 
@@ -364,7 +364,7 @@ namespace ToolKit
 
   void Entity::SetVisibility(bool vis, bool deep)
   {
-    Visible() = vis;
+    SetVisibleVal(vis);
     if (deep)
     {
       EntityRawPtrArray children;
@@ -378,7 +378,7 @@ namespace ToolKit
 
   void Entity::SetTransformLock(bool lock, bool deep)
   {
-    TransformLock() = lock;
+    SetTransformLockVal(lock);
     if (deep)
     {
       EntityRawPtrArray children;
@@ -404,7 +404,7 @@ namespace ToolKit
 
   EntityNode::EntityNode(const String& name)
   {
-    Name() = name;
+    SetNameVal(name);
   }
 
   EntityNode::~EntityNode()

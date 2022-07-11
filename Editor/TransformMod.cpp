@@ -117,9 +117,9 @@ namespace ToolKit
         StateBeginPick* baseNext = static_cast<StateBeginPick*> (nextState);
         baseNext->m_mouseData = m_mouseData;
 
-        if (!baseNext->IsIgnored(m_gizmo->Id()))
+        if (!baseNext->IsIgnored(m_gizmo->GetIdVal()))
         {
-          baseNext->m_ignoreList.push_back(m_gizmo->Id());
+          baseNext->m_ignoreList.push_back(m_gizmo->GetIdVal());
         }
       }
     }
@@ -394,7 +394,7 @@ namespace ToolKit
         int actionEntityCount = 0;
         for (Entity* ntt : entities)
         {
-          if (ntt->TransformLock())
+          if (ntt->GetTransformLockVal())
           {
             continue;
           }
@@ -535,7 +535,7 @@ namespace ToolKit
       }
 
       // Apply transform.
-      if (!e->TransformLock())
+      if (!e->GetTransformLockVal())
       {
         if (m_type == TransformType::Translate)
         {

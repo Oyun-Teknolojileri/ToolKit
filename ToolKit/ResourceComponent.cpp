@@ -34,12 +34,12 @@ namespace ToolKit
 
   BoundingBox MeshComponent::GetAABB()
   {
-    return Mesh()->m_aabb;
+    return GetMeshVal()->m_aabb;
   }
 
   void MeshComponent::Init(bool flushClientSideArray)
   {
-    Mesh()->Init(flushClientSideArray);
+    GetMeshVal()->Init(flushClientSideArray);
   }
 
   MaterialComponent::MaterialComponent()
@@ -60,7 +60,7 @@ namespace ToolKit
 
   void MaterialComponent::Init(bool flushClientSideArray)
   {
-    Material()->Init(flushClientSideArray);
+    GetMaterialVal()->Init(flushClientSideArray);
   }
 
   ComponentPtr MaterialComponent::Copy(Entity* ntt)

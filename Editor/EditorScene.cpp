@@ -49,9 +49,10 @@ namespace ToolKit
         {
           // Replace lights with EditorLights
           Light* el = reinterpret_cast<Light*>(ntt);
-          int type = el->LightType();
+          LightTypeEnum type = static_cast<LightTypeEnum>
+            (el->GetLightTypeVal());
 
-          if (type == 1)  // Directional light
+          if (type == LightTypeEnum::LightDirectional)
           {
             EditorDirectionalLight* upCasted =
             reinterpret_cast<EditorDirectionalLight*> (ntt);
@@ -61,7 +62,7 @@ namespace ToolKit
             m_entities[i] = light;
             SafeDel(ntt);
           }
-          else if (type == 2)  // Point light
+          else if (type == LightTypeEnum::LightSpot)
           {
             EditorPointLight* upCasted =
             reinterpret_cast<EditorPointLight*> (ntt);
@@ -70,7 +71,7 @@ namespace ToolKit
             m_entities[i] = light;
             SafeDel(ntt);
           }
-          else if (type == 3)  // Spot light
+          else if (type == LightTypeEnum::LightSpot)
           {
             EditorSpotLight* upCasted =
             reinterpret_cast<EditorSpotLight*> (ntt);
@@ -261,7 +262,7 @@ namespace ToolKit
       Entity* removed = nullptr;
       if ((removed = Scene::RemoveEntity(id)))
       {
-        RemoveFromSelection(removed->Id());
+        RemoveFromSelection(removed->GetIdVal());
       }
 
       return removed;

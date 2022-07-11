@@ -36,11 +36,14 @@
     Name##_Index = m_localData.m_variants.size(); \
     m_localData.Add(var); \
   } \
-  public: inline Class& Name() { \
-    return m_localData[Name##_Index].GetVar<Class>(); \
+  public: inline ParameterVariant& Param##Name() { \
+    return m_localData[Name##_Index]; \
   } \
-  public: inline const Class& Name##C() const { \
+  public: inline const Class& Get##Name##Val() const { \
     return m_localData[Name##_Index].GetCVar<Class>(); \
+  } \
+  public: inline void Set##Name##Val(const Class& val) { \
+    m_localData[Name##_Index] = val; \
   } \
   public: inline size_t Name##Index() { \
     return Name##_Index; \
@@ -387,7 +390,7 @@ namespace ToolKit
     String m_name;  //<! Name of the variant.
 
     /**
-    * Callback function for value changes. This function gets called before
+    * Callback function for value changes. This function gets called after
     * new value set.
     */
     std::function<void(Value& oldVal, Value& newVal)> m_onValueChangedFn;
@@ -396,12 +399,12 @@ namespace ToolKit
     template<typename T>
     void AsignVal(T& val)
     {
-      Value newVal = val;
+      Value oldVal = m_var;
+      m_var = val;
       if (m_onValueChangedFn)
       {
-        m_onValueChangedFn(m_var, newVal);
+        m_onValueChangedFn(oldVal, m_var);
       }
-      m_var = newVal;
     }
 
    private:

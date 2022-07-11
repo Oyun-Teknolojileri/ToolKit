@@ -91,13 +91,13 @@ namespace ToolKit
         EditorScenePtr currScene = g_app->GetCurrentScene();
         if (StatePickingBase::m_dbgArrow)
         {
-          currScene->RemoveEntity(StatePickingBase::m_dbgArrow->Id());
+          currScene->RemoveEntity(StatePickingBase::m_dbgArrow->GetIdVal());
           StatePickingBase::m_dbgArrow = nullptr;
         }
 
         if (StatePickingBase::m_dbgFrustum)
         {
-          currScene->RemoveEntity(StatePickingBase::m_dbgFrustum->Id());
+          currScene->RemoveEntity(StatePickingBase::m_dbgFrustum->GetIdVal());
           StatePickingBase::m_dbgFrustum = nullptr;
         }
       }
@@ -464,7 +464,7 @@ namespace ToolKit
         {
           mesh->ApplyTransform(ts);
         }
-        g_app->m_statusMsg = "Transforms applied to " + ntt->Name();
+        g_app->m_statusMsg = "Transforms applied to " + ntt->GetNameVal();
       }
       else
       {
@@ -490,7 +490,7 @@ namespace ToolKit
         String fileName = ntt->GetMesh()->GetFile();
         if (fileName.empty())
         {
-          fileName = MeshPath(ntt->Name() + MESH);
+          fileName = MeshPath(ntt->GetNameVal() + MESH);
         }
 
         if (nameTag != tagArgs.end())

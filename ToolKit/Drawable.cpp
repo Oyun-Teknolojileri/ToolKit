@@ -85,16 +85,16 @@ namespace ToolKit
     GetMeshManager()->Remove(GetMesh()->GetFile());
   }
 
-  MeshPtr& Drawable::GetMesh() const
+  MeshPtr Drawable::GetMesh() const
   {
     MeshComponentPtr meshComp = GetComponent<MeshComponent>();
-    return meshComp->Mesh();
+    return meshComp->GetMeshVal();
   }
 
   void Drawable::SetMesh(const MeshPtr& mesh)
   {
     MeshComponentPtr meshComp = GetComponent<MeshComponent>();
-    meshComp->Mesh() = mesh;
+    meshComp->SetMeshVal(mesh);
   }
 
 }  // namespace ToolKit

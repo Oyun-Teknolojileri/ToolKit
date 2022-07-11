@@ -71,10 +71,13 @@ namespace ToolKit
       std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.1f);
 
       MeshComponent* mc = new MeshComponent();
-      mc->Mesh() = sphere->GetMeshComponent()->Mesh();
-      mc->Mesh()->m_material =
+      mc->SetMeshVal
+      (
+        sphere->GetMeshComponent()->GetMeshVal()
+      );
+
       GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-      mc->Mesh()->CalculateAABB();
+      mc->GetMeshVal()->CalculateAABB();
       AddComponent(mc);
 
       m_gizmo->InitGizmo(this);
@@ -82,9 +85,9 @@ namespace ToolKit
       // Directional light gizmo
       for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
       {
-        MeshPtr mesh = lb->GetMeshComponent()->Mesh();
+        MeshPtr mesh = lb->GetMeshComponent()->GetMeshVal();
         mesh->Init();
-        mc->Mesh()->m_subMeshes.push_back(mesh);
+        mc->GetMeshVal()->m_subMeshes.push_back(mesh);
       }
 
       m_gizmoActive = true;
@@ -101,8 +104,8 @@ namespace ToolKit
 
           for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
           {
-            MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->Mesh();
-            mc->Mesh()->m_subMeshes.push_back(lbMesh);
+            MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
+            mc->GetMeshVal()->m_subMeshes.push_back(lbMesh);
           }
 
           m_gizmoActive = true;
@@ -111,7 +114,7 @@ namespace ToolKit
         {
           // Remove submeshes from mesh component
           MeshComponentPtr mc = GetComponent<MeshComponent>();
-          mc->Mesh()->m_subMeshes.clear();
+          mc->GetMeshVal()->m_subMeshes.clear();
 
           m_gizmoActive = false;
         }
@@ -172,10 +175,15 @@ namespace ToolKit
       std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.1f);
 
       MeshComponent* mc = new MeshComponent();
-      mc->Mesh() = sphere->GetMeshComponent()->Mesh();
-      mc->Mesh()->m_material =
-      GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-      mc->Mesh()->CalculateAABB();
+      mc->SetMeshVal
+      (
+        sphere->GetMeshComponent()->GetMeshVal()
+      );
+
+      MeshPtr compMesh = mc->GetMeshVal();
+      compMesh->m_material = GetMaterialManager()->
+        GetCopyOfUnlitColorMaterial();
+      compMesh->CalculateAABB();
       AddComponent(mc);
 
       m_gizmo->InitGizmo(this);
@@ -183,9 +191,9 @@ namespace ToolKit
       // Gizmo
       for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
       {
-        MeshPtr mesh = lb->GetMeshComponent()->Mesh();
+        MeshPtr mesh = lb->GetMeshComponent()->GetMeshVal();
         mesh->Init();
-        mc->Mesh()->m_subMeshes.push_back(mesh);
+        compMesh->m_subMeshes.push_back(mesh);
       }
 
       m_gizmoActive = true;
@@ -202,9 +210,9 @@ namespace ToolKit
 
           for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
           {
-            mc->Mesh()->m_subMeshes.push_back
+            mc->GetMeshVal()->m_subMeshes.push_back
             (
-              lb->GetMeshComponent()->Mesh()
+              lb->GetMeshComponent()->GetMeshVal()
             );
           }
 
@@ -214,7 +222,7 @@ namespace ToolKit
         {
           // Remove submeshes from mesh component
           MeshComponentPtr mc = GetComponent<MeshComponent>();
-          mc->Mesh()->m_subMeshes.clear();
+          mc->GetMeshVal()->m_subMeshes.clear();
 
           m_gizmoActive = false;
         }
@@ -276,18 +284,23 @@ namespace ToolKit
       std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.1f);
 
       MeshComponent* mc = new MeshComponent();
-      mc->Mesh() = sphere->GetMeshComponent()->Mesh();
-      mc->Mesh()->m_material =
-      GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-      mc->Mesh()->CalculateAABB();
+      mc->SetMeshVal
+      (
+        sphere->GetMeshComponent()->GetMeshVal()
+      );
+
+      MeshPtr compMesh = mc->GetMeshVal();
+      compMesh->m_material = GetMaterialManager()->
+        GetCopyOfUnlitColorMaterial();
+      compMesh->CalculateAABB();
       AddComponent(mc);
 
       // Gizmo
       for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
       {
-        MeshPtr mesh = lb->GetComponent<MeshComponent>()->Mesh();
+        MeshPtr mesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
         mesh->Init();
-        mc->Mesh()->m_subMeshes.push_back(mesh);
+        compMesh->m_subMeshes.push_back(mesh);
       }
 
       m_gizmoActive = true;
@@ -303,8 +316,8 @@ namespace ToolKit
           MeshComponentPtr mc = GetComponent<MeshComponent>();
           for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
           {
-            MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->Mesh();
-            mc->Mesh()->m_subMeshes.push_back(lbMesh);
+            MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
+            mc->GetMeshVal()->m_subMeshes.push_back(lbMesh);
           }
 
           m_gizmoActive = true;
@@ -313,7 +326,7 @@ namespace ToolKit
         {
           // Remove submeshes from mesh component
           MeshComponentPtr mc = GetComponent<MeshComponent>();
-          mc->Mesh()->m_subMeshes.clear();
+          mc->GetMeshVal()->m_subMeshes.clear();
 
           m_gizmoActive = false;
         }

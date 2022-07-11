@@ -381,6 +381,17 @@ namespace ToolKit
     return m_storage[MaterialPath("unlit.material", true)]->Copy<Material>();
   }
 
+  MaterialPtr MaterialManager::GetCopyOfUIMaterial()
+  {
+    MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+    material->UnInit();
+    material->GetRenderState()->blendFunction =
+      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+    material->GetRenderState()->depthTestEnabled = true;
+
+    return material;
+  }
+
   MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial()
   {
     return m_storage

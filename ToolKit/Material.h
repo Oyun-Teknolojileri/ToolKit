@@ -52,6 +52,7 @@ namespace ToolKit
     String GetDefaultResource(ResourceType type) override;
 
     MaterialPtr GetCopyOfUnlitMaterial();
+    MaterialPtr GetCopyOfUIMaterial();
     MaterialPtr GetCopyOfUnlitColorMaterial();
     MaterialPtr GetCopyOfSolidMaterial();
     MaterialPtr GetCopyOfDefaultMaterial();

@@ -78,12 +78,12 @@ namespace ToolKit
       {
         if (pNode->m_entity)
         {
-          m_parentId = pNode->m_entity->Id();
+          m_parentId = pNode->m_entity->GetIdVal();
         }
         pNode->Orphan(m_ntt->m_node);
       }
 
-      g_app->GetCurrentScene()->RemoveEntity(m_ntt->Id());
+      g_app->GetCurrentScene()->RemoveEntity(m_ntt->GetIdVal());
       m_actionComitted = true;
     }
 
@@ -144,7 +144,7 @@ namespace ToolKit
     void CreateAction::Undo()
     {
       SwapSelection();
-      g_app->GetCurrentScene()->RemoveEntity(m_ntt->Id());
+      g_app->GetCurrentScene()->RemoveEntity(m_ntt->GetIdVal());
       m_actionComitted = false;
     }
 
@@ -602,7 +602,7 @@ namespace ToolKit
       {
         if (pd.entity != nullptr)
         {
-          ids.push_back(pd.entity->Id());
+          ids.push_back(pd.entity->GetIdVal());
         }
         else
         {
@@ -642,7 +642,7 @@ namespace ToolKit
       }
 
       ToEntityIdArray(m_ignoreList, ignores);
-      m_ignoreList.push_back(g_app->m_grid->Id());
+      m_ignoreList.push_back(g_app->m_grid->GetIdVal());
     }
 
     SignalId StateBeginPick::Update(float deltaTime)
@@ -680,7 +680,7 @@ namespace ToolKit
             if (m_dbgArrow == nullptr)
             {
               m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
-              m_ignoreList.push_back(m_dbgArrow->Id());
+              m_ignoreList.push_back(m_dbgArrow->GetIdVal());
               currScene->AddEntity(m_dbgArrow.get());
             }
 
@@ -822,7 +822,7 @@ namespace ToolKit
               (
                 new LineBatch(corners, X_AXIS, DrawType::Line)
               );
-              m_ignoreList.push_back(m_dbgFrustum->Id());
+              m_ignoreList.push_back(m_dbgFrustum->GetIdVal());
               currScene->AddEntity(m_dbgFrustum.get());
             }
             else
@@ -974,7 +974,7 @@ namespace ToolKit
             ActionManager::GetInstance()->AddAction(new CreateAction(cpy));
           }
 
-          currScene->AddToSelection(copies.front()->Id(), true);
+          currScene->AddToSelection(copies.front()->GetIdVal(), true);
           cpyCount += static_cast<int>(copies.size());
         }
 

@@ -804,7 +804,7 @@ namespace ToolKit
     idArray.reserve(ptrArray.size());
     for (Entity* ntt : ptrArray)
     {
-      idArray.push_back(ntt->Id());
+      idArray.push_back(ntt->GetIdVal());
     }
   }
 

@@ -96,7 +96,10 @@ namespace ToolKit
 
       MeshComponentPtr camMeshComp = GetComponent<MeshComponent>();
       LineBatch frusta(lines, g_cameraGizmoColor, DrawType::Line);
-      camMeshComp->Mesh() = frusta.GetComponent<MeshComponent>()->Mesh();
+      camMeshComp->SetMeshVal
+      (
+        frusta.GetComponent<MeshComponent>()->GetMeshVal()
+      );
 
       // Triangle part.
       VertexArray vertices;
@@ -115,8 +118,8 @@ namespace ToolKit
       subMesh->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
       subMesh->ConstructFaces();
 
-      camMeshComp->Mesh()->m_subMeshes.push_back(subMesh);
-      camMeshComp->Mesh()->CalculateAABB();
+      camMeshComp->GetMeshVal()->m_subMeshes.push_back(subMesh);
+      camMeshComp->GetMeshVal()->CalculateAABB();
       camMeshComp->Init(false);
     }
 

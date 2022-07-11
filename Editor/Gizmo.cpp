@@ -39,12 +39,12 @@ namespace ToolKit
     void Cursor::Generate()
     {
       MeshComponentPtr parentMeshComp = GetComponent<MeshComponent>();
-      MeshPtr parentMesh = parentMeshComp->Mesh();
+      MeshPtr parentMesh = parentMeshComp->GetMeshVal();
       parentMesh->UnInit();
 
       // Billboard
       Quad quad;
-      MeshPtr& meshPtr = quad.GetMeshComponent()->Mesh();
+      MeshPtr meshPtr = quad.GetMeshComponent()->GetMeshVal();
 
       meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
       meshPtr->m_material->UnInit();
@@ -124,15 +124,15 @@ namespace ToolKit
 
         Arrow2d arrow(t);
         MeshComponentPtr arrowMeshComp = arrow.GetComponent<MeshComponent>();
-        MeshPtr arrowMesh = arrowMeshComp->Mesh();
+        MeshPtr arrowMesh = arrowMeshComp->GetMeshVal();
         arrowMesh->m_material->GetRenderState()->depthTestEnabled = false;
         if (i == 0)
         {
-          GetMeshComponent()->Mesh() = arrowMesh;
+          GetMeshComponent()->SetMeshVal(arrowMesh);
         }
         else
         {
-          GetMeshComponent()->Mesh()->m_subMeshes.push_back(arrowMesh);
+          GetMeshComponent()->GetMeshVal()->m_subMeshes.push_back(arrowMesh);
         }
       }
     }
@@ -162,7 +162,7 @@ namespace ToolKit
       m_mesh = std::make_shared<Mesh>();
 
       LineBatch line(pnts, params.color, DrawType::Line, 2.0f);
-      MeshPtr lnMesh = line.GetComponent<MeshComponent>()->Mesh();
+      MeshPtr lnMesh = line.GetComponent<MeshComponent>()->GetMeshVal();
       m_mesh->m_subMeshes.push_back(lnMesh);
 
       MaterialPtr material =
@@ -172,14 +172,14 @@ namespace ToolKit
       if (params.type == SolidType::Cube)
       {
         Cube solid(params.solidDim);
-        MeshPtr& mesh = solid.GetComponent<MeshComponent>()->Mesh();
+        MeshPtr mesh = solid.GetComponent<MeshComponent>()->GetMeshVal();
         mesh->m_material = material;
         m_mesh->m_subMeshes.push_back(mesh);
       }
       else if (params.type == SolidType::Cone)
       {
         Cone solid({ params.solidDim.y, params.solidDim.x, 10, 10 });
-        MeshPtr mesh = solid.GetComponent<MeshComponent>()->Mesh();
+        MeshPtr mesh = solid.GetComponent<MeshComponent>()->GetMeshVal();
         mesh->m_material = material;
         m_mesh->m_subMeshes.push_back(mesh);
       }
@@ -219,7 +219,7 @@ namespace ToolKit
         };
 
         LineBatch guide(pnts, g_gizmoColor[axisInd % 3], DrawType::Line, 1.0f);
-        MeshPtr guideMesh = guide.GetComponent<MeshComponent>()->Mesh();
+        MeshPtr guideMesh = guide.GetComponent<MeshComponent>()->GetMeshVal();
         m_mesh->m_subMeshes.push_back(guideMesh);
       }
     }
@@ -280,7 +280,7 @@ namespace ToolKit
       corners.push_back(corners.front());
 
       LineBatch circle(corners, params.color, DrawType::LineStrip, 4.0f);
-      MeshPtr circleMesh = circle.GetComponent<MeshComponent>()->Mesh();
+      MeshPtr circleMesh = circle.GetComponent<MeshComponent>()->GetMeshVal();
       m_mesh = circleMesh;
 
       // Guide line.
@@ -304,7 +304,7 @@ namespace ToolKit
         pnts.push_back(glcl - dir * 999.0f);
 
         LineBatch guide(pnts, g_gizmoColor[axisIndx], DrawType::Line, 1.0f);
-        MeshPtr guideMesh = guide.GetComponent<MeshComponent>()->Mesh();
+        MeshPtr guideMesh = guide.GetComponent<MeshComponent>()->GetMeshVal();
         m_mesh->m_subMeshes.push_back(guideMesh);
       }
     }
@@ -379,7 +379,7 @@ namespace ToolKit
       material->m_color = params.color;
       material->GetRenderState()->cullMode = CullingType::TwoSided;
 
-      MeshPtr& mesh = solid.GetMeshComponent()->Mesh();
+      MeshPtr mesh = solid.GetMeshComponent()->GetMeshVal();
       mesh->m_material = material;
       m_mesh = mesh;
 
@@ -648,7 +648,7 @@ namespace ToolKit
         mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
       mesh->Init(false);
-      GetComponent<MeshComponent>()->Mesh() = mesh;
+      GetComponent<MeshComponent>()->SetMeshVal(mesh);
     }
 
     GizmoHandle::Params LinearGizmo::GetParam() const
@@ -762,7 +762,7 @@ namespace ToolKit
         mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
 
-      GetComponent<MeshComponent>()->Mesh() = mesh;
+      GetComponent<MeshComponent>()->SetMeshVal(mesh);
     }
 
     void PolarGizmo::Render(Renderer* renderer, Camera* cam)
@@ -772,7 +772,7 @@ namespace ToolKit
       if (sphere == nullptr)
       {
         sphere = std::make_shared<Sphere>(1.0f);
-        sphere->GetMeshComponent()->Mesh()->
+        sphere->GetMeshComponent()->GetMeshVal()->
           m_material->GetRenderState()->cullMode = CullingType::Front;
       }
 
@@ -798,11 +798,14 @@ namespace ToolKit
       m_gizmoLineBatches[0] = new LineBatch();
 
       MeshComponent* mc = new MeshComponent();
-      mc->Mesh() = m_gizmoLineBatches[0]->GetMeshComponent()->Mesh();
-      mc->Mesh()->m_material->Init();
+      mc->SetMeshVal
+      (
+        m_gizmoLineBatches[0]->GetMeshComponent()->GetMeshVal()
+      );
+      mc->GetMeshVal()->m_material->Init();
       AddComponent(mc);
 
-      MeshPtr mesh = mc->Mesh();
+      MeshPtr mesh = mc->GetMeshVal();
 
       m_innerCirclePnts.resize(m_circleVertexCount + 1);
       m_outerCirclePnts.resize(m_circleVertexCount + 1);
@@ -813,17 +816,17 @@ namespace ToolKit
 
       mesh->m_subMeshes.push_back
       (
-        m_gizmoLineBatches[1]->GetComponent<MeshComponent>()->Mesh()
+        m_gizmoLineBatches[1]->GetComponent<MeshComponent>()->GetMeshVal()
       );
 
       mesh->m_subMeshes.push_back
       (
-        m_gizmoLineBatches[2]->GetComponent<MeshComponent>()->Mesh()
+        m_gizmoLineBatches[2]->GetComponent<MeshComponent>()->GetMeshVal()
       );
 
       mesh->m_subMeshes.push_back
       (
-        m_gizmoLineBatches[3]->GetComponent<MeshComponent>()->Mesh()
+        m_gizmoLineBatches[3]->GetComponent<MeshComponent>()->GetMeshVal()
       );
 
       mesh->m_subMeshes[0]->m_material->Init();
@@ -844,7 +847,7 @@ namespace ToolKit
     {
       // Middle line
       Vec3 d = Vec3(0.0f, 0.0f, -1.0f);
-      float r = light->Radius();
+      float r = light->GetRadiusVal();
       m_pnts[0] = Vec3
       (
         ZERO
@@ -929,10 +932,10 @@ namespace ToolKit
 
       d = d * r;
 
-      float innerCircleRadius = r
-      * glm::tan(glm::radians(light->InnerAngle() / 2));
-      float outerCircleRadius = r
-      * glm::tan(glm::radians(light->OuterAngle() / 2));
+      float innerCircleRadius = r *
+        glm::tan(glm::radians(light->GetInnerAngleVal() / 2));
+      float outerCircleRadius = r *
+        glm::tan(glm::radians(light->GetOuterAngleVal() / 2));
 
       Vec3 inStartPoint = d + per * innerCircleRadius;
       Vec3 outStartPoint = d + per * outerCircleRadius;
@@ -997,8 +1000,12 @@ namespace ToolKit
       m_gizmoLineBatches[0] = new LineBatch();
 
       MeshComponent* mc = new MeshComponent();
-      mc->Mesh() = m_gizmoLineBatches[0]->GetMeshComponent()->Mesh();
-      mc->Mesh()->m_material->Init();
+      mc->SetMeshVal
+      (
+        m_gizmoLineBatches[0]->GetMeshComponent()->GetMeshVal()
+      );
+
+      mc->GetMeshVal()->m_material->Init();
       AddComponent(mc);
     }
 
@@ -1052,20 +1059,24 @@ namespace ToolKit
 
       // Create gizmo meshes and materials
       MeshComponent* mc = new MeshComponent();
-      mc->Mesh() = m_gizmoLineBatches[0]->GetMeshComponent()->Mesh();
-      mc->Mesh()->m_material->Init();
+      mc->SetMeshVal
+      (
+        m_gizmoLineBatches[0]->GetMeshComponent()->GetMeshVal()
+      );
+
+      mc->GetMeshVal()->m_material->Init();
       AddComponent(mc);
 
-      MeshPtr mesh = mc->Mesh();
+      MeshPtr mesh = mc->GetMeshVal();
       mesh->m_subMeshes.push_back
       (
-        m_gizmoLineBatches[1]->GetMeshComponent()->Mesh()
+        m_gizmoLineBatches[1]->GetMeshComponent()->GetMeshVal()
       );
 
       mesh->m_subMeshes[0]->m_material->Init();
       mesh->m_subMeshes.push_back
       (
-        m_gizmoLineBatches[2]->GetMeshComponent()->Mesh()
+        m_gizmoLineBatches[2]->GetMeshComponent()->GetMeshVal()
       );
 
       mesh->m_subMeshes[1]->m_material->Init();
@@ -1092,7 +1103,7 @@ namespace ToolKit
       );
 
       // Create circle with rotating points around forward vector
-      Vec3 startingPoint = up * light->Radius();
+      Vec3 startingPoint = up * light->GetRadiusVal();
       m_circlePnts1[0] = startingPoint;
       Mat4 idendityMatrix = Mat4(1.0f);
       for (int i = 1; i <= m_circleVertexCount; i++)
@@ -1111,7 +1122,7 @@ namespace ToolKit
       );
 
       // Create circle with rotating points around right vector
-      startingPoint = up * light->Radius();
+      startingPoint = up * light->GetRadiusVal();
       m_circlePnts2[0] = startingPoint;
       for (int i = 1; i <= m_circleVertexCount; i++)
       {
@@ -1129,7 +1140,7 @@ namespace ToolKit
       );
 
       // Create circle with rotating points around up vector
-      startingPoint = right * light->Radius();
+      startingPoint = right * light->GetRadiusVal();
       m_circlePnts3[0] = startingPoint;
       for (int i = 1; i <= m_circleVertexCount; i++)
       {

@@ -20,8 +20,10 @@ namespace ToolKit
       {
         m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
         m_material->UnInit();
-        m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(
-          TexturePath("grid.png"));
+        m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>
+          (
+            TexturePath("grid.png")
+          );
         m_material->GetRenderState()->blendFunction =
           BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
         m_material->GetRenderState()->cullMode = CullingType::TwoSided;
@@ -35,40 +37,46 @@ namespace ToolKit
       }
 
       // Create grid mesh.
-      m_size.x = size.x % 2 == 0 ? size.x : size.x + 1;
-      m_size.y = size.y % 2 == 0 ? size.y : size.y + 1;
       Resize(size);
     }
 
     void Grid::Resize(UVec2 size, AxisLabel axis, float gridSpaceScale)
     {
-      m_size.x = size.x % 2 == 0 ? size.x : size.x + 1;
-      m_size.y = size.y % 2 == 0 ? size.y : size.y + 1;
+      for (int i = 0; i < 2; i++)
+      {
+        m_size[i] = size[i] % 2 == 0 ? size[i] : size[i] + 1;
+      }
 
       bool axises[3] = { false, false, false };
-      if (axis != AxisLabel::XY &&
-        axis != AxisLabel::YZ &&
-        axis != AxisLabel::ZX)
+
+      assert
+      (
+        (
+          axis == AxisLabel::XY ||
+          axis == AxisLabel::YZ ||
+          axis == AxisLabel::ZX
+        ) && "Only works for given values."
+      );
+
+      if (axis == AxisLabel::XY)
       {
-        GetLogger()->WriteConsole(LogType::Error,
-          "Grid::Resize has invalid x,y,z info; please report this!"); return;
+        axises[0] = true;
+        axises[1] = true;
       }
-      else
+
+      if (axis == AxisLabel::YZ)
       {
-        if (axis == AxisLabel::XY)
-        {
-          axises[0] = true; axises[1] = true;
-        }
-        if (axis == AxisLabel::YZ)
-        {
-          axises[1] = true; axises[2] = true;
-        }
-        if (axis == AxisLabel::ZX)
-        {
-          axises[0] = true; axises[2] = true;
-        }
+        axises[1] = true;
+        axises[2] = true;
       }
-      MeshPtr& parentMesh = GetMeshComponent()->Mesh();
+
+      if (axis == AxisLabel::ZX)
+      {
+        axises[0] = true;
+        axises[2] = true;
+      }
+
+      MeshPtr parentMesh = GetMeshComponent()->GetMeshVal();
       parentMesh->UnInit();
       glm::vec2 scale = glm::vec2(m_size) * glm::vec2(0.5f);
 
@@ -80,43 +88,55 @@ namespace ToolKit
         Vec3(-scale.x * 0.5f - 0.025f, 0.0f, -scale.y * 0.5f - 0.025f)
       };
 
+      // Used to manupulate axes.
+      auto axisConvertFn = [&axises](Vertex& v) -> void
+      {
+        Vec3 prevVertex = v.pos;
+        bool isFirstOnePicked = false;
+        for (ubyte axisIndex = 0; axisIndex < 3; axisIndex++)
+        {
+          if (axises[axisIndex] == false)
+          {
+            v.pos[axisIndex] = prevVertex.y;
+          }
+          else if (!isFirstOnePicked)
+          {
+            v.pos[axisIndex] = prevVertex.x;
+            isFirstOnePicked = true;
+          }
+          else
+          {
+            v.pos[axisIndex] = prevVertex.z;
+          }
+        }
+      };
+
       for (int i = 0; i < 4; i++)
       {
         Quad quad;
-        MeshPtr& mesh = quad.GetMeshComponent()->Mesh();
+        MeshPtr mesh = quad.GetMeshComponent()->GetMeshVal();
         for (int j = 0; j < 4; j++)
         {
-          ToolKit::Vertex& clientVertex = mesh->m_clientSideVertices[j];
-          clientVertex.pos = (clientVertex.pos
-            * glm::vec3(scale.x, scale.y, 0.0f)).xzy + offsets[i];
+          Vertex& clientVertex = mesh->m_clientSideVertices[j];
+          clientVertex.pos =
+            (
+              clientVertex.pos *
+              glm::vec3
+              (
+                scale.x,
+                scale.y,
+                0.0f
+              )
+            ).xzy + offsets[i];
           clientVertex.tex = clientVertex.pos.xz * gridSpaceScale;
-
-
-          // Convert according to new axises
-          Vec3 prevVertex = clientVertex.pos;
-          bool isFirstOnePicked = false;
-          for (uint8_t axisIndex = 0; axisIndex < 3; axisIndex++)
-          {
-            if (axises[axisIndex] == false)
-            {
-              clientVertex.pos[axisIndex] = prevVertex.y;
-            }
-            else if (!isFirstOnePicked)
-            {
-              clientVertex.pos[axisIndex] = prevVertex.x;
-              isFirstOnePicked = true;
-            }
-            else
-            {
-              clientVertex.pos[axisIndex] = prevVertex.z;
-            }
-          }
+          axisConvertFn(clientVertex);
         }
 
         mesh->m_material = m_material;
         if (i == 0)
         {
-          GetMeshComponent()->Mesh() = mesh;
+          GetMeshComponent()->SetMeshVal(mesh);
+          parentMesh = mesh;
         }
         else
         {
@@ -128,100 +148,45 @@ namespace ToolKit
       vertices.resize(2);
 
       // x - z lines.
-      Vec3 ls_es[2] = {
+      Vec3 lines[2] =
+      {
         Vec3(0.05f, scale.x * 2.0f, 1.0f),
         Vec3(scale.y * 2.0f, 0.05f, 1.0f)
       };
+
       for (int i = 0; i < 2; i++)
       {
         MaterialPtr solidMat = GetMaterialManager()->
           GetCopyOfUnlitColorMaterial();
         solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
         solidMat->m_color = g_gridAxisBlue;
-        Vec3 ls = ls_es[i];
+        Vec3 ls = lines[i];
 
-        // Choose axis color
-        if (i == 0)
+        // Set axis colors
+        bool iZero = i == 0;
+        switch (axis)
         {
-          // Set axis colors
-          switch (axis)
-          {
-            case AxisLabel::XY:
-            solidMat->m_color = g_gridAxisGreen;
-            break;
-            case AxisLabel::YZ:
-            solidMat->m_color = g_gridAxisBlue;
-            break;
-            case AxisLabel::ZX:
-            solidMat->m_color = g_gridAxisBlue;
-            break;
-          }
-        }
-        else
-        {
-          // Set axis colors
-          switch (axis)
-          {
-            case AxisLabel::XY:
-            solidMat->m_color = g_gridAxisRed;
-            break;
-            case AxisLabel::YZ:
-            solidMat->m_color = g_gridAxisGreen;
-            break;
-            case AxisLabel::ZX:
-            solidMat->m_color = g_gridAxisRed;
-            break;
-          }
+          case AxisLabel::XY:
+            solidMat->m_color = iZero ? g_gridAxisGreen : g_gridAxisRed;
+          break;
+          case AxisLabel::YZ:
+            solidMat->m_color = iZero ? g_gridAxisBlue : g_gridAxisGreen;
+          break;
+          case AxisLabel::ZX:
+            solidMat->m_color = iZero ? g_gridAxisBlue : g_gridAxisRed;
+          break;
         }
 
         Quad quad;
-        MeshPtr& mesh = quad.GetMeshComponent()->Mesh();
+        MeshPtr mesh = quad.GetMeshComponent()->GetMeshVal();
         for (int j = 0; j < 4; j++)
         {
           Vertex& clientVertex = mesh->m_clientSideVertices[j];
           clientVertex.pos = (clientVertex.pos * ls).xzy;
-
-          // Convert according to new axises
-          Vec3 prevVertex = clientVertex.pos;
-          bool isFirstOnePicked = false;
-          for (uint8_t axisIndex = 0; axisIndex < 3; axisIndex++)
-          {
-            if (axises[axisIndex] == false)
-            {
-              clientVertex.pos[axisIndex] = prevVertex.y;
-            }
-            else if (!isFirstOnePicked)
-            {
-              clientVertex.pos[axisIndex] = prevVertex.x;
-              isFirstOnePicked = true;
-            }
-            else
-            {
-              clientVertex.pos[axisIndex] = prevVertex.z;
-            }
-          }
+          axisConvertFn(clientVertex);
         }
         mesh->m_material = solidMat;
         parentMesh->m_subMeshes.push_back(mesh);
-      }
-
-      // Set axis colors
-      switch (axis)
-      {
-        case AxisLabel::XY:
-        parentMesh->m_subMeshes[0]->m_material->m_color = g_gridAxisRed;
-        parentMesh->m_subMeshes[1]->m_material->m_color = g_gridAxisGreen;
-        break;
-        case AxisLabel::YZ:
-        parentMesh->m_subMeshes[0]->m_material->m_color = g_gridAxisGreen;
-        parentMesh->m_subMeshes[1]->m_material->m_color = g_gridAxisBlue;
-        break;
-        case AxisLabel::ZX:
-        parentMesh->m_subMeshes[0]->m_material->m_color = g_gridAxisBlue;
-        parentMesh->m_subMeshes[1]->m_material->m_color = g_gridAxisRed;
-        break;
-        default:
-        break;
       }
 
       parentMesh->CalculateAABB();
@@ -246,5 +211,6 @@ namespace ToolKit
 
       return false;
     }
+
   }  //  namespace Editor
 }  //  namespace ToolKit

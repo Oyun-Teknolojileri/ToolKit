@@ -65,21 +65,31 @@ namespace ToolKit
     SurfaceEventCallback m_onMouseClick = nullptr;
   };
 
+  static VariantCategory ButtonCategory
+  {
+    "Button",
+    90
+  };
+
   class TK_API Button : public Surface
   {
    public:
     Button();
     explicit Button(const Vec2& size);
-    Button(const TexturePtr& buttonImage, const TexturePtr& mouseOverImage);
+    Button(const TexturePtr& buttonImage, const TexturePtr& hoverImage);
     virtual ~Button();
     EntityType GetType() const override;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     void ResetCallbacks() override;
 
+   protected:
+     void ParameterConstructor();
+     void ParameterEventConstructor();
+
    public:
-    TexturePtr m_mouseOverImage;
-    TexturePtr m_buttonImage;
+    TKDeclareParam(MaterialPtr, ButtonMaterial);
+    TKDeclareParam(MaterialPtr, HoverMaterial);
 
     // Local events.
     SurfaceEventCallback m_onMouseEnterLocal;

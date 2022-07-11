@@ -59,6 +59,8 @@ namespace ToolKit
   };
 
   typedef std::shared_ptr<class MaterialComponent> MaterialComponentPtr;
+  typedef std::vector<MaterialComponentPtr> MaterialComponentPtrArray;
+
   static VariantCategory MaterialComponentCategory
   {
     "Material Component",

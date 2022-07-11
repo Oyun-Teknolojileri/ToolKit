@@ -41,7 +41,7 @@ namespace ToolKit
   {
     SafeDel(m_camera);
     m_camera = cam;
-    m_attachedCamera = cam->Id();
+    m_attachedCamera = cam->GetIdVal();
   }
 
   ViewportBase::ViewportBase()

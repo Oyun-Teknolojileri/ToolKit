@@ -149,7 +149,7 @@ namespace ToolKit
       {
         Sphere ball;
         String fullpath = GetFullPath();
-        MeshPtr& mesh = ball.GetMeshComponent()->Mesh();
+        MeshPtr mesh = ball.GetMeshComponent()->GetMeshVal();
         mesh->m_material = GetMaterialManager()->Create<Material>(fullpath);
         mesh->Init(false);
 
@@ -171,7 +171,7 @@ namespace ToolKit
         float h = (texture->m_height / maxDim) * thumbSize.y;
 
         Surface surface(Vec2(w, h));
-        MeshPtr& mesh = surface.GetMeshComponent()->Mesh();
+        MeshPtr mesh = surface.GetMeshComponent()->GetMeshVal();
         mesh->m_material->m_diffuseTexture = texture;
         mesh->Init(false);
 

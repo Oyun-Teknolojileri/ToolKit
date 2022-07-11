@@ -29,17 +29,29 @@ namespace ToolKit
       {
         case ParameterVariant::VariantType::Bool:
         {
-          ImGui::Checkbox(var->m_name.c_str(), var->GetVarPtr<bool>());
+          bool val = var->GetVar<bool>();
+          if (ImGui::Checkbox(var->m_name.c_str(), &val))
+          {
+            *var = val;
+          }
         }
         break;
         case ParameterVariant::VariantType::Float:
         {
-          ImGui::InputFloat(var->m_name.c_str(), var->GetVarPtr<float>());
+          float val = var->GetVar<float>();
+          if (ImGui::InputFloat(var->m_name.c_str(), &val))
+          {
+            *var = val;
+          }
         }
         break;
         case ParameterVariant::VariantType::Int:
         {
-          ImGui::InputInt(var->m_name.c_str(), var->GetVarPtr<int>());
+          int val = var->GetVar<int>();
+          if (ImGui::InputInt(var->m_name.c_str(), &val))
+          {
+            *var = val;
+          }
         }
         break;
         case ParameterVariant::VariantType::Vec2:
@@ -53,27 +65,46 @@ namespace ToolKit
         break;
         case ParameterVariant::VariantType::Vec3:
         {
-          ImGui::InputFloat3(var->m_name.c_str(), &var->GetVar<Vec3>()[0]);
+          Vec3 val = var->GetVar<Vec3>();
+          if (ImGui::InputFloat3(var->m_name.c_str(), &val[0]))
+          {
+            *var = val;
+          }
         }
         break;
         case ParameterVariant::VariantType::Vec4:
         {
-          ImGui::InputFloat4(var->m_name.c_str(), &var->GetVar<Vec4>()[0]);
+          Vec4 val = var->GetVar<Vec4>();
+          if (ImGui::InputFloat4(var->m_name.c_str(), &val[0]))
+          {
+            *var = val;
+          }
         }
         break;
         case ParameterVariant::VariantType::String:
         {
-          ImGui::InputText(var->m_name.c_str(), var->GetVarPtr<String>());
+          String val = var->GetVar<String>();
+          if (ImGui::InputText(var->m_name.c_str(), &val))
+          {
+            *var = val;
+          }
         }
         break;
         case ParameterVariant::VariantType::ULongID:
         {
-          ImGui::InputScalar
+          ULongID val = var->GetVar<ULongID>();
+          if
           (
-            var->m_name.c_str(),
-            ImGuiDataType_U32,
-            var->GetVarPtr<ULongID>()
-          );
+            ImGui::InputScalar
+            (
+              var->m_name.c_str(),
+              ImGuiDataType_U32,
+              var->GetVarPtr<ULongID>()
+            )
+          )
+          {
+            *var = val;
+          }
         }
         break;
         case ParameterVariant::VariantType::MaterialPtr:
@@ -86,9 +117,10 @@ namespace ToolKit
             file = mref->GetFile();
           }
 
+          String uniqueName = var->m_name + "##" + id;
           DropSubZone
           (
-            "Material##" + id,
+            uniqueName,
             static_cast<uint> (UI::m_materialIcon->m_id),
             file,
             [&var](const DirectoryEntry& entry) -> void
@@ -249,13 +281,13 @@ namespace ToolKit
         return;
       }
 
-      ShowParameterBlock(m_entity->m_localData, m_entity->Id());
+      ShowParameterBlock(m_entity->m_localData, m_entity->GetIdVal());
 
       // Missing data reporter.
       if (m_entity->IsDrawable())
       {
         Drawable* dw = static_cast<Drawable*> (m_entity);
-        MeshPtr& mesh = dw->GetMesh();
+        MeshPtr mesh = dw->GetMesh();
 
         StringArray missingData;
         MeshRawCPtrArray meshes;
@@ -924,14 +956,14 @@ namespace ToolKit
             entry->GetFile(),
             [&drawable](const DirectoryEntry& dirEnt) -> void
             {
-              MeshPtr& mesh = drawable->GetMesh();
+              MeshPtr mesh = drawable->GetMesh();
               if (strcmp(dirEnt.m_ext.c_str(), ".material") != 0)
               {
                 g_app->m_statusMsg = "An imported material file expected!";
                 return;
               }
               mesh->m_material =
-              GetMaterialManager()->Create<Material>(dirEnt.GetFullPath());
+                GetMaterialManager()->Create<Material>(dirEnt.GetFullPath());
               mesh->m_material->Init();
               mesh->m_dirty = true;
             }

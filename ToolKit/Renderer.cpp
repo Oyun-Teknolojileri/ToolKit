@@ -112,7 +112,7 @@ namespace ToolKit
     MaterialPtr nttMat;
     if (MaterialComponentPtr matCom = ntt->GetComponent<MaterialComponent>())
     {
-      if (nttMat = matCom->Material())
+      if (nttMat = matCom->GetMaterialVal())
       {
         nttMat->Init();
       }
@@ -120,7 +120,7 @@ namespace ToolKit
 
     for (MeshComponentPtr meshCom : meshComponents)
     {
-      MeshPtr mesh = meshCom->Mesh();
+      MeshPtr mesh = meshCom->GetMeshVal();
       if (mesh->IsSkinned())
       {
         RenderSkinned(static_cast<Drawable*> (ntt), cam);
@@ -263,7 +263,7 @@ namespace ToolKit
     static ProgramPtr prog = CreateProgram(vertexShader, fragShader);
     BindProgram(prog);
 
-    MeshPtr mesh = object->GetMeshComponent()->Mesh();
+    MeshPtr mesh = object->GetMeshComponent()->GetMeshVal();
     mesh->Init();
 
     RenderState* rs = mesh->m_material->GetRenderState();
@@ -463,7 +463,7 @@ namespace ToolKit
     material->Init();
 
     static Quad quad;
-    quad.GetMeshComponent()->Mesh()->m_material = material;
+    quad.GetMeshComponent()->GetMeshVal()->m_material = material;
 
     static Camera quadCam;
     Render(&quad, &quadCam);
@@ -506,29 +506,57 @@ namespace ToolKit
   {
     auto delTrFn = [&blendedEntities](Entity* ntt) -> bool
     {
-      if (ntt->GetType() == EntityType::Entity_Node)
-      {
-        return false;
-      }
+      // Check too see if there are any material with blend state.
+      MaterialComponentPtrArray materials;
+      ntt->GetComponent<MaterialComponent>(materials);
 
-      MeshComponentPtr ms = ntt->GetComponent<MeshComponent>();
-      if (ms == nullptr)
+      if (!materials.empty())
       {
-        return false;
-      }
-
-      BlendFunction blend
-        = ms->Mesh()->m_material->GetRenderState()->blendFunction;
-      if (ntt->IsDrawable() && ntt->Visible() && static_cast<int>(blend))
-      {
-        blendedEntities.push_back(ntt);
-        return true;
+        for (MaterialComponentPtr& mt : materials)
+        {
+          if
+          (
+            mt->GetMaterialVal()->GetRenderState()->blendFunction !=
+            BlendFunction::NONE
+          )
+          {
+            blendedEntities.push_back(ntt);
+            return true;
+          }
+        }
       }
       else
       {
-        return false;
+        MeshComponentPtrArray meshes;
+        ntt->GetComponent<MeshComponent>(meshes);
+
+        if (meshes.empty())
+        {
+          return false;
+        }
+
+        for (MeshComponentPtr& ms : meshes)
+        {
+          MeshRawCPtrArray all;
+          ms->GetMeshVal()->GetAllMeshes(all);
+          for (const Mesh* m : all)
+          {
+            if
+            (
+              m->m_material->GetRenderState()->blendFunction !=
+              BlendFunction::NONE
+            )
+            {
+              blendedEntities.push_back(ntt);
+              return true;
+            }
+          }
+        }
       }
+
+      return false;
     };
+
     entities.erase
     (
       std::remove_if(entities.begin(), entities.end(), delTrFn), entities.end()
@@ -546,7 +574,7 @@ namespace ToolKit
     // Render opaque objects
     for (Entity* ntt : entities)
     {
-      if (ntt->IsDrawable() && ntt->Visible())
+      if (ntt->IsDrawable() && ntt->GetVisibleVal())
       {
         if (ntt->GetType() == EntityType::Entity_Billboard)
         {
@@ -670,11 +698,11 @@ namespace ToolKit
         float radius;
         if (lights[i]->GetLightType() == LightTypeEnum::LightPoint)
         {
-          radius = static_cast<PointLight*>(lights[i])->Radius();
+          radius = static_cast<PointLight*>(lights[i])->GetRadiusVal();
         }
         else if (lights[i]->GetLightType() == LightTypeEnum::LightSpot)
         {
-          radius = static_cast<SpotLight*>(lights[i])->Radius();
+          radius = static_cast<SpotLight*>(lights[i])->GetRadiusVal();
         }
         else
         {
@@ -936,13 +964,13 @@ namespace ToolKit
       // Point light uniforms
       if (type == LightTypeEnum::LightPoint)
       {
-        Vec3 color = currLight->Color();
-        float intensity = currLight->Intensity();
+        Vec3 color = currLight->GetColorVal();
+        float intensity = currLight->GetIntensityVal();
         Vec3 pos = currLight->m_node->GetTranslation
         (
           TransformationSpace::TS_WORLD
         );
-        float radius = static_cast<PointLight*>(currLight)->Radius();
+        float radius = static_cast<PointLight*>(currLight)->GetRadiusVal();
 
         GLuint loc = glGetUniformLocation
         (
@@ -978,10 +1006,10 @@ namespace ToolKit
       // Directional light uniforms
       else if (type == LightTypeEnum::LightDirectional)
       {
-        Vec3 color = currLight->Color();
-        float intensity = currLight->Intensity();
+        Vec3 color = currLight->GetColorVal();
+        float intensity = currLight->GetIntensityVal();
         Vec3 dir = static_cast<DirectionalLight*>(currLight)->
-        GetComponent<DirectionComponent>()->GetDirection();
+          GetComponent<DirectionComponent>()->GetDirection();
 
         GLuint loc = glGetUniformLocation
         (
@@ -1011,8 +1039,8 @@ namespace ToolKit
       // Spot light uniforms
       else if (type == LightTypeEnum::LightSpot)
       {
-        Vec3 color = currLight->Color();
-        float intensity = currLight->Intensity();
+        Vec3 color = currLight->GetColorVal();
+        float intensity = currLight->GetIntensityVal();
         Vec3 pos = currLight->m_node->GetTranslation
         (
           TransformationSpace::TS_WORLD
@@ -1020,14 +1048,14 @@ namespace ToolKit
         SpotLight* spotLight = static_cast<SpotLight*>(currLight);
         Vec3 dir =
         spotLight->GetComponent<DirectionComponent>()->GetDirection();
-        float radius = spotLight->Radius();
+        float radius = spotLight->GetRadiusVal();
         float outAngle = glm::cos
         (
-          glm::radians(spotLight->OuterAngle() / 2.0f)
+          glm::radians(spotLight->GetOuterAngleVal() / 2.0f)
         );
         float innAngle = glm::cos
         (
-          glm::radians(spotLight->InnerAngle() / 2.0f)
+          glm::radians(spotLight->GetInnerAngleVal() / 2.0f)
         );
 
         GLuint loc = glGetUniformLocation

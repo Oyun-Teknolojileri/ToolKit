@@ -21,7 +21,7 @@ namespace ToolKit
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     void RemoveResources() override;
 
-    MeshPtr& GetMesh() const;
+    MeshPtr GetMesh() const;
     void SetMesh(const MeshPtr& mesh);
 
    protected:

@@ -346,7 +346,7 @@ namespace ToolKit
             dwMesh->m_node->SetTranslation(pos);
             EditorScenePtr currScene = g_app->GetCurrentScene();
             currScene->AddEntity(dwMesh);
-            currScene->AddToSelection(dwMesh->Id(), false);
+            currScene->AddToSelection(dwMesh->GetIdVal(), false);
             SetActive();
           }
           else if (entry.m_ext == SCENE)

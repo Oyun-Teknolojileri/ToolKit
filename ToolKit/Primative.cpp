@@ -117,7 +117,7 @@ namespace ToolKit
   {
     ParameterConstructor();
 
-    Scale() = scale;
+    SetScaleVal(scale);
     Generate();
   }
 
@@ -160,7 +160,7 @@ namespace ToolKit
     VertexArray vertices;
     vertices.resize(36);
 
-    const Vec3& scale = ScaleC();
+    const Vec3& scale = GetScaleVal();
 
     Vec3 corners[8]
     {
@@ -300,7 +300,7 @@ namespace ToolKit
     vertices[35].tex = Vec2(1.0f, 0.0f);
     vertices[35].norm = Vec3(0.0f, -1.0f, 0.0f);
 
-    MeshPtr mesh = GetComponent<MeshComponent>()->Mesh();
+    MeshPtr mesh = GetComponent<MeshComponent>()->GetMeshVal();
     mesh->m_vertexCount = (uint)vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_clientSideIndices = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
@@ -377,7 +377,7 @@ namespace ToolKit
     vertices[3].norm = Vec3(0.0f, 0.0f, 1.0f);
     vertices[3].btan = Vec3(0.0f, 1.0f, 0.0f);
 
-    MeshPtr mesh = GetMeshComponent()->Mesh();
+    MeshPtr mesh = GetMeshComponent()->GetMeshVal();
     mesh->m_vertexCount = (uint)vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount = 6;
@@ -418,7 +418,7 @@ namespace ToolKit
 
   void Sphere::Generate()
   {
-    const float r = Radius();
+    const float r = GetRadiusVal();
     const int nRings = 32;
     const int nSegments = 32;
 
@@ -476,7 +476,7 @@ namespace ToolKit
       }  // end for seg
     }  // end for ring
 
-    MeshPtr mesh = GetMeshComponent()->Mesh();
+    MeshPtr mesh = GetMeshComponent()->GetMeshVal();
     mesh->m_vertexCount = (uint)vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount = (uint)indices.size();
@@ -525,10 +525,10 @@ namespace ToolKit
   {
     AddComponent(new MeshComponent());
     ParameterConstructor();
-    Height() = height;
-    Radius() = radius;
-    SegBase() = segBase;
-    SegHeight() = segHeight;
+    SetHeightVal(height);
+    SetRadiusVal(radius);
+    SetSegBaseVal(segBase);
+    SetSegHeightVal(segHeight);
     Generate();
   }
 
@@ -538,10 +538,10 @@ namespace ToolKit
     VertexArray vertices;
     std::vector<uint> indices;
 
-    float height = Height();
-    float radius = Radius();
-    int nSegBase = SegBase();
-    int nSegHeight = SegHeight();
+    float height = GetHeightVal();
+    float radius = GetRadiusVal();
+    int nSegBase = GetSegBaseVal();
+    int nSegHeight = GetSegHeightVal();
 
     float deltaAngle = (glm::two_pi<float>() / nSegBase);
     float deltaHeight = height / nSegHeight;
@@ -624,10 +624,10 @@ namespace ToolKit
       offset++;
     }
 
-    MeshPtr mesh = GetComponent<MeshComponent>()->Mesh();
-    mesh->m_vertexCount = (uint)vertices.size();
+    MeshPtr mesh = GetComponent<MeshComponent>()->GetMeshVal();
+    mesh->m_vertexCount = static_cast<uint> (vertices.size());
     mesh->m_clientSideVertices = vertices;
-    mesh->m_indexCount = (uint)indices.size();
+    mesh->m_indexCount = static_cast<uint> (indices.size());
     mesh->m_clientSideIndices = indices;
     mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
 
@@ -753,12 +753,12 @@ namespace ToolKit
     }
 
     MeshComponentPtr mesh = GetComponent<MeshComponent>();
-    mesh->Mesh()->m_vertexCount = (uint)vertices.size();
-    mesh->Mesh()->m_clientSideVertices = vertices;
-    mesh->Mesh()->m_material = newMat;
+    mesh->GetMeshVal()->m_vertexCount = static_cast<uint> (vertices.size());
+    mesh->GetMeshVal()->m_clientSideVertices = vertices;
+    mesh->GetMeshVal()->m_material = newMat;
 
-    mesh->Mesh()->CalculateAABB();
-    mesh->Mesh()->ConstructFaces();
+    mesh->GetMeshVal()->CalculateAABB();
+    mesh->GetMeshVal()->ConstructFaces();
   }
 
   LineBatch::LineBatch
@@ -799,7 +799,7 @@ namespace ToolKit
     VertexArray vertices;
     vertices.resize(linePnts.size());
 
-    MeshPtr mesh = GetComponent<MeshComponent>()->Mesh();
+    MeshPtr mesh = GetComponent<MeshComponent>()->GetMeshVal();
     mesh->UnInit();
     mesh->m_material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
     mesh->m_material->GetRenderState()->drawType = t;

@@ -323,7 +323,7 @@ namespace ToolKit
           {
             EditorDirectionalLight* light = new EditorDirectionalLight();
             light->Init();
-            light->Name() = "Sun";
+            light->SetNameVal("Sun");
             currScene->AddEntity(static_cast<Entity*>(light));
           }
 
@@ -331,7 +331,7 @@ namespace ToolKit
           {
             EditorPointLight* light = new EditorPointLight();
             light->Init();
-            light->Name() = "PointLight";
+            light->SetNameVal("PointLight");
             currScene->AddEntity(static_cast<Entity*>(light));
           }
 
@@ -339,7 +339,7 @@ namespace ToolKit
           {
             EditorSpotLight* light = new EditorSpotLight();
             light->Init();
-            light->Name() = "SpotLight";
+            light->SetNameVal("SpotLight");
             currScene->AddEntity(static_cast<Entity*>(light));
           }
           ImGui::EndMenu();
@@ -360,10 +360,10 @@ namespace ToolKit
         (
           ImGui::GetID("ViewportOptions"),
           overlaySize,
-          ImGuiWindowFlags_NoMove
-          | ImGuiWindowFlags_NoTitleBar
-          | ImGuiWindowFlags_NoScrollbar
-          | ImGuiWindowFlags_NoScrollWithMouse
+          ImGuiWindowFlags_NoMove |
+          ImGuiWindowFlags_NoTitleBar |
+          ImGuiWindowFlags_NoScrollbar |
+          ImGuiWindowFlags_NoScrollWithMouse
         )
       )
       {
@@ -489,7 +489,7 @@ namespace ToolKit
               {
                 if (EditorViewport* vp = g_app->GetActiveViewport())
                 {
-                  vp->AttachCamera(cam->Id());
+                  vp->AttachCamera(cam->GetIdVal());
                   noCamera = false;
                 }
               }

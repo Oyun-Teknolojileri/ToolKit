@@ -691,7 +691,7 @@ namespace ToolKit
 
             // Add mesh to the scene
             currScene->AddEntity(dwMesh);
-            currScene->AddToSelection(dwMesh->Id(), false);
+            currScene->AddToSelection(dwMesh->GetIdVal(), false);
             SetActive();
 
             meshAddedToScene = true;
@@ -727,7 +727,7 @@ namespace ToolKit
             EditorScene::PickData pd = currScene->PickObject(ray);
             if (pd.entity != nullptr)
             {
-              Entity* ent = currScene->GetEntity(pd.entity->Id());
+              Entity* ent = currScene->GetEntity(pd.entity->GetIdVal());
 
               MeshComponentPtr ms = ent->GetComponent<MeshComponent>();
               if (ms != nullptr)
@@ -744,7 +744,7 @@ namespace ToolKit
                 (
                   path
                 );
-                ms->Mesh()->SetMaterial(material);
+                ms->GetMeshVal()->SetMaterial(material);
               }
             }
           }
@@ -853,7 +853,7 @@ namespace ToolKit
       EntityIdArray ignoreList;
       if (meshLoaded)
       {
-        ignoreList.push_back((*boundingBox)->Id());
+        ignoreList.push_back((*boundingBox)->GetIdVal());
       }
       EditorScene::PickData pd = currScene->PickObject(ray, ignoreList);
       bool meshFound = false;
@@ -909,7 +909,7 @@ namespace ToolKit
       if (meshLoaded && !ImGui::IsMouseDragging(0))
       {
         // Remove debug bounding box mesh from scene
-        currScene->RemoveEntity((*boundingBox)->Id());
+        currScene->RemoveEntity((*boundingBox)->GetIdVal());
         meshLoaded = false;
 
         if (!meshAddedToScene)

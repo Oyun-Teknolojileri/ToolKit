@@ -19,37 +19,33 @@ namespace ToolKit
   Surface::Surface(TexturePtr texture, const Vec2& pivotOffset)
     : Surface()
   {
-    GetMeshComponent()->Mesh()->m_material->m_diffuseTexture = texture;
-    PivotOffset() = pivotOffset;
+    GetMaterialComponent()->GetMaterialVal()->m_diffuseTexture = texture;
+    SetPivotOffsetVal(pivotOffset);
     SetSizeFromTexture();
-    CreateQuat();
   }
 
   Surface::Surface(TexturePtr texture, const SpriteEntry& entry)
     : Surface()
   {
-    GetMeshComponent()->Mesh()->m_material->m_diffuseTexture = texture;
+    GetMaterialComponent()->GetMaterialVal()->m_diffuseTexture = texture;
     SetSizeFromTexture();
-    CreateQuat(entry);
   }
 
   Surface::Surface(const String& textureFile, const Vec2& pivotOffset)
     : Surface()
   {
-    GetMeshComponent()->Mesh()->m_material->m_diffuseTexture =
+    GetMaterialComponent()->GetMaterialVal()->m_diffuseTexture =
       GetTextureManager()->Create<Texture>(textureFile);
 
-    PivotOffset() = pivotOffset;
+    SetPivotOffsetVal(pivotOffset);
     SetSizeFromTexture();
-    CreateQuat();
   }
 
   Surface::Surface(const Vec2& size, const Vec2& offset)
     : Surface()
   {
-    Size() = size;
-    PivotOffset() = offset;
-    CreateQuat();
+    SetSizeVal(size);
+    SetPivotOffsetVal(offset);
   }
 
   Surface::~Surface()
@@ -80,7 +76,7 @@ namespace ToolKit
       SetSizeFromTexture();
     }
 
-    MeshPtr mesh = GetMeshComponent()->Mesh();
+    MeshPtr mesh = GetMeshComponent()->GetMeshVal();
     mesh->UnInit();
     CreateQuat();
     mesh->Init();
@@ -93,18 +89,10 @@ namespace ToolKit
     AddComponent(meshComponent);
 
     MaterialComponent* materialComponent = new MaterialComponent();
-    materialComponent->m_localData
-    [
-      materialComponent->MaterialIndex()
-    ].m_exposed = false;
+    materialComponent->ParamMaterial().m_exposed = false;
 
-    MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-    material->UnInit();
-    material->GetRenderState()->blendFunction =
-      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-    material->GetRenderState()->depthTestEnabled = true;
-
-    materialComponent->Material() = material;
+    MaterialPtr material = GetMaterialManager()->GetCopyOfUIMaterial();
+    materialComponent->SetMaterialVal(material);
 
     AddComponent(materialComponent);
   }
@@ -131,7 +119,7 @@ namespace ToolKit
 
     Material_Define
     (
-      GetMaterialComponent()->Material(),
+      GetMaterialComponent()->GetMaterialVal(),
       SurfaceCategory.Name,
       SurfaceCategory.Priority,
       true,
@@ -141,24 +129,22 @@ namespace ToolKit
 
   void Surface::ParameterEventConstructor()
   {
-    m_localData[Size_Index].m_onValueChangedFn =
+    ParamSize().m_onValueChangedFn =
       [this](Value& oldVal, Value& newVal) -> void
     {
-      Size() = std::get<Vec2>(newVal);
       UpdateGeometry(false);
     };
 
-    m_localData[PivotOffset_Index].m_onValueChangedFn =
+    ParamPivotOffset().m_onValueChangedFn =
       [this](Value& oldVal, Value& newVal) -> void
     {
-      PivotOffset() = std::get<Vec2>(newVal);
       UpdateGeometry(false);
     };
 
-    m_localData[Material_Index].m_onValueChangedFn =
+    ParamMaterial().m_onValueChangedFn =
       [this](Value& oldVal, Value& newVal) -> void
     {
-      GetMaterialComponent()->Material() = std::get<MaterialPtr>(newVal);
+      GetMaterialComponent()->SetMaterialVal(std::get<MaterialPtr>(newVal));
       UpdateGeometry(true);
     };
   }
@@ -180,10 +166,11 @@ namespace ToolKit
 
   void Surface::CreateQuat()
   {
-    float width = Size().x;
-    float height = Size().y;
+    float width = GetSizeVal().x;
+    float height = GetSizeVal().y;
     float depth = 0;
-    Vec2 absOffset = Vec2(PivotOffset().x * width, PivotOffset().y * height);
+    Vec2 absOffset =
+      Vec2 (GetPivotOffsetVal().x * width, GetPivotOffsetVal().y * height);
 
     VertexArray vertices;
     vertices.resize(6);
@@ -201,7 +188,7 @@ namespace ToolKit
     vertices[5].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
     vertices[5].tex = Vec2(0.0f, 0.0f);
 
-    MeshPtr mesh = GetMeshComponent()->Mesh();
+    MeshPtr mesh = GetMeshComponent()->GetMeshVal();
     mesh->m_clientSideVertices = vertices;
     mesh->CalculateAABB();
   }
@@ -210,7 +197,7 @@ namespace ToolKit
   {
     assert(false && "Old function needs to be re factored.");
 
-    MeshPtr& mesh = GetMeshComponent()->Mesh();
+    MeshPtr mesh = GetMeshComponent()->GetMeshVal();
     float imageWidth = static_cast<float>
     (
       mesh->m_material->m_diffuseTexture->m_width
@@ -293,12 +280,17 @@ namespace ToolKit
 
   void Surface::SetSizeFromTexture()
   {
-    Size() =
-    Vec2
-    (
-      Material()->m_diffuseTexture->m_width,
-      Material()->m_diffuseTexture->m_height
-    );
+    if (TexturePtr dt = GetMaterialVal()->m_diffuseTexture)
+    {
+      SetSizeVal
+      (
+        Vec2
+        (
+          dt->m_width,
+          dt->m_height
+        )
+      );
+    }
   }
 
   // Button
@@ -306,24 +298,26 @@ namespace ToolKit
 
   Button::Button()
   {
+    ParameterConstructor();
+    ParameterEventConstructor();
     ResetCallbacks();
   }
 
   Button::Button(const Vec2& size)
     : Surface(size)
   {
+    ParameterConstructor();
+    ParameterEventConstructor();
     ResetCallbacks();
   }
 
-  Button::Button
-  (
-    const TexturePtr& buttonImage,
-    const TexturePtr& mouseOverImage
-  )
+  Button::Button(const TexturePtr& buttonImage, const TexturePtr& hoverImage)
     : Surface(buttonImage, Vec2())
   {
-    m_buttonImage = buttonImage;
-    m_mouseOverImage = mouseOverImage;
+    ParameterConstructor();
+    ParameterEventConstructor();
+    GetButtonMaterialVal()->m_diffuseTexture = buttonImage;
+    GetHoverMaterialVal()->m_diffuseTexture = hoverImage;
     ResetCallbacks();
   }
 
@@ -339,63 +333,12 @@ namespace ToolKit
   void Button::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Surface::Serialize(doc, parent);
-    if (!m_mouseOverImage && !m_buttonImage)
-    {
-      return;
-    }
-
-    XmlNode* node = doc->allocate_node(rapidxml::node_element, "Button");
-    if (m_mouseOverImage)
-    {
-      String relPath = GetRelativeResourcePath(m_mouseOverImage->GetFile());
-      node->append_attribute
-      (
-        doc->allocate_attribute
-        (
-          "mouseOverImage",
-          doc->allocate_string(relPath.c_str())
-        )
-      );
-    }
-
-    if (m_buttonImage)
-    {
-      String relPath = GetRelativeResourcePath(m_buttonImage->GetFile());
-      node->append_attribute
-      (
-        doc->allocate_attribute
-        (
-          "buttonImage",
-          doc->allocate_string(relPath.c_str())
-        )
-      );
-    }
-
-    parent->last_node()->append_node(node);
   }
 
   void Button::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     Surface::DeSerialize(doc, parent);
-    if (XmlNode* buttonNode = parent->first_node("Button"))
-    {
-      String image;
-      ReadAttr(buttonNode, "mouseOverImage", image);
-      if (!image.empty())
-      {
-        String path = TexturePath(image);
-        NormalizePath(path);
-        m_mouseOverImage = GetTextureManager()->Create<Texture>(path);
-      }
-
-      ReadAttr(buttonNode, "buttonImage", image);
-      if (!image.empty())
-      {
-        String path = TexturePath(image);
-        NormalizePath(path);
-        m_buttonImage = GetTextureManager()->Create<Texture>(path);
-      }
-    }
+    ParameterEventConstructor();
   }
 
   void Button::ResetCallbacks()
@@ -404,17 +347,52 @@ namespace ToolKit
 
     m_onMouseEnterLocal = [this](Event* e, Entity* ntt) -> void
     {
-      GetMeshComponent()->Mesh()->
-        m_material->m_diffuseTexture = m_mouseOverImage;
+      SetMaterialVal(GetButtonMaterialVal());
     };
     m_onMouseEnter = m_onMouseEnterLocal;
 
     m_onMouseExitLocal = [this](Event* e, Entity* ntt) -> void
     {
-      GetMeshComponent()->Mesh()->
-        m_material->m_diffuseTexture = m_buttonImage;
+      SetMaterialVal(GetHoverMaterialVal());
     };
     m_onMouseExit = m_onMouseExitLocal;
+  }
+
+  void Button::ParameterConstructor()
+  {
+    // Update surface params.
+    ParamMaterial().m_exposed = false;
+    ParamSize().m_category = ButtonCategory;
+    ParamPivotOffset().m_category = ButtonCategory;
+
+    // Define button params.
+    ButtonMaterial_Define
+    (
+      GetMaterialManager()->GetCopyOfUIMaterial(),
+      ButtonCategory.Name,
+      ButtonCategory.Priority,
+      true,
+      true
+    );
+
+    HoverMaterial_Define
+    (
+      GetMaterialManager()->GetCopyOfUIMaterial(),
+      ButtonCategory.Name,
+      ButtonCategory.Priority,
+      true,
+      true
+    );
+  }
+
+  void Button::ParameterEventConstructor()
+  {
+    ParamButtonMaterial().m_onValueChangedFn =
+      [this](Value& oldVal, Value& newVal) -> void
+    {
+      // Override surface material.
+      SetMaterialVal(std::get<MaterialPtr>(newVal));
+    };
   }
 
 }  // namespace ToolKit
