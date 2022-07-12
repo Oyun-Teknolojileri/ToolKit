@@ -725,11 +725,9 @@ namespace ToolKit
             // Find the drop entity
             Ray ray = RayFromMousePosition();
             EditorScene::PickData pd = currScene->PickObject(ray);
-            if (pd.entity != nullptr)
+            if (pd.entity != nullptr && pd.entity->IsDrawable())
             {
-              Entity* ent = currScene->GetEntity(pd.entity->GetIdVal());
-
-              MeshComponentPtr ms = ent->GetComponent<MeshComponent>();
+              MeshComponentPtr ms = pd.entity->GetComponent<MeshComponent>();
               if (ms != nullptr)
               {
                 // Load material once
@@ -744,7 +742,17 @@ namespace ToolKit
                 (
                   path
                 );
-                ms->GetMeshVal()->SetMaterial(material);
+                // Set material to material component
+                MaterialComponentPtr matPtr =
+                pd.entity->GetMaterialComponent();
+                if (matPtr == nullptr)
+                {
+                  // Create a new material component
+                  MaterialComponent* matComp = new MaterialComponent();
+                  pd.entity->AddComponent(matComp);
+                  matPtr = pd.entity->GetMaterialComponent();
+                }
+                matPtr->m_localData[matPtr->MaterialIndex()] = material;
               }
             }
           }
