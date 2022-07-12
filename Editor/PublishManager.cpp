@@ -37,7 +37,12 @@ namespace ToolKit
 
       // Run scripts
       // Warning: Running batch files are Windows specific
+      Path workDir = std::filesystem::current_path();
+      Path newWorkDir(ConcatPaths({ "..", "Web"}));
+      std::filesystem::current_path(newWorkDir);
       std::system(ConcatPaths({ "..", "Web", "Release.bat" }).c_str());
+      newWorkDir = Path(ConcatPaths({ ResourcePath(), "..", "Codes", "Web" }));
+      std::filesystem::current_path(newWorkDir);
       std::system
       (
         ConcatPaths
@@ -45,6 +50,7 @@ namespace ToolKit
           { ResourcePath(), "..", "Codes", "Web", "Release.bat" }
         ).c_str()
       );
+      std::filesystem::current_path(workDir);
 
       // Move files to a directory
       String projectName = g_app->m_workspace.GetActiveProject().name;
