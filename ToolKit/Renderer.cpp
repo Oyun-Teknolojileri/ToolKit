@@ -516,7 +516,8 @@ namespace ToolKit
         {
           if
           (
-            mt->GetMaterialVal()->GetRenderState()->blendFunction !=
+            mt->GetMaterialVal()
+            && mt->GetMaterialVal()->GetRenderState()->blendFunction !=
             BlendFunction::NONE
           )
           {
