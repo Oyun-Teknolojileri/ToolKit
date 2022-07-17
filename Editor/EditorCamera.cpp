@@ -34,11 +34,6 @@ namespace ToolKit
     {
     }
 
-    bool EditorCamera::IsDrawable() const
-    {
-      return true;
-    }
-
     Entity* EditorCamera::Copy() const
     {
       EditorCamera* cpy = new EditorCamera();

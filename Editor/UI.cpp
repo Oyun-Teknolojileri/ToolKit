@@ -17,6 +17,7 @@
 #include "PropInspector.h"
 #include "Util.h"
 #include "PluginWindow.h"
+#include "Action.h"
 #include "ImGui/imgui_stdlib.h"
 #include "Imgui/imgui_impl_sdl.h"
 #include "Imgui/imgui_impl_opengl3.h"
@@ -72,6 +73,7 @@ namespace ToolKit
     TexturePtr UI::m_unlockedIcon;
     TexturePtr UI::m_viewZoomIcon;
     TexturePtr UI::m_gridIcon;
+    TexturePtr UI::m_closeIcon;
 
     void UI::Init()
     {
@@ -336,10 +338,15 @@ namespace ToolKit
       );
       m_viewZoomIcon->Init();
       m_gridIcon = GetTextureManager()->Create<Texture>
-        (
-        TexturePath("Icons/grid.png", true)
-        );
+      (
+      TexturePath("Icons/grid.png", true)
+      );
       m_gridIcon->Init();
+      m_closeIcon = GetTextureManager()->Create<Texture>
+      (
+      TexturePath("Icons/close.png", true)
+      );
+      m_closeIcon->Init();
     }
 
     void UI::InitTheme()

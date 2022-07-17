@@ -6,6 +6,7 @@
 #include "Mod.h"
 #include "Util.h"
 #include "FolderWindow.h"
+#include "UI.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -28,16 +29,10 @@ namespace ToolKit
     // Recursively show entity hierarchy & update via drag drop.
     ULongID g_parent = NULL_HANDLE;
     std::vector<ULongID> g_child;
-    static ImGuiTreeNodeFlags g_baseNodeFlags
-      = ImGuiTreeNodeFlags_OpenOnArrow
-      | ImGuiTreeNodeFlags_OpenOnDoubleClick
-      | ImGuiTreeNodeFlags_SpanAvailWidth
-      | ImGuiTreeNodeFlags_AllowItemOverlap
-      | ImGuiTreeNodeFlags_FramePadding;
 
     void OutlinerWindow::ShowNode(Entity* e)
     {
-      ImGuiTreeNodeFlags nodeFlags = g_baseNodeFlags;
+      ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
       EditorScenePtr currScene = g_app->GetCurrentScene();
       if (currScene->IsSelected(e->GetIdVal()))
       {
@@ -61,7 +56,7 @@ namespace ToolKit
             {
               if (childNtt->m_node->m_children.empty())
               {
-                nodeFlags = g_baseNodeFlags;
+                nodeFlags = g_treeNodeFlags;
                 if (currScene->IsSelected(childNtt->GetIdVal()))
                 {
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
@@ -73,7 +68,7 @@ namespace ToolKit
               }
               else
               {
-                nodeFlags = g_baseNodeFlags;
+                nodeFlags = g_treeNodeFlags;
                 if (currScene->IsSelected(childNtt->GetIdVal()))
                 {
                   nodeFlags |= ImGuiTreeNodeFlags_Selected;
@@ -162,7 +157,7 @@ namespace ToolKit
     void OutlinerWindow::Show()
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
-      ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 6.0f);
+      ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         HandleStates();
@@ -173,7 +168,7 @@ namespace ToolKit
           (
             "Scene",
             0,
-            g_baseNodeFlags | ImGuiTreeNodeFlags_DefaultOpen,
+            g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen,
             UI::m_collectionIcon
           )
         )

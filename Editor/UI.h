@@ -10,7 +10,16 @@
 
 namespace ToolKit
 {
-  class Texture;
+
+  // Global Style Decelerations
+  static const ImGuiTreeNodeFlags g_treeNodeFlags =
+  ImGuiTreeNodeFlags_OpenOnArrow
+  | ImGuiTreeNodeFlags_OpenOnDoubleClick
+  | ImGuiTreeNodeFlags_SpanAvailWidth
+  | ImGuiTreeNodeFlags_AllowItemOverlap
+  | ImGuiTreeNodeFlags_FramePadding;
+
+  const float g_indentSpacing = 6.0f;
 
   namespace Editor
   {
@@ -226,6 +235,7 @@ namespace ToolKit
       static TexturePtr m_unlockedIcon;
       static TexturePtr m_viewZoomIcon;
       static TexturePtr m_gridIcon;
+      static TexturePtr m_closeIcon;
     };
   }  // namespace Editor
 }  // namespace ToolKit

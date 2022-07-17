@@ -105,6 +105,9 @@
     <ClCompile Include="PublishManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Action.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -195,6 +198,9 @@
       <Filter>Entities</Filter>
     </ClInclude>
     <ClInclude Include="PublishManager.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Action.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

@@ -87,6 +87,11 @@ namespace ToolKit
     void AddComponent(Component* component);
 
     /**
+    * Adds a component to the Entity same as AddComponent(Component* component).
+    */
+    void AddComponent(ComponentPtr component);
+
+    /**
     * Used to easily access first MeshComponentPtr.
     * @return First MeshComponentPtr if any otherwise empty pointer.
     */
@@ -101,8 +106,9 @@ namespace ToolKit
     /**
     * Remove the given component from the components of the Entity.
     * @param componentId Id of the component to be removed.
+    * @return Removed ComponentPtr. If nothing gets removed, returns nullptr.
     */
-    void RemoveComponent(ULongID componentId);
+    ComponentPtr RemoveComponent(ULongID componentId);
 
     /**
     * Used to return first encountered component of type T.

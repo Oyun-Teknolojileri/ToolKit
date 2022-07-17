@@ -4,6 +4,7 @@
 
 #include "Mod.h"
 #include "Gizmo.h"
+#include "Action.h"
 
 namespace ToolKit
 {

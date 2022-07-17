@@ -7,7 +7,6 @@
 #include "UI.h"
 #include "GlobalDef.h"
 
-
 namespace ToolKit
 {
   class Camera;

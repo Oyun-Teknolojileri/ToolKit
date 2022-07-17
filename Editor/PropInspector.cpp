@@ -441,10 +441,23 @@ namespace ToolKit
         ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen)
       )
       {
-        ImGui::Indent(8.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
+
+        std::vector<ULongID> compRemove;
         for (ComponentPtr& com : m_entity->m_components)
         {
-          ShowParameterBlock(com->m_localData, com->m_id);
+          if (ShowComponentBlock(com->m_localData, com->m_id))
+          {
+            compRemove.push_back(com->m_id);
+          }
+        }
+
+        for (ULongID id : compRemove)
+        {
+          ActionManager::GetInstance()->AddAction
+          (
+            new DeleteComponentAction(m_entity->GetComponent(id))
+          );
         }
 
         ImGui::PushItemWidth(150);
@@ -491,7 +504,7 @@ namespace ToolKit
         }
         UI::EndCenteredTextButton();
 
-        ImGui::Unindent(8.0f);
+        ImGui::PopStyleVar();
       }
     }
 
@@ -526,6 +539,57 @@ namespace ToolKit
           }
         }
       }
+    }
+
+    bool EntityView::ShowComponentBlock(ParameterBlock& params, ULongID id)
+    {
+      VariantCategoryArray categories;
+      params.GetCategories(categories, true, true);
+
+      bool removeComp = false;
+      for (VariantCategory& category : categories)
+      {
+        String varName = category.Name + "##" + std::to_string(id);
+        bool isOpen = ImGui::TreeNodeEx
+        (
+          varName.c_str(),
+          ImGuiTreeNodeFlags_DefaultOpen | g_treeNodeFlags
+        );
+
+        float offset = ImGui::GetContentRegionAvail().x - 10.0f;
+        ImGui::SameLine(offset);
+        ImGui::PushID(static_cast<int> (id));
+        if
+        (
+          UI::ImageButtonDecorless
+          (
+            UI::m_closeIcon->m_textureId,
+            ImVec2(15.0f, 15.0f),
+            false
+          ) &&
+          !removeComp
+        )
+        {
+          g_app->m_statusMsg = "Component " + category.Name + " removed.";
+          removeComp = true;
+        }
+        ImGui::PopID();
+
+        if (isOpen)
+        {
+          ParameterVariantRawPtrArray vars;
+          params.GetByCategory(category.Name, vars);
+
+          for (ParameterVariant* var : vars)
+          {
+            ShowVariant(var);
+          }
+
+          ImGui::TreePop();
+        }
+      }
+
+      return removeComp;
     }
 
     void EntityView::ShowCustomData()

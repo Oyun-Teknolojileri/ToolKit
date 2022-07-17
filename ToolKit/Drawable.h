@@ -13,10 +13,8 @@ namespace ToolKit
    public:
     Drawable();
     virtual ~Drawable();
-    bool IsDrawable() const override;
     EntityType GetType() const override;
     void SetPose(const AnimationPtr& anim, float time) override;
-    struct BoundingBox GetAABB(bool inWorld = false) const override;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     void RemoveResources() override;

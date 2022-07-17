@@ -46,6 +46,7 @@ namespace ToolKit
       virtual ~EntityView() {}
       virtual void Show();
       virtual void ShowParameterBlock(ParameterBlock& params, ULongID id);
+      virtual bool ShowComponentBlock(ParameterBlock& params, ULongID id);
 
      protected:
       void ShowCustomData();

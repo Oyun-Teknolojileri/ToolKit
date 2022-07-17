@@ -24,11 +24,6 @@ namespace ToolKit
   {
   }
 
-  bool Drawable::IsDrawable() const
-  {
-    return true;
-  }
-
   EntityType Drawable::GetType() const
   {
     return EntityType::Entity_Drawable;
@@ -47,17 +42,6 @@ namespace ToolKit
     {
       anim->GetPose(m_node, time);
     }
-  }
-
-  BoundingBox Drawable::GetAABB(bool inWorld) const
-  {
-    BoundingBox bb = GetMesh()->m_aabb;
-    if (inWorld)
-    {
-      TransformAABB(bb, m_node->GetTransform(TransformationSpace::TS_WORLD));
-    }
-
-    return bb;
   }
 
   Entity* Drawable::CopyTo(Entity* copyTo) const

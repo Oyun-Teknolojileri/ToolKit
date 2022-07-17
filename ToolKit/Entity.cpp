@@ -237,6 +237,11 @@ namespace ToolKit
 
   void Entity::AddComponent(Component* component)
   {
+    AddComponent(ComponentPtr(component));
+  }
+
+  void Entity::AddComponent(ComponentPtr component)
+  {
     assert
     (
       GetComponent(component->m_id) == nullptr &&
@@ -244,7 +249,7 @@ namespace ToolKit
     );
 
     component->m_entity = this;
-    m_components.push_back(ComponentPtr(component));
+    m_components.push_back(component);
   }
 
   MeshComponentPtr Entity::GetMeshComponent()
@@ -257,16 +262,19 @@ namespace ToolKit
     return GetComponent<MaterialComponent>();
   }
 
-  void Entity::RemoveComponent(ULongID componentId)
+  ComponentPtr Entity::RemoveComponent(ULongID componentId)
   {
     for (size_t i = 0; i < m_components.size(); i++)
     {
-      if (m_components[i]->m_id == componentId)
+      ComponentPtr com = m_components[i];
+      if (com->m_id == componentId)
       {
         m_components.erase(m_components.begin() + i);
-        return;
+        return com;
       }
     }
+
+    return nullptr;
   }
 
   ComponentPtr Entity::GetComponent(ULongID id) const

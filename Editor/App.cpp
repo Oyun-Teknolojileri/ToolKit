@@ -25,6 +25,7 @@
 #include "PluginWindow.h"
 #include "EditorViewport2d.h"
 #include "DirectionComponent.h"
+#include "Action.h"
 #include "GL/glew.h"
 #include "DebugNew.h"
 

@@ -94,6 +94,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Action.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="ConsoleWindow.cpp" />
     <ClCompile Include="EditorCamera.cpp" />
@@ -152,6 +153,7 @@
     <ClCompile Include="Workspace.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Action.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="ConsoleWindow.h" />
     <ClInclude Include="EditorCamera.h" />
