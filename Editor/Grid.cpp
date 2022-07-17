@@ -20,15 +20,22 @@ namespace ToolKit
       {
         m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
         m_material->UnInit();
-        m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>
-          (
-            TexturePath("grid.png")
-          );
         m_material->GetRenderState()->blendFunction =
           BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
         m_material->GetRenderState()->cullMode = CullingType::TwoSided;
-        m_material->Init();
 
+        m_material->m_vertexShader =
+          GetShaderManager()->Create<Shader>
+          (
+            ShaderPath("gridVertex.shader", true)
+          );
+        m_material->m_fragmetShader =
+          GetShaderManager()->Create<Shader>
+          (
+            ShaderPath("gridFragment.shader", true)
+          );
+
+        m_material->Init();
         GetMaterialManager()->m_storage[g_gridMaterialName] = m_material;
       }
       else
@@ -47,33 +54,34 @@ namespace ToolKit
         m_size[i] = size[i] % 2 == 0 ? size[i] : size[i] + 1;
       }
 
-      bool axises[3] = { false, false, false };
+      // Set cell size
+      m_gridCellSize = gridSpaceScale;
 
-      assert
-      (
+      // Rotate according to axis label and set origin axis line colors
+      switch (axis)
+      {
+        case AxisLabel::XY:
+        m_node->SetOrientation
         (
-          axis == AxisLabel::XY ||
-          axis == AxisLabel::YZ ||
-          axis == AxisLabel::ZX
-        ) && "Only works for given values."
-      );
-
-      if (axis == AxisLabel::XY)
-      {
-        axises[0] = true;
-        axises[1] = true;
-      }
-
-      if (axis == AxisLabel::YZ)
-      {
-        axises[1] = true;
-        axises[2] = true;
-      }
-
-      if (axis == AxisLabel::ZX)
-      {
-        axises[0] = true;
-        axises[2] = true;
+          glm::angleAxis(glm::radians(90.0f), Z_AXIS) *
+          RotationTo(X_AXIS, Y_AXIS)
+        );
+        m_horizontalAxisColor = g_gridAxisRed;
+        m_verticalAxisColor = g_gridAxisGreen;
+        break;
+        case AxisLabel::ZX:
+        m_node->SetOrientation(RotationTo(Z_AXIS, Y_AXIS));
+        m_horizontalAxisColor = g_gridAxisRed;
+        m_verticalAxisColor = g_gridAxisBlue;
+        break;
+        case AxisLabel::YZ:
+        m_node->SetOrientation(
+          glm::angleAxis(glm::radians(90.0f), Y_AXIS) *
+          RotationTo(X_AXIS, Y_AXIS)
+        );
+        m_horizontalAxisColor = g_gridAxisGreen;
+        m_verticalAxisColor = g_gridAxisBlue;
+        break;
       }
 
       MeshPtr parentMesh = GetMeshComponent()->GetMeshVal();
@@ -82,33 +90,10 @@ namespace ToolKit
 
       Vec3Array offsets =
       {
-        Vec3(-scale.x * 0.5f - 0.025f, 0.0f, scale.y * 0.5f + 0.025f),
-        Vec3(scale.x * 0.5f + 0.025f, 0.0f, scale.y * 0.5f + 0.025f),
-        Vec3(scale.x * 0.5f + 0.025f, 0.0f, -scale.y * 0.5f - 0.025f),
-        Vec3(-scale.x * 0.5f - 0.025f, 0.0f, -scale.y * 0.5f - 0.025f)
-      };
-
-      // Used to manupulate axes.
-      auto axisConvertFn = [&axises](Vertex& v) -> void
-      {
-        Vec3 prevVertex = v.pos;
-        bool isFirstOnePicked = false;
-        for (ubyte axisIndex = 0; axisIndex < 3; axisIndex++)
-        {
-          if (axises[axisIndex] == false)
-          {
-            v.pos[axisIndex] = prevVertex.y;
-          }
-          else if (!isFirstOnePicked)
-          {
-            v.pos[axisIndex] = prevVertex.x;
-            isFirstOnePicked = true;
-          }
-          else
-          {
-            v.pos[axisIndex] = prevVertex.z;
-          }
-        }
+        Vec3(-scale.x * 0.5f, scale.y * 0.5f, 0.0f),
+        Vec3(scale.x * 0.5f, scale.y * 0.5f, 0.0f),
+        Vec3(scale.x * 0.5f, -scale.y * 0.5f, 0.0f),
+        Vec3(-scale.x * 0.5f, -scale.y * 0.5f, 0.0f)
       };
 
       for (int i = 0; i < 4; i++)
@@ -118,18 +103,9 @@ namespace ToolKit
         for (int j = 0; j < 4; j++)
         {
           Vertex& clientVertex = mesh->m_clientSideVertices[j];
-          clientVertex.pos =
-            (
-              clientVertex.pos *
-              glm::vec3
-              (
-                scale.x,
-                scale.y,
-                0.0f
-              )
-            ).xzy + offsets[i];
-          clientVertex.tex = clientVertex.pos.xz * gridSpaceScale;
-          axisConvertFn(clientVertex);
+          clientVertex.pos = (clientVertex.pos * glm::vec3(scale, 0.0f)) +
+            offsets[i];
+          clientVertex.tex = clientVertex.pos.xy * m_gridCellSize;
         }
 
         mesh->m_material = m_material;
@@ -142,51 +118,6 @@ namespace ToolKit
         {
           parentMesh->m_subMeshes.push_back(mesh);
         }
-      }
-
-      VertexArray vertices;
-      vertices.resize(2);
-
-      // x - z lines.
-      Vec3 lines[2] =
-      {
-        Vec3(0.05f, scale.x * 2.0f, 1.0f),
-        Vec3(scale.y * 2.0f, 0.05f, 1.0f)
-      };
-
-      for (int i = 0; i < 2; i++)
-      {
-        MaterialPtr solidMat = GetMaterialManager()->
-          GetCopyOfUnlitColorMaterial();
-        solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
-        solidMat->m_color = g_gridAxisBlue;
-        Vec3 ls = lines[i];
-
-        // Set axis colors
-        bool iZero = i == 0;
-        switch (axis)
-        {
-          case AxisLabel::XY:
-            solidMat->m_color = iZero ? g_gridAxisGreen : g_gridAxisRed;
-          break;
-          case AxisLabel::YZ:
-            solidMat->m_color = iZero ? g_gridAxisBlue : g_gridAxisGreen;
-          break;
-          case AxisLabel::ZX:
-            solidMat->m_color = iZero ? g_gridAxisBlue : g_gridAxisRed;
-          break;
-        }
-
-        Quad quad;
-        MeshPtr mesh = quad.GetMeshComponent()->GetMeshVal();
-        for (int j = 0; j < 4; j++)
-        {
-          Vertex& clientVertex = mesh->m_clientSideVertices[j];
-          clientVertex.pos = (clientVertex.pos * ls).xzy;
-          axisConvertFn(clientVertex);
-        }
-        mesh->m_material = solidMat;
-        parentMesh->m_subMeshes.push_back(mesh);
       }
 
       parentMesh->CalculateAABB();

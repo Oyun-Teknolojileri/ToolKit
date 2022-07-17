@@ -97,7 +97,7 @@ namespace ToolKit
       CameraAlignment m_cameraAlignment = CameraAlignment::Free;
       int m_additionalWindowFlags = 0;
       bool m_orbitLock = false;
-      static Vec3 m_snapDeltas3DView;
+      Vec3 m_snapDeltas;  // X: Translation, Y: Rotation, Z: Scale
 
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;

@@ -159,6 +159,9 @@ namespace ToolKit
         case Uniform::FRAME_COUNT:
         name = "FrameCount";
         break;
+        case Uniform::GRID_SETTINGS:
+        name = "GridData";
+        break;
         default:
         assert(false && "unknown uniform");
         break;
@@ -238,6 +241,10 @@ namespace ToolKit
         else if (strcmp("FrameCount", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::FRAME_COUNT);
+        }
+        else if (strcmp("GridData", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::GRID_SETTINGS);
         }
         else
         {

@@ -25,7 +25,6 @@ namespace ToolKit
   namespace Editor
   {
     Overlay2DViewportOptions* m_2dViewOptions = nullptr;
-    Vec3 EditorViewport2d::m_snapDeltas2DView = Vec3(0.25f, 45.0f, 0.25f);
 
     EditorViewport2d::EditorViewport2d(XmlNode* node)
       : EditorViewport(node)
@@ -36,6 +35,7 @@ namespace ToolKit
       {
         m_2dViewOptions = new Overlay2DViewportOptions(this);
       }
+      m_snapDeltas = Vec3(10.0f, 45.0f, 0.25f);
     }
 
     EditorViewport2d::EditorViewport2d(float width, float height)
@@ -83,9 +83,9 @@ namespace ToolKit
         DrawOverlays();
         if (m_mouseOverContentArea && g_app->m_snapsEnabled)
         {
-          g_app->m_moveDelta = m_snapDeltas2DView.x;
-          g_app->m_rotateDelta = m_snapDeltas2DView.y;
-          g_app->m_scaleDelta = m_snapDeltas2DView.z;
+          g_app->m_moveDelta = m_snapDeltas.x;
+          g_app->m_rotateDelta = m_snapDeltas.y;
+          g_app->m_scaleDelta = m_snapDeltas.z;
         }
       }
       ImGui::End();
@@ -103,6 +103,14 @@ namespace ToolKit
         SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);
         return;
       }
+
+      // Resize Grid
+      g_app->m_2dGrid->Resize
+      (
+        m_gridWholeSize,
+        AxisLabel::XY,
+        m_gridCellSizeByPixel
+      );
 
       PanZoom(deltaTime);
     }
@@ -428,8 +436,7 @@ namespace ToolKit
         {
           if (m_zoomPercentage == 800)
           {
-            GetLogger()->WriteConsole(LogType::Warning,
-              "2DViewport's max zoom level is 800!");
+            g_app->m_statusMsg = "Max zoom";
             return;
           }
           if (m_zoomPercentage >= 100)
@@ -453,8 +460,7 @@ namespace ToolKit
           }
           else
           {
-            GetLogger()->WriteConsole(LogType::Warning,
-              "2DViewport's min zoom level is 12.5!");
+            g_app->m_statusMsg = "Min zoom";
           }
         }
       }
@@ -496,9 +502,6 @@ namespace ToolKit
       Camera* cam = GetCamera();
       if (cam)
       {
-        g_app->m_2dGrid->Resize(
-          m_gridWholeSize,
-          AxisLabel::XY, 0.25f * (1.0f / m_gridCellSizeByPixel));
         // Adjust zoom always.
         if (m_mouseOverContentArea)
         {

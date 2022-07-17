@@ -159,6 +159,7 @@ namespace ToolKit
       void Render(Renderer* renderer, Camera* cam);
     };
 
+
     class SpotLightGizmo : public Entity
     {
      public:

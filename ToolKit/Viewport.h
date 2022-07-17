@@ -137,6 +137,13 @@ namespace ToolKit
     virtual Vec2 TransformScreenToViewportSpace(const Vec2& pnt);
 
     /**
+    * Transforms the point from world space to screen space
+    * @param pnt Position of point in world space.
+    * @return Position of point in screen space.
+    */
+    virtual Vec2 TransformWorldSpaceToScreenSpace(const Vec3& pnt);
+
+    /**
     * Returns if true if the viewport Camera is orthographic.
     * @return True if the viewport Camera is orthographic, false otherwise.
     */

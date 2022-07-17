@@ -210,6 +210,22 @@ namespace ToolKit
     );
   }
 
+  Vec2 Viewport::TransformWorldSpaceToScreenSpace(const Vec3& pnt)
+  {
+    Camera* cam = GetCamera();
+    glm::mat4 view = cam->GetViewMatrix();
+    glm::mat4 project = cam->GetData().projection;
+    Vec3 screenPos = glm::project(
+      pnt,
+      view,
+      project,
+      glm::vec4(0.0f, 0.0f, m_width, m_height)
+    );
+    screenPos.x += m_wndPos.x;
+    screenPos.y = m_wndContentAreaSize.y + m_wndPos.y - screenPos.y;
+    return screenPos.xy;
+  }
+
   Vec2 Viewport::TransformScreenToViewportSpace(const Vec2& pnt)
   {
     Vec2 vp = pnt - m_wndPos;  // In window space.

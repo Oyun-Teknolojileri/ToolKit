@@ -18,7 +18,8 @@ namespace ToolKit
     LIGHT_DATA,
     CAM_DATA,
     COLOR,
-    FRAME_COUNT
+    FRAME_COUNT,
+    GRID_SETTINGS
   };
 
   class TK_API Shader : public Resource

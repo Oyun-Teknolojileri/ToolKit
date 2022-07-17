@@ -765,7 +765,6 @@ namespace ToolKit
     glGetProgramiv(program, GL_LINK_STATUS, &linked);
     if (!linked)
     {
-      assert(linked);
       GLint infoLen = 0;
       glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
       if (infoLen > 1)
@@ -776,6 +775,7 @@ namespace ToolKit
 
         SafeDelArray(log);
       }
+      assert(linked);
 
       glDeleteProgram(program);
     }
@@ -886,6 +886,28 @@ namespace ToolKit
         {
           GLint loc = glGetUniformLocation(program->m_handle, "FrameCount");
           glUniform1ui(loc, m_frameCount);
+        }
+        break;
+        case Uniform::GRID_SETTINGS:
+        {
+          GLint locCellSize =
+            glGetUniformLocation(program->m_handle, "GridData.cellSize");
+          glUniform1fv(locCellSize, 1, &m_gridCellSize);
+          GLint locGridSize =
+            glGetUniformLocation(program->m_handle, "GridData.gridSize");
+          glUniform1fv(locGridSize, 1, &m_gridSize);
+          GLint locHorizontalAxisColor = glGetUniformLocation
+          (
+            program->m_handle,
+            "GridData.horizontalAxisColor"
+          );
+          glUniform3fv(locHorizontalAxisColor, 1, &m_gridHorizontalAxisColor.x);
+          GLint locVerticalAxisColor = glGetUniformLocation
+          (
+            program->m_handle,
+            "GridData.verticalAxisColor"
+          );
+          glUniform3fv(locVerticalAxisColor, 1, &m_gridVerticalAxisColor.x);
         }
         break;
         default:

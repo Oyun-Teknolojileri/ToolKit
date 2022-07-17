@@ -119,6 +119,10 @@ namespace ToolKit
     uint m_windowHeight = 0;
     Vec4 m_bgColor = { 0.2f, 0.2f, 0.2f, 1.0f };
     MaterialPtr m_overrideMat = nullptr;
+    // Grid parameters
+    float m_gridCellSize = 0.1f, m_gridSize = 100.0f;
+    Vec3 m_gridHorizontalAxisColor = Vec3(1.0f, 0.0f, 0.0f);
+    Vec3 m_gridVerticalAxisColor = Vec3(0.0f, 0.0f, 1.0f);
 
    private:
     uint m_currentProgram = 0;

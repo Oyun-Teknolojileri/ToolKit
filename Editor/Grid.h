@@ -23,6 +23,9 @@ namespace ToolKit
 
      public:
       UVec2 m_size;  // m^2 size of the grid.
+      float m_gridCellSize = 1.0f;  // m^2 size of each cell
+      Vec3 m_horizontalAxisColor = Vec3(1.0f, 0.0f, 0.0f);
+      Vec3 m_verticalAxisColor = Vec3(0.0f, 0.0f, 1.0f);
       MaterialPtr m_material;
     };
 

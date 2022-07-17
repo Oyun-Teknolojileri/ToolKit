@@ -55,7 +55,9 @@ namespace ToolKit
 
       m_cursor = new Cursor();
       m_origin = new Axis3d();
-      m_grid = new Grid(UVec2(100));
+      static uint g_3dGridSize = 100000;
+      m_grid = new Grid(UVec2(g_3dGridSize));
+      m_grid->Resize(UVec2(g_3dGridSize), AxisLabel::ZX, 0.025);
       m_grid->GetMeshComponent()->Init(false);
       Generate2dGrid();
 
@@ -286,10 +288,18 @@ namespace ToolKit
           // Render fixed scene objects.
           if (viewport->GetType() == Window::Type::Viewport2d)
           {
+            m_renderer->m_gridCellSize = m_2dGrid->m_gridCellSize;
+            m_renderer->m_gridHorizontalAxisColor =
+              m_2dGrid->m_horizontalAxisColor;
+            m_renderer->m_gridVerticalAxisColor = m_2dGrid->m_verticalAxisColor;
             m_renderer->Render(m_2dGrid, cam);
           }
           else
           {
+            m_renderer->m_gridCellSize = m_grid->m_gridCellSize;
+            m_renderer->m_gridHorizontalAxisColor =
+              m_grid->m_horizontalAxisColor;
+            m_renderer->m_gridVerticalAxisColor = m_grid->m_verticalAxisColor;
             m_renderer->Render(m_grid, cam);
 
             m_origin->LookAt(cam, viewport->m_zoom);
@@ -1601,10 +1611,10 @@ Fail:
 
     void App::Generate2dGrid()
     {
-      m_2dGrid = new Grid(glm::uvec2(g_app->m_playWidth, g_app->m_playHeight));
+      m_2dGrid = new Grid(UVec2(g_app->m_playWidth, g_app->m_playHeight));
       m_2dGrid->Resize(
         UVec2(g_app->m_playWidth, g_app->m_playHeight),
-        AxisLabel::XY, 0.0025f * 10);  // Generate grid cells 10 x 10
+        AxisLabel::XY, 10.0);  // Generate grid cells 10 x 10
     }
 
     void DebugMessage(const String& msg)

@@ -620,10 +620,24 @@ namespace ToolKit
 
     void StateTransformTo::Rotate(Entity* ntt)
     {
+      EditorViewport* viewport = g_app->GetActiveViewport();
       PolarGizmo* pg = static_cast<PolarGizmo*> (m_gizmo);
       int axisInd = static_cast<int> (m_gizmo->GetGrabbedAxis());
       Vec3 projAxis = pg->m_handles[axisInd]->m_tangentDir;
-      float delta = glm::dot(projAxis, m_delta);
+      Vec3 mouseDelta = m_delta;
+
+
+      float delta = glm::dot(projAxis, mouseDelta);
+      Vec3 deltaInWS = Vec3(delta, 0.0f, 0.0f);
+      Vec2 deltaInSS = viewport->TransformWorldSpaceToScreenSpace(deltaInWS);
+      deltaInSS -= viewport->TransformWorldSpaceToScreenSpace(Vec3(0));
+      deltaInSS = Vec2
+      (
+        deltaInSS.x / viewport->m_width,
+        deltaInSS.y / viewport->m_height
+      );
+      delta = glm::length(deltaInSS) * ((delta > 0.0f) ? 1 : -1);
+      delta = glm::degrees(delta) / 9.0f;
 
       m_deltaAccum.x += delta;
       float spacing = glm::radians(g_app->m_rotateDelta);
@@ -637,7 +651,9 @@ namespace ToolKit
         delta = glm::round(m_deltaAccum.x / spacing) * spacing;
       }
 
+
       m_deltaAccum.x = 0.0f;
+
       if (glm::notEqual(delta, 0.0f))
       {
         Quaternion rotation =
@@ -648,7 +664,10 @@ namespace ToolKit
 
     void StateTransformTo::Scale(Entity* ntt)
     {
-      float delta = glm::length(m_delta);
+      int axisIndx = static_cast<int> (m_gizmo->GetGrabbedAxis());
+      Vec3 aabbSize = ntt->GetAABB().max - ntt->GetAABB().min;
+      aabbSize *= AXIS[axisIndx];
+      float delta = glm::length(m_delta) / glm::length(aabbSize);
       m_deltaAccum.x += delta;
 
       float spacing = g_app->m_scaleDelta;
@@ -664,7 +683,6 @@ namespace ToolKit
       m_deltaAccum.x = 0;
 
       // Transfer world space delta to local axis.
-      int axisIndx = static_cast<int> (m_gizmo->GetGrabbedAxis());
       Vec3 target = AXIS[axisIndx] * delta;
       target *= glm::sign
       (

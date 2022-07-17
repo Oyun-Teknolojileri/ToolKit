@@ -12,7 +12,6 @@ namespace ToolKit
 
   namespace Editor
   {
-
     class EditorViewport2d : public EditorViewport
     {
      public:
@@ -63,7 +62,6 @@ namespace ToolKit
       DirectionalLight m_forwardLight;
 
      public:
-      static Vec3 m_snapDeltas2DView;
       float m_zoomPercentage = 100;
       uint16_t m_gridCellSizeByPixel = 10;
       IVec2 m_gridWholeSize = IVec2(640, 480);

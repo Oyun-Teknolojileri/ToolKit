@@ -19,6 +19,8 @@
 #include "EditorViewport.h"
 #include "ResourceComponent.h"
 #include "GL/glew.h"
+#include "App.h"
+#include "EditorViewport2d.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -488,12 +490,16 @@ namespace ToolKit
       AxisLabel hit = AxisLabel::None;
       for (size_t i = 0; i < m_handles.size(); i++)
       {
+        if (!m_handles[i]->m_mesh)
+        {
+          continue;
+        }
         if (m_handles[i]->HitTest(ray, t))
         {
           if (t < tMin)
           {
             tMin = t;
-            hit = (AxisLabel)i;
+            hit = static_cast<AxisLabel>(m_handles[i]->m_params.axis);
           }
         }
       }
@@ -674,7 +680,7 @@ namespace ToolKit
       for (int i = 3; i < 6; i++)
       {
         m_handles.push_back(new QuadHandle());
-        m_handles[i]->m_params.axis = (AxisLabel)i;
+        m_handles[i]->m_params.axis = static_cast<AxisLabel>(i);
       }
 
       Update(0.0);
@@ -722,9 +728,24 @@ namespace ToolKit
     {
       GizmoHandle::Params p = GetParam();
 
+      // Clear all meshes
       for (int i = 0; i < 3; i++)
       {
-        if (m_grabbedAxis == (AxisLabel)i)
+        m_handles[i]->m_mesh = nullptr;
+      }
+
+      EditorViewport2d* viewport2D = dynamic_cast<EditorViewport2d*>
+        (
+        g_app->GetActiveViewport()
+        );
+      for (int i = 0; i < 3; i++)
+      {
+        // If gizmo is in 2D view, just generate Z axis
+        if (viewport2D && i != static_cast<int>(AxisLabel::Z))
+        {
+          continue;
+        }
+        if (m_grabbedAxis == static_cast<AxisLabel>(i))
         {
           p.color = g_selectHighLightPrimaryColor;
         }
@@ -733,17 +754,17 @@ namespace ToolKit
           p.color = g_gizmoColor[i];
         }
 
-        if (IsLocked((AxisLabel)i))
+        if (IsLocked(static_cast<AxisLabel>(i)))
         {
           p.color = g_gizmoLocked;
         }
-        else if (m_lastHovered == (AxisLabel)i)
+        else if (m_lastHovered == static_cast<AxisLabel>(i))
         {
           p.color = g_selectHighLightSecondaryColor;
           m_lastHovered = AxisLabel::None;
         }
 
-        p.axis = (AxisLabel)i;
+        p.axis = static_cast<AxisLabel>(i);
         if (IsGrabbed(p.axis))
         {
           p.grabPnt = m_grabPoint;
@@ -759,7 +780,10 @@ namespace ToolKit
       MeshPtr mesh = std::make_shared<Mesh>();
       for (int i = 0; i < m_handles.size(); i++)
       {
-        mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+        if (m_handles[i]->m_mesh)
+        {
+          mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+        }
       }
 
       GetComponent<MeshComponent>()->SetMeshVal(mesh);
