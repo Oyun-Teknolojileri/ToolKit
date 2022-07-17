@@ -156,6 +156,12 @@ namespace ToolKit
     */
     ~ParameterVariant();
 
+
+    /**
+    * Default copy constructor makes a call to default assignment operator.
+    */
+    explicit ParameterVariant(const ParameterVariant& other);
+
     /**
     * Constructs bool type variant.
     */
@@ -273,6 +279,13 @@ namespace ToolKit
     {
       return &std::get<T>(m_var);
     }
+
+    /**
+    * Default assignment operator, copies every member but event callbacks and 
+    * the id. Events refer to objects to operate on. Consider coping or rewiring
+    * event callbacks explicitly. Otherwise unintended objects gets affected.
+    */
+    ParameterVariant& operator= (const ParameterVariant& other);
 
     /**
     * Assign a bool to the value of the variant.

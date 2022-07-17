@@ -42,7 +42,8 @@ namespace ToolKit
     void ComponentConstructor();
     void ParameterConstructor();
     void ParameterEventConstructor();
-    Entity* CopyTo(Entity* copyTo) const override;
+    Entity* CopyTo(Entity* other) const override;
+    Entity* InstantiateTo(Entity* other) const override;
 
    private:
     void CreateQuat();

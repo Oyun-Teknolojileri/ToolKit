@@ -1,4 +1,7 @@
 #include "Surface.h"
+
+#include <memory>
+
 #include "Mesh.h"
 #include "Texture.h"
 #include "Material.h"
@@ -66,6 +69,14 @@ namespace ToolKit
   {
     Entity::DeSerialize(doc, parent);
     ParameterEventConstructor();
+
+    // Re assign default material.
+    MaterialComponentPtr matCom = GetMaterialComponent();
+    if (matCom->GetMaterialVal()->IsDynamic())
+    {
+      matCom->SetMaterialVal(GetMaterialManager()->GetCopyOfUIMaterial());
+    }
+
     CreateQuat();
   }
 
@@ -149,11 +160,23 @@ namespace ToolKit
     };
   }
 
-  Entity* Surface::CopyTo(Entity* copyTo) const
+  Entity* Surface::CopyTo(Entity* other) const
   {
-    Entity::CopyTo(copyTo);
-    Surface* cpy = static_cast<Surface*> (copyTo);
+    Entity* cpy = Entity::CopyTo(other);
+
+    // Create an independent mesh.
+    MeshPtr mesh = std::make_shared<Mesh>();
+    cpy->GetMeshComponent()->SetMeshVal(mesh);
+
+    Surface* surf = static_cast<Surface*> (cpy);
+    surf->UpdateGeometry(false);
+
     return cpy;
+  }
+
+  Entity* Surface::InstantiateTo(Entity* other) const
+  {
+    return CopyTo(other);
   }
 
   void Surface::ResetCallbacks()
@@ -387,8 +410,11 @@ namespace ToolKit
 
   void Button::ParameterEventConstructor()
   {
+    // Always rewire events for correctness.
+    Surface::ParameterEventConstructor();
+
     ParamButtonMaterial().m_onValueChangedFn =
-      [this](Value& oldVal, Value& newVal) -> void
+      [this](Value& oldVal, Value& newVal)-> void
     {
       // Override surface material.
       SetMaterialVal(std::get<MaterialPtr>(newVal));

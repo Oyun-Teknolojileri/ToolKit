@@ -28,6 +28,28 @@ namespace ToolKit
   {
   }
 
+  ParameterVariant::ParameterVariant(const ParameterVariant& other)
+  {
+    *this = other;
+  }
+
+  ParameterVariant& ParameterVariant::operator=(const ParameterVariant& other)
+  {
+    if (m_id != other.m_id)
+    {
+      m_category = other.m_category;
+      m_editable = other.m_editable;
+      m_exposed = other.m_exposed;
+      m_name = other.m_name;
+      m_type = other.m_type;
+      m_var = other.m_var;
+
+      // Events m_onValueChangedFn intentionally not copied.
+    }
+
+    return *this;
+  }
+
   ParameterVariant::ParameterVariant(bool var)
   {
     *this = var;
