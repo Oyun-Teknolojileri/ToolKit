@@ -53,11 +53,6 @@ namespace ToolKit
       return instance;
     }
 
-    bool EditorDirectionalLight::IsDrawable() const
-    {
-      return true;
-    }
-
     void EditorDirectionalLight::Init()
     {
       if (m_initialized)
@@ -155,11 +150,6 @@ namespace ToolKit
       WeakCopy(instance, false);
       instance->Init();
       return instance;
-    }
-
-    bool EditorPointLight::IsDrawable() const
-    {
-      return true;
     }
 
     void EditorPointLight::Init()
@@ -263,11 +253,6 @@ namespace ToolKit
       WeakCopy(instance, false);
       instance->Init();
       return instance;
-    }
-
-    bool EditorSpotLight::IsDrawable() const
-    {
-      return true;
     }
 
     void EditorSpotLight::Init()

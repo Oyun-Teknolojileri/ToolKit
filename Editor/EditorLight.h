@@ -25,7 +25,6 @@ namespace ToolKit
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
-      bool IsDrawable() const override;
 
       void Init() override;
       void EnableGizmo(bool enable);
@@ -46,7 +45,6 @@ namespace ToolKit
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
-      bool IsDrawable() const override;
 
       void Init() override;
       void EnableGizmo(bool enable);
@@ -65,7 +63,6 @@ namespace ToolKit
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
-      bool IsDrawable() const override;
 
       void Init() override;
       void EnableGizmo(bool enable);
