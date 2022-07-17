@@ -209,9 +209,9 @@ namespace ToolKit
       std::vector<LineBatch*> m_gizmoLineBatches;
 
       int m_circleVertexCount = 30;
-      Vec3Array m_circlePnts1;
-      Vec3Array m_circlePnts2;
-      Vec3Array m_circlePnts3;
+      Vec3Array m_circlePntsXY;
+      Vec3Array m_circlePntsYZ;
+      Vec3Array m_circlePntsXZ;
     };
 
   }  // namespace Editor

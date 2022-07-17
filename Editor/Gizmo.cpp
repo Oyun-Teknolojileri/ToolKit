@@ -1053,9 +1053,9 @@ namespace ToolKit
       m_gizmoLineBatches[1] = new LineBatch();
       m_gizmoLineBatches[2] = new LineBatch();
 
-      m_circlePnts1.resize(m_circleVertexCount + 1);
-      m_circlePnts2.resize(m_circleVertexCount + 1);
-      m_circlePnts3.resize(m_circleVertexCount + 1);
+      m_circlePntsXY.resize(m_circleVertexCount + 1);
+      m_circlePntsYZ.resize(m_circleVertexCount + 1);
+      m_circlePntsXZ.resize(m_circleVertexCount + 1);
 
       // Create gizmo meshes and materials
       MeshComponent* mc = new MeshComponent();
@@ -1102,60 +1102,41 @@ namespace ToolKit
         TransformationSpace::TS_WORLD
       );
 
-      // Create circle with rotating points around forward vector
-      Vec3 startingPoint = up * light->GetRadiusVal();
-      m_circlePnts1[0] = startingPoint;
-      Mat4 idendityMatrix = Mat4(1.0f);
-      for (int i = 1; i <= m_circleVertexCount; i++)
-      {
-        Mat4 rot = glm::rotate(idendityMatrix, deltaAngle, forward);
-        startingPoint = Vec3(rot * Vec4(startingPoint, 1.0f));
-        m_circlePnts1[i] = startingPoint;
-      }
-
-      m_gizmoLineBatches[0]->Generate
+      auto drawCircleGizmo = [&light, &deltaAngle, this]
       (
-        m_circlePnts1,
-        g_lightGizmoColor,
-        DrawType::LineStrip,
-        1.0f
-      );
-
-      // Create circle with rotating points around right vector
-      startingPoint = up * light->GetRadiusVal();
-      m_circlePnts2[0] = startingPoint;
-      for (int i = 1; i <= m_circleVertexCount; i++)
+        Vec3Array vertices,
+        const Vec3& axis,
+        const Vec3& perpAxis,
+        int lineBatchIndex
+      )
       {
-        Mat4 rot = glm::rotate(idendityMatrix, deltaAngle, right);
-        startingPoint = Vec3(rot * Vec4(startingPoint, 1.0f));
-        m_circlePnts2[i] = startingPoint;
-      }
+        Vec3 startingPoint = perpAxis * light->GetRadiusVal();
+        vertices[0] = startingPoint;
+        Mat4 idendityMatrix = Mat4(1.0f);
+        for (int i = 1; i < m_circleVertexCount + 1; ++i)
+        {
+          Mat4 rot = glm::rotate(idendityMatrix, deltaAngle, axis);
+          startingPoint = Vec3(rot * Vec4(startingPoint, 1.0f));
+          vertices[i] = startingPoint;
+        }
 
-      m_gizmoLineBatches[1]->Generate
-      (
-        m_circlePnts2,
-        g_lightGizmoColor,
-        DrawType::LineStrip,
-        1.0f
-      );
+        m_gizmoLineBatches[lineBatchIndex]->Generate
+        (
+          vertices,
+          g_lightGizmoColor,
+          DrawType::LineStrip,
+          1.0f
+        );
+      };
 
-      // Create circle with rotating points around up vector
-      startingPoint = right * light->GetRadiusVal();
-      m_circlePnts3[0] = startingPoint;
-      for (int i = 1; i <= m_circleVertexCount; i++)
-      {
-        Mat4 rot = glm::rotate(idendityMatrix, deltaAngle, up);
-        startingPoint = Vec3(rot * Vec4(startingPoint, 1.0f));
-        m_circlePnts3[i] = startingPoint;
-      }
+      // Circle on XY plane
+      drawCircleGizmo(m_circlePntsXY, forward, up, 0);
 
-      m_gizmoLineBatches[2]->Generate
-      (
-        m_circlePnts3,
-        g_lightGizmoColor,
-        DrawType::LineStrip,
-        1.0f
-      );
+      // Circle on YZ plane
+      drawCircleGizmo(m_circlePntsXY, right, up, 1);
+
+      // Circle on XZ plane
+      drawCircleGizmo(m_circlePntsXY, up, right, 2);
     }
 
     std::vector<LineBatch*> PointLightGizmo::GetGizmoLineBatches()
@@ -1163,5 +1144,5 @@ namespace ToolKit
       return m_gizmoLineBatches;
     }
 
-}  // namespace Editor
+  }  // namespace Editor
 }  // namespace ToolKit
