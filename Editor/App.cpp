@@ -282,27 +282,28 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
+          Camera* cam = viewport->GetCamera();
+
+          // Render scene.
           m_renderer->RenderScene(GetCurrentScene(), viewport, gameLights);
 
-          Camera* cam = viewport->GetCamera();;
+          // Render grid.
+          auto gridDrawFn = [this, &cam](Grid* grid) -> void
+          {
+            m_renderer->m_gridCellSize = grid->m_gridCellSize;
+            m_renderer->m_gridHorizontalAxisColor = grid->m_horizontalAxisColor;
+            m_renderer->m_gridVerticalAxisColor = grid->m_verticalAxisColor;
+            m_renderer->Render(grid, cam);
+          };
+
+          Grid* grid = viewport->GetType() == Window::Type::Viewport2d ?
+            m_2dGrid : m_grid;
+
+          gridDrawFn(grid);
 
           // Render fixed scene objects.
-          if (viewport->GetType() == Window::Type::Viewport2d)
+          if (viewport->GetType() != Window::Type::Viewport2d)
           {
-            m_renderer->m_gridCellSize = m_2dGrid->m_gridCellSize;
-            m_renderer->m_gridHorizontalAxisColor =
-              m_2dGrid->m_horizontalAxisColor;
-            m_renderer->m_gridVerticalAxisColor = m_2dGrid->m_verticalAxisColor;
-            m_renderer->Render(m_2dGrid, cam);
-          }
-          else
-          {
-            m_renderer->m_gridCellSize = m_grid->m_gridCellSize;
-            m_renderer->m_gridHorizontalAxisColor =
-              m_grid->m_horizontalAxisColor;
-            m_renderer->m_gridVerticalAxisColor = m_grid->m_verticalAxisColor;
-            m_renderer->Render(m_grid, cam);
-
             m_origin->LookAt(cam, viewport->m_zoom);
             m_renderer->Render(m_origin, cam);
 
