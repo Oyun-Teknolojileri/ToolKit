@@ -858,28 +858,24 @@ namespace ToolKit
       mesh->m_subMeshes[2]->m_material->Init();
     }
 
-    SpotLightGizmo::~SpotLightGizmo()
+    void SpotLightGizmo::InitGizmo(Light* light)
     {
-      for (LineBatch* lb : m_gizmoLineBatches)
-      {
-        SafeDel(lb);
-      }
-      m_gizmoLineBatches.clear();
-    }
+      assert(light->GetLightType() == LightTypeEnum::LightSpot);
+      SpotLight* sLight = static_cast<SpotLight*> (light);
 
-    void SpotLightGizmo::InitGizmo(SpotLight* light)
-    {
       // Middle line
       Vec3 d = Vec3(0.0f, 0.0f, -1.0f);
-      float r = light->GetRadiusVal();
+      float r = sLight->GetRadiusVal();
       m_pnts[0] = Vec3
       (
         ZERO
       );
+
       m_pnts[1] = Vec3
       (
         d * r * 2.25f
       );
+
       m_gizmoLineBatches[0]->Generate
       (
         m_pnts,
@@ -957,9 +953,10 @@ namespace ToolKit
       d = d * r;
 
       float innerCircleRadius = r *
-        glm::tan(glm::radians(light->GetInnerAngleVal() / 2));
+        glm::tan(glm::radians(sLight->GetInnerAngleVal() / 2));
+
       float outerCircleRadius = r *
-        glm::tan(glm::radians(light->GetOuterAngleVal() / 2));
+        glm::tan(glm::radians(sLight->GetOuterAngleVal() / 2));
 
       Vec3 inStartPoint = d + per * innerCircleRadius;
       Vec3 outStartPoint = d + per * outerCircleRadius;
@@ -968,6 +965,7 @@ namespace ToolKit
 
       float deltaAngle = glm::two_pi<float>() / m_circleVertexCount;
       m_rot = Mat4(1.0f);
+
       for (int i = 1; i < m_circleVertexCount + 1; i++)
       {
         // Inner circle vertices
@@ -987,6 +985,7 @@ namespace ToolKit
         g_lightGizmoColor,
         DrawType::LineStrip, 1.0f
       );
+
       m_gizmoLineBatches[2]->Generate
       (
         m_outerCirclePnts,
@@ -1012,11 +1011,6 @@ namespace ToolKit
       );
     }
 
-    std::vector<LineBatch*> SpotLightGizmo::GetGizmoLineBatches()
-    {
-      return m_gizmoLineBatches;
-    }
-
     DirectionalLightGizmo::DirectionalLightGizmo(DirectionalLight* light)
     {
       m_gizmoLineBatches.resize(1);
@@ -1033,17 +1027,10 @@ namespace ToolKit
       AddComponent(mc);
     }
 
-    DirectionalLightGizmo::~DirectionalLightGizmo()
+    void DirectionalLightGizmo::InitGizmo(Light* light)
     {
-      for (LineBatch* lb : m_gizmoLineBatches)
-      {
-        SafeDel(lb);
-      }
-      m_gizmoLineBatches.clear();
-    }
+      assert(light->GetLightType() == LightTypeEnum::LightDirectional);
 
-    void DirectionalLightGizmo::InitGizmo(DirectionalLight* light)
-    {
       // Middle line
       Vec3 d = Vec3(0.0f, 0.0f, -1.0f);
       Vec3 norm = glm::normalize(d);
@@ -1051,10 +1038,12 @@ namespace ToolKit
       (
         ZERO
       );
+
       m_pnts[1] = Vec3
       (
         d * 10.0f
       );
+
       m_gizmoLineBatches[0]->Generate
       (
         m_pnts,
@@ -1062,11 +1051,6 @@ namespace ToolKit
         DrawType::Line,
         1.0f
       );
-    }
-
-    std::vector<LineBatch*> DirectionalLightGizmo::GetGizmoLineBatches()
-    {
-      return m_gizmoLineBatches;
     }
 
     PointLightGizmo::PointLightGizmo(PointLight* light)
@@ -1106,27 +1090,22 @@ namespace ToolKit
       mesh->m_subMeshes[1]->m_material->Init();
     }
 
-    PointLightGizmo::~PointLightGizmo()
+    void PointLightGizmo::InitGizmo(Light* light)
     {
-      for (LineBatch* lb : m_gizmoLineBatches)
-      {
-        SafeDel(lb);
-      }
-      m_gizmoLineBatches.clear();
-    }
+      assert(light->GetLightType() == LightTypeEnum::LightPoint);
+      PointLight* pLight = static_cast<PointLight*> (light);
 
-    void PointLightGizmo::InitGizmo(PointLight* light)
-    {
       Vec3 up = Vec3(0.0f, 1.0f, 0.0f);
       Vec3 right = Vec3(1.0f, 0.0f, 0.0f);
       Vec3 forward = Vec3(0.0f, 0.0f, 1.0f);
       float deltaAngle = glm::two_pi<float>() / m_circleVertexCount;
-      Vec3 lightPos = light->m_node->GetTranslation
+
+      Vec3 lightPos = pLight->m_node->GetTranslation
       (
         TransformationSpace::TS_WORLD
       );
 
-      auto drawCircleGizmo = [&light, &deltaAngle, this]
+      auto drawCircleGizmo = [&pLight, &deltaAngle, this]
       (
         Vec3Array vertices,
         const Vec3& axis,
@@ -1134,9 +1113,10 @@ namespace ToolKit
         int lineBatchIndex
       )
       {
-        Vec3 startingPoint = perpAxis * light->GetRadiusVal();
+        Vec3 startingPoint = perpAxis * pLight->GetRadiusVal();
         vertices[0] = startingPoint;
         Mat4 idendityMatrix = Mat4(1.0f);
+
         for (int i = 1; i < m_circleVertexCount + 1; ++i)
         {
           Mat4 rot = glm::rotate(idendityMatrix, deltaAngle, axis);
@@ -1163,7 +1143,20 @@ namespace ToolKit
       drawCircleGizmo(m_circlePntsXY, up, right, 2);
     }
 
-    std::vector<LineBatch*> PointLightGizmo::GetGizmoLineBatches()
+    LightGizmoBase::LightGizmoBase()
+    {
+    }
+
+    LightGizmoBase::~LightGizmoBase()
+    {
+      for (LineBatch* lb : m_gizmoLineBatches)
+      {
+        SafeDel(lb);
+      }
+      m_gizmoLineBatches.clear();
+    }
+
+    LineBatchRawPtrArray LightGizmoBase::GetGizmoLineBatches()
     {
       return m_gizmoLineBatches;
     }

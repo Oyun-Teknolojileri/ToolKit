@@ -42,10 +42,6 @@ namespace ToolKit
     Entity::DeSerialize(doc, parent);
   }
 
-  void Light::Init()
-  {
-  }
-
   DirectionalLight::DirectionalLight()
   {
     SetLightTypeVal(static_cast<int> (LightTypeEnum::LightDirectional));

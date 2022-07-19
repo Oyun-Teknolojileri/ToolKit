@@ -15,8 +15,28 @@ namespace ToolKit
 {
   namespace Editor
   {
+    // Editor Light Utils.
+    extern void EnableLightGizmo(Light* light, bool enable);
 
-    class EditorDirectionalLight : public DirectionalLight
+    class EditorLightBase
+    {
+     public:
+      EditorLightBase();
+      virtual ~EditorLightBase();
+
+      void EnableGizmo(bool enable);
+      virtual void Init() = 0;
+
+     protected:
+      LightGizmoBase* m_gizmo = nullptr;
+      MeshComponentPtr m_gizmoMC = nullptr;
+      bool m_gizmoActive = false;
+      bool m_initialized = false;
+    };
+
+    class EditorDirectionalLight :
+      public DirectionalLight,
+      public EditorLightBase
     {
      public:
       EditorDirectionalLight();
@@ -27,16 +47,9 @@ namespace ToolKit
       Entity* Instantiate() const override;
 
       void Init() override;
-      void EnableGizmo(bool enable);
-
-     private:
-       DirectionalLightGizmo* m_gizmo = nullptr;
-       MeshComponent* m_gizmoMC = nullptr;
-
-       bool m_gizmoActive = false;
     };
 
-    class EditorPointLight : public PointLight
+    class EditorPointLight : public PointLight, public EditorLightBase
     {
      public:
       EditorPointLight();
@@ -47,14 +60,9 @@ namespace ToolKit
       Entity* Instantiate() const override;
 
       void Init() override;
-      void EnableGizmo(bool enable);
-
-     private:
-      PointLightGizmo* m_gizmo = nullptr;
-      bool m_gizmoActive = false;
     };
 
-    class EditorSpotLight : public SpotLight
+    class EditorSpotLight : public SpotLight, public EditorLightBase
     {
      public:
       EditorSpotLight();
@@ -65,12 +73,6 @@ namespace ToolKit
       Entity* Instantiate() const override;
 
       void Init() override;
-      void EnableGizmo(bool enable);
-
-     private:
-      SpotLightGizmo* m_gizmo = nullptr;
-
-      bool m_gizmoActive = false;
     };
 
   }  // namespace Editor

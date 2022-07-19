@@ -212,36 +212,15 @@ namespace ToolKit
         {
           if (light->GetIdVal() == entity->GetIdVal())
           {
-            if (light->GetLightType() == LightTypeEnum::LightDirectional)
-            {
-              static_cast<EditorDirectionalLight*>(light)->EnableGizmo(true);
-            }
-            else if (light->GetLightType() == LightTypeEnum::LightSpot)
-            {
-              static_cast<EditorSpotLight*>(light)->EnableGizmo(true);
-            }
-            else if (light->GetLightType() == LightTypeEnum::LightPoint)
-            {
-              static_cast<EditorPointLight*>(light)->EnableGizmo(true);
-            }
+            EnableLightGizmo(light, true);
             found = true;
             break;
           }
         }
+
         if (!found)
         {
-          if (light->GetLightType() == LightTypeEnum::LightDirectional)
-          {
-            static_cast<EditorDirectionalLight*>(light)->EnableGizmo(false);
-          }
-          else if (light->GetLightType() == LightTypeEnum::LightSpot)
-          {
-            static_cast<EditorSpotLight*>(light)->EnableGizmo(false);
-          }
-          else if (light->GetLightType() == LightTypeEnum::LightPoint)
-          {
-            static_cast<EditorPointLight*>(light)->EnableGizmo(false);
-          }
+          EnableLightGizmo(light, false);
         }
       }
 
@@ -253,6 +232,7 @@ namespace ToolKit
         m_sceneLights.begin(),
         m_sceneLights.end()
       );
+
       // Sort lights by type
       auto lightSortFn = [](Light* light1, Light* light2) -> bool
       {
@@ -1324,32 +1304,9 @@ Fail:
             if (ntt->GetType() == EntityType::Entity_Light)
             {
               Light* light = static_cast<Light*>(ntt);
-
-              if (light->GetLightType() == LightTypeEnum::LightDirectional)
-              {
-                static_cast<EditorDirectionalLight*>(light)->EnableGizmo(false);
-              }
-              else if (light->GetLightType() == LightTypeEnum::LightSpot)
-              {
-                static_cast<EditorSpotLight*>(light)->EnableGizmo(false);
-              }
-              else if (light->GetLightType() == LightTypeEnum::LightPoint)
-              {
-                static_cast<EditorPointLight*>(light)->EnableGizmo(false);
-              }
+              EnableLightGizmo(light, false);
               m_renderer->Render(ntt, viewport->GetCamera());
-              if (light->GetLightType() == LightTypeEnum::LightDirectional)
-              {
-                static_cast<EditorDirectionalLight*>(light)->EnableGizmo(true);
-              }
-              else if (light->GetLightType() == LightTypeEnum::LightSpot)
-              {
-                static_cast<EditorSpotLight*>(light)->EnableGizmo(true);
-              }
-              else if (light->GetLightType() == LightTypeEnum::LightPoint)
-              {
-                static_cast<EditorPointLight*>(light)->EnableGizmo(true);
-              }
+              EnableLightGizmo(light, true);
             }
             else
             {

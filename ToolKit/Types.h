@@ -95,6 +95,7 @@ namespace ToolKit
   typedef std::vector<MeshPtr> MeshPtrArray;
   typedef std::vector<class Mesh*> MeshRawPtrArray;
   typedef std::vector<const class Mesh*> MeshRawCPtrArray;
+
   typedef std::vector<class Entity*> EntityRawPtrArray;
   typedef std::vector<class Light*> LightRawPtrArray;
   typedef std::vector<class DirectionalLight*> DirectionalLightRawPtrArray;
@@ -107,6 +108,8 @@ namespace ToolKit
   typedef std::vector<class Face> FaceArray;
   typedef std::vector<class ParameterVariant> ParameterVariantArray;
   typedef std::vector<class ParameterVariant*> ParameterVariantRawPtrArray;
+  typedef std::vector<class LineBatch*> LineBatchRawPtrArray;
+
   typedef rapidxml::xml_node<char> XmlNode;
   typedef rapidxml::xml_attribute<char> XmlAttribute;
   typedef rapidxml::xml_document<char> XmlDocument;

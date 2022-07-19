@@ -27,15 +27,10 @@ namespace ToolKit
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-    virtual void Init();
-
    public:
     TKDeclareParam(int, LightType);
     TKDeclareParam(Vec3, Color);
     TKDeclareParam(float, Intensity);
-
-   protected:
-    bool m_initialized = false;
   };
 
   class TK_API DirectionalLight : public Light

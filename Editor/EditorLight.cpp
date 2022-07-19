@@ -14,6 +14,69 @@ namespace ToolKit
   namespace Editor
   {
 
+    void EnableLightGizmo(Light* light, bool enable)
+    {
+      switch (light->GetLightType())
+      {
+        case LightTypeEnum::LightDirectional:
+          static_cast<EditorDirectionalLight*> (light)->EnableGizmo(enable);
+        break;
+        case LightTypeEnum::LightPoint:
+          static_cast<EditorPointLight*> (light)->EnableGizmo(enable);
+        break;
+        case LightTypeEnum::LightSpot:
+          static_cast<EditorSpotLight*> (light)->EnableGizmo(enable);
+        break;
+        case LightTypeEnum::LightBase:
+        default:
+          assert(false && "Invalid Light Type");
+        break;
+      }
+    }
+
+    EditorLightBase::EditorLightBase()
+    {
+    }
+
+    EditorLightBase::~EditorLightBase()
+    {
+      if (m_initialized)
+      {
+        m_initialized = false;
+        SafeDel(m_gizmo);
+      }
+    }
+
+    void EditorLightBase::EnableGizmo(bool enable)
+    {
+      if (m_gizmoMC == nullptr)
+      {
+        return;
+      }
+
+      if (enable != m_gizmoActive)
+      {
+        if (enable)
+        {
+          // Add submeshes to mesh component
+          for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
+          {
+            MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
+            m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(lbMesh);
+          }
+
+          m_gizmoActive = true;
+        }
+        else
+        {
+          // Remove submeshes from mesh component
+          m_gizmoMC->GetMeshVal()->m_subMeshes.clear();
+
+          m_gizmoActive = false;
+        }
+      }
+    }
+
     EditorDirectionalLight::EditorDirectionalLight()
     {
       m_gizmo = new DirectionalLightGizmo(this);
@@ -30,11 +93,6 @@ namespace ToolKit
 
     EditorDirectionalLight::~EditorDirectionalLight()
     {
-      if (m_initialized)
-      {
-        m_initialized = false;
-        SafeDel(m_gizmo);
-      }
     }
 
     Entity* EditorDirectionalLight::Copy() const
@@ -60,8 +118,6 @@ namespace ToolKit
         return;
       }
 
-      m_initialized = true;
-
       // Light sphere
       std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.1f);
 
@@ -71,7 +127,8 @@ namespace ToolKit
         sphere->GetMeshComponent()->GetMeshVal()
       );
 
-      GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      mc->GetMeshVal()->m_material =
+        GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       mc->GetMeshVal()->CalculateAABB();
       AddComponent(mc);
 
@@ -85,35 +142,9 @@ namespace ToolKit
         mc->GetMeshVal()->m_subMeshes.push_back(mesh);
       }
 
+      m_gizmoMC = GetMeshComponent();
       m_gizmoActive = true;
-    }
-
-    void EditorDirectionalLight::EnableGizmo(bool enable)
-    {
-      if (enable != m_gizmoActive)
-      {
-        if (enable)
-        {
-          // Add submeshes to mesh component
-          MeshComponentPtr mc = GetComponent<MeshComponent>();
-
-          for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
-          {
-            MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
-            mc->GetMeshVal()->m_subMeshes.push_back(lbMesh);
-          }
-
-          m_gizmoActive = true;
-        }
-        else
-        {
-          // Remove submeshes from mesh component
-          MeshComponentPtr mc = GetComponent<MeshComponent>();
-          mc->GetMeshVal()->m_subMeshes.clear();
-
-          m_gizmoActive = false;
-        }
-      }
+      m_initialized = true;
     }
 
     EditorPointLight::EditorPointLight()
@@ -129,11 +160,6 @@ namespace ToolKit
 
     EditorPointLight::~EditorPointLight()
     {
-      if (m_initialized)
-      {
-        m_initialized = false;
-        SafeDel(m_gizmo);
-      }
     }
 
     Entity* EditorPointLight::Copy() const
@@ -159,8 +185,6 @@ namespace ToolKit
         return;
       }
 
-      m_initialized = true;
-
       // Light sphere
       std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(0.1f);
 
@@ -171,8 +195,8 @@ namespace ToolKit
       );
 
       MeshPtr compMesh = mc->GetMeshVal();
-      compMesh->m_material = GetMaterialManager()->
-        GetCopyOfUnlitColorMaterial();
+      compMesh->m_material =
+        GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       compMesh->CalculateAABB();
       AddComponent(mc);
 
@@ -186,37 +210,9 @@ namespace ToolKit
         compMesh->m_subMeshes.push_back(mesh);
       }
 
+      m_gizmoMC = GetMeshComponent();
       m_gizmoActive = true;
-    }
-
-    void EditorPointLight::EnableGizmo(bool enable)
-    {
-      if (enable != m_gizmoActive)
-      {
-        if (enable)
-        {
-          // Add submeshes to mesh component
-          MeshComponentPtr mc = GetComponent<MeshComponent>();
-
-          for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
-          {
-            mc->GetMeshVal()->m_subMeshes.push_back
-            (
-              lb->GetMeshComponent()->GetMeshVal()
-            );
-          }
-
-          m_gizmoActive = true;
-        }
-        else
-        {
-          // Remove submeshes from mesh component
-          MeshComponentPtr mc = GetComponent<MeshComponent>();
-          mc->GetMeshVal()->m_subMeshes.clear();
-
-          m_gizmoActive = false;
-        }
-      }
+      m_initialized = true;
     }
 
     EditorSpotLight::EditorSpotLight()
@@ -232,11 +228,6 @@ namespace ToolKit
 
     EditorSpotLight::~EditorSpotLight()
     {
-      if (m_initialized)
-      {
-        m_initialized = false;
-        SafeDel(m_gizmo);
-      }
     }
 
     Entity* EditorSpotLight::Copy() const
@@ -262,7 +253,6 @@ namespace ToolKit
         return;
       }
 
-      m_initialized = true;
       m_gizmo->InitGizmo(this);
 
       // Light sphere
@@ -275,8 +265,8 @@ namespace ToolKit
       );
 
       MeshPtr compMesh = mc->GetMeshVal();
-      compMesh->m_material = GetMaterialManager()->
-        GetCopyOfUnlitColorMaterial();
+      compMesh->m_material =
+        GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       compMesh->CalculateAABB();
       AddComponent(mc);
 
@@ -288,34 +278,9 @@ namespace ToolKit
         compMesh->m_subMeshes.push_back(mesh);
       }
 
+      m_gizmoMC = GetMeshComponent();
       m_gizmoActive = true;
-    }
-
-    void EditorSpotLight::EnableGizmo(bool enable)
-    {
-      if (enable != m_gizmoActive)
-      {
-        if (enable)
-        {
-          // Add submeshes to mesh component
-          MeshComponentPtr mc = GetComponent<MeshComponent>();
-          for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
-          {
-            MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
-            mc->GetMeshVal()->m_subMeshes.push_back(lbMesh);
-          }
-
-          m_gizmoActive = true;
-        }
-        else
-        {
-          // Remove submeshes from mesh component
-          MeshComponentPtr mc = GetComponent<MeshComponent>();
-          mc->GetMeshVal()->m_subMeshes.clear();
-
-          m_gizmoActive = false;
-        }
-      }
+      m_initialized = true;
     }
 
   }  // namespace Editor

@@ -159,20 +159,26 @@ namespace ToolKit
       void Render(Renderer* renderer, Camera* cam);
     };
 
+    class LightGizmoBase
+    {
+     public:
+      LightGizmoBase();
+      virtual ~LightGizmoBase();
 
-    class SpotLightGizmo : public Entity
+      virtual void InitGizmo(Light* light) = 0;
+      LineBatchRawPtrArray GetGizmoLineBatches();
+
+     protected:
+      LineBatchRawPtrArray m_gizmoLineBatches;
+    };
+
+    class SpotLightGizmo : public Entity, public LightGizmoBase
     {
      public:
       explicit SpotLightGizmo(SpotLight* light);
-      ~SpotLightGizmo();
-
-      void InitGizmo(SpotLight* light);
-
-      std::vector<LineBatch*> GetGizmoLineBatches();
+      void InitGizmo(Light* light) override;
 
      private:
-      std::vector<LineBatch*> m_gizmoLineBatches;
-
       int m_circleVertexCount;
       Vec3Array m_pnts;
       Vec3Array m_innerCirclePnts;
@@ -182,33 +188,23 @@ namespace ToolKit
       Mat4 m_rot;
     };
 
-    class DirectionalLightGizmo : public Entity
+    class DirectionalLightGizmo : public Entity, public LightGizmoBase
     {
      public:
       explicit DirectionalLightGizmo(DirectionalLight* light);
-      ~DirectionalLightGizmo();
-
-      void InitGizmo(DirectionalLight* light);
-      std::vector<LineBatch*> GetGizmoLineBatches();
+      void InitGizmo(Light* light) override;
 
      private:
-      std::vector<LineBatch*> m_gizmoLineBatches;
-
       Vec3Array m_pnts;
     };
 
-    class PointLightGizmo : public Entity
+    class PointLightGizmo : public Entity, public LightGizmoBase
     {
      public:
       explicit PointLightGizmo(PointLight* light);
-      ~PointLightGizmo();
-
-      void InitGizmo(PointLight* light);
-      std::vector<LineBatch*> GetGizmoLineBatches();
+      void InitGizmo(Light* light) override;
 
      private:
-      std::vector<LineBatch*> m_gizmoLineBatches;
-
       int m_circleVertexCount = 30;
       Vec3Array m_circlePntsXY;
       Vec3Array m_circlePntsYZ;
