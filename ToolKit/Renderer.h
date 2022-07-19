@@ -17,13 +17,16 @@ namespace ToolKit
    public:
     Renderer();
     ~Renderer();
+
     void RenderScene
     (
       const ScenePtr& scene,
       Viewport* viewport,
       LightRawPtrArray editor_lights
     );
+
     void RenderUI(const UILayerPtrArray& uiLayers, Viewport* viewport);
+
     void Render
     (
       Entity* ntt,
@@ -31,19 +34,23 @@ namespace ToolKit
       const LightRawPtrArray& editorLights =
       LightRawPtrArray()
     );
+
     void SetRenderState(const RenderState* const state);
+
     void SetRenderTarget
     (
       RenderTarget* renderTarget,
       bool clear = true,
       const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f }
     );
+
     void SwapRenderTarget
     (
       RenderTarget** renderTarget,
       bool clear = true,
       const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f }
     );
+
     void DrawFullQuad(ShaderPtr fragmentShader);
 
    private:
@@ -57,7 +64,8 @@ namespace ToolKit
     /**
     * Extracts blended entites from given entity array.
     * @param entities Entity array that the transparents will extracted from.
-    * @param blendedEntities Entity array that are going to be filled with transparents.
+    * @param blendedEntities Entity array that are going to be filled
+    * with transparents.
     */
     void GetTransparentEntites
     (
@@ -66,7 +74,7 @@ namespace ToolKit
     );
 
     /**
-    * Renders the entites immidately. No sorting applied.
+    * Renders the entities immediately. No sorting applied.
     * @param entities All entities to render.
     * @param cam Camera for rendering.
     * @param zoom Zoom amount of camera.
@@ -82,7 +90,8 @@ namespace ToolKit
     );
 
     /**
-    * Sorts and renders entities. For double-sided blended entites first render back, than renders front.
+    * Sorts and renders entities. For double-sided blended entities first
+    * render back, than renders front.
     * @param entities All entities to render.
     * @param cam Camera for rendering.
     * @param zoom Zoom amount of camera.
@@ -96,6 +105,7 @@ namespace ToolKit
       const LightRawPtrArray& editorLights =
       LightRawPtrArray()
     );
+
     void RenderSkinned(Drawable* object, Camera* cam);
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
@@ -105,6 +115,7 @@ namespace ToolKit
       Entity* entity,
       const LightRawPtrArray& lights
     );
+
     void SetProjectViewModel(Entity* ntt, Camera* cam);
     void BindProgram(ProgramPtr program);
     void LinkProgram(uint program, uint vertexP, uint fragmentP);
@@ -119,10 +130,12 @@ namespace ToolKit
     uint m_windowHeight = 0;
     Vec4 m_bgColor = { 0.2f, 0.2f, 0.2f, 1.0f };
     MaterialPtr m_overrideMat = nullptr;
+
     // Grid parameters
-    float m_gridCellSize = 0.1f, m_gridSize = 100.0f;
-    Vec3 m_gridHorizontalAxisColor = Vec3(1.0f, 0.0f, 0.0f);
-    Vec3 m_gridVerticalAxisColor = Vec3(0.0f, 0.0f, 1.0f);
+    float m_gridCellSize = 0.1f;
+    float m_gridSize = 100.0f;
+    Vec3 m_gridHorizontalAxisColor = X_AXIS;
+    Vec3 m_gridVerticalAxisColor = Z_AXIS;
 
    private:
     uint m_currentProgram = 0;

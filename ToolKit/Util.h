@@ -165,6 +165,24 @@ namespace ToolKit
   TK_API Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies);
   TK_API Entity* DeepInstantiate(Entity* root, EntityRawPtrArray& instances);
 
+  // Sort entities  by distance (from boundary center)
+  // in ascending order to camera. Accounts for isometric camera.
+  TK_API void StableSortByDistanceToCamera
+  (
+    EntityRawPtrArray& entities,
+    const Camera* cam
+  );
+
+  // Sort entities by their material's render state's priority in
+  // descending order.
+  TK_API void StableSortByMaterialPriority(EntityRawPtrArray& entities);
+
+  // If there is a material component, returns its material else
+  // returns mesh's material. If there is not a MaterialComponent, it will
+  // return the mesh's first material. In case of multisubmesh, there may be
+  // multiple materials. But they are ignored.
+  TK_API MaterialPtr GetRenderMaterial(Entity* entity);
+
   // Memory operations.
   ///////////////////////////////////////////////////////
   // Useful to force plugin modules to allocate from main toolkit module.

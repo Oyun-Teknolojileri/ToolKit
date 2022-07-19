@@ -51,7 +51,6 @@ namespace ToolKit
     GetTransparentEntites(entities, blendedEntities);
 
     RenderOpaque(entities, cam, viewport->m_zoom, editorLights);
-
     RenderTransparent(blendedEntities, cam, viewport->m_zoom, editorLights);
   }
 
@@ -596,51 +595,12 @@ namespace ToolKit
     const LightRawPtrArray& editorLights
   )
   {
-    // Sort transparent entities
-    if (cam->IsOrtographic())
-    {
-      auto sortFn = [](Entity* nt1, Entity* nt2) -> bool
-      {
-        float first = nt1->m_node->GetTranslation
-        (
-          TransformationSpace::TS_WORLD
-        ).z;
-        float second = nt2->m_node->GetTranslation
-        (
-          TransformationSpace::TS_WORLD
-        ).z;
+    StableSortByDistanceToCamera(entities, cam);
+    StableSortByMaterialPriority(entities);
 
-        return first < second;
-      };
-
-      std::stable_sort(entities.begin(), entities.end(), sortFn);
-    }
-    else
-    {
-      auto sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool
-      {
-        Vec3 camLoc = cam->m_node->GetTranslation
-        (
-          TransformationSpace::TS_WORLD
-        );
-        BoundingBox bb1 = ntt1->GetAABB(true);
-        float first = glm::length2(bb1.GetCenter() - camLoc);
-        BoundingBox bb2 = ntt2->GetAABB(true);
-        float second = glm::length2(bb2.GetCenter() - camLoc);
-        return second < first;
-      };
-      std::stable_sort(entities.begin(), entities.end(), sortFn);
-    }
-
-    // Render non-opaque entities
+    // Render transparent entities
     for (Entity* ntt : entities)
     {
-      Drawable* dw = static_cast<Drawable*>(ntt);
-      if (dw == nullptr)
-      {
-        continue;
-      }
-
       if (ntt->GetType() == EntityType::Entity_Billboard)
       {
         Billboard* billboard = static_cast<Billboard*> (ntt);
@@ -649,22 +609,16 @@ namespace ToolKit
 
       // For two sided materials,
       // first render back of transparent objects then render front
-      if
-        (
-        dw->GetMesh()->m_material->GetRenderState()->cullMode
-        == CullingType::TwoSided
-        )
+      MaterialPtr renderMaterial = GetRenderMaterial(ntt);
+      if (renderMaterial->GetRenderState()->cullMode == CullingType::TwoSided)
       {
-        dw->GetMesh()->m_material->GetRenderState()->cullMode
-          = CullingType::Front;
+        renderMaterial->GetRenderState()->cullMode = CullingType::Front;
         Render(ntt, cam, editorLights);
 
-        dw->GetMesh()->m_material->GetRenderState()->cullMode
-          = CullingType::Back;
+        renderMaterial->GetRenderState()->cullMode = CullingType::Back;
         Render(ntt, cam, editorLights);
 
-        dw->GetMesh()->m_material->GetRenderState()->cullMode
-          = CullingType::TwoSided;
+        renderMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
       }
       else
       {

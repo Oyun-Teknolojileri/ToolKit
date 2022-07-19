@@ -45,9 +45,9 @@
 			vec3 cameraGridPos = (InverseTransModel * vec4(CamData.pos, 1.0)).xyz;
 			o_cameraGridPos = cameraGridPos.xz;
 
-      vec4 v = vec4(o_gridPos.x, 0, o_gridPos.y, 1);
-      v.y -= cameraGridPos.y;
-      v = Model * v;
+			vec4 v = vec4(o_gridPos.x, 0, o_gridPos.y, 1);
+			v.y -= cameraGridPos.y;
+			v = Model * v;
 			o_viewDir = -v.xyz;
 
 			gl_Position = ProjectViewModel * vec4(vPosition, 1.0);

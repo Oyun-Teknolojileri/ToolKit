@@ -945,6 +945,87 @@ namespace ToolKit
     return cpy;
   }
 
+  TK_API void StableSortByDistanceToCamera
+  (
+    EntityRawPtrArray& entities,
+    const Camera* cam
+  )
+  {
+    std::function<bool(Entity*, Entity*)> sortFn =
+      [cam](Entity* ntt1, Entity* ntt2) -> bool
+    {
+      Vec3 camLoc = cam->m_node->GetTranslation
+      (
+        TransformationSpace::TS_WORLD
+      );
+
+      BoundingBox bb1 = ntt1->GetAABB(true);
+      float first = glm::length2(bb1.GetCenter() - camLoc);
+
+      BoundingBox bb2 = ntt2->GetAABB(true);
+      float second = glm::length2(bb2.GetCenter() - camLoc);
+
+      return second < first;
+    };
+
+    if (cam->IsOrtographic())
+    {
+      sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool
+      {
+        float first = ntt1->m_node->GetTranslation
+        (
+          TransformationSpace::TS_WORLD
+        ).z;
+
+        float second = ntt2->m_node->GetTranslation
+        (
+          TransformationSpace::TS_WORLD
+        ).z;
+
+        return first < second;
+      };
+    }
+
+    std::stable_sort(entities.begin(), entities.end(), sortFn);
+  }
+
+  TK_API void StableSortByMaterialPriority(EntityRawPtrArray& entities)
+  {
+    std::stable_sort
+    (
+      entities.begin(),
+      entities.end(),
+      [](Entity* a, Entity* b) -> bool
+      {
+        MaterialComponentPtr matA = a->GetMaterialComponent();
+        MaterialComponentPtr matB = b->GetMaterialComponent();
+        if (matA && matB)
+        {
+          int pA = matA->GetMaterialVal()->GetRenderState()->priority;
+          int pB = matB->GetMaterialVal()->GetRenderState()->priority;
+          return pA > pB;
+        }
+
+        return false;
+      }
+    );
+  }
+
+  TK_API MaterialPtr GetRenderMaterial(Entity* entity)
+  {
+    MaterialPtr renderMat = nullptr;
+    if (MaterialComponentPtr matCom = entity->GetMaterialComponent())
+    {
+      renderMat = matCom->GetMaterialVal();
+    }
+    else if (MeshComponentPtr meshCom = entity->GetMeshComponent())
+    {
+      renderMat = meshCom->GetMeshVal()->m_material;
+    }
+
+    return renderMat;
+  }
+
   void* TKMalloc(size_t sz)
   {
     return malloc(sz);

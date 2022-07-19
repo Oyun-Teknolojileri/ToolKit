@@ -54,13 +54,20 @@ namespace ToolKit
     {
       AssignManagerReporters();
 
+      // Create editor objects.
       m_cursor = new Cursor();
       m_origin = new Axis3d();
-      static uint g_3dGridSize = 100000;
-      m_grid = new Grid(UVec2(g_3dGridSize));
-      m_grid->Resize(UVec2(g_3dGridSize), AxisLabel::ZX, 0.025);
-      m_grid->GetMeshComponent()->Init(false);
-      Generate2dGrid();
+
+      uint gridSize = 100000;
+      m_grid = new Grid(UVec2(gridSize));
+      m_grid->Resize(UVec2(gridSize), AxisLabel::ZX, 0.025f);
+
+      m_2dGrid = new Grid(UVec2(g_app->m_playWidth, g_app->m_playHeight));
+      m_2dGrid->Resize
+      (
+        UVec2(g_app->m_playWidth, g_app->m_playHeight),
+        AxisLabel::XY, 10.0
+      );  // Generate grid cells 10 x 10
 
       // Lights and camera.
       m_lightMaster = new Node();
@@ -282,12 +289,11 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
-          Camera* cam = viewport->GetCamera();
-
           // Render scene.
           m_renderer->RenderScene(GetCurrentScene(), viewport, gameLights);
 
           // Render grid.
+          Camera* cam = viewport->GetCamera();
           auto gridDrawFn = [this, &cam](Grid* grid) -> void
           {
             m_renderer->m_gridCellSize = grid->m_gridCellSize;
@@ -1609,14 +1615,6 @@ Fail:
       scene->m_newScene = true;
       GetSceneManager()->Manage(scene);
       SetCurrentScene(scene);
-    }
-
-    void App::Generate2dGrid()
-    {
-      m_2dGrid = new Grid(UVec2(g_app->m_playWidth, g_app->m_playHeight));
-      m_2dGrid->Resize(
-        UVec2(g_app->m_playWidth, g_app->m_playHeight),
-        AxisLabel::XY, 10.0);  // Generate grid cells 10 x 10
     }
 
     void DebugMessage(const String& msg)

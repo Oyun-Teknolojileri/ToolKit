@@ -14,34 +14,40 @@ namespace ToolKit
     Grid::Grid(UVec2 size)
     {
       AddComponent(new MeshComponent());
+      AddComponent(new MaterialComponent());
 
       // Create grid material.
       if (!GetMaterialManager()->Exist(g_gridMaterialName))
       {
-        m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-        m_material->UnInit();
-        m_material->GetRenderState()->blendFunction =
-          BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-        m_material->GetRenderState()->cullMode = CullingType::TwoSided;
+        MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+        material->UnInit();
+        material->GetRenderState()->blendFunction =
+        BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
 
-        m_material->m_vertexShader =
-          GetShaderManager()->Create<Shader>
-          (
-            ShaderPath("gridVertex.shader", true)
-          );
-        m_material->m_fragmetShader =
-          GetShaderManager()->Create<Shader>
-          (
-            ShaderPath("gridFragment.shader", true)
-          );
+        material->GetRenderState()->cullMode = CullingType::TwoSided;
 
-        m_material->Init();
-        GetMaterialManager()->m_storage[g_gridMaterialName] = m_material;
+        material->m_vertexShader =
+        GetShaderManager()->Create<Shader>
+        (
+          ShaderPath("gridVertex.shader", true)
+        );
+
+        material->m_fragmetShader =
+        GetShaderManager()->Create<Shader>
+        (
+          ShaderPath("gridFragment.shader", true)
+        );
+
+        material->GetRenderState()->priority = 100;
+        material->Init();
+
+        GetMaterialManager()->m_storage[g_gridMaterialName] = material;
       }
-      else
-      {
-        m_material = GetMaterialManager()->Create<Material>(g_gridMaterialName);
-      }
+
+      GetMaterialComponent()->SetMaterialVal
+      (
+        GetMaterialManager()->Create<Material>(g_gridMaterialName)
+      );
 
       // Create grid mesh.
       Resize(size);
@@ -61,66 +67,44 @@ namespace ToolKit
       switch (axis)
       {
         case AxisLabel::XY:
-        m_node->SetOrientation
-        (
-          glm::angleAxis(glm::radians(90.0f), Z_AXIS) *
-          RotationTo(X_AXIS, Y_AXIS)
-        );
-        m_horizontalAxisColor = g_gridAxisRed;
-        m_verticalAxisColor = g_gridAxisGreen;
+          m_node->SetOrientation
+          (
+            glm::angleAxis(glm::radians(90.0f), Z_AXIS) *
+            RotationTo(X_AXIS, Y_AXIS)
+          );
+          m_horizontalAxisColor = g_gridAxisRed;
+          m_verticalAxisColor = g_gridAxisGreen;
         break;
         case AxisLabel::ZX:
-        m_node->SetOrientation(RotationTo(Z_AXIS, Y_AXIS));
-        m_horizontalAxisColor = g_gridAxisRed;
-        m_verticalAxisColor = g_gridAxisBlue;
+          m_node->SetOrientation(RotationTo(Z_AXIS, Y_AXIS));
+          m_horizontalAxisColor = g_gridAxisRed;
+          m_verticalAxisColor = g_gridAxisBlue;
         break;
         case AxisLabel::YZ:
-        m_node->SetOrientation(
-          glm::angleAxis(glm::radians(90.0f), Y_AXIS) *
-          RotationTo(X_AXIS, Y_AXIS)
-        );
-        m_horizontalAxisColor = g_gridAxisGreen;
-        m_verticalAxisColor = g_gridAxisBlue;
+          m_node->SetOrientation
+          (
+            glm::angleAxis(glm::radians(90.0f), Y_AXIS) *
+            RotationTo(X_AXIS, Y_AXIS)
+          );
+          m_horizontalAxisColor = g_gridAxisGreen;
+          m_verticalAxisColor = g_gridAxisBlue;
         break;
       }
 
-      MeshPtr parentMesh = GetMeshComponent()->GetMeshVal();
-      parentMesh->UnInit();
       glm::vec2 scale = glm::vec2(m_size) * glm::vec2(0.5f);
 
-      Vec3Array offsets =
+      Quad quad;
+      MeshPtr mesh = quad.GetMeshComponent()->GetMeshVal();
+      for (int j = 0; j < 4; j++)
       {
-        Vec3(-scale.x * 0.5f, scale.y * 0.5f, 0.0f),
-        Vec3(scale.x * 0.5f, scale.y * 0.5f, 0.0f),
-        Vec3(scale.x * 0.5f, -scale.y * 0.5f, 0.0f),
-        Vec3(-scale.x * 0.5f, -scale.y * 0.5f, 0.0f)
-      };
-
-      for (int i = 0; i < 4; i++)
-      {
-        Quad quad;
-        MeshPtr mesh = quad.GetMeshComponent()->GetMeshVal();
-        for (int j = 0; j < 4; j++)
-        {
-          Vertex& clientVertex = mesh->m_clientSideVertices[j];
-          clientVertex.pos = (clientVertex.pos * glm::vec3(scale, 0.0f)) +
-            offsets[i];
-          clientVertex.tex = clientVertex.pos.xy * m_gridCellSize;
-        }
-
-        mesh->m_material = m_material;
-        if (i == 0)
-        {
-          GetMeshComponent()->SetMeshVal(mesh);
-          parentMesh = mesh;
-        }
-        else
-        {
-          parentMesh->m_subMeshes.push_back(mesh);
-        }
+        Vertex& clientVertex = mesh->m_clientSideVertices[j];
+        clientVertex.pos = (clientVertex.pos * glm::vec3(scale, 0.0f));
+        clientVertex.tex = clientVertex.pos.xy * m_gridCellSize;
       }
 
-      parentMesh->CalculateAABB();
+      mesh->CalculateAABB();
+      mesh->Init();
+      GetMeshComponent()->SetMeshVal(mesh);
     }
 
     bool Grid::HitTest(const Ray& ray, Vec3& pos)

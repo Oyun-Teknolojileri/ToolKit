@@ -128,7 +128,6 @@ namespace ToolKit
       void CreateSimulationWindow();
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
-      void Generate2dGrid();
 
      public:
       // UI elements.

@@ -66,7 +66,9 @@ namespace ToolKit
     Quaternion* orientation,
     Vec3* scale
   );
+
   TK_API bool IsAffine(const Mat4& transform);
+
   TK_API void QDUDecomposition
   (
     const Mat3& transform,
@@ -74,6 +76,7 @@ namespace ToolKit
     Vec3& kD,
     Vec3& kU
   );
+
   TK_API void ExtractAxes
   (
     const Mat4& transform,
@@ -82,6 +85,7 @@ namespace ToolKit
     Vec3& z,
     bool normalize = true
   );
+
   TK_API Frustum ExtractFrustum(const Mat4& projectViewModel, bool normalize);
 
   // Intersections
@@ -100,6 +104,7 @@ namespace ToolKit
     float sphereRadius,
     const Vec3& vertex
   );
+
   TK_API bool SphereSphereIntersection
   (
     const Vec3& spherePos,
@@ -107,18 +112,22 @@ namespace ToolKit
     const Vec3& spherePos2,
     float sphereRadius2
   );
+
   TK_API bool BoxBoxIntersection
   (
     const BoundingBox& box1,
     const BoundingBox& box2
   );
+
   TK_API bool BoxPointIntersection(const BoundingBox& box, const Vec3& point);
+
   TK_API bool RayBoxIntersection
   (
     const Ray& ray,
     const BoundingBox& box,
     float& t
   );
+
   TK_API bool RayTriangleIntersection
   (
     const Ray& ray,
@@ -127,29 +136,34 @@ namespace ToolKit
     const Vec3& v2,
     float& t
   );
+
   TK_API bool RayMeshIntersection
   (
     class Mesh* const mesh,
     const Ray& ray,
     float& t
   );
+
   TK_API IntersectResult FrustumBoxIntersection
   (
     const Frustum& frustum,
     const BoundingBox& box
   );  // 0 outside, 1 inside, 2 intersect
+
   TK_API bool RayPlaneIntersection
   (
     const Ray& ray,
     const PlaneEquation& plane,
     float& t
   );
+
   TK_API bool RaySphereIntersection
   (
     const Ray& ray,
     const BoundingSphere& sphere,
     float& t
   );
+
   // Line is same as ray but it is infinite on both sides.
   // Unless ray is parallel to plane, it will always yield a result.
   TK_API bool LinePlaneIntersection
@@ -158,10 +172,12 @@ namespace ToolKit
     const PlaneEquation& plane,
     float& t
   );
+
   TK_API Vec3 PointOnRay(const Ray& ray, float t);
 
   // Geometric Operations
   //////////////////////////////////////////
+
   TK_API void NormalizePlaneEquation(PlaneEquation& plane);
   TK_API void TransformAABB(BoundingBox& box, const Mat4& transform);
   TK_API void GetCorners(const BoundingBox& box, Vec3Array& corners);
@@ -173,6 +189,7 @@ namespace ToolKit
 
   // Conversions and Interpolation
   //////////////////////////////////////////
+
   TK_API Vec3 Interpolate(const Vec3& vec1, const Vec3& vec2, float ratio);
   TK_API void ToSpherical(Vec3 p, float& r, float& zenith, float& azimuth);
   TK_API Vec3 ToCartesian(float r, float zenith, float azimuth);
@@ -183,9 +200,11 @@ namespace ToolKit
 
   // Comparison
   //////////////////////////////////////////
+
   template<typename T>
   bool VecAllEqual(const T& a, const T& b)
   {
     return glm::all(glm::equal<T>(a, b));
   }
+
 }  // namespace ToolKit
