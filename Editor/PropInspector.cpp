@@ -121,7 +121,7 @@ namespace ToolKit
           DropSubZone
           (
             uniqueName,
-            static_cast<uint> (UI::m_materialIcon->m_id),
+            static_cast<uint> (UI::m_materialIcon->m_textureId),
             file,
             [&var](const DirectoryEntry& entry) -> void
             {
@@ -150,7 +150,7 @@ namespace ToolKit
           DropSubZone
           (
             "Mesh##" + std::to_string(mref->m_id),
-            static_cast<uint> (UI::m_meshIcon->m_id),
+            static_cast<uint> (UI::m_meshIcon->m_textureId),
             mref->GetFile(),
             [](const DirectoryEntry& entry) -> void
             {
@@ -194,65 +194,76 @@ namespace ToolKit
         }
       }
 
-      if (ImGui::BeginTable("##DropZone", 2))
+      if (!dropName.empty())
       {
-        ImGui::TableNextRow();
-        ImGui::TableNextColumn();
-
-        if (!dropName.empty())
-        {
-          ImGui::Text(dropName.c_str());
-        }
-
-        ImGui::Image
-        (
-          reinterpret_cast<void*>((intptr_t)iconId),
-          ImVec2(48.0f, 48.0f),
-          ImVec2(0.0f, 0.0f),
-          texCoords
-        );
-
-        if (ImGui::BeginDragDropTarget())
-        {
-          if
-          (
-            const ImGuiPayload* payload =
-            ImGui::AcceptDragDropPayload("BrowserDragZone")
-          )
-          {
-            IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
-            DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
-            dropAction(entry);
-          }
-
-          ImGui::EndDragDropTarget();
-        }
-
-        UI::HelpMarker(TKLoc + file, "Drop zone", 0.1f);
-        ImGui::TableNextColumn();
-
-        String fullPath = dirEnt.GetFullPath();
-        ImGui::Text("%s", fullPath.c_str());
-        UI::HelpMarker(TKLoc + file, fullPath.c_str(), 0.1f);
-
-        ImGui::TableNextRow();
-        ImGui::TableNextColumn();
-        ImGui::TableNextColumn();
-
-        if (ImGui::Button("Reload"))
-        {
-          if (ResourceManager* man = dirEnt.GetManager())
-          {
-            if (man->Exist(file))
-            {
-              man->m_storage[file]->Reload();
-              man->m_storage[file]->Init(false);
-            }
-          }
-        }
-
-        ImGui::EndTable();
+        ImGui::Text(dropName.c_str());
       }
+
+      bool clicked = ImGui::ImageButton
+      (
+        reinterpret_cast<void*>((intptr_t)iconId),
+        ImVec2(48.0f, 48.0f),
+        ImVec2(0.0f, 0.0f),
+        texCoords
+      );
+
+      if (ImGui::BeginDragDropTarget())
+      {
+        if
+        (
+          const ImGuiPayload* payload =
+          ImGui::AcceptDragDropPayload("BrowserDragZone")
+        )
+        {
+          IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
+          DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
+          dropAction(entry);
+        }
+
+        ImGui::EndDragDropTarget();
+      }
+
+      // Show file info.
+      String info = "Drop zone";
+      if (!file.empty() && !dirEnt.m_fileName.empty())
+      {
+        info = "";
+        if (ResourceManager* man = dirEnt.GetManager())
+        {
+          auto textureRepFn = [&info, file](const TexturePtr& t) -> void
+          {
+            if (t)
+            {
+              String file, ext;
+              DecomposePath(t->GetFile(), nullptr, &file, &ext);
+
+              info += "Texture: " + file + ext + "\n";
+              info += "Width: " + std::to_string(t->m_width) + "\n";
+              info += "Height: " + std::to_string(t->m_height);
+            }
+          };
+
+          if (man->m_type == ResourceType::Material)
+          {          
+            MaterialPtr mr = man->Create<Material>(file);
+            if (clicked)
+            {
+              g_app->GetMaterialInspector()->m_material = mr;
+            }
+              
+            info += "File: " + dirEnt.m_fileName + dirEnt.m_ext + "\n";
+            textureRepFn(mr->m_diffuseTexture);
+          }
+
+          if (man->m_type == ResourceType::Texture)
+          {
+            TexturePtr t = man->Create<Texture>(file);
+            textureRepFn(t);
+          }
+        }
+      }
+
+      UI::HelpMarker(TKLoc + file, info.c_str(), 0.1f);
     }
 
     void View::DropSubZone
@@ -842,7 +853,13 @@ namespace ToolKit
         entry->m_dirty = true;
       };
 
-      if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
+      String name, ext;
+      DecomposePath(entry->GetFile(), nullptr, &name, &ext);
+
+      ImGui::Text("Material: %s%s", name.c_str(), ext.c_str());
+      ImGui::Separator();
+
+      //if (ImGui::CollapsingHeader(name.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
       {
         Vec4 col = Vec4(entry->m_color, entry->m_alpha);
         if
