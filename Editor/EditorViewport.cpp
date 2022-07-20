@@ -857,7 +857,7 @@ namespace ToolKit
     {
       Vec3 lastDragMeshPos = Vec3(0.0f);
 
-      // Find the point of the curser in 3D coordinates
+      // Find the point of the cursor in 3D coordinates
       Ray ray = RayFromMousePosition();
       EntityIdArray ignoreList;
       if (meshLoaded)
@@ -874,7 +874,6 @@ namespace ToolKit
       else
       {
         // Locate the mesh to grid
-        Ray ray = RayFromMousePosition();
         lastDragMeshPos = PointOnRay(ray, 5.0f);
         g_app->m_grid->HitTest(ray, lastDragMeshPos);
       }
