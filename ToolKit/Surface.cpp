@@ -156,7 +156,6 @@ namespace ToolKit
       [this](Value& oldVal, Value& newVal) -> void
     {
       GetMaterialComponent()->SetMaterialVal(std::get<MaterialPtr>(newVal));
-      UpdateGeometry(true);
     };
   }
 
