@@ -108,6 +108,9 @@
     <ClCompile Include="Action.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="MaterialInspector.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -202,6 +205,9 @@
     </ClInclude>
     <ClInclude Include="Action.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialInspector.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,12 @@
 #include "ConsoleWindow.h"
+
+#include <filesystem>
+#include <vector>
+#include <algorithm>
+#include <memory>
+#include <string>
+
+#include "MaterialInspector.h"
 #include "FolderWindow.h"
 #include "GlobalDef.h"
 #include "Gizmo.h"
@@ -8,12 +16,6 @@
 #include "Light.h"
 #include "DirectionComponent.h"
 #include "DebugNew.h"
-
-#include <filesystem>
-#include <vector>
-#include <algorithm>
-#include <memory>
-#include <string>
 
 namespace ToolKit
 {

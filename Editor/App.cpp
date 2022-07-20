@@ -22,13 +22,13 @@
 #include "FolderWindow.h"
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
+#include "MaterialInspector.h"
 #include "PluginWindow.h"
 #include "EditorViewport2d.h"
 #include "DirectionComponent.h"
 #include "Action.h"
 #include "GL/glew.h"
 #include "DebugNew.h"
-
 
 namespace ToolKit
 {

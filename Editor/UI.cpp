@@ -15,6 +15,7 @@
 #include "OverlayUI.h"
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
+#include "MaterialInspector.h"
 #include "Util.h"
 #include "PluginWindow.h"
 #include "Action.h"
