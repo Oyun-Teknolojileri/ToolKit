@@ -45,6 +45,21 @@ namespace ToolKit
 
     SetRenderTarget(viewport->m_viewportImage);
 
+    // Dropout non visible & drawable entities.
+    entities.erase
+    (
+      std::remove_if
+      (
+        entities.begin(),
+        entities.end(),
+        [](Entity* ntt) -> bool
+        {
+          return !ntt->GetVisibleVal() || !ntt->IsDrawable();
+        }
+      ),
+      entities.end()
+    );
+
     FrustumCull(entities, cam);
 
     EntityRawPtrArray blendedEntities;
@@ -574,16 +589,13 @@ namespace ToolKit
     // Render opaque objects
     for (Entity* ntt : entities)
     {
-      if (ntt->IsDrawable() && ntt->GetVisibleVal())
+      if (ntt->GetType() == EntityType::Entity_Billboard)
       {
-        if (ntt->GetType() == EntityType::Entity_Billboard)
-        {
-          Billboard* billboard = static_cast<Billboard*> (ntt);
-          billboard->LookAt(cam, zoom);
-        }
-
-        Render(ntt, cam, editorLights);
+        Billboard* billboard = static_cast<Billboard*> (ntt);
+        billboard->LookAt(cam, zoom);
       }
+
+      Render(ntt, cam, editorLights);
     }
   }
 
