@@ -656,16 +656,21 @@ namespace ToolKit
         (
           { DefaultPath(), "Editor.settings" }
         );
+
         std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>
-          (
+        (
           settingsFile.c_str()
-          );
+        );
 
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
 
-        XmlNode* app = Query(lclDoc.get(), { "App" });
-        CreateWindows(app);
+        // Prevent loading last scene.
+        Project pj = m_workspace.GetActiveProject();
+        m_workspace.SetScene("");
+
+        DeSerialize(lclDoc.get(), nullptr);
+        m_workspace.SetScene(pj.scene);
 
         settingsFile = ConcatPaths({ DefaultPath(), "defaultUI.ini" });
         ImGui::LoadIniSettingsFromDisk(settingsFile.c_str());
@@ -770,31 +775,31 @@ namespace ToolKit
           switch ((Window::Type)type)
           {
             case Window::Type::Viewport:
-            wnd = new EditorViewport(wndNode);
+              wnd = new EditorViewport(wndNode);
             break;
             case Window::Type::Console:
-            wnd = new ConsoleWindow(wndNode);
+              wnd = new ConsoleWindow(wndNode);
             break;
             case Window::Type::Outliner:
-            wnd = new OutlinerWindow(wndNode);
+              wnd = new OutlinerWindow(wndNode);
             break;
             case Window::Type::Browser:
-            wnd = new FolderWindow(wndNode);
+              wnd = new FolderWindow(wndNode);
             break;
             case Window::Type::Inspector:
-            wnd = new PropInspector(wndNode);
+              wnd = new PropInspector(wndNode);
             break;
             case Window::Type::MaterialInspector:
-            wnd = new MaterialInspector(wndNode);
+              wnd = new MaterialInspector(wndNode);
             break;
             case Window::Type::PluginWindow:
-            wnd = new PluginWindow(wndNode);
+              wnd = new PluginWindow(wndNode);
             break;
             case Window::Type::Viewport2d:
-            wnd = new EditorViewport2d(wndNode);
+              wnd = new EditorViewport2d(wndNode);
             break;
             default:
-            assert(false);
+              assert(false);
             break;
           }
 
@@ -1105,31 +1110,31 @@ Fail:
       )
       {
         DeSerialize(nullptr, nullptr);
-
-        // Restore window.
-        SDL_SetWindowSize
-        (
-          g_window,
-          m_renderer->m_windowWidth,
-          m_renderer->m_windowHeight
-        );
-        SDL_SetWindowPosition
-        (
-          g_window,
-          SDL_WINDOWPOS_CENTERED,
-          SDL_WINDOWPOS_CENTERED
-        );
-
-        if (m_windowMaximized)
-        {
-          SDL_MaximizeWindow(g_window);
-        }
-
         UI::InitSettings();
       }
       else
       {
         ResetUI();
+      }
+
+      // Restore app window.
+      SDL_SetWindowSize
+      (
+        g_window,
+        m_renderer->m_windowWidth,
+        m_renderer->m_windowHeight
+      );
+
+      SDL_SetWindowPosition
+      (
+        g_window,
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED
+      );
+
+      if (m_windowMaximized)
+      {
+        SDL_MaximizeWindow(g_window);
       }
     }
 
