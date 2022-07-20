@@ -36,5 +36,5 @@ namespace ToolKit
       MaterialView* m_view;
     };
 
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

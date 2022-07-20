@@ -243,13 +243,13 @@ namespace ToolKit
           };
 
           if (man->m_type == ResourceType::Material)
-          {          
+          {
             MaterialPtr mr = man->Create<Material>(file);
             if (clicked)
             {
               g_app->GetMaterialInspector()->m_material = mr;
             }
-              
+
             info += "File: " + dirEnt.m_fileName + dirEnt.m_ext + "\n";
             textureRepFn(mr->m_diffuseTexture);
           }

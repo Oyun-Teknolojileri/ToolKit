@@ -278,5 +278,5 @@ namespace ToolKit
       ModShortCutSignals({ SDL_SCANCODE_DELETE });
     }
 
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit
