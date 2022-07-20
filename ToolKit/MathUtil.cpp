@@ -178,10 +178,10 @@ namespace ToolKit
   void ExtractAxes
   (
     const Mat4& transform,
-   Vec3& x,
-   Vec3& y,
-   Vec3& z,
-   bool normalize
+    Vec3& x,
+    Vec3& y,
+    Vec3& z,
+    bool normalize
   ) {
     x = glm::column(transform, 0);
     y = glm::column(transform, 1);
@@ -407,7 +407,8 @@ namespace ToolKit
         [&updateHit, &t, &closestPickedDistance, &ray, &hit](Face& face)
         {
           float dist = FLT_MAX;
-          if (
+          if
+          (
             RayTriangleIntersection
             (
               ray,
@@ -431,7 +432,8 @@ namespace ToolKit
       for (const Face& face : mesh->m_faces)
       {
         float dist = FLT_MAX;
-        if (
+        if
+        (
          RayTriangleIntersection
          (
            ray,
@@ -697,7 +699,8 @@ namespace ToolKit
 
   float SignedDistance(const PlaneEquation& plane, const Vec3& pnt)
   {
-    assert(
+    assert
+    (
      glm::isNormalized(plane.normal, 0.0001f) &&
      "Normalized vector expected."
     );
@@ -710,7 +713,8 @@ namespace ToolKit
 
   Vec3 ProjectPointOntoPlane(const PlaneEquation& plane, const Vec3& pnt)
   {
-    assert(
+    assert
+    (
      glm::isNormalized(plane.normal, 0.0001f) &&
      "Normalized vector expected."
     );
@@ -732,7 +736,8 @@ namespace ToolKit
 
   Vec3 ToCartesian(float r, float zenith, float azimuth)
   {
-    return Vec3(
+    return Vec3
+    (
      r * glm::sin(zenith) * glm::sin(azimuth),
      r * glm::cos(zenith),
      r * glm::sin(zenith) * glm::cos(azimuth)
