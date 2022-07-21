@@ -43,7 +43,7 @@ namespace ToolKit
     /**
     * Auto generated code for type information.
     */
-    TKResouceType(Animation);
+    TKResourceType(Animation);
 
     /**
     * Empty constructor.
@@ -96,6 +96,11 @@ namespace ToolKit
 
     /** Reverses the animation. */
     void Reverse();
+
+    /**
+    * Save animation to disk
+    */
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
 
    protected:
     void CopyTo(Resource* other) override;

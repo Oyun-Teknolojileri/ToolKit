@@ -21,7 +21,7 @@ namespace ToolKit
   class TK_API Skeleton : public Resource
   {
    public:
-    TKResouceType(Skeleton)
+    TKResourceType(Skeleton)
 
     Skeleton();
     explicit Skeleton(String file);

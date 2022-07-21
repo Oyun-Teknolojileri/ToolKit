@@ -178,6 +178,72 @@ namespace ToolKit
 
     m_loaded = true;
   }
+  void Animation::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* container = CreateXmlNode(doc, "anim", parent);
+
+    char* fpsValueStr = doc->allocate_string(std::to_string(m_fps).c_str());
+    XmlAttribute* fpsAttrib = doc->allocate_attribute
+    (
+      "fps",
+      fpsValueStr
+    );
+    container->append_attribute(fpsAttrib);
+
+    char* durationValueStr = doc->allocate_string
+    (
+      std::to_string(m_duration).c_str()
+    );
+    XmlAttribute* durAttrib = doc->allocate_attribute
+    (
+      "duration",
+      durationValueStr
+    );
+    container->append_attribute(durAttrib);
+
+    BoneKeyArrayMap::const_iterator iterator;
+    for (auto const& [boneName, keys] : m_keys)
+    {
+      XmlNode* boneNode = CreateXmlNode(doc, "node", container);
+
+      boneNode->append_attribute
+      (
+        doc->allocate_attribute("name", boneName.c_str())
+      );
+
+      for (uint keyIndex = 0; keyIndex < keys.size(); keyIndex++)
+      {
+        XmlNode* keyNode = CreateXmlNode(doc, "key", boneNode);
+        const Key& key = keys[keyIndex];
+
+        keyNode->append_attribute
+        (
+          doc->allocate_attribute("frame", std::to_string(key.m_frame).c_str())
+        );
+
+        WriteVec
+        (
+          CreateXmlNode(doc, "translation", keyNode),
+          doc,
+          key.m_position
+        );
+
+        WriteVec
+        (
+          CreateXmlNode(doc, "scale", keyNode),
+          doc,
+          key.m_scale
+        );
+
+        WriteVec
+        (
+          CreateXmlNode(doc, "rotation", keyNode),
+          doc,
+          key.m_rotation
+        );
+      }
+    }
+  }
 
   void Animation::Init(bool flushClientSideArray)
   {

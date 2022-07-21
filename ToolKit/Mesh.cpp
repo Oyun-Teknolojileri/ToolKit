@@ -57,15 +57,21 @@ namespace ToolKit
 
   void Mesh::UnInit()
   {
-    GLuint buffers[2] = { m_vboIndexId, m_vboVertexId };
-    glDeleteBuffers(2, buffers);
+    // If mesh class is only used to serialize/deserialize (nothing GPU related)
+    //  then GPU buffers may not be initialized, so don't need to call these
+    if (m_initiated)
+    {
+      GLuint buffers[2] = { m_vboIndexId, m_vboVertexId };
+      glDeleteBuffers(2, buffers);
+      glDeleteVertexArrays(1, &m_vaoId);
+    }
     m_vboVertexId = 0;
     m_vboIndexId = 0;
 
-    glDeleteVertexArrays(1, &m_vaoId);
     m_vaoId = 0;
 
     m_subMeshes.clear();
+
 
     m_initiated = false;
   }

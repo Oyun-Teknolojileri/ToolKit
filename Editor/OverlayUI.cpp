@@ -528,12 +528,14 @@ namespace ToolKit
       EditorViewport2d* editorViewport =
         reinterpret_cast<EditorViewport2d*>(m_owner);
       ImGui::TableSetColumnIndex(nextItemIndex++);
-      if (
+      if
+      (
         ImGui::ImageButton
         (
-        Convert2ImGuiTexture(UI::m_viewZoomIcon),
-        ImVec2(16, 16)
-        ))
+          Convert2ImGuiTexture(UI::m_viewZoomIcon),
+          ImVec2(16, 16)
+        )
+      )
       {
         editorViewport->m_zoomPercentage = 100;
       }
@@ -566,12 +568,14 @@ namespace ToolKit
 
 
       ImGui::TableSetColumnIndex(nextItemIndex++);
-      if (
+      if
+      (
         ImGui::ImageButton
         (
-        (ImTextureID)UI::m_gridIcon->m_textureId, ImVec2(18, 18)
+          Convert2ImGuiTexture(UI::m_gridIcon),
+          ImVec2(18, 18)
         )
-        )
+      )
       {
         ImGui::OpenPopup("##GridMenu");
       }

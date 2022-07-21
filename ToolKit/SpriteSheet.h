@@ -21,7 +21,7 @@ namespace ToolKit
   class TK_API SpriteSheet : public Resource
   {
    public:
-    TKResouceType(SpriteSheet)
+    TKResourceType(SpriteSheet)
 
     SpriteSheet();
     explicit SpriteSheet(String file);

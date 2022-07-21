@@ -11,7 +11,7 @@ namespace ToolKit
   class TK_API Texture : public Resource
   {
    public:
-    TKResouceType(Texture)
+    TKResourceType(Texture)
 
     Texture();
     explicit Texture(String file);
@@ -35,7 +35,7 @@ namespace ToolKit
   class TK_API CubeMap : public Texture
   {
    public:
-    TKResouceType(CubeMap)
+    TKResourceType(CubeMap)
 
     CubeMap();
     explicit CubeMap(String file);
@@ -65,7 +65,7 @@ namespace ToolKit
   class TK_API RenderTarget : public Texture
   {
    public:
-    TKResouceType(RenderTarget)
+    TKResourceType(RenderTarget)
 
     RenderTarget();
     RenderTarget

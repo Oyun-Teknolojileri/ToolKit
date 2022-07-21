@@ -21,7 +21,7 @@ namespace ToolKit
     };
 
    public:
-    TKResouceType(Scene)
+    TKResourceType(Scene)
 
     Scene();
     explicit Scene(String file);

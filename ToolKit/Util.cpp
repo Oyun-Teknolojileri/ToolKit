@@ -362,26 +362,34 @@ namespace ToolKit
       exist = path.find(root, 0);
       toolKit = true;
     }
-
-    if (exist != String::npos)
+    else
     {
-      String rel = path.substr(root.length() + 1);
-      // Extract the root layer. Mesh, Texture ect...
-      exist = rel.find(GetPathSeparator());
-      if (exist != String::npos)
+      // If path isn't absolute
+      if (!root.length())
       {
-        rel = rel.substr(exist + 1);
+        return path;
       }
-
-      if (toolKit)
+      else
       {
-        //  Any relative path starting with ToolKit root directory
-        //  will be search in the default path.
-        rel = ConcatPaths({ "ToolKit", rel });
-      }
+        String rel = path.substr(root.length() + 1);
+        // Extract the root layer. Mesh, Texture ect...
+        exist = rel.find(GetPathSeparator());
+        if (exist != String::npos)
+        {
+          rel = rel.substr(exist + 1);
+        }
 
-      return rel;
+        if (toolKit)
+        {
+          //  Any relative path starting with ToolKit root directory
+          //  will be search in the default path.
+          rel = ConcatPaths({ "ToolKit", rel });
+        }
+
+        return rel;
+      }
     }
+
 
     return path;
   }

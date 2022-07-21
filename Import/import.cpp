@@ -1,3 +1,5 @@
+#include <assert.h>
+#include <rapidxml_ext.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -6,7 +8,6 @@
 #include <utility>
 #include <algorithm>
 #include <string>
-#include <assert.h>
 #include <filesystem>
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
@@ -14,26 +15,26 @@
 #include "assimp/DefaultLogger.hpp"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+#include <Util.h>
+#include <ToolKit.h>
+#include <rapidxml.hpp>
 
-using namespace std;
+
+using std::string;
+using std::vector;
+using std::unordered_map;
+using std::to_string;
+using std::ifstream;
+using std::ios;
+using std::fstream;
+using std::ofstream;
+using std::cout;
+using std::endl;
 namespace fs = std::filesystem;
-
-struct Pnt3D
-{
-  float x = 0;
-  float y = 0;
-  float z = 0;
-};
-
-struct Pnt2D
-{
-  float x = 0;
-  float y = 0;
-};
 
 class BoneNode
 {
-public:
+ public:
   BoneNode() {}
 
   BoneNode(aiNode* node, unsigned int index)
@@ -50,7 +51,12 @@ public:
 vector<string> g_usedFiles;
 bool IsUsed(string file)
 {
-  return find(g_usedFiles.begin(), g_usedFiles.end(), file) == g_usedFiles.end();
+  return find
+  (
+    g_usedFiles.begin(),
+    g_usedFiles.end(),
+    file
+  ) == g_usedFiles.end();
 }
 
 void AddToUsedFiles(string file)
@@ -65,13 +71,19 @@ void AddToUsedFiles(string file)
 void ClearForbidden(std::string& str)
 {
   const std::string forbiddenChars = "\\/:?\"<>|";
-  std::replace_if(str.begin(), str.end(), [&forbiddenChars](char c) { return std::string::npos != forbiddenChars.find(c); }, ' ');
+  std::replace_if
+  (
+    str.begin(),
+    str.end(),
+    [&forbiddenChars]
+      (char c)
+      { return std::string::npos != forbiddenChars.find(c); },
+    ' ');
 }
 
 unordered_map<string, BoneNode> g_skeletonMap;
 const aiScene* g_scene = nullptr;
 static unsigned int g_lastId = 1;
-std::string g_currentExt;
 
 char GetPathSeparator()
 {
@@ -140,10 +152,60 @@ string GetMaterialName(aiMesh* mesh)
 {
   aiString matName;
   g_scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_NAME, matName);
-  return GetMaterialName(g_scene->mMaterials[mesh->mMaterialIndex], mesh->mMaterialIndex);
+  return GetMaterialName
+  (
+    g_scene->mMaterials[mesh->mMaterialIndex],
+    mesh->mMaterialIndex
+  );
 }
 
-void PrintAnims_(const aiScene* scene, string file)
+
+std::vector<ToolKit::MaterialPtr> tMaterials;
+template<typename T>
+void CreateFileAndSerializeObject
+(
+  std::shared_ptr<T> objectToSerialize,
+  const ToolKit::String& filePath
+)
+{
+  std::ofstream file;
+  file.open(filePath.c_str(), std::ios::out);
+  assert(file.is_open() && "File creation failed!");
+
+
+  ToolKit::XmlDocument doc;
+  objectToSerialize->Serialize(&doc, nullptr);
+  std::string xml;
+  rapidxml::print(std::back_inserter(xml), doc, 0);
+
+  file << xml;
+  file.close();
+  doc.clear();
+}
+template<typename T>
+void CreateFileAndSerializeObject
+(
+  T* objectToSerialize,
+  const ToolKit::String& filePath
+)
+{
+  std::ofstream file;
+  file.open(filePath.c_str(), std::ios::out);
+  assert(file.is_open() && "File creation failed!");
+
+
+  ToolKit::XmlDocument doc;
+  objectToSerialize->Serialize(&doc, nullptr);
+  std::string xml;
+  rapidxml::print(std::back_inserter(xml), doc, 0);
+
+  file << xml;
+  file.close();
+  doc.clear();
+}
+
+const char* g_currentExt = nullptr;
+void ImportAnimation(const aiScene* scene, string file)
 {
   if (!scene->HasAnimations())
     return;
@@ -151,17 +213,13 @@ void PrintAnims_(const aiScene* scene, string file)
   for (unsigned int i = 0; i < scene->mNumAnimations; i++)
   {
     aiAnimation* anim = scene->mAnimations[i];
-    string path = file;
     std::string animName(anim->mName.C_Str());
+    string animFilePath = file;
     replace(animName.begin(), animName.end(), '.', '_');
     replace(animName.begin(), animName.end(), '|', '_');
-    path += animName + ".anim";
-
-    AddToUsedFiles(path);
-
-    ofstream oFile;
-    oFile.open(path, ios::out);
-    assert(oFile.good());
+    animFilePath += animName + ".anim";
+    AddToUsedFiles(animFilePath);
+    ToolKit::AnimationPtr tAnim = std::make_shared<ToolKit::Animation>();
 
     double fps = anim->mTicksPerSecond == 0 ? 24.0 : anim->mTicksPerSecond;
     double duration = anim->mDuration / fps;
@@ -169,65 +227,69 @@ void PrintAnims_(const aiScene* scene, string file)
     {
       duration = anim->mDuration / 1000.0f;
     }
-    oFile << "<anim fps=\"" + to_string(fps) + "\" duration=\"" + to_string(duration) + "\">\n";
 
-    for (unsigned int j = 0; j < anim->mNumChannels; j++)
+    for (unsigned int chIndx = 0; chIndx < anim->mNumChannels; chIndx++)
     {
-      aiNodeAnim* nodeAnim = anim->mChannels[j];
-      oFile << "  <node name=\"" + string(nodeAnim->mNodeName.C_Str()) + "\">\n";
-      for (unsigned int k = 0; k < nodeAnim->mNumPositionKeys; k++)
+      aiNodeAnim* nodeAnim = anim->mChannels[chIndx];
+      ToolKit::KeyArray keys;
+      for (unsigned int kIndx = 0; kIndx < nodeAnim->mNumPositionKeys; kIndx++)
       {
-        int key = (int)round(nodeAnim->mPositionKeys[k].mTime);
+        int keyFrameIndex =
+          static_cast<int>
+          (
+            round(nodeAnim->mPositionKeys[kIndx].mTime)
+          );
         if (g_currentExt == ".glb")
         {
-          key = (int)round(fps * nodeAnim->mPositionKeys[k].mTime / 1000.0f);
+          keyFrameIndex =
+            static_cast<int>
+            (
+              round(fps * nodeAnim->mPositionKeys[kIndx].mTime / 1000.0f)
+            );
         }
+        aiVector3D t = nodeAnim->mPositionKeys[kIndx].mValue;
+        aiQuaternion r = nodeAnim->mRotationKeys[kIndx].mValue;
+        aiVector3D s = nodeAnim->mScalingKeys[kIndx].mValue;
 
-        oFile << "    <key frame=\"" + to_string(key) + "\">\n";
-        aiVector3D t = nodeAnim->mPositionKeys[k].mValue;
-        oFile << "      <translation x=\"" + to_string(t.x) + "\" y=\"" + to_string(t.y) + "\" z=\"" + to_string(t.z) + "\"/>\n";
-        aiQuaternion r = nodeAnim->mRotationKeys[k].mValue;
-        oFile << "      <rotation w=\"" + to_string(r.w) + "\" x=\"" + to_string(r.x) + "\" y=\"" + to_string(r.y) + "\" z=\"" + to_string(r.z) + "\"/>\n";
-        aiVector3D s = nodeAnim->mScalingKeys[k].mValue;
-        oFile << "      <scale x=\"" + to_string(s.x) + "\" y=\"" + to_string(s.y) + "\" z=\"" + to_string(s.z) + "\"/>\n";
-        oFile << "    </key>\n";
+
+        ToolKit::Key tKey;
+        tKey.m_frame = keyFrameIndex;
+        tKey.m_position = ToolKit::Vec3(t.x, t.y, t.z);
+        tKey.m_rotation = ToolKit::Quaternion(r.x, r.y, r.z, r.w);
+        tKey.m_scale = ToolKit::Vec3(s.x, s.y, s.z);
+        keys.push_back(tKey);
       }
-      oFile << "  </node>\n";
-    }
 
-    oFile << "</anim>\n";
-    oFile.close();
+      tAnim->m_keys.insert(std::make_pair(nodeAnim->mNodeName.C_Str(), keys));
+    }
+    tAnim->m_duration = duration;
+    tAnim->m_fps = fps;
+
+    CreateFileAndSerializeObject(tAnim, animFilePath);
   }
 }
 
-void PrintMaterial_(const aiScene* scene, string filePath, string origin)
+void ImportMaterial(const aiScene* scene, string filePath, string origin)
 {
   fs::path pathOrg = fs::path(origin).parent_path();
 
-  for (unsigned int i = 0; i < scene->mNumMaterials; i++)
+  auto textureFindAndCreateFunc =
+    [scene, filePath, pathOrg]
+  (
+    aiTextureType textureAssimpType,
+    aiMaterial* material
+  ) -> ToolKit::TexturePtr
   {
-    aiMaterial* material = scene->mMaterials[i];
-    string name = GetMaterialName(material, i);
-    string writePath = filePath + name + ".material";
-    if (IsUsed(writePath))
-    {
-      // Unused material.
-      continue;
-    }
-
-    ofstream file(writePath, ios::out);
-    assert(file.good());
-
-    file << "<material>\n";
-    int diffTexCnt = material->GetTextureCount(aiTextureType_DIFFUSE);
-    if (diffTexCnt > 0)
+    int texCount = material->GetTextureCount(textureAssimpType);
+    ToolKit::TexturePtr tTexture;
+    if (texCount > 0)
     {
       aiString texture;
-      material->GetTexture(aiTextureType_DIFFUSE, 0, &texture);
+      material->GetTexture(textureAssimpType, 0, &texture);
 
       string tName = texture.C_Str();
       bool embedded = false;
-      if (!tName.empty() && tName[0] == '*') // Embedded texture.
+      if (!tName.empty() && tName[0] == '*')  // Embedded texture.
       {
         embedded = true;
         string indxPart = tName.substr(1);
@@ -241,7 +303,10 @@ void PrintMaterial_(const aiScene* scene, string filePath, string origin)
 
       string fileName = tName;
       TrunckToFileName(fileName);
-      string textPath = fs::path(filePath + fileName).lexically_normal().u8string();
+      string textPath =
+        fs::path(filePath + fileName).
+        lexically_normal().
+        u8string();
       if (!embedded && !std::filesystem::exists(textPath))
       {
         // Try copying texture.
@@ -262,23 +327,50 @@ void PrintMaterial_(const aiScene* scene, string filePath, string origin)
               fs::create_directories(dir);
             }
           }
-          
+
           fs::copy(fullPath, target, fs::copy_options::overwrite_existing);
         }
         isGoodFile.close();
       }
-
       AddToUsedFiles(textPath);
-
-      file << "  <diffuseTexture name = \"" + textPath + "\"/>\n";
+      tTexture = std::make_shared<ToolKit::Texture>();
+      tTexture->SetFile(textPath);
     }
-    file << "</material>\n";
-    file.close();
+    return tTexture;
+  };
+  for (unsigned int i = 0; i < scene->mNumMaterials; i++)
+  {
+    aiMaterial* material = scene->mMaterials[i];
+    string name = GetMaterialName(material, i);
+    string writePath = filePath + name + ".material";
+    ToolKit::MaterialPtr tMaterial = std::make_shared<ToolKit::Material>();
+
+
+    auto diffuse = textureFindAndCreateFunc(aiTextureType_DIFFUSE, material);
+    if (diffuse)
+    {
+      tMaterial->m_diffuseTexture = diffuse;
+    }
+
+    tMaterial->SetFile(writePath);
+    CreateFileAndSerializeObject(tMaterial, writePath);
+    AddToUsedFiles(writePath);
+    tMaterials.push_back(tMaterial);
   }
 }
 
-void AppendMesh_(aiMesh* mesh, ofstream& file, string filePath)
+// Creates a ToolKit mesh by reading the aiMesh
+// @param mainMesh: Pointer of the mesh
+void ConvertMesh
+(
+  aiMesh* mesh,
+  const ToolKit::String& fileDir,
+  ToolKit::MeshPtr tMesh
+)
 {
+  assert(!mesh->mNumBones && "Meshes with bones isn't supported for now!");
+  assert(mesh->mNumVertices && "Mesh has no vertices!");
+  /*
   // Skin data
   unordered_map<int, vector<pair<int, float> > > skinData;
   for (unsigned int i = 0; i < mesh->mNumBones; i++)
@@ -291,51 +383,46 @@ void AppendMesh_(aiMesh* mesh, ofstream& file, string filePath)
       aiVertexWeight vw = bone->mWeights[j];
       skinData[vw.mVertexId].push_back(pair<int, float>(bn.boneIndex, vw.mWeight));
     }
-  }
+  }*/
 
-  // Mesh
-  assert(file.good());
-  string tag = "skinMesh";
-  if (skinData.empty())
-  {
-    tag = "mesh";
-  }
-
-  string path, name;
-  Decompose(filePath, path, name);
-
-  string fullMaterialPath = path + GetMaterialName(mesh) + ".material";
-  AddToUsedFiles(fullMaterialPath);
-
-  file << "  <" + tag + ">\n";
-  file << "    <material name=\"" + fullMaterialPath + "\"/>\n";
-  file << "    <vertices>\n";
+  tMesh->m_clientSideVertices.resize(mesh->mNumVertices);
   for (unsigned int i = 0; i < mesh->mNumVertices; i++)
   {
-    file << "      <v>\n";
+    tMesh->m_clientSideVertices[i].pos =
+      ToolKit::Vec3
+      (
+        mesh->mVertices[i].x,
+        mesh->mVertices[i].y,
+        mesh->mVertices[i].z
+      );
+    tMesh->m_clientSideVertices[i].norm =
+      ToolKit::Vec3
+      (
+        mesh->mNormals[i].x,
+        mesh->mNormals[i].y,
+        mesh->mNormals[i].z
+      );
 
-    file << "        <p x=\"" + to_string(mesh->mVertices[i].x) + "\" y=\"" + to_string(mesh->mVertices[i].y) + "\" z=\"" + to_string(mesh->mVertices[i].z) + "\"/>\n";
-    file << "        <n x=\"" + to_string(mesh->mNormals[i].x) + "\" y=\"" + to_string(mesh->mNormals[i].y) + "\" z=\"" + to_string(mesh->mNormals[i].z) + "\"/>\n";
-
-    Pnt2D vec;
-    if (mesh->HasTextureCoords(0)) // Does the mesh contain texture coordinates?
+    // Does the mesh contain texture coordinates?
+    if (mesh->HasTextureCoords(0))
     {
-      vec.x = mesh->mTextureCoords[0][i].x;
-      vec.y = mesh->mTextureCoords[0][i].y;
+      tMesh->m_clientSideVertices[i].tex.x = mesh->mTextureCoords[0][i].x;
+      tMesh->m_clientSideVertices[i].tex.y = mesh->mTextureCoords[0][i].y;
     }
 
-    file << "        <t x=\"" + to_string(vec.x) + "\" y=\"" + to_string(vec.y) + "\"/>\n";
 
-    Pnt3D tangent;
     if (mesh->HasTangentsAndBitangents())
     {
-      tangent.x = mesh->mBitangents[i].x;
-      tangent.y = mesh->mBitangents[i].y;
-      tangent.z = mesh->mBitangents[i].z;
+      tMesh->m_clientSideVertices[i].btan =
+        ToolKit::Vec3
+        (
+          mesh->mBitangents[i].x,
+          mesh->mBitangents[i].y,
+          mesh->mBitangents[i].z
+        );
     }
 
-    file << "        <bt x=\"" + to_string(tangent.x) + "\" y=\"" + to_string(tangent.y) + "\" z=\"" + to_string(tangent.z) + "\"/>\n";
-
+    /*
     if (!skinData.empty())
     {
       if (skinData.find(i) != skinData.end())
@@ -350,32 +437,47 @@ void AppendMesh_(aiMesh* mesh, ofstream& file, string filePath)
         file << "        <b w=\"" + to_string(skinData[i][0].first) + "\" x=\"" + to_string(skinData[i][1].first) + "\" y=\"" + to_string(skinData[i][2].first) + "\" z=\"" + to_string(skinData[i][3].first) + "\"/>\n";
         file << "        <w w=\"" + to_string(skinData[i][0].second) + "\" x=\"" + to_string(skinData[i][1].second) + "\" y=\"" + to_string(skinData[i][2].second) + "\" z=\"" + to_string(skinData[i][3].second) + "\"/>\n";
       }
-    }
-
-    file << "      </v>\n";
+    }*/
   }
-  file << "    </vertices>\n";
 
-  file << "    <faces>\n";
-  for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+  tMesh->m_clientSideIndices.resize(mesh->mNumFaces * 3);
+  for (unsigned int face_i = 0; face_i < mesh->mNumFaces; face_i++)
   {
-    aiFace face = mesh->mFaces[i];
+    aiFace face = mesh->mFaces[face_i];
     assert(face.mNumIndices == 3);
-    file << "      <f x=\"" + to_string(face.mIndices[0]) + "\" y=\"" + to_string(face.mIndices[1]) + "\" z=\"" + to_string(face.mIndices[2]) + "\"/>\n";
+    for (ToolKit::ubyte i = 0; i < 3; i++)
+    {
+      tMesh->m_clientSideIndices[(face_i * 3) + i] = face.mIndices[i];
+    }
   }
-  file << "    </faces>\n";
 
-  file << "  </" + tag + ">\n";
+  tMesh->m_loaded = true;
+  tMesh->m_vertexCount = static_cast<int>(tMesh->m_clientSideVertices.size());
+  tMesh->m_indexCount = static_cast<int>(tMesh->m_clientSideIndices.size());
+  tMesh->m_material = tMaterials[mesh->mMaterialIndex];
 }
 
-void SearchMesh(ofstream& sceneFile, const aiScene* scene, string filePath, aiNode* node, int parentId)
+void SearchMesh
+(
+  const aiScene* scene,
+  ToolKit::Scene* tScene,
+  string filePath,
+  aiNode* node,
+  int parentId
+)
 {
   int thisId = g_lastId++;
+  int etype = 0;  // Base. Empty entities are used for transform nodes.
+  ToolKit::Entity* entity = nullptr;
 
-  // Write meshes.
-  string meshPath;
+
+  // Write meshes
   if (node->mNumMeshes > 0)
   {
+    entity = new ToolKit::Entity;
+    entity->AddComponent(new ToolKit::MeshComponent);
+
+    ToolKit::MeshPtr parentMeshOfNode = std::make_shared<ToolKit::Mesh>();
     string path, name;
     Decompose(filePath, path, name);
 
@@ -387,64 +489,56 @@ void SearchMesh(ofstream& sceneFile, const aiScene* scene, string filePath, aiNo
 
     string fileName = std::string(node->mName.C_Str());
     ClearForbidden(fileName);
-    meshPath = path + fileName + "." + tag;
+    ToolKit::String meshPath = path + fileName + "." + tag;
     AddToUsedFiles(meshPath);
 
-    ofstream file(meshPath, ios::out);
-    file << "<meshContainer>\n";
-
-    for (unsigned int i = 0; i < node->mNumMeshes; i++)
+    if (node->mNumMeshes == 1)
     {
-      aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-      AppendMesh_(mesh, file, filePath);
+      aiMesh* mesh = scene->mMeshes[node->mMeshes[0]];
+      ConvertMesh(mesh, path, parentMeshOfNode);
     }
+    for (unsigned int i = 1; i < node->mNumMeshes; i++)
+    {
+      aiMesh* mesh = scene->mMeshes[node->mMeshes[0]];
+      ToolKit::MeshPtr subMesh = std::make_shared<ToolKit::Mesh>();
+      ConvertMesh(mesh, path, subMesh);
+      parentMeshOfNode->m_subMeshes.push_back(subMesh);
+    }
+    parentMeshOfNode->SetFile(meshPath);
+    CreateFileAndSerializeObject(parentMeshOfNode, meshPath);
 
-    file << "</meshContainer>\n";
-    file.close();
-  }
-
-  int etype = 9; // Drawable
-  if (meshPath.empty())
-  {
-    etype = 0; // Base. Empty entities are used for transform nodes.
-  }
-
-  // Write Entity.
-  if (parentId != -1)
-  {
-    sceneFile << "  <E i=\"" + std::to_string(thisId) + "\" pi=\"" + std::to_string(parentId) + "\" t=\"" + std::to_string(etype) + "\">\n";
+    entity->GetMeshComponent()->SetMeshVal(parentMeshOfNode);
   }
   else
   {
-    sceneFile << "  <E i=\"" + std::to_string(thisId) + "\" t=\"" + std::to_string(etype) + "\">\n";
+    entity = ToolKit::Entity::CreateByType(ToolKit::EntityType::Entity_Base);
   }
 
-  sceneFile << "    <N is=\"1\">\n";
+
+  entity->SetIdVal(thisId);
+  entity->_parentId = parentId;
+  entity->m_node = new ToolKit::Node;
 
   aiQuaternion rt;
   aiVector3D ts, scl;
   node->mTransformation.Decompose(scl, rt, ts);
 
-  sceneFile << "      <T x=\"" + std::to_string(ts.x) + "\" y=\"" + std::to_string(ts.y) + "\" z=\"" + std::to_string(ts.z) + "\" />\n";
-  sceneFile << "      <R x=\"" + std::to_string(rt.x) + "\" y=\"" + std::to_string(rt.y) + "\" z=\"" + std::to_string(rt.z) + "\" w=\"" + std::to_string(rt.w) + "\" />\n";
-  sceneFile << "      <S x=\"" + std::to_string(scl.x) + "\" y=\"" + std::to_string(scl.y) + "\" z=\"" + std::to_string(scl.z) + "\" />\n";
+  ToolKit::Quaternion tRt = ToolKit::Quaternion(rt.x, rt.y, rt.z, rt.w);
+  entity->m_node->SetOrientation(tRt);
+  entity->m_node->SetTranslation(ToolKit::Vec3(ts.x, ts.y, ts.z));
+  entity->m_node->SetScale(ToolKit::Vec3(scl.x, scl.y, scl.z));
 
-  sceneFile << "    </N>\n";
-
-  if (!meshPath.empty())
-  {
-    sceneFile << "    <M f=\"" + meshPath + "\"/>\n";
-  }
-
-  sceneFile << "  </E>\n";
 
   for (unsigned int j = 0; j < node->mNumChildren; j++)
   {
-    SearchMesh(sceneFile, scene, filePath, node->mChildren[j], thisId);
+    SearchMesh(scene, tScene, filePath, node->mChildren[j], thisId);
   }
+
+  // Add entity to the scene to serialize the entity
+  tScene->AddEntity(entity);
 }
 
-void PrintMesh_(const aiScene* scene, string filePath)
+void ImportSceneAndMeshes(const aiScene* scene, string filePath)
 {
   // Print Scene.
   string path, name;
@@ -452,19 +546,19 @@ void PrintMesh_(const aiScene* scene, string filePath)
 
   string fullPath = path + name + ".scene";
   AddToUsedFiles(fullPath);
-
-  ofstream file(fullPath, ios::out);
-  file << "<S name=\"" + path + name + "\">\n";
+  ToolKit::Scene* tScene = new ToolKit::Scene;
 
   // Add Meshes.
-  SearchMesh(file, scene, filePath, scene->mRootNode, -1);
+  SearchMesh(scene, tScene, filePath, scene->mRootNode, -1);
 
-  file << "</S>";
-  file.close();
+  CreateFileAndSerializeObject(tScene, fullPath);
 }
 
 void PrintSkeleton_(const aiScene* scene, string filePath)
 {
+  printf("Skeleton importing isn't supported yet!");
+  return;
+  /*
   auto addBoneNodeFn = [](aiNode* node, aiBone* bone) -> void
   {
     BoneNode bn(node, 0);
@@ -486,7 +580,7 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
       aiBone* bone = mesh->mBones[j];
       bones.push_back(bone);
       aiNode* node = scene->mRootNode->FindNode(bone->mName);
-      while (node) // Go Up
+      while (node)  // Go Up
       {
         if (node == meshNode)
         {
@@ -507,7 +601,9 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
       }
 
       node = scene->mRootNode->FindNode(bone->mName);
-      function<void(aiNode*)> checkDownFn = [&checkDownFn, &bone, &addBoneNodeFn](aiNode* node) -> void // Go Down
+      function<void(aiNode*)> checkDownFn =
+        [&checkDownFn, &bone, &addBoneNodeFn]
+        (aiNode* node) -> void  // Go Down
       {
         if (node == nullptr)
         {
@@ -534,7 +630,9 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
   }
 
   // Assign indices
-  function<void(aiNode*, unsigned int&)> assignBoneIndexFn = [&assignBoneIndexFn](aiNode* node, unsigned int& index) -> void
+  function<void(aiNode*, unsigned int&)> assignBoneIndexFn =
+    [&assignBoneIndexFn]
+    (aiNode* node, unsigned int& index) -> void
   {
     if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
     {
@@ -614,15 +712,17 @@ void PrintSkeleton_(const aiScene* scene, string filePath)
   {
     AddToUsedFiles(fullPath);
   }
+  */
 }
 
-void PrintTextures_(const aiScene* scene, string filePath)
+void ImportTextures(const aiScene* scene, string filePath)
 {
   // Embedded textures.
   if (scene->HasTextures())
   {
     for (unsigned int i = 0; i < scene->mNumTextures; i++)
     {
+      ToolKit::TexturePtr tTexture = std::make_shared<ToolKit::Texture>();
       aiTexture* texture = scene->mTextures[i];
       string embId = GetTextureName(texture, i);
 
@@ -632,12 +732,24 @@ void PrintTextures_(const aiScene* scene, string filePath)
         ofstream file(filePath + embId, fstream::out | std::fstream::binary);
         assert(file.good());
 
-        file.write((const char*)scene->mTextures[i]->pcData, scene->mTextures[i]->mWidth);
+        file.write
+        (
+          (const char*)scene->mTextures[i]->pcData,
+          scene->mTextures[i]->mWidth
+        );
       }
       else
       {
         unsigned char* buffer = (unsigned char*)texture->pcData;
-        stbi_write_png(filePath.c_str(), texture->mWidth, texture->mHeight, 4, buffer, texture->mWidth * 4);
+        stbi_write_png
+        (
+          filePath.c_str(),
+          texture->mWidth,
+          texture->mHeight,
+          4,
+          buffer,
+          texture->mWidth * 4
+        );
       }
     }
   }
@@ -649,7 +761,8 @@ int main(int argc, char* argv[])
   {
     if (argc < 2)
     {
-      cout << "usage: Import 'fileToImport.format' <op> -t 'importTo' <op> -s 1.0\n";
+      cout <<
+        "usage: Import 'fileToImport.format' <op> -t 'importTo' <op> -s 1.0\n";
       throw (-1);
     }
 
@@ -668,7 +781,7 @@ int main(int argc, char* argv[])
 
       if (arg == "-s")
       {
-        float scale = (float)std::atof(argv[i + 1]);
+        float scale = static_cast<float>(std::atof(argv[i + 1]));
         importer.SetPropertyFloat(AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, scale);
       }
     }
@@ -685,10 +798,10 @@ int main(int argc, char* argv[])
     {
       fstream fList;
       fList.open(file, ios::in);
-      if (fList.is_open()) 
+      if (fList.is_open())
       {
         string fileStr;
-        while (getline(fList, fileStr)) 
+        while (getline(fList, fileStr))
         {
           files.push_back(fileStr);
         }
@@ -700,9 +813,16 @@ int main(int argc, char* argv[])
       files.push_back(file);
     }
 
-    for (int i = 0; i < (int)files.size(); i++)
+    // Initialize ToolKit to serialize resources
+    ToolKit::Main* g_proxy = new ToolKit::Main();
+    ToolKit::Main::SetProxy(g_proxy);
+
+    for (int i = 0; i < static_cast<int>(files.size()); i++)
     {
       file = files[i];
+      // Clear global materials for each scene to prevent wrong referencing
+      tMaterials.clear();
+
       const aiScene* scene = importer.ReadFile
       (
         file,
@@ -723,14 +843,20 @@ int main(int argc, char* argv[])
       fs::path pathToProcess = file;
       string fileName = pathToProcess.filename().u8string();
 
-      g_currentExt = pathToProcess.extension().u8string();
+      g_currentExt = pathToProcess.extension().u8string().c_str();
       string destFile = dest + fileName;
 
-      PrintSkeleton_(scene, destFile);
-      PrintMesh_(scene, destFile);
-      PrintAnims_(scene, dest);
-      PrintMaterial_(scene, dest, file);
-      PrintTextures_(scene, dest);
+      // PrintSkeleton_(scene, destFile);
+
+      // DON'T BREAK THE CALLING ORDER!
+
+      ImportAnimation(scene, dest);
+      // Create Textures to reference in Materials
+      ImportTextures(scene, dest);
+      // Create Materials to reference in Meshes
+      ImportMaterial(scene, dest, file);
+      // Create Meshes & Scene
+      ImportSceneAndMeshes(scene, destFile);
     }
 
     // Report all in use files.
@@ -740,6 +866,9 @@ int main(int argc, char* argv[])
       inUse << fs << endl;
     }
     inUse.close();
+
+
+    delete g_proxy;
   }
   catch (int code)
   {
@@ -750,5 +879,6 @@ int main(int argc, char* argv[])
 
   Assimp::DefaultLogger::get()->info("Import success");
   Assimp::DefaultLogger::kill();
+
   return 0;
 }

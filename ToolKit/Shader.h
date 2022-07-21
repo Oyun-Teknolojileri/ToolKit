@@ -25,7 +25,7 @@ namespace ToolKit
   class TK_API Shader : public Resource
   {
    public:
-    TKResouceType(Shader)
+    TKResourceType(Shader)
 
     Shader();
     explicit Shader(String file);

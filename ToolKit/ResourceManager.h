@@ -55,7 +55,7 @@ namespace ToolKit
           String def = GetDefaultResource(T::GetTypeStatic());
           if (!CheckFile(def))
           {
-            assert(0 && "No default resource !");
+            assert(0 && "No default resource!");
             return nullptr;
           }
 

@@ -11,7 +11,7 @@ namespace ToolKit
 
   extern TK_API ResourceManager* GetResourceManager(ResourceType type);
 
-#define TKResouceType(type) \
+#define TKResourceType(type) \
   static ResourceType GetTypeStatic() { return ResourceType::type; } \
   ResourceType GetType() const override { return ResourceType::type; }
 
