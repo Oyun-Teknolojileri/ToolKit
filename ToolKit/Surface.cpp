@@ -369,13 +369,13 @@ namespace ToolKit
 
     m_onMouseEnterLocal = [this](Event* e, Entity* ntt) -> void
     {
-      SetMaterialVal(GetButtonMaterialVal());
+      SetMaterialVal(GetHoverMaterialVal());
     };
     m_onMouseEnter = m_onMouseEnterLocal;
 
     m_onMouseExitLocal = [this](Event* e, Entity* ntt) -> void
     {
-      SetMaterialVal(GetHoverMaterialVal());
+      SetMaterialVal(GetButtonMaterialVal());
     };
     m_onMouseExit = m_onMouseExitLocal;
   }

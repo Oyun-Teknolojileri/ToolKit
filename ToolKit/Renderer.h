@@ -22,7 +22,7 @@ namespace ToolKit
     (
       const ScenePtr& scene,
       Viewport* viewport,
-      LightRawPtrArray editor_lights
+      const LightRawPtrArray& editor_lights
     );
 
     void RenderUI(const UILayerPtrArray& uiLayers, Viewport* viewport);
@@ -54,6 +54,14 @@ namespace ToolKit
     void DrawFullQuad(ShaderPtr fragmentShader);
 
    private:
+    void RenderEntities
+    (
+      EntityRawPtrArray& entities,
+      Camera* cam,
+      Viewport* viewport,
+      const LightRawPtrArray& editorLights = LightRawPtrArray()
+    );
+
     /**
     * Removes the entites that are outside of the camera.
     * @param entities All entites.

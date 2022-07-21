@@ -355,10 +355,10 @@ namespace ToolKit
       // Prevent overriding default scene.
       EditorScenePtr currScene = GetCurrentScene();
       if
-        (
+      (
         GetSceneManager()->GetDefaultResource(ResourceType::Scene)
         == currScene->GetFile()
-        )
+      )
       {
         currScene->SetFile(ScenePath("New Scene" + SCENE));
         return OnSaveAsScene();

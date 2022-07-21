@@ -37,7 +37,7 @@ namespace ToolKit
   (
     const ScenePtr& scene,
     Viewport* viewport,
-    LightRawPtrArray editorLights
+    const LightRawPtrArray& editorLights
   )
   {
     Camera* cam = viewport->GetCamera();
@@ -45,20 +45,7 @@ namespace ToolKit
 
     SetRenderTarget(viewport->m_viewportImage);
 
-    // Dropout non visible & drawable entities.
-    entities.erase
-    (
-      std::remove_if
-      (
-        entities.begin(),
-        entities.end(),
-        [](Entity* ntt) -> bool
-        {
-          return !ntt->GetVisibleVal() || !ntt->IsDrawable();
-        }
-      ),
-      entities.end()
-    );
+    RenderEntities(entities, cam, viewport, editorLights);
 
     FrustumCull(entities, cam);
 
@@ -101,14 +88,7 @@ namespace ToolKit
           1000.0f
         );
 
-        FrustumCull(allEntities, layer->m_cam);
-
-        EntityRawPtrArray blendedEntities;
-        GetTransparentEntites(allEntities, blendedEntities);
-
-        RenderOpaque(allEntities, layer->m_cam, viewport->m_zoom);
-
-        RenderTransparent(blendedEntities, layer->m_cam, viewport->m_zoom);
+        RenderEntities(allEntities, layer->m_cam, viewport);
       }
     }
   }
@@ -481,6 +461,39 @@ namespace ToolKit
 
     static Camera quadCam;
     Render(&quad, &quadCam);
+  }
+
+  void Renderer::RenderEntities
+  (
+    EntityRawPtrArray& entities,
+    Camera* cam,
+    Viewport* viewport,
+    const LightRawPtrArray& lights
+  )
+  {
+    // Dropout non visible & drawable entities.
+    entities.erase
+    (
+      std::remove_if
+      (
+        entities.begin(),
+        entities.end(),
+        [](Entity* ntt) -> bool
+        {
+          return !ntt->GetVisibleVal() || !ntt->IsDrawable();
+        }
+      ),
+      entities.end()
+    );
+
+    FrustumCull(entities, cam);
+
+    EntityRawPtrArray blendedEntities;
+    GetTransparentEntites(entities, blendedEntities);
+
+    RenderOpaque(entities, cam, viewport->m_zoom);
+
+    RenderTransparent(blendedEntities, cam, viewport->m_zoom);
   }
 
   void Renderer::FrustumCull(EntityRawPtrArray& entities, Camera* camera)

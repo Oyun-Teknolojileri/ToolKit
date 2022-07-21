@@ -90,6 +90,8 @@ namespace ToolKit
 
   void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent)
   {
+    Save(true);
+
     XmlNode* refNode = CreateXmlNode(doc, XmlResRefElement, parent);
     WriteAttr
     (

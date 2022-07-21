@@ -120,7 +120,6 @@ namespace ToolKit
   {
     XmlNode* container = CreateXmlNode(doc, "shader", parent);
     XmlNode* node = CreateXmlNode(doc, "type", container);
-    container->append_node(node);
 
     if (m_shaderType == GraphicTypes::VertexShader)
     {
