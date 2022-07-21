@@ -46,14 +46,6 @@ namespace ToolKit
     SetRenderTarget(viewport->m_viewportImage);
 
     RenderEntities(entities, cam, viewport, editorLights);
-
-    FrustumCull(entities, cam);
-
-    EntityRawPtrArray blendedEntities;
-    GetTransparentEntites(entities, blendedEntities);
-
-    RenderOpaque(entities, cam, viewport->m_zoom, editorLights);
-    RenderTransparent(blendedEntities, cam, viewport->m_zoom, editorLights);
   }
 
   /**
@@ -491,9 +483,9 @@ namespace ToolKit
     EntityRawPtrArray blendedEntities;
     GetTransparentEntites(entities, blendedEntities);
 
-    RenderOpaque(entities, cam, viewport->m_zoom);
+    RenderOpaque(entities, cam, viewport->m_zoom, lights);
 
-    RenderTransparent(blendedEntities, cam, viewport->m_zoom);
+    RenderTransparent(blendedEntities, cam, viewport->m_zoom, lights);
   }
 
   void Renderer::FrustumCull(EntityRawPtrArray& entities, Camera* camera)
