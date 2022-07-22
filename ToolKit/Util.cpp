@@ -363,6 +363,13 @@ namespace ToolKit
       toolKit = true;
     }
 
+    if (exist == String::npos)
+    {
+      // ToolKit resource absolute path
+      root = std::filesystem::absolute(root).string();
+      exist = path.find(root, 0);
+    }
+
     if (exist != String::npos)
     {
       // If path isn't absolute
