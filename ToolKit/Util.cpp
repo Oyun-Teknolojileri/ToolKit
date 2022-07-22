@@ -362,7 +362,8 @@ namespace ToolKit
       exist = path.find(root, 0);
       toolKit = true;
     }
-    else
+
+    if (exist != String::npos)
     {
       // If path isn't absolute
       if (!root.length())
