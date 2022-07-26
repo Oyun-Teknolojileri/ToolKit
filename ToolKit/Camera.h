@@ -49,6 +49,19 @@ namespace ToolKit
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
+    void ParameterConstructor();
+
+   public:
+    TKDeclareParam(float, Fov);
+    TKDeclareParam(float, Aspect);
+    TKDeclareParam(float, Near);
+    TKDeclareParam(float, Far);
+    TKDeclareParam(float, Height);
+    TKDeclareParam(float, Left);
+    TKDeclareParam(float, Right);
+    TKDeclareParam(float, Bottom);
+    TKDeclareParam(float, Top);
+    TKDeclareParam(bool, Orthographic);
 
    private:
     float m_fov = 1.0f;
