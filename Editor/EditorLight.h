@@ -26,6 +26,7 @@ namespace ToolKit
 
       void EnableGizmo(bool enable);
       virtual void Init() = 0;
+      virtual void ParameterEventConstructor() = 0;
 
      protected:
       LightGizmoBase* m_gizmo = nullptr;
@@ -42,6 +43,7 @@ namespace ToolKit
       EditorDirectionalLight();
       explicit EditorDirectionalLight(const EditorDirectionalLight* light);
       virtual ~EditorDirectionalLight();
+      void ParameterEventConstructor() override {};
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
@@ -55,6 +57,7 @@ namespace ToolKit
       EditorPointLight();
       explicit EditorPointLight(const EditorPointLight* light);
       virtual ~EditorPointLight();
+      void ParameterEventConstructor() override;
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
@@ -68,6 +71,7 @@ namespace ToolKit
       EditorSpotLight();
       explicit EditorSpotLight(const EditorSpotLight* light);
       virtual ~EditorSpotLight();
+      void ParameterEventConstructor() override;
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;

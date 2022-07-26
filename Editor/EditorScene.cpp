@@ -62,7 +62,7 @@ namespace ToolKit
             m_entities[i] = light;
             SafeDel(ntt);
           }
-          else if (type == LightTypeEnum::LightSpot)
+          else if (type == LightTypeEnum::LightPoint)
           {
             EditorPointLight* upCasted =
             reinterpret_cast<EditorPointLight*> (ntt);
