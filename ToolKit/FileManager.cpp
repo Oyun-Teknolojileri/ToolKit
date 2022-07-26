@@ -458,7 +458,7 @@ namespace ToolKit
     // Check offset map of file
     String unixifiedPath = relativePath;
     UnixifyPath(unixifiedPath);
-    ZPOS64_T offset = m_zipFilesOffsetTable[unixifiedPath];
+    ZPOS64_T offset = m_zipFilesOffsetTable[unixifiedPath].first;
     if (offset != 0)
     {
       if (unzSetOffset64(zfile, offset) == UNZ_OK)
@@ -577,7 +577,7 @@ namespace ToolKit
     // Check offset map of file
     String unixifiedPath = relativePath;
     UnixifyPath(unixifiedPath);
-    ZPOS64_T offset = m_zipFilesOffsetTable[unixifiedPath];
+    ZPOS64_T offset = m_zipFilesOffsetTable[unixifiedPath].first;
     if (offset != 0)
     {
       if (unzSetOffset64(zfile, offset) == UNZ_OK)
@@ -819,13 +819,15 @@ namespace ToolKit
             );
             filename[fileInfo.size_filename] = '\0';
 
-            ZPOS64_T offset = unzGetOffset64(m_zfile);
+            std::pair<ZPOS64_T, uint32_t> element;
+            element.first = unzGetOffset64(m_zfile);
+            element.second = fileInfo.uncompressed_size;
 
             // Unixfy the path
             String filenameStr(filename);
             UnixifyPath(filenameStr);
 
-            m_zipFilesOffsetTable[filenameStr.c_str()] = offset;
+            m_zipFilesOffsetTable[filenameStr.c_str()] = element;
 
             SafeDelArray(filename);
           }
