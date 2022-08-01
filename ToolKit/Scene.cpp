@@ -115,17 +115,13 @@ namespace ToolKit
 
   void Scene::Merge(ScenePtr other)
   {
-    ULongID bigId = GetBiggestEntityId() + 1;
+    ULongID lastID = GetHandleManager()->GetNextHandle(), biggestID = 0;
     const EntityRawPtrArray& entities = other->GetEntities();
     for (Entity* ntt : entities)
     {
-      // Update ids to prevent collision.
-      ULongID id = ntt->GetIdVal();
-      ntt->SetIdVal(id + bigId);
-      ntt->_parentId += bigId;
-
       AddEntity(ntt);  // Insert into this scene.
     }
+    GetHandleManager()->SetMaxHandle(biggestID);
 
     other->RemoveAllEntities();
     GetSceneManager()->Remove(other->GetFile());
@@ -265,9 +261,10 @@ namespace ToolKit
 
   void Scene::AddEntity(Entity* entity)
   {
+    ULongID nttyID = entity->GetIdVal();
     assert
     (
-      GetEntity(entity->GetIdVal()) == nullptr &&
+      GetEntity(nttyID) == nullptr &&
       "Entity is already in the scene."
     );
     m_entities.push_back(entity);
@@ -469,6 +466,8 @@ namespace ToolKit
     DecomposePath(path, nullptr, &m_name, nullptr);
     ReadAttr(root, "version", m_version);
 
+    ULongID lastID = GetHandleManager()->GetNextHandle();
+    ULongID biggestID = 0;
     XmlNode* node = nullptr;
     for
     (
@@ -485,8 +484,15 @@ namespace ToolKit
       Entity* ntt = Entity::CreateByType(t);
 
       ntt->DeSerialize(doc, node);
+      // Incrementing the incoming ntt ids with current max id value...
+      //   to prevent id collisions.
+      ULongID currentID = ntt->GetIdVal() + lastID;
+      biggestID = glm::max(biggestID, currentID);
+      ntt->SetIdVal(currentID);
+      ntt->_parentId = ntt->_parentId + lastID;
       m_entities.push_back(ntt);
     }
+    GetHandleManager()->SetMaxHandle(biggestID);
   }
 
   ULongID Scene::GetBiggestEntityId()

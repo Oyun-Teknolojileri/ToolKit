@@ -190,6 +190,11 @@
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ToolKit\ToolKit.vcxproj">
+      <Project>{85523a06-924e-4b9d-b95c-411cb388936b}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

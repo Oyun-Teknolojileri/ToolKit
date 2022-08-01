@@ -216,9 +216,13 @@ namespace ToolKit
         XmlNode* keyNode = CreateXmlNode(doc, "key", boneNode);
         const Key& key = keys[keyIndex];
 
+        char* frameIndexValueStr = doc->allocate_string
+        (
+          std::to_string(keyIndex).c_str()
+        );
         keyNode->append_attribute
         (
-          doc->allocate_attribute("frame", std::to_string(key.m_frame).c_str())
+          doc->allocate_attribute("frame", frameIndexValueStr)
         );
 
         WriteVec
