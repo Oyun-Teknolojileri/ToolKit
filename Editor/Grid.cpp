@@ -91,14 +91,14 @@ namespace ToolKit
         break;
       }
 
-      glm::vec2 scale = glm::vec2(m_size) * glm::vec2(0.5f);
+      Vec2 scale = Vec2(m_size);
 
       Quad quad;
       MeshPtr mesh = quad.GetMeshComponent()->GetMeshVal();
       for (int j = 0; j < 4; j++)
       {
         Vertex& clientVertex = mesh->m_clientSideVertices[j];
-        clientVertex.pos = (clientVertex.pos * glm::vec3(scale, 0.0f));
+        clientVertex.pos = (clientVertex.pos * Vec3(scale, 0.0f));
         clientVertex.tex = clientVertex.pos.xy * m_gridCellSize;
       }
 

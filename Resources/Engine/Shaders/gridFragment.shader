@@ -53,8 +53,6 @@
 			float lod1_cs = lod0_cs * 10.f;
 			float lod2_cs = lod1_cs * 10.f;
 
-			// Grid is infinte, so shift uv based on camera position in local tile space
-			//uv += o_cameraGridPos;
 
 			// Allow each anti-aliased line to cover up to 10 pixels.
 			dudv *= 2.0;
@@ -70,7 +68,7 @@
 			vec2 lod2_cross_a = 1.f - abs(clamp(mod(uv, lod2_cs) / dudv, 0.0f, 1.0f) * 2.0f - 1.f);
 			float lod2_a = max(lod2_cross_a.x, lod2_cross_a.y);
 
-			vec4 thin_color = vec4(vec3(0.203601092), 1.0f);
+			vec4 thin_color = vec4(vec3(0.253601092), 1.0f);
 			vec4 thick_color = vec4(vec3(0.0f), 1.0f);
 
 			// Set XZ axis colors for axis-matching thick lines
@@ -111,10 +109,7 @@
 					c.a *= lod0_a * (1.0f-lod_fade);
 				}
 			}
-			//c.a *= op;
 			fragColor = c;
-			//if (c.a <= 0.0f) discard;
-			//fragColor = vec4(vec3(op), 1.0f);
 		}
 	-->
 	</source>
