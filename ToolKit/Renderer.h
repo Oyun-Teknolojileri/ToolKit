@@ -129,7 +129,7 @@ namespace ToolKit
       const LightRawPtrArray& lights
     );
     void GetEnvironmentLightEntities(EntityRawPtrArray entities);
-    void FindEnvironmentLights(EntityRawPtrArray entities, Viewport* viewport);
+    void FindEnvironmentLight(Entity* entity, Camera* camera);
 
     void SetProjectViewModel(Entity* ntt, Camera* cam);
     void BindProgram(ProgramPtr program);

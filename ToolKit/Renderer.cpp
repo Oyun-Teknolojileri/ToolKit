@@ -511,9 +511,6 @@ namespace ToolKit
 
     FrustumCull(entities, cam);
 
-    // Find environment lights for entities
-    FindEnvironmentLights(entities, viewport);
-
     EntityRawPtrArray blendedEntities;
     GetTransparentEntites(entities, blendedEntities);
 
@@ -634,6 +631,8 @@ namespace ToolKit
         billboard->LookAt(cam, zoom);
       }
 
+      FindEnvironmentLight(ntt, cam);
+
       Render(ntt, cam, editorLights);
     }
   }
@@ -657,6 +656,8 @@ namespace ToolKit
         Billboard* billboard = static_cast<Billboard*> (ntt);
         billboard->LookAt(cam, zoom);
       }
+
+      FindEnvironmentLight(ntt, cam);
 
       // For two sided materials,
       // first render back of transparent objects then render front
@@ -761,6 +762,11 @@ namespace ToolKit
     m_environmentLightEntities.clear();
     for (Entity* ntt : entities)
     {
+      if (ntt->GetType() == EntityType::Entity_Sky)
+      {
+        continue;
+      }
+
       EnvironmentComponentPtr envCom =
       ntt->GetComponent<EnvironmentComponent>();
       if
@@ -777,13 +783,13 @@ namespace ToolKit
     }
   }
 
-  void Renderer::FindEnvironmentLights
+  void Renderer::FindEnvironmentLight
   (
-    EntityRawPtrArray entities,
-    Viewport* viewport
+    Entity* entity,
+    Camera* camera
   )
   {
-    if (viewport->IsOrthographic())
+    if (camera->IsOrtographic())
     {
       return;
     }
@@ -793,104 +799,100 @@ namespace ToolKit
 
     // Iterate all entities and mark the ones which should
     // be lit with environment light
-    Vec3 pos;
-    Vec3 max;
-    Vec3 min;
+
+    Entity* env = nullptr;
+
+    MaterialComponentPtr matCom = entity->GetComponent<MaterialComponent>();
+    MaterialPtr mat = nullptr;
+    if (matCom == nullptr)
+    {
+      mat = entity->GetMeshComponent()->GetMeshVal()->m_material;
+    }
+    else
+    {
+      mat = matCom->GetMaterialVal();
+      if (mat == nullptr)
+      {
+        return;
+      }
+    }
+
+    Vec3 pos = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+    Vec3 max = ZERO;
+    Vec3 min = ZERO;
     Vec3 curMax;
     Vec3 curMin;
-    Entity* env = nullptr;
-    for (Entity* ntt : entities)
+    env = nullptr;
+    for (Entity* envNtt : m_environmentLightEntities)
     {
-      MaterialComponentPtr matCom = ntt->GetComponent<MaterialComponent>();
-      MaterialPtr mat = nullptr;
-      if (matCom == nullptr)
+      curMax = envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMax();
+      curMin = envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMin();
+
+      if (PointInsideBBox(pos, curMax, curMin))
       {
-        mat = ntt->GetMeshComponent()->GetMeshVal()->m_material;
-      }
-      else
-      {
-        mat = matCom->GetMaterialVal();
-        if (mat == nullptr)
+        auto setCurrentBBox =
+        [&max, &min, &env]
+        (
+          const Vec3& currMax,
+          const Vec3& currMin,
+          Entity* ntt
+        ) -> void
         {
+          max = currMax;
+          min = currMin;
+          env = ntt;
+        };
+
+        if (max == min && max == ZERO)
+        {
+          setCurrentBBox(curMax, curMin, envNtt);
           continue;
         }
-      }
 
-      pos = ntt->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-      max = ZERO;
-      min = ZERO;
-      env = nullptr;
-      for (Entity* envNtt : m_environmentLightEntities)
-      {
-        curMax = envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMax();
-        curMin = envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMin();
-
-        if (PointInsideBBox(pos, curMax, curMin))
+        bool change = false;
+        if (BoxBoxIntersection(max, min, curMax, curMin))
         {
-          auto setCurrentBBox =
-          [&max, &min, &env]
-          (
-            const Vec3& currMax,
-            const Vec3& currMin,
-            Entity* ntt
-          ) -> void
-          {
-            max = currMax;
-            min = currMin;
-            env = ntt;
-          };
-
-          if (max == min && max == ZERO)
-          {
-            setCurrentBBox(curMax, curMin, envNtt);
-            continue;
-          }
-
-          bool change = false;
-          if (BoxBoxIntersection(max, min, curMax, curMin))
-          {
-            // Take the smaller box
-            if (BoxVolume(max, min) > BoxVolume(curMax, curMin))
-            {
-              change = true;
-            }
-          }
-          else
+          // Take the smaller box
+          if (BoxVolume(max, min) > BoxVolume(curMax, curMin))
           {
             change = true;
           }
-
-          if (change)
-          {
-            setCurrentBBox(curMax, curMin, envNtt);
-          }
-        }
-      }
-
-      if (env != nullptr)
-      {
-        mat->GetRenderState()->IBLInUse = true;
-        mat->GetRenderState()->irradianceMap =
-        env->GetComponent<EnvironmentComponent>()
-        ->GetHdriVal()->GetIrradianceCubemapId();
-      }
-      else
-      {
-        // Sky light
-        EnvironmentComponentPtr env =
-        GetSceneManager()->GetCurrentScene()->GetSky()->
-        GetComponent<EnvironmentComponent>();
-        if (env->GetIlluminateVal())
-        {
-          mat->GetRenderState()->IBLInUse = true;
-          mat->GetRenderState()->irradianceMap =
-          env->GetHdriVal()->GetIrradianceCubemapId();
         }
         else
         {
-          mat->GetRenderState()->IBLInUse = false;
-          mat->GetRenderState()->irradianceMap = 0;
+          change = true;
         }
+
+        if (change)
+        {
+          setCurrentBBox(curMax, curMin, envNtt);
+        }
+      }
+    }
+
+    if (env != nullptr)
+    {
+      mat->GetRenderState()->IBLInUse = true;
+      mat->GetRenderState()->irradianceMap =
+      env->GetComponent<EnvironmentComponent>()
+      ->GetHdriVal()->GetIrradianceCubemapId();
+    }
+    else
+    {
+      // Sky light
+      EnvironmentComponentPtr env =
+      GetSceneManager()->GetCurrentScene()->GetSky()->
+      GetComponent<EnvironmentComponent>();
+      if (env->GetIlluminateVal())
+      {
+        mat->GetRenderState()->IBLInUse = true;
+        mat->GetRenderState()->irradianceMap =
+        env->GetHdriVal()->GetIrradianceCubemapId();
+      }
+      else
+      {
+        mat->GetRenderState()->IBLInUse = false;
+        mat->GetRenderState()->irradianceMap = 0;
       }
     }
   }
