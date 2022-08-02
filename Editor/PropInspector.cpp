@@ -345,11 +345,6 @@ namespace ToolKit
         ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen)
       )
       {
-        Mat3 rotate;
-        Vec3 scale, shear;
-        Mat4 ts = m_entity->m_node->GetTransform(g_app->m_transformSpace);
-        QDUDecomposition(ts, rotate, scale, shear);
-
         // Continuous edit utils.
         static TransformAction* dragMem = nullptr;
         const auto saveDragMemFn = [this]() -> void
@@ -369,17 +364,26 @@ namespace ToolKit
           }
         };
 
-        TransformationSpace space = g_app->m_transformSpace;
-        Vec3 translate = glm::column(ts, 3);
+        Vec3 translate = m_entity->m_node->GetTranslation
+        (
+          TransformationSpace::TS_PARENT
+        );
         if (ImGui::DragFloat3("Translate", &translate[0], 0.25f))
         {
           saveDragMemFn();
-          m_entity->m_node->SetTranslation(translate, space);
+          m_entity->m_node->SetTranslation
+          (
+            translate,
+            TransformationSpace::TS_PARENT
+          );
         }
 
         saveTransformActionFn();
 
-        Quaternion q0 = glm::toQuat(rotate);
+        Quaternion q0 = m_entity->m_node->GetOrientation
+        (
+          TransformationSpace::TS_LOCAL
+        );
         Vec3 eularXYZ = glm::eulerAngles(q0);
         Vec3 degrees = glm::degrees(eularXYZ);
         if (ImGui::DragFloat3("Rotate", &degrees[0], 0.25f))
@@ -402,17 +406,25 @@ namespace ToolKit
 
           if (isDrag)
           {
-            m_entity->m_node->Rotate(q, space);
+            m_entity->m_node->Rotate
+            (
+              q,
+              TransformationSpace::TS_LOCAL
+            );
           }
           else
           {
-            m_entity->m_node->SetOrientation(q, space);
+            m_entity->m_node->SetOrientation
+            (
+              q,
+              TransformationSpace::TS_LOCAL
+            );
           }
         }
 
         saveTransformActionFn();
 
-        scale = m_entity->m_node->GetScale();
+        Vec3 scale = m_entity->m_node->GetScale();
         if (ImGui::DragFloat3("Scale", &scale[0], 0.25f))
         {
           saveDragMemFn();
