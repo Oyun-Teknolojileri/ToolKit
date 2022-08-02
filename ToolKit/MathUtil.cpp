@@ -283,6 +283,19 @@ namespace ToolKit
       (box1.min.z <= box2.max.z && box1.max.z >= box2.min.z);
   }
 
+  bool BoxBoxIntersection
+  (
+    const Vec3& box1Max,
+    const Vec3& box1Min,
+    const Vec3& box2Max,
+    const Vec3& box2Min
+  )
+  {
+    return (box1Min.x <= box2Max.x && box1Max.x >= box2Min.x) &&
+      (box1Min.y <= box2Max.y && box1Max.y >= box2Min.y) &&
+      (box1Min.z <= box2Max.z && box1Max.z >= box2Min.z);
+  }
+
   bool BoxPointIntersection(const BoundingBox& box, const Vec3& point)
   {
     // Not accept point on bounding box cases.
@@ -610,6 +623,11 @@ namespace ToolKit
     return baseLine.position + (baseLine.direction * d);
   }
 
+  float BoxVolume(const Vec3& max, const Vec3& min)
+  {
+    return glm::abs((max.x - min.x) * (max.y - min.y) * (max.z - min.z));
+  }
+
   // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
   void NormalizePlaneEquation(PlaneEquation& plane)
   {
@@ -783,6 +801,16 @@ namespace ToolKit
     }
 
     return glm::normalize(perp);
+  }
+
+  bool PointInsideBBox(const Vec3& point, const Vec3& max, const Vec3& min)
+  {
+    return
+    (
+      point.x <= max.x && point.x >= min.x
+      && point.y <= max.y && point.y >= min.y
+      && point.z <= max.z && point.z >= min.z
+    );
   }
 
 }  // namespace ToolKit

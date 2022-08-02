@@ -41,7 +41,8 @@ namespace ToolKit
     Entity_Camera,
     Entity_Directional,
     Entity_Node,
-    Entity_Button
+    Entity_Button,
+    Entity_Sky
   };
 
   static VariantCategory EntityCategory

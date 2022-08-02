@@ -3,6 +3,8 @@
 	<uniform name = "LightData" />
 	<uniform name = "CamData" />
 	<uniform name = "Color" />
+	<uniform name = "UseIbl" />
+	<uniform name = "IBLIrradianceMap" />
 	<source>
 	<!--
 		#version 300 es
@@ -37,6 +39,9 @@
 		uniform _LightData LightData;
 		uniform _CamData CamData;
 		uniform vec4 Color;
+
+		uniform samplerCube IBLIrradianceMap;
+		uniform float UseIbl;
 
 		in vec3 v_pos;
 		in vec3 v_normal;
@@ -164,7 +169,10 @@
 
 				irradiance += (ambient + diffuse + specular) * LightData.intensity[i];
 			}
-			
+
+			vec3 iblIrradiance = UseIbl * texture(IBLIrradianceMap, n).rgb;
+			irradiance += iblIrradiance * 0.25;
+
 			fragColor = vec4(irradiance * Color.xyz, Color.a);
 		}
 	-->

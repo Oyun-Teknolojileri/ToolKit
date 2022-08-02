@@ -33,8 +33,6 @@ namespace ToolKit
     class MaterialInspector;
     class Window;
     class Gizmo;
-    class LightBillboard;
-    class SpotLightGizmo;
     class PublishManager;
 
     class App : Serializable
@@ -119,6 +117,11 @@ namespace ToolKit
         EditorViewport* viewport,
         Gizmo* gizmo
       );
+      void RenderComponentGizmo
+      (
+        EditorViewport* viewport,
+        EntityRawPtrArray selecteds
+      );
       void ShowPlayWindow(float deltaTime);
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
@@ -151,10 +154,8 @@ namespace ToolKit
       Grid* m_2dGrid;
       Axis3d* m_origin;
       Cursor* m_cursor;
-      SpotLightGizmo* m_spotLightGizmo;
-      LightBillboard* m_pointLightBillboard;
-      LightBillboard* m_directionalLightBillboard;
       Gizmo* m_gizmo = nullptr;
+      Billboard* m_environmentBillboard = nullptr;
       std::vector<Entity*> m_perFrameDebugObjects;
 
       // 3 point lighting system.

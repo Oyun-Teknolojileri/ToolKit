@@ -1,12 +1,16 @@
 #pragma once
 
+#include <vector>
+
 #include "Types.h"
 #include "Resource.h"
 #include "ResourceManager.h"
-#include <vector>
+#include "Renderer.h"
 
 namespace ToolKit
 {
+  class Viewport;
+  class Renderer;
 
   class TK_API Texture : public Resource
   {
@@ -15,6 +19,7 @@ namespace ToolKit
 
     Texture();
     explicit Texture(String file);
+    explicit Texture(uint textureId);
     virtual ~Texture();
 
     void Load() override;
@@ -39,6 +44,7 @@ namespace ToolKit
 
     CubeMap();
     explicit CubeMap(String file);
+    explicit CubeMap(uint cubemapId);
     ~CubeMap();
 
     void Load() override;
@@ -50,6 +56,69 @@ namespace ToolKit
 
    public:
     std::vector<uint8*> m_images;
+  };
+
+  struct CubeMapSettings
+  {
+    int level;
+    int internalformat;
+    int width;
+    int height;
+    uint format;
+    uint type;
+    void* pixels;
+    int wrapSet;
+    int filterSet;
+  };
+
+  class TK_API Hdri : public Texture
+  {
+   public:
+    TKResourceType(Hdri);
+
+    Hdri();
+    explicit Hdri(const String& file);
+    virtual ~Hdri();
+
+    void Load() override;
+    void Init(bool flushClientSideArray = true) override;
+    void UnInit() override;
+
+    bool TextureAssigned();
+    uint GetCubemapId();
+    void SetCubemapId(uint id);
+    uint GetIrradianceCubemapId();
+    void SetIrradianceCubemapId(uint id);
+
+   protected:
+    void CreateFramebuffer();
+    void GenerateCubemapFromHdri();
+    void GenerateIrradianceMap();
+    uint GenerateCubemapBuffers(struct CubeMapSettings cubeMapSettings);
+    void RenderToCubeMap
+    (
+      int fbo,
+      const Mat4 views[6],
+      CameraPtr cam,
+      uint cubeMapTextureId,
+      int width,
+      int height,
+      MaterialPtr mat
+    );
+
+    void Clear() override;
+
+   public:
+    CubeMapPtr m_cubemap = nullptr;
+    CubeMapPtr m_irradianceCubemap = nullptr;
+    float* m_imagef = nullptr;
+
+   private:
+    uint m_captureFBO = 0;
+    uint m_captureRBO = 0;
+
+    MaterialPtr m_texToCubemapMat = nullptr;
+    MaterialPtr m_cubemapToIrradiancemapMat = nullptr;
   };
 
   struct RenderTargetSettigs

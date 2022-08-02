@@ -161,6 +161,15 @@ namespace ToolKit
         case Uniform::GRID_SETTINGS:
         name = "GridData";
         break;
+        case Uniform::PROJECTION_VIEW_NO_TR:
+        name = "ProjectionViewNoTr";
+        break;
+        case Uniform::USE_IBL:
+        name = "UseIbl";
+        break;
+        case Uniform::IBL_IRRADIANCE:
+        name = "IBLIrradianceMap";
+        break;
         default:
         assert(false && "unknown uniform");
         break;
@@ -244,6 +253,22 @@ namespace ToolKit
         else if (strcmp("GridData", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::GRID_SETTINGS);
+        }
+        else if (strcmp("Exposure", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::EXPOSURE);
+        }
+        else if (strcmp("ProjectionViewNoTr", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::PROJECTION_VIEW_NO_TR);
+        }
+        else if (strcmp("UseIbl", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::USE_IBL);
+        }
+        else if (strcmp("IBLIrradianceMap", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::IBL_IRRADIANCE);
         }
         else
         {

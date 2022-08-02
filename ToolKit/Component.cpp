@@ -53,6 +53,9 @@ namespace ToolKit
       case ComponentType::MaterialComponent:
         return new MaterialComponent();
       break;
+      case ComponentType::EnvironmentComponent:
+        return new EnvironmentComponent();
+      break;
       case ComponentType::Base:
       default:
         assert(false && "Unsupported component type");

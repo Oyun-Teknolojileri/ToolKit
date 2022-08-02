@@ -1,4 +1,4 @@
-#include "ConsoleWindow.h"
+#include "FolderWindow.h"
 
 #include <filesystem>
 #include <vector>
@@ -6,8 +6,7 @@
 #include <memory>
 #include <string>
 
-#include "MaterialInspector.h"
-#include "FolderWindow.h"
+#include "ConsoleWindow.h"
 #include "GlobalDef.h"
 #include "Gizmo.h"
 #include "PropInspector.h"
@@ -16,6 +15,7 @@
 #include "Light.h"
 #include "DirectionComponent.h"
 #include "DebugNew.h"
+#include "MaterialInspector.h"
 
 namespace ToolKit
 {
@@ -61,6 +61,10 @@ namespace ToolKit
       {
         return GetTextureManager();
       }
+      else if (m_ext == HDR)
+      {
+        return GetTextureManager();
+      }
       else if (m_ext == SCENE)
       {
         return GetSceneManager();
@@ -71,9 +75,10 @@ namespace ToolKit
 
     void DirectoryEntry::GenerateThumbnail() const
     {
+      bool isHdri = false;
       const Vec2& thumbSize = g_app->m_thumbnailSize;
       auto renderThumbFn =
-      [this, &thumbSize](Camera* cam, Entity* obj) -> void
+      [this, &thumbSize, &isHdri](Camera* cam, Entity* obj) -> void
       {
         RenderTarget* thumb = nullptr;
         RenderTargetPtr thumbPtr = nullptr;
@@ -114,6 +119,11 @@ namespace ToolKit
         light.GetComponent<DirectionComponent>()->LookAt(ZERO);
 
         LightRawPtrArray lights = { &light };
+
+        if (isHdri)
+        {
+          cam->GetComponent<DirectionComponent>()->Roll(glm::radians(180.0f));
+        }
 
         g_app->m_renderer->Render(obj, cam, lights);
 
@@ -161,10 +171,22 @@ namespace ToolKit
 
         renderThumbFn(&cam, &ball);
       }
-      else if (SupportedImageFormat(m_ext))
+      else if (SupportedImageFormat(m_ext) || m_ext == HDR)
       {
         String fullpath = m_rootPath + GetPathSeparator() + m_fileName + m_ext;
-        TexturePtr texture = GetTextureManager()->Create<Texture>(fullpath);
+        TexturePtr texture = nullptr;
+        if (m_ext == HDR)
+        {
+          texture = GetTextureManager()->Create<Hdri>(fullpath);
+          texture->Init();
+          isHdri = true;
+        }
+        else
+        {
+          texture = GetTextureManager()->Create<Texture>(fullpath);
+          isHdri = false;
+        }
+
         float maxDim = static_cast<float>
         (
           glm::max(texture->m_width, texture->m_height)
@@ -351,6 +373,10 @@ namespace ToolKit
               genThumbFn();
             }
             else if (SupportedImageFormat(dirEnt.m_ext))
+            {
+              genThumbFn();
+            }
+            else if (dirEnt.m_ext == HDR)
             {
               genThumbFn();
             }

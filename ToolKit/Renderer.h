@@ -8,9 +8,11 @@
 #include "Light.h"
 #include "Viewport.h"
 #include "SpriteSheet.h"
+#include "Sky.h"
 
 namespace ToolKit
 {
+  class Viewport;
 
   class TK_API Renderer
   {
@@ -20,7 +22,7 @@ namespace ToolKit
 
     void RenderScene
     (
-      const ScenePtr& scene,
+      const ScenePtr scene,
       Viewport* viewport,
       const LightRawPtrArray& editor_lights
     );
@@ -35,7 +37,7 @@ namespace ToolKit
       LightRawPtrArray()
     );
 
-    void SetRenderState(const RenderState* const state);
+    void SetRenderState(const RenderState* const state, ProgramPtr program);
 
     void SetRenderTarget
     (
@@ -52,6 +54,7 @@ namespace ToolKit
     );
 
     void DrawFullQuad(ShaderPtr fragmentShader);
+    void DrawCube(Camera* cam, MaterialPtr mat, bool reverseFaces = false);
 
    private:
     void RenderEntities
@@ -114,6 +117,8 @@ namespace ToolKit
       LightRawPtrArray()
     );
 
+    void RenderSky(Sky* sky, Camera* cam);
+
     void RenderSkinned(Drawable* object, Camera* cam);
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
@@ -123,6 +128,8 @@ namespace ToolKit
       Entity* entity,
       const LightRawPtrArray& lights
     );
+    void GetEnvironmentLightEntities(EntityRawPtrArray entities);
+    void FindEnvironmentLights(EntityRawPtrArray entities, Viewport* viewport);
 
     void SetProjectViewModel(Entity* ntt, Camera* cam);
     void BindProgram(ProgramPtr program);
@@ -147,6 +154,7 @@ namespace ToolKit
 
    private:
     uint m_currentProgram = 0;
+    int m_textureIdCount = 0;
     Mat4 m_project;
     Mat4 m_view;
     Mat4 m_model;
@@ -158,6 +166,8 @@ namespace ToolKit
 
     std::unordered_map<String, ProgramPtr> m_programs;
     RenderState m_renderState;
+
+    EntityRawPtrArray m_environmentLightEntities;
   };
 
 }  // namespace ToolKit

@@ -5,6 +5,7 @@
 #include "MathUtil.h"
 #include "Util.h"
 #include "Light.h"
+#include "Sky.h"
 #include "ResourceComponent.h"
 #include "DebugNew.h"
 
@@ -224,6 +225,9 @@ namespace ToolKit
       break;
       case EntityType::Entity_Light:
       e = new Light();
+      break;
+      case EntityType::Entity_Sky:
+      e = new Sky();
       break;
       case EntityType::Entity_SpriteAnim:
       case EntityType::Entity_Directional:

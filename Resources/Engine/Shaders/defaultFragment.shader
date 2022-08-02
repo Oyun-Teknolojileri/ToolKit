@@ -2,6 +2,8 @@
 	<type name = "fragmentShader" />
 	<uniform name = "LightData" />
 	<uniform name = "CamData" />
+	<uniform name = "UseIbl" />
+	<uniform name = "IBLIrradianceMap" />
 	<source>
 	<!--
 		#version 300 es
@@ -36,6 +38,9 @@
 		uniform _LightData LightData;
 		uniform _CamData CamData;
 		uniform sampler2D s_texture;
+		uniform samplerCube IBLIrradianceMap;
+
+		uniform float UseIbl;
 
 		in vec3 v_pos;
 		in vec3 v_normal;
@@ -163,7 +168,9 @@
 				}
 
 				irradiance += (ambient + diffuse + specular) * LightData.intensity[i];
-			} 
+			}
+			vec3 iblIrradiance = UseIbl * texture(IBLIrradianceMap, n).rgb;
+			irradiance += iblIrradiance * 0.25;
 
 			vec4 objectColor = texture(s_texture, v_texture);
 			fragColor = vec4(irradiance, 1.0) * objectColor;

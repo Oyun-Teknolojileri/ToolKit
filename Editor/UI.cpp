@@ -74,6 +74,7 @@ namespace ToolKit
     TexturePtr UI::m_unlockedIcon;
     TexturePtr UI::m_viewZoomIcon;
     TexturePtr UI::m_gridIcon;
+    TexturePtr UI::m_skyIcon;
     TexturePtr UI::m_closeIcon;
 
     void UI::Init()
@@ -340,9 +341,14 @@ namespace ToolKit
       m_viewZoomIcon->Init();
       m_gridIcon = GetTextureManager()->Create<Texture>
       (
-      TexturePath("Icons/grid.png", true)
+        TexturePath("Icons/grid.png", true)
       );
       m_gridIcon->Init();
+      m_skyIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/sky.png", true)
+      );
+      m_skyIcon->Init();
       m_closeIcon = GetTextureManager()->Create<Texture>
       (
       TexturePath("Icons/close.png", true)
@@ -989,31 +995,6 @@ namespace ToolKit
 
         ImGui::EndMenu();
       }
-
-      /*
-      for (const Project& project : g_app->m_workspace.m_projects)
-      {
-        if (ImGui::BeginMenu(project.name.c_str()))
-        {
-          if (ImGui::MenuItem("Open"))
-          {
-            g_app->OpenProject(project);
-          }
-          
-          if (ImGui::BeginMenu("Publish"))
-          {
-            if (ImGui::MenuItem("Web"))
-            {
-              // TODO go on
-            }
-
-            ImGui::EndMenu();
-          }
-
-          ImGui::EndMenu();
-        }
-      }
-      */
     }
 
     void UI::ShowImportWindow()

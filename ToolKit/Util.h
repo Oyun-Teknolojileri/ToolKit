@@ -135,6 +135,8 @@ namespace ToolKit
   TK_API LineBatch* CreateBoundingBoxDebugObject
   (
     const BoundingBox& box,
+    const Vec3& color = Vec3(1.0f, 0.0f, 0.0f),
+    float size = 2.0f,
     const Mat4* transform = nullptr
   );
 

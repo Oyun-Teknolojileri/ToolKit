@@ -159,6 +159,16 @@ namespace ToolKit
       void Render(Renderer* renderer, Camera* cam);
     };
 
+    class SkyBillboard : public Billboard
+    {
+     public:
+      SkyBillboard();
+      virtual ~SkyBillboard();
+
+     private:
+      void Generate();
+    };
+
     class LightGizmoBase
     {
      public:

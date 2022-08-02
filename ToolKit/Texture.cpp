@@ -1,7 +1,11 @@
 #include "Texture.h"
+
+#include <memory>
+
 #include "ToolKit.h"
 #include "GL/glew.h"
 #include "DebugNew.h"
+#include "DirectionComponent.h"
 
 namespace ToolKit
 {
@@ -15,6 +19,12 @@ namespace ToolKit
     : Texture()
   {
     SetFile(file);
+  }
+
+  Texture::Texture(uint textureId)
+  {
+    m_textureId = textureId;
+    m_initiated = true;
   }
 
   Texture::~Texture()
@@ -111,6 +121,7 @@ namespace ToolKit
   {
     stbi_image_free(m_image);
     m_image = nullptr;
+    m_loaded = false;
   }
 
   CubeMap::CubeMap()
@@ -122,6 +133,12 @@ namespace ToolKit
     : Texture()
   {
     SetFile(file);
+  }
+
+  CubeMap::CubeMap(uint cubemapId)
+  {
+    m_textureId = cubemapId;
+    m_initiated = true;
   }
 
   CubeMap::~CubeMap()
@@ -221,6 +238,9 @@ namespace ToolKit
       return;
     }
 
+    GLint currId;
+    glGetIntegerv(GL_TEXTURE_CUBE_MAP, &currId);
+
     glGenTextures(1, &m_textureId);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureId);
 
@@ -268,6 +288,8 @@ namespace ToolKit
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
+    glBindTexture(GL_TEXTURE_CUBE_MAP, currId);
+
     if (flushClientSideArray)
     {
       Clear();
@@ -285,11 +307,418 @@ namespace ToolKit
 
   void CubeMap::Clear()
   {
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < m_images.size(); i++)
     {
       stbi_image_free(m_images[i]);
       m_images[i] = nullptr;
     }
+    m_loaded = false;
+  }
+
+  Hdri::Hdri()
+  {
+  }
+
+  Hdri::Hdri(const String& file)
+    : Texture()
+  {
+    SetFile(file);
+  }
+
+  Hdri::~Hdri()
+  {
+    UnInit();
+  }
+
+  void Hdri::Load()
+  {
+    if (m_loaded)
+    {
+      return;
+    }
+
+    // Load hdri image
+    stbi_set_flip_vertically_on_load(true);
+    m_imagef = stbi_loadf
+    (
+      GetFile().c_str(),
+      &m_width,
+      &m_height,
+      &m_bytePP,
+      0
+    );
+    stbi_set_flip_vertically_on_load(false);
+    if (m_imagef)
+    {
+      m_loaded = true;
+    }
+  }
+
+  void Hdri::Init(bool flushClientSideArray)
+  {
+    if (m_initiated)
+    {
+      return;
+    }
+
+    // Sanity check.
+    if (m_imagef == nullptr || m_width <= 0 || m_height <= 0)
+    {
+      return;
+    }
+
+    // Create framebuffer holds cubemap
+    CreateFramebuffer();
+
+    // Convert hdri image to cubemap images
+    GenerateCubemapFromHdri();
+
+    // Generate irradience cubemap images
+    GenerateIrradianceMap();
+
+    if (flushClientSideArray)
+    {
+      Clear();
+    }
+
+    m_initiated = true;
+  }
+
+  void Hdri::UnInit()
+  {
+    if (m_initiated)
+    {
+      glDeleteFramebuffers(1, &m_captureFBO);
+      glDeleteRenderbuffers(1, &m_captureRBO);
+      m_cubemap->UnInit();
+      m_irradianceCubemap->UnInit();
+    }
+    Texture::UnInit();
+    Clear();
+    m_initiated = false;
+  }
+
+  bool Hdri::TextureAssigned()
+  {
+    return (GetFile().size() != 0);
+  }
+
+  uint Hdri::GetCubemapId()
+  {
+    return m_cubemap->m_textureId;
+  }
+
+  void Hdri::SetCubemapId(uint id)
+  {
+    m_cubemap->m_textureId = id;
+  }
+
+  uint Hdri::GetIrradianceCubemapId()
+  {
+    if (m_irradianceCubemap)
+    {
+      return m_irradianceCubemap->m_textureId;
+    }
+    else
+    {
+      return 0;
+    }
+  }
+
+  void Hdri::SetIrradianceCubemapId(uint id)
+  {
+    m_irradianceCubemap->m_textureId = id;
+  }
+
+  uint Hdri::GenerateCubemapBuffers(struct CubeMapSettings cubeMapSettings)
+  {
+    // Create buffers for cubemap textures
+    GLuint textureId;
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+      glTexImage2D
+      (
+        GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+        cubeMapSettings.level,
+        cubeMapSettings.internalformat,
+        cubeMapSettings.width,
+        cubeMapSettings.height,
+        0,
+        cubeMapSettings.format,
+        cubeMapSettings.type,
+        cubeMapSettings.pixels
+      );
+    }
+
+    glTexParameteri
+    (
+      GL_TEXTURE_CUBE_MAP,
+      GL_TEXTURE_WRAP_S,
+      cubeMapSettings.wrapSet
+    );
+    glTexParameteri
+    (
+      GL_TEXTURE_CUBE_MAP,
+      GL_TEXTURE_WRAP_T,
+      cubeMapSettings.wrapSet
+    );
+    glTexParameteri
+    (
+      GL_TEXTURE_CUBE_MAP,
+      GL_TEXTURE_WRAP_R,
+      cubeMapSettings.wrapSet
+    );
+    glTexParameteri
+    (
+      GL_TEXTURE_CUBE_MAP,
+      GL_TEXTURE_MIN_FILTER,
+      cubeMapSettings.filterSet
+    );
+    glTexParameteri
+    (
+      GL_TEXTURE_CUBE_MAP,
+      GL_TEXTURE_MAG_FILTER,
+      cubeMapSettings.filterSet
+    );
+
+    return textureId;
+  }
+
+  void Hdri::RenderToCubeMap
+  (
+    int fbo,
+    const Mat4 views[6],
+    CameraPtr cam,
+    uint cubeMapTextureId,
+    int width,
+    int height,
+    MaterialPtr mat
+  )
+  {
+    GLint lastFBO;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    // Render cube from 6 different angles for 6 images of cubemap
+    for (int i = 0; i < 6; ++i)
+    {
+      Vec3 pos;
+      Quaternion rot;
+      Vec3 sca;
+      DecomposeMatrix(views[i], &pos, &rot, &sca);
+
+      cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
+      cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
+      cam->m_node->SetScale(sca);
+
+      glFramebufferTexture2D
+      (
+        GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+        cubeMapTextureId,
+        0
+      );
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glViewport(0, 0, width , height);
+      GetRenderer()->DrawCube(cam.get(), mat, true);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+  }
+
+  void Hdri::Clear()
+  {
+    stbi_image_free(m_imagef);
+    m_imagef = nullptr;
+    m_loaded = false;
+  }
+
+  void Hdri::CreateFramebuffer()
+  {
+    GLint lastFBO;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+
+    glGenFramebuffers(1, &m_captureFBO);
+    glGenRenderbuffers(1, &m_captureRBO);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_captureFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_captureRBO);
+    glRenderbufferStorage
+    (
+      GL_RENDERBUFFER,
+      GL_DEPTH_COMPONENT24,
+      m_width / 4,
+      m_width / 4
+    );
+    glFramebufferRenderbuffer
+    (
+      GL_FRAMEBUFFER,
+      GL_DEPTH_ATTACHMENT,
+      GL_RENDERBUFFER,
+      m_captureRBO
+    );
+
+    // Check if framebuffer is complete
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+      GetLogger()->Log("Error while creating framebuffer.");
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+  }
+
+  void Hdri::GenerateCubemapFromHdri()
+  {
+    GLint currId;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
+
+    // Store hdri in texture buffer
+    glGenTextures(1, &m_textureId);
+    glBindTexture(GL_TEXTURE_2D, m_textureId);
+    glTexImage2D
+    (
+      GL_TEXTURE_2D,
+      0,
+      GL_RGB16F,
+      m_width,
+      m_height,
+      0,
+      GL_RGB,
+      GL_FLOAT,
+      m_imagef
+    );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glBindTexture(GL_TEXTURE_2D, currId);
+
+    glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &currId);
+
+    GLuint cubemapTextureId = GenerateCubemapBuffers
+    (
+      {
+        0,
+        GL_RGB16F,
+        m_width / 4,
+        m_width / 4,
+        GL_RGB,
+        GL_FLOAT,
+        nullptr,
+        GL_CLAMP_TO_EDGE,
+        GL_LINEAR
+      }
+    );
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, currId);
+
+    // Views for 6 different angles
+    CameraPtr cam = std::make_shared<Camera>();
+    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
+    Mat4 views[] =
+    {
+      glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+      glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+      glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+      glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+      glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+      glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))
+    };
+
+    // Create material
+    ShaderPtr vert = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("equirectToCubeVert.shader", true)
+    );
+    ShaderPtr frag = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("equirectToCubeFrag.shader", true)
+    );
+    frag->m_shaderParams["Exposure"] = ParameterVariant(1.0f);
+
+    m_texToCubemapMat = std::make_shared<Material>();
+    m_texToCubemapMat->m_diffuseTexture =
+    std::make_shared<Texture>(m_textureId);
+    m_texToCubemapMat->m_vertexShader = vert;
+    m_texToCubemapMat->m_fragmetShader = frag;
+    m_texToCubemapMat->Init();
+
+    RenderToCubeMap
+    (
+      m_captureFBO,
+      views,
+      cam,
+      cubemapTextureId,
+      m_width / 4,
+      m_width / 4,
+      m_texToCubemapMat
+    );
+
+    m_cubemap = std::make_shared<CubeMap>(cubemapTextureId);
+  }
+
+  void Hdri::GenerateIrradianceMap()
+  {
+    GLuint irradianceTextureId = GenerateCubemapBuffers
+    (
+      {
+        0,
+        GL_RGB16F,
+        m_width / 64,
+        m_width / 64,
+        GL_RGB,
+        GL_FLOAT,
+        nullptr,
+        GL_CLAMP_TO_EDGE,
+        GL_LINEAR
+      }
+    );
+
+    // Views for 6 different angles
+    CameraPtr cam = std::make_shared<Camera>();
+    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
+    Mat4 views[] =
+    {
+      glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+      glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+      glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+      glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+      glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+      glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))
+    };
+
+    // Create material
+    ShaderPtr vert = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("irradianceGenerateVert.shader", true)
+    );
+    ShaderPtr frag = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("irradianceGenerateFrag.shader", true)
+    );
+
+    m_cubemapToIrradiancemapMat = std::make_shared<Material>();
+    m_cubemapToIrradiancemapMat->m_cubeMap = m_cubemap;
+    m_cubemapToIrradiancemapMat->m_vertexShader = vert;
+    m_cubemapToIrradiancemapMat->m_fragmetShader = frag;
+    m_cubemapToIrradiancemapMat->Init();
+
+    RenderToCubeMap
+    (
+      m_captureFBO,
+      views,
+      cam,
+      irradianceTextureId,
+      m_width / 64,
+      m_width / 64,
+      m_cubemapToIrradiancemapMat
+    );
+
+    m_irradianceCubemap = std::make_shared<CubeMap>(irradianceTextureId);
   }
 
   RenderTarget::RenderTarget()
@@ -528,6 +957,7 @@ namespace ToolKit
       t == ResourceType::Texture
       || t == ResourceType::CubeMap
       || t == ResourceType::RenderTarget
+      || t == ResourceType::Hdri
     )
     {
       return true;
@@ -549,6 +979,9 @@ namespace ToolKit
       break;
       case ResourceType::RenderTarget:
       tex = new RenderTarget();
+      break;
+      case ResourceType::Hdri:
+      tex = new Hdri();
       break;
       default:
       assert(false);

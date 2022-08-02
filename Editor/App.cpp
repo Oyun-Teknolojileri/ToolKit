@@ -69,19 +69,22 @@ namespace ToolKit
         AxisLabel::XY, 10.0
       );  // Generate grid cells 10 x 10
 
+      m_environmentBillboard = new SkyBillboard();
+
       // Lights and camera.
       m_lightMaster = new Node();
 
+      float intensity = 1.5f;
       DirectionalLight* light = new DirectionalLight();
       light->SetColorVal(Vec3(0.267f));
-      light->SetIntensityVal(1.5f);
+      light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(180.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
       light->SetColorVal(Vec3(0.55f));
-      light->SetIntensityVal(1.5f);
+      light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
       m_lightMaster->AddChild(light->m_node);
@@ -89,7 +92,7 @@ namespace ToolKit
 
       light = new DirectionalLight();
       light->SetColorVal(Vec3(0.15f));
-      light->SetIntensityVal(1.5f);
+      light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
       m_lightMaster->AddChild(light->m_node);
@@ -97,7 +100,7 @@ namespace ToolKit
 
       light = new DirectionalLight();
       light->SetColorVal(Vec3(0.1f));
-      light->SetIntensityVal(1.5f);
+      light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
       m_lightMaster->AddChild(light->m_node);
@@ -156,6 +159,7 @@ namespace ToolKit
       SafeDel(m_grid);
       SafeDel(m_origin);
       SafeDel(m_cursor);
+      SafeDel(m_environmentBillboard);
 
       for (Light* light : m_sceneLights)
       {
@@ -208,9 +212,9 @@ namespace ToolKit
       for (Light* light : allLights)
       {
         bool found = false;
-        for (Entity* entity : selecteds)
+        for (Entity* ntt : selecteds)
         {
-          if (light->GetIdVal() == entity->GetIdVal())
+          if (light->GetIdVal() == ntt->GetIdVal())
           {
             EnableLightGizmo(light, true);
             found = true;
@@ -226,6 +230,7 @@ namespace ToolKit
 
       // Take all lights in an array
       LightRawPtrArray gameLights = GetCurrentScene()->GetLights();
+
       gameLights.insert
       (
         gameLights.end(),
@@ -299,6 +304,8 @@ namespace ToolKit
 
           // Render gizmo.
           RenderGizmo(viewport, m_gizmo);
+
+          RenderComponentGizmo(viewport, selecteds);
         }
 
         // Render debug objects.
@@ -634,9 +641,9 @@ namespace ToolKit
     EditorScenePtr App::GetCurrentScene()
     {
       EditorScenePtr eScn = std::static_pointer_cast<EditorScene>
-        (
+      (
         GetSceneManager()->GetCurrentScene()
-        );
+      );
 
       return eScn;
     }
@@ -989,14 +996,14 @@ namespace ToolKit
               }
 
               if
-                (
+              (
                 ext == PNG ||
                 ext == JPG ||
                 ext == JPEG ||
                 ext == TGA ||
                 ext == BMP ||
                 ext == PSD
-                )
+              )
               {
                 fullPath = TexturePath(line);
               }
@@ -1302,11 +1309,19 @@ Fail:
         solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
         m_renderer->m_overrideMat = solidMat;
 
+        bool isLight = false;
         for (Entity* ntt : selection)
         {
           if (ntt->IsDrawable())
           {
+            isLight = false;
             if (ntt->GetType() == EntityType::Entity_Light)
+            {
+              isLight = true;
+            }
+
+            // Disable all gizmos
+            if (isLight)
             {
               Light* light = static_cast<Light*>(ntt);
               EnableLightGizmo(light, false);
@@ -1393,6 +1408,56 @@ Fail:
         if (nttGizmo != nullptr)
         {
           m_renderer->Render(gizmo, viewport->GetCamera());
+        }
+      }
+    }
+
+    void App::RenderComponentGizmo
+    (
+      EditorViewport* viewport,
+      EntityRawPtrArray selecteds
+    )
+    {
+      for (Entity* ntt : GetCurrentScene()->GetEntities())
+      {
+        // Environment Component
+        EnvironmentComponentPtr envCom =
+        ntt->GetComponent<EnvironmentComponent>();
+        if (envCom != nullptr)
+        {
+          // Translate billboard
+          m_environmentBillboard->m_worldLocation =
+          ntt->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+
+          // Rotate billboard
+          m_environmentBillboard->LookAt
+          (
+            viewport->GetCamera(),
+            viewport->m_zoom
+          );
+
+          // Render billboard
+          m_renderer->Render(m_environmentBillboard, viewport->GetCamera());
+        }
+      }
+
+      for (Entity* ntt : selecteds)
+      {
+        // Environment Component
+        EnvironmentComponentPtr envCom =
+        ntt->GetComponent<EnvironmentComponent>();
+        if (envCom != nullptr && ntt->GetType() != EntityType::Entity_Sky)
+        {
+          // Bounding box
+          m_perFrameDebugObjects.push_back
+          (
+            CreateBoundingBoxDebugObject
+            (
+              *envCom->GetBBox(),
+              g_environmentGizmoColor,
+              1.0f
+          )
+          );
         }
       }
     }

@@ -13,6 +13,7 @@
 */
 namespace ToolKit
 {
+  struct RenderTargetSettigs;
 
   /**
   * Base class for Viewport class. Holds Camera object that viewport has.

@@ -47,6 +47,11 @@ namespace ToolKit
     // Update parent - child relation for entities.
     for (Entity* e : m_entities)
     {
+      if (e->GetType() == EntityType::Entity_Sky)
+      {
+        m_sky = static_cast<Sky*>(e);
+      }
+
       if (e->_parentId != 0)
       {
         Entity* parent = GetEntity(e->_parentId);
@@ -55,6 +60,13 @@ namespace ToolKit
           parent->m_node->AddChild(e->m_node);
         }
       }
+    }
+
+    // Add sky if no sky is deserialized
+    if (m_sky == nullptr)
+    {
+      Sky* sky = new Sky();
+      SetSky(sky, false);
     }
 
     m_loaded = true;
@@ -94,13 +106,26 @@ namespace ToolKit
     const EntityRawPtrArray& ntties = GetEntities();
     for (Entity* ntt : ntties)
     {
-      if (ntt->IsDrawable())
+      if (ntt->GetType() == EntityType::Entity_Sky)
       {
+        static_cast<Sky*>(ntt)->Init();
+      }
+      else if (ntt->IsDrawable())
+      {
+        // Mesh component
         MeshComponentPtrArray meshes;
         ntt->GetComponent<MeshComponent>(meshes);
         for (MeshComponentPtr& mesh : meshes)
         {
           mesh->Init(flushClientSideArray);
+        }
+
+        // Environment component
+        EnvironmentComponentPtr envCom =
+        ntt->GetComponent<EnvironmentComponent>();
+        if (envCom != nullptr)
+        {
+          envCom->Init(true);
         }
       }
     }
@@ -369,6 +394,27 @@ namespace ToolKit
     return filtered;
   }
 
+  Sky* Scene::GetSky()
+  {
+    return m_sky;
+  }
+
+  // This function should be always used for assigning sky to scene
+  void Scene::SetSky(Sky* sky, bool init)
+  {
+    if (m_sky != nullptr)
+    {
+      Entity* sky = RemoveEntity(m_sky->GetIdVal());
+      SafeDel(sky);
+    }
+    m_sky = sky;
+    if (init)
+    {
+      m_sky->Init();
+    }
+    AddEntity(m_sky);
+  }
+
   void Scene::Destroy(bool removeResources)
   {
     for (Entity* ntt : m_entities)
@@ -377,10 +423,11 @@ namespace ToolKit
       {
         ntt->RemoveResources();
       }
-
       SafeDel(ntt);
     }
     m_entities.clear();
+
+    m_sky = nullptr;
 
     m_loaded = false;
     m_initiated = false;

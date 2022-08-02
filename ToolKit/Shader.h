@@ -19,7 +19,11 @@ namespace ToolKit
     CAM_DATA,
     COLOR,
     FRAME_COUNT,
-    GRID_SETTINGS
+    GRID_SETTINGS,
+    EXPOSURE,
+    PROJECTION_VIEW_NO_TR,
+    USE_IBL,
+    IBL_IRRADIANCE
   };
 
   class TK_API Shader : public Resource

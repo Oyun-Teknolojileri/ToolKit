@@ -4,10 +4,11 @@
 #include <memory>
 
 #include "Component.h"
+#include "Types.h"
+#include "MathUtil.h"
 
 namespace ToolKit
 {
-
   typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
   typedef std::vector<MeshComponentPtr> MeshComponentPtrArray;
   static VariantCategory MeshComponentCategory
@@ -93,6 +94,44 @@ namespace ToolKit
     * within the Mesh.
     */
     TKDeclareParam(MaterialPtr, Material);
+  };
+
+  typedef std::shared_ptr<class EnvironmentComponent> EnvironmentComponentPtr;
+  static VariantCategory EnvironmentComponentCategory
+  {
+    "Environment Component",
+    90
+  };
+
+  class TK_API EnvironmentComponent : public Component
+  {
+   public:
+    TKComponentType(EnvironmentComponent);
+
+    EnvironmentComponent();
+    virtual ~EnvironmentComponent();
+
+    ComponentPtr Copy(Entity* ntt) override;
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void UpdateBBox();
+
+    BoundingBox* GetBBox();
+    Vec3 GetBBoxMin();
+    Vec3 GetBBoxMax();
+
+    void Init(bool flushClientSideArray);
+
+   private:
+    void ParameterConstructor();
+   public:
+    TKDeclareParam(HdriPtr, Hdri);
+    TKDeclareParam(Vec3, Max);
+    TKDeclareParam(Vec3, Min);
+    TKDeclareParam(bool, Illuminate);
+
+   private:
+    BoundingBox* m_bbox;
   };
 
 }  //  namespace ToolKit

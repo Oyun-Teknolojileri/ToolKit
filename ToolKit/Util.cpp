@@ -429,6 +429,11 @@ namespace ToolKit
       return ResourceType::Texture;
     }
 
+    if (ext == HDR)
+    {
+      return ResourceType::Hdri;
+    }
+
     if (ext == SHADER)
     {
       return ResourceType::Shader;
@@ -767,6 +772,8 @@ namespace ToolKit
   LineBatch* CreateBoundingBoxDebugObject
   (
     const BoundingBox& box,
+    const Vec3& color,
+    float size,
     const Mat4* transform
   )
   {
@@ -804,9 +811,9 @@ namespace ToolKit
     LineBatch* lineForm = new LineBatch
     (
       vertices,
-      X_AXIS,
+      color,
       DrawType::LineStrip,
-      2.0f
+      size
     );
     return lineForm;
   }

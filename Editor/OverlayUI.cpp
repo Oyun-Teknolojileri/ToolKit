@@ -7,6 +7,7 @@
 #include "EditorLight.h"
 #include "EditorViewport2d.h"
 #include "DebugNew.h"
+#include "Sky.h"
 
 namespace ToolKit
 {
@@ -686,11 +687,11 @@ namespace ToolKit
 
         if (ImGui::BeginMenu("Light"))
         {
-          if (ImGui::MenuItem("Sun"))
+          if (ImGui::MenuItem("Directional"))
           {
             EditorDirectionalLight* light = new EditorDirectionalLight();
             light->Init();
-            light->SetNameVal("Sun");
+            light->SetNameVal("DirectionalLight");
             currScene->AddEntity(static_cast<Entity*>(light));
           }
 
@@ -709,6 +710,13 @@ namespace ToolKit
             light->SetNameVal("SpotLight");
             currScene->AddEntity(static_cast<Entity*>(light));
           }
+
+          if (ImGui::MenuItem("Sky"))
+          {
+            Sky* sky = new Sky();
+            currScene->SetSky(sky);
+          }
+
           ImGui::EndMenu();
         }
       };

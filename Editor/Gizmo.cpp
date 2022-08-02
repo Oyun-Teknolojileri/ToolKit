@@ -810,6 +810,43 @@ namespace ToolKit
       renderer->Render(this, cam);
     }
 
+    SkyBillboard::SkyBillboard()
+      : Billboard({ true, 3.5f, 15.0f })
+    {
+      Generate();
+    }
+
+    SkyBillboard::~SkyBillboard()
+    {
+    }
+
+    void SkyBillboard::Generate()
+    {
+      MeshComponentPtr parentMeshComp = GetComponent<MeshComponent>();
+      MeshPtr parentMesh = parentMeshComp->GetMeshVal();
+      parentMesh->UnInit();
+
+      // Billboard
+      Quad quad;
+      MeshPtr meshPtr = quad.GetMeshComponent()->GetMeshVal();
+
+      meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      meshPtr->m_material->UnInit();
+      meshPtr->m_material->m_diffuseTexture =
+      GetTextureManager()->Create<Texture>
+      (
+        TexturePath(ConcatPaths({ "Icons", "sky.png" }), true)
+      );
+      meshPtr->m_material->GetRenderState()->blendFunction =
+      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+      meshPtr->m_material->Init();
+
+      meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
+      parentMesh->m_subMeshes.push_back(meshPtr);
+
+      parentMesh->CalculateAABB();
+    }
+
     SpotLightGizmo::SpotLightGizmo(SpotLight* light)
     {
       m_circleVertexCount = 36;

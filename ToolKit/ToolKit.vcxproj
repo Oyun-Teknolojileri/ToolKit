@@ -36,6 +36,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Skeleton.cpp" />
+    <ClCompile Include="Sky.cpp" />
     <ClCompile Include="SpriteSheet.cpp" />
     <ClCompile Include="StateMachine.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -80,6 +81,7 @@
     <ClInclude Include="Serialize.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Skeleton.h" />
+    <ClInclude Include="Sky.h" />
     <ClInclude Include="SpriteSheet.h" />
     <ClInclude Include="StateMachine.h" />
     <ClInclude Include="stdafx.h" />

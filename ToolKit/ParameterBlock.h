@@ -69,7 +69,8 @@ namespace ToolKit
     String,
     ULongID,
     MeshPtr,
-    MaterialPtr
+    MaterialPtr,
+    HdriPtr
     > Value;
 
   /**
@@ -143,7 +144,8 @@ namespace ToolKit
       ULongID,
       MeshPtr,
       MaterialPtr,
-      Vec2
+      Vec2,
+      HdriPtr
     };
 
     /**
@@ -241,6 +243,11 @@ namespace ToolKit
     * Constructs MaterialPtr type variant.
     */
     explicit ParameterVariant(const MaterialPtr& var);
+
+    /**
+    * Constructs HdriPtr type variant.
+    */
+    explicit ParameterVariant(const HdriPtr& var);
 
     /**
     * Used to retrieve VariantType of the variant.
@@ -366,6 +373,11 @@ namespace ToolKit
     * Assign a MaterialPtr to the value of the variant.
     */
     ParameterVariant& operator= (const MaterialPtr& var);
+
+    /**
+    * Assign a MaterialPtr to the value of the variant.
+    */
+    ParameterVariant& operator= (const HdriPtr& var);
 
     /**
     * Serializes the variant to the xml document.

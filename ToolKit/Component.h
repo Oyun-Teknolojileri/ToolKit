@@ -34,7 +34,8 @@ namespace ToolKit
     Base,
     MeshComponent,
     DirectionComponent,
-    MaterialComponent
+    MaterialComponent,
+    EnvironmentComponent
   };
 
   /**

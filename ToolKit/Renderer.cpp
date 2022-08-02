@@ -35,7 +35,7 @@ namespace ToolKit
 
   void Renderer::RenderScene
   (
-    const ScenePtr& scene,
+    const ScenePtr scene,
     Viewport* viewport,
     const LightRawPtrArray& editorLights
   )
@@ -46,6 +46,11 @@ namespace ToolKit
     SetRenderTarget(viewport->m_viewportImage);
 
     RenderEntities(entities, cam, viewport, editorLights);
+
+    if (!cam->IsOrtographic())
+    {
+      RenderSky(scene->GetSky(), cam);
+    }
   }
 
   /**
@@ -124,6 +129,7 @@ namespace ToolKit
 
       for (Mesh* mesh : meshCollector)
       {
+        m_textureIdCount = 0;
         if (m_overrideMat != nullptr)
         {
           m_mat = m_overrideMat.get();
@@ -138,11 +144,12 @@ namespace ToolKit
           m_mat->m_vertexShader,
           m_mat->m_fragmetShader
         );
+
         BindProgram(prg);
         FeedUniforms(prg);
 
         RenderState* rs = m_mat->GetRenderState();
-        SetRenderState(rs);
+        SetRenderState(rs, prg);
 
         glBindVertexArray(mesh->m_vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
@@ -220,7 +227,7 @@ namespace ToolKit
     for (Mesh* mesh : meshCollector)
     {
       RenderState* rs = mesh->m_material->GetRenderState();
-      SetRenderState(rs);
+      SetRenderState(rs, skinProg);
 
       glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
       SetVertexLayout(VertexLayout::SkinMesh);
@@ -253,7 +260,7 @@ namespace ToolKit
     mesh->Init();
 
     RenderState* rs = mesh->m_material->GetRenderState();
-    SetRenderState(rs);
+    SetRenderState(rs, prog);
 
     GLint pvloc = glGetUniformLocation(prog->m_handle, "ProjectViewModel");
     Mat4 pm = glm::ortho
@@ -294,7 +301,11 @@ namespace ToolKit
     surface->m_node = backup;
   }
 
-  void Renderer::SetRenderState(const RenderState* const state)
+  void Renderer::SetRenderState
+  (
+    const RenderState* const state,
+    ProgramPtr program
+  )
   {
     if (m_renderState.cullMode != state->cullMode)
     {
@@ -353,21 +364,24 @@ namespace ToolKit
       m_renderState.blendFunction = state->blendFunction;
     }
 
-    if
-    (
-      m_renderState.diffuseTexture
-      != state->diffuseTexture
-      && state->diffuseTextureInUse
-    )
+    if (state->diffuseTextureInUse)
     {
       m_renderState.diffuseTexture = state->diffuseTexture;
+      GLint loc = glGetUniformLocation(program->m_handle, "s_texture");
+      glUniform1i(loc, m_textureIdCount);
+      glActiveTexture(GL_TEXTURE0 + m_textureIdCount);
       glBindTexture(GL_TEXTURE_2D, m_renderState.diffuseTexture);
+      m_textureIdCount++;
     }
 
-    if (m_renderState.cubeMap != state->cubeMap && state->cubeMapInUse)
+    if (state->cubeMapInUse)
     {
       m_renderState.cubeMap = state->cubeMap;
+      GLint loc = glGetUniformLocation(program->m_handle, "cubeMap");
+      glUniform1i(loc, m_textureIdCount);
+      glActiveTexture(GL_TEXTURE0 + m_textureIdCount);
       glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderState.cubeMap);
+      m_textureIdCount++;
     }
 
     if (m_renderState.lineWidth != state->lineWidth)
@@ -455,6 +469,21 @@ namespace ToolKit
     Render(&quad, &quadCam);
   }
 
+  void Renderer::DrawCube(Camera* cam, MaterialPtr mat, bool reverseFaces)
+  {
+    static Cube cube;
+    cube.Generate(reverseFaces);
+
+    MaterialComponentPtr matc = cube.GetMaterialComponent();
+    if (matc == nullptr)
+    {
+      cube.AddComponent(new MaterialComponent);
+    }
+    cube.GetMaterialComponent()->SetMaterialVal(mat);
+
+    Render(&cube, cam);
+  }
+
   void Renderer::RenderEntities
   (
     EntityRawPtrArray& entities,
@@ -463,6 +492,8 @@ namespace ToolKit
     const LightRawPtrArray& lights
   )
   {
+    GetEnvironmentLightEntities(entities);
+
     // Dropout non visible & drawable entities.
     entities.erase
     (
@@ -479,6 +510,9 @@ namespace ToolKit
     );
 
     FrustumCull(entities, cam);
+
+    // Find environment lights for entities
+    FindEnvironmentLights(entities, viewport);
 
     EntityRawPtrArray blendedEntities;
     GetTransparentEntites(entities, blendedEntities);
@@ -644,6 +678,20 @@ namespace ToolKit
     }
   }
 
+  void Renderer::RenderSky(Sky* sky, Camera* cam)
+  {
+    if (sky == nullptr || !sky->GetDrawSkyVal())
+    {
+      return;
+    }
+
+    glDepthFunc(GL_LEQUAL);
+
+    DrawCube(cam, sky->GetSkyboxMaterial(), true);
+
+    glDepthFunc(GL_LESS);  // Return to default depth test
+  }
+
   LightRawPtrArray Renderer::GetBestLights
   (
     Entity* entity,
@@ -705,6 +753,146 @@ namespace ToolKit
     );
 
     return bestLights;
+  }
+
+  void Renderer::GetEnvironmentLightEntities(EntityRawPtrArray entities)
+  {
+    // Find entities which have environment component
+    m_environmentLightEntities.clear();
+    for (Entity* ntt : entities)
+    {
+      EnvironmentComponentPtr envCom =
+      ntt->GetComponent<EnvironmentComponent>();
+      if
+      (
+        envCom != nullptr
+        && envCom->GetHdriVal() != nullptr
+        && envCom->GetHdriVal()->TextureAssigned()
+        && envCom->GetIlluminateVal()
+      )
+      {
+        envCom->Init(true);
+        m_environmentLightEntities.push_back(ntt);
+      }
+    }
+  }
+
+  void Renderer::FindEnvironmentLights
+  (
+    EntityRawPtrArray entities,
+    Viewport* viewport
+  )
+  {
+    if (viewport->IsOrthographic())
+    {
+      return;
+    }
+
+    // Note: If multiple bounding boxes are intersecting and the intersection
+    // volume includes the entity, the smaller bounding box is taken
+
+    // Iterate all entities and mark the ones which should
+    // be lit with environment light
+    Vec3 pos;
+    Vec3 max;
+    Vec3 min;
+    Vec3 curMax;
+    Vec3 curMin;
+    Entity* env = nullptr;
+    for (Entity* ntt : entities)
+    {
+      MaterialComponentPtr matCom = ntt->GetComponent<MaterialComponent>();
+      MaterialPtr mat = nullptr;
+      if (matCom == nullptr)
+      {
+        mat = ntt->GetMeshComponent()->GetMeshVal()->m_material;
+      }
+      else
+      {
+        mat = matCom->GetMaterialVal();
+        if (mat == nullptr)
+        {
+          continue;
+        }
+      }
+
+      pos = ntt->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      max = ZERO;
+      min = ZERO;
+      env = nullptr;
+      for (Entity* envNtt : m_environmentLightEntities)
+      {
+        curMax = envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMax();
+        curMin = envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMin();
+
+        if (PointInsideBBox(pos, curMax, curMin))
+        {
+          auto setCurrentBBox =
+          [&max, &min, &env]
+          (
+            const Vec3& currMax,
+            const Vec3& currMin,
+            Entity* ntt
+          ) -> void
+          {
+            max = currMax;
+            min = currMin;
+            env = ntt;
+          };
+
+          if (max == min && max == ZERO)
+          {
+            setCurrentBBox(curMax, curMin, envNtt);
+            continue;
+          }
+
+          bool change = false;
+          if (BoxBoxIntersection(max, min, curMax, curMin))
+          {
+            // Take the smaller box
+            if (BoxVolume(max, min) > BoxVolume(curMax, curMin))
+            {
+              change = true;
+            }
+          }
+          else
+          {
+            change = true;
+          }
+
+          if (change)
+          {
+            setCurrentBBox(curMax, curMin, envNtt);
+          }
+        }
+      }
+
+      if (env != nullptr)
+      {
+        mat->GetRenderState()->IBLInUse = true;
+        mat->GetRenderState()->irradianceMap =
+        env->GetComponent<EnvironmentComponent>()
+        ->GetHdriVal()->GetIrradianceCubemapId();
+      }
+      else
+      {
+        // Sky light
+        EnvironmentComponentPtr env =
+        GetSceneManager()->GetCurrentScene()->GetSky()->
+        GetComponent<EnvironmentComponent>();
+        if (env->GetIlluminateVal())
+        {
+          mat->GetRenderState()->IBLInUse = true;
+          mat->GetRenderState()->irradianceMap =
+          env->GetHdriVal()->GetIrradianceCubemapId();
+        }
+        else
+        {
+          mat->GetRenderState()->IBLInUse = false;
+          mat->GetRenderState()->irradianceMap = 0;
+        }
+      }
+    }
   }
 
   void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)
@@ -881,9 +1069,55 @@ namespace ToolKit
           glUniform3fv(locVerticalAxisColor, 1, &m_gridVerticalAxisColor.x);
         }
         break;
+        case Uniform::EXPOSURE:
+        {
+          GLint loc = glGetUniformLocation(program->m_handle, "Exposure");
+          glUniform1f(loc, shader->m_shaderParams["Exposure"].GetVar<float>());
+        }
+        break;
+        case Uniform::PROJECTION_VIEW_NO_TR:
+        {
+          GLint loc = glGetUniformLocation
+          (
+            program->m_handle,
+            "ProjectionViewNoTr"
+          );
+          // Zero transalate variables in model matrix
+          m_view[0][3] = 0.0f;
+          m_view[1][3] = 0.0f;
+          m_view[2][3] = 0.0f;
+          m_view[3][3] = 1.0f;
+          m_view[3][0] = 0.0f;
+          m_view[3][1] = 0.0f;
+          m_view[3][2] = 0.0f;
+          Mat4 mul = m_project * m_view;
+          glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
+        }
+        break;
+        case Uniform::USE_IBL:
+        {
+          m_renderState.IBLInUse = m_mat->GetRenderState()->IBLInUse;
+          GLint loc = glGetUniformLocation(program->m_handle, "UseIbl");
+          glUniform1f(loc, static_cast<float>(m_renderState.IBLInUse));
+        }
+        break;
+        case Uniform::IBL_IRRADIANCE:
+        {
+          m_renderState.irradianceMap = m_mat->GetRenderState()->irradianceMap;
+          GLint loc = glGetUniformLocation
+          (
+            program->m_handle,
+            "IBLIrradianceMap"
+          );
+          glUniform1i(loc, m_textureIdCount);
+          glActiveTexture(GL_TEXTURE0 + m_textureIdCount);
+          glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderState.irradianceMap);
+          m_textureIdCount++;
+        }
+        break;
         default:
           assert(false);
-          break;
+        break;
         }
       }
 

@@ -22,6 +22,7 @@ namespace ToolKit
     SpriteSheet,
     Texture,
     CubeMap,
+    Hdri,
     RenderTarget,
     Scene,
     Skeleton

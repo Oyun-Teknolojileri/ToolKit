@@ -83,6 +83,7 @@ namespace ToolKit
   typedef std::shared_ptr<class Material> MaterialPtr;
   typedef std::shared_ptr<class CubeMap> CubeMapPtr;
   typedef std::shared_ptr<class Texture> TexturePtr;
+  typedef std::shared_ptr<class Hdri> HdriPtr;
   typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;
   typedef std::shared_ptr<class SpriteSheet> SpriteSheetPtr;
   typedef std::shared_ptr<class Mesh> MeshPtr;
@@ -167,6 +168,7 @@ namespace ToolKit
   static const String TGA(".tga");
   static const String BMP(".bmp");
   static const String PSD(".psd");
+  static const String HDR(".hdr");
 
   // Local formats.
   static const String SCENE(".scene");

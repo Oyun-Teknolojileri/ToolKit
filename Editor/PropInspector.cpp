@@ -158,6 +158,44 @@ namespace ToolKit
           );
         }
         break;
+      case ParameterVariant::VariantType::HdriPtr:
+      {
+        HdriPtr mref = var->GetVar<HdriPtr>();
+        String file, id;
+        if (mref)
+        {
+          id = std::to_string(mref->m_id);
+          file = mref->GetFile();
+        }
+
+        DropSubZone
+        (
+          "Hdri##" + id,
+          static_cast<uint> (UI::m_imageIcon->m_id),
+          file,
+          [&var](const DirectoryEntry& entry) -> void
+          {
+            if (GetResourceType(entry.m_ext) == ResourceType::Hdri)
+            {
+              HdriPtr hdri = GetTextureManager()->Create<Hdri>
+              (
+                entry.GetFullPath()
+              );
+              hdri->Init();
+              *var = hdri;
+            }
+            else
+            {
+              GetLogger()->WriteConsole
+              (
+                LogType::Error,
+                "Only hdri's are accepted."
+              );
+            }
+          }
+        );
+        break;
+      }
       default:
         break;
       }
@@ -493,7 +531,7 @@ namespace ToolKit
             (
               "##NewComponent",
               &dataType,
-              "...\0Mesh Component\0Material Component"
+              "...\0Mesh Component\0Material Component\0Environment Component"
             )
           )
           {
@@ -505,6 +543,9 @@ namespace ToolKit
               break;
             case 2:
               newComponent = new MaterialComponent;
+              break;
+            case 3:
+              newComponent = new EnvironmentComponent;
               break;
             default:
               break;

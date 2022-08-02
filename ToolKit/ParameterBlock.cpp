@@ -130,6 +130,11 @@ namespace ToolKit
     *this = var;
   }
 
+  ParameterVariant::ParameterVariant(const HdriPtr& var)
+  {
+    *this = var;
+  }
+
   ParameterVariant::VariantType ParameterVariant::GetType() const
   {
     return m_type;
@@ -244,6 +249,13 @@ namespace ToolKit
   ParameterVariant& ParameterVariant::operator=(const MaterialPtr& var)
   {
     m_type = VariantType::MaterialPtr;
+    AsignVal(var);
+    return *this;
+  }
+
+  ParameterVariant& ParameterVariant::operator=(const HdriPtr& var)
+  {
+    m_type = VariantType::HdriPtr;
     AsignVal(var);
     return *this;
   }
@@ -406,6 +418,15 @@ namespace ToolKit
         }
       }
       break;
+      case VariantType::HdriPtr:
+      {
+        HdriPtr res = GetCVar<HdriPtr>();
+        if (res && !res->IsDynamic())
+        {
+          res->SerializeRef(doc, node);
+        }
+        break;
+      }
       default:
       assert(false && "Invalid type.");
       break;
@@ -562,6 +583,20 @@ namespace ToolKit
         {
           file = MaterialPath(file);
           m_var = GetMaterialManager()->Create<Material>(file);
+        }
+      }
+      break;
+      case VariantType::HdriPtr:
+      {
+        String file = Resource::DeserializeRef(parent);
+        if (file.empty())
+        {
+          m_var = std::make_shared<Hdri>();
+        }
+        else
+        {
+          file = TexturePath(file);
+          m_var = GetTextureManager()->Create<Hdri>(file);
         }
       }
       break;
