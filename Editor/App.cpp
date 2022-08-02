@@ -634,6 +634,7 @@ namespace ToolKit
 
         // Set the editor scene back.
         GetCurrentScene()->Reload();
+        GetCurrentScene()->Init();
         m_playWindow->SetVisibility(false);
       }
     }
