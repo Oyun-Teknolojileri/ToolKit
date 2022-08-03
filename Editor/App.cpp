@@ -607,6 +607,7 @@ namespace ToolKit
 
           if (m_runWindowed)
           {
+            m_playWindow->OnResize(m_playWidth, m_playHeight);
             m_playWindow->SetVisibility(true);
           }
         }
