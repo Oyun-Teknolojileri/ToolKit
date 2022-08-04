@@ -76,6 +76,7 @@ namespace ToolKit
     TexturePtr UI::m_gridIcon;
     TexturePtr UI::m_skyIcon;
     TexturePtr UI::m_closeIcon;
+    TexturePtr UI::m_studioLightsToggleIcon;
 
     void UI::Init()
     {
@@ -354,6 +355,11 @@ namespace ToolKit
       TexturePath("Icons/close.png", true)
       );
       m_closeIcon->Init();
+      m_studioLightsToggleIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/studio_lights_toggle.png", true)
+      );
+      m_studioLightsToggleIcon->Init();
     }
 
     void UI::InitTheme()

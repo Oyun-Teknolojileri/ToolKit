@@ -999,11 +999,6 @@ namespace ToolKit
         break;
         case Uniform::LIGHT_DATA:
         {
-          if (m_lights.size() == 0)
-          {
-            break;
-          }
-
           FeedLightUniforms(program);
         }
         break;

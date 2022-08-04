@@ -232,12 +232,15 @@ namespace ToolKit
       // Take all lights in an array
       LightRawPtrArray gameLights = GetCurrentScene()->GetLights();
 
-      gameLights.insert
-      (
-        gameLights.end(),
-        m_sceneLights.begin(),
-        m_sceneLights.end()
-      );
+      if (m_studioLightsActive)
+      {
+        gameLights.insert
+        (
+          gameLights.end(),
+          m_sceneLights.begin(),
+          m_sceneLights.end()
+        );
+      }
 
       // Sort lights by type
       auto lightSortFn = [](Light* light1, Light* light2) -> bool
@@ -260,7 +263,10 @@ namespace ToolKit
         // Update scene lights for the current view.
         Camera* viewCam = viewport->GetCamera();
         m_lightMaster->OrphanSelf();
-        viewCam->m_node->AddChild(m_lightMaster);
+        if (m_studioLightsActive)
+        {
+          viewCam->m_node->AddChild(m_lightMaster);
+        }
 
         // PlayWindow is drawn on perspective. Thus, skip perspective.
         if (m_gameMod != GameMod::Stop && !m_runWindowed)

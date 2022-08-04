@@ -30,12 +30,13 @@ namespace ToolKit
     {
       nullptr,
       nullptr,
+      nullptr,
       nullptr
     };
 
     void InitOverlays(EditorViewport* viewport)
     {
-      for (int i = 0; i < 3; i++)
+      for (int i = 0; i < 4; i++)
       {
         OverlayUI** overlay = &EditorViewport::m_overlays[i];
         if (*overlay == nullptr)
@@ -50,6 +51,9 @@ namespace ToolKit
             break;
           case 2:
             *overlay = new StatusBar(viewport);
+            break;
+          case 3:
+            *overlay = new OverlayLighting(viewport);
             break;
           }
         }

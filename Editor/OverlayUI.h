@@ -30,6 +30,13 @@ namespace ToolKit
       void Show() override;
     };
 
+    class OverlayLighting : public OverlayUI
+    {
+     public:
+      explicit OverlayLighting(EditorViewport* owner);
+      void Show() override;
+    };
+
     class OverlayViewportOptions : public OverlayUI
     {
      public:

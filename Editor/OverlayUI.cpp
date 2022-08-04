@@ -224,6 +224,71 @@ namespace ToolKit
     }
 
 
+    // OverlayLighting
+    //////////////////////////////////////////////////////////////////////////
+
+    OverlayLighting::OverlayLighting(EditorViewport* owner)
+      : OverlayUI(owner)
+    {
+    }
+
+    void OverlayLighting::Show()
+    {
+      ImVec2 overlaySize(28, 30);
+
+      // Center the toolbar
+      float width = ImGui::GetWindowContentRegionWidth();
+      float offset = (width - overlaySize.x) * 0.5f;
+      ImGui::SameLine(offset);
+
+      const Vec2 padding = Vec2(-28.0f + width, 35.0f);
+      Vec2 pos = ImGui::GetWindowPos();
+      pos += padding;
+      ImGui::SetNextWindowPos(pos);
+
+      ImGui::SetNextWindowBgAlpha(0.65f);
+      if
+      (
+        ImGui::BeginChildFrame
+        (
+          ImGui::GetID("LightingOptions"),
+          overlaySize,
+          ImGuiWindowFlags_NoMove |
+          ImGuiWindowFlags_NoTitleBar |
+          ImGuiWindowFlags_NoScrollbar |
+          ImGuiWindowFlags_NoScrollWithMouse
+        )
+      )
+      {
+        SetOwnerState();
+
+        ImGui::BeginTable
+        (
+          "##SettingsBar",
+          1,
+          ImGuiTableFlags_SizingStretchProp
+        );
+        ImGui::TableNextRow();
+        unsigned int nextItemIndex = 0;
+
+        ImGui::TableSetColumnIndex(nextItemIndex++);
+        g_app->m_studioLightsActive = UI::ToggleButton
+        (
+          UI::m_studioLightsToggleIcon->m_textureId,
+          ImVec2(12.0f, 14.0f),
+          g_app->m_studioLightsActive
+        );
+        UI::HelpMarker
+        (
+          TKLoc + m_owner->m_name,
+          "Toogle studio lights."
+        );
+
+        ImGui::EndTable();
+      }
+      ImGui::EndChildFrame();
+    }
+
     // OverlayViewportOptions Common Functions
     //////////////////////////////////////////////////////////////////////////
 
@@ -950,6 +1015,5 @@ namespace ToolKit
       }
       ImGui::EndChildFrame();
     }
-
   }  // namespace Editor
 }  // namespace ToolKit

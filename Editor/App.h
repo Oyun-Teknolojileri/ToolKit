@@ -161,6 +161,7 @@ namespace ToolKit
       // 3 point lighting system.
       Node* m_lightMaster = nullptr;
       LightRawPtrArray m_sceneLights;  // { 0:key 1:fill, 2:back }
+      bool m_studioLightsActive = true;
 
       // Editor states.
       int m_fps = 0;
