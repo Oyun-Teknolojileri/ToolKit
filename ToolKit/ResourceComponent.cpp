@@ -75,6 +75,7 @@ namespace ToolKit
   EnvironmentComponent::EnvironmentComponent()
   {
     ParameterConstructor();
+    ParameterEventConstructor();
 
     m_bbox = new BoundingBox();
     UpdateBBox();
@@ -93,6 +94,7 @@ namespace ToolKit
       "that does not exist in environment component."
     );
 
+    GetHdriVal()->m_exposure = GetExposureVal();
     GetHdriVal()->Init(flushClientSideArray);
   }
 
@@ -133,6 +135,46 @@ namespace ToolKit
       true,
       true
     );
+
+    Intensity_Define
+    (
+      0.25f,
+      EnvironmentComponentCategory.Name,
+      EnvironmentComponentCategory.Priority,
+      true,
+      true
+    );
+    Exposure_Define
+    (
+      1.0f,
+      EnvironmentComponentCategory.Name,
+      EnvironmentComponentCategory.Priority,
+      true,
+      true
+    );
+  }
+
+  void EnvironmentComponent::ParameterEventConstructor()
+  {
+    auto reInitHdriFn = [](HdriPtr hdri, float exposure)
+    {
+      hdri->UnInit();
+      hdri->Load();
+      hdri->m_exposure = exposure;
+      hdri->Init(true);
+    };
+
+    ParamExposure().m_onValueChangedFn =
+    [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
+    {
+      reInitHdriFn(GetHdriVal(), std::get<float>(newVal));
+    };
+
+    ParamHdri().m_onValueChangedFn =
+    [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
+    {
+      reInitHdriFn(std::get<HdriPtr>(newVal), GetExposureVal());
+    };
   }
 
   ComponentPtr EnvironmentComponent::Copy(Entity* ntt)
@@ -154,6 +196,7 @@ namespace ToolKit
   {
     Component::DeSerialize(doc, parent);
     UpdateBBox();
+    ParameterEventConstructor();
   }
 
   void EnvironmentComponent::UpdateBBox()

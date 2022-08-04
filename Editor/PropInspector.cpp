@@ -38,7 +38,11 @@ namespace ToolKit
         case ParameterVariant::VariantType::Float:
         {
           float val = var->GetVar<float>();
-          if (ImGui::InputFloat(var->m_name.c_str(), &val))
+          if
+          (
+            ImGui::InputFloat(var->m_name.c_str(), &val)
+            && ImGui::IsKeyPressed(ImGuiKey_Enter)
+          )
           {
             *var = val;
           }
@@ -47,7 +51,11 @@ namespace ToolKit
         case ParameterVariant::VariantType::Int:
         {
           int val = var->GetVar<int>();
-          if (ImGui::InputInt(var->m_name.c_str(), &val))
+          if
+          (
+            ImGui::InputInt(var->m_name.c_str(), &val)
+            && ImGui::IsKeyPressed(ImGuiKey_Enter)
+          )
           {
             *var = val;
           }
@@ -83,7 +91,11 @@ namespace ToolKit
         case ParameterVariant::VariantType::String:
         {
           String val = var->GetVar<String>();
-          if (ImGui::InputText(var->m_name.c_str(), &val))
+          if
+          (
+            ImGui::InputText(var->m_name.c_str(), &val)
+            && ImGui::IsKeyPressed(ImGuiKey_Enter)
+          )
           {
             *var = val;
           }
@@ -100,6 +112,7 @@ namespace ToolKit
               ImGuiDataType_U32,
               var->GetVarPtr<ULongID>()
             )
+            && ImGui::IsKeyPressed(ImGuiKey_Enter)
           )
           {
             *var = val;
@@ -171,18 +184,16 @@ namespace ToolKit
         DropSubZone
         (
           "Hdri##" + id,
-          static_cast<uint> (UI::m_imageIcon->m_id),
+          static_cast<uint> (UI::m_imageIcon->m_textureId),
           file,
           [&var](const DirectoryEntry& entry) -> void
           {
             if (GetResourceType(entry.m_ext) == ResourceType::Hdri)
             {
-              HdriPtr hdri = GetTextureManager()->Create<Hdri>
+              *var = GetTextureManager()->Create<Hdri>
               (
                 entry.GetFullPath()
               );
-              hdri->Init();
-              *var = hdri;
             }
             else
             {

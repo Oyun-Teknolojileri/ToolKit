@@ -266,6 +266,10 @@ namespace ToolKit
         {
           m_uniforms.push_back(Uniform::USE_IBL);
         }
+        else if (strcmp("IblIntensity", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::IBL_INTENSITY);
+        }
         else if (strcmp("IBLIrradianceMap", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::IBL_IRRADIANCE);

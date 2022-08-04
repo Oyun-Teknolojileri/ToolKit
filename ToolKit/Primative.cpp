@@ -155,9 +155,9 @@ namespace ToolKit
     Scale_Define(Vec3(1.0f), "Geometry", 90, true, true);
   }
 
-  void Cube::Generate(bool reverseFaces)
+  void Cube::Generate()
   {
-    if (reverseFaces == m_facesReversed && m_generated)
+    if (m_generated)
     {
       return;
     }
@@ -308,27 +308,11 @@ namespace ToolKit
     MeshPtr mesh = GetComponent<MeshComponent>()->GetMeshVal();
     mesh->m_vertexCount = (uint)vertices.size();
     mesh->m_clientSideVertices = vertices;
-    if (reverseFaces)
+    mesh->m_clientSideIndices =
     {
-      mesh->m_clientSideIndices =
-      {
-        2, 1, 0, 5, 4, 3, 8, 7, 6, 11, 10, 9, 14, 13, 12, 17, 16, 15, 20,
-        19, 18, 23, 22, 21, 26, 25, 24, 29, 28, 27, 32, 31, 30, 35, 34, 33
-      };
-
-      for (Vertex v : vertices)
-      {
-        v.norm = v.norm * (-1.0f);
-      }
-    }
-    else
-    {
-      mesh->m_clientSideIndices =
-      {
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-        19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35
-      };
-    }
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+      19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35
+    };
 
     mesh->m_indexCount = (uint)mesh->m_clientSideIndices.size();
     mesh->m_material = GetMaterialManager()->GetCopyOfDefaultMaterial();
@@ -337,7 +321,6 @@ namespace ToolKit
     mesh->ConstructFaces();
 
     m_generated = true;
-    m_facesReversed = reverseFaces;
   }
 
   Quad::Quad(bool genDef)

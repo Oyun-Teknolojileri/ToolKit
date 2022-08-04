@@ -75,10 +75,9 @@ namespace ToolKit
 
     void DirectoryEntry::GenerateThumbnail() const
     {
-      bool isHdri = false;
       const Vec2& thumbSize = g_app->m_thumbnailSize;
       auto renderThumbFn =
-      [this, &thumbSize, &isHdri](Camera* cam, Entity* obj) -> void
+      [this, &thumbSize](Camera* cam, Entity* obj) -> void
       {
         RenderTarget* thumb = nullptr;
         RenderTargetPtr thumbPtr = nullptr;
@@ -119,11 +118,6 @@ namespace ToolKit
         light.GetComponent<DirectionComponent>()->LookAt(ZERO);
 
         LightRawPtrArray lights = { &light };
-
-        if (isHdri)
-        {
-          cam->GetComponent<DirectionComponent>()->Roll(glm::radians(180.0f));
-        }
 
         g_app->m_renderer->Render(obj, cam, lights);
 
@@ -177,14 +171,13 @@ namespace ToolKit
         TexturePtr texture = nullptr;
         if (m_ext == HDR)
         {
-          texture = GetTextureManager()->Create<Hdri>(fullpath);
-          texture->Init();
-          isHdri = true;
+          texture = std::make_shared<Texture>(fullpath, true);
+          texture->Load();
+          texture->Init(true);
         }
         else
         {
           texture = GetTextureManager()->Create<Texture>(fullpath);
-          isHdri = false;
         }
 
         float maxDim = static_cast<float>

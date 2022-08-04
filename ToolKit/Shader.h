@@ -23,6 +23,7 @@ namespace ToolKit
     EXPOSURE,
     PROJECTION_VIEW_NO_TR,
     USE_IBL,
+    IBL_INTENSITY,
     IBL_IRRADIANCE
   };
 

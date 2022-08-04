@@ -124,11 +124,15 @@ namespace ToolKit
 
    private:
     void ParameterConstructor();
+    void ParameterEventConstructor();
+
    public:
     TKDeclareParam(HdriPtr, Hdri);
     TKDeclareParam(Vec3, Max);
     TKDeclareParam(Vec3, Min);
     TKDeclareParam(bool, Illuminate);
+    TKDeclareParam(float, Intensity);
+    TKDeclareParam(float, Exposure);
 
    private:
     BoundingBox* m_bbox;

@@ -469,10 +469,10 @@ namespace ToolKit
     Render(&quad, &quadCam);
   }
 
-  void Renderer::DrawCube(Camera* cam, MaterialPtr mat, bool reverseFaces)
+  void Renderer::DrawCube(Camera* cam, MaterialPtr mat)
   {
     static Cube cube;
-    cube.Generate(reverseFaces);
+    cube.Generate();
 
     MaterialComponentPtr matc = cube.GetMaterialComponent();
     if (matc == nullptr)
@@ -688,7 +688,7 @@ namespace ToolKit
 
     glDepthFunc(GL_LEQUAL);
 
-    DrawCube(cam, sky->GetSkyboxMaterial(), true);
+    DrawCube(cam, sky->GetSkyboxMaterial());
 
     glDepthFunc(GL_LESS);  // Return to default depth test
   }
@@ -773,7 +773,7 @@ namespace ToolKit
       (
         envCom != nullptr
         && envCom->GetHdriVal() != nullptr
-        && envCom->GetHdriVal()->TextureAssigned()
+        && envCom->GetHdriVal()->IsTextureAssigned()
         && envCom->GetIlluminateVal()
       )
       {
@@ -802,58 +802,49 @@ namespace ToolKit
 
     Entity* env = nullptr;
 
-    MaterialComponentPtr matCom = entity->GetComponent<MaterialComponent>();
-    MaterialPtr mat = nullptr;
-    if (matCom == nullptr)
+    MaterialPtr mat = GetRenderMaterial(entity);
+    if (mat == nullptr)
     {
-      mat = entity->GetMeshComponent()->GetMeshVal()->m_material;
-    }
-    else
-    {
-      mat = matCom->GetMaterialVal();
-      if (mat == nullptr)
-      {
-        return;
-      }
+      return;
     }
 
     Vec3 pos = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-    Vec3 max = ZERO;
-    Vec3 min = ZERO;
-    Vec3 curMax;
-    Vec3 curMin;
+    BoundingBox bestBox;
+    bestBox.max = ZERO;
+    bestBox.min = ZERO;
+    BoundingBox currentBox;
     env = nullptr;
     for (Entity* envNtt : m_environmentLightEntities)
     {
-      curMax = envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMax();
-      curMin = envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMin();
+      currentBox.max =
+      envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMax();
+      currentBox.min =
+      envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMin();
 
-      if (PointInsideBBox(pos, curMax, curMin))
+      if (PointInsideBBox(pos, currentBox.max, currentBox.min))
       {
         auto setCurrentBBox =
-        [&max, &min, &env]
+        [&bestBox, &env]
         (
-          const Vec3& currMax,
-          const Vec3& currMin,
+          const BoundingBox& box,
           Entity* ntt
         ) -> void
         {
-          max = currMax;
-          min = currMin;
+          bestBox = box;
           env = ntt;
         };
 
-        if (max == min && max == ZERO)
+        if (bestBox.max == bestBox.min && bestBox.max == ZERO)
         {
-          setCurrentBBox(curMax, curMin, envNtt);
+          setCurrentBBox(currentBox, envNtt);
           continue;
         }
 
         bool change = false;
-        if (BoxBoxIntersection(max, min, curMax, curMin))
+        if (BoxBoxIntersection(bestBox, currentBox))
         {
           // Take the smaller box
-          if (BoxVolume(max, min) > BoxVolume(curMax, curMin))
+          if (bestBox.Volume() > currentBox.Volume())
           {
             change = true;
           }
@@ -865,7 +856,7 @@ namespace ToolKit
 
         if (change)
         {
-          setCurrentBBox(curMax, curMin, envNtt);
+          setCurrentBBox(currentBox, envNtt);
         }
       }
     }
@@ -873,21 +864,24 @@ namespace ToolKit
     if (env != nullptr)
     {
       mat->GetRenderState()->IBLInUse = true;
+      EnvironmentComponentPtr envCom =
+      env->GetComponent<EnvironmentComponent>();
+      mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
       mat->GetRenderState()->irradianceMap =
-      env->GetComponent<EnvironmentComponent>()
-      ->GetHdriVal()->GetIrradianceCubemapId();
+      envCom->GetHdriVal()->GetIrradianceCubemapId();
     }
     else
     {
       // Sky light
-      EnvironmentComponentPtr env =
-      GetSceneManager()->GetCurrentScene()->GetSky()->
-      GetComponent<EnvironmentComponent>();
-      if (env->GetIlluminateVal())
+      Sky* sky = GetSceneManager()->GetCurrentScene()->GetSky();
+      if (sky->GetIlluminateVal())
       {
         mat->GetRenderState()->IBLInUse = true;
+        EnvironmentComponentPtr envCom =
+        sky->GetComponent<EnvironmentComponent>();
+        mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
         mat->GetRenderState()->irradianceMap =
-        env->GetHdriVal()->GetIrradianceCubemapId();
+        envCom->GetHdriVal()->GetIrradianceCubemapId();
       }
       else
       {
@@ -1101,6 +1095,13 @@ namespace ToolKit
           m_renderState.IBLInUse = m_mat->GetRenderState()->IBLInUse;
           GLint loc = glGetUniformLocation(program->m_handle, "UseIbl");
           glUniform1f(loc, static_cast<float>(m_renderState.IBLInUse));
+        }
+        break;
+        case Uniform::IBL_INTENSITY:
+        {
+          m_renderState.iblIntensity = m_mat->GetRenderState()->iblIntensity;
+          GLint loc = glGetUniformLocation(program->m_handle, "IblIntensity");
+          glUniform1f(loc, static_cast<float>(m_renderState.iblIntensity));
         }
         break;
         case Uniform::IBL_IRRADIANCE:

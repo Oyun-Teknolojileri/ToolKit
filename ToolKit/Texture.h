@@ -17,8 +17,8 @@ namespace ToolKit
    public:
     TKResourceType(Texture)
 
-    Texture();
-    explicit Texture(String file);
+    explicit Texture(bool floatFormat = false);
+    explicit Texture(String file, bool floatFormat = false);
     explicit Texture(uint textureId);
     virtual ~Texture();
 
@@ -34,7 +34,9 @@ namespace ToolKit
     int m_width = 0;
     int m_height = 0;
     int m_bytePP = 0;
+    bool m_floatFormat = false;
     uint8* m_image = nullptr;
+    float* m_imagef = nullptr;
   };
 
   class TK_API CubeMap : public Texture
@@ -84,7 +86,7 @@ namespace ToolKit
     void Init(bool flushClientSideArray = true) override;
     void UnInit() override;
 
-    bool TextureAssigned();
+    bool IsTextureAssigned();
     uint GetCubemapId();
     void SetCubemapId(uint id);
     uint GetIrradianceCubemapId();
@@ -92,8 +94,10 @@ namespace ToolKit
 
    protected:
     void CreateFramebuffer();
-    void GenerateCubemapFromHdri();
+    void GenerateCubemapFrom2DTexture();
     void GenerateIrradianceMap();
+
+   private:
     uint GenerateCubemapBuffers(struct CubeMapSettings cubeMapSettings);
     void RenderToCubeMap
     (
@@ -106,19 +110,18 @@ namespace ToolKit
       MaterialPtr mat
     );
 
-    void Clear() override;
-
    public:
     CubeMapPtr m_cubemap = nullptr;
     CubeMapPtr m_irradianceCubemap = nullptr;
-    float* m_imagef = nullptr;
+    float m_exposure = 1.0f;
 
-   private:
+   protected:
     uint m_captureFBO = 0;
     uint m_captureRBO = 0;
 
     MaterialPtr m_texToCubemapMat = nullptr;
     MaterialPtr m_cubemapToIrradiancemapMat = nullptr;
+    TexturePtr m_equirectangularTexture = nullptr;
   };
 
   struct RenderTargetSettigs

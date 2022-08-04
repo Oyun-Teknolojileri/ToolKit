@@ -52,6 +52,7 @@ namespace ToolKit
     float lineWidth = 1.0f;
     VertexLayout vertexLayout = VertexLayout::None;
     bool IBLInUse = false;
+    float iblIntensity = 0.25f;
     uint irradianceMap = 0;
     int priority = 0;  // The higher the priority, the earlier to draw.
   };

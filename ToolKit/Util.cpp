@@ -444,6 +444,11 @@ namespace ToolKit
       return ResourceType::Audio;
     }
 
+    if (ext == SCENE)
+    {
+      return ResourceType::Scene;
+    }
+
     assert(false);
     return ResourceType::Base;
   }

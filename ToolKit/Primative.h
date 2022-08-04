@@ -54,7 +54,7 @@ namespace ToolKit
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-    void Generate(bool reverseFaces = false);
+    void Generate();
 
    public:
     TKDeclareParam(Vec3, Scale);
@@ -65,7 +65,6 @@ namespace ToolKit
     void ParameterConstructor();
 
    private:
-    bool m_facesReversed = false;
     bool m_generated = false;
   };
 

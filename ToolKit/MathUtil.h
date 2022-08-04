@@ -31,6 +31,15 @@ namespace ToolKit
       max = glm::max(max, v);
       min = glm::min(min, v);
     }
+
+    float Volume()
+    {
+      return glm::abs
+      (
+        (max.x - min.x) * (max.y - min.y) *
+        (max.z - min.z)
+      );
+    }
   };
 
   struct Ray
@@ -119,14 +128,6 @@ namespace ToolKit
     const BoundingBox& box2
   );
 
-  TK_API bool BoxBoxIntersection
-  (
-    const Vec3& box1Max,
-    const Vec3& box1Min,
-    const Vec3& box2Max,
-    const Vec3& box2Min
-  );
-
   TK_API bool BoxPointIntersection(const BoundingBox& box, const Vec3& point);
 
   TK_API bool RayBoxIntersection
@@ -194,7 +195,6 @@ namespace ToolKit
   TK_API float SignedDistance(const PlaneEquation& plane, const Vec3& pnt);
   TK_API Vec3 ProjectPointOntoPlane(const PlaneEquation& plane, const Vec3& pt);
   TK_API Vec3 ProjectPointOntoLine(const Ray& ray, const Vec3& pnt);
-  TK_API float BoxVolume(const Vec3& max, const Vec3& min);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

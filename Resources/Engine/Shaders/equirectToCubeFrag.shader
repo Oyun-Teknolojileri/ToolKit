@@ -7,7 +7,7 @@
 		precision highp float;
 
 		uniform float Exposure;
-		uniform sampler2D equirectangularMap;
+		uniform sampler2D s_texture;
 
 		in vec3 v_pos;
 		out vec4 fragColor;
@@ -24,7 +24,7 @@
 		void main()
 		{
 	    vec2 uv = SampleSphericalMap(normalize(v_pos));
-	    vec3 color = texture(equirectangularMap, uv).rgb;
+	    vec3 color = texture(s_texture, uv).rgb;
 
 			// Tone mapping
 			color = vec3(1.0) - exp(-color * Exposure);

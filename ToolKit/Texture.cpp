@@ -10,13 +10,14 @@
 namespace ToolKit
 {
 
-  Texture::Texture()
+  Texture::Texture(bool floatFormat)
   {
+    m_floatFormat = floatFormat;
     m_textureId = 0;
   }
 
-  Texture::Texture(String file)
-    : Texture()
+  Texture::Texture(String file, bool floatFormat)
+    : Texture(floatFormat)
   {
     SetFile(file);
   }
@@ -39,19 +40,39 @@ namespace ToolKit
       return;
     }
 
-    if
-    (
-      m_image = GetFileManager()->GetImageFile
-      (
-        GetFile(),
-        &m_width,
-        &m_height,
-        &m_bytePP,
-        4
-      )
-    )
+    if (m_floatFormat)
     {
-      m_loaded = true;
+      if
+      (
+        m_imagef = stbi_loadf
+        (
+          GetFile().c_str(),
+          &m_width,
+          &m_height,
+          &m_bytePP,
+          3
+        )
+      )
+      {
+        m_loaded = true;
+      }
+    }
+    else
+    {
+      if
+      (
+        m_image = GetFileManager()->GetImageFile
+        (
+          GetFile(),
+          &m_width,
+          &m_height,
+          &m_bytePP,
+          4
+        )
+      )
+      {
+        m_loaded = true;
+      }
     }
   }
 
@@ -62,29 +83,54 @@ namespace ToolKit
       return;
     }
 
-    if (m_image == nullptr || m_width <= 0 || m_height <= 0)
+    // Sanity check
+    if
+    (
+      (m_image == nullptr && m_imagef == nullptr)
+      || m_width <= 0
+      || m_height <= 0
+    )
     {
       return;
     }
 
-    glGenTextures(1, &m_textureId);
-
     GLint currId;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
 
+    glGenTextures(1, &m_textureId);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
-    glTexImage2D
-    (
-      GL_TEXTURE_2D,
-      0,
-      GL_RGBA,
-      m_width,
-      m_height,
-      0,
-      GL_RGBA,
-      GL_UNSIGNED_BYTE,
-      m_image
-    );
+
+    if (m_floatFormat)
+    {
+      glTexImage2D
+      (
+        GL_TEXTURE_2D,
+        0,
+        GL_RGB16F,
+        m_width,
+        m_height,
+        0,
+        GL_RGB,
+        GL_FLOAT,
+        m_imagef
+      );
+    }
+    else
+    {
+      glTexImage2D
+      (
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        m_width,
+        m_height,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        m_image
+      );
+    }
+
     glGenerateMipmap(GL_TEXTURE_2D);
     glTexParameteri
     (
@@ -120,7 +166,9 @@ namespace ToolKit
   void Texture::Clear()
   {
     stbi_image_free(m_image);
+    stbi_image_free(m_imagef);
     m_image = nullptr;
+    m_imagef = nullptr;
     m_loaded = false;
   }
 
@@ -317,10 +365,21 @@ namespace ToolKit
 
   Hdri::Hdri()
   {
+    m_floatFormat = true;
+    m_exposure = 1.0f;
+
+    m_texToCubemapMat = std::make_shared<Material>();
+    m_cubemapToIrradiancemapMat = std::make_shared<Material>();
+    m_irradianceCubemap = std::make_shared<CubeMap>(0);
+    m_cubemap = std::make_shared<CubeMap>(0);
+    m_equirectangularTexture = std::make_shared<Texture>
+    (
+      static_cast<uint>(0)
+    );
   }
 
   Hdri::Hdri(const String& file)
-    : Texture()
+    : Hdri()
   {
     SetFile(file);
   }
@@ -339,19 +398,8 @@ namespace ToolKit
 
     // Load hdri image
     stbi_set_flip_vertically_on_load(true);
-    m_imagef = stbi_loadf
-    (
-      GetFile().c_str(),
-      &m_width,
-      &m_height,
-      &m_bytePP,
-      0
-    );
+    Texture::Load();
     stbi_set_flip_vertically_on_load(false);
-    if (m_imagef)
-    {
-      m_loaded = true;
-    }
   }
 
   void Hdri::Init(bool flushClientSideArray)
@@ -370,18 +418,14 @@ namespace ToolKit
     // Create framebuffer holds cubemap
     CreateFramebuffer();
 
+    // Init 2D hdri texture
+    Texture::Init();
+
     // Convert hdri image to cubemap images
-    GenerateCubemapFromHdri();
+    GenerateCubemapFrom2DTexture();
 
     // Generate irradience cubemap images
     GenerateIrradianceMap();
-
-    if (flushClientSideArray)
-    {
-      Clear();
-    }
-
-    m_initiated = true;
   }
 
   void Hdri::UnInit()
@@ -394,11 +438,9 @@ namespace ToolKit
       m_irradianceCubemap->UnInit();
     }
     Texture::UnInit();
-    Clear();
-    m_initiated = false;
   }
 
-  bool Hdri::TextureAssigned()
+  bool Hdri::IsTextureAssigned()
   {
     return (GetFile().size() != 0);
   }
@@ -432,6 +474,9 @@ namespace ToolKit
 
   uint Hdri::GenerateCubemapBuffers(struct CubeMapSettings cubeMapSettings)
   {
+    GLint currId;
+    glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &currId);
+
     // Create buffers for cubemap textures
     GLuint textureId;
     glGenTextures(1, &textureId);
@@ -484,6 +529,8 @@ namespace ToolKit
       cubeMapSettings.filterSet
     );
 
+    glBindTexture(GL_TEXTURE_CUBE_MAP, currId);
+
     return textureId;
   }
 
@@ -524,17 +571,14 @@ namespace ToolKit
       );
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glViewport(0, 0, width , height);
-      GetRenderer()->DrawCube(cam.get(), mat, true);
+
+      CullingType currType = mat->GetRenderState()->cullMode;
+      mat->GetRenderState()->cullMode = CullingType::TwoSided;
+      GetRenderer()->DrawCube(cam.get(), mat);
+      mat->GetRenderState()->cullMode = currType;
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-  }
-
-  void Hdri::Clear()
-  {
-    stbi_image_free(m_imagef);
-    m_imagef = nullptr;
-    m_loaded = false;
   }
 
   void Hdri::CreateFramebuffer()
@@ -551,8 +595,8 @@ namespace ToolKit
     (
       GL_RENDERBUFFER,
       GL_DEPTH_COMPONENT24,
-      m_width / 4,
-      m_width / 4
+      m_width,
+      m_width
     );
     glFramebufferRenderbuffer
     (
@@ -570,42 +614,15 @@ namespace ToolKit
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
-  void Hdri::GenerateCubemapFromHdri()
+  void Hdri::GenerateCubemapFrom2DTexture()
   {
-    GLint currId;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
-
-    // Store hdri in texture buffer
-    glGenTextures(1, &m_textureId);
-    glBindTexture(GL_TEXTURE_2D, m_textureId);
-    glTexImage2D
-    (
-      GL_TEXTURE_2D,
-      0,
-      GL_RGB16F,
-      m_width,
-      m_height,
-      0,
-      GL_RGB,
-      GL_FLOAT,
-      m_imagef
-    );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glBindTexture(GL_TEXTURE_2D, currId);
-
-    glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &currId);
-
     GLuint cubemapTextureId = GenerateCubemapBuffers
     (
       {
         0,
         GL_RGB16F,
-        m_width / 4,
-        m_width / 4,
+        m_width,
+        m_width,
         GL_RGB,
         GL_FLOAT,
         nullptr,
@@ -613,8 +630,6 @@ namespace ToolKit
         GL_LINEAR
       }
     );
-
-    glBindTexture(GL_TEXTURE_CUBE_MAP, currId);
 
     // Views for 6 different angles
     CameraPtr cam = std::make_shared<Camera>();
@@ -638,11 +653,10 @@ namespace ToolKit
     (
       ShaderPath("equirectToCubeFrag.shader", true)
     );
-    frag->m_shaderParams["Exposure"] = ParameterVariant(1.0f);
+    frag->m_shaderParams["Exposure"] = m_exposure;
 
-    m_texToCubemapMat = std::make_shared<Material>();
-    m_texToCubemapMat->m_diffuseTexture =
-    std::make_shared<Texture>(m_textureId);
+    m_equirectangularTexture->m_textureId = m_textureId;
+    m_texToCubemapMat->m_diffuseTexture = m_equirectangularTexture;
     m_texToCubemapMat->m_vertexShader = vert;
     m_texToCubemapMat->m_fragmetShader = frag;
     m_texToCubemapMat->Init();
@@ -653,12 +667,12 @@ namespace ToolKit
       views,
       cam,
       cubemapTextureId,
-      m_width / 4,
-      m_width / 4,
+      m_width,
+      m_width,
       m_texToCubemapMat
     );
 
-    m_cubemap = std::make_shared<CubeMap>(cubemapTextureId);
+    m_cubemap->m_textureId = cubemapTextureId;
   }
 
   void Hdri::GenerateIrradianceMap()
@@ -701,7 +715,6 @@ namespace ToolKit
       ShaderPath("irradianceGenerateFrag.shader", true)
     );
 
-    m_cubemapToIrradiancemapMat = std::make_shared<Material>();
     m_cubemapToIrradiancemapMat->m_cubeMap = m_cubemap;
     m_cubemapToIrradiancemapMat->m_vertexShader = vert;
     m_cubemapToIrradiancemapMat->m_fragmetShader = frag;
@@ -718,7 +731,7 @@ namespace ToolKit
       m_cubemapToIrradiancemapMat
     );
 
-    m_irradianceCubemap = std::make_shared<CubeMap>(irradianceTextureId);
+    m_irradianceCubemap->m_textureId = irradianceTextureId;
   }
 
   RenderTarget::RenderTarget()

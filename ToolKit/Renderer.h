@@ -54,7 +54,7 @@ namespace ToolKit
     );
 
     void DrawFullQuad(ShaderPtr fragmentShader);
-    void DrawCube(Camera* cam, MaterialPtr mat, bool reverseFaces = false);
+    void DrawCube(Camera* cam, MaterialPtr mat);
 
    private:
     void RenderEntities
