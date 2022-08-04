@@ -119,8 +119,9 @@ namespace ToolKit
       scene->m_name = sceneName;
       scene->m_newScene = true;
       SetCurrentScene(scene);
-
       ApplyProjectSettings(m_onNewScene);
+
+
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
       {
         StringInputWindow* wsDir = new StringInputWindow
@@ -1039,8 +1040,7 @@ namespace ToolKit
           MeshPtr mesh;
           if (ext == SKINMESH)
           {
-            assert(false);
-            // mesh = GetSkinMeshManager()->Create(meshFile);
+            mesh = GetMeshManager()->Create<SkinMesh>(meshFile);
           }
           else
           {
@@ -1094,7 +1094,7 @@ Fail:
       GetSceneManager()->Remove(GetCurrentScene()->GetFile());
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
       SetCurrentScene(scene);
-      scene->Init(false);
+      scene->Init();
 
       m_workspace.SetScene(scene->m_name);
     }

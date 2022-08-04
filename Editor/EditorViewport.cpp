@@ -634,12 +634,11 @@ namespace ToolKit
       static LineBatch* boundingBox = nullptr;
       static bool meshLoaded = false;
       static bool meshAddedToScene = false;
-      static Drawable* dwMesh = nullptr;
+      static Entity* dwMesh = nullptr;
 
       // AssetBrowser drop handling.
       if (ImGui::BeginDragDropTarget())
       {
-        // Check if the drag object is a mesh
         const ImGuiPayload* dragPayload = ImGui::GetDragDropPayload();
         if (dragPayload->DataSize != sizeof(DirectoryEntry))
         {
@@ -647,8 +646,9 @@ namespace ToolKit
         }
         DirectoryEntry dragEntry = *(const DirectoryEntry*)dragPayload->Data;
 
+        // Check if the drag object is a mesh
         Vec3 lastDragMeshPos = Vec3(0.0f);
-        if (dragEntry.m_ext == MESH)
+        if (dragEntry.m_ext == MESH || dragEntry.m_ext == SKINMESH)
         {
           // Load mesh
           LoadDragMesh
@@ -682,7 +682,7 @@ namespace ToolKit
           IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
           DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
 
-          if (entry.m_ext == MESH)
+          if (entry.m_ext == MESH || entry.m_ext == SKINMESH)
           {
             // Translate mesh to correct position
             dwMesh->m_node->SetTranslation(
@@ -813,7 +813,7 @@ namespace ToolKit
       bool& meshLoaded,
       DirectoryEntry dragEntry,
       ImGuiIO io,
-      Drawable** dwMesh,
+      Entity** dwMesh,
       LineBatch** boundingBox,
       EditorScenePtr currScene
     )
@@ -825,17 +825,19 @@ namespace ToolKit
         (
           { dragEntry.m_rootPath, dragEntry.m_fileName + dragEntry.m_ext }
         );
-        *dwMesh = new Drawable();
-        if (io.KeyShift)
+        *dwMesh = new Entity();
+        (*dwMesh)->AddComponent(new MeshComponent);
+        MeshPtr mesh;
+        if (dragEntry.m_ext == SKINMESH)
         {
-          MeshPtr mesh = GetMeshManager()->Create<Mesh>(path);
-          (*dwMesh)->SetMesh(mesh->Copy<Mesh>());
+          mesh = GetMeshManager()->Create<SkinMesh>(path);
         }
         else
         {
-          (*dwMesh)->SetMesh(GetMeshManager()->Create<Mesh>(path));
+          mesh = GetMeshManager()->Create<Mesh>(path);
         }
-        (*dwMesh)->GetMesh()->Init(false);
+        (*dwMesh)->GetMeshComponent()->SetMeshVal(mesh);
+        mesh->Init(false);
 
         // Load bounding box once
         *boundingBox = CreateBoundingBoxDebugObject((*dwMesh)->GetAABB(true));
@@ -851,7 +853,7 @@ namespace ToolKit
     (
       bool& meshLoaded,
       EditorScenePtr currScene,
-      Drawable* dwMesh,
+      Entity* dwMesh,
       LineBatch** boundingBox
     )
     {
@@ -910,7 +912,7 @@ namespace ToolKit
       bool& meshLoaded,
       bool& meshAddedToScene,
       EditorScenePtr currScene,
-      Drawable** dwMesh,
+      Entity** dwMesh,
       LineBatch** boundingBox
     )
     {

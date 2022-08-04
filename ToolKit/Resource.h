@@ -49,7 +49,7 @@ namespace ToolKit
     * @param doc Xml document to append the reference node.
     * @param parent Xml Node to append the reference.
     */
-    void SerializeRef(XmlDocument* doc, XmlNode* parent);
+    void SerializeRef(XmlDocument* doc, XmlNode* parent) const;
 
     /**
     * Extracts the File attribute from the ResourceRef Xml Node.
@@ -64,7 +64,7 @@ namespace ToolKit
     * file. 
     * Always call this if you are in Serialize function.
     */
-    const String& GetSerializeFile();
+    const String& GetSerializeFile() const;
     void SetFile(const String& file);
 
     /**

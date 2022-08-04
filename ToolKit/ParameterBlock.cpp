@@ -405,6 +405,7 @@ namespace ToolKit
         MeshPtr res = GetCVar<MeshPtr>();
         if (res && !res->IsDynamic())
         {
+          res->Save(true);
           res->SerializeRef(doc, node);
         }
       }
@@ -414,6 +415,7 @@ namespace ToolKit
         MaterialPtr res = GetCVar<MaterialPtr>();
         if (res && !res->IsDynamic())
         {
+          res->Save(true);
           res->SerializeRef(doc, node);
         }
       }
@@ -423,6 +425,7 @@ namespace ToolKit
         HdriPtr res = GetCVar<HdriPtr>();
         if (res && !res->IsDynamic())
         {
+          res->Save(true);
           res->SerializeRef(doc, node);
         }
         break;
@@ -568,7 +571,16 @@ namespace ToolKit
         else
         {
           file = MeshPath(file);
-          m_var = GetMeshManager()->Create<Mesh>(file);
+          String ext;
+          DecomposePath(file, nullptr, nullptr, &ext);
+          if (ext == SKINMESH)
+          {
+            m_var = GetMeshManager()->Create<SkinMesh>(file);
+          }
+          else
+          {
+            m_var = GetMeshManager()->Create<Mesh>(file);
+          }
         }
       }
       break;

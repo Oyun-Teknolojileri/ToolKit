@@ -119,7 +119,7 @@ namespace ToolKit
 
     void RenderSky(Sky* sky, Camera* cam);
 
-    void RenderSkinned(Drawable* object, Camera* cam);
+    void RenderSkinned(Entity* object, Camera* cam);
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
 

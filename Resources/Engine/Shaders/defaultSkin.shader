@@ -1,9 +1,9 @@
 <shader>
-	<type name = vertexShader />
+	<type name = "vertexShader" />
 	<uniform name = "ProjectViewModel" />
 	<source>
 	<!--
-      #version 300 es\n
+      #version 300 es
       struct Bone
       {
          mat4 transform;

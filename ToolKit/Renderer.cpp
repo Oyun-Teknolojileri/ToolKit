@@ -112,9 +112,12 @@ namespace ToolKit
     for (MeshComponentPtr meshCom : meshComponents)
     {
       MeshPtr mesh = meshCom->GetMeshVal();
+      m_lights = GetBestLights(ntt, lights);
+      m_cam = cam;
+      SetProjectViewModel(ntt, cam);
       if (mesh->IsSkinned())
       {
-        RenderSkinned(static_cast<Drawable*> (ntt), cam);
+        RenderSkinned(ntt, cam);
         return;
       }
 
@@ -123,9 +126,6 @@ namespace ToolKit
       MeshRawPtrArray meshCollector;
       mesh->GetAllMeshes(meshCollector);
 
-      m_cam = cam;
-      m_lights = GetBestLights(ntt, lights);
-      SetProjectViewModel(ntt, cam);
 
       for (Mesh* mesh : meshCollector)
       {
@@ -174,10 +174,9 @@ namespace ToolKit
     }
   }
 
-  void Renderer::RenderSkinned(Drawable* object, Camera* cam)
+  void Renderer::RenderSkinned(Entity* object, Camera* cam)
   {
-    MeshPtr mesh = object->GetMesh();
-    mesh->Init();
+    MeshPtr mesh = object->GetMeshComponent()->GetMeshVal();
     SetProjectViewModel(object, cam);
 
     static ShaderPtr skinShader = GetShaderManager()->Create<Shader>
@@ -940,6 +939,8 @@ namespace ToolKit
   {
     assert(vertex);
     assert(fragment);
+    vertex->Init();
+    fragment->Init();
 
     String tag;
     tag = vertex->m_tag + fragment->m_tag;
@@ -1426,11 +1427,12 @@ namespace ToolKit
       offset += 2 * sizeof(float);
 
       glEnableVertexAttribArray(3);  // BiTangent
-      glVertexAttribIPointer
+      glVertexAttribPointer
       (
         3,
         3,
-        GL_UNSIGNED_INT,
+        GL_FLOAT,
+        GL_FALSE,
         sizeof(SkinVertex),
         BUFFER_OFFSET(offset)
       );
@@ -1446,7 +1448,7 @@ namespace ToolKit
         sizeof(SkinVertex),
         BUFFER_OFFSET(offset)
       );
-      offset += 4 * sizeof(float);
+      offset += 4 * sizeof(unsigned int);
 
       glEnableVertexAttribArray(5);  // Weights
       glVertexAttribPointer

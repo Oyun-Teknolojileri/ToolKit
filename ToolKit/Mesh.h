@@ -88,7 +88,7 @@ namespace ToolKit
    public:
     TKResourceType(SkinMesh)
 
-      SkinMesh();
+    SkinMesh();
     explicit SkinMesh(const String& file);
     ~SkinMesh();
 
@@ -98,6 +98,8 @@ namespace ToolKit
 
     int GetVertexSize() const override;
     bool IsSkinned() const override;
+
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
    protected:
     void InitVertices(bool flush) override;
@@ -116,5 +118,4 @@ namespace ToolKit
     ResourcePtr CreateLocal(ResourceType type) override;
     String GetDefaultResource(ResourceType type) override;
   };
-
 }  // namespace ToolKit

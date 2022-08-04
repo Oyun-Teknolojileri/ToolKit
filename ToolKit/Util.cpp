@@ -65,6 +65,10 @@ namespace ToolKit
   );
   template TK_API void WriteVec
   (
+    XmlNode* node, XmlDocument* doc, const UVec4& val
+  );
+  template TK_API void WriteVec
+  (
     XmlNode* node, XmlDocument* doc, const Quaternion& val
   );
 

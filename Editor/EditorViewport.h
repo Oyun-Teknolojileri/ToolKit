@@ -68,7 +68,7 @@ namespace ToolKit
         bool& meshLoaded,
         DirectoryEntry dragEntry,
         ImGuiIO io,
-        Drawable** dwMesh,
+        Entity** dwMesh,
         LineBatch** boundingBox,
         EditorScenePtr currScene
       );
@@ -77,7 +77,7 @@ namespace ToolKit
       (
         bool& meshLoaded,
         EditorScenePtr currScene,
-        Drawable* dwMesh,
+        Entity* dwMesh,
         LineBatch** boundingBox
       );
       void HandleDropMesh
@@ -85,7 +85,7 @@ namespace ToolKit
         bool& meshLoaded,
         bool& meshAddedToScene,
         EditorScenePtr currScene,
-        Drawable** dwMesh,
+        Entity** dwMesh,
         LineBatch** boundingBox
       );
 
