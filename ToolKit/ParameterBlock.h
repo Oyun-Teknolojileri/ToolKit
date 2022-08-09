@@ -12,10 +12,10 @@
 #include "Serialize.h"
 
 /**
-* @def TKDeclareParam(Class, Name) Auto generated code for declaring accessing
-* local data for container Class.
+* @def TKDeclareParam(Class, Name) Auto generates the code for accessing and 
+* serialization of local data in the container Class.
 * Any class which needs managed ParameterBlocks must declare
-* ParameterBlock m_localData object. For each ParameterVariant, this macro
+* ParameterBlock m_localData member. For each ParameterVariant, this macro
 * can be utilized to generate access methods for the corresponding
 * ParameterVariant.
 * @param Class One of the supported types by ParameterVariant.
@@ -36,15 +36,42 @@
     Name##_Index = m_localData.m_variants.size(); \
     m_localData.Add(var); \
   } \
-  public: inline Class& Name() { \
-    return m_localData[Name##_Index].GetVar<Class>(); \
+  public: inline ParameterVariant& Param##Name() { \
+    return m_localData[Name##_Index]; \
   } \
-  public: inline const Class& Name##C() const { \
+  public: inline const Class& Get##Name##Val() const { \
     return m_localData[Name##_Index].GetCVar<Class>(); \
+  } \
+  public: inline void Set##Name##Val(const Class& val) { \
+    m_localData[Name##_Index] = val; \
+  } \
+  public: inline size_t Name##Index() { \
+    return Name##_Index; \
   }
 
 namespace ToolKit
 {
+
+  typedef
+  std::variant
+    <
+    bool,
+    byte,
+    ubyte,
+    float,
+    int,
+    uint,
+    Vec2,
+    Vec3,
+    Vec4,
+    Mat3,
+    Mat4,
+    String,
+    ULongID,
+    MeshPtr,
+    MaterialPtr,
+    HdriPtr
+    > Value;
 
   /**
   * The category to group / access / sort and display the ParameterVariant.
@@ -102,6 +129,7 @@ namespace ToolKit
     */
     enum class VariantType
     {
+      // Order is important. Don't change it.
       byte,
       ubyte,
       Float,
@@ -115,7 +143,9 @@ namespace ToolKit
       Bool,
       ULongID,
       MeshPtr,
-      MaterialPtr
+      MaterialPtr,
+      Vec2,
+      HdriPtr
     };
 
     /**
@@ -127,6 +157,12 @@ namespace ToolKit
     * Empty destructor.
     */
     ~ParameterVariant();
+
+
+    /**
+    * Default copy constructor makes a call to default assignment operator.
+    */
+    explicit ParameterVariant(const ParameterVariant& other);
 
     /**
     * Constructs bool type variant.
@@ -157,6 +193,11 @@ namespace ToolKit
     * Constructs uint type variant.
     */
     explicit ParameterVariant(uint var);
+
+    /**
+    * Constructs Vec2 type variant.
+    */
+    explicit ParameterVariant(const Vec2& var);
 
     /**
     * Constructs Vec3 type variant.
@@ -204,6 +245,11 @@ namespace ToolKit
     explicit ParameterVariant(const MaterialPtr& var);
 
     /**
+    * Constructs HdriPtr type variant.
+    */
+    explicit ParameterVariant(const HdriPtr& var);
+
+    /**
     * Used to retrieve VariantType of the variant.
     * @return VariantType That corresponds to current type of the variant.
     */
@@ -242,6 +288,13 @@ namespace ToolKit
     }
 
     /**
+    * Default assignment operator, copies every member but event callbacks and 
+    * the id. Events refer to objects to operate on. Consider coping or rewiring
+    * event callbacks explicitly. Otherwise unintended objects gets affected.
+    */
+    ParameterVariant& operator= (const ParameterVariant& other);
+
+    /**
     * Assign a bool to the value of the variant.
     */
     ParameterVariant& operator= (bool var);
@@ -270,6 +323,11 @@ namespace ToolKit
     * Assign a uint to the value of the variant.
     */
     ParameterVariant& operator= (uint var);
+
+    /**
+    * Assign a Vec2 to the value of the variant.
+    */
+    ParameterVariant& operator= (const Vec2& var);
 
     /**
     * Assign a Vec3 to the value of the variant.
@@ -317,6 +375,11 @@ namespace ToolKit
     ParameterVariant& operator= (const MaterialPtr& var);
 
     /**
+    * Assign a MaterialPtr to the value of the variant.
+    */
+    ParameterVariant& operator= (const HdriPtr& var);
+
+    /**
     * Serializes the variant to the xml document.
     * @param doc The xml document object to serialize to.
     * @param parent The parent xml node to serialize to.
@@ -351,24 +414,26 @@ namespace ToolKit
     VariantCategory m_category;
     String m_name;  //<! Name of the variant.
 
+    /**
+    * Callback function for value changes. This function gets called after
+    * new value set.
+    */
+    std::function<void(Value& oldVal, Value& newVal)> m_onValueChangedFn;
+
    private:
-    std::variant
-      <
-      bool,
-      byte,
-      ubyte,
-      float,
-      int,
-      uint,
-      Vec3,
-      Vec4,
-      Mat3,
-      Mat4,
-      String,
-      ULongID,
-      MeshPtr,
-      MaterialPtr
-      > m_var;  //!< The variant that hold the actual data.
+    template<typename T>
+    void AsignVal(T& val)
+    {
+      Value oldVal = m_var;
+      m_var = val;
+      if (m_onValueChangedFn)
+      {
+        m_onValueChangedFn(oldVal, m_var);
+      }
+    }
+
+   private:
+    Value m_var;  //!< The variant that hold the actual data.
 
     VariantType m_type = VariantType::Int;  //!< Type of the variant.
   };
@@ -423,8 +488,15 @@ namespace ToolKit
     * descending order by request.
     * @param categories An array to return unique categories.
     * @param sortDesc Sorts the categories by priority in descending order.
+    * @param filterByExpose Filters out categories which does not contains any
+    * exposed Variants.
     */
-    void GetCategories(VariantCategoryArray& categories, bool sortDesc);
+    void GetCategories
+    (
+      VariantCategoryArray& categories,
+      bool sortDesc,
+      bool filterByExpose
+    );
 
     /**
     * Collects every variant by the given category.

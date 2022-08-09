@@ -1,7 +1,13 @@
 #pragma once
 
 #include <filesystem>
+#include <unordered_map>
+#include <utility>
 
+#include "zip.h"
+#include "unzip.h"
+#include <rapidxml.hpp>
+#include <rapidxml_utils.hpp>
 #include "Types.h"
 
 namespace ToolKit
@@ -9,35 +15,82 @@ namespace ToolKit
   class TK_API FileManager
   {
    public:
+    ~FileManager();
+
+    XmlFile GetXmlFile(const String& filePath);
+    uint8* GetImageFile
+    (
+      const String& path,
+      int* x,
+      int* y,
+      int* comp,
+      int reqComp
+    );
     void PackResources(const String& path);
+
+    bool CheckFileFromResources(const String& path);
 
    private:
     void LoadAllScenes(const String& path);
-    void GetAllUsedResourcePaths();
-    void CreatePackResources(const String& path);
-    void CreatePackDirectories();
+    void GetAllUsedResourcePaths(const String& path);
 
-    void CopyFontResourcesToPack();
-    void CopyMaterialResourcesToPack();
-    void CopyMeshResourcesToPack();
-    void CopyShaderResourcesToPack();
-    void CopyTextureResourcesToPack();
-    void CopyAnimationResourcesToPack(const String& path);
-    void CopySceneResourcesToPack(const String& path);
+    bool ZipPack(const String& zipName);
+    bool AddFileToZip(zipFile zfile, const char* filename);
+
+    void GetAnimationPaths(const String& path);
+    void GetScenePaths(const String& path);
+    void GetExtraFilePaths(const String& path);
+
+    void GetRelativeResourcesPath(String& path);
+    XmlFile ReadXmlFileFromZip
+    (
+      zipFile zfile,
+      const String& relativePath,
+      const char* path
+    );
+    uint8* ReadImageFileFromZip
+    (
+      zipFile zfile,
+      const String& relativePath,
+      const char* path,
+      int* x,
+      int* y,
+      int* comp,
+      int reqComp
+    );
+    XmlFile CreateXmlFileFromZip
+    (
+      zipFile zfile,
+      const String& filename,
+      uint filesize
+    );
+    uint8* CreateImageFileFromZip
+    (
+      zipFile zfile,
+      const String& filename,
+      uint filesize,
+      int* x,
+      int* y,
+      int* comp,
+      int reqComp
+    );
+
+    void GenerateOffsetTableForPakFiles();
+    bool IsFileInPak(const String& filename);
 
    private:
-    UniqueStringArray m_fontResourcePaths;
-    UniqueStringArray m_materialResourcePaths;
-    UniqueStringArray m_meshResourcePaths;
-    UniqueStringArray m_shaderResourcePaths;
-    UniqueStringArray m_textureResourcePaths;
+    StringSet m_allPaths;
+    std::unordered_map<String, std::pair<ZPOS64_T, uint32_t>>
+    m_zipFilesOffsetTable;
+    bool m_offsetTableCreated = false;
+    zipFile m_zfile = nullptr;
 
-    Path m_minFontsDirectoryPath;
-    Path m_minMaterialsDirectoryPath;
-    Path m_minMeshesDirectoryPath;
-    Path m_minShadersDirectoryPath;
-    Path m_minTexturesDirectoryPath;
-    Path m_minAnimDirectoryPath;
-    Path m_minSceneDirectoryPath;
+    struct _streambuf : std::streambuf
+    {
+      _streambuf(char* begin, char* end)
+      {
+        this->setg(begin, begin, end);
+      }
+    };
   };
 }  // namespace ToolKit

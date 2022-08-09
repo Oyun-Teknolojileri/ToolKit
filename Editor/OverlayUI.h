@@ -11,38 +11,51 @@ namespace ToolKit
 
     class OverlayUI
     {
-    public:
-      OverlayUI(EditorViewport* owner);
+     public:
+      explicit OverlayUI(EditorViewport* owner);
       virtual ~OverlayUI();
       virtual void Show() = 0;
 
       void SetOwnerState();
 
-    public:
+     public:
       EditorViewport* m_owner;
       Vec2 m_scroll;
     };
 
     class OverlayMods : public OverlayUI
     {
-    public:
-      OverlayMods(EditorViewport* owner);
-      virtual void Show() override;
+     public:
+       explicit OverlayMods(EditorViewport* owner);
+      void Show() override;
+    };
+
+    class OverlayLighting : public OverlayUI
+    {
+     public:
+      explicit OverlayLighting(EditorViewport* owner);
+      void Show() override;
     };
 
     class OverlayViewportOptions : public OverlayUI
     {
-    public:
-      OverlayViewportOptions(EditorViewport* owner);
-      virtual void Show() override;
+     public:
+      explicit OverlayViewportOptions(EditorViewport* owner);
+      void Show() override;
+    };
+
+    class Overlay2DViewportOptions : public OverlayUI
+    {
+     public:
+       explicit Overlay2DViewportOptions(EditorViewport* owner);
+       void Show() override;
     };
 
     class StatusBar : public OverlayUI
     {
-    public:
-      StatusBar(EditorViewport* owner);
-      virtual void Show() override;
+     public:
+      explicit StatusBar(EditorViewport* owner);
+      void Show() override;
     };
-
-  }
-}
+  }  //  namespace Editor
+}  //  namespace ToolKit

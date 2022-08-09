@@ -5,6 +5,8 @@
 #include "MathUtil.h"
 #include "Util.h"
 #include "Light.h"
+#include "Sky.h"
+#include "ResourceComponent.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -27,7 +29,7 @@ namespace ToolKit
 
   bool Entity::IsDrawable() const
   {
-    return false;
+    return GetComponent<MeshComponent>() != nullptr;
   }
 
   EntityType Entity::GetType() const
@@ -37,6 +39,21 @@ namespace ToolKit
 
   void Entity::SetPose(const AnimationPtr& anim, float time)
   {
+    // Search for a SkinMesh
+    // Animate only entity node if there is no SkinMesh
+    MeshComponentPtr meshComponent = GetMeshComponent();
+    if (meshComponent)
+    {
+      MeshPtr mesh = meshComponent->GetMeshVal();
+      if (mesh->IsSkinned())
+      {
+        SkinMesh* skinMesh = static_cast<SkinMesh*> (mesh.get());
+        SkeletonPtr skeleton = skinMesh->m_skeleton;
+        anim->GetPose(skeleton, time);
+        return;
+      }
+    }
+    // SkinMesh isn't found, animate entity nodes
     anim->GetPose(m_node, time);
   }
 
@@ -91,7 +108,7 @@ namespace ToolKit
     other->ClearComponents();
     for (const ComponentPtr& com : m_components)
     {
-      other->m_components.push_back(com->Copy());
+      other->m_components.push_back(com->Copy(other));
     }
 
     return other;
@@ -133,7 +150,7 @@ namespace ToolKit
 
     Tag_Define
     (
-      "Tag",
+      "",
       EntityCategory.Name,
       EntityCategory.Priority,
       true, true
@@ -164,9 +181,9 @@ namespace ToolKit
     other->m_node->m_entity = other;
 
     // Preserve Ids.
-    ULongID id = other->Id();
+    ULongID id = other->GetIdVal();
     other->m_localData = m_localData;
-    other->Id() = id;
+    other->SetIdVal(id);
 
     if (copyComponents)
     {
@@ -224,6 +241,9 @@ namespace ToolKit
       case EntityType::Entity_Light:
       e = new Light();
       break;
+      case EntityType::Entity_Sky:
+      e = new Sky();
+      break;
       case EntityType::Entity_SpriteAnim:
       case EntityType::Entity_Directional:
       default:
@@ -236,6 +256,11 @@ namespace ToolKit
 
   void Entity::AddComponent(Component* component)
   {
+    AddComponent(ComponentPtr(component));
+  }
+
+  void Entity::AddComponent(ComponentPtr component)
+  {
     assert
     (
       GetComponent(component->m_id) == nullptr &&
@@ -243,19 +268,32 @@ namespace ToolKit
     );
 
     component->m_entity = this;
-    m_components.push_back(ComponentPtr(component));
+    m_components.push_back(component);
   }
 
-  void Entity::RemoveComponent(ULongID componentId)
+  MeshComponentPtr Entity::GetMeshComponent()
+  {
+    return GetComponent<MeshComponent>();
+  }
+
+  MaterialComponentPtr Entity::GetMaterialComponent()
+  {
+    return GetComponent<MaterialComponent>();
+  }
+
+  ComponentPtr Entity::RemoveComponent(ULongID componentId)
   {
     for (size_t i = 0; i < m_components.size(); i++)
     {
-      if (m_components[i]->m_id == componentId)
+      ComponentPtr com = m_components[i];
+      if (com->m_id == componentId)
       {
         m_components.erase(m_components.begin() + i);
-        return;
+        return com;
       }
     }
+
+    return nullptr;
   }
 
   ComponentPtr Entity::GetComponent(ULongID id) const
@@ -274,7 +312,7 @@ namespace ToolKit
   void Entity::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = CreateXmlNode(doc, XmlEntityElement, parent);
-    WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(IdC()));
+    WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(GetIdVal()));
     if (m_node->m_parent && m_node->m_parent->m_entity)
     {
       WriteAttr
@@ -282,7 +320,7 @@ namespace ToolKit
         node,
         doc,
         XmlParentEntityIdAttr,
-        std::to_string(m_node->m_parent->m_entity->IdC())
+        std::to_string(m_node->m_parent->m_entity->GetIdVal())
       );
     }
 
@@ -325,6 +363,7 @@ namespace ToolKit
 
     m_localData.DeSerialize(doc, parent);
 
+    ClearComponents();
     if (XmlNode* components = node->first_node("Components"))
     {
       XmlNode* comNode = components->first_node(XmlComponent.c_str());
@@ -352,7 +391,7 @@ namespace ToolKit
 
   void Entity::SetVisibility(bool vis, bool deep)
   {
-    Visible() = vis;
+    SetVisibleVal(vis);
     if (deep)
     {
       EntityRawPtrArray children;
@@ -366,7 +405,7 @@ namespace ToolKit
 
   void Entity::SetTransformLock(bool lock, bool deep)
   {
-    TransformLock() = lock;
+    SetTransformLockVal(lock);
     if (deep)
     {
       EntityRawPtrArray children;
@@ -392,7 +431,7 @@ namespace ToolKit
 
   EntityNode::EntityNode(const String& name)
   {
-    Name() = name;
+    SetNameVal(name);
   }
 
   EntityNode::~EntityNode()

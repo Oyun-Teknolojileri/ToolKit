@@ -1,18 +1,21 @@
-#include "ConsoleWindow.h"
 #include "FolderWindow.h"
-#include "GlobalDef.h"
-#include "Gizmo.h"
-#include "PropInspector.h"
-#include "Util.h"
-#include "App.h"
-#include "DebugNew.h"
-#include "Light.h"
 
 #include <filesystem>
 #include <vector>
 #include <algorithm>
 #include <memory>
 #include <string>
+
+#include "ConsoleWindow.h"
+#include "GlobalDef.h"
+#include "Gizmo.h"
+#include "PropInspector.h"
+#include "Util.h"
+#include "App.h"
+#include "Light.h"
+#include "DirectionComponent.h"
+#include "DebugNew.h"
+#include "MaterialInspector.h"
 
 namespace ToolKit
 {
@@ -58,6 +61,10 @@ namespace ToolKit
       {
         return GetTextureManager();
       }
+      else if (m_ext == HDR)
+      {
+        return GetTextureManager();
+      }
       else if (m_ext == SCENE)
       {
         return GetSceneManager();
@@ -70,7 +77,7 @@ namespace ToolKit
     {
       const Vec2& thumbSize = g_app->m_thumbnailSize;
       auto renderThumbFn =
-      [this, &thumbSize](Camera* cam, Drawable* dw) -> void
+      [this, &thumbSize](Camera* cam, Entity* obj) -> void
       {
         RenderTarget* thumb = nullptr;
         RenderTargetPtr thumbPtr = nullptr;
@@ -112,7 +119,7 @@ namespace ToolKit
 
         LightRawPtrArray lights = { &light };
 
-        g_app->m_renderer->Render(dw, cam, lights);
+        g_app->m_renderer->Render(obj, cam, lights);
 
         g_app->m_renderer->SwapRenderTarget(&thumb, false);
         g_app->m_thumbnailCache[GetFullPath()] = thumbPtr;
@@ -148,7 +155,7 @@ namespace ToolKit
       {
         Sphere ball;
         String fullpath = GetFullPath();
-        MeshPtr& mesh = ball.GetMesh();
+        MeshPtr mesh = ball.GetMeshComponent()->GetMeshVal();
         mesh->m_material = GetMaterialManager()->Create<Material>(fullpath);
         mesh->Init(false);
 
@@ -158,10 +165,21 @@ namespace ToolKit
 
         renderThumbFn(&cam, &ball);
       }
-      else if (SupportedImageFormat(m_ext))
+      else if (SupportedImageFormat(m_ext) || m_ext == HDR)
       {
         String fullpath = m_rootPath + GetPathSeparator() + m_fileName + m_ext;
-        TexturePtr texture = GetTextureManager()->Create<Texture>(fullpath);
+        TexturePtr texture = nullptr;
+        if (m_ext == HDR)
+        {
+          texture = std::make_shared<Texture>(fullpath, true);
+          texture->Load();
+          texture->Init(true);
+        }
+        else
+        {
+          texture = GetTextureManager()->Create<Texture>(fullpath);
+        }
+
         float maxDim = static_cast<float>
         (
           glm::max(texture->m_width, texture->m_height)
@@ -170,9 +188,9 @@ namespace ToolKit
         float h = (texture->m_height / maxDim) * thumbSize.y;
 
         Surface surface(Vec2(w, h));
-        MeshPtr& mesh = surface.GetMesh();
-        mesh->m_material->m_diffuseTexture = texture;
-        mesh->Init(false);
+        MaterialComponentPtr matCom = surface.GetMaterialComponent();
+        matCom->GetMaterialVal()->m_diffuseTexture = texture;
+        matCom->Init(false);
 
         Camera cam;
         cam.SetLens
@@ -351,6 +369,10 @@ namespace ToolKit
             {
               genThumbFn();
             }
+            else if (dirEnt.m_ext == HDR)
+            {
+              genThumbFn();
+            }
             else
             {
               if (m_onlyNativeTypes)
@@ -516,7 +538,7 @@ namespace ToolKit
 
         // Zoom amount
         ImGui::TableNextColumn();
-        ImGui::Text("%%%.0f", GetThumbnailZoomPercent(thumbnailZoom));
+        ImGui::Text("%.0f%%", GetThumbnailZoomPercent(thumbnailZoom));
         // Tooltips
         UI::HelpMarker(TKLoc, "Ctrl + mouse scroll to adjust thumbnail size.");
 

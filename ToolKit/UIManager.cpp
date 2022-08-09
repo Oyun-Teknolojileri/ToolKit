@@ -32,7 +32,7 @@ namespace ToolKit
     m_cam = cam;
     m_viewport = vp;
     m_lastCamEntity = vp->GetCamera();
-    vp->AttachCamera(cam->Id());
+    vp->AttachCamera(cam->GetIdVal());
 
     // Add update camera (cam) to scene, AttachCamera - GetCamera
     // routines will search the in the scene.
@@ -45,12 +45,12 @@ namespace ToolKit
     }
 
     UpdateSurfaces(vp);
-    vp->AttachCamera(m_lastCamEntity->Id());
+    vp->AttachCamera(m_lastCamEntity->GetIdVal());
 
     if (SceneManager* sceneMngr = GetSceneManager())
     {
       ScenePtr currScene = sceneMngr->GetCurrentScene();
-      currScene->RemoveEntity(m_cam->Id());
+      currScene->RemoveEntity(m_cam->GetIdVal());
     }
   }
 
@@ -62,7 +62,7 @@ namespace ToolKit
       (
         [&entityName](Entity* e) -> bool
         {
-          return e->Name() == entityName;
+          return e->GetNameVal() == entityName;
         }
       );
 

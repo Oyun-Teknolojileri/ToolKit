@@ -16,17 +16,19 @@
 #include "GlobalDef.h"
 #include "OverlayUI.h"
 #include "Grid.h"
-#include "Directional.h"
+#include "Camera.h"
 #include "Mod.h"
 #include "ConsoleWindow.h"
 #include "FolderWindow.h"
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
+#include "MaterialInspector.h"
 #include "PluginWindow.h"
 #include "EditorViewport2d.h"
+#include "DirectionComponent.h"
+#include "Action.h"
 #include "GL/glew.h"
 #include "DebugNew.h"
-
 
 namespace ToolKit
 {
@@ -52,41 +54,53 @@ namespace ToolKit
     {
       AssignManagerReporters();
 
+      // Create editor objects.
       m_cursor = new Cursor();
       m_origin = new Axis3d();
-      m_grid = new Grid(100);
-      m_grid->GetMesh()->Init(false);
-      Generate2dGrid();
+
+      uint gridSize = 100000;
+      m_grid = new Grid(UVec2(gridSize));
+      m_grid->Resize(UVec2(gridSize), AxisLabel::ZX, 0.025f);
+
+      m_2dGrid = new Grid(UVec2(g_app->m_playWidth, g_app->m_playHeight));
+      m_2dGrid->Resize
+      (
+        UVec2(g_app->m_playWidth, g_app->m_playHeight),
+        AxisLabel::XY, 10.0
+      );  // Generate grid cells 10 x 10
+
+      m_environmentBillboard = new SkyBillboard();
 
       // Lights and camera.
       m_lightMaster = new Node();
 
+      float intensity = 1.5f;
       DirectionalLight* light = new DirectionalLight();
-      light->Color() = Vec3(0.267f);
-      light->Intensity() = 1.5f;
+      light->SetColorVal(Vec3(0.267f));
+      light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(180.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->Color() = Vec3(0.55f);
-      light->Intensity() = 1.5f;
+      light->SetColorVal(Vec3(0.55f));
+      light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->Color() = Vec3(0.15f);
-      light->Intensity() = 1.5f;
+      light->SetColorVal(Vec3(0.15f));
+      light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
       light = new DirectionalLight();
-      light->Color() = Vec3(0.1f);
-      light->Intensity() = 1.5f;
+      light->SetColorVal(Vec3(0.1f));
+      light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
       m_lightMaster->AddChild(light->m_node);
@@ -105,8 +119,9 @@ namespace ToolKit
       scene->m_name = sceneName;
       scene->m_newScene = true;
       SetCurrentScene(scene);
-
       ApplyProjectSettings(m_onNewScene);
+
+
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
       {
         StringInputWindow* wsDir = new StringInputWindow
@@ -127,6 +142,8 @@ namespace ToolKit
       {
         m_workspace.RefreshProjects();
       }
+
+      m_publishManager = new PublishManager();
     }
 
     void App::Destroy()
@@ -136,10 +153,14 @@ namespace ToolKit
 
       GetCurrentScene()->Destroy(false);
 
+      SafeDel(m_publishManager);
+
       // Editor objects.
+      SafeDel(m_2dGrid);
       SafeDel(m_grid);
       SafeDel(m_origin);
       SafeDel(m_cursor);
+      SafeDel(m_environmentBillboard);
 
       for (Light* light : m_sceneLights)
       {
@@ -147,6 +168,12 @@ namespace ToolKit
       }
       SafeDel(m_lightMaster);
       m_sceneLights.clear();
+
+      for (Entity* dbgObj : m_perFrameDebugObjects)
+      {
+        SafeDel(dbgObj);
+      }
+      m_perFrameDebugObjects.clear();
 
       GetAnimationPlayer()->m_records.clear();
 
@@ -186,43 +213,35 @@ namespace ToolKit
       for (Light* light : allLights)
       {
         bool found = false;
-        for (Entity* entity : selecteds)
+        for (Entity* ntt : selecteds)
         {
-          if (light->Id() == entity->Id())
+          if (light->GetIdVal() == ntt->GetIdVal())
           {
-            if (light->GetLightType() == LightTypeEnum::LightDirectional)
-            {
-              static_cast<EditorDirectionalLight*>(light)->EnableGizmo(true);
-            }
-            else if (light->GetLightType() == LightTypeEnum::LightSpot)
-            {
-              static_cast<EditorSpotLight*>(light)->EnableGizmo(true);
-            }
+            EnableLightGizmo(light, true);
             found = true;
             break;
           }
         }
+
         if (!found)
         {
-          if (light->GetLightType() == LightTypeEnum::LightDirectional)
-          {
-            static_cast<EditorDirectionalLight*>(light)->EnableGizmo(false);
-          }
-          else if (light->GetLightType() == LightTypeEnum::LightSpot)
-          {
-            static_cast<EditorSpotLight*>(light)->EnableGizmo(false);
-          }
+          EnableLightGizmo(light, false);
         }
       }
 
       // Take all lights in an array
       LightRawPtrArray gameLights = GetCurrentScene()->GetLights();
-      gameLights.insert
-      (
-        gameLights.end(),
-        m_sceneLights.begin(),
-        m_sceneLights.end()
-      );
+
+      if (m_studioLightsActive)
+      {
+        gameLights.insert
+        (
+          gameLights.end(),
+          m_sceneLights.begin(),
+          m_sceneLights.end()
+        );
+      }
+
       // Sort lights by type
       auto lightSortFn = [](Light* light1, Light* light2) -> bool
       {
@@ -244,7 +263,10 @@ namespace ToolKit
         // Update scene lights for the current view.
         Camera* viewCam = viewport->GetCamera();
         m_lightMaster->OrphanSelf();
-        viewCam->m_node->AddChild(m_lightMaster);
+        if (m_studioLightsActive)
+        {
+          viewCam->m_node->AddChild(m_lightMaster);
+        }
 
         // PlayWindow is drawn on perspective. Thus, skip perspective.
         if (m_gameMod != GameMod::Stop && !m_runWindowed)
@@ -259,19 +281,27 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
+          // Render scene.
           m_renderer->RenderScene(GetCurrentScene(), viewport, gameLights);
 
-          Camera* cam = viewport->GetCamera();;
+          // Render grid.
+          Camera* cam = viewport->GetCamera();
+          auto gridDrawFn = [this, &cam](Grid* grid) -> void
+          {
+            m_renderer->m_gridCellSize = grid->m_gridCellSize;
+            m_renderer->m_gridHorizontalAxisColor = grid->m_horizontalAxisColor;
+            m_renderer->m_gridVerticalAxisColor = grid->m_verticalAxisColor;
+            m_renderer->Render(grid, cam);
+          };
+
+          Grid* grid = viewport->GetType() == Window::Type::Viewport2d ?
+            m_2dGrid : m_grid;
+
+          gridDrawFn(grid);
 
           // Render fixed scene objects.
-          if (viewport->GetType() == Window::Type::Viewport2d)
+          if (viewport->GetType() != Window::Type::Viewport2d)
           {
-            m_renderer->Render(&m_2dGrid, cam);
-          }
-          else
-          {
-            m_renderer->Render(m_grid, cam);
-
             m_origin->LookAt(cam, viewport->m_zoom);
             m_renderer->Render(m_origin, cam);
 
@@ -281,12 +311,14 @@ namespace ToolKit
 
           // Render gizmo.
           RenderGizmo(viewport, m_gizmo);
+
+          RenderComponentGizmo(viewport, selecteds);
         }
 
         // Render debug objects.
         if (!m_perFrameDebugObjects.empty())
         {
-          for (Drawable* dbgObj : m_perFrameDebugObjects)
+          for (Entity* dbgObj : m_perFrameDebugObjects)
           {
             m_renderer->Render(dbgObj, viewCam);
             SafeDel(dbgObj);
@@ -337,10 +369,10 @@ namespace ToolKit
       // Prevent overriding default scene.
       EditorScenePtr currScene = GetCurrentScene();
       if
-        (
+      (
         GetSceneManager()->GetDefaultResource(ResourceType::Scene)
         == currScene->GetFile()
-        )
+      )
       {
         currScene->SetFile(ScenePath("New Scene" + SCENE));
         return OnSaveAsScene();
@@ -582,6 +614,7 @@ namespace ToolKit
 
           if (m_runWindowed)
           {
+            m_playWindow->OnResize(m_playWidth, m_playHeight);
             m_playWindow->SetVisibility(true);
           }
         }
@@ -609,6 +642,7 @@ namespace ToolKit
 
         // Set the editor scene back.
         GetCurrentScene()->Reload();
+        GetCurrentScene()->Init();
         m_playWindow->SetVisibility(false);
       }
     }
@@ -616,9 +650,9 @@ namespace ToolKit
     EditorScenePtr App::GetCurrentScene()
     {
       EditorScenePtr eScn = std::static_pointer_cast<EditorScene>
-        (
+      (
         GetSceneManager()->GetCurrentScene()
-        );
+      );
 
       return eScn;
     }
@@ -638,16 +672,21 @@ namespace ToolKit
         (
           { DefaultPath(), "Editor.settings" }
         );
+
         std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>
-          (
+        (
           settingsFile.c_str()
-          );
+        );
 
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
 
-        XmlNode* app = Query(lclDoc.get(), { "App" });
-        CreateWindows(app);
+        // Prevent loading last scene.
+        Project pj = m_workspace.GetActiveProject();
+        m_workspace.SetScene("");
+
+        DeSerialize(lclDoc.get(), nullptr);
+        m_workspace.SetScene(pj.scene);
 
         settingsFile = ConcatPaths({ DefaultPath(), "defaultUI.ini" });
         ImGui::LoadIniSettingsFromDisk(settingsFile.c_str());
@@ -752,31 +791,31 @@ namespace ToolKit
           switch ((Window::Type)type)
           {
             case Window::Type::Viewport:
-            wnd = new EditorViewport(wndNode);
+              wnd = new EditorViewport(wndNode);
             break;
             case Window::Type::Console:
-            wnd = new ConsoleWindow(wndNode);
+              wnd = new ConsoleWindow(wndNode);
             break;
             case Window::Type::Outliner:
-            wnd = new OutlinerWindow(wndNode);
+              wnd = new OutlinerWindow(wndNode);
             break;
             case Window::Type::Browser:
-            wnd = new FolderWindow(wndNode);
+              wnd = new FolderWindow(wndNode);
             break;
             case Window::Type::Inspector:
-            wnd = new PropInspector(wndNode);
+              wnd = new PropInspector(wndNode);
             break;
             case Window::Type::MaterialInspector:
-            wnd = new MaterialInspector(wndNode);
+              wnd = new MaterialInspector(wndNode);
             break;
             case Window::Type::PluginWindow:
-            wnd = new PluginWindow(wndNode);
+              wnd = new PluginWindow(wndNode);
             break;
             case Window::Type::Viewport2d:
-            wnd = new EditorViewport2d(wndNode);
+              wnd = new EditorViewport2d(wndNode);
             break;
             default:
-            assert(false);
+              assert(false);
             break;
           }
 
@@ -966,14 +1005,14 @@ namespace ToolKit
               }
 
               if
-                (
+              (
                 ext == PNG ||
                 ext == JPG ||
                 ext == JPEG ||
                 ext == TGA ||
                 ext == BMP ||
                 ext == PSD
-                )
+              )
               {
                 fullPath = TexturePath(line);
               }
@@ -1007,8 +1046,7 @@ namespace ToolKit
           MeshPtr mesh;
           if (ext == SKINMESH)
           {
-            assert(false);
-            // mesh = GetSkinMeshManager()->Create(meshFile);
+            mesh = GetMeshManager()->Create<SkinMesh>(meshFile);
           }
           else
           {
@@ -1062,7 +1100,7 @@ Fail:
       GetSceneManager()->Remove(GetCurrentScene()->GetFile());
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
       SetCurrentScene(scene);
-      scene->Init(false);
+      scene->Init();
 
       m_workspace.SetScene(scene->m_name);
     }
@@ -1087,31 +1125,31 @@ Fail:
       )
       {
         DeSerialize(nullptr, nullptr);
-
-        // Restore window.
-        SDL_SetWindowSize
-        (
-          g_window,
-          m_renderer->m_windowWidth,
-          m_renderer->m_windowHeight
-        );
-        SDL_SetWindowPosition
-        (
-          g_window,
-          SDL_WINDOWPOS_CENTERED,
-          SDL_WINDOWPOS_CENTERED
-        );
-
-        if (m_windowMaximized)
-        {
-          SDL_MaximizeWindow(g_window);
-        }
-
         UI::InitSettings();
       }
       else
       {
         ResetUI();
+      }
+
+      // Restore app window.
+      SDL_SetWindowSize
+      (
+        g_window,
+        m_renderer->m_windowWidth,
+        m_renderer->m_windowHeight
+      );
+
+      SDL_SetWindowPosition
+      (
+        g_window,
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED
+      );
+
+      if (m_windowMaximized)
+      {
+        SDL_MaximizeWindow(g_window);
       }
     }
 
@@ -1279,31 +1317,24 @@ Fail:
         solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
         m_renderer->m_overrideMat = solidMat;
 
+        bool isLight = false;
         for (Entity* ntt : selection)
         {
           if (ntt->IsDrawable())
           {
+            isLight = false;
             if (ntt->GetType() == EntityType::Entity_Light)
             {
-              Light* light = static_cast<Light*>(ntt);
+              isLight = true;
+            }
 
-              if (light->GetLightType() == LightTypeEnum::LightDirectional)
-              {
-                static_cast<EditorDirectionalLight*>(light)->EnableGizmo(false);
-              }
-              else if (light->GetLightType() == LightTypeEnum::LightSpot)
-              {
-                static_cast<EditorSpotLight*>(light)->EnableGizmo(false);
-              }
+            // Disable all gizmos
+            if (isLight)
+            {
+              Light* light = static_cast<Light*>(ntt);
+              EnableLightGizmo(light, false);
               m_renderer->Render(ntt, viewport->GetCamera());
-              if (light->GetLightType() == LightTypeEnum::LightDirectional)
-              {
-                static_cast<EditorDirectionalLight*>(light)->EnableGizmo(true);
-              }
-              else if (light->GetLightType() == LightTypeEnum::LightSpot)
-              {
-                static_cast<EditorSpotLight*>(light)->EnableGizmo(true);
-              }
+              EnableLightGizmo(light, true);
             }
             else
             {
@@ -1385,6 +1416,56 @@ Fail:
         if (nttGizmo != nullptr)
         {
           m_renderer->Render(gizmo, viewport->GetCamera());
+        }
+      }
+    }
+
+    void App::RenderComponentGizmo
+    (
+      EditorViewport* viewport,
+      EntityRawPtrArray selecteds
+    )
+    {
+      for (Entity* ntt : GetCurrentScene()->GetEntities())
+      {
+        // Environment Component
+        EnvironmentComponentPtr envCom =
+        ntt->GetComponent<EnvironmentComponent>();
+        if (envCom != nullptr)
+        {
+          // Translate billboard
+          m_environmentBillboard->m_worldLocation =
+          ntt->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+
+          // Rotate billboard
+          m_environmentBillboard->LookAt
+          (
+            viewport->GetCamera(),
+            viewport->m_zoom
+          );
+
+          // Render billboard
+          m_renderer->Render(m_environmentBillboard, viewport->GetCamera());
+        }
+      }
+
+      for (Entity* ntt : selecteds)
+      {
+        // Environment Component
+        EnvironmentComponentPtr envCom =
+        ntt->GetComponent<EnvironmentComponent>();
+        if (envCom != nullptr && ntt->GetType() != EntityType::Entity_Sky)
+        {
+          // Bounding box
+          m_perFrameDebugObjects.push_back
+          (
+            CreateBoundingBoxDebugObject
+            (
+              *envCom->GetBBox(),
+              g_environmentGizmoColor,
+              1.0f
+          )
+          );
         }
       }
     }
@@ -1569,39 +1650,6 @@ Fail:
       scene->m_newScene = true;
       GetSceneManager()->Manage(scene);
       SetCurrentScene(scene);
-    }
-
-    void App::Generate2dGrid()
-    {
-      Vec2 layoutSize = { g_app->m_playWidth, g_app->m_playHeight };
-
-      float stepDist = 20.0f;
-      int yRep = static_cast<int>(layoutSize.x / stepDist);
-      int xRep = static_cast<int>(layoutSize.y / stepDist);
-      int total = xRep * yRep * 2;
-
-      Vec3Array linePnts;
-      linePnts.reserve(total);
-      const float depth = -1.0f;
-
-      Vec2 origin = { layoutSize.x * -0.5f, layoutSize.y * -0.5f };
-      for (int i = 1; i < xRep; i++)
-      {
-        Vec3 p0(origin.x, origin.y + stepDist * i, depth);
-        Vec3 p1(layoutSize.x * 0.5f, origin.y + stepDist * i, depth);
-        linePnts.push_back(p0);
-        linePnts.push_back(p1);
-
-        for (int j = 1; j < yRep; j++)
-        {
-          Vec3 p0(origin.x + stepDist * j, origin.y, depth);
-          Vec3 p1(origin.x + stepDist * j, origin.y + layoutSize.y, depth);
-          linePnts.push_back(p0);
-          linePnts.push_back(p1);
-        }
-      }
-
-      m_2dGrid.Generate(linePnts, Vec3(0.5f), DrawType::Line);
     }
 
     void DebugMessage(const String& msg)

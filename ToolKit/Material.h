@@ -11,7 +11,7 @@ namespace ToolKit
   class TK_API Material : public Resource
   {
    public:
-    TKResouceType(Material)
+    TKResourceType(Material)
 
     Material();
     explicit Material(String file);
@@ -52,6 +52,7 @@ namespace ToolKit
     String GetDefaultResource(ResourceType type) override;
 
     MaterialPtr GetCopyOfUnlitMaterial();
+    MaterialPtr GetCopyOfUIMaterial();
     MaterialPtr GetCopyOfUnlitColorMaterial();
     MaterialPtr GetCopyOfSolidMaterial();
     MaterialPtr GetCopyOfDefaultMaterial();

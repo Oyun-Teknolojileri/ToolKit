@@ -7,7 +7,7 @@
 
 #include "Animation.h"
 #include "Audio.h"
-#include "Directional.h"
+#include "Camera.h"
 #include "Drawable.h"
 #include "Entity.h"
 #include "Material.h"

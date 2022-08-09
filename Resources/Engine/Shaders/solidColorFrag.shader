@@ -3,6 +3,9 @@
 	<uniform name = "LightData" />
 	<uniform name = "CamData" />
 	<uniform name = "Color" />
+	<uniform name = "UseIbl" />
+	<uniform name = "IblIntensity" />
+	<uniform name = "IBLIrradianceMap" />
 	<source>
 	<!--
 		#version 300 es
@@ -38,6 +41,10 @@
 		uniform _CamData CamData;
 		uniform vec4 Color;
 
+		uniform samplerCube IBLIrradianceMap;
+		uniform float UseIbl;
+		uniform float IblIntensity;
+
 		in vec3 v_pos;
 		in vec3 v_normal;
 		in vec2 v_texture;
@@ -55,7 +62,7 @@
 				vec3 ambient = vec3(0.0);
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
-				if (LightData.type[i] == 1) // Point light
+				if (LightData.type[i] == 2) // Point light
 				{
 					vec3 fragToLight = LightData.pos[i] - v_pos;
 
@@ -98,7 +105,7 @@
 					diffuse  *= attenuation * radiusCheck;
 					specular *= attenuation * radiusCheck;
 				}
-				else if (LightData.type[i] == 2) // Directional light
+				else if (LightData.type[i] == 1) // Directional light
 				{
 					vec3 l = -LightData.dir[i];
 
@@ -164,7 +171,10 @@
 
 				irradiance += (ambient + diffuse + specular) * LightData.intensity[i];
 			}
-			
+
+			vec3 iblIrradiance = UseIbl * texture(IBLIrradianceMap, n).rgb;
+			irradiance += iblIrradiance * IblIntensity;
+
 			fragColor = vec4(irradiance * Color.xyz, Color.a);
 		}
 	-->

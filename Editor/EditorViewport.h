@@ -7,7 +7,6 @@
 #include "UI.h"
 #include "GlobalDef.h"
 
-
 namespace ToolKit
 {
   class Camera;
@@ -69,24 +68,25 @@ namespace ToolKit
         bool& meshLoaded,
         DirectoryEntry dragEntry,
         ImGuiIO io,
-        Drawable** dwMesh,
-        Drawable** boundingBox,
+        Entity** dwMesh,
+        LineBatch** boundingBox,
         EditorScenePtr currScene
       );
+
       Vec3 CalculateDragMeshPosition
       (
         bool& meshLoaded,
         EditorScenePtr currScene,
-        Drawable* dwMesh,
-        Drawable** boundingBox
+        Entity* dwMesh,
+        LineBatch** boundingBox
       );
       void HandleDropMesh
       (
         bool& meshLoaded,
         bool& meshAddedToScene,
         EditorScenePtr currScene,
-        Drawable** dwMesh,
-        Drawable** boundingBox
+        Entity** dwMesh,
+        LineBatch** boundingBox
       );
 
      public:
@@ -96,6 +96,7 @@ namespace ToolKit
       CameraAlignment m_cameraAlignment = CameraAlignment::Free;
       int m_additionalWindowFlags = 0;
       bool m_orbitLock = false;
+      Vec3 m_snapDeltas;  // X: Translation, Y: Rotation, Z: Scale
 
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;

@@ -21,7 +21,7 @@ namespace ToolKit
   class TK_API Skeleton : public Resource
   {
    public:
-    TKResouceType(Skeleton)
+    TKResourceType(Skeleton)
 
     Skeleton();
     explicit Skeleton(String file);
@@ -30,6 +30,8 @@ namespace ToolKit
     void Init(bool flushClientSideArray = true) override;
     void UnInit() override;
     void Load() override;
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     void AddBone(Bone* bone, Bone* parent = nullptr);
     int GetBoneIndex(String bone);

@@ -1,11 +1,10 @@
 #include "PropInspector.h"
-#include "GlobalDef.h"
+#include "App.h"
 #include "Util.h"
-
-#include "ImGui/imgui_stdlib.h"
 #include "ConsoleWindow.h"
 #include "TransformMod.h"
-
+#include "MaterialInspector.h"
+#include "ImGui/imgui_stdlib.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -29,44 +28,185 @@ namespace ToolKit
       {
         case ParameterVariant::VariantType::Bool:
         {
-          ImGui::Checkbox(var->m_name.c_str(), var->GetVarPtr<bool>());
+          bool val = var->GetVar<bool>();
+          if (ImGui::Checkbox(var->m_name.c_str(), &val))
+          {
+            *var = val;
+          }
         }
         break;
         case ParameterVariant::VariantType::Float:
         {
-          ImGui::InputFloat(var->m_name.c_str(), var->GetVarPtr<float>());
+          float val = var->GetVar<float>();
+          if
+          (
+            ImGui::InputFloat(var->m_name.c_str(), &val)
+            && ImGui::IsKeyPressed(ImGuiKey_Enter)
+          )
+          {
+            *var = val;
+          }
         }
         break;
         case ParameterVariant::VariantType::Int:
         {
-          ImGui::InputInt(var->m_name.c_str(), var->GetVarPtr<int>());
+          int val = var->GetVar<int>();
+          if
+          (
+            ImGui::InputInt(var->m_name.c_str(), &val)
+            && ImGui::IsKeyPressed(ImGuiKey_Enter)
+          )
+          {
+            *var = val;
+          }
+        }
+        break;
+        case ParameterVariant::VariantType::Vec2:
+        {
+          Vec2 val = var->GetVar<Vec2>();
+          if (ImGui::InputFloat2(var->m_name.c_str(), &val[0]))
+          {
+            *var = val;
+          }
         }
         break;
         case ParameterVariant::VariantType::Vec3:
         {
-          ImGui::InputFloat3(var->m_name.c_str(), &var->GetVar<Vec3>()[0]);
+          Vec3 val = var->GetVar<Vec3>();
+          if (ImGui::InputFloat3(var->m_name.c_str(), &val[0]))
+          {
+            *var = val;
+          }
         }
         break;
         case ParameterVariant::VariantType::Vec4:
         {
-          ImGui::InputFloat4(var->m_name.c_str(), &var->GetVar<Vec4>()[0]);
+          Vec4 val = var->GetVar<Vec4>();
+          if (ImGui::InputFloat4(var->m_name.c_str(), &val[0]))
+          {
+            *var = val;
+          }
         }
         break;
         case ParameterVariant::VariantType::String:
         {
-          ImGui::InputText(var->m_name.c_str(), var->GetVarPtr<String>());
+          String val = var->GetVar<String>();
+          if
+          (
+            ImGui::InputText(var->m_name.c_str(), &val)
+            && ImGui::IsKeyPressed(ImGuiKey_Enter)
+          )
+          {
+            *var = val;
+          }
         }
         break;
         case ParameterVariant::VariantType::ULongID:
         {
-          ImGui::InputScalar
+          ULongID val = var->GetVar<ULongID>();
+          if
           (
-            var->m_name.c_str(),
-            ImGuiDataType_U32,
-            var->GetVarPtr<ULongID>()
+            ImGui::InputScalar
+            (
+              var->m_name.c_str(),
+              ImGuiDataType_U32,
+              var->GetVarPtr<ULongID>()
+            )
+            && ImGui::IsKeyPressed(ImGuiKey_Enter)
+          )
+          {
+            *var = val;
+          }
+        }
+        break;
+        case ParameterVariant::VariantType::MaterialPtr:
+        {
+          MaterialPtr& mref = var->GetVar<MaterialPtr>();
+          String file, id;
+          if (mref)
+          {
+            id = std::to_string(mref->m_id);
+            file = mref->GetFile();
+          }
+
+          String uniqueName = var->m_name + "##" + id;
+          DropSubZone
+          (
+            uniqueName,
+            static_cast<uint> (UI::m_materialIcon->m_textureId),
+            file,
+            [&var](const DirectoryEntry& entry) -> void
+            {
+              if (GetResourceType(entry.m_ext) == ResourceType::Material)
+              {
+                *var = GetMaterialManager()->Create<Material>
+                (
+                  entry.GetFullPath()
+                );
+              }
+              else
+              {
+                GetLogger()->WriteConsole
+                (
+                  LogType::Error,
+                  "Only Material Types are accepted."
+                );
+              }
+            }
           );
         }
         break;
+        case ParameterVariant::VariantType::MeshPtr:
+        {
+          MeshPtr mref = var->GetVar<MeshPtr>();
+          DropSubZone
+          (
+            "Mesh##" + std::to_string(mref->m_id),
+            static_cast<uint> (UI::m_meshIcon->m_textureId),
+            mref->GetFile(),
+            [](const DirectoryEntry& entry) -> void
+            {
+              assert(false && "Not implemented !");
+            }
+          );
+        }
+        break;
+      case ParameterVariant::VariantType::HdriPtr:
+      {
+        HdriPtr mref = var->GetVar<HdriPtr>();
+        String file, id;
+        if (mref)
+        {
+          id = std::to_string(mref->m_id);
+          file = mref->GetFile();
+        }
+
+        DropSubZone
+        (
+          "Hdri##" + id,
+          static_cast<uint> (UI::m_imageIcon->m_textureId),
+          file,
+          [&var](const DirectoryEntry& entry) -> void
+          {
+            if (GetResourceType(entry.m_ext) == ResourceType::Hdri)
+            {
+              *var = GetTextureManager()->Create<Hdri>
+              (
+                entry.GetFullPath()
+              );
+            }
+            else
+            {
+              GetLogger()->WriteConsole
+              (
+                LogType::Error,
+                "Only hdri's are accepted."
+              );
+            }
+          }
+        );
+        break;
+      }
       default:
         break;
       }
@@ -102,76 +242,87 @@ namespace ToolKit
         }
       }
 
-      if (ImGui::BeginTable("##DropZone", 2))
+      if (!dropName.empty())
       {
-        ImGui::TableNextRow();
-        ImGui::TableNextColumn();
-
-        if (!dropName.empty())
-        {
-          ImGui::Text(dropName.c_str());
-        }
-
-        ImGui::Image
-        (
-          reinterpret_cast<void*>((intptr_t)iconId),
-          ImVec2(48.0f, 48.0f),
-          ImVec2(0.0f, 0.0f),
-          texCoords
-        );
-
-        if (ImGui::BeginDragDropTarget())
-        {
-          if
-          (
-            const ImGuiPayload* payload =
-            ImGui::AcceptDragDropPayload("BrowserDragZone")
-          )
-          {
-            IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
-            DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
-            dropAction(entry);
-          }
-
-          ImGui::EndDragDropTarget();
-        }
-
-        UI::HelpMarker(TKLoc + file, "Drop zone", 0.1f);
-        ImGui::TableNextColumn();
-
-        String fullPath = dirEnt.GetFullPath();
-        ImGui::Text("%s", fullPath.c_str());
-        UI::HelpMarker(TKLoc + file, fullPath.c_str(), 0.1f);
-
-        ImGui::TableNextRow();
-        ImGui::TableNextColumn();
-        ImGui::TableNextColumn();
-
-        if (ImGui::Button("Reload"))
-        {
-          if (ResourceManager* man = dirEnt.GetManager())
-          {
-            if (man->Exist(file))
-            {
-              man->m_storage[file]->Reload();
-              man->m_storage[file]->Init(false);
-            }
-          }
-        }
-
-        ImGui::EndTable();
+        ImGui::Text(dropName.c_str());
       }
+
+      bool clicked = ImGui::ImageButton
+      (
+        reinterpret_cast<void*>((intptr_t)iconId),
+        ImVec2(48.0f, 48.0f),
+        ImVec2(0.0f, 0.0f),
+        texCoords
+      );
+
+      if (ImGui::BeginDragDropTarget())
+      {
+        if
+        (
+          const ImGuiPayload* payload =
+          ImGui::AcceptDragDropPayload("BrowserDragZone")
+        )
+        {
+          IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
+          DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
+          dropAction(entry);
+        }
+
+        ImGui::EndDragDropTarget();
+      }
+
+      // Show file info.
+      String info = "Drop zone";
+      if (!file.empty() && !dirEnt.m_fileName.empty())
+      {
+        info = "";
+        if (ResourceManager* man = dirEnt.GetManager())
+        {
+          auto textureRepFn = [&info, file](const TexturePtr& t) -> void
+          {
+            if (t)
+            {
+              String file, ext;
+              DecomposePath(t->GetFile(), nullptr, &file, &ext);
+
+              info += "Texture: " + file + ext + "\n";
+              info += "Width: " + std::to_string(t->m_width) + "\n";
+              info += "Height: " + std::to_string(t->m_height);
+            }
+          };
+
+          if (man->m_type == ResourceType::Material)
+          {
+            MaterialPtr mr = man->Create<Material>(file);
+            if (clicked)
+            {
+              g_app->GetMaterialInspector()->m_material = mr;
+            }
+
+            info += "File: " + dirEnt.m_fileName + dirEnt.m_ext + "\n";
+            textureRepFn(mr->m_diffuseTexture);
+          }
+
+          if (man->m_type == ResourceType::Texture)
+          {
+            TexturePtr t = man->Create<Texture>(file);
+            textureRepFn(t);
+          }
+        }
+      }
+
+      UI::HelpMarker(TKLoc + file, info.c_str(), 0.1f);
     }
 
     void View::DropSubZone
     (
+      const String& title,
       uint fallbackIcon,
       const String& file,
       std::function<void(const DirectoryEntry& entry)> dropAction
     )
     {
-      String uid = "Resource##" + std::to_string(m_viewID);
-      if (ImGui::TreeNode(uid.c_str()))
+      if (ImGui::TreeNode(title.c_str()))
       {
         DropZone(fallbackIcon, file, dropAction);
 
@@ -189,13 +340,13 @@ namespace ToolKit
         return;
       }
 
-      ShowVariants();
+      ShowParameterBlock(m_entity->m_localData, m_entity->GetIdVal());
 
       // Missing data reporter.
       if (m_entity->IsDrawable())
       {
         Drawable* dw = static_cast<Drawable*> (m_entity);
-        MeshPtr& mesh = dw->GetMesh();
+        MeshPtr mesh = dw->GetMesh();
 
         StringArray missingData;
         MeshRawCPtrArray meshes;
@@ -243,12 +394,7 @@ namespace ToolKit
         ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen)
       )
       {
-        Mat3 rotate;
-        Vec3 scale, shear;
-        Mat4 ts = m_entity->m_node->GetTransform(g_app->m_transformSpace);
-        QDUDecomposition(ts, rotate, scale, shear);
-
-        // Continous edit utils.
+        // Continuous edit utils.
         static TransformAction* dragMem = nullptr;
         const auto saveDragMemFn = [this]() -> void
         {
@@ -267,17 +413,26 @@ namespace ToolKit
           }
         };
 
-        TransformationSpace space = g_app->m_transformSpace;
-        Vec3 translate = glm::column(ts, 3);
+        Vec3 translate = m_entity->m_node->GetTranslation
+        (
+          TransformationSpace::TS_PARENT
+        );
         if (ImGui::DragFloat3("Translate", &translate[0], 0.25f))
         {
           saveDragMemFn();
-          m_entity->m_node->SetTranslation(translate, space);
+          m_entity->m_node->SetTranslation
+          (
+            translate,
+            TransformationSpace::TS_PARENT
+          );
         }
 
         saveTransformActionFn();
 
-        Quaternion q0 = glm::toQuat(rotate);
+        Quaternion q0 = m_entity->m_node->GetOrientation
+        (
+          TransformationSpace::TS_LOCAL
+        );
         Vec3 eularXYZ = glm::eulerAngles(q0);
         Vec3 degrees = glm::degrees(eularXYZ);
         if (ImGui::DragFloat3("Rotate", &degrees[0], 0.25f))
@@ -300,17 +455,25 @@ namespace ToolKit
 
           if (isDrag)
           {
-            m_entity->m_node->Rotate(q, space);
+            m_entity->m_node->Rotate
+            (
+              q,
+              TransformationSpace::TS_LOCAL
+            );
           }
           else
           {
-            m_entity->m_node->SetOrientation(q, space);
+            m_entity->m_node->SetOrientation
+            (
+              q,
+              TransformationSpace::TS_LOCAL
+            );
           }
         }
 
         saveTransformActionFn();
 
-        scale = m_entity->m_node->GetScale();
+        Vec3 scale = m_entity->m_node->GetScale();
         if (ImGui::DragFloat3("Scale", &scale[0], 0.25f))
         {
           saveDragMemFn();
@@ -334,7 +497,7 @@ namespace ToolKit
 
         BoundingBox bb = m_entity->GetAABB(true);
         Vec3 dim = bb.max - bb.min;
-        ImGui::Text("Bounding box dimentions:");
+        ImGui::Text("Bounding box dimensions:");
         ImGui::Text("x: %.2f", dim.x);
         ImGui::SameLine();
         ImGui::Text("\ty: %.2f", dim.y);
@@ -343,14 +506,86 @@ namespace ToolKit
       }
 
       ShowCustomData();
+
+      if
+      (
+        ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen)
+      )
+      {
+        ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
+
+        std::vector<ULongID> compRemove;
+        for (ComponentPtr& com : m_entity->m_components)
+        {
+          if (ShowComponentBlock(com->m_localData, com->m_id))
+          {
+            compRemove.push_back(com->m_id);
+          }
+        }
+
+        for (ULongID id : compRemove)
+        {
+          ActionManager::GetInstance()->AddAction
+          (
+            new DeleteComponentAction(m_entity->GetComponent(id))
+          );
+        }
+
+        ImGui::PushItemWidth(150);
+        static bool addInAction = false;
+        if (addInAction)
+        {
+          int dataType = 0;
+          if
+          (
+            ImGui::Combo
+            (
+              "##NewComponent",
+              &dataType,
+              "...\0Mesh Component\0Material Component\0Environment Component"
+            )
+          )
+          {
+            Component* newComponent = nullptr;
+            switch (dataType)
+            {
+            case 1:
+              newComponent = new MeshComponent();
+              break;
+            case 2:
+              newComponent = new MaterialComponent;
+              break;
+            case 3:
+              newComponent = new EnvironmentComponent;
+              break;
+            default:
+              break;
+            }
+
+            if (newComponent)
+            {
+              m_entity->AddComponent(newComponent);
+              addInAction = false;
+            }
+          }
+        }
+        ImGui::PopItemWidth();
+
+        ImGui::Separator();
+        if (UI::BeginCenteredTextButton("Add Component"))
+        {
+          addInAction = true;
+        }
+        UI::EndCenteredTextButton();
+
+        ImGui::PopStyleVar();
+      }
     }
 
-    void EntityView::ShowVariants()
+    void EntityView::ShowParameterBlock(ParameterBlock& params, ULongID id)
     {
-      ParameterBlock& localData = m_entity->m_localData;
-
       VariantCategoryArray categories;
-      localData.GetCategories(categories, true);
+      params.GetCategories(categories, true, true);
 
       for (VariantCategory& category : categories)
       {
@@ -359,17 +594,18 @@ namespace ToolKit
           continue;
         }
 
+        String varName = category.Name + "##" + std::to_string(id);
         if
         (
           ImGui::CollapsingHeader
           (
-            category.Name.c_str(),
+            varName.c_str(),
             ImGuiTreeNodeFlags_DefaultOpen
           )
         )
         {
           ParameterVariantRawPtrArray vars;
-          localData.GetByCategory(category.Name, vars);
+          params.GetByCategory(category.Name, vars);
 
           for (ParameterVariant* var : vars)
           {
@@ -377,6 +613,57 @@ namespace ToolKit
           }
         }
       }
+    }
+
+    bool EntityView::ShowComponentBlock(ParameterBlock& params, ULongID id)
+    {
+      VariantCategoryArray categories;
+      params.GetCategories(categories, true, true);
+
+      bool removeComp = false;
+      for (VariantCategory& category : categories)
+      {
+        String varName = category.Name + "##" + std::to_string(id);
+        bool isOpen = ImGui::TreeNodeEx
+        (
+          varName.c_str(),
+          ImGuiTreeNodeFlags_DefaultOpen | g_treeNodeFlags
+        );
+
+        float offset = ImGui::GetContentRegionAvail().x - 10.0f;
+        ImGui::SameLine(offset);
+        ImGui::PushID(static_cast<int> (id));
+        if
+        (
+          UI::ImageButtonDecorless
+          (
+            UI::m_closeIcon->m_textureId,
+            ImVec2(15.0f, 15.0f),
+            false
+          ) &&
+          !removeComp
+        )
+        {
+          g_app->m_statusMsg = "Component " + category.Name + " removed.";
+          removeComp = true;
+        }
+        ImGui::PopID();
+
+        if (isOpen)
+        {
+          ParameterVariantRawPtrArray vars;
+          params.GetByCategory(category.Name, vars);
+
+          for (ParameterVariant* var : vars)
+          {
+            ShowVariant(var);
+          }
+
+          ImGui::TreePop();
+        }
+      }
+
+      return removeComp;
     }
 
     void EntityView::ShowCustomData()
@@ -540,8 +827,9 @@ namespace ToolKit
               (
                 "##NewCustData",
                 &dataType,
-                "...\0String\0Boolean\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4")
+                "...\0String\0Boolean\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4"
               )
+            )
             {
               ParameterVariant customVar;
               // This makes them only visible in Custom Data dropdown.
@@ -590,284 +878,11 @@ namespace ToolKit
           }
           ImGui::PopItemWidth();
 
-          Vec2 min = ImGui::GetWindowContentRegionMin();
-          Vec2 max = ImGui::GetWindowContentRegionMax();
-          Vec2 size = max - min;
-
-          ImGui::AlignTextToFramePadding();
-          ImVec2 tsize = ImGui::CalcTextSize("Add Custom Data");
-          float offset = (size.x - tsize.x) * 0.5f;
-          ImGui::Indent(offset);
-
-          if (ImGui::Button("Add Custom Data"))
+          if (UI::BeginCenteredTextButton("Add Custom Data"))
           {
             addInAction = true;
           }
-
-          ImGui::Indent(-offset);
-        }
-      }
-    }
-
-    // MeshView
-    //////////////////////////////////////////////////////////////////////////
-
-    void MeshView::Show()
-    {
-      MeshPtr& entry = static_cast<Drawable*> (m_entity)->GetMesh();
-      if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen))
-      {
-        if (ImGui::BeginTable("##MeshStats", 2))
-        {
-          ImGui::TableNextRow();
-          ImGui::TableNextColumn();
-
-          ImGui::Text("Face count:");
-          ImGui::TableNextColumn();
-          ImGui::Text("%d", (uint)entry->m_faces.size());
-
-          ImGui::TableNextRow();
-          ImGui::TableNextColumn();
-
-          ImGui::Text("Vertex count:");
-          ImGui::TableNextColumn();
-          ImGui::Text("%d", (uint)entry->m_clientSideVertices.size());
-
-          ImGui::EndTable();
-        }
-
-        DropSubZone
-        (
-          UI::m_meshIcon->m_textureId,
-          entry->GetFile(),
-          [this](const DirectoryEntry& dirEnt) -> void
-          {
-            if (m_entity && m_entity->IsDrawable())
-            {
-              Drawable* dw = static_cast<Drawable*> (m_entity);
-              dw->SetMesh
-              (
-                GetResourceManager(ResourceType::Mesh)->Create<Mesh>
-                (
-                  dirEnt.GetFullPath()
-                )
-              );
-            }
-          }
-        );
-      }
-    }
-
-    // MaterialView
-    //////////////////////////////////////////////////////////////////////////
-
-    void MaterialView::Show()
-    {
-      Drawable* drawable = static_cast<Drawable*> (m_entity);
-      MaterialPtr entry;
-
-      bool entityMod = true;
-      if ((entry = m_material))
-      {
-        entityMod = false;
-      }
-      else
-      {
-        if (drawable == nullptr)
-        {
-          return;
-        }
-        entry = drawable->GetMesh()->m_material;
-      }
-
-      auto updateThumbFn = [&entry]() -> void
-      {
-        DirectoryEntry dirEnt(entry->GetFile());
-        dirEnt.GenerateThumbnail();
-        entry->m_dirty = true;
-      };
-
-      if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
-      {
-        Vec4 col = Vec4(entry->m_color, entry->m_alpha);
-        if (ImGui::ColorEdit4("MatColor##1", &col.x))
-        {
-          entry->m_color = col.xyz;
-          entry->m_alpha = col.a;
-          updateThumbFn();
-        }
-
-        if (ImGui::TreeNode("Textures"))
-        {
-          ImGui::LabelText("##diffTexture", "Diffuse Texture: ");
-          String target = GetPathSeparatorAsStr();
-          if (entry->m_diffuseTexture)
-          {
-            target = entry->m_diffuseTexture->GetFile();
-          }
-
-          DropZone
-          (
-            UI::m_imageIcon->m_textureId,
-            target,
-            [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-            {
-              // Switch from solid color material to default for texturing.
-              if (entry->m_diffuseTexture == nullptr)
-              {
-                entry->m_fragmetShader =
-                GetShaderManager()->Create<Shader>
-                (
-                  ShaderPath("defaultFragment.shader", true)
-                );
-                entry->m_fragmetShader->Init();
-              }
-              entry->m_diffuseTexture =
-              GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
-              entry->m_diffuseTexture->Init();
-              updateThumbFn();
-            }
-          );
-
-          ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNode("Shaders"))
-        {
-          ImGui::LabelText("##vertShader", "Vertex Shader: ");
-          DropZone
-          (
-            UI::m_codeIcon->m_textureId,
-            entry->m_vertexShader->GetFile(),
-            [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-            {
-              if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
-              {
-                g_app->m_statusMsg = "An imported shader file expected!";
-                return;
-              }
-              entry->m_vertexShader =
-              GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-              entry->m_vertexShader->Init();
-              updateThumbFn();
-            }
-          );
-
-          ImGui::LabelText("##fragShader", "Fragment Shader: ");
-          DropZone
-          (
-            UI::m_codeIcon->m_textureId,
-            entry->m_fragmetShader->GetFile(),
-            [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-            {
-              entry->m_fragmetShader =
-              GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-              entry->m_fragmetShader->Init();
-              updateThumbFn();
-            }
-          );
-          ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNode("Render State"))
-        {
-          int cullMode = static_cast<int>(entry->GetRenderState()->cullMode);
-          if (ImGui::Combo("Cull mode", &cullMode, "Two Sided\0Front\0Back"))
-          {
-            entry->GetRenderState()->cullMode = (CullingType)cullMode;
-            entry->m_dirty = true;
-          }
-
-          int blendMode =
-          static_cast<int>(entry->GetRenderState()->blendFunction);
-          if (ImGui::Combo("Blend mode", &blendMode, "None\0Alpha Blending"))
-          {
-            entry->GetRenderState()->blendFunction = (BlendFunction)blendMode;
-            entry->m_dirty = true;
-          }
-
-          int drawType = -1;
-          switch (entry->GetRenderState()->drawType)
-          {
-          case DrawType::Triangle:
-            drawType = 0;
-            break;
-          case DrawType::Line:
-            drawType = 1;
-            break;
-          case DrawType::LineStrip:
-            drawType = 2;
-            break;
-          case DrawType::LineLoop:
-            drawType = 3;
-            break;
-          case DrawType::Point:
-            drawType = 4;
-            break;
-          }
-
-          if
-          (
-            ImGui::Combo
-            (
-              "Draw mode",
-              &drawType,
-              "Triangle\0Line\0Line Strip\0Line Loop\0Point"
-            )
-          )
-          {
-            switch (drawType)
-            {
-            case 0:
-              entry->GetRenderState()->drawType = DrawType::Triangle;
-              break;
-            case 1:
-              entry->GetRenderState()->drawType = DrawType::Line;
-              break;
-            case 2:
-              entry->GetRenderState()->drawType = DrawType::LineStrip;
-              break;
-            case 3:
-              entry->GetRenderState()->drawType = DrawType::LineLoop;
-              break;
-            case 4:
-              entry->GetRenderState()->drawType = DrawType::Point;
-              break;
-            }
-
-            entry->m_dirty = true;
-          }
-
-          bool depthTest = entry->GetRenderState()->depthTestEnabled;
-          if (ImGui::Checkbox("Enable depth test", &depthTest))
-          {
-            entry->GetRenderState()->depthTestEnabled = depthTest;
-            entry->m_dirty = true;
-          }
-
-          ImGui::TreePop();
-        }
-
-        if (entityMod)
-        {
-          DropSubZone
-          (
-            UI::m_materialIcon->m_textureId,
-            entry->GetFile(),
-            [&drawable](const DirectoryEntry& dirEnt) -> void
-            {
-              MeshPtr& mesh = drawable->GetMesh();
-              if (strcmp(dirEnt.m_ext.c_str(), ".material") != 0)
-              {
-                g_app->m_statusMsg = "An imported material file expected!";
-                return;
-              }
-              mesh->m_material =
-              GetMaterialManager()->Create<Material>(dirEnt.GetFullPath());
-              mesh->m_material->Init();
-              mesh->m_dirty = true;
-            }
-          );
+          UI::EndCenteredTextButton();
         }
       }
     }
@@ -883,19 +898,12 @@ namespace ToolKit
 
     PropInspector::PropInspector()
     {
-      m_views.push_back(new EntityView());
-      m_views.push_back(new MaterialView());
-      m_views.push_back(new MeshView());
-      m_views.push_back(new SurfaceView());
+      m_view = new EntityView();
     }
 
     PropInspector::~PropInspector()
     {
-      for (View* v : m_views)
-      {
-        SafeDel(v);
-      }
-      m_views.clear();
+      SafeDel(m_view);
     }
 
     void PropInspector::Show()
@@ -911,27 +919,8 @@ namespace ToolKit
         }
         else
         {
-          EntityView* ev = GetView<EntityView>();
-          ev->m_entity = curr;
-          ev->Show();
-
-          if (curr->IsDrawable())
-          {
-            MeshView* mev = GetView<MeshView>();
-            mev->m_entity = curr;
-            mev->Show();
-
-            MaterialView* mav = GetView <MaterialView>();
-            mav->m_entity = curr;
-            mav->Show();
-          }
-
-          if (curr->IsSurfaceInstance())
-          {
-            View* view = GetView<SurfaceView>();
-            view->m_entity = curr;
-            view->Show();
-          }
+          m_view->m_entity = curr;
+          m_view->Show();
         }
       }
       ImGui::End();
@@ -956,205 +945,6 @@ namespace ToolKit
           SDL_SCANCODE_S
         }
       );
-    }
-
-    template<typename T>
-    T* PropInspector::GetView()
-    {
-      for (View* v : m_views)
-      {
-        if (T* cv = dynamic_cast<T*> (v))
-        {
-          return cv;
-        }
-      }
-
-      assert(false && "Invalid View type queried");
-      return nullptr;
-    }
-
-    MaterialInspector::MaterialInspector(XmlNode* node)
-      : MaterialInspector()
-    {
-      DeSerialize(nullptr, node);
-    }
-
-    MaterialInspector::MaterialInspector()
-    {
-      m_view = new MaterialView();
-    }
-
-    MaterialInspector::~MaterialInspector()
-    {
-      SafeDel(m_view);
-    }
-
-    void MaterialInspector::Show()
-    {
-      if (ImGui::Begin(m_name.c_str(), &m_visible))
-      {
-        HandleStates();
-
-        if (m_material == nullptr)
-        {
-          ImGui::Text("Select a material");
-        }
-        else
-        {
-          m_view->m_material = m_material;
-          m_view->Show();
-        }
-      }
-      ImGui::End();
-    }
-
-    Window::Type MaterialInspector::GetType() const
-    {
-      return Type::MaterialInspector;
-    }
-
-    void MaterialInspector::DispatchSignals() const
-    {
-      ModShortCutSignals({ SDL_SCANCODE_DELETE });
-    }
-
-    void SurfaceView::Show()
-    {
-      if (!m_entity->IsSurfaceInstance())
-      {
-        return;
-      }
-
-      Surface* entry = static_cast<Surface*> (m_entity);
-      if (ImGui::CollapsingHeader("Surface", ImGuiTreeNodeFlags_DefaultOpen))
-      {
-        if
-        (
-          ImGui::BeginTable
-          (
-            "##SurfaceProps",
-            2,
-            ImGuiTableFlags_SizingFixedSame
-          )
-        )
-        {
-          ImGui::TableSetupColumn("##size");
-          ImGui::TableSetupColumn
-          (
-            "##offset",
-            ImGuiTableColumnFlags_WidthStretch
-          );
-
-          ImGui::TableNextRow();
-          ImGui::TableNextColumn();
-
-          ImGui::Text("Size: ");
-          ImGui::TableNextColumn();
-
-          ImGui::InputFloat2
-          (
-            "##Size",
-            reinterpret_cast<float*>(&entry->m_size)
-          );
-          if (ImGui::IsItemDeactivatedAfterEdit())
-          {
-            entry->UpdateGeometry(false);
-          }
-
-          ImGui::TableNextRow();
-          ImGui::TableNextColumn();
-
-          ImGui::Text("Offset: ");
-          ImGui::TableNextColumn();
-
-          ImGui::InputFloat2
-          (
-            "##Offset",
-            reinterpret_cast<float*>(&entry->m_pivotOffset)
-          );
-          if (ImGui::IsItemDeactivatedAfterEdit())
-          {
-            entry->UpdateGeometry(false);
-          }
-
-          ImGui::EndTable();
-
-          const char* text = "Update Size By Texture";
-          if (ImGui::Button(text))
-          {
-            entry->UpdateGeometry(true);
-          }
-
-          // Show additions.
-          ShowButton();
-        }
-      }
-    }
-
-    void SurfaceView::ShowButton()
-    {
-      if (m_entity->GetType() == EntityType::Entity_Button)
-      {
-        Button* button = dynamic_cast<Button*> (m_entity);
-        ImGui::Text("Button");
-        ImGui::Separator();
-
-        String file = "\\button image.";
-        if (button->m_buttonImage)
-        {
-          file = button->m_buttonImage->GetFile();
-        }
-
-        DropZone
-        (
-          UI::m_imageIcon->m_textureId,
-          file,
-          [this](const DirectoryEntry& dirEnt) -> void
-          {
-            if (m_entity && m_entity->IsDrawable())
-            {
-              if (m_entity->GetType() == EntityType::Entity_Button)
-              {
-                Button* button = dynamic_cast<Button*> (m_entity);
-                TexturePtr texture =
-                GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
-                texture->Init(false);
-                button->m_buttonImage = texture;
-                button->GetMesh()->m_material->m_diffuseTexture = texture;
-                button->UpdateGeometry(true);
-              }
-            }
-          },
-          "Button Image:"
-        );
-
-        file = "\\mouse over image.";
-        if (button->m_mouseOverImage)
-        {
-          file = button->m_mouseOverImage->GetFile();
-        }
-
-        DropZone
-        (
-          UI::m_imageIcon->m_textureId,
-          file,
-          [this](const DirectoryEntry& dirEnt) -> void
-          {
-            if (m_entity && m_entity->IsDrawable())
-            {
-              if (m_entity->GetType() == EntityType::Entity_Button)
-              {
-                Button* button = dynamic_cast<Button*> (m_entity);
-                TexturePtr texture =
-                GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
-                texture->Init(false);
-                button->m_mouseOverImage = texture;
-              }
-            }
-          },
-          "Mouse Hover Image:"
-        );
-      }
     }
 
   }  // namespace Editor

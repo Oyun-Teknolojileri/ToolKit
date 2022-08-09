@@ -40,9 +40,13 @@ namespace ToolKit
     const String g_gridMaterialName("TK_EDITOR_GRID");
     const Vec3 g_gridAxisBlue = Vec3(0.196f, 0.541f, 0.905f);
     const Vec3 g_gridAxisRed = Vec3(0.89f, 0.239f, 0.341f);
+    const Vec3 g_gridAxisGreen = Vec3(0.537f, 0.831f, 0.07f);
     const Vec3 g_gizmoRed = Vec3(0.89f, 0.239f, 0.341f);
     const Vec3 g_gizmoGreen = Vec3(0.537f, 0.831f, 0.07f);
     const Vec3 g_gizmoBlue = Vec3(0.196f, 0.541f, 0.905f);
+    const Vec3 g_cameraGizmoColor = Vec3(0.0f);
+    const Vec3 g_lightGizmoColor = Vec3(0.0f);
+    const Vec3 g_environmentGizmoColor = Vec3(0.0f);
     const Vec3 g_gizmoLocked = Vec3(0.3f);
     const std::vector<Vec3> g_gizmoColor =
     { g_gizmoRed, g_gizmoGreen, g_gizmoBlue };

@@ -4,6 +4,9 @@
     <Filter Include="Source">
       <UniqueIdentifier>{b9272a08-74f2-4119-add4-68697b39f5e9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Component">
+      <UniqueIdentifier>{abe79bd2-78b3-46a4-99b4-82b7fbc43e63}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp">
@@ -12,10 +15,7 @@
     <ClCompile Include="Audio.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Component.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Directional.cpp">
+    <ClCompile Include="Camera.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Drawable.cpp">
@@ -102,6 +102,18 @@
     <ClCompile Include="FileManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>Source\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectionComponent.cpp">
+      <Filter>Source\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceComponent.cpp">
+      <Filter>Source\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Sky.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h">
@@ -110,13 +122,10 @@
     <ClInclude Include="Audio.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Component.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="DebugNew.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Directional.h">
+    <ClInclude Include="Camera.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Drawable.h">
@@ -216,6 +225,18 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="FileManager.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>Source\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceComponent.h">
+      <Filter>Source\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectionComponent.h">
+      <Filter>Source\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Sky.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

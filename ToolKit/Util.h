@@ -5,6 +5,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <string>
 #include <vector>
 
 namespace ToolKit
@@ -124,6 +125,7 @@ namespace ToolKit
 
   TK_API String ToLower(const String& str);
   TK_API String Format(const char* msg, ...);
+  TK_API String Trim(const std::string& str, const String& whitespace = " \t");
 
   // Debug geometries.
   ///////////////////////////////////////////////////////
@@ -133,6 +135,8 @@ namespace ToolKit
   TK_API LineBatch* CreateBoundingBoxDebugObject
   (
     const BoundingBox& box,
+    const Vec3& color = Vec3(1.0f, 0.0f, 0.0f),
+    float size = 2.0f,
     const Mat4* transform = nullptr
   );
 
@@ -162,6 +166,24 @@ namespace ToolKit
   // {copies} First one is the copy root, fallowing are attached children.
   TK_API Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies);
   TK_API Entity* DeepInstantiate(Entity* root, EntityRawPtrArray& instances);
+
+  // Sort entities  by distance (from boundary center)
+  // in ascending order to camera. Accounts for isometric camera.
+  TK_API void StableSortByDistanceToCamera
+  (
+    EntityRawPtrArray& entities,
+    const Camera* cam
+  );
+
+  // Sort entities by their material's render state's priority in
+  // descending order.
+  TK_API void StableSortByMaterialPriority(EntityRawPtrArray& entities);
+
+  // If there is a material component, returns its material else
+  // returns mesh's material. If there is not a MaterialComponent, it will
+  // return the mesh's first material. In case of multisubmesh, there may be
+  // multiple materials. But they are ignored.
+  TK_API MaterialPtr GetRenderMaterial(Entity* entity);
 
   // Memory operations.
   ///////////////////////////////////////////////////////

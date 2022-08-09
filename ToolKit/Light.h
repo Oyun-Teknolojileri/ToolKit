@@ -8,13 +8,12 @@
 
 namespace ToolKit
 {
-
   enum class LightTypeEnum
   {
-    LightBase,
-    LightPoint,
-    LightDirectional,
-    LightSpot
+    LightBase = 0,
+    LightDirectional = 1,
+    LightPoint = 2,
+    LightSpot = 3
   };
 
   class TK_API Light : public Entity
@@ -28,15 +27,10 @@ namespace ToolKit
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-    virtual void Init();
-
    public:
     TKDeclareParam(int, LightType);
     TKDeclareParam(Vec3, Color);
     TKDeclareParam(float, Intensity);
-
-   protected:
-    bool m_initialized = false;
   };
 
   class TK_API DirectionalLight : public Light

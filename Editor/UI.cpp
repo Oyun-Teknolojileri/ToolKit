@@ -15,8 +15,10 @@
 #include "OverlayUI.h"
 #include "OutlinerWindow.h"
 #include "PropInspector.h"
+#include "MaterialInspector.h"
 #include "Util.h"
 #include "PluginWindow.h"
+#include "Action.h"
 #include "ImGui/imgui_stdlib.h"
 #include "Imgui/imgui_impl_sdl.h"
 #include "Imgui/imgui_impl_opengl3.h"
@@ -71,6 +73,10 @@ namespace ToolKit
     TexturePtr UI::m_lockedIcon;
     TexturePtr UI::m_unlockedIcon;
     TexturePtr UI::m_viewZoomIcon;
+    TexturePtr UI::m_gridIcon;
+    TexturePtr UI::m_skyIcon;
+    TexturePtr UI::m_closeIcon;
+    TexturePtr UI::m_studioLightsToggleIcon;
 
     void UI::Init()
     {
@@ -334,6 +340,26 @@ namespace ToolKit
         TexturePath("Icons/viewzoom.png", true)
       );
       m_viewZoomIcon->Init();
+      m_gridIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/grid.png", true)
+      );
+      m_gridIcon->Init();
+      m_skyIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/sky.png", true)
+      );
+      m_skyIcon->Init();
+      m_closeIcon = GetTextureManager()->Create<Texture>
+      (
+      TexturePath("Icons/close.png", true)
+      );
+      m_closeIcon->Init();
+      m_studioLightsToggleIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/studio_lights_toggle.png", true)
+      );
+      m_studioLightsToggleIcon->Init();
     }
 
     void UI::InitTheme()
@@ -941,7 +967,7 @@ namespace ToolKit
 
     void UI::ShowMenuProjects()
     {
-      if (ImGui::MenuItem("New"))
+      if (ImGui::MenuItem("New Project"))
       {
         StringInputWindow* inputWnd =
         new StringInputWindow("NewProject", true);
@@ -954,18 +980,26 @@ namespace ToolKit
         };
       }
 
-      if (ImGui::MenuItem("Pack Project"))
+      if (ImGui::BeginMenu("Open Project"))
       {
-        g_app->PackResources();
-      }
-      ImGui::Separator();
-
-      for (const Project& project : g_app->m_workspace.m_projects)
-      {
-        if (ImGui::MenuItem(project.name.c_str()))
+        for (const Project& project : g_app->m_workspace.m_projects)
         {
-          g_app->OpenProject(project);
+          if (ImGui::MenuItem(project.name.c_str()))
+          {
+            g_app->OpenProject(project);
+          }
         }
+        ImGui::EndMenu();
+      }
+
+      if (ImGui::BeginMenu("Publish"))
+      {
+        if (ImGui::MenuItem("Web"))
+        {
+          g_app->m_publishManager->Publish(PublishPlatform::Web);
+        }
+
+        ImGui::EndMenu();
       }
     }
 
@@ -1360,6 +1394,39 @@ namespace ToolKit
       }
 
       return newPushState;
+    }
+
+    float g_centeredTextOffset = 0.0f;
+    bool UI::BeginCenteredTextButton(const String& text, const String& id)
+    {
+      assert
+      (
+        g_centeredTextOffset == 0.0f &&
+        "Begin / End CenteredTextButton mismatch !"
+      );
+
+      Vec2 min = ImGui::GetWindowContentRegionMin();
+      Vec2 max = ImGui::GetWindowContentRegionMax();
+      Vec2 size = max - min;
+
+      ImGui::AlignTextToFramePadding();
+      ImVec2 tSize = ImGui::CalcTextSize(text.c_str());
+      g_centeredTextOffset = (size.x - tSize.x) * 0.5f;
+      ImGui::Indent(g_centeredTextOffset);
+
+      String buttonText = text;
+      if (!id.empty())
+      {
+        buttonText += "##" + id;
+      }
+
+      return ImGui::Button(buttonText.c_str());
+    }
+
+    void UI::EndCenteredTextButton()
+    {
+      ImGui::Indent(-g_centeredTextOffset);
+      g_centeredTextOffset = 0.0f;
     }
 
     Window::Window()

@@ -21,7 +21,7 @@ namespace ToolKit
   class TK_API SpriteSheet : public Resource
   {
    public:
-    TKResouceType(SpriteSheet)
+    TKResourceType(SpriteSheet)
 
     SpriteSheet();
     explicit SpriteSheet(String file);
@@ -45,11 +45,11 @@ namespace ToolKit
     std::unordered_map<String, Surface*> m_sprites;
   };
 
-  class TK_API SpriteAnimation : public Drawable
+  class TK_API SpriteAnimation : public Entity
   {
    public:
     SpriteAnimation();
-    explicit SpriteAnimation(SpriteSheetPtr spriteSheet);
+    explicit SpriteAnimation(const SpriteSheetPtr& spriteSheet);
     ~SpriteAnimation();
 
     virtual EntityType GetType() const;

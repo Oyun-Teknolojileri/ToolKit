@@ -59,6 +59,13 @@ namespace rapidxml
                 throw runtime_error("error reading stream");
             m_data.push_back(0);
         }
+
+        file(const char* buffer, unsigned int size)
+        {
+          m_data.reserve(size + 1);
+          m_data = std::vector<char>(buffer, buffer + size + 1);
+          m_data[size] = 0;
+        }
         
         //! Gets file data.
         //! \return Pointer to data of file.

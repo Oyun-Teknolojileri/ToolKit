@@ -1,104 +1,71 @@
 #pragma once
 
+#include <vector>
+#include <functional>
+
 #include "UI.h"
 #include "FolderWindow.h"
-#include <functional>
 
 namespace ToolKit
 {
   namespace Editor
   {
 
-    class View 
+    class View
     {
-    public:
+     public:
       virtual ~View() {}
       virtual void Show() = 0;
       virtual void ShowVariant(ParameterVariant* var);
 
-      void DropZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction, const String& dropName = "");
-      void DropSubZone(uint fallbackIcon, const String& file, std::function<void(const DirectoryEntry& entry)> dropAction);
+      void DropZone
+      (
+        uint fallbackIcon,
+        const String& file,
+        std::function<void(const DirectoryEntry& entry)> dropAction,
+        const String& dropName = ""
+      );
 
-    public:
+      void DropSubZone
+      (
+        const String& title,
+        uint fallbackIcon,
+        const String& file,
+        std::function<void(const DirectoryEntry& entry)> dropAction
+      );
+
+     public:
       Entity* m_entity = nullptr;
       int m_viewID = 0;
     };
 
     class EntityView : public View
     {
-    public:
-      EntityView() { m_viewID = 1;  }
+     public:
+      EntityView() { m_viewID = 1; }
       virtual ~EntityView() {}
       virtual void Show();
-      virtual void ShowVariants();
+      virtual void ShowParameterBlock(ParameterBlock& params, ULongID id);
+      virtual bool ShowComponentBlock(ParameterBlock& params, ULongID id);
 
-    protected:
+     protected:
       void ShowCustomData();
-    };
-
-    class MeshView : public View
-    {
-    public:
-      MeshView() { m_viewID = 2; }
-      virtual ~MeshView() {}
-      virtual void Show() override;
-    };
-
-    class MaterialView : public View
-    {
-    public:
-      MaterialView() { m_viewID = 3; }
-      virtual ~MaterialView() {}
-      virtual void Show() override;
-
-    public:
-      MaterialPtr m_material;
-    };
-
-    class SurfaceView : public View
-    {
-    public:
-      SurfaceView() { m_viewID = 4; }
-      virtual ~SurfaceView() {}
-      virtual void Show() override;
-      void ShowButton();
     };
 
     class PropInspector : public Window
     {
-    public:
-      PropInspector(XmlNode* node);
+     public:
+      explicit PropInspector(XmlNode* node);
       PropInspector();
       virtual ~PropInspector();
 
-      virtual void Show() override;
-      virtual Type GetType() const override;
-      virtual void DispatchSignals() const override;
+      void Show() override;
+      Type GetType() const override;
+      void DispatchSignals() const override;
 
-      template<typename T>
-      T* GetView();
-
-    public:
-      std::vector<View*> m_views;
+     public:
+      EntityView* m_view;
     };
 
-    class MaterialInspector : public Window
-    {
-    public:
-      MaterialInspector(XmlNode* node);
-      MaterialInspector();
-      virtual ~MaterialInspector();
-
-      virtual void Show() override;
-      virtual Type GetType() const override;
-      virtual void DispatchSignals() const override;
-
-    public:
-      MaterialPtr m_material;
-
-    private:
-      MaterialView* m_view;
-    };
-
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

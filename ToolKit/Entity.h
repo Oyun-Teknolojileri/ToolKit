@@ -1,11 +1,16 @@
 #pragma once
 
+/**
+* @file Entity.h Header for Entity, 
+*/
+
 #include <memory>
 #include <vector>
 
 #include "Types.h"
 #include "ParameterBlock.h"
 #include "Component.h"
+#include "ResourceComponent.h"
 #include "Node.h"
 #include "Animation.h"
 #include "Serialize.h"
@@ -13,6 +18,10 @@
 namespace ToolKit
 {
 
+  /**
+  * Enums that shows the type of the Entity. Each derived class should provide
+  * a type identifier for itself to make itself known to the ToolKit.
+  */
   enum class EntityType
   {
     // Order is important. Don't change for backward comparable scene files.
@@ -32,7 +41,8 @@ namespace ToolKit
     Entity_Camera,
     Entity_Directional,
     Entity_Node,
-    Entity_Button
+    Entity_Button,
+    Entity_Sky
   };
 
   static VariantCategory EntityCategory
@@ -41,6 +51,11 @@ namespace ToolKit
     100
   };
 
+  /**
+  * Fundamental object that all the ToolKit utilities can interacted with.
+  * Entity is the base class for all the objects that can be inserted in any 
+  * scene.
+  */
   class TK_API Entity : public Serializable
   {
    public:
@@ -62,15 +77,44 @@ namespace ToolKit
 
     static Entity* CreateByType(EntityType t);
 
-    // Component functionalities.
+    /**
+    * Adds the given component into the components of the Entity. While adding
+    * the component to the list, function also converts the component to a
+    * shared pointer for obtaining lifetime management. Also Entity set itself
+    * as the new components parent.
+    * @param component Component pointer that will be added to components of 
+    * this entity.
+    */
     void AddComponent(Component* component);
 
     /**
-    * Remove the given component from the m_components.
-    * @param componentId Id of the component tobe removed.
+    * Adds a component to the Entity same as AddComponent(Component* component).
     */
-    void RemoveComponent(ULongID componentId);
+    void AddComponent(ComponentPtr component);
 
+    /**
+    * Used to easily access first MeshComponentPtr.
+    * @return First MeshComponentPtr if any otherwise empty pointer.
+    */
+    MeshComponentPtr GetMeshComponent();
+
+    /**
+    * Used to easily access first MaterialComponentPtr.
+    * @return First MaterialComponentPtr if any exist, otherwise empty pointer.
+    */
+    MaterialComponentPtr GetMaterialComponent();
+
+    /**
+    * Remove the given component from the components of the Entity.
+    * @param componentId Id of the component to be removed.
+    * @return Removed ComponentPtr. If nothing gets removed, returns nullptr.
+    */
+    ComponentPtr RemoveComponent(ULongID componentId);
+
+    /**
+    * Used to return first encountered component of type T.
+    * @return First Component of type T if any exist, otherwise empty pointer.
+    */
     template<typename T>
     std::shared_ptr<T> GetComponent() const
     {
@@ -85,6 +129,11 @@ namespace ToolKit
       return nullptr;
     }
 
+    /**
+    * Used to return all components of type T.
+    * @param components ComponentPtrArray that will contain all encountered
+    * components of type T.
+    */
     template<typename T>
     void GetComponent(std::vector<std::shared_ptr<T>>& components) const
     {
@@ -97,6 +146,11 @@ namespace ToolKit
       }
     }
 
+    /**
+    * Used to return ComponentPtr with given id.
+    * @param id Id of the Component that will be returned.
+    * @return ComponentPtr with the given id.
+    */
     ComponentPtr GetComponent(ULongID id) const;
 
     /**

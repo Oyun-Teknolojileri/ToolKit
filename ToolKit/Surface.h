@@ -3,7 +3,7 @@
 #include <vector>
 #include <functional>
 
-#include "Drawable.h"
+#include "Entity.h"
 #include "MathUtil.h"
 #include "Resource.h"
 #include "Events.h"
@@ -13,7 +13,13 @@
 namespace ToolKit
 {
 
-  class TK_API Surface : public Drawable
+  static VariantCategory SurfaceCategory
+  {
+    "Surface",
+    90
+  };
+
+  class TK_API Surface : public Entity
   {
    public:
     Surface();
@@ -33,7 +39,11 @@ namespace ToolKit
     void UpdateGeometry(bool byTexture);
 
    protected:
-    Entity* CopyTo(Entity* copyTo) const override;
+    void ComponentConstructor();
+    void ParameterConstructor();
+    void ParameterEventConstructor();
+    Entity* CopyTo(Entity* other) const override;
+    Entity* InstantiateTo(Entity* other) const override;
 
    private:
     void CreateQuat();
@@ -41,8 +51,9 @@ namespace ToolKit
     void SetSizeFromTexture();
 
    public:
-    Vec2 m_size;
-    Vec2 m_pivotOffset;
+    TKDeclareParam(Vec2, Size);
+    TKDeclareParam(Vec2, PivotOffset);
+    TKDeclareParam(MaterialPtr, Material);
 
     // UI states.
     bool m_mouseOver = false;
@@ -55,21 +66,31 @@ namespace ToolKit
     SurfaceEventCallback m_onMouseClick = nullptr;
   };
 
+  static VariantCategory ButtonCategory
+  {
+    "Button",
+    90
+  };
+
   class TK_API Button : public Surface
   {
    public:
     Button();
     explicit Button(const Vec2& size);
-    Button(const TexturePtr& buttonImage, const TexturePtr& mouseOverImage);
+    Button(const TexturePtr& buttonImage, const TexturePtr& hoverImage);
     virtual ~Button();
     EntityType GetType() const override;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     void ResetCallbacks() override;
 
+   protected:
+     void ParameterConstructor();
+     void ParameterEventConstructor();
+
    public:
-    TexturePtr m_mouseOverImage;
-    TexturePtr m_buttonImage;
+    TKDeclareParam(MaterialPtr, ButtonMaterial);
+    TKDeclareParam(MaterialPtr, HoverMaterial);
 
     // Local events.
     SurfaceEventCallback m_onMouseEnterLocal;

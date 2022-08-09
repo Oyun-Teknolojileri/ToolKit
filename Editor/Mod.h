@@ -1,99 +1,17 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+
 #include "ToolKit.h"
 #include "StateMachine.h"
 #include "App.h"
 
 namespace ToolKit
 {
-  class Arrow2d;
-  class LineBatch;
 
   namespace Editor
   {
-
-    class Action
-    {
-    public:
-      Action();
-      virtual ~Action();
-
-      virtual void Undo() = 0;
-      virtual void Redo() = 0;
-
-    public:
-      std::vector<Action*> m_group;
-    };
-
-    class DeleteAction : public Action
-    {
-    public:
-      DeleteAction(Entity* ntt);
-      virtual ~DeleteAction();
-
-      virtual void Undo() override;
-      virtual void Redo() override;
-
-    private:
-      void HandleAnimRecords(Entity* ntt);
-
-    private:
-      Entity* m_ntt;
-      ULongID m_parentId;
-      EntityIdArray m_children;
-      AnimRecordArray m_records;
-      bool m_actionComitted;
-    };
-
-    class CreateAction : public Action
-    {
-    public:
-      CreateAction(Entity* ntt);
-      virtual ~CreateAction();
-
-      virtual void Undo() override;
-      virtual void Redo() override;
-
-    private:
-      void SwapSelection();
-
-    private:
-      Entity* m_ntt;
-      bool m_actionComitted;
-      EntityIdArray m_selecteds;
-    };
-
-    // ActionManager
-    //////////////////////////////////////////////////////////////////////////
-
-    class ActionManager
-    {
-    public:
-      ~ActionManager();
-
-      ActionManager(ActionManager const&) = delete;
-      void operator=(ActionManager const&) = delete;
-
-      void Init();
-      void UnInit();
-      void AddAction(Action* action);
-      void GroupLastActions(int n);
-      void BeginActionGroup();
-      void RemoveLastAction();
-      void Undo();
-      void Redo();
-      static ActionManager* GetInstance();
-
-    private:
-      ActionManager();
-
-    private:
-      static ActionManager m_instance;
-      std::vector<Action*> m_actionStack;
-      int m_stackPointer;
-      bool m_initiated;
-      bool m_actionGrouping;
-    };
 
     // ModManager
     //////////////////////////////////////////////////////////////////////////
@@ -110,18 +28,18 @@ namespace ToolKit
 
     class BaseMod
     {
-    public:
-      BaseMod(ModId id);
+     public:
+      explicit BaseMod(ModId id);
       virtual ~BaseMod();
       virtual void Init();
       virtual void UnInit();
       virtual void Update(float deltaTime);
       virtual void Signal(SignalId signal);
 
-    protected:
+     protected:
       static int GetNextSignalId();
 
-    public:
+     public:
       ModId m_id;
       StateMachine* m_stateMachine;
 
@@ -137,7 +55,7 @@ namespace ToolKit
 
     class ModManager
     {
-    public:
+     public:
       ~ModManager();
 
       ModManager(ModManager const&) = delete;
@@ -148,16 +66,17 @@ namespace ToolKit
       static ModManager* GetInstance();
       void Update(float deltaTime);
       void DispatchSignal(SignalId signal);
-      void SetMod(bool set, ModId mod); // If set true, sets the given mod. Else does nothing.
+      // If set true, sets the given mod. Else does nothing.
+      void SetMod(bool set, ModId mod);
 
-    private:
+     private:
       ModManager();
 
-    private:
+     private:
       static ModManager m_instance;
       bool m_initiated;
 
-    public:
+     public:
       std::vector<BaseMod*> m_modStack;
     };
 
@@ -166,28 +85,28 @@ namespace ToolKit
 
     class StateType
     {
-    public:
-      const static String Null;
-      const static String StateBeginPick;
-      const static String StateBeginBoxPick;
-      const static String StateEndPick;
-      const static String StateDeletePick;
-      const static String StateTransformBegin;
-      const static String StateTransformTo;
-      const static String StateTransformEnd;
-      const static String StateDuplicate;
+     public:
+      static const String Null;
+      static const String StateBeginPick;
+      static const String StateBeginBoxPick;
+      static const String StateEndPick;
+      static const String StateDeletePick;
+      static const String StateTransformBegin;
+      static const String StateTransformTo;
+      static const String StateTransformEnd;
+      static const String StateDuplicate;
     };
 
     class StatePickingBase : public State
     {
-    public:
+     public:
       StatePickingBase();
-      virtual void TransitionIn(State* prevState) override;
-      virtual void TransitionOut(State* nextState) override;
+      void TransitionIn(State* prevState) override;
+      void TransitionOut(State* nextState) override;
       bool IsIgnored(ULongID id);
       void PickDataToEntityId(EntityIdArray& ids);
 
-    public:
+     public:
       // Picking data.
       std::vector<Vec2> m_mouseData;
       std::vector<EditorScene::PickData> m_pickData;
@@ -200,48 +119,48 @@ namespace ToolKit
 
     class StateBeginPick : public StatePickingBase
     {
-    public:
-      virtual void TransitionIn(State* prevState) override;
-      virtual SignalId Update(float deltaTime) override;
-      virtual String Signaled(SignalId signal) override;
-      virtual String GetType() override { return StateType::StateBeginPick; }
+     public:
+      void TransitionIn(State* prevState) override;
+      SignalId Update(float deltaTime) override;
+      String Signaled(SignalId signal) override;
+      String GetType() override { return StateType::StateBeginPick; }
     };
 
     class StateBeginBoxPick : public StatePickingBase
     {
-    public:
-      virtual SignalId Update(float deltaTime) override;
-      virtual String Signaled(SignalId signal) override;
-      virtual String GetType() override { return StateType::StateBeginBoxPick; }
+     public:
+      SignalId Update(float deltaTime) override;
+      String Signaled(SignalId signal) override;
+      String GetType() override { return StateType::StateBeginBoxPick; }
 
-    private:
+     private:
       void GetMouseRect(Vec2& min, Vec2& max);
     };
 
     class StateEndPick : public StatePickingBase
     {
-    public:
-      virtual SignalId Update(float deltaTime) override;
-      virtual String Signaled(SignalId signal) override;
-      virtual String GetType() override { return StateType::StateEndPick; }
+     public:
+      SignalId Update(float deltaTime) override;
+      String Signaled(SignalId signal) override;
+      String GetType() override { return StateType::StateEndPick; }
     };
 
     class StateDeletePick : public StatePickingBase
     {
-    public:
-      virtual SignalId Update(float deltaTime) override;
-      virtual String Signaled(SignalId signal) override;
-      virtual String GetType() override { return StateType::StateDeletePick; }
+     public:
+      SignalId Update(float deltaTime) override;
+      String Signaled(SignalId signal) override;
+      String GetType() override { return StateType::StateDeletePick; }
     };
 
     class StateDuplicate : public State
     {
-    public:
-      virtual void TransitionIn(State* prevState) override;
-      virtual void TransitionOut(State* nextState) override;
-      virtual SignalId Update(float deltaTime) override;
-      virtual String Signaled(SignalId signal) override;
-      virtual String GetType() override { return StateType::StateDuplicate; };
+     public:
+      void TransitionIn(State* prevState) override;
+      void TransitionOut(State* nextState) override;
+      SignalId Update(float deltaTime) override;
+      String Signaled(SignalId signal) override;
+      String GetType() override { return StateType::StateDuplicate; };
     };
 
     // Mods
@@ -249,21 +168,21 @@ namespace ToolKit
 
     class SelectMod : public BaseMod
     {
-    public:
+     public:
       SelectMod();
 
-      virtual void Init() override;
-      virtual void Update(float deltaTime) override;
+      void Init() override;
+      void Update(float deltaTime) override;
     };
 
     class CursorMod : public BaseMod
     {
-    public:
+     public:
       CursorMod();
 
-      virtual void Init() override;
-      virtual void Update(float deltaTime) override;
+      void Init() override;
+      void Update(float deltaTime) override;
     };
 
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

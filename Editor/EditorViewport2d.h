@@ -12,7 +12,6 @@ namespace ToolKit
 
   namespace Editor
   {
-
     class EditorViewport2d : public EditorViewport
     {
      public:
@@ -61,7 +60,11 @@ namespace ToolKit
       Vec2 m_layoutSize;
 
       DirectionalLight m_forwardLight;
-      LineBatch m_grid;
+
+     public:
+      float m_zoomPercentage = 100;
+      uint16_t m_gridCellSizeByPixel = 10;
+      IVec2 m_gridWholeSize = IVec2(640, 480);
     };
 
   }  // namespace Editor

@@ -1,4 +1,5 @@
-#include "Directional.h"
+#include "Camera.h"
+#include "DirectionComponent.h"
 #include "Node.h"
 #include "Util.h"
 #include "DebugNew.h"

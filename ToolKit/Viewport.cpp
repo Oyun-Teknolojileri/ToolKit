@@ -2,7 +2,8 @@
 
 #include <algorithm>
 
-#include "Directional.h"
+#include "Camera.h"
+#include "DirectionComponent.h"
 #include "Renderer.h"
 #include "Node.h"
 #include "Primative.h"
@@ -40,7 +41,7 @@ namespace ToolKit
   {
     SafeDel(m_camera);
     m_camera = cam;
-    m_attachedCamera = cam->Id();
+    m_attachedCamera = cam->GetIdVal();
   }
 
   ViewportBase::ViewportBase()
@@ -207,6 +208,22 @@ namespace ToolKit
       project,
       Vec4(0.0f, 0.0f, m_width, m_height)
     );
+  }
+
+  Vec2 Viewport::TransformWorldSpaceToScreenSpace(const Vec3& pnt)
+  {
+    Camera* cam = GetCamera();
+    glm::mat4 view = cam->GetViewMatrix();
+    glm::mat4 project = cam->GetData().projection;
+    Vec3 screenPos = glm::project(
+      pnt,
+      view,
+      project,
+      glm::vec4(0.0f, 0.0f, m_width, m_height)
+    );
+    screenPos.x += m_wndPos.x;
+    screenPos.y = m_wndContentAreaSize.y + m_wndPos.y - screenPos.y;
+    return screenPos.xy;
   }
 
   Vec2 Viewport::TransformScreenToViewportSpace(const Vec2& pnt)

@@ -1,6 +1,7 @@
 
 #include "Light.h"
 #include "Component.h"
+#include "DirectionComponent.h"
 
 #include <string>
 
@@ -41,14 +42,9 @@ namespace ToolKit
     Entity::DeSerialize(doc, parent);
   }
 
-  void Light::Init()
-  {
-  }
-
   DirectionalLight::DirectionalLight()
   {
-    LightType() = 1;
-
+    SetLightTypeVal(static_cast<int> (LightTypeEnum::LightDirectional));
     AddComponent(new DirectionComponent(this));
   }
 
@@ -61,8 +57,8 @@ namespace ToolKit
   {
     m_localData.m_variants.reserve(m_localData.m_variants.size() + 1);
 
-    LightType() = 2;
-    Radius_Define(50.0f, "Light", 90, true, true);
+    SetLightTypeVal(static_cast<int> (LightTypeEnum::LightPoint));
+    Radius_Define(3.0f, "Light", 90, true, true);
   }
 
   LightTypeEnum PointLight::GetLightType() const
@@ -73,8 +69,7 @@ namespace ToolKit
   SpotLight::SpotLight()
   {
     m_localData.m_variants.reserve(m_localData.m_variants.size() + 3);
-
-    LightType() = 3;
+    SetLightTypeVal(static_cast<int> (LightTypeEnum::LightSpot));
     Radius_Define(10.0f, "Light", 90, true, true);
     OuterAngle_Define(35.0f, "Light", 90, true, true);
     InnerAngle_Define(30.0f, "Light", 90, true, true);

@@ -49,7 +49,8 @@ namespace ToolKit
         {
           // Replace lights with EditorLights
           Light* el = reinterpret_cast<Light*>(ntt);
-          LightTypeEnum type = static_cast<LightTypeEnum> (el->LightType());
+          LightTypeEnum type = static_cast<LightTypeEnum>
+            (el->GetLightTypeVal());
 
           if (type == LightTypeEnum::LightDirectional)
           {
@@ -261,7 +262,7 @@ namespace ToolKit
       Entity* removed = nullptr;
       if ((removed = Scene::RemoveEntity(id)))
       {
-        RemoveFromSelection(removed->Id());
+        RemoveFromSelection(removed->GetIdVal());
       }
 
       return removed;

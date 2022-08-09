@@ -62,7 +62,7 @@ namespace ToolKit
   typedef std::shared_ptr<class Resource> ResourcePtr;
   typedef std::string String;
   typedef std::vector<String> StringArray;
-  typedef std::set<std::string> UniqueStringArray;
+  typedef std::set<std::string> StringSet;
   typedef glm::ivec2 IVec2;
   typedef glm::vec2 Vec2;
   typedef std::vector<Vec2> Vec2Array;
@@ -71,6 +71,7 @@ namespace ToolKit
   typedef glm::vec4 Vec4;
   typedef std::vector<Vec4> Vec4Array;
   typedef glm::uvec4 UVec4;
+  typedef glm::uvec2 UVec2;
   typedef glm::mat4 Mat4;
   typedef glm::mat3 Mat3;
   typedef glm::quat Quaternion;
@@ -82,6 +83,7 @@ namespace ToolKit
   typedef std::shared_ptr<class Material> MaterialPtr;
   typedef std::shared_ptr<class CubeMap> CubeMapPtr;
   typedef std::shared_ptr<class Texture> TexturePtr;
+  typedef std::shared_ptr<class Hdri> HdriPtr;
   typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;
   typedef std::shared_ptr<class SpriteSheet> SpriteSheetPtr;
   typedef std::shared_ptr<class Mesh> MeshPtr;
@@ -94,6 +96,7 @@ namespace ToolKit
   typedef std::vector<MeshPtr> MeshPtrArray;
   typedef std::vector<class Mesh*> MeshRawPtrArray;
   typedef std::vector<const class Mesh*> MeshRawCPtrArray;
+
   typedef std::vector<class Entity*> EntityRawPtrArray;
   typedef std::vector<class Light*> LightRawPtrArray;
   typedef std::vector<class DirectionalLight*> DirectionalLightRawPtrArray;
@@ -106,6 +109,8 @@ namespace ToolKit
   typedef std::vector<class Face> FaceArray;
   typedef std::vector<class ParameterVariant> ParameterVariantArray;
   typedef std::vector<class ParameterVariant*> ParameterVariantRawPtrArray;
+  typedef std::vector<class LineBatch*> LineBatchRawPtrArray;
+
   typedef rapidxml::xml_node<char> XmlNode;
   typedef rapidxml::xml_attribute<char> XmlAttribute;
   typedef rapidxml::xml_document<char> XmlDocument;
@@ -124,12 +129,6 @@ namespace ToolKit
 
   // Filesystem variable types
   typedef std::filesystem::path Path;
-
-  // Components.
-  typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
-  typedef std::vector<MeshComponentPtr> MeshComponentPtrArray;
-  typedef std::shared_ptr<class Component> ComponentPtr;
-  typedef std::vector<ComponentPtr> ComponentPtrArray;
 
   // Enitiy types.
   typedef std::shared_ptr<class Camera> CameraPtr;
@@ -169,6 +168,7 @@ namespace ToolKit
   static const String TGA(".tga");
   static const String BMP(".bmp");
   static const String PSD(".psd");
+  static const String HDR(".hdr");
 
   // Local formats.
   static const String SCENE(".scene");
@@ -239,6 +239,6 @@ namespace ToolKit
     DrawTypePoints = 0x0000
   };
 
-  static const char* TKVersionStr = "v0.3.11";
+  static const char* TKVersionStr = "v0.3.12";
 
 }  // namespace ToolKit

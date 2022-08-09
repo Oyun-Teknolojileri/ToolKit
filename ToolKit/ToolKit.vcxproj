@@ -14,7 +14,8 @@
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="Component.cpp" />
-    <ClCompile Include="Directional.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DirectionComponent.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="FileManager.cpp" />
@@ -30,10 +31,12 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="Resource.cpp" />
+    <ClCompile Include="ResourceComponent.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Skeleton.cpp" />
+    <ClCompile Include="Sky.cpp" />
     <ClCompile Include="SpriteSheet.cpp" />
     <ClCompile Include="StateMachine.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -52,7 +55,8 @@
     <ClInclude Include="Audio.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="DebugNew.h" />
-    <ClInclude Include="Directional.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="DirectionComponent.h" />
     <ClInclude Include="Drawable.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Events.h" />
@@ -71,11 +75,13 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderState.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="ResourceComponent.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Serialize.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Skeleton.h" />
+    <ClInclude Include="Sky.h" />
     <ClInclude Include="SpriteSheet.h" />
     <ClInclude Include="StateMachine.h" />
     <ClInclude Include="stdafx.h" />
@@ -122,14 +128,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\\Glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include</IncludePath>
+    <LibraryPath>$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\Glew\lib\Release\x64;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\\Glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include</IncludePath>
+    <LibraryPath>$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Dependency\Glew\lib\Release\x64;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib</LibraryPath>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -146,7 +152,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>SDL2main.lib;SDL2.lib;glew32.lib;OpenGL32.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;OpenAL32.lib;glew32.lib;SDL2main.lib;SDL2.lib;zlibstatic.lib;minizip.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

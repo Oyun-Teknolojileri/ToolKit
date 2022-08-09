@@ -5,7 +5,9 @@
 #include "Primative.h"
 #include "Mesh.h"
 #include "ToolKit.h"
+#include "ResourceComponent.h"
 #include "DebugNew.h"
+#include "GlobalDef.h"
 
 namespace ToolKit
 {
@@ -30,11 +32,6 @@ namespace ToolKit
 
     EditorCamera::~EditorCamera()
     {
-    }
-
-    bool EditorCamera::IsDrawable() const
-    {
-      return true;
     }
 
     Entity* EditorCamera::Copy() const
@@ -93,8 +90,11 @@ namespace ToolKit
       };
 
       MeshComponentPtr camMeshComp = GetComponent<MeshComponent>();
-      LineBatch frusta(lines, ZERO, DrawType::Line);
-      camMeshComp->Mesh() = frusta.GetComponent<MeshComponent>()->Mesh();
+      LineBatch frusta(lines, g_cameraGizmoColor, DrawType::Line);
+      camMeshComp->SetMeshVal
+      (
+        frusta.GetComponent<MeshComponent>()->GetMeshVal()
+      );
 
       // Triangle part.
       VertexArray vertices;
@@ -113,8 +113,8 @@ namespace ToolKit
       subMesh->m_material->GetRenderState()->cullMode = CullingType::TwoSided;
       subMesh->ConstructFaces();
 
-      camMeshComp->Mesh()->m_subMeshes.push_back(subMesh);
-      camMeshComp->Mesh()->CalculateAABB();
+      camMeshComp->GetMeshVal()->m_subMeshes.push_back(subMesh);
+      camMeshComp->GetMeshVal()->CalculateAABB();
       camMeshComp->Init(false);
     }
 

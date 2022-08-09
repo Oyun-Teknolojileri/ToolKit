@@ -32,7 +32,7 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file(GetFile().c_str());
+    XmlFile file = GetFileManager()->GetXmlFile(GetFile());
     XmlDocument doc;
     doc.parse<0>(file.data());
 
@@ -379,6 +379,17 @@ namespace ToolKit
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial()
   {
     return m_storage[MaterialPath("unlit.material", true)]->Copy<Material>();
+  }
+
+  MaterialPtr MaterialManager::GetCopyOfUIMaterial()
+  {
+    MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+    material->UnInit();
+    material->GetRenderState()->blendFunction =
+      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+    material->GetRenderState()->depthTestEnabled = true;
+
+    return material;
   }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial()

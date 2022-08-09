@@ -88,7 +88,7 @@ namespace ToolKit
     assert(false && "Not implemented");
   }
 
-  void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent)
+  void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* refNode = CreateXmlNode(doc, XmlResRefElement, parent);
     WriteAttr
@@ -121,7 +121,7 @@ namespace ToolKit
     return m_file;
   }
 
-  const String& Resource::GetSerializeFile()
+  const String& Resource::GetSerializeFile() const
   {
     if (_missingFile.empty())
     {

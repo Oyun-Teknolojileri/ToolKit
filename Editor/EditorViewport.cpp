@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "Directional.h"
+#include "Camera.h"
 #include "Renderer.h"
 #include "App.h"
 #include "GlobalDef.h"
@@ -16,7 +16,9 @@
 #include "Gizmo.h"
 #include "Mod.h"
 #include "Util.h"
+#include "DirectionComponent.h"
 #include "DebugNew.h"
+#include "FileManager.h"
 
 
 namespace ToolKit
@@ -28,12 +30,13 @@ namespace ToolKit
     {
       nullptr,
       nullptr,
+      nullptr,
       nullptr
     };
 
     void InitOverlays(EditorViewport* viewport)
     {
-      for (int i = 0; i < 3; i++)
+      for (int i = 0; i < 4; i++)
       {
         OverlayUI** overlay = &EditorViewport::m_overlays[i];
         if (*overlay == nullptr)
@@ -49,6 +52,9 @@ namespace ToolKit
           case 2:
             *overlay = new StatusBar(viewport);
             break;
+          case 3:
+            *overlay = new OverlayLighting(viewport);
+            break;
           }
         }
       }
@@ -59,6 +65,7 @@ namespace ToolKit
       DeSerialize(nullptr, node);
       ResetViewportImage(GetRenderTargetSettings());
       InitOverlays(this);
+      m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
     }
 
     EditorViewport::EditorViewport(float width, float height)
@@ -66,6 +73,7 @@ namespace ToolKit
     {
       m_name = g_viewportStr + " " + std::to_string(m_id);
       InitOverlays(this);
+      m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
     }
 
     EditorViewport::~EditorViewport()
@@ -96,6 +104,12 @@ namespace ToolKit
         DrawCommands();
         HandleDrop();
         DrawOverlays();
+        if (m_mouseOverContentArea && g_app->m_snapsEnabled)
+        {
+          g_app->m_moveDelta = m_snapDeltas.x;
+          g_app->m_rotateDelta = m_snapDeltas.y;
+          g_app->m_scaleDelta = m_snapDeltas.z;
+        }
       }
       ImGui::End();
     }
@@ -621,15 +635,14 @@ namespace ToolKit
       EditorScenePtr currScene = g_app->GetCurrentScene();
 
       // Asset drag and drop loading variables
-      static Drawable* boundingBox = nullptr;
+      static LineBatch* boundingBox = nullptr;
       static bool meshLoaded = false;
       static bool meshAddedToScene = false;
-      static Drawable* dwMesh = nullptr;
+      static Entity* dwMesh = nullptr;
 
       // AssetBrowser drop handling.
       if (ImGui::BeginDragDropTarget())
       {
-        // Check if the drag object is a mesh
         const ImGuiPayload* dragPayload = ImGui::GetDragDropPayload();
         if (dragPayload->DataSize != sizeof(DirectoryEntry))
         {
@@ -637,8 +650,9 @@ namespace ToolKit
         }
         DirectoryEntry dragEntry = *(const DirectoryEntry*)dragPayload->Data;
 
+        // Check if the drag object is a mesh
         Vec3 lastDragMeshPos = Vec3(0.0f);
-        if (dragEntry.m_ext == MESH)
+        if (dragEntry.m_ext == MESH || dragEntry.m_ext == SKINMESH)
         {
           // Load mesh
           LoadDragMesh
@@ -672,7 +686,7 @@ namespace ToolKit
           IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
           DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
 
-          if (entry.m_ext == MESH)
+          if (entry.m_ext == MESH || entry.m_ext == SKINMESH)
           {
             // Translate mesh to correct position
             dwMesh->m_node->SetTranslation(
@@ -682,7 +696,7 @@ namespace ToolKit
 
             // Add mesh to the scene
             currScene->AddEntity(dwMesh);
-            currScene->AddToSelection(dwMesh->Id(), false);
+            currScene->AddToSelection(dwMesh->GetIdVal(), false);
             SetActive();
 
             meshAddedToScene = true;
@@ -716,11 +730,9 @@ namespace ToolKit
             // Find the drop entity
             Ray ray = RayFromMousePosition();
             EditorScene::PickData pd = currScene->PickObject(ray);
-            if (pd.entity != nullptr)
+            if (pd.entity != nullptr && pd.entity->IsDrawable())
             {
-              Entity* ent = currScene->GetEntity(pd.entity->Id());
-
-              MeshComponentPtr ms = ent->GetComponent<MeshComponent>();
+              MeshComponentPtr ms = pd.entity->GetComponent<MeshComponent>();
               if (ms != nullptr)
               {
                 // Load material once
@@ -735,7 +747,17 @@ namespace ToolKit
                 (
                   path
                 );
-                ms->Mesh()->SetMaterial(material);
+                // Set material to material component
+                MaterialComponentPtr matPtr =
+                pd.entity->GetMaterialComponent();
+                if (matPtr == nullptr)
+                {
+                  // Create a new material component
+                  MaterialComponent* matComp = new MaterialComponent();
+                  pd.entity->AddComponent(matComp);
+                  matPtr = pd.entity->GetMaterialComponent();
+                }
+                matPtr->m_localData[matPtr->MaterialIndex()] = material;
               }
             }
           }
@@ -795,8 +817,8 @@ namespace ToolKit
       bool& meshLoaded,
       DirectoryEntry dragEntry,
       ImGuiIO io,
-      Drawable** dwMesh,
-      Drawable** boundingBox,
+      Entity** dwMesh,
+      LineBatch** boundingBox,
       EditorScenePtr currScene
     )
     {
@@ -807,17 +829,19 @@ namespace ToolKit
         (
           { dragEntry.m_rootPath, dragEntry.m_fileName + dragEntry.m_ext }
         );
-        *dwMesh = new Drawable();
-        if (io.KeyShift)
+        *dwMesh = new Entity();
+        (*dwMesh)->AddComponent(new MeshComponent);
+        MeshPtr mesh;
+        if (dragEntry.m_ext == SKINMESH)
         {
-          MeshPtr mesh = GetMeshManager()->Create<Mesh>(path);
-          (*dwMesh)->SetMesh(mesh->Copy<Mesh>());
+          mesh = GetMeshManager()->Create<SkinMesh>(path);
         }
         else
         {
-          (*dwMesh)->SetMesh(GetMeshManager()->Create<Mesh>(path));
+          mesh = GetMeshManager()->Create<Mesh>(path);
         }
-        (*dwMesh)->GetMesh()->Init(false);
+        (*dwMesh)->GetMeshComponent()->SetMeshVal(mesh);
+        mesh->Init(false);
 
         // Load bounding box once
         *boundingBox = CreateBoundingBoxDebugObject((*dwMesh)->GetAABB(true));
@@ -833,18 +857,18 @@ namespace ToolKit
     (
       bool& meshLoaded,
       EditorScenePtr currScene,
-      Drawable* dwMesh,
-      Drawable** boundingBox
+      Entity* dwMesh,
+      LineBatch** boundingBox
     )
     {
       Vec3 lastDragMeshPos = Vec3(0.0f);
 
-      // Find the point of the curser in 3D coordinates
+      // Find the point of the cursor in 3D coordinates
       Ray ray = RayFromMousePosition();
       EntityIdArray ignoreList;
       if (meshLoaded)
       {
-        ignoreList.push_back((*boundingBox)->Id());
+        ignoreList.push_back((*boundingBox)->GetIdVal());
       }
       EditorScene::PickData pd = currScene->PickObject(ray, ignoreList);
       bool meshFound = false;
@@ -856,7 +880,6 @@ namespace ToolKit
       else
       {
         // Locate the mesh to grid
-        Ray ray = RayFromMousePosition();
         lastDragMeshPos = PointOnRay(ray, 5.0f);
         g_app->m_grid->HitTest(ray, lastDragMeshPos);
       }
@@ -893,14 +916,14 @@ namespace ToolKit
       bool& meshLoaded,
       bool& meshAddedToScene,
       EditorScenePtr currScene,
-      Drawable** dwMesh,
-      Drawable** boundingBox
+      Entity** dwMesh,
+      LineBatch** boundingBox
     )
     {
       if (meshLoaded && !ImGui::IsMouseDragging(0))
       {
         // Remove debug bounding box mesh from scene
-        currScene->RemoveEntity((*boundingBox)->Id());
+        currScene->RemoveEntity((*boundingBox)->GetIdVal());
         meshLoaded = false;
 
         if (!meshAddedToScene)

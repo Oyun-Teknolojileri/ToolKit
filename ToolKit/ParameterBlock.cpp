@@ -28,6 +28,28 @@ namespace ToolKit
   {
   }
 
+  ParameterVariant::ParameterVariant(const ParameterVariant& other)
+  {
+    *this = other;
+  }
+
+  ParameterVariant& ParameterVariant::operator=(const ParameterVariant& other)
+  {
+    if (m_id != other.m_id)
+    {
+      m_category = other.m_category;
+      m_editable = other.m_editable;
+      m_exposed = other.m_exposed;
+      m_name = other.m_name;
+      m_type = other.m_type;
+      m_var = other.m_var;
+
+      // Events m_onValueChangedFn intentionally not copied.
+    }
+
+    return *this;
+  }
+
   ParameterVariant::ParameterVariant(bool var)
   {
     *this = var;
@@ -57,6 +79,12 @@ namespace ToolKit
   {
     *this = var;
   }
+
+  ParameterVariant::ParameterVariant(const Vec2& var)
+  {
+    *this = var;
+  }
+
   ParameterVariant::ParameterVariant(const Vec3& var)
   {
     *this = var;
@@ -102,6 +130,11 @@ namespace ToolKit
     *this = var;
   }
 
+  ParameterVariant::ParameterVariant(const HdriPtr& var)
+  {
+    *this = var;
+  }
+
   ParameterVariant::VariantType ParameterVariant::GetType() const
   {
     return m_type;
@@ -110,106 +143,121 @@ namespace ToolKit
   ParameterVariant& ParameterVariant::operator= (bool var)
   {
     m_type = VariantType::Bool;
-    m_var = var;
+    AsignVal(var);
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (byte var)
   {
     m_type = VariantType::byte;
-    m_var = var;
+    AsignVal(var);
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (ubyte var)
   {
     m_type = VariantType::ubyte;
-    m_var = var;
+    AsignVal(var);
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (float var)
   {
     m_type = VariantType::Float;
-    m_var = var;
+    AsignVal(var);
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (int var)
   {
     m_type = VariantType::Int;
-    m_var = var;
+    AsignVal(var);
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (uint var)
   {
     m_type = VariantType::UInt;
-    m_var = var;
+    AsignVal(var);
+    return *this;
+  }
+
+  ParameterVariant& ParameterVariant::operator=(const Vec2& var)
+  {
+    m_type = VariantType::Vec2;
+    AsignVal(var);
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (const Vec3& var)
   {
     m_type = VariantType::Vec3;
-    m_var = var;
+    AsignVal(var);
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (const Vec4& var)
   {
     m_type = VariantType::Vec4;
-    m_var = var;
+    AsignVal(var);
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (const Mat3& var)
   {
     m_type = VariantType::Mat3;
-    m_var = var;
+    AsignVal(var);
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (const Mat4& var)
   {
     m_type = VariantType::Mat4;
-    m_var = var;
+    AsignVal(var);
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (const String& var)
   {
     m_type = VariantType::String;
-    m_var = var;
+    AsignVal(var);
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (const char* var)
   {
     m_type = VariantType::String;
-    m_var = String(var);
+    String str = String(var);
+    AsignVal(str);
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator= (ULongID var)
   {
     m_type = VariantType::ULongID;
-    m_var = var;
+    AsignVal(var);
     return *this;
   }
 
   ParameterVariant& ParameterVariant::operator=(const MeshPtr& var)
   {
-      m_type = VariantType::MeshPtr;
-      m_var = var;
-      return *this;
+    m_type = VariantType::MeshPtr;
+    AsignVal(var);
+    return *this;
   }
 
   ParameterVariant& ParameterVariant::operator=(const MaterialPtr& var)
   {
-      m_type = VariantType::MaterialPtr;
-      m_var = var;
-      return *this;
+    m_type = VariantType::MaterialPtr;
+    AsignVal(var);
+    return *this;
+  }
+
+  ParameterVariant& ParameterVariant::operator=(const HdriPtr& var)
+  {
+    m_type = VariantType::HdriPtr;
+    AsignVal(var);
+    return *this;
   }
 
   void ParameterVariant::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -303,6 +351,11 @@ namespace ToolKit
         );
       }
       break;
+      case VariantType::Vec2:
+      {
+        WriteVec(node, doc, GetCVar<Vec2>());
+      }
+      break;
       case VariantType::Vec3:
       {
         WriteVec(node, doc, GetCVar<Vec3>());
@@ -352,6 +405,7 @@ namespace ToolKit
         MeshPtr res = GetCVar<MeshPtr>();
         if (res && !res->IsDynamic())
         {
+          res->Save(true);
           res->SerializeRef(doc, node);
         }
       }
@@ -361,10 +415,21 @@ namespace ToolKit
         MaterialPtr res = GetCVar<MaterialPtr>();
         if (res && !res->IsDynamic())
         {
+          res->Save(true);
           res->SerializeRef(doc, node);
         }
       }
       break;
+      case VariantType::HdriPtr:
+      {
+        HdriPtr res = GetCVar<HdriPtr>();
+        if (res && !res->IsDynamic())
+        {
+          res->Save(true);
+          res->SerializeRef(doc, node);
+        }
+        break;
+      }
       default:
       assert(false && "Invalid type.");
       break;
@@ -433,6 +498,13 @@ namespace ToolKit
         m_var = val;
       }
       break;
+      case VariantType::Vec2:
+      {
+        Vec2 var;
+        ReadVec(parent, var);
+        m_var = var;
+      }
+      break;
       case VariantType::Vec3:
       {
         Vec3 var;
@@ -499,7 +571,16 @@ namespace ToolKit
         else
         {
           file = MeshPath(file);
-          m_var = GetMeshManager()->Create<Mesh>(file);
+          String ext;
+          DecomposePath(file, nullptr, nullptr, &ext);
+          if (ext == SKINMESH)
+          {
+            m_var = GetMeshManager()->Create<SkinMesh>(file);
+          }
+          else
+          {
+            m_var = GetMeshManager()->Create<Mesh>(file);
+          }
         }
       }
       break;
@@ -514,6 +595,20 @@ namespace ToolKit
         {
           file = MaterialPath(file);
           m_var = GetMaterialManager()->Create<Material>(file);
+        }
+      }
+      break;
+      case VariantType::HdriPtr:
+      {
+        String file = Resource::DeserializeRef(parent);
+        if (file.empty())
+        {
+          m_var = std::make_shared<Hdri>();
+        }
+        else
+        {
+          file = TexturePath(file);
+          m_var = GetTextureManager()->Create<Hdri>(file);
         }
       }
       break;
@@ -585,19 +680,46 @@ namespace ToolKit
   void ParameterBlock::GetCategories
   (
     VariantCategoryArray& categories,
-    bool sortDesc
+    bool sortDesc,
+    bool filterByExpose
   )
   {
     categories.clear();
+
+    std::unordered_map<String, bool> containsExposedVar;
     std::unordered_map<String, bool> isCategoryAdded;
     for (const ParameterVariant& var : m_variants)
     {
       const String& name = var.m_category.Name;
+      if (var.m_exposed == true)
+      {
+        containsExposedVar[name] = true;
+      }
+
       if (isCategoryAdded.find(name) == isCategoryAdded.end())
       {
         isCategoryAdded[name] = true;
         categories.push_back(var.m_category);
       }
+    }
+
+    if (filterByExpose)
+    {
+      categories.erase
+      (
+        std::remove_if
+        (
+          categories.begin(),
+          categories.end(),
+          [&containsExposedVar](const VariantCategory& vc) -> bool
+          {
+            // remove if not contains exposed var.
+            return containsExposedVar.find(vc.Name) ==
+              containsExposedVar.end();
+          }
+        ),
+        categories.end()
+      );
     }
 
     std::sort

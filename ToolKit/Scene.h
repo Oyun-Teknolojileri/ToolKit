@@ -7,10 +7,10 @@
 #include "MathUtil.h"
 #include "Light.h"
 #include "Types.h"
+#include "Sky.h"
 
 namespace ToolKit
 {
-
   class TK_API Scene : public Resource
   {
    public:
@@ -21,7 +21,7 @@ namespace ToolKit
     };
 
    public:
-    TKResouceType(Scene)
+    TKResourceType(Scene)
 
     Scene();
     explicit Scene(String file);
@@ -57,6 +57,8 @@ namespace ToolKit
     EntityRawPtrArray GetByTag(const String& tag);
     Entity* GetFirstByTag(const String& tag);
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
+    Sky* GetSky();
+    void SetSky(Sky* sky, bool init = true);
 
     virtual Entity* RemoveEntity(ULongID id);
     virtual void RemoveEntity(const EntityRawPtrArray& entities);
@@ -77,6 +79,7 @@ namespace ToolKit
    protected:
     EntityRawPtrArray m_entities;
     String m_version;
+    Sky* m_sky = nullptr;
   };
 
   class TK_API SceneManager : public ResourceManager

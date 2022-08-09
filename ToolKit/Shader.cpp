@@ -35,7 +35,7 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file(GetFile().c_str());
+    XmlFile file = GetFileManager()->GetXmlFile(GetFile());
     XmlDocument doc;
     doc.parse<rapidxml::parse_full>(file.data());
     if (XmlNode* rootNode = doc.first_node("shader"))
@@ -120,7 +120,6 @@ namespace ToolKit
   {
     XmlNode* container = CreateXmlNode(doc, "shader", parent);
     XmlNode* node = CreateXmlNode(doc, "type", container);
-    container->append_node(node);
 
     if (m_shaderType == GraphicTypes::VertexShader)
     {
@@ -158,6 +157,18 @@ namespace ToolKit
         break;
         case Uniform::FRAME_COUNT:
         name = "FrameCount";
+        break;
+        case Uniform::GRID_SETTINGS:
+        name = "GridData";
+        break;
+        case Uniform::PROJECTION_VIEW_NO_TR:
+        name = "ProjectionViewNoTr";
+        break;
+        case Uniform::USE_IBL:
+        name = "UseIbl";
+        break;
+        case Uniform::IBL_IRRADIANCE:
+        name = "IBLIrradianceMap";
         break;
         default:
         assert(false && "unknown uniform");
@@ -238,6 +249,30 @@ namespace ToolKit
         else if (strcmp("FrameCount", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::FRAME_COUNT);
+        }
+        else if (strcmp("GridData", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::GRID_SETTINGS);
+        }
+        else if (strcmp("Exposure", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::EXPOSURE);
+        }
+        else if (strcmp("ProjectionViewNoTr", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::PROJECTION_VIEW_NO_TR);
+        }
+        else if (strcmp("UseIbl", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::USE_IBL);
+        }
+        else if (strcmp("IblIntensity", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::IBL_INTENSITY);
+        }
+        else if (strcmp("IBLIrradianceMap", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::IBL_IRRADIANCE);
         }
         else
         {

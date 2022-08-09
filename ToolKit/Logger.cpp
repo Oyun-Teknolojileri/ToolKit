@@ -36,7 +36,11 @@ namespace ToolKit
 
     static char buff[2048];
     vsprintf(buff, msg, args);
-    m_writeConsoleFn(logType, String(buff));
+
+    if (m_writeConsoleFn != nullptr)
+    {
+      m_writeConsoleFn(logType, String(buff));
+    }
 
     va_end(args);
   }

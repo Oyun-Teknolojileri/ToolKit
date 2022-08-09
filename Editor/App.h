@@ -8,6 +8,7 @@
 #include "Workspace.h"
 #include "GlobalDef.h"
 #include "Light.h"
+#include "PublishManager.h"
 
 namespace ToolKit
 {
@@ -32,8 +33,7 @@ namespace ToolKit
     class MaterialInspector;
     class Window;
     class Gizmo;
-    class LightBillboard;
-    class SpotLightGizmo;
+    class PublishManager;
 
     class App : Serializable
     {
@@ -117,6 +117,11 @@ namespace ToolKit
         EditorViewport* viewport,
         Gizmo* gizmo
       );
+      void RenderComponentGizmo
+      (
+        EditorViewport* viewport,
+        EntityRawPtrArray selecteds
+      );
       void ShowPlayWindow(float deltaTime);
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
@@ -126,7 +131,6 @@ namespace ToolKit
       void CreateSimulationWindow();
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
-      void Generate2dGrid();
 
      public:
       // UI elements.
@@ -147,18 +151,17 @@ namespace ToolKit
 
       // Editor objects.
       Grid* m_grid;
-      LineBatch m_2dGrid;
+      Grid* m_2dGrid;
       Axis3d* m_origin;
       Cursor* m_cursor;
-      SpotLightGizmo* m_spotLightGizmo;
-      LightBillboard* m_pointLightBillboard;
-      LightBillboard* m_directionalLightBillboard;
       Gizmo* m_gizmo = nullptr;
-      std::vector<Drawable*> m_perFrameDebugObjects;
+      Billboard* m_environmentBillboard = nullptr;
+      std::vector<Entity*> m_perFrameDebugObjects;
 
       // 3 point lighting system.
       Node* m_lightMaster = nullptr;
       LightRawPtrArray m_sceneLights;  // { 0:key 1:fill, 2:back }
+      bool m_studioLightsActive = true;
 
       // Editor states.
       int m_fps = 0;
@@ -172,6 +175,7 @@ namespace ToolKit
       byte m_showGraphicsApiErrors = 0;
       TransformationSpace m_transformSpace = TransformationSpace::TS_WORLD;
       Workspace m_workspace;
+      PublishManager* m_publishManager = nullptr;
       GameMod m_gameMod = GameMod::Stop;
 
       // Snap settings.

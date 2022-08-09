@@ -65,6 +65,10 @@ namespace ToolKit
   );
   template TK_API void WriteVec
   (
+    XmlNode* node, XmlDocument* doc, const UVec4& val
+  );
+  template TK_API void WriteVec
+  (
     XmlNode* node, XmlDocument* doc, const Quaternion& val
   );
 
@@ -254,7 +258,7 @@ namespace ToolKit
 
   bool CheckFile(const String& path)
   {
-    return std::filesystem::exists(path);
+    return GetFileManager()->CheckFileFromResources(path);
   }
 
   String CreateCopyFileFullPath(const String& fullPath)
@@ -363,25 +367,41 @@ namespace ToolKit
       toolKit = true;
     }
 
+    if (exist == String::npos)
+    {
+      // ToolKit resource absolute path
+      root = std::filesystem::absolute(root).string();
+      exist = path.find(root, 0);
+    }
+
     if (exist != String::npos)
     {
-      String rel = path.substr(root.length() + 1);
-      // Extract the root layer. Mesh, Texture ect...
-      exist = rel.find(GetPathSeparator());
-      if (exist != String::npos)
+      // If path isn't absolute
+      if (!root.length())
       {
-        rel = rel.substr(exist + 1);
+        return path;
       }
-
-      if (toolKit)
+      else
       {
-        //  Any relative path starting with ToolKit root directory
-        //  will be search in the default path.
-        rel = ConcatPaths({ "ToolKit", rel });
-      }
+        String rel = path.substr(root.length() + 1);
+        // Extract the root layer. Mesh, Texture ect...
+        exist = rel.find(GetPathSeparator());
+        if (exist != String::npos)
+        {
+          rel = rel.substr(exist + 1);
+        }
 
-      return rel;
+        if (toolKit)
+        {
+          //  Any relative path starting with ToolKit root directory
+          //  will be search in the default path.
+          rel = ConcatPaths({ "ToolKit", rel });
+        }
+
+        return rel;
+      }
     }
+
 
     return path;
   }
@@ -413,6 +433,11 @@ namespace ToolKit
       return ResourceType::Texture;
     }
 
+    if (ext == HDR)
+    {
+      return ResourceType::Hdri;
+    }
+
     if (ext == SHADER)
     {
       return ResourceType::Shader;
@@ -421,6 +446,11 @@ namespace ToolKit
     if (ext == AUDIO)
     {
       return ResourceType::Audio;
+    }
+
+    if (ext == SCENE)
+    {
+      return ResourceType::Scene;
     }
 
     assert(false);
@@ -703,6 +733,20 @@ namespace ToolKit
     return msgFormatted;
   }
 
+  String Trim(const std::string& str, const String& whitespace)
+  {
+    const size_t strBegin = str.find_first_not_of(whitespace);
+    if (strBegin == std::string::npos)
+    {
+      return "";  // no content
+    }
+
+    const size_t strEnd = str.find_last_not_of(whitespace);
+    const size_t strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
+  }
+
   LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size)
   {
     // Searching perpendicular axes on the plane.
@@ -737,6 +781,8 @@ namespace ToolKit
   LineBatch* CreateBoundingBoxDebugObject
   (
     const BoundingBox& box,
+    const Vec3& color,
+    float size,
     const Mat4* transform
   )
   {
@@ -774,9 +820,9 @@ namespace ToolKit
     LineBatch* lineForm = new LineBatch
     (
       vertices,
-      X_AXIS,
+      color,
       DrawType::LineStrip,
-      2.0f
+      size
     );
     return lineForm;
   }
@@ -790,7 +836,7 @@ namespace ToolKit
     idArray.reserve(ptrArray.size());
     for (Entity* ntt : ptrArray)
     {
-      idArray.push_back(ntt->Id());
+      idArray.push_back(ntt->GetIdVal());
     }
   }
 
@@ -929,6 +975,87 @@ namespace ToolKit
     }
 
     return cpy;
+  }
+
+  TK_API void StableSortByDistanceToCamera
+  (
+    EntityRawPtrArray& entities,
+    const Camera* cam
+  )
+  {
+    std::function<bool(Entity*, Entity*)> sortFn =
+      [cam](Entity* ntt1, Entity* ntt2) -> bool
+    {
+      Vec3 camLoc = cam->m_node->GetTranslation
+      (
+        TransformationSpace::TS_WORLD
+      );
+
+      BoundingBox bb1 = ntt1->GetAABB(true);
+      float first = glm::length2(bb1.GetCenter() - camLoc);
+
+      BoundingBox bb2 = ntt2->GetAABB(true);
+      float second = glm::length2(bb2.GetCenter() - camLoc);
+
+      return second < first;
+    };
+
+    if (cam->IsOrtographic())
+    {
+      sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool
+      {
+        float first = ntt1->m_node->GetTranslation
+        (
+          TransformationSpace::TS_WORLD
+        ).z;
+
+        float second = ntt2->m_node->GetTranslation
+        (
+          TransformationSpace::TS_WORLD
+        ).z;
+
+        return first < second;
+      };
+    }
+
+    std::stable_sort(entities.begin(), entities.end(), sortFn);
+  }
+
+  TK_API void StableSortByMaterialPriority(EntityRawPtrArray& entities)
+  {
+    std::stable_sort
+    (
+      entities.begin(),
+      entities.end(),
+      [](Entity* a, Entity* b) -> bool
+      {
+        MaterialComponentPtr matA = a->GetMaterialComponent();
+        MaterialComponentPtr matB = b->GetMaterialComponent();
+        if (matA && matB)
+        {
+          int pA = matA->GetMaterialVal()->GetRenderState()->priority;
+          int pB = matB->GetMaterialVal()->GetRenderState()->priority;
+          return pA > pB;
+        }
+
+        return false;
+      }
+    );
+  }
+
+  TK_API MaterialPtr GetRenderMaterial(Entity* entity)
+  {
+    MaterialPtr renderMat = nullptr;
+    if (MaterialComponentPtr matCom = entity->GetMaterialComponent())
+    {
+      renderMat = matCom->GetMaterialVal();
+    }
+    else if (MeshComponentPtr meshCom = entity->GetMeshComponent())
+    {
+      renderMat = meshCom->GetMeshVal()->m_material;
+    }
+
+    return renderMat;
   }
 
   void* TKMalloc(size_t sz)

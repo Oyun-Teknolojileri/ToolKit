@@ -21,6 +21,11 @@
   <ItemGroup>
     <ClCompile Include="import.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ToolKit\ToolKit.vcxproj">
+      <Project>{85523a06-924e-4b9d-b95c-411cb388936b}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -82,10 +87,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Utils\Import\</OutDir>
+    <LibraryPath>$(SolutionDir)Bin;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Utils\Import\</OutDir>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\Glew\include;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\OpenAL\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Bin;$(SolutionDir)Dependency\Glew\lib\Release\x64;$(SolutionDir)Dependency\OpenAL\libs\Win64;$(SolutionDir)Dependency\SDL2\lib\x64;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -127,9 +136,14 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc142-mt.lib;ToolKit_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)Bin\glew32.dll" "$(TargetDir)"
+copy /Y "$(SolutionDir)Bin\OpenAL32.dll" "$(TargetDir)"
+copy /Y "$(SolutionDir)Bin\ToolKit_d.dll" "$(TargetDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -147,9 +161,14 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc142-mt.lib;OpenGL32.lib;glew32.lib;OpenAL32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;zlibstatic.lib;minizip.lib;ToolKit.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)Bin\glew32.dll" "$(TargetDir)"
+copy /Y "$(SolutionDir)Bin\OpenAL32.dll" "$(TargetDir)"
+copy /Y "$(SolutionDir)Bin\ToolKit.dll" "$(TargetDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

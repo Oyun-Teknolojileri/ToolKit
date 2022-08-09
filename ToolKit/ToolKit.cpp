@@ -251,7 +251,7 @@ namespace ToolKit
 
   String DefaultPath()
   {
-    static String res = ConcatPaths({ ".", "..", "Resources", "Engine" });
+    static String res = ConcatPaths({ "..", "Resources", "Engine" });
 
     return res;
   }

@@ -6,6 +6,8 @@
 
 #include "ToolKit.h"
 #include "Util.h"
+#include "Component.h"
+#include "ResourceComponent.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -36,8 +38,7 @@ namespace ToolKit
 
     String path = GetFile();
     NormalizePath(path);
-
-    XmlFile sceneFile(path.c_str());
+    XmlFile sceneFile = GetFileManager()->GetXmlFile(path);
     XmlDocument sceneDoc;
     sceneDoc.parse<0>(sceneFile.data());
 
@@ -46,6 +47,11 @@ namespace ToolKit
     // Update parent - child relation for entities.
     for (Entity* e : m_entities)
     {
+      if (e->GetType() == EntityType::Entity_Sky)
+      {
+        m_sky = static_cast<Sky*>(e);
+      }
+
       if (e->_parentId != 0)
       {
         Entity* parent = GetEntity(e->_parentId);
@@ -54,6 +60,13 @@ namespace ToolKit
           parent->m_node->AddChild(e->m_node);
         }
       }
+    }
+
+    // Add sky if no sky is deserialized
+    if (m_sky == nullptr)
+    {
+      Sky* sky = new Sky();
+      SetSky(sky, false);
     }
 
     m_loaded = true;
@@ -93,13 +106,26 @@ namespace ToolKit
     const EntityRawPtrArray& ntties = GetEntities();
     for (Entity* ntt : ntties)
     {
-      if (ntt->IsDrawable())
+      if (ntt->GetType() == EntityType::Entity_Sky)
       {
+        static_cast<Sky*>(ntt)->Init();
+      }
+      else if (ntt->IsDrawable())
+      {
+        // Mesh component
         MeshComponentPtrArray meshes;
         ntt->GetComponent<MeshComponent>(meshes);
         for (MeshComponentPtr& mesh : meshes)
         {
           mesh->Init(flushClientSideArray);
+        }
+
+        // Environment component
+        EnvironmentComponentPtr envCom =
+        ntt->GetComponent<EnvironmentComponent>();
+        if (envCom != nullptr)
+        {
+          envCom->Init(true);
         }
       }
     }
@@ -114,16 +140,13 @@ namespace ToolKit
 
   void Scene::Merge(ScenePtr other)
   {
-    ULongID bigId = GetBiggestEntityId() + 1;
+    ULongID lastID = GetHandleManager()->GetNextHandle(), biggestID = 0;
     const EntityRawPtrArray& entities = other->GetEntities();
     for (Entity* ntt : entities)
     {
-      // Update ids to prevent collision.
-      ntt->Id() += bigId;
-      ntt->_parentId += bigId;
-
       AddEntity(ntt);  // Insert into this scene.
     }
+    GetHandleManager()->SetMaxHandle(biggestID);
 
     other->RemoveAllEntities();
     GetSceneManager()->Remove(other->GetFile());
@@ -148,7 +171,7 @@ namespace ToolKit
 
       if
       (
-        std::find(ignoreList.begin(), ignoreList.end(), ntt->Id())
+        std::find(ignoreList.begin(), ignoreList.end(), ntt->GetIdVal())
         != ignoreList.end()
       )
       {
@@ -172,7 +195,7 @@ namespace ToolKit
 
         for (MeshComponentPtr& meshCmp : meshes)
         {
-          MeshPtr mesh = meshCmp->Mesh();
+          MeshPtr mesh = meshCmp->GetMeshVal();
           if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount)
           {
             // Per polygon check if data exist.
@@ -217,8 +240,12 @@ namespace ToolKit
 
       if
       (
-        std::find(ignoreList.begin(), ignoreList.end(), e->Id()) !=
-        ignoreList.end()
+        std::find
+        (
+          ignoreList.begin(),
+          ignoreList.end(),
+          e->GetIdVal()
+        ) != ignoreList.end()
       )
       {
         continue;
@@ -248,7 +275,7 @@ namespace ToolKit
   {
     for (Entity* e : m_entities)
     {
-      if (e->Id() == id)
+      if (e->GetIdVal() == id)
       {
         return e;
       }
@@ -259,8 +286,12 @@ namespace ToolKit
 
   void Scene::AddEntity(Entity* entity)
   {
-    assert(GetEntity(entity->Id()) ==
-      nullptr && "Entity is already in the scene.");
+    ULongID nttyID = entity->GetIdVal();
+    assert
+    (
+      GetEntity(nttyID) == nullptr &&
+      "Entity is already in the scene."
+    );
     m_entities.push_back(entity);
   }
 
@@ -269,7 +300,7 @@ namespace ToolKit
     Entity* removed = nullptr;
     for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; i--)
     {
-      if (m_entities[i]->Id() == id)
+      if (m_entities[i]->GetIdVal() == id)
       {
         removed = m_entities[i];
         m_entities.erase(m_entities.begin() + i);
@@ -284,7 +315,7 @@ namespace ToolKit
   {
     for (Entity* ntt : entities)
     {
-      RemoveEntity(ntt->Id());
+      RemoveEntity(ntt->GetIdVal());
     }
   }
 
@@ -316,7 +347,7 @@ namespace ToolKit
   {
     for (Entity* e : m_entities)
     {
-      if (e->Name() == name)
+      if (e->GetNameVal() == name)
       {
         return e;
       }
@@ -330,7 +361,7 @@ namespace ToolKit
     for (Entity* e : m_entities)
     {
       StringArray tokens;
-      Split(e->Tag(), ".", tokens);
+      Split(e->GetTagVal(), ".", tokens);
 
       for (const String& token : tokens)
       {
@@ -363,6 +394,27 @@ namespace ToolKit
     return filtered;
   }
 
+  Sky* Scene::GetSky()
+  {
+    return m_sky;
+  }
+
+  // This function should be always used for assigning sky to scene
+  void Scene::SetSky(Sky* sky, bool init)
+  {
+    if (m_sky != nullptr)
+    {
+      Entity* sky = RemoveEntity(m_sky->GetIdVal());
+      SafeDel(sky);
+    }
+    m_sky = sky;
+    if (init)
+    {
+      m_sky->Init();
+    }
+    AddEntity(m_sky);
+  }
+
   void Scene::Destroy(bool removeResources)
   {
     for (Entity* ntt : m_entities)
@@ -371,10 +423,11 @@ namespace ToolKit
       {
         ntt->RemoveResources();
       }
-
       SafeDel(ntt);
     }
     m_entities.clear();
+
+    m_sky = nullptr;
 
     m_loaded = false;
     m_initiated = false;
@@ -391,7 +444,7 @@ namespace ToolKit
     Scene prefab;
     prefab.AddEntity(entity);
     GetChildren(entity, prefab.m_entities);
-    String name = entity->Name() + SCENE;
+    String name = entity->GetNameVal() + SCENE;
     prefab.SetFile(PrefabPath(name));
     prefab.m_name = name;
     prefab.Save(false);
@@ -460,6 +513,8 @@ namespace ToolKit
     DecomposePath(path, nullptr, &m_name, nullptr);
     ReadAttr(root, "version", m_version);
 
+    ULongID lastID = GetHandleManager()->GetNextHandle();
+    ULongID biggestID = 0;
     XmlNode* node = nullptr;
     for
     (
@@ -476,8 +531,15 @@ namespace ToolKit
       Entity* ntt = Entity::CreateByType(t);
 
       ntt->DeSerialize(doc, node);
+      // Incrementing the incoming ntt ids with current max id value...
+      //   to prevent id collisions.
+      ULongID currentID = ntt->GetIdVal() + lastID;
+      biggestID = glm::max(biggestID, currentID);
+      ntt->SetIdVal(currentID);
+      ntt->_parentId = ntt->_parentId + lastID;
       m_entities.push_back(ntt);
     }
+    GetHandleManager()->SetMaxHandle(biggestID);
   }
 
   ULongID Scene::GetBiggestEntityId()
@@ -485,7 +547,7 @@ namespace ToolKit
     ULongID lastId = 0;
     for (Entity* ntt : m_entities)
     {
-      lastId = glm::max(lastId, ntt->Id());
+      lastId = glm::max(lastId, ntt->GetIdVal());
     }
 
     return lastId;

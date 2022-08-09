@@ -18,13 +18,19 @@ namespace ToolKit
     LIGHT_DATA,
     CAM_DATA,
     COLOR,
-    FRAME_COUNT
+    FRAME_COUNT,
+    GRID_SETTINGS,
+    EXPOSURE,
+    PROJECTION_VIEW_NO_TR,
+    USE_IBL,
+    IBL_INTENSITY,
+    IBL_IRRADIANCE
   };
 
   class TK_API Shader : public Resource
   {
    public:
-    TKResouceType(Shader)
+    TKResourceType(Shader)
 
     Shader();
     explicit Shader(String file);

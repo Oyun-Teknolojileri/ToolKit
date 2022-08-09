@@ -3,119 +3,121 @@
 #include "ToolKit.h"
 #include "Primative.h"
 #include "DebugNew.h"
+#include <glm/detail/_swizzle.hpp>
+#include <glm/detail/_swizzle_func.hpp>
 
 namespace ToolKit
 {
   namespace Editor
   {
 
-    Grid::Grid(uint size)
+    Grid::Grid(UVec2 size)
     {
+      AddComponent(new MeshComponent());
+      AddComponent(new MaterialComponent());
+
       // Create grid material.
       if (!GetMaterialManager()->Exist(g_gridMaterialName))
       {
-        m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-        m_material->UnInit();
-        m_material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("grid.png"));
-        m_material->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-        m_material->GetRenderState()->cullMode = CullingType::TwoSided;
-        m_material->Init();
+        MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+        material->UnInit();
+        material->GetRenderState()->blendFunction =
+        BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
 
-        GetMaterialManager()->m_storage[g_gridMaterialName] = m_material;
+        material->GetRenderState()->cullMode = CullingType::TwoSided;
+
+        material->m_vertexShader =
+        GetShaderManager()->Create<Shader>
+        (
+          ShaderPath("gridVertex.shader", true)
+        );
+
+        material->m_fragmetShader =
+        GetShaderManager()->Create<Shader>
+        (
+          ShaderPath("gridFragment.shader", true)
+        );
+
+        material->GetRenderState()->priority = 100;
+        material->Init();
+
+        GetMaterialManager()->m_storage[g_gridMaterialName] = material;
       }
-      else
-      {
-        m_material = GetMaterialManager()->Create<Material>(g_gridMaterialName);
-      }
+
+      GetMaterialComponent()->SetMaterialVal
+      (
+        GetMaterialManager()->Create<Material>(g_gridMaterialName)
+      );
 
       // Create grid mesh.
-      m_size = size % 2 == 0 ? size : size + 1;
       Resize(size);
     }
 
-    void Grid::Resize(uint size, float gridSpaceScale)
+    void Grid::Resize(UVec2 size, AxisLabel axis, float gridSpaceScale)
     {
-      MeshPtr& parentMesh = GetMesh();
-      parentMesh->UnInit();
-      float scale = (float)m_size * 0.5f;
-
-      Vec3Array offsets =
-      {
-        Vec3(-scale * 0.5f - 0.025f, 0.0f, scale * 0.5f + 0.025f),
-        Vec3(scale * 0.5f + 0.025f, 0.0f, scale * 0.5f + 0.025f),
-        Vec3(scale * 0.5f + 0.025f, 0.0f, -scale * 0.5f - 0.025f),
-        Vec3(-scale * 0.5f - 0.025f, 0.0f, -scale * 0.5f - 0.025f)
-      };
-
-      for (int i = 0; i < 4; i++)
-      {
-        Quad quad;
-        MeshPtr& mesh = quad.GetMesh();
-        for (int j = 0; j < 4; j++)
-        {
-          mesh->m_clientSideVertices[j].pos = (mesh->m_clientSideVertices[j].pos * scale).xzy + offsets[i];
-          mesh->m_clientSideVertices[j].tex = mesh->m_clientSideVertices[j].pos.xz * gridSpaceScale;
-        }
-
-        mesh->m_material = m_material;
-        if (i == 0)
-        {
-          SetMesh(mesh);
-        }
-        else
-        {
-          parentMesh->m_subMeshes.push_back(mesh);
-        }
-      }
-
-      VertexArray vertices;
-      vertices.resize(2);
-
-      // x - z lines.
-      Vec3 ls = Vec3(0.05f, scale * 2.0f, 1.0f);
       for (int i = 0; i < 2; i++)
       {
-        MaterialPtr solidMat = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-        solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
-        solidMat->m_color = g_gridAxisBlue;
-
-        if (i == 1)
-        {
-          ls = ls.yxz;
-          solidMat->m_color = g_gridAxisRed;
-        }
-
-        Quad quad;
-        MeshPtr& mesh = quad.GetMesh();
-        for (int j = 0; j < 4; j++)
-        {
-          mesh->m_clientSideVertices[j].pos = (mesh->m_clientSideVertices[j].pos * ls).xzy;
-        }
-        mesh->m_material = solidMat;
-        parentMesh->m_subMeshes.push_back(mesh);
+        m_size[i] = size[i] % 2 == 0 ? size[i] : size[i] + 1;
       }
 
-      parentMesh->CalculateAABB();
+      // Set cell size
+      m_gridCellSize = gridSpaceScale;
+
+      // Rotate according to axis label and set origin axis line colors
+      switch (axis)
+      {
+        case AxisLabel::XY:
+          m_node->SetOrientation
+          (
+            glm::angleAxis(glm::radians(90.0f), Z_AXIS) *
+            RotationTo(X_AXIS, Y_AXIS)
+          );
+          m_horizontalAxisColor = g_gridAxisRed;
+          m_verticalAxisColor = g_gridAxisGreen;
+        break;
+        case AxisLabel::ZX:
+          m_node->SetOrientation(RotationTo(Z_AXIS, Y_AXIS));
+          m_horizontalAxisColor = g_gridAxisRed;
+          m_verticalAxisColor = g_gridAxisBlue;
+        break;
+        case AxisLabel::YZ:
+          m_node->SetOrientation
+          (
+            glm::angleAxis(glm::radians(90.0f), Y_AXIS) *
+            RotationTo(X_AXIS, Y_AXIS)
+          );
+          m_horizontalAxisColor = g_gridAxisGreen;
+          m_verticalAxisColor = g_gridAxisBlue;
+        break;
+      }
+
+      Vec2 scale = Vec2(m_size);
+
+      Quad quad;
+      MeshPtr mesh = quad.GetMeshComponent()->GetMeshVal();
+      for (int j = 0; j < 4; j++)
+      {
+        Vertex& clientVertex = mesh->m_clientSideVertices[j];
+        clientVertex.pos = (clientVertex.pos * Vec3(scale, 0.0f));
+        clientVertex.tex = clientVertex.pos.xy * m_gridCellSize;
+      }
+
+      mesh->CalculateAABB();
+      mesh->Init();
+      GetMeshComponent()->SetMeshVal(mesh);
     }
 
     bool Grid::HitTest(const Ray& ray, Vec3& pos)
     {
-      Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
-      Mat4 its = glm::inverse(ts);
-      Ray rayInObjectSpace =
-      {
-        its * Vec4(ray.position, 1.0f),
-        its * Vec4(ray.direction, 0.0f)
-      };
-
       float dist = 0.0f;
-      if (RayBoxIntersection(rayInObjectSpace, GetAABB(), dist))
+      if (RayBoxIntersection(ray, GetAABB(true), dist))
       {
-        pos = PointOnRay(rayInObjectSpace, dist);
+        pos = PointOnRay(ray, dist);
         return true;
       }
 
       return false;
     }
-  }
-}
+
+  }  //  namespace Editor
+}  //  namespace ToolKit

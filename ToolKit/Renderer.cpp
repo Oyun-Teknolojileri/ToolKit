@@ -5,7 +5,7 @@
 #include "Mesh.h"
 #include "Drawable.h"
 #include "Texture.h"
-#include "Directional.h"
+#include "Camera.h"
 #include "Node.h"
 #include "Material.h"
 #include "Surface.h"
@@ -16,6 +16,8 @@
 #include "UIManager.h"
 #include "Shader.h"
 #include "ToolKit.h"
+#include "DirectionComponent.h"
+#include "ResourceComponent.h"
 #include "GL/glew.h"
 #include "DebugNew.h"
 
@@ -33,9 +35,9 @@ namespace ToolKit
 
   void Renderer::RenderScene
   (
-    const ScenePtr& scene,
+    const ScenePtr scene,
     Viewport* viewport,
-    LightRawPtrArray editorLights
+    const LightRawPtrArray& editorLights
   )
   {
     Camera* cam = viewport->GetCamera();
@@ -43,14 +45,12 @@ namespace ToolKit
 
     SetRenderTarget(viewport->m_viewportImage);
 
-    FrustumCull(entities, cam);
+    RenderEntities(entities, cam, viewport, editorLights);
 
-    EntityRawPtrArray blendedEntities;
-    GetTransparentEntites(entities, blendedEntities);
-
-    RenderOpaque(entities, cam, viewport->m_zoom, editorLights);
-
-    RenderTransparent(blendedEntities, cam, viewport->m_zoom, editorLights);
+    if (!cam->IsOrtographic())
+    {
+      RenderSky(scene->GetSky(), cam);
+    }
   }
 
   /**
@@ -85,14 +85,7 @@ namespace ToolKit
           1000.0f
         );
 
-        FrustumCull(allEntities, layer->m_cam);
-
-        EntityRawPtrArray blendedEntities;
-        GetTransparentEntites(allEntities, blendedEntities);
-
-        RenderOpaque(allEntities, layer->m_cam, viewport->m_zoom);
-
-        RenderTransparent(blendedEntities, layer->m_cam, viewport->m_zoom);
+        RenderEntities(allEntities, layer->m_cam, viewport);
       }
     }
   }
@@ -107,12 +100,24 @@ namespace ToolKit
     MeshComponentPtrArray meshComponents;
     ntt->GetComponent<MeshComponent>(meshComponents);
 
+    MaterialPtr nttMat;
+    if (MaterialComponentPtr matCom = ntt->GetComponent<MaterialComponent>())
+    {
+      if (nttMat = matCom->GetMaterialVal())
+      {
+        nttMat->Init();
+      }
+    }
+
     for (MeshComponentPtr meshCom : meshComponents)
     {
-      MeshPtr mesh = meshCom->Mesh();
+      MeshPtr mesh = meshCom->GetMeshVal();
+      m_lights = GetBestLights(ntt, lights);
+      m_cam = cam;
+      SetProjectViewModel(ntt, cam);
       if (mesh->IsSkinned())
       {
-        RenderSkinned(static_cast<Drawable*> (ntt), cam);
+        RenderSkinned(ntt, cam);
         return;
       }
 
@@ -121,16 +126,17 @@ namespace ToolKit
       MeshRawPtrArray meshCollector;
       mesh->GetAllMeshes(meshCollector);
 
-      m_cam = cam;
-      m_lights = GetBestLights(ntt, lights);
-      SetProjectViewModel(ntt, cam);
 
       for (Mesh* mesh : meshCollector)
       {
-        m_mat = mesh->m_material.get();
+        m_textureIdCount = 0;
         if (m_overrideMat != nullptr)
         {
           m_mat = m_overrideMat.get();
+        }
+        else
+        {
+          m_mat = nttMat ? nttMat.get() : mesh->m_material.get();
         }
 
         ProgramPtr prg = CreateProgram
@@ -138,11 +144,12 @@ namespace ToolKit
           m_mat->m_vertexShader,
           m_mat->m_fragmetShader
         );
+
         BindProgram(prg);
         FeedUniforms(prg);
 
         RenderState* rs = m_mat->GetRenderState();
-        SetRenderState(rs);
+        SetRenderState(rs, prg);
 
         glBindVertexArray(mesh->m_vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
@@ -167,10 +174,9 @@ namespace ToolKit
     }
   }
 
-  void Renderer::RenderSkinned(Drawable* object, Camera* cam)
+  void Renderer::RenderSkinned(Entity* object, Camera* cam)
   {
-    MeshPtr mesh = object->GetMesh();
-    mesh->Init();
+    MeshPtr mesh = object->GetMeshComponent()->GetMeshVal();
     SetProjectViewModel(object, cam);
 
     static ShaderPtr skinShader = GetShaderManager()->Create<Shader>
@@ -220,7 +226,7 @@ namespace ToolKit
     for (Mesh* mesh : meshCollector)
     {
       RenderState* rs = mesh->m_material->GetRenderState();
-      SetRenderState(rs);
+      SetRenderState(rs, skinProg);
 
       glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
       SetVertexLayout(VertexLayout::SkinMesh);
@@ -249,10 +255,11 @@ namespace ToolKit
     static ProgramPtr prog = CreateProgram(vertexShader, fragShader);
     BindProgram(prog);
 
-    MeshPtr mesh = object->GetMesh();
+    MeshPtr mesh = object->GetMeshComponent()->GetMeshVal();
     mesh->Init();
+
     RenderState* rs = mesh->m_material->GetRenderState();
-    SetRenderState(rs);
+    SetRenderState(rs, prog);
 
     GLint pvloc = glGetUniformLocation(prog->m_handle, "ProjectViewModel");
     Mat4 pm = glm::ortho
@@ -264,10 +271,12 @@ namespace ToolKit
       0.0f,
       100.0f
     );
+
     Mat4 mul = pm * object->m_node->GetTransform
     (
       TransformationSpace::TS_WORLD
     );
+
     glUniformMatrix4fv(pvloc, 1, false, reinterpret_cast<float*>(&mul));
 
     glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
@@ -291,7 +300,11 @@ namespace ToolKit
     surface->m_node = backup;
   }
 
-  void Renderer::SetRenderState(const RenderState* const state)
+  void Renderer::SetRenderState
+  (
+    const RenderState* const state,
+    ProgramPtr program
+  )
   {
     if (m_renderState.cullMode != state->cullMode)
     {
@@ -350,21 +363,24 @@ namespace ToolKit
       m_renderState.blendFunction = state->blendFunction;
     }
 
-    if
-    (
-      m_renderState.diffuseTexture
-      != state->diffuseTexture
-      && state->diffuseTextureInUse
-    )
+    if (state->diffuseTextureInUse)
     {
       m_renderState.diffuseTexture = state->diffuseTexture;
+      GLint loc = glGetUniformLocation(program->m_handle, "s_texture");
+      glUniform1i(loc, m_textureIdCount);
+      glActiveTexture(GL_TEXTURE0 + m_textureIdCount);
       glBindTexture(GL_TEXTURE_2D, m_renderState.diffuseTexture);
+      m_textureIdCount++;
     }
 
-    if (m_renderState.cubeMap != state->cubeMap && state->cubeMapInUse)
+    if (state->cubeMapInUse)
     {
       m_renderState.cubeMap = state->cubeMap;
+      GLint loc = glGetUniformLocation(program->m_handle, "cubeMap");
+      glUniform1i(loc, m_textureIdCount);
+      glActiveTexture(GL_TEXTURE0 + m_textureIdCount);
       glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderState.cubeMap);
+      m_textureIdCount++;
     }
 
     if (m_renderState.lineWidth != state->lineWidth)
@@ -446,11 +462,60 @@ namespace ToolKit
     material->Init();
 
     static Quad quad;
-    quad.GetMesh()->m_material = material;
+    quad.GetMeshComponent()->GetMeshVal()->m_material = material;
 
-    static Camera dummy;
+    static Camera quadCam;
+    Render(&quad, &quadCam);
+  }
 
-    Render(&quad, &dummy);
+  void Renderer::DrawCube(Camera* cam, MaterialPtr mat)
+  {
+    static Cube cube;
+    cube.Generate();
+
+    MaterialComponentPtr matc = cube.GetMaterialComponent();
+    if (matc == nullptr)
+    {
+      cube.AddComponent(new MaterialComponent);
+    }
+    cube.GetMaterialComponent()->SetMaterialVal(mat);
+
+    Render(&cube, cam);
+  }
+
+  void Renderer::RenderEntities
+  (
+    EntityRawPtrArray& entities,
+    Camera* cam,
+    Viewport* viewport,
+    const LightRawPtrArray& lights
+  )
+  {
+    GetEnvironmentLightEntities(entities);
+
+    // Dropout non visible & drawable entities.
+    entities.erase
+    (
+      std::remove_if
+      (
+        entities.begin(),
+        entities.end(),
+        [](Entity* ntt) -> bool
+        {
+          return !ntt->GetVisibleVal() || !ntt->IsDrawable();
+        }
+      ),
+      entities.end()
+    );
+
+    FrustumCull(entities, cam);
+
+    EntityRawPtrArray blendedEntities;
+    GetTransparentEntites(entities, blendedEntities);
+
+    RenderOpaque(entities, cam, viewport->m_zoom, lights);
+
+    RenderTransparent(blendedEntities, cam, viewport->m_zoom, lights);
   }
 
   void Renderer::FrustumCull(EntityRawPtrArray& entities, Camera* camera)
@@ -490,29 +555,58 @@ namespace ToolKit
   {
     auto delTrFn = [&blendedEntities](Entity* ntt) -> bool
     {
-      if (ntt->GetType() == EntityType::Entity_Node)
-      {
-        return false;
-      }
+      // Check too see if there are any material with blend state.
+      MaterialComponentPtrArray materials;
+      ntt->GetComponent<MaterialComponent>(materials);
 
-      MeshComponentPtr ms = ntt->GetComponent<MeshComponent>();
-      if (ms == nullptr)
+      if (!materials.empty())
       {
-        return false;
-      }
-
-      BlendFunction blend
-        = ms->Mesh()->m_material->GetRenderState()->blendFunction;
-      if (ntt->IsDrawable() && ntt->Visible() && static_cast<int>(blend))
-      {
-        blendedEntities.push_back(ntt);
-        return true;
+        for (MaterialComponentPtr& mt : materials)
+        {
+          if
+          (
+            mt->GetMaterialVal()
+            && mt->GetMaterialVal()->GetRenderState()->blendFunction !=
+            BlendFunction::NONE
+          )
+          {
+            blendedEntities.push_back(ntt);
+            return true;
+          }
+        }
       }
       else
       {
-        return false;
+        MeshComponentPtrArray meshes;
+        ntt->GetComponent<MeshComponent>(meshes);
+
+        if (meshes.empty())
+        {
+          return false;
+        }
+
+        for (MeshComponentPtr& ms : meshes)
+        {
+          MeshRawCPtrArray all;
+          ms->GetMeshVal()->GetAllMeshes(all);
+          for (const Mesh* m : all)
+          {
+            if
+            (
+              m->m_material->GetRenderState()->blendFunction !=
+              BlendFunction::NONE
+            )
+            {
+              blendedEntities.push_back(ntt);
+              return true;
+            }
+          }
+        }
       }
+
+      return false;
     };
+
     entities.erase
     (
       std::remove_if(entities.begin(), entities.end(), delTrFn), entities.end()
@@ -530,16 +624,15 @@ namespace ToolKit
     // Render opaque objects
     for (Entity* ntt : entities)
     {
-      if (ntt->IsDrawable() && ntt->Visible())
+      if (ntt->GetType() == EntityType::Entity_Billboard)
       {
-        if (ntt->GetType() == EntityType::Entity_Billboard)
-        {
-          Billboard* billboard = static_cast<Billboard*> (ntt);
-          billboard->LookAt(cam, zoom);
-        }
-
-        Render(ntt, cam, editorLights);
+        Billboard* billboard = static_cast<Billboard*> (ntt);
+        billboard->LookAt(cam, zoom);
       }
+
+      FindEnvironmentLight(ntt, cam);
+
+      Render(ntt, cam, editorLights);
     }
   }
 
@@ -551,81 +644,52 @@ namespace ToolKit
     const LightRawPtrArray& editorLights
   )
   {
-    // Sort transparent entities
-    if (cam->IsOrtographic())
-    {
-      auto sortFn = [](Entity* nt1, Entity* nt2) -> bool
-      {
-        float first = nt1->m_node->GetTranslation
-        (
-          TransformationSpace::TS_WORLD
-        ).z;
-        float second = nt2->m_node->GetTranslation
-        (
-          TransformationSpace::TS_WORLD
-        ).z;
+    StableSortByDistanceToCamera(entities, cam);
+    StableSortByMaterialPriority(entities);
 
-        return first < second;
-      };
-
-      std::stable_sort(entities.begin(), entities.end(), sortFn);
-    }
-    else
-    {
-      auto sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool
-      {
-        Vec3 camLoc = cam->m_node->GetTranslation
-        (
-          TransformationSpace::TS_WORLD
-        );
-        BoundingBox bb1 = ntt1->GetAABB(true);
-        float first = glm::length2(bb1.GetCenter() - camLoc);
-        BoundingBox bb2 = ntt2->GetAABB(true);
-        float second = glm::length2(bb2.GetCenter() - camLoc);
-        return second < first;
-      };
-      std::stable_sort(entities.begin(), entities.end(), sortFn);
-    }
-
-    // Render non-opaque entities
+    // Render transparent entities
     for (Entity* ntt : entities)
     {
-      Drawable* dw = static_cast<Drawable*>(ntt);
-      if (dw == nullptr)
-      {
-        continue;
-      }
-
       if (ntt->GetType() == EntityType::Entity_Billboard)
       {
         Billboard* billboard = static_cast<Billboard*> (ntt);
         billboard->LookAt(cam, zoom);
       }
 
+      FindEnvironmentLight(ntt, cam);
+
       // For two sided materials,
       // first render back of transparent objects then render front
-      if
-        (
-        dw->GetMesh()->m_material->GetRenderState()->cullMode
-        == CullingType::TwoSided
-        )
+      MaterialPtr renderMaterial = GetRenderMaterial(ntt);
+      if (renderMaterial->GetRenderState()->cullMode == CullingType::TwoSided)
       {
-        dw->GetMesh()->m_material->GetRenderState()->cullMode
-          = CullingType::Front;
+        renderMaterial->GetRenderState()->cullMode = CullingType::Front;
         Render(ntt, cam, editorLights);
 
-        dw->GetMesh()->m_material->GetRenderState()->cullMode
-          = CullingType::Back;
+        renderMaterial->GetRenderState()->cullMode = CullingType::Back;
         Render(ntt, cam, editorLights);
 
-        dw->GetMesh()->m_material->GetRenderState()->cullMode
-          = CullingType::TwoSided;
+        renderMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
       }
       else
       {
         Render(ntt, cam, editorLights);
       }
     }
+  }
+
+  void Renderer::RenderSky(Sky* sky, Camera* cam)
+  {
+    if (sky == nullptr || !sky->GetDrawSkyVal())
+    {
+      return;
+    }
+
+    glDepthFunc(GL_LEQUAL);
+
+    DrawCube(cam, sky->GetSkyboxMaterial());
+
+    glDepthFunc(GL_LESS);  // Return to default depth test
   }
 
   LightRawPtrArray Renderer::GetBestLights
@@ -654,11 +718,11 @@ namespace ToolKit
         float radius;
         if (lights[i]->GetLightType() == LightTypeEnum::LightPoint)
         {
-          radius = static_cast<PointLight*>(lights[i])->Radius();
+          radius = static_cast<PointLight*>(lights[i])->GetRadiusVal();
         }
         else if (lights[i]->GetLightType() == LightTypeEnum::LightSpot)
         {
-          radius = static_cast<SpotLight*>(lights[i])->Radius();
+          radius = static_cast<SpotLight*>(lights[i])->GetRadiusVal();
         }
         else
         {
@@ -691,6 +755,141 @@ namespace ToolKit
     return bestLights;
   }
 
+  void Renderer::GetEnvironmentLightEntities(EntityRawPtrArray entities)
+  {
+    // Find entities which have environment component
+    m_environmentLightEntities.clear();
+    for (Entity* ntt : entities)
+    {
+      if (ntt->GetType() == EntityType::Entity_Sky)
+      {
+        continue;
+      }
+
+      EnvironmentComponentPtr envCom =
+      ntt->GetComponent<EnvironmentComponent>();
+      if
+      (
+        envCom != nullptr
+        && envCom->GetHdriVal() != nullptr
+        && envCom->GetHdriVal()->IsTextureAssigned()
+        && envCom->GetIlluminateVal()
+      )
+      {
+        envCom->Init(true);
+        m_environmentLightEntities.push_back(ntt);
+      }
+    }
+  }
+
+  void Renderer::FindEnvironmentLight
+  (
+    Entity* entity,
+    Camera* camera
+  )
+  {
+    if (camera->IsOrtographic())
+    {
+      return;
+    }
+
+    // Note: If multiple bounding boxes are intersecting and the intersection
+    // volume includes the entity, the smaller bounding box is taken
+
+    // Iterate all entities and mark the ones which should
+    // be lit with environment light
+
+    Entity* env = nullptr;
+
+    MaterialPtr mat = GetRenderMaterial(entity);
+    if (mat == nullptr)
+    {
+      return;
+    }
+
+    Vec3 pos = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+    BoundingBox bestBox;
+    bestBox.max = ZERO;
+    bestBox.min = ZERO;
+    BoundingBox currentBox;
+    env = nullptr;
+    for (Entity* envNtt : m_environmentLightEntities)
+    {
+      currentBox.max =
+      envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMax();
+      currentBox.min =
+      envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMin();
+
+      if (PointInsideBBox(pos, currentBox.max, currentBox.min))
+      {
+        auto setCurrentBBox =
+        [&bestBox, &env]
+        (
+          const BoundingBox& box,
+          Entity* ntt
+        ) -> void
+        {
+          bestBox = box;
+          env = ntt;
+        };
+
+        if (bestBox.max == bestBox.min && bestBox.max == ZERO)
+        {
+          setCurrentBBox(currentBox, envNtt);
+          continue;
+        }
+
+        bool change = false;
+        if (BoxBoxIntersection(bestBox, currentBox))
+        {
+          // Take the smaller box
+          if (bestBox.Volume() > currentBox.Volume())
+          {
+            change = true;
+          }
+        }
+        else
+        {
+          change = true;
+        }
+
+        if (change)
+        {
+          setCurrentBBox(currentBox, envNtt);
+        }
+      }
+    }
+
+    if (env != nullptr)
+    {
+      mat->GetRenderState()->IBLInUse = true;
+      EnvironmentComponentPtr envCom =
+      env->GetComponent<EnvironmentComponent>();
+      mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
+      mat->GetRenderState()->irradianceMap =
+      envCom->GetHdriVal()->GetIrradianceCubemapId();
+    }
+    else
+    {
+      // Sky light
+      Sky* sky = GetSceneManager()->GetCurrentScene()->GetSky();
+      if (sky->GetIlluminateVal())
+      {
+        mat->GetRenderState()->IBLInUse = true;
+        EnvironmentComponentPtr envCom =
+        sky->GetComponent<EnvironmentComponent>();
+        mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
+        mat->GetRenderState()->irradianceMap =
+        envCom->GetHdriVal()->GetIrradianceCubemapId();
+      }
+      else
+      {
+        mat->GetRenderState()->IBLInUse = false;
+        mat->GetRenderState()->irradianceMap = 0;
+      }
+    }
+  }
+
   void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)
   {
     m_view = cam->GetViewMatrix();
@@ -720,7 +919,6 @@ namespace ToolKit
     glGetProgramiv(program, GL_LINK_STATUS, &linked);
     if (!linked)
     {
-      assert(linked);
       GLint infoLen = 0;
       glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
       if (infoLen > 1)
@@ -731,6 +929,7 @@ namespace ToolKit
 
         SafeDelArray(log);
       }
+      assert(linked);
 
       glDeleteProgram(program);
     }
@@ -740,6 +939,8 @@ namespace ToolKit
   {
     assert(vertex);
     assert(fragment);
+    vertex->Init();
+    fragment->Init();
 
     String tag;
     tag = vertex->m_tag + fragment->m_tag;
@@ -798,11 +999,6 @@ namespace ToolKit
         break;
         case Uniform::LIGHT_DATA:
         {
-          if (m_lights.size() == 0)
-          {
-            break;
-          }
-
           FeedLightUniforms(program);
         }
         break;
@@ -843,9 +1039,84 @@ namespace ToolKit
           glUniform1ui(loc, m_frameCount);
         }
         break;
+        case Uniform::GRID_SETTINGS:
+        {
+          GLint locCellSize =
+            glGetUniformLocation(program->m_handle, "GridData.cellSize");
+          glUniform1fv(locCellSize, 1, &m_gridCellSize);
+          GLint locGridSize =
+            glGetUniformLocation(program->m_handle, "GridData.gridSize");
+          glUniform1fv(locGridSize, 1, &m_gridSize);
+          GLint locHorizontalAxisColor = glGetUniformLocation
+          (
+            program->m_handle,
+            "GridData.horizontalAxisColor"
+          );
+          glUniform3fv(locHorizontalAxisColor, 1, &m_gridHorizontalAxisColor.x);
+          GLint locVerticalAxisColor = glGetUniformLocation
+          (
+            program->m_handle,
+            "GridData.verticalAxisColor"
+          );
+          glUniform3fv(locVerticalAxisColor, 1, &m_gridVerticalAxisColor.x);
+        }
+        break;
+        case Uniform::EXPOSURE:
+        {
+          GLint loc = glGetUniformLocation(program->m_handle, "Exposure");
+          glUniform1f(loc, shader->m_shaderParams["Exposure"].GetVar<float>());
+        }
+        break;
+        case Uniform::PROJECTION_VIEW_NO_TR:
+        {
+          GLint loc = glGetUniformLocation
+          (
+            program->m_handle,
+            "ProjectionViewNoTr"
+          );
+          // Zero transalate variables in model matrix
+          m_view[0][3] = 0.0f;
+          m_view[1][3] = 0.0f;
+          m_view[2][3] = 0.0f;
+          m_view[3][3] = 1.0f;
+          m_view[3][0] = 0.0f;
+          m_view[3][1] = 0.0f;
+          m_view[3][2] = 0.0f;
+          Mat4 mul = m_project * m_view;
+          glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
+        }
+        break;
+        case Uniform::USE_IBL:
+        {
+          m_renderState.IBLInUse = m_mat->GetRenderState()->IBLInUse;
+          GLint loc = glGetUniformLocation(program->m_handle, "UseIbl");
+          glUniform1f(loc, static_cast<float>(m_renderState.IBLInUse));
+        }
+        break;
+        case Uniform::IBL_INTENSITY:
+        {
+          m_renderState.iblIntensity = m_mat->GetRenderState()->iblIntensity;
+          GLint loc = glGetUniformLocation(program->m_handle, "IblIntensity");
+          glUniform1f(loc, static_cast<float>(m_renderState.iblIntensity));
+        }
+        break;
+        case Uniform::IBL_IRRADIANCE:
+        {
+          m_renderState.irradianceMap = m_mat->GetRenderState()->irradianceMap;
+          GLint loc = glGetUniformLocation
+          (
+            program->m_handle,
+            "IBLIrradianceMap"
+          );
+          glUniform1i(loc, m_textureIdCount);
+          glActiveTexture(GL_TEXTURE0 + m_textureIdCount);
+          glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderState.irradianceMap);
+          m_textureIdCount++;
+        }
+        break;
         default:
           assert(false);
-          break;
+        break;
         }
       }
 
@@ -920,13 +1191,13 @@ namespace ToolKit
       // Point light uniforms
       if (type == LightTypeEnum::LightPoint)
       {
-        Vec3 color = currLight->Color();
-        float intensity = currLight->Intensity();
+        Vec3 color = currLight->GetColorVal();
+        float intensity = currLight->GetIntensityVal();
         Vec3 pos = currLight->m_node->GetTranslation
         (
           TransformationSpace::TS_WORLD
         );
-        float radius = static_cast<PointLight*>(currLight)->Radius();
+        float radius = static_cast<PointLight*>(currLight)->GetRadiusVal();
 
         GLuint loc = glGetUniformLocation
         (
@@ -962,10 +1233,10 @@ namespace ToolKit
       // Directional light uniforms
       else if (type == LightTypeEnum::LightDirectional)
       {
-        Vec3 color = currLight->Color();
-        float intensity = currLight->Intensity();
-        Vec3 dir =
-        currLight->GetComponent<DirectionComponent>()->GetDirection();
+        Vec3 color = currLight->GetColorVal();
+        float intensity = currLight->GetIntensityVal();
+        Vec3 dir = static_cast<DirectionalLight*>(currLight)->
+          GetComponent<DirectionComponent>()->GetDirection();
 
         GLuint loc = glGetUniformLocation
         (
@@ -995,28 +1266,23 @@ namespace ToolKit
       // Spot light uniforms
       else if (type == LightTypeEnum::LightSpot)
       {
-        Vec3 color = currLight->Color();
-        float intensity = currLight->Intensity();
+        Vec3 color = currLight->GetColorVal();
+        float intensity = currLight->GetIntensityVal();
         Vec3 pos = currLight->m_node->GetTranslation
         (
           TransformationSpace::TS_WORLD
         );
+        SpotLight* spotLight = static_cast<SpotLight*>(currLight);
         Vec3 dir =
-        currLight->GetComponent<DirectionComponent>()->GetDirection();
-        float radius = static_cast<SpotLight*>(currLight)->Radius();
+        spotLight->GetComponent<DirectionComponent>()->GetDirection();
+        float radius = spotLight->GetRadiusVal();
         float outAngle = glm::cos
         (
-          glm::radians
-          (
-            static_cast<SpotLight*>(currLight)->OuterAngle() / 2.0f
-          )
+          glm::radians(spotLight->GetOuterAngleVal() / 2.0f)
         );
         float innAngle = glm::cos
         (
-          glm::radians
-          (
-            static_cast<SpotLight*>(currLight)->InnerAngle() / 2.0f
-          )
+          glm::radians(spotLight->GetInnerAngleVal() / 2.0f)
         );
 
         GLuint loc = glGetUniformLocation
@@ -1156,11 +1422,12 @@ namespace ToolKit
       offset += 2 * sizeof(float);
 
       glEnableVertexAttribArray(3);  // BiTangent
-      glVertexAttribIPointer
+      glVertexAttribPointer
       (
         3,
         3,
-        GL_UNSIGNED_INT,
+        GL_FLOAT,
+        GL_FALSE,
         sizeof(SkinVertex),
         BUFFER_OFFSET(offset)
       );
@@ -1176,7 +1443,7 @@ namespace ToolKit
         sizeof(SkinVertex),
         BUFFER_OFFSET(offset)
       );
-      offset += 4 * sizeof(float);
+      offset += 4 * sizeof(unsigned int);
 
       glEnableVertexAttribArray(5);  // Weights
       glVertexAttribPointer

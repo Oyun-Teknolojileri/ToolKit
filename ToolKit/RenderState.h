@@ -13,16 +13,16 @@ namespace ToolKit
 
   enum class DrawType
   {
-    Triangle = (int)GraphicTypes::DrawTypeTriangle,
-    Line = (int)GraphicTypes::DrawTypeLines,
-    LineStrip = (int)GraphicTypes::DrawTypeLineStrip,
-    LineLoop = (int)GraphicTypes::DrawTypeLineLoop,
-    Point = (int)GraphicTypes::DrawTypePoints
+    Triangle = static_cast<int> (GraphicTypes::DrawTypeTriangle),
+    Line = static_cast<int> (GraphicTypes::DrawTypeLines),
+    LineStrip = static_cast<int> (GraphicTypes::DrawTypeLineStrip),
+    LineLoop = static_cast<int> (GraphicTypes::DrawTypeLineLoop),
+    Point = static_cast<int> (GraphicTypes::DrawTypePoints)
   };
 
   enum class CullingType
   {
-    TwoSided, // No culling
+    TwoSided,  // No culling
     Front,
     Back
   };
@@ -36,11 +36,11 @@ namespace ToolKit
 
   class TK_API RenderState : public Serializable
   {
-  public:
+   public:
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
-  public:
+   public:
     CullingType cullMode = CullingType::Back;
     bool depthTestEnabled = true;
     BlendFunction blendFunction = BlendFunction::NONE;
@@ -51,6 +51,10 @@ namespace ToolKit
     bool cubeMapInUse = false;
     float lineWidth = 1.0f;
     VertexLayout vertexLayout = VertexLayout::None;
+    bool IBLInUse = false;
+    float iblIntensity = 0.25f;
+    uint irradianceMap = 0;
+    int priority = 0;  // The higher the priority, the earlier to draw.
   };
 
-}
+}  // namespace ToolKit

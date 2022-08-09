@@ -58,7 +58,7 @@ namespace ToolKit
 
     for (auto entry : m_sprites)
     {
-      entry.second->GetMesh()->Init(flushClientSideArray);
+      entry.second->GetMeshComponent()->Init(flushClientSideArray);
     }
 
     m_initiated = true;
@@ -131,7 +131,7 @@ namespace ToolKit
   {
   }
 
-  SpriteAnimation::SpriteAnimation(SpriteSheetPtr spriteSheet)
+  SpriteAnimation::SpriteAnimation(const SpriteSheetPtr& spriteSheet)
   {
     m_sheet = spriteSheet;
   }

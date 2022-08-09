@@ -29,7 +29,7 @@ namespace ToolKit
   class TK_API Mesh : public Resource
   {
    public:
-    TKResouceType(Mesh)
+    TKResourceType(Mesh)
 
     Mesh();
     explicit Mesh(const String& file);
@@ -86,9 +86,9 @@ namespace ToolKit
   class TK_API SkinMesh : public Mesh
   {
    public:
-    TKResouceType(SkinMesh)
+    TKResourceType(SkinMesh)
 
-      SkinMesh();
+    SkinMesh();
     explicit SkinMesh(const String& file);
     ~SkinMesh();
 
@@ -98,6 +98,8 @@ namespace ToolKit
 
     int GetVertexSize() const override;
     bool IsSkinned() const override;
+
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
    protected:
     void InitVertices(bool flush) override;
@@ -116,5 +118,4 @@ namespace ToolKit
     ResourcePtr CreateLocal(ResourceType type) override;
     String GetDefaultResource(ResourceType type) override;
   };
-
 }  // namespace ToolKit

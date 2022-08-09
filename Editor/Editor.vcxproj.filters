@@ -102,6 +102,15 @@
     <ClCompile Include="EditorLight.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
+    <ClCompile Include="PublishManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Action.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialInspector.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -190,6 +199,15 @@
     </ClInclude>
     <ClInclude Include="EditorLight.h">
       <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="PublishManager.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Action.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialInspector.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

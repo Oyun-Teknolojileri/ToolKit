@@ -10,337 +10,18 @@
 #include "Node.h"
 #include "Primative.h"
 #include "Grid.h"
-#include "Directional.h"
+#include "Camera.h"
 #include "Gizmo.h"
 #include "TransformMod.h"
 #include "ConsoleWindow.h"
 #include "Util.h"
+#include "DirectionComponent.h"
 #include "DebugNew.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
-
-    // Action
-    //////////////////////////////////////////////////////////////////////////
-
-    Action::Action()
-    {
-    }
-
-    Action::~Action()
-    {
-      for (Action* a : m_group)
-      {
-        SafeDel(a);
-      }
-      m_group.clear();
-    }
-
-    DeleteAction::DeleteAction(Entity* ntt)
-    {
-      m_ntt = ntt;
-      Redo();
-    }
-
-    DeleteAction::~DeleteAction()
-    {
-      if (m_actionComitted)
-      {
-        SafeDel(m_ntt);
-      }
-    }
-
-    void DeleteAction::Undo()
-    {
-      assert(m_ntt != nullptr);
-
-      EditorScenePtr currScene = g_app->GetCurrentScene();
-      currScene->AddEntity(m_ntt);
-      if (m_parentId != NULL_HANDLE)
-      {
-        if (Entity* pEntt = currScene->GetEntity(m_parentId))
-        {
-          m_ntt->m_node->OrphanSelf();
-          pEntt->m_node->AddChild(m_ntt->m_node);
-        }
-      }
-
-      m_actionComitted = false;
-      HandleAnimRecords(m_ntt);
-    }
-
-    void DeleteAction::Redo()
-    {
-      if (Node* pNode = m_ntt->m_node->m_parent)
-      {
-        if (pNode->m_entity)
-        {
-          m_parentId = pNode->m_entity->Id();
-        }
-        pNode->Orphan(m_ntt->m_node);
-      }
-
-      g_app->GetCurrentScene()->RemoveEntity(m_ntt->Id());
-      m_actionComitted = true;
-    }
-
-    void DeleteAction::HandleAnimRecords(Entity* ntt)
-    {
-      if (m_actionComitted)
-      {
-        m_records.clear();
-        auto removeItr = std::remove_if
-        (
-          GetAnimationPlayer()->m_records.begin(),
-          GetAnimationPlayer()->m_records.end(),
-          [this, ntt](AnimRecord* record)
-          {
-            if (ntt == record->m_entity)
-            {
-              m_records.push_back(record);
-              return true;
-            }
-
-            return false;
-          }
-        );
-
-        if (GetAnimationPlayer()->m_records.end() != removeItr)
-        {
-          GetAnimationPlayer()->m_records.erase(removeItr);
-        }
-      }
-      else
-      {
-        GetAnimationPlayer()->m_records.insert
-        (
-          GetAnimationPlayer()->m_records.end(),
-          m_records.begin(),
-          m_records.end()
-        );
-      }
-    }
-
-    CreateAction::CreateAction(Entity* ntt)
-    {
-      m_ntt = ntt;
-      m_actionComitted = true;
-      EditorScenePtr currScene = g_app->GetCurrentScene();
-      currScene->GetSelectedEntities(m_selecteds);
-      currScene->AddEntity(ntt);
-    }
-
-    CreateAction::~CreateAction()
-    {
-      if (!m_actionComitted)
-      {
-        SafeDel(m_ntt);
-      }
-    }
-
-    void CreateAction::Undo()
-    {
-      SwapSelection();
-      g_app->GetCurrentScene()->RemoveEntity(m_ntt->Id());
-      m_actionComitted = false;
-    }
-
-    void CreateAction::Redo()
-    {
-      SwapSelection();
-      g_app->GetCurrentScene()->AddEntity(m_ntt);
-      m_actionComitted = true;
-    }
-
-    void CreateAction::SwapSelection()
-    {
-      EntityIdArray selection;
-      EditorScenePtr currScene = g_app->GetCurrentScene();
-      currScene->GetSelectedEntities(selection);
-      currScene->AddToSelection(m_selecteds, false);
-      std::swap(m_selecteds, selection);
-    }
-
-    // ActionManager
-    //////////////////////////////////////////////////////////////////////////
-
-    ActionManager ActionManager::m_instance;
-
-    ActionManager::ActionManager()
-    {
-      m_initiated = false;
-      m_stackPointer = 0;
-    }
-
-    ActionManager::~ActionManager()
-    {
-      assert(m_initiated == false && "Call ActionManager::UnInit.");
-    }
-
-    void ActionManager::Init()
-    {
-      m_initiated = true;
-      m_actionGrouping = false;
-    }
-
-    void ActionManager::UnInit()
-    {
-      for (Action* action : m_actionStack)
-      {
-        SafeDel(action);
-      }
-      m_actionStack.clear();
-
-      m_initiated = false;
-    }
-
-    void ActionManager::AddAction(Action* action)
-    {
-      if (m_stackPointer > -1)
-      {
-        if (m_stackPointer < static_cast<int>(m_actionStack.size()) - 1)
-        {
-          // All actions above stack pointer are invalidated.
-          for (size_t i = m_stackPointer + 1; i < m_actionStack.size(); i++)
-          {
-            Action* a = m_actionStack[i];
-            SafeDel(a);
-          }
-
-          m_actionStack.erase
-          (
-            m_actionStack.begin() + m_stackPointer + 1,
-            m_actionStack.end()
-          );
-        }
-      }
-      else
-      {
-        for (size_t i = 0; i < m_actionStack.size(); i++)
-        {
-          Action* a = m_actionStack[i];
-          SafeDel(a);
-        }
-
-        m_actionStack.clear();
-      }
-
-      m_actionStack.push_back(action);
-      if (m_actionStack.size() > g_maxUndoCount && !m_actionGrouping)
-      {
-        Action* a = m_actionStack.front();
-        SafeDel(a);
-
-        pop_front(m_actionStack);
-      }
-      m_stackPointer = static_cast<int>(m_actionStack.size()) - 1;
-    }
-
-    void ActionManager::GroupLastActions(int n)
-    {
-      if (n == 0)
-      {
-        return;
-      }
-
-      // Sanity Checks.
-      assert(m_stackPointer == static_cast<int>(m_actionStack.size()) - 1
-      && "Call grouping right after add.");
-      if (n >= static_cast<int>(m_actionStack.size()) && !m_actionGrouping)
-      {
-        assert(static_cast<int>(m_actionStack.size()) >=
-        n
-        && "We can't stack more than we have. Try using BeginActionGroup()"
-        " to pass a series of action as a group");
-        return;
-      }
-
-      int begIndx = static_cast<int>(m_actionStack.size()) - n;
-      Action* root = m_actionStack[begIndx++];
-      root->m_group.reserve(n - 1);
-      for (int i = begIndx; i < static_cast<int>(m_actionStack.size()); i++)
-      {
-        root->m_group.push_back(m_actionStack[i]);
-      }
-
-      m_actionStack.erase
-      (
-        m_actionStack.begin() + begIndx,
-        m_actionStack.end()
-      );
-      m_stackPointer = static_cast<int>(m_actionStack.size()) - 1;
-      m_actionGrouping = false;
-    }
-
-    void ActionManager::BeginActionGroup()
-    {
-      m_actionGrouping = true;
-    }
-
-    void ActionManager::RemoveLastAction()
-    {
-      if (!m_actionStack.empty())
-      {
-        if (m_stackPointer > -1)
-        {
-          Action* action = m_actionStack[m_stackPointer];
-          SafeDel(action);
-          m_actionStack.erase(m_actionStack.begin() + m_stackPointer);
-          m_stackPointer--;
-        }
-      }
-    }
-
-    void ActionManager::Undo()
-    {
-      if (!m_actionStack.empty())
-      {
-        if (m_stackPointer > -1)
-        {
-          Action* action = m_actionStack[m_stackPointer];
-
-          // Undo in reverse order.
-          for
-          (
-            int i = static_cast<int>(action->m_group.size()) - 1;
-            i > -1;
-            i--
-          )
-          {
-            action->m_group[i]->Undo();
-          }
-          action->Undo();
-          m_stackPointer--;
-        }
-      }
-    }
-
-    void ActionManager::Redo()
-    {
-      if (m_actionStack.empty())
-      {
-        return;
-      }
-
-      if (m_stackPointer < static_cast<int>(m_actionStack.size()) - 1)
-      {
-        Action* action = m_actionStack[m_stackPointer + 1];
-        action->Redo();
-        for (Action* ga : action->m_group)
-        {
-          ga->Redo();
-        }
-
-        m_stackPointer++;
-      }
-    }
-
-    ActionManager* ActionManager::GetInstance()
-    {
-      return &m_instance;
-    }
 
     // ModManager
     //////////////////////////////////////////////////////////////////////////
@@ -601,7 +282,7 @@ namespace ToolKit
       {
         if (pd.entity != nullptr)
         {
-          ids.push_back(pd.entity->Id());
+          ids.push_back(pd.entity->GetIdVal());
         }
         else
         {
@@ -641,7 +322,7 @@ namespace ToolKit
       }
 
       ToEntityIdArray(m_ignoreList, ignores);
-      m_ignoreList.push_back(g_app->m_grid->Id());
+      m_ignoreList.push_back(g_app->m_grid->GetIdVal());
     }
 
     SignalId StateBeginPick::Update(float deltaTime)
@@ -679,7 +360,7 @@ namespace ToolKit
             if (m_dbgArrow == nullptr)
             {
               m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
-              m_ignoreList.push_back(m_dbgArrow->Id());
+              m_ignoreList.push_back(m_dbgArrow->GetIdVal());
               currScene->AddEntity(m_dbgArrow.get());
             }
 
@@ -821,7 +502,7 @@ namespace ToolKit
               (
                 new LineBatch(corners, X_AXIS, DrawType::Line)
               );
-              m_ignoreList.push_back(m_dbgFrustum->Id());
+              m_ignoreList.push_back(m_dbgFrustum->GetIdVal());
               currScene->AddEntity(m_dbgFrustum.get());
             }
             else
@@ -973,7 +654,7 @@ namespace ToolKit
             ActionManager::GetInstance()->AddAction(new CreateAction(cpy));
           }
 
-          currScene->AddToSelection(copies.front()->Id(), true);
+          currScene->AddToSelection(copies.front()->GetIdVal(), true);
           cpyCount += static_cast<int>(copies.size());
         }
 

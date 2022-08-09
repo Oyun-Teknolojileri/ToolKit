@@ -8,7 +8,7 @@
 #include "ToolKit.h"
 #include "Node.h"
 #include "Surface.h"
-#include "Directional.h"
+#include "Camera.h"
 #include "Mesh.h"
 #include "Material.h"
 #include "Texture.h"
@@ -17,7 +17,10 @@
 #include "GlobalDef.h"
 #include "ConsoleWindow.h"
 #include "EditorViewport.h"
+#include "ResourceComponent.h"
 #include "GL/glew.h"
+#include "App.h"
+#include "EditorViewport2d.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -37,12 +40,13 @@ namespace ToolKit
 
     void Cursor::Generate()
     {
-      MeshPtr& parentMesh = GetMesh();
+      MeshComponentPtr parentMeshComp = GetComponent<MeshComponent>();
+      MeshPtr parentMesh = parentMeshComp->GetMeshVal();
       parentMesh->UnInit();
 
       // Billboard
       Quad quad;
-      MeshPtr& meshPtr = quad.GetMesh();
+      MeshPtr meshPtr = quad.GetMeshComponent()->GetMeshVal();
 
       meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
       meshPtr->m_material->UnInit();
@@ -121,15 +125,16 @@ namespace ToolKit
         }
 
         Arrow2d arrow(t);
-        MeshPtr& mesh = arrow.GetMesh();
-        mesh->m_material->GetRenderState()->depthTestEnabled = false;
+        MeshComponentPtr arrowMeshComp = arrow.GetComponent<MeshComponent>();
+        MeshPtr arrowMesh = arrowMeshComp->GetMeshVal();
+        arrowMesh->m_material->GetRenderState()->depthTestEnabled = false;
         if (i == 0)
         {
-          SetMesh(mesh);
+          GetMeshComponent()->SetMeshVal(arrowMesh);
         }
         else
         {
-          GetMesh()->m_subMeshes.push_back(mesh);
+          GetMeshComponent()->GetMeshVal()->m_subMeshes.push_back(arrowMesh);
         }
       }
     }
@@ -159,7 +164,8 @@ namespace ToolKit
       m_mesh = std::make_shared<Mesh>();
 
       LineBatch line(pnts, params.color, DrawType::Line, 2.0f);
-      m_mesh->m_subMeshes.push_back(line.GetMesh());
+      MeshPtr lnMesh = line.GetComponent<MeshComponent>()->GetMeshVal();
+      m_mesh->m_subMeshes.push_back(lnMesh);
 
       MaterialPtr material =
       GetMaterialManager()->GetCopyOfUnlitColorMaterial();
@@ -168,14 +174,14 @@ namespace ToolKit
       if (params.type == SolidType::Cube)
       {
         Cube solid(params.solidDim);
-        MeshPtr& mesh = solid.GetMesh();
+        MeshPtr mesh = solid.GetComponent<MeshComponent>()->GetMeshVal();
         mesh->m_material = material;
         m_mesh->m_subMeshes.push_back(mesh);
       }
       else if (params.type == SolidType::Cone)
       {
         Cone solid({ params.solidDim.y, params.solidDim.x, 10, 10 });
-        MeshPtr& mesh = solid.GetMesh();
+        MeshPtr mesh = solid.GetComponent<MeshComponent>()->GetMeshVal();
         mesh->m_material = material;
         m_mesh->m_subMeshes.push_back(mesh);
       }
@@ -215,7 +221,8 @@ namespace ToolKit
         };
 
         LineBatch guide(pnts, g_gizmoColor[axisInd % 3], DrawType::Line, 1.0f);
-        m_mesh->m_subMeshes.push_back(guide.GetMesh());
+        MeshPtr guideMesh = guide.GetComponent<MeshComponent>()->GetMeshVal();
+        m_mesh->m_subMeshes.push_back(guideMesh);
       }
     }
 
@@ -275,7 +282,8 @@ namespace ToolKit
       corners.push_back(corners.front());
 
       LineBatch circle(corners, params.color, DrawType::LineStrip, 4.0f);
-      m_mesh = circle.GetMesh();
+      MeshPtr circleMesh = circle.GetComponent<MeshComponent>()->GetMeshVal();
+      m_mesh = circleMesh;
 
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
@@ -298,7 +306,8 @@ namespace ToolKit
         pnts.push_back(glcl - dir * 999.0f);
 
         LineBatch guide(pnts, g_gizmoColor[axisIndx], DrawType::Line, 1.0f);
-        m_mesh->m_subMeshes.push_back(guide.GetMesh());
+        MeshPtr guideMesh = guide.GetComponent<MeshComponent>()->GetMeshVal();
+        m_mesh->m_subMeshes.push_back(guideMesh);
       }
     }
 
@@ -372,7 +381,7 @@ namespace ToolKit
       material->m_color = params.color;
       material->GetRenderState()->cullMode = CullingType::TwoSided;
 
-      MeshPtr& mesh = solid.GetMesh();
+      MeshPtr mesh = solid.GetMeshComponent()->GetMeshVal();
       mesh->m_material = material;
       m_mesh = mesh;
 
@@ -481,12 +490,16 @@ namespace ToolKit
       AxisLabel hit = AxisLabel::None;
       for (size_t i = 0; i < m_handles.size(); i++)
       {
+        if (!m_handles[i]->m_mesh)
+        {
+          continue;
+        }
         if (m_handles[i]->HitTest(ray, t))
         {
           if (t < tMin)
           {
             tMin = t;
-            hit = (AxisLabel)i;
+            hit = static_cast<AxisLabel>(m_handles[i]->m_params.axis);
           }
         }
       }
@@ -641,7 +654,7 @@ namespace ToolKit
         mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
       mesh->Init(false);
-      SetMesh(mesh);
+      GetComponent<MeshComponent>()->SetMeshVal(mesh);
     }
 
     GizmoHandle::Params LinearGizmo::GetParam() const
@@ -667,7 +680,7 @@ namespace ToolKit
       for (int i = 3; i < 6; i++)
       {
         m_handles.push_back(new QuadHandle());
-        m_handles[i]->m_params.axis = (AxisLabel)i;
+        m_handles[i]->m_params.axis = static_cast<AxisLabel>(i);
       }
 
       Update(0.0);
@@ -715,9 +728,24 @@ namespace ToolKit
     {
       GizmoHandle::Params p = GetParam();
 
+      // Clear all meshes
       for (int i = 0; i < 3; i++)
       {
-        if (m_grabbedAxis == (AxisLabel)i)
+        m_handles[i]->m_mesh = nullptr;
+      }
+
+      EditorViewport2d* viewport2D = dynamic_cast<EditorViewport2d*>
+        (
+        g_app->GetActiveViewport()
+        );
+      for (int i = 0; i < 3; i++)
+      {
+        // If gizmo is in 2D view, just generate Z axis
+        if (viewport2D && i != static_cast<int>(AxisLabel::Z))
+        {
+          continue;
+        }
+        if (m_grabbedAxis == static_cast<AxisLabel>(i))
         {
           p.color = g_selectHighLightPrimaryColor;
         }
@@ -726,17 +754,17 @@ namespace ToolKit
           p.color = g_gizmoColor[i];
         }
 
-        if (IsLocked((AxisLabel)i))
+        if (IsLocked(static_cast<AxisLabel>(i)))
         {
           p.color = g_gizmoLocked;
         }
-        else if (m_lastHovered == (AxisLabel)i)
+        else if (m_lastHovered == static_cast<AxisLabel>(i))
         {
           p.color = g_selectHighLightSecondaryColor;
           m_lastHovered = AxisLabel::None;
         }
 
-        p.axis = (AxisLabel)i;
+        p.axis = static_cast<AxisLabel>(i);
         if (IsGrabbed(p.axis))
         {
           p.grabPnt = m_grabPoint;
@@ -752,10 +780,13 @@ namespace ToolKit
       MeshPtr mesh = std::make_shared<Mesh>();
       for (int i = 0; i < m_handles.size(); i++)
       {
-        mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+        if (m_handles[i]->m_mesh)
+        {
+          mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
+        }
       }
 
-      SetMesh(mesh);
+      GetComponent<MeshComponent>()->SetMeshVal(mesh);
     }
 
     void PolarGizmo::Render(Renderer* renderer, Camera* cam)
@@ -765,8 +796,8 @@ namespace ToolKit
       if (sphere == nullptr)
       {
         sphere = std::make_shared<Sphere>(1.0f);
-        sphere->GetMesh()->m_material->GetRenderState()->cullMode =
-        CullingType::Front;
+        sphere->GetMeshComponent()->GetMeshVal()->
+          m_material->GetRenderState()->cullMode = CullingType::Front;
       }
 
       *sphere->m_node = *m_node;
@@ -777,6 +808,43 @@ namespace ToolKit
 
       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       renderer->Render(this, cam);
+    }
+
+    SkyBillboard::SkyBillboard()
+      : Billboard({ true, 3.5f, 15.0f })
+    {
+      Generate();
+    }
+
+    SkyBillboard::~SkyBillboard()
+    {
+    }
+
+    void SkyBillboard::Generate()
+    {
+      MeshComponentPtr parentMeshComp = GetComponent<MeshComponent>();
+      MeshPtr parentMesh = parentMeshComp->GetMeshVal();
+      parentMesh->UnInit();
+
+      // Billboard
+      Quad quad;
+      MeshPtr meshPtr = quad.GetMeshComponent()->GetMeshVal();
+
+      meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      meshPtr->m_material->UnInit();
+      meshPtr->m_material->m_diffuseTexture =
+      GetTextureManager()->Create<Texture>
+      (
+        TexturePath(ConcatPaths({ "Icons", "sky.png" }), true)
+      );
+      meshPtr->m_material->GetRenderState()->blendFunction =
+      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+      meshPtr->m_material->Init();
+
+      meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
+      parentMesh->m_subMeshes.push_back(meshPtr);
+
+      parentMesh->CalculateAABB();
     }
 
     SpotLightGizmo::SpotLightGizmo(SpotLight* light)
@@ -791,11 +859,14 @@ namespace ToolKit
       m_gizmoLineBatches[0] = new LineBatch();
 
       MeshComponent* mc = new MeshComponent();
-      mc->Mesh() = m_gizmoLineBatches[0]->GetMesh();
-      mc->Mesh()->m_material->Init();
+      mc->SetMeshVal
+      (
+        m_gizmoLineBatches[0]->GetMeshComponent()->GetMeshVal()
+      );
+      mc->GetMeshVal()->m_material->Init();
       AddComponent(mc);
 
-      MeshPtr mesh = mc->Mesh();
+      MeshPtr mesh = mc->GetMeshVal();
 
       m_innerCirclePnts.resize(m_circleVertexCount + 1);
       m_outerCirclePnts.resize(m_circleVertexCount + 1);
@@ -804,37 +875,51 @@ namespace ToolKit
       m_gizmoLineBatches[2] = new LineBatch();
       m_gizmoLineBatches[3] = new LineBatch();
 
-      mesh->m_subMeshes.push_back(m_gizmoLineBatches[1]->GetMesh());
-      mesh->m_subMeshes.push_back(m_gizmoLineBatches[2]->GetMesh());
-      mesh->m_subMeshes.push_back(m_gizmoLineBatches[3]->GetMesh());
+      mesh->m_subMeshes.push_back
+      (
+        m_gizmoLineBatches[1]->GetComponent<MeshComponent>()->GetMeshVal()
+      );
+
+      mesh->m_subMeshes.push_back
+      (
+        m_gizmoLineBatches[2]->GetComponent<MeshComponent>()->GetMeshVal()
+      );
+
+      mesh->m_subMeshes.push_back
+      (
+        m_gizmoLineBatches[3]->GetComponent<MeshComponent>()->GetMeshVal()
+      );
+
       mesh->m_subMeshes[0]->m_material->Init();
       mesh->m_subMeshes[1]->m_material->Init();
       mesh->m_subMeshes[2]->m_material->Init();
     }
 
-    SpotLightGizmo::~SpotLightGizmo()
+    void SpotLightGizmo::InitGizmo(Light* light)
     {
-      for (LineBatch* lb : m_gizmoLineBatches)
-      {
-        SafeDel(lb);
-      }
-      m_gizmoLineBatches.clear();
-    }
+      assert(light->GetLightType() == LightTypeEnum::LightSpot);
+      SpotLight* sLight = static_cast<SpotLight*> (light);
 
-    void SpotLightGizmo::InitGizmo(SpotLight* light)
-    {
       // Middle line
       Vec3 d = Vec3(0.0f, 0.0f, -1.0f);
-      float r = light->Radius();
+      float r = sLight->GetRadiusVal();
       m_pnts[0] = Vec3
       (
         ZERO
       );
+
       m_pnts[1] = Vec3
       (
         d * r * 2.25f
       );
-      m_gizmoLineBatches[0]->Generate(m_pnts, Vec3(0.0f), DrawType::Line, 1.0f);
+
+      m_gizmoLineBatches[0]->Generate
+      (
+        m_pnts,
+        g_lightGizmoColor,
+        DrawType::Line,
+        1.0f
+      );
 
       // Calculating circles
       int zeroCount = 0;
@@ -904,10 +989,11 @@ namespace ToolKit
 
       d = d * r;
 
-      float innerCircleRadius = r
-      * glm::tan(glm::radians(light->InnerAngle() / 2));
-      float outerCircleRadius = r
-      * glm::tan(glm::radians(light->OuterAngle() / 2));
+      float innerCircleRadius = r *
+        glm::tan(glm::radians(sLight->GetInnerAngleVal() / 2));
+
+      float outerCircleRadius = r *
+        glm::tan(glm::radians(sLight->GetOuterAngleVal() / 2));
 
       Vec3 inStartPoint = d + per * innerCircleRadius;
       Vec3 outStartPoint = d + per * outerCircleRadius;
@@ -916,6 +1002,7 @@ namespace ToolKit
 
       float deltaAngle = glm::two_pi<float>() / m_circleVertexCount;
       m_rot = Mat4(1.0f);
+
       for (int i = 1; i < m_circleVertexCount + 1; i++)
       {
         // Inner circle vertices
@@ -932,13 +1019,14 @@ namespace ToolKit
       m_gizmoLineBatches[1]->Generate
       (
         m_innerCirclePnts,
-        Vec3(0.15f),
+        g_lightGizmoColor,
         DrawType::LineStrip, 1.0f
       );
+
       m_gizmoLineBatches[2]->Generate
       (
         m_outerCirclePnts,
-        Vec3(0.15f),
+        g_lightGizmoColor,
         DrawType::LineStrip, 1.0f
       );
 
@@ -954,15 +1042,10 @@ namespace ToolKit
       m_gizmoLineBatches[3]->Generate
       (
         m_conePnts,
-        Vec3(0.15f),
+        g_lightGizmoColor,
         DrawType::Line,
         1.0f
       );
-    }
-
-    std::vector<LineBatch*> SpotLightGizmo::GetGizmoLineBatches()
-    {
-      return m_gizmoLineBatches;
     }
 
     DirectionalLightGizmo::DirectionalLightGizmo(DirectionalLight* light)
@@ -972,12 +1055,136 @@ namespace ToolKit
       m_gizmoLineBatches[0] = new LineBatch();
 
       MeshComponent* mc = new MeshComponent();
-      mc->Mesh() = m_gizmoLineBatches[0]->GetMesh();
-      mc->Mesh()->m_material->Init();
+      mc->SetMeshVal
+      (
+        m_gizmoLineBatches[0]->GetMeshComponent()->GetMeshVal()
+      );
+
+      mc->GetMeshVal()->m_material->Init();
       AddComponent(mc);
     }
 
-    DirectionalLightGizmo::~DirectionalLightGizmo()
+    void DirectionalLightGizmo::InitGizmo(Light* light)
+    {
+      assert(light->GetLightType() == LightTypeEnum::LightDirectional);
+
+      // Middle line
+      Vec3 d = Vec3(0.0f, 0.0f, -1.0f);
+      Vec3 norm = glm::normalize(d);
+      m_pnts[0] = Vec3
+      (
+        ZERO
+      );
+
+      m_pnts[1] = Vec3
+      (
+        d * 10.0f
+      );
+
+      m_gizmoLineBatches[0]->Generate
+      (
+        m_pnts,
+        g_lightGizmoColor,
+        DrawType::Line,
+        1.0f
+      );
+    }
+
+    PointLightGizmo::PointLightGizmo(PointLight* light)
+    {
+      m_gizmoLineBatches.resize(3);
+
+      m_gizmoLineBatches[0] = new LineBatch();
+      m_gizmoLineBatches[1] = new LineBatch();
+      m_gizmoLineBatches[2] = new LineBatch();
+
+      m_circlePntsXY.resize(m_circleVertexCount + 1);
+      m_circlePntsYZ.resize(m_circleVertexCount + 1);
+      m_circlePntsXZ.resize(m_circleVertexCount + 1);
+
+      // Create gizmo meshes and materials
+      MeshComponent* mc = new MeshComponent();
+      mc->SetMeshVal
+      (
+        m_gizmoLineBatches[0]->GetMeshComponent()->GetMeshVal()
+      );
+
+      mc->GetMeshVal()->m_material->Init();
+      AddComponent(mc);
+
+      MeshPtr mesh = mc->GetMeshVal();
+      mesh->m_subMeshes.push_back
+      (
+        m_gizmoLineBatches[1]->GetMeshComponent()->GetMeshVal()
+      );
+
+      mesh->m_subMeshes[0]->m_material->Init();
+      mesh->m_subMeshes.push_back
+      (
+        m_gizmoLineBatches[2]->GetMeshComponent()->GetMeshVal()
+      );
+
+      mesh->m_subMeshes[1]->m_material->Init();
+    }
+
+    void PointLightGizmo::InitGizmo(Light* light)
+    {
+      assert(light->GetLightType() == LightTypeEnum::LightPoint);
+      PointLight* pLight = static_cast<PointLight*> (light);
+
+      Vec3 up = Vec3(0.0f, 1.0f, 0.0f);
+      Vec3 right = Vec3(1.0f, 0.0f, 0.0f);
+      Vec3 forward = Vec3(0.0f, 0.0f, 1.0f);
+      float deltaAngle = glm::two_pi<float>() / m_circleVertexCount;
+
+      Vec3 lightPos = pLight->m_node->GetTranslation
+      (
+        TransformationSpace::TS_WORLD
+      );
+
+      auto drawCircleGizmo = [&pLight, &deltaAngle, this]
+      (
+        Vec3Array vertices,
+        const Vec3& axis,
+        const Vec3& perpAxis,
+        int lineBatchIndex
+      )
+      {
+        Vec3 startingPoint = perpAxis * pLight->GetRadiusVal();
+        vertices[0] = startingPoint;
+        Mat4 idendityMatrix = Mat4(1.0f);
+
+        for (int i = 1; i < m_circleVertexCount + 1; ++i)
+        {
+          Mat4 rot = glm::rotate(idendityMatrix, deltaAngle, axis);
+          startingPoint = Vec3(rot * Vec4(startingPoint, 1.0f));
+          vertices[i] = startingPoint;
+        }
+
+        m_gizmoLineBatches[lineBatchIndex]->Generate
+        (
+          vertices,
+          g_lightGizmoColor,
+          DrawType::LineStrip,
+          1.0f
+        );
+      };
+
+      // Circle on XY plane
+      drawCircleGizmo(m_circlePntsXY, forward, up, 0);
+
+      // Circle on YZ plane
+      drawCircleGizmo(m_circlePntsXY, right, up, 1);
+
+      // Circle on XZ plane
+      drawCircleGizmo(m_circlePntsXY, up, right, 2);
+    }
+
+    LightGizmoBase::LightGizmoBase()
+    {
+    }
+
+    LightGizmoBase::~LightGizmoBase()
     {
       for (LineBatch* lb : m_gizmoLineBatches)
       {
@@ -986,29 +1193,7 @@ namespace ToolKit
       m_gizmoLineBatches.clear();
     }
 
-    void DirectionalLightGizmo::InitGizmo(DirectionalLight* light)
-    {
-      // Middle line
-      Vec3 d = Vec3(0.0f, 0.0f, -1.0f);
-      Vec3 norm = glm::normalize(d);
-      m_pnts[0] = Vec3
-      (
-        ZERO
-      );
-      m_pnts[1] = Vec3
-      (
-        d * 10.0f
-      );
-      m_gizmoLineBatches[0]->Generate
-      (
-        m_pnts,
-        Vec3(0.0f),
-        DrawType::Line,
-        1.0f
-      );
-    }
-
-    std::vector<LineBatch*> DirectionalLightGizmo::GetGizmoLineBatches()
+    LineBatchRawPtrArray LightGizmoBase::GetGizmoLineBatches()
     {
       return m_gizmoLineBatches;
     }

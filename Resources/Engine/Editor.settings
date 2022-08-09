@@ -1,9 +1,9 @@
 <App>
 	<Settings>
-		<Size width="1858" height="1057" maximized="1"/>
+		<Size width="1920" height="1017" maximized="1"/>
 	</Settings>
 	<Window name="3D View" id="10" type="0" visible="1">
-		<Viewport width="1061.000000" height="997.000000" alignment="0" lock="0">
+		<Viewport width="990.000000" height="957.000000" alignment="0" lock="0">
 			<E i="1017" t="13">
 				<N i="22" is="0" ito="0">
 					<T x="7.567446" y="9.419968" z="3.776399"/>
@@ -22,7 +22,7 @@
 						<PB/>
 					</Component>
 				</Components>
-				<Camera fov="0.785398" aspect="1.064193" near="0.500000" far="1000.000000" height="997.000000" ortographic="0" left="10.000000" right="10.000000" top="10.000000" bottom="10.000000"/>
+				<Camera fov="0.785398" aspect="1.034483" near="0.500000" far="1000.000000" height="957.000000" ortographic="0" left="10.000000" right="10.000000" top="10.000000" bottom="10.000000"/>
 			</E>
 		</Viewport>
 	</Window>
@@ -51,7 +51,7 @@
 		</Viewport>
 	</Window>
 	<Window name="ISO View" id="12" type="0" visible="1">
-		<Viewport width="395.000000" height="381.000000" alignment="1" lock="1">
+		<Viewport width="405.000000" height="364.000000" alignment="1" lock="1">
 			<E i="1023" t="13">
 				<N i="24" is="0" ito="0">
 					<T x="0.000000" y="10.000000" z="0.000000"/>
@@ -70,7 +70,7 @@
 						<PB/>
 					</Component>
 				</Components>
-				<Camera fov="0.000000" aspect="1.000000" near="0.500000" far="1000.000000" height="6.350000" ortographic="1" left="-3.291667" right="3.291667" top="3.175000" bottom="-3.175000"/>
+				<Camera fov="0.000000" aspect="1.000000" near="0.500000" far="1000.000000" height="6.066667" ortographic="1" left="-3.375000" right="3.375000" top="3.033334" bottom="-3.033334"/>
 			</E>
 		</Viewport>
 	</Window>
@@ -105,4 +105,3 @@
 	<Window name="Material Inspector" id="17" type="6" visible="1"/>
 	<Window name="Plugin" id="18" type="7" visible="1"/>
 </App>
-

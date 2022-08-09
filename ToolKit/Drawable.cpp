@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "Mesh.h"
+#include "ResourceComponent.h"
 #include "Material.h"
 #include "ToolKit.h"
 #include "Node.h"
@@ -23,11 +24,6 @@ namespace ToolKit
   {
   }
 
-  bool Drawable::IsDrawable() const
-  {
-    return true;
-  }
-
   EntityType Drawable::GetType() const
   {
     return EntityType::Entity_Drawable;
@@ -46,17 +42,6 @@ namespace ToolKit
     {
       anim->GetPose(m_node, time);
     }
-  }
-
-  BoundingBox Drawable::GetAABB(bool inWorld) const
-  {
-    BoundingBox bb = GetMesh()->m_aabb;
-    if (inWorld)
-    {
-      TransformAABB(bb, m_node->GetTransform(TransformationSpace::TS_WORLD));
-    }
-
-    return bb;
   }
 
   Entity* Drawable::CopyTo(Entity* copyTo) const
@@ -85,16 +70,16 @@ namespace ToolKit
     GetMeshManager()->Remove(GetMesh()->GetFile());
   }
 
-  MeshPtr& Drawable::GetMesh() const
+  MeshPtr Drawable::GetMesh() const
   {
     MeshComponentPtr meshComp = GetComponent<MeshComponent>();
-    return meshComp->Mesh();
+    return meshComp->GetMeshVal();
   }
 
   void Drawable::SetMesh(const MeshPtr& mesh)
   {
     MeshComponentPtr meshComp = GetComponent<MeshComponent>();
-    meshComp->Mesh() = mesh;
+    meshComp->SetMeshVal(mesh);
   }
 
 }  // namespace ToolKit

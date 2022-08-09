@@ -10,7 +10,16 @@
 
 namespace ToolKit
 {
-  class Texture;
+
+  // Global Style Decelerations
+  static const ImGuiTreeNodeFlags g_treeNodeFlags =
+  ImGuiTreeNodeFlags_OpenOnArrow
+  | ImGuiTreeNodeFlags_OpenOnDoubleClick
+  | ImGuiTreeNodeFlags_SpanAvailWidth
+  | ImGuiTreeNodeFlags_AllowItemOverlap
+  | ImGuiTreeNodeFlags_FramePadding;
+
+  const float g_indentSpacing = 6.0f;
 
   namespace Editor
   {
@@ -156,6 +165,12 @@ namespace ToolKit
         const Vec2& size,
         bool pushState
       );
+      static bool BeginCenteredTextButton
+      (
+        const String& text,
+        const String& id = ""
+      );
+      static void EndCenteredTextButton();
 
      public:
       static bool m_showNewSceneWindow;
@@ -219,6 +234,10 @@ namespace ToolKit
       static TexturePtr m_lockedIcon;
       static TexturePtr m_unlockedIcon;
       static TexturePtr m_viewZoomIcon;
+      static TexturePtr m_gridIcon;
+      static TexturePtr m_skyIcon;
+      static TexturePtr m_closeIcon;
+      static TexturePtr m_studioLightsToggleIcon;
     };
   }  // namespace Editor
 }  // namespace ToolKit

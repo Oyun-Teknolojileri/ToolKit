@@ -57,15 +57,21 @@ namespace ToolKit
 
   void Mesh::UnInit()
   {
-    GLuint buffers[2] = { m_vboIndexId, m_vboVertexId };
-    glDeleteBuffers(2, buffers);
+    // If mesh class is only used to serialize/deserialize (nothing GPU related)
+    //  then GPU buffers may not be initialized, so don't need to call these
+    if (m_initiated)
+    {
+      GLuint buffers[2] = { m_vboIndexId, m_vboVertexId };
+      glDeleteBuffers(2, buffers);
+      glDeleteVertexArrays(1, &m_vaoId);
+    }
     m_vboVertexId = 0;
     m_vboIndexId = 0;
 
-    glDeleteVertexArrays(1, &m_vaoId);
     m_vaoId = 0;
 
     m_subMeshes.clear();
+
 
     m_initiated = false;
   }
@@ -79,7 +85,7 @@ namespace ToolKit
 
     String path = GetFile();
     NormalizePath(path);
-    XmlFile file(path.c_str());
+    XmlFile file = GetFileManager()->GetXmlFile(path);
     XmlDocument doc;
     doc.parse<0>(file.data());
 
@@ -205,32 +211,45 @@ namespace ToolKit
     }
   }
 
-  void Mesh::ConstructFaces()
+  template<typename T>
+  void ConstructFacesT(T* mesh)
   {
-    size_t triCnt = m_clientSideIndices.size() / 3;
-    if (m_clientSideIndices.empty())
+    size_t triCnt = mesh->m_clientSideIndices.size() / 3;
+    if (mesh->m_clientSideIndices.empty())
     {
-      triCnt = m_clientSideVertices.size() / 3;
+      triCnt = mesh->m_clientSideVertices.size() / 3;
     }
 
-    m_faces.resize(triCnt);
+    mesh->m_faces.resize(triCnt);
     for (size_t i = 0; i < triCnt; i++)
     {
-      if (m_clientSideIndices.empty())
+      if (mesh->m_clientSideIndices.empty())
       {
         for (size_t j = 0; j < 3; j++)
         {
-          m_faces[i].vertices[j] = &m_clientSideVertices[i * 3 + j];
+          mesh->m_faces[i].vertices[j] = &mesh->m_clientSideVertices[i * 3 + j];
         }
       }
       else
       {
         for (size_t j = 0; j < 3; j++)
         {
-          size_t indx = m_clientSideIndices[i * 3 + j];
-          m_faces[i].vertices[j] = &m_clientSideVertices[indx];
+          size_t indx = mesh->m_clientSideIndices[i * 3 + j];
+          mesh->m_faces[i].vertices[j] = &mesh->m_clientSideVertices[indx];
         }
       }
+    }
+  }
+
+  void Mesh::ConstructFaces()
+  {
+    if (IsSkinned())
+    {
+      ConstructFacesT(reinterpret_cast<SkinMesh*>(this));
+    }
+    else
+    {
+      ConstructFacesT(this);
     }
   }
 
@@ -254,65 +273,91 @@ namespace ToolKit
     m_dirty = false;
   }
 
+  template<typename T>
+  void writeMesh(XmlDocument* doc, XmlNode* parent, const T* mesh)
+  {
+    XmlNode* meshNode;
+    if constexpr (std::is_same<T, ToolKit::SkinMesh>::value)
+    {
+      meshNode = CreateXmlNode(doc, "skinMesh", parent);
+    }
+    else
+    {
+      meshNode = CreateXmlNode(doc, "mesh", parent);
+    }
+
+    WriteMaterial(meshNode, doc, mesh->m_material->GetSerializeFile());
+
+    // Write Skeleton file reference
+    if constexpr (std::is_same<T, ToolKit::SkinMesh>::value)
+    {
+      mesh->m_skeleton->SerializeRef(doc, meshNode);
+    }
+
+
+    XmlNode* vertices = CreateXmlNode(doc, "vertices", meshNode);
+
+    // Serialize vertex
+    for (const auto& v : mesh->m_clientSideVertices)
+    {
+      XmlNode* vNod = CreateXmlNode(doc, "v", vertices);
+
+      XmlNode* p = CreateXmlNode(doc, "p", vNod);
+      WriteVec(p, doc, v.pos);
+
+      XmlNode* n = CreateXmlNode(doc, "n", vNod);
+      WriteVec(n, doc, v.norm);
+
+      XmlNode* t = CreateXmlNode(doc, "t", vNod);
+      WriteVec(t, doc, v.tex);
+
+      XmlNode* bt = CreateXmlNode(doc, "bt", vNod);
+      WriteVec(bt, doc, v.btan);
+      if constexpr (std::is_same<T, ToolKit::SkinMesh>::value)
+      {
+        XmlNode* b = CreateXmlNode(doc, "b", vNod);
+        WriteVec(b, doc, v.bones);
+
+        XmlNode* w = CreateXmlNode(doc, "w", vNod);
+        WriteVec(w, doc, v.weights);
+      }
+    }
+
+    // Serialize faces
+    XmlNode* faces = CreateXmlNode(doc, "faces", meshNode);
+
+    for (size_t i = 0; i < mesh->m_clientSideIndices.size() / 3; i++)
+    {
+      XmlNode* f = CreateXmlNode(doc, "f", faces);
+
+      WriteAttr
+      (
+        f,
+        doc,
+        "x",
+        std::to_string(mesh->m_clientSideIndices[i * 3])
+      );
+      WriteAttr
+      (
+        f,
+        doc,
+        "y",
+        std::to_string(mesh->m_clientSideIndices[i * 3 + 1])
+      );
+      WriteAttr
+      (
+        f,
+        doc,
+        "z",
+        std::to_string(mesh->m_clientSideIndices[i * 3 + 2])
+      );
+    }
+  };
+
   void Mesh::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "meshContainer", parent);
 
-    auto writeMeshFn = [container, doc](const Mesh* mesh) -> void
-    {
-      XmlNode* meshNode = CreateXmlNode(doc, "mesh", container);
-      WriteMaterial(meshNode, doc, mesh->m_material->GetSerializeFile());
-
-      XmlNode* vertices = CreateXmlNode(doc, "vertices", meshNode);
-
-      // Serialize vertex
-      for (const Vertex& v : mesh->m_clientSideVertices)
-      {
-        XmlNode* vNod = CreateXmlNode(doc, "v", vertices);
-
-        XmlNode* p = CreateXmlNode(doc, "p", vNod);
-        WriteVec(p, doc, v.pos);
-
-        XmlNode* n = CreateXmlNode(doc, "n", vNod);
-        WriteVec(n, doc, v.norm);
-
-        XmlNode* t = CreateXmlNode(doc, "t", vNod);
-        WriteVec(t, doc, v.tex);
-
-        XmlNode* bt = CreateXmlNode(doc, "bt", vNod);
-        WriteVec(bt, doc, v.btan);
-      }
-
-      // Serialize faces
-      XmlNode* faces = CreateXmlNode(doc, "faces", meshNode);
-
-      for (size_t i = 0; i < mesh->m_clientSideIndices.size() / 3; i++)
-      {
-        XmlNode* f = CreateXmlNode(doc, "f", faces);
-
-        WriteAttr
-        (
-          f,
-          doc,
-          "x",
-          std::to_string(mesh->m_clientSideIndices[i * 3])
-        );
-        WriteAttr
-        (
-          f,
-          doc,
-          "y",
-          std::to_string(mesh->m_clientSideIndices[i * 3 + 1])
-        );
-        WriteAttr
-        (
-          f,
-          doc,
-          "z",
-          std::to_string(mesh->m_clientSideIndices[i * 3 + 2])
-        );
-      }
-    };
 
     // This approach will flatten the mesh on a single sibling level.
     // To keep the depth hierarch, recursive save is needed.
@@ -320,7 +365,14 @@ namespace ToolKit
     GetAllMeshes(cMeshes);
     for (const Mesh* m : cMeshes)
     {
-      writeMeshFn(m);
+      if (m->IsSkinned())
+      {
+        writeMesh(doc, container, static_cast<const SkinMesh*>(m));
+      }
+      else
+      {
+        writeMesh(doc, container, static_cast<const Mesh*>(m));
+      }
     }
   }
 
@@ -456,6 +508,10 @@ namespace ToolKit
 
   void SkinMesh::Init(bool flushClientSideArray)
   {
+    if (m_skeleton == nullptr)
+    {
+      return;
+    }
     m_skeleton->Init(flushClientSideArray);
     Mesh::Init(flushClientSideArray);
   }
@@ -467,28 +523,41 @@ namespace ToolKit
 
   void SkinMesh::Load()
   {
-    // Skeleton
-    m_skeleton->Load();
-    assert(m_skeleton->m_loaded);
-    if (!m_skeleton->m_loaded)
-    {
-      return;
-    }
-
     if (m_loaded)
     {
       return;
     }
 
+    // If skeleton is specified, load it
+    // While reading from a file, it's probably not loaded
+    // So Deserialize will also try to load it
+    if (m_skeleton)
+    {
+      m_skeleton->Load();
+      assert(m_skeleton->m_loaded);
+      if (!m_skeleton->m_loaded)
+      {
+        return;
+      }
+    }
+
+
+
     String path = GetFile();
     NormalizePath(path);
-    XmlFile file(path.c_str());
+    XmlFile file = GetFileManager()->GetXmlFile(path);
     XmlDocument doc;
     doc.parse<0>(file.data());
 
-    XmlNode* node = doc.first_node("meshContainer");
-    assert(m_skeleton->m_loaded);
-    if (node == nullptr)
+    if (XmlNode* node = doc.first_node("meshContainer"))
+    {
+      DeSerialize(&doc, node);
+      m_loaded = true;
+    }
+  }
+  void SkinMesh::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    if (parent == nullptr)
     {
       return;
     }
@@ -496,12 +565,13 @@ namespace ToolKit
     m_aabb = BoundingBox();
 
     SkinMesh* mesh = this;
+    XmlNode* node = parent;
     for
-    (
-      node = node->first_node("skinMesh");
-      node;
-      node = node->next_sibling("skinMesh")
-    )
+      (
+        node = node->first_node("skinMesh");
+        node;
+        node = node->next_sibling("skinMesh")
+      )
     {
       if (mesh == nullptr)
       {
@@ -509,21 +579,17 @@ namespace ToolKit
         m_subMeshes.push_back(MeshPtr(mesh));
       }
 
-      XmlNode* materialNode = node->first_node("material");
-      String matFile = materialNode->first_attribute("name")->value();
-      NormalizePath(matFile);
+      mesh->m_material = ReadMaterial(node);
 
-      if (CheckFile(matFile))
+      String path = Skeleton::DeserializeRef(node);
+      if (path.length() == 0)
       {
-        mesh->m_material = GetMaterialManager()->Create<Material> (matFile);
+        assert(0 && "SkinMesh has no skeleton!");
       }
-      else
-      {
-        mesh->m_material = GetMaterialManager()->Create<Material>
-        (
-          MaterialPath("default.material", true)
-        );
-      }
+      NormalizePath(path);
+      String skelFile = SkeletonPath(path);
+      mesh->m_skeleton = GetSkeletonManager()->Create<Skeleton>(skelFile);
+
 
       XmlNode* vertex = node->first_node("vertices");
       for (XmlNode* v = vertex->first_node("v"); v; v = v->next_sibling())
@@ -550,10 +616,11 @@ namespace ToolKit
         mesh->m_clientSideIndices.push_back(indices.z);
       }
 
+      mesh->m_loaded = true;
+      mesh->m_vertexCount = static_cast<int>(mesh->m_clientSideVertices.size());
+      mesh->m_indexCount = static_cast<int>(mesh->m_clientSideIndices.size());
       mesh = nullptr;
     }
-
-    m_loaded = true;
   }
 
   int SkinMesh::GetVertexSize() const
@@ -589,6 +656,7 @@ namespace ToolKit
       m_clientSideVertices.clear();
     }
   }
+
 
   MeshManager::MeshManager()
   {
@@ -635,5 +703,4 @@ namespace ToolKit
   {
     return MeshPath("Suzanne.mesh", true);
   }
-
 }  // namespace ToolKit

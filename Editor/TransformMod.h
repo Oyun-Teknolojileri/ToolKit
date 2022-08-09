@@ -1,7 +1,10 @@
 #pragma once
 
+#include <vector>
+
 #include "Mod.h"
 #include "Gizmo.h"
+#include "Action.h"
 
 namespace ToolKit
 {
@@ -10,7 +13,7 @@ namespace ToolKit
     // States.
     class StateTransformBase : public State
     {
-    public:
+     public:
       enum class TransformType
       {
         Translate,
@@ -18,18 +21,18 @@ namespace ToolKit
         Scale
       };
 
-    public:
+     public:
       StateTransformBase();
-      virtual SignalId Update(float deltaTime) override;
-      virtual void TransitionIn(State* prevState) override;
-      virtual void TransitionOut(State* nextState) override;
+      SignalId Update(float deltaTime) override;
+      void TransitionIn(State* prevState) override;
+      void TransitionOut(State* nextState) override;
 
-    protected:
+     protected:
       void MakeSureGizmoIsValid();
-      Vec3 GetGrabbedAxis(int n); // {0: grabbed 1: orthogonal axis}.
+      Vec3 GetGrabbedAxis(int n);  // {0: grabbed 1: orthogonal axis}.
       bool IsPlaneMod();
 
-    public:
+     public:
       Gizmo* m_gizmo;
       std::vector<Vec2> m_mouseData;
       PlaneEquation m_intersectionPlane;
@@ -38,84 +41,85 @@ namespace ToolKit
 
     class StateTransformBegin : public StateTransformBase
     {
-    public:
-      virtual void TransitionIn(State* prevState) override;
-      virtual void TransitionOut(State* nextState) override;
+     public:
+      void TransitionIn(State* prevState) override;
+      void TransitionOut(State* nextState) override;
 
-      virtual SignalId Update(float deltaTime) override;
-      virtual String Signaled(SignalId signal) override;
-      virtual String GetType() override { return StateType::StateTransformBegin; }
+      SignalId Update(float deltaTime) override;
+      String Signaled(SignalId signal) override;
+      String GetType() override;
 
-    private:
+     private:
       void CalculateIntersectionPlane();
       void CalculateGrabPoint();
     };
 
     class TransformAction : public Action
     {
-    public:
-      TransformAction(Entity* ntt);
+     public:
+      explicit TransformAction(Entity* ntt);
       virtual ~TransformAction();
 
       virtual void Undo();
       virtual void Redo();
 
-    private:
+     private:
       void Swap();
 
-    private:
+     private:
       Entity* m_entity;
       Mat4 m_transform;
     };
 
     class StateTransformTo : public StateTransformBase
     {
-    public:
-      virtual void TransitionIn(State* prevState) override;
-      virtual void TransitionOut(State* prevState) override;
-      virtual SignalId Update(float deltaTime) override;
-      virtual String Signaled(SignalId signal) override;
-      virtual String GetType() override { return StateType::StateTransformTo; }
+     public:
+      void TransitionIn(State* prevState) override;
+      void TransitionOut(State* prevState) override;
+      SignalId Update(float deltaTime) override;
+      String Signaled(SignalId signal) override;
+      String GetType() override;
 
-    private:
+     private:
       void CalculateDelta();
       void Transform(const Vec3& delta);
       void Translate(Entity* ntt);
       void Rotate(Entity* ntt);
       void Scale(Entity* ntt);
 
-    public:
+     public:
       Vec3 m_delta;
       Vec3 m_deltaAccum;
       Vec3 m_initialLoc;
 
-    private:
+     private:
       IVec2 m_mouseInitialLoc;
     };
 
     class StateTransformEnd : public StateTransformBase
     {
-    public:
-      virtual void TransitionOut(State* nextState) override;
-      virtual SignalId Update(float deltaTime) override;
-      virtual String Signaled(SignalId signal) override;
-      virtual String GetType() override { return StateType::StateTransformEnd; }
+     public:
+      void TransitionOut(State* nextState) override;
+      SignalId Update(float deltaTime) override;
+      String Signaled(SignalId signal) override;
+      String GetType() override;
     };
 
     // Mod.
     class TransformMod : public BaseMod
     {
-    public:
-      TransformMod(ModId id);
+     public:
+      explicit TransformMod(ModId id);
       virtual ~TransformMod();
 
-      virtual void Init() override;
-      virtual void UnInit() override;
-      virtual void Update(float deltaTime) override;
+      void Init() override;
+      void UnInit() override;
+      void Update(float deltaTime) override;
 
-    public:
+     public:
       Gizmo* m_gizmo;
       TransformationSpace m_prevTransformSpace;
     };
-  }
-}
+
+  }  // namespace Editor
+}  // namespace ToolKit

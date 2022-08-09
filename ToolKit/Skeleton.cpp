@@ -7,6 +7,7 @@
 #include "rapidxml_utils.hpp"
 #include "Util.h"
 #include "DebugNew.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -21,6 +22,18 @@ namespace ToolKit
   Bone::~Bone()
   {
     // Override orphaning.
+    NodePtrArray& childsOfParent = m_node->m_parent->m_children;
+    for (uint childIndx = 0; childIndx < childsOfParent.size(); childIndx)
+    {
+      if (m_node == childsOfParent[childIndx])
+      {
+        childsOfParent.erase(childsOfParent.begin() + childIndx);
+      }
+      else
+      {
+        childIndx++;
+      }
+    }
     m_node->m_parent = nullptr;
     SafeDel(m_node);
   }
@@ -45,13 +58,65 @@ namespace ToolKit
   {
   }
 
+  // Find skeleton's each child bone from its child nodes
+  // Then call childProcessFunc (should be recursive to traverse all childs)
+  void ForEachChildBoneNode
+  (
+    const Skeleton* skltn,
+    std::function<void(const Bone*)> childProcessFunc
+  )
+  {
+    // For each parent bone of the skeleton, write bones recursively
+    for (Node* childNode : skltn->m_node->m_children)
+    {
+      // Find child node
+      Bone* childBone = nullptr;
+      for (Bone* boneSearch : skltn->m_bones)
+      {
+        if (boneSearch->m_node = childNode)
+        {
+          childBone = boneSearch;
+          break;
+        }
+      }
+      // If there is a child bone
+      if (childBone)
+      {
+        childProcessFunc(childBone);
+      }
+    }
+  }
+
   void Skeleton::UnInit()
   {
-    SafeDel(m_node);
-    for (Bone* bone : m_bones)
+    std::function<void(const Bone*)> deleteBone =
+    [this, &deleteBone]
+    (
+      const Bone* parentBone
+    ) -> void
     {
-      SafeDel(bone);
-    }
+      for (Node* childNode : parentBone->m_node->m_children)
+      {
+        // Find child bone
+        Bone* childBone = nullptr;
+        for (Bone* boneSearch : this->m_bones)
+        {
+          if (boneSearch->m_node == childNode)
+          {
+            childBone = boneSearch;
+            break;
+          }
+        }
+        // If child node is a bone of the skeleton
+        if (childBone)
+        {
+          deleteBone(childBone);
+        }
+      }
+      SafeDel(parentBone);
+    };
+    ForEachChildBoneNode(this, deleteBone);
+    SafeDel(m_node);
 
     m_bones.clear();
     m_initiated = false;
@@ -59,17 +124,110 @@ namespace ToolKit
 
   void Skeleton::Load()
   {
-    XmlFile file(GetFile().c_str());
+    XmlFile file = GetFileManager()->GetXmlFile(GetFile());
     XmlDocument doc;
     doc.parse<0>(file.data());
 
-    XmlNode* node = doc.first_node("skeleton");
-    if (node == nullptr)
+    if (XmlNode* node = doc.first_node("skeleton"))
+    {
+      DeSerialize(&doc, node);
+      m_loaded = true;
+    }
+  }
+
+  void WriteBone
+  (
+    const Skeleton* skeleton,
+    const Bone* bone,
+    XmlDocument* doc,
+    XmlNode* parentNode
+  )
+  {
+    XmlNode* boneXmlNode = CreateXmlNode(doc, "bone", parentNode);
+
+    WriteAttr(boneXmlNode, doc, "name", bone->m_name.c_str());
+
+    auto writeTransformFnc =
+      [doc](XmlNode* parent, Vec3 tra, Quaternion rot, Vec3 scale)
+    {
+      XmlNode* traNode = CreateXmlNode(doc, "translation", parent);
+      WriteVec(traNode, doc, tra);
+
+      XmlNode* rotNode = CreateXmlNode(doc, "rotation", parent);
+      WriteVec(rotNode, doc, rot);
+
+      XmlNode* scaleNode = CreateXmlNode(doc, "scale", parent);
+      WriteVec(scaleNode, doc, scale);
+    };
+
+    // Bone Node Transform
+    writeTransformFnc
+    (
+      boneXmlNode,
+      bone->m_node->GetTranslation(),
+      bone->m_node->GetOrientation(),
+      bone->m_node->GetScale()
+    );
+
+    // Bind Pose Transform
+    XmlNode* bindPoseNode = CreateXmlNode(doc, "bindPose", boneXmlNode);
+    {
+      Vec3 tra, scale;
+      Quaternion rot;
+      DecomposeMatrix(bone->m_inverseWorldMatrix, &tra, &rot, &scale);
+      writeTransformFnc(bindPoseNode, tra, rot, scale);
+    }
+
+    for (Node* childNode : bone->m_node->m_children)
+    {
+      // Find child bone
+      Bone* childBone = nullptr;
+      for(Bone* boneSearch : skeleton->m_bones)
+      {
+        if (boneSearch->m_node == childNode)
+        {
+          childBone = boneSearch;
+          break;
+        }
+      }
+      // If child node is a bone of the skeleton
+      if (childBone)
+      {
+        WriteBone(skeleton, childBone, doc, boneXmlNode);
+      }
+    }
+  }
+  void Skeleton::Serialize(XmlDocument* doc, XmlNode* parent) const
+  {
+    XmlNode* container = CreateXmlNode(doc, "skeleton", parent);
+
+    auto writeBoneFnc =
+      [doc, container, this]
+    (const Bone* childBone) -> void
+    {
+      WriteBone
+      (
+        this,
+        childBone,
+        doc,
+        container
+      );
+    };
+    ForEachChildBoneNode(this, writeBoneFnc);
+  }
+  void Skeleton::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    if (parent == nullptr)
     {
       return;
     }
 
-    for (node = node->first_node("bone"); node; node = node->next_sibling())
+    for
+    (
+      XmlNode* node = parent->first_node("bone");
+      node;
+      node = node->next_sibling()
+    )
     {
       Traverse(node, nullptr);
     }

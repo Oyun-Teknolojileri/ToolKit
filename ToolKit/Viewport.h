@@ -13,6 +13,7 @@
 */
 namespace ToolKit
 {
+  struct RenderTargetSettigs;
 
   /**
   * Base class for Viewport class. Holds Camera object that viewport has.
@@ -135,6 +136,13 @@ namespace ToolKit
     * @return Position of point in viewport space.
     */
     virtual Vec2 TransformScreenToViewportSpace(const Vec2& pnt);
+
+    /**
+    * Transforms the point from world space to screen space
+    * @param pnt Position of point in world space.
+    * @return Position of point in screen space.
+    */
+    virtual Vec2 TransformWorldSpaceToScreenSpace(const Vec3& pnt);
 
     /**
     * Returns if true if the viewport Camera is orthographic.
