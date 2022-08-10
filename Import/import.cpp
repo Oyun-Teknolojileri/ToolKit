@@ -896,7 +896,7 @@ namespace ToolKit
 
       Assimp::Importer importer;
       string dest, file = argv[1];
-      Assimp::DefaultLogger::create("log.txt", Assimp::Logger::VERBOSE);
+      Assimp::DefaultLogger::create("Assimplog.txt", Assimp::Logger::VERBOSE);
       for (int i = 0; i < argc; i++)
       {
         string arg = argv[i];
@@ -960,6 +960,7 @@ namespace ToolKit
           | aiProcess_LimitBoneWeights
           | aiProcess_GenNormals
           | aiProcess_GlobalScale
+          | aiProcess_FindInvalidData
         );
 
         if (scene == nullptr)

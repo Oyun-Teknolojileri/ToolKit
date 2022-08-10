@@ -16,17 +16,35 @@
       in uvec4 vBones;
       in vec4 vWeights;
       uniform mat4 ProjectViewModel;
-      uniform Bone bones[64];
+      uniform sampler2D boneTransform_textures; // This is dynamic data
+      uniform sampler2D boneBindPose_textures;  // This is static data
+      uniform float numBones;
       out vec3 v_pos;
       out vec3 v_normal;
       out vec2 v_texture;
       out vec3 v_bitan;
+      
+      mat4 getMatrixFromTexture(sampler2D boneText, uint boneIndx) {
+         float v = (float(boneIndx) / numBones);
+         float step = 1.0f / (numBones * 4.0f);
+         return mat4
+         (
+            texture(boneText, vec2(v + (step / 2.0f), 0.0f)),
+            texture(boneText, vec2(v + step + (step / 2.0f), 0.0f)),
+            texture(boneText, vec2(v + (step * 2.0f) + (step / 2.0f), 0.0f)),
+            texture(boneText, vec2(v + (step * 3.0f) + (step / 2.0f), 0.0f))
+         );
+      }
+      vec4 skin(vec4 vertexPos){
+         vec4 skinned = vec4(0);
+         for(int i = 0; i < 4; i++){
+            skinned += getMatrixFromTexture(boneTransform_textures, vBones[i]) * getMatrixFromTexture(boneBindPose_textures, vBones[i]) * vertexPos * vWeights[i];
+         }
+         return skinned;
+      }
       void main()
       {
-         gl_Position = bones[vBones.x].transform * bones[vBones.x].bindPose * vec4(vPosition, 1.0) * vWeights.x;
-         gl_Position += bones[vBones.y].transform * bones[vBones.y].bindPose * vec4(vPosition, 1.0) * vWeights.y;
-         gl_Position += bones[vBones.z].transform * bones[vBones.z].bindPose * vec4(vPosition, 1.0) * vWeights.z;
-         gl_Position += bones[vBones.w].transform * bones[vBones.w].bindPose * vec4(vPosition, 1.0) * vWeights.w;
+         gl_Position = skin(vec4(vPosition, 1.0f));
          v_pos = gl_Position.xyz;
          gl_Position = ProjectViewModel * gl_Position;
          v_texture = vTexture;

@@ -112,6 +112,8 @@ namespace ToolKit
       bone->m_node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
       bone->m_node->SetChildrenDirty();
     }
+
+    skeleton->m_isAnimatedThisFrame = true;
   }
 
   void Animation::GetPose(Node* node, int frame)

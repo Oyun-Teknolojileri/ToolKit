@@ -8,6 +8,7 @@
 #include "Util.h"
 #include "DebugNew.h"
 #include "ToolKit.h"
+#include "GL/glew.h"
 
 namespace ToolKit
 {
@@ -270,6 +271,95 @@ namespace ToolKit
       return nullptr;
     }
     return m_bones[index];
+  }
+  void Skeleton::UpdateTransformationTexture()
+  {
+    auto createBoneTexture = [this](TexturePtr& ptr)
+    {
+      ptr = std::make_shared<Texture>();
+      ptr->m_floatFormat = true;
+      ptr->m_height = 1;
+      ptr->m_width = static_cast<int>(m_bones.size()) * 4;
+      ptr->m_name = m_name + " BindPoseTexture";
+
+      glGenTextures(1, &ptr->m_textureId);
+      glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
+      glTexImage2D
+      (
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA32F,
+        ptr->m_width,
+        ptr->m_height,
+        0,
+        GL_RGBA,
+        GL_FLOAT,
+        nullptr
+      );
+      glTexParameteri
+      (
+        GL_TEXTURE_2D,
+        GL_TEXTURE_MIN_FILTER,
+        GL_NEAREST
+      );
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+      ptr->m_initiated = true;
+      ptr->m_loaded = true;
+    };
+    auto uploadBoneMatrix = [](Mat4 mat, uint32_t boneIndx)
+    {
+      glTexSubImage2D
+      (
+        GL_TEXTURE_2D,
+        0,
+        boneIndx * 4,
+        0,
+        4,
+        1,
+        GL_RGBA,
+        GL_FLOAT,
+        &mat
+      );
+    };
+
+
+    if (m_bindPoseTexture == nullptr)
+    {
+      createBoneTexture(m_bindPoseTexture);
+      for (uint64_t boneIndx = 0; boneIndx < m_bones.size(); boneIndx++)
+      {
+        uploadBoneMatrix
+        (
+          m_bones[boneIndx]->m_inverseWorldMatrix,
+          static_cast<uint32_t>(boneIndx)
+        );
+      }
+    }
+    if (m_boneTransformTexture == nullptr)
+    {
+      createBoneTexture(m_boneTransformTexture);
+      for (uint64_t bnIndx = 0; bnIndx < m_bones.size(); bnIndx++)
+      {
+        uploadBoneMatrix
+        (
+          m_bones[bnIndx]->m_node->GetTransform(TransformationSpace::TS_WORLD),
+          bnIndx
+        );
+      }
+    }
+    if (m_isAnimatedThisFrame)
+    {
+      for (uint64_t bnIndx = 0; bnIndx < m_bones.size(); bnIndx++)
+      {
+        uploadBoneMatrix
+        (
+          m_bones[bnIndx]->m_node->GetTransform(TransformationSpace::TS_WORLD),
+          bnIndx
+        );
+      }
+      m_isAnimatedThisFrame = false;
+    }
   }
 
   void Skeleton::Traverse(XmlNode* node, Bone* parent)

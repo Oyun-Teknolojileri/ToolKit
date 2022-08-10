@@ -181,43 +181,46 @@ namespace ToolKit
 
     static ShaderPtr skinShader = GetShaderManager()->Create<Shader>
     (
-      ShaderPath("defaultSkin.shader")
+      ShaderPath("defaultSkin.shader", true)
     );
-    static ShaderPtr fragShader = GetShaderManager()->Create<Shader>
+    static ProgramPtr skinProg = CreateProgram
     (
-      ShaderPath("defaultFragment.shader")
+      skinShader,
+      mesh->m_material->m_fragmetShader
     );
-    static ProgramPtr skinProg = CreateProgram(skinShader, fragShader);
     BindProgram(skinProg);
     FeedUniforms(skinProg);
 
     SkeletonPtr skeleton = static_cast<SkinMesh*> (mesh.get())->m_skeleton;
+    skeleton->UpdateTransformationTexture();
     for (int i = 0; i < static_cast<int>(skeleton->m_bones.size()); i++)
     {
       Bone* bone = skeleton->m_bones[i];;
       GLint loc = glGetUniformLocation
       (
         skinProg->m_handle,
-        g_boneTransformStrCache[i].c_str()
+        "boneTransform_textures"
       );
-      Mat4 transform = bone->m_node->GetTransform
+      glUniform1i(loc, m_textureIdCount);
+      glActiveTexture(GL_TEXTURE0 + m_textureIdCount++);
+      glBindTexture
       (
-        TransformationSpace::TS_WORLD
+        GL_TEXTURE_2D,
+        skeleton->m_boneTransformTexture->m_textureId
       );
-      glUniformMatrix4fv(loc, 1, false, &transform[0][0]);
 
       loc = glGetUniformLocation
       (
         skinProg->m_handle,
-        g_boneBindPosStrCache[i].c_str()
+        "boneBindPose_textures"
       );
-      glUniformMatrix4fv
-      (
-        loc,
-        1,
-        false,
-        reinterpret_cast<float*>(&bone->m_inverseWorldMatrix)
-      );
+      glUniform1i(loc, m_textureIdCount);
+      glActiveTexture(GL_TEXTURE0 + m_textureIdCount++);
+      glBindTexture(GL_TEXTURE_2D, skeleton->m_bindPoseTexture->m_textureId);
+
+      loc = glGetUniformLocation(skinProg->m_handle, "numBones");
+      float boneCount = static_cast<float>(skeleton->m_bones.size());
+      glUniform1fv(loc, 1, &boneCount);
     }
 
     MeshRawPtrArray meshCollector;
