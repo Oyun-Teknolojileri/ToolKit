@@ -154,11 +154,7 @@ namespace ToolKit
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
      private:
-      void CreateSimulationWindow
-      (
-        float width = g_app->m_playWidth,
-        float height = g_app->m_playHeight
-      );
+      void CreateSimulationWindow(float width , float height);
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
 

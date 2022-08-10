@@ -769,7 +769,11 @@ namespace ToolKit
         PluginWindow* plugWindow = new PluginWindow();
         m_windows.push_back(plugWindow);
 
-        CreateSimulationWindow();
+        CreateSimulationWindow
+        (
+          g_app->m_emulatorSettings.playWidth,
+          g_app->m_emulatorSettings.playHeight
+        );
       }
     }
 
@@ -837,7 +841,11 @@ namespace ToolKit
         } while ((wndNode = wndNode->next_sibling("Window")));
       }
 
-      CreateSimulationWindow();
+      CreateSimulationWindow
+      (
+          g_app->m_emulatorSettings.playWidth,
+          g_app->m_emulatorSettings.playHeight
+      );
     }
 
     int App::Import
