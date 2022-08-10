@@ -679,20 +679,24 @@ namespace ToolKit
 
       if (g_app->m_playWindow->IsVisible())
       {
-        if (g_app->m_landscape)
+        if (g_app->m_emulatorSettings.landscape)
         {
           g_app->m_playWindow->OnResize
           (
-            g_app->m_playHeight * g_app->m_zoomAmount,
-            g_app->m_playWidth * g_app->m_zoomAmount
+            g_app->m_emulatorSettings.playHeight *
+            g_app->m_emulatorSettings.zoomAmount,
+            g_app->m_emulatorSettings.playWidth *
+            g_app->m_emulatorSettings.zoomAmount
           );
         }
         else
         {
           g_app->m_playWindow->OnResize
           (
-            g_app->m_playWidth * g_app->m_zoomAmount,
-            g_app->m_playHeight * g_app->m_zoomAmount
+            g_app->m_emulatorSettings.playWidth *
+            g_app->m_emulatorSettings.zoomAmount,
+            g_app->m_emulatorSettings.playHeight *
+            g_app->m_emulatorSettings.zoomAmount
           );
         }
 

@@ -216,7 +216,7 @@ namespace ToolKit
           }
           ImGui::Text("Run In Window");
           ImGui::TableSetColumnIndex(1);
-          ImGui::Checkbox(" ", &g_app->m_runWindowed);
+          ImGui::Checkbox(" ", &g_app->m_emulatorSettings.runWindowed);
           if (m_simulationModeDisabled)
           {
             ImGui::EndDisabled();
@@ -225,7 +225,8 @@ namespace ToolKit
           ImGui::TableSetColumnIndex(0);
 
           // Resolution Bar
-          App::EmulatorResolution resolution = g_app->m_emuRes;
+          App::EmulatorResolution resolution = g_app->m_emulatorSettings.emuRes;
+
           int resolutionType = static_cast<int>(resolution);
 
           ImGui::Text("Resolution");
@@ -258,62 +259,63 @@ namespace ToolKit
             switch (resolution)
             {
               case EmulatorResolution::Iphone_SE:
-              g_app->m_playWidth = 375;
-              g_app->m_playHeight = 667;
+              g_app->m_emulatorSettings.playWidth = 375;
+              g_app->m_emulatorSettings.playHeight = 667;
               break;
               case EmulatorResolution::Iphone_XR:
-              g_app->m_playWidth = 414;
-              g_app->m_playHeight = 896;
+              g_app->m_emulatorSettings.playWidth = 414;
+              g_app->m_emulatorSettings.playHeight = 896;
               break;
               case EmulatorResolution::Iphone_12_Pro:
-              g_app->m_playWidth = 390;
-              g_app->m_playHeight = 844;
+              g_app->m_emulatorSettings.playWidth = 390;
+              g_app->m_emulatorSettings.playHeight = 844;
               break;
               case EmulatorResolution::Pixel_5:
-              g_app->m_playWidth = 393;
-              g_app->m_playHeight = 851;
+              g_app->m_emulatorSettings.playWidth = 393;
+              g_app->m_emulatorSettings.playHeight = 851;
               break;
               case EmulatorResolution::Galaxy_S20_Ultra:
-              g_app->m_playWidth = 412;
-              g_app->m_playHeight = 915;
+              g_app->m_emulatorSettings.playWidth = 412;
+              g_app->m_emulatorSettings.playHeight = 915;
               break;
               case EmulatorResolution::Galaxy_Note20:
-              g_app->m_playWidth = 412;
-              g_app->m_playHeight = 915;
+              g_app->m_emulatorSettings.playWidth = 412;
+              g_app->m_emulatorSettings.playHeight = 915;
               break;
               case EmulatorResolution::Galaxy_Note20_Ultra:
-              g_app->m_playWidth = 390;
-              g_app->m_playHeight = 844;
+              g_app->m_emulatorSettings.playWidth = 390;
+              g_app->m_emulatorSettings.playHeight = 844;
               break;
               case EmulatorResolution::Ipad_Air:
-              g_app->m_playWidth = 820;
-              g_app->m_playHeight = 1180;
+              g_app->m_emulatorSettings.playWidth = 820;
+              g_app->m_emulatorSettings.playHeight = 1180;
               break;
               case EmulatorResolution::Ipad_Mini:
-              g_app->m_playWidth = 768;
-              g_app->m_playHeight = 1024;
+              g_app->m_emulatorSettings.playWidth = 768;
+              g_app->m_emulatorSettings.playHeight = 1024;
               break;
               case EmulatorResolution::Surface_Pro_7:
-              g_app->m_playWidth = 912;
-              g_app->m_playHeight = 1398;
+              g_app->m_emulatorSettings.playWidth = 912;
+              g_app->m_emulatorSettings.playHeight = 1398;
               break;
               case EmulatorResolution::Surface_Duo:
-              g_app->m_playWidth = 540;
-              g_app->m_playHeight = 720;
+              g_app->m_emulatorSettings.playWidth = 540;
+              g_app->m_emulatorSettings.playHeight = 720;
               break;
               case EmulatorResolution::Galaxy_A51_A71:
-              g_app->m_playWidth = 412;
-              g_app->m_playHeight = 914;
+              g_app->m_emulatorSettings.playWidth = 412;
+              g_app->m_emulatorSettings.playHeight = 914;
               break;
             }
-            g_app->m_emuRes = resolution;
+            g_app->m_emulatorSettings.emuRes = resolution;
             g_app->m_windowCamLoad = true;
           }
 
           // Width - Height
           ImGui::TableNextRow();
           ImGui::TableSetColumnIndex(0);
-          bool isCustomSized = g_app->m_emuRes == EmulatorResolution::Custom;
+          bool isCustomSized =
+            g_app->m_emulatorSettings.emuRes == EmulatorResolution::Custom;
           if (!isCustomSized)
           {
             ImGui::BeginDisabled();
@@ -322,15 +324,28 @@ namespace ToolKit
           ImGui::TableSetColumnIndex(1);
           ImGui::SetNextItemWidth(150.0f);
           ImGui::DragFloat
-            ("##w", &g_app->m_playWidth, 1.0f, 1.0f, 4096.0f, "%.0f");
+          (
+            "##w",
+            &g_app->m_emulatorSettings.playWidth,
+            1.0f,
+            1.0f,
+            4096.0f,
+            "%.0f"
+          );
           ImGui::TableNextRow();
           ImGui::TableSetColumnIndex(0);
           ImGui::Text("Height");
           ImGui::TableSetColumnIndex(1);
           ImGui::SetNextItemWidth(150.0f);
           ImGui::DragFloat
-            ("##h", &g_app->m_playHeight, 1.0f, 1.0f, 4096.0f, "%.0f");
-
+          (
+            "##h",
+            &g_app->m_emulatorSettings.playHeight,
+            1.0f,
+            1.0f,
+            4096.0f,
+            "%.0f"
+          );
           if (!isCustomSized)
           {
             ImGui::EndDisabled();
@@ -342,20 +357,25 @@ namespace ToolKit
           ImGui::Text("Zoom");
           ImGui::TableSetColumnIndex(1);
           ImGui::SetNextItemWidth(150.0f);
-          ImGui::SliderFloat("##z", &g_app->m_zoomAmount, 0.25f, 1.0f, "x%.2f");
-
+          ImGui::SliderFloat
+          (
+            "##z",
+            &g_app->m_emulatorSettings.zoomAmount,
+            0.25f,
+            1.0f,
+            "x%.2f"
+          );
           // Landscape - Portrait Toggle
           ImGui::TableNextRow();
           ImGui::TableSetColumnIndex(0);
           ImGui::Text("Portrait/\nLandscape");
           ImGui::TableSetColumnIndex(1);
-          g_app->m_landscape = UI::ToggleButton
+          g_app->m_emulatorSettings.landscape = UI::ToggleButton
           (
             UI::m_landscapeIcon->m_textureId,
             Vec2(30, 30),
-            g_app->m_landscape
+            g_app->m_emulatorSettings.landscape
           );
-
           ImGui::EndTable();
         }
         ImGui::End();

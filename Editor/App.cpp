@@ -62,10 +62,21 @@ namespace ToolKit
       m_grid = new Grid(UVec2(gridSize));
       m_grid->Resize(UVec2(gridSize), AxisLabel::ZX, 0.025f);
 
-      m_2dGrid = new Grid(UVec2(g_app->m_playWidth, g_app->m_playHeight));
+      m_2dGrid = new Grid
+      (
+        UVec2
+        (
+          g_app->m_emulatorSettings.playWidth,
+          g_app->m_emulatorSettings.playHeight
+        )
+      );
       m_2dGrid->Resize
       (
-        UVec2(g_app->m_playWidth, g_app->m_playHeight),
+        UVec2
+        (
+          g_app->m_emulatorSettings.playWidth,
+          g_app->m_emulatorSettings.playHeight
+        ),
         AxisLabel::XY, 10.0
       );  // Generate grid cells 10 x 10
 
@@ -143,7 +154,7 @@ namespace ToolKit
         m_workspace.RefreshProjects();
       }
 
-      m_emuRes = EmulatorResolution::Custom;
+      m_emulatorSettings.emuRes = EmulatorResolution::Custom;
       m_publishManager = new PublishManager();
     }
 
@@ -270,7 +281,7 @@ namespace ToolKit
         }
 
         // PlayWindow is drawn on perspective. Thus, skip perspective.
-        if (m_gameMod != GameMod::Stop && !m_runWindowed)
+        if (m_gameMod != GameMod::Stop && !m_emulatorSettings.runWindowed)
         {
           if (viewport->m_name == g_3dViewport)
           {
@@ -613,7 +624,7 @@ namespace ToolKit
           m_statusMsg = "Game is playing";
           m_gameMod = mod;
 
-          if (m_runWindowed)
+          if (m_emulatorSettings.runWindowed)
           {
             m_playWindow->SetVisibility(true);
           }
@@ -1481,10 +1492,10 @@ Fail:
 
         if (m_gameMod != GameMod::Stop)
         {
-          m_playWindow->SetVisibility(m_runWindowed);
+          m_playWindow->SetVisibility(m_emulatorSettings.runWindowed);
 
           EditorViewport* playWindow = GetWindow<EditorViewport>(g_3dViewport);
-          if (m_runWindowed)
+          if (m_emulatorSettings.runWindowed)
           {
             if (m_windowCamLoad)
             {
@@ -1617,7 +1628,11 @@ Fail:
 
     void App::CreateSimulationWindow(float width, float height)
     {
-      m_playWindow = new EditorViewport(width, height);
+      m_playWindow = new EditorViewport
+      (
+        m_emulatorSettings.playWidth,
+        m_emulatorSettings.playHeight
+      );
       m_playWindow->m_name = g_simulationViewport;
       m_playWindow->m_additionalWindowFlags =
       ImGuiWindowFlags_NoResize

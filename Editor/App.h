@@ -62,6 +62,15 @@ namespace ToolKit
         Galaxy_A51_A71
       };
 
+      struct EmulatorSettings
+      {
+        bool runWindowed = false;
+        bool landscape = false;
+        float playWidth = 640.0f;
+        float playHeight = 480.0f;
+        float zoomAmount = 1.0f;
+        EmulatorResolution emuRes = EmulatorResolution::Custom;
+      };
      public:
       App(int windowWidth, int windowHeight);
       virtual ~App();
@@ -165,13 +174,8 @@ namespace ToolKit
       std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
 
       // Emulator settings.
-      bool m_runWindowed = false;
-      bool m_landscape = false;
-      float m_playWidth = 640.0f;
-      float m_playHeight = 480.0f;
-      float m_zoomAmount = 1.0f;
-      EmulatorResolution m_emuRes;
       EditorViewport* m_playWindow = nullptr;
+      EmulatorSettings m_emulatorSettings;
 
       // Editor objects.
       Grid* m_grid;
