@@ -4,11 +4,14 @@
 #include "App.h"
 #include "DebugNew.h"
 
+typedef ToolKit::Editor::App::EmulatorResolution EmulatorResolution;
+
 namespace ToolKit
 {
 
   namespace Editor
   {
+
 
     PluginWindow::PluginWindow()
     {
@@ -28,14 +31,14 @@ namespace ToolKit
     {
       ImGui::SetNextWindowSize(ImVec2(300, 30), ImGuiCond_Once);
       if
-      (
+        (
         ImGui::Begin
         (
-          "Plugin",
-          &m_visible,
-          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse
+        "Plugin",
+        &m_visible,
+        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse
         )
-      )
+        )
       {
         HandleStates();
 
@@ -60,8 +63,8 @@ namespace ToolKit
           // Blue tint.
           ImGui::PushStyleColor
           (
-           ImGuiCol_Button,
-           (ImVec4)ImColor::HSV(4 / 7.0f, 0.6f, 0.6f)
+            ImGuiCol_Button,
+            (ImVec4)ImColor::HSV(4 / 7.0f, 0.6f, 0.6f)
           );
           ImGui::PushStyleColor
           (
@@ -76,13 +79,13 @@ namespace ToolKit
 
           // Pause.
           if
-          (
+            (
             ImGui::ImageButton
-              (
-                Convert2ImGuiTexture(UI::m_pauseIcon),
-                ImVec2(btnWidth, btnWidth)
-              )
-          )
+            (
+            Convert2ImGuiTexture(UI::m_pauseIcon),
+            ImVec2(btnWidth, btnWidth)
+            )
+            )
           {
             g_app->SetGameMod(App::GameMod::Paused);
           }
@@ -94,8 +97,8 @@ namespace ToolKit
           // Green tint.
           ImGui::PushStyleColor
           (
-          ImGuiCol_Button,
-          (ImVec4)ImColor::HSV(2 / 7.0f, 0.6f, 0.6f)
+            ImGuiCol_Button,
+            (ImVec4)ImColor::HSV(2 / 7.0f, 0.6f, 0.6f)
           );
           ImGui::PushStyleColor
           (
@@ -110,13 +113,13 @@ namespace ToolKit
 
           // Play.
           if
-          (
+            (
             ImGui::ImageButton
             (
-              Convert2ImGuiTexture(UI::m_playIcon),
-              ImVec2(btnWidth, btnWidth)
+            Convert2ImGuiTexture(UI::m_playIcon),
+            ImVec2(btnWidth, btnWidth)
             )
-          )
+            )
           {
             m_simulationModeDisabled = true;
             g_app->SetGameMod(App::GameMod::Playing);
@@ -146,13 +149,13 @@ namespace ToolKit
 
         // Stop.
         if
-        (
+          (
           ImGui::ImageButton
           (
-            Convert2ImGuiTexture(UI::m_stopIcon),
-            ImVec2(btnWidth, btnWidth)
+          Convert2ImGuiTexture(UI::m_stopIcon),
+          ImVec2(btnWidth, btnWidth)
           )
-        )
+          )
         {
           if (g_app->m_gameMod != App::GameMod::Stop)
           {
@@ -165,13 +168,13 @@ namespace ToolKit
         ImGui::SameLine();
 
         if
-        (
+          (
           ImGui::ImageButton
           (
-            Convert2ImGuiTexture(UI::m_vsCodeIcon),
-            ImVec2(btnWidth, btnWidth)
+          Convert2ImGuiTexture(UI::m_vsCodeIcon),
+          ImVec2(btnWidth, btnWidth)
           )
-        )
+          )
         {
           String codePath = g_app->m_workspace.GetCodePath();
           if (CheckFile(codePath))
@@ -201,36 +204,162 @@ namespace ToolKit
         // Other editor and game entity plugins.
         ImGui::Separator();
 
-        if (m_simulationModeDisabled)
-        {
-          ImGui::BeginDisabled(m_simulationModeDisabled);
-          ImGui::Checkbox("Run in window", &g_app->m_runWindowed);
-          ImGui::EndDisabled();
-        }
-        else
-        {
-          ImGui::Checkbox("Run in window", &g_app->m_runWindowed);
-        }
 
-        if (ImGui::BeginTable("EmuSet", 4, ImGuiTableFlags_SizingFixedFit))
+
+        if (ImGui::BeginTable("EmuSet1", 2, ImGuiTableFlags_SizingFixedFit))
         {
           ImGui::TableNextRow();
           ImGui::TableSetColumnIndex(0);
-          ImGui::Text("Width: ");
+          if (m_simulationModeDisabled)
+          {
+            ImGui::BeginDisabled(m_simulationModeDisabled);
+          }
+          ImGui::Text("Run In Window");
           ImGui::TableSetColumnIndex(1);
-          ImGui::SetNextItemWidth(100.0f);
-          ImGui::InputFloat("##w", &g_app->m_playWidth, 0, 0, "%.0f");
-          ImGui::TableSetColumnIndex(2);
-          ImGui::Text("Height: ");
-          ImGui::TableSetColumnIndex(3);
-          ImGui::SetNextItemWidth(100.0f);
-          ImGui::InputFloat("##h", &g_app->m_playHeight, 0, 0, "%.0f");
+          ImGui::Checkbox(" ", &g_app->m_runWindowed);
+          if (m_simulationModeDisabled)
+          {
+            ImGui::EndDisabled();
+          }
+          ImGui::TableNextRow();
+          ImGui::TableSetColumnIndex(0);
+
+          // Resolution Bar
+          App::EmulatorResolution resolution = g_app->m_emuRes;
+          int resolutionType = static_cast<int>(resolution);
+
+          ImGui::Text("Resolution");
+          ImGui::TableSetColumnIndex(1);
+          ImGui::SetNextItemWidth(150.0f);
+          if
+          (
+            ImGui::Combo
+            (
+            "##dropdown",
+            &resolutionType,
+            "Custom\0"
+            "iPhone SE\0"
+            "iPhone XR\0"
+            "iPhone 12 Pro\0"
+            "Pixel 5\0"
+            "Galaxy S20 Ultra\0"
+            "Galaxy Note 20\0"
+            "Galaxy Note 20 Ultra\0"
+            "Ipad Air\0"
+            "Ipad Mini\0"
+            "Surface Pro 7\0"
+            "Surface Duo\0"
+            "Galaxy A51 / A71"
+            )
+          )
+          {
+            EmulatorResolution resolution = static_cast<EmulatorResolution>
+              (resolutionType);
+            switch (resolution)
+            {
+              case EmulatorResolution::Iphone_SE:
+              g_app->m_playWidth = 375;
+              g_app->m_playHeight = 667;
+              break;
+              case EmulatorResolution::Iphone_XR:
+              g_app->m_playWidth = 414;
+              g_app->m_playHeight = 896;
+              break;
+              case EmulatorResolution::Iphone_12_Pro:
+              g_app->m_playWidth = 390;
+              g_app->m_playHeight = 844;
+              break;
+              case EmulatorResolution::Pixel_5:
+              g_app->m_playWidth = 393;
+              g_app->m_playHeight = 851;
+              break;
+              case EmulatorResolution::Galaxy_S20_Ultra:
+              g_app->m_playWidth = 412;
+              g_app->m_playHeight = 915;
+              break;
+              case EmulatorResolution::Galaxy_Note20:
+              g_app->m_playWidth = 412;
+              g_app->m_playHeight = 915;
+              break;
+              case EmulatorResolution::Galaxy_Note20_Ultra:
+              g_app->m_playWidth = 390;
+              g_app->m_playHeight = 844;
+              break;
+              case EmulatorResolution::Ipad_Air:
+              g_app->m_playWidth = 820;
+              g_app->m_playHeight = 1180;
+              break;
+              case EmulatorResolution::Ipad_Mini:
+              g_app->m_playWidth = 768;
+              g_app->m_playHeight = 1024;
+              break;
+              case EmulatorResolution::Surface_Pro_7:
+              g_app->m_playWidth = 912;
+              g_app->m_playHeight = 1398;
+              break;
+              case EmulatorResolution::Surface_Duo:
+              g_app->m_playWidth = 540;
+              g_app->m_playHeight = 720;
+              break;
+              case EmulatorResolution::Galaxy_A51_A71:
+              g_app->m_playWidth = 412;
+              g_app->m_playHeight = 914;
+              break;
+            }
+            g_app->m_emuRes = resolution;
+            g_app->m_windowCamLoad = true;
+          }
+
+          // Width - Height
+          ImGui::TableNextRow();
+          ImGui::TableSetColumnIndex(0);
+          bool isCustomSized = g_app->m_emuRes == EmulatorResolution::Custom;
+          if (!isCustomSized)
+          {
+            ImGui::BeginDisabled();
+          }
+          ImGui::Text("Width");
+          ImGui::TableSetColumnIndex(1);
+          ImGui::SetNextItemWidth(150.0f);
+          ImGui::DragFloat
+            ("##w", &g_app->m_playWidth, 1.0f, 1.0f, 4096.0f, "%.0f");
+          ImGui::TableNextRow();
+          ImGui::TableSetColumnIndex(0);
+          ImGui::Text("Height");
+          ImGui::TableSetColumnIndex(1);
+          ImGui::SetNextItemWidth(150.0f);
+          ImGui::DragFloat
+            ("##h", &g_app->m_playHeight, 1.0f, 1.0f, 4096.0f, "%.0f");
+
+          if (!isCustomSized)
+          {
+            ImGui::EndDisabled();
+          }
+
+          // Zoom
+          ImGui::TableNextRow();
+          ImGui::TableSetColumnIndex(0);
+          ImGui::Text("Zoom");
+          ImGui::TableSetColumnIndex(1);
+          ImGui::SetNextItemWidth(150.0f);
+          ImGui::SliderFloat("##z", &g_app->m_zoomAmount, 0.25f, 1.0f, "x%.2f");
+
+          // Landscape - Portrait Toggle
+          ImGui::TableNextRow();
+          ImGui::TableSetColumnIndex(0);
+          ImGui::Text("Portrait/\nLandscape");
+          ImGui::TableSetColumnIndex(1);
+          g_app->m_landscape = UI::ToggleButton
+          (
+            UI::m_landscapeIcon->m_textureId,
+            Vec2(30, 30),
+            g_app->m_landscape
+          );
 
           ImGui::EndTable();
         }
+        ImGui::End();
       }
-
-      ImGui::End();
     }
 
     Window::Type PluginWindow::GetType() const

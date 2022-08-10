@@ -45,6 +45,23 @@ namespace ToolKit
         Stop
       };
 
+      enum class EmulatorResolution
+      {
+        Custom,
+        Iphone_SE,
+        Iphone_XR,
+        Iphone_12_Pro,
+        Pixel_5,
+        Galaxy_S20_Ultra,
+        Galaxy_Note20,
+        Galaxy_Note20_Ultra,
+        Ipad_Air,
+        Ipad_Mini,
+        Surface_Pro_7,
+        Surface_Duo,
+        Galaxy_A51_A71
+      };
+
      public:
       App(int windowWidth, int windowHeight);
       virtual ~App();
@@ -128,7 +145,11 @@ namespace ToolKit
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
      private:
-      void CreateSimulationWindow();
+      void CreateSimulationWindow
+      (
+        float width = g_app->m_playWidth,
+        float height = g_app->m_playHeight
+      );
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
 
@@ -145,8 +166,11 @@ namespace ToolKit
 
       // Emulator settings.
       bool m_runWindowed = false;
+      bool m_landscape = false;
       float m_playWidth = 640.0f;
       float m_playHeight = 480.0f;
+      float m_zoomAmount = 1.0f;
+      EmulatorResolution m_emuRes;
       EditorViewport* m_playWindow = nullptr;
 
       // Editor objects.
@@ -185,13 +209,11 @@ namespace ToolKit
       float m_scaleDelta = 0.5f;
 
       Renderer* m_renderer;
-
+      bool m_windowCamLoad = true;
      private:
       // Internal states.
       bool m_onNewScene = false;
       bool m_onQuit = false;
-
-      bool m_windowCamLoad = true;
     };
 
     extern void DebugMessage(const String& msg);

@@ -76,6 +76,7 @@ namespace ToolKit
     TexturePtr UI::m_gridIcon;
     TexturePtr UI::m_skyIcon;
     TexturePtr UI::m_closeIcon;
+    TexturePtr UI::m_landscapeIcon;
     TexturePtr UI::m_studioLightsToggleIcon;
 
     void UI::Init()
@@ -350,11 +351,19 @@ namespace ToolKit
         TexturePath("Icons/sky.png", true)
       );
       m_skyIcon->Init();
+
       m_closeIcon = GetTextureManager()->Create<Texture>
       (
       TexturePath("Icons/close.png", true)
       );
       m_closeIcon->Init();
+
+      m_landscapeIcon = GetTextureManager()->Create<Texture>
+      (
+        TexturePath("Icons/landscape-portrait.png", true)
+      );
+      m_landscapeIcon->Init();
+
       m_studioLightsToggleIcon = GetTextureManager()->Create<Texture>
       (
         TexturePath("Icons/studio_lights_toggle.png", true)
@@ -670,6 +679,23 @@ namespace ToolKit
 
       if (g_app->m_playWindow->IsVisible())
       {
+        if (g_app->m_landscape)
+        {
+          g_app->m_playWindow->OnResize
+          (
+            g_app->m_playHeight * g_app->m_zoomAmount,
+            g_app->m_playWidth * g_app->m_zoomAmount
+          );
+        }
+        else
+        {
+          g_app->m_playWindow->OnResize
+          (
+            g_app->m_playWidth * g_app->m_zoomAmount,
+            g_app->m_playHeight * g_app->m_zoomAmount
+          );
+        }
+
         g_app->m_playWindow->Show();
       }
 

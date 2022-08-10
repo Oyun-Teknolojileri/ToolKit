@@ -143,6 +143,7 @@ namespace ToolKit
         m_workspace.RefreshProjects();
       }
 
+      m_emuRes = EmulatorResolution::Custom;
       m_publishManager = new PublishManager();
     }
 
@@ -614,7 +615,6 @@ namespace ToolKit
 
           if (m_runWindowed)
           {
-            m_playWindow->OnResize(m_playWidth, m_playHeight);
             m_playWindow->SetVisibility(true);
           }
         }
@@ -1615,9 +1615,9 @@ Fail:
       }
     }
 
-    void App::CreateSimulationWindow()
+    void App::CreateSimulationWindow(float width, float height)
     {
-      m_playWindow = new EditorViewport(m_playWidth, m_playHeight);
+      m_playWindow = new EditorViewport(width, height);
       m_playWindow->m_name = g_simulationViewport;
       m_playWindow->m_additionalWindowFlags =
       ImGuiWindowFlags_NoResize

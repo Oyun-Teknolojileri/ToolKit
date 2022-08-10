@@ -84,7 +84,7 @@ namespace ToolKit
     {
       m_mouseOverOverlay = false;
 
-      ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
+      ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_None);
 
       if
       (
@@ -258,6 +258,7 @@ namespace ToolKit
     void EditorViewport::UpdateContentArea()
     {
       // Content area size
+
       m_contentAreaMin = ImGui::GetWindowContentRegionMin();
       m_contentAreaMax = ImGui::GetWindowContentRegionMax();
 
@@ -274,7 +275,6 @@ namespace ToolKit
         glm::abs(m_contentAreaMax.x - m_contentAreaMin.x),
         glm::abs(m_contentAreaMax.y - m_contentAreaMin.y)
       );
-
       ImGuiIO& io = ImGui::GetIO();
       ImVec2 absMousePos = io.MousePos;
       m_mouseOverContentArea = false;
@@ -318,6 +318,7 @@ namespace ToolKit
             Vec2(1.0f, -1.0f)
           );
 
+
           if
           (
             m_wndContentAreaSize.x != m_width ||
@@ -326,6 +327,7 @@ namespace ToolKit
           {
             OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
           }
+
 
           if (IsActive())
           {
