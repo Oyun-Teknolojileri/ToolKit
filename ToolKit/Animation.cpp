@@ -128,9 +128,9 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file = GetFileManager()->GetXmlFile(GetFile());
+    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
     XmlDocument doc;
-    doc.parse<0>(file.data());
+    doc.parse<0>(file->data());
 
     XmlNode* node = doc.first_node("anim");
     if (node == nullptr)

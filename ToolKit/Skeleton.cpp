@@ -125,9 +125,9 @@ namespace ToolKit
 
   void Skeleton::Load()
   {
-    XmlFile file = GetFileManager()->GetXmlFile(GetFile());
+    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
     XmlDocument doc;
-    doc.parse<0>(file.data());
+    doc.parse<0>(file->data());
 
     if (XmlNode* node = doc.first_node("skeleton"))
     {

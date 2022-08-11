@@ -85,9 +85,9 @@ namespace ToolKit
 
     String path = GetFile();
     NormalizePath(path);
-    XmlFile file = GetFileManager()->GetXmlFile(path);
+    XmlFilePtr file = GetFileManager()->GetXmlFile(path);
     XmlDocument doc;
-    doc.parse<0>(file.data());
+    doc.parse<0>(file->data());
 
     if (XmlNode* node = doc.first_node("meshContainer"))
     {
@@ -545,9 +545,9 @@ namespace ToolKit
 
     String path = GetFile();
     NormalizePath(path);
-    XmlFile file = GetFileManager()->GetXmlFile(path);
+    XmlFilePtr file = GetFileManager()->GetXmlFile(path);
     XmlDocument doc;
-    doc.parse<0>(file.data());
+    doc.parse<0>(file->data());
 
     if (XmlNode* node = doc.first_node("meshContainer"))
     {

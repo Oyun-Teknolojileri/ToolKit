@@ -38,9 +38,9 @@ namespace ToolKit
 
     String path = GetFile();
     NormalizePath(path);
-    XmlFile sceneFile = GetFileManager()->GetXmlFile(path);
+    XmlFilePtr sceneFile = GetFileManager()->GetXmlFile(path);
     XmlDocument sceneDoc;
-    sceneDoc.parse<0>(sceneFile.data());
+    sceneDoc.parse<0>(sceneFile->data());
 
     DeSerialize(&sceneDoc, nullptr);
 

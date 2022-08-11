@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <unordered_map>
 #include <utility>
+#include <variant>
 
 #include "zip.h"
 #include "unzip.h"
@@ -17,10 +18,10 @@ namespace ToolKit
    public:
     ~FileManager();
 
-    XmlFile GetXmlFile(const String& filePath);
+    XmlFilePtr GetXmlFile(const String& filePath);
     uint8* GetImageFile
     (
-      const String& path,
+      const String& filePath,
       int* x,
       int* y,
       int* comp,
@@ -31,6 +32,30 @@ namespace ToolKit
     bool CheckFileFromResources(const String& path);
 
    private:
+    typedef std::variant
+      <
+      XmlFilePtr,
+      uint8*,
+      float*
+      > FileDataType;
+
+    enum class FileType
+    {
+      Xml,
+      ImageUint8,
+      ImageFloat
+    };
+
+    struct FileInfo
+    {
+      String& filePath;
+      int* x;
+      int* y;
+      int* comp;
+      int reqComp;
+    };
+
+    FileDataType GetFile(FileType fileType, FileInfo& fileSettings);
     void LoadAllScenes(const String& path);
     void GetAllUsedResourcePaths(const String& path);
 
@@ -42,7 +67,7 @@ namespace ToolKit
     void GetExtraFilePaths(const String& path);
 
     void GetRelativeResourcesPath(String& path);
-    XmlFile ReadXmlFileFromZip
+    XmlFilePtr ReadXmlFileFromZip
     (
       zipFile zfile,
       const String& relativePath,
@@ -52,13 +77,9 @@ namespace ToolKit
     (
       zipFile zfile,
       const String& relativePath,
-      const char* path,
-      int* x,
-      int* y,
-      int* comp,
-      int reqComp
+      FileInfo& fileSettings
     );
-    XmlFile CreateXmlFileFromZip
+    XmlFilePtr CreateXmlFileFromZip
     (
       zipFile zfile,
       const String& filename,
@@ -67,12 +88,8 @@ namespace ToolKit
     uint8* CreateImageFileFromZip
     (
       zipFile zfile,
-      const String& filename,
       uint filesize,
-      int* x,
-      int* y,
-      int* comp,
-      int reqComp
+      FileInfo& fileSettings
     );
 
     void GenerateOffsetTableForPakFiles();

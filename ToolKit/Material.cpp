@@ -32,9 +32,9 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file = GetFileManager()->GetXmlFile(GetFile());
+    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
     XmlDocument doc;
-    doc.parse<0>(file.data());
+    doc.parse<0>(file->data());
 
     XmlNode* rootNode = doc.first_node("material");
     DeSerialize(&doc, rootNode);
