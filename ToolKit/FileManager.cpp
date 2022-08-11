@@ -275,7 +275,12 @@ namespace ToolKit
     {
       if (!AddFileToZip(zFile, path.c_str()))
       {
-        GetLogger()->WriteConsole(LogType::Error, "Error adding file to zip.");
+        GetLogger()->WriteConsole
+        (
+          LogType::Error,
+          "Error adding file to zip. %s",
+          path.c_str()
+        );
       }
     }
 

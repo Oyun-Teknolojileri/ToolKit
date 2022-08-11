@@ -41,7 +41,7 @@ namespace ToolKit
           if
           (
             ImGui::InputFloat(var->m_name.c_str(), &val)
-            && ImGui::IsKeyPressed(ImGuiKey_Enter)
+            && ImGuiEnterPressed()
           )
           {
             *var = val;
@@ -54,7 +54,7 @@ namespace ToolKit
           if
           (
             ImGui::InputInt(var->m_name.c_str(), &val)
-            && ImGui::IsKeyPressed(ImGuiKey_Enter)
+            && ImGuiEnterPressed()
           )
           {
             *var = val;
@@ -94,7 +94,7 @@ namespace ToolKit
           if
           (
             ImGui::InputText(var->m_name.c_str(), &val)
-            && ImGui::IsKeyPressed(ImGuiKey_Enter)
+            && ImGuiEnterPressed()
           )
           {
             *var = val;
@@ -112,7 +112,7 @@ namespace ToolKit
               ImGuiDataType_U32,
               var->GetVarPtr<ULongID>()
             )
-            && ImGui::IsKeyPressed(ImGuiKey_Enter)
+            && ImGuiEnterPressed()
           )
           {
             *var = val;
@@ -330,6 +330,15 @@ namespace ToolKit
       }
     }
 
+    bool View::ImGuiEnterPressed()
+    {
+      return
+      (
+        ImGui::IsKeyPressed(ImGuiKey_KeypadEnter)
+        || ImGui::IsKeyPressed(ImGuiKey_Enter)
+      );
+    }
+
     // EntityView
     //////////////////////////////////////////////////////////////////////////
 
@@ -394,6 +403,11 @@ namespace ToolKit
         ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen)
       )
       {
+        Mat3 rotate;
+        Vec3 scale, shear;
+        Mat4 ts = m_entity->m_node->GetTransform(g_app->m_transformSpace);
+        QDUDecomposition(ts, rotate, scale, shear);
+
         // Continuous edit utils.
         static TransformAction* dragMem = nullptr;
         const auto saveDragMemFn = [this]() -> void
@@ -413,26 +427,27 @@ namespace ToolKit
           }
         };
 
-        Vec3 translate = m_entity->m_node->GetTranslation
-        (
-          TransformationSpace::TS_PARENT
-        );
-        if (ImGui::DragFloat3("Translate", &translate[0], 0.25f))
+        TransformationSpace space = g_app->m_transformSpace;
+        Vec3 translate = glm::column(ts, 3);
+        Vec3 newTranslate = translate;
+        if (ImGui::DragFloat3("Translate", &newTranslate[0], 0.25f))
         {
           saveDragMemFn();
-          m_entity->m_node->SetTranslation
-          (
-            translate,
-            TransformationSpace::TS_PARENT
-          );
+
+          bool isDrag = ImGui::IsMouseDragging(0, 0.25f);
+          if (isDrag)
+          {
+            m_entity->m_node->Translate(newTranslate - translate, space);
+          }
+          else if (!isDrag && ImGuiEnterPressed())
+          {
+            m_entity->m_node->SetTranslation(newTranslate, space);
+          }
         }
 
         saveTransformActionFn();
 
-        Quaternion q0 = m_entity->m_node->GetOrientation
-        (
-          TransformationSpace::TS_LOCAL
-        );
+        Quaternion q0 = glm::toQuat(rotate);
         Vec3 eularXYZ = glm::eulerAngles(q0);
         Vec3 degrees = glm::degrees(eularXYZ);
         if (ImGui::DragFloat3("Rotate", &degrees[0], 0.25f))
@@ -455,29 +470,34 @@ namespace ToolKit
 
           if (isDrag)
           {
-            m_entity->m_node->Rotate
-            (
-              q,
-              TransformationSpace::TS_LOCAL
-            );
+            m_entity->m_node->Rotate(q, space);
           }
-          else
+          else if (ImGuiEnterPressed())
           {
-            m_entity->m_node->SetOrientation
-            (
-              q,
-              TransformationSpace::TS_LOCAL
-            );
+            m_entity->m_node->SetOrientation(q, space);
           }
         }
 
         saveTransformActionFn();
 
-        Vec3 scale = m_entity->m_node->GetScale();
-        if (ImGui::DragFloat3("Scale", &scale[0], 0.25f))
+        if (ImGui::DragFloat3("Scale", &scale[0], 0.1f))
         {
-          saveDragMemFn();
-          m_entity->m_node->SetScale(scale);
+          bool exceed = false;
+          if (scale.x <= 0.0f || scale.y <= 0.0f || scale.z <= 0.0f)
+          {
+            exceed = true;
+          }
+
+          if (!exceed)
+          {
+            saveDragMemFn();
+
+            bool isDrag = ImGui::IsMouseDragging(0, 0.25f);
+            if (isDrag || ImGuiEnterPressed())
+            {
+              m_entity->m_node->SetScale(scale);
+            }
+          }
         }
 
         saveTransformActionFn();

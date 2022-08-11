@@ -34,6 +34,9 @@ namespace ToolKit
         std::function<void(const DirectoryEntry& entry)> dropAction
       );
 
+     protected:
+      bool ImGuiEnterPressed();
+
      public:
       Entity* m_entity = nullptr;
       int m_viewID = 0;

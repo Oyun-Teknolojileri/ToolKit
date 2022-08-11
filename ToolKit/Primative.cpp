@@ -117,7 +117,7 @@ namespace ToolKit
   {
     ParameterConstructor();
 
-    SetScaleVal(scale);
+    SetCubeScaleVal(scale);
     Generate();
   }
 
@@ -152,7 +152,7 @@ namespace ToolKit
   void Cube::ParameterConstructor()
   {
     AddComponent(new MeshComponent());
-    Scale_Define(Vec3(1.0f), "Geometry", 90, true, true);
+    CubeScale_Define(Vec3(1.0f), "Geometry", 90, true, true);
   }
 
   void Cube::Generate()
@@ -165,7 +165,7 @@ namespace ToolKit
     VertexArray vertices;
     vertices.resize(36);
 
-    const Vec3& scale = GetScaleVal();
+    const Vec3& scale = GetCubeScaleVal();
 
     Vec3 corners[8]
     {

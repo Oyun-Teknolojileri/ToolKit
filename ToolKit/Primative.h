@@ -57,7 +57,7 @@ namespace ToolKit
     void Generate();
 
    public:
-    TKDeclareParam(Vec3, Scale);
+    TKDeclareParam(Vec3, CubeScale);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
