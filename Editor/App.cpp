@@ -80,8 +80,6 @@ namespace ToolKit
         AxisLabel::XY, 10.0
       );  // Generate grid cells 10 x 10
 
-      m_environmentBillboard = new SkyBillboard();
-
       // Lights and camera.
       m_lightMaster = new Node();
 
@@ -172,7 +170,6 @@ namespace ToolKit
       SafeDel(m_grid);
       SafeDel(m_origin);
       SafeDel(m_cursor);
-      SafeDel(m_environmentBillboard);
 
       for (Light* light : m_sceneLights)
       {
@@ -206,11 +203,12 @@ namespace ToolKit
       std::vector<EditorViewport*> viewports;
       for (Window* wnd : m_windows)
       {
-        wnd->DispatchSignals();
         if (EditorViewport* vp = dynamic_cast<EditorViewport*> (wnd))
         {
           viewports.push_back(vp);
+          GetCurrentScene()->UpdateBillboardTransforms(vp);
         }
+        wnd->DispatchSignals();
       }
 
       ShowPlayWindow(deltaTime);
@@ -290,6 +288,8 @@ namespace ToolKit
         }
 
         viewport->Update(deltaTime);
+
+        GetCurrentScene()->UpdateBillboardTransforms(viewport);
 
         if (viewport->IsVisible())
         {
@@ -1339,6 +1339,18 @@ Fail:
         bool isLight = false;
         for (Entity* ntt : selection)
         {
+          // Add billboard
+          Entity* bb = GetCurrentScene()->GetBillboardOfEntity(ntt);
+          if (bb != nullptr)
+          {
+            static_cast<Billboard*>(bb)->LookAt
+            (
+              viewport->GetCamera(),
+              viewport->m_zoom
+            );
+            m_renderer->Render(bb, viewport->GetCamera());
+          }
+
           if (ntt->IsDrawable())
           {
             isLight = false;
@@ -1445,29 +1457,13 @@ Fail:
       EntityRawPtrArray selecteds
     )
     {
-      for (Entity* ntt : GetCurrentScene()->GetEntities())
+      // Entity billboards
+      for (Billboard* bb : GetCurrentScene()->GetBillboards())
       {
-        // Environment Component
-        EnvironmentComponentPtr envCom =
-        ntt->GetComponent<EnvironmentComponent>();
-        if (envCom != nullptr)
-        {
-          // Translate billboard
-          m_environmentBillboard->m_worldLocation =
-          ntt->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-
-          // Rotate billboard
-          m_environmentBillboard->LookAt
-          (
-            viewport->GetCamera(),
-            viewport->m_zoom
-          );
-
-          // Render billboard
-          m_renderer->Render(m_environmentBillboard, viewport->GetCamera());
-        }
+        m_renderer->Render(bb, viewport->GetCamera());
       }
 
+      // Selected gizmos
       for (Entity* ntt : selecteds)
       {
         // Environment Component

@@ -179,7 +179,6 @@ namespace ToolKit
       Axis3d* m_origin;
       Cursor* m_cursor;
       Gizmo* m_gizmo = nullptr;
-      Billboard* m_environmentBillboard = nullptr;
       std::vector<Entity*> m_perFrameDebugObjects;
 
       // 3 point lighting system.

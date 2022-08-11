@@ -12,21 +12,39 @@ namespace ToolKit
 {
   namespace Editor
   {
-    class Cursor : public Billboard
+    class EditorBillboardBase : public Billboard
+    {
+     public:
+      enum class BillboardType
+      {
+        Cursor,
+        Axis3d,
+        Gizmo,
+        Sky
+      };
+
+     public:
+      explicit EditorBillboardBase(const Settings& settings);
+      virtual BillboardType GetBillboardType() const = 0;
+    };
+
+    class Cursor : public EditorBillboardBase
     {
      public:
       Cursor();
       virtual ~Cursor();
+      BillboardType GetBillboardType() const override;
 
      private:
       void Generate();
     };
 
-    class Axis3d : public Billboard
+    class Axis3d : public EditorBillboardBase
     {
      public:
       Axis3d();
       virtual ~Axis3d();
+      BillboardType GetBillboardType() const override;
 
      private:
       void Generate();
@@ -88,11 +106,12 @@ namespace ToolKit
       bool HitTest(const Ray& ray, float& t) const override;
     };
 
-    class Gizmo : public Billboard
+    class Gizmo : public EditorBillboardBase
     {
      public:
       explicit Gizmo(const Billboard::Settings& set);
       virtual ~Gizmo();
+      BillboardType GetBillboardType() const override;
 
       virtual AxisLabel HitTest(const Ray& ray) const;
       virtual void Update(float deltaTime) = 0;
@@ -159,11 +178,12 @@ namespace ToolKit
       void Render(Renderer* renderer, Camera* cam);
     };
 
-    class SkyBillboard : public Billboard
+    class SkyBillboard : public EditorBillboardBase
     {
      public:
       SkyBillboard();
       virtual ~SkyBillboard();
+      BillboardType GetBillboardType() const override;
 
      private:
       void Generate();

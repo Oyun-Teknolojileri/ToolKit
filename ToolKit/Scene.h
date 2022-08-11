@@ -35,18 +35,20 @@ namespace ToolKit
     virtual void Merge(ScenePtr other);
 
     // Scene queries.
-    PickData PickObject
+    virtual PickData PickObject
     (
       Ray ray,
-      const EntityIdArray& ignoreList = EntityIdArray()
-    ) const;
-    void PickObject
+      const EntityIdArray& ignoreList = EntityIdArray(),
+      const EntityRawPtrArray& extraList = EntityRawPtrArray()
+    );
+    virtual void PickObject
     (
       const Frustum& frustum,
       std::vector<PickData>& pickedObjects,
       const EntityIdArray& ignoreList = EntityIdArray(),
+      const EntityRawPtrArray& extraList = EntityRawPtrArray(),
       bool pickPartiallyInside = true
-    ) const;
+    );
 
     // Entity operations.
     Entity* GetEntity(ULongID id) const;

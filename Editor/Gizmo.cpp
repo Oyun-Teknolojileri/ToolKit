@@ -27,15 +27,24 @@ namespace ToolKit
 {
   namespace Editor
   {
+    EditorBillboardBase::EditorBillboardBase(const Settings& settings)
+      : Billboard(settings)
+    {
+    }
 
     Cursor::Cursor()
-      : Billboard({ true, 10.0f, 60.0f })
+      : EditorBillboardBase({ true, 10.0f, 60.0f })
     {
       Generate();
     }
 
     Cursor::~Cursor()
     {
+    }
+
+    EditorBillboardBase::BillboardType Cursor::GetBillboardType() const
+    {
+      return BillboardType::Cursor;
     }
 
     void Cursor::Generate()
@@ -97,13 +106,18 @@ namespace ToolKit
     }
 
     Axis3d::Axis3d()
-      : Billboard({ false, 10.0f, 60.0f })
+      : EditorBillboardBase({ false, 10.0f, 60.0f })
     {
       Generate();
     }
 
     Axis3d::~Axis3d()
     {
+    }
+
+    EditorBillboardBase::BillboardType Axis3d::GetBillboardType() const
+    {
+      return BillboardType::Axis3d;
     }
 
     void Axis3d::Generate()
@@ -471,7 +485,7 @@ namespace ToolKit
     //////////////////////////////////////////////////////////////////////////
 
     Gizmo::Gizmo(const Billboard::Settings& set)
-      : Billboard(set)
+      : EditorBillboardBase(set)
     {
       m_grabbedAxis = AxisLabel::None;
     }
@@ -482,6 +496,11 @@ namespace ToolKit
       {
         SafeDel(m_handles[i]);
       }
+    }
+
+    EditorBillboardBase::BillboardType Gizmo::GetBillboardType() const
+    {
+      return BillboardType::Gizmo;
     }
 
     AxisLabel Gizmo::HitTest(const Ray& ray) const
@@ -811,13 +830,18 @@ namespace ToolKit
     }
 
     SkyBillboard::SkyBillboard()
-      : Billboard({ true, 3.5f, 15.0f })
+      : EditorBillboardBase({ true, 3.5f, 15.0f })
     {
       Generate();
     }
 
     SkyBillboard::~SkyBillboard()
     {
+    }
+
+    EditorBillboardBase::BillboardType SkyBillboard::GetBillboardType() const
+    {
+      return BillboardType::Sky;
     }
 
     void SkyBillboard::Generate()

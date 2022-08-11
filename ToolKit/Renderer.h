@@ -24,7 +24,7 @@ namespace ToolKit
     (
       const ScenePtr scene,
       Viewport* viewport,
-      const LightRawPtrArray& editor_lights
+      const LightRawPtrArray& editorLights
     );
 
     void RenderUI(const UILayerPtrArray& uiLayers, Viewport* viewport);

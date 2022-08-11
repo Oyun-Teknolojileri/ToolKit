@@ -531,6 +531,12 @@ namespace ToolKit
           );
         }
 
+        // Remove billboards if necessary
+        std::static_pointer_cast<EditorScene>
+        (
+          GetSceneManager()->GetCurrentScene()
+        )->InitEntityBillboard(m_entity);
+
         ImGui::PushItemWidth(150);
         static bool addInAction = false;
         if (addInAction)
@@ -566,6 +572,12 @@ namespace ToolKit
             {
               m_entity->AddComponent(newComponent);
               addInAction = false;
+
+              // Add gizmo if needed
+              std::static_pointer_cast<EditorScene>
+              (
+                GetSceneManager()->GetCurrentScene()
+              )->AddBillboardToEntity(m_entity);
             }
           }
         }
