@@ -76,7 +76,7 @@ namespace ToolKit
     TexturePtr UI::m_gridIcon;
     TexturePtr UI::m_skyIcon;
     TexturePtr UI::m_closeIcon;
-    TexturePtr UI::m_landscapeIcon;
+    TexturePtr UI::m_phoneRotateIcon;
     TexturePtr UI::m_studioLightsToggleIcon;
 
     void UI::Init()
@@ -358,11 +358,11 @@ namespace ToolKit
       );
       m_closeIcon->Init();
 
-      m_landscapeIcon = GetTextureManager()->Create<Texture>
+      m_phoneRotateIcon = GetTextureManager()->Create<Texture>
       (
-        TexturePath("Icons/landscape-portrait.png", true)
+        TexturePath("Icons/rotate-icon.png", true)
       );
-      m_landscapeIcon->Init();
+      m_phoneRotateIcon->Init();
 
       m_studioLightsToggleIcon = GetTextureManager()->Create<Texture>
       (
@@ -699,7 +699,6 @@ namespace ToolKit
             g_app->m_emulatorSettings.zoomAmount
           );
         }
-
         g_app->m_playWindow->Show();
       }
 

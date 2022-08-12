@@ -2,6 +2,7 @@
 
 #include "ToolKit.h"
 #include "UI.h"
+#include"App.h"
 
 namespace ToolKit
 {
@@ -23,6 +24,7 @@ namespace ToolKit
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
      private:
+      String EmuResToString(EmulatorResolution emuRes);
       bool m_simulationModeDisabled = false;
     };
 

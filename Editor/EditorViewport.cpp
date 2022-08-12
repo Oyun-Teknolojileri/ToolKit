@@ -318,7 +318,6 @@ namespace ToolKit
             Vec2(1.0f, -1.0f)
           );
 
-
           if
           (
             m_wndContentAreaSize.x != m_width ||
@@ -327,7 +326,6 @@ namespace ToolKit
           {
             OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
           }
-
 
           if (IsActive())
           {

@@ -1639,9 +1639,9 @@ Fail:
       );
       m_playWindow->m_name = g_simulationViewport;
       m_playWindow->m_additionalWindowFlags =
-      ImGuiWindowFlags_NoResize
-      | ImGuiWindowFlags_NoDocking
-      | ImGuiWindowFlags_NoCollapse;
+        ImGuiWindowFlags_NoResize
+        | ImGuiWindowFlags_NoDocking
+        |ImGuiWindowFlags_NoCollapse;
       m_playWindow->SetVisibility(false);
     }
 
