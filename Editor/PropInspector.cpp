@@ -38,11 +38,7 @@ namespace ToolKit
         case ParameterVariant::VariantType::Float:
         {
           float val = var->GetVar<float>();
-          if
-          (
-            ImGui::InputFloat(var->m_name.c_str(), &val)
-            && ImGuiEnterPressed()
-          )
+          if (ImGui::DragFloat(var->m_name.c_str(), &val, 0.1f))
           {
             *var = val;
           }
@@ -51,11 +47,7 @@ namespace ToolKit
         case ParameterVariant::VariantType::Int:
         {
           int val = var->GetVar<int>();
-          if
-          (
-            ImGui::InputInt(var->m_name.c_str(), &val)
-            && ImGuiEnterPressed()
-          )
+          if(ImGui::InputInt(var->m_name.c_str(), &val))
           {
             *var = val;
           }
@@ -64,7 +56,7 @@ namespace ToolKit
         case ParameterVariant::VariantType::Vec2:
         {
           Vec2 val = var->GetVar<Vec2>();
-          if (ImGui::InputFloat2(var->m_name.c_str(), &val[0]))
+          if (ImGui::DragFloat2(var->m_name.c_str(), &val[0], 0.1f))
           {
             *var = val;
           }
@@ -73,18 +65,88 @@ namespace ToolKit
         case ParameterVariant::VariantType::Vec3:
         {
           Vec3 val = var->GetVar<Vec3>();
-          if (ImGui::InputFloat3(var->m_name.c_str(), &val[0]))
+          if (var->m_hint.isColor)
           {
-            *var = val;
+            if
+            (
+              ImGui::ColorEdit3
+              (
+                var->m_name.c_str(),
+                &val[0],
+                ImGuiColorEditFlags_NoLabel
+              )
+            )
+            {
+              *var = val;
+            }
+          }
+          else if (var->m_hint.isRangeLimited)
+          {
+            if
+            (
+              ImGui::DragFloat3
+              (
+                var->m_name.c_str(),
+                &val[0],
+                var->m_hint.increment,
+                var->m_hint.rangeMin,
+                var->m_hint.rangeMax
+              )
+            )
+            {
+              *var = val;
+            }
+          }
+          else
+          {
+            if (ImGui::DragFloat3(var->m_name.c_str(), &val[0], 0.1f))
+            {
+              *var = val;
+            }
           }
         }
         break;
         case ParameterVariant::VariantType::Vec4:
         {
           Vec4 val = var->GetVar<Vec4>();
-          if (ImGui::InputFloat4(var->m_name.c_str(), &val[0]))
+          if (var->m_hint.isColor)
           {
-            *var = val;
+            if
+            (
+              ImGui::ColorEdit4
+              (
+                var->m_name.c_str(),
+                &val[0],
+                ImGuiColorEditFlags_NoLabel
+              )
+            )
+            {
+              *var = val;
+            }
+          }
+          else if (var->m_hint.isRangeLimited)
+          {
+            if
+            (
+              ImGui::DragFloat4
+              (
+                var->m_name.c_str(),
+                &val[0],
+                var->m_hint.increment,
+                var->m_hint.rangeMin,
+                var->m_hint.rangeMax
+              )
+            )
+            {
+              *var = val;
+            }
+          }
+          else
+          {
+            if (ImGui::DragFloat4(var->m_name.c_str(), &val[0], 0.1f))
+            {
+              *var = val;
+            }
           }
         }
         break;
@@ -786,17 +848,17 @@ namespace ToolKit
             break;
             case ParameterVariant::VariantType::Float:
             {
-              ImGui::InputFloat(pId.c_str(), var->GetVarPtr<float>());
+              ImGui::DragFloat(pId.c_str(), var->GetVarPtr<float>(), 0.1f);
             }
             break;
             case ParameterVariant::VariantType::Vec3:
             {
-              ImGui::InputFloat3(pId.c_str(), &var->GetVar<Vec3>()[0]);
+              ImGui::DragFloat3(pId.c_str(), &var->GetVar<Vec3>()[0], 0.1f);
             }
             break;
             case ParameterVariant::VariantType::Vec4:
             {
-              ImGui::InputFloat4(pId.c_str(), &var->GetVar<Vec4>()[0]);
+              ImGui::DragFloat4(pId.c_str(), &var->GetVar<Vec4>()[0], 0.1f);
             }
             break;
             case ParameterVariant::VariantType::Mat3:

@@ -13,7 +13,7 @@ namespace ToolKit
     m_localData.m_variants.reserve(m_localData.m_variants.size() + 3);
 
     LightType_Define(0, "Light", 90, false, false);
-    Color_Define(Vec3(1.0f), "Light", 90, true, true);
+    Color_Define(Vec3(1.0f), "Light", 0, true, true, { true });
     Intensity_Define(1.0f, "Light", 90, true, true);
   }
 

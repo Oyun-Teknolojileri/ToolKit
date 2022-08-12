@@ -43,6 +43,7 @@ namespace ToolKit
       m_name = other.m_name;
       m_type = other.m_type;
       m_var = other.m_var;
+      m_hint = other.m_hint;
 
       // Events m_onValueChangedFn intentionally not copied.
     }
@@ -281,6 +282,17 @@ namespace ToolKit
     WriteAttr(node, doc, "priority", std::to_string(m_category.Priority));
     WriteAttr(node, doc, "exposed", std::to_string(m_exposed));
     WriteAttr(node, doc, "editable", std::to_string(m_editable));
+    WriteAttr(node, doc, "hint.isColor", std::to_string(m_hint.isColor));
+    WriteAttr
+    (
+      node,
+      doc,
+      "hint.isRanLim",
+      std::to_string(m_hint.isRangeLimited)
+    );
+    WriteAttr(node, doc, "hint.rangeMin", std::to_string(m_hint.rangeMin));
+    WriteAttr(node, doc, "hint.rangeMax", std::to_string(m_hint.rangeMax));
+    WriteAttr(node, doc, "hint.increment", std::to_string(m_hint.increment));
 
     // Serialize data.
     switch (m_type)
@@ -453,6 +465,11 @@ namespace ToolKit
     ReadAttr(parent, "priority", m_category.Priority);
     ReadAttr(parent, "exposed", m_exposed);
     ReadAttr(parent, "editable", m_editable);
+    ReadAttr(parent, "hint.isColor", m_hint.isColor);
+    ReadAttr(parent, "hint.isRanLim", m_hint.isRangeLimited);
+    ReadAttr(parent, "hint.rangeMin", m_hint.rangeMin);
+    ReadAttr(parent, "hint.rangeMax", m_hint.rangeMax);
+    ReadAttr(parent, "hint.increment", m_hint.increment);
 
     switch (m_type)
     {

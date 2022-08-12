@@ -239,22 +239,22 @@ namespace ToolKit
         case SDLK_F5:
           if
           (
-            g_app->m_gameMod == App::GameMod::Playing ||
-            g_app->m_gameMod == App::GameMod::Paused
+            g_app->m_gameMod == GameMod::Playing ||
+            g_app->m_gameMod == GameMod::Paused
           )
           {
-            g_app->SetGameMod(App::GameMod::Stop);
+            g_app->SetGameMod(GameMod::Stop);
           }
           else
           {
-            g_app->SetGameMod(App::GameMod::Playing);
+            g_app->SetGameMod(GameMod::Playing);
           }
           break;
         case SDLK_ESCAPE:
           if
           (
-            g_app->m_gameMod != App::GameMod::Playing &&
-            g_app->m_gameMod != App::GameMod::Paused
+            g_app->m_gameMod != GameMod::Playing &&
+            g_app->m_gameMod != GameMod::Paused
           )
           {
             g_app->OnQuit();

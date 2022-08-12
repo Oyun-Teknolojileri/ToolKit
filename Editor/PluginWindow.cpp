@@ -4,15 +4,10 @@
 #include "App.h"
 #include "DebugNew.h"
 
-typedef ToolKit::Editor::App::EmulatorResolution EmulatorResolution;
-
 namespace ToolKit
 {
-
   namespace Editor
   {
-
-
     PluginWindow::PluginWindow()
     {
       m_name = "Plugin";
@@ -31,14 +26,14 @@ namespace ToolKit
     {
       ImGui::SetNextWindowSize(ImVec2(300, 30), ImGuiCond_Once);
       if
-        (
+      (
         ImGui::Begin
         (
-        "Plugin",
-        &m_visible,
-        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse
+          "Plugin",
+          &m_visible,
+          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse
         )
-        )
+      )
       {
         HandleStates();
 
@@ -79,7 +74,7 @@ namespace ToolKit
         ImGui::SameLine(offset);
         ImGui::SetCursorPosY(16.0f);
 
-        if (g_app->m_gameMod == App::GameMod::Playing)
+        if (g_app->m_gameMod == GameMod::Playing)
         {
           // Blue tint.
           ImGui::PushStyleColor
@@ -100,15 +95,15 @@ namespace ToolKit
 
           // Pause.
           if
-            (
+          (
             ImGui::ImageButton
             (
-            Convert2ImGuiTexture(UI::m_pauseIcon),
-            ImVec2(btnWidth, btnWidth)
+              Convert2ImGuiTexture(UI::m_pauseIcon),
+              ImVec2(btnWidth, btnWidth)
             )
-            )
+          )
           {
-            g_app->SetGameMod(App::GameMod::Paused);
+            g_app->SetGameMod(GameMod::Paused);
           }
 
           ImGui::PopStyleColor(3);
@@ -134,16 +129,16 @@ namespace ToolKit
 
           // Play.
           if
-            (
+          (
             ImGui::ImageButton
             (
-            Convert2ImGuiTexture(UI::m_playIcon),
-            ImVec2(btnWidth, btnWidth)
+              Convert2ImGuiTexture(UI::m_playIcon),
+              ImVec2(btnWidth, btnWidth)
             )
-            )
+          )
           {
             m_simulationModeDisabled = true;
-            g_app->SetGameMod(App::GameMod::Playing);
+            g_app->SetGameMod(GameMod::Playing);
           }
 
           ImGui::PopStyleColor(3);
@@ -170,18 +165,18 @@ namespace ToolKit
 
         // Stop.
         if
-          (
+        (
           ImGui::ImageButton
           (
-          Convert2ImGuiTexture(UI::m_stopIcon),
-          ImVec2(btnWidth, btnWidth)
+            Convert2ImGuiTexture(UI::m_stopIcon),
+            ImVec2(btnWidth, btnWidth)
           )
-          )
+        )
         {
-          if (g_app->m_gameMod != App::GameMod::Stop)
+          if (g_app->m_gameMod != GameMod::Stop)
           {
             m_simulationModeDisabled = false;
-            g_app->SetGameMod(App::GameMod::Stop);
+            g_app->SetGameMod(GameMod::Stop);
           }
         }
 
@@ -189,13 +184,13 @@ namespace ToolKit
         ImGui::SameLine();
 
         if
-          (
+        (
           ImGui::ImageButton
           (
-          Convert2ImGuiTexture(UI::m_vsCodeIcon),
-          ImVec2(btnWidth, btnWidth)
+            Convert2ImGuiTexture(UI::m_vsCodeIcon),
+            ImVec2(btnWidth, btnWidth)
           )
-          )
+        )
         {
           String codePath = g_app->m_workspace.GetCodePath();
           if (CheckFile(codePath))
@@ -267,26 +262,26 @@ namespace ToolKit
             ImGui::TableSetColumnIndex(1);
             ImGui::SetNextItemWidth(150.0f);
             if
-              (
+            (
               ImGui::Combo
               (
-              "##dropdown",
-              &resolutionType,
-              "Custom\0"
-              "iPhone SE\0"
-              "iPhone XR\0"
-              "iPhone 12 Pro\0"
-              "Pixel 5\0"
-              "Galaxy S20 Ultra\0"
-              "Galaxy Note 20\0"
-              "Galaxy Note 20 Ultra\0"
-              "Ipad Air\0"
-              "Ipad Mini\0"
-              "Surface Pro 7\0"
-              "Surface Duo\0"
-              "Galaxy A51 / A71"
+                "##dropdown",
+                &resolutionType,
+                "Custom\0"
+                "iPhone SE\0"
+                "iPhone XR\0"
+                "iPhone 12 Pro\0"
+                "Pixel 5\0"
+                "Galaxy S20 Ultra\0"
+                "Galaxy Note 20\0"
+                "Galaxy Note 20 Ultra\0"
+                "Ipad Air\0"
+                "Ipad Mini\0"
+                "Surface Pro 7\0"
+                "Surface Duo\0"
+                "Galaxy A51 / A71"
               )
-              )
+            )
             {
               EmulatorResolution resolution = static_cast<EmulatorResolution>
                 (resolutionType);
@@ -406,13 +401,13 @@ namespace ToolKit
             ImGui::TableSetColumnIndex(1);
 
             if
-              (
+            (
               ImGui::ImageButton
               (
-              Convert2ImGuiTexture(UI::m_phoneRotateIcon),
-              ImVec2(30, 30)
+                Convert2ImGuiTexture(UI::m_phoneRotateIcon),
+                ImVec2(30, 30)
               )
-              )
+            )
             {
               bool* rotated = &g_app->m_emulatorSettings.landscape;
               *rotated = !(*rotated);

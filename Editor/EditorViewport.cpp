@@ -783,7 +783,7 @@ namespace ToolKit
         if (IsActive() || g_app->m_showOverlayUIAlways)
         {
           bool onPlugin = false;
-          if (m_name == g_3dViewport && g_app->m_gameMod != App::GameMod::Stop)
+          if (m_name == g_3dViewport && g_app->m_gameMod != GameMod::Stop)
           {
             if (!g_app->m_emulatorSettings.runWindowed)
             {

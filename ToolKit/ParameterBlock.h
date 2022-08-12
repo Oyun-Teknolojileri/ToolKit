@@ -27,12 +27,14 @@
     const String& category, \
     int priority, \
     bool exposed, \
-    bool editable) { \
+    bool editable, \
+    UIHint hint = {}) { \
     ParameterVariant var(val); \
     var.m_name = #Name; \
     var.m_category = { category, priority }; \
     var.m_exposed = exposed; \
     var.m_editable = editable; \
+    var.m_hint = hint; \
     Name##_Index = m_localData.m_variants.size(); \
     m_localData.Add(var); \
   } \
@@ -72,6 +74,15 @@ namespace ToolKit
     MaterialPtr,
     HdriPtr
     > Value;
+
+  struct UIHint
+  {
+    bool isColor = false;
+    bool isRangeLimited = false;
+    float rangeMin = 0.0f;
+    float rangeMax = 100.0f;
+    float increment = 0.1f;
+  };
 
   /**
   * The category to group / access / sort and display the ParameterVariant.
@@ -413,6 +424,8 @@ namespace ToolKit
     */
     VariantCategory m_category;
     String m_name;  //<! Name of the variant.
+
+    UIHint m_hint;
 
     /**
     * Callback function for value changes. This function gets called after
