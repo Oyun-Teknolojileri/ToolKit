@@ -56,6 +56,9 @@ namespace ToolKit
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
      private:
+      void ShowHeader();
+      void ShowSimButtons();
+      void ShowSettings();
       String EmuResToString(EmulatorResolution emuRes);
       bool m_simulationModeDisabled = false;
     };
