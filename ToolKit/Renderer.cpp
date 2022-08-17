@@ -876,7 +876,7 @@ namespace ToolKit
     {
       // Sky light
       Sky* sky = GetSceneManager()->GetCurrentScene()->GetSky();
-      if (sky->GetIlluminateVal())
+      if (sky != nullptr && sky->GetIlluminateVal())
       {
         mat->GetRenderState()->IBLInUse = true;
         EnvironmentComponentPtr envCom =

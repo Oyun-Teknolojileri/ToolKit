@@ -778,8 +778,7 @@ namespace ToolKit
 
           if (ImGui::MenuItem("Sky"))
           {
-            Sky* sky = new Sky();
-            currScene->SetSky(sky);
+            currScene->AddEntity(new Sky());
           }
 
           ImGui::EndMenu();

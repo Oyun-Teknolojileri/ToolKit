@@ -85,13 +85,6 @@ namespace ToolKit
 
       float intensity = 1.5f;
       DirectionalLight* light = new DirectionalLight();
-      light->SetColorVal(Vec3(0.267f));
-      light->SetIntensityVal(intensity);
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(180.0f));
-      m_lightMaster->AddChild(light->m_node);
-      m_sceneLights.push_back(light);
-
-      light = new DirectionalLight();
       light->SetColorVal(Vec3(0.55f));
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));

@@ -47,11 +47,6 @@ namespace ToolKit
     // Update parent - child relation for entities.
     for (Entity* e : m_entities)
     {
-      if (e->GetType() == EntityType::Entity_Sky)
-      {
-        m_sky = static_cast<Sky*>(e);
-      }
-
       if (e->_parentId != 0)
       {
         Entity* parent = GetEntity(e->_parentId);
@@ -406,25 +401,18 @@ namespace ToolKit
     return filtered;
   }
 
+  // Returns the last sky added
   Sky* Scene::GetSky()
   {
-    return m_sky;
-  }
+    for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; --i)
+    {
+      if (m_entities[i]->GetType() == EntityType::Entity_Sky)
+      {
+        return static_cast<Sky*>(m_entities[i]);
+      }
+    }
 
-  // This function should be always used for assigning sky to scene
-  void Scene::SetSky(Sky* sky, bool init)
-  {
-    if (m_sky != nullptr)
-    {
-      Entity* sky = RemoveEntity(m_sky->GetIdVal());
-      SafeDel(sky);
-    }
-    m_sky = sky;
-    if (init)
-    {
-      m_sky->Init();
-    }
-    AddEntity(m_sky);
+    return nullptr;
   }
 
   void Scene::Destroy(bool removeResources)
@@ -438,8 +426,6 @@ namespace ToolKit
       SafeDel(ntt);
     }
     m_entities.clear();
-
-    m_sky = nullptr;
 
     m_loaded = false;
     m_initiated = false;

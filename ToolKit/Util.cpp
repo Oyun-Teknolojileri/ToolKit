@@ -97,7 +97,7 @@ namespace ToolKit
     {
       if constexpr (std::is_integral_v<T>)
       {
-        return static_cast<int> (std::atoi(attr->value()));
+        return static_cast<T>(strtoull(attr->value(), nullptr, 10));
       }
       else if constexpr (std::is_floating_point_v<T>)
       {

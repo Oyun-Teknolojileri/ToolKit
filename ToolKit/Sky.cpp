@@ -78,6 +78,11 @@ namespace ToolKit
 
   MaterialPtr Sky::GetSkyboxMaterial()
   {
+    if (!m_initialized)
+    {
+      Init();
+    }
+
     HdriPtr hdri = GetComponent<EnvironmentComponent>()->GetHdriVal();
     m_skyboxMaterial->m_cubeMap = hdri->m_cubemap;
     return m_skyboxMaterial;

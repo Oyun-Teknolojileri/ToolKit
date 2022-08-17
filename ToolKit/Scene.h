@@ -60,7 +60,6 @@ namespace ToolKit
     Entity* GetFirstByTag(const String& tag);
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
     Sky* GetSky();
-    void SetSky(Sky* sky, bool init = true);
 
     virtual Entity* RemoveEntity(ULongID id);
     virtual void RemoveEntity(const EntityRawPtrArray& entities);
@@ -81,7 +80,6 @@ namespace ToolKit
    protected:
     EntityRawPtrArray m_entities;
     String m_version;
-    Sky* m_sky = nullptr;
   };
 
   class TK_API SceneManager : public ResourceManager

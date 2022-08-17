@@ -8,15 +8,16 @@
 
 namespace ToolKit
 {
-
   ULongID HandleManager::GetNextHandle()
   {
+    assert(m_baseHandle < m_maxIdLimit && "Generated id is too long.");
     return ++m_baseHandle;
   }
 
   void HandleManager::SetMaxHandle(ULongID val)
   {
     m_baseHandle = glm::max(m_baseHandle, val);
+    assert(m_baseHandle < m_maxIdLimit && "Generated id is too long.");
   }
 
   Main* Main::m_proxy = nullptr;

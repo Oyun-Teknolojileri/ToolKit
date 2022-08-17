@@ -24,8 +24,6 @@ namespace ToolKit
 
     void PluginWindow::Show()
     {
-
-
       ImGui::SetNextWindowSize(ImVec2(350, 150), ImGuiCond_Once);
       if
       (
@@ -65,13 +63,13 @@ namespace ToolKit
       Window::DeSerialize(doc, parent);
     }
 
-    void PluginWindow::ShowHeader() 
+    void PluginWindow::ShowHeader()
     {
-      int playwidth = static_cast<int> 
+      int playwidth = static_cast<int>
         (g_app->m_emulatorSettings.playWidth);
-      int playHeight = static_cast<int> 
+      int playHeight = static_cast<int>
         (g_app->m_emulatorSettings.playHeight);
-        
+
       String preset =
       EmuResToString(g_app->m_emulatorSettings.emuRes) +
       " / " +
@@ -93,7 +91,7 @@ namespace ToolKit
       }
     }
 
-    void PluginWindow::ShowSimButtons() 
+    void PluginWindow::ShowSimButtons()
     {
       Vec2 min = ImGui::GetWindowContentRegionMin();
       Vec2 max = ImGui::GetWindowContentRegionMax();
@@ -251,7 +249,7 @@ namespace ToolKit
       }
     }
 
-    void PluginWindow::ShowSettings() 
+    void PluginWindow::ShowSettings()
     {
       // Emulator Settings
       ImVec2 settingsRegion = ImVec2
@@ -303,7 +301,7 @@ namespace ToolKit
           )
         )
         {
-          EmulatorResolution resolution = 
+          EmulatorResolution resolution =
             static_cast<EmulatorResolution> (resolutionType);
           switch (resolution)
           {

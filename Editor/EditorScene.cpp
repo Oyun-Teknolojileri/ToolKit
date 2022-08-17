@@ -34,13 +34,6 @@ namespace ToolKit
     {
       Scene::Load();
 
-      // Add sky if no sky is deserialized
-      if (m_sky == nullptr)
-      {
-        Sky* sky = new Sky();
-        SetSky(sky, false);
-      }
-
       for (int i = static_cast<int>(m_entities.size()) - 1; i > -1; i--)
       {
         Entity* ntt = m_entities[i];
