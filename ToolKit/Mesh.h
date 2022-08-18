@@ -103,6 +103,7 @@ namespace ToolKit
 
    protected:
     void InitVertices(bool flush) override;
+    void CopyTo(Resource* other) override;
 
    public:
     std::vector<SkinVertex> m_clientSideVertices;

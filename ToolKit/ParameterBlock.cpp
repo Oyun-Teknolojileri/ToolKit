@@ -1,11 +1,13 @@
 #include "ParameterBlock.h"
 
 #include <memory>
+#include <utility>
 
 #include "Util.h"
 #include "Mesh.h"
 #include "ToolKit.h"
 #include "DebugNew.h"
+#include "Animation.h"
 
 namespace ToolKit
 {
@@ -136,6 +138,11 @@ namespace ToolKit
     *this = var;
   }
 
+  ParameterVariant::ParameterVariant(const AnimRecordPtrMap& var)
+  {
+    *this = var;
+  }
+
   ParameterVariant::VariantType ParameterVariant::GetType() const
   {
     return m_type;
@@ -257,6 +264,19 @@ namespace ToolKit
   ParameterVariant& ParameterVariant::operator=(const HdriPtr& var)
   {
     m_type = VariantType::HdriPtr;
+    AsignVal(var);
+    return *this;
+  }
+
+  /**
+  * Assign a AnimationPtr to the value of the variant.
+  */
+  ParameterVariant& ParameterVariant::operator=
+  (
+    const AnimRecordPtrMap& var
+  )
+  {
+    m_type = VariantType::AnimRecordPtrMap;
     AsignVal(var);
     return *this;
   }
@@ -440,8 +460,30 @@ namespace ToolKit
           res->Save(true);
           res->SerializeRef(doc, node);
         }
-        break;
       }
+      break;
+      case VariantType::AnimRecordPtrMap:
+      {
+        const AnimRecordPtrMap& list = GetCVar<AnimRecordPtrMap>();
+        XmlNode* listNode = CreateXmlNode(doc, "List", node);
+        WriteAttr(listNode, doc, "size", std::to_string(list.size()));
+        uint recordIndx = 0;
+        for (auto iter = list.begin(); iter != list.end(); ++iter, recordIndx++)
+        {
+          const AnimRecordPtr& state = iter->second;
+          XmlNode* elementNode =
+            CreateXmlNode(doc, std::to_string(recordIndx), listNode);
+          if (iter->first.length())
+          {
+            WriteAttr(elementNode, doc, "SignalName", iter->first);
+          }
+          if (state->m_animation)
+          {
+            state->m_animation->SerializeRef(doc, elementNode);
+          }
+        }
+      }
+      break;
       default:
       assert(false && "Invalid type.");
       break;
@@ -627,6 +669,32 @@ namespace ToolKit
           file = TexturePath(file);
           m_var = GetTextureManager()->Create<Hdri>(file);
         }
+      }
+      break;
+      case VariantType::AnimRecordPtrMap:
+      {
+        XmlNode* listNode = parent->first_node("List");
+        uint listSize = 0;
+        ReadAttr(listNode, "size", listSize);
+        AnimRecordPtrMap list;
+        for (uint stateIndx = 0; stateIndx < listSize; stateIndx++)
+        {
+          AnimRecordPtr record = std::make_shared<AnimRecord>();
+          XmlNode* elementNode =
+            listNode->first_node(std::to_string(stateIndx).c_str());
+
+          String signalName;
+          ReadAttr(elementNode, "SignalName", signalName);
+          String file = Resource::DeserializeRef(elementNode);
+          if (!file.empty())
+          {
+            file = AnimationPath(file);
+            record->m_animation =
+              GetAnimationManager()->Create<Animation>(file);
+          }
+          list.insert(std::make_pair(signalName, record));
+        }
+        m_var = list;
       }
       break;
       default:

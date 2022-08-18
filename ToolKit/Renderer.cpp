@@ -193,9 +193,8 @@ namespace ToolKit
 
     SkeletonPtr skeleton = static_cast<SkinMesh*> (mesh.get())->m_skeleton;
     skeleton->UpdateTransformationTexture();
-    for (int i = 0; i < static_cast<int>(skeleton->m_bones.size()); i++)
+    // Bind bone data
     {
-      Bone* bone = skeleton->m_bones[i];;
       GLint loc = glGetUniformLocation
       (
         skinProg->m_handle,

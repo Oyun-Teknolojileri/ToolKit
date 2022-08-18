@@ -307,7 +307,7 @@ namespace ToolKit
       ptr->m_initiated = true;
       ptr->m_loaded = true;
     };
-    auto uploadBoneMatrix = [](Mat4 mat, uint32_t boneIndx)
+    auto uploadBoneMatrix = [](Mat4 mat, uint boneIndx)
     {
       glTexSubImage2D
       (
@@ -332,33 +332,21 @@ namespace ToolKit
         uploadBoneMatrix
         (
           m_bones[boneIndx]->m_inverseWorldMatrix,
-          static_cast<uint32_t>(boneIndx)
+          static_cast<uint>(boneIndx)
         );
       }
     }
     if (m_boneTransformTexture == nullptr)
     {
       createBoneTexture(m_boneTransformTexture);
-      for (uint64_t bnIndx = 0; bnIndx < m_bones.size(); bnIndx++)
-      {
-        uploadBoneMatrix
-        (
-          m_bones[bnIndx]->m_node->GetTransform(TransformationSpace::TS_WORLD),
-          bnIndx
-        );
-      }
     }
-    if (m_isAnimatedThisFrame)
+    for (uint bnIndx = 0; bnIndx < static_cast<uint>(m_bones.size()); bnIndx++)
     {
-      for (uint64_t bnIndx = 0; bnIndx < m_bones.size(); bnIndx++)
-      {
-        uploadBoneMatrix
-        (
-          m_bones[bnIndx]->m_node->GetTransform(TransformationSpace::TS_WORLD),
-          bnIndx
-        );
-      }
-      m_isAnimatedThisFrame = false;
+      uploadBoneMatrix
+      (
+        m_bones[bnIndx]->m_node->GetTransform(TransformationSpace::TS_WORLD),
+        (uint)bnIndx
+      );
     }
   }
 

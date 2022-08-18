@@ -13,6 +13,7 @@
 #include <utility>
 #include <set>
 #include <filesystem>
+#include <unordered_map>
 
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
@@ -75,6 +76,10 @@ namespace ToolKit
   typedef glm::mat4 Mat4;
   typedef glm::mat3 Mat3;
   typedef glm::quat Quaternion;
+  typedef std::shared_ptr<class AnimRecord> AnimRecordPtr;
+  typedef std::unordered_map<String, AnimRecordPtr> AnimRecordPtrMap;
+  typedef class AnimRecord* AnimRecordRawPtr;
+  typedef std::vector<AnimRecordRawPtr> AnimRecordRawPtrArray;
   typedef std::vector<int> IntArray;
   typedef std::vector<struct VariantCategory> VariantCategoryArray;
 

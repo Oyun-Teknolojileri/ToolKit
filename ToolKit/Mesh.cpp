@@ -656,6 +656,13 @@ namespace ToolKit
       m_clientSideVertices.clear();
     }
   }
+  void SkinMesh::CopyTo(Resource* other)
+  {
+    Mesh::CopyTo(other);
+    SkinMesh* cpy = static_cast<SkinMesh*> (other);
+    cpy->m_skeleton = m_skeleton->Copy<Skeleton>();
+    cpy->m_skeleton->Init();
+  }
 
 
   MeshManager::MeshManager()

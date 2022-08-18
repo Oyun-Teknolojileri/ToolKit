@@ -72,7 +72,8 @@ namespace ToolKit
     ULongID,
     MeshPtr,
     MaterialPtr,
-    HdriPtr
+    HdriPtr,
+    AnimRecordPtrMap
     > Value;
 
   struct UIHint
@@ -94,7 +95,7 @@ namespace ToolKit
     * Priority of the category. Sorted and processed by this number within
     * every aspect of the framework. Such as Editor's Property Inspector.
     */
-    int Priority;
+    int Priority = 0;
   };
 
   /**
@@ -156,7 +157,8 @@ namespace ToolKit
       MeshPtr,
       MaterialPtr,
       Vec2,
-      HdriPtr
+      HdriPtr,
+      AnimRecordPtrMap
     };
 
     /**
@@ -259,6 +261,11 @@ namespace ToolKit
     * Constructs HdriPtr type variant.
     */
     explicit ParameterVariant(const HdriPtr& var);
+
+    /**
+    * Constructs AnimationStatePtrArray type variant.
+    */
+    explicit ParameterVariant(const AnimRecordPtrMap& var);
 
     /**
     * Used to retrieve VariantType of the variant.
@@ -389,6 +396,11 @@ namespace ToolKit
     * Assign a MaterialPtr to the value of the variant.
     */
     ParameterVariant& operator= (const HdriPtr& var);
+
+    /**
+    * Assign a AnimationStatePtrArray to the value of the variant.
+    */
+    ParameterVariant& operator= (const AnimRecordPtrMap& var);
 
     /**
     * Serializes the variant to the xml document.

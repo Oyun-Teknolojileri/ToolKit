@@ -16,7 +16,7 @@ namespace ToolKit
      public:
       virtual ~View() {}
       virtual void Show() = 0;
-      virtual void ShowVariant(ParameterVariant* var);
+      virtual void ShowVariant(ParameterVariant* var, ComponentPtr comp);
 
       void DropZone
       (
@@ -49,7 +49,7 @@ namespace ToolKit
       virtual ~EntityView() {}
       virtual void Show();
       virtual void ShowParameterBlock(ParameterBlock& params, ULongID id);
-      virtual bool ShowComponentBlock(ParameterBlock& params, ULongID id);
+      virtual bool ShowComponentBlock(ComponentPtr& comp);
 
      protected:
       void ShowCustomData();

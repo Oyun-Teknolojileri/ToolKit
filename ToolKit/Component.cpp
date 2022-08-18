@@ -56,6 +56,9 @@ namespace ToolKit
       case ComponentType::EnvironmentComponent:
         return new EnvironmentComponent();
       break;
+      case ComponentType::AnimControllerComponent:
+      return new AnimControllerComponent();
+      break;
       case ComponentType::Base:
       default:
         assert(false && "Unsupported component type");

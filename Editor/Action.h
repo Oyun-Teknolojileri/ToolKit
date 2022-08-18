@@ -39,7 +39,7 @@ namespace ToolKit
       Entity* m_ntt;
       ULongID m_parentId;
       EntityIdArray m_children;
-      AnimRecordArray m_records;
+      AnimRecordRawPtrArray m_records;
       bool m_actionComitted;
     };
 

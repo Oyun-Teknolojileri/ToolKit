@@ -112,8 +112,6 @@ namespace ToolKit
       bone->m_node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
       bone->m_node->SetChildrenDirty();
     }
-
-    skeleton->m_isAnimatedThisFrame = true;
   }
 
   void Animation::GetPose(Node* node, int frame)
@@ -354,8 +352,10 @@ namespace ToolKit
     }
   }
 
+
   AnimRecord::AnimRecord()
   {
+    m_id = GetHandleManager()->GetNextHandle();
   }
 
   AnimRecord::AnimRecord(Entity* entity, const AnimationPtr& anim)
@@ -366,12 +366,13 @@ namespace ToolKit
 
   void AnimationPlayer::AddRecord(AnimRecord* rec)
   {
-    m_records.push_back(rec);
-  }
+    int indx = Exist(rec->m_id);
+    if (indx != -1)
+    {
+      return;
+    }
 
-  void AnimationPlayer::RemoveRecord(const AnimRecord& rec)
-  {
-    RemoveRecord(rec.m_id);
+    m_records.push_back(rec);
   }
 
   void AnimationPlayer::RemoveRecord(ULongID id)
@@ -417,10 +418,10 @@ namespace ToolKit
       }
 
       if
-      (
+        (
         state == AnimRecord::State::Rewind ||
         state == AnimRecord::State::Stop
-      )
+        )
       {
         record->m_currentTime = 0;
       }

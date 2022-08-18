@@ -35,7 +35,8 @@ namespace ToolKit
     MeshComponent,
     DirectionComponent,
     MaterialComponent,
-    EnvironmentComponent
+    EnvironmentComponent,
+    AnimControllerComponent
   };
 
   /**

@@ -1,8 +1,10 @@
 #include "ResourceComponent.h"
+#include <utility>
 #include "Mesh.h"
 #include "Material.h"
 #include "Entity.h"
 #include "ToolKit.h"
+#include "Animation.h"
 
 namespace ToolKit
 {
@@ -233,4 +235,104 @@ namespace ToolKit
     return m_bbox->max;
   }
 
+
+  AnimControllerComponent::AnimControllerComponent()
+  {
+    Records_Define
+    (
+      {},
+      AnimRecordComponentCategory.Name,
+      AnimRecordComponentCategory.Priority,
+      true,
+      true
+    );
+
+    m_id = GetHandleManager()->GetNextHandle();
+  }
+  AnimControllerComponent::~AnimControllerComponent()
+  {
+    Stop();
+  }
+
+  ComponentPtr AnimControllerComponent::Copy(Entity* ntt)
+  {
+    AnimControllerComponentPtr ec =
+      std::make_shared<AnimControllerComponent>();
+    ec->m_localData = m_localData;
+    ec->m_entity = ntt;
+
+    return ec;
+  }
+
+  void AnimControllerComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    Component::DeSerialize(doc, parent);
+    AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
+    for (auto iter = list.begin(); iter != list.end(); ++iter)
+    {
+      iter->second->m_entity = m_entity;
+    }
+  }
+
+  void AnimControllerComponent::AddSignal
+  (
+    const String& signalName,
+    AnimRecordPtr record
+  )
+  {
+    ParamRecords().GetVar<AnimRecordPtrMap>().insert
+    (
+      std::make_pair(signalName, record)
+    );
+  }
+
+  void AnimControllerComponent::RemoveSignal(const String& signalName)
+  {
+    const auto& signal = GetRecordsVal().find(signalName);
+    if (signal == GetRecordsVal().end())
+    {
+      return;
+    }
+
+    GetAnimationPlayer()->RemoveRecord(signal->second->m_id);
+    ParamRecords().GetVar<AnimRecordPtrMap>().erase(signalName);
+  }
+
+  void AnimControllerComponent::Play(const String& signalName)
+  {
+    AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
+    AnimRecordPtr& rec = list[signalName];
+    if (rec == nullptr)
+    {
+      return;
+    }
+
+    if (activeRecord)
+    {
+      activeRecord->m_state = AnimRecord::State::Stop;
+    }
+    rec->m_state = AnimRecord::State::Play;
+    rec->m_loop = true;
+    rec->m_entity = m_entity;
+    activeRecord = rec;
+    GetAnimationPlayer()->AddRecord(rec.get());
+  }
+
+  void AnimControllerComponent::Stop()
+  {
+    if (activeRecord)
+    {
+      activeRecord->m_state = AnimRecord::State::Stop;
+      activeRecord = nullptr;
+    }
+  }
+
+  void AnimControllerComponent::Pause()
+  {
+    activeRecord->m_state = AnimRecord::State::Pause;
+  }
+  AnimRecordPtr AnimControllerComponent::GetActiveRecord()
+  {
+    return activeRecord;
+  }
 }  //  namespace ToolKit

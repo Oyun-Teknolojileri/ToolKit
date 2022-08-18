@@ -155,6 +155,16 @@ namespace ToolKit
     DeleteComponentAction::DeleteComponentAction(ComponentPtr com)
     {
       m_com = com;
+      switch (com->GetType())
+      {
+        case ComponentType::AnimControllerComponent:
+        {
+          reinterpret_cast<AnimControllerComponent*>(com.get())->Stop();
+        }
+        break;
+        default:
+        break;
+      };
       Redo();
     }
 

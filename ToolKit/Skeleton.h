@@ -45,7 +45,6 @@ namespace ToolKit
     Node* m_node;
     std::vector<Bone*> m_bones;
     TexturePtr m_boneTransformTexture, m_bindPoseTexture;
-    bool m_isAnimatedThisFrame = false;
   };
 
   class TK_API SkeletonManager : public ResourceManager
