@@ -53,6 +53,9 @@ namespace ToolKit
       const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f }
     );
 
+    void SetViewport(Viewport* viewport);
+    void SetViewportSize(uint width, uint height);
+
     void DrawFullQuad(ShaderPtr fragmentShader);
     void DrawCube(Camera* cam, MaterialPtr mat);
 

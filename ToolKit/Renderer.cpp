@@ -43,7 +43,7 @@ namespace ToolKit
     Camera* cam = viewport->GetCamera();
     EntityRawPtrArray entities = scene->GetEntities();
 
-    SetRenderTarget(viewport->m_viewportImage);
+    SetViewport(viewport);
 
     RenderEntities(entities, cam, viewport, editorLights);
 
@@ -400,7 +400,7 @@ namespace ToolKit
     const Vec4& color
   )
   {
-    if (m_renderTarget == renderTarget)
+    if (m_renderTarget == renderTarget && m_renderTarget != nullptr)
     {
       return;
     }
@@ -449,6 +449,20 @@ namespace ToolKit
     RenderTarget* tmp = *renderTarget;
     *renderTarget = m_renderTarget;
     SetRenderTarget(tmp, clear, color);
+  }
+
+  void Renderer::SetViewport(Viewport* viewport)
+  {
+    m_windowWidth = static_cast<uint>(viewport->m_width);
+    m_windowHeight = static_cast<uint>(viewport->m_height);
+    SetRenderTarget(viewport->m_viewportImage);
+  }
+
+  void Renderer::SetViewportSize(uint width, uint height)
+  {
+    m_windowWidth = width;
+    m_windowHeight = height;
+    glViewport(0, 0, width, height);
   }
 
   void Renderer::DrawFullQuad(ShaderPtr fragmentShader)

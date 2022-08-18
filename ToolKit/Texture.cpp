@@ -44,13 +44,15 @@ namespace ToolKit
     {
       if
       (
-        m_imagef = stbi_loadf
         (
-          GetFile().c_str(),
-          &m_width,
-          &m_height,
-          &m_bytePP,
-          3
+          m_imagef = GetFileManager()->GetHdriFile
+          (
+            GetFile().c_str(),
+            &m_width,
+            &m_height,
+            &m_bytePP,
+            3
+          )
         )
       )
       {
@@ -61,13 +63,15 @@ namespace ToolKit
     {
       if
       (
-        m_image = GetFileManager()->GetImageFile
         (
-          GetFile(),
-          &m_width,
-          &m_height,
-          &m_bytePP,
-          4
+          m_image = GetFileManager()->GetImageFile
+          (
+            GetFile(),
+            &m_width,
+            &m_height,
+            &m_bytePP,
+            4
+          )
         )
       )
       {
@@ -114,6 +118,12 @@ namespace ToolKit
         GL_FLOAT,
         m_imagef
       );
+      glTexParameteri
+      (
+        GL_TEXTURE_2D,
+        GL_TEXTURE_MIN_FILTER,
+        GL_LINEAR
+      );
     }
     else
     {
@@ -129,15 +139,15 @@ namespace ToolKit
         GL_UNSIGNED_BYTE,
         m_image
       );
+      glGenerateMipmap(GL_TEXTURE_2D);
+      glTexParameteri
+      (
+        GL_TEXTURE_2D,
+        GL_TEXTURE_MIN_FILTER,
+        GL_LINEAR_MIPMAP_LINEAR
+      );
     }
 
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glTexParameteri
-    (
-      GL_TEXTURE_2D,
-      GL_TEXTURE_MIN_FILTER,
-      GL_LINEAR_MIPMAP_LINEAR
-    );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     if (GL_EXT_texture_filter_anisotropic)
@@ -415,8 +425,7 @@ namespace ToolKit
       return;
     }
 
-    // Create framebuffer holds cubemap
-    CreateFramebuffer();
+    CreateFramebuffersForCubeMaps();
 
     // Init 2D hdri texture
     Texture::Init();
@@ -426,14 +435,14 @@ namespace ToolKit
 
     // Generate irradience cubemap images
     GenerateIrradianceMap();
+
+    DeleteFramebuffers();
   }
 
   void Hdri::UnInit()
   {
     if (m_initiated)
     {
-      glDeleteFramebuffers(1, &m_captureFBO);
-      glDeleteRenderbuffers(1, &m_captureRBO);
       m_cubemap->UnInit();
       m_irradianceCubemap->UnInit();
     }
@@ -536,7 +545,7 @@ namespace ToolKit
 
   void Hdri::RenderToCubeMap
   (
-    int fbo,
+    GLuint fbo,
     const Mat4 views[6],
     CameraPtr cam,
     uint cubeMapTextureId,
@@ -570,7 +579,7 @@ namespace ToolKit
         0
       );
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      glViewport(0, 0, width , height);
+      GetRenderer()->SetViewportSize(width, height);
 
       CullingType currType = mat->GetRenderState()->cullMode;
       mat->GetRenderState()->cullMode = CullingType::TwoSided;
@@ -581,37 +590,52 @@ namespace ToolKit
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
-  void Hdri::CreateFramebuffer()
+  void Hdri::CreateFramebuffersForCubeMaps()
   {
+    auto createFbFn = [](GLuint& fbo, GLuint& rbo, int width, int height)
+    {
+      glGenFramebuffers(1, &fbo);
+      glGenRenderbuffers(1, &rbo);
+
+      glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+      glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+      glRenderbufferStorage
+      (
+        GL_RENDERBUFFER,
+        GL_DEPTH_COMPONENT24,
+        width,
+        height
+      );
+      glFramebufferRenderbuffer
+      (
+        GL_FRAMEBUFFER,
+        GL_DEPTH_ATTACHMENT,
+        GL_RENDERBUFFER,
+        rbo
+      );
+
+      // Check if framebuffer is complete
+      if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+      {
+        GetLogger()->Log("Error while creating framebuffer.");
+      }
+    };
+
     GLint lastFBO;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
 
-    glGenFramebuffers(1, &m_captureFBO);
-    glGenRenderbuffers(1, &m_captureRBO);
+    createFbFn(m_fbo, m_rbo, m_width, m_width);
+    createFbFn(m_irradianceFbo, m_irradianceRbo, m_width / 64, m_width / 64);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_captureFBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, m_captureRBO);
-    glRenderbufferStorage
-    (
-      GL_RENDERBUFFER,
-      GL_DEPTH_COMPONENT24,
-      m_width,
-      m_width
-    );
-    glFramebufferRenderbuffer
-    (
-      GL_FRAMEBUFFER,
-      GL_DEPTH_ATTACHMENT,
-      GL_RENDERBUFFER,
-      m_captureRBO
-    );
-
-    // Check if framebuffer is complete
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    {
-      GetLogger()->Log("Error while creating framebuffer.");
-    }
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+  }
+
+  void Hdri::DeleteFramebuffers()
+  {
+    glDeleteFramebuffers(1, &m_fbo);
+    glDeleteRenderbuffers(1, &m_rbo);
+    glDeleteFramebuffers(1, &m_irradianceFbo);
+    glDeleteRenderbuffers(1, &m_irradianceRbo);
   }
 
   void Hdri::GenerateCubemapFrom2DTexture()
@@ -620,11 +644,11 @@ namespace ToolKit
     (
       {
         0,
-        GL_RGB16F,
+        GL_RGB,
         m_width,
         m_width,
         GL_RGB,
-        GL_FLOAT,
+        GL_UNSIGNED_BYTE,
         nullptr,
         GL_CLAMP_TO_EDGE,
         GL_LINEAR
@@ -663,7 +687,7 @@ namespace ToolKit
 
     RenderToCubeMap
     (
-      m_captureFBO,
+      m_fbo,
       views,
       cam,
       cubemapTextureId,
@@ -681,11 +705,11 @@ namespace ToolKit
     (
       {
         0,
-        GL_RGB16F,
+        GL_RGB,
         m_width / 64,
         m_width / 64,
         GL_RGB,
-        GL_FLOAT,
+        GL_UNSIGNED_BYTE,
         nullptr,
         GL_CLAMP_TO_EDGE,
         GL_LINEAR
@@ -722,7 +746,7 @@ namespace ToolKit
 
     RenderToCubeMap
     (
-      m_captureFBO,
+      m_irradianceFbo,
       views,
       cam,
       irradianceTextureId,
@@ -1005,7 +1029,14 @@ namespace ToolKit
 
   String TextureManager::GetDefaultResource(ResourceType type)
   {
-    return TexturePath("default.png", true);
+    if (type == ResourceType::Hdri)
+    {
+      return TexturePath("defaultHDRI.hdr", true);
+    }
+    else
+    {
+      return TexturePath("default.png", true);
+    }
   }
 
 }  // namespace ToolKit

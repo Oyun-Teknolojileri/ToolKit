@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <utility>
 #include <variant>
+#include <fstream>
 
 #include "zip.h"
 #include "unzip.h"
@@ -27,6 +28,15 @@ namespace ToolKit
       int* comp,
       int reqComp
     );
+    float* GetHdriFile
+    (
+      const String& filePath,
+      int* x,
+      int* y,
+      int* comp,
+      int reqComp
+    );
+
     void PackResources(const String& path);
 
     bool CheckFileFromResources(const String& path);
@@ -46,7 +56,7 @@ namespace ToolKit
       ImageFloat
     };
 
-    struct FileInfo
+    struct ImageFileInfo
     {
       String& filePath;
       int* x;
@@ -55,7 +65,7 @@ namespace ToolKit
       int reqComp;
     };
 
-    FileDataType GetFile(FileType fileType, FileInfo& fileSettings);
+    FileDataType GetFile(FileType fileType, ImageFileInfo& fileInfo);
     void LoadAllScenes(const String& path);
     void GetAllUsedResourcePaths(const String& path);
 
@@ -77,7 +87,13 @@ namespace ToolKit
     (
       zipFile zfile,
       const String& relativePath,
-      FileInfo& fileSettings
+      ImageFileInfo& fileInfo
+    );
+    float* ReadHdriFileFromZip
+    (
+      zipFile zfile,
+      const String& relativePath,
+      ImageFileInfo& fileInfo
     );
     XmlFilePtr CreateXmlFileFromZip
     (
@@ -89,7 +105,13 @@ namespace ToolKit
     (
       zipFile zfile,
       uint filesize,
-      FileInfo& fileSettings
+      ImageFileInfo& fileInfo
+    );
+    float* CreateHdriFileFromZip
+    (
+      zipFile zfile,
+      uint filesize,
+      ImageFileInfo& fileInfo
     );
 
     void GenerateOffsetTableForPakFiles();

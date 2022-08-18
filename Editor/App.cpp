@@ -353,9 +353,7 @@ namespace ToolKit
 
     void App::OnResize(uint width, uint height)
     {
-      m_renderer->m_windowWidth = width;
-      m_renderer->m_windowHeight = height;
-      glViewport(0, 0, width, height);
+      m_renderer->SetViewportSize(width, height);
     }
 
     void App::OnNewScene(const String& name)

@@ -93,7 +93,8 @@ namespace ToolKit
     void SetIrradianceCubemapId(uint id);
 
    protected:
-    void CreateFramebuffer();
+    void CreateFramebuffersForCubeMaps();
+    void DeleteFramebuffers();
     void GenerateCubemapFrom2DTexture();
     void GenerateIrradianceMap();
 
@@ -101,7 +102,7 @@ namespace ToolKit
     uint GenerateCubemapBuffers(struct CubeMapSettings cubeMapSettings);
     void RenderToCubeMap
     (
-      int fbo,
+      uint fbo,
       const Mat4 views[6],
       CameraPtr cam,
       uint cubeMapTextureId,
@@ -116,12 +117,14 @@ namespace ToolKit
     float m_exposure = 1.0f;
 
    protected:
-    uint m_captureFBO = 0;
-    uint m_captureRBO = 0;
-
     MaterialPtr m_texToCubemapMat = nullptr;
     MaterialPtr m_cubemapToIrradiancemapMat = nullptr;
     TexturePtr m_equirectangularTexture = nullptr;
+
+    uint m_fbo = 0;
+    uint m_rbo = 0;
+    uint m_irradianceFbo = 0;
+    uint m_irradianceRbo = 0;
   };
 
   struct RenderTargetSettigs
