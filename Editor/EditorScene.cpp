@@ -34,6 +34,20 @@ namespace ToolKit
     {
       Scene::Load();
 
+      auto copyNodeHierarchyFn = [](Entity* ntt1, Entity* ntt2)
+      {
+        if (Node* parent = ntt1->m_node->m_parent)
+        {
+          ntt1->m_node->OrphanSelf();
+          parent->AddChild(ntt2->m_node);
+        }
+        for (Node* node : ntt1->m_node->m_children)
+        {
+          node->OrphanSelf();
+          ntt2->m_node->AddChild(node);
+        }
+      };
+
       for (int i = static_cast<int>(m_entities.size()) - 1; i > -1; i--)
       {
         Entity* ntt = m_entities[i];
@@ -47,6 +61,10 @@ namespace ToolKit
           // Cheating here just to copy the Camera entity into EditorCamera.
           EditorCamera* upCasted = reinterpret_cast<EditorCamera*> (ntt);
           EditorCamera* cam = new EditorCamera(upCasted);
+
+          // Copy node hierarchy
+          copyNodeHierarchyFn(ntt, cam);
+
           m_entities[i] = cam;
           SafeDel(ntt);
         }
@@ -63,6 +81,10 @@ namespace ToolKit
             reinterpret_cast<EditorDirectionalLight*> (ntt);
             EditorDirectionalLight* light =
             new EditorDirectionalLight(upCasted);
+
+            // Copy node hierarchy
+            copyNodeHierarchyFn(ntt, light);
+
             light->Init();
             m_entities[i] = light;
             SafeDel(ntt);
@@ -72,6 +94,10 @@ namespace ToolKit
             EditorPointLight* upCasted =
             reinterpret_cast<EditorPointLight*> (ntt);
             EditorPointLight* light = new EditorPointLight(upCasted);
+
+            // Copy node hierarchy
+            copyNodeHierarchyFn(ntt, light);
+
             light->Init();
             m_entities[i] = light;
             SafeDel(ntt);
@@ -81,6 +107,10 @@ namespace ToolKit
             EditorSpotLight* upCasted =
             reinterpret_cast<EditorSpotLight*> (ntt);
             EditorSpotLight* light = new EditorSpotLight(upCasted);
+
+            // Copy node hierarchy
+            copyNodeHierarchyFn(ntt, light);
+
             light->Init();
             m_entities[i] = light;
             SafeDel(ntt);
