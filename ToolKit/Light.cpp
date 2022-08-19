@@ -1,18 +1,15 @@
 
 #include "Light.h"
-#include "Component.h"
-#include "DirectionComponent.h"
 
 #include <string>
 
+#include "Component.h"
+#include "DirectionComponent.h"
 
 namespace ToolKit
 {
   Light::Light()
   {
-    m_localData.m_variants.reserve(m_localData.m_variants.size() + 3);
-
-    LightType_Define(0, "Light", 90, false, false);
     Color_Define(Vec3(1.0f), "Light", 0, true, true, { true });
     Intensity_Define(1.0f, "Light", 90, true, true);
   }
@@ -24,11 +21,6 @@ namespace ToolKit
   EntityType Light::GetType() const
   {
     return EntityType::Entity_Light;
-  }
-
-  LightTypeEnum Light::GetLightType() const
-  {
-    return LightTypeEnum::LightBase;
   }
 
   void Light::Serialize(XmlDocument* doc, XmlNode* parent) const
@@ -44,32 +36,26 @@ namespace ToolKit
 
   DirectionalLight::DirectionalLight()
   {
-    SetLightTypeVal(static_cast<int> (LightTypeEnum::LightDirectional));
     AddComponent(new DirectionComponent(this));
   }
 
-  LightTypeEnum DirectionalLight::GetLightType() const
+  EntityType DirectionalLight::GetType() const
   {
-    return LightTypeEnum::LightDirectional;
+    return EntityType::Entity_DirectionalLight;
   }
 
   PointLight::PointLight()
   {
-    m_localData.m_variants.reserve(m_localData.m_variants.size() + 1);
-
-    SetLightTypeVal(static_cast<int> (LightTypeEnum::LightPoint));
     Radius_Define(3.0f, "Light", 90, true, true);
   }
 
-  LightTypeEnum PointLight::GetLightType() const
+  EntityType PointLight::GetType() const
   {
-    return LightTypeEnum::LightPoint;
+    return EntityType::Entity_PointLight;
   }
 
   SpotLight::SpotLight()
   {
-    m_localData.m_variants.reserve(m_localData.m_variants.size() + 3);
-    SetLightTypeVal(static_cast<int> (LightTypeEnum::LightSpot));
     Radius_Define(10.0f, "Light", 90, true, true);
     OuterAngle_Define(35.0f, "Light", 90, true, true);
     InnerAngle_Define(30.0f, "Light", 90, true, true);
@@ -77,8 +63,8 @@ namespace ToolKit
     AddComponent(new DirectionComponent(this));
   }
 
-  LightTypeEnum SpotLight::GetLightType() const
+  EntityType SpotLight::GetType() const
   {
-    return LightTypeEnum::LightSpot;
+    return EntityType::Entity_SpotLight;
   }
 }  // namespace ToolKit

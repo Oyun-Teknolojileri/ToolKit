@@ -34,87 +34,29 @@ namespace ToolKit
     {
       Scene::Load();
 
-      auto copyNodeHierarchyFn = [](Entity* ntt1, Entity* ntt2)
-      {
-        if (Node* parent = ntt1->m_node->m_parent)
-        {
-          ntt1->m_node->OrphanSelf();
-          parent->AddChild(ntt2->m_node);
-        }
-        for (Node* node : ntt1->m_node->m_children)
-        {
-          node->OrphanSelf();
-          ntt2->m_node->AddChild(node);
-        }
-      };
-
       for (int i = static_cast<int>(m_entities.size()) - 1; i > -1; i--)
       {
         Entity* ntt = m_entities[i];
 
-        // Add billboard gizmo
+        // Add billboards
         AddBillboardToEntity(ntt);
 
-        // Replace cameras with EditorCamera.
+        // Create gizmos
         if (ntt->GetType() == EntityType::Entity_Camera)
         {
-          // Cheating here just to copy the Camera entity into EditorCamera.
-          EditorCamera* upCasted = reinterpret_cast<EditorCamera*> (ntt);
-          EditorCamera* cam = new EditorCamera(upCasted);
-
-          // Copy node hierarchy
-          copyNodeHierarchyFn(ntt, cam);
-
-          m_entities[i] = cam;
-          SafeDel(ntt);
+          static_cast<EditorCamera*>(ntt)->GenerateFrustum();
         }
-        else if (ntt->GetType() == EntityType::Entity_Light)
+        else if (ntt->GetType() == EntityType::Entity_DirectionalLight)
         {
-          // Replace lights with EditorLights
-          Light* el = reinterpret_cast<Light*>(ntt);
-          LightTypeEnum type = static_cast<LightTypeEnum>
-            (el->GetLightTypeVal());
-
-          if (type == LightTypeEnum::LightDirectional)
-          {
-            EditorDirectionalLight* upCasted =
-            reinterpret_cast<EditorDirectionalLight*> (ntt);
-            EditorDirectionalLight* light =
-            new EditorDirectionalLight(upCasted);
-
-            // Copy node hierarchy
-            copyNodeHierarchyFn(ntt, light);
-
-            light->Init();
-            m_entities[i] = light;
-            SafeDel(ntt);
-          }
-          else if (type == LightTypeEnum::LightPoint)
-          {
-            EditorPointLight* upCasted =
-            reinterpret_cast<EditorPointLight*> (ntt);
-            EditorPointLight* light = new EditorPointLight(upCasted);
-
-            // Copy node hierarchy
-            copyNodeHierarchyFn(ntt, light);
-
-            light->Init();
-            m_entities[i] = light;
-            SafeDel(ntt);
-          }
-          else if (type == LightTypeEnum::LightSpot)
-          {
-            EditorSpotLight* upCasted =
-            reinterpret_cast<EditorSpotLight*> (ntt);
-            EditorSpotLight* light = new EditorSpotLight(upCasted);
-
-            // Copy node hierarchy
-            copyNodeHierarchyFn(ntt, light);
-
-            light->Init();
-            m_entities[i] = light;
-            SafeDel(ntt);
-          }
+          static_cast<EditorDirectionalLight*>(ntt)->Init();
+        }
+        else if (ntt->GetType() == EntityType::Entity_PointLight)
+        {
+          static_cast<EditorPointLight*>(ntt)->Init();
+        }
+        else if (ntt->GetType() == EntityType::Entity_SpotLight)
+        {
+          static_cast<EditorSpotLight*>(ntt)->Init();
         }
       }
     }

@@ -29,12 +29,12 @@
 #include "Action.h"
 #include "GL/glew.h"
 #include "DebugNew.h"
+#include "EditorCamera.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
-
     App::App(int windowWidth, int windowHeight)
       : m_workspace(this)
     {
@@ -43,6 +43,8 @@ namespace ToolKit
       m_renderer->m_windowWidth = windowWidth;
       m_renderer->m_windowHeight = windowHeight;
       m_statusMsg = "OK";
+
+      OverrideEntityConstructors();
     }
 
     App::~App()
@@ -250,11 +252,11 @@ namespace ToolKit
       {
         return
         (
-          light1->GetLightType() == LightTypeEnum::LightDirectional
+          light1->GetType() == EntityType::Entity_DirectionalLight
           &&
           (
-            light2->GetLightType() == LightTypeEnum::LightSpot
-            || light2->GetLightType() == LightTypeEnum::LightPoint
+            light2->GetType() == EntityType::Entity_SpotLight
+            || light2->GetType() == EntityType::Entity_PointLight
           )
         );
       };
@@ -1345,7 +1347,7 @@ Fail:
           if (ntt->IsDrawable())
           {
             isLight = false;
-            if (ntt->GetType() == EntityType::Entity_Light)
+            if (ntt->IsLightInstance())
             {
               isLight = true;
             }
@@ -1620,6 +1622,46 @@ Fail:
         String fullPath = ScenePath(scene);
         OpenScene(fullPath);
       }
+    }
+
+    void App::OverrideEntityConstructors()
+    {
+      auto cameraConstructorOverrideFn = []() -> Entity*
+      {
+        return new EditorCamera();
+      };
+      auto dirLightConstructorOverrideFn = []() -> Entity*
+      {
+        return new EditorDirectionalLight();
+      };
+      auto pointLightConstructorOverrideFn = []() -> Entity*
+      {
+        return new EditorPointLight();
+      };
+      auto spotLightConstructorOverrideFn = []() -> Entity*
+      {
+        return new EditorSpotLight();
+      };
+      GetEntityFactory()->OverrideEntityConstructor
+      (
+        EntityType::Entity_Camera,
+        cameraConstructorOverrideFn
+      );
+      GetEntityFactory()->OverrideEntityConstructor
+      (
+        EntityType::Entity_DirectionalLight,
+        dirLightConstructorOverrideFn
+      );
+      GetEntityFactory()->OverrideEntityConstructor
+      (
+        EntityType::Entity_PointLight,
+        pointLightConstructorOverrideFn
+      );
+      GetEntityFactory()->OverrideEntityConstructor
+      (
+        EntityType::Entity_SpotLight,
+        spotLightConstructorOverrideFn
+      );
     }
 
     void App::CreateSimulationWindow(float width, float height)

@@ -341,7 +341,7 @@ namespace ToolKit
     LightRawPtrArray lights;
     for (Entity* ntt : m_entities)
     {
-      if (ntt->GetType() == EntityType::Entity_Light)
+      if (ntt->IsLightInstance())
       {
         lights.push_back(static_cast<Light*>(ntt));
       }
@@ -526,9 +526,10 @@ namespace ToolKit
         XmlEntityTypeAttr.c_str()
       );
       EntityType t = (EntityType)std::atoi(typeAttr->value());
-      Entity* ntt = Entity::CreateByType(t);
+      Entity* ntt = GetEntityFactory()->CreateByType(t);
 
       ntt->DeSerialize(doc, node);
+
       // Incrementing the incoming ntt ids with current max id value...
       //   to prevent id collisions.
       ULongID currentID = ntt->GetIdVal() + lastID;

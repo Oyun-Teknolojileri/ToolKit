@@ -43,10 +43,11 @@ namespace ToolKit
       EditorDirectionalLight();
       explicit EditorDirectionalLight(const EditorDirectionalLight* light);
       virtual ~EditorDirectionalLight();
-      void ParameterEventConstructor() override {};
+      void ParameterEventConstructor() override;
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
+      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
       void Init() override;
     };
@@ -61,6 +62,7 @@ namespace ToolKit
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
+      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
       void Init() override;
     };
@@ -75,6 +77,7 @@ namespace ToolKit
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
+      void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
       void Init() override;
     };

@@ -15,8 +15,8 @@
 		{
 			/*
 			Type
-				1 : Point light
-				2 : Directional light
+				1 : Directional light
+				2 : Point light
 				3 : Spot light
 			*/
 			int type[12];

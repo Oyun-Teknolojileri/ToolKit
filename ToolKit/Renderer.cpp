@@ -721,7 +721,7 @@ namespace ToolKit
     // Find the end of directional lights
     for (int i = 0; i < lights.size(); i++)
     {
-      if(lights[i]->GetLightType() == LightTypeEnum::LightDirectional)
+      if(lights[i]->GetType() == EntityType::Entity_DirectionalLight)
       {
         bestLights.push_back(lights[i]);
       }
@@ -732,11 +732,11 @@ namespace ToolKit
     {
       {
         float radius;
-        if (lights[i]->GetLightType() == LightTypeEnum::LightPoint)
+        if (lights[i]->GetType() == EntityType::Entity_PointLight)
         {
           radius = static_cast<PointLight*>(lights[i])->GetRadiusVal();
         }
-        else if (lights[i]->GetLightType() == LightTypeEnum::LightSpot)
+        else if (lights[i]->GetType() == EntityType::Entity_SpotLight)
         {
           radius = static_cast<SpotLight*>(lights[i])->GetRadiusVal();
         }
@@ -1202,10 +1202,10 @@ namespace ToolKit
     {
       Light* currLight = m_lights[i];
 
-      LightTypeEnum type = currLight->GetLightType();
+      EntityType type = currLight->GetType();
 
       // Point light uniforms
-      if (type == LightTypeEnum::LightPoint)
+      if (type == EntityType::Entity_PointLight)
       {
         Vec3 color = currLight->GetColorVal();
         float intensity = currLight->GetIntensityVal();
@@ -1220,7 +1220,7 @@ namespace ToolKit
           program->m_handle,
           g_lightTypeStrCache[i].c_str()
         );
-        glUniform1i(loc, static_cast<GLuint>(type));
+        glUniform1i(loc, static_cast<GLuint>(2));
         loc = glGetUniformLocation
         (
           program->m_handle,
@@ -1247,7 +1247,7 @@ namespace ToolKit
         glUniform1f(loc, radius);
       }
       // Directional light uniforms
-      else if (type == LightTypeEnum::LightDirectional)
+      else if (type == EntityType::Entity_DirectionalLight)
       {
         Vec3 color = currLight->GetColorVal();
         float intensity = currLight->GetIntensityVal();
@@ -1259,7 +1259,7 @@ namespace ToolKit
           program->m_handle,
           g_lightTypeStrCache[i].c_str()
         );
-        glUniform1i(loc, static_cast<GLuint>(type));
+        glUniform1i(loc, static_cast<GLuint>(1));
         loc = glGetUniformLocation
         (
           program->m_handle,
@@ -1280,7 +1280,7 @@ namespace ToolKit
         glUniform3fv(loc, 1, &dir.x);
       }
       // Spot light uniforms
-      else if (type == LightTypeEnum::LightSpot)
+      else if (type == EntityType::Entity_SpotLight)
       {
         Vec3 color = currLight->GetColorVal();
         float intensity = currLight->GetIntensityVal();
@@ -1306,7 +1306,7 @@ namespace ToolKit
           program->m_handle,
           g_lightTypeStrCache[i].c_str()
         );
-        glUniform1i(loc, static_cast<GLuint>(type));
+        glUniform1i(loc, static_cast<GLuint>(3));
         loc = glGetUniformLocation
         (
           program->m_handle,

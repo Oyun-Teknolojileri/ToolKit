@@ -41,6 +41,8 @@ namespace ToolKit
     m_skeletonManager = new SkeletonManager();
     m_fileManager = new FileManager();
 
+    m_entityFactory = new EntityFactory();
+
     m_logger->Log("Main Constructed");
   }
 
@@ -62,6 +64,8 @@ namespace ToolKit
     SafeDel(m_uiManager);
     SafeDel(m_skeletonManager);
     SafeDel(m_fileManager);
+
+    SafeDel(m_entityFactory);
 
     m_logger->Log("Main Deconstructed");
     SafeDel(m_logger);
@@ -235,6 +239,11 @@ namespace ToolKit
   TK_API FileManager* GetFileManager()
   {
     return Main::GetInstance()->m_fileManager;
+  }
+
+  TK_API EntityFactory* GetEntityFactory()
+  {
+    return Main::GetInstance()->m_entityFactory;
   }
 
   String DefaultAbsolutePath()

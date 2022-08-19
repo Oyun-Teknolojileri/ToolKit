@@ -21,7 +21,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-
 using std::string;
 using std::vector;
 using std::unordered_map;
@@ -572,9 +571,8 @@ namespace ToolKit
     }
     else
     {
-      entity = Entity::CreateByType(EntityType::Entity_Base);
+      entity = GetEntityFactory()->CreateByType(EntityType::Entity_Base);
     }
-
 
     ULongID thisId = entity->GetIdVal();
     g_entityIds.push_back(thisId);

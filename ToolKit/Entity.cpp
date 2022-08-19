@@ -92,7 +92,7 @@ namespace ToolKit
   Entity* Entity::Copy() const
   {
     EntityType t = GetType();
-    Entity* e = CreateByType(t);
+    Entity* e = GetEntityFactory()->CreateByType(t);
     return CopyTo(e);
   }
 
@@ -117,7 +117,7 @@ namespace ToolKit
   Entity* Entity::Instantiate() const
   {
     EntityType t = GetType();
-    Entity* e = CreateByType(t);
+    Entity* e = GetEntityFactory()->CreateByType(t);
     return InstantiateTo(e);
   }
 
@@ -189,69 +189,6 @@ namespace ToolKit
     {
       other->m_components = m_components;
     }
-  }
-
-  Entity* Entity::CreateByType(EntityType t)
-  {
-    Entity* e = nullptr;
-    switch (t)
-    {
-      case EntityType::Entity_Base:
-      e = new Entity();
-      break;
-      case EntityType::Entity_Node:
-      e = new EntityNode();
-      break;
-      case EntityType::Entity_AudioSource:
-      e = new AudioSource();
-      break;
-      case EntityType::Entity_Billboard:
-      e = new Billboard(Billboard::Settings());
-      break;
-      case EntityType::Entity_Cube:
-      e = new Cube(false);
-      break;
-      case EntityType::Entity_Quad:
-      e = new Quad(false);
-      break;
-      case EntityType::Entity_Sphere:
-      e = new Sphere(false);
-      break;
-      case EntityType::Etity_Arrow:
-      e = new Arrow2d(false);
-      break;
-      case EntityType::Entity_LineBatch:
-      e = new LineBatch();
-      break;
-      case EntityType::Entity_Cone:
-      e = new Cone(false);
-      break;
-      case EntityType::Entity_Drawable:
-      e = new Drawable();
-      break;
-      case EntityType::Entity_Camera:
-      e = new Camera();
-      break;
-      case EntityType::Entity_Surface:
-      e = new Surface();
-      break;
-      case EntityType::Entity_Button:
-      e = new Button();
-      break;
-      case EntityType::Entity_Light:
-      e = new Light();
-      break;
-      case EntityType::Entity_Sky:
-      e = new Sky();
-      break;
-      case EntityType::Entity_SpriteAnim:
-      case EntityType::Entity_Directional:
-      default:
-      assert(false);
-      break;
-    }
-
-    return e;
   }
 
   void Entity::AddComponent(Component* component)
@@ -425,6 +362,18 @@ namespace ToolKit
       t == EntityType::Entity_Button;
   }
 
+  bool Entity::IsLightInstance() const
+  {
+    EntityType type = GetType();
+    return
+    (
+      type == EntityType::Entity_Light
+      || type == EntityType::Entity_DirectionalLight
+      || type == EntityType::Entity_PointLight
+      || type == EntityType::Entity_SpotLight
+    );
+  }
+
   EntityNode::EntityNode()
   {
   }
@@ -445,6 +394,106 @@ namespace ToolKit
 
   void EntityNode::RemoveResources()
   {
+  }
+
+  EntityFactory::EntityFactory()
+  {
+    m_overrideFns.resize
+    (
+      static_cast<size_t>(EntityType::ENTITY_TYPE_COUNT),
+      nullptr
+    );
+  }
+
+  EntityFactory::~EntityFactory()
+  {
+    m_overrideFns.clear();
+  }
+
+  Entity* EntityFactory::CreateByType(EntityType type)
+  {
+    // Overriden constructors
+    if (m_overrideFns[static_cast<int>(type)] != nullptr)
+    {
+      return m_overrideFns[static_cast<int>(type)]();
+    }
+
+    Entity* e = nullptr;
+    switch (type)
+    {
+      case EntityType::Entity_Base:
+      e = new Entity();
+      break;
+      case EntityType::Entity_Node:
+      e = new EntityNode();
+      break;
+      case EntityType::Entity_AudioSource:
+      e = new AudioSource();
+      break;
+      case EntityType::Entity_Billboard:
+      e = new Billboard(Billboard::Settings());
+      break;
+      case EntityType::Entity_Cube:
+      e = new Cube(false);
+      break;
+      case EntityType::Entity_Quad:
+      e = new Quad(false);
+      break;
+      case EntityType::Entity_Sphere:
+      e = new Sphere(false);
+      break;
+      case EntityType::Etity_Arrow:
+      e = new Arrow2d(false);
+      break;
+      case EntityType::Entity_LineBatch:
+      e = new LineBatch();
+      break;
+      case EntityType::Entity_Cone:
+      e = new Cone(false);
+      break;
+      case EntityType::Entity_Drawable:
+      e = new Drawable();
+      break;
+      case EntityType::Entity_Camera:
+      e = new Camera();
+      break;
+      case EntityType::Entity_Surface:
+      e = new Surface();
+      break;
+      case EntityType::Entity_Button:
+      e = new Button();
+      break;
+      case EntityType::Entity_Light:
+      e = new Light();
+      case EntityType::Entity_DirectionalLight:
+      e = new DirectionalLight();
+      case EntityType::Entity_PointLight:
+      e = new PointLight();
+      case EntityType::Entity_SpotLight:
+      e = new SpotLight();
+      break;
+      case EntityType::Entity_Sky:
+      e = new Sky();
+      break;
+      case EntityType::Entity_SpriteAnim:
+      case EntityType::Entity_Directional:
+      default:
+      assert(false);
+      break;
+    }
+
+    return e;
+
+    return nullptr;
+  }
+
+  void EntityFactory::OverrideEntityConstructor
+  (
+    EntityType type,
+    std::function<Entity* ()> fn
+  )
+  {
+    m_overrideFns[static_cast<int>(type)] = fn;
   }
 
 }  // namespace ToolKit

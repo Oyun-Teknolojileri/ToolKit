@@ -13,21 +13,20 @@ namespace ToolKit
 {
   namespace Editor
   {
-
     void EnableLightGizmo(Light* light, bool enable)
     {
-      switch (light->GetLightType())
+      switch (light->GetType())
       {
-        case LightTypeEnum::LightDirectional:
+        case EntityType::Entity_DirectionalLight:
           static_cast<EditorDirectionalLight*> (light)->EnableGizmo(enable);
         break;
-        case LightTypeEnum::LightPoint:
+        case EntityType::Entity_PointLight:
           static_cast<EditorPointLight*> (light)->EnableGizmo(enable);
         break;
-        case LightTypeEnum::LightSpot:
+        case EntityType::Entity_SpotLight:
           static_cast<EditorSpotLight*> (light)->EnableGizmo(enable);
         break;
-        case LightTypeEnum::LightBase:
+        case EntityType::Entity_Light:
         default:
           assert(false && "Invalid Light Type");
         break;
@@ -40,11 +39,7 @@ namespace ToolKit
 
     EditorLightBase::~EditorLightBase()
     {
-      if (m_initialized)
-      {
-        m_initialized = false;
-        SafeDel(m_gizmo);
-      }
+      SafeDel(m_gizmo);
     }
 
     void EditorLightBase::EnableGizmo(bool enable)
@@ -96,6 +91,10 @@ namespace ToolKit
     {
     }
 
+    void EditorDirectionalLight::ParameterEventConstructor()
+    {
+    }
+
     Entity* EditorDirectionalLight::Copy() const
     {
       EditorDirectionalLight* cpy = new EditorDirectionalLight();
@@ -110,6 +109,12 @@ namespace ToolKit
       WeakCopy(instance, false);
       instance->Init();
       return instance;
+    }
+
+    void EditorDirectionalLight::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    {
+      Light::DeSerialize(doc, parent);
+      ParameterEventConstructor();
     }
 
     void EditorDirectionalLight::Init()
@@ -187,6 +192,12 @@ namespace ToolKit
       WeakCopy(instance, false);
       instance->Init();
       return instance;
+    }
+
+    void EditorPointLight::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    {
+      Light::DeSerialize(doc, parent);
+      ParameterEventConstructor();
     }
 
     void EditorPointLight::Init()
@@ -271,6 +282,12 @@ namespace ToolKit
       WeakCopy(instance, false);
       instance->Init();
       return instance;
+    }
+
+    void EditorSpotLight::DeSerialize(XmlDocument* doc, XmlNode* parent)
+    {
+      Light::DeSerialize(doc, parent);
+      ParameterEventConstructor();
     }
 
     void EditorSpotLight::Init()

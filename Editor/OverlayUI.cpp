@@ -740,7 +740,10 @@ namespace ToolKit
         ImGui::Separator();
         if (ImGui::MenuItem("Node"))
         {
-          Entity* node = Entity::CreateByType(EntityType::Entity_Node);
+          Entity* node = GetEntityFactory()->CreateByType
+          (
+            EntityType::Entity_Node
+          );
           currScene->AddEntity(node);
         }
 
@@ -871,7 +874,10 @@ namespace ToolKit
         ImGui::Separator();
         if (ImGui::MenuItem("Node"))
         {
-          Entity* node = Entity::CreateByType(EntityType::Entity_Node);
+          Entity* node = GetEntityFactory()->CreateByType
+          (
+            EntityType::Entity_Node
+          );
           currScene->AddEntity(node);
         }
       };

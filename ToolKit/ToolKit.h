@@ -97,6 +97,8 @@ namespace ToolKit
     HandleManager m_handleManager;
     FileManager* m_fileManager = nullptr;
 
+    EntityFactory* m_entityFactory = nullptr;
+
     bool m_initiated = false;
     String m_resourceRoot;
     EventPool m_eventPool;
@@ -123,6 +125,8 @@ namespace ToolKit
   TK_API HandleManager* GetHandleManager();
   TK_API SkeletonManager* GetSkeletonManager();
   TK_API FileManager* GetFileManager();
+
+  TK_API EntityFactory* GetEntityFactory();
 
   TK_API String DefaultPath();
   TK_API String DefaultAbsolutePath();

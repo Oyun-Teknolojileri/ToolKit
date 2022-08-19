@@ -921,7 +921,7 @@ namespace ToolKit
 
     void SpotLightGizmo::InitGizmo(Light* light)
     {
-      assert(light->GetLightType() == LightTypeEnum::LightSpot);
+      assert(light->GetType() == EntityType::Entity_SpotLight);
       SpotLight* sLight = static_cast<SpotLight*> (light);
 
       // Middle line
@@ -1090,7 +1090,7 @@ namespace ToolKit
 
     void DirectionalLightGizmo::InitGizmo(Light* light)
     {
-      assert(light->GetLightType() == LightTypeEnum::LightDirectional);
+      assert(light->GetType() == EntityType::Entity_DirectionalLight);
 
       // Middle line
       Vec3 d = Vec3(0.0f, 0.0f, -1.0f);
@@ -1153,7 +1153,7 @@ namespace ToolKit
 
     void PointLightGizmo::InitGizmo(Light* light)
     {
-      assert(light->GetLightType() == LightTypeEnum::LightPoint);
+      assert(light->GetType() == EntityType::Entity_PointLight);
       PointLight* pLight = static_cast<PointLight*> (light);
 
       Vec3 up = Vec3(0.0f, 1.0f, 0.0f);

@@ -42,7 +42,11 @@ namespace ToolKit
     Entity_Directional,
     Entity_Node,
     Entity_Button,
-    Entity_Sky
+    Entity_Sky,
+    Entity_DirectionalLight,
+    Entity_PointLight,
+    Entity_SpotLight,
+    ENTITY_TYPE_COUNT  // Holds the size of the enum
   };
 
   static VariantCategory EntityCategory
@@ -74,8 +78,7 @@ namespace ToolKit
     void SetVisibility(bool vis, bool deep);
     void SetTransformLock(bool vis, bool deep);
     bool IsSurfaceInstance();
-
-    static Entity* CreateByType(EntityType t);
+    bool IsLightInstance() const;
 
     /**
     * Adds the given component into the components of the Entity. While adding
@@ -191,6 +194,23 @@ namespace ToolKit
 
     EntityType GetType() const override;
     void RemoveResources() override;
+  };
+
+  class TK_API EntityFactory
+  {
+   public:
+    EntityFactory();
+    ~EntityFactory();
+
+    Entity* CreateByType(EntityType type);
+    void OverrideEntityConstructor
+    (
+      EntityType type,
+      std::function<Entity* ()> fn
+    );
+
+   private:
+    std::vector<std::function<Entity* ()>> m_overrideFns;
   };
 
 }  // namespace ToolKit

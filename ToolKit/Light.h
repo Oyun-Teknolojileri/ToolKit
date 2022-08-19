@@ -8,14 +8,6 @@
 
 namespace ToolKit
 {
-  enum class LightTypeEnum
-  {
-    LightBase = 0,
-    LightDirectional = 1,
-    LightPoint = 2,
-    LightSpot = 3
-  };
-
   class TK_API Light : public Entity
   {
    public:
@@ -23,12 +15,10 @@ namespace ToolKit
     virtual ~Light();
 
     EntityType GetType() const override;
-    virtual LightTypeEnum GetLightType() const;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
    public:
-    TKDeclareParam(int, LightType);
     TKDeclareParam(Vec3, Color);
     TKDeclareParam(float, Intensity);
   };
@@ -39,7 +29,7 @@ namespace ToolKit
      DirectionalLight();
      virtual ~DirectionalLight() {}
 
-    LightTypeEnum GetLightType() const override;
+     EntityType GetType() const override;
   };
 
   class TK_API PointLight : public Light
@@ -48,7 +38,7 @@ namespace ToolKit
     PointLight();
     virtual ~PointLight() {}
 
-    LightTypeEnum GetLightType() const override;
+    EntityType GetType() const override;
 
    public:
     TKDeclareParam(float, Radius);
@@ -60,7 +50,7 @@ namespace ToolKit
     SpotLight();
     virtual ~SpotLight() {}
 
-    LightTypeEnum GetLightType() const override;
+    EntityType GetType() const override;
 
    public:
     TKDeclareParam(float, Radius);
