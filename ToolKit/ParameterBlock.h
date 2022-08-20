@@ -76,6 +76,8 @@ namespace ToolKit
     AnimRecordPtrMap
     > Value;
 
+    typedef std::function<void(Value& oldVal, Value& newVal)> ValueUpdateFn;
+
   struct UIHint
   {
     bool isColor = false;
@@ -443,7 +445,7 @@ namespace ToolKit
     * Callback function for value changes. This function gets called after
     * new value set.
     */
-    std::function<void(Value& oldVal, Value& newVal)> m_onValueChangedFn;
+    ValueUpdateFn m_onValueChangedFn;
 
    private:
     template<typename T>

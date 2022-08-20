@@ -34,10 +34,8 @@ namespace ToolKit
     {
       Scene::Load();
 
-      for (int i = static_cast<int>(m_entities.size()) - 1; i > -1; i--)
+      for (Entity* ntt : m_entities)
       {
-        Entity* ntt = m_entities[i];
-
         // Add billboards
         AddBillboardToEntity(ntt);
 

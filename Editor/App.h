@@ -105,16 +105,19 @@ namespace ToolKit
         EditorViewport* viewport,
         EntityRawPtrArray selecteds
       );
+
       void RenderGizmo
       (
         EditorViewport* viewport,
         Gizmo* gizmo
       );
+
       void RenderComponentGizmo
       (
         EditorViewport* viewport,
         EntityRawPtrArray selecteds
       );
+
       void ShowPlayWindow(float deltaTime);
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;

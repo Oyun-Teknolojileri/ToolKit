@@ -1626,41 +1626,40 @@ Fail:
 
     void App::OverrideEntityConstructors()
     {
-      auto cameraConstructorOverrideFn = []() -> Entity*
-      {
-        return new EditorCamera();
-      };
-      auto dirLightConstructorOverrideFn = []() -> Entity*
-      {
-        return new EditorDirectionalLight();
-      };
-      auto pointLightConstructorOverrideFn = []() -> Entity*
-      {
-        return new EditorPointLight();
-      };
-      auto spotLightConstructorOverrideFn = []() -> Entity*
-      {
-        return new EditorSpotLight();
-      };
       GetEntityFactory()->OverrideEntityConstructor
       (
         EntityType::Entity_Camera,
-        cameraConstructorOverrideFn
+        []() -> Entity*
+        {
+          return new EditorCamera();
+        }
       );
+
       GetEntityFactory()->OverrideEntityConstructor
       (
         EntityType::Entity_DirectionalLight,
-        dirLightConstructorOverrideFn
+        []() -> Entity*
+        {
+          return new EditorDirectionalLight();
+        }
       );
+
       GetEntityFactory()->OverrideEntityConstructor
       (
         EntityType::Entity_PointLight,
-        pointLightConstructorOverrideFn
+        []() -> Entity*
+        {
+          return new EditorPointLight();
+        }
       );
+
       GetEntityFactory()->OverrideEntityConstructor
       (
         EntityType::Entity_SpotLight,
-        spotLightConstructorOverrideFn
+        []() -> Entity*
+        {
+          return new EditorSpotLight();
+        }
       );
     }
 

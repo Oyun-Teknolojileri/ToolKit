@@ -21,15 +21,18 @@ namespace ToolKit
     class EditorLightBase
     {
      public:
-      EditorLightBase();
+      EditorLightBase(Light* light);
       virtual ~EditorLightBase();
 
-      void EnableGizmo(Light* light, bool enable);
-      virtual void Init() = 0;
-      virtual void Init(Light* light);
+      void EnableGizmo(bool enable);
+      virtual void Init();
       virtual void ParameterEventConstructor() = 0;
 
      protected:
+      ValueUpdateFn m_gizmoUpdateFn;
+
+     protected:
+      Light* m_light = nullptr;
       LightGizmoBase* m_gizmo = nullptr;
       MeshComponentPtr m_gizmoMC = nullptr;
       bool m_gizmoActive = false;
@@ -42,7 +45,6 @@ namespace ToolKit
     {
      public:
       EditorDirectionalLight();
-      explicit EditorDirectionalLight(const EditorDirectionalLight* light);
       virtual ~EditorDirectionalLight();
       void ParameterEventConstructor() override;
 
@@ -50,15 +52,12 @@ namespace ToolKit
       Entity* Instantiate() const override;
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-
-      void Init() override;
     };
 
     class EditorPointLight : public PointLight, public EditorLightBase
     {
      public:
       EditorPointLight();
-      explicit EditorPointLight(const EditorPointLight* light);
       virtual ~EditorPointLight();
       void ParameterEventConstructor() override;
 
@@ -66,15 +65,12 @@ namespace ToolKit
       Entity* Instantiate() const override;
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-
-      void Init() override;
     };
 
     class EditorSpotLight : public SpotLight, public EditorLightBase
     {
      public:
       EditorSpotLight();
-      explicit EditorSpotLight(const EditorSpotLight* light);
       virtual ~EditorSpotLight();
       void ParameterEventConstructor() override;
 
@@ -82,8 +78,6 @@ namespace ToolKit
       Entity* Instantiate() const override;
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-
-      void Init() override;
     };
 
   }  // namespace Editor

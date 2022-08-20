@@ -19,21 +19,18 @@ namespace ToolKit
         case EntityType::Entity_DirectionalLight:
           static_cast<EditorDirectionalLight*>(light)->EnableGizmo
           (
-            light,
             enable
           );
         break;
         case EntityType::Entity_PointLight:
           static_cast<EditorPointLight*>(light)->EnableGizmo
           (
-            light,
             enable
           );
         break;
         case EntityType::Entity_SpotLight:
           static_cast<EditorSpotLight*>(light)->EnableGizmo
           (
-            light,
             enable
           );
         break;
@@ -44,8 +41,20 @@ namespace ToolKit
       }
     }
 
-    EditorLightBase::EditorLightBase()
+    EditorLightBase::EditorLightBase(Light* light)
+      : m_light(light)
     {
+      m_gizmoUpdateFn =
+      [this](Value& oldVal, Value& newVal) -> void
+      {
+        m_gizmo->InitGizmo(m_light);
+        for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
+        {
+          MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
+          lbMesh->Init();
+          m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(lbMesh);
+        }
+      };
     }
 
     EditorLightBase::~EditorLightBase()
@@ -53,7 +62,7 @@ namespace ToolKit
       SafeDel(m_gizmo);
     }
 
-    void EditorLightBase::Init(Light* light)
+    void EditorLightBase::Init()
     {
       if (m_initialized)
       {
@@ -64,7 +73,7 @@ namespace ToolKit
       m_gizmoMC = std::make_shared<MeshComponent>();
       m_gizmoMC->ParamMesh().m_exposed = false;
 
-      m_gizmo->InitGizmo(light);
+      m_gizmo->InitGizmo(m_light);
 
       // Add gizmo meshes to mesh component
       for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
@@ -79,9 +88,9 @@ namespace ToolKit
       m_initialized = true;
     }
 
-    void EditorLightBase::EnableGizmo(Light* light, bool enable)
+    void EditorLightBase::EnableGizmo(bool enable)
     {
-      if (m_gizmoMC == nullptr)
+      if (m_gizmoMC == nullptr || m_light == nullptr)
       {
         return;
       }
@@ -90,28 +99,20 @@ namespace ToolKit
       {
         if (enable)
         {
-          light->AddComponent(m_gizmoMC);
+          m_light->AddComponent(m_gizmoMC);
           m_gizmoActive = true;
         }
         else
         {
-          light->RemoveComponent(m_gizmoMC->m_id);
+          m_light->RemoveComponent(m_gizmoMC->m_id);
           m_gizmoActive = false;
         }
       }
     }
 
     EditorDirectionalLight::EditorDirectionalLight()
+      : EditorLightBase(this)
     {
-      m_gizmo = new DirectionalLightGizmo(this);
-    }
-
-    EditorDirectionalLight::EditorDirectionalLight
-    (
-      const EditorDirectionalLight* light
-    )
-    {
-      light->CopyTo(this);
       m_gizmo = new DirectionalLightGizmo(this);
     }
 
@@ -164,20 +165,9 @@ namespace ToolKit
       ParameterEventConstructor();
     }
 
-    void EditorDirectionalLight::Init()
-    {
-      EditorLightBase::Init(this);
-    }
-
     EditorPointLight::EditorPointLight()
+      : EditorLightBase(this)
     {
-      m_gizmo = new PointLightGizmo(this);
-      ParameterEventConstructor();
-    }
-
-    EditorPointLight::EditorPointLight(const EditorPointLight* light)
-    {
-      light->CopyTo(this);
       m_gizmo = new PointLightGizmo(this);
       ParameterEventConstructor();
     }
@@ -188,17 +178,7 @@ namespace ToolKit
 
     void EditorPointLight::ParameterEventConstructor()
     {
-      ParamRadius().m_onValueChangedFn =
-      [this](Value& oldVal, Value& newVal) -> void
-      {
-        m_gizmo->InitGizmo(this);
-        for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
-        {
-          MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
-          lbMesh->Init();
-          m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(lbMesh);
-        }
-      };
+      ParamRadius().m_onValueChangedFn = m_gizmoUpdateFn;
     }
 
     Entity* EditorPointLight::Copy() const
@@ -242,20 +222,9 @@ namespace ToolKit
       ParameterEventConstructor();
     }
 
-    void EditorPointLight::Init()
-    {
-      EditorLightBase::Init(this);
-    }
-
     EditorSpotLight::EditorSpotLight()
+      : EditorLightBase(this)
     {
-      m_gizmo = new SpotLightGizmo(this);
-      ParameterEventConstructor();
-    }
-
-    EditorSpotLight::EditorSpotLight(const EditorSpotLight* light)
-    {
-      light->CopyTo(this);
       m_gizmo = new SpotLightGizmo(this);
       ParameterEventConstructor();
     }
@@ -266,23 +235,9 @@ namespace ToolKit
 
     void EditorSpotLight::ParameterEventConstructor()
     {
-      auto GizmoUpdateFn =
-      [this](Value& oldVal, Value& newVal) -> void
-      {
-        m_gizmo->InitGizmo(this);
-        for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
-        {
-          MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
-          lbMesh->Init();
-          m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(lbMesh);
-        }
-      };
-
-      ParamRadius().m_onValueChangedFn = GizmoUpdateFn;
-
-      ParamOuterAngle().m_onValueChangedFn = GizmoUpdateFn;
-
-      ParamInnerAngle().m_onValueChangedFn = GizmoUpdateFn;
+      ParamRadius().m_onValueChangedFn = m_gizmoUpdateFn;
+      ParamOuterAngle().m_onValueChangedFn = m_gizmoUpdateFn;
+      ParamInnerAngle().m_onValueChangedFn = m_gizmoUpdateFn;
     }
 
     Entity* EditorSpotLight::Copy() const
@@ -326,9 +281,5 @@ namespace ToolKit
       ParameterEventConstructor();
     }
 
-    void EditorSpotLight::Init()
-    {
-      EditorLightBase::Init(this);
-    }
   }  // namespace Editor
 }  // namespace ToolKit
