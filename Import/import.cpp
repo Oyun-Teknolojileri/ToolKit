@@ -101,12 +101,12 @@ namespace ToolKit
     (
       str.begin(),
       str.end(),
-      [&forbiddenChars]
-    (char c)
+      [&forbiddenChars] (char c)
       {
         return std::string::npos != forbiddenChars.find(c);
       },
-      ' ');
+      ' '
+    );
   }
 
   unordered_map<string, BoneNode> g_skeletonMap;
@@ -235,7 +235,9 @@ namespace ToolKit
   void ImportAnimation(const aiScene* scene, string file)
   {
     if (!scene->HasAnimations())
+    {
       return;
+    }
 
     for (unsigned int i = 0; i < scene->mNumAnimations; i++)
     {
@@ -260,23 +262,24 @@ namespace ToolKit
         aiNodeAnim* nodeAnim = anim->mChannels[chIndx];
         KeyArray keys;
         for
-          (
-            unsigned int kIndx = 0;
-            kIndx < nodeAnim->mNumPositionKeys;
-            kIndx++
-          )
+        (
+          unsigned int kIndx = 0;
+          kIndx < nodeAnim->mNumPositionKeys;
+          kIndx++
+        )
         {
           int keyFrameIndex =
             static_cast<int>
             (
-            round(nodeAnim->mPositionKeys[kIndx].mTime)
+              round(nodeAnim->mPositionKeys[kIndx].mTime)
             );
+
           if (g_currentExt == ".glb")
           {
             keyFrameIndex =
               static_cast<int>
               (
-              round(fps * nodeAnim->mPositionKeys[kIndx].mTime / 1000.0f)
+                round(fps * nodeAnim->mPositionKeys[kIndx].mTime / 1000.0f)
               );
           }
           aiVector3D t = nodeAnim->mPositionKeys[kIndx].mValue;
@@ -305,12 +308,11 @@ namespace ToolKit
   {
     fs::path pathOrg = fs::path(origin).parent_path();
 
-    auto textureFindAndCreateFunc =
-      [scene, filePath, pathOrg]
+    auto textureFindAndCreateFunc = [scene, filePath, pathOrg]
     (
       aiTextureType textureAssimpType,
       aiMaterial* material
-      ) -> TexturePtr
+    ) -> TexturePtr
     {
       int texCount = material->GetTextureCount(textureAssimpType);
       TexturePtr tTexture;
@@ -335,10 +337,9 @@ namespace ToolKit
 
         string fileName = tName;
         TrunckToFileName(fileName);
-        string textPath =
-          fs::path(filePath + fileName).
-          lexically_normal().
-          u8string();
+        string textPath = fs::path(filePath + fileName).lexically_normal()
+          .u8string();
+
         if (!embedded && !std::filesystem::exists(textPath))
         {
           // Try copying texture.
@@ -364,19 +365,20 @@ namespace ToolKit
           }
           isGoodFile.close();
         }
+
         AddToUsedFiles(textPath);
         tTexture = std::make_shared<Texture>();
         tTexture->SetFile(textPath);
       }
       return tTexture;
     };
+
     for (unsigned int i = 0; i < scene->mNumMaterials; i++)
     {
       aiMaterial* material = scene->mMaterials[i];
       string name = GetMaterialName(material, i);
       string writePath = filePath + name + ".material";
       MaterialPtr tMaterial = std::make_shared<Material>();
-
 
       auto diffuse = textureFindAndCreateFunc(aiTextureType_DIFFUSE, material);
       if (diffuse)
@@ -430,16 +432,16 @@ namespace ToolKit
       v.pos =
         Vec3
         (
-        mesh->mVertices[vIndex].x,
-        mesh->mVertices[vIndex].y,
-        mesh->mVertices[vIndex].z
+          mesh->mVertices[vIndex].x,
+          mesh->mVertices[vIndex].y,
+          mesh->mVertices[vIndex].z
         );
       v.norm =
         Vec3
         (
-        mesh->mNormals[vIndex].x,
-        mesh->mNormals[vIndex].y,
-        mesh->mNormals[vIndex].z
+          mesh->mNormals[vIndex].x,
+          mesh->mNormals[vIndex].y,
+          mesh->mNormals[vIndex].z
         );
 
       // Does the mesh contain texture coordinates?
@@ -455,19 +457,19 @@ namespace ToolKit
         v.btan =
           Vec3
           (
-          mesh->mBitangents[vIndex].x,
-          mesh->mBitangents[vIndex].y,
-          mesh->mBitangents[vIndex].z
+            mesh->mBitangents[vIndex].x,
+            mesh->mBitangents[vIndex].y,
+            mesh->mBitangents[vIndex].z
           );
       }
 
       if constexpr (std::is_same<convertType, SkinMeshPtr>::value)
       {
         if
-          (
+        (
           !skinData.empty() &&
           skinData.find(vIndex) != skinData.end()
-          )
+        )
         {
           for (int j = 0; j < 4; j++)
           {
@@ -513,7 +515,6 @@ namespace ToolKit
   )
   {
     Entity* entity = nullptr;
-
 
     // Write meshes
     if (node->mNumMeshes > 0)
@@ -597,6 +598,7 @@ namespace ToolKit
     ULongID thisId = g_entityIds[g_idListIterationIndex++];
     Entity* entity = tScene->GetEntity(thisId);
     entity->m_node->m_inheritScale = true;
+
     if (parentId != thisId)
     {
       Entity* pEntity = tScene->GetEntity(parentId);
@@ -709,14 +711,14 @@ namespace ToolKit
           }
 
           addBoneNodeFn(node, bone);
-
           node = node->mParent;
         }
 
         node = scene->mRootNode->FindNode(bone->mName);
+
+        // Go Down
         std::function<void(aiNode*)> checkDownFn =
-          [&checkDownFn, &bone, &addBoneNodeFn]
-        (aiNode* node) -> void  // Go Down
+          [&checkDownFn, &bone, &addBoneNodeFn] (aiNode* node) -> void
         {
           if (node == nullptr)
           {
@@ -744,8 +746,7 @@ namespace ToolKit
 
     // Assign indices
     std::function<void(aiNode*, unsigned int&)> assignBoneIndexFn =
-      [&assignBoneIndexFn]
-    (aiNode* node, unsigned int& index) -> void
+      [&assignBoneIndexFn] (aiNode* node, unsigned int& index) -> void
     {
       if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
       {
@@ -761,8 +762,6 @@ namespace ToolKit
     unsigned int boneIndex = 0;
     assignBoneIndexFn(scene->mRootNode, boneIndex);
 
-
-
     string name, path;
     Decompose(filePath, path, name);
     string fullPath = path + name + SKELETON;
@@ -776,7 +775,7 @@ namespace ToolKit
     (
       aiNode* node,
       Bone* parentBone
-      ) -> void
+    ) -> void
     {
       Bone* bone = parentBone;
       if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
@@ -791,15 +790,17 @@ namespace ToolKit
         setBoneHierarchyFn(node->mChildren[i], bone);
       }
     };
+
     std::function<void(aiNode* node)> setTransformationsFn =
       [&setTransformationsFn]
-    (
-      aiNode* node
+      (
+        aiNode* node
       ) -> void
     {
       if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
       {
         Bone* tBone = g_skeleton->GetBone(node->mName.C_Str());
+
         // Set bone node transformation
         {
           Vec3 t, s;
@@ -810,6 +811,7 @@ namespace ToolKit
           tBone->m_node->Rotate(r);
           tBone->m_node->Scale(s);
         }
+
         // Set bind pose transformation
         {
           aiBone* bone = g_skeletonMap[node->mName.C_Str()].bone;
@@ -828,6 +830,7 @@ namespace ToolKit
           }
         }
       }
+
       for (unsigned int i = 0; i < node->mNumChildren; i++)
       {
         setTransformationsFn(node->mChildren[i]);
