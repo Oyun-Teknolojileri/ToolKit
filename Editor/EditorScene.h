@@ -77,7 +77,11 @@ namespace ToolKit
      private:
       void CopyTo(Resource* other) override;
 
-      bool InitSkyBillboard(Entity* entity);
+      bool InitBillboard
+      (
+        Entity* entity,
+        EditorBillboardBase::BillboardType type
+      );
 
      public:
        // Indicates if this is created via new scene.

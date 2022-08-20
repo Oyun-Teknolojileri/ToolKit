@@ -392,6 +392,13 @@ namespace ToolKit
 
     void EditorScene::AddBillboardToEntity(Entity* entity)
     {
+      auto addBillboardFn = [this, &entity](EditorBillboardBase* billboard)
+      {
+        billboard->m_entity = entity;
+        m_entityBillboardMap[entity] = billboard;
+        m_billboards.push_back(billboard);
+      };
+
       // Note: Only 1 billboard per entity is supported.
 
       // Check environment component
@@ -400,9 +407,15 @@ namespace ToolKit
       if (envCom != nullptr)
       {
         SkyBillboard* billboard = new SkyBillboard();
-        billboard->m_entity = entity;
-        m_entityBillboardMap[entity] = billboard;
-        m_billboards.push_back(billboard);
+        addBillboardFn(billboard);
+        return;
+      }
+
+      // Check light
+      if (entity->IsLightInstance())
+      {
+        LightBillboard* billboard = new LightBillboard();
+        addBillboardFn(billboard);
         return;
       }
     }
@@ -458,7 +471,12 @@ namespace ToolKit
 
     void EditorScene::InitEntityBillboard(Entity* entity)
     {
-      if (InitSkyBillboard(entity))
+      if (InitBillboard(entity, EditorBillboardBase::BillboardType::Sky))
+      {
+        return;
+      }
+
+      if (InitBillboard(entity, EditorBillboardBase::BillboardType::Light))
       {
         return;
       }
@@ -472,9 +490,12 @@ namespace ToolKit
       cpy->m_newScene = true;
     }
 
-    bool EditorScene::InitSkyBillboard(Entity* entity)
+    bool EditorScene::InitBillboard
+    (
+      Entity* entity,
+      EditorBillboardBase::BillboardType type
+    )
     {
-      // Check for environment component
       bool found = false;
       Billboard* bb = nullptr;
 
@@ -491,11 +512,19 @@ namespace ToolKit
         found = true;
       }
 
-      EnvironmentComponentPtr ec =
-      entity->GetComponent<EnvironmentComponent>();
-      if (ec == nullptr && found)
+      bool check = false;
+      if (type == EditorBillboardBase::BillboardType::Sky)
       {
-        // Remove billboard if there is no environment component
+        check = entity->GetComponent<EnvironmentComponent>() != nullptr;
+      }
+      else if (type == EditorBillboardBase::BillboardType::Light)
+      {
+        check = entity->IsLightInstance();
+      }
+
+      if (!check && found)
+      {
+        // Remove billboard if the entity is not the correct type
         RemoveBillboardFromEntity(entity);
         return false;
       }
@@ -504,8 +533,7 @@ namespace ToolKit
         // Check if the billboard is the correct one and change it if it is not
         if
         (
-          m_entityBillboardMap[entity]->GetBillboardType()
-          == EditorBillboardBase::BillboardType::Sky
+          m_entityBillboardMap[entity]->GetBillboardType() == type
         )
         {
           return true;
