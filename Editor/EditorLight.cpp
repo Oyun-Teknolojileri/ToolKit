@@ -192,6 +192,12 @@ namespace ToolKit
       [this](Value& oldVal, Value& newVal) -> void
       {
         m_gizmo->InitGizmo(this);
+        for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
+        {
+          MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
+          lbMesh->Init();
+          m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(lbMesh);
+        }
       };
     }
 
@@ -264,6 +270,12 @@ namespace ToolKit
       [this](Value& oldVal, Value& newVal) -> void
       {
         m_gizmo->InitGizmo(this);
+        for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
+        {
+          MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
+          lbMesh->Init();
+          m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(lbMesh);
+        }
       };
 
       ParamRadius().m_onValueChangedFn = GizmoUpdateFn;
