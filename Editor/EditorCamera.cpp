@@ -116,9 +116,11 @@ namespace ToolKit
       camMeshComp->GetMeshVal()->m_subMeshes.push_back(subMesh);
       camMeshComp->GetMeshVal()->CalculateAABB();
       camMeshComp->Init(false);
+
+      // Do not expose camera mesh component
+      camMeshComp->ParamMesh().m_exposed = false;
     }
 
   }  // namespace Editor
 
 }  // namespace ToolKit
-

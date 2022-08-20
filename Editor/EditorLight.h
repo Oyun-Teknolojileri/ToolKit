@@ -24,8 +24,9 @@ namespace ToolKit
       EditorLightBase();
       virtual ~EditorLightBase();
 
-      void EnableGizmo(bool enable);
+      void EnableGizmo(Light* light, bool enable);
       virtual void Init() = 0;
+      virtual void Init(Light* light);
       virtual void ParameterEventConstructor() = 0;
 
      protected:
@@ -47,6 +48,7 @@ namespace ToolKit
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
+      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
       void Init() override;
@@ -62,6 +64,7 @@ namespace ToolKit
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
+      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
       void Init() override;
@@ -77,6 +80,7 @@ namespace ToolKit
 
       Entity* Copy() const override;
       Entity* Instantiate() const override;
+      void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
       void Init() override;

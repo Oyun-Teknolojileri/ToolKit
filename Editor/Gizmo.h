@@ -20,12 +20,18 @@ namespace ToolKit
         Cursor,
         Axis3d,
         Gizmo,
-        Sky
+        Sky,
+        Light
       };
 
      public:
       explicit EditorBillboardBase(const Settings& settings);
       virtual BillboardType GetBillboardType() const = 0;
+
+      virtual void Generate();
+
+     public:
+      String m_imagePath;
     };
 
     class Cursor : public EditorBillboardBase
@@ -36,7 +42,7 @@ namespace ToolKit
       BillboardType GetBillboardType() const override;
 
      private:
-      void Generate();
+      void Generate() override;
     };
 
     class Axis3d : public EditorBillboardBase
@@ -47,7 +53,7 @@ namespace ToolKit
       BillboardType GetBillboardType() const override;
 
      private:
-      void Generate();
+      void Generate() override;
     };
 
     class GizmoHandle
@@ -186,7 +192,17 @@ namespace ToolKit
       BillboardType GetBillboardType() const override;
 
      private:
-      void Generate();
+      void Generate() override;
+    };
+
+    class LightBillboard : public EditorBillboardBase
+    {
+     public:
+      LightBillboard();
+      virtual ~LightBillboard();
+      BillboardType GetBillboardType() const override;
+
+      void Generate() override;
     };
 
     class LightGizmoBase

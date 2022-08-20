@@ -32,6 +32,33 @@ namespace ToolKit
     {
     }
 
+    void EditorBillboardBase::Generate()
+    {
+      MeshComponentPtr parentMeshComp = GetComponent<MeshComponent>();
+      MeshPtr parentMesh = parentMeshComp->GetMeshVal();
+      parentMesh->UnInit();
+
+      // Billboard
+      Quad quad;
+      MeshPtr meshPtr = quad.GetMeshComponent()->GetMeshVal();
+
+      meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      meshPtr->m_material->UnInit();
+      meshPtr->m_material->m_diffuseTexture =
+      GetTextureManager()->Create<Texture>
+      (
+        m_imagePath
+      );
+      meshPtr->m_material->GetRenderState()->blendFunction =
+        BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+      meshPtr->m_material->Init();
+
+      meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
+      parentMesh->m_subMeshes.push_back(meshPtr);
+
+      parentMesh->CalculateAABB();
+    }
+
     Cursor::Cursor()
       : EditorBillboardBase({ true, 10.0f, 60.0f })
     {
@@ -830,7 +857,7 @@ namespace ToolKit
     }
 
     SkyBillboard::SkyBillboard()
-      : EditorBillboardBase({ true, 3.5f, 15.0f })
+      : EditorBillboardBase({ true, 3.5f, 10.0f })
     {
       Generate();
     }
@@ -846,29 +873,32 @@ namespace ToolKit
 
     void SkyBillboard::Generate()
     {
-      MeshComponentPtr parentMeshComp = GetComponent<MeshComponent>();
-      MeshPtr parentMesh = parentMeshComp->GetMeshVal();
-      parentMesh->UnInit();
+      m_imagePath = TexturePath(ConcatPaths({ "Icons", "sky.png" }), true);
+      EditorBillboardBase::Generate();
+    }
 
-      // Billboard
-      Quad quad;
-      MeshPtr meshPtr = quad.GetMeshComponent()->GetMeshVal();
+    LightBillboard::LightBillboard()
+      : EditorBillboardBase({ true, 3.5f, 10.0f })
+    {
+      Generate();
+    }
 
-      meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-      meshPtr->m_material->UnInit();
-      meshPtr->m_material->m_diffuseTexture =
-      GetTextureManager()->Create<Texture>
+    LightBillboard::~LightBillboard()
+    {
+    }
+
+    EditorBillboardBase::BillboardType LightBillboard::GetBillboardType() const
+    {
+      return BillboardType::Light;
+    }
+
+    void LightBillboard::Generate()
+    {
+      m_imagePath = TexturePath
       (
-        TexturePath(ConcatPaths({ "Icons", "sky.png" }), true)
+        ConcatPaths({ "Icons", "light_point.png" }), true
       );
-      meshPtr->m_material->GetRenderState()->blendFunction =
-      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-      meshPtr->m_material->Init();
-
-      meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
-      parentMesh->m_subMeshes.push_back(meshPtr);
-
-      parentMesh->CalculateAABB();
+      EditorBillboardBase::Generate();
     }
 
     SpotLightGizmo::SpotLightGizmo(SpotLight* light)
