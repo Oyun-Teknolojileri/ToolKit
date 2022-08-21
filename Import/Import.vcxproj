@@ -166,8 +166,7 @@ copy /Y "$(SolutionDir)Bin\ToolKit_d.dll" "$(TargetDir)"</Command>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)Bin\glew32.dll" "$(TargetDir)"
-copy /Y "$(SolutionDir)Bin\OpenAL32.dll" "$(TargetDir)"
-copy /Y "$(SolutionDir)Bin\ToolKit.dll" "$(TargetDir)"</Command>
+copy /Y "$(SolutionDir)Bin\OpenAL32.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

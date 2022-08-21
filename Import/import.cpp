@@ -232,40 +232,17 @@ namespace ToolKit
   }
 
   const float g_desiredFps = 24.0f;
+  const float g_animEps = 0.001f;
   String g_currentExt;
 
-  int KeyTimeToFrame(double time)
-  {
-    // Assimp bug ! 
-    // Reports milliseconds in glb / gltf
-    // Reports key index in fbx
-    // Here I am trying to fix inconsistency.
-
-    int keyFrameIndex =
-      static_cast<int>
-      (
-        round(time)
-      );
-
-    if (g_currentExt == ".glb" || g_currentExt == ".gltf")
-    {
-      keyFrameIndex =
-        static_cast<int>
-        (
-          round(g_desiredFps * time / 1000.0f)
-        );
-    }
-
-    return keyFrameIndex;
-  }
-
   // Interpolator functions Begin
+  // Range checks added by Cihan Bal.
   // https://github.com/triplepointfive/ogldev/blob/master/tutorial39/mesh.cpp
 
   bool LessEqual(float a, float b, float eps)
   {
     float diff = a - b;
-    return diff < - eps || diff == 0.0f; 
+    return diff < - eps || diff == 0.0f;
   }
 
   bool IsEqual(float a, float b, float eps)
@@ -282,7 +259,15 @@ namespace ToolKit
   {
     for (uint i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
     {
-      if (LessEqual(AnimationTime, pNodeAnim->mPositionKeys[i + 1].mTime, 0.001f))
+      if
+      (
+        LessEqual
+        (
+          AnimationTime,
+          static_cast<float> (pNodeAnim->mPositionKeys[i + 1].mTime),
+          g_animEps
+        )
+      )
       {
         return i;
       }
@@ -299,8 +284,15 @@ namespace ToolKit
 
     for (uint i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++)
     {
-      
-      if (LessEqual(AnimationTime, pNodeAnim->mRotationKeys[i + 1].mTime, 0.001f))
+      if
+      (
+        LessEqual
+        (
+          AnimationTime,
+          static_cast<float> (pNodeAnim->mPositionKeys[i + 1].mTime),
+          g_animEps
+        )
+      )
       {
         return i;
       }
@@ -317,7 +309,15 @@ namespace ToolKit
 
     for (uint i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++)
     {
-      if (LessEqual(AnimationTime, pNodeAnim->mScalingKeys[i + 1].mTime, 0.001f))
+      if
+      (
+        LessEqual
+        (
+          AnimationTime,
+          static_cast<float> (pNodeAnim->mPositionKeys[i + 1].mTime),
+          g_animEps
+        )
+      )
       {
         return i;
       }
@@ -328,7 +328,12 @@ namespace ToolKit
     return 0;
   }
 
-  void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
+  void CalcInterpolatedPosition
+  (
+    aiVector3D& Out,
+    float AnimationTime,
+    const aiNodeAnim* pNodeAnim
+  )
   {
     if (pNodeAnim->mNumPositionKeys == 1)
     {
@@ -339,8 +344,18 @@ namespace ToolKit
     uint PositionIndex = FindPosition(AnimationTime, pNodeAnim);
     uint NextPositionIndex = (PositionIndex + 1);
     assert(NextPositionIndex < pNodeAnim->mNumPositionKeys);
-    float DeltaTime = (float)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
-    float Factor = (AnimationTime - (float)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
+    float DeltaTime =
+      static_cast<float>
+      (
+        pNodeAnim->mPositionKeys[NextPositionIndex].mTime -
+        pNodeAnim->mPositionKeys[PositionIndex].mTime
+      );
+
+    float Factor =
+      (
+        AnimationTime -
+        static_cast<float> (pNodeAnim->mPositionKeys[PositionIndex].mTime)
+      ) / DeltaTime;
 
     if (IsZero(Factor, 0.001f))
     {
@@ -359,7 +374,12 @@ namespace ToolKit
     Out = Start + Factor * Delta;
   }
 
-  void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
+  void CalcInterpolatedRotation
+  (
+    aiQuaternion& Out,
+    float AnimationTime,
+    const aiNodeAnim* pNodeAnim
+  )
   {
     // we need at least two values to interpolate...
     if (pNodeAnim->mNumRotationKeys == 1)
@@ -371,27 +391,47 @@ namespace ToolKit
     uint RotationIndex = FindRotation(AnimationTime, pNodeAnim);
     uint NextRotationIndex = (RotationIndex + 1);
     assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
-    float DeltaTime = (float)(pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime);
-    float Factor = (AnimationTime - (float)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
 
-    if (IsZero(Factor, 0.001f))
+    float DeltaTime =
+      static_cast<float>
+      (
+        pNodeAnim->mRotationKeys[NextRotationIndex].mTime -
+        pNodeAnim->mRotationKeys[RotationIndex].mTime
+      );
+
+    float Factor =
+      (
+        AnimationTime -
+        static_cast<float> (pNodeAnim->mRotationKeys[RotationIndex].mTime)
+      ) / DeltaTime;
+
+    if (IsZero(Factor, g_animEps))
     {
       Factor = 0.0f;
     }
 
-    if (IsEqual(Factor, 1.0f, 0.001f))
+    if (IsEqual(Factor, 1.0f, g_animEps))
     {
       Factor = 1.0f;
     }
 
     assert(Factor >= 0.0f && Factor <= 1.0f);
-    const aiQuaternion& StartRotationQ = pNodeAnim->mRotationKeys[RotationIndex].mValue;
-    const aiQuaternion& EndRotationQ = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
+    const aiQuaternion& StartRotationQ =
+      pNodeAnim->mRotationKeys[RotationIndex].mValue;
+
+    const aiQuaternion& EndRotationQ =
+      pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
+
     aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
     Out = Out.Normalize();
   }
 
-  void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
+  void CalcInterpolatedScaling
+  (
+    aiVector3D& Out,
+    float AnimationTime,
+    const aiNodeAnim* pNodeAnim
+  )
   {
     if (pNodeAnim->mNumScalingKeys == 1)
     {
@@ -402,8 +442,19 @@ namespace ToolKit
     uint ScalingIndex = FindScaling(AnimationTime, pNodeAnim);
     uint NextScalingIndex = (ScalingIndex + 1);
     assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
-    float DeltaTime = (float)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
-    float Factor = (AnimationTime - (float)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
+
+    float DeltaTime =
+      static_cast<float>
+      (
+        pNodeAnim->mScalingKeys[NextScalingIndex].mTime -
+        pNodeAnim->mScalingKeys[ScalingIndex].mTime
+      );
+
+    float Factor =
+      (
+        AnimationTime -
+        static_cast<float> (pNodeAnim->mScalingKeys[ScalingIndex].mTime)
+      ) / DeltaTime;
 
     if (IsZero(Factor, 0.001f))
     {
@@ -442,7 +493,9 @@ namespace ToolKit
       AddToUsedFiles(animFilePath);
       AnimationPtr tAnim = std::make_shared<Animation>();
 
-      double fps = anim->mTicksPerSecond == 0 ? g_desiredFps : anim->mTicksPerSecond;
+      double fps = anim->mTicksPerSecond == 0 ? g_desiredFps :
+        anim->mTicksPerSecond;
+
       double duration = anim->mDuration / fps;
       uint frameCount = (uint)ceil(duration * g_desiredFps);
 
@@ -450,16 +503,23 @@ namespace ToolKit
       {
         aiNodeAnim* nodeAnim = anim->mChannels[chIndx];
         KeyArray keys;
-        for (int frame = 1; frame < frameCount; frame++)
+        for (uint frame = 1; frame < frameCount; frame++)
         {
-          double timeInTicks = (frame / g_desiredFps) * anim->mTicksPerSecond;
+          float timeInTicks = (frame / g_desiredFps) *
+            static_cast<float> (anim->mTicksPerSecond);
 
-          // Timer is not yet reach the animation begin. Skip frames.
-          // Happens when there aren't keys at the beginning of the animation
-          // but arrive later.
           aiVector3D t;
-          
-          if (LessEqual(timeInTicks, nodeAnim->mPositionKeys[0].mTime, 0.001f))
+          if
+          (
+            // Timer is not yet reach the animation begin. Skip frames.
+            // Happens when there aren't keys at the beginning of the animation.
+            LessEqual
+            (
+              timeInTicks,
+              static_cast<float> (nodeAnim->mPositionKeys[0].mTime),
+              0.001f
+            )
+          )
           {
             t = nodeAnim->mPositionKeys[0].mValue;
           }
@@ -469,7 +529,15 @@ namespace ToolKit
           }
 
           aiQuaternion r;
-          if (LessEqual(timeInTicks, nodeAnim->mRotationKeys[0].mTime, 0.001f))
+          if
+          (
+            LessEqual
+            (
+              timeInTicks,
+              static_cast<float> (nodeAnim->mRotationKeys[0].mTime),
+              0.001f
+            )
+          )
           {
             r = nodeAnim->mRotationKeys[0].mValue;
           }
@@ -479,7 +547,15 @@ namespace ToolKit
           }
 
           aiVector3D s;
-          if (LessEqual(timeInTicks, nodeAnim->mScalingKeys[0].mTime, 0.001f))
+          if
+          (
+            LessEqual
+            (
+              timeInTicks,
+              static_cast<float> (nodeAnim->mScalingKeys[0].mTime),
+              0.001f
+            )
+          )
           {
             s = nodeAnim->mScalingKeys[0].mValue;
           }
@@ -640,7 +716,7 @@ namespace ToolKit
 
       if (mesh->HasNormals())
       {
-        v.norm = 
+        v.norm =
           Vec3
           (
             mesh->mNormals[vIndex].x,
