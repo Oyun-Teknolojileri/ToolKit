@@ -17,6 +17,7 @@ namespace ToolKit
       virtual ~View() {}
       virtual void Show() = 0;
       virtual void ShowVariant(ParameterVariant* var, ComponentPtr comp);
+      void ShowAnimationControllerComponent(ParameterVariant* var, ComponentPtr comp);
 
       void DropZone
       (

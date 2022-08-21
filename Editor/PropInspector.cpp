@@ -273,268 +273,7 @@ namespace ToolKit
       }
         case ParameterVariant::VariantType::AnimRecordPtrMap:
         {
-          AnimRecordPtrMap& mref = var->GetVar<AnimRecordPtrMap>();
-          String file, id;
-
-          AnimControllerComponent* animPlayerComp =
-            reinterpret_cast<AnimControllerComponent*>(comp.get());
-          // If component isn't AnimationPlayerComponent, don't show variant
-          if
-          (
-            !comp ||
-            comp->GetType() != ComponentType::AnimControllerComponent
-          )
-          {
-            GetLogger()->WriteConsole
-            (
-              LogType::Error,
-              "AnimRecordPtrMap is for AnimationControllerComponent"
-            );
-            break;
-          }
-
-          static String addedSignalName;
-          if (ImGui::Button("Add Record"))
-          {
-            if (mref.find(addedSignalName) != mref.end())
-            {
-              GetLogger()->WriteConsole(LogType::Error, "SignalName exists");
-            }
-            else if (addedSignalName.length() == 0)
-            {
-              GetLogger()->WriteConsole(LogType::Error, "SignalName invalid");
-            }
-            else
-            {
-              AnimRecordPtr rec = std::make_shared<AnimRecord>();
-              rec->m_state = AnimRecord::State::Stop;
-              rec->m_entity = animPlayerComp->m_entity;
-              mref.insert(std::make_pair(addedSignalName, rec));
-            }
-          }
-          ImGui::SameLine();
-          ImGui::PushItemWidth(200);
-          ImGui::InputText("Signal Name", &addedSignalName);
-          ImGui::PopItemWidth();
-
-          if
-          (
-            ImGui::BeginTable
-            (
-              "Animation Records and Signals",
-              4,
-              ImGuiTableFlags_RowBg
-            | ImGuiTableFlags_Borders
-            | ImGuiTableFlags_Resizable
-            | ImGuiTableFlags_Reorderable
-            | ImGuiTableFlags_ScrollY
-            )
-          )
-          {
-            float tableWdth = ImGui::GetItemRectSize().x;
-            ImGui::TableSetupColumn
-            (
-              "Animation",
-              ImGuiTableColumnFlags_WidthStretch,
-              tableWdth / 5.0f
-            );
-            ImGui::TableSetupColumn
-            (
-              "Name",
-              ImGuiTableColumnFlags_WidthStretch,
-              tableWdth / 2.5f
-            );
-            ImGui::TableSetupColumn
-            (
-              "Preview",
-              ImGuiTableColumnFlags_WidthStretch,
-              tableWdth / 4.0f
-            );
-            ImGui::TableSetupColumn
-            (
-              "",
-              ImGuiTableColumnFlags_WidthStretch,
-              tableWdth / 20.0f
-            );
-            ImGui::TableHeadersRow();
-
-            uint rowIndx = 0;
-            String removedSignalName = "";
-            String nameUpdated = "";
-            AnimRecordPtrMap::iterator nameUpdatedIter = {};
-            for (auto it = mref.begin(); it != mref.end(); ++it, rowIndx++)
-            {
-              uint columnIndx = 0;
-              ImGui::TableNextRow();
-              ImGui::PushID(rowIndx);
-
-              // Animation DropZone
-              {
-                ImGui::TableSetColumnIndex(columnIndx++);
-                ImGui::SetCursorPosX(tableWdth / 25.0f);
-                DropZone
-                (
-                  static_cast<uint> (UI::m_clipIcon->m_textureId),
-                  file,
-                  [&it](const DirectoryEntry& entry) -> void
-                  {
-                    if (GetResourceType(entry.m_ext) == ResourceType::Animation)
-                    {
-                      it->second->m_animation =
-                        GetAnimationManager()->Create<Animation>
-                        (
-                        entry.GetFullPath()
-                        );
-                    }
-                    else
-                    {
-                      GetLogger()->WriteConsole
-                      (
-                        LogType::Error,
-                        "Only animations are accepted."
-                      );
-                    }
-                  }
-                );
-              }
-
-              // Signal Name
-              {
-                ImGui::TableSetColumnIndex(columnIndx++);
-                ImGui::SetCursorPosY
-                (
-                  ImGui::GetCursorPos().y + (ImGui::GetItemRectSize().y / 4.0f)
-                );
-                ImGui::PushItemWidth((tableWdth / 2.5f) - 5.0f);
-                String readOnly = it->first;
-                if
-                (
-                  ImGui::InputText
-                  (
-                    "##",
-                    &readOnly,
-                    ImGuiInputTextFlags_EnterReturnsTrue
-                  )
-                  && readOnly.length()
-                )
-                {
-                  nameUpdated = readOnly;
-                  nameUpdatedIter = it;
-                }
-                ImGui::PopItemWidth();
-              }
-
-              // Play, Pause & Stop Buttons
-              ImGui::TableSetColumnIndex(columnIndx++);
-              if (it->second->m_animation)
-              {
-                ImGui::SetCursorPosX
-                (
-                  ImGui::GetCursorPos().x
-                  + (ImGui::GetItemRectSize().x / 10.0f)
-                );
-                ImGui::SetCursorPosY
-                (
-                  ImGui::GetCursorPos().y
-                  + (ImGui::GetItemRectSize().y / 5.0f)
-                );
-                AnimRecordPtr activeRecord =
-                  animPlayerComp->GetActiveRecord();
-
-                if
-                (
-                  activeRecord == it->second
-                  && activeRecord->m_state == AnimRecord::State::Play
-                )
-                {
-                  if
-                  (
-                    UI::ImageButtonDecorless
-                    (
-                    UI::m_pauseIcon->m_textureId,
-                    Vec2(24, 24),
-                    false
-                    )
-                  )
-                  {
-                    animPlayerComp->Pause();
-                  }
-
-                  ImGui::SameLine();
-                  if
-                    (
-                    UI::ImageButtonDecorless
-                    (
-                    UI::m_stopIcon->m_textureId,
-                    Vec2(24, 24),
-                    false
-                    )
-                    )
-                  {
-                    animPlayerComp->Stop();
-                  }
-                }
-                else if
-                (
-                  UI::ImageButtonDecorless
-                  (
-                    UI::m_playIcon->m_textureId,
-                    Vec2(24, 24),
-                    false
-                  )
-                )
-                {
-                  animPlayerComp->Play(it->first.c_str());
-                }
-              }
-
-              // Remove Button
-              {
-                ImGui::TableSetColumnIndex(columnIndx++);
-                ImGui::SetCursorPosY
-                (
-                  ImGui::GetCursorPos().y + (ImGui::GetItemRectSize().y / 4.0f)
-                );
-                if
-                  (
-                  UI::ImageButtonDecorless
-                  (
-                  UI::m_closeIcon->m_textureId,
-                  Vec2(15, 15),
-                  false
-                  )
-                  )
-                {
-                  removedSignalName = it->first;
-                }
-              }
-
-
-              ImGui::PopID();
-            }
-
-            if (removedSignalName.length())
-            {
-              animPlayerComp->RemoveSignal(removedSignalName);
-            }
-            if (nameUpdated.length() && nameUpdatedIter->first != nameUpdated)
-            {
-              if (mref.find(nameUpdated) != mref.end())
-              {
-                GetLogger()->WriteConsole(LogType::Error, "SignalName exists");
-              }
-              else
-              {
-                auto node = mref.extract(nameUpdatedIter->first);
-                node.key() = nameUpdated;
-                mref.insert(std::move(node));
-
-                nameUpdated = "";
-                nameUpdatedIter = {};
-              }
-            }
-            ImGui::EndTable();
-          }
+          ShowAnimationControllerComponent(var, comp);
         }
         break;
         default:
@@ -542,6 +281,312 @@ namespace ToolKit
       }
 
       ImGui::EndDisabled();
+    }
+
+    void View::ShowAnimationControllerComponent
+    (
+      ParameterVariant* var,
+      ComponentPtr comp
+    )
+    {
+      AnimRecordPtrMap& mref = var->GetVar<AnimRecordPtrMap>();
+      String file, id;
+
+      AnimControllerComponent* animPlayerComp =
+        reinterpret_cast<AnimControllerComponent*>(comp.get());
+
+      // If component isn't AnimationPlayerComponent, don't show variant
+      if
+      (
+        !comp ||
+        comp->GetType() != ComponentType::AnimControllerComponent
+      )
+      {
+        GetLogger()->WriteConsole
+        (
+          LogType::Error,
+          "AnimRecordPtrMap is for AnimationControllerComponent"
+        );
+        return;
+      }
+
+      static String addedSignalName;
+      if (ImGui::Button("Add Record"))
+      {
+        if (mref.find(addedSignalName) != mref.end())
+        {
+          GetLogger()->WriteConsole(LogType::Error, "SignalName exists");
+        }
+        else if (addedSignalName.length() == 0)
+        {
+          GetLogger()->WriteConsole(LogType::Error, "SignalName invalid");
+        }
+        else
+        {
+          AnimRecordPtr rec = std::make_shared<AnimRecord>();
+          rec->m_state = AnimRecord::State::Stop;
+          rec->m_entity = animPlayerComp->m_entity;
+          mref.insert(std::make_pair(addedSignalName, rec));
+        }
+      }
+
+      ImGui::SameLine();
+      ImGui::PushItemWidth(200);
+      ImGui::InputText("Signal Name", &addedSignalName);
+      ImGui::PopItemWidth();
+
+      static AnimRecordPtr currentAnim = nullptr;
+      if (currentAnim)
+      {
+        String file;
+        DecomposePath
+        (
+          currentAnim->m_animation->GetFile(),
+          nullptr,
+          &file,
+          nullptr
+        );
+
+        String text = Format
+          (
+            "Animation: %s, Duration: %f, T: %f",
+            file.c_str(),
+            currentAnim->m_animation->m_duration,
+            currentAnim->m_currentTime
+          );
+
+        ImGui::Text(text.c_str());
+      }
+
+      if
+      (
+        ImGui::BeginTable
+        (
+          "Animation Records and Signals",
+          4,
+          ImGuiTableFlags_RowBg
+          | ImGuiTableFlags_Borders
+          | ImGuiTableFlags_Resizable
+          | ImGuiTableFlags_Reorderable
+          | ImGuiTableFlags_ScrollY
+        )
+      )
+      {
+        float tableWdth = ImGui::GetItemRectSize().x;
+        ImGui::TableSetupColumn
+        (
+          "Animation",
+          ImGuiTableColumnFlags_WidthStretch,
+          tableWdth / 5.0f
+        );
+
+        ImGui::TableSetupColumn
+        (
+          "Name",
+          ImGuiTableColumnFlags_WidthStretch,
+          tableWdth / 2.5f
+        );
+
+        ImGui::TableSetupColumn
+        (
+          "Preview",
+          ImGuiTableColumnFlags_WidthStretch,
+          tableWdth / 4.0f
+        );
+
+        ImGui::TableSetupColumn
+        (
+          "",
+          ImGuiTableColumnFlags_WidthStretch,
+          tableWdth / 20.0f
+        );
+
+        ImGui::TableHeadersRow();
+
+        uint rowIndx = 0;
+        String removedSignalName = "";
+        String nameUpdated = "";
+        AnimRecordPtrMap::iterator nameUpdatedIter = {};
+
+        for (auto it = mref.begin(); it != mref.end(); ++it, rowIndx++)
+        {
+          uint columnIndx = 0;
+          ImGui::TableNextRow();
+          ImGui::PushID(rowIndx);
+
+          // Animation DropZone
+          {
+            ImGui::TableSetColumnIndex(columnIndx++);
+            ImGui::SetCursorPosX(tableWdth / 25.0f);
+            DropZone
+            (
+              static_cast<uint> (UI::m_clipIcon->m_textureId),
+              file,
+              [&it](const DirectoryEntry& entry) -> void
+              {
+                if (GetResourceType(entry.m_ext) == ResourceType::Animation)
+                {
+                  it->second->m_animation =
+                    GetAnimationManager()->Create<Animation>
+                    (
+                    entry.GetFullPath()
+                    );
+                }
+                else
+                {
+                  GetLogger()->WriteConsole
+                  (
+                    LogType::Error,
+                    "Only animations are accepted."
+                  );
+                }
+              }
+            );
+          }
+
+          // Signal Name
+          {
+            ImGui::TableSetColumnIndex(columnIndx++);
+            ImGui::SetCursorPosY
+            (
+              ImGui::GetCursorPos().y + (ImGui::GetItemRectSize().y / 4.0f)
+            );
+            ImGui::PushItemWidth((tableWdth / 2.5f) - 5.0f);
+            String readOnly = it->first;
+            if
+            (
+              ImGui::InputText
+              (
+                "##",
+                &readOnly,
+                ImGuiInputTextFlags_EnterReturnsTrue
+              )
+              && readOnly.length()
+            )
+            {
+              nameUpdated = readOnly;
+              nameUpdatedIter = it;
+            }
+            ImGui::PopItemWidth();
+          }
+
+          // Play, Pause & Stop Buttons
+          ImGui::TableSetColumnIndex(columnIndx++);
+          if (it->second->m_animation)
+          {
+            ImGui::SetCursorPosX
+            (
+              ImGui::GetCursorPos().x
+              + (ImGui::GetItemRectSize().x / 10.0f)
+            );
+
+            ImGui::SetCursorPosY
+            (
+              ImGui::GetCursorPos().y
+              + (ImGui::GetItemRectSize().y / 5.0f)
+            );
+
+            AnimRecordPtr activeRecord = animPlayerComp->GetActiveRecord();
+
+            // Alternate between Play - Pause buttons.
+            if
+            (
+              activeRecord == it->second
+              && activeRecord->m_state == AnimRecord::State::Play
+            )
+            {
+              if
+              (
+                UI::ImageButtonDecorless
+                (
+                  UI::m_pauseIcon->m_textureId,
+                  Vec2(24, 24),
+                  false
+                )
+              )
+              {
+                animPlayerComp->Pause();
+              }
+            }
+            else if (
+              UI::ImageButtonDecorless
+              (
+                UI::m_playIcon->m_textureId,
+                Vec2(24, 24),
+                false
+              )
+            )
+            {
+              animPlayerComp->Play(it->first.c_str());
+              currentAnim = it->second;
+            }
+
+            // Draw stop button always.
+            ImGui::SameLine();
+            if
+            (
+              UI::ImageButtonDecorless
+              (
+                UI::m_stopIcon->m_textureId,
+                Vec2(24, 24),
+                false
+              )
+            )
+            {
+              animPlayerComp->Stop();
+              currentAnim = nullptr;
+            }
+          }
+
+          // Remove Button
+          {
+            ImGui::TableSetColumnIndex(columnIndx++);
+            ImGui::SetCursorPosY
+            (
+              ImGui::GetCursorPos().y + (ImGui::GetItemRectSize().y / 4.0f)
+            );
+
+            if
+            (
+              UI::ImageButtonDecorless
+              (
+                UI::m_closeIcon->m_textureId,
+                Vec2(15, 15),
+                false
+              )
+            )
+            {
+              removedSignalName = it->first;
+            }
+          }
+
+          ImGui::PopID();
+        }
+
+        if (removedSignalName.length())
+        {
+          animPlayerComp->RemoveSignal(removedSignalName);
+        }
+
+        if (nameUpdated.length() && nameUpdatedIter->first != nameUpdated)
+        {
+          if (mref.find(nameUpdated) != mref.end())
+          {
+            GetLogger()->WriteConsole(LogType::Error, "SignalName exists");
+          }
+          else
+          {
+            auto node = mref.extract(nameUpdatedIter->first);
+            node.key() = nameUpdated;
+            mref.insert(std::move(node));
+
+            nameUpdated = "";
+            nameUpdatedIter = {};
+          }
+        }
+
+        ImGui::EndTable();
+      }
     }
 
     void View::DropZone
