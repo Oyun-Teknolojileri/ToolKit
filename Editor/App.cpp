@@ -874,7 +874,7 @@ namespace ToolKit
       std::filesystem::path pathBck = std::filesystem::current_path();
       std::filesystem::path path = pathBck.u8string() + ConcatPaths
       (
-        { ".", "..", "Utils", "Import" }
+        { "", "..", "Utils", "Import" }
       );
       std::filesystem::current_path(path);
 

@@ -147,19 +147,11 @@ namespace ToolKit
     *s = Vec3(aiS.x, aiS.y, aiS.z);
   }
 
-  string GetTextureName(const aiTexture* texture, unsigned int i)
+  string GetEmbeddedTextureName(const aiTexture* texture)
   {
     string name = texture->mFilename.C_Str();
     NormalizePath(name);
-
-    if (name.empty() || name[0] == '*')
-    {
-      name = "emb" + to_string(i) + "." + texture->achFormatHint;
-    }
-    else
-    {
-      TrunckToFileName(name);
-    }
+    name = name + "." + texture->achFormatHint;
 
     return name;
   }
@@ -608,7 +600,7 @@ namespace ToolKit
           if (scene->mNumTextures > tIndx)
           {
             aiTexture* t = scene->mTextures[tIndx];
-            tName = GetTextureName(t, tIndx);
+            tName = GetEmbeddedTextureName(t);
           }
         }
 
@@ -654,7 +646,7 @@ namespace ToolKit
     {
       aiMaterial* material = scene->mMaterials[i];
       string name = GetMaterialName(material, i);
-      string writePath = filePath + name + ".material";
+      string writePath = filePath + name + MATERIAL;
       MaterialPtr tMaterial = std::make_shared<Material>();
 
       auto diffuse = textureFindAndCreateFunc(aiTextureType_DIFFUSE, material);
@@ -1134,7 +1126,7 @@ namespace ToolKit
       {
         TexturePtr tTexture = std::make_shared<Texture>();
         aiTexture* texture = scene->mTextures[i];
-        string embId = GetTextureName(texture, i);
+        string embId = GetEmbeddedTextureName(texture);
 
         // Compressed.
         if (texture->mHeight == 0)
@@ -1177,8 +1169,6 @@ namespace ToolKit
       }
 
       Assimp::Importer importer;
-
-
       importer.SetPropertyInteger
       (
         AI_CONFIG_PP_SBP_REMOVE,
