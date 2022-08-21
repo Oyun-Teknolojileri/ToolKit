@@ -223,12 +223,12 @@ namespace ToolKit
     doc.clear();
   }
 
-  const float g_desiredFps = 24.0f;
+  const float g_desiredFps = 30.0f;
   const float g_animEps = 0.001f;
   String g_currentExt;
 
   // Interpolator functions Begin
-  // Range checks added by Cihan Bal.
+  // Range checks added by OTSoftware.
   // https://github.com/triplepointfive/ogldev/blob/master/tutorial39/mesh.cpp
 
   bool LessEqual(float a, float b, float eps)
@@ -245,6 +245,16 @@ namespace ToolKit
   bool IsZero(float a, float eps)
   {
     return abs(a) < eps;
+  }
+
+  int GetMax(int a, int b)
+  {
+    return a > b ? a : b;
+  }
+
+  int GetMax(int a, int b, int c)
+  {
+    return GetMax(a, GetMax(b, c));
   }
 
   uint FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
@@ -491,10 +501,14 @@ namespace ToolKit
       double duration = anim->mDuration / fps;
       uint frameCount = (uint)ceil(duration * g_desiredFps);
 
+      // Used to normalize animation start time.
+      int cr, ct, cs, cmax;
+      cr = ct = cs = cmax = 0;
+
       for (unsigned int chIndx = 0; chIndx < anim->mNumChannels; chIndx++)
       {
-        aiNodeAnim* nodeAnim = anim->mChannels[chIndx];
         KeyArray keys;
+        aiNodeAnim* nodeAnim = anim->mChannels[chIndx];
         for (uint frame = 1; frame < frameCount; frame++)
         {
           float timeInTicks = (frame / g_desiredFps) *
@@ -513,11 +527,12 @@ namespace ToolKit
             )
           )
           {
-            t = nodeAnim->mPositionKeys[0].mValue;
+            continue;
           }
           else
           {
             CalcInterpolatedPosition(t, timeInTicks, nodeAnim);
+            ct++;
           }
 
           aiQuaternion r;
@@ -531,11 +546,12 @@ namespace ToolKit
             )
           )
           {
-            r = nodeAnim->mRotationKeys[0].mValue;
+            continue;
           }
           else
           {
             CalcInterpolatedRotation(r, timeInTicks, nodeAnim);
+            cr++;
           }
 
           aiVector3D s;
@@ -549,11 +565,12 @@ namespace ToolKit
             )
           )
           {
-            s = nodeAnim->mScalingKeys[0].mValue;
+            continue;
           }
           else
           {
             CalcInterpolatedScaling(s, timeInTicks, nodeAnim);
+            cs++;
           }
 
           Key tKey;
@@ -564,9 +581,13 @@ namespace ToolKit
           keys.push_back(tKey);
         }
 
+        cmax = GetMax(cr, ct, cs);
+        cr = ct = cs = 0;
         tAnim->m_keys.insert(std::make_pair(nodeAnim->mNodeName.C_Str(), keys));
       }
-      tAnim->m_duration = static_cast<float>(duration);
+
+      // Recalculate duration. May be misleading dueto shifted animations.
+      tAnim->m_duration = static_cast<float>(cmax / g_desiredFps);
       tAnim->m_fps = static_cast<float>(g_desiredFps);
 
       CreateFileAndSerializeObject(tAnim, animFilePath);
