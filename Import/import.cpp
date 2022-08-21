@@ -289,7 +289,7 @@ namespace ToolKit
         LessEqual
         (
           AnimationTime,
-          static_cast<float> (pNodeAnim->mPositionKeys[i + 1].mTime),
+          static_cast<float> (pNodeAnim->mRotationKeys[i + 1].mTime),
           g_animEps
         )
       )
@@ -314,7 +314,7 @@ namespace ToolKit
         LessEqual
         (
           AnimationTime,
-          static_cast<float> (pNodeAnim->mPositionKeys[i + 1].mTime),
+          static_cast<float> (pNodeAnim->mScalingKeys[i + 1].mTime),
           g_animEps
         )
       )
@@ -843,7 +843,7 @@ namespace ToolKit
 
       string fileName = std::string(node->mName.C_Str());
       ClearForbidden(fileName);
-      String meshPath = path + fileName + "." + tag;
+      String meshPath = path + fileName + tag;
       AddToUsedFiles(meshPath);
 
       parentMeshOfNode->SetFile(meshPath);
