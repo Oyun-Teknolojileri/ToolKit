@@ -384,6 +384,11 @@ namespace ToolKit
     }
   }
 
+  void AnimationPlayer::RemoveRecord(const AnimRecord& rec)
+  {
+    RemoveRecord(rec.m_id);
+  }
+
   void AnimationPlayer::Update(float deltaTimeSec)
   {
     int index = 0;

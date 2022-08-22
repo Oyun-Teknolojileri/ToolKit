@@ -212,6 +212,12 @@ namespace ToolKit
     void RemoveRecord(ULongID id);
 
     /**
+    * Removes the given AnimRecord.
+    * @param rec Record to remove.
+    */
+    void RemoveRecord(const AnimRecord& rec);
+
+    /**
     * Update all the records in the player and apply transforms
     * to corresponding entities.
     * @param deltaTimeSec The delta time in seconds for

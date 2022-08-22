@@ -29,7 +29,7 @@ namespace ToolKit
       (
         ImGui::Begin
         (
-          "Simulation",
+          "Simulation##Plgn",
           &m_visible,
           ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse
         )
