@@ -486,9 +486,62 @@ namespace ToolKit
     WriteAttr(scene, doc, "version", TKVersionStr);
     WriteAttr(scene, doc, "name", name.c_str());
 
-    for (Entity* ntt : m_entities)
+    for (size_t listIndx = 0; listIndx < m_entities.size(); listIndx++)
     {
+      Entity* ntt = m_entities[listIndx];
       ntt->Serialize(doc, scene);
+
+      NormalizeEntityID
+      (
+        doc,
+        scene->last_node(XmlEntityElement.c_str()),
+        listIndx
+      );
+    }
+  }
+
+  void Scene::NormalizeEntityID
+  (
+    XmlDocument* doc,
+    XmlNode* parent,
+    size_t listIndx
+  ) const
+  {
+    XmlAttribute* parentAttrib =
+      parent->first_attribute(XmlParentEntityIdAttr.c_str());
+    parent->remove_attribute
+    (
+      parent->first_attribute(XmlEntityIdAttr.c_str())
+    );
+    WriteAttr(parent, doc, XmlEntityIdAttr, std::to_string(listIndx + 1));
+
+    Entity* ntt = m_entities[listIndx];
+    Node* parentNode = ntt->m_node->m_parent;
+    // If parent is in scene, save its list index too
+    if (parentNode && parentNode->m_entity)
+    {
+      for
+        (
+        uint parentSrchIndx = 0;
+        parentSrchIndx < m_entities.size();
+        parentSrchIndx++
+        )
+      {
+        if (parentNode->m_entity == m_entities[parentSrchIndx])
+        {
+          parent->remove_attribute
+          (
+            parentAttrib
+          );
+          WriteAttr
+          (
+            parent,
+            doc,
+            XmlParentEntityIdAttr,
+            std::to_string(parentSrchIndx + 1)
+          );
+        }
+      }
     }
   }
 
@@ -532,7 +585,9 @@ namespace ToolKit
 
       // Incrementing the incoming ntt ids with current max id value...
       //   to prevent id collisions.
-      ULongID currentID = ntt->GetIdVal() + lastID;
+      ULongID listIndx = 0;
+      ReadAttr(node, XmlEntityIdAttr, listIndx);
+      ULongID currentID = listIndx + lastID;
       biggestID = glm::max(biggestID, currentID);
       ntt->SetIdVal(currentID);
       ntt->_parentId = ntt->_parentId + lastID;

@@ -273,7 +273,7 @@ namespace ToolKit
       }
         case ParameterVariant::VariantType::AnimRecordPtrMap:
         {
-          ShowAnimationControllerComponent(var, comp);
+          ShowAnimControllerComponent(var, comp);
         }
         break;
         default:
@@ -283,7 +283,7 @@ namespace ToolKit
       ImGui::EndDisabled();
     }
 
-    void View::ShowAnimationControllerComponent
+    void View::ShowAnimControllerComponent
     (
       ParameterVariant* var,
       ComponentPtr comp
