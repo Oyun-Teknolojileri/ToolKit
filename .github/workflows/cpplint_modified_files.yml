@@ -28,7 +28,7 @@ jobs:
           all_files = [file for file in modified_files if file.lower().endswith(cpp_exts)]
           cpp_files = []
           for cpp_file in all_files:
-            if not cpp_file.startswith("Dependency/"):
+            if not cpp_file.startswith("Dependency/") and not cpp_file.startswith("Import/assimp/"):
               cpp_files.append(cpp_file)
           print(f"{len(cpp_files)} C++ files were modified.")
           if not cpp_files:

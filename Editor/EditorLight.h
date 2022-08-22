@@ -21,7 +21,7 @@ namespace ToolKit
     class EditorLightBase
     {
      public:
-      EditorLightBase(Light* light);
+      explicit EditorLightBase(Light* light);
       virtual ~EditorLightBase();
 
       void EnableGizmo(bool enable);

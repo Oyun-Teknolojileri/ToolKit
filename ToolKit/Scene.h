@@ -76,6 +76,8 @@ namespace ToolKit
 
    protected:
     void CopyTo(Resource* other) override;
+    // Normalize entity IDs while serializing
+    void NormalizeEntityID(XmlDocument* doc, XmlNode* prent, size_t indx) const;
 
    protected:
     EntityRawPtrArray m_entities;
