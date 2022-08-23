@@ -215,6 +215,10 @@ namespace ToolKit
       LineBatchRawPtrArray GetGizmoLineBatches();
 
      protected:
+      template <typename T>
+      void GetLightMeshData(Light* light);
+
+     protected:
       LineBatchRawPtrArray m_gizmoLineBatches;
     };
 

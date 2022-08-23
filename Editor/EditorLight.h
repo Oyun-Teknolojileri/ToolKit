@@ -31,10 +31,12 @@ namespace ToolKit
      protected:
       ValueUpdateFn m_gizmoUpdateFn;
 
-     protected:
-      Light* m_light = nullptr;
+     public:
       LightGizmoBase* m_gizmo = nullptr;
       MeshComponentPtr m_gizmoMC = nullptr;
+
+     protected:
+      Light* m_light = nullptr;
       bool m_gizmoActive = false;
       bool m_initialized = false;
     };

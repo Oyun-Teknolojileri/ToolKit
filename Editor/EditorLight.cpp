@@ -48,12 +48,6 @@ namespace ToolKit
       [this](Value& oldVal, Value& newVal) -> void
       {
         m_gizmo->InitGizmo(m_light);
-        for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
-        {
-          MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
-          lbMesh->Init();
-          m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(lbMesh);
-        }
       };
     }
 
@@ -74,14 +68,6 @@ namespace ToolKit
       m_gizmoMC->ParamMesh().m_exposed = false;
 
       m_gizmo->InitGizmo(m_light);
-
-      // Add gizmo meshes to mesh component
-      for (LineBatch* lb : m_gizmo->GetGizmoLineBatches())
-      {
-        MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
-        lbMesh->Init();
-        m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(lbMesh);
-      }
       m_gizmoMC->ParamMesh().m_exposed = false;
 
       m_gizmoActive = false;

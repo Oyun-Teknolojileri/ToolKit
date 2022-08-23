@@ -1100,6 +1100,8 @@ namespace ToolKit
         DrawType::Line,
         1.0f
       );
+
+      GetLightMeshData<EditorSpotLight>(light);
     }
 
     DirectionalLightGizmo::DirectionalLightGizmo(DirectionalLight* light)
@@ -1142,6 +1144,8 @@ namespace ToolKit
         DrawType::Line,
         1.0f
       );
+
+      GetLightMeshData<EditorDirectionalLight>(light);
     }
 
     PointLightGizmo::PointLightGizmo(PointLight* light)
@@ -1232,6 +1236,8 @@ namespace ToolKit
 
       // Circle on XZ plane
       drawCircleGizmo(m_circlePntsXY, up, right, 2);
+
+      GetLightMeshData<EditorPointLight>(light);
     }
 
     LightGizmoBase::LightGizmoBase()
@@ -1252,5 +1258,19 @@ namespace ToolKit
       return m_gizmoLineBatches;
     }
 
+    template <typename T>
+    void LightGizmoBase::GetLightMeshData(Light* light)
+    {
+      for
+      (
+        LineBatch* lb : static_cast<T*>(light)->m_gizmo->GetGizmoLineBatches()
+      )
+      {
+        MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
+        lbMesh->Init();
+        static_cast<T*>(light)
+          ->m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(lbMesh);
+      }
+    }
   }  // namespace Editor
 }  // namespace ToolKit
