@@ -310,50 +310,25 @@ namespace ToolKit
         return;
       }
 
-      static String addedSignalName;
-      if (ImGui::Button("Add Record"))
-      {
-        if (mref.find(addedSignalName) != mref.end())
-        {
-          GetLogger()->WriteConsole(LogType::Error, "SignalName exists");
-        }
-        else if (addedSignalName.length() == 0)
-        {
-          GetLogger()->WriteConsole(LogType::Error, "SignalName invalid");
-        }
-        else
-        {
-          AnimRecordPtr rec = std::make_shared<AnimRecord>();
-          rec->m_state = AnimRecord::State::Stop;
-          rec->m_entity = animPlayerComp->m_entity;
-          mref.insert(std::make_pair(addedSignalName, rec));
-        }
-      }
 
-      ImGui::SameLine();
-      ImGui::PushItemWidth(200);
-      ImGui::InputText("Signal Name", &addedSignalName);
-      ImGui::PopItemWidth();
-
-      static AnimRecordPtr currentAnim = nullptr;
-      if (currentAnim)
+      if (animPlayerComp->GetActiveRecord())
       {
         String file;
         DecomposePath
         (
-          currentAnim->m_animation->GetFile(),
+          animPlayerComp->GetActiveRecord()->m_animation->GetFile(),
           nullptr,
           &file,
           nullptr
         );
 
         String text = Format
-          (
-            "Animation: %s, Duration: %f, T: %f",
-            file.c_str(),
-            currentAnim->m_animation->m_duration,
-            currentAnim->m_currentTime
-          );
+        (
+          "Animation: %s, Duration: %f, T: %f",
+          file.c_str(),
+          animPlayerComp->GetActiveRecord()->m_animation->m_duration,
+          animPlayerComp->GetActiveRecord()->m_currentTime
+        );
 
         ImGui::Text(text.c_str());
       }
@@ -406,69 +381,80 @@ namespace ToolKit
         uint rowIndx = 0;
         String removedSignalName = "";
         String nameUpdated = "";
-        AnimRecordPtrMap::iterator nameUpdatedIter = {};
+        std::pair<String, AnimRecordPtr> nameUpdatedPair = {};
 
+        static std::pair<String, AnimRecordPtr> extraTrack =
+          std::make_pair("", std::make_shared<AnimRecord>());
+
+        // Animation DropZone
+        auto showAnimationDropzone =
+        [this, tableWdth, file]
+        (uint& columnIndx, const std::pair<String, AnimRecordPtr>& pair)
+        {
+          ImGui::TableSetColumnIndex(columnIndx++);
+          ImGui::SetCursorPosX(tableWdth / 25.0f);
+          DropZone
+          (
+            static_cast<uint> (UI::m_clipIcon->m_textureId),
+            file,
+            [&pair](const DirectoryEntry& entry) -> void
+            {
+              if (GetResourceType(entry.m_ext) == ResourceType::Animation)
+              {
+                pair.second->m_animation =
+                  GetAnimationManager()->Create<Animation>
+                  (
+                    entry.GetFullPath()
+                  );
+              }
+              else
+              {
+                GetLogger()->WriteConsole
+                (
+                  LogType::Error,
+                  "Only animations are accepted."
+                );
+              }
+            }
+          );
+        };
+        auto showSignalName =
+        [this, &nameUpdated, &nameUpdatedPair, tableWdth]
+        (uint& columnIndx, const std::pair<String, AnimRecordPtr>& pair)
+        {
+          ImGui::TableSetColumnIndex(columnIndx++);
+          ImGui::SetCursorPosY
+          (
+            ImGui::GetCursorPos().y + (ImGui::GetItemRectSize().y / 4.0f)
+          );
+          ImGui::PushItemWidth((tableWdth / 2.5f) - 5.0f);
+          String readOnly = pair.first;
+          if
+          (
+            ImGui::InputText
+            (
+              "##",
+              &readOnly,
+              ImGuiInputTextFlags_EnterReturnsTrue
+            )
+            && readOnly.length()
+          )
+          {
+            nameUpdated = readOnly;
+            nameUpdatedPair = pair;
+          }
+          ImGui::PopItemWidth();
+        };
         for (auto it = mref.begin(); it != mref.end(); ++it, rowIndx++)
         {
           uint columnIndx = 0;
           ImGui::TableNextRow();
           ImGui::PushID(rowIndx);
 
-          // Animation DropZone
-          {
-            ImGui::TableSetColumnIndex(columnIndx++);
-            ImGui::SetCursorPosX(tableWdth / 25.0f);
-            DropZone
-            (
-              static_cast<uint> (UI::m_clipIcon->m_textureId),
-              file,
-              [&it](const DirectoryEntry& entry) -> void
-              {
-                if (GetResourceType(entry.m_ext) == ResourceType::Animation)
-                {
-                  it->second->m_animation =
-                    GetAnimationManager()->Create<Animation>
-                    (
-                    entry.GetFullPath()
-                    );
-                }
-                else
-                {
-                  GetLogger()->WriteConsole
-                  (
-                    LogType::Error,
-                    "Only animations are accepted."
-                  );
-                }
-              }
-            );
-          }
+          showAnimationDropzone(columnIndx, *it);
 
           // Signal Name
-          {
-            ImGui::TableSetColumnIndex(columnIndx++);
-            ImGui::SetCursorPosY
-            (
-              ImGui::GetCursorPos().y + (ImGui::GetItemRectSize().y / 4.0f)
-            );
-            ImGui::PushItemWidth((tableWdth / 2.5f) - 5.0f);
-            String readOnly = it->first;
-            if
-            (
-              ImGui::InputText
-              (
-                "##",
-                &readOnly,
-                ImGuiInputTextFlags_EnterReturnsTrue
-              )
-              && readOnly.length()
-            )
-            {
-              nameUpdated = readOnly;
-              nameUpdatedIter = it;
-            }
-            ImGui::PopItemWidth();
-          }
+          showSignalName(columnIndx, *it);
 
           // Play, Pause & Stop Buttons
           ImGui::TableSetColumnIndex(columnIndx++);
@@ -490,10 +476,10 @@ namespace ToolKit
 
             // Alternate between Play - Pause buttons.
             if
-            (
+              (
               activeRecord == it->second
               && activeRecord->m_state == AnimRecord::State::Play
-            )
+              )
             {
               if
               (
@@ -508,7 +494,8 @@ namespace ToolKit
                 animPlayerComp->Pause();
               }
             }
-            else if (
+            else if
+            (
               UI::ImageButtonDecorless
               (
                 UI::m_playIcon->m_textureId,
@@ -518,7 +505,6 @@ namespace ToolKit
             )
             {
               animPlayerComp->Play(it->first.c_str());
-              currentAnim = it->second;
             }
 
             // Draw stop button always.
@@ -534,7 +520,6 @@ namespace ToolKit
             )
             {
               animPlayerComp->Stop();
-              currentAnim = nullptr;
             }
           }
 
@@ -563,26 +548,52 @@ namespace ToolKit
           ImGui::PopID();
         }
 
+
+        {
+          uint columnIndx = 0;
+          ImGui::TableNextRow();
+          ImGui::PushID(rowIndx);
+
+          showAnimationDropzone(columnIndx, extraTrack);
+
+          // Signal Name
+          showSignalName(columnIndx, extraTrack);
+
+          ImGui::PopID();
+        }
+
         if (removedSignalName.length())
         {
           animPlayerComp->RemoveSignal(removedSignalName);
         }
 
-        if (nameUpdated.length() && nameUpdatedIter->first != nameUpdated)
+        if (nameUpdated.length() && nameUpdatedPair.first != nameUpdated)
         {
           if (mref.find(nameUpdated) != mref.end())
           {
             GetLogger()->WriteConsole(LogType::Error, "SignalName exists");
           }
+          else if (nameUpdatedPair.first == extraTrack.first)
+          {
+            extraTrack.first = nameUpdated;
+          }
           else
           {
-            auto node = mref.extract(nameUpdatedIter->first);
+            auto node = mref.extract(nameUpdatedPair.first);
             node.key() = nameUpdated;
             mref.insert(std::move(node));
 
             nameUpdated = "";
-            nameUpdatedIter = {};
+            nameUpdatedPair = {};
           }
+        }
+
+        // If extra track is filled properly, add it to the list
+        if (extraTrack.first != "" && extraTrack.second->m_animation != nullptr)
+        {
+          mref.insert(extraTrack);
+          extraTrack.first = "";
+          extraTrack.second = std::make_shared<AnimRecord>();
         }
 
         ImGui::EndTable();
