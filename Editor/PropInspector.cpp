@@ -406,6 +406,10 @@ namespace ToolKit
                   (
                     entry.GetFullPath()
                   );
+                if (pair.first.empty())
+                {
+                  extraTrack.first = entry.m_fileName;
+                }
               }
               else
               {
@@ -418,6 +422,7 @@ namespace ToolKit
             }
           );
         };
+
         auto showSignalName =
         [this, &nameUpdated, &nameUpdatedPair, tableWdth]
         (uint& columnIndx, const std::pair<String, AnimRecordPtr>& pair)
@@ -476,10 +481,10 @@ namespace ToolKit
 
             // Alternate between Play - Pause buttons.
             if
-              (
+            (
               activeRecord == it->second
               && activeRecord->m_state == AnimRecord::State::Play
-              )
+            )
             {
               if
               (
@@ -548,19 +553,16 @@ namespace ToolKit
           ImGui::PopID();
         }
 
+        // Show last extra track.
+        uint columnIndx = 0;
+        ImGui::TableNextRow();
+        ImGui::PushID(rowIndx);
 
-        {
-          uint columnIndx = 0;
-          ImGui::TableNextRow();
-          ImGui::PushID(rowIndx);
+        showAnimationDropzone(columnIndx, extraTrack);
 
-          showAnimationDropzone(columnIndx, extraTrack);
-
-          // Signal Name
-          showSignalName(columnIndx, extraTrack);
-
-          ImGui::PopID();
-        }
+        // Signal Name
+        showSignalName(columnIndx, extraTrack);
+        ImGui::PopID();
 
         if (removedSignalName.length())
         {

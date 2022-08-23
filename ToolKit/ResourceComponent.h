@@ -158,12 +158,10 @@ namespace ToolKit
     * Empty constructor.
     */
     AnimControllerComponent();
-
     virtual ~AnimControllerComponent();
 
     ComponentPtr Copy(Entity* ntt) override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-
 
     void Play(const String& recordName);
     void Stop();
@@ -171,6 +169,7 @@ namespace ToolKit
     AnimRecordPtr GetActiveRecord();
     void AddSignal(const String& signalName, AnimRecordPtr record);
     void RemoveSignal(const String& signalName);
+
    public:
     TKDeclareParam(AnimRecordPtrMap, Records);
 
