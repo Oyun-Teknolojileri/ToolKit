@@ -797,6 +797,11 @@ namespace ToolKit
     tMesh->m_vertexCount = static_cast<int>(tMesh->m_clientSideVertices.size());
     tMesh->m_indexCount = static_cast<int>(tMesh->m_clientSideIndices.size());
     tMesh->m_material = tMaterials[mesh->mMaterialIndex];
+    for (ubyte i = 0; i < 3; i++)
+    {
+      tMesh->m_aabb.min[i] = mesh->mAABB.mMin[i];
+      tMesh->m_aabb.max[i] = mesh->mAABB.mMax[i];
+    }
   }
 
   void SearchMesh
@@ -1264,6 +1269,7 @@ namespace ToolKit
           | aiProcess_GenSmoothNormals
           | aiProcess_GlobalScale
           | aiProcess_FindInvalidData
+          | aiProcess_GenBoundingBoxes
         );
 
         if (scene == nullptr)

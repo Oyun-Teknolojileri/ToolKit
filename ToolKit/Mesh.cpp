@@ -294,6 +294,10 @@ namespace ToolKit
       mesh->m_skeleton->SerializeRef(doc, meshNode);
     }
 
+    XmlNode* aabbMinNode = CreateXmlNode(doc, "AABB-Min", meshNode);
+    WriteVec(aabbMinNode, doc, mesh->m_aabb.min);
+    XmlNode* aabbMaxNode = CreateXmlNode(doc, "AABB-Max", meshNode);
+    WriteVec(aabbMaxNode, doc, mesh->m_aabb.max);
 
     XmlNode* vertices = CreateXmlNode(doc, "vertices", meshNode);
 
@@ -402,12 +406,22 @@ namespace ToolKit
 
       mesh->m_material = ReadMaterial(node);
 
+      XmlNode* aabbMinAttr = node->first_node("AABB-Min");
+      if (aabbMinAttr)
+      {
+        ReadVec(aabbMinAttr, mesh->m_aabb.min);
+        ReadVec(node->first_node("AABB-Max"), mesh->m_aabb.max);
+      }
+
       XmlNode* vertex = node->first_node("vertices");
       for (XmlNode* v = vertex->first_node("v"); v; v = v->next_sibling())
       {
         Vertex vd;
         ReadVec(v->first_node("p"), vd.pos);
-        m_aabb.UpdateBoundary(vd.pos);
+        if (aabbMinAttr == nullptr)
+        {
+          m_aabb.UpdateBoundary(vd.pos);
+        }
 
         ReadVec(v->first_node("n"), vd.norm);
         ReadVec(v->first_node("t"), vd.tex);
@@ -579,6 +593,13 @@ namespace ToolKit
         m_subMeshes.push_back(MeshPtr(mesh));
       }
 
+      XmlNode* aabbMinAttr = node->first_node("AABB-Min");
+      if (aabbMinAttr)
+      {
+        ReadVec(aabbMinAttr, mesh->m_aabb.min);
+        ReadVec(node->first_node("AABB-Max"), mesh->m_aabb.max);
+      }
+
       mesh->m_material = ReadMaterial(node);
 
       String path = Skeleton::DeserializeRef(node);
@@ -596,7 +617,10 @@ namespace ToolKit
       {
         SkinVertex vd;
         ReadVec(v->first_node("p"), vd.pos);
-        m_aabb.UpdateBoundary(vd.pos);
+        if (aabbMinAttr == nullptr)
+        {
+          m_aabb.UpdateBoundary(vd.pos);
+        }
 
         ReadVec(v->first_node("n"), vd.norm);
         ReadVec(v->first_node("t"), vd.tex);

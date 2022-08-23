@@ -33,13 +33,9 @@ namespace ToolKit
       void Redo() override;
 
      private:
-      void HandleAnimRecords(Entity* ntt);
-
-     private:
       Entity* m_ntt;
       ULongID m_parentId;
       EntityIdArray m_children;
-      AnimRecordRawPtrArray m_records;
       bool m_actionComitted;
     };
 

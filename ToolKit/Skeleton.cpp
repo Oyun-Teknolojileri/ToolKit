@@ -22,20 +22,8 @@ namespace ToolKit
 
   Bone::~Bone()
   {
-    // Override orphaning.
-    NodePtrArray& childsOfParent = m_node->m_parent->m_children;
-    for (uint childIndx = 0; childIndx < childsOfParent.size(); childIndx)
-    {
-      if (m_node == childsOfParent[childIndx])
-      {
-        childsOfParent.erase(childsOfParent.begin() + childIndx);
-      }
-      else
-      {
-        childIndx++;
-      }
-    }
     m_node->m_parent = nullptr;
+    m_node->m_children.clear();
     SafeDel(m_node);
   }
 
@@ -74,7 +62,7 @@ namespace ToolKit
       Bone* childBone = nullptr;
       for (Bone* boneSearch : skltn->m_bones)
       {
-        if (boneSearch->m_node = childNode)
+        if (boneSearch->m_node == childNode)
         {
           childBone = boneSearch;
           break;
@@ -90,8 +78,9 @@ namespace ToolKit
 
   void Skeleton::UnInit()
   {
+    uint32_t deletedCount = 0;
     std::function<void(const Bone*)> deleteBone =
-    [this, &deleteBone]
+    [this, &deleteBone, &deletedCount]
     (
       const Bone* parentBone
     ) -> void
@@ -114,9 +103,11 @@ namespace ToolKit
           deleteBone(childBone);
         }
       }
+      deletedCount++;
       SafeDel(parentBone);
     };
     ForEachChildBoneNode(this, deleteBone);
+    m_node->m_children.clear();
     SafeDel(m_node);
 
     m_bones.clear();
