@@ -38,8 +38,8 @@
 
 		uniform _LightData LightData;
 		uniform _CamData CamData;
-		uniform sampler2D s_texture;
-		uniform samplerCube IBLIrradianceMap;
+		uniform sampler2D s_texture0;
+		uniform samplerCube s_texture1;
 
 		uniform float UseIbl;
 		uniform float IblIntensity;
@@ -171,10 +171,10 @@
 
 				irradiance += (ambient + diffuse + specular) * LightData.intensity[i];
 			}
-			vec3 iblIrradiance = UseIbl * texture(IBLIrradianceMap, n).rgb;
+			vec3 iblIrradiance = UseIbl * texture(s_texture1, n).rgb;
 			irradiance += iblIrradiance * IblIntensity;
 
-			vec4 objectColor = texture(s_texture, v_texture);
+			vec4 objectColor = texture(s_texture0, v_texture);
 			fragColor = vec4(irradiance, 1.0) * objectColor;
 		}
 	-->

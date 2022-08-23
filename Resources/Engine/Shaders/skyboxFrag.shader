@@ -8,11 +8,11 @@
 		out vec4 fragColor;
 		in vec3 v_pos;
 
-		uniform samplerCube cubeMap;
+		uniform samplerCube s_texture1;
 
 		void main()
 		{
-		    vec3 color = texture(cubeMap, v_pos).rgb;
+		    vec3 color = texture(s_texture1, v_pos).rgb;
 
 		    fragColor = vec4(color, 1.0);
 		}

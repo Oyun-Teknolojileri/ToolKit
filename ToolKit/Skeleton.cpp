@@ -298,8 +298,9 @@ namespace ToolKit
       ptr->m_initiated = true;
       ptr->m_loaded = true;
     };
-    auto uploadBoneMatrix = [](Mat4 mat, uint boneIndx)
+    auto uploadBoneMatrix = [](Mat4 mat, TexturePtr& ptr, uint boneIndx)
     {
+      glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
       glTexSubImage2D
       (
         GL_TEXTURE_2D,
@@ -323,6 +324,7 @@ namespace ToolKit
         uploadBoneMatrix
         (
           m_bones[boneIndx]->m_inverseWorldMatrix,
+          m_bindPoseTexture,
           static_cast<uint>(boneIndx)
         );
       }
@@ -336,6 +338,7 @@ namespace ToolKit
       uploadBoneMatrix
       (
         m_bones[bnIndx]->m_node->GetTransform(TransformationSpace::TS_WORLD),
+        m_boneTransformTexture,
         (uint)bnIndx
       );
     }

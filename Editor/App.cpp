@@ -1386,8 +1386,7 @@ Fail:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         // Dilate.
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
+        GetRenderer()->SetTexture(0, stencilMask.m_textureId);
         ShaderPtr dilate = GetShaderManager()->Create<Shader>
         (
           ShaderPath("dilateFrag.shader", true)

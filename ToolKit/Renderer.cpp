@@ -129,7 +129,6 @@ namespace ToolKit
 
       for (Mesh* mesh : meshCollector)
       {
-        m_textureIdCount = 0;
         if (m_overrideMat != nullptr)
         {
           m_mat = m_overrideMat.get();
@@ -178,57 +177,57 @@ namespace ToolKit
   {
     MeshPtr mesh = object->GetMeshComponent()->GetMeshVal();
     SetProjectViewModel(object, cam);
+    MaterialPtr nttMat = nullptr;
+    if (object->GetMaterialComponent())
+    {
+      nttMat = object->GetMaterialComponent()->GetMaterialVal();
+    }
 
     static ShaderPtr skinShader = GetShaderManager()->Create<Shader>
     (
       ShaderPath("defaultSkin.shader", true)
     );
-    static ProgramPtr skinProg = CreateProgram
-    (
-      skinShader,
-      mesh->m_material->m_fragmetShader
-    );
-    BindProgram(skinProg);
-    FeedUniforms(skinProg);
 
     SkeletonPtr skeleton = static_cast<SkinMesh*> (mesh.get())->m_skeleton;
     skeleton->UpdateTransformationTexture();
-    // Bind bone data
-    {
-      GLint loc = glGetUniformLocation
-      (
-        skinProg->m_handle,
-        "boneTransform_textures"
-      );
-      glUniform1i(loc, m_textureIdCount);
-      glActiveTexture(GL_TEXTURE0 + m_textureIdCount++);
-      glBindTexture
-      (
-        GL_TEXTURE_2D,
-        skeleton->m_boneTransformTexture->m_textureId
-      );
-
-      loc = glGetUniformLocation
-      (
-        skinProg->m_handle,
-        "boneBindPose_textures"
-      );
-      glUniform1i(loc, m_textureIdCount);
-      glActiveTexture(GL_TEXTURE0 + m_textureIdCount++);
-      glBindTexture(GL_TEXTURE_2D, skeleton->m_bindPoseTexture->m_textureId);
-
-      loc = glGetUniformLocation(skinProg->m_handle, "numBones");
-      float boneCount = static_cast<float>(skeleton->m_bones.size());
-      glUniform1fv(loc, 1, &boneCount);
-    }
 
     MeshRawPtrArray meshCollector;
     mesh->GetAllMeshes(meshCollector);
 
     for (Mesh* mesh : meshCollector)
     {
-      RenderState* rs = mesh->m_material->GetRenderState();
-      SetRenderState(rs, skinProg);
+      if (m_overrideMat != nullptr)
+      {
+        m_mat = m_overrideMat.get();
+      }
+      else
+      {
+        m_mat = nttMat ? nttMat.get() : mesh->m_material.get();
+      }
+
+      GLenum beforeSetting = glGetError();
+      ProgramPtr prg = CreateProgram
+      (
+        skinShader,
+        m_mat->m_fragmetShader
+      );
+      BindProgram(prg);
+
+      // Bind bone data
+      {
+        SetTexture(2, skeleton->m_bindPoseTexture->m_textureId);
+        SetTexture(3, skeleton->m_boneTransformTexture->m_textureId);
+
+        GLint loc = glGetUniformLocation(prg->m_handle, "numBones");
+        float boneCount = static_cast<float>(skeleton->m_bones.size());
+        glUniform1fv(loc, 1, &boneCount);
+      }
+      GLenum afterSetting = glGetError();
+
+      FeedUniforms(prg);
+
+      RenderState* rs = m_mat->GetRenderState();
+      SetRenderState(rs, prg);
 
       glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
       SetVertexLayout(VertexLayout::SkinMesh);
@@ -368,21 +367,13 @@ namespace ToolKit
     if (state->diffuseTextureInUse)
     {
       m_renderState.diffuseTexture = state->diffuseTexture;
-      GLint loc = glGetUniformLocation(program->m_handle, "s_texture");
-      glUniform1i(loc, m_textureIdCount);
-      glActiveTexture(GL_TEXTURE0 + m_textureIdCount);
-      glBindTexture(GL_TEXTURE_2D, m_renderState.diffuseTexture);
-      m_textureIdCount++;
+      SetTexture(0, state->diffuseTexture);
     }
 
     if (state->cubeMapInUse)
     {
       m_renderState.cubeMap = state->cubeMap;
-      GLint loc = glGetUniformLocation(program->m_handle, "cubeMap");
-      glUniform1i(loc, m_textureIdCount);
-      glActiveTexture(GL_TEXTURE0 + m_textureIdCount);
-      glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderState.cubeMap);
-      m_textureIdCount++;
+      SetTexture(1, state->diffuseTexture);
     }
 
     if (m_renderState.lineWidth != state->lineWidth)
@@ -970,6 +961,24 @@ namespace ToolKit
         vertex->m_shaderHandle,
         fragment->m_shaderHandle
       );
+      glUseProgram(program->m_handle);
+      for
+      (
+        ubyte slotIndx = 0;
+        slotIndx < m_rhiSettings::textureSlotCount;
+        slotIndx++
+      )
+      {
+        GLint loc = glGetUniformLocation
+        (
+          program->m_handle,
+          ("s_texture" + std::to_string(slotIndx)).c_str()
+        );
+        if (loc != -1)
+        {
+          glUniform1i(loc, slotIndx);
+        }
+      }
       m_programs[program->m_tag] = program;
     }
 
@@ -1119,15 +1128,7 @@ namespace ToolKit
         case Uniform::IBL_IRRADIANCE:
         {
           m_renderState.irradianceMap = m_mat->GetRenderState()->irradianceMap;
-          GLint loc = glGetUniformLocation
-          (
-            program->m_handle,
-            "IBLIrradianceMap"
-          );
-          glUniform1i(loc, m_textureIdCount);
-          glActiveTexture(GL_TEXTURE0 + m_textureIdCount);
-          glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderState.irradianceMap);
-          m_textureIdCount++;
+          SetTexture(1, m_renderState.irradianceMap);
         }
         break;
         default:
@@ -1472,5 +1473,23 @@ namespace ToolKit
         BUFFER_OFFSET(offset)
       );
     }
+  }
+
+  void Renderer::SetTexture(ubyte slotIndx, uint textureId)
+  {
+    // Slots:
+    // 0 -> Color Texture
+    // 1 -> Irradiance Map
+    // 2 & 3 -> Skinning information
+    // Note: These are defaults.
+    //  You can override these slots in your linked shader program
+    assert
+    (
+      slotIndx < m_rhiSettings::textureSlotCount
+      && "You exceed texture slot count"
+    );
+    m_textureSlots[slotIndx] = textureId;
+    glActiveTexture(GL_TEXTURE0 + slotIndx);
+    glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
   }
 }  // namespace ToolKit

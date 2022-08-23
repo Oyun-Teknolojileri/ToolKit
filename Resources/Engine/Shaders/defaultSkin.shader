@@ -16,8 +16,8 @@
       in uvec4 vBones;
       in vec4 vWeights;
       uniform mat4 ProjectViewModel;
-      uniform sampler2D boneTransform_textures; // This is dynamic data
-      uniform sampler2D boneBindPose_textures;  // This is static data
+      uniform sampler2D s_texture2;  // This is static data, bindPose texture
+      uniform sampler2D s_texture3; // This is dynamic data, boneTransform texture
       uniform float numBones;
       out vec3 v_pos;
       out vec3 v_normal;
@@ -38,7 +38,7 @@
       vec4 skin(vec4 vertexPos){
          vec4 skinned = vec4(0);
          for(int i = 0; i < 4; i++){
-            skinned += getMatrixFromTexture(boneTransform_textures, vBones[i]) * getMatrixFromTexture(boneBindPose_textures, vBones[i]) * vertexPos * vWeights[i];
+            skinned += getMatrixFromTexture(s_texture3, vBones[i]) * getMatrixFromTexture(s_texture2, vBones[i]) * vertexPos * vWeights[i];
          }
          return skinned;
       }
