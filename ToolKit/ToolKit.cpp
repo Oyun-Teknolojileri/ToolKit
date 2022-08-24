@@ -48,7 +48,7 @@ namespace ToolKit
       return;
     }
 
-    m_engineSettings.DeSerialize();
+    m_engineSettings.DeSerialize(nullptr, nullptr);
 
     m_logger->Log("Main PreInit");
     m_renderer = new Renderer();
@@ -407,13 +407,17 @@ namespace ToolKit
 
   void EngineSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
-    XmlDocument lclDoc;
+    XmlDocBundle lclData;
     if (doc == nullptr)
     {
       String path = ConcatPaths({ ConfigPath(), "Engine.settings" });
-      XmlFile file(path.c_str());
-      lclDoc.parse<0>(file.data());
-      doc = &lclDoc;
+      XmlFilePtr file = std::make_shared<XmlFile>(path.c_str());
+      XmlDocumentPtr docPtr = std::make_shared<XmlDocument>();
+      docPtr->parse<0>(file->data());
+      lclData.file = file;
+      lclData.doc = docPtr;
+
+      doc = docPtr.get();
     }
 
     if (parent == nullptr)
