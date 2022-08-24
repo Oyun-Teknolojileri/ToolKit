@@ -3,6 +3,8 @@
 #include "DebugNew.h"
 
 #include <filesystem>
+#include <memory>
+#include <string>
 
 namespace ToolKit
 {
@@ -22,10 +24,13 @@ namespace ToolKit
 
     XmlNode* Workspace::GetDefaultWorkspaceNode(XmlDocBundle& bundle)
     {
-      String settingsFile = ConcatPaths({ DefaultPath(), "workspace.settings" });
+      String settingsFile = ConcatPaths
+      (
+        { DefaultPath(), "workspace.settings" }
+      );
       if (CheckFile(settingsFile))
       {
-        std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
+        XmlFilePtr lclFile = GetFileManager()->GetXmlFile(settingsFile.c_str());
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
 
@@ -57,7 +62,10 @@ namespace ToolKit
       if (XmlNode* node = GetDefaultWorkspaceNode(docBundle))
       {
         std::ofstream file;
-        String settingsPath = ConcatPaths({ DefaultPath(), "workspace.settings" });
+        String settingsPath = ConcatPaths
+        (
+          { DefaultPath(), "workspace.settings" }
+        );
 
         file.open(settingsPath.c_str(), std::ios::out);
         if (file.is_open())
@@ -125,7 +133,10 @@ namespace ToolKit
         return m_activeWorkspace;
       }
 
-      return ConcatPaths({ m_activeWorkspace, m_activeProject.name,  "Resources" });
+      return ConcatPaths
+      (
+        { m_activeWorkspace, m_activeProject.name,  "Resources" }
+      );
     }
 
     String Workspace::GetActiveWorkspace()
@@ -157,7 +168,11 @@ namespace ToolKit
     void Workspace::RefreshProjects()
     {
       m_projects.clear();
-      for (std::filesystem::directory_entry const& dir : std::filesystem::directory_iterator(m_activeWorkspace))
+      for
+      (
+        std::filesystem::directory_entry const& dir :
+        std::filesystem::directory_iterator(m_activeWorkspace)
+      )
       {
         if (dir.is_directory())
         {
@@ -181,16 +196,27 @@ namespace ToolKit
     void Workspace::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
       std::ofstream file;
-      String fileName = ConcatPaths({ m_activeWorkspace, "workspace.settings" });
+      String fileName = ConcatPaths
+      (
+        { m_activeWorkspace, "workspace.settings" }
+      );
       file.open(fileName.c_str(), std::ios::out);
 
       if (file.is_open())
       {
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
-        XmlNode* settings = lclDoc->allocate_node(rapidxml::node_element, "Settings");
+        XmlNode* settings = lclDoc->allocate_node
+        (
+          rapidxml::node_element,
+          "Settings"
+        );
         lclDoc->append_node(settings);
 
-        XmlNode* setNode = lclDoc->allocate_node(rapidxml::node_element, "Workspace");
+        XmlNode* setNode = lclDoc->allocate_node
+        (
+          rapidxml::node_element,
+          "Workspace"
+        );
         WriteAttr(setNode, lclDoc.get(), "path", m_activeWorkspace);
         settings->append_node(setNode);
 
@@ -202,7 +228,8 @@ namespace ToolKit
         if (GetSceneManager()->Exist(sceneFile))
         {
           String sceneRoot = ScenePath("");
-          // Don't save anything as current scene, if its not in scene root folder.
+          // Don't save anything as current scene,
+          // if its not in scene root folder.
           if (sceneFile.find(sceneRoot) != String::npos)
           {
             String scenePath = GetRelativeResourcePath(sceneFile);
@@ -221,7 +248,10 @@ namespace ToolKit
 
     void Workspace::DeSerialize(XmlDocument* doc, XmlNode* parent)
     {
-      String settingsFile = ConcatPaths({ m_activeWorkspace, "workspace.settings" });
+      String settingsFile = ConcatPaths
+      (
+        { m_activeWorkspace, "workspace.settings" }
+      );
       if (!CheckFile(settingsFile))
       {
         settingsFile = ConcatPaths({ DefaultPath(), "workspace.settings" });
@@ -251,5 +281,5 @@ namespace ToolKit
       }
     }
 
-  }
-}
+  }  // namespace Editor
+}  // namespace ToolKit

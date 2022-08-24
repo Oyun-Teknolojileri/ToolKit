@@ -1,4 +1,6 @@
 #include "PropInspector.h"
+#include <memory>
+#include <utility>
 #include "App.h"
 #include "Util.h"
 #include "ConsoleWindow.h"
@@ -15,7 +17,7 @@ namespace ToolKit
     // View
     //////////////////////////////////////////////////////////////////////////
 
-    void View::ShowVariant(ParameterVariant* var)
+    void View::ShowVariant(ParameterVariant* var, ComponentPtr comp)
     {
       if (!var->m_exposed)
       {
@@ -38,11 +40,7 @@ namespace ToolKit
         case ParameterVariant::VariantType::Float:
         {
           float val = var->GetVar<float>();
-          if
-          (
-            ImGui::InputFloat(var->m_name.c_str(), &val)
-            && ImGui::IsKeyPressed(ImGuiKey_Enter)
-          )
+          if (ImGui::DragFloat(var->m_name.c_str(), &val, 0.1f))
           {
             *var = val;
           }
@@ -51,11 +49,7 @@ namespace ToolKit
         case ParameterVariant::VariantType::Int:
         {
           int val = var->GetVar<int>();
-          if
-          (
-            ImGui::InputInt(var->m_name.c_str(), &val)
-            && ImGui::IsKeyPressed(ImGuiKey_Enter)
-          )
+          if(ImGui::InputInt(var->m_name.c_str(), &val))
           {
             *var = val;
           }
@@ -64,7 +58,7 @@ namespace ToolKit
         case ParameterVariant::VariantType::Vec2:
         {
           Vec2 val = var->GetVar<Vec2>();
-          if (ImGui::InputFloat2(var->m_name.c_str(), &val[0]))
+          if (ImGui::DragFloat2(var->m_name.c_str(), &val[0], 0.1f))
           {
             *var = val;
           }
@@ -73,18 +67,88 @@ namespace ToolKit
         case ParameterVariant::VariantType::Vec3:
         {
           Vec3 val = var->GetVar<Vec3>();
-          if (ImGui::InputFloat3(var->m_name.c_str(), &val[0]))
+          if (var->m_hint.isColor)
           {
-            *var = val;
+            if
+            (
+              ImGui::ColorEdit3
+              (
+                var->m_name.c_str(),
+                &val[0],
+                ImGuiColorEditFlags_NoLabel
+              )
+            )
+            {
+              *var = val;
+            }
+          }
+          else if (var->m_hint.isRangeLimited)
+          {
+            if
+            (
+              ImGui::DragFloat3
+              (
+                var->m_name.c_str(),
+                &val[0],
+                var->m_hint.increment,
+                var->m_hint.rangeMin,
+                var->m_hint.rangeMax
+              )
+            )
+            {
+              *var = val;
+            }
+          }
+          else
+          {
+            if (ImGui::DragFloat3(var->m_name.c_str(), &val[0], 0.1f))
+            {
+              *var = val;
+            }
           }
         }
         break;
         case ParameterVariant::VariantType::Vec4:
         {
           Vec4 val = var->GetVar<Vec4>();
-          if (ImGui::InputFloat4(var->m_name.c_str(), &val[0]))
+          if (var->m_hint.isColor)
           {
-            *var = val;
+            if
+            (
+              ImGui::ColorEdit4
+              (
+                var->m_name.c_str(),
+                &val[0],
+                ImGuiColorEditFlags_NoLabel
+              )
+            )
+            {
+              *var = val;
+            }
+          }
+          else if (var->m_hint.isRangeLimited)
+          {
+            if
+            (
+              ImGui::DragFloat4
+              (
+                var->m_name.c_str(),
+                &val[0],
+                var->m_hint.increment,
+                var->m_hint.rangeMin,
+                var->m_hint.rangeMax
+              )
+            )
+            {
+              *var = val;
+            }
+          }
+          else
+          {
+            if (ImGui::DragFloat4(var->m_name.c_str(), &val[0], 0.1f))
+            {
+              *var = val;
+            }
           }
         }
         break;
@@ -94,7 +158,7 @@ namespace ToolKit
           if
           (
             ImGui::InputText(var->m_name.c_str(), &val)
-            && ImGui::IsKeyPressed(ImGuiKey_Enter)
+            && ImGuiEnterPressed()
           )
           {
             *var = val;
@@ -112,7 +176,7 @@ namespace ToolKit
               ImGuiDataType_U32,
               var->GetVarPtr<ULongID>()
             )
-            && ImGui::IsKeyPressed(ImGuiKey_Enter)
+            && ImGuiEnterPressed()
           )
           {
             *var = val;
@@ -171,8 +235,8 @@ namespace ToolKit
           );
         }
         break;
-      case ParameterVariant::VariantType::HdriPtr:
-      {
+        case ParameterVariant::VariantType::HdriPtr:
+        {
         HdriPtr mref = var->GetVar<HdriPtr>();
         String file, id;
         if (mref)
@@ -207,11 +271,335 @@ namespace ToolKit
         );
         break;
       }
-      default:
+        case ParameterVariant::VariantType::AnimRecordPtrMap:
+        {
+          ShowAnimControllerComponent(var, comp);
+        }
         break;
+        default:
+         break;
       }
 
       ImGui::EndDisabled();
+    }
+
+    void View::ShowAnimControllerComponent
+    (
+      ParameterVariant* var,
+      ComponentPtr comp
+    )
+    {
+      AnimRecordPtrMap& mref = var->GetVar<AnimRecordPtrMap>();
+      String file, id;
+
+      AnimControllerComponent* animPlayerComp =
+        reinterpret_cast<AnimControllerComponent*>(comp.get());
+
+      // If component isn't AnimationPlayerComponent, don't show variant
+      if
+      (
+        !comp ||
+        comp->GetType() != ComponentType::AnimControllerComponent
+      )
+      {
+        GetLogger()->WriteConsole
+        (
+          LogType::Error,
+          "AnimRecordPtrMap is for AnimationControllerComponent"
+        );
+        return;
+      }
+
+
+      if (animPlayerComp->GetActiveRecord())
+      {
+        String file;
+        DecomposePath
+        (
+          animPlayerComp->GetActiveRecord()->m_animation->GetFile(),
+          nullptr,
+          &file,
+          nullptr
+        );
+
+        String text = Format
+        (
+          "Animation: %s, Duration: %f, T: %f",
+          file.c_str(),
+          animPlayerComp->GetActiveRecord()->m_animation->m_duration,
+          animPlayerComp->GetActiveRecord()->m_currentTime
+        );
+
+        ImGui::Text(text.c_str());
+      }
+
+      if
+      (
+        ImGui::BeginTable
+        (
+          "Animation Records and Signals",
+          4,
+          ImGuiTableFlags_RowBg
+          | ImGuiTableFlags_Borders
+          | ImGuiTableFlags_Resizable
+          | ImGuiTableFlags_Reorderable
+          | ImGuiTableFlags_ScrollY
+        )
+      )
+      {
+        float tableWdth = ImGui::GetItemRectSize().x;
+        ImGui::TableSetupColumn
+        (
+          "Animation",
+          ImGuiTableColumnFlags_WidthStretch,
+          tableWdth / 5.0f
+        );
+
+        ImGui::TableSetupColumn
+        (
+          "Name",
+          ImGuiTableColumnFlags_WidthStretch,
+          tableWdth / 2.5f
+        );
+
+        ImGui::TableSetupColumn
+        (
+          "Preview",
+          ImGuiTableColumnFlags_WidthStretch,
+          tableWdth / 4.0f
+        );
+
+        ImGui::TableSetupColumn
+        (
+          "",
+          ImGuiTableColumnFlags_WidthStretch,
+          tableWdth / 20.0f
+        );
+
+        ImGui::TableHeadersRow();
+
+        uint rowIndx = 0;
+        String removedSignalName = "";
+        String nameUpdated = "";
+        std::pair<String, AnimRecordPtr> nameUpdatedPair = {};
+
+        static std::pair<String, AnimRecordPtr> extraTrack =
+          std::make_pair("", std::make_shared<AnimRecord>());
+
+        // Animation DropZone
+        auto showAnimationDropzone =
+        [this, tableWdth, file]
+        (uint& columnIndx, const std::pair<String, AnimRecordPtr>& pair)
+        {
+          ImGui::TableSetColumnIndex(columnIndx++);
+          ImGui::SetCursorPosX(tableWdth / 25.0f);
+          DropZone
+          (
+            static_cast<uint> (UI::m_clipIcon->m_textureId),
+            file,
+            [&pair](const DirectoryEntry& entry) -> void
+            {
+              if (GetResourceType(entry.m_ext) == ResourceType::Animation)
+              {
+                pair.second->m_animation =
+                  GetAnimationManager()->Create<Animation>
+                  (
+                    entry.GetFullPath()
+                  );
+                if (pair.first.empty())
+                {
+                  extraTrack.first = entry.m_fileName;
+                }
+              }
+              else
+              {
+                GetLogger()->WriteConsole
+                (
+                  LogType::Error,
+                  "Only animations are accepted."
+                );
+              }
+            }
+          );
+        };
+
+        auto showSignalName =
+        [this, &nameUpdated, &nameUpdatedPair, tableWdth]
+        (uint& columnIndx, const std::pair<String, AnimRecordPtr>& pair)
+        {
+          ImGui::TableSetColumnIndex(columnIndx++);
+          ImGui::SetCursorPosY
+          (
+            ImGui::GetCursorPos().y + (ImGui::GetItemRectSize().y / 4.0f)
+          );
+          ImGui::PushItemWidth((tableWdth / 2.5f) - 5.0f);
+          String readOnly = pair.first;
+          if
+          (
+            ImGui::InputText
+            (
+              "##",
+              &readOnly,
+              ImGuiInputTextFlags_EnterReturnsTrue
+            )
+            && readOnly.length()
+          )
+          {
+            nameUpdated = readOnly;
+            nameUpdatedPair = pair;
+          }
+          ImGui::PopItemWidth();
+        };
+        for (auto it = mref.begin(); it != mref.end(); ++it, rowIndx++)
+        {
+          uint columnIndx = 0;
+          ImGui::TableNextRow();
+          ImGui::PushID(rowIndx);
+
+          showAnimationDropzone(columnIndx, *it);
+
+          // Signal Name
+          showSignalName(columnIndx, *it);
+
+          // Play, Pause & Stop Buttons
+          ImGui::TableSetColumnIndex(columnIndx++);
+          if (it->second->m_animation)
+          {
+            ImGui::SetCursorPosX
+            (
+              ImGui::GetCursorPos().x
+              + (ImGui::GetItemRectSize().x / 10.0f)
+            );
+
+            ImGui::SetCursorPosY
+            (
+              ImGui::GetCursorPos().y
+              + (ImGui::GetItemRectSize().y / 5.0f)
+            );
+
+            AnimRecordPtr activeRecord = animPlayerComp->GetActiveRecord();
+
+            // Alternate between Play - Pause buttons.
+            if
+            (
+              activeRecord == it->second
+              && activeRecord->m_state == AnimRecord::State::Play
+            )
+            {
+              if
+              (
+                UI::ImageButtonDecorless
+                (
+                  UI::m_pauseIcon->m_textureId,
+                  Vec2(24, 24),
+                  false
+                )
+              )
+              {
+                animPlayerComp->Pause();
+              }
+            }
+            else if
+            (
+              UI::ImageButtonDecorless
+              (
+                UI::m_playIcon->m_textureId,
+                Vec2(24, 24),
+                false
+              )
+            )
+            {
+              animPlayerComp->Play(it->first.c_str());
+            }
+
+            // Draw stop button always.
+            ImGui::SameLine();
+            if
+            (
+              UI::ImageButtonDecorless
+              (
+                UI::m_stopIcon->m_textureId,
+                Vec2(24, 24),
+                false
+              )
+            )
+            {
+              animPlayerComp->Stop();
+            }
+          }
+
+          // Remove Button
+          {
+            ImGui::TableSetColumnIndex(columnIndx++);
+            ImGui::SetCursorPosY
+            (
+              ImGui::GetCursorPos().y + (ImGui::GetItemRectSize().y / 4.0f)
+            );
+
+            if
+            (
+              UI::ImageButtonDecorless
+              (
+                UI::m_closeIcon->m_textureId,
+                Vec2(15, 15),
+                false
+              )
+            )
+            {
+              removedSignalName = it->first;
+            }
+          }
+
+          ImGui::PopID();
+        }
+
+        // Show last extra track.
+        uint columnIndx = 0;
+        ImGui::TableNextRow();
+        ImGui::PushID(rowIndx);
+
+        showAnimationDropzone(columnIndx, extraTrack);
+
+        // Signal Name
+        showSignalName(columnIndx, extraTrack);
+        ImGui::PopID();
+
+        if (removedSignalName.length())
+        {
+          animPlayerComp->RemoveSignal(removedSignalName);
+        }
+
+        if (nameUpdated.length() && nameUpdatedPair.first != nameUpdated)
+        {
+          if (mref.find(nameUpdated) != mref.end())
+          {
+            GetLogger()->WriteConsole(LogType::Error, "SignalName exists");
+          }
+          else if (nameUpdatedPair.first == extraTrack.first)
+          {
+            extraTrack.first = nameUpdated;
+          }
+          else
+          {
+            auto node = mref.extract(nameUpdatedPair.first);
+            node.key() = nameUpdated;
+            mref.insert(std::move(node));
+
+            nameUpdated = "";
+            nameUpdatedPair = {};
+          }
+        }
+
+        // If extra track is filled properly, add it to the list
+        if (extraTrack.first != "" && extraTrack.second->m_animation != nullptr)
+        {
+          mref.insert(extraTrack);
+          extraTrack.first = "";
+          extraTrack.second = std::make_shared<AnimRecord>();
+        }
+
+        ImGui::EndTable();
+      }
     }
 
     void View::DropZone
@@ -325,9 +713,17 @@ namespace ToolKit
       if (ImGui::TreeNode(title.c_str()))
       {
         DropZone(fallbackIcon, file, dropAction);
-
         ImGui::TreePop();
       }
+    }
+
+    bool View::ImGuiEnterPressed()
+    {
+      return
+      (
+        ImGui::IsKeyPressed(ImGuiKey_KeypadEnter)
+        || ImGui::IsKeyPressed(ImGuiKey_Enter)
+      );
     }
 
     // EntityView
@@ -394,6 +790,11 @@ namespace ToolKit
         ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen)
       )
       {
+        Mat3 rotate;
+        Vec3 scale, shear;
+        Mat4 ts = m_entity->m_node->GetTransform(g_app->m_transformSpace);
+        QDUDecomposition(ts, rotate, scale, shear);
+
         // Continuous edit utils.
         static TransformAction* dragMem = nullptr;
         const auto saveDragMemFn = [this]() -> void
@@ -413,26 +814,27 @@ namespace ToolKit
           }
         };
 
-        Vec3 translate = m_entity->m_node->GetTranslation
-        (
-          TransformationSpace::TS_PARENT
-        );
-        if (ImGui::DragFloat3("Translate", &translate[0], 0.25f))
+        TransformationSpace space = g_app->m_transformSpace;
+        Vec3 translate = glm::column(ts, 3);
+        Vec3 newTranslate = translate;
+        if (ImGui::DragFloat3("Translate", &newTranslate[0], 0.25f))
         {
           saveDragMemFn();
-          m_entity->m_node->SetTranslation
-          (
-            translate,
-            TransformationSpace::TS_PARENT
-          );
+
+          bool isDrag = ImGui::IsMouseDragging(0, 0.25f);
+          if (isDrag)
+          {
+            m_entity->m_node->Translate(newTranslate - translate, space);
+          }
+          else if (!isDrag && ImGuiEnterPressed())
+          {
+            m_entity->m_node->SetTranslation(newTranslate, space);
+          }
         }
 
         saveTransformActionFn();
 
-        Quaternion q0 = m_entity->m_node->GetOrientation
-        (
-          TransformationSpace::TS_LOCAL
-        );
+        Quaternion q0 = glm::toQuat(rotate);
         Vec3 eularXYZ = glm::eulerAngles(q0);
         Vec3 degrees = glm::degrees(eularXYZ);
         if (ImGui::DragFloat3("Rotate", &degrees[0], 0.25f))
@@ -455,29 +857,34 @@ namespace ToolKit
 
           if (isDrag)
           {
-            m_entity->m_node->Rotate
-            (
-              q,
-              TransformationSpace::TS_LOCAL
-            );
+            m_entity->m_node->Rotate(q, space);
           }
-          else
+          else if (ImGuiEnterPressed())
           {
-            m_entity->m_node->SetOrientation
-            (
-              q,
-              TransformationSpace::TS_LOCAL
-            );
+            m_entity->m_node->SetOrientation(q, space);
           }
         }
 
         saveTransformActionFn();
 
-        Vec3 scale = m_entity->m_node->GetScale();
-        if (ImGui::DragFloat3("Scale", &scale[0], 0.25f))
+        if (ImGui::DragFloat3("Scale", &scale[0], 0.1f))
         {
-          saveDragMemFn();
-          m_entity->m_node->SetScale(scale);
+          bool exceed = false;
+          if (scale.x <= 0.0f || scale.y <= 0.0f || scale.z <= 0.0f)
+          {
+            exceed = true;
+          }
+
+          if (!exceed)
+          {
+            saveDragMemFn();
+
+            bool isDrag = ImGui::IsMouseDragging(0, 0.25f);
+            if (isDrag || ImGuiEnterPressed())
+            {
+              m_entity->m_node->SetScale(scale);
+            }
+          }
         }
 
         saveTransformActionFn();
@@ -507,17 +914,14 @@ namespace ToolKit
 
       ShowCustomData();
 
-      if
-      (
-        ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen)
-      )
+      if(ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
       {
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
 
         std::vector<ULongID> compRemove;
         for (ComponentPtr& com : m_entity->m_components)
         {
-          if (ShowComponentBlock(com->m_localData, com->m_id))
+          if (ShowComponentBlock(com))
           {
             compRemove.push_back(com->m_id);
           }
@@ -531,6 +935,12 @@ namespace ToolKit
           );
         }
 
+        // Remove billboards if necessary
+        std::static_pointer_cast<EditorScene>
+        (
+          GetSceneManager()->GetCurrentScene()
+        )->InitEntityBillboard(m_entity);
+
         ImGui::PushItemWidth(150);
         static bool addInAction = false;
         if (addInAction)
@@ -542,7 +952,11 @@ namespace ToolKit
             (
               "##NewComponent",
               &dataType,
-              "...\0Mesh Component\0Material Component\0Environment Component"
+              "..."
+                "\0Mesh Component"
+                "\0Material Component"
+                "\0Environment Component"
+                "\0Animation Controller Component"
             )
           )
           {
@@ -558,6 +972,9 @@ namespace ToolKit
             case 3:
               newComponent = new EnvironmentComponent;
               break;
+            case 4:
+              newComponent = new AnimControllerComponent;
+            break;
             default:
               break;
             }
@@ -566,6 +983,12 @@ namespace ToolKit
             {
               m_entity->AddComponent(newComponent);
               addInAction = false;
+
+              // Add gizmo if needed
+              std::static_pointer_cast<EditorScene>
+              (
+                GetSceneManager()->GetCurrentScene()
+              )->AddBillboardToEntity(m_entity);
             }
           }
         }
@@ -609,21 +1032,21 @@ namespace ToolKit
 
           for (ParameterVariant* var : vars)
           {
-            ShowVariant(var);
+            ShowVariant(var, nullptr);
           }
         }
       }
     }
 
-    bool EntityView::ShowComponentBlock(ParameterBlock& params, ULongID id)
+    bool EntityView::ShowComponentBlock(ComponentPtr& comp)
     {
       VariantCategoryArray categories;
-      params.GetCategories(categories, true, true);
+      comp->m_localData.GetCategories(categories, true, true);
 
       bool removeComp = false;
       for (VariantCategory& category : categories)
       {
-        String varName = category.Name + "##" + std::to_string(id);
+        String varName = category.Name + "##" + std::to_string(comp->m_id);
         bool isOpen = ImGui::TreeNodeEx
         (
           varName.c_str(),
@@ -632,7 +1055,7 @@ namespace ToolKit
 
         float offset = ImGui::GetContentRegionAvail().x - 10.0f;
         ImGui::SameLine(offset);
-        ImGui::PushID(static_cast<int> (id));
+        ImGui::PushID(static_cast<int> (comp->m_id));
         if
         (
           UI::ImageButtonDecorless
@@ -652,11 +1075,11 @@ namespace ToolKit
         if (isOpen)
         {
           ParameterVariantRawPtrArray vars;
-          params.GetByCategory(category.Name, vars);
+          comp->m_localData.GetByCategory(category.Name, vars);
 
           for (ParameterVariant* var : vars)
           {
-            ShowVariant(var);
+            ShowVariant(var, comp);
           }
 
           ImGui::TreePop();
@@ -754,17 +1177,17 @@ namespace ToolKit
             break;
             case ParameterVariant::VariantType::Float:
             {
-              ImGui::InputFloat(pId.c_str(), var->GetVarPtr<float>());
+              ImGui::DragFloat(pId.c_str(), var->GetVarPtr<float>(), 0.1f);
             }
             break;
             case ParameterVariant::VariantType::Vec3:
             {
-              ImGui::InputFloat3(pId.c_str(), &var->GetVar<Vec3>()[0]);
+              ImGui::DragFloat3(pId.c_str(), &var->GetVar<Vec3>()[0], 0.1f);
             }
             break;
             case ParameterVariant::VariantType::Vec4:
             {
-              ImGui::InputFloat4(pId.c_str(), &var->GetVar<Vec4>()[0]);
+              ImGui::DragFloat4(pId.c_str(), &var->GetVar<Vec4>()[0], 0.1f);
             }
             break;
             case ParameterVariant::VariantType::Mat3:

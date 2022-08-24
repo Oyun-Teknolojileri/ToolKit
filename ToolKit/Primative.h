@@ -7,7 +7,6 @@
 
 namespace ToolKit
 {
-
   class TK_API Billboard : public Entity
   {
    public:
@@ -42,6 +41,7 @@ namespace ToolKit
    public:
     Settings m_settings;
     Vec3 m_worldLocation;
+    Entity* m_entity = nullptr;
   };
 
   class TK_API Cube final : public Entity
@@ -57,7 +57,7 @@ namespace ToolKit
     void Generate();
 
    public:
-    TKDeclareParam(Vec3, Scale);
+    TKDeclareParam(Vec3, CubeScale);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;

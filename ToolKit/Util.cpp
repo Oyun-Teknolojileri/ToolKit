@@ -97,7 +97,14 @@ namespace ToolKit
     {
       if constexpr (std::is_integral_v<T>)
       {
-        return static_cast<int> (std::atoi(attr->value()));
+        if constexpr (std::is_unsigned_v<T>)
+        {
+          return static_cast<T>(std::stoull(attr->value()));
+        }
+        else
+        {
+          return static_cast<T>(std::atoi(attr->value()));
+        }
       }
       else if constexpr (std::is_floating_point_v<T>)
       {

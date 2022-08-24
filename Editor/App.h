@@ -9,6 +9,7 @@
 #include "GlobalDef.h"
 #include "Light.h"
 #include "PublishManager.h"
+#include "PluginWindow.h"
 
 namespace ToolKit
 {
@@ -37,14 +38,6 @@ namespace ToolKit
 
     class App : Serializable
     {
-     public:
-      enum class GameMod
-      {
-        Playing,
-        Paused,
-        Stop
-      };
-
      public:
       App(int windowWidth, int windowHeight);
       virtual ~App();
@@ -112,23 +105,27 @@ namespace ToolKit
         EditorViewport* viewport,
         EntityRawPtrArray selecteds
       );
+
       void RenderGizmo
       (
         EditorViewport* viewport,
         Gizmo* gizmo
       );
+
       void RenderComponentGizmo
       (
         EditorViewport* viewport,
         EntityRawPtrArray selecteds
       );
+
       void ShowPlayWindow(float deltaTime);
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
      private:
-      void CreateSimulationWindow();
+      void OverrideEntityConstructors();
+      void CreateSimulationWindow(float width , float height);
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
 
@@ -144,10 +141,8 @@ namespace ToolKit
       std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
 
       // Emulator settings.
-      bool m_runWindowed = false;
-      float m_playWidth = 640.0f;
-      float m_playHeight = 480.0f;
       EditorViewport* m_playWindow = nullptr;
+      EmulatorSettings m_emulatorSettings;
 
       // Editor objects.
       Grid* m_grid;
@@ -155,7 +150,6 @@ namespace ToolKit
       Axis3d* m_origin;
       Cursor* m_cursor;
       Gizmo* m_gizmo = nullptr;
-      Billboard* m_environmentBillboard = nullptr;
       std::vector<Entity*> m_perFrameDebugObjects;
 
       // 3 point lighting system.
@@ -185,13 +179,11 @@ namespace ToolKit
       float m_scaleDelta = 0.5f;
 
       Renderer* m_renderer;
-
+      bool m_windowCamLoad = true;
      private:
       // Internal states.
       bool m_onNewScene = false;
       bool m_onQuit = false;
-
-      bool m_windowCamLoad = true;
     };
 
     extern void DebugMessage(const String& msg);

@@ -135,23 +135,37 @@ namespace ToolKit
 
 
   /**
+  * The class responsible for managing
+  * the life time and storing initial instances of the Animation resources.
+  */
+  class TK_API AnimationManager : public ResourceManager
+  {
+   public:
+    AnimationManager();
+    virtual ~AnimationManager();
+    bool CanStore(ResourceType t) override;
+    ResourcePtr CreateLocal(ResourceType type) override;
+  };
+
+
+  /**
   * The class that represents the current state of the animation such as its
-  * current time,
+  * current time
   */
   class TK_API AnimRecord
   {
    public:
-     /**
-     * Empty constructor.
-     */
-     AnimRecord();
+    /**
+    * Empty constructor.
+    */
+    AnimRecord();
 
     /**
-    * Construct an animation recrod for the enitiy with given animation.
+    * Construct an animation record for the enitiy with given animation.
     * @param entity Is the entity to play the animation on.
     * @param anim Is the animation to play for the record.
     */
-     AnimRecord(Entity* entity, const AnimationPtr& anim);
+    AnimRecord(Entity* entity, const AnimationPtr& anim);
 
    public:
     /**
@@ -160,7 +174,7 @@ namespace ToolKit
     float m_currentTime = 0.0f;
     bool m_loop = false;  //!< States if the animation mean to be looped.
     AnimationPtr m_animation;  //!< Animimation to play.
-    Entity* m_entity;  //!< Entity to play the animation on.
+    Entity* m_entity;
 
     /**
     * Enums that represent's the current state of the Animation in the
@@ -178,21 +192,6 @@ namespace ToolKit
     ULongID m_id;
   };
 
-  typedef std::vector<AnimRecord*> AnimRecordArray;
-
-  /**
-  * The class responsible for managing
-  * the life time and storing initial instances of the Animation resources.
-  */
-  class TK_API AnimationManager : public ResourceManager
-  {
-   public:
-    AnimationManager();
-    virtual ~AnimationManager();
-    bool CanStore(ResourceType t) override;
-    ResourcePtr CreateLocal(ResourceType type) override;
-  };
-
   /**
   * The class that is responsible playing animation records
   * and updating transformations of the corresponding Entities.
@@ -207,16 +206,16 @@ namespace ToolKit
     void AddRecord(AnimRecord* rec);
 
     /**
-    * Removes a record from the AnimationPlayer.
-    * @param rec AnimRecord data to remove.
-    */
-    void RemoveRecord(const AnimRecord& rec);
-
-    /**
     * Removes the AnimRecord with the given id.
     * @param id Id of the AnimRecord.
     */
     void RemoveRecord(ULongID id);
+
+    /**
+    * Removes the given AnimRecord.
+    * @param rec Record to remove.
+    */
+    void RemoveRecord(const AnimRecord& rec);
 
     /**
     * Update all the records in the player and apply transforms
@@ -234,7 +233,8 @@ namespace ToolKit
     int Exist(ULongID id) const;
 
    public:
-    AnimRecordArray m_records;  //!< Storage for the AnimRecord objects.
+    // Storage for the AnimRecord objects.
+    AnimRecordRawPtrArray m_records;
   };
 
 }  // namespace ToolKit

@@ -85,9 +85,9 @@ namespace ToolKit
 
     String path = GetFile();
     NormalizePath(path);
-    XmlFile file = GetFileManager()->GetXmlFile(path);
+    XmlFilePtr file = GetFileManager()->GetXmlFile(path);
     XmlDocument doc;
-    doc.parse<0>(file.data());
+    doc.parse<0>(file->data());
 
     if (XmlNode* node = doc.first_node("meshContainer"))
     {
@@ -293,7 +293,6 @@ namespace ToolKit
     {
       mesh->m_skeleton->SerializeRef(doc, meshNode);
     }
-
 
     XmlNode* vertices = CreateXmlNode(doc, "vertices", meshNode);
 
@@ -545,9 +544,9 @@ namespace ToolKit
 
     String path = GetFile();
     NormalizePath(path);
-    XmlFile file = GetFileManager()->GetXmlFile(path);
+    XmlFilePtr file = GetFileManager()->GetXmlFile(path);
     XmlDocument doc;
-    doc.parse<0>(file.data());
+    doc.parse<0>(file->data());
 
     if (XmlNode* node = doc.first_node("meshContainer"))
     {
@@ -655,6 +654,13 @@ namespace ToolKit
     {
       m_clientSideVertices.clear();
     }
+  }
+  void SkinMesh::CopyTo(Resource* other)
+  {
+    Mesh::CopyTo(other);
+    SkinMesh* cpy = static_cast<SkinMesh*> (other);
+    cpy->m_skeleton = m_skeleton->Copy<Skeleton>();
+    cpy->m_skeleton->Init();
   }
 
 

@@ -24,7 +24,7 @@ namespace ToolKit
     (
       const ScenePtr scene,
       Viewport* viewport,
-      const LightRawPtrArray& editor_lights
+      const LightRawPtrArray& editorLights
     );
 
     void RenderUI(const UILayerPtrArray& uiLayers, Viewport* viewport);
@@ -53,8 +53,12 @@ namespace ToolKit
       const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f }
     );
 
+    void SetViewport(Viewport* viewport);
+    void SetViewportSize(uint width, uint height);
+
     void DrawFullQuad(ShaderPtr fragmentShader);
     void DrawCube(Camera* cam, MaterialPtr mat);
+    void SetTexture(ubyte slotIndx, uint textureId);
 
    private:
     void RenderEntities
@@ -154,7 +158,6 @@ namespace ToolKit
 
    private:
     uint m_currentProgram = 0;
-    int m_textureIdCount = 0;
     Mat4 m_project;
     Mat4 m_view;
     Mat4 m_model;
@@ -163,6 +166,11 @@ namespace ToolKit
     Camera* m_cam = nullptr;
     Material* m_mat = nullptr;
     RenderTarget* m_renderTarget = nullptr;
+    typedef struct RHIConstants
+    {
+      static constexpr ubyte textureSlotCount = 8;
+    } m_rhiSettings;
+    uint m_textureSlots[RHIConstants::textureSlotCount];
 
     std::unordered_map<String, ProgramPtr> m_programs;
     RenderState m_renderState;

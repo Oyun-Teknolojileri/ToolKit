@@ -16,10 +16,6 @@ namespace ToolKit
     );
     AddComponent(envComp);
 
-    // Mesh Component
-    MeshComponent* mc = new MeshComponent();
-    AddComponent(mc);
-
     ParameterConstructor();
     ParameterEventConstructor();
   }
@@ -39,15 +35,6 @@ namespace ToolKit
     {
       return;
     }
-
-    // Creating an invisible mesh
-    MeshComponentPtr mc = GetComponent<MeshComponent>();
-    Cube cube(Vec3(1.0f));
-    MeshPtr meshPtr = cube.GetMeshComponent()->GetMeshVal();
-    mc->SetMeshVal(meshPtr);
-    m_node->SetScale(Vec3(0.35f));
-    SetVisibility(false, false);
-    mc->ParamMesh().m_exposed = false;
 
     // Environment Component
     EnvironmentComponentPtr envComp = GetComponent<EnvironmentComponent>();
@@ -91,6 +78,11 @@ namespace ToolKit
 
   MaterialPtr Sky::GetSkyboxMaterial()
   {
+    if (!m_initialized)
+    {
+      Init();
+    }
+
     HdriPtr hdri = GetComponent<EnvironmentComponent>()->GetHdriVal();
     m_skyboxMaterial->m_cubeMap = hdri->m_cubemap;
     return m_skyboxMaterial;
@@ -140,6 +132,8 @@ namespace ToolKit
     );
 
     SetNameVal("Sky");
+
+    ParamVisible().m_exposed = false;
   }
 
   void Sky::ParameterEventConstructor()

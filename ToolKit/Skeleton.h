@@ -36,6 +36,7 @@ namespace ToolKit
     void AddBone(Bone* bone, Bone* parent = nullptr);
     int GetBoneIndex(String bone);
     Bone* GetBone(String bone);
+    void UpdateTransformationTexture();
 
    private:
     void Traverse(XmlNode* node, Bone* parent);
@@ -43,6 +44,7 @@ namespace ToolKit
    public:
     Node* m_node;
     std::vector<Bone*> m_bones;
+    TexturePtr m_boneTransformTexture, m_bindPoseTexture;
   };
 
   class TK_API SkeletonManager : public ResourceManager

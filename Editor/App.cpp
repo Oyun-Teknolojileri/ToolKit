@@ -29,12 +29,12 @@
 #include "Action.h"
 #include "GL/glew.h"
 #include "DebugNew.h"
+#include "EditorCamera.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
-
     App::App(int windowWidth, int windowHeight)
       : m_workspace(this)
     {
@@ -43,6 +43,8 @@ namespace ToolKit
       m_renderer->m_windowWidth = windowWidth;
       m_renderer->m_windowHeight = windowHeight;
       m_statusMsg = "OK";
+
+      OverrideEntityConstructors();
     }
 
     App::~App()
@@ -62,27 +64,29 @@ namespace ToolKit
       m_grid = new Grid(UVec2(gridSize));
       m_grid->Resize(UVec2(gridSize), AxisLabel::ZX, 0.025f);
 
-      m_2dGrid = new Grid(UVec2(g_app->m_playWidth, g_app->m_playHeight));
+      m_2dGrid = new Grid
+      (
+        UVec2
+        (
+          g_app->m_emulatorSettings.playWidth,
+          g_app->m_emulatorSettings.playHeight
+        )
+      );
       m_2dGrid->Resize
       (
-        UVec2(g_app->m_playWidth, g_app->m_playHeight),
+        UVec2
+        (
+          g_app->m_emulatorSettings.playWidth,
+          g_app->m_emulatorSettings.playHeight
+        ),
         AxisLabel::XY, 10.0
       );  // Generate grid cells 10 x 10
-
-      m_environmentBillboard = new SkyBillboard();
 
       // Lights and camera.
       m_lightMaster = new Node();
 
       float intensity = 1.5f;
       DirectionalLight* light = new DirectionalLight();
-      light->SetColorVal(Vec3(0.267f));
-      light->SetIntensityVal(intensity);
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(180.0f));
-      m_lightMaster->AddChild(light->m_node);
-      m_sceneLights.push_back(light);
-
-      light = new DirectionalLight();
       light->SetColorVal(Vec3(0.55f));
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
@@ -143,6 +147,7 @@ namespace ToolKit
         m_workspace.RefreshProjects();
       }
 
+      m_emulatorSettings.emuRes = EmulatorResolution::Custom;
       m_publishManager = new PublishManager();
     }
 
@@ -160,7 +165,6 @@ namespace ToolKit
       SafeDel(m_grid);
       SafeDel(m_origin);
       SafeDel(m_cursor);
-      SafeDel(m_environmentBillboard);
 
       for (Light* light : m_sceneLights)
       {
@@ -194,11 +198,12 @@ namespace ToolKit
       std::vector<EditorViewport*> viewports;
       for (Window* wnd : m_windows)
       {
-        wnd->DispatchSignals();
         if (EditorViewport* vp = dynamic_cast<EditorViewport*> (wnd))
         {
           viewports.push_back(vp);
+          GetCurrentScene()->UpdateBillboardTransforms(vp);
         }
+        wnd->DispatchSignals();
       }
 
       ShowPlayWindow(deltaTime);
@@ -247,11 +252,11 @@ namespace ToolKit
       {
         return
         (
-          light1->GetLightType() == LightTypeEnum::LightDirectional
+          light1->GetType() == EntityType::Entity_DirectionalLight
           &&
           (
-            light2->GetLightType() == LightTypeEnum::LightSpot
-            || light2->GetLightType() == LightTypeEnum::LightPoint
+            light2->GetType() == EntityType::Entity_SpotLight
+            || light2->GetType() == EntityType::Entity_PointLight
           )
         );
       };
@@ -269,7 +274,7 @@ namespace ToolKit
         }
 
         // PlayWindow is drawn on perspective. Thus, skip perspective.
-        if (m_gameMod != GameMod::Stop && !m_runWindowed)
+        if (m_gameMod != GameMod::Stop && !m_emulatorSettings.runWindowed)
         {
           if (viewport->m_name == g_3dViewport)
           {
@@ -278,6 +283,8 @@ namespace ToolKit
         }
 
         viewport->Update(deltaTime);
+
+        GetCurrentScene()->UpdateBillboardTransforms(viewport);
 
         if (viewport->IsVisible())
         {
@@ -348,9 +355,7 @@ namespace ToolKit
 
     void App::OnResize(uint width, uint height)
     {
-      m_renderer->m_windowWidth = width;
-      m_renderer->m_windowHeight = height;
-      glViewport(0, 0, width, height);
+      m_renderer->SetViewportSize(width, height);
     }
 
     void App::OnNewScene(const String& name)
@@ -612,9 +617,8 @@ namespace ToolKit
           m_statusMsg = "Game is playing";
           m_gameMod = mod;
 
-          if (m_runWindowed)
+          if (m_emulatorSettings.runWindowed)
           {
-            m_playWindow->OnResize(m_playWidth, m_playHeight);
             m_playWindow->SetVisibility(true);
           }
         }
@@ -758,7 +762,11 @@ namespace ToolKit
         PluginWindow* plugWindow = new PluginWindow();
         m_windows.push_back(plugWindow);
 
-        CreateSimulationWindow();
+        CreateSimulationWindow
+        (
+          g_app->m_emulatorSettings.playWidth,
+          g_app->m_emulatorSettings.playHeight
+        );
       }
     }
 
@@ -826,7 +834,11 @@ namespace ToolKit
         } while ((wndNode = wndNode->next_sibling("Window")));
       }
 
-      CreateSimulationWindow();
+      CreateSimulationWindow
+      (
+          g_app->m_emulatorSettings.playWidth,
+          g_app->m_emulatorSettings.playHeight
+      );
     }
 
     int App::Import
@@ -862,7 +874,7 @@ namespace ToolKit
       std::filesystem::path pathBck = std::filesystem::current_path();
       std::filesystem::path path = pathBck.u8string() + ConcatPaths
       (
-        { ".", "..", "Utils", "Import" }
+        { "", "..", "Utils", "Import" }
       );
       std::filesystem::current_path(path);
 
@@ -1320,10 +1332,22 @@ Fail:
         bool isLight = false;
         for (Entity* ntt : selection)
         {
+          // Add billboard
+          Entity* bb = GetCurrentScene()->GetBillboardOfEntity(ntt);
+          if (bb != nullptr)
+          {
+            static_cast<Billboard*>(bb)->LookAt
+            (
+              viewport->GetCamera(),
+              viewport->m_zoom
+            );
+            m_renderer->Render(bb, viewport->GetCamera());
+          }
+
           if (ntt->IsDrawable())
           {
             isLight = false;
-            if (ntt->GetType() == EntityType::Entity_Light)
+            if (ntt->IsLightInstance())
             {
               isLight = true;
             }
@@ -1362,7 +1386,7 @@ Fail:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         // Dilate.
-        glBindTexture(GL_TEXTURE_2D, stencilMask.m_textureId);
+        GetRenderer()->SetTexture(0, stencilMask.m_textureId);
         ShaderPtr dilate = GetShaderManager()->Create<Shader>
         (
           ShaderPath("dilateFrag.shader", true)
@@ -1426,29 +1450,13 @@ Fail:
       EntityRawPtrArray selecteds
     )
     {
-      for (Entity* ntt : GetCurrentScene()->GetEntities())
+      // Entity billboards
+      for (Billboard* bb : GetCurrentScene()->GetBillboards())
       {
-        // Environment Component
-        EnvironmentComponentPtr envCom =
-        ntt->GetComponent<EnvironmentComponent>();
-        if (envCom != nullptr)
-        {
-          // Translate billboard
-          m_environmentBillboard->m_worldLocation =
-          ntt->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-
-          // Rotate billboard
-          m_environmentBillboard->LookAt
-          (
-            viewport->GetCamera(),
-            viewport->m_zoom
-          );
-
-          // Render billboard
-          m_renderer->Render(m_environmentBillboard, viewport->GetCamera());
-        }
+        m_renderer->Render(bb, viewport->GetCamera());
       }
 
+      // Selected gizmos
       for (Entity* ntt : selecteds)
       {
         // Environment Component
@@ -1481,10 +1489,10 @@ Fail:
 
         if (m_gameMod != GameMod::Stop)
         {
-          m_playWindow->SetVisibility(m_runWindowed);
+          m_playWindow->SetVisibility(m_emulatorSettings.runWindowed);
 
           EditorViewport* playWindow = GetWindow<EditorViewport>(g_3dViewport);
-          if (m_runWindowed)
+          if (m_emulatorSettings.runWindowed)
           {
             if (m_windowCamLoad)
             {
@@ -1615,14 +1623,57 @@ Fail:
       }
     }
 
-    void App::CreateSimulationWindow()
+    void App::OverrideEntityConstructors()
     {
-      m_playWindow = new EditorViewport(m_playWidth, m_playHeight);
+      GetEntityFactory()->OverrideEntityConstructor
+      (
+        EntityType::Entity_Camera,
+        []() -> Entity*
+        {
+          return new EditorCamera();
+        }
+      );
+
+      GetEntityFactory()->OverrideEntityConstructor
+      (
+        EntityType::Entity_DirectionalLight,
+        []() -> Entity*
+        {
+          return new EditorDirectionalLight();
+        }
+      );
+
+      GetEntityFactory()->OverrideEntityConstructor
+      (
+        EntityType::Entity_PointLight,
+        []() -> Entity*
+        {
+          return new EditorPointLight();
+        }
+      );
+
+      GetEntityFactory()->OverrideEntityConstructor
+      (
+        EntityType::Entity_SpotLight,
+        []() -> Entity*
+        {
+          return new EditorSpotLight();
+        }
+      );
+    }
+
+    void App::CreateSimulationWindow(float width, float height)
+    {
+      m_playWindow = new EditorViewport
+      (
+        m_emulatorSettings.playWidth,
+        m_emulatorSettings.playHeight
+      );
       m_playWindow->m_name = g_simulationViewport;
       m_playWindow->m_additionalWindowFlags =
-      ImGuiWindowFlags_NoResize
-      | ImGuiWindowFlags_NoDocking
-      | ImGuiWindowFlags_NoCollapse;
+        ImGuiWindowFlags_NoResize
+        | ImGuiWindowFlags_NoDocking
+        |ImGuiWindowFlags_NoCollapse;
       m_playWindow->SetVisibility(false);
     }
 

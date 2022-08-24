@@ -126,9 +126,9 @@ namespace ToolKit
       return;
     }
 
-    XmlFile file = GetFileManager()->GetXmlFile(GetFile());
+    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
     XmlDocument doc;
-    doc.parse<0>(file.data());
+    doc.parse<0>(file->data());
 
     XmlNode* node = doc.first_node("anim");
     if (node == nullptr)
@@ -352,8 +352,10 @@ namespace ToolKit
     }
   }
 
+
   AnimRecord::AnimRecord()
   {
+    m_id = GetHandleManager()->GetNextHandle();
   }
 
   AnimRecord::AnimRecord(Entity* entity, const AnimationPtr& anim)
@@ -364,12 +366,13 @@ namespace ToolKit
 
   void AnimationPlayer::AddRecord(AnimRecord* rec)
   {
-    m_records.push_back(rec);
-  }
+    int indx = Exist(rec->m_id);
+    if (indx != -1)
+    {
+      return;
+    }
 
-  void AnimationPlayer::RemoveRecord(const AnimRecord& rec)
-  {
-    RemoveRecord(rec.m_id);
+    m_records.push_back(rec);
   }
 
   void AnimationPlayer::RemoveRecord(ULongID id)
@@ -379,6 +382,11 @@ namespace ToolKit
     {
       m_records.erase(m_records.begin() + indx);
     }
+  }
+
+  void AnimationPlayer::RemoveRecord(const AnimRecord& rec)
+  {
+    RemoveRecord(rec.m_id);
   }
 
   void AnimationPlayer::Update(float deltaTimeSec)
@@ -415,10 +423,10 @@ namespace ToolKit
       }
 
       if
-      (
+        (
         state == AnimRecord::State::Rewind ||
         state == AnimRecord::State::Stop
-      )
+        )
       {
         record->m_currentTime = 0;
       }

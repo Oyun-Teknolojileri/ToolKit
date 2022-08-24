@@ -38,20 +38,15 @@ namespace ToolKit
 
     String path = GetFile();
     NormalizePath(path);
-    XmlFile sceneFile = GetFileManager()->GetXmlFile(path);
+    XmlFilePtr sceneFile = GetFileManager()->GetXmlFile(path);
     XmlDocument sceneDoc;
-    sceneDoc.parse<0>(sceneFile.data());
+    sceneDoc.parse<0>(sceneFile->data());
 
     DeSerialize(&sceneDoc, nullptr);
 
     // Update parent - child relation for entities.
     for (Entity* e : m_entities)
     {
-      if (e->GetType() == EntityType::Entity_Sky)
-      {
-        m_sky = static_cast<Sky*>(e);
-      }
-
       if (e->_parentId != 0)
       {
         Entity* parent = GetEntity(e->_parentId);
@@ -60,13 +55,6 @@ namespace ToolKit
           parent->m_node->AddChild(e->m_node);
         }
       }
-    }
-
-    // Add sky if no sky is deserialized
-    if (m_sky == nullptr)
-    {
-      Sky* sky = new Sky();
-      SetSky(sky, false);
     }
 
     m_loaded = true;
@@ -155,70 +143,80 @@ namespace ToolKit
   Scene::PickData Scene::PickObject
   (
     Ray ray,
-    const EntityIdArray& ignoreList
-  ) const
+    const EntityIdArray& ignoreList,
+    const EntityRawPtrArray& extraList
+  )
   {
     PickData pd;
     pd.pickPos = ray.position + ray.direction * 5.0f;
 
     float closestPickedDistance = FLT_MAX;
-    for (Entity* ntt : m_entities)
+
+    auto pickFn =
+    [&ignoreList, &ray, &pd, &closestPickedDistance]
+    (const EntityRawPtrArray& entities) -> void
     {
-      if (!ntt->IsDrawable())
+      for (Entity* ntt : entities)
       {
-        continue;
-      }
-
-      if
-      (
-        std::find(ignoreList.begin(), ignoreList.end(), ntt->GetIdVal())
-        != ignoreList.end()
-      )
-      {
-        continue;
-      }
-
-      Ray rayInObjectSpace = ray;
-      Mat4 ts = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
-      Mat4 its = glm::inverse(ts);
-      rayInObjectSpace.position = its * Vec4(ray.position, 1.0f);
-      rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
-
-      float dist = 0;
-      if (RayBoxIntersection(rayInObjectSpace, ntt->GetAABB(), dist))
-      {
-        bool hit = true;
-
-        // Collect meshes.
-        MeshComponentPtrArray meshes;
-        ntt->GetComponent<MeshComponent>(meshes);
-
-        for (MeshComponentPtr& meshCmp : meshes)
+        if (!ntt->IsDrawable())
         {
-          MeshPtr mesh = meshCmp->GetMeshVal();
-          if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount)
+          continue;
+        }
+
+        if
+        (
+          std::find(ignoreList.begin(), ignoreList.end(), ntt->GetIdVal())
+          != ignoreList.end()
+        )
+        {
+          continue;
+        }
+
+        Ray rayInObjectSpace = ray;
+        Mat4 ts = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
+        Mat4 its = glm::inverse(ts);
+        rayInObjectSpace.position = its * Vec4(ray.position, 1.0f);
+        rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
+
+        float dist = 0;
+        if (RayBoxIntersection(rayInObjectSpace, ntt->GetAABB(), dist))
+        {
+          bool hit = true;
+
+          // Collect meshes.
+          MeshComponentPtrArray meshes;
+          ntt->GetComponent<MeshComponent>(meshes);
+
+          for (MeshComponentPtr& meshCmp : meshes)
           {
-            // Per polygon check if data exist.
-            float meshDist = 0.0f;
-            hit = RayMeshIntersection(mesh.get(), rayInObjectSpace, meshDist);
+            MeshPtr mesh = meshCmp->GetMeshVal();
+            if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount)
+            {
+              // Per polygon check if data exist.
+              float meshDist = 0.0f;
+              hit = RayMeshIntersection(mesh.get(), rayInObjectSpace, meshDist);
+              if (hit)
+              {
+                dist = meshDist;
+              }
+            }
+
             if (hit)
             {
-              dist = meshDist;
-            }
-          }
-
-          if (hit)
-          {
-            if (dist < closestPickedDistance && dist > 0.0f)
-            {
-              pd.entity = ntt;
-              pd.pickPos = ray.position + ray.direction * dist;
-              closestPickedDistance = dist;
+              if (dist < closestPickedDistance && dist > 0.0f)
+              {
+                pd.entity = ntt;
+                pd.pickPos = ray.position + ray.direction * dist;
+                closestPickedDistance = dist;
+              }
             }
           }
         }
       }
-    }
+    };
+
+    pickFn(m_entities);
+    pickFn(extraList);
 
     return pd;
   }
@@ -228,47 +226,56 @@ namespace ToolKit
     const Frustum& frustum,
     std::vector<PickData>& pickedObjects,
     const EntityIdArray& ignoreList,
+    const EntityRawPtrArray& extraList,
     bool pickPartiallyInside
-  ) const
+  )
   {
-    for (Entity* e : m_entities)
+    auto pickFn =
+    [&frustum, &pickedObjects, &ignoreList, &pickPartiallyInside]
+    (const EntityRawPtrArray& entities) -> void
     {
-      if (!e->IsDrawable())
+      for (Entity* e : entities)
       {
-        continue;
-      }
+        if (!e->IsDrawable())
+        {
+          continue;
+        }
 
-      if
-      (
-        std::find
+        if
         (
-          ignoreList.begin(),
-          ignoreList.end(),
-          e->GetIdVal()
-        ) != ignoreList.end()
-      )
-      {
-        continue;
-      }
-
-      BoundingBox bb = e->GetAABB(true);
-      IntersectResult res = FrustumBoxIntersection(frustum, bb);
-      if (res != IntersectResult::Outside)
-      {
-        PickData pd;
-        pd.pickPos = (bb.max + bb.min) * 0.5f;
-        pd.entity = e;
-
-        if (res == IntersectResult::Inside)
+          std::find
+          (
+            ignoreList.begin(),
+            ignoreList.end(),
+            e->GetIdVal()
+          ) != ignoreList.end()
+        )
         {
-          pickedObjects.push_back(pd);
+          continue;
         }
-        else if (pickPartiallyInside)
+
+        BoundingBox bb = e->GetAABB(true);
+        IntersectResult res = FrustumBoxIntersection(frustum, bb);
+        if (res != IntersectResult::Outside)
         {
-          pickedObjects.push_back(pd);
+          PickData pd;
+          pd.pickPos = (bb.max + bb.min) * 0.5f;
+          pd.entity = e;
+
+          if (res == IntersectResult::Inside)
+          {
+            pickedObjects.push_back(pd);
+          }
+          else if (pickPartiallyInside)
+          {
+            pickedObjects.push_back(pd);
+          }
         }
       }
-    }
+    };
+
+    pickFn(m_entities);
+    pickFn(extraList);
   }
 
   Entity* Scene::GetEntity(ULongID id) const
@@ -334,7 +341,7 @@ namespace ToolKit
     LightRawPtrArray lights;
     for (Entity* ntt : m_entities)
     {
-      if (ntt->GetType() == EntityType::Entity_Light)
+      if (ntt->IsLightInstance())
       {
         lights.push_back(static_cast<Light*>(ntt));
       }
@@ -394,25 +401,18 @@ namespace ToolKit
     return filtered;
   }
 
+  // Returns the last sky added
   Sky* Scene::GetSky()
   {
-    return m_sky;
-  }
+    for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; --i)
+    {
+      if (m_entities[i]->GetType() == EntityType::Entity_Sky)
+      {
+        return static_cast<Sky*>(m_entities[i]);
+      }
+    }
 
-  // This function should be always used for assigning sky to scene
-  void Scene::SetSky(Sky* sky, bool init)
-  {
-    if (m_sky != nullptr)
-    {
-      Entity* sky = RemoveEntity(m_sky->GetIdVal());
-      SafeDel(sky);
-    }
-    m_sky = sky;
-    if (init)
-    {
-      m_sky->Init();
-    }
-    AddEntity(m_sky);
+    return nullptr;
   }
 
   void Scene::Destroy(bool removeResources)
@@ -426,8 +426,6 @@ namespace ToolKit
       SafeDel(ntt);
     }
     m_entities.clear();
-
-    m_sky = nullptr;
 
     m_loaded = false;
     m_initiated = false;
@@ -488,9 +486,62 @@ namespace ToolKit
     WriteAttr(scene, doc, "version", TKVersionStr);
     WriteAttr(scene, doc, "name", name.c_str());
 
-    for (Entity* ntt : m_entities)
+    for (size_t listIndx = 0; listIndx < m_entities.size(); listIndx++)
     {
+      Entity* ntt = m_entities[listIndx];
       ntt->Serialize(doc, scene);
+
+      NormalizeEntityID
+      (
+        doc,
+        scene->last_node(XmlEntityElement.c_str()),
+        listIndx
+      );
+    }
+  }
+
+  void Scene::NormalizeEntityID
+  (
+    XmlDocument* doc,
+    XmlNode* parent,
+    size_t listIndx
+  ) const
+  {
+    XmlAttribute* parentAttrib =
+      parent->first_attribute(XmlParentEntityIdAttr.c_str());
+    parent->remove_attribute
+    (
+      parent->first_attribute(XmlEntityIdAttr.c_str())
+    );
+    WriteAttr(parent, doc, XmlEntityIdAttr, std::to_string(listIndx + 1));
+
+    Entity* ntt = m_entities[listIndx];
+    Node* parentNode = ntt->m_node->m_parent;
+    // If parent is in scene, save its list index too
+    if (parentNode && parentNode->m_entity)
+    {
+      for
+        (
+        uint parentSrchIndx = 0;
+        parentSrchIndx < m_entities.size();
+        parentSrchIndx++
+        )
+      {
+        if (parentNode->m_entity == m_entities[parentSrchIndx])
+        {
+          parent->remove_attribute
+          (
+            parentAttrib
+          );
+          WriteAttr
+          (
+            parent,
+            doc,
+            XmlParentEntityIdAttr,
+            std::to_string(parentSrchIndx + 1)
+          );
+        }
+      }
     }
   }
 
@@ -528,12 +579,15 @@ namespace ToolKit
         XmlEntityTypeAttr.c_str()
       );
       EntityType t = (EntityType)std::atoi(typeAttr->value());
-      Entity* ntt = Entity::CreateByType(t);
+      Entity* ntt = GetEntityFactory()->CreateByType(t);
 
       ntt->DeSerialize(doc, node);
+
       // Incrementing the incoming ntt ids with current max id value...
       //   to prevent id collisions.
-      ULongID currentID = ntt->GetIdVal() + lastID;
+      ULongID listIndx = 0;
+      ReadAttr(node, XmlEntityIdAttr, listIndx);
+      ULongID currentID = listIndx + lastID;
       biggestID = glm::max(biggestID, currentID);
       ntt->SetIdVal(currentID);
       ntt->_parentId = ntt->_parentId + lastID;

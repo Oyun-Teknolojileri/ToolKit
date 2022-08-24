@@ -27,12 +27,14 @@
     const String& category, \
     int priority, \
     bool exposed, \
-    bool editable) { \
+    bool editable, \
+    UIHint hint = {}) { \
     ParameterVariant var(val); \
     var.m_name = #Name; \
     var.m_category = { category, priority }; \
     var.m_exposed = exposed; \
     var.m_editable = editable; \
+    var.m_hint = hint; \
     Name##_Index = m_localData.m_variants.size(); \
     m_localData.Add(var); \
   } \
@@ -70,8 +72,20 @@ namespace ToolKit
     ULongID,
     MeshPtr,
     MaterialPtr,
-    HdriPtr
+    HdriPtr,
+    AnimRecordPtrMap
     > Value;
+
+    typedef std::function<void(Value& oldVal, Value& newVal)> ValueUpdateFn;
+
+  struct UIHint
+  {
+    bool isColor = false;
+    bool isRangeLimited = false;
+    float rangeMin = 0.0f;
+    float rangeMax = 100.0f;
+    float increment = 0.1f;
+  };
 
   /**
   * The category to group / access / sort and display the ParameterVariant.
@@ -83,7 +97,7 @@ namespace ToolKit
     * Priority of the category. Sorted and processed by this number within
     * every aspect of the framework. Such as Editor's Property Inspector.
     */
-    int Priority;
+    int Priority = 0;
   };
 
   /**
@@ -145,7 +159,8 @@ namespace ToolKit
       MeshPtr,
       MaterialPtr,
       Vec2,
-      HdriPtr
+      HdriPtr,
+      AnimRecordPtrMap
     };
 
     /**
@@ -248,6 +263,11 @@ namespace ToolKit
     * Constructs HdriPtr type variant.
     */
     explicit ParameterVariant(const HdriPtr& var);
+
+    /**
+    * Constructs AnimationStatePtrArray type variant.
+    */
+    explicit ParameterVariant(const AnimRecordPtrMap& var);
 
     /**
     * Used to retrieve VariantType of the variant.
@@ -380,6 +400,11 @@ namespace ToolKit
     ParameterVariant& operator= (const HdriPtr& var);
 
     /**
+    * Assign a AnimationStatePtrArray to the value of the variant.
+    */
+    ParameterVariant& operator= (const AnimRecordPtrMap& var);
+
+    /**
     * Serializes the variant to the xml document.
     * @param doc The xml document object to serialize to.
     * @param parent The parent xml node to serialize to.
@@ -414,11 +439,13 @@ namespace ToolKit
     VariantCategory m_category;
     String m_name;  //<! Name of the variant.
 
+    UIHint m_hint;
+
     /**
     * Callback function for value changes. This function gets called after
     * new value set.
     */
-    std::function<void(Value& oldVal, Value& newVal)> m_onValueChangedFn;
+    ValueUpdateFn m_onValueChangedFn;
 
    private:
     template<typename T>

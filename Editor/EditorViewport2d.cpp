@@ -59,8 +59,8 @@ namespace ToolKit
 
       Vec2 size =
       {
-        g_app->m_playWidth * 1.1f,
-        g_app->m_playHeight * 1.1f
+        g_app->m_emulatorSettings.playWidth * 1.1f,
+        g_app->m_emulatorSettings.playHeight * 1.1f
       };
 
       ImGui::SetNextWindowSize(size, ImGuiCond_Once);
@@ -487,8 +487,8 @@ namespace ToolKit
     {
       m_canvasSize =
       {
-        g_app->m_playWidth,
-        g_app->m_playHeight
+        g_app->m_emulatorSettings.playWidth,
+        g_app->m_emulatorSettings.playHeight
       };
 
       m_viewportImage->UnInit();

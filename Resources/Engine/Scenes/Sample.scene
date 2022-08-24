@@ -1,11 +1,26 @@
-<S name="Sample">
-	<E i="1084" n="Suzanne" ta="" t="9" vi="1">
-		<N i="86" is="0" ito="0">
+<S version="v0.3.12" name="Sample">
+	<E i="1001" t="9">
+		<N i="1002" is="0" ito="0">
 			<T x="0.000000" y="0.000000" z="0.000000"/>
 			<R x="0.000000" y="0.000000" z="0.000000" w="1.000000"/>
 			<S x="1.000000" y="1.000000" z="1.000000"/>
 		</N>
-		<M f="ToolKit\suzanne.mesh"/>
+		<PB>
+			<P t="11" name="Id" category="Meta" priority="100" exposed="1" editable="0" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1001"/>
+			<P t="9" name="Name" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="Suzanne"/>
+			<P t="9" name="Tag" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v=""/>
+			<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1"/>
+			<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="0"/>
+		</PB>
+		<Components>
+			<Component t="1">
+				<PB>
+					<P t="12" name="Mesh" category="Mesh Component" priority="90" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000">
+						<ResourceRef Type="4" File="ToolKit\suzanne.mesh"/>
+					</P>
+				</PB>
+			</Component>
+		</Components>
 	</E>
 </S>
 

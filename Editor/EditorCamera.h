@@ -15,8 +15,6 @@ namespace ToolKit
       virtual ~EditorCamera();
       Entity* Copy() const override;
       Entity* Instantiate() const override;
-
-     private:
       void GenerateFrustum();
     };
 

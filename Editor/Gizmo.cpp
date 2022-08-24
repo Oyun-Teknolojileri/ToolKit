@@ -27,15 +27,51 @@ namespace ToolKit
 {
   namespace Editor
   {
+    EditorBillboardBase::EditorBillboardBase(const Settings& settings)
+      : Billboard(settings)
+    {
+    }
+
+    void EditorBillboardBase::Generate()
+    {
+      MeshComponentPtr parentMeshComp = GetComponent<MeshComponent>();
+      MeshPtr parentMesh = parentMeshComp->GetMeshVal();
+      parentMesh->UnInit();
+
+      // Billboard
+      Quad quad;
+      MeshPtr meshPtr = quad.GetMeshComponent()->GetMeshVal();
+
+      meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      meshPtr->m_material->UnInit();
+      meshPtr->m_material->m_diffuseTexture =
+      GetTextureManager()->Create<Texture>
+      (
+        m_imagePath
+      );
+      meshPtr->m_material->GetRenderState()->blendFunction =
+        BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+      meshPtr->m_material->Init();
+
+      meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
+      parentMesh->m_subMeshes.push_back(meshPtr);
+
+      parentMesh->CalculateAABB();
+    }
 
     Cursor::Cursor()
-      : Billboard({ true, 10.0f, 60.0f })
+      : EditorBillboardBase({ true, 10.0f, 60.0f })
     {
       Generate();
     }
 
     Cursor::~Cursor()
     {
+    }
+
+    EditorBillboardBase::BillboardType Cursor::GetBillboardType() const
+    {
+      return BillboardType::Cursor;
     }
 
     void Cursor::Generate()
@@ -97,13 +133,18 @@ namespace ToolKit
     }
 
     Axis3d::Axis3d()
-      : Billboard({ false, 10.0f, 60.0f })
+      : EditorBillboardBase({ false, 10.0f, 60.0f })
     {
       Generate();
     }
 
     Axis3d::~Axis3d()
     {
+    }
+
+    EditorBillboardBase::BillboardType Axis3d::GetBillboardType() const
+    {
+      return BillboardType::Axis3d;
     }
 
     void Axis3d::Generate()
@@ -471,7 +512,7 @@ namespace ToolKit
     //////////////////////////////////////////////////////////////////////////
 
     Gizmo::Gizmo(const Billboard::Settings& set)
-      : Billboard(set)
+      : EditorBillboardBase(set)
     {
       m_grabbedAxis = AxisLabel::None;
     }
@@ -482,6 +523,11 @@ namespace ToolKit
       {
         SafeDel(m_handles[i]);
       }
+    }
+
+    EditorBillboardBase::BillboardType Gizmo::GetBillboardType() const
+    {
+      return BillboardType::Gizmo;
     }
 
     AxisLabel Gizmo::HitTest(const Ray& ray) const
@@ -811,7 +857,7 @@ namespace ToolKit
     }
 
     SkyBillboard::SkyBillboard()
-      : Billboard({ true, 3.5f, 15.0f })
+      : EditorBillboardBase({ true, 3.5f, 10.0f })
     {
       Generate();
     }
@@ -820,31 +866,39 @@ namespace ToolKit
     {
     }
 
+    EditorBillboardBase::BillboardType SkyBillboard::GetBillboardType() const
+    {
+      return BillboardType::Sky;
+    }
+
     void SkyBillboard::Generate()
     {
-      MeshComponentPtr parentMeshComp = GetComponent<MeshComponent>();
-      MeshPtr parentMesh = parentMeshComp->GetMeshVal();
-      parentMesh->UnInit();
+      m_imagePath = TexturePath(ConcatPaths({ "Icons", "sky.png" }), true);
+      EditorBillboardBase::Generate();
+    }
 
-      // Billboard
-      Quad quad;
-      MeshPtr meshPtr = quad.GetMeshComponent()->GetMeshVal();
+    LightBillboard::LightBillboard()
+      : EditorBillboardBase({ true, 3.5f, 10.0f })
+    {
+      Generate();
+    }
 
-      meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-      meshPtr->m_material->UnInit();
-      meshPtr->m_material->m_diffuseTexture =
-      GetTextureManager()->Create<Texture>
+    LightBillboard::~LightBillboard()
+    {
+    }
+
+    EditorBillboardBase::BillboardType LightBillboard::GetBillboardType() const
+    {
+      return BillboardType::Light;
+    }
+
+    void LightBillboard::Generate()
+    {
+      m_imagePath = TexturePath
       (
-        TexturePath(ConcatPaths({ "Icons", "sky.png" }), true)
+        ConcatPaths({ "Icons", "light_point.png" }), true
       );
-      meshPtr->m_material->GetRenderState()->blendFunction =
-      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-      meshPtr->m_material->Init();
-
-      meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
-      parentMesh->m_subMeshes.push_back(meshPtr);
-
-      parentMesh->CalculateAABB();
+      EditorBillboardBase::Generate();
     }
 
     SpotLightGizmo::SpotLightGizmo(SpotLight* light)
@@ -897,7 +951,7 @@ namespace ToolKit
 
     void SpotLightGizmo::InitGizmo(Light* light)
     {
-      assert(light->GetLightType() == LightTypeEnum::LightSpot);
+      assert(light->GetType() == EntityType::Entity_SpotLight);
       SpotLight* sLight = static_cast<SpotLight*> (light);
 
       // Middle line
@@ -1046,6 +1100,8 @@ namespace ToolKit
         DrawType::Line,
         1.0f
       );
+
+      GetLightMeshData<EditorSpotLight>(light);
     }
 
     DirectionalLightGizmo::DirectionalLightGizmo(DirectionalLight* light)
@@ -1066,7 +1122,7 @@ namespace ToolKit
 
     void DirectionalLightGizmo::InitGizmo(Light* light)
     {
-      assert(light->GetLightType() == LightTypeEnum::LightDirectional);
+      assert(light->GetType() == EntityType::Entity_DirectionalLight);
 
       // Middle line
       Vec3 d = Vec3(0.0f, 0.0f, -1.0f);
@@ -1088,6 +1144,8 @@ namespace ToolKit
         DrawType::Line,
         1.0f
       );
+
+      GetLightMeshData<EditorDirectionalLight>(light);
     }
 
     PointLightGizmo::PointLightGizmo(PointLight* light)
@@ -1129,7 +1187,7 @@ namespace ToolKit
 
     void PointLightGizmo::InitGizmo(Light* light)
     {
-      assert(light->GetLightType() == LightTypeEnum::LightPoint);
+      assert(light->GetType() == EntityType::Entity_PointLight);
       PointLight* pLight = static_cast<PointLight*> (light);
 
       Vec3 up = Vec3(0.0f, 1.0f, 0.0f);
@@ -1178,6 +1236,8 @@ namespace ToolKit
 
       // Circle on XZ plane
       drawCircleGizmo(m_circlePntsXY, up, right, 2);
+
+      GetLightMeshData<EditorPointLight>(light);
     }
 
     LightGizmoBase::LightGizmoBase()
@@ -1198,5 +1258,19 @@ namespace ToolKit
       return m_gizmoLineBatches;
     }
 
+    template <typename T>
+    void LightGizmoBase::GetLightMeshData(Light* light)
+    {
+      for
+      (
+        LineBatch* lb : static_cast<T*>(light)->m_gizmo->GetGizmoLineBatches()
+      )
+      {
+        MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
+        lbMesh->Init();
+        static_cast<T*>(light)
+          ->m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(lbMesh);
+      }
+    }
   }  // namespace Editor
 }  // namespace ToolKit

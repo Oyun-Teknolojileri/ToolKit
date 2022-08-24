@@ -740,7 +740,10 @@ namespace ToolKit
         ImGui::Separator();
         if (ImGui::MenuItem("Node"))
         {
-          Entity* node = Entity::CreateByType(EntityType::Entity_Node);
+          Entity* node = GetEntityFactory()->CreateByType
+          (
+            EntityType::Entity_Node
+          );
           currScene->AddEntity(node);
         }
 
@@ -778,8 +781,7 @@ namespace ToolKit
 
           if (ImGui::MenuItem("Sky"))
           {
-            Sky* sky = new Sky();
-            currScene->SetSky(sky);
+            currScene->AddEntity(new Sky());
           }
 
           ImGui::EndMenu();
@@ -872,7 +874,10 @@ namespace ToolKit
         ImGui::Separator();
         if (ImGui::MenuItem("Node"))
         {
-          Entity* node = Entity::CreateByType(EntityType::Entity_Node);
+          Entity* node = GetEntityFactory()->CreateByType
+          (
+            EntityType::Entity_Node
+          );
           currScene->AddEntity(node);
         }
       };

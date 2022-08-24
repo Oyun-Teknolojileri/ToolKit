@@ -41,6 +41,22 @@ namespace ToolKit
       }
     }
 
+    void HandleCompSpecificOps(Entity* ntt, bool isActionCommitted)
+    {
+      if (isActionCommitted)
+      {
+        AnimControllerComponentPtr comp =
+          ntt->GetComponent<AnimControllerComponent>();
+        if (comp)
+        {
+          comp->Stop();
+        }
+      }
+      else
+      {
+      }
+    }
+
     void DeleteAction::Undo()
     {
       assert(m_ntt != nullptr);
@@ -57,7 +73,7 @@ namespace ToolKit
       }
 
       m_actionComitted = false;
-      HandleAnimRecords(m_ntt);
+      HandleCompSpecificOps(m_ntt, m_actionComitted);
     }
 
     void DeleteAction::Redo()
@@ -73,43 +89,7 @@ namespace ToolKit
 
       g_app->GetCurrentScene()->RemoveEntity(m_ntt->GetIdVal());
       m_actionComitted = true;
-    }
-
-    void DeleteAction::HandleAnimRecords(Entity* ntt)
-    {
-      if (m_actionComitted)
-      {
-        m_records.clear();
-        auto removeItr = std::remove_if
-        (
-          GetAnimationPlayer()->m_records.begin(),
-          GetAnimationPlayer()->m_records.end(),
-          [this, ntt](AnimRecord* record)
-          {
-            if (ntt == record->m_entity)
-            {
-              m_records.push_back(record);
-              return true;
-            }
-
-            return false;
-          }
-        );
-
-        if (GetAnimationPlayer()->m_records.end() != removeItr)
-        {
-          GetAnimationPlayer()->m_records.erase(removeItr);
-        }
-      }
-      else
-      {
-        GetAnimationPlayer()->m_records.insert
-        (
-          GetAnimationPlayer()->m_records.end(),
-          m_records.begin(),
-          m_records.end()
-        );
-      }
+      HandleCompSpecificOps(m_ntt, m_actionComitted);
     }
 
     CreateAction::CreateAction(Entity* ntt)
@@ -155,6 +135,16 @@ namespace ToolKit
     DeleteComponentAction::DeleteComponentAction(ComponentPtr com)
     {
       m_com = com;
+      switch (com->GetType())
+      {
+        case ComponentType::AnimControllerComponent:
+        {
+          reinterpret_cast<AnimControllerComponent*>(com.get())->Stop();
+        }
+        break;
+        default:
+        break;
+      };
       Redo();
     }
 

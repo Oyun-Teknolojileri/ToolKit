@@ -1,11 +1,13 @@
 #include "ParameterBlock.h"
 
 #include <memory>
+#include <utility>
 
 #include "Util.h"
 #include "Mesh.h"
 #include "ToolKit.h"
 #include "DebugNew.h"
+#include "Animation.h"
 
 namespace ToolKit
 {
@@ -43,6 +45,7 @@ namespace ToolKit
       m_name = other.m_name;
       m_type = other.m_type;
       m_var = other.m_var;
+      m_hint = other.m_hint;
 
       // Events m_onValueChangedFn intentionally not copied.
     }
@@ -131,6 +134,11 @@ namespace ToolKit
   }
 
   ParameterVariant::ParameterVariant(const HdriPtr& var)
+  {
+    *this = var;
+  }
+
+  ParameterVariant::ParameterVariant(const AnimRecordPtrMap& var)
   {
     *this = var;
   }
@@ -260,6 +268,19 @@ namespace ToolKit
     return *this;
   }
 
+  /**
+  * Assign a AnimationPtr to the value of the variant.
+  */
+  ParameterVariant& ParameterVariant::operator=
+  (
+    const AnimRecordPtrMap& var
+  )
+  {
+    m_type = VariantType::AnimRecordPtrMap;
+    AsignVal(var);
+    return *this;
+  }
+
   void ParameterVariant::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = doc->allocate_node
@@ -281,6 +302,17 @@ namespace ToolKit
     WriteAttr(node, doc, "priority", std::to_string(m_category.Priority));
     WriteAttr(node, doc, "exposed", std::to_string(m_exposed));
     WriteAttr(node, doc, "editable", std::to_string(m_editable));
+    WriteAttr(node, doc, "hint.isColor", std::to_string(m_hint.isColor));
+    WriteAttr
+    (
+      node,
+      doc,
+      "hint.isRanLim",
+      std::to_string(m_hint.isRangeLimited)
+    );
+    WriteAttr(node, doc, "hint.rangeMin", std::to_string(m_hint.rangeMin));
+    WriteAttr(node, doc, "hint.rangeMax", std::to_string(m_hint.rangeMax));
+    WriteAttr(node, doc, "hint.increment", std::to_string(m_hint.increment));
 
     // Serialize data.
     switch (m_type)
@@ -428,8 +460,30 @@ namespace ToolKit
           res->Save(true);
           res->SerializeRef(doc, node);
         }
-        break;
       }
+      break;
+      case VariantType::AnimRecordPtrMap:
+      {
+        const AnimRecordPtrMap& list = GetCVar<AnimRecordPtrMap>();
+        XmlNode* listNode = CreateXmlNode(doc, "List", node);
+        WriteAttr(listNode, doc, "size", std::to_string(list.size()));
+        uint recordIndx = 0;
+        for (auto iter = list.begin(); iter != list.end(); ++iter, recordIndx++)
+        {
+          const AnimRecordPtr& state = iter->second;
+          XmlNode* elementNode =
+            CreateXmlNode(doc, std::to_string(recordIndx), listNode);
+          if (iter->first.length())
+          {
+            WriteAttr(elementNode, doc, "SignalName", iter->first);
+          }
+          if (state->m_animation)
+          {
+            state->m_animation->SerializeRef(doc, elementNode);
+          }
+        }
+      }
+      break;
       default:
       assert(false && "Invalid type.");
       break;
@@ -453,6 +507,11 @@ namespace ToolKit
     ReadAttr(parent, "priority", m_category.Priority);
     ReadAttr(parent, "exposed", m_exposed);
     ReadAttr(parent, "editable", m_editable);
+    ReadAttr(parent, "hint.isColor", m_hint.isColor);
+    ReadAttr(parent, "hint.isRanLim", m_hint.isRangeLimited);
+    ReadAttr(parent, "hint.rangeMin", m_hint.rangeMin);
+    ReadAttr(parent, "hint.rangeMax", m_hint.rangeMax);
+    ReadAttr(parent, "hint.increment", m_hint.increment);
 
     switch (m_type)
     {
@@ -610,6 +669,32 @@ namespace ToolKit
           file = TexturePath(file);
           m_var = GetTextureManager()->Create<Hdri>(file);
         }
+      }
+      break;
+      case VariantType::AnimRecordPtrMap:
+      {
+        XmlNode* listNode = parent->first_node("List");
+        uint listSize = 0;
+        ReadAttr(listNode, "size", listSize);
+        AnimRecordPtrMap list;
+        for (uint stateIndx = 0; stateIndx < listSize; stateIndx++)
+        {
+          AnimRecordPtr record = std::make_shared<AnimRecord>();
+          XmlNode* elementNode =
+            listNode->first_node(std::to_string(stateIndx).c_str());
+
+          String signalName;
+          ReadAttr(elementNode, "SignalName", signalName);
+          String file = Resource::DeserializeRef(elementNode);
+          if (!file.empty())
+          {
+            file = AnimationPath(file);
+            record->m_animation =
+              GetAnimationManager()->Create<Animation>(file);
+          }
+          list.insert(std::make_pair(signalName, record));
+        }
+        m_var = list;
       }
       break;
       default:

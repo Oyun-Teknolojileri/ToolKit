@@ -1,12 +1,8 @@
 
 #include "FileManager.h"
 
-#include <string.h>
-#include <fstream>
 #include <string>
-#include <unordered_map>
 #include <memory>
-#include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
@@ -22,60 +18,54 @@ namespace ToolKit
     }
   }
 
-  XmlFile FileManager::GetXmlFile(const String& filePath)
+  XmlFilePtr FileManager::GetXmlFile(const String& filePath)
   {
-    String pakPath = ConcatPaths({ ResourcePath(), "..", "MinResources.pak" });
-
-    // Get relative path from Resources directory
-    String relativePath = filePath;
-    GetRelativeResourcesPath(relativePath);
-
-    if (!m_zfile)
-    {
-      m_zfile = unzOpen(pakPath.c_str());
-    }
-
-    if (m_zfile)
-    {
-      GenerateOffsetTableForPakFiles();
-
-      XmlFile file = ReadXmlFileFromZip
-      (
-        m_zfile,
-        relativePath,
-        filePath.c_str()
-      );
-
-      return file;
-    }
-    else
-    {
-      // Zip pak not found, read from file at default path
-      XmlFile file = XmlFile(filePath.c_str());
-
-      return file;
-    }
+    String path = filePath;
+    ImageFileInfo fileInfo = { path, nullptr, nullptr, nullptr, 0 };
+    return std::get<XmlFilePtr>(GetFile(FileType::Xml, fileInfo));
   }
 
   uint8* FileManager::GetImageFile
   (
-    const String& path,
+    const String& filePath,
     int* x,
     int* y,
     int* comp,
     int reqComp
   )
   {
+    String path = filePath;
+    ImageFileInfo fileInfo = { path, x, y, comp, reqComp };
+    FileDataType data = GetFile(FileType::ImageUint8, fileInfo);
+    return std::get<uint8*>(data);
+  }
+
+  float* FileManager::GetHdriFile
+  (
+    const String& filePath,
+    int* x,
+    int* y,
+    int* comp,
+    int reqComp
+  )
+  {
+    String path = filePath;
+    ImageFileInfo fileInfo = { path, x, y, comp, reqComp };
+    FileDataType data = GetFile(FileType::ImageFloat, fileInfo);
+    return std::get<float*>(data);
+  }
+
+  FileManager::FileDataType FileManager::GetFile
+  (
+    FileType fileType,
+    ImageFileInfo& fileInfo
+  )
+  {
     String pakPath = ConcatPaths({ ResourcePath(), "..", "MinResources.pak" });
 
     // Get relative path from Resources directory
-    String relativePath = path;
+    String relativePath = fileInfo.filePath;
     GetRelativeResourcesPath(relativePath);
-    if (relativePath.empty())
-    {
-      return nullptr;
-    }
-    const char* relativePathC = relativePath.c_str();
 
     if (!m_zfile)
     {
@@ -86,26 +76,76 @@ namespace ToolKit
     {
       GenerateOffsetTableForPakFiles();
 
-      uint8* img = ReadImageFileFromZip
-      (
-        m_zfile,
-        relativePathC,
-        path.c_str(),
-        x,
-        y,
-        comp,
-        reqComp
-      );
-
-      return img;
+      if (fileType == FileType::Xml)
+      {
+        return ReadXmlFileFromZip
+        (
+          m_zfile,
+          relativePath,
+          fileInfo.filePath.c_str()
+        );
+      }
+      else if (fileType == FileType::ImageUint8)
+      {
+        return ReadImageFileFromZip
+        (
+          m_zfile,
+          relativePath,
+          fileInfo
+        );
+      }
+      else if (fileType == FileType::ImageFloat)
+      {
+        return ReadHdriFileFromZip
+        (
+          m_zfile,
+          relativePath,
+          fileInfo
+        );
+      }
+      else
+      {
+        assert(false && "Unimplemented file type.");
+      }
     }
     else
     {
-      // Zip pak not found
-      uint8* img = stbi_load(path.c_str(), x, y, comp, reqComp);
-
-      return img;
+      // Zip pak not found, read from file at default path
+      if (fileType == FileType::Xml)
+      {
+        return std::make_shared<XmlFile>(fileInfo.filePath.c_str());
+      }
+      else if (fileType == FileType::ImageUint8)
+      {
+        return stbi_load
+        (
+          fileInfo.filePath.c_str(),
+          fileInfo.x,
+          fileInfo.y,
+          fileInfo.comp,
+          fileInfo.reqComp
+        );
+      }
+      else if (fileType == FileType::ImageFloat)
+      {
+        return stbi_loadf
+        (
+          fileInfo.filePath.c_str(),
+          fileInfo.x,
+          fileInfo.y,
+          fileInfo.comp,
+          fileInfo.reqComp
+        );
+      }
+      else
+      {
+        assert(false && "Unimplemented file type.");
+      }
     }
+
+    // Supress warning
+    uint8* temp = nullptr;
+    return temp;
   }
 
   void FileManager::PackResources(const String& path)
@@ -275,7 +315,12 @@ namespace ToolKit
     {
       if (!AddFileToZip(zFile, path.c_str()))
       {
-        GetLogger()->WriteConsole(LogType::Error, "Error adding file to zip.");
+        GetLogger()->WriteConsole
+        (
+          LogType::Error,
+          "Error adding file to zip. %s",
+          path.c_str()
+        );
       }
     }
 
@@ -448,7 +493,7 @@ namespace ToolKit
     }
   }
 
-  XmlFile FileManager::ReadXmlFileFromZip
+  XmlFilePtr FileManager::ReadXmlFileFromZip
   (
     zipFile zfile,
     const String& relativePath,
@@ -483,7 +528,7 @@ namespace ToolKit
             ) == UNZ_OK
           )
           {
-            XmlFile file = CreateXmlFileFromZip
+            XmlFilePtr file = CreateXmlFileFromZip
             (
               zfile,
               relativePath,
@@ -495,83 +540,15 @@ namespace ToolKit
       }
     }
 
-    // If the file is not found in offset map, go over zip files
-    if (unzGoToFirstFile(zfile) == UNZ_OK)
-    {
-      // Iterate over file info's
-      do
-      {
-        if (unzOpenCurrentFile(zfile) == UNZ_OK)
-        {
-          unz_file_info fileInfo;
-          memset(&fileInfo, 0, sizeof(unz_file_info));
-
-          if
-          (
-            unzGetCurrentFileInfo
-            (
-              zfile,
-              &fileInfo,
-              NULL,
-              0,
-              NULL,
-              0,
-              NULL,
-              0
-            ) == UNZ_OK
-          )
-          {
-            // Get file info
-            char* filename = new char[fileInfo.size_filename + 1]();
-            unzGetCurrentFileInfo
-            (
-              zfile,
-              &fileInfo,
-              filename,
-              fileInfo.size_filename + 1,
-              NULL,
-              0,
-              NULL,
-              0
-            );
-            filename[fileInfo.size_filename] = '\0';
-
-            if (strcmp(filename, relativePath.c_str()))
-            {
-              SafeDelArray(filename);
-              unzCloseCurrentFile(zfile);
-              continue;
-            }
-
-            XmlFile file = CreateXmlFileFromZip
-            (
-              zfile,
-              filename,
-              static_cast<uint>(fileInfo.uncompressed_size)
-            );
-
-            SafeDelArray(filename);
-
-            return file;
-          }
-
-          unzCloseCurrentFile(zfile);
-        }
-      } while (unzGoToNextFile(zfile) == UNZ_OK);
-    }
-
-    return XmlFile(path);
+    // If the file is not found return the file from path
+    return std::make_shared<XmlFile>(path);
   }
 
   uint8* FileManager::ReadImageFileFromZip
   (
     zipFile zfile,
     const String& relativePath,
-    const char* path,
-    int* x,
-    int* y,
-    int* comp,
-    int reqComp
+    ImageFileInfo& fileInfo
   )
   {
     // Check offset map of file
@@ -584,15 +561,15 @@ namespace ToolKit
       {
         if (unzOpenCurrentFile(zfile) == UNZ_OK)
         {
-          unz_file_info fileInfo;
-          memset(&fileInfo, 0, sizeof(unz_file_info));
+          unz_file_info unzFileInfo;
+          memset(&unzFileInfo, 0, sizeof(unz_file_info));
 
           if
           (
             unzGetCurrentFileInfo
             (
               zfile,
-              &fileInfo,
+              &unzFileInfo,
               NULL,
               0,
               NULL,
@@ -602,15 +579,12 @@ namespace ToolKit
             ) == UNZ_OK
           )
           {
+            fileInfo.filePath = relativePath;
             uint8* img = CreateImageFileFromZip
             (
               zfile,
-              relativePath,
-              static_cast<uint>(fileInfo.uncompressed_size),
-              x,
-              y,
-              comp,
-              reqComp
+              static_cast<uint>(unzFileInfo.uncompressed_size),
+              fileInfo
             );
             return img;
           }
@@ -618,23 +592,43 @@ namespace ToolKit
       }
     }
 
-    // If the file is not found in offset map, go over zip files
-    if (unzGoToFirstFile(zfile) == UNZ_OK)
+    // If the file is not found return the file from path
+    return stbi_load
+    (
+      fileInfo.filePath.c_str(),
+      fileInfo.x,
+      fileInfo.y,
+      fileInfo.comp,
+      fileInfo.reqComp
+    );
+  }
+
+  float* FileManager::ReadHdriFileFromZip
+  (
+    zipFile zfile,
+    const String& relativePath,
+    ImageFileInfo& fileInfo
+  )
+  {
+    // Check offset map of file
+    String unixifiedPath = relativePath;
+    UnixifyPath(unixifiedPath);
+    ZPOS64_T offset = m_zipFilesOffsetTable[unixifiedPath].first;
+    if (offset != 0)
     {
-      // Iterate over file info's
-      do
+      if (unzSetOffset64(zfile, offset) == UNZ_OK)
       {
         if (unzOpenCurrentFile(zfile) == UNZ_OK)
         {
-          unz_file_info fileInfo;
-          memset(&fileInfo, 0, sizeof(unz_file_info));
+          unz_file_info unzFileInfo;
+          memset(&unzFileInfo, 0, sizeof(unz_file_info));
 
           if
           (
             unzGetCurrentFileInfo
             (
               zfile,
-              &fileInfo,
+              &unzFileInfo,
               NULL,
               0,
               NULL,
@@ -644,54 +638,31 @@ namespace ToolKit
             ) == UNZ_OK
           )
           {
-            // Get file info
-            char* filename = new char[fileInfo.size_filename + 1]();
-            unzGetCurrentFileInfo
+            fileInfo.filePath = relativePath;
+            float* img = CreateHdriFileFromZip
             (
               zfile,
-              &fileInfo,
-              filename,
-              fileInfo.size_filename + 1,
-              NULL,
-              0,
-              NULL,
-              0
+              static_cast<uint>(unzFileInfo.uncompressed_size),
+              fileInfo
             );
-            filename[fileInfo.size_filename] = '\0';
-
-            if (strcmp(filename, relativePath.c_str()))
-            {
-              SafeDelArray(filename);
-              unzCloseCurrentFile(zfile);
-              continue;
-            }
-
-            // Read file
-            uint8* img = CreateImageFileFromZip
-            (
-              zfile,
-              filename,
-              static_cast<uint>(fileInfo.uncompressed_size),
-              x,
-              y,
-              comp,
-              reqComp
-            );
-
-            SafeDelArray(filename);
-
             return img;
           }
-
-          unzCloseCurrentFile(zfile);
         }
-      } while (unzGoToNextFile(zfile) == UNZ_OK);
+      }
     }
 
-    return stbi_load(path, x, y, comp, reqComp);
+    // If the file is not found return the file from path
+    return stbi_loadf
+    (
+      fileInfo.filePath.c_str(),
+      fileInfo.x,
+      fileInfo.y,
+      fileInfo.comp,
+      fileInfo.reqComp
+    );
   }
 
-  XmlFile FileManager::CreateXmlFileFromZip
+  XmlFilePtr FileManager::CreateXmlFileFromZip
   (
     zipFile zfile,
     const String& filename,
@@ -716,7 +687,7 @@ namespace ToolKit
     }
 
     // Create XmlFile object
-    XmlFile file(fileBuffer, readBytes);
+    XmlFilePtr file = std::make_shared<XmlFile>(fileBuffer, readBytes);
 
     SafeDelArray(fileBuffer);
 
@@ -726,12 +697,8 @@ namespace ToolKit
   uint8* FileManager::CreateImageFileFromZip
   (
     zipFile zfile,
-    const String& filename,
     uint filesize,
-    int* x,
-    int* y,
-    int* comp,
-    int reqComp
+    ImageFileInfo& fileInfo
   )
   {
     unsigned char* fileBuffer = new unsigned char[filesize]();
@@ -740,13 +707,13 @@ namespace ToolKit
     {
       GetLogger()->Log
       (
-        "Error reading compressed file: " + filename
+        "Error reading compressed file: " + fileInfo.filePath
       );
       GetLogger()->WriteConsole
       (
         LogType::Error,
         "Error reading compressed file: %s",
-        filename.c_str()
+        fileInfo.filePath.c_str()
       );
     }
 
@@ -755,10 +722,49 @@ namespace ToolKit
     (
       fileBuffer,
       filesize,
-      x,
-      y,
-      comp,
-      reqComp
+      fileInfo.x,
+      fileInfo.y,
+      fileInfo.comp,
+      fileInfo.reqComp
+    );
+
+    SafeDelArray(fileBuffer);
+
+    return img;
+  }
+
+  float* FileManager::CreateHdriFileFromZip
+  (
+    zipFile zfile,
+    uint filesize,
+    ImageFileInfo& fileInfo
+  )
+  {
+    unsigned char* fileBuffer = new unsigned char[filesize]();
+    uint readBytes = unzReadCurrentFile(zfile, fileBuffer, filesize);
+    if (readBytes < 0)
+    {
+      GetLogger()->Log
+      (
+        "Error reading compressed file: " + fileInfo.filePath
+      );
+      GetLogger()->WriteConsole
+      (
+        LogType::Error,
+        "Error reading compressed file: %s",
+        fileInfo.filePath.c_str()
+      );
+    }
+
+    // Load image
+    float* img = stbi_loadf_from_memory
+    (
+      fileBuffer,
+      filesize,
+      fileInfo.x,
+      fileInfo.y,
+      fileInfo.comp,
+      fileInfo.reqComp
     );
 
     SafeDelArray(fileBuffer);

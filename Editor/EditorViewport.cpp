@@ -84,7 +84,7 @@ namespace ToolKit
     {
       m_mouseOverOverlay = false;
 
-      ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_Once);
+      ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_None);
 
       if
       (
@@ -258,6 +258,7 @@ namespace ToolKit
     void EditorViewport::UpdateContentArea()
     {
       // Content area size
+
       m_contentAreaMin = ImGui::GetWindowContentRegionMin();
       m_contentAreaMax = ImGui::GetWindowContentRegionMax();
 
@@ -274,7 +275,6 @@ namespace ToolKit
         glm::abs(m_contentAreaMax.x - m_contentAreaMin.x),
         glm::abs(m_contentAreaMax.y - m_contentAreaMin.y)
       );
-
       ImGuiIO& io = ImGui::GetIO();
       ImVec2 absMousePos = io.MousePos;
       m_mouseOverContentArea = false;
@@ -783,9 +783,9 @@ namespace ToolKit
         if (IsActive() || g_app->m_showOverlayUIAlways)
         {
           bool onPlugin = false;
-          if (m_name == g_3dViewport && g_app->m_gameMod != App::GameMod::Stop)
+          if (m_name == g_3dViewport && g_app->m_gameMod != GameMod::Stop)
           {
-            if (!g_app->m_runWindowed)
+            if (!g_app->m_emulatorSettings.runWindowed)
             {
               // Game is being drawn on 3d viewport. Hide overlays.
               onPlugin = true;

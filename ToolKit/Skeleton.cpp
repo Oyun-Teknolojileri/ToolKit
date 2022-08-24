@@ -8,6 +8,7 @@
 #include "Util.h"
 #include "DebugNew.h"
 #include "ToolKit.h"
+#include "GL/glew.h"
 
 namespace ToolKit
 {
@@ -21,20 +22,8 @@ namespace ToolKit
 
   Bone::~Bone()
   {
-    // Override orphaning.
-    NodePtrArray& childsOfParent = m_node->m_parent->m_children;
-    for (uint childIndx = 0; childIndx < childsOfParent.size(); childIndx)
-    {
-      if (m_node == childsOfParent[childIndx])
-      {
-        childsOfParent.erase(childsOfParent.begin() + childIndx);
-      }
-      else
-      {
-        childIndx++;
-      }
-    }
     m_node->m_parent = nullptr;
+    m_node->m_children.clear();
     SafeDel(m_node);
   }
 
@@ -73,7 +62,7 @@ namespace ToolKit
       Bone* childBone = nullptr;
       for (Bone* boneSearch : skltn->m_bones)
       {
-        if (boneSearch->m_node = childNode)
+        if (boneSearch->m_node == childNode)
         {
           childBone = boneSearch;
           break;
@@ -89,8 +78,9 @@ namespace ToolKit
 
   void Skeleton::UnInit()
   {
+    uint32_t deletedCount = 0;
     std::function<void(const Bone*)> deleteBone =
-    [this, &deleteBone]
+    [this, &deleteBone, &deletedCount]
     (
       const Bone* parentBone
     ) -> void
@@ -113,9 +103,11 @@ namespace ToolKit
           deleteBone(childBone);
         }
       }
+      deletedCount++;
       SafeDel(parentBone);
     };
     ForEachChildBoneNode(this, deleteBone);
+    m_node->m_children.clear();
     SafeDel(m_node);
 
     m_bones.clear();
@@ -124,9 +116,9 @@ namespace ToolKit
 
   void Skeleton::Load()
   {
-    XmlFile file = GetFileManager()->GetXmlFile(GetFile());
+    XmlFilePtr file = GetFileManager()->GetXmlFile(GetFile());
     XmlDocument doc;
-    doc.parse<0>(file.data());
+    doc.parse<0>(file->data());
 
     if (XmlNode* node = doc.first_node("skeleton"))
     {
@@ -270,6 +262,86 @@ namespace ToolKit
       return nullptr;
     }
     return m_bones[index];
+  }
+  void Skeleton::UpdateTransformationTexture()
+  {
+    auto createBoneTexture = [this](TexturePtr& ptr)
+    {
+      ptr = std::make_shared<Texture>();
+      ptr->m_floatFormat = true;
+      ptr->m_height = 1;
+      ptr->m_width = static_cast<int>(m_bones.size()) * 4;
+      ptr->m_name = m_name + " BindPoseTexture";
+
+      glGenTextures(1, &ptr->m_textureId);
+      glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
+      glTexImage2D
+      (
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA32F,
+        ptr->m_width,
+        ptr->m_height,
+        0,
+        GL_RGBA,
+        GL_FLOAT,
+        nullptr
+      );
+      glTexParameteri
+      (
+        GL_TEXTURE_2D,
+        GL_TEXTURE_MIN_FILTER,
+        GL_NEAREST
+      );
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+      ptr->m_initiated = true;
+      ptr->m_loaded = true;
+    };
+    auto uploadBoneMatrix = [](Mat4 mat, TexturePtr& ptr, uint boneIndx)
+    {
+      glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
+      glTexSubImage2D
+      (
+        GL_TEXTURE_2D,
+        0,
+        boneIndx * 4,
+        0,
+        4,
+        1,
+        GL_RGBA,
+        GL_FLOAT,
+        &mat
+      );
+    };
+
+
+    if (m_bindPoseTexture == nullptr)
+    {
+      createBoneTexture(m_bindPoseTexture);
+      for (uint64_t boneIndx = 0; boneIndx < m_bones.size(); boneIndx++)
+      {
+        uploadBoneMatrix
+        (
+          m_bones[boneIndx]->m_inverseWorldMatrix,
+          m_bindPoseTexture,
+          static_cast<uint>(boneIndx)
+        );
+      }
+    }
+    if (m_boneTransformTexture == nullptr)
+    {
+      createBoneTexture(m_boneTransformTexture);
+    }
+    for (uint bnIndx = 0; bnIndx < static_cast<uint>(m_bones.size()); bnIndx++)
+    {
+      uploadBoneMatrix
+      (
+        m_bones[bnIndx]->m_node->GetTransform(TransformationSpace::TS_WORLD),
+        m_boneTransformTexture,
+        (uint)bnIndx
+      );
+    }
   }
 
   void Skeleton::Traverse(XmlNode* node, Bone* parent)
