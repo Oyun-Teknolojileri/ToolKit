@@ -19,7 +19,6 @@
 
 namespace ToolKit
 {
-
   namespace Editor
   {
 
@@ -97,8 +96,28 @@ namespace ToolKit
       };
     }
 
+
+    /*
+    * Refactor as below.
+    * 
+    * PreInit Main
+    * InitSDL
+    * Init App
+    * Uninit App
+    * Uninit Main
+    * Uninit SDL
+    * PostUninit Main
+    */
+
     void Init()
     {
+      // PreInit Main
+      g_proxy = new Main();
+      //g_proxy->m_resourceRoot = ConcatPaths({ ".", "..", "Resources" });
+      Main::SetProxy(g_proxy);
+      g_proxy->PreInit();
+
+      // Init SDL
       if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0)
       {
         g_running = false;
@@ -160,15 +179,12 @@ namespace ToolKit
 #ifdef TK_DEBUG
             GlDebugReportInit();
 #endif
-            g_proxy = new Main();
 
+            // Init Main
             // Override SceneManager.
             SafeDel(g_proxy->m_sceneManager);
             g_proxy->m_sceneManager = new EditorSceneManager();
-
-            Main::SetProxy(g_proxy);
-            Main::GetInstance()->Init();
-            UI::Init();
+            g_proxy->Init();
 
             // Set defaults
             SDL_GL_SetSwapInterval(0);
@@ -179,6 +195,7 @@ namespace ToolKit
 
             // Init app
             g_app = new App(width, height);
+            UI::Init();
             g_app->Init();
           }
         }
@@ -189,7 +206,9 @@ namespace ToolKit
     {
       UI::UnInit();
       SafeDel(g_app);
-      Main::GetInstance()->Uninit();
+
+      g_proxy->Uninit();
+      g_proxy->PostUninit();
       SafeDel(g_proxy);
 
       SDL_DestroyWindow(g_window);
