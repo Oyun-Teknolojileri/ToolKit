@@ -198,7 +198,7 @@ namespace ToolKit
           if
           (
             ImGui::InputText(var->m_name.c_str(), &val)
-            && ImGuiEnterPressed()
+            && IsTextInputFinalized()
           )
           {
             *var = val;
@@ -216,7 +216,7 @@ namespace ToolKit
               ImGuiDataType_U32,
               var->GetVarPtr<ULongID>()
             )
-            && ImGuiEnterPressed()
+            && IsTextInputFinalized()
           )
           {
             *var = val;
@@ -757,12 +757,13 @@ namespace ToolKit
       }
     }
 
-    bool View::ImGuiEnterPressed()
+    bool View::IsTextInputFinalized()
     {
       return
       (
         ImGui::IsKeyPressed(ImGuiKey_KeypadEnter)
         || ImGui::IsKeyPressed(ImGuiKey_Enter)
+        || ImGui::IsKeyPressed(ImGuiKey_Tab)
       );
     }
 
@@ -866,7 +867,7 @@ namespace ToolKit
           {
             m_entity->m_node->Translate(newTranslate - translate, space);
           }
-          else if (!isDrag && ImGuiEnterPressed())
+          else if (!isDrag && IsTextInputFinalized())
           {
             m_entity->m_node->SetTranslation(newTranslate, space);
           }
@@ -899,7 +900,7 @@ namespace ToolKit
           {
             m_entity->m_node->Rotate(q, space);
           }
-          else if (ImGuiEnterPressed())
+          else if (IsTextInputFinalized())
           {
             m_entity->m_node->SetOrientation(q, space);
           }
@@ -920,7 +921,7 @@ namespace ToolKit
             saveDragMemFn();
 
             bool isDrag = ImGui::IsMouseDragging(0, 0.25f);
-            if (isDrag || ImGuiEnterPressed())
+            if (isDrag || IsTextInputFinalized())
             {
               m_entity->m_node->SetScale(scale);
             }

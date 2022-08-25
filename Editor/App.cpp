@@ -241,16 +241,15 @@ namespace ToolKit
       }
 
       // Take all lights in an array
-      LightRawPtrArray gameLights = GetCurrentScene()->GetLights();
+      LightRawPtrArray totalLights;
 
       if (m_studioLightsActive)
       {
-        gameLights.insert
-        (
-          gameLights.end(),
-          m_sceneLights.begin(),
-          m_sceneLights.end()
-        );
+        totalLights = m_sceneLights;
+      }
+      else
+      {
+        totalLights = GetCurrentScene()->GetLights();
       }
 
       // Sort lights by type
@@ -266,7 +265,7 @@ namespace ToolKit
           )
         );
       };
-      std::stable_sort(gameLights.begin(), gameLights.end(), lightSortFn);
+      std::stable_sort(totalLights.begin(), totalLights.end(), lightSortFn);
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -295,7 +294,7 @@ namespace ToolKit
         if (viewport->IsVisible())
         {
           // Render scene.
-          m_renderer->RenderScene(GetCurrentScene(), viewport, gameLights);
+          m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
 
           // Render grid.
           Camera* cam = viewport->GetCamera();

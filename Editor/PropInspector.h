@@ -36,7 +36,7 @@ namespace ToolKit
       );
 
      protected:
-      bool ImGuiEnterPressed();
+      bool IsTextInputFinalized();
 
      public:
       Entity* m_entity = nullptr;
