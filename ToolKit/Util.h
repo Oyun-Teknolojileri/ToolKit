@@ -185,6 +185,10 @@ namespace ToolKit
   // multiple materials. But they are ignored.
   TK_API MaterialPtr GetRenderMaterial(Entity* entity);
 
+  enum class EntityType;
+  // Returns true if the type is a light type
+  TK_API bool IsLightType(EntityType type);
+
   // Memory operations.
   ///////////////////////////////////////////////////////
   // Useful to force plugin modules to allocate from main toolkit module.

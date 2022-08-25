@@ -40,9 +40,29 @@ namespace ToolKit
         case ParameterVariant::VariantType::Float:
         {
           float val = var->GetVar<float>();
-          if (ImGui::DragFloat(var->m_name.c_str(), &val, 0.1f))
+          if (!var->m_hint.isRangeLimited)
           {
-            *var = val;
+            if (ImGui::InputFloat(var->m_name.c_str(), &val))
+            {
+              *var = val;
+            }
+          }
+          else
+          {
+            if
+            (
+              ImGui::DragFloat
+              (
+                var->m_name.c_str(),
+                &val,
+                var->m_hint.increment,
+                var->m_hint.rangeMin,
+                var->m_hint.rangeMax
+              )
+            )
+            {
+              *var = val;
+            }
           }
         }
         break;
@@ -58,9 +78,29 @@ namespace ToolKit
         case ParameterVariant::VariantType::Vec2:
         {
           Vec2 val = var->GetVar<Vec2>();
-          if (ImGui::DragFloat2(var->m_name.c_str(), &val[0], 0.1f))
+          if (var->m_hint.isRangeLimited)
           {
-            *var = val;
+            if
+            (
+              ImGui::DragFloat2
+              (
+                var->m_name.c_str(),
+                &val[0],
+                var->m_hint.increment,
+                var->m_hint.rangeMin,
+                var->m_hint.rangeMax
+              )
+            )
+            {
+              *var = val;
+            }
+          }
+          else
+          {
+            if (ImGui::DragFloat2(var->m_name.c_str(), &val[0], 0.1f))
+            {
+              *var = val;
+            }
           }
         }
         break;

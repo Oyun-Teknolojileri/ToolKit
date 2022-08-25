@@ -43,6 +43,9 @@ namespace ToolKit
     Camera* cam = viewport->GetCamera();
     EntityRawPtrArray entities = scene->GetEntities();
 
+    // Shadow pass
+    UpdateShadowMaps(editorLights, entities);
+
     SetViewport(viewport);
 
     RenderEntities(entities, cam, viewport, editorLights);
@@ -897,6 +900,62 @@ namespace ToolKit
     }
   }
 
+  void Renderer::UpdateShadowMaps
+  (
+    LightRawPtrArray lights,
+    EntityRawPtrArray entities
+  )
+  {
+    static uint lastFrameCount = -1;
+
+    if (lastFrameCount != m_totalFrameCount)
+    {
+      MaterialPtr lastOverrideMaterial = m_overrideMat;
+
+      GLint lastFBO;
+      glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+
+      for (Light* light : lights)
+      {
+        // TODO(osman): Delete type check after implementing
+        // shadows for other light types
+        if(light->GetType() != EntityType::Entity_DirectionalLight)
+        {
+          continue;
+        }
+
+        if (light->GetCastShadowVal())
+        {
+          // Create framebuffer
+          light->InitShadowMap();
+
+          // Get shadow map camera
+          light->UpdateShadowMapCamera();
+          Camera* cam = light->GetShadowMapCamera();
+
+          FrustumCull(entities, cam);
+
+          // Render scene for depth buffer
+
+          SetRenderTarget(light->GetShadowMapRenderTarget());
+          glClear(GL_DEPTH_BUFFER_BIT);
+          // Depth only render
+          glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+          m_overrideMat = light->GetShadowMaterial();
+          for (Entity* ntt : entities)
+          {
+            Render(ntt, cam);
+          }
+          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        }
+      }
+
+      m_overrideMat = lastOverrideMaterial;
+      glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+    }
+    lastFrameCount = m_totalFrameCount;
+  }
+
   void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)
   {
     m_view = cam->GetViewMatrix();
@@ -979,6 +1038,7 @@ namespace ToolKit
           glUniform1i(loc, slotIndx);
         }
       }
+
       m_programs[program->m_tag] = program;
     }
 
@@ -1198,7 +1258,9 @@ namespace ToolKit
 
   void Renderer::FeedLightUniforms(ProgramPtr program)
   {
-    size_t size = glm::min(m_lights.size(), m_maxLightsPerObject);
+    ResetShadowMapBindings();
+
+    size_t size = glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
     for (size_t i = 0; i < size; i++)
     {
       Light* currLight = m_lights[i];
@@ -1351,6 +1413,58 @@ namespace ToolKit
         );
         glUniform1f(loc, innAngle);
       }
+
+      bool castShadow = currLight->GetCastShadowVal();
+
+      // TODO(osman): Delete type check after implementing
+      // shadows for other light types
+      if
+      (
+        castShadow
+        && currLight->GetType() == EntityType::Entity_DirectionalLight
+      )
+      {
+        GLint loc = glGetUniformLocation
+        (
+          program->m_handle,
+          g_lightSpaceMatrixStrCache[i].c_str()
+        );
+        glUniformMatrix4fv
+        (
+          loc,
+          1,
+          GL_FALSE,
+          &(currLight->GetShadowMapCameraSpaceMatrix())[0][0]
+        );
+
+        loc = glGetUniformLocation
+        (
+          program->m_handle,
+          g_lightShadowMinBiasStrCache[i].c_str()
+        );
+        glUniform1f(loc, currLight->GetShadowMinBiasVal() * 0.001f);
+
+        loc = glGetUniformLocation
+        (
+          program->m_handle,
+          g_lightShadowMaxBiasStrCache[i].c_str()
+        );
+        glUniform1f(loc, currLight->GetShadowMaxBiasVal() * 0.001f);
+
+        SetShadowMapTexture
+        (
+          type,
+          currLight->GetShadowMapRenderTarget()->m_textureId,
+          program
+        );
+      }
+
+      GLint loc = glGetUniformLocation
+      (
+        program->m_handle,
+        g_lightCastShadowStrCache[i].c_str()
+      );
+      glUniform1i(loc, static_cast<int>(castShadow));
     }
 
     GLint loc = glGetUniformLocation
@@ -1491,5 +1605,78 @@ namespace ToolKit
     m_textureSlots[slotIndx] = textureId;
     glActiveTexture(GL_TEXTURE0 + slotIndx);
     glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
+  }
+
+  void Renderer::SetShadowMapTexture
+  (
+    EntityType type,
+    uint textureId,
+    ProgramPtr program
+  )
+  {
+    assert(IsLightType(type));
+
+    if (m_bindedShadowMapCount >= m_rhiSettings::maxShadows)
+    {
+      return;
+    }
+
+    int currCh = m_bindedShadowMapCount + m_rhiSettings::textureSlotCount;
+    if (type == EntityType::Entity_PointLight)
+    {
+      if (m_pointLightShadowCount < m_rhiSettings::maxPointLightShadows)
+      {
+        glUniform1i
+        (
+          glGetUniformLocation
+          (
+            program->m_handle,
+            (
+              "LightData.pointLightShadowMap["
+              + std::to_string(m_pointLightShadowCount)
+              + "]"
+            ).c_str()
+          ),
+          currCh
+        );
+        glActiveTexture(GL_TEXTURE0 + currCh);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+        m_bindedShadowMapCount++;
+        m_pointLightShadowCount++;
+      }
+    }
+    else
+    {
+      if
+      (
+        m_dirAndSpotLightShadowCount < m_rhiSettings::maxDirAndSpotLightShadows
+      )
+      {
+        glUniform1i
+        (
+          glGetUniformLocation
+          (
+            program->m_handle,
+            (
+              "LightData.dirAndSpotLightShadowMap["
+              + std::to_string(m_dirAndSpotLightShadowCount)
+              + "]"
+            ).c_str()
+          ),
+          currCh
+        );
+        glActiveTexture(GL_TEXTURE0 + currCh);
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        m_bindedShadowMapCount++;
+        m_dirAndSpotLightShadowCount++;
+      }
+    }
+  }
+
+  void Renderer::ResetShadowMapBindings()
+  {
+    m_bindedShadowMapCount = 0;
+    m_dirAndSpotLightShadowCount = 0;
+    m_pointLightShadowCount = 0;
   }
 }  // namespace ToolKit

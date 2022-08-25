@@ -131,10 +131,16 @@ namespace ToolKit
   {
     byte Msaa = 0;
     bool DepthStencil = true;
+    bool useBorderColor = false;
     GraphicTypes WarpS = GraphicTypes::UVRepeat;
     GraphicTypes WarpT = GraphicTypes::UVRepeat;
     GraphicTypes MinFilter = GraphicTypes::SampleNearest;
     GraphicTypes MagFilter = GraphicTypes::SampleNearest;
+    GraphicTypes InternalFormat = GraphicTypes::FormatRGBA;
+    GraphicTypes Format = GraphicTypes::FormatRGBA;
+    GraphicTypes Type = GraphicTypes::TypeUnsignedByte;
+    GraphicTypes Attachment = GraphicTypes::ColorAttachment0;
+    Vec4 borderColor = Vec4(0.0f);
   };
 
   class TK_API RenderTarget : public Texture

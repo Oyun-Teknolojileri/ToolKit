@@ -236,12 +236,19 @@ namespace ToolKit
     FragmentShader = 0x8B30,
     UVRepeat = 0x2901,
     UVClampToEdge = 0x812F,
+    UVClampToBorder = 0x812D,
     SampleNearest = 0x2600,
     DrawTypeTriangle = 0x0004,
     DrawTypeLines = 0x0001,
     DrawTypeLineStrip = 0x0003,
     DrawTypeLineLoop = 0x0002,
-    DrawTypePoints = 0x0000
+    DrawTypePoints = 0x0000,
+    FormatRGBA = 0x1908,
+    FormatDepthComponent = 0x1902,
+    ColorAttachment0 = 0x8CE0,
+    DepthAttachment = 0x8D00,
+    TypeFloat = 0x1406,
+    TypeUnsignedByte = 0x1401
   };
 
   static const char* TKVersionStr = "v0.3.13";

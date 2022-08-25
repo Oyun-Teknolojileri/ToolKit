@@ -91,6 +91,8 @@ namespace ToolKit
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
+      light->m_isStudioLight = true;
+      light->SetCastShadowVal(false);
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
@@ -99,6 +101,8 @@ namespace ToolKit
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
+      light->m_isStudioLight = true;
+      light->SetCastShadowVal(false);
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
@@ -107,6 +111,8 @@ namespace ToolKit
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
+      light->m_isStudioLight = true;
+      light->SetCastShadowVal(false);
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
@@ -351,6 +357,8 @@ namespace ToolKit
 
       // Remove editor lights
       m_lightMaster->OrphanSelf();
+
+      m_renderer->m_totalFrameCount++;
     }
 
     void App::OnResize(uint width, uint height)

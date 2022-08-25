@@ -29,6 +29,13 @@
 			float outAngle[12];
 			float innAngle[12];
 			int activeCount;
+
+			mat4 spaceMatrix[12];
+			sampler2D dirAndSpotLightShadowMap[8];
+			samplerCube pointLightShadowMap[8];
+			int castShadow[12];
+			float shadowMinBias[12];
+			float shadowMaxBias[12];
 		};
 
 		struct _CamData
@@ -51,11 +58,38 @@
 
 		out vec4 fragColor;
 
+		// https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+		int CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
+		{
+			vec4 fragPosForLight = LightData.spaceMatrix[index] * vec4(pos, 1.0);
+
+			// Projection divide
+			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
+
+			// Transform to [0, 1] range
+			projCoord = projCoord * 0.5 + 0.5;
+
+			// Get depth of the current fragment according to lights view
+			float currentDepth = projCoord.z;
+
+			// Get closest depth value according to lights view
+			float closestDepth = texture(LightData.dirAndSpotLightShadowMap[dirIndex], projCoord.xy).r;
+
+			float bias = max(LightData.shadowMaxBias[index] * (1.0 - dot(normal, -LightData.dir[index])), LightData.shadowMinBias[index]);
+			int shadow = currentDepth - bias > closestDepth ? 0 : 1;
+
+			return shadow;
+		}
+
 		void main()
 		{
+			int dirAndSpotLightCount = 0;
+			int pointLightCount = 0;
+
 			vec3 n = normalize(v_normal);
 			vec3 e = normalize(CamData.pos - v_pos);
 
+			int shadow = 1;
 			vec3 irradiance = vec3(0.0);
 			for (int i = 0; i < LightData.activeCount; i++)
 			{
@@ -104,6 +138,8 @@
 
 					diffuse  *= attenuation * radiusCheck;
 					specular *= attenuation * radiusCheck;
+
+					pointLightCount += 1;
 				}
 				else if (LightData.type[i] == 1) // Directional light
 				{
@@ -122,6 +158,10 @@
 					// Ambient
 					float ambientStrength = 0.01;
 					ambient = ambientStrength * LightData.color[i];
+
+					shadow = (1 - LightData.castShadow[i]) |
+						(CalculateDirectionalShadow(v_pos, i, dirAndSpotLightCount, n) & LightData.castShadow[i]);
+					dirAndSpotLightCount += 1;
 				}
 				else if (LightData.type[i] == 3) // Spot light
 				{
@@ -167,9 +207,11 @@
 
 					diffuse *= intensity * radiusCheck * attenuation;
 					specular *= intensity * radiusCheck * attenuation;
+
+					dirAndSpotLightCount += 1;
 				}
 
-				irradiance += (ambient + diffuse + specular) * LightData.intensity[i];
+				irradiance += (ambient + diffuse + specular) * LightData.intensity[i] * float(shadow);
 			}
 
 			vec3 iblIrradiance = UseIbl * texture(s_texture1, n).rgb;

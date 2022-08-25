@@ -136,6 +136,70 @@ namespace ToolKit
     "LightData.innAngle[11]"
   };
 
+  static StringArray g_lightSpaceMatrixStrCache =
+  {
+    "LightData.spaceMatrix[0]",
+    "LightData.spaceMatrix[1]",
+    "LightData.spaceMatrix[2]",
+    "LightData.spaceMatrix[3]",
+    "LightData.spaceMatrix[4]",
+    "LightData.spaceMatrix[5]",
+    "LightData.spaceMatrix[6]",
+    "LightData.spaceMatrix[7]",
+    "LightData.spaceMatrix[8]",
+    "LightData.spaceMatrix[9]",
+    "LightData.spaceMatrix[10]",
+    "LightData.spaceMatrix[11]"
+  };
+
+  static StringArray g_lightCastShadowStrCache =
+  {
+    "LightData.castShadow[0]",
+    "LightData.castShadow[1]",
+    "LightData.castShadow[2]",
+    "LightData.castShadow[3]",
+    "LightData.castShadow[4]",
+    "LightData.castShadow[5]",
+    "LightData.castShadow[6]",
+    "LightData.castShadow[7]",
+    "LightData.castShadow[8]",
+    "LightData.castShadow[9]",
+    "LightData.castShadow[10]",
+    "LightData.castShadow[11]"
+  };
+
+  static StringArray g_lightShadowMinBiasStrCache =
+  {
+    "LightData.shadowMinBias[0]",
+    "LightData.shadowMinBias[1]",
+    "LightData.shadowMinBias[2]",
+    "LightData.shadowMinBias[3]",
+    "LightData.shadowMinBias[4]",
+    "LightData.shadowMinBias[5]",
+    "LightData.shadowMinBias[6]",
+    "LightData.shadowMinBias[7]",
+    "LightData.shadowMinBias[8]",
+    "LightData.shadowMinBias[9]",
+    "LightData.shadowMinBias[10]",
+    "LightData.shadowMinBias[11]"
+  };
+
+  static StringArray g_lightShadowMaxBiasStrCache =
+  {
+    "LightData.shadowMaxBias[0]",
+    "LightData.shadowMaxBias[1]",
+    "LightData.shadowMaxBias[2]",
+    "LightData.shadowMaxBias[3]",
+    "LightData.shadowMaxBias[4]",
+    "LightData.shadowMaxBias[5]",
+    "LightData.shadowMaxBias[6]",
+    "LightData.shadowMaxBias[7]",
+    "LightData.shadowMaxBias[8]",
+    "LightData.shadowMaxBias[9]",
+    "LightData.shadowMaxBias[10]",
+    "LightData.shadowMaxBias[11]"
+  };
+
   static StringArray g_boneTransformStrCache =
   {
     "bones[0].transform",
