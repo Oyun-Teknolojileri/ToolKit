@@ -124,6 +124,8 @@ namespace ToolKit
   Entity* Entity::InstantiateTo(Entity* other) const
   {
     WeakCopy(other);
+    other->SetIsInstanceVal(true);
+    other->_baseEntityId = this->GetIdVal();
     return other;
   }
 
@@ -170,6 +172,14 @@ namespace ToolKit
       EntityCategory.Name,
       EntityCategory.Priority,
       true, true
+    );
+
+    IsInstance_Define
+    (
+      false,
+      EntityCategory.Name,
+      EntityCategory.Priority,
+      false, true   // isInstance shouldn't change except WeakCopy is called
     );
   }
 
@@ -233,9 +243,44 @@ namespace ToolKit
     return nullptr;
   }
 
+  ComponentPtrArray& Entity::GetComponentPtrArray()
+  {
+    if (GetIsInstanceVal())
+    {
+      if (GetSceneManager() && GetSceneManager()->GetCurrentScene())
+      {
+        Entity* baseEntity =
+          GetSceneManager()->GetCurrentScene()->GetEntity(_baseEntityId);
+        if (baseEntity)
+        {
+          return baseEntity->m_components;
+        }
+      }
+    }
+    return m_components;
+  }
+
+
+  const ComponentPtrArray& Entity::GetComponentPtrArray() const
+  {
+    if (GetIsInstanceVal())
+    {
+      if (GetSceneManager() && GetSceneManager()->GetCurrentScene())
+      {
+        Entity* baseEntity =
+          GetSceneManager()->GetCurrentScene()->GetEntity(_baseEntityId);
+        if (baseEntity)
+        {
+          return baseEntity->m_components;
+        }
+      }
+    }
+    return m_components;
+  }
+
   ComponentPtr Entity::GetComponent(ULongID id) const
   {
-    for (const ComponentPtr& com : m_components)
+    for (const ComponentPtr& com : GetComponentPtrArray())
     {
       if (com->m_id == id)
       {
@@ -258,6 +303,16 @@ namespace ToolKit
         doc,
         XmlParentEntityIdAttr,
         std::to_string(m_node->m_parent->m_entity->GetIdVal())
+      );
+    }
+    if (GetIsInstanceVal())
+    {
+      WriteAttr
+      (
+        node,
+        doc,
+        XmlBaseEntityIdAttr,
+        std::to_string(_baseEntityId)
       );
     }
 
@@ -299,6 +354,14 @@ namespace ToolKit
     }
 
     m_localData.DeSerialize(doc, parent);
+
+    // For instance entities, don't load components
+    //  Use InstantiateTo() after deserializing base entity
+    if (GetIsInstanceVal())
+    {
+      ReadAttr(node, XmlBaseEntityIdAttr, _baseEntityId);
+      return;
+    }
 
     ClearComponents();
     if (XmlNode* components = node->first_node("Components"))
@@ -372,6 +435,21 @@ namespace ToolKit
       || type == EntityType::Entity_PointLight
       || type == EntityType::Entity_SpotLight
     );
+  }
+
+  ULongID Entity::GetBaseEntityID() const
+  {
+    return _baseEntityId;
+  }
+
+  void Entity::SetBaseEntityID(ULongID id)
+  {
+    assert
+    (
+      GetIsInstanceVal()
+      && "You should call this only for instance entities!"
+    );
+    _baseEntityId = id;
   }
 
   EntityNode::EntityNode()

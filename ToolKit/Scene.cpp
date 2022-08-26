@@ -44,6 +44,28 @@ namespace ToolKit
 
     DeSerialize(&sceneDoc, nullptr);
 
+
+    // Instantiate entities
+    for (Entity* e : m_entities)
+    {
+      if (e->GetIsInstanceVal())
+      {
+        if (Entity* parent = GetEntity(e->GetBaseEntityID()))
+        {
+          Node* node = e->m_node->Copy();
+          parent->InstantiateTo(e);
+          SafeDel(e->m_node);
+          node->m_entity = e;
+          e->m_node = node;
+        }
+        else
+        {
+          GetLogger()->WriteConsole(LogType::Warning, "Base entity not found!");
+          RemoveEntity(e->GetIdVal());
+        }
+      }
+    }
+
     // Update parent - child relation for entities.
     for (Entity* e : m_entities)
     {
@@ -509,6 +531,8 @@ namespace ToolKit
   {
     XmlAttribute* parentAttrib =
       parent->first_attribute(XmlParentEntityIdAttr.c_str());
+    XmlAttribute* baseAttrib =
+      parent->first_attribute(XmlBaseEntityIdAttr.c_str());
     parent->remove_attribute
     (
       parent->first_attribute(XmlEntityIdAttr.c_str())
@@ -538,6 +562,32 @@ namespace ToolKit
             parent,
             doc,
             XmlParentEntityIdAttr,
+            std::to_string(parentSrchIndx + 1)
+          );
+        }
+      }
+    }
+    // If instantiated, save its base entity's list index too
+    if (ntt->GetIsInstanceVal())
+    {
+      for
+      (
+        uint parentSrchIndx = 0;
+        parentSrchIndx < m_entities.size();
+        parentSrchIndx++
+      )
+      {
+        if (ntt->GetBaseEntityID() == m_entities[parentSrchIndx]->GetIdVal())
+        {
+          parent->remove_attribute
+          (
+            baseAttrib
+          );
+          WriteAttr
+          (
+            parent,
+            doc,
+            XmlBaseEntityIdAttr,
             std::to_string(parentSrchIndx + 1)
           );
         }
@@ -590,7 +640,11 @@ namespace ToolKit
       ULongID currentID = listIndx + lastID;
       biggestID = glm::max(biggestID, currentID);
       ntt->SetIdVal(currentID);
-      ntt->_parentId = ntt->_parentId + lastID;
+      ntt->_parentId += lastID;
+      if (ntt->GetIsInstanceVal())
+      {
+        ntt->SetBaseEntityID(lastID + ntt->GetBaseEntityID());
+      }
       m_entities.push_back(ntt);
     }
     GetHandleManager()->SetMaxHandle(biggestID);

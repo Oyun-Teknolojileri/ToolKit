@@ -1126,7 +1126,7 @@ Fail:
 
     void App::MergeScene(const String& fullPath)
     {
-      ScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
+      EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
       scene->Load();
       scene->Init(false);
       GetCurrentScene()->Merge(scene);

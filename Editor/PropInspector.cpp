@@ -960,7 +960,7 @@ namespace ToolKit
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
 
         std::vector<ULongID> compRemove;
-        for (ComponentPtr& com : m_entity->m_components)
+        for (ComponentPtr& com : m_entity->GetComponentPtrArray())
         {
           if (ShowComponentBlock(com))
           {

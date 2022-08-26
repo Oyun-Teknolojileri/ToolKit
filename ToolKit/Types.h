@@ -196,6 +196,7 @@ namespace ToolKit
   static const String XmlEntityTypeAttr("t");
   static const String XmlEntityVisAttr("vi");
   static const String XmlEntityTrLockAttr("lc");
+  static const String XmlBaseEntityIdAttr("bi");
   static const String XmlSceneElement("S");
   static const String XmlParamterElement("P");
   static const String XmlParamterValAttr("v");

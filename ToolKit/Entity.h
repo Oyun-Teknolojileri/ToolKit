@@ -79,6 +79,8 @@ namespace ToolKit
     void SetTransformLock(bool vis, bool deep);
     bool IsSurfaceInstance();
     bool IsLightInstance() const;
+    ULongID GetBaseEntityID() const;
+    void SetBaseEntityID(ULongID);
 
     /**
     * Adds the given component into the components of the Entity. While adding
@@ -114,6 +116,9 @@ namespace ToolKit
     */
     ComponentPtr RemoveComponent(ULongID componentId);
 
+    ComponentPtrArray& GetComponentPtrArray();
+    const ComponentPtrArray& GetComponentPtrArray() const;
+
     /**
     * Used to return first encountered component of type T.
     * @return First Component of type T if any exist, otherwise empty pointer.
@@ -121,7 +126,7 @@ namespace ToolKit
     template<typename T>
     std::shared_ptr<T> GetComponent() const
     {
-      for (const ComponentPtr& com : m_components)
+      for (const ComponentPtr& com : GetComponentPtrArray())
       {
         if (com->GetType() == T::GetTypeStatic())
         {
@@ -140,7 +145,7 @@ namespace ToolKit
     template<typename T>
     void GetComponent(std::vector<std::shared_ptr<T>>& components) const
     {
-      for (const ComponentPtr& com : m_components)
+      for (const ComponentPtr& com : GetComponentPtrArray())
       {
         if (com->GetType() == T::GetTypeStatic())
         {
@@ -161,9 +166,9 @@ namespace ToolKit
     */
     void ClearComponents();
 
+    virtual Entity* InstantiateTo(Entity* other) const;
    protected:
     virtual Entity* CopyTo(Entity* other) const;
-    virtual Entity* InstantiateTo(Entity* other) const;
     void ParameterConstructor();
     void WeakCopy(Entity* other, bool copyComponents = true) const;
 
@@ -174,15 +179,34 @@ namespace ToolKit
     TKDeclareParam(bool, Visible);
     TKDeclareParam(bool, TransformLock);
 
+    /**
+    * True if this entity is an instance of another entity
+    * If true;
+    *  Deserialization doesn't load components
+    *  You should instantiate from base entity by yourself
+    *   Example: Scene deserialization instantiates from base entities last
+    * Don't use this outside of scene,
+    *  otherwise base entity's component list can't be accessed
+    */
+    TKDeclareParam(bool, IsInstance);
+
     Node* m_node;
     ParameterBlock m_localData;  // Entity's own data.
-    ComponentPtrArray m_components;
 
     /**
     * Internally used variable.
     * Helper ID for entity De serialization. Points to parent of the entity.
     */
     ULongID _parentId;
+
+   private:
+    ComponentPtrArray m_components;
+
+    /**
+    * Internally used variable.
+    * Helper ID for finding base entity. Id must be valid in the current scene.
+    */
+    ULongID _baseEntityId;
   };
 
   class TK_API EntityNode : public Entity
