@@ -181,8 +181,8 @@ namespace ToolKit
     // Override this to alter render target creation.
 
     /**
-    * Returns RenderTargetSetting that Viewport has.
-    * @return RenderTargetSetting that Viewport has.
+    * Returns RenderTargetSetting of the Viewport.
+    * @return RenderTargetSetting of the Viewport.
     */
     virtual RenderTargetSettigs GetRenderTargetSettings();
 

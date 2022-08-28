@@ -48,6 +48,7 @@ namespace ToolKit
       void Init2dCam();
       void UpdateCanvasSize();
       void PanZoom(float deltaTime);
+      void InitViewOptions();
 
      private:
       Vec2 m_canvasSize;

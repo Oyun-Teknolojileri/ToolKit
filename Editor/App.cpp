@@ -669,12 +669,21 @@ namespace ToolKit
     void App::ResetUI()
     {
       DeleteWindows();
-      if (CheckFile(ConcatPaths({ DefaultPath(), "Editor.settings" })))
+      if 
+      (
+        CheckFile
+        (
+          ConcatPaths
+          (
+            { m_workspace.GetProjectConfigPath(), g_editorSettingsFile }
+          )
+        )
+      )
       {
         // Try reading defaults.
         String settingsFile = ConcatPaths
         (
-          { DefaultPath(), "Editor.settings" }
+          { ConfigPath(), g_editorSettingsFile }
         );
 
         std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>
@@ -692,7 +701,7 @@ namespace ToolKit
         DeSerialize(lclDoc.get(), nullptr);
         m_workspace.SetScene(pj.scene);
 
-        settingsFile = ConcatPaths({ DefaultPath(), "defaultUI.ini" });
+        settingsFile = ConcatPaths({ ConfigPath(), "defaultUI.ini" });
         ImGui::LoadIniSettingsFromDisk(settingsFile.c_str());
       }
       else
@@ -1131,7 +1140,10 @@ Fail:
       (
         CheckFile
         (
-          ConcatPaths({ ResourcePath(), "Editor.settings" })
+          ConcatPaths
+          (
+            { m_workspace.GetProjectConfigPath(), g_editorSettingsFile }
+          )
         )
         && !setDefaults
       )
@@ -1518,7 +1530,7 @@ Fail:
       m_workspace.Serialize(nullptr, nullptr);
 
       std::ofstream file;
-      String fileName = ConcatPaths({ ResourcePath(), "Editor.settings" });
+      String fileName = ConcatPaths({ ResourcePath(), g_editorSettingsFile });
 
       file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
@@ -1585,8 +1597,9 @@ Fail:
       {
         String settingsFile = ConcatPaths
         (
-          { ResourcePath(), "Editor.settings" }
+          { ConfigPath(), g_editorSettingsFile }
         );
+
         lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
         lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());

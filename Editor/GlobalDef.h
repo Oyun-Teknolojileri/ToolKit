@@ -35,6 +35,9 @@ namespace ToolKit
     const String g_IsoViewport("ISO View");
     const String g_simulationViewport("Simulation");
     const String g_pluginWindow("Plugin");
+    const String g_workspaceFile("Workspace.settings");
+    const String g_uiLayoutFile("UILayout.ini");
+    const String g_editorSettingsFile("Editor.settings");
 
     // Colors and materials.
     const String g_gridMaterialName("TK_EDITOR_GRID");

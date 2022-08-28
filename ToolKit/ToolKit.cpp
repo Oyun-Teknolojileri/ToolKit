@@ -285,17 +285,8 @@ namespace ToolKit
     return res;
   }
 
-  TK_API String ConfigPath(bool def)
+  TK_API String ConfigPath()
   {
-    if (!def)
-    {
-      String& path = Main::GetInstance()->m_resourceRoot;
-      if (!path.empty())
-      {
-        return ConcatPaths({ path, "..", "Config"  });
-      }
-    }
-
     return ConcatPaths({ ".", "..", "Config"  });
   }
 

@@ -26,7 +26,7 @@ namespace ToolKit
     {
       String settingsFile = ConcatPaths
       (
-        { DefaultPath(), "workspace.settings" }
+        { ConfigPath(), g_workspaceFile }
       );
       if (CheckFile(settingsFile))
       {
@@ -64,7 +64,7 @@ namespace ToolKit
         std::ofstream file;
         String settingsPath = ConcatPaths
         (
-          { DefaultPath(), "workspace.settings" }
+          { ConfigPath(), g_workspaceFile }
         );
 
         file.open(settingsPath.c_str(), std::ios::out);
@@ -109,6 +109,19 @@ namespace ToolKit
       );
 
       return codePath;
+    }
+
+    String Workspace::GetProjectConfigPath()
+    {
+      if (m_activeProject.name.empty())
+      {
+        return m_activeWorkspace;
+      }
+
+      return ConcatPaths
+      (
+        { m_activeWorkspace, m_activeProject.name, "Config" }
+      );
     }
 
     String Workspace::GetPluginPath()
@@ -198,7 +211,7 @@ namespace ToolKit
       std::ofstream file;
       String fileName = ConcatPaths
       (
-        { m_activeWorkspace, "workspace.settings" }
+        { m_activeWorkspace, g_workspaceFile }
       );
       file.open(fileName.c_str(), std::ios::out);
 
@@ -250,11 +263,11 @@ namespace ToolKit
     {
       String settingsFile = ConcatPaths
       (
-        { m_activeWorkspace, "workspace.settings" }
+        { m_activeWorkspace, g_workspaceFile }
       );
       if (!CheckFile(settingsFile))
       {
-        settingsFile = ConcatPaths({ DefaultPath(), "workspace.settings" });
+        settingsFile = ConcatPaths({ ConfigPath(), g_workspaceFile });
       }
 
       XmlFilePtr lclFile = std::make_shared<XmlFile> (settingsFile.c_str());

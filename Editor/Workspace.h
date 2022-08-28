@@ -30,6 +30,7 @@ namespace ToolKit
 
       // Accessors to workspace
       String GetCodePath();
+      String GetProjectConfigPath();
       String GetPluginPath();
       String GetResourceRoot();
       String GetActiveWorkspace();

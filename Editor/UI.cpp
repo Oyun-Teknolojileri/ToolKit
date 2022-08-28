@@ -656,7 +656,7 @@ namespace ToolKit
       }
       else
       {
-        path = ConcatPaths({ DefaultPath(), "defaultUI.ini" });
+        path = ConcatPaths({ ConfigPath(), g_uiLayoutFile });
         if (CheckFile(path))
         {
           ImGui::LoadIniSettingsFromDisk(path.c_str());

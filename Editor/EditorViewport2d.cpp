@@ -31,11 +31,7 @@ namespace ToolKit
     {
       UpdateCanvasSize();
       Init2dCam();
-      if (!m_2dViewOptions)
-      {
-        m_2dViewOptions = new Overlay2DViewportOptions(this);
-      }
-      m_snapDeltas = Vec3(10.0f, 45.0f, 0.25f);
+      InitViewOptions();
     }
 
     EditorViewport2d::EditorViewport2d(float width, float height)
@@ -43,6 +39,7 @@ namespace ToolKit
     {
       UpdateCanvasSize();
       Init2dCam();
+      InitViewOptions();
     }
 
     EditorViewport2d::~EditorViewport2d()
@@ -521,5 +518,15 @@ namespace ToolKit
         }
       }
     }
+
+    void EditorViewport2d::InitViewOptions()
+    {
+      if (!m_2dViewOptions)
+      {
+        m_2dViewOptions = new Overlay2DViewportOptions(this);
+      }
+      m_snapDeltas = Vec3(10.0f, 45.0f, 0.25f);
+    }
+
   }  // namespace Editor
 }  // namespace ToolKit
