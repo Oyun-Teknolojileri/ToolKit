@@ -67,11 +67,11 @@ namespace ToolKit
       (
         ScenePath(sceneName)
       );
+
       scene->m_name = sceneName;
       scene->m_newScene = true;
       SetCurrentScene(scene);
       ApplyProjectSettings(m_onNewScene);
-
 
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
       {
@@ -406,6 +406,7 @@ namespace ToolKit
         (
           "Quiting... Are you sure?##ClsApp"
         );
+
         reallyQuit->m_yesCallback = [this]()
         {
           m_workspace.Serialize(nullptr, nullptr);
@@ -1477,7 +1478,10 @@ Fail:
       m_workspace.Serialize(nullptr, nullptr);
 
       std::ofstream file;
-      String fileName = ConcatPaths({ ResourcePath(), g_editorSettingsFile });
+      String fileName = ConcatPaths
+      (
+        { m_workspace.GetProjectConfigPath(), g_editorSettingsFile}
+      );
 
       file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
@@ -1498,6 +1502,7 @@ Fail:
           rapidxml::node_element,
           "Size"
         );
+
         WriteAttr
         (
           setNode,
@@ -1505,6 +1510,7 @@ Fail:
           "width",
           std::to_string(m_renderer->m_windowWidth)
         );
+
         WriteAttr
         (
           setNode,
@@ -1512,6 +1518,7 @@ Fail:
           "height",
           std::to_string(m_renderer->m_windowHeight)
         );
+
         WriteAttr
         (
           setNode,
@@ -1521,9 +1528,9 @@ Fail:
         );
         settings->append_node(setNode);
 
-        for (Window* w : m_windows)
+        for (Window* wnd : m_windows)
         {
-          w->Serialize(lclDoc.get(), app);
+          wnd->Serialize(lclDoc.get(), app);
         }
 
         std::string xml;
@@ -1544,8 +1551,22 @@ Fail:
       {
         String settingsFile = ConcatPaths
         (
-          { ConfigPath(), g_editorSettingsFile }
+          { m_workspace.GetProjectConfigPath(), g_editorSettingsFile}
         );
+
+        if (!CheckFile(settingsFile))
+        {
+          settingsFile = ConcatPaths
+          (
+            { ConfigPath(), g_editorSettingsFile}
+          );
+
+          assert
+          (
+            CheckFile(settingsFile) && 
+            "ToolKit/Config/Editor.settings must exist."
+          );
+        }
 
         lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
         lclDoc = std::make_shared<XmlDocument>();

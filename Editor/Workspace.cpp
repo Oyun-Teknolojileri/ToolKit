@@ -22,12 +22,13 @@ namespace ToolKit
       DeSerialize(nullptr, nullptr);
     }
 
-    XmlNode* Workspace::GetDefaultWorkspaceNode(XmlDocBundle& bundle)
+    XmlNode* Workspace::GetDefaultWorkspaceNode(XmlDocBundle& bundle) const
     {
       String settingsFile = ConcatPaths
       (
         { ConfigPath(), g_workspaceFile }
       );
+
       if (CheckFile(settingsFile))
       {
         XmlFilePtr lclFile = GetFileManager()->GetXmlFile(settingsFile.c_str());
@@ -44,7 +45,7 @@ namespace ToolKit
       return nullptr;
     }
 
-    String Workspace::GetDefaultWorkspace()
+    String Workspace::GetDefaultWorkspace() const
     {
       String path;
       XmlDocBundle docBundle;
@@ -97,7 +98,7 @@ namespace ToolKit
       return false;
     }
 
-    String Workspace::GetCodePath()
+    String Workspace::GetCodePath() const
     {
       String codePath = ConcatPaths
       (
@@ -111,7 +112,7 @@ namespace ToolKit
       return codePath;
     }
 
-    String Workspace::GetProjectConfigPath()
+    String Workspace::GetProjectConfigPath() const
     {
       if (m_activeProject.name.empty())
       {
@@ -124,7 +125,7 @@ namespace ToolKit
       );
     }
 
-    String Workspace::GetPluginPath()
+    String Workspace::GetPluginPath() const
     {
       String codePath = GetCodePath();
       String pluginPath = ConcatPaths
@@ -139,7 +140,7 @@ namespace ToolKit
       return pluginPath;
     }
 
-    String Workspace::GetResourceRoot()
+    String Workspace::GetResourceRoot() const
     {
       if (m_activeProject.name.empty())
       {
@@ -152,17 +153,18 @@ namespace ToolKit
       );
     }
 
-    String Workspace::GetActiveWorkspace()
+    String Workspace::GetActiveWorkspace() const
     {
-      if (m_activeWorkspace.empty())
-      {
-        m_activeWorkspace = GetDefaultWorkspace();
-      }
+      assert
+      (
+        m_activeWorkspace.empty() == false &&
+        "Workspace must be initialized."
+      );
 
       return m_activeWorkspace;
     }
 
-    Project Workspace::GetActiveProject()
+    Project Workspace::GetActiveProject() const
     {
       return m_activeProject;
     }
@@ -213,8 +215,8 @@ namespace ToolKit
       (
         { m_activeWorkspace, g_workspaceFile }
       );
-      file.open(fileName.c_str(), std::ios::out);
 
+      file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
       {
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
@@ -265,6 +267,7 @@ namespace ToolKit
       (
         { m_activeWorkspace, g_workspaceFile }
       );
+
       if (!CheckFile(settingsFile))
       {
         settingsFile = ConcatPaths({ ConfigPath(), g_workspaceFile });

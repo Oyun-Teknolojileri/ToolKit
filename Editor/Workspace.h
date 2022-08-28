@@ -17,6 +17,7 @@ namespace ToolKit
     };
 
     class App;
+
     class Workspace : public Serializable
     {
      public:
@@ -24,17 +25,17 @@ namespace ToolKit
       void Init();
 
       // Defaults read / writes to installment directory.
-      XmlNode* GetDefaultWorkspaceNode(XmlDocBundle& bundle);
-      String GetDefaultWorkspace();
+      XmlNode* GetDefaultWorkspaceNode(XmlDocBundle& bundle) const;
+      String GetDefaultWorkspace() const;
       bool SetDefaultWorkspace(const String& path);
 
       // Accessors to workspace
-      String GetCodePath();
-      String GetProjectConfigPath();
-      String GetPluginPath();
-      String GetResourceRoot();
-      String GetActiveWorkspace();
-      Project GetActiveProject();
+      String GetCodePath() const;
+      String GetProjectConfigPath() const;
+      String GetPluginPath() const;
+      String GetResourceRoot() const;
+      String GetActiveWorkspace() const;
+      Project GetActiveProject() const;
       void SetActiveProject(const Project& project);
       void SetScene(const String& scene);
 
@@ -53,5 +54,4 @@ namespace ToolKit
     };
 
   }  // namespace Editor
-
 }  // namespace ToolKit
