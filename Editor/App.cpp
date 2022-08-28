@@ -55,60 +55,7 @@ namespace ToolKit
     void App::Init()
     {
       AssignManagerReporters();
-
-      // Create editor objects.
-      m_cursor = new Cursor();
-      m_origin = new Axis3d();
-
-      uint gridSize = 100000;
-      m_grid = new Grid(UVec2(gridSize));
-      m_grid->Resize(UVec2(gridSize), AxisLabel::ZX, 0.025f);
-
-      m_2dGrid = new Grid
-      (
-        UVec2
-        (
-          g_app->m_emulatorSettings.playWidth,
-          g_app->m_emulatorSettings.playHeight
-        )
-      );
-      m_2dGrid->Resize
-      (
-        UVec2
-        (
-          g_app->m_emulatorSettings.playWidth,
-          g_app->m_emulatorSettings.playHeight
-        ),
-        AxisLabel::XY, 10.0
-      );  // Generate grid cells 10 x 10
-
-      // Lights and camera.
-      m_lightMaster = new Node();
-
-      float intensity = 1.5f;
-      DirectionalLight* light = new DirectionalLight();
-      light->SetColorVal(Vec3(0.55f));
-      light->SetIntensityVal(intensity);
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
-      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
-      m_lightMaster->AddChild(light->m_node);
-      m_sceneLights.push_back(light);
-
-      light = new DirectionalLight();
-      light->SetColorVal(Vec3(0.15f));
-      light->SetIntensityVal(intensity);
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
-      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
-      m_lightMaster->AddChild(light->m_node);
-      m_sceneLights.push_back(light);
-
-      light = new DirectionalLight();
-      light->SetColorVal(Vec3(0.1f));
-      light->SetIntensityVal(intensity);
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
-      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
-      m_lightMaster->AddChild(light->m_node);
-      m_sceneLights.push_back(light);
+      CreateEditorEntities();
 
       ModManager::GetInstance()->Init();
       ModManager::GetInstance()->SetMod(true, ModId::Select);
@@ -1714,6 +1661,64 @@ Fail:
       scene->m_newScene = true;
       GetSceneManager()->Manage(scene);
       SetCurrentScene(scene);
+    }
+
+    void App::CreateEditorEntities()
+    {
+      // Create editor objects.
+      m_cursor = new Cursor();
+      m_origin = new Axis3d();
+
+      uint gridSize = 100000;
+      m_grid = new Grid(UVec2(gridSize));
+      m_grid->Resize(UVec2(gridSize), AxisLabel::ZX, 0.025f);
+
+      m_2dGrid = new Grid
+      (
+        UVec2
+        (
+          g_app->m_emulatorSettings.playWidth,
+          g_app->m_emulatorSettings.playHeight
+        )
+      );
+
+      m_2dGrid->Resize
+      (
+        UVec2
+        (
+          g_app->m_emulatorSettings.playWidth,
+          g_app->m_emulatorSettings.playHeight
+        ),
+        AxisLabel::XY, 10.0
+      );  // Generate grid cells 10 x 10
+
+      // Lights and camera.
+      m_lightMaster = new Node();
+
+      float intensity = 1.5f;
+      DirectionalLight* light = new DirectionalLight();
+      light->SetColorVal(Vec3(0.55f));
+      light->SetIntensityVal(intensity);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
+      m_lightMaster->AddChild(light->m_node);
+      m_sceneLights.push_back(light);
+
+      light = new DirectionalLight();
+      light->SetColorVal(Vec3(0.15f));
+      light->SetIntensityVal(intensity);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
+      m_lightMaster->AddChild(light->m_node);
+      m_sceneLights.push_back(light);
+
+      light = new DirectionalLight();
+      light->SetColorVal(Vec3(0.1f));
+      light->SetIntensityVal(intensity);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
+      m_lightMaster->AddChild(light->m_node);
+      m_sceneLights.push_back(light);
     }
 
     void DebugMessage(const String& msg)

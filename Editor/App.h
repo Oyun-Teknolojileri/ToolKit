@@ -128,6 +128,7 @@ namespace ToolKit
       void CreateSimulationWindow(float width , float height);
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
+      void CreateEditorEntities();
 
      public:
       // UI elements.
