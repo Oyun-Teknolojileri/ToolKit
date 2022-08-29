@@ -419,6 +419,5 @@ namespace ToolKit
       SetMaterialVal(std::get<MaterialPtr>(newVal));
     };
   }
-
 }  // namespace ToolKit
 

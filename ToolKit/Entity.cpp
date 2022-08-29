@@ -419,10 +419,15 @@ namespace ToolKit
 
   bool Entity::IsSurfaceInstance()
   {
-    EntityType t = GetType();
-    return
-      t == EntityType::Entity_Surface ||
-      t == EntityType::Entity_Button;
+      switch (GetType())
+      {
+          case EntityType::Entity_Surface:
+          case EntityType::Entity_Button:
+          case EntityType::Entity_CanvasPanel:
+          return true;
+          default:
+          return false;
+      }
   }
 
   bool Entity::IsLightInstance() const
@@ -552,6 +557,9 @@ namespace ToolKit
       break;
       case EntityType::Entity_Sky:
       e = new Sky();
+      break;
+      case EntityType::Entity_CanvasPanel:
+      e = new CanvasPanel();
       break;
       case EntityType::Entity_SpriteAnim:
       case EntityType::Entity_Directional:

@@ -22,6 +22,7 @@
 #include "SpriteSheet.h"
 #include "StateMachine.h"
 #include "Surface.h"
+#include "CanvasPanel.h"
 #include "Texture.h"
 #include "Scene.h"
 #include "PluginManager.h"

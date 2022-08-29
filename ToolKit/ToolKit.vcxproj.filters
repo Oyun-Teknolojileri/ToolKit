@@ -114,6 +114,9 @@
     <ClCompile Include="Sky.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="CanvasPanel.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h">
@@ -237,6 +240,9 @@
       <Filter>Source\Component</Filter>
     </ClInclude>
     <ClInclude Include="Sky.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="CanvasPanel.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

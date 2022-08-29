@@ -36,7 +36,7 @@ namespace ToolKit
     virtual void ResetCallbacks();
     //  To reflect the size & pivot changes,
     //  this function regenerates the geometry.
-    void UpdateGeometry(bool byTexture);
+    virtual void UpdateGeometry(bool byTexture);
 
    protected:
     void ComponentConstructor();
@@ -96,5 +96,4 @@ namespace ToolKit
     SurfaceEventCallback m_onMouseEnterLocal;
     SurfaceEventCallback m_onMouseExitLocal;
   };
-
 }  //  namespace ToolKit

@@ -734,6 +734,13 @@ namespace ToolKit
             suface->GetMeshComponent()->Init(false);
             currScene->AddEntity(suface);
           }
+
+          if (ImGui::MenuItem("Canvas Panel"))
+          {
+              CanvasPanel* canvasPanel = new CanvasPanel(Vec2(800.0f, 600.0f));
+              canvasPanel->GetMeshComponent()->Init(false);
+              currScene->AddEntity(canvasPanel);
+          }
           ImGui::EndMenu();
         }
 
@@ -869,6 +876,13 @@ namespace ToolKit
           Surface* suface = new Button(Vec2(100.0f, 30.0f));
           suface->GetMeshComponent()->Init(false);
           currScene->AddEntity(suface);
+        }
+
+        if (ImGui::MenuItem("Canvas Panel"))
+        {
+            CanvasPanel* canvasPanel = new CanvasPanel(Vec2(800.0f, 600.0f));
+            canvasPanel->GetMeshComponent()->Init(false);
+            currScene->AddEntity(canvasPanel);
         }
 
         ImGui::Separator();
