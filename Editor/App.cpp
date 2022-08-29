@@ -30,6 +30,7 @@
 #include "GL/glew.h"
 #include "DebugNew.h"
 #include "EditorCamera.h"
+#include "Anchor.h"
 
 namespace ToolKit
 {
@@ -323,6 +324,9 @@ namespace ToolKit
 
           // Render gizmo.
           RenderGizmo(viewport, m_gizmo);
+
+          // Render anchor.
+          RenderAnchor(viewport, m_anchor);
 
           RenderComponentGizmo(viewport, selecteds);
         }
@@ -1449,6 +1453,25 @@ Fail:
           m_renderer->Render(gizmo, viewport->GetCamera());
         }
       }
+    }
+
+    void App::RenderAnchor
+    (
+        EditorViewport* viewport,
+        AnchorPtr anchor
+    )
+    {
+        if (anchor == nullptr)
+        {
+            return;
+        }
+
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        if (dynamic_cast<Entity*>(anchor.get()) != nullptr)
+        {
+            m_renderer->Render(anchor.get(), viewport->GetCamera());
+        }
     }
 
     void App::RenderComponentGizmo

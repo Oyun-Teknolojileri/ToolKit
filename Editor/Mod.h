@@ -23,7 +23,8 @@ namespace ToolKit
       Cursor,
       Move,
       Rotate,
-      Scale
+      Scale,
+      Anchor
     };
 
     class BaseMod
@@ -95,6 +96,9 @@ namespace ToolKit
       static const String StateTransformTo;
       static const String StateTransformEnd;
       static const String StateDuplicate;
+      static const String StateAnchorBegin;
+      static const String StateAnchorTo;
+      static const String StateAnchorEnd;
     };
 
     class StatePickingBase : public State

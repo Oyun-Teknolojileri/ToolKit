@@ -13,6 +13,7 @@
 namespace ToolKit
 {
   Surface::Surface()
+      : m_anchorRatios { 0.f, 1.f, 0.f, 1.f }
   {
     ComponentConstructor();
     ParameterConstructor();

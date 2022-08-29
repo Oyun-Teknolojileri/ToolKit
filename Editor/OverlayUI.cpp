@@ -53,7 +53,7 @@ namespace ToolKit
       ImGui::SetNextWindowPos(wndPos);
       ImGui::SetNextWindowBgAlpha(0.65f);
 
-      ImVec2 overlaySize(48, 260);
+      ImVec2 overlaySize(48, 310);
       if
       (
         ImGui::BeginChildFrame
@@ -165,6 +165,23 @@ namespace ToolKit
           TKLoc + m_owner->m_name,
           "Scale\nScale (resize) selected items."
         );
+        ImGui::Separator();
+
+        // Anchor button.
+        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id
+        == ModId::Anchor;
+        ModManager::GetInstance()->SetMod
+        (
+            UI::ToggleButton
+            (
+            UI::m_anchorIcn->m_textureId,
+            ImVec2(32, 32),
+            isCurrentMod
+        ) && !isCurrentMod,
+            ModId::Anchor
+        );
+        UI::HelpMarker(TKLoc + m_owner->m_name,
+          "Anchor\nSet anchor of selected item.");
         ImGui::Separator();
 
         const char* items[] = { "1", "2", "4", "8", "16" };
@@ -734,13 +751,6 @@ namespace ToolKit
             suface->GetMeshComponent()->Init(false);
             currScene->AddEntity(suface);
           }
-
-          if (ImGui::MenuItem("Canvas Panel"))
-          {
-              CanvasPanel* canvasPanel = new CanvasPanel(Vec2(800.0f, 600.0f));
-              canvasPanel->GetMeshComponent()->Init(false);
-              currScene->AddEntity(canvasPanel);
-          }
           ImGui::EndMenu();
         }
 
@@ -878,9 +888,10 @@ namespace ToolKit
           currScene->AddEntity(suface);
         }
 
-        if (ImGui::MenuItem("Canvas Panel"))
+        if (ImGui::MenuItem("CanvasPanel"))
         {
             CanvasPanel* canvasPanel = new CanvasPanel(Vec2(800.0f, 600.0f));
+            canvasPanel->SetPivotOffsetVal({ 0.5f, 0.5f });
             canvasPanel->GetMeshComponent()->Init(false);
             currScene->AddEntity(canvasPanel);
         }

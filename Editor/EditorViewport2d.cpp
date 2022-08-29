@@ -199,7 +199,7 @@ namespace ToolKit
         glm::abs(m_contentAreaMax.y - m_contentAreaMin.y)
       );
 
-      m_canvasSize = m_wndContentAreaSize * 0.8f;
+      m_canvasSize = m_wndContentAreaSize;
 
       ImGuiIO& io = ImGui::GetIO();
       ImVec2 absMousePos = io.MousePos;

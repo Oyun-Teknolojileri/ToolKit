@@ -227,6 +227,20 @@ namespace ToolKit
     XY  // XY(5) % 3 = Z(2)
   };
 
+  enum class DirectionLabel
+  {
+      None = -1,
+      N,
+      S,
+      E,
+      W,
+      SE,
+      SW,
+      NE,
+      NW,
+      CENTER
+  };
+
   static const float TK_FLT_MAX = std::numeric_limits<float>::max();
   static const int TK_INT_MAX = std::numeric_limits<int>::max();
 

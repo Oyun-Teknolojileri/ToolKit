@@ -13,11 +13,7 @@
 
 namespace ToolKit
 {
-  static VariantCategory CanvasPanelCategory
-  {
-    "CanvasPanel",
-    90
-  };
+  static VariantCategory CanvasPanelCategory { "CanvasPanel", 90 };
 
   class TK_API CanvasPanel : public Surface
   {
@@ -30,6 +26,8 @@ namespace ToolKit
     void ResetCallbacks() override;
 
     void UpdateGeometry(bool byTexture) override;
+    void ApplyRecursivResizePolicy(float width, float height);
+
    protected:
     void ParameterConstructor();
     void ParameterEventConstructor();
@@ -44,5 +42,4 @@ namespace ToolKit
     SurfaceEventCallback m_onMouseEnterLocal;
     SurfaceEventCallback m_onMouseExitLocal;
   };
-
 }  //  namespace ToolKit

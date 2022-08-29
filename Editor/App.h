@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -35,6 +36,7 @@ namespace ToolKit
     class Window;
     class Gizmo;
     class PublishManager;
+    using AnchorPtr = std::shared_ptr<class Anchor>;
 
     class App : Serializable
     {
@@ -111,7 +113,11 @@ namespace ToolKit
         EditorViewport* viewport,
         Gizmo* gizmo
       );
-
+      void RenderAnchor
+      (
+          EditorViewport* viewport,
+          AnchorPtr anchor
+      );
       void RenderComponentGizmo
       (
         EditorViewport* viewport,
@@ -150,6 +156,7 @@ namespace ToolKit
       Axis3d* m_origin;
       Cursor* m_cursor;
       Gizmo* m_gizmo = nullptr;
+      AnchorPtr m_anchor;
       std::vector<Entity*> m_perFrameDebugObjects;
 
       // 3 point lighting system.
