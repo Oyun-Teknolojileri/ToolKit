@@ -29,7 +29,6 @@ namespace ToolKit
     EditorViewport2d::EditorViewport2d(XmlNode* node)
       : EditorViewport(node)
     {
-      UpdateCanvasSize();
       Init2dCam();
       InitViewOptions();
     }
@@ -37,7 +36,6 @@ namespace ToolKit
     EditorViewport2d::EditorViewport2d(float width, float height)
       : EditorViewport(width, height)
     {
-      UpdateCanvasSize();
       Init2dCam();
       InitViewOptions();
     }
@@ -54,13 +52,8 @@ namespace ToolKit
     {
       m_mouseOverOverlay = false;
 
-      Vec2 size =
-      {
-        g_app->m_emulatorSettings.playWidth * 1.1f,
-        g_app->m_emulatorSettings.playHeight * 1.1f
-      };
+      ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_None);
 
-      ImGui::SetNextWindowSize(size, ImGuiCond_Once);
       if
       (
         ImGui::Begin
@@ -231,16 +224,12 @@ namespace ToolKit
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
           // Resize window.
-          if
-          (
-            glm::notEqual(m_wndContentAreaSize.x, m_width) ||
-            glm::notEqual(m_wndContentAreaSize.y, m_height)
-          )
+          Vec2 wndSize = ImGui::GetWindowSize();
+          if (wndSize.x != m_width || wndSize.y != m_height)
           {
-            OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
+            OnResize(wndSize.x, wndSize.y);
           }
 
-          Vec2 wndSize = ImGui::GetWindowSize();
           ImGui::SetCursorPos((wndSize - m_canvasSize) * 0.5f);
           ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
           ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
@@ -414,10 +403,6 @@ namespace ToolKit
       }
     }
 
-    void EditorViewport2d::DrawCanvasToolBar()
-    {
-    }
-
     void EditorViewport2d::AdjustZoom(float delta)
     {
       if (delta == 0.0f && 100.0f / m_zoomPercentage == m_zoom)
@@ -478,20 +463,6 @@ namespace ToolKit
       m_zoom = 1.0f;
       GetCamera()->m_node->SetTranslation(Z_AXIS * 10.0f);
       AdjustZoom(FLT_MIN);
-    }
-
-    void EditorViewport2d::UpdateCanvasSize()
-    {
-      m_canvasSize =
-      {
-        g_app->m_emulatorSettings.playWidth,
-        g_app->m_emulatorSettings.playHeight
-      };
-
-      m_viewportImage->UnInit();
-      m_viewportImage->m_width = (uint)m_canvasSize.x;
-      m_viewportImage->m_height = (uint)m_canvasSize.y;
-      m_viewportImage->Init();
     }
 
     void EditorViewport2d::PanZoom(float deltaTime)

@@ -41,12 +41,10 @@ namespace ToolKit
       void DrawCommands();
       void HandleDrop();
       void DrawOverlays();
-      void DrawCanvasToolBar();
       void AdjustZoom(float delta) override;
 
      private:
       void Init2dCam();
-      void UpdateCanvasSize();
       void PanZoom(float deltaTime);
       void InitViewOptions();
 

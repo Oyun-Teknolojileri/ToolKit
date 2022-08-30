@@ -318,13 +318,10 @@ namespace ToolKit
             Vec2(1.0f, -1.0f)
           );
 
-          if
-          (
-            m_wndContentAreaSize.x != m_width ||
-            m_wndContentAreaSize.y != m_height
-          )
+          Vec2 wndSize = ImGui::GetWindowSize();
+          if (wndSize.x != m_width || wndSize.y != m_height)
           {
-            OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
+            OnResize(wndSize.x, wndSize.y);
           }
 
           if (IsActive())
