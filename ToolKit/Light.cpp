@@ -16,8 +16,7 @@ namespace ToolKit
     Color_Define(Vec3(1.0f), "Light", 0, true, true, { true });
     Intensity_Define(1.0f, "Light", 90, true, true);
     CastShadow_Define(false, "Light", 90, true, true);
-    ShadowMinBias_Define(0.4f, "Light", 90, true, true);
-    ShadowMaxBias_Define(1.2f, "Light", 90, true, true);
+    ShadowBias_Define(0.4f, "Light", 90, true, true);
     ShadowResolution_Define
     (
       Vec2(1024.0f, 1024.0f),
@@ -37,6 +36,7 @@ namespace ToolKit
 
   Light::~Light()
   {
+    UnInitShadowMap();
   }
 
   void Light::ParameterEventConstructor()
@@ -67,71 +67,6 @@ namespace ToolKit
   }
 
   void Light::InitShadowMap()
-  {
-  }
-
-  void Light::UnInitShadowMap()
-  {
-  }
-
-  void Light::SetShadowMapResolution(uint width, uint height)
-  {
-    m_shadowMapWidth = width;
-    m_shadowMapHeight = height;
-    m_shadowMapResolutionChanged = true;
-  }
-
-  Vec2 Light::GetShadowMapResolution()
-  {
-    return Vec2(m_shadowMapWidth, m_shadowMapHeight);
-  }
-
-  RenderTarget* Light::GetShadowMapRenderTarget()
-  {
-    return m_depthRenderTarget;
-  }
-
-  MaterialPtr Light::GetShadowMaterial()
-  {
-    return m_shadowMapMaterial;
-  }
-
-  Camera* Light::GetShadowMapCamera()
-  {
-    return m_shadowMapCamera;
-  }
-
-  Mat4 Light::GetShadowMapCameraSpaceMatrix()
-  {
-    return m_shadowMapCamera->GetProjectionMatrix()
-      * m_shadowMapCamera->GetViewMatrix();
-  }
-
-  void Light::UpdateShadowMapCamera()
-  {
-    m_shadowMapCamera->m_node->SetTranslation
-    (
-      m_node->GetTranslation(TransformationSpace::TS_WORLD),
-      TransformationSpace::TS_WORLD
-    );
-  }
-
-  DirectionalLight::DirectionalLight()
-  {
-    AddComponent(new DirectionComponent(this));
-  }
-
-  DirectionalLight::~DirectionalLight()
-  {
-    UnInitShadowMap();
-  }
-
-  EntityType DirectionalLight::GetType() const
-  {
-    return EntityType::Entity_DirectionalLight;
-  }
-
-  void DirectionalLight::InitShadowMap()
   {
     if (m_shadowMapInitialized && !m_shadowMapResolutionChanged)
     {
@@ -164,42 +99,68 @@ namespace ToolKit
     m_depthRenderTarget->Init();
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
 
+    InitShadowMapDepthMaterial();
+    m_shadowMapInitialized = true;
+  }
+
+  void Light::UnInitShadowMap()
+  {
+    SafeDel(m_depthRenderTarget);
+    m_shadowMapInitialized = false;
+  }
+
+  void Light::SetShadowMapResolution(uint width, uint height)
+  {
+    m_shadowMapWidth = width;
+    m_shadowMapHeight = height;
+    m_shadowMapResolutionChanged = true;
+  }
+
+  Vec2 Light::GetShadowMapResolution()
+  {
+    return Vec2(m_shadowMapWidth, m_shadowMapHeight);
+  }
+
+  RenderTarget* Light::GetShadowMapRenderTarget()
+  {
+    return m_depthRenderTarget;
+  }
+
+  MaterialPtr Light::GetShadowMaterial()
+  {
+    return m_shadowMapMaterial;
+  }
+
+  void Light::InitShadowMapDepthMaterial()
+  {
     // Create shadow material
     ShaderPtr vert = GetShaderManager()->Create<Shader>
     (
-      ShaderPath("directionalDepthVert.shader", true)
+      ShaderPath("orthogonalDepthVert.shader", true)
     );
     ShaderPtr frag = GetShaderManager()->Create<Shader>
     (
-      ShaderPath("directionalDepthFrag.shader", true)
+      ShaderPath("orthogonalDepthFrag.shader", true)
     );
+
     m_shadowMapMaterial = std::make_shared<Material>();
     m_shadowMapMaterial->m_vertexShader = vert;
     m_shadowMapMaterial->m_fragmetShader = frag;
     m_shadowMapMaterial->Init();
-
-    // Camera for rendering shadow map
-    m_shadowMapCamera = new Camera();
-    m_shadowMapCamera->SetLens(-20.0f, 20.0f, -20.0f, 20.0f, 0.1f, 100.0f);
-    UpdateShadowMapCamera();
-
-    m_shadowMapInitialized = true;
   }
 
-  void DirectionalLight::UnInitShadowMap()
+  DirectionalLight::DirectionalLight()
   {
-    SafeDel(m_depthRenderTarget);
-    SafeDel(m_shadowMapCamera);
-    m_shadowMapInitialized = false;
+    AddComponent(new DirectionComponent(this));
   }
 
-  void DirectionalLight::UpdateShadowMapCamera()
+  DirectionalLight::~DirectionalLight()
   {
-    Light::UpdateShadowMapCamera();
-    m_shadowMapCamera->m_node->SetOrientation
-    (
-      m_node->GetOrientation(TransformationSpace::TS_WORLD)
-    );
+  }
+
+  EntityType DirectionalLight::GetType() const
+  {
+    return EntityType::Entity_DirectionalLight;
   }
 
   PointLight::PointLight()
@@ -210,10 +171,6 @@ namespace ToolKit
   EntityType PointLight::GetType() const
   {
     return EntityType::Entity_PointLight;
-  }
-
-  void PointLight::InitShadowMap()
-  {
   }
 
   SpotLight::SpotLight()
@@ -229,7 +186,27 @@ namespace ToolKit
   {
     return EntityType::Entity_SpotLight;
   }
+
   void SpotLight::InitShadowMap()
   {
+    Light::InitShadowMap();
+  }
+
+  void SpotLight::InitShadowMapDepthMaterial()
+  {
+    // Create shadow material
+    ShaderPtr vert = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("perspectiveDepthVert.shader", true)
+    );
+    ShaderPtr frag = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("perspectiveDepthFrag.shader", true)
+    );
+
+    m_shadowMapMaterial = std::make_shared<Material>();
+    m_shadowMapMaterial->m_vertexShader = vert;
+    m_shadowMapMaterial->m_fragmetShader = frag;
+    m_shadowMapMaterial->Init();
   }
 }  // namespace ToolKit

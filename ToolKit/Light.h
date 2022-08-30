@@ -26,19 +26,20 @@ namespace ToolKit
     Vec2 GetShadowMapResolution();
     RenderTarget* GetShadowMapRenderTarget();
     MaterialPtr GetShadowMaterial();
-    Camera* GetShadowMapCamera();
-    Mat4 GetShadowMapCameraSpaceMatrix();
-    virtual void UpdateShadowMapCamera();
+
+   protected:
+    virtual void InitShadowMapDepthMaterial();
 
    public:
     TKDeclareParam(Vec3, Color);
     TKDeclareParam(float, Intensity);
     TKDeclareParam(bool, CastShadow);
-    TKDeclareParam(float, ShadowMinBias);
-    TKDeclareParam(float, ShadowMaxBias);
+    TKDeclareParam(float, ShadowBias);
     TKDeclareParam(Vec2, ShadowResolution);
 
     bool m_isStudioLight = false;
+    Mat4 m_shadowMapCameraProjectionViewMatrix;
+    float m_shadowMapCameraFar;
 
    protected:
     bool m_shadowMapInitialized = false;
@@ -46,7 +47,6 @@ namespace ToolKit
     uint m_shadowMapHeight = 1024;
     bool m_shadowMapResolutionChanged = false;
     MaterialPtr m_shadowMapMaterial = nullptr;
-    Camera* m_shadowMapCamera = nullptr;
     RenderTarget* m_depthRenderTarget = nullptr;
   };
 
@@ -57,10 +57,6 @@ namespace ToolKit
      virtual ~DirectionalLight();
 
      EntityType GetType() const override;
-
-     void InitShadowMap() override;
-     void UnInitShadowMap() override;
-     void UpdateShadowMapCamera() override;
   };
 
   class TK_API PointLight : public Light
@@ -70,8 +66,6 @@ namespace ToolKit
     virtual ~PointLight() {}
 
     EntityType GetType() const override;
-
-    void InitShadowMap() override;
 
    public:
     TKDeclareParam(float, Radius);
@@ -86,6 +80,9 @@ namespace ToolKit
     EntityType GetType() const override;
 
     void InitShadowMap() override;
+
+   protected:
+    void InitShadowMapDepthMaterial() override;
 
    public:
     TKDeclareParam(float, Radius);

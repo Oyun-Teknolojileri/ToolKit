@@ -57,6 +57,7 @@ namespace ToolKit
 
    public:
     TKDeclareParam(MeshPtr, Mesh);  //!< Component's Mesh resource.
+    TKDeclareParam(bool, CastShadow);
   };
 
   typedef std::shared_ptr<class MaterialComponent> MaterialComponentPtr;

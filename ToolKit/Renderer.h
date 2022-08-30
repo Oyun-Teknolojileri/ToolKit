@@ -177,6 +177,7 @@ namespace ToolKit
     Mat4 m_model;
     LightRawPtrArray m_lights;
     Camera* m_cam = nullptr;
+    Camera* m_shadowMapCamera = nullptr;
     Material* m_mat = nullptr;
     RenderTarget* m_renderTarget = nullptr;
     typedef struct RHIConstants

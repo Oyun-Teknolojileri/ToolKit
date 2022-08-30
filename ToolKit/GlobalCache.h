@@ -136,20 +136,20 @@ namespace ToolKit
     "LightData.innAngle[11]"
   };
 
-  static StringArray g_lightSpaceMatrixStrCache =
+  static StringArray g_lightprojectionViewMatrixStrCache =
   {
-    "LightData.spaceMatrix[0]",
-    "LightData.spaceMatrix[1]",
-    "LightData.spaceMatrix[2]",
-    "LightData.spaceMatrix[3]",
-    "LightData.spaceMatrix[4]",
-    "LightData.spaceMatrix[5]",
-    "LightData.spaceMatrix[6]",
-    "LightData.spaceMatrix[7]",
-    "LightData.spaceMatrix[8]",
-    "LightData.spaceMatrix[9]",
-    "LightData.spaceMatrix[10]",
-    "LightData.spaceMatrix[11]"
+    "LightData.projectionViewMatrix[0]",
+    "LightData.projectionViewMatrix[1]",
+    "LightData.projectionViewMatrix[2]",
+    "LightData.projectionViewMatrix[3]",
+    "LightData.projectionViewMatrix[4]",
+    "LightData.projectionViewMatrix[5]",
+    "LightData.projectionViewMatrix[6]",
+    "LightData.projectionViewMatrix[7]",
+    "LightData.projectionViewMatrix[8]",
+    "LightData.projectionViewMatrix[9]",
+    "LightData.projectionViewMatrix[10]",
+    "LightData.projectionViewMatrix[11]"
   };
 
   static StringArray g_lightCastShadowStrCache =
@@ -168,36 +168,36 @@ namespace ToolKit
     "LightData.castShadow[11]"
   };
 
-  static StringArray g_lightShadowMinBiasStrCache =
+  static StringArray g_lightShadowBiasStrCache =
   {
-    "LightData.shadowMinBias[0]",
-    "LightData.shadowMinBias[1]",
-    "LightData.shadowMinBias[2]",
-    "LightData.shadowMinBias[3]",
-    "LightData.shadowMinBias[4]",
-    "LightData.shadowMinBias[5]",
-    "LightData.shadowMinBias[6]",
-    "LightData.shadowMinBias[7]",
-    "LightData.shadowMinBias[8]",
-    "LightData.shadowMinBias[9]",
-    "LightData.shadowMinBias[10]",
-    "LightData.shadowMinBias[11]"
+    "LightData.shadowBias[0]",
+    "LightData.shadowBias[1]",
+    "LightData.shadowBias[2]",
+    "LightData.shadowBias[3]",
+    "LightData.shadowBias[4]",
+    "LightData.shadowBias[5]",
+    "LightData.shadowBias[6]",
+    "LightData.shadowBias[7]",
+    "LightData.shadowBias[8]",
+    "LightData.shadowBias[9]",
+    "LightData.shadowBias[10]",
+    "LightData.shadowBias[11]"
   };
 
-  static StringArray g_lightShadowMaxBiasStrCache =
+  static StringArray g_lightShadowMapCamFarPlaneStrCache =
   {
-    "LightData.shadowMaxBias[0]",
-    "LightData.shadowMaxBias[1]",
-    "LightData.shadowMaxBias[2]",
-    "LightData.shadowMaxBias[3]",
-    "LightData.shadowMaxBias[4]",
-    "LightData.shadowMaxBias[5]",
-    "LightData.shadowMaxBias[6]",
-    "LightData.shadowMaxBias[7]",
-    "LightData.shadowMaxBias[8]",
-    "LightData.shadowMaxBias[9]",
-    "LightData.shadowMaxBias[10]",
-    "LightData.shadowMaxBias[11]"
+    "LightData.shadowMapCamFarPlane[0]",
+    "LightData.shadowMapCamFarPlane[1]",
+    "LightData.shadowMapCamFarPlane[2]",
+    "LightData.shadowMapCamFarPlane[3]",
+    "LightData.shadowMapCamFarPlane[4]",
+    "LightData.shadowMapCamFarPlane[5]",
+    "LightData.shadowMapCamFarPlane[6]",
+    "LightData.shadowMapCamFarPlane[7]",
+    "LightData.shadowMapCamFarPlane[8]",
+    "LightData.shadowMapCamFarPlane[9]",
+    "LightData.shadowMapCamFarPlane[10]",
+    "LightData.shadowMapCamFarPlane[11]"
   };
 
   static StringArray g_boneTransformStrCache =
