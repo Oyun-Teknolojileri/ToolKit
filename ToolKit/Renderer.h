@@ -59,6 +59,13 @@ namespace ToolKit
     void DrawFullQuad(ShaderPtr fragmentShader);
     void DrawCube(Camera* cam, MaterialPtr mat);
     void SetTexture(ubyte slotIndx, uint textureId);
+    void SetShadowMapTexture
+    (
+      EntityType type,
+      uint textureId,
+      ProgramPtr program
+    );
+    void ResetShadowMapBindings();
 
    private:
     void RenderEntities
@@ -135,6 +142,12 @@ namespace ToolKit
     void GetEnvironmentLightEntities(EntityRawPtrArray entities);
     void FindEnvironmentLight(Entity* entity, Camera* camera);
 
+    void UpdateShadowMaps
+    (
+      LightRawPtrArray lights,
+      EntityRawPtrArray entities
+    );
+
     void SetProjectViewModel(Entity* ntt, Camera* cam);
     void BindProgram(ProgramPtr program);
     void LinkProgram(uint program, uint vertexP, uint fragmentP);
@@ -144,6 +157,7 @@ namespace ToolKit
     void SetVertexLayout(VertexLayout layout);
 
    public:
+    uint m_totalFrameCount = 0;
     uint m_frameCount = 0;
     uint m_windowWidth = 0;
     uint m_windowHeight = 0;
@@ -162,15 +176,23 @@ namespace ToolKit
     Mat4 m_view;
     Mat4 m_model;
     LightRawPtrArray m_lights;
-    size_t m_maxLightsPerObject = 12;
     Camera* m_cam = nullptr;
+    Camera* m_shadowMapCamera = nullptr;
     Material* m_mat = nullptr;
     RenderTarget* m_renderTarget = nullptr;
     typedef struct RHIConstants
     {
       static constexpr ubyte textureSlotCount = 8;
+      // 4 studio lights, 8 in game lights
+      static constexpr size_t maxLightsPerObject = 12;
+      static constexpr int maxDirAndSpotLightShadows = 8;
+      static constexpr int maxPointLightShadows = 8;
+      static constexpr int maxShadows = 8;
     } m_rhiSettings;
     uint m_textureSlots[RHIConstants::textureSlotCount];
+    int m_bindedShadowMapCount = 0;
+    int m_dirAndSpotLightShadowCount = 0;
+    int m_pointLightShadowCount = 0;
 
     std::unordered_map<String, ProgramPtr> m_programs;
     RenderState m_renderState;

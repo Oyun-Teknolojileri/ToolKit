@@ -22,6 +22,7 @@
 #include "SpriteSheet.h"
 #include "StateMachine.h"
 #include "Surface.h"
+#include "CanvasPanel.h"
 #include "Texture.h"
 #include "Scene.h"
 #include "PluginManager.h"
@@ -62,7 +63,7 @@ namespace ToolKit
 
    private:
     ULongID m_baseHandle = 1000;  //!< Starting value of the handles.
-    ULongID m_maxIdLimit = std::numeric_limits<uint64_t>::max() / 10;
+    ULongID m_maxIdLimit = (std::numeric_limits<uint64_t>::max() / 10) * 9;
   };
 
   class TK_API EngineSettings : public Serializable

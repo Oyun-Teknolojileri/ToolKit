@@ -2,7 +2,10 @@
 #include "Light.h"
 
 #include <string>
+#include <memory>
 
+#include "ToolKit.h"
+#include "GL/glew.h"
 #include "Component.h"
 #include "DirectionComponent.h"
 
@@ -12,10 +15,38 @@ namespace ToolKit
   {
     Color_Define(Vec3(1.0f), "Light", 0, true, true, { true });
     Intensity_Define(1.0f, "Light", 90, true, true);
+    CastShadow_Define(false, "Light", 90, true, true);
+    ShadowBias_Define(0.4f, "Light", 90, true, true);
+    ShadowResolution_Define
+    (
+      Vec2(1024.0f, 1024.0f),
+      "Light",
+      90,
+      true,
+      true,
+      {
+        false,
+        true,
+        32.0f,
+        4096.0f,
+        2.0f
+      }
+    );
   }
 
   Light::~Light()
   {
+    UnInitShadowMap();
+  }
+
+  void Light::ParameterEventConstructor()
+  {
+    ParamShadowResolution().m_onValueChangedFn =
+    [this](Value& oldVal, Value& newVal) -> void
+    {
+      UnInitShadowMap();
+      InitShadowMap();
+    };
   }
 
   EntityType Light::GetType() const
@@ -32,11 +63,99 @@ namespace ToolKit
   {
     ClearComponents();  // Read from file.
     Entity::DeSerialize(doc, parent);
+    ParameterEventConstructor();
+  }
+
+  void Light::InitShadowMap()
+  {
+    if (m_shadowMapInitialized && !m_shadowMapResolutionChanged)
+    {
+      return;
+    }
+
+    // Store current framebuffer
+    GLint lastFBO;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+
+    m_depthRenderTarget = new RenderTarget
+    (
+      static_cast<uint>(GetShadowResolutionVal().x),
+      static_cast<uint>(GetShadowResolutionVal().y),
+      {
+        0,
+        false,
+        true,
+        GraphicTypes::UVClampToBorder,
+        GraphicTypes::UVClampToBorder,
+        GraphicTypes::SampleNearest,
+        GraphicTypes::SampleNearest,
+        GraphicTypes::FormatDepthComponent,
+        GraphicTypes::FormatDepthComponent,
+        GraphicTypes::TypeFloat,
+        GraphicTypes::DepthAttachment,
+        Vec4(1.0f)
+      }
+    );
+    m_depthRenderTarget->Init();
+    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+
+    InitShadowMapDepthMaterial();
+    m_shadowMapInitialized = true;
+  }
+
+  void Light::UnInitShadowMap()
+  {
+    SafeDel(m_depthRenderTarget);
+    m_shadowMapInitialized = false;
+  }
+
+  void Light::SetShadowMapResolution(uint width, uint height)
+  {
+    m_shadowMapWidth = width;
+    m_shadowMapHeight = height;
+    m_shadowMapResolutionChanged = true;
+  }
+
+  Vec2 Light::GetShadowMapResolution()
+  {
+    return Vec2(m_shadowMapWidth, m_shadowMapHeight);
+  }
+
+  RenderTarget* Light::GetShadowMapRenderTarget()
+  {
+    return m_depthRenderTarget;
+  }
+
+  MaterialPtr Light::GetShadowMaterial()
+  {
+    return m_shadowMapMaterial;
+  }
+
+  void Light::InitShadowMapDepthMaterial()
+  {
+    // Create shadow material
+    ShaderPtr vert = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("orthogonalDepthVert.shader", true)
+    );
+    ShaderPtr frag = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("orthogonalDepthFrag.shader", true)
+    );
+
+    m_shadowMapMaterial = std::make_shared<Material>();
+    m_shadowMapMaterial->m_vertexShader = vert;
+    m_shadowMapMaterial->m_fragmetShader = frag;
+    m_shadowMapMaterial->Init();
   }
 
   DirectionalLight::DirectionalLight()
   {
     AddComponent(new DirectionComponent(this));
+  }
+
+  DirectionalLight::~DirectionalLight()
+  {
   }
 
   EntityType DirectionalLight::GetType() const
@@ -66,5 +185,28 @@ namespace ToolKit
   EntityType SpotLight::GetType() const
   {
     return EntityType::Entity_SpotLight;
+  }
+
+  void SpotLight::InitShadowMap()
+  {
+    Light::InitShadowMap();
+  }
+
+  void SpotLight::InitShadowMapDepthMaterial()
+  {
+    // Create shadow material
+    ShaderPtr vert = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("perspectiveDepthVert.shader", true)
+    );
+    ShaderPtr frag = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("perspectiveDepthFrag.shader", true)
+    );
+
+    m_shadowMapMaterial = std::make_shared<Material>();
+    m_shadowMapMaterial->m_vertexShader = vert;
+    m_shadowMapMaterial->m_fragmetShader = frag;
+    m_shadowMapMaterial->Init();
   }
 }  // namespace ToolKit

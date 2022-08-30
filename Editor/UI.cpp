@@ -78,6 +78,7 @@ namespace ToolKit
     TexturePtr UI::m_closeIcon;
     TexturePtr UI::m_phoneRotateIcon;
     TexturePtr UI::m_studioLightsToggleIcon;
+    TexturePtr UI::m_anchorIcn;
 
     void UI::Init()
     {
@@ -369,6 +370,11 @@ namespace ToolKit
         TexturePath("Icons/studio_lights_toggle.png", true)
       );
       m_studioLightsToggleIcon->Init();
+      m_anchorIcn = GetTextureManager()->Create<Texture>
+          (
+          TexturePath("Icons/anchor_move.png", true)
+          );
+      m_anchorIcn->Init();
     }
 
     void UI::InitTheme()

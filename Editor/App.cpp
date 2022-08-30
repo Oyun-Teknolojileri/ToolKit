@@ -30,6 +30,7 @@
 #include "GL/glew.h"
 #include "DebugNew.h"
 #include "EditorCamera.h"
+#include "Anchor.h"
 
 namespace ToolKit
 {
@@ -182,16 +183,15 @@ namespace ToolKit
       }
 
       // Take all lights in an array
-      LightRawPtrArray gameLights = GetCurrentScene()->GetLights();
+      LightRawPtrArray totalLights;
 
       if (m_studioLightsActive)
       {
-        gameLights.insert
-        (
-          gameLights.end(),
-          m_sceneLights.begin(),
-          m_sceneLights.end()
-        );
+        totalLights = m_sceneLights;
+      }
+      else
+      {
+        totalLights = GetCurrentScene()->GetLights();
       }
 
       // Sort lights by type
@@ -207,7 +207,7 @@ namespace ToolKit
           )
         );
       };
-      std::stable_sort(gameLights.begin(), gameLights.end(), lightSortFn);
+      std::stable_sort(totalLights.begin(), totalLights.end(), lightSortFn);
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -236,7 +236,7 @@ namespace ToolKit
         if (viewport->IsVisible())
         {
           // Render scene.
-          m_renderer->RenderScene(GetCurrentScene(), viewport, gameLights);
+          m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
 
           // Render grid.
           Camera* cam = viewport->GetCamera();
@@ -265,6 +265,9 @@ namespace ToolKit
 
           // Render gizmo.
           RenderGizmo(viewport, m_gizmo);
+
+          // Render anchor.
+          RenderAnchor(viewport, m_anchor);
 
           RenderComponentGizmo(viewport, selecteds);
         }
@@ -298,6 +301,8 @@ namespace ToolKit
 
       // Remove editor lights
       m_lightMaster->OrphanSelf();
+
+      m_renderer->m_totalFrameCount++;
     }
 
     void App::OnResize(uint width, uint height)
@@ -1076,7 +1081,7 @@ Fail:
 
     void App::MergeScene(const String& fullPath)
     {
-      ScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
+      EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
       scene->Load();
       scene->Init(false);
       GetCurrentScene()->Merge(scene);
@@ -1404,6 +1409,25 @@ Fail:
       }
     }
 
+    void App::RenderAnchor
+    (
+        EditorViewport* viewport,
+        AnchorPtr anchor
+    )
+    {
+        if (anchor == nullptr)
+        {
+            return;
+        }
+
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        if (dynamic_cast<Entity*>(anchor.get()) != nullptr)
+        {
+            m_renderer->Render(anchor.get(), viewport->GetCamera());
+        }
+    }
+
     void App::RenderComponentGizmo
     (
       EditorViewport* viewport,
@@ -1702,7 +1726,6 @@ Fail:
           g_app->m_emulatorSettings.playHeight
         )
       );
-
       m_2dGrid->Resize
       (
         UVec2
@@ -1722,6 +1745,8 @@ Fail:
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
+      light->m_isStudioLight = true;
+      light->SetCastShadowVal(false);
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
@@ -1730,6 +1755,8 @@ Fail:
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
+      light->m_isStudioLight = true;
+      light->SetCastShadowVal(false);
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
 
@@ -1738,9 +1765,10 @@ Fail:
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
+      light->m_isStudioLight = true;
+      light->SetCastShadowVal(false);
       m_lightMaster->AddChild(light->m_node);
-      m_sceneLights.push_back(light);
-    }
+      m_sceneLights.push_back(light);    }
 
     void DebugMessage(const String& msg)
     {

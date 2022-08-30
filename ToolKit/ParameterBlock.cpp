@@ -720,8 +720,6 @@ namespace ToolKit
 
   void ParameterBlock::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
-    m_variants.clear();
-
     if (XmlNode* block = parent->first_node(XmlParamBlockElement.c_str()))
     {
       XmlNode* param = block->first_node(XmlParamterElement.c_str());
@@ -729,7 +727,20 @@ namespace ToolKit
       {
         ParameterVariant var;
         var.DeSerialize(doc, param);
-        Add(var);
+        bool isFound = false;
+        for (ParameterVariant& m_var : m_variants)
+        {
+          if (var.m_name == m_var.m_name)
+          {
+            m_var = var;
+            isFound = true;
+            break;
+          }
+        }
+        if (!isFound && var.m_category.Name == CustomDataCategory.Name)
+        {
+          Add(var);
+        }
         param = param->next_sibling();
       }
     }

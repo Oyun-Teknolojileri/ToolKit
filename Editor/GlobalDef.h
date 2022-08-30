@@ -61,6 +61,9 @@ namespace ToolKit
     const Vec4 g_selectHighLightSecondaryColor =
       Vec4(0.898f, 0.352f, 0.031f, 1.0f);
 
+    const Vec3 g_anchorColor = Vec3(1.f);
+    const Vec4 g_anchorGuideLineColor = Vec4(0.21f, 0.84f, 0.84f, 0.7f);
+
     const Vec4 g_consoleErrorColor = Vec4(1.0f, 0.4f, 0.4f, 1.0f);
     const Vec4 g_consoleCommandColor = Vec4(1.0f, 0.8f, 0.6f, 1.0f);
     const Vec4 g_consoleWarningColor = Vec4(0.3f, 0.8f, 0.3f, 1.0f);

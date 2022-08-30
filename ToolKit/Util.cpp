@@ -1065,6 +1065,17 @@ namespace ToolKit
     return renderMat;
   }
 
+  TK_API bool IsLightType(EntityType type)
+  {
+    return
+    (
+      type == EntityType::Entity_Light
+      || type == EntityType::Entity_DirectionalLight
+      || type == EntityType::Entity_PointLight
+      || type == EntityType::Entity_SpotLight
+    );
+  }
+
   void* TKMalloc(size_t sz)
   {
     return malloc(sz);
