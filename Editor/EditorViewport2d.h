@@ -44,28 +44,18 @@ namespace ToolKit
       void AdjustZoom(float delta) override;
 
      private:
-      void Init2dCam();
       void PanZoom(float deltaTime);
-      void InitViewOptions();
+      void InitViewport();
 
      private:
-      Vec2 m_canvasSize;
+      Vec2 m_canvasSize = Vec2(640.0f, 480.0f);
       Vec2 m_canvasPos;
-
-      Vec2 m_contentAreaMin;
-      Vec2 m_contentAreaMax;
-      Vec2 m_scroll;
-
-      Vec2 m_layoutSize;
-
-      DirectionalLight m_forwardLight;
 
      public:
       float m_zoomPercentage = 100;
-      uint16_t m_gridCellSizeByPixel = 10;
-      IVec2 m_gridWholeSize = IVec2(640, 480);
+      uint m_gridCellSizeByPixel = 10;
+      IVec2 m_gridSize = IVec2(640, 480);
     };
 
   }  // namespace Editor
-
 }  // namespace ToolKit

@@ -49,7 +49,8 @@ namespace ToolKit
       (
         m_owner->m_wndPos.x + padding,
         m_owner->m_wndPos.y + padding
-      ) + m_scroll;
+      );
+
       ImGui::SetNextWindowPos(wndPos);
       ImGui::SetNextWindowBgAlpha(0.65f);
 
@@ -628,7 +629,7 @@ namespace ToolKit
           &cellSizeStep
         );
         ImGui::InputInt2("Grid Size",
-          reinterpret_cast<int*>(&editorViewport->m_gridWholeSize));
+          reinterpret_cast<int*>(&editorViewport->m_gridSize));
         ImGui::PopItemWidth();
       };
 
@@ -941,16 +942,17 @@ namespace ToolKit
     void StatusBar::Show()
     {
       // Status bar.
+      Vec2 wndPadding = ImGui::GetStyle().WindowPadding;
       ImVec2 overlaySize;
-      overlaySize.x = m_owner->m_width - 2;
+      overlaySize.x = m_owner->m_width - 18.0f;
       overlaySize.y = 24;
       Vec2 pos = m_owner->m_wndPos;
-      Vec2 wndPadding = ImGui::GetStyle().WindowPadding;
 
       pos.x += 1;
-      pos.y += m_owner->m_height - wndPadding.y - 16.0f;
-      ImGui::SetNextWindowPos(pos + m_scroll);
+      pos.y += m_owner->m_height - wndPadding.y - 54.0f;
+      ImGui::SetNextWindowPos(pos);
       ImGui::SetNextWindowBgAlpha(0.65f);
+
       if
       (
         ImGui::BeginChildFrame
@@ -1014,7 +1016,7 @@ namespace ToolKit
 
           // Draw Fps.
           String fps = "Fps: " + std::to_string(g_app->m_fps);
-          ImGui::SameLine(m_owner->m_width - 70.0f);
+          ImGui::SameLine(m_owner->m_width - 88.0f);
           ImGui::Text(fps.c_str());
         }
       }

@@ -29,15 +29,13 @@ namespace ToolKit
     EditorViewport2d::EditorViewport2d(XmlNode* node)
       : EditorViewport(node)
     {
-      Init2dCam();
-      InitViewOptions();
+      InitViewport();
     }
 
     EditorViewport2d::EditorViewport2d(float width, float height)
       : EditorViewport(width, height)
     {
-      Init2dCam();
-      InitViewOptions();
+      InitViewport();
     }
 
     EditorViewport2d::~EditorViewport2d()
@@ -61,7 +59,7 @@ namespace ToolKit
           m_name.c_str(),
           &m_visible,
           ImGuiWindowFlags_NoScrollWithMouse
-          | ImGuiWindowFlags_HorizontalScrollbar
+          | ImGuiWindowFlags_NoScrollbar
         )
       )
       {
@@ -71,6 +69,7 @@ namespace ToolKit
         DrawCommands();
         HandleDrop();
         DrawOverlays();
+
         if (m_mouseOverContentArea && g_app->m_snapsEnabled)
         {
           g_app->m_moveDelta = m_snapDeltas.x;
@@ -97,9 +96,9 @@ namespace ToolKit
       // Resize Grid
       g_app->m_2dGrid->Resize
       (
-        m_gridWholeSize,
+        UVec2(10000),
         AxisLabel::XY,
-        m_gridCellSizeByPixel
+        (float)m_gridCellSizeByPixel
       );
 
       PanZoom(deltaTime);
@@ -107,14 +106,10 @@ namespace ToolKit
 
     void EditorViewport2d::OnResize(float width, float height)
     {
-      m_width = width;
+      m_width  = width;
       m_height = height;
 
-      m_viewportImage->UnInit();
-      m_viewportImage->m_width = (uint)m_canvasSize.x;
-      m_viewportImage->m_height = (uint)m_canvasSize.y;
-      m_viewportImage->Init();
-
+      ResetViewportImage(GetRenderTargetSettings());
       AdjustZoom(FLT_MIN);
     }
 
@@ -220,7 +215,6 @@ namespace ToolKit
     {
       if (!ImGui::IsWindowCollapsed())
       {
-        m_scroll = Vec2(ImGui::GetScrollX(), ImGui::GetScrollY());
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
           // Resize window.
@@ -269,8 +263,8 @@ namespace ToolKit
           {
             ImGui::GetWindowDrawList()->AddRect
             (
-              m_contentAreaMin + m_scroll,
-              m_contentAreaMax + m_scroll,
+              m_contentAreaMin,
+              m_contentAreaMax,
               IM_COL32(255, 255, 0, 255)
             );
           }
@@ -278,8 +272,8 @@ namespace ToolKit
           {
             ImGui::GetWindowDrawList()->AddRect
             (
-              m_contentAreaMin + m_scroll,
-              m_contentAreaMax + m_scroll,
+              m_contentAreaMin,
+              m_contentAreaMax,
               IM_COL32(128, 128, 128, 255)
             );
           }
@@ -379,24 +373,20 @@ namespace ToolKit
         if (IsActive() || g_app->m_showOverlayUIAlways)
         {
           // Draw all overlays except 3DViewportOptions!
-          for (uint32_t i = 0; i < m_overlays.size(); i++)
+          for (size_t i = 0; i < m_overlays.size(); i++)
           {
             if (i == 1)
             {
-              m_2dViewOptions->m_scroll = m_scroll;
               m_2dViewOptions->m_owner = this;
               m_2dViewOptions->Show();
-              m_2dViewOptions->m_scroll = Vec2();
               continue;
             }
 
             OverlayUI* overlay = m_overlays[i];
             if (overlay)
             {
-              overlay->m_scroll = m_scroll;
               overlay->m_owner = this;
               overlay->Show();
-              overlay->m_scroll = Vec2();
             }
           }
         }
@@ -458,13 +448,6 @@ namespace ToolKit
       );
     }
 
-    void EditorViewport2d::Init2dCam()
-    {
-      m_zoom = 1.0f;
-      GetCamera()->m_node->SetTranslation(Z_AXIS * 10.0f);
-      AdjustZoom(FLT_MIN);
-    }
-
     void EditorViewport2d::PanZoom(float deltaTime)
     {
       Camera* cam = GetCamera();
@@ -490,8 +473,14 @@ namespace ToolKit
       }
     }
 
-    void EditorViewport2d::InitViewOptions()
+    void EditorViewport2d::InitViewport()
     {
+      ResetViewportImage(GetRenderTargetSettings());
+
+      m_zoom = 1.0f;
+      GetCamera()->m_node->SetTranslation(Z_AXIS * 10.0f);
+      AdjustZoom(FLT_MIN);
+
       if (!m_2dViewOptions)
       {
         m_2dViewOptions = new Overlay2DViewportOptions(this);
