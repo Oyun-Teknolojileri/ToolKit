@@ -1,435 +1,87 @@
 <App>
 	<Settings>
-		<Size width="414" height="364" maximized="1"/>
+		<Size width="1280" height="800" maximized="0"/>
 	</Settings>
-	<Window name="3D View" id="10" type="0" visible="1">
-		<Viewport width="941.000000" height="957.000000" alignment="0" lock="0">
-			<E i="1017" t="13">
-				<N i="22" is="0" ito="0">
-					<T x="16.565842" y="1.945174" z="7.444052"/>
-					<R x="0.007574" y="0.507520" z="-0.004463" w="0.861595"/>
+	<Window name="3D View" id="1" type="0" visible="1">
+		<Viewport width="505.000000" height="778.000000" alignment="0" lock="0">
+			<E i="1343" t="13">
+				<N i="1354" is="0" ito="0">
+					<T x="5.000000" y="3.000000" z="5.000000"/>
+					<R x="-0.184111" y="0.375008" z="0.076261" w="0.905349"/>
 					<S x="1.000000" y="1.000000" z="1.000000"/>
 				</N>
 				<PB>
-					<P t="11" name="Id" category="Meta" priority="100" exposed="1" editable="0" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="1017"/>
-					<P t="9" name="Name" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="Entity_1017"/>
-					<P t="9" name="Tag" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="Tag"/>
-					<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="1"/>
-					<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="0"/>
+					<P t="11" name="Id" category="Meta" priority="100" exposed="1" editable="0" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1343"/>
+					<P t="9" name="Name" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="Entity_1343"/>
+					<P t="9" name="Tag" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v=""/>
+					<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1"/>
+					<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="0"/>
 				</PB>
 				<Components>
 					<Component t="2">
 						<PB/>
 					</Component>
 				</Components>
-				<Camera fov="0.785398" aspect="0.983281" near="0.500000" far="1000.000000" height="957.000000" ortographic="0" left="10.000000" right="10.000000" top="10.000000" bottom="10.000000"/>
+				<Camera fov="0.785398" aspect="0.649100" near="0.500000" far="1000.000000" height="778.000000" ortographic="0" left="10.000000" right="10.000000" top="10.000000" bottom="10.000000"/>
 			</E>
 		</Viewport>
 	</Window>
-	<Window name="2D View" id="11" type="8" visible="0">
-		<Viewport width="1045.000000" height="997.000000" alignment="0" lock="0">
-			<E i="1019" t="13">
-				<N i="23" is="0" ito="0">
-					<T x="0.000000" y="0.000000" z="10.000000"/>
+	<Window name="2D View" id="2" type="8" visible="0">
+		<Viewport width="713.000000" height="778.000000" alignment="0" lock="0">
+			<E i="1357" t="13">
+				<N i="1368" is="0" ito="0">
+					<T x="0.000000" y="0.000000" z="1.000000"/>
 					<R x="0.000000" y="0.000000" z="0.000000" w="1.000000"/>
 					<S x="1.000000" y="1.000000" z="1.000000"/>
 				</N>
 				<PB>
-					<P t="11" name="Id" category="Meta" priority="100" exposed="1" editable="0" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="1019"/>
-					<P t="9" name="Name" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="Entity_1019"/>
-					<P t="9" name="Tag" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="Tag"/>
-					<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="1"/>
-					<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="0"/>
+					<P t="11" name="Id" category="Meta" priority="100" exposed="1" editable="0" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1357"/>
+					<P t="9" name="Name" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="Entity_1357"/>
+					<P t="9" name="Tag" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v=""/>
+					<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1"/>
+					<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="0"/>
 				</PB>
 				<Components>
 					<Component t="2">
 						<PB/>
 					</Component>
 				</Components>
-				<Camera fov="0.000000" aspect="1.000000" near="0.010000" far="1000.000000" height="480.000000" ortographic="1" left="-320.000000" right="320.000000" top="240.000000" bottom="-240.000000"/>
+				<Camera fov="0.000000" aspect="1.000000" near="0.010000" far="1000.000000" height="296.000000" ortographic="1" left="-139.400009" right="139.400009" top="148.000000" bottom="-148.000000"/>
 			</E>
 		</Viewport>
 	</Window>
-	<Window name="ISO View" id="12" type="0" visible="1">
-		<Viewport width="414.000000" height="364.000000" alignment="1" lock="1">
-			<E i="1023" t="13">
-				<N i="24" is="0" ito="0">
-					<T x="3.942511" y="20.000008" z="1.411772"/>
+	<Window name="ISO View" id="3" type="0" visible="1">
+		<Viewport width="462.000000" height="346.000000" alignment="1" lock="1">
+			<E i="1371" t="13">
+				<N i="1382" is="0" ito="0">
+					<T x="0.080730" y="8.000000" z="0.059584"/>
 					<R x="-0.707107" y="0.000000" z="0.000000" w="0.707107"/>
 					<S x="1.000000" y="1.000000" z="1.000000"/>
 				</N>
 				<PB>
-					<P t="11" name="Id" category="Meta" priority="100" exposed="1" editable="0" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="1023"/>
-					<P t="9" name="Name" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="Entity_1023"/>
-					<P t="9" name="Tag" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="Tag"/>
-					<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="1"/>
-					<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="0.000000" hint.increment="0.000000" v="0"/>
+					<P t="11" name="Id" category="Meta" priority="100" exposed="1" editable="0" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1371"/>
+					<P t="9" name="Name" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="Entity_1371"/>
+					<P t="9" name="Tag" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v=""/>
+					<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1"/>
+					<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="0"/>
 				</PB>
 				<Components>
 					<Component t="2">
 						<PB/>
 					</Component>
 				</Components>
-				<Camera fov="0.000000" aspect="1.000000" near="0.500000" far="1000.000000" height="12.396456" ortographic="1" left="-7.049633" right="7.049633" top="6.198228" bottom="-6.198228"/>
+				<Camera fov="0.000000" aspect="1.000000" near="0.500000" far="1000.000000" height="4.613696" ortographic="1" left="-3.080242" right="3.080242" top="2.306848" bottom="-2.306848"/>
 			</E>
 		</Viewport>
 	</Window>
-	<Window name="" id="13" type="1" visible="1"/>
-	<Window name="Asset Browser" id="14" type="3" visible="1">
-		<FolderWindow activeFolder="29" showStructure="1">
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\anim" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\chaman" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\City" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\City\Buildings" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\City\Environments" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\City\Props" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\City\Vehicles" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\coin" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\densglft" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\faungltf" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\Heist" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\Heist\Environments" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\Heist\Items" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\Heist\Props" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\Heist\Weapons" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\LevelSelect-LevelGoals" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\LevelSelect-LevelGoals\levelselect-numbers" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\Prototype" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\Prototype\Buildings" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\Prototype\Icons" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\Prototype\Notes" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\Prototype\Outdoor" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\Prototype\Pawns" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\Prototype\Primitives" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\Prototype\Props" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\trex" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\trex2" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Materials\tubagltf" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\anim" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\chaman" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\City" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\City\Buildings" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\City\Environments" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\City\Props" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\City\Vehicles" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\coins" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\densglft" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\faungltf" vis="1" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\Heist" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\Heist\Environments" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\Heist\Items" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\Heist\Props" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\Heist\Weapons" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\Prototype" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\Prototype\Buildings" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\Prototype\Icons" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\Prototype\Notes" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\Prototype\Outdoor" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\Prototype\Pawns" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\Prototype\Primitives" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\Prototype\Props" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\trex" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\trex2" vis="1" active="1">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Meshes\tubagltf" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Prefabs" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\chaman" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\Chapter3" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\Chapter4" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\densglft" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\faungltf" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\HitmanGoLevels" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\Layouts" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\testscenes" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\testscenes\LevelGoals-TestLevels" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\testscenes\TOOK23-testscenes" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\TOOK21" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\trex" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\trex2" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Scenes\tubagltf" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\chaman" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\City" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\City\Buildings" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\City\Environments" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\City\Props" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\City\Vehicles" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\densglft" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\faungltf" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Heist" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Heist\Environments" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Heist\Items" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Heist\Props" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Heist\Weapons" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Layers" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Layers\ChapterSelect" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Layers\InGame" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Layers\InGame\level-goals" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Layers\InGame\level-names" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Layers\InGame\numbers" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Layers\InGame\transparent-bg" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Layers\LevelSelect" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Layers\LevelSelect\numbers" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Layers\Main" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Layers\Main\new-texts" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Prototype" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Prototype\Buildings" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Prototype\Icons" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Prototype\Notes" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Prototype\Outdoor" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Prototype\Pawns" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Prototype\Primitives" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\Prototype\Props" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\trex" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\trex2" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\Go2\ThiefGo\Resources\Textures\tubagltf" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\ToolKit\Resources\Engine" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\ToolKit\Resources\Engine\Fonts" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\ToolKit\Resources\Engine\Materials" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\ToolKit\Resources\Engine\Meshes" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\ToolKit\Resources\Engine\Scenes" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\ToolKit\Resources\Engine\Shaders" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\ToolKit\Resources\Engine\Textures" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
-			<FolderView path="C:\Users\afrai\Documents\ToolKit\Resources\Engine\Textures\Icons" vis="0" active="0">
-				<IconSize x="50.000000" y="50.000000"/>
-			</FolderView>
+	<Window name="" id="4" type="1" visible="1"/>
+	<Window name="Asset Browser" id="5" type="3" visible="1">
+		<FolderWindow activeFolder="-1" showStructure="1">
 		</FolderWindow>
 	</Window>
-	<Window name="Outliner" id="15" type="4" visible="1"/>
-	<Window name="Property Inspector" id="16" type="5" visible="1"/>
-	<Window name="Material Inspector" id="17" type="6" visible="1"/>
-	<Window name="Plugin" id="18" type="7" visible="1"/>
+	<Window name="Outliner" id="6" type="4" visible="1"/>
+	<Window name="Property Inspector" id="7" type="5" visible="1"/>
+	<Window name="Material Inspector" id="8" type="6" visible="1"/>
+	<Window name="Plugin" id="9" type="7" visible="1"/>
 </App>
 
