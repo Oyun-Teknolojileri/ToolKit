@@ -622,22 +622,12 @@ namespace ToolKit
     void App::ResetUI()
     {
       DeleteWindows();
-      if 
-      (
-        CheckFile
-        (
-          ConcatPaths
-          (
-            { m_workspace.GetProjectConfigPath(), g_editorSettingsFile }
-          )
-        )
-      )
+
+      String defEditSet = ConcatPaths({ConfigPath(), g_editorSettingsFile});
+      if (CheckFile(defEditSet))
       {
         // Try reading defaults.
-        String settingsFile = ConcatPaths
-        (
-          { ConfigPath(), g_editorSettingsFile }
-        );
+        String settingsFile = defEditSet;
 
         std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>
         (
