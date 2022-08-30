@@ -649,7 +649,7 @@ namespace ToolKit
         DeSerialize(lclDoc.get(), nullptr);
         m_workspace.SetScene(pj.scene);
 
-        settingsFile = ConcatPaths({ ConfigPath(), "defaultUI.ini" });
+        settingsFile = ConcatPaths({ ConfigPath(), g_uiLayoutFile });
         ImGui::LoadIniSettingsFromDisk(settingsFile.c_str());
       }
       else
