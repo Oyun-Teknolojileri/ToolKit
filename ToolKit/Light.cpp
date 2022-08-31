@@ -85,6 +85,8 @@ namespace ToolKit
         0,
         false,
         true,
+        GraphicTypes::Target2D,
+        GraphicTypes::UVClampToBorder,
         GraphicTypes::UVClampToBorder,
         GraphicTypes::UVClampToBorder,
         GraphicTypes::SampleNearest,
@@ -173,6 +175,63 @@ namespace ToolKit
     return EntityType::Entity_PointLight;
   }
 
+  void PointLight::InitShadowMap()
+  {
+    if (m_shadowMapInitialized && !m_shadowMapResolutionChanged)
+    {
+      return;
+    }
+
+    // Store current framebuffer
+    GLint lastFBO;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+
+    m_depthRenderTarget = new RenderTarget
+    (
+      static_cast<uint>(GetShadowResolutionVal().x),
+      static_cast<uint>(GetShadowResolutionVal().y),
+      {
+        0,
+        false,
+        true,
+        GraphicTypes::TargetCubeMap,
+        GraphicTypes::UVClampToBorder,
+        GraphicTypes::UVClampToBorder,
+        GraphicTypes::UVClampToBorder,
+        GraphicTypes::SampleNearest,
+        GraphicTypes::SampleNearest,
+        GraphicTypes::FormatDepthComponent,
+        GraphicTypes::FormatDepthComponent,
+        GraphicTypes::TypeFloat,
+        GraphicTypes::DepthAttachment,
+        Vec4(1.0f)
+      }
+    );
+    m_depthRenderTarget->Init();
+    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+
+    InitShadowMapDepthMaterial();
+    m_shadowMapInitialized = true;
+  }
+
+  void PointLight::InitShadowMapDepthMaterial()
+  {
+    // Create shadow material
+    ShaderPtr vert = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("perspectiveDepthVert.shader", true)
+    );
+    ShaderPtr frag = GetShaderManager()->Create<Shader>
+    (
+      ShaderPath("perspectiveDepthFrag.shader", true)
+    );
+
+    m_shadowMapMaterial = std::make_shared<Material>();
+    m_shadowMapMaterial->m_vertexShader = vert;
+    m_shadowMapMaterial->m_fragmetShader = frag;
+    m_shadowMapMaterial->Init();
+  }
+
   SpotLight::SpotLight()
   {
     Radius_Define(10.0f, "Light", 90, true, true);
@@ -185,11 +244,6 @@ namespace ToolKit
   EntityType SpotLight::GetType() const
   {
     return EntityType::Entity_SpotLight;
-  }
-
-  void SpotLight::InitShadowMap()
-  {
-    Light::InitShadowMap();
   }
 
   void SpotLight::InitShadowMapDepthMaterial()

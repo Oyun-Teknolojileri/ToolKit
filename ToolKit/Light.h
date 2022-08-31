@@ -67,6 +67,11 @@ namespace ToolKit
 
     EntityType GetType() const override;
 
+    void InitShadowMap() override;
+
+   protected:
+    void InitShadowMapDepthMaterial() override;
+
    public:
     TKDeclareParam(float, Radius);
   };
@@ -78,8 +83,6 @@ namespace ToolKit
     virtual ~SpotLight() {}
 
     EntityType GetType() const override;
-
-    void InitShadowMap() override;
 
    protected:
     void InitShadowMapDepthMaterial() override;

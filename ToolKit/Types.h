@@ -263,7 +263,9 @@ namespace ToolKit
     ColorAttachment0 = 0x8CE0,
     DepthAttachment = 0x8D00,
     TypeFloat = 0x1406,
-    TypeUnsignedByte = 0x1401
+    TypeUnsignedByte = 0x1401,
+    Target2D = 0x0DE1,
+    TargetCubeMap = 0x8513
   };
 
   static const char* TKVersionStr = "v0.3.13";

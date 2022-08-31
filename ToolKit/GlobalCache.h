@@ -200,6 +200,38 @@ namespace ToolKit
     "LightData.shadowMapCamFarPlane[11]"
   };
 
+  static StringArray g_pointLightShadowMapStrCache =
+  {
+    "LightData.pointLightShadowMap[0]",
+    "LightData.pointLightShadowMap[1]",
+    "LightData.pointLightShadowMap[2]",
+    "LightData.pointLightShadowMap[3]",
+    "LightData.pointLightShadowMap[4]",
+    "LightData.pointLightShadowMap[5]",
+    "LightData.pointLightShadowMap[6]",
+    "LightData.pointLightShadowMap[7]",
+    "LightData.pointLightShadowMap[8]",
+    "LightData.pointLightShadowMap[9]",
+    "LightData.pointLightShadowMap[10]",
+    "LightData.pointLightShadowMap[11]"
+  };
+
+  static StringArray g_dirAndSpotLightShadowMapStrCache =
+  {
+    "LightData.dirAndSpotLightShadowMap[0]",
+    "LightData.dirAndSpotLightShadowMap[1]",
+    "LightData.dirAndSpotLightShadowMap[2]",
+    "LightData.dirAndSpotLightShadowMap[3]",
+    "LightData.dirAndSpotLightShadowMap[4]",
+    "LightData.dirAndSpotLightShadowMap[5]",
+    "LightData.dirAndSpotLightShadowMap[6]",
+    "LightData.dirAndSpotLightShadowMap[7]",
+    "LightData.dirAndSpotLightShadowMap[8]",
+    "LightData.dirAndSpotLightShadowMap[9]",
+    "LightData.dirAndSpotLightShadowMap[10]",
+    "LightData.dirAndSpotLightShadowMap[11]"
+  };
+
   static StringArray g_boneTransformStrCache =
   {
     "bones[0].transform",

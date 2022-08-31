@@ -918,13 +918,6 @@ namespace ToolKit
 
       for (Light* light : lights)
       {
-        // TODO(osman): Delete type check after implementing
-        // shadows for other light types
-        if(light->GetType() == EntityType::Entity_PointLight)
-        {
-          continue;
-        }
-
         if (light->GetCastShadowVal())
         {
           // Create framebuffer
@@ -954,6 +947,14 @@ namespace ToolKit
           }
           else if (light->GetType() == EntityType::Entity_PointLight)
           {
+            m_shadowMapCamera->SetLens
+            (
+              glm::radians(90.0f),
+              light->GetShadowResolutionVal().x,
+              light->GetShadowResolutionVal().y,
+              0.01f,
+              static_cast<SpotLight*>(light)->GetRadiusVal()
+            );
           }
           else if (light->GetType() == EntityType::Entity_SpotLight)
           {
@@ -977,32 +978,128 @@ namespace ToolKit
             TransformationSpace::TS_WORLD
           );
 
-          light->m_shadowMapCameraProjectionViewMatrix =
-            m_shadowMapCamera->GetProjectionMatrix()
-            * m_shadowMapCamera->GetViewMatrix();
-          light->m_shadowMapCameraFar = m_shadowMapCamera->GetData().far;
-
-          FrustumCull(entities, m_shadowMapCamera);
-
-          // Render scene for depth buffer
-
-          SetRenderTarget(light->GetShadowMapRenderTarget());
-          glClear(GL_DEPTH_BUFFER_BIT);
-          // Depth only render
-          glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-          m_overrideMat = light->GetShadowMaterial();
-          for (Entity* ntt : entities)
+          auto renderForShadowMapFn =
+          [this](Light* light, EntityRawPtrArray entities) -> void
           {
-            if
-            (
-              ntt->IsDrawable()
-              && ntt->GetMeshComponent()->GetCastShadowVal()
-            )
+            light->m_shadowMapCameraProjectionViewMatrix =
+              m_shadowMapCamera->GetProjectionMatrix()
+              * m_shadowMapCamera->GetViewMatrix();
+            light->m_shadowMapCameraFar = m_shadowMapCamera->GetData().far;
+
+            FrustumCull(entities, m_shadowMapCamera);
+
+            glClear(GL_DEPTH_BUFFER_BIT);
+            // Depth only render
+            glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+            m_overrideMat = light->GetShadowMaterial();
+            for (Entity* ntt : entities)
             {
-              Render(ntt, m_shadowMapCamera);
+              if
+              (
+                ntt->IsDrawable()
+                && ntt->GetMeshComponent()->GetCastShadowVal()
+              )
+              {
+                Render(ntt, m_shadowMapCamera);
+              }
+            }
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+          };
+
+          static Quaternion rotations[6];
+          static Vec3 scales[6];
+
+          // Calculate view transformations once
+          static bool viewsCalculated = false;
+          if (!viewsCalculated)
+          {
+            Mat4 views[6] =
+            {
+              glm::lookAt
+              (
+                ZERO,
+                Vec3(1.0f, 0.0f, 0.0f),
+                Vec3(0.0f, -1.0f, 0.0f)
+              ),
+              glm::lookAt
+              (
+                ZERO,
+                Vec3(-1.0f, 0.0f, 0.0f),
+                Vec3(0.0f, -1.0f, 0.0f)
+              ),
+              glm::lookAt
+              (
+                ZERO,
+                Vec3(0.0f, -1.0f, 0.0f),
+                Vec3(0.0f, 0.0f, -1.0f)
+              ),
+              glm::lookAt
+              (
+                ZERO,
+                Vec3(0.0f, 1.0f, 0.0f),
+                Vec3(0.0f, 0.0f, 1.0f)
+              ),
+              glm::lookAt
+              (
+                ZERO,
+                Vec3(0.0f, 0.0f, 1.0f),
+                Vec3(0.0f, -1.0f, 0.0f)
+              ),
+              glm::lookAt
+              (
+                ZERO,
+                Vec3(0.0f, 0.0f, -1.0f),
+                Vec3(0.0f, -1.0f, 0.0f)
+              )
+            };
+
+            for (int i = 0; i < 6; ++i)
+            {
+              DecomposeMatrix(views[i], nullptr, &rotations[i], &scales[i]);
+            }
+
+            viewsCalculated = true;
+          }
+
+          if (light->GetType() == EntityType::Entity_PointLight)
+          {
+            glBindFramebuffer
+            (
+              GL_FRAMEBUFFER,
+              light->GetShadowMapRenderTarget()->m_frameBufferId
+            );
+            glViewport
+            (
+              0,
+              0,
+              static_cast<uint>(light->GetShadowMapResolution().x),
+              static_cast<uint>(light->GetShadowMapResolution().y)
+            );
+            for (unsigned int i = 0; i < 6; ++i)
+            {
+              glFramebufferTexture2D
+              (
+                GL_FRAMEBUFFER,
+                GL_DEPTH_ATTACHMENT,
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                light->GetShadowMapRenderTarget()->m_textureId,
+                0
+              );
+              m_shadowMapCamera->m_node->SetOrientation
+              (
+                rotations[i],
+                TransformationSpace::TS_WORLD
+              );
+              m_shadowMapCamera->m_node->SetScale(scales[i]);
+
+              renderForShadowMapFn(light, entities);
             }
           }
-          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+          else
+          {
+            SetRenderTarget(light->GetShadowMapRenderTarget());
+            renderForShadowMapFn(light, entities);
+          }
         }
       }
 
@@ -1316,7 +1413,7 @@ namespace ToolKit
 
   void Renderer::FeedLightUniforms(ProgramPtr program)
   {
-    ResetShadowMapBindings();
+    ResetShadowMapBindings(program);
 
     size_t size = glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
     for (size_t i = 0; i < size; i++)
@@ -1473,14 +1570,7 @@ namespace ToolKit
       }
 
       bool castShadow = currLight->GetCastShadowVal();
-
-      // TODO(osman): Delete type check after implementing
-      // shadows for other light types
-      if
-      (
-        castShadow
-        && currLight->GetType() != EntityType::Entity_PointLight
-      )
+      if (castShadow)
       {
         GLint loc = glGetUniformLocation
         (
@@ -1690,11 +1780,19 @@ namespace ToolKit
       return;
     }
 
-    int currCh = m_bindedShadowMapCount + m_rhiSettings::textureSlotCount;
+    /*
+    * Texture Slots:
+    * 8-11: Directional and spot light shadow maps
+    * 12-15: Point light shadow maps
+    */
+
     if (type == EntityType::Entity_PointLight)
     {
       if (m_pointLightShadowCount < m_rhiSettings::maxPointLightShadows)
       {
+        int curr = m_pointLightShadowCount
+          + m_rhiSettings::maxDirAndSpotLightShadows
+          + m_rhiSettings::textureSlotCount;
         glUniform1i
         (
           glGetUniformLocation
@@ -1706,9 +1804,9 @@ namespace ToolKit
               + "]"
             ).c_str()
           ),
-          currCh
+          curr
         );
-        glActiveTexture(GL_TEXTURE0 + currCh);
+        glActiveTexture(GL_TEXTURE0 + curr);
         glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
         m_bindedShadowMapCount++;
         m_pointLightShadowCount++;
@@ -1721,6 +1819,8 @@ namespace ToolKit
         m_dirAndSpotLightShadowCount < m_rhiSettings::maxDirAndSpotLightShadows
       )
       {
+        int curr = m_dirAndSpotLightShadowCount
+          + m_rhiSettings::textureSlotCount;
         glUniform1i
         (
           glGetUniformLocation
@@ -1732,9 +1832,9 @@ namespace ToolKit
               + "]"
             ).c_str()
           ),
-          currCh
+          curr
         );
-        glActiveTexture(GL_TEXTURE0 + currCh);
+        glActiveTexture(GL_TEXTURE0 + curr);
         glBindTexture(GL_TEXTURE_2D, textureId);
         m_bindedShadowMapCount++;
         m_dirAndSpotLightShadowCount++;
@@ -1742,7 +1842,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::ResetShadowMapBindings()
+  void Renderer::ResetShadowMapBindings(ProgramPtr program)
   {
     m_bindedShadowMapCount = 0;
     m_dirAndSpotLightShadowCount = 0;

@@ -132,8 +132,10 @@ namespace ToolKit
     byte Msaa = 0;
     bool DepthStencil = true;
     bool useBorderColor = false;
+    GraphicTypes Target = GraphicTypes::Target2D;
     GraphicTypes WarpS = GraphicTypes::UVRepeat;
     GraphicTypes WarpT = GraphicTypes::UVRepeat;
+    GraphicTypes WarpR = GraphicTypes::UVRepeat;
     GraphicTypes MinFilter = GraphicTypes::SampleNearest;
     GraphicTypes MagFilter = GraphicTypes::SampleNearest;
     GraphicTypes InternalFormat = GraphicTypes::FormatRGBA;

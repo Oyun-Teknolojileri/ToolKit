@@ -65,7 +65,7 @@ namespace ToolKit
       uint textureId,
       ProgramPtr program
     );
-    void ResetShadowMapBindings();
+    void ResetShadowMapBindings(ProgramPtr program);
 
    private:
     void RenderEntities
@@ -185,8 +185,8 @@ namespace ToolKit
       static constexpr ubyte textureSlotCount = 8;
       // 4 studio lights, 8 in game lights
       static constexpr size_t maxLightsPerObject = 12;
-      static constexpr int maxDirAndSpotLightShadows = 8;
-      static constexpr int maxPointLightShadows = 8;
+      static constexpr int maxDirAndSpotLightShadows = 4;
+      static constexpr int maxPointLightShadows = 4;
       static constexpr int maxShadows = 8;
     } m_rhiSettings;
     uint m_textureSlots[RHIConstants::textureSlotCount];

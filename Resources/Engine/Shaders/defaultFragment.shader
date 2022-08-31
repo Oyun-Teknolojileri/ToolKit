@@ -30,12 +30,14 @@
 			int activeCount;
 
 			mat4 projectionViewMatrix[12];
-			sampler2D dirAndSpotLightShadowMap[8];
-			samplerCube pointLightShadowMap[8];
+			sampler2D dirAndSpotLightShadowMap[4];
+			samplerCube pointLightShadowMap[4];
 			int castShadow[12];
 			float shadowBias[12];
 			float shadowMapCamFarPlane[12];
 		};
+		const int maxPointLightShadows = 4;
+		const int maxDirAndSpotLightShadows = 4;
 
 		struct _CamData
 		{
@@ -102,6 +104,20 @@
 			return shadow;
 		}
 
+		int CalculatePointShadow(vec3 pos, int index, int pointIndex, vec3 normal)
+		{
+			vec3 lightToFrag = pos - LightData.pos[index];
+			float closestDepth = texture(LightData.pointLightShadowMap[pointIndex], lightToFrag).r;
+
+			float currentDepth = length(lightToFrag);
+			// Convert to [0 1] range
+			currentDepth = currentDepth / LightData.shadowMapCamFarPlane[index];
+
+			int shadow = currentDepth - LightData.shadowBias[index] > closestDepth ? 0 : 1;
+
+			return shadow;
+		}
+
 		void main()
 		{
 			int dirAndSpotLightShadowCount = 0;
@@ -114,6 +130,7 @@
 			vec3 irradiance = vec3(0.0);
 			for (int i = 0; i < LightData.activeCount; i++)
 			{
+				int maxShadowCheck = 1;
 				shadow = 1;
 				vec3 ambient = vec3(0.0);
 				vec3 diffuse = vec3(0.0);
@@ -158,6 +175,12 @@
 					diffuse  *= attenuation * radiusCheck;
 					specular *= attenuation * radiusCheck;
 
+					maxShadowCheck = int(maxPointLightShadows > pointLightShadowCount);
+					shadow = maxShadowCheck * ((1 - LightData.castShadow[i]) |
+					(
+						CalculatePointShadow(v_pos, i, pointLightShadowCount, n)
+						& LightData.castShadow[i]
+					));
 					pointLightShadowCount += LightData.castShadow[i];
 				}
 				else if (LightData.type[i] == 1) // Directional light
@@ -178,11 +201,12 @@
 					float ambientStrength = 0.01;
 					ambient = ambientStrength * LightData.color[i];
 
-					shadow = (1 - LightData.castShadow[i]) |
+					maxShadowCheck = int(maxDirAndSpotLightShadows > dirAndSpotLightShadowCount);
+					shadow = maxShadowCheck * ((1 - LightData.castShadow[i]) |
 					(
 						CalculateDirectionalShadow(v_pos, i, dirAndSpotLightShadowCount, n)
 						& LightData.castShadow[i]
-					);
+					));
 					dirAndSpotLightShadowCount += LightData.castShadow[i];
 				}
 				else if (LightData.type[i] == 3) // Spot light
@@ -230,16 +254,17 @@
 					diffuse *= intensity * radiusCheck * attenuation;
 					specular *= intensity * radiusCheck * attenuation;
 
-					shadow = (1 - LightData.castShadow[i]) |
+					maxShadowCheck = int(maxDirAndSpotLightShadows > dirAndSpotLightShadowCount);
+					shadow = maxShadowCheck * ((1 - LightData.castShadow[i]) |
 					(
 						CalculateSpotShadow(v_pos, i, dirAndSpotLightShadowCount, n)
 						& LightData.castShadow[i]
-					);
-
+					));
 					dirAndSpotLightShadowCount += LightData.castShadow[i];
 				}
 
-				irradiance += (ambient + diffuse + specular) * LightData.intensity[i] * float(shadow);
+				irradiance += (ambient + diffuse + specular) * LightData.intensity[i]
+				* float(shadow | (1 - maxShadowCheck));
 			}
 			vec3 iblIrradiance = UseIbl * texture(s_texture7, n).rgb;
 			irradiance += iblIrradiance * IblIntensity;

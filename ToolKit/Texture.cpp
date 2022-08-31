@@ -799,55 +799,93 @@ namespace ToolKit
       return;
     }
 
-    GLint currId;  // Don't override the current render target.
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
+    GLint currId = 0;  // Don't override the current render target.
+    if (m_settings.Target == GraphicTypes::Target2D)
+    {
+      glGetIntegerv(GL_TEXTURE_BINDING_2D, &currId);
+    }
+    else if (m_settings.Target == GraphicTypes::TargetCubeMap)
+    {
+      glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &currId);
+    }
 
     // Create frame buffer color texture
     glGenTextures(1, &m_textureId);
-    glBindTexture(GL_TEXTURE_2D, m_textureId);
+    glBindTexture(static_cast<int>(m_settings.Target), m_textureId);
 
     glTexParameteri
     (
-      GL_TEXTURE_2D,
+      static_cast<int>(m_settings.Target),
       GL_TEXTURE_WRAP_S,
       static_cast<int> (m_settings.WarpS)
     );
     glTexParameteri
     (
-      GL_TEXTURE_2D,
+      static_cast<int>(m_settings.Target),
       GL_TEXTURE_WRAP_T,
       static_cast<int> (m_settings.WarpT)
     );
+    if (m_settings.Target == GraphicTypes::TargetCubeMap)
+    {
+      glTexParameteri
+      (
+        static_cast<int>(m_settings.Target),
+        GL_TEXTURE_WRAP_R,
+        static_cast<int> (m_settings.WarpR)
+      );
+    }
     glTexParameteri
     (
-      GL_TEXTURE_2D,
+      static_cast<int>(m_settings.Target),
       GL_TEXTURE_MIN_FILTER,
       static_cast<int> (m_settings.MinFilter)
     );
     glTexParameteri
     (
-      GL_TEXTURE_2D,
+      static_cast<int>(m_settings.Target),
       GL_TEXTURE_MAG_FILTER,
       static_cast<int> (m_settings.MagFilter)
     );
-    glTexImage2D
-    (
-      GL_TEXTURE_2D,
-      0,
-      static_cast<int>(m_settings.InternalFormat),
-      m_width,
-      m_height,
-      0,
-      static_cast<int>(m_settings.Format),
-      static_cast<int>(m_settings.Type),
-      0
-    );
+
+    if (m_settings.Target == GraphicTypes::Target2D)
+    {
+      glTexImage2D
+      (
+        GL_TEXTURE_2D,
+        0,
+        static_cast<int>(m_settings.InternalFormat),
+        m_width,
+        m_height,
+        0,
+        static_cast<int>(m_settings.Format),
+        static_cast<int>(m_settings.Type),
+        0
+      );
+    }
+    else if (m_settings.Target == GraphicTypes::TargetCubeMap)
+    {
+      for (unsigned int i = 0; i < 6; ++i)
+      {
+        glTexImage2D
+        (
+          GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+          0,
+          static_cast<int>(m_settings.InternalFormat),
+          m_width,
+          m_height,
+          0,
+          static_cast<int>(m_settings.Format),
+          static_cast<int>(m_settings.Type),
+          0
+        );
+      }
+    }
 
     if (m_settings.useBorderColor)
     {
       glTexParameterfv
       (
-        GL_TEXTURE_2D,
+        static_cast<int>(m_settings.Target),
         GL_TEXTURE_BORDER_COLOR,
         &(m_settings.borderColor[0])
       );
@@ -877,24 +915,41 @@ namespace ToolKit
     bool goForMsaa = m_settings.Msaa > 0 && !msaaRTunsupported;
     if (goForMsaa)
     {
-      glFramebufferTexture2DMultisampleEXT
-      (
-        GL_FRAMEBUFFER,
-        static_cast<int>(m_settings.Attachment),
-        GL_TEXTURE_2D,
-        m_textureId,
-        0,
-        m_settings.Msaa
-      );
+      if (m_settings.Target == GraphicTypes::Target2D)
+      {
+        glFramebufferTexture2DMultisampleEXT
+        (
+          GL_FRAMEBUFFER,
+          static_cast<int>(m_settings.Attachment),
+          static_cast<int>(m_settings.Target),
+          m_textureId,
+          0,
+          m_settings.Msaa
+        );
+      }
+      else if (m_settings.Target == GraphicTypes::TargetCubeMap)
+      {
+        for (unsigned int i = 0; i < 6; ++i)
+        {
+          glFramebufferTexture2DMultisampleEXT
+          (
+            GL_FRAMEBUFFER,
+            static_cast<int>(m_settings.Attachment),
+            GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+            m_textureId,
+            0,
+            m_settings.Msaa
+          );
+        }
+      }
     }
     else
     #endif
     {
-      glFramebufferTexture2D
+      glFramebufferTexture
       (
         GL_FRAMEBUFFER,
         static_cast<int>(m_settings.Attachment),
-        GL_TEXTURE_2D,
         m_textureId,
         0
       );
@@ -957,7 +1012,9 @@ namespace ToolKit
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);  // Restore backbuffer.
-    glBindTexture(GL_TEXTURE_2D, currId);  // Restore previous render target.
+
+    // Restore previous render target.
+    glBindTexture(static_cast<int>(m_settings.Target), currId);
   }
 
   void RenderTarget::UnInit()
