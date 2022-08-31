@@ -23,7 +23,7 @@ namespace ToolKit
       void Show() override;
       Type GetType() const override;
       void Update(float deltaTime) override;
-      void OnResize(float width, float height) override;
+      void OnResizeContentArea(float width, float height) override;
 
       // Viewport Overrides.
       Vec2 GetLastMousePosViewportSpace() override;

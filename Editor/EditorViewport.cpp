@@ -83,8 +83,7 @@ namespace ToolKit
     void EditorViewport::Show()
     {
       m_mouseOverOverlay = false;
-
-      ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_None);
+      ImGui::SetNextWindowSize(Vec2(m_size), ImGuiCond_None);
 
       if
       (
@@ -185,8 +184,6 @@ namespace ToolKit
       Window::Serialize(doc, parent);
       XmlNode* node = doc->allocate_node(rapidxml::node_element, "Viewport");
 
-      WriteAttr(node, doc, "width", std::to_string(m_width));
-      WriteAttr(node, doc, "height", std::to_string(m_height));
       WriteAttr
       (
         node,
@@ -194,6 +191,7 @@ namespace ToolKit
         "alignment",
         std::to_string(static_cast<int>(m_cameraAlignment))
       );
+
       WriteAttr
       (
         node,
@@ -213,8 +211,6 @@ namespace ToolKit
 
       if (XmlNode* node = parent->first_node("Viewport"))
       {
-        ReadAttr(node, "width", m_width);
-        ReadAttr(node, "height", m_height);
         ReadAttr
         (
           node,
@@ -226,10 +222,19 @@ namespace ToolKit
       }
     }
 
-    void EditorViewport::OnResize(float width, float height)
+    void EditorViewport::OnResizeContentArea(float width, float height)
     {
-      Viewport::OnResize(width, height);
+      Viewport::OnResizeContentArea(width, height);
       AdjustZoom(0.0f);
+    }
+
+    void EditorViewport::ResizeWindow(uint width, uint height)
+    {
+      Vec2 size(m_size);
+      Vec2 windowStyleArea = size - m_wndContentAreaSize;
+      Vec2 contentAreaSize = size - windowStyleArea;
+
+      OnResizeContentArea(contentAreaSize.x, contentAreaSize.y);
     }
 
     void EditorViewport::GetContentAreaScreenCoordinates
@@ -238,8 +243,8 @@ namespace ToolKit
       Vec2* max
     ) const
     {
-      *min = m_wndPos;
-      *max = m_wndPos + m_wndContentAreaSize;
+      *min = m_contentAreaLocation;
+      *max = m_contentAreaLocation + m_wndContentAreaSize;
     }
 
     void EditorViewport::SetCamera(Camera* cam)
@@ -267,8 +272,8 @@ namespace ToolKit
       m_contentAreaMax.x += ImGui::GetWindowPos().x;
       m_contentAreaMax.y += ImGui::GetWindowPos().y;
 
-      m_wndPos.x = m_contentAreaMin.x;
-      m_wndPos.y = m_contentAreaMin.y;
+      m_contentAreaLocation.x = m_contentAreaMin.x;
+      m_contentAreaLocation.y = m_contentAreaMin.y;
 
       m_wndContentAreaSize = Vec2
       (
@@ -308,21 +313,23 @@ namespace ToolKit
     {
       if (!ImGui::IsWindowCollapsed())
       {
+
+        // Resize window.
+        Vec2 wndSize = ImGui::GetWindowSize();
+        if (!VecAllEqual(wndSize, Vec2(m_size)))
+        {
+          ResizeWindow((uint)wndSize.x, (uint)wndSize.y);
+        }
+
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
           ImGui::Image
           (
             Convert2ImGuiTexture(m_viewportImage),
-            Vec2(m_width, m_height),
+            m_wndContentAreaSize,
             Vec2(0.0f, 0.0f),
             Vec2(1.0f, -1.0f)
           );
-
-          Vec2 wndSize = ImGui::GetWindowSize();
-          if (wndSize.x != m_width || wndSize.y != m_height)
-          {
-            OnResize(wndSize.x, wndSize.y);
-          }
 
           if (IsActive())
           {
@@ -529,10 +536,12 @@ namespace ToolKit
             Vec3 deltaOnImagePlane = glm::unProject
             (
               // Here, mouse delta is transformed to viewport center.
-              Vec3(x + m_width * 0.5f, y + m_height * 0.5f, 0.0f),
+                Vec3(x + m_wndContentAreaSize.x * 0.5f,
+                     y + m_wndContentAreaSize .y * 0.5f,
+                     0.0f),
               Mat4(),
               dat.projection,
-              Vec4(0.0f, 0.0f, m_width, m_height)
+                Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y)
             );
 
             // Thales ! Reflect imageplane displacement to world space.
@@ -613,11 +622,10 @@ namespace ToolKit
         float dist = glm::distance(ZERO, dat.pos);
         m_zoom = dist / 600.0f;
         cam->SetLens
-        (
-          -m_zoom * m_width * 0.5f,
-          m_zoom * m_width * 0.5f,
-          -m_zoom * m_height * 0.5f,
-          m_zoom * m_height * 0.5f,
+        (-m_zoom * m_wndContentAreaSize.x * 0.5f,
+                     m_zoom * m_wndContentAreaSize.x * 0.5f,
+                     -m_zoom * m_wndContentAreaSize.y * 0.5f,
+                     m_zoom * m_wndContentAreaSize.y * 0.5f,
           0.5f,
           1000.0f
         );

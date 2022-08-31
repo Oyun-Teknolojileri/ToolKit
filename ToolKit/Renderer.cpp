@@ -76,8 +76,8 @@ namespace ToolKit
         EntityRawPtrArray allEntities;
         GetChildren(rootNode, allEntities);
 
-        float halfWidth = viewport->m_width * 0.5f;
-        float halfHeight = viewport->m_height * 0.5f;
+        float halfWidth  = viewport->m_wndContentAreaSize.x * 0.5f;
+        float halfHeight = viewport->m_wndContentAreaSize.y * 0.5f;
 
         layer->m_cam->SetLens
         (
@@ -447,8 +447,8 @@ namespace ToolKit
 
   void Renderer::SetViewport(Viewport* viewport)
   {
-    m_windowWidth = static_cast<uint>(viewport->m_width);
-    m_windowHeight = static_cast<uint>(viewport->m_height);
+    m_windowWidth  = static_cast<uint>(viewport->m_wndContentAreaSize.x);
+    m_windowHeight = static_cast<uint>(viewport->m_wndContentAreaSize.y);
     SetRenderTarget(viewport->m_viewportImage);
   }
 

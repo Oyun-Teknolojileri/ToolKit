@@ -50,7 +50,7 @@ namespace ToolKit
     {
       m_mouseOverOverlay = false;
 
-      ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_None);
+      ImGui::SetNextWindowSize(Vec2(m_size), ImGuiCond_None);
 
       if
       (
@@ -104,10 +104,10 @@ namespace ToolKit
       PanZoom(deltaTime);
     }
 
-    void EditorViewport2d::OnResize(float width, float height)
+    void EditorViewport2d::OnResizeContentArea(float width, float height)
     {
-      m_width  = width;
-      m_height = height;
+      m_wndContentAreaSize.x = width;
+      m_wndContentAreaSize.y   = height;
 
       ResetViewportImage(GetRenderTargetSettings());
       AdjustZoom(FLT_MIN);
@@ -126,7 +126,7 @@ namespace ToolKit
     {
       Vec2 viewportPoint = GetLastMousePosViewportSpace();
       viewportPoint.y = m_canvasSize.y - viewportPoint.y;
-      Vec2 screenPoint = m_wndPos + m_canvasPos + viewportPoint;
+      Vec2 screenPoint = m_contentAreaLocation + m_canvasPos + viewportPoint;
       return screenPoint;
     }
 
@@ -160,7 +160,7 @@ namespace ToolKit
       Vec2* max
     ) const
     {
-      *min = m_canvasPos + m_wndPos;
+      *min = m_canvasPos + m_contentAreaLocation;
       *max = *min + m_canvasSize;
     }
 
@@ -175,8 +175,8 @@ namespace ToolKit
       m_contentAreaMax.x += ImGui::GetWindowPos().x;
       m_contentAreaMax.y += ImGui::GetWindowPos().y;
 
-      m_wndPos.x = m_contentAreaMin.x;
-      m_wndPos.y = m_contentAreaMin.y;
+      m_contentAreaLocation.x = m_contentAreaMin.x;
+      m_contentAreaLocation.y = m_contentAreaMin.y;
 
       m_wndContentAreaSize = Vec2
       (
@@ -215,15 +215,15 @@ namespace ToolKit
     {
       if (!ImGui::IsWindowCollapsed())
       {
+        // Resize window.
+        Vec2 wndSize = ImGui::GetWindowSize();
+        if (!VecAllEqual(wndSize, Vec2(m_size)))
+        {
+          ResizeWindow((uint)wndSize.x, (uint)wndSize.y);
+        }
+
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
-          // Resize window.
-          Vec2 wndSize = ImGui::GetWindowSize();
-          if (wndSize.x != m_width || wndSize.y != m_height)
-          {
-            OnResize(wndSize.x, wndSize.y);
-          }
-
           ImGui::SetCursorPos((wndSize - m_canvasSize) * 0.5f);
           ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
           ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));

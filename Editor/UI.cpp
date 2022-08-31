@@ -691,7 +691,7 @@ namespace ToolKit
       {
         if (g_app->m_emulatorSettings.landscape)
         {
-          g_app->m_playWindow->OnResize
+          g_app->m_playWindow->OnResizeContentArea
           (
             g_app->m_emulatorSettings.playHeight *
             g_app->m_emulatorSettings.zoomAmount,
@@ -701,7 +701,7 @@ namespace ToolKit
         }
         else
         {
-          g_app->m_playWindow->OnResize
+          g_app->m_playWindow->OnResizeContentArea
           (
             g_app->m_emulatorSettings.playWidth *
             g_app->m_emulatorSettings.zoomAmount,
@@ -1470,6 +1470,7 @@ namespace ToolKit
 
     Window::Window()
     {
+      m_size = UVec2(640, 480);
       m_id = ++m_baseId;
     }
 
@@ -1534,6 +1535,12 @@ namespace ToolKit
         "visible",
         std::to_string(static_cast<int>(m_visible))
       );
+
+      XmlNode* childNode = CreateXmlNode(doc, "Size", node);
+      WriteVec(childNode, doc, m_size);
+
+      childNode = CreateXmlNode(doc, "Location", node);
+      WriteVec(childNode, doc, m_location);
     }
 
     void Window::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -1552,6 +1559,16 @@ namespace ToolKit
       ReadAttr(node, "id", m_id);
       // Type is determined by the corrsesponding constructor.
       ReadAttr(node, "visible", m_visible);
+
+      if (XmlNode* childNode = node->first_node("Size"))
+      {
+        ReadVec(childNode, m_size);
+      }
+
+      if (XmlNode* childNode = node->first_node("Location"))
+      {
+        ReadVec(childNode, m_location);
+      }
     }
 
     void Window::HandleStates()

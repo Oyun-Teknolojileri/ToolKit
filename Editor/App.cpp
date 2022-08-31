@@ -1259,8 +1259,8 @@ Fail:
         rtSet.WarpS = rtSet.WarpT = GraphicTypes::UVClampToEdge;
         RenderTarget stencilMask
         (
-          static_cast<int>(viewport->m_width),
-          static_cast<int>(viewport->m_height),
+          static_cast<int>(viewport->m_size.x),
+          static_cast<int>(viewport->m_size.y),
           rtSet
         );
         stencilMask.Init();

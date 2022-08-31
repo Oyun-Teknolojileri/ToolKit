@@ -42,7 +42,8 @@ namespace ToolKit
       // Viewport overrides.
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-      void OnResize(float width, float height) override;
+      void OnResizeContentArea(float width, float height) override;
+      virtual void ResizeWindow(uint width, uint height);
 
       // Editor functions
       void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const;

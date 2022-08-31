@@ -47,8 +47,8 @@ namespace ToolKit
       const float padding = 5.0f;
       Vec2 wndPos = Vec2
       (
-        m_owner->m_wndPos.x + padding,
-        m_owner->m_wndPos.y + padding
+        m_owner->m_contentAreaLocation.x + padding,
+        m_owner->m_contentAreaLocation.y + padding
       );
 
       ImGui::SetNextWindowPos(wndPos);
@@ -969,12 +969,12 @@ namespace ToolKit
       // Status bar.
       Vec2 wndPadding = ImGui::GetStyle().WindowPadding;
       ImVec2 overlaySize;
-      overlaySize.x = m_owner->m_width - 18.0f;
+      overlaySize.x = m_owner->m_wndContentAreaSize.x - 2.0f;
       overlaySize.y = 24;
-      Vec2 pos = m_owner->m_wndPos;
+      Vec2 pos = m_owner->m_contentAreaLocation;
 
       pos.x += 1;
-      pos.y += m_owner->m_height - wndPadding.y - 54.0f;
+      pos.y += m_owner->m_wndContentAreaSize.y - wndPadding.y - 16.0f;
       ImGui::SetNextWindowPos(pos);
       ImGui::SetNextWindowBgAlpha(0.65f);
 
@@ -1032,7 +1032,7 @@ namespace ToolKit
           info = "Project: " + prj.name + "Scene: " + prj.scene;
           pos = ImGui::CalcTextSize(info.c_str());
 
-          ImGui::SameLine((m_owner->m_width - pos.x) * 0.5f);
+          ImGui::SameLine((m_owner->m_wndContentAreaSize.x - pos.x) * 0.5f);
           info = "Project: " + prj.name;
           ImGui::BulletText(info.c_str());
           ImGui::SameLine();
@@ -1041,7 +1041,7 @@ namespace ToolKit
 
           // Draw Fps.
           String fps = "Fps: " + std::to_string(g_app->m_fps);
-          ImGui::SameLine(m_owner->m_width - 88.0f);
+          ImGui::SameLine(m_owner->m_wndContentAreaSize.x - 70.0f);
           ImGui::Text(fps.c_str());
         }
       }
