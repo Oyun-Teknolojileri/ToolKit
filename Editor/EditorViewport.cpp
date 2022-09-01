@@ -230,7 +230,10 @@ namespace ToolKit
 
     void EditorViewport::ResizeWindow(uint width, uint height)
     {
-      Vec2 size(m_size);
+      m_size.x = width;
+      m_size.y = height;
+
+      Vec2 size(width, height);
       Vec2 windowStyleArea = size - m_wndContentAreaSize;
       Vec2 contentAreaSize = size - windowStyleArea;
 
