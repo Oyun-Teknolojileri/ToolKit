@@ -95,7 +95,7 @@ namespace ToolKit
         m_workspace.RefreshProjects();
       }
 
-      m_emulatorSettings.emuRes = EmulatorResolution::Custom;
+      m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager = new PublishManager();
     }
 
@@ -221,7 +221,7 @@ namespace ToolKit
         }
 
         // PlayWindow is drawn on perspective. Thus, skip perspective.
-        if (m_gameMod != GameMod::Stop && !m_emulatorSettings.runWindowed)
+        if (m_gameMod != GameMod::Stop && !m_simulatorSettings.Windowed)
         {
           if (viewport->m_name == g_3dViewport)
           {
@@ -571,9 +571,9 @@ namespace ToolKit
           m_statusMsg = "Game is playing";
           m_gameMod = mod;
 
-          if (m_emulatorSettings.runWindowed)
+          if (m_simulatorSettings.Windowed)
           {
-            m_playWindow->SetVisibility(true);
+            m_simulationWindow->SetVisibility(true);
           }
         }
         else
@@ -601,7 +601,7 @@ namespace ToolKit
         // Set the editor scene back.
         GetCurrentScene()->Reload();
         GetCurrentScene()->Init();
-        m_playWindow->SetVisibility(false);
+        m_simulationWindow->SetVisibility(false);
       }
     }
 
@@ -713,8 +713,8 @@ namespace ToolKit
 
         CreateSimulationWindow
         (
-          m_emulatorSettings.playWidth,
-          m_emulatorSettings.playHeight
+          m_simulatorSettings.Width,
+          m_simulatorSettings.Height
         );
       }
     }
@@ -732,7 +732,7 @@ namespace ToolKit
         SafeDel(EditorViewport::m_overlays[i]);
       }
 
-      SafeDel(m_playWindow);
+      SafeDel(m_simulationWindow);
     }
 
     void App::CreateWindows(XmlNode* parent)
@@ -785,8 +785,8 @@ namespace ToolKit
 
       CreateSimulationWindow
       (
-          m_emulatorSettings.playWidth,
-          m_emulatorSettings.playHeight
+          m_simulatorSettings.Width,
+          m_simulatorSettings.Height
       );
     }
 
@@ -1460,10 +1460,10 @@ Fail:
 
         if (m_gameMod != GameMod::Stop)
         {
-          m_playWindow->SetVisibility(m_emulatorSettings.runWindowed);
+          m_simulationWindow->SetVisibility(m_simulatorSettings.Windowed);
 
           EditorViewport* playWindow = GetWindow<EditorViewport>(g_3dViewport);
-          if (m_emulatorSettings.runWindowed)
+          if (m_simulatorSettings.Windowed)
           {
             if (m_windowCamLoad)
             {
@@ -1471,10 +1471,10 @@ Fail:
               (
                 TransformationSpace::TS_WORLD
               );
-              m_playWindow->GetCamera()->m_node->SetTransform(camTs);
+              m_simulationWindow->GetCamera()->m_node->SetTransform(camTs);
               m_windowCamLoad = false;
             }
-            playWindow = m_playWindow;
+            playWindow = m_simulationWindow;
           }
           m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
           plugin->Frame(deltaTime, playWindow);
@@ -1656,17 +1656,17 @@ Fail:
 
     void App::CreateSimulationWindow(float width, float height)
     {
-      m_playWindow = new EditorViewport
+      m_simulationWindow = new EditorViewport
       (
-        m_emulatorSettings.playWidth,
-        m_emulatorSettings.playHeight
+        m_simulatorSettings.Width,
+        m_simulatorSettings.Height
       );
-      m_playWindow->m_name = g_simulationViewport;
-      m_playWindow->m_additionalWindowFlags =
+      m_simulationWindow->m_name = g_simulationViewport;
+      m_simulationWindow->m_additionalWindowFlags =
         ImGuiWindowFlags_NoResize
         | ImGuiWindowFlags_NoDocking
         |ImGuiWindowFlags_NoCollapse;
-      m_playWindow->SetVisibility(false);
+      m_simulationWindow->SetVisibility(false);
     }
 
     void App::AssignManagerReporters()

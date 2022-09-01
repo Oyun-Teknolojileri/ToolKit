@@ -797,7 +797,7 @@ namespace ToolKit
           bool onPlugin = false;
           if (m_name == g_3dViewport && g_app->m_gameMod != GameMod::Stop)
           {
-            if (!g_app->m_emulatorSettings.runWindowed)
+            if (!g_app->m_simulatorSettings.Windowed)
             {
               // Game is being drawn on 3d viewport. Hide overlays.
               onPlugin = true;

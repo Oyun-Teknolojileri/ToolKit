@@ -687,29 +687,29 @@ namespace ToolKit
         }
       }
 
-      if (g_app->m_playWindow->IsVisible())
+      if (g_app->m_simulationWindow->IsVisible())
       {
-        if (g_app->m_emulatorSettings.landscape)
+        if (g_app->m_simulatorSettings.Landscape)
         {
-          g_app->m_playWindow->ResizeWindow
+          g_app->m_simulationWindow->ResizeWindow
           (
-            g_app->m_emulatorSettings.playHeight *
-            g_app->m_emulatorSettings.zoomAmount,
-            g_app->m_emulatorSettings.playWidth *
-            g_app->m_emulatorSettings.zoomAmount
+            uint(g_app->m_simulatorSettings.Height *
+            g_app->m_simulatorSettings.Scale),
+            uint(g_app->m_simulatorSettings.Width *
+            g_app->m_simulatorSettings.Scale)
           );
         }
         else
         {
-          g_app->m_playWindow->ResizeWindow
+          g_app->m_simulationWindow->ResizeWindow
           (
-            g_app->m_emulatorSettings.playWidth *
-            g_app->m_emulatorSettings.zoomAmount,
-            g_app->m_emulatorSettings.playHeight *
-            g_app->m_emulatorSettings.zoomAmount
+            uint(g_app->m_simulatorSettings.Width *
+            g_app->m_simulatorSettings.Scale),
+            uint(g_app->m_simulatorSettings.Height *
+            g_app->m_simulatorSettings.Scale)
           );
         }
-        g_app->m_playWindow->Show();
+        g_app->m_simulationWindow->Show();
       }
 
       if (m_imguiSampleWindow)

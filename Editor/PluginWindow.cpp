@@ -66,12 +66,12 @@ namespace ToolKit
     void PluginWindow::ShowHeader()
     {
       int playwidth = static_cast<int>
-        (g_app->m_emulatorSettings.playWidth);
+        (g_app->m_simulatorSettings.Width);
       int playHeight = static_cast<int>
-        (g_app->m_emulatorSettings.playHeight);
+        (g_app->m_simulatorSettings.Height);
 
       String preset =
-      EmuResToString(g_app->m_emulatorSettings.emuRes) +
+      EmuResToString(g_app->m_simulatorSettings.Resolution) +
       " / " +
       std::to_string(playwidth) +
       "x" +
@@ -84,7 +84,7 @@ namespace ToolKit
       {
         ImGui::BeginDisabled(m_simulationModeDisabled);
       }
-      ImGui::Checkbox("Run In Window", &g_app->m_emulatorSettings.runWindowed);
+      ImGui::Checkbox("Run In Window", &g_app->m_simulatorSettings.Windowed);
       if (m_simulationModeDisabled)
       {
         ImGui::EndDisabled();
@@ -272,7 +272,7 @@ namespace ToolKit
         ImGui::TableSetColumnIndex(0);
 
         // Resolution Bar
-        EmulatorResolution resolution = g_app->m_emulatorSettings.emuRes;
+        EmulatorResolution resolution = g_app->m_simulatorSettings.Resolution;
 
         int resolutionType = static_cast<int>(resolution);
 
@@ -306,56 +306,56 @@ namespace ToolKit
           switch (resolution)
           {
             case EmulatorResolution::Iphone_SE:
-              g_app->m_emulatorSettings.playWidth = 375;
-              g_app->m_emulatorSettings.playHeight = 667;
+              g_app->m_simulatorSettings.Width = 375;
+              g_app->m_simulatorSettings.Height = 667;
             break;
             case EmulatorResolution::Iphone_XR:
-              g_app->m_emulatorSettings.playWidth = 414;
-              g_app->m_emulatorSettings.playHeight = 896;
+              g_app->m_simulatorSettings.Width = 414;
+              g_app->m_simulatorSettings.Height = 896;
             break;
             case EmulatorResolution::Iphone_12_Pro:
-              g_app->m_emulatorSettings.playWidth = 390;
-              g_app->m_emulatorSettings.playHeight = 844;
+              g_app->m_simulatorSettings.Width = 390;
+              g_app->m_simulatorSettings.Height = 844;
             break;
             case EmulatorResolution::Pixel_5:
-              g_app->m_emulatorSettings.playWidth = 393;
-              g_app->m_emulatorSettings.playHeight = 851;
+              g_app->m_simulatorSettings.Width = 393;
+              g_app->m_simulatorSettings.Height = 851;
             break;
             case EmulatorResolution::Galaxy_S20_Ultra:
-              g_app->m_emulatorSettings.playWidth = 412;
-              g_app->m_emulatorSettings.playHeight = 915;
+              g_app->m_simulatorSettings.Width = 412;
+              g_app->m_simulatorSettings.Height = 915;
             break;
             case EmulatorResolution::Galaxy_Note20:
-              g_app->m_emulatorSettings.playWidth = 412;
-              g_app->m_emulatorSettings.playHeight = 915;
+              g_app->m_simulatorSettings.Width = 412;
+              g_app->m_simulatorSettings.Height = 915;
             break;
             case EmulatorResolution::Galaxy_Note20_Ultra:
-              g_app->m_emulatorSettings.playWidth = 390;
-              g_app->m_emulatorSettings.playHeight = 844;
+              g_app->m_simulatorSettings.Width = 390;
+              g_app->m_simulatorSettings.Height = 844;
             break;
             case EmulatorResolution::Ipad_Air:
-              g_app->m_emulatorSettings.playWidth = 820;
-              g_app->m_emulatorSettings.playHeight = 1180;
+              g_app->m_simulatorSettings.Width = 820;
+              g_app->m_simulatorSettings.Height = 1180;
             break;
             case EmulatorResolution::Ipad_Mini:
-              g_app->m_emulatorSettings.playWidth = 768;
-              g_app->m_emulatorSettings.playHeight = 1024;
+              g_app->m_simulatorSettings.Width = 768;
+              g_app->m_simulatorSettings.Height = 1024;
             break;
             case EmulatorResolution::Surface_Pro_7:
-              g_app->m_emulatorSettings.playWidth = 912;
-              g_app->m_emulatorSettings.playHeight = 1398;
+              g_app->m_simulatorSettings.Width = 912;
+              g_app->m_simulatorSettings.Height = 1398;
             break;
             case EmulatorResolution::Surface_Duo:
-              g_app->m_emulatorSettings.playWidth = 540;
-              g_app->m_emulatorSettings.playHeight = 720;
+              g_app->m_simulatorSettings.Width = 540;
+              g_app->m_simulatorSettings.Height = 720;
             break;
             case EmulatorResolution::Galaxy_A51_A71:
-              g_app->m_emulatorSettings.playWidth = 412;
-              g_app->m_emulatorSettings.playHeight = 914;
+              g_app->m_simulatorSettings.Width = 412;
+              g_app->m_simulatorSettings.Height = 914;
             break;
           }
 
-          g_app->m_emulatorSettings.emuRes = resolution;
+          g_app->m_simulatorSettings.Resolution = resolution;
           g_app->m_windowCamLoad = true;
         }
 
@@ -363,7 +363,7 @@ namespace ToolKit
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
         bool isCustomSized =
-          g_app->m_emulatorSettings.emuRes == EmulatorResolution::Custom;
+          g_app->m_simulatorSettings.Resolution == EmulatorResolution::Custom;
         if (!isCustomSized)
         {
           ImGui::BeginDisabled();
@@ -376,7 +376,7 @@ namespace ToolKit
         ImGui::DragFloat
         (
           "##w",
-          &g_app->m_emulatorSettings.playWidth,
+          &g_app->m_simulatorSettings.Width,
           1.0f,
           1.0f,
           4096.0f,
@@ -392,7 +392,7 @@ namespace ToolKit
         ImGui::DragFloat
         (
           "##h",
-          &g_app->m_emulatorSettings.playHeight,
+          &g_app->m_simulatorSettings.Height,
           1.0f,
           1.0f,
           4096.0f,
@@ -414,7 +414,7 @@ namespace ToolKit
         ImGui::SliderFloat
         (
           "##z",
-          &g_app->m_emulatorSettings.zoomAmount,
+          &g_app->m_simulatorSettings.Scale,
           0.25f,
           1.0f,
           "x%.2f"
@@ -435,7 +435,7 @@ namespace ToolKit
           )
         )
         {
-          bool* rotated = &g_app->m_emulatorSettings.landscape;
+          bool* rotated = &g_app->m_simulatorSettings.Landscape;
           *rotated = !(*rotated);
         }
         ImGui::EndTable();
