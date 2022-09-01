@@ -651,7 +651,6 @@ namespace ToolKit
       else
       {
         // 3d viewport.
-
         Vec2 vpSize = Vec2(m_renderer->m_windowSize) * 0.8f;
         EditorViewport* vp = new EditorViewport(vpSize);
         vp->m_name = g_3dViewport;
@@ -1661,11 +1660,13 @@ Fail:
         m_simulatorSettings.Width,
         m_simulatorSettings.Height
       );
+
       m_simulationWindow->m_name = g_simulationViewport;
       m_simulationWindow->m_additionalWindowFlags =
         ImGuiWindowFlags_NoResize
         | ImGuiWindowFlags_NoDocking
         |ImGuiWindowFlags_NoCollapse;
+
       m_simulationWindow->SetVisibility(false);
     }
 

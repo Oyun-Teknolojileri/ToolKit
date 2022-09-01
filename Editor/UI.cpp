@@ -689,26 +689,6 @@ namespace ToolKit
 
       if (g_app->m_simulationWindow->IsVisible())
       {
-        if (g_app->m_simulatorSettings.Landscape)
-        {
-          g_app->m_simulationWindow->ResizeWindow
-          (
-            uint(g_app->m_simulatorSettings.Height *
-            g_app->m_simulatorSettings.Scale),
-            uint(g_app->m_simulatorSettings.Width *
-            g_app->m_simulatorSettings.Scale)
-          );
-        }
-        else
-        {
-          g_app->m_simulationWindow->ResizeWindow
-          (
-            uint(g_app->m_simulatorSettings.Width *
-            g_app->m_simulatorSettings.Scale),
-            uint(g_app->m_simulatorSettings.Height *
-            g_app->m_simulatorSettings.Scale)
-          );
-        }
         g_app->m_simulationWindow->Show();
       }
 
