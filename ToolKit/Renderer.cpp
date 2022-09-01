@@ -1000,6 +1000,13 @@ namespace ToolKit
                 && ntt->GetMeshComponent()->GetCastShadowVal()
               )
               {
+                MaterialPtr entityMat = GetRenderMaterial(ntt);
+                m_overrideMat->SetRenderState
+                (
+                  entityMat->GetRenderState()
+                );
+                m_overrideMat->m_alpha = entityMat->m_alpha;
+                m_overrideMat->m_diffuseTexture = entityMat->m_diffuseTexture;
                 Render(ntt, m_shadowMapCamera);
               }
             }
@@ -1072,8 +1079,8 @@ namespace ToolKit
             (
               0,
               0,
-              static_cast<uint>(light->GetShadowMapResolution().x),
-              static_cast<uint>(light->GetShadowMapResolution().y)
+              static_cast<uint>(light->GetShadowResolutionVal().x),
+              static_cast<uint>(light->GetShadowResolutionVal().y)
             );
             for (unsigned int i = 0; i < 6; ++i)
             {
@@ -1257,7 +1264,7 @@ namespace ToolKit
         case Uniform::COLOR:
         {
           if (m_mat == nullptr)
-            return;
+            break;
 
           Vec4 color = Vec4(m_mat->m_color, m_mat->m_alpha);
           if
@@ -1344,6 +1351,37 @@ namespace ToolKit
         {
           m_renderState.irradianceMap = m_mat->GetRenderState()->irradianceMap;
           SetTexture(7, m_renderState.irradianceMap);
+        }
+        break;
+        case Uniform::DIFFUSE_TEXTURE_IN_USE:
+        {
+          GLint loc =
+          glGetUniformLocation(program->m_handle, "diffuseTextureInUse");
+          glUniform1i
+          (
+            loc,
+            static_cast<int>(m_mat->GetRenderState()->diffuseTextureInUse)
+          );
+        }
+        break;
+        case Uniform::COLOR_ALPHA:
+        {
+          if (m_mat == nullptr)
+            break;
+
+          GLint loc = glGetUniformLocation(program->m_handle, "colorAlpha");
+          if
+          (
+            m_mat->GetRenderState()->blendFunction
+            == BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA
+          )
+          {
+            glUniform1f(loc, m_mat->m_alpha);
+          }
+          else
+          {
+            glUniform1f(loc, 1.0f);
+          }
         }
         break;
         default:
@@ -1569,6 +1607,13 @@ namespace ToolKit
         glUniform1f(loc, innAngle);
       }
 
+      GLuint loc = glGetUniformLocation
+      (
+        program->m_handle,
+        g_lightPCFKernelSizeHalfCache[i].c_str()
+      );
+      glUniform1i(loc, currLight->GetShadowPCFKernelSizeVal() / 2);
+
       bool castShadow = currLight->GetCastShadowVal();
       if (castShadow)
       {
@@ -1607,7 +1652,7 @@ namespace ToolKit
         );
       }
 
-      GLint loc = glGetUniformLocation
+      loc = glGetUniformLocation
       (
         program->m_handle,
         g_lightCastShadowStrCache[i].c_str()

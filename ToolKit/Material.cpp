@@ -160,6 +160,11 @@ namespace ToolKit
     return &m_renderState;
   }
 
+  void Material::SetRenderState(RenderState* state)
+  {
+    m_renderState = *state;  // Copy
+  }
+
   void Material::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "material", parent);

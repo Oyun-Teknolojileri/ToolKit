@@ -24,7 +24,9 @@ namespace ToolKit
     PROJECTION_VIEW_NO_TR,
     USE_IBL,
     IBL_INTENSITY,
-    IBL_IRRADIANCE
+    IBL_IRRADIANCE,
+    DIFFUSE_TEXTURE_IN_USE,
+    COLOR_ALPHA
   };
 
   class TK_API Shader : public Resource

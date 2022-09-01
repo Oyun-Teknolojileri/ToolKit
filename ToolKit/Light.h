@@ -22,8 +22,6 @@ namespace ToolKit
     // Shadow operations
     virtual void InitShadowMap();
     virtual void UnInitShadowMap();
-    void SetShadowMapResolution(uint width, uint height);
-    Vec2 GetShadowMapResolution();
     RenderTarget* GetShadowMapRenderTarget();
     MaterialPtr GetShadowMaterial();
 
@@ -36,6 +34,7 @@ namespace ToolKit
     TKDeclareParam(bool, CastShadow);
     TKDeclareParam(float, ShadowBias);
     TKDeclareParam(Vec2, ShadowResolution);
+    TKDeclareParam(int, ShadowPCFKernelSize);
 
     bool m_isStudioLight = false;
     Mat4 m_shadowMapCameraProjectionViewMatrix;
@@ -43,8 +42,6 @@ namespace ToolKit
 
    protected:
     bool m_shadowMapInitialized = false;
-    uint m_shadowMapWidth = 1024;
-    uint m_shadowMapHeight = 1024;
     bool m_shadowMapResolutionChanged = false;
     MaterialPtr m_shadowMapMaterial = nullptr;
     RenderTarget* m_depthRenderTarget = nullptr;

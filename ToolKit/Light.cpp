@@ -14,9 +14,37 @@ namespace ToolKit
   Light::Light()
   {
     Color_Define(Vec3(1.0f), "Light", 0, true, true, { true });
-    Intensity_Define(1.0f, "Light", 90, true, true);
+    Intensity_Define
+    (
+      1.0f,
+      "Light",
+      90,
+      true,
+      true,
+      {
+        false,
+        true,
+        0.0f,
+        100000.0f,
+        0.1f
+      }
+    );
     CastShadow_Define(false, "Light", 90, true, true);
-    ShadowBias_Define(0.4f, "Light", 90, true, true);
+    ShadowBias_Define
+    (
+      0.4f,
+      "Light",
+      90,
+      true,
+      true,
+      {
+        false,
+        true,
+        0.0f,
+        100000.0f,
+        0.01f
+      }
+    );
     ShadowResolution_Define
     (
       Vec2(1024.0f, 1024.0f),
@@ -32,6 +60,7 @@ namespace ToolKit
         2.0f
       }
     );
+    ShadowPCFKernelSize_Define(5, "Light", 90, true, true);
   }
 
   Light::~Light()
@@ -111,18 +140,6 @@ namespace ToolKit
     m_shadowMapInitialized = false;
   }
 
-  void Light::SetShadowMapResolution(uint width, uint height)
-  {
-    m_shadowMapWidth = width;
-    m_shadowMapHeight = height;
-    m_shadowMapResolutionChanged = true;
-  }
-
-  Vec2 Light::GetShadowMapResolution()
-  {
-    return Vec2(m_shadowMapWidth, m_shadowMapHeight);
-  }
-
   RenderTarget* Light::GetShadowMapRenderTarget()
   {
     return m_depthRenderTarget;
@@ -167,7 +184,22 @@ namespace ToolKit
 
   PointLight::PointLight()
   {
-    Radius_Define(3.0f, "Light", 90, true, true);
+    Radius_Define
+    (
+      3.0f,
+      "Light",
+      90,
+      true,
+      true,
+      {
+        false,
+        true,
+        0.1f,
+        100000.0f,
+        0.4f
+      }
+    );
+    ParamShadowPCFKernelSize().m_exposed = false;
   }
 
   EntityType PointLight::GetType() const
@@ -234,9 +266,51 @@ namespace ToolKit
 
   SpotLight::SpotLight()
   {
-    Radius_Define(10.0f, "Light", 90, true, true);
-    OuterAngle_Define(35.0f, "Light", 90, true, true);
-    InnerAngle_Define(30.0f, "Light", 90, true, true);
+    Radius_Define
+    (
+      10.0f,
+      "Light",
+      90,
+      true,
+      true,
+      {
+        false,
+        true,
+        0.1f,
+        100000.0f,
+        0.4f
+      }
+    );
+    OuterAngle_Define
+    (
+      35.0f,
+      "Light",
+      90,
+      true,
+      true,
+      {
+        false,
+        true,
+        0.5f,
+        89.8f,
+        1.0f
+      }
+    );
+    InnerAngle_Define
+    (
+      30.0f,
+      "Light",
+      90,
+      true,
+      true,
+      {
+        false,
+        true,
+        0.5f,
+        89.8f,
+        1.0f
+      }
+    );
 
     AddComponent(new DirectionComponent(this));
   }

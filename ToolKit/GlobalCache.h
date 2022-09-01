@@ -88,6 +88,22 @@ namespace ToolKit
     "LightData.type[11]"
   };
 
+  static StringArray g_lightPCFKernelSizeHalfCache =
+  {
+    "LightData.shadowPCFKernelHalfSize[0]",
+    "LightData.shadowPCFKernelHalfSize[1]",
+    "LightData.shadowPCFKernelHalfSize[2]",
+    "LightData.shadowPCFKernelHalfSize[3]",
+    "LightData.shadowPCFKernelHalfSize[4]",
+    "LightData.shadowPCFKernelHalfSize[5]",
+    "LightData.shadowPCFKernelHalfSize[6]",
+    "LightData.shadowPCFKernelHalfSize[7]",
+    "LightData.shadowPCFKernelHalfSize[8]",
+    "LightData.shadowPCFKernelHalfSize[9]",
+    "LightData.shadowPCFKernelHalfSize[10]",
+    "LightData.shadowPCFKernelHalfSize[11]"
+  };
+
   static StringArray g_lightRadiusStrCache =
   {
     "LightData.radius[0]",

@@ -274,6 +274,14 @@ namespace ToolKit
         {
           m_uniforms.push_back(Uniform::IBL_IRRADIANCE);
         }
+        else if (strcmp("DiffuseTextureInUse", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::DIFFUSE_TEXTURE_IN_USE);
+        }
+        else if (strcmp("ColorAlpha", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::COLOR_ALPHA);
+        }
         else
         {
           assert(false);
