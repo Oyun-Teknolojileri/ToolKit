@@ -58,6 +58,8 @@ namespace ToolKit
       void DrawCommands();
       void HandleDrop();
       void DrawOverlays();
+      void ComitResize();
+      void UpdateSnaps();
 
       // Mods.
       void FpsNavigationMode(float deltaTime);
@@ -82,6 +84,7 @@ namespace ToolKit
         Entity* dwMesh,
         LineBatch** boundingBox
       );
+
       void HandleDropMesh
       (
         bool& meshLoaded,
@@ -111,6 +114,7 @@ namespace ToolKit
      private:
       // States.
       bool m_relMouseModBegin = true;
+      bool m_needsResize      = false;
     };
 
   }  // namespace Editor

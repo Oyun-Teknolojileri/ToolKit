@@ -107,12 +107,8 @@ namespace ToolKit
         DrawCommands();
         HandleDrop();
         DrawOverlays();
-        if (m_mouseOverContentArea && g_app->m_snapsEnabled)
-        {
-          g_app->m_moveDelta = m_snapDeltas.x;
-          g_app->m_rotateDelta = m_snapDeltas.y;
-          g_app->m_scaleDelta = m_snapDeltas.z;
-        }
+        ComitResize();
+        UpdateSnaps();
       }
       ImGui::End();
     }
@@ -236,12 +232,7 @@ namespace ToolKit
     {
       m_size.x = width;
       m_size.y = height;
-
-      Vec2 size(width, height);
-      Vec2 windowStyleArea = size - m_wndContentAreaSize;
-      Vec2 contentAreaSize = size - windowStyleArea;
-
-      OnResizeContentArea(contentAreaSize.x, contentAreaSize.y);
+      m_needsResize = true;
     }
 
     void EditorViewport::GetContentAreaScreenCoordinates
@@ -821,6 +812,30 @@ namespace ToolKit
             }
           }
         }
+      }
+    }
+
+    void EditorViewport::ComitResize()
+    {
+      if (m_needsResize)
+      {
+        Vec2 size(m_size);
+        Vec2 windowStyleArea = size - m_wndContentAreaSize;
+        Vec2 contentAreaSize = size - windowStyleArea;
+
+        OnResizeContentArea(contentAreaSize.x, contentAreaSize.y);
+      }
+
+      m_needsResize = false;
+    }
+
+    void EditorViewport::UpdateSnaps()
+    {
+      if (m_mouseOverContentArea && g_app->m_snapsEnabled)
+      {
+        g_app->m_moveDelta   = m_snapDeltas.x;
+        g_app->m_rotateDelta = m_snapDeltas.y;
+        g_app->m_scaleDelta  = m_snapDeltas.z;
       }
     }
 

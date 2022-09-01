@@ -73,13 +73,8 @@ namespace ToolKit
         DrawCommands();
         HandleDrop();
         DrawOverlays();
-
-        if (m_mouseOverContentArea && g_app->m_snapsEnabled)
-        {
-          g_app->m_moveDelta = m_snapDeltas.x;
-          g_app->m_rotateDelta = m_snapDeltas.y;
-          g_app->m_scaleDelta = m_snapDeltas.z;
-        }
+        ComitResize();
+        UpdateSnaps();
       }
       ImGui::End();
     }
