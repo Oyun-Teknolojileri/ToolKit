@@ -427,7 +427,7 @@ namespace ToolKit
     else
     {
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
-      glViewport(0, 0, m_windowWidth, m_windowHeight);
+      glViewport(0, 0, m_windowSize.x, m_windowSize.y);
     }
 
     m_renderTarget = renderTarget;
@@ -447,15 +447,14 @@ namespace ToolKit
 
   void Renderer::SetViewport(Viewport* viewport)
   {
-    m_windowWidth  = static_cast<uint>(viewport->m_wndContentAreaSize.x);
-    m_windowHeight = static_cast<uint>(viewport->m_wndContentAreaSize.y);
+    m_viewportSize = UVec2(viewport->m_wndContentAreaSize);
     SetRenderTarget(viewport->m_viewportImage);
   }
 
   void Renderer::SetViewportSize(uint width, uint height)
   {
-    m_windowWidth = width;
-    m_windowHeight = height;
+    m_viewportSize.x = width;
+    m_viewportSize.y = height;
     glViewport(0, 0, width, height);
   }
 

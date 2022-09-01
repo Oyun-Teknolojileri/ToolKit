@@ -918,7 +918,7 @@ namespace ToolKit
         );
       }
       else
-      #endif
+    #endif
       {
         glRenderbufferStorage
         (

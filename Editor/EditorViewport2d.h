@@ -17,6 +17,7 @@ namespace ToolKit
      public:
       explicit EditorViewport2d(XmlNode* node);
       EditorViewport2d(float width, float height);
+      EditorViewport2d(const Vec2& size);
       virtual ~EditorViewport2d();
 
       // Window Overrides.

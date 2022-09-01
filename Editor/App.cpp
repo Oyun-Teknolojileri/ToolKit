@@ -41,8 +41,8 @@ namespace ToolKit
     {
       m_cursor = nullptr;
       m_renderer = Main::GetInstance()->m_renderer;
-      m_renderer->m_windowWidth = windowWidth;
-      m_renderer->m_windowHeight = windowHeight;
+      m_renderer->m_windowSize.x = windowWidth;
+      m_renderer->m_windowSize.y = windowHeight;
       m_statusMsg = "OK";
 
       OverrideEntityConstructors();
@@ -307,7 +307,8 @@ namespace ToolKit
 
     void App::OnResize(uint width, uint height)
     {
-      m_renderer->SetViewportSize(width, height);
+      m_renderer->m_windowSize.x = width;
+      m_renderer->m_windowSize.y = height;
     }
 
     void App::OnNewScene(const String& name)
@@ -650,11 +651,9 @@ namespace ToolKit
       else
       {
         // 3d viewport.
-        EditorViewport* vp = new EditorViewport
-        (
-          m_renderer->m_windowWidth * 0.8f,
-          m_renderer->m_windowHeight * 0.8f
-        );
+
+        Vec2 vpSize = Vec2(m_renderer->m_windowSize) * 0.8f;
+        EditorViewport* vp = new EditorViewport(vpSize);
         vp->m_name = g_3dViewport;
         vp->GetCamera()->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
         vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt
@@ -666,8 +665,7 @@ namespace ToolKit
         // 2d viewport.
         vp = new EditorViewport2d
         (
-          m_renderer->m_windowWidth * 0.8f,
-          m_renderer->m_windowHeight * 0.8f
+          vpSize
         );
         vp->m_name = g_2dViewport;
         vp->GetCamera()->m_node->SetTranslation(Z_AXIS);
@@ -676,8 +674,7 @@ namespace ToolKit
         // Isometric viewport.
         vp = new EditorViewport
         (
-          m_renderer->m_windowWidth * 0.8f,
-          m_renderer->m_windowHeight * 0.8f
+          vpSize
         );
         vp->m_name = g_IsoViewport;
         vp->GetCamera()->m_node->SetTranslation({ 0.0f, 10.0f, 0.0f });
@@ -1103,8 +1100,8 @@ Fail:
       SDL_SetWindowSize
       (
         g_window,
-        m_renderer->m_windowWidth,
-        m_renderer->m_windowHeight
+        m_renderer->m_windowSize.x,
+        m_renderer->m_windowSize.y
       );
 
       SDL_SetWindowPosition
@@ -1522,7 +1519,7 @@ Fail:
           setNode,
           lclDoc.get(),
           "width",
-          std::to_string(m_renderer->m_windowWidth)
+          std::to_string(m_renderer->m_windowSize.x)
         );
 
         WriteAttr
@@ -1530,7 +1527,7 @@ Fail:
           setNode,
           lclDoc.get(),
           "height",
-          std::to_string(m_renderer->m_windowHeight)
+          std::to_string(m_renderer->m_windowSize.y)
         );
 
         WriteAttr

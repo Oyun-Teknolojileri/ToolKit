@@ -38,6 +38,10 @@ namespace ToolKit
       InitViewport();
     }
 
+    EditorViewport2d::EditorViewport2d(const Vec2& size) : EditorViewport2d(size.x, size.y)
+    {
+    }
+
     EditorViewport2d::~EditorViewport2d()
     {
       if (m_2dViewOptions)

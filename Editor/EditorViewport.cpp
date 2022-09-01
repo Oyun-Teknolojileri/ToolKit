@@ -76,6 +76,10 @@ namespace ToolKit
       m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
     }
 
+    EditorViewport::EditorViewport(const Vec2& size) : EditorViewport(size.x, size.y)
+    {
+    }
+
     EditorViewport::~EditorViewport()
     {
     }
