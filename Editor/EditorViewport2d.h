@@ -52,9 +52,8 @@ namespace ToolKit
       Vec2 m_canvasPos;
 
      public:
-      float m_zoomPercentage = 100;
+      float m_zoomPercentage = 100.0f;
       uint m_gridCellSizeByPixel = 10;
-      IVec2 m_gridSize = IVec2(640, 480);
     };
 
   }  // namespace Editor

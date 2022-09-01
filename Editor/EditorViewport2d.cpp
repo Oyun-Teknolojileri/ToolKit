@@ -96,7 +96,7 @@ namespace ToolKit
       // Resize Grid
       g_app->m_2dGrid->Resize
       (
-        UVec2(10000),
+        g_max2dGridSize,
         AxisLabel::XY,
         (float)m_gridCellSizeByPixel
       );

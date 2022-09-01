@@ -716,8 +716,8 @@ namespace ToolKit
 
         CreateSimulationWindow
         (
-          g_app->m_emulatorSettings.playWidth,
-          g_app->m_emulatorSettings.playHeight
+          m_emulatorSettings.playWidth,
+          m_emulatorSettings.playHeight
         );
       }
     }
@@ -788,8 +788,8 @@ namespace ToolKit
 
       CreateSimulationWindow
       (
-          g_app->m_emulatorSettings.playWidth,
-          g_app->m_emulatorSettings.playHeight
+          m_emulatorSettings.playWidth,
+          m_emulatorSettings.playHeight
       );
     }
 
@@ -1704,27 +1704,14 @@ Fail:
       m_cursor = new Cursor();
       m_origin = new Axis3d();
 
-      uint gridSize = 100000;
-      m_grid = new Grid(UVec2(gridSize));
-      m_grid->Resize(UVec2(gridSize), AxisLabel::ZX, 0.025f);
+      m_grid = new Grid(g_max2dGridSize, AxisLabel::ZX, 0.025f);
 
       m_2dGrid = new Grid
       (
-        UVec2
-        (
-          g_app->m_emulatorSettings.playWidth,
-          g_app->m_emulatorSettings.playHeight
-        )
-      );
-      m_2dGrid->Resize
-      (
-        UVec2
-        (
-          g_app->m_emulatorSettings.playWidth,
-          g_app->m_emulatorSettings.playHeight
-        ),
-        AxisLabel::XY, 10.0
-      );  // Generate grid cells 10 x 10
+        g_max2dGridSize,
+        AxisLabel::XY,
+        10.0f
+      ); // Generate grid cells 10 x 10
 
       // Lights and camera.
       m_lightMaster = new Node();

@@ -645,9 +645,6 @@ namespace ToolKit
           ImGuiDataType_U16, &editorViewport->m_gridCellSizeByPixel,
           &cellSizeStep
         );
-        ImGui::InputInt2("Grid Size",
-          reinterpret_cast<int*>(&editorViewport->m_gridSize));
-        ImGui::PopItemWidth();
       };
 
 
