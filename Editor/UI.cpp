@@ -691,7 +691,7 @@ namespace ToolKit
       {
         if (g_app->m_emulatorSettings.landscape)
         {
-          g_app->m_playWindow->OnResizeContentArea
+          g_app->m_playWindow->ResizeWindow
           (
             g_app->m_emulatorSettings.playHeight *
             g_app->m_emulatorSettings.zoomAmount,
@@ -701,7 +701,7 @@ namespace ToolKit
         }
         else
         {
-          g_app->m_playWindow->OnResizeContentArea
+          g_app->m_playWindow->ResizeWindow
           (
             g_app->m_emulatorSettings.playWidth *
             g_app->m_emulatorSettings.zoomAmount,
