@@ -1,4 +1,7 @@
 #include "PluginWindow.h"
+
+#include <utility>
+
 #include "GlobalDef.h"
 #include "ConsoleWindow.h"
 #include "App.h"

@@ -308,7 +308,7 @@ namespace ToolKit
 
     struct Timing
     {
-      Timing(uint fps)
+      explicit Timing(uint fps)
       {
         lastTime = GetElapsedMilliSeconds();
         currentTime = 0.0f;

@@ -68,16 +68,17 @@ namespace ToolKit
       m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
     }
 
+    EditorViewport::EditorViewport(const Vec2& size)
+        : EditorViewport(size.x, size.y)
+    {
+    }
+
     EditorViewport::EditorViewport(float width, float height)
       : Viewport(width, height)
     {
       m_name = g_viewportStr + " " + std::to_string(m_id);
       InitOverlays(this);
       m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
-    }
-
-    EditorViewport::EditorViewport(const Vec2& size) : EditorViewport(size.x, size.y)
-    {
     }
 
     EditorViewport::~EditorViewport()
@@ -311,7 +312,6 @@ namespace ToolKit
     {
       if (!ImGui::IsWindowCollapsed())
       {
-
         // Resize window.
         Vec2 wndSize = ImGui::GetWindowSize();
         if (!VecAllEqual(wndSize, Vec2(m_size)))

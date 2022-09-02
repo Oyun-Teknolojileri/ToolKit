@@ -58,7 +58,8 @@ namespace ToolKit
   {
   }
 
-  Viewport::Viewport(float width, float height) : m_wndContentAreaSize(width, height)
+  Viewport::Viewport(float width, float height)
+    : m_wndContentAreaSize(width, height)
   {
     GetCamera()->SetLens(glm::quarter_pi<float>(), width, height);
     ResetViewportImage(GetRenderTargetSettings());
@@ -220,7 +221,8 @@ namespace ToolKit
         glm::vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y)
     );
     screenPos.x += m_contentAreaLocation.x;
-    screenPos.y = m_wndContentAreaSize.y + m_contentAreaLocation.y - screenPos.y;
+    screenPos.y = m_wndContentAreaSize.y + m_contentAreaLocation.y
+      - screenPos.y;
     return screenPos.xy;
   }
 

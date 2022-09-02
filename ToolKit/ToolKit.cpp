@@ -1,5 +1,6 @@
 #include "ToolKit.h"
 
+#include <memory>
 #include <algorithm>
 #include <filesystem>
 #include <string>

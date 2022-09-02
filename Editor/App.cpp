@@ -1573,7 +1573,7 @@ Fail:
 
           assert
           (
-            CheckFile(settingsFile) && 
+            CheckFile(settingsFile) &&
             "ToolKit/Config/Editor.settings must exist."
           );
         }
@@ -1709,7 +1709,7 @@ Fail:
         g_max2dGridSize,
         AxisLabel::XY,
         10.0f
-      ); // Generate grid cells 10 x 10
+      );  // Generate grid cells 10 x 10
 
       // Lights and camera.
       m_lightMaster = new Node();

@@ -38,7 +38,8 @@ namespace ToolKit
       InitViewport();
     }
 
-    EditorViewport2d::EditorViewport2d(const Vec2& size) : EditorViewport2d(size.x, size.y)
+    EditorViewport2d::EditorViewport2d(const Vec2& size)
+      : EditorViewport2d(size.x, size.y)
     {
     }
 
@@ -97,7 +98,7 @@ namespace ToolKit
       (
         g_max2dGridSize,
         AxisLabel::XY,
-        (float)m_gridCellSizeByPixel
+        float(m_gridCellSizeByPixel)
       );
 
       PanZoom(deltaTime);
