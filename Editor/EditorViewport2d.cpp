@@ -98,7 +98,7 @@ namespace ToolKit
       (
         g_max2dGridSize,
         AxisLabel::XY,
-        float(m_gridCellSizeByPixel)
+        static_cast<float> (m_gridCellSizeByPixel)
       );
 
       PanZoom(deltaTime);

@@ -87,9 +87,9 @@ namespace ToolKit
       String preset =
       EmuResToString(m_settings->Resolution) +
       " / " +
-      std::to_string(int(m_settings->Width)) +
+      std::to_string(static_cast<int>(m_settings->Width)) +
       "x" +
-      std::to_string(int(m_settings->Height));
+      std::to_string(static_cast<int>(m_settings->Height));
 
       String section = "Device: " + preset;
       ImGui::Text(section.c_str());
