@@ -29,20 +29,18 @@ namespace ToolKit
     EditorViewport2d::EditorViewport2d(XmlNode* node)
       : EditorViewport(node)
     {
-      UpdateCanvasSize();
-      Init2dCam();
-      if (!m_2dViewOptions)
-      {
-        m_2dViewOptions = new Overlay2DViewportOptions(this);
-      }
-      m_snapDeltas = Vec3(10.0f, 45.0f, 0.25f);
+      InitViewport();
     }
 
     EditorViewport2d::EditorViewport2d(float width, float height)
       : EditorViewport(width, height)
     {
-      UpdateCanvasSize();
-      Init2dCam();
+      InitViewport();
+    }
+
+    EditorViewport2d::EditorViewport2d(const Vec2& size)
+      : EditorViewport2d(size.x, size.y)
+    {
     }
 
     EditorViewport2d::~EditorViewport2d()
@@ -57,13 +55,8 @@ namespace ToolKit
     {
       m_mouseOverOverlay = false;
 
-      Vec2 size =
-      {
-        g_app->m_emulatorSettings.playWidth * 1.1f,
-        g_app->m_emulatorSettings.playHeight * 1.1f
-      };
+      ImGui::SetNextWindowSize(Vec2(m_size), ImGuiCond_None);
 
-      ImGui::SetNextWindowSize(size, ImGuiCond_Once);
       if
       (
         ImGui::Begin
@@ -71,7 +64,7 @@ namespace ToolKit
           m_name.c_str(),
           &m_visible,
           ImGuiWindowFlags_NoScrollWithMouse
-          | ImGuiWindowFlags_HorizontalScrollbar
+          | ImGuiWindowFlags_NoScrollbar
         )
       )
       {
@@ -81,12 +74,8 @@ namespace ToolKit
         DrawCommands();
         HandleDrop();
         DrawOverlays();
-        if (m_mouseOverContentArea && g_app->m_snapsEnabled)
-        {
-          g_app->m_moveDelta = m_snapDeltas.x;
-          g_app->m_rotateDelta = m_snapDeltas.y;
-          g_app->m_scaleDelta = m_snapDeltas.z;
-        }
+        ComitResize();
+        UpdateSnaps();
       }
       ImGui::End();
     }
@@ -107,24 +96,20 @@ namespace ToolKit
       // Resize Grid
       g_app->m_2dGrid->Resize
       (
-        m_gridWholeSize,
+        g_max2dGridSize,
         AxisLabel::XY,
-        m_gridCellSizeByPixel
+        static_cast<float> (m_gridCellSizeByPixel)
       );
 
       PanZoom(deltaTime);
     }
 
-    void EditorViewport2d::OnResize(float width, float height)
+    void EditorViewport2d::OnResizeContentArea(float width, float height)
     {
-      m_width = width;
-      m_height = height;
+      m_wndContentAreaSize.x = width;
+      m_wndContentAreaSize.y   = height;
 
-      m_viewportImage->UnInit();
-      m_viewportImage->m_width = (uint)m_canvasSize.x;
-      m_viewportImage->m_height = (uint)m_canvasSize.y;
-      m_viewportImage->Init();
-
+      ResetViewportImage(GetRenderTargetSettings());
       AdjustZoom(FLT_MIN);
     }
 
@@ -141,7 +126,7 @@ namespace ToolKit
     {
       Vec2 viewportPoint = GetLastMousePosViewportSpace();
       viewportPoint.y = m_canvasSize.y - viewportPoint.y;
-      Vec2 screenPoint = m_wndPos + m_canvasPos + viewportPoint;
+      Vec2 screenPoint = m_contentAreaLocation + m_canvasPos + viewportPoint;
       return screenPoint;
     }
 
@@ -175,7 +160,7 @@ namespace ToolKit
       Vec2* max
     ) const
     {
-      *min = m_canvasPos + m_wndPos;
+      *min = m_canvasPos + m_contentAreaLocation;
       *max = *min + m_canvasSize;
     }
 
@@ -190,8 +175,8 @@ namespace ToolKit
       m_contentAreaMax.x += ImGui::GetWindowPos().x;
       m_contentAreaMax.y += ImGui::GetWindowPos().y;
 
-      m_wndPos.x = m_contentAreaMin.x;
-      m_wndPos.y = m_contentAreaMin.y;
+      m_contentAreaLocation.x = m_contentAreaMin.x;
+      m_contentAreaLocation.y = m_contentAreaMin.y;
 
       m_wndContentAreaSize = Vec2
       (
@@ -199,7 +184,7 @@ namespace ToolKit
         glm::abs(m_contentAreaMax.y - m_contentAreaMin.y)
       );
 
-      m_canvasSize = m_wndContentAreaSize * 0.8f;
+      m_canvasSize = m_wndContentAreaSize;
 
       ImGuiIO& io = ImGui::GetIO();
       ImVec2 absMousePos = io.MousePos;
@@ -230,20 +215,15 @@ namespace ToolKit
     {
       if (!ImGui::IsWindowCollapsed())
       {
-        m_scroll = Vec2(ImGui::GetScrollX(), ImGui::GetScrollY());
+        // Resize window.
+        Vec2 wndSize = ImGui::GetWindowSize();
+        if (!VecAllEqual(wndSize, Vec2(m_size)))
+        {
+          ResizeWindow((uint)wndSize.x, (uint)wndSize.y);
+        }
+
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
-          // Resize window.
-          if
-          (
-            glm::notEqual(m_wndContentAreaSize.x, m_width) ||
-            glm::notEqual(m_wndContentAreaSize.y, m_height)
-          )
-          {
-            OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
-          }
-
-          Vec2 wndSize = ImGui::GetWindowSize();
           ImGui::SetCursorPos((wndSize - m_canvasSize) * 0.5f);
           ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
           ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
@@ -283,8 +263,8 @@ namespace ToolKit
           {
             ImGui::GetWindowDrawList()->AddRect
             (
-              m_contentAreaMin + m_scroll,
-              m_contentAreaMax + m_scroll,
+              m_contentAreaMin,
+              m_contentAreaMax,
               IM_COL32(255, 255, 0, 255)
             );
           }
@@ -292,8 +272,8 @@ namespace ToolKit
           {
             ImGui::GetWindowDrawList()->AddRect
             (
-              m_contentAreaMin + m_scroll,
-              m_contentAreaMax + m_scroll,
+              m_contentAreaMin,
+              m_contentAreaMax,
               IM_COL32(128, 128, 128, 255)
             );
           }
@@ -393,32 +373,24 @@ namespace ToolKit
         if (IsActive() || g_app->m_showOverlayUIAlways)
         {
           // Draw all overlays except 3DViewportOptions!
-          for (uint32_t i = 0; i < m_overlays.size(); i++)
+          for (size_t i = 0; i < m_overlays.size(); i++)
           {
             if (i == 1)
             {
-              m_2dViewOptions->m_scroll = m_scroll;
               m_2dViewOptions->m_owner = this;
               m_2dViewOptions->Show();
-              m_2dViewOptions->m_scroll = Vec2();
               continue;
             }
 
             OverlayUI* overlay = m_overlays[i];
             if (overlay)
             {
-              overlay->m_scroll = m_scroll;
               overlay->m_owner = this;
               overlay->Show();
-              overlay->m_scroll = Vec2();
             }
           }
         }
       }
-    }
-
-    void EditorViewport2d::DrawCanvasToolBar()
-    {
     }
 
     void EditorViewport2d::AdjustZoom(float delta)
@@ -476,27 +448,6 @@ namespace ToolKit
       );
     }
 
-    void EditorViewport2d::Init2dCam()
-    {
-      m_zoom = 1.0f;
-      GetCamera()->m_node->SetTranslation(Z_AXIS * 10.0f);
-      AdjustZoom(FLT_MIN);
-    }
-
-    void EditorViewport2d::UpdateCanvasSize()
-    {
-      m_canvasSize =
-      {
-        g_app->m_emulatorSettings.playWidth,
-        g_app->m_emulatorSettings.playHeight
-      };
-
-      m_viewportImage->UnInit();
-      m_viewportImage->m_width = (uint)m_canvasSize.x;
-      m_viewportImage->m_height = (uint)m_canvasSize.y;
-      m_viewportImage->Init();
-    }
-
     void EditorViewport2d::PanZoom(float deltaTime)
     {
       Camera* cam = GetCamera();
@@ -521,5 +472,21 @@ namespace ToolKit
         }
       }
     }
+
+    void EditorViewport2d::InitViewport()
+    {
+      ResetViewportImage(GetRenderTargetSettings());
+
+      m_zoom = 1.0f;
+      GetCamera()->m_node->SetTranslation(Z_AXIS * 10.0f);
+      AdjustZoom(FLT_MIN);
+
+      if (!m_2dViewOptions)
+      {
+        m_2dViewOptions = new Overlay2DViewportOptions(this);
+      }
+      m_snapDeltas = Vec3(10.0f, 45.0f, 0.25f);
+    }
+
   }  // namespace Editor
 }  // namespace ToolKit

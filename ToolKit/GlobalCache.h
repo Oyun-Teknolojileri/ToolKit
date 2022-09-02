@@ -136,6 +136,70 @@ namespace ToolKit
     "LightData.innAngle[11]"
   };
 
+  static StringArray g_lightprojectionViewMatrixStrCache =
+  {
+    "LightData.projectionViewMatrix[0]",
+    "LightData.projectionViewMatrix[1]",
+    "LightData.projectionViewMatrix[2]",
+    "LightData.projectionViewMatrix[3]",
+    "LightData.projectionViewMatrix[4]",
+    "LightData.projectionViewMatrix[5]",
+    "LightData.projectionViewMatrix[6]",
+    "LightData.projectionViewMatrix[7]",
+    "LightData.projectionViewMatrix[8]",
+    "LightData.projectionViewMatrix[9]",
+    "LightData.projectionViewMatrix[10]",
+    "LightData.projectionViewMatrix[11]"
+  };
+
+  static StringArray g_lightCastShadowStrCache =
+  {
+    "LightData.castShadow[0]",
+    "LightData.castShadow[1]",
+    "LightData.castShadow[2]",
+    "LightData.castShadow[3]",
+    "LightData.castShadow[4]",
+    "LightData.castShadow[5]",
+    "LightData.castShadow[6]",
+    "LightData.castShadow[7]",
+    "LightData.castShadow[8]",
+    "LightData.castShadow[9]",
+    "LightData.castShadow[10]",
+    "LightData.castShadow[11]"
+  };
+
+  static StringArray g_lightShadowBiasStrCache =
+  {
+    "LightData.shadowBias[0]",
+    "LightData.shadowBias[1]",
+    "LightData.shadowBias[2]",
+    "LightData.shadowBias[3]",
+    "LightData.shadowBias[4]",
+    "LightData.shadowBias[5]",
+    "LightData.shadowBias[6]",
+    "LightData.shadowBias[7]",
+    "LightData.shadowBias[8]",
+    "LightData.shadowBias[9]",
+    "LightData.shadowBias[10]",
+    "LightData.shadowBias[11]"
+  };
+
+  static StringArray g_lightShadowMapCamFarPlaneStrCache =
+  {
+    "LightData.shadowMapCamFarPlane[0]",
+    "LightData.shadowMapCamFarPlane[1]",
+    "LightData.shadowMapCamFarPlane[2]",
+    "LightData.shadowMapCamFarPlane[3]",
+    "LightData.shadowMapCamFarPlane[4]",
+    "LightData.shadowMapCamFarPlane[5]",
+    "LightData.shadowMapCamFarPlane[6]",
+    "LightData.shadowMapCamFarPlane[7]",
+    "LightData.shadowMapCamFarPlane[8]",
+    "LightData.shadowMapCamFarPlane[9]",
+    "LightData.shadowMapCamFarPlane[10]",
+    "LightData.shadowMapCamFarPlane[11]"
+  };
+
   static StringArray g_boneTransformStrCache =
   {
     "bones[0].transform",

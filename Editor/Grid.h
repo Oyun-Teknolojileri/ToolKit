@@ -11,12 +11,13 @@ namespace ToolKit
     class Grid : public Entity
     {
      public:
-      explicit Grid(UVec2 size);
+      explicit Grid(UVec2 size, AxisLabel axis, float cellSize);
+
       void Resize
       (
         UVec2 size,
         AxisLabel axis = AxisLabel::ZX,
-        float gridSpaceScale = 1.0f
+        float cellSize = 1.0f
       );
 
       bool HitTest(const Ray& ray, Vec3& pos);

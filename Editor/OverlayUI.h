@@ -20,7 +20,6 @@ namespace ToolKit
 
      public:
       EditorViewport* m_owner;
-      Vec2 m_scroll;
     };
 
     class OverlayMods : public OverlayUI

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -35,6 +36,7 @@ namespace ToolKit
     class Window;
     class Gizmo;
     class PublishManager;
+    using AnchorPtr = std::shared_ptr<class Anchor>;
 
     class App : Serializable
     {
@@ -111,7 +113,11 @@ namespace ToolKit
         EditorViewport* viewport,
         Gizmo* gizmo
       );
-
+      void RenderAnchor
+      (
+          EditorViewport* viewport,
+          AnchorPtr anchor
+      );
       void RenderComponentGizmo
       (
         EditorViewport* viewport,
@@ -128,6 +134,7 @@ namespace ToolKit
       void CreateSimulationWindow(float width , float height);
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
+      void CreateEditorEntities();
 
      public:
       // UI elements.
@@ -140,9 +147,9 @@ namespace ToolKit
       Vec2 m_thumbnailSize = Vec2(300.0f, 300.0f);
       std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
 
-      // Emulator settings.
-      EditorViewport* m_playWindow = nullptr;
-      EmulatorSettings m_emulatorSettings;
+      // Simulator settings.
+      EditorViewport* m_simulationWindow = nullptr;
+      SimulationSettings m_simulatorSettings;
 
       // Editor objects.
       Grid* m_grid;
@@ -150,7 +157,8 @@ namespace ToolKit
       Axis3d* m_origin;
       Cursor* m_cursor;
       Gizmo* m_gizmo = nullptr;
-      std::vector<Entity*> m_perFrameDebugObjects;
+      AnchorPtr m_anchor;
+      EntityRawPtrArray m_perFrameDebugObjects;
 
       // 3 point lighting system.
       Node* m_lightMaster = nullptr;

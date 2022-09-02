@@ -164,7 +164,7 @@ namespace ToolKit
     * @param width Width of viewport
     * @param height Height of viewport
     */
-    virtual void OnResize(float width, float height);
+    virtual void OnResizeContentArea(float width, float height);
 
     /**
     * Adjusts the zoom of the Viewport's Camera.
@@ -181,8 +181,8 @@ namespace ToolKit
     // Override this to alter render target creation.
 
     /**
-    * Returns RenderTargetSetting that Viewport has.
-    * @return RenderTargetSetting that Viewport has.
+    * Returns RenderTargetSetting of the Viewport.
+    * @return RenderTargetSetting of the Viewport.
     */
     virtual RenderTargetSettigs GetRenderTargetSettings();
 
@@ -196,9 +196,7 @@ namespace ToolKit
     RenderTarget* m_viewportImage = nullptr;  //!< Render target of viewport.
 
     // Window properties.
-    Vec2 m_wndPos;  //!< Position of viewport window.
-    float m_width = 640.0f;  //!< Width of Viewport's Camera.
-    float m_height = 480.0f;  //!< Height of Viewport's Camera.
+    Vec2 m_contentAreaLocation;  //!< Position of content area in screen space.
     float m_zoom = 1.0f;  //!< Zoom amount of Viewport's Camera.
 
     // States.

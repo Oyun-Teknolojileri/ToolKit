@@ -11,7 +11,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    Grid::Grid(UVec2 size)
+    Grid::Grid(UVec2 size, AxisLabel axis, float cellSize)
     {
       AddComponent(new MeshComponent());
       AddComponent(new MaterialComponent());
@@ -50,10 +50,10 @@ namespace ToolKit
       );
 
       // Create grid mesh.
-      Resize(size);
+      Resize(size, axis, cellSize);
     }
 
-    void Grid::Resize(UVec2 size, AxisLabel axis, float gridSpaceScale)
+    void Grid::Resize(UVec2 size, AxisLabel axis, float cellSize)
     {
       for (int i = 0; i < 2; i++)
       {
@@ -61,7 +61,7 @@ namespace ToolKit
       }
 
       // Set cell size
-      m_gridCellSize = gridSpaceScale;
+      m_gridCellSize = cellSize;
 
       // Rotate according to axis label and set origin axis line colors
       switch (axis)

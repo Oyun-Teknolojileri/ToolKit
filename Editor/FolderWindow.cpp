@@ -1210,14 +1210,14 @@ namespace ToolKit
 
       for
       (
-        const std::filesystem::directory_entry& e :
+        const std::filesystem::directory_entry& entry :
         std::filesystem::directory_iterator(path)
       )
       {
-        if (e.is_directory())
+        if (entry.is_directory())
         {
           FolderView view(this);
-          String path = e.path().u8string();
+          String path = entry.path().u8string();
           view.SetPath(path);
           if (!view.m_folder.compare("Engine"))
           {

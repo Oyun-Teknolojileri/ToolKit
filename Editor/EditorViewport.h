@@ -29,6 +29,7 @@ namespace ToolKit
     {
      public:
       explicit EditorViewport(XmlNode * node);
+      explicit EditorViewport(const Vec2& size);
       EditorViewport(float width, float height);
       virtual ~EditorViewport();
 
@@ -42,7 +43,8 @@ namespace ToolKit
       // Viewport overrides.
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-      void OnResize(float width, float height) override;
+      void OnResizeContentArea(float width, float height) override;
+      virtual void ResizeWindow(uint width, uint height);
 
       // Editor functions
       void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const;
@@ -56,6 +58,8 @@ namespace ToolKit
       void DrawCommands();
       void HandleDrop();
       void DrawOverlays();
+      void ComitResize();
+      void UpdateSnaps();
 
       // Mods.
       void FpsNavigationMode(float deltaTime);
@@ -80,6 +84,7 @@ namespace ToolKit
         Entity* dwMesh,
         LineBatch** boundingBox
       );
+
       void HandleDropMesh
       (
         bool& meshLoaded,
@@ -109,6 +114,7 @@ namespace ToolKit
      private:
       // States.
       bool m_relMouseModBegin = true;
+      bool m_needsResize      = false;
     };
 
   }  // namespace Editor

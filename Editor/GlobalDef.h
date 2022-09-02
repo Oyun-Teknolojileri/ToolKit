@@ -35,6 +35,9 @@ namespace ToolKit
     const String g_IsoViewport("ISO View");
     const String g_simulationViewport("Simulation");
     const String g_pluginWindow("Plugin");
+    const String g_workspaceFile("Workspace.settings");
+    const String g_uiLayoutFile("UILayout.ini");
+    const String g_editorSettingsFile("Editor.settings");
 
     // Colors and materials.
     const String g_gridMaterialName("TK_EDITOR_GRID");
@@ -58,6 +61,9 @@ namespace ToolKit
     const Vec4 g_selectHighLightSecondaryColor =
       Vec4(0.898f, 0.352f, 0.031f, 1.0f);
 
+    const Vec3 g_anchorColor = Vec3(1.f);
+    const Vec4 g_anchorGuideLineColor = Vec4(0.21f, 0.84f, 0.84f, 0.7f);
+
     const Vec4 g_consoleErrorColor = Vec4(1.0f, 0.4f, 0.4f, 1.0f);
     const Vec4 g_consoleCommandColor = Vec4(1.0f, 0.8f, 0.6f, 1.0f);
     const Vec4 g_consoleWarningColor = Vec4(0.3f, 0.8f, 0.3f, 1.0f);
@@ -65,6 +71,7 @@ namespace ToolKit
 
     // Editor settings.
     const size_t g_maxUndoCount = 50;
+    const UVec2 g_max2dGridSize(999000);
 
     // Editor types.
     typedef std::shared_ptr<class EditorScene> EditorScenePtr;

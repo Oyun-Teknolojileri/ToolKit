@@ -33,6 +33,8 @@ namespace ToolKit
     }
   }
 
+  template TK_API void ReadVec(XmlNode* node, UVec2& val);
+  template TK_API void ReadVec(XmlNode* node, IVec2& val);
   template TK_API void ReadVec(XmlNode* node, Vec2& val);
   template TK_API void ReadVec(XmlNode* node, Vec3& val);
   template TK_API void ReadVec(XmlNode* node, glm::ivec3& val);
@@ -50,6 +52,19 @@ namespace ToolKit
       WriteAttr(node, doc, letters[i], std::to_string(val[i]));
     }
   }
+
+
+  template TK_API void WriteVec
+  (
+    XmlNode* node, XmlDocument* doc, const UVec2& val
+  );
+
+  template TK_API void WriteVec
+  (
+    XmlNode* node,
+    XmlDocument* doc,
+    const IVec2& val
+  );
 
   template TK_API void WriteVec
   (
@@ -1063,6 +1078,17 @@ namespace ToolKit
     }
 
     return renderMat;
+  }
+
+  TK_API bool IsLightType(EntityType type)
+  {
+    return
+    (
+      type == EntityType::Entity_Light
+      || type == EntityType::Entity_DirectionalLight
+      || type == EntityType::Entity_PointLight
+      || type == EntityType::Entity_SpotLight
+    );
   }
 
   void* TKMalloc(size_t sz)

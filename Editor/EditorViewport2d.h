@@ -16,6 +16,7 @@ namespace ToolKit
     {
      public:
       explicit EditorViewport2d(XmlNode* node);
+      explicit EditorViewport2d(const Vec2& size);
       EditorViewport2d(float width, float height);
       virtual ~EditorViewport2d();
 
@@ -23,7 +24,7 @@ namespace ToolKit
       void Show() override;
       Type GetType() const override;
       void Update(float deltaTime) override;
-      void OnResize(float width, float height) override;
+      void OnResizeContentArea(float width, float height) override;
 
       // Viewport Overrides.
       Vec2 GetLastMousePosViewportSpace() override;
@@ -41,32 +42,20 @@ namespace ToolKit
       void DrawCommands();
       void HandleDrop();
       void DrawOverlays();
-      void DrawCanvasToolBar();
       void AdjustZoom(float delta) override;
 
      private:
-      void Init2dCam();
-      void UpdateCanvasSize();
       void PanZoom(float deltaTime);
+      void InitViewport();
 
      private:
-      Vec2 m_canvasSize;
+      Vec2 m_canvasSize = Vec2(640.0f, 480.0f);
       Vec2 m_canvasPos;
 
-      Vec2 m_contentAreaMin;
-      Vec2 m_contentAreaMax;
-      Vec2 m_scroll;
-
-      Vec2 m_layoutSize;
-
-      DirectionalLight m_forwardLight;
-
      public:
-      float m_zoomPercentage = 100;
-      uint16_t m_gridCellSizeByPixel = 10;
-      IVec2 m_gridWholeSize = IVec2(640, 480);
+      float m_zoomPercentage = 100.0f;
+      uint m_gridCellSizeByPixel = 10;
     };
 
   }  // namespace Editor
-
 }  // namespace ToolKit

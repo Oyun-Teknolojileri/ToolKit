@@ -22,6 +22,7 @@
 #include "SpriteSheet.h"
 #include "StateMachine.h"
 #include "Surface.h"
+#include "CanvasPanel.h"
 #include "Texture.h"
 #include "Scene.h"
 #include "PluginManager.h"
@@ -62,7 +63,28 @@ namespace ToolKit
 
    private:
     ULongID m_baseHandle = 1000;  //!< Starting value of the handles.
-    ULongID m_maxIdLimit = std::numeric_limits<uint64_t>::max() / 10;
+    ULongID m_maxIdLimit = (std::numeric_limits<uint64_t>::max() / 10) * 9;
+  };
+
+  class TK_API EngineSettings : public Serializable
+  {
+   public:
+     struct WindowSettings
+     {
+       String Name = "ToolKit";
+       uint Width = 1024;
+       uint Height = 768;
+       bool FullScreen = false;
+     } Window;
+
+     struct GraphicSettings
+     {
+       uint MSAA = 2;
+       uint FPS = 60;
+     } Graphics;
+
+     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
   };
 
   class TK_API Main
@@ -74,8 +96,11 @@ namespace ToolKit
     Main(Main const&) = delete;
     void operator=(Main const&) = delete;
 
+    virtual void PreInit();
     virtual void Init();
     virtual void Uninit();
+    virtual void PostUninit();
+
     static Main* GetInstance();
     static void SetProxy(Main* proxy);
 
@@ -99,9 +124,11 @@ namespace ToolKit
 
     EntityFactory* m_entityFactory = nullptr;
 
+    bool m_preInitiated = false;
     bool m_initiated = false;
     String m_resourceRoot;
     EventPool m_eventPool;
+    EngineSettings m_engineSettings;
 
    private:
     static Main* m_proxy;
@@ -130,6 +157,7 @@ namespace ToolKit
 
   TK_API String DefaultPath();
   TK_API String DefaultAbsolutePath();
+  TK_API String ConfigPath();
   TK_API String ResourcePath(bool def = false);
   TK_API String TexturePath(const String& file, bool def = false);
   TK_API String MeshPath(const String& file, bool def = false);

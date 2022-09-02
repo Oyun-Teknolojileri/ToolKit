@@ -633,8 +633,8 @@ namespace ToolKit
       deltaInSS -= viewport->TransformWorldSpaceToScreenSpace(Vec3(0));
       deltaInSS = Vec2
       (
-        deltaInSS.x / viewport->m_width,
-        deltaInSS.y / viewport->m_height
+        deltaInSS.x / viewport->m_wndContentAreaSize.x,
+        deltaInSS.y / viewport->m_wndContentAreaSize.y
       );
       delta = glm::length(deltaInSS) * ((delta > 0.0f) ? 1 : -1);
       delta = glm::degrees(delta) / 9.0f;
