@@ -111,12 +111,6 @@
     <ClCompile Include="MaterialInspector.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="AnchorMod.cpp">
-      <Filter>Mods</Filter>
-    </ClCompile>
-    <ClCompile Include="Anchor.cpp">
-      <Filter>Entities</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -214,12 +208,6 @@
     </ClInclude>
     <ClInclude Include="MaterialInspector.h">
       <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="AnchorMod.h">
-      <Filter>Mods</Filter>
-    </ClInclude>
-    <ClInclude Include="Anchor.h">
-      <Filter>Entities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

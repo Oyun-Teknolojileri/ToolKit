@@ -19,15 +19,6 @@ namespace ToolKit
       true,
       true
     );
-
-    CastShadow_Define
-    (
-      true,
-      MeshComponentCategory.Name,
-      MeshComponentCategory.Priority,
-      true,
-      true
-    );
   }
 
   MeshComponent::~MeshComponent()

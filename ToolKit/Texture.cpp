@@ -834,24 +834,14 @@ namespace ToolKit
     (
       GL_TEXTURE_2D,
       0,
-      static_cast<int>(m_settings.InternalFormat),
+      GL_RGBA,
       m_width,
       m_height,
       0,
-      static_cast<int>(m_settings.Format),
-      static_cast<int>(m_settings.Type),
+      GL_RGBA,
+      GL_UNSIGNED_BYTE,
       0
     );
-
-    if (m_settings.useBorderColor)
-    {
-      glTexParameterfv
-      (
-        GL_TEXTURE_2D,
-        GL_TEXTURE_BORDER_COLOR,
-        &(m_settings.borderColor[0])
-      );
-    }
 
     glGenFramebuffers(1, &m_frameBufferId);
     glBindFramebuffer(GL_FRAMEBUFFER, m_frameBufferId);
@@ -880,7 +870,7 @@ namespace ToolKit
       glFramebufferTexture2DMultisampleEXT
       (
         GL_FRAMEBUFFER,
-        static_cast<int>(m_settings.Attachment),
+        GL_COLOR_ATTACHMENT0,
         GL_TEXTURE_2D,
         m_textureId,
         0,
@@ -893,7 +883,7 @@ namespace ToolKit
       glFramebufferTexture2D
       (
         GL_FRAMEBUFFER,
-        static_cast<int>(m_settings.Attachment),
+        GL_COLOR_ATTACHMENT0,
         GL_TEXTURE_2D,
         m_textureId,
         0
@@ -918,7 +908,7 @@ namespace ToolKit
         );
       }
       else
-    #endif
+      #endif
       {
         glRenderbufferStorage
         (

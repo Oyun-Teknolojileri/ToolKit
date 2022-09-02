@@ -5,7 +5,7 @@
 		#version 300 es
 		precision highp float;
 
-		uniform samplerCube s_texture6;
+		uniform samplerCube s_texture1;
 
 		in vec3 v_pos;
 		out vec4 fragColor;
@@ -35,7 +35,7 @@
 	            // tangent space to world
 	            vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N; 
 
-	            irradiance += texture(s_texture6, sampleVec).rgb * cos(theta) * sin(theta);
+	            irradiance += texture(s_texture1, sampleVec).rgb * cos(theta) * sin(theta);
 	            nrSamples += 1.0;
 	        }
 	    }

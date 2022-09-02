@@ -196,7 +196,6 @@ namespace ToolKit
   static const String XmlEntityTypeAttr("t");
   static const String XmlEntityVisAttr("vi");
   static const String XmlEntityTrLockAttr("lc");
-  static const String XmlBaseEntityIdAttr("bi");
   static const String XmlSceneElement("S");
   static const String XmlParamterElement("P");
   static const String XmlParamterValAttr("v");
@@ -227,20 +226,6 @@ namespace ToolKit
     XY  // XY(5) % 3 = Z(2)
   };
 
-  enum class DirectionLabel
-  {
-      None = -1,
-      N,
-      S,
-      E,
-      W,
-      SE,
-      SW,
-      NE,
-      NW,
-      CENTER
-  };
-
   static const float TK_FLT_MAX = std::numeric_limits<float>::max();
   static const int TK_INT_MAX = std::numeric_limits<int>::max();
 
@@ -251,19 +236,12 @@ namespace ToolKit
     FragmentShader = 0x8B30,
     UVRepeat = 0x2901,
     UVClampToEdge = 0x812F,
-    UVClampToBorder = 0x812D,
     SampleNearest = 0x2600,
     DrawTypeTriangle = 0x0004,
     DrawTypeLines = 0x0001,
     DrawTypeLineStrip = 0x0003,
     DrawTypeLineLoop = 0x0002,
-    DrawTypePoints = 0x0000,
-    FormatRGBA = 0x1908,
-    FormatDepthComponent = 0x1902,
-    ColorAttachment0 = 0x8CE0,
-    DepthAttachment = 0x8D00,
-    TypeFloat = 0x1406,
-    TypeUnsignedByte = 0x1401
+    DrawTypePoints = 0x0000
   };
 
   static const char* TKVersionStr = "v0.3.13";

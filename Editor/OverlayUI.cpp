@@ -47,14 +47,13 @@ namespace ToolKit
       const float padding = 5.0f;
       Vec2 wndPos = Vec2
       (
-        m_owner->m_contentAreaLocation.x + padding,
-        m_owner->m_contentAreaLocation.y + padding
-      );
-
+        m_owner->m_wndPos.x + padding,
+        m_owner->m_wndPos.y + padding
+      ) + m_scroll;
       ImGui::SetNextWindowPos(wndPos);
       ImGui::SetNextWindowBgAlpha(0.65f);
 
-      ImVec2 overlaySize(48, 310);
+      ImVec2 overlaySize(48, 260);
       if
       (
         ImGui::BeginChildFrame
@@ -166,23 +165,6 @@ namespace ToolKit
           TKLoc + m_owner->m_name,
           "Scale\nScale (resize) selected items."
         );
-        ImGui::Separator();
-
-        // Anchor button.
-        isCurrentMod = ModManager::GetInstance()->m_modStack.back()->m_id
-        == ModId::Anchor;
-        ModManager::GetInstance()->SetMod
-        (
-            UI::ToggleButton
-            (
-            UI::m_anchorIcn->m_textureId,
-            ImVec2(32, 32),
-            isCurrentMod
-        ) && !isCurrentMod,
-            ModId::Anchor
-        );
-        UI::HelpMarker(TKLoc + m_owner->m_name,
-          "Anchor\nSet anchor of selected item.");
         ImGui::Separator();
 
         const char* items[] = { "1", "2", "4", "8", "16" };
@@ -645,6 +627,9 @@ namespace ToolKit
           ImGuiDataType_U16, &editorViewport->m_gridCellSizeByPixel,
           &cellSizeStep
         );
+        ImGui::InputInt2("Grid Size",
+          reinterpret_cast<int*>(&editorViewport->m_gridWholeSize));
+        ImGui::PopItemWidth();
       };
 
 
@@ -886,14 +871,6 @@ namespace ToolKit
           currScene->AddEntity(suface);
         }
 
-        if (ImGui::MenuItem("CanvasPanel"))
-        {
-            CanvasPanel* canvasPanel = new CanvasPanel(Vec2(800.0f, 600.0f));
-            canvasPanel->SetPivotOffsetVal({ 0.5f, 0.5f });
-            canvasPanel->GetMeshComponent()->Init(false);
-            currScene->AddEntity(canvasPanel);
-        }
-
         ImGui::Separator();
         if (ImGui::MenuItem("Node"))
         {
@@ -964,17 +941,16 @@ namespace ToolKit
     void StatusBar::Show()
     {
       // Status bar.
-      Vec2 wndPadding = ImGui::GetStyle().WindowPadding;
       ImVec2 overlaySize;
-      overlaySize.x = m_owner->m_wndContentAreaSize.x - 2.0f;
+      overlaySize.x = m_owner->m_width - 2;
       overlaySize.y = 24;
-      Vec2 pos = m_owner->m_contentAreaLocation;
+      Vec2 pos = m_owner->m_wndPos;
+      Vec2 wndPadding = ImGui::GetStyle().WindowPadding;
 
       pos.x += 1;
-      pos.y += m_owner->m_wndContentAreaSize.y - wndPadding.y - 16.0f;
-      ImGui::SetNextWindowPos(pos);
+      pos.y += m_owner->m_height - wndPadding.y - 16.0f;
+      ImGui::SetNextWindowPos(pos + m_scroll);
       ImGui::SetNextWindowBgAlpha(0.65f);
-
       if
       (
         ImGui::BeginChildFrame
@@ -1029,7 +1005,7 @@ namespace ToolKit
           info = "Project: " + prj.name + "Scene: " + prj.scene;
           pos = ImGui::CalcTextSize(info.c_str());
 
-          ImGui::SameLine((m_owner->m_wndContentAreaSize.x - pos.x) * 0.5f);
+          ImGui::SameLine((m_owner->m_width - pos.x) * 0.5f);
           info = "Project: " + prj.name;
           ImGui::BulletText(info.c_str());
           ImGui::SameLine();
@@ -1038,7 +1014,7 @@ namespace ToolKit
 
           // Draw Fps.
           String fps = "Fps: " + std::to_string(g_app->m_fps);
-          ImGui::SameLine(m_owner->m_wndContentAreaSize.x - 70.0f);
+          ImGui::SameLine(m_owner->m_width - 70.0f);
           ImGui::Text(fps.c_str());
         }
       }

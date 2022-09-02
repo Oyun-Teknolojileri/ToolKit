@@ -29,27 +29,19 @@
 			float outAngle[12];
 			float innAngle[12];
 			int activeCount;
-
-			mat4 projectionViewMatrix[12];
-			sampler2D dirAndSpotLightShadowMap[8];
-			samplerCube pointLightShadowMap[8];
-			int castShadow[12];
-			float shadowBias[12];
-			float shadowMapCamFarPlane[12];
 		};
 
 		struct _CamData
 		{
 			vec3 pos;
 			vec3 dir;
-			float farPlane;
 		};
 
 		uniform _LightData LightData;
 		uniform _CamData CamData;
 		uniform vec4 Color;
 
-		uniform samplerCube s_texture7;
+		uniform samplerCube s_texture1;
 		uniform float UseIbl;
 		uniform float IblIntensity;
 
@@ -59,63 +51,14 @@
 
 		out vec4 fragColor;
 
-		// https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
-		int CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
-		{
-			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
-
-			// Projection divide
-			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
-
-			// Transform to [0, 1] range
-			projCoord = projCoord * 0.5 + 0.5;
-
-			// Get depth of the current fragment according to lights view
-			float currentDepth = projCoord.z;
-
-			// Get closest depth value according to lights view
-			float closestDepth = texture(LightData.dirAndSpotLightShadowMap[dirIndex], projCoord.xy).r;
-
-			int shadow = currentDepth - LightData.shadowBias[index] > closestDepth ? 0 : 1;
-
-			return shadow;
-		}
-
-		int CalculateSpotShadow(vec3 pos, int index, int spotIndex, vec3 normal)
-		{
-			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
-
-			// Projection divide
-			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
-
-			// Transform to [0, 1] range
-			projCoord = projCoord * 0.5 + 0.5;
-
-			float closestDepth = texture(LightData.dirAndSpotLightShadowMap[spotIndex], projCoord.xy).r;
-
-			vec3 lightToFrag = pos - LightData.pos[index];
-			float currentDepth = length(lightToFrag);
-			// Convert to [0 1] range
-			currentDepth = currentDepth / LightData.shadowMapCamFarPlane[index];
-
-			int shadow = currentDepth - LightData.shadowBias[index] > closestDepth ? 0 : 1;
-
-			return shadow;
-		}
-
 		void main()
 		{
-			int dirAndSpotLightShadowCount = 0;
-			int pointLightShadowCount = 0;
-
 			vec3 n = normalize(v_normal);
 			vec3 e = normalize(CamData.pos - v_pos);
 
-			int shadow = 1;
 			vec3 irradiance = vec3(0.0);
 			for (int i = 0; i < LightData.activeCount; i++)
 			{
-				shadow = 1;
 				vec3 ambient = vec3(0.0);
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
@@ -155,10 +98,12 @@
 					float spec = pow(max(dot(n, halfwayDir), 0.0), 32.0);
 					specular = specularStrength * spec * LightData.color[i];
 
+					// Ambient
+					float ambientStrength = 0.01;
+					ambient = ambientStrength * LightData.color[i];
+
 					diffuse  *= attenuation * radiusCheck;
 					specular *= attenuation * radiusCheck;
-
-					pointLightShadowCount += LightData.castShadow[i];
 				}
 				else if (LightData.type[i] == 1) // Directional light
 				{
@@ -177,13 +122,6 @@
 					// Ambient
 					float ambientStrength = 0.01;
 					ambient = ambientStrength * LightData.color[i];
-
-					shadow = (1 - LightData.castShadow[i]) |
-					(
-						CalculateDirectionalShadow(v_pos, i, dirAndSpotLightShadowCount, n)
-						& LightData.castShadow[i]
-					);
-					dirAndSpotLightShadowCount += LightData.castShadow[i];
 				}
 				else if (LightData.type[i] == 3) // Spot light
 				{
@@ -229,19 +167,12 @@
 
 					diffuse *= intensity * radiusCheck * attenuation;
 					specular *= intensity * radiusCheck * attenuation;
-
-					shadow = (1 - LightData.castShadow[i]) |
-					(
-						CalculateSpotShadow(v_pos, i, dirAndSpotLightShadowCount, n)
-						& LightData.castShadow[i]
-					);
-					dirAndSpotLightShadowCount += LightData.castShadow[i];
 				}
 
-				irradiance += (ambient + diffuse + specular) * LightData.intensity[i] * float(shadow);
+				irradiance += (ambient + diffuse + specular) * LightData.intensity[i];
 			}
 
-			vec3 iblIrradiance = UseIbl * texture(s_texture7, n).rgb;
+			vec3 iblIrradiance = UseIbl * texture(s_texture1, n).rgb;
 			irradiance += iblIrradiance * IblIntensity;
 
 			fragColor = vec4(irradiance * Color.xyz, Color.a);

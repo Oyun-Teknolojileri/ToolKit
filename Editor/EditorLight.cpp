@@ -66,7 +66,6 @@ namespace ToolKit
       // Mesh component for gizmo
       m_gizmoMC = std::make_shared<MeshComponent>();
       m_gizmoMC->ParamMesh().m_exposed = false;
-      m_gizmoMC->SetCastShadowVal(false);
 
       m_gizmo->InitGizmo(m_light);
       m_gizmoMC->ParamMesh().m_exposed = false;

@@ -73,8 +73,6 @@ namespace ToolKit
      public:
       String m_name;
       uint m_id;
-      UVec2 m_size;
-      IVec2 m_location;
 
      private:
       // Internal unique id generator.
@@ -241,7 +239,6 @@ namespace ToolKit
       static TexturePtr m_closeIcon;
       static TexturePtr m_phoneRotateIcon;
       static TexturePtr m_studioLightsToggleIcon;
-      static TexturePtr m_anchorIcn;
     };
   }  // namespace Editor
 }  // namespace ToolKit

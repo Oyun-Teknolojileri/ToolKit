@@ -113,7 +113,6 @@ namespace ToolKit
     data.fov = m_fov;
     data.aspect = m_aspect;
     data.nearDist = m_near;
-    data.far = m_far;
     data.height = m_height;
     data.ortographic = m_ortographic;
 

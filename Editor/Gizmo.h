@@ -21,8 +21,7 @@ namespace ToolKit
         Axis3d,
         Gizmo,
         Sky,
-        Light,
-        Anchor
+        Light
       };
 
      public:

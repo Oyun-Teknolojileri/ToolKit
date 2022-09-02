@@ -1,6 +1,5 @@
 #include "ToolKit.h"
 
-#include <memory>
 #include <algorithm>
 #include <filesystem>
 #include <string>
@@ -25,33 +24,8 @@ namespace ToolKit
 
   Main::Main()
   {
-    // Start Timer.
-    GetElapsedMilliSeconds();
-
     m_logger = new Logger();
-    m_logger->Log("Main Constructed");
-  }
 
-  Main::~Main()
-  {
-    assert(m_initiated == false && "Uninitiate before destruct");
-
-    m_logger->Log("Main Destructed");
-    SafeDel(m_logger);
-  }
-
-  void Main::PreInit()
-  {
-    assert(m_preInitiated == false && "Main already preInitialized");
-
-    if (m_preInitiated)
-    {
-      return;
-    }
-
-    m_engineSettings.DeSerialize(nullptr, nullptr);
-
-    m_logger->Log("Main PreInit");
     m_renderer = new Renderer();
     m_pluginManager = new PluginManager();
     m_animationMan = new AnimationManager();
@@ -66,22 +40,43 @@ namespace ToolKit
     m_uiManager = new UIManager();
     m_skeletonManager = new SkeletonManager();
     m_fileManager = new FileManager();
+
     m_entityFactory = new EntityFactory();
 
-    m_preInitiated = true;
+    m_logger->Log("Main Constructed");
+  }
+
+  Main::~Main()
+  {
+    assert(m_initiated == false && "Uninitiate before deconstruct");
+
+    SafeDel(m_renderer);
+    SafeDel(m_pluginManager);
+    SafeDel(m_animationMan);
+    SafeDel(m_animationPlayer);
+    SafeDel(m_textureMan);
+    SafeDel(m_meshMan);
+    SafeDel(m_spriteSheetMan);
+    SafeDel(m_audioMan);
+    SafeDel(m_shaderMan);
+    SafeDel(m_materialManager);
+    SafeDel(m_sceneManager);
+    SafeDel(m_uiManager);
+    SafeDel(m_skeletonManager);
+    SafeDel(m_fileManager);
+
+    SafeDel(m_entityFactory);
+
+    m_logger->Log("Main Deconstructed");
+    SafeDel(m_logger);
   }
 
   void Main::Init()
   {
-    assert(m_preInitiated && "Preinitialize first");
-    assert(m_initiated == false && "Main already initialized");
+    // Start Timer.
+    GetElapsedMilliSeconds();
 
-    if (m_initiated)
-    {
-      return;
-    }
-
-    m_logger->Log("Main Init");
+    m_logger->Log("ToolKit Initialization");
 
     m_pluginManager->Init();
     m_animationMan->Init();
@@ -99,7 +94,7 @@ namespace ToolKit
 
   void Main::Uninit()
   {
-    m_logger->Log("Main Uninit");
+    m_logger->Log("ToolKit Unitialization");
 
     m_animationPlayer->m_records.clear();
     m_animationMan->Uninit();
@@ -112,32 +107,10 @@ namespace ToolKit
     m_sceneManager->Uninit();
     m_skeletonManager->Uninit();
 
-    m_initiated = false;
-    m_preInitiated = false;
-  }
-
-  void Main::PostUninit()
-  {
-    m_logger->Log("Main PostUninit");
-
     // After all the resources, we can safely free modules.
     m_pluginManager->UnInit();
 
-    SafeDel(m_renderer);
-    SafeDel(m_pluginManager);
-    SafeDel(m_animationMan);
-    SafeDel(m_animationPlayer);
-    SafeDel(m_textureMan);
-    SafeDel(m_meshMan);
-    SafeDel(m_spriteSheetMan);
-    SafeDel(m_audioMan);
-    SafeDel(m_shaderMan);
-    SafeDel(m_materialManager);
-    SafeDel(m_sceneManager);
-    SafeDel(m_uiManager);
-    SafeDel(m_skeletonManager);
-    SafeDel(m_fileManager);
-    SafeDel(m_entityFactory);
+    m_initiated = false;
   }
 
   Main* Main::GetInstance()
@@ -286,11 +259,6 @@ namespace ToolKit
     return res;
   }
 
-  TK_API String ConfigPath()
-  {
-    return ConcatPaths({ ".", "..", "Config"  });
-  }
-
   String DefaultPath()
   {
     static String res = ConcatPaths({ "..", "Resources", "Engine" });
@@ -390,67 +358,6 @@ namespace ToolKit
   String PrefabPath(const String& file, bool def)
   {
     return ProcessPath(file, "Prefabs", def);
-  }
-
-  void EngineSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
-  {
-    assert(false && "Not implemented");
-  }
-
-  void EngineSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    XmlDocBundle lclData;
-    if (doc == nullptr)
-    {
-      String path = ConcatPaths({ ConfigPath(), "Engine.settings" });
-      XmlFilePtr file = std::make_shared<XmlFile>(path.c_str());
-      XmlDocumentPtr docPtr = std::make_shared<XmlDocument>();
-      docPtr->parse<0>(file->data());
-      lclData.file = file;
-      lclData.doc = docPtr;
-
-      doc = docPtr.get();
-    }
-
-    if (parent == nullptr)
-    {
-      parent = doc->first_node("Settings");
-    }
-
-    if (parent)
-    {
-      if (XmlNode* node2 = parent->first_node("Window"))
-      {
-        if (XmlAttribute* attr = node2->first_attribute("width"))
-        {
-          Window.Width = atoi(attr->value());
-        }
-        if (XmlAttribute* attr = node2->first_attribute("height"))
-        {
-          Window.Height = atoi(attr->value());
-        }
-        if (XmlAttribute* attr = node2->first_attribute("name"))
-        {
-          Window.Name = attr->value();
-        }
-        if (XmlAttribute* attr = node2->first_attribute("fullscreen"))
-        {
-          Window.FullScreen = atoi(attr->value()) != 0;
-        }
-      }
-
-      if (XmlNode* node2 = parent->first_node("Graphics"))
-      {
-        if (XmlAttribute* attr = node2->first_attribute("fps"))
-        {
-          Graphics.FPS = atoi(attr->value());
-        }
-        if (XmlAttribute* attr = node2->first_attribute("msaa"))
-        {
-          Graphics.MSAA = atoi(attr->value());
-        }
-      }
-    }
   }
 
 }  //  namespace ToolKit

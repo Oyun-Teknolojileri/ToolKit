@@ -40,29 +40,9 @@ namespace ToolKit
         case ParameterVariant::VariantType::Float:
         {
           float val = var->GetVar<float>();
-          if (!var->m_hint.isRangeLimited)
+          if (ImGui::DragFloat(var->m_name.c_str(), &val, 0.1f))
           {
-            if (ImGui::InputFloat(var->m_name.c_str(), &val))
-            {
-              *var = val;
-            }
-          }
-          else
-          {
-            if
-            (
-              ImGui::DragFloat
-              (
-                var->m_name.c_str(),
-                &val,
-                var->m_hint.increment,
-                var->m_hint.rangeMin,
-                var->m_hint.rangeMax
-              )
-            )
-            {
-              *var = val;
-            }
+            *var = val;
           }
         }
         break;
@@ -78,29 +58,9 @@ namespace ToolKit
         case ParameterVariant::VariantType::Vec2:
         {
           Vec2 val = var->GetVar<Vec2>();
-          if (var->m_hint.isRangeLimited)
+          if (ImGui::DragFloat2(var->m_name.c_str(), &val[0], 0.1f))
           {
-            if
-            (
-              ImGui::DragFloat2
-              (
-                var->m_name.c_str(),
-                &val[0],
-                var->m_hint.increment,
-                var->m_hint.rangeMin,
-                var->m_hint.rangeMax
-              )
-            )
-            {
-              *var = val;
-            }
-          }
-          else
-          {
-            if (ImGui::DragFloat2(var->m_name.c_str(), &val[0], 0.1f))
-            {
-              *var = val;
-            }
+            *var = val;
           }
         }
         break;
@@ -198,7 +158,7 @@ namespace ToolKit
           if
           (
             ImGui::InputText(var->m_name.c_str(), &val)
-            && IsTextInputFinalized()
+            && ImGuiEnterPressed()
           )
           {
             *var = val;
@@ -216,7 +176,7 @@ namespace ToolKit
               ImGuiDataType_U32,
               var->GetVarPtr<ULongID>()
             )
-            && IsTextInputFinalized()
+            && ImGuiEnterPressed()
           )
           {
             *var = val;
@@ -757,13 +717,12 @@ namespace ToolKit
       }
     }
 
-    bool View::IsTextInputFinalized()
+    bool View::ImGuiEnterPressed()
     {
       return
       (
         ImGui::IsKeyPressed(ImGuiKey_KeypadEnter)
         || ImGui::IsKeyPressed(ImGuiKey_Enter)
-        || ImGui::IsKeyPressed(ImGuiKey_Tab)
       );
     }
 
@@ -826,69 +785,6 @@ namespace ToolKit
         }
       }
 
-      if (m_entity->IsSurfaceInstance()
-        && m_entity->GetType() != EntityType::Entity_CanvasPanel)
-      {
-        if (ImGui::CollapsingHeader("Anchor", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-          UI::ToggleButton("Anchor", { 50, 20 }, true);
-
-          Surface* surface = static_cast<Surface*>(m_entity);
-
-          if (((surface->m_anchorRatios[0] + surface->m_anchorRatios[1])
-                > 0.99f)
-            && ((surface->m_anchorRatios[2] + surface->m_anchorRatios[3])
-              > 0.99f))
-          {
-            float position[2];
-            Vec3 pos;
-            float w = 0, h = 0;
-            if (surface->m_node->m_parent)
-            {
-              if (Entity* parent = surface->m_node->m_parent->m_entity)
-              {
-                if (parent->GetType() == EntityType::Entity_CanvasPanel)
-                {
-                  CanvasPanel* canvasPanel = static_cast<CanvasPanel*>(parent);
-                  pos = canvasPanel->m_node->GetTranslation(
-                    TransformationSpace::TS_WORLD);
-                  w = canvasPanel->GetSizeVal().x;
-                  h = canvasPanel->GetSizeVal().y;
-                  pos -= Vec3(w / 2.f, h / 2.f, 0.f);
-                  const Vec3 surfacePos = surface->m_node->GetTranslation(
-                    TransformationSpace::TS_WORLD);
-                  position[0] =
-                    surfacePos.x - (pos.x + w * surface->m_anchorRatios[0]);
-                  position[1] =
-                    surfacePos.y - (pos.y + h * surface->m_anchorRatios[2]);
-
-                  const Vec2 size = canvasPanel->GetSizeVal();
-                  float res[] = { size.x, size.y };
-                  if (ImGui::InputFloat2("New resolution:", res))
-                  {
-                    canvasPanel->ApplyRecursivResizePolicy(res[0], res[1]);
-                  }
-                }
-              }
-            }
-            ImGui::DragFloat(
-              "Position X", &position[0], 0.25f, pos.x, pos.x + w);
-            ImGui::DragFloat(
-                  "Position Y", &position[1], 0.25f, pos.y, pos.y + h);
-          }
-          else
-          {
-            ImGui::DragFloat2(
-              "Horizontal", &surface->m_anchorRatios[0], 0.25f, 0.f, 1.f);
-
-            ImGui::DragFloat2(
-              "Vertical", &surface->m_anchorRatios[2], 0.25f, 0.f, 1.f);
-          }
-
-          ImGui::Separator();
-        }
-      }
-
       if
       (
         ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen)
@@ -930,7 +826,7 @@ namespace ToolKit
           {
             m_entity->m_node->Translate(newTranslate - translate, space);
           }
-          else if (!isDrag && IsTextInputFinalized())
+          else if (!isDrag && ImGuiEnterPressed())
           {
             m_entity->m_node->SetTranslation(newTranslate, space);
           }
@@ -963,7 +859,7 @@ namespace ToolKit
           {
             m_entity->m_node->Rotate(q, space);
           }
-          else if (IsTextInputFinalized())
+          else if (ImGuiEnterPressed())
           {
             m_entity->m_node->SetOrientation(q, space);
           }
@@ -984,7 +880,7 @@ namespace ToolKit
             saveDragMemFn();
 
             bool isDrag = ImGui::IsMouseDragging(0, 0.25f);
-            if (isDrag || IsTextInputFinalized())
+            if (isDrag || ImGuiEnterPressed())
             {
               m_entity->m_node->SetScale(scale);
             }
@@ -1023,7 +919,7 @@ namespace ToolKit
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
 
         std::vector<ULongID> compRemove;
-        for (ComponentPtr& com : m_entity->GetComponentPtrArray())
+        for (ComponentPtr& com : m_entity->m_components)
         {
           if (ShowComponentBlock(com))
           {

@@ -31,7 +31,6 @@ namespace ToolKit
 
   Renderer::~Renderer()
   {
-    SafeDel(m_shadowMapCamera);
   }
 
   void Renderer::RenderScene
@@ -43,9 +42,6 @@ namespace ToolKit
   {
     Camera* cam = viewport->GetCamera();
     EntityRawPtrArray entities = scene->GetEntities();
-
-    // Shadow pass
-    UpdateShadowMaps(editorLights, entities);
 
     SetViewport(viewport);
 
@@ -76,8 +72,8 @@ namespace ToolKit
         EntityRawPtrArray allEntities;
         GetChildren(rootNode, allEntities);
 
-        float halfWidth  = viewport->m_wndContentAreaSize.x * 0.5f;
-        float halfHeight = viewport->m_wndContentAreaSize.y * 0.5f;
+        float halfWidth = viewport->m_width * 0.5f;
+        float halfHeight = viewport->m_height * 0.5f;
 
         layer->m_cam->SetLens
         (
@@ -377,7 +373,7 @@ namespace ToolKit
     if (state->cubeMapInUse)
     {
       m_renderState.cubeMap = state->cubeMap;
-      SetTexture(6, state->cubeMap);
+      SetTexture(1, state->diffuseTexture);
     }
 
     if (m_renderState.lineWidth != state->lineWidth)
@@ -427,7 +423,7 @@ namespace ToolKit
     else
     {
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
-      glViewport(0, 0, m_windowSize.x, m_windowSize.y);
+      glViewport(0, 0, m_windowWidth, m_windowHeight);
     }
 
     m_renderTarget = renderTarget;
@@ -447,14 +443,15 @@ namespace ToolKit
 
   void Renderer::SetViewport(Viewport* viewport)
   {
-    m_viewportSize = UVec2(viewport->m_wndContentAreaSize);
+    m_windowWidth = static_cast<uint>(viewport->m_width);
+    m_windowHeight = static_cast<uint>(viewport->m_height);
     SetRenderTarget(viewport->m_viewportImage);
   }
 
   void Renderer::SetViewportSize(uint width, uint height)
   {
-    m_viewportSize.x = width;
-    m_viewportSize.y = height;
+    m_windowWidth = width;
+    m_windowHeight = height;
     glViewport(0, 0, width, height);
   }
 
@@ -900,117 +897,6 @@ namespace ToolKit
     }
   }
 
-  void Renderer::UpdateShadowMaps
-  (
-    LightRawPtrArray lights,
-    EntityRawPtrArray entities
-  )
-  {
-    static uint lastFrameCount = -1;
-
-    if (lastFrameCount != m_totalFrameCount)
-    {
-      MaterialPtr lastOverrideMaterial = m_overrideMat;
-
-      GLint lastFBO;
-      glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
-
-      for (Light* light : lights)
-      {
-        // TODO(osman): Delete type check after implementing
-        // shadows for other light types
-        if(light->GetType() == EntityType::Entity_PointLight)
-        {
-          continue;
-        }
-
-        if (light->GetCastShadowVal())
-        {
-          // Create framebuffer
-          light->InitShadowMap();
-
-          // Get shadow map camera
-          if (m_shadowMapCamera == nullptr)
-          {
-            m_shadowMapCamera = new Camera();
-          }
-
-          if (light->GetType() == EntityType::Entity_DirectionalLight)
-          {
-            m_shadowMapCamera->SetLens
-            (
-              -20.0f,
-              20.0f,
-              -20.0f,
-              20.0f,
-              0.01f,
-              100.0f
-            );
-            m_shadowMapCamera->m_node->SetOrientation
-            (
-              light->m_node->GetOrientation(TransformationSpace::TS_WORLD)
-            );
-          }
-          else if (light->GetType() == EntityType::Entity_PointLight)
-          {
-          }
-          else if (light->GetType() == EntityType::Entity_SpotLight)
-          {
-            m_shadowMapCamera->SetLens
-            (
-              glm::radians(static_cast<SpotLight*>(light)->GetOuterAngleVal()),
-              light->GetShadowResolutionVal().x,
-              light->GetShadowResolutionVal().y,
-              0.01f,
-              static_cast<SpotLight*>(light)->GetRadiusVal()
-            );
-            m_shadowMapCamera->m_node->SetOrientation
-            (
-              light->m_node->GetOrientation(TransformationSpace::TS_WORLD)
-            );
-          }
-
-          m_shadowMapCamera->m_node->SetTranslation
-          (
-            light->m_node->GetTranslation(TransformationSpace::TS_WORLD),
-            TransformationSpace::TS_WORLD
-          );
-
-          light->m_shadowMapCameraProjectionViewMatrix =
-            m_shadowMapCamera->GetProjectionMatrix()
-            * m_shadowMapCamera->GetViewMatrix();
-          light->m_shadowMapCameraFar = m_shadowMapCamera->GetData().far;
-
-          FrustumCull(entities, m_shadowMapCamera);
-
-          // Render scene for depth buffer
-
-          SetRenderTarget(light->GetShadowMapRenderTarget());
-          glClear(GL_DEPTH_BUFFER_BIT);
-          // Depth only render
-          glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-          m_overrideMat = light->GetShadowMaterial();
-          for (Entity* ntt : entities)
-          {
-            if
-            (
-              ntt->IsDrawable()
-              && ntt->GetMeshComponent()->GetCastShadowVal()
-            )
-            {
-              Render(ntt, m_shadowMapCamera);
-            }
-          }
-          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        }
-      }
-
-      m_overrideMat = lastOverrideMaterial;
-      glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-    }
-    lastFrameCount = m_totalFrameCount;
-  }
-
   void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)
   {
     m_view = cam->GetViewMatrix();
@@ -1093,7 +979,6 @@ namespace ToolKit
           glUniform1i(loc, slotIndx);
         }
       }
-
       m_programs[program->m_tag] = program;
     }
 
@@ -1152,8 +1037,6 @@ namespace ToolKit
           glUniform3fv(loc, 1, &data.pos.x);
           loc = glGetUniformLocation(program->m_handle, "CamData.dir");
           glUniform3fv(loc, 1, &data.dir.x);
-          loc = glGetUniformLocation(program->m_handle, "CamData.farPlane");
-          glUniform1f(loc, data.far);
         }
         break;
         case Uniform::COLOR:
@@ -1245,7 +1128,7 @@ namespace ToolKit
         case Uniform::IBL_IRRADIANCE:
         {
           m_renderState.irradianceMap = m_mat->GetRenderState()->irradianceMap;
-          SetTexture(7, m_renderState.irradianceMap);
+          SetTexture(1, m_renderState.irradianceMap);
         }
         break;
         default:
@@ -1315,9 +1198,7 @@ namespace ToolKit
 
   void Renderer::FeedLightUniforms(ProgramPtr program)
   {
-    ResetShadowMapBindings();
-
-    size_t size = glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
+    size_t size = glm::min(m_lights.size(), m_maxLightsPerObject);
     for (size_t i = 0; i < size; i++)
     {
       Light* currLight = m_lights[i];
@@ -1470,58 +1351,6 @@ namespace ToolKit
         );
         glUniform1f(loc, innAngle);
       }
-
-      bool castShadow = currLight->GetCastShadowVal();
-
-      // TODO(osman): Delete type check after implementing
-      // shadows for other light types
-      if
-      (
-        castShadow
-        && currLight->GetType() != EntityType::Entity_PointLight
-      )
-      {
-        GLint loc = glGetUniformLocation
-        (
-          program->m_handle,
-          g_lightprojectionViewMatrixStrCache[i].c_str()
-        );
-        glUniformMatrix4fv
-        (
-          loc,
-          1,
-          GL_FALSE,
-          &(currLight->m_shadowMapCameraProjectionViewMatrix)[0][0]
-        );
-
-        loc = glGetUniformLocation
-        (
-          program->m_handle,
-          g_lightShadowBiasStrCache[i].c_str()
-        );
-        glUniform1f(loc, currLight->GetShadowBiasVal() * 0.001f);
-
-        loc = glGetUniformLocation
-        (
-          program->m_handle,
-          g_lightShadowMapCamFarPlaneStrCache[i].c_str()
-        );
-        glUniform1f(loc, currLight->m_shadowMapCameraFar);
-
-        SetShadowMapTexture
-        (
-          type,
-          currLight->GetShadowMapRenderTarget()->m_textureId,
-          program
-        );
-      }
-
-      GLint loc = glGetUniformLocation
-      (
-        program->m_handle,
-        g_lightCastShadowStrCache[i].c_str()
-      );
-      glUniform1i(loc, static_cast<int>(castShadow));
     }
 
     GLint loc = glGetUniformLocation
@@ -1649,11 +1478,9 @@ namespace ToolKit
   void Renderer::SetTexture(ubyte slotIndx, uint textureId)
   {
     // Slots:
-    // 0 - 5 : 2D textures
-    // 6 - 7 : Cube map textures
     // 0 -> Color Texture
+    // 1 -> Irradiance Map
     // 2 & 3 -> Skinning information
-    // 7 -> Irradiance Map
     // Note: These are defaults.
     //  You can override these slots in your linked shader program
     assert
@@ -1663,88 +1490,6 @@ namespace ToolKit
     );
     m_textureSlots[slotIndx] = textureId;
     glActiveTexture(GL_TEXTURE0 + slotIndx);
-
-    // Slot id 6 - 7 are cubemaps
-    if (slotIndx < 6)
-    {
-      glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
-    }
-    else
-    {
-      glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureSlots[slotIndx]);
-    }
-  }
-
-  void Renderer::SetShadowMapTexture
-  (
-    EntityType type,
-    uint textureId,
-    ProgramPtr program
-  )
-  {
-    assert(IsLightType(type));
-
-    if (m_bindedShadowMapCount >= m_rhiSettings::maxShadows)
-    {
-      return;
-    }
-
-    int currCh = m_bindedShadowMapCount + m_rhiSettings::textureSlotCount;
-    if (type == EntityType::Entity_PointLight)
-    {
-      if (m_pointLightShadowCount < m_rhiSettings::maxPointLightShadows)
-      {
-        glUniform1i
-        (
-          glGetUniformLocation
-          (
-            program->m_handle,
-            (
-              "LightData.pointLightShadowMap["
-              + std::to_string(m_pointLightShadowCount)
-              + "]"
-            ).c_str()
-          ),
-          currCh
-        );
-        glActiveTexture(GL_TEXTURE0 + currCh);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
-        m_bindedShadowMapCount++;
-        m_pointLightShadowCount++;
-      }
-    }
-    else
-    {
-      if
-      (
-        m_dirAndSpotLightShadowCount < m_rhiSettings::maxDirAndSpotLightShadows
-      )
-      {
-        glUniform1i
-        (
-          glGetUniformLocation
-          (
-            program->m_handle,
-            (
-              "LightData.dirAndSpotLightShadowMap["
-              + std::to_string(m_dirAndSpotLightShadowCount)
-              + "]"
-            ).c_str()
-          ),
-          currCh
-        );
-        glActiveTexture(GL_TEXTURE0 + currCh);
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        m_bindedShadowMapCount++;
-        m_dirAndSpotLightShadowCount++;
-      }
-    }
-  }
-
-  void Renderer::ResetShadowMapBindings()
-  {
-    m_bindedShadowMapCount = 0;
-    m_dirAndSpotLightShadowCount = 0;
-    m_pointLightShadowCount = 0;
+    glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
   }
 }  // namespace ToolKit

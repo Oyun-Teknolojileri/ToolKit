@@ -22,13 +22,12 @@ namespace ToolKit
       DeSerialize(nullptr, nullptr);
     }
 
-    XmlNode* Workspace::GetDefaultWorkspaceNode(XmlDocBundle& bundle) const
+    XmlNode* Workspace::GetDefaultWorkspaceNode(XmlDocBundle& bundle)
     {
       String settingsFile = ConcatPaths
       (
-        { ConfigPath(), g_workspaceFile }
+        { DefaultPath(), "workspace.settings" }
       );
-
       if (CheckFile(settingsFile))
       {
         XmlFilePtr lclFile = GetFileManager()->GetXmlFile(settingsFile.c_str());
@@ -45,7 +44,7 @@ namespace ToolKit
       return nullptr;
     }
 
-    String Workspace::GetDefaultWorkspace() const
+    String Workspace::GetDefaultWorkspace()
     {
       String path;
       XmlDocBundle docBundle;
@@ -65,7 +64,7 @@ namespace ToolKit
         std::ofstream file;
         String settingsPath = ConcatPaths
         (
-          { ConfigPath(), g_workspaceFile }
+          { DefaultPath(), "workspace.settings" }
         );
 
         file.open(settingsPath.c_str(), std::ios::out);
@@ -98,7 +97,7 @@ namespace ToolKit
       return false;
     }
 
-    String Workspace::GetCodePath() const
+    String Workspace::GetCodePath()
     {
       String codePath = ConcatPaths
       (
@@ -112,20 +111,7 @@ namespace ToolKit
       return codePath;
     }
 
-    String Workspace::GetProjectConfigPath() const
-    {
-      if (m_activeProject.name.empty())
-      {
-        return m_activeWorkspace;
-      }
-
-      return ConcatPaths
-      (
-        { m_activeWorkspace, m_activeProject.name, "Config" }
-      );
-    }
-
-    String Workspace::GetPluginPath() const
+    String Workspace::GetPluginPath()
     {
       String codePath = GetCodePath();
       String pluginPath = ConcatPaths
@@ -140,7 +126,7 @@ namespace ToolKit
       return pluginPath;
     }
 
-    String Workspace::GetResourceRoot() const
+    String Workspace::GetResourceRoot()
     {
       if (m_activeProject.name.empty())
       {
@@ -153,18 +139,17 @@ namespace ToolKit
       );
     }
 
-    String Workspace::GetActiveWorkspace() const
+    String Workspace::GetActiveWorkspace()
     {
-      assert
-      (
-        m_activeWorkspace.empty() == false &&
-        "Workspace must be initialized."
-      );
+      if (m_activeWorkspace.empty())
+      {
+        m_activeWorkspace = GetDefaultWorkspace();
+      }
 
       return m_activeWorkspace;
     }
 
-    Project Workspace::GetActiveProject() const
+    Project Workspace::GetActiveProject()
     {
       return m_activeProject;
     }
@@ -213,10 +198,10 @@ namespace ToolKit
       std::ofstream file;
       String fileName = ConcatPaths
       (
-        { m_activeWorkspace, g_workspaceFile }
+        { m_activeWorkspace, "workspace.settings" }
       );
-
       file.open(fileName.c_str(), std::ios::out);
+
       if (file.is_open())
       {
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
@@ -265,12 +250,11 @@ namespace ToolKit
     {
       String settingsFile = ConcatPaths
       (
-        { m_activeWorkspace, g_workspaceFile }
+        { m_activeWorkspace, "workspace.settings" }
       );
-
       if (!CheckFile(settingsFile))
       {
-        settingsFile = ConcatPaths({ ConfigPath(), g_workspaceFile });
+        settingsFile = ConcatPaths({ DefaultPath(), "workspace.settings" });
       }
 
       XmlFilePtr lclFile = std::make_shared<XmlFile> (settingsFile.c_str());

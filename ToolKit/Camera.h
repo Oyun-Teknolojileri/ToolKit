@@ -16,7 +16,6 @@ namespace ToolKit
       float fov;
       float aspect;
       float nearDist;
-      float far;
       float height;
       bool ortographic;
     };

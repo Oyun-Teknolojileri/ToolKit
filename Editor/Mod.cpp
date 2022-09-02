@@ -17,7 +17,6 @@
 #include "Util.h"
 #include "DirectionComponent.h"
 #include "DebugNew.h"
-#include "AnchorMod.h"
 
 namespace ToolKit
 {
@@ -96,10 +95,6 @@ namespace ToolKit
           nextMod = new TransformMod(mod);
           modNameDbg = "Mod: Scale";
           break;
-        case ModId::Anchor:
-          nextMod = new AnchorMod(mod);
-          modNameDbg = "Mod: Anchor";
-        break;
         case ModId::Base:
         default:
           break;
@@ -238,9 +233,6 @@ namespace ToolKit
     const String StateType::StateTransformTo = "StateTransformTo";
     const String StateType::StateTransformEnd = "StateTransformEnd";
     const String StateType::StateDuplicate = "StateDuplicate";
-    const String StateType::StateAnchorBegin = "StateAnchorBegin";
-    const String StateType::StateAnchorTo = "StateAnchorTo";
-    const String StateType::StateAnchorEnd = "StateAnchorEnd";
 
     std::shared_ptr<Arrow2d> StatePickingBase::m_dbgArrow = nullptr;
     std::shared_ptr<LineBatch> StatePickingBase::m_dbgFrustum = nullptr;

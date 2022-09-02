@@ -18,7 +18,6 @@ namespace ToolKit
     EditorCamera::EditorCamera()
     {
       AddComponent(new MeshComponent());
-      GetMeshComponent()->SetCastShadowVal(false);
       GenerateFrustum();
     }
 
@@ -28,7 +27,6 @@ namespace ToolKit
 
       // Recreate frustum.
       AddComponent(new MeshComponent());
-      GetMeshComponent()->SetCastShadowVal(false);
       GenerateFrustum();
     }
 
