@@ -33,6 +33,8 @@ namespace ToolKit
     }
   }
 
+  template TK_API void ReadVec(XmlNode* node, UVec2& val);
+  template TK_API void ReadVec(XmlNode* node, IVec2& val);
   template TK_API void ReadVec(XmlNode* node, Vec2& val);
   template TK_API void ReadVec(XmlNode* node, Vec3& val);
   template TK_API void ReadVec(XmlNode* node, glm::ivec3& val);
@@ -50,6 +52,19 @@ namespace ToolKit
       WriteAttr(node, doc, letters[i], std::to_string(val[i]));
     }
   }
+
+
+  template TK_API void WriteVec
+  (
+    XmlNode* node, XmlDocument* doc, const UVec2& val
+  );
+
+  template TK_API void WriteVec
+  (
+    XmlNode* node,
+    XmlDocument* doc,
+    const IVec2& val
+  );
 
   template TK_API void WriteVec
   (

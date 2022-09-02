@@ -68,6 +68,11 @@ namespace ToolKit
       m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
     }
 
+    EditorViewport::EditorViewport(const Vec2& size)
+        : EditorViewport(size.x, size.y)
+    {
+    }
+
     EditorViewport::EditorViewport(float width, float height)
       : Viewport(width, height)
     {
@@ -83,8 +88,7 @@ namespace ToolKit
     void EditorViewport::Show()
     {
       m_mouseOverOverlay = false;
-
-      ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_None);
+      ImGui::SetNextWindowSize(Vec2(m_size), ImGuiCond_None);
 
       if
       (
@@ -104,12 +108,8 @@ namespace ToolKit
         DrawCommands();
         HandleDrop();
         DrawOverlays();
-        if (m_mouseOverContentArea && g_app->m_snapsEnabled)
-        {
-          g_app->m_moveDelta = m_snapDeltas.x;
-          g_app->m_rotateDelta = m_snapDeltas.y;
-          g_app->m_scaleDelta = m_snapDeltas.z;
-        }
+        ComitResize();
+        UpdateSnaps();
       }
       ImGui::End();
     }
@@ -185,8 +185,6 @@ namespace ToolKit
       Window::Serialize(doc, parent);
       XmlNode* node = doc->allocate_node(rapidxml::node_element, "Viewport");
 
-      WriteAttr(node, doc, "width", std::to_string(m_width));
-      WriteAttr(node, doc, "height", std::to_string(m_height));
       WriteAttr
       (
         node,
@@ -194,6 +192,7 @@ namespace ToolKit
         "alignment",
         std::to_string(static_cast<int>(m_cameraAlignment))
       );
+
       WriteAttr
       (
         node,
@@ -213,8 +212,6 @@ namespace ToolKit
 
       if (XmlNode* node = parent->first_node("Viewport"))
       {
-        ReadAttr(node, "width", m_width);
-        ReadAttr(node, "height", m_height);
         ReadAttr
         (
           node,
@@ -226,10 +223,17 @@ namespace ToolKit
       }
     }
 
-    void EditorViewport::OnResize(float width, float height)
+    void EditorViewport::OnResizeContentArea(float width, float height)
     {
-      Viewport::OnResize(width, height);
+      Viewport::OnResizeContentArea(width, height);
       AdjustZoom(0.0f);
+    }
+
+    void EditorViewport::ResizeWindow(uint width, uint height)
+    {
+      m_size.x = width;
+      m_size.y = height;
+      m_needsResize = true;
     }
 
     void EditorViewport::GetContentAreaScreenCoordinates
@@ -238,8 +242,8 @@ namespace ToolKit
       Vec2* max
     ) const
     {
-      *min = m_wndPos;
-      *max = m_wndPos + m_wndContentAreaSize;
+      *min = m_contentAreaLocation;
+      *max = m_contentAreaLocation + m_wndContentAreaSize;
     }
 
     void EditorViewport::SetCamera(Camera* cam)
@@ -251,7 +255,7 @@ namespace ToolKit
     RenderTargetSettigs EditorViewport::GetRenderTargetSettings()
     {
       RenderTargetSettigs sets;
-      sets.Msaa = 8;
+      sets.Msaa = Main::GetInstance()->m_engineSettings.Graphics.MSAA;
       return sets;
     }
 
@@ -267,8 +271,8 @@ namespace ToolKit
       m_contentAreaMax.x += ImGui::GetWindowPos().x;
       m_contentAreaMax.y += ImGui::GetWindowPos().y;
 
-      m_wndPos.x = m_contentAreaMin.x;
-      m_wndPos.y = m_contentAreaMin.y;
+      m_contentAreaLocation.x = m_contentAreaMin.x;
+      m_contentAreaLocation.y = m_contentAreaMin.y;
 
       m_wndContentAreaSize = Vec2
       (
@@ -308,24 +312,22 @@ namespace ToolKit
     {
       if (!ImGui::IsWindowCollapsed())
       {
+        // Resize window.
+        Vec2 wndSize = ImGui::GetWindowSize();
+        if (!VecAllEqual(wndSize, Vec2(m_size)))
+        {
+          ResizeWindow((uint)wndSize.x, (uint)wndSize.y);
+        }
+
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
           ImGui::Image
           (
             Convert2ImGuiTexture(m_viewportImage),
-            Vec2(m_width, m_height),
+            m_wndContentAreaSize,
             Vec2(0.0f, 0.0f),
             Vec2(1.0f, -1.0f)
           );
-
-          if
-          (
-            m_wndContentAreaSize.x != m_width ||
-            m_wndContentAreaSize.y != m_height
-          )
-          {
-            OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
-          }
 
           if (IsActive())
           {
@@ -532,10 +534,12 @@ namespace ToolKit
             Vec3 deltaOnImagePlane = glm::unProject
             (
               // Here, mouse delta is transformed to viewport center.
-              Vec3(x + m_width * 0.5f, y + m_height * 0.5f, 0.0f),
+                Vec3(x + m_wndContentAreaSize.x * 0.5f,
+                     y + m_wndContentAreaSize .y * 0.5f,
+                     0.0f),
               Mat4(),
               dat.projection,
-              Vec4(0.0f, 0.0f, m_width, m_height)
+                Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y)
             );
 
             // Thales ! Reflect imageplane displacement to world space.
@@ -616,11 +620,10 @@ namespace ToolKit
         float dist = glm::distance(ZERO, dat.pos);
         m_zoom = dist / 600.0f;
         cam->SetLens
-        (
-          -m_zoom * m_width * 0.5f,
-          m_zoom * m_width * 0.5f,
-          -m_zoom * m_height * 0.5f,
-          m_zoom * m_height * 0.5f,
+        (-m_zoom * m_wndContentAreaSize.x * 0.5f,
+                     m_zoom * m_wndContentAreaSize.x * 0.5f,
+                     -m_zoom * m_wndContentAreaSize.y * 0.5f,
+                     m_zoom * m_wndContentAreaSize.y * 0.5f,
           0.5f,
           1000.0f
         );
@@ -785,7 +788,7 @@ namespace ToolKit
           bool onPlugin = false;
           if (m_name == g_3dViewport && g_app->m_gameMod != GameMod::Stop)
           {
-            if (!g_app->m_emulatorSettings.runWindowed)
+            if (!g_app->m_simulatorSettings.Windowed)
             {
               // Game is being drawn on 3d viewport. Hide overlays.
               onPlugin = true;
@@ -809,6 +812,30 @@ namespace ToolKit
             }
           }
         }
+      }
+    }
+
+    void EditorViewport::ComitResize()
+    {
+      if (m_needsResize)
+      {
+        Vec2 size(m_size);
+        Vec2 windowStyleArea = size - m_wndContentAreaSize;
+        Vec2 contentAreaSize = size - windowStyleArea;
+
+        OnResizeContentArea(contentAreaSize.x, contentAreaSize.y);
+      }
+
+      m_needsResize = false;
+    }
+
+    void EditorViewport::UpdateSnaps()
+    {
+      if (m_mouseOverContentArea && g_app->m_snapsEnabled)
+      {
+        g_app->m_moveDelta   = m_snapDeltas.x;
+        g_app->m_rotateDelta = m_snapDeltas.y;
+        g_app->m_scaleDelta  = m_snapDeltas.z;
       }
     }
 

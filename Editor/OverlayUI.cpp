@@ -47,9 +47,10 @@ namespace ToolKit
       const float padding = 5.0f;
       Vec2 wndPos = Vec2
       (
-        m_owner->m_wndPos.x + padding,
-        m_owner->m_wndPos.y + padding
-      ) + m_scroll;
+        m_owner->m_contentAreaLocation.x + padding,
+        m_owner->m_contentAreaLocation.y + padding
+      );
+
       ImGui::SetNextWindowPos(wndPos);
       ImGui::SetNextWindowBgAlpha(0.65f);
 
@@ -644,9 +645,6 @@ namespace ToolKit
           ImGuiDataType_U16, &editorViewport->m_gridCellSizeByPixel,
           &cellSizeStep
         );
-        ImGui::InputInt2("Grid Size",
-          reinterpret_cast<int*>(&editorViewport->m_gridWholeSize));
-        ImGui::PopItemWidth();
       };
 
 
@@ -966,16 +964,17 @@ namespace ToolKit
     void StatusBar::Show()
     {
       // Status bar.
-      ImVec2 overlaySize;
-      overlaySize.x = m_owner->m_width - 2;
-      overlaySize.y = 24;
-      Vec2 pos = m_owner->m_wndPos;
       Vec2 wndPadding = ImGui::GetStyle().WindowPadding;
+      ImVec2 overlaySize;
+      overlaySize.x = m_owner->m_wndContentAreaSize.x - 2.0f;
+      overlaySize.y = 24;
+      Vec2 pos = m_owner->m_contentAreaLocation;
 
       pos.x += 1;
-      pos.y += m_owner->m_height - wndPadding.y - 16.0f;
-      ImGui::SetNextWindowPos(pos + m_scroll);
+      pos.y += m_owner->m_wndContentAreaSize.y - wndPadding.y - 16.0f;
+      ImGui::SetNextWindowPos(pos);
       ImGui::SetNextWindowBgAlpha(0.65f);
+
       if
       (
         ImGui::BeginChildFrame
@@ -1030,7 +1029,7 @@ namespace ToolKit
           info = "Project: " + prj.name + "Scene: " + prj.scene;
           pos = ImGui::CalcTextSize(info.c_str());
 
-          ImGui::SameLine((m_owner->m_width - pos.x) * 0.5f);
+          ImGui::SameLine((m_owner->m_wndContentAreaSize.x - pos.x) * 0.5f);
           info = "Project: " + prj.name;
           ImGui::BulletText(info.c_str());
           ImGui::SameLine();
@@ -1039,7 +1038,7 @@ namespace ToolKit
 
           // Draw Fps.
           String fps = "Fps: " + std::to_string(g_app->m_fps);
-          ImGui::SameLine(m_owner->m_width - 70.0f);
+          ImGui::SameLine(m_owner->m_wndContentAreaSize.x - 70.0f);
           ImGui::Text(fps.c_str());
         }
       }

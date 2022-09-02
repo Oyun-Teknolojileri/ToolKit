@@ -32,14 +32,14 @@ namespace ToolKit
       Galaxy_A51_A71
     };
 
-    struct EmulatorSettings
+    struct SimulationSettings
     {
-      bool runWindowed = false;
-      bool landscape = false;
-      float playWidth = 640.0f;
-      float playHeight = 480.0f;
-      float zoomAmount = 1.0f;
-      EmulatorResolution emuRes = EmulatorResolution::Custom;
+      bool Windowed = false;
+      bool Landscape = false;
+      float Width = 640.0f;
+      float Height = 480.0f;
+      float Scale = 1.0f;
+      EmulatorResolution Resolution = EmulatorResolution::Custom;
     };
 
     class PluginWindow : public Window
@@ -56,10 +56,14 @@ namespace ToolKit
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
      private:
+      void UpdateSimWndSize();
       void ShowHeader();
       void ShowSimButtons();
       void ShowSettings();
       String EmuResToString(EmulatorResolution emuRes);
+
+     private:
+      SimulationSettings* m_settings = nullptr;
       bool m_simulationModeDisabled = false;
     };
 

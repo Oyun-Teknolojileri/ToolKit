@@ -1,0 +1,21 @@
+---
+BasedOnStyle: Microsoft
+AccessModifierOffset: '-1'
+AlignAfterOpenBracket: Align
+AlignConsecutiveMacros: 'true'
+AlignConsecutiveAssignments: 'true'
+AlignEscapedNewlines: Right
+AlwaysBreakTemplateDeclarations: 'Yes'
+BinPackArguments: 'false'
+BinPackParameters: 'false'
+ColumnLimit: '80'
+MaxEmptyLinesToKeep: '1'
+NamespaceIndentation: All
+SpacesInParentheses: 'false'
+PointerAlignment: Left
+TabWidth: '1'
+IndentWidth: '2'
+UseTab: Never
+SortIncludes: 'false'
+
+...

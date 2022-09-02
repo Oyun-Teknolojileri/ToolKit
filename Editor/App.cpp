@@ -41,8 +41,8 @@ namespace ToolKit
     {
       m_cursor = nullptr;
       m_renderer = Main::GetInstance()->m_renderer;
-      m_renderer->m_windowWidth = windowWidth;
-      m_renderer->m_windowHeight = windowHeight;
+      m_renderer->m_windowSize.x = windowWidth;
+      m_renderer->m_windowSize.y = windowHeight;
       m_statusMsg = "OK";
 
       OverrideEntityConstructors();
@@ -56,66 +56,7 @@ namespace ToolKit
     void App::Init()
     {
       AssignManagerReporters();
-
-      // Create editor objects.
-      m_cursor = new Cursor();
-      m_origin = new Axis3d();
-
-      uint gridSize = 100000;
-      m_grid = new Grid(UVec2(gridSize));
-      m_grid->Resize(UVec2(gridSize), AxisLabel::ZX, 0.025f);
-
-      m_2dGrid = new Grid
-      (
-        UVec2
-        (
-          g_app->m_emulatorSettings.playWidth,
-          g_app->m_emulatorSettings.playHeight
-        )
-      );
-      m_2dGrid->Resize
-      (
-        UVec2
-        (
-          g_app->m_emulatorSettings.playWidth,
-          g_app->m_emulatorSettings.playHeight
-        ),
-        AxisLabel::XY, 10.0
-      );  // Generate grid cells 10 x 10
-
-      // Lights and camera.
-      m_lightMaster = new Node();
-
-      float intensity = 1.5f;
-      DirectionalLight* light = new DirectionalLight();
-      light->SetColorVal(Vec3(0.55f));
-      light->SetIntensityVal(intensity);
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
-      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
-      light->m_isStudioLight = true;
-      light->SetCastShadowVal(false);
-      m_lightMaster->AddChild(light->m_node);
-      m_sceneLights.push_back(light);
-
-      light = new DirectionalLight();
-      light->SetColorVal(Vec3(0.15f));
-      light->SetIntensityVal(intensity);
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
-      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
-      light->m_isStudioLight = true;
-      light->SetCastShadowVal(false);
-      m_lightMaster->AddChild(light->m_node);
-      m_sceneLights.push_back(light);
-
-      light = new DirectionalLight();
-      light->SetColorVal(Vec3(0.1f));
-      light->SetIntensityVal(intensity);
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
-      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
-      light->m_isStudioLight = true;
-      light->SetCastShadowVal(false);
-      m_lightMaster->AddChild(light->m_node);
-      m_sceneLights.push_back(light);
+      CreateEditorEntities();
 
       ModManager::GetInstance()->Init();
       ModManager::GetInstance()->SetMod(true, ModId::Select);
@@ -127,11 +68,11 @@ namespace ToolKit
       (
         ScenePath(sceneName)
       );
+
       scene->m_name = sceneName;
       scene->m_newScene = true;
       SetCurrentScene(scene);
       ApplyProjectSettings(m_onNewScene);
-
 
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
       {
@@ -154,7 +95,7 @@ namespace ToolKit
         m_workspace.RefreshProjects();
       }
 
-      m_emulatorSettings.emuRes = EmulatorResolution::Custom;
+      m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager = new PublishManager();
     }
 
@@ -280,7 +221,7 @@ namespace ToolKit
         }
 
         // PlayWindow is drawn on perspective. Thus, skip perspective.
-        if (m_gameMod != GameMod::Stop && !m_emulatorSettings.runWindowed)
+        if (m_gameMod != GameMod::Stop && !m_simulatorSettings.Windowed)
         {
           if (viewport->m_name == g_3dViewport)
           {
@@ -366,7 +307,8 @@ namespace ToolKit
 
     void App::OnResize(uint width, uint height)
     {
-      m_renderer->SetViewportSize(width, height);
+      m_renderer->m_windowSize.x = width;
+      m_renderer->m_windowSize.y = height;
     }
 
     void App::OnNewScene(const String& name)
@@ -470,6 +412,7 @@ namespace ToolKit
         (
           "Quiting... Are you sure?##ClsApp"
         );
+
         reallyQuit->m_yesCallback = [this]()
         {
           m_workspace.Serialize(nullptr, nullptr);
@@ -628,9 +571,9 @@ namespace ToolKit
           m_statusMsg = "Game is playing";
           m_gameMod = mod;
 
-          if (m_emulatorSettings.runWindowed)
+          if (m_simulatorSettings.Windowed)
           {
-            m_playWindow->SetVisibility(true);
+            m_simulationWindow->SetVisibility(true);
           }
         }
         else
@@ -658,7 +601,7 @@ namespace ToolKit
         // Set the editor scene back.
         GetCurrentScene()->Reload();
         GetCurrentScene()->Init();
-        m_playWindow->SetVisibility(false);
+        m_simulationWindow->SetVisibility(false);
       }
     }
 
@@ -680,13 +623,12 @@ namespace ToolKit
     void App::ResetUI()
     {
       DeleteWindows();
-      if (CheckFile(ConcatPaths({ DefaultPath(), "Editor.settings" })))
+
+      String defEditSet = ConcatPaths({ConfigPath(), g_editorSettingsFile});
+      if (CheckFile(defEditSet))
       {
         // Try reading defaults.
-        String settingsFile = ConcatPaths
-        (
-          { DefaultPath(), "Editor.settings" }
-        );
+        String settingsFile = defEditSet;
 
         std::shared_ptr<XmlFile> lclFile = std::make_shared<XmlFile>
         (
@@ -703,17 +645,14 @@ namespace ToolKit
         DeSerialize(lclDoc.get(), nullptr);
         m_workspace.SetScene(pj.scene);
 
-        settingsFile = ConcatPaths({ DefaultPath(), "defaultUI.ini" });
+        settingsFile = ConcatPaths({ ConfigPath(), g_uiLayoutFile });
         ImGui::LoadIniSettingsFromDisk(settingsFile.c_str());
       }
       else
       {
         // 3d viewport.
-        EditorViewport* vp = new EditorViewport
-        (
-          m_renderer->m_windowWidth * 0.8f,
-          m_renderer->m_windowHeight * 0.8f
-        );
+        Vec2 vpSize = Vec2(m_renderer->m_windowSize) * 0.8f;
+        EditorViewport* vp = new EditorViewport(vpSize);
         vp->m_name = g_3dViewport;
         vp->GetCamera()->m_node->SetTranslation({ 5.0f, 3.0f, 5.0f });
         vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt
@@ -725,8 +664,7 @@ namespace ToolKit
         // 2d viewport.
         vp = new EditorViewport2d
         (
-          m_renderer->m_windowWidth * 0.8f,
-          m_renderer->m_windowHeight * 0.8f
+          vpSize
         );
         vp->m_name = g_2dViewport;
         vp->GetCamera()->m_node->SetTranslation(Z_AXIS);
@@ -735,8 +673,7 @@ namespace ToolKit
         // Isometric viewport.
         vp = new EditorViewport
         (
-          m_renderer->m_windowWidth * 0.8f,
-          m_renderer->m_windowHeight * 0.8f
+          vpSize
         );
         vp->m_name = g_IsoViewport;
         vp->GetCamera()->m_node->SetTranslation({ 0.0f, 10.0f, 0.0f });
@@ -775,8 +712,8 @@ namespace ToolKit
 
         CreateSimulationWindow
         (
-          g_app->m_emulatorSettings.playWidth,
-          g_app->m_emulatorSettings.playHeight
+          m_simulatorSettings.Width,
+          m_simulatorSettings.Height
         );
       }
     }
@@ -794,7 +731,7 @@ namespace ToolKit
         SafeDel(EditorViewport::m_overlays[i]);
       }
 
-      SafeDel(m_playWindow);
+      SafeDel(m_simulationWindow);
     }
 
     void App::CreateWindows(XmlNode* parent)
@@ -847,8 +784,8 @@ namespace ToolKit
 
       CreateSimulationWindow
       (
-          g_app->m_emulatorSettings.playWidth,
-          g_app->m_emulatorSettings.playHeight
+          m_simulatorSettings.Width,
+          m_simulatorSettings.Height
       );
     }
 
@@ -1142,7 +1079,10 @@ Fail:
       (
         CheckFile
         (
-          ConcatPaths({ ResourcePath(), "Editor.settings" })
+          ConcatPaths
+          (
+            { m_workspace.GetProjectConfigPath(), g_editorSettingsFile }
+          )
         )
         && !setDefaults
       )
@@ -1159,8 +1099,8 @@ Fail:
       SDL_SetWindowSize
       (
         g_window,
-        m_renderer->m_windowWidth,
-        m_renderer->m_windowHeight
+        m_renderer->m_windowSize.x,
+        m_renderer->m_windowSize.y
       );
 
       SDL_SetWindowPosition
@@ -1315,8 +1255,8 @@ Fail:
         rtSet.WarpS = rtSet.WarpT = GraphicTypes::UVClampToEdge;
         RenderTarget stencilMask
         (
-          static_cast<int>(viewport->m_width),
-          static_cast<int>(viewport->m_height),
+          static_cast<int>(viewport->m_size.x),
+          static_cast<int>(viewport->m_size.y),
           rtSet
         );
         stencilMask.Init();
@@ -1519,10 +1459,10 @@ Fail:
 
         if (m_gameMod != GameMod::Stop)
         {
-          m_playWindow->SetVisibility(m_emulatorSettings.runWindowed);
+          m_simulationWindow->SetVisibility(m_simulatorSettings.Windowed);
 
           EditorViewport* playWindow = GetWindow<EditorViewport>(g_3dViewport);
-          if (m_emulatorSettings.runWindowed)
+          if (m_simulatorSettings.Windowed)
           {
             if (m_windowCamLoad)
             {
@@ -1530,10 +1470,10 @@ Fail:
               (
                 TransformationSpace::TS_WORLD
               );
-              m_playWindow->GetCamera()->m_node->SetTransform(camTs);
+              m_simulationWindow->GetCamera()->m_node->SetTransform(camTs);
               m_windowCamLoad = false;
             }
-            playWindow = m_playWindow;
+            playWindow = m_simulationWindow;
           }
           m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
           plugin->Frame(deltaTime, playWindow);
@@ -1548,7 +1488,10 @@ Fail:
       m_workspace.Serialize(nullptr, nullptr);
 
       std::ofstream file;
-      String fileName = ConcatPaths({ ResourcePath(), "Editor.settings" });
+      String fileName = ConcatPaths
+      (
+        { m_workspace.GetProjectConfigPath(), g_editorSettingsFile}
+      );
 
       file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
@@ -1569,20 +1512,23 @@ Fail:
           rapidxml::node_element,
           "Size"
         );
+
         WriteAttr
         (
           setNode,
           lclDoc.get(),
           "width",
-          std::to_string(m_renderer->m_windowWidth)
+          std::to_string(m_renderer->m_windowSize.x)
         );
+
         WriteAttr
         (
           setNode,
           lclDoc.get(),
           "height",
-          std::to_string(m_renderer->m_windowHeight)
+          std::to_string(m_renderer->m_windowSize.y)
         );
+
         WriteAttr
         (
           setNode,
@@ -1592,9 +1538,9 @@ Fail:
         );
         settings->append_node(setNode);
 
-        for (Window* w : m_windows)
+        for (Window* wnd : m_windows)
         {
-          w->Serialize(lclDoc.get(), app);
+          wnd->Serialize(lclDoc.get(), app);
         }
 
         std::string xml;
@@ -1615,8 +1561,23 @@ Fail:
       {
         String settingsFile = ConcatPaths
         (
-          { ResourcePath(), "Editor.settings" }
+          { m_workspace.GetProjectConfigPath(), g_editorSettingsFile}
         );
+
+        if (!CheckFile(settingsFile))
+        {
+          settingsFile = ConcatPaths
+          (
+            { ConfigPath(), g_editorSettingsFile}
+          );
+
+          assert
+          (
+            CheckFile(settingsFile) &&
+            "ToolKit/Config/Editor.settings must exist."
+          );
+        }
+
         lclFile = std::make_shared<XmlFile>(settingsFile.c_str());
         lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
@@ -1694,17 +1655,19 @@ Fail:
 
     void App::CreateSimulationWindow(float width, float height)
     {
-      m_playWindow = new EditorViewport
+      m_simulationWindow = new EditorViewport
       (
-        m_emulatorSettings.playWidth,
-        m_emulatorSettings.playHeight
+        m_simulatorSettings.Width,
+        m_simulatorSettings.Height
       );
-      m_playWindow->m_name = g_simulationViewport;
-      m_playWindow->m_additionalWindowFlags =
+
+      m_simulationWindow->m_name = g_simulationViewport;
+      m_simulationWindow->m_additionalWindowFlags =
         ImGuiWindowFlags_NoResize
         | ImGuiWindowFlags_NoDocking
         |ImGuiWindowFlags_NoCollapse;
-      m_playWindow->SetVisibility(false);
+
+      m_simulationWindow->SetVisibility(false);
     }
 
     void App::AssignManagerReporters()
@@ -1732,6 +1695,55 @@ Fail:
       GetSceneManager()->Manage(scene);
       SetCurrentScene(scene);
     }
+
+    void App::CreateEditorEntities()
+    {
+      // Create editor objects.
+      m_cursor = new Cursor();
+      m_origin = new Axis3d();
+
+      m_grid = new Grid(g_max2dGridSize, AxisLabel::ZX, 0.025f);
+
+      m_2dGrid = new Grid
+      (
+        g_max2dGridSize,
+        AxisLabel::XY,
+        10.0f
+      );  // Generate grid cells 10 x 10
+
+      // Lights and camera.
+      m_lightMaster = new Node();
+
+      float intensity = 1.5f;
+      DirectionalLight* light = new DirectionalLight();
+      light->SetColorVal(Vec3(0.55f));
+      light->SetIntensityVal(intensity);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
+      light->m_isStudioLight = true;
+      light->SetCastShadowVal(false);
+      m_lightMaster->AddChild(light->m_node);
+      m_sceneLights.push_back(light);
+
+      light = new DirectionalLight();
+      light->SetColorVal(Vec3(0.15f));
+      light->SetIntensityVal(intensity);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
+      light->m_isStudioLight = true;
+      light->SetCastShadowVal(false);
+      m_lightMaster->AddChild(light->m_node);
+      m_sceneLights.push_back(light);
+
+      light = new DirectionalLight();
+      light->SetColorVal(Vec3(0.1f));
+      light->SetIntensityVal(intensity);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
+      light->m_isStudioLight = true;
+      light->SetCastShadowVal(false);
+      m_lightMaster->AddChild(light->m_node);
+      m_sceneLights.push_back(light);    }
 
     void DebugMessage(const String& msg)
     {

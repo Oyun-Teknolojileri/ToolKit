@@ -76,8 +76,8 @@ namespace ToolKit
         EntityRawPtrArray allEntities;
         GetChildren(rootNode, allEntities);
 
-        float halfWidth = viewport->m_width * 0.5f;
-        float halfHeight = viewport->m_height * 0.5f;
+        float halfWidth  = viewport->m_wndContentAreaSize.x * 0.5f;
+        float halfHeight = viewport->m_wndContentAreaSize.y * 0.5f;
 
         layer->m_cam->SetLens
         (
@@ -427,7 +427,7 @@ namespace ToolKit
     else
     {
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
-      glViewport(0, 0, m_windowWidth, m_windowHeight);
+      glViewport(0, 0, m_windowSize.x, m_windowSize.y);
     }
 
     m_renderTarget = renderTarget;
@@ -447,15 +447,14 @@ namespace ToolKit
 
   void Renderer::SetViewport(Viewport* viewport)
   {
-    m_windowWidth = static_cast<uint>(viewport->m_width);
-    m_windowHeight = static_cast<uint>(viewport->m_height);
+    m_viewportSize = UVec2(viewport->m_wndContentAreaSize);
     SetRenderTarget(viewport->m_viewportImage);
   }
 
   void Renderer::SetViewportSize(uint width, uint height)
   {
-    m_windowWidth = width;
-    m_windowHeight = height;
+    m_viewportSize.x = width;
+    m_viewportSize.y = height;
     glViewport(0, 0, width, height);
   }
 

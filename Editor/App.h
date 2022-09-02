@@ -134,6 +134,7 @@ namespace ToolKit
       void CreateSimulationWindow(float width , float height);
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
+      void CreateEditorEntities();
 
      public:
       // UI elements.
@@ -146,9 +147,9 @@ namespace ToolKit
       Vec2 m_thumbnailSize = Vec2(300.0f, 300.0f);
       std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
 
-      // Emulator settings.
-      EditorViewport* m_playWindow = nullptr;
-      EmulatorSettings m_emulatorSettings;
+      // Simulator settings.
+      EditorViewport* m_simulationWindow = nullptr;
+      SimulationSettings m_simulatorSettings;
 
       // Editor objects.
       Grid* m_grid;
@@ -157,7 +158,7 @@ namespace ToolKit
       Cursor* m_cursor;
       Gizmo* m_gizmo = nullptr;
       AnchorPtr m_anchor;
-      std::vector<Entity*> m_perFrameDebugObjects;
+      EntityRawPtrArray m_perFrameDebugObjects;
 
       // 3 point lighting system.
       Node* m_lightMaster = nullptr;
