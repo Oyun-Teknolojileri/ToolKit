@@ -604,18 +604,32 @@ namespace ToolKit
 
       if (!deleteList.empty())
       {
-        if (deleteList.size() > 1)
-        {
-          ActionManager::GetInstance()->BeginActionGroup();
-        }
+        ActionManager::GetInstance()->BeginActionGroup();
 
+        uint instanceCount = 0;
         for (Entity* e : deleteList)
         {
+          if (!e->GetIsInstanceVal())
+          {
+            // Search if this is used to instantiate other entities
+            for (Entity* p : g_app->GetCurrentScene()->GetEntities())
+            {
+              if
+              (
+                p->GetIsInstanceVal()
+                && p->GetBaseEntityID() == e->GetIdVal()
+              )
+              {
+                ActionManager::GetInstance()->AddAction(new DeleteAction(p));
+                instanceCount++;
+              }
+            }
+          }
           ActionManager::GetInstance()->AddAction(new DeleteAction(e));
         }
         ActionManager::GetInstance()->GroupLastActions
         (
-          static_cast<int>(deleteList.size())
+          static_cast<int>(deleteList.size() + instanceCount)
         );
       }
 
@@ -651,10 +665,16 @@ namespace ToolKit
           if (copy)
           {
             DeepCopy(ntt, copies);
+            // Status info
+            g_app->m_statusMsg = std::to_string(cpyCount)
+              + " entities are copied.";
           }
           else
           {
             DeepInstantiate(ntt, copies);
+            // Status info
+            g_app->m_statusMsg = std::to_string(cpyCount)
+              + " entities are instantiated.";
           }
 
           for (Entity* cpy : copies)
@@ -666,9 +686,6 @@ namespace ToolKit
           cpyCount += static_cast<int>(copies.size());
         }
 
-        // Status info
-        g_app->m_statusMsg = std::to_string(cpyCount)
-        + " entities are copied.";
 
         ActionManager::GetInstance()->GroupLastActions(cpyCount);
       }

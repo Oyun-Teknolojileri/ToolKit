@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <functional>
+#include <unordered_map>
 
 #include "Resource.h"
 #include "MathUtil.h"
@@ -60,6 +61,7 @@ namespace ToolKit
     Entity* GetFirstByTag(const String& tag);
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
     Sky* GetSky();
+    void LinkPrefab(const String& fullPath);
 
     virtual Entity* RemoveEntity(ULongID id);
     virtual void RemoveEntity(const EntityRawPtrArray& entities);
@@ -101,5 +103,4 @@ namespace ToolKit
    private:
     ScenePtr m_currentScene;
   };
-
 }  // namespace ToolKit

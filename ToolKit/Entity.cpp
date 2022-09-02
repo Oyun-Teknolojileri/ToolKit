@@ -8,6 +8,7 @@
 #include "Sky.h"
 #include "ResourceComponent.h"
 #include "DebugNew.h"
+#include "Prefab.h"
 
 namespace ToolKit
 {
@@ -560,6 +561,8 @@ namespace ToolKit
       break;
       case EntityType::Entity_CanvasPanel:
       e = new CanvasPanel();
+      case EntityType::Entity_Prefab:
+      e = new Prefab();
       break;
       case EntityType::Entity_SpriteAnim:
       case EntityType::Entity_Directional:

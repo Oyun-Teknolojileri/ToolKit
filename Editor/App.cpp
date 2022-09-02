@@ -354,12 +354,12 @@ namespace ToolKit
           "Override existing file##OvrdScn",
           msg
         );
-        overrideScene->m_yesCallback = [&saveFn]()
+        overrideScene->m_buttons[0].m_callback = [&saveFn]()
         {
           saveFn();
         };
 
-        overrideScene->m_noCallback = []()
+        overrideScene->m_buttons[1].m_callback = []()
         {
           g_app->GetConsole()->AddLog
           (
@@ -413,14 +413,14 @@ namespace ToolKit
           "Quiting... Are you sure?##ClsApp"
         );
 
-        reallyQuit->m_yesCallback = [this]()
+        reallyQuit->m_buttons[0].m_callback = [this]()
         {
           m_workspace.Serialize(nullptr, nullptr);
           Serialize(nullptr, nullptr);
           g_running = false;
         };
 
-        reallyQuit->m_noCallback = [this]()
+        reallyQuit->m_buttons[1].m_callback = [this]()
         {
           m_onQuit = false;
         };
@@ -1069,7 +1069,7 @@ Fail:
     {
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
       scene->Load();
-      scene->Init(false);
+      scene->Init();
       GetCurrentScene()->Merge(scene);
     }
 

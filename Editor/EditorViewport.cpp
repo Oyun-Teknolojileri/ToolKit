@@ -706,25 +706,34 @@ namespace ToolKit
           }
           else if (entry.m_ext == SCENE)
           {
-            YesNoWindow* importOptionWnd = new YesNoWindow
-            (
-              "Open Scene",
-              "Open",
-              "Merge",
-              "Open or merge the scene ?",
-              true
-            );
-            importOptionWnd->m_yesCallback = [entry]() ->void
+            YesNoWindow::ButtonInfo openButton;
+            openButton.m_name = "Open";
+            openButton.m_callback = [entry]() ->void
             {
               String fullPath = entry.GetFullPath();
               g_app->OpenScene(fullPath);
             };
-
-            importOptionWnd->m_noCallback = [entry]() -> void
+            YesNoWindow::ButtonInfo linkButton;
+            linkButton.m_name = "Link";
+            linkButton.m_callback = [entry]() -> void
+            {
+              String fullPath = entry.GetFullPath();
+              GetSceneManager()->GetCurrentScene()->LinkPrefab(fullPath);
+            };
+            YesNoWindow::ButtonInfo mergeButton;
+            mergeButton.m_name = "Merge";
+            mergeButton.m_callback = [entry]() -> void
             {
               String fullPath = entry.GetFullPath();
               g_app->MergeScene(fullPath);
             };
+            YesNoWindow* importOptionWnd = new YesNoWindow
+            (
+              "Open Scene",
+              {openButton, linkButton, mergeButton},
+              "Open or Link the scene ?",
+              true
+            );
 
             UI::m_volatileWindows.push_back(importOptionWnd);
           }

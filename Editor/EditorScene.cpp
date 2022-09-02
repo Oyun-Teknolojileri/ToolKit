@@ -6,6 +6,7 @@
 #include "App.h"
 #include "EditorCamera.h"
 #include "DebugNew.h"
+#include <Prefab.h>
 
 namespace ToolKit
 {
@@ -83,6 +84,19 @@ namespace ToolKit
       }
     }
 
+    void TraverseChildNodes
+    (
+      Node* parent,
+      const std::function<void(Node* node)>& callbackFn
+    )
+    {
+      for (Node* childNode : parent->m_children)
+      {
+        TraverseChildNodes(childNode, callbackFn);
+      }
+      callbackFn(parent);
+    }
+
     void EditorScene::AddToSelection(ULongID id, bool additive)
     {
       assert(!IsSelected(id));
@@ -90,6 +104,19 @@ namespace ToolKit
       {
         m_selectedEntities.clear();
       }
+
+      // If selected entity belongs to a prefab
+      //  select all childs of the prefab entity too
+      if (Prefab* mainPrefab = Prefab::GetPrefabRoot(GetEntity(id)))
+      {
+        auto addToSelectionFn = [this](Node* node)
+        {
+          m_selectedEntities.push_back(node->m_entity->GetIdVal());
+        };
+        TraverseChildNodes(mainPrefab->m_node, addToSelectionFn);
+        return;
+      }
+
       m_selectedEntities.push_back(id);
     }
 

@@ -49,7 +49,7 @@ namespace ToolKit
       EntityView() { m_viewID = 1; }
       virtual ~EntityView() {}
       virtual void Show();
-      virtual void ShowParameterBlock(ParameterBlock& params, ULongID id);
+      virtual void ShowParameterBlock();
       virtual bool ShowComponentBlock(ComponentPtr& comp);
 
      protected:

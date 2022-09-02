@@ -101,12 +101,16 @@ namespace ToolKit
     class YesNoWindow : public Window
     {
      public:
+      struct ButtonInfo
+      {
+        String m_name;
+        std::function<void()> m_callback;
+      };
       explicit YesNoWindow(const String& name, const String& msg = "");
       YesNoWindow
       (
         const String& name,
-        const String& yesBtnText,
-        const String& noBtnText,
+        const std::vector<ButtonInfo>& buttons,
         const String& msg,
         bool showCancel
       );
@@ -114,11 +118,8 @@ namespace ToolKit
       Type GetType() const override { return Window::Type::InputPopup; }
 
      public:
-      std::function<void()> m_yesCallback;
-      std::function<void()> m_noCallback;
+      std::vector<ButtonInfo> m_buttons;
       String m_msg;
-      String m_yesText;
-      String m_noText;
       bool m_showCancel = false;
     };
 

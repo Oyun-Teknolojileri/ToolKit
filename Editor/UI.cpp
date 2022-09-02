@@ -1817,20 +1817,21 @@ namespace ToolKit
     {
       m_name = name;
       m_msg = msg;
+      m_buttons.resize(2);
+      m_buttons[0].m_name = "Yes";
+      m_buttons[1].m_name = "No";
     }
 
     YesNoWindow::YesNoWindow
     (
       const String& name,
-      const String& yesBtnText,
-      const String& noBtnText,
+      const std::vector<ButtonInfo>& buttons,
       const String& msg,
       bool showCancel
     )
     {
       m_name = name;
-      m_yesText = yesBtnText;
-      m_noText = noBtnText;
+      m_buttons = buttons;
       m_msg = msg;
       m_showCancel = showCancel;
     }
@@ -1866,11 +1867,13 @@ namespace ToolKit
           ImGui::Text("%s", m_msg.c_str());
         }
 
+        uint columnCount = m_buttons.size() + 2;
+        columnCount += m_showCancel ? 1 : 0;
         // Center buttons.
         ImGui::BeginTable
         (
           "##FilterZoom",
-          m_showCancel ? 5 : 4,
+          columnCount,
           ImGuiTableFlags_SizingFixedFit
         );
 
@@ -1895,34 +1898,22 @@ namespace ToolKit
         ImGui::TableNextColumn();
         ImGui::TableNextColumn();
 
-        if
-        (
-          ImGui::Button
-          (
-            m_yesText.empty() ? "Yes" : m_yesText.c_str(),
-            ImVec2(120, 0)
-          )
-        )
+        for (ButtonInfo& button : m_buttons)
         {
-          m_visible = false;
-          m_yesCallback();
-          ImGui::CloseCurrentPopup();
-        }
-        ImGui::SetItemDefaultFocus();
-        ImGui::TableNextColumn();
-
-        if
-        (
-          ImGui::Button
+          if
           (
-            m_noText.empty() ? "No" : m_noText.c_str(),
-            ImVec2(120, 0)
+            ImGui::Button
+            (
+              button.m_name.c_str(),
+              ImVec2(120, 0)
+            )
           )
-        )
-        {
-          m_visible = false;
-          m_noCallback();
-          ImGui::CloseCurrentPopup();
+          {
+            m_visible = false;
+            button.m_callback();
+            ImGui::CloseCurrentPopup();
+          }
+          ImGui::TableNextColumn();
         }
 
         if (m_showCancel)

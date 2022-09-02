@@ -8,6 +8,7 @@
 #include "MaterialInspector.h"
 #include "ImGui/imgui_stdlib.h"
 #include "DebugNew.h"
+#include <Prefab.h>
 
 namespace ToolKit
 {
@@ -777,7 +778,7 @@ namespace ToolKit
         return;
       }
 
-      ShowParameterBlock(m_entity->m_localData, m_entity->GetIdVal());
+      ShowParameterBlock();
 
       // Missing data reporter.
       if (m_entity->IsDrawable())
@@ -1018,6 +1019,11 @@ namespace ToolKit
 
       ShowCustomData();
 
+      // If entity belongs to a prefab, don't show components
+      if (Prefab::GetPrefabRoot(m_entity))
+      {
+        return;
+      }
       if(ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
       {
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
@@ -1109,10 +1115,10 @@ namespace ToolKit
       }
     }
 
-    void EntityView::ShowParameterBlock(ParameterBlock& params, ULongID id)
+    void EntityView::ShowParameterBlock()
     {
       VariantCategoryArray categories;
-      params.GetCategories(categories, true, true);
+      m_entity->m_localData.GetCategories(categories, true, true);
 
       for (VariantCategory& category : categories)
       {
@@ -1120,8 +1126,16 @@ namespace ToolKit
         {
           continue;
         }
+        // If entity belongs to a prefab,
+        //   Don't show transform lock and transformation
+        bool isFromPrefab = false;
+        if (Prefab::GetPrefabRoot(m_entity))
+        {
+          isFromPrefab = true;
+        }
 
-        String varName = category.Name + "##" + std::to_string(id);
+        String varName =
+          category.Name + "##" + std::to_string(m_entity->GetIdVal());
         if
         (
           ImGui::CollapsingHeader
@@ -1132,7 +1146,7 @@ namespace ToolKit
         )
         {
           ParameterVariantRawPtrArray vars;
-          params.GetByCategory(category.Name, vars);
+          m_entity->m_localData.GetByCategory(category.Name, vars);
 
           for (ParameterVariant* var : vars)
           {
@@ -1195,222 +1209,265 @@ namespace ToolKit
 
     void EntityView::ShowCustomData()
     {
-      if
+      auto showCustomDataFnc =
+      [this]
       (
-        ImGui::CollapsingHeader("Custom Data", ImGuiTreeNodeFlags_DefaultOpen)
+        String headerName,
+        ParameterVariantRawPtrArray& vars,
+        bool isListEditable
       )
       {
         if
         (
-          ImGui::BeginTable
+          ImGui::CollapsingHeader
           (
-            "##CustomData",
-            3,
-            ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedSame
+            headerName.c_str(),
+            ImGuiTreeNodeFlags_DefaultOpen
           )
         )
         {
-          Vec2 xSize = ImGui::CalcTextSize("Name");
-          xSize *= 3.0f;
-          ImGui::TableSetupColumn
+          if
           (
-            "Name",
-            ImGuiTableColumnFlags_WidthFixed,
-            xSize.x
-          );
-          ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-
-          xSize = ImGui::CalcTextSize("X");
-          xSize *= 2.5f;
-          ImGui::TableSetupColumn
-          (
-            "##Remove",
-            ImGuiTableColumnFlags_WidthFixed,
-            xSize.x
-          );
-
-          ImGui::TableHeadersRow();
-
-          ImGui::TableSetColumnIndex(0);
-          ImGui::PushItemWidth(-FLT_MIN);
-
-          ImGui::TableSetColumnIndex(1);
-          ImGui::PushItemWidth(-FLT_MIN);
-
-          ParameterVariantRawPtrArray customParams;
-          m_entity->m_localData.GetByCategory
-          (
-            CustomDataCategory.Name,
-            customParams
-          );
-
-          ParameterVariant* remove = nullptr;
-          for (size_t i = 0; i < customParams.size(); i++)
+            ImGui::BeginTable
+            (
+              headerName.c_str(),
+              3,
+              ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedSame
+            )
+          )
           {
-            ImGui::TableNextRow();
+            Vec2 xSize = ImGui::CalcTextSize("Name");
+            xSize *= 3.0f;
+            ImGui::TableSetupColumn
+            (
+              "Name",
+              ImGuiTableColumnFlags_WidthFixed,
+              xSize.x
+            );
+            ImGui::TableSetupColumn
+            (
+              "Value",
+              ImGuiTableColumnFlags_WidthStretch
+            );
+
+            xSize = ImGui::CalcTextSize("X");
+            xSize *= 2.5f;
+            ImGui::TableSetupColumn
+            (
+              "##Remove",
+              ImGuiTableColumnFlags_WidthFixed,
+              xSize.x
+            );
+
+            ImGui::TableHeadersRow();
+
             ImGui::TableSetColumnIndex(0);
-
-            ImGui::PushID(static_cast<int>(i));
-            ParameterVariant* var = customParams[i];
-            static char buff[1024];
-            strcpy_s(buff, sizeof(buff), var->m_name.c_str());
-
-            String pNameId = "##Name" + std::to_string(i);
-            ImGui::InputText(pNameId.c_str(), buff, sizeof(buff));
-            var->m_name = buff;
+            ImGui::PushItemWidth(-FLT_MIN);
 
             ImGui::TableSetColumnIndex(1);
+            ImGui::PushItemWidth(-FLT_MIN);
 
-            String pId = "##" + std::to_string(i);
-            switch (var->GetType())
+            ParameterVariant* remove = nullptr;
+            for (size_t i = 0; i < vars.size(); i++)
             {
-            case ParameterVariant::VariantType::String:
-            {
-              ImGui::InputText(pId.c_str(), var->GetVarPtr<String>());
-            }
-            break;
-            case ParameterVariant::VariantType::Bool:
-            {
-              ImGui::Checkbox(pId.c_str(), var->GetVarPtr<bool>());
-            }
-            break;
-            case ParameterVariant::VariantType::Int:
-            {
-              ImGui::InputInt(pId.c_str(), var->GetVarPtr<int>());
-            }
-            break;
-            case ParameterVariant::VariantType::Float:
-            {
-              ImGui::DragFloat(pId.c_str(), var->GetVarPtr<float>(), 0.1f);
-            }
-            break;
-            case ParameterVariant::VariantType::Vec3:
-            {
-              ImGui::DragFloat3(pId.c_str(), &var->GetVar<Vec3>()[0], 0.1f);
-            }
-            break;
-            case ParameterVariant::VariantType::Vec4:
-            {
-              ImGui::DragFloat4(pId.c_str(), &var->GetVar<Vec4>()[0], 0.1f);
-            }
-            break;
-            case ParameterVariant::VariantType::Mat3:
-            {
-              Vec3 vec;
-              Mat3 val = var->GetVar<Mat3>();
-              for (int j = 0; j < 3; j++)
+              ImGui::TableNextRow();
+              ImGui::TableSetColumnIndex(0);
+
+              ImGui::PushID(static_cast<int>(i));
+              ParameterVariant* var = vars[i];
+              static char buff[1024];
+              strcpy_s(buff, sizeof(buff), var->m_name.c_str());
+
+              String pNameId = "##Name" + std::to_string(i);
+              ImGui::InputText(pNameId.c_str(), buff, sizeof(buff));
+              var->m_name = buff;
+
+              ImGui::TableSetColumnIndex(1);
+
+              String pId = "##" + std::to_string(i);
+              switch (var->GetType())
               {
-                pId += std::to_string(j);
-                vec = glm::row(val, j);
-                ImGui::InputFloat3(pId.c_str(), &vec[0]);
-                val = glm::row(val, j, vec);
-                *var = val;
+                case ParameterVariant::VariantType::String:
+                {
+                  ImGui::InputText(pId.c_str(), var->GetVarPtr<String>());
+                }
+                break;
+                case ParameterVariant::VariantType::Bool:
+                {
+                  ImGui::Checkbox(pId.c_str(), var->GetVarPtr<bool>());
+                }
+                break;
+                case ParameterVariant::VariantType::Int:
+                {
+                  ImGui::InputInt(pId.c_str(), var->GetVarPtr<int>());
+                }
+                break;
+                case ParameterVariant::VariantType::Float:
+                {
+                  ImGui::DragFloat(pId.c_str(), var->GetVarPtr<float>(), 0.1f);
+                }
+                break;
+                case ParameterVariant::VariantType::Vec3:
+                {
+                  ImGui::DragFloat3(pId.c_str(), &var->GetVar<Vec3>()[0], 0.1f);
+                }
+                break;
+                case ParameterVariant::VariantType::Vec4:
+                {
+                  ImGui::DragFloat4(pId.c_str(), &var->GetVar<Vec4>()[0], 0.1f);
+                }
+                break;
+                case ParameterVariant::VariantType::Mat3:
+                {
+                  Vec3 vec;
+                  Mat3 val = var->GetVar<Mat3>();
+                  for (int j = 0; j < 3; j++)
+                  {
+                    pId += std::to_string(j);
+                    vec = glm::row(val, j);
+                    ImGui::InputFloat3(pId.c_str(), &vec[0]);
+                    val = glm::row(val, j, vec);
+                    *var = val;
+                  }
+                }
+                break;
+                case ParameterVariant::VariantType::Mat4:
+                {
+                  Vec4 vec;
+                  Mat4 val = var->GetVar<Mat4>();
+                  for (int j = 0; j < 4; j++)
+                  {
+                    pId += std::to_string(j);
+                    vec = glm::row(val, j);
+                    ImGui::InputFloat4(pId.c_str(), &vec[0]);
+                    val = glm::row(val, j, vec);
+                    *var = val;
+                  }
+                }
+                break;
               }
-            }
-            break;
-            case ParameterVariant::VariantType::Mat4:
-            {
-              Vec4 vec;
-              Mat4 val = var->GetVar<Mat4>();
-              for (int j = 0; j < 4; j++)
+
+              ImGui::TableSetColumnIndex(2);
+              if (isListEditable && ImGui::Button("X"))
               {
-                pId += std::to_string(j);
-                vec = glm::row(val, j);
-                ImGui::InputFloat4(pId.c_str(), &vec[0]);
-                val = glm::row(val, j, vec);
-                *var = val;
+                remove = vars[i];
+                g_app->m_statusMsg =
+                  Format
+                  (
+                    "Parameter %d: %s removed.",
+                    i + 1,
+                    var->m_name.c_str()
+                  );
               }
-            }
-            break;
+
+              ImGui::PopID();
             }
 
-            ImGui::TableSetColumnIndex(2);
-            if (ImGui::Button("X"))
+            if (remove != nullptr)
             {
-              remove = customParams[i];
-              g_app->m_statusMsg =
-              Format("Parameter %d: %s removed.", i + 1, var->m_name.c_str());
+              m_entity->m_localData.Remove(remove->m_id);
             }
 
-            ImGui::PopID();
-          }
+            ImGui::EndTable();
+            ImGui::Separator();
 
-          if (remove != nullptr)
-          {
-            m_entity->m_localData.Remove(remove->m_id);
-          }
-
-          ImGui::EndTable();
-          ImGui::Separator();
-
-          ImGui::PushItemWidth(150);
-          static bool addInAction = false;
-          if (addInAction)
-          {
-            int dataType = 0;
-            if
-            (
-              ImGui::Combo
-              (
+            ImGui::PushItemWidth(150);
+            static bool addInAction = false;
+            if (isListEditable && addInAction)
+            {
+              int dataType = 0;
+              if
+                (
+                ImGui::Combo
+                (
                 "##NewCustData",
                 &dataType,
                 "...\0String\0Boolean\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4"
-              )
-            )
-            {
-              ParameterVariant customVar;
-              // This makes them only visible in Custom Data dropdown.
-              customVar.m_exposed = false;
-              customVar.m_editable = true;
-              customVar.m_category = CustomDataCategory;
-
-              bool added = true;
-              switch (dataType)
+                )
+                )
               {
-              case 1:
-                customVar = "";
-                break;
-              case 2:
-                customVar = false;
-                break;
-              case 3:
-                customVar = 0;
-                break;
-              case 4:
-                customVar = 0.0f;
-                break;
-              case 5:
-                customVar = ZERO;
-                break;
-              case 6:
-                customVar = Vec4();
-                break;
-              case 7:
-                customVar = Mat3();
-                break;
-              case 8:
-                customVar = Mat4();
-                break;
-              default:
-                added = false;
-                break;
-              }
+                ParameterVariant customVar;
+                // This makes them only visible in Custom Data dropdown.
+                customVar.m_exposed = false;
+                customVar.m_editable = true;
+                customVar.m_category = CustomDataCategory;
 
-              if (added)
-              {
-                m_entity->m_localData.Add(customVar);
-                addInAction = false;
+                bool added = true;
+                switch (dataType)
+                {
+                  case 1:
+                  customVar = "";
+                  break;
+                  case 2:
+                  customVar = false;
+                  break;
+                  case 3:
+                  customVar = 0;
+                  break;
+                  case 4:
+                  customVar = 0.0f;
+                  break;
+                  case 5:
+                  customVar = ZERO;
+                  break;
+                  case 6:
+                  customVar = Vec4();
+                  break;
+                  case 7:
+                  customVar = Mat3();
+                  break;
+                  case 8:
+                  customVar = Mat4();
+                  break;
+                  default:
+                  added = false;
+                  break;
+                }
+
+                if (added)
+                {
+                  m_entity->m_localData.Add(customVar);
+                  addInAction = false;
+                }
               }
             }
-          }
-          ImGui::PopItemWidth();
+            ImGui::PopItemWidth();
 
-          if (UI::BeginCenteredTextButton("Add Custom Data"))
-          {
-            addInAction = true;
+            if
+            (
+              isListEditable
+              && UI::BeginCenteredTextButton("Add Custom Data")
+            )
+            {
+              addInAction = true;
+            }
+            UI::EndCenteredTextButton();
           }
-          UI::EndCenteredTextButton();
         }
+      };
+
+      ParameterVariantRawPtrArray customParams;
+      m_entity->m_localData.GetByCategory
+      (
+        CustomDataCategory.Name,
+        customParams
+      );
+      showCustomDataFnc("Custom Data", customParams, true);
+
+      if (m_entity->GetType() == EntityType::Entity_Prefab)
+      {
+        ParameterVariantRawPtrArray inheritedParams;
+        Prefab* prefab = static_cast<Prefab*>(m_entity);
+        for (Node* root : prefab->m_node->m_children)
+        {
+          Entity* e = root->m_entity;
+          e->m_localData.GetByCategory
+          (
+            CustomDataCategory.Name,
+            inheritedParams
+          );
+        }
+        showCustomDataFnc("Prefab Data", inheritedParams, false);
       }
     }
 

@@ -39,7 +39,11 @@ namespace ToolKit
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
       }
 
-      if (e->m_node->m_children.empty())
+      if
+      (
+        e->m_node->m_children.empty()
+        || e->GetType() == EntityType::Entity_Prefab
+      )
       {
         nodeFlags |= ImGuiTreeNodeFlags_Leaf |
           ImGuiTreeNodeFlags_NoTreePushOnOpen;

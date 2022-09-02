@@ -3,12 +3,14 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <utility>
 
 #include "ToolKit.h"
 #include "Util.h"
 #include "Component.h"
 #include "ResourceComponent.h"
 #include "DebugNew.h"
+#include "Prefab.h"
 
 namespace ToolKit
 {
@@ -28,6 +30,7 @@ namespace ToolKit
   {
     Destroy(false);
   }
+
 
   void Scene::Load()
   {
@@ -50,13 +53,23 @@ namespace ToolKit
     {
       if (e->GetIsInstanceVal())
       {
-        if (Entity* parent = GetEntity(e->GetBaseEntityID()))
+        Prefab* prefab = Prefab::GetPrefabRoot(e);
+        if (prefab)
+        {
+          // If entity is from a prefab or a prefab, don't do anything
+          // Prefab's child entity instances aren't serialized anyway
+          //   but Prefab::Init instantiates, so we need to check it here
+          // Long story short: Prefab deserialization handles this case
+        }
+        else if (Entity* base = GetEntity(e->GetBaseEntityID()))
         {
           Node* node = e->m_node->Copy();
-          parent->InstantiateTo(e);
+          ParameterBlock params = e->m_localData;
+          base->InstantiateTo(e);
           SafeDel(e->m_node);
           node->m_entity = e;
           e->m_node = node;
+          e->m_localData = params;
         }
         else
         {
@@ -437,6 +450,23 @@ namespace ToolKit
     return nullptr;
   }
 
+  void Scene::LinkPrefab(const String& fullPath)
+  {
+    if (fullPath == GetFile())
+    {
+      GetLogger()->WriteConsole
+      (
+        LogType::Error,
+        "You can't prefab same scene!"
+      );
+      return;
+    }
+    Prefab* prefab = new Prefab();
+    AddEntity(prefab);
+    prefab->SetScenePathVal(fullPath);
+    prefab->Init(this);
+  }
+
   void Scene::Destroy(bool removeResources)
   {
     for (Entity* ntt : m_entities)
@@ -511,6 +541,15 @@ namespace ToolKit
     for (size_t listIndx = 0; listIndx < m_entities.size(); listIndx++)
     {
       Entity* ntt = m_entities[listIndx];
+      // If entity isn't a prefab type but from a prefab, don't serialize it
+      if
+      (
+        ntt->GetType() != EntityType::Entity_Prefab
+        && Prefab::GetPrefabRoot(ntt)
+      )
+      {
+        continue;
+      }
       ntt->Serialize(doc, scene);
 
       NormalizeEntityID
@@ -632,6 +671,10 @@ namespace ToolKit
       Entity* ntt = GetEntityFactory()->CreateByType(t);
 
       ntt->DeSerialize(doc, node);
+      if (ntt->GetType() == EntityType::Entity_Prefab)
+      {
+        static_cast<Prefab*>(ntt)->Init(this);
+      }
 
       // Incrementing the incoming ntt ids with current max id value...
       //   to prevent id collisions.
@@ -645,6 +688,7 @@ namespace ToolKit
       {
         ntt->SetBaseEntityID(lastID + ntt->GetBaseEntityID());
       }
+
       m_entities.push_back(ntt);
     }
     GetHandleManager()->SetMaxHandle(biggestID);
