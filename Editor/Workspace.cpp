@@ -155,12 +155,6 @@ namespace ToolKit
 
     String Workspace::GetActiveWorkspace() const
     {
-      assert
-      (
-        m_activeWorkspace.empty() == false &&
-        "Workspace must be initialized."
-      );
-
       return m_activeWorkspace;
     }
 
