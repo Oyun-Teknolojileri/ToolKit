@@ -34,7 +34,8 @@ namespace ToolKit
     TKDeclareParam(bool, CastShadow);
     TKDeclareParam(float, ShadowBias);
     TKDeclareParam(Vec2, ShadowResolution);
-    TKDeclareParam(int, ShadowPCFKernelSize);
+    TKDeclareParam(float, PCFSampleSize);
+    TKDeclareParam(int, PCFKernelSize);
 
     bool m_isStudioLight = false;
     Mat4 m_shadowMapCameraProjectionViewMatrix;
@@ -54,6 +55,12 @@ namespace ToolKit
      virtual ~DirectionalLight();
 
      EntityType GetType() const override;
+
+     BoundingBox GetShadowMapCameraFrustumCorners();
+
+   public:
+    TKDeclareParam(Vec4, ShadowFrustumSize);
+    TKDeclareParam(Vec2, ShadowFrustumNearAndFar);
   };
 
   class TK_API PointLight : public Light

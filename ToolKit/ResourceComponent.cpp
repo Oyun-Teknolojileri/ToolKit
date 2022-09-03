@@ -126,7 +126,14 @@ namespace ToolKit
       EnvironmentComponentCategory.Name,
       EnvironmentComponentCategory.Priority,
       true,
-      true
+      true,
+      {
+        false,
+        true,
+        0.0f,
+        100000.0f,
+        0.5f
+      }
     );
 
     Min_Define
@@ -135,7 +142,14 @@ namespace ToolKit
       EnvironmentComponentCategory.Name,
       EnvironmentComponentCategory.Priority,
       true,
-      true
+      true,
+      {
+        false,
+        true,
+        0.0f,
+        100000.0f,
+        0.5f
+      }
     );
 
     Illuminate_Define
@@ -153,7 +167,14 @@ namespace ToolKit
       EnvironmentComponentCategory.Name,
       EnvironmentComponentCategory.Priority,
       true,
-      true
+      true,
+      {
+        false,
+        true,
+        0.0f,
+        100000.0f,
+        0.1f
+      }
     );
     Exposure_Define
     (
@@ -161,7 +182,14 @@ namespace ToolKit
       EnvironmentComponentCategory.Name,
       EnvironmentComponentCategory.Priority,
       true,
-      true
+      true,
+      {
+        false,
+        true,
+        0.0f,
+        50.0f,
+        0.05f
+      }
     );
   }
 

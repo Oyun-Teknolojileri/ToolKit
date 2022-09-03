@@ -1365,6 +1365,30 @@ Fail:
           CreateBoundingBoxDebugObject(primary->GetAABB(true))
         );
       }
+
+      if (m_showDirectionalLightShadowFrustum)
+      {
+        // Directional light shadow map frustum
+        if
+        (
+          primary->GetType() == EntityType::Entity_DirectionalLight
+          && static_cast<DirectionalLight*>(primary)->GetCastShadowVal()
+        )
+        {
+          Mat4 transform = primary->m_node->GetTransform();
+          m_perFrameDebugObjects.push_back
+          (
+            CreateBoundingBoxDebugObject
+            (
+              static_cast<DirectionalLight*>(primary)->
+              GetShadowMapCameraFrustumCorners(),
+              Vec3(1.0f, 0.0f, 0.0f),
+              0.2f,
+              &transform
+            )
+          );
+        }
+      }
     }
 
     void App::RenderGizmo

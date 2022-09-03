@@ -590,6 +590,11 @@ namespace ToolKit
       GetPluginManager()->Load(plugin);
     }
 
+    void ShowDirectionalLightShadowFrustum(TagArgArray tagArgs)
+    {
+      BoolCheck(tagArgs, &g_app->m_showDirectionalLightShadowFrustum);
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2)
     {
@@ -647,6 +652,11 @@ namespace ToolKit
       CreateCommand(g_showGraphicsApiLogs, ShowGraphicsApiLogs);
       CreateCommand(g_setWorkspaceDir, SetWorkspaceDir);
       CreateCommand(g_loadPlugin, LoadPlugin);
+      CreateCommand
+      (
+        g_showDirectionalLightShadowFrustum,
+        ShowDirectionalLightShadowFrustum
+      );
     }
 
     ConsoleWindow::~ConsoleWindow()

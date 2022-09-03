@@ -88,20 +88,52 @@ namespace ToolKit
     "LightData.type[11]"
   };
 
-  static StringArray g_lightPCFKernelSizeHalfCache =
+  static StringArray g_lightPCFSampleHalfSizeCache =
   {
-    "LightData.shadowPCFKernelHalfSize[0]",
-    "LightData.shadowPCFKernelHalfSize[1]",
-    "LightData.shadowPCFKernelHalfSize[2]",
-    "LightData.shadowPCFKernelHalfSize[3]",
-    "LightData.shadowPCFKernelHalfSize[4]",
-    "LightData.shadowPCFKernelHalfSize[5]",
-    "LightData.shadowPCFKernelHalfSize[6]",
-    "LightData.shadowPCFKernelHalfSize[7]",
-    "LightData.shadowPCFKernelHalfSize[8]",
-    "LightData.shadowPCFKernelHalfSize[9]",
-    "LightData.shadowPCFKernelHalfSize[10]",
-    "LightData.shadowPCFKernelHalfSize[11]"
+    "LightData.PCFSampleHalfSize[0]",
+    "LightData.PCFSampleHalfSize[1]",
+    "LightData.PCFSampleHalfSize[2]",
+    "LightData.PCFSampleHalfSize[3]",
+    "LightData.PCFSampleHalfSize[4]",
+    "LightData.PCFSampleHalfSize[5]",
+    "LightData.PCFSampleHalfSize[6]",
+    "LightData.PCFSampleHalfSize[7]",
+    "LightData.PCFSampleHalfSize[8]",
+    "LightData.PCFSampleHalfSize[9]",
+    "LightData.PCFSampleHalfSize[10]",
+    "LightData.PCFSampleHalfSize[11]"
+  };
+
+  static StringArray g_lightPCFSampleDistanceCache =
+  {
+    "LightData.PCFSampleDistance[0]",
+    "LightData.PCFSampleDistance[1]",
+    "LightData.PCFSampleDistance[2]",
+    "LightData.PCFSampleDistance[3]",
+    "LightData.PCFSampleDistance[4]",
+    "LightData.PCFSampleDistance[5]",
+    "LightData.PCFSampleDistance[6]",
+    "LightData.PCFSampleDistance[7]",
+    "LightData.PCFSampleDistance[8]",
+    "LightData.PCFSampleDistance[9]",
+    "LightData.PCFSampleDistance[10]",
+    "LightData.PCFSampleDistance[11]"
+  };
+
+  static StringArray g_lightPCFUnitSampleDistanceCache =
+  {
+    "LightData.PCFUnitSampleDistance[0]",
+    "LightData.PCFUnitSampleDistance[1]",
+    "LightData.PCFUnitSampleDistance[2]",
+    "LightData.PCFUnitSampleDistance[3]",
+    "LightData.PCFUnitSampleDistance[4]",
+    "LightData.PCFUnitSampleDistance[5]",
+    "LightData.PCFUnitSampleDistance[6]",
+    "LightData.PCFUnitSampleDistance[7]",
+    "LightData.PCFUnitSampleDistance[8]",
+    "LightData.PCFUnitSampleDistance[9]",
+    "LightData.PCFUnitSampleDistance[10]",
+    "LightData.PCFUnitSampleDistance[11]"
   };
 
   static StringArray g_lightRadiusStrCache =

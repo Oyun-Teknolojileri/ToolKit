@@ -112,7 +112,14 @@ namespace ToolKit
       "Sky",
       90,
       true,
-      true
+      true,
+      {
+        false,
+        true,
+        0.0f,
+        100000.0f,
+        0.1f
+      }
     );
     Exposure_Define
     (
@@ -120,7 +127,14 @@ namespace ToolKit
       "Sky",
       90,
       true,
-      true
+      true,
+      {
+        false,
+        true,
+        0.0f,
+        50.0f,
+        0.05f
+      }
     );
     Hdri_Define
     (

@@ -70,9 +70,29 @@ namespace ToolKit
         case ParameterVariant::VariantType::Int:
         {
           int val = var->GetVar<int>();
-          if(ImGui::InputInt(var->m_name.c_str(), &val))
+          if (var->m_hint.isRangeLimited)
           {
-            *var = val;
+            if
+            (
+              ImGui::DragInt
+              (
+                var->m_name.c_str(),
+                &val,
+                var->m_hint.increment,
+                static_cast<int>(var->m_hint.rangeMin),
+                static_cast<int>(var->m_hint.rangeMax)
+              )
+            )
+            {
+              *var = val;
+            }
+          }
+          else
+          {
+            if (ImGui::InputInt(var->m_name.c_str(), &val))
+            {
+              *var = val;
+            }
           }
         }
         break;

@@ -930,14 +930,18 @@ namespace ToolKit
 
           if (light->GetType() == EntityType::Entity_DirectionalLight)
           {
+            Vec4 frustumSize = static_cast<DirectionalLight*>(light)
+              ->GetShadowFrustumSizeVal();
+            Vec2 frustumNearFar = static_cast<DirectionalLight*>(light)
+              ->GetShadowFrustumNearAndFarVal();
             m_shadowMapCamera->SetLens
             (
-              -20.0f,
-              20.0f,
-              -20.0f,
-              20.0f,
-              0.01f,
-              100.0f
+              frustumSize.x,
+              frustumSize.y,
+              frustumSize.z,
+              frustumSize.w,
+              frustumNearFar.x,
+              frustumNearFar.y
             );
             m_shadowMapCamera->m_node->SetOrientation
             (
@@ -1452,8 +1456,9 @@ namespace ToolKit
   {
     ResetShadowMapBindings(program);
 
-    size_t size = glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
-    for (size_t i = 0; i < size; i++)
+    size_t lightSize =
+    glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
+    for (size_t i = 0; i < lightSize; i++)
     {
       Light* currLight = m_lights[i];
 
@@ -1606,12 +1611,41 @@ namespace ToolKit
         glUniform1f(loc, innAngle);
       }
 
+      // Sanity check
+      if
+      (
+        currLight->GetPCFSampleSizeVal() == 0.0f
+        && currLight->GetCastShadowVal()
+      )
+      {
+        currLight->SetPCFSampleSizeVal(1.0f);
+      }
+
+      float size = currLight->GetPCFSampleSizeVal();
+      float speed = size / currLight->GetPCFKernelSizeVal();
+      float step = static_cast<float>(currLight->GetPCFKernelSizeVal());
+      float unit = 1.0f / ((step + 1.0f) * (step + 1.0f));
+
       GLuint loc = glGetUniformLocation
       (
         program->m_handle,
-        g_lightPCFKernelSizeHalfCache[i].c_str()
+        g_lightPCFSampleHalfSizeCache[i].c_str()
       );
-      glUniform1i(loc, currLight->GetShadowPCFKernelSizeVal() / 2);
+      glUniform1f(loc, currLight->GetPCFSampleSizeVal() / 2.0f);
+
+      loc = glGetUniformLocation
+      (
+        program->m_handle,
+        g_lightPCFSampleDistanceCache[i].c_str()
+      );
+      glUniform1f(loc, speed);
+
+      loc = glGetUniformLocation
+      (
+        program->m_handle,
+        g_lightPCFUnitSampleDistanceCache[i].c_str()
+      );
+      glUniform1f(loc, unit);
 
       bool castShadow = currLight->GetCastShadowVal();
       if (castShadow)

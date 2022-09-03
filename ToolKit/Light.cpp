@@ -60,7 +60,36 @@ namespace ToolKit
         2.0f
       }
     );
-    ShadowPCFKernelSize_Define(5, "Light", 90, true, true);
+    PCFSampleSize_Define
+    (
+      7.0f,
+      "Light",
+      90,
+      true,
+      true,
+      {
+        false,
+        true,
+        0.1f,
+        100.0f,
+        0.1f
+      }
+    );
+    PCFKernelSize_Define
+    (
+      5,
+      "Light",
+      90,
+      true,
+      true,
+      {
+        false,
+        true,
+        1,
+        20,
+        1
+      }
+    );
   }
 
   Light::~Light()
@@ -170,6 +199,36 @@ namespace ToolKit
 
   DirectionalLight::DirectionalLight()
   {
+    ShadowFrustumSize_Define
+    (
+      Vec4(-20.0f, 20.0f, -20.0f, 20.0f),
+      "Light",
+      90,
+      true,
+      true,
+      {
+        false,
+        true,
+        -1000.0f,
+        1000.0f,
+        1.0f
+      }
+    );
+    ShadowFrustumNearAndFar_Define
+    (
+      Vec2(0.01f, 100.0f),
+      "Light",
+      90,
+      true,
+      true,
+      {
+        false,
+        true,
+        0.01f,
+        10000.0f,
+        2.0f
+      }
+    );
     AddComponent(new DirectionComponent(this));
   }
 
@@ -180,6 +239,34 @@ namespace ToolKit
   EntityType DirectionalLight::GetType() const
   {
     return EntityType::Entity_DirectionalLight;
+  }
+
+  BoundingBox DirectionalLight::GetShadowMapCameraFrustumCorners()
+  {
+    BoundingBox box;
+    Vec3 max = Vec3(1.0f, 1.0f, 1.0f);
+    Vec3 min = Vec3(-1.0f, -1.0f, -1.0f);
+    Vec4 frustumSize = GetShadowFrustumSizeVal();
+    Vec2 frustumNearFar = GetShadowFrustumNearAndFarVal();
+    Mat4 invProj = glm::inverse
+    (
+      glm::ortho
+      (
+        frustumSize.x,
+        frustumSize.y,
+        frustumSize.z,
+        frustumSize.w,
+        frustumNearFar.x,
+        frustumNearFar.y
+      )
+    );
+    Vec4 hmgMax = invProj * Vec4(max, 1.0f);
+    Vec4 hmgMin = invProj * Vec4(min, 1.0f);
+    max = Vec3(hmgMax) / hmgMax.w;
+    min = Vec3(hmgMin) / hmgMin.w;
+    box.max = max;
+    box.min = min;
+    return box;
   }
 
   PointLight::PointLight()
@@ -199,7 +286,8 @@ namespace ToolKit
         0.4f
       }
     );
-    ParamShadowPCFKernelSize().m_exposed = false;
+    ParamPCFSampleSize().m_exposed = false;
+    ParamPCFKernelSize().m_exposed = false;
   }
 
   EntityType PointLight::GetType() const

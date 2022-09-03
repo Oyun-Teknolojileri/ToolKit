@@ -35,7 +35,9 @@
 			int castShadow[12];
 			float shadowBias[12];
 			float shadowMapCamFarPlane[12];
-			int shadowPCFKernelHalfSize[12];
+			float PCFSampleHalfSize[12];
+			float PCFSampleDistance[12];
+			float PCFUnitSampleDistance[12];
 		};
 		const int maxPointLightShadows = 4;
 		const int maxDirAndSpotLightShadows = 4;
@@ -84,20 +86,25 @@
 			// Get depth of the current fragment according to lights view
 			float currentDepth = projCoord.z;
 
+			// Shadow bias
+			vec3 lightDir = LightData.pos[index] - pos;
+
 			float shadow = 0.0;
 			vec2 texelSize = 1.0 / vec2(textureSize(LightData.dirAndSpotLightShadowMap[dirIndex], 0));
-			int size = LightData.shadowPCFKernelHalfSize[index];
+			float size = LightData.PCFSampleHalfSize[index];
+			float speed = LightData.PCFSampleDistance[index];
+			float unit = LightData.PCFUnitSampleDistance[index];
+
 			// PCF
-			for (int i = -size; i < size; i++)
+			for (float i = -size; i <= size; i+=speed)
 			{
-				for (int j = -size; j <= size; j++)
+				for (float j = -size; j <= size; j+=speed)
 				{
 					float shadowSample = texture(LightData.dirAndSpotLightShadowMap[dirIndex],
 					projCoord.xy + vec2(i, j) * texelSize).r;
-					shadow += currentDepth - LightData.shadowBias[index] > shadowSample ? 0.0 : 1.0;
+					shadow += currentDepth - LightData.shadowBias[index] > shadowSample ? 0.0 : unit;
 				}
 			}
-			shadow = shadow / float((size * 2 + 1) * (size * 2 + 1));
 
 			return shadow;
 		}
@@ -111,27 +118,34 @@
 
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currentDepth = length(lightToFrag);
-			// Convert to [0 1] range
-			currentDepth = currentDepth / LightData.shadowMapCamFarPlane[index];
 
 			float shadow = 0.0;
 
 			// Transform to [0, 1] range
 			projCoord = projCoord * 0.5 + 0.5;
 
+			// Shadow bias
+			vec3 lightDir = normalize(-lightToFrag);
+			float bias = LightData.shadowBias[index];
+			bias = max(bias * 10.0 * (1.0 - dot(normal, lightDir)), 0.0);
+
 			vec2 texelSize = 1.0 / vec2(textureSize(LightData.dirAndSpotLightShadowMap[spotIndex], 0));
-			int size = LightData.shadowPCFKernelHalfSize[index];
+			float size = LightData.PCFSampleHalfSize[index];
+			float speed = LightData.PCFSampleDistance[index];
+			float unit = LightData.PCFUnitSampleDistance[index];
+
 			// PCF
-			for (int i = -size; i < size; i++)
+			for (float i = -size; i <= size; i+=speed)
 			{
-				for (int j = -size; j <= size; j++)
+				for (float j = -size; j <= size; j+=speed)
 				{
 					float shadowSample = texture(LightData.dirAndSpotLightShadowMap[spotIndex],
 					projCoord.xy + vec2(i, j) * texelSize).r;
-					shadow += currentDepth - LightData.shadowBias[index] > shadowSample ? 0.0 : 1.0;
+					// Convert to [0 1] range
+					shadowSample *= LightData.shadowMapCamFarPlane[index];
+					shadow += currentDepth - LightData.shadowBias[index] > shadowSample ? 0.0 : unit;
 				}
 			}
-			shadow = shadow / float((size * 2 + 1) * (size * 2 + 1));
 
 			return shadow;
 		}
