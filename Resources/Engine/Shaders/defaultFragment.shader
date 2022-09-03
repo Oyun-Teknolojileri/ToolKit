@@ -76,18 +76,14 @@
 		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
 		{
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
-
-			// Projection divide
-			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
-
-			// Transform to [0, 1] range
-			projCoord = projCoord * 0.5 + 0.5;
-
-			// Get depth of the current fragment according to lights view
+			vec3 projCoord = fragPosForLight.xyz * 0.5 + 0.5;
+			projCoord = clamp(projCoord, 0.0, 1.0);
 			float currentDepth = projCoord.z;
 
 			// Shadow bias
-			vec3 lightDir = LightData.pos[index] - pos;
+			float bias = LightData.shadowBias[index];
+			//vec3 lightDir = normalize(LightData.pos[index] - pos);
+			//bias = max(bias * (1.0 - dot(normal, lightDir)), 0.005);
 
 			float shadow = 0.0;
 			vec2 texelSize = 1.0 / vec2(textureSize(LightData.dirAndSpotLightShadowMap[dirIndex], 0));
@@ -102,7 +98,7 @@
 				{
 					float shadowSample = texture(LightData.dirAndSpotLightShadowMap[dirIndex],
 					projCoord.xy + vec2(i, j) * texelSize).r;
-					shadow += currentDepth - LightData.shadowBias[index] > shadowSample ? 0.0 : unit;
+					shadow += currentDepth - bias > shadowSample ? 0.0 : unit;
 				}
 			}
 
@@ -127,7 +123,7 @@
 			// Shadow bias
 			vec3 lightDir = normalize(-lightToFrag);
 			float bias = LightData.shadowBias[index];
-			bias = max(bias * 10.0 * (1.0 - dot(normal, lightDir)), 0.0);
+			bias = max(bias * 10.0 * (1.0 - dot(normal, lightDir)), 10.0);
 
 			vec2 texelSize = 1.0 / vec2(textureSize(LightData.dirAndSpotLightShadowMap[spotIndex], 0));
 			float size = LightData.PCFSampleHalfSize[index];
@@ -157,9 +153,9 @@
 			float currentDepth = length(lightToFrag);
 
 			// Shadow bias
-			vec3 lightDir = normalize(-lightToFrag);
 			float bias = LightData.shadowBias[index];
-			bias = max(bias * 10.0 * (1.0 - dot(normal, lightDir)), 0.1);
+			vec3 lightDir = normalize(-lightToFrag);
+			bias = max(bias * 10.0 * (1.0 - dot(normal, lightDir)), 10.0);
 
 			float shadow = 0.0;
 			float radius = 0.03;
@@ -263,7 +259,7 @@
 					{
 						shadow = CalculateDirectionalShadow(v_pos, i, dirAndSpotLightShadowCount, n);
 						dirAndSpotLightShadowCount += 1;
-					}
+					}				
 				}
 				else if (LightData.type[i] == 3) // Spot light
 				{
