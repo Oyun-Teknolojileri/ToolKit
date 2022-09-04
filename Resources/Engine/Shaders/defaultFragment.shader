@@ -123,7 +123,7 @@
 			// Shadow bias
 			vec3 lightDir = normalize(-lightToFrag);
 			float bias = LightData.shadowBias[index];
-			bias = max(bias * 10.0 * (1.0 - dot(normal, lightDir)), 10.0);
+			bias = max(bias * 10.0 * (1.0 - dot(normal, lightDir)), 0.005);
 
 			vec2 texelSize = 1.0 / vec2(textureSize(LightData.dirAndSpotLightShadowMap[spotIndex], 0));
 			float size = LightData.PCFSampleHalfSize[index];
@@ -155,7 +155,7 @@
 			// Shadow bias
 			float bias = LightData.shadowBias[index];
 			vec3 lightDir = normalize(-lightToFrag);
-			bias = max(bias * 10.0 * (1.0 - dot(normal, lightDir)), 10.0);
+			bias = max(bias * 10.0 * (1.0 - dot(normal, lightDir)), 0.005);
 
 			float shadow = 0.0;
 			float radius = 0.03;
