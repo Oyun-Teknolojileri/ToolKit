@@ -12,41 +12,30 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     void EnableLightGizmo(Light* light, bool enable)
     {
       switch (light->GetType())
       {
-        case EntityType::Entity_DirectionalLight:
-          static_cast<EditorDirectionalLight*>(light)->EnableGizmo
-          (
-            enable
-          );
+      case EntityType::Entity_DirectionalLight:
+        static_cast<EditorDirectionalLight*>(light)->EnableGizmo(enable);
         break;
-        case EntityType::Entity_PointLight:
-          static_cast<EditorPointLight*>(light)->EnableGizmo
-          (
-            enable
-          );
+      case EntityType::Entity_PointLight:
+        static_cast<EditorPointLight*>(light)->EnableGizmo(enable);
         break;
-        case EntityType::Entity_SpotLight:
-          static_cast<EditorSpotLight*>(light)->EnableGizmo
-          (
-            enable
-          );
+      case EntityType::Entity_SpotLight:
+        static_cast<EditorSpotLight*>(light)->EnableGizmo(enable);
         break;
-        case EntityType::Entity_Light:
-        default:
-          assert(false && "Invalid Light Type");
+      case EntityType::Entity_Light:
+      default:
+        assert(false && "Invalid Light Type");
         break;
       }
     }
 
-    EditorLightBase::EditorLightBase(Light* light)
-      : m_light(light)
+    EditorLightBase::EditorLightBase(Light* light) : m_light(light)
     {
-      m_gizmoUpdateFn =
-      [this](Value& oldVal, Value& newVal) -> void
-      {
+      m_gizmoUpdateFn = [this](Value& oldVal, Value& newVal) -> void {
         m_gizmo->InitGizmo(m_light);
       };
     }
@@ -64,7 +53,7 @@ namespace ToolKit
       }
 
       // Mesh component for gizmo
-      m_gizmoMC = std::make_shared<MeshComponent>();
+      m_gizmoMC                        = std::make_shared<MeshComponent>();
       m_gizmoMC->ParamMesh().m_exposed = false;
       m_gizmoMC->SetCastShadowVal(false);
 
@@ -97,8 +86,7 @@ namespace ToolKit
       }
     }
 
-    EditorDirectionalLight::EditorDirectionalLight()
-      : EditorLightBase(this)
+    EditorDirectionalLight::EditorDirectionalLight() : EditorLightBase(this)
     {
       m_gizmo = new DirectionalLightGizmo(this);
     }
@@ -127,11 +115,8 @@ namespace ToolKit
       return instance;
     }
 
-    void EditorDirectionalLight::Serialize
-    (
-      XmlDocument* doc,
-      XmlNode* parent
-    ) const
+    void EditorDirectionalLight::Serialize(XmlDocument* doc,
+                                           XmlNode* parent) const
     {
       m_gizmoMC->ParamMesh().m_exposed = false;
       Light::Serialize(doc, parent);
@@ -152,8 +137,7 @@ namespace ToolKit
       ParameterEventConstructor();
     }
 
-    EditorPointLight::EditorPointLight()
-      : EditorLightBase(this)
+    EditorPointLight::EditorPointLight() : EditorLightBase(this)
     {
       m_gizmo = new PointLightGizmo(this);
       ParameterEventConstructor();
@@ -184,11 +168,7 @@ namespace ToolKit
       return instance;
     }
 
-    void EditorPointLight::Serialize
-    (
-      XmlDocument* doc,
-      XmlNode* parent
-    ) const
+    void EditorPointLight::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
       m_gizmoMC->ParamMesh().m_exposed = false;
       Light::Serialize(doc, parent);
@@ -209,8 +189,7 @@ namespace ToolKit
       ParameterEventConstructor();
     }
 
-    EditorSpotLight::EditorSpotLight()
-      : EditorLightBase(this)
+    EditorSpotLight::EditorSpotLight() : EditorLightBase(this)
     {
       m_gizmo = new SpotLightGizmo(this);
       ParameterEventConstructor();
@@ -222,7 +201,7 @@ namespace ToolKit
 
     void EditorSpotLight::ParameterEventConstructor()
     {
-      ParamRadius().m_onValueChangedFn = m_gizmoUpdateFn;
+      ParamRadius().m_onValueChangedFn     = m_gizmoUpdateFn;
       ParamOuterAngle().m_onValueChangedFn = m_gizmoUpdateFn;
       ParamInnerAngle().m_onValueChangedFn = m_gizmoUpdateFn;
     }
@@ -243,11 +222,7 @@ namespace ToolKit
       return instance;
     }
 
-    void EditorSpotLight::Serialize
-    (
-      XmlDocument* doc,
-      XmlNode* parent
-    ) const
+    void EditorSpotLight::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
       m_gizmoMC->ParamMesh().m_exposed = false;
       Light::Serialize(doc, parent);
@@ -268,5 +243,5 @@ namespace ToolKit
       ParameterEventConstructor();
     }
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

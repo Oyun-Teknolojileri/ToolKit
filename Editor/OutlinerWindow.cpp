@@ -13,6 +13,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     OutlinerWindow::OutlinerWindow(XmlNode* node)
     {
       DeSerialize(nullptr, node);
@@ -33,20 +34,17 @@ namespace ToolKit
     void OutlinerWindow::ShowNode(Entity* e)
     {
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
-      EditorScenePtr currScene = g_app->GetCurrentScene();
+      EditorScenePtr currScene     = g_app->GetCurrentScene();
       if (currScene->IsSelected(e->GetIdVal()))
       {
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
       }
 
-      if
-      (
-        e->m_node->m_children.empty()
-        || e->GetType() == EntityType::Entity_Prefab
-      )
+      if (e->m_node->m_children.empty() ||
+          e->GetType() == EntityType::Entity_Prefab)
       {
-        nodeFlags |= ImGuiTreeNodeFlags_Leaf |
-          ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        nodeFlags |=
+            ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
         DrawHeader(e, nodeFlags);
       }
       else
@@ -67,7 +65,7 @@ namespace ToolKit
                 }
 
                 nodeFlags |= ImGuiTreeNodeFlags_Leaf |
-                  ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                             ImGuiTreeNodeFlags_NoTreePushOnOpen;
                 DrawHeader(childNtt, nodeFlags);
               }
               else
@@ -135,11 +133,8 @@ namespace ToolKit
 
       if (ImGui::BeginDragDropTarget())
       {
-        if
-        (
-          const ImGuiPayload* payload =
-          ImGui::AcceptDragDropPayload("HierarcyChange")
-        )
+        if (const ImGuiPayload* payload =
+                ImGui::AcceptDragDropPayload("HierarcyChange"))
         {
           // Change the selected files hierarchy
           EntityRawPtrArray selected;
@@ -166,16 +161,10 @@ namespace ToolKit
       {
         HandleStates();
 
-        if
-        (
-          DrawRootHeader
-          (
-            "Scene",
-            0,
-            g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen,
-            UI::m_collectionIcon
-          )
-        )
+        if (DrawRootHeader("Scene",
+                           0,
+                           g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen,
+                           UI::m_collectionIcon))
         {
           const EntityRawPtrArray& ntties = currScene->GetEntities();
           EntityRawPtrArray roots;
@@ -226,25 +215,19 @@ namespace ToolKit
       GetParents(ntt, m_nttFocusPath);
     }
 
-    bool OutlinerWindow::DrawRootHeader
-    (
-      const String& rootName,
-      uint id,
-      ImGuiTreeNodeFlags flags,
-      TexturePtr icon
-    )
+    bool OutlinerWindow::DrawRootHeader(const String& rootName,
+                                        uint id,
+                                        ImGuiTreeNodeFlags flags,
+                                        TexturePtr icon)
     {
       const String sId = "##" + std::to_string(id);
-      bool isOpen = ImGui::TreeNodeEx(sId.c_str(), flags);
+      bool isOpen      = ImGui::TreeNodeEx(sId.c_str(), flags);
 
       // Orphan in this case.
       if (ImGui::BeginDragDropTarget())
       {
-        if
-        (
-          const ImGuiPayload* payload =
-          ImGui::AcceptDragDropPayload("HierarcyChange")
-        )
+        if (const ImGuiPayload* payload =
+                ImGui::AcceptDragDropPayload("HierarcyChange"))
         {
           EntityRawPtrArray selected;
           EditorScenePtr currScene = g_app->GetCurrentScene();
@@ -289,7 +272,7 @@ namespace ToolKit
       }
 
       const String sId = "##" + std::to_string(ntt->GetIdVal());
-      bool isOpen = ImGui::TreeNodeEx(sId.c_str(), flags);
+      bool isOpen      = ImGui::TreeNodeEx(sId.c_str(), flags);
 
       if (ImGui::BeginPopupContextItem())
       {
@@ -322,7 +305,7 @@ namespace ToolKit
 
       SetItemState(ntt);
 
-      TexturePtr icon = nullptr;
+      TexturePtr icon  = nullptr;
       EntityType eType = ntt->GetType();
       if (eType == EntityType::Entity_Node)
       {
@@ -344,16 +327,9 @@ namespace ToolKit
       icon = ntt->GetVisibleVal() ? UI::m_visibleIcon : UI::m_invisibleIcon;
 
       // Texture only toggle button.
-      ImGui::PushID(static_cast<int> (ntt->GetIdVal()));
-      if
-      (
-        UI::ImageButtonDecorless
-        (
-          icon->m_textureId,
-          ImVec2(15.0f, 15.0f),
-          false
-        )
-      )
+      ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
+      if (UI::ImageButtonDecorless(
+              icon->m_textureId, ImVec2(15.0f, 15.0f), false))
       {
         ntt->SetVisibility(!ntt->GetVisibleVal(), true);
       }
@@ -364,16 +340,9 @@ namespace ToolKit
       icon = ntt->GetTransformLockVal() ? UI::m_lockedIcon : UI::m_unlockedIcon;
 
       // Texture only toggle button.
-      ImGui::PushID(static_cast<int> (ntt->GetIdVal()));
-      if
-      (
-        UI::ImageButtonDecorless
-        (
-          icon->m_textureId,
-          ImVec2(15.0f, 15.0f),
-          false
-        )
-      )
+      ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
+      if (UI::ImageButtonDecorless(
+              icon->m_textureId, ImVec2(15.0f, 15.0f), false))
       {
         ntt->SetTransformLock(!ntt->GetTransformLockVal(), true);
       }
@@ -383,5 +352,5 @@ namespace ToolKit
       return isOpen;
     }
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

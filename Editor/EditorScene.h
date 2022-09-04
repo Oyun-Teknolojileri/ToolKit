@@ -52,20 +52,15 @@ namespace ToolKit
       void SelectByTag(const String& tag);
 
       // Pick operations
-      PickData PickObject
-      (
-        Ray ray,
-        const EntityIdArray& ignoreList = EntityIdArray(),
-        const EntityRawPtrArray& extraList = EntityRawPtrArray()
-      ) override;
-      void PickObject
-      (
-        const Frustum& frustum,
-        std::vector<PickData>& pickedObjects,
-        const EntityIdArray& ignoreList = EntityIdArray(),
-        const EntityRawPtrArray& extraList = EntityRawPtrArray(),
-        bool pickPartiallyInside = true
-      ) override;
+      PickData PickObject(
+          Ray ray,
+          const EntityIdArray& ignoreList    = EntityIdArray(),
+          const EntityRawPtrArray& extraList = EntityRawPtrArray()) override;
+      void PickObject(const Frustum& frustum,
+                      std::vector<PickData>& pickedObjects,
+                      const EntityIdArray& ignoreList    = EntityIdArray(),
+                      const EntityRawPtrArray& extraList = EntityRawPtrArray(),
+                      bool pickPartiallyInside           = true) override;
 
       // Gizmo operations
       void AddBillboardToEntity(Entity* entity);
@@ -78,15 +73,12 @@ namespace ToolKit
      private:
       void CopyTo(Resource* other) override;
 
-      bool InitBillboard
-      (
-        Entity* entity,
-        EditorBillboardBase::BillboardType type
-      );
+      bool InitBillboard(Entity* entity,
+                         EditorBillboardBase::BillboardType type);
 
      public:
-       // Indicates if this is created via new scene.
-       // That is not saved on the disk.
+      // Indicates if this is created via new scene.
+      // That is not saved on the disk.
       bool m_newScene;
 
      private:
@@ -104,5 +96,5 @@ namespace ToolKit
       ResourcePtr CreateLocal(ResourceType type) override;
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

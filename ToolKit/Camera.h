@@ -28,15 +28,12 @@ namespace ToolKit
 
     void SetLens(float fov, float width, float height);
     void SetLens(float fov, float width, float height, float near, float far);
-    void SetLens
-    (
-      float left,
-      float right,
-      float bottom,
-      float top,
-      float near,
-      float far
-    );
+    void SetLens(float left,
+                 float right,
+                 float bottom,
+                 float top,
+                 float near,
+                 float far);
     Mat4 GetViewMatrix() const;
     Mat4 GetProjectionMatrix() const;
     void SetProjectionMatrix(Mat4 proj);
@@ -52,16 +49,16 @@ namespace ToolKit
     Entity* CopyTo(Entity* copyTo) const override;
 
    private:
-    float m_fov = 1.0f;
-    float m_aspect = 1.0f;
-    float m_near = 0.01f;
-    float m_far = 1000.0f;
-    float m_height = 400.0f;
-    float m_left = 10.0f;
-    float m_right = 10.0f;
-    float m_bottom = 10.0f;
-    float m_top = 10.0f;
+    float m_fov        = 1.0f;
+    float m_aspect     = 1.0f;
+    float m_near       = 0.01f;
+    float m_far        = 1000.0f;
+    float m_height     = 400.0f;
+    float m_left       = 10.0f;
+    float m_right      = 10.0f;
+    float m_bottom     = 10.0f;
+    float m_top        = 10.0f;
     bool m_ortographic = false;
     Mat4 m_projection;
   };
-}  // namespace ToolKit
+} // namespace ToolKit

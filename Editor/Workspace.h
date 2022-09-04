@@ -53,5 +53,5 @@ namespace ToolKit
       Project m_activeProject;
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

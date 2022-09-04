@@ -10,13 +10,11 @@
 namespace ToolKit
 {
 
-  void DecomposeMatrix
-  (
-    const Mat4& transform,
-    Vec3* translation,
-    Quaternion* orientation,
-    Vec3* scale
-  ) {
+  void DecomposeMatrix(const Mat4& transform,
+                       Vec3* translation,
+                       Quaternion* orientation,
+                       Vec3* scale)
+  {
     // assert(IsAffine(transform));
 
     if (scale != nullptr || orientation != nullptr)
@@ -44,11 +42,8 @@ namespace ToolKit
 
   bool IsAffine(const Mat4& transform)
   {
-    return
-     transform[0][3] == 0 &&
-     transform[1][3] == 0 &&
-     transform[2][3] == 0 &&
-     transform[3][3] == 1;
+    return transform[0][3] == 0 && transform[1][3] == 0 &&
+           transform[2][3] == 0 && transform[3][3] == 1;
   }
 
   // https://github.com/OGRECave/ogre-next/blob/master/OgreMain/src/OgreMatrix3.cpp
@@ -83,50 +78,35 @@ namespace ToolKit
 
     // build orthogonal matrix Q
     // TK_MOD To row major. Ogre is row major.
-    Mat4 m = glm::transpose(transform);
-    float fInvLength = glm::inversesqrt
-    (
-     m[0][0] * m[0][0] +
-     m[1][0] * m[1][0] +
-     m[2][0] * m[2][0]
-    );
+    Mat4 m           = glm::transpose(transform);
+    float fInvLength = glm::inversesqrt(m[0][0] * m[0][0] + m[1][0] * m[1][0] +
+                                        m[2][0] * m[2][0]);
 
     kQ[0][0] = m[0][0] * fInvLength;
     kQ[1][0] = m[1][0] * fInvLength;
     kQ[2][0] = m[2][0] * fInvLength;
 
-    float fDot = kQ[0][0] * m[0][1] + kQ[1][0] * m[1][1] +
-      kQ[2][0] * m[2][1];
-    kQ[0][1] = m[0][1] - fDot * kQ[0][0];
-    kQ[1][1] = m[1][1] - fDot * kQ[1][0];
-    kQ[2][1] = m[2][1] - fDot * kQ[2][0];
-    fInvLength = glm::inversesqrt
-    (
-     kQ[0][1] * kQ[0][1] +
-     kQ[1][1] * kQ[1][1] +
-     kQ[2][1] * kQ[2][1]
-    );
+    float fDot = kQ[0][0] * m[0][1] + kQ[1][0] * m[1][1] + kQ[2][0] * m[2][1];
+    kQ[0][1]   = m[0][1] - fDot * kQ[0][0];
+    kQ[1][1]   = m[1][1] - fDot * kQ[1][0];
+    kQ[2][1]   = m[2][1] - fDot * kQ[2][0];
+    fInvLength = glm::inversesqrt(kQ[0][1] * kQ[0][1] + kQ[1][1] * kQ[1][1] +
+                                  kQ[2][1] * kQ[2][1]);
 
     kQ[0][1] *= fInvLength;
     kQ[1][1] *= fInvLength;
     kQ[2][1] *= fInvLength;
 
-    fDot = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] +
-      kQ[2][0] * m[2][2];
+    fDot     = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] + kQ[2][0] * m[2][2];
     kQ[0][2] = m[0][2] - fDot * kQ[0][0];
     kQ[1][2] = m[1][2] - fDot * kQ[1][0];
     kQ[2][2] = m[2][2] - fDot * kQ[2][0];
-    fDot = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] +
-      kQ[2][1] * m[2][2];
+    fDot     = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] + kQ[2][1] * m[2][2];
     kQ[0][2] -= fDot * kQ[0][1];
     kQ[1][2] -= fDot * kQ[1][1];
     kQ[2][2] -= fDot * kQ[2][1];
-    fInvLength = glm::inversesqrt
-    (
-     kQ[0][2] * kQ[0][2] +
-     kQ[1][2] * kQ[1][2] +
-     kQ[2][2] * kQ[2][2]
-    );
+    fInvLength = glm::inversesqrt(kQ[0][2] * kQ[0][2] + kQ[1][2] * kQ[1][2] +
+                                  kQ[2][2] * kQ[2][2]);
 
     kQ[0][2] *= fInvLength;
     kQ[1][2] *= fInvLength;
@@ -134,9 +114,9 @@ namespace ToolKit
 
     // guarantee that orthogonal matrix has determinant 1 (no reflections)
     float fDet =
-      kQ[0][0] * kQ[1][1] * kQ[2][2] + kQ[0][1] * kQ[1][2] * kQ[2][0] +
-      kQ[0][2] * kQ[1][0] * kQ[2][1] - kQ[0][2] * kQ[1][1] * kQ[2][0] -
-      kQ[0][1] * kQ[1][0] * kQ[2][2] - kQ[0][0] * kQ[1][2] * kQ[2][1];
+        kQ[0][0] * kQ[1][1] * kQ[2][2] + kQ[0][1] * kQ[1][2] * kQ[2][0] +
+        kQ[0][2] * kQ[1][0] * kQ[2][1] - kQ[0][2] * kQ[1][1] * kQ[2][0] -
+        kQ[0][1] * kQ[1][0] * kQ[2][2] - kQ[0][0] * kQ[1][2] * kQ[2][1];
 
     if (fDet < 0.0)
     {
@@ -147,21 +127,15 @@ namespace ToolKit
 
     // build "right" matrix R
     Mat3 kR;
-    kR[0][0] = kQ[0][0] * m[0][0] + kQ[1][0] * m[1][0] +
-      kQ[2][0] * m[2][0];
-    kR[0][1] = kQ[0][0] * m[0][1] + kQ[1][0] * m[1][1] +
-      kQ[2][0] * m[2][1];
-    kR[1][1] = kQ[0][1] * m[0][1] + kQ[1][1] * m[1][1] +
-      kQ[2][1] * m[2][1];
-    kR[0][2] = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] +
-      kQ[2][0] * m[2][2];
-    kR[1][2] = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] +
-      kQ[2][1] * m[2][2];
-    kR[2][2] = kQ[0][2] * m[0][2] + kQ[1][2] * m[1][2] +
-      kQ[2][2] * m[2][2];
+    kR[0][0] = kQ[0][0] * m[0][0] + kQ[1][0] * m[1][0] + kQ[2][0] * m[2][0];
+    kR[0][1] = kQ[0][0] * m[0][1] + kQ[1][0] * m[1][1] + kQ[2][0] * m[2][1];
+    kR[1][1] = kQ[0][1] * m[0][1] + kQ[1][1] * m[1][1] + kQ[2][1] * m[2][1];
+    kR[0][2] = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] + kQ[2][0] * m[2][2];
+    kR[1][2] = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] + kQ[2][1] * m[2][2];
+    kR[2][2] = kQ[0][2] * m[0][2] + kQ[1][2] * m[1][2] + kQ[2][2] * m[2][2];
 
-    kQ = glm::transpose(kQ);  // TK_MOD To column major. Ogre is row major.
-    kR = glm::transpose(kR);  // TK_MOD To column major. Ogre is row major.
+    kQ = glm::transpose(kQ); // TK_MOD To column major. Ogre is row major.
+    kR = glm::transpose(kR); // TK_MOD To column major. Ogre is row major.
 
     // the scaling component
     kD[0] = kR[0][0];
@@ -170,19 +144,14 @@ namespace ToolKit
 
     // the shear component
     float fInvD0 = 1.0f / kD[0];
-    kU[0] = kR[0][1] * fInvD0;
-    kU[1] = kR[0][2] * fInvD0;
-    kU[2] = kR[1][2] / kD[1];
+    kU[0]        = kR[0][1] * fInvD0;
+    kU[1]        = kR[0][2] * fInvD0;
+    kU[2]        = kR[1][2] / kD[1];
   }
 
-  void ExtractAxes
-  (
-    const Mat4& transform,
-    Vec3& x,
-    Vec3& y,
-    Vec3& z,
-    bool normalize
-  ) {
+  void ExtractAxes(
+      const Mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize)
+  {
     x = glm::column(transform, 0);
     y = glm::column(transform, 1);
     z = glm::column(transform, 2);
@@ -196,10 +165,12 @@ namespace ToolKit
   }
 
   /*
-  * If the given matrix is projection matrix, then the algorithm gives the clipping planes in view space
-  * If the matrix is projection * view,then the algorithm gives the clipping planes in world space
-  * If the matrix is projection * view * model, then the algorithm gives the clipping planes in model space
-  */
+   * If the given matrix is projection matrix, then the algorithm gives the
+   * clipping planes in view space If the matrix is projection * view,then the
+   * algorithm gives the clipping planes in world space If the matrix is
+   * projection * view * model, then the algorithm gives the clipping planes in
+   * model space
+   */
   // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
   Frustum ExtractFrustum(const Mat4& _projectViewModel, bool normalize)
   {
@@ -211,37 +182,37 @@ namespace ToolKit
     frus.planes[4].normal.x = projectViewModel[3][0] + projectViewModel[0][0];
     frus.planes[4].normal.y = projectViewModel[3][1] + projectViewModel[0][1];
     frus.planes[4].normal.z = projectViewModel[3][2] + projectViewModel[0][2];
-    frus.planes[4].d = projectViewModel[3][3] + projectViewModel[0][3];
+    frus.planes[4].d        = projectViewModel[3][3] + projectViewModel[0][3];
 
     // Right clipping plane
     frus.planes[5].normal.x = projectViewModel[3][0] - projectViewModel[0][0];
     frus.planes[5].normal.y = projectViewModel[3][1] - projectViewModel[0][1];
     frus.planes[5].normal.z = projectViewModel[3][2] - projectViewModel[0][2];
-    frus.planes[5].d = projectViewModel[3][3] - projectViewModel[0][3];
+    frus.planes[5].d        = projectViewModel[3][3] - projectViewModel[0][3];
 
     // Top clipping plane
     frus.planes[2].normal.x = projectViewModel[3][0] - projectViewModel[1][0];
     frus.planes[2].normal.y = projectViewModel[3][1] - projectViewModel[1][1];
     frus.planes[2].normal.z = projectViewModel[3][2] - projectViewModel[1][2];
-    frus.planes[2].d = projectViewModel[3][3] - projectViewModel[1][3];
+    frus.planes[2].d        = projectViewModel[3][3] - projectViewModel[1][3];
 
     // Bottom clipping plane
     frus.planes[3].normal.x = projectViewModel[3][0] + projectViewModel[1][0];
     frus.planes[3].normal.y = projectViewModel[3][1] + projectViewModel[1][1];
     frus.planes[3].normal.z = projectViewModel[3][2] + projectViewModel[1][2];
-    frus.planes[3].d = projectViewModel[3][3] + projectViewModel[1][3];
+    frus.planes[3].d        = projectViewModel[3][3] + projectViewModel[1][3];
 
     // Near clipping plane
     frus.planes[0].normal.x = projectViewModel[3][0] + projectViewModel[2][0];
     frus.planes[0].normal.y = projectViewModel[3][1] + projectViewModel[2][1];
     frus.planes[0].normal.z = projectViewModel[3][2] + projectViewModel[2][2];
-    frus.planes[0].d = projectViewModel[3][3] + projectViewModel[2][3];
+    frus.planes[0].d        = projectViewModel[3][3] + projectViewModel[2][3];
 
     // Far clipping plane
     frus.planes[1].normal.x = projectViewModel[3][0] - projectViewModel[2][0];
     frus.planes[1].normal.y = projectViewModel[3][1] - projectViewModel[2][1];
     frus.planes[1].normal.z = projectViewModel[3][2] - projectViewModel[2][2];
-    frus.planes[1].d = projectViewModel[3][3] - projectViewModel[2][3];
+    frus.planes[1].d        = projectViewModel[3][3] - projectViewModel[2][3];
 
     // Normalize the plane equations, if requested
     if (normalize)
@@ -255,23 +226,19 @@ namespace ToolKit
     return frus;
   }
 
-  bool SpherePointIntersection
-  (
-    const Vec3& spherePos,
-    float sphereRadius,
-    const Vec3& vertex
-  ) {
+  bool SpherePointIntersection(const Vec3& spherePos,
+                               float sphereRadius,
+                               const Vec3& vertex)
+  {
     float dist = glm::distance(spherePos, vertex);
     return dist < sphereRadius;
   }
 
-  bool SphereSphereIntersection
-  (
-    const Vec3& spherePos,
-    float sphereRadius,
-    const Vec3& spherePos2,
-    float sphereRadius2
-  ) {
+  bool SphereSphereIntersection(const Vec3& spherePos,
+                                float sphereRadius,
+                                const Vec3& spherePos2,
+                                float sphereRadius2)
+  {
     float dist = glm::distance(spherePos, spherePos2);
     return dist < (sphereRadius + sphereRadius2);
   }
@@ -279,8 +246,8 @@ namespace ToolKit
   bool BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2)
   {
     return (box1.min.x <= box2.max.x && box1.max.x >= box2.min.x) &&
-      (box1.min.y <= box2.max.y && box1.max.y >= box2.min.y) &&
-      (box1.min.z <= box2.max.z && box1.max.z >= box2.min.z);
+           (box1.min.y <= box2.max.y && box1.max.y >= box2.min.y) &&
+           (box1.min.z <= box2.max.z && box1.max.z >= box2.min.z);
   }
 
   bool BoxPointIntersection(const BoundingBox& box, const Vec3& point)
@@ -316,16 +283,10 @@ namespace ToolKit
     float t5 = (box.min.z - ray.position.z) * dirfrac.z;
     float t6 = (box.max.z - ray.position.z) * dirfrac.z;
 
-    float tmin = glm::max
-    (
-     glm::max(glm::min(t1, t2), glm::min(t3, t4)),
-     glm::min(t5, t6)
-    );
-    float tmax = glm::min
-    (
-     glm::min(glm::max(t1, t2), glm::max(t3, t4)),
-     glm::max(t5, t6)
-    );
+    float tmin = glm::max(glm::max(glm::min(t1, t2), glm::min(t3, t4)),
+                          glm::min(t5, t6));
+    float tmax = glm::min(glm::min(glm::max(t1, t2), glm::max(t3, t4)),
+                          glm::max(t5, t6));
 
     // if tmax < 0, ray (line) is intersecting AABB,
     // but the whole AABB is behind us
@@ -347,26 +308,21 @@ namespace ToolKit
   }
 
   // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-  bool RayTriangleIntersection
-  (
-    const Ray& ray,
-    const Vec3& v0,
-    const Vec3& v1,
-    const Vec3& v2,
-    float& t
-  ) {
+  bool RayTriangleIntersection(
+      const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t)
+  {
     const float EPSILON = 0.0000001f;
-    Vec3 vertex0 = v0;
-    Vec3 vertex1 = v1;
-    Vec3 vertex2 = v2;
+    Vec3 vertex0        = v0;
+    Vec3 vertex1        = v1;
+    Vec3 vertex2        = v2;
     Vec3 edge1, edge2, h, s, q;
     float a, f, u, v;
     edge1 = vertex1 - vertex0;
     edge2 = vertex2 - vertex0;
-    h = glm::cross(ray.direction, edge2);
-    a = glm::dot(edge1, h);
+    h     = glm::cross(ray.direction, edge2);
+    a     = glm::dot(edge1, h);
     if (a > -EPSILON && a < EPSILON)
-      return false;    // This ray is parallel to this triangle.
+      return false; // This ray is parallel to this triangle.
     f = 1.0f / a;
     s = ray.position - vertex0;
     u = f * glm::dot(s, h);
@@ -379,7 +335,7 @@ namespace ToolKit
     // At this stage we can compute t to find out
     // where the intersection point is on the line.
     t = f * glm::dot(edge2, q);
-    if (t > EPSILON)  // ray intersection
+    if (t > EPSILON) // ray intersection
     {
       return true;
     }
@@ -393,61 +349,48 @@ namespace ToolKit
     std::vector<Mesh*> meshes;
     mesh->GetAllMeshes(meshes);
     float closestPickedDistance = FLT_MAX;
-    bool hit = false;
+    bool hit                    = false;
 
     for (Mesh* const mesh : meshes)
     {
 #ifndef __EMSCRIPTEN__
       std::mutex updateHit;
-      std::for_each
-      (
-        std::execution::par_unseq,
-        mesh->m_faces.begin(),
-        mesh->m_faces.end(),
-        [&updateHit, &t, &closestPickedDistance, &ray, &hit](Face& face)
-        {
-          float dist = FLT_MAX;
-          if
-          (
-            RayTriangleIntersection
-            (
-              ray,
-              face.vertices[0]->pos,
-              face.vertices[1]->pos,
-              face.vertices[2]->pos,
-              dist
-            )
-          ) {
-            std::lock_guard<std::mutex> guard(updateHit);
-            if (dist < closestPickedDistance && t >= 0.0f)
+      std::for_each(
+          std::execution::par_unseq,
+          mesh->m_faces.begin(),
+          mesh->m_faces.end(),
+          [&updateHit, &t, &closestPickedDistance, &ray, &hit](Face& face) {
+            float dist = FLT_MAX;
+            if (RayTriangleIntersection(ray,
+                                        face.vertices[0]->pos,
+                                        face.vertices[1]->pos,
+                                        face.vertices[2]->pos,
+                                        dist))
             {
-              t = dist;
-              closestPickedDistance = dist;
-              hit = true;
+              std::lock_guard<std::mutex> guard(updateHit);
+              if (dist < closestPickedDistance && t >= 0.0f)
+              {
+                t                     = dist;
+                closestPickedDistance = dist;
+                hit                   = true;
+              }
             }
-          }
-        }
-      );
+          });
 #else
       for (const Face& face : mesh->m_faces)
       {
         float dist = FLT_MAX;
-        if
-        (
-         RayTriangleIntersection
-         (
-           ray,
-           face.vertices[0]->pos,
-           face.vertices[1]->pos,
-           face.vertices[2]->pos,
-           dist
-         )
-        ) {
+        if (RayTriangleIntersection(ray,
+                                    face.vertices[0]->pos,
+                                    face.vertices[1]->pos,
+                                    face.vertices[2]->pos,
+                                    dist))
+        {
           if (dist < closestPickedDistance && t >= 0.0f)
           {
-            t = dist;
+            t                     = dist;
             closestPickedDistance = dist;
-            hit = true;
+            hit                   = true;
           }
         }
       }
@@ -458,16 +401,13 @@ namespace ToolKit
   }
 
   /*
-  * When the plane equation is not normalized, the distance of a point to the plane:
-  * If distance < 0 , then the point p lies in the negative halfspace.
-  * If distance = 0 , then the point p lies in the plane.
-  * If distance > 0 , then the point p lies in the positive halfspace.
-  */
-  IntersectResult FrustumBoxIntersection
-  (
-    const Frustum& frustum,
-    const BoundingBox& box
-  )
+   * When the plane equation is not normalized, the distance of a point to the
+   * plane: If distance < 0 , then the point p lies in the negative halfspace.
+   * If distance = 0 , then the point p lies in the plane.
+   * If distance > 0 , then the point p lies in the positive halfspace.
+   */
+  IntersectResult FrustumBoxIntersection(const Frustum& frustum,
+                                         const BoundingBox& box)
   {
     Vec3 vmin, vmax;
     IntersectResult res = IntersectResult::Inside;
@@ -510,12 +450,12 @@ namespace ToolKit
         vmax.z = box.max.z;
       }
 
-      float distmin = glm::dot(frustum.planes[i].normal, vmin) +
-       frustum.planes[i].d;
+      float distmin =
+          glm::dot(frustum.planes[i].normal, vmin) + frustum.planes[i].d;
       if (distmin > 0)
       {
-        float distmax = glm::dot(frustum.planes[i].normal, vmax) +
-         frustum.planes[i].d;
+        float distmax =
+            glm::dot(frustum.planes[i].normal, vmax) + frustum.planes[i].d;
         if (distmax <= 0)
         {
           res = IntersectResult::Intersect;
@@ -538,12 +478,10 @@ namespace ToolKit
     return res;
   }
 
-  bool RayPlaneIntersection
-  (
-    const Ray& ray,
-    const PlaneEquation& plane,
-    float& t
-  ) {
+  bool RayPlaneIntersection(const Ray& ray,
+                            const PlaneEquation& plane,
+                            float& t)
+  {
     float denom = glm::dot(ray.direction, plane.normal);
     // Ray and plane facing(-). Not parallel (0) or ray facing plane's back (+).
     if (glm::lessThan(denom, 0.0f))
@@ -557,21 +495,19 @@ namespace ToolKit
   }
 
   // https://gist.github.com/wwwtyro/beecc31d65d1004f5a9d
-  bool RaySphereIntersection
-  (
-    const Ray& ray,
-    const BoundingSphere& sphere,
-    float& t
-  ) {
-    Vec3 r0 = ray.position;
-    Vec3 rd = ray.direction;
-    Vec3 s0 = sphere.pos;
+  bool RaySphereIntersection(const Ray& ray,
+                             const BoundingSphere& sphere,
+                             float& t)
+  {
+    Vec3 r0  = ray.position;
+    Vec3 rd  = ray.direction;
+    Vec3 s0  = sphere.pos;
     float sr = sphere.radius;
 
-    float a = glm::dot(rd, rd);
+    float a    = glm::dot(rd, rd);
     Vec3 s0_r0 = r0 - s0;
-    float b = 2.0f * glm::dot(rd, s0_r0);
-    float c = glm::dot(s0_r0, s0_r0) - (sr * sr);
+    float b    = 2.0f * glm::dot(rd, s0_r0);
+    float c    = glm::dot(s0_r0, s0_r0) - (sr * sr);
     if (b * b - 4.0f * a * c < 0.0f)
     {
       return false;
@@ -581,14 +517,12 @@ namespace ToolKit
     return true;
   }
 
-  bool LinePlaneIntersection
-  (
-    const Ray& ray,
-    const PlaneEquation& plane,
-    float& t
-  ) {
+  bool LinePlaneIntersection(const Ray& ray,
+                             const PlaneEquation& plane,
+                             float& t)
+  {
     float denom = glm::dot(ray.direction, plane.normal);
-    if (glm::notEqual(denom, 0.0f))  // Not parallel (0).
+    if (glm::notEqual(denom, 0.0f)) // Not parallel (0).
     {
       t = -(glm::dot(plane.normal, ray.position) - plane.d) / denom;
       return true;
@@ -605,7 +539,7 @@ namespace ToolKit
   // https://forum.unity.com/threads/how-do-i-find-the-closest-point-on-a-line.340058/
   TK_API Vec3 ProjectPointOntoLine(const Ray& baseLine, const Vec3& point)
   {
-    Vec3 v = point - baseLine.position;
+    Vec3 v  = point - baseLine.position;
     float d = dot(v, baseLine.direction);
     return baseLine.position + (baseLine.direction * d);
   }
@@ -613,11 +547,11 @@ namespace ToolKit
   // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
   void NormalizePlaneEquation(PlaneEquation& plane)
   {
-    float mag = glm::length(plane.normal);
+    float mag      = glm::length(plane.normal);
     plane.normal.x = plane.normal.x / mag;
     plane.normal.y = plane.normal.y / mag;
     plane.normal.z = plane.normal.z / mag;
-    plane.d = plane.d / mag;
+    plane.d        = plane.d / mag;
   }
 
   void TransformAABB(BoundingBox& box, const Mat4& transform)
@@ -629,7 +563,7 @@ namespace ToolKit
     box = BoundingBox();
     for (int i = 0; i < 8; i++)
     {
-      Vec3 v = transform * Vec4(corners[i], 1.0f);
+      Vec3 v  = transform * Vec4(corners[i], 1.0f);
       box.min = glm::min(v, box.min);
       box.max = glm::max(v, box.max);
     }
@@ -641,37 +575,27 @@ namespace ToolKit
     Vec3 maxtr = box.max;
 
     Vec3 maxtl = box.max;
-    maxtl.x = box.min.x;
+    maxtl.x    = box.min.x;
 
     Vec3 maxbr = maxtr;
-    maxbr.y = box.min.y;
+    maxbr.y    = box.min.y;
 
     Vec3 maxbl = maxtl;
-    maxbl.y = box.min.y;
+    maxbl.y    = box.min.y;
 
     Vec3 minbl = maxbl;
-    minbl.z = box.min.z;
+    minbl.z    = box.min.z;
 
     Vec3 minbr = maxbr;
-    minbr.z = box.min.z;
+    minbr.z    = box.min.z;
 
     Vec3 mintl = maxtl;
-    mintl.z = box.min.z;
+    mintl.z    = box.min.z;
 
     Vec3 mintr = maxtr;
-    mintr.z = box.min.z;
+    mintr.z    = box.min.z;
 
-    corners =
-    {
-      mintl,
-      mintr,
-      minbr,
-      minbl,
-      maxtl,
-      maxtr,
-      maxbr,
-      maxbl
-    };
+    corners = {mintl, mintr, minbr, minbl, maxtl, maxtr, maxbr, maxbl};
   }
 
   PlaneEquation PlaneFrom(Vec3 const pnts[3])
@@ -682,7 +606,7 @@ namespace ToolKit
 
     PlaneEquation eq;
     eq.normal = glm::normalize(glm::cross(v1, v2));
-    eq.d = -glm::dot(eq.normal, pnts[0]);
+    eq.d      = -glm::dot(eq.normal, pnts[0]);
 
     return eq;
   }
@@ -691,33 +615,27 @@ namespace ToolKit
   {
     assert(glm::isNormalized(normal, 0.0001f) && "Normalized vector expected.");
 
-    PlaneEquation plane = { normal, 0.0f };
-    plane.d = glm::dot(point, normal) / glm::dot(normal, normal);
+    PlaneEquation plane = {normal, 0.0f};
+    plane.d             = glm::dot(point, normal) / glm::dot(normal, normal);
 
-    return  plane;
+    return plane;
   }
 
   float SignedDistance(const PlaneEquation& plane, const Vec3& pnt)
   {
-    assert
-    (
-     glm::isNormalized(plane.normal, 0.0001f) &&
-     "Normalized vector expected."
-    );
+    assert(glm::isNormalized(plane.normal, 0.0001f) &&
+           "Normalized vector expected.");
 
     Vec3 planeOrig = plane.normal * plane.d;
-    Vec3 checkPnt = pnt - planeOrig;
+    Vec3 checkPnt  = pnt - planeOrig;
 
     return glm::dot(checkPnt, plane.normal);
   }
 
   Vec3 ProjectPointOntoPlane(const PlaneEquation& plane, const Vec3& pnt)
   {
-    assert
-    (
-     glm::isNormalized(plane.normal, 0.0001f) &&
-     "Normalized vector expected."
-    );
+    assert(glm::isNormalized(plane.normal, 0.0001f) &&
+           "Normalized vector expected.");
 
     return pnt - glm::dot(plane.normal, pnt) * plane.normal;
   }
@@ -729,19 +647,16 @@ namespace ToolKit
 
   void ToSpherical(Vec3 p, float& r, float& zenith, float& azimuth)
   {
-    r = glm::length(p);
+    r       = glm::length(p);
     azimuth = glm::atan(p.x, p.z);
-    zenith = glm::acos(p.y / r);
+    zenith  = glm::acos(p.y / r);
   }
 
   Vec3 ToCartesian(float r, float zenith, float azimuth)
   {
-    return Vec3
-    (
-     r * glm::sin(zenith) * glm::sin(azimuth),
-     r * glm::cos(zenith),
-     r * glm::sin(zenith) * glm::cos(azimuth)
-    );
+    return Vec3(r * glm::sin(zenith) * glm::sin(azimuth),
+                r * glm::cos(zenith),
+                r * glm::sin(zenith) * glm::cos(azimuth));
   }
 
   Quaternion RotationTo(Vec3 a, Vec3 b)
@@ -753,9 +668,9 @@ namespace ToolKit
     float d = glm::dot(a, b);
     if (glm::equal<float>(d, 1.0f))
     {
-      return Quaternion();  // Vectors are colinear.
+      return Quaternion(); // Vectors are colinear.
     }
-    else if (glm::equal<float>(d, -1.0f))  // Vectors are oposite, align them.
+    else if (glm::equal<float>(d, -1.0f)) // Vectors are oposite, align them.
     {
       axis = Orthogonal(a);
     }
@@ -772,7 +687,7 @@ namespace ToolKit
   TK_API Vec3 Orthogonal(const Vec3& v)
   {
     static const float fSquareZero = static_cast<float>(1e-06 * 1e-06);
-    Vec3 perp = glm::cross(v, X_AXIS);
+    Vec3 perp                      = glm::cross(v, X_AXIS);
     // Check length
     if (glm::length2(perp) < fSquareZero)
     {
@@ -787,12 +702,8 @@ namespace ToolKit
 
   bool PointInsideBBox(const Vec3& point, const Vec3& max, const Vec3& min)
   {
-    return
-    (
-      point.x <= max.x && point.x >= min.x
-      && point.y <= max.y && point.y >= min.y
-      && point.z <= max.z && point.z >= min.z
-    );
+    return (point.x <= max.x && point.x >= min.x && point.y <= max.y &&
+            point.y >= min.y && point.z <= max.z && point.z >= min.z);
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

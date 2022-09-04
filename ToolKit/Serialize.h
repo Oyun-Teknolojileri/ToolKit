@@ -4,12 +4,12 @@
 
 namespace ToolKit
 {
-  
-  class TK_API Serializable 
+
+  class TK_API Serializable
   {
-  public:
+   public:
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const = 0;
-    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent) = 0;
+    virtual void DeSerialize(XmlDocument* doc, XmlNode* parent)     = 0;
   };
 
-}
+} // namespace ToolKit

@@ -10,6 +10,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     // States.
     class StateTransformBase : public State
     {
@@ -29,7 +30,7 @@ namespace ToolKit
 
      protected:
       void MakeSureGizmoIsValid();
-      Vec3 GetGrabbedAxis(int n);  // {0: grabbed 1: orthogonal axis}.
+      Vec3 GetGrabbedAxis(int n); // {0: grabbed 1: orthogonal axis}.
       bool IsPlaneMod();
 
      public:
@@ -121,5 +122,5 @@ namespace ToolKit
       TransformationSpace m_prevTransformSpace;
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

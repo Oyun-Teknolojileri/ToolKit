@@ -13,6 +13,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     typedef std::pair<String, StringArray> TagArg;
     typedef std::vector<TagArg> TagArgArray;
     typedef TagArgArray::const_iterator TagArgCIt;
@@ -74,10 +75,8 @@ namespace ToolKit
     const String g_loadPlugin("LoadPlugin");
     void LoadPlugin(TagArgArray tagArgs);
 
-    const String g_showDirectionalLightShadowFrustum
-    (
-      "ShowDirectionalLightShadowFrustum"
-    );
+    const String g_showDirectionalLightShadowFrustum(
+        "ShowDirectionalLightShadowFrustum");
     void ShowDirectionalLightShadowFrustum(TagArgArray tagArgs);
 
     // Command errors
@@ -96,21 +95,15 @@ namespace ToolKit
       void AddLog(const String& log, const String& tag);
       void ClearLog();
       void ExecCommand(const String& commandLine);
-      void ParseCommandLine
-      (
-        String commandLine,
-        String& command,
-        TagArgArray& tagArgs
-      );
+      void ParseCommandLine(String commandLine,
+                            String& command,
+                            TagArgArray& tagArgs);
 
      private:
       // Command line word processing. Auto-complete and history lookups.
       int TextEditCallback(ImGuiInputTextCallbackData* data);
-      void CreateCommand
-      (
-        const String& command,
-        std::function<void(TagArgArray)> executor
-      );
+      void CreateCommand(const String& command,
+                         std::function<void(TagArgArray)> executor);
 
      private:
       // States.
@@ -120,14 +113,15 @@ namespace ToolKit
       StringArray m_items;
       StringArray m_commands;
       std::unordered_map<String, std::function<void(TagArgArray&)>>
-      m_commandExecutors;
+          m_commandExecutors;
 
-      std::vector <String> m_history;
+      std::vector<String> m_history;
       // -1: new line, 0..History.Size-1 browsing history.
       int m_historyPos = -1;
 
       // ImGui Helpers.
       ImGuiTextFilter m_filter;
     };
-  }  // namespace Editor
-}  // namespace ToolKit
+
+  } // namespace Editor
+} // namespace ToolKit

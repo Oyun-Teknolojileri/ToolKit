@@ -10,6 +10,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     // States.
     class StateAnchorBase : public State
     {
@@ -115,5 +116,5 @@ namespace ToolKit
       TransformationSpace m_prevTransformSpace;
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

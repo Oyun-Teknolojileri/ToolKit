@@ -15,8 +15,8 @@ namespace ToolKit
 
   Bone::Bone(String name)
   {
-    m_name = name;
-    m_node = new Node();
+    m_name                 = name;
+    m_node                 = new Node();
     m_node->m_inheritScale = true;
   }
 
@@ -49,11 +49,8 @@ namespace ToolKit
 
   // Find skeleton's each child bone from its child nodes
   // Then call childProcessFunc (should be recursive to traverse all childs)
-  void ForEachChildBoneNode
-  (
-    const Skeleton* skltn,
-    std::function<void(const Bone*)> childProcessFunc
-  )
+  void ForEachChildBoneNode(const Skeleton* skltn,
+                            std::function<void(const Bone*)> childProcessFunc)
   {
     // For each parent bone of the skeleton, write bones recursively
     for (Node* childNode : skltn->m_node->m_children)
@@ -80,11 +77,7 @@ namespace ToolKit
   {
     uint32_t deletedCount = 0;
     std::function<void(const Bone*)> deleteBone =
-    [this, &deleteBone, &deletedCount]
-    (
-      const Bone* parentBone
-    ) -> void
-    {
+        [this, &deleteBone, &deletedCount](const Bone* parentBone) -> void {
       for (Node* childNode : parentBone->m_node->m_children)
       {
         // Find child bone
@@ -127,39 +120,32 @@ namespace ToolKit
     }
   }
 
-  void WriteBone
-  (
-    const Skeleton* skeleton,
-    const Bone* bone,
-    XmlDocument* doc,
-    XmlNode* parentNode
-  )
+  void WriteBone(const Skeleton* skeleton,
+                 const Bone* bone,
+                 XmlDocument* doc,
+                 XmlNode* parentNode)
   {
     XmlNode* boneXmlNode = CreateXmlNode(doc, "bone", parentNode);
 
     WriteAttr(boneXmlNode, doc, "name", bone->m_name.c_str());
 
     auto writeTransformFnc =
-      [doc](XmlNode* parent, Vec3 tra, Quaternion rot, Vec3 scale)
-    {
-      XmlNode* traNode = CreateXmlNode(doc, "translation", parent);
-      WriteVec(traNode, doc, tra);
+        [doc](XmlNode* parent, Vec3 tra, Quaternion rot, Vec3 scale) {
+          XmlNode* traNode = CreateXmlNode(doc, "translation", parent);
+          WriteVec(traNode, doc, tra);
 
-      XmlNode* rotNode = CreateXmlNode(doc, "rotation", parent);
-      WriteVec(rotNode, doc, rot);
+          XmlNode* rotNode = CreateXmlNode(doc, "rotation", parent);
+          WriteVec(rotNode, doc, rot);
 
-      XmlNode* scaleNode = CreateXmlNode(doc, "scale", parent);
-      WriteVec(scaleNode, doc, scale);
-    };
+          XmlNode* scaleNode = CreateXmlNode(doc, "scale", parent);
+          WriteVec(scaleNode, doc, scale);
+        };
 
     // Bone Node Transform
-    writeTransformFnc
-    (
-      boneXmlNode,
-      bone->m_node->GetTranslation(),
-      bone->m_node->GetOrientation(),
-      bone->m_node->GetScale()
-    );
+    writeTransformFnc(boneXmlNode,
+                      bone->m_node->GetTranslation(),
+                      bone->m_node->GetOrientation(),
+                      bone->m_node->GetScale());
 
     // Bind Pose Transform
     XmlNode* bindPoseNode = CreateXmlNode(doc, "bindPose", boneXmlNode);
@@ -174,7 +160,7 @@ namespace ToolKit
     {
       // Find child bone
       Bone* childBone = nullptr;
-      for(Bone* boneSearch : skeleton->m_bones)
+      for (Bone* boneSearch : skeleton->m_bones)
       {
         if (boneSearch->m_node == childNode)
         {
@@ -193,17 +179,8 @@ namespace ToolKit
   {
     XmlNode* container = CreateXmlNode(doc, "skeleton", parent);
 
-    auto writeBoneFnc =
-      [doc, container, this]
-    (const Bone* childBone) -> void
-    {
-      WriteBone
-      (
-        this,
-        childBone,
-        doc,
-        container
-      );
+    auto writeBoneFnc = [doc, container, this](const Bone* childBone) -> void {
+      WriteBone(this, childBone, doc, container);
     };
     ForEachChildBoneNode(this, writeBoneFnc);
   }
@@ -214,12 +191,8 @@ namespace ToolKit
       return;
     }
 
-    for
-    (
-      XmlNode* node = parent->first_node("bone");
-      node;
-      node = node->next_sibling()
-    )
+    for (XmlNode* node = parent->first_node("bone"); node;
+         node          = node->next_sibling())
     {
       Traverse(node, nullptr);
     }
@@ -247,7 +220,7 @@ namespace ToolKit
     {
       if (m_bones[i]->m_name.compare(bone) == 0)
       {
-        return static_cast<int> (i);
+        return static_cast<int>(i);
       }
     }
 
@@ -265,68 +238,44 @@ namespace ToolKit
   }
   void Skeleton::UpdateTransformationTexture()
   {
-    auto createBoneTexture = [this](TexturePtr& ptr)
-    {
-      ptr = std::make_shared<Texture>();
+    auto createBoneTexture = [this](TexturePtr& ptr) {
+      ptr                = std::make_shared<Texture>();
       ptr->m_floatFormat = true;
-      ptr->m_height = 1;
-      ptr->m_width = static_cast<int>(m_bones.size()) * 4;
-      ptr->m_name = m_name + " BindPoseTexture";
+      ptr->m_height      = 1;
+      ptr->m_width       = static_cast<int>(m_bones.size()) * 4;
+      ptr->m_name        = m_name + " BindPoseTexture";
 
       glGenTextures(1, &ptr->m_textureId);
       glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
-      glTexImage2D
-      (
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA32F,
-        ptr->m_width,
-        ptr->m_height,
-        0,
-        GL_RGBA,
-        GL_FLOAT,
-        nullptr
-      );
-      glTexParameteri
-      (
-        GL_TEXTURE_2D,
-        GL_TEXTURE_MIN_FILTER,
-        GL_NEAREST
-      );
+      glTexImage2D(GL_TEXTURE_2D,
+                   0,
+                   GL_RGBA32F,
+                   ptr->m_width,
+                   ptr->m_height,
+                   0,
+                   GL_RGBA,
+                   GL_FLOAT,
+                   nullptr);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
       ptr->m_initiated = true;
-      ptr->m_loaded = true;
+      ptr->m_loaded    = true;
     };
-    auto uploadBoneMatrix = [](Mat4 mat, TexturePtr& ptr, uint boneIndx)
-    {
+    auto uploadBoneMatrix = [](Mat4 mat, TexturePtr& ptr, uint boneIndx) {
       glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
-      glTexSubImage2D
-      (
-        GL_TEXTURE_2D,
-        0,
-        boneIndx * 4,
-        0,
-        4,
-        1,
-        GL_RGBA,
-        GL_FLOAT,
-        &mat
-      );
+      glTexSubImage2D(
+          GL_TEXTURE_2D, 0, boneIndx * 4, 0, 4, 1, GL_RGBA, GL_FLOAT, &mat);
     };
-
 
     if (m_bindPoseTexture == nullptr)
     {
       createBoneTexture(m_bindPoseTexture);
       for (uint64_t boneIndx = 0; boneIndx < m_bones.size(); boneIndx++)
       {
-        uploadBoneMatrix
-        (
-          m_bones[boneIndx]->m_inverseWorldMatrix,
-          m_bindPoseTexture,
-          static_cast<uint>(boneIndx)
-        );
+        uploadBoneMatrix(m_bones[boneIndx]->m_inverseWorldMatrix,
+                         m_bindPoseTexture,
+                         static_cast<uint>(boneIndx));
       }
     }
     if (m_boneTransformTexture == nullptr)
@@ -335,12 +284,10 @@ namespace ToolKit
     }
     for (uint bnIndx = 0; bnIndx < static_cast<uint>(m_bones.size()); bnIndx++)
     {
-      uploadBoneMatrix
-      (
-        m_bones[bnIndx]->m_node->GetTransform(TransformationSpace::TS_WORLD),
-        m_boneTransformTexture,
-        (uint)bnIndx
-      );
+      uploadBoneMatrix(
+          m_bones[bnIndx]->m_node->GetTransform(TransformationSpace::TS_WORLD),
+          m_boneTransformTexture,
+          (uint) bnIndx);
     }
   }
 
@@ -358,7 +305,7 @@ namespace ToolKit
       return;
     }
 
-    Bone* bone = new Bone(attr->value());
+    Bone* bone       = new Bone(attr->value());
     XmlNode* subNode = node->first_node("translation");
     ReadVec(subNode, bone->m_node->m_translation);
 
@@ -386,7 +333,7 @@ namespace ToolKit
       Mat4 tsm;
       tsm = glm::translate(tsm, ts);
       Mat4 sclm;
-      sclm = glm::scale(sclm, scl);
+      sclm     = glm::scale(sclm, scl);
       Mat4 rtm = glm::toMat4(rt);
 
       bone->m_inverseWorldMatrix = tsm * rtm * sclm;
@@ -394,12 +341,8 @@ namespace ToolKit
 
     AddBone(bone, parent);
 
-    for
-    (
-      subNode = node->first_node("bone");
-      subNode;
-      subNode = subNode->next_sibling()
-    )
+    for (subNode = node->first_node("bone"); subNode;
+         subNode = subNode->next_sibling())
     {
       Traverse(subNode, bone);
     }
@@ -429,11 +372,11 @@ namespace ToolKit
     ResourcePtr res;
     if (type == ResourceType::Skeleton)
     {
-      res = std::make_shared<Skeleton> ();
+      res = std::make_shared<Skeleton>();
     }
 
     assert(res != nullptr);
     return res;
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

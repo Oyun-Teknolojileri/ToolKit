@@ -7,8 +7,8 @@
 #include <vector>
 
 #ifndef __EMSCRIPTEN__
-#pragma message("Compiling precompiled headers.\n")
-#define GLM_FORCE_MESSAGES
+  #pragma message("Compiling precompiled headers.\n")
+  #define GLM_FORCE_MESSAGES
 #endif
 
 // GLM

@@ -7,6 +7,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     class EditorViewport;
 
     class OverlayUI
@@ -25,7 +26,7 @@ namespace ToolKit
     class OverlayMods : public OverlayUI
     {
      public:
-       explicit OverlayMods(EditorViewport* owner);
+      explicit OverlayMods(EditorViewport* owner);
       void Show() override;
     };
 
@@ -46,8 +47,8 @@ namespace ToolKit
     class Overlay2DViewportOptions : public OverlayUI
     {
      public:
-       explicit Overlay2DViewportOptions(EditorViewport* owner);
-       void Show() override;
+      explicit Overlay2DViewportOptions(EditorViewport* owner);
+      void Show() override;
     };
 
     class StatusBar : public OverlayUI
@@ -56,5 +57,6 @@ namespace ToolKit
       explicit StatusBar(EditorViewport* owner);
       void Show() override;
     };
-  }  //  namespace Editor
-}  //  namespace ToolKit
+
+  } //  namespace Editor
+} //  namespace ToolKit

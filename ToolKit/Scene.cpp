@@ -20,8 +20,7 @@ namespace ToolKit
     m_name = "New Scene";
   }
 
-  Scene::Scene(String file)
-    : Scene()
+  Scene::Scene(String file) : Scene()
   {
     SetFile(file);
   }
@@ -30,7 +29,6 @@ namespace ToolKit
   {
     Destroy(false);
   }
-
 
   void Scene::Load()
   {
@@ -47,7 +45,6 @@ namespace ToolKit
 
     DeSerialize(&sceneDoc, nullptr);
 
-
     // Instantiate entities
     for (Entity* e : m_entities)
     {
@@ -63,12 +60,12 @@ namespace ToolKit
         }
         else if (Entity* base = GetEntity(e->GetBaseEntityID()))
         {
-          Node* node = e->m_node->Copy();
+          Node* node            = e->m_node->Copy();
           ParameterBlock params = e->m_localData;
           base->InstantiateTo(e);
           SafeDel(e->m_node);
           node->m_entity = e;
-          e->m_node = node;
+          e->m_node      = node;
           e->m_localData = params;
         }
         else
@@ -145,7 +142,7 @@ namespace ToolKit
 
         // Environment component
         EnvironmentComponentPtr envCom =
-        ntt->GetComponent<EnvironmentComponent>();
+            ntt->GetComponent<EnvironmentComponent>();
         if (envCom != nullptr)
         {
           envCom->Init(true);
@@ -167,7 +164,7 @@ namespace ToolKit
     const EntityRawPtrArray& entities = other->GetEntities();
     for (Entity* ntt : entities)
     {
-      AddEntity(ntt);  // Insert into this scene.
+      AddEntity(ntt); // Insert into this scene.
     }
     GetHandleManager()->SetMaxHandle(biggestID);
 
@@ -175,22 +172,17 @@ namespace ToolKit
     GetSceneManager()->Remove(other->GetFile());
   }
 
-  Scene::PickData Scene::PickObject
-  (
-    Ray ray,
-    const EntityIdArray& ignoreList,
-    const EntityRawPtrArray& extraList
-  )
+  Scene::PickData Scene::PickObject(Ray ray,
+                                    const EntityIdArray& ignoreList,
+                                    const EntityRawPtrArray& extraList)
   {
     PickData pd;
     pd.pickPos = ray.position + ray.direction * 5.0f;
 
     float closestPickedDistance = FLT_MAX;
 
-    auto pickFn =
-    [&ignoreList, &ray, &pd, &closestPickedDistance]
-    (const EntityRawPtrArray& entities) -> void
-    {
+    auto pickFn = [&ignoreList, &ray, &pd, &closestPickedDistance](
+                      const EntityRawPtrArray& entities) -> void {
       for (Entity* ntt : entities)
       {
         if (!ntt->IsDrawable())
@@ -198,19 +190,16 @@ namespace ToolKit
           continue;
         }
 
-        if
-        (
-          std::find(ignoreList.begin(), ignoreList.end(), ntt->GetIdVal())
-          != ignoreList.end()
-        )
+        if (std::find(ignoreList.begin(), ignoreList.end(), ntt->GetIdVal()) !=
+            ignoreList.end())
         {
           continue;
         }
 
         Ray rayInObjectSpace = ray;
-        Mat4 ts = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
+        Mat4 ts  = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
         Mat4 its = glm::inverse(ts);
-        rayInObjectSpace.position = its * Vec4(ray.position, 1.0f);
+        rayInObjectSpace.position  = its * Vec4(ray.position, 1.0f);
         rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
 
         float dist = 0;
@@ -240,8 +229,8 @@ namespace ToolKit
             {
               if (dist < closestPickedDistance && dist > 0.0f)
               {
-                pd.entity = ntt;
-                pd.pickPos = ray.position + ray.direction * dist;
+                pd.entity             = ntt;
+                pd.pickPos            = ray.position + ray.direction * dist;
                 closestPickedDistance = dist;
               }
             }
@@ -256,19 +245,14 @@ namespace ToolKit
     return pd;
   }
 
-  void Scene::PickObject
-  (
-    const Frustum& frustum,
-    std::vector<PickData>& pickedObjects,
-    const EntityIdArray& ignoreList,
-    const EntityRawPtrArray& extraList,
-    bool pickPartiallyInside
-  )
+  void Scene::PickObject(const Frustum& frustum,
+                         std::vector<PickData>& pickedObjects,
+                         const EntityIdArray& ignoreList,
+                         const EntityRawPtrArray& extraList,
+                         bool pickPartiallyInside)
   {
-    auto pickFn =
-    [&frustum, &pickedObjects, &ignoreList, &pickPartiallyInside]
-    (const EntityRawPtrArray& entities) -> void
-    {
+    auto pickFn = [&frustum, &pickedObjects, &ignoreList, &pickPartiallyInside](
+                      const EntityRawPtrArray& entities) -> void {
       for (Entity* e : entities)
       {
         if (!e->IsDrawable())
@@ -276,26 +260,19 @@ namespace ToolKit
           continue;
         }
 
-        if
-        (
-          std::find
-          (
-            ignoreList.begin(),
-            ignoreList.end(),
-            e->GetIdVal()
-          ) != ignoreList.end()
-        )
+        if (std::find(ignoreList.begin(), ignoreList.end(), e->GetIdVal()) !=
+            ignoreList.end())
         {
           continue;
         }
 
-        BoundingBox bb = e->GetAABB(true);
+        BoundingBox bb      = e->GetAABB(true);
         IntersectResult res = FrustumBoxIntersection(frustum, bb);
         if (res != IntersectResult::Outside)
         {
           PickData pd;
           pd.pickPos = (bb.max + bb.min) * 0.5f;
-          pd.entity = e;
+          pd.entity  = e;
 
           if (res == IntersectResult::Inside)
           {
@@ -329,11 +306,7 @@ namespace ToolKit
   void Scene::AddEntity(Entity* entity)
   {
     ULongID nttyID = entity->GetIdVal();
-    assert
-    (
-      GetEntity(nttyID) == nullptr &&
-      "Entity is already in the scene."
-    );
+    assert(GetEntity(nttyID) == nullptr && "Entity is already in the scene.");
     m_entities.push_back(entity);
   }
 
@@ -426,13 +399,10 @@ namespace ToolKit
   EntityRawPtrArray Scene::Filter(std::function<bool(Entity*)> filter)
   {
     EntityRawPtrArray filtered;
-    std::copy_if
-    (
-      m_entities.begin(),
-      m_entities.end(),
-      std::back_inserter(filtered),
-      filter
-    );
+    std::copy_if(m_entities.begin(),
+                 m_entities.end(),
+                 std::back_inserter(filtered),
+                 filter);
     return filtered;
   }
 
@@ -454,11 +424,7 @@ namespace ToolKit
   {
     if (fullPath == GetFile())
     {
-      GetLogger()->WriteConsole
-      (
-        LogType::Error,
-        "You can't prefab same scene!"
-      );
+      GetLogger()->WriteConsole(LogType::Error, "You can't prefab same scene!");
       return;
     }
     Prefab* prefab = new Prefab();
@@ -479,15 +445,15 @@ namespace ToolKit
     }
     m_entities.clear();
 
-    m_loaded = false;
+    m_loaded    = false;
     m_initiated = false;
   }
 
   void Scene::SavePrefab(Entity* entity)
   {
     // Assign a default node.
-    Node* prevNode = entity->m_node;
-    entity->m_node = new Node();
+    Node* prevNode             = entity->m_node;
+    entity->m_node             = new Node();
     entity->m_node->m_children = prevNode->m_children;
 
     // Construct prefab.
@@ -514,7 +480,7 @@ namespace ToolKit
   void Scene::CopyTo(Resource* other)
   {
     Resource::CopyTo(other);
-    Scene* cpy = static_cast<Scene*> (other);
+    Scene* cpy  = static_cast<Scene*>(other);
     cpy->m_name = m_name + "_cpy";
 
     cpy->m_entities.reserve(m_entities.size());
@@ -542,93 +508,60 @@ namespace ToolKit
     {
       Entity* ntt = m_entities[listIndx];
       // If entity isn't a prefab type but from a prefab, don't serialize it
-      if
-      (
-        ntt->GetType() != EntityType::Entity_Prefab
-        && Prefab::GetPrefabRoot(ntt)
-      )
+      if (ntt->GetType() != EntityType::Entity_Prefab &&
+          Prefab::GetPrefabRoot(ntt))
       {
         continue;
       }
       ntt->Serialize(doc, scene);
 
-      NormalizeEntityID
-      (
-        doc,
-        scene->last_node(XmlEntityElement.c_str()),
-        listIndx
-      );
+      NormalizeEntityID(
+          doc, scene->last_node(XmlEntityElement.c_str()), listIndx);
     }
   }
 
-  void Scene::NormalizeEntityID
-  (
-    XmlDocument* doc,
-    XmlNode* parent,
-    size_t listIndx
-  ) const
+  void Scene::NormalizeEntityID(XmlDocument* doc,
+                                XmlNode* parent,
+                                size_t listIndx) const
   {
     XmlAttribute* parentAttrib =
-      parent->first_attribute(XmlParentEntityIdAttr.c_str());
+        parent->first_attribute(XmlParentEntityIdAttr.c_str());
     XmlAttribute* baseAttrib =
-      parent->first_attribute(XmlBaseEntityIdAttr.c_str());
-    parent->remove_attribute
-    (
-      parent->first_attribute(XmlEntityIdAttr.c_str())
-    );
+        parent->first_attribute(XmlBaseEntityIdAttr.c_str());
+    parent->remove_attribute(parent->first_attribute(XmlEntityIdAttr.c_str()));
     WriteAttr(parent, doc, XmlEntityIdAttr, std::to_string(listIndx + 1));
 
-    Entity* ntt = m_entities[listIndx];
+    Entity* ntt      = m_entities[listIndx];
     Node* parentNode = ntt->m_node->m_parent;
     // If parent is in scene, save its list index too
     if (parentNode && parentNode->m_entity)
     {
-      for
-        (
-        uint parentSrchIndx = 0;
-        parentSrchIndx < m_entities.size();
-        parentSrchIndx++
-        )
+      for (uint parentSrchIndx = 0; parentSrchIndx < m_entities.size();
+           parentSrchIndx++)
       {
         if (parentNode->m_entity == m_entities[parentSrchIndx])
         {
-          parent->remove_attribute
-          (
-            parentAttrib
-          );
-          WriteAttr
-          (
-            parent,
-            doc,
-            XmlParentEntityIdAttr,
-            std::to_string(parentSrchIndx + 1)
-          );
+          parent->remove_attribute(parentAttrib);
+          WriteAttr(parent,
+                    doc,
+                    XmlParentEntityIdAttr,
+                    std::to_string(parentSrchIndx + 1));
         }
       }
     }
     // If instantiated, save its base entity's list index too
     if (ntt->GetIsInstanceVal())
     {
-      for
-      (
-        uint parentSrchIndx = 0;
-        parentSrchIndx < m_entities.size();
-        parentSrchIndx++
-      )
+      for (uint parentSrchIndx = 0; parentSrchIndx < m_entities.size();
+           parentSrchIndx++)
       {
         if (ntt->GetBaseEntityID() == m_entities[parentSrchIndx]->GetIdVal())
         {
-          parent->remove_attribute
-          (
-            baseAttrib
-          );
-          WriteAttr
-          (
-            parent,
-            doc,
-            XmlBaseEntityIdAttr,
-            std::to_string(parentSrchIndx + 1)
-          );
+          parent->remove_attribute(baseAttrib);
+          WriteAttr(parent,
+                    doc,
+                    XmlBaseEntityIdAttr,
+                    std::to_string(parentSrchIndx + 1));
         }
       }
     }
@@ -653,22 +586,15 @@ namespace ToolKit
     DecomposePath(path, nullptr, &m_name, nullptr);
     ReadAttr(root, "version", m_version);
 
-    ULongID lastID = GetHandleManager()->GetNextHandle();
+    ULongID lastID    = GetHandleManager()->GetNextHandle();
     ULongID biggestID = 0;
-    XmlNode* node = nullptr;
-    for
-    (
-      node = root->first_node(XmlEntityElement.c_str());
-      node;
-      node = node->next_sibling(XmlEntityElement.c_str())
-    )
+    XmlNode* node     = nullptr;
+    for (node = root->first_node(XmlEntityElement.c_str()); node;
+         node = node->next_sibling(XmlEntityElement.c_str()))
     {
-      XmlAttribute* typeAttr = node->first_attribute
-      (
-        XmlEntityTypeAttr.c_str()
-      );
-      EntityType t = (EntityType)std::atoi(typeAttr->value());
-      Entity* ntt = GetEntityFactory()->CreateByType(t);
+      XmlAttribute* typeAttr = node->first_attribute(XmlEntityTypeAttr.c_str());
+      EntityType t           = (EntityType) std::atoi(typeAttr->value());
+      Entity* ntt            = GetEntityFactory()->CreateByType(t);
 
       ntt->DeSerialize(doc, node);
       if (ntt->GetType() == EntityType::Entity_Prefab)
@@ -681,7 +607,7 @@ namespace ToolKit
       ULongID listIndx = 0;
       ReadAttr(node, XmlEntityIdAttr, listIndx);
       ULongID currentID = listIndx + lastID;
-      biggestID = glm::max(biggestID, currentID);
+      biggestID         = glm::max(biggestID, currentID);
       ntt->SetIdVal(currentID);
       ntt->_parentId += lastID;
       if (ntt->GetIsInstanceVal())
@@ -751,4 +677,4 @@ namespace ToolKit
     m_currentScene = scene;
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

@@ -12,6 +12,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     class EditorBillboardBase : public Billboard
     {
      public:
@@ -262,5 +263,5 @@ namespace ToolKit
       Vec3Array m_circlePntsXZ;
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

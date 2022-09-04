@@ -14,40 +14,42 @@ namespace ToolKit
     class View
     {
      public:
-      virtual ~View() {}
+      virtual ~View()
+      {
+      }
       virtual void Show() = 0;
       virtual void ShowVariant(ParameterVariant* var, ComponentPtr comp);
       void ShowAnimControllerComponent(ParameterVariant* var, ComponentPtr cmp);
 
-      void DropZone
-      (
-        uint fallbackIcon,
-        const String& file,
-        std::function<void(const DirectoryEntry& entry)> dropAction,
-        const String& dropName = ""
-      );
+      void DropZone(uint fallbackIcon,
+                    const String& file,
+                    std::function<void(const DirectoryEntry& entry)> dropAction,
+                    const String& dropName = "");
 
-      void DropSubZone
-      (
-        const String& title,
-        uint fallbackIcon,
-        const String& file,
-        std::function<void(const DirectoryEntry& entry)> dropAction
-      );
+      void DropSubZone(
+          const String& title,
+          uint fallbackIcon,
+          const String& file,
+          std::function<void(const DirectoryEntry& entry)> dropAction);
 
      protected:
       bool IsTextInputFinalized();
 
      public:
       Entity* m_entity = nullptr;
-      int m_viewID = 0;
+      int m_viewID     = 0;
     };
 
     class EntityView : public View
     {
      public:
-      EntityView() { m_viewID = 1; }
-      virtual ~EntityView() {}
+      EntityView()
+      {
+        m_viewID = 1;
+      }
+      virtual ~EntityView()
+      {
+      }
       virtual void Show();
       virtual void ShowParameterBlock();
       virtual bool ShowComponentBlock(ComponentPtr& comp);
@@ -71,5 +73,5 @@ namespace ToolKit
       EntityView* m_view;
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

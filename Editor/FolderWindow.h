@@ -48,7 +48,7 @@ namespace ToolKit
 
      private:
       void CreateItemActions();
-      void MoveTo(const String& dst);  // Imgui Drop target.
+      void MoveTo(const String& dst); // Imgui Drop target.
 
      public:
       // Indicates this is a root folder (one level under Resources)
@@ -57,23 +57,23 @@ namespace ToolKit
       // States if the tab is visible.
       // Doesnt necesserly mean active, its just a tab in the FolderView.
       bool m_visible = false;
-      bool m_active = false;  // Active tab, whose content is being displayed.
+      bool m_active  = false; // Active tab, whose content is being displayed.
       // Always false. When set to true,
       // actives the view and becomes false again.
-      bool m_activateNext = false;
+      bool m_activateNext    = false;
       bool m_onlyNativeTypes = true;
-      Vec2 m_iconSize = Vec2(50.0f);
+      Vec2 m_iconSize        = Vec2(50.0f);
       std::vector<DirectoryEntry> m_entiries;
       String m_folder;
 
      private:
       FolderWindow* m_parent = nullptr;
       String m_path;
-      bool m_dirty = false;
+      bool m_dirty            = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
       ImGuiTextFilter m_filter;
-      std::unordered_map
-      <String, std::function<void(DirectoryEntry*)>> m_itemActions;
+      std::unordered_map<String, std::function<void(DirectoryEntry*)>>
+          m_itemActions;
 
       // If you change this value, change the calculaton of thumbnail zoom
       const float m_thumbnailMaxZoom = 300.f;
@@ -111,8 +111,9 @@ namespace ToolKit
 
       std::unordered_map<String, ViewSettings> m_viewSettings;
       std::vector<FolderView> m_entiries;
-      int m_activeFolder = -1;
+      int m_activeFolder   = -1;
       bool m_showStructure = true;
     };
-  }  // namespace Editor
-}  // namespace ToolKit
+
+  } // namespace Editor
+} // namespace ToolKit

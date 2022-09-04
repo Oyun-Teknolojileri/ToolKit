@@ -9,65 +9,58 @@
 
 namespace ToolKit
 {
+
   typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
   typedef std::vector<MeshComponentPtr> MeshComponentPtrArray;
-  static VariantCategory MeshComponentCategory
-  {
-    "Mesh Component",
-    90
-  };
+  static VariantCategory MeshComponentCategory{"Mesh Component", 90};
 
   class TK_API MeshComponent : public Component
   {
    public:
     /**
-    * Auto generated code for type information.
-    */
+     * Auto generated code for type information.
+     */
     TKComponentType(MeshComponent);
 
     /**
-    * Empty constructor.
-    */
+     * Empty constructor.
+     */
     MeshComponent();
 
     /**
-    * Empty destructor.
-    */
+     * Empty destructor.
+     */
     virtual ~MeshComponent();
 
     /**
-    * Creates a copy of the MeshComponent. Contained Mesh does not get
-    * copied but referenced. However Material is copied and will be serialized
-    * to the scene if the containing Entity gets serialized.
-    * @param ntt Parent Entity of the component.
-    * @return Copy of the MeshComponent.
-    */
+     * Creates a copy of the MeshComponent. Contained Mesh does not get
+     * copied but referenced. However Material is copied and will be serialized
+     * to the scene if the containing Entity gets serialized.
+     * @param ntt Parent Entity of the component.
+     * @return Copy of the MeshComponent.
+     */
     ComponentPtr Copy(Entity* ntt) override;
 
     /**
-    * Gets the bounding box of the contained Mesh.
-    * @return BoundingBox of the contained Mesh.
-    */
+     * Gets the bounding box of the contained Mesh.
+     * @return BoundingBox of the contained Mesh.
+     */
     BoundingBox GetAABB();
 
     /**
-    * Initiates the MeshComponent and underlying Mesh and Material resources.
-    */
+     * Initiates the MeshComponent and underlying Mesh and Material resources.
+     */
     void Init(bool flushClientSideArray);
 
    public:
-    TKDeclareParam(MeshPtr, Mesh);  //!< Component's Mesh resource.
+    TKDeclareParam(MeshPtr, Mesh); //!< Component's Mesh resource.
     TKDeclareParam(bool, CastShadow);
   };
 
   typedef std::shared_ptr<class MaterialComponent> MaterialComponentPtr;
   typedef std::vector<MaterialComponentPtr> MaterialComponentPtrArray;
 
-  static VariantCategory MaterialComponentCategory
-  {
-    "Material Component",
-    90
-  };
+  static VariantCategory MaterialComponentCategory{"Material Component", 90};
 
   class TK_API MaterialComponent : public Component
   {
@@ -78,31 +71,28 @@ namespace ToolKit
     virtual ~MaterialComponent();
 
     /**
-    * Creates a copy of the MaterialComponent. Contained Material is copied 
-    * and will be serialized to the scene if the containing Entity gets 
-    * serialized.
-    * @param ntt Parent Entity of the component.
-    * @return Copy of the MaterialComponent.
-    */
+     * Creates a copy of the MaterialComponent. Contained Material is copied
+     * and will be serialized to the scene if the containing Entity gets
+     * serialized.
+     * @param ntt Parent Entity of the component.
+     * @return Copy of the MaterialComponent.
+     */
     ComponentPtr Copy(Entity* ntt) override;
 
     void Init(bool flushClientSideArray);
 
    public:
     /**
-    * Component's material resource. In case this object is not null, Renderer
-    * picks this material to render the mesh otherwise falls back to Material
-    * within the Mesh.
-    */
+     * Component's material resource. In case this object is not null, Renderer
+     * picks this material to render the mesh otherwise falls back to Material
+     * within the Mesh.
+     */
     TKDeclareParam(MaterialPtr, Material);
   };
 
   typedef std::shared_ptr<class EnvironmentComponent> EnvironmentComponentPtr;
-  static VariantCategory EnvironmentComponentCategory
-  {
-    "Environment Component",
-    90
-  };
+  static VariantCategory EnvironmentComponentCategory{"Environment Component",
+                                                      90};
 
   class TK_API EnvironmentComponent : public Component
   {
@@ -139,25 +129,22 @@ namespace ToolKit
     BoundingBox* m_bbox;
   };
 
-  static VariantCategory AnimRecordComponentCategory
-  {
-    "Animation Record Component",
-    90
-  };
+  static VariantCategory AnimRecordComponentCategory{
+      "Animation Record Component", 90};
   typedef std::shared_ptr<class AnimControllerComponent>
-    AnimControllerComponentPtr;
+      AnimControllerComponentPtr;
 
   /**
-  * The component that stores animation records for the entity
-  */
+   * The component that stores animation records for the entity
+   */
   class TK_API AnimControllerComponent : public Component
   {
    public:
     TKComponentType(AnimControllerComponent);
 
     /**
-    * Empty constructor.
-    */
+     * Empty constructor.
+     */
     AnimControllerComponent();
     virtual ~AnimControllerComponent();
 
@@ -177,4 +164,5 @@ namespace ToolKit
    private:
     AnimRecordPtr activeRecord;
   };
-}  //  namespace ToolKit
+
+} //  namespace ToolKit

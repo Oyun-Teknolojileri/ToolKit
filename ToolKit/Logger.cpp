@@ -44,4 +44,4 @@ namespace ToolKit
 
     va_end(args);
   }
-}  // namespace ToolKit
+} // namespace ToolKit

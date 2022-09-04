@@ -11,20 +11,20 @@ namespace ToolKit
   // http://www.dunsanyinteractive.com/blogs/oliver/?p=72
 
   /*
-  * Struct that holds the RIFF data of the Wave file.
-  * The RIFF data is the meta data information that holds,
-  * the ID, size and format of the wave file
-  */
+   * Struct that holds the RIFF data of the Wave file.
+   * The RIFF data is the meta data information that holds,
+   * the ID, size and format of the wave file
+   */
   struct RIFF_Header
   {
     char chunkID[4];
-    int64_t chunkSize;  // size not including chunkSize or chunkID
+    int64_t chunkSize; // size not including chunkSize or chunkID
     char format[4];
   };
 
   /*
-  * Struct to hold fmt subchunk data for WAVE files.
-  */
+   * Struct to hold fmt subchunk data for WAVE files.
+   */
   struct WAVE_Format
   {
     char subChunkID[4];
@@ -38,20 +38,22 @@ namespace ToolKit
   };
 
   /*
-  * Struct to hold the data of the wave file
-  */
+   * Struct to hold the data of the wave file
+   */
   struct WAVE_Data
   {
-    char subChunkID[4];  // should contain the word data
-    int32_t subChunk2Size;  // Stores the size of the data block
+    char subChunkID[4];    // should contain the word data
+    int32_t subChunk2Size; // Stores the size of the data block
   };
 
   /*
-  * Load wave file function. No need for ALUT with this
-  */
-  bool loadWavFile(const String filename, ALuint* buffer,
-    ALsizei* size, ALsizei* frequency,
-    ALenum* format)
+   * Load wave file function. No need for ALUT with this
+   */
+  bool loadWavFile(const String filename,
+                   ALuint* buffer,
+                   ALsizei* size,
+                   ALsizei* frequency,
+                   ALenum* format)
   {
     // Local Declarations
     FILE* soundFile = NULL;
@@ -65,30 +67,25 @@ namespace ToolKit
       soundFile = fopen(filename.c_str(), "rb");
 
       if (!soundFile)
-        throw (filename);
+        throw(filename);
 
       // Read in the first chunk into the struct
       fread(&riff_header, sizeof(RIFF_Header), 1, soundFile);
 
       // check for RIFF and WAVE tag in memeory
-      if ((riff_header.chunkID[0] != 'R' ||
-        riff_header.chunkID[1] != 'I' ||
-        riff_header.chunkID[2] != 'F' ||
-        riff_header.chunkID[3] != 'F') ||
-        (riff_header.format[0] != 'W' ||
-        riff_header.format[1] != 'A' ||
-        riff_header.format[2] != 'V' ||
-        riff_header.format[3] != 'E'))
-        throw ("Invalid RIFF or WAVE Header");
+      if ((riff_header.chunkID[0] != 'R' || riff_header.chunkID[1] != 'I' ||
+           riff_header.chunkID[2] != 'F' || riff_header.chunkID[3] != 'F') ||
+          (riff_header.format[0] != 'W' || riff_header.format[1] != 'A' ||
+           riff_header.format[2] != 'V' || riff_header.format[3] != 'E'))
+        throw("Invalid RIFF or WAVE Header");
 
       // Read in the 2nd chunk for the wave info
       fread(&wave_format, sizeof(WAVE_Format), 1, soundFile);
       // check for fmt tag in memory
       if (wave_format.subChunkID[0] != 'f' ||
-        wave_format.subChunkID[1] != 'm' ||
-        wave_format.subChunkID[2] != 't' ||
-        wave_format.subChunkID[3] != ' ')
-        throw ("Invalid Wave Format");
+          wave_format.subChunkID[1] != 'm' ||
+          wave_format.subChunkID[2] != 't' || wave_format.subChunkID[3] != ' ')
+        throw("Invalid Wave Format");
 
       // check for extra parameters;
       if (wave_format.subChunkSize > 16)
@@ -97,22 +94,20 @@ namespace ToolKit
       // Read in the the last byte of data before the sound file
       fread(&wave_data, sizeof(WAVE_Data), 1, soundFile);
       // check for data tag in memory
-      if (wave_data.subChunkID[0] != 'd' ||
-        wave_data.subChunkID[1] != 'a' ||
-        wave_data.subChunkID[2] != 't' ||
-        wave_data.subChunkID[3] != 'a')
-        throw ("Invalid data header");
+      if (wave_data.subChunkID[0] != 'd' || wave_data.subChunkID[1] != 'a' ||
+          wave_data.subChunkID[2] != 't' || wave_data.subChunkID[3] != 'a')
+        throw("Invalid data header");
 
       // Allocate memory for data
       data = new unsigned char[wave_data.subChunk2Size];
 
       // Read in the sound data into the soundData variable
       if (!fread(data, wave_data.subChunk2Size, 1, soundFile))
-        throw ("error loading WAVE data into struct!");
+        throw("error loading WAVE data into struct!");
 
       // Now we set the variables that we passed in with the
       // data from the structs
-      *size = wave_data.subChunk2Size;
+      *size      = wave_data.subChunk2Size;
       *frequency = wave_format.sampleRate;
       // The format is worked out by looking at the number of
       // channels and the bits per sample.
@@ -135,8 +130,8 @@ namespace ToolKit
       // errorCheck();
       // now we put our data into the openAL buffer and
       // check for success
-      alBufferData(*buffer, *format, reinterpret_cast<void*> (data),
-        *size, *frequency);
+      alBufferData(
+          *buffer, *format, reinterpret_cast<void*>(data), *size, *frequency);
       // errorCheck();
       // clean up and return true if successful
 
@@ -160,8 +155,7 @@ namespace ToolKit
   {
   }
 
-  Audio::Audio(String file)
-    : Audio()
+  Audio::Audio(String file) : Audio()
   {
     SetFile(file);
   }
@@ -202,19 +196,16 @@ namespace ToolKit
   {
     ResourceManager::Init();
     m_device = alcOpenDevice(nullptr);
-    m_context = alcCreateContext
-    (
-      reinterpret_cast<ALCdevice*> (m_device),
-      nullptr
-    );
-    alcMakeContextCurrent(reinterpret_cast<ALCcontext*> (m_context));
+    m_context =
+        alcCreateContext(reinterpret_cast<ALCdevice*>(m_device), nullptr);
+    alcMakeContextCurrent(reinterpret_cast<ALCcontext*>(m_context));
   }
 
   void AudioManager::Uninit()
   {
-    alcDestroyContext(reinterpret_cast<ALCcontext*> (m_context));
+    alcDestroyContext(reinterpret_cast<ALCcontext*>(m_context));
 
-    alcCloseDevice(reinterpret_cast<ALCdevice*> (m_device));
+    alcCloseDevice(reinterpret_cast<ALCdevice*>(m_device));
     ResourceManager::Uninit();
   }
 
@@ -282,4 +273,4 @@ namespace ToolKit
     alSourcePause(source->m_source);
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

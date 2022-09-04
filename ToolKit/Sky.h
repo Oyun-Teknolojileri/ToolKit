@@ -29,8 +29,8 @@ namespace ToolKit
     TKDeclareParam(HdriPtr, Hdri);
 
    private:
-    bool m_initialized = false;
+    bool m_initialized           = false;
     MaterialPtr m_skyboxMaterial = nullptr;
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

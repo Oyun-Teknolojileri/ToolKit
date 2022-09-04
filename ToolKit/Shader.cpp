@@ -17,8 +17,7 @@ namespace ToolKit
   {
   }
 
-  Shader::Shader(String file)
-    : Shader()
+  Shader::Shader(String file) : Shader()
   {
     SetFile(file);
   }
@@ -52,7 +51,7 @@ namespace ToolKit
       return;
     }
 
-    m_shaderHandle = glCreateShader((GLenum)m_shaderType);
+    m_shaderHandle = glCreateShader((GLenum) m_shaderType);
     if (m_shaderHandle == 0)
     {
       return;
@@ -60,11 +59,11 @@ namespace ToolKit
 
     // Start with #version
     const char* str = nullptr;
-    size_t loc = m_source.find("#version");
+    size_t loc      = m_source.find("#version");
     if (loc != String::npos)
     {
       m_source = m_source.substr(loc);
-      str = m_source.c_str();
+      str      = m_source.c_str();
     }
     else
     {
@@ -101,7 +100,7 @@ namespace ToolKit
       m_source.clear();
     }
 
-    m_tag = std::to_string(m_shaderHandle);
+    m_tag       = std::to_string(m_shaderHandle);
     m_initiated = true;
   }
 
@@ -119,7 +118,7 @@ namespace ToolKit
   void Shader::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "shader", parent);
-    XmlNode* node = CreateXmlNode(doc, "type", container);
+    XmlNode* node      = CreateXmlNode(doc, "type", container);
 
     if (m_shaderType == GraphicTypes::VertexShader)
     {
@@ -137,40 +136,40 @@ namespace ToolKit
       String name;
       switch (ui)
       {
-        case Uniform::PROJECT_MODEL_VIEW:
+      case Uniform::PROJECT_MODEL_VIEW:
         name = "ProjectViewModel";
         break;
-        case Uniform::MODEL:
+      case Uniform::MODEL:
         name = "Model";
         break;
-        case Uniform::INV_TR_MODEL:
+      case Uniform::INV_TR_MODEL:
         name = "InverseTransModel";
         break;
-        case Uniform::LIGHT_DATA:
+      case Uniform::LIGHT_DATA:
         name = "LightData";
         break;
-        case Uniform::CAM_DATA:
+      case Uniform::CAM_DATA:
         name = "CamData";
         break;
-        case Uniform::COLOR:
+      case Uniform::COLOR:
         name = "Color";
         break;
-        case Uniform::FRAME_COUNT:
+      case Uniform::FRAME_COUNT:
         name = "FrameCount";
         break;
-        case Uniform::GRID_SETTINGS:
+      case Uniform::GRID_SETTINGS:
         name = "GridData";
         break;
-        case Uniform::PROJECTION_VIEW_NO_TR:
+      case Uniform::PROJECTION_VIEW_NO_TR:
         name = "ProjectionViewNoTr";
         break;
-        case Uniform::USE_IBL:
+      case Uniform::USE_IBL:
         name = "UseIbl";
         break;
-        case Uniform::IBL_IRRADIANCE:
+      case Uniform::IBL_IRRADIANCE:
         name = "IBLIrradianceMap";
         break;
-        default:
+      default:
         assert(false && "unknown uniform");
         break;
       }
@@ -178,11 +177,8 @@ namespace ToolKit
       WriteAttr(node, doc, "name", name);
     }
 
-    XmlNode* src = CreateXmlNode(doc, "source", container);
-    XmlNode* srcInput = doc->allocate_node
-    (
-      rapidxml::node_type::node_comment
-    );
+    XmlNode* src      = CreateXmlNode(doc, "source", container);
+    XmlNode* srcInput = doc->allocate_node(rapidxml::node_type::node_comment);
     src->append_node(srcInput);
     srcInput->value(doc->allocate_string(m_source.c_str()));
   }
@@ -195,12 +191,8 @@ namespace ToolKit
     }
 
     XmlNode* rootNode = parent;
-    for
-    (
-      XmlNode* node = rootNode->first_node();
-      node;
-      node = node->next_sibling()
-    )
+    for (XmlNode* node = rootNode->first_node(); node;
+         node          = node->next_sibling())
     {
       if (strcmp("type", node->name()) == 0)
       {
@@ -338,4 +330,4 @@ namespace ToolKit
     return ResourcePtr(new Shader());
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

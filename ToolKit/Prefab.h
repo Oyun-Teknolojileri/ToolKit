@@ -13,9 +13,9 @@
 namespace ToolKit
 {
   /**
-  * Entity to use in scenes
-  * Loads the given scene and instantiates root entities to current scene
-  */
+   * Entity to use in scenes
+   * Loads the given scene and instantiates root entities to current scene
+   */
   class TK_API Prefab : public Entity
   {
    public:
@@ -29,6 +29,7 @@ namespace ToolKit
 
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+
    private:
     void ParameterConstructor();
     void ParameterEventConstructor();
@@ -41,4 +42,4 @@ namespace ToolKit
     // Used only in deserialization
     std::unordered_map<String, ParameterVariantArray> childCustomDatas;
   };
-}  // namespace ToolKit
+} // namespace ToolKit

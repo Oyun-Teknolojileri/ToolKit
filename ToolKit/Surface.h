@@ -13,11 +13,7 @@
 namespace ToolKit
 {
 
-  static VariantCategory SurfaceCategory
-  {
-    "Surface",
-    90
-  };
+  static VariantCategory SurfaceCategory{"Surface", 90};
 
   class TK_API Surface : public Entity
   {
@@ -26,17 +22,20 @@ namespace ToolKit
     Surface(TexturePtr texture, const Vec2& pivotOffset);
     Surface(TexturePtr texture, const SpriteEntry& entry);
     Surface(const String& textureFile, const Vec2& pivotOffset);
-    Surface(const Vec2& size, const Vec2& offset = { 0.5f, 0.5f });
+    Surface(const Vec2& size, const Vec2& offset = {0.5f, 0.5f});
     virtual ~Surface();
 
     EntityType GetType() const override;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+    void CalculateAnchorOffsets(Vec3 canvas[4], Vec3 surface[4]);
+
     virtual void ResetCallbacks();
     //  To reflect the size & pivot changes,
     //  this function regenerates the geometry.
     virtual void UpdateGeometry(bool byTexture);
+
    protected:
     void ComponentConstructor();
     void ParameterConstructor();
@@ -55,22 +54,27 @@ namespace ToolKit
     TKDeclareParam(MaterialPtr, Material);
 
     // UI states.
-    bool m_mouseOver = false;
+    bool m_mouseOver    = false;
     bool m_mouseClicked = false;
-    float m_anchorRatios[4];
+
+    struct ANCHOR_PARAMS
+    {
+      bool lockWidth          = false;
+      bool lockHeight         = false;
+      float m_anchorRatios[4] = {0.f, 1.f, 0.f, 1.f};
+      float m_offsets[4]      = {0.f};
+    };
+
+    ANCHOR_PARAMS m_anchorParams;
 
     // Event Callbacks.
     SurfaceEventCallback m_onMouseEnter = nullptr;
-    SurfaceEventCallback m_onMouseExit = nullptr;
-    SurfaceEventCallback m_onMouseOver = nullptr;
+    SurfaceEventCallback m_onMouseExit  = nullptr;
+    SurfaceEventCallback m_onMouseOver  = nullptr;
     SurfaceEventCallback m_onMouseClick = nullptr;
   };
 
-  static VariantCategory ButtonCategory
-  {
-    "Button",
-    90
-  };
+  static VariantCategory ButtonCategory{"Button", 90};
 
   class TK_API Button : public Surface
   {
@@ -85,8 +89,8 @@ namespace ToolKit
     void ResetCallbacks() override;
 
    protected:
-     void ParameterConstructor();
-     void ParameterEventConstructor();
+    void ParameterConstructor();
+    void ParameterEventConstructor();
 
    public:
     TKDeclareParam(MaterialPtr, ButtonMaterial);
@@ -96,4 +100,5 @@ namespace ToolKit
     SurfaceEventCallback m_onMouseEnterLocal;
     SurfaceEventCallback m_onMouseExitLocal;
   };
-}  //  namespace ToolKit
+
+} //  namespace ToolKit

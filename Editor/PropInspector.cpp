@@ -1,14 +1,17 @@
 #include "PropInspector.h"
+
 #include <memory>
 #include <utility>
+
 #include "App.h"
 #include "Util.h"
 #include "ConsoleWindow.h"
 #include "TransformMod.h"
 #include "MaterialInspector.h"
 #include "ImGui/imgui_stdlib.h"
+#include "Prefab.h"
+#include "AnchorMod.h"
 #include "DebugNew.h"
-#include <Prefab.h>
 
 namespace ToolKit
 {
@@ -29,488 +32,347 @@ namespace ToolKit
 
       switch (var->GetType())
       {
-        case ParameterVariant::VariantType::Bool:
+      case ParameterVariant::VariantType::Bool: {
+        bool val = var->GetVar<bool>();
+        if (ImGui::Checkbox(var->m_name.c_str(), &val))
         {
-          bool val = var->GetVar<bool>();
-          if (ImGui::Checkbox(var->m_name.c_str(), &val))
+          *var = val;
+        }
+      }
+      break;
+      case ParameterVariant::VariantType::Float: {
+        float val = var->GetVar<float>();
+        if (!var->m_hint.isRangeLimited)
+        {
+          if (ImGui::InputFloat(var->m_name.c_str(), &val))
           {
             *var = val;
           }
         }
-        break;
-        case ParameterVariant::VariantType::Float:
+        else
         {
-          float val = var->GetVar<float>();
-          if (!var->m_hint.isRangeLimited)
-          {
-            if (ImGui::InputFloat(var->m_name.c_str(), &val))
-            {
-              *var = val;
-            }
-          }
-          else
-          {
-            if
-            (
-              ImGui::DragFloat
-              (
-                var->m_name.c_str(),
-                &val,
-                var->m_hint.increment,
-                var->m_hint.rangeMin,
-                var->m_hint.rangeMax
-              )
-            )
-            {
-              *var = val;
-            }
-          }
-        }
-        break;
-        case ParameterVariant::VariantType::Int:
-        {
-          int val = var->GetVar<int>();
-          if (var->m_hint.isRangeLimited)
-          {
-            if
-            (
-              ImGui::DragInt
-              (
-                var->m_name.c_str(),
-                &val,
-                var->m_hint.increment,
-                static_cast<int>(var->m_hint.rangeMin),
-                static_cast<int>(var->m_hint.rangeMax)
-              )
-            )
-            {
-              *var = val;
-            }
-          }
-          else
-          {
-            if (ImGui::InputInt(var->m_name.c_str(), &val))
-            {
-              *var = val;
-            }
-          }
-        }
-        break;
-        case ParameterVariant::VariantType::Vec2:
-        {
-          Vec2 val = var->GetVar<Vec2>();
-          if (var->m_hint.isRangeLimited)
-          {
-            if
-            (
-              ImGui::DragFloat2
-              (
-                var->m_name.c_str(),
-                &val[0],
-                var->m_hint.increment,
-                var->m_hint.rangeMin,
-                var->m_hint.rangeMax
-              )
-            )
-            {
-              *var = val;
-            }
-          }
-          else
-          {
-            if (ImGui::DragFloat2(var->m_name.c_str(), &val[0], 0.1f))
-            {
-              *var = val;
-            }
-          }
-        }
-        break;
-        case ParameterVariant::VariantType::Vec3:
-        {
-          Vec3 val = var->GetVar<Vec3>();
-          if (var->m_hint.isColor)
-          {
-            if
-            (
-              ImGui::ColorEdit3
-              (
-                var->m_name.c_str(),
-                &val[0],
-                ImGuiColorEditFlags_NoLabel
-              )
-            )
-            {
-              *var = val;
-            }
-          }
-          else if (var->m_hint.isRangeLimited)
-          {
-            if
-            (
-              ImGui::DragFloat3
-              (
-                var->m_name.c_str(),
-                &val[0],
-                var->m_hint.increment,
-                var->m_hint.rangeMin,
-                var->m_hint.rangeMax
-              )
-            )
-            {
-              *var = val;
-            }
-          }
-          else
-          {
-            if (ImGui::DragFloat3(var->m_name.c_str(), &val[0], 0.1f))
-            {
-              *var = val;
-            }
-          }
-        }
-        break;
-        case ParameterVariant::VariantType::Vec4:
-        {
-          Vec4 val = var->GetVar<Vec4>();
-          if (var->m_hint.isColor)
-          {
-            if
-            (
-              ImGui::ColorEdit4
-              (
-                var->m_name.c_str(),
-                &val[0],
-                ImGuiColorEditFlags_NoLabel
-              )
-            )
-            {
-              *var = val;
-            }
-          }
-          else if (var->m_hint.isRangeLimited)
-          {
-            if
-            (
-              ImGui::DragFloat4
-              (
-                var->m_name.c_str(),
-                &val[0],
-                var->m_hint.increment,
-                var->m_hint.rangeMin,
-                var->m_hint.rangeMax
-              )
-            )
-            {
-              *var = val;
-            }
-          }
-          else
-          {
-            if (ImGui::DragFloat4(var->m_name.c_str(), &val[0], 0.1f))
-            {
-              *var = val;
-            }
-          }
-        }
-        break;
-        case ParameterVariant::VariantType::String:
-        {
-          String val = var->GetVar<String>();
-          if
-          (
-            ImGui::InputText(var->m_name.c_str(), &val)
-            && IsTextInputFinalized()
-          )
+          if (ImGui::DragFloat(var->m_name.c_str(),
+                               &val,
+                               var->m_hint.increment,
+                               var->m_hint.rangeMin,
+                               var->m_hint.rangeMax))
           {
             *var = val;
           }
         }
-        break;
-        case ParameterVariant::VariantType::ULongID:
+      }
+      break;
+      case ParameterVariant::VariantType::Int: {
+        int val = var->GetVar<int>();
+        if (var->m_hint.isRangeLimited)
         {
-          ULongID val = var->GetVar<ULongID>();
-          if
-          (
-            ImGui::InputScalar
-            (
-              var->m_name.c_str(),
-              ImGuiDataType_U32,
-              var->GetVarPtr<ULongID>()
-            )
-            && IsTextInputFinalized()
-          )
+          if (ImGui::DragInt(var->m_name.c_str(),
+                             &val,
+                             var->m_hint.increment,
+                             static_cast<int>(var->m_hint.rangeMin),
+                             static_cast<int>(var->m_hint.rangeMax)))
           {
             *var = val;
           }
         }
-        break;
-        case ParameterVariant::VariantType::MaterialPtr:
+        else
         {
-          MaterialPtr& mref = var->GetVar<MaterialPtr>();
-          String file, id;
-          if (mref)
+          if (ImGui::InputInt(var->m_name.c_str(), &val))
           {
-            id = std::to_string(mref->m_id);
-            file = mref->GetFile();
+            *var = val;
           }
+        }
+      }
+      break;
+      case ParameterVariant::VariantType::Vec2: {
+        Vec2 val = var->GetVar<Vec2>();
+        if (var->m_hint.isRangeLimited)
+        {
+          if (ImGui::DragFloat2(var->m_name.c_str(),
+                                &val[0],
+                                var->m_hint.increment,
+                                var->m_hint.rangeMin,
+                                var->m_hint.rangeMax))
+          {
+            *var = val;
+          }
+        }
+        else
+        {
+          if (ImGui::DragFloat2(var->m_name.c_str(), &val[0], 0.1f))
+          {
+            *var = val;
+          }
+        }
+      }
+      break;
+      case ParameterVariant::VariantType::Vec3: {
+        Vec3 val = var->GetVar<Vec3>();
+        if (var->m_hint.isColor)
+        {
+          if (ImGui::ColorEdit3(
+                  var->m_name.c_str(), &val[0], ImGuiColorEditFlags_NoLabel))
+          {
+            *var = val;
+          }
+        }
+        else if (var->m_hint.isRangeLimited)
+        {
+          if (ImGui::DragFloat3(var->m_name.c_str(),
+                                &val[0],
+                                var->m_hint.increment,
+                                var->m_hint.rangeMin,
+                                var->m_hint.rangeMax))
+          {
+            *var = val;
+          }
+        }
+        else
+        {
+          if (ImGui::DragFloat3(var->m_name.c_str(), &val[0], 0.1f))
+          {
+            *var = val;
+          }
+        }
+      }
+      break;
+      case ParameterVariant::VariantType::Vec4: {
+        Vec4 val = var->GetVar<Vec4>();
+        if (var->m_hint.isColor)
+        {
+          if (ImGui::ColorEdit4(
+                  var->m_name.c_str(), &val[0], ImGuiColorEditFlags_NoLabel))
+          {
+            *var = val;
+          }
+        }
+        else if (var->m_hint.isRangeLimited)
+        {
+          if (ImGui::DragFloat4(var->m_name.c_str(),
+                                &val[0],
+                                var->m_hint.increment,
+                                var->m_hint.rangeMin,
+                                var->m_hint.rangeMax))
+          {
+            *var = val;
+          }
+        }
+        else
+        {
+          if (ImGui::DragFloat4(var->m_name.c_str(), &val[0], 0.1f))
+          {
+            *var = val;
+          }
+        }
+      }
+      break;
+      case ParameterVariant::VariantType::String: {
+        String val = var->GetVar<String>();
+        if (ImGui::InputText(var->m_name.c_str(), &val) &&
+            IsTextInputFinalized())
+        {
+          *var = val;
+        }
+      }
+      break;
+      case ParameterVariant::VariantType::ULongID: {
+        ULongID val = var->GetVar<ULongID>();
+        if (ImGui::InputScalar(var->m_name.c_str(),
+                               ImGuiDataType_U32,
+                               var->GetVarPtr<ULongID>()) &&
+            IsTextInputFinalized())
+        {
+          *var = val;
+        }
+      }
+      break;
+      case ParameterVariant::VariantType::MaterialPtr: {
+        MaterialPtr& mref = var->GetVar<MaterialPtr>();
+        String file, id;
+        if (mref)
+        {
+          id   = std::to_string(mref->m_id);
+          file = mref->GetFile();
+        }
 
-          String uniqueName = var->m_name + "##" + id;
-          DropSubZone
-          (
+        String uniqueName = var->m_name + "##" + id;
+        DropSubZone(
             uniqueName,
-            static_cast<uint> (UI::m_materialIcon->m_textureId),
+            static_cast<uint>(UI::m_materialIcon->m_textureId),
             file,
-            [&var](const DirectoryEntry& entry) -> void
-            {
+            [&var](const DirectoryEntry& entry) -> void {
               if (GetResourceType(entry.m_ext) == ResourceType::Material)
               {
-                *var = GetMaterialManager()->Create<Material>
-                (
-                  entry.GetFullPath()
-                );
+                *var =
+                    GetMaterialManager()->Create<Material>(entry.GetFullPath());
               }
               else
               {
-                GetLogger()->WriteConsole
-                (
-                  LogType::Error,
-                  "Only Material Types are accepted."
-                );
+                GetLogger()->WriteConsole(LogType::Error,
+                                          "Only Material Types are accepted.");
               }
-            }
-          );
-        }
-        break;
-        case ParameterVariant::VariantType::MeshPtr:
-        {
-          MeshPtr mref = var->GetVar<MeshPtr>();
-          DropSubZone
-          (
-            "Mesh##" + std::to_string(mref->m_id),
-            static_cast<uint> (UI::m_meshIcon->m_textureId),
-            mref->GetFile(),
-            [](const DirectoryEntry& entry) -> void
-            {
-              assert(false && "Not implemented !");
-            }
-          );
-        }
-        break;
-        case ParameterVariant::VariantType::HdriPtr:
-        {
+            });
+      }
+      break;
+      case ParameterVariant::VariantType::MeshPtr: {
+        MeshPtr mref = var->GetVar<MeshPtr>();
+        DropSubZone("Mesh##" + std::to_string(mref->m_id),
+                    static_cast<uint>(UI::m_meshIcon->m_textureId),
+                    mref->GetFile(),
+                    [](const DirectoryEntry& entry) -> void {
+                      assert(false && "Not implemented !");
+                    });
+      }
+      break;
+      case ParameterVariant::VariantType::HdriPtr: {
         HdriPtr mref = var->GetVar<HdriPtr>();
         String file, id;
         if (mref)
         {
-          id = std::to_string(mref->m_id);
+          id   = std::to_string(mref->m_id);
           file = mref->GetFile();
         }
 
-        DropSubZone
-        (
-          "Hdri##" + id,
-          static_cast<uint> (UI::m_imageIcon->m_textureId),
-          file,
-          [&var](const DirectoryEntry& entry) -> void
-          {
-            if (GetResourceType(entry.m_ext) == ResourceType::Hdri)
-            {
-              *var = GetTextureManager()->Create<Hdri>
-              (
-                entry.GetFullPath()
-              );
-            }
-            else
-            {
-              GetLogger()->WriteConsole
-              (
-                LogType::Error,
-                "Only hdri's are accepted."
-              );
-            }
-          }
-        );
+        DropSubZone("Hdri##" + id,
+                    static_cast<uint>(UI::m_imageIcon->m_textureId),
+                    file,
+                    [&var](const DirectoryEntry& entry) -> void {
+                      if (GetResourceType(entry.m_ext) == ResourceType::Hdri)
+                      {
+                        *var = GetTextureManager()->Create<Hdri>(
+                            entry.GetFullPath());
+                      }
+                      else
+                      {
+                        GetLogger()->WriteConsole(LogType::Error,
+                                                  "Only hdri's are accepted.");
+                      }
+                    });
         break;
       }
-        case ParameterVariant::VariantType::AnimRecordPtrMap:
-        {
-          ShowAnimControllerComponent(var, comp);
-        }
+      case ParameterVariant::VariantType::AnimRecordPtrMap: {
+        ShowAnimControllerComponent(var, comp);
+      }
+      break;
+      default:
         break;
-        default:
-         break;
       }
 
       ImGui::EndDisabled();
     }
 
-    void View::ShowAnimControllerComponent
-    (
-      ParameterVariant* var,
-      ComponentPtr comp
-    )
+    void View::ShowAnimControllerComponent(ParameterVariant* var,
+                                           ComponentPtr comp)
     {
       AnimRecordPtrMap& mref = var->GetVar<AnimRecordPtrMap>();
       String file, id;
 
       AnimControllerComponent* animPlayerComp =
-        reinterpret_cast<AnimControllerComponent*>(comp.get());
+          reinterpret_cast<AnimControllerComponent*>(comp.get());
 
       // If component isn't AnimationPlayerComponent, don't show variant
-      if
-      (
-        !comp ||
-        comp->GetType() != ComponentType::AnimControllerComponent
-      )
+      if (!comp || comp->GetType() != ComponentType::AnimControllerComponent)
       {
-        GetLogger()->WriteConsole
-        (
-          LogType::Error,
-          "AnimRecordPtrMap is for AnimationControllerComponent"
-        );
+        GetLogger()->WriteConsole(
+            LogType::Error,
+            "AnimRecordPtrMap is for AnimationControllerComponent");
         return;
       }
-
 
       if (animPlayerComp->GetActiveRecord())
       {
         String file;
-        DecomposePath
-        (
-          animPlayerComp->GetActiveRecord()->m_animation->GetFile(),
-          nullptr,
-          &file,
-          nullptr
-        );
+        DecomposePath(animPlayerComp->GetActiveRecord()->m_animation->GetFile(),
+                      nullptr,
+                      &file,
+                      nullptr);
 
-        String text = Format
-        (
-          "Animation: %s, Duration: %f, T: %f",
-          file.c_str(),
-          animPlayerComp->GetActiveRecord()->m_animation->m_duration,
-          animPlayerComp->GetActiveRecord()->m_currentTime
-        );
+        String text =
+            Format("Animation: %s, Duration: %f, T: %f",
+                   file.c_str(),
+                   animPlayerComp->GetActiveRecord()->m_animation->m_duration,
+                   animPlayerComp->GetActiveRecord()->m_currentTime);
 
         ImGui::Text(text.c_str());
       }
 
-      if
-      (
-        ImGui::BeginTable
-        (
-          "Animation Records and Signals",
-          4,
-          ImGuiTableFlags_RowBg
-          | ImGuiTableFlags_Borders
-          | ImGuiTableFlags_Resizable
-          | ImGuiTableFlags_Reorderable
-          | ImGuiTableFlags_ScrollY
-        )
-      )
+      if (ImGui::BeginTable("Animation Records and Signals",
+                            4,
+                            ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders |
+                                ImGuiTableFlags_Resizable |
+                                ImGuiTableFlags_Reorderable |
+                                ImGuiTableFlags_ScrollY))
       {
         float tableWdth = ImGui::GetItemRectSize().x;
-        ImGui::TableSetupColumn
-        (
-          "Animation",
-          ImGuiTableColumnFlags_WidthStretch,
-          tableWdth / 5.0f
-        );
+        ImGui::TableSetupColumn(
+            "Animation", ImGuiTableColumnFlags_WidthStretch, tableWdth / 5.0f);
 
-        ImGui::TableSetupColumn
-        (
-          "Name",
-          ImGuiTableColumnFlags_WidthStretch,
-          tableWdth / 2.5f
-        );
+        ImGui::TableSetupColumn(
+            "Name", ImGuiTableColumnFlags_WidthStretch, tableWdth / 2.5f);
 
-        ImGui::TableSetupColumn
-        (
-          "Preview",
-          ImGuiTableColumnFlags_WidthStretch,
-          tableWdth / 4.0f
-        );
+        ImGui::TableSetupColumn(
+            "Preview", ImGuiTableColumnFlags_WidthStretch, tableWdth / 4.0f);
 
-        ImGui::TableSetupColumn
-        (
-          "",
-          ImGuiTableColumnFlags_WidthStretch,
-          tableWdth / 20.0f
-        );
+        ImGui::TableSetupColumn(
+            "", ImGuiTableColumnFlags_WidthStretch, tableWdth / 20.0f);
 
         ImGui::TableHeadersRow();
 
-        uint rowIndx = 0;
-        String removedSignalName = "";
-        String nameUpdated = "";
+        uint rowIndx                                     = 0;
+        String removedSignalName                         = "";
+        String nameUpdated                               = "";
         std::pair<String, AnimRecordPtr> nameUpdatedPair = {};
 
         static std::pair<String, AnimRecordPtr> extraTrack =
-          std::make_pair("", std::make_shared<AnimRecord>());
+            std::make_pair("", std::make_shared<AnimRecord>());
 
         // Animation DropZone
         auto showAnimationDropzone =
-        [this, tableWdth, file]
-        (uint& columnIndx, const std::pair<String, AnimRecordPtr>& pair)
-        {
-          ImGui::TableSetColumnIndex(columnIndx++);
-          ImGui::SetCursorPosX(tableWdth / 25.0f);
-          DropZone
-          (
-            static_cast<uint> (UI::m_clipIcon->m_textureId),
-            file,
-            [&pair](const DirectoryEntry& entry) -> void
-            {
-              if (GetResourceType(entry.m_ext) == ResourceType::Animation)
-              {
-                pair.second->m_animation =
-                  GetAnimationManager()->Create<Animation>
-                  (
-                    entry.GetFullPath()
-                  );
-                if (pair.first.empty())
-                {
-                  extraTrack.first = entry.m_fileName;
-                }
-              }
-              else
-              {
-                GetLogger()->WriteConsole
-                (
-                  LogType::Error,
-                  "Only animations are accepted."
-                );
-              }
-            }
-          );
-        };
+            [this, tableWdth, file](
+                uint& columnIndx,
+                const std::pair<String, AnimRecordPtr>& pair) {
+              ImGui::TableSetColumnIndex(columnIndx++);
+              ImGui::SetCursorPosX(tableWdth / 25.0f);
+              DropZone(static_cast<uint>(UI::m_clipIcon->m_textureId),
+                       file,
+                       [&pair](const DirectoryEntry& entry) -> void {
+                         if (GetResourceType(entry.m_ext) ==
+                             ResourceType::Animation)
+                         {
+                           pair.second->m_animation =
+                               GetAnimationManager()->Create<Animation>(
+                                   entry.GetFullPath());
+                           if (pair.first.empty())
+                           {
+                             extraTrack.first = entry.m_fileName;
+                           }
+                         }
+                         else
+                         {
+                           GetLogger()->WriteConsole(
+                               LogType::Error, "Only animations are accepted.");
+                         }
+                       });
+            };
 
         auto showSignalName =
-        [this, &nameUpdated, &nameUpdatedPair, tableWdth]
-        (uint& columnIndx, const std::pair<String, AnimRecordPtr>& pair)
-        {
-          ImGui::TableSetColumnIndex(columnIndx++);
-          ImGui::SetCursorPosY
-          (
-            ImGui::GetCursorPos().y + (ImGui::GetItemRectSize().y / 4.0f)
-          );
-          ImGui::PushItemWidth((tableWdth / 2.5f) - 5.0f);
-          String readOnly = pair.first;
-          if
-          (
-            ImGui::InputText
-            (
-              "##",
-              &readOnly,
-              ImGuiInputTextFlags_EnterReturnsTrue
-            )
-            && readOnly.length()
-          )
-          {
-            nameUpdated = readOnly;
-            nameUpdatedPair = pair;
-          }
-          ImGui::PopItemWidth();
-        };
+            [this, &nameUpdated, &nameUpdatedPair, tableWdth](
+                uint& columnIndx,
+                const std::pair<String, AnimRecordPtr>& pair) {
+              ImGui::TableSetColumnIndex(columnIndx++);
+              ImGui::SetCursorPosY(ImGui::GetCursorPos().y +
+                                   (ImGui::GetItemRectSize().y / 4.0f));
+              ImGui::PushItemWidth((tableWdth / 2.5f) - 5.0f);
+              String readOnly = pair.first;
+              if (ImGui::InputText(
+                      "##", &readOnly, ImGuiInputTextFlags_EnterReturnsTrue) &&
+                  readOnly.length())
+              {
+                nameUpdated     = readOnly;
+                nameUpdatedPair = pair;
+              }
+              ImGui::PopItemWidth();
+            };
         for (auto it = mref.begin(); it != mref.end(); ++it, rowIndx++)
         {
           uint columnIndx = 0;
@@ -526,64 +388,34 @@ namespace ToolKit
           ImGui::TableSetColumnIndex(columnIndx++);
           if (it->second->m_animation)
           {
-            ImGui::SetCursorPosX
-            (
-              ImGui::GetCursorPos().x
-              + (ImGui::GetItemRectSize().x / 10.0f)
-            );
+            ImGui::SetCursorPosX(ImGui::GetCursorPos().x +
+                                 (ImGui::GetItemRectSize().x / 10.0f));
 
-            ImGui::SetCursorPosY
-            (
-              ImGui::GetCursorPos().y
-              + (ImGui::GetItemRectSize().y / 5.0f)
-            );
+            ImGui::SetCursorPosY(ImGui::GetCursorPos().y +
+                                 (ImGui::GetItemRectSize().y / 5.0f));
 
             AnimRecordPtr activeRecord = animPlayerComp->GetActiveRecord();
 
             // Alternate between Play - Pause buttons.
-            if
-            (
-              activeRecord == it->second
-              && activeRecord->m_state == AnimRecord::State::Play
-            )
+            if (activeRecord == it->second &&
+                activeRecord->m_state == AnimRecord::State::Play)
             {
-              if
-              (
-                UI::ImageButtonDecorless
-                (
-                  UI::m_pauseIcon->m_textureId,
-                  Vec2(24, 24),
-                  false
-                )
-              )
+              if (UI::ImageButtonDecorless(
+                      UI::m_pauseIcon->m_textureId, Vec2(24, 24), false))
               {
                 animPlayerComp->Pause();
               }
             }
-            else if
-            (
-              UI::ImageButtonDecorless
-              (
-                UI::m_playIcon->m_textureId,
-                Vec2(24, 24),
-                false
-              )
-            )
+            else if (UI::ImageButtonDecorless(
+                         UI::m_playIcon->m_textureId, Vec2(24, 24), false))
             {
               animPlayerComp->Play(it->first.c_str());
             }
 
             // Draw stop button always.
             ImGui::SameLine();
-            if
-            (
-              UI::ImageButtonDecorless
-              (
-                UI::m_stopIcon->m_textureId,
-                Vec2(24, 24),
-                false
-              )
-            )
+            if (UI::ImageButtonDecorless(
+                    UI::m_stopIcon->m_textureId, Vec2(24, 24), false))
             {
               animPlayerComp->Stop();
             }
@@ -592,20 +424,11 @@ namespace ToolKit
           // Remove Button
           {
             ImGui::TableSetColumnIndex(columnIndx++);
-            ImGui::SetCursorPosY
-            (
-              ImGui::GetCursorPos().y + (ImGui::GetItemRectSize().y / 4.0f)
-            );
+            ImGui::SetCursorPosY(ImGui::GetCursorPos().y +
+                                 (ImGui::GetItemRectSize().y / 4.0f));
 
-            if
-            (
-              UI::ImageButtonDecorless
-              (
-                UI::m_closeIcon->m_textureId,
-                Vec2(15, 15),
-                false
-              )
-            )
+            if (UI::ImageButtonDecorless(
+                    UI::m_closeIcon->m_textureId, Vec2(15, 15), false))
             {
               removedSignalName = it->first;
             }
@@ -642,11 +465,11 @@ namespace ToolKit
           }
           else
           {
-            auto node = mref.extract(nameUpdatedPair.first);
+            auto node  = mref.extract(nameUpdatedPair.first);
             node.key() = nameUpdated;
             mref.insert(std::move(node));
 
-            nameUpdated = "";
+            nameUpdated     = "";
             nameUpdatedPair = {};
           }
         }
@@ -655,7 +478,7 @@ namespace ToolKit
         if (extraTrack.first != "" && extraTrack.second->m_animation != nullptr)
         {
           mref.insert(extraTrack);
-          extraTrack.first = "";
+          extraTrack.first  = "";
           extraTrack.second = std::make_shared<AnimRecord>();
         }
 
@@ -663,23 +486,21 @@ namespace ToolKit
       }
     }
 
-    void View::DropZone
-    (
-      uint fallbackIcon,
-      const String& file,
-      std::function<void(const DirectoryEntry& entry)> dropAction,
-      const String& dropName
-    )
+    void View::DropZone(
+        uint fallbackIcon,
+        const String& file,
+        std::function<void(const DirectoryEntry& entry)> dropAction,
+        const String& dropName)
     {
       DirectoryEntry dirEnt;
       bool fileExist = g_app->GetAssetBrowser()->GetFileEntry(file, dirEnt);
-      uint iconId = fallbackIcon;
+      uint iconId    = fallbackIcon;
 
       ImVec2 texCoords = ImVec2(1.0f, 1.0f);
       if (RenderTargetPtr thumb = dirEnt.GetThumbnail())
       {
         texCoords = ImVec2(1.0f, -1.0f);
-        iconId = thumb->m_textureId;
+        iconId    = thumb->m_textureId;
       }
       else if (fileExist)
       {
@@ -696,24 +517,19 @@ namespace ToolKit
         ImGui::Text(dropName.c_str());
       }
 
-      bool clicked = ImGui::ImageButton
-      (
-        reinterpret_cast<void*>((intptr_t)iconId),
-        ImVec2(48.0f, 48.0f),
-        ImVec2(0.0f, 0.0f),
-        texCoords
-      );
+      bool clicked =
+          ImGui::ImageButton(reinterpret_cast<void*>((intptr_t) iconId),
+                             ImVec2(48.0f, 48.0f),
+                             ImVec2(0.0f, 0.0f),
+                             texCoords);
 
       if (ImGui::BeginDragDropTarget())
       {
-        if
-        (
-          const ImGuiPayload* payload =
-          ImGui::AcceptDragDropPayload("BrowserDragZone")
-        )
+        if (const ImGuiPayload* payload =
+                ImGui::AcceptDragDropPayload("BrowserDragZone"))
         {
           IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
-          DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
+          DirectoryEntry entry = *(const DirectoryEntry*) payload->Data;
           dropAction(entry);
         }
 
@@ -727,8 +543,7 @@ namespace ToolKit
         info = "";
         if (ResourceManager* man = dirEnt.GetManager())
         {
-          auto textureRepFn = [&info, file](const TexturePtr& t) -> void
-          {
+          auto textureRepFn = [&info, file](const TexturePtr& t) -> void {
             if (t)
             {
               String file, ext;
@@ -763,13 +578,11 @@ namespace ToolKit
       UI::HelpMarker(TKLoc + file, info.c_str(), 0.1f);
     }
 
-    void View::DropSubZone
-    (
-      const String& title,
-      uint fallbackIcon,
-      const String& file,
-      std::function<void(const DirectoryEntry& entry)> dropAction
-    )
+    void View::DropSubZone(
+        const String& title,
+        uint fallbackIcon,
+        const String& file,
+        std::function<void(const DirectoryEntry& entry)> dropAction)
     {
       if (ImGui::TreeNode(title.c_str()))
       {
@@ -780,12 +593,9 @@ namespace ToolKit
 
     bool View::IsTextInputFinalized()
     {
-      return
-      (
-        ImGui::IsKeyPressed(ImGuiKey_KeypadEnter)
-        || ImGui::IsKeyPressed(ImGuiKey_Enter)
-        || ImGui::IsKeyPressed(ImGuiKey_Tab)
-      );
+      return (ImGui::IsKeyPressed(ImGuiKey_KeypadEnter) ||
+              ImGui::IsKeyPressed(ImGuiKey_Enter) ||
+              ImGui::IsKeyPressed(ImGuiKey_Tab));
     }
 
     // EntityView
@@ -803,7 +613,7 @@ namespace ToolKit
       // Missing data reporter.
       if (m_entity->IsDrawable())
       {
-        Drawable* dw = static_cast<Drawable*> (m_entity);
+        Drawable* dw = static_cast<Drawable*>(m_entity);
         MeshPtr mesh = dw->GetMesh();
 
         StringArray missingData;
@@ -847,73 +657,110 @@ namespace ToolKit
         }
       }
 
-      if (m_entity->IsSurfaceInstance()
-        && m_entity->GetType() != EntityType::Entity_CanvasPanel)
+      if (m_entity->IsSurfaceInstance() &&
+          m_entity->m_node->m_parent != nullptr &&
+          m_entity->m_node->m_parent->m_entity != nullptr &&
+          m_entity->m_node->m_parent->m_entity->GetType() ==
+              EntityType::Entity_CanvasPanel)
       {
+        Surface* surface = static_cast<Surface*>(m_entity);
+        CanvasPanel* canvasPanel =
+            static_cast<CanvasPanel*>(surface->m_node->m_parent->m_entity);
+
         if (ImGui::CollapsingHeader("Anchor", ImGuiTreeNodeFlags_DefaultOpen))
         {
-          UI::ToggleButton("Anchor", { 50, 20 }, true);
+          UI::ToggleButton("Anchor", {50, 20}, true);
 
-          Surface* surface = static_cast<Surface*>(m_entity);
+          const Vec2 size = {canvasPanel->GetAABB(true).GetWidth(),
+                             canvasPanel->GetAABB(true).GetHeight()};
+          float res[]     = {size.x, size.y};
+          if (ImGui::InputFloat2("New resolution:", res))
+          {
+            canvasPanel->ApplyRecursivResizePolicy(res[0], res[1]);
+          }
 
-          if (((surface->m_anchorRatios[0] + surface->m_anchorRatios[1])
-                > 0.99f)
-            && ((surface->m_anchorRatios[2] + surface->m_anchorRatios[3])
-              > 0.99f))
+          if (((surface->m_anchorParams.m_anchorRatios[0] +
+                surface->m_anchorParams.m_anchorRatios[1]) > 0.99f) &&
+              ((surface->m_anchorParams.m_anchorRatios[2] +
+                surface->m_anchorParams.m_anchorRatios[3]) > 0.99f))
           {
             float position[2];
             Vec3 pos;
             float w = 0, h = 0;
-            if (surface->m_node->m_parent)
-            {
-              if (Entity* parent = surface->m_node->m_parent->m_entity)
-              {
-                if (parent->GetType() == EntityType::Entity_CanvasPanel)
-                {
-                  CanvasPanel* canvasPanel = static_cast<CanvasPanel*>(parent);
-                  pos = canvasPanel->m_node->GetTranslation(
-                    TransformationSpace::TS_WORLD);
-                  w = canvasPanel->GetSizeVal().x;
-                  h = canvasPanel->GetSizeVal().y;
-                  pos -= Vec3(w / 2.f, h / 2.f, 0.f);
-                  const Vec3 surfacePos = surface->m_node->GetTranslation(
-                    TransformationSpace::TS_WORLD);
-                  position[0] =
-                    surfacePos.x - (pos.x + w * surface->m_anchorRatios[0]);
-                  position[1] =
-                    surfacePos.y - (pos.y + h * surface->m_anchorRatios[2]);
 
-                  const Vec2 size = canvasPanel->GetSizeVal();
-                  float res[] = { size.x, size.y };
-                  if (ImGui::InputFloat2("New resolution:", res))
-                  {
-                    canvasPanel->ApplyRecursivResizePolicy(res[0], res[1]);
-                  }
-                }
-              }
+            {
+              pos = canvasPanel->m_node->GetTranslation(
+                  TransformationSpace::TS_WORLD);
+              w = canvasPanel->GetSizeVal().x;
+              h = canvasPanel->GetSizeVal().y;
+              pos -= Vec3(w / 2.f, h / 2.f, 0.f);
+              const Vec3 surfacePos = surface->m_node->GetTranslation(
+                  TransformationSpace::TS_WORLD);
+              position[0] =
+                  surfacePos.x -
+                  (pos.x + w * surface->m_anchorParams.m_anchorRatios[0]);
+              position[1] =
+                  surfacePos.y -
+                  (pos.y + h * surface->m_anchorParams.m_anchorRatios[2]);
             }
             ImGui::DragFloat(
-              "Position X", &position[0], 0.25f, pos.x, pos.x + w);
+                "Position X", &position[0], 0.25f, pos.x, pos.x + w);
             ImGui::DragFloat(
-                  "Position Y", &position[1], 0.25f, pos.y, pos.y + h);
+                "Position Y", &position[1], 0.25f, pos.y, pos.y + h);
           }
           else
           {
-            ImGui::DragFloat2(
-              "Horizontal", &surface->m_anchorRatios[0], 0.25f, 0.f, 1.f);
+            ImGui::DragFloat2("Horizontal",
+                              &surface->m_anchorParams.m_anchorRatios[0],
+                              0.25f,
+                              0.f,
+                              1.f);
 
-            ImGui::DragFloat2(
-              "Vertical", &surface->m_anchorRatios[2], 0.25f, 0.f, 1.f);
+            ImGui::DragFloat2("Vertical",
+                              &surface->m_anchorParams.m_anchorRatios[2],
+                              0.25f,
+                              0.f,
+                              1.f);
+          }
+
+          for (int i = 0; i < 4; i++)
+          {
+            ImGui::DragFloat(("Ratio " + std::to_string(i)).c_str(),
+                             &surface->m_anchorParams.m_anchorRatios[i],
+                             0.25f,
+                             0,
+                             1);
+          }
+
+          if (((surface->m_anchorParams.m_anchorRatios[2] +
+                surface->m_anchorParams.m_anchorRatios[3]) < 0.99f))
+          {
+            if (ImGui::DragFloat("Offset Top",
+                                 &surface->m_anchorParams.m_offsets[0]) ||
+                ImGui::DragFloat("Offset Bottom",
+                                 &surface->m_anchorParams.m_offsets[1]))
+            {
+              canvasPanel->ApplyRecursivResizePolicy(res[0], res[1]);
+            }
+          }
+
+          if (((surface->m_anchorParams.m_anchorRatios[0] +
+                surface->m_anchorParams.m_anchorRatios[1]) < 0.99f))
+          {
+            if (ImGui::DragFloat("Offset Left",
+                                 &surface->m_anchorParams.m_offsets[2]) ||
+                ImGui::DragFloat("Offset Right",
+                                 &surface->m_anchorParams.m_offsets[3]))
+            {
+              canvasPanel->ApplyRecursivResizePolicy(res[0], res[1]);
+            }
           }
 
           ImGui::Separator();
         }
       }
 
-      if
-      (
-        ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen)
-      )
+      if (ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen))
       {
         Mat3 rotate;
         Vec3 scale, shear;
@@ -922,16 +769,14 @@ namespace ToolKit
 
         // Continuous edit utils.
         static TransformAction* dragMem = nullptr;
-        const auto saveDragMemFn = [this]() -> void
-        {
+        const auto saveDragMemFn        = [this]() -> void {
           if (dragMem == nullptr)
           {
             dragMem = new TransformAction(m_entity);
           }
         };
 
-        const auto saveTransformActionFn = [this]() -> void
-        {
+        const auto saveTransformActionFn = [this]() -> void {
           if (ImGui::IsItemDeactivatedAfterEdit())
           {
             ActionManager::GetInstance()->AddAction(dragMem);
@@ -940,8 +785,8 @@ namespace ToolKit
         };
 
         TransformationSpace space = g_app->m_transformSpace;
-        Vec3 translate = glm::column(ts, 3);
-        Vec3 newTranslate = translate;
+        Vec3 translate            = glm::column(ts, 3);
+        Vec3 newTranslate         = translate;
         if (ImGui::DragFloat3("Translate", &newTranslate[0], 0.25f))
         {
           saveDragMemFn();
@@ -961,12 +806,12 @@ namespace ToolKit
 
         Quaternion q0 = glm::toQuat(rotate);
         Vec3 eularXYZ = glm::eulerAngles(q0);
-        Vec3 degrees = glm::degrees(eularXYZ);
+        Vec3 degrees  = glm::degrees(eularXYZ);
         if (ImGui::DragFloat3("Rotate", &degrees[0], 0.25f))
         {
           saveDragMemFn();
 
-          Vec3 eular = glm::radians(degrees);
+          Vec3 eular  = glm::radians(degrees);
           Vec3 change = eular - eularXYZ;
 
           bool isDrag = ImGui::IsMouseDragging(0, 0.25f);
@@ -978,7 +823,7 @@ namespace ToolKit
           Quaternion qx = glm::angleAxis(change.x, X_AXIS);
           Quaternion qy = glm::angleAxis(change.y, Y_AXIS);
           Quaternion qz = glm::angleAxis(change.z, Z_AXIS);
-          Quaternion q = qz * qy * qx;
+          Quaternion q  = qz * qy * qx;
 
           if (isDrag)
           {
@@ -1014,21 +859,16 @@ namespace ToolKit
 
         saveTransformActionFn();
 
-        if
-        (
-          ImGui::Checkbox("Inherit Scale", &m_entity->m_node->m_inheritScale)
-        )
+        if (ImGui::Checkbox("Inherit Scale", &m_entity->m_node->m_inheritScale))
         {
-          m_entity->m_node->SetInheritScaleDeep
-          (
-            m_entity->m_node->m_inheritScale
-          );
+          m_entity->m_node->SetInheritScaleDeep(
+              m_entity->m_node->m_inheritScale);
         }
 
         ImGui::Separator();
 
         BoundingBox bb = m_entity->GetAABB(true);
-        Vec3 dim = bb.max - bb.min;
+        Vec3 dim       = bb.max - bb.min;
         ImGui::Text("Bounding box dimensions:");
         ImGui::Text("x: %.2f", dim.x);
         ImGui::SameLine();
@@ -1044,7 +884,7 @@ namespace ToolKit
       {
         return;
       }
-      if(ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
+      if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
       {
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
 
@@ -1059,36 +899,27 @@ namespace ToolKit
 
         for (ULongID id : compRemove)
         {
-          ActionManager::GetInstance()->AddAction
-          (
-            new DeleteComponentAction(m_entity->GetComponent(id))
-          );
+          ActionManager::GetInstance()->AddAction(
+              new DeleteComponentAction(m_entity->GetComponent(id)));
         }
 
         // Remove billboards if necessary
-        std::static_pointer_cast<EditorScene>
-        (
-          GetSceneManager()->GetCurrentScene()
-        )->InitEntityBillboard(m_entity);
+        std::static_pointer_cast<EditorScene>(
+            GetSceneManager()->GetCurrentScene())
+            ->InitEntityBillboard(m_entity);
 
         ImGui::PushItemWidth(150);
         static bool addInAction = false;
         if (addInAction)
         {
           int dataType = 0;
-          if
-          (
-            ImGui::Combo
-            (
-              "##NewComponent",
-              &dataType,
-              "..."
-                "\0Mesh Component"
-                "\0Material Component"
-                "\0Environment Component"
-                "\0Animation Controller Component"
-            )
-          )
+          if (ImGui::Combo("##NewComponent",
+                           &dataType,
+                           "..."
+                           "\0Mesh Component"
+                           "\0Material Component"
+                           "\0Environment Component"
+                           "\0Animation Controller Component"))
           {
             Component* newComponent = nullptr;
             switch (dataType)
@@ -1104,7 +935,7 @@ namespace ToolKit
               break;
             case 4:
               newComponent = new AnimControllerComponent;
-            break;
+              break;
             default:
               break;
             }
@@ -1115,10 +946,9 @@ namespace ToolKit
               addInAction = false;
 
               // Add gizmo if needed
-              std::static_pointer_cast<EditorScene>
-              (
-                GetSceneManager()->GetCurrentScene()
-              )->AddBillboardToEntity(m_entity);
+              std::static_pointer_cast<EditorScene>(
+                  GetSceneManager()->GetCurrentScene())
+                  ->AddBillboardToEntity(m_entity);
             }
           }
         }
@@ -1155,15 +985,9 @@ namespace ToolKit
         }
 
         String varName =
-          category.Name + "##" + std::to_string(m_entity->GetIdVal());
-        if
-        (
-          ImGui::CollapsingHeader
-          (
-            varName.c_str(),
-            ImGuiTreeNodeFlags_DefaultOpen
-          )
-        )
+            category.Name + "##" + std::to_string(m_entity->GetIdVal());
+        if (ImGui::CollapsingHeader(varName.c_str(),
+                                    ImGuiTreeNodeFlags_DefaultOpen))
         {
           ParameterVariantRawPtrArray vars;
           m_entity->m_localData.GetByCategory(category.Name, vars);
@@ -1185,28 +1009,18 @@ namespace ToolKit
       for (VariantCategory& category : categories)
       {
         String varName = category.Name + "##" + std::to_string(comp->m_id);
-        bool isOpen = ImGui::TreeNodeEx
-        (
-          varName.c_str(),
-          ImGuiTreeNodeFlags_DefaultOpen | g_treeNodeFlags
-        );
+        bool isOpen    = ImGui::TreeNodeEx(
+            varName.c_str(), ImGuiTreeNodeFlags_DefaultOpen | g_treeNodeFlags);
 
         float offset = ImGui::GetContentRegionAvail().x - 10.0f;
         ImGui::SameLine(offset);
-        ImGui::PushID(static_cast<int> (comp->m_id));
-        if
-        (
-          UI::ImageButtonDecorless
-          (
-            UI::m_closeIcon->m_textureId,
-            ImVec2(15.0f, 15.0f),
-            false
-          ) &&
-          !removeComp
-        )
+        ImGui::PushID(static_cast<int>(comp->m_id));
+        if (UI::ImageButtonDecorless(
+                UI::m_closeIcon->m_textureId, ImVec2(15.0f, 15.0f), false) &&
+            !removeComp)
         {
           g_app->m_statusMsg = "Component " + category.Name + " removed.";
-          removeComp = true;
+          removeComp         = true;
         }
         ImGui::PopID();
 
@@ -1229,55 +1043,28 @@ namespace ToolKit
 
     void EntityView::ShowCustomData()
     {
-      auto showCustomDataFnc =
-      [this]
-      (
-        String headerName,
-        ParameterVariantRawPtrArray& vars,
-        bool isListEditable
-      )
-      {
-        if
-        (
-          ImGui::CollapsingHeader
-          (
-            headerName.c_str(),
-            ImGuiTreeNodeFlags_DefaultOpen
-          )
-        )
+      auto showCustomDataFnc = [this](String headerName,
+                                      ParameterVariantRawPtrArray& vars,
+                                      bool isListEditable) {
+        if (ImGui::CollapsingHeader(headerName.c_str(),
+                                    ImGuiTreeNodeFlags_DefaultOpen))
         {
-          if
-          (
-            ImGui::BeginTable
-            (
-              headerName.c_str(),
-              3,
-              ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedSame
-            )
-          )
+          if (ImGui::BeginTable(headerName.c_str(),
+                                3,
+                                ImGuiTableFlags_Resizable |
+                                    ImGuiTableFlags_SizingFixedSame))
           {
             Vec2 xSize = ImGui::CalcTextSize("Name");
             xSize *= 3.0f;
-            ImGui::TableSetupColumn
-            (
-              "Name",
-              ImGuiTableColumnFlags_WidthFixed,
-              xSize.x
-            );
-            ImGui::TableSetupColumn
-            (
-              "Value",
-              ImGuiTableColumnFlags_WidthStretch
-            );
+            ImGui::TableSetupColumn(
+                "Name", ImGuiTableColumnFlags_WidthFixed, xSize.x);
+            ImGui::TableSetupColumn("Value",
+                                    ImGuiTableColumnFlags_WidthStretch);
 
             xSize = ImGui::CalcTextSize("X");
             xSize *= 2.5f;
-            ImGui::TableSetupColumn
-            (
-              "##Remove",
-              ImGuiTableColumnFlags_WidthFixed,
-              xSize.x
-            );
+            ImGui::TableSetupColumn(
+                "##Remove", ImGuiTableColumnFlags_WidthFixed, xSize.x);
 
             ImGui::TableHeadersRow();
 
@@ -1307,77 +1094,64 @@ namespace ToolKit
               String pId = "##" + std::to_string(i);
               switch (var->GetType())
               {
-                case ParameterVariant::VariantType::String:
+              case ParameterVariant::VariantType::String: {
+                ImGui::InputText(pId.c_str(), var->GetVarPtr<String>());
+              }
+              break;
+              case ParameterVariant::VariantType::Bool: {
+                ImGui::Checkbox(pId.c_str(), var->GetVarPtr<bool>());
+              }
+              break;
+              case ParameterVariant::VariantType::Int: {
+                ImGui::InputInt(pId.c_str(), var->GetVarPtr<int>());
+              }
+              break;
+              case ParameterVariant::VariantType::Float: {
+                ImGui::DragFloat(pId.c_str(), var->GetVarPtr<float>(), 0.1f);
+              }
+              break;
+              case ParameterVariant::VariantType::Vec3: {
+                ImGui::DragFloat3(pId.c_str(), &var->GetVar<Vec3>()[0], 0.1f);
+              }
+              break;
+              case ParameterVariant::VariantType::Vec4: {
+                ImGui::DragFloat4(pId.c_str(), &var->GetVar<Vec4>()[0], 0.1f);
+              }
+              break;
+              case ParameterVariant::VariantType::Mat3: {
+                Vec3 vec;
+                Mat3 val = var->GetVar<Mat3>();
+                for (int j = 0; j < 3; j++)
                 {
-                  ImGui::InputText(pId.c_str(), var->GetVarPtr<String>());
+                  pId += std::to_string(j);
+                  vec = glm::row(val, j);
+                  ImGui::InputFloat3(pId.c_str(), &vec[0]);
+                  val  = glm::row(val, j, vec);
+                  *var = val;
                 }
-                break;
-                case ParameterVariant::VariantType::Bool:
+              }
+              break;
+              case ParameterVariant::VariantType::Mat4: {
+                Vec4 vec;
+                Mat4 val = var->GetVar<Mat4>();
+                for (int j = 0; j < 4; j++)
                 {
-                  ImGui::Checkbox(pId.c_str(), var->GetVarPtr<bool>());
+                  pId += std::to_string(j);
+                  vec = glm::row(val, j);
+                  ImGui::InputFloat4(pId.c_str(), &vec[0]);
+                  val  = glm::row(val, j, vec);
+                  *var = val;
                 }
-                break;
-                case ParameterVariant::VariantType::Int:
-                {
-                  ImGui::InputInt(pId.c_str(), var->GetVarPtr<int>());
-                }
-                break;
-                case ParameterVariant::VariantType::Float:
-                {
-                  ImGui::DragFloat(pId.c_str(), var->GetVarPtr<float>(), 0.1f);
-                }
-                break;
-                case ParameterVariant::VariantType::Vec3:
-                {
-                  ImGui::DragFloat3(pId.c_str(), &var->GetVar<Vec3>()[0], 0.1f);
-                }
-                break;
-                case ParameterVariant::VariantType::Vec4:
-                {
-                  ImGui::DragFloat4(pId.c_str(), &var->GetVar<Vec4>()[0], 0.1f);
-                }
-                break;
-                case ParameterVariant::VariantType::Mat3:
-                {
-                  Vec3 vec;
-                  Mat3 val = var->GetVar<Mat3>();
-                  for (int j = 0; j < 3; j++)
-                  {
-                    pId += std::to_string(j);
-                    vec = glm::row(val, j);
-                    ImGui::InputFloat3(pId.c_str(), &vec[0]);
-                    val = glm::row(val, j, vec);
-                    *var = val;
-                  }
-                }
-                break;
-                case ParameterVariant::VariantType::Mat4:
-                {
-                  Vec4 vec;
-                  Mat4 val = var->GetVar<Mat4>();
-                  for (int j = 0; j < 4; j++)
-                  {
-                    pId += std::to_string(j);
-                    vec = glm::row(val, j);
-                    ImGui::InputFloat4(pId.c_str(), &vec[0]);
-                    val = glm::row(val, j, vec);
-                    *var = val;
-                  }
-                }
-                break;
+              }
+              break;
               }
 
               ImGui::TableSetColumnIndex(2);
               if (isListEditable && ImGui::Button("X"))
               {
-                remove = vars[i];
-                g_app->m_statusMsg =
-                  Format
-                  (
-                    "Parameter %d: %s removed.",
-                    i + 1,
-                    var->m_name.c_str()
-                  );
+                remove             = vars[i];
+                g_app->m_statusMsg = Format(
+                    "Parameter %d: %s removed.", i + 1, var->m_name.c_str());
               }
 
               ImGui::PopID();
@@ -1396,50 +1170,46 @@ namespace ToolKit
             if (isListEditable && addInAction)
             {
               int dataType = 0;
-              if
-                (
-                ImGui::Combo
-                (
-                "##NewCustData",
-                &dataType,
-                "...\0String\0Boolean\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4"
-                )
-                )
+              if (ImGui::Combo(
+                      "##NewCustData",
+                      &dataType,
+                      "..."
+                      "\0String\0Boolean\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4"))
               {
                 ParameterVariant customVar;
                 // This makes them only visible in Custom Data dropdown.
-                customVar.m_exposed = false;
+                customVar.m_exposed  = false;
                 customVar.m_editable = true;
                 customVar.m_category = CustomDataCategory;
 
                 bool added = true;
                 switch (dataType)
                 {
-                  case 1:
+                case 1:
                   customVar = "";
                   break;
-                  case 2:
+                case 2:
                   customVar = false;
                   break;
-                  case 3:
+                case 3:
                   customVar = 0;
                   break;
-                  case 4:
+                case 4:
                   customVar = 0.0f;
                   break;
-                  case 5:
+                case 5:
                   customVar = ZERO;
                   break;
-                  case 6:
+                case 6:
                   customVar = Vec4();
                   break;
-                  case 7:
+                case 7:
                   customVar = Mat3();
                   break;
-                  case 8:
+                case 8:
                   customVar = Mat4();
                   break;
-                  default:
+                default:
                   added = false;
                   break;
                 }
@@ -1453,11 +1223,8 @@ namespace ToolKit
             }
             ImGui::PopItemWidth();
 
-            if
-            (
-              isListEditable
-              && UI::BeginCenteredTextButton("Add Custom Data")
-            )
+            if (isListEditable &&
+                UI::BeginCenteredTextButton("Add Custom Data"))
             {
               addInAction = true;
             }
@@ -1467,11 +1234,8 @@ namespace ToolKit
       };
 
       ParameterVariantRawPtrArray customParams;
-      m_entity->m_localData.GetByCategory
-      (
-        CustomDataCategory.Name,
-        customParams
-      );
+      m_entity->m_localData.GetByCategory(CustomDataCategory.Name,
+                                          customParams);
       showCustomDataFnc("Custom Data", customParams, true);
 
       if (m_entity->GetType() == EntityType::Entity_Prefab)
@@ -1481,11 +1245,8 @@ namespace ToolKit
         for (Node* root : prefab->m_node->m_children)
         {
           Entity* e = root->m_entity;
-          e->m_localData.GetByCategory
-          (
-            CustomDataCategory.Name,
-            inheritedParams
-          );
+          e->m_localData.GetByCategory(CustomDataCategory.Name,
+                                       inheritedParams);
         }
         showCustomDataFnc("Prefab Data", inheritedParams, false);
       }
@@ -1494,8 +1255,7 @@ namespace ToolKit
     // PropInspector
     //////////////////////////////////////////////////////////////////////////
 
-    PropInspector::PropInspector(XmlNode* node)
-      : PropInspector()
+    PropInspector::PropInspector(XmlNode* node) : PropInspector()
     {
       DeSerialize(nullptr, node);
     }
@@ -1537,20 +1297,14 @@ namespace ToolKit
 
     void PropInspector::DispatchSignals() const
     {
-      ModShortCutSignals
-      (
-        {
-          SDL_SCANCODE_DELETE,
-          SDL_SCANCODE_D,
-          SDL_SCANCODE_F,
-          SDL_SCANCODE_R,
-          SDL_SCANCODE_G,
-          SDL_SCANCODE_B,
-          SDL_SCANCODE_S
-        }
-      );
+      ModShortCutSignals({SDL_SCANCODE_DELETE,
+                          SDL_SCANCODE_D,
+                          SDL_SCANCODE_F,
+                          SDL_SCANCODE_R,
+                          SDL_SCANCODE_G,
+                          SDL_SCANCODE_B,
+                          SDL_SCANCODE_S});
     }
 
-  }  // namespace Editor
-}  // namespace ToolKit
-
+  } // namespace Editor
+} // namespace ToolKit

@@ -28,7 +28,7 @@ namespace ToolKit
     class EditorViewport : public Viewport, public Window
     {
      public:
-      explicit EditorViewport(XmlNode * node);
+      explicit EditorViewport(XmlNode* node);
       explicit EditorViewport(const Vec2& size);
       EditorViewport(float width, float height);
       virtual ~EditorViewport();
@@ -67,41 +67,32 @@ namespace ToolKit
       void AdjustZoom(float delta) override;
 
      private:
-      void LoadDragMesh
-      (
-        bool& meshLoaded,
-        DirectoryEntry dragEntry,
-        ImGuiIO io,
-        Entity** dwMesh,
-        LineBatch** boundingBox,
-        EditorScenePtr currScene
-      );
+      void LoadDragMesh(bool& meshLoaded,
+                        DirectoryEntry dragEntry,
+                        ImGuiIO io,
+                        Entity** dwMesh,
+                        LineBatch** boundingBox,
+                        EditorScenePtr currScene);
 
-      Vec3 CalculateDragMeshPosition
-      (
-        bool& meshLoaded,
-        EditorScenePtr currScene,
-        Entity* dwMesh,
-        LineBatch** boundingBox
-      );
+      Vec3 CalculateDragMeshPosition(bool& meshLoaded,
+                                     EditorScenePtr currScene,
+                                     Entity* dwMesh,
+                                     LineBatch** boundingBox);
 
-      void HandleDropMesh
-      (
-        bool& meshLoaded,
-        bool& meshAddedToScene,
-        EditorScenePtr currScene,
-        Entity** dwMesh,
-        LineBatch** boundingBox
-      );
+      void HandleDropMesh(bool& meshLoaded,
+                          bool& meshAddedToScene,
+                          EditorScenePtr currScene,
+                          Entity** dwMesh,
+                          LineBatch** boundingBox);
 
      public:
       // Window properties.
       static std::vector<class OverlayUI*> m_overlays;
-      bool m_mouseOverOverlay = false;
+      bool m_mouseOverOverlay           = false;
       CameraAlignment m_cameraAlignment = CameraAlignment::Free;
-      int m_additionalWindowFlags = 0;
-      bool m_orbitLock = false;
-      Vec3 m_snapDeltas;  // X: Translation, Y: Rotation, Z: Scale
+      int m_additionalWindowFlags       = 0;
+      bool m_orbitLock                  = false;
+      Vec3 m_snapDeltas; // X: Translation, Y: Rotation, Z: Scale
 
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;
@@ -117,5 +108,5 @@ namespace ToolKit
       bool m_needsResize      = false;
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

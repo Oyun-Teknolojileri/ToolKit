@@ -9,7 +9,6 @@
 
 namespace ToolKit
 {
-
   namespace Editor
   {
 
@@ -59,7 +58,7 @@ namespace ToolKit
      public:
       ~ModManager();
 
-      ModManager(ModManager const&) = delete;
+      ModManager(ModManager const&)     = delete;
       void operator=(ModManager const&) = delete;
 
       void Init();
@@ -127,7 +126,10 @@ namespace ToolKit
       void TransitionIn(State* prevState) override;
       SignalId Update(float deltaTime) override;
       String Signaled(SignalId signal) override;
-      String GetType() override { return StateType::StateBeginPick; }
+      String GetType() override
+      {
+        return StateType::StateBeginPick;
+      }
     };
 
     class StateBeginBoxPick : public StatePickingBase
@@ -135,7 +137,10 @@ namespace ToolKit
      public:
       SignalId Update(float deltaTime) override;
       String Signaled(SignalId signal) override;
-      String GetType() override { return StateType::StateBeginBoxPick; }
+      String GetType() override
+      {
+        return StateType::StateBeginBoxPick;
+      }
 
      private:
       void GetMouseRect(Vec2& min, Vec2& max);
@@ -146,7 +151,10 @@ namespace ToolKit
      public:
       SignalId Update(float deltaTime) override;
       String Signaled(SignalId signal) override;
-      String GetType() override { return StateType::StateEndPick; }
+      String GetType() override
+      {
+        return StateType::StateEndPick;
+      }
     };
 
     class StateDeletePick : public StatePickingBase
@@ -154,7 +162,10 @@ namespace ToolKit
      public:
       SignalId Update(float deltaTime) override;
       String Signaled(SignalId signal) override;
-      String GetType() override { return StateType::StateDeletePick; }
+      String GetType() override
+      {
+        return StateType::StateDeletePick;
+      }
     };
 
     class StateDuplicate : public State
@@ -164,7 +175,10 @@ namespace ToolKit
       void TransitionOut(State* nextState) override;
       SignalId Update(float deltaTime) override;
       String Signaled(SignalId signal) override;
-      String GetType() override { return StateType::StateDuplicate; };
+      String GetType() override
+      {
+        return StateType::StateDuplicate;
+      };
     };
 
     // Mods
@@ -188,5 +202,5 @@ namespace ToolKit
       void Update(float deltaTime) override;
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

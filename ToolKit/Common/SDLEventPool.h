@@ -41,7 +41,7 @@ namespace ToolKit
       MouseEvent* me = new MouseEvent();
       Main::GetInstance()->m_eventPool.push_back(me);
 
-      me->m_action = EventAction::Move;
+      me->m_action    = EventAction::Move;
       me->absolute[0] = e.motion.x;
       me->absolute[1] = e.motion.y;
       me->relative[0] = e.motion.xrel;
@@ -53,7 +53,7 @@ namespace ToolKit
       MouseEvent* me = new MouseEvent();
       Main::GetInstance()->m_eventPool.push_back(me);
 
-      me->m_action = EventAction::Scroll;
+      me->m_action  = EventAction::Scroll;
       me->scroll[0] = e.wheel.x;
       me->scroll[1] = e.wheel.y;
     }
@@ -75,7 +75,7 @@ namespace ToolKit
       }
 
       ke->m_keyCode = e.key.keysym.sym;
-      ke->m_mode = modState;
+      ke->m_mode    = modState;
     }
   }
 
@@ -89,4 +89,4 @@ namespace ToolKit
     pool.clear();
   }
 
-}
+} // namespace ToolKit

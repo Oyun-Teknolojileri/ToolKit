@@ -13,7 +13,7 @@
 
 namespace ToolKit
 {
-  static VariantCategory CanvasPanelCategory { "CanvasPanel", 90 };
+  static VariantCategory CanvasPanelCategory{"CanvasPanel", 90};
 
   class TK_API CanvasPanel : public Surface
   {
@@ -42,4 +42,4 @@ namespace ToolKit
     SurfaceEventCallback m_onMouseEnterLocal;
     SurfaceEventCallback m_onMouseExitLocal;
   };
-}  //  namespace ToolKit
+} //  namespace ToolKit

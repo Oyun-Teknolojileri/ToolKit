@@ -1,9 +1,9 @@
 #pragma once
 
 /**
-* @file ToolKit.h Header for Main, the manager class to access all the 
-* functionalities of the ToolKit framework.
-*/
+ * @file ToolKit.h Header for Main, the manager class to access all the
+ * functionalities of the ToolKit framework.
+ */
 
 #include <limits>
 
@@ -36,55 +36,55 @@
 #include "FileManager.h"
 
 /**
-* Base name space for all the ToolKit functionalities.
-*/
+ * Base name space for all the ToolKit functionalities.
+ */
 namespace ToolKit
 {
 
   /**
-  * A class that Provides a unique handle when needed.
-  */
+   * A class that Provides a unique handle when needed.
+   */
   class TK_API HandleManager
   {
    public:
     /**
-    * Creates a handle that has not been allocated within the current runtime.
-    * Increments the m_baseHandle by one.
-    * @return A unique handle for the current runtime.
-    */
+     * Creates a handle that has not been allocated within the current runtime.
+     * Increments the m_baseHandle by one.
+     * @return A unique handle for the current runtime.
+     */
     ULongID GetNextHandle();
 
     /**
-    * This function allows to set the m_baseHandle to maximum of
-    * val and m_baseHandle. That is m_baseHandle = max(m_baseHandle, val).
-    * @param val The value to compare with current handle.
-    */
+     * This function allows to set the m_baseHandle to maximum of
+     * val and m_baseHandle. That is m_baseHandle = max(m_baseHandle, val).
+     * @param val The value to compare with current handle.
+     */
     void SetMaxHandle(ULongID val);
 
    private:
-    ULongID m_baseHandle = 1000;  //!< Starting value of the handles.
+    ULongID m_baseHandle = 1000; //!< Starting value of the handles.
     ULongID m_maxIdLimit = (std::numeric_limits<uint64_t>::max() / 10) * 9;
   };
 
   class TK_API EngineSettings : public Serializable
   {
    public:
-     struct WindowSettings
-     {
-       String Name = "ToolKit";
-       uint Width = 1024;
-       uint Height = 768;
-       bool FullScreen = false;
-     } Window;
+    struct WindowSettings
+    {
+      String Name     = "ToolKit";
+      uint Width      = 1024;
+      uint Height     = 768;
+      bool FullScreen = false;
+    } Window;
 
-     struct GraphicSettings
-     {
-       uint MSAA = 2;
-       uint FPS = 60;
-     } Graphics;
+    struct GraphicSettings
+    {
+      uint MSAA = 2;
+      uint FPS  = 60;
+    } Graphics;
 
-     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
-     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
   };
 
   class TK_API Main
@@ -93,7 +93,7 @@ namespace ToolKit
     Main();
     virtual ~Main();
 
-    Main(Main const&) = delete;
+    Main(Main const&)           = delete;
     void operator=(Main const&) = delete;
 
     virtual void PreInit();
@@ -105,27 +105,27 @@ namespace ToolKit
     static void SetProxy(Main* proxy);
 
    public:
-    AnimationManager* m_animationMan = nullptr;
-    AnimationPlayer* m_animationPlayer = nullptr;
-    AudioManager* m_audioMan = nullptr;
-    MaterialManager* m_materialManager = nullptr;
-    MeshManager* m_meshMan = nullptr;
-    ShaderManager* m_shaderMan = nullptr;
+    AnimationManager* m_animationMan     = nullptr;
+    AnimationPlayer* m_animationPlayer   = nullptr;
+    AudioManager* m_audioMan             = nullptr;
+    MaterialManager* m_materialManager   = nullptr;
+    MeshManager* m_meshMan               = nullptr;
+    ShaderManager* m_shaderMan           = nullptr;
     SpriteSheetManager* m_spriteSheetMan = nullptr;
-    TextureManager* m_textureMan = nullptr;
-    SceneManager* m_sceneManager = nullptr;
-    PluginManager* m_pluginManager = nullptr;
-    Renderer* m_renderer = nullptr;
-    Logger* m_logger = nullptr;
-    UIManager* m_uiManager = nullptr;
-    SkeletonManager* m_skeletonManager = nullptr;
+    TextureManager* m_textureMan         = nullptr;
+    SceneManager* m_sceneManager         = nullptr;
+    PluginManager* m_pluginManager       = nullptr;
+    Renderer* m_renderer                 = nullptr;
+    Logger* m_logger                     = nullptr;
+    UIManager* m_uiManager               = nullptr;
+    SkeletonManager* m_skeletonManager   = nullptr;
     HandleManager m_handleManager;
     FileManager* m_fileManager = nullptr;
 
     EntityFactory* m_entityFactory = nullptr;
 
     bool m_preInitiated = false;
-    bool m_initiated = false;
+    bool m_initiated    = false;
     String m_resourceRoot;
     EventPool m_eventPool;
     EngineSettings m_engineSettings;
@@ -171,4 +171,4 @@ namespace ToolKit
   TK_API String ScenePath(const String& file, bool def = false);
   TK_API String PrefabPath(const String& file, bool def = false);
 
-}  // namespace ToolKit
+} // namespace ToolKit

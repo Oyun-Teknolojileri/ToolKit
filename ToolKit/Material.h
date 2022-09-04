@@ -59,4 +59,4 @@ namespace ToolKit
     MaterialPtr GetCopyOfDefaultMaterial();
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

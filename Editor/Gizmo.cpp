@@ -27,15 +27,16 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     EditorBillboardBase::EditorBillboardBase(const Settings& settings)
-      : Billboard(settings)
+        : Billboard(settings)
     {
     }
 
     void EditorBillboardBase::Generate()
     {
       MeshComponentPtr parentMeshComp = GetComponent<MeshComponent>();
-      MeshPtr parentMesh = parentMeshComp->GetMeshVal();
+      MeshPtr parentMesh              = parentMeshComp->GetMeshVal();
       parentMesh->UnInit();
 
       // Billboard
@@ -45,12 +46,9 @@ namespace ToolKit
       meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
       meshPtr->m_material->UnInit();
       meshPtr->m_material->m_diffuseTexture =
-      GetTextureManager()->Create<Texture>
-      (
-        m_imagePath
-      );
+          GetTextureManager()->Create<Texture>(m_imagePath);
       meshPtr->m_material->GetRenderState()->blendFunction =
-        BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+          BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
       meshPtr->m_material->Init();
 
       meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
@@ -59,8 +57,7 @@ namespace ToolKit
       parentMesh->CalculateAABB();
     }
 
-    Cursor::Cursor()
-      : EditorBillboardBase({ true, 10.0f, 60.0f })
+    Cursor::Cursor() : EditorBillboardBase({true, 10.0f, 60.0f})
     {
       Generate();
     }
@@ -77,7 +74,7 @@ namespace ToolKit
     void Cursor::Generate()
     {
       MeshComponentPtr parentMeshComp = GetComponent<MeshComponent>();
-      MeshPtr parentMesh = parentMeshComp->GetMeshVal();
+      MeshPtr parentMesh              = parentMeshComp->GetMeshVal();
       parentMesh->UnInit();
 
       // Billboard
@@ -87,12 +84,10 @@ namespace ToolKit
       meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
       meshPtr->m_material->UnInit();
       meshPtr->m_material->m_diffuseTexture =
-      GetTextureManager()->Create<Texture>
-      (
-        TexturePath(ConcatPaths({ "Icons", "cursor4k.png" }), true)
-      );
+          GetTextureManager()->Create<Texture>(
+              TexturePath(ConcatPaths({"Icons", "cursor4k.png"}), true));
       meshPtr->m_material->GetRenderState()->blendFunction =
-      BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+          BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
       meshPtr->m_material->Init();
 
       meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
@@ -121,19 +116,18 @@ namespace ToolKit
       vertices[11].pos.y = -0.7f;
 
       MaterialPtr newMaterial =
-      GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-      newMaterial->m_color = Vec3(0.1f, 0.1f, 0.1f);
-      newMaterial->GetRenderState()->drawType = DrawType::Line;
+          GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      newMaterial->m_color                            = Vec3(0.1f, 0.1f, 0.1f);
+      newMaterial->GetRenderState()->drawType         = DrawType::Line;
       newMaterial->GetRenderState()->depthTestEnabled = false;
 
       parentMesh->m_clientSideVertices = vertices;
-      parentMesh->m_material = newMaterial;
+      parentMesh->m_material           = newMaterial;
 
       parentMesh->CalculateAABB();
     }
 
-    Axis3d::Axis3d()
-      : EditorBillboardBase({ false, 10.0f, 60.0f })
+    Axis3d::Axis3d() : EditorBillboardBase({false, 10.0f, 60.0f})
     {
       Generate();
     }
@@ -167,7 +161,7 @@ namespace ToolKit
 
         Arrow2d arrow(t);
         MeshComponentPtr arrowMeshComp = arrow.GetComponent<MeshComponent>();
-        MeshPtr arrowMesh = arrowMeshComp->GetMeshVal();
+        MeshPtr arrowMesh              = arrowMeshComp->GetMeshVal();
         arrowMesh->m_material->GetRenderState()->depthTestEnabled = false;
         if (i == 0)
         {
@@ -195,12 +189,8 @@ namespace ToolKit
     {
       m_params = params;
 
-      Vec3 dir = AXIS[static_cast<int>(params.axis) % 3];
-      std::vector<Vec3> pnts =
-      {
-        dir * params.toeTip.x,
-        dir * params.toeTip.y
-      };
+      Vec3 dir               = AXIS[static_cast<int>(params.axis) % 3];
+      std::vector<Vec3> pnts = {dir * params.toeTip.x, dir * params.toeTip.y};
 
       m_mesh = std::make_shared<Mesh>();
 
@@ -209,20 +199,20 @@ namespace ToolKit
       m_mesh->m_subMeshes.push_back(lnMesh);
 
       MaterialPtr material =
-      GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+          GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       material->m_color = params.color;
 
       if (params.type == SolidType::Cube)
       {
         Cube solid(params.solidDim);
-        MeshPtr mesh = solid.GetComponent<MeshComponent>()->GetMeshVal();
+        MeshPtr mesh     = solid.GetComponent<MeshComponent>()->GetMeshVal();
         mesh->m_material = material;
         m_mesh->m_subMeshes.push_back(mesh);
       }
       else if (params.type == SolidType::Cone)
       {
-        Cone solid({ params.solidDim.y, params.solidDim.x, 10, 10 });
-        MeshPtr mesh = solid.GetComponent<MeshComponent>()->GetMeshVal();
+        Cone solid({params.solidDim.y, params.solidDim.x, 10, 10});
+        MeshPtr mesh     = solid.GetComponent<MeshComponent>()->GetMeshVal();
         mesh->m_material = material;
         m_mesh->m_subMeshes.push_back(mesh);
       }
@@ -253,13 +243,9 @@ namespace ToolKit
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
-        int axisInd = static_cast<int>(m_params.axis);
-        Vec3 axis = AXIS[axisInd];
-        Vec3Array pnts =
-        {
-          axis * 999.0f,
-          axis * -999.0f
-        };
+        int axisInd    = static_cast<int>(m_params.axis);
+        Vec3 axis      = AXIS[axisInd];
+        Vec3Array pnts = {axis * 999.0f, axis * -999.0f};
 
         LineBatch guide(pnts, g_gizmoColor[axisInd % 3], DrawType::Line, 1.0f);
         MeshPtr guideMesh = guide.GetComponent<MeshComponent>()->GetMeshVal();
@@ -271,10 +257,10 @@ namespace ToolKit
     {
       // Hit test done in object space bounding boxes.
       Mat4 transform = GetTransform();
-      Mat4 its = glm::inverse(transform);
+      Mat4 its       = glm::inverse(transform);
 
       Ray rayInObj;
-      rayInObj.position = its * Vec4(ray.position, 1.0f);
+      rayInObj.position  = its * Vec4(ray.position, 1.0f);
       rayInObj.direction = its * Vec4(ray.direction, 0.0f);
 
       m_mesh->CalculateAABB();
@@ -283,9 +269,9 @@ namespace ToolKit
 
     Mat4 GizmoHandle::GetTransform() const
     {
-      Mat4 sc = glm::scale(Mat4(), m_params.scale);
-      Mat4 rt = Mat4(m_params.normals);
-      Mat4 ts = glm::translate(Mat4(), m_params.translate);
+      Mat4 sc        = glm::scale(Mat4(), m_params.scale);
+      Mat4 rt        = Mat4(m_params.normals);
+      Mat4 ts        = glm::translate(Mat4(), m_params.translate);
       Mat4 transform = ts * rt * sc;
 
       return transform;
@@ -324,22 +310,22 @@ namespace ToolKit
 
       LineBatch circle(corners, params.color, DrawType::LineStrip, 4.0f);
       MeshPtr circleMesh = circle.GetComponent<MeshComponent>()->GetMeshVal();
-      m_mesh = circleMesh;
+      m_mesh             = circleMesh;
 
       // Guide line.
       if (!glm::isNull(params.grabPnt, glm::epsilon<float>()))
       {
         // Bring the grab point to object space.
         Vec3 glcl = params.grabPnt - params.worldLoc;
-        glcl = glm::normalize(glm::inverse(params.normals) * glcl);
+        glcl      = glm::normalize(glm::inverse(params.normals) * glcl);
 
         int axisIndx = static_cast<int>(params.axis);
-        Vec3 axis = AXIS[axisIndx];
+        Vec3 axis    = AXIS[axisIndx];
 
         // Neighbor points for parallel line.
-        Vec3 p1 = glm::normalize(glm::angleAxis(0.0001f, axis) * glcl);
-        Vec3 p2 = glm::normalize(glm::angleAxis(-0.0001f, axis) * glcl);
-        Vec3 dir = glm::normalize(p1 - p2);
+        Vec3 p1      = glm::normalize(glm::angleAxis(0.0001f, axis) * glcl);
+        Vec3 p2      = glm::normalize(glm::angleAxis(-0.0001f, axis) * glcl);
+        Vec3 dir     = glm::normalize(p1 - p2);
         m_tangentDir = glm::normalize(params.normals * dir);
 
         Vec3Array pnts;
@@ -356,26 +342,22 @@ namespace ToolKit
     {
       t = TK_FLT_MAX;
 
-      Mat4 sc = glm::scale(Mat4(), m_params.scale);
-      Mat4 rt = Mat4(m_params.normals);
-      Mat4 ts = glm::translate(Mat4(), m_params.translate);
+      Mat4 sc        = glm::scale(Mat4(), m_params.scale);
+      Mat4 rt        = Mat4(m_params.normals);
+      Mat4 ts        = glm::translate(Mat4(), m_params.translate);
       Mat4 transform = ts * rt * sc;
-      Mat4 its = glm::inverse(transform);
+      Mat4 its       = glm::inverse(transform);
 
       Ray rayInObj;
-      rayInObj.position = its * Vec4(ray.position, 1.0f);
+      rayInObj.position  = its * Vec4(ray.position, 1.0f);
       rayInObj.direction = its * Vec4(ray.direction, 0.0f);
 
       for (size_t i = 1; i < m_mesh->m_clientSideVertices.size(); i++)
       {
-        Vec3& v1 = m_mesh->m_clientSideVertices[i - 1].pos;
-        Vec3& v2 = m_mesh->m_clientSideVertices[i].pos;
-        Vec3 mid = (v1 + v2) * 0.5f;
-        BoundingBox bb =
-        {
-          mid - Vec3(0.05f),
-          mid + Vec3(0.05f)
-        };
+        Vec3& v1       = m_mesh->m_clientSideVertices[i - 1].pos;
+        Vec3& v2       = m_mesh->m_clientSideVertices[i].pos;
+        Vec3 mid       = (v1 + v2) * 0.5f;
+        BoundingBox bb = {mid - Vec3(0.05f), mid + Vec3(0.05f)};
 
         float tInt;
         if (RayBoxIntersection(rayInObj, bb, tInt))
@@ -418,15 +400,15 @@ namespace ToolKit
 
       Quad solid;
       MaterialPtr material =
-      GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-      material->m_color = params.color;
+          GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+      material->m_color                    = params.color;
       material->GetRenderState()->cullMode = CullingType::TwoSided;
 
-      MeshPtr mesh = solid.GetMeshComponent()->GetMeshVal();
+      MeshPtr mesh     = solid.GetMeshComponent()->GetMeshVal();
       mesh->m_material = material;
-      m_mesh = mesh;
+      m_mesh           = mesh;
 
-      float scale = 0.15f;
+      float scale  = 0.15f;
       float offset = 2.0f;
 
       for (Vertex& v : m_mesh->m_clientSideVertices)
@@ -472,7 +454,7 @@ namespace ToolKit
               glcl + AXIS[i] * -999.0f
             },
             g_gizmoColor[i],
-            DrawType::Line, 
+            DrawType::Line,
             1.0f
           );
         }
@@ -494,14 +476,14 @@ namespace ToolKit
 
     bool QuadHandle::HitTest(const Ray& ray, float& t) const
     {
-      Mat4 sc = glm::scale(Mat4(), m_params.scale);
-      Mat4 rt = Mat4(m_params.normals);
-      Mat4 ts = glm::translate(Mat4(), m_params.translate);
+      Mat4 sc        = glm::scale(Mat4(), m_params.scale);
+      Mat4 rt        = Mat4(m_params.normals);
+      Mat4 ts        = glm::translate(Mat4(), m_params.translate);
       Mat4 transform = ts * rt * sc;
-      Mat4 its = glm::inverse(transform);
+      Mat4 its       = glm::inverse(transform);
 
       Ray rayInObj;
-      rayInObj.position = its * Vec4(ray.position, 1.0f);
+      rayInObj.position  = its * Vec4(ray.position, 1.0f);
       rayInObj.direction = its * Vec4(ray.direction, 0.0f);
 
       m_mesh->CalculateAABB();
@@ -511,8 +493,7 @@ namespace ToolKit
     // Gizmo
     //////////////////////////////////////////////////////////////////////////
 
-    Gizmo::Gizmo(const Billboard::Settings& set)
-      : EditorBillboardBase(set)
+    Gizmo::Gizmo(const Billboard::Settings& set) : EditorBillboardBase(set)
     {
       m_grabbedAxis = AxisLabel::None;
     }
@@ -545,7 +526,7 @@ namespace ToolKit
           if (t < tMin)
           {
             tMin = t;
-            hit = static_cast<AxisLabel>(m_handles[i]->m_params.axis);
+            hit  = static_cast<AxisLabel>(m_handles[i]->m_params.axis);
           }
         }
       }
@@ -555,12 +536,8 @@ namespace ToolKit
 
     bool Gizmo::IsLocked(AxisLabel axis) const
     {
-      return std::find
-      (
-        m_lockedAxis.begin(),
-        m_lockedAxis.end(),
-        axis
-      ) != m_lockedAxis.end();
+      return std::find(m_lockedAxis.begin(), m_lockedAxis.end(), axis) !=
+             m_lockedAxis.end();
     }
 
     void Gizmo::Lock(AxisLabel axis)
@@ -574,16 +551,9 @@ namespace ToolKit
 
     void Gizmo::UnLock(AxisLabel axis)
     {
-      m_lockedAxis.erase
-      (
-        std::remove
-        (
-          m_lockedAxis.begin(),
-          m_lockedAxis.end(),
-          axis
-        ),
-        m_lockedAxis.end()
-      );
+      m_lockedAxis.erase(
+          std::remove(m_lockedAxis.begin(), m_lockedAxis.end(), axis),
+          m_lockedAxis.end());
     }
 
     bool Gizmo::IsGrabbed(AxisLabel axis) const
@@ -622,10 +592,10 @@ namespace ToolKit
     GizmoHandle::Params Gizmo::GetParam() const
     {
       GizmoHandle::Params p;
-      p.normals = m_normalVectors;
-      p.worldLoc = m_worldLocation;
+      p.normals    = m_normalVectors;
+      p.worldLoc   = m_worldLocation;
       p.initialPnt = m_initialPoint;
-      Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
+      Mat4 ts      = m_node->GetTransform(TransformationSpace::TS_WORLD);
       DecomposeMatrix(ts, &p.translate, nullptr, &p.scale);
 
       return p;
@@ -634,15 +604,9 @@ namespace ToolKit
     // LinearGizmo
     //////////////////////////////////////////////////////////////////////////
 
-    LinearGizmo::LinearGizmo()
-      : Gizmo({ false, 6.0f, 60.0f })
+    LinearGizmo::LinearGizmo() : Gizmo({false, 6.0f, 60.0f})
     {
-      m_handles =
-      {
-        new GizmoHandle(),
-        new GizmoHandle(),
-        new GizmoHandle()
-      };
+      m_handles = {new GizmoHandle(), new GizmoHandle(), new GizmoHandle()};
       m_handles[0]->m_params.axis = AxisLabel::X;
       m_handles[1]->m_params.axis = AxisLabel::Y;
       m_handles[2]->m_params.axis = AxisLabel::Z;
@@ -661,7 +625,7 @@ namespace ToolKit
       for (int i = 0; i < static_cast<int>(m_handles.size()); i++)
       {
         GizmoHandle* handle = m_handles[i];
-        AxisLabel axis = handle->m_params.axis;
+        AxisLabel axis      = handle->m_params.axis;
         if (m_grabbedAxis == axis)
         {
           p.color = g_selectHighLightPrimaryColor;
@@ -677,7 +641,7 @@ namespace ToolKit
         }
         else if (m_lastHovered == axis)
         {
-          p.color = g_selectHighLightSecondaryColor;
+          p.color       = g_selectHighLightSecondaryColor;
           m_lastHovered = AxisLabel::None;
         }
 
@@ -708,15 +672,15 @@ namespace ToolKit
       const float tip = 0.8f, toe = 0.05f, rad = 0.1f;
 
       GizmoHandle::Params p;
-      p.normals = m_normalVectors;
-      p.worldLoc = m_worldLocation;
+      p.normals    = m_normalVectors;
+      p.worldLoc   = m_worldLocation;
       p.initialPnt = m_initialPoint;
-      Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
+      Mat4 ts      = m_node->GetTransform(TransformationSpace::TS_WORLD);
       DecomposeMatrix(ts, &p.translate, nullptr, &p.scale);
 
       p.solidDim.xyz = Vec3(rad, 1.0f - tip, rad);
-      p.toeTip = Vec3(toe, tip, 0.0f);
-      p.type = GizmoHandle::SolidType::Cone;
+      p.toeTip       = Vec3(toe, tip, 0.0f);
+      p.type         = GizmoHandle::SolidType::Cone;
 
       return p;
     }
@@ -747,21 +711,15 @@ namespace ToolKit
     GizmoHandle::Params ScaleGizmo::GetParam() const
     {
       GizmoHandle::Params p = LinearGizmo::GetParam();
-      p.solidDim = Vec3(0.15f);
-      p.type = GizmoHandle::SolidType::Cube;
+      p.solidDim            = Vec3(0.15f);
+      p.type                = GizmoHandle::SolidType::Cube;
 
       return p;
     }
 
-    PolarGizmo::PolarGizmo()
-      : Gizmo({ false, 6.0f, 60.0f })
+    PolarGizmo::PolarGizmo() : Gizmo({false, 6.0f, 60.0f})
     {
-      m_handles =
-      {
-        new PolarHandle(),
-        new PolarHandle(),
-        new PolarHandle()
-      };
+      m_handles = {new PolarHandle(), new PolarHandle(), new PolarHandle()};
 
       Update(0.0f);
     }
@@ -780,10 +738,8 @@ namespace ToolKit
         m_handles[i]->m_mesh = nullptr;
       }
 
-      EditorViewport2d* viewport2D = dynamic_cast<EditorViewport2d*>
-        (
-        g_app->GetActiveViewport()
-        );
+      EditorViewport2d* viewport2D =
+          dynamic_cast<EditorViewport2d*>(g_app->GetActiveViewport());
       for (int i = 0; i < 3; i++)
       {
         // If gizmo is in 2D view, just generate Z axis
@@ -806,7 +762,7 @@ namespace ToolKit
         }
         else if (m_lastHovered == static_cast<AxisLabel>(i))
         {
-          p.color = g_selectHighLightSecondaryColor;
+          p.color       = g_selectHighLightSecondaryColor;
           m_lastHovered = AxisLabel::None;
         }
 
@@ -842,8 +798,10 @@ namespace ToolKit
       if (sphere == nullptr)
       {
         sphere = std::make_shared<Sphere>(1.0f);
-        sphere->GetMeshComponent()->GetMeshVal()->
-          m_material->GetRenderState()->cullMode = CullingType::Front;
+        sphere->GetMeshComponent()
+            ->GetMeshVal()
+            ->m_material->GetRenderState()
+            ->cullMode = CullingType::Front;
       }
 
       *sphere->m_node = *m_node;
@@ -856,8 +814,7 @@ namespace ToolKit
       renderer->Render(this, cam);
     }
 
-    SkyBillboard::SkyBillboard()
-      : EditorBillboardBase({ true, 3.5f, 10.0f })
+    SkyBillboard::SkyBillboard() : EditorBillboardBase({true, 3.5f, 10.0f})
     {
       Generate();
     }
@@ -873,12 +830,11 @@ namespace ToolKit
 
     void SkyBillboard::Generate()
     {
-      m_imagePath = TexturePath(ConcatPaths({ "Icons", "sky.png" }), true);
+      m_imagePath = TexturePath(ConcatPaths({"Icons", "sky.png"}), true);
       EditorBillboardBase::Generate();
     }
 
-    LightBillboard::LightBillboard()
-      : EditorBillboardBase({ true, 3.5f, 10.0f })
+    LightBillboard::LightBillboard() : EditorBillboardBase({true, 3.5f, 10.0f})
     {
       Generate();
     }
@@ -894,18 +850,16 @@ namespace ToolKit
 
     void LightBillboard::Generate()
     {
-      m_imagePath = TexturePath
-      (
-        ConcatPaths({ "Icons", "light_point.png" }), true
-      );
+      m_imagePath =
+          TexturePath(ConcatPaths({"Icons", "light_point.png"}), true);
       EditorBillboardBase::Generate();
     }
 
     SpotLightGizmo::SpotLightGizmo(SpotLight* light)
     {
       m_circleVertexCount = 36;
-      m_identityMatrix = Mat4(1.0f);
-      m_rot = Mat4(1.0f);
+      m_identityMatrix    = Mat4(1.0f);
+      m_rot               = Mat4(1.0f);
 
       m_gizmoLineBatches.resize(4);
 
@@ -913,10 +867,7 @@ namespace ToolKit
       m_gizmoLineBatches[0] = new LineBatch();
 
       MeshComponent* mc = new MeshComponent();
-      mc->SetMeshVal
-      (
-        m_gizmoLineBatches[0]->GetMeshComponent()->GetMeshVal()
-      );
+      mc->SetMeshVal(m_gizmoLineBatches[0]->GetMeshComponent()->GetMeshVal());
       mc->GetMeshVal()->m_material->Init();
       AddComponent(mc);
 
@@ -929,20 +880,14 @@ namespace ToolKit
       m_gizmoLineBatches[2] = new LineBatch();
       m_gizmoLineBatches[3] = new LineBatch();
 
-      mesh->m_subMeshes.push_back
-      (
-        m_gizmoLineBatches[1]->GetComponent<MeshComponent>()->GetMeshVal()
-      );
+      mesh->m_subMeshes.push_back(
+          m_gizmoLineBatches[1]->GetComponent<MeshComponent>()->GetMeshVal());
 
-      mesh->m_subMeshes.push_back
-      (
-        m_gizmoLineBatches[2]->GetComponent<MeshComponent>()->GetMeshVal()
-      );
+      mesh->m_subMeshes.push_back(
+          m_gizmoLineBatches[2]->GetComponent<MeshComponent>()->GetMeshVal());
 
-      mesh->m_subMeshes.push_back
-      (
-        m_gizmoLineBatches[3]->GetComponent<MeshComponent>()->GetMeshVal()
-      );
+      mesh->m_subMeshes.push_back(
+          m_gizmoLineBatches[3]->GetComponent<MeshComponent>()->GetMeshVal());
 
       mesh->m_subMeshes[0]->m_material->Init();
       mesh->m_subMeshes[1]->m_material->Init();
@@ -952,28 +897,17 @@ namespace ToolKit
     void SpotLightGizmo::InitGizmo(Light* light)
     {
       assert(light->GetType() == EntityType::Entity_SpotLight);
-      SpotLight* sLight = static_cast<SpotLight*> (light);
+      SpotLight* sLight = static_cast<SpotLight*>(light);
 
       // Middle line
-      Vec3 d = Vec3(0.0f, 0.0f, -1.0f);
-      float r = sLight->GetRadiusVal();
-      m_pnts[0] = Vec3
-      (
-        ZERO
-      );
+      Vec3 d    = Vec3(0.0f, 0.0f, -1.0f);
+      float r   = sLight->GetRadiusVal();
+      m_pnts[0] = Vec3(ZERO);
 
-      m_pnts[1] = Vec3
-      (
-        d * r * 2.25f
-      );
+      m_pnts[1] = Vec3(d * r * 2.25f);
 
-      m_gizmoLineBatches[0]->Generate
-      (
-        m_pnts,
-        g_lightGizmoColor,
-        DrawType::Line,
-        1.0f
-      );
+      m_gizmoLineBatches[0]->Generate(
+          m_pnts, g_lightGizmoColor, DrawType::Line, 1.0f);
 
       // Calculating circles
       int zeroCount = 0;
@@ -1043,63 +977,51 @@ namespace ToolKit
 
       d = d * r;
 
-      float innerCircleRadius = r *
-        glm::tan(glm::radians(sLight->GetInnerAngleVal() / 2));
+      float innerCircleRadius =
+          r * glm::tan(glm::radians(sLight->GetInnerAngleVal() / 2));
 
-      float outerCircleRadius = r *
-        glm::tan(glm::radians(sLight->GetOuterAngleVal() / 2));
+      float outerCircleRadius =
+          r * glm::tan(glm::radians(sLight->GetOuterAngleVal() / 2));
 
-      Vec3 inStartPoint = d + per * innerCircleRadius;
-      Vec3 outStartPoint = d + per * outerCircleRadius;
+      Vec3 inStartPoint    = d + per * innerCircleRadius;
+      Vec3 outStartPoint   = d + per * outerCircleRadius;
       m_innerCirclePnts[0] = inStartPoint;
       m_outerCirclePnts[0] = outStartPoint;
 
       float deltaAngle = glm::two_pi<float>() / m_circleVertexCount;
-      m_rot = Mat4(1.0f);
+      m_rot            = Mat4(1.0f);
 
       for (int i = 1; i < m_circleVertexCount + 1; i++)
       {
         // Inner circle vertices
-        m_rot = glm::rotate(m_identityMatrix, deltaAngle, d);
-        inStartPoint = Vec3(m_rot * Vec4(inStartPoint, 1.0f));
+        m_rot                = glm::rotate(m_identityMatrix, deltaAngle, d);
+        inStartPoint         = Vec3(m_rot * Vec4(inStartPoint, 1.0f));
         m_innerCirclePnts[i] = inStartPoint;
 
         // Outer circle vertices
-        m_rot = glm::rotate(m_identityMatrix, deltaAngle, d);
-        outStartPoint = Vec3(m_rot * Vec4(outStartPoint, 1.0f));
+        m_rot                = glm::rotate(m_identityMatrix, deltaAngle, d);
+        outStartPoint        = Vec3(m_rot * Vec4(outStartPoint, 1.0f));
         m_outerCirclePnts[i] = outStartPoint;
       }
 
-      m_gizmoLineBatches[1]->Generate
-      (
-        m_innerCirclePnts,
-        g_lightGizmoColor,
-        DrawType::LineStrip, 1.0f
-      );
+      m_gizmoLineBatches[1]->Generate(
+          m_innerCirclePnts, g_lightGizmoColor, DrawType::LineStrip, 1.0f);
 
-      m_gizmoLineBatches[2]->Generate
-      (
-        m_outerCirclePnts,
-        g_lightGizmoColor,
-        DrawType::LineStrip, 1.0f
-      );
+      m_gizmoLineBatches[2]->Generate(
+          m_outerCirclePnts, g_lightGizmoColor, DrawType::LineStrip, 1.0f);
 
       // Cone
       int coneIndex = 0;
       for (int i = 0; i < m_circleVertexCount; i += 4)
       {
-        m_conePnts[coneIndex] = ZERO;;
+        m_conePnts[coneIndex] = ZERO;
+        ;
         m_conePnts[coneIndex + 1] = m_outerCirclePnts[i];
         coneIndex += 2;
       }
 
-      m_gizmoLineBatches[3]->Generate
-      (
-        m_conePnts,
-        g_lightGizmoColor,
-        DrawType::Line,
-        1.0f
-      );
+      m_gizmoLineBatches[3]->Generate(
+          m_conePnts, g_lightGizmoColor, DrawType::Line, 1.0f);
 
       GetLightMeshData<EditorSpotLight>(light);
     }
@@ -1111,10 +1033,7 @@ namespace ToolKit
       m_gizmoLineBatches[0] = new LineBatch();
 
       MeshComponent* mc = new MeshComponent();
-      mc->SetMeshVal
-      (
-        m_gizmoLineBatches[0]->GetMeshComponent()->GetMeshVal()
-      );
+      mc->SetMeshVal(m_gizmoLineBatches[0]->GetMeshComponent()->GetMeshVal());
 
       mc->GetMeshVal()->m_material->Init();
       AddComponent(mc);
@@ -1125,25 +1044,14 @@ namespace ToolKit
       assert(light->GetType() == EntityType::Entity_DirectionalLight);
 
       // Middle line
-      Vec3 d = Vec3(0.0f, 0.0f, -1.0f);
+      Vec3 d    = Vec3(0.0f, 0.0f, -1.0f);
       Vec3 norm = glm::normalize(d);
-      m_pnts[0] = Vec3
-      (
-        ZERO
-      );
+      m_pnts[0] = Vec3(ZERO);
 
-      m_pnts[1] = Vec3
-      (
-        d * 10.0f
-      );
+      m_pnts[1] = Vec3(d * 10.0f);
 
-      m_gizmoLineBatches[0]->Generate
-      (
-        m_pnts,
-        g_lightGizmoColor,
-        DrawType::Line,
-        1.0f
-      );
+      m_gizmoLineBatches[0]->Generate(
+          m_pnts, g_lightGizmoColor, DrawType::Line, 1.0f);
 
       GetLightMeshData<EditorDirectionalLight>(light);
     }
@@ -1162,25 +1070,18 @@ namespace ToolKit
 
       // Create gizmo meshes and materials
       MeshComponent* mc = new MeshComponent();
-      mc->SetMeshVal
-      (
-        m_gizmoLineBatches[0]->GetMeshComponent()->GetMeshVal()
-      );
+      mc->SetMeshVal(m_gizmoLineBatches[0]->GetMeshComponent()->GetMeshVal());
 
       mc->GetMeshVal()->m_material->Init();
       AddComponent(mc);
 
       MeshPtr mesh = mc->GetMeshVal();
-      mesh->m_subMeshes.push_back
-      (
-        m_gizmoLineBatches[1]->GetMeshComponent()->GetMeshVal()
-      );
+      mesh->m_subMeshes.push_back(
+          m_gizmoLineBatches[1]->GetMeshComponent()->GetMeshVal());
 
       mesh->m_subMeshes[0]->m_material->Init();
-      mesh->m_subMeshes.push_back
-      (
-        m_gizmoLineBatches[2]->GetMeshComponent()->GetMeshVal()
-      );
+      mesh->m_subMeshes.push_back(
+          m_gizmoLineBatches[2]->GetMeshComponent()->GetMeshVal());
 
       mesh->m_subMeshes[1]->m_material->Init();
     }
@@ -1188,44 +1089,33 @@ namespace ToolKit
     void PointLightGizmo::InitGizmo(Light* light)
     {
       assert(light->GetType() == EntityType::Entity_PointLight);
-      PointLight* pLight = static_cast<PointLight*> (light);
+      PointLight* pLight = static_cast<PointLight*>(light);
 
-      Vec3 up = Vec3(0.0f, 1.0f, 0.0f);
-      Vec3 right = Vec3(1.0f, 0.0f, 0.0f);
-      Vec3 forward = Vec3(0.0f, 0.0f, 1.0f);
+      Vec3 up          = Vec3(0.0f, 1.0f, 0.0f);
+      Vec3 right       = Vec3(1.0f, 0.0f, 0.0f);
+      Vec3 forward     = Vec3(0.0f, 0.0f, 1.0f);
       float deltaAngle = glm::two_pi<float>() / m_circleVertexCount;
 
-      Vec3 lightPos = pLight->m_node->GetTranslation
-      (
-        TransformationSpace::TS_WORLD
-      );
+      Vec3 lightPos =
+          pLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
-      auto drawCircleGizmo = [&pLight, &deltaAngle, this]
-      (
-        Vec3Array vertices,
-        const Vec3& axis,
-        const Vec3& perpAxis,
-        int lineBatchIndex
-      )
-      {
-        Vec3 startingPoint = perpAxis * pLight->GetRadiusVal();
-        vertices[0] = startingPoint;
+      auto drawCircleGizmo = [&pLight, &deltaAngle, this](Vec3Array vertices,
+                                                          const Vec3& axis,
+                                                          const Vec3& perpAxis,
+                                                          int lineBatchIndex) {
+        Vec3 startingPoint  = perpAxis * pLight->GetRadiusVal();
+        vertices[0]         = startingPoint;
         Mat4 idendityMatrix = Mat4(1.0f);
 
         for (int i = 1; i < m_circleVertexCount + 1; ++i)
         {
-          Mat4 rot = glm::rotate(idendityMatrix, deltaAngle, axis);
+          Mat4 rot      = glm::rotate(idendityMatrix, deltaAngle, axis);
           startingPoint = Vec3(rot * Vec4(startingPoint, 1.0f));
-          vertices[i] = startingPoint;
+          vertices[i]   = startingPoint;
         }
 
-        m_gizmoLineBatches[lineBatchIndex]->Generate
-        (
-          vertices,
-          g_lightGizmoColor,
-          DrawType::LineStrip,
-          1.0f
-        );
+        m_gizmoLineBatches[lineBatchIndex]->Generate(
+            vertices, g_lightGizmoColor, DrawType::LineStrip, 1.0f);
       };
 
       // Circle on XY plane
@@ -1261,16 +1151,15 @@ namespace ToolKit
     template <typename T>
     void LightGizmoBase::GetLightMeshData(Light* light)
     {
-      for
-      (
-        LineBatch* lb : static_cast<T*>(light)->m_gizmo->GetGizmoLineBatches()
-      )
+      for (LineBatch* lb :
+           static_cast<T*>(light)->m_gizmo->GetGizmoLineBatches())
       {
         MeshPtr lbMesh = lb->GetComponent<MeshComponent>()->GetMeshVal();
         lbMesh->Init();
-        static_cast<T*>(light)
-          ->m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(lbMesh);
+        static_cast<T*>(light)->m_gizmoMC->GetMeshVal()->m_subMeshes.push_back(
+            lbMesh);
       }
     }
-  }  // namespace Editor
-}  // namespace ToolKit
+
+  } // namespace Editor
+} // namespace ToolKit

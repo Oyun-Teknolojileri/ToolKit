@@ -22,21 +22,15 @@ namespace ToolKit
         MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
         material->UnInit();
         material->GetRenderState()->blendFunction =
-        BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+            BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
 
         material->GetRenderState()->cullMode = CullingType::TwoSided;
 
-        material->m_vertexShader =
-        GetShaderManager()->Create<Shader>
-        (
-          ShaderPath("gridVertex.shader", true)
-        );
+        material->m_vertexShader = GetShaderManager()->Create<Shader>(
+            ShaderPath("gridVertex.shader", true));
 
-        material->m_fragmetShader =
-        GetShaderManager()->Create<Shader>
-        (
-          ShaderPath("gridFragment.shader", true)
-        );
+        material->m_fragmetShader = GetShaderManager()->Create<Shader>(
+            ShaderPath("gridFragment.shader", true));
 
         material->GetRenderState()->priority = 100;
         material->Init();
@@ -44,10 +38,8 @@ namespace ToolKit
         GetMaterialManager()->m_storage[g_gridMaterialName] = material;
       }
 
-      GetMaterialComponent()->SetMaterialVal
-      (
-        GetMaterialManager()->Create<Material>(g_gridMaterialName)
-      );
+      GetMaterialComponent()->SetMaterialVal(
+          GetMaterialManager()->Create<Material>(g_gridMaterialName));
 
       // Create grid mesh.
       Resize(size, axis, cellSize);
@@ -66,40 +58,34 @@ namespace ToolKit
       // Rotate according to axis label and set origin axis line colors
       switch (axis)
       {
-        case AxisLabel::XY:
-          m_node->SetOrientation
-          (
-            glm::angleAxis(glm::radians(90.0f), Z_AXIS) *
-            RotationTo(X_AXIS, Y_AXIS)
-          );
-          m_horizontalAxisColor = g_gridAxisRed;
-          m_verticalAxisColor = g_gridAxisGreen;
+      case AxisLabel::XY:
+        m_node->SetOrientation(glm::angleAxis(glm::radians(90.0f), Z_AXIS) *
+                               RotationTo(X_AXIS, Y_AXIS));
+        m_horizontalAxisColor = g_gridAxisRed;
+        m_verticalAxisColor   = g_gridAxisGreen;
         break;
-        case AxisLabel::ZX:
-          m_node->SetOrientation(RotationTo(Z_AXIS, Y_AXIS));
-          m_horizontalAxisColor = g_gridAxisRed;
-          m_verticalAxisColor = g_gridAxisBlue;
+      case AxisLabel::ZX:
+        m_node->SetOrientation(RotationTo(Z_AXIS, Y_AXIS));
+        m_horizontalAxisColor = g_gridAxisRed;
+        m_verticalAxisColor   = g_gridAxisBlue;
         break;
-        case AxisLabel::YZ:
-          m_node->SetOrientation
-          (
-            glm::angleAxis(glm::radians(90.0f), Y_AXIS) *
-            RotationTo(X_AXIS, Y_AXIS)
-          );
-          m_horizontalAxisColor = g_gridAxisGreen;
-          m_verticalAxisColor = g_gridAxisBlue;
+      case AxisLabel::YZ:
+        m_node->SetOrientation(glm::angleAxis(glm::radians(90.0f), Y_AXIS) *
+                               RotationTo(X_AXIS, Y_AXIS));
+        m_horizontalAxisColor = g_gridAxisGreen;
+        m_verticalAxisColor   = g_gridAxisBlue;
         break;
       }
 
-      Vec2 scale = Vec2(m_size);
-
       Quad quad;
       MeshPtr mesh = quad.GetMeshComponent()->GetMeshVal();
+      Vec2 scale   = Vec2(m_size);
+
       for (int j = 0; j < 4; j++)
       {
         Vertex& clientVertex = mesh->m_clientSideVertices[j];
-        clientVertex.pos = (clientVertex.pos * Vec3(scale, 0.0f));
-        clientVertex.tex = clientVertex.pos.xy * m_gridCellSize;
+        clientVertex.pos     = (clientVertex.pos * Vec3(scale, 0.0f));
+        clientVertex.tex     = clientVertex.pos.xy * m_gridCellSize;
       }
 
       mesh->CalculateAABB();
@@ -119,5 +105,5 @@ namespace ToolKit
       return false;
     }
 
-  }  //  namespace Editor
-}  //  namespace ToolKit
+  } //  namespace Editor
+} //  namespace ToolKit

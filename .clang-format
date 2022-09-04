@@ -17,5 +17,9 @@ TabWidth: '1'
 IndentWidth: '2'
 UseTab: Never
 SortIncludes: 'false'
-
+IndentPPDirectives: 'BeforeHash'
+LambdaBodyIndentation: 'Signature'
+AlignArrayOfStructures: 'Right'
+SpaceAfterCStyleCast: 'true'
+TypenameMacros: ["TKResourceType", "TKComponentType", "TKDeclareParam"]
 ...

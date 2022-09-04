@@ -1,8 +1,8 @@
 #pragma once
 
 /**
-* @file Entity.h Header for Entity, 
-*/
+ * @file Entity.h Header for Entity,
+ */
 
 #include <memory>
 #include <vector>
@@ -19,9 +19,9 @@ namespace ToolKit
 {
 
   /**
-  * Enums that shows the type of the Entity. Each derived class should provide
-  * a type identifier for itself to make itself known to the ToolKit.
-  */
+   * Enums that shows the type of the Entity. Each derived class should provide
+   * a type identifier for itself to make itself known to the ToolKit.
+   */
   enum class EntityType
   {
     // Order is important. Don't change for backward comparable scene files.
@@ -48,20 +48,16 @@ namespace ToolKit
     Entity_SpotLight,
     Entity_CanvasPanel,
     Entity_Prefab,
-    ENTITY_TYPE_COUNT  // Holds the size of the enum
+    ENTITY_TYPE_COUNT // Holds the size of the enum
   };
 
-  static VariantCategory EntityCategory
-  {
-    "Meta",
-    100
-  };
+  static VariantCategory EntityCategory{"Meta", 100};
 
   /**
-  * Fundamental object that all the ToolKit utilities can interacted with.
-  * Entity is the base class for all the objects that can be inserted in any 
-  * scene.
-  */
+   * Fundamental object that all the ToolKit utilities can interacted with.
+   * Entity is the base class for all the objects that can be inserted in any
+   * scene.
+   */
   class TK_API Entity : public Serializable
   {
    public:
@@ -85,54 +81,55 @@ namespace ToolKit
     void SetBaseEntityID(ULongID);
 
     /**
-    * Adds the given component into the components of the Entity. While adding
-    * the component to the list, function also converts the component to a
-    * shared pointer for obtaining lifetime management. Also Entity set itself
-    * as the new components parent.
-    * @param component Component pointer that will be added to components of 
-    * this entity.
-    */
+     * Adds the given component into the components of the Entity. While adding
+     * the component to the list, function also converts the component to a
+     * shared pointer for obtaining lifetime management. Also Entity set itself
+     * as the new components parent.
+     * @param component Component pointer that will be added to components of
+     * this entity.
+     */
     void AddComponent(Component* component);
 
     /**
-    * Adds a component to the Entity same as AddComponent(Component* component).
-    */
+     * Adds a component to the Entity same as AddComponent(Component*
+     * component).
+     */
     void AddComponent(ComponentPtr component);
 
     /**
-    * Used to easily access first MeshComponentPtr.
-    * @return First MeshComponentPtr if any otherwise empty pointer.
-    */
+     * Used to easily access first MeshComponentPtr.
+     * @return First MeshComponentPtr if any otherwise empty pointer.
+     */
     MeshComponentPtr GetMeshComponent();
 
     /**
-    * Used to easily access first MaterialComponentPtr.
-    * @return First MaterialComponentPtr if any exist, otherwise empty pointer.
-    */
+     * Used to easily access first MaterialComponentPtr.
+     * @return First MaterialComponentPtr if any exist, otherwise empty pointer.
+     */
     MaterialComponentPtr GetMaterialComponent();
 
     /**
-    * Remove the given component from the components of the Entity.
-    * @param componentId Id of the component to be removed.
-    * @return Removed ComponentPtr. If nothing gets removed, returns nullptr.
-    */
+     * Remove the given component from the components of the Entity.
+     * @param componentId Id of the component to be removed.
+     * @return Removed ComponentPtr. If nothing gets removed, returns nullptr.
+     */
     ComponentPtr RemoveComponent(ULongID componentId);
 
     ComponentPtrArray& GetComponentPtrArray();
     const ComponentPtrArray& GetComponentPtrArray() const;
 
     /**
-    * Used to return first encountered component of type T.
-    * @return First Component of type T if any exist, otherwise empty pointer.
-    */
-    template<typename T>
+     * Used to return first encountered component of type T.
+     * @return First Component of type T if any exist, otherwise empty pointer.
+     */
+    template <typename T>
     std::shared_ptr<T> GetComponent() const
     {
       for (const ComponentPtr& com : GetComponentPtrArray())
       {
         if (com->GetType() == T::GetTypeStatic())
         {
-          return std::reinterpret_pointer_cast<T> (com);
+          return std::reinterpret_pointer_cast<T>(com);
         }
       }
 
@@ -140,35 +137,36 @@ namespace ToolKit
     }
 
     /**
-    * Used to return all components of type T.
-    * @param components ComponentPtrArray that will contain all encountered
-    * components of type T.
-    */
-    template<typename T>
+     * Used to return all components of type T.
+     * @param components ComponentPtrArray that will contain all encountered
+     * components of type T.
+     */
+    template <typename T>
     void GetComponent(std::vector<std::shared_ptr<T>>& components) const
     {
       for (const ComponentPtr& com : GetComponentPtrArray())
       {
         if (com->GetType() == T::GetTypeStatic())
         {
-          components.push_back(std::static_pointer_cast<T> (com));
+          components.push_back(std::static_pointer_cast<T>(com));
         }
       }
     }
 
     /**
-    * Used to return ComponentPtr with given id.
-    * @param id Id of the Component that will be returned.
-    * @return ComponentPtr with the given id.
-    */
+     * Used to return ComponentPtr with given id.
+     * @param id Id of the Component that will be returned.
+     * @return ComponentPtr with the given id.
+     */
     ComponentPtr GetComponent(ULongID id) const;
 
     /**
-    * Removes all components from the entity.
-    */
+     * Removes all components from the entity.
+     */
     void ClearComponents();
 
     virtual Entity* InstantiateTo(Entity* other) const;
+
    protected:
     virtual Entity* CopyTo(Entity* other) const;
     void ParameterConstructor();
@@ -182,32 +180,32 @@ namespace ToolKit
     TKDeclareParam(bool, TransformLock);
 
     /**
-    * True if this entity is an instance of another entity
-    * If true;
-    *  Deserialization doesn't load components
-    *  You should instantiate from base entity by yourself
-    *   Example: Scene deserialization instantiates from base entities last
-    * Don't use this outside of scene,
-    *  otherwise base entity's component list can't be accessed
-    */
+     * True if this entity is an instance of another entity
+     * If true;
+     *  Deserialization doesn't load components
+     *  You should instantiate from base entity by yourself
+     *   Example: Scene deserialization instantiates from base entities last
+     * Don't use this outside of scene,
+     *  otherwise base entity's component list can't be accessed
+     */
     TKDeclareParam(bool, IsInstance);
 
     Node* m_node;
-    ParameterBlock m_localData;  // Entity's own data.
+    ParameterBlock m_localData; // Entity's own data.
 
     /**
-    * Internally used variable.
-    * Helper ID for entity De serialization. Points to parent of the entity.
-    */
+     * Internally used variable.
+     * Helper ID for entity De serialization. Points to parent of the entity.
+     */
     ULongID _parentId;
 
    private:
     ComponentPtrArray m_components;
 
     /**
-    * Internally used variable.
-    * Helper ID for finding base entity. Id must be valid in the current scene.
-    */
+     * Internally used variable.
+     * Helper ID for finding base entity. Id must be valid in the current scene.
+     */
     ULongID _baseEntityId;
   };
 
@@ -229,14 +227,11 @@ namespace ToolKit
     ~EntityFactory();
 
     Entity* CreateByType(EntityType type);
-    void OverrideEntityConstructor
-    (
-      EntityType type,
-      std::function<Entity* ()> fn
-    );
+    void OverrideEntityConstructor(EntityType type,
+                                   std::function<Entity*()> fn);
 
    private:
-    std::vector<std::function<Entity* ()>> m_overrideFns;
+    std::vector<std::function<Entity*()>> m_overrideFns;
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

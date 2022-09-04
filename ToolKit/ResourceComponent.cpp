@@ -11,23 +11,17 @@ namespace ToolKit
 
   MeshComponent::MeshComponent()
   {
-    Mesh_Define
-    (
-      std::make_shared<ToolKit::Mesh>(),
-      MeshComponentCategory.Name,
-      MeshComponentCategory.Priority,
-      true,
-      true
-    );
+    Mesh_Define(std::make_shared<ToolKit::Mesh>(),
+                MeshComponentCategory.Name,
+                MeshComponentCategory.Priority,
+                true,
+                true);
 
-    CastShadow_Define
-    (
-      true,
-      MeshComponentCategory.Name,
-      MeshComponentCategory.Priority,
-      true,
-      true
-    );
+    CastShadow_Define(true,
+                      MeshComponentCategory.Name,
+                      MeshComponentCategory.Priority,
+                      true,
+                      true);
   }
 
   MeshComponent::~MeshComponent()
@@ -37,8 +31,8 @@ namespace ToolKit
   ComponentPtr MeshComponent::Copy(Entity* ntt)
   {
     MeshComponentPtr mc = std::make_shared<MeshComponent>();
-    mc->m_localData = m_localData;
-    mc->m_entity = ntt;
+    mc->m_localData     = m_localData;
+    mc->m_entity        = ntt;
 
     return mc;
   }
@@ -55,14 +49,11 @@ namespace ToolKit
 
   MaterialComponent::MaterialComponent()
   {
-    Material_Define
-    (
-      nullptr,
-      MaterialComponentCategory.Name,
-      MaterialComponentCategory.Priority,
-      true,
-      true
-    );
+    Material_Define(nullptr,
+                    MaterialComponentCategory.Name,
+                    MaterialComponentCategory.Priority,
+                    true,
+                    true);
   }
 
   MaterialComponent::~MaterialComponent()
@@ -77,8 +68,8 @@ namespace ToolKit
   ComponentPtr MaterialComponent::Copy(Entity* ntt)
   {
     MaterialComponentPtr mc = std::make_shared<MaterialComponent>();
-    mc->m_localData = m_localData;
-    mc->m_entity = ntt;
+    mc->m_localData         = m_localData;
+    mc->m_entity            = ntt;
 
     return mc;
   }
@@ -99,11 +90,9 @@ namespace ToolKit
 
   void EnvironmentComponent::Init(bool flushClientSideArray)
   {
-    assert
-    (
-      GetHdriVal() != nullptr && "Attempt to initialize hdri resource "
-      "that does not exist in environment component."
-    );
+    assert(GetHdriVal() != nullptr &&
+           "Attempt to initialize hdri resource "
+           "that does not exist in environment component.");
 
     GetHdriVal()->m_exposure = GetExposureVal();
     GetHdriVal()->Init(flushClientSideArray);
@@ -111,92 +100,49 @@ namespace ToolKit
 
   void EnvironmentComponent::ParameterConstructor()
   {
-    Hdri_Define
-    (
-      nullptr,
-      EnvironmentComponentCategory.Name,
-      EnvironmentComponentCategory.Priority,
-      true,
-      true
-    );
+    Hdri_Define(nullptr,
+                EnvironmentComponentCategory.Name,
+                EnvironmentComponentCategory.Priority,
+                true,
+                true);
 
-    Max_Define
-    (
-      Vec3(4.0f),
-      EnvironmentComponentCategory.Name,
-      EnvironmentComponentCategory.Priority,
-      true,
-      true,
-      {
-        false,
-        true,
-        0.0f,
-        100000.0f,
-        0.5f
-      }
-    );
+    Max_Define(Vec3(4.0f),
+               EnvironmentComponentCategory.Name,
+               EnvironmentComponentCategory.Priority,
+               true,
+               true,
+               {false, true, 0.0f, 100000.0f, 0.5f});
 
-    Min_Define
-    (
-      Vec3(-4.0f),
-      EnvironmentComponentCategory.Name,
-      EnvironmentComponentCategory.Priority,
-      true,
-      true,
-      {
-        false,
-        true,
-        0.0f,
-        100000.0f,
-        0.5f
-      }
-    );
+    Min_Define(Vec3(-4.0f),
+               EnvironmentComponentCategory.Name,
+               EnvironmentComponentCategory.Priority,
+               true,
+               true,
+               {false, true, 0.0f, 100000.0f, 0.5f});
 
-    Illuminate_Define
-    (
-      true,
-      EnvironmentComponentCategory.Name,
-      EnvironmentComponentCategory.Priority,
-      true,
-      true
-    );
+    Illuminate_Define(true,
+                      EnvironmentComponentCategory.Name,
+                      EnvironmentComponentCategory.Priority,
+                      true,
+                      true);
 
-    Intensity_Define
-    (
-      0.25f,
-      EnvironmentComponentCategory.Name,
-      EnvironmentComponentCategory.Priority,
-      true,
-      true,
-      {
-        false,
-        true,
-        0.0f,
-        100000.0f,
-        0.1f
-      }
-    );
-    Exposure_Define
-    (
-      1.0f,
-      EnvironmentComponentCategory.Name,
-      EnvironmentComponentCategory.Priority,
-      true,
-      true,
-      {
-        false,
-        true,
-        0.0f,
-        50.0f,
-        0.05f
-      }
-    );
+    Intensity_Define(0.25f,
+                     EnvironmentComponentCategory.Name,
+                     EnvironmentComponentCategory.Priority,
+                     true,
+                     true,
+                     {false, true, 0.0f, 100000.0f, 0.1f});
+    Exposure_Define(1.0f,
+                    EnvironmentComponentCategory.Name,
+                    EnvironmentComponentCategory.Priority,
+                    true,
+                    true,
+                    {false, true, 0.0f, 50.0f, 0.05f});
   }
 
   void EnvironmentComponent::ParameterEventConstructor()
   {
-    auto reInitHdriFn = [](HdriPtr hdri, float exposure)
-    {
+    auto reInitHdriFn = [](HdriPtr hdri, float exposure) {
       hdri->UnInit();
       hdri->Load();
       hdri->m_exposure = exposure;
@@ -204,14 +150,12 @@ namespace ToolKit
     };
 
     ParamExposure().m_onValueChangedFn =
-    [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
-    {
+        [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void {
       reInitHdriFn(GetHdriVal(), std::get<float>(newVal));
     };
 
     ParamHdri().m_onValueChangedFn =
-    [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
-    {
+        [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void {
       reInitHdriFn(std::get<HdriPtr>(newVal), GetExposureVal());
     };
   }
@@ -219,8 +163,8 @@ namespace ToolKit
   ComponentPtr EnvironmentComponent::Copy(Entity* ntt)
   {
     EnvironmentComponentPtr ec = std::make_shared<EnvironmentComponent>();
-    ec->m_localData = m_localData;
-    ec->m_entity = ntt;
+    ec->m_localData            = m_localData;
+    ec->m_entity               = ntt;
     ec->UpdateBBox();
 
     return ec;
@@ -272,17 +216,13 @@ namespace ToolKit
     return m_bbox->max;
   }
 
-
   AnimControllerComponent::AnimControllerComponent()
   {
-    Records_Define
-    (
-      {},
-      AnimRecordComponentCategory.Name,
-      AnimRecordComponentCategory.Priority,
-      true,
-      true
-    );
+    Records_Define({},
+                   AnimRecordComponentCategory.Name,
+                   AnimRecordComponentCategory.Priority,
+                   true,
+                   true);
 
     m_id = GetHandleManager()->GetNextHandle();
   }
@@ -293,10 +233,9 @@ namespace ToolKit
 
   ComponentPtr AnimControllerComponent::Copy(Entity* ntt)
   {
-    AnimControllerComponentPtr ec =
-      std::make_shared<AnimControllerComponent>();
-    ec->m_localData = m_localData;
-    ec->m_entity = ntt;
+    AnimControllerComponentPtr ec = std::make_shared<AnimControllerComponent>();
+    ec->m_localData               = m_localData;
+    ec->m_entity                  = ntt;
 
     return ec;
   }
@@ -311,16 +250,11 @@ namespace ToolKit
     }
   }
 
-  void AnimControllerComponent::AddSignal
-  (
-    const String& signalName,
-    AnimRecordPtr record
-  )
+  void AnimControllerComponent::AddSignal(const String& signalName,
+                                          AnimRecordPtr record)
   {
-    ParamRecords().GetVar<AnimRecordPtrMap>().insert
-    (
-      std::make_pair(signalName, record)
-    );
+    ParamRecords().GetVar<AnimRecordPtrMap>().insert(
+        std::make_pair(signalName, record));
   }
 
   void AnimControllerComponent::RemoveSignal(const String& signalName)
@@ -338,7 +272,7 @@ namespace ToolKit
   void AnimControllerComponent::Play(const String& signalName)
   {
     AnimRecordPtrMap& list = ParamRecords().GetVar<AnimRecordPtrMap>();
-    AnimRecordPtr& rec = list[signalName];
+    AnimRecordPtr& rec     = list[signalName];
     if (rec == nullptr)
     {
       return;
@@ -348,10 +282,10 @@ namespace ToolKit
     {
       activeRecord->m_state = AnimRecord::State::Stop;
     }
-    rec->m_state = AnimRecord::State::Play;
-    rec->m_loop = true;
+    rec->m_state  = AnimRecord::State::Play;
+    rec->m_loop   = true;
     rec->m_entity = m_entity;
-    activeRecord = rec;
+    activeRecord  = rec;
     GetAnimationPlayer()->AddRecord(rec.get());
   }
 
@@ -360,7 +294,7 @@ namespace ToolKit
     if (activeRecord)
     {
       activeRecord->m_state = AnimRecord::State::Stop;
-      activeRecord = nullptr;
+      activeRecord          = nullptr;
     }
   }
 
@@ -372,4 +306,5 @@ namespace ToolKit
   {
     return activeRecord;
   }
-}  //  namespace ToolKit
+
+} //  namespace ToolKit

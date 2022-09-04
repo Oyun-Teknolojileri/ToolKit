@@ -27,14 +27,13 @@ namespace ToolKit
 {
   namespace Editor
   {
-    Anchor::Anchor(const Billboard::Settings& set)
-      : EditorBillboardBase(set)
-      , m_anchorRatios { 0.f }
+
+    Anchor::Anchor(const Billboard::Settings& set) : EditorBillboardBase(set)
     {
       for (int i = 0; i < 9; i++)
       {
         m_handles.push_back(std::make_shared<AnchorHandle>());
-        constexpr int val = static_cast<int>(DirectionLabel::N);
+        constexpr int val                = (int) DirectionLabel::N;
         m_handles[i]->m_params.direction = static_cast<DirectionLabel>(val + i);
       }
 
@@ -89,8 +88,8 @@ namespace ToolKit
     {
       AnchorHandle::Params p;
       p.worldLoc = m_worldLocation;
-      p.color = g_anchorColor;
-      Mat4 ts = m_node->GetTransform(TransformationSpace::TS_WORLD);
+      p.color    = g_anchorColor;
+      Mat4 ts    = m_node->GetTransform(TransformationSpace::TS_WORLD);
       DecomposeMatrix(ts, &p.translate, nullptr, &p.scale);
 
       return p;
@@ -98,46 +97,53 @@ namespace ToolKit
 
     void Anchor::Update(float deltaTime)
     {
-      Vec3 axes[3] = { { 1.f, 0.f, 0.f }, { 0.f, 1.f, 0.f },
-        { 0.f, 0.f, 1.f } };
-      float w = 0, h = 0;
+      if (m_entity == nullptr || !m_entity->IsSurfaceInstance() ||
+          m_entity->m_node->m_parent == nullptr ||
+          m_entity->m_node->m_parent->m_entity == nullptr ||
+          m_entity->m_node->m_parent->m_entity->GetType() !=
+              EntityType::Entity_CanvasPanel)
+        return;
+
+      CanvasPanel* canvasPanel =
+          static_cast<CanvasPanel*>(m_entity->m_node->m_parent->m_entity);
+
       Vec3 pos;
-      if (m_entity && m_entity->IsSurfaceInstance())
+      float w = 0, h = 0;
       {
-        Surface* surface = static_cast<Surface*>(m_entity);
-        if (Entity* parent = surface->m_node->m_parent->m_entity)
-        {
-          if (parent->GetType() == EntityType::Entity_CanvasPanel)
-          {
-            CanvasPanel* canvasPanel = static_cast<CanvasPanel*>(parent);
-            pos = canvasPanel->m_node->GetTranslation(
-              TransformationSpace::TS_WORLD);
-            w = canvasPanel->GetSizeVal().x;
-            h = canvasPanel->GetSizeVal().y;
-            pos -= Vec3(w / 2.f, -h / 2.f, 0.f);
-          }
-        }
+        const BoundingBox bb = canvasPanel->GetAABB(true);
+        w                    = bb.GetWidth();
+        h                    = bb.GetHeight();
+        pos                  = Vec3(bb.min.x, bb.max.y, pos.z);
       }
+
+      Surface* surface    = static_cast<Surface*>(m_entity);
+      float* anchorRatios = surface->m_anchorParams.m_anchorRatios;
+
+      const Vec3 axis[3] = {
+          {1.f, 0.f, 0.f},
+          {0.f, 1.f, 0.f},
+          {0.f, 0.f, 1.f}
+      };
 
       Vec3 guideLines[8];
       {
-        guideLines[0] = pos + axes[0] * ((1.f - m_anchorRatios[1]) * w);
-        guideLines[1] = guideLines[0] - axes[1] * h;
+        guideLines[0] = pos + axis[0] * ((1.f - anchorRatios[1]) * w);
+        guideLines[1] = guideLines[0] - axis[1] * h;
 
-        guideLines[2] = pos - axes[1] * (m_anchorRatios[2] * h);
-        guideLines[3] = guideLines[2] + axes[0] * w;
+        guideLines[2] = pos - axis[1] * (anchorRatios[2] * h);
+        guideLines[3] = guideLines[2] + axis[0] * w;
 
-        guideLines[4] = pos + axes[0] * ((m_anchorRatios[0]) * w);
-        guideLines[5] = guideLines[4] - axes[1] * h;
+        guideLines[4] = pos + axis[0] * ((anchorRatios[0]) * w);
+        guideLines[5] = guideLines[4] - axis[1] * h;
 
-        guideLines[6] = pos - axes[1] * ((1.f - m_anchorRatios[3]) * h);
-        guideLines[7] = guideLines[6] + axes[0] * w;
+        guideLines[6] = pos - axis[1] * ((1.f - anchorRatios[3]) * h);
+        guideLines[7] = guideLines[6] + axis[0] * w;
       }
 
       float handleTranslate = 30.f;
 
-      if ((m_anchorRatios[0] + m_anchorRatios[1] < 0.99f)
-        || (m_anchorRatios[2] + m_anchorRatios[3] < 0.99f))
+      if ((anchorRatios[0] + anchorRatios[1] < 0.99f) ||
+          (anchorRatios[2] + anchorRatios[3] < 0.99f))
       {
         handleTranslate = 20.f;
       }
@@ -145,7 +151,7 @@ namespace ToolKit
       for (AnchorHandlePtr handle : m_handles)
       {
         AnchorHandle::Params p = GetParam();
-        p.type = AnchorHandle::SolidType::Quad;
+        p.type                 = AnchorHandle::SolidType::Quad;
 
         p.worldLoc = pos;
 
@@ -177,11 +183,11 @@ namespace ToolKit
 
         if (direction == DirectionLabel::CENTER)
         {
-          p.worldLoc -= axes[1] * ((m_anchorRatios[2]) * h);
-          p.worldLoc += axes[0] * ((m_anchorRatios[0]) * w);
+          p.worldLoc -= axis[1] * ((anchorRatios[2]) * h);
+          p.worldLoc += axis[0] * ((anchorRatios[0]) * w);
 
-          if ((m_anchorRatios[0] + m_anchorRatios[1] < 0.99f)
-            || (m_anchorRatios[2] + m_anchorRatios[3] < 0.99f))
+          if ((anchorRatios[0] + anchorRatios[1] < 0.99f) ||
+              (anchorRatios[2] + anchorRatios[3] < 0.99f))
           {
             handle->m_mesh.reset();
             continue;
@@ -191,103 +197,103 @@ namespace ToolKit
 
         if (direction == DirectionLabel::NE)
         {
-          p.worldLoc -= axes[1] * ((m_anchorRatios[2]) * h);
-          p.worldLoc += axes[0] * ((1.f - m_anchorRatios[1]) * w);
+          p.worldLoc -= axis[1] * ((anchorRatios[2]) * h);
+          p.worldLoc += axis[0] * ((1.f - anchorRatios[1]) * w);
 
           p.translate = Vec3(0.f, handleTranslate, 0.f);
-          p.scale = Vec3(0.5f, 1.1f, 1.f);
-          p.angle = glm::radians(-45.f);
+          p.scale     = Vec3(0.5f, 1.1f, 1.f);
+          p.angle     = glm::radians(-45.f);
         }
         if (direction == DirectionLabel::SE)
         {
-          p.worldLoc -= axes[1] * ((1.f - m_anchorRatios[3]) * h);
-          p.worldLoc += axes[0] * ((1.f - m_anchorRatios[1]) * w);
+          p.worldLoc -= axis[1] * ((1.f - anchorRatios[3]) * h);
+          p.worldLoc += axis[0] * ((1.f - anchorRatios[1]) * w);
 
           p.translate = Vec3(0.f, -handleTranslate, 0.f);
-          p.scale = Vec3(0.5f, 1.1f, 1.f);
-          p.angle = glm::radians(45.f);
+          p.scale     = Vec3(0.5f, 1.1f, 1.f);
+          p.angle     = glm::radians(45.f);
         }
         if (direction == DirectionLabel::NW)
         {
-          p.worldLoc -= axes[1] * ((m_anchorRatios[2]) * h);
-          p.worldLoc += axes[0] * ((m_anchorRatios[0]) * w);
+          p.worldLoc -= axis[1] * ((anchorRatios[2]) * h);
+          p.worldLoc += axis[0] * ((anchorRatios[0]) * w);
 
           p.translate = Vec3(0.f, handleTranslate, 0.f);
-          p.scale = Vec3(0.5f, 1.1f, 1.f);
-          p.angle = glm::radians(45.f);
+          p.scale     = Vec3(0.5f, 1.1f, 1.f);
+          p.angle     = glm::radians(45.f);
         }
         if (direction == DirectionLabel::SW)
         {
-          p.worldLoc -= axes[1] * ((1.f - m_anchorRatios[3]) * h);
-          p.worldLoc += axes[0] * ((m_anchorRatios[0]) * w);
+          p.worldLoc -= axis[1] * ((1.f - anchorRatios[3]) * h);
+          p.worldLoc += axis[0] * ((anchorRatios[0]) * w);
 
           p.translate = Vec3(0.f, handleTranslate, 0.f);
-          p.scale = Vec3(0.5f, 1.1f, 1.f);
-          p.angle = glm::radians(135.f);
+          p.scale     = Vec3(0.5f, 1.1f, 1.f);
+          p.angle     = glm::radians(135.f);
         }
         if (direction == DirectionLabel::E)
         {
-          p.worldLoc -= axes[1]
-            * ((m_anchorRatios[2]
-                 + (1.f - m_anchorRatios[2] - m_anchorRatios[3]) / 2.f)
-              * h);
-          p.worldLoc += axes[0] * ((1.f - m_anchorRatios[1]) * w);
+          p.worldLoc -=
+              axis[1] * ((anchorRatios[2] +
+                          (1.f - anchorRatios[2] - anchorRatios[3]) / 2.f) *
+                         h);
+          p.worldLoc += axis[0] * ((1.f - anchorRatios[1]) * w);
 
-          if (m_anchorRatios[2] + m_anchorRatios[3] < 0.99f)
+          if (anchorRatios[2] + anchorRatios[3] < 0.99f)
           {
             handle->m_mesh.reset();
             continue;
           }
           p.translate = Vec3(30.f, 0.f, 0.f);
-          p.scale = Vec3(1.1f, 0.5f, 1.f);
+          p.scale     = Vec3(1.1f, 0.5f, 1.f);
         }
         if (direction == DirectionLabel::W)
         {
-          p.worldLoc -= axes[1]
-            * ((m_anchorRatios[2]
-                 + (1.f - m_anchorRatios[2] - m_anchorRatios[3]) / 2.f)
-              * h);
-          p.worldLoc += axes[0] * (m_anchorRatios[0] * w);
+          p.worldLoc -=
+              axis[1] * ((anchorRatios[2] +
+                          (1.f - anchorRatios[2] - anchorRatios[3]) / 2.f) *
+                         h);
+          p.worldLoc += axis[0] * (anchorRatios[0] * w);
 
-          if (m_anchorRatios[2] + m_anchorRatios[3] < 0.99f)
+          if (anchorRatios[2] + anchorRatios[3] < 0.99f)
           {
             handle->m_mesh.reset();
             continue;
           }
           p.translate = Vec3(-30.f, 0.f, 0.f);
-          p.scale = Vec3(1.1f, 0.5f, 1.f);
+          p.scale     = Vec3(1.1f, 0.5f, 1.f);
         }
         if (direction == DirectionLabel::N)
         {
-          p.worldLoc -= axes[1] * ((m_anchorRatios[2]) * h);
-          p.worldLoc += axes[0]
-            * ((m_anchorRatios[0]
-                 + (1.f - m_anchorRatios[0] - m_anchorRatios[1]) / 2.f)
-              * w);
+          p.worldLoc -= axis[1] * ((anchorRatios[2]) * h);
+          p.worldLoc +=
+              axis[0] * ((anchorRatios[0] +
+                          (1.f - anchorRatios[0] - anchorRatios[1]) / 2.f) *
+                         w);
 
-          if (m_anchorRatios[0] + m_anchorRatios[1] < 1.f)
+          if (anchorRatios[0] + anchorRatios[1] < 1.f)
           {
             handle->m_mesh.reset();
             continue;
           }
           p.translate = Vec3(0.f, 30.f, 0.f);
-          p.scale = Vec3(0.5f, 1.1f, 1.f);
+          p.scale     = Vec3(0.5f, 1.1f, 1.f);
         }
         if (direction == DirectionLabel::S)
         {
-          p.worldLoc += axes[0]
-            * ((m_anchorRatios[0]
-                 + (1.f - m_anchorRatios[0] - m_anchorRatios[1]) / 2.f)
-              * w);
-          p.worldLoc -= axes[1] * ((1.f - m_anchorRatios[3]) * h);
+          p.worldLoc +=
+              axis[0] * ((anchorRatios[0] +
+                          (1.f - anchorRatios[0] - anchorRatios[1]) / 2.f) *
+                         w);
+          p.worldLoc -= axis[1] * ((1.f - anchorRatios[3]) * h);
 
-          if (m_anchorRatios[0] + m_anchorRatios[1] < 1.f)
+          if (anchorRatios[0] + anchorRatios[1] < 1.f)
           {
             handle->m_mesh.reset();
             continue;
           }
           p.translate = Vec3(0.f, -30.f, 0.f);
-          p.scale = Vec3(0.5f, 1.1f, 1.f);
+          p.scale     = Vec3(0.5f, 1.1f, 1.f);
         }
 
         if (EditorViewport* vp = g_app->GetActiveViewport())
@@ -306,18 +312,43 @@ namespace ToolKit
           mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
 
-      if (m_lastHovered != DirectionLabel::None
-        || GetGrabbedDirection() != DirectionLabel::None)
+      {
+        Vec3 canvasPoints[4], surfacePoints[4];
+        surface->CalculateAnchorOffsets(canvasPoints, surfacePoints);
+
+        //{
+        //  Vec3Array pnts = { surfacePoints[0], surfacePoints[3],
+        //    surfacePoints[1], surfacePoints[2] };
+
+        //  LineBatch guide(
+        //    pnts, Vec4(0.81f, 0.24f, 0.44f, 0.7f), DrawType::Line, 2.5f);
+        //  MeshPtr guideMesh =
+        //  guide.GetComponent<MeshComponent>()->GetMeshVal();
+        //  mesh->m_subMeshes.push_back(guideMesh);
+        //}
+
+        // Vec3Array pnts = { canvasPoints[0], canvasPoints[3], canvasPoints[1],
+        //   canvasPoints[2] };
+
+        // LineBatch guide(
+        //   pnts, Vec4(0.11f, 0.84f, 0.34f, 0.7f), DrawType::Line, 2.5f);
+        // MeshPtr guideMesh =
+        // guide.GetComponent<MeshComponent>()->GetMeshVal();
+        // mesh->m_subMeshes.push_back(guideMesh);
+      }
+
+      if (m_lastHovered != DirectionLabel::None ||
+          GetGrabbedDirection() != DirectionLabel::None)
       {
         Vec3Array pnts = {
-          guideLines[0],
-          guideLines[1],
-          guideLines[2],
-          guideLines[3],
-          guideLines[4],
-          guideLines[5],
-          guideLines[6],
-          guideLines[7],
+            guideLines[0],
+            guideLines[1],
+            guideLines[2],
+            guideLines[3],
+            guideLines[4],
+            guideLines[5],
+            guideLines[6],
+            guideLines[7],
         };
 
         LineBatch guide(pnts, g_anchorGuideLineColor, DrawType::Line, 2.5f);
@@ -334,7 +365,10 @@ namespace ToolKit
     // AnchorHandle
     //////////////////////////////////////////////////////////////////////////
 
-    AnchorHandle::AnchorHandle() { m_params.color = g_anchorColor; }
+    AnchorHandle::AnchorHandle()
+    {
+      m_params.color = g_anchorColor;
+    }
 
     void AnchorHandle::Generate(const Params& params)
     {
@@ -353,7 +387,7 @@ namespace ToolKit
       }
       else
       {
-        assert(false);  // A new primitive type?
+        assert(false); // A new primitive type?
       }
 
       Mat4 mat(1.0f);
@@ -380,10 +414,10 @@ namespace ToolKit
     {
       // Hit test done in object space bounding boxes.
       Mat4 transform = GetTransform();
-      Mat4 its = glm::inverse(transform);
+      Mat4 its       = glm::inverse(transform);
 
       Ray rayInObj;
-      rayInObj.position = Vec4(ray.position, 1.0f);
+      rayInObj.position  = Vec4(ray.position, 1.0f);
       rayInObj.direction = Vec4(ray.direction, 0.0f);
 
       m_mesh->CalculateAABB();
@@ -392,12 +426,13 @@ namespace ToolKit
 
     Mat4 AnchorHandle::GetTransform() const
     {
-      Mat4 sc = glm::scale(Mat4(), m_params.scale);
-      Mat4 rt = Mat4(1.f);
-      Mat4 ts = glm::translate(Mat4(), m_params.translate);
+      Mat4 sc        = glm::scale(Mat4(), m_params.scale);
+      Mat4 rt        = Mat4(1.f);
+      Mat4 ts        = glm::translate(Mat4(), m_params.translate);
       Mat4 transform = ts * rt * sc;
 
       return transform;
     }
-  }  // namespace Editor
-}  // namespace ToolKit
+
+  } // namespace Editor
+} // namespace ToolKit

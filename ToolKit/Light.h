@@ -42,21 +42,21 @@ namespace ToolKit
     float m_shadowMapCameraFar;
 
    protected:
-    bool m_shadowMapInitialized = false;
+    bool m_shadowMapInitialized       = false;
     bool m_shadowMapResolutionChanged = false;
-    MaterialPtr m_shadowMapMaterial = nullptr;
+    MaterialPtr m_shadowMapMaterial   = nullptr;
     RenderTarget* m_depthRenderTarget = nullptr;
   };
 
   class TK_API DirectionalLight : public Light
   {
    public:
-     DirectionalLight();
-     virtual ~DirectionalLight();
+    DirectionalLight();
+    virtual ~DirectionalLight();
 
-     EntityType GetType() const override;
+    EntityType GetType() const override;
 
-     BoundingBox GetShadowMapCameraFrustumCorners();
+    BoundingBox GetShadowMapCameraFrustumCorners();
 
    public:
     TKDeclareParam(Vec4, ShadowFrustumSize);
@@ -67,7 +67,9 @@ namespace ToolKit
   {
    public:
     PointLight();
-    virtual ~PointLight() {}
+    virtual ~PointLight()
+    {
+    }
 
     EntityType GetType() const override;
 
@@ -84,7 +86,9 @@ namespace ToolKit
   {
    public:
     SpotLight();
-    virtual ~SpotLight() {}
+    virtual ~SpotLight()
+    {
+    }
 
     EntityType GetType() const override;
 
@@ -97,4 +101,4 @@ namespace ToolKit
     TKDeclareParam(float, InnerAngle);
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

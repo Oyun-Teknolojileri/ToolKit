@@ -10,8 +10,13 @@ namespace ToolKit
     class MaterialView : public View
     {
      public:
-      MaterialView() { m_viewID = 3; }
-      virtual ~MaterialView() {}
+      MaterialView()
+      {
+        m_viewID = 3;
+      }
+      virtual ~MaterialView()
+      {
+      }
       void Show() override;
 
      public:
@@ -36,5 +41,5 @@ namespace ToolKit
       MaterialView* m_view;
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

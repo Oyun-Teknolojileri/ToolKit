@@ -5,9 +5,9 @@
 
 namespace ToolKit
 {
-
   namespace Editor
   {
+
     enum class GameMod
     {
       Playing,
@@ -34,11 +34,11 @@ namespace ToolKit
 
     struct SimulationSettings
     {
-      bool Windowed = false;
-      bool Landscape = false;
-      float Width = 640.0f;
-      float Height = 480.0f;
-      float Scale = 1.0f;
+      bool Windowed                 = false;
+      bool Landscape                = false;
+      float Width                   = 640.0f;
+      float Height                  = 480.0f;
+      float Scale                   = 1.0f;
       EmulatorResolution Resolution = EmulatorResolution::Custom;
     };
 
@@ -64,9 +64,8 @@ namespace ToolKit
 
      private:
       SimulationSettings* m_settings = nullptr;
-      bool m_simulationModeDisabled = false;
+      bool m_simulationModeDisabled  = false;
     };
 
-  }  // namespace Editor
-
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

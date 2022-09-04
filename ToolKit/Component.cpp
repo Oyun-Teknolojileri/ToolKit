@@ -23,14 +23,10 @@ namespace ToolKit
   void Component::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* componentNode = CreateXmlNode(doc, XmlComponent, parent);
-    WriteAttr
-    (
-      componentNode, doc, XmlParamterTypeAttr,
-      std::to_string
-      (
-        static_cast<int> (GetType())
-      )
-    );
+    WriteAttr(componentNode,
+              doc,
+              XmlParamterTypeAttr,
+              std::to_string(static_cast<int>(GetType())));
 
     m_localData.Serialize(doc, componentNode);
   }
@@ -44,27 +40,27 @@ namespace ToolKit
   {
     switch (t)
     {
-      case ComponentType::MeshComponent:
-        return new MeshComponent();
+    case ComponentType::MeshComponent:
+      return new MeshComponent();
       break;
-      case ComponentType::DirectionComponent:
-        return new DirectionComponent();
+    case ComponentType::DirectionComponent:
+      return new DirectionComponent();
       break;
-      case ComponentType::MaterialComponent:
-        return new MaterialComponent();
+    case ComponentType::MaterialComponent:
+      return new MaterialComponent();
       break;
-      case ComponentType::EnvironmentComponent:
-        return new EnvironmentComponent();
+    case ComponentType::EnvironmentComponent:
+      return new EnvironmentComponent();
       break;
-      case ComponentType::AnimControllerComponent:
+    case ComponentType::AnimControllerComponent:
       return new AnimControllerComponent();
       break;
-      case ComponentType::Base:
-      default:
-        assert(false && "Unsupported component type");
+    case ComponentType::Base:
+    default:
+      assert(false && "Unsupported component type");
       break;
     }
     return nullptr;
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

@@ -29,4 +29,4 @@ namespace ToolKit
     Entity* InstantiateTo(Entity* copyTo) const override;
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

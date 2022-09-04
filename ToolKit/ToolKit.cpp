@@ -52,21 +52,21 @@ namespace ToolKit
     m_engineSettings.DeSerialize(nullptr, nullptr);
 
     m_logger->Log("Main PreInit");
-    m_renderer = new Renderer();
-    m_pluginManager = new PluginManager();
-    m_animationMan = new AnimationManager();
+    m_renderer        = new Renderer();
+    m_pluginManager   = new PluginManager();
+    m_animationMan    = new AnimationManager();
     m_animationPlayer = new AnimationPlayer();
-    m_textureMan = new TextureManager();
-    m_meshMan = new MeshManager();
-    m_spriteSheetMan = new SpriteSheetManager();
-    m_audioMan = new AudioManager();
-    m_shaderMan = new ShaderManager();
+    m_textureMan      = new TextureManager();
+    m_meshMan         = new MeshManager();
+    m_spriteSheetMan  = new SpriteSheetManager();
+    m_audioMan        = new AudioManager();
+    m_shaderMan       = new ShaderManager();
     m_materialManager = new MaterialManager();
-    m_sceneManager = new SceneManager();
-    m_uiManager = new UIManager();
+    m_sceneManager    = new SceneManager();
+    m_uiManager       = new UIManager();
     m_skeletonManager = new SkeletonManager();
-    m_fileManager = new FileManager();
-    m_entityFactory = new EntityFactory();
+    m_fileManager     = new FileManager();
+    m_entityFactory   = new EntityFactory();
 
     m_preInitiated = true;
   }
@@ -112,7 +112,7 @@ namespace ToolKit
     m_sceneManager->Uninit();
     m_skeletonManager->Uninit();
 
-    m_initiated = false;
+    m_initiated    = false;
     m_preInitiated = false;
   }
 
@@ -288,12 +288,12 @@ namespace ToolKit
 
   TK_API String ConfigPath()
   {
-    return ConcatPaths({ ".", "..", "Config"  });
+    return ConcatPaths({".", "..", "Config"});
   }
 
   String DefaultPath()
   {
-    static String res = ConcatPaths({ "..", "Resources", "Engine" });
+    static String res = ConcatPaths({"..", "Resources", "Engine"});
 
     return res;
   }
@@ -312,12 +312,12 @@ namespace ToolKit
     return DefaultPath();
   }
 
-  /* 
-  * When dynamically created resources refer to default assets,
-  * they got saved with an altered relative path which starts with ToolKit.
-  * Check Util.h GetRelativeResourcePath() for more.
-  * So here, we try to detect defaul assets.
-  */
+  /*
+   * When dynamically created resources refer to default assets,
+   * they got saved with an altered relative path which starts with ToolKit.
+   * Check Util.h GetRelativeResourcePath() for more.
+   * So here, we try to detect defaul assets.
+   */
   bool CheckForRelative(const String& file)
   {
     return file.find("ToolKit") != String::npos;
@@ -328,12 +328,12 @@ namespace ToolKit
     if (CheckForRelative(file))
     {
       constexpr int length = sizeof("ToolKit");
-      String modified = file.substr(length);
-      String path = ConcatPaths({ ResourcePath(true), prefix, modified });
+      String modified      = file.substr(length);
+      String path = ConcatPaths({ResourcePath(true), prefix, modified});
       return path;
     }
 
-    String path = ConcatPaths({ ResourcePath(def), prefix, file });
+    String path = ConcatPaths({ResourcePath(def), prefix, file});
     return path;
   }
 
@@ -402,12 +402,12 @@ namespace ToolKit
     XmlDocBundle lclData;
     if (doc == nullptr)
     {
-      String path = ConcatPaths({ ConfigPath(), "Engine.settings" });
-      XmlFilePtr file = std::make_shared<XmlFile>(path.c_str());
+      String path           = ConcatPaths({ConfigPath(), "Engine.settings"});
+      XmlFilePtr file       = std::make_shared<XmlFile>(path.c_str());
       XmlDocumentPtr docPtr = std::make_shared<XmlDocument>();
       docPtr->parse<0>(file->data());
       lclData.file = file;
-      lclData.doc = docPtr;
+      lclData.doc  = docPtr;
 
       doc = docPtr.get();
     }
@@ -453,4 +453,4 @@ namespace ToolKit
     }
   }
 
-}  //  namespace ToolKit
+} //  namespace ToolKit

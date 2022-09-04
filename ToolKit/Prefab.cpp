@@ -8,14 +8,7 @@ namespace ToolKit
 {
   Prefab::Prefab()
   {
-    ScenePath_Define
-    (
-      "",
-      "Prefab",
-      90,
-      true,
-      false
-    );
+    ScenePath_Define("", "Prefab", 90, true, false);
     ParameterConstructor();
     ParameterEventConstructor();
   }
@@ -35,11 +28,8 @@ namespace ToolKit
     {
       return static_cast<Prefab*>(ntt);
     }
-    else if
-    (
-      ntt->m_node->m_parent == nullptr
-      || ntt->m_node->m_parent->m_entity == nullptr
-    )
+    else if (ntt->m_node->m_parent == nullptr ||
+             ntt->m_node->m_parent->m_entity == nullptr)
     {
       return nullptr;
     }
@@ -96,12 +86,8 @@ namespace ToolKit
     Entity::DeSerialize(doc, parent);
     parent = parent->last_node();
 
-    for
-    (
-      XmlNode* rNode = parent->first_node();
-      rNode;
-      rNode = rNode->next_sibling()
-    )
+    for (XmlNode* rNode = parent->first_node(); rNode;
+         rNode          = rNode->next_sibling())
     {
       String rootName = rNode->name();
       ParameterVariantArray vars;
@@ -123,7 +109,7 @@ namespace ToolKit
 
     for (Node* rNode : m_node->m_children)
     {
-      Entity* r = rNode->m_entity;
+      Entity* r        = rNode->m_entity;
       XmlNode* rootSer = CreateXmlNode(doc, r->GetNameVal(), parent);
       for (const ParameterVariant& var : r->m_localData.m_variants)
       {
@@ -141,4 +127,4 @@ namespace ToolKit
   void Prefab::ParameterEventConstructor()
   {
   }
-}  // namespace ToolKit
+} // namespace ToolKit

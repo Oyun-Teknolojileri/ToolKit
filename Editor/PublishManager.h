@@ -35,5 +35,5 @@ namespace ToolKit
       WebPublisher* m_webPublisher = nullptr;
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit
