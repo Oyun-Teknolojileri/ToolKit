@@ -266,12 +266,6 @@ namespace ToolKit
   void Node::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = CreateXmlNode(doc, XmlNodeElement, parent);
-    WriteAttr(node, doc, XmlNodeIdAttr, std::to_string(m_id));
-
-    if (m_parent != nullptr)
-    {
-      WriteAttr(node, doc, XmlNodeParentIdAttr, std::to_string(m_parent->m_id));
-    }
 
     WriteAttr(node,
               doc,
@@ -300,19 +294,6 @@ namespace ToolKit
     {
       assert(false && "Unbound node can not exist.");
       return;
-    }
-
-    if (XmlAttribute* id = node->first_attribute(XmlNodeIdAttr.c_str()))
-    {
-      String val = id->value();
-      m_id       = std::atoi(val.c_str());
-    }
-
-    if (XmlAttribute* pid = node->first_attribute(XmlNodeParentIdAttr.c_str()))
-    {
-      String val = pid->value();
-      // Node look up from parent ...
-      // It's being handled in scene deserialize.
     }
 
     if (XmlAttribute* attr =

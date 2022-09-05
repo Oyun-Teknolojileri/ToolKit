@@ -216,12 +216,25 @@ namespace ToolKit
       break;
       case ParameterVariant::VariantType::MeshPtr: {
         MeshPtr mref = var->GetVar<MeshPtr>();
-        DropSubZone("Mesh##" + std::to_string(mref->m_id),
-                    static_cast<uint>(UI::m_meshIcon->m_textureId),
-                    mref->GetFile(),
-                    [](const DirectoryEntry& entry) -> void {
-                      assert(false && "Not implemented !");
-                    });
+        DropSubZone(
+            "Mesh##" + std::to_string(mref->m_id),
+            static_cast<uint>(UI::m_meshIcon->m_textureId),
+            mref->GetFile(),
+            [&var](const DirectoryEntry& entry) -> void {
+              if (GetResourceType(entry.m_ext) == ResourceType::Mesh)
+              {
+                *var = GetMeshManager()->Create<Mesh>(entry.GetFullPath());
+              }
+              else if (GetResourceType(entry.m_ext) == ResourceType::SkinMesh)
+              {
+                *var = GetMeshManager()->Create<SkinMesh>(entry.GetFullPath());
+              }
+              else
+              {
+                GetLogger()->WriteConsole(LogType::Error,
+                                          "Only meshes are accepted.");
+              }
+            });
       }
       break;
       case ParameterVariant::VariantType::HdriPtr: {
@@ -571,6 +584,21 @@ namespace ToolKit
           {
             TexturePtr t = man->Create<Texture>(file);
             textureRepFn(t);
+          }
+
+          if (man->m_type == ResourceType::Mesh ||
+              man->m_type == ResourceType::SkinMesh)
+          {
+            MeshPtr mesh = man->Create<Mesh>(file);
+            info += "File: " + dirEnt.m_fileName + dirEnt.m_ext + "\n";
+            info +=
+                "Vertex Count: " + std::to_string(mesh->m_vertexCount) + "\n";
+            info += "Index Count: " + std::to_string(mesh->m_indexCount) + "\n";
+            if (mesh->m_faces.size())
+            {
+              info +=
+                  "Face Count: " + std::to_string(mesh->m_faces.size()) + "\n";
+            }
           }
         }
       }

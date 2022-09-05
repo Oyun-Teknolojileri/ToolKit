@@ -510,6 +510,7 @@ namespace ToolKit
       break;
     case EntityType::Entity_CanvasPanel:
       e = new CanvasPanel();
+      break;
     case EntityType::Entity_Prefab:
       e = new Prefab();
       break;
