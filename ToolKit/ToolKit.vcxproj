@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="CanvasPanel.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DirectionComponent.cpp" />
@@ -27,6 +28,7 @@
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="ParameterBlock.cpp" />
     <ClCompile Include="PluginManager.cpp" />
+    <ClCompile Include="Prefab.cpp" />
     <ClCompile Include="Primative.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RenderState.cpp" />
@@ -53,6 +55,7 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Audio.h" />
+    <ClInclude Include="CanvasPanel.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="DebugNew.h" />
     <ClInclude Include="Camera.h" />
@@ -71,6 +74,7 @@
     <ClInclude Include="ParameterBlock.h" />
     <ClInclude Include="Plugin.h" />
     <ClInclude Include="PluginManager.h" />
+    <ClInclude Include="Prefab.h" />
     <ClInclude Include="Primative.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderState.h" />

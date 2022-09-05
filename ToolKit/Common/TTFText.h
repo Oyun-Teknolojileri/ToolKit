@@ -1,6 +1,6 @@
 #pragma once
 
-#include  <string>
+#include <string>
 #include "GLES3/gl32.h"
 #include "SDL_ttf.h"
 #include "Mesh.h"
@@ -8,7 +8,7 @@
 
 class TTFText
 {
-public:
+ public:
   TTFText(std::string file, int size = 11)
   {
     m_font = TTF_OpenFont(file.c_str(), size);
@@ -20,7 +20,7 @@ public:
     SDL_FreeSurface(m_sdlSurface);
     SafeDel(m_surface);
   }
-  
+
   void SetText(std::string text)
   {
     m_text = text;
@@ -41,10 +41,10 @@ public:
   void SetPos(int x, int y)
   {
     if (m_surface != nullptr)
-      m_surface->m_node->SetTranslation({ x, y, 0 });
+      m_surface->m_node->SetTranslation({x, y, 0});
   }
 
-private:
+ private:
   void CreateTexture()
   {
     SDL_FreeSurface(m_sdlSurface);
@@ -81,14 +81,22 @@ private:
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, format, m_sdlSurface->w, m_sdlSurface->h, 0, format, GL_UNSIGNED_BYTE, m_sdlSurface->pixels);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 format,
+                 m_sdlSurface->w,
+                 m_sdlSurface->h,
+                 0,
+                 format,
+                 GL_UNSIGNED_BYTE,
+                 m_sdlSurface->pixels);
 
     std::shared_ptr<ToolKit::Texture> texPtr(new ToolKit::Texture());
     texPtr->m_textureId = textureId;
-    texPtr->m_width = m_sdlSurface->w;
-    texPtr->m_height = m_sdlSurface->h;
+    texPtr->m_width     = m_sdlSurface->w;
+    texPtr->m_height    = m_sdlSurface->h;
 
-		ToolKit::Node* backUp = nullptr;
+    ToolKit::Node* backUp = nullptr;
     if (m_surface != nullptr)
       backUp = new ToolKit::Node(*m_surface->m_node);
 
@@ -103,12 +111,12 @@ private:
     }
   }
 
-public:
-	ToolKit::Surface* m_surface = nullptr;
+ public:
+  ToolKit::Surface* m_surface = nullptr;
 
-private:
+ private:
   SDL_Surface* m_sdlSurface = nullptr;
   std::string m_text;
-  TTF_Font* m_font = nullptr;
-  SDL_Color m_color = { 255, 0, 0, 1 };
+  TTF_Font* m_font  = nullptr;
+  SDL_Color m_color = {255, 0, 0, 1};
 };

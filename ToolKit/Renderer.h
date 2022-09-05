@@ -20,38 +20,25 @@ namespace ToolKit
     Renderer();
     ~Renderer();
 
-    void RenderScene
-    (
-      const ScenePtr scene,
-      Viewport* viewport,
-      const LightRawPtrArray& editorLights
-    );
+    void RenderScene(const ScenePtr scene,
+                     Viewport* viewport,
+                     const LightRawPtrArray& editorLights);
 
     void RenderUI(const UILayerPtrArray& uiLayers, Viewport* viewport);
 
-    void Render
-    (
-      Entity* ntt,
-      Camera* cam,
-      const LightRawPtrArray& editorLights =
-      LightRawPtrArray()
-    );
+    void Render(Entity* ntt,
+                Camera* cam,
+                const LightRawPtrArray& editorLights = LightRawPtrArray());
 
     void SetRenderState(const RenderState* const state, ProgramPtr program);
 
-    void SetRenderTarget
-    (
-      RenderTarget* renderTarget,
-      bool clear = true,
-      const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f }
-    );
+    void SetRenderTarget(RenderTarget* renderTarget,
+                         bool clear        = true,
+                         const Vec4& color = {0.2f, 0.2f, 0.2f, 1.0f});
 
-    void SwapRenderTarget
-    (
-      RenderTarget** renderTarget,
-      bool clear = true,
-      const Vec4& color = { 0.2f, 0.2f, 0.2f, 1.0f }
-    );
+    void SwapRenderTarget(RenderTarget** renderTarget,
+                          bool clear        = true,
+                          const Vec4& color = {0.2f, 0.2f, 0.2f, 1.0f});
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
@@ -59,67 +46,60 @@ namespace ToolKit
     void DrawFullQuad(ShaderPtr fragmentShader);
     void DrawCube(Camera* cam, MaterialPtr mat);
     void SetTexture(ubyte slotIndx, uint textureId);
+    void SetShadowMapTexture(EntityType type,
+                             uint textureId,
+                             ProgramPtr program);
+    void ResetShadowMapBindings(ProgramPtr program);
 
    private:
-    void RenderEntities
-    (
-      EntityRawPtrArray& entities,
-      Camera* cam,
-      Viewport* viewport,
-      const LightRawPtrArray& editorLights = LightRawPtrArray()
-    );
+    void RenderEntities(
+        EntityRawPtrArray& entities,
+        Camera* cam,
+        Viewport* viewport,
+        const LightRawPtrArray& editorLights = LightRawPtrArray());
 
     /**
-    * Removes the entites that are outside of the camera.
-    * @param entities All entites.
-    * @param camera Camera that is being used for generating frustum.
-    */
+     * Removes the entites that are outside of the camera.
+     * @param entities All entites.
+     * @param camera Camera that is being used for generating frustum.
+     */
     void FrustumCull(EntityRawPtrArray& entities, Camera* camera);
 
     /**
-    * Extracts blended entites from given entity array.
-    * @param entities Entity array that the transparents will extracted from.
-    * @param blendedEntities Entity array that are going to be filled
-    * with transparents.
-    */
-    void GetTransparentEntites
-    (
-      EntityRawPtrArray& entities,
-      EntityRawPtrArray& blendedEntities
-    );
+     * Extracts blended entites from given entity array.
+     * @param entities Entity array that the transparents will extracted from.
+     * @param blendedEntities Entity array that are going to be filled
+     * with transparents.
+     */
+    void GetTransparentEntites(EntityRawPtrArray& entities,
+                               EntityRawPtrArray& blendedEntities);
 
     /**
-    * Renders the entities immediately. No sorting applied.
-    * @param entities All entities to render.
-    * @param cam Camera for rendering.
-    * @param zoom Zoom amount of camera.
-    * @param editorLights All lights.
-    */
-    void RenderOpaque
-    (
-      EntityRawPtrArray entities,
-      Camera* cam,
-      float zoom,
-      const LightRawPtrArray& editorLights =
-      LightRawPtrArray()
-    );
+     * Renders the entities immediately. No sorting applied.
+     * @param entities All entities to render.
+     * @param cam Camera for rendering.
+     * @param zoom Zoom amount of camera.
+     * @param editorLights All lights.
+     */
+    void RenderOpaque(
+        EntityRawPtrArray entities,
+        Camera* cam,
+        float zoom,
+        const LightRawPtrArray& editorLights = LightRawPtrArray());
 
     /**
-    * Sorts and renders entities. For double-sided blended entities first
-    * render back, than renders front.
-    * @param entities All entities to render.
-    * @param cam Camera for rendering.
-    * @param zoom Zoom amount of camera.
-    * @param editorLights All lights.
-    */
-    void RenderTransparent
-    (
-      EntityRawPtrArray entities,
-      Camera* cam,
-      float zoom,
-      const LightRawPtrArray& editorLights =
-      LightRawPtrArray()
-    );
+     * Sorts and renders entities. For double-sided blended entities first
+     * render back, than renders front.
+     * @param entities All entities to render.
+     * @param cam Camera for rendering.
+     * @param zoom Zoom amount of camera.
+     * @param editorLights All lights.
+     */
+    void RenderTransparent(
+        EntityRawPtrArray entities,
+        Camera* cam,
+        float zoom,
+        const LightRawPtrArray& editorLights = LightRawPtrArray());
 
     void RenderSky(Sky* sky, Camera* cam);
 
@@ -127,13 +107,12 @@ namespace ToolKit
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
 
-    LightRawPtrArray GetBestLights
-    (
-      Entity* entity,
-      const LightRawPtrArray& lights
-    );
+    LightRawPtrArray GetBestLights(Entity* entity,
+                                   const LightRawPtrArray& lights);
     void GetEnvironmentLightEntities(EntityRawPtrArray entities);
     void FindEnvironmentLight(Entity* entity, Camera* camera);
+
+    void UpdateShadowMaps(LightRawPtrArray lights, EntityRawPtrArray entities);
 
     void SetProjectViewModel(Entity* ntt, Camera* cam);
     void BindProgram(ProgramPtr program);
@@ -144,17 +123,18 @@ namespace ToolKit
     void SetVertexLayout(VertexLayout layout);
 
    public:
-    uint m_frameCount = 0;
-    uint m_windowWidth = 0;
-    uint m_windowHeight = 0;
-    Vec4 m_bgColor = { 0.2f, 0.2f, 0.2f, 1.0f };
+    uint m_totalFrameCount = 0;
+    uint m_frameCount      = 0;
+    UVec2 m_windowSize;   //!< Application window size.
+    UVec2 m_viewportSize; //!< Current viewport size.
+    Vec4 m_bgColor            = {0.2f, 0.2f, 0.2f, 1.0f};
     MaterialPtr m_overrideMat = nullptr;
 
     // Grid parameters
-    float m_gridCellSize = 0.1f;
-    float m_gridSize = 100.0f;
+    float m_gridCellSize           = 0.1f;
+    float m_gridSize               = 100.0f;
     Vec3 m_gridHorizontalAxisColor = X_AXIS;
-    Vec3 m_gridVerticalAxisColor = Z_AXIS;
+    Vec3 m_gridVerticalAxisColor   = Z_AXIS;
 
    private:
     uint m_currentProgram = 0;
@@ -162,15 +142,23 @@ namespace ToolKit
     Mat4 m_view;
     Mat4 m_model;
     LightRawPtrArray m_lights;
-    size_t m_maxLightsPerObject = 12;
-    Camera* m_cam = nullptr;
-    Material* m_mat = nullptr;
+    Camera* m_cam                = nullptr;
+    Camera* m_shadowMapCamera    = nullptr;
+    Material* m_mat              = nullptr;
     RenderTarget* m_renderTarget = nullptr;
     typedef struct RHIConstants
     {
       static constexpr ubyte textureSlotCount = 8;
+      // 4 studio lights, 8 in game lights
+      static constexpr size_t maxLightsPerObject     = 12;
+      static constexpr int maxDirAndSpotLightShadows = 4;
+      static constexpr int maxPointLightShadows      = 4;
+      static constexpr int maxShadows                = 8;
     } m_rhiSettings;
     uint m_textureSlots[RHIConstants::textureSlotCount];
+    int m_bindedShadowMapCount       = 0;
+    int m_dirAndSpotLightShadowCount = 0;
+    int m_pointLightShadowCount      = 0;
 
     std::unordered_map<String, ProgramPtr> m_programs;
     RenderState m_renderState;
@@ -178,4 +166,4 @@ namespace ToolKit
     EntityRawPtrArray m_environmentLightEntities;
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

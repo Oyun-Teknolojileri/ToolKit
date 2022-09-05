@@ -15,7 +15,7 @@ namespace ToolKit
   Node::~Node()
   {
     OrphanSelf(true);
-    for (int i = static_cast<int> (m_children.size()) - 1; i >= 0; i--)
+    for (int i = static_cast<int>(m_children.size()) - 1; i >= 0; i--)
     {
       Orphan(m_children[i], true);
     }
@@ -24,7 +24,7 @@ namespace ToolKit
   void Node::Translate(const Vec3& val, TransformationSpace space)
   {
     Vec3 tmpScl = m_scale;
-    m_scale = Vec3(1.0f);
+    m_scale     = Vec3(1.0f);
 
     Mat4 ts = glm::translate(Mat4(), val);
     TransformImp(ts, space, &m_translation, nullptr, nullptr);
@@ -35,7 +35,7 @@ namespace ToolKit
   void Node::Rotate(const Quaternion& val, TransformationSpace space)
   {
     Vec3 tmpScl = m_scale;
-    m_scale = Vec3(1.0f);
+    m_scale     = Vec3(1.0f);
 
     Mat4 ts = glm::toMat4(val);
     TransformImp(ts, space, nullptr, &m_orientation, nullptr);
@@ -48,12 +48,7 @@ namespace ToolKit
     m_scale *= val;
   }
 
-  void Node::Transform
-  (
-    const Mat4& val,
-    TransformationSpace space,
-    bool noScale
-  )
+  void Node::Transform(const Mat4& val, TransformationSpace space, bool noScale)
   {
     Vec3 tmpScl = m_scale;
     if (noScale)
@@ -61,14 +56,11 @@ namespace ToolKit
       m_scale = Vec3(1.0f);
     }
 
-    TransformImp
-    (
-      val,
-      space,
-      &m_translation,
-      &m_orientation,
-      noScale ? nullptr : &m_scale
-    );
+    TransformImp(val,
+                 space,
+                 &m_translation,
+                 &m_orientation,
+                 noScale ? nullptr : &m_scale);
 
     if (noScale)
     {
@@ -76,12 +68,9 @@ namespace ToolKit
     }
   }
 
-  void Node::SetTransform
-  (
-    const Mat4& val,
-    TransformationSpace space,
-    bool noScale
-  )
+  void Node::SetTransform(const Mat4& val,
+                          TransformationSpace space,
+                          bool noScale)
   {
     Vec3 tmpScl = m_scale;
     if (noScale)
@@ -89,14 +78,11 @@ namespace ToolKit
       m_scale = Vec3(1.0f);
     }
 
-    SetTransformImp
-    (
-      val,
-      space,
-      &m_translation,
-      &m_orientation,
-      noScale ? nullptr : &m_scale
-    );
+    SetTransformImp(val,
+                    space,
+                    &m_translation,
+                    &m_orientation,
+                    noScale ? nullptr : &m_scale);
 
     if (noScale)
     {
@@ -183,17 +169,17 @@ namespace ToolKit
     Mat3 axes;
     switch (space)
     {
-      case TransformationSpace::TS_WORLD:
+    case TransformationSpace::TS_WORLD:
       break;
-      case TransformationSpace::TS_PARENT:
+    case TransformationSpace::TS_PARENT:
       if (m_parent != nullptr)
       {
         axes = m_parent->GetTransform(TransformationSpace::TS_WORLD);
       }
       break;
-      case TransformationSpace::TS_LOCAL:
+    case TransformationSpace::TS_LOCAL:
       axes = GetTransform(TransformationSpace::TS_WORLD);
-      default:
+    default:
       break;
     }
 
@@ -213,7 +199,7 @@ namespace ToolKit
 
     m_children.push_back(child);
     child->m_parent = this;
-    child->m_dirty = true;
+    child->m_dirty  = true;
     child->SetChildrenDirty();
 
     if (preserveTransform)
@@ -231,7 +217,7 @@ namespace ToolKit
         Mat4 ts = child->GetTransform(TransformationSpace::TS_WORLD);
 
         child->m_parent = nullptr;
-        child->m_dirty = true;
+        child->m_dirty  = true;
         child->SetChildrenDirty();
         m_children.erase(m_children.begin() + i);
 
@@ -268,11 +254,11 @@ namespace ToolKit
     // Look at Util/DeepCopy for preserving hierarchy.
     Node* node = new Node();
 
-    node->m_inheritScale = m_inheritScale;
+    node->m_inheritScale         = m_inheritScale;
     node->m_inheritOnlyTranslate = m_inheritOnlyTranslate;
-    node->m_translation = m_translation;
-    node->m_orientation = m_orientation;
-    node->m_scale = m_scale;
+    node->m_translation          = m_translation;
+    node->m_orientation          = m_orientation;
+    node->m_scale                = m_scale;
 
     return node;
   }
@@ -280,34 +266,16 @@ namespace ToolKit
   void Node::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* node = CreateXmlNode(doc, XmlNodeElement, parent);
-    WriteAttr(node, doc, XmlNodeIdAttr, std::to_string(m_id));
 
-    if (m_parent != nullptr)
-    {
-      WriteAttr
-      (
-        node,
-        doc,
-        XmlNodeParentIdAttr,
-        std::to_string(m_parent->m_id)
-      );
-    }
+    WriteAttr(node,
+              doc,
+              XmlNodeInheritScaleAttr,
+              std::to_string(static_cast<int>(m_inheritScale)));
 
-    WriteAttr
-    (
-      node,
-      doc,
-      XmlNodeInheritScaleAttr,
-      std::to_string(static_cast<int> (m_inheritScale))
-    );
-
-    WriteAttr
-    (
-      node,
-      doc,
-      XmlNodeInheritTranslateOnlyAttr,
-      std::to_string(static_cast<int> (m_inheritOnlyTranslate))
-    );
+    WriteAttr(node,
+              doc,
+              XmlNodeInheritTranslateOnlyAttr,
+              std::to_string(static_cast<int>(m_inheritOnlyTranslate)));
 
     XmlNode* tNode = CreateXmlNode(doc, XmlTranslateElement, node);
     WriteVec(tNode, doc, m_translation);
@@ -328,40 +296,18 @@ namespace ToolKit
       return;
     }
 
-    if (XmlAttribute* id = node->first_attribute(XmlNodeIdAttr.c_str()))
+    if (XmlAttribute* attr =
+            node->first_attribute(XmlNodeInheritScaleAttr.c_str()))
     {
-      String val = id->value();
-      m_id = std::atoi(val.c_str());
+      String val     = attr->value();
+      m_inheritScale = static_cast<bool>(std::atoi(val.c_str()));
     }
 
-    if
-    (
-      XmlAttribute* pid = node->first_attribute(XmlNodeParentIdAttr.c_str())
-    )
+    if (XmlAttribute* attr =
+            node->first_attribute(XmlNodeInheritTranslateOnlyAttr.c_str()))
     {
-      String val = pid->value();
-      // Node look up from parent ...
-      // It's being handled in scene deserialize.
-    }
-
-    if
-    (
-      XmlAttribute* attr =
-      node->first_attribute(XmlNodeInheritScaleAttr.c_str())
-    )
-    {
-      String val = attr->value();
-      m_inheritScale = static_cast<bool> (std::atoi(val.c_str()));
-    }
-
-    if
-    (
-      XmlAttribute* attr =
-      node->first_attribute(XmlNodeInheritTranslateOnlyAttr.c_str())
-    )
-    {
-      String val = attr->value();
-      m_inheritOnlyTranslate = static_cast<bool> (std::atoi(val.c_str()));
+      String val             = attr->value();
+      m_inheritOnlyTranslate = static_cast<bool>(std::atoi(val.c_str()));
     }
 
     if (XmlNode* n = node->first_node(XmlTranslateElement.c_str()))
@@ -389,26 +335,23 @@ namespace ToolKit
     }
   }
 
-  void Node::TransformImp
-  (
-    const Mat4& val,
-    TransformationSpace space,
-    Vec3* translation,
-    Quaternion* orientation,
-    Vec3* scale
-  )
+  void Node::TransformImp(const Mat4& val,
+                          TransformationSpace space,
+                          Vec3* translation,
+                          Quaternion* orientation,
+                          Vec3* scale)
   {
     Mat4 ps, ts;
     ps = GetParentTransform();
     switch (space)
     {
-      case TransformationSpace::TS_WORLD:
+    case TransformationSpace::TS_WORLD:
       ts = glm::inverse(ps) * val * ps * GetLocalTransform();
       break;
-      case TransformationSpace::TS_PARENT:
+    case TransformationSpace::TS_PARENT:
       ts = val * GetLocalTransform();
       break;
-      case TransformationSpace::TS_LOCAL:
+    case TransformationSpace::TS_LOCAL:
       ts = GetLocalTransform() * val;
       break;
     }
@@ -417,29 +360,26 @@ namespace ToolKit
     SetChildrenDirty();
   }
 
-  void Node::SetTransformImp
-  (
-    const Mat4& val,
-    TransformationSpace space,
-    Vec3* translation,
-    Quaternion* orientation,
-    Vec3* scale
-  )
+  void Node::SetTransformImp(const Mat4& val,
+                             TransformationSpace space,
+                             Vec3* translation,
+                             Quaternion* orientation,
+                             Vec3* scale)
   {
     Mat4 ts;
     switch (space)
     {
-      case TransformationSpace::TS_WORLD:
+    case TransformationSpace::TS_WORLD:
       if (m_parent != nullptr)
       {
         Mat4 ps = GetParentTransform();
-        ts = glm::inverse(ps) * val;
+        ts      = glm::inverse(ps) * val;
         break;
-      }  // Fall trough.
-      case TransformationSpace::TS_PARENT:
+      } // Fall trough.
+    case TransformationSpace::TS_PARENT:
       ts = val;
       break;
-      case TransformationSpace::TS_LOCAL:
+    case TransformationSpace::TS_LOCAL:
       Transform(val, TransformationSpace::TS_LOCAL);
       return;
     }
@@ -448,31 +388,28 @@ namespace ToolKit
     SetChildrenDirty();
   }
 
-  void Node::GetTransformImp
-  (
-    TransformationSpace space,
-    Mat4* transform,
-    Vec3* translation,
-    Quaternion* orientation,
-    Vec3* scale
-  )
+  void Node::GetTransformImp(TransformationSpace space,
+                             Mat4* transform,
+                             Vec3* translation,
+                             Quaternion* orientation,
+                             Vec3* scale)
   {
     switch (space)
     {
-      case TransformationSpace::TS_WORLD:
+    case TransformationSpace::TS_WORLD:
       if (m_parent != nullptr)
       {
         Mat4 ts = GetLocalTransform();
         Mat4 ps = GetParentTransform();
-        ts = ps * ts;
+        ts      = ps * ts;
         if (transform != nullptr)
         {
           *transform = ts;
         }
         DecomposeMatrix(ts, translation, orientation, scale);
         break;
-      }  // Fall trough.
-      case TransformationSpace::TS_PARENT:
+      } // Fall trough.
+    case TransformationSpace::TS_PARENT:
       if (transform != nullptr)
       {
         *transform = GetLocalTransform();
@@ -490,8 +427,8 @@ namespace ToolKit
         *scale = m_scale;
       }
       break;
-      case TransformationSpace::TS_LOCAL:
-      default:
+    case TransformationSpace::TS_LOCAL:
+    default:
       if (transform != nullptr)
       {
         *transform = Mat4();
@@ -516,8 +453,8 @@ namespace ToolKit
   {
     Mat4 ts, rt, scl;
     scl = glm::scale(scl, m_scale);
-    rt = glm::toMat4(m_orientation);
-    ts = glm::translate(ts, m_translation);
+    rt  = glm::toMat4(m_orientation);
+    ts  = glm::translate(ts, m_translation);
     return ts * rt * scl;
   }
 
@@ -536,13 +473,13 @@ namespace ToolKit
       if (m_inheritOnlyTranslate)
       {
         Vec3 t = ps[3];
-        ps = glm::translate(Mat4(), t);
+        ps     = glm::translate(Mat4(), t);
       }
       else if (!m_inheritScale)
       {
         for (int i = 0; i < 3; i++)
         {
-          Vec3 v = ps[i];
+          Vec3 v    = ps[i];
           ps[i].xyz = glm::normalize(v);
         }
       }
@@ -563,4 +500,4 @@ namespace ToolKit
     }
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

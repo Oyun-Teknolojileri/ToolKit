@@ -18,5 +18,5 @@ namespace ToolKit
       void GenerateFrustum();
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

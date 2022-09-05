@@ -20,19 +20,13 @@
 #include "DebugNew.h"
 #include "FileManager.h"
 
-
 namespace ToolKit
 {
   namespace Editor
   {
 
-    std::vector<OverlayUI*> EditorViewport::m_overlays =
-    {
-      nullptr,
-      nullptr,
-      nullptr,
-      nullptr
-    };
+    std::vector<OverlayUI*> EditorViewport::m_overlays = {
+        nullptr, nullptr, nullptr, nullptr};
 
     void InitOverlays(EditorViewport* viewport)
     {
@@ -68,8 +62,13 @@ namespace ToolKit
       m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
     }
 
+    EditorViewport::EditorViewport(const Vec2& size)
+        : EditorViewport(size.x, size.y)
+    {
+    }
+
     EditorViewport::EditorViewport(float width, float height)
-      : Viewport(width, height)
+        : Viewport(width, height)
     {
       m_name = g_viewportStr + " " + std::to_string(m_id);
       InitOverlays(this);
@@ -83,20 +82,13 @@ namespace ToolKit
     void EditorViewport::Show()
     {
       m_mouseOverOverlay = false;
+      ImGui::SetNextWindowSize(Vec2(m_size), ImGuiCond_None);
 
-      ImGui::SetNextWindowSize(ImVec2(m_width, m_height), ImGuiCond_None);
-
-      if
-      (
-        ImGui::Begin
-        (
-          m_name.c_str(),
-          &m_visible,
-          ImGuiWindowFlags_NoScrollbar
-          | ImGuiWindowFlags_NoScrollWithMouse
-          | m_additionalWindowFlags
-        )
-      )
+      if (ImGui::Begin(m_name.c_str(),
+                       &m_visible,
+                       ImGuiWindowFlags_NoScrollbar |
+                           ImGuiWindowFlags_NoScrollWithMouse |
+                           m_additionalWindowFlags))
       {
         UpdateContentArea();
         UpdateWindow();
@@ -104,12 +96,8 @@ namespace ToolKit
         DrawCommands();
         HandleDrop();
         DrawOverlays();
-        if (m_mouseOverContentArea && g_app->m_snapsEnabled)
-        {
-          g_app->m_moveDelta = m_snapDeltas.x;
-          g_app->m_rotateDelta = m_snapDeltas.y;
-          g_app->m_scaleDelta = m_snapDeltas.z;
-        }
+        ComitResize();
+        UpdateSnaps();
       }
       ImGui::End();
     }
@@ -134,11 +122,8 @@ namespace ToolKit
 
     bool EditorViewport::IsViewportQueriable() const
     {
-      return m_mouseOverContentArea
-        && m_mouseHover
-        && m_active
-        && m_visible
-        && m_relMouseModBegin;
+      return m_mouseOverContentArea && m_mouseHover && m_active && m_visible &&
+             m_relMouseModBegin;
     }
 
     void EditorViewport::DispatchSignals() const
@@ -150,26 +135,20 @@ namespace ToolKit
 
       if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
       {
-        ModManager::GetInstance()->DispatchSignal
-        (
-          BaseMod::m_leftMouseBtnDownSgnl
-        );
+        ModManager::GetInstance()->DispatchSignal(
+            BaseMod::m_leftMouseBtnDownSgnl);
       }
 
       if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
       {
-        ModManager::GetInstance()->DispatchSignal
-        (
-          BaseMod::m_leftMouseBtnUpSgnl
-        );
+        ModManager::GetInstance()->DispatchSignal(
+            BaseMod::m_leftMouseBtnUpSgnl);
       }
 
       if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
       {
-        ModManager::GetInstance()->DispatchSignal
-        (
-          BaseMod::m_leftMouseBtnDragSgnl
-        );
+        ModManager::GetInstance()->DispatchSignal(
+            BaseMod::m_leftMouseBtnDragSgnl);
       }
 
       if (ImGui::IsKeyPressed(ImGuiKey_Delete, false))
@@ -185,22 +164,13 @@ namespace ToolKit
       Window::Serialize(doc, parent);
       XmlNode* node = doc->allocate_node(rapidxml::node_element, "Viewport");
 
-      WriteAttr(node, doc, "width", std::to_string(m_width));
-      WriteAttr(node, doc, "height", std::to_string(m_height));
-      WriteAttr
-      (
-        node,
-        doc,
-        "alignment",
-        std::to_string(static_cast<int>(m_cameraAlignment))
-      );
-      WriteAttr
-      (
-        node,
-        doc,
-        "lock",
-        std::to_string(static_cast<int>(m_orbitLock))
-      );
+      WriteAttr(node,
+                doc,
+                "alignment",
+                std::to_string(static_cast<int>(m_cameraAlignment)));
+
+      WriteAttr(
+          node, doc, "lock", std::to_string(static_cast<int>(m_orbitLock)));
       GetCamera()->Serialize(doc, node);
 
       XmlNode* wnd = parent->last_node();
@@ -213,33 +183,47 @@ namespace ToolKit
 
       if (XmlNode* node = parent->first_node("Viewport"))
       {
-        ReadAttr(node, "width", m_width);
-        ReadAttr(node, "height", m_height);
-        ReadAttr
-        (
-          node,
-          "alignment",
-          *(reinterpret_cast<int*>(&m_cameraAlignment))
-        );
+        ReadAttr(
+            node, "alignment", *(reinterpret_cast<int*>(&m_cameraAlignment)));
         ReadAttr(node, "lock", m_orbitLock);
         SetCamera(new Camera(node->first_node("E")));
       }
     }
 
-    void EditorViewport::OnResize(float width, float height)
+    void EditorViewport::OnResizeContentArea(float width, float height)
     {
-      Viewport::OnResize(width, height);
+      Viewport::OnResizeContentArea(width, height);
       AdjustZoom(0.0f);
     }
 
-    void EditorViewport::GetContentAreaScreenCoordinates
-    (
-      Vec2* min,
-      Vec2* max
-    ) const
+    void EditorViewport::ResizeWindow(uint width, uint height)
     {
-      *min = m_wndPos;
-      *max = m_wndPos + m_wndContentAreaSize;
+      m_size.x      = width;
+      m_size.y      = height;
+      m_needsResize = true;
+
+      if (EditorScenePtr currScene = g_app->GetCurrentScene())
+      {
+        for (Entity* ntt : currScene->GetEntities())
+        {
+          if (ntt->GetType() == EntityType::Entity_CanvasPanel)
+          {
+            CanvasPanel* canvasPanel = static_cast<CanvasPanel*>(ntt);
+            if (canvasPanel->m_node->m_parent == nullptr)
+            {
+              canvasPanel->ApplyRecursivResizePolicy(
+                  static_cast<float>(width), static_cast<float>(height));
+            }
+          }
+        }
+      }
+    }
+
+    void EditorViewport::GetContentAreaScreenCoordinates(Vec2* min,
+                                                         Vec2* max) const
+    {
+      *min = m_contentAreaLocation;
+      *max = m_contentAreaLocation + m_wndContentAreaSize;
     }
 
     void EditorViewport::SetCamera(Camera* cam)
@@ -251,7 +235,7 @@ namespace ToolKit
     RenderTargetSettigs EditorViewport::GetRenderTargetSettings()
     {
       RenderTargetSettigs sets;
-      sets.Msaa = 8;
+      sets.Msaa = Main::GetInstance()->m_engineSettings.Graphics.MSAA;
       return sets;
     }
 
@@ -267,83 +251,59 @@ namespace ToolKit
       m_contentAreaMax.x += ImGui::GetWindowPos().x;
       m_contentAreaMax.y += ImGui::GetWindowPos().y;
 
-      m_wndPos.x = m_contentAreaMin.x;
-      m_wndPos.y = m_contentAreaMin.y;
+      m_contentAreaLocation.x = m_contentAreaMin.x;
+      m_contentAreaLocation.y = m_contentAreaMin.y;
 
-      m_wndContentAreaSize = Vec2
-      (
-        glm::abs(m_contentAreaMax.x - m_contentAreaMin.x),
-        glm::abs(m_contentAreaMax.y - m_contentAreaMin.y)
-      );
-      ImGuiIO& io = ImGui::GetIO();
-      ImVec2 absMousePos = io.MousePos;
+      m_wndContentAreaSize =
+          Vec2(glm::abs(m_contentAreaMax.x - m_contentAreaMin.x),
+               glm::abs(m_contentAreaMax.y - m_contentAreaMin.y));
+      ImGuiIO& io            = ImGui::GetIO();
+      ImVec2 absMousePos     = io.MousePos;
       m_mouseOverContentArea = false;
-      if
-      (
-        m_contentAreaMin.x < absMousePos.x
-        && m_contentAreaMax.x > absMousePos.x
-      )
+      if (m_contentAreaMin.x < absMousePos.x &&
+          m_contentAreaMax.x > absMousePos.x)
       {
-        if
-        (
-          m_contentAreaMin.y < absMousePos.y
-          && m_contentAreaMax.y > absMousePos.y
-        )
+        if (m_contentAreaMin.y < absMousePos.y &&
+            m_contentAreaMax.y > absMousePos.y)
         {
           m_mouseOverContentArea = true;
         }
       }
 
-      m_lastMousePosRelContentArea.x = static_cast<int>
-      (
-        absMousePos.x - m_contentAreaMin.x
-      );
-      m_lastMousePosRelContentArea.y = static_cast<int>
-      (
-        absMousePos.y - m_contentAreaMin.y
-      );
+      m_lastMousePosRelContentArea.x =
+          static_cast<int>(absMousePos.x - m_contentAreaMin.x);
+      m_lastMousePosRelContentArea.y =
+          static_cast<int>(absMousePos.y - m_contentAreaMin.y);
     }
 
     void EditorViewport::UpdateWindow()
     {
       if (!ImGui::IsWindowCollapsed())
       {
+        // Resize window.
+        Vec2 wndSize = ImGui::GetWindowSize();
+        if (!VecAllEqual(wndSize, Vec2(m_size)))
+        {
+          ResizeWindow((uint) wndSize.x, (uint) wndSize.y);
+        }
+
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
-          ImGui::Image
-          (
-            Convert2ImGuiTexture(m_viewportImage),
-            Vec2(m_width, m_height),
-            Vec2(0.0f, 0.0f),
-            Vec2(1.0f, -1.0f)
-          );
-
-          if
-          (
-            m_wndContentAreaSize.x != m_width ||
-            m_wndContentAreaSize.y != m_height
-          )
-          {
-            OnResize(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
-          }
+          ImGui::Image(Convert2ImGuiTexture(m_viewportImage),
+                       m_wndContentAreaSize,
+                       Vec2(0.0f, 0.0f),
+                       Vec2(1.0f, -1.0f));
 
           if (IsActive())
           {
-            ImGui::GetWindowDrawList()->AddRect
-            (
-              m_contentAreaMin,
-              m_contentAreaMax,
-              IM_COL32(255, 255, 0, 255)
-            );
+            ImGui::GetWindowDrawList()->AddRect(
+                m_contentAreaMin, m_contentAreaMax, IM_COL32(255, 255, 0, 255));
           }
           else
           {
-            ImGui::GetWindowDrawList()->AddRect
-            (
-              m_contentAreaMin,
-              m_contentAreaMax,
-              IM_COL32(128, 128, 128, 255)
-            );
+            ImGui::GetWindowDrawList()->AddRect(m_contentAreaMin,
+                                                m_contentAreaMax,
+                                                IM_COL32(128, 128, 128, 255));
           }
         }
       }
@@ -394,18 +354,14 @@ namespace ToolKit
             }
           }
 
-          cam->GetComponent<DirectionComponent>()->Pitch
-          (
-            -glm::radians(delta.y * g_app->m_mouseSensitivity)
-          );
-          cam->GetComponent<DirectionComponent>()->RotateOnUpVector
-          (
-            -glm::radians(delta.x * g_app->m_mouseSensitivity)
-          );
+          cam->GetComponent<DirectionComponent>()->Pitch(
+              -glm::radians(delta.y * g_app->m_mouseSensitivity));
+          cam->GetComponent<DirectionComponent>()->RotateOnUpVector(
+              -glm::radians(delta.x * g_app->m_mouseSensitivity));
 
           Vec3 dir, up, right;
-          dir = -Z_AXIS;
-          up = Y_AXIS;
+          dir   = -Z_AXIS;
+          up    = Y_AXIS;
           right = X_AXIS;
 
           float speed = g_app->m_camSpeed;
@@ -447,11 +403,8 @@ namespace ToolKit
             move = normalize(move);
           }
 
-          cam->m_node->Translate
-          (
-            move * displace,
-            TransformationSpace::TS_LOCAL
-          );
+          cam->m_node->Translate(move * displace,
+                                 TransformationSpace::TS_LOCAL);
         }
         else
         {
@@ -481,18 +434,18 @@ namespace ToolKit
 
         static Vec3 orbitPnt;
         static bool hitFound = false;
-        static float dist = 0.0f;
-        Camera::CamData dat = cam->GetData();
+        static float dist    = 0.0f;
+        Camera::CamData dat  = cam->GetData();
         if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
         {
           // Figure out orbiting point.
           EditorScenePtr currScene = g_app->GetCurrentScene();
-          Entity* currEntity = currScene->GetCurrentSelection();
+          Entity* currEntity       = currScene->GetCurrentSelection();
           if (currEntity == nullptr)
           {
             if (!hitFound)
             {
-              Ray orbitRay = RayFromMousePosition();
+              Ray orbitRay             = RayFromMousePosition();
               EditorScene::PickData pd = currScene->PickObject(orbitRay);
 
               if (pd.entity == nullptr)
@@ -507,36 +460,37 @@ namespace ToolKit
                 orbitPnt = pd.pickPos;
               }
               hitFound = true;
-              dist = glm::distance(orbitPnt, dat.pos);
+              dist     = glm::distance(orbitPnt, dat.pos);
             }
           }
           else
           {
             hitFound = true;
-            orbitPnt = currEntity->m_node->GetTranslation
-            (
-              TransformationSpace::TS_WORLD
-            );
+            orbitPnt = currEntity->m_node->GetTranslation(
+                TransformationSpace::TS_WORLD);
             dist = glm::distance(orbitPnt, dat.pos);
           }
 
           // Orbit around it.
           float x = io.MouseDelta.x;
           float y = io.MouseDelta.y;
-          Vec3 r = cam->GetComponent<DirectionComponent>()->GetRight();
-          Vec3 u = cam->GetComponent<DirectionComponent>()->GetUp();
+          Vec3 r  = cam->GetComponent<DirectionComponent>()->GetRight();
+          Vec3 u  = cam->GetComponent<DirectionComponent>()->GetUp();
 
           if (io.KeyShift || m_orbitLock)
           {
             // Reflect window space mouse delta to image plane.
-            Vec3 deltaOnImagePlane = glm::unProject
-            (
-              // Here, mouse delta is transformed to viewport center.
-              Vec3(x + m_width * 0.5f, y + m_height * 0.5f, 0.0f),
-              Mat4(),
-              dat.projection,
-              Vec4(0.0f, 0.0f, m_width, m_height)
-            );
+            Vec3 deltaOnImagePlane = glm::unProject(
+                // Here, mouse delta is transformed to viewport center.
+                Vec3(x + m_wndContentAreaSize.x * 0.5f,
+                     y + m_wndContentAreaSize.y * 0.5f,
+                     0.0f),
+                Mat4(),
+                dat.projection,
+                Vec4(0.0f,
+                     0.0f,
+                     m_wndContentAreaSize.x,
+                     m_wndContentAreaSize.y));
 
             // Thales ! Reflect imageplane displacement to world space.
             Vec3 deltaOnWorld = deltaOnImagePlane * dist / dat.nearDist;
@@ -566,22 +520,14 @@ namespace ToolKit
               }
             }
 
-            Mat4 camTs = cam->m_node->GetTransform
-            (
-              TransformationSpace::TS_WORLD
-            );
-            Mat4 ts = glm::translate(Mat4(), orbitPnt);
+            Mat4 camTs =
+                cam->m_node->GetTransform(TransformationSpace::TS_WORLD);
+            Mat4 ts  = glm::translate(Mat4(), orbitPnt);
             Mat4 its = glm::translate(Mat4(), -orbitPnt);
-            Quaternion qx = glm::angleAxis
-            (
-              -glm::radians(y * g_app->m_mouseSensitivity),
-              r
-            );
-            Quaternion qy = glm::angleAxis
-            (
-              -glm::radians(x * g_app->m_mouseSensitivity),
-              Y_AXIS
-            );
+            Quaternion qx =
+                glm::angleAxis(-glm::radians(y * g_app->m_mouseSensitivity), r);
+            Quaternion qy = glm::angleAxis(
+                -glm::radians(x * g_app->m_mouseSensitivity), Y_AXIS);
 
             camTs = ts * glm::toMat4(qy * qx) * its * camTs;
             cam->m_node->SetTransform(camTs, TransformationSpace::TS_WORLD);
@@ -596,7 +542,7 @@ namespace ToolKit
         if (!ImGui::IsMouseDown(ImGuiMouseButton_Middle))
         {
           hitFound = false;
-          dist = 0.0f;
+          dist     = 0.0f;
         }
       }
     }
@@ -604,26 +550,20 @@ namespace ToolKit
     void EditorViewport::AdjustZoom(float delta)
     {
       Camera* cam = GetCamera();
-      cam->m_node->Translate
-      (
-        Vec3(0.0f, 0.0f, -delta),
-        TransformationSpace::TS_LOCAL
-      );
+      cam->m_node->Translate(Vec3(0.0f, 0.0f, -delta),
+                             TransformationSpace::TS_LOCAL);
       if (cam->IsOrtographic())
       {
         // Magic zoom.
         Camera::CamData dat = cam->GetData();
-        float dist = glm::distance(ZERO, dat.pos);
-        m_zoom = dist / 600.0f;
-        cam->SetLens
-        (
-          -m_zoom * m_width * 0.5f,
-          m_zoom * m_width * 0.5f,
-          -m_zoom * m_height * 0.5f,
-          m_zoom * m_height * 0.5f,
-          0.5f,
-          1000.0f
-        );
+        float dist          = glm::distance(ZERO, dat.pos);
+        m_zoom              = dist / 600.0f;
+        cam->SetLens(-m_zoom * m_wndContentAreaSize.x * 0.5f,
+                     m_zoom * m_wndContentAreaSize.x * 0.5f,
+                     -m_zoom * m_wndContentAreaSize.y * 0.5f,
+                     m_zoom * m_wndContentAreaSize.y * 0.5f,
+                     0.5f,
+                     1000.0f);
       }
     }
 
@@ -636,9 +576,9 @@ namespace ToolKit
 
       // Asset drag and drop loading variables
       static LineBatch* boundingBox = nullptr;
-      static bool meshLoaded = false;
-      static bool meshAddedToScene = false;
-      static Entity* dwMesh = nullptr;
+      static bool meshLoaded        = false;
+      static bool meshAddedToScene  = false;
+      static Entity* dwMesh         = nullptr;
 
       // AssetBrowser drop handling.
       if (ImGui::BeginDragDropTarget())
@@ -648,51 +588,32 @@ namespace ToolKit
         {
           return;
         }
-        DirectoryEntry dragEntry = *(const DirectoryEntry*)dragPayload->Data;
+        DirectoryEntry dragEntry = *(const DirectoryEntry*) dragPayload->Data;
 
         // Check if the drag object is a mesh
         Vec3 lastDragMeshPos = Vec3(0.0f);
         if (dragEntry.m_ext == MESH || dragEntry.m_ext == SKINMESH)
         {
           // Load mesh
-          LoadDragMesh
-          (
-            meshLoaded,
-            dragEntry,
-            io,
-            &dwMesh,
-            &boundingBox,
-            currScene
-          );
+          LoadDragMesh(
+              meshLoaded, dragEntry, io, &dwMesh, &boundingBox, currScene);
 
           // Show bounding box
-          lastDragMeshPos = CalculateDragMeshPosition
-          (
-            meshLoaded,
-            currScene,
-            dwMesh,
-            &boundingBox
-          );
+          lastDragMeshPos = CalculateDragMeshPosition(
+              meshLoaded, currScene, dwMesh, &boundingBox);
         }
 
-        if
-        (
-          const ImGuiPayload* payload = ImGui::AcceptDragDropPayload
-          (
-            "BrowserDragZone"
-          )
-        )
+        if (const ImGuiPayload* payload =
+                ImGui::AcceptDragDropPayload("BrowserDragZone"))
         {
           IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
-          DirectoryEntry entry = *(const DirectoryEntry*)payload->Data;
+          DirectoryEntry entry = *(const DirectoryEntry*) payload->Data;
 
           if (entry.m_ext == MESH || entry.m_ext == SKINMESH)
           {
             // Translate mesh to correct position
-            dwMesh->m_node->SetTranslation(
-              lastDragMeshPos,
-              TransformationSpace::TS_WORLD
-            );
+            dwMesh->m_node->SetTranslation(lastDragMeshPos,
+                                           TransformationSpace::TS_WORLD);
 
             // Add mesh to the scene
             currScene->AddEntity(dwMesh);
@@ -703,32 +624,36 @@ namespace ToolKit
           }
           else if (entry.m_ext == SCENE)
           {
-            YesNoWindow* importOptionWnd = new YesNoWindow
-            (
-              "Open Scene",
-              "Open",
-              "Merge",
-              "Open or merge the scene ?",
-              true
-            );
-            importOptionWnd->m_yesCallback = [entry]() ->void
-            {
+            YesNoWindow::ButtonInfo openButton;
+            openButton.m_name     = "Open";
+            openButton.m_callback = [entry]() -> void {
               String fullPath = entry.GetFullPath();
               g_app->OpenScene(fullPath);
             };
-
-            importOptionWnd->m_noCallback = [entry]() -> void
-            {
+            YesNoWindow::ButtonInfo linkButton;
+            linkButton.m_name     = "Link";
+            linkButton.m_callback = [entry]() -> void {
+              String fullPath = entry.GetFullPath();
+              GetSceneManager()->GetCurrentScene()->LinkPrefab(fullPath);
+            };
+            YesNoWindow::ButtonInfo mergeButton;
+            mergeButton.m_name     = "Merge";
+            mergeButton.m_callback = [entry]() -> void {
               String fullPath = entry.GetFullPath();
               g_app->MergeScene(fullPath);
             };
+            YesNoWindow* importOptionWnd =
+                new YesNoWindow("Open Scene",
+                                {openButton, linkButton, mergeButton},
+                                "Open or Link the scene ?",
+                                true);
 
             UI::m_volatileWindows.push_back(importOptionWnd);
           }
           else if (entry.m_ext == MATERIAL)
           {
             // Find the drop entity
-            Ray ray = RayFromMousePosition();
+            Ray ray                  = RayFromMousePosition();
             EditorScene::PickData pd = currScene->PickObject(ray);
             if (pd.entity != nullptr && pd.entity->IsDrawable())
             {
@@ -736,20 +661,13 @@ namespace ToolKit
               if (ms != nullptr)
               {
                 // Load material once
-                String path = ConcatPaths
-                (
-                  {
-                    dragEntry.m_rootPath,
-                    dragEntry.m_fileName + dragEntry.m_ext
-                  }
-                );
-                MaterialPtr material = GetMaterialManager()->Create<Material>
-                (
-                  path
-                );
+                String path =
+                    ConcatPaths({dragEntry.m_rootPath,
+                                 dragEntry.m_fileName + dragEntry.m_ext});
+                MaterialPtr material =
+                    GetMaterialManager()->Create<Material>(path);
                 // Set material to material component
-                MaterialComponentPtr matPtr =
-                pd.entity->GetMaterialComponent();
+                MaterialComponentPtr matPtr = pd.entity->GetMaterialComponent();
                 if (matPtr == nullptr)
                 {
                   // Create a new material component
@@ -766,14 +684,8 @@ namespace ToolKit
         ImGui::EndDragDropTarget();
       }
 
-      HandleDropMesh
-      (
-        meshLoaded,
-        meshAddedToScene,
-        currScene,
-        &dwMesh,
-        &boundingBox
-      );
+      HandleDropMesh(
+          meshLoaded, meshAddedToScene, currScene, &dwMesh, &boundingBox);
     }
 
     void EditorViewport::DrawOverlays()
@@ -785,7 +697,7 @@ namespace ToolKit
           bool onPlugin = false;
           if (m_name == g_3dViewport && g_app->m_gameMod != GameMod::Stop)
           {
-            if (!g_app->m_emulatorSettings.runWindowed)
+            if (!g_app->m_simulatorSettings.Windowed)
             {
               // Game is being drawn on 3d viewport. Hide overlays.
               onPlugin = true;
@@ -812,23 +724,42 @@ namespace ToolKit
       }
     }
 
-    void EditorViewport::LoadDragMesh
-    (
-      bool& meshLoaded,
-      DirectoryEntry dragEntry,
-      ImGuiIO io,
-      Entity** dwMesh,
-      LineBatch** boundingBox,
-      EditorScenePtr currScene
-    )
+    void EditorViewport::ComitResize()
+    {
+      if (m_needsResize)
+      {
+        Vec2 size(m_size);
+        Vec2 windowStyleArea = size - m_wndContentAreaSize;
+        Vec2 contentAreaSize = size - windowStyleArea;
+
+        OnResizeContentArea(contentAreaSize.x, contentAreaSize.y);
+      }
+
+      m_needsResize = false;
+    }
+
+    void EditorViewport::UpdateSnaps()
+    {
+      if (m_mouseOverContentArea && g_app->m_snapsEnabled)
+      {
+        g_app->m_moveDelta   = m_snapDeltas.x;
+        g_app->m_rotateDelta = m_snapDeltas.y;
+        g_app->m_scaleDelta  = m_snapDeltas.z;
+      }
+    }
+
+    void EditorViewport::LoadDragMesh(bool& meshLoaded,
+                                      DirectoryEntry dragEntry,
+                                      ImGuiIO io,
+                                      Entity** dwMesh,
+                                      LineBatch** boundingBox,
+                                      EditorScenePtr currScene)
     {
       if (!meshLoaded)
       {
         // Load mesh once
-        String path = ConcatPaths
-        (
-          { dragEntry.m_rootPath, dragEntry.m_fileName + dragEntry.m_ext }
-        );
+        String path = ConcatPaths(
+            {dragEntry.m_rootPath, dragEntry.m_fileName + dragEntry.m_ext});
         *dwMesh = new Entity();
         (*dwMesh)->AddComponent(new MeshComponent);
         MeshPtr mesh;
@@ -853,13 +784,10 @@ namespace ToolKit
       }
     }
 
-    Vec3 EditorViewport::CalculateDragMeshPosition
-    (
-      bool& meshLoaded,
-      EditorScenePtr currScene,
-      Entity* dwMesh,
-      LineBatch** boundingBox
-    )
+    Vec3 EditorViewport::CalculateDragMeshPosition(bool& meshLoaded,
+                                                   EditorScenePtr currScene,
+                                                   Entity* dwMesh,
+                                                   LineBatch** boundingBox)
     {
       Vec3 lastDragMeshPos = Vec3(0.0f);
 
@@ -871,10 +799,10 @@ namespace ToolKit
         ignoreList.push_back((*boundingBox)->GetIdVal());
       }
       EditorScene::PickData pd = currScene->PickObject(ray, ignoreList);
-      bool meshFound = false;
+      bool meshFound           = false;
       if (pd.entity != nullptr)
       {
-        meshFound = true;
+        meshFound       = true;
         lastDragMeshPos = pd.pickPos;
       }
       else
@@ -902,23 +830,18 @@ namespace ToolKit
         }
       }
 
-      (*boundingBox)->m_node->SetTranslation
-      (
-        lastDragMeshPos,
-        TransformationSpace::TS_WORLD
-      );
+      (*boundingBox)
+          ->m_node->SetTranslation(lastDragMeshPos,
+                                   TransformationSpace::TS_WORLD);
 
       return lastDragMeshPos;
     }
 
-    void EditorViewport::HandleDropMesh
-    (
-      bool& meshLoaded,
-      bool& meshAddedToScene,
-      EditorScenePtr currScene,
-      Entity** dwMesh,
-      LineBatch** boundingBox
-    )
+    void EditorViewport::HandleDropMesh(bool& meshLoaded,
+                                        bool& meshAddedToScene,
+                                        EditorScenePtr currScene,
+                                        Entity** dwMesh,
+                                        LineBatch** boundingBox)
     {
       if (meshLoaded && !ImGui::IsMouseDragging(0))
       {
@@ -939,5 +862,6 @@ namespace ToolKit
         SafeDel(*boundingBox);
       }
     }
-  }  // namespace Editor
-}  // namespace ToolKit
+
+  } // namespace Editor
+} // namespace ToolKit

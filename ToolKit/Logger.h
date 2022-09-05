@@ -26,4 +26,4 @@ namespace ToolKit
     std::ofstream m_logFile;
     std::function<void(LogType, String)> m_writeConsoleFn;
   };
-}  // namespace ToolKit
+} // namespace ToolKit

@@ -15,16 +15,16 @@ namespace ToolKit
       bool lookAtCamera = true;
 
       /**
-      * If grater then 0, place the billboard always at approximately 
-      * (Difference due to RadialToPlanarDistance conversion) 
-      * given distance to camera.
-      */
+       * If grater then 0, place the billboard always at approximately
+       * (Difference due to RadialToPlanarDistance conversion)
+       * given distance to camera.
+       */
       float distanceToCamera = 0.0f;
 
       /**
-      * If greater then 0, 
-      * Fov changes due to window height changes doesn't shrink the object.
-      */
+       * If greater then 0,
+       * Fov changes due to window height changes doesn't shrink the object.
+       */
       float heightInScreenSpace = 0.0f;
     };
 
@@ -136,7 +136,7 @@ namespace ToolKit
   {
    public:
     Arrow2d(bool genDef = true);
-    Arrow2d(AxisLabel label);  // X - Y - Z.
+    Arrow2d(AxisLabel label); // X - Y - Z.
     EntityType GetType() const override;
 
    protected:
@@ -154,26 +154,19 @@ namespace ToolKit
   {
    public:
     LineBatch();
-    LineBatch
-    (
-      const Vec3Array& linePnts,
-      const Vec3& color,
-      DrawType t,
-      float lineWidth = 1.0f
-    );
+    LineBatch(const Vec3Array& linePnts,
+              const Vec3& color,
+              DrawType t,
+              float lineWidth = 1.0f);
 
     EntityType GetType() const override;
-    void Generate
-    (
-      const Vec3Array& linePnts,
-      const Vec3& color,
-      DrawType t,
-      float lineWidth = 1.0f
-    );
+    void Generate(const Vec3Array& linePnts,
+                  const Vec3& color,
+                  DrawType t,
+                  float lineWidth = 1.0f);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
   };
 
-}  // namespace ToolKit
-
+} // namespace ToolKit

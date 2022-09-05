@@ -24,7 +24,9 @@ namespace ToolKit
     PROJECTION_VIEW_NO_TR,
     USE_IBL,
     IBL_INTENSITY,
-    IBL_IRRADIANCE
+    IBL_IRRADIANCE,
+    DIFFUSE_TEXTURE_IN_USE,
+    COLOR_ALPHA
   };
 
   class TK_API Shader : public Resource
@@ -49,7 +51,7 @@ namespace ToolKit
 
     String m_tag;
     GraphicTypes m_shaderType = GraphicTypes::VertexShader;
-    uint m_shaderHandle = 0;
+    uint m_shaderHandle       = 0;
     std::vector<Uniform> m_uniforms;
     String m_source;
   };
@@ -77,4 +79,4 @@ namespace ToolKit
     ResourcePtr CreateLocal(ResourceType type) override;
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

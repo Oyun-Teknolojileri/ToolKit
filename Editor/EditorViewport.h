@@ -28,7 +28,8 @@ namespace ToolKit
     class EditorViewport : public Viewport, public Window
     {
      public:
-      explicit EditorViewport(XmlNode * node);
+      explicit EditorViewport(XmlNode* node);
+      explicit EditorViewport(const Vec2& size);
       EditorViewport(float width, float height);
       virtual ~EditorViewport();
 
@@ -42,7 +43,8 @@ namespace ToolKit
       // Viewport overrides.
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-      void OnResize(float width, float height) override;
+      void OnResizeContentArea(float width, float height) override;
+      virtual void ResizeWindow(uint width, uint height);
 
       // Editor functions
       void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const;
@@ -56,6 +58,8 @@ namespace ToolKit
       void DrawCommands();
       void HandleDrop();
       void DrawOverlays();
+      void ComitResize();
+      void UpdateSnaps();
 
       // Mods.
       void FpsNavigationMode(float deltaTime);
@@ -63,40 +67,32 @@ namespace ToolKit
       void AdjustZoom(float delta) override;
 
      private:
-      void LoadDragMesh
-      (
-        bool& meshLoaded,
-        DirectoryEntry dragEntry,
-        ImGuiIO io,
-        Entity** dwMesh,
-        LineBatch** boundingBox,
-        EditorScenePtr currScene
-      );
+      void LoadDragMesh(bool& meshLoaded,
+                        DirectoryEntry dragEntry,
+                        ImGuiIO io,
+                        Entity** dwMesh,
+                        LineBatch** boundingBox,
+                        EditorScenePtr currScene);
 
-      Vec3 CalculateDragMeshPosition
-      (
-        bool& meshLoaded,
-        EditorScenePtr currScene,
-        Entity* dwMesh,
-        LineBatch** boundingBox
-      );
-      void HandleDropMesh
-      (
-        bool& meshLoaded,
-        bool& meshAddedToScene,
-        EditorScenePtr currScene,
-        Entity** dwMesh,
-        LineBatch** boundingBox
-      );
+      Vec3 CalculateDragMeshPosition(bool& meshLoaded,
+                                     EditorScenePtr currScene,
+                                     Entity* dwMesh,
+                                     LineBatch** boundingBox);
+
+      void HandleDropMesh(bool& meshLoaded,
+                          bool& meshAddedToScene,
+                          EditorScenePtr currScene,
+                          Entity** dwMesh,
+                          LineBatch** boundingBox);
 
      public:
       // Window properties.
       static std::vector<class OverlayUI*> m_overlays;
-      bool m_mouseOverOverlay = false;
+      bool m_mouseOverOverlay           = false;
       CameraAlignment m_cameraAlignment = CameraAlignment::Free;
-      int m_additionalWindowFlags = 0;
-      bool m_orbitLock = false;
-      Vec3 m_snapDeltas;  // X: Translation, Y: Rotation, Z: Scale
+      int m_additionalWindowFlags       = 0;
+      bool m_orbitLock                  = false;
+      Vec3 m_snapDeltas; // X: Translation, Y: Rotation, Z: Scale
 
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;
@@ -109,7 +105,8 @@ namespace ToolKit
      private:
       // States.
       bool m_relMouseModBegin = true;
+      bool m_needsResize      = false;
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

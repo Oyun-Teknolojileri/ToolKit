@@ -10,11 +10,11 @@
 #include "Gizmo.h"
 #include "ResourceComponent.h"
 
-
 namespace ToolKit
 {
   namespace Editor
   {
+
     // Editor Light Utils.
     extern void EnableLightGizmo(Light* light, bool enable);
 
@@ -32,18 +32,17 @@ namespace ToolKit
       ValueUpdateFn m_gizmoUpdateFn;
 
      public:
-      LightGizmoBase* m_gizmo = nullptr;
+      LightGizmoBase* m_gizmo    = nullptr;
       MeshComponentPtr m_gizmoMC = nullptr;
 
      protected:
-      Light* m_light = nullptr;
+      Light* m_light     = nullptr;
       bool m_gizmoActive = false;
       bool m_initialized = false;
     };
 
-    class EditorDirectionalLight :
-      public DirectionalLight,
-      public EditorLightBase
+    class EditorDirectionalLight : public DirectionalLight,
+                                   public EditorLightBase
     {
      public:
       EditorDirectionalLight();
@@ -82,5 +81,5 @@ namespace ToolKit
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

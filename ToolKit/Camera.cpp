@@ -12,7 +12,7 @@ namespace ToolKit
     DeSerialize(nullptr, node);
 
     DirectionComponentPtr dCom = GetComponent<DirectionComponent>();
-    dCom->m_entity = this;
+    dCom->m_entity             = this;
 
     if (m_ortographic)
     {
@@ -39,44 +39,31 @@ namespace ToolKit
     SetLens(fov, width, height, 0.5f, 1000.0f);
   }
 
-  void Camera::SetLens
-  (
-    float fov,
-    float width,
-    float height,
-    float near,
-    float far
-  )
+  void Camera::SetLens(
+      float fov, float width, float height, float near, float far)
   {
-    m_projection = glm::perspectiveFov(fov, width, height, near, far);
-    m_fov = fov;
-    m_aspect = width / height;
-    m_near = near;
-    m_far = far;
-    m_height = height;
+    m_projection  = glm::perspectiveFov(fov, width, height, near, far);
+    m_fov         = fov;
+    m_aspect      = width / height;
+    m_near        = near;
+    m_far         = far;
+    m_height      = height;
     m_ortographic = false;
   }
 
-  void Camera::SetLens
-  (
-    float left,
-    float right,
-    float bottom,
-    float top,
-    float near,
-    float far
-  )
+  void Camera::SetLens(
+      float left, float right, float bottom, float top, float near, float far)
   {
-    m_projection = glm::ortho(left, right, bottom, top, near, far);
-    m_left = left;
-    m_right = right;
-    m_top = top;
-    m_bottom = bottom;
-    m_fov = 0.0f;
-    m_aspect = 1.0f;
-    m_near = near;
-    m_far = far;
-    m_height = top - bottom;
+    m_projection  = glm::ortho(left, right, bottom, top, near, far);
+    m_left        = left;
+    m_right       = right;
+    m_top         = top;
+    m_bottom      = bottom;
+    m_fov         = 0.0f;
+    m_aspect      = 1.0f;
+    m_near        = near;
+    m_far         = far;
+    m_height      = top - bottom;
     m_ortographic = true;
   }
 
@@ -108,12 +95,13 @@ namespace ToolKit
     assert(dcp);
     data.dir = dcp->GetDirection();
 
-    data.pos = m_node->GetTranslation(TransformationSpace::TS_WORLD);
-    data.projection = m_projection;
-    data.fov = m_fov;
-    data.aspect = m_aspect;
-    data.nearDist = m_near;
-    data.height = m_height;
+    data.pos         = m_node->GetTranslation(TransformationSpace::TS_WORLD);
+    data.projection  = m_projection;
+    data.fov         = m_fov;
+    data.aspect      = m_aspect;
+    data.nearDist    = m_near;
+    data.far         = m_far;
+    data.height      = m_height;
     data.ortographic = m_ortographic;
 
     return data;
@@ -165,21 +153,21 @@ namespace ToolKit
   Entity* Camera::CopyTo(Entity* copyTo) const
   {
     WeakCopy(copyTo, false);
-    Camera* cpy = static_cast<Camera*> (copyTo);
-    cpy->m_fov = m_fov;
-    cpy->m_aspect = m_aspect;
-    cpy->m_near = m_near;
-    cpy->m_far = m_far;
-    cpy->m_height = m_height;
-    cpy->m_left = m_left;
-    cpy->m_right = m_right;
-    cpy->m_bottom = m_bottom;
+    Camera* cpy        = static_cast<Camera*>(copyTo);
+    cpy->m_fov         = m_fov;
+    cpy->m_aspect      = m_aspect;
+    cpy->m_near        = m_near;
+    cpy->m_far         = m_far;
+    cpy->m_height      = m_height;
+    cpy->m_left        = m_left;
+    cpy->m_right       = m_right;
+    cpy->m_bottom      = m_bottom;
     cpy->m_ortographic = m_ortographic;
-    cpy->m_projection = m_projection;
+    cpy->m_projection  = m_projection;
     cpy->ClearComponents();
     cpy->AddComponent(new DirectionComponent(cpy));
 
     return cpy;
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

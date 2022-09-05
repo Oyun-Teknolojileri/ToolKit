@@ -13,7 +13,7 @@ namespace ToolKit
    public:
     UILayer();
     virtual ~UILayer();
-    virtual void Init() = 0;
+    virtual void Init()   = 0;
     virtual void Uninit() = 0;
     virtual void Update(float deltaTime, Camera* cam, Viewport* vp);
     Entity* FetchEntity(const String& entityName);
@@ -25,10 +25,10 @@ namespace ToolKit
     bool CheckMouseOver(Surface* surface, Event* e, Viewport* vp);
 
    public:
-    String m_layerName;  // Should be the name of root entity of layout.
-    Camera* m_cam = nullptr;
-    ScenePtr m_layout = nullptr;
-    Viewport* m_viewport = nullptr;
+    String m_layerName; // Should be the name of root entity of layout.
+    Camera* m_cam           = nullptr;
+    ScenePtr m_layout       = nullptr;
+    Viewport* m_viewport    = nullptr;
     Camera* m_lastCamEntity = nullptr;
   };
 
@@ -49,4 +49,4 @@ namespace ToolKit
     UILayerPtrArray m_allLayers;
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

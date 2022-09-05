@@ -34,7 +34,7 @@ namespace ToolKit
     MeshPtr mesh = GetMesh();
     if (mesh->IsSkinned())
     {
-      SkinMesh* skinMesh = static_cast<SkinMesh*> (mesh.get());
+      SkinMesh* skinMesh   = static_cast<SkinMesh*>(mesh.get());
       SkeletonPtr skeleton = skinMesh->m_skeleton;
       anim->GetPose(skeleton, time);
     }
@@ -82,5 +82,4 @@ namespace ToolKit
     meshComp->SetMeshVal(mesh);
   }
 
-}  // namespace ToolKit
-
+} // namespace ToolKit

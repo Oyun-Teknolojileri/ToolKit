@@ -46,7 +46,7 @@ namespace ToolKit
       if (isActionCommitted)
       {
         AnimControllerComponentPtr comp =
-          ntt->GetComponent<AnimControllerComponent>();
+            ntt->GetComponent<AnimControllerComponent>();
         if (comp)
         {
           comp->Stop();
@@ -94,8 +94,8 @@ namespace ToolKit
 
     CreateAction::CreateAction(Entity* ntt)
     {
-      m_ntt = ntt;
-      m_actionComitted = true;
+      m_ntt                    = ntt;
+      m_actionComitted         = true;
       EditorScenePtr currScene = g_app->GetCurrentScene();
       currScene->GetSelectedEntities(m_selecteds);
       currScene->AddEntity(ntt);
@@ -137,12 +137,11 @@ namespace ToolKit
       m_com = com;
       switch (com->GetType())
       {
-        case ComponentType::AnimControllerComponent:
-        {
-          reinterpret_cast<AnimControllerComponent*>(com.get())->Stop();
-        }
-        break;
-        default:
+      case ComponentType::AnimControllerComponent: {
+        reinterpret_cast<AnimControllerComponent*>(com.get())->Stop();
+      }
+      break;
+      default:
         break;
       };
       Redo();
@@ -171,7 +170,7 @@ namespace ToolKit
 
     ActionManager::ActionManager()
     {
-      m_initiated = false;
+      m_initiated    = false;
       m_stackPointer = 0;
     }
 
@@ -182,7 +181,7 @@ namespace ToolKit
 
     void ActionManager::Init()
     {
-      m_initiated = true;
+      m_initiated      = true;
       m_actionGrouping = false;
     }
 
@@ -210,11 +209,8 @@ namespace ToolKit
             SafeDel(a);
           }
 
-          m_actionStack.erase
-          (
-            m_actionStack.begin() + m_stackPointer + 1,
-            m_actionStack.end()
-          );
+          m_actionStack.erase(m_actionStack.begin() + m_stackPointer + 1,
+                              m_actionStack.end());
         }
       }
       else
@@ -247,18 +243,17 @@ namespace ToolKit
       }
 
       // Sanity Checks.
-      assert(m_stackPointer == static_cast<int>(m_actionStack.size()) - 1
-      && "Call grouping right after add.");
+      assert(m_stackPointer == static_cast<int>(m_actionStack.size()) - 1 &&
+             "Call grouping right after add.");
       if (n >= static_cast<int>(m_actionStack.size()) && !m_actionGrouping)
       {
-        assert(static_cast<int>(m_actionStack.size()) >=
-        n
-        && "We can't stack more than we have. Try using BeginActionGroup()"
-        " to pass a series of action as a group");
+        assert(static_cast<int>(m_actionStack.size()) >= n &&
+               "We can't stack more than we have. Try using BeginActionGroup()"
+               " to pass a series of action as a group");
         return;
       }
 
-      int begIndx = static_cast<int>(m_actionStack.size()) - n;
+      int begIndx  = static_cast<int>(m_actionStack.size()) - n;
       Action* root = m_actionStack[begIndx++];
       root->m_group.reserve(n - 1);
       for (int i = begIndx; i < static_cast<int>(m_actionStack.size()); i++)
@@ -266,12 +261,8 @@ namespace ToolKit
         root->m_group.push_back(m_actionStack[i]);
       }
 
-      m_actionStack.erase
-      (
-        m_actionStack.begin() + begIndx,
-        m_actionStack.end()
-      );
-      m_stackPointer = static_cast<int>(m_actionStack.size()) - 1;
+      m_actionStack.erase(m_actionStack.begin() + begIndx, m_actionStack.end());
+      m_stackPointer   = static_cast<int>(m_actionStack.size()) - 1;
       m_actionGrouping = false;
     }
 
@@ -303,12 +294,8 @@ namespace ToolKit
           Action* action = m_actionStack[m_stackPointer];
 
           // Undo in reverse order.
-          for
-          (
-            int i = static_cast<int>(action->m_group.size()) - 1;
-            i > -1;
-            i--
-          )
+          for (int i = static_cast<int>(action->m_group.size()) - 1; i > -1;
+               i--)
           {
             action->m_group[i]->Undo();
           }
@@ -343,5 +330,5 @@ namespace ToolKit
       return &m_instance;
     }
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

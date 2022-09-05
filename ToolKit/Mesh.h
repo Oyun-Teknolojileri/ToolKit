@@ -7,7 +7,6 @@
 #include "ResourceManager.h"
 #include "MathUtil.h"
 
-
 namespace ToolKit
 {
 
@@ -63,10 +62,10 @@ namespace ToolKit
     VertexArray m_clientSideVertices;
     std::vector<uint> m_clientSideIndices;
     uint m_vboVertexId = 0;
-    uint m_vboIndexId = 0;
-    uint m_vaoId = 0;
+    uint m_vboIndexId  = 0;
+    uint m_vaoId       = 0;
     uint m_vertexCount = 0;
-    uint m_indexCount = 0;
+    uint m_indexCount  = 0;
     MaterialPtr m_material;
     MeshPtrArray m_subMeshes;
     BoundingBox m_aabb;
@@ -119,4 +118,4 @@ namespace ToolKit
     ResourcePtr CreateLocal(ResourceType type) override;
     String GetDefaultResource(ResourceType type) override;
   };
-}  // namespace ToolKit
+} // namespace ToolKit

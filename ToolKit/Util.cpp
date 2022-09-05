@@ -14,25 +14,27 @@
 namespace ToolKit
 {
 
-  template<typename T>
+  template <typename T>
   void ReadVec(XmlNode* node, T& val)
   {
-    static const char letters[] = { 'x', 'y', 'z', 'w' };
-    int limit = glm::min(val.length(), 4);
+    static const char letters[] = {'x', 'y', 'z', 'w'};
+    int limit                   = glm::min(val.length(), 4);
     for (int i = 0; i < limit; i++)
     {
       XmlAttribute* attr = node->first_attribute(letters + i, 1);
       if constexpr (std::is_integral_v<typename T::value_type>)
       {
-        val[i] = static_cast<int> (std::atoi(attr->value()));
+        val[i] = static_cast<int>(std::atoi(attr->value()));
       }
       else if constexpr (std::is_floating_point_v<typename T::value_type>)
       {
-        val[i] = static_cast<float> (std::atof(attr->value()));
+        val[i] = static_cast<float>(std::atof(attr->value()));
       }
     }
   }
 
+  template TK_API void ReadVec(XmlNode* node, UVec2& val);
+  template TK_API void ReadVec(XmlNode* node, IVec2& val);
   template TK_API void ReadVec(XmlNode* node, Vec2& val);
   template TK_API void ReadVec(XmlNode* node, Vec3& val);
   template TK_API void ReadVec(XmlNode* node, glm::ivec3& val);
@@ -40,57 +42,52 @@ namespace ToolKit
   template TK_API void ReadVec(XmlNode* node, Vec4& val);
   template TK_API void ReadVec(XmlNode* node, UVec4& val);
 
-  template<typename T>
+  template <typename T>
   void WriteVec(XmlNode* node, XmlDocument* doc, const T& val)
   {
-    static const String letters[] = { "x", "y", "z", "w" };
-    int limit = glm::min(val.length(), 4);
+    static const String letters[] = {"x", "y", "z", "w"};
+    int limit                     = glm::min(val.length(), 4);
     for (int i = 0; i < limit; i++)
     {
       WriteAttr(node, doc, letters[i], std::to_string(val[i]));
     }
   }
 
-  template TK_API void WriteVec
-  (
-    XmlNode* node, XmlDocument* doc, const Vec2& val
-  );
-  template TK_API void WriteVec
-  (
-    XmlNode* node, XmlDocument* doc, const Vec3& val
-  );
-  template TK_API void WriteVec
-  (
-    XmlNode* node, XmlDocument* doc, const Vec4& val
-  );
-  template TK_API void WriteVec
-  (
-    XmlNode* node, XmlDocument* doc, const UVec4& val
-  );
-  template TK_API void WriteVec
-  (
-    XmlNode* node, XmlDocument* doc, const Quaternion& val
-  );
+  template TK_API void WriteVec(XmlNode* node,
+                                XmlDocument* doc,
+                                const UVec2& val);
 
-  void WriteAttr
-  (
-    XmlNode* node,
-    XmlDocument* doc,
-    const String& name,
-    const String& val
-  )
+  template TK_API void WriteVec(XmlNode* node,
+                                XmlDocument* doc,
+                                const IVec2& val);
+
+  template TK_API void WriteVec(XmlNode* node,
+                                XmlDocument* doc,
+                                const Vec2& val);
+  template TK_API void WriteVec(XmlNode* node,
+                                XmlDocument* doc,
+                                const Vec3& val);
+  template TK_API void WriteVec(XmlNode* node,
+                                XmlDocument* doc,
+                                const Vec4& val);
+  template TK_API void WriteVec(XmlNode* node,
+                                XmlDocument* doc,
+                                const UVec4& val);
+  template TK_API void WriteVec(XmlNode* node,
+                                XmlDocument* doc,
+                                const Quaternion& val);
+
+  void WriteAttr(XmlNode* node,
+                 XmlDocument* doc,
+                 const String& name,
+                 const String& val)
   {
-    node->append_attribute
-    (
-      doc->allocate_attribute
-      (
-        doc->allocate_string(name.c_str(), 0),
-        doc->allocate_string(val.c_str(), 0)
-      )
-    );
+    node->append_attribute(
+        doc->allocate_attribute(doc->allocate_string(name.c_str(), 0),
+                                doc->allocate_string(val.c_str(), 0)));
   }
 
-  template<typename T>
+  template <typename T>
   T ReadVal(XmlNode* node, const String& name)
   {
     if (XmlAttribute* attr = node->first_attribute(name.c_str()))
@@ -108,7 +105,7 @@ namespace ToolKit
       }
       else if constexpr (std::is_floating_point_v<T>)
       {
-        return static_cast<float> (std::atof(attr->value()));
+        return static_cast<float>(std::atof(attr->value()));
       }
     }
 
@@ -174,13 +171,10 @@ namespace ToolKit
     return node;
   }
 
-  bool UpdateAttribute
-  (
-    XmlDocument* doc,
-    const StringArray& path,
-    const String& attribute,
-    const String& val
-  )
+  bool UpdateAttribute(XmlDocument* doc,
+                       const StringArray& path,
+                       const String& attribute,
+                       const String& val)
   {
     if (XmlNode* node = Query(doc, path))
     {
@@ -190,11 +184,8 @@ namespace ToolKit
       }
       else
       {
-        XmlAttribute* newAttr = doc->allocate_attribute
-        (
-          attribute.c_str(),
-          val.c_str()
-        );
+        XmlAttribute* newAttr =
+            doc->allocate_attribute(attribute.c_str(), val.c_str());
         node->append_attribute(newAttr);
       }
 
@@ -208,12 +199,8 @@ namespace ToolKit
   {
     assert(doc);
 
-    char* str = doc->allocate_string(name.c_str());
-    XmlNode* node = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      str
-    );
+    char* str     = doc->allocate_string(name.c_str());
+    XmlNode* node = doc->allocate_node(rapidxml::node_type::node_element, str);
 
     if (parent)
     {
@@ -229,11 +216,8 @@ namespace ToolKit
 
   void WriteMaterial(XmlNode* parent, XmlDocument* doc, const String& file)
   {
-    XmlNode* material = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      "material"
-    );
+    XmlNode* material =
+        doc->allocate_node(rapidxml::node_type::node_element, "material");
     parent->append_node(material);
 
     String matPath = GetRelativeResourcePath(file);
@@ -242,11 +226,8 @@ namespace ToolKit
       matPath = MaterialPath("default.material", true);
     }
 
-    XmlAttribute* nameAttr = doc->allocate_attribute
-    (
-      "name",
-      doc->allocate_string(matPath.c_str())
-    );
+    XmlAttribute* nameAttr =
+        doc->allocate_attribute("name", doc->allocate_string(matPath.c_str()));
     material->append_attribute(nameAttr);
   }
 
@@ -275,16 +256,14 @@ namespace ToolKit
     {
       String path, name, ext;
       DecomposePath(fullPath, &path, &name, &ext);
-      cpyPath = ConcatPaths({ path, name + "_copy" + ext });
+      cpyPath = ConcatPaths({path, name + "_copy" + ext});
       if (CheckFile(cpyPath))
       {
         int i = 1;
         do
         {
-          cpyPath = ConcatPaths
-          (
-            { path, name + "_copy(" + std::to_string(i++) + ")" + ext }
-          );
+          cpyPath = ConcatPaths(
+              {path, name + "_copy(" + std::to_string(i++) + ")" + ext});
         } while (CheckFile(cpyPath));
       }
     }
@@ -292,13 +271,10 @@ namespace ToolKit
     return cpyPath;
   }
 
-  void DecomposePath
-  (
-    const String& fullPath,
-    String* path,
-    String* name,
-    String* ext
-  )
+  void DecomposePath(const String& fullPath,
+                     String* path,
+                     String* name,
+                     String* ext)
   {
     String normal = fullPath;
     NormalizePath(normal);
@@ -362,22 +338,22 @@ namespace ToolKit
   String GetRelativeResourcePath(const String& path)
   {
     // Check workspace relativity.
-    String root = Main::GetInstance()->m_resourceRoot;
+    String root  = Main::GetInstance()->m_resourceRoot;
     size_t exist = path.find(root);
 
     // Check install path relativity.
     bool toolKit = false;
     if (exist == String::npos)
     {
-      root = ResourcePath(true);
-      exist = path.find(root, 0);
+      root    = ResourcePath(true);
+      exist   = path.find(root, 0);
       toolKit = true;
     }
 
     if (exist == String::npos)
     {
       // ToolKit resource absolute path
-      root = std::filesystem::absolute(root).string();
+      root  = std::filesystem::absolute(root).string();
       exist = path.find(root, 0);
     }
 
@@ -402,13 +378,12 @@ namespace ToolKit
         {
           //  Any relative path starting with ToolKit root directory
           //  will be search in the default path.
-          rel = ConcatPaths({ "ToolKit", rel });
+          rel = ConcatPaths({"ToolKit", rel});
         }
 
         return rel;
       }
     }
-
 
     return path;
   }
@@ -635,7 +610,8 @@ namespace ToolKit
   // split a string into multiple sub strings, based on a separator string
   // for example, if separator="::",
   // s = "abc::def xy::st:" -> "abc", "def xy" and "st:",
-  // https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c?page=2&tab=votes#tab-top // NOLINT
+  // https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c?page=2&tab=votes#tab-top
+  // // NOLINT
   void Split(const String& s, const String& sep, StringArray& v)
   {
     typedef String::const_iterator iter;
@@ -674,12 +650,9 @@ namespace ToolKit
   }
 
   // https://stackoverflow.com/questions/5878775/how-to-find-and-replace-string
-  void ReplaceStringInPlace
-  (
-    String& subject,
-    const String& search,
-    const String& replace
-  )
+  void ReplaceStringInPlace(String& subject,
+                            const String& search,
+                            const String& replace)
   {
     size_t pos = 0;
     while ((pos = subject.find(search, pos)) != std::string::npos)
@@ -689,12 +662,9 @@ namespace ToolKit
     }
   }
 
-  void ReplaceFirstStringInPlace
-  (
-    String& subject,
-    const String& search,
-    const String& replace
-  )
+  void ReplaceFirstStringInPlace(String& subject,
+                                 const String& search,
+                                 const String& replace)
   {
     size_t pos = 0;
     if ((pos = subject.find(search, pos)) != std::string::npos)
@@ -703,12 +673,9 @@ namespace ToolKit
     }
   }
 
-  void ReplaceCharInPlace
-  (
-    String& subject,
-    const char search,
-    const char replace
-  )
+  void ReplaceCharInPlace(String& subject,
+                          const char search,
+                          const char replace)
   {
     for (char& ch : subject)
     {
@@ -745,10 +712,10 @@ namespace ToolKit
     const size_t strBegin = str.find_first_not_of(whitespace);
     if (strBegin == std::string::npos)
     {
-      return "";  // no content
+      return ""; // no content
     }
 
-    const size_t strEnd = str.find_last_not_of(whitespace);
+    const size_t strEnd   = str.find_last_not_of(whitespace);
     const size_t strRange = strEnd - strBegin + 1;
 
     return str.substr(strBegin, strRange);
@@ -760,20 +727,17 @@ namespace ToolKit
     Vec3 z = plane.normal;
     Vec3 x = z + Vec3(1.0f);
     Vec3 y = glm::cross(z, x);
-    x = glm::normalize(glm::cross(y, z));
-    y = glm::normalize(glm::cross(z, x));
+    x      = glm::normalize(glm::cross(y, z));
+    y      = glm::normalize(glm::cross(z, x));
 
     NormalizePlaneEquation(plane);
     Vec3 o = plane.normal * plane.d;
 
     float hSize = size * 0.5f;
-    Vec3Array corners
-    {
-      o + x * hSize + y * hSize,
-      o - x * hSize + y * hSize,
-      o - x * hSize - y * hSize,
-      o + x * hSize - y * hSize
-    };
+    Vec3Array corners{o + x * hSize + y * hSize,
+                      o - x * hSize + y * hSize,
+                      o - x * hSize - y * hSize,
+                      o + x * hSize - y * hSize};
 
     LineBatch* obj = new LineBatch(corners, X_AXIS, DrawType::LineLoop, 5.0f);
     return obj;
@@ -785,35 +749,31 @@ namespace ToolKit
     return obj;
   }
 
-  LineBatch* CreateBoundingBoxDebugObject
-  (
-    const BoundingBox& box,
-    const Vec3& color,
-    float size,
-    const Mat4* transform
-  )
+  LineBatch* CreateBoundingBoxDebugObject(const BoundingBox& box,
+                                          const Vec3& color,
+                                          float size,
+                                          const Mat4* transform)
   {
     Vec3Array corners;
     GetCorners(box, corners);
 
-    std::vector<Vec3> vertices =
-    {
-      corners[0],  // FTL
-      corners[3],  // FBL
-      corners[2],  // FBR
-      corners[1],  // FTR
-      corners[0],  // FTL
-      corners[4],  // BTL
-      corners[7],  // BBL
-      corners[6],  // BBR
-      corners[5],  // BTR
-      corners[4],  // BTL
-      corners[5],  // BTR
-      corners[1],  // FTR
-      corners[2],  // FBR
-      corners[6],  // BBR
-      corners[7],  // BBL
-      corners[3]  // FBL
+    std::vector<Vec3> vertices = {
+        corners[0], // FTL
+        corners[3], // FBL
+        corners[2], // FBR
+        corners[1], // FTR
+        corners[0], // FTL
+        corners[4], // BTL
+        corners[7], // BBL
+        corners[6], // BBR
+        corners[5], // BTR
+        corners[4], // BTL
+        corners[5], // BTR
+        corners[1], // FTR
+        corners[2], // FBR
+        corners[6], // BBR
+        corners[7], // BBL
+        corners[3]  // FBL
     };
 
     if (transform != nullptr)
@@ -824,21 +784,13 @@ namespace ToolKit
       }
     }
 
-    LineBatch* lineForm = new LineBatch
-    (
-      vertices,
-      color,
-      DrawType::LineStrip,
-      size
-    );
+    LineBatch* lineForm =
+        new LineBatch(vertices, color, DrawType::LineStrip, size);
     return lineForm;
   }
 
-  void ToEntityIdArray
-  (
-    EntityIdArray& idArray,
-    const EntityRawPtrArray& ptrArray
-  )
+  void ToEntityIdArray(EntityIdArray& idArray,
+                       const EntityRawPtrArray& ptrArray)
   {
     idArray.reserve(ptrArray.size());
     for (Entity* ntt : ptrArray)
@@ -860,15 +812,11 @@ namespace ToolKit
     return false;
   }
 
-  void RootsOnly
-  (
-    const EntityRawPtrArray& entities,
-    EntityRawPtrArray& roots,
-    Entity* child
-  )
+  void RootsOnly(const EntityRawPtrArray& entities,
+                 EntityRawPtrArray& roots,
+                 Entity* child)
   {
-    auto AddUnique = [&roots](Entity* e) -> void
-    {
+    auto AddUnique = [&roots](Entity* e) -> void {
       assert(e != nullptr);
       bool unique = std::find(roots.begin(), roots.end(), e) == roots.end();
       if (unique)
@@ -881,15 +829,8 @@ namespace ToolKit
     if (parent != nullptr)
     {
       Entity* parentEntity = parent->m_entity;
-      if
-      (
-        std::find
-        (
-          entities.begin(),
-        entities.end(),
-        parentEntity
-        ) != entities.end()
-      )
+      if (std::find(entities.begin(), entities.end(), parentEntity) !=
+          entities.end())
       {
         RootsOnly(entities, roots, parentEntity);
       }
@@ -904,11 +845,8 @@ namespace ToolKit
     }
   }
 
-  void GetRootEntities
-  (
-    const EntityRawPtrArray& entities,
-    EntityRawPtrArray& roots
-  )
+  void GetRootEntities(const EntityRawPtrArray& entities,
+                       EntityRawPtrArray& roots)
   {
     for (Entity* e : entities)
     {
@@ -984,42 +922,30 @@ namespace ToolKit
     return cpy;
   }
 
-  TK_API void StableSortByDistanceToCamera
-  (
-    EntityRawPtrArray& entities,
-    const Camera* cam
-  )
+  TK_API void StableSortByDistanceToCamera(EntityRawPtrArray& entities,
+                                           const Camera* cam)
   {
-    std::function<bool(Entity*, Entity*)> sortFn =
-      [cam](Entity* ntt1, Entity* ntt2) -> bool
-    {
-      Vec3 camLoc = cam->m_node->GetTranslation
-      (
-        TransformationSpace::TS_WORLD
-      );
+    std::function<bool(Entity*, Entity*)> sortFn = [cam](Entity* ntt1,
+                                                         Entity* ntt2) -> bool {
+      Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
       BoundingBox bb1 = ntt1->GetAABB(true);
-      float first = glm::length2(bb1.GetCenter() - camLoc);
+      float first     = glm::length2(bb1.GetCenter() - camLoc);
 
       BoundingBox bb2 = ntt2->GetAABB(true);
-      float second = glm::length2(bb2.GetCenter() - camLoc);
+      float second    = glm::length2(bb2.GetCenter() - camLoc);
 
       return second < first;
     };
 
     if (cam->IsOrtographic())
     {
-      sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool
-      {
-        float first = ntt1->m_node->GetTranslation
-        (
-          TransformationSpace::TS_WORLD
-        ).z;
+      sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool {
+        float first =
+            ntt1->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
 
-        float second = ntt2->m_node->GetTranslation
-        (
-          TransformationSpace::TS_WORLD
-        ).z;
+        float second =
+            ntt2->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
 
         return first < second;
       };
@@ -1030,24 +956,19 @@ namespace ToolKit
 
   TK_API void StableSortByMaterialPriority(EntityRawPtrArray& entities)
   {
-    std::stable_sort
-    (
-      entities.begin(),
-      entities.end(),
-      [](Entity* a, Entity* b) -> bool
-      {
-        MaterialComponentPtr matA = a->GetMaterialComponent();
-        MaterialComponentPtr matB = b->GetMaterialComponent();
-        if (matA && matB)
-        {
-          int pA = matA->GetMaterialVal()->GetRenderState()->priority;
-          int pB = matB->GetMaterialVal()->GetRenderState()->priority;
-          return pA > pB;
-        }
+    std::stable_sort(
+        entities.begin(), entities.end(), [](Entity* a, Entity* b) -> bool {
+          MaterialComponentPtr matA = a->GetMaterialComponent();
+          MaterialComponentPtr matB = b->GetMaterialComponent();
+          if (matA && matB)
+          {
+            int pA = matA->GetMaterialVal()->GetRenderState()->priority;
+            int pB = matB->GetMaterialVal()->GetRenderState()->priority;
+            return pA > pB;
+          }
 
-        return false;
-      }
-    );
+          return false;
+        });
   }
 
   TK_API MaterialPtr GetRenderMaterial(Entity* entity)
@@ -1065,6 +986,14 @@ namespace ToolKit
     return renderMat;
   }
 
+  TK_API bool IsLightType(EntityType type)
+  {
+    return (type == EntityType::Entity_Light ||
+            type == EntityType::Entity_DirectionalLight ||
+            type == EntityType::Entity_PointLight ||
+            type == EntityType::Entity_SpotLight);
+  }
+
   void* TKMalloc(size_t sz)
   {
     return malloc(sz);
@@ -1077,16 +1006,12 @@ namespace ToolKit
 
   int IndexOf(Entity* ntt, const EntityRawPtrArray& entities)
   {
-    EntityRawPtrArray::const_iterator it = std::find
-    (
-      entities.begin(),
-      entities.end(),
-      ntt
-    );
+    EntityRawPtrArray::const_iterator it =
+        std::find(entities.begin(), entities.end(), ntt);
 
     if (it != entities.end())
     {
-      return static_cast<int> (it - entities.begin());
+      return static_cast<int>(it - entities.begin());
     }
 
     return -1;
@@ -1114,15 +1039,14 @@ namespace ToolKit
   {
     namespace ch = std::chrono;
     static ch::high_resolution_clock::time_point t1 =
-      ch::high_resolution_clock::now();
+        ch::high_resolution_clock::now();
 
-    ch::high_resolution_clock::time_point t2 =
-      ch::high_resolution_clock::now();
+    ch::high_resolution_clock::time_point t2 = ch::high_resolution_clock::now();
 
     ch::duration<double> timeSpan =
-      ch::duration_cast<ch::duration<double>> (t2 - t1);
+        ch::duration_cast<ch::duration<double>>(t2 - t1);
 
     return static_cast<float>(timeSpan.count() * 1000.0);
   }
 
-}  //  namespace ToolKit
+} //  namespace ToolKit

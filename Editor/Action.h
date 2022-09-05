@@ -60,10 +60,10 @@ namespace ToolKit
     class DeleteComponentAction : public Action
     {
      public:
-       explicit DeleteComponentAction(ComponentPtr com);
+      explicit DeleteComponentAction(ComponentPtr com);
 
-       void Undo() override;
-       void Redo() override;
+      void Undo() override;
+      void Redo() override;
 
      private:
       ComponentPtr m_com;
@@ -77,7 +77,7 @@ namespace ToolKit
      public:
       ~ActionManager();
 
-      ActionManager(ActionManager const&) = delete;
+      ActionManager(ActionManager const&)  = delete;
       void operator=(ActionManager const&) = delete;
 
       void Init();
@@ -101,5 +101,5 @@ namespace ToolKit
       bool m_actionGrouping;
     };
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

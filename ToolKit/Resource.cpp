@@ -9,7 +9,7 @@ namespace ToolKit
 
   Resource::Resource()
   {
-    m_id = GetHandleManager()->GetNextHandle();
+    m_id   = GetHandleManager()->GetNextHandle();
     m_name = "Resource_" + std::to_string(m_id);
   }
 
@@ -67,9 +67,9 @@ namespace ToolKit
     {
       other->m_file = CreateCopyFileFullPath(m_file);
     }
-    other->m_name = m_name;
-    other->m_dirty = m_dirty;
-    other->m_loaded = m_loaded;
+    other->m_name      = m_name;
+    other->m_dirty     = m_dirty;
+    other->m_loaded    = m_loaded;
     other->m_initiated = m_initiated;
   }
 
@@ -91,17 +91,11 @@ namespace ToolKit
   void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* refNode = CreateXmlNode(doc, XmlResRefElement, parent);
-    WriteAttr
-    (
-      refNode, doc, "Type",
-      std::to_string
-      (
-        static_cast<int> (GetType())
-      )
-    );
+    WriteAttr(
+        refNode, doc, "Type", std::to_string(static_cast<int>(GetType())));
 
     String file = GetSerializeFile();
-    file = GetRelativeResourcePath(file);
+    file        = GetRelativeResourcePath(file);
     WriteAttr(refNode, doc, "File", file);
   }
 
@@ -136,4 +130,4 @@ namespace ToolKit
     m_file = file;
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

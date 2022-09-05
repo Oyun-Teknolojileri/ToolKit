@@ -20,13 +20,8 @@ namespace ToolKit
     {
       if (ScenePtr currScene = GetSceneManager()->GetCurrentScene())
       {
-        if
-        (
-          Camera* cam = static_cast<Camera*>
-          (
-            currScene->GetEntity(m_attachedCamera)
-          )
-        )
+        if (Camera* cam =
+                static_cast<Camera*>(currScene->GetEntity(m_attachedCamera)))
         {
           assert(cam->GetType() == EntityType::Entity_Camera);
           return cam;
@@ -40,7 +35,7 @@ namespace ToolKit
   void ViewportBase::SetCamera(Camera* cam)
   {
     SafeDel(m_camera);
-    m_camera = cam;
+    m_camera         = cam;
     m_attachedCamera = cam->GetIdVal();
   }
 
@@ -59,7 +54,7 @@ namespace ToolKit
   }
 
   Viewport::Viewport(float width, float height)
-    : m_width(width), m_height(height)
+      : m_wndContentAreaSize(width, height)
   {
     GetCamera()->SetLens(glm::quarter_pi<float>(), width, height);
     ResetViewportImage(GetRenderTargetSettings());
@@ -70,12 +65,12 @@ namespace ToolKit
     SafeDel(m_viewportImage);
   }
 
-  void Viewport::OnResize(float width, float height)
+  void Viewport::OnResizeContentArea(float width, float height)
   {
-    m_width = width;
-    m_height = height;
+    m_wndContentAreaSize.x = width;
+    m_wndContentAreaSize.y = height;
 
-    UpdateCameraLens(m_width, m_height);
+    UpdateCameraLens(width, height);
     ResetViewportImage(GetRenderTargetSettings());
   }
 
@@ -85,22 +80,16 @@ namespace ToolKit
     m_zoom = glm::max(m_zoom, 0.01f);
 
     Camera* cam = GetCamera();
-    cam->m_node->Translate
-    (
-      Vec3(0.0f, 0.0f, -delta),
-      TransformationSpace::TS_LOCAL
-    );
+    cam->m_node->Translate(Vec3(0.0f, 0.0f, -delta),
+                           TransformationSpace::TS_LOCAL);
     if (cam->IsOrtographic())
     {
-      cam->SetLens
-      (
-        -m_zoom * m_width * 0.5f,
-        m_zoom * m_width * 0.5f,
-        -m_zoom * m_height * 0.5f,
-        m_zoom * m_height * 0.5f,
-        0.5f,
-        1000.0f
-      );
+      cam->SetLens(-m_zoom * m_wndContentAreaSize.x * 0.5f,
+                   m_zoom * m_wndContentAreaSize.x * 0.5f,
+                   -m_zoom * m_wndContentAreaSize.y * 0.5f,
+                   m_zoom * m_wndContentAreaSize.y * 0.5f,
+                   0.5f,
+                   1000.0f);
     }
   }
 
@@ -126,16 +115,15 @@ namespace ToolKit
   {
     if (m_viewportImage)
     {
-      m_viewportImage->Reconstrcut((uint)m_width, (uint)m_height, settings);
+      m_viewportImage->Reconstrcut((uint) m_wndContentAreaSize.x,
+                                   (uint) m_wndContentAreaSize.y,
+                                   settings);
     }
     else
     {
-      m_viewportImage = new RenderTarget
-      (
-        (uint)m_width,
-        (uint)m_height,
-        settings
-      );
+      m_viewportImage = new RenderTarget((uint) m_wndContentAreaSize.x,
+                                         (uint) m_wndContentAreaSize.y,
+                                         settings);
       m_viewportImage->Init();
     }
   }
@@ -160,13 +148,9 @@ namespace ToolKit
     }
     else
     {
-      ray.direction = glm::normalize
-      (
-        ray.position - cam->m_node->GetTranslation
-        (
-          TransformationSpace::TS_WORLD
-        )
-      );
+      ray.direction =
+          glm::normalize(ray.position - cam->m_node->GetTranslation(
+                                            TransformationSpace::TS_WORLD));
     }
 
     return ray;
@@ -180,7 +164,7 @@ namespace ToolKit
   Vec2 Viewport::GetLastMousePosViewportSpace()
   {
     Vec2 screenPoint = m_lastMousePosRelContentArea;
-    screenPoint.y = m_wndContentAreaSize.y - screenPoint.y;
+    screenPoint.y    = m_wndContentAreaSize.y - screenPoint.y;
 
     return screenPoint;
   }
@@ -188,48 +172,46 @@ namespace ToolKit
   Vec2 Viewport::GetLastMousePosScreenSpace()
   {
     Vec2 screenPoint = GetLastMousePosViewportSpace();
-    screenPoint.y = m_wndContentAreaSize.y - screenPoint.y;
+    screenPoint.y    = m_wndContentAreaSize.y - screenPoint.y;
 
-    return m_wndPos + screenPoint;
+    return m_contentAreaLocation + screenPoint;
   }
 
   Vec3 Viewport::TransformViewportToWorldSpace(const Vec2& pnt)
   {
     Vec3 screenPoint = Vec3(pnt, 0.0f);
 
-    Camera* cam = GetCamera();
-    Mat4 view = cam->GetViewMatrix();
+    Camera* cam  = GetCamera();
+    Mat4 view    = cam->GetViewMatrix();
     Mat4 project = cam->GetProjectionMatrix();
 
-    return glm::unProject
-    (
-      screenPoint,
-      view,
-      project,
-      Vec4(0.0f, 0.0f, m_width, m_height)
-    );
+    return glm::unProject(
+        screenPoint,
+        view,
+        project,
+        Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
   }
 
   Vec2 Viewport::TransformWorldSpaceToScreenSpace(const Vec3& pnt)
   {
-    Camera* cam = GetCamera();
-    glm::mat4 view = cam->GetViewMatrix();
+    Camera* cam       = GetCamera();
+    glm::mat4 view    = cam->GetViewMatrix();
     glm::mat4 project = cam->GetData().projection;
-    Vec3 screenPos = glm::project(
-      pnt,
-      view,
-      project,
-      glm::vec4(0.0f, 0.0f, m_width, m_height)
-    );
-    screenPos.x += m_wndPos.x;
-    screenPos.y = m_wndContentAreaSize.y + m_wndPos.y - screenPos.y;
+    Vec3 screenPos    = glm::project(
+        pnt,
+        view,
+        project,
+        glm::vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
+    screenPos.x += m_contentAreaLocation.x;
+    screenPos.y =
+        m_wndContentAreaSize.y + m_contentAreaLocation.y - screenPos.y;
     return screenPos.xy;
   }
 
   Vec2 Viewport::TransformScreenToViewportSpace(const Vec2& pnt)
   {
-    Vec2 vp = pnt - m_wndPos;  // In window space.
-    vp.y = m_wndContentAreaSize.y - vp.y;  // In viewport space.
+    Vec2 vp = pnt - m_contentAreaLocation;   // In window space.
+    vp.y    = m_wndContentAreaSize.y - vp.y; // In viewport space.
     return vp;
   }
 
@@ -246,7 +228,7 @@ namespace ToolKit
   void Viewport::AttachCamera(ULongID camId)
   {
     m_attachedCamera = camId;
-    UpdateCameraLens(m_width, m_height);
+    UpdateCameraLens(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

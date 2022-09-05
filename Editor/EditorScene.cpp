@@ -6,20 +6,19 @@
 #include "App.h"
 #include "EditorCamera.h"
 #include "DebugNew.h"
+#include <Prefab.h>
 
 namespace ToolKit
 {
   namespace Editor
   {
 
-    EditorScene::EditorScene()
-      : Scene()
+    EditorScene::EditorScene() : Scene()
     {
       m_newScene = true;
     }
 
-    EditorScene::EditorScene(const String& file)
-      : EditorScene()
+    EditorScene::EditorScene(const String& file) : EditorScene()
     {
       SetFile(file);
       m_newScene = false;
@@ -61,26 +60,29 @@ namespace ToolKit
 
     bool EditorScene::IsSelected(ULongID id) const
     {
-      return std::find
-      (
-        m_selectedEntities.begin(),
-        m_selectedEntities.end(),
-        id
-      ) != m_selectedEntities.end();
+      return std::find(m_selectedEntities.begin(),
+                       m_selectedEntities.end(),
+                       id) != m_selectedEntities.end();
     }
 
     void EditorScene::RemoveFromSelection(ULongID id)
     {
-      auto nttIt = std::find
-      (
-        m_selectedEntities.begin(),
-        m_selectedEntities.end(),
-        id
-      );
+      auto nttIt =
+          std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
       if (nttIt != m_selectedEntities.end())
       {
         m_selectedEntities.erase(nttIt);
       }
+    }
+
+    void TraverseChildNodes(Node* parent,
+                            const std::function<void(Node* node)>& callbackFn)
+    {
+      for (Node* childNode : parent->m_children)
+      {
+        TraverseChildNodes(childNode, callbackFn);
+      }
+      callbackFn(parent);
     }
 
     void EditorScene::AddToSelection(ULongID id, bool additive)
@@ -90,14 +92,23 @@ namespace ToolKit
       {
         m_selectedEntities.clear();
       }
+
+      // If selected entity belongs to a prefab
+      //  select all childs of the prefab entity too
+      if (Prefab* mainPrefab = Prefab::GetPrefabRoot(GetEntity(id)))
+      {
+        auto addToSelectionFn = [this](Node* node) {
+          m_selectedEntities.push_back(node->m_entity->GetIdVal());
+        };
+        TraverseChildNodes(mainPrefab->m_node, addToSelectionFn);
+        return;
+      }
+
       m_selectedEntities.push_back(id);
     }
 
-    void EditorScene::AddToSelection
-    (
-      const EntityIdArray& entities,
-      bool additive
-    )
+    void EditorScene::AddToSelection(const EntityIdArray& entities,
+                                     bool additive)
     {
       ULongID currentId = NULL_HANDLE;
       if (entities.size() > 1)
@@ -132,7 +143,7 @@ namespace ToolKit
         {
           AddToSelection(id, true);
         }
-        else  // Add, make current or toggle selection.
+        else // Add, make current or toggle selection.
         {
           if (IsSelected(id))
           {
@@ -165,11 +176,8 @@ namespace ToolKit
       MakeCurrentSelection(currentId, true);
     }
 
-    void EditorScene::AddToSelection
-    (
-      const EntityRawPtrArray& entities,
-      bool additive
-    )
+    void EditorScene::AddToSelection(const EntityRawPtrArray& entities,
+                                     bool additive)
     {
       EntityIdArray ids;
       ToEntityIdArray(ids, entities);
@@ -193,11 +201,8 @@ namespace ToolKit
 
     void EditorScene::MakeCurrentSelection(ULongID id, bool ifExist)
     {
-      EntityIdArray::iterator itr = std::find
-      (
-        m_selectedEntities.begin(),
-        m_selectedEntities.end(), id
-      );
+      EntityIdArray::iterator itr =
+          std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
       if (itr != m_selectedEntities.end())
       {
         std::iter_swap(itr, m_selectedEntities.end() - 1);
@@ -213,7 +218,7 @@ namespace ToolKit
 
     uint EditorScene::GetSelectedEntityCount() const
     {
-      return (uint)m_selectedEntities.size();
+      return (uint) m_selectedEntities.size();
     }
 
     Entity* EditorScene::GetCurrentSelection() const
@@ -289,12 +294,9 @@ namespace ToolKit
       AddToSelection(GetByTag(tag), false);
     }
 
-    Scene::PickData EditorScene::PickObject
-    (
-      Ray ray,
-      const EntityIdArray& ignoreList,
-      const EntityRawPtrArray& extraList
-    )
+    Scene::PickData EditorScene::PickObject(Ray ray,
+                                            const EntityIdArray& ignoreList,
+                                            const EntityRawPtrArray& extraList)
     {
       // Add billboards to scene
       EntityRawPtrArray temp = extraList;
@@ -303,12 +305,9 @@ namespace ToolKit
       Scene::PickData pdata = Scene::PickObject(ray, ignoreList, temp);
 
       // If the billboards are picked, pick the entity
-      if
-      (
-        pdata.entity != nullptr
-        && pdata.entity->GetType() == EntityType::Entity_Billboard
-        && static_cast<Billboard*>(pdata.entity)->m_entity != nullptr
-      )
+      if (pdata.entity != nullptr &&
+          pdata.entity->GetType() == EntityType::Entity_Billboard &&
+          static_cast<Billboard*>(pdata.entity)->m_entity != nullptr)
       {
         pdata.entity = static_cast<Billboard*>(pdata.entity)->m_entity;
       }
@@ -316,83 +315,63 @@ namespace ToolKit
       return pdata;
     }
 
-    void EditorScene::PickObject
-    (
-      const Frustum& frustum,
-      std::vector<PickData>& pickedObjects,
-      const EntityIdArray& ignoreList,
-      const EntityRawPtrArray& extraList,
-      bool pickPartiallyInside
-    )
+    void EditorScene::PickObject(const Frustum& frustum,
+                                 std::vector<PickData>& pickedObjects,
+                                 const EntityIdArray& ignoreList,
+                                 const EntityRawPtrArray& extraList,
+                                 bool pickPartiallyInside)
     {
       // Add billboards to scene
       EntityRawPtrArray temp = extraList;
       temp.insert(temp.end(), m_billboards.begin(), m_billboards.end());
 
-      Scene::PickObject
-      (
-        frustum,
-        pickedObjects,
-        ignoreList,
-        temp,
-        pickPartiallyInside
-      );
+      Scene::PickObject(
+          frustum, pickedObjects, ignoreList, temp, pickPartiallyInside);
 
       // If the billboards are picked, pick the entity
 
       // Dropout non visible & drawable entities.
-      pickedObjects.erase
-      (
-        std::remove_if
-        (
-          pickedObjects.begin(),
-          pickedObjects.end(),
-          [&pickedObjects](PickData& pd) -> bool
-          {
-            if
-            (
-              pd.entity != nullptr
-              && pd.entity->GetType() == EntityType::Entity_Billboard
-              && static_cast<Billboard*>(pd.entity)->m_entity != nullptr
-            )
-            {
-              // Check if the entity is already picked
-              bool found = false;
-              for (PickData& pd2 : pickedObjects)
-              {
-                if
-                (
-                  pd2.entity->GetIdVal()
-                  == static_cast<Billboard*>(pd.entity)->m_entity->GetIdVal()
-                )
+      pickedObjects.erase(
+          std::remove_if(
+              pickedObjects.begin(),
+              pickedObjects.end(),
+              [&pickedObjects](PickData& pd) -> bool {
+                if (pd.entity != nullptr &&
+                    pd.entity->GetType() == EntityType::Entity_Billboard &&
+                    static_cast<Billboard*>(pd.entity)->m_entity != nullptr)
                 {
-                  found = true;
-                  break;
-                }
-              }
+                  // Check if the entity is already picked
+                  bool found = false;
+                  for (PickData& pd2 : pickedObjects)
+                  {
+                    if (pd2.entity->GetIdVal() ==
+                        static_cast<Billboard*>(pd.entity)
+                            ->m_entity->GetIdVal())
+                    {
+                      found = true;
+                      break;
+                    }
+                  }
 
-              if (found)
-              {
-                return true;
-              }
-              else
-              {
-                pd.entity = static_cast<Billboard*>(pd.entity)->m_entity;
+                  if (found)
+                  {
+                    return true;
+                  }
+                  else
+                  {
+                    pd.entity = static_cast<Billboard*>(pd.entity)->m_entity;
+                    return false;
+                  }
+                }
                 return false;
-              }
-            }
-            return false;
-          }
-        ),
-        pickedObjects.end()
-      );
+              }),
+          pickedObjects.end());
     }
 
     void EditorScene::AddBillboardToEntity(Entity* entity)
     {
-      auto addBillboardFn = [this, &entity](EditorBillboardBase* billboard)
-      {
-        billboard->m_entity = entity;
+      auto addBillboardFn = [this, &entity](EditorBillboardBase* billboard) {
+        billboard->m_entity          = entity;
         m_entityBillboardMap[entity] = billboard;
         m_billboards.push_back(billboard);
       };
@@ -401,7 +380,7 @@ namespace ToolKit
 
       // Check environment component
       EnvironmentComponentPtr envCom =
-      entity->GetComponent<EnvironmentComponent>();
+          entity->GetComponent<EnvironmentComponent>();
       if (envCom != nullptr)
       {
         SkyBillboard* billboard = new SkyBillboard();
@@ -420,11 +399,7 @@ namespace ToolKit
 
     void EditorScene::RemoveBillboardFromEntity(Entity* entity)
     {
-      if
-      (
-        m_entityBillboardMap.find(entity)
-        != m_entityBillboardMap.end()
-      )
+      if (m_entityBillboardMap.find(entity) != m_entityBillboardMap.end())
       {
         Entity* bb = m_entityBillboardMap[entity];
         m_entityBillboardMap.erase(entity);
@@ -462,7 +437,7 @@ namespace ToolKit
       for (Billboard* bb : m_billboards)
       {
         bb->m_worldLocation =
-        bb->m_entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            bb->m_entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         bb->LookAt(viewport->GetCamera(), viewport->m_zoom);
       }
     }
@@ -483,25 +458,18 @@ namespace ToolKit
     void EditorScene::CopyTo(Resource* other)
     {
       // Clear fixed layers.
-      EditorScene* cpy = static_cast<EditorScene*> (other);
+      EditorScene* cpy = static_cast<EditorScene*>(other);
       Scene::CopyTo(cpy);
       cpy->m_newScene = true;
     }
 
-    bool EditorScene::InitBillboard
-    (
-      Entity* entity,
-      EditorBillboardBase::BillboardType type
-    )
+    bool EditorScene::InitBillboard(Entity* entity,
+                                    EditorBillboardBase::BillboardType type)
     {
-      bool found = false;
+      bool found    = false;
       Billboard* bb = nullptr;
 
-      if
-      (
-        m_entityBillboardMap.find(entity)
-        == m_entityBillboardMap.end()
-      )
+      if (m_entityBillboardMap.find(entity) == m_entityBillboardMap.end())
       {
         found = false;
       }
@@ -529,10 +497,7 @@ namespace ToolKit
       else if (found)
       {
         // Check if the billboard is the correct one and change it if it is not
-        if
-        (
-          m_entityBillboardMap[entity]->GetBillboardType() == type
-        )
+        if (m_entityBillboardMap[entity]->GetBillboardType() == type)
         {
           return true;
         }
@@ -563,5 +528,5 @@ namespace ToolKit
       return ResourcePtr(new EditorScene());
     }
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

@@ -38,7 +38,7 @@ namespace ToolKit
   void ResourceManager::Manage(const ResourcePtr& resource)
   {
     String file = resource->GetFile();
-    bool sane = !file.empty();
+    bool sane   = !file.empty();
     sane &= !Exist(file);
     sane &= CanStore(resource->GetType());
 
@@ -61,8 +61,8 @@ namespace ToolKit
   ResourcePtr ResourceManager::Remove(const String& file)
   {
     ResourcePtr resource = nullptr;
-    auto mapItr = m_storage.find(file);
-    if (mapItr  != m_storage.end())
+    auto mapItr          = m_storage.find(file);
+    if (mapItr != m_storage.end())
     {
       resource = mapItr->second;
       m_storage.erase(file);
@@ -78,7 +78,7 @@ namespace ToolKit
 
     static char buff[2048];
     vsprintf(buff, msg, args);
-    
+
     if (m_reporterFn)
     {
       m_reporterFn(buff);
@@ -91,4 +91,4 @@ namespace ToolKit
     va_end(args);
   }
 
-}
+} // namespace ToolKit

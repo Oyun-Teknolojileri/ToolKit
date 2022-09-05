@@ -5,7 +5,6 @@
 #include <vector>
 #include <iterator>
 
-
 namespace ToolKit
 {
 
@@ -29,8 +28,8 @@ namespace ToolKit
 
   void UILayer::Update(float deltaTime, Camera* cam, Viewport* vp)
   {
-    m_cam = cam;
-    m_viewport = vp;
+    m_cam           = cam;
+    m_viewport      = vp;
     m_lastCamEntity = vp->GetCamera();
     vp->AttachCamera(cam->GetIdVal());
 
@@ -58,13 +57,10 @@ namespace ToolKit
   {
     if (m_layout)
     {
-      EntityRawPtrArray fetch = m_layout->Filter
-      (
-        [&entityName](Entity* e) -> bool
-        {
-          return e->GetNameVal() == entityName;
-        }
-      );
+      EntityRawPtrArray fetch =
+          m_layout->Filter([&entityName](Entity* e) -> bool {
+            return e->GetNameVal() == entityName;
+          });
 
       if (!fetch.empty())
       {
@@ -78,7 +74,7 @@ namespace ToolKit
   {
     if (CheckMouseOver(surface, e, vp))
     {
-      MouseEvent* me = static_cast<MouseEvent*> (e);
+      MouseEvent* me = static_cast<MouseEvent*>(e);
       return me->m_action == EventAction::LeftClick;
     }
 
@@ -90,7 +86,7 @@ namespace ToolKit
     if (e->m_type == Event::EventType::Mouse)
     {
       BoundingBox box = surface->GetAABB(true);
-      Ray ray = vp->RayFromMousePosition();
+      Ray ray         = vp->RayFromMousePosition();
 
       float t = 0.0f;
       if (RayBoxIntersection(ray, box, t))
@@ -120,7 +116,7 @@ namespace ToolKit
       {
         if (ntt->IsSurfaceInstance())
         {
-          Surface* surface = static_cast<Surface*> (ntt);
+          Surface* surface   = static_cast<Surface*>(ntt);
           bool mouseOverPrev = surface->m_mouseOver;
 
           if (surface->m_mouseOver = CheckMouseOver(surface, e, vp))
@@ -193,18 +189,14 @@ namespace ToolKit
   }
 
   /**
-  * Returns current UILayer that UIManager has.
-  */
+   * Returns current UILayer that UIManager has.
+   */
   UILayerPtrArray UIManager::GetCurrentLayers()
   {
     UILayerPtrArray currentLayers;
     currentLayers.push_back(m_rootLayer);
-    currentLayers.insert
-    (
-      currentLayers.end(),
-      m_childLayers.begin(),
-      m_childLayers.end()
-    );
+    currentLayers.insert(
+        currentLayers.end(), m_childLayers.begin(), m_childLayers.end());
     return currentLayers;
   }
 
@@ -213,6 +205,30 @@ namespace ToolKit
     if (m_rootLayer == nullptr)
     {
       return;
+    }
+
+    const EntityRawPtrArray& arr = m_rootLayer->m_layout->GetEntities();
+    for (Entity* ntt : arr)
+    {
+      if (ntt->GetType() == EntityType::Entity_CanvasPanel)
+      {
+        CanvasPanel* canvasPanel = static_cast<CanvasPanel*>(ntt);
+        static float xResolution = 0;
+        static float yResolution = 0;
+
+        // Apply sizing only when the resoultion has changed.
+        if (xResolution != vp->m_wndContentAreaSize.x ||
+            yResolution != vp->m_wndContentAreaSize.y)
+        {
+          if (canvasPanel->m_node->m_parent)
+          {
+            canvasPanel->ApplyRecursivResizePolicy(vp->m_wndContentAreaSize.x,
+                                                   vp->m_wndContentAreaSize.y);
+          }
+        }
+        xResolution = vp->m_wndContentAreaSize.x;
+        yResolution = vp->m_wndContentAreaSize.y;
+      }
     }
 
     m_rootLayer->Update(deltaTime, m_rootLayer->m_cam, vp);
@@ -228,4 +244,4 @@ namespace ToolKit
     }
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

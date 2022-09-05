@@ -1,9 +1,9 @@
 #pragma once
 
 /**
-* @file Forward declerations for frequenty used common ToolKit classes and
-* relatled structures.
-*/
+ * @file Forward declerations for frequenty used common ToolKit classes and
+ * relatled structures.
+ */
 
 #include <vector>
 #include <string>
@@ -18,36 +18,48 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
 
-#ifdef _WIN32  // Windows.
-#define TK_STDCAL __stdcall
-#ifdef TK_DLL_EXPORT  // Dynamic binding.
-#define TK_API __declspec(dllexport)
-#else  // Static binding.
-#define TK_API
-#endif
-#else  // Other OS.
-#define TK_API
-#define TK_STDCAL
+#ifdef _WIN32 // Windows.
+  #define TK_STDCAL __stdcall
+  #ifdef TK_DLL_EXPORT // Dynamic binding.
+    #define TK_API __declspec(dllexport)
+  #else // Static binding.
+    #define TK_API
+  #endif
+#else // Other OS.
+  #define TK_API
+  #define TK_STDCAL
 #endif
 
-#define SafeDel(ptr) { delete ptr; ptr = nullptr; }
-#define SafeDelArray(ptr) { delete[] ptr; ptr = nullptr; }
+#define SafeDel(ptr)                                                           \
+  {                                                                            \
+    delete ptr;                                                                \
+    ptr = nullptr;                                                             \
+  }
+#define SafeDelArray(ptr)                                                      \
+  {                                                                            \
+    delete[] ptr;                                                              \
+    ptr = nullptr;                                                             \
+  }
 
 #define TKStringify(x) #x
-#define TKToString(x) TKStringify(x)
-#define TKLoc __FILE__ ":" TKToString(__LINE__)
+#define TKToString(x)  TKStringify(x)
+#define TKLoc          __FILE__ ":" TKToString(__LINE__)
 
 // std template types require dll interface.
-#pragma warning( disable: 4251 )
+#pragma warning(disable : 4251)
 
 /// @cond
 namespace rapidxml
 {
-  template<class Ch> class xml_document;
-  template<class Ch> class xml_node;
-  template<class Ch> class xml_attribute;
-  template<class Ch> class file;
-}
+  template <class Ch>
+  class xml_document;
+  template <class Ch>
+  class xml_node;
+  template <class Ch>
+  class xml_attribute;
+  template <class Ch>
+  class file;
+} // namespace rapidxml
 /// @endcond
 
 namespace ToolKit
@@ -140,26 +152,18 @@ namespace ToolKit
   typedef std::shared_ptr<class Surface> SurfacePtr;
 
   // Callbacks.
-  typedef std::function<void(class Event*, class Entity*)>
-    SurfaceEventCallback;
+  typedef std::function<void(class Event*, class Entity*)> SurfaceEventCallback;
 
   // Math Vector declerations.
-  static const Vec3 ZERO = Vec3(0.0f);
-  static const Vec3 X_AXIS = Vec3(1.0f, 0.0f, 0.0f);
-  static const Vec3 Y_AXIS = Vec3(0.0f, 1.0f, 0.0f);
-  static const Vec3 Z_AXIS = Vec3(0.0f, 0.0f, 1.0f);
+  static const Vec3 ZERO    = Vec3(0.0f);
+  static const Vec3 X_AXIS  = Vec3(1.0f, 0.0f, 0.0f);
+  static const Vec3 Y_AXIS  = Vec3(0.0f, 1.0f, 0.0f);
+  static const Vec3 Z_AXIS  = Vec3(0.0f, 0.0f, 1.0f);
   static const Vec3 XY_AXIS = Vec3(1.0f, 1.0f, 0.0f);
   static const Vec3 YZ_AXIS = Vec3(0.0f, 1.0f, 1.0f);
   static const Vec3 ZX_AXIS = Vec3(1.0f, 0.0f, 1.0f);
-  static const Vec3 AXIS[6] =
-  {
-    X_AXIS,
-    Y_AXIS,
-    Z_AXIS,
-    XY_AXIS,
-    YZ_AXIS,
-    ZX_AXIS
-  };
+  static const Vec3 AXIS[6] = {
+      X_AXIS, Y_AXIS, Z_AXIS, XY_AXIS, YZ_AXIS, ZX_AXIS};
   struct BoundingBox;
 
   // Supported file formats.
@@ -196,6 +200,7 @@ namespace ToolKit
   static const String XmlEntityTypeAttr("t");
   static const String XmlEntityVisAttr("vi");
   static const String XmlEntityTrLockAttr("lc");
+  static const String XmlBaseEntityIdAttr("bi");
   static const String XmlSceneElement("S");
   static const String XmlParamterElement("P");
   static const String XmlParamterValAttr("v");
@@ -216,34 +221,57 @@ namespace ToolKit
 
   enum class AxisLabel
   {
-    None = -1,  // Order matters. Don't change.
+    None = -1, // Order matters. Don't change.
     X,
     Y,
     Z,
     // Mod3 gives plane normal .
-    YZ,  // YZ(3) % 3 = X(0)
-    ZX,  // ZX(4) % 3 = Y(1)
+    YZ, // YZ(3) % 3 = X(0)
+    ZX, // ZX(4) % 3 = Y(1)
     XY  // XY(5) % 3 = Z(2)
   };
 
+  enum class DirectionLabel
+  {
+    None = -1,
+    N,
+    S,
+    E,
+    W,
+    SE,
+    SW,
+    NE,
+    NW,
+    CENTER
+  };
+
   static const float TK_FLT_MAX = std::numeric_limits<float>::max();
-  static const int TK_INT_MAX = std::numeric_limits<int>::max();
+  static const int TK_INT_MAX   = std::numeric_limits<int>::max();
 
   // Graphics Api Type Overrides.
   enum class GraphicTypes
   {
-    VertexShader = 0x8B31,
-    FragmentShader = 0x8B30,
-    UVRepeat = 0x2901,
-    UVClampToEdge = 0x812F,
-    SampleNearest = 0x2600,
-    DrawTypeTriangle = 0x0004,
-    DrawTypeLines = 0x0001,
-    DrawTypeLineStrip = 0x0003,
-    DrawTypeLineLoop = 0x0002,
-    DrawTypePoints = 0x0000
+    VertexShader         = 0x8B31,
+    FragmentShader       = 0x8B30,
+    UVRepeat             = 0x2901,
+    UVClampToEdge        = 0x812F,
+    UVClampToBorder      = 0x812D,
+    SampleNearest        = 0x2600,
+    DrawTypeTriangle     = 0x0004,
+    DrawTypeLines        = 0x0001,
+    DrawTypeLineStrip    = 0x0003,
+    DrawTypeLineLoop     = 0x0002,
+    DrawTypePoints       = 0x0000,
+    FormatRGBA           = 0x1908,
+    FormatDepthComponent = 0x1902,
+    ColorAttachment0     = 0x8CE0,
+    DepthAttachment      = 0x8D00,
+    TypeFloat            = 0x1406,
+    TypeUnsignedByte     = 0x1401,
+    Target2D             = 0x0DE1,
+    TargetCubeMap        = 0x8513
   };
 
-  static const char* TKVersionStr = "v0.3.13";
+  static const char* TKVersionStr = "v0.3.14";
 
-}  // namespace ToolKit
+} // namespace ToolKit

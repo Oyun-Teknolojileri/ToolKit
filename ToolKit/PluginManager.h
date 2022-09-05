@@ -25,7 +25,7 @@ namespace ToolKit
     ~PluginManager();
 
     // Platform dependent functions.
-    bool Load(const String& file);  // Auto reloads if the dll is dirty.
+    bool Load(const String& file); // Auto reloads if the dll is dirty.
     void Unload(const String& file);
 
     // No platform dependency.
@@ -46,4 +46,4 @@ namespace ToolKit
     std::function<void(const String&)> m_reporterFn;
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

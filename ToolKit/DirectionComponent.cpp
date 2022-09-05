@@ -19,16 +19,15 @@ namespace ToolKit
 
   ComponentPtr DirectionComponent::Copy(Entity* ntt)
   {
-    DirectionComponentPtr dc =
-    std::make_shared<DirectionComponent>(m_entity);
-    dc->m_entity = ntt;
+    DirectionComponentPtr dc = std::make_shared<DirectionComponent>(m_entity);
+    dc->m_entity             = ntt;
     return dc;
   }
 
   Vec3 DirectionComponent::GetDirection()
   {
     Mat4 transform =
-    m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
+        m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
     return -glm::column(transform, 2);
   }
 
@@ -52,56 +51,49 @@ namespace ToolKit
 
   void DirectionComponent::RotateOnUpVector(float angle)
   {
-    m_entity->m_node->Rotate
-    (
-      glm::angleAxis
-      (
-        angle,
-        Vec3(0.0f, 1.0f, 0.0f)
-      ),
-      TransformationSpace::TS_WORLD
-    );
+    m_entity->m_node->Rotate(glm::angleAxis(angle, Vec3(0.0f, 1.0f, 0.0f)),
+                             TransformationSpace::TS_WORLD);
   }
 
   Vec3 DirectionComponent::GetUp() const
   {
     Mat4 transform =
-    m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
+        m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
     return glm::column(transform, 1);
   }
 
   Vec3 DirectionComponent::GetRight() const
   {
     Mat4 transform =
-    m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
+        m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
     return glm::column(transform, 0);
   }
 
   void DirectionComponent::LookAt(Vec3 target)
   {
-    Vec3 eye = m_entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+    Vec3 eye  = m_entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
     Vec3 tdir = target - eye;
-    tdir.y = 0.0f;  // project on xz
-    tdir = glm::normalize(tdir);
-    Vec3 dir = GetDirection();
-    dir.y = 0.0f;  // project on xz
-    dir = glm::normalize(dir);
+    tdir.y    = 0.0f; // project on xz
+    tdir      = glm::normalize(tdir);
+    Vec3 dir  = GetDirection();
+    dir.y     = 0.0f; // project on xz
+    dir       = glm::normalize(dir);
 
-    if (glm::all(glm::epsilonEqual(tdir, dir, { 0.0001f, 0.0001f, 0.0001f })))
+    if (glm::all(glm::epsilonEqual(tdir, dir, {0.0001f, 0.0001f, 0.0001f})))
     {
       return;
     }
 
     Vec3 rotAxis = glm::normalize(glm::cross(dir, tdir));
-    float yaw = glm::acos(glm::dot(tdir, dir));
+    float yaw    = glm::acos(glm::dot(tdir, dir));
 
     yaw *= glm::sign(glm::dot(Y_AXIS, rotAxis));
     RotateOnUpVector(yaw);
 
-    tdir = target - eye;
-    tdir = glm::normalize(tdir);
-    dir = glm::normalize(GetDirection());
-    rotAxis = glm::normalize(glm::cross(dir, tdir));
+    tdir        = target - eye;
+    tdir        = glm::normalize(tdir);
+    dir         = glm::normalize(GetDirection());
+    rotAxis     = glm::normalize(glm::cross(dir, tdir));
     float pitch = glm::acos(glm::dot(tdir, dir));
     pitch *= glm::sign(glm::dot(GetRight(), rotAxis));
     Pitch(pitch);
@@ -113,4 +105,4 @@ namespace ToolKit
     }
   }
 
-}  //  namespace ToolKit
+} //  namespace ToolKit

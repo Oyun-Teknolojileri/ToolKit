@@ -7,17 +7,14 @@
 #include "Types.h"
 #include "Serialize.h"
 
-
 namespace ToolKit
 {
 
   // Global Style Decelerations
   static const ImGuiTreeNodeFlags g_treeNodeFlags =
-  ImGuiTreeNodeFlags_OpenOnArrow
-  | ImGuiTreeNodeFlags_OpenOnDoubleClick
-  | ImGuiTreeNodeFlags_SpanAvailWidth
-  | ImGuiTreeNodeFlags_AllowItemOverlap
-  | ImGuiTreeNodeFlags_FramePadding;
+      ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+      ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap |
+      ImGuiTreeNodeFlags_FramePadding;
 
   const float g_indentSpacing = 6.0f;
 
@@ -42,7 +39,7 @@ namespace ToolKit
      public:
       Window();
       virtual ~Window();
-      virtual void Show() = 0;
+      virtual void Show()          = 0;
       virtual Type GetType() const = 0;
       void SetVisibility(bool visible);
 
@@ -50,7 +47,7 @@ namespace ToolKit
       bool IsActive() const;
       bool IsVisible() const;
       bool MouseHovers() const;
-      bool CanDispatchSignals() const;  // If active & visible & mouse hovers.
+      bool CanDispatchSignals() const; // If active & visible & mouse hovers.
 
       // System calls.
       virtual void DispatchSignals() const;
@@ -66,13 +63,15 @@ namespace ToolKit
 
      protected:
       // States.
-      bool m_visible = true;
-      bool m_active = false;
+      bool m_visible    = true;
+      bool m_active     = false;
       bool m_mouseHover = false;
 
      public:
       String m_name;
       uint m_id;
+      UVec2 m_size;
+      IVec2 m_location;
 
      private:
       // Internal unique id generator.
@@ -84,7 +83,10 @@ namespace ToolKit
      public:
       StringInputWindow(const String& name, bool showCancel);
       void Show() override;
-      Type GetType() const override { return Window::Type::InputPopup; }
+      Type GetType() const override
+      {
+        return Window::Type::InputPopup;
+      }
 
      public:
       std::function<void(const String& val)> m_taskFn;
@@ -99,24 +101,25 @@ namespace ToolKit
     class YesNoWindow : public Window
     {
      public:
+      struct ButtonInfo
+      {
+        String m_name;
+        std::function<void()> m_callback;
+      };
       explicit YesNoWindow(const String& name, const String& msg = "");
-      YesNoWindow
-      (
-        const String& name,
-        const String& yesBtnText,
-        const String& noBtnText,
-        const String& msg,
-        bool showCancel
-      );
+      YesNoWindow(const String& name,
+                  const std::vector<ButtonInfo>& buttons,
+                  const String& msg,
+                  bool showCancel);
       void Show() override;
-      Type GetType() const override { return Window::Type::InputPopup; }
+      Type GetType() const override
+      {
+        return Window::Type::InputPopup;
+      }
 
      public:
-      std::function<void()> m_yesCallback;
-      std::function<void()> m_noCallback;
+      std::vector<ButtonInfo> m_buttons;
       String m_msg;
-      String m_yesText;
-      String m_noText;
       bool m_showCancel = false;
     };
 
@@ -138,38 +141,23 @@ namespace ToolKit
       static void ShowMenuProjects();
       static void ShowImportWindow();
       static void ShowSearchForFilesWindow();
-      static void HelpMarker
-      (
-        const String& key,
-        const char* desc,
-        float wait = m_hoverTimeForHelp
-      );
+      static void HelpMarker(const String& key,
+                             const char* desc,
+                             float wait = m_hoverTimeForHelp);
       static void ShowNewSceneWindow();
 
       // Custom widgets.
-      static bool ImageButtonDecorless
-      (
-        uint textureID,
-        const Vec2& size,
-        bool flipImage
-      );
-      static bool ToggleButton
-      (
-        uint textureID,
-        const Vec2& size,
-        bool pushState
-      );
-      static bool ToggleButton
-      (
-       const String& text,
-        const Vec2& size,
-        bool pushState
-      );
-      static bool BeginCenteredTextButton
-      (
-        const String& text,
-        const String& id = ""
-      );
+      static bool ImageButtonDecorless(uint textureID,
+                                       const Vec2& size,
+                                       bool flipImage);
+      static bool ToggleButton(uint textureID,
+                               const Vec2& size,
+                               bool pushState);
+      static bool ToggleButton(const String& text,
+                               const Vec2& size,
+                               bool pushState);
+      static bool BeginCenteredTextButton(const String& text,
+                                          const String& id = "");
       static void EndCenteredTextButton();
 
      public:
@@ -184,7 +172,7 @@ namespace ToolKit
       static struct Import
       {
         bool showImportWindow = false;
-        bool overwrite = false;
+        bool overwrite        = false;
         StringArray files;
         String subDir;
         float scale = 1.0f;
@@ -239,6 +227,8 @@ namespace ToolKit
       static TexturePtr m_closeIcon;
       static TexturePtr m_phoneRotateIcon;
       static TexturePtr m_studioLightsToggleIcon;
+      static TexturePtr m_anchorIcn;
     };
-  }  // namespace Editor
-}  // namespace ToolKit
+
+  } // namespace Editor
+} // namespace ToolKit

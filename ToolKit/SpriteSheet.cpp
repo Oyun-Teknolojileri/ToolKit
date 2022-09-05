@@ -10,13 +10,11 @@
 namespace ToolKit
 {
 
-  SpriteSheet::SpriteSheet()
-    : m_imageWidth(0), m_imageHeight(0)
+  SpriteSheet::SpriteSheet() : m_imageWidth(0), m_imageHeight(0)
   {
   }
 
-  SpriteSheet::SpriteSheet(String file)
-    : SpriteSheet()
+  SpriteSheet::SpriteSheet(String file) : SpriteSheet()
   {
     SetFile(file);
   }
@@ -35,13 +33,11 @@ namespace ToolKit
 
     if (FetchEntries())
     {
-      m_spriteSheet = GetTextureManager()->Create<Texture>
-      (
-        SpritePath(m_imageFile)
-      );
+      m_spriteSheet =
+          GetTextureManager()->Create<Texture>(SpritePath(m_imageFile));
       for (const SpriteEntry& entry : m_entries)
       {
-        Surface* surface = new Surface(m_spriteSheet, entry);
+        Surface* surface      = new Surface(m_spriteSheet, entry);
         m_sprites[entry.name] = surface;
       }
     }
@@ -86,39 +82,39 @@ namespace ToolKit
     }
 
     XmlAttribute* attr = node->first_attribute("name");
-    m_imageFile = attr->value();
+    m_imageFile        = attr->value();
     NormalizePath(m_imageFile);
 
-    attr = node->first_attribute("w");
+    attr         = node->first_attribute("w");
     m_imageWidth = std::atoi(attr->value());
 
-    attr = node->first_attribute("h");
+    attr          = node->first_attribute("h");
     m_imageHeight = std::atoi(attr->value());
 
     for (node = node->first_node("spr"); node; node = node->next_sibling())
     {
       SpriteEntry entry;
-      attr = node->first_attribute("name");
-      entry.name = attr->value();
-      attr = node->first_attribute("x");
-      entry.rectangle.x = std::atoi(attr->value());
-      attr = node->first_attribute("y");
-      entry.rectangle.y = std::atoi(attr->value());
-      attr = node->first_attribute("w");
-      entry.rectangle.width = std::atoi(attr->value());
-      attr = node->first_attribute("h");
+      attr                   = node->first_attribute("name");
+      entry.name             = attr->value();
+      attr                   = node->first_attribute("x");
+      entry.rectangle.x      = std::atoi(attr->value());
+      attr                   = node->first_attribute("y");
+      entry.rectangle.y      = std::atoi(attr->value());
+      attr                   = node->first_attribute("w");
+      entry.rectangle.width  = std::atoi(attr->value());
+      attr                   = node->first_attribute("h");
       entry.rectangle.height = std::atoi(attr->value());
 
       attr = node->first_attribute("px");
       if (attr != nullptr)
       {
-        entry.offset.x = static_cast<float> (std::atof(attr->value()));
+        entry.offset.x = static_cast<float>(std::atof(attr->value()));
       }
 
       attr = node->first_attribute("py");
       if (attr != nullptr)
       {
-        entry.offset.y = static_cast<float> (std::atof(attr->value()));
+        entry.offset.y = static_cast<float>(std::atof(attr->value()));
       }
 
       m_entries.push_back(entry);
@@ -233,5 +229,4 @@ namespace ToolKit
     return ResourcePtr(new SpriteSheet());
   }
 
-}  // namespace ToolKit
-
+} // namespace ToolKit

@@ -57,16 +57,16 @@ namespace ToolKit
     void Update(float deltaTime);
 
    public:
-    float m_animFps = 23.4f;
-    bool m_looping = false;
+    float m_animFps        = 23.4f;
+    bool m_looping         = false;
     bool m_animationStoped = false;
     StringArray m_frames;
     SpriteSheetPtr m_sheet;
     String m_currentFrame;
 
    private:
-    float m_currentTime = 0.0f;  // Seconds
-    float m_prevTime = 0.0f;
+    float m_currentTime = 0.0f; // Seconds
+    float m_prevTime    = 0.0f;
   };
 
   class TK_API SpriteSheetManager : public ResourceManager
@@ -78,4 +78,4 @@ namespace ToolKit
     ResourcePtr CreateLocal(ResourceType type) override;
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

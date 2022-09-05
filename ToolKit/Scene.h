@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <functional>
+#include <unordered_map>
 
 #include "Resource.h"
 #include "MathUtil.h"
@@ -35,20 +36,16 @@ namespace ToolKit
     virtual void Merge(ScenePtr other);
 
     // Scene queries.
-    virtual PickData PickObject
-    (
-      Ray ray,
-      const EntityIdArray& ignoreList = EntityIdArray(),
-      const EntityRawPtrArray& extraList = EntityRawPtrArray()
-    );
-    virtual void PickObject
-    (
-      const Frustum& frustum,
-      std::vector<PickData>& pickedObjects,
-      const EntityIdArray& ignoreList = EntityIdArray(),
-      const EntityRawPtrArray& extraList = EntityRawPtrArray(),
-      bool pickPartiallyInside = true
-    );
+    virtual PickData PickObject(
+        Ray ray,
+        const EntityIdArray& ignoreList    = EntityIdArray(),
+        const EntityRawPtrArray& extraList = EntityRawPtrArray());
+    virtual void PickObject(
+        const Frustum& frustum,
+        std::vector<PickData>& pickedObjects,
+        const EntityIdArray& ignoreList    = EntityIdArray(),
+        const EntityRawPtrArray& extraList = EntityRawPtrArray(),
+        bool pickPartiallyInside           = true);
 
     // Entity operations.
     Entity* GetEntity(ULongID id) const;
@@ -60,6 +57,7 @@ namespace ToolKit
     Entity* GetFirstByTag(const String& tag);
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
     Sky* GetSky();
+    void LinkPrefab(const String& fullPath);
 
     virtual Entity* RemoveEntity(ULongID id);
     virtual void RemoveEntity(const EntityRawPtrArray& entities);
@@ -101,5 +99,4 @@ namespace ToolKit
    private:
     ScenePtr m_currentScene;
   };
-
-}  // namespace ToolKit
+} // namespace ToolKit

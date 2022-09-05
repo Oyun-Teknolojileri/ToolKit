@@ -6,23 +6,23 @@
 namespace ToolKit
 {
 
-  typedef ToolKit::GamePlugin* (__cdecl* TKPROC)();
+  typedef ToolKit::GamePlugin*(__cdecl* TKPROC)();
 
 #ifdef _WIN32
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <fileapi.h>
+  #define NOMINMAX
+  #define WIN32_LEAN_AND_MEAN
+  #include <Windows.h>
+  #include <fileapi.h>
 
-#undef near
-#undef far
+  #undef near
+  #undef far
 
   String GetWriteTime(const String& file)
   {
     WIN32_FILE_ATTRIBUTE_DATA attrData;
     GetFileAttributesEx(file.c_str(), GetFileExInfoStandard, &attrData);
     String time = std::to_string(attrData.ftLastWriteTime.dwHighDateTime) +
-      std::to_string(attrData.ftLastWriteTime.dwLowDateTime);
+                  std::to_string(attrData.ftLastWriteTime.dwLowDateTime);
 
     return time;
   }
@@ -40,7 +40,7 @@ namespace ToolKit
   #endif
 
     // Check the register.
-    bool newRegAdded = false;
+    bool newRegAdded    = false;
     PluginRegister* reg = nullptr;
     if (reg = GetRegister(dllName))
     {
@@ -57,7 +57,7 @@ namespace ToolKit
           Unload(reg->m_file);
           if (reg->m_module)
           {
-            FreeLibrary((HINSTANCE)reg->m_module);
+            FreeLibrary((HINSTANCE) reg->m_module);
           }
         }
       }
@@ -76,15 +76,15 @@ namespace ToolKit
 
     if (hinstLib != NULL)
     {
-      reg->m_module = reinterpret_cast<void*> (hinstLib);
-      ProcAdd = (TKPROC)GetProcAddress(hinstLib, "CreateInstance");
+      reg->m_module = reinterpret_cast<void*>(hinstLib);
+      ProcAdd       = (TKPROC) GetProcAddress(hinstLib, "CreateInstance");
 
       if (ProcAdd != NULL)
       {
-        reg->m_plugin = (ProcAdd)();
+        reg->m_plugin = (ProcAdd) ();
         reg->m_plugin->Init(Main::GetInstance());
-        reg->m_loaded = true;
-        reg->m_file = dllName;
+        reg->m_loaded        = true;
+        reg->m_file          = dllName;
         reg->m_lastWriteTime = GetWriteTime(dllName);
         return true;
       }
@@ -119,12 +119,7 @@ namespace ToolKit
   void PluginManager::Unload(const String& file)
   {
     PluginRegister* reg = GetRegister(file);
-    if
-      (
-      reg == nullptr
-      || reg->m_plugin == nullptr
-      || !reg->m_loaded
-      )
+    if (reg == nullptr || reg->m_plugin == nullptr || !reg->m_loaded)
     {
       return;
     }
@@ -134,7 +129,7 @@ namespace ToolKit
 
     if (reg->m_module)
     {
-      FreeLibrary((HINSTANCE)reg->m_module);
+      FreeLibrary((HINSTANCE) reg->m_module);
       reg->m_module = nullptr;
     }
 
@@ -169,7 +164,7 @@ namespace ToolKit
   {
     if (PluginRegister* reg = GetGameRegister())
     {
-      return static_cast<GamePlugin*> (reg->m_plugin);
+      return static_cast<GamePlugin*>(reg->m_plugin);
     }
 
     return nullptr;
@@ -198,10 +193,7 @@ namespace ToolKit
 
   void PluginManager::Init()
   {
-    m_reporterFn = [](const String& msg) -> void
-    {
-      GetLogger()->Log(msg);
-    };
+    m_reporterFn = [](const String& msg) -> void { GetLogger()->Log(msg); };
   }
 
   PluginRegister* PluginManager::GetRegister(const String& file)
@@ -225,4 +217,4 @@ namespace ToolKit
   {
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

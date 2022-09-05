@@ -22,6 +22,7 @@ namespace ToolKit
     void Init(bool flushClientSideArray = true) override;
     void UnInit() override;
     RenderState* GetRenderState();
+    void SetRenderState(RenderState* state);
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
@@ -58,4 +59,4 @@ namespace ToolKit
     MaterialPtr GetCopyOfDefaultMaterial();
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

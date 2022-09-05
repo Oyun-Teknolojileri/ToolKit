@@ -85,4 +85,4 @@ namespace ToolKit
     }
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

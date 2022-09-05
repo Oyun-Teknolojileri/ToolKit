@@ -14,7 +14,7 @@ namespace ToolKit
    public:
     TKResourceType(Audio)
 
-      Audio();
+    Audio();
     explicit Audio(String file);
     ~Audio();
 
@@ -37,7 +37,7 @@ namespace ToolKit
     ResourcePtr CreateLocal(ResourceType type) override;
 
    public:
-    void* m_device = nullptr;
+    void* m_device  = nullptr;
     void* m_context = nullptr;
   };
 
@@ -66,4 +66,4 @@ namespace ToolKit
     static void Pause(AudioSource* source);
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

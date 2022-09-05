@@ -17,6 +17,7 @@
 #include "Util.h"
 #include "DirectionComponent.h"
 #include "DebugNew.h"
+#include "AnchorMod.h"
 
 namespace ToolKit
 {
@@ -76,24 +77,28 @@ namespace ToolKit
         switch (mod)
         {
         case ModId::Select:
-          nextMod = new SelectMod();
+          nextMod    = new SelectMod();
           modNameDbg = "Mod: Select";
           break;
         case ModId::Cursor:
-          nextMod = new CursorMod();
+          nextMod    = new CursorMod();
           modNameDbg = "Mod: Cursor";
           break;
         case ModId::Move:
-          nextMod = new TransformMod(mod);
+          nextMod    = new TransformMod(mod);
           modNameDbg = "Mod: Move";
           break;
         case ModId::Rotate:
-          nextMod = new TransformMod(mod);
+          nextMod    = new TransformMod(mod);
           modNameDbg = "Mod: Rotate";
           break;
         case ModId::Scale:
-          nextMod = new TransformMod(mod);
+          nextMod    = new TransformMod(mod);
           modNameDbg = "Mod: Scale";
+          break;
+        case ModId::Anchor:
+          nextMod    = new AnchorMod(mod);
+          modNameDbg = "Mod: Anchor";
           break;
         case ModId::Base:
         default:
@@ -117,12 +122,10 @@ namespace ToolKit
           }
         }
 
-        /*
-        * If the state is changed while the previous state is being actively
-        *  used (in StateTransitionTo state), delete the last function
-        * pointers from the array, since the function
-        * parameters are not valid anymore.
-        */
+        // If the state is changed while the previous state is being actively
+        // used (in StateTransitionTo state), delete the last function
+        // pointers from the array, since the function
+        // parameters are not valid anymore.
         EditorViewport* vp = g_app->GetActiveViewport();
         if (vp == nullptr)
         {
@@ -159,16 +162,16 @@ namespace ToolKit
 
     // Signal definitions.
     SignalId BaseMod::m_leftMouseBtnDownSgnl = BaseMod::GetNextSignalId();
-    SignalId BaseMod::m_leftMouseBtnUpSgnl = BaseMod::GetNextSignalId();
+    SignalId BaseMod::m_leftMouseBtnUpSgnl   = BaseMod::GetNextSignalId();
     SignalId BaseMod::m_leftMouseBtnDragSgnl = BaseMod::GetNextSignalId();
-    SignalId BaseMod::m_mouseMoveSgnl = BaseMod::GetNextSignalId();
-    SignalId BaseMod::m_backToStart = BaseMod::GetNextSignalId();
-    SignalId BaseMod::m_delete = BaseMod::GetNextSignalId();
-    SignalId BaseMod::m_duplicate = BaseMod::GetNextSignalId();
+    SignalId BaseMod::m_mouseMoveSgnl        = BaseMod::GetNextSignalId();
+    SignalId BaseMod::m_backToStart          = BaseMod::GetNextSignalId();
+    SignalId BaseMod::m_delete               = BaseMod::GetNextSignalId();
+    SignalId BaseMod::m_duplicate            = BaseMod::GetNextSignalId();
 
     BaseMod::BaseMod(ModId id)
     {
-      m_id = id;
+      m_id           = id;
       m_stateMachine = new StateMachine();
     }
 
@@ -206,8 +209,8 @@ namespace ToolKit
           {
             if (ConsoleWindow* consol = g_app->GetConsole())
             {
-              String log = "\t" + prevStateDbg->GetType() + " -> "
-              + nextState->GetType();
+              String log = "\t" + prevStateDbg->GetType() + " -> " +
+                           nextState->GetType();
               consol->AddLog(log, "ModDbg");
             }
           }
@@ -224,17 +227,20 @@ namespace ToolKit
     // States
     //////////////////////////////////////////////////////////////////////////
 
-    const String StateType::Null = "";
-    const String StateType::StateBeginPick = "StateBeginPick";
-    const String StateType::StateBeginBoxPick = "StateBeginBoxPick";
-    const String StateType::StateEndPick = "StateEndPick";
-    const String StateType::StateDeletePick = "StateDeletePick";
+    const String StateType::Null                = "";
+    const String StateType::StateBeginPick      = "StateBeginPick";
+    const String StateType::StateBeginBoxPick   = "StateBeginBoxPick";
+    const String StateType::StateEndPick        = "StateEndPick";
+    const String StateType::StateDeletePick     = "StateDeletePick";
     const String StateType::StateTransformBegin = "StateTransformBegin";
-    const String StateType::StateTransformTo = "StateTransformTo";
-    const String StateType::StateTransformEnd = "StateTransformEnd";
-    const String StateType::StateDuplicate = "StateDuplicate";
+    const String StateType::StateTransformTo    = "StateTransformTo";
+    const String StateType::StateTransformEnd   = "StateTransformEnd";
+    const String StateType::StateDuplicate      = "StateDuplicate";
+    const String StateType::StateAnchorBegin    = "StateAnchorBegin";
+    const String StateType::StateAnchorTo       = "StateAnchorTo";
+    const String StateType::StateAnchorEnd      = "StateAnchorEnd";
 
-    std::shared_ptr<Arrow2d> StatePickingBase::m_dbgArrow = nullptr;
+    std::shared_ptr<Arrow2d> StatePickingBase::m_dbgArrow     = nullptr;
     std::shared_ptr<LineBatch> StatePickingBase::m_dbgFrustum = nullptr;
 
     StatePickingBase::StatePickingBase()
@@ -248,14 +254,11 @@ namespace ToolKit
 
     void StatePickingBase::TransitionOut(State* nextState)
     {
-      if
-      (
-        StatePickingBase* baseState =
-        dynamic_cast<StatePickingBase*> (nextState)
-      )
+      if (StatePickingBase* baseState =
+              dynamic_cast<StatePickingBase*>(nextState))
       {
         baseState->m_ignoreList = m_ignoreList;
-        baseState->m_mouseData = m_mouseData;
+        baseState->m_mouseData  = m_mouseData;
 
         if (nextState->GetType() != StateType::StateBeginPick)
         {
@@ -268,12 +271,8 @@ namespace ToolKit
 
     bool StatePickingBase::IsIgnored(ULongID id)
     {
-      return std::find
-      (
-        m_ignoreList.begin(),
-        m_ignoreList.end(),
-        id
-      ) != m_ignoreList.end();
+      return std::find(m_ignoreList.begin(), m_ignoreList.end(), id) !=
+             m_ignoreList.end();
     }
 
     void StatePickingBase::PickDataToEntityId(EntityIdArray& ids)
@@ -300,24 +299,14 @@ namespace ToolKit
       {
         if (vp->GetType() == Window::Type::Viewport)
         {
-          ignores = g_app->GetCurrentScene()->Filter
-          (
-            [](Entity* ntt) -> bool
-            {
-              return ntt->IsSurfaceInstance();
-            }
-          );
+          ignores = g_app->GetCurrentScene()->Filter(
+              [](Entity* ntt) -> bool { return ntt->IsSurfaceInstance(); });
         }
 
         if (vp->GetType() == Window::Type::Viewport2d)
         {
-          ignores = g_app->GetCurrentScene()->Filter
-          (
-            [](Entity* ntt) -> bool
-            {
-              return !ntt->IsSurfaceInstance();
-            }
-          );
+          ignores = g_app->GetCurrentScene()->Filter(
+              [](Entity* ntt) -> bool { return !ntt->IsSurfaceInstance(); });
         }
       }
 
@@ -348,7 +337,7 @@ namespace ToolKit
         {
           m_mouseData[0] = vp->GetLastMousePosScreenSpace();
 
-          Ray ray = vp->RayFromMousePosition();
+          Ray ray                  = vp->RayFromMousePosition();
           EditorScenePtr currScene = g_app->GetCurrentScene();
           EditorScene::PickData pd = currScene->PickObject(ray, m_ignoreList);
           m_pickData.push_back(pd);
@@ -365,10 +354,8 @@ namespace ToolKit
             }
 
             m_dbgArrow->m_node->SetTranslation(ray.position);
-            m_dbgArrow->m_node->SetOrientation
-            (
-              RotationTo(X_AXIS, ray.direction)
-            );
+            m_dbgArrow->m_node->SetOrientation(
+                RotationTo(X_AXIS, ray.direction));
           }
 
           return StateType::StateEndPick;
@@ -415,28 +402,22 @@ namespace ToolKit
           std::vector<Vec3> rect3d;
 
           // Front rectangle.
-          Vec3 lensLoc = cam->m_node->GetTranslation
-          (
-            TransformationSpace::TS_WORLD
-          );
+          Vec3 lensLoc =
+              cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
           for (int i = 0; i < 4; i++)
           {
-            Vec2 p = vp->TransformScreenToViewportSpace(rect[i]);
+            Vec2 p  = vp->TransformScreenToViewportSpace(rect[i]);
             Vec3 p0 = vp->TransformViewportToWorldSpace(p);
             rect3d.push_back(p0);
             if (cam->IsOrtographic())
             {
-              rays.push_back
-              (
-                {
-                  lensLoc,
-                  cam->GetComponent<DirectionComponent>()->GetDirection()
-                }
-              );
+              rays.push_back(
+                  {lensLoc,
+                   cam->GetComponent<DirectionComponent>()->GetDirection()});
             }
             else
             {
-              rays.push_back({ lensLoc, glm::normalize(p0 - lensLoc) });
+              rays.push_back({lensLoc, glm::normalize(p0 - lensLoc)});
             }
           }
 
@@ -451,22 +432,22 @@ namespace ToolKit
           // Frustum from 8 points.
           Frustum frustum;
           std::vector<Vec3> planePnts;
-          planePnts = { rect3d[0], rect3d[7], rect3d[4] };  // Left plane.
+          planePnts         = {rect3d[0], rect3d[7], rect3d[4]}; // Left plane.
           frustum.planes[0] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[5], rect3d[6], rect3d[1] };  // Right plane.
+          planePnts         = {rect3d[5], rect3d[6], rect3d[1]}; // Right plane.
           frustum.planes[1] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[4], rect3d[5], rect3d[0] };  // Top plane.
+          planePnts         = {rect3d[4], rect3d[5], rect3d[0]}; // Top plane.
           frustum.planes[2] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[3], rect3d[6], rect3d[7] };  // Bottom plane.
+          planePnts = {rect3d[3], rect3d[6], rect3d[7]}; // Bottom plane.
           frustum.planes[3] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[0], rect3d[1], rect3d[3] };  // Near plane.
+          planePnts         = {rect3d[0], rect3d[1], rect3d[3]}; // Near plane.
           frustum.planes[4] = PlaneFrom(planePnts.data());
 
-          planePnts = { rect3d[7], rect3d[5], rect3d[4] };  // Far plane.
+          planePnts         = {rect3d[7], rect3d[5], rect3d[4]}; // Far plane.
           frustum.planes[5] = PlaneFrom(planePnts.data());
 
           // Perform picking.
@@ -478,30 +459,35 @@ namespace ToolKit
           // Debug draw the picking frustum.
           if (g_app->m_showPickingDebug)
           {
-            std::vector<Vec3> corners =
-            {
-              rect3d[0], rect3d[1], rect3d[1], rect3d[2], rect3d[2],
-              rect3d[3], rect3d[3], rect3d[0],
-              rect3d[0], rect3d[0] + rays[0].direction * depth,
-              rect3d[1], rect3d[1] + rays[1].direction * depth,
-              rect3d[2], rect3d[2] + rays[2].direction * depth,
-              rect3d[3], rect3d[3] + rays[3].direction * depth,
-              rect3d[0] + rays[0].direction * depth,
-              rect3d[1] + rays[1].direction * depth,
-              rect3d[1] + rays[1].direction * depth,
-              rect3d[2] + rays[2].direction * depth,
-              rect3d[2] + rays[2].direction * depth,
-              rect3d[3] + rays[3].direction * depth,
-              rect3d[3] + rays[3].direction * depth,
-              rect3d[0] + rays[0].direction * depth
-            };
+            std::vector<Vec3> corners = {rect3d[0],
+                                         rect3d[1],
+                                         rect3d[1],
+                                         rect3d[2],
+                                         rect3d[2],
+                                         rect3d[3],
+                                         rect3d[3],
+                                         rect3d[0],
+                                         rect3d[0],
+                                         rect3d[0] + rays[0].direction * depth,
+                                         rect3d[1],
+                                         rect3d[1] + rays[1].direction * depth,
+                                         rect3d[2],
+                                         rect3d[2] + rays[2].direction * depth,
+                                         rect3d[3],
+                                         rect3d[3] + rays[3].direction * depth,
+                                         rect3d[0] + rays[0].direction * depth,
+                                         rect3d[1] + rays[1].direction * depth,
+                                         rect3d[1] + rays[1].direction * depth,
+                                         rect3d[2] + rays[2].direction * depth,
+                                         rect3d[2] + rays[2].direction * depth,
+                                         rect3d[3] + rays[3].direction * depth,
+                                         rect3d[3] + rays[3].direction * depth,
+                                         rect3d[0] + rays[0].direction * depth};
 
             if (m_dbgFrustum == nullptr)
             {
-              m_dbgFrustum = std::shared_ptr<LineBatch>
-              (
-                new LineBatch(corners, X_AXIS, DrawType::Line)
-              );
+              m_dbgFrustum = std::shared_ptr<LineBatch>(
+                  new LineBatch(corners, X_AXIS, DrawType::Line));
               m_ignoreList.push_back(m_dbgFrustum->GetIdVal());
               currScene->AddEntity(m_dbgFrustum.get());
             }
@@ -522,8 +508,7 @@ namespace ToolKit
         {
           m_mouseData[1] = vp->GetLastMousePosScreenSpace();
 
-          auto drawSelectionRectangleFn = [this](ImDrawList* drawList) -> void
-          {
+          auto drawSelectionRectangleFn = [this](ImDrawList* drawList) -> void {
             Vec2 min, max;
             GetMouseRect(min, max);
 
@@ -566,12 +551,10 @@ namespace ToolKit
     SignalId StateDeletePick::Update(float deltaTime)
     {
       Window::Type activeType = g_app->GetActiveWindow()->GetType();
-      if  // Stop text edit deletes to remove entities.
-        (
-          activeType != Window::Type::Viewport
-          && activeType != Window::Type::Viewport2d
-          && activeType != Window::Type::Outliner
-        )
+      if // Stop text edit deletes to remove entities.
+          (activeType != Window::Type::Viewport &&
+           activeType != Window::Type::Viewport2d &&
+           activeType != Window::Type::Outliner)
       {
         return NullSignal;
       }
@@ -596,19 +579,28 @@ namespace ToolKit
 
       if (!deleteList.empty())
       {
-        if (deleteList.size() > 1)
-        {
-          ActionManager::GetInstance()->BeginActionGroup();
-        }
+        ActionManager::GetInstance()->BeginActionGroup();
 
+        uint instanceCount = 0;
         for (Entity* e : deleteList)
         {
+          if (!e->GetIsInstanceVal())
+          {
+            // Search if this is used to instantiate other entities
+            for (Entity* p : g_app->GetCurrentScene()->GetEntities())
+            {
+              if (p->GetIsInstanceVal() &&
+                  p->GetBaseEntityID() == e->GetIdVal())
+              {
+                ActionManager::GetInstance()->AddAction(new DeleteAction(p));
+                instanceCount++;
+              }
+            }
+          }
           ActionManager::GetInstance()->AddAction(new DeleteAction(e));
         }
-        ActionManager::GetInstance()->GroupLastActions
-        (
-          static_cast<int>(deleteList.size())
-        );
+        ActionManager::GetInstance()->GroupLastActions(
+            static_cast<int>(deleteList.size() + instanceCount));
       }
 
       return NullSignal;
@@ -636,17 +628,23 @@ namespace ToolKit
         GetRootEntities(selecteds, selectedRoots);
 
         int cpyCount = 0;
-        bool copy = ImGui::GetIO().KeyShift;
+        bool copy    = ImGui::GetIO().KeyShift;
         for (Entity* ntt : selectedRoots)
         {
           EntityRawPtrArray copies;
           if (copy)
           {
             DeepCopy(ntt, copies);
+            // Status info
+            g_app->m_statusMsg =
+                std::to_string(cpyCount) + " entities are copied.";
           }
           else
           {
             DeepInstantiate(ntt, copies);
+            // Status info
+            g_app->m_statusMsg =
+                std::to_string(cpyCount) + " entities are instantiated.";
           }
 
           for (Entity* cpy : copies)
@@ -657,10 +655,6 @@ namespace ToolKit
           currScene->AddToSelection(copies.front()->GetIdVal(), true);
           cpyCount += static_cast<int>(copies.size());
         }
-
-        // Status info
-        g_app->m_statusMsg = std::to_string(cpyCount)
-        + " entities are copied.";
 
         ActionManager::GetInstance()->GroupLastActions(cpyCount);
       }
@@ -683,24 +677,23 @@ namespace ToolKit
     // Mods
     //////////////////////////////////////////////////////////////////////////
 
-    SelectMod::SelectMod()
-      : BaseMod(ModId::Select)
+    SelectMod::SelectMod() : BaseMod(ModId::Select)
     {
     }
 
     void SelectMod::Init()
     {
-      StateBeginPick* initialState = new StateBeginPick();
+      StateBeginPick* initialState   = new StateBeginPick();
       m_stateMachine->m_currentState = initialState;
 
       m_stateMachine->PushState(initialState);
       m_stateMachine->PushState(new StateBeginBoxPick());
 
-      State* state = new StateEndPick();
+      State* state                  = new StateEndPick();
       state->m_links[m_backToStart] = StateType::StateBeginPick;
       m_stateMachine->PushState(state);
 
-      state = new StateDeletePick();
+      state                         = new StateDeletePick();
       state->m_links[m_backToStart] = StateType::StateBeginPick;
       m_stateMachine->PushState(state);
     }
@@ -712,39 +705,33 @@ namespace ToolKit
       if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick)
       {
         StateEndPick* endPick =
-        static_cast<StateEndPick*>(m_stateMachine->m_currentState);
+            static_cast<StateEndPick*>(m_stateMachine->m_currentState);
         EntityIdArray entities;
         endPick->PickDataToEntityId(entities);
-        g_app->GetCurrentScene()->AddToSelection
-        (
-          entities,
-          ImGui::GetIO().KeyShift
-        );
+        g_app->GetCurrentScene()->AddToSelection(entities,
+                                                 ImGui::GetIO().KeyShift);
 
         ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
       }
 
-      if
-      (
-        m_stateMachine->m_currentState->GetType() == StateType::StateDeletePick
-      )
+      if (m_stateMachine->m_currentState->GetType() ==
+          StateType::StateDeletePick)
       {
         ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
       }
     }
 
-    CursorMod::CursorMod()
-      : BaseMod(ModId::Cursor)
+    CursorMod::CursorMod() : BaseMod(ModId::Cursor)
     {
     }
 
     void CursorMod::Init()
     {
-      State* state = new StateBeginPick();
+      State* state                   = new StateBeginPick();
       m_stateMachine->m_currentState = state;
       m_stateMachine->PushState(state);
 
-      state = new StateEndPick();
+      state                                  = new StateEndPick();
       state->m_links[BaseMod::m_backToStart] = StateType::StateBeginPick;
       m_stateMachine->PushState(state);
     }
@@ -756,12 +743,13 @@ namespace ToolKit
       if (m_stateMachine->m_currentState->GetType() == StateType::StateEndPick)
       {
         StateEndPick* endPick =
-        static_cast<StateEndPick*>(m_stateMachine->m_currentState);
-        EditorScene::PickData& pd = endPick->m_pickData.back();
+            static_cast<StateEndPick*>(m_stateMachine->m_currentState);
+        EditorScene::PickData& pd        = endPick->m_pickData.back();
         g_app->m_cursor->m_worldLocation = pd.pickPos;
 
         m_stateMachine->Signal(BaseMod::m_backToStart);
       }
     }
-  }  // namespace Editor
-}  // namespace ToolKit
+
+  } // namespace Editor
+} // namespace ToolKit

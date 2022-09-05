@@ -40,17 +40,15 @@ namespace ToolKit
     virtual String GetDefaultResource(ResourceType type);
 
     ResourceManager(ResourceManager const&) = delete;
-    void operator=(ResourceManager const&) = delete;
+    void operator=(ResourceManager const&)  = delete;
 
-    template<typename T>
+    template <typename T>
     std::shared_ptr<T> Create(const String& file)
     {
       if (!Exist(file))
       {
-        std::shared_ptr<T> resource = std::static_pointer_cast<T>
-        (
-          CreateLocal(T::GetTypeStatic())
-        );
+        std::shared_ptr<T> resource =
+            std::static_pointer_cast<T>(CreateLocal(T::GetTypeStatic()));
         if (!CheckFile(file))
         {
           String def = GetDefaultResource(T::GetTypeStatic());
@@ -74,7 +72,7 @@ namespace ToolKit
         m_storage[file] = resource;
       }
 
-      return std::reinterpret_pointer_cast<T> (m_storage[file]);
+      return std::reinterpret_pointer_cast<T>(m_storage[file]);
     }
 
     bool Exist(String file);
@@ -85,10 +83,10 @@ namespace ToolKit
     void Report(const char* msg, ...);
 
    public:
-     // Log callback, if provided messages passed to callback.
+    // Log callback, if provided messages passed to callback.
     std::function<void(const String&)> m_reporterFn = nullptr;
     std::unordered_map<String, ResourcePtr> m_storage;
     ResourceType m_type = ResourceType::Base;
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

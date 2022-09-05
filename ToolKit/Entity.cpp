@@ -8,6 +8,7 @@
 #include "Sky.h"
 #include "ResourceComponent.h"
 #include "DebugNew.h"
+#include "Prefab.h"
 
 namespace ToolKit
 {
@@ -16,9 +17,9 @@ namespace ToolKit
   {
     ParameterConstructor();
 
-    m_node = new Node();
+    m_node           = new Node();
     m_node->m_entity = this;
-    _parentId = 0;
+    _parentId        = 0;
   }
 
   Entity::~Entity()
@@ -47,7 +48,7 @@ namespace ToolKit
       MeshPtr mesh = meshComponent->GetMeshVal();
       if (mesh->IsSkinned())
       {
-        SkinMesh* skinMesh = static_cast<SkinMesh*> (mesh.get());
+        SkinMesh* skinMesh   = static_cast<SkinMesh*>(mesh.get());
         SkeletonPtr skeleton = skinMesh->m_skeleton;
         anim->GetPose(skeleton, time);
         return;
@@ -92,7 +93,7 @@ namespace ToolKit
   Entity* Entity::Copy() const
   {
     EntityType t = GetType();
-    Entity* e = GetEntityFactory()->CreateByType(t);
+    Entity* e    = GetEntityFactory()->CreateByType(t);
     return CopyTo(e);
   }
 
@@ -117,13 +118,15 @@ namespace ToolKit
   Entity* Entity::Instantiate() const
   {
     EntityType t = GetType();
-    Entity* e = GetEntityFactory()->CreateByType(t);
+    Entity* e    = GetEntityFactory()->CreateByType(t);
     return InstantiateTo(e);
   }
 
   Entity* Entity::InstantiateTo(Entity* other) const
   {
     WeakCopy(other);
+    other->SetIsInstanceVal(true);
+    other->_baseEntityId = this->GetIdVal();
     return other;
   }
 
@@ -132,44 +135,28 @@ namespace ToolKit
     m_localData.m_variants.reserve(6);
     ULongID id = GetHandleManager()->GetNextHandle();
 
-    Id_Define
-    (
-      id,
-      EntityCategory.Name,
-      EntityCategory.Priority,
-      true, false
-    );
+    Id_Define(id, EntityCategory.Name, EntityCategory.Priority, true, false);
 
-    Name_Define
-    (
-      "Entity_" + std::to_string(id),
-      EntityCategory.Name,
-      EntityCategory.Priority,
-      true, true
-    );
+    Name_Define("Entity_" + std::to_string(id),
+                EntityCategory.Name,
+                EntityCategory.Priority,
+                true,
+                true);
 
-    Tag_Define
-    (
-      "",
-      EntityCategory.Name,
-      EntityCategory.Priority,
-      true, true
-    );
+    Tag_Define("", EntityCategory.Name, EntityCategory.Priority, true, true);
 
-    Visible_Define
-    (
-      true,
-      EntityCategory.Name,
-      EntityCategory.Priority,
-      true, true
-    );
+    Visible_Define(
+        true, EntityCategory.Name, EntityCategory.Priority, true, true);
 
-    TransformLock_Define
-    (
-      false,
-      EntityCategory.Name,
-      EntityCategory.Priority,
-      true, true
+    TransformLock_Define(
+        false, EntityCategory.Name, EntityCategory.Priority, true, true);
+
+    IsInstance_Define(
+        false,
+        EntityCategory.Name,
+        EntityCategory.Priority,
+        false,
+        true // isInstance shouldn't change except WeakCopy is called
     );
   }
 
@@ -177,11 +164,11 @@ namespace ToolKit
   {
     assert(other->GetType() == GetType());
     SafeDel(other->m_node);
-    other->m_node = m_node->Copy();
+    other->m_node           = m_node->Copy();
     other->m_node->m_entity = other;
 
     // Preserve Ids.
-    ULongID id = other->GetIdVal();
+    ULongID id         = other->GetIdVal();
     other->m_localData = m_localData;
     other->SetIdVal(id);
 
@@ -198,11 +185,8 @@ namespace ToolKit
 
   void Entity::AddComponent(ComponentPtr component)
   {
-    assert
-    (
-      GetComponent(component->m_id) == nullptr &&
-      "Component has already been added."
-    );
+    assert(GetComponent(component->m_id) == nullptr &&
+           "Component has already been added.");
 
     component->m_entity = this;
     m_components.push_back(component);
@@ -233,9 +217,43 @@ namespace ToolKit
     return nullptr;
   }
 
+  ComponentPtrArray& Entity::GetComponentPtrArray()
+  {
+    if (GetIsInstanceVal())
+    {
+      if (GetSceneManager() && GetSceneManager()->GetCurrentScene())
+      {
+        Entity* baseEntity =
+            GetSceneManager()->GetCurrentScene()->GetEntity(_baseEntityId);
+        if (baseEntity)
+        {
+          return baseEntity->m_components;
+        }
+      }
+    }
+    return m_components;
+  }
+
+  const ComponentPtrArray& Entity::GetComponentPtrArray() const
+  {
+    if (GetIsInstanceVal())
+    {
+      if (GetSceneManager() && GetSceneManager()->GetCurrentScene())
+      {
+        Entity* baseEntity =
+            GetSceneManager()->GetCurrentScene()->GetEntity(_baseEntityId);
+        if (baseEntity)
+        {
+          return baseEntity->m_components;
+        }
+      }
+    }
+    return m_components;
+  }
+
   ComponentPtr Entity::GetComponent(ULongID id) const
   {
-    for (const ComponentPtr& com : m_components)
+    for (const ComponentPtr& com : GetComponentPtrArray())
     {
       if (com->m_id == id)
       {
@@ -252,22 +270,20 @@ namespace ToolKit
     WriteAttr(node, doc, XmlEntityIdAttr, std::to_string(GetIdVal()));
     if (m_node->m_parent && m_node->m_parent->m_entity)
     {
-      WriteAttr
-      (
-        node,
-        doc,
-        XmlParentEntityIdAttr,
-        std::to_string(m_node->m_parent->m_entity->GetIdVal())
-      );
+      WriteAttr(node,
+                doc,
+                XmlParentEntityIdAttr,
+                std::to_string(m_node->m_parent->m_entity->GetIdVal()));
+    }
+    if (GetIsInstanceVal())
+    {
+      WriteAttr(node, doc, XmlBaseEntityIdAttr, std::to_string(_baseEntityId));
     }
 
-    WriteAttr
-    (
-      node,
-      doc,
-      XmlEntityTypeAttr,
-      std::to_string(static_cast<int> (GetType()))
-    );
+    WriteAttr(node,
+              doc,
+              XmlEntityTypeAttr,
+              std::to_string(static_cast<int>(GetType())));
 
     m_node->Serialize(doc, node);
     m_localData.Serialize(doc, node);
@@ -300,6 +316,14 @@ namespace ToolKit
 
     m_localData.DeSerialize(doc, parent);
 
+    // For instance entities, don't load components
+    //  Use InstantiateTo() after deserializing base entity
+    if (GetIsInstanceVal())
+    {
+      ReadAttr(node, XmlBaseEntityIdAttr, _baseEntityId);
+      return;
+    }
+
     ClearComponents();
     if (XmlNode* components = node->first_node("Components"))
     {
@@ -308,10 +332,8 @@ namespace ToolKit
       {
         int type = -1;
         ReadAttr(comNode, XmlParamterTypeAttr, type);
-        Component* com = Component::CreateByType
-        (
-          static_cast<ComponentType> (type)
-        );
+        Component* com =
+            Component::CreateByType(static_cast<ComponentType>(type));
 
         com->DeSerialize(doc, comNode);
         AddComponent(com);
@@ -356,22 +378,36 @@ namespace ToolKit
 
   bool Entity::IsSurfaceInstance()
   {
-    EntityType t = GetType();
-    return
-      t == EntityType::Entity_Surface ||
-      t == EntityType::Entity_Button;
+    switch (GetType())
+    {
+    case EntityType::Entity_Surface:
+    case EntityType::Entity_Button:
+    case EntityType::Entity_CanvasPanel:
+      return true;
+    default:
+      return false;
+    }
   }
 
   bool Entity::IsLightInstance() const
   {
     EntityType type = GetType();
-    return
-    (
-      type == EntityType::Entity_Light
-      || type == EntityType::Entity_DirectionalLight
-      || type == EntityType::Entity_PointLight
-      || type == EntityType::Entity_SpotLight
-    );
+    return (type == EntityType::Entity_Light ||
+            type == EntityType::Entity_DirectionalLight ||
+            type == EntityType::Entity_PointLight ||
+            type == EntityType::Entity_SpotLight);
+  }
+
+  ULongID Entity::GetBaseEntityID() const
+  {
+    return _baseEntityId;
+  }
+
+  void Entity::SetBaseEntityID(ULongID id)
+  {
+    assert(GetIsInstanceVal() &&
+           "You should call this only for instance entities!");
+    _baseEntityId = id;
   }
 
   EntityNode::EntityNode()
@@ -398,11 +434,8 @@ namespace ToolKit
 
   EntityFactory::EntityFactory()
   {
-    m_overrideFns.resize
-    (
-      static_cast<size_t>(EntityType::ENTITY_TYPE_COUNT),
-      nullptr
-    );
+    m_overrideFns.resize(static_cast<size_t>(EntityType::ENTITY_TYPE_COUNT),
+                         nullptr);
   }
 
   EntityFactory::~EntityFactory()
@@ -421,63 +454,69 @@ namespace ToolKit
     Entity* e = nullptr;
     switch (type)
     {
-      case EntityType::Entity_Base:
+    case EntityType::Entity_Base:
       e = new Entity();
       break;
-      case EntityType::Entity_Node:
+    case EntityType::Entity_Node:
       e = new EntityNode();
       break;
-      case EntityType::Entity_AudioSource:
+    case EntityType::Entity_AudioSource:
       e = new AudioSource();
       break;
-      case EntityType::Entity_Billboard:
+    case EntityType::Entity_Billboard:
       e = new Billboard(Billboard::Settings());
       break;
-      case EntityType::Entity_Cube:
+    case EntityType::Entity_Cube:
       e = new Cube(false);
       break;
-      case EntityType::Entity_Quad:
+    case EntityType::Entity_Quad:
       e = new Quad(false);
       break;
-      case EntityType::Entity_Sphere:
+    case EntityType::Entity_Sphere:
       e = new Sphere(false);
       break;
-      case EntityType::Etity_Arrow:
+    case EntityType::Etity_Arrow:
       e = new Arrow2d(false);
       break;
-      case EntityType::Entity_LineBatch:
+    case EntityType::Entity_LineBatch:
       e = new LineBatch();
       break;
-      case EntityType::Entity_Cone:
+    case EntityType::Entity_Cone:
       e = new Cone(false);
       break;
-      case EntityType::Entity_Drawable:
+    case EntityType::Entity_Drawable:
       e = new Drawable();
       break;
-      case EntityType::Entity_Camera:
+    case EntityType::Entity_Camera:
       e = new Camera();
       break;
-      case EntityType::Entity_Surface:
+    case EntityType::Entity_Surface:
       e = new Surface();
       break;
-      case EntityType::Entity_Button:
+    case EntityType::Entity_Button:
       e = new Button();
       break;
-      case EntityType::Entity_Light:
+    case EntityType::Entity_Light:
       e = new Light();
-      case EntityType::Entity_DirectionalLight:
+    case EntityType::Entity_DirectionalLight:
       e = new DirectionalLight();
-      case EntityType::Entity_PointLight:
+    case EntityType::Entity_PointLight:
       e = new PointLight();
-      case EntityType::Entity_SpotLight:
+    case EntityType::Entity_SpotLight:
       e = new SpotLight();
       break;
-      case EntityType::Entity_Sky:
+    case EntityType::Entity_Sky:
       e = new Sky();
       break;
-      case EntityType::Entity_SpriteAnim:
-      case EntityType::Entity_Directional:
-      default:
+    case EntityType::Entity_CanvasPanel:
+      e = new CanvasPanel();
+      break;
+    case EntityType::Entity_Prefab:
+      e = new Prefab();
+      break;
+    case EntityType::Entity_SpriteAnim:
+    case EntityType::Entity_Directional:
+    default:
       assert(false);
       break;
     }
@@ -487,13 +526,10 @@ namespace ToolKit
     return nullptr;
   }
 
-  void EntityFactory::OverrideEntityConstructor
-  (
-    EntityType type,
-    std::function<Entity* ()> fn
-  )
+  void EntityFactory::OverrideEntityConstructor(EntityType type,
+                                                std::function<Entity*()> fn)
   {
     m_overrideFns[static_cast<int>(type)] = fn;
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

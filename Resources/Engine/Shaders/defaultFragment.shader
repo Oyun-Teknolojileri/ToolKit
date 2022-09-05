@@ -28,18 +28,40 @@
 			float outAngle[12];
 			float innAngle[12];
 			int activeCount;
+
+			mat4 projectionViewMatrix[12];
+			sampler2D dirAndSpotLightShadowMap[4];
+			samplerCube pointLightShadowMap[4];
+			int castShadow[12];
+			float shadowBias[12];
+			float shadowMapCamFarPlane[12];
+			float PCFSampleHalfSize[12];
+			float PCFSampleDistance[12];
+			float PCFUnitSampleDistance[12];
 		};
+		const int maxPointLightShadows = 4;
+		const int maxDirAndSpotLightShadows = 4;
+
+		const vec3 cubemapSampleDirections[20] = vec3[]
+		(
+			vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
+			vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+			vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
+			vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1),
+			vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
+		);
 
 		struct _CamData
 		{
 			vec3 pos;
 			vec3 dir;
+			float farPlane;
 		};
 
 		uniform _LightData LightData;
 		uniform _CamData CamData;
 		uniform sampler2D s_texture0;
-		uniform samplerCube s_texture1;
+		uniform samplerCube s_texture7;
 
 		uniform float UseIbl;
 		uniform float IblIntensity;
@@ -50,14 +72,120 @@
 
 		out vec4 fragColor;
 
+		// https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
+		{
+			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
+			vec3 projCoord = fragPosForLight.xyz * 0.5 + 0.5;
+			projCoord = clamp(projCoord, 0.0, 1.0);
+			float currentDepth = projCoord.z;
+
+			// Shadow bias
+			float bias = LightData.shadowBias[index];
+			//vec3 lightDir = normalize(LightData.pos[index] - pos);
+			//bias = max(bias * (1.0 - dot(normal, lightDir)), 0.005);
+
+			float shadow = 0.0;
+			vec2 texelSize = 1.0 / vec2(textureSize(LightData.dirAndSpotLightShadowMap[dirIndex], 0));
+			float size = LightData.PCFSampleHalfSize[index];
+			float speed = LightData.PCFSampleDistance[index];
+			float unit = LightData.PCFUnitSampleDistance[index];
+
+			// PCF
+			for (float i = -size; i <= size; i+=speed)
+			{
+				for (float j = -size; j <= size; j+=speed)
+				{
+					float shadowSample = texture(LightData.dirAndSpotLightShadowMap[dirIndex],
+					projCoord.xy + vec2(i, j) * texelSize).r;
+					shadow += currentDepth - bias > shadowSample ? 0.0 : unit;
+				}
+			}
+
+			return shadow;
+		}
+
+		float CalculateSpotShadow(vec3 pos, int index, int spotIndex, vec3 normal)
+		{
+			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
+
+			// Projection divide
+			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
+
+			vec3 lightToFrag = pos - LightData.pos[index];
+			float currentDepth = length(lightToFrag);
+
+			float shadow = 0.0;
+
+			// Transform to [0, 1] range
+			projCoord = projCoord * 0.5 + 0.5;
+
+			// Shadow bias
+			vec3 lightDir = normalize(-lightToFrag);
+			float bias = LightData.shadowBias[index];
+			bias = max(bias * 10.0 * (1.0 - dot(normal, lightDir)), 0.005);
+
+			vec2 texelSize = 1.0 / vec2(textureSize(LightData.dirAndSpotLightShadowMap[spotIndex], 0));
+			float size = LightData.PCFSampleHalfSize[index];
+			float speed = LightData.PCFSampleDistance[index];
+			float unit = LightData.PCFUnitSampleDistance[index];
+
+			// PCF
+			for (float i = -size; i <= size; i+=speed)
+			{
+				for (float j = -size; j <= size; j+=speed)
+				{
+					float shadowSample = texture(LightData.dirAndSpotLightShadowMap[spotIndex],
+					projCoord.xy + vec2(i, j) * texelSize).r;
+					// Convert to [0 1] range
+					shadowSample *= LightData.shadowMapCamFarPlane[index];
+					shadow += currentDepth - LightData.shadowBias[index] > shadowSample ? 0.0 : unit;
+				}
+			}
+
+			return shadow;
+		}
+
+		float CalculatePointShadow(vec3 pos, int index, int pointIndex, vec3 normal)
+		{
+			vec3 lightToFrag = pos - LightData.pos[index];
+
+			float currentDepth = length(lightToFrag);
+
+			// Shadow bias
+			float bias = LightData.shadowBias[index];
+			vec3 lightDir = normalize(-lightToFrag);
+			bias = max(bias * 10.0 * (1.0 - dot(normal, lightDir)), 0.005);
+
+			float shadow = 0.0;
+			float radius = 0.03;
+			// PCF
+			for (int i = 0; i < 20; i++)
+			{
+				float shadowSample = texture(LightData.pointLightShadowMap[pointIndex],
+				lightToFrag + cubemapSampleDirections[i] * radius).r;
+				// Recover from [0 1] range
+				shadowSample *= LightData.shadowMapCamFarPlane[index];
+				shadow += currentDepth - bias > shadowSample ? 0.0 : 1.0;
+			}
+			shadow = shadow / 20.0;
+
+			return shadow;
+		}
+
 		void main()
 		{
+			int dirAndSpotLightShadowCount = 0;
+			int pointLightShadowCount = 0;
+
 			vec3 n = normalize(v_normal);
 			vec3 e = normalize(CamData.pos - v_pos);
 
+			float shadow = 1.0;
 			vec3 irradiance = vec3(0.0);
 			for (int i = 0; i < LightData.activeCount; i++)
 			{
+				shadow = 1.0;
 				vec3 ambient = vec3(0.0);
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
@@ -98,12 +226,15 @@
 					float spec = pow(max(dot(n, halfwayDir), 0.0), 32.0);
 					specular = specularStrength * spec * LightData.color[i];
 
-					// Ambient
-					float ambientStrength = 0.01;
-					ambient = ambientStrength * LightData.color[i];
-
 					diffuse  *= attenuation * radiusCheck;
 					specular *= attenuation * radiusCheck;
+
+					bool maxShadowCheck = maxPointLightShadows > pointLightShadowCount;
+					if (maxShadowCheck && LightData.castShadow[i] == 1)
+					{
+						shadow = CalculatePointShadow(v_pos, i, pointLightShadowCount, n);
+						pointLightShadowCount += 1;
+					}
 				}
 				else if (LightData.type[i] == 1) // Directional light
 				{
@@ -122,6 +253,13 @@
 					// Ambient
 					float ambientStrength = 0.01;
 					ambient = ambientStrength * LightData.color[i];
+
+					bool maxShadowCheck = maxDirAndSpotLightShadows > dirAndSpotLightShadowCount;
+					if (maxShadowCheck && LightData.castShadow[i] == 1)
+					{
+						shadow = CalculateDirectionalShadow(v_pos, i, dirAndSpotLightShadowCount, n);
+						dirAndSpotLightShadowCount += 1;
+					}				
 				}
 				else if (LightData.type[i] == 3) // Spot light
 				{
@@ -167,11 +305,18 @@
 
 					diffuse *= intensity * radiusCheck * attenuation;
 					specular *= intensity * radiusCheck * attenuation;
+
+					bool maxShadowCheck = maxDirAndSpotLightShadows > dirAndSpotLightShadowCount;
+					if (maxShadowCheck && LightData.castShadow[i] == 1)
+					{
+						shadow = CalculateSpotShadow(v_pos, i, dirAndSpotLightShadowCount, n);
+						dirAndSpotLightShadowCount += 1;
+					}
 				}
 
-				irradiance += (ambient + diffuse + specular) * LightData.intensity[i];
+				irradiance += (ambient + diffuse + specular) * LightData.intensity[i] * shadow;
 			}
-			vec3 iblIrradiance = UseIbl * texture(s_texture1, n).rgb;
+			vec3 iblIrradiance = UseIbl * texture(s_texture7, n).rgb;
 			irradiance += iblIrradiance * IblIntensity;
 
 			vec4 objectColor = texture(s_texture0, v_texture);

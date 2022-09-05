@@ -56,4 +56,4 @@ namespace ToolKit
     ResourcePtr CreateLocal(ResourceType type) override;
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

@@ -15,13 +15,19 @@
 namespace ToolKit
 {
 
-  /**
-   * @def TKComponentType(type) The macro is responsible for
-   * responsible for auto generating component type information.
-   */
-  #define TKComponentType(type) \
-  static ComponentType GetTypeStatic() { return ComponentType::type; } \
-  ComponentType GetType() const override { return ComponentType::type; }
+/**
+ * @def TKComponentType(type) The macro is responsible for
+ * responsible for auto generating component type information.
+ */
+#define TKComponentType(type)                                                  \
+  static ComponentType GetTypeStatic()                                         \
+  {                                                                            \
+    return ComponentType::type;                                                \
+  }                                                                            \
+  ComponentType GetType() const override                                       \
+  {                                                                            \
+    return ComponentType::type;                                                \
+  }
 
   typedef std::shared_ptr<class Component> ComponentPtr;
   typedef std::vector<ComponentPtr> ComponentPtrArray;
@@ -90,9 +96,9 @@ namespace ToolKit
     static Component* CreateByType(ComponentType t);
 
    public:
-    ULongID m_id;  //!< Unique id of the component for the current runtime.
-    ParameterBlock m_localData;  //!< Component local data.
-    Entity* m_entity = nullptr;  //!< Parent Entity of the component.
+    ULongID m_id; //!< Unique id of the component for the current runtime.
+    ParameterBlock m_localData; //!< Component local data.
+    Entity* m_entity = nullptr; //!< Parent Entity of the component.
   };
 
-}  // namespace ToolKit
+} // namespace ToolKit

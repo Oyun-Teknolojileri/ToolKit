@@ -1,38 +1,24 @@
-# From: https://github.com/cpplint/GitHub-Action-for-cpplint
-
-name: cpplint_modified_files
+name: clang-format Check
 on: [push, pull_request]
 jobs:
-  cpplint_modified_files:
+  formatting-check:
+    name: Formatting Check
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path:
+          - check: './ToolKit'
+            exclude: '(hello|world)' # Exclude file paths containing "hello" or "world"
+          - check: './Editor'
+            exclude: '(ImGui)'
+          - check: './Import'
+            exclude: '(assimp|stb_)'
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v2
-      - run: python -m pip install cpplint
-      - run: git diff origin/master HEAD --name-only > git_diff.txt
-      - name: cpplint_modified_files
-        shell: python
-        run: |
-          import os
-          import subprocess
-          import sys
-
-          print("Python {}.{}.{}".format(*sys.version_info))  # Python 3.8
-          with open("git_diff.txt") as in_file:
-            modified_files = sorted(in_file.read().splitlines())
-          print("{} files were modified.".format(len(modified_files)))
-
-          cpp_exts = tuple(".c .c++ .cc .cpp .cu .cuh .cxx .h .h++ .hh .hpp .hxx".split())
-          all_files = [file for file in modified_files if file.lower().endswith(cpp_exts)]
-          cpp_files = []
-          for cpp_file in all_files:
-            if not cpp_file.startswith("Dependency/") and not cpp_file.startswith("Import/assimp/"):
-              cpp_files.append(cpp_file)
-          print(f"{len(cpp_files)} C++ files were modified.")
-          if not cpp_files:
-            sys.exit(0)
-
-          print("cpplint:")
-          subprocess.run(["cpplint", "--filter=-legal/copyright,+build/c++14,-build/header_guard,+build/pragma_once,-whitespace/braces,-whitespace/newline,-whitespace/parens,-runtime/indentation_namespace,-build/include_subdir,-runtime/references"] + cpp_files, check=True, text=True)
+    - uses: actions/checkout@v2
+    - name: Run clang-format style check for C/C++/Protobuf programs.
+      uses: jidicula/clang-format-action@v4.8.0
+      with:
+        clang-format-version: '14'
+        check-path: ${{ matrix.path['check'] }}
+        exclude-regex: ${{ matrix.path['exclude'] }}
+        fallback-style: 'Microsoft' # optional

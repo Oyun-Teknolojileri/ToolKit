@@ -22,29 +22,27 @@ namespace ToolKit
       DeSerialize(nullptr, nullptr);
     }
 
-    XmlNode* Workspace::GetDefaultWorkspaceNode(XmlDocBundle& bundle)
+    XmlNode* Workspace::GetDefaultWorkspaceNode(XmlDocBundle& bundle) const
     {
-      String settingsFile = ConcatPaths
-      (
-        { DefaultPath(), "workspace.settings" }
-      );
+      String settingsFile = ConcatPaths({ConfigPath(), g_workspaceFile});
+
       if (CheckFile(settingsFile))
       {
         XmlFilePtr lclFile = GetFileManager()->GetXmlFile(settingsFile.c_str());
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
 
-        bundle.doc = lclDoc;
+        bundle.doc  = lclDoc;
         bundle.file = lclFile;
 
-        StringArray path = { "Settings", "Workspace" };
+        StringArray path = {"Settings", "Workspace"};
         return Query(lclDoc.get(), path);
       }
 
       return nullptr;
     }
 
-    String Workspace::GetDefaultWorkspace()
+    String Workspace::GetDefaultWorkspace() const
     {
       String path;
       XmlDocBundle docBundle;
@@ -62,10 +60,7 @@ namespace ToolKit
       if (XmlNode* node = GetDefaultWorkspaceNode(docBundle))
       {
         std::ofstream file;
-        String settingsPath = ConcatPaths
-        (
-          { DefaultPath(), "workspace.settings" }
-        );
+        String settingsPath = ConcatPaths({ConfigPath(), g_workspaceFile});
 
         file.open(settingsPath.c_str(), std::ios::out);
         if (file.is_open())
@@ -74,10 +69,7 @@ namespace ToolKit
           RefreshProjects();
           if (XmlAttribute* attr = node->first_attribute("path"))
           {
-            attr->value
-            (
-              docBundle.doc->allocate_string(path.c_str(), 0)
-            );
+            attr->value(docBundle.doc->allocate_string(path.c_str(), 0));
           }
           else
           {
@@ -97,66 +89,56 @@ namespace ToolKit
       return false;
     }
 
-    String Workspace::GetCodePath()
+    String Workspace::GetCodePath() const
     {
-      String codePath = ConcatPaths
-      (
-        {
-          GetActiveWorkspace(),
-          m_activeProject.name,
-          "Codes"
-        }
-      );
+      String codePath =
+          ConcatPaths({GetActiveWorkspace(), m_activeProject.name, "Codes"});
 
       return codePath;
     }
 
-    String Workspace::GetPluginPath()
-    {
-      String codePath = GetCodePath();
-      String pluginPath = ConcatPaths
-      (
-        {
-          codePath,
-          "Bin",
-          m_activeProject.name
-        }
-      );
-
-      return pluginPath;
-    }
-
-    String Workspace::GetResourceRoot()
+    String Workspace::GetProjectConfigPath() const
     {
       if (m_activeProject.name.empty())
       {
         return m_activeWorkspace;
       }
 
-      return ConcatPaths
-      (
-        { m_activeWorkspace, m_activeProject.name,  "Resources" }
-      );
+      return ConcatPaths({m_activeWorkspace, m_activeProject.name, "Config"});
     }
 
-    String Workspace::GetActiveWorkspace()
+    String Workspace::GetPluginPath() const
     {
-      if (m_activeWorkspace.empty())
+      String codePath   = GetCodePath();
+      String pluginPath = ConcatPaths({codePath, "Bin", m_activeProject.name});
+
+      return pluginPath;
+    }
+
+    String Workspace::GetResourceRoot() const
+    {
+      if (m_activeProject.name.empty())
       {
-        m_activeWorkspace = GetDefaultWorkspace();
+        return m_activeWorkspace;
       }
 
+      return ConcatPaths(
+          {m_activeWorkspace, m_activeProject.name, "Resources"});
+    }
+
+    String Workspace::GetActiveWorkspace() const
+    {
       return m_activeWorkspace;
     }
 
-    Project Workspace::GetActiveProject()
+    Project Workspace::GetActiveProject() const
     {
       return m_activeProject;
     }
 
     void Workspace::SetActiveProject(const Project& project)
     {
-      m_activeProject = project;
+      m_activeProject                     = project;
       Main::GetInstance()->m_resourceRoot = GetResourceRoot();
     }
 
@@ -168,11 +150,8 @@ namespace ToolKit
     void Workspace::RefreshProjects()
     {
       m_projects.clear();
-      for
-      (
-        std::filesystem::directory_entry const& dir :
-        std::filesystem::directory_iterator(m_activeWorkspace)
-      )
+      for (std::filesystem::directory_entry const& dir :
+           std::filesystem::directory_iterator(m_activeWorkspace))
       {
         if (dir.is_directory())
         {
@@ -181,11 +160,7 @@ namespace ToolKit
           // Hide hidden folders
           if (dirName.size() > 1 && dirName[0] != '.')
           {
-            Project project =
-            {
-              dirName,
-              ""
-            };
+            Project project = {dirName, ""};
 
             m_projects.push_back(project);
           }
@@ -196,27 +171,18 @@ namespace ToolKit
     void Workspace::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
       std::ofstream file;
-      String fileName = ConcatPaths
-      (
-        { m_activeWorkspace, "workspace.settings" }
-      );
-      file.open(fileName.c_str(), std::ios::out);
+      String fileName = ConcatPaths({m_activeWorkspace, g_workspaceFile});
 
+      file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
       {
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
-        XmlNode* settings = lclDoc->allocate_node
-        (
-          rapidxml::node_element,
-          "Settings"
-        );
+        XmlNode* settings =
+            lclDoc->allocate_node(rapidxml::node_element, "Settings");
         lclDoc->append_node(settings);
 
-        XmlNode* setNode = lclDoc->allocate_node
-        (
-          rapidxml::node_element,
-          "Workspace"
-        );
+        XmlNode* setNode =
+            lclDoc->allocate_node(rapidxml::node_element, "Workspace");
         WriteAttr(setNode, lclDoc.get(), "path", m_activeWorkspace);
         settings->append_node(setNode);
 
@@ -248,17 +214,15 @@ namespace ToolKit
 
     void Workspace::DeSerialize(XmlDocument* doc, XmlNode* parent)
     {
-      String settingsFile = ConcatPaths
-      (
-        { m_activeWorkspace, "workspace.settings" }
-      );
+      String settingsFile = ConcatPaths({m_activeWorkspace, g_workspaceFile});
+
       if (!CheckFile(settingsFile))
       {
-        settingsFile = ConcatPaths({ DefaultPath(), "workspace.settings" });
+        settingsFile = ConcatPaths({ConfigPath(), g_workspaceFile});
       }
 
-      XmlFilePtr lclFile = std::make_shared<XmlFile> (settingsFile.c_str());
-      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument> ();
+      XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
+      XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
       lclDoc->parse<0>(lclFile->data());
 
       if (XmlNode* settings = lclDoc->first_node("Settings"))
@@ -276,10 +240,10 @@ namespace ToolKit
           ReadAttr(setNode, "scene", sceneName);
         }
 
-        Project project = { projectName, sceneName };
+        Project project = {projectName, sceneName};
         SetActiveProject(project);
       }
     }
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit

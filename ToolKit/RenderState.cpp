@@ -6,11 +6,8 @@ namespace ToolKit
 
   void RenderState::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    XmlNode* container = doc->allocate_node
-    (
-      rapidxml::node_type::node_element,
-      "renderState"
-    );
+    XmlNode* container =
+        doc->allocate_node(rapidxml::node_type::node_element, "renderState");
 
     if (parent != nullptr)
     {
@@ -21,61 +18,30 @@ namespace ToolKit
       doc->append_node(container);
     }
 
-    WriteAttr
-    (
-      container,
-      doc,
-      "cullMode",
-      std::to_string(static_cast<int> (cullMode))
-    );
+    WriteAttr(
+        container, doc, "cullMode", std::to_string(static_cast<int>(cullMode)));
 
-    WriteAttr
-    (
-      container,
-      doc,
-      "depthTest",
-      std::to_string(static_cast<int> (depthTestEnabled))
-    );
+    WriteAttr(container,
+              doc,
+              "depthTest",
+              std::to_string(static_cast<int>(depthTestEnabled)));
 
-    WriteAttr
-    (
-      container,
-      doc,
-      "blendFunction",
-      std::to_string(static_cast<int> (blendFunction))
-    );
+    WriteAttr(container,
+              doc,
+              "blendFunction",
+              std::to_string(static_cast<int>(blendFunction)));
 
-    WriteAttr
-    (
-      container,
-      doc,
-      "drawType",
-      std::to_string(static_cast<int> (drawType))
-    );
+    WriteAttr(
+        container, doc, "drawType", std::to_string(static_cast<int>(drawType)));
 
-    WriteAttr
-    (
-      container,
-      doc,
-      "vertexLayout",
-      std::to_string(static_cast<int> (vertexLayout))
-    );
+    WriteAttr(container,
+              doc,
+              "vertexLayout",
+              std::to_string(static_cast<int>(vertexLayout)));
 
-    WriteAttr
-    (
-      container,
-      doc,
-      "priority",
-      std::to_string(priority)
-    );
+    WriteAttr(container, doc, "priority", std::to_string(priority));
 
-    WriteAttr
-    (
-      container,
-      doc,
-      "useIBL",
-      std::to_string(IBLInUse)
-    );
+    WriteAttr(container, doc, "useIBL", std::to_string(IBLInUse));
   }
 
   void RenderState::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -87,40 +53,23 @@ namespace ToolKit
 
     if (XmlNode* container = parent->first_node("renderState"))
     {
-      ReadAttr(container, "cullMode", *reinterpret_cast<int*> (&cullMode));
+      ReadAttr(container, "cullMode", *reinterpret_cast<int*>(&cullMode));
 
-      ReadAttr
-      (
-        container,
-        "depthTest",
-        *reinterpret_cast<int*> (&depthTestEnabled)
-      );
+      ReadAttr(
+          container, "depthTest", *reinterpret_cast<int*>(&depthTestEnabled));
 
-      ReadAttr
-      (
-        container,
-        "blendFunction",
-        *reinterpret_cast<int*> (&blendFunction)
-      );
+      ReadAttr(
+          container, "blendFunction", *reinterpret_cast<int*>(&blendFunction));
 
-      ReadAttr
-      (
-        container,
-        "drawType",
-        *reinterpret_cast<int*> (&drawType)
-      );
+      ReadAttr(container, "drawType", *reinterpret_cast<int*>(&drawType));
 
-      ReadAttr
-      (
-        container,
-        "vertexLayout",
-        *reinterpret_cast<int*> (&vertexLayout)
-      );
+      ReadAttr(
+          container, "vertexLayout", *reinterpret_cast<int*>(&vertexLayout));
 
       ReadAttr(container, "vertexLayout", priority);
 
-      ReadAttr(container, "useIBL", *reinterpret_cast<int*> (&IBLInUse));
+      ReadAttr(container, "useIBL", *reinterpret_cast<int*>(&IBLInUse));
     }
   }
 
-}  // namespace ToolKit
+} // namespace ToolKit

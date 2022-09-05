@@ -22,7 +22,7 @@ namespace ToolKit
     StateTransformBase::StateTransformBase()
     {
       m_gizmo = nullptr;
-      m_type = TransformType::Translate;
+      m_type  = TransformType::Translate;
 
       m_mouseData.resize(2);
     }
@@ -41,9 +41,9 @@ namespace ToolKit
       {
         // Get world location as gizmo origin.
         m_gizmo->m_worldLocation =
-          e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         m_gizmo->m_normalVectors =
-          e->m_node->GetTransformAxes(g_app->m_transformSpace);
+            e->m_node->GetTransformAxes(g_app->m_transformSpace);
       }
 
       m_gizmo->Update(deltaTime);
@@ -57,14 +57,14 @@ namespace ToolKit
     void StateTransformBase::TransitionOut(State* nextState)
     {
       StateTransformBase* baseState =
-        dynamic_cast<StateTransformBase*> (nextState);
+          dynamic_cast<StateTransformBase*>(nextState);
 
       if (baseState != nullptr)
       {
-        baseState->m_gizmo = m_gizmo;
-        baseState->m_mouseData = m_mouseData;
+        baseState->m_gizmo             = m_gizmo;
+        baseState->m_mouseData         = m_mouseData;
         baseState->m_intersectionPlane = m_intersectionPlane;
-        baseState->m_type = m_type;
+        baseState->m_type              = m_type;
       }
     }
 
@@ -85,7 +85,7 @@ namespace ToolKit
       Vec3 axes[3];
       ExtractAxes(m_gizmo->m_normalVectors, axes[0], axes[1], axes[2]);
 
-      int first = static_cast<int> (m_gizmo->GetGrabbedAxis()) % 3;
+      int first = static_cast<int>(m_gizmo->GetGrabbedAxis()) % 3;
       if (n == 0)
       {
         return axes[first];
@@ -114,8 +114,8 @@ namespace ToolKit
 
       if (nextState->ThisIsA<StateBeginPick>())
       {
-        StateBeginPick* baseNext = static_cast<StateBeginPick*> (nextState);
-        baseNext->m_mouseData = m_mouseData;
+        StateBeginPick* baseNext = static_cast<StateBeginPick*>(nextState);
+        baseNext->m_mouseData    = m_mouseData;
 
         if (!baseNext->IsIgnored(m_gizmo->GetIdVal()))
         {
@@ -126,7 +126,7 @@ namespace ToolKit
 
     SignalId StateTransformBegin::Update(float deltaTime)
     {
-      StateTransformBase::Update(deltaTime);  // Update gizmo's loc & view.
+      StateTransformBase::Update(deltaTime); // Update gizmo's loc & view.
 
       MakeSureGizmoIsValid();
 
@@ -140,16 +140,16 @@ namespace ToolKit
           return NullSignal;
         }
 
-        Vec3 camOrg = vp->GetCamera()->
-          m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        Vec3 camOrg = vp->GetCamera()->m_node->GetTranslation(
+            TransformationSpace::TS_WORLD);
         Vec3 gizmOrg =
-          m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            m_gizmo->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
-        Vec3 dir = glm::normalize(camOrg - gizmOrg);
+        Vec3 dir                = glm::normalize(camOrg - gizmOrg);
         m_gizmo->m_initialPoint = gizmOrg;
 
-        float safetyMeasure = glm::abs(glm::cos(glm::radians(5.0f)));
-        AxisLabel axisLabes[3] = { AxisLabel::X, AxisLabel::Y, AxisLabel::Z };
+        float safetyMeasure    = glm::abs(glm::cos(glm::radians(5.0f)));
+        AxisLabel axisLabes[3] = {AxisLabel::X, AxisLabel::Y, AxisLabel::Z};
 
         Vec3 axes[3];
         ExtractAxes(m_gizmo->m_normalVectors, axes[0], axes[1], axes[2]);
@@ -245,38 +245,34 @@ namespace ToolKit
 
     String StateTransformBegin::GetType()
     {
-        return StateType::StateTransformBegin;
+      return StateType::StateTransformBegin;
     }
 
     void StateTransformBegin::CalculateIntersectionPlane()
     {
-      if (PolarGizmo* pg = dynamic_cast<PolarGizmo*> (m_gizmo))
+      if (PolarGizmo* pg = dynamic_cast<PolarGizmo*>(m_gizmo))
       {
         // Polar intersection plane.
-        if (static_cast<int> (m_gizmo->GetGrabbedAxis()) < 3)
+        if (static_cast<int>(m_gizmo->GetGrabbedAxis()) < 3)
         {
           assert(m_gizmo->GetGrabbedAxis() != AxisLabel::None);
 
-          Vec3 p = m_gizmo->m_worldLocation;
+          Vec3 p    = m_gizmo->m_worldLocation;
           Vec3 axis = GetGrabbedAxis(0);
 
           if (EditorViewport* vp = g_app->GetActiveViewport())
           {
             float t;
             PlaneEquation axisPlane = PlaneFrom(p, axis);
-            Ray ray = vp->RayFromMousePosition();
+            Ray ray                 = vp->RayFromMousePosition();
             if (LinePlaneIntersection(ray, axisPlane, t))
             {
               Vec3 intersectPnt = PointOnRay(ray, t);
-              intersectPnt = glm::normalize(intersectPnt - p);
-              pg->m_grabPoint = intersectPnt;
+              intersectPnt      = glm::normalize(intersectPnt - p);
+              pg->m_grabPoint   = intersectPnt;
 
               m_intersectionPlane =
-              PlaneFrom
-              (
-                intersectPnt + m_gizmo->m_worldLocation,
-                axis
-              );
+                  PlaneFrom(intersectPnt + m_gizmo->m_worldLocation, axis);
             }
           }
         }
@@ -285,10 +281,10 @@ namespace ToolKit
       {
         // Linear intersection plane.
         EditorViewport* vp = g_app->GetActiveViewport();
-        Vec3 camOrg = vp->GetCamera()->
-          m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        Vec3 camOrg        = vp->GetCamera()->m_node->GetTranslation(
+            TransformationSpace::TS_WORLD);
         Vec3 gizmOrg = m_gizmo->m_worldLocation;
-        Vec3 dir = glm::normalize(camOrg - gizmOrg);
+        Vec3 dir     = glm::normalize(camOrg - gizmOrg);
 
         Vec3 x, px, y, py, z, pz;
         ExtractAxes(m_gizmo->m_normalVectors, x, y, z);
@@ -318,8 +314,8 @@ namespace ToolKit
 
         if (m_gizmo->GetGrabbedAxis() <= AxisLabel::Z)
         {
-          py = glm::normalize(glm::cross(px, dir));
-          pz = glm::normalize(glm::cross(py, px));
+          py                  = glm::normalize(glm::cross(px, dir));
+          pz                  = glm::normalize(glm::cross(py, px));
           m_intersectionPlane = PlaneFrom(gizmOrg, pz);
         }
       }
@@ -346,7 +342,7 @@ namespace ToolKit
 
     TransformAction::TransformAction(Entity* ntt)
     {
-      m_entity = ntt;
+      m_entity    = ntt;
       m_transform = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
     }
 
@@ -366,10 +362,10 @@ namespace ToolKit
 
     void TransformAction::Swap()
     {
-      Mat4 backUp = m_entity->
-        m_node->GetTransform(TransformationSpace::TS_WORLD);
-      m_entity->
-        m_node->SetTransform(m_transform, TransformationSpace::TS_WORLD, false);
+      Mat4 backUp =
+          m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
+      m_entity->m_node->SetTransform(
+          m_transform, TransformationSpace::TS_WORLD, false);
       m_transform = backUp;
     }
 
@@ -405,10 +401,10 @@ namespace ToolKit
         ActionManager::GetInstance()->GroupLastActions(actionEntityCount);
       }
 
-      m_delta = ZERO;
+      m_delta      = ZERO;
       m_deltaAccum = ZERO;
-      m_initialLoc = currScene->GetCurrentSelection()->
-        m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      m_initialLoc = currScene->GetCurrentSelection()->m_node->GetTranslation(
+          TransformationSpace::TS_WORLD);
       SDL_GetGlobalMouseState(&m_mouseInitialLoc.x, &m_mouseInitialLoc.y);
     }
 
@@ -418,11 +414,8 @@ namespace ToolKit
       m_gizmo->m_grabPoint = ZERO;
 
       // Set the mouse position roughly.
-      SDL_WarpMouseGlobal
-      (
-        static_cast<int> (m_mouseData[1].x),
-        static_cast<int> (m_mouseData[1].y)
-      );
+      SDL_WarpMouseGlobal(static_cast<int>(m_mouseData[1].x),
+                          static_cast<int>(m_mouseData[1].y));
     }
 
     SignalId StateTransformTo::Update(float deltaTime)
@@ -436,20 +429,16 @@ namespace ToolKit
         vp->GetContentAreaScreenCoordinates(&contentMin, &contentMax);
 
         auto drawMoveCursorFn =
-          [this, contentMin, contentMax](ImDrawList* drawList) -> void
-        {
+            [this, contentMin, contentMax](ImDrawList* drawList) -> void {
           // Clamp the mouse pos.
           Vec2 pos = m_mouseData[1];
-          pos = glm::clamp(pos, contentMin, contentMax);
+          pos      = glm::clamp(pos, contentMin, contentMax);
 
           // Draw cursor.
           Vec2 size(28.0f);
-          drawList->AddImage
-          (
-            Convert2ImGuiTexture(UI::m_moveIcn),
-            pos - size * 0.5f,
-            pos + size * 0.5f
-          );
+          drawList->AddImage(Convert2ImGuiTexture(UI::m_moveIcn),
+                             pos - size * 0.5f,
+                             pos + size * 0.5f);
         };
 
         vp->m_drawCommands.push_back(drawMoveCursorFn);
@@ -489,7 +478,7 @@ namespace ToolKit
 
       float t;
       EditorViewport* vp = g_app->GetActiveViewport();
-      Ray ray = vp->RayFromScreenSpacePoint(m_mouseData[1]);
+      Ray ray            = vp->RayFromScreenSpacePoint(m_mouseData[1]);
       if (LinePlaneIntersection(ray, m_intersectionPlane, t))
       {
         // This point.
@@ -573,10 +562,10 @@ namespace ToolKit
       Vec3 delta = m_delta;
       if (!IsPlaneMod())
       {
-        int axis = static_cast<int> (m_gizmo->GetGrabbedAxis());
+        int axis = static_cast<int>(m_gizmo->GetGrabbedAxis());
         Vec3 dir = m_gizmo->m_normalVectors[axis];
-        dir = glm::normalize(dir);
-        delta = glm::dot(dir, m_delta) * dir;
+        dir      = glm::normalize(dir);
+        delta    = glm::dot(dir, m_delta) * dir;
       }
 
       m_deltaAccum += delta;
@@ -585,9 +574,9 @@ namespace ToolKit
       // Snap for pos.
       if (g_app->m_snapsEnabled)
       {
-        target = m_initialLoc + m_deltaAccum;
+        target        = m_initialLoc + m_deltaAccum;
         float spacing = g_app->m_moveDelta;
-        Vec3 snapped = glm::round(target / spacing) * spacing;
+        Vec3 snapped  = glm::round(target / spacing) * spacing;
 
         // Apply axis lock.
         AxisLabel grabbedAxis = m_gizmo->GetGrabbedAxis();
@@ -596,14 +585,14 @@ namespace ToolKit
         case AxisLabel::X:
         case AxisLabel::Y:
         case AxisLabel::Z:
-          target[static_cast<int> (grabbedAxis)] =
-            snapped[static_cast<int> (grabbedAxis)];
+          target[static_cast<int>(grabbedAxis)] =
+              snapped[static_cast<int>(grabbedAxis)];
           break;
         case AxisLabel::YZ:
         case AxisLabel::ZX:
         case AxisLabel::XY:
-          snapped[static_cast<int> (grabbedAxis) % 3] =
-            target[static_cast<int> (grabbedAxis) % 3];
+          snapped[static_cast<int>(grabbedAxis) % 3] =
+              target[static_cast<int>(grabbedAxis) % 3];
           target = snapped;
           break;
         default:
@@ -621,23 +610,19 @@ namespace ToolKit
     void StateTransformTo::Rotate(Entity* ntt)
     {
       EditorViewport* viewport = g_app->GetActiveViewport();
-      PolarGizmo* pg = static_cast<PolarGizmo*> (m_gizmo);
-      int axisInd = static_cast<int> (m_gizmo->GetGrabbedAxis());
-      Vec3 projAxis = pg->m_handles[axisInd]->m_tangentDir;
-      Vec3 mouseDelta = m_delta;
+      PolarGizmo* pg           = static_cast<PolarGizmo*>(m_gizmo);
+      int axisInd              = static_cast<int>(m_gizmo->GetGrabbedAxis());
+      Vec3 projAxis            = pg->m_handles[axisInd]->m_tangentDir;
+      Vec3 mouseDelta          = m_delta;
 
-
-      float delta = glm::dot(projAxis, mouseDelta);
+      float delta    = glm::dot(projAxis, mouseDelta);
       Vec3 deltaInWS = Vec3(delta, 0.0f, 0.0f);
       Vec2 deltaInSS = viewport->TransformWorldSpaceToScreenSpace(deltaInWS);
       deltaInSS -= viewport->TransformWorldSpaceToScreenSpace(Vec3(0));
-      deltaInSS = Vec2
-      (
-        deltaInSS.x / viewport->m_width,
-        deltaInSS.y / viewport->m_height
-      );
-      delta = glm::length(deltaInSS) * ((delta > 0.0f) ? 1 : -1);
-      delta = glm::degrees(delta) / 9.0f;
+      deltaInSS = Vec2(deltaInSS.x / viewport->m_wndContentAreaSize.x,
+                       deltaInSS.y / viewport->m_wndContentAreaSize.y);
+      delta     = glm::length(deltaInSS) * ((delta > 0.0f) ? 1 : -1);
+      delta     = glm::degrees(delta) / 9.0f;
 
       m_deltaAccum.x += delta;
       float spacing = glm::radians(g_app->m_rotateDelta);
@@ -651,20 +636,19 @@ namespace ToolKit
         delta = glm::round(m_deltaAccum.x / spacing) * spacing;
       }
 
-
       m_deltaAccum.x = 0.0f;
 
       if (glm::notEqual(delta, 0.0f))
       {
         Quaternion rotation =
-          glm::angleAxis(delta, m_gizmo->m_normalVectors[axisInd]);
+            glm::angleAxis(delta, m_gizmo->m_normalVectors[axisInd]);
         ntt->m_node->Rotate(rotation, TransformationSpace::TS_WORLD);
       }
     }
 
     void StateTransformTo::Scale(Entity* ntt)
     {
-      int axisIndx = static_cast<int> (m_gizmo->GetGrabbedAxis());
+      int axisIndx  = static_cast<int>(m_gizmo->GetGrabbedAxis());
       Vec3 aabbSize = ntt->GetAABB().max - ntt->GetAABB().min;
       aabbSize *= AXIS[axisIndx];
       float delta = glm::length(m_delta) / glm::length(aabbSize);
@@ -679,19 +663,13 @@ namespace ToolKit
         }
       }
 
-      delta = m_deltaAccum.x;
+      delta          = m_deltaAccum.x;
       m_deltaAccum.x = 0;
 
       // Transfer world space delta to local axis.
       Vec3 target = AXIS[axisIndx] * delta;
-      target *= glm::sign
-      (
-        glm::dot
-        (
-          m_delta,
-          m_gizmo->m_normalVectors[axisIndx]
-        )
-      );
+      target *=
+          glm::sign(glm::dot(m_delta, m_gizmo->m_normalVectors[axisIndx]));
 
       Vec3 scale = ntt->m_node->GetScale() + target;
 
@@ -714,7 +692,7 @@ namespace ToolKit
       if (nextState->ThisIsA<StateTransformBegin>())
       {
         StateTransformBegin* baseNext =
-          static_cast<StateTransformBegin*> (nextState);
+            static_cast<StateTransformBegin*>(nextState);
 
         baseNext->m_gizmo->Grab(AxisLabel::None);
         baseNext->m_mouseData[0] = Vec2();
@@ -746,8 +724,7 @@ namespace ToolKit
     // MoveMod
     //////////////////////////////////////////////////////////////////////////
 
-    TransformMod::TransformMod(ModId id)
-      : BaseMod(id)
+    TransformMod::TransformMod(ModId id) : BaseMod(id)
     {
       m_gizmo = nullptr;
     }
@@ -760,20 +737,20 @@ namespace ToolKit
 
     void TransformMod::Init()
     {
-      State* state = new StateTransformBegin();
-      StateTransformBase* baseState = static_cast<StateTransformBase*> (state);
+      State* state                  = new StateTransformBegin();
+      StateTransformBase* baseState = static_cast<StateTransformBase*>(state);
       switch (m_id)
       {
       case ModId::Move:
-        m_gizmo = new MoveGizmo();
+        m_gizmo           = new MoveGizmo();
         baseState->m_type = StateTransformBase::TransformType::Translate;
         break;
       case ModId::Rotate:
-        m_gizmo = new PolarGizmo();
+        m_gizmo           = new PolarGizmo();
         baseState->m_type = StateTransformBase::TransformType::Rotate;
         break;
       case ModId::Scale:
-        m_gizmo = new ScaleGizmo();
+        m_gizmo           = new ScaleGizmo();
         baseState->m_type = StateTransformBase::TransformType::Scale;
         break;
       default:
@@ -781,25 +758,25 @@ namespace ToolKit
         return;
       }
 
-      baseState->m_gizmo = m_gizmo;
+      baseState->m_gizmo             = m_gizmo;
       m_stateMachine->m_currentState = state;
 
       m_stateMachine->PushState(state);
       m_stateMachine->PushState(new StateTransformTo());
       m_stateMachine->PushState(new StateTransformEnd());
 
-      state = new StateBeginPick();
+      state                         = new StateBeginPick();
       state->m_links[m_backToStart] = StateType::StateTransformBegin;
       m_stateMachine->PushState(state);
-      state = new StateEndPick();
-      state->m_links[m_backToStart] = StateType::StateTransformBegin;
-      m_stateMachine->PushState(state);
-
-      state = new StateDeletePick();
+      state                         = new StateEndPick();
       state->m_links[m_backToStart] = StateType::StateTransformBegin;
       m_stateMachine->PushState(state);
 
-      state = new StateDuplicate();
+      state                         = new StateDeletePick();
+      state->m_links[m_backToStart] = StateType::StateTransformBegin;
+      m_stateMachine->PushState(state);
+
+      state                         = new StateDuplicate();
       state->m_links[m_backToStart] = StateType::StateTransformBegin;
       m_stateMachine->PushState(state);
 
@@ -835,12 +812,12 @@ namespace ToolKit
       if (m_stateMachine->m_currentState->ThisIsA<StateEndPick>())
       {
         StateEndPick* endPick =
-          static_cast<StateEndPick*> (m_stateMachine->m_currentState);
+            static_cast<StateEndPick*>(m_stateMachine->m_currentState);
 
         EntityIdArray entities;
         endPick->PickDataToEntityId(entities);
-        g_app->GetCurrentScene()->
-          AddToSelection(entities, ImGui::GetIO().KeyShift);
+        g_app->GetCurrentScene()->AddToSelection(entities,
+                                                 ImGui::GetIO().KeyShift);
 
         ModManager::GetInstance()->DispatchSignal(m_backToStart);
       }
@@ -861,5 +838,5 @@ namespace ToolKit
       }
     }
 
-  }  // namespace Editor
-}  // namespace ToolKit
+  } // namespace Editor
+} // namespace ToolKit
