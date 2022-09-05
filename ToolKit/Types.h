@@ -272,6 +272,6 @@ namespace ToolKit
     TargetCubeMap        = 0x8513
   };
 
-  static const char* TKVersionStr = "v0.3.13";
+  static const char* TKVersionStr = "v0.3.14";
 
 } // namespace ToolKit
