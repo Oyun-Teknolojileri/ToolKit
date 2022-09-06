@@ -4,9 +4,9 @@
  * @file Header for ViewportBase, Viewport and related structures.
  */
 
-#include "Types.h"
 #include "MathUtil.h"
 #include "Texture.h"
+#include "Types.h"
 
 /**
  * Base name space for all the ToolKit functionalities.

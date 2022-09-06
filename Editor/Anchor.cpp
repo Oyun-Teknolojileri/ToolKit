@@ -1,27 +1,29 @@
 
 #include "Anchor.h"
 
-#include <memory>
-#include <vector>
-
 #include "App.h"
 #include "Camera.h"
 #include "ConsoleWindow.h"
-#include "DebugNew.h"
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
+#include "GL/glew.h"
+#include "GlobalDef.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
-#include "GL/glew.h"
-#include <glm/gtc/matrix_transform.hpp>
-#include "GlobalDef.h"
 #include "Primative.h"
 #include "RenderState.h"
 #include "ResourceComponent.h"
 #include "Surface.h"
 #include "Texture.h"
 #include "ToolKit.h"
+
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <memory>
+#include <vector>
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {

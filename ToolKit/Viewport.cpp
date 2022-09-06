@@ -1,14 +1,15 @@
 #include "Viewport.h"
 
-#include <algorithm>
-
 #include "Camera.h"
 #include "DirectionComponent.h"
-#include "Renderer.h"
 #include "Node.h"
 #include "Primative.h"
-#include "Util.h"
+#include "Renderer.h"
 #include "ToolKit.h"
+#include "Util.h"
+
+#include <algorithm>
+
 #include "DebugNew.h"
 
 namespace ToolKit

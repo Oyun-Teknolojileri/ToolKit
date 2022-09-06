@@ -1,13 +1,14 @@
 #include "Surface.h"
 
+#include "Material.h"
+#include "Mesh.h"
+#include "Node.h"
+#include "Texture.h"
+#include "ToolKit.h"
+#include "Viewport.h"
+
 #include <memory>
 
-#include "Mesh.h"
-#include "Texture.h"
-#include "Material.h"
-#include "Node.h"
-#include "Viewport.h"
-#include "ToolKit.h"
 #include "DebugNew.h"
 
 namespace ToolKit

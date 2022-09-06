@@ -5,15 +5,15 @@
  * and related structures.
  */
 
-#include <vector>
-#include <unordered_map>
-
-#include "Types.h"
-#include "Resource.h"
-#include "ResourceManager.h"
 #include "Entity.h"
 #include "Node.h"
+#include "Resource.h"
+#include "ResourceManager.h"
 #include "Skeleton.h"
+#include "Types.h"
+
+#include <unordered_map>
+#include <vector>
 
 namespace ToolKit
 {

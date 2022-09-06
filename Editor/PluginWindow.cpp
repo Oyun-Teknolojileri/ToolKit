@@ -1,10 +1,11 @@
 #include "PluginWindow.h"
 
+#include "App.h"
+#include "ConsoleWindow.h"
+#include "GlobalDef.h"
+
 #include <utility>
 
-#include "GlobalDef.h"
-#include "ConsoleWindow.h"
-#include "App.h"
 #include "DebugNew.h"
 
 namespace ToolKit

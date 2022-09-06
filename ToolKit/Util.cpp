@@ -1,14 +1,15 @@
 #include "Util.h"
 
-#include <string>
-#include <cstdarg>
-#include <fstream>
-#include <filesystem>
-#include <algorithm>
-
-#include "rapidxml.hpp"
 #include "Primative.h"
 #include "ToolKit.h"
+#include "rapidxml.hpp"
+
+#include <algorithm>
+#include <cstdarg>
+#include <filesystem>
+#include <fstream>
+#include <string>
+
 #include "DebugNew.h"
 
 namespace ToolKit

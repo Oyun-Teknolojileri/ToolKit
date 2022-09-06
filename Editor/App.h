@@ -1,16 +1,16 @@
 #pragma once
 
+#include "EditorScene.h"
+#include "GlobalDef.h"
+#include "Light.h"
+#include "PluginWindow.h"
+#include "PublishManager.h"
+#include "ToolKit.h"
+#include "Workspace.h"
+
 #include <memory>
 #include <unordered_map>
 #include <vector>
-
-#include "ToolKit.h"
-#include "EditorScene.h"
-#include "Workspace.h"
-#include "GlobalDef.h"
-#include "Light.h"
-#include "PublishManager.h"
-#include "PluginWindow.h"
 
 namespace ToolKit
 {

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "RenderState.h"
+#include "Renderer.h"
 #include "Resource.h"
 #include "ResourceManager.h"
-#include "Renderer.h"
 
 namespace ToolKit
 {

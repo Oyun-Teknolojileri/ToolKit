@@ -1,15 +1,16 @@
 #include "Drawable.h"
 
+#include "Component.h"
+#include "Material.h"
+#include "Mesh.h"
+#include "Node.h"
+#include "ResourceComponent.h"
+#include "Skeleton.h"
+#include "ToolKit.h"
+#include "Util.h"
+
 #include <memory>
 
-#include "Mesh.h"
-#include "ResourceComponent.h"
-#include "Material.h"
-#include "ToolKit.h"
-#include "Node.h"
-#include "Util.h"
-#include "Component.h"
-#include "Skeleton.h"
 #include "DebugNew.h"
 
 namespace ToolKit

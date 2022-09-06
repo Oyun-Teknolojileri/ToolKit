@@ -1,13 +1,12 @@
 #pragma once
 
 #include "ToolKit.h"
+#include "UI.h"
 
 #include <functional>
-#include <utility>
 #include <unordered_map>
+#include <utility>
 #include <vector>
-
-#include "UI.h"
 
 namespace ToolKit
 {

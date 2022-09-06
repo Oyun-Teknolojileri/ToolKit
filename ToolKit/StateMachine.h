@@ -4,8 +4,9 @@
  * @file StateMachine.h Header for State, StateMachine.
  */
 
-#include <unordered_map>
 #include "Types.h"
+
+#include <unordered_map>
 
 namespace ToolKit
 {

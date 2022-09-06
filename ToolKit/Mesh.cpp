@@ -1,15 +1,17 @@
 #include "Mesh.h"
 
-#include <unordered_map>
+#include "GL/glew.h"
+#include "Material.h"
+#include "Skeleton.h"
+#include "Texture.h"
+#include "ToolKit.h"
+#include "Util.h"
 
 #include <rapidxml.hpp>
 #include <rapidxml_utils.hpp>
-#include "ToolKit.h"
-#include "Material.h"
-#include "Texture.h"
-#include "Skeleton.h"
-#include "Util.h"
-#include "GL/glew.h"
+
+#include <unordered_map>
+
 #include "DebugNew.h"
 
 namespace ToolKit

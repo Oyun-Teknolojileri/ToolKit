@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-
-#include "Types.h"
 #include "ResourceManager.h"
 #include "Serialize.h"
+#include "Types.h"
+
+#include <memory>
 
 namespace ToolKit
 {
