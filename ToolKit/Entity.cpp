@@ -498,10 +498,13 @@ namespace ToolKit
       break;
     case EntityType::Entity_Light:
       e = new Light();
+      break;
     case EntityType::Entity_DirectionalLight:
       e = new DirectionalLight();
+      break;
     case EntityType::Entity_PointLight:
       e = new PointLight();
+      break;
     case EntityType::Entity_SpotLight:
       e = new SpotLight();
       break;
