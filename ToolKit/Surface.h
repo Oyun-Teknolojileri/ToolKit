@@ -1,14 +1,14 @@
 #pragma once
 
-#include <vector>
-#include <functional>
-
 #include "Entity.h"
+#include "Events.h"
 #include "MathUtil.h"
 #include "Resource.h"
-#include "Events.h"
-#include "Types.h"
 #include "SpriteSheet.h"
+#include "Types.h"
+
+#include <functional>
+#include <vector>
 
 namespace ToolKit
 {

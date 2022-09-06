@@ -1,6 +1,7 @@
 #include "Component.h"
-#include "ResourceComponent.h"
+
 #include "DirectionComponent.h"
+#include "ResourceComponent.h"
 #include "ToolKit.h"
 
 namespace ToolKit

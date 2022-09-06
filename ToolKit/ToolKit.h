@@ -5,35 +5,32 @@
  * functionalities of the ToolKit framework.
  */
 
-#include <limits>
-
 #include "Animation.h"
 #include "Audio.h"
 #include "Camera.h"
+#include "CanvasPanel.h"
 #include "Drawable.h"
 #include "Entity.h"
+#include "Events.h"
+#include "FileManager.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
+#include "PluginManager.h"
 #include "Primative.h"
 #include "RenderState.h"
 #include "Renderer.h"
+#include "Scene.h"
 #include "Shader.h"
+#include "Skeleton.h"
 #include "SpriteSheet.h"
 #include "StateMachine.h"
 #include "Surface.h"
-#include "CanvasPanel.h"
 #include "Texture.h"
-#include "Scene.h"
-#include "PluginManager.h"
-#include "Events.h"
-#include "UIManager.h"
-#include "Scene.h"
-#include "Renderer.h"
-#include "Material.h"
 #include "Types.h"
-#include "Skeleton.h"
-#include "FileManager.h"
+#include "UIManager.h"
+
+#include <limits>
 
 /**
  * Base name space for all the ToolKit functionalities.

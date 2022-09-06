@@ -1,23 +1,24 @@
 #include "Mod.h"
 
-#include <utility>
-#include <vector>
-#include <memory>
-#include <algorithm>
-
-#include "GlobalDef.h"
+#include "AnchorMod.h"
+#include "Camera.h"
+#include "ConsoleWindow.h"
+#include "DirectionComponent.h"
 #include "EditorViewport.h"
+#include "Gizmo.h"
+#include "GlobalDef.h"
+#include "Grid.h"
 #include "Node.h"
 #include "Primative.h"
-#include "Grid.h"
-#include "Camera.h"
-#include "Gizmo.h"
 #include "TransformMod.h"
-#include "ConsoleWindow.h"
 #include "Util.h"
-#include "DirectionComponent.h"
+
+#include <algorithm>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "DebugNew.h"
-#include "AnchorMod.h"
 
 namespace ToolKit
 {

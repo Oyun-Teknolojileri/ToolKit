@@ -1,13 +1,14 @@
 #include "Shader.h"
 
-#include <vector>
-
+#include "GL/glew.h"
 #include "ToolKit.h"
 #include "Util.h"
 #include "rapidxml.hpp"
-#include "rapidxml_utils.hpp"
 #include "rapidxml_print.hpp"
-#include "GL/glew.h"
+#include "rapidxml_utils.hpp"
+
+#include <vector>
+
 #include "DebugNew.h"
 
 namespace ToolKit

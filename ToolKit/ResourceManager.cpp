@@ -1,17 +1,19 @@
 #include "ResourceManager.h"
-#include "Util.h"
+
 #include "Animation.h"
 #include "Audio.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Scene.h"
 #include "Shader.h"
 #include "SpriteSheet.h"
 #include "Texture.h"
-#include "Scene.h"
 #include "ToolKit.h"
-#include "DebugNew.h"
+#include "Util.h"
 
 #include <string>
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {

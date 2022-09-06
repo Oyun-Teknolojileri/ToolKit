@@ -1,27 +1,27 @@
 
 #include "UI.h"
 
-#include <vector>
+#include "Action.h"
+#include "App.h"
+#include "ConsoleWindow.h"
+#include "EditorViewport.h"
+#include "FolderWindow.h"
+#include "GlobalDef.h"
+#include "ImGui/imgui_stdlib.h"
+#include "Imgui/imgui_impl_opengl3.h"
+#include "Imgui/imgui_impl_sdl.h"
+#include "MaterialInspector.h"
+#include "Mod.h"
+#include "OutlinerWindow.h"
+#include "OverlayUI.h"
+#include "PluginWindow.h"
+#include "PropInspector.h"
+#include "SDL.h"
+#include "Util.h"
+
 #include <algorithm>
 #include <unordered_map>
-
-#include "App.h"
-#include "EditorViewport.h"
-#include "SDL.h"
-#include "GlobalDef.h"
-#include "Mod.h"
-#include "ConsoleWindow.h"
-#include "FolderWindow.h"
-#include "OverlayUI.h"
-#include "OutlinerWindow.h"
-#include "PropInspector.h"
-#include "MaterialInspector.h"
-#include "Util.h"
-#include "PluginWindow.h"
-#include "Action.h"
-#include "ImGui/imgui_stdlib.h"
-#include "Imgui/imgui_impl_sdl.h"
-#include "Imgui/imgui_impl_opengl3.h"
+#include <vector>
 
 #include "DebugNew.h"
 
@@ -1399,7 +1399,7 @@ namespace ToolKit
           ImGui::Text("%s", m_msg.c_str());
         }
 
-        uint columnCount = m_buttons.size() + 2;
+        uint columnCount = (uint) m_buttons.size() + 2;
         columnCount += m_showCancel ? 1 : 0;
         // Center buttons.
         ImGui::BeginTable(

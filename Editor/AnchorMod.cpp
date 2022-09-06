@@ -1,17 +1,18 @@
 #include "AnchorMod.h"
 
-#include <algorithm>
-#include <memory>
-#include <utility>
-
 #include "Camera.h"
 #include "ConsoleWindow.h"
-#include "DebugNew.h"
 #include "EditorViewport.h"
 #include "Gizmo.h"
 #include "GlobalDef.h"
 #include "Node.h"
 #include "Util.h"
+
+#include <algorithm>
+#include <memory>
+#include <utility>
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -64,6 +65,7 @@ namespace ToolKit
 
     void StateAnchorBase::TransitionIn(State* prevState)
     {
+      m_signalConsumed = false;
     }
 
     void StateAnchorBase::TransitionOut(State* nextState)
@@ -132,7 +134,9 @@ namespace ToolKit
           }
         }
         else
+        {
           return NullSignal;
+        }
       }
 
       return NullSignal;
@@ -140,6 +144,8 @@ namespace ToolKit
 
     String StateAnchorBegin::Signaled(SignalId signal)
     {
+      m_signalConsumed = false;
+
       if (signal == BaseMod::m_leftMouseBtnDownSgnl)
       {
         if (EditorViewport* vp = g_app->GetActiveViewport())
@@ -149,13 +155,10 @@ namespace ToolKit
           m_anchor->Grab(axis);
         }
 
-        if (m_anchor->IsGrabbed(DirectionLabel::None) ||
-            g_app->GetCurrentScene()->GetCurrentSelection() == nullptr)
+        if (!m_anchor->IsGrabbed(DirectionLabel::None) &&
+            g_app->GetCurrentScene()->GetCurrentSelection() != nullptr)
         {
-          return StateType::StateBeginPick;
-        }
-        else
-        {
+          m_signalConsumed = true;
           CalculateIntersectionPlane();
           CalculateGrabPoint();
         }
@@ -176,6 +179,7 @@ namespace ToolKit
 
         if (!m_anchor->IsGrabbed(DirectionLabel::None))
         {
+          m_signalConsumed = true;
           return StateType::StateAnchorTo;
         }
       }
@@ -326,6 +330,8 @@ namespace ToolKit
 
     String StateAnchorTo::Signaled(SignalId signal)
     {
+      m_signalConsumed = false;
+
       if (signal == BaseMod::m_leftMouseBtnDragSgnl)
       {
         CalculateDelta();
@@ -605,12 +611,12 @@ namespace ToolKit
       m_stateMachine->PushState(new StateAnchorTo());
       m_stateMachine->PushState(new StateAnchorEnd());
 
-      state                         = new StateBeginPick();
+      /* state                      = new StateBeginPick();
       state->m_links[m_backToStart] = StateType::StateAnchorBegin;
       m_stateMachine->PushState(state);
       state                         = new StateEndPick();
       state->m_links[m_backToStart] = StateType::StateAnchorBegin;
-      m_stateMachine->PushState(state);
+      m_stateMachine->PushState(state);*/
 
       m_prevTransformSpace = g_app->m_transformSpace;
     }
@@ -623,7 +629,7 @@ namespace ToolKit
     {
       BaseMod::Update(deltaTime);
 
-      if (m_stateMachine->m_currentState->ThisIsA<StateEndPick>())
+      /* if (m_stateMachine->m_currentState->ThisIsA<StateEndPick>())
       {
         StateEndPick* endPick =
             static_cast<StateEndPick*>(m_stateMachine->m_currentState);
@@ -633,12 +639,12 @@ namespace ToolKit
         g_app->GetCurrentScene()->AddToSelection(entities,
                                                  ImGui::GetIO().KeyShift);
 
-        ModManager::GetInstance()->DispatchSignal(m_backToStart);
-      }
+        m_stateMachine->Signal(BaseMod::m_backToStart);
+      }*/
 
       if (m_stateMachine->m_currentState->ThisIsA<StateAnchorEnd>())
       {
-        ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
+        m_stateMachine->Signal(BaseMod::m_backToStart);
       }
     }
 

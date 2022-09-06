@@ -1,12 +1,12 @@
 
 #include "PublishManager.h"
 
+#include "App.h"
+#include "ToolKit.h"
+
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
-#include <algorithm>
-
-#include "ToolKit.h"
-#include "App.h"
 
 namespace ToolKit
 {

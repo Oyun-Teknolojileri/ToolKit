@@ -1,14 +1,16 @@
 #include "Entity.h"
-#include "Node.h"
-#include "ToolKit.h"
-#include "Skeleton.h"
-#include "MathUtil.h"
-#include "Util.h"
+
 #include "Light.h"
-#include "Sky.h"
-#include "ResourceComponent.h"
-#include "DebugNew.h"
+#include "MathUtil.h"
+#include "Node.h"
 #include "Prefab.h"
+#include "ResourceComponent.h"
+#include "Skeleton.h"
+#include "Sky.h"
+#include "ToolKit.h"
+#include "Util.h"
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -498,10 +500,13 @@ namespace ToolKit
       break;
     case EntityType::Entity_Light:
       e = new Light();
+      break;
     case EntityType::Entity_DirectionalLight:
       e = new DirectionalLight();
+      break;
     case EntityType::Entity_PointLight:
       e = new PointLight();
+      break;
     case EntityType::Entity_SpotLight:
       e = new SpotLight();
       break;

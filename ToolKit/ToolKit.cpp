@@ -1,8 +1,8 @@
 #include "ToolKit.h"
 
-#include <memory>
 #include <algorithm>
 #include <filesystem>
+#include <memory>
 #include <string>
 
 #include "DebugNew.h"

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-
 #include "Entity.h"
-#include "Types.h"
 #include "Primative.h"
+#include "Types.h"
+
+#include <string>
 
 namespace ToolKit
 {

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ToolKit.h"
 #include "GL/glew.h"
+#include "ToolKit.h"
 
-#include <string>
 #include <functional>
+#include <string>
 
 class GlErrorReporter
 {

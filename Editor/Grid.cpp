@@ -1,10 +1,13 @@
 #include "Grid.h"
+
 #include "GlobalDef.h"
-#include "ToolKit.h"
 #include "Primative.h"
-#include "DebugNew.h"
+#include "ToolKit.h"
+
 #include <glm/detail/_swizzle.hpp>
 #include <glm/detail/_swizzle_func.hpp>
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {
