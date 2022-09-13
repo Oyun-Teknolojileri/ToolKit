@@ -16,40 +16,21 @@ namespace ToolKit
 
     Grid::Grid(UVec2 size, AxisLabel axis, float cellSize)
     {
-      AddComponent(new MeshComponent());
-      AddComponent(new MaterialComponent());
-
-      // Create grid material.
-      if (!GetMaterialManager()->Exist(g_gridMaterialName))
-      {
-        MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
-        material->UnInit();
-        material->GetRenderState()->blendFunction =
-            BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-
-        material->GetRenderState()->cullMode = CullingType::TwoSided;
-
-        material->m_vertexShader = GetShaderManager()->Create<Shader>(
-            ShaderPath("gridVertex.shader", true));
-
-        material->m_fragmetShader = GetShaderManager()->Create<Shader>(
-            ShaderPath("gridFragment.shader", true));
-
-        material->GetRenderState()->priority = 100;
-        material->Init();
-
-        GetMaterialManager()->m_storage[g_gridMaterialName] = material;
-      }
-
-      GetMaterialComponent()->SetMaterialVal(
-          GetMaterialManager()->Create<Material>(g_gridMaterialName));
+      Init();
 
       // Create grid mesh.
       Resize(size, axis, cellSize);
+
+      m_initiated = true;
     }
 
     void Grid::Resize(UVec2 size, AxisLabel axis, float cellSize)
     {
+      if (VecAllEqual<UVec2>(size, m_size) && m_initiated)
+      {
+        return;
+      }
+
       for (int i = 0; i < 2; i++)
       {
         m_size[i] = size[i] % 2 == 0 ? size[i] : size[i] + 1;
@@ -106,6 +87,37 @@ namespace ToolKit
       }
 
       return false;
+    }
+
+    void Grid::Init()
+    {
+      AddComponent(new MeshComponent());
+      AddComponent(new MaterialComponent());
+
+      // Create grid material.
+      if (!GetMaterialManager()->Exist(g_gridMaterialName))
+      {
+        MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitMaterial();
+        material->UnInit();
+        material->GetRenderState()->blendFunction =
+            BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+
+        material->GetRenderState()->cullMode = CullingType::TwoSided;
+
+        material->m_vertexShader = GetShaderManager()->Create<Shader>(
+            ShaderPath("gridVertex.shader", true));
+
+        material->m_fragmetShader = GetShaderManager()->Create<Shader>(
+            ShaderPath("gridFragment.shader", true));
+
+        material->GetRenderState()->priority = 100;
+        material->Init();
+
+        GetMaterialManager()->m_storage[g_gridMaterialName] = material;
+      }
+
+      GetMaterialComponent()->SetMaterialVal(
+          GetMaterialManager()->Create<Material>(g_gridMaterialName));
     }
 
   } //  namespace Editor

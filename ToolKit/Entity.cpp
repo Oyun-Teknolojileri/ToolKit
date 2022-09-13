@@ -384,7 +384,7 @@ namespace ToolKit
     {
     case EntityType::Entity_Surface:
     case EntityType::Entity_Button:
-    case EntityType::Entity_CanvasPanel:
+    case EntityType::Entity_Canvas:
       return true;
     default:
       return false;
@@ -513,8 +513,8 @@ namespace ToolKit
     case EntityType::Entity_Sky:
       e = new Sky();
       break;
-    case EntityType::Entity_CanvasPanel:
-      e = new CanvasPanel();
+    case EntityType::Entity_Canvas:
+      e = new Canvas();
       break;
     case EntityType::Entity_Prefab:
       e = new Prefab();

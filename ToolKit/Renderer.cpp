@@ -28,11 +28,13 @@ namespace ToolKit
 
   Renderer::Renderer()
   {
+    m_uiCamera = new Camera();
   }
 
   Renderer::~Renderer()
   {
     SafeDel(m_shadowMapCamera);
+    SafeDel(m_uiCamera);
   }
 
   void Renderer::RenderScene(const ScenePtr scene,
@@ -56,33 +58,20 @@ namespace ToolKit
   }
 
   /**
-   * Renders given UILayer's to given Viewport.
-   * @param uiLayers UILayer pointer array that will be rendered.
-   * @param viewport Viewport that UILayer's are going to rendered with.
+   * Renders given UILayer to given Viewport.
+   * @param layer UILayer that will be rendered.
+   * @param viewport that UILayer will be rendered with.
    */
-  void Renderer::RenderUI(const UILayerPtrArray& uiLayers, Viewport* viewport)
+  void Renderer::RenderUI(Viewport* viewport, UILayer* layer)
   {
-    if (uiLayers[0] == nullptr)
-    {
-      return;
-    }
+    float halfWidth  = viewport->m_wndContentAreaSize.x * 0.5f;
+    float halfHeight = viewport->m_wndContentAreaSize.y * 0.5f;
 
-    for (UILayer* layer : uiLayers)
-    {
-      if (Entity* rootNode = layer->GetLayer(layer->m_layerName))
-      {
-        EntityRawPtrArray allEntities;
-        GetChildren(rootNode, allEntities);
+    m_uiCamera->SetLens(
+        -halfWidth, halfWidth, -halfHeight, halfHeight, 0.5f, 1000.0f);
 
-        float halfWidth  = viewport->m_wndContentAreaSize.x * 0.5f;
-        float halfHeight = viewport->m_wndContentAreaSize.y * 0.5f;
-
-        layer->m_cam->SetLens(
-            -halfWidth, halfWidth, -halfHeight, halfHeight, 0.5f, 1000.0f);
-
-        RenderEntities(allEntities, layer->m_cam, viewport);
-      }
-    }
+    EntityRawPtrArray entities = layer->m_scene->GetEntities();
+    RenderEntities(entities, m_uiCamera, viewport);
   }
 
   void Renderer::Render(Entity* ntt,

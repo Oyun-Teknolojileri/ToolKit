@@ -1,4 +1,4 @@
-#include "CanvasPanel.h"
+#include "Canvas.h"
 
 #include "Material.h"
 #include "Mesh.h"
@@ -13,91 +13,60 @@
 
 namespace ToolKit
 {
-  // CanvasPanel
+  // Canvas
   //////////////////////////////////////////
 
-  CanvasPanel::CanvasPanel() : Surface()
+  Canvas::Canvas() : Surface()
   {
     ParameterConstructor();
     ParameterEventConstructor();
-    ResetCallbacks();
+    CreateQuadLines();
   }
 
-  CanvasPanel::CanvasPanel(const Vec2& size) : Surface(size)
+  Canvas::Canvas(const Vec2& size) : Surface(size)
   {
     ParameterConstructor();
     ParameterEventConstructor();
-    ResetCallbacks();
+    CreateQuadLines();
   }
 
-  EntityType CanvasPanel::GetType() const
+  EntityType Canvas::GetType() const
   {
-    return EntityType::Entity_CanvasPanel;
+    return EntityType::Entity_Canvas;
   }
 
-  void CanvasPanel::Serialize(XmlDocument* doc, XmlNode* parent) const
+  void Canvas::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Surface::Serialize(doc, parent);
   }
 
-  void CanvasPanel::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  void Canvas::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     Surface::DeSerialize(doc, parent);
     ParameterEventConstructor();
+    CreateQuadLines();
   }
 
-  void CanvasPanel::ResetCallbacks()
+  void Canvas::ParameterConstructor()
   {
-    Surface::ResetCallbacks();
-  }
-
-  void CanvasPanel::ParameterConstructor()
-  {
-    MaterialPtr nttMat;
-    if (MaterialComponentPtr matCom = GetComponent<MaterialComponent>())
-    {
-      if (nttMat = matCom->GetMaterialVal())
-      {
-        // nttMat->GetRenderState()->drawType = DrawType::LineStrip;
-        nttMat->m_color = {0.01f, 0.01f, 0.9f};
-      }
-    }
     // Update surface params.
     ParamMaterial().m_exposed     = false;
-    ParamSize().m_category        = CanvasPanelCategory;
-    ParamPivotOffset().m_category = CanvasPanelCategory;
-
-    MaterialPtr material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
-    material->UnInit();
-    material->GetRenderState()->drawType  = DrawType::Line;
-    material->GetRenderState()->lineWidth = 3.f;
-    material->Init();
-    // mat->GetRenderState()->drawType = DrawType::Line;
-    //  Define button params.
-    CanvasPanelMaterial_Define(material,
-                               CanvasPanelCategory.Name,
-                               CanvasPanelCategory.Priority,
-                               true,
-                               true);
+    ParamSize().m_category        = CanvasCategory;
+    ParamPivotOffset().m_category = CanvasCategory;
   }
 
-  void CanvasPanel::ParameterEventConstructor()
+  void Canvas::ParameterEventConstructor()
   {
-    // Always rewire events for correctness.
     Surface::ParameterEventConstructor();
-
-    ParamCanvasPanelMaterial().m_onValueChangedFn = nullptr;
+    ParamMaterial().m_onValueChangedFn = nullptr;
   }
 
-  void CanvasPanel::UpdateGeometry(bool byTexture)
+  void Canvas::UpdateGeometry(bool byTexture)
   {
-    MeshPtr mesh = GetMeshComponent()->GetMeshVal();
-    mesh->UnInit();
     CreateQuadLines();
-    mesh->Init(false);
   }
 
-  void CanvasPanel::ApplyRecursivResizePolicy(float width, float height)
+  void Canvas::ApplyRecursivResizePolicy(float width, float height)
   {
     const Vec2 size = GetSizeVal();
     Vec3 scale1     = m_node->GetScale();
@@ -205,10 +174,10 @@ namespace ToolKit
             childNode->SetTranslation(translate, TransformationSpace::TS_WORLD);
           }
 
-          if (surface->GetType() == EntityType::Entity_CanvasPanel)
+          if (surface->GetType() == EntityType::Entity_Canvas)
           {
-            CanvasPanel* canvasPanel = static_cast<CanvasPanel*>(surface);
-            const BoundingBox bb     = canvasPanel->GetAABB(true);
+            Canvas* canvasPanel  = static_cast<Canvas*>(surface);
+            const BoundingBox bb = canvasPanel->GetAABB(true);
             canvasPanel->ApplyRecursivResizePolicy(bb.GetWidth(),
                                                    bb.GetHeight());
           }
@@ -217,7 +186,7 @@ namespace ToolKit
     }
   }
 
-  void CanvasPanel::CreateQuadLines()
+  void Canvas::CreateQuadLines()
   {
     float width  = GetSizeVal().x;
     float height = GetSizeVal().y;
@@ -236,9 +205,11 @@ namespace ToolKit
     vertices[6].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
     vertices[7].pos = Vec3(-absOffset.x, -absOffset.y, depth);
 
-    MeshPtr mesh               = GetMeshComponent()->GetMeshVal();
+    MeshPtr mesh               = std::make_shared<Mesh>();
     mesh->m_clientSideVertices = vertices;
     mesh->CalculateAABB();
+    mesh->Init();
+    GetMeshComponent()->SetMeshVal(mesh);
 
     MaterialPtr material = GetMaterialComponent()->GetMaterialVal();
     material->UnInit();

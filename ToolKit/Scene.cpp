@@ -311,6 +311,11 @@ namespace ToolKit
     m_entities.push_back(entity);
   }
 
+  EntityRawPtrArray& Scene::AccessEntityArray()
+  {
+    return m_entities;
+  }
+
   Entity* Scene::RemoveEntity(ULongID id)
   {
     Entity* removed = nullptr;

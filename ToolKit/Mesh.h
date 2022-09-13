@@ -61,7 +61,7 @@ namespace ToolKit
 
    public:
     VertexArray m_clientSideVertices;
-    std::vector<uint> m_clientSideIndices;
+    UIntArray m_clientSideIndices;
     uint m_vboVertexId = 0;
     uint m_vboIndexId  = 0;
     uint m_vaoId       = 0;

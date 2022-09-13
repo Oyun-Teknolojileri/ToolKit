@@ -13,17 +13,16 @@
 
 namespace ToolKit
 {
-  static VariantCategory CanvasPanelCategory{"CanvasPanel", 90};
+  static VariantCategory CanvasCategory{"Canvas", 90};
 
-  class TK_API CanvasPanel : public Surface
+  class TK_API Canvas : public Surface
   {
    public:
-    CanvasPanel();
-    explicit CanvasPanel(const Vec2& size);
+    Canvas();
+    explicit Canvas(const Vec2& size);
     EntityType GetType() const override;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-    void ResetCallbacks() override;
 
     void UpdateGeometry(bool byTexture) override;
     void ApplyRecursivResizePolicy(float width, float height);

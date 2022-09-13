@@ -40,6 +40,7 @@ namespace ToolKit
         Ray ray,
         const EntityIdArray& ignoreList    = EntityIdArray(),
         const EntityRawPtrArray& extraList = EntityRawPtrArray());
+
     virtual void PickObject(
         const Frustum& frustum,
         std::vector<PickData>& pickedObjects,
@@ -50,6 +51,7 @@ namespace ToolKit
     // Entity operations.
     Entity* GetEntity(ULongID id) const;
     virtual void AddEntity(Entity* entity);
+    EntityRawPtrArray& AccessEntityArray(); //!< Mutable Entity array access.
     const EntityRawPtrArray& GetEntities() const;
     const LightRawPtrArray GetLights() const;
     Entity* GetFirstEntityByName(const String& name);

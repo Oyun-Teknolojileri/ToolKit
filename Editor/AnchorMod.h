@@ -28,6 +28,7 @@ namespace ToolKit
 
      protected:
       void MakeSureAnchorIsValid();
+      void ReflectAnchorTransform(Entity* ntt);
 
      public:
       AnchorPtr m_anchor;
@@ -35,6 +36,9 @@ namespace ToolKit
       PlaneEquation m_intersectionPlane;
       TransformType m_type;
       bool m_signalConsumed = false;
+
+     protected:
+      Vec3 m_anchorDeltaTransform; // Anchor medallion change.
     };
 
     class StateAnchorBegin : public StateAnchorBase
@@ -81,10 +85,8 @@ namespace ToolKit
      private:
       void CalculateDelta();
       void Transform(const Vec3& delta);
-      void Translate(Entity* ntt);
 
      public:
-      Vec3 m_delta;
       Vec3 m_deltaAccum;
       Vec3 m_initialLoc;
 

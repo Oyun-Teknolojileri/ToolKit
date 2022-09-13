@@ -61,6 +61,7 @@ namespace ToolKit
       void ShowSimButtons();
       void ShowSettings();
       String EmuResToString(EmulatorResolution emuRes);
+      void UpdateCanvas(uint width, uint heigth);
 
      private:
       SimulationSettings* m_settings = nullptr;

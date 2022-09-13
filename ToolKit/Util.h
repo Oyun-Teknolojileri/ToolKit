@@ -75,6 +75,7 @@ namespace ToolKit
   TK_API String GetPathSeparatorAsStr();
   TK_API bool SupportedImageFormat(const String& ext);
   TK_API bool SupportedMeshFormat(const String& ext);
+  TK_API bool IsLayer(const String& file);
 
   // String operations.
   ///////////////////////////////////////////////////////
@@ -94,6 +95,9 @@ namespace ToolKit
                                  const char search,
                                  const char replace);
 
+  /**
+   * Transform ascii chars to lower. Intended usage is extention comparison.
+   */
   TK_API String ToLower(const String& str);
   TK_API String Format(const char* msg, ...);
   TK_API String Trim(const std::string& str, const String& whitespace = " \t");

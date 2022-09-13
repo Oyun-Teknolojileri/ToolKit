@@ -88,11 +88,8 @@ namespace ToolKit
   typedef glm::mat4 Mat4;
   typedef glm::mat3 Mat3;
   typedef glm::quat Quaternion;
-  typedef std::shared_ptr<class AnimRecord> AnimRecordPtr;
-  typedef std::unordered_map<String, AnimRecordPtr> AnimRecordPtrMap;
-  typedef class AnimRecord* AnimRecordRawPtr;
-  typedef std::vector<AnimRecordRawPtr> AnimRecordRawPtrArray;
   typedef std::vector<int> IntArray;
+  typedef std::vector<uint> UIntArray;
   typedef std::vector<struct VariantCategory> VariantCategoryArray;
 
   // Resource types.
@@ -113,7 +110,12 @@ namespace ToolKit
   typedef std::vector<MeshPtr> MeshPtrArray;
   typedef std::vector<class Mesh*> MeshRawPtrArray;
   typedef std::vector<const class Mesh*> MeshRawCPtrArray;
+  typedef std::shared_ptr<class AnimRecord> AnimRecordPtr;
+  typedef std::unordered_map<String, AnimRecordPtr> AnimRecordPtrMap;
+  typedef class AnimRecord* AnimRecordRawPtr;
+  typedef std::vector<AnimRecordRawPtr> AnimRecordRawPtrArray;
 
+  // Entity types.
   typedef std::vector<class Entity*> EntityRawPtrArray;
   typedef std::vector<class Light*> LightRawPtrArray;
   typedef std::vector<class DirectionalLight*> DirectionalLightRawPtrArray;
@@ -127,14 +129,15 @@ namespace ToolKit
   typedef std::vector<class ParameterVariant> ParameterVariantArray;
   typedef std::vector<class ParameterVariant*> ParameterVariantRawPtrArray;
   typedef std::vector<class LineBatch*> LineBatchRawPtrArray;
+  typedef std::vector<class UILayer*> UILayerRawPtrArray;
 
+  // Xml types.
   typedef rapidxml::xml_node<char> XmlNode;
   typedef rapidxml::xml_attribute<char> XmlAttribute;
   typedef rapidxml::xml_document<char> XmlDocument;
   typedef std::shared_ptr<XmlDocument> XmlDocumentPtr;
   typedef rapidxml::file<char> XmlFile;
   typedef std::shared_ptr<XmlFile> XmlFilePtr;
-  typedef std::vector<class UILayer*> UILayerPtrArray;
 
   struct XmlDocBundle
   {
@@ -142,7 +145,9 @@ namespace ToolKit
     XmlFilePtr file;
   };
 
+  // System Types
   typedef std::vector<class Event*> EventPool;
+  typedef std::shared_ptr<class Viewport*> ViewportPtr;
 
   // Filesystem variable types
   typedef std::filesystem::path Path;
@@ -188,6 +193,7 @@ namespace ToolKit
   static const String MATERIAL(".material");
   static const String SHADER(".shader");
   static const String AUDIO(".wav");
+  static const String LAYER(".layer");
 
   static const ULongID NULL_HANDLE = 0;
 

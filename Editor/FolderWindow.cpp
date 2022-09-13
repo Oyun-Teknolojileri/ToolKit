@@ -305,7 +305,7 @@ namespace ToolKit
             {
               iconId = UI::m_folderIcon->m_textureId;
             }
-            else if (dirEnt.m_ext == SCENE)
+            else if (dirEnt.m_ext == SCENE || dirEnt.m_ext == LAYER)
             {
               iconId = UI::m_worldIcon->m_textureId;
             }

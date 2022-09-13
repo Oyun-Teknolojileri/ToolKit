@@ -24,7 +24,12 @@ namespace ToolKit
                      Viewport* viewport,
                      const LightRawPtrArray& editorLights);
 
-    void RenderUI(const UILayerPtrArray& uiLayers, Viewport* viewport);
+    /**
+     * Renders given UILayer to given Viewport.
+     * @param layer UILayer that will be rendered.
+     * @param viewport that UILayer will be rendered with.
+     */
+    void RenderUI(Viewport* viewport, UILayer* layer);
 
     void Render(Entity* ntt,
                 Camera* cam,
@@ -146,6 +151,7 @@ namespace ToolKit
     float m_gridSize               = 100.0f;
     Vec3 m_gridHorizontalAxisColor = X_AXIS;
     Vec3 m_gridVerticalAxisColor   = Z_AXIS;
+    Camera* m_uiCamera             = nullptr;
 
    private:
     uint m_currentProgram = 0;

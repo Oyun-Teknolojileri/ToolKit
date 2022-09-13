@@ -42,7 +42,8 @@ namespace ToolKit
 
   ViewportBase::ViewportBase()
   {
-    m_camera = new Camera();
+    m_camera     = new Camera();
+    m_viewportId = GetHandleManager()->GetNextHandle();
   }
 
   ViewportBase::~ViewportBase()

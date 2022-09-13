@@ -46,7 +46,7 @@ namespace ToolKit
     Entity_DirectionalLight,
     Entity_PointLight,
     Entity_SpotLight,
-    Entity_CanvasPanel,
+    Entity_Canvas,
     Entity_Prefab,
     ENTITY_TYPE_COUNT // Holds the size of the enum
   };

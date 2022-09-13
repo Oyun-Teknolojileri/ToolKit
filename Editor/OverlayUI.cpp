@@ -709,9 +709,9 @@ namespace ToolKit
           currScene->AddEntity(suface);
         }
 
-        if (ImGui::MenuItem("CanvasPanel"))
+        if (ImGui::MenuItem("Canvas"))
         {
-          CanvasPanel* canvasPanel = new CanvasPanel(Vec2(800.0f, 600.0f));
+          Canvas* canvasPanel = new Canvas(Vec2(800.0f, 600.0f));
           canvasPanel->SetPivotOffsetVal({0.5f, 0.5f});
           canvasPanel->GetMeshComponent()->Init(false);
           currScene->AddEntity(canvasPanel);

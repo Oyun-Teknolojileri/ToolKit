@@ -8,7 +8,7 @@
 #include "Animation.h"
 #include "Audio.h"
 #include "Camera.h"
-#include "CanvasPanel.h"
+#include "Canvas.h"
 #include "Drawable.h"
 #include "Entity.h"
 #include "Events.h"

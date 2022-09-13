@@ -103,11 +103,11 @@ namespace ToolKit
           m_entity->m_node->m_parent == nullptr ||
           m_entity->m_node->m_parent->m_entity == nullptr ||
           m_entity->m_node->m_parent->m_entity->GetType() !=
-              EntityType::Entity_CanvasPanel)
+              EntityType::Entity_Canvas)
         return;
 
-      CanvasPanel* canvasPanel =
-          static_cast<CanvasPanel*>(m_entity->m_node->m_parent->m_entity);
+      Canvas* canvasPanel =
+          static_cast<Canvas*>(m_entity->m_node->m_parent->m_entity);
 
       Vec3 pos;
       float w = 0, h = 0;
@@ -298,12 +298,15 @@ namespace ToolKit
           p.scale     = Vec3(0.5f, 1.1f, 1.f);
         }
 
-        if (EditorViewport* vp = g_app->GetActiveViewport())
+        if (EditorViewport* vp = g_app->GetViewport(g_2dViewport))
         {
-          constexpr float s = 30.f;
-          p.translate *= vp->m_zoom;
-          p.scale *= Vec3(s * vp->m_zoom, s * vp->m_zoom, 1.f);
-          handle->Generate(p);
+          if (vp->IsVisible())
+          {
+            float s = 30.f;
+            p.translate *= vp->m_zoom;
+            p.scale *= Vec3(s * vp->m_zoom, s * vp->m_zoom, 1.f);
+            handle->Generate(p);
+          }
         }
       }
 

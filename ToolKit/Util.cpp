@@ -608,6 +608,11 @@ namespace ToolKit
     return supportedFormats.find(ToLower(ext)) != String::npos;
   }
 
+  TK_API bool IsLayer(const String& file)
+  {
+    return file.find(ToLower(LAYER)) != String::npos;
+  }
+
   // split a string into multiple sub strings, based on a separator string
   // for example, if separator="::",
   // s = "abc::def xy::st:" -> "abc", "def xy" and "st:",

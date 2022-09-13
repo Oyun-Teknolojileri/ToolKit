@@ -123,6 +123,8 @@ namespace ToolKit
 
       GetAnimationPlayer()->m_records.clear();
 
+      GetUIManager()->DestroyLayers();
+
       ModManager::GetInstance()->UnInit();
       ActionManager::GetInstance()->UnInit();
     }
@@ -148,7 +150,7 @@ namespace ToolKit
         wnd->DispatchSignals();
       }
 
-      ShowPlayWindow(deltaTime);
+      ShowSimulationWindow(deltaTime);
 
       // Selected entities
       EntityRawPtrArray selecteds;
@@ -254,7 +256,10 @@ namespace ToolKit
           RenderGizmo(viewport, m_gizmo);
 
           // Render anchor.
-          RenderAnchor(viewport, m_anchor);
+          if (viewport->GetType() == Window::Type::Viewport2d)
+          {
+            RenderAnchor(viewport, m_anchor);
+          }
 
           RenderComponentGizmo(viewport, selecteds);
         }
@@ -933,9 +938,22 @@ namespace ToolKit
       GetCurrentScene()->Destroy(false);
       GetSceneManager()->Remove(GetCurrentScene()->GetFile());
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
+      if (IsLayer(fullPath))
+      {
+        if (EditorViewport2d* viewport =
+                GetWindow<EditorViewport2d>(g_2dViewport))
+        {
+          UILayer* layer = new UILayer(scene);
+          GetUIManager()->AddLayer(viewport->m_viewportId, layer);
+        }
+        else
+        {
+          g_app->m_statusMsg = "Layer creation failed. No 2d viewport.";
+        }
+      }
+
       SetCurrentScene(scene);
       scene->Init();
-
       m_workspace.SetScene(scene->m_name);
     }
 
@@ -945,6 +963,11 @@ namespace ToolKit
       scene->Load();
       scene->Init();
       GetCurrentScene()->Merge(scene);
+    }
+
+    void App::LinkScene(const String& fullPath)
+    {
+      GetSceneManager()->GetCurrentScene()->LinkPrefab(fullPath);
     }
 
     void App::ApplyProjectSettings(bool setDefaults)
@@ -1243,7 +1266,7 @@ namespace ToolKit
         if (anchor->m_entity && anchor->m_entity->m_node->m_parent &&
             anchor->m_entity->m_node->m_parent->m_entity &&
             anchor->m_entity->m_node->m_parent->m_entity->GetType() ==
-                EntityType::Entity_CanvasPanel)
+                EntityType::Entity_Canvas)
           m_renderer->Render(anchor.get(), viewport->GetCamera());
       }
     }
@@ -1272,7 +1295,7 @@ namespace ToolKit
       }
     }
 
-    void App::ShowPlayWindow(float deltaTime)
+    void App::ShowSimulationWindow(float deltaTime)
     {
       if (GamePlugin* plugin = GetPluginManager()->GetGamePlugin())
       {
@@ -1299,7 +1322,7 @@ namespace ToolKit
           }
           m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
           plugin->Frame(deltaTime, playWindow);
-          m_renderer->RenderUI(GetUIManager()->GetCurrentLayers(), playWindow);
+
           m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
         }
       }

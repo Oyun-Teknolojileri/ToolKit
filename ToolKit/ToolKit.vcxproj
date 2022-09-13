@@ -13,7 +13,7 @@
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Audio.cpp" />
-    <ClCompile Include="CanvasPanel.cpp" />
+    <ClCompile Include="Canvas.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DirectionComponent.cpp" />
@@ -55,7 +55,7 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Audio.h" />
-    <ClInclude Include="CanvasPanel.h" />
+    <ClInclude Include="Canvas.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="DebugNew.h" />
     <ClInclude Include="Camera.h" />

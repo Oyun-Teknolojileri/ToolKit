@@ -118,17 +118,17 @@ namespace ToolKit
 
   void Surface::ComponentConstructor()
   {
-    MeshComponent* meshComponent = new MeshComponent();
-    meshComponent->m_localData[meshComponent->MeshIndex()].m_exposed = false;
+    MeshComponent* meshComponent         = new MeshComponent();
+    meshComponent->ParamMesh().m_exposed = false;
+    meshComponent->SetCastShadowVal(false);
     AddComponent(meshComponent);
 
     MaterialComponent* materialComponent         = new MaterialComponent();
     materialComponent->ParamMaterial().m_exposed = false;
+    AddComponent(materialComponent);
 
     MaterialPtr material = GetMaterialManager()->GetCopyOfUIMaterial();
     materialComponent->SetMaterialVal(material);
-
-    AddComponent(materialComponent);
   }
 
   void Surface::ParameterConstructor()
@@ -294,11 +294,10 @@ namespace ToolKit
   {
     if (canvas == nullptr || surface == nullptr ||
         m_node->m_parent == nullptr || m_node->m_parent->m_entity == nullptr ||
-        m_node->m_parent->m_entity->GetType() != EntityType::Entity_CanvasPanel)
+        m_node->m_parent->m_entity->GetType() != EntityType::Entity_Canvas)
       return;
 
-    CanvasPanel* canvasPanel =
-        static_cast<CanvasPanel*>(m_node->m_parent->m_entity);
+    Canvas* canvasPanel = static_cast<Canvas*>(m_node->m_parent->m_entity);
 
     const BoundingBox bb = canvasPanel->GetAABB(true);
     const float w        = bb.GetWidth();

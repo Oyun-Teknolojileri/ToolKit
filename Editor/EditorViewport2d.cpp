@@ -83,6 +83,9 @@ namespace ToolKit
 
     void EditorViewport2d::Update(float deltaTime)
     {
+      // Always update anchor.
+      m_anchorMode->Update(deltaTime);
+
       if (!IsActive())
       {
         SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);
@@ -311,34 +314,7 @@ namespace ToolKit
           IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
           DirectoryEntry entry = *(const DirectoryEntry*) payload->Data;
 
-          if (entry.m_ext == MESH)
-          {
-            String path =
-                ConcatPaths({entry.m_rootPath, entry.m_fileName + entry.m_ext});
-
-            ImGuiIO& io      = ImGui::GetIO();
-            Drawable* dwMesh = new Drawable();
-            if (io.KeyShift)
-            {
-              MeshPtr mesh = GetMeshManager()->Create<Mesh>(path);
-              dwMesh->SetMesh(mesh->Copy<Mesh>());
-            }
-            else
-            {
-              dwMesh->SetMesh(GetMeshManager()->Create<Mesh>(path));
-            }
-
-            dwMesh->GetMesh()->Init(false);
-            Ray ray  = RayFromMousePosition();
-            Vec3 pos = PointOnRay(ray, 5.0f);
-            g_app->m_grid->HitTest(ray, pos);
-            dwMesh->m_node->SetTranslation(pos);
-            EditorScenePtr currScene = g_app->GetCurrentScene();
-            currScene->AddEntity(dwMesh);
-            currScene->AddToSelection(dwMesh->GetIdVal(), false);
-            SetActive();
-          }
-          else if (entry.m_ext == SCENE)
+          if (entry.m_ext == LAYER)
           {
             YesNoWindow::ButtonInfo openButton;
             openButton.m_name     = "Open";

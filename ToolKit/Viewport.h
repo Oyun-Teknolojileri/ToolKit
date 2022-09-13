@@ -42,6 +42,12 @@ namespace ToolKit
      */
     virtual void SetCamera(Camera* cam);
 
+   public:
+    /**
+     * Viewport identifier. Unique trough the runtime.
+     */
+    ULongID m_viewportId;
+
    protected:
     /**
      * Id of Camera that is attached to Viewport.

@@ -69,6 +69,7 @@ namespace ToolKit
       // Workspace.
       void OpenScene(const String& fullPath);
       void MergeScene(const String& fullPath);
+      void LinkScene(const String& fullPath);
       void ApplyProjectSettings(bool setDefaults);
       void OpenProject(const Project& project);
       void PackResources();
@@ -110,7 +111,7 @@ namespace ToolKit
       void RenderComponentGizmo(EditorViewport* viewport,
                                 EntityRawPtrArray selecteds);
 
-      void ShowPlayWindow(float deltaTime);
+      void ShowSimulationWindow(float deltaTime);
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
