@@ -142,12 +142,13 @@ namespace ToolKit
         guideLines[7] = guideLines[6] + axis[0] * w;
       }
 
-      float handleTranslate = 30.f;
+      const float shapeSize = 15.0f;
+      float handleTranslate = shapeSize;
 
       if ((anchorRatios[0] + anchorRatios[1] < 0.99f) ||
           (anchorRatios[2] + anchorRatios[3] < 0.99f))
       {
-        handleTranslate = 20.f;
+        handleTranslate = shapeSize * (2.0f / 3.0f);
       }
 
       for (AnchorHandlePtr handle : m_handles)
@@ -233,6 +234,7 @@ namespace ToolKit
           p.scale     = Vec3(0.5f, 1.1f, 1.f);
           p.angle     = glm::radians(135.f);
         }
+
         if (direction == DirectionLabel::E)
         {
           p.worldLoc -=
@@ -246,7 +248,7 @@ namespace ToolKit
             handle->m_mesh.reset();
             continue;
           }
-          p.translate = Vec3(30.f, 0.f, 0.f);
+          p.translate = Vec3(shapeSize, 0.f, 0.f);
           p.scale     = Vec3(1.1f, 0.5f, 1.f);
         }
         if (direction == DirectionLabel::W)
@@ -262,7 +264,7 @@ namespace ToolKit
             handle->m_mesh.reset();
             continue;
           }
-          p.translate = Vec3(-30.f, 0.f, 0.f);
+          p.translate = Vec3(-shapeSize, 0.f, 0.f);
           p.scale     = Vec3(1.1f, 0.5f, 1.f);
         }
         if (direction == DirectionLabel::N)
@@ -278,7 +280,7 @@ namespace ToolKit
             handle->m_mesh.reset();
             continue;
           }
-          p.translate = Vec3(0.f, 30.f, 0.f);
+          p.translate = Vec3(0.f, shapeSize, 0.f);
           p.scale     = Vec3(0.5f, 1.1f, 1.f);
         }
         if (direction == DirectionLabel::S)
@@ -294,7 +296,7 @@ namespace ToolKit
             handle->m_mesh.reset();
             continue;
           }
-          p.translate = Vec3(0.f, -30.f, 0.f);
+          p.translate = Vec3(0.f, -shapeSize, 0.f);
           p.scale     = Vec3(0.5f, 1.1f, 1.f);
         }
 
@@ -302,7 +304,7 @@ namespace ToolKit
         {
           if (vp->IsVisible())
           {
-            float s = 30.f;
+            float s = shapeSize;
             p.translate *= vp->m_zoom;
             p.scale *= Vec3(s * vp->m_zoom, s * vp->m_zoom, 1.f);
             handle->Generate(p);
