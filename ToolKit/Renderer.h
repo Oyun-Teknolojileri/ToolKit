@@ -114,6 +114,17 @@ namespace ToolKit
 
     void UpdateShadowMaps(LightRawPtrArray lights, EntityRawPtrArray entities);
 
+    // Fits the scene into the shadow map camera frustum. As the scene gets
+    // bigger, the resolution gets lower.
+    void FitSceneBoundingBoxIntoLightFrustum(Camera* lightCamera,
+                                             const EntityRawPtrArray& entities,
+                                             DirectionalLight* light);
+    // Fits view frustum of the camera into shadow map camera frustum. As the
+    // view frustum gets bigger, the resolution gets lower.
+    void FitViewFrustumIntoLightFrustum(Camera* lightCamera,
+                                        Camera* viewCamera,
+                                        DirectionalLight* light);
+
     void SetProjectViewModel(Entity* ntt, Camera* cam);
     void BindProgram(ProgramPtr program);
     void LinkProgram(uint program, uint vertexP, uint fragmentP);

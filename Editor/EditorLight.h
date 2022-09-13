@@ -26,7 +26,6 @@ namespace ToolKit
 
       void EnableGizmo(bool enable);
       virtual void Init();
-      virtual void ParameterEventConstructor() = 0;
 
      protected:
       ValueUpdateFn m_gizmoUpdateFn;
@@ -53,6 +52,8 @@ namespace ToolKit
       Entity* Instantiate() const override;
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+      LineBatch* GetDebugShadowFrustum();
     };
 
     class EditorPointLight : public PointLight, public EditorLightBase

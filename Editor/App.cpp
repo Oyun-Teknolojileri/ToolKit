@@ -259,23 +259,20 @@ namespace ToolKit
           RenderComponentGizmo(viewport, selecteds);
         }
 
+        RenderSelected(viewport, selecteds);
+
         // Render debug objects.
         if (!m_perFrameDebugObjects.empty())
         {
           for (Entity* dbgObj : m_perFrameDebugObjects)
           {
             m_renderer->Render(dbgObj, viewCam);
+          }
+          for (Entity* dbgObj : m_perFrameDebugObjects)
+          {
             SafeDel(dbgObj);
           }
           m_perFrameDebugObjects.clear();
-        }
-      }
-
-      if (m_gameMod != GameMod::Playing)
-      {
-        for (EditorViewport* viewport : viewports)
-        {
-          RenderSelected(viewport, selecteds);
         }
       }
 
@@ -1201,13 +1198,9 @@ namespace ToolKit
         if (primary->GetType() == EntityType::Entity_DirectionalLight &&
             static_cast<DirectionalLight*>(primary)->GetCastShadowVal())
         {
-          Mat4 transform = primary->m_node->GetTransform();
-          m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(
-              static_cast<DirectionalLight*>(primary)
-                  ->GetShadowMapCameraFrustumCorners(),
-              Vec3(1.0f, 0.0f, 0.0f),
-              0.2f,
-              &transform));
+          m_perFrameDebugObjects.push_back(
+              static_cast<EditorDirectionalLight*>(primary)
+                  ->GetDebugShadowFrustum());
         }
       }
     }

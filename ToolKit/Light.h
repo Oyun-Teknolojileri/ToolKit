@@ -13,7 +13,7 @@ namespace ToolKit
    public:
     Light();
     virtual ~Light();
-    void ParameterEventConstructor();
+    virtual void ParameterEventConstructor();
 
     EntityType GetType() const override;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
@@ -56,11 +56,7 @@ namespace ToolKit
 
     EntityType GetType() const override;
 
-    BoundingBox GetShadowMapCameraFrustumCorners();
-
-   public:
-    TKDeclareParam(Vec4, ShadowFrustumSize);
-    TKDeclareParam(Vec2, ShadowFrustumNearAndFar);
+    Vec3Array GetShadowFrustumCorners();
   };
 
   class TK_API PointLight : public Light
