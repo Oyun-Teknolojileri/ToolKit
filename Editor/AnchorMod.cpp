@@ -531,6 +531,8 @@ namespace ToolKit
               surfacePoints[2].y - canvasPoints[2].y;
         }
       }
+
+      m_anchorDeltaTransform = ZERO; // Consume the delta.
     }
 
     // StateAnchorEnd
