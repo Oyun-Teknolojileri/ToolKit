@@ -140,7 +140,6 @@ namespace ToolKit
       {
         if (anchState->m_signalConsumed)
         {
-          DebugMessage("Signal Consumed");
           return;
         }
       }

@@ -35,7 +35,7 @@ namespace ToolKit
       std::vector<Vec2> m_mouseData;
       PlaneEquation m_intersectionPlane;
       TransformType m_type;
-      bool m_signalConsumed = false;
+      bool m_signalConsumed = true;
 
      protected:
       Vec3 m_anchorDeltaTransform; // Anchor medallion change.

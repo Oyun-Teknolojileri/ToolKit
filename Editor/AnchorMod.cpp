@@ -32,6 +32,8 @@ namespace ToolKit
 
     SignalId StateAnchorBase::Update(float deltaTime)
     {
+      m_signalConsumed = !m_anchor->IsGrabbed(DirectionLabel::None);
+
       MakeSureAnchorIsValid();
       m_anchor->Update(deltaTime);
       return NullSignal;
@@ -40,7 +42,6 @@ namespace ToolKit
     void StateAnchorBase::TransitionIn(State* prevState)
     {
       m_anchorDeltaTransform = ZERO;
-      m_signalConsumed       = false;
     }
 
     void StateAnchorBase::TransitionOut(State* nextState)
@@ -136,8 +137,6 @@ namespace ToolKit
 
     String StateAnchorBegin::Signaled(SignalId signal)
     {
-      m_signalConsumed = false;
-
       if (signal == BaseMod::m_leftMouseBtnDownSgnl)
       {
         if (EditorViewport* vp = g_app->GetActiveViewport())
@@ -150,7 +149,6 @@ namespace ToolKit
         if (!m_anchor->IsGrabbed(DirectionLabel::None) &&
             g_app->GetCurrentScene()->GetCurrentSelection() != nullptr)
         {
-          m_signalConsumed = true;
           CalculateIntersectionPlane();
           CalculateGrabPoint();
         }
@@ -171,7 +169,6 @@ namespace ToolKit
 
         if (!m_anchor->IsGrabbed(DirectionLabel::None))
         {
-          m_signalConsumed = true;
           return StateType::StateAnchorTo;
         }
       }
@@ -322,11 +319,8 @@ namespace ToolKit
 
     String StateAnchorTo::Signaled(SignalId signal)
     {
-      m_signalConsumed = false;
-
       if (signal == BaseMod::m_leftMouseBtnDragSgnl)
       {
-        m_signalConsumed = true;
         CalculateDelta();
       }
 
