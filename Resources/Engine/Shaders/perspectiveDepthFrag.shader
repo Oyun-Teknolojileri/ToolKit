@@ -2,7 +2,7 @@
 	<type name = "fragmentShader" />
 	<uniform name = "CamData" />
 	<uniform name = "DiffuseTextureInUse" />
-	<uniform nam = "ColorAlpha" />
+	<uniform name = "ColorAlpha" />
 	<source>
 	<!--
 		#version 300 es

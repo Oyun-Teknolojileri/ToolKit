@@ -181,18 +181,59 @@ namespace ToolKit
                                                   "LightData.castShadow[10]",
                                                   "LightData.castShadow[11]"};
 
-  static StringArray g_lightShadowBiasStrCache = {"LightData.shadowBias[0]",
-                                                  "LightData.shadowBias[1]",
-                                                  "LightData.shadowBias[2]",
-                                                  "LightData.shadowBias[3]",
-                                                  "LightData.shadowBias[4]",
-                                                  "LightData.shadowBias[5]",
-                                                  "LightData.shadowBias[6]",
-                                                  "LightData.shadowBias[7]",
-                                                  "LightData.shadowBias[8]",
-                                                  "LightData.shadowBias[9]",
-                                                  "LightData.shadowBias[10]",
-                                                  "LightData.shadowBias[11]"};
+  static StringArray g_lightNormalBiasStrCache = {"LightData.normalBias[0]",
+                                                  "LightData.normalBias[1]",
+                                                  "LightData.normalBias[2]",
+                                                  "LightData.normalBias[3]",
+                                                  "LightData.normalBias[4]",
+                                                  "LightData.normalBias[5]",
+                                                  "LightData.normalBias[6]",
+                                                  "LightData.normalBias[7]",
+                                                  "LightData.normalBias[8]",
+                                                  "LightData.normalBias[9]",
+                                                  "LightData.normalBias[10]",
+                                                  "LightData.normalBias[11]"};
+
+  static StringArray g_lightShadowFixedBiasStrCache = {
+      "LightData.shadowFixedBias[0]",
+      "LightData.shadowFixedBias[1]",
+      "LightData.shadowFixedBias[2]",
+      "LightData.shadowFixedBias[3]",
+      "LightData.shadowFixedBias[4]",
+      "LightData.shadowFixedBias[5]",
+      "LightData.shadowFixedBias[6]",
+      "LightData.shadowFixedBias[7]",
+      "LightData.shadowFixedBias[8]",
+      "LightData.shadowFixedBias[9]",
+      "LightData.shadowFixedBias[10]",
+      "LightData.shadowFixedBias[11]"};
+
+  static StringArray g_lightShadowSlopedBiasStrCache = {
+      "LightData.shadowSlopedBias[0]",
+      "LightData.shadowSlopedBias[1]",
+      "LightData.shadowSlopedBias[2]",
+      "LightData.shadowSlopedBias[3]",
+      "LightData.shadowSlopedBias[4]",
+      "LightData.shadowSlopedBias[5]",
+      "LightData.shadowSlopedBias[6]",
+      "LightData.shadowSlopedBias[7]",
+      "LightData.shadowSlopedBias[8]",
+      "LightData.shadowSlopedBias[9]",
+      "LightData.shadowSlopedBias[10]",
+      "LightData.shadowSlopedBias[11]"};
+
+  static StringArray g_PCFKernelSizeStrCache = {"LightData.PCFKernelSize[0]",
+                                                "LightData.PCFKernelSize[1]",
+                                                "LightData.PCFKernelSize[2]",
+                                                "LightData.PCFKernelSize[3]",
+                                                "LightData.PCFKernelSize[4]",
+                                                "LightData.PCFKernelSize[5]",
+                                                "LightData.PCFKernelSize[6]",
+                                                "LightData.PCFKernelSize[7]",
+                                                "LightData.PCFKernelSize[8]",
+                                                "LightData.PCFKernelSize[9]",
+                                                "LightData.PCFKernelSize[10]",
+                                                "LightData.PCFKernelSize[11]"};
 
   static StringArray g_lightShadowMapCamFarPlaneStrCache = {
       "LightData.shadowMapCamFarPlane[0]",

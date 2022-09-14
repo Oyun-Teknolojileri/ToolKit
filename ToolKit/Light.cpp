@@ -17,8 +17,12 @@ namespace ToolKit
     Intensity_Define(
         1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
     CastShadow_Define(false, "Light", 90, true, true);
-    ShadowBias_Define(
-        0.4f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.01f});
+    NormalBias_Define(
+        0.1f, "Light", 80, true, true, {false, true, 0.1f, 5.0f, 0.005f});
+    FixedBias_Define(
+        0.0f, "Light", 80, true, true, {false, true, 0, 100.0f, 0.1f});
+    SlopedBias_Define(
+        2.0f, "Light", 80, true, true, {false, true, 0.0f, 100.0f, 0.1f});
     ShadowResolution_Define(Vec2(1024.0f, 1024.0f),
                             "Light",
                             90,
@@ -27,7 +31,8 @@ namespace ToolKit
                             {false, true, 32.0f, 4096.0f, 2.0f});
     PCFSampleSize_Define(
         7.0f, "Light", 90, true, true, {false, true, 0.1f, 100.0f, 0.1f});
-    PCFKernelSize_Define(5, "Light", 90, true, true, {false, true, 1, 20, 1});
+    PCFKernelSize_Define(5, "Light", 90, true, true, {false, true, 0, 20, 1});
+    ParameterEventConstructor();
   }
 
   Light::~Light()
@@ -37,11 +42,8 @@ namespace ToolKit
 
   void Light::ParameterEventConstructor()
   {
-    ParamShadowResolution().m_onValueChangedFn = [this](Value& oldVal,
-                                                        Value& newVal) -> void {
-      UnInitShadowMap();
-      InitShadowMap();
-    };
+    ParamShadowResolution().m_onValueChangedFn =
+        [this](Value& oldVal, Value& newVal) -> void { ReInitShadowMap(); };
   }
 
   EntityType Light::GetType() const
@@ -128,7 +130,16 @@ namespace ToolKit
 
   DirectionalLight::DirectionalLight()
   {
+    SetNormalBiasVal(0.1f);
+    SetFixedBiasVal(0.0f);
+    SetSlopedBiasVal(2.0f);
     AddComponent(new DirectionComponent(this));
+  }
+
+  void Light::ReInitShadowMap()
+  {
+    UnInitShadowMap();
+    InitShadowMap();
   }
 
   DirectionalLight::~DirectionalLight()
@@ -164,9 +175,14 @@ namespace ToolKit
 
   PointLight::PointLight()
   {
+    SetNormalBiasVal(0.1f);
+    SetFixedBiasVal(0.0f);
+    SetSlopedBiasVal(2.0f);
+    SetPCFSampleSizeVal(0.03f);
+    ParamPCFSampleSize().m_hint = {false, true, 0.001f, 0.5f, 0.01f};
+    PCFLevel_Define(1, "Light", 90, true, true, {false, true, 0, 2, 1});
     Radius_Define(
         3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
-    ParamPCFSampleSize().m_exposed = false;
     ParamPCFKernelSize().m_exposed = false;
   }
 
@@ -226,6 +242,9 @@ namespace ToolKit
 
   SpotLight::SpotLight()
   {
+    SetNormalBiasVal(0.2f);
+    SetFixedBiasVal(10.0f);
+    SetSlopedBiasVal(5.0f);
     Radius_Define(
         10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
     OuterAngle_Define(

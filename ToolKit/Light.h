@@ -27,12 +27,15 @@ namespace ToolKit
 
    protected:
     virtual void InitShadowMapDepthMaterial();
+    void ReInitShadowMap();
 
    public:
     TKDeclareParam(Vec3, Color);
     TKDeclareParam(float, Intensity);
     TKDeclareParam(bool, CastShadow);
-    TKDeclareParam(float, ShadowBias);
+    TKDeclareParam(float, FixedBias);
+    TKDeclareParam(float, SlopedBias);
+    TKDeclareParam(float, NormalBias);
     TKDeclareParam(Vec2, ShadowResolution);
     TKDeclareParam(float, PCFSampleSize);
     TKDeclareParam(int, PCFKernelSize);
@@ -76,6 +79,7 @@ namespace ToolKit
 
    public:
     TKDeclareParam(float, Radius);
+    TKDeclareParam(int, PCFLevel);
   };
 
   class TK_API SpotLight : public Light

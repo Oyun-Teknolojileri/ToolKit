@@ -913,7 +913,19 @@ namespace ToolKit
             renderForShadowMapFn(light, entities);
           }
         }
-        else
+        else if (light->GetType() == EntityType::Entity_DirectionalLight)
+        {
+          glPolygonOffset(light->GetSlopedBiasVal() * 0.5f,
+                          light->GetFixedBiasVal() * 500.0f);
+
+          glEnable(GL_POLYGON_OFFSET_FILL);
+
+          SetRenderTarget(light->GetShadowMapRenderTarget());
+          renderForShadowMapFn(light, entities);
+
+          glDisable(GL_POLYGON_OFFSET_FILL);
+        }
+        else // Spot light
         {
           SetRenderTarget(light->GetShadowMapRenderTarget());
           renderForShadowMapFn(light, entities);
@@ -1427,9 +1439,14 @@ namespace ToolKit
         currLight->SetPCFSampleSizeVal(1.0f);
       }
 
-      float size  = currLight->GetPCFSampleSizeVal();
-      float speed = size / currLight->GetPCFKernelSizeVal();
-      float step  = static_cast<float>(currLight->GetPCFKernelSizeVal());
+      float size       = currLight->GetPCFSampleSizeVal();
+      float kernelSize = (float) currLight->GetPCFKernelSizeVal();
+      if (glm::epsilonEqual(kernelSize, 0.0f, 0.00001f))
+      {
+        kernelSize = FLT_MIN;
+      }
+      float speed = size / kernelSize;
+      float step  = kernelSize;
       float unit  = 1.0f / ((step + 1.0f) * (step + 1.0f));
 
       GLuint loc = glGetUniformLocation(
@@ -1456,12 +1473,39 @@ namespace ToolKit
             &(currLight->m_shadowMapCameraProjectionViewMatrix)[0][0]);
 
         loc = glGetUniformLocation(program->m_handle,
-                                   g_lightShadowBiasStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetShadowBiasVal() * 0.001f);
+                                   g_lightNormalBiasStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetNormalBiasVal());
+
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowFixedBiasStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetFixedBiasVal() * 0.01f);
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowSlopedBiasStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetSlopedBiasVal() * 0.1f);
 
         loc = glGetUniformLocation(
             program->m_handle, g_lightShadowMapCamFarPlaneStrCache[i].c_str());
         glUniform1f(loc, currLight->m_shadowMapCameraFar);
+
+        if (currLight->GetType() == EntityType::Entity_PointLight)
+        {
+          int level = static_cast<PointLight*>(currLight)->GetPCFLevelVal();
+          if (level == 0)
+          {
+            level = 1;
+          }
+          else if (level == 1)
+          {
+            level = 8;
+          }
+          else if (level == 2)
+          {
+            level = 20;
+          }
+          loc = glGetUniformLocation(program->m_handle,
+                                     g_PCFKernelSizeStrCache[i].c_str());
+          glUniform1i(loc, level);
+        }
 
         SetShadowMapTexture(
             type, currLight->GetShadowMapRenderTarget()->m_textureId, program);
