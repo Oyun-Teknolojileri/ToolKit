@@ -1446,8 +1446,9 @@ namespace ToolKit
         kernelSize = FLT_MIN;
       }
       float speed = size / kernelSize;
-      float step  = kernelSize;
-      float unit  = 1.0f / ((step + 1.0f) * (step + 1.0f));
+      speed -= 0.0005f; // Fix floating point error
+      float step = kernelSize;
+      float unit = 1.0f / ((step + 1.0f) * (step + 1.0f));
 
       GLuint loc = glGetUniformLocation(
           program->m_handle, g_lightPCFSampleHalfSizeCache[i].c_str());

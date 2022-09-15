@@ -18,7 +18,7 @@ namespace ToolKit
         1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
     CastShadow_Define(false, "Light", 90, true, true);
     NormalBias_Define(
-        0.1f, "Light", 80, true, true, {false, true, 0.1f, 5.0f, 0.005f});
+        0.1f, "Light", 80, true, true, {false, true, 0.0f, 5.0f, 0.005f});
     FixedBias_Define(
         0.0f, "Light", 80, true, true, {false, true, 0, 100.0f, 0.1f});
     SlopedBias_Define(
