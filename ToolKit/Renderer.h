@@ -147,11 +147,16 @@ namespace ToolKit
     MaterialPtr m_overrideMat = nullptr;
 
     // Grid parameters
-    float m_gridCellSize           = 0.1f;
-    float m_gridSize               = 100.0f;
-    Vec3 m_gridHorizontalAxisColor = X_AXIS;
-    Vec3 m_gridVerticalAxisColor   = Z_AXIS;
-    Camera* m_uiCamera             = nullptr;
+    struct GridParams
+    {
+      float sizeEachCell       = 0.1f;
+      float maxLinePixelCount  = 2.0f;
+      Vec3 axisColorHorizontal = X_AXIS;
+      Vec3 axisColorVertical   = Z_AXIS;
+      bool is2DViewport        = false;
+    };
+    GridParams m_gridParams;
+    Camera* m_uiCamera = nullptr;
 
    private:
     uint m_currentProgram = 0;

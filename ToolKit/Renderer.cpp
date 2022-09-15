@@ -1095,9 +1095,9 @@ namespace ToolKit
         glGetProgramInfoLog(program, infoLen, nullptr, log);
         GetLogger()->Log(log);
 
+        assert(linked);
         SafeDelArray(log);
       }
-      assert(linked);
 
       glDeleteProgram(program);
     }
@@ -1205,16 +1205,22 @@ namespace ToolKit
         case Uniform::GRID_SETTINGS: {
           GLint locCellSize =
               glGetUniformLocation(program->m_handle, "GridData.cellSize");
-          glUniform1fv(locCellSize, 1, &m_gridCellSize);
-          GLint locGridSize =
-              glGetUniformLocation(program->m_handle, "GridData.gridSize");
-          glUniform1fv(locGridSize, 1, &m_gridSize);
+          glUniform1fv(locCellSize, 1, &m_gridParams.sizeEachCell);
+          GLint locLineMaxPixelCount = glGetUniformLocation(
+              program->m_handle, "GridData.lineMaxPixelCount");
+          glUniform1fv(
+              locLineMaxPixelCount, 1, &m_gridParams.maxLinePixelCount);
           GLint locHorizontalAxisColor = glGetUniformLocation(
               program->m_handle, "GridData.horizontalAxisColor");
-          glUniform3fv(locHorizontalAxisColor, 1, &m_gridHorizontalAxisColor.x);
+          glUniform3fv(
+              locHorizontalAxisColor, 1, &m_gridParams.axisColorHorizontal.x);
           GLint locVerticalAxisColor = glGetUniformLocation(
               program->m_handle, "GridData.verticalAxisColor");
-          glUniform3fv(locVerticalAxisColor, 1, &m_gridVerticalAxisColor.x);
+          glUniform3fv(
+              locVerticalAxisColor, 1, &m_gridParams.axisColorVertical.x);
+          GLint locIs2dViewport =
+              glGetUniformLocation(program->m_handle, "GridData.is2DViewport");
+          glUniform1ui(locIs2dViewport, m_gridParams.is2DViewport);
         }
         break;
         case Uniform::EXPOSURE: {

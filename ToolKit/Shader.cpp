@@ -88,10 +88,10 @@ namespace ToolKit
         GetLogger()->Log(GetFile());
         GetLogger()->Log(str);
 
+        assert(compiled);
         SafeDelArray(log);
       }
 
-      assert(compiled);
       glDeleteShader(m_shaderHandle);
       return;
     }

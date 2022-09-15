@@ -70,7 +70,7 @@ namespace ToolKit
 
     // Editor settings.
     const size_t g_maxUndoCount = 50;
-    const UVec2 g_max2dGridSize(999000);
+    const UVec2 g_max2dGridSize(100 * 100 * 2);
 
     // Editor types.
     typedef std::shared_ptr<class EditorScene> EditorScenePtr;

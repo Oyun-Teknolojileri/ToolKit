@@ -229,10 +229,16 @@ namespace ToolKit
 
           // Render grid.
           Camera* cam     = viewport->GetCamera();
-          auto gridDrawFn = [this, &cam](Grid* grid) -> void {
-            m_renderer->m_gridCellSize            = grid->m_gridCellSize;
-            m_renderer->m_gridHorizontalAxisColor = grid->m_horizontalAxisColor;
-            m_renderer->m_gridVerticalAxisColor   = grid->m_verticalAxisColor;
+          auto gridDrawFn = [this, &cam, &viewport](Grid* grid) -> void {
+            m_renderer->m_gridParams.sizeEachCell = grid->m_gridCellSize;
+            m_renderer->m_gridParams.axisColorHorizontal =
+                grid->m_horizontalAxisColor;
+            m_renderer->m_gridParams.axisColorVertical =
+                grid->m_verticalAxisColor;
+            m_renderer->m_gridParams.maxLinePixelCount =
+                grid->m_maxLinePixelCount;
+            m_renderer->m_gridParams.is2DViewport =
+                (viewport->GetType() == Window::Type::Viewport2d);
             m_renderer->Render(grid, cam);
           };
 
@@ -1495,11 +1501,12 @@ namespace ToolKit
       m_cursor = new Cursor();
       m_origin = new Axis3d();
 
-      m_grid = new Grid(g_max2dGridSize, AxisLabel::ZX, 0.025f);
+      m_grid = new Grid(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0);
 
       m_2dGrid = new Grid(g_max2dGridSize,
                           AxisLabel::XY,
-                          10.0f); // Generate grid cells 10 x 10
+                          10.0f,
+                          4.0); // Generate grid cells 10 x 10
 
       // Lights and camera.
       m_lightMaster = new Node();

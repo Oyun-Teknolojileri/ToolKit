@@ -95,7 +95,8 @@ namespace ToolKit
       // Resize Grid
       g_app->m_2dGrid->Resize(g_max2dGridSize,
                               AxisLabel::XY,
-                              static_cast<float>(m_gridCellSizeByPixel));
+                              static_cast<float>(m_gridCellSizeByPixel),
+                              2.0f);
 
       PanZoom(deltaTime);
 
@@ -249,6 +250,8 @@ namespace ToolKit
           ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
           ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
           ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+          ImGui::PushStyleColor(ImGuiCol_FrameBg,
+                                ImGui::GetStyleColorVec4(ImGuiCol_ChildBg));
 
           ImDrawList* dw = ImGui::GetWindowDrawList();
           dw->ChannelsSplit(2);
@@ -269,9 +272,10 @@ namespace ToolKit
 
           m_canvasPos -= m_contentAreaMin; // Convert relative to content area.
           ImGui::EndChildFrame();
-          ImGui::PopStyleVar(3);
 
           dw->ChannelsMerge();
+          ImGui::PopStyleColor(1);
+          ImGui::PopStyleVar(3);
 
           // Draw borders.
           if (IsActive())
