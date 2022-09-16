@@ -8,7 +8,7 @@ jobs:
       matrix:
         path:
           - check: './ToolKit'
-            exclude: '(hello|world)' # Exclude file paths containing "hello" or "world"
+            exclude: ''
           - check: './Editor'
             exclude: '(ImGui)'
           - check: './Import'
