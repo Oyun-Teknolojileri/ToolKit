@@ -1,14 +1,13 @@
 #include "EditorCamera.h"
 
-#include "GlobalDef.h"
-#include "Mesh.h"
-#include "Primative.h"
-#include "ResourceComponent.h"
-#include "ToolKit.h"
-
 #include <memory>
 
+#include "Primative.h"
+#include "Mesh.h"
+#include "ToolKit.h"
+#include "ResourceComponent.h"
 #include "DebugNew.h"
+#include "GlobalDef.h"
 
 namespace ToolKit
 {

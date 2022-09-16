@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Renderer.h"
+#include <vector>
+
+#include "Types.h"
 #include "Resource.h"
 #include "ResourceManager.h"
-#include "Types.h"
-
-#include <vector>
+#include "Renderer.h"
 
 namespace ToolKit
 {

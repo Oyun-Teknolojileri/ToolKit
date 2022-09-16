@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Animation.h"
-#include "Types.h"
-
 #include <vector>
+
+#include "Types.h"
+#include "Animation.h"
 
 namespace ToolKit
 {

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Component.h"
-#include "MathUtil.h"
-#include "Types.h"
-
-#include <memory>
 #include <vector>
+#include <memory>
+
+#include "Component.h"
+#include "Types.h"
+#include "MathUtil.h"
 
 namespace ToolKit
 {

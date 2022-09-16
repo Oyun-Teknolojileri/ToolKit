@@ -1,9 +1,7 @@
 #include "Node.h"
-
 #include "MathUtil.h"
-#include "ToolKit.h"
 #include "Util.h"
-
+#include "ToolKit.h"
 #include "DebugNew.h"
 
 namespace ToolKit

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ImGui/imgui.h"
-#include "Serialize.h"
-#include "Types.h"
-
-#include <functional>
 #include <vector>
+#include <functional>
+
+#include "ImGui/imgui.h"
+#include "Types.h"
+#include "Serialize.h"
 
 namespace ToolKit
 {

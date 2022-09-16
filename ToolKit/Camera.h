@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Entity.h"
 #include "Types.h"
+#include "Entity.h"
 
 namespace ToolKit
 {

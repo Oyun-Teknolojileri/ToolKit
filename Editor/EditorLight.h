@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Gizmo.h"
-#include "Light.h"
-#include "Primative.h"
-#include "ResourceComponent.h"
-#include "ToolKit.h"
-#include "Types.h"
-
-#include <string>
 #include <vector>
+#include <string>
+
+#include "ToolKit.h"
+#include "Light.h"
+#include "Types.h"
+#include "Primative.h"
+#include "Gizmo.h"
+#include "ResourceComponent.h"
 
 namespace ToolKit
 {

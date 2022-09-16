@@ -1,37 +1,36 @@
 #include "App.h"
 
-#include "Action.h"
-#include "Anchor.h"
-#include "Camera.h"
-#include "ConsoleWindow.h"
-#include "DirectionComponent.h"
-#include "EditorCamera.h"
-#include "EditorViewport.h"
-#include "EditorViewport2d.h"
-#include "FolderWindow.h"
-#include "GL/glew.h"
-#include "Gizmo.h"
-#include "GlobalDef.h"
-#include "Grid.h"
-#include "MaterialInspector.h"
-#include "Mod.h"
-#include "Node.h"
-#include "OutlinerWindow.h"
-#include "OverlayUI.h"
-#include "PluginWindow.h"
-#include "Primative.h"
-#include "PropInspector.h"
-#include "Renderer.h"
-#include "UI.h"
-
 #include <filesystem>
 #include <iostream>
-#include <memory>
 #include <sstream>
-#include <string>
 #include <vector>
+#include <string>
+#include <memory>
 
+#include "Gizmo.h"
+#include "Renderer.h"
+#include "UI.h"
+#include "EditorViewport.h"
+#include "Primative.h"
+#include "Node.h"
+#include "GlobalDef.h"
+#include "OverlayUI.h"
+#include "Grid.h"
+#include "Camera.h"
+#include "Mod.h"
+#include "ConsoleWindow.h"
+#include "FolderWindow.h"
+#include "OutlinerWindow.h"
+#include "PropInspector.h"
+#include "MaterialInspector.h"
+#include "PluginWindow.h"
+#include "EditorViewport2d.h"
+#include "DirectionComponent.h"
+#include "Action.h"
+#include "GL/glew.h"
 #include "DebugNew.h"
+#include "EditorCamera.h"
+#include "Anchor.h"
 
 namespace ToolKit
 {
@@ -1084,7 +1083,7 @@ namespace ToolKit
     void App::RenderSelected(EditorViewport* viewport,
                              EntityRawPtrArray selecteds)
     {
-      if (selecteds.empty())
+      if (GetCurrentScene()->GetSelectedEntityCount() == 0)
       {
         return;
       }

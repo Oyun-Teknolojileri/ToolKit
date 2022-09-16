@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <functional>
+
 #include "Entity.h"
 #include "Events.h"
 #include "MathUtil.h"
@@ -7,9 +10,6 @@
 #include "SpriteSheet.h"
 #include "Surface.h"
 #include "Types.h"
-
-#include <functional>
-#include <vector>
 
 namespace ToolKit
 {

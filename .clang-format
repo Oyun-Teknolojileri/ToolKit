@@ -21,25 +21,5 @@ IndentPPDirectives: 'BeforeHash'
 LambdaBodyIndentation: 'Signature'
 AlignArrayOfStructures: 'Right'
 SpaceAfterCStyleCast: 'true'
-FixNamespaceComments: 'true'
 TypenameMacros: ["TKResourceType", "TKComponentType", "TKDeclareParam"]
-SortIncludes: true
-IncludeBlocks: Regroup
-IncludeCategories:
-  # Headers in <> from specific external libraries.
-  - Regex:           'DebugNew.h'
-    Priority:        4
-  # Headers in <> without extension.
-  - Regex:           '<([A-Za-z0-9\Q/-_\E])+>'
-    Priority:        3
-  # Headers in <> with extension.
-  - Regex:           '<([A-Za-z0-9.\Q/-_\E])+>'
-    Priority:        2
-  # Headers in "" with extension.
-  - Regex:           '"([A-Za-z0-9.\Q/-_\E])+"'
-    Priority:        1
-
-Language: 'Cpp'
-Standard: 'c++17'
-
 ...

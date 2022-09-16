@@ -1,12 +1,11 @@
 #pragma once
 
-#include "MathUtil.h"
-#include "Resource.h"
-#include "ResourceManager.h"
-#include "Types.h"
-
 #include <memory>
 #include <vector>
+#include "Types.h"
+#include "Resource.h"
+#include "ResourceManager.h"
+#include "MathUtil.h"
 
 namespace ToolKit
 {

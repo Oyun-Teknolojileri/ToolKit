@@ -1,10 +1,8 @@
 #include "Material.h"
-
 #include "ToolKit.h"
 #include "Util.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
-
 #include "DebugNew.h"
 
 namespace ToolKit

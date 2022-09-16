@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Serialize.h"
-#include "ToolKit.h"
-
 #include <vector>
+
+#include "ToolKit.h"
+#include "Serialize.h"
 
 namespace ToolKit
 {

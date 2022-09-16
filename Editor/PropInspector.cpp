@@ -1,17 +1,16 @@
 #include "PropInspector.h"
 
-#include "AnchorMod.h"
-#include "App.h"
-#include "ConsoleWindow.h"
-#include "ImGui/imgui_stdlib.h"
-#include "MaterialInspector.h"
-#include "Prefab.h"
-#include "TransformMod.h"
-#include "Util.h"
-
 #include <memory>
 #include <utility>
 
+#include "App.h"
+#include "Util.h"
+#include "ConsoleWindow.h"
+#include "TransformMod.h"
+#include "MaterialInspector.h"
+#include "ImGui/imgui_stdlib.h"
+#include "Prefab.h"
+#include "AnchorMod.h"
 #include "DebugNew.h"
 
 namespace ToolKit

@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Light.h"
-#include "MathUtil.h"
-#include "Resource.h"
-#include "Sky.h"
-#include "Types.h"
-
+#include <vector>
 #include <functional>
 #include <unordered_map>
-#include <vector>
+
+#include "Resource.h"
+#include "MathUtil.h"
+#include "Light.h"
+#include "Types.h"
+#include "Sky.h"
 
 namespace ToolKit
 {

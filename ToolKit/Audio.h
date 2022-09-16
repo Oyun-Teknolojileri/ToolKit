@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Entity.h"
+#include <memory>
+
 #include "Resource.h"
 #include "ResourceManager.h"
-
-#include <memory>
+#include "Entity.h"
 
 namespace ToolKit
 {

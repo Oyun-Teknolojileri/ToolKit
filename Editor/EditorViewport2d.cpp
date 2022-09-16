@@ -1,25 +1,24 @@
 #include "EditorViewport2d.h"
 
-#include "App.h"
-#include "Camera.h"
-#include "ConsoleWindow.h"
-#include "FileManager.h"
-#include "FolderWindow.h"
-#include "Gizmo.h"
-#include "GlobalDef.h"
-#include "Grid.h"
-#include "Light.h"
-#include "Mod.h"
-#include "Node.h"
-#include "OverlayUI.h"
-#include "Primative.h"
-#include "Renderer.h"
-#include "SDL.h"
-#include "Util.h"
-
 #include <algorithm>
 
+#include "Camera.h"
+#include "Renderer.h"
+#include "App.h"
+#include "GlobalDef.h"
+#include "SDL.h"
+#include "OverlayUI.h"
+#include "Node.h"
+#include "Primative.h"
+#include "Grid.h"
+#include "FolderWindow.h"
+#include "ConsoleWindow.h"
+#include "Gizmo.h"
+#include "Mod.h"
+#include "Util.h"
 #include "DebugNew.h"
+#include "Light.h"
+#include "FileManager.h"
 
 namespace ToolKit
 {
@@ -46,7 +45,6 @@ namespace ToolKit
 
     EditorViewport2d::~EditorViewport2d()
     {
-      SafeDel(m_anchorMode);
       if (m_2dViewOptions)
       {
         SafeDel(m_2dViewOptions);
@@ -95,8 +93,6 @@ namespace ToolKit
                               static_cast<float>(m_gridCellSizeByPixel));
 
       PanZoom(deltaTime);
-
-      m_anchorMode->Update(deltaTime);
     }
 
     void EditorViewport2d::OnResizeContentArea(float width, float height)
@@ -106,43 +102,6 @@ namespace ToolKit
 
       ResetViewportImage(GetRenderTargetSettings());
       AdjustZoom(FLT_MIN);
-    }
-
-    void EditorViewport2d::DispatchSignals() const
-    {
-      if (!CanDispatchSignals() || m_mouseOverOverlay)
-      {
-        return;
-      }
-
-      if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-      {
-        m_anchorMode->Signal(BaseMod::m_leftMouseBtnDownSgnl);
-      }
-
-      if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-      {
-        m_anchorMode->Signal(BaseMod::m_leftMouseBtnUpSgnl);
-      }
-
-      if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-      {
-        m_anchorMode->Signal(BaseMod::m_leftMouseBtnDragSgnl);
-      }
-
-      StateAnchorBase* anchState = static_cast<StateAnchorBase*>(
-          m_anchorMode->m_stateMachine->m_currentState);
-
-      if (anchState)
-      {
-        if (anchState->m_signalConsumed)
-        {
-          DebugMessage("Signal Consumed");
-          return;
-        }
-      }
-
-      EditorViewport::DispatchSignals();
     }
 
     Vec2 EditorViewport2d::GetLastMousePosViewportSpace()
@@ -477,14 +436,6 @@ namespace ToolKit
 
     void EditorViewport2d::InitViewport()
     {
-      if (m_anchorMode)
-      {
-        m_anchorMode->UnInit();
-        SafeDel(m_anchorMode);
-      }
-      m_anchorMode = new AnchorMod(ModId::Anchor);
-      m_anchorMode->Init();
-
       ResetViewportImage(GetRenderTargetSettings());
 
       m_zoom = 1.0f;

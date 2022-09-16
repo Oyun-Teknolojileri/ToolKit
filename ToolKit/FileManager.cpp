@@ -1,12 +1,12 @@
 
 #include "FileManager.h"
 
-#include <memory>
 #include <string>
+#include <memory>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "ToolKit.h"
 #include "stb/stb_image.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {

@@ -1,9 +1,9 @@
 #include "Sky.h"
 
-#include "DirectionComponent.h"
-#include "ToolKit.h"
-
 #include <memory>
+
+#include "ToolKit.h"
+#include "DirectionComponent.h"
 
 namespace ToolKit
 {

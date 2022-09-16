@@ -1,13 +1,12 @@
 #include "OutlinerWindow.h"
 
-#include "FolderWindow.h"
-#include "GlobalDef.h"
-#include "Mod.h"
-#include "UI.h"
-#include "Util.h"
-
 #include <vector>
 
+#include "GlobalDef.h"
+#include "Mod.h"
+#include "Util.h"
+#include "FolderWindow.h"
+#include "UI.h"
 #include "DebugNew.h"
 
 namespace ToolKit

@@ -1,18 +1,19 @@
 #include "App.h"
-#include "Common/GlErrorReporter.h"
-#include "Common/SDLEventPool.h"
-#include "ConsoleWindow.h"
-#include "GL/glew.h"
-#include "ImGui/imgui_impl_sdl.h"
-#include "Mod.h"
-#include "SDL.h"
-#include "SDL_opengl.h"
-#include "Types.h"
-#include "UI.h"
 
 #include <stdio.h>
-
 #include <chrono>
+
+#include "Types.h"
+#include "Mod.h"
+#include "UI.h"
+#include "ConsoleWindow.h"
+#include "Common/GlErrorReporter.h"
+#include "Common/SDLEventPool.h"
+#include "ImGui/imgui_impl_sdl.h"
+#include "GL/glew.h"
+
+#include "SDL.h"
+#include "SDL_opengl.h"
 
 #include "DebugNew.h"
 

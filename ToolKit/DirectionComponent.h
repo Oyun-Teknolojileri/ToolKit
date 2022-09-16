@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Component.h"
-
 #include <memory>
+
+#include "Component.h"
 
 namespace ToolKit
 {

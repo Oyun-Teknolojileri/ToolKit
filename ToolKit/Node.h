@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Serialize.h"
 #include "Types.h"
+#include "Serialize.h"
 
 namespace ToolKit
 {

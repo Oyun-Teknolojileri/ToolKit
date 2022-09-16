@@ -1,10 +1,9 @@
 
+#include "ToolKit.h"
 #include "UIManager.h"
 
-#include "ToolKit.h"
-
-#include <iterator>
 #include <vector>
+#include <iterator>
 
 namespace ToolKit
 {

@@ -1,9 +1,8 @@
 #include "Resource.h"
 
-#include "ToolKit.h"
-#include "Util.h"
-
 #include <string>
+#include "Util.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {

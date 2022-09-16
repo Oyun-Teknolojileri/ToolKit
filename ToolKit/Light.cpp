@@ -1,13 +1,13 @@
 
 #include "Light.h"
 
+#include <string>
+#include <memory>
+
+#include "ToolKit.h"
+#include "GL/glew.h"
 #include "Component.h"
 #include "DirectionComponent.h"
-#include "GL/glew.h"
-#include "ToolKit.h"
-
-#include <memory>
-#include <string>
 
 namespace ToolKit
 {

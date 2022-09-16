@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Resource.h"
-
 #include <vector>
+#include "Resource.h"
 
 namespace ToolKit
 {

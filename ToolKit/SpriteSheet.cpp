@@ -1,12 +1,10 @@
+#include "ToolKit.h"
 #include "SpriteSheet.h"
-
 #include "Mesh.h"
 #include "Node.h"
 #include "Surface.h"
-#include "ToolKit.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
-
 #include "DebugNew.h"
 
 namespace ToolKit

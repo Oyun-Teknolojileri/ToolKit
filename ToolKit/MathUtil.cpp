@@ -1,13 +1,11 @@
 #include "MathUtil.h"
-
 #include "Mesh.h"
-
-#include <algorithm>
-#include <execution>
-#include <mutex>
-#include <vector>
-
 #include "DebugNew.h"
+
+#include <vector>
+#include <algorithm>
+#include <mutex>
+#include <execution>
 
 namespace ToolKit
 {

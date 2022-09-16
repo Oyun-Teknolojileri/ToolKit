@@ -5,11 +5,11 @@
  * and related structures.
  */
 
-#include "Serialize.h"
-#include "Types.h"
-
-#include <unordered_map>
 #include <variant>
+#include <unordered_map>
+
+#include "Types.h"
+#include "Serialize.h"
 
 /**
  * @def TKDeclareParam(Class, Name) Auto generates the code for accessing and

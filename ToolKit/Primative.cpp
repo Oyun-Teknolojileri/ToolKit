@@ -1,14 +1,13 @@
 #include "Primative.h"
 
-#include "DirectionComponent.h"
-#include "MathUtil.h"
-#include "Mesh.h"
-#include "Node.h"
-#include "ResourceComponent.h"
-#include "ToolKit.h"
-
 #include <vector>
 
+#include "Mesh.h"
+#include "ToolKit.h"
+#include "MathUtil.h"
+#include "DirectionComponent.h"
+#include "Node.h"
+#include "ResourceComponent.h"
 #include "DebugNew.h"
 
 namespace ToolKit

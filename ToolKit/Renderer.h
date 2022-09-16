@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Light.h"
-#include "RenderState.h"
-#include "Sky.h"
-#include "SpriteSheet.h"
-#include "Types.h"
-#include "Viewport.h"
-
 #include <memory>
 #include <unordered_map>
+
+#include "Types.h"
+#include "RenderState.h"
+#include "Light.h"
+#include "Viewport.h"
+#include "SpriteSheet.h"
+#include "Sky.h"
 
 namespace ToolKit
 {

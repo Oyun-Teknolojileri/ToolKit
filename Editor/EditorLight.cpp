@@ -1,12 +1,12 @@
 
 #include "EditorLight.h"
 
-#include "App.h"
-#include "Material.h"
-#include "Texture.h"
-
 #include <memory>
 #include <string>
+
+#include "Material.h"
+#include "Texture.h"
+#include "App.h"
 
 namespace ToolKit
 {

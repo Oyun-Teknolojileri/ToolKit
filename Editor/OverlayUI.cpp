@@ -1,15 +1,13 @@
 #include "OverlayUI.h"
-
+#include "EditorViewport.h"
+#include "GlobalDef.h"
+#include "Mod.h"
 #include "ConsoleWindow.h"
 #include "EditorCamera.h"
 #include "EditorLight.h"
-#include "EditorViewport.h"
 #include "EditorViewport2d.h"
-#include "GlobalDef.h"
-#include "Mod.h"
-#include "Sky.h"
-
 #include "DebugNew.h"
+#include "Sky.h"
 
 namespace ToolKit
 {

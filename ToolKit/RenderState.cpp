@@ -1,5 +1,4 @@
 #include "RenderState.h"
-
 #include "Util.h"
 
 namespace ToolKit

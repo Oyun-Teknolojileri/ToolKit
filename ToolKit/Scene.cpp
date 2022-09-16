@@ -1,17 +1,16 @@
 #include "Scene.h"
 
-#include "Component.h"
-#include "Prefab.h"
-#include "ResourceComponent.h"
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <utility>
+
 #include "ToolKit.h"
 #include "Util.h"
-
-#include <algorithm>
-#include <string>
-#include <utility>
-#include <vector>
-
+#include "Component.h"
+#include "ResourceComponent.h"
 #include "DebugNew.h"
+#include "Prefab.h"
 
 namespace ToolKit
 {

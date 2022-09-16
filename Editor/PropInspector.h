@@ -1,10 +1,10 @@
 #pragma once
 
-#include "FolderWindow.h"
-#include "UI.h"
-
-#include <functional>
 #include <vector>
+#include <functional>
+
+#include "UI.h"
+#include "FolderWindow.h"
 
 namespace ToolKit
 {

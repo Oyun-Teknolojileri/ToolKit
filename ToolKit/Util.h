@@ -3,6 +3,8 @@
 #include "MathUtil.h"
 #include "Types.h"
 
+#include <assert.h>
+#include <string.h>
 #include <string>
 #include <vector>
 

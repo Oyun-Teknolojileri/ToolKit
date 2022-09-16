@@ -1,5 +1,4 @@
 #include "DirectionComponent.h"
-
 #include "Entity.h"
 
 namespace ToolKit

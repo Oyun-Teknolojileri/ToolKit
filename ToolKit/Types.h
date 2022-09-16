@@ -5,18 +5,18 @@
  * relatled structures.
  */
 
-#include "glm/glm.hpp"
-#include "glm/gtc/quaternion.hpp"
-
-#include <filesystem>
+#include <vector>
+#include <string>
+#include <memory>
 #include <functional>
 #include <limits>
-#include <memory>
-#include <set>
-#include <string>
-#include <unordered_map>
 #include <utility>
-#include <vector>
+#include <set>
+#include <filesystem>
+#include <unordered_map>
+
+#include "glm/glm.hpp"
+#include "glm/gtc/quaternion.hpp"
 
 #ifdef _WIN32 // Windows.
   #define TK_STDCAL __stdcall

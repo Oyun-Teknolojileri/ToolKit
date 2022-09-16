@@ -1,12 +1,10 @@
 #include "ResourceComponent.h"
-
-#include "Animation.h"
-#include "Entity.h"
-#include "Material.h"
-#include "Mesh.h"
-#include "ToolKit.h"
-
 #include <utility>
+#include "Mesh.h"
+#include "Material.h"
+#include "Entity.h"
+#include "ToolKit.h"
+#include "Animation.h"
 
 namespace ToolKit
 {

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "App.h"
-#include "StateMachine.h"
-#include "ToolKit.h"
-
 #include <memory>
 #include <vector>
+
+#include "ToolKit.h"
+#include "StateMachine.h"
+#include "App.h"
 
 namespace ToolKit
 {

@@ -1,25 +1,24 @@
 #include "EditorViewport.h"
 
-#include "App.h"
-#include "Camera.h"
-#include "ConsoleWindow.h"
-#include "DirectionComponent.h"
-#include "FileManager.h"
-#include "FolderWindow.h"
-#include "Gizmo.h"
-#include "GlobalDef.h"
-#include "Grid.h"
-#include "Mod.h"
-#include "Node.h"
-#include "OverlayUI.h"
-#include "Primative.h"
-#include "Renderer.h"
-#include "SDL.h"
-#include "Util.h"
-
 #include <algorithm>
 
+#include "Camera.h"
+#include "Renderer.h"
+#include "App.h"
+#include "GlobalDef.h"
+#include "SDL.h"
+#include "OverlayUI.h"
+#include "Node.h"
+#include "Primative.h"
+#include "Grid.h"
+#include "FolderWindow.h"
+#include "ConsoleWindow.h"
+#include "Gizmo.h"
+#include "Mod.h"
+#include "Util.h"
+#include "DirectionComponent.h"
 #include "DebugNew.h"
+#include "FileManager.h"
 
 namespace ToolKit
 {

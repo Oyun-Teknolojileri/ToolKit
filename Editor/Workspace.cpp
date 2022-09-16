@@ -1,12 +1,10 @@
 #include "Workspace.h"
-
 #include "App.h"
+#include "DebugNew.h"
 
 #include <filesystem>
 #include <memory>
 #include <string>
-
-#include "DebugNew.h"
 
 namespace ToolKit
 {

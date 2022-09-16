@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Action.h"
-#include "Anchor.h"
-#include "Mod.h"
-
 #include <vector>
+
+#include "Mod.h"
+#include "Anchor.h"
+#include "Action.h"
 
 namespace ToolKit
 {
@@ -34,7 +34,6 @@ namespace ToolKit
       std::vector<Vec2> m_mouseData;
       PlaneEquation m_intersectionPlane;
       TransformType m_type;
-      bool m_signalConsumed = false;
     };
 
     class StateAnchorBegin : public StateAnchorBase

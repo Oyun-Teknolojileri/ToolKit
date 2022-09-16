@@ -1,22 +1,21 @@
 #include "FolderWindow.h"
 
-#include "App.h"
-#include "ConsoleWindow.h"
-#include "DirectionComponent.h"
-#include "Gizmo.h"
-#include "GlobalDef.h"
-#include "Light.h"
-#include "MaterialInspector.h"
-#include "PropInspector.h"
-#include "Util.h"
-
-#include <algorithm>
 #include <filesystem>
+#include <vector>
+#include <algorithm>
 #include <memory>
 #include <string>
-#include <vector>
 
+#include "ConsoleWindow.h"
+#include "GlobalDef.h"
+#include "Gizmo.h"
+#include "PropInspector.h"
+#include "Util.h"
+#include "App.h"
+#include "Light.h"
+#include "DirectionComponent.h"
 #include "DebugNew.h"
+#include "MaterialInspector.h"
 
 namespace ToolKit
 {
