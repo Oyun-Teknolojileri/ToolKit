@@ -1,27 +1,29 @@
 
 #include "Anchor.h"
 
-#include <memory>
-#include <vector>
-
 #include "App.h"
 #include "Camera.h"
 #include "ConsoleWindow.h"
-#include "DebugNew.h"
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
+#include "GL/glew.h"
+#include "GlobalDef.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
-#include "GL/glew.h"
-#include <glm/gtc/matrix_transform.hpp>
-#include "GlobalDef.h"
 #include "Primative.h"
 #include "RenderState.h"
 #include "ResourceComponent.h"
 #include "Surface.h"
 #include "Texture.h"
 #include "ToolKit.h"
+
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <memory>
+#include <vector>
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -101,11 +103,11 @@ namespace ToolKit
           m_entity->m_node->m_parent == nullptr ||
           m_entity->m_node->m_parent->m_entity == nullptr ||
           m_entity->m_node->m_parent->m_entity->GetType() !=
-              EntityType::Entity_CanvasPanel)
+              EntityType::Entity_Canvas)
         return;
 
-      CanvasPanel* canvasPanel =
-          static_cast<CanvasPanel*>(m_entity->m_node->m_parent->m_entity);
+      Canvas* canvasPanel =
+          static_cast<Canvas*>(m_entity->m_node->m_parent->m_entity);
 
       Vec3 pos;
       float w = 0, h = 0;
@@ -140,12 +142,13 @@ namespace ToolKit
         guideLines[7] = guideLines[6] + axis[0] * w;
       }
 
-      float handleTranslate = 30.f;
+      const float shapeSize = 15.0f;
+      float handleTranslate = shapeSize;
 
       if ((anchorRatios[0] + anchorRatios[1] < 0.99f) ||
           (anchorRatios[2] + anchorRatios[3] < 0.99f))
       {
-        handleTranslate = 20.f;
+        handleTranslate = shapeSize * (2.0f / 3.0f);
       }
 
       for (AnchorHandlePtr handle : m_handles)
@@ -231,6 +234,7 @@ namespace ToolKit
           p.scale     = Vec3(0.5f, 1.1f, 1.f);
           p.angle     = glm::radians(135.f);
         }
+
         if (direction == DirectionLabel::E)
         {
           p.worldLoc -=
@@ -244,7 +248,7 @@ namespace ToolKit
             handle->m_mesh.reset();
             continue;
           }
-          p.translate = Vec3(30.f, 0.f, 0.f);
+          p.translate = Vec3(shapeSize, 0.f, 0.f);
           p.scale     = Vec3(1.1f, 0.5f, 1.f);
         }
         if (direction == DirectionLabel::W)
@@ -260,7 +264,7 @@ namespace ToolKit
             handle->m_mesh.reset();
             continue;
           }
-          p.translate = Vec3(-30.f, 0.f, 0.f);
+          p.translate = Vec3(-shapeSize, 0.f, 0.f);
           p.scale     = Vec3(1.1f, 0.5f, 1.f);
         }
         if (direction == DirectionLabel::N)
@@ -276,7 +280,7 @@ namespace ToolKit
             handle->m_mesh.reset();
             continue;
           }
-          p.translate = Vec3(0.f, 30.f, 0.f);
+          p.translate = Vec3(0.f, shapeSize, 0.f);
           p.scale     = Vec3(0.5f, 1.1f, 1.f);
         }
         if (direction == DirectionLabel::S)
@@ -292,16 +296,19 @@ namespace ToolKit
             handle->m_mesh.reset();
             continue;
           }
-          p.translate = Vec3(0.f, -30.f, 0.f);
+          p.translate = Vec3(0.f, -shapeSize, 0.f);
           p.scale     = Vec3(0.5f, 1.1f, 1.f);
         }
 
-        if (EditorViewport* vp = g_app->GetActiveViewport())
+        if (EditorViewport* vp = g_app->GetViewport(g_2dViewport))
         {
-          constexpr float s = 30.f;
-          p.translate *= vp->m_zoom;
-          p.scale *= Vec3(s * vp->m_zoom, s * vp->m_zoom, 1.f);
-          handle->Generate(p);
+          if (vp->IsVisible())
+          {
+            float s = shapeSize;
+            p.translate *= vp->m_zoom;
+            p.scale *= Vec3(s * vp->m_zoom, s * vp->m_zoom, 1.f);
+            handle->Generate(p);
+          }
         }
       }
 

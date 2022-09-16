@@ -1,14 +1,16 @@
 #include "Entity.h"
-#include "Node.h"
-#include "ToolKit.h"
-#include "Skeleton.h"
-#include "MathUtil.h"
-#include "Util.h"
+
 #include "Light.h"
-#include "Sky.h"
-#include "ResourceComponent.h"
-#include "DebugNew.h"
+#include "MathUtil.h"
+#include "Node.h"
 #include "Prefab.h"
+#include "ResourceComponent.h"
+#include "Skeleton.h"
+#include "Sky.h"
+#include "ToolKit.h"
+#include "Util.h"
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -382,7 +384,7 @@ namespace ToolKit
     {
     case EntityType::Entity_Surface:
     case EntityType::Entity_Button:
-    case EntityType::Entity_CanvasPanel:
+    case EntityType::Entity_Canvas:
       return true;
     default:
       return false;
@@ -498,18 +500,21 @@ namespace ToolKit
       break;
     case EntityType::Entity_Light:
       e = new Light();
+      break;
     case EntityType::Entity_DirectionalLight:
       e = new DirectionalLight();
+      break;
     case EntityType::Entity_PointLight:
       e = new PointLight();
+      break;
     case EntityType::Entity_SpotLight:
       e = new SpotLight();
       break;
     case EntityType::Entity_Sky:
       e = new Sky();
       break;
-    case EntityType::Entity_CanvasPanel:
-      e = new CanvasPanel();
+    case EntityType::Entity_Canvas:
+      e = new Canvas();
       break;
     case EntityType::Entity_Prefab:
       e = new Prefab();

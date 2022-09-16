@@ -5,12 +5,12 @@
  * and related structures.
  */
 
-#include <vector>
-#include <memory>
-
 #include "ParameterBlock.h"
 #include "Serialize.h"
 #include "Types.h"
+
+#include <memory>
+#include <vector>
 
 namespace ToolKit
 {

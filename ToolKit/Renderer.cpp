@@ -1,24 +1,25 @@
 #include "Renderer.h"
 
+#include "Camera.h"
+#include "DirectionComponent.h"
+#include "Drawable.h"
+#include "GL/glew.h"
+#include "GlobalCache.h"
+#include "Material.h"
+#include "Mesh.h"
+#include "Node.h"
+#include "ResourceComponent.h"
+#include "Scene.h"
+#include "Shader.h"
+#include "Skeleton.h"
+#include "Surface.h"
+#include "Texture.h"
+#include "ToolKit.h"
+#include "UIManager.h"
+#include "Viewport.h"
+
 #include <algorithm>
 
-#include "Mesh.h"
-#include "Drawable.h"
-#include "Texture.h"
-#include "Camera.h"
-#include "Node.h"
-#include "Material.h"
-#include "Surface.h"
-#include "Skeleton.h"
-#include "GlobalCache.h"
-#include "Viewport.h"
-#include "Scene.h"
-#include "UIManager.h"
-#include "Shader.h"
-#include "ToolKit.h"
-#include "DirectionComponent.h"
-#include "ResourceComponent.h"
-#include "GL/glew.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -27,11 +28,13 @@ namespace ToolKit
 
   Renderer::Renderer()
   {
+    m_uiCamera = new Camera();
   }
 
   Renderer::~Renderer()
   {
     SafeDel(m_shadowMapCamera);
+    SafeDel(m_uiCamera);
   }
 
   void Renderer::RenderScene(const ScenePtr scene,
@@ -55,33 +58,20 @@ namespace ToolKit
   }
 
   /**
-   * Renders given UILayer's to given Viewport.
-   * @param uiLayers UILayer pointer array that will be rendered.
-   * @param viewport Viewport that UILayer's are going to rendered with.
+   * Renders given UILayer to given Viewport.
+   * @param layer UILayer that will be rendered.
+   * @param viewport that UILayer will be rendered with.
    */
-  void Renderer::RenderUI(const UILayerPtrArray& uiLayers, Viewport* viewport)
+  void Renderer::RenderUI(Viewport* viewport, UILayer* layer)
   {
-    if (uiLayers[0] == nullptr)
-    {
-      return;
-    }
+    float halfWidth  = viewport->m_wndContentAreaSize.x * 0.5f;
+    float halfHeight = viewport->m_wndContentAreaSize.y * 0.5f;
 
-    for (UILayer* layer : uiLayers)
-    {
-      if (Entity* rootNode = layer->GetLayer(layer->m_layerName))
-      {
-        EntityRawPtrArray allEntities;
-        GetChildren(rootNode, allEntities);
+    m_uiCamera->SetLens(
+        -halfWidth, halfWidth, -halfHeight, halfHeight, 0.5f, 1000.0f);
 
-        float halfWidth  = viewport->m_wndContentAreaSize.x * 0.5f;
-        float halfHeight = viewport->m_wndContentAreaSize.y * 0.5f;
-
-        layer->m_cam->SetLens(
-            -halfWidth, halfWidth, -halfHeight, halfHeight, 0.5f, 1000.0f);
-
-        RenderEntities(allEntities, layer->m_cam, viewport);
-      }
-    }
+    EntityRawPtrArray entities = layer->m_scene->GetEntities();
+    RenderEntities(entities, m_uiCamera, viewport);
   }
 
   void Renderer::Render(Entity* ntt,
@@ -792,162 +782,280 @@ namespace ToolKit
   void Renderer::UpdateShadowMaps(LightRawPtrArray lights,
                                   EntityRawPtrArray entities)
   {
-    static uint lastFrameCount = -1;
+    MaterialPtr lastOverrideMaterial = m_overrideMat;
 
-    if (lastFrameCount != m_totalFrameCount)
+    GLint lastFBO;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+
+    for (Light* light : lights)
     {
-      MaterialPtr lastOverrideMaterial = m_overrideMat;
-
-      GLint lastFBO;
-      glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
-
-      for (Light* light : lights)
+      if (light->GetCastShadowVal())
       {
-        if (light->GetCastShadowVal())
+        // Create framebuffer
+        light->InitShadowMap();
+
+        // Get shadow map camera
+        if (m_shadowMapCamera == nullptr)
         {
-          // Create framebuffer
-          light->InitShadowMap();
+          m_shadowMapCamera = new Camera();
+        }
 
-          // Get shadow map camera
-          if (m_shadowMapCamera == nullptr)
-          {
-            m_shadowMapCamera = new Camera();
-          }
-
-          if (light->GetType() == EntityType::Entity_DirectionalLight)
-          {
-            Vec4 frustumSize = static_cast<DirectionalLight*>(light)
-                                   ->GetShadowFrustumSizeVal();
-            Vec2 frustumNearFar = static_cast<DirectionalLight*>(light)
-                                      ->GetShadowFrustumNearAndFarVal();
-            m_shadowMapCamera->SetLens(frustumSize.x,
-                                       frustumSize.y,
-                                       frustumSize.z,
-                                       frustumSize.w,
-                                       frustumNearFar.x,
-                                       frustumNearFar.y);
-            m_shadowMapCamera->m_node->SetOrientation(
-                light->m_node->GetOrientation(TransformationSpace::TS_WORLD));
-          }
-          else if (light->GetType() == EntityType::Entity_PointLight)
-          {
-            m_shadowMapCamera->SetLens(
-                glm::radians(90.0f),
-                light->GetShadowResolutionVal().x,
-                light->GetShadowResolutionVal().y,
-                0.01f,
-                static_cast<SpotLight*>(light)->GetRadiusVal());
-          }
-          else if (light->GetType() == EntityType::Entity_SpotLight)
-          {
-            m_shadowMapCamera->SetLens(
-                glm::radians(
-                    static_cast<SpotLight*>(light)->GetOuterAngleVal()),
-                light->GetShadowResolutionVal().x,
-                light->GetShadowResolutionVal().y,
-                0.01f,
-                static_cast<SpotLight*>(light)->GetRadiusVal());
-            m_shadowMapCamera->m_node->SetOrientation(
-                light->m_node->GetOrientation(TransformationSpace::TS_WORLD));
-          }
-
+        if (light->GetType() == EntityType::Entity_DirectionalLight)
+        {
+          FitSceneBoundingBoxIntoLightFrustum(
+              m_shadowMapCamera,
+              entities,
+              static_cast<DirectionalLight*>(light));
+        }
+        else if (light->GetType() == EntityType::Entity_PointLight)
+        {
+          m_shadowMapCamera->SetLens(
+              glm::radians(90.0f),
+              light->GetShadowResolutionVal().x,
+              light->GetShadowResolutionVal().y,
+              0.01f,
+              static_cast<SpotLight*>(light)->GetRadiusVal());
           m_shadowMapCamera->m_node->SetTranslation(
               light->m_node->GetTranslation(TransformationSpace::TS_WORLD),
               TransformationSpace::TS_WORLD);
+        }
+        else if (light->GetType() == EntityType::Entity_SpotLight)
+        {
+          m_shadowMapCamera->SetLens(
+              glm::radians(static_cast<SpotLight*>(light)->GetOuterAngleVal()),
+              light->GetShadowResolutionVal().x,
+              light->GetShadowResolutionVal().y,
+              0.01f,
+              static_cast<SpotLight*>(light)->GetRadiusVal());
+          m_shadowMapCamera->m_node->SetOrientation(
+              light->m_node->GetOrientation(TransformationSpace::TS_WORLD));
+          m_shadowMapCamera->m_node->SetTranslation(
+              light->m_node->GetTranslation(TransformationSpace::TS_WORLD),
+              TransformationSpace::TS_WORLD);
+        }
 
-          auto renderForShadowMapFn =
-              [this](Light* light, EntityRawPtrArray entities) -> void {
-            light->m_shadowMapCameraProjectionViewMatrix =
-                m_shadowMapCamera->GetProjectionMatrix() *
-                m_shadowMapCamera->GetViewMatrix();
-            light->m_shadowMapCameraFar = m_shadowMapCamera->GetData().far;
+        auto renderForShadowMapFn = [this](Light* light,
+                                           EntityRawPtrArray entities) -> void {
+          light->m_shadowMapCameraProjectionViewMatrix =
+              m_shadowMapCamera->GetProjectionMatrix() *
+              m_shadowMapCamera->GetViewMatrix();
+          light->m_shadowMapCameraFar = m_shadowMapCamera->GetData().far;
 
-            FrustumCull(entities, m_shadowMapCamera);
+          FrustumCull(entities, m_shadowMapCamera);
 
-            glClear(GL_DEPTH_BUFFER_BIT);
-            // Depth only render
-            glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-            m_overrideMat = light->GetShadowMaterial();
-            for (Entity* ntt : entities)
-            {
-              if (ntt->IsDrawable() &&
-                  ntt->GetMeshComponent()->GetCastShadowVal())
-              {
-                MaterialPtr entityMat = GetRenderMaterial(ntt);
-                m_overrideMat->SetRenderState(entityMat->GetRenderState());
-                m_overrideMat->m_alpha          = entityMat->m_alpha;
-                m_overrideMat->m_diffuseTexture = entityMat->m_diffuseTexture;
-                Render(ntt, m_shadowMapCamera);
-              }
-            }
-            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-          };
-
-          static Quaternion rotations[6];
-          static Vec3 scales[6];
-
-          // Calculate view transformations once
-          static bool viewsCalculated = false;
-          if (!viewsCalculated)
+          glClear(GL_DEPTH_BUFFER_BIT);
+          // Depth only render
+          glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+          m_overrideMat = light->GetShadowMaterial();
+          for (Entity* ntt : entities)
           {
-            Mat4 views[6] = {
-                glm::lookAt(
-                    ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                glm::lookAt(
-                    ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                glm::lookAt(
-                    ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-                glm::lookAt(
-                    ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-                glm::lookAt(
-                    ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                glm::lookAt(
-                    ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
-
-            for (int i = 0; i < 6; ++i)
+            if (ntt->IsDrawable() &&
+                ntt->GetMeshComponent()->GetCastShadowVal())
             {
-              DecomposeMatrix(views[i], nullptr, &rotations[i], &scales[i]);
+              MaterialPtr entityMat = GetRenderMaterial(ntt);
+              m_overrideMat->SetRenderState(entityMat->GetRenderState());
+              m_overrideMat->m_alpha          = entityMat->m_alpha;
+              m_overrideMat->m_diffuseTexture = entityMat->m_diffuseTexture;
+              Render(ntt, m_shadowMapCamera);
             }
+          }
+          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        };
 
-            viewsCalculated = true;
+        static Quaternion rotations[6];
+        static Vec3 scales[6];
+
+        // Calculate view transformations once
+        static bool viewsCalculated = false;
+        if (!viewsCalculated)
+        {
+          Mat4 views[6] = {
+              glm::lookAt(
+                  ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+              glm::lookAt(
+                  ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+              glm::lookAt(
+                  ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+              glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+              glm::lookAt(
+                  ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+              glm::lookAt(
+                  ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+
+          for (int i = 0; i < 6; ++i)
+          {
+            DecomposeMatrix(views[i], nullptr, &rotations[i], &scales[i]);
           }
 
-          if (light->GetType() == EntityType::Entity_PointLight)
+          viewsCalculated = true;
+        }
+
+        if (light->GetType() == EntityType::Entity_PointLight)
+        {
+          glBindFramebuffer(GL_FRAMEBUFFER,
+                            light->GetShadowMapRenderTarget()->m_frameBufferId);
+          glViewport(0,
+                     0,
+                     static_cast<uint>(light->GetShadowResolutionVal().x),
+                     static_cast<uint>(light->GetShadowResolutionVal().y));
+          for (unsigned int i = 0; i < 6; ++i)
           {
-            glBindFramebuffer(
+            glFramebufferTexture2D(
                 GL_FRAMEBUFFER,
-                light->GetShadowMapRenderTarget()->m_frameBufferId);
-            glViewport(0,
-                       0,
-                       static_cast<uint>(light->GetShadowResolutionVal().x),
-                       static_cast<uint>(light->GetShadowResolutionVal().y));
-            for (unsigned int i = 0; i < 6; ++i)
-            {
-              glFramebufferTexture2D(
-                  GL_FRAMEBUFFER,
-                  GL_DEPTH_ATTACHMENT,
-                  GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                  light->GetShadowMapRenderTarget()->m_textureId,
-                  0);
-              m_shadowMapCamera->m_node->SetOrientation(
-                  rotations[i], TransformationSpace::TS_WORLD);
-              m_shadowMapCamera->m_node->SetScale(scales[i]);
+                GL_DEPTH_ATTACHMENT,
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                light->GetShadowMapRenderTarget()->m_textureId,
+                0);
+            m_shadowMapCamera->m_node->SetOrientation(
+                rotations[i], TransformationSpace::TS_WORLD);
+            m_shadowMapCamera->m_node->SetScale(scales[i]);
 
-              renderForShadowMapFn(light, entities);
-            }
-          }
-          else
-          {
-            SetRenderTarget(light->GetShadowMapRenderTarget());
             renderForShadowMapFn(light, entities);
           }
         }
-      }
+        else if (light->GetType() == EntityType::Entity_DirectionalLight)
+        {
+          glPolygonOffset(light->GetSlopedBiasVal() * 0.5f,
+                          light->GetFixedBiasVal() * 500.0f);
 
-      m_overrideMat = lastOverrideMaterial;
-      glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+          glEnable(GL_POLYGON_OFFSET_FILL);
+
+          SetRenderTarget(light->GetShadowMapRenderTarget());
+          renderForShadowMapFn(light, entities);
+
+          glDisable(GL_POLYGON_OFFSET_FILL);
+        }
+        else // Spot light
+        {
+          SetRenderTarget(light->GetShadowMapRenderTarget());
+          renderForShadowMapFn(light, entities);
+        }
+      }
     }
-    lastFrameCount = m_totalFrameCount;
+
+    m_overrideMat = lastOverrideMaterial;
+    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+  }
+
+  void Renderer::FitSceneBoundingBoxIntoLightFrustum(
+      Camera* lightCamera,
+      const EntityRawPtrArray& entities,
+      DirectionalLight* light)
+  {
+    TransformationSpace ts = TransformationSpace::TS_WORLD;
+
+    // Calculate all scene's bounding box
+    BoundingBox totalBBox;
+    for (Entity* ntt : entities)
+    {
+      if (!(ntt->IsDrawable() && ntt->GetVisibleVal()))
+      {
+        continue;
+      }
+      if (!ntt->GetMeshComponent()->GetCastShadowVal())
+      {
+        continue;
+      }
+      BoundingBox bb = ntt->GetAABB(true);
+      totalBBox.UpdateBoundary(bb.max);
+      totalBBox.UpdateBoundary(bb.min);
+    }
+    Vec3 center = totalBBox.GetCenter();
+
+    // Set light transformation
+    lightCamera->m_node->SetTranslation(center, ts);
+    lightCamera->m_node->SetOrientation(light->m_node->GetOrientation(ts), ts);
+    Mat4 lightView = lightCamera->GetViewMatrix();
+
+    // Bounding box of the scene
+    Vec3 min         = totalBBox.min;
+    Vec3 max         = totalBBox.max;
+    Vec4 vertices[8] = {Vec4(min.x, min.y, min.z, 1.0f),
+                        Vec4(min.x, min.y, max.z, 1.0f),
+                        Vec4(min.x, max.y, min.z, 1.0f),
+                        Vec4(max.x, min.y, min.z, 1.0f),
+                        Vec4(min.x, max.y, max.z, 1.0f),
+                        Vec4(max.x, min.y, max.z, 1.0f),
+                        Vec4(max.x, max.y, min.z, 1.0f),
+                        Vec4(max.x, max.y, max.z, 1.0f)};
+
+    // Calculate bounding box in light space
+    float minX = std::numeric_limits<float>::max();
+    float maxX = std::numeric_limits<float>::min();
+    float minY = std::numeric_limits<float>::max();
+    float maxY = std::numeric_limits<float>::min();
+    float minZ = std::numeric_limits<float>::max();
+    float maxZ = std::numeric_limits<float>::min();
+    for (int i = 0; i < 8; ++i)
+    {
+      const Vec4 vertex = lightView * vertices[i];
+
+      minX = std::min(minX, vertex.x);
+      maxX = std::max(maxX, vertex.x);
+      minY = std::min(minY, vertex.y);
+      maxY = std::max(maxY, vertex.y);
+      minZ = std::min(minZ, vertex.z);
+      maxZ = std::max(maxZ, vertex.z);
+    }
+
+    lightCamera->SetLens(minX, maxX, minY, maxY, minZ, maxZ);
+  }
+
+  void Renderer::FitViewFrustumIntoLightFrustum(Camera* lightCamera,
+                                                Camera* viewCamera,
+                                                DirectionalLight* light)
+  {
+    assert(false && "Experimental.");
+    // Fit view frustum into light frustum
+    Vec3 frustum[8] = {Vec3(-1.0f, -1.0f, -1.0f),
+                       Vec3(1.0f, -1.0f, -1.0f),
+                       Vec3(1.0f, -1.0f, 1.0f),
+                       Vec3(-1.0f, -1.0f, 1.0f),
+                       Vec3(-1.0f, 1.0f, -1.0f),
+                       Vec3(1.0f, 1.0f, -1.0f),
+                       Vec3(1.0f, 1.0f, 1.0f),
+                       Vec3(-1.0f, 1.0f, 1.0f)};
+
+    const Mat4 inverseViewProj = glm::inverse(
+        viewCamera->GetProjectionMatrix() * viewCamera->GetViewMatrix());
+
+    for (int i = 0; i < 8; ++i)
+    {
+      const Vec4 t = inverseViewProj * Vec4(frustum[i], 1.0f);
+      frustum[i]   = Vec3(t.x / t.w, t.y / t.w, t.z / t.w);
+    }
+
+    Vec3 center = ZERO;
+    for (int i = 0; i < 8; ++i)
+    {
+      center += frustum[i];
+    }
+    center /= 8.0f;
+
+    TransformationSpace ts = TransformationSpace::TS_WORLD;
+    lightCamera->m_node->SetTranslation(center, ts);
+    lightCamera->m_node->SetOrientation(light->m_node->GetOrientation(ts), ts);
+    Mat4 lightView = lightCamera->GetViewMatrix();
+
+    // Calculate bounding box
+    float minX = std::numeric_limits<float>::max();
+    float maxX = std::numeric_limits<float>::min();
+    float minY = std::numeric_limits<float>::max();
+    float maxY = std::numeric_limits<float>::min();
+    float minZ = std::numeric_limits<float>::max();
+    float maxZ = std::numeric_limits<float>::min();
+    for (int i = 0; i < 8; ++i)
+    {
+      const Vec4 vertex = lightView * Vec4(frustum[i], 1.0f);
+      minX              = std::min(minX, vertex.x);
+      maxX              = std::max(maxX, vertex.x);
+      minY              = std::min(minY, vertex.y);
+      maxY              = std::max(maxY, vertex.y);
+      minZ              = std::min(minZ, vertex.z);
+      maxZ              = std::max(maxZ, vertex.z);
+    }
+
+    lightCamera->SetLens(minX, maxX, minY, maxY, minZ, maxZ);
   }
 
   void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)
@@ -987,9 +1095,9 @@ namespace ToolKit
         glGetProgramInfoLog(program, infoLen, nullptr, log);
         GetLogger()->Log(log);
 
+        assert(linked);
         SafeDelArray(log);
       }
-      assert(linked);
 
       glDeleteProgram(program);
     }
@@ -1097,16 +1205,22 @@ namespace ToolKit
         case Uniform::GRID_SETTINGS: {
           GLint locCellSize =
               glGetUniformLocation(program->m_handle, "GridData.cellSize");
-          glUniform1fv(locCellSize, 1, &m_gridCellSize);
-          GLint locGridSize =
-              glGetUniformLocation(program->m_handle, "GridData.gridSize");
-          glUniform1fv(locGridSize, 1, &m_gridSize);
+          glUniform1fv(locCellSize, 1, &m_gridParams.sizeEachCell);
+          GLint locLineMaxPixelCount = glGetUniformLocation(
+              program->m_handle, "GridData.lineMaxPixelCount");
+          glUniform1fv(
+              locLineMaxPixelCount, 1, &m_gridParams.maxLinePixelCount);
           GLint locHorizontalAxisColor = glGetUniformLocation(
               program->m_handle, "GridData.horizontalAxisColor");
-          glUniform3fv(locHorizontalAxisColor, 1, &m_gridHorizontalAxisColor.x);
+          glUniform3fv(
+              locHorizontalAxisColor, 1, &m_gridParams.axisColorHorizontal.x);
           GLint locVerticalAxisColor = glGetUniformLocation(
               program->m_handle, "GridData.verticalAxisColor");
-          glUniform3fv(locVerticalAxisColor, 1, &m_gridVerticalAxisColor.x);
+          glUniform3fv(
+              locVerticalAxisColor, 1, &m_gridParams.axisColorVertical.x);
+          GLint locIs2dViewport =
+              glGetUniformLocation(program->m_handle, "GridData.is2DViewport");
+          glUniform1ui(locIs2dViewport, m_gridParams.is2DViewport);
         }
         break;
         case Uniform::EXPOSURE: {
@@ -1331,10 +1445,16 @@ namespace ToolKit
         currLight->SetPCFSampleSizeVal(1.0f);
       }
 
-      float size  = currLight->GetPCFSampleSizeVal();
-      float speed = size / currLight->GetPCFKernelSizeVal();
-      float step  = static_cast<float>(currLight->GetPCFKernelSizeVal());
-      float unit  = 1.0f / ((step + 1.0f) * (step + 1.0f));
+      float size       = currLight->GetPCFSampleSizeVal();
+      float kernelSize = (float) currLight->GetPCFKernelSizeVal();
+      if (glm::epsilonEqual(kernelSize, 0.0f, 0.00001f))
+      {
+        kernelSize = FLT_MIN;
+      }
+      float speed = size / kernelSize;
+      speed -= 0.0005f; // Fix floating point error
+      float step = kernelSize;
+      float unit = 1.0f / ((step + 1.0f) * (step + 1.0f));
 
       GLuint loc = glGetUniformLocation(
           program->m_handle, g_lightPCFSampleHalfSizeCache[i].c_str());
@@ -1360,12 +1480,39 @@ namespace ToolKit
             &(currLight->m_shadowMapCameraProjectionViewMatrix)[0][0]);
 
         loc = glGetUniformLocation(program->m_handle,
-                                   g_lightShadowBiasStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetShadowBiasVal() * 0.001f);
+                                   g_lightNormalBiasStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetNormalBiasVal());
+
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowFixedBiasStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetFixedBiasVal() * 0.01f);
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowSlopedBiasStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetSlopedBiasVal() * 0.1f);
 
         loc = glGetUniformLocation(
             program->m_handle, g_lightShadowMapCamFarPlaneStrCache[i].c_str());
         glUniform1f(loc, currLight->m_shadowMapCameraFar);
+
+        if (currLight->GetType() == EntityType::Entity_PointLight)
+        {
+          int level = static_cast<PointLight*>(currLight)->GetPCFLevelVal();
+          if (level == 0)
+          {
+            level = 1;
+          }
+          else if (level == 1)
+          {
+            level = 8;
+          }
+          else if (level == 2)
+          {
+            level = 20;
+          }
+          loc = glGetUniformLocation(program->m_handle,
+                                     g_PCFKernelSizeStrCache[i].c_str());
+          glUniform1i(loc, level);
+        }
 
         SetShadowMapTexture(
             type, currLight->GetShadowMapRenderTarget()->m_textureId, program);

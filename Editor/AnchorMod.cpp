@@ -1,17 +1,18 @@
 #include "AnchorMod.h"
 
-#include <algorithm>
-#include <memory>
-#include <utility>
-
 #include "Camera.h"
 #include "ConsoleWindow.h"
-#include "DebugNew.h"
 #include "EditorViewport.h"
 #include "Gizmo.h"
 #include "GlobalDef.h"
 #include "Node.h"
 #include "Util.h"
+
+#include <algorithm>
+#include <memory>
+#include <utility>
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -31,39 +32,16 @@ namespace ToolKit
 
     SignalId StateAnchorBase::Update(float deltaTime)
     {
-      EditorScenePtr currScene = g_app->GetCurrentScene();
-      if (currScene->GetSelectedEntityCount() == 0)
-      {
-        g_app->m_anchor = nullptr;
-        return NullSignal;
-      }
+      m_signalConsumed = !m_anchor->IsGrabbed(DirectionLabel::None);
 
-      if (Entity* e = currScene->GetCurrentSelection())
-      {
-        if (e->IsSurfaceInstance())
-        {
-          Surface* surface = static_cast<Surface*>(e);
-          if (Node* parentNode = surface->m_node->m_parent)
-          {
-            if (parentNode->m_entity->GetType() ==
-                EntityType::Entity_CanvasPanel)
-            {
-              m_anchor->m_entity = surface;
-              CanvasPanel* canvasPanel =
-                  static_cast<CanvasPanel*>(parentNode->m_entity);
-              m_anchor->m_worldLocation = canvasPanel->m_node->GetTranslation(
-                  TransformationSpace::TS_WORLD);
-            }
-          }
-        }
-      }
-
+      MakeSureAnchorIsValid();
       m_anchor->Update(deltaTime);
       return NullSignal;
     }
 
     void StateAnchorBase::TransitionIn(State* prevState)
     {
+      m_anchorDeltaTransform = ZERO;
     }
 
     void StateAnchorBase::TransitionOut(State* nextState)
@@ -81,11 +59,32 @@ namespace ToolKit
 
     void StateAnchorBase::MakeSureAnchorIsValid()
     {
-      if (g_app->m_anchor == nullptr)
+      g_app->m_anchor = nullptr;
+
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      if (currScene->GetSelectedEntityCount() == 0)
       {
-        if (g_app->GetCurrentScene()->GetCurrentSelection() != nullptr)
+        m_anchor->m_entity = nullptr;
+        return;
+      }
+
+      if (Entity* e = currScene->GetCurrentSelection())
+      {
+        if (e->IsSurfaceInstance())
         {
-          g_app->m_anchor = m_anchor;
+          Surface* surface = static_cast<Surface*>(e);
+          if (Node* parentNode = surface->m_node->m_parent)
+          {
+            if (parentNode->m_entity->GetType() == EntityType::Entity_Canvas)
+            {
+              m_anchor->m_entity  = surface;
+              Canvas* canvasPanel = static_cast<Canvas*>(parentNode->m_entity);
+              m_anchor->m_worldLocation = canvasPanel->m_node->GetTranslation(
+                  TransformationSpace::TS_WORLD);
+
+              g_app->m_anchor = m_anchor;
+            }
+          }
         }
       }
     }
@@ -118,8 +117,6 @@ namespace ToolKit
     {
       StateAnchorBase::Update(deltaTime);
 
-      MakeSureAnchorIsValid();
-
       if (g_app->GetCurrentScene()->GetCurrentSelection() != nullptr)
       {
         if (EditorViewport* vp = g_app->GetActiveViewport())
@@ -131,9 +128,9 @@ namespace ToolKit
             m_anchor->m_lastHovered = axis;
           }
         }
-        else
-          return NullSignal;
       }
+
+      ReflectAnchorTransform(m_anchor->m_entity);
 
       return NullSignal;
     }
@@ -149,12 +146,8 @@ namespace ToolKit
           m_anchor->Grab(axis);
         }
 
-        if (m_anchor->IsGrabbed(DirectionLabel::None) ||
-            g_app->GetCurrentScene()->GetCurrentSelection() == nullptr)
-        {
-          return StateType::StateBeginPick;
-        }
-        else
+        if (!m_anchor->IsGrabbed(DirectionLabel::None) &&
+            g_app->GetCurrentScene()->GetCurrentSelection() != nullptr)
         {
           CalculateIntersectionPlane();
           CalculateGrabPoint();
@@ -279,8 +272,8 @@ namespace ToolKit
         ActionManager::GetInstance()->GroupLastActions(actionEntityCount);
       }
 
-      m_delta      = ZERO;
-      m_deltaAccum = ZERO;
+      m_anchorDeltaTransform = ZERO;
+      m_deltaAccum           = ZERO;
       m_initialLoc = currScene->GetCurrentSelection()->m_node->GetTranslation(
           TransformationSpace::TS_WORLD);
       SDL_GetGlobalMouseState(&m_mouseInitialLoc.x, &m_mouseInitialLoc.y);
@@ -298,7 +291,7 @@ namespace ToolKit
 
     SignalId StateAnchorTo::Update(float deltaTime)
     {
-      Transform(m_delta);
+      Transform(m_anchorDeltaTransform);
       StateAnchorBase::Update(deltaTime);
       ImGui::SetMouseCursor(ImGuiMouseCursor_None);
       if (EditorViewport* vp = g_app->GetActiveViewport())
@@ -359,18 +352,18 @@ namespace ToolKit
       {
         Vec3 p = PointOnRay(ray, t);
 
-        CanvasPanel* canvasPanel = static_cast<CanvasPanel*>(
+        Canvas* canvasPanel = static_cast<Canvas*>(
             m_anchor->m_entity->m_node->m_parent->m_entity);
 
         ray = vp->RayFromScreenSpacePoint(m_mouseData[0]);
         LinePlaneIntersection(ray, m_intersectionPlane, t);
-        Vec3 p0 = PointOnRay(ray, t);
-        m_delta = p - p0;
+        Vec3 p0                = PointOnRay(ray, t);
+        m_anchorDeltaTransform = p - p0;
       }
       else
       {
         assert(false && "Intersection expected.");
-        m_delta = ZERO;
+        m_anchorDeltaTransform = ZERO;
       }
 
       std::swap(m_mouseData[0], m_mouseData[1]);
@@ -384,15 +377,15 @@ namespace ToolKit
 
       Entity* e = currScene->GetCurrentSelection();
 
-      Translate(e);
+      ReflectAnchorTransform(e);
     }
 
-    void StateAnchorTo::Translate(Entity* ntt)
+    void StateAnchorBase::ReflectAnchorTransform(Entity* ntt)
     {
       if (m_anchor == nullptr || ntt == nullptr || !ntt->IsSurfaceInstance() ||
           !ntt->m_node->m_parent || !ntt->m_node->m_parent->m_entity ||
           ntt->m_node->m_parent->m_entity->GetType() !=
-              EntityType::Entity_CanvasPanel)
+              EntityType::Entity_Canvas)
         return;
 
       Surface* surface = static_cast<Surface*>(ntt);
@@ -411,14 +404,14 @@ namespace ToolKit
       {
         Vec3 dir{1.f, 0.f, 0.f};
         dir = glm::normalize(dir);
-        deltaX += glm::dot(dir, m_delta) * dir;
+        deltaX += glm::dot(dir, m_anchorDeltaTransform) * dir;
       }
 
       if (hasYDirection)
       {
         Vec3 dir{0.f, 1.f, 0.f};
         dir = glm::normalize(dir);
-        deltaY += glm::dot(dir, m_delta) * dir;
+        deltaY += glm::dot(dir, m_anchorDeltaTransform) * dir;
       }
 
       {
@@ -426,12 +419,12 @@ namespace ToolKit
 
         if (Entity* parent = surface->m_node->m_parent->m_entity)
         {
-          if (parent->GetType() == EntityType::Entity_CanvasPanel)
+          if (parent->GetType() == EntityType::Entity_Canvas)
           {
-            CanvasPanel* canvasPanel = static_cast<CanvasPanel*>(parent);
-            const BoundingBox bb     = canvasPanel->GetAABB(true);
-            w                        = bb.GetWidth();
-            h                        = bb.GetHeight();
+            Canvas* canvasPanel  = static_cast<Canvas*>(parent);
+            const BoundingBox bb = canvasPanel->GetAABB(true);
+            w                    = bb.GetWidth();
+            h                    = bb.GetHeight();
           }
         }
 
@@ -439,8 +432,8 @@ namespace ToolKit
 
         if (direction == DirectionLabel::CENTER)
         {
-          const float dX = m_delta.x / w;
-          const float dY = m_delta.y / h;
+          const float dX = m_anchorDeltaTransform.x / w;
+          const float dY = m_anchorDeltaTransform.y / h;
 
           anchorRatios[0] += std::min(1.f, dX);
           anchorRatios[0] = std::max(0.f, anchorRatios[0]);
@@ -458,7 +451,7 @@ namespace ToolKit
         if (direction == DirectionLabel::W || direction == DirectionLabel::NW ||
             direction == DirectionLabel::SW)
         {
-          const float d = m_delta.x / w;
+          const float d = m_anchorDeltaTransform.x / w;
           anchorRatios[0] += std::min(1.f, d);
           anchorRatios[0] = std::max(0.f, anchorRatios[0]);
           anchorRatios[0] = std::min(1.f, anchorRatios[0]);
@@ -471,7 +464,7 @@ namespace ToolKit
         if (direction == DirectionLabel::E || direction == DirectionLabel::NE ||
             direction == DirectionLabel::SE)
         {
-          const float d = m_delta.x / w;
+          const float d = m_anchorDeltaTransform.x / w;
           anchorRatios[1] -= std::min(1.f, d);
 
           anchorRatios[1] = std::max(0.f, anchorRatios[1]);
@@ -485,7 +478,7 @@ namespace ToolKit
         if (direction == DirectionLabel::N || direction == DirectionLabel::NW ||
             direction == DirectionLabel::NE)
         {
-          const float d = m_delta.y / h;
+          const float d = m_anchorDeltaTransform.y / h;
           anchorRatios[2] -= std::min(1.f, d);
 
           anchorRatios[2] = std::max(0.f, anchorRatios[2]);
@@ -499,7 +492,7 @@ namespace ToolKit
         if (direction == DirectionLabel::S || direction == DirectionLabel::SW ||
             direction == DirectionLabel::SE)
         {
-          const float d = m_delta.y / h;
+          const float d = m_anchorDeltaTransform.y / h;
           anchorRatios[3] += std::min(1.f, d);
 
           anchorRatios[3] = std::max(0.f, anchorRatios[3]);
@@ -532,6 +525,8 @@ namespace ToolKit
               surfacePoints[2].y - canvasPoints[2].y;
         }
       }
+
+      m_anchorDeltaTransform = ZERO; // Consume the delta.
     }
 
     // StateAnchorEnd
@@ -605,12 +600,12 @@ namespace ToolKit
       m_stateMachine->PushState(new StateAnchorTo());
       m_stateMachine->PushState(new StateAnchorEnd());
 
-      state                         = new StateBeginPick();
+      /* state                      = new StateBeginPick();
       state->m_links[m_backToStart] = StateType::StateAnchorBegin;
       m_stateMachine->PushState(state);
       state                         = new StateEndPick();
       state->m_links[m_backToStart] = StateType::StateAnchorBegin;
-      m_stateMachine->PushState(state);
+      m_stateMachine->PushState(state);*/
 
       m_prevTransformSpace = g_app->m_transformSpace;
     }
@@ -623,7 +618,7 @@ namespace ToolKit
     {
       BaseMod::Update(deltaTime);
 
-      if (m_stateMachine->m_currentState->ThisIsA<StateEndPick>())
+      /* if (m_stateMachine->m_currentState->ThisIsA<StateEndPick>())
       {
         StateEndPick* endPick =
             static_cast<StateEndPick*>(m_stateMachine->m_currentState);
@@ -633,12 +628,12 @@ namespace ToolKit
         g_app->GetCurrentScene()->AddToSelection(entities,
                                                  ImGui::GetIO().KeyShift);
 
-        ModManager::GetInstance()->DispatchSignal(m_backToStart);
-      }
+        m_stateMachine->Signal(BaseMod::m_backToStart);
+      }*/
 
       if (m_stateMachine->m_currentState->ThisIsA<StateAnchorEnd>())
       {
-        ModManager::GetInstance()->DispatchSignal(BaseMod::m_backToStart);
+        m_stateMachine->Signal(BaseMod::m_backToStart);
       }
     }
 

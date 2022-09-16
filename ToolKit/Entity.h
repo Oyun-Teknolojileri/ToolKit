@@ -4,16 +4,16 @@
  * @file Entity.h Header for Entity,
  */
 
+#include "Animation.h"
+#include "Component.h"
+#include "Node.h"
+#include "ParameterBlock.h"
+#include "ResourceComponent.h"
+#include "Serialize.h"
+#include "Types.h"
+
 #include <memory>
 #include <vector>
-
-#include "Types.h"
-#include "ParameterBlock.h"
-#include "Component.h"
-#include "ResourceComponent.h"
-#include "Node.h"
-#include "Animation.h"
-#include "Serialize.h"
 
 namespace ToolKit
 {
@@ -46,7 +46,7 @@ namespace ToolKit
     Entity_DirectionalLight,
     Entity_PointLight,
     Entity_SpotLight,
-    Entity_CanvasPanel,
+    Entity_Canvas,
     Entity_Prefab,
     ENTITY_TYPE_COUNT // Holds the size of the enum
   };

@@ -1,15 +1,16 @@
 #include "Animation.h"
 
-#include <vector>
-#include <utility>
-
 #include "Entity.h"
 #include "Node.h"
-#include "rapidxml.hpp"
-#include "rapidxml_utils.hpp"
-#include "Util.h"
 #include "Skeleton.h"
 #include "ToolKit.h"
+#include "Util.h"
+#include "rapidxml.hpp"
+#include "rapidxml_utils.hpp"
+
+#include <utility>
+#include <vector>
+
 #include "DebugNew.h"
 
 namespace ToolKit

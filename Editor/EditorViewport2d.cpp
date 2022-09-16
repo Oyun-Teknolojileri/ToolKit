@@ -1,24 +1,25 @@
 #include "EditorViewport2d.h"
 
+#include "App.h"
+#include "Camera.h"
+#include "ConsoleWindow.h"
+#include "FileManager.h"
+#include "FolderWindow.h"
+#include "Gizmo.h"
+#include "GlobalDef.h"
+#include "Grid.h"
+#include "Light.h"
+#include "Mod.h"
+#include "Node.h"
+#include "OverlayUI.h"
+#include "Primative.h"
+#include "Renderer.h"
+#include "SDL.h"
+#include "Util.h"
+
 #include <algorithm>
 
-#include "Camera.h"
-#include "Renderer.h"
-#include "App.h"
-#include "GlobalDef.h"
-#include "SDL.h"
-#include "OverlayUI.h"
-#include "Node.h"
-#include "Primative.h"
-#include "Grid.h"
-#include "FolderWindow.h"
-#include "ConsoleWindow.h"
-#include "Gizmo.h"
-#include "Mod.h"
-#include "Util.h"
 #include "DebugNew.h"
-#include "Light.h"
-#include "FileManager.h"
 
 namespace ToolKit
 {
@@ -45,6 +46,7 @@ namespace ToolKit
 
     EditorViewport2d::~EditorViewport2d()
     {
+      SafeDel(m_anchorMode);
       if (m_2dViewOptions)
       {
         SafeDel(m_2dViewOptions);
@@ -81,6 +83,9 @@ namespace ToolKit
 
     void EditorViewport2d::Update(float deltaTime)
     {
+      // Always update anchor.
+      m_anchorMode->Update(deltaTime);
+
       if (!IsActive())
       {
         SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);
@@ -90,9 +95,12 @@ namespace ToolKit
       // Resize Grid
       g_app->m_2dGrid->Resize(g_max2dGridSize,
                               AxisLabel::XY,
-                              static_cast<float>(m_gridCellSizeByPixel));
+                              static_cast<float>(m_gridCellSizeByPixel),
+                              2.0f);
 
       PanZoom(deltaTime);
+
+      m_anchorMode->Update(deltaTime);
     }
 
     void EditorViewport2d::OnResizeContentArea(float width, float height)
@@ -102,6 +110,42 @@ namespace ToolKit
 
       ResetViewportImage(GetRenderTargetSettings());
       AdjustZoom(FLT_MIN);
+    }
+
+    void EditorViewport2d::DispatchSignals() const
+    {
+      if (!CanDispatchSignals() || m_mouseOverOverlay)
+      {
+        return;
+      }
+
+      if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+      {
+        m_anchorMode->Signal(BaseMod::m_leftMouseBtnDownSgnl);
+      }
+
+      if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+      {
+        m_anchorMode->Signal(BaseMod::m_leftMouseBtnUpSgnl);
+      }
+
+      if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+      {
+        m_anchorMode->Signal(BaseMod::m_leftMouseBtnDragSgnl);
+      }
+
+      StateAnchorBase* anchState = static_cast<StateAnchorBase*>(
+          m_anchorMode->m_stateMachine->m_currentState);
+
+      if (anchState)
+      {
+        if (anchState->m_signalConsumed)
+        {
+          return;
+        }
+      }
+
+      EditorViewport::DispatchSignals();
     }
 
     Vec2 EditorViewport2d::GetLastMousePosViewportSpace()
@@ -206,6 +250,8 @@ namespace ToolKit
           ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
           ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
           ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+          ImGui::PushStyleColor(ImGuiCol_FrameBg,
+                                ImGui::GetStyleColorVec4(ImGuiCol_ChildBg));
 
           ImDrawList* dw = ImGui::GetWindowDrawList();
           dw->ChannelsSplit(2);
@@ -226,9 +272,10 @@ namespace ToolKit
 
           m_canvasPos -= m_contentAreaMin; // Convert relative to content area.
           ImGui::EndChildFrame();
-          ImGui::PopStyleVar(3);
 
           dw->ChannelsMerge();
+          ImGui::PopStyleColor(1);
+          ImGui::PopStyleVar(3);
 
           // Draw borders.
           if (IsActive())
@@ -270,34 +317,7 @@ namespace ToolKit
           IM_ASSERT(payload->DataSize == sizeof(DirectoryEntry));
           DirectoryEntry entry = *(const DirectoryEntry*) payload->Data;
 
-          if (entry.m_ext == MESH)
-          {
-            String path =
-                ConcatPaths({entry.m_rootPath, entry.m_fileName + entry.m_ext});
-
-            ImGuiIO& io      = ImGui::GetIO();
-            Drawable* dwMesh = new Drawable();
-            if (io.KeyShift)
-            {
-              MeshPtr mesh = GetMeshManager()->Create<Mesh>(path);
-              dwMesh->SetMesh(mesh->Copy<Mesh>());
-            }
-            else
-            {
-              dwMesh->SetMesh(GetMeshManager()->Create<Mesh>(path));
-            }
-
-            dwMesh->GetMesh()->Init(false);
-            Ray ray  = RayFromMousePosition();
-            Vec3 pos = PointOnRay(ray, 5.0f);
-            g_app->m_grid->HitTest(ray, pos);
-            dwMesh->m_node->SetTranslation(pos);
-            EditorScenePtr currScene = g_app->GetCurrentScene();
-            currScene->AddEntity(dwMesh);
-            currScene->AddToSelection(dwMesh->GetIdVal(), false);
-            SetActive();
-          }
-          else if (entry.m_ext == SCENE)
+          if (entry.m_ext == LAYER)
           {
             YesNoWindow::ButtonInfo openButton;
             openButton.m_name     = "Open";
@@ -436,6 +456,14 @@ namespace ToolKit
 
     void EditorViewport2d::InitViewport()
     {
+      if (m_anchorMode)
+      {
+        m_anchorMode->UnInit();
+        SafeDel(m_anchorMode);
+      }
+      m_anchorMode = new AnchorMod(ModId::Anchor);
+      m_anchorMode->Init();
+
       ResetViewportImage(GetRenderTargetSettings());
 
       m_zoom = 1.0f;

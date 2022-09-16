@@ -11,7 +11,7 @@
 		precision highp float;
 
 		// Fixed Attributes.
-		in vec3 vPosition;
+		layout (location = 0) in vec3 vPosition;
 
 		struct _CamData
 		{
@@ -23,9 +23,11 @@
 		struct _GridData
 		{
 			float cellSize;
-			float gridSize;
+			float lineMaxPixelCount;
 			vec3 horizontalAxisColor;
 			vec3 verticalAxisColor;
+			uint is2DViewport;
+			float cullDistance;
 		};
 		uniform _GridData GridData;
 
@@ -37,6 +39,7 @@
 		out vec2 o_gridPos;
 		out vec2 o_cameraGridPos;
 		out vec3 o_viewDir;
+		out vec3 v_pos;
 		
 		void main()
 		{
@@ -49,7 +52,8 @@
 			v.y -= cameraGridPos.y;
 			v = Model * v;
 			o_viewDir = -v.xyz;
-
+			
+		  v_pos = (Model * vec4(vPosition, 1.0)).xyz;
 			gl_Position = ProjectViewModel * vec4(vPosition, 1.0);
 		}
 	-->

@@ -1,14 +1,15 @@
 #include "Util.h"
 
-#include <string>
-#include <cstdarg>
-#include <fstream>
-#include <filesystem>
-#include <algorithm>
-
-#include "rapidxml.hpp"
 #include "Primative.h"
 #include "ToolKit.h"
+#include "rapidxml.hpp"
+
+#include <algorithm>
+#include <cstdarg>
+#include <filesystem>
+#include <fstream>
+#include <string>
+
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -605,6 +606,11 @@ namespace ToolKit
   {
     static String supportedFormats(FBX + GLB + GLTF + OBJ);
     return supportedFormats.find(ToLower(ext)) != String::npos;
+  }
+
+  TK_API bool IsLayer(const String& file)
+  {
+    return file.find(ToLower(LAYER)) != String::npos;
   }
 
   // split a string into multiple sub strings, based on a separator string

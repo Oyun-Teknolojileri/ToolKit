@@ -1,25 +1,28 @@
-#include <assert.h>
-#include <rapidxml_ext.h>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <functional>
-#include <unordered_map>
-#include <utility>
-#include <algorithm>
-#include <string>
-#include <filesystem>
+#include "assimp/DefaultLogger.hpp"
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
-#include "assimp/DefaultLogger.hpp"
+
+#include <assert.h>
+#include <rapidxml_ext.h>
+
+#include <algorithm>
+#include <filesystem>
+#include <fstream>
+#include <functional>
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-#include <Util.h>
+
 #include <ToolKit.h>
-#include <rapidxml.hpp>
+#include <Util.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <rapidxml.hpp>
 
 using std::cout;
 using std::endl;

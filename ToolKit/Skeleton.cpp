@@ -1,14 +1,15 @@
 #include "Skeleton.h"
 
-#include <memory>
-
+#include "GL/glew.h"
 #include "Node.h"
+#include "ToolKit.h"
+#include "Util.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
-#include "Util.h"
+
+#include <memory>
+
 #include "DebugNew.h"
-#include "ToolKit.h"
-#include "GL/glew.h"
 
 namespace ToolKit
 {

@@ -1,21 +1,22 @@
 #include "FolderWindow.h"
 
-#include <filesystem>
-#include <vector>
-#include <algorithm>
-#include <memory>
-#include <string>
-
+#include "App.h"
 #include "ConsoleWindow.h"
-#include "GlobalDef.h"
+#include "DirectionComponent.h"
 #include "Gizmo.h"
+#include "GlobalDef.h"
+#include "Light.h"
+#include "MaterialInspector.h"
 #include "PropInspector.h"
 #include "Util.h"
-#include "App.h"
-#include "Light.h"
-#include "DirectionComponent.h"
+
+#include <algorithm>
+#include <filesystem>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "DebugNew.h"
-#include "MaterialInspector.h"
 
 namespace ToolKit
 {
@@ -304,7 +305,7 @@ namespace ToolKit
             {
               iconId = UI::m_folderIcon->m_textureId;
             }
-            else if (dirEnt.m_ext == SCENE)
+            else if (dirEnt.m_ext == SCENE || dirEnt.m_ext == LAYER)
             {
               iconId = UI::m_worldIcon->m_textureId;
             }

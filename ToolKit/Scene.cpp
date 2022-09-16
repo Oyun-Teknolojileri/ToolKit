@@ -1,16 +1,17 @@
 #include "Scene.h"
 
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <utility>
-
+#include "Component.h"
+#include "Prefab.h"
+#include "ResourceComponent.h"
 #include "ToolKit.h"
 #include "Util.h"
-#include "Component.h"
-#include "ResourceComponent.h"
+
+#include <algorithm>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "DebugNew.h"
-#include "Prefab.h"
 
 namespace ToolKit
 {
@@ -308,6 +309,11 @@ namespace ToolKit
     ULongID nttyID = entity->GetIdVal();
     assert(GetEntity(nttyID) == nullptr && "Entity is already in the scene.");
     m_entities.push_back(entity);
+  }
+
+  EntityRawPtrArray& Scene::AccessEntityArray()
+  {
+    return m_entities;
   }
 
   Entity* Scene::RemoveEntity(ULongID id)

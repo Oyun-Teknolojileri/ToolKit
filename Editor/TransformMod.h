@@ -1,10 +1,10 @@
 #pragma once
 
-#include <vector>
-
-#include "Mod.h"
-#include "Gizmo.h"
 #include "Action.h"
+#include "Gizmo.h"
+#include "Mod.h"
+
+#include <vector>
 
 namespace ToolKit
 {

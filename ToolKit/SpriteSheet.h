@@ -1,12 +1,12 @@
 #pragma once
 
-#include <vector>
-#include <unordered_map>
-
-#include "MathUtil.h"
 #include "Drawable.h"
+#include "MathUtil.h"
 #include "Resource.h"
 #include "ResourceManager.h"
+
+#include <unordered_map>
+#include <vector>
 
 namespace ToolKit
 {

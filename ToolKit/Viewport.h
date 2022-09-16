@@ -4,9 +4,9 @@
  * @file Header for ViewportBase, Viewport and related structures.
  */
 
-#include "Types.h"
 #include "MathUtil.h"
 #include "Texture.h"
+#include "Types.h"
 
 /**
  * Base name space for all the ToolKit functionalities.
@@ -41,6 +41,12 @@ namespace ToolKit
      * @param cam New Camera for viewport.
      */
     virtual void SetCamera(Camera* cam);
+
+   public:
+    /**
+     * Viewport identifier. Unique trough the runtime.
+     */
+    ULongID m_viewportId;
 
    protected:
     /**

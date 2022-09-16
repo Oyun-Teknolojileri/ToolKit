@@ -181,18 +181,59 @@ namespace ToolKit
                                                   "LightData.castShadow[10]",
                                                   "LightData.castShadow[11]"};
 
-  static StringArray g_lightShadowBiasStrCache = {"LightData.shadowBias[0]",
-                                                  "LightData.shadowBias[1]",
-                                                  "LightData.shadowBias[2]",
-                                                  "LightData.shadowBias[3]",
-                                                  "LightData.shadowBias[4]",
-                                                  "LightData.shadowBias[5]",
-                                                  "LightData.shadowBias[6]",
-                                                  "LightData.shadowBias[7]",
-                                                  "LightData.shadowBias[8]",
-                                                  "LightData.shadowBias[9]",
-                                                  "LightData.shadowBias[10]",
-                                                  "LightData.shadowBias[11]"};
+  static StringArray g_lightNormalBiasStrCache = {"LightData.normalBias[0]",
+                                                  "LightData.normalBias[1]",
+                                                  "LightData.normalBias[2]",
+                                                  "LightData.normalBias[3]",
+                                                  "LightData.normalBias[4]",
+                                                  "LightData.normalBias[5]",
+                                                  "LightData.normalBias[6]",
+                                                  "LightData.normalBias[7]",
+                                                  "LightData.normalBias[8]",
+                                                  "LightData.normalBias[9]",
+                                                  "LightData.normalBias[10]",
+                                                  "LightData.normalBias[11]"};
+
+  static StringArray g_lightShadowFixedBiasStrCache = {
+      "LightData.shadowFixedBias[0]",
+      "LightData.shadowFixedBias[1]",
+      "LightData.shadowFixedBias[2]",
+      "LightData.shadowFixedBias[3]",
+      "LightData.shadowFixedBias[4]",
+      "LightData.shadowFixedBias[5]",
+      "LightData.shadowFixedBias[6]",
+      "LightData.shadowFixedBias[7]",
+      "LightData.shadowFixedBias[8]",
+      "LightData.shadowFixedBias[9]",
+      "LightData.shadowFixedBias[10]",
+      "LightData.shadowFixedBias[11]"};
+
+  static StringArray g_lightShadowSlopedBiasStrCache = {
+      "LightData.shadowSlopedBias[0]",
+      "LightData.shadowSlopedBias[1]",
+      "LightData.shadowSlopedBias[2]",
+      "LightData.shadowSlopedBias[3]",
+      "LightData.shadowSlopedBias[4]",
+      "LightData.shadowSlopedBias[5]",
+      "LightData.shadowSlopedBias[6]",
+      "LightData.shadowSlopedBias[7]",
+      "LightData.shadowSlopedBias[8]",
+      "LightData.shadowSlopedBias[9]",
+      "LightData.shadowSlopedBias[10]",
+      "LightData.shadowSlopedBias[11]"};
+
+  static StringArray g_PCFKernelSizeStrCache = {"LightData.PCFKernelSize[0]",
+                                                "LightData.PCFKernelSize[1]",
+                                                "LightData.PCFKernelSize[2]",
+                                                "LightData.PCFKernelSize[3]",
+                                                "LightData.PCFKernelSize[4]",
+                                                "LightData.PCFKernelSize[5]",
+                                                "LightData.PCFKernelSize[6]",
+                                                "LightData.PCFKernelSize[7]",
+                                                "LightData.PCFKernelSize[8]",
+                                                "LightData.PCFKernelSize[9]",
+                                                "LightData.PCFKernelSize[10]",
+                                                "LightData.PCFKernelSize[11]"};
 
   static StringArray g_lightShadowMapCamFarPlaneStrCache = {
       "LightData.shadowMapCamFarPlane[0]",
@@ -235,53 +276,5 @@ namespace ToolKit
       "LightData.dirAndSpotLightShadowMap[9]",
       "LightData.dirAndSpotLightShadowMap[10]",
       "LightData.dirAndSpotLightShadowMap[11]"};
-
-  static StringArray g_boneTransformStrCache = {
-      "bones[0].transform",  "bones[1].transform",  "bones[2].transform",
-      "bones[3].transform",  "bones[4].transform",  "bones[5].transform",
-      "bones[6].transform",  "bones[7].transform",  "bones[8].transform",
-      "bones[9].transform",  "bones[10].transform", "bones[11].transform",
-      "bones[12].transform", "bones[13].transform", "bones[14].transform",
-      "bones[15].transform", "bones[16].transform", "bones[17].transform",
-      "bones[18].transform", "bones[19].transform", "bones[20].transform",
-      "bones[21].transform", "bones[22].transform", "bones[23].transform",
-      "bones[24].transform", "bones[25].transform", "bones[26].transform",
-      "bones[27].transform", "bones[28].transform", "bones[29].transform",
-      "bones[30].transform", "bones[31].transform", "bones[32].transform",
-      "bones[33].transform", "bones[34].transform", "bones[35].transform",
-      "bones[36].transform", "bones[37].transform", "bones[38].transform",
-      "bones[39].transform", "bones[40].transform", "bones[41].transform",
-      "bones[42].transform", "bones[43].transform", "bones[44].transform",
-      "bones[45].transform", "bones[46].transform", "bones[47].transform",
-      "bones[48].transform", "bones[49].transform", "bones[50].transform",
-      "bones[51].transform", "bones[52].transform", "bones[53].transform",
-      "bones[54].transform", "bones[55].transform", "bones[56].transform",
-      "bones[57].transform", "bones[58].transform", "bones[59].transform",
-      "bones[60].transform", "bones[61].transform", "bones[62].transform",
-      "bones[63].transform", "bones[64].transform"};
-
-  static StringArray g_boneBindPosStrCache = {
-      "bones[0].bindPose",  "bones[1].bindPose",  "bones[2].bindPose",
-      "bones[3].bindPose",  "bones[4].bindPose",  "bones[5].bindPose",
-      "bones[6].bindPose",  "bones[7].bindPose",  "bones[8].bindPose",
-      "bones[9].bindPose",  "bones[10].bindPose", "bones[11].bindPose",
-      "bones[12].bindPose", "bones[13].bindPose", "bones[14].bindPose",
-      "bones[15].bindPose", "bones[16].bindPose", "bones[17].bindPose",
-      "bones[18].bindPose", "bones[19].bindPose", "bones[20].bindPose",
-      "bones[21].bindPose", "bones[22].bindPose", "bones[23].bindPose",
-      "bones[24].bindPose", "bones[25].bindPose", "bones[26].bindPose",
-      "bones[27].bindPose", "bones[28].bindPose", "bones[29].bindPose",
-      "bones[30].bindPose", "bones[31].bindPose", "bones[32].bindPose",
-      "bones[33].bindPose", "bones[34].bindPose", "bones[35].bindPose",
-      "bones[36].bindPose", "bones[37].bindPose", "bones[38].bindPose",
-      "bones[39].bindPose", "bones[40].bindPose", "bones[41].bindPose",
-      "bones[42].bindPose", "bones[43].bindPose", "bones[44].bindPose",
-      "bones[45].bindPose", "bones[46].bindPose", "bones[47].bindPose",
-      "bones[48].bindPose", "bones[49].bindPose", "bones[50].bindPose",
-      "bones[51].bindPose", "bones[52].bindPose", "bones[53].bindPose",
-      "bones[54].bindPose", "bones[55].bindPose", "bones[56].bindPose",
-      "bones[57].bindPose", "bones[58].bindPose", "bones[59].bindPose",
-      "bones[60].bindPose", "bones[61].bindPose", "bones[62].bindPose",
-      "bones[63].bindPose", "bones[64].bindPose"};
 
 } // namespace ToolKit

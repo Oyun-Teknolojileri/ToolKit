@@ -1,21 +1,22 @@
 #include "ConsoleWindow.h"
 
-#include <filesystem>
-#include <algorithm>
-#include <string>
-#include <utility>
-
-#include "Logger.h"
-#include "GlobalDef.h"
-#include "Primative.h"
-#include "Mod.h"
-#include "Entity.h"
-#include "Node.h"
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "EditorViewport.h"
+#include "Entity.h"
+#include "GlobalDef.h"
+#include "Logger.h"
+#include "Mod.h"
+#include "Node.h"
+#include "Primative.h"
 #include "TransformMod.h"
 #include "Util.h"
+
+#include <algorithm>
+#include <filesystem>
+#include <string>
+#include <utility>
+
 #include "DebugNew.h"
 
 namespace ToolKit

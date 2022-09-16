@@ -1,12 +1,12 @@
 
 #include "EditorLight.h"
 
-#include <memory>
-#include <string>
-
+#include "App.h"
 #include "Material.h"
 #include "Texture.h"
-#include "App.h"
+
+#include <memory>
+#include <string>
 
 namespace ToolKit
 {
@@ -135,6 +135,42 @@ namespace ToolKit
       }
 
       ParameterEventConstructor();
+    }
+
+    LineBatch* EditorDirectionalLight::GetDebugShadowFrustum()
+    {
+      Vec3Array corners = GetShadowFrustumCorners();
+      static Vec3Array vertices;
+      vertices.resize(24);
+      vertices[0]  = corners[3];
+      vertices[1]  = corners[2];
+      vertices[2]  = corners[2];
+      vertices[3]  = corners[1];
+      vertices[4]  = corners[1];
+      vertices[5]  = corners[0];
+      vertices[6]  = corners[0];
+      vertices[7]  = corners[3];
+      vertices[8]  = corners[6];
+      vertices[9]  = corners[5];
+      vertices[10] = corners[5];
+      vertices[11] = corners[4];
+      vertices[12] = corners[4];
+      vertices[13] = corners[7];
+      vertices[14] = corners[7];
+      vertices[15] = corners[6];
+      vertices[16] = corners[6];
+      vertices[17] = corners[2];
+      vertices[18] = corners[5];
+      vertices[19] = corners[1];
+      vertices[20] = corners[4];
+      vertices[21] = corners[0];
+      vertices[22] = corners[7];
+      vertices[23] = corners[3];
+
+      LineBatch* lb =
+          new LineBatch(vertices, Vec3(1.0f, 0.0f, 0.0f), DrawType::Line, 0.5f);
+
+      return lb;
     }
 
     EditorPointLight::EditorPointLight() : EditorLightBase(this)

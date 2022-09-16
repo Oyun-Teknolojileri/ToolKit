@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Plugin.h"
+#include "Types.h"
+
 #include <functional>
 #include <vector>
-
-#include "Types.h"
-#include "Plugin.h"
 
 namespace ToolKit
 {

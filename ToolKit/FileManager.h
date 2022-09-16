@@ -1,16 +1,17 @@
 #pragma once
 
+#include "Types.h"
+#include "unzip.h"
+#include "zip.h"
+
+#include <rapidxml.hpp>
+#include <rapidxml_utils.hpp>
+
 #include <filesystem>
+#include <fstream>
 #include <unordered_map>
 #include <utility>
 #include <variant>
-#include <fstream>
-
-#include "zip.h"
-#include "unzip.h"
-#include <rapidxml.hpp>
-#include <rapidxml_utils.hpp>
-#include "Types.h"
 
 namespace ToolKit
 {

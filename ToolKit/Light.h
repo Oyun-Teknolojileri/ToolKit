@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-
 #include "Entity.h"
-#include "Types.h"
 #include "Primative.h"
+#include "Types.h"
+
+#include <string>
 
 namespace ToolKit
 {
@@ -13,7 +13,7 @@ namespace ToolKit
    public:
     Light();
     virtual ~Light();
-    void ParameterEventConstructor();
+    virtual void ParameterEventConstructor();
 
     EntityType GetType() const override;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
@@ -27,12 +27,15 @@ namespace ToolKit
 
    protected:
     virtual void InitShadowMapDepthMaterial();
+    void ReInitShadowMap();
 
    public:
     TKDeclareParam(Vec3, Color);
     TKDeclareParam(float, Intensity);
     TKDeclareParam(bool, CastShadow);
-    TKDeclareParam(float, ShadowBias);
+    TKDeclareParam(float, FixedBias);
+    TKDeclareParam(float, SlopedBias);
+    TKDeclareParam(float, NormalBias);
     TKDeclareParam(Vec2, ShadowResolution);
     TKDeclareParam(float, PCFSampleSize);
     TKDeclareParam(int, PCFKernelSize);
@@ -56,11 +59,7 @@ namespace ToolKit
 
     EntityType GetType() const override;
 
-    BoundingBox GetShadowMapCameraFrustumCorners();
-
-   public:
-    TKDeclareParam(Vec4, ShadowFrustumSize);
-    TKDeclareParam(Vec2, ShadowFrustumNearAndFar);
+    Vec3Array GetShadowFrustumCorners();
   };
 
   class TK_API PointLight : public Light
@@ -80,6 +79,7 @@ namespace ToolKit
 
    public:
     TKDeclareParam(float, Radius);
+    TKDeclareParam(int, PCFLevel);
   };
 
   class TK_API SpotLight : public Light

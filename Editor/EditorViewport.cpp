@@ -1,24 +1,25 @@
 #include "EditorViewport.h"
 
+#include "App.h"
+#include "Camera.h"
+#include "ConsoleWindow.h"
+#include "DirectionComponent.h"
+#include "FileManager.h"
+#include "FolderWindow.h"
+#include "Gizmo.h"
+#include "GlobalDef.h"
+#include "Grid.h"
+#include "Mod.h"
+#include "Node.h"
+#include "OverlayUI.h"
+#include "Primative.h"
+#include "Renderer.h"
+#include "SDL.h"
+#include "Util.h"
+
 #include <algorithm>
 
-#include "Camera.h"
-#include "Renderer.h"
-#include "App.h"
-#include "GlobalDef.h"
-#include "SDL.h"
-#include "OverlayUI.h"
-#include "Node.h"
-#include "Primative.h"
-#include "Grid.h"
-#include "FolderWindow.h"
-#include "ConsoleWindow.h"
-#include "Gizmo.h"
-#include "Mod.h"
-#include "Util.h"
-#include "DirectionComponent.h"
 #include "DebugNew.h"
-#include "FileManager.h"
 
 namespace ToolKit
 {
@@ -201,22 +202,6 @@ namespace ToolKit
       m_size.x      = width;
       m_size.y      = height;
       m_needsResize = true;
-
-      if (EditorScenePtr currScene = g_app->GetCurrentScene())
-      {
-        for (Entity* ntt : currScene->GetEntities())
-        {
-          if (ntt->GetType() == EntityType::Entity_CanvasPanel)
-          {
-            CanvasPanel* canvasPanel = static_cast<CanvasPanel*>(ntt);
-            if (canvasPanel->m_node->m_parent == nullptr)
-            {
-              canvasPanel->ApplyRecursivResizePolicy(
-                  static_cast<float>(width), static_cast<float>(height));
-            }
-          }
-        }
-      }
     }
 
     void EditorViewport::GetContentAreaScreenCoordinates(Vec2* min,
@@ -622,7 +607,7 @@ namespace ToolKit
 
             meshAddedToScene = true;
           }
-          else if (entry.m_ext == SCENE)
+          else if (entry.m_ext == SCENE || entry.m_ext == LAYER)
           {
             YesNoWindow::ButtonInfo openButton;
             openButton.m_name     = "Open";
@@ -634,7 +619,7 @@ namespace ToolKit
             linkButton.m_name     = "Link";
             linkButton.m_callback = [entry]() -> void {
               String fullPath = entry.GetFullPath();
-              GetSceneManager()->GetCurrentScene()->LinkPrefab(fullPath);
+              g_app->LinkScene(fullPath);
             };
             YesNoWindow::ButtonInfo mergeButton;
             mergeButton.m_name     = "Merge";

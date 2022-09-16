@@ -1,10 +1,11 @@
 #pragma once
 
-#include <string>
 #include "GLES3/gl32.h"
-#include "SDL_ttf.h"
-#include "Mesh.h"
 #include "Material.h"
+#include "Mesh.h"
+#include "SDL_ttf.h"
+
+#include <string>
 
 class TTFText
 {

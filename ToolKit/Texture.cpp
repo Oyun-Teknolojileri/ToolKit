@@ -1,11 +1,12 @@
 #include "Texture.h"
 
+#include "DirectionComponent.h"
+#include "GL/glew.h"
+#include "ToolKit.h"
+
 #include <memory>
 
-#include "ToolKit.h"
-#include "GL/glew.h"
 #include "DebugNew.h"
-#include "DirectionComponent.h"
 
 namespace ToolKit
 {

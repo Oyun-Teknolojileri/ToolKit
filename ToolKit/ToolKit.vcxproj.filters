@@ -7,33 +7,24 @@
     <Filter Include="Source\Component">
       <UniqueIdentifier>{abe79bd2-78b3-46a4-99b4-82b7fbc43e63}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Resource">
+      <UniqueIdentifier>{c9634dd9-c2e5-4ff9-8745-07519d53981c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Entity">
+      <UniqueIdentifier>{354f4c99-8d95-42cf-b41b-a522f643c0f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\UI">
+      <UniqueIdentifier>{b83754ed-1ff1-4e41-8b4e-68bd5094ba69}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Animation.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Audio.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="Drawable.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Entity.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Logger.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="MathUtil.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Node.cpp">
@@ -45,31 +36,10 @@
     <ClCompile Include="PluginManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Primative.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="RenderState.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="ResourceManager.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Skeleton.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="SpriteSheet.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="StateMachine.cpp">
@@ -78,25 +48,13 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Surface.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="ToolKit.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="UIManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Util.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Viewport.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Light.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="FileManager.cpp">
@@ -111,33 +69,72 @@
     <ClCompile Include="ResourceComponent.cpp">
       <Filter>Source\Component</Filter>
     </ClCompile>
-    <ClCompile Include="Sky.cpp">
-      <Filter>Source</Filter>
+    <ClCompile Include="Surface.cpp">
+      <Filter>Source\UI</Filter>
     </ClCompile>
-    <ClCompile Include="CanvasPanel.cpp">
-      <Filter>Source</Filter>
+    <ClCompile Include="Canvas.cpp">
+      <Filter>Source\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UIManager.cpp">
+      <Filter>Source\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio.cpp">
+      <Filter>Source\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Source\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Source\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Source\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource.cpp">
+      <Filter>Source\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteSheet.cpp">
+      <Filter>Source\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Skeleton.cpp">
+      <Filter>Source\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Source\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Primative.cpp">
+      <Filter>Source\Entity</Filter>
     </ClCompile>
     <ClCompile Include="Prefab.cpp">
-      <Filter>Source</Filter>
+      <Filter>Source\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>Source\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="Sky.cpp">
+      <Filter>Source\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Source\Entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Animation.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Audio.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="DebugNew.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="Drawable.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Entity.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Events.h">
@@ -149,13 +146,7 @@
     <ClInclude Include="Logger.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="MathUtil.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Node.h">
@@ -170,34 +161,13 @@
     <ClInclude Include="PluginManager.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Primative.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="Renderer.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="RenderState.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Resource.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceManager.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="Serialize.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Skeleton.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="SpriteSheet.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="StateMachine.h">
@@ -206,28 +176,16 @@
     <ClInclude Include="stdafx.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Surface.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="ToolKit.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Types.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="UIManager.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="Util.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Viewport.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Light.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="FileManager.h">
@@ -242,14 +200,65 @@
     <ClInclude Include="DirectionComponent.h">
       <Filter>Source\Component</Filter>
     </ClInclude>
-    <ClInclude Include="Sky.h">
-      <Filter>Source</Filter>
+    <ClInclude Include="Surface.h">
+      <Filter>Source\UI</Filter>
     </ClInclude>
-    <ClInclude Include="CanvasPanel.h">
-      <Filter>Source</Filter>
+    <ClInclude Include="Canvas.h">
+      <Filter>Source\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIManager.h">
+      <Filter>Source\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio.h">
+      <Filter>Source\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Source\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Source\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Source\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Source\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Source\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteSheet.h">
+      <Filter>Source\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Skeleton.h">
+      <Filter>Source\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Source\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Source\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Source\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Primative.h">
+      <Filter>Source\Entity</Filter>
     </ClInclude>
     <ClInclude Include="Prefab.h">
-      <Filter>Source</Filter>
+      <Filter>Source\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Source\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Source\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="Sky.h">
+      <Filter>Source\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Source\Entity</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

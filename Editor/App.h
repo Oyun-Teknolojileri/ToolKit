@@ -1,16 +1,16 @@
 #pragma once
 
+#include "EditorScene.h"
+#include "GlobalDef.h"
+#include "Light.h"
+#include "PluginWindow.h"
+#include "PublishManager.h"
+#include "ToolKit.h"
+#include "Workspace.h"
+
 #include <memory>
 #include <unordered_map>
 #include <vector>
-
-#include "ToolKit.h"
-#include "EditorScene.h"
-#include "Workspace.h"
-#include "GlobalDef.h"
-#include "Light.h"
-#include "PublishManager.h"
-#include "PluginWindow.h"
 
 namespace ToolKit
 {
@@ -69,6 +69,7 @@ namespace ToolKit
       // Workspace.
       void OpenScene(const String& fullPath);
       void MergeScene(const String& fullPath);
+      void LinkScene(const String& fullPath);
       void ApplyProjectSettings(bool setDefaults);
       void OpenProject(const Project& project);
       void PackResources();
@@ -110,7 +111,7 @@ namespace ToolKit
       void RenderComponentGizmo(EditorViewport* viewport,
                                 EntityRawPtrArray selecteds);
 
-      void ShowPlayWindow(float deltaTime);
+      void ShowSimulationWindow(float deltaTime);
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;

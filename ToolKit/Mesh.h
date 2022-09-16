@@ -1,11 +1,12 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-#include "Types.h"
+#include "MathUtil.h"
 #include "Resource.h"
 #include "ResourceManager.h"
-#include "MathUtil.h"
+#include "Types.h"
+
+#include <memory>
+#include <vector>
 
 namespace ToolKit
 {
@@ -60,7 +61,7 @@ namespace ToolKit
 
    public:
     VertexArray m_clientSideVertices;
-    std::vector<uint> m_clientSideIndices;
+    UIntArray m_clientSideIndices;
     uint m_vboVertexId = 0;
     uint m_vboIndexId  = 0;
     uint m_vaoId       = 0;

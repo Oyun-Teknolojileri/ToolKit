@@ -1,76 +1,67 @@
 
-#include "ToolKit.h"
 #include "UIManager.h"
 
-#include <vector>
+#include "ToolKit.h"
+
 #include <iterator>
+#include <vector>
 
 namespace ToolKit
 {
 
-  UILayer::UILayer()
+  UILayer::UILayer(ScenePtr scene)
   {
+    m_scene = scene;
+    m_id    = GetHandleManager()->GetNextHandle();
   }
 
   UILayer::~UILayer()
   {
   }
 
-  Entity* UILayer::GetLayer(const String& layerName)
+  void UILayer::Init()
   {
-    if (m_layout)
-    {
-      return m_layout->GetFirstEntityByName(layerName);
-    }
-
-    return nullptr;
   }
 
-  void UILayer::Update(float deltaTime, Camera* cam, Viewport* vp)
+  void UILayer::Uninit()
   {
-    m_cam           = cam;
-    m_viewport      = vp;
-    m_lastCamEntity = vp->GetCamera();
-    vp->AttachCamera(cam->GetIdVal());
-
-    // Add update camera (cam) to scene, AttachCamera - GetCamera
-    // routines will search the in the scene.
-    // Make sure this is the very first thing before accessing viewport
-    // cameras.
-    if (SceneManager* sceneMngr = GetSceneManager())
-    {
-      ScenePtr currScene = sceneMngr->GetCurrentScene();
-      currScene->AddEntity(cam);
-    }
-
-    UpdateSurfaces(vp);
-    vp->AttachCamera(m_lastCamEntity->GetIdVal());
-
-    if (SceneManager* sceneMngr = GetSceneManager())
-    {
-      ScenePtr currScene = sceneMngr->GetCurrentScene();
-      currScene->RemoveEntity(m_cam->GetIdVal());
-    }
   }
 
-  Entity* UILayer::FetchEntity(const String& entityName)
+  void UILayer::Update(float deltaTime)
   {
-    if (m_layout)
-    {
-      EntityRawPtrArray fetch =
-          m_layout->Filter([&entityName](Entity* e) -> bool {
-            return e->GetNameVal() == entityName;
-          });
+  }
 
-      if (!fetch.empty())
+  void UILayer::ResizeUI(float width, float height)
+  {
+    if (m_scene == nullptr)
+    {
+      return;
+    }
+
+    const EntityRawPtrArray& arr = m_scene->GetEntities();
+    for (Entity* ntt : arr)
+    {
+      if (ntt->GetType() == EntityType::Entity_Canvas)
       {
-        return fetch.front();
+        Canvas* canvasPanel = static_cast<Canvas*>(ntt);
+
+        // Apply sizing only when the resolution has changed.
+        Vec2 size(width, height);
+        if (!VecAllEqual<Vec2>(m_size, size))
+        {
+          m_size = size;
+
+          // Resize only root canvases.
+          if (canvasPanel->m_node->m_parent == nullptr)
+          {
+            canvasPanel->ApplyRecursivResizePolicy(width, height);
+          }
+        }
       }
     }
-    return nullptr;
   }
 
-  bool UILayer::CheckMouseClick(Surface* surface, Event* e, Viewport* vp)
+  bool UIManager::CheckMouseClick(Surface* surface, Event* e, Viewport* vp)
   {
     if (CheckMouseOver(surface, e, vp))
     {
@@ -81,7 +72,7 @@ namespace ToolKit
     return false;
   }
 
-  bool UILayer::CheckMouseOver(Surface* surface, Event* e, Viewport* vp)
+  bool UIManager::CheckMouseOver(Surface* surface, Event* e, Viewport* vp)
   {
     if (e->m_type == Event::EventType::Mouse)
     {
@@ -97,18 +88,15 @@ namespace ToolKit
     return false;
   }
 
-  void UILayer::UpdateSurfaces(Viewport* vp)
+  void UIManager::UpdateSurfaces(Viewport* vp, UILayer* layer)
   {
-    Entity* rootEntity = m_layout->GetFirstEntityByName(m_layerName);
-
-    EntityRawPtrArray entities;
-    GetChildren(rootEntity, entities);
     EventPool& events = Main::GetInstance()->m_eventPool;
-    if (entities.empty() || events.empty())
+    if (events.empty())
     {
       return;
     }
 
+    EntityRawPtrArray& entities = layer->m_scene->AccessEntityArray();
     for (Entity* ntt : entities)
     {
       // Process events.
@@ -155,92 +143,82 @@ namespace ToolKit
     }
   }
 
-  void UIManager::SetRootLayer(UILayer* newRootLayer)
+  void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)
   {
-    m_rootLayer = newRootLayer;
-  }
-
-  void UIManager::AddChildLayer(UILayer* newChildLayer)
-  {
-    m_childLayers.push_back(newChildLayer);
-  }
-
-  void UIManager::RemoveChildLayer(String layerName)
-  {
-    UILayerPtrArray::iterator it;
-    it = m_childLayers.begin();
-    while (it != m_childLayers.end())
+    for (auto& viewLayerArray : m_viewportIdLayerArrayMap)
     {
-      if ((*it)->m_layerName == layerName)
+      if (viewLayerArray.first == viewport->m_viewportId)
       {
-        m_childLayers.erase(it);
-        return;
-      }
-      else
-      {
-        it++;
-      }
-    }
-  }
-
-  void UIManager::RemoveAllChilds()
-  {
-    m_childLayers.clear();
-  }
-
-  /**
-   * Returns current UILayer that UIManager has.
-   */
-  UILayerPtrArray UIManager::GetCurrentLayers()
-  {
-    UILayerPtrArray currentLayers;
-    currentLayers.push_back(m_rootLayer);
-    currentLayers.insert(
-        currentLayers.end(), m_childLayers.begin(), m_childLayers.end());
-    return currentLayers;
-  }
-
-  void UIManager::UpdateLayers(float deltaTime, Viewport* vp)
-  {
-    if (m_rootLayer == nullptr)
-    {
-      return;
-    }
-
-    const EntityRawPtrArray& arr = m_rootLayer->m_layout->GetEntities();
-    for (Entity* ntt : arr)
-    {
-      if (ntt->GetType() == EntityType::Entity_CanvasPanel)
-      {
-        CanvasPanel* canvasPanel = static_cast<CanvasPanel*>(ntt);
-        static float xResolution = 0;
-        static float yResolution = 0;
-
-        // Apply sizing only when the resoultion has changed.
-        if (xResolution != vp->m_wndContentAreaSize.x ||
-            yResolution != vp->m_wndContentAreaSize.y)
+        for (UILayer* layer : viewLayerArray.second)
         {
-          if (canvasPanel->m_node->m_parent)
-          {
-            canvasPanel->ApplyRecursivResizePolicy(vp->m_wndContentAreaSize.x,
-                                                   vp->m_wndContentAreaSize.y);
-          }
+          // Check potential events than updates.
+          UpdateSurfaces(viewport, layer);
+          layer->Update(deltaTime);
         }
-        xResolution = vp->m_wndContentAreaSize.x;
-        yResolution = vp->m_wndContentAreaSize.y;
+      }
+    }
+  }
+
+  void UIManager::GetLayers(ULongID viewportId, UILayerRawPtrArray& layers)
+  {
+    auto res = m_viewportIdLayerArrayMap.find(viewportId);
+    if (res != m_viewportIdLayerArrayMap.end())
+    {
+      layers = res->second;
+    }
+  }
+
+  void UIManager::AddLayer(ULongID viewportId, UILayer* layer)
+  {
+    if (Exist(viewportId, layer->m_id) == -1)
+    {
+      m_viewportIdLayerArrayMap[viewportId].push_back(layer);
+    }
+  }
+
+  UILayer* UIManager::RemoveLayer(ULongID viewportId, ULongID layerId)
+  {
+    UILayer* layer = nullptr;
+    int indx       = Exist(viewportId, layerId);
+    if (indx != -1)
+    {
+      UILayerRawPtrArray& layers = m_viewportIdLayerArrayMap[viewportId];
+      layer                      = layers[indx];
+      layers.erase(layers.begin() + indx);
+    }
+
+    return layer;
+  }
+
+  int UIManager::Exist(ULongID viewportId, ULongID layerId)
+  {
+    auto vlArray = m_viewportIdLayerArrayMap.find(viewportId);
+    if (vlArray == m_viewportIdLayerArrayMap.end())
+    {
+      return -1;
+    }
+
+    UILayerRawPtrArray& layers = vlArray->second;
+    for (size_t i = 0; i < layers.size(); i++)
+    {
+      if (layers[i]->m_id == layerId)
+      {
+        return (int) i;
       }
     }
 
-    m_rootLayer->Update(deltaTime, m_rootLayer->m_cam, vp);
+    return -1;
+  }
 
-    if (m_childLayers.size() < 1)
+  void UIManager::DestroyLayers()
+  {
+    for (auto vpLayerArray : m_viewportIdLayerArrayMap)
     {
-      return;
-    }
-
-    for (UILayer* layer : m_childLayers)
-    {
-      layer->Update(deltaTime, layer->m_cam, vp);
+      for (UILayer* layer : vpLayerArray.second)
+      {
+        layer->Uninit();
+        SafeDel(layer);
+      }
     }
   }
 

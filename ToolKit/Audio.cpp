@@ -1,9 +1,10 @@
 #include "Audio.h"
 
-#include <iostream>
-
 #include "al.h"
 #include "alc.h"
+
+#include <iostream>
+
 #include "DebugNew.h"
 
 namespace ToolKit

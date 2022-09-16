@@ -1,10 +1,10 @@
 #pragma once
 
-#include <vector>
-
-#include "Mod.h"
-#include "Anchor.h"
 #include "Action.h"
+#include "Anchor.h"
+#include "Mod.h"
+
+#include <vector>
 
 namespace ToolKit
 {
@@ -28,12 +28,17 @@ namespace ToolKit
 
      protected:
       void MakeSureAnchorIsValid();
+      void ReflectAnchorTransform(Entity* ntt);
 
      public:
       AnchorPtr m_anchor;
       std::vector<Vec2> m_mouseData;
       PlaneEquation m_intersectionPlane;
       TransformType m_type;
+      bool m_signalConsumed = true;
+
+     protected:
+      Vec3 m_anchorDeltaTransform; // Anchor medallion change.
     };
 
     class StateAnchorBegin : public StateAnchorBase
@@ -80,10 +85,8 @@ namespace ToolKit
      private:
       void CalculateDelta();
       void Transform(const Vec3& delta);
-      void Translate(Entity* ntt);
 
      public:
-      Vec3 m_delta;
       Vec3 m_deltaAccum;
       Vec3 m_initialLoc;
 

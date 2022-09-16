@@ -1,16 +1,17 @@
 #include "PropInspector.h"
 
+#include "AnchorMod.h"
+#include "App.h"
+#include "ConsoleWindow.h"
+#include "ImGui/imgui_stdlib.h"
+#include "MaterialInspector.h"
+#include "Prefab.h"
+#include "TransformMod.h"
+#include "Util.h"
+
 #include <memory>
 #include <utility>
 
-#include "App.h"
-#include "Util.h"
-#include "ConsoleWindow.h"
-#include "TransformMod.h"
-#include "MaterialInspector.h"
-#include "ImGui/imgui_stdlib.h"
-#include "Prefab.h"
-#include "AnchorMod.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -689,11 +690,11 @@ namespace ToolKit
           m_entity->m_node->m_parent != nullptr &&
           m_entity->m_node->m_parent->m_entity != nullptr &&
           m_entity->m_node->m_parent->m_entity->GetType() ==
-              EntityType::Entity_CanvasPanel)
+              EntityType::Entity_Canvas)
       {
         Surface* surface = static_cast<Surface*>(m_entity);
-        CanvasPanel* canvasPanel =
-            static_cast<CanvasPanel*>(surface->m_node->m_parent->m_entity);
+        Canvas* canvasPanel =
+            static_cast<Canvas*>(surface->m_node->m_parent->m_entity);
 
         if (ImGui::CollapsingHeader("Anchor", ImGuiTreeNodeFlags_DefaultOpen))
         {

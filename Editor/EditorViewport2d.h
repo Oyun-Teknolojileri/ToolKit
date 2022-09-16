@@ -1,15 +1,13 @@
 #pragma once
 
-#include "ToolKit.h"
-#include "Viewport.h"
-#include "UI.h"
+#include "AnchorMod.h"
 #include "EditorViewport.h"
+#include "ToolKit.h"
+#include "UI.h"
+#include "Viewport.h"
 
 namespace ToolKit
 {
-  class Camera;
-  class RenderTarget;
-
   namespace Editor
   {
     class EditorViewport2d : public EditorViewport
@@ -25,6 +23,7 @@ namespace ToolKit
       Type GetType() const override;
       void Update(float deltaTime) override;
       void OnResizeContentArea(float width, float height) override;
+      void DispatchSignals() const override;
 
       // Viewport Overrides.
       Vec2 GetLastMousePosViewportSpace() override;
@@ -49,7 +48,8 @@ namespace ToolKit
       void InitViewport();
 
      private:
-      Vec2 m_canvasSize = Vec2(640.0f, 480.0f);
+      AnchorMod* m_anchorMode = nullptr;
+      Vec2 m_canvasSize       = Vec2(640.0f, 480.0f);
       Vec2 m_canvasPos;
 
      public:

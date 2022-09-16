@@ -1,14 +1,14 @@
 #pragma once
 
+#include "Light.h"
+#include "RenderState.h"
+#include "Sky.h"
+#include "SpriteSheet.h"
+#include "Types.h"
+#include "Viewport.h"
+
 #include <memory>
 #include <unordered_map>
-
-#include "Types.h"
-#include "RenderState.h"
-#include "Light.h"
-#include "Viewport.h"
-#include "SpriteSheet.h"
-#include "Sky.h"
 
 namespace ToolKit
 {
@@ -24,7 +24,12 @@ namespace ToolKit
                      Viewport* viewport,
                      const LightRawPtrArray& editorLights);
 
-    void RenderUI(const UILayerPtrArray& uiLayers, Viewport* viewport);
+    /**
+     * Renders given UILayer to given Viewport.
+     * @param layer UILayer that will be rendered.
+     * @param viewport that UILayer will be rendered with.
+     */
+    void RenderUI(Viewport* viewport, UILayer* layer);
 
     void Render(Entity* ntt,
                 Camera* cam,
@@ -114,6 +119,17 @@ namespace ToolKit
 
     void UpdateShadowMaps(LightRawPtrArray lights, EntityRawPtrArray entities);
 
+    // Fits the scene into the shadow map camera frustum. As the scene gets
+    // bigger, the resolution gets lower.
+    void FitSceneBoundingBoxIntoLightFrustum(Camera* lightCamera,
+                                             const EntityRawPtrArray& entities,
+                                             DirectionalLight* light);
+    // Fits view frustum of the camera into shadow map camera frustum. As the
+    // view frustum gets bigger, the resolution gets lower.
+    void FitViewFrustumIntoLightFrustum(Camera* lightCamera,
+                                        Camera* viewCamera,
+                                        DirectionalLight* light);
+
     void SetProjectViewModel(Entity* ntt, Camera* cam);
     void BindProgram(ProgramPtr program);
     void LinkProgram(uint program, uint vertexP, uint fragmentP);
@@ -131,10 +147,16 @@ namespace ToolKit
     MaterialPtr m_overrideMat = nullptr;
 
     // Grid parameters
-    float m_gridCellSize           = 0.1f;
-    float m_gridSize               = 100.0f;
-    Vec3 m_gridHorizontalAxisColor = X_AXIS;
-    Vec3 m_gridVerticalAxisColor   = Z_AXIS;
+    struct GridParams
+    {
+      float sizeEachCell       = 0.1f;
+      float maxLinePixelCount  = 2.0f;
+      Vec3 axisColorHorizontal = X_AXIS;
+      Vec3 axisColorVertical   = Z_AXIS;
+      bool is2DViewport        = false;
+    };
+    GridParams m_gridParams;
+    Camera* m_uiCamera = nullptr;
 
    private:
     uint m_currentProgram = 0;

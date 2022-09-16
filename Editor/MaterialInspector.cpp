@@ -1,5 +1,7 @@
 #include "MaterialInspector.h"
+
 #include "App.h"
+
 #include "DebugNew.h"
 
 namespace ToolKit

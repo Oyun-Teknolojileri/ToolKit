@@ -34,11 +34,14 @@
 			sampler2D dirAndSpotLightShadowMap[4];
 			samplerCube pointLightShadowMap[4];
 			int castShadow[12];
-			float shadowBias[12];
+			float normalBias[12];
+			float shadowFixedBias[12];
+			float shadowSlopedBias[12];
 			float shadowMapCamFarPlane[12];
 			float PCFSampleHalfSize[12];
 			float PCFSampleDistance[12];
 			float PCFUnitSampleDistance[12];
+			int PCFKernelSize[12];
 		};
 		const int maxPointLightShadows = 4;
 		const int maxDirAndSpotLightShadows = 4;
@@ -73,22 +76,28 @@
 
 		out vec4 fragColor;
 
-		// https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
 		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
 		{
-			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
+			vec3 lightDir = normalize(LightData.pos[index] - pos);
 
-			// Projection divide
-			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
+			float normalBias = 
+			LightData.normalBias[index] * (1.0 - abs(dot(lightDir, normal)));
+
+			vec4 fragPosForLight = LightData.projectionViewMatrix[index]
+			* vec4(pos + normal * LightData.normalBias[index], 1.0);
+
+			vec3 projCoord = fragPosForLight.xyz;
 
 			// Transform to [0, 1] range
 			projCoord = projCoord * 0.5 + 0.5;
 
+			if (projCoord.z < 0.0 || projCoord.z > 1.0)
+			{
+				return 1.0;
+			}
+
 			// Get depth of the current fragment according to lights view
 			float currentDepth = projCoord.z;
-
-			// Shadow bias
-			vec3 lightDir = LightData.pos[index] - pos;
 
 			float shadow = 0.0;
 			vec2 texelSize = 1.0 / vec2(textureSize(LightData.dirAndSpotLightShadowMap[dirIndex], 0));
@@ -103,7 +112,8 @@
 				{
 					float shadowSample = texture(LightData.dirAndSpotLightShadowMap[dirIndex],
 					projCoord.xy + vec2(i, j) * texelSize).r;
-					shadow += currentDepth - LightData.shadowBias[index] > shadowSample ? 0.0 : unit;
+					shadow += currentDepth - size * max(texelSize.x, texelSize.y) - LightData.shadowFixedBias[index]
+					> shadowSample ? 0.0 : unit;
 				}
 			}
 
@@ -112,12 +122,18 @@
 
 		float CalculateSpotShadow(vec3 pos, int index, int spotIndex, vec3 normal)
 		{
-			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
+			vec3 lightToFrag = pos - LightData.pos[index];
+			vec3 lightDir = normalize(-lightToFrag);
+
+			float normalBias = 
+			LightData.normalBias[index] * (1.0 - abs(dot(lightDir, normal)));
+
+			vec4 fragPosForLight = LightData.projectionViewMatrix[index]
+			* vec4(pos + normal * normalBias, 1.0);
 
 			// Projection divide
 			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
 
-			vec3 lightToFrag = pos - LightData.pos[index];
 			float currentDepth = length(lightToFrag);
 
 			float shadow = 0.0;
@@ -125,10 +141,8 @@
 			// Transform to [0, 1] range
 			projCoord = projCoord * 0.5 + 0.5;
 
-			// Shadow bias
-			vec3 lightDir = normalize(-lightToFrag);
-			float bias = LightData.shadowBias[index];
-			bias = max(bias * 10.0 * (1.0 - dot(normal, lightDir)), 0.0);
+			float bias = max(LightData.shadowFixedBias[index],
+			LightData.shadowSlopedBias[index] * (1.0 - dot(normal, lightDir)));
 
 			vec2 texelSize = 1.0 / vec2(textureSize(LightData.dirAndSpotLightShadowMap[spotIndex], 0));
 			float size = LightData.PCFSampleHalfSize[index];
@@ -144,7 +158,8 @@
 					projCoord.xy + vec2(i, j) * texelSize).r;
 					// Convert to [0 1] range
 					shadowSample *= LightData.shadowMapCamFarPlane[index];
-					shadow += currentDepth - LightData.shadowBias[index] > shadowSample ? 0.0 : unit;
+					shadow += currentDepth - size * max(texelSize.x, texelSize.y) - bias
+					> shadowSample ? 0.0 : unit;
 				}
 			}
 
@@ -154,26 +169,30 @@
 		float CalculatePointShadow(vec3 pos, int index, int pointIndex, vec3 normal)
 		{
 			vec3 lightToFrag = pos - LightData.pos[index];
-
-			float currentDepth = length(lightToFrag);
-
-			// Shadow bias
 			vec3 lightDir = normalize(-lightToFrag);
-			float bias = LightData.shadowBias[index];
-			bias = max(bias * 10.0 * (1.0 - dot(normal, lightDir)), 0.1);
+
+			float normalBias = 
+			LightData.normalBias[index] * (1.0 - abs(dot(lightDir, normal)));
+
+			float currentDepth = length(pos + normal * LightData.normalBias[index] - LightData.pos[index]);
+
+			float bias = max(LightData.shadowFixedBias[index],
+			LightData.shadowSlopedBias[index] * (1.0 - dot(normal, lightDir)));
 
 			float shadow = 0.0;
-			float radius = 0.03;
+			float radius = 2.0 * LightData.PCFSampleHalfSize[index];
+			int size = LightData.PCFKernelSize[index];
+
 			// PCF
-			for (int i = 0; i < 20; i++)
+			for (int i = 0; i < size; i++)
 			{
 				float shadowSample = texture(LightData.pointLightShadowMap[pointIndex],
 				lightToFrag + cubemapSampleDirections[i] * radius).r;
 				// Recover from [0 1] range
 				shadowSample *= LightData.shadowMapCamFarPlane[index];
-				shadow += currentDepth - bias > shadowSample ? 0.0 : 1.0;
+				shadow += currentDepth - radius - bias > shadowSample ? 0.0 : 1.0;
 			}
-			shadow = shadow / 20.0;
+			shadow = shadow / float(size);
 
 			return shadow;
 		}

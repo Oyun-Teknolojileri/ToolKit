@@ -1,10 +1,12 @@
 #include "PluginWindow.h"
 
+#include "App.h"
+#include "ConsoleWindow.h"
+#include "EditorViewport2d.h"
+#include "GlobalDef.h"
+
 #include <utility>
 
-#include "GlobalDef.h"
-#include "ConsoleWindow.h"
-#include "App.h"
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -75,6 +77,7 @@ namespace ToolKit
         }
 
         g_app->m_simulationWindow->ResizeWindow(width, height);
+        UpdateCanvas(width, height);
       }
     }
 
@@ -415,6 +418,23 @@ namespace ToolKit
       default:
         assert(false && "Resolution not found.");
         return "Err";
+      }
+    }
+
+    void PluginWindow::UpdateCanvas(uint width, uint height)
+    {
+      EditorViewport2d* viewport =
+          g_app->GetWindow<EditorViewport2d>(g_2dViewport);
+
+      if (viewport != nullptr)
+      {
+        UILayerRawPtrArray layers;
+        GetUIManager()->GetLayers(viewport->m_viewportId, layers);
+
+        for (UILayer* layer : layers)
+        {
+          layer->ResizeUI((float) width, (float) height);
+        }
       }
     }
 

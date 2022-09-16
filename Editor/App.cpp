@@ -1,36 +1,37 @@
 #include "App.h"
 
-#include <filesystem>
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <memory>
-
+#include "Action.h"
+#include "Anchor.h"
+#include "Camera.h"
+#include "ConsoleWindow.h"
+#include "DirectionComponent.h"
+#include "EditorCamera.h"
+#include "EditorViewport.h"
+#include "EditorViewport2d.h"
+#include "FolderWindow.h"
+#include "GL/glew.h"
 #include "Gizmo.h"
+#include "GlobalDef.h"
+#include "Grid.h"
+#include "MaterialInspector.h"
+#include "Mod.h"
+#include "Node.h"
+#include "OutlinerWindow.h"
+#include "OverlayUI.h"
+#include "PluginWindow.h"
+#include "Primative.h"
+#include "PropInspector.h"
 #include "Renderer.h"
 #include "UI.h"
-#include "EditorViewport.h"
-#include "Primative.h"
-#include "Node.h"
-#include "GlobalDef.h"
-#include "OverlayUI.h"
-#include "Grid.h"
-#include "Camera.h"
-#include "Mod.h"
-#include "ConsoleWindow.h"
-#include "FolderWindow.h"
-#include "OutlinerWindow.h"
-#include "PropInspector.h"
-#include "MaterialInspector.h"
-#include "PluginWindow.h"
-#include "EditorViewport2d.h"
-#include "DirectionComponent.h"
-#include "Action.h"
-#include "GL/glew.h"
+
+#include <filesystem>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "DebugNew.h"
-#include "EditorCamera.h"
-#include "Anchor.h"
 
 namespace ToolKit
 {
@@ -122,6 +123,8 @@ namespace ToolKit
 
       GetAnimationPlayer()->m_records.clear();
 
+      GetUIManager()->DestroyLayers();
+
       ModManager::GetInstance()->UnInit();
       ActionManager::GetInstance()->UnInit();
     }
@@ -147,7 +150,7 @@ namespace ToolKit
         wnd->DispatchSignals();
       }
 
-      ShowPlayWindow(deltaTime);
+      ShowSimulationWindow(deltaTime);
 
       // Selected entities
       EntityRawPtrArray selecteds;
@@ -226,10 +229,16 @@ namespace ToolKit
 
           // Render grid.
           Camera* cam     = viewport->GetCamera();
-          auto gridDrawFn = [this, &cam](Grid* grid) -> void {
-            m_renderer->m_gridCellSize            = grid->m_gridCellSize;
-            m_renderer->m_gridHorizontalAxisColor = grid->m_horizontalAxisColor;
-            m_renderer->m_gridVerticalAxisColor   = grid->m_verticalAxisColor;
+          auto gridDrawFn = [this, &cam, &viewport](Grid* grid) -> void {
+            m_renderer->m_gridParams.sizeEachCell = grid->m_gridCellSize;
+            m_renderer->m_gridParams.axisColorHorizontal =
+                grid->m_horizontalAxisColor;
+            m_renderer->m_gridParams.axisColorVertical =
+                grid->m_verticalAxisColor;
+            m_renderer->m_gridParams.maxLinePixelCount =
+                grid->m_maxLinePixelCount;
+            m_renderer->m_gridParams.is2DViewport =
+                (viewport->GetType() == Window::Type::Viewport2d);
             m_renderer->Render(grid, cam);
           };
 
@@ -253,10 +262,15 @@ namespace ToolKit
           RenderGizmo(viewport, m_gizmo);
 
           // Render anchor.
-          RenderAnchor(viewport, m_anchor);
+          if (viewport->GetType() == Window::Type::Viewport2d)
+          {
+            RenderAnchor(viewport, m_anchor);
+          }
 
           RenderComponentGizmo(viewport, selecteds);
         }
+
+        RenderSelected(viewport, selecteds);
 
         // Render debug objects.
         if (!m_perFrameDebugObjects.empty())
@@ -264,17 +278,12 @@ namespace ToolKit
           for (Entity* dbgObj : m_perFrameDebugObjects)
           {
             m_renderer->Render(dbgObj, viewCam);
+          }
+          for (Entity* dbgObj : m_perFrameDebugObjects)
+          {
             SafeDel(dbgObj);
           }
           m_perFrameDebugObjects.clear();
-        }
-      }
-
-      if (m_gameMod != GameMod::Playing)
-      {
-        for (EditorViewport* viewport : viewports)
-        {
-          RenderSelected(viewport, selecteds);
         }
       }
 
@@ -935,9 +944,22 @@ namespace ToolKit
       GetCurrentScene()->Destroy(false);
       GetSceneManager()->Remove(GetCurrentScene()->GetFile());
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
+      if (IsLayer(fullPath))
+      {
+        if (EditorViewport2d* viewport =
+                GetWindow<EditorViewport2d>(g_2dViewport))
+        {
+          UILayer* layer = new UILayer(scene);
+          GetUIManager()->AddLayer(viewport->m_viewportId, layer);
+        }
+        else
+        {
+          g_app->m_statusMsg = "Layer creation failed. No 2d viewport.";
+        }
+      }
+
       SetCurrentScene(scene);
       scene->Init();
-
       m_workspace.SetScene(scene->m_name);
     }
 
@@ -947,6 +969,11 @@ namespace ToolKit
       scene->Load();
       scene->Init();
       GetCurrentScene()->Merge(scene);
+    }
+
+    void App::LinkScene(const String& fullPath)
+    {
+      GetSceneManager()->GetCurrentScene()->LinkPrefab(fullPath);
     }
 
     void App::ApplyProjectSettings(bool setDefaults)
@@ -1083,7 +1110,7 @@ namespace ToolKit
     void App::RenderSelected(EditorViewport* viewport,
                              EntityRawPtrArray selecteds)
     {
-      if (GetCurrentScene()->GetSelectedEntityCount() == 0)
+      if (selecteds.empty())
       {
         return;
       }
@@ -1200,13 +1227,9 @@ namespace ToolKit
         if (primary->GetType() == EntityType::Entity_DirectionalLight &&
             static_cast<DirectionalLight*>(primary)->GetCastShadowVal())
         {
-          Mat4 transform = primary->m_node->GetTransform();
-          m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(
-              static_cast<DirectionalLight*>(primary)
-                  ->GetShadowMapCameraFrustumCorners(),
-              Vec3(1.0f, 0.0f, 0.0f),
-              0.2f,
-              &transform));
+          m_perFrameDebugObjects.push_back(
+              static_cast<EditorDirectionalLight*>(primary)
+                  ->GetDebugShadowFrustum());
         }
       }
     }
@@ -1249,7 +1272,7 @@ namespace ToolKit
         if (anchor->m_entity && anchor->m_entity->m_node->m_parent &&
             anchor->m_entity->m_node->m_parent->m_entity &&
             anchor->m_entity->m_node->m_parent->m_entity->GetType() ==
-                EntityType::Entity_CanvasPanel)
+                EntityType::Entity_Canvas)
           m_renderer->Render(anchor.get(), viewport->GetCamera());
       }
     }
@@ -1278,7 +1301,7 @@ namespace ToolKit
       }
     }
 
-    void App::ShowPlayWindow(float deltaTime)
+    void App::ShowSimulationWindow(float deltaTime)
     {
       if (GamePlugin* plugin = GetPluginManager()->GetGamePlugin())
       {
@@ -1305,7 +1328,7 @@ namespace ToolKit
           }
           m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
           plugin->Frame(deltaTime, playWindow);
-          m_renderer->RenderUI(GetUIManager()->GetCurrentLayers(), playWindow);
+
           m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
         }
       }
@@ -1478,11 +1501,12 @@ namespace ToolKit
       m_cursor = new Cursor();
       m_origin = new Axis3d();
 
-      m_grid = new Grid(g_max2dGridSize, AxisLabel::ZX, 0.025f);
+      m_grid = new Grid(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0);
 
       m_2dGrid = new Grid(g_max2dGridSize,
                           AxisLabel::XY,
-                          10.0f); // Generate grid cells 10 x 10
+                          10.0f,
+                          4.0); // Generate grid cells 10 x 10
 
       // Lights and camera.
       m_lightMaster = new Node();

@@ -1,13 +1,13 @@
 
 #include "Light.h"
 
-#include <string>
-#include <memory>
-
-#include "ToolKit.h"
-#include "GL/glew.h"
 #include "Component.h"
 #include "DirectionComponent.h"
+#include "GL/glew.h"
+#include "ToolKit.h"
+
+#include <memory>
+#include <string>
 
 namespace ToolKit
 {
@@ -17,8 +17,12 @@ namespace ToolKit
     Intensity_Define(
         1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
     CastShadow_Define(false, "Light", 90, true, true);
-    ShadowBias_Define(
-        0.4f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.01f});
+    NormalBias_Define(
+        0.1f, "Light", 80, true, true, {false, true, 0.0f, 5.0f, 0.005f});
+    FixedBias_Define(
+        0.0f, "Light", 80, true, true, {false, true, 0, 100.0f, 0.1f});
+    SlopedBias_Define(
+        2.0f, "Light", 80, true, true, {false, true, 0.0f, 100.0f, 0.1f});
     ShadowResolution_Define(Vec2(1024.0f, 1024.0f),
                             "Light",
                             90,
@@ -27,7 +31,8 @@ namespace ToolKit
                             {false, true, 32.0f, 4096.0f, 2.0f});
     PCFSampleSize_Define(
         7.0f, "Light", 90, true, true, {false, true, 0.1f, 100.0f, 0.1f});
-    PCFKernelSize_Define(5, "Light", 90, true, true, {false, true, 1, 20, 1});
+    PCFKernelSize_Define(5, "Light", 90, true, true, {false, true, 0, 20, 1});
+    ParameterEventConstructor();
   }
 
   Light::~Light()
@@ -37,11 +42,8 @@ namespace ToolKit
 
   void Light::ParameterEventConstructor()
   {
-    ParamShadowResolution().m_onValueChangedFn = [this](Value& oldVal,
-                                                        Value& newVal) -> void {
-      UnInitShadowMap();
-      InitShadowMap();
-    };
+    ParamShadowResolution().m_onValueChangedFn =
+        [this](Value& oldVal, Value& newVal) -> void { ReInitShadowMap(); };
   }
 
   EntityType Light::GetType() const
@@ -128,19 +130,16 @@ namespace ToolKit
 
   DirectionalLight::DirectionalLight()
   {
-    ShadowFrustumSize_Define(Vec4(-20.0f, 20.0f, -20.0f, 20.0f),
-                             "Light",
-                             90,
-                             true,
-                             true,
-                             {false, true, -1000.0f, 1000.0f, 1.0f});
-    ShadowFrustumNearAndFar_Define(Vec2(0.01f, 100.0f),
-                                   "Light",
-                                   90,
-                                   true,
-                                   true,
-                                   {false, true, 0.01f, 10000.0f, 2.0f});
+    SetNormalBiasVal(0.1f);
+    SetFixedBiasVal(0.0f);
+    SetSlopedBiasVal(2.0f);
     AddComponent(new DirectionComponent(this));
+  }
+
+  void Light::ReInitShadowMap()
+  {
+    UnInitShadowMap();
+    InitShadowMap();
   }
 
   DirectionalLight::~DirectionalLight()
@@ -152,33 +151,38 @@ namespace ToolKit
     return EntityType::Entity_DirectionalLight;
   }
 
-  BoundingBox DirectionalLight::GetShadowMapCameraFrustumCorners()
+  // Returns 8 sized array
+  Vec3Array DirectionalLight::GetShadowFrustumCorners()
   {
-    BoundingBox box;
-    Vec3 max            = Vec3(1.0f, 1.0f, 1.0f);
-    Vec3 min            = Vec3(-1.0f, -1.0f, -1.0f);
-    Vec4 frustumSize    = GetShadowFrustumSizeVal();
-    Vec2 frustumNearFar = GetShadowFrustumNearAndFarVal();
-    Mat4 invProj        = glm::inverse(glm::ortho(frustumSize.x,
-                                           frustumSize.y,
-                                           frustumSize.z,
-                                           frustumSize.w,
-                                           frustumNearFar.x,
-                                           frustumNearFar.y));
-    Vec4 hmgMax         = invProj * Vec4(max, 1.0f);
-    Vec4 hmgMin         = invProj * Vec4(min, 1.0f);
-    max                 = Vec3(hmgMax) / hmgMax.w;
-    min                 = Vec3(hmgMin) / hmgMin.w;
-    box.max             = max;
-    box.min             = min;
-    return box;
+    Vec3Array frustum = {Vec3(-1.0f, -1.0f, -1.0f),
+                         Vec3(1.0f, -1.0f, -1.0f),
+                         Vec3(1.0f, -1.0f, 1.0f),
+                         Vec3(-1.0f, -1.0f, 1.0f),
+                         Vec3(-1.0f, 1.0f, -1.0f),
+                         Vec3(1.0f, 1.0f, -1.0f),
+                         Vec3(1.0f, 1.0f, 1.0f),
+                         Vec3(-1.0f, 1.0f, 1.0f)};
+
+    const Mat4 inverseSpaceMatrix =
+        glm::inverse(m_shadowMapCameraProjectionViewMatrix);
+    for (int i = 0; i < 8; ++i)
+    {
+      const Vec4 t = inverseSpaceMatrix * Vec4(frustum[i], 1.0f);
+      frustum[i]   = Vec3(t.x / t.w, t.y / t.w, t.z / t.w);
+    }
+    return frustum;
   }
 
   PointLight::PointLight()
   {
+    SetNormalBiasVal(0.1f);
+    SetFixedBiasVal(0.0f);
+    SetSlopedBiasVal(2.0f);
+    SetPCFSampleSizeVal(0.03f);
+    ParamPCFSampleSize().m_hint = {false, true, 0.001f, 0.5f, 0.01f};
+    PCFLevel_Define(1, "Light", 90, true, true, {false, true, 0, 2, 1});
     Radius_Define(
         3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
-    ParamPCFSampleSize().m_exposed = false;
     ParamPCFKernelSize().m_exposed = false;
   }
 
@@ -238,6 +242,9 @@ namespace ToolKit
 
   SpotLight::SpotLight()
   {
+    SetNormalBiasVal(0.2f);
+    SetFixedBiasVal(10.0f);
+    SetSlopedBiasVal(5.0f);
     Radius_Define(
         10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
     OuterAngle_Define(

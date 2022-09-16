@@ -1,13 +1,14 @@
 #include "ParameterBlock.h"
 
+#include "Animation.h"
+#include "Mesh.h"
+#include "ToolKit.h"
+#include "Util.h"
+
 #include <memory>
 #include <utility>
 
-#include "Util.h"
-#include "Mesh.h"
-#include "ToolKit.h"
 #include "DebugNew.h"
-#include "Animation.h"
 
 namespace ToolKit
 {
