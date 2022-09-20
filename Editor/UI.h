@@ -78,51 +78,6 @@ namespace ToolKit
       static uint m_baseId;
     };
 
-    class StringInputWindow : public Window
-    {
-     public:
-      StringInputWindow(const String& name, bool showCancel);
-      void Show() override;
-      Type GetType() const override
-      {
-        return Window::Type::InputPopup;
-      }
-
-     public:
-      std::function<void(const String& val)> m_taskFn;
-      String m_inputVal;
-      String m_inputLabel;
-      String m_hint;
-
-     private:
-      bool m_showCancel;
-    };
-
-    class YesNoWindow : public Window
-    {
-     public:
-      struct ButtonInfo
-      {
-        String m_name;
-        std::function<void()> m_callback;
-      };
-      explicit YesNoWindow(const String& name, const String& msg = "");
-      YesNoWindow(const String& name,
-                  const std::vector<ButtonInfo>& buttons,
-                  const String& msg,
-                  bool showCancel);
-      void Show() override;
-      Type GetType() const override
-      {
-        return Window::Type::InputPopup;
-      }
-
-     public:
-      std::vector<ButtonInfo> m_buttons;
-      String m_msg;
-      bool m_showCancel = false;
-    };
-
     class UI
     {
      public:

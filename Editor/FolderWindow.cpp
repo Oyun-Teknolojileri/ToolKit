@@ -7,6 +7,7 @@
 #include "GlobalDef.h"
 #include "Light.h"
 #include "MaterialInspector.h"
+#include "PopupWindows.h"
 #include "PropInspector.h"
 #include "Util.h"
 

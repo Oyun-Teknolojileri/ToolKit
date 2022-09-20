@@ -117,6 +117,9 @@
     <ClCompile Include="Anchor.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
+    <ClCompile Include="PopupWindows.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -220,6 +223,9 @@
     </ClInclude>
     <ClInclude Include="Anchor.h">
       <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="PopupWindows.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,7 @@
 #include "Mod.h"
 #include "Node.h"
 #include "OverlayUI.h"
+#include "PopupWindows.h"
 #include "Primative.h"
 #include "Renderer.h"
 #include "SDL.h"
@@ -609,29 +610,29 @@ namespace ToolKit
           }
           else if (entry.m_ext == SCENE || entry.m_ext == LAYER)
           {
-            YesNoWindow::ButtonInfo openButton;
+            MultiChoiceWindow::ButtonInfo openButton;
             openButton.m_name     = "Open";
             openButton.m_callback = [entry]() -> void {
               String fullPath = entry.GetFullPath();
               g_app->OpenScene(fullPath);
             };
-            YesNoWindow::ButtonInfo linkButton;
+            MultiChoiceWindow::ButtonInfo linkButton;
             linkButton.m_name     = "Link";
             linkButton.m_callback = [entry]() -> void {
               String fullPath = entry.GetFullPath();
               g_app->LinkScene(fullPath);
             };
-            YesNoWindow::ButtonInfo mergeButton;
+            MultiChoiceWindow::ButtonInfo mergeButton;
             mergeButton.m_name     = "Merge";
             mergeButton.m_callback = [entry]() -> void {
               String fullPath = entry.GetFullPath();
               g_app->MergeScene(fullPath);
             };
-            YesNoWindow* importOptionWnd =
-                new YesNoWindow("Open Scene",
-                                {openButton, linkButton, mergeButton},
-                                "Open or Link the scene ?",
-                                true);
+            MultiChoiceWindow* importOptionWnd =
+                new MultiChoiceWindow("Open Scene",
+                                      {openButton, linkButton, mergeButton},
+                                      "Open or Link the scene ?",
+                                      true);
 
             UI::m_volatileWindows.push_back(importOptionWnd);
           }

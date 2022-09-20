@@ -19,6 +19,7 @@
 #include "OutlinerWindow.h"
 #include "OverlayUI.h"
 #include "PluginWindow.h"
+#include "PopupWindows.h"
 #include "Primative.h"
 #include "PropInspector.h"
 #include "Renderer.h"
@@ -342,9 +343,9 @@ namespace ToolKit
                      " exist on the disk.\nOverride the existing scene ?";
         YesNoWindow* overrideScene =
             new YesNoWindow("Override existing file##OvrdScn", msg);
-        overrideScene->m_buttons[0].m_callback = [&saveFn]() { saveFn(); };
+        overrideScene->m_yesCallback = [&saveFn]() { saveFn(); };
 
-        overrideScene->m_buttons[1].m_callback = []() {
+        overrideScene->m_noCallback = []() {
           g_app->GetConsole()->AddLog(
               "Scene has not been saved.\n"
               "A scene with the same name exist. Use File->SaveAs.",
@@ -389,13 +390,13 @@ namespace ToolKit
         YesNoWindow* reallyQuit =
             new YesNoWindow("Quiting... Are you sure?##ClsApp");
 
-        reallyQuit->m_buttons[0].m_callback = [this]() {
+        reallyQuit->m_yesCallback = [this]() {
           m_workspace.Serialize(nullptr, nullptr);
           Serialize(nullptr, nullptr);
           g_running = false;
         };
 
-        reallyQuit->m_buttons[1].m_callback = [this]() { m_onQuit = false; };
+        reallyQuit->m_noCallback = [this]() { m_onQuit = false; };
 
         UI::m_volatileWindows.push_back(reallyQuit);
         m_onQuit = true;
