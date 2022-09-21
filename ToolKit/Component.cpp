@@ -56,6 +56,9 @@ namespace ToolKit
     case ComponentType::AnimControllerComponent:
       return new AnimControllerComponent();
       break;
+    case ComponentType::SkeletonComponent:
+      return new SkeletonComponent();
+      break;
     case ComponentType::Base:
     default:
       assert(false && "Unsupported component type");

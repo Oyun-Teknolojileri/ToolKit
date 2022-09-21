@@ -467,6 +467,7 @@ namespace ToolKit
 
   void SkinMesh::Init(bool flushClientSideArray)
   {
+
     if (m_skeleton == nullptr)
     {
       return;
@@ -486,7 +487,6 @@ namespace ToolKit
     {
       return;
     }
-
     // If skeleton is specified, load it
     // While reading from a file, it's probably not loaded
     // So Deserialize will also try to load it
@@ -499,7 +499,6 @@ namespace ToolKit
         return;
       }
     }
-
     String path = GetFile();
     NormalizePath(path);
     XmlFilePtr file = GetFileManager()->GetXmlFile(path);

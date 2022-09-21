@@ -42,21 +42,17 @@ namespace ToolKit
 
   void Entity::SetPose(const AnimationPtr& anim, float time)
   {
-    // Search for a SkinMesh
-    // Animate only entity node if there is no SkinMesh
-    MeshComponentPtr meshComponent = GetMeshComponent();
-    if (meshComponent)
+    MeshComponentPtr meshComp = GetMeshComponent();
+    if (meshComp)
     {
-      MeshPtr mesh = meshComponent->GetMeshVal();
-      if (mesh->IsSkinned())
+      MeshPtr mesh                  = meshComp->GetMeshVal();
+      SkeletonComponentPtr skelComp = GetComponent<SkeletonComponent>();
+      if (mesh->IsSkinned() && skelComp)
       {
-        SkinMesh* skinMesh   = static_cast<SkinMesh*>(mesh.get());
-        SkeletonPtr skeleton = skinMesh->m_skeleton;
-        anim->GetPose(skeleton, time);
+        anim->GetPose(skelComp, time);
         return;
       }
     }
-    // SkinMesh isn't found, animate entity nodes
     anim->GetPose(m_node, time);
   }
 

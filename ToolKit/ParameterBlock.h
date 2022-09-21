@@ -86,7 +86,8 @@ namespace ToolKit
                        MeshPtr,
                        MaterialPtr,
                        HdriPtr,
-                       AnimRecordPtrMap>
+                       AnimRecordPtrMap,
+                       SkeletonPtr>
       Value;
 
   typedef std::function<void(Value& oldVal, Value& newVal)> ValueUpdateFn;
@@ -173,7 +174,8 @@ namespace ToolKit
       MaterialPtr,
       Vec2,
       HdriPtr,
-      AnimRecordPtrMap
+      AnimRecordPtrMap,
+      SkeletonPtr
     };
 
     /**
@@ -277,9 +279,14 @@ namespace ToolKit
     explicit ParameterVariant(const HdriPtr& var);
 
     /**
-     * Constructs AnimationStatePtrArray type variant.
+     * Constructs AnimRecordPtrMap type variant.
      */
     explicit ParameterVariant(const AnimRecordPtrMap& var);
+
+    /**
+     * Constructs SkeletonPtr type variant.
+     */
+    explicit ParameterVariant(const SkeletonPtr& var);
 
     /**
      * Used to retrieve VariantType of the variant.
@@ -413,9 +420,14 @@ namespace ToolKit
     ParameterVariant& operator=(const HdriPtr& var);
 
     /**
-     * Assign a AnimationStatePtrArray to the value of the variant.
+     * Assign a AnimRecordPtrMap to the value of the variant.
      */
     ParameterVariant& operator=(const AnimRecordPtrMap& var);
+
+    /**
+     * Assign a SkeletonPtr to the value of the variant.
+     */
+    ParameterVariant& operator=(const SkeletonPtr& var);
 
     /**
      * Serializes the variant to the xml document.

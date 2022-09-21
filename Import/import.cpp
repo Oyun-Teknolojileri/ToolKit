@@ -949,19 +949,30 @@ namespace ToolKit
     g_skeleton->SetFile(fullPath);
 
     // Print
-    std::function<void(aiNode * node, Bone*)> setBoneHierarchyFn =
-        [&setBoneHierarchyFn](aiNode* node, Bone* parentBone) -> void {
-      Bone* bone = parentBone;
+    std::function<void(aiNode * node, DynamicBoneMap::DynamicBone*)>
+        setBoneHierarchyFn =
+            [&setBoneHierarchyFn](
+                aiNode* node, DynamicBoneMap::DynamicBone* parentBone) -> void {
+      DynamicBoneMap::DynamicBone* searchDBone = parentBone;
       if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
       {
         assert(node->mName.length);
+        g_skeleton->m_Tpose.boneList.insert(std::make_pair(
+            String(node->mName.C_Str()), DynamicBoneMap::DynamicBone()));
+        searchDBone =
+            &g_skeleton->m_Tpose.boneList.find(node->mName.C_Str())->second;
+        searchDBone->node                 = new Node();
+        searchDBone->node->m_inheritScale = true;
+        searchDBone->boneIndx             = g_skeleton->m_bones.size();
+        g_skeleton->m_Tpose.AddDynamicBone(
+            node->mName.C_Str(), *searchDBone, parentBone);
 
-        bone = new Bone(node->mName.C_Str());
-        g_skeleton->AddBone(bone, parentBone);
+        StaticBone* sBone = new StaticBone(node->mName.C_Str());
+        g_skeleton->m_bones.push_back(sBone);
       }
       for (unsigned int i = 0; i < node->mNumChildren; i++)
       {
-        setBoneHierarchyFn(node->mChildren[i], bone);
+        setBoneHierarchyFn(node->mChildren[i], searchDBone);
       }
     };
 
@@ -969,17 +980,19 @@ namespace ToolKit
         [&setTransformationsFn](aiNode* node) -> void {
       if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
       {
-        Bone* tBone = g_skeleton->GetBone(node->mName.C_Str());
+        StaticBone* sBone = g_skeleton->GetBone(node->mName.C_Str());
 
         // Set bone node transformation
         {
+          DynamicBoneMap::DynamicBone& dBone =
+              g_skeleton->m_Tpose.boneList[node->mName.C_Str()];
           Vec3 t, s;
           Quaternion r;
           DecomposeAssimpMatrix(node->mTransformation, &t, &r, &s);
 
-          tBone->m_node->Translate(t);
-          tBone->m_node->Rotate(r);
-          tBone->m_node->Scale(s);
+          dBone.node->Translate(t);
+          dBone.node->Rotate(r);
+          dBone.node->Scale(s);
         }
 
         // Set bind pose transformation
@@ -996,7 +1009,7 @@ namespace ToolKit
             tMat                        = glm::translate(tMat, t);
             rMat                        = glm::toMat4(r);
             sMat                        = glm::scale(sMat, s);
-            tBone->m_inverseWorldMatrix = tMat * rMat * sMat;
+            sBone->m_inverseWorldMatrix = tMat * rMat * sMat;
           }
         }
       }
@@ -1112,6 +1125,7 @@ namespace ToolKit
       // Initialize ToolKit to serialize resources
       Main* g_proxy = new Main();
       Main::SetProxy(g_proxy);
+      g_proxy->m_entityFactory = new EntityFactory();
 
       for (int i = 0; i < static_cast<int>(files.size()); i++)
       {

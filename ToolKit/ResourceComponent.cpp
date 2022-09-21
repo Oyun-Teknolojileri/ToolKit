@@ -238,6 +238,15 @@ namespace ToolKit
     AnimControllerComponentPtr ec = std::make_shared<AnimControllerComponent>();
     ec->m_localData               = m_localData;
     ec->m_entity                  = ntt;
+    for (auto& record : ec->ParamRecords().GetVar<AnimRecordPtrMap>())
+    {
+      AnimRecordPtr newRecord = std::make_shared<AnimRecord>();
+      ULongID p_id            = newRecord->m_id;
+      *newRecord              = *record.second;
+      newRecord->m_id         = p_id;
+      newRecord->m_entity     = ntt;
+      record.second           = newRecord;
+    }
 
     return ec;
   }
@@ -309,4 +318,45 @@ namespace ToolKit
     return activeRecord;
   }
 
+  SkeletonComponent::SkeletonComponent()
+  {
+    SkeletonResource_Define(nullptr,
+                            SkeletonComponentCategory.Name,
+                            SkeletonComponentCategory.Priority,
+                            true,
+                            true);
+  }
+
+  SkeletonComponent::~SkeletonComponent()
+  {
+    delete map;
+  }
+  void SkeletonComponent::Init()
+  {
+    const SkeletonPtr& resource = GetSkeletonResourceVal();
+    if (resource == nullptr)
+    {
+      return;
+    }
+
+    map = new DynamicBoneMap;
+    map->Init(resource.get());
+  }
+
+  ComponentPtr SkeletonComponent::Copy(Entity* ntt)
+  {
+    SkeletonComponentPtr dst = std::make_shared<SkeletonComponent>();
+    dst->m_entity            = ntt;
+
+    dst->SetSkeletonResourceVal(GetSkeletonResourceVal());
+    dst->Init();
+
+    return dst;
+  }
+  void SkeletonComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    Component::DeSerialize(doc, parent);
+    map = new DynamicBoneMap;
+    map->Init(GetSkeletonResourceVal().get());
+  }
 } //  namespace ToolKit

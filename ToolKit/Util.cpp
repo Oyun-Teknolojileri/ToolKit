@@ -436,6 +436,11 @@ namespace ToolKit
       return ResourceType::Scene;
     }
 
+    if (ext == SKELETON)
+    {
+      return ResourceType::Skeleton;
+    }
+
     assert(false);
     return ResourceType::Base;
   }

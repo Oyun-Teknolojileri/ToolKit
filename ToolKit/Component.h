@@ -42,7 +42,8 @@ namespace ToolKit
     DirectionComponent,
     MaterialComponent,
     EnvironmentComponent,
-    AnimControllerComponent
+    AnimControllerComponent,
+    SkeletonComponent
   };
 
   /**

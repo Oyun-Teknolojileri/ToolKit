@@ -90,13 +90,14 @@ namespace ToolKit
       }
     }
 
+    SkeletonComponentPtr skelComp = ntt->GetComponent<SkeletonComponent>();
     for (MeshComponentPtr meshCom : meshComponents)
     {
       MeshPtr mesh = meshCom->GetMeshVal();
       m_lights     = GetBestLights(ntt, lights);
       m_cam        = cam;
       SetProjectViewModel(ntt, cam);
-      if (mesh->IsSkinned())
+      if (mesh->IsSkinned() && skelComp)
       {
         RenderSkinned(ntt, cam);
         return;
@@ -160,8 +161,12 @@ namespace ToolKit
     static ShaderPtr skinShader = GetShaderManager()->Create<Shader>(
         ShaderPath("defaultSkin.shader", true));
 
-    SkeletonPtr skeleton = static_cast<SkinMesh*>(mesh.get())->m_skeleton;
-    skeleton->UpdateTransformationTexture();
+    SkeletonComponentPtr skelComp = object->GetComponent<SkeletonComponent>();
+    if (!skelComp->GetSkeletonResourceVal())
+    {
+      return;
+    }
+    SkeletonPtr skel = skelComp->GetSkeletonResourceVal();
 
     MeshRawPtrArray meshCollector;
     mesh->GetAllMeshes(meshCollector);
@@ -181,13 +186,15 @@ namespace ToolKit
       ProgramPtr prg       = CreateProgram(skinShader, m_mat->m_fragmetShader);
       BindProgram(prg);
 
+      skelComp->map->UpdateGPUTexture();
       // Bind bone data
       {
-        SetTexture(2, skeleton->m_bindPoseTexture->m_textureId);
-        SetTexture(3, skeleton->m_boneTransformTexture->m_textureId);
+        SetTexture(2, skel->m_bindPoseTexture->m_textureId);
+        SetTexture(3, skelComp->map->boneTransformNodeTexture->m_textureId);
 
         GLint loc       = glGetUniformLocation(prg->m_handle, "numBones");
-        float boneCount = static_cast<float>(skeleton->m_bones.size());
+        float boneCount = static_cast<float>(
+            skelComp->GetSkeletonResourceVal()->m_bones.size());
         glUniform1fv(loc, 1, &boneCount);
       }
       GLenum afterSetting = glGetError();

@@ -144,6 +144,11 @@ namespace ToolKit
     *this = var;
   }
 
+  ParameterVariant::ParameterVariant(const SkeletonPtr& var)
+  {
+    *this = var;
+  }
+
   ParameterVariant::VariantType ParameterVariant::GetType() const
   {
     return m_type;
@@ -270,11 +275,21 @@ namespace ToolKit
   }
 
   /**
-   * Assign a AnimationPtr to the value of the variant.
+   * Assign a AnimRecprdPtrMap to the value of the variant.
    */
   ParameterVariant& ParameterVariant::operator=(const AnimRecordPtrMap& var)
   {
     m_type = VariantType::AnimRecordPtrMap;
+    AsignVal(var);
+    return *this;
+  }
+
+  /**
+   * Assign a SkeletonPtr to the value of the variant.
+   */
+  ParameterVariant& ParameterVariant::operator=(const SkeletonPtr& var)
+  {
+    m_type = VariantType::SkeletonPtr;
     AsignVal(var);
     return *this;
   }
@@ -432,6 +447,10 @@ namespace ToolKit
           state->m_animation->SerializeRef(doc, elementNode);
         }
       }
+    }
+    break;
+    case VariantType::SkeletonPtr: {
+      GetCVar<SkeletonPtr>()->SerializeRef(doc, node);
     }
     break;
     default:
@@ -627,6 +646,19 @@ namespace ToolKit
         list.insert(std::make_pair(signalName, record));
       }
       m_var = list;
+    }
+    break;
+    case VariantType::SkeletonPtr: {
+      String file = Resource::DeserializeRef(parent);
+      if (file.empty())
+      {
+        m_var = std::make_shared<Skeleton>();
+      }
+      else
+      {
+        file  = SkeletonPath(file);
+        m_var = GetSkeletonManager()->Create<Skeleton>(file);
+      }
     }
     break;
     default:

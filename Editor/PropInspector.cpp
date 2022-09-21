@@ -248,7 +248,7 @@ namespace ToolKit
         }
 
         DropSubZone("Hdri##" + id,
-                    static_cast<uint>(UI::m_imageIcon->m_textureId),
+                    UI::m_imageIcon->m_textureId,
                     file,
                     [&var](const DirectoryEntry& entry) -> void {
                       if (GetResourceType(entry.m_ext) == ResourceType::Hdri)
@@ -264,6 +264,35 @@ namespace ToolKit
                     });
         break;
       }
+      case ParameterVariant::VariantType::SkeletonPtr: {
+        SkeletonPtr mref = var->GetVar<SkeletonPtr>();
+        String file, id;
+        if (mref)
+        {
+          id   = std::to_string(mref->m_id);
+          file = mref->GetFile();
+        }
+
+        auto dropZoneFnc = [&var, &comp](const DirectoryEntry& entry) -> void {
+          if (GetResourceType(entry.m_ext) == ResourceType::Skeleton)
+          {
+            *var = GetSkeletonManager()->Create<Skeleton>(entry.GetFullPath());
+            if (comp->GetType() == ComponentType::SkeletonComponent)
+            {
+              SkeletonComponent* skelComp = (SkeletonComponent*) comp.get();
+              skelComp->Init();
+            }
+          }
+          else
+          {
+            GetLogger()->WriteConsole(LogType::Error,
+                                      "Only skeletons are accepted.");
+          }
+        };
+        DropSubZone(
+            "Skeleton##" + id, UI::m_boneIcon->m_textureId, file, dropZoneFnc);
+      }
+      break;
       case ParameterVariant::VariantType::AnimRecordPtrMap: {
         ShowAnimControllerComponent(var, comp);
       }
@@ -948,7 +977,8 @@ namespace ToolKit
                            "\0Mesh Component"
                            "\0Material Component"
                            "\0Environment Component"
-                           "\0Animation Controller Component"))
+                           "\0Animation Controller Component"
+                           "\0Skeleton Component"))
           {
             Component* newComponent = nullptr;
             switch (dataType)
@@ -964,6 +994,9 @@ namespace ToolKit
               break;
             case 4:
               newComponent = new AnimControllerComponent;
+              break;
+            case 5:
+              newComponent = new SkeletonComponent;
               break;
             default:
               break;
