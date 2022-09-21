@@ -164,6 +164,9 @@ namespace ToolKit
                                                 Value& newVal) -> void {
       GetMaterialComponent()->SetMaterialVal(std::get<MaterialPtr>(newVal));
     };
+
+    GetMeshComponent()->ParamMesh().m_exposed       = false;
+    GetMeshComponent()->ParamCastShadow().m_exposed = false;
   }
 
   Entity* Surface::CopyTo(Entity* other) const
@@ -439,6 +442,9 @@ namespace ToolKit
       // Override surface material.
       SetMaterialVal(std::get<MaterialPtr>(newVal));
     };
+
+    GetMeshComponent()->ParamMesh().m_exposed       = false;
+    GetMeshComponent()->ParamCastShadow().m_exposed = false;
   }
 
 } // namespace ToolKit
