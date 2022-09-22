@@ -770,6 +770,15 @@ namespace ToolKit
         (*dwMesh)->GetMeshComponent()->SetMeshVal(mesh);
         mesh->Init(false);
 
+        if (mesh->IsSkinned())
+        {
+          SkeletonComponentPtr skelComp = std::make_shared<SkeletonComponent>();
+          skelComp->SetSkeletonResourceVal(
+              ((SkinMesh*) mesh.get())->m_skeleton);
+          (*dwMesh)->AddComponent(skelComp);
+          skelComp->Init();
+        }
+
         // Load bounding box once
         *boundingBox = CreateBoundingBoxDebugObject((*dwMesh)->GetAABB(true));
 

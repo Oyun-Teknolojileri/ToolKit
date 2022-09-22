@@ -162,11 +162,20 @@ namespace ToolKit
         ShaderPath("defaultSkin.shader", true));
 
     SkeletonComponentPtr skelComp = object->GetComponent<SkeletonComponent>();
-    if (!skelComp->GetSkeletonResourceVal())
+    SkeletonPtr skel              = skelComp->GetSkeletonResourceVal();
+    if (skel == nullptr)
     {
       return;
     }
-    SkeletonPtr skel = skelComp->GetSkeletonResourceVal();
+    skelComp->map->UpdateGPUTexture();
+
+    // Bind bone textures
+    // This is valid because these slots will be used by every shader program
+    //   below (Renderer::TextureSlot system).
+    // But bone count can't be bound here because its location changes every
+    //   shader program
+    SetTexture(2, skel->m_bindPoseTexture->m_textureId);
+    SetTexture(3, skelComp->map->boneTransformNodeTexture->m_textureId);
 
     MeshRawPtrArray meshCollector;
     mesh->GetAllMeshes(meshCollector);
@@ -186,17 +195,14 @@ namespace ToolKit
       ProgramPtr prg       = CreateProgram(skinShader, m_mat->m_fragmetShader);
       BindProgram(prg);
 
-      skelComp->map->UpdateGPUTexture();
-      // Bind bone data
+      // Bind bone count
       {
-        SetTexture(2, skel->m_bindPoseTexture->m_textureId);
-        SetTexture(3, skelComp->map->boneTransformNodeTexture->m_textureId);
-
         GLint loc       = glGetUniformLocation(prg->m_handle, "numBones");
         float boneCount = static_cast<float>(
             skelComp->GetSkeletonResourceVal()->m_bones.size());
         glUniform1fv(loc, 1, &boneCount);
       }
+
       GLenum afterSetting = glGetError();
 
       FeedUniforms(prg);
