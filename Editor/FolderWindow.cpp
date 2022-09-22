@@ -3,6 +3,7 @@
 #include "App.h"
 #include "ConsoleWindow.h"
 #include "DirectionComponent.h"
+#include "Framebuffer.h"
 #include "Gizmo.h"
 #include "GlobalDef.h"
 #include "Light.h"
@@ -81,16 +82,18 @@ namespace ToolKit
       const Vec2& thumbSize = g_app->m_thumbnailSize;
       auto renderThumbFn    = [this, &thumbSize](Camera* cam,
                                               Entity* obj) -> void {
-        RenderTarget* thumb      = nullptr;
-        RenderTargetPtr thumbPtr = nullptr;
-        String fullPath          = GetFullPath();
+        FramebufferPtr thumbFbPtr = nullptr;
+        Framebuffer* thumbFb      = nullptr;
+        RenderTarget* thumb       = nullptr;
+        RenderTargetPtr thumbPtr  = nullptr;
+        String fullPath           = GetFullPath();
 
         if (g_app->m_thumbnailCache.find(fullPath) !=
             g_app->m_thumbnailCache.end())
         {
           thumbPtr = g_app->m_thumbnailCache[fullPath];
-          if (thumbPtr->m_width - static_cast<int>(thumbSize.x) == 0 &&
-              thumbPtr->m_height - static_cast<int>(thumbSize.y) == 0)
+          if (thumbPtr->m_width - (int) thumbSize.x == 0 &&
+              thumbPtr->m_height - (int) thumbSize.y == 0)
           {
             thumb = thumbPtr.get();
           }
@@ -102,9 +105,15 @@ namespace ToolKit
                                                     (uint) thumbSize.y);
           thumb    = thumbPtr.get();
           thumb->Init();
+          thumbFbPtr = std::make_shared<Framebuffer>();
+          thumbFbPtr->Init(
+              {(uint) thumbSize.x, (uint) thumbSize.y, 0, false, true});
+          thumbFb = thumbFbPtr.get();
+          thumbFb->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                 thumb);
         }
 
-        g_app->m_renderer->SwapRenderTarget(&thumb);
+        g_app->m_renderer->SwapFramebuffer(&thumbFb);
 
         DirectionalLight light;
         light.m_node->SetTranslation({5.0f, 5.0f, 5.0f});
@@ -114,7 +123,7 @@ namespace ToolKit
 
         g_app->m_renderer->Render(obj, cam, lights);
 
-        g_app->m_renderer->SwapRenderTarget(&thumb, false);
+        g_app->m_renderer->SwapFramebuffer(&thumbFb, false);
         g_app->m_thumbnailCache[GetFullPath()] = thumbPtr;
       };
 

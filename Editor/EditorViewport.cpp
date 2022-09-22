@@ -93,12 +93,12 @@ namespace ToolKit
                            m_additionalWindowFlags))
       {
         UpdateContentArea();
+        ComitResize();
         UpdateWindow();
         HandleStates();
         DrawCommands();
         HandleDrop();
         DrawOverlays();
-        ComitResize();
         UpdateSnaps();
       }
       ImGui::End();
@@ -275,7 +275,17 @@ namespace ToolKit
 
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
-          ImGui::Image(Convert2ImGuiTexture(m_viewportImage),
+          uint texId = 0;
+          if (m_framebuffer->GetAttachment(
+                  Framebuffer::Attachment::ColorAttachment0) != nullptr)
+          {
+            texId =
+                m_framebuffer
+                    ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
+                    ->m_textureId;
+          }
+
+          ImGui::Image(ConvertUIntImGuiTexture(texId),
                        m_wndContentAreaSize,
                        Vec2(0.0f, 0.0f),
                        Vec2(1.0f, -1.0f));

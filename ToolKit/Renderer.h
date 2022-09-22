@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Framebuffer.h"
 #include "Light.h"
 #include "RenderState.h"
 #include "Sky.h"
@@ -12,6 +13,8 @@
 
 namespace ToolKit
 {
+  class Sky;
+  class Framebuffer;
   class Viewport;
 
   class TK_API Renderer
@@ -37,13 +40,12 @@ namespace ToolKit
 
     void SetRenderState(const RenderState* const state, ProgramPtr program);
 
-    void SetRenderTarget(RenderTarget* renderTarget,
+    void SetFramebuffer(Framebuffer* fb,
+                        bool clear        = true,
+                        const Vec4& color = {0.2f, 0.2f, 0.2f, 1.0f});
+    void SwapFramebuffer(Framebuffer** fb,
                          bool clear        = true,
                          const Vec4& color = {0.2f, 0.2f, 0.2f, 1.0f});
-
-    void SwapRenderTarget(RenderTarget** renderTarget,
-                          bool clear        = true,
-                          const Vec4& color = {0.2f, 0.2f, 0.2f, 1.0f});
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
@@ -164,10 +166,10 @@ namespace ToolKit
     Mat4 m_view;
     Mat4 m_model;
     LightRawPtrArray m_lights;
-    Camera* m_cam                = nullptr;
-    Camera* m_shadowMapCamera    = nullptr;
-    Material* m_mat              = nullptr;
-    RenderTarget* m_renderTarget = nullptr;
+    Camera* m_cam              = nullptr;
+    Camera* m_shadowMapCamera  = nullptr;
+    Material* m_mat            = nullptr;
+    Framebuffer* m_framebuffer = nullptr;
     typedef struct RHIConstants
     {
       static constexpr ubyte textureSlotCount = 8;

@@ -42,8 +42,24 @@ namespace ToolKit
 
   void Light::ParameterEventConstructor()
   {
-    ParamShadowResolution().m_onValueChangedFn =
-        [this](Value& oldVal, Value& newVal) -> void { ReInitShadowMap(); };
+    ParamShadowResolution().m_onValueChangedFn = [this](Value& oldVal,
+                                                        Value& newVal) -> void {
+      const Vec2 val = std::get<Vec2>(newVal);
+      if (val.x > 0.0f && val.y > 0.0f &&
+          !glm::epsilonEqual(val.x, 0.0f, 0.9f) &&
+          !glm::epsilonEqual(val.y, 0.0f, 0.9f))
+      {
+        ReInitShadowMap();
+      }
+    };
+
+    ParamPCFSampleSize().m_onValueChangedFn = [](Value& oldVal,
+                                                 Value& newVal) -> void {
+      if (glm::epsilonEqual(std::get<float>(newVal), 0.0f, 0.00001f))
+      {
+        newVal = 1.0f;
+      }
+    };
   }
 
   EntityType Light::GetType() const
@@ -70,29 +86,27 @@ namespace ToolKit
       return;
     }
 
-    // Store current framebuffer
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+    Vec2 res   = GetShadowResolutionVal();
+    m_shadowRt = new RenderTarget((int) res.x,
+                                  (int) res.y,
+                                  {0,
+                                   true,
+                                   GraphicTypes::Target2D,
+                                   GraphicTypes::UVClampToBorder,
+                                   GraphicTypes::UVClampToBorder,
+                                   GraphicTypes::UVClampToBorder,
+                                   GraphicTypes::SampleNearest,
+                                   GraphicTypes::SampleNearest,
+                                   GraphicTypes::FormatDepthComponent,
+                                   GraphicTypes::FormatDepthComponent,
+                                   GraphicTypes::TypeFloat,
+                                   Vec4(1.0f)});
+    m_shadowRt->Init();
 
-    m_depthRenderTarget =
-        new RenderTarget(static_cast<uint>(GetShadowResolutionVal().x),
-                         static_cast<uint>(GetShadowResolutionVal().y),
-                         {0,
-                          false,
-                          true,
-                          GraphicTypes::Target2D,
-                          GraphicTypes::UVClampToBorder,
-                          GraphicTypes::UVClampToBorder,
-                          GraphicTypes::UVClampToBorder,
-                          GraphicTypes::SampleNearest,
-                          GraphicTypes::SampleNearest,
-                          GraphicTypes::FormatDepthComponent,
-                          GraphicTypes::FormatDepthComponent,
-                          GraphicTypes::TypeFloat,
-                          GraphicTypes::DepthAttachment,
-                          Vec4(1.0f)});
-    m_depthRenderTarget->Init();
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+    m_depthFramebuffer = new Framebuffer();
+    m_depthFramebuffer->Init({(uint) res.x, (uint) res.y, 0, false, false});
+    m_depthFramebuffer->SetAttachment(Framebuffer::Attachment::DepthAttachment,
+                                      m_shadowRt);
 
     InitShadowMapDepthMaterial();
     m_shadowMapInitialized = true;
@@ -100,13 +114,24 @@ namespace ToolKit
 
   void Light::UnInitShadowMap()
   {
-    SafeDel(m_depthRenderTarget);
+    if (!m_shadowMapInitialized)
+    {
+      return;
+    }
+
+    SafeDel(m_depthFramebuffer);
+    SafeDel(m_shadowRt);
     m_shadowMapInitialized = false;
+  }
+
+  Framebuffer* Light::GetShadowMapFramebuffer()
+  {
+    return m_depthFramebuffer;
   }
 
   RenderTarget* Light::GetShadowMapRenderTarget()
   {
-    return m_depthRenderTarget;
+    return m_shadowRt;
   }
 
   MaterialPtr Light::GetShadowMaterial()
@@ -198,29 +223,27 @@ namespace ToolKit
       return;
     }
 
-    // Store current framebuffer
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+    Vec2 res   = GetShadowResolutionVal();
+    m_shadowRt = new RenderTarget((int) res.x,
+                                  (int) res.y,
+                                  {0,
+                                   true,
+                                   GraphicTypes::TargetCubeMap,
+                                   GraphicTypes::UVClampToBorder,
+                                   GraphicTypes::UVClampToBorder,
+                                   GraphicTypes::UVClampToBorder,
+                                   GraphicTypes::SampleNearest,
+                                   GraphicTypes::SampleNearest,
+                                   GraphicTypes::FormatDepthComponent,
+                                   GraphicTypes::FormatDepthComponent,
+                                   GraphicTypes::TypeFloat,
+                                   Vec4(1.0f)});
+    m_shadowRt->Init();
 
-    m_depthRenderTarget =
-        new RenderTarget(static_cast<uint>(GetShadowResolutionVal().x),
-                         static_cast<uint>(GetShadowResolutionVal().y),
-                         {0,
-                          false,
-                          true,
-                          GraphicTypes::TargetCubeMap,
-                          GraphicTypes::UVClampToBorder,
-                          GraphicTypes::UVClampToBorder,
-                          GraphicTypes::UVClampToBorder,
-                          GraphicTypes::SampleNearest,
-                          GraphicTypes::SampleNearest,
-                          GraphicTypes::FormatDepthComponent,
-                          GraphicTypes::FormatDepthComponent,
-                          GraphicTypes::TypeFloat,
-                          GraphicTypes::DepthAttachment,
-                          Vec4(1.0f)});
-    m_depthRenderTarget->Init();
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+    m_depthFramebuffer = new Framebuffer();
+    m_depthFramebuffer->Init({(uint) res.x, (uint) res.y, 0, false, false});
+    m_depthFramebuffer->SetAttachment(Framebuffer::Attachment::DepthAttachment,
+                                      m_shadowRt);
 
     InitShadowMapDepthMaterial();
     m_shadowMapInitialized = true;

@@ -340,24 +340,18 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetRenderTarget(RenderTarget* renderTarget,
-                                 bool clear,
-                                 const Vec4& color)
+  void Renderer::SetFramebuffer(Framebuffer* fb, bool clear, const Vec4& color)
   {
-    if (m_renderTarget == renderTarget && m_renderTarget != nullptr)
+    if (fb == m_framebuffer && fb != nullptr)
     {
       return;
     }
 
-    if (renderTarget != nullptr)
+    if (fb != nullptr)
     {
-      glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->m_frameBufferId);
-      glViewport(0, 0, renderTarget->m_width, renderTarget->m_height);
-
-      if (glm::all(glm::epsilonNotEqual(color, m_bgColor, 0.001f)))
-      {
-        glClearColor(color.r, color.g, color.b, color.a);
-      }
+      FramebufferSettings fbSet = fb->GetSettings();
+      glBindFramebuffer(GL_FRAMEBUFFER, fb->GetFboId());
+      glViewport(0, 0, fbSet.width, fbSet.height);
 
       if (clear)
       {
@@ -376,22 +370,22 @@ namespace ToolKit
       glViewport(0, 0, m_windowSize.x, m_windowSize.y);
     }
 
-    m_renderTarget = renderTarget;
+    m_framebuffer = fb;
   }
 
-  void Renderer::SwapRenderTarget(RenderTarget** renderTarget,
-                                  bool clear,
-                                  const Vec4& color)
+  void Renderer::SwapFramebuffer(Framebuffer** fb,
+                                 bool clear,
+                                 const Vec4& color)
   {
-    RenderTarget* tmp = *renderTarget;
-    *renderTarget     = m_renderTarget;
-    SetRenderTarget(tmp, clear, color);
+    Framebuffer* tmp = *fb;
+    *fb              = m_framebuffer;
+    SetFramebuffer(tmp, clear, color);
   }
 
   void Renderer::SetViewport(Viewport* viewport)
   {
     m_viewportSize = UVec2(viewport->m_wndContentAreaSize);
-    SetRenderTarget(viewport->m_viewportImage);
+    SetFramebuffer(viewport->m_framebuffer);
   }
 
   void Renderer::SetViewportSize(uint width, uint height)
@@ -899,20 +893,19 @@ namespace ToolKit
 
         if (light->GetType() == EntityType::Entity_PointLight)
         {
-          glBindFramebuffer(GL_FRAMEBUFFER,
-                            light->GetShadowMapRenderTarget()->m_frameBufferId);
+          SetFramebuffer(light->GetShadowMapFramebuffer());
           glViewport(0,
                      0,
                      static_cast<uint>(light->GetShadowResolutionVal().x),
                      static_cast<uint>(light->GetShadowResolutionVal().y));
+
           for (unsigned int i = 0; i < 6; ++i)
           {
-            glFramebufferTexture2D(
-                GL_FRAMEBUFFER,
-                GL_DEPTH_ATTACHMENT,
-                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                light->GetShadowMapRenderTarget()->m_textureId,
-                0);
+            light->GetShadowMapFramebuffer()->SetAttachment(
+                Framebuffer::Attachment::DepthAttachment,
+                light->GetShadowMapRenderTarget(),
+                (Framebuffer::CubemapFace) i);
+
             m_shadowMapCamera->m_node->SetOrientation(
                 rotations[i], TransformationSpace::TS_WORLD);
             m_shadowMapCamera->m_node->SetScale(scales[i]);
@@ -927,14 +920,16 @@ namespace ToolKit
 
           glEnable(GL_POLYGON_OFFSET_FILL);
 
-          SetRenderTarget(light->GetShadowMapRenderTarget());
+          GLenum err = glGetError();
+
+          SetFramebuffer(light->GetShadowMapFramebuffer());
           renderForShadowMapFn(light, entities);
 
           glDisable(GL_POLYGON_OFFSET_FILL);
         }
         else // Spot light
         {
-          SetRenderTarget(light->GetShadowMapRenderTarget());
+          SetFramebuffer(light->GetShadowMapFramebuffer());
           renderForShadowMapFn(light, entities);
         }
       }
@@ -1445,13 +1440,6 @@ namespace ToolKit
         glUniform1f(loc, innAngle);
       }
 
-      // Sanity check
-      if (currLight->GetPCFSampleSizeVal() == 0.0f &&
-          currLight->GetCastShadowVal())
-      {
-        currLight->SetPCFSampleSizeVal(1.0f);
-      }
-
       float size       = currLight->GetPCFSampleSizeVal();
       float kernelSize = (float) currLight->GetPCFKernelSizeVal();
       if (glm::epsilonEqual(kernelSize, 0.0f, 0.00001f))
@@ -1522,7 +1510,11 @@ namespace ToolKit
         }
 
         SetShadowMapTexture(
-            type, currLight->GetShadowMapRenderTarget()->m_textureId, program);
+            type,
+            currLight->GetShadowMapFramebuffer()
+                ->GetAttachment(Framebuffer::Attachment::DepthAttachment)
+                ->m_textureId,
+            program);
       }
 
       loc = glGetUniformLocation(program->m_handle,

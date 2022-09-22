@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Entity.h"
+#include "Framebuffer.h"
 #include "Primative.h"
 #include "Types.h"
 
@@ -8,6 +9,7 @@
 
 namespace ToolKit
 {
+  class Framebuffer;
   class TK_API Light : public Entity
   {
    public:
@@ -22,6 +24,7 @@ namespace ToolKit
     // Shadow operations
     virtual void InitShadowMap();
     virtual void UnInitShadowMap();
+    Framebuffer* GetShadowMapFramebuffer();
     RenderTarget* GetShadowMapRenderTarget();
     MaterialPtr GetShadowMaterial();
 
@@ -48,7 +51,8 @@ namespace ToolKit
     bool m_shadowMapInitialized       = false;
     bool m_shadowMapResolutionChanged = false;
     MaterialPtr m_shadowMapMaterial   = nullptr;
-    RenderTarget* m_depthRenderTarget = nullptr;
+    Framebuffer* m_depthFramebuffer   = nullptr;
+    RenderTarget* m_shadowRt          = nullptr;
   };
 
   class TK_API DirectionalLight : public Light

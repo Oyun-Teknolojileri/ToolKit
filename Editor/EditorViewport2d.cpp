@@ -66,12 +66,12 @@ namespace ToolKit
                            ImGuiWindowFlags_NoScrollbar))
       {
         UpdateContentArea();
+        ComitResize();
         UpdateWindow();
         HandleStates();
         DrawCommands();
         HandleDrop();
         DrawOverlays();
-        ComitResize();
         UpdateSnaps();
       }
       ImGui::End();
@@ -264,7 +264,18 @@ namespace ToolKit
                                      ImGuiWindowFlags_NoScrollWithMouse |
                                      ImGuiWindowFlags_AlwaysUseWindowPadding);
           m_canvasPos = ImGui::GetWindowPos();
-          ImGui::Image(Convert2ImGuiTexture(m_viewportImage),
+
+          uint texId = 0;
+          if (m_framebuffer->GetAttachment(
+                  Framebuffer::Attachment::ColorAttachment0) != nullptr)
+          {
+            texId =
+                m_framebuffer
+                    ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
+                    ->m_textureId;
+          }
+
+          ImGui::Image(ConvertUIntImGuiTexture(texId),
                        m_canvasSize,
                        ImVec2(0.0f, 0.0f),
                        ImVec2(1.0f, -1.0f));

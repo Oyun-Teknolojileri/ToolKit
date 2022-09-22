@@ -623,16 +623,9 @@ namespace ToolKit
                              const RenderTargetSettigs& settings)
       : RenderTarget()
   {
-    m_width         = width;
-    m_height        = height;
-    m_frameBufferId = 0;
-    m_depthBufferId = 0;
-    m_settings      = settings;
-  }
-
-  RenderTarget::~RenderTarget()
-  {
-    UnInit();
+    m_width    = width;
+    m_height   = height;
+    m_settings = settings;
   }
 
   void RenderTarget::Load()
@@ -719,117 +712,10 @@ namespace ToolKit
                        &(m_settings.borderColor[0]));
     }
 
-    glGenFramebuffers(1, &m_frameBufferId);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_frameBufferId);
-
-    // Attach 2D texture to this FBO
-#ifndef __EMSCRIPTEN__
-    bool msaaRTunsupported = false;
-    if (glFramebufferTexture2DMultisampleEXT == nullptr)
-    {
-      msaaRTunsupported = true;
-
-      static bool notReported = true;
-      if (notReported)
-      {
-        GetLogger()->Log(
-            "Unsupported Extension: glFramebufferTexture2DMultisampleEXT");
-        notReported = false;
-      }
-    }
-
-    bool goForMsaa = m_settings.Msaa > 0 && !msaaRTunsupported;
-    if (goForMsaa)
-    {
-      if (m_settings.Target == GraphicTypes::Target2D)
-      {
-        glFramebufferTexture2DMultisampleEXT(
-            GL_FRAMEBUFFER,
-            static_cast<int>(m_settings.Attachment),
-            static_cast<int>(m_settings.Target),
-            m_textureId,
-            0,
-            m_settings.Msaa);
-      }
-      else if (m_settings.Target == GraphicTypes::TargetCubeMap)
-      {
-        for (unsigned int i = 0; i < 6; ++i)
-        {
-          glFramebufferTexture2DMultisampleEXT(
-              GL_FRAMEBUFFER,
-              static_cast<int>(m_settings.Attachment),
-              GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-              m_textureId,
-              0,
-              m_settings.Msaa);
-        }
-      }
-    }
-    else
-#endif
-    {
-      glFramebufferTexture(GL_FRAMEBUFFER,
-                           static_cast<int>(m_settings.Attachment),
-                           m_textureId,
-                           0);
-    }
-
-    if (m_settings.DepthStencil)
-    {
-      glGenRenderbuffers(1, &m_depthBufferId);
-      glBindRenderbuffer(GL_RENDERBUFFER, m_depthBufferId);
-
-#ifndef __EMSCRIPTEN__
-      if (goForMsaa)
-      {
-        glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER,
-                                            m_settings.Msaa,
-                                            GL_DEPTH24_STENCIL8,
-                                            m_width,
-                                            m_height);
-      }
-      else
-#endif
-      {
-        glRenderbufferStorage(
-            GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
-      }
-
-      // Attach depth buffer to FBO
-      glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                                GL_DEPTH_STENCIL_ATTACHMENT,
-                                GL_RENDERBUFFER,
-                                m_depthBufferId);
-    }
-
-    if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) !=
-        GL_FRAMEBUFFER_COMPLETE)
-    {
-      m_initiated = false;
-      glDeleteTextures(1, &m_textureId);
-      glDeleteFramebuffers(1, &m_frameBufferId);
-      glDeleteRenderbuffers(1, &m_depthBufferId);
-    }
-    else
-    {
-      m_initiated = true;
-    }
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); // Restore backbuffer.
+    m_initiated = true;
 
     // Restore previous render target.
     glBindTexture(static_cast<int>(m_settings.Target), currId);
-  }
-
-  void RenderTarget::UnInit()
-  {
-    Texture::UnInit();
-
-    glDeleteFramebuffers(1, &m_frameBufferId);
-    glDeleteRenderbuffers(1, &m_depthBufferId);
-    m_initiated = false;
   }
 
   void RenderTarget::Reconstrcut(uint width,

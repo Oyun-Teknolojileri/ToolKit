@@ -77,6 +77,9 @@ namespace ToolKit
 
 #define Convert2ImGuiTexture(TexturePtr)                                       \
   (void*) (intptr_t) (TexturePtr->m_textureId) // NOLINT
-  }                                            // namespace Editor
+
+#define ConvertUIntImGuiTexture(uint) (void*) (intptr_t) (uint)
+
+  } // namespace Editor
 
 } // namespace ToolKit

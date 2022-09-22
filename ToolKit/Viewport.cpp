@@ -64,7 +64,8 @@ namespace ToolKit
 
   Viewport::~Viewport()
   {
-    SafeDel(m_viewportImage);
+    SafeDel(m_framebuffer);
+    SafeDel(m_renderTarget);
   }
 
   void Viewport::OnResizeContentArea(float width, float height)
@@ -115,18 +116,37 @@ namespace ToolKit
 
   void Viewport::ResetViewportImage(const RenderTargetSettigs& settings)
   {
-    if (m_viewportImage)
+    if (m_framebuffer == nullptr)
     {
-      m_viewportImage->Reconstrcut((uint) m_wndContentAreaSize.x,
-                                   (uint) m_wndContentAreaSize.y,
-                                   settings);
+      m_framebuffer = new Framebuffer();
+    }
+
+    m_framebuffer->UnInit();
+
+    // Remove old render target
+    if (m_renderTarget)
+    {
+      SafeDel(m_renderTarget);
+    }
+
+    m_framebuffer->Init({(uint) m_wndContentAreaSize.x,
+                         (uint) m_wndContentAreaSize.y,
+                         settings.Msaa,
+                         false,
+                         true});
+
+    m_renderTarget = new RenderTarget(
+        (uint) m_wndContentAreaSize.x, (uint) m_wndContentAreaSize.y, settings);
+    m_renderTarget->Init();
+
+    if (m_renderTarget->m_initiated)
+    {
+      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                   m_renderTarget);
     }
     else
     {
-      m_viewportImage = new RenderTarget((uint) m_wndContentAreaSize.x,
-                                         (uint) m_wndContentAreaSize.y,
-                                         settings);
-      m_viewportImage->Init();
+      SafeDel(m_renderTarget);
     }
   }
 

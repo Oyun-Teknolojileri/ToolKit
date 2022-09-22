@@ -34,8 +34,8 @@
 			samplerCube pointLightShadowMap[4];
 			int castShadow[12];
 			float normalBias[12];
-			float shadowSlopedBias[12];
 			float shadowFixedBias[12];
+			float shadowSlopedBias[12];
 			float shadowMapCamFarPlane[12];
 			float PCFSampleHalfSize[12];
 			float PCFSampleDistance[12];

@@ -127,7 +127,6 @@ namespace ToolKit
   struct RenderTargetSettigs
   {
     byte Msaa                   = 0;
-    bool DepthStencil           = true;
     bool useBorderColor         = false;
     GraphicTypes Target         = GraphicTypes::Target2D;
     GraphicTypes WarpS          = GraphicTypes::UVRepeat;
@@ -138,7 +137,6 @@ namespace ToolKit
     GraphicTypes InternalFormat = GraphicTypes::FormatRGBA;
     GraphicTypes Format         = GraphicTypes::FormatRGBA;
     GraphicTypes Type           = GraphicTypes::TypeUnsignedByte;
-    GraphicTypes Attachment     = GraphicTypes::ColorAttachment0;
     Vec4 borderColor            = Vec4(0.0f);
   };
 
@@ -151,21 +149,15 @@ namespace ToolKit
     RenderTarget(uint widht,
                  uint height,
                  const RenderTargetSettigs& settings = RenderTargetSettigs());
-    virtual ~RenderTarget();
 
     void Load() override;
     void Init(bool flushClientSideArray = true) override;
-    void UnInit() override;
     void Reconstrcut(uint width,
                      uint height,
                      const RenderTargetSettigs& settings);
     const RenderTargetSettigs& GetSettings() const;
 
    public:
-    uint m_frameBufferId = 0;
-    uint m_depthBufferId = 0;
-
-   private:
     RenderTargetSettigs m_settings;
   };
 

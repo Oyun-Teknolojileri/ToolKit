@@ -99,6 +99,7 @@ namespace ToolKit
   typedef std::shared_ptr<class Texture> TexturePtr;
   typedef std::shared_ptr<class Hdri> HdriPtr;
   typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;
+  typedef std::shared_ptr<class Framebuffer> FramebufferPtr;
   typedef std::shared_ptr<class SpriteSheet> SpriteSheetPtr;
   typedef std::shared_ptr<class Mesh> MeshPtr;
   typedef std::shared_ptr<class Skeleton> SkeletonPtr;

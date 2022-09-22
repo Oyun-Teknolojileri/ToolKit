@@ -4,8 +4,8 @@
  * @file Header for ViewportBase, Viewport and related structures.
  */
 
+#include "Framebuffer.h"
 #include "MathUtil.h"
-#include "Texture.h"
 #include "Types.h"
 
 /**
@@ -13,6 +13,7 @@
  */
 namespace ToolKit
 {
+  class Framebuffer;
   struct RenderTargetSettigs;
 
   /**
@@ -200,7 +201,9 @@ namespace ToolKit
     void ResetViewportImage(const RenderTargetSettigs& settings);
 
    public:
-    RenderTarget* m_viewportImage = nullptr; //!< Render target of viewport.
+    RenderTarget* m_renderTarget = nullptr; //!< Render target of viewport
+    Framebuffer* m_framebuffer =
+        nullptr; //!< Framebuffer of the render target of the viewport
 
     // Window properties.
     Vec2 m_contentAreaLocation; //!< Position of content area in screen space.

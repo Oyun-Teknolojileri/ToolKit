@@ -9,6 +9,7 @@
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
 #include "FolderWindow.h"
+#include "Framebuffer.h"
 #include "GL/glew.h"
 #include "Gizmo.h"
 #include "GlobalDef.h"
@@ -290,7 +291,7 @@ namespace ToolKit
 
       // Viewports set their own render target.
       // Set the app framebuffer back for UI.
-      m_renderer->SetRenderTarget(nullptr);
+      m_renderer->SetFramebuffer(nullptr);
 
       // Render UI.
       UI::EndUI();
@@ -1125,13 +1126,14 @@ namespace ToolKit
 
         RenderTargetSettigs rtSet;
         rtSet.WarpS = rtSet.WarpT = GraphicTypes::UVClampToEdge;
-        RenderTarget stencilMask(static_cast<int>(viewport->m_size.x),
-                                 static_cast<int>(viewport->m_size.y),
-                                 rtSet);
+        RenderTarget stencilMask(viewport->m_size.x, viewport->m_size.y, rtSet);
         stencilMask.Init();
+        Framebuffer stencilFb;
+        stencilFb.Init({viewport->m_size.x, viewport->m_size.y, 0, true, true});
+        stencilFb.SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                &stencilMask);
 
-        m_renderer->SetRenderTarget(
-            &stencilMask, true, {0.0f, 0.0f, 0.0f, 1.0});
+        m_renderer->SetFramebuffer(&stencilFb, true, {0.0f, 0.0f, 0.0f, 1.0});
 
         glEnable(GL_STENCIL_TEST);
         glStencilMask(0xFF);
@@ -1191,7 +1193,7 @@ namespace ToolKit
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
 
-        m_renderer->SetRenderTarget(viewport->m_viewportImage, false);
+        m_renderer->SetFramebuffer(viewport->m_framebuffer, false);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -1327,10 +1329,10 @@ namespace ToolKit
             }
             playWindow = m_simulationWindow;
           }
-          m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
+          m_renderer->SwapFramebuffer(&playWindow->m_framebuffer);
           plugin->Frame(deltaTime, playWindow);
 
-          m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
+          m_renderer->SwapFramebuffer(&playWindow->m_framebuffer);
         }
       }
     }
