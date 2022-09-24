@@ -443,6 +443,13 @@ namespace ToolKit
     return m_bones[index];
   }
 
+  void Skeleton::CopyTo(Resource* other)
+  {
+    Skeleton* dst = static_cast<Skeleton*>(other);
+    dst->SetFile(GetFile());
+    dst->Load();
+  }
+
   SkeletonManager::SkeletonManager()
   {
     m_type = ResourceType::Skeleton;

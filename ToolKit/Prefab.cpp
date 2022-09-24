@@ -16,6 +16,19 @@ namespace ToolKit
 
   Prefab::~Prefab()
   {
+    UnInit();
+  }
+  void Prefab::UnInit()
+  {
+    if (m_initiated)
+    {
+      m_currentScene->RemoveEntity(m_instanceEntities);
+      for (Entity* ntt : m_instanceEntities)
+      {
+        SafeDel(ntt);
+      }
+    }
+    m_initiated = false;
   }
 
   EntityType Prefab::GetType() const
@@ -37,18 +50,23 @@ namespace ToolKit
     return GetPrefabRoot(ntt->m_node->m_parent->m_entity);
   }
 
-  void Prefab::Init(Scene* currentScene)
+  void Prefab::Init(Scene* curScene)
   {
-    prefabScene = GetSceneManager()->Create<Scene>(GetScenePathVal());
-    if (prefabScene == nullptr)
+    if (m_initiated)
+    {
+      return;
+    }
+    m_currentScene = curScene;
+    m_prefabScene  = GetSceneManager()->Create<Scene>(GetScenePathVal());
+    if (m_prefabScene == nullptr)
     {
       GetLogger()->WriteConsole(LogType::Warning, "Prefab scene isn't found!");
       return;
     }
-    prefabScene->Init();
+    m_prefabScene->Init();
 
     EntityRawPtrArray rootEntities;
-    GetRootEntities(prefabScene->GetEntities(), rootEntities);
+    GetRootEntities(m_prefabScene->GetEntities(), rootEntities);
 
     assert(rootEntities.size() != 0 && "Prefab scene is empty");
     for (Entity* root : rootEntities)
@@ -58,11 +76,11 @@ namespace ToolKit
       m_node->AddChild(instantiatedEntityList[0]->m_node);
       for (Entity* child : instantiatedEntityList)
       {
-        currentScene->AddEntity(child);
+        m_currentScene->AddEntity(child);
         child->SetTransformLockVal(true);
         child->ParamTransformLock().m_editable = false;
-        auto foundParamArray = childCustomDatas.find(child->GetNameVal());
-        if (foundParamArray != childCustomDatas.end())
+        auto foundParamArray = m_childCustomDatas.find(child->GetNameVal());
+        if (foundParamArray != m_childCustomDatas.end())
         {
           for (ParameterVariant& var : child->m_localData.m_variants)
           {
@@ -76,10 +94,14 @@ namespace ToolKit
           }
         }
       }
+      m_instanceEntities.insert(m_instanceEntities.end(),
+                                instantiatedEntityList.begin(),
+                                instantiatedEntityList.end());
     }
 
     // We need this data only at deserialization, no later
-    childCustomDatas.clear();
+    m_childCustomDatas.clear();
+    m_initiated = true;
   }
 
   void Prefab::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -99,7 +121,7 @@ namespace ToolKit
         vars.push_back(param);
       }
 
-      childCustomDatas.insert(std::make_pair(rootName, vars));
+      m_childCustomDatas.insert(std::make_pair(rootName, vars));
     }
   }
 

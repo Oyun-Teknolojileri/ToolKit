@@ -35,7 +35,6 @@ namespace ToolKit
     MeshComponentPtr mc = std::make_shared<MeshComponent>();
     mc->m_localData     = m_localData;
     mc->m_entity        = ntt;
-
     return mc;
   }
 
@@ -313,9 +312,20 @@ namespace ToolKit
   {
     activeRecord->m_state = AnimRecord::State::Pause;
   }
+
   AnimRecordPtr AnimControllerComponent::GetActiveRecord()
   {
     return activeRecord;
+  }
+  AnimRecordPtr AnimControllerComponent::GetAnimRecord(const String& signalName)
+  {
+    AnimRecordPtrMap& records = ParamRecords().GetVar<AnimRecordPtrMap>();
+    const auto& recordIter    = records.find(signalName);
+    if (recordIter != records.end())
+    {
+      return recordIter->second;
+    }
+    return nullptr;
   }
 
   SkeletonComponent::SkeletonComponent()
@@ -325,11 +335,16 @@ namespace ToolKit
                             SkeletonComponentCategory.Priority,
                             true,
                             true);
+
+    map = nullptr;
   }
 
   SkeletonComponent::~SkeletonComponent()
   {
-    delete map;
+    if (map)
+    {
+      delete map;
+    }
   }
   void SkeletonComponent::Init()
   {

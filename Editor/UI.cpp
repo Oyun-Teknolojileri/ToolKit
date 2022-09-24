@@ -81,6 +81,7 @@ namespace ToolKit
     TexturePtr UI::m_phoneRotateIcon;
     TexturePtr UI::m_studioLightsToggleIcon;
     TexturePtr UI::m_anchorIcn;
+    TexturePtr UI::m_prefabIcn;
 
     void UI::Init()
     {
@@ -287,6 +288,9 @@ namespace ToolKit
       m_anchorIcn = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/anchor_move.png", true));
       m_anchorIcn->Init();
+      m_prefabIcn = GetTextureManager()->Create<Texture>(
+          TexturePath("Icons/scene_data.png", true));
+      m_prefabIcn->Init();
     }
 
     void UI::InitTheme()

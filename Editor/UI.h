@@ -183,6 +183,7 @@ namespace ToolKit
       static TexturePtr m_phoneRotateIcon;
       static TexturePtr m_studioLightsToggleIcon;
       static TexturePtr m_anchorIcn;
+      static TexturePtr m_prefabIcn;
     };
 
   } // namespace Editor

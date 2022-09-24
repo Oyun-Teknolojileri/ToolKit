@@ -64,6 +64,9 @@ namespace ToolKit
     int GetBoneIndex(String bone);
     StaticBone* GetBone(String bone);
 
+   protected:
+    void CopyTo(Resource* other) override;
+
    public:
     std::vector<StaticBone*> m_bones;
     DynamicBoneMap m_Tpose;

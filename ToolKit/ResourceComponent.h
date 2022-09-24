@@ -155,6 +155,7 @@ namespace ToolKit
     void Stop();
     void Pause();
     AnimRecordPtr GetActiveRecord();
+    AnimRecordPtr GetAnimRecord(const String& signalName);
     void AddSignal(const String& signalName, AnimRecordPtr record);
     void RemoveSignal(const String& signalName);
 

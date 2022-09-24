@@ -25,6 +25,7 @@ namespace ToolKit
     EntityType GetType() const override;
 
     void Init(Scene* currentScene);
+    void UnInit();
     static Prefab* GetPrefabRoot(Entity* ntt);
 
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
@@ -36,10 +37,13 @@ namespace ToolKit
 
    public:
     TKDeclareParam(String, ScenePath);
-    ScenePtr prefabScene;
+    ScenePtr m_prefabScene;
+    Scene* m_currentScene;
+    bool m_initiated = false;
 
    private:
     // Used only in deserialization
-    std::unordered_map<String, ParameterVariantArray> childCustomDatas;
+    std::unordered_map<String, ParameterVariantArray> m_childCustomDatas;
+    EntityRawPtrArray m_instanceEntities;
   };
 } // namespace ToolKit

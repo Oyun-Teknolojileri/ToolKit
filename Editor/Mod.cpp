@@ -13,6 +13,8 @@
 #include "TransformMod.h"
 #include "Util.h"
 
+#include <Prefab.h>
+
 #include <algorithm>
 #include <memory>
 #include <utility>
@@ -578,11 +580,11 @@ namespace ToolKit
       // Revert to recover hierarchies.
       std::reverse(deleteList.begin(), deleteList.end());
 
+      uint deleteActCount = 0;
       if (!deleteList.empty())
       {
         ActionManager::GetInstance()->BeginActionGroup();
 
-        uint instanceCount = 0;
         for (Entity* e : deleteList)
         {
           if (!e->GetIsInstanceVal())
@@ -594,14 +596,21 @@ namespace ToolKit
                   p->GetBaseEntityID() == e->GetIdVal())
               {
                 ActionManager::GetInstance()->AddAction(new DeleteAction(p));
-                instanceCount++;
+                deleteActCount++;
               }
             }
           }
+          // If entity is from a prefab, don't delete it because Prefab will
+          // remove them
+          else if (Prefab::GetPrefabRoot(e) &&
+                   e->GetType() != EntityType::Entity_Prefab)
+          {
+            continue;
+          }
           ActionManager::GetInstance()->AddAction(new DeleteAction(e));
+          deleteActCount++;
         }
-        ActionManager::GetInstance()->GroupLastActions(
-            static_cast<int>(deleteList.size() + instanceCount));
+        ActionManager::GetInstance()->GroupLastActions(deleteActCount);
       }
 
       return NullSignal;
@@ -620,7 +629,7 @@ namespace ToolKit
       if (!selecteds.empty())
       {
         currScene->ClearSelection();
-        if (selecteds.size() > 1)
+        if (selecteds.size())
         {
           ActionManager::GetInstance()->BeginActionGroup();
         }

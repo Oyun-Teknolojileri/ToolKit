@@ -441,8 +441,14 @@ namespace ToolKit
 
   void Scene::Destroy(bool removeResources)
   {
-    for (Entity* ntt : m_entities)
+    for (uint nttIndx = 0; nttIndx < m_entities.size(); nttIndx++)
     {
+      Entity* ntt = m_entities[nttIndx];
+      if (Prefab::GetPrefabRoot(ntt) &&
+          ntt->GetType() != EntityType::Entity_Prefab)
+      {
+        continue;
+      }
       if (removeResources)
       {
         ntt->RemoveResources();

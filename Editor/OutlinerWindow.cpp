@@ -6,6 +6,8 @@
 #include "UI.h"
 #include "Util.h"
 
+#include <Prefab.h>
+
 #include <vector>
 
 #include "DebugNew.h"
@@ -57,40 +59,7 @@ namespace ToolKit
             Entity* childNtt = n->m_entity;
             if (childNtt != nullptr)
             {
-              if (childNtt->m_node->m_children.empty())
-              {
-                nodeFlags = g_treeNodeFlags;
-                if (currScene->IsSelected(childNtt->GetIdVal()))
-                {
-                  nodeFlags |= ImGuiTreeNodeFlags_Selected;
-                }
-
-                nodeFlags |= ImGuiTreeNodeFlags_Leaf |
-                             ImGuiTreeNodeFlags_NoTreePushOnOpen;
-                DrawHeader(childNtt, nodeFlags);
-              }
-              else
-              {
-                nodeFlags = g_treeNodeFlags;
-                if (currScene->IsSelected(childNtt->GetIdVal()))
-                {
-                  nodeFlags |= ImGuiTreeNodeFlags_Selected;
-                }
-
-                if (DrawHeader(childNtt, nodeFlags))
-                {
-                  for (Node* deepChildNode : childNtt->m_node->m_children)
-                  {
-                    Entity* deepChild = deepChildNode->m_entity;
-                    if (deepChild)
-                    {
-                      ShowNode(deepChild);
-                    }
-                  }
-
-                  ImGui::TreePop();
-                }
-              }
+              ShowNode(childNtt);
             }
           }
 
@@ -143,7 +112,9 @@ namespace ToolKit
 
           for (int i = 0; i < selected.size(); i++)
           {
-            if (selected[i]->GetIdVal() != e->GetIdVal())
+            if (selected[i]->GetIdVal() != e->GetIdVal() &&
+                (!Prefab::GetPrefabRoot(selected[i]) ||
+                 selected[i]->GetType() == EntityType::Entity_Prefab))
             {
               g_child.push_back(selected[i]->GetIdVal());
             }
@@ -236,7 +207,9 @@ namespace ToolKit
 
           for (int i = 0; i < selected.size(); i++)
           {
-            if (selected[i]->GetIdVal() != NULL_HANDLE)
+            if (selected[i]->GetIdVal() != NULL_HANDLE &&
+                (!Prefab::GetPrefabRoot(selected[i]) ||
+                 selected[i]->GetType() == EntityType::Entity_Prefab))
             {
               g_child.push_back(selected[i]->GetIdVal());
             }
@@ -308,9 +281,14 @@ namespace ToolKit
 
       TexturePtr icon  = nullptr;
       EntityType eType = ntt->GetType();
-      if (eType == EntityType::Entity_Node)
+      switch (eType)
       {
+      case EntityType::Entity_Node:
         icon = UI::m_arrowsIcon;
+        break;
+      case EntityType::Entity_Prefab:
+        icon = UI::m_prefabIcn;
+        break;
       }
 
       if (icon)

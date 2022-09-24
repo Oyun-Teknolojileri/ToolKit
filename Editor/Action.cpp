@@ -4,6 +4,8 @@
 #include "EditorScene.h"
 #include "GlobalDef.h"
 
+#include <Prefab.h>
+
 #include <utility>
 
 namespace ToolKit
@@ -62,6 +64,10 @@ namespace ToolKit
       assert(m_ntt != nullptr);
 
       EditorScenePtr currScene = g_app->GetCurrentScene();
+      if (m_ntt->GetType() == EntityType::Entity_Prefab)
+      {
+        ((Prefab*) m_ntt)->Init(currScene.get());
+      }
       currScene->AddEntity(m_ntt);
       if (m_parentId != NULL_HANDLE)
       {
@@ -88,6 +94,10 @@ namespace ToolKit
       }
 
       g_app->GetCurrentScene()->RemoveEntity(m_ntt->GetIdVal());
+      if (m_ntt->GetType() == EntityType::Entity_Prefab)
+      {
+        ((Prefab*) m_ntt)->UnInit();
+      }
       m_actionComitted = true;
       HandleCompSpecificOps(m_ntt, m_actionComitted);
     }
