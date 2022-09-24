@@ -54,10 +54,10 @@ namespace ToolKit
         ShaderPath("skyboxVert.shader", true));
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("skyboxFrag.shader", true));
-    m_skyboxMaterial                  = std::make_shared<Material>();
-    m_skyboxMaterial->m_cubeMap       = envComp->GetHdriVal()->m_cubemap;
-    m_skyboxMaterial->m_vertexShader  = vert;
-    m_skyboxMaterial->m_fragmetShader = frag;
+    m_skyboxMaterial                   = std::make_shared<Material>();
+    m_skyboxMaterial->m_cubeMap        = envComp->GetHdriVal()->m_cubemap;
+    m_skyboxMaterial->m_vertexShader   = vert;
+    m_skyboxMaterial->m_fragmentShader = frag;
     m_skyboxMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
     m_skyboxMaterial->Init();
 

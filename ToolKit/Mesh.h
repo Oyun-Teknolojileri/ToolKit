@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MathUtil.h"
+#include "RenderState.h"
 #include "Resource.h"
 #include "ResourceManager.h"
 #include "Types.h"
@@ -71,6 +72,7 @@ namespace ToolKit
     MeshPtrArray m_subMeshes;
     BoundingBox m_aabb;
     FaceArray m_faces;
+    VertexLayout m_vertexLayout;
 
    private:
     MeshRawPtrArray m_allMeshes;

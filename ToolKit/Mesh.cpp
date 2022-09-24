@@ -41,6 +41,7 @@ namespace ToolKit
 
     InitVertices(flushClientSideArray);
     InitIndices(flushClientSideArray);
+    m_vertexLayout = VertexLayout::Mesh;
     if (!flushClientSideArray)
     {
       ConstructFaces();
@@ -467,7 +468,7 @@ namespace ToolKit
 
   void SkinMesh::Init(bool flushClientSideArray)
   {
-
+    m_vertexLayout = VertexLayout::SkinMesh;
     if (m_skeleton == nullptr)
     {
       return;

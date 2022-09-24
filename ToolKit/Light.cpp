@@ -147,9 +147,9 @@ namespace ToolKit
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("orthogonalDepthFrag.shader", true));
 
-    m_shadowMapMaterial                  = std::make_shared<Material>();
-    m_shadowMapMaterial->m_vertexShader  = vert;
-    m_shadowMapMaterial->m_fragmetShader = frag;
+    m_shadowMapMaterial                   = std::make_shared<Material>();
+    m_shadowMapMaterial->m_vertexShader   = vert;
+    m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
   }
 
@@ -257,9 +257,9 @@ namespace ToolKit
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("perspectiveDepthFrag.shader", true));
 
-    m_shadowMapMaterial                  = std::make_shared<Material>();
-    m_shadowMapMaterial->m_vertexShader  = vert;
-    m_shadowMapMaterial->m_fragmetShader = frag;
+    m_shadowMapMaterial                   = std::make_shared<Material>();
+    m_shadowMapMaterial->m_vertexShader   = vert;
+    m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
   }
 
@@ -291,9 +291,9 @@ namespace ToolKit
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("perspectiveDepthFrag.shader", true));
 
-    m_shadowMapMaterial                  = std::make_shared<Material>();
-    m_shadowMapMaterial->m_vertexShader  = vert;
-    m_shadowMapMaterial->m_fragmetShader = frag;
+    m_shadowMapMaterial                   = std::make_shared<Material>();
+    m_shadowMapMaterial->m_vertexShader   = vert;
+    m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
   }
 } // namespace ToolKit

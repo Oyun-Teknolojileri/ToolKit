@@ -90,26 +90,45 @@ namespace ToolKit
       }
     }
 
-    SkeletonComponentPtr skelComp = ntt->GetComponent<SkeletonComponent>();
-    for (MeshComponentPtr meshCom : meshComponents)
-    {
-      MeshPtr mesh = meshCom->GetMeshVal();
-      m_lights     = GetBestLights(ntt, lights);
-      m_cam        = cam;
-      SetProjectViewModel(ntt, cam);
-      if (mesh->IsSkinned() && skelComp)
+    // Skeleton Component is used by all meshes of an entity.
+    const auto& updateAndBindSkinningTextures = [ntt, this]() {
+      SkeletonComponentPtr skelComp = ntt->GetComponent<SkeletonComponent>();
+      if (skelComp == nullptr)
       {
-        RenderSkinned(ntt, cam);
         return;
       }
+      SkeletonPtr skel = skelComp->GetSkeletonResourceVal();
+      if (skel == nullptr)
+      {
+        return;
+      }
+      skelComp->map->UpdateGPUTexture();
 
-      mesh->Init();
+      // Bind bone textures
+      // This is valid because these slots will be used by every shader program
+      //   below (Renderer::TextureSlot system).
+      // But bone count can't be bound here because its location changes every
+      //   shader program
+      SetTexture(2, skel->m_bindPoseTexture->m_textureId);
+      SetTexture(3, skelComp->map->boneTransformNodeTexture->m_textureId);
+    };
+    updateAndBindSkinningTextures();
+
+    for (MeshComponentPtr meshCom : meshComponents)
+    {
+      MeshPtr mainMesh = meshCom->GetMeshVal();
+      m_lights         = GetBestLights(ntt, lights);
+      m_cam            = cam;
+      SetProjectViewModel(ntt, cam);
+
+      mainMesh->Init();
 
       MeshRawPtrArray meshCollector;
-      mesh->GetAllMeshes(meshCollector);
+      mainMesh->GetAllMeshes(meshCollector);
 
       for (Mesh* mesh : meshCollector)
       {
+        mesh->Init();
         if (m_overrideMat != nullptr)
         {
           m_mat = m_overrideMat.get();
@@ -120,17 +139,31 @@ namespace ToolKit
         }
 
         ProgramPtr prg =
-            CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmetShader);
+            CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
 
         BindProgram(prg);
+
+        auto activateSkinning = [prg, ntt](uint isSkinned) {
+          GLint isSkinnedLoc = glGetUniformLocation(prg->m_handle, "isSkinned");
+          glUniform1ui(isSkinnedLoc, isSkinned);
+          if (isSkinned)
+          {
+            GLint numBonesLoc = glGetUniformLocation(prg->m_handle, "numBones");
+            float boneCount =
+                static_cast<float>(ntt->GetComponent<SkeletonComponent>()
+                                       ->GetSkeletonResourceVal()
+                                       ->m_bones.size());
+            glUniform1fv(numBonesLoc, 1, &boneCount);
+          }
+        };
+        activateSkinning(mesh->IsSkinned());
         FeedUniforms(prg);
 
         RenderState* rs = m_mat->GetRenderState();
         SetRenderState(rs, prg);
 
-        glBindVertexArray(mesh->m_vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
-        SetVertexLayout(VertexLayout::Mesh);
+        SetVertexLayout(mesh->m_vertexLayout);
 
         if (mesh->m_indexCount != 0)
         {
@@ -145,77 +178,6 @@ namespace ToolKit
           glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
         }
       }
-    }
-  }
-
-  void Renderer::RenderSkinned(Entity* object, Camera* cam)
-  {
-    MeshPtr mesh = object->GetMeshComponent()->GetMeshVal();
-    SetProjectViewModel(object, cam);
-    MaterialPtr nttMat = nullptr;
-    if (object->GetMaterialComponent())
-    {
-      nttMat = object->GetMaterialComponent()->GetMaterialVal();
-    }
-
-    static ShaderPtr skinShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("defaultSkin.shader", true));
-
-    SkeletonComponentPtr skelComp = object->GetComponent<SkeletonComponent>();
-    SkeletonPtr skel              = skelComp->GetSkeletonResourceVal();
-    if (skel == nullptr)
-    {
-      return;
-    }
-    skelComp->map->UpdateGPUTexture();
-
-    // Bind bone textures
-    // This is valid because these slots will be used by every shader program
-    //   below (Renderer::TextureSlot system).
-    // But bone count can't be bound here because its location changes every
-    //   shader program
-    SetTexture(2, skel->m_bindPoseTexture->m_textureId);
-    SetTexture(3, skelComp->map->boneTransformNodeTexture->m_textureId);
-
-    MeshRawPtrArray meshCollector;
-    mesh->GetAllMeshes(meshCollector);
-
-    for (Mesh* mesh : meshCollector)
-    {
-      if (m_overrideMat != nullptr)
-      {
-        m_mat = m_overrideMat.get();
-      }
-      else
-      {
-        m_mat = nttMat ? nttMat.get() : mesh->m_material.get();
-      }
-
-      GLenum beforeSetting = glGetError();
-      ProgramPtr prg       = CreateProgram(skinShader, m_mat->m_fragmetShader);
-      BindProgram(prg);
-
-      // Bind bone count
-      {
-        GLint loc       = glGetUniformLocation(prg->m_handle, "numBones");
-        float boneCount = static_cast<float>(
-            skelComp->GetSkeletonResourceVal()->m_bones.size());
-        glUniform1fv(loc, 1, &boneCount);
-      }
-
-      GLenum afterSetting = glGetError();
-
-      FeedUniforms(prg);
-
-      RenderState* rs = m_mat->GetRenderState();
-      SetRenderState(rs, prg);
-
-      glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
-      SetVertexLayout(VertexLayout::SkinMesh);
-
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-      glDrawElements(
-          (GLenum) rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
     }
   }
 
@@ -408,8 +370,8 @@ namespace ToolKit
     static MaterialPtr material = std::make_shared<Material>();
     material->UnInit();
 
-    material->m_vertexShader  = fullQuadVert;
-    material->m_fragmetShader = fragmentShader;
+    material->m_vertexShader   = fullQuadVert;
+    material->m_fragmentShader = fragmentShader;
     material->Init();
 
     static Quad quad;

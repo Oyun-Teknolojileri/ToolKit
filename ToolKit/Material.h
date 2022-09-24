@@ -34,7 +34,7 @@ namespace ToolKit
     CubeMapPtr m_cubeMap;
     TexturePtr m_diffuseTexture;
     ShaderPtr m_vertexShader;
-    ShaderPtr m_fragmetShader;
+    ShaderPtr m_fragmentShader;
     Vec3 m_color;
     float m_alpha;
 

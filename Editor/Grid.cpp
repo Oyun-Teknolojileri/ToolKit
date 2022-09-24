@@ -184,7 +184,7 @@ namespace ToolKit
         material->m_vertexShader = GetShaderManager()->Create<Shader>(
             ShaderPath("gridVertex.shader", true));
 
-        material->m_fragmetShader = GetShaderManager()->Create<Shader>(
+        material->m_fragmentShader = GetShaderManager()->Create<Shader>(
             ShaderPath("gridFragment.shader", true));
 
         material->GetRenderState()->priority = 100;

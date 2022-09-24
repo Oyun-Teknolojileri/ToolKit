@@ -555,7 +555,7 @@ namespace ToolKit
     m_equirectangularTexture->m_textureId = m_textureId;
     m_texToCubemapMat->m_diffuseTexture   = m_equirectangularTexture;
     m_texToCubemapMat->m_vertexShader     = vert;
-    m_texToCubemapMat->m_fragmetShader    = frag;
+    m_texToCubemapMat->m_fragmentShader   = frag;
     m_texToCubemapMat->Init();
 
     RenderToCubeMap(m_fbo,
@@ -598,9 +598,9 @@ namespace ToolKit
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("irradianceGenerateFrag.shader", true));
 
-    m_cubemapToIrradiancemapMat->m_cubeMap       = m_cubemap;
-    m_cubemapToIrradiancemapMat->m_vertexShader  = vert;
-    m_cubemapToIrradiancemapMat->m_fragmetShader = frag;
+    m_cubemapToIrradiancemapMat->m_cubeMap        = m_cubemap;
+    m_cubemapToIrradiancemapMat->m_vertexShader   = vert;
+    m_cubemapToIrradiancemapMat->m_fragmentShader = frag;
     m_cubemapToIrradiancemapMat->Init();
 
     RenderToCubeMap(m_irradianceFbo,
