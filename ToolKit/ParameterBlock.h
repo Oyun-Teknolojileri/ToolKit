@@ -189,6 +189,12 @@ namespace ToolKit
     ~ParameterVariant();
 
     /**
+     * Directly sets the new value.
+     * @param newVal new value for the variant.
+     */
+    void SetValue(Value& newVal);
+
+    /**
      * Default copy constructor makes a call to default assignment operator.
      */
     explicit ParameterVariant(const ParameterVariant& other);
@@ -470,7 +476,7 @@ namespace ToolKit
      * Callback function for value changes. This function gets called after
      * new value set.
      */
-    ValueUpdateFn m_onValueChangedFn;
+    std::vector<ValueUpdateFn> m_onValueChangedFn;
 
    private:
     template <typename T>
@@ -478,9 +484,10 @@ namespace ToolKit
     {
       Value oldVal = m_var;
       m_var        = val;
-      if (m_onValueChangedFn)
+
+      for (ValueUpdateFn& fn : m_onValueChangedFn)
       {
-        m_onValueChangedFn(oldVal, m_var);
+        fn(oldVal, m_var);
       }
     }
 
@@ -555,6 +562,16 @@ namespace ToolKit
      */
     void GetByCategory(const String& category,
                        ParameterVariantRawPtrArray& variants);
+
+    /**
+     * Search the variant with given category and name. Returns true if found
+     * and sets the var.
+     * @param category to look for.
+     * @param name of the variant to look for.
+     * @param output variant.
+     * @returns true if the variant found.
+     */
+    bool LookUp(StringView category, StringView name, ParameterVariant** var);
 
    public:
     /**

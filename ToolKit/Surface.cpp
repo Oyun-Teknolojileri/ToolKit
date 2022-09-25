@@ -154,16 +154,20 @@ namespace ToolKit
 
   void Surface::ParameterEventConstructor()
   {
-    ParamSize().m_onValueChangedFn =
-        [this](Value& oldVal, Value& newVal) -> void { UpdateGeometry(false); };
+    ParamSize().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void {
+          UpdateGeometry(false);
+        });
 
-    ParamPivotOffset().m_onValueChangedFn =
-        [this](Value& oldVal, Value& newVal) -> void { UpdateGeometry(false); };
+    ParamPivotOffset().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void {
+          UpdateGeometry(false);
+        });
 
-    ParamMaterial().m_onValueChangedFn = [this](Value& oldVal,
-                                                Value& newVal) -> void {
-      GetMaterialComponent()->SetMaterialVal(std::get<MaterialPtr>(newVal));
-    };
+    ParamMaterial().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void {
+          GetMaterialComponent()->SetMaterialVal(std::get<MaterialPtr>(newVal));
+        });
 
     GetMeshComponent()->ParamMesh().m_exposed       = false;
     GetMeshComponent()->ParamCastShadow().m_exposed = false;
@@ -437,11 +441,11 @@ namespace ToolKit
     // Always rewire events for correctness.
     Surface::ParameterEventConstructor();
 
-    ParamButtonMaterial().m_onValueChangedFn = [this](Value& oldVal,
-                                                      Value& newVal) -> void {
-      // Override surface material.
-      SetMaterialVal(std::get<MaterialPtr>(newVal));
-    };
+    ParamButtonMaterial().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void {
+          // Override surface material.
+          SetMaterialVal(std::get<MaterialPtr>(newVal));
+        });
 
     GetMeshComponent()->ParamMesh().m_exposed       = false;
     GetMeshComponent()->ParamCastShadow().m_exposed = false;

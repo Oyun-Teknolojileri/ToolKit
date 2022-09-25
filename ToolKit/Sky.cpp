@@ -111,23 +111,23 @@ namespace ToolKit
 
   void Sky::ParameterEventConstructor()
   {
-    ParamIntensity().m_onValueChangedFn = [this](Value& oldVal,
-                                                 Value& newVal) -> void {
-      GetComponent<EnvironmentComponent>()->SetIntensityVal(
-          std::get<float>(newVal));
-    };
+    ParamIntensity().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void {
+          GetComponent<EnvironmentComponent>()->SetIntensityVal(
+              std::get<float>(newVal));
+        });
 
-    ParamExposure().m_onValueChangedFn = [this](Value& oldVal,
-                                                Value& newVal) -> void {
-      GetComponent<EnvironmentComponent>()->SetExposureVal(
-          std::get<float>(newVal));
-    };
+    ParamExposure().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void {
+          GetComponent<EnvironmentComponent>()->SetExposureVal(
+              std::get<float>(newVal));
+        });
 
-    ParamHdri().m_onValueChangedFn = [this](Value& oldVal,
-                                            Value& newVal) -> void {
-      GetComponent<EnvironmentComponent>()->SetHdriVal(
-          std::get<HdriPtr>(newVal));
-    };
+    ParamHdri().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void {
+          GetComponent<EnvironmentComponent>()->SetHdriVal(
+              std::get<HdriPtr>(newVal));
+        });
   }
 
 } // namespace ToolKit

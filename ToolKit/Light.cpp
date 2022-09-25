@@ -42,24 +42,24 @@ namespace ToolKit
 
   void Light::ParameterEventConstructor()
   {
-    ParamShadowResolution().m_onValueChangedFn = [this](Value& oldVal,
-                                                        Value& newVal) -> void {
-      const Vec2 val = std::get<Vec2>(newVal);
-      if (val.x > 0.0f && val.y > 0.0f &&
-          !glm::epsilonEqual(val.x, 0.0f, 0.9f) &&
-          !glm::epsilonEqual(val.y, 0.0f, 0.9f))
-      {
-        ReInitShadowMap();
-      }
-    };
+    ParamShadowResolution().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void {
+          const Vec2 val = std::get<Vec2>(newVal);
+          if (val.x > 0.0f && val.y > 0.0f &&
+              !glm::epsilonEqual(val.x, 0.0f, 0.9f) &&
+              !glm::epsilonEqual(val.y, 0.0f, 0.9f))
+          {
+            ReInitShadowMap();
+          }
+        });
 
-    ParamPCFSampleSize().m_onValueChangedFn = [](Value& oldVal,
-                                                 Value& newVal) -> void {
-      if (glm::epsilonEqual(std::get<float>(newVal), 0.0f, 0.00001f))
-      {
-        newVal = 1.0f;
-      }
-    };
+    ParamPCFSampleSize().m_onValueChangedFn.push_back(
+        [](Value& oldVal, Value& newVal) -> void {
+          if (glm::epsilonEqual(std::get<float>(newVal), 0.0f, 0.00001f))
+          {
+            newVal = 1.0f;
+          }
+        });
   }
 
   EntityType Light::GetType() const

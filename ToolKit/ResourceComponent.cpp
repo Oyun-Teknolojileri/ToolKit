@@ -150,15 +150,15 @@ namespace ToolKit
       hdri->Init(true);
     };
 
-    ParamExposure().m_onValueChangedFn =
+    ParamExposure().m_onValueChangedFn.push_back(
         [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void {
-      reInitHdriFn(GetHdriVal(), std::get<float>(newVal));
-    };
+          reInitHdriFn(GetHdriVal(), std::get<float>(newVal));
+        });
 
-    ParamHdri().m_onValueChangedFn =
+    ParamHdri().m_onValueChangedFn.push_back(
         [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void {
-      reInitHdriFn(std::get<HdriPtr>(newVal), GetExposureVal());
-    };
+          reInitHdriFn(std::get<HdriPtr>(newVal), GetExposureVal());
+        });
   }
 
   ComponentPtr EnvironmentComponent::Copy(Entity* ntt)

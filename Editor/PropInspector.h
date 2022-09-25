@@ -56,6 +56,7 @@ namespace ToolKit
 
      protected:
       void ShowCustomData();
+      ValueUpdateFn MultiUpdate(ParameterVariant* var);
     };
 
     class PropInspector : public Window

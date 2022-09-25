@@ -74,6 +74,7 @@ namespace ToolKit
   typedef const int16_t SignalId;
   typedef std::shared_ptr<class Resource> ResourcePtr;
   typedef std::string String;
+  typedef std::string_view StringView;
   typedef std::vector<String> StringArray;
   typedef std::set<std::string> StringSet;
   typedef glm::ivec2 IVec2;

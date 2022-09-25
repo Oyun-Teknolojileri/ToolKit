@@ -1038,8 +1038,9 @@ namespace ToolKit
         {
           continue;
         }
+
         // If entity belongs to a prefab,
-        //   Don't show transform lock and transformation
+        // don't show transform lock and transformation.
         bool isFromPrefab = false;
         if (Prefab::GetPrefabRoot(m_entity))
         {
@@ -1056,7 +1057,11 @@ namespace ToolKit
 
           for (ParameterVariant* var : vars)
           {
+            ValueUpdateFn multiUpdate = MultiUpdate(var);
+
+            var->m_onValueChangedFn.push_back(multiUpdate);
             ShowVariant(var, nullptr);
+            var->m_onValueChangedFn.pop_back();
           }
         }
       }
@@ -1139,6 +1144,9 @@ namespace ToolKit
             ParameterVariant* remove = nullptr;
             for (size_t i = 0; i < vars.size(); i++)
             {
+              ValueUpdateFn multiUpdateFn = MultiUpdate(vars[i]);
+              vars[i]->m_onValueChangedFn.push_back(multiUpdateFn);
+
               ImGui::TableNextRow();
               ImGui::TableSetColumnIndex(0);
 
@@ -1161,7 +1169,11 @@ namespace ToolKit
               }
               break;
               case ParameterVariant::VariantType::Bool: {
-                ImGui::Checkbox(pId.c_str(), var->GetVarPtr<bool>());
+                bool val = var->GetVar<bool>();
+                if (ImGui::Checkbox(pId.c_str(), &val))
+                {
+                  *var = val;
+                }
               }
               break;
               case ParameterVariant::VariantType::Int: {
@@ -1216,6 +1228,7 @@ namespace ToolKit
                     "Parameter %d: %s removed.", i + 1, var->m_name.c_str());
               }
 
+              vars[i]->m_onValueChangedFn.pop_back();
               ImGui::PopID();
             }
 
@@ -1240,7 +1253,7 @@ namespace ToolKit
               {
                 ParameterVariant customVar;
                 // This makes them only visible in Custom Data dropdown.
-                customVar.m_exposed  = false;
+                customVar.m_exposed  = true;
                 customVar.m_editable = true;
                 customVar.m_category = CustomDataCategory;
 
@@ -1312,6 +1325,30 @@ namespace ToolKit
         }
         showCustomDataFnc("Prefab Data", inheritedParams, false);
       }
+    }
+
+    ValueUpdateFn EntityView::MultiUpdate(ParameterVariant* var)
+    {
+      EntityRawPtrArray entities;
+      g_app->GetCurrentScene()->GetSelectedEntities(entities);
+
+      // Remove current selected because its already updated.
+      entities.pop_back();
+
+      ValueUpdateFn multiUpdate = [var, entities](Value& oldVal,
+                                                  Value& newVal) -> void {
+        for (Entity* ntt : entities)
+        {
+          ParameterVariant* vLookUp = nullptr;
+          if (ntt->m_localData.LookUp(
+                  var->m_category.Name, var->m_name, &vLookUp))
+          {
+            vLookUp->SetValue(newVal);
+          }
+        }
+      };
+
+      return multiUpdate;
     }
 
     // PropInspector

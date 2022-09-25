@@ -46,6 +46,7 @@ namespace ToolKit
       // Window queries.
       bool IsActive() const;
       bool IsVisible() const;
+      bool IsMoving() const;
       bool MouseHovers() const;
       bool CanDispatchSignals() const; // If active & visible & mouse hovers.
 
@@ -66,6 +67,7 @@ namespace ToolKit
       bool m_visible    = true;
       bool m_active     = false;
       bool m_mouseHover = false;
+      bool m_moving     = false; //!< States if window is moving.
 
      public:
       String m_name;
