@@ -39,7 +39,7 @@ namespace ToolKit
     virtual ~Shader();
 
     void Load() override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
     void SetShaderParameter(String param, const ParameterVariant& val);
 

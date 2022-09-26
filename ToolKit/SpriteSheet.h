@@ -28,7 +28,7 @@ namespace ToolKit
     ~SpriteSheet();
 
     void Load() override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
    private:

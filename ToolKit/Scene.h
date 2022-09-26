@@ -30,7 +30,7 @@ namespace ToolKit
 
     void Load() override;
     void Save(bool onlyIfDirty) override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
     // Merges entities from the other scene and wipeouts the other scene.
     virtual void Merge(ScenePtr other);

@@ -18,7 +18,7 @@ namespace ToolKit
     explicit Audio(String file);
     ~Audio();
 
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void Load() override;
     void UnInit() override;
 

@@ -88,7 +88,7 @@ namespace ToolKit
      * Set the resource to initiated state.
      * @param flushClientSideArray unused.
      */
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
 
     /**
      * Set the resource to uninitiated state and removes the keys.

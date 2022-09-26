@@ -36,7 +36,7 @@ namespace ToolKit
     explicit Mesh(const String& file);
     virtual ~Mesh();
 
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
     void Load() override;
     void Save(bool onlyIfDirty) override;
@@ -94,7 +94,7 @@ namespace ToolKit
     explicit SkinMesh(const String& file);
     ~SkinMesh();
 
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
     void Load() override;
 

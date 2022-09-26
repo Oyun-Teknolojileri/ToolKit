@@ -23,7 +23,7 @@ namespace ToolKit
     virtual ~Texture();
 
     void Load() override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
    protected:
@@ -50,7 +50,7 @@ namespace ToolKit
     ~CubeMap();
 
     void Load() override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
    protected:
@@ -83,7 +83,7 @@ namespace ToolKit
     virtual ~Hdri();
 
     void Load() override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
     bool IsTextureAssigned();
@@ -151,7 +151,7 @@ namespace ToolKit
                  const RenderTargetSettigs& settings = RenderTargetSettigs());
 
     void Load() override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void Reconstrcut(uint width,
                      uint height,
                      const RenderTargetSettigs& settings);

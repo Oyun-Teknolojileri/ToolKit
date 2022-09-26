@@ -19,7 +19,7 @@ namespace ToolKit
 
     void Load() override;
     void Save(bool onlyIfDirty) override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
     RenderState* GetRenderState();
     void SetRenderState(RenderState* state);

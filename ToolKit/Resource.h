@@ -30,7 +30,7 @@ namespace ToolKit
     virtual void Save(bool onlyIfDirty);
     virtual void Reload();
 
-    virtual void Init(bool flushClientSideArray = true) = 0;
+    virtual void Init(bool flushClientSideArray = false) = 0;
     virtual void UnInit()                               = 0;
 
     template <typename T>
