@@ -85,6 +85,7 @@ namespace ToolKit
     {
       m_mouseOverOverlay = false;
       ImGui::SetNextWindowSize(Vec2(m_size), ImGuiCond_None);
+      ImGui::PushStyleColor(ImGuiCol_WindowBg, g_wndBgColor);
 
       if (ImGui::Begin(m_name.c_str(),
                        &m_visible,
@@ -101,7 +102,9 @@ namespace ToolKit
         DrawOverlays();
         UpdateSnaps();
       }
+
       ImGui::End();
+      ImGui::PopStyleColor();
     }
 
     void EditorViewport::Update(float deltaTime)

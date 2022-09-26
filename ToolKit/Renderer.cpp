@@ -28,7 +28,8 @@ namespace ToolKit
 
   Renderer::Renderer()
   {
-    m_uiCamera = new Camera();
+    m_clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+    m_uiCamera   = new Camera();
   }
 
   Renderer::~Renderer()
@@ -327,9 +328,10 @@ namespace ToolKit
                 GL_STENCIL_BUFFER_BIT);
       }
 
-      if (glm::all(glm::epsilonNotEqual(color, m_bgColor, 0.001f)))
+      if (glm::all(glm::epsilonNotEqual(color, m_clearColor, 0.001f)))
       {
-        glClearColor(m_bgColor.r, m_bgColor.g, m_bgColor.b, m_bgColor.a);
+        glClearColor(
+            m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
       }
     }
     else

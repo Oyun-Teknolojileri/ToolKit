@@ -144,7 +144,7 @@ namespace ToolKit
     uint m_frameCount      = 0;
     UVec2 m_windowSize;   //!< Application window size.
     UVec2 m_viewportSize; //!< Current viewport size.
-    Vec4 m_bgColor            = {0.2f, 0.2f, 0.2f, 1.0f};
+    Vec4 m_clearColor; //!< RenderTarget clear color.
     MaterialPtr m_overrideMat = nullptr;
 
     // Grid parameters

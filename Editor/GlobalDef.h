@@ -53,6 +53,7 @@ namespace ToolKit
     const Vec3 g_gizmoLocked             = Vec3(0.3f);
     const std::vector<Vec3> g_gizmoColor = {
         g_gizmoRed, g_gizmoGreen, g_gizmoBlue};
+    const Vec4 g_wndBgColor = Vec4(0.105f, 0.121f, 0.164f, 1.0f);
 
     const Vec4 g_selectBoxWindowColor        = Vec4(0.4f, 0.4f, 0.4f, 0.4f);
     const Vec4 g_selectBoxBorderColor        = Vec4(1.0f, 1.0f, 1.0f, 1.0f);

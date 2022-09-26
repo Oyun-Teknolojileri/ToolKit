@@ -31,6 +31,12 @@ namespace ToolKit
   {
   }
 
+  void ParameterVariant::SetValue(Value& newVal)
+  {
+    assert(m_var.index() == newVal.index() && "Variant types must match.");
+    m_var = newVal;
+  }
+
   ParameterVariant::ParameterVariant(const ParameterVariant& other)
   {
     *this = other;
@@ -788,6 +794,25 @@ namespace ToolKit
         variants.push_back(&var);
       }
     }
+  }
+
+  bool ParameterBlock::LookUp(StringView category,
+                              StringView name,
+                              ParameterVariant** var)
+  {
+    for (ParameterVariant& lv : m_variants)
+    {
+      if (lv.m_category.Name == category)
+      {
+        if (lv.m_name == name)
+        {
+          *var = &lv;
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
 } // namespace ToolKit

@@ -511,18 +511,22 @@ namespace ToolKit
         {
           m_mouseData[1] = vp->GetLastMousePosScreenSpace();
 
-          auto drawSelectionRectangleFn = [this](ImDrawList* drawList) -> void {
-            Vec2 min, max;
-            GetMouseRect(min, max);
+          if (!vp->IsMoving())
+          {
+            auto drawSelectionRectangleFn =
+                [this](ImDrawList* drawList) -> void {
+              Vec2 min, max;
+              GetMouseRect(min, max);
 
-            ImU32 col = ImColor(g_selectBoxWindowColor);
-            drawList->AddRectFilled(min, max, col, 5.0f);
+              ImU32 col = ImColor(g_selectBoxWindowColor);
+              drawList->AddRectFilled(min, max, col, 5.0f);
 
-            col = ImColor(g_selectBoxBorderColor);
-            drawList->AddRect(min, max, col, 5.0f, 15, 2.0f);
-          };
+              col = ImColor(g_selectBoxBorderColor);
+              drawList->AddRect(min, max, col, 5.0f, 15, 2.0f);
+            };
 
-          vp->m_drawCommands.push_back(drawSelectionRectangleFn);
+            vp->m_drawCommands.push_back(drawSelectionRectangleFn);
+          }
         }
       }
 

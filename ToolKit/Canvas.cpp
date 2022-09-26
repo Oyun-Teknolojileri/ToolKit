@@ -58,7 +58,7 @@ namespace ToolKit
   void Canvas::ParameterEventConstructor()
   {
     Surface::ParameterEventConstructor();
-    ParamMaterial().m_onValueChangedFn = nullptr;
+    ParamMaterial().m_onValueChangedFn.clear();
   }
 
   void Canvas::UpdateGeometry(bool byTexture)
