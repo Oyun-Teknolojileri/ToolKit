@@ -555,7 +555,7 @@ namespace ToolKit
       GetPluginManager()->Load(plugin);
     }
 
-    void ShowDirectionalLightShadowFrustum(TagArgArray tagArgs)
+    void ShowShadowFrustum(TagArgArray tagArgs)
     {
       BoolCheck(tagArgs, &g_app->m_showDirectionalLightShadowFrustum);
     }
@@ -617,8 +617,7 @@ namespace ToolKit
       CreateCommand(g_showGraphicsApiLogs, ShowGraphicsApiLogs);
       CreateCommand(g_setWorkspaceDir, SetWorkspaceDir);
       CreateCommand(g_loadPlugin, LoadPlugin);
-      CreateCommand(g_showDirectionalLightShadowFrustum,
-                    ShowDirectionalLightShadowFrustum);
+      CreateCommand(g_showShadowFrustum, ShowShadowFrustum);
     }
 
     ConsoleWindow::~ConsoleWindow()

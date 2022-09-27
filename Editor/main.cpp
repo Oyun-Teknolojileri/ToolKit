@@ -87,11 +87,48 @@ namespace ToolKit
      * PostUninit Main
      */
 
+    // Windows util function for creating ToolKit Cfg files in AppData.
+    void CreateAppData()
+    {
+      // For windows check appdata.
+      StringView appData = getenv("APPDATA");
+      if (appData.empty())
+      {
+        return;
+      }
+
+      StringArray files = {"Workspace.settings",
+                           "Editor.settings",
+                           "UILayout.ini",
+                           "Engine.settings"};
+
+      String cfgPath    = ConcatPaths({String(appData), "ToolKit", "Config"});
+      String targetFile = ConcatPaths({cfgPath, files[0]});
+
+      // Create ToolKit Configs.
+      if (!CheckSystemFile(targetFile))
+      {
+        if (std::filesystem::create_directories(cfgPath))
+        {
+          for (int i = 0; i < 4; i++)
+          {
+            std::filesystem::copy(
+                ConcatPaths({ConfigPath(), files[i]}),
+                ConcatPaths({cfgPath, files[i]}),
+                std::filesystem::copy_options::overwrite_existing);
+          }
+        }
+      }
+
+      Main::GetInstance()->SetConfigPath(cfgPath);
+    }
+
     void PreInit()
     {
       // PreInit Main
       g_proxy = new Main();
       Main::SetProxy(g_proxy);
+      CreateAppData();
       g_proxy->PreInit();
     }
 

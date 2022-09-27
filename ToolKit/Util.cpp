@@ -245,6 +245,11 @@ namespace ToolKit
     return nullptr;
   }
 
+  TK_API bool CheckSystemFile(StringView path)
+  {
+    return std::filesystem::exists(path);
+  }
+
   bool CheckFile(const String& path)
   {
     return GetFileManager()->CheckFileFromResources(path);

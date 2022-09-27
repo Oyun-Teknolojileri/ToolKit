@@ -185,6 +185,7 @@ namespace ToolKit
     void EditorViewport::DeSerialize(XmlDocument* doc, XmlNode* parent)
     {
       Window::DeSerialize(doc, parent);
+      m_wndContentAreaSize = m_size;
 
       if (XmlNode* node = parent->first_node("Viewport"))
       {

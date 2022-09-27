@@ -186,8 +186,8 @@ namespace ToolKit
 
      private:
       // Internal states.
-      bool m_onNewScene = false;
       bool m_onQuit     = false;
+      String m_newSceneName;
     };
 
     extern void DebugMessage(const String& msg);

@@ -173,7 +173,7 @@ namespace ToolKit
     void Workspace::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
       std::ofstream file;
-      String fileName = ConcatPaths({m_activeWorkspace, g_workspaceFile});
+      String fileName = ConcatPaths({ConfigPath(), g_workspaceFile});
 
       file.open(fileName.c_str(), std::ios::out);
       if (file.is_open())
@@ -216,12 +216,7 @@ namespace ToolKit
 
     void Workspace::DeSerialize(XmlDocument* doc, XmlNode* parent)
     {
-      String settingsFile = ConcatPaths({m_activeWorkspace, g_workspaceFile});
-
-      if (!CheckFile(settingsFile))
-      {
-        settingsFile = ConcatPaths({ConfigPath(), g_workspaceFile});
-      }
+      String settingsFile = ConcatPaths({ConfigPath(), g_workspaceFile});
 
       XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
       XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();

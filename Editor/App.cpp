@@ -66,13 +66,18 @@ namespace ToolKit
 
       m_workspace.Init();
       String sceneName = "New Scene" + SCENE;
+      if (!m_newSceneName.empty())
+      {
+        sceneName = m_newSceneName;
+      }
+
       EditorScenePtr scene =
           std::make_shared<EditorScene>(ScenePath(sceneName));
 
       scene->m_name     = sceneName;
       scene->m_newScene = true;
       SetCurrentScene(scene);
-      ApplyProjectSettings(m_onNewScene);
+      ApplyProjectSettings(false);
 
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
       {
@@ -321,13 +326,11 @@ namespace ToolKit
 
     void App::OnNewScene(const String& name)
     {
-      m_onNewScene = true;
-
       Destroy();
+      m_newSceneName = name;
       Init();
-      CreateAndSetNewScene(name);
+      m_newSceneName.clear();
       m_workspace.SetScene(name);
-      m_onNewScene = false;
     }
 
     void App::OnSaveScene()
@@ -1358,10 +1361,18 @@ namespace ToolKit
       m_workspace.Serialize(nullptr, nullptr);
 
       std::ofstream file;
-      String fileName = ConcatPaths(
-          {m_workspace.GetProjectConfigPath(), g_editorSettingsFile});
+      String cfgPath  = m_workspace.GetProjectConfigPath();
+      String fileName = ConcatPaths({cfgPath, g_editorSettingsFile});
 
-      file.open(fileName.c_str(), std::ios::out);
+      // File or Config folder is missing.
+      std::ios::openmode openMode = std::ios::out;
+      if (!CheckSystemFile(fileName))
+      {
+        std::filesystem::create_directories(cfgPath);
+        openMode = std::ios::app;
+      }
+
+      file.open(fileName.c_str(), openMode);
       if (file.is_open())
       {
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
