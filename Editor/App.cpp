@@ -183,13 +183,10 @@ namespace ToolKit
       // Take all lights in an array
       LightRawPtrArray totalLights;
 
-      if (m_studioLightsActive)
+      totalLights = GetCurrentScene()->GetLights();
+      if (m_sceneLightingMode == Unlit)
       {
         totalLights = m_sceneLights;
-      }
-      else
-      {
-        totalLights = GetCurrentScene()->GetLights();
       }
 
       // Sort lights by type
@@ -206,7 +203,7 @@ namespace ToolKit
         // Update scene lights for the current view.
         Camera* viewCam = viewport->GetCamera();
         m_lightMaster->OrphanSelf();
-        if (m_studioLightsActive)
+        if (m_sceneLightingMode == Unlit)
         {
           viewCam->m_node->AddChild(m_lightMaster);
         }
@@ -226,6 +223,20 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
+          if (m_sceneLightingMode == LightComplexity)
+          {
+            MaterialPtr lightComplexity = std::make_shared<Material>();
+            lightComplexity->m_fragmentShader =
+                GetShaderManager()->Create<Shader>(
+                    ShaderPath("ToolKit/lightComplexity.shader"));
+            lightComplexity->Init();
+            m_renderer->m_overrideMat = lightComplexity;
+          }
+          else
+          {
+            m_renderer->m_overrideMat = nullptr;
+          }
+
           // Render scene.
           m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
 
@@ -1125,21 +1136,26 @@ namespace ToolKit
         }
 
         RenderTargetSettigs rtSet;
-        rtSet.WarpS = rtSet.WarpT = GraphicTypes::UVClampToEdge;
-        RenderTarget stencilMask(viewport->m_size.x, viewport->m_size.y, rtSet);
-        stencilMask.Init();
-        Framebuffer stencilFb;
-        stencilFb.Init({viewport->m_size.x, viewport->m_size.y, 0, true, true});
-        stencilFb.SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                &stencilMask);
+        rtSet.WarpS = rtSet.WarpT              = GraphicTypes::UVClampToEdge;
+        viewport->selectedStencilRT.m_width    = viewport->m_size.x;
+        viewport->selectedStencilRT.m_height   = viewport->m_size.y;
+        viewport->selectedStencilRT.m_settings = rtSet;
+        viewport->selectedStencilRT.Init();
+        viewport->selectedFramebuffer.Init(
+            {viewport->m_size.x, viewport->m_size.y, 0, true, true});
+        viewport->selectedFramebuffer.SetAttachment(
+            Framebuffer::Attachment::ColorAttachment0,
+            &viewport->selectedStencilRT);
 
-        m_renderer->SetFramebuffer(&stencilFb, true, {0.0f, 0.0f, 0.0f, 1.0});
+        m_renderer->SetFramebuffer(
+            &viewport->selectedFramebuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
 
         glEnable(GL_STENCIL_TEST);
         glStencilMask(0xFF);
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
         glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        glClear(GL_STENCIL_BUFFER_BIT);
 
         // webgl create problem with depth only drawing with textures.
         static MaterialPtr solidMat =
@@ -1199,7 +1215,7 @@ namespace ToolKit
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         // Dilate.
-        GetRenderer()->SetTexture(0, stencilMask.m_textureId);
+        GetRenderer()->SetTexture(0, viewport->selectedStencilRT.m_textureId);
         ShaderPtr dilate = GetShaderManager()->Create<Shader>(
             ShaderPath("dilateFrag.shader", true));
         dilate->SetShaderParameter("Color", ParameterVariant(color));

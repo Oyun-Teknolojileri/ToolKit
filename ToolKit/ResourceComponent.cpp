@@ -229,7 +229,10 @@ namespace ToolKit
   }
   AnimControllerComponent::~AnimControllerComponent()
   {
-    GetAnimationPlayer()->RemoveRecord(activeRecord->m_id);
+    if (activeRecord != nullptr)
+    {
+      GetAnimationPlayer()->RemoveRecord(activeRecord->m_id);
+    }
   }
 
   ComponentPtr AnimControllerComponent::Copy(Entity* ntt)

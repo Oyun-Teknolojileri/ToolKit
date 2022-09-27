@@ -99,11 +99,11 @@ namespace ToolKit
     // Detach all attachments
     if (m_defaultRboId != 0)
     {
-      DetachAttachment(Attachment::DepthAttachment);
+      DeleteDefaultDepthAttachment();
     }
     else
     {
-      DeleteDefaultDepthAttachment();
+      DetachAttachment(Attachment::DepthAttachment);
     }
     for (int i = 0; i < m_maxColorAttachmentCount; ++i)
     {

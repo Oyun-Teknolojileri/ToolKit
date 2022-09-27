@@ -213,11 +213,38 @@ namespace ToolKit
         unsigned int nextItemIndex = 0;
 
         ImGui::TableSetColumnIndex(nextItemIndex++);
-        g_app->m_studioLightsActive =
-            UI::ToggleButton(UI::m_studioLightsToggleIcon->m_textureId,
-                             ImVec2(12.0f, 14.0f),
-                             g_app->m_studioLightsActive);
-        UI::HelpMarker(TKLoc + m_owner->m_name, "Toogle studio lights.");
+        UI::ImageButtonDecorless(UI::m_studioLightsToggleIcon->m_textureId,
+                                 ImVec2(12.0f, 14.0f),
+                                 false);
+        UI::HelpMarker(TKLoc + m_owner->m_name,
+                       "Right click for lighting options");
+
+        if (ImGui::BeginPopupContextItem("##LightingMenu"))
+        {
+          ImGui::PushItemWidth(100);
+          static uint lightModeIndx = 0;
+          const char* itemNames[]   = {"Unlit", "Lit", "Light Complexity"};
+          uint itemCount            = sizeof(itemNames) / sizeof(itemNames[0]);
+          if (ImGui::BeginCombo("Modes", itemNames[lightModeIndx]))
+          {
+            for (uint itemIndx = 0; itemIndx < itemCount; itemIndx++)
+            {
+              bool isSelected      = false;
+              const char* itemName = itemNames[itemIndx];
+              ImGui::Selectable(itemName, &isSelected);
+              if (isSelected)
+              {
+                lightModeIndx = itemIndx;
+              }
+            }
+
+            ImGui::EndCombo();
+          }
+
+          ImGui::PopItemWidth();
+          g_app->m_sceneLightingMode = (App::lightMode) lightModeIndx;
+          ImGui::EndPopup();
+        }
 
         ImGui::EndTable();
       }

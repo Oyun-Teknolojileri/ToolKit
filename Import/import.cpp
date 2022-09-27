@@ -1134,6 +1134,9 @@ namespace ToolKit
 
         if (scene == nullptr)
         {
+          assert(
+              0 &&
+              "Assimp failed to import the file. Probably file is corrupted!");
           throw(-1);
         }
         g_scene                 = scene;

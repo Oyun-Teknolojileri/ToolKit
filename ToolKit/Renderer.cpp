@@ -163,6 +163,7 @@ namespace ToolKit
         RenderState* rs = m_mat->GetRenderState();
         SetRenderState(rs, prg);
 
+        glBindVertexArray(mesh->m_vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
         SetVertexLayout(mesh->m_vertexLayout);
 
@@ -592,33 +593,49 @@ namespace ToolKit
     // Add the lights inside of the radius first
     for (int i = 0; i < lights.size(); i++)
     {
+      float radius;
+      if (lights[i]->GetType() == EntityType::Entity_PointLight)
       {
-        float radius;
-        if (lights[i]->GetType() == EntityType::Entity_PointLight)
-        {
-          radius = static_cast<PointLight*>(lights[i])->GetRadiusVal();
-        }
-        else if (lights[i]->GetType() == EntityType::Entity_SpotLight)
-        {
-          radius = static_cast<SpotLight*>(lights[i])->GetRadiusVal();
-        }
-        else
-        {
-          continue;
-        }
+        radius = static_cast<PointLight*>(lights[i])->GetRadiusVal();
+      }
+      else if (lights[i]->GetType() == EntityType::Entity_SpotLight)
+      {
+        radius = static_cast<SpotLight*>(lights[i])->GetRadiusVal();
+      }
+      else
+      {
+        continue;
+      }
 
-        float distance = glm::length2(
-            entity->m_node->GetTranslation(TransformationSpace::TS_WORLD) -
-            lights[i]->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+      float curDistance = glm::length2(
+          entity->m_node->GetTranslation(TransformationSpace::TS_WORLD) -
+          lights[i]->m_node->GetTranslation(TransformationSpace::TS_WORLD));
 
-        if (distance < radius * radius)
+      if (curDistance < radius * radius)
+      {
+        bool isAdded = false;
+        for (uint searchIndx = 0; searchIndx < bestLights.size(); searchIndx++)
+        {
+          Light* prevLight   = bestLights[searchIndx];
+          float prevDistance = glm::length2(
+              entity->m_node->GetTranslation(TransformationSpace::TS_WORLD) -
+              prevLight->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+          if (prevDistance > curDistance)
+          {
+            bestLights.insert(bestLights.begin() + searchIndx, lights[i]);
+            isAdded = true;
+            break;
+          }
+        }
+        if (!isAdded)
         {
           bestLights.push_back(lights[i]);
         }
-        else
-        {
-          outsideRadiusLights.push_back(lights[i]);
-        }
+      }
+      else
+      {
+        // Until a better light culling is implemented
+        // outsideRadiusLights.push_back(lights[i]);
       }
     }
     bestLights.insert(bestLights.end(),

@@ -588,9 +588,13 @@ namespace ToolKit
   void SkinMesh::InitVertices(bool flush)
   {
     glDeleteBuffers(1, &m_vboIndexId);
+    glDeleteVertexArrays(1, &m_vaoId);
 
     if (!m_clientSideVertices.empty())
     {
+      glGenVertexArrays(1, &m_vaoId);
+      glBindVertexArray(m_vaoId);
+
       glGenBuffers(1, &m_vboVertexId);
       glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
       glBufferData(GL_ARRAY_BUFFER,

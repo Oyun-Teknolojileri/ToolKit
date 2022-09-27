@@ -94,6 +94,8 @@ namespace ToolKit
       int m_additionalWindowFlags       = 0;
       bool m_orbitLock                  = false;
       Vec3 m_snapDeltas; // X: Translation, Y: Rotation, Z: Scale
+      Framebuffer selectedFramebuffer;
+      RenderTarget selectedStencilRT;
 
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;
