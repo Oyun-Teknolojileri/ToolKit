@@ -1337,10 +1337,7 @@ namespace ToolKit
             }
             playWindow = m_simulationWindow;
           }
-          m_renderer->SwapFramebuffer(&playWindow->m_framebuffer);
           plugin->Frame(deltaTime, playWindow);
-
-          m_renderer->SwapFramebuffer(&playWindow->m_framebuffer);
         }
       }
     }
