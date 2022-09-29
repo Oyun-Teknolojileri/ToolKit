@@ -186,13 +186,17 @@ namespace ToolKit
     void OverlayLighting::Show()
     {
       ImVec2 overlaySize(28, 30);
+      if (!editorLitModeOn)
+      {
+        overlaySize.x += 170;
+      }
 
       // Center the toolbar
       float width  = ImGui::GetWindowContentRegionWidth();
       float offset = (width - overlaySize.x) * 0.5f;
       ImGui::SameLine(offset);
 
-      const Vec2 padding = Vec2(-28.0f + width, 35.0f);
+      const Vec2 padding = Vec2(-overlaySize.x + width, overlaySize.y + 5.0f);
       Vec2 pos           = ImGui::GetWindowPos();
       pos += padding;
       ImGui::SetNextWindowPos(pos);
@@ -207,33 +211,33 @@ namespace ToolKit
       {
         SetOwnerState();
 
-        ImGui::BeginTable(
-            "##SettingsBar", 1, ImGuiTableFlags_SizingStretchProp);
+        ImGui::BeginTable("##SettingsBar",
+                          editorLitModeOn ? 1 : 2,
+                          ImGuiTableFlags_SizingStretchProp);
         ImGui::TableNextRow();
         unsigned int nextItemIndex = 0;
 
-        ImGui::TableSetColumnIndex(nextItemIndex++);
-        UI::ImageButtonDecorless(UI::m_studioLightsToggleIcon->m_textureId,
-                                 ImVec2(12.0f, 14.0f),
-                                 false);
-        UI::HelpMarker(TKLoc + m_owner->m_name,
-                       "Right click for lighting options");
-
-        if (ImGui::BeginPopupContextItem("##LightingMenu"))
+        if (!editorLitModeOn)
         {
-          ImGui::PushItemWidth(100);
+          ImGui::TableSetColumnIndex(nextItemIndex++);
+          ImGui::PushItemWidth(160);
           static uint lightModeIndx = 0;
-          const char* itemNames[]   = {"Unlit", "Lit", "Light Complexity"};
+          const char* itemNames[]   = {"Editor Lit",
+                                       "Unlit",
+                                       "Full Lit",
+                                       "Light Complexity",
+                                       "Lighting Only"};
           uint itemCount            = sizeof(itemNames) / sizeof(itemNames[0]);
-          if (ImGui::BeginCombo("Modes", itemNames[lightModeIndx]))
+          if (ImGui::BeginCombo("", itemNames[lightModeIndx]))
           {
-            for (uint itemIndx = 0; itemIndx < itemCount; itemIndx++)
+            for (uint itemIndx = 1; itemIndx < itemCount; itemIndx++)
             {
               bool isSelected      = false;
               const char* itemName = itemNames[itemIndx];
               ImGui::Selectable(itemName, &isSelected);
               if (isSelected)
               {
+                // 0 is EditorLit
                 lightModeIndx = itemIndx;
               }
             }
@@ -242,9 +246,20 @@ namespace ToolKit
           }
 
           ImGui::PopItemWidth();
-          g_app->m_sceneLightingMode = (App::lightMode) lightModeIndx;
-          ImGui::EndPopup();
+          g_app->m_sceneLightingMode = (App::LightMode) lightModeIndx;
         }
+        else
+        {
+          g_app->m_sceneLightingMode = App::EditorLit;
+        }
+
+        ImGui::TableSetColumnIndex(nextItemIndex++);
+        editorLitModeOn =
+            UI::ToggleButton(UI::m_studioLightsToggleIcon->m_textureId,
+                             ImVec2(12.0f, 14.0f),
+                             editorLitModeOn);
+        UI::HelpMarker(TKLoc + m_owner->m_name,
+                       "Scene Lighting Mode");
 
         ImGui::EndTable();
       }

@@ -189,7 +189,7 @@ namespace ToolKit
       LightRawPtrArray totalLights;
 
       totalLights = GetCurrentScene()->GetLights();
-      if (m_sceneLightingMode == Unlit)
+      if (m_sceneLightingMode == EditorLit)
       {
         totalLights = m_sceneLights;
       }
@@ -208,7 +208,7 @@ namespace ToolKit
         // Update scene lights for the current view.
         Camera* viewCam = viewport->GetCamera();
         m_lightMaster->OrphanSelf();
-        if (m_sceneLightingMode == Unlit)
+        if (m_sceneLightingMode == EditorLit)
         {
           viewCam->m_node->AddChild(m_lightMaster);
         }
@@ -228,8 +228,9 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
-          if (m_sceneLightingMode == LightComplexity)
+          switch (m_sceneLightingMode)
           {
+          case LightComplexity: {
             MaterialPtr lightComplexity = std::make_shared<Material>();
             lightComplexity->m_fragmentShader =
                 GetShaderManager()->Create<Shader>(
@@ -237,9 +238,26 @@ namespace ToolKit
             lightComplexity->Init();
             m_renderer->m_overrideMat = lightComplexity;
           }
-          else
-          {
-            m_renderer->m_overrideMat = nullptr;
+          break;
+          case LightingOnly: {
+            MaterialPtr lightingOnly = std::make_shared<Material>();
+            lightingOnly->m_fragmentShader =
+                GetShaderManager()->Create<Shader>(
+                    ShaderPath("ToolKit/lightingOnly.shader"));
+            lightingOnly->Init();
+            m_renderer->m_overrideMat = lightingOnly;
+          }
+          break;
+          case Unlit: {
+            MaterialPtr unlit = GetMaterialManager()->GetCopyOfUnlitMaterial();
+            unlit->Init();
+            m_renderer->m_overrideMat = unlit;
+            m_renderer->m_overrideDiffuseTexture = true;
+          }
+          break;
+          default:
+            m_renderer->m_overrideMat            = nullptr;
+            m_renderer->m_overrideDiffuseTexture = false;
           }
 
           // Render scene.

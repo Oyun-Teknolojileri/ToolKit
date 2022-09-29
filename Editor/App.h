@@ -150,14 +150,15 @@ namespace ToolKit
       // 3 point lighting system.
       Node* m_lightMaster = nullptr;
       LightRawPtrArray m_sceneLights; // { 0:key 1:fill, 2:back }
-      enum lightMode
+      enum LightMode : ubyte
       {
+        EditorLit,
         Unlit,
-        Lit,
+        FullyLit,
         LightComplexity,
-        LightingOnly //!-< Not supported yet
+        LightingOnly
       };
-      lightMode m_sceneLightingMode = Unlit;
+      LightMode m_sceneLightingMode = EditorLit;
 
       // Editor states.
       int m_fps                                = 0;
@@ -186,7 +187,7 @@ namespace ToolKit
 
      private:
       // Internal states.
-      bool m_onQuit     = false;
+      bool m_onQuit = false;
       String m_newSceneName;
     };
 

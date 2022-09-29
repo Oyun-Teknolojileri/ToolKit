@@ -35,6 +35,7 @@ namespace ToolKit
      public:
       explicit OverlayLighting(EditorViewport* owner);
       void Show() override;
+      bool editorLitModeOn = true;
     };
 
     class OverlayViewportOptions : public OverlayUI

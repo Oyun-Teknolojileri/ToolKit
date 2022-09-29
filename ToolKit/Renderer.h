@@ -144,8 +144,9 @@ namespace ToolKit
     uint m_frameCount      = 0;
     UVec2 m_windowSize;   //!< Application window size.
     UVec2 m_viewportSize; //!< Current viewport size.
-    Vec4 m_clearColor; //!< RenderTarget clear color.
-    MaterialPtr m_overrideMat = nullptr;
+    Vec4 m_clearColor;    //!< RenderTarget clear color.
+    MaterialPtr m_overrideMat     = nullptr;
+    bool m_overrideDiffuseTexture = false;
 
     // Grid parameters
     struct GridParams

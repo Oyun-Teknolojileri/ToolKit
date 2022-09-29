@@ -160,8 +160,17 @@ namespace ToolKit
         activateSkinning(mesh->IsSkinned());
         FeedUniforms(prg);
 
-        RenderState* rs = m_mat->GetRenderState();
-        SetRenderState(rs, prg);
+        RenderState rs = *m_mat->GetRenderState();
+        if (m_overrideDiffuseTexture && m_overrideMat)
+        {
+          Material* secondaryMat =
+              nttMat ? nttMat.get() : mesh->m_material.get();
+          if (secondaryMat->m_diffuseTexture)
+          {
+            rs.diffuseTexture = secondaryMat->m_diffuseTexture->m_textureId;
+          }
+        }
+        SetRenderState(&rs, prg);
 
         glBindVertexArray(mesh->m_vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
@@ -170,14 +179,14 @@ namespace ToolKit
         if (mesh->m_indexCount != 0)
         {
           glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-          glDrawElements((GLenum) rs->drawType,
+          glDrawElements((GLenum) rs.drawType,
                          mesh->m_indexCount,
                          GL_UNSIGNED_INT,
                          nullptr);
         }
         else
         {
-          glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
+          glDrawArrays((GLenum) rs.drawType, 0, mesh->m_vertexCount);
         }
       }
     }
@@ -684,6 +693,10 @@ namespace ToolKit
     Entity* env = nullptr;
 
     MaterialPtr mat = GetRenderMaterial(entity);
+    if (m_overrideMat)
+    {
+      mat = m_overrideMat;
+    }
     if (mat == nullptr)
     {
       return;
@@ -1251,7 +1264,7 @@ namespace ToolKit
         break;
         case Uniform::DIFFUSE_TEXTURE_IN_USE: {
           GLint loc =
-              glGetUniformLocation(program->m_handle, "diffuseTextureInUse");
+              glGetUniformLocation(program->m_handle, "DiffuseTextureInUse");
           glUniform1i(
               loc,
               static_cast<int>(m_mat->GetRenderState()->diffuseTextureInUse));
