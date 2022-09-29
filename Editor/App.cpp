@@ -1138,20 +1138,8 @@ namespace ToolKit
           return;
         }
 
-        RenderTargetSettigs rtSet;
-        rtSet.WarpS = rtSet.WarpT              = GraphicTypes::UVClampToEdge;
-        viewport->selectedStencilRT.m_width    = viewport->m_size.x;
-        viewport->selectedStencilRT.m_height   = viewport->m_size.y;
-        viewport->selectedStencilRT.m_settings = rtSet;
-        viewport->selectedStencilRT.Init();
-        viewport->selectedFramebuffer.Init(
-            {viewport->m_size.x, viewport->m_size.y, 0, true, true});
-        viewport->selectedFramebuffer.SetAttachment(
-            Framebuffer::Attachment::ColorAttachment0,
-            &viewport->selectedStencilRT);
-
         m_renderer->SetFramebuffer(
-            &viewport->selectedFramebuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
+            viewport->m_selectedFramebuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
 
         glEnable(GL_STENCIL_TEST);
         glStencilMask(0xFF);
@@ -1218,7 +1206,8 @@ namespace ToolKit
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         // Dilate.
-        GetRenderer()->SetTexture(0, viewport->selectedStencilRT.m_textureId);
+        GetRenderer()->SetTexture(0,
+                                  viewport->m_selectedStencilRT->m_textureId);
         ShaderPtr dilate = GetShaderManager()->Create<Shader>(
             ShaderPath("dilateFrag.shader", true));
         dilate->SetShaderParameter("Color", ParameterVariant(color));

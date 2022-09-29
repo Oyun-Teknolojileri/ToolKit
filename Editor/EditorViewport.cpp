@@ -59,7 +59,8 @@ namespace ToolKit
     EditorViewport::EditorViewport(XmlNode* node)
     {
       DeSerialize(nullptr, node);
-      ResetViewportImage(GetRenderTargetSettings());
+      m_needsResize = true;
+      ComitResize();
       InitOverlays(this);
       m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
     }
@@ -79,6 +80,8 @@ namespace ToolKit
 
     EditorViewport::~EditorViewport()
     {
+      SafeDel(m_selectedFramebuffer);
+      SafeDel(m_selectedStencilRT);
     }
 
     void EditorViewport::Show()
@@ -199,6 +202,46 @@ namespace ToolKit
     void EditorViewport::OnResizeContentArea(float width, float height)
     {
       Viewport::OnResizeContentArea(width, height);
+      // Selected framebuffer resize
+      {
+        if (m_selectedFramebuffer == nullptr)
+        {
+          m_selectedFramebuffer = new Framebuffer();
+        }
+
+        m_selectedFramebuffer->UnInit();
+
+        // Remove old render target
+        if (m_selectedStencilRT)
+        {
+          SafeDel(m_selectedStencilRT);
+        }
+
+        RenderTargetSettigs selectedSettings;
+        selectedSettings.WarpS = selectedSettings.WarpT =
+            GraphicTypes::UVClampToEdge;
+        m_selectedFramebuffer->Init({(uint) m_wndContentAreaSize.x,
+                                     (uint) m_wndContentAreaSize.y,
+                                     selectedSettings.Msaa,
+                                     true,
+                                     true});
+
+        m_selectedStencilRT = new RenderTarget((uint) m_wndContentAreaSize.x,
+                                               (uint) m_wndContentAreaSize.y,
+                                               selectedSettings);
+        m_selectedStencilRT->Init();
+
+        if (m_selectedStencilRT->m_initiated)
+        {
+          m_selectedFramebuffer->SetAttachment(
+              Framebuffer::Attachment::ColorAttachment0, m_selectedStencilRT);
+        }
+        else
+        {
+          SafeDel(m_selectedStencilRT);
+        }
+      }
+
       AdjustZoom(0.0f);
     }
 
