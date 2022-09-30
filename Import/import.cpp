@@ -718,8 +718,16 @@ namespace ToolKit
         ConvertMesh(aMesh, mesh);
 
         // Better to use scene node name
+        string fileName  = "";
         aiNode* meshNode = g_scene->mRootNode->FindNode(aMesh->mName);
-        string fileName  = std::string(meshNode->mName.C_Str());
+        if (meshNode)
+        {
+          fileName = std::string(meshNode->mName.C_Str());
+        }
+        else
+        {
+          fileName = aMesh->mName.C_Str();
+        }
         ClearForbidden(fileName);
         String meshPath = path + fileName + MESH;
 
