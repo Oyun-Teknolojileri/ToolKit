@@ -17,21 +17,20 @@ namespace ToolKit
     Intensity_Define(
         1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
     CastShadow_Define(false, "Light", 90, true, true);
-    NormalBias_Define(
-        0.1f, "Light", 80, true, true, {false, true, 0.0f, 5.0f, 0.005f});
-    FixedBias_Define(
-        0.0f, "Light", 80, true, true, {false, true, 0, 100.0f, 0.1f});
-    SlopedBias_Define(
-        2.0f, "Light", 80, true, true, {false, true, 0.0f, 100.0f, 0.1f});
     ShadowResolution_Define(Vec2(1024.0f, 1024.0f),
                             "Light",
                             90,
                             true,
                             true,
                             {false, true, 32.0f, 4096.0f, 2.0f});
-    PCFSampleSize_Define(
-        7.0f, "Light", 90, true, true, {false, true, 0.1f, 100.0f, 0.1f});
-    PCFKernelSize_Define(5, "Light", 90, true, true, {false, true, 0, 20, 1});
+    PCFSamples_Define(
+       32, "Light", 90, true, true, {false, true, 0, 128, 1});
+    PCFRadius_Define(
+        0.01f, "Light", 90, true, true, {false, true, 0.0f, 5.0f, 0.0001f});
+    ShadowThickness_Define(
+        0.5f, "Light", 90, true, true, {false, true, 0.0f, 5.0f, 0.05f});
+    LightBleedingReduction_Define(
+        0.1f, "Light", 90, true, true, {false, true, 0.0f, 1.0f, 0.001f});
     ParameterEventConstructor();
   }
 
@@ -42,6 +41,7 @@ namespace ToolKit
 
   void Light::ParameterEventConstructor()
   {
+    ParamShadowResolution().m_onValueChangedFn.clear();
     ParamShadowResolution().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void {
           const Vec2 val = std::get<Vec2>(newVal);
@@ -50,14 +50,6 @@ namespace ToolKit
               !glm::epsilonEqual(val.y, 0.0f, 0.9f))
           {
             ReInitShadowMap();
-          }
-        });
-
-    ParamPCFSampleSize().m_onValueChangedFn.push_back(
-        [](Value& oldVal, Value& newVal) -> void {
-          if (glm::epsilonEqual(std::get<float>(newVal), 0.0f, 0.00001f))
-          {
-            newVal = 1.0f;
           }
         });
   }
@@ -86,28 +78,35 @@ namespace ToolKit
       return;
     }
 
-    Vec2 res   = GetShadowResolutionVal();
-    m_shadowRt = new RenderTarget((int) res.x,
-                                  (int) res.y,
-                                  {0,
-                                   true,
-                                   GraphicTypes::Target2D,
-                                   GraphicTypes::UVClampToBorder,
-                                   GraphicTypes::UVClampToBorder,
-                                   GraphicTypes::UVClampToBorder,
-                                   GraphicTypes::SampleNearest,
-                                   GraphicTypes::SampleNearest,
-                                   GraphicTypes::FormatDepthComponent,
-                                   GraphicTypes::FormatDepthComponent,
-                                   GraphicTypes::TypeFloat,
-                                   Vec4(1.0f)});
+    // Shadow map render target
+    Vec2 res                           = GetShadowResolutionVal();
+    const RenderTargetSettigs settings = {0,
+                                          true,
+                                          GraphicTypes::Target2D,
+                                          GraphicTypes::UVClampToBorder,
+                                          GraphicTypes::UVClampToBorder,
+                                          GraphicTypes::UVClampToBorder,
+                                          GraphicTypes::SampleLinear,
+                                          GraphicTypes::SampleLinear,
+                                          GraphicTypes::FormatRG32F,
+                                          GraphicTypes::FormatRG,
+                                          GraphicTypes::TypeFloat,
+                                          Vec4(1.0f)};
+    m_shadowRt =
+        std::make_shared<RenderTarget>((int) res.x, (int) res.y, settings);
     m_shadowRt->Init();
 
-    m_depthFramebuffer = new Framebuffer();
-    m_depthFramebuffer->Init({(uint) res.x, (uint) res.y, 0, false, false});
-    m_depthFramebuffer->SetAttachment(Framebuffer::Attachment::DepthAttachment,
-                                      m_shadowRt);
+    m_depthFramebuffer = std::make_shared<Framebuffer>();
+    m_depthFramebuffer->Init({(uint) res.x, (uint) res.y, 0, false, true});
+    m_depthFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                      m_shadowRt.get());
 
+    // Shadow map temporary render target for blurring
+    m_shadowMapTempBlurRt =
+        std::make_shared<RenderTarget>((int) res.x, (int) res.y, settings);
+    m_shadowMapTempBlurRt->Init();
+
+    // Shadow map material
     InitShadowMapDepthMaterial();
     m_shadowMapInitialized = true;
   }
@@ -119,19 +118,22 @@ namespace ToolKit
       return;
     }
 
-    SafeDel(m_depthFramebuffer);
-    SafeDel(m_shadowRt);
     m_shadowMapInitialized = false;
   }
 
-  Framebuffer* Light::GetShadowMapFramebuffer()
+  FramebufferPtr Light::GetShadowMapFramebuffer()
   {
     return m_depthFramebuffer;
   }
 
-  RenderTarget* Light::GetShadowMapRenderTarget()
+  RenderTargetPtr Light::GetShadowMapRenderTarget()
   {
     return m_shadowRt;
+  }
+
+  RenderTargetPtr Light::GetShadowMapTempBlurRt()
+  {
+    return m_shadowMapTempBlurRt;
   }
 
   MaterialPtr Light::GetShadowMaterial()
@@ -153,18 +155,15 @@ namespace ToolKit
     m_shadowMapMaterial->Init();
   }
 
-  DirectionalLight::DirectionalLight()
-  {
-    SetNormalBiasVal(0.1f);
-    SetFixedBiasVal(0.0f);
-    SetSlopedBiasVal(2.0f);
-    AddComponent(new DirectionComponent(this));
-  }
-
   void Light::ReInitShadowMap()
   {
     UnInitShadowMap();
     InitShadowMap();
+  }
+
+  DirectionalLight::DirectionalLight()
+  {
+    AddComponent(new DirectionComponent(this));
   }
 
   DirectionalLight::~DirectionalLight()
@@ -200,15 +199,10 @@ namespace ToolKit
 
   PointLight::PointLight()
   {
-    SetNormalBiasVal(0.1f);
-    SetFixedBiasVal(0.0f);
-    SetSlopedBiasVal(2.0f);
-    SetPCFSampleSizeVal(0.03f);
-    ParamPCFSampleSize().m_hint = {false, true, 0.001f, 0.5f, 0.01f};
-    PCFLevel_Define(1, "Light", 90, true, true, {false, true, 0, 2, 1});
     Radius_Define(
         3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
-    ParamPCFKernelSize().m_exposed = false;
+    ParamShadowThickness().m_exposed  = false;
+    ParamPCFRadius().m_hint.increment = 0.02f;
   }
 
   EntityType PointLight::GetType() const
@@ -223,28 +217,36 @@ namespace ToolKit
       return;
     }
 
-    Vec2 res   = GetShadowResolutionVal();
-    m_shadowRt = new RenderTarget((int) res.x,
-                                  (int) res.y,
-                                  {0,
-                                   true,
-                                   GraphicTypes::TargetCubeMap,
-                                   GraphicTypes::UVClampToBorder,
-                                   GraphicTypes::UVClampToBorder,
-                                   GraphicTypes::UVClampToBorder,
-                                   GraphicTypes::SampleNearest,
-                                   GraphicTypes::SampleNearest,
-                                   GraphicTypes::FormatDepthComponent,
-                                   GraphicTypes::FormatDepthComponent,
-                                   GraphicTypes::TypeFloat,
-                                   Vec4(1.0f)});
+    // Shadow map render target
+    Vec2 res                           = GetShadowResolutionVal();
+    const RenderTargetSettigs settings = {0,
+                                          false,
+                                          GraphicTypes::TargetCubeMap,
+                                          GraphicTypes::UVClampToEdge,
+                                          GraphicTypes::UVClampToEdge,
+                                          GraphicTypes::UVClampToEdge,
+                                          GraphicTypes::SampleLinear,
+                                          GraphicTypes::SampleLinear,
+                                          GraphicTypes::FormatRG32F,
+                                          GraphicTypes::FormatRG,
+                                          GraphicTypes::TypeFloat,
+                                          Vec4(1.0f)};
+    m_shadowRt =
+        std::make_shared<RenderTarget>((int) res.x, (int) res.y, settings);
     m_shadowRt->Init();
 
-    m_depthFramebuffer = new Framebuffer();
-    m_depthFramebuffer->Init({(uint) res.x, (uint) res.y, 0, false, false});
-    m_depthFramebuffer->SetAttachment(Framebuffer::Attachment::DepthAttachment,
-                                      m_shadowRt);
+    m_depthFramebuffer = std::make_shared<Framebuffer>();
+    m_depthFramebuffer->Init({(uint) res.x, (uint) res.y, 0, false, true});
+    m_depthFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                      m_shadowRt.get(),
+                                      Framebuffer::CubemapFace::POS_X);
 
+    // Shadow map temporary render target for blur
+    m_shadowMapTempBlurRt =
+        std::make_shared<RenderTarget>((int) res.x, (int) res.y, settings);
+    m_shadowMapTempBlurRt->Init();
+
+    // Shadow map material
     InitShadowMapDepthMaterial();
     m_shadowMapInitialized = true;
   }
@@ -265,9 +267,6 @@ namespace ToolKit
 
   SpotLight::SpotLight()
   {
-    SetNormalBiasVal(0.2f);
-    SetFixedBiasVal(10.0f);
-    SetSlopedBiasVal(5.0f);
     Radius_Define(
         10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
     OuterAngle_Define(

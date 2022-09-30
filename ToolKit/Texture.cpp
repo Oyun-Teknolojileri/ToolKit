@@ -656,37 +656,18 @@ namespace ToolKit
 
     // Create frame buffer color texture
     glGenTextures(1, &m_textureId);
-    glBindTexture(static_cast<int>(m_settings.Target), m_textureId);
-
-    glTexParameteri(static_cast<int>(m_settings.Target),
-                    GL_TEXTURE_WRAP_S,
-                    static_cast<int>(m_settings.WarpS));
-    glTexParameteri(static_cast<int>(m_settings.Target),
-                    GL_TEXTURE_WRAP_T,
-                    static_cast<int>(m_settings.WarpT));
-    if (m_settings.Target == GraphicTypes::TargetCubeMap)
-    {
-      glTexParameteri(static_cast<int>(m_settings.Target),
-                      GL_TEXTURE_WRAP_R,
-                      static_cast<int>(m_settings.WarpR));
-    }
-    glTexParameteri(static_cast<int>(m_settings.Target),
-                    GL_TEXTURE_MIN_FILTER,
-                    static_cast<int>(m_settings.MinFilter));
-    glTexParameteri(static_cast<int>(m_settings.Target),
-                    GL_TEXTURE_MAG_FILTER,
-                    static_cast<int>(m_settings.MagFilter));
+    glBindTexture((int) m_settings.Target, m_textureId);
 
     if (m_settings.Target == GraphicTypes::Target2D)
     {
       glTexImage2D(GL_TEXTURE_2D,
                    0,
-                   static_cast<int>(m_settings.InternalFormat),
+                   (int) m_settings.InternalFormat,
                    m_width,
                    m_height,
                    0,
-                   static_cast<int>(m_settings.Format),
-                   static_cast<int>(m_settings.Type),
+                   (int) m_settings.Format,
+                   (int) m_settings.Type,
                    0);
     }
     else if (m_settings.Target == GraphicTypes::TargetCubeMap)
@@ -695,19 +676,35 @@ namespace ToolKit
       {
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                      0,
-                     static_cast<int>(m_settings.InternalFormat),
+                     (int) m_settings.InternalFormat,
                      m_width,
                      m_height,
                      0,
-                     static_cast<int>(m_settings.Format),
-                     static_cast<int>(m_settings.Type),
+                     (int) m_settings.Format,
+                     (int) m_settings.Type,
                      0);
       }
     }
 
+    glTexParameteri(
+        (int) m_settings.Target, GL_TEXTURE_WRAP_S, (int) m_settings.WarpS);
+    glTexParameteri(
+        (int) m_settings.Target, GL_TEXTURE_WRAP_T, (int) m_settings.WarpT);
+    if (m_settings.Target == GraphicTypes::TargetCubeMap)
+    {
+      glTexParameteri(
+          (int) m_settings.Target, GL_TEXTURE_WRAP_R, (int) m_settings.WarpR);
+    }
+    glTexParameteri((int) m_settings.Target,
+                    GL_TEXTURE_MIN_FILTER,
+                    (int) m_settings.MinFilter);
+    glTexParameteri((int) m_settings.Target,
+                    GL_TEXTURE_MAG_FILTER,
+                    (int) m_settings.MagFilter);
+
     if (m_settings.useBorderColor)
     {
-      glTexParameterfv(static_cast<int>(m_settings.Target),
+      glTexParameterfv((int) m_settings.Target,
                        GL_TEXTURE_BORDER_COLOR,
                        &(m_settings.borderColor[0]));
     }
@@ -715,7 +712,7 @@ namespace ToolKit
     m_initiated = true;
 
     // Restore previous render target.
-    glBindTexture(static_cast<int>(m_settings.Target), currId);
+    glBindTexture((int) m_settings.Target, currId);
   }
 
   void RenderTarget::Reconstrcut(uint width,

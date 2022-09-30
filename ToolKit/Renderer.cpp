@@ -28,12 +28,15 @@ namespace ToolKit
 
   Renderer::Renderer()
   {
-    m_clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
-    m_uiCamera   = new Camera();
+    m_uiCamera = new Camera();
   }
 
   Renderer::~Renderer()
   {
+    if (m_gaussianBlurFramebuffer != nullptr)
+    {
+      SafeDel(m_gaussianBlurFramebuffer);
+    }
     SafeDel(m_shadowMapCamera);
     SafeDel(m_uiCamera);
   }
@@ -45,8 +48,7 @@ namespace ToolKit
     Camera* cam                = viewport->GetCamera();
     EntityRawPtrArray entities = scene->GetEntities();
 
-    // Shadow pass
-    UpdateShadowMaps(editorLights, entities);
+    ShadowPass(editorLights, entities);
 
     SetViewport(viewport);
 
@@ -334,14 +336,9 @@ namespace ToolKit
 
       if (clear)
       {
+        glClearColor(color.r, color.g, color.b, color.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
                 GL_STENCIL_BUFFER_BIT);
-      }
-
-      if (glm::all(glm::epsilonNotEqual(color, m_clearColor, 0.001f)))
-      {
-        glClearColor(
-            m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
       }
     }
     else
@@ -386,8 +383,13 @@ namespace ToolKit
     material->m_fragmentShader = fragmentShader;
     material->Init();
 
+    DrawFullQuad(material);
+  }
+
+  void Renderer::DrawFullQuad(MaterialPtr mat)
+  {
     static Quad quad;
-    quad.GetMeshComponent()->GetMeshVal()->m_material = material;
+    quad.GetMeshComponent()->GetMeshVal()->m_material = mat;
 
     static Camera quadCam;
     Render(&quad, &quadCam);
@@ -780,8 +782,15 @@ namespace ToolKit
     }
   }
 
-  void Renderer::UpdateShadowMaps(LightRawPtrArray lights,
-                                  EntityRawPtrArray entities)
+  void Renderer::ShadowPass(const LightRawPtrArray& lights,
+                            const EntityRawPtrArray& entities)
+  {
+    UpdateShadowMaps(lights, entities);
+    FilterShadowMaps(lights);
+  }
+
+  void Renderer::UpdateShadowMaps(const LightRawPtrArray& lights,
+                                  const EntityRawPtrArray& entities)
   {
     MaterialPtr lastOverrideMaterial = m_overrideMat;
 
@@ -840,13 +849,10 @@ namespace ToolKit
           light->m_shadowMapCameraProjectionViewMatrix =
               m_shadowMapCamera->GetProjectionMatrix() *
               m_shadowMapCamera->GetViewMatrix();
-          light->m_shadowMapCameraFar = m_shadowMapCamera->GetData().far;
 
           FrustumCull(entities, m_shadowMapCamera);
 
-          glClear(GL_DEPTH_BUFFER_BIT);
-          // Depth only render
-          glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
           m_overrideMat = light->GetShadowMaterial();
           for (Entity* ntt : entities)
           {
@@ -860,7 +866,6 @@ namespace ToolKit
               Render(ntt, m_shadowMapCamera);
             }
           }
-          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         };
 
         static Quaternion rotations[6];
@@ -893,7 +898,8 @@ namespace ToolKit
 
         if (light->GetType() == EntityType::Entity_PointLight)
         {
-          SetFramebuffer(light->GetShadowMapFramebuffer());
+          SetFramebuffer(
+              light->GetShadowMapFramebuffer().get(), true, Vec4(1.0f));
           glViewport(0,
                      0,
                      static_cast<uint>(light->GetShadowResolutionVal().x),
@@ -902,8 +908,8 @@ namespace ToolKit
           for (unsigned int i = 0; i < 6; ++i)
           {
             light->GetShadowMapFramebuffer()->SetAttachment(
-                Framebuffer::Attachment::DepthAttachment,
-                light->GetShadowMapRenderTarget(),
+                Framebuffer::Attachment::ColorAttachment0,
+                light->GetShadowMapRenderTarget().get(),
                 (Framebuffer::CubemapFace) i);
 
             m_shadowMapCamera->m_node->SetOrientation(
@@ -915,21 +921,14 @@ namespace ToolKit
         }
         else if (light->GetType() == EntityType::Entity_DirectionalLight)
         {
-          glPolygonOffset(light->GetSlopedBiasVal() * 0.5f,
-                          light->GetFixedBiasVal() * 500.0f);
-
-          glEnable(GL_POLYGON_OFFSET_FILL);
-
-          GLenum err = glGetError();
-
-          SetFramebuffer(light->GetShadowMapFramebuffer());
+          SetFramebuffer(
+              light->GetShadowMapFramebuffer().get(), true, Vec4(1.0f));
           renderForShadowMapFn(light, entities);
-
-          glDisable(GL_POLYGON_OFFSET_FILL);
         }
         else // Spot light
         {
-          SetFramebuffer(light->GetShadowMapFramebuffer());
+          SetFramebuffer(
+              light->GetShadowMapFramebuffer().get(), true, Vec4(1.0f));
           renderForShadowMapFn(light, entities);
         }
       }
@@ -937,6 +936,63 @@ namespace ToolKit
 
     m_overrideMat = lastOverrideMaterial;
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+  }
+
+  void Renderer::FilterShadowMaps(const LightRawPtrArray& lights)
+  {
+    for (Light* light : lights)
+    {
+      if (!light->GetCastShadowVal() || light->GetShadowThicknessVal() < 0.001f)
+      {
+        continue;
+      }
+
+      if (light->GetType() == EntityType::Entity_PointLight)
+      {
+        continue;
+      }
+      const float softness = light->GetShadowThicknessVal();
+      Apply7x1GaussianBlur(light->GetShadowMapRenderTarget(),
+                           light->GetShadowMapTempBlurRt(),
+                           X_AXIS,
+                           softness / light->GetShadowResolutionVal().x);
+      Apply7x1GaussianBlur(light->GetShadowMapTempBlurRt(),
+                           light->GetShadowMapRenderTarget(),
+                           Y_AXIS,
+                           softness / light->GetShadowResolutionVal().y);
+    }
+  }
+
+  void Renderer::Apply7x1GaussianBlur(const TexturePtr source,
+                                      RenderTargetPtr dest,
+                                      const Vec3& axis,
+                                      float amount)
+  {
+    if (m_gaussianBlurFramebuffer == nullptr)
+    {
+      m_gaussianBlurFramebuffer = new Framebuffer();
+      m_gaussianBlurFramebuffer->Init({0, 0, 0, false, false});
+
+      ShaderPtr vert = GetShaderManager()->Create<Shader>(
+          ShaderPath("gausBlur7x1Vert.shader", true));
+      ShaderPtr frag = GetShaderManager()->Create<Shader>(
+          ShaderPath("gausBlur7x1Frag.shader", true));
+      m_gaussianBlurMaterial                   = std::make_shared<Material>();
+      m_gaussianBlurMaterial->m_vertexShader   = vert;
+      m_gaussianBlurMaterial->m_fragmentShader = frag;
+    }
+
+    m_gaussianBlurMaterial->UnInit();
+    m_gaussianBlurMaterial->m_diffuseTexture = source;
+    m_gaussianBlurMaterial->m_fragmentShader->m_shaderParams["BlurScale"] =
+        axis * amount;
+    m_gaussianBlurMaterial->Init();
+
+    m_gaussianBlurFramebuffer->SetAttachment(
+        Framebuffer::Attachment::ColorAttachment0, dest.get());
+
+    SetFramebuffer(m_gaussianBlurFramebuffer, true, Vec4(1.0f));
+    DrawFullQuad(m_gaussianBlurMaterial);
   }
 
   void Renderer::FitSceneBoundingBoxIntoLightFrustum(
@@ -1180,8 +1236,6 @@ namespace ToolKit
           glUniform3fv(loc, 1, &data.pos.x);
           loc = glGetUniformLocation(program->m_handle, "CamData.dir");
           glUniform3fv(loc, 1, &data.dir.x);
-          loc = glGetUniformLocation(program->m_handle, "CamData.farPlane");
-          glUniform1f(loc, data.far);
         }
         break;
         case Uniform::COLOR: {
@@ -1440,29 +1494,6 @@ namespace ToolKit
         glUniform1f(loc, innAngle);
       }
 
-      float size       = currLight->GetPCFSampleSizeVal();
-      float kernelSize = (float) currLight->GetPCFKernelSizeVal();
-      if (glm::epsilonEqual(kernelSize, 0.0f, 0.00001f))
-      {
-        kernelSize = FLT_MIN;
-      }
-      float speed = size / kernelSize;
-      speed -= 0.0005f; // Fix floating point error
-      float step = kernelSize;
-      float unit = 1.0f / ((step + 1.0f) * (step + 1.0f));
-
-      GLuint loc = glGetUniformLocation(
-          program->m_handle, g_lightPCFSampleHalfSizeCache[i].c_str());
-      glUniform1f(loc, currLight->GetPCFSampleSizeVal() / 2.0f);
-
-      loc = glGetUniformLocation(program->m_handle,
-                                 g_lightPCFSampleDistanceCache[i].c_str());
-      glUniform1f(loc, speed);
-
-      loc = glGetUniformLocation(program->m_handle,
-                                 g_lightPCFUnitSampleDistanceCache[i].c_str());
-      glUniform1f(loc, unit);
-
       bool castShadow = currLight->GetCastShadowVal();
       if (castShadow)
       {
@@ -1475,50 +1506,30 @@ namespace ToolKit
             &(currLight->m_shadowMapCameraProjectionViewMatrix)[0][0]);
 
         loc = glGetUniformLocation(program->m_handle,
-                                   g_lightNormalBiasStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetNormalBiasVal());
+                                   g_lightBleedingReductionStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetLightBleedingReductionVal());
 
         loc = glGetUniformLocation(program->m_handle,
-                                   g_lightShadowFixedBiasStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetFixedBiasVal() * 0.01f);
+                                   g_lightPCFSamplesStrCache[i].c_str());
+        glUniform1i(loc, currLight->GetPCFSamplesVal());
+
         loc = glGetUniformLocation(program->m_handle,
-                                   g_lightShadowSlopedBiasStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetSlopedBiasVal() * 0.1f);
+                                   g_lightPCFRadiusStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetPCFRadiusVal());
 
-        loc = glGetUniformLocation(
-            program->m_handle, g_lightShadowMapCamFarPlaneStrCache[i].c_str());
-        glUniform1f(loc, currLight->m_shadowMapCameraFar);
-
-        if (currLight->GetType() == EntityType::Entity_PointLight)
-        {
-          int level = static_cast<PointLight*>(currLight)->GetPCFLevelVal();
-          if (level == 0)
-          {
-            level = 1;
-          }
-          else if (level == 1)
-          {
-            level = 8;
-          }
-          else if (level == 2)
-          {
-            level = 20;
-          }
-          loc = glGetUniformLocation(program->m_handle,
-                                     g_PCFKernelSizeStrCache[i].c_str());
-          glUniform1i(loc, level);
-        }
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightsoftShadowsStrCache[i].c_str());
+        glUniform1i(loc, (int) (currLight->GetPCFSamplesVal() > 1));
 
         SetShadowMapTexture(
             type,
             currLight->GetShadowMapFramebuffer()
-                ->GetAttachment(Framebuffer::Attachment::DepthAttachment)
+                ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
                 ->m_textureId,
             program);
       }
-
-      loc = glGetUniformLocation(program->m_handle,
-                                 g_lightCastShadowStrCache[i].c_str());
+      GLuint loc = glGetUniformLocation(program->m_handle,
+                                        g_lightCastShadowStrCache[i].c_str());
       glUniform1i(loc, static_cast<int>(castShadow));
     }
 

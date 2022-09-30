@@ -13,12 +13,10 @@
 
 		uniform mat4 ProjectViewModel;
 
-		out vec3 v_normal;
 		out vec2 v_texture;
 		
 		void main()
 		{
-			v_normal = vNormal;
 			v_texture = vTexture;
 		  gl_Position = ProjectViewModel * vec4(vPosition, 1.0);
 		}

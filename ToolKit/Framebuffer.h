@@ -61,10 +61,12 @@ namespace ToolKit
                                 RenderTarget* rt,
                                 CubemapFace face = CubemapFace::NONE);
     RenderTarget* GetAttachment(Attachment atc);
+    void ClearAttachments();
 
     uint GetFboId();
     uint GetDefaultRboId();
     FramebufferSettings GetSettings();
+    void CheckFramebufferComplete();
 
    private:
     RenderTarget* DetachAttachment(Attachment atc);

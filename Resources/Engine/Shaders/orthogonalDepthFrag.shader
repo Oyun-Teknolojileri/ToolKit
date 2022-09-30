@@ -1,18 +1,29 @@
 <shader>
 	<type name = "fragmentShader" />
 	<uniform name = "DiffuseTextureInUse" />
-	<uniform nam = "ColorAlpha" />
+	<uniform name = "ColorAlpha" />
 	<source>
 	<!--
 		#version 300 es
 		precision mediump float;
 
-		in vec3 v_normal;
 		in vec2 v_texture;
 
 		uniform int diffuseTextureInUse;
 		uniform sampler2D s_texture0;
 		uniform float colorAlpha;
+
+		out vec4 fragColor;
+
+		vec2 ComputeMoments(float depth)
+		{
+			vec2 moments;
+			moments.x = depth;
+			float dx = dFdx(moments.x);
+			float dy = dFdy(moments.x);
+			moments.y = moments.x * moments.x * 0.25 * (dx * dx + dy * dy);
+			return moments;
+		}
 
 		void main()
 		{
@@ -23,7 +34,7 @@
 				discard;
 			}
 
-			//gl_FragDepth = gl_FragCoord.z;
+			fragColor = vec4(ComputeMoments(gl_FragCoord.z), 0.0, 0.0);
 		}
 	-->
 	</source>

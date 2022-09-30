@@ -24,8 +24,9 @@ namespace ToolKit
     // Shadow operations
     virtual void InitShadowMap();
     virtual void UnInitShadowMap();
-    Framebuffer* GetShadowMapFramebuffer();
-    RenderTarget* GetShadowMapRenderTarget();
+    FramebufferPtr GetShadowMapFramebuffer();
+    RenderTargetPtr GetShadowMapRenderTarget();
+    RenderTargetPtr GetShadowMapTempBlurRt();
     MaterialPtr GetShadowMaterial();
 
    protected:
@@ -36,23 +37,22 @@ namespace ToolKit
     TKDeclareParam(Vec3, Color);
     TKDeclareParam(float, Intensity);
     TKDeclareParam(bool, CastShadow);
-    TKDeclareParam(float, FixedBias);
-    TKDeclareParam(float, SlopedBias);
-    TKDeclareParam(float, NormalBias);
     TKDeclareParam(Vec2, ShadowResolution);
-    TKDeclareParam(float, PCFSampleSize);
-    TKDeclareParam(int, PCFKernelSize);
+    TKDeclareParam(int, PCFSamples);
+    TKDeclareParam(float, PCFRadius);
+    TKDeclareParam(float, ShadowThickness);
+    TKDeclareParam(float, LightBleedingReduction);
 
     bool m_isStudioLight = false;
     Mat4 m_shadowMapCameraProjectionViewMatrix;
-    float m_shadowMapCameraFar;
 
    protected:
-    bool m_shadowMapInitialized       = false;
-    bool m_shadowMapResolutionChanged = false;
-    MaterialPtr m_shadowMapMaterial   = nullptr;
-    Framebuffer* m_depthFramebuffer   = nullptr;
-    RenderTarget* m_shadowRt          = nullptr;
+    bool m_shadowMapInitialized         = false;
+    bool m_shadowMapResolutionChanged   = false;
+    MaterialPtr m_shadowMapMaterial     = nullptr;
+    FramebufferPtr m_depthFramebuffer     = nullptr;
+    RenderTargetPtr m_shadowRt            = nullptr;
+    RenderTargetPtr m_shadowMapTempBlurRt = nullptr;
   };
 
   class TK_API DirectionalLight : public Light
@@ -83,7 +83,6 @@ namespace ToolKit
 
    public:
     TKDeclareParam(float, Radius);
-    TKDeclareParam(int, PCFLevel);
   };
 
   class TK_API SpotLight : public Light

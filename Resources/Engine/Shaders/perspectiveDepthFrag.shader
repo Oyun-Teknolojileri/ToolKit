@@ -9,22 +9,31 @@
 		precision mediump float;
 
 		in vec4 v_pos;
-		in vec3 v_normal;
 		in vec2 v_texture;
 
 		struct _CamData
 		{
 			vec3 pos;
 			vec3 dir;
-			float farPlane;
 		};
 
 		uniform _CamData CamData;
-		uniform float FarPlane;
 
 		uniform int diffuseTextureInUse;
 		uniform sampler2D s_texture0;
 		uniform float colorAlpha;
+
+		out vec4 fragColor;
+
+		vec2 ComputeMoments(float depth)
+		{
+			vec2 moments;
+			moments.x = depth;
+			float dx = dFdx(moments.x);
+			float dy = dFdy(moments.x);
+			moments.y = moments.x * moments.x * 0.25 * (dx * dx + dy * dy);
+			return moments;
+		}
 
 		void main()
 		{
@@ -35,12 +44,8 @@
 				discard;
 			}
 
-	    float lightDistance = length(v_pos.xyz - CamData.pos);
-	    
-	    // Convert to [0 1] range
-	    lightDistance = lightDistance / CamData.farPlane;
-	    
-	    gl_FragDepth = lightDistance;
+	    vec2 lightDistance = ComputeMoments(length(v_pos.xyz - CamData.pos));
+	    fragColor = vec4(lightDistance, 0.0, 0.0);
 		}
 	-->
 	</source>

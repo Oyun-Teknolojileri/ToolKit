@@ -73,48 +73,6 @@ namespace ToolKit
                                             "LightData.type[10]",
                                             "LightData.type[11]"};
 
-  static StringArray g_lightPCFSampleHalfSizeCache = {
-      "LightData.PCFSampleHalfSize[0]",
-      "LightData.PCFSampleHalfSize[1]",
-      "LightData.PCFSampleHalfSize[2]",
-      "LightData.PCFSampleHalfSize[3]",
-      "LightData.PCFSampleHalfSize[4]",
-      "LightData.PCFSampleHalfSize[5]",
-      "LightData.PCFSampleHalfSize[6]",
-      "LightData.PCFSampleHalfSize[7]",
-      "LightData.PCFSampleHalfSize[8]",
-      "LightData.PCFSampleHalfSize[9]",
-      "LightData.PCFSampleHalfSize[10]",
-      "LightData.PCFSampleHalfSize[11]"};
-
-  static StringArray g_lightPCFSampleDistanceCache = {
-      "LightData.PCFSampleDistance[0]",
-      "LightData.PCFSampleDistance[1]",
-      "LightData.PCFSampleDistance[2]",
-      "LightData.PCFSampleDistance[3]",
-      "LightData.PCFSampleDistance[4]",
-      "LightData.PCFSampleDistance[5]",
-      "LightData.PCFSampleDistance[6]",
-      "LightData.PCFSampleDistance[7]",
-      "LightData.PCFSampleDistance[8]",
-      "LightData.PCFSampleDistance[9]",
-      "LightData.PCFSampleDistance[10]",
-      "LightData.PCFSampleDistance[11]"};
-
-  static StringArray g_lightPCFUnitSampleDistanceCache = {
-      "LightData.PCFUnitSampleDistance[0]",
-      "LightData.PCFUnitSampleDistance[1]",
-      "LightData.PCFUnitSampleDistance[2]",
-      "LightData.PCFUnitSampleDistance[3]",
-      "LightData.PCFUnitSampleDistance[4]",
-      "LightData.PCFUnitSampleDistance[5]",
-      "LightData.PCFUnitSampleDistance[6]",
-      "LightData.PCFUnitSampleDistance[7]",
-      "LightData.PCFUnitSampleDistance[8]",
-      "LightData.PCFUnitSampleDistance[9]",
-      "LightData.PCFUnitSampleDistance[10]",
-      "LightData.PCFUnitSampleDistance[11]"};
-
   static StringArray g_lightRadiusStrCache = {"LightData.radius[0]",
                                               "LightData.radius[1]",
                                               "LightData.radius[2]",
@@ -181,74 +139,6 @@ namespace ToolKit
                                                   "LightData.castShadow[10]",
                                                   "LightData.castShadow[11]"};
 
-  static StringArray g_lightNormalBiasStrCache = {"LightData.normalBias[0]",
-                                                  "LightData.normalBias[1]",
-                                                  "LightData.normalBias[2]",
-                                                  "LightData.normalBias[3]",
-                                                  "LightData.normalBias[4]",
-                                                  "LightData.normalBias[5]",
-                                                  "LightData.normalBias[6]",
-                                                  "LightData.normalBias[7]",
-                                                  "LightData.normalBias[8]",
-                                                  "LightData.normalBias[9]",
-                                                  "LightData.normalBias[10]",
-                                                  "LightData.normalBias[11]"};
-
-  static StringArray g_lightShadowFixedBiasStrCache = {
-      "LightData.shadowFixedBias[0]",
-      "LightData.shadowFixedBias[1]",
-      "LightData.shadowFixedBias[2]",
-      "LightData.shadowFixedBias[3]",
-      "LightData.shadowFixedBias[4]",
-      "LightData.shadowFixedBias[5]",
-      "LightData.shadowFixedBias[6]",
-      "LightData.shadowFixedBias[7]",
-      "LightData.shadowFixedBias[8]",
-      "LightData.shadowFixedBias[9]",
-      "LightData.shadowFixedBias[10]",
-      "LightData.shadowFixedBias[11]"};
-
-  static StringArray g_lightShadowSlopedBiasStrCache = {
-      "LightData.shadowSlopedBias[0]",
-      "LightData.shadowSlopedBias[1]",
-      "LightData.shadowSlopedBias[2]",
-      "LightData.shadowSlopedBias[3]",
-      "LightData.shadowSlopedBias[4]",
-      "LightData.shadowSlopedBias[5]",
-      "LightData.shadowSlopedBias[6]",
-      "LightData.shadowSlopedBias[7]",
-      "LightData.shadowSlopedBias[8]",
-      "LightData.shadowSlopedBias[9]",
-      "LightData.shadowSlopedBias[10]",
-      "LightData.shadowSlopedBias[11]"};
-
-  static StringArray g_PCFKernelSizeStrCache = {"LightData.PCFKernelSize[0]",
-                                                "LightData.PCFKernelSize[1]",
-                                                "LightData.PCFKernelSize[2]",
-                                                "LightData.PCFKernelSize[3]",
-                                                "LightData.PCFKernelSize[4]",
-                                                "LightData.PCFKernelSize[5]",
-                                                "LightData.PCFKernelSize[6]",
-                                                "LightData.PCFKernelSize[7]",
-                                                "LightData.PCFKernelSize[8]",
-                                                "LightData.PCFKernelSize[9]",
-                                                "LightData.PCFKernelSize[10]",
-                                                "LightData.PCFKernelSize[11]"};
-
-  static StringArray g_lightShadowMapCamFarPlaneStrCache = {
-      "LightData.shadowMapCamFarPlane[0]",
-      "LightData.shadowMapCamFarPlane[1]",
-      "LightData.shadowMapCamFarPlane[2]",
-      "LightData.shadowMapCamFarPlane[3]",
-      "LightData.shadowMapCamFarPlane[4]",
-      "LightData.shadowMapCamFarPlane[5]",
-      "LightData.shadowMapCamFarPlane[6]",
-      "LightData.shadowMapCamFarPlane[7]",
-      "LightData.shadowMapCamFarPlane[8]",
-      "LightData.shadowMapCamFarPlane[9]",
-      "LightData.shadowMapCamFarPlane[10]",
-      "LightData.shadowMapCamFarPlane[11]"};
-
   static StringArray g_pointLightShadowMapStrCache = {
       "LightData.pointLightShadowMap[0]",
       "LightData.pointLightShadowMap[1]",
@@ -276,5 +166,58 @@ namespace ToolKit
       "LightData.dirAndSpotLightShadowMap[9]",
       "LightData.dirAndSpotLightShadowMap[10]",
       "LightData.dirAndSpotLightShadowMap[11]"};
+
+  static StringArray g_lightPCFSamplesStrCache = {"LightData.PCFSamples[0]",
+                                                  "LightData.PCFSamples[1]",
+                                                  "LightData.PCFSamples[2]",
+                                                  "LightData.PCFSamples[3]",
+                                                  "LightData.PCFSamples[4]",
+                                                  "LightData.PCFSamples[5]",
+                                                  "LightData.PCFSamples[6]",
+                                                  "LightData.PCFSamples[7]",
+                                                  "LightData.PCFSamples[8]",
+                                                  "LightData.PCFSamples[9]",
+                                                  "LightData.PCFSamples[10]",
+                                                  "LightData.PCFSamples[11]"};
+
+  static StringArray g_lightPCFRadiusStrCache = {"LightData.PCFRadius[0]",
+                                                 "LightData.PCFRadius[1]",
+                                                 "LightData.PCFRadius[2]",
+                                                 "LightData.PCFRadius[3]",
+                                                 "LightData.PCFRadius[4]",
+                                                 "LightData.PCFRadius[5]",
+                                                 "LightData.PCFRadius[6]",
+                                                 "LightData.PCFRadius[7]",
+                                                 "LightData.PCFRadius[8]",
+                                                 "LightData.PCFRadius[9]",
+                                                 "LightData.PCFRadius[10]",
+                                                 "LightData.PCFRadius[11]"};
+
+  static StringArray g_lightsoftShadowsStrCache = {"LightData.softShadows[0]",
+                                                   "LightData.softShadows[1]",
+                                                   "LightData.softShadows[2]",
+                                                   "LightData.softShadows[3]",
+                                                   "LightData.softShadows[4]",
+                                                   "LightData.softShadows[5]",
+                                                   "LightData.softShadows[6]",
+                                                   "LightData.softShadows[7]",
+                                                   "LightData.softShadows[8]",
+                                                   "LightData.softShadows[9]",
+                                                   "LightData.softShadows[10]",
+                                                   "LightData.softShadows[11]"};
+
+  static StringArray g_lightBleedingReductionStrCache = {
+      "LightData.lightBleedingReduction[0]",
+      "LightData.lightBleedingReduction[1]",
+      "LightData.lightBleedingReduction[2]",
+      "LightData.lightBleedingReduction[3]",
+      "LightData.lightBleedingReduction[4]",
+      "LightData.lightBleedingReduction[5]",
+      "LightData.lightBleedingReduction[6]",
+      "LightData.lightBleedingReduction[7]",
+      "LightData.lightBleedingReduction[8]",
+      "LightData.lightBleedingReduction[9]",
+      "LightData.lightBleedingReduction[10]",
+      "LightData.lightBleedingReduction[11]"};
 
 } // namespace ToolKit

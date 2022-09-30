@@ -104,23 +104,7 @@ namespace ToolKit
       return;
     }
 
-    // Detach all attachments
-    if (m_defaultRboId != 0)
-    {
-      DeleteDefaultDepthAttachment();
-    }
-    else
-    {
-      DetachAttachment(Attachment::DepthAttachment);
-    }
-    for (int i = 0; i < m_maxColorAttachmentCount; ++i)
-    {
-      if (m_colorAtchs[i] != nullptr)
-      {
-        DetachAttachment((Attachment) i);
-        m_colorAtchs[i] = nullptr;
-      }
-    }
+    ClearAttachments();
 
     // Delete framebuffer
     glDeleteFramebuffers(1, &m_fboId);
@@ -193,11 +177,7 @@ namespace ToolKit
       SetDrawBuffers();
     }
 
-    // Check if framebuffer is complete
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    {
-      GetLogger()->Log("Error: Framebuffer incomplete!");
-    }
+    CheckFramebufferComplete();
 
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
 
@@ -216,6 +196,27 @@ namespace ToolKit
     else
     {
       return m_depthAtch;
+    }
+  }
+
+  void Framebuffer::ClearAttachments()
+  {
+    // Detach all attachments
+    if (m_defaultRboId != 0)
+    {
+      DetachAttachment(Attachment::DepthAttachment);
+    }
+    else
+    {
+      DeleteDefaultDepthAttachment();
+    }
+    for (int i = 0; i < m_maxColorAttachmentCount; ++i)
+    {
+      if (m_colorAtchs[i] != nullptr)
+      {
+        DetachAttachment((Attachment) i);
+        m_colorAtchs[i] = nullptr;
+      }
     }
   }
 
@@ -282,6 +283,16 @@ namespace ToolKit
   FramebufferSettings Framebuffer::GetSettings()
   {
     return m_settings;
+  }
+
+  void Framebuffer::CheckFramebufferComplete()
+  {
+    GLint lastFBO;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
+    GLenum check = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    assert(check == GL_FRAMEBUFFER_COMPLETE && "Framebuffer incomplete");
+    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
   void Framebuffer::DeleteDefaultDepthAttachment()

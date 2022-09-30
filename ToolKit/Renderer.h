@@ -51,6 +51,7 @@ namespace ToolKit
     void SetViewportSize(uint width, uint height);
 
     void DrawFullQuad(ShaderPtr fragmentShader);
+    void DrawFullQuad(MaterialPtr mat);
     void DrawCube(Camera* cam, MaterialPtr mat);
     void SetTexture(ubyte slotIndx, uint textureId);
     void SetShadowMapTexture(EntityType type,
@@ -118,7 +119,15 @@ namespace ToolKit
     void GetEnvironmentLightEntities(EntityRawPtrArray entities);
     void FindEnvironmentLight(Entity* entity, Camera* camera);
 
-    void UpdateShadowMaps(LightRawPtrArray lights, EntityRawPtrArray entities);
+    void ShadowPass(const LightRawPtrArray& lights,
+                    const EntityRawPtrArray& entities);
+    void UpdateShadowMaps(const LightRawPtrArray& lights,
+                          const EntityRawPtrArray& entities);
+    void FilterShadowMaps(const LightRawPtrArray& lights);
+    void Apply7x1GaussianBlur(const TexturePtr source,
+                              RenderTargetPtr dest,
+                              const Vec3& axis,
+                              float amount);
 
     // Fits the scene into the shadow map camera frustum. As the scene gets
     // bigger, the resolution gets lower.
@@ -144,7 +153,6 @@ namespace ToolKit
     uint m_frameCount      = 0;
     UVec2 m_windowSize;   //!< Application window size.
     UVec2 m_viewportSize; //!< Current viewport size.
-    Vec4 m_clearColor;    //!< RenderTarget clear color.
     MaterialPtr m_overrideMat     = nullptr;
     bool m_overrideDiffuseTexture = false;
 
@@ -188,6 +196,9 @@ namespace ToolKit
     RenderState m_renderState;
 
     EntityRawPtrArray m_environmentLightEntities;
+
+    Framebuffer* m_gaussianBlurFramebuffer = nullptr;
+    MaterialPtr m_gaussianBlurMaterial     = nullptr;
   };
 
 } // namespace ToolKit
