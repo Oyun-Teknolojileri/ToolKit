@@ -27,6 +27,14 @@ namespace ToolKit
 
     m_settings = settings;
 
+    // If msaa is not supported, do not use
+    if (glFramebufferTexture2DMultisampleEXT == nullptr)
+    {
+      m_settings.msaa = 0;
+      GetLogger()->Log(
+          "Unsupported Extension: glFramebufferTexture2DMultisampleEXT");
+    }
+
     // Create framebuffer object
     glGenFramebuffers(1, &m_fboId);
 
@@ -160,7 +168,7 @@ namespace ToolKit
                              0);
     }
 #ifndef __EMSCRIPTEN__
-    else if (rt->m_settings.Msaa > 0)
+    else if (rt->m_settings.Msaa > 0 && m_settings.msaa == rt->m_settings.Msaa)
     {
       glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER,
                                            attachment,
@@ -234,7 +242,7 @@ namespace ToolKit
       // Detach
       glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
 #ifndef __EMSCRIPTEN__
-      if (rt->m_settings.Msaa > 0)
+      if (rt->m_settings.Msaa > 0 && m_settings.msaa == rt->m_settings.Msaa)
       {
         glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER,
                                              attachment,
