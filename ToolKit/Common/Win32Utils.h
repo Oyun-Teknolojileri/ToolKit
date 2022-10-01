@@ -312,7 +312,7 @@ namespace ToolKit
         // We suppose to wait to call callback.
         if (callback != nullptr)
         {
-          std::thread t([&pi, callback, finalizeFn]() -> void {
+          std::thread t([pi, callback, finalizeFn]() -> void {
             DWORD stat = 0;
             bool exit  = false;
             while (!exit)
