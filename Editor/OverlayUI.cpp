@@ -1,11 +1,12 @@
 #include "OverlayUI.h"
 
+#include "App.h"
 #include "ConsoleWindow.h"
 #include "EditorCamera.h"
 #include "EditorLight.h"
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Mod.h"
 #include "Sky.h"
 
@@ -258,8 +259,7 @@ namespace ToolKit
             UI::ToggleButton(UI::m_studioLightsToggleIcon->m_textureId,
                              ImVec2(12.0f, 14.0f),
                              editorLitModeOn);
-        UI::HelpMarker(TKLoc + m_owner->m_name,
-                       "Scene Lighting Mode");
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Scene Lighting Mode");
 
         ImGui::EndTable();
       }
@@ -827,7 +827,8 @@ namespace ToolKit
 
         // If the status message has changed.
         static String prevMsg = g_app->m_statusMsg;
-        if (g_app->m_statusMsg != "OK")
+        bool nte = EndsWith(g_app->m_statusMsg, g_statusNoTerminate);
+        if (g_app->m_statusMsg != "OK" && !nte)
         {
           // Hold msg for 3 sec. before switching to OK.
           static float elapsedTime = 0.0f;
@@ -850,7 +851,17 @@ namespace ToolKit
 
         // Inject status.
         ImGui::SameLine();
-        ImGui::Text(g_app->m_statusMsg.c_str());
+
+        if (nte)
+        {
+          String trimmed =
+              Trim(g_app->m_statusMsg.c_str(), g_statusNoTerminate);
+          ImGui::Text(trimmed.c_str());
+        }
+        else
+        {
+          ImGui::Text(g_app->m_statusMsg.c_str());
+        }
 
         ImVec2 msgSize = ImGui::CalcTextSize(g_app->m_statusMsg.c_str());
         float wndWidth = ImGui::GetWindowContentRegionWidth();

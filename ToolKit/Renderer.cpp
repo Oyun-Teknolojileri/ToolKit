@@ -4,7 +4,7 @@
 #include "DirectionComponent.h"
 #include "Drawable.h"
 #include "GL/glew.h"
-#include "GlobalCache.h"
+#include "ShaderReflectionCache.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"

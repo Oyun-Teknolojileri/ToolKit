@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GlobalDef.h"
+#include "Global.h"
 #include "ToolKit.h"
 #include "UI.h"
 #include "Viewport.h"

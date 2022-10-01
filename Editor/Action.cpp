@@ -2,7 +2,7 @@
 
 #include "App.h"
 #include "EditorScene.h"
-#include "GlobalDef.h"
+#include "Global.h"
 
 #include <Prefab.h>
 

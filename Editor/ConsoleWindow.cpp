@@ -1,10 +1,11 @@
 #include "ConsoleWindow.h"
 
+#include "App.h"
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "EditorViewport.h"
 #include "Entity.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Logger.h"
 #include "Mod.h"
 #include "Node.h"

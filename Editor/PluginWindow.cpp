@@ -3,7 +3,7 @@
 #include "App.h"
 #include "ConsoleWindow.h"
 #include "EditorViewport2d.h"
-#include "GlobalDef.h"
+#include "Global.h"
 
 #include <utility>
 
@@ -42,7 +42,7 @@ namespace ToolKit
         ShowHeader();
         ImGui::Separator();
 
-        ShowSimButtons();
+        ShowActionButtons();
         ImGui::Separator();
 
         ShowSettings();
@@ -65,7 +65,7 @@ namespace ToolKit
       Window::DeSerialize(doc, parent);
     }
 
-    void PluginWindow::UpdateSimWndSize()
+    void PluginWindow::UpdateSimulationWndSize()
     {
       if (g_app->m_simulationWindow)
       {
@@ -102,7 +102,7 @@ namespace ToolKit
       }
     }
 
-    void PluginWindow::ShowSimButtons()
+    void PluginWindow::ShowActionButtons()
     {
       Vec2 min  = ImGui::GetWindowContentRegionMin();
       Vec2 max  = ImGui::GetWindowContentRegionMax();
@@ -110,7 +110,7 @@ namespace ToolKit
 
       // Draw play - pause - stop buttons.
       float btnWidth = 24.0f;
-      float offset   = (size.x - btnWidth * 4.0f) * 0.5f;
+      float offset   = (size.x - btnWidth * 5.0f) * 0.5f;
 
       ImGui::SameLine(offset);
       float curYoff = ImGui::GetCursorPosY() + 10.0f;
@@ -180,6 +180,7 @@ namespace ToolKit
       ImGui::PopStyleColor(3);
       ImGui::SameLine();
 
+      // VS Code.
       if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_vsCodeIcon),
                              ImVec2(btnWidth, btnWidth)))
       {
@@ -187,7 +188,7 @@ namespace ToolKit
         if (CheckFile(codePath))
         {
           String cmd = "code \"" + codePath + "\"";
-          int result = std::system(cmd.c_str());
+          int result = g_app->ExecSysCommand(cmd, true, false);
           if (result != 0)
           {
             g_app->GetConsole()->AddLog("Visual Studio Code can't be started. "
@@ -201,6 +202,15 @@ namespace ToolKit
                                       LogType::Error);
         }
       }
+
+      // Build.
+      ImGui::SameLine();
+      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_buildIcn),
+                             ImVec2(btnWidth, btnWidth)))
+      {
+        g_app->CompilePlugin();
+      }
+      UI::HelpMarker(TKLoc, "Build\nBuilds the projects code files.");
     }
 
     void PluginWindow::ShowSettings()
@@ -301,7 +311,7 @@ namespace ToolKit
 
           m_settings->Resolution = resolution;
           g_app->m_windowCamLoad = true;
-          UpdateSimWndSize();
+          UpdateSimulationWndSize();
         }
 
         // Width - Height
@@ -322,7 +332,7 @@ namespace ToolKit
         if (ImGui::DragFloat(
                 "##w", &m_settings->Width, 1.0f, 1.0f, 4096.0f, "%.0f"))
         {
-          UpdateSimWndSize();
+          UpdateSimulationWndSize();
         }
 
         ImGui::TableNextRow();
@@ -334,7 +344,7 @@ namespace ToolKit
         if (ImGui::DragFloat(
                 "##h", &m_settings->Height, 1.0f, 1.0f, 4096.0f, "%.0f"))
         {
-          UpdateSimWndSize();
+          UpdateSimulationWndSize();
         }
 
         if (!isCustomSized)
@@ -351,7 +361,7 @@ namespace ToolKit
 
         if (ImGui::SliderFloat("##z", &m_settings->Scale, 0.25f, 1.0f, "x%.2f"))
         {
-          UpdateSimWndSize();
+          UpdateSimulationWndSize();
         }
 
         // Landscape - Portrait Toggle
@@ -364,7 +374,7 @@ namespace ToolKit
                                ImVec2(30, 30)))
         {
           m_settings->Landscape = !m_settings->Landscape;
-          UpdateSimWndSize();
+          UpdateSimulationWndSize();
         }
         ImGui::EndTable();
       }

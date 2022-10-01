@@ -1,6 +1,6 @@
 #include "Grid.h"
 
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Primative.h"
 #include "ToolKit.h"
 

@@ -1,7 +1,8 @@
 #include "OutlinerWindow.h"
 
+#include "App.h"
 #include "FolderWindow.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Mod.h"
 #include "UI.h"
 #include "Util.h"

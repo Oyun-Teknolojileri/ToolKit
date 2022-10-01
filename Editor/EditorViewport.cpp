@@ -7,7 +7,7 @@
 #include "FileManager.h"
 #include "FolderWindow.h"
 #include "Gizmo.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Grid.h"
 #include "Mod.h"
 #include "Node.h"

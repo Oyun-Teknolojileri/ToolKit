@@ -12,7 +12,7 @@
 #include "Framebuffer.h"
 #include "GL/glew.h"
 #include "Gizmo.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Grid.h"
 #include "MaterialInspector.h"
 #include "Mod.h"
@@ -240,10 +240,9 @@ namespace ToolKit
           }
           break;
           case LightingOnly: {
-            MaterialPtr lightingOnly = std::make_shared<Material>();
-            lightingOnly->m_fragmentShader =
-                GetShaderManager()->Create<Shader>(
-                    ShaderPath("ToolKit/lightingOnly.shader"));
+            MaterialPtr lightingOnly       = std::make_shared<Material>();
+            lightingOnly->m_fragmentShader = GetShaderManager()->Create<Shader>(
+                ShaderPath("ToolKit/lightingOnly.shader"));
             lightingOnly->Init();
             m_renderer->m_overrideMat = lightingOnly;
           }
@@ -251,7 +250,7 @@ namespace ToolKit
           case Unlit: {
             MaterialPtr unlit = GetMaterialManager()->GetCopyOfUnlitMaterial();
             unlit->Init();
-            m_renderer->m_overrideMat = unlit;
+            m_renderer->m_overrideMat            = unlit;
             m_renderer->m_overrideDiffuseTexture = true;
           }
           break;
@@ -571,6 +570,47 @@ namespace ToolKit
       }
     }
 
+    void App::CompilePlugin()
+    {
+      String codePath = m_workspace.GetCodePath();
+      String buildDir = ConcatPaths({codePath, "build"});
+
+      // create a build dir if not exist.
+      std::filesystem::create_directories(buildDir);
+
+      // Update project files in case of change.
+      String cmd  = "cmake -S " + codePath + " -B " + buildDir;
+      m_statusMsg = "Compiling ..." + g_statusNoTerminate;
+      ExecSysCommand(cmd, true, false, [this, buildDir](int res) -> void {
+        String cmd = "cmake --build " + buildDir;
+        ExecSysCommand(cmd, false, false, [=](int res) -> void {
+          if (res)
+          {
+            m_statusMsg = "Compile Failed.";
+
+            String detail;
+            if (res == 1)
+            {
+              detail = "CMake Build Failed.";
+            }
+
+            if (res == -1)
+            {
+              detail = "CMake Generate Failed.";
+            }
+
+            GetLogger()->WriteConsole(
+                LogType::Error, "%s %s", m_statusMsg.c_str(), detail.c_str());
+          }
+          else
+          {
+            m_statusMsg = "Compiled.";
+            GetLogger()->WriteConsole(LogType::Memo, "%s", m_statusMsg.c_str());
+          }
+        });
+      });
+    }
+
     EditorScenePtr App::GetCurrentScene()
     {
       EditorScenePtr eScn = std::static_pointer_cast<EditorScene>(
@@ -582,6 +622,19 @@ namespace ToolKit
     void App::SetCurrentScene(const EditorScenePtr& scene)
     {
       GetSceneManager()->SetCurrentScene(scene);
+    }
+
+    int App::ExecSysCommand(StringView cmd,
+                            bool async,
+                            bool showConsole,
+                            SysCommandDoneCallback callback)
+    {
+      if (m_sysComExecFn)
+      {
+        return m_sysComExecFn(cmd, async, showConsole, callback);
+      }
+
+      return -1;
     }
 
     void App::ResetUI()
@@ -794,7 +847,7 @@ namespace ToolKit
           cmd += "\" -s " + std::to_string(UI::ImportData.scale);
 
           // Execute command
-          result = std::system(cmd.c_str());
+          result = ExecSysCommand(cmd.c_str(), false, false);
           assert(result != -1);
         }
 

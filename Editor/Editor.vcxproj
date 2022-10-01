@@ -167,7 +167,7 @@
     <ClInclude Include="EditorViewport2d.h" />
     <ClInclude Include="FolderWindow.h" />
     <ClInclude Include="Gizmo.h" />
-    <ClInclude Include="GlobalDef.h" />
+    <ClInclude Include="Global.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="ImGui\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="MaterialInspector.h" />

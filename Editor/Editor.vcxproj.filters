@@ -161,7 +161,7 @@
     <ClInclude Include="Gizmo.h">
       <Filter>Entities</Filter>
     </ClInclude>
-    <ClInclude Include="GlobalDef.h">
+    <ClInclude Include="Global.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="App.h">

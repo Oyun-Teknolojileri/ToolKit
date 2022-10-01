@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Drawable.h"
-#include "GlobalDef.h"
+#include "Global.h"
 
 namespace ToolKit
 {

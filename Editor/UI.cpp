@@ -6,7 +6,7 @@
 #include "ConsoleWindow.h"
 #include "EditorViewport.h"
 #include "FolderWindow.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "ImGui/imgui_stdlib.h"
 #include "Imgui/imgui_impl_opengl3.h"
 #include "Imgui/imgui_impl_sdl.h"
@@ -35,6 +35,7 @@ namespace ToolKit
     bool UI::m_imguiSampleWindow     = false;
     bool UI::m_showNewSceneWindow    = false;
     float UI::m_hoverTimeForHelp     = 1.0f;
+    UI::Blocker UI::BlockerData;
     UI::Import UI::ImportData;
     UI::SearchFile UI::SearchFileData;
     std::vector<Window*> UI::m_volatileWindows;
@@ -82,6 +83,7 @@ namespace ToolKit
     TexturePtr UI::m_studioLightsToggleIcon;
     TexturePtr UI::m_anchorIcn;
     TexturePtr UI::m_prefabIcn;
+    TexturePtr UI::m_buildIcn;
 
     void UI::Init()
     {
@@ -291,6 +293,10 @@ namespace ToolKit
       m_prefabIcn = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/scene_data.png", true));
       m_prefabIcn->Init();
+
+      m_buildIcn = GetTextureManager()->Create<Texture>(
+          TexturePath("Icons/build.png", true));
+      m_buildIcn->Init();
     }
 
     void UI::InitTheme()
@@ -325,7 +331,7 @@ namespace ToolKit
           0.23529413f, 0.24705884f, 0.25490198f, 0.00f};
       style->Colors[ImGuiCol_PopupBg] = {0.13f, 0.13f, 0.13f, 0.94f};
       style->Colors[ImGuiCol_Border]  = {
-          0.33333334f, 0.33333334f, 0.33333334f, 0.50f};
+           0.33333334f, 0.33333334f, 0.33333334f, 0.50f};
       style->Colors[ImGuiCol_BorderShadow] = {
           0.15686275f, 0.15686275f, 0.15686275f, 0.00f};
       style->Colors[ImGuiCol_FrameBg] = {
@@ -338,7 +344,7 @@ namespace ToolKit
       style->Colors[ImGuiCol_TitleBgCollapsed] = {0.16f, 0.29f, 0.48f, 1.00f};
       style->Colors[ImGuiCol_TitleBgActive]    = {0.00f, 0.00f, 0.00f, 0.51f};
       style->Colors[ImGuiCol_MenuBarBg]        = {
-          0.27058825f, 0.28627452f, 0.2901961f, 0.80f};
+                 0.27058825f, 0.28627452f, 0.2901961f, 0.80f};
       style->Colors[ImGuiCol_ScrollbarBg] = {
           0.27058825f, 0.28627452f, 0.2901961f, 0.60f};
       style->Colors[ImGuiCol_ScrollbarGrab] = {
@@ -352,7 +358,7 @@ namespace ToolKit
       style->Colors[ImGuiCol_SliderGrab]       = {0.70f, 0.70f, 0.70f, 0.62f};
       style->Colors[ImGuiCol_SliderGrabActive] = {0.30f, 0.30f, 0.30f, 0.84f};
       style->Colors[ImGuiCol_Button]           = {
-          0.33333334f, 0.3529412f, 0.36078432f, 0.49f};
+                    0.33333334f, 0.3529412f, 0.36078432f, 0.49f};
       style->Colors[ImGuiCol_ButtonHovered] = {
           0.21960786f, 0.30980393f, 0.41960788f, 1.00f};
       style->Colors[ImGuiCol_ButtonActive] = {
@@ -430,6 +436,7 @@ namespace ToolKit
       ShowImportWindow();
       ShowSearchForFilesWindow();
       ShowNewSceneWindow();
+      ShowBlocker();
 
       // Show & Destroy if not visible.
       for (int i = static_cast<int>(m_volatileWindows.size()) - 1; i > -1; i--)
@@ -963,6 +970,61 @@ namespace ToolKit
       }
     }
 
+    void UI::ShowBlocker()
+    {
+      if (!BlockerData.Show)
+      {
+        return;
+      }
+
+      IVec2 wp;
+      SDL_GetWindowPosition(g_window, &wp.x, &wp.y);
+
+      ImGuiIO& io = ImGui::GetIO();
+      ImGui::SetNextWindowPos(ImVec2(wp.x + io.DisplaySize.x * 0.5f,
+                                     wp.y + io.DisplaySize.y * 0.5f),
+                              ImGuiCond_Always,
+                              ImVec2(0.5f, 0.5f));
+
+      ImGui::OpenPopup("Blocker");
+      if (ImGui::BeginPopupModal(
+              "Blocker",
+              NULL,
+              ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground |
+                  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize))
+      {
+        CenteredText(BlockerData.Message);
+
+        if (BlockerData.ShowStatusMessages)
+        {
+          CenteredText(g_app->m_statusMsg);
+        }
+
+        if (BlockerData.ShowWaitingDots)
+        {
+          static int dotCnt   = 0;
+          static float lastEp = GetElapsedMilliSeconds();
+          float elp           = GetElapsedMilliSeconds();
+
+          String dots[4] = {"   .   ", "   ..   ", "   ...   ", " "};
+          CenteredText(dots[dotCnt]);
+
+          if (elp - lastEp > 500.0f)
+          {
+            lastEp = elp;
+            dotCnt++;
+            
+            if (dotCnt > 3)
+            {
+              dotCnt = 0;
+            }
+          }
+        }
+
+        ImGui::EndPopup();
+      }
+    }
+
     bool UI::ImageButtonDecorless(uint textureID,
                                   const Vec2& size,
                                   bool flipImage)
@@ -1068,6 +1130,15 @@ namespace ToolKit
     {
       ImGui::Indent(-g_centeredTextOffset);
       g_centeredTextOffset = 0.0f;
+    }
+
+    void UI::CenteredText(const String& text)
+    {
+      float windowWidth = ImGui::GetWindowSize().x;
+      float textWidth   = ImGui::CalcTextSize(text.c_str()).x;
+
+      ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
+      ImGui::Text(text.c_str());
     }
 
     Window::Window()

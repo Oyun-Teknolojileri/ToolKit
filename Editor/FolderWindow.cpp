@@ -5,7 +5,7 @@
 #include "DirectionComponent.h"
 #include "Framebuffer.h"
 #include "Gizmo.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Light.h"
 #include "MaterialInspector.h"
 #include "PopupWindows.h"

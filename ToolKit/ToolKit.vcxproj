@@ -66,7 +66,7 @@
     <ClInclude Include="Events.h" />
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="Framebuffer.h" />
-    <ClInclude Include="GlobalCache.h" />
+    <ClInclude Include="ShaderReflectionCache.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Material.h" />

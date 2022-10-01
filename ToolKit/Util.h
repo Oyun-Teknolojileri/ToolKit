@@ -101,7 +101,8 @@ namespace ToolKit
    */
   TK_API String ToLower(const String& str);
   TK_API String Format(const char* msg, ...);
-  TK_API String Trim(const std::string& str, const String& whitespace = " \t");
+  TK_API String Trim(const String& str, const String& whitespace = " \t");
+  TK_API bool EndsWith(const String& str, const String& suffix);
 
   // Debug geometries.
   ///////////////////////////////////////////////////////

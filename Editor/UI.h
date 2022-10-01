@@ -102,6 +102,7 @@ namespace ToolKit
                              const char* desc,
                              float wait = m_hoverTimeForHelp);
       static void ShowNewSceneWindow();
+      static void ShowBlocker();
 
       // Custom widgets.
       static bool ImageButtonDecorless(uint textureID,
@@ -116,6 +117,7 @@ namespace ToolKit
       static bool BeginCenteredTextButton(const String& text,
                                           const String& id = "");
       static void EndCenteredTextButton();
+      static void CenteredText(const String& text);
 
      public:
       static bool m_showNewSceneWindow;
@@ -125,6 +127,14 @@ namespace ToolKit
 
       // Volatile windows. (Pop-ups etc.)
       static std::vector<Window*> m_volatileWindows;
+
+      static struct Blocker
+      {
+        bool Show               = false;
+        bool ShowStatusMessages = false;
+        bool ShowWaitingDots    = false;
+        String Message          = "Working";
+      } BlockerData;
 
       static struct Import
       {
@@ -186,6 +196,7 @@ namespace ToolKit
       static TexturePtr m_studioLightsToggleIcon;
       static TexturePtr m_anchorIcn;
       static TexturePtr m_prefabIcn;
+      static TexturePtr m_buildIcn;
     };
 
   } // namespace Editor

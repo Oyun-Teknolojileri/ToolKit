@@ -38,6 +38,7 @@ namespace ToolKit
     const String g_workspaceFile("Workspace.settings");
     const String g_uiLayoutFile("UILayout.ini");
     const String g_editorSettingsFile("Editor.settings");
+    const String g_statusNoTerminate("#nte");
 
     // Colors and materials.
     const String g_gridMaterialName("TK_EDITOR_GRID");

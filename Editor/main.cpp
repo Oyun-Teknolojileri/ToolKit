@@ -1,6 +1,7 @@
 #include "App.h"
 #include "Common/GlErrorReporter.h"
 #include "Common/SDLEventPool.h"
+#include "Common/Win32Utils.h"
 #include "ConsoleWindow.h"
 #include "GL/glew.h"
 #include "ImGui/imgui_impl_sdl.h"
@@ -214,6 +215,7 @@ namespace ToolKit
 
             // Init app
             g_app = new App(g_settings.Window.Width, g_settings.Window.Height);
+            g_app->m_sysComExecFn = ToolKit::Win32Helpers::g_SysComExecFn;
             UI::Init();
             g_app->Init();
           }

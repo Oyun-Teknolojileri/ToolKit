@@ -1,6 +1,6 @@
 #pragma once
 
-#include "App.h"
+#include "EditorScene.h"
 #include "StateMachine.h"
 #include "ToolKit.h"
 

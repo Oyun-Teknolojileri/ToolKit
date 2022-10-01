@@ -3,7 +3,7 @@
 #include "App.h"
 #include "EditorCamera.h"
 #include "EditorViewport.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Prefab.h"
 #include "Util.h"
 

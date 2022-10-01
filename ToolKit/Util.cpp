@@ -737,6 +737,11 @@ namespace ToolKit
     return str.substr(strBegin, strRange);
   }
 
+  TK_API bool EndsWith(const String& str, const String& suffix)
+  {
+    return str.rfind(suffix) == glm::abs(str.size() - suffix.size());
+  }
+
   LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size)
   {
     // Searching perpendicular axes on the plane.

@@ -56,9 +56,9 @@ namespace ToolKit
       virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
 
      private:
-      void UpdateSimWndSize();
+      void UpdateSimulationWndSize();
       void ShowHeader();
-      void ShowSimButtons();
+      void ShowActionButtons();
       void ShowSettings();
       String EmuResToString(EmulatorResolution emuRes);
       void UpdateCanvas(uint width, uint heigth);
