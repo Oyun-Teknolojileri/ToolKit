@@ -140,6 +140,9 @@ namespace ToolKit
       case Uniform::PROJECT_MODEL_VIEW:
         name = "ProjectViewModel";
         break;
+      case Uniform::VIEW:
+        name = "View";
+        break;
       case Uniform::MODEL:
         name = "Model";
         break;
@@ -218,6 +221,10 @@ namespace ToolKit
         if (strcmp("ProjectViewModel", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::PROJECT_MODEL_VIEW);
+        }
+        else if (strcmp("View", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::VIEW);
         }
         else if (strcmp("Model", attr->value()) == 0)
         {

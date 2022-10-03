@@ -169,6 +169,20 @@ namespace ToolKit
       "LightData.dirAndSpotLightShadowMap[10]",
       "LightData.dirAndSpotLightShadowMap[11]"};
 
+  static const StringArray g_lightShadowMapCameraFarStrCache = {
+      "LightData.shadowMapCameraFar[0]",
+      "LightData.shadowMapCameraFar[1]",
+      "LightData.shadowMapCameraFar[2]",
+      "LightData.shadowMapCameraFar[3]",
+      "LightData.shadowMapCameraFar[4]",
+      "LightData.shadowMapCameraFar[5]",
+      "LightData.shadowMapCameraFar[6]",
+      "LightData.shadowMapCameraFar[7]",
+      "LightData.shadowMapCameraFar[8]",
+      "LightData.shadowMapCameraFar[9]",
+      "LightData.shadowMapCameraFar[10]",
+      "LightData.shadowMapCameraFar[11]"};
+
   static const StringArray g_lightPCFSamplesStrCache = {
       "LightData.PCFSamples[0]",
       "LightData.PCFSamples[1]",

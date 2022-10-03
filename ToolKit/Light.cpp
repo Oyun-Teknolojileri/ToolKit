@@ -91,7 +91,7 @@ namespace ToolKit
                                           GraphicTypes::FormatRG32F,
                                           GraphicTypes::FormatRG,
                                           GraphicTypes::TypeFloat,
-                                          Vec4(1.0f)};
+                                          Vec4(FLT_MAX)};
     m_shadowRt =
         std::make_shared<RenderTarget>((int) res.x, (int) res.y, settings);
     m_shadowRt->Init();
@@ -230,7 +230,7 @@ namespace ToolKit
                                           GraphicTypes::FormatRG32F,
                                           GraphicTypes::FormatRG,
                                           GraphicTypes::TypeFloat,
-                                          Vec4(1.0f)};
+                                          Vec4(FLT_MAX)};
     m_shadowRt =
         std::make_shared<RenderTarget>((int) res.x, (int) res.y, settings);
     m_shadowRt->Init();

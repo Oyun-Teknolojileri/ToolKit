@@ -45,6 +45,7 @@ namespace ToolKit
 
     bool m_isStudioLight = false;
     Mat4 m_shadowMapCameraProjectionViewMatrix;
+    float m_shaowMapCameraFar = 1.0f;
 
    protected:
     bool m_shadowMapInitialized         = false;

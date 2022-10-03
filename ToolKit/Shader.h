@@ -13,6 +13,7 @@ namespace ToolKit
   enum class Uniform
   {
     PROJECT_MODEL_VIEW,
+    VIEW,
     MODEL,
     INV_TR_MODEL,
     LIGHT_DATA,

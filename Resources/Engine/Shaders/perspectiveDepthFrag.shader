@@ -1,23 +1,14 @@
 <shader>
 	<type name = "fragmentShader" />
-	<uniform name = "CamData" />
 	<uniform name = "DiffuseTextureInUse" />
 	<uniform name = "ColorAlpha" />
 	<source>
 	<!--
 		#version 300 es
-		precision mediump float;
+		precision highp float;
 
 		in vec4 v_pos;
 		in vec2 v_texture;
-
-		struct _CamData
-		{
-			vec3 pos;
-			vec3 dir;
-		};
-
-		uniform _CamData CamData;
 
 		uniform int diffuseTextureInUse;
 		uniform sampler2D s_texture0;
@@ -44,7 +35,7 @@
 				discard;
 			}
 
-	    vec2 lightDistance = ComputeMoments(length(v_pos.xyz - CamData.pos));
+	    vec2 lightDistance = ComputeMoments(length(v_pos.xyz));
 	    fragColor = vec4(lightDistance, 0.0, 0.0);
 		}
 	-->

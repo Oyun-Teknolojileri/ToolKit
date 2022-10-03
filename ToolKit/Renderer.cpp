@@ -4,13 +4,13 @@
 #include "DirectionComponent.h"
 #include "Drawable.h"
 #include "GL/glew.h"
-#include "ShaderReflectionCache.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
 #include "ResourceComponent.h"
 #include "Scene.h"
 #include "Shader.h"
+#include "ShaderReflectionCache.h"
 #include "Skeleton.h"
 #include "Surface.h"
 #include "Texture.h"
@@ -849,6 +849,7 @@ namespace ToolKit
           light->m_shadowMapCameraProjectionViewMatrix =
               m_shadowMapCamera->GetProjectionMatrix() *
               m_shadowMapCamera->GetViewMatrix();
+          light->m_shaowMapCameraFar = m_shadowMapCamera->GetData().far;
 
           FrustumCull(entities, m_shadowMapCamera);
 
@@ -1211,6 +1212,10 @@ namespace ToolKit
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
         break;
+        case Uniform::VIEW: {
+          GLint loc = glGetUniformLocation(program->m_handle, "View");
+          glUniformMatrix4fv(loc, 1, false, &m_view[0][0]);
+        }
         case Uniform::MODEL: {
           GLint loc = glGetUniformLocation(program->m_handle, "Model");
           glUniformMatrix4fv(loc, 1, false, &m_model[0][0]);
@@ -1236,6 +1241,8 @@ namespace ToolKit
           glUniform3fv(loc, 1, &data.pos.x);
           loc = glGetUniformLocation(program->m_handle, "CamData.dir");
           glUniform3fv(loc, 1, &data.dir.x);
+          loc = glGetUniformLocation(program->m_handle, "CamData.far");
+          glUniform1f(loc, data.far);
         }
         break;
         case Uniform::COLOR: {
@@ -1504,6 +1511,10 @@ namespace ToolKit
             1,
             GL_FALSE,
             &(currLight->m_shadowMapCameraProjectionViewMatrix)[0][0]);
+
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowMapCameraFarStrCache[i].c_str());
+        glUniform1f(loc, currLight->m_shaowMapCameraFar);
 
         loc = glGetUniformLocation(program->m_handle,
                                    g_lightBleedingReductionStrCache[i].c_str());

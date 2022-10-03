@@ -161,6 +161,7 @@
 			int activeCount;
 
 			mat4 projectionViewMatrix[12];
+			float shadowMapCameraFar[12];
 			sampler2D dirAndSpotLightShadowMap[4];
 			samplerCube pointLightShadowMap[4];
 			int castShadow[12];
@@ -185,6 +186,7 @@
 		{
 			vec3 pos;
 			vec3 dir;
+			float far;
 		};
 
 		uniform _LightData LightData;
@@ -273,7 +275,7 @@
 			projCoord = projCoord * 0.5 + 0.5;
 
 			vec3 lightToFrag = pos - LightData.pos[index];
-			float currFragDepth = length(lightToFrag);
+			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
 
 			if (LightData.softShadows[index] == 1)
 			{
@@ -291,7 +293,7 @@
 		float CalculatePointShadow(vec3 pos, int index, int pointIndex, vec3 normal)
 		{
 			vec3 lightToFrag = pos - LightData.pos[index];
-			float currFragDepth = length(lightToFrag);
+			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
 
 			if (LightData.softShadows[index] == 1)
 			{
