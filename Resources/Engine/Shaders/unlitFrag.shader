@@ -13,6 +13,9 @@
 		void main()
 		{
 		  fragColor = texture(s_texture0, v_texture);
+			if(fragColor.a < 0.1f){
+				discard;
+			}
 		}
 	-->
 	</source>
