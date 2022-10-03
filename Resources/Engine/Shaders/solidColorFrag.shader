@@ -194,6 +194,8 @@
 		uniform _CamData CamData;
 		uniform vec4 Color;
 
+		uniform sampler2D s_texture5;
+
 		uniform samplerCube s_texture7;
 		uniform float UseIbl;
 		uniform float IblIntensity;
@@ -455,7 +457,11 @@
 			vec3 iblIrradiance = UseIbl * texture(s_texture7, n).rgb;
 			irradiance += iblIrradiance * IblIntensity;
 
-			fragColor = vec4(irradiance * Color.xyz, Color.a);
+			vec2 coords = gl_FragCoord.xy / vec2(textureSize(s_texture5, 0));
+			coords = vec2(coords.x, coords.y);
+			float ambientOcclusion = texture(s_texture5, coords).r;
+
+			fragColor = vec4(ambientOcclusion * irradiance * Color.xyz, Color.a);
 		}
 	-->
 	</source>

@@ -726,6 +726,13 @@ namespace ToolKit
     Init();
   }
 
+    void RenderTarget::ReconstrcutIfNeeded(uint width,
+                                 uint height)
+  {
+      if (m_width != width || m_height != height)
+        Reconstrcut(width, height, m_settings);
+  }
+
   const RenderTargetSettigs& RenderTarget::GetSettings() const
   {
     return m_settings;

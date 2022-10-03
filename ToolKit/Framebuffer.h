@@ -68,6 +68,7 @@ namespace ToolKit
     FramebufferSettings GetSettings();
     void CheckFramebufferComplete();
 
+    void ReconstructIfNeeded(uint width, uint height);
    private:
     RenderTarget* DetachAttachment(Attachment atc);
     void DeleteDefaultDepthAttachment();

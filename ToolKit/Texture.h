@@ -155,6 +155,8 @@ namespace ToolKit
     void Reconstrcut(uint width,
                      uint height,
                      const RenderTargetSettigs& settings);
+    void ReconstrcutIfNeeded(uint width,
+                             uint height);
     const RenderTargetSettigs& GetSettings() const;
 
    public:

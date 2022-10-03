@@ -205,6 +205,16 @@ namespace ToolKit
     Framebuffer* m_framebuffer =
         nullptr; //!< Framebuffer of the render target of the viewport
 
+    FramebufferPtr m_ssaoGBuffer =
+        nullptr; // Basicly needed for SSAO algorithm.
+    FramebufferPtr m_ssaoBuffer     = nullptr;
+    FramebufferPtr m_ssaoBufferBlur = nullptr;
+    RenderTargetPtr m_ssaoPosition  = nullptr;
+    RenderTargetPtr m_ssaoNormal    = nullptr;
+    RenderTargetPtr m_ssao          = nullptr;
+    RenderTargetPtr m_ssaoBlur      = nullptr;
+    MaterialPtr m_ssaoCalcMat       = nullptr;
+
     // Window properties.
     Vec2 m_contentAreaLocation; //!< Position of content area in screen space.
     float m_zoom = 1.0f;        //!< Zoom amount of Viewport's Camera.

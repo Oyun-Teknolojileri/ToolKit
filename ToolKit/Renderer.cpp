@@ -19,6 +19,7 @@
 #include "Viewport.h"
 
 #include <algorithm>
+#include <random>
 
 #include "DebugNew.h"
 
@@ -33,9 +34,9 @@ namespace ToolKit
 
   Renderer::~Renderer()
   {
-    if (m_gaussianBlurFramebuffer != nullptr)
+    if (m_blurFramebuffer != nullptr)
     {
-      SafeDel(m_gaussianBlurFramebuffer);
+      SafeDel(m_blurFramebuffer);
     }
     SafeDel(m_shadowMapCamera);
     SafeDel(m_uiCamera);
@@ -49,6 +50,7 @@ namespace ToolKit
     EntityRawPtrArray entities = scene->GetEntities();
 
     ShadowPass(editorLights, entities);
+    GenerateSSAOTexture(scene, viewport, editorLights);
 
     SetViewport(viewport);
 
@@ -57,6 +59,242 @@ namespace ToolKit
     if (!cam->IsOrtographic())
     {
       RenderSky(scene->GetSky(), cam);
+    }
+  }
+
+  void Renderer::GenerateKernelAndNoiseForSSAOSamples(
+      std::vector<glm::vec3>& ssaoKernel, std::vector<glm::vec3>& ssaoNoise)
+  {
+    // generate sample kernel
+    // ----------------------
+    auto lerp = [](float a, float b, float f) { return a + f * (b - a); };
+
+    std::uniform_real_distribution<GLfloat> randomFloats(
+        0.0, 1.0); // generates random floats between 0.0 and 1.0
+    std::default_random_engine generator;
+    if (ssaoKernel.size() == 0)
+      for (unsigned int i = 0; i < 64; ++i)
+      {
+        glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0,
+                         randomFloats(generator) * 2.0 - 1.0,
+                         randomFloats(generator));
+        sample = glm::normalize(sample);
+        sample *= randomFloats(generator);
+        float scale = float(i) / 64.0f;
+
+        // scale samples s.t. they're more aligned to center of kernel
+        scale = lerp(0.1f, 1.0f, scale * scale);
+        sample *= scale;
+        ssaoKernel.push_back(sample);
+      }
+
+    // generate noise texture
+    // ----------------------
+    if (ssaoNoise.size() == 0)
+      for (unsigned int i = 0; i < 16; i++)
+      {
+        glm::vec3 noise(randomFloats(generator) * 2.0 - 1.0,
+                        randomFloats(generator) * 2.0 - 1.0,
+                        0.0f); // rotate around z-axis (in tangent space)
+        ssaoNoise.push_back(noise);
+      }
+  }
+
+  void Renderer::GenerateSSAOTexture(const ScenePtr scene,
+                                     Viewport* viewport,
+                                     const LightRawPtrArray& editorLights)
+  {
+    Camera* cam                = viewport->GetCamera();
+    EntityRawPtrArray entities = scene->GetEntities();
+
+    RenderTargetSettigs rtSet;
+    rtSet.WarpS = rtSet.WarpT = GraphicTypes::UVClampToEdge;
+    rtSet.InternalFormat      = GraphicTypes::FormatRGBA16F;
+    rtSet.Format              = GraphicTypes::FormatRGBA;
+    rtSet.Type                = GraphicTypes::TypeFloat;
+
+    if (!viewport->m_ssaoPosition)
+      viewport->m_ssaoPosition = std::make_shared<RenderTarget>(
+          (uint) viewport->m_wndContentAreaSize.x,
+          (uint) viewport->m_wndContentAreaSize.y,
+          rtSet);
+
+    viewport->m_ssaoPosition->Init();
+    viewport->m_ssaoPosition->ReconstrcutIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+
+    if (!viewport->m_ssaoNormal)
+      viewport->m_ssaoNormal = std::make_shared<RenderTarget>(
+          (uint) viewport->m_wndContentAreaSize.x,
+          (uint) viewport->m_wndContentAreaSize.y,
+          rtSet);
+
+    viewport->m_ssaoNormal->Init();
+    viewport->m_ssaoNormal->ReconstrcutIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+
+    if (!viewport->m_ssaoGBuffer)
+      viewport->m_ssaoGBuffer = std::make_shared<Framebuffer>();
+
+    viewport->m_ssaoGBuffer->Init({(uint) viewport->m_wndContentAreaSize.x,
+                                   (uint) viewport->m_wndContentAreaSize.y,
+                                   0,
+                                   false,
+                                   true});
+
+    viewport->m_ssaoGBuffer->ReconstructIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+
+    viewport->m_ssaoGBuffer->SetAttachment(
+        Framebuffer::Attachment::ColorAttachment0,
+        viewport->m_ssaoPosition.get());
+    viewport->m_ssaoGBuffer->SetAttachment(
+        Framebuffer::Attachment::ColorAttachment1,
+        viewport->m_ssaoNormal.get());
+    SetFramebuffer(
+        viewport->m_ssaoGBuffer.get(), true, {0.0f, 0.0f, 0.0f, 1.0});
+
+    ShaderPtr ssao_geo_vert = GetShaderManager()->Create<Shader>(
+        ShaderPath("ssaoVertex.shader", true));
+    ssao_geo_vert->Init();
+    ssao_geo_vert->SetShaderParameter("viewMatrix",
+                                      ParameterVariant(cam->GetViewMatrix()));
+    ShaderPtr ssao_geo_frag = GetShaderManager()->Create<Shader>(
+        ShaderPath("ssaoGBufferFrag.shader", true));
+    ssao_geo_frag->Init();
+    MaterialPtr material = std::make_shared<Material>();
+    material->UnInit();
+
+    material->m_vertexShader   = ssao_geo_vert;
+    material->m_fragmentShader = ssao_geo_frag;
+    material->Init();
+
+    m_overrideMat = material;
+    RenderEntities(entities, cam, viewport, editorLights);
+    SetFramebuffer(nullptr);
+    m_overrideMat = nullptr;
+
+    static std::vector<glm::vec3> ssaoKernel;
+    static std::vector<glm::vec3> ssaoNoise;
+    GenerateKernelAndNoiseForSSAOSamples(ssaoKernel, ssaoNoise);
+
+    static unsigned int noiseTexture = 0;
+    if (noiseTexture == 0)
+    {
+
+      glGenTextures(1, &noiseTexture);
+      glBindTexture(GL_TEXTURE_2D, noiseTexture);
+      glTexImage2D(GL_TEXTURE_2D,
+                   0,
+                   GL_RGBA32F,
+                   4,
+                   4,
+                   0,
+                   GL_RGB,
+                   GL_FLOAT,
+                   &ssaoNoise[0]);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    }
+
+    if (!viewport->m_ssao)
+      viewport->m_ssao = std::make_shared<RenderTarget>(
+          (uint) viewport->m_wndContentAreaSize.x,
+          (uint) viewport->m_wndContentAreaSize.y,
+          rtSet);
+
+    viewport->m_ssao->Init();
+    viewport->m_ssao->ReconstrcutIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+
+    if (!viewport->m_ssaoBuffer)
+      viewport->m_ssaoBuffer = std::make_shared<Framebuffer>();
+    viewport->m_ssaoBuffer->Init({(uint) viewport->m_wndContentAreaSize.x,
+                                  (uint) viewport->m_wndContentAreaSize.y,
+                                  0,
+                                  false,
+                                  true});
+
+    viewport->m_ssaoBuffer->ReconstructIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+    viewport->m_ssaoBuffer->SetAttachment(
+        Framebuffer::Attachment::ColorAttachment0, viewport->m_ssao.get());
+    SetFramebuffer(viewport->m_ssaoBuffer.get());
+
+    SetTexture(0, viewport->m_ssaoPosition->m_textureId);
+    SetTexture(1, viewport->m_ssaoNormal->m_textureId);
+    SetTexture(2, noiseTexture);
+
+    if (!viewport->m_ssaoCalcMat)
+    {
+      viewport->m_ssaoCalcMat = std::make_shared<Material>();
+      ShaderPtr ssaoVert = GetShaderManager()->Create<Shader>(
+          ShaderPath("ssaoCalcVert.shader", true));
+      ShaderPtr ssaoFrag = GetShaderManager()->Create<Shader>(
+          ShaderPath("ssaoCalcFrag.shader", true));
+      viewport->m_ssaoCalcMat->m_vertexShader = ssaoVert;
+      viewport->m_ssaoCalcMat->m_fragmentShader = ssaoFrag;
+      viewport->m_ssaoCalcMat->Init();
+    }
+    ShaderPtr ssaoFrag = viewport->m_ssaoCalcMat->m_fragmentShader;
+
+    ssaoFrag->SetShaderParameter("projection",
+                                 ParameterVariant(cam->GetProjectionMatrix()));
+    ssaoFrag->SetShaderParameter(
+        "screen_size", ParameterVariant(viewport->m_wndContentAreaSize));
+    ssaoFrag->SetShaderParameter("gPosition", ParameterVariant(0));
+    ssaoFrag->SetShaderParameter("gNormal", ParameterVariant(1));
+    ssaoFrag->SetShaderParameter("texNoise", ParameterVariant(2));
+    for (unsigned int i = 0; i < 64; ++i)
+      ssaoFrag->SetShaderParameter(g_ssaoSamplesStrCache[i],
+                                   ParameterVariant(ssaoKernel[i]));
+
+    DrawFullQuad(viewport->m_ssaoCalcMat);
+    SetFramebuffer(nullptr);
+
+    if (!viewport->m_ssaoBlur)
+      viewport->m_ssaoBlur = std::make_shared<RenderTarget>(
+          (uint) viewport->m_wndContentAreaSize.x,
+          (uint) viewport->m_wndContentAreaSize.y,
+          rtSet);
+    viewport->m_ssaoBlur->Init();
+    viewport->m_ssaoBlur->ReconstrcutIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+
+    if (!viewport->m_ssaoBufferBlur)
+      viewport->m_ssaoBufferBlur = std::make_shared<Framebuffer>();
+    viewport->m_ssaoBufferBlur->Init({(uint) viewport->m_wndContentAreaSize.x,
+                                      (uint) viewport->m_wndContentAreaSize.y,
+                                      0,
+                                      false,
+                                      true});
+
+    viewport->m_ssaoBufferBlur->ReconstructIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+
+    const Vec2 scale = 1.0f / viewport->m_wndContentAreaSize;
+    ApplyAverageBlur(viewport->m_ssao, viewport->m_ssaoBlur, X_AXIS, scale.x);
+    ApplyAverageBlur(viewport->m_ssaoBlur, viewport->m_ssao, Y_AXIS, scale.y);
+
+    m_overrideMat = nullptr;
+    SetFramebuffer(nullptr);
+    SetTexture(5, (uint) viewport->m_ssao->m_textureId);
+    // Debug purpose.
+    {
+      // ShaderPtr quad = GetShaderManager()->Create<Shader>(
+      //     ShaderPath("unlitFrag.shader", true));
+      // quad->SetShaderParameter("s_texture0", ParameterVariant(5));
+      // SetViewport(viewport);
+      // DrawFullQuad(quad);
     }
   }
 
@@ -967,13 +1205,16 @@ namespace ToolKit
   void Renderer::Apply7x1GaussianBlur(const TexturePtr source,
                                       RenderTargetPtr dest,
                                       const Vec3& axis,
-                                      float amount)
+                                      const float amount)
   {
-    if (m_gaussianBlurFramebuffer == nullptr)
+    if (m_blurFramebuffer == nullptr)
     {
-      m_gaussianBlurFramebuffer = new Framebuffer();
-      m_gaussianBlurFramebuffer->Init({0, 0, 0, false, false});
+      m_blurFramebuffer = new Framebuffer();
+      m_blurFramebuffer->Init({0, 0, 0, false, false});
+    }
 
+    if (m_gaussianBlurMaterial == nullptr)
+    {
       ShaderPtr vert = GetShaderManager()->Create<Shader>(
           ShaderPath("gausBlur7x1Vert.shader", true));
       ShaderPtr frag = GetShaderManager()->Create<Shader>(
@@ -985,15 +1226,50 @@ namespace ToolKit
 
     m_gaussianBlurMaterial->UnInit();
     m_gaussianBlurMaterial->m_diffuseTexture = source;
-    m_gaussianBlurMaterial->m_fragmentShader->m_shaderParams["BlurScale"] =
-        axis * amount;
+    m_gaussianBlurMaterial->m_fragmentShader->SetShaderParameter(
+        "BlurScale", ParameterVariant(axis * amount));
     m_gaussianBlurMaterial->Init();
 
-    m_gaussianBlurFramebuffer->SetAttachment(
-        Framebuffer::Attachment::ColorAttachment0, dest.get());
+    m_blurFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                     dest.get());
 
-    SetFramebuffer(m_gaussianBlurFramebuffer, true, Vec4(1.0f));
+    SetFramebuffer(m_blurFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_gaussianBlurMaterial);
+  }
+
+  void Renderer::ApplyAverageBlur(const TexturePtr source,
+                                  RenderTargetPtr dest,
+                                  const Vec3& axis,
+                                  const float amount)
+  {
+    if (m_blurFramebuffer == nullptr)
+    {
+      m_blurFramebuffer = new Framebuffer();
+      m_blurFramebuffer->Init({0, 0, 0, false, false});
+    }
+
+    if (m_averageBlurMaterial == nullptr)
+    {
+      ShaderPtr vert = GetShaderManager()->Create<Shader>(
+          ShaderPath("avgBlurVert.shader", true));
+      ShaderPtr frag = GetShaderManager()->Create<Shader>(
+          ShaderPath("avgBlurFrag.shader", true));
+      m_averageBlurMaterial                   = std::make_shared<Material>();
+      m_averageBlurMaterial->m_vertexShader   = vert;
+      m_averageBlurMaterial->m_fragmentShader = frag;
+    }
+
+    m_averageBlurMaterial->UnInit();
+    m_averageBlurMaterial->m_diffuseTexture = source;
+    m_averageBlurMaterial->m_fragmentShader->SetShaderParameter(
+        "BlurScale", ParameterVariant(axis * amount));
+    m_averageBlurMaterial->Init();
+
+    m_blurFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                     dest.get());
+
+    SetFramebuffer(m_blurFramebuffer, true, Vec4(1.0f));
+    DrawFullQuad(m_averageBlurMaterial);
   }
 
   void Renderer::FitSceneBoundingBoxIntoLightFrustum(
@@ -1370,6 +1646,10 @@ namespace ToolKit
         case ParameterVariant::VariantType::Int:
           glUniform1i(loc, var.second.GetVar<int>());
           break;
+        case ParameterVariant::VariantType::Vec2:
+          glUniform2fv(
+              loc, 1, reinterpret_cast<float*>(&var.second.GetVar<Vec2>()));
+          break;
         case ParameterVariant::VariantType::Vec3:
           glUniform3fv(
               loc, 1, reinterpret_cast<float*>(&var.second.GetVar<Vec3>()));
@@ -1512,8 +1792,8 @@ namespace ToolKit
             GL_FALSE,
             &(currLight->m_shadowMapCameraProjectionViewMatrix)[0][0]);
 
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightShadowMapCameraFarStrCache[i].c_str());
+        loc = glGetUniformLocation(
+            program->m_handle, g_lightShadowMapCameraFarStrCache[i].c_str());
         glUniform1f(loc, currLight->m_shaowMapCameraFar);
 
         loc = glGetUniformLocation(program->m_handle,

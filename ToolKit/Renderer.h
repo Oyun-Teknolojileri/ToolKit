@@ -127,7 +127,11 @@ namespace ToolKit
     void Apply7x1GaussianBlur(const TexturePtr source,
                               RenderTargetPtr dest,
                               const Vec3& axis,
-                              float amount);
+                              const float amount);
+    void ApplyAverageBlur(const TexturePtr source,
+                          RenderTargetPtr dest,
+                          const Vec3& axis,
+                          const float amount);
 
     // Fits the scene into the shadow map camera frustum. As the scene gets
     // bigger, the resolution gets lower.
@@ -147,6 +151,12 @@ namespace ToolKit
     void FeedUniforms(ProgramPtr program);
     void FeedLightUniforms(ProgramPtr program);
     void SetVertexLayout(VertexLayout layout);
+
+    void GenerateSSAOTexture(const ScenePtr scene,
+                             Viewport* viewport,
+                             const LightRawPtrArray& editorLights);
+    void GenerateKernelAndNoiseForSSAOSamples(
+        std::vector<glm::vec3>& ssaoKernel, std::vector<glm::vec3>& ssaoNoise);
 
    public:
     uint m_totalFrameCount = 0;
@@ -197,8 +207,9 @@ namespace ToolKit
 
     EntityRawPtrArray m_environmentLightEntities;
 
-    Framebuffer* m_gaussianBlurFramebuffer = nullptr;
-    MaterialPtr m_gaussianBlurMaterial     = nullptr;
+    Framebuffer* m_blurFramebuffer     = nullptr;
+    MaterialPtr m_gaussianBlurMaterial = nullptr;
+    MaterialPtr m_averageBlurMaterial  = nullptr;
   };
 
 } // namespace ToolKit

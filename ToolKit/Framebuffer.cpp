@@ -112,6 +112,17 @@ namespace ToolKit
     m_initialized = false;
   }
 
+  void Framebuffer::ReconstructIfNeeded(uint width, uint height)
+  {
+    if (m_settings.width != width || m_settings.height != height)
+    {
+      UnInit();
+      m_settings.width = width;
+      m_settings.height = height;
+      Init(m_settings);
+    }
+  }
+
   RenderTarget* Framebuffer::SetAttachment(Attachment atc,
                                            RenderTarget* rt,
                                            CubemapFace face)
@@ -202,7 +213,7 @@ namespace ToolKit
   void Framebuffer::ClearAttachments()
   {
     // Detach all attachments
-    if (m_defaultRboId != 0)
+    if (m_defaultRboId == 0)
     {
       DetachAttachment(Attachment::DepthAttachment);
     }

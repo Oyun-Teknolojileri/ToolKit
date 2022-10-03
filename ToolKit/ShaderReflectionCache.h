@@ -239,4 +239,19 @@ namespace ToolKit
       "LightData.lightBleedingReduction[10]",
       "LightData.lightBleedingReduction[11]"};
 
+  static const StringArray g_ssaoSamplesStrCache = {
+      "samples[0]",  "samples[1]",  "samples[2]",  "samples[3]",  "samples[4]",
+      "samples[5]",  "samples[6]",  "samples[7]",  "samples[8]",  "samples[9]",
+      "samples[10]", "samples[11]", "samples[12]", "samples[13]", "samples[14]",
+      "samples[15]", "samples[16]", "samples[17]", "samples[18]", "samples[19]",
+      "samples[20]", "samples[21]", "samples[22]", "samples[23]", "samples[24]",
+      "samples[25]", "samples[26]", "samples[27]", "samples[28]", "samples[29]",
+      "samples[30]", "samples[31]", "samples[32]", "samples[33]", "samples[34]",
+      "samples[35]", "samples[36]", "samples[37]", "samples[38]", "samples[39]",
+      "samples[40]", "samples[41]", "samples[42]", "samples[43]", "samples[44]",
+      "samples[45]", "samples[46]", "samples[47]", "samples[48]", "samples[49]",
+      "samples[50]", "samples[51]", "samples[52]", "samples[53]", "samples[54]",
+      "samples[55]", "samples[56]", "samples[57]", "samples[58]", "samples[59]",
+      "samples[60]", "samples[61]", "samples[62]", "samples[63]"};
+
 } // namespace ToolKit
