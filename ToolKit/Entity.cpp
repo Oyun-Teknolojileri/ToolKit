@@ -97,6 +97,8 @@ namespace ToolKit
 
   void Entity::ClearComponents()
   {
+    // Probably base entity will call this too, so there is no problem to use
+    //  like that
     m_components.clear();
   }
 
@@ -105,9 +107,9 @@ namespace ToolKit
     WeakCopy(other);
 
     other->ClearComponents();
-    for (const ComponentPtr& com : m_components)
+    for (const ComponentPtr& com : GetComponentPtrArray())
     {
-      other->m_components.push_back(com->Copy(other));
+      other->GetComponentPtrArray().push_back(com->Copy(other));
     }
 
     return other;
@@ -172,7 +174,7 @@ namespace ToolKit
 
     if (copyComponents)
     {
-      other->m_components = m_components;
+      other->GetComponentPtrArray() = GetComponentPtrArray();
     }
   }
 
@@ -187,7 +189,7 @@ namespace ToolKit
            "Component has already been added.");
 
     component->m_entity = this;
-    m_components.push_back(component);
+    GetComponentPtrArray().push_back(component);
   }
 
   MeshComponentPtr Entity::GetMeshComponent()
@@ -202,12 +204,13 @@ namespace ToolKit
 
   ComponentPtr Entity::RemoveComponent(ULongID componentId)
   {
-    for (size_t i = 0; i < m_components.size(); i++)
+    ComponentPtrArray& compList = GetComponentPtrArray();
+    for (size_t i = 0; i < compList.size(); i++)
     {
-      ComponentPtr com = m_components[i];
+      ComponentPtr com = compList[i];
       if (com->m_id == componentId)
       {
-        m_components.erase(m_components.begin() + i);
+        compList.erase(compList.begin() + i);
         return com;
       }
     }
@@ -225,7 +228,7 @@ namespace ToolKit
             GetSceneManager()->GetCurrentScene()->GetEntity(_baseEntityId);
         if (baseEntity)
         {
-          return baseEntity->m_components;
+          return baseEntity->GetComponentPtrArray();
         }
       }
     }
@@ -242,7 +245,7 @@ namespace ToolKit
             GetSceneManager()->GetCurrentScene()->GetEntity(_baseEntityId);
         if (baseEntity)
         {
-          return baseEntity->m_components;
+          return baseEntity->GetComponentPtrArray();
         }
       }
     }
@@ -287,7 +290,7 @@ namespace ToolKit
     m_localData.Serialize(doc, node);
 
     XmlNode* compNode = CreateXmlNode(doc, "Components", node);
-    for (const ComponentPtr& cmp : m_components)
+    for (const ComponentPtr& cmp : GetComponentPtrArray())
     {
       cmp->Serialize(doc, compNode);
     }

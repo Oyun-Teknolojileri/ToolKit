@@ -200,6 +200,9 @@ namespace ToolKit
     ULongID _parentId;
 
    private:
+    // This should be private, because instantiated entities don't use this list
+    // NOTE: Entity's own functions shouldn't access this either.
+    //  They should use GetComponentPtrArray instead.
     ComponentPtrArray m_components;
 
     /**
