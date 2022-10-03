@@ -122,6 +122,9 @@ namespace ToolKit
       void RenderComponentGizmo(EditorViewport* viewport,
                                 EntityRawPtrArray selecteds);
 
+      void HideGizmos();
+      void ShowGizmos();
+
       void ShowSimulationWindow(float deltaTime);
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;

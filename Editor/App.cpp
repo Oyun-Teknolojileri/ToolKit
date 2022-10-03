@@ -1383,6 +1383,32 @@ namespace ToolKit
       }
     }
 
+    void App::HideGizmos()
+    {
+      for (Entity* ntt : GetCurrentScene()->GetEntities())
+      {
+        // Light and camera gizmos
+        if (ntt->IsLightInstance() ||
+            ntt->GetType() == EntityType::Entity_Camera)
+        {
+          ntt->SetVisibility(false, false);
+        }
+      }
+    }
+
+    void App::ShowGizmos()
+    {
+      for (Entity* ntt : GetCurrentScene()->GetEntities())
+      {
+        // Light and camera gizmos
+        if (ntt->IsLightInstance() ||
+            ntt->GetType() == EntityType::Entity_Camera)
+        {
+          ntt->SetVisibility(true, false);
+        }
+      }
+    }
+
     void App::ShowSimulationWindow(float deltaTime)
     {
       if (GamePlugin* plugin = GetPluginManager()->GetGamePlugin())
@@ -1408,7 +1434,9 @@ namespace ToolKit
             }
             playWindow = m_simulationWindow;
           }
+          HideGizmos();
           plugin->Frame(deltaTime, playWindow);
+          ShowGizmos();
         }
       }
     }
