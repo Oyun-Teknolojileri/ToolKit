@@ -172,7 +172,8 @@ namespace ToolKit
     material->m_fragmentShader = ssao_geo_frag;
     material->Init();
 
-    m_overrideMat = material;
+    MaterialPtr overrideMatPrev = m_overrideMat;
+    m_overrideMat               = material;
     RenderEntities(entities, cam, viewport, editorLights);
     SetFramebuffer(nullptr);
     m_overrideMat = nullptr;
@@ -226,7 +227,7 @@ namespace ToolKit
         (uint) viewport->m_wndContentAreaSize.y);
     viewport->m_ssaoBuffer->SetAttachment(
         Framebuffer::Attachment::ColorAttachment0, viewport->m_ssao.get());
-    SetFramebuffer(viewport->m_ssaoBuffer.get());
+    SetFramebuffer(viewport->m_ssaoBuffer.get(), true, {0.0f, 0.0f, 0.0f, 1.0});
 
     SetTexture(0, viewport->m_ssaoPosition->m_textureId);
     SetTexture(1, viewport->m_ssaoNormal->m_textureId);
@@ -235,11 +236,11 @@ namespace ToolKit
     if (!viewport->m_ssaoCalcMat)
     {
       viewport->m_ssaoCalcMat = std::make_shared<Material>();
-      ShaderPtr ssaoVert = GetShaderManager()->Create<Shader>(
+      ShaderPtr ssaoVert      = GetShaderManager()->Create<Shader>(
           ShaderPath("ssaoCalcVert.shader", true));
       ShaderPtr ssaoFrag = GetShaderManager()->Create<Shader>(
           ShaderPath("ssaoCalcFrag.shader", true));
-      viewport->m_ssaoCalcMat->m_vertexShader = ssaoVert;
+      viewport->m_ssaoCalcMat->m_vertexShader   = ssaoVert;
       viewport->m_ssaoCalcMat->m_fragmentShader = ssaoFrag;
       viewport->m_ssaoCalcMat->Init();
     }
@@ -285,7 +286,7 @@ namespace ToolKit
     ApplyAverageBlur(viewport->m_ssao, viewport->m_ssaoBlur, X_AXIS, scale.x);
     ApplyAverageBlur(viewport->m_ssaoBlur, viewport->m_ssao, Y_AXIS, scale.y);
 
-    m_overrideMat = nullptr;
+    m_overrideMat = overrideMatPrev;
     SetFramebuffer(nullptr);
     SetTexture(5, (uint) viewport->m_ssao->m_textureId);
     // Debug purpose.

@@ -1223,6 +1223,7 @@ namespace ToolKit
         static MaterialPtr solidMat =
             GetMaterialManager()->GetCopyOfSolidMaterial();
         solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
+        MaterialPtr overrideMatPrev = m_renderer->m_overrideMat;
         m_renderer->m_overrideMat            = solidMat;
 
         bool isLight = false;
@@ -1260,7 +1261,7 @@ namespace ToolKit
           }
         }
 
-        m_renderer->m_overrideMat = nullptr;
+        m_renderer->m_overrideMat = overrideMatPrev;
 
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 

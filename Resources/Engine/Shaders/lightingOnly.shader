@@ -7,6 +7,7 @@
 	<uniform name = "IBLIrradianceMap" />
 	<source>
 	<!--
+	// Don't forget to apply changes to lightingOnly shader
 		#version 300 es
 		precision highp float;
 
@@ -194,6 +195,8 @@
 		uniform sampler2D s_texture0;
 		uniform samplerCube s_texture7;
 
+		uniform sampler2D s_texture5;
+
 		uniform float UseIbl;
 		uniform float IblIntensity;
 
@@ -310,6 +313,10 @@
 
 		void main()
 		{
+			vec4 objectColor = texture(s_texture0, v_texture);
+			if(objectColor.a < 0.1f){
+				discard;
+			}
 			int dirAndSpotLightShadowCount = 0;
 			int pointLightShadowCount = 0;
 
@@ -454,7 +461,11 @@
 			vec3 iblIrradiance = UseIbl * texture(s_texture7, n).rgb;
 			irradiance += iblIrradiance * IblIntensity;
 
-			fragColor = vec4(irradiance, 1.0);
+			vec2 coords = gl_FragCoord.xy / vec2(textureSize(s_texture5, 0));
+			coords = vec2(coords.x, coords.y);
+			float ambientOcclusion = texture(s_texture5, coords).r;
+
+			fragColor = ambientOcclusion * vec4(irradiance, 1.0);
 		}
 	-->
 	</source>

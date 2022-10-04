@@ -344,7 +344,8 @@ namespace ToolKit
                             ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders |
                                 ImGuiTableFlags_Resizable |
                                 ImGuiTableFlags_Reorderable |
-                                ImGuiTableFlags_ScrollY))
+                                ImGuiTableFlags_ScrollY,
+                            ImVec2(ImGui::GetWindowSize().x - 15, 200)))
       {
         float tableWdth = ImGui::GetItemRectSize().x;
         ImGui::TableSetupColumn(
