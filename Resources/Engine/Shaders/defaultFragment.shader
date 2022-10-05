@@ -465,7 +465,7 @@
 			coords = vec2(coords.x, coords.y);
 			float ambientOcclusion = texture(s_texture5, coords).r;
 
-			fragColor = ambientOcclusion * vec4(irradiance, 1.0) * objectColor;
+			fragColor = vec4(ambientOcclusion * irradiance, 1.0) * objectColor;
 		}
 	-->
 	</source>

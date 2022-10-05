@@ -61,7 +61,7 @@
 		  v_normal = normalMat * vNormal;
 		  v_texture = vTexture;
 
-			v_normal = vNormal;
+			//v_normal = vNormal;
 			v_bitan = vBiTan;
 		}
 	-->
