@@ -119,12 +119,11 @@ namespace ToolKit
       if (g_app->m_gameMod == GameMod::Playing)
       {
         // Blue tint.
-        ImGui::PushStyleColor(ImGuiCol_Button,
-                              (ImVec4) ImColor::HSV(4 / 7.0f, 0.6f, 0.6f));
+        ImGui::PushStyleColor(ImGuiCol_Button, g_blueTintButtonColor);
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                              (ImVec4) ImColor::HSV(4 / 7.0f, 0.7f, 0.7f));
+                              g_blueTintButtonHoverColor);
         ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                              (ImVec4) ImColor::HSV(4 / 7.0f, 0.8f, 0.8f));
+                              g_blueTintButtonActiveColor);
 
         // Pause.
         if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_pauseIcon),
@@ -138,12 +137,11 @@ namespace ToolKit
       else
       {
         // Green tint.
-        ImGui::PushStyleColor(ImGuiCol_Button,
-                              (ImVec4) ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
+        ImGui::PushStyleColor(ImGuiCol_Button, g_greenTintButtonColor);
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                              (ImVec4) ImColor::HSV(2 / 7.0f, 0.7f, 0.7f));
+                              g_greenTintButtonHoverColor);
         ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                              (ImVec4) ImColor::HSV(2 / 7.0f, 0.8f, 0.8f));
+                              g_greenTintButtonActiveColor);
 
         // Play.
         if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_playIcon),
@@ -159,12 +157,9 @@ namespace ToolKit
       ImGui::SameLine();
 
       // Red tint.
-      ImGui::PushStyleColor(ImGuiCol_Button,
-                            (ImVec4) ImColor::HSV(0 / 7.0f, 0.6f, 0.6f));
-      ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                            (ImVec4) ImColor::HSV(0 / 7.0f, 0.7f, 0.7f));
-      ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                            (ImVec4) ImColor::HSV(0 / 7.0f, 0.8f, 0.8f));
+      ImGui::PushStyleColor(ImGuiCol_Button, g_redTintButtonColor);
+      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, g_redTintButtonHoverColor);
+      ImGui::PushStyleColor(ImGuiCol_ButtonActive, g_redTintButtonActiveColor);
 
       // Stop.
       if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_stopIcon),

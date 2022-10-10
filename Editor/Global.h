@@ -78,6 +78,19 @@ namespace ToolKit
     const Vec4 g_consoleMemoColor =
         Vec4(0.456263458f, 0.456263458f, 0.456263458f, 1.0f);
 
+    const Vec4 g_blueTintButtonColor       = Vec4(0.043f, 0.173f, 0.325f, 1.0f);
+    const Vec4 g_blueTintButtonHoverColor  = Vec4(0.032f, 0.208f, 0.456f, 1.0f);
+    const Vec4 g_blueTintButtonActiveColor = Vec4(0.018f, 0.247f, 0.612f, 1.0f);
+
+    const Vec4 g_greenTintButtonColor = Vec4(0.0949f, 0.325f, 0.044f, 1.0f);
+    const Vec4 g_greenTintButtonHoverColor = Vec4(0.099f, 0.456f, 0.032f, 1.0f);
+    const Vec4 g_greenTintButtonActiveColor =
+        Vec4(0.095f, 0.612f, 0.018f, 1.0f);
+
+    const Vec4 g_redTintButtonColor       = Vec4(0.325f, 0.043f, 0.043f, 1.0f);
+    const Vec4 g_redTintButtonHoverColor  = Vec4(0.456f, 0.032f, 0.032f, 1.0f);
+    const Vec4 g_redTintButtonActiveColor = Vec4(0.612f, 0.018f, 0.018f, 1.0f);
+
     // Editor settings.
     const size_t g_maxUndoCount = 50;
     const UVec2 g_max2dGridSize(100 * 100 * 2);
