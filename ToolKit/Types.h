@@ -236,7 +236,9 @@ namespace ToolKit
     // Mod3 gives plane normal .
     YZ, // YZ(3) % 3 = X(0)
     ZX, // ZX(4) % 3 = Y(1)
-    XY  // XY(5) % 3 = Z(2)
+    XY, // XY(5) % 3 = Z(2)
+    // Don't apply mod3
+    XYZ
   };
 
   enum class DirectionLabel
