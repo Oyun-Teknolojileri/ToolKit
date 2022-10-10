@@ -825,6 +825,20 @@ namespace ToolKit
     glDepthFunc(GL_LESS); // Return to default depth test
   }
 
+  // An interval has start time and end time
+  struct LightSortStruct
+  {
+    Light* light        = nullptr;
+    uint intersectCount = 0;
+  };
+
+  // Compares two intervals according to starting times.
+  bool CompareLightIntersects(const LightSortStruct& i1,
+                              const LightSortStruct& i2)
+  {
+    return (i1.intersectCount > i2.intersectCount);
+  }
+
   LightRawPtrArray Renderer::GetBestLights(Entity* entity,
                                            const LightRawPtrArray& lights)
   {
@@ -842,56 +856,76 @@ namespace ToolKit
     }
 
     // Add the lights inside of the radius first
-    for (int i = 0; i < lights.size(); i++)
+    std::vector<LightSortStruct> intersectCounts(lights.size());
+    BoundingBox aabb = entity->GetAABB(true);
+    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
     {
+      Light* light = lights[lightIndx];
       float radius;
-      if (lights[i]->GetType() == EntityType::Entity_PointLight)
+      if (light->GetType() == EntityType::Entity_PointLight)
       {
-        radius = static_cast<PointLight*>(lights[i])->GetRadiusVal();
+        radius = static_cast<PointLight*>(light)->GetRadiusVal();
       }
-      else if (lights[i]->GetType() == EntityType::Entity_SpotLight)
+      else if (light->GetType() == EntityType::Entity_SpotLight)
       {
-        radius = static_cast<SpotLight*>(lights[i])->GetRadiusVal();
+        radius = static_cast<SpotLight*>(light)->GetRadiusVal();
       }
       else
       {
         continue;
       }
 
-      float curDistance = glm::length2(
-          entity->m_node->GetTranslation(TransformationSpace::TS_WORLD) -
-          lights[i]->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+      intersectCounts[lightIndx].light = light;
+      uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
 
-      if (curDistance < radius * radius)
+      /* This algorithms can be used for better sorting
+      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
       {
-        bool isAdded = false;
-        for (uint searchIndx = 0; searchIndx < bestLights.size(); searchIndx++)
+        for (uint isMin = 0; isMin < 2; isMin++)
         {
-          Light* prevLight   = bestLights[searchIndx];
-          float prevDistance = glm::length2(
-              entity->m_node->GetTranslation(TransformationSpace::TS_WORLD) -
-              prevLight->m_node->GetTranslation(TransformationSpace::TS_WORLD));
-          if (prevDistance > curDistance)
+          Vec3 p     = aabb.min;
+          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
+          float dist = glm::length(
+              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+          if (dist <= radius)
           {
-            bestLights.insert(bestLights.begin() + searchIndx, lights[i]);
-            isAdded = true;
-            break;
+            curIntersectCount++;
           }
         }
-        if (!isAdded)
+      }*/
+      if (light->GetType() == EntityType::Entity_SpotLight)
+      {
+        Frustum spotFrustum = ExtractFrustum(
+            ((SpotLight*) light)->m_shadowMapCameraProjectionViewMatrix, false);
+
+        if (FrustumBoxIntersection(spotFrustum, aabb) !=
+            IntersectResult::Outside)
         {
-          bestLights.push_back(lights[i]);
+          curIntersectCount++;
         }
       }
-      else
+      if (light->GetType() == EntityType::Entity_PointLight)
       {
-        // Until a better light culling is implemented
-        // outsideRadiusLights.push_back(lights[i]);
+        BoundingSphere lightSphere;
+        lightSphere.pos =
+            light->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        lightSphere.radius = radius;
+        if (SphereBoxIntersection(lightSphere, aabb))
+        {
+          curIntersectCount++;
+        }
       }
     }
-    bestLights.insert(bestLights.end(),
-                      outsideRadiusLights.begin(),
-                      outsideRadiusLights.end());
+    std::sort(
+        intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
+    for (uint i = 0; i < intersectCounts.size(); i++)
+    {
+      if (intersectCounts[i].intersectCount == 0)
+      {
+        break;
+      }
+      bestLights.push_back(intersectCounts[i].light);
+    }
 
     return bestLights;
   }
@@ -1039,11 +1073,8 @@ namespace ToolKit
 
     for (Light* light : lights)
     {
-      if (light->GetCastShadowVal())
+      // Update shadow map ProjView matrix every frame for all lights
       {
-        // Create framebuffer
-        light->InitShadowMap();
-
         // Get shadow map camera
         if (m_shadowMapCamera == nullptr)
         {
@@ -1084,13 +1115,25 @@ namespace ToolKit
               TransformationSpace::TS_WORLD);
         }
 
+        light->m_shadowMapCameraProjectionViewMatrix =
+            m_shadowMapCamera->GetProjectionMatrix() *
+            m_shadowMapCamera->GetViewMatrix();
+        light->m_shadowMapCameraFar = m_shadowMapCamera->GetData().far;
+      }
+
+      if (light->GetCastShadowVal())
+      {
+        // Create framebuffer
+        light->InitShadowMap();
+
         auto renderForShadowMapFn = [this](Light* light,
                                            EntityRawPtrArray entities) -> void {
+          // This is copy because point light is rendered with different shadow
+          // map cameras each time this func called
           light->m_shadowMapCameraProjectionViewMatrix =
               m_shadowMapCamera->GetProjectionMatrix() *
               m_shadowMapCamera->GetViewMatrix();
-          light->m_shaowMapCameraFar = m_shadowMapCamera->GetData().far;
-
+          light->m_shadowMapCameraFar = m_shadowMapCamera->GetData().far;
           FrustumCull(entities, m_shadowMapCamera);
 
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1796,7 +1839,7 @@ namespace ToolKit
 
         loc = glGetUniformLocation(
             program->m_handle, g_lightShadowMapCameraFarStrCache[i].c_str());
-        glUniform1f(loc, currLight->m_shaowMapCameraFar);
+        glUniform1f(loc, currLight->m_shadowMapCameraFar);
 
         loc = glGetUniformLocation(program->m_handle,
                                    g_lightBleedingReductionStrCache[i].c_str());

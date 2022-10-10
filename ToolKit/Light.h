@@ -45,12 +45,12 @@ namespace ToolKit
 
     bool m_isStudioLight = false;
     Mat4 m_shadowMapCameraProjectionViewMatrix;
-    float m_shaowMapCameraFar = 1.0f;
+    float m_shadowMapCameraFar = 1.0f;
 
    protected:
-    bool m_shadowMapInitialized         = false;
-    bool m_shadowMapResolutionChanged   = false;
-    MaterialPtr m_shadowMapMaterial     = nullptr;
+    bool m_shadowMapInitialized           = false;
+    bool m_shadowMapResolutionChanged     = false;
+    MaterialPtr m_shadowMapMaterial       = nullptr;
     FramebufferPtr m_depthFramebuffer     = nullptr;
     RenderTargetPtr m_shadowRt            = nullptr;
     RenderTargetPtr m_shadowMapTempBlurRt = nullptr;
