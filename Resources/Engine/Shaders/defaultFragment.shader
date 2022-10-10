@@ -327,8 +327,6 @@
 			vec3 irradiance = vec3(0.0);
 			for (int i = 0; i < LightData.activeCount; i++)
 			{
-				shadow = 1.0;
-				vec3 ambient = vec3(0.0);
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
 				if (LightData.type[i] == 2) // Point light
@@ -392,10 +390,6 @@
 					float spec = pow(max(dot(n, halfwayDir), 0.0), 32.0);
 					specular = specularStrength * spec * LightData.color[i];
 
-					// Ambient
-					float ambientStrength = 0.01;
-					ambient = ambientStrength * LightData.color[i];
-
 					bool maxShadowCheck = maxDirAndSpotLightShadows > dirAndSpotLightShadowCount;
 					if (maxShadowCheck && LightData.castShadow[i] == 1)
 					{
@@ -456,7 +450,7 @@
 					}
 				}
 
-				irradiance += (ambient + diffuse + specular) * LightData.intensity[i] * shadow;
+				irradiance += (diffuse + specular) * LightData.intensity[i] * shadow;
 			}
 			vec3 iblIrradiance = UseIbl * texture(s_texture7, n).rgb;
 			irradiance += iblIrradiance * IblIntensity;

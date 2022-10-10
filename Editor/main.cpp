@@ -154,6 +154,8 @@ namespace ToolKit
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
+        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+
         if (g_settings.Graphics.MSAA > 0)
         {
           SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
@@ -212,6 +214,7 @@ namespace ToolKit
 
             glEnable(GL_CULL_FACE);
             glEnable(GL_DEPTH_TEST);
+            glEnable(GL_FRAMEBUFFER_SRGB);
 
             // Init app
             g_app = new App(g_settings.Window.Width, g_settings.Window.Height);

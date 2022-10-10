@@ -12,9 +12,9 @@
 
 		void main()
 		{
-		    vec3 color = texture(s_texture6, v_pos).rgb;
+			vec3 color = texture(s_texture6, v_pos).rgb;
 
-		    fragColor = vec4(color, 1.0);
+			fragColor = vec4(color, 1.0);
 		}
 	-->
 	</source>

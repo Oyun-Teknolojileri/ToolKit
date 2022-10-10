@@ -15,7 +15,7 @@
 		void main()
 		{
 			vec4 color = vec4(0.0);
-		  
+
 			color += texture(s_texture0, v_texture + vec2(-3.0) * BlurScale.xy) * (1.0 / 64.0);
 			color += texture(s_texture0, v_texture + vec2(-2.0) * BlurScale.xy) * (6.0 / 64.0);
 			color += texture(s_texture0, v_texture + vec2(-1.0) * BlurScale.xy) * (15.0 / 64.0);
