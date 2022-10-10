@@ -156,7 +156,7 @@ namespace ToolKit
                              Viewport* viewport,
                              const LightRawPtrArray& editorLights);
     void GenerateKernelAndNoiseForSSAOSamples(
-        std::vector<glm::vec3>& ssaoKernel, std::vector<glm::vec3>& ssaoNoise);
+        std::vector<glm::vec3>& ssaoKernel, std::vector<glm::vec2>& ssaoNoise);
 
    public:
     uint m_totalFrameCount = 0;

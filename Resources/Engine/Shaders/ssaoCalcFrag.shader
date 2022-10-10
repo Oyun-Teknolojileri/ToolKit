@@ -35,7 +35,7 @@
 		    vec2 noiseScale = vec2(screen_size[0]/4.0, screen_size[1]/4.0); 
 			vec3 fragPos = texture(gPosition, v_texture).xyz;
 			vec3 normal = normalize(texture(gNormal, v_texture).rgb);
-			vec3 randomVec = normalize(texture(texNoise, v_texture * noiseScale).xyz);
+			vec3 randomVec = vec3(normalize(texture(texNoise, v_texture * noiseScale).xy), 0.0);
 			// create TBN change-of-basis matrix: from tangent-space to view-space
 			vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
 			vec3 bitangent = cross(normal, tangent);
@@ -63,7 +63,7 @@
 			}
 			occlusion = 1.0 - (occlusion / float(kernelSize));
 			
-			fragColor = vec4(occlusion, occlusion, occlusion, 1.0);
+			fragColor = vec4(occlusion, 0.0, 0.0, 1.0);
 		}
 
 	-->

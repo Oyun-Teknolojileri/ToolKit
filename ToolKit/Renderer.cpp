@@ -63,7 +63,7 @@ namespace ToolKit
   }
 
   void Renderer::GenerateKernelAndNoiseForSSAOSamples(
-      std::vector<glm::vec3>& ssaoKernel, std::vector<glm::vec3>& ssaoNoise)
+      Vec3Array& ssaoKernel, Vec2Array& ssaoNoise)
   {
     // generate sample kernel
     // ----------------------
@@ -93,9 +93,8 @@ namespace ToolKit
     if (ssaoNoise.size() == 0)
       for (unsigned int i = 0; i < 16; i++)
       {
-        glm::vec3 noise(randomFloats(generator) * 2.0 - 1.0,
-                        randomFloats(generator) * 2.0 - 1.0,
-                        0.0f); // rotate around z-axis (in tangent space)
+        glm::vec2 noise(randomFloats(generator) * 2.0 - 1.0,
+                        randomFloats(generator) * 2.0 - 1.0);
         ssaoNoise.push_back(noise);
       }
   }
@@ -178,8 +177,8 @@ namespace ToolKit
     SetFramebuffer(nullptr);
     m_overrideMat = nullptr;
 
-    static std::vector<glm::vec3> ssaoKernel;
-    static std::vector<glm::vec3> ssaoNoise;
+    static Vec3Array ssaoKernel;
+    static Vec2Array ssaoNoise;
     GenerateKernelAndNoiseForSSAOSamples(ssaoKernel, ssaoNoise);
 
     static unsigned int noiseTexture = 0;
@@ -188,26 +187,28 @@ namespace ToolKit
 
       glGenTextures(1, &noiseTexture);
       glBindTexture(GL_TEXTURE_2D, noiseTexture);
-      glTexImage2D(GL_TEXTURE_2D,
-                   0,
-                   GL_RGBA32F,
-                   4,
-                   4,
-                   0,
-                   GL_RGB,
-                   GL_FLOAT,
-                   &ssaoNoise[0]);
+      glTexImage2D(
+          GL_TEXTURE_2D, 0, GL_RG32F, 4, 4, 0, GL_RG, GL_FLOAT, &ssaoNoise[0]);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     }
 
+    RenderTargetSettigs oneChannelSet = {};
+    oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
+    oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
+    oneChannelSet.InternalFormat      = GraphicTypes::FormatR32F;
+    oneChannelSet.Format              = GraphicTypes::FormatRed;
+    oneChannelSet.Type                = GraphicTypes::TypeFloat;
+
     if (!viewport->m_ssao)
+    {
       viewport->m_ssao = std::make_shared<RenderTarget>(
           (uint) viewport->m_wndContentAreaSize.x,
           (uint) viewport->m_wndContentAreaSize.y,
-          rtSet);
+          oneChannelSet);
+    }
 
     viewport->m_ssao->Init();
     viewport->m_ssao->ReconstrcutIfNeeded(
@@ -264,7 +265,7 @@ namespace ToolKit
       viewport->m_ssaoBlur = std::make_shared<RenderTarget>(
           (uint) viewport->m_wndContentAreaSize.x,
           (uint) viewport->m_wndContentAreaSize.y,
-          rtSet);
+          oneChannelSet);
     viewport->m_ssaoBlur->Init();
     viewport->m_ssaoBlur->ReconstrcutIfNeeded(
         (uint) viewport->m_wndContentAreaSize.x,
