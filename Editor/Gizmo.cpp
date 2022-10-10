@@ -17,8 +17,7 @@
 #include "Surface.h"
 #include "Texture.h"
 #include "ToolKit.h"
-
-#include <glm/gtc/matrix_transform.hpp>
+#include "Types.h"
 
 #include <memory>
 #include <vector>
@@ -643,9 +642,9 @@ namespace ToolKit
         }
         else
         {
-          p.color  = Vec3(1);
-          p.toeTip = Vec3(0.0);
-          p.scale  = Vec3(0.8);
+          p.color  = Vec3(1.0f);
+          p.toeTip = Vec3(0.0f);
+          p.scale  = Vec3(0.8f);
         }
 
         if (IsLocked(axis))
