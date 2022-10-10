@@ -18,6 +18,7 @@
       in uvec4 vBones;
       in vec4 vWeights;
       uniform mat4 ProjectViewModel;
+      uniform mat4 InverseTransModel;
       uniform mat4 Model;
       uniform sampler2D s_texture2;  // This is static data, bindPose texture
       uniform sampler2D s_texture3; // This is dynamic data, boneTransform texture
@@ -56,7 +57,7 @@
          v_pos = (Model * gl_Position).xyz;
          gl_Position = ProjectViewModel * gl_Position;
          v_texture = vTexture;
-         v_normal = vNormal;
+         v_normal = (InverseTransModel * vec4(vNormal, 1.0)).xyz;
          v_bitan = vBiTan;
       };
 	-->
