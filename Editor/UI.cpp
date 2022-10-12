@@ -84,6 +84,7 @@ namespace ToolKit
     TexturePtr UI::m_anchorIcn;
     TexturePtr UI::m_prefabIcn;
     TexturePtr UI::m_buildIcn;
+    TexturePtr UI::m_addIcon;
 
     void UI::Init()
     {
@@ -297,6 +298,9 @@ namespace ToolKit
       m_buildIcn = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/build.png", true));
       m_buildIcn->Init();
+      m_addIcon = GetTextureManager()->Create<Texture>(
+          TexturePath("Icons/add.png", true));
+      m_addIcon->Init();
     }
 
     void UI::InitTheme()
@@ -1021,7 +1025,7 @@ namespace ToolKit
           {
             lastEp = elp;
             dotCnt++;
-            
+
             if (dotCnt > 3)
             {
               dotCnt = 0;

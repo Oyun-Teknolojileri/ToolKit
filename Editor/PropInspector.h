@@ -20,6 +20,9 @@ namespace ToolKit
       virtual void Show() = 0;
       virtual void ShowVariant(ParameterVariant* var, ComponentPtr comp);
       void ShowAnimControllerComponent(ParameterVariant* var, ComponentPtr cmp);
+      void ShowMaterialPtr(const String& uniqueName,
+                           const String& file,
+                           MaterialPtr& var);
 
       void DropZone(uint fallbackIcon,
                     const String& file,
@@ -57,6 +60,8 @@ namespace ToolKit
      protected:
       void ShowCustomData();
       ValueUpdateFn MultiUpdate(ParameterVariant* var);
+      void ShowMultiMaterialComponent(
+          ComponentPtr& comp, std::function<bool(const String&)> showCompFunc);
     };
 
     class PropInspector : public Window

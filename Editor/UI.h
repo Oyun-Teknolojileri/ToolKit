@@ -197,6 +197,7 @@ namespace ToolKit
       static TexturePtr m_anchorIcn;
       static TexturePtr m_prefabIcn;
       static TexturePtr m_buildIcn;
+      static TexturePtr m_addIcon;
     };
 
   } // namespace Editor

@@ -43,7 +43,8 @@ namespace ToolKit
     MaterialComponent,
     EnvironmentComponent,
     AnimControllerComponent,
-    SkeletonComponent
+    SkeletonComponent,
+    MultiMaterialComponent
   };
 
   /**

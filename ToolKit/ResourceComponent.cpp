@@ -377,4 +377,85 @@ namespace ToolKit
     map = new DynamicBoneMap;
     map->Init(GetSkeletonResourceVal().get());
   }
+
+  MultiMaterialComponent::MultiMaterialComponent()
+  {
+  }
+
+  MultiMaterialComponent::~MultiMaterialComponent()
+  {
+  }
+
+  ComponentPtr MultiMaterialComponent::Copy(Entity* ntt)
+  {
+    return nullptr;
+  }
+
+  void MultiMaterialComponent::Init(bool flushClientSideArray)
+  {
+  }
+  const char *XmlMatCountAttrib = "MaterialCount", *XmlMatIdAttrib = "ID";
+  void MultiMaterialComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    Component::DeSerialize(doc, parent);
+    uint matCount = 0;
+    ReadAttr(parent, XmlMatCountAttrib, matCount);
+    materials.resize(matCount);
+    for (uint i = 0; i < materials.size(); i++)
+    {
+      XmlNode* resourceNode = parent->first_node(std::to_string(i).c_str());
+      if (!resourceNode)
+      {
+        materials[i] = GetMaterialManager()->GetCopyOfDefaultMaterial();
+        continue;
+      }
+      materials[i] = GetMaterialManager()->Create<Material>(
+          MaterialPath(Resource::DeserializeRef(resourceNode)));
+    }
+  }
+  void MultiMaterialComponent::Serialize(XmlDocument* doc,
+                                         XmlNode* parent) const
+  {
+    Component::Serialize(doc, parent);
+    XmlNode* compNode = parent->last_node(XmlComponent.c_str());
+    WriteAttr(
+        compNode, doc, XmlMatCountAttrib, std::to_string(materials.size()));
+    for (uint i = 0; i < materials.size(); i++)
+    {
+      XmlNode* resourceRefNode =
+          CreateXmlNode(doc, std::to_string(i), compNode);
+      materials[i]->SerializeRef(doc, resourceRefNode);
+    }
+  }
+  void MultiMaterialComponent::AddMaterial(MaterialPtr mat)
+  {
+    materials.push_back(mat);
+  }
+  void MultiMaterialComponent::RemoveMaterial(uint index)
+  {
+    assert(materials.size() >= index && "Material List overflow");
+    materials.erase(materials.begin() + index);
+  }
+  const MaterialPtrArray& MultiMaterialComponent::GetMaterialList() const
+  {
+    return materials;
+  }
+  MaterialPtrArray& MultiMaterialComponent::GetMaterialList()
+  {
+    return materials;
+  }
+  void MultiMaterialComponent::UpdateMaterialList(MeshComponentPtr meshComp)
+  {
+    if (meshComp == nullptr || meshComp->GetMeshVal() == nullptr)
+    {
+      return;
+    }
+    MeshRawPtrArray meshCollector;
+    meshComp->GetMeshVal()->GetAllMeshes(meshCollector);
+    materials.resize(meshCollector.size());
+    for (uint i = 0; i < meshCollector.size(); i++)
+    {
+      materials[i] = meshCollector[i]->m_material;
+    }
+  }
 } //  namespace ToolKit

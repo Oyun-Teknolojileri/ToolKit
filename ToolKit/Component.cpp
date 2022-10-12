@@ -59,6 +59,9 @@ namespace ToolKit
     case ComponentType::SkeletonComponent:
       return new SkeletonComponent();
       break;
+    case ComponentType::MultiMaterialComponent:
+      return new MultiMaterialComponent;
+      break;
     case ComponentType::Base:
     default:
       assert(false && "Unsupported component type");

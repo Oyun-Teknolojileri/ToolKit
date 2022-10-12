@@ -62,8 +62,8 @@ namespace ToolKit
     }
   }
 
-  void Renderer::GenerateKernelAndNoiseForSSAOSamples(
-      Vec3Array& ssaoKernel, Vec2Array& ssaoNoise)
+  void Renderer::GenerateKernelAndNoiseForSSAOSamples(Vec3Array& ssaoKernel,
+                                                      Vec2Array& ssaoNoise)
   {
     // generate sample kernel
     // ----------------------
@@ -333,6 +333,8 @@ namespace ToolKit
       }
     }
 
+    MultiMaterialPtr mmComp = ntt->GetComponent<MultiMaterialComponent>();
+
     // Skeleton Component is used by all meshes of an entity.
     const auto& updateAndBindSkinningTextures = [ntt, this]() {
       SkeletonComponentPtr skelComp = ntt->GetComponent<SkeletonComponent>();
@@ -369,8 +371,14 @@ namespace ToolKit
       MeshRawPtrArray meshCollector;
       mainMesh->GetAllMeshes(meshCollector);
 
-      for (Mesh* mesh : meshCollector)
+      for (uint meshIndx = 0; meshIndx < meshCollector.size(); meshIndx++)
       {
+        Mesh* mesh = meshCollector[meshIndx];
+        if (mmComp && mmComp->GetMaterialList().size() > meshIndx)
+        {
+          nttMat = mmComp->GetMaterialList()[meshIndx];
+          nttMat->Init();
+        }
         mesh->Init();
         if (m_overrideMat != nullptr)
         {

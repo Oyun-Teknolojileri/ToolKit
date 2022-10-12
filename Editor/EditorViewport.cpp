@@ -826,8 +826,8 @@ namespace ToolKit
           skelComp->Init();
         }
 
-        MaterialComponentPtr matComp = std::make_shared<MaterialComponent>();
-        matComp->SetMaterialVal(mesh->m_material);
+        MultiMaterialPtr matComp = std::make_shared<MultiMaterialComponent>();
+        matComp->UpdateMaterialList((*dwMesh)->GetMeshComponent());
         (*dwMesh)->AddComponent(matComp);
 
         // Load bounding box once
