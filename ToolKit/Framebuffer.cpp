@@ -5,6 +5,14 @@
 
 namespace ToolKit
 {
+
+  bool FramebufferSettings::Compare(const FramebufferSettings& settings)
+  {
+    return settings.width == width && settings.height == height &&
+           settings.msaa == msaa && settings.depthStencil == depthStencil &&
+           settings.useDefaultDepth == useDefaultDepth;
+  }
+
   Framebuffer::Framebuffer()
   {
     for (int i = 0; i < m_maxColorAttachmentCount; ++i)
@@ -117,7 +125,7 @@ namespace ToolKit
     if (m_settings.width != width || m_settings.height != height)
     {
       UnInit();
-      m_settings.width = width;
+      m_settings.width  = width;
       m_settings.height = height;
       Init(m_settings);
     }

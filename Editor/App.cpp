@@ -98,6 +98,8 @@ namespace ToolKit
 
       m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager               = new PublishManager();
+      GetRenderer()->m_clearColor =
+          Vec4(0.007024517f, 0.00959683f, 0.018735119f, 1.0f);
     }
 
     void App::Destroy()
@@ -1223,7 +1225,7 @@ namespace ToolKit
         static MaterialPtr solidMat =
             GetMaterialManager()->GetCopyOfSolidMaterial();
         solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
-        MaterialPtr overrideMatPrev = m_renderer->m_overrideMat;
+        MaterialPtr overrideMatPrev          = m_renderer->m_overrideMat;
         m_renderer->m_overrideMat            = solidMat;
 
         bool isLight = false;

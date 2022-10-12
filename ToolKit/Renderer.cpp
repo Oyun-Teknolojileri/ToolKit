@@ -571,14 +571,16 @@ namespace ToolKit
 
   void Renderer::SetFramebuffer(Framebuffer* fb, bool clear, const Vec4& color)
   {
-    if (fb == m_framebuffer && fb != nullptr)
-    {
-      return;
-    }
-
     if (fb != nullptr)
     {
       FramebufferSettings fbSet = fb->GetSettings();
+
+      if (fb == m_framebuffer && fb->GetSettings().Compare(m_lastFramebufferSettings))
+      {
+        return;
+      }
+      m_lastFramebufferSettings = fbSet;
+
       glBindFramebuffer(GL_FRAMEBUFFER, fb->GetFboId());
       glViewport(0, 0, fbSet.width, fbSet.height);
 
@@ -598,6 +600,11 @@ namespace ToolKit
     m_framebuffer = fb;
   }
 
+  void Renderer::SetFramebuffer(Framebuffer* fb, bool clear)
+  {
+    SetFramebuffer(fb, clear, m_clearColor);
+  }
+
   void Renderer::SwapFramebuffer(Framebuffer** fb,
                                  bool clear,
                                  const Vec4& color)
@@ -605,6 +612,11 @@ namespace ToolKit
     Framebuffer* tmp = *fb;
     *fb              = m_framebuffer;
     SetFramebuffer(tmp, clear, color);
+  }
+
+  void Renderer::SwapFramebuffer(Framebuffer** fb, bool clear)
+  {
+    SwapFramebuffer(fb, clear, m_clearColor);
   }
 
   void Renderer::SetViewport(Viewport* viewport)

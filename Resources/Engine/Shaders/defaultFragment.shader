@@ -327,6 +327,7 @@
 			vec3 irradiance = vec3(0.0);
 			for (int i = 0; i < LightData.activeCount; i++)
 			{
+				shadow = 1.0;
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
 				if (LightData.type[i] == 2) // Point light

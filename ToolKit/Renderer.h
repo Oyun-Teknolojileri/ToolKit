@@ -13,9 +13,6 @@
 
 namespace ToolKit
 {
-  class Sky;
-  class Framebuffer;
-  class Viewport;
 
   class TK_API Renderer
   {
@@ -40,12 +37,10 @@ namespace ToolKit
 
     void SetRenderState(const RenderState* const state, ProgramPtr program);
 
-    void SetFramebuffer(Framebuffer* fb,
-                        bool clear        = true,
-                        const Vec4& color = {0.2f, 0.2f, 0.2f, 1.0f});
-    void SwapFramebuffer(Framebuffer** fb,
-                         bool clear        = true,
-                         const Vec4& color = {0.2f, 0.2f, 0.2f, 1.0f});
+    void SetFramebuffer(Framebuffer* fb, bool clear, const Vec4& color);
+    void SetFramebuffer(Framebuffer* fb, bool clear = true);
+    void SwapFramebuffer(Framebuffer** fb, bool clear, const Vec4& color);
+    void SwapFramebuffer(Framebuffer** fb, bool clear = true);
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
@@ -155,14 +150,15 @@ namespace ToolKit
     void GenerateSSAOTexture(const ScenePtr scene,
                              Viewport* viewport,
                              const LightRawPtrArray& editorLights);
-    void GenerateKernelAndNoiseForSSAOSamples(
-        std::vector<glm::vec3>& ssaoKernel, std::vector<glm::vec2>& ssaoNoise);
+    void GenerateKernelAndNoiseForSSAOSamples(Vec3Array& ssaoKernel,
+                                              Vec2Array& ssaoNoise);
 
    public:
     uint m_totalFrameCount = 0;
     uint m_frameCount      = 0;
     UVec2 m_windowSize;   //!< Application window size.
     UVec2 m_viewportSize; //!< Current viewport size.
+    Vec4 m_clearColor             = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
     MaterialPtr m_overrideMat     = nullptr;
     bool m_overrideDiffuseTexture = false;
 
@@ -188,6 +184,8 @@ namespace ToolKit
     Camera* m_shadowMapCamera  = nullptr;
     Material* m_mat            = nullptr;
     Framebuffer* m_framebuffer = nullptr;
+    FramebufferSettings m_lastFramebufferSettings;
+
     typedef struct RHIConstants
     {
       static constexpr ubyte textureSlotCount = 8;

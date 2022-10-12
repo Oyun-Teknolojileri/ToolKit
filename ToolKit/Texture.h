@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Renderer.h"
 #include "Resource.h"
 #include "ResourceManager.h"
 #include "Types.h"
@@ -9,15 +8,13 @@
 
 namespace ToolKit
 {
-  class Viewport;
-  class Renderer;
 
   class TK_API Texture : public Resource
   {
    public:
-    TKResourceType(Texture)
+    TKResourceType(Texture);
 
-        explicit Texture(bool floatFormat = false);
+    explicit Texture(bool floatFormat = false);
     explicit Texture(String file, bool floatFormat = false);
     explicit Texture(uint textureId);
     virtual ~Texture();
@@ -155,8 +152,7 @@ namespace ToolKit
     void Reconstrcut(uint width,
                      uint height,
                      const RenderTargetSettigs& settings);
-    void ReconstrcutIfNeeded(uint width,
-                             uint height);
+    void ReconstrcutIfNeeded(uint width, uint height);
     const RenderTargetSettigs& GetSettings() const;
 
    public:

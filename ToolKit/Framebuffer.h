@@ -4,6 +4,7 @@
 
 namespace ToolKit
 {
+
   struct FramebufferSettings
   {
     uint width           = 1024;
@@ -11,6 +12,8 @@ namespace ToolKit
     int msaa             = 0;
     bool depthStencil    = false;
     bool useDefaultDepth = true;
+
+    bool Compare(const FramebufferSettings& settings);
   };
 
   class TK_API Framebuffer
@@ -22,7 +25,7 @@ namespace ToolKit
 
     // Initalized framebuffer carries either depth attachment or depth
     // stencil attachment. In order to change, uninit and init the framebuffer
-    // with new variables.
+    // with new settings.
 
    public:
     enum class Attachment
@@ -69,6 +72,7 @@ namespace ToolKit
     void CheckFramebufferComplete();
 
     void ReconstructIfNeeded(uint width, uint height);
+
    private:
     RenderTarget* DetachAttachment(Attachment atc);
     void DeleteDefaultDepthAttachment();
