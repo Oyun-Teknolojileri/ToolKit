@@ -149,10 +149,10 @@ namespace ToolKit
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
-    void Reconstrcut(uint width,
+    void Reconstruct(uint width,
                      uint height,
                      const RenderTargetSettigs& settings);
-    void ReconstrcutIfNeeded(uint width, uint height);
+    void ReconstructIfNeeded(uint width, uint height);
     const RenderTargetSettigs& GetSettings() const;
 
    public:

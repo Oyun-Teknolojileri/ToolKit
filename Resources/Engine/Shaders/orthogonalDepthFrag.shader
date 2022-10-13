@@ -9,7 +9,7 @@
 
 		in vec2 v_texture;
 
-		uniform int diffuseTextureInUse;
+		uniform int DiffuseTextureInUse;
 		uniform sampler2D s_texture0;
 		uniform float colorAlpha;
 
@@ -27,8 +27,8 @@
 
 		void main()
 		{
-			float alpha = float(1 - diffuseTextureInUse) * colorAlpha
-				+ float(diffuseTextureInUse) * texture(s_texture0, v_texture).a;
+			float alpha = float(1 - DiffuseTextureInUse) * colorAlpha
+				+ float(DiffuseTextureInUse) * texture(s_texture0, v_texture).a;
 			if (alpha < 0.1)
 			{
 				discard;

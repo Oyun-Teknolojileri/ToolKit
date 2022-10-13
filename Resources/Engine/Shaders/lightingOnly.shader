@@ -3,6 +3,7 @@
 	<uniform name = "LightData" />
 	<uniform name = "CamData" />
 	<uniform name = "UseIbl" />
+	<uniform name = "UseAO" />
 	<uniform name = "IblIntensity" />
 	<uniform name = "IBLIrradianceMap" />
 	<source>
@@ -199,6 +200,7 @@
 
 		uniform float UseIbl;
 		uniform float IblIntensity;
+		uniform int UseAO;
 
 		in vec3 v_pos;
 		in vec3 v_normal;
@@ -458,7 +460,16 @@
 
 			vec2 coords = gl_FragCoord.xy / vec2(textureSize(s_texture5, 0));
 			coords = vec2(coords.x, coords.y);
-			float ambientOcclusion = texture(s_texture5, coords).r;
+
+			float ambientOcclusion;
+			if (UseAO == 0)
+			{
+				ambientOcclusion = 1.0;
+			}
+			else
+			{
+				ambientOcclusion = texture(s_texture5, coords).r;
+			}
 
 			fragColor = vec4(ambientOcclusion * irradiance, 1.0);
 		}

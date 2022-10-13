@@ -27,6 +27,9 @@ namespace ToolKit
       String m_fileName;
       String m_rootPath;
       bool m_isDirectory = false;
+
+     private:
+      MaterialPtr m_tempThumbnailMaterial = nullptr;
     };
 
     class FolderWindow;

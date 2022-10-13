@@ -158,7 +158,14 @@ namespace ToolKit
         Sphere ball;
         String fullpath  = GetFullPath();
         MeshPtr mesh     = ball.GetMeshComponent()->GetMeshVal();
-        mesh->m_material = GetMaterialManager()->Create<Material>(fullpath);
+
+        MaterialPtr mat = GetMaterialManager()->Create<Material>(fullpath);
+        mesh->m_material = mat;
+
+        // Disable ao
+        bool aoActive = mesh->m_material->GetRenderState()->AOInUse;
+        mat->GetRenderState()->AOInUse = false;
+
         mesh->Init(false);
 
         Camera cam;
@@ -166,6 +173,8 @@ namespace ToolKit
         cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 1.5f));
 
         renderThumbFn(&cam, &ball);
+
+        mat->GetRenderState()->AOInUse = aoActive;
       }
       else if (SupportedImageFormat(m_ext) || m_ext == HDR)
       {

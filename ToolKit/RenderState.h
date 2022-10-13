@@ -51,10 +51,13 @@ namespace ToolKit
     bool cubeMapInUse           = false;
     float lineWidth             = 1.0f;
     VertexLayout vertexLayout   = VertexLayout::None;
-    bool IBLInUse               = false;
-    float iblIntensity          = 0.25f;
-    uint irradianceMap          = 0;
-    int priority = 0; // The higher the priority, the earlier to draw.
+    bool IBLInUse = false; // ONLY Renderer class edits and uses this variable.
+                           // This variable does not give any functionality to
+                           // disable or enable ibl for material.
+    float iblIntensity = 0.25f;
+    uint irradianceMap = 0;
+    bool AOInUse       = true;
+    int priority       = 0; // The higher the priority, the earlier to draw.
   };
 
 } // namespace ToolKit

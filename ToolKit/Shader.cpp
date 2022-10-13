@@ -173,6 +173,12 @@ namespace ToolKit
       case Uniform::IBL_IRRADIANCE:
         name = "IBLIrradianceMap";
         break;
+      case Uniform::USE_AO:
+        name = "UseAO";
+        break;
+      case Uniform::DIFFUSE_TEXTURE_IN_USE:
+        name = "DiffuseTextureInUse";
+        break;
       default:
         assert(false && "unknown uniform");
         break;
@@ -281,6 +287,10 @@ namespace ToolKit
         else if (strcmp("ColorAlpha", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::COLOR_ALPHA);
+        }
+        else if (strcmp("UseAO", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::USE_AO);
         }
         else
         {

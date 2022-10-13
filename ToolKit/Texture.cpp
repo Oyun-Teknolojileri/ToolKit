@@ -715,7 +715,7 @@ namespace ToolKit
     glBindTexture((int) m_settings.Target, currId);
   }
 
-  void RenderTarget::Reconstrcut(uint width,
+  void RenderTarget::Reconstruct(uint width,
                                  uint height,
                                  const RenderTargetSettigs& settings)
   {
@@ -726,11 +726,10 @@ namespace ToolKit
     Init();
   }
 
-    void RenderTarget::ReconstrcutIfNeeded(uint width,
-                                 uint height)
+  void RenderTarget::ReconstructIfNeeded(uint width, uint height)
   {
-      if (m_width != width || m_height != height)
-        Reconstrcut(width, height, m_settings);
+    if (m_width != width || m_height != height)
+      Reconstruct(width, height, m_settings);
   }
 
   const RenderTargetSettigs& RenderTarget::GetSettings() const

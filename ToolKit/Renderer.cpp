@@ -50,9 +50,6 @@ namespace ToolKit
     EntityRawPtrArray entities = scene->GetEntities();
 
     ShadowPass(editorLights, entities);
-    GenerateSSAOTexture(scene, viewport, editorLights);
-
-    SetViewport(viewport);
 
     RenderEntities(entities, cam, viewport, editorLights);
 
@@ -99,12 +96,10 @@ namespace ToolKit
       }
   }
 
-  void Renderer::GenerateSSAOTexture(const ScenePtr scene,
-                                     Viewport* viewport,
-                                     const LightRawPtrArray& editorLights)
+  void Renderer::GenerateSSAOTexture(const EntityRawPtrArray& entities,
+                                     Viewport* viewport)
   {
-    Camera* cam                = viewport->GetCamera();
-    EntityRawPtrArray entities = scene->GetEntities();
+    Camera* cam = viewport->GetCamera();
 
     RenderTargetSettigs rtSet;
     rtSet.WarpS = rtSet.WarpT = GraphicTypes::UVClampToEdge;
@@ -119,7 +114,7 @@ namespace ToolKit
           rtSet);
 
     viewport->m_ssaoPosition->Init();
-    viewport->m_ssaoPosition->ReconstrcutIfNeeded(
+    viewport->m_ssaoPosition->ReconstructIfNeeded(
         (uint) viewport->m_wndContentAreaSize.x,
         (uint) viewport->m_wndContentAreaSize.y);
 
@@ -130,7 +125,7 @@ namespace ToolKit
           rtSet);
 
     viewport->m_ssaoNormal->Init();
-    viewport->m_ssaoNormal->ReconstrcutIfNeeded(
+    viewport->m_ssaoNormal->ReconstructIfNeeded(
         (uint) viewport->m_wndContentAreaSize.x,
         (uint) viewport->m_wndContentAreaSize.y);
 
@@ -156,24 +151,42 @@ namespace ToolKit
     SetFramebuffer(
         viewport->m_ssaoGBuffer.get(), true, {0.0f, 0.0f, 0.0f, 1.0});
 
-    ShaderPtr ssao_geo_vert = GetShaderManager()->Create<Shader>(
-        ShaderPath("ssaoVertex.shader", true));
-    ssao_geo_vert->Init();
-    ssao_geo_vert->SetShaderParameter("viewMatrix",
+    if (m_aoMat == nullptr)
+    {
+      ShaderPtr ssaoGeoVert = GetShaderManager()->Create<Shader>(
+          ShaderPath("ssaoVertex.shader", true));
+      ssaoGeoVert->Init();
+      ssaoGeoVert->SetShaderParameter("viewMatrix",
                                       ParameterVariant(cam->GetViewMatrix()));
-    ShaderPtr ssao_geo_frag = GetShaderManager()->Create<Shader>(
-        ShaderPath("ssaoGBufferFrag.shader", true));
-    ssao_geo_frag->Init();
-    MaterialPtr material = std::make_shared<Material>();
-    material->UnInit();
+      ShaderPtr ssaoGeoFrag = GetShaderManager()->Create<Shader>(
+          ShaderPath("ssaoGBufferFrag.shader", true));
+      ssaoGeoFrag->Init();
 
-    material->m_vertexShader   = ssao_geo_vert;
-    material->m_fragmentShader = ssao_geo_frag;
-    material->Init();
+      m_aoMat                   = std::make_shared<Material>();
+      m_aoMat->m_vertexShader   = ssaoGeoVert;
+      m_aoMat->m_fragmentShader = ssaoGeoFrag;
+    }
+    m_aoMat->UnInit();
+    m_aoMat->m_fragmentShader->SetShaderParameter(
+        "viewMatrix", ParameterVariant(cam->GetViewMatrix()));
 
     MaterialPtr overrideMatPrev = m_overrideMat;
-    m_overrideMat               = material;
-    RenderEntities(entities, cam, viewport, editorLights);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    for (Entity* ntt : entities)
+    {
+      if (ntt->IsDrawable() && ntt->GetVisibleVal())
+      {
+        MaterialPtr entityMat     = GetRenderMaterial(ntt);
+        m_aoMat->m_alpha          = entityMat->m_alpha;
+        m_aoMat->m_diffuseTexture = entityMat->m_diffuseTexture;
+
+        m_overrideMat = m_aoMat;
+        Render(ntt, cam);
+      }
+    }
+
     SetFramebuffer(nullptr);
     m_overrideMat = nullptr;
 
@@ -184,7 +197,6 @@ namespace ToolKit
     static unsigned int noiseTexture = 0;
     if (noiseTexture == 0)
     {
-
       glGenTextures(1, &noiseTexture);
       glBindTexture(GL_TEXTURE_2D, noiseTexture);
       glTexImage2D(
@@ -211,7 +223,7 @@ namespace ToolKit
     }
 
     viewport->m_ssao->Init();
-    viewport->m_ssao->ReconstrcutIfNeeded(
+    viewport->m_ssao->ReconstructIfNeeded(
         (uint) viewport->m_wndContentAreaSize.x,
         (uint) viewport->m_wndContentAreaSize.y);
 
@@ -267,7 +279,7 @@ namespace ToolKit
           (uint) viewport->m_wndContentAreaSize.y,
           oneChannelSet);
     viewport->m_ssaoBlur->Init();
-    viewport->m_ssaoBlur->ReconstrcutIfNeeded(
+    viewport->m_ssaoBlur->ReconstructIfNeeded(
         (uint) viewport->m_wndContentAreaSize.x,
         (uint) viewport->m_wndContentAreaSize.y);
 
@@ -408,7 +420,6 @@ namespace ToolKit
           }
         };
         activateSkinning(mesh->IsSkinned());
-        FeedUniforms(prg);
 
         RenderState rs = *m_mat->GetRenderState();
         if (m_overrideDiffuseTexture && m_overrideMat)
@@ -421,6 +432,8 @@ namespace ToolKit
           }
         }
         SetRenderState(&rs, prg);
+
+        FeedUniforms(prg);
 
         glBindVertexArray(mesh->m_vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
@@ -552,13 +565,15 @@ namespace ToolKit
 
     if (state->diffuseTextureInUse)
     {
-      m_renderState.diffuseTexture = state->diffuseTexture;
+      m_renderState.diffuseTexture      = state->diffuseTexture;
+      m_renderState.diffuseTextureInUse = state->diffuseTextureInUse;
       SetTexture(0, state->diffuseTexture);
     }
 
     if (state->cubeMapInUse)
     {
-      m_renderState.cubeMap = state->cubeMap;
+      m_renderState.cubeMap      = state->cubeMap;
+      m_renderState.cubeMapInUse = state->cubeMapInUse;
       SetTexture(6, state->cubeMap);
     }
 
@@ -575,7 +590,8 @@ namespace ToolKit
     {
       FramebufferSettings fbSet = fb->GetSettings();
 
-      if (fb == m_framebuffer && fb->GetSettings().Compare(m_lastFramebufferSettings))
+      if (fb == m_framebuffer &&
+          fb->GetSettings().Compare(m_lastFramebufferSettings))
       {
         return;
       }
@@ -687,6 +703,10 @@ namespace ToolKit
                    entities.end());
 
     FrustumCull(entities, cam);
+
+    GenerateSSAOTexture(entities, viewport);
+
+    SetViewport(viewport);
 
     EntityRawPtrArray blendedEntities;
     GetTransparentEntites(entities, blendedEntities);
@@ -1156,6 +1176,7 @@ namespace ToolKit
           light->m_shadowMapCameraFar = m_shadowMapCamera->GetData().far;
           FrustumCull(entities, m_shadowMapCamera);
 
+          glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
           m_overrideMat = light->GetShadowMaterial();
           for (Entity* ntt : entities)
@@ -1667,9 +1688,7 @@ namespace ToolKit
         case Uniform::DIFFUSE_TEXTURE_IN_USE: {
           GLint loc =
               glGetUniformLocation(program->m_handle, "DiffuseTextureInUse");
-          glUniform1i(
-              loc,
-              static_cast<int>(m_mat->GetRenderState()->diffuseTextureInUse));
+          glUniform1i(loc, (int) m_mat->GetRenderState()->diffuseTextureInUse);
         }
         break;
         case Uniform::COLOR_ALPHA: {
@@ -1686,6 +1705,12 @@ namespace ToolKit
           {
             glUniform1f(loc, 1.0f);
           }
+        }
+        break;
+        case Uniform::USE_AO: {
+          m_renderState.AOInUse = m_mat->GetRenderState()->AOInUse;
+          GLint loc = glGetUniformLocation(program->m_handle, "UseAO");
+          glUniform1i(loc, (int) m_renderState.AOInUse);
         }
         break;
         default:

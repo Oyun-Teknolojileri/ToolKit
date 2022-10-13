@@ -147,9 +147,8 @@ namespace ToolKit
     void FeedLightUniforms(ProgramPtr program);
     void SetVertexLayout(VertexLayout layout);
 
-    void GenerateSSAOTexture(const ScenePtr scene,
-                             Viewport* viewport,
-                             const LightRawPtrArray& editorLights);
+    void GenerateSSAOTexture(const EntityRawPtrArray& entities,
+                             Viewport* viewport);
     void GenerateKernelAndNoiseForSSAOSamples(Vec3Array& ssaoKernel,
                                               Vec2Array& ssaoNoise);
 
@@ -183,6 +182,7 @@ namespace ToolKit
     Camera* m_cam              = nullptr;
     Camera* m_shadowMapCamera  = nullptr;
     Material* m_mat            = nullptr;
+    MaterialPtr m_aoMat        = nullptr;
     Framebuffer* m_framebuffer = nullptr;
     FramebufferSettings m_lastFramebufferSettings;
 
