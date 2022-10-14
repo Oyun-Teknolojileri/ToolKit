@@ -347,17 +347,10 @@
 					float linear = 0.09;
 					float quadratic = 0.032;
 					float distance = length(fragToLight);
-					float attenuation = 1.0 /
-					(constant + linear * distance + quadratic * (distance * distance));
+					float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
 
 					// Decrase attenuation heavily near radius
-					float cutOff = 0.5;
-					attenuation *= clamp
-					(
-						cutOff * distance + LightData.radius[i] * 0.5 - distance,
-						0.0,
-						1.0
-					);
+					attenuation *= 1.0 - smoothstep(0.0, LightData.radius[i], distance);
 
 					// Diffuse
 					float diff = max(dot(n, l), 0.0);
@@ -403,42 +396,35 @@
 				else if (LightData.type[i] == 3) // Spot light
 				{
 					vec3 fragToLight = LightData.pos[i] - v_pos;
+					vec3 fragToLightNorm = normalize(fragToLight);
+					float fragToLightDist = length(fragToLight);
 
 					// No need calculation for the fragments outside of the light radius
-					float radiusCheck = clamp(LightData.radius[i] - length(fragToLight), 0.0, 1.0);
+					float radiusCheck = clamp(LightData.radius[i] - fragToLightDist, 0.0, 1.0);
 					radiusCheck = ceil(radiusCheck);
-
-					vec3 l = -LightData.dir[i];
 
 					// Attenuation
 					float constant = 1.0;
 					float linear = 0.09;
 					float quadratic = 0.032;
-					float distance = length(fragToLight);
+					float distance = fragToLightDist;
 					float attenuation = 1.0 /
 					(constant + linear * distance + quadratic * (distance * distance));
 
 					// Decrase attenuation heavily near radius
-					float cutOff = 0.5;
-					attenuation *= clamp
-					(
-						cutOff * distance + LightData.radius[i] * 0.5 - distance,
-						0.0,
-						1.0
-					);
+					attenuation *= 1.0 - smoothstep(0.0, LightData.radius[i], distance);
 
 					// Diffuse
-					float diff = max(dot(n, l), 0.0);
+					float diff = max(dot(n, fragToLightNorm), 0.0);
 					diffuse = diff * LightData.color[i];
 
 					// Specular
 					float specularStrength = 0.4;
-					vec3 halfwayDir = normalize(l + e);  
+					vec3 halfwayDir = normalize(fragToLightNorm + e);  
 					float spec = pow(max(dot(n, halfwayDir), 0.0), 32.0);
 					specular = specularStrength * spec * LightData.color[i];
 
-					vec3 lightToFrag = normalize(v_pos -  LightData.pos[i]);
-					float theta = dot(lightToFrag, -l);
+					float theta = dot(-fragToLightNorm, LightData.dir[i]);
 					float epsilon =  LightData.innAngle[i] - LightData.outAngle[i];
 					float intensity = clamp((theta - LightData.outAngle[i]) / epsilon, 0.0, 1.0);
 
