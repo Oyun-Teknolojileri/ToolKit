@@ -47,7 +47,9 @@ namespace ToolKit
 
     void DrawFullQuad(ShaderPtr fragmentShader);
     void DrawFullQuad(MaterialPtr mat);
-    void DrawCube(Camera* cam, MaterialPtr mat);
+    void DrawCube(Camera* cam,
+                  MaterialPtr mat,
+                  const Mat4& transform = Mat4(1.0f));
     void SetTexture(ubyte slotIndx, uint textureId);
     void SetShadowMapTexture(EntityType type,
                              uint textureId,
@@ -167,6 +169,7 @@ namespace ToolKit
     Mat4 m_project;
     Mat4 m_view;
     Mat4 m_model;
+    Mat4 m_iblRotation;
     LightRawPtrArray m_lights;
     Camera* m_cam              = nullptr;
     Camera* m_shadowMapCamera  = nullptr;

@@ -671,10 +671,11 @@ namespace ToolKit
     Render(&quad, &quadCam);
   }
 
-  void Renderer::DrawCube(Camera* cam, MaterialPtr mat)
+  void Renderer::DrawCube(Camera* cam, MaterialPtr mat, const Mat4& transform)
   {
     static Cube cube;
     cube.Generate();
+    cube.m_node->SetTransform(transform);
 
     MaterialComponentPtr matc = cube.GetMaterialComponent();
     if (matc == nullptr)
@@ -860,7 +861,11 @@ namespace ToolKit
 
     glDepthFunc(GL_LEQUAL);
 
-    DrawCube(cam, sky->GetSkyboxMaterial());
+    MaterialPtr skyboxMat = sky->GetSkyboxMaterial();
+    const Mat4 rotation =
+        glm::toMat4(sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
+    DrawCube(cam, skyboxMat, rotation);
+    sky->m_node;
 
     glDepthFunc(GL_LESS); // Return to default depth test
   }
@@ -1075,6 +1080,8 @@ namespace ToolKit
       mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
       mat->GetRenderState()->irradianceMap =
           envCom->GetHdriVal()->GetIrradianceCubemapId();
+      m_iblRotation = glm::toMat4(
+          env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
     }
     else
     {
@@ -1088,11 +1095,14 @@ namespace ToolKit
         mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
         mat->GetRenderState()->irradianceMap =
             envCom->GetHdriVal()->GetIrradianceCubemapId();
+        m_iblRotation = glm::toMat4(
+            sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
       }
       else
       {
         mat->GetRenderState()->IBLInUse      = false;
         mat->GetRenderState()->irradianceMap = 0;
+        m_iblRotation                        = Mat4(1.0f);
       }
     }
   }
@@ -1512,14 +1522,15 @@ namespace ToolKit
           GLint loc =
               glGetUniformLocation(program->m_handle, "ProjectionViewNoTr");
           // Zero transalate variables in model matrix
-          m_view[0][3] = 0.0f;
-          m_view[1][3] = 0.0f;
-          m_view[2][3] = 0.0f;
-          m_view[3][3] = 1.0f;
-          m_view[3][0] = 0.0f;
-          m_view[3][1] = 0.0f;
-          m_view[3][2] = 0.0f;
-          Mat4 mul     = m_project * m_view;
+          Mat4 view  = m_view;
+          view[0][3] = 0.0f;
+          view[1][3] = 0.0f;
+          view[2][3] = 0.0f;
+          view[3][3] = 1.0f;
+          view[3][0] = 0.0f;
+          view[3][1] = 0.0f;
+          view[3][2] = 0.0f;
+          Mat4 mul   = m_project * view;
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
         break;
@@ -1566,6 +1577,12 @@ namespace ToolKit
           m_renderState.AOInUse = m_mat->GetRenderState()->AOInUse;
           GLint loc = glGetUniformLocation(program->m_handle, "UseAO");
           glUniform1i(loc, (int) m_renderState.AOInUse);
+        }
+        break;
+        case Uniform::IBL_ROTATION: {
+          GLint loc = glGetUniformLocation(program->m_handle, "IblRotation");
+
+          glUniformMatrix4fv(loc, 1, false, &m_iblRotation[0][0]);
         }
         break;
         default:

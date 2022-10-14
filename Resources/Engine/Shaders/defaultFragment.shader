@@ -6,6 +6,7 @@
 	<uniform name = "UseAO" />
 	<uniform name = "IblIntensity" />
 	<uniform name = "IBLIrradianceMap" />
+	<uniform name = "IblRotation" />
 	<source>
 	<!--
 	// Don't forget to apply changes to lightingOnly shader
@@ -198,6 +199,7 @@
 
 		uniform sampler2D s_texture5;
 
+		uniform mat4 IblRotation;
 		uniform float UseIbl;
 		uniform float IblIntensity;
 		uniform int UseAO;
@@ -441,7 +443,8 @@
 
 				irradiance += (diffuse + specular) * LightData.intensity[i] * shadow;
 			}
-			vec3 iblIrradiance = UseIbl * texture(s_texture7, n).rgb;
+			vec3 iblSamplerVec = (IblRotation * vec4(n, 1.0)).xyz;
+			vec3 iblIrradiance = UseIbl * texture(s_texture7, iblSamplerVec).rgb;
 			irradiance += iblIrradiance * IblIntensity;
 
 			vec2 coords = gl_FragCoord.xy / vec2(textureSize(s_texture5, 0));

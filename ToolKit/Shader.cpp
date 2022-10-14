@@ -179,6 +179,9 @@ namespace ToolKit
       case Uniform::DIFFUSE_TEXTURE_IN_USE:
         name = "DiffuseTextureInUse";
         break;
+      case Uniform::IBL_ROTATION:
+        name = "IblRotation";
+        break;
       default:
         assert(false && "unknown uniform");
         break;
@@ -291,6 +294,10 @@ namespace ToolKit
         else if (strcmp("UseAO", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::USE_AO);
+        }
+        else if (strcmp("IblRotation", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::IBL_ROTATION);
         }
         else
         {

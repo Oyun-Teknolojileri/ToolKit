@@ -28,7 +28,8 @@ namespace ToolKit
     IBL_IRRADIANCE,
     DIFFUSE_TEXTURE_IN_USE,
     COLOR_ALPHA,
-    USE_AO
+    USE_AO,
+    IBL_ROTATION
   };
 
   class TK_API Shader : public Resource

@@ -165,6 +165,7 @@ namespace ToolKit
         // Disable ao
         bool aoActive = mesh->m_material->GetRenderState()->AOInUse;
         mat->GetRenderState()->AOInUse = false;
+        mat->GetRenderState()->IBLInUse = false;
 
         mesh->Init(false);
 

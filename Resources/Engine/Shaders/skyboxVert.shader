@@ -1,6 +1,7 @@
 <shader>
 	<type name = "vertexShader" />
 	<uniform name = "ProjectionViewNoTr" />
+	<uniform name = "Model" />
 	<source>
 	<!--
 		#version 300 es
@@ -12,12 +13,13 @@
 		layout (location = 2) in vec2 vTexture;
 
 		uniform mat4 ProjectionViewNoTr;
+		uniform mat4 Model;
 
 		out vec3 v_pos;
 
 		void main()
 		{
-			v_pos = vPosition;
+			v_pos = (Model * vec4(vPosition, 1.0)).xyz;
 
 			vec4 clipPos = ProjectionViewNoTr * vec4(vPosition, 1.0);
 
