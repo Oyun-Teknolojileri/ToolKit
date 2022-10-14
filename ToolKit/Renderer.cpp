@@ -883,7 +883,6 @@ namespace ToolKit
                                            const LightRawPtrArray& lights)
   {
     LightRawPtrArray bestLights;
-    LightRawPtrArray outsideRadiusLights;
     bestLights.reserve(lights.size());
 
     // Find the end of directional lights
@@ -935,6 +934,8 @@ namespace ToolKit
       }*/
       if (light->GetType() == EntityType::Entity_SpotLight)
       {
+        static_cast<SpotLight*>(light)->UpdateShadowMapCamera(
+            m_shadowMapCamera);
         Frustum spotFrustum = ExtractFrustum(
             ((SpotLight*) light)->m_shadowMapCameraProjectionViewMatrix, false);
 
@@ -1114,6 +1115,7 @@ namespace ToolKit
     for (Light* light : lights)
     {
       // Update shadow map ProjView matrix every frame for all lights
+      if (light->GetCastShadowVal())
       {
         // Get shadow map camera
         if (m_shadowMapCamera == nullptr)
@@ -1123,46 +1125,20 @@ namespace ToolKit
 
         if (light->GetType() == EntityType::Entity_DirectionalLight)
         {
-          FitSceneBoundingBoxIntoLightFrustum(
-              m_shadowMapCamera,
-              entities,
-              static_cast<DirectionalLight*>(light));
+          static_cast<DirectionalLight*>(light)->UpdateShadowMapCamera(
+              m_shadowMapCamera, entities);
         }
         else if (light->GetType() == EntityType::Entity_PointLight)
         {
-          m_shadowMapCamera->SetLens(
-              glm::radians(90.0f),
-              light->GetShadowResolutionVal().x,
-              light->GetShadowResolutionVal().y,
-              0.01f,
-              static_cast<SpotLight*>(light)->GetRadiusVal());
-          m_shadowMapCamera->m_node->SetTranslation(
-              light->m_node->GetTranslation(TransformationSpace::TS_WORLD),
-              TransformationSpace::TS_WORLD);
+          static_cast<PointLight*>(light)->UpdateShadowMapCamera(
+              m_shadowMapCamera);
         }
         else if (light->GetType() == EntityType::Entity_SpotLight)
         {
-          m_shadowMapCamera->SetLens(
-              glm::radians(static_cast<SpotLight*>(light)->GetOuterAngleVal()),
-              light->GetShadowResolutionVal().x,
-              light->GetShadowResolutionVal().y,
-              0.01f,
-              static_cast<SpotLight*>(light)->GetRadiusVal());
-          m_shadowMapCamera->m_node->SetOrientation(
-              light->m_node->GetOrientation(TransformationSpace::TS_WORLD));
-          m_shadowMapCamera->m_node->SetTranslation(
-              light->m_node->GetTranslation(TransformationSpace::TS_WORLD),
-              TransformationSpace::TS_WORLD);
+          static_cast<SpotLight*>(light)->UpdateShadowMapCamera(
+              m_shadowMapCamera);
         }
 
-        light->m_shadowMapCameraProjectionViewMatrix =
-            m_shadowMapCamera->GetProjectionMatrix() *
-            m_shadowMapCamera->GetViewMatrix();
-        light->m_shadowMapCameraFar = m_shadowMapCamera->GetData().far;
-      }
-
-      if (light->GetCastShadowVal())
-      {
         // Create framebuffer
         light->InitShadowMap();
 
@@ -1356,127 +1332,6 @@ namespace ToolKit
 
     SetFramebuffer(m_blurFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_averageBlurMaterial);
-  }
-
-  void Renderer::FitSceneBoundingBoxIntoLightFrustum(
-      Camera* lightCamera,
-      const EntityRawPtrArray& entities,
-      DirectionalLight* light)
-  {
-    TransformationSpace ts = TransformationSpace::TS_WORLD;
-
-    // Calculate all scene's bounding box
-    BoundingBox totalBBox;
-    for (Entity* ntt : entities)
-    {
-      if (!(ntt->IsDrawable() && ntt->GetVisibleVal()))
-      {
-        continue;
-      }
-      if (!ntt->GetMeshComponent()->GetCastShadowVal())
-      {
-        continue;
-      }
-      BoundingBox bb = ntt->GetAABB(true);
-      totalBBox.UpdateBoundary(bb.max);
-      totalBBox.UpdateBoundary(bb.min);
-    }
-    Vec3 center = totalBBox.GetCenter();
-
-    // Set light transformation
-    lightCamera->m_node->SetTranslation(center, ts);
-    lightCamera->m_node->SetOrientation(light->m_node->GetOrientation(ts), ts);
-    Mat4 lightView = lightCamera->GetViewMatrix();
-
-    // Bounding box of the scene
-    Vec3 min         = totalBBox.min;
-    Vec3 max         = totalBBox.max;
-    Vec4 vertices[8] = {Vec4(min.x, min.y, min.z, 1.0f),
-                        Vec4(min.x, min.y, max.z, 1.0f),
-                        Vec4(min.x, max.y, min.z, 1.0f),
-                        Vec4(max.x, min.y, min.z, 1.0f),
-                        Vec4(min.x, max.y, max.z, 1.0f),
-                        Vec4(max.x, min.y, max.z, 1.0f),
-                        Vec4(max.x, max.y, min.z, 1.0f),
-                        Vec4(max.x, max.y, max.z, 1.0f)};
-
-    // Calculate bounding box in light space
-    float minX = std::numeric_limits<float>::max();
-    float maxX = std::numeric_limits<float>::min();
-    float minY = std::numeric_limits<float>::max();
-    float maxY = std::numeric_limits<float>::min();
-    float minZ = std::numeric_limits<float>::max();
-    float maxZ = std::numeric_limits<float>::min();
-    for (int i = 0; i < 8; ++i)
-    {
-      const Vec4 vertex = lightView * vertices[i];
-
-      minX = std::min(minX, vertex.x);
-      maxX = std::max(maxX, vertex.x);
-      minY = std::min(minY, vertex.y);
-      maxY = std::max(maxY, vertex.y);
-      minZ = std::min(minZ, vertex.z);
-      maxZ = std::max(maxZ, vertex.z);
-    }
-
-    lightCamera->SetLens(minX, maxX, minY, maxY, minZ, maxZ);
-  }
-
-  void Renderer::FitViewFrustumIntoLightFrustum(Camera* lightCamera,
-                                                Camera* viewCamera,
-                                                DirectionalLight* light)
-  {
-    assert(false && "Experimental.");
-    // Fit view frustum into light frustum
-    Vec3 frustum[8] = {Vec3(-1.0f, -1.0f, -1.0f),
-                       Vec3(1.0f, -1.0f, -1.0f),
-                       Vec3(1.0f, -1.0f, 1.0f),
-                       Vec3(-1.0f, -1.0f, 1.0f),
-                       Vec3(-1.0f, 1.0f, -1.0f),
-                       Vec3(1.0f, 1.0f, -1.0f),
-                       Vec3(1.0f, 1.0f, 1.0f),
-                       Vec3(-1.0f, 1.0f, 1.0f)};
-
-    const Mat4 inverseViewProj = glm::inverse(
-        viewCamera->GetProjectionMatrix() * viewCamera->GetViewMatrix());
-
-    for (int i = 0; i < 8; ++i)
-    {
-      const Vec4 t = inverseViewProj * Vec4(frustum[i], 1.0f);
-      frustum[i]   = Vec3(t.x / t.w, t.y / t.w, t.z / t.w);
-    }
-
-    Vec3 center = ZERO;
-    for (int i = 0; i < 8; ++i)
-    {
-      center += frustum[i];
-    }
-    center /= 8.0f;
-
-    TransformationSpace ts = TransformationSpace::TS_WORLD;
-    lightCamera->m_node->SetTranslation(center, ts);
-    lightCamera->m_node->SetOrientation(light->m_node->GetOrientation(ts), ts);
-    Mat4 lightView = lightCamera->GetViewMatrix();
-
-    // Calculate bounding box
-    float minX = std::numeric_limits<float>::max();
-    float maxX = std::numeric_limits<float>::min();
-    float minY = std::numeric_limits<float>::max();
-    float maxY = std::numeric_limits<float>::min();
-    float minZ = std::numeric_limits<float>::max();
-    float maxZ = std::numeric_limits<float>::min();
-    for (int i = 0; i < 8; ++i)
-    {
-      const Vec4 vertex = lightView * Vec4(frustum[i], 1.0f);
-      minX              = std::min(minX, vertex.x);
-      maxX              = std::max(maxX, vertex.x);
-      minY              = std::min(minY, vertex.y);
-      maxY              = std::max(maxY, vertex.y);
-      minZ              = std::min(minZ, vertex.z);
-      maxZ              = std::max(maxZ, vertex.z);
-    }
-
-    lightCamera->SetLens(minX, maxX, minY, maxY, minZ, maxZ);
   }
 
   void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)

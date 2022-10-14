@@ -64,7 +64,18 @@ namespace ToolKit
 
     EntityType GetType() const override;
 
+    void UpdateShadowMapCamera(Camera* cam, const EntityRawPtrArray& entities);
     Vec3Array GetShadowFrustumCorners();
+
+   private:
+    // Fits the entities into the shadow map camera frustum. As the scene gets
+    // bigger, the resolution gets lower.
+    void FitEntitiesBBoxIntoShadowFrustum(Camera* lightCamera,
+                                          const EntityRawPtrArray& entities);
+    // Fits view frustum of the camera into shadow map camera frustum. As the
+    // view frustum gets bigger, the resolution gets lower.
+    void FitViewFrustumIntoLightFrustum(Camera* lightCamera,
+                                        Camera* viewCamera);
   };
 
   class TK_API PointLight : public Light
@@ -78,6 +89,7 @@ namespace ToolKit
     EntityType GetType() const override;
 
     void InitShadowMap() override;
+    void UpdateShadowMapCamera(Camera* cam);
 
    protected:
     void InitShadowMapDepthMaterial() override;
@@ -95,6 +107,8 @@ namespace ToolKit
     }
 
     EntityType GetType() const override;
+
+    void UpdateShadowMapCamera(Camera* cam);
 
    protected:
     void InitShadowMapDepthMaterial() override;
