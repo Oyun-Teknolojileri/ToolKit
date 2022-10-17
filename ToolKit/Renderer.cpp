@@ -939,6 +939,11 @@ namespace ToolKit
       }*/
       if (light->GetType() == EntityType::Entity_SpotLight)
       {
+        if (m_shadowMapCamera == nullptr)
+        {
+          m_shadowMapCamera = new Camera();
+        }
+
         static_cast<SpotLight*>(light)->UpdateShadowMapCamera(
             m_shadowMapCamera);
         Frustum spotFrustum = ExtractFrustum(
