@@ -9,6 +9,12 @@
 
 namespace ToolKit
 {
+  enum class ShaderType
+  {
+    VertexShader,
+    FragmentShader,
+    IncludeShader
+  };
 
   enum class Uniform
   {
@@ -49,12 +55,16 @@ namespace ToolKit
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+   private:
+    void HandleShaderIncludes(const String& file);
+
    public:
     std::unordered_map<String, ParameterVariant> m_shaderParams;
 
     String m_tag;
-    GraphicTypes m_shaderType = GraphicTypes::VertexShader;
+    ShaderType m_shaderType = ShaderType::VertexShader;
     uint m_shaderHandle       = 0;
+    StringArray m_includeFiles;
     std::vector<Uniform> m_uniforms;
     String m_source;
   };

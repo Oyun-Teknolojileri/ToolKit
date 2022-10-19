@@ -41,8 +41,6 @@ namespace ToolKit
               std::to_string(static_cast<int>(vertexLayout)));
 
     WriteAttr(container, doc, "priority", std::to_string(priority));
-
-    WriteAttr(container, doc, "useIBL", std::to_string(IBLInUse));
   }
 
   void RenderState::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -68,8 +66,6 @@ namespace ToolKit
           container, "vertexLayout", *reinterpret_cast<int*>(&vertexLayout));
 
       ReadAttr(container, "vertexLayout", priority);
-
-      ReadAttr(container, "useIBL", *reinterpret_cast<int*>(&IBLInUse));
     }
   }
 

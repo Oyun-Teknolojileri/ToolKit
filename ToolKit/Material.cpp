@@ -235,11 +235,11 @@ namespace ToolKit
         String path        = attr->value();
         NormalizePath(path);
         ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath(path));
-        if (shader->m_shaderType == GraphicTypes::VertexShader)
+        if (shader->m_shaderType == ShaderType::VertexShader)
         {
           m_vertexShader = shader;
         }
-        else if (shader->m_shaderType == GraphicTypes::FragmentShader)
+        else if (shader->m_shaderType == ShaderType::FragmentShader)
         {
           m_fragmentShader = shader;
         }

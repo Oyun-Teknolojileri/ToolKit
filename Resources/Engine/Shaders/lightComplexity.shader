@@ -1,7 +1,6 @@
 <shader>
 	<type name = "fragmentShader" />
 	<uniform name = "LightData" />
-	<uniform name = "CamData" />
 	<uniform name = "UseIbl" />
 	<uniform name = "IblIntensity" />
 	<uniform name = "IBLIrradianceMap" />
@@ -41,24 +40,6 @@
 			float PCFSampleDistance[12];
 			float PCFUnitSampleDistance[12];
 			int PCFKernelSize[12];
-		};
-		const int maxPointLightShadows = 4;
-		const int maxDirAndSpotLightShadows = 4;
-
-		const vec3 cubemapSampleDirections[20] = vec3[]
-		(
-			vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
-			vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
-			vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
-			vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1),
-			vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
-		);
-
-		struct _CamData
-		{
-			vec3 pos;
-			vec3 dir;
-			float farPlane;
 		};
 
 		uniform _LightData LightData;
@@ -106,10 +87,6 @@
 
 		void main()
 		{
-			int dirAndSpotLightShadowCount = 0;
-			int pointLightShadowCount = 0;
-			int sampledShadowCount = 0;
-
 			vec3 color = GetHeatMap(float(LightData.activeCount), float(8));
 			fragColor = vec4(color, 1.0);
 		}

@@ -8,6 +8,7 @@
 #include "rapidxml_utils.hpp"
 
 #include <vector>
+#include <unordered_set>
 
 #include "DebugNew.h"
 
@@ -52,7 +53,21 @@ namespace ToolKit
       return;
     }
 
-    m_shaderHandle = glCreateShader((GLenum) m_shaderType);
+    GLenum type = 0;
+    if (m_shaderType == ShaderType::VertexShader)
+    {
+      type = (GLenum) GraphicTypes::VertexShader;
+    }
+    else if (m_shaderType == ShaderType::FragmentShader)
+    {
+      type = (GLenum) GraphicTypes::FragmentShader;
+    }
+    else
+    {
+      assert(false && "This type should not be compiled.");
+    }
+
+    m_shaderHandle = glCreateShader(type);
     if (m_shaderHandle == 0)
     {
       return;
@@ -121,13 +136,23 @@ namespace ToolKit
     XmlNode* container = CreateXmlNode(doc, "shader", parent);
     XmlNode* node      = CreateXmlNode(doc, "type", container);
 
-    if (m_shaderType == GraphicTypes::VertexShader)
+    if (m_shaderType == ShaderType::VertexShader)
     {
       WriteAttr(node, doc, "name", "fragmentShader");
     }
-    else if (m_shaderType == GraphicTypes::FragmentShader)
+    else if (m_shaderType == ShaderType::FragmentShader)
     {
       WriteAttr(node, doc, "name", "vertexShader");
+    }
+    else if (m_shaderType == ShaderType::IncludeShader)
+    {
+      WriteAttr(node, doc, "name", "includeShader");
+    }
+
+    for (String file : m_includeFiles)
+    {
+      XmlNode* node = CreateXmlNode(doc, "include", container);
+      WriteAttr(node, doc, "name", file);
     }
 
     for (Uniform ui : m_uniforms)
@@ -203,6 +228,8 @@ namespace ToolKit
       return;
     }
 
+    m_includeFiles.clear();
+
     XmlNode* rootNode = parent;
     for (XmlNode* node = rootNode->first_node(); node;
          node          = node->next_sibling())
@@ -212,16 +239,25 @@ namespace ToolKit
         XmlAttribute* attr = node->first_attribute("name");
         if (strcmp("vertexShader", attr->value()) == 0)
         {
-          m_shaderType = GraphicTypes::VertexShader;
+          m_shaderType = ShaderType::VertexShader;
         }
         else if (strcmp("fragmentShader", attr->value()) == 0)
         {
-          m_shaderType = GraphicTypes::FragmentShader;
+          m_shaderType = ShaderType::FragmentShader;
+        }
+        else if (strcmp("includeShader", attr->value()) == 0)
+        {
+          m_shaderType = ShaderType::IncludeShader;
         }
         else
         {
           assert(false);
         }
+      }
+
+      if (strcmp("include", node->name()) == 0)
+      {
+        m_includeFiles.push_back(node->first_attribute("name")->value());
       }
 
       if (strcmp("uniform", node->name()) == 0)
@@ -309,6 +345,94 @@ namespace ToolKit
       {
         m_source = node->first_node()->value();
       }
+    }
+
+    // Iterate back to forth
+    for (auto i = m_includeFiles.rbegin(); i != m_includeFiles.rend(); ++i)
+    {
+      HandleShaderIncludes(*i);
+    }
+  }
+
+  void Shader::HandleShaderIncludes(const String& file)
+  {
+    // Handle source of shader
+
+    ShaderPtr includeShader =
+        GetShaderManager()->Create<Shader>(ShaderPath(file, true));
+    String includeSource = includeShader->m_source; // Copy
+
+    // Crop the version and precision defines
+    size_t versionLoc = includeSource.find("#version");
+    if (versionLoc != String::npos)
+    {
+      for (size_t fileLoc = versionLoc; fileLoc < includeSource.length();
+           ++fileLoc)
+      {
+        if (includeSource[fileLoc] == '\n')
+        {
+          includeSource =
+              includeSource.replace(versionLoc, fileLoc - versionLoc + 1, "");
+          break;
+        }
+      }
+    }
+
+    size_t precisionLoc = includeSource.find("precision");
+    if (precisionLoc != String::npos)
+    {
+      for (size_t fileLoc = precisionLoc; fileLoc < includeSource.length();
+           ++fileLoc)
+      {
+        if (includeSource[fileLoc] == ';')
+        {
+          includeSource = includeSource.replace(
+              precisionLoc, fileLoc - precisionLoc + 1, "");
+          break;
+        }
+      }
+    }
+
+    // Put included file after precision and version defines
+    size_t includeLoc = 0;
+    versionLoc        = m_source.find("#version");
+    for (size_t fileLoc = versionLoc; fileLoc < m_source.length(); ++fileLoc)
+    {
+      if (m_source[fileLoc] == '\n')
+      {
+        includeLoc = std::max(includeLoc, fileLoc + 1);
+        break;
+      }
+    }
+    precisionLoc = m_source.find("precision");
+    for (size_t fileLoc = precisionLoc; fileLoc < m_source.length(); ++fileLoc)
+    {
+      if (m_source[fileLoc] == ';')
+      {
+        includeLoc = std::max(includeLoc, fileLoc + 3);
+        break;
+      }
+    }
+
+    m_source.replace(includeLoc, 0, includeSource);
+
+    // Handle uniforms
+
+    std::unordered_set<Uniform> unis;
+    for (Uniform uni : m_uniforms)
+    {
+      unis.insert(uni);
+    }
+
+    for (Uniform uni : includeShader->m_uniforms)
+    {
+      unis.insert(uni);
+    }
+
+    m_uniforms.clear();
+    for (auto i = unis.begin(); i != unis.end(); ++i)
+    {
+      m_uniforms.push_back(*i);
     }
   }
 

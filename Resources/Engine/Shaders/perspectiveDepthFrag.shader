@@ -1,5 +1,6 @@
 <shader>
 	<type name = "fragmentShader" />
+	<include name = "VSM.shader" />
 	<uniform name = "DiffuseTextureInUse" />
 	<uniform name = "ColorAlpha" />
 	<source>
@@ -15,16 +16,6 @@
 		uniform float colorAlpha;
 
 		out vec4 fragColor;
-
-		vec2 ComputeMoments(float depth)
-		{
-			vec2 moments;
-			moments.x = depth;
-			float dx = dFdx(moments.x);
-			float dy = dFdy(moments.x);
-			moments.y = moments.x * moments.x * 0.25 * (dx * dx + dy * dy);
-			return moments;
-		}
 
 		void main()
 		{
