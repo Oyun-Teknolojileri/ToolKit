@@ -157,6 +157,32 @@ namespace ToolKit
       {
         if (dir.is_directory())
         {
+          String resourcesPath =
+              ConcatPaths({dir.path().string(), "Resources"});
+          String codesPath = ConcatPaths({dir.path().string(), "Codes"});
+          // Skip directory if it doesn't have folders: Resources, Codes
+          if (!std::filesystem::directory_entry(resourcesPath).is_directory() ||
+              !std::filesystem::directory_entry(codesPath).is_directory())
+          {
+            continue;
+          }
+          const StringArray requiredResourceFolders = {
+              "Materials", "Meshes", "Scenes", "Textures"};
+          bool foundAllRequiredFolders = true;
+          for (uint i = 0; i < requiredResourceFolders.size(); i++)
+          {
+            if (!(std::filesystem::directory_entry(
+                      ConcatPaths({resourcesPath, requiredResourceFolders[i]}))
+                      .is_directory()))
+            {
+              foundAllRequiredFolders = false;
+              break;
+            }
+          }
+          if (!foundAllRequiredFolders)
+          {
+            break;
+          }
           std::string dirName = dir.path().filename().u8string();
 
           // Hide hidden folders

@@ -70,7 +70,6 @@ namespace ToolKit
      private:
       void LoadDragMesh(bool& meshLoaded,
                         DirectoryEntry dragEntry,
-                        ImGuiIO io,
                         Entity** dwMesh,
                         LineBatch** boundingBox,
                         EditorScenePtr currScene);

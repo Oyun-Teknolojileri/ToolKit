@@ -612,8 +612,6 @@ namespace ToolKit
 
     void EditorViewport::HandleDrop()
     {
-      ImGuiIO& io = ImGui::GetIO();
-
       // Current scene
       EditorScenePtr currScene = g_app->GetCurrentScene();
 
@@ -638,8 +636,7 @@ namespace ToolKit
         if (dragEntry.m_ext == MESH || dragEntry.m_ext == SKINMESH)
         {
           // Load mesh
-          LoadDragMesh(
-              meshLoaded, dragEntry, io, &dwMesh, &boundingBox, currScene);
+          LoadDragMesh(meshLoaded, dragEntry, &dwMesh, &boundingBox, currScene);
 
           // Show bounding box
           lastDragMeshPos = CalculateDragMeshPosition(
@@ -711,7 +708,9 @@ namespace ToolKit
                     GetMaterialManager()->Create<Material>(path);
                 // Set material to material component
                 MaterialComponentPtr matPtr = pd.entity->GetMaterialComponent();
-                if (matPtr == nullptr)
+                MultiMaterialPtr mmPtr =
+                    pd.entity->GetComponent<MultiMaterialComponent>();
+                if (matPtr == nullptr && mmPtr == nullptr)
                 {
                   // Create a new material component
                   MaterialComponent* matComp = new MaterialComponent();
@@ -793,7 +792,6 @@ namespace ToolKit
 
     void EditorViewport::LoadDragMesh(bool& meshLoaded,
                                       DirectoryEntry dragEntry,
-                                      ImGuiIO io,
                                       Entity** dwMesh,
                                       LineBatch** boundingBox,
                                       EditorScenePtr currScene)

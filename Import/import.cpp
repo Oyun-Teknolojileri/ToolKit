@@ -811,9 +811,9 @@ namespace ToolKit
       {
         meshComp->SetMeshVal(g_meshes[aMesh]);
       }
-      MaterialComponentPtr matComp = std::make_shared<MaterialComponent>();
+      MultiMaterialPtr matComp = std::make_shared<MultiMaterialComponent>();
       ntt->AddComponent(matComp);
-      matComp->SetMaterialVal(meshComp->GetMeshVal()->m_material);
+      matComp->UpdateMaterialList(meshComp);
     }
 
     for (uint childIndx = 0; childIndx < node->mNumChildren; childIndx++)
