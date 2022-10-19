@@ -359,7 +359,6 @@ namespace ToolKit
       {
         return;
       }
-      skelComp->map->UpdateGPUTexture();
 
       // Bind bone textures
       // This is valid because these slots will be used by every shader program
@@ -368,6 +367,8 @@ namespace ToolKit
       //   shader program
       SetTexture(2, skel->m_bindPoseTexture->m_textureId);
       SetTexture(3, skelComp->map->boneTransformNodeTexture->m_textureId);
+
+      skelComp->map->UpdateGPUTexture();
     };
     updateAndBindSkinningTextures();
 
