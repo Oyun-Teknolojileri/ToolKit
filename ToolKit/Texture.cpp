@@ -82,7 +82,7 @@ namespace ToolKit
     {
       glTexImage2D(GL_TEXTURE_2D,
                    0,
-                   GL_RGB16F,
+                   GL_RGB32F,
                    m_width,
                    m_height,
                    0,
