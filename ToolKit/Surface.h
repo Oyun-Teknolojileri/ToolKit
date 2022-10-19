@@ -59,8 +59,6 @@ namespace ToolKit
 
     struct ANCHOR_PARAMS
     {
-      bool lockWidth          = false;
-      bool lockHeight         = false;
       float m_anchorRatios[4] = {0.f, 1.f, 0.f, 1.f};
       float m_offsets[4]      = {0.f};
     };

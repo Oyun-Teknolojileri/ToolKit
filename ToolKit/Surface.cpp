@@ -309,14 +309,9 @@ namespace ToolKit
     const BoundingBox bb = canvasPanel->GetAABB(true);
     const float w        = bb.GetWidth();
     const float h        = bb.GetHeight();
-    /*
-        const Vec2 canvasAbsOffset(
-          canvasPanel->GetPivotOffsetVal().x * w,
-          canvasPanel->GetPivotOffsetVal().y * h);*/
 
     Vec3 pos =
         canvasPanel->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-    /* pos += Vec3(-canvasAbsOffset.x, canvasAbsOffset.y, 0.f);*/
     pos.x = bb.min.x;
     pos.y = bb.max.y;
 

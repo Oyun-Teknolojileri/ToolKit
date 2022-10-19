@@ -36,8 +36,8 @@ namespace ToolKit
     {
       bool Windowed                 = false;
       bool Landscape                = false;
-      float Width                   = 640.0f;
-      float Height                  = 480.0f;
+      float Width                   = 500.0f;
+      float Height                  = 500.0f;
       float Scale                   = 1.0f;
       EmulatorResolution Resolution = EmulatorResolution::Custom;
     };

@@ -741,7 +741,7 @@ namespace ToolKit
           float res[]     = {size.x, size.y};
           if (ImGui::InputFloat2("New resolution:", res))
           {
-            canvasPanel->ApplyRecursivResizePolicy(res[0], res[1]);
+            canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
           }
 
           if (((surface->m_anchorParams.m_anchorRatios[0] +
@@ -805,7 +805,7 @@ namespace ToolKit
                 ImGui::DragFloat("Offset Bottom",
                                  &surface->m_anchorParams.m_offsets[1]))
             {
-              canvasPanel->ApplyRecursivResizePolicy(res[0], res[1]);
+              canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
             }
           }
 
@@ -817,7 +817,7 @@ namespace ToolKit
                 ImGui::DragFloat("Offset Right",
                                  &surface->m_anchorParams.m_offsets[3]))
             {
-              canvasPanel->ApplyRecursivResizePolicy(res[0], res[1]);
+              canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
             }
           }
 

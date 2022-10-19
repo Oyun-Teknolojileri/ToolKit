@@ -415,117 +415,107 @@ namespace ToolKit
         deltaY += glm::dot(dir, m_anchorDeltaTransform) * dir;
       }
 
+      float w = 0, h = 0;
+
+      if (Entity* parent = surface->m_node->m_parent->m_entity)
       {
-        float w = 0, h = 0;
-
-        if (Entity* parent = surface->m_node->m_parent->m_entity)
+        if (parent->GetType() == EntityType::Entity_Canvas)
         {
-          if (parent->GetType() == EntityType::Entity_Canvas)
-          {
-            Canvas* canvasPanel  = static_cast<Canvas*>(parent);
-            const BoundingBox bb = canvasPanel->GetAABB(true);
-            w                    = bb.GetWidth();
-            h                    = bb.GetHeight();
-          }
+          Canvas* canvasPanel  = static_cast<Canvas*>(parent);
+          const BoundingBox bb = canvasPanel->GetAABB(true);
+          w                    = bb.GetWidth();
+          h                    = bb.GetHeight();
         }
+      }
 
-        float* anchorRatios = surface->m_anchorParams.m_anchorRatios;
+      float* anchorRatios = surface->m_anchorParams.m_anchorRatios;
 
-        if (direction == DirectionLabel::CENTER)
+      if (direction == DirectionLabel::CENTER)
+      {
+        const float dX = m_anchorDeltaTransform.x / w;
+        const float dY = m_anchorDeltaTransform.y / h;
+
+        anchorRatios[0] += std::min(1.f, dX);
+        anchorRatios[0] = std::max(0.f, anchorRatios[0]);
+        anchorRatios[0] = std::min(1.f, anchorRatios[0]);
+
+        anchorRatios[1] = 1.f - anchorRatios[0];
+
+        anchorRatios[2] -= std::min(1.f, dY);
+        anchorRatios[2] = std::max(0.f, anchorRatios[2]);
+        anchorRatios[2] = std::min(1.f, anchorRatios[2]);
+
+        anchorRatios[3] = 1.f - anchorRatios[2];
+      }
+
+      if (direction == DirectionLabel::W || direction == DirectionLabel::NW ||
+          direction == DirectionLabel::SW)
+      {
+        const float d = m_anchorDeltaTransform.x / w;
+        anchorRatios[0] += std::min(1.f, d);
+        anchorRatios[0] = std::max(0.f, anchorRatios[0]);
+        anchorRatios[0] = std::min(1.f, anchorRatios[0]);
+
+        if ((anchorRatios[0] + anchorRatios[1]) > 1.f)
         {
-          const float dX = m_anchorDeltaTransform.x / w;
-          const float dY = m_anchorDeltaTransform.y / h;
+          anchorRatios[0] = 1.f - anchorRatios[1];
+        }
+      }
+      if (direction == DirectionLabel::E || direction == DirectionLabel::NE ||
+          direction == DirectionLabel::SE)
+      {
+        const float d = m_anchorDeltaTransform.x / w;
+        anchorRatios[1] -= std::min(1.f, d);
 
-          anchorRatios[0] += std::min(1.f, dX);
-          anchorRatios[0] = std::max(0.f, anchorRatios[0]);
-          anchorRatios[0] = std::min(1.f, anchorRatios[0]);
+        anchorRatios[1] = std::max(0.f, anchorRatios[1]);
+        anchorRatios[1] = std::min(1.f, anchorRatios[1]);
 
+        if ((anchorRatios[1] + anchorRatios[0]) > 1.f)
+        {
           anchorRatios[1] = 1.f - anchorRatios[0];
+        }
+      }
+      if (direction == DirectionLabel::N || direction == DirectionLabel::NW ||
+          direction == DirectionLabel::NE)
+      {
+        const float d = m_anchorDeltaTransform.y / h;
+        anchorRatios[2] -= std::min(1.f, d);
 
-          anchorRatios[2] -= std::min(1.f, dY);
-          anchorRatios[2] = std::max(0.f, anchorRatios[2]);
-          anchorRatios[2] = std::min(1.f, anchorRatios[2]);
+        anchorRatios[2] = std::max(0.f, anchorRatios[2]);
+        anchorRatios[2] = std::min(1.f, anchorRatios[2]);
 
+        if ((anchorRatios[2] + anchorRatios[3]) > 1.f)
+        {
+          anchorRatios[2] = 1.f - anchorRatios[3];
+        }
+      }
+      if (direction == DirectionLabel::S || direction == DirectionLabel::SW ||
+          direction == DirectionLabel::SE)
+      {
+        const float d = m_anchorDeltaTransform.y / h;
+        anchorRatios[3] += std::min(1.f, d);
+
+        anchorRatios[3] = std::max(0.f, anchorRatios[3]);
+        anchorRatios[3] = std::min(1.f, anchorRatios[3]);
+
+        if ((anchorRatios[3] + anchorRatios[2]) > 1.f)
+        {
           anchorRatios[3] = 1.f - anchorRatios[2];
         }
-
-        if (direction == DirectionLabel::W || direction == DirectionLabel::NW ||
-            direction == DirectionLabel::SW)
-        {
-          const float d = m_anchorDeltaTransform.x / w;
-          anchorRatios[0] += std::min(1.f, d);
-          anchorRatios[0] = std::max(0.f, anchorRatios[0]);
-          anchorRatios[0] = std::min(1.f, anchorRatios[0]);
-
-          if ((anchorRatios[0] + anchorRatios[1]) > 1.f)
-          {
-            anchorRatios[0] = 1.f - anchorRatios[1];
-          }
-        }
-        if (direction == DirectionLabel::E || direction == DirectionLabel::NE ||
-            direction == DirectionLabel::SE)
-        {
-          const float d = m_anchorDeltaTransform.x / w;
-          anchorRatios[1] -= std::min(1.f, d);
-
-          anchorRatios[1] = std::max(0.f, anchorRatios[1]);
-          anchorRatios[1] = std::min(1.f, anchorRatios[1]);
-
-          if ((anchorRatios[1] + anchorRatios[0]) > 1.f)
-          {
-            anchorRatios[1] = 1.f - anchorRatios[0];
-          }
-        }
-        if (direction == DirectionLabel::N || direction == DirectionLabel::NW ||
-            direction == DirectionLabel::NE)
-        {
-          const float d = m_anchorDeltaTransform.y / h;
-          anchorRatios[2] -= std::min(1.f, d);
-
-          anchorRatios[2] = std::max(0.f, anchorRatios[2]);
-          anchorRatios[2] = std::min(1.f, anchorRatios[2]);
-
-          if ((anchorRatios[2] + anchorRatios[3]) > 1.f)
-          {
-            anchorRatios[2] = 1.f - anchorRatios[3];
-          }
-        }
-        if (direction == DirectionLabel::S || direction == DirectionLabel::SW ||
-            direction == DirectionLabel::SE)
-        {
-          const float d = m_anchorDeltaTransform.y / h;
-          anchorRatios[3] += std::min(1.f, d);
-
-          anchorRatios[3] = std::max(0.f, anchorRatios[3]);
-          anchorRatios[3] = std::min(1.f, anchorRatios[3]);
-
-          if ((anchorRatios[3] + anchorRatios[2]) > 1.f)
-          {
-            anchorRatios[3] = 1.f - anchorRatios[2];
-          }
-        }
       }
 
-      {
-        Vec3 canvasPoints[4], surfacePoints[4];
-        surface->CalculateAnchorOffsets(canvasPoints, surfacePoints);
+      Vec3 canvasPoints[4], surfacePoints[4];
+      surface->CalculateAnchorOffsets(canvasPoints, surfacePoints);
 
-        // if (!surface->m_anchorParams.lockWidth)
-        {
-          surface->m_anchorParams.m_offsets[2] =
-              surfacePoints[0].x - canvasPoints[0].x;
-          surface->m_anchorParams.m_offsets[3] =
-              canvasPoints[1].x - surfacePoints[1].x;
-        }
+      surface->m_anchorParams.m_offsets[2] =
+          surfacePoints[0].x - canvasPoints[0].x;
+      surface->m_anchorParams.m_offsets[3] =
+          canvasPoints[1].x - surfacePoints[1].x;
 
-        // if (!surface->m_anchorParams.lockHeight)
-        {
-          surface->m_anchorParams.m_offsets[0] =
-              canvasPoints[0].y - surfacePoints[0].y;
-          surface->m_anchorParams.m_offsets[1] =
-              surfacePoints[2].y - canvasPoints[2].y;
-        }
-      }
+      surface->m_anchorParams.m_offsets[0] =
+          canvasPoints[0].y - surfacePoints[0].y;
+      surface->m_anchorParams.m_offsets[1] =
+          surfacePoints[2].y - canvasPoints[2].y;
 
       m_anchorDeltaTransform = ZERO; // Consume the delta.
     }

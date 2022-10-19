@@ -436,6 +436,7 @@ namespace ToolKit
         UILayerRawPtrArray layers;
         GetUIManager()->GetLayers(viewport->m_viewportId, layers);
 
+        g_app->GetCurrentScene()->ClearSelection();
         for (UILayer* layer : layers)
         {
           layer->ResizeUI((float) width, (float) height);
