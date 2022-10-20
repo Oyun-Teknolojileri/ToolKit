@@ -121,6 +121,25 @@ namespace ToolKit
         }
       }
 
+      // Create Path file.
+      String pathFile = ConcatPaths({cfgPath, "Path.txt"});
+
+      std::fstream file;
+      file.open(pathFile, std::ios::trunc | std::ios::out);
+      if (file.is_open())
+      {
+        std::filesystem::path path = std::filesystem::current_path();
+        if (path.has_parent_path())
+        {
+          String utf8Path = path.parent_path().u8string();
+          utf8Path.erase(remove(utf8Path.begin(), utf8Path.end(), '\"'),
+                         utf8Path.end());
+
+          file << utf8Path;
+        }
+        file.close();
+      }
+
       Main::GetInstance()->SetConfigPath(cfgPath);
     }
 
