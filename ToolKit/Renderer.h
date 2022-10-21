@@ -56,6 +56,15 @@ namespace ToolKit
                              ProgramPtr program);
     void ResetShadowMapBindings(ProgramPtr program);
 
+    Texture* GenerateCubemapFrom2DTexture(TexturePtr texture,
+                                          uint width,
+                                          uint height,
+                                          float exposure = 1.0f);
+
+    Texture* GenerateIrradianceCubemap(CubeMapPtr cubemap,
+                                       uint width,
+                                       uint height);
+
    private:
     void RenderEntities(
         EntityRawPtrArray& entities,
@@ -106,7 +115,7 @@ namespace ToolKit
         float zoom,
         const LightRawPtrArray& editorLights = LightRawPtrArray());
 
-    void RenderSky(Sky* sky, Camera* cam);
+    void RenderSky(SkyBase* sky, Camera* cam);
 
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
@@ -197,7 +206,7 @@ namespace ToolKit
 
     EntityRawPtrArray m_environmentLightEntities;
 
-    Framebuffer* m_blurFramebuffer     = nullptr;
+    Framebuffer* m_utilFramebuffer     = nullptr;
     MaterialPtr m_gaussianBlurMaterial = nullptr;
     MaterialPtr m_averageBlurMaterial  = nullptr;
   };

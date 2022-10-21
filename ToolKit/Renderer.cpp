@@ -34,9 +34,9 @@ namespace ToolKit
 
   Renderer::~Renderer()
   {
-    if (m_blurFramebuffer != nullptr)
+    if (m_utilFramebuffer != nullptr)
     {
-      SafeDel(m_blurFramebuffer);
+      SafeDel(m_utilFramebuffer);
     }
     SafeDel(m_shadowMapCamera);
     SafeDel(m_uiCamera);
@@ -51,11 +51,17 @@ namespace ToolKit
 
     ShadowPass(editorLights, entities);
 
+    SkyBase* sky = scene->GetSky();
+    if (sky != nullptr)
+    {
+      sky->Init();
+    }
+
     RenderEntities(entities, cam, viewport, editorLights);
 
     if (!cam->IsOrtographic())
     {
-      RenderSky(scene->GetSky(), cam);
+      RenderSky(sky, cam);
     }
   }
 
@@ -853,9 +859,9 @@ namespace ToolKit
     }
   }
 
-  void Renderer::RenderSky(Sky* sky, Camera* cam)
+  void Renderer::RenderSky(SkyBase* sky, Camera* cam)
   {
-    if (sky == nullptr || !sky->GetDrawSkyVal())
+    if (sky == nullptr || (!sky->GetDrawSkyVal()))
     {
       return;
     }
@@ -864,9 +870,8 @@ namespace ToolKit
 
     MaterialPtr skyboxMat = sky->GetSkyboxMaterial();
     const Mat4 rotation =
-        glm::toMat4(sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
+        Mat4(sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
     DrawCube(cam, skyboxMat, rotation);
-    sky->m_node;
 
     glDepthFunc(GL_LESS); // Return to default depth test
   }
@@ -1084,25 +1089,42 @@ namespace ToolKit
       EnvironmentComponentPtr envCom =
           env->GetComponent<EnvironmentComponent>();
       mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
-      mat->GetRenderState()->irradianceMap =
-          envCom->GetHdriVal()->GetIrradianceCubemapId();
-      m_iblRotation = glm::toMat4(
-          env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
+      if (CubeMapPtr irradianceCubemap =
+              envCom->GetHdriVal()->GetIrradianceCubemap())
+      {
+        mat->GetRenderState()->irradianceMap = irradianceCubemap->m_textureId;
+      }
+      m_iblRotation =
+          Mat4(env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
     }
     else
     {
       // Sky light
-      Sky* sky = GetSceneManager()->GetCurrentScene()->GetSky();
+      SkyBase* sky = GetSceneManager()->GetCurrentScene()->GetSky();
       if (sky != nullptr && sky->GetIlluminateVal())
       {
+        sky->Init();
         mat->GetRenderState()->IBLInUse = true;
-        EnvironmentComponentPtr envCom =
-            sky->GetComponent<EnvironmentComponent>();
-        mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
-        mat->GetRenderState()->irradianceMap =
-            envCom->GetHdriVal()->GetIrradianceCubemapId();
-        m_iblRotation = glm::toMat4(
-            sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
+        if (sky->GetType() == EntityType::Entity_Sky)
+        {
+          if (CubeMapPtr irradianceCubemap =
+                  static_cast<Sky*>(sky)
+                      ->GetComponent<EnvironmentComponent>()
+                      ->GetHdriVal()
+                      ->GetIrradianceCubemap())
+          {
+            mat->GetRenderState()->irradianceMap =
+                irradianceCubemap->m_textureId;
+          }
+        }
+        else if (sky->GetType() == EntityType::Entity_GradientSky)
+        {
+          mat->GetRenderState()->irradianceMap =
+              static_cast<GradientSky*>(sky)->GetIrradianceMap()->m_textureId;
+        }
+        mat->GetRenderState()->iblIntensity = sky->GetIntensityVal();
+        m_iblRotation =
+            Mat4(sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
       }
       else
       {
@@ -1285,10 +1307,10 @@ namespace ToolKit
                                       const Vec3& axis,
                                       const float amount)
   {
-    if (m_blurFramebuffer == nullptr)
+    if (m_utilFramebuffer == nullptr)
     {
-      m_blurFramebuffer = new Framebuffer();
-      m_blurFramebuffer->Init({0, 0, 0, false, false});
+      m_utilFramebuffer = new Framebuffer();
+      m_utilFramebuffer->Init({0, 0, 0, false, false});
     }
 
     if (m_gaussianBlurMaterial == nullptr)
@@ -1308,10 +1330,10 @@ namespace ToolKit
         "BlurScale", ParameterVariant(axis * amount));
     m_gaussianBlurMaterial->Init();
 
-    m_blurFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+    m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                      dest.get());
 
-    SetFramebuffer(m_blurFramebuffer, true, Vec4(1.0f));
+    SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_gaussianBlurMaterial);
   }
 
@@ -1320,10 +1342,10 @@ namespace ToolKit
                                   const Vec3& axis,
                                   const float amount)
   {
-    if (m_blurFramebuffer == nullptr)
+    if (m_utilFramebuffer == nullptr)
     {
-      m_blurFramebuffer = new Framebuffer();
-      m_blurFramebuffer->Init({0, 0, 0, false, false});
+      m_utilFramebuffer = new Framebuffer();
+      m_utilFramebuffer->Init({0, 0, 0, false, false});
     }
 
     if (m_averageBlurMaterial == nullptr)
@@ -1343,10 +1365,10 @@ namespace ToolKit
         "BlurScale", ParameterVariant(axis * amount));
     m_averageBlurMaterial->Init();
 
-    m_blurFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+    m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                      dest.get());
 
-    SetFramebuffer(m_blurFramebuffer, true, Vec4(1.0f));
+    SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_averageBlurMaterial);
   }
 
@@ -1956,4 +1978,158 @@ namespace ToolKit
     m_dirAndSpotLightShadowCount = 0;
     m_pointLightShadowCount      = 0;
   }
+
+  Texture* Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture,
+                                                  uint width,
+                                                  uint height,
+                                                  float exposure)
+  {
+    const RenderTargetSettigs set = {0,
+                                     false,
+                                     GraphicTypes::TargetCubeMap,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::TypeUnsignedByte,
+                                     Vec4(0.0f)};
+    RenderTarget* cubemap         = new RenderTarget(width, height, set);
+    cubemap->Init();
+
+    // Views for 6 different angles
+    CameraPtr cam = std::make_shared<Camera>();
+    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
+    Mat4 views[] = {
+        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+
+    // Create material
+    MaterialPtr mat = std::make_shared<Material>();
+    ShaderPtr vert  = GetShaderManager()->Create<Shader>(
+        ShaderPath("equirectToCubeVert.shader", true));
+    ShaderPtr frag = GetShaderManager()->Create<Shader>(
+        ShaderPath("equirectToCubeFrag.shader", true));
+    frag->m_shaderParams["Exposure"] = exposure;
+
+    mat->m_diffuseTexture           = texture;
+    mat->m_vertexShader             = vert;
+    mat->m_fragmentShader           = frag;
+    mat->GetRenderState()->cullMode = CullingType::TwoSided;
+    mat->Init();
+
+    if (m_utilFramebuffer == nullptr)
+    {
+      m_utilFramebuffer = new Framebuffer();
+    }
+    m_utilFramebuffer->UnInit();
+    m_utilFramebuffer->Init({width, height, 0, false, false});
+    m_utilFramebuffer->ClearAttachments();
+
+    for (int i = 0; i < 6; ++i)
+    {
+      Vec3 pos;
+      Quaternion rot;
+      Vec3 sca;
+      DecomposeMatrix(views[i], &pos, &rot, &sca);
+
+      cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
+      cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
+      cam->m_node->SetScale(sca);
+
+      m_utilFramebuffer->SetAttachment(
+          Framebuffer::Attachment::ColorAttachment0,
+          cubemap,
+          (Framebuffer::CubemapFace) i);
+
+      SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
+
+      DrawCube(cam.get(), mat);
+    }
+    SetFramebuffer(nullptr);
+
+    return cubemap;
+  }
+
+  Texture* Renderer::GenerateIrradianceCubemap(CubeMapPtr cubemap,
+                                               uint width,
+                                               uint height)
+  {
+    const RenderTargetSettigs set   = {0,
+                                       false,
+                                       GraphicTypes::TargetCubeMap,
+                                       GraphicTypes::UVClampToEdge,
+                                       GraphicTypes::UVClampToEdge,
+                                       GraphicTypes::UVClampToEdge,
+                                       GraphicTypes::SampleLinear,
+                                       GraphicTypes::SampleLinear,
+                                       GraphicTypes::FormatRGB,
+                                       GraphicTypes::FormatRGB,
+                                       GraphicTypes::TypeUnsignedByte,
+                                       Vec4(0.0f)};
+    RenderTarget* irradianceCubemap = new RenderTarget(width, height, set);
+    irradianceCubemap->Init();
+
+    // Views for 6 different angles
+    CameraPtr cam = std::make_shared<Camera>();
+    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
+    Mat4 views[] = {
+        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+
+    // Create material
+    MaterialPtr mat = std::make_shared<Material>();
+    ShaderPtr vert  = GetShaderManager()->Create<Shader>(
+        ShaderPath("irradianceGenerateVert.shader", true));
+    ShaderPtr frag = GetShaderManager()->Create<Shader>(
+        ShaderPath("irradianceGenerateFrag.shader", true));
+
+    mat->m_cubeMap                  = cubemap;
+    mat->m_vertexShader             = vert;
+    mat->m_fragmentShader           = frag;
+    mat->GetRenderState()->cullMode = CullingType::TwoSided;
+    mat->Init();
+
+    if (m_utilFramebuffer == nullptr)
+    {
+      m_utilFramebuffer = new Framebuffer();
+    }
+    m_utilFramebuffer->UnInit();
+    m_utilFramebuffer->Init({width, height, 0, false, false});
+
+    for (int i = 0; i < 6; ++i)
+    {
+      Vec3 pos;
+      Quaternion rot;
+      Vec3 sca;
+      DecomposeMatrix(views[i], &pos, &rot, &sca);
+
+      cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
+      cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
+      cam->m_node->SetScale(sca);
+
+      m_utilFramebuffer->SetAttachment(
+          Framebuffer::Attachment::ColorAttachment0,
+          irradianceCubemap,
+          (Framebuffer::CubemapFace) i);
+
+      SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
+
+      DrawCube(cam.get(), mat);
+    }
+    SetFramebuffer(nullptr);
+
+    return irradianceCubemap;
+  }
+
 } // namespace ToolKit

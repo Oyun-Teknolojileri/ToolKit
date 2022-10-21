@@ -1117,9 +1117,6 @@ namespace ToolKit
     float g_centeredTextOffset = 0.0f;
     bool UI::BeginCenteredTextButton(const String& text, const String& id)
     {
-      assert(g_centeredTextOffset == 0.0f &&
-             "Begin / End CenteredTextButton mismatch !");
-
       Vec2 min  = ImGui::GetWindowContentRegionMin();
       Vec2 max  = ImGui::GetWindowContentRegionMax();
       Vec2 size = max - min;

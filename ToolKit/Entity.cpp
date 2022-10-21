@@ -392,11 +392,19 @@ namespace ToolKit
 
   bool Entity::IsLightInstance() const
   {
-    EntityType type = GetType();
+    const EntityType type = GetType();
     return (type == EntityType::Entity_Light ||
             type == EntityType::Entity_DirectionalLight ||
             type == EntityType::Entity_PointLight ||
             type == EntityType::Entity_SpotLight);
+  }
+
+  bool Entity::IsSkyInstance() const
+  {
+    const EntityType type = GetType();
+    return (type == EntityType::Entity_Sky ||
+            type == EntityType::Entity_SkyBase ||
+            type == EntityType::Entity_GradientSky);
   }
 
   ULongID Entity::GetBaseEntityID() const
@@ -511,6 +519,9 @@ namespace ToolKit
       break;
     case EntityType::Entity_Sky:
       e = new Sky();
+      break;
+    case EntityType::Entity_GradientSky:
+      e = new GradientSky();
       break;
     case EntityType::Entity_Canvas:
       e = new Canvas();

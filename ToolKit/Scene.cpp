@@ -413,13 +413,13 @@ namespace ToolKit
   }
 
   // Returns the last sky added
-  Sky* Scene::GetSky()
+  SkyBase* Scene::GetSky()
   {
     for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; --i)
     {
-      if (m_entities[i]->GetType() == EntityType::Entity_Sky)
+      if (m_entities[i]->IsSkyInstance())
       {
-        return static_cast<Sky*>(m_entities[i]);
+        return static_cast<SkyBase*>(m_entities[i]);
       }
     }
 

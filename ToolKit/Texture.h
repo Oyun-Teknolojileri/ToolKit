@@ -84,16 +84,8 @@ namespace ToolKit
     void UnInit() override;
 
     bool IsTextureAssigned();
-    uint GetCubemapId();
-    void SetCubemapId(uint id);
-    uint GetIrradianceCubemapId();
-    void SetIrradianceCubemapId(uint id);
-
-   protected:
-    void CreateFramebuffersForCubeMaps();
-    void DeleteFramebuffers();
-    void GenerateCubemapFrom2DTexture();
-    void GenerateIrradianceMap();
+    CubeMapPtr GetCubemap();
+    CubeMapPtr GetIrradianceCubemap();
 
    private:
     uint GenerateCubemapBuffers(struct CubeMapSettings cubeMapSettings);
@@ -114,11 +106,6 @@ namespace ToolKit
     MaterialPtr m_texToCubemapMat           = nullptr;
     MaterialPtr m_cubemapToIrradiancemapMat = nullptr;
     TexturePtr m_equirectangularTexture     = nullptr;
-
-    uint m_fbo           = 0;
-    uint m_rbo           = 0;
-    uint m_irradianceFbo = 0;
-    uint m_irradianceRbo = 0;
   };
 
   struct RenderTargetSettigs

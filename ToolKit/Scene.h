@@ -58,7 +58,7 @@ namespace ToolKit
     EntityRawPtrArray GetByTag(const String& tag);
     Entity* GetFirstByTag(const String& tag);
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
-    Sky* GetSky();
+    SkyBase* GetSky();
     void LinkPrefab(const String& fullPath);
 
     virtual Entity* RemoveEntity(ULongID id);

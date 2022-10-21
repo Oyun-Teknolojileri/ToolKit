@@ -1078,6 +1078,17 @@ namespace ToolKit
             var->m_onValueChangedFn.pop_back();
           }
         }
+
+        // If entity is gradient sky create a "Update IBL Textures" button
+        if (m_entity->GetType() == EntityType::Entity_GradientSky &&
+            category.Name.compare("Sky") == 0) // TODO(Osman) test without this
+        {
+          if (UI::BeginCenteredTextButton("Update IBL Textures"))
+          {
+            static_cast<Sky*>(m_entity)->ReInit();
+          }
+          UI::EndCenteredTextButton();
+        }
       }
     }
 

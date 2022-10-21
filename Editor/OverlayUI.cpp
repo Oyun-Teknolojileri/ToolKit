@@ -667,6 +667,11 @@ namespace ToolKit
             currScene->AddEntity(new Sky());
           }
 
+          if (ImGui::MenuItem("Gradient Sky"))
+          {
+            currScene->AddEntity(new GradientSky());
+          }
+
           ImGui::EndMenu();
         }
       };

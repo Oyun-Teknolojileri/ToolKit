@@ -128,6 +128,7 @@ namespace ToolKit
   void Texture::UnInit()
   {
     glDeleteTextures(1, &m_textureId);
+    m_textureId = 0;
     Clear();
     m_initiated = false;
   }
@@ -308,8 +309,7 @@ namespace ToolKit
 
     m_texToCubemapMat           = std::make_shared<Material>();
     m_cubemapToIrradiancemapMat = std::make_shared<Material>();
-    m_irradianceCubemap         = std::make_shared<CubeMap>(0);
-    m_cubemap                   = std::make_shared<CubeMap>(0);
+    m_irradianceCubemap         = std::make_shared<CubeMap>(0); // TODO
     m_equirectangularTexture = std::make_shared<Texture>(static_cast<uint>(0));
   }
 
@@ -349,18 +349,29 @@ namespace ToolKit
       return;
     }
 
-    CreateFramebuffersForCubeMaps();
-
     // Init 2D hdri texture
-    Texture::Init();
+    Texture::Init(flushClientSideArray);
 
     // Convert hdri image to cubemap images
-    GenerateCubemapFrom2DTexture();
+    Texture* cubemap = GetRenderer()->GenerateCubemapFrom2DTexture(
+        GetTextureManager()->Create<Texture>(GetFile()),
+        m_width,
+        m_width,
+        1.0f);
+    m_cubemap = std::make_shared<CubeMap>(cubemap->m_textureId);
+
+    // Don't let cubemap object delete this texture along with itself
+    cubemap->m_textureId = 0;
+    SafeDel(cubemap);
 
     // Generate irradience cubemap images
-    GenerateIrradianceMap();
+    Texture* irradianceMap = GetRenderer()->GenerateIrradianceCubemap(
+        m_cubemap, m_width / 64, m_width / 64);
+    m_irradianceCubemap = std::make_shared<CubeMap>(irradianceMap->m_textureId);
 
-    DeleteFramebuffers();
+    // Don't let cubemap object delete this texture along with itself
+    irradianceMap->m_textureId = 0;
+    SafeDel(irradianceMap);
   }
 
   void Hdri::UnInit()
@@ -378,31 +389,14 @@ namespace ToolKit
     return (GetFile().size() != 0);
   }
 
-  uint Hdri::GetCubemapId()
+  CubeMapPtr Hdri::GetCubemap()
   {
-    return m_cubemap->m_textureId;
+    return m_cubemap;
   }
 
-  void Hdri::SetCubemapId(uint id)
+  CubeMapPtr Hdri::GetIrradianceCubemap()
   {
-    m_cubemap->m_textureId = id;
-  }
-
-  uint Hdri::GetIrradianceCubemapId()
-  {
-    if (m_irradianceCubemap)
-    {
-      return m_irradianceCubemap->m_textureId;
-    }
-    else
-    {
-      return 0;
-    }
-  }
-
-  void Hdri::SetIrradianceCubemapId(uint id)
-  {
-    m_irradianceCubemap->m_textureId = id;
+    return m_irradianceCubemap;
   }
 
   uint Hdri::GenerateCubemapBuffers(struct CubeMapSettings cubeMapSettings)
@@ -483,135 +477,6 @@ namespace ToolKit
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-  }
-
-  void Hdri::CreateFramebuffersForCubeMaps()
-  {
-    auto createFbFn = [](GLuint& fbo, GLuint& rbo, int width, int height) {
-      glGenFramebuffers(1, &fbo);
-      glGenRenderbuffers(1, &rbo);
-
-      glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-      glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-      glRenderbufferStorage(
-          GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-      glFramebufferRenderbuffer(
-          GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-      // Check if framebuffer is complete
-      if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-      {
-        GetLogger()->Log("Error while creating framebuffer.");
-      }
-    };
-
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
-
-    createFbFn(m_fbo, m_rbo, m_width, m_width);
-    createFbFn(m_irradianceFbo, m_irradianceRbo, m_width / 64, m_width / 64);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-  }
-
-  void Hdri::DeleteFramebuffers()
-  {
-    glDeleteFramebuffers(1, &m_fbo);
-    glDeleteRenderbuffers(1, &m_rbo);
-    glDeleteFramebuffers(1, &m_irradianceFbo);
-    glDeleteRenderbuffers(1, &m_irradianceRbo);
-  }
-
-  void Hdri::GenerateCubemapFrom2DTexture()
-  {
-    GLuint cubemapTextureId = GenerateCubemapBuffers({0,
-                                                      GL_RGB,
-                                                      m_width,
-                                                      m_width,
-                                                      GL_RGB,
-                                                      GL_UNSIGNED_BYTE,
-                                                      nullptr,
-                                                      GL_CLAMP_TO_EDGE,
-                                                      GL_LINEAR});
-
-    // Views for 6 different angles
-    CameraPtr cam = std::make_shared<Camera>();
-    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
-    Mat4 views[] = {
-        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
-
-    // Create material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(
-        ShaderPath("equirectToCubeVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(
-        ShaderPath("equirectToCubeFrag.shader", true));
-    frag->m_shaderParams["Exposure"] = m_exposure;
-
-    m_equirectangularTexture->m_textureId = m_textureId;
-    m_texToCubemapMat->m_diffuseTexture   = m_equirectangularTexture;
-    m_texToCubemapMat->m_vertexShader     = vert;
-    m_texToCubemapMat->m_fragmentShader   = frag;
-    m_texToCubemapMat->Init();
-
-    RenderToCubeMap(m_fbo,
-                    views,
-                    cam,
-                    cubemapTextureId,
-                    m_width,
-                    m_width,
-                    m_texToCubemapMat);
-
-    m_cubemap->m_textureId = cubemapTextureId;
-  }
-
-  void Hdri::GenerateIrradianceMap()
-  {
-    GLuint irradianceTextureId = GenerateCubemapBuffers({0,
-                                                         GL_RGB,
-                                                         m_width / 64,
-                                                         m_width / 64,
-                                                         GL_RGB,
-                                                         GL_UNSIGNED_BYTE,
-                                                         nullptr,
-                                                         GL_CLAMP_TO_EDGE,
-                                                         GL_LINEAR});
-
-    // Views for 6 different angles
-    CameraPtr cam = std::make_shared<Camera>();
-    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
-    Mat4 views[] = {
-        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
-
-    // Create material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(
-        ShaderPath("irradianceGenerateVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(
-        ShaderPath("irradianceGenerateFrag.shader", true));
-
-    m_cubemapToIrradiancemapMat->m_cubeMap        = m_cubemap;
-    m_cubemapToIrradiancemapMat->m_vertexShader   = vert;
-    m_cubemapToIrradiancemapMat->m_fragmentShader = frag;
-    m_cubemapToIrradiancemapMat->Init();
-
-    RenderToCubeMap(m_irradianceFbo,
-                    views,
-                    cam,
-                    irradianceTextureId,
-                    m_width / 64,
-                    m_width / 64,
-                    m_cubemapToIrradiancemapMat);
-
-    m_irradianceCubemap->m_textureId = irradianceTextureId;
   }
 
   RenderTarget::RenderTarget() : Texture()
