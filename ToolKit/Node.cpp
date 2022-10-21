@@ -166,25 +166,9 @@ namespace ToolKit
     return m_scale;
   }
 
-  Mat3 Node::GetTransformAxes(TransformationSpace space)
+  Mat3 Node::GetTransformAxes()
   {
-    Mat3 axes;
-    switch (space)
-    {
-    case TransformationSpace::TS_WORLD:
-      break;
-    case TransformationSpace::TS_PARENT:
-      if (m_parent != nullptr)
-      {
-        axes = m_parent->GetTransform(TransformationSpace::TS_WORLD);
-      }
-      break;
-    case TransformationSpace::TS_LOCAL:
-      axes = GetTransform(TransformationSpace::TS_WORLD);
-    default:
-      break;
-    }
-
+    Mat3 axes = GetTransform(TransformationSpace::TS_WORLD);
     for (int i = 0; i < 3; i++)
     {
       axes[i] = glm::normalize(axes[i]);
@@ -343,14 +327,10 @@ namespace ToolKit
                           Quaternion* orientation,
                           Vec3* scale)
   {
-    Mat4 ps, ts;
-    ps = GetParentTransform();
+    Mat4 ts;
     switch (space)
     {
     case TransformationSpace::TS_WORLD:
-      ts = glm::inverse(ps) * val * ps * GetLocalTransform();
-      break;
-    case TransformationSpace::TS_PARENT:
       ts = val * GetLocalTransform();
       break;
     case TransformationSpace::TS_LOCAL:
@@ -377,13 +357,9 @@ namespace ToolKit
         Mat4 ps = GetParentTransform();
         ts      = glm::inverse(ps) * val;
         break;
-      } // Fall trough.
-    case TransformationSpace::TS_PARENT:
-      ts = val;
-      break;
+      } // Fall trough
     case TransformationSpace::TS_LOCAL:
-      Transform(val, TransformationSpace::TS_LOCAL);
-      return;
+      ts = val;
     }
 
     DecomposeMatrix(ts, translation, orientation, scale);
@@ -410,8 +386,9 @@ namespace ToolKit
         }
         DecomposeMatrix(ts, translation, orientation, scale);
         break;
-      } // Fall trough.
-    case TransformationSpace::TS_PARENT:
+      } // Fall trough
+    case TransformationSpace::TS_LOCAL:
+    default:
       if (transform != nullptr)
       {
         *transform = GetLocalTransform();
@@ -427,25 +404,6 @@ namespace ToolKit
       if (scale != nullptr)
       {
         *scale = m_scale;
-      }
-      break;
-    case TransformationSpace::TS_LOCAL:
-    default:
-      if (transform != nullptr)
-      {
-        *transform = Mat4();
-      }
-      if (translation != nullptr)
-      {
-        *translation = ZERO;
-      }
-      if (orientation != nullptr)
-      {
-        *orientation = Quaternion();
-      }
-      if (scale != nullptr)
-      {
-        *scale = Vec3(1.0f);
       }
       break;
     }

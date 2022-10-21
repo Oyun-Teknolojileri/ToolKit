@@ -44,8 +44,15 @@ namespace ToolKit
         // Get world location as gizmo origin.
         m_gizmo->m_worldLocation =
             e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        m_gizmo->m_normalVectors =
-            e->m_node->GetTransformAxes(g_app->m_transformSpace);
+
+        if (g_app->m_transformSpace == TransformationSpace::TS_LOCAL)
+        {
+          m_gizmo->m_normalVectors = e->m_node->GetTransformAxes();
+        }
+        else
+        {
+          m_gizmo->m_normalVectors = Mat3();
+        }
       }
 
       m_gizmo->Update(deltaTime);

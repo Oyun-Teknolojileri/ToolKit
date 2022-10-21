@@ -136,11 +136,6 @@ namespace ToolKit
             ts = TransformationSpace::TS_WORLD;
           }
 
-          if (tsStr == "parent")
-          {
-            ts = TransformationSpace::TS_PARENT;
-          }
-
           if (tsStr == "local")
           {
             ts = TransformationSpace::TS_LOCAL;
@@ -336,11 +331,6 @@ namespace ToolKit
           PrintTransform(TransformationSpace::TS_WORLD);
         }
 
-        if (tsStr == "parent")
-        {
-          PrintTransform(TransformationSpace::TS_PARENT);
-        }
-
         if (tsStr == "local")
         {
           PrintTransform(TransformationSpace::TS_LOCAL);
@@ -363,11 +353,6 @@ namespace ToolKit
       if (tsStr == "world")
       {
         g_app->m_transformSpace = TransformationSpace::TS_WORLD;
-      }
-
-      if (tsStr == "parent")
-      {
-        g_app->m_transformSpace = TransformationSpace::TS_PARENT;
       }
 
       if (tsStr == "local")

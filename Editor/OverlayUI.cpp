@@ -298,7 +298,7 @@ namespace ToolKit
       ImGuiStyle& style = ImGui::GetStyle();
       float spacing     = style.ItemInnerSpacing.x;
 
-      const char* itemsOrient[]    = {"World", "Parent", "Local"};
+      const char* itemsOrient[]    = {"World", "Local"};
       static int currentItemOrient = 0;
 
       ImGui::TableSetColumnIndex(nextColumnItem++);
@@ -333,9 +333,6 @@ namespace ToolKit
         switch (currentItemOrient)
         {
         case 1:
-          ts = "parent";
-          break;
-        case 2:
           ts = "local";
           break;
         case 0:
