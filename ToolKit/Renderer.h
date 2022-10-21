@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Framebuffer.h"
 #include "Light.h"
 #include "RenderState.h"
 #include "Sky.h"
@@ -12,7 +13,6 @@
 
 namespace ToolKit
 {
-  class Viewport;
 
   class TK_API Renderer
   {
@@ -37,24 +37,33 @@ namespace ToolKit
 
     void SetRenderState(const RenderState* const state, ProgramPtr program);
 
-    void SetRenderTarget(RenderTarget* renderTarget,
-                         bool clear        = true,
-                         const Vec4& color = {0.2f, 0.2f, 0.2f, 1.0f});
-
-    void SwapRenderTarget(RenderTarget** renderTarget,
-                          bool clear        = true,
-                          const Vec4& color = {0.2f, 0.2f, 0.2f, 1.0f});
+    void SetFramebuffer(Framebuffer* fb, bool clear, const Vec4& color);
+    void SetFramebuffer(Framebuffer* fb, bool clear = true);
+    void SwapFramebuffer(Framebuffer** fb, bool clear, const Vec4& color);
+    void SwapFramebuffer(Framebuffer** fb, bool clear = true);
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
 
     void DrawFullQuad(ShaderPtr fragmentShader);
-    void DrawCube(Camera* cam, MaterialPtr mat);
+    void DrawFullQuad(MaterialPtr mat);
+    void DrawCube(Camera* cam,
+                  MaterialPtr mat,
+                  const Mat4& transform = Mat4(1.0f));
     void SetTexture(ubyte slotIndx, uint textureId);
     void SetShadowMapTexture(EntityType type,
                              uint textureId,
                              ProgramPtr program);
     void ResetShadowMapBindings(ProgramPtr program);
+
+    Texture* GenerateCubemapFrom2DTexture(TexturePtr texture,
+                                          uint width,
+                                          uint height,
+                                          float exposure = 1.0f);
+
+    Texture* GenerateIrradianceCubemap(CubeMapPtr cubemap,
+                                       uint width,
+                                       uint height);
 
    private:
     void RenderEntities(
@@ -106,9 +115,8 @@ namespace ToolKit
         float zoom,
         const LightRawPtrArray& editorLights = LightRawPtrArray());
 
-    void RenderSky(Sky* sky, Camera* cam);
+    void RenderSky(SkyBase* sky, Camera* cam);
 
-    void RenderSkinned(Entity* object, Camera* cam);
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
 
@@ -117,18 +125,19 @@ namespace ToolKit
     void GetEnvironmentLightEntities(EntityRawPtrArray entities);
     void FindEnvironmentLight(Entity* entity, Camera* camera);
 
-    void UpdateShadowMaps(LightRawPtrArray lights, EntityRawPtrArray entities);
-
-    // Fits the scene into the shadow map camera frustum. As the scene gets
-    // bigger, the resolution gets lower.
-    void FitSceneBoundingBoxIntoLightFrustum(Camera* lightCamera,
-                                             const EntityRawPtrArray& entities,
-                                             DirectionalLight* light);
-    // Fits view frustum of the camera into shadow map camera frustum. As the
-    // view frustum gets bigger, the resolution gets lower.
-    void FitViewFrustumIntoLightFrustum(Camera* lightCamera,
-                                        Camera* viewCamera,
-                                        DirectionalLight* light);
+    void ShadowPass(const LightRawPtrArray& lights,
+                    const EntityRawPtrArray& entities);
+    void UpdateShadowMaps(const LightRawPtrArray& lights,
+                          const EntityRawPtrArray& entities);
+    void FilterShadowMaps(const LightRawPtrArray& lights);
+    void Apply7x1GaussianBlur(const TexturePtr source,
+                              RenderTargetPtr dest,
+                              const Vec3& axis,
+                              const float amount);
+    void ApplyAverageBlur(const TexturePtr source,
+                          RenderTargetPtr dest,
+                          const Vec3& axis,
+                          const float amount);
 
     void SetProjectViewModel(Entity* ntt, Camera* cam);
     void BindProgram(ProgramPtr program);
@@ -138,13 +147,19 @@ namespace ToolKit
     void FeedLightUniforms(ProgramPtr program);
     void SetVertexLayout(VertexLayout layout);
 
+    void GenerateSSAOTexture(const EntityRawPtrArray& entities,
+                             Viewport* viewport);
+    void GenerateKernelAndNoiseForSSAOSamples(Vec3Array& ssaoKernel,
+                                              Vec2Array& ssaoNoise);
+
    public:
     uint m_totalFrameCount = 0;
     uint m_frameCount      = 0;
     UVec2 m_windowSize;   //!< Application window size.
     UVec2 m_viewportSize; //!< Current viewport size.
-    Vec4 m_bgColor            = {0.2f, 0.2f, 0.2f, 1.0f};
-    MaterialPtr m_overrideMat = nullptr;
+    Vec4 m_clearColor             = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    MaterialPtr m_overrideMat     = nullptr;
+    bool m_overrideDiffuseTexture = false;
 
     // Grid parameters
     struct GridParams
@@ -163,11 +178,15 @@ namespace ToolKit
     Mat4 m_project;
     Mat4 m_view;
     Mat4 m_model;
+    Mat4 m_iblRotation;
     LightRawPtrArray m_lights;
-    Camera* m_cam                = nullptr;
-    Camera* m_shadowMapCamera    = nullptr;
-    Material* m_mat              = nullptr;
-    RenderTarget* m_renderTarget = nullptr;
+    Camera* m_cam              = nullptr;
+    Camera* m_shadowMapCamera  = nullptr;
+    Material* m_mat            = nullptr;
+    MaterialPtr m_aoMat        = nullptr;
+    Framebuffer* m_framebuffer = nullptr;
+    FramebufferSettings m_lastFramebufferSettings;
+
     typedef struct RHIConstants
     {
       static constexpr ubyte textureSlotCount = 8;
@@ -186,6 +205,10 @@ namespace ToolKit
     RenderState m_renderState;
 
     EntityRawPtrArray m_environmentLightEntities;
+
+    Framebuffer* m_utilFramebuffer     = nullptr;
+    MaterialPtr m_gaussianBlurMaterial = nullptr;
+    MaterialPtr m_averageBlurMaterial  = nullptr;
   };
 
 } // namespace ToolKit

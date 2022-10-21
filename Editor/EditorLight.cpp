@@ -185,7 +185,8 @@ namespace ToolKit
 
     void EditorPointLight::ParameterEventConstructor()
     {
-      ParamRadius().m_onValueChangedFn = m_gizmoUpdateFn;
+      ParamRadius().m_onValueChangedFn.clear();
+      ParamRadius().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
     }
 
     Entity* EditorPointLight::Copy() const
@@ -237,9 +238,12 @@ namespace ToolKit
 
     void EditorSpotLight::ParameterEventConstructor()
     {
-      ParamRadius().m_onValueChangedFn     = m_gizmoUpdateFn;
-      ParamOuterAngle().m_onValueChangedFn = m_gizmoUpdateFn;
-      ParamInnerAngle().m_onValueChangedFn = m_gizmoUpdateFn;
+      ParamRadius().m_onValueChangedFn.clear();
+      ParamRadius().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
+      ParamOuterAngle().m_onValueChangedFn.clear();
+      ParamOuterAngle().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
+      ParamInnerAngle().m_onValueChangedFn.clear();
+      ParamInnerAngle().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
     }
 
     Entity* EditorSpotLight::Copy() const

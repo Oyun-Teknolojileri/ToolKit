@@ -1,11 +1,12 @@
 #include "OverlayUI.h"
 
+#include "App.h"
 #include "ConsoleWindow.h"
 #include "EditorCamera.h"
 #include "EditorLight.h"
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Mod.h"
 #include "Sky.h"
 
@@ -186,13 +187,17 @@ namespace ToolKit
     void OverlayLighting::Show()
     {
       ImVec2 overlaySize(28, 30);
+      if (!editorLitModeOn)
+      {
+        overlaySize.x += 170;
+      }
 
       // Center the toolbar
       float width  = ImGui::GetWindowContentRegionWidth();
       float offset = (width - overlaySize.x) * 0.5f;
       ImGui::SameLine(offset);
 
-      const Vec2 padding = Vec2(-28.0f + width, 35.0f);
+      const Vec2 padding = Vec2(-overlaySize.x + width, overlaySize.y + 5.0f);
       Vec2 pos           = ImGui::GetWindowPos();
       pos += padding;
       ImGui::SetNextWindowPos(pos);
@@ -207,17 +212,54 @@ namespace ToolKit
       {
         SetOwnerState();
 
-        ImGui::BeginTable(
-            "##SettingsBar", 1, ImGuiTableFlags_SizingStretchProp);
+        ImGui::BeginTable("##SettingsBar",
+                          editorLitModeOn ? 1 : 2,
+                          ImGuiTableFlags_SizingStretchProp);
         ImGui::TableNextRow();
         unsigned int nextItemIndex = 0;
 
+        if (!editorLitModeOn)
+        {
+          ImGui::TableSetColumnIndex(nextItemIndex++);
+          ImGui::PushItemWidth(160);
+          static uint lightModeIndx = 0;
+          const char* itemNames[]   = {"Editor Lit",
+                                       "Unlit",
+                                       "Full Lit",
+                                       "Light Complexity",
+                                       "Lighting Only"};
+          uint itemCount            = sizeof(itemNames) / sizeof(itemNames[0]);
+          if (ImGui::BeginCombo("", itemNames[lightModeIndx]))
+          {
+            for (uint itemIndx = 1; itemIndx < itemCount; itemIndx++)
+            {
+              bool isSelected      = false;
+              const char* itemName = itemNames[itemIndx];
+              ImGui::Selectable(itemName, &isSelected);
+              if (isSelected)
+              {
+                // 0 is EditorLit
+                lightModeIndx = itemIndx;
+              }
+            }
+
+            ImGui::EndCombo();
+          }
+
+          ImGui::PopItemWidth();
+          g_app->m_sceneLightingMode = (App::LightMode) lightModeIndx;
+        }
+        else
+        {
+          g_app->m_sceneLightingMode = App::EditorLit;
+        }
+
         ImGui::TableSetColumnIndex(nextItemIndex++);
-        g_app->m_studioLightsActive =
+        editorLitModeOn =
             UI::ToggleButton(UI::m_studioLightsToggleIcon->m_textureId,
                              ImVec2(12.0f, 14.0f),
-                             g_app->m_studioLightsActive);
-        UI::HelpMarker(TKLoc + m_owner->m_name, "Toogle studio lights.");
+                             editorLitModeOn);
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Scene Lighting Mode");
 
         ImGui::EndTable();
       }
@@ -256,7 +298,7 @@ namespace ToolKit
       ImGuiStyle& style = ImGui::GetStyle();
       float spacing     = style.ItemInnerSpacing.x;
 
-      const char* itemsOrient[]    = {"World", "Parent", "Local"};
+      const char* itemsOrient[]    = {"World", "Local"};
       static int currentItemOrient = 0;
 
       ImGui::TableSetColumnIndex(nextColumnItem++);
@@ -291,9 +333,6 @@ namespace ToolKit
         switch (currentItemOrient)
         {
         case 1:
-          ts = "parent";
-          break;
-        case 2:
           ts = "local";
           break;
         case 0:
@@ -625,6 +664,11 @@ namespace ToolKit
             currScene->AddEntity(new Sky());
           }
 
+          if (ImGui::MenuItem("Gradient Sky"))
+          {
+            currScene->AddEntity(new GradientSky());
+          }
+
           ImGui::EndMenu();
         }
       };
@@ -785,7 +829,8 @@ namespace ToolKit
 
         // If the status message has changed.
         static String prevMsg = g_app->m_statusMsg;
-        if (g_app->m_statusMsg != "OK")
+        bool nte = EndsWith(g_app->m_statusMsg, g_statusNoTerminate);
+        if (g_app->m_statusMsg != "OK" && !nte)
         {
           // Hold msg for 3 sec. before switching to OK.
           static float elapsedTime = 0.0f;
@@ -808,7 +853,17 @@ namespace ToolKit
 
         // Inject status.
         ImGui::SameLine();
-        ImGui::Text(g_app->m_statusMsg.c_str());
+
+        if (nte)
+        {
+          String trimmed =
+              Trim(g_app->m_statusMsg.c_str(), g_statusNoTerminate);
+          ImGui::Text(trimmed.c_str());
+        }
+        else
+        {
+          ImGui::Text(g_app->m_statusMsg.c_str());
+        }
 
         ImVec2 msgSize = ImGui::CalcTextSize(g_app->m_statusMsg.c_str());
         float wndWidth = ImGui::GetWindowContentRegionWidth();

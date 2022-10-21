@@ -6,12 +6,13 @@
 #include "FileManager.h"
 #include "FolderWindow.h"
 #include "Gizmo.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Grid.h"
 #include "Light.h"
 #include "Mod.h"
 #include "Node.h"
 #include "OverlayUI.h"
+#include "PopupWindows.h"
 #include "Primative.h"
 #include "Renderer.h"
 #include "SDL.h"
@@ -58,6 +59,7 @@ namespace ToolKit
       m_mouseOverOverlay = false;
 
       ImGui::SetNextWindowSize(Vec2(m_size), ImGuiCond_None);
+      ImGui::PushStyleColor(ImGuiCol_WindowBg, g_wndBgColor);
 
       if (ImGui::Begin(m_name.c_str(),
                        &m_visible,
@@ -65,15 +67,17 @@ namespace ToolKit
                            ImGuiWindowFlags_NoScrollbar))
       {
         UpdateContentArea();
+        ComitResize();
         UpdateWindow();
         HandleStates();
         DrawCommands();
         HandleDrop();
         DrawOverlays();
-        ComitResize();
         UpdateSnaps();
       }
+
       ImGui::End();
+      ImGui::PopStyleColor();
     }
 
     Window::Type EditorViewport2d::GetType() const
@@ -263,7 +267,18 @@ namespace ToolKit
                                      ImGuiWindowFlags_NoScrollWithMouse |
                                      ImGuiWindowFlags_AlwaysUseWindowPadding);
           m_canvasPos = ImGui::GetWindowPos();
-          ImGui::Image(Convert2ImGuiTexture(m_viewportImage),
+
+          uint texId = 0;
+          if (m_framebuffer->GetAttachment(
+                  Framebuffer::Attachment::ColorAttachment0) != nullptr)
+          {
+            texId =
+                m_framebuffer
+                    ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
+                    ->m_textureId;
+          }
+
+          ImGui::Image(ConvertUIntImGuiTexture(texId),
                        m_canvasSize,
                        ImVec2(0.0f, 0.0f),
                        ImVec2(1.0f, -1.0f));
@@ -319,29 +334,29 @@ namespace ToolKit
 
           if (entry.m_ext == LAYER)
           {
-            YesNoWindow::ButtonInfo openButton;
+            MultiChoiceWindow::ButtonInfo openButton;
             openButton.m_name     = "Open";
             openButton.m_callback = [entry]() -> void {
               String fullPath = entry.GetFullPath();
               g_app->OpenScene(fullPath);
             };
-            YesNoWindow::ButtonInfo linkButton;
+            MultiChoiceWindow::ButtonInfo linkButton;
             linkButton.m_name     = "Link";
             linkButton.m_callback = [entry]() -> void {
               String fullPath = entry.GetFullPath();
               GetSceneManager()->GetCurrentScene()->LinkPrefab(fullPath);
             };
-            YesNoWindow::ButtonInfo mergeButton;
+            MultiChoiceWindow::ButtonInfo mergeButton;
             mergeButton.m_name     = "Merge";
             mergeButton.m_callback = [entry]() -> void {
               String fullPath = entry.GetFullPath();
               g_app->MergeScene(fullPath);
             };
-            YesNoWindow* importOptionWnd =
-                new YesNoWindow("Open Scene",
-                                {openButton, linkButton, mergeButton},
-                                "Open, link or merge the scene?",
-                                true);
+            MultiChoiceWindow* importOptionWnd =
+                new MultiChoiceWindow("Open Scene",
+                                      {openButton, linkButton, mergeButton},
+                                      "Open, link or merge the scene?",
+                                      true);
 
             UI::m_volatileWindows.push_back(importOptionWnd);
           }

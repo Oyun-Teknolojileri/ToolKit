@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GlobalDef.h"
+#include "Global.h"
 #include "ToolKit.h"
 #include "UI.h"
 #include "Viewport.h"
@@ -70,7 +70,6 @@ namespace ToolKit
      private:
       void LoadDragMesh(bool& meshLoaded,
                         DirectoryEntry dragEntry,
-                        ImGuiIO io,
                         Entity** dwMesh,
                         LineBatch** boundingBox,
                         EditorScenePtr currScene);
@@ -94,6 +93,8 @@ namespace ToolKit
       int m_additionalWindowFlags       = 0;
       bool m_orbitLock                  = false;
       Vec3 m_snapDeltas; // X: Translation, Y: Rotation, Z: Scale
+      Framebuffer* m_selectedFramebuffer = nullptr;
+      RenderTarget* m_selectedStencilRT  = nullptr;
 
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;

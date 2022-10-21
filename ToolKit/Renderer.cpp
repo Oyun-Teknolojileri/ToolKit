@@ -4,13 +4,13 @@
 #include "DirectionComponent.h"
 #include "Drawable.h"
 #include "GL/glew.h"
-#include "GlobalCache.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
 #include "ResourceComponent.h"
 #include "Scene.h"
 #include "Shader.h"
+#include "ShaderReflectionCache.h"
 #include "Skeleton.h"
 #include "Surface.h"
 #include "Texture.h"
@@ -19,6 +19,7 @@
 #include "Viewport.h"
 
 #include <algorithm>
+#include <random>
 
 #include "DebugNew.h"
 
@@ -33,6 +34,10 @@ namespace ToolKit
 
   Renderer::~Renderer()
   {
+    if (m_utilFramebuffer != nullptr)
+    {
+      SafeDel(m_utilFramebuffer);
+    }
     SafeDel(m_shadowMapCamera);
     SafeDel(m_uiCamera);
   }
@@ -44,16 +49,272 @@ namespace ToolKit
     Camera* cam                = viewport->GetCamera();
     EntityRawPtrArray entities = scene->GetEntities();
 
-    // Shadow pass
-    UpdateShadowMaps(editorLights, entities);
+    ShadowPass(editorLights, entities);
 
-    SetViewport(viewport);
+    SkyBase* sky = scene->GetSky();
+    if (sky != nullptr)
+    {
+      sky->Init();
+    }
 
     RenderEntities(entities, cam, viewport, editorLights);
 
     if (!cam->IsOrtographic())
     {
-      RenderSky(scene->GetSky(), cam);
+      RenderSky(sky, cam);
+    }
+  }
+
+  void Renderer::GenerateKernelAndNoiseForSSAOSamples(Vec3Array& ssaoKernel,
+                                                      Vec2Array& ssaoNoise)
+  {
+    // generate sample kernel
+    // ----------------------
+    auto lerp = [](float a, float b, float f) { return a + f * (b - a); };
+
+    std::uniform_real_distribution<GLfloat> randomFloats(
+        0.0, 1.0); // generates random floats between 0.0 and 1.0
+    std::default_random_engine generator;
+    if (ssaoKernel.size() == 0)
+      for (unsigned int i = 0; i < 64; ++i)
+      {
+        glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0,
+                         randomFloats(generator) * 2.0 - 1.0,
+                         randomFloats(generator));
+        sample = glm::normalize(sample);
+        sample *= randomFloats(generator);
+        float scale = float(i) / 64.0f;
+
+        // scale samples s.t. they're more aligned to center of kernel
+        scale = lerp(0.1f, 1.0f, scale * scale);
+        sample *= scale;
+        ssaoKernel.push_back(sample);
+      }
+
+    // generate noise texture
+    // ----------------------
+    if (ssaoNoise.size() == 0)
+      for (unsigned int i = 0; i < 16; i++)
+      {
+        glm::vec2 noise(randomFloats(generator) * 2.0 - 1.0,
+                        randomFloats(generator) * 2.0 - 1.0);
+        ssaoNoise.push_back(noise);
+      }
+  }
+
+  void Renderer::GenerateSSAOTexture(const EntityRawPtrArray& entities,
+                                     Viewport* viewport)
+  {
+    Camera* cam = viewport->GetCamera();
+
+    RenderTargetSettigs rtSet;
+    rtSet.WarpS = rtSet.WarpT = GraphicTypes::UVClampToEdge;
+    rtSet.InternalFormat      = GraphicTypes::FormatRGBA16F;
+    rtSet.Format              = GraphicTypes::FormatRGBA;
+    rtSet.Type                = GraphicTypes::TypeFloat;
+
+    if (!viewport->m_ssaoPosition)
+      viewport->m_ssaoPosition = std::make_shared<RenderTarget>(
+          (uint) viewport->m_wndContentAreaSize.x,
+          (uint) viewport->m_wndContentAreaSize.y,
+          rtSet);
+
+    viewport->m_ssaoPosition->Init();
+    viewport->m_ssaoPosition->ReconstructIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+
+    if (!viewport->m_ssaoNormal)
+      viewport->m_ssaoNormal = std::make_shared<RenderTarget>(
+          (uint) viewport->m_wndContentAreaSize.x,
+          (uint) viewport->m_wndContentAreaSize.y,
+          rtSet);
+
+    viewport->m_ssaoNormal->Init();
+    viewport->m_ssaoNormal->ReconstructIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+
+    if (!viewport->m_ssaoGBuffer)
+      viewport->m_ssaoGBuffer = std::make_shared<Framebuffer>();
+
+    viewport->m_ssaoGBuffer->Init({(uint) viewport->m_wndContentAreaSize.x,
+                                   (uint) viewport->m_wndContentAreaSize.y,
+                                   0,
+                                   false,
+                                   true});
+
+    viewport->m_ssaoGBuffer->ReconstructIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+
+    viewport->m_ssaoGBuffer->SetAttachment(
+        Framebuffer::Attachment::ColorAttachment0,
+        viewport->m_ssaoPosition.get());
+    viewport->m_ssaoGBuffer->SetAttachment(
+        Framebuffer::Attachment::ColorAttachment1,
+        viewport->m_ssaoNormal.get());
+    SetFramebuffer(
+        viewport->m_ssaoGBuffer.get(), true, {0.0f, 0.0f, 0.0f, 1.0});
+
+    if (m_aoMat == nullptr)
+    {
+      ShaderPtr ssaoGeoVert = GetShaderManager()->Create<Shader>(
+          ShaderPath("ssaoVertex.shader", true));
+      ssaoGeoVert->Init();
+      ssaoGeoVert->SetShaderParameter("viewMatrix",
+                                      ParameterVariant(cam->GetViewMatrix()));
+      ShaderPtr ssaoGeoFrag = GetShaderManager()->Create<Shader>(
+          ShaderPath("ssaoGBufferFrag.shader", true));
+      ssaoGeoFrag->Init();
+
+      m_aoMat                   = std::make_shared<Material>();
+      m_aoMat->m_vertexShader   = ssaoGeoVert;
+      m_aoMat->m_fragmentShader = ssaoGeoFrag;
+    }
+    m_aoMat->UnInit();
+    m_aoMat->m_fragmentShader->SetShaderParameter(
+        "viewMatrix", ParameterVariant(cam->GetViewMatrix()));
+
+    MaterialPtr overrideMatPrev = m_overrideMat;
+
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    for (Entity* ntt : entities)
+    {
+      if (ntt->IsDrawable() && ntt->GetVisibleVal())
+      {
+        MaterialPtr entityMat     = GetRenderMaterial(ntt);
+        m_aoMat->m_alpha          = entityMat->m_alpha;
+        m_aoMat->m_diffuseTexture = entityMat->m_diffuseTexture;
+
+        m_overrideMat = m_aoMat;
+        Render(ntt, cam);
+      }
+    }
+
+    SetFramebuffer(nullptr);
+    m_overrideMat = nullptr;
+
+    static Vec3Array ssaoKernel;
+    static Vec2Array ssaoNoise;
+    GenerateKernelAndNoiseForSSAOSamples(ssaoKernel, ssaoNoise);
+
+    static unsigned int noiseTexture = 0;
+    if (noiseTexture == 0)
+    {
+      glGenTextures(1, &noiseTexture);
+      glBindTexture(GL_TEXTURE_2D, noiseTexture);
+      glTexImage2D(
+          GL_TEXTURE_2D, 0, GL_RG32F, 4, 4, 0, GL_RG, GL_FLOAT, &ssaoNoise[0]);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    }
+
+    RenderTargetSettigs oneChannelSet = {};
+    oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
+    oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
+    oneChannelSet.InternalFormat      = GraphicTypes::FormatR32F;
+    oneChannelSet.Format              = GraphicTypes::FormatRed;
+    oneChannelSet.Type                = GraphicTypes::TypeFloat;
+
+    if (!viewport->m_ssao)
+    {
+      viewport->m_ssao = std::make_shared<RenderTarget>(
+          (uint) viewport->m_wndContentAreaSize.x,
+          (uint) viewport->m_wndContentAreaSize.y,
+          oneChannelSet);
+    }
+
+    viewport->m_ssao->Init();
+    viewport->m_ssao->ReconstructIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+
+    if (!viewport->m_ssaoBuffer)
+      viewport->m_ssaoBuffer = std::make_shared<Framebuffer>();
+    viewport->m_ssaoBuffer->Init({(uint) viewport->m_wndContentAreaSize.x,
+                                  (uint) viewport->m_wndContentAreaSize.y,
+                                  0,
+                                  false,
+                                  true});
+
+    viewport->m_ssaoBuffer->ReconstructIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+    viewport->m_ssaoBuffer->SetAttachment(
+        Framebuffer::Attachment::ColorAttachment0, viewport->m_ssao.get());
+    SetFramebuffer(viewport->m_ssaoBuffer.get(), true, {0.0f, 0.0f, 0.0f, 1.0});
+
+    SetTexture(0, viewport->m_ssaoPosition->m_textureId);
+    SetTexture(1, viewport->m_ssaoNormal->m_textureId);
+    SetTexture(2, noiseTexture);
+
+    if (!viewport->m_ssaoCalcMat)
+    {
+      viewport->m_ssaoCalcMat = std::make_shared<Material>();
+      ShaderPtr ssaoVert      = GetShaderManager()->Create<Shader>(
+          ShaderPath("ssaoCalcVert.shader", true));
+      ShaderPtr ssaoFrag = GetShaderManager()->Create<Shader>(
+          ShaderPath("ssaoCalcFrag.shader", true));
+      viewport->m_ssaoCalcMat->m_vertexShader   = ssaoVert;
+      viewport->m_ssaoCalcMat->m_fragmentShader = ssaoFrag;
+      viewport->m_ssaoCalcMat->Init();
+    }
+    ShaderPtr ssaoFrag = viewport->m_ssaoCalcMat->m_fragmentShader;
+
+    ssaoFrag->SetShaderParameter("projection",
+                                 ParameterVariant(cam->GetProjectionMatrix()));
+    ssaoFrag->SetShaderParameter(
+        "screen_size", ParameterVariant(viewport->m_wndContentAreaSize));
+    ssaoFrag->SetShaderParameter("gPosition", ParameterVariant(0));
+    ssaoFrag->SetShaderParameter("gNormal", ParameterVariant(1));
+    ssaoFrag->SetShaderParameter("texNoise", ParameterVariant(2));
+    for (unsigned int i = 0; i < 64; ++i)
+      ssaoFrag->SetShaderParameter(g_ssaoSamplesStrCache[i],
+                                   ParameterVariant(ssaoKernel[i]));
+
+    DrawFullQuad(viewport->m_ssaoCalcMat);
+    SetFramebuffer(nullptr);
+
+    if (!viewport->m_ssaoBlur)
+      viewport->m_ssaoBlur = std::make_shared<RenderTarget>(
+          (uint) viewport->m_wndContentAreaSize.x,
+          (uint) viewport->m_wndContentAreaSize.y,
+          oneChannelSet);
+    viewport->m_ssaoBlur->Init();
+    viewport->m_ssaoBlur->ReconstructIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+
+    if (!viewport->m_ssaoBufferBlur)
+      viewport->m_ssaoBufferBlur = std::make_shared<Framebuffer>();
+    viewport->m_ssaoBufferBlur->Init({(uint) viewport->m_wndContentAreaSize.x,
+                                      (uint) viewport->m_wndContentAreaSize.y,
+                                      0,
+                                      false,
+                                      true});
+
+    viewport->m_ssaoBufferBlur->ReconstructIfNeeded(
+        (uint) viewport->m_wndContentAreaSize.x,
+        (uint) viewport->m_wndContentAreaSize.y);
+
+    const Vec2 scale = 1.0f / viewport->m_wndContentAreaSize;
+    ApplyAverageBlur(viewport->m_ssao, viewport->m_ssaoBlur, X_AXIS, scale.x);
+    ApplyAverageBlur(viewport->m_ssaoBlur, viewport->m_ssao, Y_AXIS, scale.y);
+
+    m_overrideMat = overrideMatPrev;
+    SetFramebuffer(nullptr);
+    SetTexture(5, (uint) viewport->m_ssao->m_textureId);
+    // Debug purpose.
+    {
+      // ShaderPtr quad = GetShaderManager()->Create<Shader>(
+      //     ShaderPath("unlitFrag.shader", true));
+      // quad->SetShaderParameter("s_texture0", ParameterVariant(5));
+      // SetViewport(viewport);
+      // DrawFullQuad(quad);
     }
   }
 
@@ -90,25 +351,54 @@ namespace ToolKit
       }
     }
 
-    for (MeshComponentPtr meshCom : meshComponents)
-    {
-      MeshPtr mesh = meshCom->GetMeshVal();
-      m_lights     = GetBestLights(ntt, lights);
-      m_cam        = cam;
-      SetProjectViewModel(ntt, cam);
-      if (mesh->IsSkinned())
+    MultiMaterialPtr mmComp = ntt->GetComponent<MultiMaterialComponent>();
+
+    // Skeleton Component is used by all meshes of an entity.
+    const auto& updateAndBindSkinningTextures = [ntt, this]() {
+      SkeletonComponentPtr skelComp = ntt->GetComponent<SkeletonComponent>();
+      if (skelComp == nullptr)
       {
-        RenderSkinned(ntt, cam);
+        return;
+      }
+      SkeletonPtr skel = skelComp->GetSkeletonResourceVal();
+      if (skel == nullptr)
+      {
         return;
       }
 
-      mesh->Init();
+      // Bind bone textures
+      // This is valid because these slots will be used by every shader program
+      //   below (Renderer::TextureSlot system).
+      // But bone count can't be bound here because its location changes every
+      //   shader program
+      SetTexture(2, skel->m_bindPoseTexture->m_textureId);
+      SetTexture(3, skelComp->map->boneTransformNodeTexture->m_textureId);
+
+      skelComp->map->UpdateGPUTexture();
+    };
+    updateAndBindSkinningTextures();
+
+    for (MeshComponentPtr meshCom : meshComponents)
+    {
+      MeshPtr mainMesh = meshCom->GetMeshVal();
+      m_lights         = GetBestLights(ntt, lights);
+      m_cam            = cam;
+      SetProjectViewModel(ntt, cam);
+
+      mainMesh->Init();
 
       MeshRawPtrArray meshCollector;
-      mesh->GetAllMeshes(meshCollector);
+      mainMesh->GetAllMeshes(meshCollector);
 
-      for (Mesh* mesh : meshCollector)
+      for (uint meshIndx = 0; meshIndx < meshCollector.size(); meshIndx++)
       {
+        Mesh* mesh = meshCollector[meshIndx];
+        if (mmComp && mmComp->GetMaterialList().size() > meshIndx)
+        {
+          nttMat = mmComp->GetMaterialList()[meshIndx];
+          nttMat->Init();
+        }
+        mesh->Init();
         if (m_overrideMat != nullptr)
         {
           m_mat = m_overrideMat.get();
@@ -119,90 +409,56 @@ namespace ToolKit
         }
 
         ProgramPtr prg =
-            CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmetShader);
+            CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
 
         BindProgram(prg);
-        FeedUniforms(prg);
 
-        RenderState* rs = m_mat->GetRenderState();
-        SetRenderState(rs, prg);
+        auto activateSkinning = [prg, ntt](uint isSkinned) {
+          GLint isSkinnedLoc = glGetUniformLocation(prg->m_handle, "isSkinned");
+          glUniform1ui(isSkinnedLoc, isSkinned);
+          if (isSkinned)
+          {
+            GLint numBonesLoc = glGetUniformLocation(prg->m_handle, "numBones");
+            float boneCount =
+                static_cast<float>(ntt->GetComponent<SkeletonComponent>()
+                                       ->GetSkeletonResourceVal()
+                                       ->m_bones.size());
+            glUniform1fv(numBonesLoc, 1, &boneCount);
+          }
+        };
+        activateSkinning(mesh->IsSkinned());
+
+        RenderState rs = *m_mat->GetRenderState();
+        if (m_overrideDiffuseTexture && m_overrideMat)
+        {
+          Material* secondaryMat =
+              nttMat ? nttMat.get() : mesh->m_material.get();
+          if (secondaryMat->m_diffuseTexture)
+          {
+            rs.diffuseTexture = secondaryMat->m_diffuseTexture->m_textureId;
+          }
+        }
+        SetRenderState(&rs, prg);
+
+        FeedUniforms(prg);
 
         glBindVertexArray(mesh->m_vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
-        SetVertexLayout(VertexLayout::Mesh);
+        SetVertexLayout(mesh->m_vertexLayout);
 
         if (mesh->m_indexCount != 0)
         {
           glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-          glDrawElements((GLenum) rs->drawType,
+          glDrawElements((GLenum) rs.drawType,
                          mesh->m_indexCount,
                          GL_UNSIGNED_INT,
                          nullptr);
         }
         else
         {
-          glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
+          glDrawArrays((GLenum) rs.drawType, 0, mesh->m_vertexCount);
         }
       }
-    }
-  }
-
-  void Renderer::RenderSkinned(Entity* object, Camera* cam)
-  {
-    MeshPtr mesh = object->GetMeshComponent()->GetMeshVal();
-    SetProjectViewModel(object, cam);
-    MaterialPtr nttMat = nullptr;
-    if (object->GetMaterialComponent())
-    {
-      nttMat = object->GetMaterialComponent()->GetMaterialVal();
-    }
-
-    static ShaderPtr skinShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("defaultSkin.shader", true));
-
-    SkeletonPtr skeleton = static_cast<SkinMesh*>(mesh.get())->m_skeleton;
-    skeleton->UpdateTransformationTexture();
-
-    MeshRawPtrArray meshCollector;
-    mesh->GetAllMeshes(meshCollector);
-
-    for (Mesh* mesh : meshCollector)
-    {
-      if (m_overrideMat != nullptr)
-      {
-        m_mat = m_overrideMat.get();
-      }
-      else
-      {
-        m_mat = nttMat ? nttMat.get() : mesh->m_material.get();
-      }
-
-      GLenum beforeSetting = glGetError();
-      ProgramPtr prg       = CreateProgram(skinShader, m_mat->m_fragmetShader);
-      BindProgram(prg);
-
-      // Bind bone data
-      {
-        SetTexture(2, skeleton->m_bindPoseTexture->m_textureId);
-        SetTexture(3, skeleton->m_boneTransformTexture->m_textureId);
-
-        GLint loc       = glGetUniformLocation(prg->m_handle, "numBones");
-        float boneCount = static_cast<float>(skeleton->m_bones.size());
-        glUniform1fv(loc, 1, &boneCount);
-      }
-      GLenum afterSetting = glGetError();
-
-      FeedUniforms(prg);
-
-      RenderState* rs = m_mat->GetRenderState();
-      SetRenderState(rs, prg);
-
-      glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
-      SetVertexLayout(VertexLayout::SkinMesh);
-
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-      glDrawElements(
-          (GLenum) rs->drawType, mesh->m_indexCount, GL_UNSIGNED_INT, nullptr);
     }
   }
 
@@ -316,13 +572,15 @@ namespace ToolKit
 
     if (state->diffuseTextureInUse)
     {
-      m_renderState.diffuseTexture = state->diffuseTexture;
+      m_renderState.diffuseTexture      = state->diffuseTexture;
+      m_renderState.diffuseTextureInUse = state->diffuseTextureInUse;
       SetTexture(0, state->diffuseTexture);
     }
 
     if (state->cubeMapInUse)
     {
-      m_renderState.cubeMap = state->cubeMap;
+      m_renderState.cubeMap      = state->cubeMap;
+      m_renderState.cubeMapInUse = state->cubeMapInUse;
       SetTexture(6, state->cubeMap);
     }
 
@@ -333,34 +591,27 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetRenderTarget(RenderTarget* renderTarget,
-                                 bool clear,
-                                 const Vec4& color)
+  void Renderer::SetFramebuffer(Framebuffer* fb, bool clear, const Vec4& color)
   {
-    if (m_renderTarget == renderTarget && m_renderTarget != nullptr)
+    if (fb != nullptr)
     {
-      return;
-    }
+      FramebufferSettings fbSet = fb->GetSettings();
 
-    if (renderTarget != nullptr)
-    {
-      glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->m_frameBufferId);
-      glViewport(0, 0, renderTarget->m_width, renderTarget->m_height);
-
-      if (glm::all(glm::epsilonNotEqual(color, m_bgColor, 0.001f)))
+      if (fb == m_framebuffer &&
+          fb->GetSettings().Compare(m_lastFramebufferSettings))
       {
-        glClearColor(color.r, color.g, color.b, color.a);
+        return;
       }
+      m_lastFramebufferSettings = fbSet;
+
+      glBindFramebuffer(GL_FRAMEBUFFER, fb->GetFboId());
+      glViewport(0, 0, fbSet.width, fbSet.height);
 
       if (clear)
       {
+        glClearColor(color.r, color.g, color.b, color.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
                 GL_STENCIL_BUFFER_BIT);
-      }
-
-      if (glm::all(glm::epsilonNotEqual(color, m_bgColor, 0.001f)))
-      {
-        glClearColor(m_bgColor.r, m_bgColor.g, m_bgColor.b, m_bgColor.a);
       }
     }
     else
@@ -369,22 +620,32 @@ namespace ToolKit
       glViewport(0, 0, m_windowSize.x, m_windowSize.y);
     }
 
-    m_renderTarget = renderTarget;
+    m_framebuffer = fb;
   }
 
-  void Renderer::SwapRenderTarget(RenderTarget** renderTarget,
-                                  bool clear,
-                                  const Vec4& color)
+  void Renderer::SetFramebuffer(Framebuffer* fb, bool clear)
   {
-    RenderTarget* tmp = *renderTarget;
-    *renderTarget     = m_renderTarget;
-    SetRenderTarget(tmp, clear, color);
+    SetFramebuffer(fb, clear, m_clearColor);
+  }
+
+  void Renderer::SwapFramebuffer(Framebuffer** fb,
+                                 bool clear,
+                                 const Vec4& color)
+  {
+    Framebuffer* tmp = *fb;
+    *fb              = m_framebuffer;
+    SetFramebuffer(tmp, clear, color);
+  }
+
+  void Renderer::SwapFramebuffer(Framebuffer** fb, bool clear)
+  {
+    SwapFramebuffer(fb, clear, m_clearColor);
   }
 
   void Renderer::SetViewport(Viewport* viewport)
   {
     m_viewportSize = UVec2(viewport->m_wndContentAreaSize);
-    SetRenderTarget(viewport->m_viewportImage);
+    SetFramebuffer(viewport->m_framebuffer);
   }
 
   void Renderer::SetViewportSize(uint width, uint height)
@@ -401,21 +662,27 @@ namespace ToolKit
     static MaterialPtr material = std::make_shared<Material>();
     material->UnInit();
 
-    material->m_vertexShader  = fullQuadVert;
-    material->m_fragmetShader = fragmentShader;
+    material->m_vertexShader   = fullQuadVert;
+    material->m_fragmentShader = fragmentShader;
     material->Init();
 
+    DrawFullQuad(material);
+  }
+
+  void Renderer::DrawFullQuad(MaterialPtr mat)
+  {
     static Quad quad;
-    quad.GetMeshComponent()->GetMeshVal()->m_material = material;
+    quad.GetMeshComponent()->GetMeshVal()->m_material = mat;
 
     static Camera quadCam;
     Render(&quad, &quadCam);
   }
 
-  void Renderer::DrawCube(Camera* cam, MaterialPtr mat)
+  void Renderer::DrawCube(Camera* cam, MaterialPtr mat, const Mat4& transform)
   {
     static Cube cube;
     cube.Generate();
+    cube.m_node->SetTransform(transform);
 
     MaterialComponentPtr matc = cube.GetMaterialComponent();
     if (matc == nullptr)
@@ -444,6 +711,10 @@ namespace ToolKit
                    entities.end());
 
     FrustumCull(entities, cam);
+
+    GenerateSSAOTexture(entities, viewport);
+
+    SetViewport(viewport);
 
     EntityRawPtrArray blendedEntities;
     GetTransparentEntites(entities, blendedEntities);
@@ -588,25 +859,41 @@ namespace ToolKit
     }
   }
 
-  void Renderer::RenderSky(Sky* sky, Camera* cam)
+  void Renderer::RenderSky(SkyBase* sky, Camera* cam)
   {
-    if (sky == nullptr || !sky->GetDrawSkyVal())
+    if (sky == nullptr || (!sky->GetDrawSkyVal()))
     {
       return;
     }
 
     glDepthFunc(GL_LEQUAL);
 
-    DrawCube(cam, sky->GetSkyboxMaterial());
+    MaterialPtr skyboxMat = sky->GetSkyboxMaterial();
+    const Mat4 rotation =
+        Mat4(sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
+    DrawCube(cam, skyboxMat, rotation);
 
     glDepthFunc(GL_LESS); // Return to default depth test
+  }
+
+  // An interval has start time and end time
+  struct LightSortStruct
+  {
+    Light* light        = nullptr;
+    uint intersectCount = 0;
+  };
+
+  // Compares two intervals according to starting times.
+  bool CompareLightIntersects(const LightSortStruct& i1,
+                              const LightSortStruct& i2)
+  {
+    return (i1.intersectCount > i2.intersectCount);
   }
 
   LightRawPtrArray Renderer::GetBestLights(Entity* entity,
                                            const LightRawPtrArray& lights)
   {
     LightRawPtrArray bestLights;
-    LightRawPtrArray outsideRadiusLights;
     bestLights.reserve(lights.size());
 
     // Find the end of directional lights
@@ -619,40 +906,83 @@ namespace ToolKit
     }
 
     // Add the lights inside of the radius first
-    for (int i = 0; i < lights.size(); i++)
+    std::vector<LightSortStruct> intersectCounts(lights.size());
+    BoundingBox aabb = entity->GetAABB(true);
+    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
     {
+      Light* light = lights[lightIndx];
+      float radius;
+      if (light->GetType() == EntityType::Entity_PointLight)
       {
-        float radius;
-        if (lights[i]->GetType() == EntityType::Entity_PointLight)
+        radius = static_cast<PointLight*>(light)->GetRadiusVal();
+      }
+      else if (light->GetType() == EntityType::Entity_SpotLight)
+      {
+        radius = static_cast<SpotLight*>(light)->GetRadiusVal();
+      }
+      else
+      {
+        continue;
+      }
+
+      intersectCounts[lightIndx].light = light;
+      uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
+
+      /* This algorithms can be used for better sorting
+      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
+      {
+        for (uint isMin = 0; isMin < 2; isMin++)
         {
-          radius = static_cast<PointLight*>(lights[i])->GetRadiusVal();
+          Vec3 p     = aabb.min;
+          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
+          float dist = glm::length(
+              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+          if (dist <= radius)
+          {
+            curIntersectCount++;
+          }
         }
-        else if (lights[i]->GetType() == EntityType::Entity_SpotLight)
+      }*/
+      if (light->GetType() == EntityType::Entity_SpotLight)
+      {
+        if (m_shadowMapCamera == nullptr)
         {
-          radius = static_cast<SpotLight*>(lights[i])->GetRadiusVal();
-        }
-        else
-        {
-          continue;
+          m_shadowMapCamera = new Camera();
         }
 
-        float distance = glm::length2(
-            entity->m_node->GetTranslation(TransformationSpace::TS_WORLD) -
-            lights[i]->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+        static_cast<SpotLight*>(light)->UpdateShadowMapCamera(
+            m_shadowMapCamera);
+        Frustum spotFrustum = ExtractFrustum(
+            ((SpotLight*) light)->m_shadowMapCameraProjectionViewMatrix, false);
 
-        if (distance < radius * radius)
+        if (FrustumBoxIntersection(spotFrustum, aabb) !=
+            IntersectResult::Outside)
         {
-          bestLights.push_back(lights[i]);
+          curIntersectCount++;
         }
-        else
+      }
+      if (light->GetType() == EntityType::Entity_PointLight)
+      {
+        BoundingSphere lightSphere;
+        lightSphere.pos =
+            light->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        lightSphere.radius = radius;
+        if (SphereBoxIntersection(lightSphere, aabb))
         {
-          outsideRadiusLights.push_back(lights[i]);
+          curIntersectCount++;
         }
       }
     }
-    bestLights.insert(bestLights.end(),
-                      outsideRadiusLights.begin(),
-                      outsideRadiusLights.end());
+    std::sort(
+        intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
+    for (uint i = 0; i < intersectCounts.size(); i++)
+    {
+      if (intersectCounts[i].intersectCount == 0)
+      {
+        break;
+      }
+      bestLights.push_back(intersectCounts[i].light);
+    }
 
     return bestLights;
   }
@@ -696,6 +1026,10 @@ namespace ToolKit
     Entity* env = nullptr;
 
     MaterialPtr mat = GetRenderMaterial(entity);
+    if (m_overrideMat)
+    {
+      mat = m_overrideMat;
+    }
     if (mat == nullptr)
     {
       return;
@@ -755,32 +1089,61 @@ namespace ToolKit
       EnvironmentComponentPtr envCom =
           env->GetComponent<EnvironmentComponent>();
       mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
-      mat->GetRenderState()->irradianceMap =
-          envCom->GetHdriVal()->GetIrradianceCubemapId();
+      if (CubeMapPtr irradianceCubemap =
+              envCom->GetHdriVal()->GetIrradianceCubemap())
+      {
+        mat->GetRenderState()->irradianceMap = irradianceCubemap->m_textureId;
+      }
+      m_iblRotation =
+          Mat4(env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
     }
     else
     {
       // Sky light
-      Sky* sky = GetSceneManager()->GetCurrentScene()->GetSky();
+      SkyBase* sky = GetSceneManager()->GetCurrentScene()->GetSky();
       if (sky != nullptr && sky->GetIlluminateVal())
       {
+        sky->Init();
         mat->GetRenderState()->IBLInUse = true;
-        EnvironmentComponentPtr envCom =
-            sky->GetComponent<EnvironmentComponent>();
-        mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
-        mat->GetRenderState()->irradianceMap =
-            envCom->GetHdriVal()->GetIrradianceCubemapId();
+        if (sky->GetType() == EntityType::Entity_Sky)
+        {
+          if (CubeMapPtr irradianceCubemap =
+                  static_cast<Sky*>(sky)
+                      ->GetComponent<EnvironmentComponent>()
+                      ->GetHdriVal()
+                      ->GetIrradianceCubemap())
+          {
+            mat->GetRenderState()->irradianceMap =
+                irradianceCubemap->m_textureId;
+          }
+        }
+        else if (sky->GetType() == EntityType::Entity_GradientSky)
+        {
+          mat->GetRenderState()->irradianceMap =
+              static_cast<GradientSky*>(sky)->GetIrradianceMap()->m_textureId;
+        }
+        mat->GetRenderState()->iblIntensity = sky->GetIntensityVal();
+        m_iblRotation =
+            Mat4(sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
       }
       else
       {
         mat->GetRenderState()->IBLInUse      = false;
         mat->GetRenderState()->irradianceMap = 0;
+        m_iblRotation                        = Mat4(1.0f);
       }
     }
   }
 
-  void Renderer::UpdateShadowMaps(LightRawPtrArray lights,
-                                  EntityRawPtrArray entities)
+  void Renderer::ShadowPass(const LightRawPtrArray& lights,
+                            const EntityRawPtrArray& entities)
+  {
+    UpdateShadowMaps(lights, entities);
+    FilterShadowMaps(lights);
+  }
+
+  void Renderer::UpdateShadowMaps(const LightRawPtrArray& lights,
+                                  const EntityRawPtrArray& entities)
   {
     MaterialPtr lastOverrideMaterial = m_overrideMat;
 
@@ -789,11 +1152,9 @@ namespace ToolKit
 
     for (Light* light : lights)
     {
+      // Update shadow map ProjView matrix every frame for all lights
       if (light->GetCastShadowVal())
       {
-        // Create framebuffer
-        light->InitShadowMap();
-
         // Get shadow map camera
         if (m_shadowMapCamera == nullptr)
         {
@@ -802,50 +1163,35 @@ namespace ToolKit
 
         if (light->GetType() == EntityType::Entity_DirectionalLight)
         {
-          FitSceneBoundingBoxIntoLightFrustum(
-              m_shadowMapCamera,
-              entities,
-              static_cast<DirectionalLight*>(light));
+          static_cast<DirectionalLight*>(light)->UpdateShadowMapCamera(
+              m_shadowMapCamera, entities);
         }
         else if (light->GetType() == EntityType::Entity_PointLight)
         {
-          m_shadowMapCamera->SetLens(
-              glm::radians(90.0f),
-              light->GetShadowResolutionVal().x,
-              light->GetShadowResolutionVal().y,
-              0.01f,
-              static_cast<SpotLight*>(light)->GetRadiusVal());
-          m_shadowMapCamera->m_node->SetTranslation(
-              light->m_node->GetTranslation(TransformationSpace::TS_WORLD),
-              TransformationSpace::TS_WORLD);
+          static_cast<PointLight*>(light)->UpdateShadowMapCamera(
+              m_shadowMapCamera);
         }
         else if (light->GetType() == EntityType::Entity_SpotLight)
         {
-          m_shadowMapCamera->SetLens(
-              glm::radians(static_cast<SpotLight*>(light)->GetOuterAngleVal()),
-              light->GetShadowResolutionVal().x,
-              light->GetShadowResolutionVal().y,
-              0.01f,
-              static_cast<SpotLight*>(light)->GetRadiusVal());
-          m_shadowMapCamera->m_node->SetOrientation(
-              light->m_node->GetOrientation(TransformationSpace::TS_WORLD));
-          m_shadowMapCamera->m_node->SetTranslation(
-              light->m_node->GetTranslation(TransformationSpace::TS_WORLD),
-              TransformationSpace::TS_WORLD);
+          static_cast<SpotLight*>(light)->UpdateShadowMapCamera(
+              m_shadowMapCamera);
         }
+
+        // Create framebuffer
+        light->InitShadowMap();
 
         auto renderForShadowMapFn = [this](Light* light,
                                            EntityRawPtrArray entities) -> void {
+          // This is copy because point light is rendered with different shadow
+          // map cameras each time this func called
           light->m_shadowMapCameraProjectionViewMatrix =
               m_shadowMapCamera->GetProjectionMatrix() *
               m_shadowMapCamera->GetViewMatrix();
           light->m_shadowMapCameraFar = m_shadowMapCamera->GetData().far;
-
           FrustumCull(entities, m_shadowMapCamera);
 
-          glClear(GL_DEPTH_BUFFER_BIT);
-          // Depth only render
-          glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+          glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
           m_overrideMat = light->GetShadowMaterial();
           for (Entity* ntt : entities)
           {
@@ -859,7 +1205,6 @@ namespace ToolKit
               Render(ntt, m_shadowMapCamera);
             }
           }
-          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         };
 
         static Quaternion rotations[6];
@@ -892,20 +1237,20 @@ namespace ToolKit
 
         if (light->GetType() == EntityType::Entity_PointLight)
         {
-          glBindFramebuffer(GL_FRAMEBUFFER,
-                            light->GetShadowMapRenderTarget()->m_frameBufferId);
+          SetFramebuffer(
+              light->GetShadowMapFramebuffer().get(), true, Vec4(1.0f));
           glViewport(0,
                      0,
                      static_cast<uint>(light->GetShadowResolutionVal().x),
                      static_cast<uint>(light->GetShadowResolutionVal().y));
+
           for (unsigned int i = 0; i < 6; ++i)
           {
-            glFramebufferTexture2D(
-                GL_FRAMEBUFFER,
-                GL_DEPTH_ATTACHMENT,
-                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                light->GetShadowMapRenderTarget()->m_textureId,
-                0);
+            light->GetShadowMapFramebuffer()->SetAttachment(
+                Framebuffer::Attachment::ColorAttachment0,
+                light->GetShadowMapRenderTarget().get(),
+                (Framebuffer::CubemapFace) i);
+
             m_shadowMapCamera->m_node->SetOrientation(
                 rotations[i], TransformationSpace::TS_WORLD);
             m_shadowMapCamera->m_node->SetScale(scales[i]);
@@ -915,19 +1260,14 @@ namespace ToolKit
         }
         else if (light->GetType() == EntityType::Entity_DirectionalLight)
         {
-          glPolygonOffset(light->GetSlopedBiasVal() * 0.5f,
-                          light->GetFixedBiasVal() * 500.0f);
-
-          glEnable(GL_POLYGON_OFFSET_FILL);
-
-          SetRenderTarget(light->GetShadowMapRenderTarget());
+          SetFramebuffer(
+              light->GetShadowMapFramebuffer().get(), true, Vec4(1.0f));
           renderForShadowMapFn(light, entities);
-
-          glDisable(GL_POLYGON_OFFSET_FILL);
         }
         else // Spot light
         {
-          SetRenderTarget(light->GetShadowMapRenderTarget());
+          SetFramebuffer(
+              light->GetShadowMapFramebuffer().get(), true, Vec4(1.0f));
           renderForShadowMapFn(light, entities);
         }
       }
@@ -937,125 +1277,99 @@ namespace ToolKit
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
-  void Renderer::FitSceneBoundingBoxIntoLightFrustum(
-      Camera* lightCamera,
-      const EntityRawPtrArray& entities,
-      DirectionalLight* light)
+  void Renderer::FilterShadowMaps(const LightRawPtrArray& lights)
   {
-    TransformationSpace ts = TransformationSpace::TS_WORLD;
-
-    // Calculate all scene's bounding box
-    BoundingBox totalBBox;
-    for (Entity* ntt : entities)
+    for (Light* light : lights)
     {
-      if (!(ntt->IsDrawable() && ntt->GetVisibleVal()))
+      if (!light->GetCastShadowVal() || light->GetShadowThicknessVal() < 0.001f)
       {
         continue;
       }
-      if (!ntt->GetMeshComponent()->GetCastShadowVal())
+
+      if (light->GetType() == EntityType::Entity_PointLight)
       {
         continue;
       }
-      BoundingBox bb = ntt->GetAABB(true);
-      totalBBox.UpdateBoundary(bb.max);
-      totalBBox.UpdateBoundary(bb.min);
+      const float softness = light->GetShadowThicknessVal();
+      Apply7x1GaussianBlur(light->GetShadowMapRenderTarget(),
+                           light->GetShadowMapTempBlurRt(),
+                           X_AXIS,
+                           softness / light->GetShadowResolutionVal().x);
+      Apply7x1GaussianBlur(light->GetShadowMapTempBlurRt(),
+                           light->GetShadowMapRenderTarget(),
+                           Y_AXIS,
+                           softness / light->GetShadowResolutionVal().y);
     }
-    Vec3 center = totalBBox.GetCenter();
-
-    // Set light transformation
-    lightCamera->m_node->SetTranslation(center, ts);
-    lightCamera->m_node->SetOrientation(light->m_node->GetOrientation(ts), ts);
-    Mat4 lightView = lightCamera->GetViewMatrix();
-
-    // Bounding box of the scene
-    Vec3 min         = totalBBox.min;
-    Vec3 max         = totalBBox.max;
-    Vec4 vertices[8] = {Vec4(min.x, min.y, min.z, 1.0f),
-                        Vec4(min.x, min.y, max.z, 1.0f),
-                        Vec4(min.x, max.y, min.z, 1.0f),
-                        Vec4(max.x, min.y, min.z, 1.0f),
-                        Vec4(min.x, max.y, max.z, 1.0f),
-                        Vec4(max.x, min.y, max.z, 1.0f),
-                        Vec4(max.x, max.y, min.z, 1.0f),
-                        Vec4(max.x, max.y, max.z, 1.0f)};
-
-    // Calculate bounding box in light space
-    float minX = std::numeric_limits<float>::max();
-    float maxX = std::numeric_limits<float>::min();
-    float minY = std::numeric_limits<float>::max();
-    float maxY = std::numeric_limits<float>::min();
-    float minZ = std::numeric_limits<float>::max();
-    float maxZ = std::numeric_limits<float>::min();
-    for (int i = 0; i < 8; ++i)
-    {
-      const Vec4 vertex = lightView * vertices[i];
-
-      minX = std::min(minX, vertex.x);
-      maxX = std::max(maxX, vertex.x);
-      minY = std::min(minY, vertex.y);
-      maxY = std::max(maxY, vertex.y);
-      minZ = std::min(minZ, vertex.z);
-      maxZ = std::max(maxZ, vertex.z);
-    }
-
-    lightCamera->SetLens(minX, maxX, minY, maxY, minZ, maxZ);
   }
 
-  void Renderer::FitViewFrustumIntoLightFrustum(Camera* lightCamera,
-                                                Camera* viewCamera,
-                                                DirectionalLight* light)
+  void Renderer::Apply7x1GaussianBlur(const TexturePtr source,
+                                      RenderTargetPtr dest,
+                                      const Vec3& axis,
+                                      const float amount)
   {
-    assert(false && "Experimental.");
-    // Fit view frustum into light frustum
-    Vec3 frustum[8] = {Vec3(-1.0f, -1.0f, -1.0f),
-                       Vec3(1.0f, -1.0f, -1.0f),
-                       Vec3(1.0f, -1.0f, 1.0f),
-                       Vec3(-1.0f, -1.0f, 1.0f),
-                       Vec3(-1.0f, 1.0f, -1.0f),
-                       Vec3(1.0f, 1.0f, -1.0f),
-                       Vec3(1.0f, 1.0f, 1.0f),
-                       Vec3(-1.0f, 1.0f, 1.0f)};
-
-    const Mat4 inverseViewProj = glm::inverse(
-        viewCamera->GetProjectionMatrix() * viewCamera->GetViewMatrix());
-
-    for (int i = 0; i < 8; ++i)
+    if (m_utilFramebuffer == nullptr)
     {
-      const Vec4 t = inverseViewProj * Vec4(frustum[i], 1.0f);
-      frustum[i]   = Vec3(t.x / t.w, t.y / t.w, t.z / t.w);
+      m_utilFramebuffer = new Framebuffer();
+      m_utilFramebuffer->Init({0, 0, 0, false, false});
     }
 
-    Vec3 center = ZERO;
-    for (int i = 0; i < 8; ++i)
+    if (m_gaussianBlurMaterial == nullptr)
     {
-      center += frustum[i];
-    }
-    center /= 8.0f;
-
-    TransformationSpace ts = TransformationSpace::TS_WORLD;
-    lightCamera->m_node->SetTranslation(center, ts);
-    lightCamera->m_node->SetOrientation(light->m_node->GetOrientation(ts), ts);
-    Mat4 lightView = lightCamera->GetViewMatrix();
-
-    // Calculate bounding box
-    float minX = std::numeric_limits<float>::max();
-    float maxX = std::numeric_limits<float>::min();
-    float minY = std::numeric_limits<float>::max();
-    float maxY = std::numeric_limits<float>::min();
-    float minZ = std::numeric_limits<float>::max();
-    float maxZ = std::numeric_limits<float>::min();
-    for (int i = 0; i < 8; ++i)
-    {
-      const Vec4 vertex = lightView * Vec4(frustum[i], 1.0f);
-      minX              = std::min(minX, vertex.x);
-      maxX              = std::max(maxX, vertex.x);
-      minY              = std::min(minY, vertex.y);
-      maxY              = std::max(maxY, vertex.y);
-      minZ              = std::min(minZ, vertex.z);
-      maxZ              = std::max(maxZ, vertex.z);
+      ShaderPtr vert = GetShaderManager()->Create<Shader>(
+          ShaderPath("gausBlur7x1Vert.shader", true));
+      ShaderPtr frag = GetShaderManager()->Create<Shader>(
+          ShaderPath("gausBlur7x1Frag.shader", true));
+      m_gaussianBlurMaterial                   = std::make_shared<Material>();
+      m_gaussianBlurMaterial->m_vertexShader   = vert;
+      m_gaussianBlurMaterial->m_fragmentShader = frag;
     }
 
-    lightCamera->SetLens(minX, maxX, minY, maxY, minZ, maxZ);
+    m_gaussianBlurMaterial->UnInit();
+    m_gaussianBlurMaterial->m_diffuseTexture = source;
+    m_gaussianBlurMaterial->m_fragmentShader->SetShaderParameter(
+        "BlurScale", ParameterVariant(axis * amount));
+    m_gaussianBlurMaterial->Init();
+
+    m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                     dest.get());
+
+    SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
+    DrawFullQuad(m_gaussianBlurMaterial);
+  }
+
+  void Renderer::ApplyAverageBlur(const TexturePtr source,
+                                  RenderTargetPtr dest,
+                                  const Vec3& axis,
+                                  const float amount)
+  {
+    if (m_utilFramebuffer == nullptr)
+    {
+      m_utilFramebuffer = new Framebuffer();
+      m_utilFramebuffer->Init({0, 0, 0, false, false});
+    }
+
+    if (m_averageBlurMaterial == nullptr)
+    {
+      ShaderPtr vert = GetShaderManager()->Create<Shader>(
+          ShaderPath("avgBlurVert.shader", true));
+      ShaderPtr frag = GetShaderManager()->Create<Shader>(
+          ShaderPath("avgBlurFrag.shader", true));
+      m_averageBlurMaterial                   = std::make_shared<Material>();
+      m_averageBlurMaterial->m_vertexShader   = vert;
+      m_averageBlurMaterial->m_fragmentShader = frag;
+    }
+
+    m_averageBlurMaterial->UnInit();
+    m_averageBlurMaterial->m_diffuseTexture = source;
+    m_averageBlurMaterial->m_fragmentShader->SetShaderParameter(
+        "BlurScale", ParameterVariant(axis * amount));
+    m_averageBlurMaterial->Init();
+
+    m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                     dest.get());
+
+    SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
+    DrawFullQuad(m_averageBlurMaterial);
   }
 
   void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)
@@ -1153,6 +1467,10 @@ namespace ToolKit
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
         break;
+        case Uniform::VIEW: {
+          GLint loc = glGetUniformLocation(program->m_handle, "View");
+          glUniformMatrix4fv(loc, 1, false, &m_view[0][0]);
+        }
         case Uniform::MODEL: {
           GLint loc = glGetUniformLocation(program->m_handle, "Model");
           glUniformMatrix4fv(loc, 1, false, &m_model[0][0]);
@@ -1178,7 +1496,7 @@ namespace ToolKit
           glUniform3fv(loc, 1, &data.pos.x);
           loc = glGetUniformLocation(program->m_handle, "CamData.dir");
           glUniform3fv(loc, 1, &data.dir.x);
-          loc = glGetUniformLocation(program->m_handle, "CamData.farPlane");
+          loc = glGetUniformLocation(program->m_handle, "CamData.far");
           glUniform1f(loc, data.far);
         }
         break;
@@ -1232,14 +1550,15 @@ namespace ToolKit
           GLint loc =
               glGetUniformLocation(program->m_handle, "ProjectionViewNoTr");
           // Zero transalate variables in model matrix
-          m_view[0][3] = 0.0f;
-          m_view[1][3] = 0.0f;
-          m_view[2][3] = 0.0f;
-          m_view[3][3] = 1.0f;
-          m_view[3][0] = 0.0f;
-          m_view[3][1] = 0.0f;
-          m_view[3][2] = 0.0f;
-          Mat4 mul     = m_project * m_view;
+          Mat4 view  = m_view;
+          view[0][3] = 0.0f;
+          view[1][3] = 0.0f;
+          view[2][3] = 0.0f;
+          view[3][3] = 1.0f;
+          view[3][0] = 0.0f;
+          view[3][1] = 0.0f;
+          view[3][2] = 0.0f;
+          Mat4 mul   = m_project * view;
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
         break;
@@ -1262,10 +1581,8 @@ namespace ToolKit
         break;
         case Uniform::DIFFUSE_TEXTURE_IN_USE: {
           GLint loc =
-              glGetUniformLocation(program->m_handle, "diffuseTextureInUse");
-          glUniform1i(
-              loc,
-              static_cast<int>(m_mat->GetRenderState()->diffuseTextureInUse));
+              glGetUniformLocation(program->m_handle, "DiffuseTextureInUse");
+          glUniform1i(loc, (int) m_mat->GetRenderState()->diffuseTextureInUse);
         }
         break;
         case Uniform::COLOR_ALPHA: {
@@ -1282,6 +1599,18 @@ namespace ToolKit
           {
             glUniform1f(loc, 1.0f);
           }
+        }
+        break;
+        case Uniform::USE_AO: {
+          m_renderState.AOInUse = m_mat->GetRenderState()->AOInUse;
+          GLint loc = glGetUniformLocation(program->m_handle, "UseAO");
+          glUniform1i(loc, (int) m_renderState.AOInUse);
+        }
+        break;
+        case Uniform::IBL_ROTATION: {
+          GLint loc = glGetUniformLocation(program->m_handle, "IblRotation");
+
+          glUniformMatrix4fv(loc, 1, false, &m_iblRotation[0][0]);
         }
         break;
         default:
@@ -1306,6 +1635,10 @@ namespace ToolKit
           break;
         case ParameterVariant::VariantType::Int:
           glUniform1i(loc, var.second.GetVar<int>());
+          break;
+        case ParameterVariant::VariantType::Vec2:
+          glUniform2fv(
+              loc, 1, reinterpret_cast<float*>(&var.second.GetVar<Vec2>()));
           break;
         case ParameterVariant::VariantType::Vec3:
           glUniform3fv(
@@ -1438,36 +1771,6 @@ namespace ToolKit
         glUniform1f(loc, innAngle);
       }
 
-      // Sanity check
-      if (currLight->GetPCFSampleSizeVal() == 0.0f &&
-          currLight->GetCastShadowVal())
-      {
-        currLight->SetPCFSampleSizeVal(1.0f);
-      }
-
-      float size       = currLight->GetPCFSampleSizeVal();
-      float kernelSize = (float) currLight->GetPCFKernelSizeVal();
-      if (glm::epsilonEqual(kernelSize, 0.0f, 0.00001f))
-      {
-        kernelSize = FLT_MIN;
-      }
-      float speed = size / kernelSize;
-      speed -= 0.0005f; // Fix floating point error
-      float step = kernelSize;
-      float unit = 1.0f / ((step + 1.0f) * (step + 1.0f));
-
-      GLuint loc = glGetUniformLocation(
-          program->m_handle, g_lightPCFSampleHalfSizeCache[i].c_str());
-      glUniform1f(loc, currLight->GetPCFSampleSizeVal() / 2.0f);
-
-      loc = glGetUniformLocation(program->m_handle,
-                                 g_lightPCFSampleDistanceCache[i].c_str());
-      glUniform1f(loc, speed);
-
-      loc = glGetUniformLocation(program->m_handle,
-                                 g_lightPCFUnitSampleDistanceCache[i].c_str());
-      glUniform1f(loc, unit);
-
       bool castShadow = currLight->GetCastShadowVal();
       if (castShadow)
       {
@@ -1479,47 +1782,35 @@ namespace ToolKit
             GL_FALSE,
             &(currLight->m_shadowMapCameraProjectionViewMatrix)[0][0]);
 
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightNormalBiasStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetNormalBiasVal());
-
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightShadowFixedBiasStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetFixedBiasVal() * 0.01f);
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightShadowSlopedBiasStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetSlopedBiasVal() * 0.1f);
-
         loc = glGetUniformLocation(
-            program->m_handle, g_lightShadowMapCamFarPlaneStrCache[i].c_str());
+            program->m_handle, g_lightShadowMapCameraFarStrCache[i].c_str());
         glUniform1f(loc, currLight->m_shadowMapCameraFar);
 
-        if (currLight->GetType() == EntityType::Entity_PointLight)
-        {
-          int level = static_cast<PointLight*>(currLight)->GetPCFLevelVal();
-          if (level == 0)
-          {
-            level = 1;
-          }
-          else if (level == 1)
-          {
-            level = 8;
-          }
-          else if (level == 2)
-          {
-            level = 20;
-          }
-          loc = glGetUniformLocation(program->m_handle,
-                                     g_PCFKernelSizeStrCache[i].c_str());
-          glUniform1i(loc, level);
-        }
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightBleedingReductionStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetLightBleedingReductionVal());
+
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightPCFSamplesStrCache[i].c_str());
+        glUniform1i(loc, currLight->GetPCFSamplesVal());
+
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightPCFRadiusStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetPCFRadiusVal());
+
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightsoftShadowsStrCache[i].c_str());
+        glUniform1i(loc, (int) (currLight->GetPCFSamplesVal() > 1));
 
         SetShadowMapTexture(
-            type, currLight->GetShadowMapRenderTarget()->m_textureId, program);
+            type,
+            currLight->GetShadowMapFramebuffer()
+                ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
+                ->m_textureId,
+            program);
       }
-
-      loc = glGetUniformLocation(program->m_handle,
-                                 g_lightCastShadowStrCache[i].c_str());
+      GLuint loc = glGetUniformLocation(program->m_handle,
+                                        g_lightCastShadowStrCache[i].c_str());
       glUniform1i(loc, static_cast<int>(castShadow));
     }
 
@@ -1687,4 +1978,158 @@ namespace ToolKit
     m_dirAndSpotLightShadowCount = 0;
     m_pointLightShadowCount      = 0;
   }
+
+  Texture* Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture,
+                                                  uint width,
+                                                  uint height,
+                                                  float exposure)
+  {
+    const RenderTargetSettigs set = {0,
+                                     false,
+                                     GraphicTypes::TargetCubeMap,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::TypeUnsignedByte,
+                                     Vec4(0.0f)};
+    RenderTarget* cubemap         = new RenderTarget(width, height, set);
+    cubemap->Init();
+
+    // Views for 6 different angles
+    CameraPtr cam = std::make_shared<Camera>();
+    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
+    Mat4 views[] = {
+        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+
+    // Create material
+    MaterialPtr mat = std::make_shared<Material>();
+    ShaderPtr vert  = GetShaderManager()->Create<Shader>(
+        ShaderPath("equirectToCubeVert.shader", true));
+    ShaderPtr frag = GetShaderManager()->Create<Shader>(
+        ShaderPath("equirectToCubeFrag.shader", true));
+    frag->m_shaderParams["Exposure"] = exposure;
+
+    mat->m_diffuseTexture           = texture;
+    mat->m_vertexShader             = vert;
+    mat->m_fragmentShader           = frag;
+    mat->GetRenderState()->cullMode = CullingType::TwoSided;
+    mat->Init();
+
+    if (m_utilFramebuffer == nullptr)
+    {
+      m_utilFramebuffer = new Framebuffer();
+    }
+    m_utilFramebuffer->UnInit();
+    m_utilFramebuffer->Init({width, height, 0, false, false});
+    m_utilFramebuffer->ClearAttachments();
+
+    for (int i = 0; i < 6; ++i)
+    {
+      Vec3 pos;
+      Quaternion rot;
+      Vec3 sca;
+      DecomposeMatrix(views[i], &pos, &rot, &sca);
+
+      cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
+      cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
+      cam->m_node->SetScale(sca);
+
+      m_utilFramebuffer->SetAttachment(
+          Framebuffer::Attachment::ColorAttachment0,
+          cubemap,
+          (Framebuffer::CubemapFace) i);
+
+      SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
+
+      DrawCube(cam.get(), mat);
+    }
+    SetFramebuffer(nullptr);
+
+    return cubemap;
+  }
+
+  Texture* Renderer::GenerateIrradianceCubemap(CubeMapPtr cubemap,
+                                               uint width,
+                                               uint height)
+  {
+    const RenderTargetSettigs set   = {0,
+                                       false,
+                                       GraphicTypes::TargetCubeMap,
+                                       GraphicTypes::UVClampToEdge,
+                                       GraphicTypes::UVClampToEdge,
+                                       GraphicTypes::UVClampToEdge,
+                                       GraphicTypes::SampleLinear,
+                                       GraphicTypes::SampleLinear,
+                                       GraphicTypes::FormatRGB,
+                                       GraphicTypes::FormatRGB,
+                                       GraphicTypes::TypeUnsignedByte,
+                                       Vec4(0.0f)};
+    RenderTarget* irradianceCubemap = new RenderTarget(width, height, set);
+    irradianceCubemap->Init();
+
+    // Views for 6 different angles
+    CameraPtr cam = std::make_shared<Camera>();
+    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
+    Mat4 views[] = {
+        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+
+    // Create material
+    MaterialPtr mat = std::make_shared<Material>();
+    ShaderPtr vert  = GetShaderManager()->Create<Shader>(
+        ShaderPath("irradianceGenerateVert.shader", true));
+    ShaderPtr frag = GetShaderManager()->Create<Shader>(
+        ShaderPath("irradianceGenerateFrag.shader", true));
+
+    mat->m_cubeMap                  = cubemap;
+    mat->m_vertexShader             = vert;
+    mat->m_fragmentShader           = frag;
+    mat->GetRenderState()->cullMode = CullingType::TwoSided;
+    mat->Init();
+
+    if (m_utilFramebuffer == nullptr)
+    {
+      m_utilFramebuffer = new Framebuffer();
+    }
+    m_utilFramebuffer->UnInit();
+    m_utilFramebuffer->Init({width, height, 0, false, false});
+
+    for (int i = 0; i < 6; ++i)
+    {
+      Vec3 pos;
+      Quaternion rot;
+      Vec3 sca;
+      DecomposeMatrix(views[i], &pos, &rot, &sca);
+
+      cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
+      cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
+      cam->m_node->SetScale(sca);
+
+      m_utilFramebuffer->SetAttachment(
+          Framebuffer::Attachment::ColorAttachment0,
+          irradianceCubemap,
+          (Framebuffer::CubemapFace) i);
+
+      SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
+
+      DrawCube(cam.get(), mat);
+    }
+    SetFramebuffer(nullptr);
+
+    return irradianceCubemap;
+  }
+
 } // namespace ToolKit

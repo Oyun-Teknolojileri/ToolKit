@@ -102,6 +102,11 @@ namespace ToolKit
     Intersect
   };
 
+  TK_API float SquareDistancePointToAABB(const Vec3& p, const BoundingBox& b);
+
+  TK_API bool SphereBoxIntersection(const BoundingSphere& s,
+                                    const BoundingBox& b);
+
   TK_API bool SpherePointIntersection(const Vec3& spherePos,
                                       float sphereRadius,
                                       const Vec3& vertex);

@@ -1,6 +1,7 @@
 #include "App.h"
 #include "Common/GlErrorReporter.h"
 #include "Common/SDLEventPool.h"
+#include "Common/Win32Utils.h"
 #include "ConsoleWindow.h"
 #include "GL/glew.h"
 #include "ImGui/imgui_impl_sdl.h"
@@ -87,11 +88,67 @@ namespace ToolKit
      * PostUninit Main
      */
 
+    // Windows util function for creating ToolKit Cfg files in AppData.
+    void CreateAppData()
+    {
+      // For windows check appdata.
+      StringView appData = getenv("APPDATA");
+      if (appData.empty())
+      {
+        return;
+      }
+
+      StringArray files = {"Workspace.settings",
+                           "Editor.settings",
+                           "UILayout.ini",
+                           "Engine.settings"};
+
+      String cfgPath    = ConcatPaths({String(appData), "ToolKit", "Config"});
+      String targetFile = ConcatPaths({cfgPath, files[0]});
+
+      // Create ToolKit Configs.
+      if (!CheckSystemFile(targetFile))
+      {
+        if (std::filesystem::create_directories(cfgPath))
+        {
+          for (int i = 0; i < 4; i++)
+          {
+            std::filesystem::copy(
+                ConcatPaths({ConfigPath(), files[i]}),
+                ConcatPaths({cfgPath, files[i]}),
+                std::filesystem::copy_options::overwrite_existing);
+          }
+        }
+      }
+
+      // Create Path file.
+      String pathFile = ConcatPaths({cfgPath, "Path.txt"});
+
+      std::fstream file;
+      file.open(pathFile, std::ios::trunc | std::ios::out);
+      if (file.is_open())
+      {
+        std::filesystem::path path = std::filesystem::current_path();
+        if (path.has_parent_path())
+        {
+          String utf8Path = path.parent_path().u8string();
+          utf8Path.erase(remove(utf8Path.begin(), utf8Path.end(), '\"'),
+                         utf8Path.end());
+
+          file << utf8Path;
+        }
+        file.close();
+      }
+
+      Main::GetInstance()->SetConfigPath(cfgPath);
+    }
+
     void PreInit()
     {
       // PreInit Main
       g_proxy = new Main();
       Main::SetProxy(g_proxy);
+      CreateAppData();
       g_proxy->PreInit();
     }
 
@@ -115,6 +172,8 @@ namespace ToolKit
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 
         if (g_settings.Graphics.MSAA > 0)
         {
@@ -174,9 +233,11 @@ namespace ToolKit
 
             glEnable(GL_CULL_FACE);
             glEnable(GL_DEPTH_TEST);
+            glEnable(GL_FRAMEBUFFER_SRGB);
 
             // Init app
             g_app = new App(g_settings.Window.Width, g_settings.Window.Height);
+            g_app->m_sysComExecFn = ToolKit::Win32Helpers::g_SysComExecFn;
             UI::Init();
             g_app->Init();
           }

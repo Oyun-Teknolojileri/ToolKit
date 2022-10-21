@@ -86,7 +86,8 @@ namespace ToolKit
                        MeshPtr,
                        MaterialPtr,
                        HdriPtr,
-                       AnimRecordPtrMap>
+                       AnimRecordPtrMap,
+                       SkeletonPtr>
       Value;
 
   typedef std::function<void(Value& oldVal, Value& newVal)> ValueUpdateFn;
@@ -173,7 +174,8 @@ namespace ToolKit
       MaterialPtr,
       Vec2,
       HdriPtr,
-      AnimRecordPtrMap
+      AnimRecordPtrMap,
+      SkeletonPtr
     };
 
     /**
@@ -185,6 +187,12 @@ namespace ToolKit
      * Empty destructor.
      */
     ~ParameterVariant();
+
+    /**
+     * Directly sets the new value.
+     * @param newVal new value for the variant.
+     */
+    void SetValue(Value& newVal);
 
     /**
      * Default copy constructor makes a call to default assignment operator.
@@ -277,9 +285,14 @@ namespace ToolKit
     explicit ParameterVariant(const HdriPtr& var);
 
     /**
-     * Constructs AnimationStatePtrArray type variant.
+     * Constructs AnimRecordPtrMap type variant.
      */
     explicit ParameterVariant(const AnimRecordPtrMap& var);
+
+    /**
+     * Constructs SkeletonPtr type variant.
+     */
+    explicit ParameterVariant(const SkeletonPtr& var);
 
     /**
      * Used to retrieve VariantType of the variant.
@@ -413,9 +426,14 @@ namespace ToolKit
     ParameterVariant& operator=(const HdriPtr& var);
 
     /**
-     * Assign a AnimationStatePtrArray to the value of the variant.
+     * Assign a AnimRecordPtrMap to the value of the variant.
      */
     ParameterVariant& operator=(const AnimRecordPtrMap& var);
+
+    /**
+     * Assign a SkeletonPtr to the value of the variant.
+     */
+    ParameterVariant& operator=(const SkeletonPtr& var);
 
     /**
      * Serializes the variant to the xml document.
@@ -458,7 +476,7 @@ namespace ToolKit
      * Callback function for value changes. This function gets called after
      * new value set.
      */
-    ValueUpdateFn m_onValueChangedFn;
+    std::vector<ValueUpdateFn> m_onValueChangedFn;
 
    private:
     template <typename T>
@@ -466,9 +484,10 @@ namespace ToolKit
     {
       Value oldVal = m_var;
       m_var        = val;
-      if (m_onValueChangedFn)
+
+      for (ValueUpdateFn& fn : m_onValueChangedFn)
       {
-        m_onValueChangedFn(oldVal, m_var);
+        fn(oldVal, m_var);
       }
     }
 
@@ -543,6 +562,16 @@ namespace ToolKit
      */
     void GetByCategory(const String& category,
                        ParameterVariantRawPtrArray& variants);
+
+    /**
+     * Search the variant with given category and name. Returns true if found
+     * and sets the var.
+     * @param category to look for.
+     * @param name of the variant to look for.
+     * @param output variant.
+     * @returns true if the variant found.
+     */
+    bool LookUp(StringView category, StringView name, ParameterVariant** var);
 
    public:
     /**

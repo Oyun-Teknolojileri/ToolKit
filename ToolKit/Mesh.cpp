@@ -41,6 +41,7 @@ namespace ToolKit
 
     InitVertices(flushClientSideArray);
     InitIndices(flushClientSideArray);
+    m_vertexLayout = VertexLayout::Mesh;
     if (!flushClientSideArray)
     {
       ConstructFaces();
@@ -467,6 +468,7 @@ namespace ToolKit
 
   void SkinMesh::Init(bool flushClientSideArray)
   {
+    m_vertexLayout = VertexLayout::SkinMesh;
     if (m_skeleton == nullptr)
     {
       return;
@@ -486,7 +488,6 @@ namespace ToolKit
     {
       return;
     }
-
     // If skeleton is specified, load it
     // While reading from a file, it's probably not loaded
     // So Deserialize will also try to load it
@@ -499,7 +500,6 @@ namespace ToolKit
         return;
       }
     }
-
     String path = GetFile();
     NormalizePath(path);
     XmlFilePtr file = GetFileManager()->GetXmlFile(path);
@@ -588,9 +588,13 @@ namespace ToolKit
   void SkinMesh::InitVertices(bool flush)
   {
     glDeleteBuffers(1, &m_vboIndexId);
+    glDeleteVertexArrays(1, &m_vaoId);
 
     if (!m_clientSideVertices.empty())
     {
+      glGenVertexArrays(1, &m_vaoId);
+      glBindVertexArray(m_vaoId);
+
       glGenBuffers(1, &m_vboVertexId);
       glBindBuffer(GL_ARRAY_BUFFER, m_vboVertexId);
       glBufferData(GL_ARRAY_BUFFER,

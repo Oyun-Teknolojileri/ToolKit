@@ -19,7 +19,7 @@ namespace ToolKit
 
     void Load() override;
     void Save(bool onlyIfDirty) override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
     RenderState* GetRenderState();
     void SetRenderState(RenderState* state);
@@ -34,7 +34,7 @@ namespace ToolKit
     CubeMapPtr m_cubeMap;
     TexturePtr m_diffuseTexture;
     ShaderPtr m_vertexShader;
-    ShaderPtr m_fragmetShader;
+    ShaderPtr m_fragmentShader;
     Vec3 m_color;
     float m_alpha;
 

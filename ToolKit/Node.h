@@ -9,7 +9,6 @@ namespace ToolKit
   enum class TransformationSpace
   {
     TS_WORLD,
-    TS_PARENT,
     TS_LOCAL
   };
 
@@ -23,33 +22,37 @@ namespace ToolKit
     ~Node();
 
     void Translate(const Vec3& val,
-                   TransformationSpace space = TransformationSpace::TS_PARENT);
+                   TransformationSpace space = TransformationSpace::TS_WORLD);
     void Rotate(const Quaternion& val,
-                TransformationSpace space = TransformationSpace::TS_PARENT);
+                TransformationSpace space = TransformationSpace::TS_WORLD);
     void Scale(const Vec3& val);
     void Transform(const Mat4& val,
-                   TransformationSpace space = TransformationSpace::TS_PARENT,
+                   TransformationSpace space = TransformationSpace::TS_WORLD,
                    bool noScale              = true);
     void SetTransform(
         const Mat4& val,
-        TransformationSpace space = TransformationSpace::TS_PARENT,
+        TransformationSpace space = TransformationSpace::TS_WORLD,
         bool noScale              = true);
     Mat4 GetTransform(
-        TransformationSpace space = TransformationSpace::TS_PARENT);
+        TransformationSpace space = TransformationSpace::TS_WORLD);
     void SetTranslation(
         const Vec3& val,
-        TransformationSpace space = TransformationSpace::TS_PARENT);
+        TransformationSpace space = TransformationSpace::TS_WORLD);
     Vec3 GetTranslation(
-        TransformationSpace space = TransformationSpace::TS_PARENT);
+        TransformationSpace space = TransformationSpace::TS_WORLD);
     void SetOrientation(
         const Quaternion& val,
-        TransformationSpace space = TransformationSpace::TS_PARENT);
+        TransformationSpace space = TransformationSpace::TS_WORLD);
     Quaternion GetOrientation(
-        TransformationSpace space = TransformationSpace::TS_PARENT);
+        TransformationSpace space = TransformationSpace::TS_WORLD);
     void SetScale(const Vec3& val);
     Vec3 GetScale();
-    Mat3 GetTransformAxes(
-        TransformationSpace space = TransformationSpace::TS_LOCAL);
+
+    /**
+    * @return Normalized local transform axes of the node.
+    */
+    Mat3 GetTransformAxes();
+
     void AddChild(Node* child, bool preserveTransform = false);
     void Orphan(Node* child, bool preserveTransform = false);
     void OrphanSelf(bool preserveWorldTransform = false);

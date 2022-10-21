@@ -82,7 +82,7 @@ namespace ToolKit
     {
       glTexImage2D(GL_TEXTURE_2D,
                    0,
-                   GL_RGB16F,
+                   GL_RGB32F,
                    m_width,
                    m_height,
                    0,
@@ -95,7 +95,7 @@ namespace ToolKit
     {
       glTexImage2D(GL_TEXTURE_2D,
                    0,
-                   GL_RGBA,
+                   GL_SRGB8_ALPHA8,
                    m_width,
                    m_height,
                    0,
@@ -128,6 +128,7 @@ namespace ToolKit
   void Texture::UnInit()
   {
     glDeleteTextures(1, &m_textureId);
+    m_textureId = 0;
     Clear();
     m_initiated = false;
   }
@@ -308,8 +309,7 @@ namespace ToolKit
 
     m_texToCubemapMat           = std::make_shared<Material>();
     m_cubemapToIrradiancemapMat = std::make_shared<Material>();
-    m_irradianceCubemap         = std::make_shared<CubeMap>(0);
-    m_cubemap                   = std::make_shared<CubeMap>(0);
+    m_irradianceCubemap         = std::make_shared<CubeMap>(0); // TODO
     m_equirectangularTexture = std::make_shared<Texture>(static_cast<uint>(0));
   }
 
@@ -349,18 +349,29 @@ namespace ToolKit
       return;
     }
 
-    CreateFramebuffersForCubeMaps();
-
     // Init 2D hdri texture
-    Texture::Init();
+    Texture::Init(flushClientSideArray);
 
     // Convert hdri image to cubemap images
-    GenerateCubemapFrom2DTexture();
+    Texture* cubemap = GetRenderer()->GenerateCubemapFrom2DTexture(
+        GetTextureManager()->Create<Texture>(GetFile()),
+        m_width,
+        m_width,
+        1.0f);
+    m_cubemap = std::make_shared<CubeMap>(cubemap->m_textureId);
+
+    // Don't let cubemap object delete this texture along with itself
+    cubemap->m_textureId = 0;
+    SafeDel(cubemap);
 
     // Generate irradience cubemap images
-    GenerateIrradianceMap();
+    Texture* irradianceMap = GetRenderer()->GenerateIrradianceCubemap(
+        m_cubemap, m_width / 64, m_width / 64);
+    m_irradianceCubemap = std::make_shared<CubeMap>(irradianceMap->m_textureId);
 
-    DeleteFramebuffers();
+    // Don't let cubemap object delete this texture along with itself
+    irradianceMap->m_textureId = 0;
+    SafeDel(irradianceMap);
   }
 
   void Hdri::UnInit()
@@ -378,31 +389,14 @@ namespace ToolKit
     return (GetFile().size() != 0);
   }
 
-  uint Hdri::GetCubemapId()
+  CubeMapPtr Hdri::GetCubemap()
   {
-    return m_cubemap->m_textureId;
+    return m_cubemap;
   }
 
-  void Hdri::SetCubemapId(uint id)
+  CubeMapPtr Hdri::GetIrradianceCubemap()
   {
-    m_cubemap->m_textureId = id;
-  }
-
-  uint Hdri::GetIrradianceCubemapId()
-  {
-    if (m_irradianceCubemap)
-    {
-      return m_irradianceCubemap->m_textureId;
-    }
-    else
-    {
-      return 0;
-    }
-  }
-
-  void Hdri::SetIrradianceCubemapId(uint id)
-  {
-    m_irradianceCubemap->m_textureId = id;
+    return m_irradianceCubemap;
   }
 
   uint Hdri::GenerateCubemapBuffers(struct CubeMapSettings cubeMapSettings)
@@ -485,135 +479,6 @@ namespace ToolKit
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
-  void Hdri::CreateFramebuffersForCubeMaps()
-  {
-    auto createFbFn = [](GLuint& fbo, GLuint& rbo, int width, int height) {
-      glGenFramebuffers(1, &fbo);
-      glGenRenderbuffers(1, &rbo);
-
-      glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-      glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-      glRenderbufferStorage(
-          GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-      glFramebufferRenderbuffer(
-          GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-      // Check if framebuffer is complete
-      if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-      {
-        GetLogger()->Log("Error while creating framebuffer.");
-      }
-    };
-
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
-
-    createFbFn(m_fbo, m_rbo, m_width, m_width);
-    createFbFn(m_irradianceFbo, m_irradianceRbo, m_width / 64, m_width / 64);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-  }
-
-  void Hdri::DeleteFramebuffers()
-  {
-    glDeleteFramebuffers(1, &m_fbo);
-    glDeleteRenderbuffers(1, &m_rbo);
-    glDeleteFramebuffers(1, &m_irradianceFbo);
-    glDeleteRenderbuffers(1, &m_irradianceRbo);
-  }
-
-  void Hdri::GenerateCubemapFrom2DTexture()
-  {
-    GLuint cubemapTextureId = GenerateCubemapBuffers({0,
-                                                      GL_RGB,
-                                                      m_width,
-                                                      m_width,
-                                                      GL_RGB,
-                                                      GL_UNSIGNED_BYTE,
-                                                      nullptr,
-                                                      GL_CLAMP_TO_EDGE,
-                                                      GL_LINEAR});
-
-    // Views for 6 different angles
-    CameraPtr cam = std::make_shared<Camera>();
-    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
-    Mat4 views[] = {
-        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
-
-    // Create material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(
-        ShaderPath("equirectToCubeVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(
-        ShaderPath("equirectToCubeFrag.shader", true));
-    frag->m_shaderParams["Exposure"] = m_exposure;
-
-    m_equirectangularTexture->m_textureId = m_textureId;
-    m_texToCubemapMat->m_diffuseTexture   = m_equirectangularTexture;
-    m_texToCubemapMat->m_vertexShader     = vert;
-    m_texToCubemapMat->m_fragmetShader    = frag;
-    m_texToCubemapMat->Init();
-
-    RenderToCubeMap(m_fbo,
-                    views,
-                    cam,
-                    cubemapTextureId,
-                    m_width,
-                    m_width,
-                    m_texToCubemapMat);
-
-    m_cubemap->m_textureId = cubemapTextureId;
-  }
-
-  void Hdri::GenerateIrradianceMap()
-  {
-    GLuint irradianceTextureId = GenerateCubemapBuffers({0,
-                                                         GL_RGB,
-                                                         m_width / 64,
-                                                         m_width / 64,
-                                                         GL_RGB,
-                                                         GL_UNSIGNED_BYTE,
-                                                         nullptr,
-                                                         GL_CLAMP_TO_EDGE,
-                                                         GL_LINEAR});
-
-    // Views for 6 different angles
-    CameraPtr cam = std::make_shared<Camera>();
-    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
-    Mat4 views[] = {
-        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
-
-    // Create material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(
-        ShaderPath("irradianceGenerateVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(
-        ShaderPath("irradianceGenerateFrag.shader", true));
-
-    m_cubemapToIrradiancemapMat->m_cubeMap       = m_cubemap;
-    m_cubemapToIrradiancemapMat->m_vertexShader  = vert;
-    m_cubemapToIrradiancemapMat->m_fragmetShader = frag;
-    m_cubemapToIrradiancemapMat->Init();
-
-    RenderToCubeMap(m_irradianceFbo,
-                    views,
-                    cam,
-                    irradianceTextureId,
-                    m_width / 64,
-                    m_width / 64,
-                    m_cubemapToIrradiancemapMat);
-
-    m_irradianceCubemap->m_textureId = irradianceTextureId;
-  }
-
   RenderTarget::RenderTarget() : Texture()
   {
   }
@@ -623,16 +488,9 @@ namespace ToolKit
                              const RenderTargetSettigs& settings)
       : RenderTarget()
   {
-    m_width         = width;
-    m_height        = height;
-    m_frameBufferId = 0;
-    m_depthBufferId = 0;
-    m_settings      = settings;
-  }
-
-  RenderTarget::~RenderTarget()
-  {
-    UnInit();
+    m_width    = width;
+    m_height   = height;
+    m_settings = settings;
   }
 
   void RenderTarget::Load()
@@ -663,37 +521,18 @@ namespace ToolKit
 
     // Create frame buffer color texture
     glGenTextures(1, &m_textureId);
-    glBindTexture(static_cast<int>(m_settings.Target), m_textureId);
-
-    glTexParameteri(static_cast<int>(m_settings.Target),
-                    GL_TEXTURE_WRAP_S,
-                    static_cast<int>(m_settings.WarpS));
-    glTexParameteri(static_cast<int>(m_settings.Target),
-                    GL_TEXTURE_WRAP_T,
-                    static_cast<int>(m_settings.WarpT));
-    if (m_settings.Target == GraphicTypes::TargetCubeMap)
-    {
-      glTexParameteri(static_cast<int>(m_settings.Target),
-                      GL_TEXTURE_WRAP_R,
-                      static_cast<int>(m_settings.WarpR));
-    }
-    glTexParameteri(static_cast<int>(m_settings.Target),
-                    GL_TEXTURE_MIN_FILTER,
-                    static_cast<int>(m_settings.MinFilter));
-    glTexParameteri(static_cast<int>(m_settings.Target),
-                    GL_TEXTURE_MAG_FILTER,
-                    static_cast<int>(m_settings.MagFilter));
+    glBindTexture((int) m_settings.Target, m_textureId);
 
     if (m_settings.Target == GraphicTypes::Target2D)
     {
       glTexImage2D(GL_TEXTURE_2D,
                    0,
-                   static_cast<int>(m_settings.InternalFormat),
+                   (int) m_settings.InternalFormat,
                    m_width,
                    m_height,
                    0,
-                   static_cast<int>(m_settings.Format),
-                   static_cast<int>(m_settings.Type),
+                   (int) m_settings.Format,
+                   (int) m_settings.Type,
                    0);
     }
     else if (m_settings.Target == GraphicTypes::TargetCubeMap)
@@ -702,137 +541,46 @@ namespace ToolKit
       {
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                      0,
-                     static_cast<int>(m_settings.InternalFormat),
+                     (int) m_settings.InternalFormat,
                      m_width,
                      m_height,
                      0,
-                     static_cast<int>(m_settings.Format),
-                     static_cast<int>(m_settings.Type),
+                     (int) m_settings.Format,
+                     (int) m_settings.Type,
                      0);
       }
     }
 
+    glTexParameteri(
+        (int) m_settings.Target, GL_TEXTURE_WRAP_S, (int) m_settings.WarpS);
+    glTexParameteri(
+        (int) m_settings.Target, GL_TEXTURE_WRAP_T, (int) m_settings.WarpT);
+    if (m_settings.Target == GraphicTypes::TargetCubeMap)
+    {
+      glTexParameteri(
+          (int) m_settings.Target, GL_TEXTURE_WRAP_R, (int) m_settings.WarpR);
+    }
+    glTexParameteri((int) m_settings.Target,
+                    GL_TEXTURE_MIN_FILTER,
+                    (int) m_settings.MinFilter);
+    glTexParameteri((int) m_settings.Target,
+                    GL_TEXTURE_MAG_FILTER,
+                    (int) m_settings.MagFilter);
+
     if (m_settings.useBorderColor)
     {
-      glTexParameterfv(static_cast<int>(m_settings.Target),
+      glTexParameterfv((int) m_settings.Target,
                        GL_TEXTURE_BORDER_COLOR,
                        &(m_settings.borderColor[0]));
     }
 
-    glGenFramebuffers(1, &m_frameBufferId);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_frameBufferId);
-
-    // Attach 2D texture to this FBO
-#ifndef __EMSCRIPTEN__
-    bool msaaRTunsupported = false;
-    if (glFramebufferTexture2DMultisampleEXT == nullptr)
-    {
-      msaaRTunsupported = true;
-
-      static bool notReported = true;
-      if (notReported)
-      {
-        GetLogger()->Log(
-            "Unsupported Extension: glFramebufferTexture2DMultisampleEXT");
-        notReported = false;
-      }
-    }
-
-    bool goForMsaa = m_settings.Msaa > 0 && !msaaRTunsupported;
-    if (goForMsaa)
-    {
-      if (m_settings.Target == GraphicTypes::Target2D)
-      {
-        glFramebufferTexture2DMultisampleEXT(
-            GL_FRAMEBUFFER,
-            static_cast<int>(m_settings.Attachment),
-            static_cast<int>(m_settings.Target),
-            m_textureId,
-            0,
-            m_settings.Msaa);
-      }
-      else if (m_settings.Target == GraphicTypes::TargetCubeMap)
-      {
-        for (unsigned int i = 0; i < 6; ++i)
-        {
-          glFramebufferTexture2DMultisampleEXT(
-              GL_FRAMEBUFFER,
-              static_cast<int>(m_settings.Attachment),
-              GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-              m_textureId,
-              0,
-              m_settings.Msaa);
-        }
-      }
-    }
-    else
-#endif
-    {
-      glFramebufferTexture(GL_FRAMEBUFFER,
-                           static_cast<int>(m_settings.Attachment),
-                           m_textureId,
-                           0);
-    }
-
-    if (m_settings.DepthStencil)
-    {
-      glGenRenderbuffers(1, &m_depthBufferId);
-      glBindRenderbuffer(GL_RENDERBUFFER, m_depthBufferId);
-
-#ifndef __EMSCRIPTEN__
-      if (goForMsaa)
-      {
-        glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER,
-                                            m_settings.Msaa,
-                                            GL_DEPTH24_STENCIL8,
-                                            m_width,
-                                            m_height);
-      }
-      else
-#endif
-      {
-        glRenderbufferStorage(
-            GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
-      }
-
-      // Attach depth buffer to FBO
-      glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                                GL_DEPTH_STENCIL_ATTACHMENT,
-                                GL_RENDERBUFFER,
-                                m_depthBufferId);
-    }
-
-    if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) !=
-        GL_FRAMEBUFFER_COMPLETE)
-    {
-      m_initiated = false;
-      glDeleteTextures(1, &m_textureId);
-      glDeleteFramebuffers(1, &m_frameBufferId);
-      glDeleteRenderbuffers(1, &m_depthBufferId);
-    }
-    else
-    {
-      m_initiated = true;
-    }
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); // Restore backbuffer.
+    m_initiated = true;
 
     // Restore previous render target.
-    glBindTexture(static_cast<int>(m_settings.Target), currId);
+    glBindTexture((int) m_settings.Target, currId);
   }
 
-  void RenderTarget::UnInit()
-  {
-    Texture::UnInit();
-
-    glDeleteFramebuffers(1, &m_frameBufferId);
-    glDeleteRenderbuffers(1, &m_depthBufferId);
-    m_initiated = false;
-  }
-
-  void RenderTarget::Reconstrcut(uint width,
+  void RenderTarget::Reconstruct(uint width,
                                  uint height,
                                  const RenderTargetSettigs& settings)
   {
@@ -841,6 +589,12 @@ namespace ToolKit
     m_height   = height;
     m_settings = settings;
     Init();
+  }
+
+  void RenderTarget::ReconstructIfNeeded(uint width, uint height)
+  {
+    if (m_width != width || m_height != height)
+      Reconstruct(width, height, m_settings);
   }
 
   const RenderTargetSettigs& RenderTarget::GetSettings() const

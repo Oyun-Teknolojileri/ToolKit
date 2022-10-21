@@ -25,7 +25,7 @@ namespace ToolKit
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
     void UpdateGeometry(bool byTexture) override;
-    void ApplyRecursivResizePolicy(float width, float height);
+    void ApplyRecursiveResizePolicy(float width, float height);
 
    protected:
     void ParameterConstructor();

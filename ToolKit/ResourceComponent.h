@@ -155,6 +155,7 @@ namespace ToolKit
     void Stop();
     void Pause();
     AnimRecordPtr GetActiveRecord();
+    AnimRecordPtr GetAnimRecord(const String& signalName);
     void AddSignal(const String& signalName, AnimRecordPtr record);
     void RemoveSignal(const String& signalName);
 
@@ -165,4 +166,73 @@ namespace ToolKit
     AnimRecordPtr activeRecord;
   };
 
+  static VariantCategory SkeletonComponentCategory{"Skeleton Component", 90};
+  typedef std::shared_ptr<class SkeletonComponent> SkeletonComponentPtr;
+
+  /**
+   * The component that stores skeleton resource reference and dynamic bone
+      transformation info
+   */
+  class DynamicBoneMap;
+  class TK_API SkeletonComponent : public Component
+  {
+   public:
+    TKComponentType(SkeletonComponent);
+
+    /**
+     * Empty constructor.
+     */
+    SkeletonComponent();
+    virtual ~SkeletonComponent();
+    void Init();
+
+    ComponentPtr Copy(Entity* ntt) override;
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+   public:
+    TKDeclareParam(SkeletonPtr, SkeletonResource);
+    DynamicBoneMap* map;
+  };
+
+  typedef std::shared_ptr<class MultiMaterialComponent> MultiMaterialPtr;
+  typedef std::vector<MultiMaterialPtr> MultiMaterialPtrArray;
+
+  static VariantCategory MultiMaterialCompCategory{"Multi-Material Component",
+                                                   90};
+
+  class TK_API MultiMaterialComponent : public Component
+  {
+   public:
+    TKComponentType(MultiMaterialComponent);
+
+    MultiMaterialComponent();
+    virtual ~MultiMaterialComponent();
+
+    /**
+     * Creates a copy of the MaterialComponent. Contained Material is copied
+     * and will be serialized to the scene if the containing Entity gets
+     * serialized.
+     * @param ntt Parent Entity of the component.
+     * @return Copy of the MaterialComponent.
+     */
+    ComponentPtr Copy(Entity* ntt) override;
+
+    void Init(bool flushClientSideArray);
+    void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    void Serialize(XmlDocument* doc, XmlNode* parent) const override;
+    void AddMaterial(MaterialPtr mat);
+    void RemoveMaterial(uint index);
+    const MaterialPtrArray& GetMaterialList() const;
+    MaterialPtrArray& GetMaterialList();
+    void UpdateMaterialList(MeshComponentPtr meshComp);
+
+   private:
+    MaterialPtrArray materials;
+    /**
+     * Component's material resource. In case this object is not null, Renderer
+     * picks this material to render the mesh otherwise falls back to Material
+     * within the Mesh.
+     */
+    // TKDeclareParam(MaterialPtr, Material);
+  };
 } //  namespace ToolKit

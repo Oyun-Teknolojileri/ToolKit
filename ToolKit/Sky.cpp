@@ -7,6 +7,58 @@
 
 namespace ToolKit
 {
+  SkyBase::SkyBase()
+  {
+    ParameterConstructor();
+    ParameterEventConstructor();
+  }
+
+  EntityType SkyBase::GetType() const
+  {
+    return EntityType::Entity_SkyBase;
+  }
+
+  void SkyBase::Init()
+  {
+  }
+
+  void SkyBase::ReInit()
+  {
+    m_initialized = false;
+    Init();
+  }
+
+  void SkyBase::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    Entity::DeSerialize(doc, parent);
+    ParameterEventConstructor();
+  }
+
+  MaterialPtr SkyBase::GetSkyboxMaterial()
+  {
+    return m_skyboxMaterial;
+  }
+
+  CubeMapPtr SkyBase::GetIrradianceMap()
+  {
+    assert(false);
+    return CubeMapPtr();
+  }
+
+  void SkyBase::ParameterConstructor()
+  {
+    DrawSky_Define(true, "Sky", 90, true, true);
+    Illuminate_Define(true, "Sky", 90, true, true);
+    Intensity_Define(
+        0.25f, "Sky", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
+
+    SetNameVal("SkyBase");
+  }
+
+  void SkyBase::ParameterEventConstructor()
+  {
+  }
+
   Sky::Sky()
   {
     EnvironmentComponent* envComp = new EnvironmentComponent;
@@ -35,9 +87,9 @@ namespace ToolKit
     }
 
     // Environment Component
-    EnvironmentComponentPtr envComp    = GetComponent<EnvironmentComponent>();
-    envComp->m_entity                  = this;
-    envComp->GetHdriVal()->m_initiated = false;
+    EnvironmentComponentPtr envComp = GetComponent<EnvironmentComponent>();
+    envComp->m_entity               = this;
+    envComp->GetHdriVal()->UnInit();
     envComp->SetExposureVal(GetExposureVal());
     envComp->Init(true);
 
@@ -54,44 +106,32 @@ namespace ToolKit
         ShaderPath("skyboxVert.shader", true));
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("skyboxFrag.shader", true));
-    m_skyboxMaterial                  = std::make_shared<Material>();
-    m_skyboxMaterial->m_cubeMap       = envComp->GetHdriVal()->m_cubemap;
-    m_skyboxMaterial->m_vertexShader  = vert;
-    m_skyboxMaterial->m_fragmetShader = frag;
+    m_skyboxMaterial                   = std::make_shared<Material>();
+    m_skyboxMaterial->m_cubeMap        = envComp->GetHdriVal()->m_cubemap;
+    m_skyboxMaterial->m_vertexShader   = vert;
+    m_skyboxMaterial->m_fragmentShader = frag;
     m_skyboxMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
     m_skyboxMaterial->Init();
 
     m_initialized = true;
   }
 
-  void Sky::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    Entity::DeSerialize(doc, parent);
-    ParameterEventConstructor();
-  }
-
   MaterialPtr Sky::GetSkyboxMaterial()
   {
-    if (!m_initialized)
-    {
-      Init();
-    }
+    Init();
 
     HdriPtr hdri = GetComponent<EnvironmentComponent>()->GetHdriVal();
     m_skyboxMaterial->m_cubeMap = hdri->m_cubemap;
     return m_skyboxMaterial;
   }
 
+  CubeMapPtr Sky::GetIrradianceMap()
+  {
+    return CubeMapPtr();
+  }
+
   void Sky::ParameterConstructor()
   {
-    DrawSky_Define(true, "Sky", 90, true, true);
-    Illuminate_Define(true, "Sky", 90, true, true);
-    Intensity_Define(GetComponent<EnvironmentComponent>()->GetIntensityVal(),
-                     "Sky",
-                     90,
-                     true,
-                     true,
-                     {false, true, 0.0f, 100000.0f, 0.1f});
     Exposure_Define(GetComponent<EnvironmentComponent>()->GetExposureVal(),
                     "Sky",
                     90,
@@ -111,23 +151,190 @@ namespace ToolKit
 
   void Sky::ParameterEventConstructor()
   {
-    ParamIntensity().m_onValueChangedFn = [this](Value& oldVal,
-                                                 Value& newVal) -> void {
-      GetComponent<EnvironmentComponent>()->SetIntensityVal(
-          std::get<float>(newVal));
-    };
+    ParamIntensity().m_onValueChangedFn.clear();
+    ParamIntensity().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void {
+          GetComponent<EnvironmentComponent>()->SetIntensityVal(
+              std::get<float>(newVal));
+        });
 
-    ParamExposure().m_onValueChangedFn = [this](Value& oldVal,
-                                                Value& newVal) -> void {
-      GetComponent<EnvironmentComponent>()->SetExposureVal(
-          std::get<float>(newVal));
-    };
+    ParamExposure().m_onValueChangedFn.clear();
+    ParamExposure().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void {
+          GetComponent<EnvironmentComponent>()->SetExposureVal(
+              std::get<float>(newVal));
+        });
 
-    ParamHdri().m_onValueChangedFn = [this](Value& oldVal,
-                                            Value& newVal) -> void {
-      GetComponent<EnvironmentComponent>()->SetHdriVal(
-          std::get<HdriPtr>(newVal));
-    };
+    ParamHdri().m_onValueChangedFn.clear();
+    ParamHdri().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void {
+          GetComponent<EnvironmentComponent>()->SetHdriVal(
+              std::get<HdriPtr>(newVal));
+        });
+  }
+
+  GradientSky::GradientSky()
+  {
+    ParameterConstructor();
+    ParameterEventConstructor();
+  }
+
+  GradientSky::~GradientSky()
+  {
+  }
+
+  EntityType GradientSky::GetType() const
+  {
+    return EntityType::Entity_GradientSky;
+  }
+
+  void GradientSky::Init()
+  {
+    if (m_initialized)
+    {
+      return;
+    }
+
+    // Skybox material
+    ShaderPtr vert = GetShaderManager()->Create<Shader>(
+        ShaderPath("skyboxVert.shader", true));
+    ShaderPtr frag = GetShaderManager()->Create<Shader>(
+        ShaderPath("gradientSkyboxFrag.shader", true));
+    m_skyboxMaterial                             = std::make_shared<Material>();
+    m_skyboxMaterial->m_vertexShader             = vert;
+    m_skyboxMaterial->m_fragmentShader           = frag;
+    m_skyboxMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
+    m_skyboxMaterial->Init();
+
+    // Render gradient to cubemap and store the output
+    GenerateGradientCubemap();
+
+    // Create irradiance map from cubemap
+    GenerateIrradianceCubemap();
+
+    m_initialized = true;
+  }
+
+  MaterialPtr GradientSky::GetSkyboxMaterial()
+  {
+    Init();
+
+    m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
+        "topColor", ParameterVariant(GetTopColorVal()));
+    m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
+        "middleColor", ParameterVariant(GetMiddleColorVal()));
+    m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
+        "bottomColor", ParameterVariant(GetBottomColorVal()));
+    m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
+        "exponent", ParameterVariant(GetGradientExponentVal()));
+    return m_skyboxMaterial;
+  }
+
+  CubeMapPtr GradientSky::GetIrradianceMap()
+  {
+    return m_irradianceMap;
+  }
+
+  void GradientSky::ParameterConstructor()
+  {
+    TopColor_Define(Vec3(0.3f, 0.3f, 1.0f), "Sky", 90, true, true, {true});
+    MiddleColor_Define(Vec3(1.0f, 1.0f, 0.8f), "Sky", 90, true, true, {true});
+    BottomColor_Define(Vec3(0.5f, 0.3f, 0.1f), "Sky", 90, true, true, {true});
+    GradientExponent_Define(
+        0.3f, "Sky", 90, true, true, {false, true, 0.0f, 10.0f, 0.02f});
+    IrradianceResolution_Define(
+        64.0f, "Sky", 90, true, true, {false, true, 32.0f, 2048.0f, 2.0f});
+
+    SetNameVal("Gradient Sky");
+  }
+
+  void GradientSky::ParameterEventConstructor()
+  {
+  }
+
+  void GradientSky::GenerateGradientCubemap()
+  {
+    Framebuffer fb;
+    fb.Init({m_size, m_size, 0, false, true});
+
+    const RenderTargetSettigs set = {0,
+                                     false,
+                                     GraphicTypes::TargetCubeMap,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::TypeUnsignedByte,
+                                     Vec4(0.0f)};
+    RenderTarget* cubemap         = new RenderTarget(m_size, m_size, set);
+    cubemap->Init();
+
+    // Create material
+    m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
+        "topColor", ParameterVariant(GetTopColorVal()));
+    m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
+        "middleColor", ParameterVariant(GetMiddleColorVal()));
+    m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
+        "bottomColor", ParameterVariant(GetBottomColorVal()));
+    m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
+        "exponent", ParameterVariant(GetGradientExponentVal()));
+    m_skyboxMaterial->GetRenderState()->depthTestEnabled = false;
+
+    // Views for 6 different angles
+    CameraPtr cam = std::make_shared<Camera>();
+    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
+    Mat4 views[] = {
+        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+
+    for (int i = 0; i < 6; ++i)
+    {
+      Vec3 pos;
+      Quaternion rot;
+      Vec3 sca;
+      DecomposeMatrix(views[i], &pos, &rot, &sca);
+
+      cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
+      cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
+      cam->m_node->SetScale(sca);
+
+      fb.SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                       cubemap,
+                       (Framebuffer::CubemapFace) i);
+
+      GetRenderer()->SetFramebuffer(&fb, true, Vec4(0.0f));
+
+      GetRenderer()->DrawCube(cam.get(), m_skyboxMaterial);
+    }
+
+    m_skyboxMap = std::make_shared<CubeMap>(cubemap->m_textureId);
+
+    // Don't let cubemap object delete this texture along with itself
+    cubemap->m_textureId = 0;
+    SafeDel(cubemap);
+
+    m_skyboxMaterial->GetRenderState()->depthTestEnabled = true;
+  }
+
+  void GradientSky::GenerateIrradianceCubemap()
+  {
+    Texture* irradianceMap = GetRenderer()->GenerateIrradianceCubemap(
+        m_skyboxMap,
+        (uint) GetIrradianceResolutionVal(),
+        (uint) GetIrradianceResolutionVal());
+
+    m_irradianceMap = std::make_shared<CubeMap>(irradianceMap->m_textureId);
+
+    // Don't let cubemap object delete this texture along with itself
+    irradianceMap->m_textureId = 0;
+    SafeDel(irradianceMap);
   }
 
 } // namespace ToolKit

@@ -54,7 +54,7 @@ namespace ToolKit
           // Resize only root canvases.
           if (canvasPanel->m_node->m_parent == nullptr)
           {
-            canvasPanel->ApplyRecursivResizePolicy(width, height);
+            canvasPanel->ApplyRecursiveResizePolicy(width, height);
           }
         }
       }

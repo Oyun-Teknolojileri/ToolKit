@@ -7,7 +7,7 @@
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
 #include "GL/glew.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
@@ -17,8 +17,7 @@
 #include "Surface.h"
 #include "Texture.h"
 #include "ToolKit.h"
-
-#include <glm/gtc/matrix_transform.hpp>
+#include "Types.h"
 
 #include <memory>
 #include <vector>
@@ -608,10 +607,14 @@ namespace ToolKit
 
     LinearGizmo::LinearGizmo() : Gizmo({false, 6.0f, 60.0f})
     {
-      m_handles = {new GizmoHandle(), new GizmoHandle(), new GizmoHandle()};
-      m_handles[0]->m_params.axis = AxisLabel::X;
-      m_handles[1]->m_params.axis = AxisLabel::Y;
-      m_handles[2]->m_params.axis = AxisLabel::Z;
+      m_handles.resize(3);
+      for (uint i = 0; i < 3; i++)
+      {
+        GizmoHandle* gizmo   = new GizmoHandle;
+        gizmo->m_params.axis = (AxisLabel) i;
+        gizmo->m_params.type = GizmoHandle::SolidType::Cone;
+        m_handles[i]         = gizmo;
+      }
 
       Update(0.0f);
     }
@@ -628,13 +631,20 @@ namespace ToolKit
       {
         GizmoHandle* handle = m_handles[i];
         AxisLabel axis      = handle->m_params.axis;
+        p.type              = handle->m_params.type;
         if (m_grabbedAxis == axis)
         {
           p.color = g_selectHighLightPrimaryColor;
         }
-        else
+        else if (axis != AxisLabel::XYZ)
         {
           p.color = g_gizmoColor[static_cast<int>(axis) % 3];
+        }
+        else
+        {
+          p.color  = Vec3(1.0f);
+          p.toeTip = Vec3(0.0f);
+          p.scale  = Vec3(0.8f);
         }
 
         if (IsLocked(axis))
@@ -704,6 +714,28 @@ namespace ToolKit
 
     ScaleGizmo::ScaleGizmo()
     {
+      for (uint i = 0; i < 3; i++)
+      {
+        m_handles[i]->m_params.type = GizmoHandle::SolidType::Cube;
+      }
+
+      for (int i = 3; i < 6; i++)
+      {
+        m_handles.push_back(new QuadHandle());
+        m_handles[i]->m_params.axis = static_cast<AxisLabel>(i);
+      }
+
+      // Central uniform scale cube gizmo
+      {
+        m_handles.push_back(new GizmoHandle());
+        GizmoHandle* cube    = m_handles[6];
+        cube->m_params.axis  = AxisLabel::XYZ;
+        cube->m_params.type  = GizmoHandle::SolidType::Cube;
+        cube->m_params.color = Vec3(1.0);
+        cube->m_params.scale = Vec3(5);
+      }
+
+      Update(0.0);
     }
 
     ScaleGizmo::~ScaleGizmo()

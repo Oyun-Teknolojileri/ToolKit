@@ -48,6 +48,8 @@ namespace ToolKit
     Entity_SpotLight,
     Entity_Canvas,
     Entity_Prefab,
+    Entity_SkyBase,
+    Entity_GradientSky,
     ENTITY_TYPE_COUNT // Holds the size of the enum
   };
 
@@ -77,6 +79,7 @@ namespace ToolKit
     void SetTransformLock(bool vis, bool deep);
     bool IsSurfaceInstance();
     bool IsLightInstance() const;
+    bool IsSkyInstance() const;
     ULongID GetBaseEntityID() const;
     void SetBaseEntityID(ULongID);
 
@@ -200,6 +203,9 @@ namespace ToolKit
     ULongID _parentId;
 
    private:
+    // This should be private, because instantiated entities don't use this list
+    // NOTE: Entity's own functions shouldn't access this either.
+    //  They should use GetComponentPtrArray instead.
     ComponentPtrArray m_components;
 
     /**

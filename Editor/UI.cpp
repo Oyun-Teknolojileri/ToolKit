@@ -6,7 +6,7 @@
 #include "ConsoleWindow.h"
 #include "EditorViewport.h"
 #include "FolderWindow.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "ImGui/imgui_stdlib.h"
 #include "Imgui/imgui_impl_opengl3.h"
 #include "Imgui/imgui_impl_sdl.h"
@@ -15,6 +15,7 @@
 #include "OutlinerWindow.h"
 #include "OverlayUI.h"
 #include "PluginWindow.h"
+#include "PopupWindows.h"
 #include "PropInspector.h"
 #include "SDL.h"
 #include "Util.h"
@@ -34,6 +35,7 @@ namespace ToolKit
     bool UI::m_imguiSampleWindow     = false;
     bool UI::m_showNewSceneWindow    = false;
     float UI::m_hoverTimeForHelp     = 1.0f;
+    UI::Blocker UI::BlockerData;
     UI::Import UI::ImportData;
     UI::SearchFile UI::SearchFileData;
     std::vector<Window*> UI::m_volatileWindows;
@@ -80,6 +82,9 @@ namespace ToolKit
     TexturePtr UI::m_phoneRotateIcon;
     TexturePtr UI::m_studioLightsToggleIcon;
     TexturePtr UI::m_anchorIcn;
+    TexturePtr UI::m_prefabIcn;
+    TexturePtr UI::m_buildIcn;
+    TexturePtr UI::m_addIcon;
 
     void UI::Init()
     {
@@ -286,6 +291,16 @@ namespace ToolKit
       m_anchorIcn = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/anchor_move.png", true));
       m_anchorIcn->Init();
+      m_prefabIcn = GetTextureManager()->Create<Texture>(
+          TexturePath("Icons/scene_data.png", true));
+      m_prefabIcn->Init();
+
+      m_buildIcn = GetTextureManager()->Create<Texture>(
+          TexturePath("Icons/build.png", true));
+      m_buildIcn->Init();
+      m_addIcon = GetTextureManager()->Create<Texture>(
+          TexturePath("Icons/add.png", true));
+      m_addIcon->Init();
     }
 
     void UI::InitTheme()
@@ -374,6 +389,14 @@ namespace ToolKit
           1.00f, 0.60f, 0.00f, 1.00f};
       style->Colors[ImGuiCol_TextSelectedBg] = {
           0.18431373f, 0.39607847f, 0.79215693f, 0.90f};
+
+      // Reverse gamma correction
+      for (int i = 0; i < 55; ++i)
+      {
+        style->Colors[i].x = std::powf(style->Colors[i].x, 2.2f);
+        style->Colors[i].y = std::powf(style->Colors[i].y, 2.2f);
+        style->Colors[i].z = std::powf(style->Colors[i].z, 2.2f);
+      }
     }
 
     void UI::InitSettings()
@@ -425,6 +448,7 @@ namespace ToolKit
       ShowImportWindow();
       ShowSearchForFilesWindow();
       ShowNewSceneWindow();
+      ShowBlocker();
 
       // Show & Destroy if not visible.
       for (int i = static_cast<int>(m_volatileWindows.size()) - 1; i > -1; i--)
@@ -958,6 +982,61 @@ namespace ToolKit
       }
     }
 
+    void UI::ShowBlocker()
+    {
+      if (!BlockerData.Show)
+      {
+        return;
+      }
+
+      IVec2 wp;
+      SDL_GetWindowPosition(g_window, &wp.x, &wp.y);
+
+      ImGuiIO& io = ImGui::GetIO();
+      ImGui::SetNextWindowPos(ImVec2(wp.x + io.DisplaySize.x * 0.5f,
+                                     wp.y + io.DisplaySize.y * 0.5f),
+                              ImGuiCond_Always,
+                              ImVec2(0.5f, 0.5f));
+
+      ImGui::OpenPopup("Blocker");
+      if (ImGui::BeginPopupModal(
+              "Blocker",
+              NULL,
+              ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground |
+                  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize))
+      {
+        CenteredText(BlockerData.Message);
+
+        if (BlockerData.ShowStatusMessages)
+        {
+          CenteredText(g_app->m_statusMsg);
+        }
+
+        if (BlockerData.ShowWaitingDots)
+        {
+          static int dotCnt   = 0;
+          static float lastEp = GetElapsedMilliSeconds();
+          float elp           = GetElapsedMilliSeconds();
+
+          String dots[4] = {"   .   ", "   ..   ", "   ...   ", " "};
+          CenteredText(dots[dotCnt]);
+
+          if (elp - lastEp > 500.0f)
+          {
+            lastEp = elp;
+            dotCnt++;
+
+            if (dotCnt > 3)
+            {
+              dotCnt = 0;
+            }
+          }
+        }
+
+        ImGui::EndPopup();
+      }
+    }
+
     bool UI::ImageButtonDecorless(uint textureID,
                                   const Vec2& size,
                                   bool flipImage)
@@ -1038,9 +1117,6 @@ namespace ToolKit
     float g_centeredTextOffset = 0.0f;
     bool UI::BeginCenteredTextButton(const String& text, const String& id)
     {
-      assert(g_centeredTextOffset == 0.0f &&
-             "Begin / End CenteredTextButton mismatch !");
-
       Vec2 min  = ImGui::GetWindowContentRegionMin();
       Vec2 max  = ImGui::GetWindowContentRegionMax();
       Vec2 size = max - min;
@@ -1063,6 +1139,15 @@ namespace ToolKit
     {
       ImGui::Indent(-g_centeredTextOffset);
       g_centeredTextOffset = 0.0f;
+    }
+
+    void UI::CenteredText(const String& text)
+    {
+      float windowWidth = ImGui::GetWindowSize().x;
+      float textWidth   = ImGui::CalcTextSize(text.c_str()).x;
+
+      ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
+      ImGui::Text(text.c_str());
     }
 
     Window::Window()
@@ -1088,6 +1173,11 @@ namespace ToolKit
     bool Window::IsVisible() const
     {
       return m_visible;
+    }
+
+    bool Window::IsMoving() const
+    {
+      return m_moving;
     }
 
     bool Window::MouseHovers() const
@@ -1160,6 +1250,30 @@ namespace ToolKit
     void Window::HandleStates()
     {
       ImGui::GetIO().WantCaptureMouse = true;
+
+      Vec2 loc = ImGui::GetWindowPos();
+      IVec2 iLoc(loc);
+
+      if (m_moving)
+      {
+        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+        {
+          m_moving = false;
+        }
+      }
+      else
+      {
+        if (VecAllEqual(iLoc, m_location))
+        {
+          m_moving = false;
+        }
+        else
+        {
+          m_moving = true;
+        }
+      }
+
+      m_location = iLoc;
 
       m_mouseHover =
           ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows |
@@ -1281,168 +1395,5 @@ namespace ToolKit
         }
       }
     }
-
-    StringInputWindow::StringInputWindow(const String& name, bool showCancel)
-    {
-      m_name       = name;
-      m_showCancel = showCancel;
-      UI::m_volatileWindows.push_back(this);
-    }
-
-    void StringInputWindow::Show()
-    {
-      if (!m_visible)
-      {
-        return;
-      }
-
-      ImGuiIO& io = ImGui::GetIO();
-      ImGui::SetNextWindowPos(
-          ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
-          ImGuiCond_Once,
-          ImVec2(0.5f, 0.5f));
-
-      ImGui::OpenPopup(m_name.c_str());
-      if (ImGui::BeginPopupModal(
-              m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
-      {
-        if (ImGui::IsWindowAppearing())
-        {
-          ImGui::SetKeyboardFocusHere();
-        }
-
-        ImGui::InputTextWithHint(m_inputLabel.c_str(),
-                                 m_hint.c_str(),
-                                 &m_inputVal,
-                                 ImGuiInputTextFlags_AutoSelectAll);
-
-        // Center buttons.
-        ImGui::BeginTable("##FilterZoom",
-                          m_showCancel ? 4 : 3,
-                          ImGuiTableFlags_SizingFixedFit);
-
-        ImGui::TableSetupColumn("##spaceL", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("##ok");
-        if (m_showCancel)
-        {
-          ImGui::TableSetupColumn("##cancel");
-        }
-        ImGui::TableSetupColumn("##spaceR", ImGuiTableColumnFlags_WidthStretch);
-
-        ImGui::TableNextRow();
-        ImGui::TableNextColumn();
-        ImGui::TableNextColumn();
-
-        if (ImGui::Button("OK", ImVec2(120, 0)))
-        {
-          m_visible = false;
-          m_taskFn(m_inputVal);
-          m_inputVal.clear();
-          ImGui::CloseCurrentPopup();
-        }
-
-        if (m_showCancel)
-        {
-          ImGui::TableNextColumn();
-          if (ImGui::Button("Cancel", ImVec2(120, 0)))
-          {
-            m_visible = false;
-            m_inputVal.clear();
-            ImGui::CloseCurrentPopup();
-          }
-        }
-
-        ImGui::EndTable();
-        ImGui::EndPopup();
-      }
-    }
-
-    YesNoWindow::YesNoWindow(const String& name, const String& msg)
-    {
-      m_name = name;
-      m_msg  = msg;
-      m_buttons.resize(2);
-      m_buttons[0].m_name = "Yes";
-      m_buttons[1].m_name = "No";
-    }
-
-    YesNoWindow::YesNoWindow(const String& name,
-                             const std::vector<ButtonInfo>& buttons,
-                             const String& msg,
-                             bool showCancel)
-    {
-      m_name       = name;
-      m_buttons    = buttons;
-      m_msg        = msg;
-      m_showCancel = showCancel;
-    }
-
-    void YesNoWindow::Show()
-    {
-      if (!m_visible)
-      {
-        return;
-      }
-
-      ImGuiIO& io = ImGui::GetIO();
-      ImGui::SetNextWindowPos(
-          ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
-          ImGuiCond_Once,
-          ImVec2(0.5f, 0.5f));
-
-      ImGui::OpenPopup(m_name.c_str());
-      if (ImGui::BeginPopupModal(
-              m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
-      {
-        if (!m_msg.empty())
-        {
-          ImGui::Text("%s", m_msg.c_str());
-        }
-
-        uint columnCount = (uint) m_buttons.size() + 2;
-        columnCount += m_showCancel ? 1 : 0;
-        // Center buttons.
-        ImGui::BeginTable(
-            "##FilterZoom", columnCount, ImGuiTableFlags_SizingFixedFit);
-
-        ImGui::TableSetupColumn("##spaceL", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("##yes");
-        ImGui::TableSetupColumn("##no");
-        if (m_showCancel)
-        {
-          ImGui::TableSetupColumn("##cancel");
-        }
-        ImGui::TableSetupColumn("##spaceR", ImGuiTableColumnFlags_WidthStretch);
-
-        ImGui::TableNextRow();
-        ImGui::TableNextColumn();
-        ImGui::TableNextColumn();
-
-        for (ButtonInfo& button : m_buttons)
-        {
-          if (ImGui::Button(button.m_name.c_str(), ImVec2(120, 0)))
-          {
-            m_visible = false;
-            button.m_callback();
-            ImGui::CloseCurrentPopup();
-          }
-          ImGui::TableNextColumn();
-        }
-
-        if (m_showCancel)
-        {
-          ImGui::TableNextColumn();
-          if (ImGui::Button("Cancel", ImVec2(120, 0)))
-          {
-            m_visible = false;
-            ImGui::CloseCurrentPopup();
-          }
-        }
-
-        ImGui::EndTable();
-        ImGui::EndPopup();
-      }
-    }
-
   } // namespace Editor
 } // namespace ToolKit

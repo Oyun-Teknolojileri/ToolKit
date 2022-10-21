@@ -46,6 +46,7 @@ namespace ToolKit
       // Window queries.
       bool IsActive() const;
       bool IsVisible() const;
+      bool IsMoving() const;
       bool MouseHovers() const;
       bool CanDispatchSignals() const; // If active & visible & mouse hovers.
 
@@ -66,6 +67,7 @@ namespace ToolKit
       bool m_visible    = true;
       bool m_active     = false;
       bool m_mouseHover = false;
+      bool m_moving     = false; //!< States if window is moving.
 
      public:
       String m_name;
@@ -76,51 +78,6 @@ namespace ToolKit
      private:
       // Internal unique id generator.
       static uint m_baseId;
-    };
-
-    class StringInputWindow : public Window
-    {
-     public:
-      StringInputWindow(const String& name, bool showCancel);
-      void Show() override;
-      Type GetType() const override
-      {
-        return Window::Type::InputPopup;
-      }
-
-     public:
-      std::function<void(const String& val)> m_taskFn;
-      String m_inputVal;
-      String m_inputLabel;
-      String m_hint;
-
-     private:
-      bool m_showCancel;
-    };
-
-    class YesNoWindow : public Window
-    {
-     public:
-      struct ButtonInfo
-      {
-        String m_name;
-        std::function<void()> m_callback;
-      };
-      explicit YesNoWindow(const String& name, const String& msg = "");
-      YesNoWindow(const String& name,
-                  const std::vector<ButtonInfo>& buttons,
-                  const String& msg,
-                  bool showCancel);
-      void Show() override;
-      Type GetType() const override
-      {
-        return Window::Type::InputPopup;
-      }
-
-     public:
-      std::vector<ButtonInfo> m_buttons;
-      String m_msg;
-      bool m_showCancel = false;
     };
 
     class UI
@@ -145,6 +102,7 @@ namespace ToolKit
                              const char* desc,
                              float wait = m_hoverTimeForHelp);
       static void ShowNewSceneWindow();
+      static void ShowBlocker();
 
       // Custom widgets.
       static bool ImageButtonDecorless(uint textureID,
@@ -159,6 +117,7 @@ namespace ToolKit
       static bool BeginCenteredTextButton(const String& text,
                                           const String& id = "");
       static void EndCenteredTextButton();
+      static void CenteredText(const String& text);
 
      public:
       static bool m_showNewSceneWindow;
@@ -168,6 +127,14 @@ namespace ToolKit
 
       // Volatile windows. (Pop-ups etc.)
       static std::vector<Window*> m_volatileWindows;
+
+      static struct Blocker
+      {
+        bool Show               = false;
+        bool ShowStatusMessages = false;
+        bool ShowWaitingDots    = false;
+        String Message          = "Working";
+      } BlockerData;
 
       static struct Import
       {
@@ -228,6 +195,9 @@ namespace ToolKit
       static TexturePtr m_phoneRotateIcon;
       static TexturePtr m_studioLightsToggleIcon;
       static TexturePtr m_anchorIcn;
+      static TexturePtr m_prefabIcn;
+      static TexturePtr m_buildIcn;
+      static TexturePtr m_addIcon;
     };
 
   } // namespace Editor

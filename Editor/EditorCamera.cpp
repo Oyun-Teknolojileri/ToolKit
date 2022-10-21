@@ -1,6 +1,6 @@
 #include "EditorCamera.h"
 
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Mesh.h"
 #include "Primative.h"
 #include "ResourceComponent.h"

@@ -98,6 +98,20 @@ namespace ToolKit
     virtual void Uninit();
     virtual void PostUninit();
 
+    /**
+     * Overrides the default configPath, if not changed relative to editor.exe.
+     * ../Config
+     * @param cfgPath is the new path for default config files. For windows it
+     * could be %appdata%ToolKit.
+     */
+    void SetConfigPath(StringView cfgPath);
+
+    /**
+     * Returns config path if set. It won't return any default path in case if
+     * nothing is set. To access the proper configpath see ConfigPath().
+     */
+    StringView GetConfigPath();
+
     static Main* GetInstance();
     static void SetProxy(Main* proxy);
 
@@ -129,6 +143,7 @@ namespace ToolKit
 
    private:
     static Main* m_proxy;
+    String m_cfgPath;
   };
 
   // Accessors.

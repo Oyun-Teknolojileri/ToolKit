@@ -1,29 +1,31 @@
 <shader>
 	<type name = "fragmentShader" />
+	<include name = "VSM.shader" />
 	<uniform name = "DiffuseTextureInUse" />
-	<uniform nam = "ColorAlpha" />
+	<uniform name = "ColorAlpha" />
 	<source>
 	<!--
 		#version 300 es
-		precision mediump float;
+		precision highp float;
 
-		in vec3 v_normal;
 		in vec2 v_texture;
 
-		uniform int diffuseTextureInUse;
+		uniform int DiffuseTextureInUse;
 		uniform sampler2D s_texture0;
 		uniform float colorAlpha;
 
+		out vec4 fragColor;
+
 		void main()
 		{
-			float alpha = float(1 - diffuseTextureInUse) * colorAlpha
-				+ float(diffuseTextureInUse) * texture(s_texture0, v_texture).a;
+			float alpha = float(1 - DiffuseTextureInUse) * colorAlpha
+				+ float(DiffuseTextureInUse) * texture(s_texture0, v_texture).a;
 			if (alpha < 0.1)
 			{
 				discard;
 			}
 
-			//gl_FragDepth = gl_FragCoord.z;
+			fragColor = vec4(ComputeMoments(gl_FragCoord.z), 0.0, 0.0);
 		}
 	-->
 	</source>

@@ -22,6 +22,27 @@ namespace ToolKit
     // View
     //////////////////////////////////////////////////////////////////////////
 
+    void View::ShowMaterialPtr(const String& uniqueName,
+                               const String& file,
+                               MaterialPtr& var)
+    {
+      DropSubZone(
+          uniqueName,
+          static_cast<uint>(UI::m_materialIcon->m_textureId),
+          file,
+          [&var](const DirectoryEntry& entry) -> void {
+            if (GetResourceType(entry.m_ext) == ResourceType::Material)
+            {
+              var = GetMaterialManager()->Create<Material>(entry.GetFullPath());
+            }
+            else
+            {
+              GetLogger()->WriteConsole(LogType::Error,
+                                        "Only Material Types are accepted.");
+            }
+          });
+    }
+
     void View::ShowVariant(ParameterVariant* var, ComponentPtr comp)
     {
       if (!var->m_exposed)
@@ -197,22 +218,7 @@ namespace ToolKit
         }
 
         String uniqueName = var->m_name + "##" + id;
-        DropSubZone(
-            uniqueName,
-            static_cast<uint>(UI::m_materialIcon->m_textureId),
-            file,
-            [&var](const DirectoryEntry& entry) -> void {
-              if (GetResourceType(entry.m_ext) == ResourceType::Material)
-              {
-                *var =
-                    GetMaterialManager()->Create<Material>(entry.GetFullPath());
-              }
-              else
-              {
-                GetLogger()->WriteConsole(LogType::Error,
-                                          "Only Material Types are accepted.");
-              }
-            });
+        ShowMaterialPtr(uniqueName, file, mref);
       }
       break;
       case ParameterVariant::VariantType::MeshPtr: {
@@ -248,7 +254,7 @@ namespace ToolKit
         }
 
         DropSubZone("Hdri##" + id,
-                    static_cast<uint>(UI::m_imageIcon->m_textureId),
+                    UI::m_imageIcon->m_textureId,
                     file,
                     [&var](const DirectoryEntry& entry) -> void {
                       if (GetResourceType(entry.m_ext) == ResourceType::Hdri)
@@ -264,6 +270,35 @@ namespace ToolKit
                     });
         break;
       }
+      case ParameterVariant::VariantType::SkeletonPtr: {
+        SkeletonPtr mref = var->GetVar<SkeletonPtr>();
+        String file, id;
+        if (mref)
+        {
+          id   = std::to_string(mref->m_id);
+          file = mref->GetFile();
+        }
+
+        auto dropZoneFnc = [&var, &comp](const DirectoryEntry& entry) -> void {
+          if (GetResourceType(entry.m_ext) == ResourceType::Skeleton)
+          {
+            *var = GetSkeletonManager()->Create<Skeleton>(entry.GetFullPath());
+            if (comp->GetType() == ComponentType::SkeletonComponent)
+            {
+              SkeletonComponent* skelComp = (SkeletonComponent*) comp.get();
+              skelComp->Init();
+            }
+          }
+          else
+          {
+            GetLogger()->WriteConsole(LogType::Error,
+                                      "Only skeletons are accepted.");
+          }
+        };
+        DropSubZone(
+            "Skeleton##" + id, UI::m_boneIcon->m_textureId, file, dropZoneFnc);
+      }
+      break;
       case ParameterVariant::VariantType::AnimRecordPtrMap: {
         ShowAnimControllerComponent(var, comp);
       }
@@ -315,7 +350,8 @@ namespace ToolKit
                             ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders |
                                 ImGuiTableFlags_Resizable |
                                 ImGuiTableFlags_Reorderable |
-                                ImGuiTableFlags_ScrollY))
+                                ImGuiTableFlags_ScrollY,
+                            ImVec2(ImGui::GetWindowSize().x - 15, 200)))
       {
         float tableWdth = ImGui::GetItemRectSize().x;
         ImGui::TableSetupColumn(
@@ -613,7 +649,7 @@ namespace ToolKit
         const String& file,
         std::function<void(const DirectoryEntry& entry)> dropAction)
     {
-      if (ImGui::TreeNode(title.c_str()))
+      if (ImGui::TreeNodeEx(title.c_str()))
       {
         DropZone(fallbackIcon, file, dropAction);
         ImGui::TreePop();
@@ -705,7 +741,7 @@ namespace ToolKit
           float res[]     = {size.x, size.y};
           if (ImGui::InputFloat2("New resolution:", res))
           {
-            canvasPanel->ApplyRecursivResizePolicy(res[0], res[1]);
+            canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
           }
 
           if (((surface->m_anchorParams.m_anchorRatios[0] +
@@ -769,7 +805,7 @@ namespace ToolKit
                 ImGui::DragFloat("Offset Bottom",
                                  &surface->m_anchorParams.m_offsets[1]))
             {
-              canvasPanel->ApplyRecursivResizePolicy(res[0], res[1]);
+              canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
             }
           }
 
@@ -781,7 +817,7 @@ namespace ToolKit
                 ImGui::DragFloat("Offset Right",
                                  &surface->m_anchorParams.m_offsets[3]))
             {
-              canvasPanel->ApplyRecursivResizePolicy(res[0], res[1]);
+              canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
             }
           }
 
@@ -948,7 +984,9 @@ namespace ToolKit
                            "\0Mesh Component"
                            "\0Material Component"
                            "\0Environment Component"
-                           "\0Animation Controller Component"))
+                           "\0Animation Controller Component"
+                           "\0Skeleton Component"
+                           "\0Multi-Material Component"))
           {
             Component* newComponent = nullptr;
             switch (dataType)
@@ -965,6 +1003,15 @@ namespace ToolKit
             case 4:
               newComponent = new AnimControllerComponent;
               break;
+            case 5:
+              newComponent = new SkeletonComponent;
+              break;
+            case 6: {
+              MultiMaterialComponent* mmComp = new MultiMaterialComponent;
+              mmComp->UpdateMaterialList(m_entity->GetMeshComponent());
+              newComponent = mmComp;
+            }
+            break;
             default:
               break;
             }
@@ -1005,8 +1052,9 @@ namespace ToolKit
         {
           continue;
         }
+
         // If entity belongs to a prefab,
-        //   Don't show transform lock and transformation
+        // don't show transform lock and transformation.
         bool isFromPrefab = false;
         if (Prefab::GetPrefabRoot(m_entity))
         {
@@ -1023,10 +1071,71 @@ namespace ToolKit
 
           for (ParameterVariant* var : vars)
           {
+            ValueUpdateFn multiUpdate = MultiUpdate(var);
+
+            var->m_onValueChangedFn.push_back(multiUpdate);
             ShowVariant(var, nullptr);
+            var->m_onValueChangedFn.pop_back();
           }
         }
+
+        // If entity is gradient sky create a "Update IBL Textures" button
+        if (m_entity->GetType() == EntityType::Entity_GradientSky &&
+            category.Name.compare("Sky") == 0) // TODO(Osman) test without this
+        {
+          if (UI::BeginCenteredTextButton("Update IBL Textures"))
+          {
+            static_cast<Sky*>(m_entity)->ReInit();
+          }
+          UI::EndCenteredTextButton();
+        }
       }
+    }
+
+    void EntityView::ShowMultiMaterialComponent(
+        ComponentPtr& comp, std::function<bool(const String&)> showCompFunc)
+    {
+      MultiMaterialComponent* mmComp = (MultiMaterialComponent*) comp.get();
+      MaterialPtrArray& matList      = mmComp->GetMaterialList();
+      bool isOpen = showCompFunc(MultiMaterialCompCategory.Name);
+
+      if (isOpen)
+      {
+        uint removeMaterialIndx = UINT32_MAX;
+        for (uint i = 0; i < matList.size(); i++)
+        {
+          MaterialPtr& mat = matList[i];
+          String path, fileName, ext;
+          DecomposePath(mat->GetFile(), &path, &fileName, &ext);
+          String uniqueName = std::to_string(i) + "##" + std::to_string(i);
+          if (UI::ImageButtonDecorless(
+                  UI::m_closeIcon->m_textureId, Vec2(15), false))
+          {
+            removeMaterialIndx = i;
+          }
+          ImGui::SameLine();
+          ShowMaterialPtr(uniqueName, mat->GetFile(), mat);
+        }
+        if (removeMaterialIndx != UINT32_MAX)
+        {
+          mmComp->RemoveMaterial(removeMaterialIndx);
+        }
+
+        ImGui::TreePop();
+      }
+
+      if (UI::BeginCenteredTextButton("Update"))
+      {
+        mmComp->UpdateMaterialList(mmComp->m_entity->GetMeshComponent());
+      }
+      UI::EndCenteredTextButton();
+      ImGui::SameLine();
+      if (ImGui::Button("Add"))
+      {
+        mmComp->AddMaterial(GetMaterialManager()->GetCopyOfDefaultMaterial());
+      }
+      UI::HelpMarker("Update",
+                     "Update material list by first MeshComponent's mesh list");
     }
 
     bool EntityView::ShowComponentBlock(ComponentPtr& comp)
@@ -1035,9 +1144,9 @@ namespace ToolKit
       comp->m_localData.GetCategories(categories, true, true);
 
       bool removeComp = false;
-      for (VariantCategory& category : categories)
-      {
-        String varName = category.Name + "##" + std::to_string(comp->m_id);
+      auto showCompFunc =
+          [comp, this, &removeComp](const String& headerName) -> bool {
+        String varName = headerName + "##" + std::to_string(comp->m_id);
         bool isOpen    = ImGui::TreeNodeEx(
             varName.c_str(), ImGuiTreeNodeFlags_DefaultOpen | g_treeNodeFlags);
 
@@ -1048,10 +1157,16 @@ namespace ToolKit
                 UI::m_closeIcon->m_textureId, ImVec2(15.0f, 15.0f), false) &&
             !removeComp)
         {
-          g_app->m_statusMsg = "Component " + category.Name + " removed.";
+          g_app->m_statusMsg = "Component " + headerName + " removed.";
           removeComp         = true;
         }
         ImGui::PopID();
+
+        return isOpen;
+      };
+      for (VariantCategory& category : categories)
+      {
+        bool isOpen = showCompFunc(category.Name);
 
         if (isOpen)
         {
@@ -1065,6 +1180,11 @@ namespace ToolKit
 
           ImGui::TreePop();
         }
+      }
+      // Multi-Material Component has no parameter variant, show it specifically
+      if (comp->GetType() == ComponentType::MultiMaterialComponent)
+      {
+        ShowMultiMaterialComponent(comp, showCompFunc);
       }
 
       return removeComp;
@@ -1106,6 +1226,9 @@ namespace ToolKit
             ParameterVariant* remove = nullptr;
             for (size_t i = 0; i < vars.size(); i++)
             {
+              ValueUpdateFn multiUpdateFn = MultiUpdate(vars[i]);
+              vars[i]->m_onValueChangedFn.push_back(multiUpdateFn);
+
               ImGui::TableNextRow();
               ImGui::TableSetColumnIndex(0);
 
@@ -1128,7 +1251,11 @@ namespace ToolKit
               }
               break;
               case ParameterVariant::VariantType::Bool: {
-                ImGui::Checkbox(pId.c_str(), var->GetVarPtr<bool>());
+                bool val = var->GetVar<bool>();
+                if (ImGui::Checkbox(pId.c_str(), &val))
+                {
+                  *var = val;
+                }
               }
               break;
               case ParameterVariant::VariantType::Int: {
@@ -1183,6 +1310,7 @@ namespace ToolKit
                     "Parameter %d: %s removed.", i + 1, var->m_name.c_str());
               }
 
+              vars[i]->m_onValueChangedFn.pop_back();
               ImGui::PopID();
             }
 
@@ -1207,7 +1335,7 @@ namespace ToolKit
               {
                 ParameterVariant customVar;
                 // This makes them only visible in Custom Data dropdown.
-                customVar.m_exposed  = false;
+                customVar.m_exposed  = true;
                 customVar.m_editable = true;
                 customVar.m_category = CustomDataCategory;
 
@@ -1279,6 +1407,30 @@ namespace ToolKit
         }
         showCustomDataFnc("Prefab Data", inheritedParams, false);
       }
+    }
+
+    ValueUpdateFn EntityView::MultiUpdate(ParameterVariant* var)
+    {
+      EntityRawPtrArray entities;
+      g_app->GetCurrentScene()->GetSelectedEntities(entities);
+
+      // Remove current selected because its already updated.
+      entities.pop_back();
+
+      ValueUpdateFn multiUpdate = [var, entities](Value& oldVal,
+                                                  Value& newVal) -> void {
+        for (Entity* ntt : entities)
+        {
+          ParameterVariant* vLookUp = nullptr;
+          if (ntt->m_localData.LookUp(
+                  var->m_category.Name, var->m_name, &vLookUp))
+          {
+            vLookUp->SetValue(newVal);
+          }
+        }
+      };
+
+      return multiUpdate;
     }
 
     // PropInspector

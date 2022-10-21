@@ -1,9 +1,15 @@
 #pragma once
 
+#include "ConsoleWindow.h"
 #include "EditorScene.h"
-#include "GlobalDef.h"
+#include "FolderWindow.h"
+#include "Global.h"
+#include "Grid.h"
 #include "Light.h"
+#include "MaterialInspector.h"
+#include "OutlinerWindow.h"
 #include "PluginWindow.h"
+#include "PropInspector.h"
 #include "PublishManager.h"
 #include "ToolKit.h"
 #include "Workspace.h"
@@ -14,29 +20,14 @@
 
 namespace ToolKit
 {
-  class Renderer;
-  class Light;
-  class Cube;
-  class Sphere;
-  class Camera;
-  class Animation;
-  class Billboard;
-
   namespace Editor
   {
-    class EditorViewport;
-    class Grid;
-    class Axis3d;
-    class Cursor;
-    class ConsoleWindow;
-    class FolderWindow;
-    class OutlinerWindow;
-    class PropInspector;
-    class MaterialInspector;
-    class Window;
-    class Gizmo;
-    class PublishManager;
-    using AnchorPtr = std::shared_ptr<class Anchor>;
+
+    typedef std::shared_ptr<class Anchor> AnchorPtr;
+
+    typedef std::function<void(int)> SysCommandDoneCallback;
+    typedef std::function<int(StringView, bool, bool, SysCommandDoneCallback)>
+        SysCommandExecutionFn;
 
     class App : Serializable
     {
@@ -54,8 +45,28 @@ namespace ToolKit
       void OnQuit();
       void OnNewProject(const String& name);
       void SetGameMod(GameMod mod);
+      void CompilePlugin();
       EditorScenePtr GetCurrentScene();
       void SetCurrentScene(const EditorScenePtr& scene);
+
+      /**
+       * Executes the given system command.
+       * @param cmd utf-8 formatted command string to execute.
+       * @param async states that if the command will be run async or not.
+       * @param showConsole states that the console that executes the cmd will
+       * be shown or not.
+       * @param callback function to call when the operation completed.
+       * @return 0 if command can be started successfully.
+       */
+      int ExecSysCommand(
+          StringView cmd,
+          bool async,
+          bool showConsole,
+          /**
+           * Callback function upon completion of the system command.
+           * @param int is the return value of the cmd.
+           */
+          SysCommandDoneCallback callback = nullptr);
 
       // UI.
       void ResetUI();
@@ -111,6 +122,9 @@ namespace ToolKit
       void RenderComponentGizmo(EditorViewport* viewport,
                                 EntityRawPtrArray selecteds);
 
+      void HideGizmos();
+      void ShowGizmos();
+
       void ShowSimulationWindow(float deltaTime);
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
@@ -150,7 +164,15 @@ namespace ToolKit
       // 3 point lighting system.
       Node* m_lightMaster = nullptr;
       LightRawPtrArray m_sceneLights; // { 0:key 1:fill, 2:back }
-      bool m_studioLightsActive = true;
+      enum LightMode : ubyte
+      {
+        EditorLit,
+        Unlit,
+        FullyLit,
+        LightComplexity,
+        LightingOnly
+      };
+      LightMode m_sceneLightingMode = EditorLit;
 
       // Editor states.
       int m_fps                                = 0;
@@ -164,9 +186,10 @@ namespace ToolKit
       bool m_windowMaximized                   = false;
       byte m_showGraphicsApiErrors             = 0;
       TransformationSpace m_transformSpace     = TransformationSpace::TS_WORLD;
+      PublishManager* m_publishManager         = nullptr;
+      GameMod m_gameMod                        = GameMod::Stop;
+      SysCommandExecutionFn m_sysComExecFn     = nullptr;
       Workspace m_workspace;
-      PublishManager* m_publishManager = nullptr;
-      GameMod m_gameMod                = GameMod::Stop;
 
       // Snap settings.
       bool m_snapsEnabled = false; // Delta transforms.
@@ -179,8 +202,8 @@ namespace ToolKit
 
      private:
       // Internal states.
-      bool m_onNewScene = false;
-      bool m_onQuit     = false;
+      bool m_onQuit = false;
+      String m_newSceneName;
     };
 
     extern void DebugMessage(const String& msg);

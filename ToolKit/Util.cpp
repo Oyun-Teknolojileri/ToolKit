@@ -245,6 +245,11 @@ namespace ToolKit
     return nullptr;
   }
 
+  TK_API bool CheckSystemFile(StringView path)
+  {
+    return std::filesystem::exists(path);
+  }
+
   bool CheckFile(const String& path)
   {
     return GetFileManager()->CheckFileFromResources(path);
@@ -434,6 +439,11 @@ namespace ToolKit
     if (ext == SCENE)
     {
       return ResourceType::Scene;
+    }
+
+    if (ext == SKELETON)
+    {
+      return ResourceType::Skeleton;
     }
 
     assert(false);
@@ -725,6 +735,11 @@ namespace ToolKit
     const size_t strRange = strEnd - strBegin + 1;
 
     return str.substr(strBegin, strRange);
+  }
+
+  TK_API bool EndsWith(const String& str, const String& suffix)
+  {
+    return str.rfind(suffix) == glm::abs(str.size() - suffix.size());
   }
 
   LineBatch* CreatePlaneDebugObject(PlaneEquation plane, float size)

@@ -1,29 +1,14 @@
 <shader>
-	<type name = "vertexShader" />
-	<uniform name = "ProjectViewModel" />
+	<type name = "includeShader" />
 	<source>
 	<!--
-      #version 300 es
-      struct Bone
-      {
-         mat4 transform;
-         mat4 bindPose;
-      };
-      in vec3 vPosition;
-      in vec3 vNormal;
-      in vec2 vTexture;
-      in vec3 vBiTan;
-      in uvec4 vBones;
-      in vec4 vWeights;
-      uniform mat4 ProjectViewModel;
+      layout(location = 4) in uvec4 vBones;
+      layout(location = 5) in vec4 vWeights;
+
+      uniform float numBones;
       uniform sampler2D s_texture2;  // This is static data, bindPose texture
       uniform sampler2D s_texture3; // This is dynamic data, boneTransform texture
-      uniform float numBones;
-      out vec3 v_pos;
-      out vec3 v_normal;
-      out vec2 v_texture;
-      out vec3 v_bitan;
-      
+
       mat4 getMatrixFromTexture(sampler2D boneText, uint boneIndx) {
          float v = (float(boneIndx) / numBones);
          float step = 1.0f / (numBones * 4.0f);
@@ -42,15 +27,6 @@
          }
          return skinned;
       }
-      void main()
-      {
-         gl_Position = skin(vec4(vPosition, 1.0f));
-         v_pos = gl_Position.xyz;
-         gl_Position = ProjectViewModel * gl_Position;
-         v_texture = vTexture;
-         v_normal = vNormal;
-         v_bitan = vBiTan;
-      };
 	-->
 	</source>
 </shader>

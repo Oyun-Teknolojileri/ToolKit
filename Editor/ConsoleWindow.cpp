@@ -1,10 +1,11 @@
 #include "ConsoleWindow.h"
 
+#include "App.h"
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "EditorViewport.h"
 #include "Entity.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Logger.h"
 #include "Mod.h"
 #include "Node.h"
@@ -133,11 +134,6 @@ namespace ToolKit
           if (tsStr == "world")
           {
             ts = TransformationSpace::TS_WORLD;
-          }
-
-          if (tsStr == "parent")
-          {
-            ts = TransformationSpace::TS_PARENT;
           }
 
           if (tsStr == "local")
@@ -335,11 +331,6 @@ namespace ToolKit
           PrintTransform(TransformationSpace::TS_WORLD);
         }
 
-        if (tsStr == "parent")
-        {
-          PrintTransform(TransformationSpace::TS_PARENT);
-        }
-
         if (tsStr == "local")
         {
           PrintTransform(TransformationSpace::TS_LOCAL);
@@ -362,11 +353,6 @@ namespace ToolKit
       if (tsStr == "world")
       {
         g_app->m_transformSpace = TransformationSpace::TS_WORLD;
-      }
-
-      if (tsStr == "parent")
-      {
-        g_app->m_transformSpace = TransformationSpace::TS_PARENT;
       }
 
       if (tsStr == "local")
@@ -555,7 +541,7 @@ namespace ToolKit
       GetPluginManager()->Load(plugin);
     }
 
-    void ShowDirectionalLightShadowFrustum(TagArgArray tagArgs)
+    void ShowShadowFrustum(TagArgArray tagArgs)
     {
       BoolCheck(tagArgs, &g_app->m_showDirectionalLightShadowFrustum);
     }
@@ -617,8 +603,7 @@ namespace ToolKit
       CreateCommand(g_showGraphicsApiLogs, ShowGraphicsApiLogs);
       CreateCommand(g_setWorkspaceDir, SetWorkspaceDir);
       CreateCommand(g_loadPlugin, LoadPlugin);
-      CreateCommand(g_showDirectionalLightShadowFrustum,
-                    ShowDirectionalLightShadowFrustum);
+      CreateCommand(g_showShadowFrustum, ShowShadowFrustum);
     }
 
     ConsoleWindow::~ConsoleWindow()

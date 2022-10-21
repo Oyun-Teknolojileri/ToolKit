@@ -35,7 +35,6 @@ namespace ToolKit
     MeshComponentPtr mc = std::make_shared<MeshComponent>();
     mc->m_localData     = m_localData;
     mc->m_entity        = ntt;
-
     return mc;
   }
 
@@ -151,15 +150,15 @@ namespace ToolKit
       hdri->Init(true);
     };
 
-    ParamExposure().m_onValueChangedFn =
+    ParamExposure().m_onValueChangedFn.push_back(
         [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void {
-      reInitHdriFn(GetHdriVal(), std::get<float>(newVal));
-    };
+          reInitHdriFn(GetHdriVal(), std::get<float>(newVal));
+        });
 
-    ParamHdri().m_onValueChangedFn =
+    ParamHdri().m_onValueChangedFn.push_back(
         [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void {
-      reInitHdriFn(std::get<HdriPtr>(newVal), GetExposureVal());
-    };
+          reInitHdriFn(std::get<HdriPtr>(newVal), GetExposureVal());
+        });
   }
 
   ComponentPtr EnvironmentComponent::Copy(Entity* ntt)
@@ -230,7 +229,10 @@ namespace ToolKit
   }
   AnimControllerComponent::~AnimControllerComponent()
   {
-    Stop();
+    if (activeRecord != nullptr)
+    {
+      GetAnimationPlayer()->RemoveRecord(activeRecord->m_id);
+    }
   }
 
   ComponentPtr AnimControllerComponent::Copy(Entity* ntt)
@@ -238,6 +240,15 @@ namespace ToolKit
     AnimControllerComponentPtr ec = std::make_shared<AnimControllerComponent>();
     ec->m_localData               = m_localData;
     ec->m_entity                  = ntt;
+    for (auto& record : ec->ParamRecords().GetVar<AnimRecordPtrMap>())
+    {
+      AnimRecordPtr newRecord = std::make_shared<AnimRecord>();
+      ULongID p_id            = newRecord->m_id;
+      *newRecord              = *record.second;
+      newRecord->m_id         = p_id;
+      newRecord->m_entity     = ntt;
+      record.second           = newRecord;
+    }
 
     return ec;
   }
@@ -304,9 +315,147 @@ namespace ToolKit
   {
     activeRecord->m_state = AnimRecord::State::Pause;
   }
+
   AnimRecordPtr AnimControllerComponent::GetActiveRecord()
   {
     return activeRecord;
   }
+  AnimRecordPtr AnimControllerComponent::GetAnimRecord(const String& signalName)
+  {
+    AnimRecordPtrMap& records = ParamRecords().GetVar<AnimRecordPtrMap>();
+    const auto& recordIter    = records.find(signalName);
+    if (recordIter != records.end())
+    {
+      return recordIter->second;
+    }
+    return nullptr;
+  }
 
+  SkeletonComponent::SkeletonComponent()
+  {
+    SkeletonResource_Define(nullptr,
+                            SkeletonComponentCategory.Name,
+                            SkeletonComponentCategory.Priority,
+                            true,
+                            true);
+
+    map = nullptr;
+  }
+
+  SkeletonComponent::~SkeletonComponent()
+  {
+    if (map)
+    {
+      delete map;
+    }
+  }
+  void SkeletonComponent::Init()
+  {
+    const SkeletonPtr& resource = GetSkeletonResourceVal();
+    if (resource == nullptr)
+    {
+      return;
+    }
+
+    map = new DynamicBoneMap;
+    map->Init(resource.get());
+  }
+
+  ComponentPtr SkeletonComponent::Copy(Entity* ntt)
+  {
+    SkeletonComponentPtr dst = std::make_shared<SkeletonComponent>();
+    dst->m_entity            = ntt;
+
+    dst->SetSkeletonResourceVal(GetSkeletonResourceVal());
+    dst->Init();
+
+    return dst;
+  }
+  void SkeletonComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    Component::DeSerialize(doc, parent);
+    map = new DynamicBoneMap;
+    map->Init(GetSkeletonResourceVal().get());
+  }
+
+  MultiMaterialComponent::MultiMaterialComponent()
+  {
+  }
+
+  MultiMaterialComponent::~MultiMaterialComponent()
+  {
+  }
+
+  ComponentPtr MultiMaterialComponent::Copy(Entity* ntt)
+  {
+    return nullptr;
+  }
+
+  void MultiMaterialComponent::Init(bool flushClientSideArray)
+  {
+  }
+  const char *XmlMatCountAttrib = "MaterialCount", *XmlMatIdAttrib = "ID";
+  void MultiMaterialComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    Component::DeSerialize(doc, parent);
+    uint matCount = 0;
+    ReadAttr(parent, XmlMatCountAttrib, matCount);
+    materials.resize(matCount);
+    for (uint i = 0; i < materials.size(); i++)
+    {
+      XmlNode* resourceNode = parent->first_node(std::to_string(i).c_str());
+      if (!resourceNode)
+      {
+        materials[i] = GetMaterialManager()->GetCopyOfDefaultMaterial();
+        continue;
+      }
+      materials[i] = GetMaterialManager()->Create<Material>(
+          MaterialPath(Resource::DeserializeRef(resourceNode)));
+    }
+  }
+  void MultiMaterialComponent::Serialize(XmlDocument* doc,
+                                         XmlNode* parent) const
+  {
+    Component::Serialize(doc, parent);
+    XmlNode* compNode = parent->last_node(XmlComponent.c_str());
+    WriteAttr(
+        compNode, doc, XmlMatCountAttrib, std::to_string(materials.size()));
+    for (uint i = 0; i < materials.size(); i++)
+    {
+      XmlNode* resourceRefNode =
+          CreateXmlNode(doc, std::to_string(i), compNode);
+      materials[i]->SerializeRef(doc, resourceRefNode);
+    }
+  }
+  void MultiMaterialComponent::AddMaterial(MaterialPtr mat)
+  {
+    materials.push_back(mat);
+  }
+  void MultiMaterialComponent::RemoveMaterial(uint index)
+  {
+    assert(materials.size() >= index && "Material List overflow");
+    materials.erase(materials.begin() + index);
+  }
+  const MaterialPtrArray& MultiMaterialComponent::GetMaterialList() const
+  {
+    return materials;
+  }
+  MaterialPtrArray& MultiMaterialComponent::GetMaterialList()
+  {
+    return materials;
+  }
+  void MultiMaterialComponent::UpdateMaterialList(MeshComponentPtr meshComp)
+  {
+    if (meshComp == nullptr || meshComp->GetMeshVal() == nullptr)
+    {
+      return;
+    }
+    MeshRawPtrArray meshCollector;
+    meshComp->GetMeshVal()->GetAllMeshes(meshCollector);
+    materials.resize(meshCollector.size());
+    for (uint i = 0; i < meshCollector.size(); i++)
+    {
+      materials[i] = meshCollector[i]->m_material;
+    }
+  }
 } //  namespace ToolKit

@@ -61,7 +61,7 @@ namespace ToolKit
     node->SetChildrenDirty();
   }
 
-  void Animation::GetPose(const SkeletonPtr& skeleton, float time)
+  void Animation::GetPose(const SkeletonComponentPtr& skeleton, float time)
   {
     if (m_keys.empty())
     {
@@ -70,9 +70,9 @@ namespace ToolKit
 
     float ratio;
     int key1, key2;
-    for (Bone* bone : skeleton->m_bones)
+    for (auto& dBoneIter : skeleton->map->boneList)
     {
-      auto entry = m_keys.find(bone->m_name);
+      auto entry = m_keys.find(dBoneIter.first);
       if (entry == m_keys.end())
       {
         continue;
@@ -92,16 +92,17 @@ namespace ToolKit
         continue;
       }
 
-      Key k1 = entry->second[key1];
-      Key k2 = entry->second[key2];
-      bone->m_node->m_translation =
+      Key k1                             = entry->second[key1];
+      Key k2                             = entry->second[key2];
+      DynamicBoneMap::DynamicBone& dBone = dBoneIter.second;
+      dBone.node->m_translation =
           Interpolate(k1.m_position, k2.m_position, ratio);
 
-      bone->m_node->m_orientation =
+      dBone.node->m_orientation =
           glm::slerp(k1.m_rotation, k2.m_rotation, ratio);
 
-      bone->m_node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
-      bone->m_node->SetChildrenDirty();
+      dBone.node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
+      dBone.node->SetChildrenDirty();
     }
   }
 

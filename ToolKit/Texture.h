@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Renderer.h"
 #include "Resource.h"
 #include "ResourceManager.h"
 #include "Types.h"
@@ -9,21 +8,19 @@
 
 namespace ToolKit
 {
-  class Viewport;
-  class Renderer;
 
   class TK_API Texture : public Resource
   {
    public:
-    TKResourceType(Texture)
+    TKResourceType(Texture);
 
-        explicit Texture(bool floatFormat = false);
+    explicit Texture(bool floatFormat = false);
     explicit Texture(String file, bool floatFormat = false);
     explicit Texture(uint textureId);
     virtual ~Texture();
 
     void Load() override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
    protected:
@@ -50,7 +47,7 @@ namespace ToolKit
     ~CubeMap();
 
     void Load() override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
    protected:
@@ -83,20 +80,12 @@ namespace ToolKit
     virtual ~Hdri();
 
     void Load() override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
     bool IsTextureAssigned();
-    uint GetCubemapId();
-    void SetCubemapId(uint id);
-    uint GetIrradianceCubemapId();
-    void SetIrradianceCubemapId(uint id);
-
-   protected:
-    void CreateFramebuffersForCubeMaps();
-    void DeleteFramebuffers();
-    void GenerateCubemapFrom2DTexture();
-    void GenerateIrradianceMap();
+    CubeMapPtr GetCubemap();
+    CubeMapPtr GetIrradianceCubemap();
 
    private:
     uint GenerateCubemapBuffers(struct CubeMapSettings cubeMapSettings);
@@ -117,17 +106,11 @@ namespace ToolKit
     MaterialPtr m_texToCubemapMat           = nullptr;
     MaterialPtr m_cubemapToIrradiancemapMat = nullptr;
     TexturePtr m_equirectangularTexture     = nullptr;
-
-    uint m_fbo           = 0;
-    uint m_rbo           = 0;
-    uint m_irradianceFbo = 0;
-    uint m_irradianceRbo = 0;
   };
 
   struct RenderTargetSettigs
   {
     byte Msaa                   = 0;
-    bool DepthStencil           = true;
     bool useBorderColor         = false;
     GraphicTypes Target         = GraphicTypes::Target2D;
     GraphicTypes WarpS          = GraphicTypes::UVRepeat;
@@ -138,7 +121,6 @@ namespace ToolKit
     GraphicTypes InternalFormat = GraphicTypes::FormatRGBA;
     GraphicTypes Format         = GraphicTypes::FormatRGBA;
     GraphicTypes Type           = GraphicTypes::TypeUnsignedByte;
-    GraphicTypes Attachment     = GraphicTypes::ColorAttachment0;
     Vec4 borderColor            = Vec4(0.0f);
   };
 
@@ -151,21 +133,16 @@ namespace ToolKit
     RenderTarget(uint widht,
                  uint height,
                  const RenderTargetSettigs& settings = RenderTargetSettigs());
-    virtual ~RenderTarget();
 
     void Load() override;
-    void Init(bool flushClientSideArray = true) override;
-    void UnInit() override;
-    void Reconstrcut(uint width,
+    void Init(bool flushClientSideArray = false) override;
+    void Reconstruct(uint width,
                      uint height,
                      const RenderTargetSettigs& settings);
+    void ReconstructIfNeeded(uint width, uint height);
     const RenderTargetSettigs& GetSettings() const;
 
    public:
-    uint m_frameBufferId = 0;
-    uint m_depthBufferId = 0;
-
-   private:
     RenderTargetSettigs m_settings;
   };
 

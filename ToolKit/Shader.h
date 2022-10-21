@@ -9,10 +9,17 @@
 
 namespace ToolKit
 {
+  enum class ShaderType
+  {
+    VertexShader,
+    FragmentShader,
+    IncludeShader
+  };
 
   enum class Uniform
   {
     PROJECT_MODEL_VIEW,
+    VIEW,
     MODEL,
     INV_TR_MODEL,
     LIGHT_DATA,
@@ -26,7 +33,9 @@ namespace ToolKit
     IBL_INTENSITY,
     IBL_IRRADIANCE,
     DIFFUSE_TEXTURE_IN_USE,
-    COLOR_ALPHA
+    COLOR_ALPHA,
+    USE_AO,
+    IBL_ROTATION
   };
 
   class TK_API Shader : public Resource
@@ -39,19 +48,23 @@ namespace ToolKit
     virtual ~Shader();
 
     void Load() override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
     void SetShaderParameter(String param, const ParameterVariant& val);
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+   private:
+    void HandleShaderIncludes(const String& file);
+
    public:
     std::unordered_map<String, ParameterVariant> m_shaderParams;
 
     String m_tag;
-    GraphicTypes m_shaderType = GraphicTypes::VertexShader;
+    ShaderType m_shaderType = ShaderType::VertexShader;
     uint m_shaderHandle       = 0;
+    StringArray m_includeFiles;
     std::vector<Uniform> m_uniforms;
     String m_source;
   };

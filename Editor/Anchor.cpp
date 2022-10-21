@@ -7,7 +7,7 @@
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
 #include "GL/glew.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
@@ -319,30 +319,30 @@ namespace ToolKit
           mesh->m_subMeshes.push_back(m_handles[i]->m_mesh);
       }
 
-      {
-        Vec3 canvasPoints[4], surfacePoints[4];
-        surface->CalculateAnchorOffsets(canvasPoints, surfacePoints);
+      //{
+      //  Vec3 canvasPoints[4], surfacePoints[4];
+      //  surface->CalculateAnchorOffsets(canvasPoints, surfacePoints);
 
-        //{
-        //  Vec3Array pnts = { surfacePoints[0], surfacePoints[3],
-        //    surfacePoints[1], surfacePoints[2] };
+      //  {
+      //    Vec3Array pnts = { surfacePoints[0], surfacePoints[3],
+      //      surfacePoints[1], surfacePoints[2] };
 
-        //  LineBatch guide(
-        //    pnts, Vec4(0.81f, 0.24f, 0.44f, 0.7f), DrawType::Line, 2.5f);
-        //  MeshPtr guideMesh =
-        //  guide.GetComponent<MeshComponent>()->GetMeshVal();
-        //  mesh->m_subMeshes.push_back(guideMesh);
-        //}
+      //    LineBatch guide(
+      //      pnts, Vec4(0.81f, 0.24f, 0.44f, 0.7f), DrawType::Line, 2.5f);
+      //    MeshPtr guideMesh =
+      //    guide.GetComponent<MeshComponent>()->GetMeshVal();
+      //    mesh->m_subMeshes.push_back(guideMesh);
+      //  }
 
-        // Vec3Array pnts = { canvasPoints[0], canvasPoints[3], canvasPoints[1],
-        //   canvasPoints[2] };
+      //   Vec3Array pnts = { canvasPoints[0], canvasPoints[3], canvasPoints[1],
+      //     canvasPoints[2] };
 
-        // LineBatch guide(
-        //   pnts, Vec4(0.11f, 0.84f, 0.34f, 0.7f), DrawType::Line, 2.5f);
-        // MeshPtr guideMesh =
-        // guide.GetComponent<MeshComponent>()->GetMeshVal();
-        // mesh->m_subMeshes.push_back(guideMesh);
-      }
+      //   LineBatch guide(
+      //     pnts, Vec4(0.11f, 0.84f, 0.34f, 0.7f), DrawType::Line, 2.5f);
+      //   MeshPtr guideMesh =
+      //   guide.GetComponent<MeshComponent>()->GetMeshVal();
+      //   mesh->m_subMeshes.push_back(guideMesh);
+      //}
 
       if (m_lastHovered != DirectionLabel::None ||
           GetGrabbedDirection() != DirectionLabel::None)

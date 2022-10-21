@@ -9,9 +9,10 @@
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
 #include "FolderWindow.h"
+#include "Framebuffer.h"
 #include "GL/glew.h"
 #include "Gizmo.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Grid.h"
 #include "MaterialInspector.h"
 #include "Mod.h"
@@ -19,6 +20,7 @@
 #include "OutlinerWindow.h"
 #include "OverlayUI.h"
 #include "PluginWindow.h"
+#include "PopupWindows.h"
 #include "Primative.h"
 #include "PropInspector.h"
 #include "Renderer.h"
@@ -64,13 +66,18 @@ namespace ToolKit
 
       m_workspace.Init();
       String sceneName = "New Scene" + SCENE;
+      if (!m_newSceneName.empty())
+      {
+        sceneName = m_newSceneName;
+      }
+
       EditorScenePtr scene =
           std::make_shared<EditorScene>(ScenePath(sceneName));
 
       scene->m_name     = sceneName;
       scene->m_newScene = true;
       SetCurrentScene(scene);
-      ApplyProjectSettings(m_onNewScene);
+      ApplyProjectSettings(false);
 
       if (!CheckFile(m_workspace.GetActiveWorkspace()))
       {
@@ -91,6 +98,8 @@ namespace ToolKit
 
       m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager               = new PublishManager();
+      GetRenderer()->m_clearColor =
+          Vec4(0.007024517f, 0.00959683f, 0.018735119f, 1.0f);
     }
 
     void App::Destroy()
@@ -181,13 +190,10 @@ namespace ToolKit
       // Take all lights in an array
       LightRawPtrArray totalLights;
 
-      if (m_studioLightsActive)
+      totalLights = GetCurrentScene()->GetLights();
+      if (m_sceneLightingMode == EditorLit)
       {
         totalLights = m_sceneLights;
-      }
-      else
-      {
-        totalLights = GetCurrentScene()->GetLights();
       }
 
       // Sort lights by type
@@ -204,7 +210,7 @@ namespace ToolKit
         // Update scene lights for the current view.
         Camera* viewCam = viewport->GetCamera();
         m_lightMaster->OrphanSelf();
-        if (m_studioLightsActive)
+        if (m_sceneLightingMode == EditorLit)
         {
           viewCam->m_node->AddChild(m_lightMaster);
         }
@@ -224,6 +230,37 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
+          switch (m_sceneLightingMode)
+          {
+          case LightComplexity: {
+            MaterialPtr lightComplexity = std::make_shared<Material>();
+            lightComplexity->m_fragmentShader =
+                GetShaderManager()->Create<Shader>(
+                    ShaderPath("ToolKit/lightComplexity.shader"));
+            lightComplexity->Init();
+            m_renderer->m_overrideMat = lightComplexity;
+          }
+          break;
+          case LightingOnly: {
+            MaterialPtr lightingOnly       = std::make_shared<Material>();
+            lightingOnly->m_fragmentShader = GetShaderManager()->Create<Shader>(
+                ShaderPath("ToolKit/lightingOnly.shader"));
+            lightingOnly->Init();
+            m_renderer->m_overrideMat = lightingOnly;
+          }
+          break;
+          case Unlit: {
+            MaterialPtr unlit = GetMaterialManager()->GetCopyOfUnlitMaterial();
+            unlit->Init();
+            m_renderer->m_overrideMat            = unlit;
+            m_renderer->m_overrideDiffuseTexture = true;
+          }
+          break;
+          default:
+            m_renderer->m_overrideMat            = nullptr;
+            m_renderer->m_overrideDiffuseTexture = false;
+          }
+
           // Render scene.
           m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
 
@@ -289,7 +326,7 @@ namespace ToolKit
 
       // Viewports set their own render target.
       // Set the app framebuffer back for UI.
-      m_renderer->SetRenderTarget(nullptr);
+      m_renderer->SetFramebuffer(nullptr);
 
       // Render UI.
       UI::EndUI();
@@ -308,13 +345,11 @@ namespace ToolKit
 
     void App::OnNewScene(const String& name)
     {
-      m_onNewScene = true;
-
       Destroy();
+      m_newSceneName = name;
       Init();
-      CreateAndSetNewScene(name);
+      m_newSceneName.clear();
       m_workspace.SetScene(name);
-      m_onNewScene = false;
     }
 
     void App::OnSaveScene()
@@ -342,9 +377,9 @@ namespace ToolKit
                      " exist on the disk.\nOverride the existing scene ?";
         YesNoWindow* overrideScene =
             new YesNoWindow("Override existing file##OvrdScn", msg);
-        overrideScene->m_buttons[0].m_callback = [&saveFn]() { saveFn(); };
+        overrideScene->m_yesCallback = [&saveFn]() { saveFn(); };
 
-        overrideScene->m_buttons[1].m_callback = []() {
+        overrideScene->m_noCallback = []() {
           g_app->GetConsole()->AddLog(
               "Scene has not been saved.\n"
               "A scene with the same name exist. Use File->SaveAs.",
@@ -389,13 +424,13 @@ namespace ToolKit
         YesNoWindow* reallyQuit =
             new YesNoWindow("Quiting... Are you sure?##ClsApp");
 
-        reallyQuit->m_buttons[0].m_callback = [this]() {
+        reallyQuit->m_yesCallback = [this]() {
           m_workspace.Serialize(nullptr, nullptr);
           Serialize(nullptr, nullptr);
           g_running = false;
         };
 
-        reallyQuit->m_buttons[1].m_callback = [this]() { m_onQuit = false; };
+        reallyQuit->m_noCallback = [this]() { m_onQuit = false; };
 
         UI::m_volatileWindows.push_back(reallyQuit);
         m_onQuit = true;
@@ -537,6 +572,47 @@ namespace ToolKit
       }
     }
 
+    void App::CompilePlugin()
+    {
+      String codePath = m_workspace.GetCodePath();
+      String buildDir = ConcatPaths({codePath, "build"});
+
+      // create a build dir if not exist.
+      std::filesystem::create_directories(buildDir);
+
+      // Update project files in case of change.
+      String cmd  = "cmake -S " + codePath + " -B " + buildDir;
+      m_statusMsg = "Compiling ..." + g_statusNoTerminate;
+      ExecSysCommand(cmd, true, false, [this, buildDir](int res) -> void {
+        String cmd = "cmake --build " + buildDir;
+        ExecSysCommand(cmd, false, false, [=](int res) -> void {
+          if (res)
+          {
+            m_statusMsg = "Compile Failed.";
+
+            String detail;
+            if (res == 1)
+            {
+              detail = "CMake Build Failed.";
+            }
+
+            if (res == -1)
+            {
+              detail = "CMake Generate Failed.";
+            }
+
+            GetLogger()->WriteConsole(
+                LogType::Error, "%s %s", m_statusMsg.c_str(), detail.c_str());
+          }
+          else
+          {
+            m_statusMsg = "Compiled.";
+            GetLogger()->WriteConsole(LogType::Memo, "%s", m_statusMsg.c_str());
+          }
+        });
+      });
+    }
+
     EditorScenePtr App::GetCurrentScene()
     {
       EditorScenePtr eScn = std::static_pointer_cast<EditorScene>(
@@ -548,6 +624,19 @@ namespace ToolKit
     void App::SetCurrentScene(const EditorScenePtr& scene)
     {
       GetSceneManager()->SetCurrentScene(scene);
+    }
+
+    int App::ExecSysCommand(StringView cmd,
+                            bool async,
+                            bool showConsole,
+                            SysCommandDoneCallback callback)
+    {
+      if (m_sysComExecFn)
+      {
+        return m_sysComExecFn(cmd, async, showConsole, callback);
+      }
+
+      return -1;
     }
 
     void App::ResetUI()
@@ -760,7 +849,7 @@ namespace ToolKit
           cmd += "\" -s " + std::to_string(UI::ImportData.scale);
 
           // Execute command
-          result = std::system(cmd.c_str());
+          result = ExecSysCommand(cmd.c_str(), false, false);
           assert(result != -1);
         }
 
@@ -1122,26 +1211,21 @@ namespace ToolKit
           return;
         }
 
-        RenderTargetSettigs rtSet;
-        rtSet.WarpS = rtSet.WarpT = GraphicTypes::UVClampToEdge;
-        RenderTarget stencilMask(static_cast<int>(viewport->m_size.x),
-                                 static_cast<int>(viewport->m_size.y),
-                                 rtSet);
-        stencilMask.Init();
-
-        m_renderer->SetRenderTarget(
-            &stencilMask, true, {0.0f, 0.0f, 0.0f, 1.0});
+        m_renderer->SetFramebuffer(
+            viewport->m_selectedFramebuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
 
         glEnable(GL_STENCIL_TEST);
         glStencilMask(0xFF);
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
         glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        glClear(GL_STENCIL_BUFFER_BIT);
 
         // webgl create problem with depth only drawing with textures.
         static MaterialPtr solidMat =
             GetMaterialManager()->GetCopyOfSolidMaterial();
         solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
+        MaterialPtr overrideMatPrev          = m_renderer->m_overrideMat;
         m_renderer->m_overrideMat            = solidMat;
 
         bool isLight = false;
@@ -1179,7 +1263,7 @@ namespace ToolKit
           }
         }
 
-        m_renderer->m_overrideMat = nullptr;
+        m_renderer->m_overrideMat = overrideMatPrev;
 
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
@@ -1190,13 +1274,14 @@ namespace ToolKit
         m_renderer->DrawFullQuad(solidColor);
         glDisable(GL_STENCIL_TEST);
 
-        m_renderer->SetRenderTarget(viewport->m_viewportImage, false);
+        m_renderer->SetFramebuffer(viewport->m_framebuffer, false);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         // Dilate.
-        GetRenderer()->SetTexture(0, stencilMask.m_textureId);
+        GetRenderer()->SetTexture(0,
+                                  viewport->m_selectedStencilRT->m_textureId);
         ShaderPtr dilate = GetShaderManager()->Create<Shader>(
             ShaderPath("dilateFrag.shader", true));
         dilate->SetShaderParameter("Color", ParameterVariant(color));
@@ -1301,6 +1386,32 @@ namespace ToolKit
       }
     }
 
+    void App::HideGizmos()
+    {
+      for (Entity* ntt : GetCurrentScene()->GetEntities())
+      {
+        // Light and camera gizmos
+        if (ntt->IsLightInstance() ||
+            ntt->GetType() == EntityType::Entity_Camera)
+        {
+          ntt->SetVisibility(false, false);
+        }
+      }
+    }
+
+    void App::ShowGizmos()
+    {
+      for (Entity* ntt : GetCurrentScene()->GetEntities())
+      {
+        // Light and camera gizmos
+        if (ntt->IsLightInstance() ||
+            ntt->GetType() == EntityType::Entity_Camera)
+        {
+          ntt->SetVisibility(true, false);
+        }
+      }
+    }
+
     void App::ShowSimulationWindow(float deltaTime)
     {
       if (GamePlugin* plugin = GetPluginManager()->GetGamePlugin())
@@ -1326,10 +1437,9 @@ namespace ToolKit
             }
             playWindow = m_simulationWindow;
           }
-          m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
+          HideGizmos();
           plugin->Frame(deltaTime, playWindow);
-
-          m_renderer->SwapRenderTarget(&playWindow->m_viewportImage);
+          ShowGizmos();
         }
       }
     }
@@ -1339,10 +1449,18 @@ namespace ToolKit
       m_workspace.Serialize(nullptr, nullptr);
 
       std::ofstream file;
-      String fileName = ConcatPaths(
-          {m_workspace.GetProjectConfigPath(), g_editorSettingsFile});
+      String cfgPath  = m_workspace.GetProjectConfigPath();
+      String fileName = ConcatPaths({cfgPath, g_editorSettingsFile});
 
-      file.open(fileName.c_str(), std::ios::out);
+      // File or Config folder is missing.
+      std::ios::openmode openMode = std::ios::out;
+      if (!CheckSystemFile(fileName))
+      {
+        std::filesystem::create_directories(cfgPath);
+        openMode = std::ios::app;
+      }
+
+      file.open(fileName.c_str(), openMode);
       if (file.is_open())
       {
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();

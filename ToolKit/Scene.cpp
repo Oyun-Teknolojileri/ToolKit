@@ -413,13 +413,13 @@ namespace ToolKit
   }
 
   // Returns the last sky added
-  Sky* Scene::GetSky()
+  SkyBase* Scene::GetSky()
   {
     for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; --i)
     {
-      if (m_entities[i]->GetType() == EntityType::Entity_Sky)
+      if (m_entities[i]->IsSkyInstance())
       {
-        return static_cast<Sky*>(m_entities[i]);
+        return static_cast<SkyBase*>(m_entities[i]);
       }
     }
 
@@ -441,8 +441,14 @@ namespace ToolKit
 
   void Scene::Destroy(bool removeResources)
   {
-    for (Entity* ntt : m_entities)
+    for (uint nttIndx = 0; nttIndx < m_entities.size(); nttIndx++)
     {
+      Entity* ntt = m_entities[nttIndx];
+      if (Prefab::GetPrefabRoot(ntt) &&
+          ntt->GetType() != EntityType::Entity_Prefab)
+      {
+        continue;
+      }
       if (removeResources)
       {
         ntt->RemoveResources();

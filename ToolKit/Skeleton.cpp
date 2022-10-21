@@ -14,29 +14,130 @@
 namespace ToolKit
 {
 
-  Bone::Bone(String name)
+  StaticBone::StaticBone(String name)
   {
-    m_name                 = name;
-    m_node                 = new Node();
-    m_node->m_inheritScale = true;
+    m_name = name;
   }
 
-  Bone::~Bone()
+  StaticBone::~StaticBone()
   {
+    /*
     m_node->m_parent = nullptr;
-    m_node->m_children.clear();
-    SafeDel(m_node);
+    m_node->m_children.clear();*/
+  }
+  // Create a texture such that there is mat4x4 per bone
+  TexturePtr CreateBoneTransformTexture(const Skeleton* skeleton)
+  {
+    TexturePtr ptr     = std::make_shared<Texture>();
+    ptr->m_floatFormat = true;
+    ptr->m_height      = 1;
+    ptr->m_width       = static_cast<int>(skeleton->m_bones.size()) * 4;
+    ptr->m_name        = skeleton->m_name + " BindPoseTexture";
+
+    glGenTextures(1, &ptr->m_textureId);
+    glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA32F,
+                 ptr->m_width,
+                 ptr->m_height,
+                 0,
+                 GL_RGBA,
+                 GL_FLOAT,
+                 nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    ptr->m_initiated = true;
+    ptr->m_loaded    = true;
+    return ptr;
+  }
+  void uploadBoneMatrix(Mat4 mat, TexturePtr& ptr, uint boneIndx)
+  {
+    glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
+    glTexSubImage2D(
+        GL_TEXTURE_2D, 0, boneIndx * 4, 0, 4, 1, GL_RGBA, GL_FLOAT, &mat);
+  };
+
+  void DynamicBoneMap::AddDynamicBone(const String& boneName,
+                                      DynamicBoneMap::DynamicBone& bone,
+                                      DynamicBoneMap::DynamicBone* parent)
+  {
+    if (parent)
+    {
+      parent->node->AddChild(bone.node);
+    }
+
+    boneList.insert(std::make_pair(boneName, bone));
+  }
+
+  void DynamicBoneMap::Init(const Skeleton* skeleton)
+  {
+    assert(skeleton->m_bones.size() != 0);
+
+    // Create a copy of each bone (but create new pointers for Nodes)
+    for (const auto& tPoseBone : skeleton->m_Tpose.boneList)
+    {
+      DynamicBone newBone;
+      newBone.boneIndx = tPoseBone.second.boneIndx;
+      newBone.node     = new Node();
+      *newBone.node    = *tPoseBone.second.node;
+      boneList.insert(std::make_pair(tPoseBone.first, newBone));
+    }
+    // Fix parent/child relations
+    //  ChildBone's node points to Skeleton's list rather than newly created one
+    for (const auto& tPoseBone : skeleton->m_Tpose.boneList)
+    {
+      auto& newBoneIter = boneList[tPoseBone.first];
+
+      // Find the index of the each child bone in T-Pose list
+      // Then set newBone's child bone pointer to the child
+      for (Node*& childBoneNode : newBoneIter.node->m_children)
+      {
+        for (const auto& tPoseSearchBone : skeleton->m_Tpose.boneList)
+        {
+          if (tPoseSearchBone.second.node == childBoneNode)
+          {
+            childBoneNode           = boneList[tPoseSearchBone.first].node;
+            childBoneNode->m_parent = newBoneIter.node;
+            break;
+          }
+        }
+      }
+    }
+
+    boneTransformNodeTexture = CreateBoneTransformTexture(skeleton);
+  }
+  void DynamicBoneMap::UpdateGPUTexture()
+  {
+    for (auto& dBoneIter : boneList)
+    {
+      const String& name = dBoneIter.first;
+      DynamicBone& dBone = dBoneIter.second;
+      uploadBoneMatrix(dBone.node->GetTransform(TransformationSpace::TS_WORLD),
+                       boneTransformNodeTexture,
+                       dBone.boneIndx);
+    }
+  }
+  DynamicBoneMap::~DynamicBoneMap()
+  {
+    for (auto& dBoneIter : boneList)
+    {
+      dBoneIter.second.node->m_parent = nullptr;
+      dBoneIter.second.node->m_children.clear();
+      SafeDel(dBoneIter.second.node);
+      dBoneIter.second.node = nullptr;
+    }
+    boneList.clear();
   }
 
   Skeleton::Skeleton()
   {
-    m_node = new Node();
   }
 
   Skeleton::Skeleton(String file)
   {
     SetFile(file);
-    m_node = new Node();
   }
 
   Skeleton::~Skeleton()
@@ -50,40 +151,73 @@ namespace ToolKit
 
   // Find skeleton's each child bone from its child nodes
   // Then call childProcessFunc (should be recursive to traverse all childs)
-  void ForEachChildBoneNode(const Skeleton* skltn,
-                            std::function<void(const Bone*)> childProcessFunc)
+  void DynamicBoneMap::ForEachRootBone(
+      std::function<void(const DynamicBone*)> childProcessFunc) const
   {
-    // For each parent bone of the skeleton, write bones recursively
-    for (Node* childNode : skltn->m_node->m_children)
+    // For each parent bone of the skeleton, access child bones recursively
+    for (auto& bone : boneList)
     {
-      // Find child node
-      Bone* childBone = nullptr;
-      for (Bone* boneSearch : skltn->m_bones)
+      if (bone.second.node->m_parent == nullptr)
       {
-        if (boneSearch->m_node == childNode)
+        Node* childNode = bone.second.node;
+        // Dynamic child node
+        const DynamicBone* childBone = nullptr;
+        for (auto& boneSearch : boneList)
         {
-          childBone = boneSearch;
-          break;
+          if (boneSearch.second.node == childNode)
+          {
+            childBone = &boneSearch.second;
+            break;
+          }
+        }
+        // If there is a child bone
+        if (childBone)
+        {
+          childProcessFunc(childBone);
         }
       }
-      // If there is a child bone
-      if (childBone)
+    }
+  }
+  void DynamicBoneMap::ForEachRootBone(
+      std::function<void(DynamicBone*)> childProcessFunc)
+  {
+    // For each parent bone of the skeleton, access child bones recursively
+    for (auto& bone : boneList)
+    {
+      if (bone.second.node->m_parent == nullptr)
       {
-        childProcessFunc(childBone);
+        Node* childNode = bone.second.node;
+        // Dynamic child node
+        DynamicBone* childBone = nullptr;
+        for (auto& boneSearch : boneList)
+        {
+          if (boneSearch.second.node == childNode)
+          {
+            childBone = &boneSearch.second;
+            break;
+          }
+        }
+        // If there is a child bone
+        if (childBone)
+        {
+          childProcessFunc(childBone);
+        }
       }
     }
   }
 
   void Skeleton::UnInit()
   {
+    /*
     uint32_t deletedCount = 0;
-    std::function<void(const Bone*)> deleteBone =
-        [this, &deleteBone, &deletedCount](const Bone* parentBone) -> void {
+    std::function<void(const StaticBone*)> deleteBone =
+        [this, &deleteBone, &deletedCount](
+            const StaticBone* parentBone) -> void {
       for (Node* childNode : parentBone->m_node->m_children)
       {
         // Find child bone
-        Bone* childBone = nullptr;
-        for (Bone* boneSearch : this->m_bones)
+        StaticBone* childBone = nullptr;
+        for (StaticBone* boneSearch : this->m_bones)
         {
           if (boneSearch->m_node == childNode)
           {
@@ -103,7 +237,12 @@ namespace ToolKit
     ForEachChildBoneNode(this, deleteBone);
     m_node->m_children.clear();
     SafeDel(m_node);
+    */
 
+    for (StaticBone* sBone : m_bones)
+    {
+      SafeDel(sBone);
+    }
     m_bones.clear();
     m_initiated = false;
   }
@@ -122,13 +261,14 @@ namespace ToolKit
   }
 
   void WriteBone(const Skeleton* skeleton,
-                 const Bone* bone,
+                 const DynamicBoneMap::DynamicBone* dBone,
                  XmlDocument* doc,
                  XmlNode* parentNode)
   {
-    XmlNode* boneXmlNode = CreateXmlNode(doc, "bone", parentNode);
+    const StaticBone* sBone = skeleton->m_bones[dBone->boneIndx];
+    XmlNode* boneXmlNode    = CreateXmlNode(doc, "bone", parentNode);
 
-    WriteAttr(boneXmlNode, doc, "name", bone->m_name.c_str());
+    WriteAttr(boneXmlNode, doc, "name", sBone->m_name.c_str());
 
     auto writeTransformFnc =
         [doc](XmlNode* parent, Vec3 tra, Quaternion rot, Vec3 scale) {
@@ -144,28 +284,28 @@ namespace ToolKit
 
     // Bone Node Transform
     writeTransformFnc(boneXmlNode,
-                      bone->m_node->GetTranslation(),
-                      bone->m_node->GetOrientation(),
-                      bone->m_node->GetScale());
+                      dBone->node->GetTranslation(),
+                      dBone->node->GetOrientation(),
+                      dBone->node->GetScale());
 
     // Bind Pose Transform
     XmlNode* bindPoseNode = CreateXmlNode(doc, "bindPose", boneXmlNode);
     {
       Vec3 tra, scale;
       Quaternion rot;
-      DecomposeMatrix(bone->m_inverseWorldMatrix, &tra, &rot, &scale);
+      DecomposeMatrix(sBone->m_inverseWorldMatrix, &tra, &rot, &scale);
       writeTransformFnc(bindPoseNode, tra, rot, scale);
     }
 
-    for (Node* childNode : bone->m_node->m_children)
+    for (Node* childNode : dBone->node->m_children)
     {
       // Find child bone
-      Bone* childBone = nullptr;
-      for (Bone* boneSearch : skeleton->m_bones)
+      const DynamicBoneMap::DynamicBone* childBone = nullptr;
+      for (auto& boneSearch : skeleton->m_Tpose.boneList)
       {
-        if (boneSearch->m_node == childNode)
+        if (boneSearch.second.node == childNode)
         {
-          childBone = boneSearch;
+          childBone = &boneSearch.second;
           break;
         }
       }
@@ -180,119 +320,17 @@ namespace ToolKit
   {
     XmlNode* container = CreateXmlNode(doc, "skeleton", parent);
 
-    auto writeBoneFnc = [doc, container, this](const Bone* childBone) -> void {
+    auto writeBoneFnc =
+        [doc, container, this](
+            const DynamicBoneMap::DynamicBone* childBone) -> void {
       WriteBone(this, childBone, doc, container);
     };
-    ForEachChildBoneNode(this, writeBoneFnc);
-  }
-  void Skeleton::DeSerialize(XmlDocument* doc, XmlNode* parent)
-  {
-    if (parent == nullptr)
-    {
-      return;
-    }
-
-    for (XmlNode* node = parent->first_node("bone"); node;
-         node          = node->next_sibling())
-    {
-      Traverse(node, nullptr);
-    }
-
-    m_loaded = true;
+    m_Tpose.ForEachRootBone(writeBoneFnc);
   }
 
-  void Skeleton::AddBone(Bone* bone, Bone* parent)
-  {
-    if (parent == nullptr)
-    {
-      m_node->AddChild(bone->m_node);
-    }
-    else
-    {
-      parent->m_node->AddChild(bone->m_node);
-    }
-
-    m_bones.push_back(bone);
-  }
-
-  int Skeleton::GetBoneIndex(String bone)
-  {
-    for (size_t i = 0; i < m_bones.size(); i++)
-    {
-      if (m_bones[i]->m_name.compare(bone) == 0)
-      {
-        return static_cast<int>(i);
-      }
-    }
-
-    return -1;
-  }
-
-  Bone* Skeleton::GetBone(String bone)
-  {
-    int index = GetBoneIndex(bone);
-    if (index == -1)
-    {
-      return nullptr;
-    }
-    return m_bones[index];
-  }
-  void Skeleton::UpdateTransformationTexture()
-  {
-    auto createBoneTexture = [this](TexturePtr& ptr) {
-      ptr                = std::make_shared<Texture>();
-      ptr->m_floatFormat = true;
-      ptr->m_height      = 1;
-      ptr->m_width       = static_cast<int>(m_bones.size()) * 4;
-      ptr->m_name        = m_name + " BindPoseTexture";
-
-      glGenTextures(1, &ptr->m_textureId);
-      glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
-      glTexImage2D(GL_TEXTURE_2D,
-                   0,
-                   GL_RGBA32F,
-                   ptr->m_width,
-                   ptr->m_height,
-                   0,
-                   GL_RGBA,
-                   GL_FLOAT,
-                   nullptr);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-      ptr->m_initiated = true;
-      ptr->m_loaded    = true;
-    };
-    auto uploadBoneMatrix = [](Mat4 mat, TexturePtr& ptr, uint boneIndx) {
-      glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
-      glTexSubImage2D(
-          GL_TEXTURE_2D, 0, boneIndx * 4, 0, 4, 1, GL_RGBA, GL_FLOAT, &mat);
-    };
-
-    if (m_bindPoseTexture == nullptr)
-    {
-      createBoneTexture(m_bindPoseTexture);
-      for (uint64_t boneIndx = 0; boneIndx < m_bones.size(); boneIndx++)
-      {
-        uploadBoneMatrix(m_bones[boneIndx]->m_inverseWorldMatrix,
-                         m_bindPoseTexture,
-                         static_cast<uint>(boneIndx));
-      }
-    }
-    if (m_boneTransformTexture == nullptr)
-    {
-      createBoneTexture(m_boneTransformTexture);
-    }
-    for (uint bnIndx = 0; bnIndx < static_cast<uint>(m_bones.size()); bnIndx++)
-    {
-      uploadBoneMatrix(
-          m_bones[bnIndx]->m_node->GetTransform(TransformationSpace::TS_WORLD),
-          m_boneTransformTexture,
-          (uint) bnIndx);
-    }
-  }
-
-  void Skeleton::Traverse(XmlNode* node, Bone* parent)
+  void Traverse(XmlNode* node,
+                DynamicBoneMap::DynamicBone* parent,
+                Skeleton* skeleton)
   {
     if (node == nullptr)
     {
@@ -306,15 +344,23 @@ namespace ToolKit
       return;
     }
 
-    Bone* bone       = new Bone(attr->value());
-    XmlNode* subNode = node->first_node("translation");
-    ReadVec(subNode, bone->m_node->m_translation);
+    StaticBone* sBone                 = new StaticBone(attr->value());
+    DynamicBoneMap::DynamicBone dBone = {};
+    dBone.node                        = new Node();
+    dBone.node->m_inheritScale        = true;
+    XmlNode* subNode                  = node->first_node("translation");
+    Vec3 temp;
+    ReadVec(subNode, temp);
+    dBone.node->SetTranslation(temp);
 
     subNode = node->first_node("scale");
-    ReadVec(subNode, bone->m_node->m_scale);
+    ReadVec(subNode, temp);
+    dBone.node->SetScale(temp);
 
+    Quaternion tempRot;
     subNode = node->first_node("rotation");
-    ReadVec(subNode, bone->m_node->m_orientation);
+    ReadVec(subNode, tempRot);
+    dBone.node->SetOrientation(tempRot);
 
     XmlNode* bindPoseNode = node->first_node("bindPose");
     if (bindPoseNode != nullptr)
@@ -337,16 +383,71 @@ namespace ToolKit
       sclm     = glm::scale(sclm, scl);
       Mat4 rtm = glm::toMat4(rt);
 
-      bone->m_inverseWorldMatrix = tsm * rtm * sclm;
+      sBone->m_inverseWorldMatrix = tsm * rtm * sclm;
     }
 
-    AddBone(bone, parent);
+    dBone.boneIndx = uint(skeleton->m_bones.size());
+    skeleton->m_bones.push_back(sBone);
+    skeleton->m_Tpose.AddDynamicBone(sBone->m_name, dBone, parent);
 
-    for (subNode = node->first_node("bone"); subNode;
-         subNode = subNode->next_sibling())
+    for (XmlNode* subNode = node->first_node("bone"); subNode;
+         subNode          = subNode->next_sibling())
     {
-      Traverse(subNode, bone);
+      Traverse(subNode, &dBone, skeleton);
     }
+  }
+  void Skeleton::DeSerialize(XmlDocument* doc, XmlNode* parent)
+  {
+    if (parent == nullptr)
+    {
+      return;
+    }
+
+    for (XmlNode* node = parent->first_node("bone"); node;
+         node          = node->next_sibling())
+    {
+      Traverse(node, nullptr, this);
+    }
+
+    m_bindPoseTexture = CreateBoneTransformTexture(this);
+    for (uint64_t boneIndx = 0; boneIndx < m_bones.size(); boneIndx++)
+    {
+      uploadBoneMatrix(m_bones[boneIndx]->m_inverseWorldMatrix,
+                       m_bindPoseTexture,
+                       static_cast<uint>(boneIndx));
+    }
+
+    m_loaded = true;
+  }
+
+  int Skeleton::GetBoneIndex(String bone)
+  {
+    for (size_t i = 0; i < m_bones.size(); i++)
+    {
+      if (m_bones[i]->m_name.compare(bone) == 0)
+      {
+        return static_cast<int>(i);
+      }
+    }
+
+    return -1;
+  }
+
+  StaticBone* Skeleton::GetBone(String bone)
+  {
+    int index = GetBoneIndex(bone);
+    if (index == -1)
+    {
+      return nullptr;
+    }
+    return m_bones[index];
+  }
+
+  void Skeleton::CopyTo(Resource* other)
+  {
+    Skeleton* dst = static_cast<Skeleton*>(other);
+    dst->SetFile(GetFile());
+    dst->Load();
   }
 
   SkeletonManager::SkeletonManager()

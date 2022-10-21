@@ -3,7 +3,7 @@
 #include "App.h"
 #include "EditorCamera.h"
 #include "EditorViewport.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Prefab.h"
 #include "Util.h"
 
@@ -382,7 +382,8 @@ namespace ToolKit
       // Check environment component
       EnvironmentComponentPtr envCom =
           entity->GetComponent<EnvironmentComponent>();
-      if (envCom != nullptr)
+      if (envCom != nullptr ||
+          entity->GetType() == EntityType::Entity_GradientSky)
       {
         SkyBillboard* billboard = new SkyBillboard();
         addBillboardFn(billboard);
@@ -482,7 +483,8 @@ namespace ToolKit
       bool check = false;
       if (type == EditorBillboardBase::BillboardType::Sky)
       {
-        check = entity->GetComponent<EnvironmentComponent>() != nullptr;
+        check = entity->GetComponent<EnvironmentComponent>() != nullptr ||
+                entity->GetType() == EntityType::Entity_GradientSky;
       }
       else if (type == EditorBillboardBase::BillboardType::Light)
       {

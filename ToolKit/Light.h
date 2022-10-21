@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Entity.h"
+#include "Framebuffer.h"
 #include "Primative.h"
 #include "Types.h"
 
@@ -8,6 +9,7 @@
 
 namespace ToolKit
 {
+  class Framebuffer;
   class TK_API Light : public Entity
   {
    public:
@@ -22,7 +24,9 @@ namespace ToolKit
     // Shadow operations
     virtual void InitShadowMap();
     virtual void UnInitShadowMap();
-    RenderTarget* GetShadowMapRenderTarget();
+    FramebufferPtr GetShadowMapFramebuffer();
+    RenderTargetPtr GetShadowMapRenderTarget();
+    RenderTargetPtr GetShadowMapTempBlurRt();
     MaterialPtr GetShadowMaterial();
 
    protected:
@@ -33,22 +37,23 @@ namespace ToolKit
     TKDeclareParam(Vec3, Color);
     TKDeclareParam(float, Intensity);
     TKDeclareParam(bool, CastShadow);
-    TKDeclareParam(float, FixedBias);
-    TKDeclareParam(float, SlopedBias);
-    TKDeclareParam(float, NormalBias);
     TKDeclareParam(Vec2, ShadowResolution);
-    TKDeclareParam(float, PCFSampleSize);
-    TKDeclareParam(int, PCFKernelSize);
+    TKDeclareParam(int, PCFSamples);
+    TKDeclareParam(float, PCFRadius);
+    TKDeclareParam(float, ShadowThickness);
+    TKDeclareParam(float, LightBleedingReduction);
 
     bool m_isStudioLight = false;
     Mat4 m_shadowMapCameraProjectionViewMatrix;
-    float m_shadowMapCameraFar;
+    float m_shadowMapCameraFar = 1.0f;
 
    protected:
-    bool m_shadowMapInitialized       = false;
-    bool m_shadowMapResolutionChanged = false;
-    MaterialPtr m_shadowMapMaterial   = nullptr;
-    RenderTarget* m_depthRenderTarget = nullptr;
+    bool m_shadowMapInitialized           = false;
+    bool m_shadowMapResolutionChanged     = false;
+    MaterialPtr m_shadowMapMaterial       = nullptr;
+    FramebufferPtr m_depthFramebuffer     = nullptr;
+    RenderTargetPtr m_shadowRt            = nullptr;
+    RenderTargetPtr m_shadowMapTempBlurRt = nullptr;
   };
 
   class TK_API DirectionalLight : public Light
@@ -59,7 +64,18 @@ namespace ToolKit
 
     EntityType GetType() const override;
 
+    void UpdateShadowMapCamera(Camera* cam, const EntityRawPtrArray& entities);
     Vec3Array GetShadowFrustumCorners();
+
+   private:
+    // Fits the entities into the shadow map camera frustum. As the scene gets
+    // bigger, the resolution gets lower.
+    void FitEntitiesBBoxIntoShadowFrustum(Camera* lightCamera,
+                                          const EntityRawPtrArray& entities);
+    // Fits view frustum of the camera into shadow map camera frustum. As the
+    // view frustum gets bigger, the resolution gets lower.
+    void FitViewFrustumIntoLightFrustum(Camera* lightCamera,
+                                        Camera* viewCamera);
   };
 
   class TK_API PointLight : public Light
@@ -73,13 +89,13 @@ namespace ToolKit
     EntityType GetType() const override;
 
     void InitShadowMap() override;
+    void UpdateShadowMapCamera(Camera* cam);
 
    protected:
     void InitShadowMapDepthMaterial() override;
 
    public:
     TKDeclareParam(float, Radius);
-    TKDeclareParam(int, PCFLevel);
   };
 
   class TK_API SpotLight : public Light
@@ -91,6 +107,8 @@ namespace ToolKit
     }
 
     EntityType GetType() const override;
+
+    void UpdateShadowMapCamera(Camera* cam);
 
    protected:
     void InitShadowMapDepthMaterial() override;

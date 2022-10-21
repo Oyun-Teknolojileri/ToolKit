@@ -74,9 +74,8 @@ namespace ToolKit
     const String g_loadPlugin("LoadPlugin");
     void LoadPlugin(TagArgArray tagArgs);
 
-    const String g_showDirectionalLightShadowFrustum(
-        "ShowDirectionalLightShadowFrustum");
-    void ShowDirectionalLightShadowFrustum(TagArgArray tagArgs);
+    const String g_showShadowFrustum("ShowShadowFrustum");
+    void ShowShadowFrustum(TagArgArray tagArgs);
 
     // Command errors
     const String g_noValidEntity("No valid entity");

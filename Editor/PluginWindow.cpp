@@ -3,7 +3,7 @@
 #include "App.h"
 #include "ConsoleWindow.h"
 #include "EditorViewport2d.h"
-#include "GlobalDef.h"
+#include "Global.h"
 
 #include <utility>
 
@@ -42,7 +42,7 @@ namespace ToolKit
         ShowHeader();
         ImGui::Separator();
 
-        ShowSimButtons();
+        ShowActionButtons();
         ImGui::Separator();
 
         ShowSettings();
@@ -65,7 +65,7 @@ namespace ToolKit
       Window::DeSerialize(doc, parent);
     }
 
-    void PluginWindow::UpdateSimWndSize()
+    void PluginWindow::UpdateSimulationWndSize()
     {
       if (g_app->m_simulationWindow)
       {
@@ -102,7 +102,7 @@ namespace ToolKit
       }
     }
 
-    void PluginWindow::ShowSimButtons()
+    void PluginWindow::ShowActionButtons()
     {
       Vec2 min  = ImGui::GetWindowContentRegionMin();
       Vec2 max  = ImGui::GetWindowContentRegionMax();
@@ -110,7 +110,7 @@ namespace ToolKit
 
       // Draw play - pause - stop buttons.
       float btnWidth = 24.0f;
-      float offset   = (size.x - btnWidth * 4.0f) * 0.5f;
+      float offset   = (size.x - btnWidth * 5.0f) * 0.5f;
 
       ImGui::SameLine(offset);
       float curYoff = ImGui::GetCursorPosY() + 10.0f;
@@ -119,12 +119,11 @@ namespace ToolKit
       if (g_app->m_gameMod == GameMod::Playing)
       {
         // Blue tint.
-        ImGui::PushStyleColor(ImGuiCol_Button,
-                              (ImVec4) ImColor::HSV(4 / 7.0f, 0.6f, 0.6f));
+        ImGui::PushStyleColor(ImGuiCol_Button, g_blueTintButtonColor);
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                              (ImVec4) ImColor::HSV(4 / 7.0f, 0.7f, 0.7f));
+                              g_blueTintButtonHoverColor);
         ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                              (ImVec4) ImColor::HSV(4 / 7.0f, 0.8f, 0.8f));
+                              g_blueTintButtonActiveColor);
 
         // Pause.
         if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_pauseIcon),
@@ -138,12 +137,11 @@ namespace ToolKit
       else
       {
         // Green tint.
-        ImGui::PushStyleColor(ImGuiCol_Button,
-                              (ImVec4) ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
+        ImGui::PushStyleColor(ImGuiCol_Button, g_greenTintButtonColor);
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                              (ImVec4) ImColor::HSV(2 / 7.0f, 0.7f, 0.7f));
+                              g_greenTintButtonHoverColor);
         ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                              (ImVec4) ImColor::HSV(2 / 7.0f, 0.8f, 0.8f));
+                              g_greenTintButtonActiveColor);
 
         // Play.
         if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_playIcon),
@@ -159,12 +157,9 @@ namespace ToolKit
       ImGui::SameLine();
 
       // Red tint.
-      ImGui::PushStyleColor(ImGuiCol_Button,
-                            (ImVec4) ImColor::HSV(0 / 7.0f, 0.6f, 0.6f));
-      ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                            (ImVec4) ImColor::HSV(0 / 7.0f, 0.7f, 0.7f));
-      ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                            (ImVec4) ImColor::HSV(0 / 7.0f, 0.8f, 0.8f));
+      ImGui::PushStyleColor(ImGuiCol_Button, g_redTintButtonColor);
+      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, g_redTintButtonHoverColor);
+      ImGui::PushStyleColor(ImGuiCol_ButtonActive, g_redTintButtonActiveColor);
 
       // Stop.
       if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_stopIcon),
@@ -180,6 +175,7 @@ namespace ToolKit
       ImGui::PopStyleColor(3);
       ImGui::SameLine();
 
+      // VS Code.
       if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_vsCodeIcon),
                              ImVec2(btnWidth, btnWidth)))
       {
@@ -187,7 +183,7 @@ namespace ToolKit
         if (CheckFile(codePath))
         {
           String cmd = "code \"" + codePath + "\"";
-          int result = std::system(cmd.c_str());
+          int result = g_app->ExecSysCommand(cmd, true, false);
           if (result != 0)
           {
             g_app->GetConsole()->AddLog("Visual Studio Code can't be started. "
@@ -201,6 +197,15 @@ namespace ToolKit
                                       LogType::Error);
         }
       }
+
+      // Build.
+      ImGui::SameLine();
+      if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_buildIcn),
+                             ImVec2(btnWidth, btnWidth)))
+      {
+        g_app->CompilePlugin();
+      }
+      UI::HelpMarker(TKLoc, "Build\nBuilds the projects code files.");
     }
 
     void PluginWindow::ShowSettings()
@@ -301,7 +306,7 @@ namespace ToolKit
 
           m_settings->Resolution = resolution;
           g_app->m_windowCamLoad = true;
-          UpdateSimWndSize();
+          UpdateSimulationWndSize();
         }
 
         // Width - Height
@@ -322,7 +327,7 @@ namespace ToolKit
         if (ImGui::DragFloat(
                 "##w", &m_settings->Width, 1.0f, 1.0f, 4096.0f, "%.0f"))
         {
-          UpdateSimWndSize();
+          UpdateSimulationWndSize();
         }
 
         ImGui::TableNextRow();
@@ -334,7 +339,7 @@ namespace ToolKit
         if (ImGui::DragFloat(
                 "##h", &m_settings->Height, 1.0f, 1.0f, 4096.0f, "%.0f"))
         {
-          UpdateSimWndSize();
+          UpdateSimulationWndSize();
         }
 
         if (!isCustomSized)
@@ -351,7 +356,7 @@ namespace ToolKit
 
         if (ImGui::SliderFloat("##z", &m_settings->Scale, 0.25f, 1.0f, "x%.2f"))
         {
-          UpdateSimWndSize();
+          UpdateSimulationWndSize();
         }
 
         // Landscape - Portrait Toggle
@@ -364,7 +369,7 @@ namespace ToolKit
                                ImVec2(30, 30)))
         {
           m_settings->Landscape = !m_settings->Landscape;
-          UpdateSimWndSize();
+          UpdateSimulationWndSize();
         }
         ImGui::EndTable();
       }
@@ -431,6 +436,7 @@ namespace ToolKit
         UILayerRawPtrArray layers;
         GetUIManager()->GetLayers(viewport->m_viewportId, layers);
 
+        g_app->GetCurrentScene()->ClearSelection();
         for (UILayer* layer : layers)
         {
           layer->ResizeUI((float) width, (float) height);

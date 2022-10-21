@@ -26,10 +26,11 @@
 	    vec2 uv = SampleSphericalMap(normalize(v_pos));
 	    vec3 color = texture(s_texture0, uv).rgb;
 
-			// Tone mapping
+			// Reinhard tone mapping
+			color = color / (color + vec3(1.0));
+
+			// Exposure
 			color = vec3(1.0) - exp(-color * Exposure);
-			// Gamma correct
-			color = pow(color, vec3(1.0 / 2.2));
 
 	    fragColor = vec4(color, 1.0);
 		}

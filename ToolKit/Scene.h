@@ -30,7 +30,7 @@ namespace ToolKit
 
     void Load() override;
     void Save(bool onlyIfDirty) override;
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
     // Merges entities from the other scene and wipeouts the other scene.
     virtual void Merge(ScenePtr other);
@@ -58,7 +58,7 @@ namespace ToolKit
     EntityRawPtrArray GetByTag(const String& tag);
     Entity* GetFirstByTag(const String& tag);
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
-    Sky* GetSky();
+    SkyBase* GetSky();
     void LinkPrefab(const String& fullPath);
 
     virtual Entity* RemoveEntity(ULongID id);

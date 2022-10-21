@@ -68,9 +68,9 @@ namespace ToolKit
               // Switch from solid color material to default for texturing.
               if (entry->m_diffuseTexture == nullptr)
               {
-                entry->m_fragmetShader = GetShaderManager()->Create<Shader>(
+                entry->m_fragmentShader = GetShaderManager()->Create<Shader>(
                     ShaderPath("defaultFragment.shader", true));
-                entry->m_fragmetShader->Init();
+                entry->m_fragmentShader->Init();
               }
               entry->m_diffuseTexture =
                   GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
@@ -102,11 +102,11 @@ namespace ToolKit
         ImGui::LabelText("##fragShader", "Fragment Shader: ");
         DropZone(
             UI::m_codeIcon->m_textureId,
-            entry->m_fragmetShader->GetFile(),
+            entry->m_fragmentShader->GetFile(),
             [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
-              entry->m_fragmetShader =
+              entry->m_fragmentShader =
                   GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-              entry->m_fragmetShader->Init();
+              entry->m_fragmentShader->Init();
               updateThumbFn();
             });
         ImGui::TreePop();

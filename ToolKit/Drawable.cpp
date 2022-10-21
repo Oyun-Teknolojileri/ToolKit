@@ -32,17 +32,7 @@ namespace ToolKit
 
   void Drawable::SetPose(const AnimationPtr& anim, float time)
   {
-    MeshPtr mesh = GetMesh();
-    if (mesh->IsSkinned())
-    {
-      SkinMesh* skinMesh   = static_cast<SkinMesh*>(mesh.get());
-      SkeletonPtr skeleton = skinMesh->m_skeleton;
-      anim->GetPose(skeleton, time);
-    }
-    else
-    {
-      anim->GetPose(m_node, time);
-    }
+    Entity::SetPose(anim, time);
   }
 
   Entity* Drawable::CopyTo(Entity* copyTo) const

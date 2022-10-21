@@ -1,10 +1,11 @@
 #include "TransformMod.h"
 
+#include "App.h"
 #include "Camera.h"
 #include "ConsoleWindow.h"
 #include "EditorViewport.h"
 #include "Gizmo.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Node.h"
 #include "Util.h"
 
@@ -43,8 +44,15 @@ namespace ToolKit
         // Get world location as gizmo origin.
         m_gizmo->m_worldLocation =
             e->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        m_gizmo->m_normalVectors =
-            e->m_node->GetTransformAxes(g_app->m_transformSpace);
+
+        if (g_app->m_transformSpace == TransformationSpace::TS_LOCAL)
+        {
+          m_gizmo->m_normalVectors = e->m_node->GetTransformAxes();
+        }
+        else
+        {
+          m_gizmo->m_normalVectors = Mat3();
+        }
       }
 
       m_gizmo->Update(deltaTime);
@@ -308,6 +316,9 @@ namespace ToolKit
           break;
         case AxisLabel::ZX:
           m_intersectionPlane = PlaneFrom(gizmOrg, y);
+          break;
+        case AxisLabel::XYZ:
+          m_intersectionPlane = PlaneFrom(gizmOrg, x);
           break;
         default:
           assert(false);
@@ -649,35 +660,69 @@ namespace ToolKit
 
     void StateTransformTo::Scale(Entity* ntt)
     {
+      Vec3 scaleAXISes[7];
+      scaleAXISes[(uint) AxisLabel::X]   = X_AXIS;
+      scaleAXISes[(uint) AxisLabel::Y]   = Y_AXIS;
+      scaleAXISes[(uint) AxisLabel::Z]   = Z_AXIS;
+      scaleAXISes[(uint) AxisLabel::XY]  = XY_AXIS;
+      scaleAXISes[(uint) AxisLabel::YZ]  = YZ_AXIS;
+      scaleAXISes[(uint) AxisLabel::ZX]  = ZX_AXIS;
+      scaleAXISes[(uint) AxisLabel::XYZ] = Vec3(1);
+
       int axisIndx  = static_cast<int>(m_gizmo->GetGrabbedAxis());
       Vec3 aabbSize = ntt->GetAABB().max - ntt->GetAABB().min;
-      aabbSize *= AXIS[axisIndx];
-      float delta = glm::length(m_delta) / glm::length(aabbSize);
-      m_deltaAccum.x += delta;
+      Vec3 axis     = scaleAXISes[axisIndx];
+
+      aabbSize *= axis;
+      for (uint i = 0; i < 3; i++)
+      {
+        aabbSize[i] = glm::max(aabbSize[i], 0.0001f);
+      }
+      Vec3 delta = Vec3(glm::length(m_delta) / glm::length(aabbSize));
+
+      delta *= glm::normalize(axis);
+      m_deltaAccum += delta;
 
       float spacing = g_app->m_scaleDelta;
       if (g_app->m_snapsEnabled)
       {
-        if (m_deltaAccum.x < spacing)
-        {
-          return;
+        if (IsPlaneMod())
+        { // Snapping on, 2 dimension grabbed
+          if (length(m_deltaAccum) < length(Vec3(spacing, spacing, 0)))
+          {
+            return;
+          }
+          delta        = m_deltaAccum;
+          m_deltaAccum = Vec3(0);
+        }
+        else
+        { // Snapping on, 1 dimension grabbed
+          if (length(m_deltaAccum) < spacing)
+          {
+            return;
+          }
+          delta        = m_deltaAccum;
+          m_deltaAccum = Vec3(0);
         }
       }
-
-      delta          = m_deltaAccum.x;
-      m_deltaAccum.x = 0;
+      else
+      {
+        delta        = m_deltaAccum;
+        m_deltaAccum = Vec3(0);
+      }
 
       // Transfer world space delta to local axis.
-      Vec3 target = AXIS[axisIndx] * delta;
-      target *=
-          glm::sign(glm::dot(m_delta, m_gizmo->m_normalVectors[axisIndx]));
-
-      Vec3 scale = ntt->m_node->GetScale() + target;
+      delta *= glm::sign(glm::dot(m_delta, axis));
 
       if (g_app->m_snapsEnabled)
       {
-        scale[axisIndx] = glm::round(scale[axisIndx] / spacing) * spacing;
+        for (uint32_t i = 0; i < 3; i++)
+        {
+          delta[i] = glm::round(delta[i] / spacing) * spacing;
+        }
       }
+
+      Vec3 scale = ntt->m_node->GetScale() + delta;
 
       if (glm::all(glm::notEqual(scale, Vec3(0.0f))))
       {

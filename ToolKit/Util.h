@@ -49,6 +49,7 @@ namespace ToolKit
 
   // File path operations.
   ///////////////////////////////////////////////////////
+  TK_API bool CheckSystemFile(StringView path);
   TK_API bool CheckFile(const String& path);
   TK_API String CreateCopyFileFullPath(const String& fullPath);
   TK_API void DecomposePath(const String& fullPath,
@@ -100,7 +101,8 @@ namespace ToolKit
    */
   TK_API String ToLower(const String& str);
   TK_API String Format(const char* msg, ...);
-  TK_API String Trim(const std::string& str, const String& whitespace = " \t");
+  TK_API String Trim(const String& str, const String& whitespace = " \t");
+  TK_API bool EndsWith(const String& str, const String& suffix);
 
   // Debug geometries.
   ///////////////////////////////////////////////////////

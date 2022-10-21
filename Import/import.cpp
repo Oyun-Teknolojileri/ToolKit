@@ -58,7 +58,6 @@ void TrunckToFileName(string& fullPath)
 
 namespace ToolKit
 {
-
   class BoneNode
   {
    public:
@@ -107,9 +106,8 @@ namespace ToolKit
 
   unordered_map<string, BoneNode> g_skeletonMap;
   SkeletonPtr g_skeleton;
-  const aiScene* g_scene = nullptr;
-  vector<ULongID> g_entityIds;
-  uint g_idListIterationIndex; // Used to iterate over g_entityIds
+  bool isSkeletonEntityCreated = false;
+  const aiScene* g_scene       = nullptr;
 
   void Decompose(string fullPath, string& path, string& name)
   {
@@ -169,23 +167,6 @@ namespace ToolKit
   }
 
   std::vector<MaterialPtr> tMaterials;
-  template <typename T>
-  void CreateFileAndSerializeObject(std::shared_ptr<T> objectToSerialize,
-                                    const String& filePath)
-  {
-    std::ofstream file;
-    file.open(filePath.c_str(), std::ios::out);
-    assert(file.is_open() && "File creation failed!");
-
-    XmlDocument doc;
-    objectToSerialize->Serialize(&doc, nullptr);
-    std::string xml;
-    rapidxml::print(std::back_inserter(xml), doc, 0);
-
-    file << xml;
-    file.close();
-    doc.clear();
-  }
   template <typename T>
   void CreateFileAndSerializeObject(T* objectToSerialize,
                                     const String& filePath)
@@ -419,16 +400,16 @@ namespace ToolKit
 
   // Interpolator functions END
 
-  void ImportAnimation(const aiScene* scene, string file)
+  void ImportAnimation(string file)
   {
-    if (!scene->HasAnimations())
+    if (!g_scene->HasAnimations())
     {
       return;
     }
 
-    for (uint i = 0; i < scene->mNumAnimations; i++)
+    for (uint i = 0; i < g_scene->mNumAnimations; i++)
     {
-      aiAnimation* anim = scene->mAnimations[i];
+      aiAnimation* anim = g_scene->mAnimations[i];
       std::string animName(anim->mName.C_Str());
       string animFilePath = file;
       replace(animName.begin(), animName.end(), '.', '_');
@@ -516,17 +497,17 @@ namespace ToolKit
       tAnim->m_duration = static_cast<float>(cmax / g_desiredFps);
       tAnim->m_fps      = static_cast<float>(g_desiredFps);
 
-      CreateFileAndSerializeObject(tAnim, animFilePath);
+      CreateFileAndSerializeObject(tAnim.get(), animFilePath);
     }
   }
 
-  void ImportMaterial(const aiScene* scene, string filePath, string origin)
+  void ImportMaterial(string filePath, string origin)
   {
     fs::path pathOrg = fs::path(origin).parent_path();
 
     auto textureFindAndCreateFunc =
-        [scene, filePath, pathOrg](aiTextureType textureAssimpType,
-                                   aiMaterial* material) -> TexturePtr {
+        [filePath, pathOrg](aiTextureType textureAssimpType,
+                            aiMaterial* material) -> TexturePtr {
       int texCount = material->GetTextureCount(textureAssimpType);
       TexturePtr tTexture;
       if (texCount > 0)
@@ -541,9 +522,9 @@ namespace ToolKit
           embedded           = true;
           string indxPart    = tName.substr(1);
           unsigned int tIndx = atoi(indxPart.c_str());
-          if (scene->mNumTextures > tIndx)
+          if (g_scene->mNumTextures > tIndx)
           {
-            aiTexture* t = scene->mTextures[tIndx];
+            aiTexture* t = g_scene->mTextures[tIndx];
             tName        = GetEmbeddedTextureName(t);
           }
         }
@@ -586,9 +567,9 @@ namespace ToolKit
       return tTexture;
     };
 
-    for (unsigned int i = 0; i < scene->mNumMaterials; i++)
+    for (unsigned int i = 0; i < g_scene->mNumMaterials; i++)
     {
-      aiMaterial* material  = scene->mMaterials[i];
+      aiMaterial* material  = g_scene->mMaterials[i];
       string name           = GetMaterialName(material, i);
       string writePath      = filePath + name + MATERIAL;
       MaterialPtr tMaterial = std::make_shared<Material>();
@@ -600,7 +581,7 @@ namespace ToolKit
       }
 
       tMaterial->SetFile(writePath);
-      CreateFileAndSerializeObject(tMaterial, writePath);
+      CreateFileAndSerializeObject(tMaterial.get(), writePath);
       AddToUsedFiles(writePath);
       tMaterials.push_back(tMaterial);
     }
@@ -704,135 +685,149 @@ namespace ToolKit
     }
   }
 
-  void SearchMesh(const aiScene* scene,
-                  Scene* tScene,
-                  string filePath,
-                  aiNode* node,
-                  ULongID parentId)
+  std::unordered_map<aiMesh*, MeshPtr> g_meshes;
+  SkinMeshPtr mainSkinMesh;
+
+  void ImportMeshes(string filePath)
   {
-    Entity* entity = nullptr;
+    string path, name;
+    Decompose(filePath, path, name);
+    mainSkinMesh = nullptr;
 
-    // Write meshes
-    if (node->mNumMeshes > 0)
+    // Skinned meshes will be merged because they're using the same skeleton
+    // (Only one skeleton is imported)
+    for (uint MeshIndx = 0; MeshIndx < g_scene->mNumMeshes; MeshIndx++)
     {
-      entity = new Entity;
-      entity->AddComponent(new MeshComponent);
-
-      MeshPtr parentMeshOfNode;
-      if (node->mNumMeshes == 1)
+      aiMesh* aMesh = g_scene->mMeshes[MeshIndx];
+      if (aMesh->HasBones())
       {
-        if (scene->mMeshes[node->mMeshes[0]]->HasBones())
+        SkinMeshPtr skinMesh = std::make_shared<SkinMesh>();
+        ConvertMesh(aMesh, skinMesh);
+        if (mainSkinMesh)
         {
-          SkinMeshPtr skinMesh = std::make_shared<SkinMesh>();
-          aiMesh* mesh         = scene->mMeshes[node->mMeshes[0]];
-          ConvertMesh(mesh, skinMesh);
-          parentMeshOfNode = skinMesh;
+          mainSkinMesh->m_subMeshes.push_back(skinMesh);
         }
         else
         {
-          parentMeshOfNode = std::make_shared<Mesh>();
-          aiMesh* mesh     = scene->mMeshes[node->mMeshes[0]];
-          ConvertMesh(mesh, parentMeshOfNode);
+          mainSkinMesh = skinMesh;
         }
       }
-      // Don't support multiple skeletal mesh in the same node
       else
       {
-        parentMeshOfNode = std::make_shared<Mesh>();
-        for (unsigned int i = 1; i < node->mNumMeshes; i++)
+        MeshPtr mesh = std::make_shared<Mesh>();
+        ConvertMesh(aMesh, mesh);
+
+        // Better to use scene node name
+        string fileName  = "";
+        aiNode* meshNode = g_scene->mRootNode->FindNode(aMesh->mName);
+        if (meshNode)
         {
-          aiMesh* mesh    = scene->mMeshes[node->mMeshes[0]];
-          MeshPtr subMesh = std::make_shared<Mesh>();
-          ConvertMesh(mesh, subMesh);
-          parentMeshOfNode->m_subMeshes.push_back(subMesh);
+          fileName = std::string(meshNode->mName.C_Str());
         }
+        else
+        {
+          fileName = aMesh->mName.C_Str();
+        }
+        ClearForbidden(fileName);
+        String meshPath = path + fileName + MESH;
+
+        mesh->SetFile(meshPath);
+        AddToUsedFiles(meshPath);
+        g_meshes[aMesh] = mesh;
+        CreateFileAndSerializeObject(mesh.get(), meshPath);
       }
-      string path, name;
-      Decompose(filePath, path, name);
-
-      string tag = MESH;
-      if (parentMeshOfNode->IsSkinned())
-      {
-        tag = SKINMESH;
-      }
-
-      string fileName = std::string(node->mName.C_Str());
-      ClearForbidden(fileName);
-      String meshPath = path + fileName + tag;
-      AddToUsedFiles(meshPath);
-
-      parentMeshOfNode->SetFile(meshPath);
-      CreateFileAndSerializeObject(parentMeshOfNode, meshPath);
-
-      entity->GetMeshComponent()->SetMeshVal(parentMeshOfNode);
     }
-    else
+    if (mainSkinMesh)
     {
-      entity = GetEntityFactory()->CreateByType(EntityType::Entity_Base);
+      ClearForbidden(name);
+      String skinMeshPath = path + name + SKINMESH;
+      mainSkinMesh->SetFile(skinMeshPath);
+
+      AddToUsedFiles(skinMeshPath);
+      CreateFileAndSerializeObject(mainSkinMesh.get(), skinMeshPath);
     }
-
-    ULongID thisId = entity->GetIdVal();
-    g_entityIds.push_back(thisId);
-
-    for (unsigned int j = 0; j < node->mNumChildren; j++)
-    {
-      SearchMesh(scene, tScene, filePath, node->mChildren[j], thisId);
-    }
-
-    // Add entity to the scene to serialize the entity
-    tScene->AddEntity(entity);
   }
 
-  void SearchEntity(const aiScene* scene,
-                    Scene* tScene,
-                    aiNode* node,
-                    ULongID parentId)
+  EntityRawPtrArray deletedEntities;
+  bool deleteEmptyEntitiesRecursively(Scene* tScene, Entity* ntt)
   {
-    ULongID thisId                 = g_entityIds[g_idListIterationIndex++];
-    Entity* entity                 = tScene->GetEntity(thisId);
-    entity->m_node->m_inheritScale = true;
-
-    if (parentId != thisId)
+    bool shouldDelete = true;
+    if (ntt->GetComponentPtrArray().size())
     {
-      Entity* pEntity = tScene->GetEntity(parentId);
-      if (pEntity)
+      shouldDelete = false;
+    }
+    VariantCategoryArray varCategories;
+    ntt->m_localData.GetCategories(varCategories, true, false);
+    if (varCategories.size() > 1)
+    {
+      shouldDelete = false;
+    }
+
+    for (Node* child : ntt->m_node->m_children)
+    {
+      if (!deleteEmptyEntitiesRecursively(tScene, child->m_entity))
       {
-        pEntity->m_node->AddChild(entity->m_node, true);
+        shouldDelete = false;
+      }
+    }
+    if (shouldDelete)
+    {
+      tScene->RemoveEntity(ntt->GetIdVal());
+      deletedEntities.push_back(ntt);
+    }
+    return shouldDelete;
+  }
+
+  void TraverseScene(Scene* tScene, const aiNode* node, Entity* parent)
+  {
+    Entity* ntt                 = new Entity;
+    ntt->m_node->m_inheritScale = true;
+    Vec3 t, s;
+    Quaternion rt;
+    DecomposeAssimpMatrix(node->mTransformation, &t, &rt, &s);
+
+    if (parent)
+    {
+      parent->m_node->AddChild(ntt->m_node);
+    }
+    for (uint meshIndx = 0; meshIndx < node->mNumMeshes; meshIndx++)
+    {
+      aiMesh* aMesh = g_scene->mMeshes[node->mMeshes[meshIndx]];
+      if (aMesh->HasBones() && isSkeletonEntityCreated)
+      {
+        continue;
+      }
+      MeshComponentPtr meshComp = std::make_shared<MeshComponent>();
+      ntt->AddComponent(meshComp);
+      if (aMesh->HasBones())
+      {
+        meshComp->SetMeshVal(mainSkinMesh);
+        SkeletonComponentPtr skelComp = std::make_shared<SkeletonComponent>();
+        skelComp->SetSkeletonResourceVal(g_skeleton);
+        ntt->AddComponent(skelComp);
+        isSkeletonEntityCreated = true;
       }
       else
       {
-        printf("One of entities has parent but it's not found!");
+        meshComp->SetMeshVal(g_meshes[aMesh]);
       }
+      MultiMaterialPtr matComp = std::make_shared<MultiMaterialComponent>();
+      ntt->AddComponent(matComp);
+      matComp->UpdateMaterialList(meshComp);
     }
-    entity->_parentId = parentId;
 
-    for (unsigned int j = 0; j < node->mNumChildren; j++)
+    for (uint childIndx = 0; childIndx < node->mNumChildren; childIndx++)
     {
-      SearchEntity(scene, tScene, node->mChildren[j], thisId);
-    }
-  }
-  void SetEntityTransforms(const aiScene* scene, Scene* tScene, aiNode* node)
-  {
-    ULongID thisId = g_entityIds[g_idListIterationIndex++];
-    Entity* entity = tScene->GetEntity(thisId);
-
-    Quaternion rt;
-    Vec3 ts, scl;
-    DecomposeAssimpMatrix(node->mTransformation, &ts, &rt, &scl);
-
-    // Set child transforms first
-    for (unsigned int j = 0; j < node->mNumChildren; j++)
-    {
-      SetEntityTransforms(scene, tScene, node->mChildren[j]);
+      TraverseScene(tScene, node->mChildren[childIndx], ntt);
     }
 
-    // When all childs are set, set parent's transform
-    entity->m_node->Translate(ts);
-    entity->m_node->Rotate(rt);
-    entity->m_node->Scale(scl);
+    ntt->m_node->Translate(t);
+    ntt->m_node->Rotate(rt);
+    ntt->m_node->Scale(s);
+    tScene->AddEntity(ntt);
   }
 
-  void ImportSceneAndMeshes(const aiScene* scene, string filePath)
+  void ImportScene(string filePath)
   {
     // Print Scene.
     string path, name;
@@ -842,19 +837,24 @@ namespace ToolKit
     AddToUsedFiles(fullPath);
     Scene* tScene = new Scene;
 
-    // Add Meshes.
-    SearchMesh(scene, tScene, filePath, scene->mRootNode, -1);
-
-    g_idListIterationIndex = 0;
-    SearchEntity(
-        scene, tScene, scene->mRootNode, g_entityIds[g_idListIterationIndex]);
-    g_idListIterationIndex = 0;
-    SetEntityTransforms(scene, tScene, scene->mRootNode);
+    TraverseScene(tScene, g_scene->mRootNode, nullptr);
+    // First entity is the root entity
+    EntityRawPtrArray roots;
+    GetRootEntities(tScene->GetEntities(), roots);
+    for (Entity* r : roots)
+    {
+      deleteEmptyEntitiesRecursively(tScene, r);
+    }
+    for (Entity* ntt : deletedEntities)
+    {
+      SafeDel(ntt);
+    }
+    deletedEntities.clear();
 
     CreateFileAndSerializeObject(tScene, fullPath);
   }
 
-  void PrintSkeleton_(const aiScene* scene, string filePath)
+  void ImportSkeleton(string filePath)
   {
     auto addBoneNodeFn = [](aiNode* node, aiBone* bone) -> void {
       BoneNode bn(node, 0);
@@ -867,15 +867,15 @@ namespace ToolKit
 
     // Collect skeleton parts
     vector<aiBone*> bones;
-    for (unsigned int i = 0; i < scene->mNumMeshes; i++)
+    for (unsigned int i = 0; i < g_scene->mNumMeshes; i++)
     {
-      aiMesh* mesh     = scene->mMeshes[i];
-      aiNode* meshNode = scene->mRootNode->FindNode(mesh->mName);
+      aiMesh* mesh     = g_scene->mMeshes[i];
+      aiNode* meshNode = g_scene->mRootNode->FindNode(mesh->mName);
       for (unsigned int j = 0; j < mesh->mNumBones; j++)
       {
         aiBone* bone = mesh->mBones[j];
         bones.push_back(bone);
-        aiNode* node = scene->mRootNode->FindNode(bone->mName);
+        aiNode* node = g_scene->mRootNode->FindNode(bone->mName);
         while (node) // Go Up
         {
           if (node == meshNode)
@@ -895,7 +895,7 @@ namespace ToolKit
           node = node->mParent;
         }
 
-        node = scene->mRootNode->FindNode(bone->mName);
+        node = g_scene->mRootNode->FindNode(bone->mName);
 
         // Go Down
         std::function<void(aiNode*)> checkDownFn =
@@ -939,7 +939,7 @@ namespace ToolKit
     };
 
     unsigned int boneIndex = 0;
-    assignBoneIndexFn(scene->mRootNode, boneIndex);
+    assignBoneIndexFn(g_scene->mRootNode, boneIndex);
 
     string name, path;
     Decompose(filePath, path, name);
@@ -949,19 +949,30 @@ namespace ToolKit
     g_skeleton->SetFile(fullPath);
 
     // Print
-    std::function<void(aiNode * node, Bone*)> setBoneHierarchyFn =
-        [&setBoneHierarchyFn](aiNode* node, Bone* parentBone) -> void {
-      Bone* bone = parentBone;
+    std::function<void(aiNode * node, DynamicBoneMap::DynamicBone*)>
+        setBoneHierarchyFn =
+            [&setBoneHierarchyFn](
+                aiNode* node, DynamicBoneMap::DynamicBone* parentBone) -> void {
+      DynamicBoneMap::DynamicBone* searchDBone = parentBone;
       if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
       {
         assert(node->mName.length);
+        g_skeleton->m_Tpose.boneList.insert(std::make_pair(
+            String(node->mName.C_Str()), DynamicBoneMap::DynamicBone()));
+        searchDBone =
+            &g_skeleton->m_Tpose.boneList.find(node->mName.C_Str())->second;
+        searchDBone->node                 = new Node();
+        searchDBone->node->m_inheritScale = true;
+        searchDBone->boneIndx             = uint(g_skeleton->m_bones.size());
+        g_skeleton->m_Tpose.AddDynamicBone(
+            node->mName.C_Str(), *searchDBone, parentBone);
 
-        bone = new Bone(node->mName.C_Str());
-        g_skeleton->AddBone(bone, parentBone);
+        StaticBone* sBone = new StaticBone(node->mName.C_Str());
+        g_skeleton->m_bones.push_back(sBone);
       }
       for (unsigned int i = 0; i < node->mNumChildren; i++)
       {
-        setBoneHierarchyFn(node->mChildren[i], bone);
+        setBoneHierarchyFn(node->mChildren[i], searchDBone);
       }
     };
 
@@ -969,17 +980,19 @@ namespace ToolKit
         [&setTransformationsFn](aiNode* node) -> void {
       if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
       {
-        Bone* tBone = g_skeleton->GetBone(node->mName.C_Str());
+        StaticBone* sBone = g_skeleton->GetBone(node->mName.C_Str());
 
         // Set bone node transformation
         {
+          DynamicBoneMap::DynamicBone& dBone =
+              g_skeleton->m_Tpose.boneList[node->mName.C_Str()];
           Vec3 t, s;
           Quaternion r;
           DecomposeAssimpMatrix(node->mTransformation, &t, &r, &s);
 
-          tBone->m_node->Translate(t);
-          tBone->m_node->Rotate(r);
-          tBone->m_node->Scale(s);
+          dBone.node->Translate(t);
+          dBone.node->Rotate(r);
+          dBone.node->Scale(s);
         }
 
         // Set bind pose transformation
@@ -996,7 +1009,7 @@ namespace ToolKit
             tMat                        = glm::translate(tMat, t);
             rMat                        = glm::toMat4(r);
             sMat                        = glm::scale(sMat, s);
-            tBone->m_inverseWorldMatrix = tMat * rMat * sMat;
+            sBone->m_inverseWorldMatrix = tMat * rMat * sMat;
           }
         }
       }
@@ -1007,22 +1020,22 @@ namespace ToolKit
       }
     };
 
-    setBoneHierarchyFn(scene->mRootNode, nullptr);
-    setTransformationsFn(scene->mRootNode);
+    setBoneHierarchyFn(g_scene->mRootNode, nullptr);
+    setTransformationsFn(g_scene->mRootNode);
 
-    CreateFileAndSerializeObject(g_skeleton, fullPath);
+    CreateFileAndSerializeObject(g_skeleton.get(), fullPath);
     AddToUsedFiles(fullPath);
   }
 
-  void ImportTextures(const aiScene* scene, string filePath)
+  void ImportTextures(string filePath)
   {
     // Embedded textures.
-    if (scene->HasTextures())
+    if (g_scene->HasTextures())
     {
-      for (unsigned int i = 0; i < scene->mNumTextures; i++)
+      for (unsigned int i = 0; i < g_scene->mNumTextures; i++)
       {
         TexturePtr tTexture = std::make_shared<Texture>();
-        aiTexture* texture  = scene->mTextures[i];
+        aiTexture* texture  = g_scene->mTextures[i];
         string embId        = GetEmbeddedTextureName(texture);
 
         // Compressed.
@@ -1031,8 +1044,8 @@ namespace ToolKit
           ofstream file(filePath + embId, fstream::out | std::fstream::binary);
           assert(file.good());
 
-          file.write((const char*) scene->mTextures[i]->pcData,
-                     scene->mTextures[i]->mWidth);
+          file.write((const char*) g_scene->mTextures[i]->pcData,
+                     g_scene->mTextures[i]->mWidth);
         }
         else
         {
@@ -1112,6 +1125,7 @@ namespace ToolKit
       // Initialize ToolKit to serialize resources
       Main* g_proxy = new Main();
       Main::SetProxy(g_proxy);
+      g_proxy->m_entityFactory = new EntityFactory();
 
       for (int i = 0; i < static_cast<int>(files.size()); i++)
       {
@@ -1125,15 +1139,19 @@ namespace ToolKit
                 aiProcess_FindDegenerates | aiProcess_CalcTangentSpace |
                 aiProcess_FlipUVs | aiProcess_LimitBoneWeights |
                 aiProcess_GenSmoothNormals | aiProcess_GlobalScale |
-                aiProcess_FindInvalidData | aiProcess_GenBoundingBoxes);
+                aiProcess_FindInvalidData | aiProcess_GenBoundingBoxes |
+                aiProcessPreset_TargetRealtime_MaxQuality |
+                aiProcess_PopulateArmatureData);
 
         if (scene == nullptr)
         {
+          assert(
+              0 &&
+              "Assimp failed to import the file. Probably file is corrupted!");
           throw(-1);
         }
-        g_scene                = scene;
-        g_idListIterationIndex = 0;
-        g_entityIds.clear();
+        g_scene                 = scene;
+        isSkeletonEntityCreated = false;
 
         String fileName;
         DecomposePath(file, nullptr, &fileName, &g_currentExt);
@@ -1141,15 +1159,19 @@ namespace ToolKit
 
         // DON'T BREAK THE CALLING ORDER!
 
-        ImportAnimation(scene, dest);
+        ImportAnimation(dest);
         // Create Textures to reference in Materials
-        ImportTextures(scene, dest);
+        ImportTextures(dest);
         // Create Materials to reference in Meshes
-        ImportMaterial(scene, dest, file);
+        ImportMaterial(dest, file);
         // Create a Skeleton to reference in Meshes
-        PrintSkeleton_(scene, destFile);
+        ImportSkeleton(destFile);
+
+        // Add Meshes.
+        ImportMeshes(destFile);
+
         // Create Meshes & Scene
-        ImportSceneAndMeshes(scene, destFile);
+        ImportScene(destFile);
       }
 
       // Report all in use files.

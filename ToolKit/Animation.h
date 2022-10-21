@@ -8,6 +8,7 @@
 #include "Entity.h"
 #include "Node.h"
 #include "Resource.h"
+#include "ResourceComponent.h"
 #include "ResourceManager.h"
 #include "Skeleton.h"
 #include "Types.h"
@@ -73,7 +74,7 @@ namespace ToolKit
      * @param skeleton SkeletonPtr to be transformed.
      *
      */
-    void GetPose(const SkeletonPtr& skeleton, float time);
+    void GetPose(const SkeletonComponentPtr& skeleton, float time);
 
     /**
      * Sets the Node's transform from the animation based on frame.
@@ -87,7 +88,7 @@ namespace ToolKit
      * Set the resource to initiated state.
      * @param flushClientSideArray unused.
      */
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
 
     /**
      * Set the resource to uninitiated state and removes the keys.

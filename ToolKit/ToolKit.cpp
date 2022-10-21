@@ -140,6 +140,16 @@ namespace ToolKit
     SafeDel(m_entityFactory);
   }
 
+  void Main::SetConfigPath(StringView cfgPath)
+  {
+    m_cfgPath = cfgPath;
+  }
+
+  StringView Main::GetConfigPath()
+  {
+    return m_cfgPath;
+  }
+
   Main* Main::GetInstance()
   {
     assert(m_proxy);
@@ -239,6 +249,8 @@ namespace ToolKit
       return GetTextureManager();
     case ResourceType::Scene:
       return GetSceneManager();
+    case ResourceType::Skeleton:
+      return nullptr;
     case ResourceType::Base:
     default:
       assert(false);
@@ -288,6 +300,12 @@ namespace ToolKit
 
   TK_API String ConfigPath()
   {
+    StringView path = Main::GetInstance()->GetConfigPath();
+    if (!path.empty())
+    {
+      return String(path);
+    }
+
     return ConcatPaths({".", "..", "Config"});
   }
 

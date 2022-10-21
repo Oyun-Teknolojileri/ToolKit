@@ -74,6 +74,7 @@ namespace ToolKit
   typedef const int16_t SignalId;
   typedef std::shared_ptr<class Resource> ResourcePtr;
   typedef std::string String;
+  typedef std::string_view StringView;
   typedef std::vector<String> StringArray;
   typedef std::set<std::string> StringSet;
   typedef glm::ivec2 IVec2;
@@ -95,10 +96,12 @@ namespace ToolKit
   // Resource types.
   typedef std::shared_ptr<class Animation> AnimationPtr;
   typedef std::shared_ptr<class Material> MaterialPtr;
+  typedef std::vector<MaterialPtr> MaterialPtrArray;
   typedef std::shared_ptr<class CubeMap> CubeMapPtr;
   typedef std::shared_ptr<class Texture> TexturePtr;
   typedef std::shared_ptr<class Hdri> HdriPtr;
   typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;
+  typedef std::shared_ptr<class Framebuffer> FramebufferPtr;
   typedef std::shared_ptr<class SpriteSheet> SpriteSheetPtr;
   typedef std::shared_ptr<class Mesh> MeshPtr;
   typedef std::shared_ptr<class Skeleton> SkeletonPtr;
@@ -234,7 +237,9 @@ namespace ToolKit
     // Mod3 gives plane normal .
     YZ, // YZ(3) % 3 = X(0)
     ZX, // ZX(4) % 3 = Y(1)
-    XY  // XY(5) % 3 = Z(2)
+    XY, // XY(5) % 3 = Z(2)
+    // Don't apply mod3
+    XYZ
   };
 
   enum class DirectionLabel
@@ -263,12 +268,19 @@ namespace ToolKit
     UVClampToEdge        = 0x812F,
     UVClampToBorder      = 0x812D,
     SampleNearest        = 0x2600,
+    SampleLinear         = 0x2601,
     DrawTypeTriangle     = 0x0004,
     DrawTypeLines        = 0x0001,
     DrawTypeLineStrip    = 0x0003,
     DrawTypeLineLoop     = 0x0002,
     DrawTypePoints       = 0x0000,
+    FormatRed            = 0x1903,
+    FormatRG             = 0x8227,
+    FormatRGB            = 0x1907,
     FormatRGBA           = 0x1908,
+    FormatR32F           = 0x822E,
+    FormatRG32F          = 0x8230,
+    FormatRGBA16F        = 0x881A,
     FormatDepthComponent = 0x1902,
     ColorAttachment0     = 0x8CE0,
     DepthAttachment      = 0x8D00,
@@ -278,6 +290,6 @@ namespace ToolKit
     TargetCubeMap        = 0x8513
   };
 
-  static const char* TKVersionStr = "v0.3.15";
+  static const char* TKVersionStr = "v0.3.16";
 
 } // namespace ToolKit

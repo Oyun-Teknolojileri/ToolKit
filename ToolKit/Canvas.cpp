@@ -58,7 +58,7 @@ namespace ToolKit
   void Canvas::ParameterEventConstructor()
   {
     Surface::ParameterEventConstructor();
-    ParamMaterial().m_onValueChangedFn = nullptr;
+    ParamMaterial().m_onValueChangedFn.clear();
   }
 
   void Canvas::UpdateGeometry(bool byTexture)
@@ -66,13 +66,13 @@ namespace ToolKit
     CreateQuadLines();
   }
 
-  void Canvas::ApplyRecursivResizePolicy(float width, float height)
+  void Canvas::ApplyRecursiveResizePolicy(float width, float height)
   {
-    const Vec2 size = GetSizeVal();
-    Vec3 scale1     = m_node->GetScale();
-    scale1.x        = width / size.x;
-    scale1.y        = height / size.y;
-    m_node->SetScale(scale1);
+    const Vec2 canvasCurrentSize = GetSizeVal();
+    Vec3 canvasScale             = m_node->GetScale();
+    canvasScale.x                = width / canvasCurrentSize.x;
+    canvasScale.y                = height / canvasCurrentSize.y;
+    m_node->SetScale(canvasScale);
 
     for (Node* childNode : m_node->m_children)
     {
@@ -83,94 +83,76 @@ namespace ToolKit
           Surface* surface     = static_cast<Surface*>(ntt);
           const float* offsets = surface->m_anchorParams.m_offsets;
 
+          Vec3 currentScale(1.f, 1.f, 1.f);
+          childNode->SetScale(currentScale);
+
           Vec3 canvasPoints[4], surfacePoints[4];
           surface->CalculateAnchorOffsets(canvasPoints, surfacePoints);
 
-          const Quaternion r =
-              childNode->GetOrientation(TransformationSpace::TS_WORLD);
-          const Vec3 eularXYZ = glm::eulerAngles(r);
-          const float angle   = (eularXYZ.z);
-          Mat4 orientation(1.f);
-          orientation = glm::rotate(orientation, angle, Vec3(0.f, 0.f, 1.f));
-
+          // Scale operation
           {
-            Vec4 size(surface->GetSizeVal(), 0.f, 1.f);
-            size                 = orientation * size;
-            const float ww       = fabs(size.x);
-            const float hh       = fabs(size.y);
-            const BoundingBox bb = surface->GetAABB(true);
+            const Vec4 surfaceCurrentSize(surface->GetSizeVal(), 0.f, 1.f);
+            const BoundingBox surfaceBB = surface->GetAABB(true);
+
+            const float surfaceAbsoluteWidth  = surfaceBB.GetWidth();
+            const float surfaceAbsoluteHeight = surfaceBB.GetHeight();
 
             const float innerWidth  = canvasPoints[1].x - canvasPoints[0].x;
             const float innerHeight = canvasPoints[0].y - canvasPoints[2].y;
 
             const float offsetWidthRatio =
-                ((innerWidth - (offsets[2] + offsets[3])) / ww);
+                ((innerWidth - (offsets[2] + offsets[3])) /
+                 surfaceAbsoluteWidth);
             const float offsetHeightRatio =
-                (innerHeight - ((offsets[0]) + (offsets[1]))) / hh;
+                ((innerHeight - (offsets[0] + offsets[1])) /
+                 surfaceAbsoluteHeight);
 
-            Vec3 scale(1.f, 1.f, 1.f);
+            Vec3 surfaceScale(1.f);
+            surfaceScale.x = std::max(offsetWidthRatio, 0.0001f);
+            surfaceScale.y = std::max(offsetHeightRatio, 0.0001f);
 
-            if (offsetWidthRatio > 0.f)
-              scale.x = offsetWidthRatio;
-            else if (offsetWidthRatio > -0.00000001f)
-              scale.x = childNode->GetScale().x;
-            if (offsetHeightRatio > 0.f)
-              scale.y = offsetHeightRatio;
-            else if (offsetHeightRatio > -0.00000001f)
-              scale.y = childNode->GetScale().y;
-
-            Vec4 scale_ = Vec4(scale, 1.f);
-            scale_      = orientation * scale_;
-            scale.x     = fabs(scale_.x);
-            scale.y     = fabs(scale_.y);
-
-            childNode->SetScale(scale);
-
-            if (offsetWidthRatio > 0.f)
-            {
-              surface->m_anchorParams.lockWidth = false;
-            }
-            else
-            {
-              surface->m_anchorParams.lockWidth = true;
-            }
-
-            if (offsetHeightRatio > 0.f)
-            {
-              surface->m_anchorParams.lockHeight = false;
-            }
-            else
-            {
-              surface->m_anchorParams.lockHeight = true;
-            }
+            Mat4 scaleMat;
+            scaleMat = glm::scale(scaleMat, surfaceScale);
+            childNode->Transform(
+                scaleMat, TransformationSpace::TS_WORLD, false);
           }
 
+          // Translate operation
           {
-
-            const BoundingBox bb = surface->GetAABB(true);
             surface->CalculateAnchorOffsets(canvasPoints, surfacePoints);
-            Vec4 ax1_(1.f, 0.f, 0.f, 1.f);
-            Vec4 ax2_(0.f, 1.f, 0.f, 1.f);
 
-            ax1_ = orientation * ax1_;
-            ax2_ = orientation * ax2_;
+            const float innerWidth  = canvasPoints[1].x - canvasPoints[0].x;
+            const float innerHeight = canvasPoints[0].y - canvasPoints[2].y;
 
-            Vec3 ax1 = Vec3(ax1_);
-            Vec3 ax2 = Vec3(ax2_);
-            Vec3 translate =
-                (canvasPoints[0] + ax1 * offsets[2] - ax2 * offsets[0]);
+            const Vec3 surfaceCurrentScale = childNode->GetScale();
+            if (glm::epsilonNotEqual<float>(innerWidth, 0.0f, 0.00000001f) &&
+                surfaceCurrentScale.x < 0.0f)
+            {
+              std::swap(surfacePoints[0], surfacePoints[1]);
+              std::swap(surfacePoints[2], surfacePoints[3]);
+            }
+
+            if (glm::epsilonNotEqual<float>(innerHeight, 0.0f, 0.00000001f) &&
+                surfaceCurrentScale.y < 0.0f)
+            {
+              std::swap(surfacePoints[0], surfacePoints[2]);
+              std::swap(surfacePoints[1], surfacePoints[3]);
+            }
+
+            const Vec3 widthVector(1.f, 0.f, 0.f);
+            const Vec3 heightVector(0.f, 1.f, 0.f);
+
+            Vec3 translate = (canvasPoints[0] + widthVector * offsets[2] -
+                              heightVector * offsets[0]);
+
             translate -= surfacePoints[0];
-            /*              canvasPoints[0] +
-                          ax1 *
-                              (offsets[2] +
-                               (surface->GetPivotOffsetVal().x) * bb.GetWidth())
-               - ax2 * (offsets[0] + (1.f - surface->GetPivotOffsetVal().y) *
-               bb.GetHeight());*/
 
-            const Vec3 surfacePos =
+            const Vec3 surfaceCurrentPos =
                 surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-            translate += surfacePos;
-            translate.z = surfacePos.z;
+
+            translate += surfaceCurrentPos;
+            translate.z = surfaceCurrentPos.z;
+
             childNode->SetTranslation(translate, TransformationSpace::TS_WORLD);
           }
 
@@ -178,8 +160,8 @@ namespace ToolKit
           {
             Canvas* canvasPanel  = static_cast<Canvas*>(surface);
             const BoundingBox bb = canvasPanel->GetAABB(true);
-            canvasPanel->ApplyRecursivResizePolicy(bb.GetWidth(),
-                                                   bb.GetHeight());
+            canvasPanel->ApplyRecursiveResizePolicy(bb.GetWidth(),
+                                                    bb.GetHeight());
           }
         }
       }

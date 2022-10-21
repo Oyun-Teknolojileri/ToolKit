@@ -7,11 +7,12 @@
 #include "FileManager.h"
 #include "FolderWindow.h"
 #include "Gizmo.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Grid.h"
 #include "Mod.h"
 #include "Node.h"
 #include "OverlayUI.h"
+#include "PopupWindows.h"
 #include "Primative.h"
 #include "Renderer.h"
 #include "SDL.h"
@@ -58,7 +59,8 @@ namespace ToolKit
     EditorViewport::EditorViewport(XmlNode* node)
     {
       DeSerialize(nullptr, node);
-      ResetViewportImage(GetRenderTargetSettings());
+      m_needsResize = true;
+      ComitResize();
       InitOverlays(this);
       m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
     }
@@ -78,12 +80,15 @@ namespace ToolKit
 
     EditorViewport::~EditorViewport()
     {
+      SafeDel(m_selectedFramebuffer);
+      SafeDel(m_selectedStencilRT);
     }
 
     void EditorViewport::Show()
     {
       m_mouseOverOverlay = false;
       ImGui::SetNextWindowSize(Vec2(m_size), ImGuiCond_None);
+      ImGui::PushStyleColor(ImGuiCol_WindowBg, g_wndBgColor);
 
       if (ImGui::Begin(m_name.c_str(),
                        &m_visible,
@@ -92,15 +97,17 @@ namespace ToolKit
                            m_additionalWindowFlags))
       {
         UpdateContentArea();
+        ComitResize();
         UpdateWindow();
         HandleStates();
         DrawCommands();
         HandleDrop();
         DrawOverlays();
-        ComitResize();
         UpdateSnaps();
       }
+
       ImGui::End();
+      ImGui::PopStyleColor();
     }
 
     void EditorViewport::Update(float deltaTime)
@@ -181,6 +188,7 @@ namespace ToolKit
     void EditorViewport::DeSerialize(XmlDocument* doc, XmlNode* parent)
     {
       Window::DeSerialize(doc, parent);
+      m_wndContentAreaSize = m_size;
 
       if (XmlNode* node = parent->first_node("Viewport"))
       {
@@ -194,6 +202,46 @@ namespace ToolKit
     void EditorViewport::OnResizeContentArea(float width, float height)
     {
       Viewport::OnResizeContentArea(width, height);
+      // Selected framebuffer resize
+      {
+        if (m_selectedFramebuffer == nullptr)
+        {
+          m_selectedFramebuffer = new Framebuffer();
+        }
+
+        m_selectedFramebuffer->UnInit();
+
+        // Remove old render target
+        if (m_selectedStencilRT)
+        {
+          SafeDel(m_selectedStencilRT);
+        }
+
+        RenderTargetSettigs selectedSettings;
+        selectedSettings.WarpS = selectedSettings.WarpT =
+            GraphicTypes::UVClampToEdge;
+        m_selectedFramebuffer->Init({(uint) m_wndContentAreaSize.x,
+                                     (uint) m_wndContentAreaSize.y,
+                                     selectedSettings.Msaa,
+                                     true,
+                                     true});
+
+        m_selectedStencilRT = new RenderTarget((uint) m_wndContentAreaSize.x,
+                                               (uint) m_wndContentAreaSize.y,
+                                               selectedSettings);
+        m_selectedStencilRT->Init();
+
+        if (m_selectedStencilRT->m_initiated)
+        {
+          m_selectedFramebuffer->SetAttachment(
+              Framebuffer::Attachment::ColorAttachment0, m_selectedStencilRT);
+        }
+        else
+        {
+          SafeDel(m_selectedStencilRT);
+        }
+      }
+
       AdjustZoom(0.0f);
     }
 
@@ -274,7 +322,17 @@ namespace ToolKit
 
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
-          ImGui::Image(Convert2ImGuiTexture(m_viewportImage),
+          uint texId = 0;
+          if (m_framebuffer->GetAttachment(
+                  Framebuffer::Attachment::ColorAttachment0) != nullptr)
+          {
+            texId =
+                m_framebuffer
+                    ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
+                    ->m_textureId;
+          }
+
+          ImGui::Image(ConvertUIntImGuiTexture(texId),
                        m_wndContentAreaSize,
                        Vec2(0.0f, 0.0f),
                        Vec2(1.0f, -1.0f));
@@ -554,8 +612,6 @@ namespace ToolKit
 
     void EditorViewport::HandleDrop()
     {
-      ImGuiIO& io = ImGui::GetIO();
-
       // Current scene
       EditorScenePtr currScene = g_app->GetCurrentScene();
 
@@ -580,8 +636,7 @@ namespace ToolKit
         if (dragEntry.m_ext == MESH || dragEntry.m_ext == SKINMESH)
         {
           // Load mesh
-          LoadDragMesh(
-              meshLoaded, dragEntry, io, &dwMesh, &boundingBox, currScene);
+          LoadDragMesh(meshLoaded, dragEntry, &dwMesh, &boundingBox, currScene);
 
           // Show bounding box
           lastDragMeshPos = CalculateDragMeshPosition(
@@ -609,29 +664,29 @@ namespace ToolKit
           }
           else if (entry.m_ext == SCENE || entry.m_ext == LAYER)
           {
-            YesNoWindow::ButtonInfo openButton;
+            MultiChoiceWindow::ButtonInfo openButton;
             openButton.m_name     = "Open";
             openButton.m_callback = [entry]() -> void {
               String fullPath = entry.GetFullPath();
               g_app->OpenScene(fullPath);
             };
-            YesNoWindow::ButtonInfo linkButton;
+            MultiChoiceWindow::ButtonInfo linkButton;
             linkButton.m_name     = "Link";
             linkButton.m_callback = [entry]() -> void {
               String fullPath = entry.GetFullPath();
               g_app->LinkScene(fullPath);
             };
-            YesNoWindow::ButtonInfo mergeButton;
+            MultiChoiceWindow::ButtonInfo mergeButton;
             mergeButton.m_name     = "Merge";
             mergeButton.m_callback = [entry]() -> void {
               String fullPath = entry.GetFullPath();
               g_app->MergeScene(fullPath);
             };
-            YesNoWindow* importOptionWnd =
-                new YesNoWindow("Open Scene",
-                                {openButton, linkButton, mergeButton},
-                                "Open or Link the scene ?",
-                                true);
+            MultiChoiceWindow* importOptionWnd =
+                new MultiChoiceWindow("Open Scene",
+                                      {openButton, linkButton, mergeButton},
+                                      "Open or Link the scene ?",
+                                      true);
 
             UI::m_volatileWindows.push_back(importOptionWnd);
           }
@@ -653,7 +708,9 @@ namespace ToolKit
                     GetMaterialManager()->Create<Material>(path);
                 // Set material to material component
                 MaterialComponentPtr matPtr = pd.entity->GetMaterialComponent();
-                if (matPtr == nullptr)
+                MultiMaterialPtr mmPtr =
+                    pd.entity->GetComponent<MultiMaterialComponent>();
+                if (matPtr == nullptr && mmPtr == nullptr)
                 {
                   // Create a new material component
                   MaterialComponent* matComp = new MaterialComponent();
@@ -735,7 +792,6 @@ namespace ToolKit
 
     void EditorViewport::LoadDragMesh(bool& meshLoaded,
                                       DirectoryEntry dragEntry,
-                                      ImGuiIO io,
                                       Entity** dwMesh,
                                       LineBatch** boundingBox,
                                       EditorScenePtr currScene)
@@ -758,6 +814,19 @@ namespace ToolKit
         }
         (*dwMesh)->GetMeshComponent()->SetMeshVal(mesh);
         mesh->Init(false);
+
+        if (mesh->IsSkinned())
+        {
+          SkeletonComponentPtr skelComp = std::make_shared<SkeletonComponent>();
+          skelComp->SetSkeletonResourceVal(
+              ((SkinMesh*) mesh.get())->m_skeleton);
+          (*dwMesh)->AddComponent(skelComp);
+          skelComp->Init();
+        }
+
+        MultiMaterialPtr matComp = std::make_shared<MultiMaterialComponent>();
+        matComp->UpdateMaterialList((*dwMesh)->GetMeshComponent());
+        (*dwMesh)->AddComponent(matComp);
 
         // Load bounding box once
         *boundingBox = CreateBoundingBoxDebugObject((*dwMesh)->GetAABB(true));

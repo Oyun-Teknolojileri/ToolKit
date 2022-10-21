@@ -1,17 +1,20 @@
 #include "Mod.h"
 
+#include "App.h"
 #include "AnchorMod.h"
 #include "Camera.h"
 #include "ConsoleWindow.h"
 #include "DirectionComponent.h"
 #include "EditorViewport.h"
 #include "Gizmo.h"
-#include "GlobalDef.h"
+#include "Global.h"
 #include "Grid.h"
 #include "Node.h"
 #include "Primative.h"
 #include "TransformMod.h"
 #include "Util.h"
+
+#include <Prefab.h>
 
 #include <algorithm>
 #include <memory>
@@ -509,18 +512,22 @@ namespace ToolKit
         {
           m_mouseData[1] = vp->GetLastMousePosScreenSpace();
 
-          auto drawSelectionRectangleFn = [this](ImDrawList* drawList) -> void {
-            Vec2 min, max;
-            GetMouseRect(min, max);
+          if (!vp->IsMoving())
+          {
+            auto drawSelectionRectangleFn =
+                [this](ImDrawList* drawList) -> void {
+              Vec2 min, max;
+              GetMouseRect(min, max);
 
-            ImU32 col = ImColor(g_selectBoxWindowColor);
-            drawList->AddRectFilled(min, max, col, 5.0f);
+              ImU32 col = ImColor(g_selectBoxWindowColor);
+              drawList->AddRectFilled(min, max, col, 5.0f);
 
-            col = ImColor(g_selectBoxBorderColor);
-            drawList->AddRect(min, max, col, 5.0f, 15, 2.0f);
-          };
+              col = ImColor(g_selectBoxBorderColor);
+              drawList->AddRect(min, max, col, 5.0f, 15, 2.0f);
+            };
 
-          vp->m_drawCommands.push_back(drawSelectionRectangleFn);
+            vp->m_drawCommands.push_back(drawSelectionRectangleFn);
+          }
         }
       }
 
@@ -578,11 +585,11 @@ namespace ToolKit
       // Revert to recover hierarchies.
       std::reverse(deleteList.begin(), deleteList.end());
 
+      uint deleteActCount = 0;
       if (!deleteList.empty())
       {
         ActionManager::GetInstance()->BeginActionGroup();
 
-        uint instanceCount = 0;
         for (Entity* e : deleteList)
         {
           if (!e->GetIsInstanceVal())
@@ -594,14 +601,21 @@ namespace ToolKit
                   p->GetBaseEntityID() == e->GetIdVal())
               {
                 ActionManager::GetInstance()->AddAction(new DeleteAction(p));
-                instanceCount++;
+                deleteActCount++;
               }
             }
           }
+          // If entity is from a prefab, don't delete it because Prefab will
+          // remove them
+          else if (Prefab::GetPrefabRoot(e) &&
+                   e->GetType() != EntityType::Entity_Prefab)
+          {
+            continue;
+          }
           ActionManager::GetInstance()->AddAction(new DeleteAction(e));
+          deleteActCount++;
         }
-        ActionManager::GetInstance()->GroupLastActions(
-            static_cast<int>(deleteList.size() + instanceCount));
+        ActionManager::GetInstance()->GroupLastActions(deleteActCount);
       }
 
       return NullSignal;
@@ -620,7 +634,7 @@ namespace ToolKit
       if (!selecteds.empty())
       {
         currScene->ClearSelection();
-        if (selecteds.size() > 1)
+        if (selecteds.size())
         {
           ActionManager::GetInstance()->BeginActionGroup();
         }

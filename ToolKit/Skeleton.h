@@ -7,16 +7,43 @@
 namespace ToolKit
 {
 
-  class TK_API Bone
+  class TK_API StaticBone
   {
    public:
-    explicit Bone(String name);
-    ~Bone();
+    explicit StaticBone(String name);
+    ~StaticBone();
 
    public:
     String m_name;
-    Node* m_node;
     Mat4 m_inverseWorldMatrix;
+  };
+
+  /*
+   * This class is used to store dynamic bone information
+   */
+  class TK_API DynamicBoneMap
+  {
+   public:
+    struct DynamicBone
+    {
+      // Should be same with matching static bone's element index
+      uint boneIndx;
+      Node* node;
+    };
+    // Call after skeleton fills m_bones list
+    void Init(const Skeleton* skeleton);
+    ~DynamicBoneMap();
+    std::unordered_map<String, DynamicBone> boneList;
+    TexturePtr boneTransformNodeTexture;
+    void UpdateGPUTexture();
+    // Find all child bones by recursively searching child bones
+    // Then call childProcessFunc (should be recursive to traverse all childs)
+    void ForEachRootBone(
+        std::function<void(const DynamicBone*)> childProcessFunc) const;
+    void ForEachRootBone(std::function<void(DynamicBone*)> childProcessFunc);
+    void AddDynamicBone(const String& boneName,
+                        DynamicBone& bone,
+                        DynamicBone* parent);
   };
 
   class TK_API Skeleton : public Resource
@@ -28,24 +55,22 @@ namespace ToolKit
     explicit Skeleton(String file);
     ~Skeleton();
 
-    void Init(bool flushClientSideArray = true) override;
+    void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
     void Load() override;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-    void AddBone(Bone* bone, Bone* parent = nullptr);
     int GetBoneIndex(String bone);
-    Bone* GetBone(String bone);
-    void UpdateTransformationTexture();
+    StaticBone* GetBone(String bone);
 
-   private:
-    void Traverse(XmlNode* node, Bone* parent);
+   protected:
+    void CopyTo(Resource* other) override;
 
    public:
-    Node* m_node;
-    std::vector<Bone*> m_bones;
-    TexturePtr m_boneTransformTexture, m_bindPoseTexture;
+    std::vector<StaticBone*> m_bones;
+    DynamicBoneMap m_Tpose;
+    TexturePtr m_bindPoseTexture;
   };
 
   class TK_API SkeletonManager : public ResourceManager

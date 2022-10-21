@@ -228,6 +228,36 @@ namespace ToolKit
     return frus;
   }
 
+  float SquareDistancePointToAABB(const Vec3& p, const BoundingBox& b)
+  {
+    float sqDist = 0.0f;
+    for (int i = 0; i < 3; i++)
+    {
+      // for each axis count any excess distance outside box extents
+      float v = p[i];
+      if (v < b.min[i])
+      {
+        sqDist += (b.min[i] - v) * (b.min[i] - v);
+      }
+      if (v > b.max[i])
+      {
+        sqDist += (v - b.max[i]) * (v - b.max[i]);
+      }
+    }
+    return sqDist;
+  }
+  // Returns true if sphere s intersects AABB b, false otherwise
+  bool SphereBoxIntersection(const BoundingSphere& s, const BoundingBox& b)
+  {
+    // Compute squared distance between sphere center and AABB
+    // the sqrt(dist) is fine to use as well, but this is faster.
+    float sqDist = SquareDistancePointToAABB(s.pos, b);
+
+    // Sphere and AABB intersect if the (squared) distance between them is
+    // less than the (squared) sphere radius.
+    return sqDist <= s.radius * s.radius;
+  }
+
   bool SpherePointIntersection(const Vec3& spherePos,
                                float sphereRadius,
                                const Vec3& vertex)

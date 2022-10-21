@@ -31,6 +31,12 @@ namespace ToolKit
   {
   }
 
+  void ParameterVariant::SetValue(Value& newVal)
+  {
+    assert(m_var.index() == newVal.index() && "Variant types must match.");
+    m_var = newVal;
+  }
+
   ParameterVariant::ParameterVariant(const ParameterVariant& other)
   {
     *this = other;
@@ -140,6 +146,11 @@ namespace ToolKit
   }
 
   ParameterVariant::ParameterVariant(const AnimRecordPtrMap& var)
+  {
+    *this = var;
+  }
+
+  ParameterVariant::ParameterVariant(const SkeletonPtr& var)
   {
     *this = var;
   }
@@ -270,11 +281,21 @@ namespace ToolKit
   }
 
   /**
-   * Assign a AnimationPtr to the value of the variant.
+   * Assign a AnimRecprdPtrMap to the value of the variant.
    */
   ParameterVariant& ParameterVariant::operator=(const AnimRecordPtrMap& var)
   {
     m_type = VariantType::AnimRecordPtrMap;
+    AsignVal(var);
+    return *this;
+  }
+
+  /**
+   * Assign a SkeletonPtr to the value of the variant.
+   */
+  ParameterVariant& ParameterVariant::operator=(const SkeletonPtr& var)
+  {
+    m_type = VariantType::SkeletonPtr;
     AsignVal(var);
     return *this;
   }
@@ -432,6 +453,10 @@ namespace ToolKit
           state->m_animation->SerializeRef(doc, elementNode);
         }
       }
+    }
+    break;
+    case VariantType::SkeletonPtr: {
+      GetCVar<SkeletonPtr>()->SerializeRef(doc, node);
     }
     break;
     default:
@@ -629,6 +654,19 @@ namespace ToolKit
       m_var = list;
     }
     break;
+    case VariantType::SkeletonPtr: {
+      String file = Resource::DeserializeRef(parent);
+      if (file.empty())
+      {
+        m_var = std::make_shared<Skeleton>();
+      }
+      else
+      {
+        file  = SkeletonPath(file);
+        m_var = GetSkeletonManager()->Create<Skeleton>(file);
+      }
+    }
+    break;
     default:
       assert(false && "Invalid type.");
       break;
@@ -756,6 +794,25 @@ namespace ToolKit
         variants.push_back(&var);
       }
     }
+  }
+
+  bool ParameterBlock::LookUp(StringView category,
+                              StringView name,
+                              ParameterVariant** var)
+  {
+    for (ParameterVariant& lv : m_variants)
+    {
+      if (lv.m_category.Name == category)
+      {
+        if (lv.m_name == name)
+        {
+          *var = &lv;
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
 } // namespace ToolKit
