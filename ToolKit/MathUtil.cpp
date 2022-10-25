@@ -1,6 +1,9 @@
 #include "MathUtil.h"
 
 #include "Mesh.h"
+#include "Node.h"
+#include "ResourceComponent.h"
+#include "Skeleton.h"
 
 #include <algorithm>
 #include <execution>
@@ -376,7 +379,31 @@ namespace ToolKit
       return false;
   }
 
-  bool RayMeshIntersection(Mesh* const mesh, const Ray& ray, float& t)
+  Vec3 CPUSkinning(const SkinVertex* vertex,
+                   const Skeleton* skel,
+                   const DynamicBoneMap* dynamicBoneMap)
+  {
+    Vec3 transformedPos = {};
+    for (uint boneIndx = 0; boneIndx < 4; boneIndx++)
+    {
+      uint currentBone       = vertex->bones[boneIndx];
+      StaticBone* sBone      = skel->m_bones[currentBone];
+      Mat4 bindPoseTransform = sBone->m_inverseWorldMatrix;
+      ToolKit::Mat4 boneTransform =
+          dynamicBoneMap->boneList.find(sBone->m_name)
+              ->second.node->GetTransform(TransformationSpace::TS_WORLD);
+      transformedPos +=
+          Vec3((boneTransform * bindPoseTransform * Vec4(vertex->pos, 1.0f) *
+                vertex->weights[boneIndx])
+                   .xyz);
+    }
+    return transformedPos;
+  }
+
+  bool RayMeshIntersection(Mesh* const mesh,
+                           const Ray& ray,
+                           float& t,
+                           const SkeletonComponent* skelComp)
   {
     std::vector<Mesh*> meshes;
     mesh->GetAllMeshes(meshes);
@@ -391,13 +418,25 @@ namespace ToolKit
           std::execution::par_unseq,
           mesh->m_faces.begin(),
           mesh->m_faces.end(),
-          [&updateHit, &t, &closestPickedDistance, &ray, &hit](Face& face) {
+          [&updateHit, &t, &closestPickedDistance, &ray, &hit, skelComp, mesh](
+              Face& face) {
+            Vec3 positions[3] = {face.vertices[0]->pos,
+                                 face.vertices[1]->pos,
+                                 face.vertices[2]->pos};
+            if (skelComp != nullptr && mesh->IsSkinned())
+            {
+              SkinMesh* skinMesh = (SkinMesh*) mesh;
+              for (uint32_t vertexIndx = 0; vertexIndx < 3; vertexIndx++)
+              {
+                positions[vertexIndx] =
+                    CPUSkinning((SkinVertex*) face.vertices[vertexIndx],
+                                skinMesh->m_skeleton.get(),
+                                skelComp->map);
+              }
+            }
             float dist = FLT_MAX;
-            if (RayTriangleIntersection(ray,
-                                        face.vertices[0]->pos,
-                                        face.vertices[1]->pos,
-                                        face.vertices[2]->pos,
-                                        dist))
+            if (RayTriangleIntersection(
+                    ray, positions[0], positions[1], positions[2], dist))
             {
               std::lock_guard<std::mutex> guard(updateHit);
               if (dist < closestPickedDistance && t >= 0.0f)

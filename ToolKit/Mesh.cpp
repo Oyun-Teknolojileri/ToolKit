@@ -473,8 +473,10 @@ namespace ToolKit
     {
       return;
     }
-    m_skeleton->Init(flushClientSideArray);
-    Mesh::Init(flushClientSideArray);
+    // Don't flush, otherwise CPU skinning won't work. So neither
+    // CalculateBoundary() nor RayMeshIntersection() will work as expected
+    m_skeleton->Init(false);
+    Mesh::Init(false);
   }
 
   void SkinMesh::UnInit()

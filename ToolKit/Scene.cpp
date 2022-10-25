@@ -1,8 +1,7 @@
-#include "Scene.h"
-
 #include "Component.h"
 #include "Prefab.h"
 #include "ResourceComponent.h"
+#include "Scene.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -214,12 +213,24 @@ namespace ToolKit
 
           for (MeshComponentPtr& meshCmp : meshes)
           {
-            MeshPtr mesh = meshCmp->GetMeshVal();
-            if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount)
+            Mesh* mesh = meshCmp->GetMeshVal().get();
+            // There is a special case for SkinMeshes, because
+            // m_clientSideVertices.size() here always accesses to Mesh's vertex
+            // array (Vertex*) but it should've access to SkinMesh's vertex
+            // array (SkinVertex*). I don't want to template this function to
+            // support it, that's why isSkinned() is enough!
+            if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount ||
+                mesh->IsSkinned())
             {
               // Per polygon check if data exist.
-              float meshDist = 0.0f;
-              hit = RayMeshIntersection(mesh.get(), rayInObjectSpace, meshDist);
+              float meshDist              = 0.0f;
+              SkeletonComponent* skelComp = nullptr;
+              if (mesh->IsSkinned())
+              {
+                skelComp = ntt->GetComponent<SkeletonComponent>().get();
+              }
+              hit = RayMeshIntersection(
+                  mesh, rayInObjectSpace, meshDist, skelComp);
               if (hit)
               {
                 dist = meshDist;

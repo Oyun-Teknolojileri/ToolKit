@@ -128,9 +128,17 @@ namespace ToolKit
   TK_API bool RayTriangleIntersection(
       const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t);
 
+  class DynamicBoneMap;
+  class SkinVertex;
+  TK_API Vec3 CPUSkinning(const SkinVertex* vertex,
+                          const Skeleton* skel,
+                          const DynamicBoneMap* dynamicBoneMap);
+
+  class SkeletonComponent;
   TK_API bool RayMeshIntersection(class Mesh* const mesh,
                                   const Ray& ray,
-                                  float& t);
+                                  float& t,
+                                  const SkeletonComponent* skelComp = nullptr);
 
   TK_API IntersectResult FrustumBoxIntersection(
       const Frustum& frustum,
