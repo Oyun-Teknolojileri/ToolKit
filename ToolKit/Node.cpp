@@ -45,9 +45,23 @@ namespace ToolKit
     m_scale = tmpScl;
   }
 
-  void Node::Scale(const Vec3& val)
+  void Node::Scale(const Vec3& val, TransformationSpace space)
   {
-    m_scale *= val;
+    Vec3 pos;
+    if (space == TransformationSpace::TS_WORLD)
+    {
+      pos = GetTranslation();
+      SetTranslation(ZERO);
+    }
+
+    Mat4 ts;
+    ts = glm::scale(ts, val);
+    TransformImp(ts, space, nullptr, nullptr, &m_scale);
+
+    if (space == TransformationSpace::TS_WORLD)
+    {
+      SetTranslation(pos);
+    }
   }
 
   void Node::Transform(const Mat4& val, TransformationSpace space, bool noScale)
@@ -101,23 +115,8 @@ namespace ToolKit
 
   void Node::SetTranslation(const Vec3& val, TransformationSpace space)
   {
-    if (m_parent == nullptr)
-    {
-      if (space == TransformationSpace::TS_LOCAL)
-      {
-        Translate(val, space);
-      }
-      else
-      {
-        m_translation = val;
-        SetChildrenDirty();
-      }
-    }
-    else
-    {
-      Mat4 ts = glm::translate(Mat4(), val);
-      SetTransformImp(ts, space, &m_translation, nullptr, nullptr);
-    }
+    Mat4 ts = glm::translate(Mat4(), val);
+    SetTransformImp(ts, space, &m_translation, nullptr, nullptr);
   }
 
   Vec3 Node::GetTranslation(TransformationSpace space)
@@ -129,23 +128,8 @@ namespace ToolKit
 
   void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
   {
-    if (m_parent == nullptr)
-    {
-      if (space == TransformationSpace::TS_LOCAL)
-      {
-        Rotate(val, space);
-      }
-      else
-      {
-        m_orientation = val;
-        SetChildrenDirty();
-      }
-    }
-    else
-    {
-      Mat4 ts = glm::toMat4(val);
-      SetTransformImp(ts, space, nullptr, &m_orientation, nullptr);
-    }
+    Mat4 ts = glm::toMat4(val);
+    SetTransformImp(ts, space, nullptr, &m_orientation, nullptr);
   }
 
   Quaternion Node::GetOrientation(TransformationSpace space)
@@ -155,10 +139,11 @@ namespace ToolKit
     return q;
   }
 
-  void Node::SetScale(const Vec3& val)
+  void Node::SetScale(const Vec3& val, TransformationSpace space)
   {
-    m_scale = val;
-    SetChildrenDirty();
+    Mat4 ts;
+    ts = glm::scale(ts, val);
+    SetTransformImp(ts, space, nullptr, nullptr, &m_scale);
   }
 
   Vec3 Node::GetScale()
@@ -181,7 +166,12 @@ namespace ToolKit
   {
     assert(child->m_id != m_id);
     assert(child->m_parent == nullptr);
-    Mat4 ts = child->GetTransform(TransformationSpace::TS_WORLD);
+
+    Mat4 ts;
+    if (preserveTransform)
+    {
+      ts = child->GetTransform(TransformationSpace::TS_WORLD);
+    }
 
     m_children.push_back(child);
     child->m_parent = this;
@@ -200,7 +190,11 @@ namespace ToolKit
     {
       if (m_children[i] == child)
       {
-        Mat4 ts = child->GetTransform(TransformationSpace::TS_WORLD);
+        Mat4 ts;
+        if (preserveTransform)
+        {
+          ts = child->GetTransform(TransformationSpace::TS_WORLD);
+        }
 
         child->m_parent = nullptr;
         child->m_dirty  = true;

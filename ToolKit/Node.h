@@ -25,14 +25,14 @@ namespace ToolKit
                    TransformationSpace space = TransformationSpace::TS_WORLD);
     void Rotate(const Quaternion& val,
                 TransformationSpace space = TransformationSpace::TS_WORLD);
-    void Scale(const Vec3& val);
+    void Scale(const Vec3& val,
+               TransformationSpace space = TransformationSpace::TS_LOCAL);
     void Transform(const Mat4& val,
                    TransformationSpace space = TransformationSpace::TS_WORLD,
                    bool noScale              = true);
-    void SetTransform(
-        const Mat4& val,
-        TransformationSpace space = TransformationSpace::TS_WORLD,
-        bool noScale              = true);
+    void SetTransform(const Mat4& val,
+                      TransformationSpace space = TransformationSpace::TS_WORLD,
+                      bool noScale              = true);
     Mat4 GetTransform(
         TransformationSpace space = TransformationSpace::TS_WORLD);
     void SetTranslation(
@@ -45,12 +45,13 @@ namespace ToolKit
         TransformationSpace space = TransformationSpace::TS_WORLD);
     Quaternion GetOrientation(
         TransformationSpace space = TransformationSpace::TS_WORLD);
-    void SetScale(const Vec3& val);
+    void SetScale(const Vec3& val,
+                  TransformationSpace space = TransformationSpace::TS_WORLD);
     Vec3 GetScale();
 
     /**
-    * @return Normalized local transform axes of the node.
-    */
+     * @return Normalized local transform axes of the node.
+     */
     Mat3 GetTransformAxes();
 
     void AddChild(Node* child, bool preserveTransform = false);

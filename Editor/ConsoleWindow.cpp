@@ -193,7 +193,7 @@ namespace ToolKit
           }
           else
           {
-            e->m_node->Scale(transfrom);
+            e->m_node->Scale(transfrom, ts);
           }
           actionApplied = true;
         }
@@ -363,7 +363,6 @@ namespace ToolKit
       BaseMod* mod = ModManager::GetInstance()->m_modStack.back();
       if (TransformMod* tsm = dynamic_cast<TransformMod*>(mod))
       {
-        tsm->m_prevTransformSpace = g_app->m_transformSpace;
         tsm->Signal(TransformMod::m_backToStart);
       }
     }
