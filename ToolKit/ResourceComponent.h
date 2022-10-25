@@ -55,6 +55,9 @@ namespace ToolKit
    public:
     TKDeclareParam(MeshPtr, Mesh); //!< Component's Mesh resource.
     TKDeclareParam(bool, CastShadow);
+
+   private:
+    BoundingBox m_aabb = {};
   };
 
   typedef std::shared_ptr<class MaterialComponent> MaterialComponentPtr;
@@ -191,7 +194,8 @@ namespace ToolKit
 
    public:
     TKDeclareParam(SkeletonPtr, SkeletonResource);
-    DynamicBoneMap* map;
+    DynamicBoneMap* m_map;
+    bool isDirty = true;
   };
 
   typedef std::shared_ptr<class MultiMaterialComponent> MultiMaterialPtr;

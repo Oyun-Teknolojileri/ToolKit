@@ -372,9 +372,9 @@ namespace ToolKit
       // But bone count can't be bound here because its location changes every
       //   shader program
       SetTexture(2, skel->m_bindPoseTexture->m_textureId);
-      SetTexture(3, skelComp->map->boneTransformNodeTexture->m_textureId);
+      SetTexture(3, skelComp->m_map->boneTransformNodeTexture->m_textureId);
 
-      skelComp->map->UpdateGPUTexture();
+      skelComp->m_map->UpdateGPUTexture();
     };
     updateAndBindSkinningTextures();
 

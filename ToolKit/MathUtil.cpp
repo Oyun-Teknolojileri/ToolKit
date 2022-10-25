@@ -431,7 +431,7 @@ namespace ToolKit
                 positions[vertexIndx] =
                     CPUSkinning((SkinVertex*) face.vertices[vertexIndx],
                                 skinMesh->m_skeleton.get(),
-                                skelComp->map);
+                                skelComp->m_map);
               }
             }
             float dist = FLT_MAX;

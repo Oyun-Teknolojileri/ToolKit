@@ -102,6 +102,10 @@ namespace ToolKit
     bool IsSkinned() const override;
 
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    // Because AABB is all dependent on active animation, just return AABB
+    // (doesn't change m_aabb)
+    BoundingBox CalculateAABB(const Skeleton* skel,
+                              const DynamicBoneMap* boneMap);
 
    protected:
     void InitVertices(bool flush) override;
