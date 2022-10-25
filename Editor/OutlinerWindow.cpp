@@ -3,6 +3,7 @@
 #include "App.h"
 #include "FolderWindow.h"
 #include "Global.h"
+#include "ImGui/imgui_stdlib.h"
 #include "Mod.h"
 #include "UI.h"
 #include "Util.h"
@@ -37,6 +38,11 @@ namespace ToolKit
 
     void OutlinerWindow::ShowNode(Entity* e)
     {
+      if (!m_shownEntities[e])
+      {
+        return;
+      }
+
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
       EditorScenePtr currScene     = g_app->GetCurrentScene();
       if (currScene->IsSelected(e->GetIdVal()))
@@ -126,13 +132,75 @@ namespace ToolKit
       }
     }
 
+    void OutlinerWindow::HandleSearch(const EntityRawPtrArray& ntties,
+                                      const EntityRawPtrArray& roots)
+    {
+      if (ImGui::IsKeyPressed(ImGuiKey_Enter, false) && IsActive())
+      {
+        m_stringSearchMode = true;
+      }
+
+      m_stringSearchMode = m_stringSearchMode && !m_searchString.empty();
+
+      // Clear shown entity map
+      for (Entity* ntt : ntties)
+      {
+        if (m_searchString.empty())
+        {
+          m_shownEntities[ntt] = true;
+        }
+        else
+        {
+          m_shownEntities[ntt] = false;
+        }
+      }
+      if (m_searchString.size() > 0)
+      {
+        // Find which entities should be shown
+        for (Entity* e : roots)
+        {
+          FindShownEntities(e, m_searchString);
+        }
+      }
+    }
+
+    bool OutlinerWindow::FindShownEntities(Entity* e, const String& str)
+    {
+      bool self = false;
+      if (e->GetNameVal().find(str) != String::npos)
+      {
+        self = true;
+      }
+
+      bool children = false;
+      if (e->GetType() != EntityType::Entity_Prefab)
+      {
+        for (Node* n : e->m_node->m_children)
+        {
+          Entity* childNtt = n->m_entity;
+          if (childNtt != nullptr)
+          {
+            bool child = FindShownEntities(childNtt, str);
+            children   = child | children;
+          }
+        }
+      }
+
+      bool result        = self | children;
+      m_shownEntities[e] = result;
+      return result;
+    }
+
     void OutlinerWindow::Show()
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
       ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
+
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         HandleStates();
+
+        ShowSearchBar(m_searchString);
 
         if (DrawRootHeader("Scene",
                            0,
@@ -143,10 +211,13 @@ namespace ToolKit
           EntityRawPtrArray roots;
           GetRootEntities(ntties, roots);
 
+          HandleSearch(ntties, roots);
+
           for (Entity* e : roots)
           {
             ShowNode(e);
           }
+
           ImGui::TreePop();
         }
       }
@@ -232,18 +303,36 @@ namespace ToolKit
       return isOpen;
     }
 
+    void OutlinerWindow::ShowSearchBar(String& searchString)
+    {
+      ImGui::PushItemWidth(-1);
+      ImGui::InputTextWithHint("SearchString", "Search", &searchString);
+      ImGui::PopItemWidth();
+    }
+
     bool OutlinerWindow::DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags)
     {
-      bool focusToItem = false;
+      if (ntt->GetNameVal().find(m_searchString) != String::npos)
+      {
+        m_stringSearchMode = false;
+      }
+
+      bool focusToItem  = false;
+      bool nextItemOpen = false;
       if (!m_nttFocusPath.empty())
       {
         int focusIndx = IndexOf(ntt, m_nttFocusPath);
         if (focusIndx != -1)
         {
-          ImGui::SetNextItemOpen(true);
+          nextItemOpen = true;
         }
 
         focusToItem = focusIndx == 0;
+      }
+
+      if (nextItemOpen || m_stringSearchMode)
+      {
+        ImGui::SetNextItemOpen(true);
       }
 
       const String sId = "##" + std::to_string(ntt->GetIdVal());
