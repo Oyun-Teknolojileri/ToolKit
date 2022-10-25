@@ -545,6 +545,11 @@ namespace ToolKit
       BoolCheck(tagArgs, &g_app->m_showDirectionalLightShadowFrustum);
     }
 
+    void SelectAllEffectingLights(TagArgArray tagArgs)
+    {
+      BoolCheck(tagArgs, &g_app->m_selectEffectingLights);
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2)
     {
@@ -603,6 +608,7 @@ namespace ToolKit
       CreateCommand(g_setWorkspaceDir, SetWorkspaceDir);
       CreateCommand(g_loadPlugin, LoadPlugin);
       CreateCommand(g_showShadowFrustum, ShowShadowFrustum);
+      CreateCommand(g_selectEffectingLights, SelectAllEffectingLights);
     }
 
     ConsoleWindow::~ConsoleWindow()

@@ -64,6 +64,8 @@ namespace ToolKit
     Texture* GenerateIrradianceCubemap(CubeMapPtr cubemap,
                                        uint width,
                                        uint height);
+    LightRawPtrArray GetBestLights(Entity* entity,
+                                   const LightRawPtrArray& lights);
 
    private:
     void RenderEntities(
@@ -120,8 +122,6 @@ namespace ToolKit
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
 
-    LightRawPtrArray GetBestLights(Entity* entity,
-                                   const LightRawPtrArray& lights);
     void GetEnvironmentLightEntities(EntityRawPtrArray entities);
     void FindEnvironmentLight(Entity* entity, Camera* camera);
 

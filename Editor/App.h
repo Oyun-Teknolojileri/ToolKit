@@ -183,6 +183,7 @@ namespace ToolKit
       bool m_importSlient                      = false;
       bool m_showSelectionBoundary             = false;
       bool m_showDirectionalLightShadowFrustum = false;
+      bool m_selectEffectingLights             = false;
       bool m_windowMaximized                   = false;
       byte m_showGraphicsApiErrors             = 0;
       TransformationSpace m_transformSpace     = TransformationSpace::TS_WORLD;

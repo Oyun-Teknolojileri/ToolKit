@@ -77,6 +77,9 @@ namespace ToolKit
     const String g_showShadowFrustum("ShowShadowFrustum");
     void ShowShadowFrustum(TagArgArray tagArgs);
 
+    const String g_selectEffectingLights("SelectAllEffectingLights");
+    void SelectAllEffectingLights(TagArgArray tagArgs);
+
     // Command errors
     const String g_noValidEntity("No valid entity");
 
