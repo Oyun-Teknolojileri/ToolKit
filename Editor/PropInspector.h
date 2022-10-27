@@ -62,6 +62,8 @@ namespace ToolKit
       ValueUpdateFn MultiUpdate(ParameterVariant* var);
       void ShowMultiMaterialComponent(
           ComponentPtr& comp, std::function<bool(const String&)> showCompFunc);
+      void ShowAABBOverrideComponent(
+          ComponentPtr& comp, std::function<bool(const String&)> showCompFunc);
     };
 
     class PropInspector : public Window

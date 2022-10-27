@@ -62,6 +62,9 @@ namespace ToolKit
     case ComponentType::MultiMaterialComponent:
       return new MultiMaterialComponent;
       break;
+    case ComponentType::AABBOverrideComponent:
+      return new AABBOverrideComponent;
+      break;
     case ComponentType::Base:
     default:
       assert(false && "Unsupported component type");

@@ -60,23 +60,32 @@ namespace ToolKit
   {
     BoundingBox aabb;
 
-    MeshComponentPtrArray meshCmps;
-    GetComponent<MeshComponent>(meshCmps);
-
-    if (meshCmps.empty())
+    AABBOverrideComponentPtr overrideComp =
+        GetComponent<AABBOverrideComponent>();
+    if (overrideComp)
     {
-      // Unit aabb.
-      aabb.min = Vec3(0.5f, 0.5f, 0.5f);
-      aabb.max = Vec3(-0.5f, -0.5f, -0.5f);
+      aabb = overrideComp->GetAABB();
     }
     else
     {
-      BoundingBox cmpAABB;
-      for (MeshComponentPtr& cmp : meshCmps)
+      MeshComponentPtrArray meshCmps;
+      GetComponent<MeshComponent>(meshCmps);
+
+      if (meshCmps.empty())
       {
-        cmpAABB = cmp->GetAABB();
-        aabb.UpdateBoundary(cmpAABB.max);
-        aabb.UpdateBoundary(cmpAABB.min);
+        // Unit aabb.
+        aabb.min = Vec3(0.5f, 0.5f, 0.5f);
+        aabb.max = Vec3(-0.5f, -0.5f, -0.5f);
+      }
+      else
+      {
+        BoundingBox cmpAABB;
+        for (MeshComponentPtr& cmp : meshCmps)
+        {
+          cmpAABB = cmp->GetAABB();
+          aabb.UpdateBoundary(cmpAABB.max);
+          aabb.UpdateBoundary(cmpAABB.min);
+        }
       }
     }
 

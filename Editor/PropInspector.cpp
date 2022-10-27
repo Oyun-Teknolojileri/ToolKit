@@ -986,7 +986,8 @@ namespace ToolKit
                            "\0Environment Component"
                            "\0Animation Controller Component"
                            "\0Skeleton Component"
-                           "\0Multi-Material Component"))
+                           "\0Multi-Material Component"
+                           "\0AABB Override Component"))
           {
             Component* newComponent = nullptr;
             switch (dataType)
@@ -1012,6 +1013,9 @@ namespace ToolKit
               newComponent = mmComp;
             }
             break;
+            case 7:
+              newComponent = new AABBOverrideComponent;
+              break;
             default:
               break;
             }
@@ -1138,6 +1142,19 @@ namespace ToolKit
                      "Update material list by first MeshComponent's mesh list");
     }
 
+    void EntityView::ShowAABBOverrideComponent(
+        ComponentPtr& comp, std::function<bool(const String&)> showCompFunc)
+    {
+      AABBOverrideComponent* overrideComp = (AABBOverrideComponent*) comp.get();
+
+      MeshComponentPtr meshComp =
+          overrideComp->m_entity->GetComponent<MeshComponent>();
+      if (meshComp && ImGui::Button("Update from MeshComponent"))
+      {
+        overrideComp->SetAABB(meshComp->GetAABB());
+      }
+    }
+
     bool EntityView::ShowComponentBlock(ComponentPtr& comp)
     {
       VariantCategoryArray categories;
@@ -1181,10 +1198,18 @@ namespace ToolKit
           ImGui::TreePop();
         }
       }
+      switch (comp->GetType())
+      {
+      case ComponentType::MultiMaterialComponent:
+        ShowMultiMaterialComponent(comp, showCompFunc);
+        break;
+      case ComponentType::AABBOverrideComponent:
+        ShowAABBOverrideComponent(comp, showCompFunc);
+        break;
+      }
       // Multi-Material Component has no parameter variant, show it specifically
       if (comp->GetType() == ComponentType::MultiMaterialComponent)
       {
-        ShowMultiMaterialComponent(comp, showCompFunc);
       }
 
       return removeComp;
