@@ -42,13 +42,6 @@ namespace ToolKit
       return Camera::CopyTo(cpy);
     }
 
-    Entity* EditorCamera::Instantiate() const
-    {
-      EditorCamera* instance = new EditorCamera();
-      WeakCopy(instance, false);
-      return instance;
-    }
-
     void EditorCamera::GenerateFrustum()
     {
       // Line frustum.

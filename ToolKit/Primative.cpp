@@ -83,15 +83,6 @@ namespace ToolKit
     return ntt;
   }
 
-  Entity* Billboard::InstantiateTo(Entity* copyTo) const
-  {
-    Entity::InstantiateTo(copyTo);
-    Billboard* instance       = static_cast<Billboard*>(copyTo);
-    instance->m_settings      = m_settings;
-    instance->m_worldLocation = m_worldLocation;
-    return nullptr;
-  }
-
   EntityType Billboard::GetType() const
   {
     return EntityType::Entity_Billboard;
@@ -134,13 +125,6 @@ namespace ToolKit
   {
     Entity::DeSerialize(doc, parent);
     Generate();
-  }
-
-  Entity* Cube::InstantiateTo(Entity* copyTo) const
-  {
-    Entity::InstantiateTo(copyTo);
-    Cube* instance = static_cast<Cube*>(copyTo);
-    return instance;
   }
 
   void Cube::ParameterConstructor()
@@ -333,13 +317,6 @@ namespace ToolKit
     return EntityType::Entity_Quad;
   }
 
-  Entity* Quad::InstantiateTo(Entity* copyTo) const
-  {
-    Entity::InstantiateTo(copyTo);
-    Quad* instance = static_cast<Quad*>(copyTo);
-    return instance;
-  }
-
   void Quad::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Entity::Serialize(doc, parent);
@@ -492,13 +469,6 @@ namespace ToolKit
     Generate();
   }
 
-  Entity* Sphere::InstantiateTo(Entity* copyTo) const
-  {
-    Entity::InstantiateTo(copyTo);
-    Sphere* instance = static_cast<Sphere*>(copyTo);
-    return instance;
-  }
-
   void Sphere::ParameterConstructor(float radius)
   {
     AddComponent(new MeshComponent());
@@ -646,13 +616,6 @@ namespace ToolKit
     Generate();
   }
 
-  Entity* Cone::InstantiateTo(Entity* copyTo) const
-  {
-    Entity::InstantiateTo(copyTo);
-    Cone* instance = static_cast<Cone*>(copyTo);
-    return instance;
-  }
-
   void Cone::ParameterConstructor()
   {
     Height_Define(1.0f, "Geometry", 90, true, true);
@@ -687,13 +650,6 @@ namespace ToolKit
     return ntt;
   }
 
-  Entity* Arrow2d::InstantiateTo(Entity* copyTo) const
-  {
-    Entity::InstantiateTo(copyTo);
-    Arrow2d* instance = static_cast<Arrow2d*>(copyTo);
-    instance->m_label = m_label;
-    return instance;
-  }
 
   EntityType Arrow2d::GetType() const
   {

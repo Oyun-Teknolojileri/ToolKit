@@ -40,11 +40,6 @@ namespace ToolKit
     return Entity::CopyTo(copyTo);
   }
 
-  Entity* Drawable::InstantiateTo(Entity* copyTo) const
-  {
-    return Entity::InstantiateTo(copyTo);
-  }
-
   void Drawable::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Entity::Serialize(doc, parent);

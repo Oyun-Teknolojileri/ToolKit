@@ -924,25 +924,6 @@ namespace ToolKit
     return cpy;
   }
 
-  Entity* DeepInstantiate(Entity* root, EntityRawPtrArray& instances)
-  {
-    Entity* cpy = root->Instantiate();
-    instances.push_back(cpy);
-
-    for (Node* node : root->m_node->m_children)
-    {
-      if (node->m_entity)
-      {
-        if (Entity* sub = DeepInstantiate(node->m_entity, instances))
-        {
-          cpy->m_node->AddChild(sub->m_node);
-        }
-      }
-    }
-
-    return cpy;
-  }
-
   TK_API void StableSortByDistanceToCamera(EntityRawPtrArray& entities,
                                            const Camera* cam)
   {

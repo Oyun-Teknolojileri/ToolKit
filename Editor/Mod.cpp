@@ -1,7 +1,7 @@
 #include "Mod.h"
 
-#include "App.h"
 #include "AnchorMod.h"
+#include "App.h"
 #include "Camera.h"
 #include "ConsoleWindow.h"
 #include "DirectionComponent.h"
@@ -592,23 +592,10 @@ namespace ToolKit
 
         for (Entity* e : deleteList)
         {
-          if (!e->GetIsInstanceVal())
-          {
-            // Search if this is used to instantiate other entities
-            for (Entity* p : g_app->GetCurrentScene()->GetEntities())
-            {
-              if (p->GetIsInstanceVal() &&
-                  p->GetBaseEntityID() == e->GetIdVal())
-              {
-                ActionManager::GetInstance()->AddAction(new DeleteAction(p));
-                deleteActCount++;
-              }
-            }
-          }
           // If entity is from a prefab, don't delete it because Prefab will
           // remove them
-          else if (Prefab::GetPrefabRoot(e) &&
-                   e->GetType() != EntityType::Entity_Prefab)
+          if (Prefab::GetPrefabRoot(e) &&
+              e->GetType() != EntityType::Entity_Prefab)
           {
             continue;
           }
@@ -643,34 +630,26 @@ namespace ToolKit
         GetRootEntities(selecteds, selectedRoots);
 
         int cpyCount = 0;
-        bool copy    = ImGui::GetIO().KeyShift;
-        for (Entity* ntt : selectedRoots)
+        bool copy    = ImGui::GetIO().KeyCtrl;
+        if (copy)
         {
-          EntityRawPtrArray copies;
-          if (copy)
+          for (Entity* ntt : selectedRoots)
           {
+            EntityRawPtrArray copies;
             DeepCopy(ntt, copies);
+
+            for (Entity* cpy : copies)
+            {
+              ActionManager::GetInstance()->AddAction(new CreateAction(cpy));
+            }
+
+            currScene->AddToSelection(copies.front()->GetIdVal(), true);
+            cpyCount += static_cast<int>(copies.size());
             // Status info
             g_app->m_statusMsg =
                 std::to_string(cpyCount) + " entities are copied.";
           }
-          else
-          {
-            DeepInstantiate(ntt, copies);
-            // Status info
-            g_app->m_statusMsg =
-                std::to_string(cpyCount) + " entities are instantiated.";
-          }
-
-          for (Entity* cpy : copies)
-          {
-            ActionManager::GetInstance()->AddAction(new CreateAction(cpy));
-          }
-
-          currScene->AddToSelection(copies.front()->GetIdVal(), true);
-          cpyCount += static_cast<int>(copies.size());
         }
-
         ActionManager::GetInstance()->GroupLastActions(cpyCount);
       }
     }

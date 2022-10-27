@@ -156,15 +156,15 @@ namespace ToolKit
       else if (m_ext == MATERIAL)
       {
         Sphere ball;
-        String fullpath  = GetFullPath();
-        MeshPtr mesh     = ball.GetMeshComponent()->GetMeshVal();
+        String fullpath = GetFullPath();
+        MeshPtr mesh    = ball.GetMeshComponent()->GetMeshVal();
 
-        MaterialPtr mat = GetMaterialManager()->Create<Material>(fullpath);
+        MaterialPtr mat  = GetMaterialManager()->Create<Material>(fullpath);
         mesh->m_material = mat;
 
         // Disable ao
         bool aoActive = mesh->m_material->GetRenderState()->AOInUse;
-        mat->GetRenderState()->AOInUse = false;
+        mat->GetRenderState()->AOInUse  = false;
         mat->GetRenderState()->IBLInUse = false;
 
         mesh->Init(false);

@@ -26,7 +26,6 @@ namespace ToolKit
     using Entity::ParameterConstructor;
 
     Entity* CopyTo(Entity* copyTo) const override;
-    Entity* InstantiateTo(Entity* copyTo) const override;
   };
 
 } // namespace ToolKit

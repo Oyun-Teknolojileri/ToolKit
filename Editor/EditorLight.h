@@ -49,7 +49,6 @@ namespace ToolKit
       void ParameterEventConstructor() override;
 
       Entity* Copy() const override;
-      Entity* Instantiate() const override;
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
@@ -64,7 +63,6 @@ namespace ToolKit
       void ParameterEventConstructor() override;
 
       Entity* Copy() const override;
-      Entity* Instantiate() const override;
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     };
@@ -77,7 +75,6 @@ namespace ToolKit
       void ParameterEventConstructor() override;
 
       Entity* Copy() const override;
-      Entity* Instantiate() const override;
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
     };

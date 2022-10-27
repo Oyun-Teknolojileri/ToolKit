@@ -400,7 +400,12 @@ namespace ToolKit
 
   ComponentPtr MultiMaterialComponent::Copy(Entity* ntt)
   {
-    return nullptr;
+    MultiMaterialPtr mc = std::make_shared<MultiMaterialComponent>();
+    mc->m_localData     = m_localData;
+    mc->m_entity        = ntt;
+    mc->materials       = materials;
+
+    return mc;
   }
 
   void MultiMaterialComponent::Init(bool flushClientSideArray)

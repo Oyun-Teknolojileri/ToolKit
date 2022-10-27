@@ -1,7 +1,8 @@
+#include "Scene.h"
+
 #include "Component.h"
 #include "Prefab.h"
 #include "ResourceComponent.h"
-#include "Scene.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -44,37 +45,6 @@ namespace ToolKit
     sceneDoc.parse<0>(sceneFile->data());
 
     DeSerialize(&sceneDoc, nullptr);
-
-    // Instantiate entities
-    for (Entity* e : m_entities)
-    {
-      if (e->GetIsInstanceVal())
-      {
-        Prefab* prefab = Prefab::GetPrefabRoot(e);
-        if (prefab)
-        {
-          // If entity is from a prefab or a prefab, don't do anything
-          // Prefab's child entity instances aren't serialized anyway
-          //   but Prefab::Init instantiates, so we need to check it here
-          // Long story short: Prefab deserialization handles this case
-        }
-        else if (Entity* base = GetEntity(e->GetBaseEntityID()))
-        {
-          Node* node            = e->m_node->Copy();
-          ParameterBlock params = e->m_localData;
-          base->InstantiateTo(e);
-          SafeDel(e->m_node);
-          node->m_entity = e;
-          e->m_node      = node;
-          e->m_localData = params;
-        }
-        else
-        {
-          GetLogger()->WriteConsole(LogType::Warning, "Base entity not found!");
-          RemoveEntity(e->GetIdVal());
-        }
-      }
-    }
 
     // Update parent - child relation for entities.
     for (Entity* e : m_entities)
@@ -572,22 +542,6 @@ namespace ToolKit
         }
       }
     }
-    // If instantiated, save its base entity's list index too
-    if (ntt->GetIsInstanceVal())
-    {
-      for (uint parentSrchIndx = 0; parentSrchIndx < m_entities.size();
-           parentSrchIndx++)
-      {
-        if (ntt->GetBaseEntityID() == m_entities[parentSrchIndx]->GetIdVal())
-        {
-          parent->remove_attribute(baseAttrib);
-          WriteAttr(parent,
-                    doc,
-                    XmlBaseEntityIdAttr,
-                    std::to_string(parentSrchIndx + 1));
-        }
-      }
-    }
   }
 
   void Scene::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -633,10 +587,6 @@ namespace ToolKit
       biggestID         = glm::max(biggestID, currentID);
       ntt->SetIdVal(currentID);
       ntt->_parentId += lastID;
-      if (ntt->GetIsInstanceVal())
-      {
-        ntt->SetBaseEntityID(lastID + ntt->GetBaseEntityID());
-      }
 
       m_entities.push_back(ntt);
     }

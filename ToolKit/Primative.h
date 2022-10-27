@@ -36,7 +36,6 @@ namespace ToolKit
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-    Entity* InstantiateTo(Entity* copyTo) const override;
 
    public:
     Settings m_settings;
@@ -61,7 +60,6 @@ namespace ToolKit
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-    Entity* InstantiateTo(Entity* copyTo) const override;
     void ParameterConstructor();
 
    private:
@@ -77,7 +75,6 @@ namespace ToolKit
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-    Entity* InstantiateTo(Entity* copyTo) const override;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
@@ -97,7 +94,6 @@ namespace ToolKit
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-    Entity* InstantiateTo(Entity* copyTo) const override;
     void ParameterConstructor(float radius);
 
    private:
@@ -119,7 +115,6 @@ namespace ToolKit
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-    Entity* InstantiateTo(Entity* copyTo) const override;
     void ParameterConstructor();
 
    private:
@@ -141,7 +136,6 @@ namespace ToolKit
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
-    Entity* InstantiateTo(Entity* copyTo) const override;
 
    private:
     void Generate();

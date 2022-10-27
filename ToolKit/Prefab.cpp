@@ -72,7 +72,7 @@ namespace ToolKit
     for (Entity* root : rootEntities)
     {
       EntityRawPtrArray instantiatedEntityList;
-      DeepInstantiate(root, instantiatedEntityList);
+      DeepCopy(root, instantiatedEntityList);
       m_node->AddChild(instantiatedEntityList[0]->m_node);
       for (Entity* child : instantiatedEntityList)
       {
