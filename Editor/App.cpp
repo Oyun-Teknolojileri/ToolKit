@@ -242,6 +242,11 @@ namespace ToolKit
           }
           break;
           case LightingOnly: {
+
+            // NOTE:
+            // No transparent rendering
+            // Always renders with AO open
+
             MaterialPtr lightingOnly       = std::make_shared<Material>();
             lightingOnly->m_fragmentShader = GetShaderManager()->Create<Shader>(
                 ShaderPath("ToolKit/lightingOnly.shader"));

@@ -182,6 +182,13 @@ namespace ToolKit
           entry->m_dirty                            = true;
         }
 
+        bool AOInUse = entry->GetRenderState()->AOInUse;
+        if (ImGui::Checkbox("Ambient Occlusion", &AOInUse))
+        {
+          entry->GetRenderState()->AOInUse = AOInUse;
+          entry->m_dirty                   = true;
+        }
+
         ImGui::TreePop();
       }
 

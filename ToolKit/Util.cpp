@@ -110,6 +110,11 @@ namespace ToolKit
       }
     }
 
+    if constexpr (std::is_same_v<T, bool>)
+    {
+      return 1;
+    }
+
     return 0;
   }
 
