@@ -80,6 +80,9 @@ namespace ToolKit
     const String g_selectEffectingLights("SelectAllEffectingLights");
     void SelectAllEffectingLights(TagArgArray tagArgs);
 
+    const String g_showDepth("ShowDepth");
+    void ShowDepth(TagArgArray tagArgs);
+
     // Command errors
     const String g_noValidEntity("No valid entity");
 

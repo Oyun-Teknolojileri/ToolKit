@@ -184,6 +184,7 @@ namespace ToolKit
       bool m_showSelectionBoundary             = false;
       bool m_showDirectionalLightShadowFrustum = false;
       bool m_selectEffectingLights             = false;
+      bool m_showDepth                         = false;
       bool m_windowMaximized                   = false;
       byte m_showGraphicsApiErrors             = 0;
       TransformationSpace m_transformSpace     = TransformationSpace::TS_WORLD;
@@ -205,6 +206,8 @@ namespace ToolKit
       // Internal states.
       bool m_onQuit = false;
       String m_newSceneName;
+      
+      MaterialPtr lightModeMat = nullptr;
     };
 
     extern void DebugMessage(const String& msg);
