@@ -987,6 +987,58 @@ namespace ToolKit
     return bestLights;
   }
 
+  void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
+  {
+    assert(source->m_width == dest->m_width &&
+           source->m_height == dest->m_height &&
+           "Sizes of the textures are not the same.");
+
+    assert(source->m_initiated && dest->m_initiated &&
+           "Texture is not initialized.");
+
+    assert(source);
+
+    if (m_copyFb == nullptr)
+    {
+      m_copyFb = std::make_shared<Framebuffer>();
+      m_copyFb->Init(
+          {(uint) source->m_width, (uint) source->m_height, 0, false, false});
+    }
+
+    // Re construct the framebuffer with new sizes if necessary
+    m_copyFb->ReconstructIfNeeded(source->m_width, source->m_height);
+
+    RenderTarget rt(dest.get());
+    m_copyFb->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                  &rt);
+
+    // Set and clear fb
+    Framebuffer* lastFb = m_framebuffer;
+    SetFramebuffer(m_copyFb.get(), true, Vec4(0.0f));
+
+    // Render to texture
+    if (m_copyMaterial == nullptr)
+    {
+      m_copyMaterial                 = std::make_shared<Material>();
+      m_copyMaterial->m_vertexShader = GetShaderManager()->Create<Shader>(
+          ShaderPath("copyTextureVert.shader", true));
+      m_copyMaterial->m_fragmentShader = GetShaderManager()->Create<Shader>(
+          ShaderPath("copyTextureFrag.shader", true));
+    }
+
+    m_copyMaterial->UnInit();
+    m_copyMaterial->m_diffuseTexture = source;
+    m_copyMaterial->Init();
+
+    DrawFullQuad(m_copyMaterial);
+
+    SetFramebuffer(lastFb, false);
+
+    // Prevent deleting the texture
+    rt.m_textureId = 0;
+    rt.m_initiated = false;
+  }
+
   void Renderer::GetEnvironmentLightEntities(EntityRawPtrArray entities)
   {
     // Find entities which have environment component

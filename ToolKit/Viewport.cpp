@@ -65,7 +65,6 @@ namespace ToolKit
   Viewport::~Viewport()
   {
     SafeDel(m_framebuffer);
-    SafeDel(m_renderTarget);
   }
 
   void Viewport::OnResizeContentArea(float width, float height)
@@ -123,30 +122,20 @@ namespace ToolKit
 
     m_framebuffer->UnInit();
 
-    // Remove old render target
-    if (m_renderTarget)
-    {
-      SafeDel(m_renderTarget);
-    }
-
     m_framebuffer->Init({(uint) m_wndContentAreaSize.x,
                          (uint) m_wndContentAreaSize.y,
                          settings.Msaa,
                          false,
                          true});
 
-    m_renderTarget = new RenderTarget(
+    m_renderTarget = std::make_shared<RenderTarget>(
         (uint) m_wndContentAreaSize.x, (uint) m_wndContentAreaSize.y, settings);
     m_renderTarget->Init();
 
     if (m_renderTarget->m_initiated)
     {
       m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                   m_renderTarget);
-    }
-    else
-    {
-      SafeDel(m_renderTarget);
+                                   m_renderTarget.get());
     }
   }
 

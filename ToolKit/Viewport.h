@@ -201,7 +201,7 @@ namespace ToolKit
     void ResetViewportImage(const RenderTargetSettigs& settings);
 
    public:
-    RenderTarget* m_renderTarget = nullptr; //!< Render target of viewport
+    RenderTargetPtr m_renderTarget = nullptr; //!< Render target of viewport
     Framebuffer* m_framebuffer =
         nullptr; //!< Framebuffer of the render target of the viewport
 

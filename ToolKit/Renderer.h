@@ -67,6 +67,8 @@ namespace ToolKit
     LightRawPtrArray GetBestLights(Entity* entity,
                                    const LightRawPtrArray& lights);
 
+    void CopyTexture(TexturePtr source, TexturePtr dest);
+
    private:
     void RenderEntities(
         EntityRawPtrArray& entities,
@@ -209,6 +211,9 @@ namespace ToolKit
     Framebuffer* m_utilFramebuffer     = nullptr;
     MaterialPtr m_gaussianBlurMaterial = nullptr;
     MaterialPtr m_averageBlurMaterial  = nullptr;
+
+    FramebufferPtr m_copyFb    = nullptr;
+    MaterialPtr m_copyMaterial = nullptr;
   };
 
 } // namespace ToolKit
