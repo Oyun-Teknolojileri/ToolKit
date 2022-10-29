@@ -119,6 +119,9 @@ namespace ToolKit
 
      public:
       Gizmo* m_gizmo;
+
+     private:
+      TransformationSpace m_prevTransformSpace;
     };
 
   } // namespace Editor

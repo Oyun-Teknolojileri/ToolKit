@@ -25,8 +25,7 @@ namespace ToolKit
                    TransformationSpace space = TransformationSpace::TS_WORLD);
     void Rotate(const Quaternion& val,
                 TransformationSpace space = TransformationSpace::TS_WORLD);
-    void Scale(const Vec3& val,
-               TransformationSpace space = TransformationSpace::TS_LOCAL);
+    void Scale(const Vec3& val);
     void Transform(const Mat4& val,
                    TransformationSpace space = TransformationSpace::TS_WORLD,
                    bool noScale              = true);
@@ -45,8 +44,7 @@ namespace ToolKit
         TransformationSpace space = TransformationSpace::TS_WORLD);
     Quaternion GetOrientation(
         TransformationSpace space = TransformationSpace::TS_WORLD);
-    void SetScale(const Vec3& val,
-                  TransformationSpace space = TransformationSpace::TS_WORLD);
+    void SetScale(const Vec3& val);
     Vec3 GetScale();
 
     /**

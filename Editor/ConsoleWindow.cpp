@@ -193,7 +193,7 @@ namespace ToolKit
           }
           else
           {
-            e->m_node->Scale(transfrom, ts);
+            e->m_node->Scale(transfrom);
           }
           actionApplied = true;
         }

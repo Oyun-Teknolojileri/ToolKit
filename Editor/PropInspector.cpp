@@ -905,7 +905,8 @@ namespace ToolKit
         if (ImGui::DragFloat3("Scale", &scale[0], 0.1f))
         {
           bool exceed = false;
-          if (scale.x <= 0.0f || scale.y <= 0.0f || scale.z <= 0.0f)
+          Vec3 abScl  = glm::abs(scale);
+          if (abScl.x <= 0.001f || abScl.y <= 0.001f || abScl.z <= 0.001f)
           {
             exceed = true;
           }

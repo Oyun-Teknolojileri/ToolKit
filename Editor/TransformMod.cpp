@@ -723,7 +723,7 @@ namespace ToolKit
       Vec3 scale = Vec3(1.0f) + delta;
       if (!VecAllEqual(delta, ZERO))
       {
-        ntt->m_node->Scale(scale, g_app->m_transformSpace);
+        ntt->m_node->Scale(scale);
       }
     }
 
@@ -822,10 +822,20 @@ namespace ToolKit
       state                         = new StateDuplicate();
       state->m_links[m_backToStart] = StateType::StateTransformBegin;
       m_stateMachine->PushState(state);
+
+      m_prevTransformSpace = g_app->m_transformSpace;
+      if (m_id == ModId::Scale)
+      {
+        g_app->m_transformSpace = TransformationSpace::TS_LOCAL;
+      }
     }
 
     void TransformMod::UnInit()
     {
+      if (m_id == ModId::Scale)
+      {
+        g_app->m_transformSpace = m_prevTransformSpace;
+      }
     }
 
     void TransformMod::Update(float deltaTime)

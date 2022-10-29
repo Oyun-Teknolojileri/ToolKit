@@ -45,23 +45,9 @@ namespace ToolKit
     m_scale = tmpScl;
   }
 
-  void Node::Scale(const Vec3& val, TransformationSpace space)
+  void Node::Scale(const Vec3& val)
   {
-    Vec3 pos;
-    if (space == TransformationSpace::TS_WORLD)
-    {
-      pos = GetTranslation();
-      SetTranslation(ZERO);
-    }
-
-    Mat4 ts;
-    ts = glm::scale(ts, val);
-    TransformImp(ts, space, nullptr, nullptr, &m_scale);
-
-    if (space == TransformationSpace::TS_WORLD)
-    {
-      SetTranslation(pos);
-    }
+    m_scale *= val;
   }
 
   void Node::Transform(const Mat4& val, TransformationSpace space, bool noScale)
@@ -139,11 +125,9 @@ namespace ToolKit
     return q;
   }
 
-  void Node::SetScale(const Vec3& val, TransformationSpace space)
+  void Node::SetScale(const Vec3& val)
   {
-    Mat4 ts;
-    ts = glm::scale(ts, val);
-    SetTransformImp(ts, space, nullptr, nullptr, &m_scale);
+    m_scale = val;
   }
 
   Vec3 Node::GetScale()
@@ -309,6 +293,7 @@ namespace ToolKit
   void Node::SetInheritScaleDeep(bool val)
   {
     m_inheritScale = val;
+    m_dirty        = true;
     for (Node* n : m_children)
     {
       n->SetInheritScaleDeep(val);
