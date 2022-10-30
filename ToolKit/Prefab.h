@@ -12,6 +12,9 @@
 
 namespace ToolKit
 {
+
+  static VariantCategory PrefabCategory{"Prefab", 90};
+
   /**
    * Entity to use in scenes
    * Loads the given scene and instantiates root entities to current scene

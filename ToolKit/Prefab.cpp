@@ -9,7 +9,8 @@ namespace ToolKit
 {
   Prefab::Prefab()
   {
-    ScenePath_Define("", "Prefab", 90, true, false);
+    ScenePath_Define(
+        "", PrefabCategory.Name, PrefabCategory.Priority, true, false);
     ParameterConstructor();
     ParameterEventConstructor();
   }

@@ -58,7 +58,9 @@ namespace ToolKit
       virtual bool ShowComponentBlock(ComponentPtr& comp);
 
      protected:
-      void ShowCustomData();
+      void ShowCustomData(String headerName,
+                          ParameterVariantRawPtrArray& vars,
+                          bool isListEditable);
       ValueUpdateFn MultiUpdate(ParameterVariant* var);
       void ShowMultiMaterialComponent(
           ComponentPtr& comp, std::function<bool(const String&)> showCompFunc);
