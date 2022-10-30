@@ -43,6 +43,27 @@ namespace ToolKit
           });
     }
 
+    void View::ShowMaterialVariant(const String& uniqueName,
+                                   const String& file,
+                                   ParameterVariant* var)
+    {
+      DropSubZone(
+          uniqueName,
+          static_cast<uint>(UI::m_materialIcon->m_textureId),
+          file,
+          [&var](const DirectoryEntry& entry) -> void {
+            if (GetResourceType(entry.m_ext) == ResourceType::Material)
+            {
+              *var = GetMaterialManager()->Create<Material>(entry.GetFullPath());
+            }
+            else
+            {
+              GetLogger()->WriteConsole(LogType::Error,
+                                        "Only Material Types are accepted.");
+            }
+          });
+    }
+
     void View::ShowVariant(ParameterVariant* var, ComponentPtr comp)
     {
       if (!var->m_exposed)
@@ -218,7 +239,7 @@ namespace ToolKit
         }
 
         String uniqueName = var->m_name + "##" + id;
-        ShowMaterialPtr(uniqueName, file, mref);
+        ShowMaterialVariant(uniqueName, file, var);
       }
       break;
       case ParameterVariant::VariantType::MeshPtr: {

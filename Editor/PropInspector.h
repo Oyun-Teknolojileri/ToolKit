@@ -23,6 +23,9 @@ namespace ToolKit
       void ShowMaterialPtr(const String& uniqueName,
                            const String& file,
                            MaterialPtr& var);
+      void ShowMaterialVariant(const String& uniqueName,
+                               const String& file,
+                               ParameterVariant* var);
 
       void DropZone(uint fallbackIcon,
                     const String& file,
