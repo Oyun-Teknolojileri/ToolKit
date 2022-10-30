@@ -584,6 +584,9 @@ namespace ToolKit
       break;
     case ResourceType::RenderTarget:
       break;
+    case ResourceType::Scene:
+      path = ScenePath("");
+      break;
     default:
       assert(false);
       break;

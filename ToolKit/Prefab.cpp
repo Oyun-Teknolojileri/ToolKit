@@ -9,8 +9,6 @@ namespace ToolKit
 {
   Prefab::Prefab()
   {
-    ScenePath_Define(
-        "", PrefabCategory.Name, PrefabCategory.Priority, true, false);
     ParameterConstructor();
     ParameterEventConstructor();
   }
@@ -51,6 +49,13 @@ namespace ToolKit
     return GetPrefabRoot(ntt->m_node->m_parent->m_entity);
   }
 
+  Entity* Prefab::CopyTo(Entity* other) const
+  {
+    Entity::CopyTo(other);
+    ((Prefab*) other)->Init(m_currentScene);
+    return other;
+  }
+
   void Prefab::Init(Scene* curScene)
   {
     if (m_initiated)
@@ -58,13 +63,15 @@ namespace ToolKit
       return;
     }
     m_currentScene = curScene;
-    m_prefabScene  = GetSceneManager()->Create<Scene>(GetScenePathVal());
+    m_prefabScene =
+        GetSceneManager()->Create<Scene>(PrefabPath(GetPrefabPathVal()));
     if (m_prefabScene == nullptr)
     {
       GetLogger()->WriteConsole(LogType::Warning, "Prefab scene isn't found!");
       return;
     }
     m_prefabScene->Init();
+    m_instanceEntities.clear();
 
     EntityRawPtrArray rootEntities;
     GetRootEntities(m_prefabScene->GetEntities(), rootEntities);
@@ -147,6 +154,7 @@ namespace ToolKit
 
   void Prefab::ParameterConstructor()
   {
+    PrefabPath_Define("", PrefabCategory.Name, PrefabCategory.Priority, true, false);
   }
   void Prefab::ParameterEventConstructor()
   {

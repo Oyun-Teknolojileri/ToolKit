@@ -414,9 +414,25 @@ namespace ToolKit
       GetLogger()->WriteConsole(LogType::Error, "You can't prefab same scene!");
       return;
     }
+
+    String path = GetRelativeResourcePath(fullPath);
+    // Check if file is from Prefab folder
+    {
+      String folder = fullPath.substr(0, fullPath.length() - path.length());
+      String prefabPath = PrefabPath("");
+      if (folder != PrefabPath(""))
+      {
+        GetLogger()->WriteConsole(
+            LogType::Error, "You can't use a prefab outside of Prefab folder!");
+        return;
+      }
+      String folderName =
+          folder.substr(folder.find_last_of(GetPathSeparator()));
+      // if (folderName != GetResourcePath())
+    }
     Prefab* prefab = new Prefab();
     AddEntity(prefab);
-    prefab->SetScenePathVal(fullPath);
+    prefab->SetPrefabPathVal(path);
     prefab->Init(this);
   }
 

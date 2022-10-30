@@ -579,6 +579,11 @@ namespace ToolKit
       {
         // Gather hierarchy from parent to child.
         deleteList.push_back(e);
+        if (e->GetType() == EntityType::Entity_Prefab)
+        {
+          // Entity will already delete its own childs
+          continue;
+        }
         GetChildren(e, deleteList);
       }
 
@@ -592,13 +597,6 @@ namespace ToolKit
 
         for (Entity* e : deleteList)
         {
-          // If entity is from a prefab, don't delete it because Prefab will
-          // remove them
-          if (Prefab::GetPrefabRoot(e) &&
-              e->GetType() != EntityType::Entity_Prefab)
-          {
-            continue;
-          }
           ActionManager::GetInstance()->AddAction(new DeleteAction(e));
           deleteActCount++;
         }
@@ -636,7 +634,16 @@ namespace ToolKit
           for (Entity* ntt : selectedRoots)
           {
             EntityRawPtrArray copies;
-            DeepCopy(ntt, copies);
+            // Prefab will already create its own child prefab scene entities,
+            //  So don't need to copy them too!
+            if (ntt->GetType() == EntityType::Entity_Prefab)
+            {
+              copies.push_back(ntt->Copy());
+            }
+            else
+            {
+              DeepCopy(ntt, copies);
+            }
 
             for (Entity* cpy : copies)
             {

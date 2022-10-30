@@ -117,13 +117,16 @@ namespace ToolKit
           EntityRawPtrArray selected;
           currScene->GetSelectedEntities(selected);
 
-          for (int i = 0; i < selected.size(); i++)
+          if (e->GetType() != EntityType::Entity_Prefab)
           {
-            if (selected[i]->GetIdVal() != e->GetIdVal() &&
-                (!Prefab::GetPrefabRoot(selected[i]) ||
-                 selected[i]->GetType() == EntityType::Entity_Prefab))
+            for (int i = 0; i < selected.size(); i++)
             {
-              g_child.push_back(selected[i]->GetIdVal());
+              if (selected[i]->GetIdVal() != e->GetIdVal() &&
+                  (!Prefab::GetPrefabRoot(selected[i]) ||
+                   selected[i]->GetType() == EntityType::Entity_Prefab))
+              {
+                g_child.push_back(selected[i]->GetIdVal());
+              }
             }
           }
           g_parent = e->GetIdVal();
