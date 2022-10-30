@@ -221,7 +221,6 @@ namespace ToolKit
   static const String XmlNodeIdAttr("i");
   static const String XmlNodeParentIdAttr("pi");
   static const String XmlNodeInheritScaleAttr("is");
-  static const String XmlNodeInheritTranslateOnlyAttr("ito");
   static const String XmlTranslateElement("T");
   static const String XmlRotateElement("R");
   static const String XmlScaleElement("S");

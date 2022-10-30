@@ -87,7 +87,6 @@ namespace ToolKit
     Node* m_parent              = nullptr;
     Entity* m_entity            = nullptr;
     bool m_inheritScale         = false;
-    bool m_inheritOnlyTranslate = false;
     NodePtrArray m_children;
 
    private:

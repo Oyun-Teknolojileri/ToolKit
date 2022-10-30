@@ -48,6 +48,7 @@ namespace ToolKit
   void Node::Scale(const Vec3& val)
   {
     m_scale *= val;
+    SetChildrenDirty();
   }
 
   void Node::Transform(const Mat4& val, TransformationSpace space, bool noScale)
@@ -128,6 +129,7 @@ namespace ToolKit
   void Node::SetScale(const Vec3& val)
   {
     m_scale = val;
+    SetChildrenDirty();
   }
 
   Vec3 Node::GetScale()
@@ -137,11 +139,8 @@ namespace ToolKit
 
   Mat3 Node::GetTransformAxes()
   {
-    Mat3 axes = GetTransform(TransformationSpace::TS_WORLD);
-    for (int i = 0; i < 3; i++)
-    {
-      axes[i] = glm::normalize(axes[i]);
-    }
+    Quaternion q = GetOrientation();
+    Mat3 axes    = glm::toMat3(q);
 
     return axes;
   }
@@ -219,7 +218,6 @@ namespace ToolKit
     Node* node = new Node();
 
     node->m_inheritScale         = m_inheritScale;
-    node->m_inheritOnlyTranslate = m_inheritOnlyTranslate;
     node->m_translation          = m_translation;
     node->m_orientation          = m_orientation;
     node->m_scale                = m_scale;
@@ -235,11 +233,6 @@ namespace ToolKit
               doc,
               XmlNodeInheritScaleAttr,
               std::to_string(static_cast<int>(m_inheritScale)));
-
-    WriteAttr(node,
-              doc,
-              XmlNodeInheritTranslateOnlyAttr,
-              std::to_string(static_cast<int>(m_inheritOnlyTranslate)));
 
     XmlNode* tNode = CreateXmlNode(doc, XmlTranslateElement, node);
     WriteVec(tNode, doc, m_translation);
@@ -265,13 +258,6 @@ namespace ToolKit
     {
       String val     = attr->value();
       m_inheritScale = static_cast<bool>(std::atoi(val.c_str()));
-    }
-
-    if (XmlAttribute* attr =
-            node->first_attribute(XmlNodeInheritTranslateOnlyAttr.c_str()))
-    {
-      String val             = attr->value();
-      m_inheritOnlyTranslate = static_cast<bool>(std::atoi(val.c_str()));
     }
 
     if (XmlNode* n = node->first_node(XmlTranslateElement.c_str()))
@@ -409,12 +395,7 @@ namespace ToolKit
 
       ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 
-      if (m_inheritOnlyTranslate)
-      {
-        Vec3 t = ps[3];
-        ps     = glm::translate(Mat4(), t);
-      }
-      else if (!m_inheritScale)
+      if (!m_inheritScale)
       {
         for (int i = 0; i < 3; i++)
         {
