@@ -827,10 +827,12 @@ namespace ToolKit
 
       if (ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        Mat3 rotate;
-        Vec3 scale, shear;
+        Quaternion rotate;
+        Vec3 translate;
         Mat4 ts = m_entity->m_node->GetTransform(g_app->m_transformSpace);
-        QDUDecomposition(ts, rotate, scale, shear);
+        DecomposeMatrix(ts, &translate, &rotate, nullptr);
+
+        Vec3 scale = m_entity->m_node->GetScale();
 
         // Continuous edit utils.
         static TransformAction* dragMem = nullptr;
@@ -850,7 +852,6 @@ namespace ToolKit
         };
 
         TransformationSpace space = g_app->m_transformSpace;
-        Vec3 translate            = glm::column(ts, 3);
         Vec3 newTranslate         = translate;
         if (ImGui::DragFloat3("Translate", &newTranslate[0], 0.25f))
         {
@@ -869,7 +870,7 @@ namespace ToolKit
 
         saveTransformActionFn();
 
-        Quaternion q0 = glm::toQuat(rotate);
+        Quaternion q0 = rotate;
         Vec3 eularXYZ = glm::eulerAngles(q0);
         Vec3 degrees  = glm::degrees(eularXYZ);
         if (ImGui::DragFloat3("Rotate", &degrees[0], 0.25f))
