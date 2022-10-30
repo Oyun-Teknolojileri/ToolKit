@@ -33,6 +33,8 @@ namespace ToolKit
 
       auto updateThumbFn = [&entry]() -> void {
         DirectoryEntry dirEnt(entry->GetFile());
+        g_app->m_thumbnailCache.erase(entry->GetFile());
+
         dirEnt.GenerateThumbnail();
         entry->m_dirty = true;
       };
