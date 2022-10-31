@@ -1005,9 +1005,6 @@ namespace ToolKit
           {(uint) source->m_width, (uint) source->m_height, 0, false, false});
     }
 
-    // Re construct the framebuffer with new sizes if necessary
-    m_copyFb->ReconstructIfNeeded(source->m_width, source->m_height);
-
     RenderTarget rt(dest.get());
     m_copyFb->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                   &rt);
