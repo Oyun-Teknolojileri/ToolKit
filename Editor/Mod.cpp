@@ -244,9 +244,6 @@ namespace ToolKit
     const String StateType::StateAnchorTo       = "StateAnchorTo";
     const String StateType::StateAnchorEnd      = "StateAnchorEnd";
 
-    std::shared_ptr<Arrow2d> StatePickingBase::m_dbgArrow     = nullptr;
-    std::shared_ptr<LineBatch> StatePickingBase::m_dbgFrustum = nullptr;
-
     StatePickingBase::StatePickingBase()
     {
       m_mouseData.resize(2);
@@ -350,15 +347,16 @@ namespace ToolKit
           {
             g_app->m_cursor->m_worldLocation = pd.pickPos;
 
-            if (m_dbgArrow == nullptr)
+            if (g_app->m_dbgArrow == nullptr)
             {
-              m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
-              m_ignoreList.push_back(m_dbgArrow->GetIdVal());
-              currScene->AddEntity(m_dbgArrow.get());
+              g_app->m_dbgArrow =
+                  std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
+              m_ignoreList.push_back(g_app->m_dbgArrow->GetIdVal());
+              currScene->AddEntity(g_app->m_dbgArrow.get());
             }
 
-            m_dbgArrow->m_node->SetTranslation(ray.position);
-            m_dbgArrow->m_node->SetOrientation(
+            g_app->m_dbgArrow->m_node->SetTranslation(ray.position);
+            g_app->m_dbgArrow->m_node->SetOrientation(
                 RotationTo(X_AXIS, ray.direction));
           }
 
@@ -488,16 +486,16 @@ namespace ToolKit
                                          rect3d[3] + rays[3].direction * depth,
                                          rect3d[0] + rays[0].direction * depth};
 
-            if (m_dbgFrustum == nullptr)
+            if (g_app->m_dbgFrustum == nullptr)
             {
-              m_dbgFrustum = std::shared_ptr<LineBatch>(
+              g_app->m_dbgFrustum = std::shared_ptr<LineBatch>(
                   new LineBatch(corners, X_AXIS, DrawType::Line));
-              m_ignoreList.push_back(m_dbgFrustum->GetIdVal());
-              currScene->AddEntity(m_dbgFrustum.get());
+              m_ignoreList.push_back(g_app->m_dbgFrustum->GetIdVal());
+              currScene->AddEntity(g_app->m_dbgFrustum.get());
             }
             else
             {
-              m_dbgFrustum->Generate(corners, X_AXIS, DrawType::Line);
+              g_app->m_dbgFrustum->Generate(corners, X_AXIS, DrawType::Line);
             }
           }
         }

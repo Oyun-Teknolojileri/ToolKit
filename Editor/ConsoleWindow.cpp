@@ -88,16 +88,16 @@ namespace ToolKit
       if (!g_app->m_showPickingDebug)
       {
         EditorScenePtr currScene = g_app->GetCurrentScene();
-        if (StatePickingBase::m_dbgArrow)
+        if (g_app->m_dbgArrow)
         {
-          currScene->RemoveEntity(StatePickingBase::m_dbgArrow->GetIdVal());
-          StatePickingBase::m_dbgArrow = nullptr;
+          currScene->RemoveEntity(g_app->m_dbgArrow->GetIdVal());
+          g_app->m_dbgArrow = nullptr;
         }
 
-        if (StatePickingBase::m_dbgFrustum)
+        if (g_app->m_dbgFrustum)
         {
-          currScene->RemoveEntity(StatePickingBase::m_dbgFrustum->GetIdVal());
-          StatePickingBase::m_dbgFrustum = nullptr;
+          currScene->RemoveEntity(g_app->m_dbgFrustum->GetIdVal());
+          g_app->m_dbgFrustum = nullptr;
         }
       }
     }

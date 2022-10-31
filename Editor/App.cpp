@@ -104,13 +104,8 @@ namespace ToolKit
           Vec4(0.007024517f, 0.00959683f, 0.018735119f, 1.0f);
     }
 
-    void App::Destroy()
+    void App::DestroyEditorEntities()
     {
-      // UI.
-      DeleteWindows();
-
-      GetCurrentScene()->Destroy(false);
-
       SafeDel(m_publishManager);
 
       // Editor objects.
@@ -118,6 +113,16 @@ namespace ToolKit
       SafeDel(m_grid);
       SafeDel(m_origin);
       SafeDel(m_cursor);
+      if (m_dbgArrow)
+      {
+        GetCurrentScene()->RemoveEntity(m_dbgArrow->GetIdVal());
+        m_dbgArrow = nullptr;
+      }
+      if (m_dbgFrustum)
+      {
+        GetCurrentScene()->RemoveEntity(m_dbgFrustum->GetIdVal());
+        m_dbgFrustum = nullptr;
+      }
 
       for (Light* light : m_sceneLights)
       {
@@ -131,6 +136,16 @@ namespace ToolKit
         SafeDel(dbgObj);
       }
       m_perFrameDebugObjects.clear();
+    }
+
+    void App::Destroy()
+    {
+      // UI.
+      DeleteWindows();
+
+      DestroyEditorEntities();
+
+      GetCurrentScene()->Destroy(false);
 
       GetAnimationPlayer()->m_records.clear();
 
@@ -218,11 +233,7 @@ namespace ToolKit
       {
         // Update scene lights for the current view.
         Camera* viewCam = viewport->GetCamera();
-        m_lightMaster->OrphanSelf();
-        if (m_sceneLightingMode == EditorLit)
-        {
-          viewCam->m_node->AddChild(m_lightMaster);
-        }
+        m_lightMaster->OrphanSelf(false);
 
         // PlayWindow is drawn on perspective. Thus, skip perspective.
         if (m_gameMod != GameMod::Stop && !m_simulatorSettings.Windowed)

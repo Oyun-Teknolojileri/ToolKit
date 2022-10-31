@@ -418,7 +418,7 @@ namespace ToolKit
     String path = GetRelativeResourcePath(fullPath);
     // Check if file is from Prefab folder
     {
-      String folder = fullPath.substr(0, fullPath.length() - path.length());
+      String folder     = fullPath.substr(0, fullPath.length() - path.length());
       String prefabPath = PrefabPath("");
       if (folder != PrefabPath(""))
       {

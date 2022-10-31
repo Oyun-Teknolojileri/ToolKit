@@ -136,6 +136,7 @@ namespace ToolKit
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
       void CreateEditorEntities();
+      void DestroyEditorEntities();
 
      public:
       // UI elements.
@@ -160,6 +161,8 @@ namespace ToolKit
       Gizmo* m_gizmo = nullptr;
       AnchorPtr m_anchor;
       EntityRawPtrArray m_perFrameDebugObjects;
+      std::shared_ptr<Arrow2d> m_dbgArrow;
+      std::shared_ptr<LineBatch> m_dbgFrustum;
 
       // 3 point lighting system.
       Node* m_lightMaster = nullptr;
@@ -206,7 +209,7 @@ namespace ToolKit
       // Internal states.
       bool m_onQuit = false;
       String m_newSceneName;
-      
+
       MaterialPtr lightModeMat = nullptr;
     };
 
