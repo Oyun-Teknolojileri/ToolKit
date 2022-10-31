@@ -6,6 +6,7 @@
 #include "Framebuffer.h"
 #include "Gizmo.h"
 #include "Global.h"
+#include "ImGui/imgui_stdlib.h"
 #include "Light.h"
 #include "MaterialInspector.h"
 #include "PopupWindows.h"
@@ -323,7 +324,8 @@ namespace ToolKit
                 ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
             DirectoryEntry& dirEnt = m_entries[i];
-            if (!m_filter.PassFilter(dirEnt.m_fileName.c_str()))
+
+            if (!Utf8CaseInsensitiveSearch(dirEnt.m_fileName, m_filter))
             {
               continue;
             }
@@ -506,7 +508,6 @@ namespace ToolKit
 
         ImGui::BeginTable("##FilterZoom", 4, ImGuiTableFlags_SizingFixedFit);
 
-        ImGui::TableSetupColumn("##flttxt");
         ImGui::TableSetupColumn("##flt", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("##zoom");
         ImGui::TableSetupColumn("##tglzoom");
@@ -514,11 +515,10 @@ namespace ToolKit
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
 
-        // Handle searchbar.
-        ImGui::Text("Filter: ");
-        ImGui::TableNextColumn();
-        float width = ImGui::GetWindowContentRegionWidth() * 0.25f;
-        m_filter.Draw("##Filter", width);
+        // Handle searchbar
+        ImGui::PushItemWidth(-1);
+        ImGui::InputTextWithHint(" Filter", "Filter", &m_filter);
+        ImGui::PopItemWidth();
 
         // Zoom amount
         ImGui::TableNextColumn();

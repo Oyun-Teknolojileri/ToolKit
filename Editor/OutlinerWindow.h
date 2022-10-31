@@ -44,6 +44,7 @@ namespace ToolKit
       std::unordered_map<Entity*, bool> m_shownEntities;
       String m_searchString   = "";
       bool m_stringSearchMode = false;
+      bool m_searchCaseSens   = true;
     };
 
   } // namespace Editor

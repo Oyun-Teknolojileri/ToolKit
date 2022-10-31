@@ -74,7 +74,7 @@ namespace ToolKit
       String m_path;
       bool m_dirty            = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
-      ImGuiTextFilter m_filter;
+      String m_filter         = "";
       std::unordered_map<String, std::function<void(DirectoryEntry*)>>
           m_itemActions;
 

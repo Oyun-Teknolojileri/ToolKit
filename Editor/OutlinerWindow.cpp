@@ -169,11 +169,7 @@ namespace ToolKit
 
     bool OutlinerWindow::FindShownEntities(Entity* e, const String& str)
     {
-      bool self = false;
-      if (e->GetNameVal().find(str) != String::npos)
-      {
-        self = true;
-      }
+      bool self = Utf8CaseInsensitiveSearch(e->GetNameVal(), str);
 
       bool children = false;
       if (e->GetType() != EntityType::Entity_Prefab)
@@ -205,6 +201,8 @@ namespace ToolKit
 
         ShowSearchBar(m_searchString);
 
+        ImGui::BeginChild("##Outliner Nodes");
+
         if (DrawRootHeader("Scene",
                            0,
                            g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen,
@@ -223,6 +221,8 @@ namespace ToolKit
 
           ImGui::TreePop();
         }
+
+        ImGui::EndChild();
       }
 
       // Update hierarchy if there is a change.
@@ -308,9 +308,25 @@ namespace ToolKit
 
     void OutlinerWindow::ShowSearchBar(String& searchString)
     {
+      ImGui::BeginTable("##Search", 2, ImGuiTableFlags_SizingFixedFit);
+      ImGui::TableSetupColumn("##SearchBar",
+                              ImGuiTableColumnFlags_WidthStretch);
+      ImGui::TableSetupColumn("##ToggleCaseButton");
+
+      ImGui::TableNextColumn();
+
       ImGui::PushItemWidth(-1);
-      ImGui::InputTextWithHint("SearchString", "Search", &searchString);
+      ImGui::InputTextWithHint(" SearchString", "Search", &searchString);
       ImGui::PopItemWidth();
+
+      ImGui::TableNextColumn();
+
+      m_searchCaseSens =
+          UI::ToggleButton("Aa", Vec2(24.0f, 24.f), m_searchCaseSens);
+
+      UI::HelpMarker(TKLoc, "Case Sensitivity");
+
+      ImGui::EndTable();
     }
 
     bool OutlinerWindow::DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags)
@@ -394,7 +410,7 @@ namespace ToolKit
       ImGui::Text(ntt->GetNameVal().c_str());
 
       // Hiearchy visibility
-      float offset = ImGui::GetContentRegionAvail().x - 30.0f;
+      float offset = ImGui::GetContentRegionAvail().x - 40.0f;
       ImGui::SameLine(offset);
       icon = ntt->GetVisibleVal() ? UI::m_visibleIcon : UI::m_invisibleIcon;
 
@@ -407,7 +423,7 @@ namespace ToolKit
       }
       ImGui::PopID();
 
-      offset = ImGui::GetContentRegionAvail().x - 10.0f;
+      offset = ImGui::GetContentRegionAvail().x - 20.0f;
       ImGui::SameLine(offset);
       icon = ntt->GetTransformLockVal() ? UI::m_lockedIcon : UI::m_unlockedIcon;
 

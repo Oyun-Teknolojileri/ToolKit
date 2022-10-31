@@ -1,5 +1,6 @@
 #include "Util.h"
 
+#include "Common/utf8.h"
 #include "Primative.h"
 #include "ToolKit.h"
 #include "rapidxml.hpp"
@@ -715,6 +716,24 @@ namespace ToolKit
     String lwr = str;
     transform(lwr.begin(), lwr.end(), lwr.begin(), ::tolower);
     return lwr;
+  }
+
+  bool Utf8CaseInsensitiveSearch(const String& text, const String& search)
+  {
+    char* findPoint = utf8casestr(text.c_str(), search.c_str());
+    if (!findPoint)
+    {
+      return false;
+    }
+
+    if (utf8size_lazy(findPoint) != 0)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
   }
 
   String Format(const char* msg, ...)

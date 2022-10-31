@@ -119,12 +119,14 @@ namespace ToolKit
       std::unordered_map<String, std::function<void(TagArgArray&)>>
           m_commandExecutors;
 
+      // Command text
+      String m_command    = "";
+      String m_filter     = "";
+      bool m_reclaimFocus = false;
+
       std::vector<String> m_history;
       // -1: new line, 0..History.Size-1 browsing history.
       int m_historyPos = -1;
-
-      // ImGui Helpers.
-      ImGuiTextFilter m_filter;
     };
 
   } // namespace Editor

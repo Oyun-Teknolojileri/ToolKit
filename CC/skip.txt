@@ -1,9 +1,10 @@
 # Sharped lines are comment.
 # if you don't want spesific files to be counted, get them from verbose.txt and paste here.
 # For example uncommet below.
-# ../Source/ToolKit.cpp
-../Source/Common/GlErrorReporter.h
+# ../ToolKit/ToolKit.cpp
+../ToolKit/Common/GlErrorReporter.h
 ../Import/assimp/
 ../Import/stb_image_write.h
 ../Template/
 ../Samples/
+../ToolKit/Common/UtfConv.h

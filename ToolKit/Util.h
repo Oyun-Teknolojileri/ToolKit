@@ -104,6 +104,9 @@ namespace ToolKit
   TK_API String Trim(const String& str, const String& whitespace = " \t");
   TK_API bool EndsWith(const String& str, const String& suffix);
 
+  TK_API bool Utf8CaseInsensitiveSearch(const String& text,
+                                        const String& search);
+
   // Debug geometries.
   ///////////////////////////////////////////////////////
   class LineBatch;
