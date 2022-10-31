@@ -33,6 +33,8 @@ namespace ToolKit
 
       auto updateThumbFn = [&entry]() -> void {
         DirectoryEntry dirEnt(entry->GetFile());
+        g_app->m_thumbnailCache.erase(entry->GetFile());
+
         dirEnt.GenerateThumbnail();
         entry->m_dirty = true;
       };
@@ -180,6 +182,13 @@ namespace ToolKit
         {
           entry->GetRenderState()->depthTestEnabled = depthTest;
           entry->m_dirty                            = true;
+        }
+
+        bool AOInUse = entry->GetRenderState()->AOInUse;
+        if (ImGui::Checkbox("Ambient Occlusion", &AOInUse))
+        {
+          entry->GetRenderState()->AOInUse = AOInUse;
+          entry->m_dirty                   = true;
         }
 
         ImGui::TreePop();

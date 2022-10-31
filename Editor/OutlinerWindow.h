@@ -2,6 +2,9 @@
 
 #include "UI.h"
 
+#include <string>
+#include <unordered_map>
+
 namespace ToolKit
 {
   namespace Editor
@@ -24,9 +27,13 @@ namespace ToolKit
                           ImGuiTreeNodeFlags flags,
                           TexturePtr icon);
 
+      void ShowSearchBar(String& searchString);
       bool DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags);
       void ShowNode(Entity* e);
       void SetItemState(Entity* e);
+      void HandleSearch(const EntityRawPtrArray& ntties,
+                        const EntityRawPtrArray& roots);
+      bool FindShownEntities(Entity* e, const String& str);
 
      private:
       /**
@@ -34,6 +41,10 @@ namespace ToolKit
        * to last ntt in the array.
        */
       EntityRawPtrArray m_nttFocusPath;
+      std::unordered_map<Entity*, bool> m_shownEntities;
+      String m_searchString   = "";
+      bool m_stringSearchMode = false;
+      bool m_searchCaseSens   = true;
     };
 
   } // namespace Editor

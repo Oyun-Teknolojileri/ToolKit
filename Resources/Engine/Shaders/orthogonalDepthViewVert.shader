@@ -1,11 +1,8 @@
 <shader>
 	<type name = "vertexShader" />
 	<include name = "skinning.shader" />
-	<include name = "camera.shader" />
 	<uniform name = "ProjectViewModel" />
-	<uniform name = "View" />
 	<uniform name = "Model" />
-	<uniform name = "CamData" />
 	<source>
 	<!--
 		#version 300 es
@@ -17,15 +14,16 @@
 		layout (location = 2) in vec2 vTexture;
 		layout (location = 3) in vec3 vBiTan;
 
-		out vec4 v_pos;
-		out vec3 v_normal;
-		out vec2 v_texture;
-		out vec3 v_bitan;
-
 		uniform mat4 ProjectViewModel;
-		uniform mat4 View;
-		uniform mat4 Model;
-		uniform float Far;
+    uniform mat4 Model;
+
+		uniform mat4 LightView;
+		uniform float LightFrustumHalfSize;
+		uniform vec3 LightDir; // Should be normalized
+
+		out float v_depth;
+		out vec2 v_texture;
+
 		uniform uint isSkinned;
 
 		void main()
@@ -36,10 +34,9 @@
 			if(isSkinned > 0u){
 				skinnedVPos = skin(skinnedVPos);
 			}
-			v_pos = (View * Model * skinnedVPos) / CamData.far;
 		  gl_Position = ProjectViewModel * skinnedVPos;
-			v_normal = vNormal;
-			v_bitan = vBiTan;
+			v_depth = (LightView * Model * skinnedVPos).z / LightFrustumHalfSize;
+			v_depth = v_depth * 0.5 + 0.5;
 		}
 	-->
 	</source>

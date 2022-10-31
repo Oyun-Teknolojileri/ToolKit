@@ -11,8 +11,6 @@
 		#version 300 es
 		precision highp float;
 
-		uniform sampler2D s_texture0;
-
 		in vec3 v_pos;
 		in vec3 v_normal;
 		in vec2 v_texture;
@@ -21,11 +19,6 @@
 
 		void main()
 		{
-			vec4 objectColor = texture(s_texture0, v_texture);
-			if(objectColor.a < 0.1f){
-				discard;
-			}
-
 			vec3 n = normalize(v_normal);
 			vec3 e = normalize(CamData.pos - v_pos);
 

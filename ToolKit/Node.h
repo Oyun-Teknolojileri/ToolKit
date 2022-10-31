@@ -29,10 +29,9 @@ namespace ToolKit
     void Transform(const Mat4& val,
                    TransformationSpace space = TransformationSpace::TS_WORLD,
                    bool noScale              = true);
-    void SetTransform(
-        const Mat4& val,
-        TransformationSpace space = TransformationSpace::TS_WORLD,
-        bool noScale              = true);
+    void SetTransform(const Mat4& val,
+                      TransformationSpace space = TransformationSpace::TS_WORLD,
+                      bool noScale              = true);
     Mat4 GetTransform(
         TransformationSpace space = TransformationSpace::TS_WORLD);
     void SetTranslation(
@@ -49,8 +48,8 @@ namespace ToolKit
     Vec3 GetScale();
 
     /**
-    * @return Normalized local transform axes of the node.
-    */
+     * @return Normalized local transform axes of the node.
+     */
     Mat3 GetTransformAxes();
 
     void AddChild(Node* child, bool preserveTransform = false);
@@ -88,7 +87,6 @@ namespace ToolKit
     Node* m_parent              = nullptr;
     Entity* m_entity            = nullptr;
     bool m_inheritScale         = false;
-    bool m_inheritOnlyTranslate = false;
     NodePtrArray m_children;
 
    private:

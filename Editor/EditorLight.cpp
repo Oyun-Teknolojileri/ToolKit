@@ -107,14 +107,6 @@ namespace ToolKit
       return cpy;
     }
 
-    Entity* EditorDirectionalLight::Instantiate() const
-    {
-      EditorDirectionalLight* instance = new EditorDirectionalLight();
-      WeakCopy(instance, false);
-      instance->Init();
-      return instance;
-    }
-
     void EditorDirectionalLight::Serialize(XmlDocument* doc,
                                            XmlNode* parent) const
     {
@@ -197,14 +189,6 @@ namespace ToolKit
       return cpy;
     }
 
-    Entity* EditorPointLight::Instantiate() const
-    {
-      EditorPointLight* instance = new EditorPointLight();
-      WeakCopy(instance, false);
-      instance->Init();
-      return instance;
-    }
-
     void EditorPointLight::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
       m_gizmoMC->ParamMesh().m_exposed = false;
@@ -252,14 +236,6 @@ namespace ToolKit
       WeakCopy(cpy, false);
       cpy->Init();
       return cpy;
-    }
-
-    Entity* EditorSpotLight::Instantiate() const
-    {
-      EditorSpotLight* instance = new EditorSpotLight();
-      WeakCopy(instance, false);
-      instance->Init();
-      return instance;
     }
 
     void EditorSpotLight::Serialize(XmlDocument* doc, XmlNode* parent) const

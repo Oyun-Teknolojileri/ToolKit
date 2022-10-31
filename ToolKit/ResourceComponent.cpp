@@ -40,6 +40,18 @@ namespace ToolKit
 
   BoundingBox MeshComponent::GetAABB()
   {
+    SkeletonComponentPtr skelComp = m_entity->GetComponent<SkeletonComponent>();
+    if (skelComp && GetMeshVal()->IsSkinned())
+    {
+      SkinMesh* skinMesh = (SkinMesh*) GetMeshVal().get();
+      if (skelComp->isDirty)
+      {
+        m_aabb = skinMesh->CalculateAABB(
+            skelComp->GetSkeletonResourceVal().get(), skelComp->m_map);
+        skelComp->isDirty = false;
+      }
+      return m_aabb;
+    }
     return GetMeshVal()->m_aabb;
   }
 
@@ -339,14 +351,14 @@ namespace ToolKit
                             true,
                             true);
 
-    map = nullptr;
+    m_map = nullptr;
   }
 
   SkeletonComponent::~SkeletonComponent()
   {
-    if (map)
+    if (m_map)
     {
-      delete map;
+      delete m_map;
     }
   }
   void SkeletonComponent::Init()
@@ -357,8 +369,8 @@ namespace ToolKit
       return;
     }
 
-    map = new DynamicBoneMap;
-    map->Init(resource.get());
+    m_map = new DynamicBoneMap;
+    m_map->Init(resource.get());
   }
 
   ComponentPtr SkeletonComponent::Copy(Entity* ntt)
@@ -374,8 +386,8 @@ namespace ToolKit
   void SkeletonComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     Component::DeSerialize(doc, parent);
-    map = new DynamicBoneMap;
-    map->Init(GetSkeletonResourceVal().get());
+    m_map = new DynamicBoneMap;
+    m_map->Init(GetSkeletonResourceVal().get());
   }
 
   MultiMaterialComponent::MultiMaterialComponent()
@@ -388,7 +400,12 @@ namespace ToolKit
 
   ComponentPtr MultiMaterialComponent::Copy(Entity* ntt)
   {
-    return nullptr;
+    MultiMaterialPtr mc = std::make_shared<MultiMaterialComponent>();
+    mc->m_localData     = m_localData;
+    mc->m_entity        = ntt;
+    mc->materials       = materials;
+
+    return mc;
   }
 
   void MultiMaterialComponent::Init(bool flushClientSideArray)
@@ -458,4 +475,48 @@ namespace ToolKit
       materials[i] = meshCollector[i]->m_material;
     }
   }
+
+  AABBOverrideComponent::AABBOverrideComponent()
+  {
+    PositionOffset_Define(Vec3(0),
+                          AABBOverrideCompCategory.Name,
+                          AABBOverrideCompCategory.Priority,
+                          true,
+                          true);
+
+    Size_Define(Vec3(1),
+                AABBOverrideCompCategory.Name,
+                AABBOverrideCompCategory.Priority,
+                true,
+                true);
+  }
+  AABBOverrideComponent::~AABBOverrideComponent()
+  {
+  }
+
+  ComponentPtr AABBOverrideComponent::Copy(Entity* ntt)
+  {
+    AABBOverrideComponentPtr dst = std::make_shared<AABBOverrideComponent>();
+    dst->m_entity                = ntt;
+    dst->m_localData             = m_localData;
+
+    return dst;
+  }
+
+  void AABBOverrideComponent::Init(bool flushClientSideArray)
+  {
+  }
+  BoundingBox AABBOverrideComponent::GetAABB()
+  {
+    BoundingBox aabb = {};
+    aabb.min         = GetPositionOffsetVal();
+    aabb.max         = GetPositionOffsetVal() + GetSizeVal();
+    return aabb;
+  }
+  void AABBOverrideComponent::SetAABB(BoundingBox aabb)
+  {
+    SetPositionOffsetVal(aabb.min);
+    SetSizeVal(aabb.max - aabb.min);
+  }
+
 } //  namespace ToolKit

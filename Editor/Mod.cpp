@@ -1,7 +1,7 @@
 #include "Mod.h"
 
-#include "App.h"
 #include "AnchorMod.h"
+#include "App.h"
 #include "Camera.h"
 #include "ConsoleWindow.h"
 #include "DirectionComponent.h"
@@ -244,9 +244,6 @@ namespace ToolKit
     const String StateType::StateAnchorTo       = "StateAnchorTo";
     const String StateType::StateAnchorEnd      = "StateAnchorEnd";
 
-    std::shared_ptr<Arrow2d> StatePickingBase::m_dbgArrow     = nullptr;
-    std::shared_ptr<LineBatch> StatePickingBase::m_dbgFrustum = nullptr;
-
     StatePickingBase::StatePickingBase()
     {
       m_mouseData.resize(2);
@@ -350,15 +347,16 @@ namespace ToolKit
           {
             g_app->m_cursor->m_worldLocation = pd.pickPos;
 
-            if (m_dbgArrow == nullptr)
+            if (g_app->m_dbgArrow == nullptr)
             {
-              m_dbgArrow = std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
-              m_ignoreList.push_back(m_dbgArrow->GetIdVal());
-              currScene->AddEntity(m_dbgArrow.get());
+              g_app->m_dbgArrow =
+                  std::shared_ptr<Arrow2d>(new Arrow2d(AxisLabel::X));
+              m_ignoreList.push_back(g_app->m_dbgArrow->GetIdVal());
+              currScene->AddEntity(g_app->m_dbgArrow.get());
             }
 
-            m_dbgArrow->m_node->SetTranslation(ray.position);
-            m_dbgArrow->m_node->SetOrientation(
+            g_app->m_dbgArrow->m_node->SetTranslation(ray.position);
+            g_app->m_dbgArrow->m_node->SetOrientation(
                 RotationTo(X_AXIS, ray.direction));
           }
 
@@ -488,16 +486,16 @@ namespace ToolKit
                                          rect3d[3] + rays[3].direction * depth,
                                          rect3d[0] + rays[0].direction * depth};
 
-            if (m_dbgFrustum == nullptr)
+            if (g_app->m_dbgFrustum == nullptr)
             {
-              m_dbgFrustum = std::shared_ptr<LineBatch>(
+              g_app->m_dbgFrustum = std::shared_ptr<LineBatch>(
                   new LineBatch(corners, X_AXIS, DrawType::Line));
-              m_ignoreList.push_back(m_dbgFrustum->GetIdVal());
-              currScene->AddEntity(m_dbgFrustum.get());
+              m_ignoreList.push_back(g_app->m_dbgFrustum->GetIdVal());
+              currScene->AddEntity(g_app->m_dbgFrustum.get());
             }
             else
             {
-              m_dbgFrustum->Generate(corners, X_AXIS, DrawType::Line);
+              g_app->m_dbgFrustum->Generate(corners, X_AXIS, DrawType::Line);
             }
           }
         }
@@ -579,6 +577,11 @@ namespace ToolKit
       {
         // Gather hierarchy from parent to child.
         deleteList.push_back(e);
+        if (e->GetType() == EntityType::Entity_Prefab)
+        {
+          // Entity will already delete its own childs
+          continue;
+        }
         GetChildren(e, deleteList);
       }
 
@@ -592,26 +595,6 @@ namespace ToolKit
 
         for (Entity* e : deleteList)
         {
-          if (!e->GetIsInstanceVal())
-          {
-            // Search if this is used to instantiate other entities
-            for (Entity* p : g_app->GetCurrentScene()->GetEntities())
-            {
-              if (p->GetIsInstanceVal() &&
-                  p->GetBaseEntityID() == e->GetIdVal())
-              {
-                ActionManager::GetInstance()->AddAction(new DeleteAction(p));
-                deleteActCount++;
-              }
-            }
-          }
-          // If entity is from a prefab, don't delete it because Prefab will
-          // remove them
-          else if (Prefab::GetPrefabRoot(e) &&
-                   e->GetType() != EntityType::Entity_Prefab)
-          {
-            continue;
-          }
           ActionManager::GetInstance()->AddAction(new DeleteAction(e));
           deleteActCount++;
         }
@@ -643,34 +626,35 @@ namespace ToolKit
         GetRootEntities(selecteds, selectedRoots);
 
         int cpyCount = 0;
-        bool copy    = ImGui::GetIO().KeyShift;
-        for (Entity* ntt : selectedRoots)
+        bool copy    = ImGui::GetIO().KeyCtrl;
+        if (copy)
         {
-          EntityRawPtrArray copies;
-          if (copy)
+          for (Entity* ntt : selectedRoots)
           {
-            DeepCopy(ntt, copies);
+            EntityRawPtrArray copies;
+            // Prefab will already create its own child prefab scene entities,
+            //  So don't need to copy them too!
+            if (ntt->GetType() == EntityType::Entity_Prefab)
+            {
+              copies.push_back(ntt->Copy());
+            }
+            else
+            {
+              DeepCopy(ntt, copies);
+            }
+
+            for (Entity* cpy : copies)
+            {
+              ActionManager::GetInstance()->AddAction(new CreateAction(cpy));
+            }
+
+            currScene->AddToSelection(copies.front()->GetIdVal(), true);
+            cpyCount += static_cast<int>(copies.size());
             // Status info
             g_app->m_statusMsg =
                 std::to_string(cpyCount) + " entities are copied.";
           }
-          else
-          {
-            DeepInstantiate(ntt, copies);
-            // Status info
-            g_app->m_statusMsg =
-                std::to_string(cpyCount) + " entities are instantiated.";
-          }
-
-          for (Entity* cpy : copies)
-          {
-            ActionManager::GetInstance()->AddAction(new CreateAction(cpy));
-          }
-
-          currScene->AddToSelection(copies.front()->GetIdVal(), true);
-          cpyCount += static_cast<int>(copies.size());
         }
-
         ActionManager::GetInstance()->GroupLastActions(cpyCount);
       }
     }

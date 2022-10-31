@@ -63,7 +63,7 @@ namespace ToolKit
 
     String m_tag;
     ShaderType m_shaderType = ShaderType::VertexShader;
-    uint m_shaderHandle       = 0;
+    uint m_shaderHandle     = 0;
     StringArray m_includeFiles;
     std::vector<Uniform> m_uniforms;
     String m_source;

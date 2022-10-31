@@ -221,7 +221,6 @@ namespace ToolKit
   static const String XmlNodeIdAttr("i");
   static const String XmlNodeParentIdAttr("pi");
   static const String XmlNodeInheritScaleAttr("is");
-  static const String XmlNodeInheritTranslateOnlyAttr("ito");
   static const String XmlTranslateElement("T");
   static const String XmlRotateElement("R");
   static const String XmlScaleElement("S");
@@ -290,6 +289,6 @@ namespace ToolKit
     TargetCubeMap        = 0x8513
   };
 
-  static const char* TKVersionStr = "v0.3.16";
+  static const char* TKVersionStr = "v0.3.17";
 
 } // namespace ToolKit

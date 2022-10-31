@@ -48,6 +48,7 @@ namespace ToolKit
   void Node::Scale(const Vec3& val)
   {
     m_scale *= val;
+    SetChildrenDirty();
   }
 
   void Node::Transform(const Mat4& val, TransformationSpace space, bool noScale)
@@ -101,23 +102,8 @@ namespace ToolKit
 
   void Node::SetTranslation(const Vec3& val, TransformationSpace space)
   {
-    if (m_parent == nullptr)
-    {
-      if (space == TransformationSpace::TS_LOCAL)
-      {
-        Translate(val, space);
-      }
-      else
-      {
-        m_translation = val;
-        SetChildrenDirty();
-      }
-    }
-    else
-    {
-      Mat4 ts = glm::translate(Mat4(), val);
-      SetTransformImp(ts, space, &m_translation, nullptr, nullptr);
-    }
+    Mat4 ts = glm::translate(Mat4(), val);
+    SetTransformImp(ts, space, &m_translation, nullptr, nullptr);
   }
 
   Vec3 Node::GetTranslation(TransformationSpace space)
@@ -129,23 +115,8 @@ namespace ToolKit
 
   void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
   {
-    if (m_parent == nullptr)
-    {
-      if (space == TransformationSpace::TS_LOCAL)
-      {
-        Rotate(val, space);
-      }
-      else
-      {
-        m_orientation = val;
-        SetChildrenDirty();
-      }
-    }
-    else
-    {
-      Mat4 ts = glm::toMat4(val);
-      SetTransformImp(ts, space, nullptr, &m_orientation, nullptr);
-    }
+    Mat4 ts = glm::toMat4(val);
+    SetTransformImp(ts, space, nullptr, &m_orientation, nullptr);
   }
 
   Quaternion Node::GetOrientation(TransformationSpace space)
@@ -168,11 +139,8 @@ namespace ToolKit
 
   Mat3 Node::GetTransformAxes()
   {
-    Mat3 axes = GetTransform(TransformationSpace::TS_WORLD);
-    for (int i = 0; i < 3; i++)
-    {
-      axes[i] = glm::normalize(axes[i]);
-    }
+    Quaternion q = GetOrientation();
+    Mat3 axes    = glm::toMat3(q);
 
     return axes;
   }
@@ -181,7 +149,12 @@ namespace ToolKit
   {
     assert(child->m_id != m_id);
     assert(child->m_parent == nullptr);
-    Mat4 ts = child->GetTransform(TransformationSpace::TS_WORLD);
+
+    Mat4 ts;
+    if (preserveTransform)
+    {
+      ts = child->GetTransform(TransformationSpace::TS_WORLD);
+    }
 
     m_children.push_back(child);
     child->m_parent = this;
@@ -200,7 +173,11 @@ namespace ToolKit
     {
       if (m_children[i] == child)
       {
-        Mat4 ts = child->GetTransform(TransformationSpace::TS_WORLD);
+        Mat4 ts;
+        if (preserveTransform)
+        {
+          ts = child->GetTransform(TransformationSpace::TS_WORLD);
+        }
 
         child->m_parent = nullptr;
         child->m_dirty  = true;
@@ -241,7 +218,6 @@ namespace ToolKit
     Node* node = new Node();
 
     node->m_inheritScale         = m_inheritScale;
-    node->m_inheritOnlyTranslate = m_inheritOnlyTranslate;
     node->m_translation          = m_translation;
     node->m_orientation          = m_orientation;
     node->m_scale                = m_scale;
@@ -257,11 +233,6 @@ namespace ToolKit
               doc,
               XmlNodeInheritScaleAttr,
               std::to_string(static_cast<int>(m_inheritScale)));
-
-    WriteAttr(node,
-              doc,
-              XmlNodeInheritTranslateOnlyAttr,
-              std::to_string(static_cast<int>(m_inheritOnlyTranslate)));
 
     XmlNode* tNode = CreateXmlNode(doc, XmlTranslateElement, node);
     WriteVec(tNode, doc, m_translation);
@@ -289,13 +260,6 @@ namespace ToolKit
       m_inheritScale = static_cast<bool>(std::atoi(val.c_str()));
     }
 
-    if (XmlAttribute* attr =
-            node->first_attribute(XmlNodeInheritTranslateOnlyAttr.c_str()))
-    {
-      String val             = attr->value();
-      m_inheritOnlyTranslate = static_cast<bool>(std::atoi(val.c_str()));
-    }
-
     if (XmlNode* n = node->first_node(XmlTranslateElement.c_str()))
     {
       ReadVec(n, m_translation);
@@ -315,6 +279,7 @@ namespace ToolKit
   void Node::SetInheritScaleDeep(bool val)
   {
     m_inheritScale = val;
+    m_dirty        = true;
     for (Node* n : m_children)
     {
       n->SetInheritScaleDeep(val);
@@ -430,12 +395,7 @@ namespace ToolKit
 
       ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
 
-      if (m_inheritOnlyTranslate)
-      {
-        Vec3 t = ps[3];
-        ps     = glm::translate(Mat4(), t);
-      }
-      else if (!m_inheritScale)
+      if (!m_inheritScale)
       {
         for (int i = 0; i < 3; i++)
         {

@@ -133,6 +133,7 @@ namespace ToolKit
     RenderTarget(uint widht,
                  uint height,
                  const RenderTargetSettigs& settings = RenderTargetSettigs());
+    RenderTarget(Texture* texture);
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;

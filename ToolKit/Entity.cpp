@@ -60,23 +60,32 @@ namespace ToolKit
   {
     BoundingBox aabb;
 
-    MeshComponentPtrArray meshCmps;
-    GetComponent<MeshComponent>(meshCmps);
-
-    if (meshCmps.empty())
+    AABBOverrideComponentPtr overrideComp =
+        GetComponent<AABBOverrideComponent>();
+    if (overrideComp)
     {
-      // Unit aabb.
-      aabb.min = Vec3(0.5f, 0.5f, 0.5f);
-      aabb.max = Vec3(-0.5f, -0.5f, -0.5f);
+      aabb = overrideComp->GetAABB();
     }
     else
     {
-      BoundingBox cmpAABB;
-      for (MeshComponentPtr& cmp : meshCmps)
+      MeshComponentPtrArray meshCmps;
+      GetComponent<MeshComponent>(meshCmps);
+
+      if (meshCmps.empty())
       {
-        cmpAABB = cmp->GetAABB();
-        aabb.UpdateBoundary(cmpAABB.max);
-        aabb.UpdateBoundary(cmpAABB.min);
+        // Unit aabb.
+        aabb.min = Vec3(0.5f, 0.5f, 0.5f);
+        aabb.max = Vec3(-0.5f, -0.5f, -0.5f);
+      }
+      else
+      {
+        BoundingBox cmpAABB;
+        for (MeshComponentPtr& cmp : meshCmps)
+        {
+          cmpAABB = cmp->GetAABB();
+          aabb.UpdateBoundary(cmpAABB.max);
+          aabb.UpdateBoundary(cmpAABB.min);
+        }
       }
     }
 
@@ -115,21 +124,6 @@ namespace ToolKit
     return other;
   }
 
-  Entity* Entity::Instantiate() const
-  {
-    EntityType t = GetType();
-    Entity* e    = GetEntityFactory()->CreateByType(t);
-    return InstantiateTo(e);
-  }
-
-  Entity* Entity::InstantiateTo(Entity* other) const
-  {
-    WeakCopy(other);
-    other->SetIsInstanceVal(true);
-    other->_baseEntityId = this->GetIdVal();
-    return other;
-  }
-
   void Entity::ParameterConstructor()
   {
     m_localData.m_variants.reserve(6);
@@ -150,14 +144,6 @@ namespace ToolKit
 
     TransformLock_Define(
         false, EntityCategory.Name, EntityCategory.Priority, true, true);
-
-    IsInstance_Define(
-        false,
-        EntityCategory.Name,
-        EntityCategory.Priority,
-        false,
-        true // isInstance shouldn't change except WeakCopy is called
-    );
   }
 
   void Entity::WeakCopy(Entity* other, bool copyComponents) const
@@ -220,35 +206,11 @@ namespace ToolKit
 
   ComponentPtrArray& Entity::GetComponentPtrArray()
   {
-    if (GetIsInstanceVal())
-    {
-      if (GetSceneManager() && GetSceneManager()->GetCurrentScene())
-      {
-        Entity* baseEntity =
-            GetSceneManager()->GetCurrentScene()->GetEntity(_baseEntityId);
-        if (baseEntity)
-        {
-          return baseEntity->GetComponentPtrArray();
-        }
-      }
-    }
     return m_components;
   }
 
   const ComponentPtrArray& Entity::GetComponentPtrArray() const
   {
-    if (GetIsInstanceVal())
-    {
-      if (GetSceneManager() && GetSceneManager()->GetCurrentScene())
-      {
-        Entity* baseEntity =
-            GetSceneManager()->GetCurrentScene()->GetEntity(_baseEntityId);
-        if (baseEntity)
-        {
-          return baseEntity->GetComponentPtrArray();
-        }
-      }
-    }
     return m_components;
   }
 
@@ -275,10 +237,6 @@ namespace ToolKit
                 doc,
                 XmlParentEntityIdAttr,
                 std::to_string(m_node->m_parent->m_entity->GetIdVal()));
-    }
-    if (GetIsInstanceVal())
-    {
-      WriteAttr(node, doc, XmlBaseEntityIdAttr, std::to_string(_baseEntityId));
     }
 
     WriteAttr(node,
@@ -316,14 +274,6 @@ namespace ToolKit
     }
 
     m_localData.DeSerialize(doc, parent);
-
-    // For instance entities, don't load components
-    //  Use InstantiateTo() after deserializing base entity
-    if (GetIsInstanceVal())
-    {
-      ReadAttr(node, XmlBaseEntityIdAttr, _baseEntityId);
-      return;
-    }
 
     ClearComponents();
     if (XmlNode* components = node->first_node("Components"))
@@ -405,18 +355,6 @@ namespace ToolKit
     return (type == EntityType::Entity_Sky ||
             type == EntityType::Entity_SkyBase ||
             type == EntityType::Entity_GradientSky);
-  }
-
-  ULongID Entity::GetBaseEntityID() const
-  {
-    return _baseEntityId;
-  }
-
-  void Entity::SetBaseEntityID(ULongID id)
-  {
-    assert(GetIsInstanceVal() &&
-           "You should call this only for instance entities!");
-    _baseEntityId = id;
   }
 
   EntityNode::EntityNode()

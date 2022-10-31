@@ -23,6 +23,9 @@ namespace ToolKit
       void ShowMaterialPtr(const String& uniqueName,
                            const String& file,
                            MaterialPtr& var);
+      void ShowMaterialVariant(const String& uniqueName,
+                               const String& file,
+                               ParameterVariant* var);
 
       void DropZone(uint fallbackIcon,
                     const String& file,
@@ -58,9 +61,13 @@ namespace ToolKit
       virtual bool ShowComponentBlock(ComponentPtr& comp);
 
      protected:
-      void ShowCustomData();
+      void ShowCustomData(String headerName,
+                          ParameterVariantRawPtrArray& vars,
+                          bool isListEditable);
       ValueUpdateFn MultiUpdate(ParameterVariant* var);
       void ShowMultiMaterialComponent(
+          ComponentPtr& comp, std::function<bool(const String&)> showCompFunc);
+      void ShowAABBOverrideComponent(
           ComponentPtr& comp, std::function<bool(const String&)> showCompFunc);
     };
 

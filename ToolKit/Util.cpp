@@ -1,5 +1,6 @@
 #include "Util.h"
 
+#include "Common/utf8.h"
 #include "Primative.h"
 #include "ToolKit.h"
 #include "rapidxml.hpp"
@@ -108,6 +109,11 @@ namespace ToolKit
       {
         return static_cast<float>(std::atof(attr->value()));
       }
+    }
+
+    if constexpr (std::is_same_v<T, bool>)
+    {
+      return 1;
     }
 
     return 0;
@@ -579,6 +585,9 @@ namespace ToolKit
       break;
     case ResourceType::RenderTarget:
       break;
+    case ResourceType::Scene:
+      path = ScenePath("");
+      break;
     default:
       assert(false);
       break;
@@ -707,6 +716,24 @@ namespace ToolKit
     String lwr = str;
     transform(lwr.begin(), lwr.end(), lwr.begin(), ::tolower);
     return lwr;
+  }
+
+  bool Utf8CaseInsensitiveSearch(const String& text, const String& search)
+  {
+    char* findPoint = utf8casestr(text.c_str(), search.c_str());
+    if (!findPoint)
+    {
+      return false;
+    }
+
+    if (utf8size_lazy(findPoint) != 0)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
   }
 
   String Format(const char* msg, ...)
@@ -915,25 +942,6 @@ namespace ToolKit
       if (node->m_entity)
       {
         if (Entity* sub = DeepCopy(node->m_entity, copies))
-        {
-          cpy->m_node->AddChild(sub->m_node);
-        }
-      }
-    }
-
-    return cpy;
-  }
-
-  Entity* DeepInstantiate(Entity* root, EntityRawPtrArray& instances)
-  {
-    Entity* cpy = root->Instantiate();
-    instances.push_back(cpy);
-
-    for (Node* node : root->m_node->m_children)
-    {
-      if (node->m_entity)
-      {
-        if (Entity* sub = DeepInstantiate(node->m_entity, instances))
         {
           cpy->m_node->AddChild(sub->m_node);
         }

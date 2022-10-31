@@ -116,8 +116,6 @@ namespace ToolKit
       EntityIdArray m_ignoreList;
 
       // Debug models.
-      static std::shared_ptr<Arrow2d> m_dbgArrow;
-      static std::shared_ptr<LineBatch> m_dbgFrustum;
     };
 
     class StateBeginPick : public StatePickingBase

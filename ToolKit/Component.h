@@ -44,7 +44,8 @@ namespace ToolKit
     EnvironmentComponent,
     AnimControllerComponent,
     SkeletonComponent,
-    MultiMaterialComponent
+    MultiMaterialComponent,
+    AABBOverrideComponent
   };
 
   /**

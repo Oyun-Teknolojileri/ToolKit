@@ -64,6 +64,10 @@ namespace ToolKit
     Texture* GenerateIrradianceCubemap(CubeMapPtr cubemap,
                                        uint width,
                                        uint height);
+    LightRawPtrArray GetBestLights(Entity* entity,
+                                   const LightRawPtrArray& lights);
+
+    void CopyTexture(TexturePtr source, TexturePtr dest);
 
    private:
     void RenderEntities(
@@ -120,8 +124,6 @@ namespace ToolKit
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
 
-    LightRawPtrArray GetBestLights(Entity* entity,
-                                   const LightRawPtrArray& lights);
     void GetEnvironmentLightEntities(EntityRawPtrArray entities);
     void FindEnvironmentLight(Entity* entity, Camera* camera);
 
@@ -209,6 +211,9 @@ namespace ToolKit
     Framebuffer* m_utilFramebuffer     = nullptr;
     MaterialPtr m_gaussianBlurMaterial = nullptr;
     MaterialPtr m_averageBlurMaterial  = nullptr;
+
+    FramebufferPtr m_copyFb    = nullptr;
+    MaterialPtr m_copyMaterial = nullptr;
   };
 
 } // namespace ToolKit

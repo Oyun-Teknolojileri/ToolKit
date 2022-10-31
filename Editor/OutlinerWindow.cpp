@@ -3,6 +3,7 @@
 #include "App.h"
 #include "FolderWindow.h"
 #include "Global.h"
+#include "ImGui/imgui_stdlib.h"
 #include "Mod.h"
 #include "UI.h"
 #include "Util.h"
@@ -37,6 +38,11 @@ namespace ToolKit
 
     void OutlinerWindow::ShowNode(Entity* e)
     {
+      if (!m_shownEntities[e])
+      {
+        return;
+      }
+
       ImGuiTreeNodeFlags nodeFlags = g_treeNodeFlags;
       EditorScenePtr currScene     = g_app->GetCurrentScene();
       if (currScene->IsSelected(e->GetIdVal()))
@@ -111,13 +117,16 @@ namespace ToolKit
           EntityRawPtrArray selected;
           currScene->GetSelectedEntities(selected);
 
-          for (int i = 0; i < selected.size(); i++)
+          if (e->GetType() != EntityType::Entity_Prefab)
           {
-            if (selected[i]->GetIdVal() != e->GetIdVal() &&
-                (!Prefab::GetPrefabRoot(selected[i]) ||
-                 selected[i]->GetType() == EntityType::Entity_Prefab))
+            for (int i = 0; i < selected.size(); i++)
             {
-              g_child.push_back(selected[i]->GetIdVal());
+              if (selected[i]->GetIdVal() != e->GetIdVal() &&
+                  (!Prefab::GetPrefabRoot(selected[i]) ||
+                   selected[i]->GetType() == EntityType::Entity_Prefab))
+              {
+                g_child.push_back(selected[i]->GetIdVal());
+              }
             }
           }
           g_parent = e->GetIdVal();
@@ -126,13 +135,73 @@ namespace ToolKit
       }
     }
 
+    void OutlinerWindow::HandleSearch(const EntityRawPtrArray& ntties,
+                                      const EntityRawPtrArray& roots)
+    {
+      if (ImGui::IsKeyPressed(ImGuiKey_Enter, false) && IsActive())
+      {
+        m_stringSearchMode = true;
+      }
+
+      m_stringSearchMode = m_stringSearchMode && !m_searchString.empty();
+
+      // Clear shown entity map
+      for (Entity* ntt : ntties)
+      {
+        if (m_searchString.empty())
+        {
+          m_shownEntities[ntt] = true;
+        }
+        else
+        {
+          m_shownEntities[ntt] = false;
+        }
+      }
+      if (m_searchString.size() > 0)
+      {
+        // Find which entities should be shown
+        for (Entity* e : roots)
+        {
+          FindShownEntities(e, m_searchString);
+        }
+      }
+    }
+
+    bool OutlinerWindow::FindShownEntities(Entity* e, const String& str)
+    {
+      bool self = Utf8CaseInsensitiveSearch(e->GetNameVal(), str);
+
+      bool children = false;
+      if (e->GetType() != EntityType::Entity_Prefab)
+      {
+        for (Node* n : e->m_node->m_children)
+        {
+          Entity* childNtt = n->m_entity;
+          if (childNtt != nullptr)
+          {
+            bool child = FindShownEntities(childNtt, str);
+            children   = child | children;
+          }
+        }
+      }
+
+      bool result        = self | children;
+      m_shownEntities[e] = result;
+      return result;
+    }
+
     void OutlinerWindow::Show()
     {
       EditorScenePtr currScene = g_app->GetCurrentScene();
       ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
+
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         HandleStates();
+
+        ShowSearchBar(m_searchString);
+
+        ImGui::BeginChild("##Outliner Nodes");
 
         if (DrawRootHeader("Scene",
                            0,
@@ -143,12 +212,17 @@ namespace ToolKit
           EntityRawPtrArray roots;
           GetRootEntities(ntties, roots);
 
+          HandleSearch(ntties, roots);
+
           for (Entity* e : roots)
           {
             ShowNode(e);
           }
+
           ImGui::TreePop();
         }
+
+        ImGui::EndChild();
       }
 
       // Update hierarchy if there is a change.
@@ -232,18 +306,52 @@ namespace ToolKit
       return isOpen;
     }
 
+    void OutlinerWindow::ShowSearchBar(String& searchString)
+    {
+      ImGui::BeginTable("##Search", 2, ImGuiTableFlags_SizingFixedFit);
+      ImGui::TableSetupColumn("##SearchBar",
+                              ImGuiTableColumnFlags_WidthStretch);
+      ImGui::TableSetupColumn("##ToggleCaseButton");
+
+      ImGui::TableNextColumn();
+
+      ImGui::PushItemWidth(-1);
+      ImGui::InputTextWithHint(" SearchString", "Search", &searchString);
+      ImGui::PopItemWidth();
+
+      ImGui::TableNextColumn();
+
+      m_searchCaseSens =
+          UI::ToggleButton("Aa", Vec2(24.0f, 24.f), m_searchCaseSens);
+
+      UI::HelpMarker(TKLoc, "Case Sensitivity");
+
+      ImGui::EndTable();
+    }
+
     bool OutlinerWindow::DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags)
     {
-      bool focusToItem = false;
+      if (ntt->GetNameVal().find(m_searchString) != String::npos)
+      {
+        m_stringSearchMode = false;
+      }
+
+      bool focusToItem  = false;
+      bool nextItemOpen = false;
       if (!m_nttFocusPath.empty())
       {
         int focusIndx = IndexOf(ntt, m_nttFocusPath);
         if (focusIndx != -1)
         {
-          ImGui::SetNextItemOpen(true);
+          nextItemOpen = true;
         }
 
         focusToItem = focusIndx == 0;
+      }
+
+      if (nextItemOpen || m_stringSearchMode)
+      {
+        ImGui::SetNextItemOpen(true);
       }
 
       const String sId = "##" + std::to_string(ntt->GetIdVal());
@@ -302,7 +410,7 @@ namespace ToolKit
       ImGui::Text(ntt->GetNameVal().c_str());
 
       // Hiearchy visibility
-      float offset = ImGui::GetContentRegionAvail().x - 30.0f;
+      float offset = ImGui::GetContentRegionAvail().x - 40.0f;
       ImGui::SameLine(offset);
       icon = ntt->GetVisibleVal() ? UI::m_visibleIcon : UI::m_invisibleIcon;
 
@@ -315,7 +423,7 @@ namespace ToolKit
       }
       ImGui::PopID();
 
-      offset = ImGui::GetContentRegionAvail().x - 10.0f;
+      offset = ImGui::GetContentRegionAvail().x - 20.0f;
       ImGui::SameLine(offset);
       icon = ntt->GetTransformLockVal() ? UI::m_lockedIcon : UI::m_unlockedIcon;
 

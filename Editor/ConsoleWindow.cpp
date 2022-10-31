@@ -6,6 +6,7 @@
 #include "EditorViewport.h"
 #include "Entity.h"
 #include "Global.h"
+#include "ImGui/imgui_stdlib.h"
 #include "Logger.h"
 #include "Mod.h"
 #include "Node.h"
@@ -87,16 +88,16 @@ namespace ToolKit
       if (!g_app->m_showPickingDebug)
       {
         EditorScenePtr currScene = g_app->GetCurrentScene();
-        if (StatePickingBase::m_dbgArrow)
+        if (g_app->m_dbgArrow)
         {
-          currScene->RemoveEntity(StatePickingBase::m_dbgArrow->GetIdVal());
-          StatePickingBase::m_dbgArrow = nullptr;
+          currScene->RemoveEntity(g_app->m_dbgArrow->GetIdVal());
+          g_app->m_dbgArrow = nullptr;
         }
 
-        if (StatePickingBase::m_dbgFrustum)
+        if (g_app->m_dbgFrustum)
         {
-          currScene->RemoveEntity(StatePickingBase::m_dbgFrustum->GetIdVal());
-          StatePickingBase::m_dbgFrustum = nullptr;
+          currScene->RemoveEntity(g_app->m_dbgFrustum->GetIdVal());
+          g_app->m_dbgFrustum = nullptr;
         }
       }
     }
@@ -363,7 +364,6 @@ namespace ToolKit
       BaseMod* mod = ModManager::GetInstance()->m_modStack.back();
       if (TransformMod* tsm = dynamic_cast<TransformMod*>(mod))
       {
-        tsm->m_prevTransformSpace = g_app->m_transformSpace;
         tsm->Signal(TransformMod::m_backToStart);
       }
     }
@@ -546,6 +546,16 @@ namespace ToolKit
       BoolCheck(tagArgs, &g_app->m_showDirectionalLightShadowFrustum);
     }
 
+    void SelectAllEffectingLights(TagArgArray tagArgs)
+    {
+      BoolCheck(tagArgs, &g_app->m_selectEffectingLights);
+    }
+
+    void ShowDepth(TagArgArray tagArgs)
+    {
+      BoolCheck(tagArgs, &g_app->m_showDepth);
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2)
     {
@@ -604,6 +614,8 @@ namespace ToolKit
       CreateCommand(g_setWorkspaceDir, SetWorkspaceDir);
       CreateCommand(g_loadPlugin, LoadPlugin);
       CreateCommand(g_showShadowFrustum, ShowShadowFrustum);
+      CreateCommand(g_selectEffectingLights, SelectAllEffectingLights);
+      CreateCommand(g_showDepth, ShowDepth);
     }
 
     ConsoleWindow::~ConsoleWindow()
@@ -625,10 +637,12 @@ namespace ToolKit
                           false,
                           ImGuiWindowFlags_HorizontalScrollbar);
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
+
+        m_filter = ToLower(m_filter);
         for (size_t i = 0; i < m_items.size(); i++)
         {
-          const char* item = m_items[i].c_str();
-          if (!m_filter.PassFilter(item))
+          const String item = m_items[i];
+          if (!Utf8CaseInsensitiveSearch(item, m_filter))
           {
             continue;
           }
@@ -638,17 +652,17 @@ namespace ToolKit
           ImGui::SameLine();
 
           bool popColor = false;
-          if (strstr(item, g_errorStr.c_str()))
+          if (item.find(g_errorStr) != String::npos)
           {
             ImGui::PushStyleColor(ImGuiCol_Text, g_consoleErrorColor);
             popColor = true;
           }
-          else if (strstr(item, g_commandStr.c_str()))
+          else if (item.find(g_commandStr))
           {
             ImGui::PushStyleColor(ImGuiCol_Text, g_consoleCommandColor);
             popColor = true;
           }
-          else if (strstr(item, g_warningStr.c_str()))
+          else if (item.find(g_warningStr))
           {
             ImGui::PushStyleColor(ImGuiCol_Text, g_consoleWarningColor);
             popColor = true;
@@ -659,7 +673,7 @@ namespace ToolKit
             popColor = true;
           }
 
-          ImGui::TextUnformatted(item);
+          ImGui::TextUnformatted(item.c_str());
           if (popColor)
           {
             ImGui::PopStyleColor();
@@ -677,29 +691,20 @@ namespace ToolKit
 
         ImGui::Separator();
 
-        ImGui::BeginTable("##cmd", 5, ImGuiTableFlags_SizingFixedFit);
-        ImGui::TableSetupColumn("##cmdtxt");
-        ImGui::TableSetupColumn("##cmd");
-        ImGui::TableSetupColumn("##flttxt");
+        ImGui::BeginTable("##cmd", 3, ImGuiTableFlags_SizingFixedFit);
+        ImGui::TableSetupColumn("##cmd", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("##flt", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("##clr");
 
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
 
-        ImGui::Text("Command: ");
-        ImGui::TableNextColumn();
-
-        // Command window.
-        static bool reclaimFocus = false;
-        static char inputBuff[256];
-        float width = ImGui::GetWindowContentRegionWidth() * 0.3f;
-
-        ImGui::PushItemWidth(width);
-        if (ImGui::InputText(
-                "##Input",
-                inputBuff,
-                IM_ARRAYSIZE(inputBuff),
+        // Command window
+        ImGui::PushItemWidth(-1);
+        if (ImGui::InputTextWithHint(
+                " Command",
+                "Command",
+                &m_command,
                 ImGuiInputTextFlags_EnterReturnsTrue |
                     ImGuiInputTextFlags_CallbackCompletion |
                     ImGuiInputTextFlags_CallbackHistory,
@@ -709,31 +714,25 @@ namespace ToolKit
                 },
                 reinterpret_cast<void*>(this)))
         {
-          char* s = inputBuff;
-          Strtrim(s);
-          if (s[0])
-          {
-            ExecCommand(s);
-          }
-          snprintf(s, static_cast<size_t>(1), "");
-          reclaimFocus = true;
+          ExecCommand(m_command);
+          m_command      = "";
+          m_reclaimFocus = true;
         }
-
         ImGui::PopItemWidth();
 
-        if (reclaimFocus)
+        if (m_reclaimFocus)
         {
           ImGui::SetKeyboardFocusHere(-1);
-          reclaimFocus = false;
+          m_reclaimFocus = false;
         }
 
         ImGui::TableNextColumn();
 
-        // Search bar.
-        ImGui::Text("Filter: ");
-        ImGui::TableNextColumn();
+        // Filter bar
+        ImGui::PushItemWidth(-1);
+        ImGui::InputTextWithHint(" Filter", "Filter", &m_filter);
+        ImGui::PopItemWidth();
 
-        m_filter.Draw("##Filter", width * 0.8f);
         ImGui::TableNextColumn();
 
         if (ImGui::Button("Clear"))

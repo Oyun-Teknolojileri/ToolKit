@@ -71,7 +71,6 @@ namespace ToolKit
     virtual void SetPose(const AnimationPtr& anim, float time);
     virtual struct BoundingBox GetAABB(bool inWorld = false) const;
     virtual Entity* Copy() const;
-    virtual Entity* Instantiate() const;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
     virtual void RemoveResources();
@@ -80,8 +79,6 @@ namespace ToolKit
     bool IsSurfaceInstance();
     bool IsLightInstance() const;
     bool IsSkyInstance() const;
-    ULongID GetBaseEntityID() const;
-    void SetBaseEntityID(ULongID);
 
     /**
      * Adds the given component into the components of the Entity. While adding
@@ -168,8 +165,6 @@ namespace ToolKit
      */
     void ClearComponents();
 
-    virtual Entity* InstantiateTo(Entity* other) const;
-
    protected:
     virtual Entity* CopyTo(Entity* other) const;
     void ParameterConstructor();
@@ -181,17 +176,6 @@ namespace ToolKit
     TKDeclareParam(String, Tag);
     TKDeclareParam(bool, Visible);
     TKDeclareParam(bool, TransformLock);
-
-    /**
-     * True if this entity is an instance of another entity
-     * If true;
-     *  Deserialization doesn't load components
-     *  You should instantiate from base entity by yourself
-     *   Example: Scene deserialization instantiates from base entities last
-     * Don't use this outside of scene,
-     *  otherwise base entity's component list can't be accessed
-     */
-    TKDeclareParam(bool, IsInstance);
 
     Node* m_node;
     ParameterBlock m_localData; // Entity's own data.
@@ -207,12 +191,6 @@ namespace ToolKit
     // NOTE: Entity's own functions shouldn't access this either.
     //  They should use GetComponentPtrArray instead.
     ComponentPtrArray m_components;
-
-    /**
-     * Internally used variable.
-     * Helper ID for finding base entity. Id must be valid in the current scene.
-     */
-    ULongID _baseEntityId;
   };
 
   class TK_API EntityNode : public Entity

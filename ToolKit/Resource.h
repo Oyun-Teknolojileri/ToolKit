@@ -31,7 +31,7 @@ namespace ToolKit
     virtual void Reload();
 
     virtual void Init(bool flushClientSideArray = false) = 0;
-    virtual void UnInit()                               = 0;
+    virtual void UnInit()                                = 0;
 
     template <typename T>
     std::shared_ptr<T> Copy()

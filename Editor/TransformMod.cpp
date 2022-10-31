@@ -597,15 +597,13 @@ namespace ToolKit
         case AxisLabel::X:
         case AxisLabel::Y:
         case AxisLabel::Z:
-          target[static_cast<int>(grabbedAxis)] =
-              snapped[static_cast<int>(grabbedAxis)];
+          target[int(grabbedAxis)] = snapped[int(grabbedAxis)];
           break;
         case AxisLabel::YZ:
         case AxisLabel::ZX:
         case AxisLabel::XY:
-          snapped[static_cast<int>(grabbedAxis) % 3] =
-              target[static_cast<int>(grabbedAxis) % 3];
-          target = snapped;
+          snapped[int(grabbedAxis) % 3] = target[int(grabbedAxis) % 3];
+          target                        = snapped;
           break;
         default:
           break;
@@ -722,11 +720,10 @@ namespace ToolKit
         }
       }
 
-      Vec3 scale = ntt->m_node->GetScale() + delta;
-
-      if (glm::all(glm::notEqual(scale, Vec3(0.0f))))
+      Vec3 scale = Vec3(1.0f) + delta;
+      if (!VecAllEqual(delta, ZERO))
       {
-        ntt->m_node->SetScale(scale);
+        ntt->m_node->Scale(scale);
       }
     }
 
@@ -843,7 +840,7 @@ namespace ToolKit
 
     void TransformMod::Update(float deltaTime)
     {
-      // Set transform of the gizmo with respecto active vieport.
+      // Set transform of the gizmo with respect to active viewport.
       // Important for proper picking.
       if (m_gizmo != nullptr)
       {

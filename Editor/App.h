@@ -136,6 +136,7 @@ namespace ToolKit
       void AssignManagerReporters();
       void CreateAndSetNewScene(const String& name);
       void CreateEditorEntities();
+      void DestroyEditorEntities();
 
      public:
       // UI elements.
@@ -160,6 +161,8 @@ namespace ToolKit
       Gizmo* m_gizmo = nullptr;
       AnchorPtr m_anchor;
       EntityRawPtrArray m_perFrameDebugObjects;
+      std::shared_ptr<Arrow2d> m_dbgArrow;
+      std::shared_ptr<LineBatch> m_dbgFrustum;
 
       // 3 point lighting system.
       Node* m_lightMaster = nullptr;
@@ -183,6 +186,8 @@ namespace ToolKit
       bool m_importSlient                      = false;
       bool m_showSelectionBoundary             = false;
       bool m_showDirectionalLightShadowFrustum = false;
+      bool m_selectEffectingLights             = false;
+      bool m_showDepth                         = false;
       bool m_windowMaximized                   = false;
       byte m_showGraphicsApiErrors             = 0;
       TransformationSpace m_transformSpace     = TransformationSpace::TS_WORLD;
@@ -204,6 +209,8 @@ namespace ToolKit
       // Internal states.
       bool m_onQuit = false;
       String m_newSceneName;
+
+      MaterialPtr lightModeMat = nullptr;
     };
 
     extern void DebugMessage(const String& msg);

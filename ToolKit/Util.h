@@ -104,6 +104,9 @@ namespace ToolKit
   TK_API String Trim(const String& str, const String& whitespace = " \t");
   TK_API bool EndsWith(const String& str, const String& suffix);
 
+  TK_API bool Utf8CaseInsensitiveSearch(const String& text,
+                                        const String& search);
+
   // Debug geometries.
   ///////////////////////////////////////////////////////
   class LineBatch;
@@ -130,7 +133,6 @@ namespace ToolKit
 
   // {copies} First one is the copy root, fallowing are attached children.
   TK_API Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies);
-  TK_API Entity* DeepInstantiate(Entity* root, EntityRawPtrArray& instances);
 
   // Sort entities  by distance (from boundary center)
   // in ascending order to camera. Accounts for isometric camera.

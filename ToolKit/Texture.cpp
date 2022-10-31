@@ -497,6 +497,14 @@ namespace ToolKit
   {
   }
 
+  RenderTarget::RenderTarget(Texture* texture)
+  {
+    m_width     = texture->m_width;
+    m_height    = texture->m_height;
+    m_textureId = texture->m_textureId;
+    m_initiated = true;
+  }
+
   void RenderTarget::Init(bool flushClientSideArray)
   {
     if (m_initiated)

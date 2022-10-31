@@ -70,7 +70,7 @@ namespace ToolKit
 
     float ratio;
     int key1, key2;
-    for (auto& dBoneIter : skeleton->map->boneList)
+    for (auto& dBoneIter : skeleton->m_map->boneList)
     {
       auto entry = m_keys.find(dBoneIter.first);
       if (entry == m_keys.end())
@@ -104,6 +104,7 @@ namespace ToolKit
       dBone.node->m_scale = Interpolate(k1.m_scale, k2.m_scale, ratio);
       dBone.node->SetChildrenDirty();
     }
+    skeleton->isDirty = true;
   }
 
   void Animation::GetPose(Node* node, int frame)

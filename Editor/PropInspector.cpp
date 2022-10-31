@@ -43,6 +43,27 @@ namespace ToolKit
           });
     }
 
+    void View::ShowMaterialVariant(const String& uniqueName,
+                                   const String& file,
+                                   ParameterVariant* var)
+    {
+      DropSubZone(
+          uniqueName,
+          static_cast<uint>(UI::m_materialIcon->m_textureId),
+          file,
+          [&var](const DirectoryEntry& entry) -> void {
+            if (GetResourceType(entry.m_ext) == ResourceType::Material)
+            {
+              *var = GetMaterialManager()->Create<Material>(entry.GetFullPath());
+            }
+            else
+            {
+              GetLogger()->WriteConsole(LogType::Error,
+                                        "Only Material Types are accepted.");
+            }
+          });
+    }
+
     void View::ShowVariant(ParameterVariant* var, ComponentPtr comp)
     {
       if (!var->m_exposed)
@@ -218,7 +239,7 @@ namespace ToolKit
         }
 
         String uniqueName = var->m_name + "##" + id;
-        ShowMaterialPtr(uniqueName, file, mref);
+        ShowMaterialVariant(uniqueName, file, var);
       }
       break;
       case ParameterVariant::VariantType::MeshPtr: {
@@ -827,10 +848,12 @@ namespace ToolKit
 
       if (ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        Mat3 rotate;
-        Vec3 scale, shear;
+        Quaternion rotate;
+        Vec3 translate;
         Mat4 ts = m_entity->m_node->GetTransform(g_app->m_transformSpace);
-        QDUDecomposition(ts, rotate, scale, shear);
+        DecomposeMatrix(ts, &translate, &rotate, nullptr);
+
+        Vec3 scale = m_entity->m_node->GetScale();
 
         // Continuous edit utils.
         static TransformAction* dragMem = nullptr;
@@ -850,7 +873,6 @@ namespace ToolKit
         };
 
         TransformationSpace space = g_app->m_transformSpace;
-        Vec3 translate            = glm::column(ts, 3);
         Vec3 newTranslate         = translate;
         if (ImGui::DragFloat3("Translate", &newTranslate[0], 0.25f))
         {
@@ -869,7 +891,7 @@ namespace ToolKit
 
         saveTransformActionFn();
 
-        Quaternion q0 = glm::toQuat(rotate);
+        Quaternion q0 = rotate;
         Vec3 eularXYZ = glm::eulerAngles(q0);
         Vec3 degrees  = glm::degrees(eularXYZ);
         if (ImGui::DragFloat3("Rotate", &degrees[0], 0.25f))
@@ -905,7 +927,8 @@ namespace ToolKit
         if (ImGui::DragFloat3("Scale", &scale[0], 0.1f))
         {
           bool exceed = false;
-          if (scale.x <= 0.0f || scale.y <= 0.0f || scale.z <= 0.0f)
+          Vec3 abScl  = glm::abs(scale);
+          if (abScl.x <= 0.001f || abScl.y <= 0.001f || abScl.z <= 0.001f)
           {
             exceed = true;
           }
@@ -942,7 +965,10 @@ namespace ToolKit
         ImGui::Text("\tz: %.2f", dim.z);
       }
 
-      ShowCustomData();
+      ParameterVariantRawPtrArray customParams;
+      m_entity->m_localData.GetByCategory(CustomDataCategory.Name,
+                                          customParams);
+      ShowCustomData("Custom Data", customParams, true);
 
       // If entity belongs to a prefab, don't show components
       if (Prefab::GetPrefabRoot(m_entity))
@@ -986,7 +1012,8 @@ namespace ToolKit
                            "\0Environment Component"
                            "\0Animation Controller Component"
                            "\0Skeleton Component"
-                           "\0Multi-Material Component"))
+                           "\0Multi-Material Component"
+                           "\0AABB Override Component"))
           {
             Component* newComponent = nullptr;
             switch (dataType)
@@ -1012,6 +1039,9 @@ namespace ToolKit
               newComponent = mmComp;
             }
             break;
+            case 7:
+              newComponent = new AABBOverrideComponent;
+              break;
             default:
               break;
             }
@@ -1089,6 +1119,19 @@ namespace ToolKit
           }
           UI::EndCenteredTextButton();
         }
+
+        if (category.Name == PrefabCategory.Name)
+        {
+          ParameterVariantRawPtrArray inheritedParams;
+          Prefab* prefab = static_cast<Prefab*>(m_entity);
+          for (Node* root : prefab->m_node->m_children)
+          {
+            Entity* e = root->m_entity;
+            e->m_localData.GetByCategory(CustomDataCategory.Name,
+                                         inheritedParams);
+          }
+          ShowCustomData("", inheritedParams, false);
+        }
       }
     }
 
@@ -1122,20 +1165,34 @@ namespace ToolKit
         }
 
         ImGui::TreePop();
-      }
 
-      if (UI::BeginCenteredTextButton("Update"))
-      {
-        mmComp->UpdateMaterialList(mmComp->m_entity->GetMeshComponent());
+        if (UI::BeginCenteredTextButton("Update"))
+        {
+          mmComp->UpdateMaterialList(mmComp->m_entity->GetMeshComponent());
+        }
+        UI::EndCenteredTextButton();
+        ImGui::SameLine();
+        if (ImGui::Button("Add"))
+        {
+          mmComp->AddMaterial(GetMaterialManager()->GetCopyOfDefaultMaterial());
+        }
+        UI::HelpMarker(
+            "Update",
+            "Update material list by first MeshComponent's mesh list");
       }
-      UI::EndCenteredTextButton();
-      ImGui::SameLine();
-      if (ImGui::Button("Add"))
+    }
+
+    void EntityView::ShowAABBOverrideComponent(
+        ComponentPtr& comp, std::function<bool(const String&)> showCompFunc)
+    {
+      AABBOverrideComponent* overrideComp = (AABBOverrideComponent*) comp.get();
+
+      MeshComponentPtr meshComp =
+          overrideComp->m_entity->GetComponent<MeshComponent>();
+      if (meshComp && ImGui::Button("Update from MeshComponent"))
       {
-        mmComp->AddMaterial(GetMaterialManager()->GetCopyOfDefaultMaterial());
+        overrideComp->SetAABB(meshComp->GetAABB());
       }
-      UI::HelpMarker("Update",
-                     "Update material list by first MeshComponent's mesh list");
     }
 
     bool EntityView::ShowComponentBlock(ComponentPtr& comp)
@@ -1181,233 +1238,220 @@ namespace ToolKit
           ImGui::TreePop();
         }
       }
-      // Multi-Material Component has no parameter variant, show it specifically
-      if (comp->GetType() == ComponentType::MultiMaterialComponent)
+      switch (comp->GetType())
       {
+      case ComponentType::MultiMaterialComponent:
         ShowMultiMaterialComponent(comp, showCompFunc);
+        break;
+      case ComponentType::AABBOverrideComponent:
+        ShowAABBOverrideComponent(comp, showCompFunc);
+        break;
       }
 
       return removeComp;
     }
 
-    void EntityView::ShowCustomData()
+    void EntityView::ShowCustomData(String headerName,
+                                    ParameterVariantRawPtrArray& vars,
+                                    bool isListEditable)
     {
-      auto showCustomDataFnc = [this](String headerName,
-                                      ParameterVariantRawPtrArray& vars,
-                                      bool isListEditable) {
-        if (ImGui::CollapsingHeader(headerName.c_str(),
-                                    ImGuiTreeNodeFlags_DefaultOpen))
-        {
-          if (ImGui::BeginTable(headerName.c_str(),
-                                3,
-                                ImGuiTableFlags_Resizable |
-                                    ImGuiTableFlags_SizingFixedSame))
-          {
-            Vec2 xSize = ImGui::CalcTextSize("Name");
-            xSize *= 3.0f;
-            ImGui::TableSetupColumn(
-                "Name", ImGuiTableColumnFlags_WidthFixed, xSize.x);
-            ImGui::TableSetupColumn("Value",
-                                    ImGuiTableColumnFlags_WidthStretch);
-
-            xSize = ImGui::CalcTextSize("X");
-            xSize *= 2.5f;
-            ImGui::TableSetupColumn(
-                "##Remove", ImGuiTableColumnFlags_WidthFixed, xSize.x);
-
-            ImGui::TableHeadersRow();
-
-            ImGui::TableSetColumnIndex(0);
-            ImGui::PushItemWidth(-FLT_MIN);
-
-            ImGui::TableSetColumnIndex(1);
-            ImGui::PushItemWidth(-FLT_MIN);
-
-            ParameterVariant* remove = nullptr;
-            for (size_t i = 0; i < vars.size(); i++)
-            {
-              ValueUpdateFn multiUpdateFn = MultiUpdate(vars[i]);
-              vars[i]->m_onValueChangedFn.push_back(multiUpdateFn);
-
-              ImGui::TableNextRow();
-              ImGui::TableSetColumnIndex(0);
-
-              ImGui::PushID(static_cast<int>(i));
-              ParameterVariant* var = vars[i];
-              static char buff[1024];
-              strcpy_s(buff, sizeof(buff), var->m_name.c_str());
-
-              String pNameId = "##Name" + std::to_string(i);
-              ImGui::InputText(pNameId.c_str(), buff, sizeof(buff));
-              var->m_name = buff;
-
-              ImGui::TableSetColumnIndex(1);
-
-              String pId = "##" + std::to_string(i);
-              switch (var->GetType())
-              {
-              case ParameterVariant::VariantType::String: {
-                ImGui::InputText(pId.c_str(), var->GetVarPtr<String>());
-              }
-              break;
-              case ParameterVariant::VariantType::Bool: {
-                bool val = var->GetVar<bool>();
-                if (ImGui::Checkbox(pId.c_str(), &val))
-                {
-                  *var = val;
-                }
-              }
-              break;
-              case ParameterVariant::VariantType::Int: {
-                ImGui::InputInt(pId.c_str(), var->GetVarPtr<int>());
-              }
-              break;
-              case ParameterVariant::VariantType::Float: {
-                ImGui::DragFloat(pId.c_str(), var->GetVarPtr<float>(), 0.1f);
-              }
-              break;
-              case ParameterVariant::VariantType::Vec3: {
-                ImGui::DragFloat3(pId.c_str(), &var->GetVar<Vec3>()[0], 0.1f);
-              }
-              break;
-              case ParameterVariant::VariantType::Vec4: {
-                ImGui::DragFloat4(pId.c_str(), &var->GetVar<Vec4>()[0], 0.1f);
-              }
-              break;
-              case ParameterVariant::VariantType::Mat3: {
-                Vec3 vec;
-                Mat3 val = var->GetVar<Mat3>();
-                for (int j = 0; j < 3; j++)
-                {
-                  pId += std::to_string(j);
-                  vec = glm::row(val, j);
-                  ImGui::InputFloat3(pId.c_str(), &vec[0]);
-                  val  = glm::row(val, j, vec);
-                  *var = val;
-                }
-              }
-              break;
-              case ParameterVariant::VariantType::Mat4: {
-                Vec4 vec;
-                Mat4 val = var->GetVar<Mat4>();
-                for (int j = 0; j < 4; j++)
-                {
-                  pId += std::to_string(j);
-                  vec = glm::row(val, j);
-                  ImGui::InputFloat4(pId.c_str(), &vec[0]);
-                  val  = glm::row(val, j, vec);
-                  *var = val;
-                }
-              }
-              break;
-              }
-
-              ImGui::TableSetColumnIndex(2);
-              if (isListEditable && ImGui::Button("X"))
-              {
-                remove             = vars[i];
-                g_app->m_statusMsg = Format(
-                    "Parameter %d: %s removed.", i + 1, var->m_name.c_str());
-              }
-
-              vars[i]->m_onValueChangedFn.pop_back();
-              ImGui::PopID();
-            }
-
-            if (remove != nullptr)
-            {
-              m_entity->m_localData.Remove(remove->m_id);
-            }
-
-            ImGui::EndTable();
-            ImGui::Separator();
-
-            ImGui::PushItemWidth(150);
-            static bool addInAction = false;
-            if (isListEditable && addInAction)
-            {
-              int dataType = 0;
-              if (ImGui::Combo(
-                      "##NewCustData",
-                      &dataType,
-                      "..."
-                      "\0String\0Boolean\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4"))
-              {
-                ParameterVariant customVar;
-                // This makes them only visible in Custom Data dropdown.
-                customVar.m_exposed  = true;
-                customVar.m_editable = true;
-                customVar.m_category = CustomDataCategory;
-
-                bool added = true;
-                switch (dataType)
-                {
-                case 1:
-                  customVar = "";
-                  break;
-                case 2:
-                  customVar = false;
-                  break;
-                case 3:
-                  customVar = 0;
-                  break;
-                case 4:
-                  customVar = 0.0f;
-                  break;
-                case 5:
-                  customVar = ZERO;
-                  break;
-                case 6:
-                  customVar = Vec4();
-                  break;
-                case 7:
-                  customVar = Mat3();
-                  break;
-                case 8:
-                  customVar = Mat4();
-                  break;
-                default:
-                  added = false;
-                  break;
-                }
-
-                if (added)
-                {
-                  m_entity->m_localData.Add(customVar);
-                  addInAction = false;
-                }
-              }
-            }
-            ImGui::PopItemWidth();
-
-            if (isListEditable &&
-                UI::BeginCenteredTextButton("Add Custom Data"))
-            {
-              addInAction = true;
-            }
-            UI::EndCenteredTextButton();
-          }
-        }
-      };
-
-      ParameterVariantRawPtrArray customParams;
-      m_entity->m_localData.GetByCategory(CustomDataCategory.Name,
-                                          customParams);
-      showCustomDataFnc("Custom Data", customParams, true);
-
-      if (m_entity->GetType() == EntityType::Entity_Prefab)
+      if (headerName.length() &&
+          !ImGui::CollapsingHeader(headerName.c_str(),
+                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
-        ParameterVariantRawPtrArray inheritedParams;
-        Prefab* prefab = static_cast<Prefab*>(m_entity);
-        for (Node* root : prefab->m_node->m_children)
-        {
-          Entity* e = root->m_entity;
-          e->m_localData.GetByCategory(CustomDataCategory.Name,
-                                       inheritedParams);
-        }
-        showCustomDataFnc("Prefab Data", inheritedParams, false);
+        return;
       }
-    }
+      if (ImGui::BeginTable(headerName.c_str(),
+                            3,
+                            ImGuiTableFlags_Resizable |
+                                ImGuiTableFlags_SizingFixedSame))
+      {
+        Vec2 xSize = ImGui::CalcTextSize("Name");
+        xSize *= 3.0f;
+        ImGui::TableSetupColumn(
+            "Name", ImGuiTableColumnFlags_WidthFixed, xSize.x);
+        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+        xSize = ImGui::CalcTextSize("X");
+        xSize *= 2.5f;
+        ImGui::TableSetupColumn(
+            "##Remove", ImGuiTableColumnFlags_WidthFixed, xSize.x);
+
+        ImGui::TableHeadersRow();
+
+        ImGui::TableSetColumnIndex(0);
+        ImGui::PushItemWidth(-FLT_MIN);
+
+        ImGui::TableSetColumnIndex(1);
+        ImGui::PushItemWidth(-FLT_MIN);
+
+        ParameterVariant* remove = nullptr;
+        for (size_t i = 0; i < vars.size(); i++)
+        {
+          ValueUpdateFn multiUpdateFn = MultiUpdate(vars[i]);
+          vars[i]->m_onValueChangedFn.push_back(multiUpdateFn);
+
+          ImGui::TableNextRow();
+          ImGui::TableSetColumnIndex(0);
+
+          ImGui::PushID(static_cast<int>(i));
+          ParameterVariant* var = vars[i];
+          static char buff[1024];
+          strcpy_s(buff, sizeof(buff), var->m_name.c_str());
+
+          String pNameId = "##Name" + std::to_string(i);
+          ImGui::InputText(pNameId.c_str(), buff, sizeof(buff));
+          var->m_name = buff;
+
+          ImGui::TableSetColumnIndex(1);
+
+          String pId = "##" + std::to_string(i);
+          switch (var->GetType())
+          {
+          case ParameterVariant::VariantType::String: {
+            ImGui::InputText(pId.c_str(), var->GetVarPtr<String>());
+          }
+          break;
+          case ParameterVariant::VariantType::Bool: {
+            bool val = var->GetVar<bool>();
+            if (ImGui::Checkbox(pId.c_str(), &val))
+            {
+              *var = val;
+            }
+          }
+          break;
+          case ParameterVariant::VariantType::Int: {
+            ImGui::InputInt(pId.c_str(), var->GetVarPtr<int>());
+          }
+          break;
+          case ParameterVariant::VariantType::Float: {
+            ImGui::DragFloat(pId.c_str(), var->GetVarPtr<float>(), 0.1f);
+          }
+          break;
+          case ParameterVariant::VariantType::Vec3: {
+            ImGui::DragFloat3(pId.c_str(), &var->GetVar<Vec3>()[0], 0.1f);
+          }
+          break;
+          case ParameterVariant::VariantType::Vec4: {
+            ImGui::DragFloat4(pId.c_str(), &var->GetVar<Vec4>()[0], 0.1f);
+          }
+          break;
+          case ParameterVariant::VariantType::Mat3: {
+            Vec3 vec;
+            Mat3 val = var->GetVar<Mat3>();
+            for (int j = 0; j < 3; j++)
+            {
+              pId += std::to_string(j);
+              vec = glm::row(val, j);
+              ImGui::InputFloat3(pId.c_str(), &vec[0]);
+              val  = glm::row(val, j, vec);
+              *var = val;
+            }
+          }
+          break;
+          case ParameterVariant::VariantType::Mat4: {
+            Vec4 vec;
+            Mat4 val = var->GetVar<Mat4>();
+            for (int j = 0; j < 4; j++)
+            {
+              pId += std::to_string(j);
+              vec = glm::row(val, j);
+              ImGui::InputFloat4(pId.c_str(), &vec[0]);
+              val  = glm::row(val, j, vec);
+              *var = val;
+            }
+          }
+          break;
+          }
+
+          ImGui::TableSetColumnIndex(2);
+          if (isListEditable && ImGui::Button("X"))
+          {
+            remove = vars[i];
+            g_app->m_statusMsg =
+                Format("Parameter %d: %s removed.", i + 1, var->m_name.c_str());
+          }
+
+          vars[i]->m_onValueChangedFn.pop_back();
+          ImGui::PopID();
+        }
+
+        if (remove != nullptr)
+        {
+          m_entity->m_localData.Remove(remove->m_id);
+        }
+
+        ImGui::EndTable();
+        ImGui::Separator();
+
+        static bool addInAction = false;
+        if (isListEditable && addInAction)
+        {
+          ImGui::PushItemWidth(150);
+          int dataType = 0;
+          if (ImGui::Combo(
+                  "##NewCustData",
+                  &dataType,
+                  "..."
+                  "\0String\0Boolean\0Int\0Float\0Vec3\0Vec4\0Mat3\0Mat4"))
+          {
+            ParameterVariant customVar;
+            // This makes them only visible in Custom Data dropdown.
+            customVar.m_exposed  = true;
+            customVar.m_editable = true;
+            customVar.m_category = CustomDataCategory;
+
+            bool added = true;
+            switch (dataType)
+            {
+            case 1:
+              customVar = "";
+              break;
+            case 2:
+              customVar = false;
+              break;
+            case 3:
+              customVar = 0;
+              break;
+            case 4:
+              customVar = 0.0f;
+              break;
+            case 5:
+              customVar = ZERO;
+              break;
+            case 6:
+              customVar = Vec4();
+              break;
+            case 7:
+              customVar = Mat3();
+              break;
+            case 8:
+              customVar = Mat4();
+              break;
+            default:
+              added = false;
+              break;
+            }
+
+            if (added)
+            {
+              m_entity->m_localData.Add(customVar);
+              addInAction = false;
+            }
+          }
+          ImGui::PopItemWidth();
+        }
+
+        if (isListEditable)
+        {
+          if (UI::BeginCenteredTextButton("Add Custom Data"))
+          {
+            addInAction = true;
+          }
+          UI::EndCenteredTextButton();
+        }
+      }
+    };
 
     ValueUpdateFn EntityView::MultiUpdate(ParameterVariant* var)
     {

@@ -40,6 +40,8 @@ namespace ToolKit
               "vertexLayout",
               std::to_string(static_cast<int>(vertexLayout)));
 
+    WriteAttr(container, doc, "AOInUse", std::to_string(AOInUse));
+
     WriteAttr(container, doc, "priority", std::to_string(priority));
   }
 
@@ -65,7 +67,9 @@ namespace ToolKit
       ReadAttr(
           container, "vertexLayout", *reinterpret_cast<int*>(&vertexLayout));
 
-      ReadAttr(container, "vertexLayout", priority);
+      ReadAttr(container, "priority", priority);
+
+      ReadAttr(container, "AOInUse", AOInUse);
     }
   }
 

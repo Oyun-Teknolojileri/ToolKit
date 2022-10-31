@@ -10,6 +10,7 @@
 #include <rapidxml.hpp>
 #include <rapidxml_utils.hpp>
 
+#include <execution>
 #include <unordered_map>
 
 #include "DebugNew.h"
@@ -473,8 +474,10 @@ namespace ToolKit
     {
       return;
     }
-    m_skeleton->Init(flushClientSideArray);
-    Mesh::Init(flushClientSideArray);
+    // Don't flush, otherwise CPU skinning won't work. So neither
+    // CalculateBoundary() nor RayMeshIntersection() will work as expected
+    m_skeleton->Init(false);
+    Mesh::Init(false);
   }
 
   void SkinMesh::UnInit()
@@ -573,6 +576,50 @@ namespace ToolKit
       mesh->m_indexCount  = static_cast<int>(mesh->m_clientSideIndices.size());
       mesh                = nullptr;
     }
+  }
+  BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel,
+                                      const DynamicBoneMap* boneMap)
+  {
+    BoundingBox finalAABB;
+    MeshRawPtrArray meshes;
+    GetAllMeshes(meshes);
+
+    std::vector<BoundingBox> AABBs(meshes.size());
+    std::vector<uint> indexes(meshes.size());
+    for (uint i = 0; i < meshes.size(); i++)
+    {
+      indexes[i] = i;
+    }
+    std::for_each(
+        std::execution::par_unseq,
+        indexes.begin(),
+        indexes.end(),
+        [skel, boneMap, &AABBs, &meshes](uint index) {
+          SkinMesh* m = (SkinMesh*) meshes[index];
+          if (m->m_clientSideVertices.empty())
+          {
+            return;
+          }
+          BoundingBox& meshAABB = AABBs[index];
+          std::mutex meshAABBLocker;
+
+          std::for_each(
+              std::execution::par_unseq,
+              m->m_clientSideVertices.begin(),
+              m->m_clientSideVertices.end(),
+              [skel, boneMap, &meshAABBLocker, &meshAABB](SkinVertex& v) {
+                Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap);
+                std::lock_guard<std::mutex> guard(meshAABBLocker);
+                meshAABB.UpdateBoundary(skinnedPos);
+              });
+        });
+    for (BoundingBox& aabb : AABBs)
+    {
+      finalAABB.UpdateBoundary(aabb.max);
+      finalAABB.UpdateBoundary(aabb.min);
+    }
+
+    return finalAABB;
   }
 
   int SkinMesh::GetVertexSize() const

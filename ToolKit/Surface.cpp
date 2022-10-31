@@ -187,11 +187,6 @@ namespace ToolKit
     return cpy;
   }
 
-  Entity* Surface::InstantiateTo(Entity* other) const
-  {
-    return CopyTo(other);
-  }
-
   void Surface::ResetCallbacks()
   {
     m_onMouseEnter = nullptr;

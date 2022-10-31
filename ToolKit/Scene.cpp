@@ -46,37 +46,6 @@ namespace ToolKit
 
     DeSerialize(&sceneDoc, nullptr);
 
-    // Instantiate entities
-    for (Entity* e : m_entities)
-    {
-      if (e->GetIsInstanceVal())
-      {
-        Prefab* prefab = Prefab::GetPrefabRoot(e);
-        if (prefab)
-        {
-          // If entity is from a prefab or a prefab, don't do anything
-          // Prefab's child entity instances aren't serialized anyway
-          //   but Prefab::Init instantiates, so we need to check it here
-          // Long story short: Prefab deserialization handles this case
-        }
-        else if (Entity* base = GetEntity(e->GetBaseEntityID()))
-        {
-          Node* node            = e->m_node->Copy();
-          ParameterBlock params = e->m_localData;
-          base->InstantiateTo(e);
-          SafeDel(e->m_node);
-          node->m_entity = e;
-          e->m_node      = node;
-          e->m_localData = params;
-        }
-        else
-        {
-          GetLogger()->WriteConsole(LogType::Warning, "Base entity not found!");
-          RemoveEntity(e->GetIdVal());
-        }
-      }
-    }
-
     // Update parent - child relation for entities.
     for (Entity* e : m_entities)
     {
@@ -214,12 +183,24 @@ namespace ToolKit
 
           for (MeshComponentPtr& meshCmp : meshes)
           {
-            MeshPtr mesh = meshCmp->GetMeshVal();
-            if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount)
+            Mesh* mesh = meshCmp->GetMeshVal().get();
+            // There is a special case for SkinMeshes, because
+            // m_clientSideVertices.size() here always accesses to Mesh's vertex
+            // array (Vertex*) but it should've access to SkinMesh's vertex
+            // array (SkinVertex*). I don't want to template this function to
+            // support it, that's why isSkinned() is enough!
+            if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount ||
+                mesh->IsSkinned())
             {
               // Per polygon check if data exist.
-              float meshDist = 0.0f;
-              hit = RayMeshIntersection(mesh.get(), rayInObjectSpace, meshDist);
+              float meshDist              = 0.0f;
+              SkeletonComponent* skelComp = nullptr;
+              if (mesh->IsSkinned())
+              {
+                skelComp = ntt->GetComponent<SkeletonComponent>().get();
+              }
+              hit = RayMeshIntersection(
+                  mesh, rayInObjectSpace, meshDist, skelComp);
               if (hit)
               {
                 dist = meshDist;
@@ -433,9 +414,25 @@ namespace ToolKit
       GetLogger()->WriteConsole(LogType::Error, "You can't prefab same scene!");
       return;
     }
+
+    String path = GetRelativeResourcePath(fullPath);
+    // Check if file is from Prefab folder
+    {
+      String folder     = fullPath.substr(0, fullPath.length() - path.length());
+      String prefabPath = PrefabPath("");
+      if (folder != PrefabPath(""))
+      {
+        GetLogger()->WriteConsole(
+            LogType::Error, "You can't use a prefab outside of Prefab folder!");
+        return;
+      }
+      String folderName =
+          folder.substr(folder.find_last_of(GetPathSeparator()));
+      // if (folderName != GetResourcePath())
+    }
     Prefab* prefab = new Prefab();
     AddEntity(prefab);
-    prefab->SetScenePathVal(fullPath);
+    prefab->SetPrefabPathVal(path);
     prefab->Init(this);
   }
 
@@ -561,22 +558,6 @@ namespace ToolKit
         }
       }
     }
-    // If instantiated, save its base entity's list index too
-    if (ntt->GetIsInstanceVal())
-    {
-      for (uint parentSrchIndx = 0; parentSrchIndx < m_entities.size();
-           parentSrchIndx++)
-      {
-        if (ntt->GetBaseEntityID() == m_entities[parentSrchIndx]->GetIdVal())
-        {
-          parent->remove_attribute(baseAttrib);
-          WriteAttr(parent,
-                    doc,
-                    XmlBaseEntityIdAttr,
-                    std::to_string(parentSrchIndx + 1));
-        }
-      }
-    }
   }
 
   void Scene::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -622,10 +603,6 @@ namespace ToolKit
       biggestID         = glm::max(biggestID, currentID);
       ntt->SetIdVal(currentID);
       ntt->_parentId += lastID;
-      if (ntt->GetIsInstanceVal())
-      {
-        ntt->SetBaseEntityID(lastID + ntt->GetBaseEntityID());
-      }
 
       m_entities.push_back(ntt);
     }

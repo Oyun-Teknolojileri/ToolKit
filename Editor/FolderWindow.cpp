@@ -6,6 +6,7 @@
 #include "Framebuffer.h"
 #include "Gizmo.h"
 #include "Global.h"
+#include "ImGui/imgui_stdlib.h"
 #include "Light.h"
 #include "MaterialInspector.h"
 #include "PopupWindows.h"
@@ -53,7 +54,7 @@ namespace ToolKit
       {
         return GetMaterialManager();
       }
-      else if (m_ext == MESH)
+      else if (m_ext == MESH || m_ext == SKINMESH)
       {
         return GetMeshManager();
       }
@@ -127,18 +128,37 @@ namespace ToolKit
         g_app->m_thumbnailCache[GetFullPath()] = thumbPtr;
       };
 
-      if (m_ext == MESH)
+      if (m_ext == MESH || m_ext == SKINMESH)
       {
-        Drawable dw;
+        Entity tempDrawEntity;
         String fullpath = ConcatPaths({m_rootPath, m_fileName + m_ext});
 
-        MeshPtr mesh = GetMeshManager()->Create<Mesh>(fullpath);
+        MeshPtr mesh = nullptr;
+        if (m_ext == MESH)
+        {
+          mesh = GetMeshManager()->Create<Mesh>(fullpath);
+        }
+        else
+        {
+          mesh = GetMeshManager()->Create<SkinMesh>(fullpath);
+        }
         mesh->Init(false);
-        dw.SetMesh(mesh);
+        MeshComponentPtr meshComp = std::make_shared<MeshComponent>();
+        meshComp->SetMeshVal(mesh);
+        tempDrawEntity.AddComponent(meshComp);
+
+        if (m_ext == SKINMESH)
+        {
+          SkinMesh* skinMesh            = (SkinMesh*) mesh.get();
+          SkeletonComponentPtr skelComp = std::make_shared<SkeletonComponent>();
+          skelComp->SetSkeletonResourceVal(skinMesh->m_skeleton);
+          skelComp->Init();
+          tempDrawEntity.AddComponent(skelComp);
+        }
 
         // Tight fit a frustum to a bounding sphere
         // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
-        BoundingBox bb = dw.GetAABB();
+        BoundingBox bb = meshComp->GetAABB();
         Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
         float r = glm::distance(geoCenter, bb.max) * 1.1f; // 10% safezone.
         constexpr float a = glm::radians(45.0f);
@@ -151,20 +171,20 @@ namespace ToolKit
         cam.m_node->SetTranslation(eye);
         cam.GetComponent<DirectionComponent>()->LookAt(geoCenter);
 
-        renderThumbFn(&cam, &dw);
+        renderThumbFn(&cam, &tempDrawEntity);
       }
       else if (m_ext == MATERIAL)
       {
         Sphere ball;
-        String fullpath  = GetFullPath();
-        MeshPtr mesh     = ball.GetMeshComponent()->GetMeshVal();
+        String fullpath = GetFullPath();
+        MeshPtr mesh    = ball.GetMeshComponent()->GetMeshVal();
 
-        MaterialPtr mat = GetMaterialManager()->Create<Material>(fullpath);
+        MaterialPtr mat  = GetMaterialManager()->Create<Material>(fullpath);
         mesh->m_material = mat;
 
         // Disable ao
         bool aoActive = mesh->m_material->GetRenderState()->AOInUse;
-        mat->GetRenderState()->AOInUse = false;
+        mat->GetRenderState()->AOInUse  = false;
         mat->GetRenderState()->IBLInUse = false;
 
         mesh->Init(false);
@@ -288,7 +308,7 @@ namespace ToolKit
                                           ImGui::GetFrameHeightWithSpacing();
         ImGui::BeginChild("##Content", ImVec2(0, -footerHeightReserve), true);
 
-        if (m_entiries.empty())
+        if (m_entries.empty())
         {
           // Handle context menu based on path / content type of the folder.
           ShowContextMenu();
@@ -296,15 +316,16 @@ namespace ToolKit
         else
         {
           // Draw folder items.
-          for (int i = 0; i < static_cast<int>(m_entiries.size()); i++)
+          for (int i = 0; i < static_cast<int>(m_entries.size()); i++)
           {
             // Prepare Item Icon.
             ImGuiStyle& style = ImGui::GetStyle();
             float visX2 =
                 ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
-            DirectoryEntry& dirEnt = m_entiries[i];
-            if (!m_filter.PassFilter(dirEnt.m_fileName.c_str()))
+            DirectoryEntry& dirEnt = m_entries[i];
+
+            if (!Utf8CaseInsensitiveSearch(dirEnt.m_fileName, m_filter))
             {
               continue;
             }
@@ -329,17 +350,13 @@ namespace ToolKit
             {
               iconId = UI::m_worldIcon->m_textureId;
             }
-            else if (dirEnt.m_ext == MESH)
+            else if (dirEnt.m_ext == MESH || dirEnt.m_ext == SKINMESH)
             {
               genThumbFn();
             }
             else if (dirEnt.m_ext == ANIM)
             {
               iconId = UI::m_clipIcon->m_textureId;
-            }
-            else if (dirEnt.m_ext == SKINMESH)
-            {
-              iconId = UI::m_armatureIcon->m_textureId;
             }
             else if (dirEnt.m_ext == AUDIO)
             {
@@ -491,7 +508,6 @@ namespace ToolKit
 
         ImGui::BeginTable("##FilterZoom", 4, ImGuiTableFlags_SizingFixedFit);
 
-        ImGui::TableSetupColumn("##flttxt");
         ImGui::TableSetupColumn("##flt", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("##zoom");
         ImGui::TableSetupColumn("##tglzoom");
@@ -499,11 +515,10 @@ namespace ToolKit
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
 
-        // Handle searchbar.
-        ImGui::Text("Filter: ");
-        ImGui::TableNextColumn();
-        float width = ImGui::GetWindowContentRegionWidth() * 0.25f;
-        m_filter.Draw("##Filter", width);
+        // Handle searchbar
+        ImGui::PushItemWidth(-1);
+        ImGui::InputTextWithHint(" Filter", "Filter", &m_filter);
+        ImGui::PopItemWidth();
 
         // Zoom amount
         ImGui::TableNextColumn();
@@ -560,7 +575,7 @@ namespace ToolKit
       std::vector<DirectoryEntry> m_temp_dirs;
       std::vector<DirectoryEntry> m_temp_files;
 
-      m_entiries.clear();
+      m_entries.clear();
       for (const std::filesystem::directory_entry& e :
            std::filesystem::directory_iterator(m_path))
       {
@@ -588,20 +603,20 @@ namespace ToolKit
       // Folder first, files next
       for (int i = 0; i < static_cast<int>(m_temp_dirs.size()); i++)
       {
-        m_entiries.push_back(m_temp_dirs[i]);
+        m_entries.push_back(m_temp_dirs[i]);
       }
 
       for (int i = 0; i < static_cast<int>(m_temp_files.size()); i++)
       {
-        m_entiries.push_back(m_temp_files[i]);
+        m_entries.push_back(m_temp_files[i]);
       }
     }
 
-    int FolderView::Exist(const String& file)
+    int FolderView::Exist(const String& file, const String& ext)
     {
-      for (int i = 0; i < static_cast<int>(m_entiries.size()); i++)
+      for (int i = 0; i < static_cast<int>(m_entries.size()); i++)
       {
-        if (m_entiries[i].m_fileName == file)
+        if (m_entries[i].m_fileName == file && m_entries[i].m_ext == ext)
         {
           return i;
         }
@@ -680,7 +695,7 @@ namespace ToolKit
 
       auto deleteDirFn = [](FolderView* view, const String& path) -> void {
         std::error_code ec;
-        std::filesystem::remove(path, ec);
+        std::filesystem::remove_all(path, ec);
         if (ec)
         {
           g_app->m_statusMsg = ec.message();
@@ -1240,10 +1255,10 @@ namespace ToolKit
       int viewIndx = Exist(path);
       if (viewIndx != -1)
       {
-        int dirEntry = m_entiries[viewIndx].Exist(name);
+        int dirEntry = m_entiries[viewIndx].Exist(name, ext);
         if (dirEntry != -1)
         {
-          entry = m_entiries[viewIndx].m_entiries[dirEntry];
+          entry = m_entiries[viewIndx].m_entries[dirEntry];
           return true;
         }
       }

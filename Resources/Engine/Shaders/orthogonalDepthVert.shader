@@ -2,6 +2,7 @@
 	<type name = "vertexShader" />
 	<include name = "skinning.shader" />
 	<uniform name = "ProjectViewModel" />
+	<uniform name = "Model" />
 	<source>
 	<!--
 		#version 300 es
@@ -14,11 +15,10 @@
 		layout (location = 3) in vec3 vBiTan;
 
 		uniform mat4 ProjectViewModel;
+		uniform mat4 View;
+    uniform mat4 Model;
 
-		out vec3 v_pos;
-		out vec3 v_normal;
 		out vec2 v_texture;
-		out vec3 v_bitan;
 
 		uniform uint isSkinned;
 
@@ -31,9 +31,6 @@
 				skinnedVPos = skin(skinnedVPos);
 			}
 		  gl_Position = ProjectViewModel * skinnedVPos;
-			v_pos = skinnedVPos.xyz;
-			v_normal = vNormal;
-			v_bitan = vBiTan;
 		}
 	-->
 	</source>

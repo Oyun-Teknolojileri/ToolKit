@@ -55,6 +55,9 @@ namespace ToolKit
    public:
     TKDeclareParam(MeshPtr, Mesh); //!< Component's Mesh resource.
     TKDeclareParam(bool, CastShadow);
+
+   private:
+    BoundingBox m_aabb = {};
   };
 
   typedef std::shared_ptr<class MaterialComponent> MaterialComponentPtr;
@@ -191,7 +194,8 @@ namespace ToolKit
 
    public:
     TKDeclareParam(SkeletonPtr, SkeletonResource);
-    DynamicBoneMap* map;
+    DynamicBoneMap* m_map;
+    bool isDirty = true;
   };
 
   typedef std::shared_ptr<class MultiMaterialComponent> MultiMaterialPtr;
@@ -209,11 +213,9 @@ namespace ToolKit
     virtual ~MultiMaterialComponent();
 
     /**
-     * Creates a copy of the MaterialComponent. Contained Material is copied
-     * and will be serialized to the scene if the containing Entity gets
-     * serialized.
+     * Creates a copy of the MultiMaterialComponent.
      * @param ntt Parent Entity of the component.
-     * @return Copy of the MaterialComponent.
+     * @return Copy of the MultiMaterialComponent.
      */
     ComponentPtr Copy(Entity* ntt) override;
 
@@ -228,11 +230,36 @@ namespace ToolKit
 
    private:
     MaterialPtrArray materials;
+  };
+
+  typedef std::shared_ptr<class AABBOverrideComponent> AABBOverrideComponentPtr;
+  typedef std::vector<AABBOverrideComponentPtr> AABBOverrideComponentPtrArray;
+
+  static VariantCategory AABBOverrideCompCategory{"AABB Override Component",
+                                                  90};
+
+  class TK_API AABBOverrideComponent : public Component
+  {
+   public:
+    TKComponentType(AABBOverrideComponent);
+
+    AABBOverrideComponent();
+    virtual ~AABBOverrideComponent();
+
     /**
-     * Component's material resource. In case this object is not null, Renderer
-     * picks this material to render the mesh otherwise falls back to Material
-     * within the Mesh.
+     * Creates a copy of the AABB Override Component.
+     * @param ntt Parent Entity of the component.
+     * @return Copy of the AABBOverrideComponent.
      */
-    // TKDeclareParam(MaterialPtr, Material);
+    ComponentPtr Copy(Entity* ntt) override;
+
+    void Init(bool flushClientSideArray);
+    BoundingBox GetAABB();
+    // AABB should be in entity space (not world space)
+    void SetAABB(BoundingBox aabb);
+
+   private:
+    TKDeclareParam(Vec3, PositionOffset);
+    TKDeclareParam(Vec3, Size);
   };
 } //  namespace ToolKit

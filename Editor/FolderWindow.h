@@ -44,7 +44,7 @@ namespace ToolKit
       void SetPath(const String& path);
       const String& GetPath() const;
       void Iterate();
-      int Exist(const String& file);
+      int Exist(const String& file, const String& ext);
       void ShowContextMenu(DirectoryEntry* entry = nullptr);
       void Refresh();
       float GetThumbnailZoomPercent(float thumbnailZoom);
@@ -66,7 +66,7 @@ namespace ToolKit
       bool m_activateNext    = false;
       bool m_onlyNativeTypes = true;
       Vec2 m_iconSize        = Vec2(50.0f);
-      std::vector<DirectoryEntry> m_entiries;
+      std::vector<DirectoryEntry> m_entries;
       String m_folder;
 
      private:
@@ -74,7 +74,7 @@ namespace ToolKit
       String m_path;
       bool m_dirty            = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
-      ImGuiTextFilter m_filter;
+      String m_filter         = "";
       std::unordered_map<String, std::function<void(DirectoryEntry*)>>
           m_itemActions;
 

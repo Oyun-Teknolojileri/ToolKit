@@ -94,15 +94,34 @@ namespace ToolKit
         m_selectedEntities.clear();
       }
 
+      Entity* ntt = GetEntity(id);
+
       // If selected entity belongs to a prefab
       //  select all childs of the prefab entity too
-      if (Prefab* mainPrefab = Prefab::GetPrefabRoot(GetEntity(id)))
+      if (Prefab* mainPrefab = Prefab::GetPrefabRoot(ntt))
       {
         auto addToSelectionFn = [this](Node* node) {
           m_selectedEntities.push_back(node->m_entity->GetIdVal());
         };
         TraverseChildNodes(mainPrefab->m_node, addToSelectionFn);
         return;
+      }
+
+      if (g_app->m_selectEffectingLights &&
+          ntt->GetType() != EntityType::Entity_Light &&
+          ntt->GetType() != EntityType::Entity_DirectionalLight &&
+          ntt->GetType() != EntityType::Entity_PointLight &&
+          ntt->GetType() != EntityType::Entity_SpotLight)
+      {
+        LightRawPtrArray effectingLights =
+            GetRenderer()->GetBestLights(ntt, GetLights());
+        for (Light* light : effectingLights)
+        {
+          if (!IsSelected(light->GetIdVal()))
+          {
+            AddToSelection(light->GetIdVal(), true);
+          }
+        }
       }
 
       m_selectedEntities.push_back(id);
