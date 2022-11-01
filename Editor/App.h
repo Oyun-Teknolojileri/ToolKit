@@ -90,7 +90,7 @@ namespace ToolKit
       EditorViewport* GetActiveViewport();
       EditorViewport* GetViewport(const String& name);
       ConsoleWindow* GetConsole();
-      FolderWindow* GetAssetBrowser();
+      FolderWindowRawPtrArray GetAssetBrowsers();
       OutlinerWindow* GetOutliner();
       PropInspector* GetPropInspector();
       MaterialInspector* GetMaterialInspector();
@@ -111,6 +111,26 @@ namespace ToolKit
         }
 
         return nullptr;
+      }
+
+      template<typename T>
+      std::vector<T*> GetAllWindows(const String& name)
+      {
+        std::vector<T*> list;
+        for (Window* wnd : m_windows)
+        {
+          T* casted = dynamic_cast<T*>(wnd);
+          if (casted)
+          {
+            String nameWithoutId =
+                casted->m_name.substr(0, casted->m_name.find_first_of('#'));
+            if (nameWithoutId == name)
+            {
+              list.push_back(casted);
+            }
+          }
+        }
+        return list;
       }
 
       // Quick selected render implementation.

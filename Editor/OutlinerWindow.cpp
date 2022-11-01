@@ -362,7 +362,7 @@ namespace ToolKit
         if (ImGui::MenuItem("SaveAsPrefab"))
         {
           GetSceneManager()->GetCurrentScene()->SavePrefab(ntt);
-          if (FolderWindow* browser = g_app->GetAssetBrowser())
+          for (FolderWindow* browser : g_app->GetAssetBrowsers())
           {
             String folderPath, fullPath = PrefabPath("");
             DecomposePath(fullPath, &folderPath, nullptr, nullptr);

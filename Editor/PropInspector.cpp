@@ -47,21 +47,21 @@ namespace ToolKit
                                    const String& file,
                                    ParameterVariant* var)
     {
-      DropSubZone(
-          uniqueName,
-          static_cast<uint>(UI::m_materialIcon->m_textureId),
-          file,
-          [&var](const DirectoryEntry& entry) -> void {
-            if (GetResourceType(entry.m_ext) == ResourceType::Material)
-            {
-              *var = GetMaterialManager()->Create<Material>(entry.GetFullPath());
-            }
-            else
-            {
-              GetLogger()->WriteConsole(LogType::Error,
-                                        "Only Material Types are accepted.");
-            }
-          });
+      DropSubZone(uniqueName,
+                  static_cast<uint>(UI::m_materialIcon->m_textureId),
+                  file,
+                  [&var](const DirectoryEntry& entry) -> void {
+                    if (GetResourceType(entry.m_ext) == ResourceType::Material)
+                    {
+                      *var = GetMaterialManager()->Create<Material>(
+                          entry.GetFullPath());
+                    }
+                    else
+                    {
+                      GetLogger()->WriteConsole(
+                          LogType::Error, "Only Material Types are accepted.");
+                    }
+                  });
     }
 
     void View::ShowVariant(ParameterVariant* var, ComponentPtr comp)
@@ -564,8 +564,17 @@ namespace ToolKit
         const String& dropName)
     {
       DirectoryEntry dirEnt;
-      bool fileExist = g_app->GetAssetBrowser()->GetFileEntry(file, dirEnt);
-      uint iconId    = fallbackIcon;
+
+      bool fileExist                        = false;
+      FolderWindowRawPtrArray folderWindows = g_app->GetAssetBrowsers();
+      for (FolderWindow* folderWnd : folderWindows)
+      {
+        if (folderWnd->GetFileEntry(file, dirEnt))
+        {
+          fileExist = true;
+        }
+      }
+      uint iconId = fallbackIcon;
 
       ImVec2 texCoords = ImVec2(1.0f, 1.0f);
       if (RenderTargetPtr thumb = dirEnt.GetThumbnail())

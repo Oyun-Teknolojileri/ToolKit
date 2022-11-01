@@ -33,6 +33,7 @@ namespace ToolKit
     };
 
     class FolderWindow;
+    typedef std::vector<FolderWindow*> FolderWindowRawPtrArray;
 
     class FolderView
     {
@@ -75,7 +76,8 @@ namespace ToolKit
       bool m_dirty            = false;
       ImVec2 m_contextBtnSize = ImVec2(75, 20);
       String m_filter         = "";
-      std::unordered_map<String, std::function<void(DirectoryEntry*)>>
+      std::unordered_map<String,
+                         std::function<void(DirectoryEntry*, FolderView*)>>
           m_itemActions;
 
       // If you change this value, change the calculaton of thumbnail zoom
@@ -86,13 +88,11 @@ namespace ToolKit
     {
      public:
       explicit FolderWindow(XmlNode* node);
-      FolderWindow();
+      FolderWindow(bool addEngine);
       virtual ~FolderWindow();
       void Show() override;
       Type GetType() const override;
-      void Iterate(const String& path, bool clear, bool addEngine = true);
       void UpdateContent();
-      void AddEntry(const FolderView& view);
       FolderView& GetView(int indx);
       // Returns root level active view, if deep is true,
       // returns sub-active / visible view.
@@ -100,6 +100,7 @@ namespace ToolKit
       void SetActiveView(FolderView* view);
       int Exist(const String& folder);
       bool GetFileEntry(const String& fullPath, DirectoryEntry& entry);
+      void AddEntry(const FolderView& view);
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
@@ -113,9 +114,10 @@ namespace ToolKit
       };
 
       std::unordered_map<String, ViewSettings> m_viewSettings;
-      std::vector<FolderView> m_entiries;
+      std::vector<FolderView> m_entries;
       int m_activeFolder   = -1;
       bool m_showStructure = true;
+      void Iterate(const String& path, bool clear, bool addEngine = true);
     };
 
   } // namespace Editor

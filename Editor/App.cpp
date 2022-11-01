@@ -466,8 +466,12 @@ namespace ToolKit
 
       auto saveFn = []() -> void {
         g_app->GetCurrentScene()->Save(false);
-        g_app->m_statusMsg = "Scene saved";
-        g_app->GetAssetBrowser()->UpdateContent();
+        g_app->m_statusMsg                    = "Scene saved";
+        FolderWindowRawPtrArray folderWindows = g_app->GetAssetBrowsers();
+        for (FolderWindow* folderWnd : folderWindows)
+        {
+          folderWnd->UpdateContent();
+        }
       };
 
       // File existance check.
@@ -797,9 +801,8 @@ namespace ToolKit
         ConsoleWindow* console = new ConsoleWindow();
         m_windows.push_back(console);
 
-        FolderWindow* assetBrowser = new FolderWindow();
+        FolderWindow* assetBrowser = new FolderWindow(true);
         assetBrowser->m_name       = g_assetBrowserStr;
-        assetBrowser->Iterate(ResourcePath(), true);
         m_windows.push_back(assetBrowser);
 
         OutlinerWindow* outliner = new OutlinerWindow();
@@ -1088,9 +1091,10 @@ namespace ToolKit
             mesh = GetMeshManager()->Create<Mesh>(meshFile);
           }
 
-          if (FolderWindow* browser = GetAssetBrowser())
+          FolderWindowRawPtrArray folderWindows = g_app->GetAssetBrowsers();
+          for (FolderWindow* folderWnd : folderWindows)
           {
-            browser->UpdateContent();
+            folderWnd->UpdateContent();
           }
         }
 
@@ -1277,9 +1281,9 @@ namespace ToolKit
       return nullptr;
     }
 
-    FolderWindow* App::GetAssetBrowser()
+    FolderWindowRawPtrArray App::GetAssetBrowsers()
     {
-      return GetWindow<FolderWindow>(g_assetBrowserStr);
+      return GetAllWindows<FolderWindow>(g_assetBrowserStr);
     }
 
     OutlinerWindow* App::GetOutliner()
