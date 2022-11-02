@@ -273,7 +273,7 @@ namespace ToolKit
 
     RenderTargetSettigs EditorViewport::GetRenderTargetSettings()
     {
-      RenderTargetSettigs sets;
+      RenderTargetSettigs sets = Viewport::GetRenderTargetSettings();
       sets.Msaa = Main::GetInstance()->m_engineSettings.Graphics.MSAA;
       return sets;
     }

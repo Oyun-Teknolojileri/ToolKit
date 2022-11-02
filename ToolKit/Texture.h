@@ -118,7 +118,7 @@ namespace ToolKit
     GraphicTypes WarpR          = GraphicTypes::UVRepeat;
     GraphicTypes MinFilter      = GraphicTypes::SampleNearest;
     GraphicTypes MagFilter      = GraphicTypes::SampleNearest;
-    GraphicTypes InternalFormat = GraphicTypes::FormatRGBA;
+    GraphicTypes InternalFormat = GraphicTypes::FormatRGBA16F;
     GraphicTypes Format         = GraphicTypes::FormatRGBA;
     GraphicTypes Type           = GraphicTypes::TypeUnsignedByte;
     Vec4 borderColor            = Vec4(0.0f);
