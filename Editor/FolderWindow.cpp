@@ -156,20 +156,9 @@ namespace ToolKit
           tempDrawEntity.AddComponent(skelComp);
         }
 
-        // Tight fit a frustum to a bounding sphere
-        // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
-        BoundingBox bb = meshComp->GetAABB();
-        Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
-        float r = glm::distance(geoCenter, bb.max) * 1.1f; // 10% safezone.
-        constexpr float a = glm::radians(45.0f);
-        float d           = r / glm::tan(a / 2.0f);
-
-        Vec3 eye = geoCenter + glm::normalize(Vec3(1.0f)) * d;
-
         Camera cam;
-        cam.SetLens(a, thumbSize.x, thumbSize.y);
-        cam.m_node->SetTranslation(eye);
-        cam.GetComponent<DirectionComponent>()->LookAt(geoCenter);
+        cam.SetLens(glm::radians(45.0f), thumbSize.x, thumbSize.y);
+        cam.FocusToBoundingBox(meshComp->GetAABB(), 1.1f);
 
         renderThumbFn(&cam, &tempDrawEntity);
       }

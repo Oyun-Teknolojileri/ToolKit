@@ -45,6 +45,9 @@ namespace ToolKit
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
+    // Tight fit camera frustum to a bounding box with a margin
+    void FocusToBoundingBox(const BoundingBox& bb, float margin);
+
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
 

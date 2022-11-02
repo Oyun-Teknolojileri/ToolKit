@@ -1531,13 +1531,13 @@ namespace ToolKit
 
     void PropInspector::DispatchSignals() const
     {
-      ModShortCutSignals({SDL_SCANCODE_DELETE,
-                          SDL_SCANCODE_D,
-                          SDL_SCANCODE_F,
-                          SDL_SCANCODE_R,
-                          SDL_SCANCODE_G,
-                          SDL_SCANCODE_B,
-                          SDL_SCANCODE_S});
+      ModShortCutSignals({ImGuiKey_Delete,
+                          ImGuiKey_D,
+                          ImGuiKey_F,
+                          ImGuiKey_R,
+                          ImGuiKey_G,
+                          ImGuiKey_B,
+                          ImGuiKey_S});
     }
 
   } // namespace Editor

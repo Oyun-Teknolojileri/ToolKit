@@ -724,6 +724,26 @@ namespace ToolKit
       GetSceneManager()->SetCurrentScene(scene);
     }
 
+    void App::FocusEntity(Entity* entity)
+    {
+      Camera* cam = nullptr;
+      if (Viewport* viewport = GetActiveViewport())
+      {
+        cam = viewport->GetCamera();
+      }
+      else if (Viewport* viewport = GetViewport(g_3dViewport))
+      {
+        cam = viewport->GetCamera();
+      }
+      else
+      {
+        m_statusMsg = "No 3D viewport !";
+        return;
+      }
+
+      cam->FocusToBoundingBox(entity->GetAABB(true), 1.1f);
+    }
+
     int App::ExecSysCommand(StringView cmd,
                             bool async,
                             bool showConsole,

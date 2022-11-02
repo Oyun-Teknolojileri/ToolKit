@@ -256,7 +256,7 @@ namespace ToolKit
 
     void MaterialInspector::DispatchSignals() const
     {
-      ModShortCutSignals({SDL_SCANCODE_DELETE});
+      ModShortCutSignals({ImGuiKey_Delete});
     }
 
   } // namespace Editor

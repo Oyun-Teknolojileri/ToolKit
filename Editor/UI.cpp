@@ -1368,13 +1368,15 @@ namespace ToolKit
 
       if (ImGui::IsKeyPressed(ImGuiKey_F, false) && !Exist(mask, ImGuiKey_F))
       {
-        if (Window* wnd = g_app->GetOutliner())
+        if (Entity* ntt = currSecne->GetCurrentSelection())
         {
-          if (Entity* ntt = currSecne->GetCurrentSelection())
+          if (Window* wnd = g_app->GetOutliner())
           {
             OutlinerWindow* outliner = static_cast<OutlinerWindow*>(wnd);
             outliner->Focus(ntt);
           }
+          // Focus the object in the scene
+          g_app->FocusEntity(ntt);
         }
       }
 

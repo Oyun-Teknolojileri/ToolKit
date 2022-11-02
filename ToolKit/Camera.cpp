@@ -152,6 +152,22 @@ namespace ToolKit
     }
   }
 
+  // https://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene
+  void Camera::FocusToBoundingBox(const BoundingBox& bb, float margin)
+  {
+    if (m_ortographic)
+    {
+      return;
+    }
+
+    Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
+    float r        = glm::distance(geoCenter, bb.max) * margin;
+    float d        = r / glm::tan(m_fov / 2.0f);
+    Vec3 eye       = geoCenter + glm::normalize(Vec3(1.0f)) * d;
+    m_node->SetTranslation(eye, TransformationSpace::TS_WORLD);
+    GetComponent<DirectionComponent>()->LookAt(geoCenter);
+  }
+
   Entity* Camera::CopyTo(Entity* copyTo) const
   {
     WeakCopy(copyTo, false);

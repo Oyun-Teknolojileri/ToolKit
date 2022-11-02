@@ -48,6 +48,7 @@ namespace ToolKit
       void CompilePlugin();
       EditorScenePtr GetCurrentScene();
       void SetCurrentScene(const EditorScenePtr& scene);
+      void FocusEntity(Entity* entity);
 
       /**
        * Executes the given system command.
