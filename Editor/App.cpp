@@ -556,6 +556,8 @@ namespace ToolKit
       std::filesystem::create_directories(
           ConcatPaths({fullPath, "Resources", "Fonts"}));
       std::filesystem::create_directories(
+          ConcatPaths({fullPath, "Resources", "Layers"}));
+      std::filesystem::create_directories(
           ConcatPaths({fullPath, "Resources", "Materials"}));
       std::filesystem::create_directories(
           ConcatPaths({fullPath, "Resources", "Meshes"}));

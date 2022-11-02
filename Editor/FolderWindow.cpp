@@ -631,6 +631,10 @@ namespace ToolKit
       {
         commands.push_back("Scene/Create");
       }
+      else if (path.find(LayerPath("")) != String::npos)
+      {
+        commands.push_back("Layer/Create");
+      }
 
       if (ImGui::BeginPopupContextItem())
       {
@@ -883,10 +887,9 @@ namespace ToolKit
         }
       };
 
-      // Scene/Create.
-      m_itemActions["Scene/Create"] =
-          [getSameViewsFn](DirectoryEntry* entry,
-                           FolderView* thisView) -> void {
+      auto sceneCreateFn = [getSameViewsFn](DirectoryEntry* entry,
+                                            FolderView* thisView,
+                                            const String& extention) -> void {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
         {
@@ -900,8 +903,8 @@ namespace ToolKit
           inputWnd->m_inputVal   = "New Scene";
           inputWnd->m_inputLabel = "Name";
           inputWnd->m_hint       = "New scene name...";
-          inputWnd->m_taskFn     = [views](const String& val) {
-            String file = ConcatPaths({views[0]->m_path, val + SCENE});
+          inputWnd->m_taskFn     = [views, extention](const String& val) {
+            String file = ConcatPaths({views[0]->m_path, val + extention});
             if (CheckFile(file))
             {
               g_app->GetConsole()->AddLog(
@@ -920,6 +923,18 @@ namespace ToolKit
           };
           ImGui::CloseCurrentPopup();
         }
+      };
+
+      // Scene/Create.
+      m_itemActions["Scene/Create"] =
+          [sceneCreateFn](DirectoryEntry* entry, FolderView* thisView) -> void {
+        sceneCreateFn(entry, thisView, SCENE);
+      };
+
+      // Layer/Create.
+      m_itemActions["Layer/Create"] =
+          [sceneCreateFn](DirectoryEntry* entry, FolderView* thisView) -> void {
+        sceneCreateFn(entry, thisView, LAYER);
       };
 
       // Material/Create.

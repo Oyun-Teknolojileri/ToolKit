@@ -410,6 +410,11 @@ namespace ToolKit
     return ProcessPath(file, "Prefabs", def);
   }
 
+  String LayerPath(const String& file, bool def)
+  {
+    return ProcessPath(file, "Layers", def);
+  }
+
   void EngineSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     assert(false && "Not implemented");
