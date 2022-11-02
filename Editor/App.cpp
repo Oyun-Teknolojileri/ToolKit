@@ -330,16 +330,7 @@ namespace ToolKit
             }
             break;
             case LightingOnly: {
-
-              // NOTE:
-              // No transparent rendering
-              // Always renders with AO open
-
-              lightModeMat->m_fragmentShader =
-                  GetShaderManager()->Create<Shader>(
-                      ShaderPath("ToolKit/lightingOnly.shader"));
-              lightModeMat->Init();
-              m_renderer->m_overrideMat = lightModeMat;
+              m_renderer->m_renderOnlyLighting = true;
             }
             break;
             case Unlit: {
@@ -424,6 +415,8 @@ namespace ToolKit
           }
         }
       }
+
+      m_renderer->m_renderOnlyLighting = false;
 
       // Viewports set their own render target.
       // Set the app framebuffer back for UI.

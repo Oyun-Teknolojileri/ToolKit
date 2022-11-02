@@ -5,12 +5,14 @@
 	<include name = "camera.shader" />
 	<include name = "AO.shader" />
 	<uniform name = "CamData" />
+	<uniform name = "LightingOnly" />
 	<source>
 	<!--
 		#version 300 es
 		precision highp float;
 
 		uniform sampler2D s_texture0;
+		uniform int LightingOnly;
 
 		in vec3 v_pos;
 		in vec3 v_normal;
@@ -23,6 +25,10 @@
 			vec4 objectColor = texture(s_texture0, v_texture);
 			if(objectColor.a < 0.1f){
 				discard;
+			}
+			if (LightingOnly == 1)
+			{
+				objectColor.xyz = vec3(1.0);
 			}
 
 			vec3 n = normalize(v_normal);

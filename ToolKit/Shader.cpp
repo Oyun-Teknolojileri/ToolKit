@@ -207,6 +207,9 @@ namespace ToolKit
       case Uniform::IBL_ROTATION:
         name = "IblRotation";
         break;
+      case Uniform::LIGHTING_ONLY:
+        name = "LightingOnly";
+        break;
       default:
         assert(false && "unknown uniform");
         break;
@@ -334,6 +337,10 @@ namespace ToolKit
         else if (strcmp("IblRotation", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::IBL_ROTATION);
+        }
+        else if (strcmp("LightingOnly", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::LIGHTING_ONLY);
         }
         else
         {

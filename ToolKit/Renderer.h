@@ -175,6 +175,8 @@ namespace ToolKit
     GridParams m_gridParams;
     Camera* m_uiCamera = nullptr;
 
+    bool m_renderOnlyLighting = false;
+
    private:
     uint m_currentProgram = 0;
     Mat4 m_project;

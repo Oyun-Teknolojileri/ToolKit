@@ -1006,8 +1006,7 @@ namespace ToolKit
     }
 
     RenderTarget rt(dest.get());
-    m_copyFb->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                  &rt);
+    m_copyFb->SetAttachment(Framebuffer::Attachment::ColorAttachment0, &rt);
 
     // Set and clear fb
     Framebuffer* lastFb = m_framebuffer;
@@ -1561,7 +1560,15 @@ namespace ToolKit
           }
 
           GLint loc = glGetUniformLocation(program->m_handle, "Color");
-          glUniform4fv(loc, 1, &color.x);
+          if (m_renderOnlyLighting)
+          {
+            const Vec4 overrideColor = Vec4(1.0f, 1.0f, 1.0f, color.a);
+            glUniform4fv(loc, 1, &overrideColor.x);
+          }
+          else
+          {
+            glUniform4fv(loc, 1, &color.x);
+          }
         }
         break;
         case Uniform::FRAME_COUNT: {
@@ -1660,6 +1667,11 @@ namespace ToolKit
           GLint loc = glGetUniformLocation(program->m_handle, "IblRotation");
 
           glUniformMatrix4fv(loc, 1, false, &m_iblRotation[0][0]);
+        }
+        break;
+        case Uniform::LIGHTING_ONLY: {
+          GLint loc = glGetUniformLocation(program->m_handle, "LightingOnly");
+          glUniform1i(loc, m_renderOnlyLighting ? 1 : 0);
         }
         break;
         default:

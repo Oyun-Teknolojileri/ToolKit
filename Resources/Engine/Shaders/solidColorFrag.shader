@@ -6,6 +6,7 @@
 	<include name = "AO.shader" />
 	<uniform name = "CamData" />
 	<uniform name = "Color" />
+
 	<source>
 	<!--
 		#version 300 es
