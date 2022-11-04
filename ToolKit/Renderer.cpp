@@ -57,12 +57,7 @@ namespace ToolKit
       sky->Init();
     }
 
-    RenderEntities(entities, cam, viewport, editorLights);
-
-    if (!cam->IsOrtographic())
-    {
-      RenderSky(sky, cam);
-    }
+    RenderEntities(entities, cam, viewport, editorLights, sky);
   }
 
   void Renderer::GenerateKernelAndNoiseForSSAOSamples(Vec3Array& ssaoKernel,
@@ -703,7 +698,8 @@ namespace ToolKit
   void Renderer::RenderEntities(EntityRawPtrArray& entities,
                                 Camera* cam,
                                 Viewport* viewport,
-                                const LightRawPtrArray& lights)
+                                const LightRawPtrArray& lights,
+                                SkyBase* sky)
   {
     GetEnvironmentLightEntities(entities);
 
@@ -721,6 +717,11 @@ namespace ToolKit
     GenerateSSAOTexture(entities, viewport);
 
     SetViewport(viewport);
+
+    if (sky && !cam->IsOrtographic())
+    {
+      RenderSky(sky, cam);
+    }
 
     EntityRawPtrArray blendedEntities;
     GetTransparentEntites(entities, blendedEntities);

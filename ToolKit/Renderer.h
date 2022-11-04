@@ -76,7 +76,8 @@ namespace ToolKit
         EntityRawPtrArray& entities,
         Camera* cam,
         Viewport* viewport,
-        const LightRawPtrArray& editorLights = LightRawPtrArray());
+        const LightRawPtrArray& editorLights = LightRawPtrArray(),
+        SkyBase* sky                         = nullptr);
 
     /**
      * Removes the entites that are outside of the camera.
