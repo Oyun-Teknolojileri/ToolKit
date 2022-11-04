@@ -74,8 +74,8 @@ namespace ToolKit
       if (meshCmps.empty())
       {
         // Unit aabb.
-        aabb.min = Vec3(0.5f, 0.5f, 0.5f);
-        aabb.max = Vec3(-0.5f, -0.5f, -0.5f);
+        aabb.max = Vec3(0.5f, 0.5f, 0.5f);
+        aabb.min = Vec3(-0.5f, -0.5f, -0.5f);
       }
       else
       {

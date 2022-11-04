@@ -658,24 +658,23 @@ namespace ToolKit
 
     void StateTransformTo::Scale(Entity* ntt)
     {
-      Vec3 scaleAXISes[7];
-      scaleAXISes[(uint) AxisLabel::X]   = X_AXIS;
-      scaleAXISes[(uint) AxisLabel::Y]   = Y_AXIS;
-      scaleAXISes[(uint) AxisLabel::Z]   = Z_AXIS;
-      scaleAXISes[(uint) AxisLabel::XY]  = XY_AXIS;
-      scaleAXISes[(uint) AxisLabel::YZ]  = YZ_AXIS;
-      scaleAXISes[(uint) AxisLabel::ZX]  = ZX_AXIS;
-      scaleAXISes[(uint) AxisLabel::XYZ] = Vec3(1);
+      Vec3 scaleAxes[7];
+      scaleAxes[(int) AxisLabel::X]   = X_AXIS;
+      scaleAxes[(int) AxisLabel::Y]   = Y_AXIS;
+      scaleAxes[(int) AxisLabel::Z]   = Z_AXIS;
+      scaleAxes[(int) AxisLabel::XY]  = XY_AXIS;
+      scaleAxes[(int) AxisLabel::YZ]  = YZ_AXIS;
+      scaleAxes[(int) AxisLabel::ZX]  = ZX_AXIS;
+      scaleAxes[(int) AxisLabel::XYZ] = Vec3(1.0f);
 
-      int axisIndx  = static_cast<int>(m_gizmo->GetGrabbedAxis());
-      Vec3 aabbSize = ntt->GetAABB().max - ntt->GetAABB().min;
-      Vec3 axis     = scaleAXISes[axisIndx];
+      BoundingBox bb = ntt->GetAABB();
+      Vec3 aabbSize  = bb.max - bb.min;
+
+      int axisIndex = int(m_gizmo->GetGrabbedAxis());
+      Vec3 axis     = scaleAxes[axisIndex];
 
       aabbSize *= axis;
-      for (uint i = 0; i < 3; i++)
-      {
-        aabbSize[i] = glm::max(aabbSize[i], 0.0001f);
-      }
+      aabbSize   = glm::max(aabbSize, 0.0001f);
       Vec3 delta = Vec3(glm::length(m_delta) / glm::length(aabbSize));
 
       delta *= glm::normalize(axis);
@@ -710,7 +709,30 @@ namespace ToolKit
       }
 
       // Transfer world space delta to local axis.
-      delta *= glm::sign(glm::dot(m_delta, axis));
+      if (axisIndex <= (int) AxisLabel::Z)
+      {
+        Vec3 axisDir = m_gizmo->m_normalVectors[axisIndex % 3];
+        delta *= glm::sign(glm::dot(m_delta, axisDir));
+      }
+      else
+      {
+        // Calc. major axis sign.
+        Mat3& axes     = m_gizmo->m_normalVectors;
+        float mas      = 1.0f;
+        float maxPrj   = -1.0f;
+        for (int i = 0; i < 2; i++)
+        {
+          float prj = glm::dot(m_delta, axes[i]);
+          float abPrj = glm::abs(prj);
+          if (maxPrj < abPrj)
+          {
+            maxPrj = abPrj;
+            mas    = glm::sign(prj);
+          }
+        }
+
+        delta *= mas;
+      }
 
       if (g_app->m_snapsEnabled)
       {
