@@ -1041,6 +1041,18 @@ namespace ToolKit
     rt.m_initiated = false;
   }
 
+  void Renderer::ToggleBlending(bool blending)
+  {
+    if (blending)
+    {
+      glEnable(GL_BLEND);
+    }
+    else
+    {
+      glDisable(GL_BLEND);
+    }
+  }
+
   void Renderer::GetEnvironmentLightEntities(EntityRawPtrArray entities)
   {
     // Find entities which have environment component
@@ -1254,8 +1266,12 @@ namespace ToolKit
             {
               MaterialPtr entityMat = GetRenderMaterial(ntt);
               m_overrideMat->SetRenderState(entityMat->GetRenderState());
+              m_overrideMat->UnInit();
               m_overrideMat->m_alpha          = entityMat->m_alpha;
               m_overrideMat->m_diffuseTexture = entityMat->m_diffuseTexture;
+              m_overrideMat->GetRenderState()->blendFunction =
+                  BlendFunction::NONE;
+              m_overrideMat->Init();
               Render(ntt, m_shadowMapCamera);
             }
           }
@@ -1652,15 +1668,7 @@ namespace ToolKit
             break;
 
           GLint loc = glGetUniformLocation(program->m_handle, "colorAlpha");
-          if (m_mat->GetRenderState()->blendFunction ==
-              BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
-          {
-            glUniform1f(loc, m_mat->m_alpha);
-          }
-          else
-          {
-            glUniform1f(loc, 1.0f);
-          }
+          glUniform1f(loc, m_mat->m_alpha);
         }
         break;
         case Uniform::USE_AO: {

@@ -36,7 +36,7 @@ namespace ToolKit
     ShaderPtr m_vertexShader;
     ShaderPtr m_fragmentShader;
     Vec3 m_color;
-    float m_alpha;
+    float m_alpha = 1.0f;
 
    private:
     RenderState m_renderState;

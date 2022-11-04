@@ -82,15 +82,15 @@ namespace ToolKit
     const RenderTargetSettigs settings = {0,
                                           true,
                                           GraphicTypes::Target2D,
-                                          GraphicTypes::UVClampToBorder,
-                                          GraphicTypes::UVClampToBorder,
-                                          GraphicTypes::UVClampToBorder,
+                                          GraphicTypes::UVClampToEdge,
+                                          GraphicTypes::UVClampToEdge,
+                                          GraphicTypes::UVClampToEdge,
                                           GraphicTypes::SampleLinear,
                                           GraphicTypes::SampleLinear,
                                           GraphicTypes::FormatRG32F,
                                           GraphicTypes::FormatRG,
                                           GraphicTypes::TypeFloat,
-                                          Vec4(FLT_MAX)};
+                                          Vec4(0.0f)};
     m_shadowRt =
         std::make_shared<RenderTarget>((int) res.x, (int) res.y, settings);
     m_shadowRt->Init();
@@ -346,7 +346,7 @@ namespace ToolKit
                                           GraphicTypes::FormatRG32F,
                                           GraphicTypes::FormatRG,
                                           GraphicTypes::TypeFloat,
-                                          Vec4(FLT_MAX)};
+                                          Vec4(0.0f)};
     m_shadowRt =
         std::make_shared<RenderTarget>((int) res.x, (int) res.y, settings);
     m_shadowRt->Init();

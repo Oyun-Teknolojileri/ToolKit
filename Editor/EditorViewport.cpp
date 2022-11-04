@@ -338,10 +338,23 @@ namespace ToolKit
                     ->m_textureId;
           }
 
+          ImDrawList* drawList = ImGui::GetWindowDrawList();
+          drawList->AddCallback(
+              [](const ImDrawList* parentList, const ImDrawCmd* cmd) {
+                GetRenderer()->ToggleBlending(false);
+              },
+              nullptr);
+
           ImGui::Image(ConvertUIntImGuiTexture(texId),
                        m_wndContentAreaSize,
                        Vec2(0.0f, 0.0f),
                        Vec2(1.0f, -1.0f));
+
+          drawList->AddCallback(
+              [](const ImDrawList* parentList, const ImDrawCmd* cmd) {
+                GetRenderer()->ToggleBlending(true);
+              },
+              nullptr);
 
           if (IsActive())
           {

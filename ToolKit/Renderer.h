@@ -69,6 +69,8 @@ namespace ToolKit
 
     void CopyTexture(TexturePtr source, TexturePtr dest);
 
+    void ToggleBlending(bool blending);
+
    private:
     void RenderEntities(
         EntityRawPtrArray& entities,
