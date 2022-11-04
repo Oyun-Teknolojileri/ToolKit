@@ -233,7 +233,9 @@ namespace ToolKit
       {
         // Update scene lights for the current view.
         Camera* viewCam = viewport->GetCamera();
-        m_lightMaster->OrphanSelf(false);
+
+        m_lightMaster->OrphanSelf();
+        viewCam->m_node->AddChild(m_lightMaster);
 
         // PlayWindow is drawn on perspective. Thus, skip perspective.
         if (m_gameMod != GameMod::Stop && !m_simulatorSettings.Windowed)
@@ -761,6 +763,8 @@ namespace ToolKit
 
     void App::ResetUI()
     {
+      m_lightMaster->OrphanSelf();
+
       DeleteWindows();
 
       String defEditSet = ConcatPaths({ConfigPath(), g_editorSettingsFile});
