@@ -119,6 +119,12 @@ namespace ToolKit
       static void EndCenteredTextButton();
       static void CenteredText(const String& text);
 
+      /**
+       * Can be used to see if ui is using the keyboard for input. Most likely
+       * usage is to check if user typing text to an input field.
+       */
+      static bool IsKeyboardCaptured();
+
      public:
       static bool m_showNewSceneWindow;
       static bool m_imguiSampleWindow;

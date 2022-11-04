@@ -1149,6 +1149,11 @@ namespace ToolKit
       ImGui::Text(text.c_str());
     }
 
+    bool UI::IsKeyboardCaptured()
+    {
+      return ImGui::GetIO().WantCaptureKeyboard;
+    }
+
     Window::Window()
     {
       m_size = UVec2(640, 480);
@@ -1315,7 +1320,7 @@ namespace ToolKit
 
     void Window::ModShortCutSignals(const IntArray& mask) const
     {
-      if (!CanDispatchSignals())
+      if (!CanDispatchSignals() || UI::IsKeyboardCaptured())
       {
         return;
       }
@@ -1393,6 +1398,31 @@ namespace ToolKit
           {
             ActionManager::GetInstance()->Undo();
           }
+        }
+      }
+
+      if (ImGui::IsKeyPressed(ImGuiKey_Escape, false))
+      {
+        g_app->GetCurrentScene()->ClearSelection();
+      }
+
+      if (ImGui::IsKeyDown(ImGuiKey_ModCtrl) &&
+          ImGui::IsKeyPressed(ImGuiKey_S, false))
+      {
+        g_app->GetCurrentScene()->ClearSelection();
+        g_app->OnSaveScene();
+      }
+
+      if (ImGui::IsKeyPressed(ImGuiKey_F5, false))
+      {
+        if (g_app->m_gameMod == GameMod::Playing ||
+            g_app->m_gameMod == GameMod::Paused)
+        {
+          g_app->SetGameMod(GameMod::Stop);
+        }
+        else
+        {
+          g_app->SetGameMod(GameMod::Playing);
         }
       }
     }

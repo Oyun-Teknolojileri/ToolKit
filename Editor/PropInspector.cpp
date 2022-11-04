@@ -1531,13 +1531,7 @@ namespace ToolKit
 
     void PropInspector::DispatchSignals() const
     {
-      ModShortCutSignals({ImGuiKey_Delete,
-                          ImGuiKey_D,
-                          ImGuiKey_F,
-                          ImGuiKey_R,
-                          ImGuiKey_G,
-                          ImGuiKey_B,
-                          ImGuiKey_S});
+      ModShortCutSignals();
     }
 
   } // namespace Editor

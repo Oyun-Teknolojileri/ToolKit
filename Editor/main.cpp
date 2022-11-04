@@ -262,9 +262,6 @@ namespace ToolKit
 
     void ProcessEvent(const SDL_Event& e)
     {
-      //  If message doesn't meant to be processed in imgui, set this to true.
-      bool skipImgui = false;
-
       if (e.type == SDL_WINDOWEVENT)
       {
         if (e.window.event == SDL_WINDOWEVENT_RESIZED)
@@ -294,44 +291,7 @@ namespace ToolKit
         g_app->OnQuit();
       }
 
-      if (e.type == SDL_KEYDOWN)
-      {
-        switch (e.key.keysym.sym)
-        {
-        case SDLK_F5:
-          if (g_app->m_gameMod == GameMod::Playing ||
-              g_app->m_gameMod == GameMod::Paused)
-          {
-            g_app->SetGameMod(GameMod::Stop);
-          }
-          else
-          {
-            g_app->SetGameMod(GameMod::Playing);
-          }
-          break;
-        case SDLK_ESCAPE:
-          if (g_app->m_gameMod != GameMod::Playing &&
-              g_app->m_gameMod != GameMod::Paused)
-          {
-            g_app->OnQuit();
-          }
-          break;
-        case SDLK_s:
-          if (SDL_GetModState() & KMOD_LCTRL)
-          {
-            g_app->OnSaveScene();
-            skipImgui = true;
-          }
-          break;
-        default:
-          break;
-        }
-      }
-
-      if (!skipImgui)
-      {
-        ImGui_ImplSDL2_ProcessEvent(&e);
-      }
+      ImGui_ImplSDL2_ProcessEvent(&e);
     }
 
     struct Timing
