@@ -184,6 +184,12 @@ namespace ToolKit
     {
       if (ntt->IsDrawable() && ntt->GetVisibleVal())
       {
+        MaterialPtr mat = GetRenderMaterial(ntt);
+        if (mat && !mat->GetRenderState()->AOInUse)
+        {
+          continue;
+        }
+
         MaterialPtr entityMat     = GetRenderMaterial(ntt);
         m_aoMat->m_alpha          = entityMat->m_alpha;
         m_aoMat->m_diffuseTexture = entityMat->m_diffuseTexture;
