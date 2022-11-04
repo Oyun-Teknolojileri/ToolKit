@@ -85,6 +85,7 @@ namespace ToolKit
     TexturePtr UI::m_prefabIcn;
     TexturePtr UI::m_buildIcn;
     TexturePtr UI::m_addIcon;
+    UI::AnchorPresetImages UI::m_anchorPresetIcons;
 
     void UI::Init()
     {
@@ -301,6 +302,20 @@ namespace ToolKit
       m_addIcon = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/add.png", true));
       m_addIcon->Init();
+
+      for (uint anchorPresentIndx = 0;
+           anchorPresentIndx < AnchorPresetImages::presetCount;
+           anchorPresentIndx++)
+      {
+        TexturePtr& preset =
+            m_anchorPresetIcons.m_presetImages[anchorPresentIndx];
+        preset = GetTextureManager()->Create<Texture>(TexturePath(
+            "Icons/Anchor Presets/" +
+                String(m_anchorPresetIcons.m_presetNames[anchorPresentIndx]) +
+                ".png",
+            true));
+        preset->Init();
+      }
     }
 
     void UI::InitTheme()

@@ -204,6 +204,29 @@ namespace ToolKit
       static TexturePtr m_prefabIcn;
       static TexturePtr m_buildIcn;
       static TexturePtr m_addIcon;
+
+      struct AnchorPresetImages
+      {
+        static constexpr uint presetCount      = 16;
+        const char* m_presetNames[presetCount] = {"Top Left",
+                                                  "Top Middle",
+                                                  "Top Right",
+                                                  "Top Horizontal",
+                                                  "Middle Left",
+                                                  "Middle Middle",
+                                                  "Middle Right",
+                                                  "Middle Horizontal",
+                                                  "Bottom Left",
+                                                  "Bottom Middle",
+                                                  "Bottom Right",
+                                                  "Bottom Horizontal",
+                                                  "Vertical Left",
+                                                  "Vertical Middle",
+                                                  "Vertical Right",
+                                                  "Whole"};
+        TexturePtr m_presetImages[presetCount] = {};
+      };
+      static AnchorPresetImages m_anchorPresetIcons;
     };
 
   } // namespace Editor

@@ -69,6 +69,7 @@ namespace ToolKit
           ComponentPtr& comp, std::function<bool(const String&)> showCompFunc);
       void ShowAABBOverrideComponent(
           ComponentPtr& comp, std::function<bool(const String&)> showCompFunc);
+      void ShowAnchorSettings();
     };
 
     class PropInspector : public Window

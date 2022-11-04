@@ -696,6 +696,230 @@ namespace ToolKit
     // EntityView
     //////////////////////////////////////////////////////////////////////////
 
+    void EntityView::ShowAnchorSettings()
+    {
+      Surface* surface = static_cast<Surface*>(m_entity);
+      Canvas* canvasPanel =
+          static_cast<Canvas*>(surface->m_node->m_parent->m_entity);
+
+      if (ImGui::CollapsingHeader("Anchor", ImGuiTreeNodeFlags_DefaultOpen))
+      {
+        if (ImGui::Button("Presets"))
+        {
+          ImGui::OpenPopup(ImGui::GetID("Preset Popup"));
+        }
+
+        if (ImGui::BeginPopup("Preset Popup"))
+        {
+          if (ImGui::BeginTable("Anchor Preset Table", 4))
+          {
+            for (uint itemIndx = 0;
+                 itemIndx < UI::AnchorPresetImages::presetCount;
+                 itemIndx++)
+            {
+              ImGui::TableNextColumn();
+              ImGui::PushID(itemIndx);
+              if (ImGui::ImageButton((ImTextureID) UI::m_anchorPresetIcons
+                                         .m_presetImages[itemIndx]
+                                         ->m_textureId,
+                                     Vec2(32, 32)))
+              {
+                auto changeAnchor = [surface](uint anchorPreset) {
+                  auto gatherAtLeft = [surface]() {
+                    surface->m_anchorParams.m_anchorRatios[0] = 0.0f;
+                    surface->m_anchorParams.m_anchorRatios[1] = 1.0f;
+                  };
+                  auto gatherAtRight = [surface]() {
+                    surface->m_anchorParams.m_anchorRatios[0] = 1.0f;
+                    surface->m_anchorParams.m_anchorRatios[1] = 0.0f;
+                  };
+                  auto gatherAtMiddle = [surface](bool horizontal) {
+                    surface->m_anchorParams
+                        .m_anchorRatios[(horizontal) ? 0 : 2] = 0.5f;
+                    surface->m_anchorParams
+                        .m_anchorRatios[(horizontal) ? 1 : 3] = 0.5f;
+                  };
+                  auto gatherAtTop = [surface]() {
+                    surface->m_anchorParams.m_anchorRatios[2] = 0.0f;
+                    surface->m_anchorParams.m_anchorRatios[3] = 1.0f;
+                  };
+                  auto gatherAtBottom = [surface]() {
+                    surface->m_anchorParams.m_anchorRatios[2] = 1.0f;
+                    surface->m_anchorParams.m_anchorRatios[3] = 0.0f;
+                  };
+                  auto scatterToSide = [surface](bool horizontal) {
+                    surface->m_anchorParams
+                        .m_anchorRatios[(horizontal) ? 0 : 2] = 0.0f;
+                    surface->m_anchorParams
+                        .m_anchorRatios[(horizontal) ? 1 : 3] = 0.0f;
+                  };
+
+                  uint subMode  = anchorPreset % 4;
+                  uint mainMode = (anchorPreset - subMode) / 4;
+                  // Horizontal Modes
+                  if (mainMode < 3)
+                  {
+                    // 0: Left, 1: Middle, 2: Right, 3: Side-to-Side
+                    uint anchorHorizontalPos = subMode;
+                    // 0: Top, 1: Middle, 2: Bottom
+                    uint anchorVerticalPos = mainMode;
+                    switch (anchorHorizontalPos)
+                    {
+                    case 0:
+                      gatherAtLeft();
+                      break;
+                    case 1:
+                      gatherAtMiddle(true);
+                      break;
+                    case 2:
+                      gatherAtRight();
+                      break;
+                    case 3:
+                      scatterToSide(true);
+                      break;
+                    default:
+                      assert(0 && "This shouldn't happen!");
+                    }
+                    switch (anchorVerticalPos)
+                    {
+                    case 0:
+                      gatherAtTop();
+                      break;
+                    case 1:
+                      gatherAtMiddle(false);
+                      break;
+                    case 2:
+                      gatherAtBottom();
+                      break;
+                    default:
+                      assert(0 && "This shouldn't happen!");
+                    }
+                  }
+                  // Vertical Modes
+                  else if (mainMode == 3)
+                  {
+                    // 0: Left, 1: Middle, 2: Right, 3: Whole
+                    uint anchorHorizontalPos = subMode;
+                    scatterToSide(false);
+                    switch (anchorHorizontalPos)
+                    {
+                    case 0:
+                      gatherAtLeft();
+                      break;
+                    case 1:
+                      gatherAtMiddle(true);
+                      break;
+                    case 2:
+                      gatherAtRight();
+                      break;
+                    case 3:
+                      scatterToSide(true);
+                      break;
+                    default:
+                      assert(0 && "This shouldn't happen!");
+                    }
+                  }
+                };
+
+                changeAnchor(itemIndx);
+                ImGui::CloseCurrentPopup();
+              }
+              ImGui::PopID();
+            }
+
+            ImGui::EndTable();
+          }
+
+          ImGui::EndPopup();
+        }
+
+        const Vec2 size = {canvasPanel->GetAABB(true).GetWidth(),
+                           canvasPanel->GetAABB(true).GetHeight()};
+        float res[]     = {size.x, size.y};
+        if (ImGui::InputFloat2("New resolution:", res))
+        {
+          canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
+        }
+
+        if (((surface->m_anchorParams.m_anchorRatios[0] +
+              surface->m_anchorParams.m_anchorRatios[1]) > 0.99f) &&
+            ((surface->m_anchorParams.m_anchorRatios[2] +
+              surface->m_anchorParams.m_anchorRatios[3]) > 0.99f))
+        {
+          float position[2];
+          Vec3 pos;
+          float w = 0, h = 0;
+
+          {
+            pos = canvasPanel->m_node->GetTranslation(
+                TransformationSpace::TS_WORLD);
+            w = canvasPanel->GetSizeVal().x;
+            h = canvasPanel->GetSizeVal().y;
+            pos -= Vec3(w / 2.f, h / 2.f, 0.f);
+            const Vec3 surfacePos =
+                surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            position[0] =
+                surfacePos.x -
+                (pos.x + w * surface->m_anchorParams.m_anchorRatios[0]);
+            position[1] =
+                surfacePos.y -
+                (pos.y + h * surface->m_anchorParams.m_anchorRatios[2]);
+          }
+          ImGui::DragFloat("Position X", &position[0], 0.25f, pos.x, pos.x + w);
+          ImGui::DragFloat("Position Y", &position[1], 0.25f, pos.y, pos.y + h);
+        }
+        else
+        {
+          ImGui::DragFloat2("Horizontal",
+                            &surface->m_anchorParams.m_anchorRatios[0],
+                            0.25f,
+                            0.f,
+                            1.f);
+
+          ImGui::DragFloat2("Vertical",
+                            &surface->m_anchorParams.m_anchorRatios[2],
+                            0.25f,
+                            0.f,
+                            1.f);
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+          ImGui::DragFloat(("Ratio " + std::to_string(i)).c_str(),
+                           &surface->m_anchorParams.m_anchorRatios[i],
+                           0.25f,
+                           0,
+                           1);
+        }
+
+        if (((surface->m_anchorParams.m_anchorRatios[2] +
+              surface->m_anchorParams.m_anchorRatios[3]) < 0.99f))
+        {
+          if (ImGui::DragFloat("Offset Top",
+                               &surface->m_anchorParams.m_offsets[0]) ||
+              ImGui::DragFloat("Offset Bottom",
+                               &surface->m_anchorParams.m_offsets[1]))
+          {
+            canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
+          }
+        }
+
+        if (((surface->m_anchorParams.m_anchorRatios[0] +
+              surface->m_anchorParams.m_anchorRatios[1]) < 0.99f))
+        {
+          if (ImGui::DragFloat("Offset Left",
+                               &surface->m_anchorParams.m_offsets[2]) ||
+              ImGui::DragFloat("Offset Right",
+                               &surface->m_anchorParams.m_offsets[3]))
+          {
+            canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
+          }
+        }
+
+        ImGui::Separator();
+      }
+    }
+
     void EntityView::Show()
     {
       if (m_entity == nullptr)
@@ -758,101 +982,7 @@ namespace ToolKit
           m_entity->m_node->m_parent->m_entity->GetType() ==
               EntityType::Entity_Canvas)
       {
-        Surface* surface = static_cast<Surface*>(m_entity);
-        Canvas* canvasPanel =
-            static_cast<Canvas*>(surface->m_node->m_parent->m_entity);
-
-        if (ImGui::CollapsingHeader("Anchor", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-          UI::ToggleButton("Anchor", {50, 20}, true);
-
-          const Vec2 size = {canvasPanel->GetAABB(true).GetWidth(),
-                             canvasPanel->GetAABB(true).GetHeight()};
-          float res[]     = {size.x, size.y};
-          if (ImGui::InputFloat2("New resolution:", res))
-          {
-            canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
-          }
-
-          if (((surface->m_anchorParams.m_anchorRatios[0] +
-                surface->m_anchorParams.m_anchorRatios[1]) > 0.99f) &&
-              ((surface->m_anchorParams.m_anchorRatios[2] +
-                surface->m_anchorParams.m_anchorRatios[3]) > 0.99f))
-          {
-            float position[2];
-            Vec3 pos;
-            float w = 0, h = 0;
-
-            {
-              pos = canvasPanel->m_node->GetTranslation(
-                  TransformationSpace::TS_WORLD);
-              w = canvasPanel->GetSizeVal().x;
-              h = canvasPanel->GetSizeVal().y;
-              pos -= Vec3(w / 2.f, h / 2.f, 0.f);
-              const Vec3 surfacePos = surface->m_node->GetTranslation(
-                  TransformationSpace::TS_WORLD);
-              position[0] =
-                  surfacePos.x -
-                  (pos.x + w * surface->m_anchorParams.m_anchorRatios[0]);
-              position[1] =
-                  surfacePos.y -
-                  (pos.y + h * surface->m_anchorParams.m_anchorRatios[2]);
-            }
-            ImGui::DragFloat(
-                "Position X", &position[0], 0.25f, pos.x, pos.x + w);
-            ImGui::DragFloat(
-                "Position Y", &position[1], 0.25f, pos.y, pos.y + h);
-          }
-          else
-          {
-            ImGui::DragFloat2("Horizontal",
-                              &surface->m_anchorParams.m_anchorRatios[0],
-                              0.25f,
-                              0.f,
-                              1.f);
-
-            ImGui::DragFloat2("Vertical",
-                              &surface->m_anchorParams.m_anchorRatios[2],
-                              0.25f,
-                              0.f,
-                              1.f);
-          }
-
-          for (int i = 0; i < 4; i++)
-          {
-            ImGui::DragFloat(("Ratio " + std::to_string(i)).c_str(),
-                             &surface->m_anchorParams.m_anchorRatios[i],
-                             0.25f,
-                             0,
-                             1);
-          }
-
-          if (((surface->m_anchorParams.m_anchorRatios[2] +
-                surface->m_anchorParams.m_anchorRatios[3]) < 0.99f))
-          {
-            if (ImGui::DragFloat("Offset Top",
-                                 &surface->m_anchorParams.m_offsets[0]) ||
-                ImGui::DragFloat("Offset Bottom",
-                                 &surface->m_anchorParams.m_offsets[1]))
-            {
-              canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
-            }
-          }
-
-          if (((surface->m_anchorParams.m_anchorRatios[0] +
-                surface->m_anchorParams.m_anchorRatios[1]) < 0.99f))
-          {
-            if (ImGui::DragFloat("Offset Left",
-                                 &surface->m_anchorParams.m_offsets[2]) ||
-                ImGui::DragFloat("Offset Right",
-                                 &surface->m_anchorParams.m_offsets[3]))
-            {
-              canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
-            }
-          }
-
-          ImGui::Separator();
-        }
+        ShowAnchorSettings();
       }
 
       if (ImGui::CollapsingHeader("Transforms", ImGuiTreeNodeFlags_DefaultOpen))
