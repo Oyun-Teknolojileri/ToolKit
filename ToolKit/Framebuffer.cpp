@@ -348,7 +348,7 @@ namespace ToolKit
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
 
-    GLenum colorAttachments[8];
+    GLenum colorAttachments[8] = {0,0,0,0,0,0,0,0};
     int count = 0;
     for (int i = 0; i < m_maxColorAttachmentCount; ++i)
     {
@@ -359,7 +359,14 @@ namespace ToolKit
       }
     }
 
-    glDrawBuffers(count, colorAttachments);
+    if (count == 0)
+    {
+      glDrawBuffers(0, nullptr);
+    }
+    else
+    {
+      glDrawBuffers(count, colorAttachments);
+    }
 
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }

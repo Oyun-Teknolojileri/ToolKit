@@ -394,6 +394,12 @@ namespace ToolKit
       for (uint meshIndx = 0; meshIndx < meshCollector.size(); meshIndx++)
       {
         Mesh* mesh = meshCollector[meshIndx];
+
+        if (mesh->m_vertexCount == 0)
+        {
+          continue;
+        }
+
         if (mmComp && mmComp->GetMaterialList().size() > meshIndx)
         {
           nttMat = mmComp->GetMaterialList()[meshIndx];
