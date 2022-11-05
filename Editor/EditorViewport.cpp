@@ -293,9 +293,16 @@ namespace ToolKit
       m_contentAreaLocation.x = m_contentAreaMin.x;
       m_contentAreaLocation.y = m_contentAreaMin.y;
 
+      const Vec2 lastContentAreaSize = m_wndContentAreaSize;
       m_wndContentAreaSize =
           Vec2(glm::abs(m_contentAreaMax.x - m_contentAreaMin.x),
                glm::abs(m_contentAreaMax.y - m_contentAreaMin.y));
+      if (glm::all(glm::epsilonNotEqual(
+              lastContentAreaSize, m_wndContentAreaSize, 0.001f)))
+      {
+        m_needsResize = true;
+      }
+
       ImGuiIO& io            = ImGui::GetIO();
       ImVec2 absMousePos     = io.MousePos;
       m_mouseOverContentArea = false;
