@@ -642,6 +642,9 @@ namespace ToolKit
             {
               DeepCopy(ntt, copies);
             }
+            copies[0]->m_node->SetTransform(ntt->m_node->GetTransform(),
+                                            TransformationSpace::TS_WORLD,
+                                            false);
 
             for (Entity* cpy : copies)
             {

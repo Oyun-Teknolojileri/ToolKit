@@ -719,10 +719,11 @@ namespace ToolKit
             {
               ImGui::TableNextColumn();
               ImGui::PushID(itemIndx);
-              if (ImGui::ImageButton((ImTextureID) UI::m_anchorPresetIcons
-                                         .m_presetImages[itemIndx]
-                                         ->m_textureId,
-                                     Vec2(32, 32)))
+              if (ImGui::ImageButton(
+                      reinterpret_cast<void*>((intptr_t) UI::m_anchorPresetIcons
+                                                  .m_presetImages[itemIndx]
+                                                  ->m_textureId),
+                      Vec2(32, 32)))
               {
                 auto changeAnchor = [surface](uint anchorPreset) {
                   auto gatherAtLeft = [surface]() {
