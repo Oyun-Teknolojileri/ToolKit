@@ -35,6 +35,7 @@ namespace ToolKit
 
     m_settings = settings;
 
+#ifndef __EMSCRIPTEN__
     // If msaa is not supported, do not use
     if (glFramebufferTexture2DMultisampleEXT == nullptr)
     {
@@ -42,6 +43,9 @@ namespace ToolKit
       GetLogger()->Log(
           "Unsupported Extension: glFramebufferTexture2DMultisampleEXT");
     }
+#else
+    m_settings.msaa = 0;
+#endif
 
     // Create framebuffer object
     glGenFramebuffers(1, &m_fboId);
@@ -67,10 +71,10 @@ namespace ToolKit
       glBindRenderbuffer(GL_RENDERBUFFER, m_defaultRboId);
 
       GLenum attachment = GL_DEPTH_ATTACHMENT;
-      GLenum component  = GL_DEPTH_COMPONENT;
+      GLenum component  = GL_DEPTH_COMPONENT24;
       if (m_settings.depthStencil)
       {
-        component  = GL_DEPTH_STENCIL;
+        component  = GL_DEPTH24_STENCIL8;
         attachment = GL_DEPTH_STENCIL_ATTACHMENT;
       }
 #ifndef __EMSCRIPTEN__
@@ -183,7 +187,8 @@ namespace ToolKit
 #endif
     else
     {
-      glFramebufferTexture(GL_FRAMEBUFFER, attachment, rt->m_textureId, 0);
+      glFramebufferTexture2D(
+          GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, rt->m_textureId, 0);
     }
 
     if (!IsColorAttachment(atc))
@@ -274,7 +279,8 @@ namespace ToolKit
       else
 #endif
       {
-        glFramebufferTexture(GL_FRAMEBUFFER, attachment, 0, 0);
+        glFramebufferTexture2D(
+            GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
       }
 
       if (IsColorAttachment(atc))

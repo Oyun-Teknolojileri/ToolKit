@@ -9,6 +9,7 @@
 	<!--
 		#version 300 es
 		precision highp float;
+		precision mediump int;
 
 		// Fixed Attributes.
 		layout (location = 0) in vec3 vPosition;

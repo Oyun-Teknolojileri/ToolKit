@@ -155,7 +155,8 @@
 
 // Desktop GL 2.0+ has glPolygonMode() which GL ES and WebGL don't have.
 #ifdef GL_POLYGON_MODE
-#define IMGUI_IMPL_HAS_POLYGON_MODE
+// Undefining GL_POLYGON_MODE in imconfig.h does not work
+// #define IMGUI_IMPL_HAS_POLYGON_MODE
 #endif
 
 // Desktop GL 3.2+ has glDrawElementsBaseVertex() which GL ES and WebGL don't have.

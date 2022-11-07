@@ -138,12 +138,12 @@ namespace ToolKit
     bool m_preInitiated = false;
     bool m_initiated    = false;
     String m_resourceRoot;
+    String m_cfgPath;
     EventPool m_eventPool;
     EngineSettings m_engineSettings;
 
    private:
     static Main* m_proxy;
-    String m_cfgPath;
   };
 
   // Accessors.

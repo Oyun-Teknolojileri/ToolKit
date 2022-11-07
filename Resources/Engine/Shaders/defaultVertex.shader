@@ -34,7 +34,7 @@
          v_texture = vTexture;
          v_normal = (InverseTransModel * vec4(vNormal, 1.0)).xyz;
          v_bitan = vBiTan;
-      };
+      }
 	-->
 	</source>
 </shader>

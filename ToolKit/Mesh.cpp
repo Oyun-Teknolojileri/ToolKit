@@ -590,6 +590,8 @@ namespace ToolKit
     {
       indexes[i] = i;
     }
+
+#ifndef __EMSCRIPTEN__
     std::for_each(
         std::execution::par_unseq,
         indexes.begin(),
@@ -613,6 +615,23 @@ namespace ToolKit
                 meshAABB.UpdateBoundary(skinnedPos);
               });
         });
+#else
+    for (uint index : indexes)
+    {
+      SkinMesh* m = (SkinMesh*) meshes[index];
+      if (m->m_clientSideVertices.empty())
+      {
+        continue;
+      }
+      BoundingBox& meshAABB = AABBs[index];
+      
+      for (SkinVertex v : m->m_clientSideVertices)
+      {
+        const Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap);
+        meshAABB.UpdateBoundary(skinnedPos);
+      }
+    }
+#endif
     for (BoundingBox& aabb : AABBs)
     {
       finalAABB.UpdateBoundary(aabb.max);

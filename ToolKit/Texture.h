@@ -120,7 +120,7 @@ namespace ToolKit
     GraphicTypes MagFilter      = GraphicTypes::SampleNearest;
     GraphicTypes InternalFormat = GraphicTypes::FormatRGBA16F;
     GraphicTypes Format         = GraphicTypes::FormatRGBA;
-    GraphicTypes Type           = GraphicTypes::TypeUnsignedByte;
+    GraphicTypes Type           = GraphicTypes::TypeFloat;
     Vec4 borderColor            = Vec4(0.0f);
   };
 
