@@ -166,7 +166,7 @@ namespace ToolKit
                            mesh->mMaterialIndex);
   }
 
-  std::vector<MaterialPtr> tMaterials;
+   std::vector<MaterialPtr> tMaterials;
   template <typename T>
   void CreateFileAndSerializeObject(T* objectToSerialize,
                                     const String& filePath)

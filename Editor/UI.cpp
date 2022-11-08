@@ -739,6 +739,21 @@ namespace ToolKit
 
         ImGui::EndMenu();
       }
+
+      if (ImGui::MenuItem("Save All Resources"))
+      {
+        for (auto resource : GetResourceManager(ResourceType::Mesh)->m_storage)
+        {
+          resource.second->m_dirty = true;
+          resource.second->Save(false);
+        }
+        for (auto resource : GetResourceManager(ResourceType::SkinMesh)->m_storage)
+        {
+          resource.second->m_dirty = true;
+          resource.second->Save(true);
+        }
+        
+      }
     }
 
     void UI::ShowImportWindow()
