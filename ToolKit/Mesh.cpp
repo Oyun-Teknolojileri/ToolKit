@@ -289,7 +289,7 @@ namespace ToolKit
 
     // Serialize vertex
     {
-      uint vertexBufferDataSize = mesh->m_clientSideVertices.size() *
+      size_t vertexBufferDataSize = mesh->m_clientSideVertices.size() *
                                   sizeof(mesh->m_clientSideVertices[0]);
       WriteAttr(vertices,
                 doc,
@@ -299,39 +299,14 @@ namespace ToolKit
       bintob64(
           b64Data, mesh->m_clientSideVertices.data(), vertexBufferDataSize);
       XmlNode* base64XML = CreateXmlNode(doc, "Base64", vertices);
-      base64XML->value(b64Data);
+      base64XML->value(doc->allocate_string(b64Data));
+      delete[] b64Data;
     }
-    /*
-    for (const auto& v : mesh->m_clientSideVertices)
-    {
-      XmlNode* vNod = CreateXmlNode(doc, "v", vertices);
-
-      XmlNode* p = CreateXmlNode(doc, "p", vNod);
-      WriteVec(p, doc, v.pos);
-
-      XmlNode* n = CreateXmlNode(doc, "n", vNod);
-      WriteVec(n, doc, v.norm);
-
-      XmlNode* t = CreateXmlNode(doc, "t", vNod);
-      WriteVec(t, doc, v.tex);
-
-      XmlNode* bt = CreateXmlNode(doc, "bt", vNod);
-      WriteVec(bt, doc, v.btan);
-      if constexpr (std::is_same<T, ToolKit::SkinMesh>::value)
-      {
-        XmlNode* b = CreateXmlNode(doc, "b", vNod);
-        WriteVec(b, doc, v.bones);
-
-        XmlNode* w = CreateXmlNode(doc, "w", vNod);
-        WriteVec(w, doc, v.weights);
-      }
-    }
-    */
 
     // Serialize faces
     XmlNode* faces = CreateXmlNode(doc, "faces", meshNode);
     {
-      uint facesBufferDataSize = mesh->m_clientSideIndices.size() *
+      size_t facesBufferDataSize = mesh->m_clientSideIndices.size() *
                                  sizeof(mesh->m_clientSideIndices[0]);
       WriteAttr(faces,
                 doc,
@@ -342,17 +317,6 @@ namespace ToolKit
       XmlNode* base64XML = CreateXmlNode(doc, "Base64", faces);
       base64XML->value(b64Data);
     }
-    /*
-    for (size_t i = 0; i < mesh->m_clientSideIndices.size() / 3; i++)
-    {
-      XmlNode* f = CreateXmlNode(doc, "f", faces);
-
-      WriteAttr(f, doc, "x", std::to_string(mesh->m_clientSideIndices[i * 3]));
-      WriteAttr(
-          f, doc, "y", std::to_string(mesh->m_clientSideIndices[i * 3 + 1]));
-      WriteAttr(
-          f, doc, "z", std::to_string(mesh->m_clientSideIndices[i * 3 + 2]));
-    }*/
   };
 
   template <typename T>

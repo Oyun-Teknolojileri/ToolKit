@@ -745,14 +745,19 @@ namespace ToolKit
         for (auto resource : GetResourceManager(ResourceType::Mesh)->m_storage)
         {
           resource.second->m_dirty = true;
-          resource.second->Save(false);
+          resource.second->Save(true);
         }
         for (auto resource : GetResourceManager(ResourceType::SkinMesh)->m_storage)
         {
           resource.second->m_dirty = true;
           resource.second->Save(true);
         }
-        
+        for (auto resource :
+             GetResourceManager(ResourceType::Animation)->m_storage)
+        {
+          resource.second->m_dirty = true;
+          resource.second->Save(true);
+        }
       }
     }
 

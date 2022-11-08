@@ -31,56 +31,6 @@
 /** @defgroup base64 Base64 Converter.
   * @{ */
 
-/** Convert a binary memory block in a base64 null-terminated string.
-  * @param dest Destination memory wher to put the base64 null-terminated string.
-  * @param src Source binary memory block.
-  * @param size Size in bytes of source binary memory block.
-  * @return A pointer to the null character of the base64 null-terminated string. */
-char* bintob64( char* dest, void const* src, size_t size );
-
-/** Convert a base64 string to binary format.
-  * @param dest Destination memory block.
-  * @param src Source base64 string.
-  * @return If success a pointer to the next byte in memory block.
-  *         Null if string has a bad format.  */
-void* b64tobin( void* dest, char const* src );
-
-/** Convert a base64 string to binary format.
-  * @param p Source base64 string and destination memory block.
-  * @return If success a pointer to the next byte in memory block.
-  *         Null if string has a bad format.  */
-static inline void* b64decode( void* p ) {
-    return b64tobin( p, (char*)p );
-}
-
-/** @ } */
-
-
-#endif	/* _BASE64_H_ */
-
-/*
-<https://github.com/rafagafe/base64>
-     
-  Licensed under the MIT License <http://opensource.org/licenses/MIT>.
-  SPDX-License-Identifier: MIT
-  Copyright (c) 2016-2018 Rafa Garcia <rafagarcia77@gmail.com>.
-  Permission is hereby  granted, free of charge, to any  person obtaining a copy
-  of this software and associated  documentation files (the "Software"), to deal
-  in the Software  without restriction, including without  limitation the rights
-  to  use, copy,  modify, merge,  publish, distribute,  sublicense, and/or  sell
-  copies  of  the Software,  and  to  permit persons  to  whom  the Software  is
-  furnished to do so, subject to the following conditions:
-  The above copyright notice and this permission notice shall be included in all
-  copies or substantial portions of the Software.
-  THE SOFTWARE  IS PROVIDED "AS  IS", WITHOUT WARRANTY  OF ANY KIND,  EXPRESS OR
-  IMPLIED,  INCLUDING BUT  NOT  LIMITED TO  THE  WARRANTIES OF  MERCHANTABILITY,
-  FITNESS FOR  A PARTICULAR PURPOSE AND  NONINFRINGEMENT. IN NO EVENT  SHALL THE
-  AUTHORS  OR COPYRIGHT  HOLDERS  BE  LIABLE FOR  ANY  CLAIM,  DAMAGES OR  OTHER
-  LIABILITY, WHETHER IN AN ACTION OF  CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
-  SOFTWARE.
-    */
-
 /** Escape values. */
 enum special_e
 {
@@ -104,54 +54,6 @@ static char const digittobin[] = {
     64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
     64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
     64, 64, 64, 64, 64, 64, 64, 64, 64};
-
-/* Convert a base64 null-terminated string to binary format.*/
-void* b64tobin(void* dest, char const* src)
-{
-  unsigned char const* s = (unsigned char*) src;
-  char* p                = (char*)dest;
-  for (;;)
-  {
-
-    int const a = digittobin[*s];
-    if (a == notabase64)
-      return p;
-    if (a == terminator)
-      return p;
-
-    int const b = digittobin[*++s];
-    if (b == notabase64)
-      return 0;
-    if (b == terminator)
-      return 0;
-
-    *p++ = (a << 2u) | (b >> 4u);
-
-    int const c = digittobin[*++s];
-    if (c == notabase64)
-      return 0;
-
-    int const d = digittobin[*++s];
-    if (d == notabase64)
-      return 0;
-    if (c == terminator)
-    {
-      if (d != terminator)
-        return 0;
-      return p;
-    }
-
-    *p++ = (b << 4u) | (c >> 2u);
-
-    if (d == terminator)
-      return p;
-
-    *p++ = (c << 6u) | (d >> 0u);
-    ++s;
-  }
-
-  return p;
-}
 
 /** Lookup table that converts a integer to base64 digit. */
 static char const bintodigit[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -202,7 +104,7 @@ static int get3(int c)
 }
 
 /* Convert a binary memory block in a base64 null-terminated string. */
-char* bintob64(char* dest, void const* src, size_t size)
+static char* bintob64(char* dest, void const* src, size_t size)
 {
 
   typedef struct
@@ -240,3 +142,94 @@ final:
   *dest = '\0';
   return dest;
 }
+
+
+/** Convert a base64 string to binary format.
+  * @param dest Destination memory block.
+  * @param src Source base64 string.
+  * @return If success a pointer to the next byte in memory block.
+  *         Null if string has a bad format.  */
+static void* b64tobin(void* dest, char const* src)
+{
+  unsigned char const* s = (unsigned char*) src;
+  char* p                = (char*) dest;
+  for (;;)
+  {
+
+    int const a = digittobin[*s];
+    if (a == notabase64)
+      return p;
+    if (a == terminator)
+      return p;
+
+    int const b = digittobin[*++s];
+    if (b == notabase64)
+      return 0;
+    if (b == terminator)
+      return 0;
+
+    *p++ = (a << 2u) | (b >> 4u);
+
+    int const c = digittobin[*++s];
+    if (c == notabase64)
+      return 0;
+
+    int const d = digittobin[*++s];
+    if (d == notabase64)
+      return 0;
+    if (c == terminator)
+    {
+      if (d != terminator)
+        return 0;
+      return p;
+    }
+
+    *p++ = (b << 4u) | (c >> 2u);
+
+    if (d == terminator)
+      return p;
+
+    *p++ = (c << 6u) | (d >> 0u);
+    ++s;
+  }
+
+  return p;
+}
+
+
+/** Convert a base64 string to binary format.
+  * @param p Source base64 string and destination memory block.
+  * @return If success a pointer to the next byte in memory block.
+  *         Null if string has a bad format.  */
+static inline void* b64decode( void* p ) {
+    return b64tobin( p, (char*)p );
+}
+
+/** @ } */
+
+
+#endif	/* _BASE64_H_ */
+
+/*
+<https://github.com/rafagafe/base64>
+     
+  Licensed under the MIT License <http://opensource.org/licenses/MIT>.
+  SPDX-License-Identifier: MIT
+  Copyright (c) 2016-2018 Rafa Garcia <rafagarcia77@gmail.com>.
+  Permission is hereby  granted, free of charge, to any  person obtaining a copy
+  of this software and associated  documentation files (the "Software"), to deal
+  in the Software  without restriction, including without  limitation the rights
+  to  use, copy,  modify, merge,  publish, distribute,  sublicense, and/or  sell
+  copies  of  the Software,  and  to  permit persons  to  whom  the Software  is
+  furnished to do so, subject to the following conditions:
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  THE SOFTWARE  IS PROVIDED "AS  IS", WITHOUT WARRANTY  OF ANY KIND,  EXPRESS OR
+  IMPLIED,  INCLUDING BUT  NOT  LIMITED TO  THE  WARRANTIES OF  MERCHANTABILITY,
+  FITNESS FOR  A PARTICULAR PURPOSE AND  NONINFRINGEMENT. IN NO EVENT  SHALL THE
+  AUTHORS  OR COPYRIGHT  HOLDERS  BE  LIABLE FOR  ANY  CLAIM,  DAMAGES OR  OTHER
+  LIABILITY, WHETHER IN AN ACTION OF  CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+    */
+
