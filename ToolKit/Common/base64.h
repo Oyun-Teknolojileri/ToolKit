@@ -1,7 +1,7 @@
 
 /*
 <https://github.com/rafagafe/base64>
-     
+
   Licensed under the MIT License <http://opensource.org/licenses/MIT>.
   SPDX-License-Identifier: MIT
   Copyright (c) 2016-2018 Rafa Garcia <rafagarcia77@gmail.com>.
@@ -20,16 +20,16 @@
   LIABILITY, WHETHER IN AN ACTION OF  CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
-    
+
 */
 
 #ifndef _BASE64_H_
-#define	_BASE64_H_
+  #define _BASE64_H_
 
-#include <stddef.h>
+  #include <stddef.h>
 
 /** @defgroup base64 Base64 Converter.
-  * @{ */
+ * @{ */
 
 /** Escape values. */
 enum special_e
@@ -143,12 +143,11 @@ final:
   return dest;
 }
 
-
 /** Convert a base64 string to binary format.
-  * @param dest Destination memory block.
-  * @param src Source base64 string.
-  * @return If success a pointer to the next byte in memory block.
-  *         Null if string has a bad format.  */
+ * @param dest Destination memory block.
+ * @param src Source base64 string.
+ * @return If success a pointer to the next byte in memory block.
+ *         Null if string has a bad format.  */
 static void* b64tobin(void* dest, char const* src)
 {
   unsigned char const* s = (unsigned char*) src;
@@ -196,23 +195,22 @@ static void* b64tobin(void* dest, char const* src)
   return p;
 }
 
-
 /** Convert a base64 string to binary format.
-  * @param p Source base64 string and destination memory block.
-  * @return If success a pointer to the next byte in memory block.
-  *         Null if string has a bad format.  */
-static inline void* b64decode( void* p ) {
-    return b64tobin( p, (char*)p );
+ * @param p Source base64 string and destination memory block.
+ * @return If success a pointer to the next byte in memory block.
+ *         Null if string has a bad format.  */
+static inline void* b64decode(void* p)
+{
+  return b64tobin(p, (char*) p);
 }
 
 /** @ } */
 
-
-#endif	/* _BASE64_H_ */
+#endif /* _BASE64_H_ */
 
 /*
 <https://github.com/rafagafe/base64>
-     
+
   Licensed under the MIT License <http://opensource.org/licenses/MIT>.
   SPDX-License-Identifier: MIT
   Copyright (c) 2016-2018 Rafa Garcia <rafagarcia77@gmail.com>.
@@ -232,4 +230,3 @@ static inline void* b64decode( void* p ) {
   OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
     */
-

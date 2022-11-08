@@ -103,7 +103,7 @@ namespace ToolKit
   {
     // Force save if child is dirty.
     Resource::Save(!m_dirty && !m_material->m_dirty);
-    //m_material->Save(onlyIfDirty);
+    // m_material->Save(onlyIfDirty);
   }
 
   void Mesh::CopyTo(Resource* other)
@@ -290,7 +290,7 @@ namespace ToolKit
     // Serialize vertex
     {
       size_t vertexBufferDataSize = mesh->m_clientSideVertices.size() *
-                                  sizeof(mesh->m_clientSideVertices[0]);
+                                    sizeof(mesh->m_clientSideVertices[0]);
       WriteAttr(vertices,
                 doc,
                 "VertexCount",
@@ -307,7 +307,7 @@ namespace ToolKit
     XmlNode* faces = CreateXmlNode(doc, "faces", meshNode);
     {
       size_t facesBufferDataSize = mesh->m_clientSideIndices.size() *
-                                 sizeof(mesh->m_clientSideIndices[0]);
+                                   sizeof(mesh->m_clientSideIndices[0]);
       WriteAttr(faces,
                 doc,
                 "FaceCount",
@@ -330,7 +330,7 @@ namespace ToolKit
     mainMesh->m_aabb = BoundingBox();
 
     T* mesh       = mainMesh;
-    XmlNode* node  = parent;
+    XmlNode* node = parent;
 
     String typeString;
     if constexpr (std::is_same<T, Mesh>())
@@ -347,10 +347,10 @@ namespace ToolKit
       if (mesh == nullptr)
       {
         auto meshPtr = std::make_shared<T>();
-        mesh          = meshPtr.get();
+        mesh         = meshPtr.get();
         mainMesh->m_subMeshes.push_back(meshPtr);
       }
-      
+
       mesh->m_material = ReadMaterial(node);
 
       if constexpr (std::is_same<T, SkinMesh>())
@@ -397,7 +397,7 @@ namespace ToolKit
       }
 
       XmlNode* faces = node->first_node("faces");
-      
+
       if (XmlAttribute* faceCountAttr = faces->first_attribute("FaceCount"))
       {
         uint faceCount = 0;

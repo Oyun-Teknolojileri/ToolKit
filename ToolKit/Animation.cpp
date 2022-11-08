@@ -1,5 +1,6 @@
 #include "Animation.h"
 
+#include "Common/base64.h"
 #include "Entity.h"
 #include "Node.h"
 #include "Skeleton.h"
@@ -7,7 +8,6 @@
 #include "Util.h"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
-#include "Common/base64.h"
 
 #include <utility>
 #include <vector>
@@ -200,7 +200,7 @@ namespace ToolKit
 
       WriteAttr(boneNode, doc, "KeyCount", std::to_string(keys.size()));
       size_t keyBufferSize = keys.size() * sizeof(keys[0]);
-      char* b64Data      = new char[keyBufferSize * 2];
+      char* b64Data        = new char[keyBufferSize * 2];
       bintob64(b64Data, keys.data(), keyBufferSize);
       XmlNode* base64XML = CreateXmlNode(doc, "Base64", boneNode);
       base64XML->value(doc->allocate_string(b64Data));

@@ -747,7 +747,8 @@ namespace ToolKit
           resource.second->m_dirty = true;
           resource.second->Save(true);
         }
-        for (auto resource : GetResourceManager(ResourceType::SkinMesh)->m_storage)
+        for (auto resource :
+             GetResourceManager(ResourceType::SkinMesh)->m_storage)
         {
           resource.second->m_dirty = true;
           resource.second->Save(true);
