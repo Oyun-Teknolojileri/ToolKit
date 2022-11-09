@@ -562,6 +562,11 @@ namespace ToolKit
         {
           g_app->OnSaveAsScene();
         }
+
+        if (ImGui::MenuItem("Save All Resources"))
+        {
+          g_app->SaveAllResources();
+        }
         ImGui::EndMenu();
       }
 
@@ -738,27 +743,6 @@ namespace ToolKit
         }
 
         ImGui::EndMenu();
-      }
-
-      if (ImGui::MenuItem("Save All Resources"))
-      {
-        for (auto resource : GetResourceManager(ResourceType::Mesh)->m_storage)
-        {
-          resource.second->m_dirty = true;
-          resource.second->Save(true);
-        }
-        for (auto resource :
-             GetResourceManager(ResourceType::SkinMesh)->m_storage)
-        {
-          resource.second->m_dirty = true;
-          resource.second->Save(true);
-        }
-        for (auto resource :
-             GetResourceManager(ResourceType::Animation)->m_storage)
-        {
-          resource.second->m_dirty = true;
-          resource.second->Save(true);
-        }
       }
     }
 

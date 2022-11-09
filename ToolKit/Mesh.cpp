@@ -103,7 +103,7 @@ namespace ToolKit
   {
     // Force save if child is dirty.
     Resource::Save(!m_dirty && !m_material->m_dirty);
-    // m_material->Save(onlyIfDirty);
+    m_material->Save(onlyIfDirty);
   }
 
   void Mesh::CopyTo(Resource* other)
@@ -295,12 +295,12 @@ namespace ToolKit
                 doc,
                 "VertexCount",
                 std::to_string(mesh->m_clientSideVertices.size()));
-      char* b64Data = new char[vertexBufferDataSize * 2]{};
+      char* b64Data = new char[vertexBufferDataSize * 2];
       bintob64(
           b64Data, mesh->m_clientSideVertices.data(), vertexBufferDataSize);
       XmlNode* base64XML = CreateXmlNode(doc, "Base64", vertices);
       base64XML->value(doc->allocate_string(b64Data));
-      delete[] b64Data;
+      SafeDelArray(b64Data);
     }
 
     // Serialize faces
@@ -312,10 +312,11 @@ namespace ToolKit
                 doc,
                 "FaceCount",
                 std::to_string(mesh->m_clientSideIndices.size()));
-      char* b64Data = new char[facesBufferDataSize * 2]{};
+      char* b64Data = new char[facesBufferDataSize * 2];
       bintob64(b64Data, mesh->m_clientSideIndices.data(), facesBufferDataSize);
       XmlNode* base64XML = CreateXmlNode(doc, "Base64", faces);
-      base64XML->value(b64Data);
+      base64XML->value(doc->allocate_string(b64Data));
+      SafeDelArray(b64Data);
     }
   };
 

@@ -85,6 +85,7 @@ namespace ToolKit
       void ApplyProjectSettings(bool setDefaults);
       void OpenProject(const Project& project);
       void PackResources();
+      void SaveAllResources();
 
       // UI
       Window* GetActiveWindow();
