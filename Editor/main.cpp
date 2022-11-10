@@ -3,7 +3,7 @@
 #include "Common/SDLEventPool.h"
 #include "Common/Win32Utils.h"
 #include "ConsoleWindow.h"
-#include "GL/glew.h"
+#include "GLES3/gl3.h"
 #include "ImGui/imgui_impl_sdl.h"
 #include "Mod.h"
 #include "SDL.h"
@@ -31,49 +31,6 @@ namespace ToolKit
 
     void GlDebugReportInit()
     {
-      if (glDebugMessageCallback != NULL)
-      {
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
-      }
-
-      GlErrorReporter::Report = [](const std::string& msg) -> void {
-        static byte state = g_app->m_showGraphicsApiErrors;
-
-        if (g_app == nullptr)
-        {
-          return;
-        }
-
-        if (state != g_app->m_showGraphicsApiErrors)
-        {
-          state = g_app->m_showGraphicsApiErrors;
-
-          if (state == 1)
-          {
-            glDebugMessageControl(
-                GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
-
-            glDebugMessageControl(GL_DEBUG_SOURCE_API,
-                                  GL_DEBUG_TYPE_ERROR,
-                                  GL_DEBUG_SEVERITY_HIGH,
-                                  0,
-                                  NULL,
-                                  GL_TRUE);
-          }
-          else if (state >= 2)
-          {
-            glDebugMessageControl(
-                GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
-          }
-        }
-
-        if (g_app->m_showGraphicsApiErrors)
-        {
-          g_app->GetConsole()->AddLog(msg, LogType::Error);
-        }
-      };
     }
 
     /*
@@ -208,14 +165,6 @@ namespace ToolKit
           }
           else
           {
-            //  Init glew
-            glewExperimental = true;
-            GLenum err       = glewInit();
-            if (GLEW_OK != err)
-            {
-              g_running = false;
-              return;
-            }
 
 #ifdef TK_DEBUG
             GlDebugReportInit();

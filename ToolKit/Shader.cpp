@@ -1,6 +1,6 @@
 #include "Shader.h"
 
-#include "GL/glew.h"
+#include "GLES3/gl3.h"
 #include "ToolKit.h"
 #include "Util.h"
 #include "rapidxml.hpp"

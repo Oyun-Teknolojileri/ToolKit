@@ -1,7 +1,7 @@
 #include "Texture.h"
 
 #include "DirectionComponent.h"
-#include "GL/glew.h"
+#include "GLES3/gl3.h"
 #include "ToolKit.h"
 
 #include <memory>
@@ -108,13 +108,6 @@ namespace ToolKit
     }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    if (GL_EXT_texture_filter_anisotropic)
-    {
-      float aniso = 0.0f;
-      glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
-      glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
-    }
 
     if (flushClientSideArray)
     {

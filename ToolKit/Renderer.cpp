@@ -3,7 +3,7 @@
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "Drawable.h"
-#include "GL/glew.h"
+#include "GLES3/gl3.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"

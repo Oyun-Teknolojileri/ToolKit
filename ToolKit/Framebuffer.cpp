@@ -1,6 +1,6 @@
 #include "Framebuffer.h"
 
-#include "GL/glew.h"
+#include "GLES3/gl3.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -35,7 +35,7 @@ namespace ToolKit
 
     m_settings = settings;
 
-#ifndef __EMSCRIPTEN__
+#if 0
     // If msaa is not supported, do not use
     if (glFramebufferTexture2DMultisampleEXT == nullptr)
     {
@@ -77,7 +77,7 @@ namespace ToolKit
         component  = GL_DEPTH24_STENCIL8;
         attachment = GL_DEPTH_STENCIL_ATTACHMENT;
       }
-#ifndef __EMSCRIPTEN__
+#if 0
       if (m_settings.msaa > 0)
       {
         glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER,
@@ -174,7 +174,7 @@ namespace ToolKit
                              rt->m_textureId,
                              0);
     }
-#ifndef __EMSCRIPTEN__
+#if 0
     else if (rt->m_settings.Msaa > 0 && m_settings.msaa == rt->m_settings.Msaa)
     {
       glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER,
@@ -266,7 +266,7 @@ namespace ToolKit
 
       // Detach
       glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-#ifndef __EMSCRIPTEN__
+#if 0
       if (rt->m_settings.Msaa > 0 && m_settings.msaa == rt->m_settings.Msaa)
       {
         glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER,

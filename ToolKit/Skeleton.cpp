@@ -1,6 +1,6 @@
 #include "Skeleton.h"
 
-#include "GL/glew.h"
+#include "GLES3/gl3.h"
 #include "Node.h"
 #include "ToolKit.h"
 #include "Util.h"

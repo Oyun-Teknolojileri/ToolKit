@@ -6,7 +6,7 @@
 #include "ConsoleWindow.h"
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
-#include "GL/glew.h"
+#include "GLES3/gl3.h"
 #include "Global.h"
 #include "Material.h"
 #include "Mesh.h"

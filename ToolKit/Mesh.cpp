@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-#include "GL/glew.h"
+#include "GLES3/gl3.h"
 #include "Material.h"
 #include "Skeleton.h"
 #include "Texture.h"

@@ -1,0 +1,10 @@
+prefix=${pcfiledir}/../../..
+includedir=${prefix}/include
+libdir=${prefix}/lib/x64
+
+Name: egl
+Description: Mesa EGL Library
+Version: 22.2.2
+Libs: -L${libdir} -lEGL
+Libs.private: -lpthread -pthread
+Cflags: -I${includedir} -DEGL_NO_X11
