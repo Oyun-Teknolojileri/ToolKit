@@ -29,20 +29,21 @@ namespace ToolKit
                       float cellSize,
                       float linePixelCount)
     {
+      // Set cell size
+      m_gridCellSize      = cellSize;
+      m_maxLinePixelCount = linePixelCount;
+
       if (VecAllEqual<UVec2>(size, m_size) && m_initiated)
       {
         return;
       }
 
-      const UVec2 maxGridSize(100);
+      const UVec2 maxGridSize(50u);
+
       for (int i = 0; i < 2; i++)
       {
         m_size[i] = size[i] % 2 == 0 ? size[i] : size[i] + 1;
       }
-
-      // Set cell size
-      m_gridCellSize      = cellSize;
-      m_maxLinePixelCount = linePixelCount;
 
       // Rotate according to axis label and set origin axis line colors
       switch (axis)

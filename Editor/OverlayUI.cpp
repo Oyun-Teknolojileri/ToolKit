@@ -522,11 +522,15 @@ namespace ToolKit
         ImGui::PushItemWidth(75);
         EditorViewport2d* editorViewport =
             reinterpret_cast<EditorViewport2d*>(m_owner);
-        static constexpr uint16_t cellSizeStep = 5, gridSizeStep = 0;
+        static constexpr uint16_t cellSizeStep = 5;
         ImGui::InputScalar("Cell Size",
                            ImGuiDataType_U16,
                            &editorViewport->m_gridCellSizeByPixel,
                            &cellSizeStep);
+        editorViewport->m_gridCellSizeByPixel =
+            glm::max((editorViewport->m_gridCellSizeByPixel / cellSizeStep) *
+                         cellSizeStep,
+                     1u);
       };
 
       ImGui::TableSetColumnIndex(nextItemIndex++);
