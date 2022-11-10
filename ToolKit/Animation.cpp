@@ -1,5 +1,6 @@
 #include "Animation.h"
 
+#include "Common/base64.h"
 #include "Entity.h"
 #include "Node.h"
 #include "Skeleton.h"
@@ -12,6 +13,8 @@
 #include <vector>
 
 #include "DebugNew.h"
+
+static constexpr bool SERIALIZE_ANIMATION_AS_BINARY = false;
 
 namespace ToolKit
 {
@@ -141,23 +144,37 @@ namespace ToolKit
       attr            = animNode->first_attribute("name");
       String boneName = attr->value();
 
-      for (XmlNode* keyNode = animNode->first_node("key"); keyNode;
-           keyNode          = keyNode->next_sibling())
+      // Serialized as base64
+      if (XmlAttribute* keyCountAttr = animNode->first_attribute("KeyCount"))
       {
-        Key key;
-        attr        = keyNode->first_attribute("frame");
-        key.m_frame = std::atoi(attr->value());
+        uint keyCount = 0;
+        ReadAttr(animNode, "KeyCount", keyCount);
+        KeyArray& keys = m_keys[boneName];
+        keys.resize(keyCount);
+        XmlNode* b64Node = animNode->first_node("Base64");
+        b64tobin(keys.data(), b64Node->value());
+      }
+      else
+      {
+        // Serialized as xml
+        for (XmlNode* keyNode = animNode->first_node("key"); keyNode;
+             keyNode          = keyNode->next_sibling())
+        {
+          Key key;
+          attr        = keyNode->first_attribute("frame");
+          key.m_frame = std::atoi(attr->value());
 
-        XmlNode* subNode = keyNode->first_node("translation");
-        ReadVec(subNode, key.m_position);
+          XmlNode* subNode = keyNode->first_node("translation");
+          ReadVec(subNode, key.m_position);
 
-        subNode = keyNode->first_node("scale");
-        ReadVec(subNode, key.m_scale);
+          subNode = keyNode->first_node("scale");
+          ReadVec(subNode, key.m_scale);
 
-        subNode = keyNode->first_node("rotation");
-        ReadVec(subNode, key.m_rotation);
+          subNode = keyNode->first_node("rotation");
+          ReadVec(subNode, key.m_rotation);
 
-        m_keys[boneName].push_back(key);
+          m_keys[boneName].push_back(key);
+        }
       }
     }
 
@@ -185,22 +202,36 @@ namespace ToolKit
       boneNode->append_attribute(
           doc->allocate_attribute("name", boneName.c_str()));
 
-      for (uint keyIndex = 0; keyIndex < keys.size(); keyIndex++)
+      if constexpr (SERIALIZE_ANIMATION_AS_BINARY)
       {
-        XmlNode* keyNode = CreateXmlNode(doc, "key", boneNode);
-        const Key& key   = keys[keyIndex];
+        WriteAttr(boneNode, doc, "KeyCount", std::to_string(keys.size()));
+        size_t keyBufferSize = keys.size() * sizeof(keys[0]);
+        char* b64Data        = new char[keyBufferSize * 2];
+        bintob64(b64Data, keys.data(), keyBufferSize);
+        XmlNode* base64XML = CreateXmlNode(doc, "Base64", boneNode);
+        base64XML->value(doc->allocate_string(b64Data));
+        SafeDelArray(b64Data);
+      }
+      else
+      {
+        for (uint keyIndex = 0; keyIndex < keys.size(); keyIndex++)
+        {
+          XmlNode* keyNode = CreateXmlNode(doc, "key", boneNode);
+          const Key& key   = keys[keyIndex];
 
-        char* frameIndexValueStr =
-            doc->allocate_string(std::to_string(keyIndex).c_str());
-        keyNode->append_attribute(
-            doc->allocate_attribute("frame", frameIndexValueStr));
+          char* frameIndexValueStr =
+              doc->allocate_string(std::to_string(keyIndex).c_str());
+          keyNode->append_attribute(
+              doc->allocate_attribute("frame", frameIndexValueStr));
 
-        WriteVec(
-            CreateXmlNode(doc, "translation", keyNode), doc, key.m_position);
+          WriteVec(
+              CreateXmlNode(doc, "translation", keyNode), doc, key.m_position);
 
-        WriteVec(CreateXmlNode(doc, "scale", keyNode), doc, key.m_scale);
+          WriteVec(CreateXmlNode(doc, "scale", keyNode), doc, key.m_scale);
 
-        WriteVec(CreateXmlNode(doc, "rotation", keyNode), doc, key.m_rotation);
+          WriteVec(
+              CreateXmlNode(doc, "rotation", keyNode), doc, key.m_rotation);
+        }
       }
     }
   }

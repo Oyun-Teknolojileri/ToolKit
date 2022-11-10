@@ -562,6 +562,11 @@ namespace ToolKit
         {
           g_app->OnSaveAsScene();
         }
+
+        if (ImGui::MenuItem("Save All Resources"))
+        {
+          g_app->SaveAllResources();
+        }
         ImGui::EndMenu();
       }
 
