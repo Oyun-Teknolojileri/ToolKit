@@ -23,6 +23,9 @@
 
 #include "DebugNew.h"
 
+// TODO
+#include <iostream>
+
 namespace ToolKit
 {
 #define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
@@ -452,6 +455,23 @@ namespace ToolKit
         glBindVertexArray(mesh->m_vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
         SetVertexLayout(mesh->m_vertexLayout);
+        
+        // TODO
+        static int test = 0;
+        std::cout << test++ << "Name: " << ntt->GetNameVal() << "File: "
+                  << ntt->GetMeshComponent()->GetMeshVal()->GetFile()
+                  << "SerFile: "
+                  << ntt->GetMeshComponent()->GetMeshVal()->GetSerializeFile()
+                  << "VAO: " << ntt->GetMeshComponent()->GetMeshVal()->m_vaoId
+                  << "VertSize: " << ntt->GetMeshComponent()->GetMeshVal()->m_clientSideVertices.size()
+                  << "Scene: " << GetSceneManager()->GetCurrentScene()->m_name
+          << std::endl;
+        glDisable(GL_DEPTH_TEST);
+        GLenum er = glGetError();
+        if (er != 0)
+        {
+          std::cout << er << std::endl;
+        }
 
         if (mesh->m_indexCount != 0)
         {
@@ -465,6 +485,14 @@ namespace ToolKit
         {
           glDrawArrays((GLenum) rs.drawType, 0, mesh->m_vertexCount);
         }
+        
+        // TODO
+        er = glGetError();
+        if (er != 0)
+        {
+          std::cout << er << std::endl;
+        }
+        int y = 5;
       }
     }
   }
@@ -1958,12 +1986,12 @@ namespace ToolKit
       glEnableVertexAttribArray(3); // BiTangent
       glVertexAttribPointer(
           3, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
-      offset += 3 * sizeof(uint);
+      offset += 3 * sizeof(float);
 
       glEnableVertexAttribArray(4); // Bones
       glVertexAttribPointer(
           4, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
-      offset += 4 * sizeof(unsigned int);
+      offset += 4 * sizeof(float);
 
       glEnableVertexAttribArray(5); // Weights
       glVertexAttribPointer(
@@ -2001,6 +2029,9 @@ namespace ToolKit
                                      uint textureId,
                                      ProgramPtr program)
   {
+    // TODO
+    return;
+
     assert(IsLightType(type));
 
     if (m_bindedShadowMapCount >= m_rhiSettings::maxShadows)
@@ -2067,7 +2098,6 @@ namespace ToolKit
                                                   float exposure)
   {
     const RenderTargetSettigs set = {0,
-                                     false,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::UVClampToEdge,
@@ -2076,8 +2106,7 @@ namespace ToolKit
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::FormatRGB,
                                      GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte,
-                                     Vec4(0.0f)};
+                                     GraphicTypes::TypeUnsignedByte};
     RenderTarget* cubemap         = new RenderTarget(width, height, set);
     cubemap->Init();
 
@@ -2144,7 +2173,6 @@ namespace ToolKit
                                                uint height)
   {
     const RenderTargetSettigs set   = {0,
-                                       false,
                                        GraphicTypes::TargetCubeMap,
                                        GraphicTypes::UVClampToEdge,
                                        GraphicTypes::UVClampToEdge,
@@ -2153,8 +2181,7 @@ namespace ToolKit
                                        GraphicTypes::SampleLinear,
                                        GraphicTypes::FormatRGB,
                                        GraphicTypes::FormatRGB,
-                                       GraphicTypes::TypeUnsignedByte,
-                                       Vec4(0.0f)};
+                                       GraphicTypes::TypeUnsignedByte};
     RenderTarget* irradianceCubemap = new RenderTarget(width, height, set);
     irradianceCubemap->Init();
 

@@ -80,7 +80,6 @@ namespace ToolKit
     // Shadow map render target
     Vec2 res                           = GetShadowResolutionVal();
     const RenderTargetSettigs settings = {0,
-                                          true,
                                           GraphicTypes::Target2D,
                                           GraphicTypes::UVClampToEdge,
                                           GraphicTypes::UVClampToEdge,
@@ -89,8 +88,7 @@ namespace ToolKit
                                           GraphicTypes::SampleLinear,
                                           GraphicTypes::FormatRG32F,
                                           GraphicTypes::FormatRG,
-                                          GraphicTypes::TypeFloat,
-                                          Vec4(0.0f)};
+                                          GraphicTypes::TypeFloat};
     m_shadowRt =
         std::make_shared<RenderTarget>((int) res.x, (int) res.y, settings);
     m_shadowRt->Init();
@@ -336,7 +334,6 @@ namespace ToolKit
     // Shadow map render target
     Vec2 res                           = GetShadowResolutionVal();
     const RenderTargetSettigs settings = {0,
-                                          false,
                                           GraphicTypes::TargetCubeMap,
                                           GraphicTypes::UVClampToEdge,
                                           GraphicTypes::UVClampToEdge,
@@ -345,8 +342,7 @@ namespace ToolKit
                                           GraphicTypes::SampleLinear,
                                           GraphicTypes::FormatRG32F,
                                           GraphicTypes::FormatRG,
-                                          GraphicTypes::TypeFloat,
-                                          Vec4(0.0f)};
+                                          GraphicTypes::TypeFloat};
     m_shadowRt =
         std::make_shared<RenderTarget>((int) res.x, (int) res.y, settings);
     m_shadowRt->Init();

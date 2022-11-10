@@ -575,13 +575,6 @@ namespace ToolKit
                     GL_TEXTURE_MAG_FILTER,
                     (int) m_settings.MagFilter);
 
-    if (m_settings.useBorderColor)
-    {
-      glTexParameterfv((int) m_settings.Target,
-                       GL_TEXTURE_BORDER_COLOR,
-                       &(m_settings.borderColor[0]));
-    }
-
     m_initiated = true;
 
     // Restore previous render target.

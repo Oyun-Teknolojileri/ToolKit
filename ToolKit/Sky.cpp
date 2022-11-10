@@ -258,7 +258,6 @@ namespace ToolKit
     fb.Init({m_size, m_size, 0, false, true});
 
     const RenderTargetSettigs set = {0,
-                                     false,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::UVClampToEdge,
@@ -267,8 +266,7 @@ namespace ToolKit
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::FormatRGB,
                                      GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte,
-                                     Vec4(0.0f)};
+                                     GraphicTypes::TypeUnsignedByte};
     RenderTarget* cubemap         = new RenderTarget(m_size, m_size, set);
     cubemap->Init();
 

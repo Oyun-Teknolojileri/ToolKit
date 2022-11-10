@@ -22,6 +22,12 @@ namespace ToolKit
     m_node           = new Node();
     m_node->m_entity = this;
     _parentId        = 0;
+
+    // TODO
+    if (GetNameVal().find("1244") != String::npos)
+    {
+      int y = 5;
+    }
   }
 
   Entity::~Entity()
