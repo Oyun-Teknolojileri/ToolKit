@@ -410,29 +410,16 @@ namespace ToolKit
             g_app->m_statusMsg = "Max zoom";
             return;
           }
-          if (m_zoomPercentage >= 100)
-          {
-            m_zoomPercentage += 100;
-          }
-          else if (m_zoomPercentage < 100)
-          {
-            m_zoomPercentage *= 2;
-          }
+          m_zoomPercentage += 10;
         }
         else
         {
-          if (m_zoomPercentage > 100)
-          {
-            m_zoomPercentage -= 100;
-          }
-          else if (m_zoomPercentage <= 100 && m_zoomPercentage > 13)
-          {
-            m_zoomPercentage /= 2;
-          }
-          else
+          if (m_zoomPercentage < 20)
           {
             g_app->m_statusMsg = "Min zoom";
+            return;
           }
+          m_zoomPercentage -= 10;
         }
       }
       m_zoom = 100.0f / m_zoomPercentage;
