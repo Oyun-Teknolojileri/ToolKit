@@ -7,7 +7,7 @@
 #include "ImGui/imgui_impl_sdl.h"
 #include "Mod.h"
 #include "SDL.h"
-#include "SDL_opengl.h"
+//#include "SDL_opengl.h"
 #include "Types.h"
 #include "UI.h"
 
@@ -16,6 +16,9 @@
 #include <chrono>
 
 #include "DebugNew.h"
+
+// TODO
+#include <iostream>
 
 namespace ToolKit
 {
@@ -140,7 +143,7 @@ namespace ToolKit
         }
 
 #ifdef TK_DEBUG
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+        // SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
 
         g_window =
@@ -159,6 +162,7 @@ namespace ToolKit
         else
         {
           g_context = SDL_GL_CreateContext(g_window);
+
           if (g_context == nullptr)
           {
             g_running = false;
@@ -167,7 +171,7 @@ namespace ToolKit
           {
 
 #ifdef TK_DEBUG
-            GlDebugReportInit();
+            // GlDebugReportInit();
 #endif
 
             // Init Main

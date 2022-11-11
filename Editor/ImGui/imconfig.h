@@ -79,6 +79,8 @@
 
 #include "../../ToolKit/ToolKit.h"
 
+#define IMGUI_IMPL_OPENGL_ES3
+
 #define IM_VEC2_CLASS_EXTRA                                                 \
         ImVec2(const ToolKit::Vec2& f) { x = f.x; y = f.y; }                       \
         operator ToolKit::Vec2() const { return ToolKit::Vec2(x,y); }

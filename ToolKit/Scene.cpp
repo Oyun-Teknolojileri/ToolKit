@@ -331,8 +331,6 @@ namespace ToolKit
 
   const EntityRawPtrArray& Scene::GetEntities() const
   {
-    //TODO
-    std::cout << "SizE: " << m_entities.size() << " Name: " << m_name << std::endl;
     return m_entities;
   }
 

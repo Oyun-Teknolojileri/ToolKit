@@ -455,23 +455,6 @@ namespace ToolKit
         glBindVertexArray(mesh->m_vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
         SetVertexLayout(mesh->m_vertexLayout);
-        
-        // TODO
-        static int test = 0;
-        std::cout << test++ << "Name: " << ntt->GetNameVal() << "File: "
-                  << ntt->GetMeshComponent()->GetMeshVal()->GetFile()
-                  << "SerFile: "
-                  << ntt->GetMeshComponent()->GetMeshVal()->GetSerializeFile()
-                  << "VAO: " << ntt->GetMeshComponent()->GetMeshVal()->m_vaoId
-                  << "VertSize: " << ntt->GetMeshComponent()->GetMeshVal()->m_clientSideVertices.size()
-                  << "Scene: " << GetSceneManager()->GetCurrentScene()->m_name
-          << std::endl;
-        glDisable(GL_DEPTH_TEST);
-        GLenum er = glGetError();
-        if (er != 0)
-        {
-          std::cout << er << std::endl;
-        }
 
         if (mesh->m_indexCount != 0)
         {
@@ -485,14 +468,6 @@ namespace ToolKit
         {
           glDrawArrays((GLenum) rs.drawType, 0, mesh->m_vertexCount);
         }
-        
-        // TODO
-        er = glGetError();
-        if (er != 0)
-        {
-          std::cout << er << std::endl;
-        }
-        int y = 5;
       }
     }
   }
