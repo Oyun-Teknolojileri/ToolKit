@@ -809,13 +809,55 @@ namespace ToolKit
 
         if (!fails.empty())
         {
-          ImGui::Text("Fallowing imports failed due to:\nFile format is"
-                      " not supported.\nSuported formats are fbx, glb, obj.");
+          ImGui::Text(
+              "Following imports failed due to:\nFile format is"
+              " not supported.\nSupported formats are fbx, glb, obj & png.");
           for (String& file : fails)
           {
             ImGui::Text("%s", file.c_str());
           }
           ImGui::Separator();
+        }
+
+        String importFolder;
+        if (!ImportData.activeView->m_currRoot)
+        {
+          importFolder = ImportData.activeView->m_folder;
+          if (ImportData.subDir.length())
+          {
+            importFolder += GetPathSeparatorAsStr();
+          }
+        }
+        importFolder += ImportData.subDir;
+
+        ImportData.activeView->Refresh();
+        for (int i = static_cast<int>(ImportData.files.size()) - 1; i >= 0; --i)
+        {
+          String file = ImportData.files[i];
+          String ext;
+          DecomposePath(file, nullptr, nullptr, &ext);
+
+          if (ext == ".png" || ext == ".hdri")
+          {
+            if (ImportData.activeView->GetPath().find(TexturePath("")) !=
+                String::npos)
+            {
+              // Both HDRIs and PNGs stored in Textures/ root folder
+              std::filesystem::copy(
+                  file,
+                  ConcatPaths(
+                      {GetResourcePath(ResourceType::Texture), importFolder}),
+                  std::filesystem::copy_options::overwrite_existing);
+            }
+            ImportData.files.erase(ImportData.files.begin() + i);
+          }
+        }
+        if (ImportData.files.size() == 0)
+        {
+          ImGui::EndPopup();
+          ImportData.showImportWindow = false;
+          ImGui::CloseCurrentPopup();
+          return;
         }
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
@@ -826,11 +868,9 @@ namespace ToolKit
         ImGui::PopStyleVar();
 
         ImGui::InputTextWithHint("Subdir", "optional", &ImportData.subDir);
-
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {
-          if (g_app->Import(load, ImportData.subDir, ImportData.overwrite) ==
-              -1)
+          if (g_app->Import(load, importFolder, ImportData.overwrite) == -1)
           {
             // Fall back to search.
             ImGui::EndPopup();

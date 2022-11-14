@@ -20,6 +20,8 @@ namespace ToolKit
 
   namespace Editor
   {
+    class FolderView;
+
     class Window : public Serializable
     {
      public:
@@ -148,7 +150,8 @@ namespace ToolKit
         bool overwrite        = false;
         StringArray files;
         String subDir;
-        float scale = 1.0f;
+        float scale            = 1.0f;
+        FolderView* activeView = nullptr;
       } ImportData;
 
       static struct SearchFile

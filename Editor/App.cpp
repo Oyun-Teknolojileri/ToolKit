@@ -682,18 +682,16 @@ namespace ToolKit
       // create a build dir if not exist.
       std::filesystem::create_directories(buildDir);
 
-      // Update project files in case of change.
-      #ifdef TK_DEBUG
+// Update project files in case of change.
+#ifdef TK_DEBUG
       static constexpr char buildConfig[] = "Debug";
-      #else
+#else
       static constexpr char buildConfig[] = "Release";
-      #endif
-      String cmd = "cmake -S " + codePath
-        + " -B " + buildDir;
+#endif
+      String cmd  = "cmake -S " + codePath + " -B " + buildDir;
       m_statusMsg = "Compiling ..." + g_statusNoTerminate;
       ExecSysCommand(cmd, true, false, [this, buildDir](int res) -> void {
-        String cmd = "cmake --build " + buildDir
-          + " --config " + buildConfig;
+        String cmd = "cmake --build " + buildDir + " --config " + buildConfig;
         ExecSysCommand(cmd, false, false, [=](int res) -> void {
           if (res)
           {
@@ -980,7 +978,10 @@ namespace ToolKit
 
           // Execute command
           result = ExecSysCommand(cmd.c_str(), false, false);
-          assert(result != -1);
+          if (result != 0)
+          {
+            GetLogger()->WriteConsole(LogType::Warning, "Import failed!");
+          }
         }
 
         // Move assets.
@@ -1153,6 +1154,11 @@ namespace ToolKit
       if (ext == ".txt")
       {
         // Hopefully, list of valid objects. Not a poem.
+        return true;
+      }
+
+      if (ext == ".png" || ext == ".hdri")
+      {
         return true;
       }
 
