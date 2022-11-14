@@ -10,7 +10,7 @@
 #include "EditorViewport2d.h"
 #include "FolderWindow.h"
 #include "Framebuffer.h"
-#include "GLES3/gl3.h"
+#include "GL/glew.h"
 #include "Gizmo.h"
 #include "Global.h"
 #include "Grid.h"

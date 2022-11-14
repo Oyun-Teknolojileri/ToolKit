@@ -1,6 +1,6 @@
 #include "Framebuffer.h"
 
-#include "GLES3/gl3.h"
+#include "GL/glew.h"
 #include "ToolKit.h"
 
 namespace ToolKit

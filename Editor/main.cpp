@@ -3,7 +3,7 @@
 #include "Common/SDLEventPool.h"
 #include "Common/Win32Utils.h"
 #include "ConsoleWindow.h"
-#include "GLES3/gl3.h"
+#include "GL/glew.h"
 #include "ImGui/imgui_impl_sdl.h"
 #include "Mod.h"
 #include "SDL.h"
@@ -173,6 +173,14 @@ namespace ToolKit
 #ifdef TK_DEBUG
             // GlDebugReportInit();
 #endif
+            //  Init glew
+            glewExperimental = true;
+            GLenum err       = glewInit();
+            if (GLEW_OK != err)
+            {
+              g_running = false;
+              return;
+            }
 
             // Init Main
             // Override SceneManager.
