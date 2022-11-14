@@ -868,7 +868,7 @@ namespace ToolKit
       {
         if (EditorViewport* vp = g_app->GetActiveViewport())
         {
-          m_gizmo->LookAt(vp->GetCamera(), vp->m_zoom);
+          m_gizmo->LookAt(vp->GetCamera(), vp->GetBillboardScale());
         }
       }
 

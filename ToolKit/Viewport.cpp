@@ -58,53 +58,31 @@ namespace ToolKit
   Viewport::Viewport(float width, float height)
       : m_wndContentAreaSize(width, height)
   {
-    GetCamera()->SetLens(glm::quarter_pi<float>(), width, height);
+    GetCamera()->SetLens(glm::quarter_pi<float>(), width / height);
     ResetViewportImage(GetRenderTargetSettings());
   }
 
   Viewport::~Viewport()
   {
-    SafeDel(m_framebuffer);
   }
 
   void Viewport::OnResizeContentArea(float width, float height)
   {
     m_wndContentAreaSize.x = width;
     m_wndContentAreaSize.y = height;
-
-    UpdateCameraLens(width, height);
     ResetViewportImage(GetRenderTargetSettings());
   }
 
   void Viewport::AdjustZoom(float delta)
   {
-    m_zoom -= delta;
-    m_zoom = glm::max(m_zoom, 0.01f);
-
     Camera* cam = GetCamera();
     cam->m_node->Translate(Vec3(0.0f, 0.0f, -delta),
                            TransformationSpace::TS_LOCAL);
-    if (cam->IsOrtographic())
-    {
-      cam->SetLens(-m_zoom * m_wndContentAreaSize.x * 0.5f,
-                   m_zoom * m_wndContentAreaSize.x * 0.5f,
-                   -m_zoom * m_wndContentAreaSize.y * 0.5f,
-                   m_zoom * m_wndContentAreaSize.y * 0.5f,
-                   0.5f,
-                   1000.0f);
-    }
-  }
 
-  void Viewport::UpdateCameraLens(float width, float height)
-  {
-    Camera* cam = GetCamera();
     if (cam->IsOrtographic())
     {
-      cam->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
-    }
-    else
-    {
-      cam->SetLens(cam->GetData().fov, width, height);
+      float zoom               = cam->m_orthographicScale - delta;
+      cam->m_orthographicScale = glm::max(zoom, 0.01f);
     }
   }
 
@@ -117,11 +95,10 @@ namespace ToolKit
   {
     if (m_framebuffer == nullptr)
     {
-      m_framebuffer = new Framebuffer();
+      m_framebuffer = std::make_shared<Framebuffer>();
     }
 
     m_framebuffer->UnInit();
-
     m_framebuffer->Init({(uint) m_wndContentAreaSize.x,
                          (uint) m_wndContentAreaSize.y,
                          settings.Msaa,
@@ -135,7 +112,7 @@ namespace ToolKit
     if (m_renderTarget->m_initiated)
     {
       m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                   m_renderTarget.get());
+                                   m_renderTarget);
     }
   }
 
@@ -207,15 +184,18 @@ namespace ToolKit
   {
     Camera* cam       = GetCamera();
     glm::mat4 view    = cam->GetViewMatrix();
-    glm::mat4 project = cam->GetData().projection;
-    Vec3 screenPos    = glm::project(
+    glm::mat4 project = cam->GetProjectionMatrix();
+
+    Vec3 screenPos = glm::project(
         pnt,
         view,
         project,
-        glm::vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
+        Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
+
     screenPos.x += m_contentAreaLocation.x;
     screenPos.y =
         m_wndContentAreaSize.y + m_contentAreaLocation.y - screenPos.y;
+
     return screenPos.xy;
   }
 
@@ -239,7 +219,17 @@ namespace ToolKit
   void Viewport::AttachCamera(ULongID camId)
   {
     m_attachedCamera = camId;
-    UpdateCameraLens(m_wndContentAreaSize.x, m_wndContentAreaSize.y);
+  }
+
+  float Viewport::GetBillboardScale()
+  {
+    Camera* cam = GetCamera();
+    if (cam->IsOrtographic())
+    {
+      return cam->m_orthographicScale;
+    }
+
+    return m_wndContentAreaSize.y;
   }
 
 } // namespace ToolKit

@@ -39,7 +39,7 @@ namespace ToolKit
     Entity_Surface,
     Entity_Light,
     Entity_Camera,
-    Entity_Directional,
+    UNUSEDSLOT_1,
     Entity_Node,
     Entity_Button,
     Entity_Sky,
@@ -69,7 +69,7 @@ namespace ToolKit
     virtual bool IsDrawable() const;
     virtual EntityType GetType() const;
     virtual void SetPose(const AnimationPtr& anim, float time);
-    virtual struct BoundingBox GetAABB(bool inWorld = false) const;
+    virtual BoundingBox GetAABB(bool inWorld = false) const;
     virtual Entity* Copy() const;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);

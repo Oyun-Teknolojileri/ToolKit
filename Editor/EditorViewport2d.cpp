@@ -394,10 +394,13 @@ namespace ToolKit
 
     void EditorViewport2d::AdjustZoom(float delta)
     {
-      if (delta == 0.0f && 100.0f / m_zoomPercentage == m_zoom)
+      Camera* cam = GetCamera();
+      float zoom  = cam->m_orthographicScale;
+      if (delta == 0.0f && glm::equal(100.0f / m_zoomPercentage, zoom))
       {
         return;
       }
+
       // 0.0f and FLT_MIN can be used to update lens,
       // so don't change percentage because of 0.0f or FLT_MIN
       if (delta != 0.0f && delta != FLT_MIN)
@@ -422,37 +425,30 @@ namespace ToolKit
           m_zoomPercentage -= 10;
         }
       }
-      m_zoom = 100.0f / m_zoomPercentage;
-      GetCamera()->SetLens(m_canvasSize.x * m_zoom * -0.5f,
-                           m_canvasSize.x * m_zoom * 0.5f,
-                           m_canvasSize.y * m_zoom * -0.5f,
-                           m_canvasSize.y * m_zoom * 0.5f,
-                           0.01f,
-                           1000.0f);
+
+      cam->m_orthographicScale = 100.0f / m_zoomPercentage;
     }
 
     void EditorViewport2d::PanZoom(float deltaTime)
     {
       Camera* cam = GetCamera();
-      if (cam)
+
+      // Adjust zoom always.
+      if (m_mouseOverContentArea)
       {
-        // Adjust zoom always.
-        if (m_mouseOverContentArea)
-        {
-          float zoom = ImGui::GetIO().MouseWheel;
-          AdjustZoom(zoom);
-        }
+        float zoom = ImGui::GetIO().MouseWheel;
+        AdjustZoom(zoom);
+      }
 
-        if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
-        {
-          // Orbit around it.
-          ImGuiIO& io = ImGui::GetIO();
-          float x     = -io.MouseDelta.x * m_zoom;
-          float y     = io.MouseDelta.y * m_zoom;
+      if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
+      {
+        // Orbit around it.
+        ImGuiIO& io = ImGui::GetIO();
+        float x     = -io.MouseDelta.x * cam->m_orthographicScale;
+        float y     = io.MouseDelta.y * cam->m_orthographicScale;
 
-          Vec3 displace = X_AXIS * x + Y_AXIS * y;
-          cam->m_node->Translate(displace, TransformationSpace::TS_WORLD);
-        }
+        Vec3 displace = X_AXIS * x + Y_AXIS * y;
+        cam->m_node->Translate(displace, TransformationSpace::TS_WORLD);
       }
     }
 
@@ -463,13 +459,15 @@ namespace ToolKit
         m_anchorMode->UnInit();
         SafeDel(m_anchorMode);
       }
+
       m_anchorMode = new AnchorMod(ModId::Anchor);
       m_anchorMode->Init();
 
       ResetViewportImage(GetRenderTargetSettings());
+      Camera* cam              = GetCamera();
+      cam->m_orthographicScale = 1.0f;
+      cam->m_node->SetTranslation(Z_AXIS * 10.0f);
 
-      m_zoom = 1.0f;
-      GetCamera()->m_node->SetTranslation(Z_AXIS * 10.0f);
       AdjustZoom(FLT_MIN);
 
       if (!m_2dViewOptions)

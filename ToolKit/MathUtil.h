@@ -1,76 +1,10 @@
 #pragma once
 
+#include "GeometryTypes.h"
 #include "Types.h"
-
-#include <algorithm>
 
 namespace ToolKit
 {
-  // Geometric types
-  //////////////////////////////////////////
-  template <class T>
-  struct Rect
-  {
-    T x;
-    T y;
-    T width;
-    T height;
-  };
-
-  struct BoundingBox
-  {
-    Vec3 min = Vec3(FLT_MAX);
-    Vec3 max = Vec3(-FLT_MAX);
-
-    Vec3 GetCenter()
-    {
-      return min + (max - min) * 0.5f;
-    }
-
-    void UpdateBoundary(const Vec3& v)
-    {
-      max = glm::max(max, v);
-      min = glm::min(min, v);
-    }
-
-    float Volume()
-    {
-      return glm::abs((max.x - min.x) * (max.y - min.y) * (max.z - min.z));
-    }
-
-    float GetWidth() const
-    {
-      return max.x - min.x;
-    }
-
-    float GetHeight() const
-    {
-      return max.y - min.y;
-    }
-  };
-
-  struct Ray
-  {
-    Vec3 position;
-    Vec3 direction;
-  };
-
-  struct PlaneEquation
-  {
-    Vec3 normal;
-    float d;
-  };
-
-  struct Frustum
-  {
-    PlaneEquation planes[6]; // Left - Right - Top - Bottom - Near - Far
-  };
-
-  struct BoundingSphere
-  {
-    Vec3 pos;
-    float radius;
-  };
 
   // Matrix Operations
   //////////////////////////////////////////
@@ -171,6 +105,13 @@ namespace ToolKit
   TK_API float SignedDistance(const PlaneEquation& plane, const Vec3& pnt);
   TK_API Vec3 ProjectPointOntoPlane(const PlaneEquation& plane, const Vec3& pt);
   TK_API Vec3 ProjectPointOntoLine(const Ray& ray, const Vec3& pnt);
+
+  /**
+   * Removes the entities that are outside of the camera.
+   * @param entities All entities.
+   * @param camera Camera that is being used for generating frustum.
+   */
+  TK_API void FrustumCull(EntityRawPtrArray& entities, Camera* camera);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

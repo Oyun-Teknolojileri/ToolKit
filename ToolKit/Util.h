@@ -149,9 +149,9 @@ namespace ToolKit
   // multiple materials. But they are ignored.
   TK_API MaterialPtr GetRenderMaterial(Entity* entity);
 
-  enum class EntityType;
+
   // Returns true if the type is a light type
-  TK_API bool IsLightType(EntityType type);
+  TK_API bool IsLightType(enum class EntityType type);
 
   // Memory operations.
   ///////////////////////////////////////////////////////

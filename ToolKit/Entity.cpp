@@ -56,7 +56,7 @@ namespace ToolKit
     anim->GetPose(m_node, time);
   }
 
-  struct BoundingBox Entity::GetAABB(bool inWorld) const
+  BoundingBox Entity::GetAABB(bool inWorld) const
   {
     BoundingBox aabb;
 
@@ -468,7 +468,7 @@ namespace ToolKit
       e = new Prefab();
       break;
     case EntityType::Entity_SpriteAnim:
-    case EntityType::Entity_Directional:
+    case EntityType::UNUSEDSLOT_1:
     default:
       assert(false);
       break;

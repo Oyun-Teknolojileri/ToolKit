@@ -9,26 +9,9 @@
 namespace ToolKit
 {
 
-  Camera::Camera(XmlNode* node)
-  {
-    DeSerialize(nullptr, node);
-
-    DirectionComponentPtr dCom = GetComponent<DirectionComponent>();
-    dCom->m_entity             = this;
-
-    if (m_ortographic)
-    {
-      SetLens(m_left, m_right, m_bottom, m_top, m_near, m_far);
-    }
-    else
-    {
-      SetLens(m_fov, m_aspect * m_height, m_height);
-    }
-  }
-
   Camera::Camera()
   {
-    SetLens(glm::radians(90.0f), 640.0f, 480.0f, 0.01f, 1000.0f);
+    SetLens(glm::radians(90.0f), 640.0f / 480.0f, 0.01f, 1000.0f);
     AddComponent(new DirectionComponent(this));
   }
 
@@ -36,53 +19,51 @@ namespace ToolKit
   {
   }
 
-  void Camera::SetLens(float fov, float width, float height)
+  void Camera::SetLens(float fov, float aspect)
   {
-    SetLens(fov, width, height, 0.5f, 1000.0f);
+    SetLens(fov, aspect, 0.5f, 1000.0f);
   }
 
-  void Camera::SetLens(
-      float fov, float width, float height, float near, float far)
+  void Camera::SetLens(float fov, float aspect, float near, float far)
   {
-    m_projection  = glm::perspectiveFov(fov, width, height, near, far);
+    m_projection  = glm::perspectiveFov(fov, aspect, 1.0f, near, far);
     m_fov         = fov;
-    m_aspect      = width / height;
+    m_aspect      = aspect;
     m_near        = near;
     m_far         = far;
-    m_height      = height;
     m_ortographic = false;
   }
 
   void Camera::SetLens(
       float left, float right, float bottom, float top, float near, float far)
   {
-    m_projection  = glm::ortho(left, right, bottom, top, near, far);
+    m_aspect     = (right - left) / (top - bottom);
+    m_projection = glm::ortho(left * m_orthographicScale,
+                              right * m_orthographicScale,
+                              bottom * m_orthographicScale,
+                              top * m_orthographicScale,
+                              near,
+                              far);
+
     m_left        = left;
     m_right       = right;
     m_top         = top;
     m_bottom      = bottom;
     m_fov         = 0.0f;
-    m_aspect      = 1.0f;
     m_near        = near;
     m_far         = far;
-    m_height      = top - bottom;
     m_ortographic = true;
   }
 
   Mat4 Camera::GetViewMatrix() const
   {
-    Mat4 view = m_node->GetTransform(TransformationSpace::TS_WORLD);
+    Mat4 view = m_node->GetTransform();
     return glm::inverse(view);
   }
 
   Mat4 Camera::GetProjectionMatrix() const
   {
     return m_projection;
-  }
-
-  void Camera::SetProjectionMatrix(Mat4 proj)
-  {
-    m_projection = proj;
   }
 
   bool Camera::IsOrtographic() const
@@ -97,13 +78,12 @@ namespace ToolKit
     assert(dcp);
     data.dir = dcp->GetDirection();
 
-    data.pos         = m_node->GetTranslation(TransformationSpace::TS_WORLD);
+    data.pos         = m_node->GetTranslation();
     data.projection  = m_projection;
     data.fov         = m_fov;
     data.aspect      = m_aspect;
     data.nearDist    = m_near;
     data.far         = m_far;
-    data.height      = m_height;
     data.ortographic = m_ortographic;
 
     return data;
@@ -125,30 +105,40 @@ namespace ToolKit
     WriteAttr(node, doc, "aspect", std::to_string(m_aspect));
     WriteAttr(node, doc, "near", std::to_string(m_near));
     WriteAttr(node, doc, "far", std::to_string(m_far));
-    WriteAttr(node, doc, "height", std::to_string(m_height));
     WriteAttr(node, doc, "ortographic", std::to_string(m_ortographic));
     WriteAttr(node, doc, "left", std::to_string(m_left));
     WriteAttr(node, doc, "right", std::to_string(m_right));
     WriteAttr(node, doc, "top", std::to_string(m_top));
     WriteAttr(node, doc, "bottom", std::to_string(m_bottom));
+    WriteAttr(node, doc, "scale", std::to_string(m_orthographicScale));
   }
 
   void Camera::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     ClearComponents();
     Entity::DeSerialize(doc, parent);
+
     if (XmlNode* node = parent->first_node("Camera"))
     {
       ReadAttr(node, "fov", m_fov);
       ReadAttr(node, "aspect", m_aspect);
       ReadAttr(node, "near", m_near);
       ReadAttr(node, "far", m_far);
-      ReadAttr(node, "height", m_height);
       ReadAttr(node, "ortographic", m_ortographic);
       ReadAttr(node, "left", m_left);
       ReadAttr(node, "right", m_right);
       ReadAttr(node, "top", m_top);
       ReadAttr(node, "bottom", m_bottom);
+      ReadAttr(node, "scale", m_orthographicScale);
+    }
+
+    if (m_ortographic)
+    {
+      SetLens(m_left, m_right, m_bottom, m_top, m_near, m_far);
+    }
+    else
+    {
+      SetLens(m_fov, m_aspect, m_near, m_far);
     }
   }
 
@@ -168,20 +158,71 @@ namespace ToolKit
     GetComponent<DirectionComponent>()->LookAt(geoCenter);
   }
 
+  float Camera::Fov() const
+  {
+    return m_fov;
+  }
+
+  float Camera::Aspect() const
+  {
+    return m_aspect;
+  }
+
+  float Camera::Near() const
+  {
+    return m_near;
+  }
+
+  float Camera::Far() const
+  {
+    return m_far;
+  }
+
+  float Camera::Left() const
+  {
+    return m_left;
+  }
+
+  float Camera::Right() const
+  {
+    return m_right;
+  }
+
+  float Camera::Top() const
+  {
+    return m_top;
+  }
+
+  float Camera::Bottom() const
+  {
+    return m_bottom;
+  }
+
+  Vec3 Camera::Position() const
+  {
+    return m_node->GetTranslation();
+  }
+
+  Vec3 Camera::Direction() const
+  {
+    DirectionComponentPtr dcp = GetComponent<DirectionComponent>();
+    return dcp->GetDirection();
+  }
+
   Entity* Camera::CopyTo(Entity* copyTo) const
   {
     WeakCopy(copyTo, false);
-    Camera* cpy        = static_cast<Camera*>(copyTo);
-    cpy->m_fov         = m_fov;
-    cpy->m_aspect      = m_aspect;
-    cpy->m_near        = m_near;
-    cpy->m_far         = m_far;
-    cpy->m_height      = m_height;
-    cpy->m_left        = m_left;
-    cpy->m_right       = m_right;
-    cpy->m_bottom      = m_bottom;
-    cpy->m_ortographic = m_ortographic;
-    cpy->m_projection  = m_projection;
+    Camera* cpy              = static_cast<Camera*>(copyTo);
+    cpy->m_fov               = m_fov;
+    cpy->m_aspect            = m_aspect;
+    cpy->m_near              = m_near;
+    cpy->m_far               = m_far;
+    cpy->m_left              = m_left;
+    cpy->m_right             = m_right;
+    cpy->m_bottom            = m_bottom;
+    cpy->m_ortographic       = m_ortographic;
+    cpy->m_projection        = m_projection;
+    cpy->m_orthographicScale = m_orthographicScale;
     cpy->ClearComponents();
     cpy->AddComponent(new DirectionComponent(cpy));
 
