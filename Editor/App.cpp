@@ -689,7 +689,6 @@ namespace ToolKit
       static constexpr char buildConfig[] = "Release";
       #endif
       String cmd = "cmake -S " + codePath
-        + " -A x64 "
         + " -B " + buildDir;
       m_statusMsg = "Compiling ..." + g_statusNoTerminate;
       ExecSysCommand(cmd, true, false, [this, buildDir](int res) -> void {
