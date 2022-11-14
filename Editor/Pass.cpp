@@ -368,7 +368,7 @@ namespace ToolKit
       renderer->m_overrideMat = light->GetShadowMaterial();
       for (Entity* ntt : entities)
       {
-        MaterialPtr entityMat = renderer->GetRenderMaterial(ntt);
+        MaterialPtr entityMat = ntt->GetRenderMaterial();
         renderer->m_overrideMat->SetRenderState(entityMat->GetRenderState());
         renderer->m_overrideMat->UnInit();
         renderer->m_overrideMat->m_alpha          = entityMat->m_alpha;

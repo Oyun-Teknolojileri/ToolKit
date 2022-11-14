@@ -190,13 +190,12 @@ namespace ToolKit
     {
       if (ntt->IsDrawable() && ntt->GetVisibleVal())
       {
-        MaterialPtr mat = GetRenderMaterial(ntt);
-        if (mat && !mat->GetRenderState()->AOInUse)
+        MaterialPtr entityMat = ntt->GetRenderMaterial();
+        if (!entityMat->GetRenderState()->AOInUse)
         {
           continue;
         }
 
-        MaterialPtr entityMat     = GetRenderMaterial(ntt);
         m_aoMat->m_alpha          = entityMat->m_alpha;
         m_aoMat->m_diffuseTexture = entityMat->m_diffuseTexture;
 
@@ -887,17 +886,7 @@ namespace ToolKit
       return m_overrideMat;
     }
 
-    MaterialPtr renderMat = nullptr;
-    if (MaterialComponentPtr matCom = entity->GetMaterialComponent())
-    {
-      renderMat = matCom->GetMaterialVal();
-    }
-    else if (MeshComponentPtr meshCom = entity->GetMeshComponent())
-    {
-      renderMat = meshCom->GetMeshVal()->m_material;
-    }
-
-    return renderMat;
+    return entity->GetRenderMaterial();
   }
 
   void Renderer::RenderSky(SkyBase* sky, Camera* cam)
@@ -1109,25 +1098,12 @@ namespace ToolKit
     // Iterate all entities and mark the ones which should
     // be lit with environment light
 
-    Entity* env = nullptr;
-
+    Entity* env     = nullptr;
     MaterialPtr mat = GetRenderMaterial(entity);
-    if (m_overrideMat)
-    {
-      mat = m_overrideMat;
-    }
-
-    if (mat == nullptr)
-    {
-      return;
-    }
 
     Vec3 pos = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-    BoundingBox bestBox;
-    bestBox.max = ZERO;
-    bestBox.min = ZERO;
+    BoundingBox bestBox{ZERO, ZERO};
     BoundingBox currentBox;
-    env = nullptr;
     for (Entity* envNtt : m_environmentLightEntities)
     {
       currentBox.max =
@@ -1270,7 +1246,7 @@ namespace ToolKit
             if (ntt->IsDrawable() &&
                 ntt->GetMeshComponent()->GetCastShadowVal())
             {
-              MaterialPtr entityMat = GetRenderMaterial(ntt);
+              MaterialPtr entityMat = ntt->GetRenderMaterial();
               m_overrideMat->SetRenderState(entityMat->GetRenderState());
               m_overrideMat->UnInit();
               m_overrideMat->m_alpha          = entityMat->m_alpha;
@@ -2013,8 +1989,6 @@ namespace ToolKit
                                      uint textureId,
                                      ProgramPtr program)
   {
-    assert(IsLightType(type));
-
     if (m_bindedShadowMapCount >= m_rhiSettings::maxShadows)
     {
       return;

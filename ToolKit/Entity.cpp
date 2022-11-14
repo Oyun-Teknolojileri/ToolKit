@@ -111,6 +111,27 @@ namespace ToolKit
     m_components.clear();
   }
 
+  MaterialPtr Entity::GetRenderMaterial() const
+  {
+    MaterialPtr renderMat = nullptr;
+    if (MaterialComponentPtr matCom = GetMaterialComponent())
+    {
+      renderMat = matCom->GetMaterialVal();
+    }
+    else if (MeshComponentPtr meshCom = GetMeshComponent())
+    {
+      renderMat = meshCom->GetMeshVal()->m_material;
+    }
+
+    if (renderMat == nullptr)
+    {
+      assert(false && "Entity with no material.");
+      renderMat = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    }
+
+    return renderMat;
+  }
+
   Entity* Entity::CopyTo(Entity* other) const
   {
     WeakCopy(other);
@@ -178,12 +199,12 @@ namespace ToolKit
     GetComponentPtrArray().push_back(component);
   }
 
-  MeshComponentPtr Entity::GetMeshComponent()
+  MeshComponentPtr Entity::GetMeshComponent() const
   {
     return GetComponent<MeshComponent>();
   }
 
-  MaterialComponentPtr Entity::GetMaterialComponent()
+  MaterialComponentPtr Entity::GetMaterialComponent() const
   {
     return GetComponent<MaterialComponent>();
   }
@@ -327,7 +348,7 @@ namespace ToolKit
     }
   }
 
-  bool Entity::IsSurfaceInstance()
+  bool Entity::IsSurfaceInstance() const
   {
     switch (GetType())
     {
