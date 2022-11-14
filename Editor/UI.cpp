@@ -845,8 +845,8 @@ namespace ToolKit
               // Both HDRIs and PNGs stored in Textures/ root folder
               std::filesystem::copy(
                   file,
-                  ConcatPaths(
-                      {GetResourcePath(ResourceType::Texture), importFolder}),
+                  ConcatPaths({GetResourcePath(ResourceType::Texture),
+                               ImportData.activeView->m_folder}),
                   std::filesystem::copy_options::overwrite_existing);
             }
             ImportData.files.erase(ImportData.files.begin() + i);
