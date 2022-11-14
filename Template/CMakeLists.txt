@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0.0)
 
 set(PROJECT_NAME "__projectname__" CACHE STRING "What is the project name ?")
 set(TOOLKIT_DIR "__tkdir__" CACHE FILEPATH "Where is the ToolKit source directory ?")
+set(CMAKE_GENERATOR_PLATFORM x64)
 
 #if not a path is provided, try fetching it from the path file.
 if("${TOOLKIT_DIR}" STREQUAL "__tkdir__")
