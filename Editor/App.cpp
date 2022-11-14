@@ -682,18 +682,16 @@ namespace ToolKit
       // create a build dir if not exist.
       std::filesystem::create_directories(buildDir);
 
-      // Update project files in case of change.
-      #ifdef TK_DEBUG
+// Update project files in case of change.
+#ifdef TK_DEBUG
       static constexpr char buildConfig[] = "Debug";
-      #else
+#else
       static constexpr char buildConfig[] = "Release";
-      #endif
-      String cmd = "cmake -S " + codePath
-        + " -B " + buildDir;
+#endif
+      String cmd  = "cmake -S " + codePath + " -B " + buildDir;
       m_statusMsg = "Compiling ..." + g_statusNoTerminate;
       ExecSysCommand(cmd, true, false, [this, buildDir](int res) -> void {
-        String cmd = "cmake --build " + buildDir
-          + " --config " + buildConfig;
+        String cmd = "cmake --build " + buildDir + " --config " + buildConfig;
         ExecSysCommand(cmd, false, false, [=](int res) -> void {
           if (res)
           {
@@ -1532,7 +1530,7 @@ namespace ToolKit
         {
           // Bounding box
           m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(
-              *envCom->GetBBox(), g_environmentGizmoColor, 1.0f));
+              envCom->GetBBox(), g_environmentGizmoColor, 1.0f));
         }
       }
     }
