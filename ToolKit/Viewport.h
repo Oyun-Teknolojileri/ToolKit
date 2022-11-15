@@ -163,14 +163,20 @@ namespace ToolKit
      */
     virtual void AttachCamera(ULongID camID); // Attach a camera from the scene
 
+    /**
+     * Returns the Billboard scale value based on viewport data. This scale is
+     * used to keep Billboard objects same size in screen space.
+     */
+    float GetBillboardScale();
+
    protected:
     // Internal window handling.
 
     /**
      * Updates Camera lenses with new width and height.
      * Resets the image that TargetRender of Viewport has.
-     * @param width Width of viewport
-     * @param height Height of viewport
+     * @param width Width of Viewport
+     * @param height Height of Viewport
      */
     virtual void OnResizeContentArea(float width, float height);
 
@@ -179,14 +185,6 @@ namespace ToolKit
      * @param delta Zoom amount.
      */
     virtual void AdjustZoom(float delta);
-
-    /**
-     * Updates the Viewport's Camera lens with new width and height
-     * @param width Width of Camera lens.
-     * @param height Height of Camera lens.
-     */
-    virtual void UpdateCameraLens(float width, float height);
-    // Override this to alter render target creation.
 
     /**
      * Returns RenderTargetSetting of the Viewport.
@@ -202,8 +200,11 @@ namespace ToolKit
 
    public:
     RenderTargetPtr m_renderTarget = nullptr; //!< Render target of viewport
-    Framebuffer* m_framebuffer =
-        nullptr; //!< Framebuffer of the render target of the viewport
+
+    /**
+     * Framebuffer of the render target of the viewport.
+     */
+    FramebufferPtr m_framebuffer = nullptr;
 
     FramebufferPtr m_ssaoGBuffer =
         nullptr; // Basicly needed for SSAO algorithm.
@@ -217,7 +218,6 @@ namespace ToolKit
 
     // Window properties.
     Vec2 m_contentAreaLocation; //!< Position of content area in screen space.
-    float m_zoom = 1.0f;        //!< Zoom amount of Viewport's Camera.
 
     // States.
     bool m_mouseOverContentArea = false;

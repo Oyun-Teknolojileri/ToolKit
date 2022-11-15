@@ -17,26 +17,24 @@ namespace ToolKit
       float aspect;
       float nearDist;
       float far;
-      float height;
       bool ortographic;
     };
 
    public:
     Camera();
-    explicit Camera(XmlNode* node);
     virtual ~Camera();
 
-    void SetLens(float fov, float width, float height);
-    void SetLens(float fov, float width, float height, float near, float far);
+    void SetLens(float fov, float aspect);
+    void SetLens(float fov, float aspect, float near, float far);
     void SetLens(float left,
                  float right,
                  float bottom,
                  float top,
                  float near,
                  float far);
+
     Mat4 GetViewMatrix() const;
     Mat4 GetProjectionMatrix() const;
-    void SetProjectionMatrix(Mat4 proj);
     bool IsOrtographic() const;
 
     CamData GetData() const;
@@ -48,15 +46,32 @@ namespace ToolKit
     // Tight fit camera frustum to a bounding box with a margin
     void FocusToBoundingBox(const BoundingBox& bb, float margin);
 
+    float Fov() const;
+    float Aspect() const;
+    float Near() const;
+    float Far() const;
+    float Left() const;
+    float Right() const;
+    float Top() const;
+    float Bottom() const;
+    Vec3 Position() const;
+    Vec3 Direction() const;
+
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
+
+   public:
+    /**
+     * Used to apply zoom by adjusting camera frustum. The bigger the frustum,
+     * the closer the image will be.
+     */
+    float m_orthographicScale = 1.0f;
 
    private:
     float m_fov        = 1.0f;
     float m_aspect     = 1.0f;
     float m_near       = 0.01f;
     float m_far        = 1000.0f;
-    float m_height     = 400.0f;
     float m_left       = 10.0f;
     float m_right      = 10.0f;
     float m_bottom     = 10.0f;

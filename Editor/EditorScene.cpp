@@ -455,11 +455,12 @@ namespace ToolKit
 
     void EditorScene::UpdateBillboardTransforms(EditorViewport* viewport)
     {
-      for (Billboard* bb : m_billboards)
+      for (Billboard* billboard : m_billboards)
       {
-        bb->m_worldLocation =
-            bb->m_entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        bb->LookAt(viewport->GetCamera(), viewport->m_zoom);
+        billboard->m_worldLocation =
+            billboard->m_entity->m_node->GetTranslation();
+        billboard->LookAt(viewport->GetCamera(),
+                          viewport->GetBillboardScale());
       }
     }
 

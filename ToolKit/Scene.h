@@ -60,6 +60,7 @@ namespace ToolKit
     EntityRawPtrArray Filter(std::function<bool(Entity*)> filter);
     SkyBase* GetSky();
     void LinkPrefab(const String& fullPath);
+    EntityRawPtrArray GetEnvironmentLightEntities();
 
     virtual Entity* RemoveEntity(ULongID id);
     virtual void RemoveEntity(const EntityRawPtrArray& entities);
