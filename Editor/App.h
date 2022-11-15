@@ -77,6 +77,7 @@ namespace ToolKit
       // Import facilities.
       int Import(const String& fullPath, const String& subDir, bool overwrite);
       bool CanImport(const String& fullPath);
+      void ManageDropfile(const StringView& fileName);
 
       // Workspace.
       void OpenScene(const String& fullPath);

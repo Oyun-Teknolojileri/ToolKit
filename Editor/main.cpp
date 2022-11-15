@@ -280,17 +280,7 @@ namespace ToolKit
 
       if (e.type == SDL_DROPFILE)
       {
-        const FolderWindowRawPtrArray& assetBrowsers =
-            g_app->GetAssetBrowsers();
-        for (FolderWindow* folderWindow : assetBrowsers)
-        {
-          if (folderWindow->MouseHovers())
-          {
-            UI::ImportData.activeView = folderWindow->GetActiveView(true);
-            UI::ImportData.files.push_back(e.drop.file);
-            UI::ImportData.showImportWindow = true;
-          }
-        }
+        g_app->ManageDropfile(e.drop.file);
       }
 
       if (e.type == SDL_QUIT)

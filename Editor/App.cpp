@@ -684,14 +684,15 @@ namespace ToolKit
 
 // Update project files in case of change.
 #ifdef TK_DEBUG
-      static constexpr char buildConfig[] = "Debug";
+      static const StringView buildConfig = "Debug";
 #else
-      static constexpr char buildConfig[] = "Release";
+      static const StringView buildConfig = "Release";
 #endif
       String cmd  = "cmake -S " + codePath + " -B " + buildDir;
       m_statusMsg = "Compiling ..." + g_statusNoTerminate;
       ExecSysCommand(cmd, true, false, [this, buildDir](int res) -> void {
-        String cmd = "cmake --build " + buildDir + " --config " + buildConfig;
+        String cmd =
+            "cmake --build " + buildDir + " --config " + buildConfig.data();
         ExecSysCommand(cmd, false, false, [=](int res) -> void {
           if (res)
           {
@@ -974,13 +975,13 @@ namespace ToolKit
             cmd += finalPath;
           }
 
-          cmd += "\" -s " + std::to_string(UI::ImportData.scale);
+          cmd += "\" -s " + std::to_string(UI::ImportData.Scale);
 
           // Execute command
           result = ExecSysCommand(cmd.c_str(), false, false);
           if (result != 0)
           {
-            GetLogger()->WriteConsole(LogType::Warning, "Import failed!");
+            GetLogger()->WriteConsole(LogType::Error, "Import failed!");
           }
         }
 
@@ -1163,6 +1164,19 @@ namespace ToolKit
       }
 
       return false;
+    }
+    void App::ManageDropfile(const StringView& fileName)
+    {
+      const FolderWindowRawPtrArray& assetBrowsers = g_app->GetAssetBrowsers();
+      for (FolderWindow* folderWindow : assetBrowsers)
+      {
+        if (folderWindow->MouseHovers())
+        {
+          UI::ImportData.ActiveView = folderWindow->GetActiveView(true);
+          UI::ImportData.Files.push_back(fileName.data());
+          UI::ImportData.ShowImportWindow = true;
+        }
+      }
     }
 
     void App::OpenScene(const String& fullPath)
