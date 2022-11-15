@@ -29,16 +29,12 @@ namespace ToolKit
 
   Renderer::Renderer()
   {
-    m_uiCamera = new Camera();
+    m_uiCamera        = new Camera();
+    m_utilFramebuffer = std::make_shared<Framebuffer>();
   }
 
   Renderer::~Renderer()
   {
-    if (m_utilFramebuffer != nullptr)
-    {
-      SafeDel(m_utilFramebuffer);
-    }
-    SafeDel(m_shadowMapCamera);
     SafeDel(m_uiCamera);
   }
 
@@ -48,8 +44,6 @@ namespace ToolKit
   {
     Camera* cam                = viewport->GetCamera();
     EntityRawPtrArray entities = scene->GetEntities();
-
-    ShadowPass(editorLights, entities);
 
     SkyBase* sky = scene->GetSky();
     if (sky != nullptr)
@@ -95,6 +89,21 @@ namespace ToolKit
                         randomFloats(generator) * 2.0 - 1.0);
         ssaoNoise.push_back(noise);
       }
+  }
+
+  void Renderer::SetCameraLens(Camera* cam)
+  {
+    float aspect = (float) m_viewportSize.x / (float) m_viewportSize.y;
+    if (!cam->IsOrtographic())
+    {
+      cam->SetLens(cam->Fov(), aspect, cam->Near(), cam->Far());
+    }
+    else
+    {
+      float width  = m_viewportSize.x * 0.5f;
+      float height = m_viewportSize.y * 0.5f;
+      cam->SetLens(-width, width, -height, height, cam->Near(), cam->Far());
+    }
   }
 
   void Renderer::GenerateSSAOTexture(const EntityRawPtrArray& entities,
@@ -144,13 +153,12 @@ namespace ToolKit
         (uint) viewport->m_wndContentAreaSize.y);
 
     viewport->m_ssaoGBuffer->SetAttachment(
-        Framebuffer::Attachment::ColorAttachment0,
-        viewport->m_ssaoPosition.get());
+        Framebuffer::Attachment::ColorAttachment0, viewport->m_ssaoPosition);
+
     viewport->m_ssaoGBuffer->SetAttachment(
-        Framebuffer::Attachment::ColorAttachment1,
-        viewport->m_ssaoNormal.get());
-    SetFramebuffer(
-        viewport->m_ssaoGBuffer.get(), true, {0.0f, 0.0f, 0.0f, 1.0});
+        Framebuffer::Attachment::ColorAttachment1, viewport->m_ssaoNormal);
+
+    SetFramebuffer(viewport->m_ssaoGBuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
 
     if (m_aoMat == nullptr)
     {
@@ -175,17 +183,19 @@ namespace ToolKit
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    SetCameraLens(cam);
+
     for (Entity* ntt : entities)
     {
       if (ntt->IsDrawable() && ntt->GetVisibleVal())
       {
-        MaterialPtr mat = GetRenderMaterial(ntt);
-        if (mat && !mat->GetRenderState()->AOInUse)
+        MaterialPtr entityMat = ntt->GetRenderMaterial();
+        if (!entityMat->GetRenderState()->AOInUse)
         {
           continue;
         }
 
-        MaterialPtr entityMat     = GetRenderMaterial(ntt);
         m_aoMat->m_alpha          = entityMat->m_alpha;
         m_aoMat->m_diffuseTexture = entityMat->m_diffuseTexture;
 
@@ -246,8 +256,8 @@ namespace ToolKit
         (uint) viewport->m_wndContentAreaSize.x,
         (uint) viewport->m_wndContentAreaSize.y);
     viewport->m_ssaoBuffer->SetAttachment(
-        Framebuffer::Attachment::ColorAttachment0, viewport->m_ssao.get());
-    SetFramebuffer(viewport->m_ssaoBuffer.get(), true, {0.0f, 0.0f, 0.0f, 1.0});
+        Framebuffer::Attachment::ColorAttachment0, viewport->m_ssao);
+    SetFramebuffer(viewport->m_ssaoBuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
 
     SetTexture(0, viewport->m_ssaoPosition->m_textureId);
     SetTexture(1, viewport->m_ssaoNormal->m_textureId);
@@ -340,6 +350,12 @@ namespace ToolKit
                         Camera* cam,
                         const LightRawPtrArray& lights)
   {
+    if (!cam->IsOrtographic())
+    {
+      // TODO: Orthographic mode must support environment lighting.
+      FindEnvironmentLight(ntt);
+    }
+
     MeshComponentPtrArray meshComponents;
     ntt->GetComponent<MeshComponent>(meshComponents);
 
@@ -377,6 +393,7 @@ namespace ToolKit
 
       skelComp->m_map->UpdateGPUTexture();
     };
+
     updateAndBindSkinningTextures();
 
     for (MeshComponentPtr meshCom : meshComponents)
@@ -408,11 +425,11 @@ namespace ToolKit
         mesh->Init();
         if (m_overrideMat != nullptr)
         {
-          m_mat = m_overrideMat.get();
+          m_mat = m_overrideMat;
         }
         else
         {
-          m_mat = nttMat ? nttMat.get() : mesh->m_material.get();
+          m_mat = nttMat ? nttMat : mesh->m_material;
         }
 
         ProgramPtr prg =
@@ -445,8 +462,8 @@ namespace ToolKit
             rs.diffuseTexture = secondaryMat->m_diffuseTexture->m_textureId;
           }
         }
-        SetRenderState(&rs, prg);
 
+        SetRenderState(&rs, prg);
         FeedUniforms(prg);
 
         glBindVertexArray(mesh->m_vaoId);
@@ -598,21 +615,24 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetFramebuffer(Framebuffer* fb, bool clear, const Vec4& color)
+  void Renderer::SetFramebuffer(FramebufferPtr fb,
+                                bool clear,
+                                const Vec4& color)
   {
     if (fb != nullptr)
     {
-      FramebufferSettings fbSet = fb->GetSettings();
-
-      if (fb == m_framebuffer &&
-          fb->GetSettings().Compare(m_lastFramebufferSettings))
+      if (m_framebuffer)
       {
-        return;
+        if (fb->GetFboId() == m_framebuffer->GetFboId())
+        {
+          return;
+        }
       }
-      m_lastFramebufferSettings = fbSet;
 
       glBindFramebuffer(GL_FRAMEBUFFER, fb->GetFboId());
-      glViewport(0, 0, fbSet.width, fbSet.height);
+
+      FramebufferSettings fbSet = fb->GetSettings();
+      SetViewportSize(fbSet.width, fbSet.height);
 
       if (clear)
       {
@@ -623,35 +643,48 @@ namespace ToolKit
     }
     else
     {
+      // Set backbuffer as draw area.
+      m_framebuffer = nullptr;
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
-      glViewport(0, 0, m_windowSize.x, m_windowSize.y);
+      SetViewportSize(m_windowSize.x, m_windowSize.y);
     }
 
     m_framebuffer = fb;
   }
 
-  void Renderer::SetFramebuffer(Framebuffer* fb, bool clear)
+  void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear)
   {
     SetFramebuffer(fb, clear, m_clearColor);
   }
 
-  void Renderer::SwapFramebuffer(Framebuffer** fb,
+  void Renderer::SwapFramebuffer(FramebufferPtr& fb,
                                  bool clear,
                                  const Vec4& color)
   {
-    Framebuffer* tmp = *fb;
-    *fb              = m_framebuffer;
-    SetFramebuffer(tmp, clear, color);
+    FramebufferPtr& tmp1 = fb;
+    FramebufferPtr tmp2  = m_framebuffer;
+    SetFramebuffer(fb, clear, color);
+    tmp1.swap(tmp2);
   }
 
-  void Renderer::SwapFramebuffer(Framebuffer** fb, bool clear)
+  void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear)
   {
     SwapFramebuffer(fb, clear, m_clearColor);
   }
 
+  FramebufferPtr Renderer::GetFrameBuffer()
+  {
+    return m_framebuffer;
+  }
+
+  void Renderer::ClearFrameBuffer(FramebufferPtr fb, const Vec4& color)
+  {
+    SwapFramebuffer(fb, true, color);
+    SwapFramebuffer(fb, false);
+  }
+
   void Renderer::SetViewport(Viewport* viewport)
   {
-    m_viewportSize = UVec2(viewport->m_wndContentAreaSize);
     SetFramebuffer(viewport->m_framebuffer);
   }
 
@@ -707,7 +740,9 @@ namespace ToolKit
                                 const LightRawPtrArray& lights,
                                 SkyBase* sky)
   {
-    GetEnvironmentLightEntities(entities);
+    ShadowPass(lights, entities);
+
+    CollectEnvironmentVolumes(entities);
 
     // Dropout non visible & drawable entities.
     entities.erase(std::remove_if(entities.begin(),
@@ -720,9 +755,21 @@ namespace ToolKit
 
     FrustumCull(entities, cam);
 
+    // Update billboards.
+    for (Entity* ntt : entities)
+    {
+      if (ntt->GetType() == EntityType::Entity_Billboard)
+      {
+        Billboard* billboard = static_cast<Billboard*>(ntt);
+        billboard->LookAt(cam, viewport->GetBillboardScale());
+      }
+    }
+
     GenerateSSAOTexture(entities, viewport);
 
     SetViewport(viewport);
+
+    SetCameraLens(cam);
 
     if (sky && !cam->IsOrtographic())
     {
@@ -732,31 +779,9 @@ namespace ToolKit
     EntityRawPtrArray blendedEntities;
     GetTransparentEntites(entities, blendedEntities);
 
-    RenderOpaque(entities, cam, viewport->m_zoom, lights);
+    RenderOpaque(entities, cam, lights);
 
-    RenderTransparent(blendedEntities, cam, viewport->m_zoom, lights);
-  }
-
-  void Renderer::FrustumCull(EntityRawPtrArray& entities, Camera* camera)
-  {
-    // Frustum cull
-    Mat4 pr         = camera->GetProjectionMatrix();
-    Mat4 v          = camera->GetViewMatrix();
-    Frustum frustum = ExtractFrustum(pr * v, false);
-
-    auto delFn = [frustum](Entity* ntt) -> bool {
-      IntersectResult res = FrustumBoxIntersection(frustum, ntt->GetAABB(true));
-      if (res == IntersectResult::Outside)
-      {
-        return true;
-      }
-      else
-      {
-        return false;
-      }
-    };
-    entities.erase(std::remove_if(entities.begin(), entities.end(), delFn),
-                   entities.end());
+    RenderTransparent(blendedEntities, cam, lights);
   }
 
   void Renderer::GetTransparentEntites(EntityRawPtrArray& entities,
@@ -815,27 +840,17 @@ namespace ToolKit
 
   void Renderer::RenderOpaque(EntityRawPtrArray entities,
                               Camera* cam,
-                              float zoom,
                               const LightRawPtrArray& editorLights)
   {
     // Render opaque objects
     for (Entity* ntt : entities)
     {
-      if (ntt->GetType() == EntityType::Entity_Billboard)
-      {
-        Billboard* billboard = static_cast<Billboard*>(ntt);
-        billboard->LookAt(cam, zoom);
-      }
-
-      FindEnvironmentLight(ntt, cam);
-
       Render(ntt, cam, editorLights);
     }
   }
 
   void Renderer::RenderTransparent(EntityRawPtrArray entities,
                                    Camera* cam,
-                                   float zoom,
                                    const LightRawPtrArray& editorLights)
   {
     StableSortByDistanceToCamera(entities, cam);
@@ -844,14 +859,6 @@ namespace ToolKit
     // Render transparent entities
     for (Entity* ntt : entities)
     {
-      if (ntt->GetType() == EntityType::Entity_Billboard)
-      {
-        Billboard* billboard = static_cast<Billboard*>(ntt);
-        billboard->LookAt(cam, zoom);
-      }
-
-      FindEnvironmentLight(ntt, cam);
-
       // For two sided materials,
       // first render back of transparent objects then render front
       MaterialPtr renderMaterial = GetRenderMaterial(ntt);
@@ -870,6 +877,16 @@ namespace ToolKit
         Render(ntt, cam, editorLights);
       }
     }
+  }
+
+  MaterialPtr Renderer::GetRenderMaterial(Entity* entity)
+  {
+    if (m_overrideMat)
+    {
+      return m_overrideMat;
+    }
+
+    return entity->GetRenderMaterial();
   }
 
   void Renderer::RenderSky(SkyBase* sky, Camera* cam)
@@ -923,8 +940,8 @@ namespace ToolKit
     BoundingBox aabb = entity->GetAABB(true);
     for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
     {
-      Light* light = lights[lightIndx];
       float radius;
+      Light* light = lights[lightIndx];
       if (light->GetType() == EntityType::Entity_PointLight)
       {
         radius = static_cast<PointLight*>(light)->GetRadiusVal();
@@ -956,17 +973,13 @@ namespace ToolKit
           }
         }
       }*/
+
       if (light->GetType() == EntityType::Entity_SpotLight)
       {
-        if (m_shadowMapCamera == nullptr)
-        {
-          m_shadowMapCamera = new Camera();
-        }
+        light->UpdateShadowCamera();
 
-        static_cast<SpotLight*>(light)->UpdateShadowMapCamera(
-            m_shadowMapCamera);
-        Frustum spotFrustum = ExtractFrustum(
-            ((SpotLight*) light)->m_shadowMapCameraProjectionViewMatrix, false);
+        Frustum spotFrustum =
+            ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
 
         if (FrustumBoxIntersection(spotFrustum, aabb) !=
             IntersectResult::Outside)
@@ -976,18 +989,17 @@ namespace ToolKit
       }
       if (light->GetType() == EntityType::Entity_PointLight)
       {
-        BoundingSphere lightSphere;
-        lightSphere.pos =
-            light->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-        lightSphere.radius = radius;
+        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
         if (SphereBoxIntersection(lightSphere, aabb))
         {
           curIntersectCount++;
         }
       }
     }
+
     std::sort(
         intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
+
     for (uint i = 0; i < intersectCounts.size(); i++)
     {
       if (intersectCounts[i].intersectCount == 0)
@@ -1018,12 +1030,12 @@ namespace ToolKit
           {(uint) source->m_width, (uint) source->m_height, 0, false, false});
     }
 
-    RenderTarget rt(dest.get());
-    m_copyFb->SetAttachment(Framebuffer::Attachment::ColorAttachment0, &rt);
+    RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dest);
+    m_copyFb->SetAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
 
     // Set and clear fb
-    Framebuffer* lastFb = m_framebuffer;
-    SetFramebuffer(m_copyFb.get(), true, Vec4(0.0f));
+    FramebufferPtr lastFb = m_framebuffer;
+    SetFramebuffer(m_copyFb, true, Vec4(0.0f));
 
     // Render to texture
     if (m_copyMaterial == nullptr)
@@ -1040,12 +1052,7 @@ namespace ToolKit
     m_copyMaterial->Init();
 
     DrawFullQuad(m_copyMaterial);
-
     SetFramebuffer(lastFb, false);
-
-    // Prevent deleting the texture
-    rt.m_textureId = 0;
-    rt.m_initiated = false;
   }
 
   void Renderer::ToggleBlending(bool blending)
@@ -1060,7 +1067,7 @@ namespace ToolKit
     }
   }
 
-  void Renderer::GetEnvironmentLightEntities(EntityRawPtrArray entities)
+  void Renderer::CollectEnvironmentVolumes(const EntityRawPtrArray& entities)
   {
     // Find entities which have environment component
     m_environmentLightEntities.clear();
@@ -1083,37 +1090,20 @@ namespace ToolKit
     }
   }
 
-  void Renderer::FindEnvironmentLight(Entity* entity, Camera* camera)
+  void Renderer::FindEnvironmentLight(Entity* entity)
   {
-    if (camera->IsOrtographic())
-    {
-      return;
-    }
-
     // Note: If multiple bounding boxes are intersecting and the intersection
     // volume includes the entity, the smaller bounding box is taken
 
     // Iterate all entities and mark the ones which should
     // be lit with environment light
 
-    Entity* env = nullptr;
-
+    Entity* env     = nullptr;
     MaterialPtr mat = GetRenderMaterial(entity);
-    if (m_overrideMat)
-    {
-      mat = m_overrideMat;
-    }
-    if (mat == nullptr)
-    {
-      return;
-    }
 
     Vec3 pos = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-    BoundingBox bestBox;
-    bestBox.max = ZERO;
-    bestBox.min = ZERO;
+    BoundingBox bestBox{ZERO, ZERO};
     BoundingBox currentBox;
-    env = nullptr;
     for (Entity* envNtt : m_environmentLightEntities)
     {
       currentBox = envNtt->GetComponent<EnvironmentComponent>()->GetBBox();
@@ -1171,9 +1161,8 @@ namespace ToolKit
     {
       // Sky light
       SkyBase* sky = GetSceneManager()->GetCurrentScene()->GetSky();
-      if (sky != nullptr && sky->GetIlluminateVal())
+      if (sky != nullptr && sky->IsInitialized() && sky->GetIlluminateVal())
       {
-        sky->Init();
         mat->GetRenderState()->IBLInUse = true;
         if (sky->GetType() == EntityType::Entity_Sky)
         {
@@ -1225,26 +1214,18 @@ namespace ToolKit
       // Update shadow map ProjView matrix every frame for all lights
       if (light->GetCastShadowVal())
       {
-        // Get shadow map camera
-        if (m_shadowMapCamera == nullptr)
+        if (light->GetCastShadowVal() == false)
         {
-          m_shadowMapCamera = new Camera();
+          continue;
         }
 
         if (light->GetType() == EntityType::Entity_DirectionalLight)
         {
-          static_cast<DirectionalLight*>(light)->UpdateShadowMapCamera(
-              m_shadowMapCamera, entities);
+          static_cast<DirectionalLight*>(light)->UpdateShadowFrustum(entities);
         }
-        else if (light->GetType() == EntityType::Entity_PointLight)
+        else
         {
-          static_cast<PointLight*>(light)->UpdateShadowMapCamera(
-              m_shadowMapCamera);
-        }
-        else if (light->GetType() == EntityType::Entity_SpotLight)
-        {
-          static_cast<SpotLight*>(light)->UpdateShadowMapCamera(
-              m_shadowMapCamera);
+          light->UpdateShadowCamera();
         }
 
         // Create framebuffer
@@ -1252,13 +1233,7 @@ namespace ToolKit
 
         auto renderForShadowMapFn = [this](Light* light,
                                            EntityRawPtrArray entities) -> void {
-          // This is copy because point light is rendered with different shadow
-          // map cameras each time this func called
-          light->m_shadowMapCameraProjectionViewMatrix =
-              m_shadowMapCamera->GetProjectionMatrix() *
-              m_shadowMapCamera->GetViewMatrix();
-          light->m_shadowMapCameraFar = m_shadowMapCamera->GetData().far;
-          FrustumCull(entities, m_shadowMapCamera);
+          FrustumCull(entities, light->m_shadowCamera);
 
           glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1268,7 +1243,7 @@ namespace ToolKit
             if (ntt->IsDrawable() &&
                 ntt->GetMeshComponent()->GetCastShadowVal())
             {
-              MaterialPtr entityMat = GetRenderMaterial(ntt);
+              MaterialPtr entityMat = ntt->GetRenderMaterial();
               m_overrideMat->SetRenderState(entityMat->GetRenderState());
               m_overrideMat->UnInit();
               m_overrideMat->m_alpha          = entityMat->m_alpha;
@@ -1276,73 +1251,69 @@ namespace ToolKit
               m_overrideMat->GetRenderState()->blendFunction =
                   BlendFunction::NONE;
               m_overrideMat->Init();
-              Render(ntt, m_shadowMapCamera);
+              Render(ntt, light->m_shadowCamera);
             }
           }
         };
 
-        static Quaternion rotations[6];
-        static Vec3 scales[6];
-
-        // Calculate view transformations once
-        static bool viewsCalculated = false;
-        if (!viewsCalculated)
+        switch (light->GetType())
         {
-          Mat4 views[6] = {
-              glm::lookAt(
-                  ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-              glm::lookAt(
-                  ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-              glm::lookAt(
-                  ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-              glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-              glm::lookAt(
-                  ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-              glm::lookAt(
-                  ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
-
-          for (int i = 0; i < 6; ++i)
+        case EntityType::Entity_PointLight: {
+          // Initialize point light view transforms.
+          static Quaternion rotations[6];
+          static Vec3 scales[6];
+          static bool viewsCalculated = false;
+          if (!viewsCalculated)
           {
-            DecomposeMatrix(views[i], nullptr, &rotations[i], &scales[i]);
+            Mat4 views[6] = {
+                glm::lookAt(
+                    ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                glm::lookAt(
+                    ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                glm::lookAt(
+                    ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+                glm::lookAt(
+                    ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+                glm::lookAt(
+                    ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                glm::lookAt(
+                    ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+
+            for (int i = 0; i < 6; ++i)
+            {
+              DecomposeMatrix(views[i], nullptr, &rotations[i], &scales[i]);
+            }
+
+            viewsCalculated = true;
           }
 
-          viewsCalculated = true;
-        }
+          FramebufferPtr smBuffer = light->GetShadowMapFramebuffer();
+          SetFramebuffer(smBuffer, true, Vec4(1.0f));
 
-        if (light->GetType() == EntityType::Entity_PointLight)
-        {
-          SetFramebuffer(
-              light->GetShadowMapFramebuffer().get(), true, Vec4(1.0f));
-          glViewport(0,
-                     0,
-                     static_cast<uint>(light->GetShadowResolutionVal().x),
-                     static_cast<uint>(light->GetShadowResolutionVal().y));
+          Vec2 shadowRes = light->GetShadowResolutionVal();
+          glViewport(0, 0, uint(shadowRes.x), uint(shadowRes.y));
 
           for (unsigned int i = 0; i < 6; ++i)
           {
-            light->GetShadowMapFramebuffer()->SetAttachment(
-                Framebuffer::Attachment::ColorAttachment0,
-                light->GetShadowMapRenderTarget().get(),
-                (Framebuffer::CubemapFace) i);
+            smBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                    light->GetShadowMapRenderTarget(),
+                                    (Framebuffer::CubemapFace) i);
 
-            m_shadowMapCamera->m_node->SetOrientation(
-                rotations[i], TransformationSpace::TS_WORLD);
-            m_shadowMapCamera->m_node->SetScale(scales[i]);
+            light->m_node->SetOrientation(rotations[i]);
+
+            // TODO: Scales are not needed. Remove.
+            light->m_node->SetScale(scales[i]);
 
             renderForShadowMapFn(light, entities);
           }
         }
-        else if (light->GetType() == EntityType::Entity_DirectionalLight)
-        {
-          SetFramebuffer(
-              light->GetShadowMapFramebuffer().get(), true, Vec4(1.0f));
+        case EntityType::Entity_DirectionalLight:
+        case EntityType::Entity_SpotLight:
+          SetFramebuffer(light->GetShadowMapFramebuffer(), true, Vec4(1.0f));
           renderForShadowMapFn(light, entities);
-        }
-        else // Spot light
-        {
-          SetFramebuffer(
-              light->GetShadowMapFramebuffer().get(), true, Vec4(1.0f));
-          renderForShadowMapFn(light, entities);
+          break;
+        default:
+          break;
         }
       }
     }
@@ -1381,11 +1352,8 @@ namespace ToolKit
                                       const Vec3& axis,
                                       const float amount)
   {
-    if (m_utilFramebuffer == nullptr)
-    {
-      m_utilFramebuffer = new Framebuffer();
-      m_utilFramebuffer->Init({0, 0, 0, false, false});
-    }
+    m_utilFramebuffer->UnInit();
+    m_utilFramebuffer->Init({0, 0, 0, false, false});
 
     if (m_gaussianBlurMaterial == nullptr)
     {
@@ -1405,7 +1373,7 @@ namespace ToolKit
     m_gaussianBlurMaterial->Init();
 
     m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                     dest.get());
+                                     dest);
 
     SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_gaussianBlurMaterial);
@@ -1416,11 +1384,8 @@ namespace ToolKit
                                   const Vec3& axis,
                                   const float amount)
   {
-    if (m_utilFramebuffer == nullptr)
-    {
-      m_utilFramebuffer = new Framebuffer();
-      m_utilFramebuffer->Init({0, 0, 0, false, false});
-    }
+    m_utilFramebuffer->UnInit();
+    m_utilFramebuffer->Init({0, 0, 0, false, false});
 
     if (m_averageBlurMaterial == nullptr)
     {
@@ -1440,7 +1405,7 @@ namespace ToolKit
     m_averageBlurMaterial->Init();
 
     m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                     dest.get());
+                                     dest);
 
     SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_averageBlurMaterial);
@@ -1448,7 +1413,26 @@ namespace ToolKit
 
   void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)
   {
-    m_view    = cam->GetViewMatrix();
+    m_view = cam->GetViewMatrix();
+
+    // Recalculate the projection matrix due to aspect ratio changes of the
+    // current frame buffer.
+    /*if (cam->IsOrtographic())
+    {
+      // ASPECT ??
+      cam->SetLens(cam->Left(),
+                   cam->Right(),
+                   cam->Top(),
+                   cam->Bottom(),
+                   cam->Near(),
+                   cam->Far());
+    }
+    else
+    {
+      float aspect = (float) m_viewportSize.x / (float) m_viewportSize.y;
+      cam->SetLens(cam->Fov(), aspect);
+    }*/
+
     m_project = cam->GetProjectionMatrix();
     m_model   = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
   }
@@ -1881,12 +1865,16 @@ namespace ToolKit
                                    g_lightsoftShadowsStrCache[i].c_str());
         glUniform1i(loc, (int) (currLight->GetPCFSamplesVal() > 1));
 
-        SetShadowMapTexture(
-            type,
-            currLight->GetShadowMapFramebuffer()
-                ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
-                ->m_textureId,
-            program);
+        if (FramebufferPtr shadowFrameBuffer =
+                currLight->GetShadowMapFramebuffer())
+        {
+          SetShadowMapTexture(
+              type,
+              shadowFrameBuffer
+                  ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
+                  ->m_textureId,
+              program);
+        }
       }
       GLuint loc = glGetUniformLocation(program->m_handle,
                                         g_lightCastShadowStrCache[i].c_str());
@@ -1998,8 +1986,6 @@ namespace ToolKit
                                      uint textureId,
                                      ProgramPtr program)
   {
-    assert(IsLightType(type));
-
     if (m_bindedShadowMapCount >= m_rhiSettings::maxShadows)
     {
       return;
@@ -2058,10 +2044,10 @@ namespace ToolKit
     m_pointLightShadowCount      = 0;
   }
 
-  Texture* Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture,
-                                                  uint width,
-                                                  uint height,
-                                                  float exposure)
+  CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture,
+                                                    uint width,
+                                                    uint height,
+                                                    float exposure)
   {
     const RenderTargetSettigs set = {0,
                                      false,
@@ -2075,19 +2061,9 @@ namespace ToolKit
                                      GraphicTypes::FormatRGB,
                                      GraphicTypes::TypeUnsignedByte,
                                      Vec4(0.0f)};
-    RenderTarget* cubemap         = new RenderTarget(width, height, set);
-    cubemap->Init();
-
-    // Views for 6 different angles
-    CameraPtr cam = std::make_shared<Camera>();
-    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
-    Mat4 views[] = {
-        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+    RenderTargetPtr cubeMapRt =
+        std::make_shared<RenderTarget>(width, height, set);
+    cubeMapRt->Init();
 
     // Create material
     MaterialPtr mat = std::make_shared<Material>();
@@ -2103,61 +2079,73 @@ namespace ToolKit
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
-    if (m_utilFramebuffer == nullptr)
-    {
-      m_utilFramebuffer = new Framebuffer();
-    }
     m_utilFramebuffer->UnInit();
     m_utilFramebuffer->Init({width, height, 0, false, false});
     m_utilFramebuffer->ClearAttachments();
 
+    // Views for 6 different angles
+    static Camera cam;
+    cam.SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+    Mat4 views[] = {
+        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+
     for (int i = 0; i < 6; ++i)
     {
-      Vec3 pos;
+      Vec3 pos, sca;
       Quaternion rot;
-      Vec3 sca;
+
       DecomposeMatrix(views[i], &pos, &rot, &sca);
 
-      cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
-      cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
-      cam->m_node->SetScale(sca);
+      cam.m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
+      cam.m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
+      cam.m_node->SetScale(sca);
 
       m_utilFramebuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
-          cubemap,
+          cubeMapRt,
           (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
-
-      DrawCube(cam.get(), mat);
+      DrawCube(&cam, mat);
     }
     SetFramebuffer(nullptr);
 
-    return cubemap;
+    // Take the ownership of render target.
+    CubeMapPtr cubeMap     = std::make_shared<CubeMap>(cubeMapRt->m_textureId);
+    cubeMapRt->m_textureId = 0;
+    cubeMapRt              = nullptr;
+
+    return cubeMap;
   }
 
-  Texture* Renderer::GenerateIrradianceCubemap(CubeMapPtr cubemap,
-                                               uint width,
-                                               uint height)
+  CubeMapPtr Renderer::GenerateIrradianceCubemap(CubeMapPtr cubemap,
+                                                 uint width,
+                                                 uint height)
   {
-    const RenderTargetSettigs set   = {0,
-                                       false,
-                                       GraphicTypes::TargetCubeMap,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::SampleLinear,
-                                       GraphicTypes::SampleLinear,
-                                       GraphicTypes::FormatRGB,
-                                       GraphicTypes::FormatRGB,
-                                       GraphicTypes::TypeUnsignedByte,
-                                       Vec4(0.0f)};
-    RenderTarget* irradianceCubemap = new RenderTarget(width, height, set);
-    irradianceCubemap->Init();
+    const RenderTargetSettigs set = {0,
+                                     false,
+                                     GraphicTypes::TargetCubeMap,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::TypeUnsignedByte,
+                                     Vec4(0.0f)};
+    RenderTargetPtr cubeMapRt =
+        std::make_shared<RenderTarget>(width, height, set);
+    cubeMapRt->Init();
 
     // Views for 6 different angles
     CameraPtr cam = std::make_shared<Camera>();
-    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
+    cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
     Mat4 views[] = {
         glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
         glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
@@ -2179,10 +2167,6 @@ namespace ToolKit
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
-    if (m_utilFramebuffer == nullptr)
-    {
-      m_utilFramebuffer = new Framebuffer();
-    }
     m_utilFramebuffer->UnInit();
     m_utilFramebuffer->Init({width, height, 0, false, false});
 
@@ -2199,16 +2183,20 @@ namespace ToolKit
 
       m_utilFramebuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
-          irradianceCubemap,
+          cubeMapRt,
           (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
-
       DrawCube(cam.get(), mat);
     }
     SetFramebuffer(nullptr);
 
-    return irradianceCubemap;
+    // Take the ownership of render target.
+    CubeMapPtr cubeMap     = std::make_shared<CubeMap>(cubeMapRt->m_textureId);
+    cubeMapRt->m_textureId = 0;
+    cubeMapRt              = nullptr;
+
+    return cubeMap;
   }
 
 } // namespace ToolKit

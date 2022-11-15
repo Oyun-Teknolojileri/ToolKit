@@ -551,11 +551,6 @@ namespace ToolKit
       BoolCheck(tagArgs, &g_app->m_selectEffectingLights);
     }
 
-    void ShowDepth(TagArgArray tagArgs)
-    {
-      BoolCheck(tagArgs, &g_app->m_showDepth);
-    }
-
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2)
     {
@@ -615,7 +610,6 @@ namespace ToolKit
       CreateCommand(g_loadPlugin, LoadPlugin);
       CreateCommand(g_showShadowFrustum, ShowShadowFrustum);
       CreateCommand(g_selectEffectingLights, SelectAllEffectingLights);
-      CreateCommand(g_showDepth, ShowDepth);
     }
 
     ConsoleWindow::~ConsoleWindow()

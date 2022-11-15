@@ -60,10 +60,10 @@ namespace ToolKit
     void Init(const FramebufferSettings& settings);
     void UnInit();
 
-    RenderTarget* SetAttachment(Attachment atc,
-                                RenderTarget* rt,
-                                CubemapFace face = CubemapFace::NONE);
-    RenderTarget* GetAttachment(Attachment atc);
+    RenderTargetPtr SetAttachment(Attachment atc,
+                                  RenderTargetPtr rt,
+                                  CubemapFace face = CubemapFace::NONE);
+    RenderTargetPtr GetAttachment(Attachment atc);
     void ClearAttachments();
 
     uint GetFboId();
@@ -74,7 +74,7 @@ namespace ToolKit
     void ReconstructIfNeeded(uint width, uint height);
 
    private:
-    RenderTarget* DetachAttachment(Attachment atc);
+    RenderTargetPtr DetachAttachment(Attachment atc);
     void DeleteDefaultDepthAttachment();
     void SetDrawBuffers();
     bool IsColorAttachment(Attachment atc);
@@ -88,8 +88,8 @@ namespace ToolKit
     bool m_initialized  = false;
     uint m_fboId        = 0;
     uint m_defaultRboId = 0;
-    RenderTarget* m_colorAtchs[m_maxColorAttachmentCount];
-    RenderTarget* m_depthAtch = nullptr;
+    RenderTargetPtr m_colorAtchs[m_maxColorAttachmentCount];
+    RenderTargetPtr m_depthAtch = nullptr;
   };
 
 }; // namespace ToolKit

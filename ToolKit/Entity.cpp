@@ -56,7 +56,7 @@ namespace ToolKit
     anim->GetPose(m_node, time);
   }
 
-  struct BoundingBox Entity::GetAABB(bool inWorld) const
+  BoundingBox Entity::GetAABB(bool inWorld) const
   {
     BoundingBox aabb;
 
@@ -109,6 +109,27 @@ namespace ToolKit
     // Probably base entity will call this too, so there is no problem to use
     //  like that
     m_components.clear();
+  }
+
+  MaterialPtr Entity::GetRenderMaterial() const
+  {
+    MaterialPtr renderMat = nullptr;
+    if (MaterialComponentPtr matCom = GetMaterialComponent())
+    {
+      renderMat = matCom->GetMaterialVal();
+    }
+    else if (MeshComponentPtr meshCom = GetMeshComponent())
+    {
+      renderMat = meshCom->GetMeshVal()->m_material;
+    }
+
+    if (renderMat == nullptr)
+    {
+      assert(false && "Entity with no material.");
+      renderMat = GetMaterialManager()->GetCopyOfDefaultMaterial();
+    }
+
+    return renderMat;
   }
 
   Entity* Entity::CopyTo(Entity* other) const
@@ -178,12 +199,12 @@ namespace ToolKit
     GetComponentPtrArray().push_back(component);
   }
 
-  MeshComponentPtr Entity::GetMeshComponent()
+  MeshComponentPtr Entity::GetMeshComponent() const
   {
     return GetComponent<MeshComponent>();
   }
 
-  MaterialComponentPtr Entity::GetMaterialComponent()
+  MaterialComponentPtr Entity::GetMaterialComponent() const
   {
     return GetComponent<MaterialComponent>();
   }
@@ -327,7 +348,7 @@ namespace ToolKit
     }
   }
 
-  bool Entity::IsSurfaceInstance()
+  bool Entity::IsSurfaceInstance() const
   {
     switch (GetType())
     {
@@ -468,7 +489,7 @@ namespace ToolKit
       e = new Prefab();
       break;
     case EntityType::Entity_SpriteAnim:
-    case EntityType::Entity_Directional:
+    case EntityType::UNUSEDSLOT_1:
     default:
       assert(false);
       break;
