@@ -19,6 +19,7 @@
 #include "Node.h"
 #include "OutlinerWindow.h"
 #include "OverlayUI.h"
+#include "Pass.h"
 #include "PluginWindow.h"
 #include "PopupWindows.h"
 #include "Primative.h"
@@ -37,6 +38,9 @@
 
 namespace ToolKit
 {
+  ShadowPass* myShadowPass = nullptr;
+  RenderPass* myRenderPass = nullptr;
+
   namespace Editor
   {
     App::App(int windowWidth, int windowHeight) : m_workspace(this)
@@ -47,6 +51,9 @@ namespace ToolKit
       m_renderer->m_windowSize.y = windowHeight;
       m_statusMsg                = "OK";
 
+      myShadowPass = new ShadowPass();
+      myRenderPass = new RenderPass();
+
       OverrideEntityConstructors();
 
       lightModeMat = std::make_shared<Material>();
@@ -55,6 +62,9 @@ namespace ToolKit
     App::~App()
     {
       Destroy();
+
+      SafeDel(myShadowPass);
+      SafeDel(myRenderPass);
     }
 
     void App::Init()
@@ -282,11 +292,11 @@ namespace ToolKit
           m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
 
           // Pass Test Begin
-          myShadowPass.m_params.Entities = GetCurrentScene()->GetEntities();
-          myShadowPass.m_params.Lights   = totalLights;
+          myShadowPass->m_params.Entities = GetCurrentScene()->GetEntities();
+          myShadowPass->m_params.Lights   = totalLights;
 
           // Clear old rts.
-          for (Light* l : myShadowPass.m_params.Lights)
+          for (Light* l : myShadowPass->m_params.Lights)
           {
             if (l->GetShadowMapFramebuffer())
             {
@@ -296,10 +306,10 @@ namespace ToolKit
           }
           // myShadowPass.Render();
 
-          myRenderPass.m_params.Scene          = GetCurrentScene();
-          myRenderPass.m_params.Cam            = viewCam;
-          myRenderPass.m_params.FrameBuffer    = viewport->m_framebuffer;
-          myRenderPass.m_params.BillboardScale = viewport->GetBillboardScale();
+          myRenderPass->m_params.Scene          = GetCurrentScene();
+          myRenderPass->m_params.Cam            = viewCam;
+          myRenderPass->m_params.FrameBuffer    = viewport->m_framebuffer;
+          myRenderPass->m_params.BillboardScale = viewport->GetBillboardScale();
           // myRenderPass.Render();
           // Pass Test End
 
@@ -628,18 +638,16 @@ namespace ToolKit
       // create a build dir if not exist.
       std::filesystem::create_directories(buildDir);
 
-      // Update project files in case of change.
-      #ifdef TK_DEBUG
+// Update project files in case of change.
+#ifdef TK_DEBUG
       static constexpr char buildConfig[] = "Debug";
-      #else
+#else
       static constexpr char buildConfig[] = "Release";
-      #endif
-      String cmd = "cmake -S " + codePath
-        + " -B " + buildDir;
+#endif
+      String cmd  = "cmake -S " + codePath + " -B " + buildDir;
       m_statusMsg = "Compiling ..." + g_statusNoTerminate;
       ExecSysCommand(cmd, true, false, [this, buildDir](int res) -> void {
-        String cmd = "cmake --build " + buildDir
-          + " --config " + buildConfig;
+        String cmd = "cmake --build " + buildDir + " --config " + buildConfig;
         ExecSysCommand(cmd, false, false, [=](int res) -> void {
           if (res)
           {

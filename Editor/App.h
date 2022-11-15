@@ -18,8 +18,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Pass.h"
-
 namespace ToolKit
 {
   namespace Editor
@@ -34,9 +32,6 @@ namespace ToolKit
     class App : Serializable
     {
      public:
-      ShadowPass myShadowPass;
-      RenderPass myRenderPass;
-
       App(int windowWidth, int windowHeight);
       virtual ~App();
 
