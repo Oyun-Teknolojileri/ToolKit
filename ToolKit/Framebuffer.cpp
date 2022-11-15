@@ -135,8 +135,8 @@ namespace ToolKit
     }
   }
 
-  RenderTarget* Framebuffer::SetAttachment(Attachment atc,
-                                           RenderTarget* rt,
+  RenderTargetPtr Framebuffer::SetAttachment(Attachment atc,
+                                           RenderTargetPtr rt,
                                            CubemapFace face)
   {
     GLenum attachment = GL_DEPTH_ATTACHMENT;
@@ -158,7 +158,7 @@ namespace ToolKit
       return nullptr;
     }
 
-    RenderTarget* oldRt = DetachAttachment(atc);
+    RenderTargetPtr oldRt = DetachAttachment(atc);
 
     GLint lastFBO;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
@@ -211,7 +211,7 @@ namespace ToolKit
     return oldRt;
   }
 
-  RenderTarget* Framebuffer::GetAttachment(Attachment atc)
+  RenderTargetPtr Framebuffer::GetAttachment(Attachment atc)
   {
     if (IsColorAttachment(atc))
     {
@@ -244,9 +244,9 @@ namespace ToolKit
     }
   }
 
-  RenderTarget* Framebuffer::DetachAttachment(Attachment atc)
+  RenderTargetPtr Framebuffer::DetachAttachment(Attachment atc)
   {
-    RenderTarget* rt  = m_depthAtch;
+    RenderTargetPtr rt  = m_depthAtch;
     GLenum attachment = GL_DEPTH_ATTACHMENT;
     if (IsColorAttachment(atc))
     {
@@ -354,8 +354,8 @@ namespace ToolKit
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
 
-    GLenum colorAttachments[8] = {0,0,0,0,0,0,0,0};
-    int count = 0;
+    GLenum colorAttachments[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    int count                  = 0;
     for (int i = 0; i < m_maxColorAttachmentCount; ++i)
     {
       if (m_colorAtchs[i] != nullptr && m_colorAtchs[i]->m_textureId != 0)

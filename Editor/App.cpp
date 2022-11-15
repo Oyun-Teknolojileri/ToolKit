@@ -168,10 +168,9 @@ namespace ToolKit
       std::vector<EditorViewport*> viewports;
       for (Window* wnd : m_windows)
       {
-        if (EditorViewport* vp = dynamic_cast<EditorViewport*>(wnd))
+        if (wnd->IsViewport())
         {
-          viewports.push_back(vp);
-          GetCurrentScene()->UpdateBillboardTransforms(vp);
+          viewports.push_back((EditorViewport*) wnd);
         }
         wnd->DispatchSignals();
       }
@@ -205,7 +204,7 @@ namespace ToolKit
           }
         }
 
-        if (!found || (m_showDepth && foundFirstLight))
+        if (!found)
         {
           EnableLightGizmo(light, false);
         }
@@ -252,169 +251,116 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
-          if (m_showDepth && foundFirstLight)
+          switch (m_sceneLightingMode)
           {
-            // Update shadow map cameras
-            Camera cam;
-            switch (firstSelectedLight->GetType())
-            {
-            case EntityType::Entity_DirectionalLight:
-              static_cast<DirectionalLight*>(firstSelectedLight)
-                  ->UpdateShadowMapCamera(
-                      &cam,
-                      GetSceneManager()->GetCurrentScene()->GetEntities());
-              break;
-            case EntityType::Entity_SpotLight:
-              static_cast<SpotLight*>(firstSelectedLight)
-                  ->UpdateShadowMapCamera(&cam);
-              break;
-            case EntityType::Entity_PointLight:
-              static_cast<PointLight*>(firstSelectedLight)
-                  ->UpdateShadowMapCamera(&cam);
-              break;
-            }
-
-            // Update material
+          case LightComplexity: {
             lightModeMat->UnInit();
-            if (firstSelectedLight->GetType() ==
-                EntityType::Entity_DirectionalLight)
-            {
-              lightModeMat->m_vertexShader = GetShaderManager()->Create<Shader>(
-                  ShaderPath("ToolKit/orthogonalDepthViewVert.shader"));
-              lightModeMat->m_fragmentShader =
-                  GetShaderManager()->Create<Shader>(
-                      ShaderPath("ToolKit/orthogonalDepthViewFrag.shader"));
-
-              lightModeMat->m_vertexShader->SetShaderParameter(
-                  "LightView", ParameterVariant(cam.GetViewMatrix()));
-              lightModeMat->m_vertexShader->SetShaderParameter(
-                  "LightFrustumHalfSize",
-                  ParameterVariant(
-                      (cam.GetData().far - cam.GetData().nearDist) / 2.0f));
-              lightModeMat->m_vertexShader->SetShaderParameter(
-                  "LightDir",
-                  ParameterVariant(
-                      static_cast<DirectionalLight*>(firstSelectedLight)
-                          ->GetComponent<DirectionComponent>()
-                          ->GetDirection()));
-              lightModeMat->Init();
-              m_renderer->m_overrideMat = lightModeMat;
-            }
-            else // Point or spot light
-            {
-              lightModeMat->m_vertexShader = GetShaderManager()->Create<Shader>(
-                  ShaderPath("ToolKit/defaultVertex.shader"));
-              lightModeMat->m_fragmentShader =
-                  GetShaderManager()->Create<Shader>(
-                      ShaderPath("ToolKit/perspectiveDepthViewFrag.shader"));
-
-              const Vec3 pos = firstSelectedLight->m_node->GetTranslation(
-                  TransformationSpace::TS_WORLD);
-              lightModeMat->m_fragmentShader->SetShaderParameter(
-                  "lightPos", ParameterVariant(pos));
-              lightModeMat->m_fragmentShader->SetShaderParameter(
-                  "far", ParameterVariant(cam.GetData().far));
-              lightModeMat->Init();
-              m_renderer->m_overrideMat = lightModeMat;
-            }
+            lightModeMat->m_fragmentShader = GetShaderManager()->Create<Shader>(
+                ShaderPath("ToolKit/lightComplexity.shader"));
+            lightModeMat->Init();
+            m_renderer->m_overrideMat = lightModeMat;
           }
-          else
-          {
-            switch (m_sceneLightingMode)
-            {
-            case LightComplexity: {
-              lightModeMat->UnInit();
-              lightModeMat->m_fragmentShader =
-                  GetShaderManager()->Create<Shader>(
-                      ShaderPath("ToolKit/lightComplexity.shader"));
-              lightModeMat->Init();
-              m_renderer->m_overrideMat = lightModeMat;
-            }
-            break;
-            case LightingOnly: {
-              m_renderer->m_renderOnlyLighting = true;
-            }
-            break;
-            case Unlit: {
-              lightModeMat =
-                  GetMaterialManager()->Create<Material>("unlit.material");
-              lightModeMat->Init();
-              m_renderer->m_overrideMat            = lightModeMat;
-              m_renderer->m_overrideDiffuseTexture = true;
-            }
-            break;
-            default:
-              m_renderer->m_overrideMat            = nullptr;
-              m_renderer->m_overrideDiffuseTexture = false;
-            }
+          break;
+          case LightingOnly: {
+            m_renderer->m_renderOnlyLighting = true;
+          }
+          break;
+          case Unlit: {
+            lightModeMat =
+                GetMaterialManager()->Create<Material>("unlit.material");
+            lightModeMat->Init();
+            m_renderer->m_overrideMat            = lightModeMat;
+            m_renderer->m_overrideDiffuseTexture = true;
+          }
+          break;
+          default:
+            m_renderer->m_overrideMat            = nullptr;
+            m_renderer->m_overrideDiffuseTexture = false;
           }
 
           // Render scene.
           m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
 
-          if (!m_showDepth || !foundFirstLight)
+          // Pass Test Begin
+          myShadowPass.m_params.Entities = GetCurrentScene()->GetEntities();
+          myShadowPass.m_params.Lights   = totalLights;
+
+          // Clear old rts.
+          for (Light* l : myShadowPass.m_params.Lights)
           {
-            // Render grid.
-            Camera* cam     = viewport->GetCamera();
-            auto gridDrawFn = [this, &cam, &viewport](Grid* grid) -> void {
-              m_renderer->m_gridParams.sizeEachCell = grid->m_gridCellSize;
-              m_renderer->m_gridParams.axisColorHorizontal =
-                  grid->m_horizontalAxisColor;
-              m_renderer->m_gridParams.axisColorVertical =
-                  grid->m_verticalAxisColor;
-              m_renderer->m_gridParams.maxLinePixelCount =
-                  grid->m_maxLinePixelCount;
-              m_renderer->m_gridParams.is2DViewport =
-                  (viewport->GetType() == Window::Type::Viewport2d);
-              m_renderer->Render(grid, cam);
-            };
-
-            Grid* grid = viewport->GetType() == Window::Type::Viewport2d
-                             ? m_2dGrid
-                             : m_grid;
-
-            gridDrawFn(grid);
-
-            // Render fixed scene objects.
-            if (viewport->GetType() != Window::Type::Viewport2d)
+            if (l->GetShadowMapFramebuffer())
             {
-              m_origin->LookAt(cam, viewport->m_zoom);
-              m_renderer->Render(m_origin, cam);
-
-              m_cursor->LookAt(cam, viewport->m_zoom);
-              m_renderer->Render(m_cursor, cam);
+              m_renderer->ClearFrameBuffer(l->GetShadowMapFramebuffer(),
+                                           Vec4(1.0f));
             }
-
-            // Render gizmo.
-            RenderGizmo(viewport, m_gizmo);
-
-            // Render anchor.
-            if (viewport->GetType() == Window::Type::Viewport2d)
-            {
-              RenderAnchor(viewport, m_anchor);
-            }
-
-            RenderComponentGizmo(viewport, selecteds);
           }
+          // myShadowPass.Render();
+
+          myRenderPass.m_params.Scene          = GetCurrentScene();
+          myRenderPass.m_params.Cam            = viewCam;
+          myRenderPass.m_params.FrameBuffer    = viewport->m_framebuffer;
+          myRenderPass.m_params.BillboardScale = viewport->GetBillboardScale();
+          // myRenderPass.Render();
+          // Pass Test End
+
+          // Render Editor Objects.
+          // Grid.
+          Camera* cam     = viewport->GetCamera();
+          auto gridDrawFn = [this, &cam, &viewport](Grid* grid) -> void {
+            m_renderer->m_gridParams.sizeEachCell = grid->m_gridCellSize;
+            m_renderer->m_gridParams.axisColorHorizontal =
+                grid->m_horizontalAxisColor;
+            m_renderer->m_gridParams.axisColorVertical =
+                grid->m_verticalAxisColor;
+            m_renderer->m_gridParams.maxLinePixelCount =
+                grid->m_maxLinePixelCount;
+            m_renderer->m_gridParams.is2DViewport =
+                (viewport->GetType() == Window::Type::Viewport2d);
+            m_renderer->Render(grid, cam);
+          };
+
+          Grid* grid = viewport->GetType() == Window::Type::Viewport2d
+                           ? m_2dGrid
+                           : m_grid;
+
+          gridDrawFn(grid);
+
+          // Render fixed scene objects.
+          if (viewport->GetType() != Window::Type::Viewport2d)
+          {
+            m_origin->LookAt(cam, viewport->GetBillboardScale());
+            m_renderer->Render(m_origin, cam);
+
+            m_cursor->LookAt(cam, viewport->GetBillboardScale());
+            m_renderer->Render(m_cursor, cam);
+          }
+
+          // Render gizmo.
+          RenderGizmo(viewport, m_gizmo);
+
+          // Render anchor.
+          if (viewport->GetType() == Window::Type::Viewport2d)
+          {
+            RenderAnchor(viewport, m_anchor);
+          }
+
+          RenderComponentGizmo(viewport, selecteds);
         }
 
-        if (!m_showDepth || !foundFirstLight)
-        {
-          RenderSelected(viewport, selecteds);
+        RenderSelected(viewport, selecteds);
 
-          // Render debug objects.
-          if (!m_perFrameDebugObjects.empty())
+        // Render debug objects.
+        if (!m_perFrameDebugObjects.empty())
+        {
+          for (Entity* dbgObj : m_perFrameDebugObjects)
           {
-            for (Entity* dbgObj : m_perFrameDebugObjects)
-            {
-              m_renderer->Render(dbgObj, viewCam);
-            }
-            for (Entity* dbgObj : m_perFrameDebugObjects)
-            {
-              SafeDel(dbgObj);
-            }
-            m_perFrameDebugObjects.clear();
+            m_renderer->Render(dbgObj, viewCam);
           }
+          for (Entity* dbgObj : m_perFrameDebugObjects)
+          {
+            SafeDel(dbgObj);
+          }
+          m_perFrameDebugObjects.clear();
         }
       }
 
@@ -817,7 +763,7 @@ namespace ToolKit
         vp->m_name = g_IsoViewport;
         vp->GetCamera()->m_node->SetTranslation({0.0f, 10.0f, 0.0f});
         vp->GetCamera()->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
-        vp->m_zoom = 0.02f;
+        vp->GetCamera()->m_orthographicScale = 0.02f;
         vp->GetCamera()->GetComponent<DirectionComponent>()->Pitch(
             glm::radians(-90.0f));
         vp->m_cameraAlignment = CameraAlignment::Top;
@@ -1248,6 +1194,7 @@ namespace ToolKit
 
       GetFileManager()->PackResources(path);
     }
+
     void App::SaveAllResources()
     {
       for (auto resource : GetResourceManager(ResourceType::Mesh)->m_storage)
@@ -1383,12 +1330,12 @@ namespace ToolKit
         for (Entity* ntt : selection)
         {
           // Add billboard
-          Entity* bb = GetCurrentScene()->GetBillboardOfEntity(ntt);
-          if (bb != nullptr)
+          Entity* billboard = GetCurrentScene()->GetBillboardOfEntity(ntt);
+          if (billboard != nullptr)
           {
-            static_cast<Billboard*>(bb)->LookAt(viewport->GetCamera(),
-                                                viewport->m_zoom);
-            m_renderer->Render(bb, viewport->GetCamera());
+            static_cast<Billboard*>(billboard)->LookAt(
+                viewport->GetCamera(), viewport->GetBillboardScale());
+            m_renderer->Render(billboard, viewport->GetCamera());
           }
 
           if (ntt->IsDrawable())
@@ -1477,7 +1424,7 @@ namespace ToolKit
         return;
       }
 
-      gizmo->LookAt(viewport->GetCamera(), viewport->m_zoom);
+      gizmo->LookAt(viewport->GetCamera(), viewport->GetBillboardScale());
 
       glClear(GL_DEPTH_BUFFER_BIT);
       if (PolarGizmo* pg = dynamic_cast<PolarGizmo*>(gizmo))
@@ -1786,7 +1733,6 @@ namespace ToolKit
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
-      light->m_isStudioLight = true;
       light->SetCastShadowVal(false);
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
@@ -1796,7 +1742,6 @@ namespace ToolKit
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
-      light->m_isStudioLight = true;
       light->SetCastShadowVal(false);
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);
@@ -1806,7 +1751,6 @@ namespace ToolKit
       light->SetIntensityVal(intensity);
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
-      light->m_isStudioLight = true;
       light->SetCastShadowVal(false);
       m_lightMaster->AddChild(light->m_node);
       m_sceneLights.push_back(light);

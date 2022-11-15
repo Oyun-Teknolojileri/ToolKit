@@ -31,16 +31,15 @@ namespace ToolKit
      */
     void RenderUI(Viewport* viewport, UILayer* layer);
 
-    void Render(Entity* ntt,
-                Camera* cam,
-                const LightRawPtrArray& editorLights = LightRawPtrArray());
-
     void SetRenderState(const RenderState* const state, ProgramPtr program);
 
-    void SetFramebuffer(Framebuffer* fb, bool clear, const Vec4& color);
-    void SetFramebuffer(Framebuffer* fb, bool clear = true);
-    void SwapFramebuffer(Framebuffer** fb, bool clear, const Vec4& color);
-    void SwapFramebuffer(Framebuffer** fb, bool clear = true);
+    void SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color);
+    void SetFramebuffer(FramebufferPtr fb, bool clear = true);
+    void SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color);
+    void SwapFramebuffer(FramebufferPtr& fb, bool clear = true);
+
+    FramebufferPtr GetFrameBuffer();
+    void ClearFrameBuffer(FramebufferPtr fb, const Vec4& color);
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
@@ -50,26 +49,59 @@ namespace ToolKit
     void DrawCube(Camera* cam,
                   MaterialPtr mat,
                   const Mat4& transform = Mat4(1.0f));
+
     void SetTexture(ubyte slotIndx, uint textureId);
     void SetShadowMapTexture(EntityType type,
                              uint textureId,
                              ProgramPtr program);
     void ResetShadowMapBindings(ProgramPtr program);
 
-    Texture* GenerateCubemapFrom2DTexture(TexturePtr texture,
+    CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture,
                                           uint width,
                                           uint height,
                                           float exposure = 1.0f);
 
-    Texture* GenerateIrradianceCubemap(CubeMapPtr cubemap,
+    CubeMapPtr GenerateIrradianceCubemap(CubeMapPtr cubemap,
                                        uint width,
                                        uint height);
+
     LightRawPtrArray GetBestLights(Entity* entity,
                                    const LightRawPtrArray& lights);
 
     void CopyTexture(TexturePtr source, TexturePtr dest);
 
     void ToggleBlending(bool blending);
+
+    // If there is a material component, returns its material else
+    // returns mesh's material. If there is not a MaterialComponent, it will
+    // return the mesh's first material. In case of multisubmesh, there may be
+    // multiple materials. But they are ignored.
+    MaterialPtr GetRenderMaterial(Entity* entity);
+
+    // TODO: Should be private or within a Pass.
+    /////////////////////
+    // Left public for thumbnail rendering. TODO: there must be techniques
+    // handling thumbnail render.
+    void Render(Entity* ntt,
+                Camera* cam,
+                const LightRawPtrArray& editorLights = LightRawPtrArray());
+
+    void Apply7x1GaussianBlur(const TexturePtr source,
+                              RenderTargetPtr dest,
+                              const Vec3& axis,
+                              const float amount);
+
+    /**
+     * Just before the render, set the lens to fit aspect ratio to frame buffer.
+     */
+    void SetCameraLens(Camera* cam);
+
+    /**
+     * Collects all the environment volumes.
+     */
+    void CollectEnvironmentVolumes(const EntityRawPtrArray& entities);
+
+    /////////////////////
 
    private:
     void RenderEntities(
@@ -78,13 +110,6 @@ namespace ToolKit
         Viewport* viewport,
         const LightRawPtrArray& editorLights = LightRawPtrArray(),
         SkyBase* sky                         = nullptr);
-
-    /**
-     * Removes the entites that are outside of the camera.
-     * @param entities All entites.
-     * @param camera Camera that is being used for generating frustum.
-     */
-    void FrustumCull(EntityRawPtrArray& entities, Camera* camera);
 
     /**
      * Extracts blended entites from given entity array.
@@ -105,7 +130,6 @@ namespace ToolKit
     void RenderOpaque(
         EntityRawPtrArray entities,
         Camera* cam,
-        float zoom,
         const LightRawPtrArray& editorLights = LightRawPtrArray());
 
     /**
@@ -119,7 +143,6 @@ namespace ToolKit
     void RenderTransparent(
         EntityRawPtrArray entities,
         Camera* cam,
-        float zoom,
         const LightRawPtrArray& editorLights = LightRawPtrArray());
 
     void RenderSky(SkyBase* sky, Camera* cam);
@@ -127,18 +150,20 @@ namespace ToolKit
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
 
-    void GetEnvironmentLightEntities(EntityRawPtrArray entities);
-    void FindEnvironmentLight(Entity* entity, Camera* camera);
+    /**
+     * Sets current entities material iblInUse parameter, if it falls within an
+     * environment volume or sky. Set m_iblRotation from the found environment
+     * volume to reflect environment rotation.
+     * @param entity to find the environment volume.
+     */
+    void FindEnvironmentLight(Entity* entity);
 
     void ShadowPass(const LightRawPtrArray& lights,
                     const EntityRawPtrArray& entities);
     void UpdateShadowMaps(const LightRawPtrArray& lights,
                           const EntityRawPtrArray& entities);
     void FilterShadowMaps(const LightRawPtrArray& lights);
-    void Apply7x1GaussianBlur(const TexturePtr source,
-                              RenderTargetPtr dest,
-                              const Vec3& axis,
-                              const float amount);
+
     void ApplyAverageBlur(const TexturePtr source,
                           RenderTargetPtr dest,
                           const Vec3& axis,
@@ -160,8 +185,7 @@ namespace ToolKit
    public:
     uint m_totalFrameCount = 0;
     uint m_frameCount      = 0;
-    UVec2 m_windowSize;   //!< Application window size.
-    UVec2 m_viewportSize; //!< Current viewport size.
+    UVec2 m_windowSize; //!< Application window size.
     Vec4 m_clearColor             = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
     MaterialPtr m_overrideMat     = nullptr;
     bool m_overrideDiffuseTexture = false;
@@ -187,12 +211,10 @@ namespace ToolKit
     Mat4 m_model;
     Mat4 m_iblRotation;
     LightRawPtrArray m_lights;
-    Camera* m_cam              = nullptr;
-    Camera* m_shadowMapCamera  = nullptr;
-    Material* m_mat            = nullptr;
-    MaterialPtr m_aoMat        = nullptr;
-    Framebuffer* m_framebuffer = nullptr;
-    FramebufferSettings m_lastFramebufferSettings;
+    Camera* m_cam                = nullptr;
+    MaterialPtr m_mat            = nullptr;
+    MaterialPtr m_aoMat          = nullptr;
+    FramebufferPtr m_framebuffer = nullptr;
 
     typedef struct RHIConstants
     {
@@ -203,6 +225,7 @@ namespace ToolKit
       static constexpr int maxPointLightShadows      = 4;
       static constexpr int maxShadows                = 8;
     } m_rhiSettings;
+
     uint m_textureSlots[RHIConstants::textureSlotCount];
     int m_bindedShadowMapCount       = 0;
     int m_dirAndSpotLightShadowCount = 0;
@@ -213,7 +236,13 @@ namespace ToolKit
 
     EntityRawPtrArray m_environmentLightEntities;
 
-    Framebuffer* m_utilFramebuffer     = nullptr;
+    UVec2 m_viewportSize; //!< Current viewport size.
+
+    /**
+     * Temporary frame buffer to use in various operation. Don't rely on its
+     * sate or use it to cache state.
+     */
+    FramebufferPtr m_utilFramebuffer   = nullptr;
     MaterialPtr m_gaussianBlurMaterial = nullptr;
     MaterialPtr m_averageBlurMaterial  = nullptr;
 

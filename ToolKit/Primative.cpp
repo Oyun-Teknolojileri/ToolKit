@@ -32,6 +32,7 @@ namespace ToolKit
 
         if (m_settings.heightInScreenSpace > 0.0f)
         {
+          // Compensate shrinkage due to height changes.
           m_node->SetScale(Vec3(m_settings.heightInScreenSpace * scale));
         }
       }
@@ -57,10 +58,10 @@ namespace ToolKit
 
         if (m_settings.heightInScreenSpace > 0.0f)
         {
+          // Compensate shrinkage due to height changes.
           float magicScale = 6.0f;
           m_node->SetScale(
-              Vec3(magicScale * m_settings.heightInScreenSpace /
-                   data.height)); // Compensate shrinkage due to height changes.
+              Vec3(magicScale * m_settings.heightInScreenSpace / scale));
         }
       }
 
@@ -649,7 +650,6 @@ namespace ToolKit
 
     return ntt;
   }
-
 
   EntityType Arrow2d::GetType() const
   {
