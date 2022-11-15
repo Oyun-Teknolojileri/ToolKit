@@ -628,18 +628,17 @@ namespace ToolKit
       // create a build dir if not exist.
       std::filesystem::create_directories(buildDir);
 
-      // Update project files in case of change.
-      #ifdef TK_DEBUG
-      static constexpr char buildConfig[] = "Debug";
-      #else
-      static constexpr char buildConfig[] = "Release";
-      #endif
-      String cmd = "cmake -S " + codePath
-        + " -B " + buildDir;
+// Update project files in case of change.
+#ifdef TK_DEBUG
+      static const StringView buildConfig = "Debug";
+#else
+      static const StringView buildConfig = "Release";
+#endif
+      String cmd  = "cmake -S " + codePath + " -B " + buildDir;
       m_statusMsg = "Compiling ..." + g_statusNoTerminate;
       ExecSysCommand(cmd, true, false, [this, buildDir](int res) -> void {
-        String cmd = "cmake --build " + buildDir
-          + " --config " + buildConfig;
+        String cmd =
+            "cmake --build " + buildDir + " --config " + buildConfig.data();
         ExecSysCommand(cmd, false, false, [=](int res) -> void {
           if (res)
           {
@@ -922,11 +921,14 @@ namespace ToolKit
             cmd += finalPath;
           }
 
-          cmd += "\" -s " + std::to_string(UI::ImportData.scale);
+          cmd += "\" -s " + std::to_string(UI::ImportData.Scale);
 
           // Execute command
           result = ExecSysCommand(cmd.c_str(), false, false);
-          assert(result != -1);
+          if (result != 0)
+          {
+            GetLogger()->WriteConsole(LogType::Error, "Import failed!");
+          }
         }
 
         // Move assets.
@@ -1102,7 +1104,25 @@ namespace ToolKit
         return true;
       }
 
+      if (ext == ".png" || ext == ".hdri")
+      {
+        return true;
+      }
+
       return false;
+    }
+    void App::ManageDropfile(const StringView& fileName)
+    {
+      const FolderWindowRawPtrArray& assetBrowsers = g_app->GetAssetBrowsers();
+      for (FolderWindow* folderWindow : assetBrowsers)
+      {
+        if (folderWindow->MouseHovers())
+        {
+          UI::ImportData.ActiveView = folderWindow->GetActiveView(true);
+          UI::ImportData.Files.push_back(fileName.data());
+          UI::ImportData.ShowImportWindow = true;
+        }
+      }
     }
 
     void App::OpenScene(const String& fullPath)

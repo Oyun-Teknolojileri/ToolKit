@@ -145,11 +145,12 @@ namespace ToolKit
 
       static struct Import
       {
-        bool showImportWindow = false;
-        bool overwrite        = false;
-        StringArray files;
-        String subDir;
-        float scale = 1.0f;
+        bool ShowImportWindow = false;
+        bool Overwrite        = false;
+        StringArray Files;
+        String SubDir;
+        float Scale            = 1.0f;
+        class FolderView* ActiveView = nullptr;
       } ImportData;
 
       static struct SearchFile
