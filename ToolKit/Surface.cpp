@@ -236,49 +236,49 @@ namespace ToolKit
         static_cast<float>(mesh->m_material->m_diffuseTexture->m_height);
 
     Rect<float> textureRect;
-    textureRect.x =
-        static_cast<float>(val.rectangle.x) / static_cast<float>(imageWidth);
+    textureRect.X =
+        static_cast<float>(val.rectangle.X) / static_cast<float>(imageWidth);
 
-    textureRect.height = (static_cast<float>(val.rectangle.height) /
+    textureRect.Height = (static_cast<float>(val.rectangle.Height) /
                           static_cast<float>(imageHeight));
 
-    textureRect.y = 1.0f -
-                    (static_cast<float>(val.rectangle.y) /
+    textureRect.Y = 1.0f -
+                    (static_cast<float>(val.rectangle.Y) /
                      static_cast<float>(imageHeight)) -
-                    textureRect.height;
+                    textureRect.Height;
 
-    textureRect.width = static_cast<float>(val.rectangle.width) /
+    textureRect.Width = static_cast<float>(val.rectangle.Width) /
                         static_cast<float>(imageWidth);
 
     float depth    = 0.0f;
-    float width    = static_cast<float>(val.rectangle.width);
-    float height   = static_cast<float>(val.rectangle.height);
-    Vec2 absOffset = Vec2(val.offset.x * val.rectangle.width,
-                          val.offset.y * val.rectangle.height);
+    float width    = static_cast<float>(val.rectangle.Width);
+    float height   = static_cast<float>(val.rectangle.Height);
+    Vec2 absOffset = Vec2(val.offset.x * val.rectangle.Width,
+                          val.offset.y * val.rectangle.Height);
 
     VertexArray vertices;
     vertices.resize(6);
     vertices[0].pos = Vec3(-absOffset.x, -absOffset.y, depth);
-    vertices[0].tex = Vec2(textureRect.x, 1.0f - textureRect.y);
+    vertices[0].tex = Vec2(textureRect.X, 1.0f - textureRect.Y);
     vertices[1].pos = Vec3(width - absOffset.x, -absOffset.y, depth);
     vertices[1].tex =
-        Vec2(textureRect.x + textureRect.width, 1.0f - textureRect.y);
+        Vec2(textureRect.X + textureRect.Width, 1.0f - textureRect.Y);
 
     vertices[2].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
     vertices[2].tex =
-        Vec2(textureRect.x, 1.0f - (textureRect.y + textureRect.height));
+        Vec2(textureRect.X, 1.0f - (textureRect.Y + textureRect.Height));
 
     vertices[3].pos = Vec3(width - absOffset.x, -absOffset.y, depth);
     vertices[3].tex =
-        Vec2(textureRect.x + textureRect.width, 1.0f - textureRect.y);
+        Vec2(textureRect.X + textureRect.Width, 1.0f - textureRect.Y);
 
     vertices[4].pos = Vec3(width - absOffset.x, height - absOffset.y, depth);
-    vertices[4].tex = Vec2(textureRect.x + textureRect.width,
-                           1.0f - (textureRect.y + textureRect.height));
+    vertices[4].tex = Vec2(textureRect.X + textureRect.Width,
+                           1.0f - (textureRect.Y + textureRect.Height));
 
     vertices[5].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
     vertices[5].tex =
-        Vec2(textureRect.x, 1.0f - (textureRect.y + textureRect.height));
+        Vec2(textureRect.X, 1.0f - (textureRect.Y + textureRect.Height));
 
     mesh->m_clientSideVertices = vertices;
     mesh->CalculateAABB();

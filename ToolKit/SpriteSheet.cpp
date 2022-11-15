@@ -99,13 +99,13 @@ namespace ToolKit
       attr                   = node->first_attribute("name");
       entry.name             = attr->value();
       attr                   = node->first_attribute("x");
-      entry.rectangle.x      = std::atoi(attr->value());
+      entry.rectangle.X      = std::atoi(attr->value());
       attr                   = node->first_attribute("y");
-      entry.rectangle.y      = std::atoi(attr->value());
+      entry.rectangle.Y      = std::atoi(attr->value());
       attr                   = node->first_attribute("w");
-      entry.rectangle.width  = std::atoi(attr->value());
+      entry.rectangle.Width  = std::atoi(attr->value());
       attr                   = node->first_attribute("h");
-      entry.rectangle.height = std::atoi(attr->value());
+      entry.rectangle.Height = std::atoi(attr->value());
 
       attr = node->first_attribute("px");
       if (attr != nullptr)

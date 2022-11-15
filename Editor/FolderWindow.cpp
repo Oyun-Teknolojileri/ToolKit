@@ -83,38 +83,35 @@ namespace ToolKit
       const Vec2& thumbSize = g_app->m_thumbnailSize;
       auto renderThumbFn    = [this, &thumbSize](Camera* cam,
                                               Entity* obj) -> void {
-        FramebufferPtr thumbFbPtr = nullptr;
-        Framebuffer* thumbFb      = nullptr;
-        RenderTarget* thumb       = nullptr;
-        RenderTargetPtr thumbPtr  = nullptr;
-        String fullPath           = GetFullPath();
+        RenderTargetPtr thumbPtr = nullptr;
+        String fullPath          = GetFullPath();
 
         if (g_app->m_thumbnailCache.find(fullPath) !=
             g_app->m_thumbnailCache.end())
         {
           thumbPtr = g_app->m_thumbnailCache[fullPath];
-          if (thumbPtr->m_width - (int) thumbSize.x == 0 &&
-              thumbPtr->m_height - (int) thumbSize.y == 0)
+          if (thumbPtr->m_width - (int) thumbSize.x != 0 ||
+              thumbPtr->m_height - (int) thumbSize.y != 0)
           {
-            thumb = thumbPtr.get();
+            // Re - render.
+            thumbPtr = nullptr;
           }
         }
 
-        if (thumb == nullptr)
+        FramebufferPtr thumbFbPtr = nullptr;
+        if (thumbPtr == nullptr)
         {
           thumbPtr = std::make_shared<RenderTarget>((uint) thumbSize.x,
                                                     (uint) thumbSize.y);
-          thumb    = thumbPtr.get();
-          thumb->Init();
+          thumbPtr->Init();
           thumbFbPtr = std::make_shared<Framebuffer>();
           thumbFbPtr->Init(
               {(uint) thumbSize.x, (uint) thumbSize.y, 0, false, true});
-          thumbFb = thumbFbPtr.get();
-          thumbFb->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                 thumb);
+          thumbFbPtr->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                    thumbPtr);
         }
 
-        g_app->m_renderer->SwapFramebuffer(&thumbFb);
+        g_app->m_renderer->SwapFramebuffer(thumbFbPtr);
 
         DirectionalLight light;
         light.m_node->SetTranslation({5.0f, 5.0f, 5.0f});
@@ -124,7 +121,7 @@ namespace ToolKit
 
         g_app->m_renderer->Render(obj, cam, lights);
 
-        g_app->m_renderer->SwapFramebuffer(&thumbFb, false);
+        g_app->m_renderer->SwapFramebuffer(thumbFbPtr, false);
         g_app->m_thumbnailCache[GetFullPath()] = thumbPtr;
       };
 
@@ -157,7 +154,7 @@ namespace ToolKit
         }
 
         Camera cam;
-        cam.SetLens(glm::radians(45.0f), thumbSize.x, thumbSize.y);
+        cam.SetLens(glm::radians(45.0f), thumbSize.x / thumbSize.y);
         cam.FocusToBoundingBox(meshComp->GetAABB(), 1.1f);
 
         renderThumbFn(&cam, &tempDrawEntity);
@@ -179,7 +176,7 @@ namespace ToolKit
         mesh->Init(false);
 
         Camera cam;
-        cam.SetLens(glm::half_pi<float>(), thumbSize.x, thumbSize.y);
+        cam.SetLens(glm::half_pi<float>(), thumbSize.x / thumbSize.y);
         cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 1.5f));
 
         renderThumbFn(&cam, &ball);

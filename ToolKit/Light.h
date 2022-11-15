@@ -9,7 +9,7 @@
 
 namespace ToolKit
 {
-  class Framebuffer;
+
   class TK_API Light : public Entity
   {
    public:
@@ -28,6 +28,8 @@ namespace ToolKit
     RenderTargetPtr GetShadowMapRenderTarget();
     RenderTargetPtr GetShadowMapTempBlurRt();
     MaterialPtr GetShadowMaterial();
+    virtual void UpdateShadowCamera();
+    virtual float AffectDistance();
 
    protected:
     virtual void InitShadowMapDepthMaterial();
@@ -43,9 +45,9 @@ namespace ToolKit
     TKDeclareParam(float, ShadowThickness);
     TKDeclareParam(float, LightBleedingReduction);
 
-    bool m_isStudioLight = false;
     Mat4 m_shadowMapCameraProjectionViewMatrix;
     float m_shadowMapCameraFar = 1.0f;
+    Camera* m_shadowCamera     = nullptr;
 
    protected:
     bool m_shadowMapInitialized           = false;
@@ -64,7 +66,7 @@ namespace ToolKit
 
     EntityType GetType() const override;
 
-    void UpdateShadowMapCamera(Camera* cam, const EntityRawPtrArray& entities);
+    void UpdateShadowFrustum(const EntityRawPtrArray& entities);
     Vec3Array GetShadowFrustumCorners();
 
    private:
@@ -72,6 +74,7 @@ namespace ToolKit
     // bigger, the resolution gets lower.
     void FitEntitiesBBoxIntoShadowFrustum(Camera* lightCamera,
                                           const EntityRawPtrArray& entities);
+
     // Fits view frustum of the camera into shadow map camera frustum. As the
     // view frustum gets bigger, the resolution gets lower.
     void FitViewFrustumIntoLightFrustum(Camera* lightCamera,
@@ -82,14 +85,13 @@ namespace ToolKit
   {
    public:
     PointLight();
-    virtual ~PointLight()
-    {
-    }
+    virtual ~PointLight();
 
     EntityType GetType() const override;
 
     void InitShadowMap() override;
-    void UpdateShadowMapCamera(Camera* cam);
+    void UpdateShadowCamera() override;
+    float AffectDistance() override;
 
    protected:
     void InitShadowMapDepthMaterial() override;
@@ -102,13 +104,11 @@ namespace ToolKit
   {
    public:
     SpotLight();
-    virtual ~SpotLight()
-    {
-    }
+    virtual ~SpotLight();
 
     EntityType GetType() const override;
-
-    void UpdateShadowMapCamera(Camera* cam);
+    void UpdateShadowCamera() override;
+    float AffectDistance() override;
 
    protected:
     void InitShadowMapDepthMaterial() override;

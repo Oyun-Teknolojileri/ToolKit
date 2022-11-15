@@ -115,6 +115,7 @@
     </ClCompile>
     <ClCompile Include="MaterialInspector.cpp" />
     <ClCompile Include="OutlinerWindow.cpp" />
+    <ClCompile Include="Pass.cpp" />
     <ClCompile Include="PluginWindow.cpp" />
     <ClCompile Include="PopupWindows.cpp" />
     <ClCompile Include="PropInspector.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="Grid.h" />
     <ClInclude Include="ImGui\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="MaterialInspector.h" />
+    <ClInclude Include="Pass.h" />
     <ClInclude Include="PluginWindow.h" />
     <ClInclude Include="PopupWindows.h" />
     <ClInclude Include="PublishManager.h" />
