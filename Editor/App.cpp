@@ -110,8 +110,7 @@ namespace ToolKit
 
       m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager               = new PublishManager();
-      GetRenderer()->m_clearColor =
-          Vec4(0.007024517f, 0.00959683f, 0.018735119f, 1.0f);
+      GetRenderer()->m_clearColor    = g_wndBgColor;
     }
 
     void App::DestroyEditorEntities()
@@ -294,16 +293,6 @@ namespace ToolKit
           // Pass Test Begin
           myShadowPass->m_params.Entities = GetCurrentScene()->GetEntities();
           myShadowPass->m_params.Lights   = totalLights;
-
-          // Clear old rts.
-          for (Light* l : myShadowPass->m_params.Lights)
-          {
-            if (l->GetShadowMapFramebuffer())
-            {
-              m_renderer->ClearFrameBuffer(l->GetShadowMapFramebuffer(),
-                                           Vec4(1.0f));
-            }
-          }
           // myShadowPass.Render();
 
           myRenderPass->m_params.Scene          = GetCurrentScene();

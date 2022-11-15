@@ -57,7 +57,7 @@ namespace ToolKit
     renderer->CollectEnvironmentVolumes(m_drawList);
 
     CullDrawList(m_drawList, m_params.Cam);
-  
+
     // Update billboards.
     for (Entity* ntt : m_drawList)
     {
@@ -340,8 +340,19 @@ namespace ToolKit
                        }),
         m_drawList.end());
 
+    Renderer* renderer = GetRenderer();
+
+    // Clear old rts.
+    for (Light* light : m_params.Lights)
+    {
+      if (light->GetShadowMapFramebuffer())
+      {
+        renderer->ClearFrameBuffer(light->GetShadowMapFramebuffer(),
+                                   Vec4(1.0f));
+      }
+    }
+
     // Store the render's state.
-    Renderer* renderer     = GetRenderer();
     m_prevOverrideMaterial = renderer->m_overrideMat;
     m_prevFrameBuffer      = renderer->GetFrameBuffer();
   }
