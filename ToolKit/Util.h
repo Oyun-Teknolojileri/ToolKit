@@ -143,16 +143,6 @@ namespace ToolKit
   // descending order.
   TK_API void StableSortByMaterialPriority(EntityRawPtrArray& entities);
 
-  // If there is a material component, returns its material else
-  // returns mesh's material. If there is not a MaterialComponent, it will
-  // return the mesh's first material. In case of multisubmesh, there may be
-  // multiple materials. But they are ignored.
-  TK_API MaterialPtr GetRenderMaterial(Entity* entity);
-
-  enum class EntityType;
-  // Returns true if the type is a light type
-  TK_API bool IsLightType(EntityType type);
-
   // Memory operations.
   ///////////////////////////////////////////////////////
   // Useful to force plugin modules to allocate from main toolkit module.

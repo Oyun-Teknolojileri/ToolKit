@@ -1254,6 +1254,12 @@ namespace ToolKit
       return m_active && m_visible && m_mouseHover;
     }
 
+    bool Window::IsViewport() const
+    {
+      Type t = GetType();
+      return t == Type::Viewport || t == Type::Viewport2d;
+    }
+
     void Window::DispatchSignals() const
     {
     }

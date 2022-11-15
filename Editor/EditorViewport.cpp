@@ -81,8 +81,6 @@ namespace ToolKit
 
     EditorViewport::~EditorViewport()
     {
-      SafeDel(m_selectedFramebuffer);
-      SafeDel(m_selectedStencilRT);
     }
 
     void EditorViewport::Show()
@@ -196,7 +194,9 @@ namespace ToolKit
         ReadAttr(
             node, "alignment", *(reinterpret_cast<int*>(&m_cameraAlignment)));
         ReadAttr(node, "lock", m_orbitLock);
-        SetCamera(new Camera(node->first_node("E")));
+        Camera* viewCam = new Camera();
+        viewCam->DeSerialize(nullptr, node->first_node("E"));
+        SetCamera(viewCam);
       }
     }
 
@@ -232,43 +232,25 @@ namespace ToolKit
     void EditorViewport::ResetSelectedRenderTarget(
         const RenderTargetSettigs& settings)
     {
-      if (m_selectedFramebuffer == nullptr)
-      {
-        m_selectedFramebuffer = new Framebuffer();
-      }
-
-      m_selectedFramebuffer->UnInit();
-
-      // Remove old render target
-      if (m_selectedStencilRT)
-      {
-        SafeDel(m_selectedStencilRT);
-      }
-
       RenderTargetSettigs selectedSettings;
       selectedSettings.WarpS = selectedSettings.WarpT =
           GraphicTypes::UVClampToEdge;
+
+      m_selectedFramebuffer = std::make_shared<Framebuffer>();
       m_selectedFramebuffer->Init({(uint) m_wndContentAreaSize.x,
                                    (uint) m_wndContentAreaSize.y,
                                    selectedSettings.Msaa,
                                    true,
                                    true});
 
-      m_selectedStencilRT = new RenderTarget((uint) m_wndContentAreaSize.x,
-                                             (uint) m_wndContentAreaSize.y,
-                                             selectedSettings);
+      m_selectedStencilRT =
+          std::make_shared<RenderTarget>((uint) m_wndContentAreaSize.x,
+                                         (uint) m_wndContentAreaSize.y,
+                                         selectedSettings);
 
       m_selectedStencilRT->Init();
-
-      if (m_selectedStencilRT->m_initiated)
-      {
-        m_selectedFramebuffer->SetAttachment(
-            Framebuffer::Attachment::ColorAttachment0, m_selectedStencilRT);
-      }
-      else
-      {
-        SafeDel(m_selectedStencilRT);
-      }
+      m_selectedFramebuffer->SetAttachment(
+          Framebuffer::Attachment::ColorAttachment0, m_selectedStencilRT);
     }
 
     RenderTargetSettigs EditorViewport::GetRenderTargetSettings()
@@ -621,18 +603,13 @@ namespace ToolKit
       Camera* cam = GetCamera();
       cam->m_node->Translate(Vec3(0.0f, 0.0f, -delta),
                              TransformationSpace::TS_LOCAL);
+
       if (cam->IsOrtographic())
       {
         // Magic zoom.
-        Camera::CamData dat = cam->GetData();
-        float dist          = glm::distance(ZERO, dat.pos);
-        m_zoom              = dist / 600.0f;
-        cam->SetLens(-m_zoom * m_wndContentAreaSize.x * 0.5f,
-                     m_zoom * m_wndContentAreaSize.x * 0.5f,
-                     -m_zoom * m_wndContentAreaSize.y * 0.5f,
-                     m_zoom * m_wndContentAreaSize.y * 0.5f,
-                     0.5f,
-                     1000.0f);
+        Camera::CamData dat      = cam->GetData();
+        float dist               = glm::distance(ZERO, dat.pos);
+        cam->m_orthographicScale = dist / 600.0f;
       }
     }
 

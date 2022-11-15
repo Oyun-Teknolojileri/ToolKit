@@ -49,6 +49,7 @@ namespace ToolKit
       bool IsMoving() const;
       bool MouseHovers() const;
       bool CanDispatchSignals() const; // If active & visible & mouse hovers.
+      bool IsViewport() const;
 
       // System calls.
       virtual void DispatchSignals() const;
