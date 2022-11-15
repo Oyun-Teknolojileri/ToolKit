@@ -39,6 +39,7 @@ namespace ToolKit
 
      protected:
       Vec3 m_anchorDeltaTransform; // Anchor medallion change.
+      Vec3 m_deltaAccum;
     };
 
     class StateAnchorBegin : public StateAnchorBase
@@ -87,7 +88,6 @@ namespace ToolKit
       void Transform(const Vec3& delta);
 
      public:
-      Vec3 m_deltaAccum;
       Vec3 m_initialLoc;
 
      private:

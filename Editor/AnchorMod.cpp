@@ -401,6 +401,23 @@ namespace ToolKit
 
       Vec3 deltaX, deltaY;
 
+      m_deltaAccum += m_anchorDeltaTransform;
+      m_anchorDeltaTransform = ZERO;
+
+      if (g_app->m_snapsEnabled)
+      {
+        float spacing = g_app->m_moveDelta;
+        for (uint i = 0; i < 2; i++)
+        {
+          if (abs(m_deltaAccum[i]) > spacing)
+          {
+            m_anchorDeltaTransform[i] =
+                glm::round(m_deltaAccum[i] / spacing) * spacing;
+            m_deltaAccum[i] = 0.0f;
+          }
+        }
+      }
+
       if (hasXDirection)
       {
         Vec3 dir{1.f, 0.f, 0.f};
@@ -414,7 +431,6 @@ namespace ToolKit
         dir = glm::normalize(dir);
         deltaY += glm::dot(dir, m_anchorDeltaTransform) * dir;
       }
-
       float w = 0, h = 0;
 
       if (Entity* parent = surface->m_node->m_parent->m_entity)
@@ -591,13 +607,6 @@ namespace ToolKit
       m_stateMachine->PushState(new StateAnchorTo());
       m_stateMachine->PushState(new StateAnchorEnd());
 
-      /* state                      = new StateBeginPick();
-      state->m_links[m_backToStart] = StateType::StateAnchorBegin;
-      m_stateMachine->PushState(state);
-      state                         = new StateEndPick();
-      state->m_links[m_backToStart] = StateType::StateAnchorBegin;
-      m_stateMachine->PushState(state);*/
-
       m_prevTransformSpace = g_app->m_transformSpace;
     }
 
@@ -608,19 +617,6 @@ namespace ToolKit
     void AnchorMod::Update(float deltaTime)
     {
       BaseMod::Update(deltaTime);
-
-      /* if (m_stateMachine->m_currentState->ThisIsA<StateEndPick>())
-      {
-        StateEndPick* endPick =
-            static_cast<StateEndPick*>(m_stateMachine->m_currentState);
-
-        EntityIdArray entities;
-        endPick->PickDataToEntityId(entities);
-        g_app->GetCurrentScene()->AddToSelection(entities,
-                                                 ImGui::GetIO().KeyShift);
-
-        m_stateMachine->Signal(BaseMod::m_backToStart);
-      }*/
 
       if (m_stateMachine->m_currentState->ThisIsA<StateAnchorEnd>())
       {
