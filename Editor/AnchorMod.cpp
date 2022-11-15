@@ -431,15 +431,6 @@ namespace ToolKit
         dir = glm::normalize(dir);
         deltaY += glm::dot(dir, m_anchorDeltaTransform) * dir;
       }
-
-      GetLogger()->WriteConsole(
-          LogType::Warning,
-          "DeltaTransform: %f, %f & DeltaAcum: %f, %f & Spacing",
-          m_anchorDeltaTransform.x,
-          m_anchorDeltaTransform.y,
-          m_deltaAccum.x,
-          m_deltaAccum.y,
-          g_app->m_moveDelta);
       float w = 0, h = 0;
 
       if (Entity* parent = surface->m_node->m_parent->m_entity)
