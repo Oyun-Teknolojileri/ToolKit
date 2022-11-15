@@ -108,11 +108,8 @@ namespace ToolKit
     ComponentPtr Copy(Entity* ntt) override;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
-    void UpdateBBox();
 
-    BoundingBox* GetBBox();
-    Vec3 GetBBoxMin();
-    Vec3 GetBBoxMax();
+    BoundingBox GetBBox();
 
     void Init(bool flushClientSideArray);
 
@@ -122,14 +119,11 @@ namespace ToolKit
 
    public:
     TKDeclareParam(HdriPtr, Hdri);
-    TKDeclareParam(Vec3, Max);
-    TKDeclareParam(Vec3, Min);
+    TKDeclareParam(Vec3, Size);
+    TKDeclareParam(Vec3, PositionOffset);
     TKDeclareParam(bool, Illuminate);
     TKDeclareParam(float, Intensity);
     TKDeclareParam(float, Exposure);
-
-   private:
-    BoundingBox* m_bbox;
   };
 
   static VariantCategory AnimRecordComponentCategory{

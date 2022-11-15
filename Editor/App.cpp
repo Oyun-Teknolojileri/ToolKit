@@ -1499,7 +1499,7 @@ namespace ToolKit
         {
           // Bounding box
           m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(
-              *envCom->GetBBox(), g_environmentGizmoColor, 1.0f));
+              envCom->GetBBox(), g_environmentGizmoColor, 1.0f));
         }
       }
     }

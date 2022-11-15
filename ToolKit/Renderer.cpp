@@ -1106,10 +1106,7 @@ namespace ToolKit
     BoundingBox currentBox;
     for (Entity* envNtt : m_environmentLightEntities)
     {
-      currentBox.max =
-          envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMax();
-      currentBox.min =
-          envNtt->GetComponent<EnvironmentComponent>()->GetBBoxMin();
+      currentBox = envNtt->GetComponent<EnvironmentComponent>()->GetBBox();
 
       if (PointInsideBBox(pos, currentBox.max, currentBox.min))
       {
