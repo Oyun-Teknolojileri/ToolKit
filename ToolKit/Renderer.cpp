@@ -653,17 +653,6 @@ namespace ToolKit
     }
 
     m_framebuffer = fb;
-
-    // TODO
-    static int i = 0;
-    if (m_framebuffer)
-    {
-      std::cout << i++ << " Last fb: " << fb->GetFboId() << std::endl;
-    }
-    else
-    {
-      std::cout << i++ << " Last fb: 0" << std::endl;
-    }
   }
 
   void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear)
