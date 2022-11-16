@@ -103,8 +103,7 @@ namespace ToolKit
                            "UILayout.ini",
                            "Engine.settings"};
 
-      String cfgPath    = ConcatPaths({String(appData), "ToolKit", "Config"});
-      String targetFile = ConcatPaths({cfgPath, files[0]});
+      String cfgPath = ConcatPaths({String(appData), "ToolKit", "Config"});
 
       // Create ToolKit Configs.
       bool doesConfigFolderExists = true;
@@ -116,7 +115,8 @@ namespace ToolKit
       {
         for (int i = 0; i < 4; i++)
         {
-          if (!CheckSystemFile(ConcatPaths({cfgPath, files[i]})))
+          String targetFile = ConcatPaths({cfgPath, files[i]});
+          if (!CheckSystemFile(targetFile))
           {
             std::filesystem::copy(
                 ConcatPaths({ConfigPath(), files[i]}),
