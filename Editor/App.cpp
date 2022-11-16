@@ -720,7 +720,7 @@ namespace ToolKit
       DeleteWindows();
 
       String defEditSet = ConcatPaths({ConfigPath(), g_editorSettingsFile});
-      if (CheckFile(defEditSet))
+      if (CheckFile(defEditSet) && CheckFile(m_workspace.GetActiveWorkspace()))
       {
         // Try reading defaults.
         String settingsFile = defEditSet;

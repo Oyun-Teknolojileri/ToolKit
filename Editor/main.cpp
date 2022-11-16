@@ -107,11 +107,16 @@ namespace ToolKit
       String targetFile = ConcatPaths({cfgPath, files[0]});
 
       // Create ToolKit Configs.
-      if (!CheckSystemFile(targetFile))
+      bool doesConfigFolderExists = true;
+      if (!CheckSystemFile(cfgPath))
       {
-        if (std::filesystem::create_directories(cfgPath))
+        doesConfigFolderExists = std::filesystem::create_directories(cfgPath);
+      }
+      if (doesConfigFolderExists)
+      {
+        for (int i = 0; i < 4; i++)
         {
-          for (int i = 0; i < 4; i++)
+          if (!CheckSystemFile(ConcatPaths({cfgPath, files[i]})))
           {
             std::filesystem::copy(
                 ConcatPaths({ConfigPath(), files[i]}),

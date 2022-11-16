@@ -50,7 +50,12 @@ namespace ToolKit
       XmlDocBundle docBundle;
       if (XmlNode* node = GetDefaultWorkspaceNode(docBundle))
       {
-        ReadAttr(node, "path", path);
+        String foundPath;
+        ReadAttr(node, "path", foundPath);
+        if (CheckFile(foundPath))
+        {
+          path = foundPath;
+        }
       }
 
       return path;
@@ -252,19 +257,35 @@ namespace ToolKit
       {
         if (XmlNode* setNode = settings->first_node("Workspace"))
         {
-          ReadAttr(setNode, "path", m_activeWorkspace);
+          String foundWorkspacePath;
+          ReadAttr(setNode, "path", foundWorkspacePath);
+          if (CheckFile(foundWorkspacePath))
+          {
+            m_activeWorkspace = foundWorkspacePath;
+          }
         }
 
-        String projectName, sceneName;
-        if (XmlNode* setNode = settings->first_node("Project"))
+        if (m_activeWorkspace.length())
         {
-          ReadAttr(setNode, "name", projectName);
-          String scene;
-          ReadAttr(setNode, "scene", sceneName);
-        }
+          RefreshProjects();
 
-        Project project = {projectName, sceneName};
-        SetActiveProject(project);
+          String projectName, sceneName;
+          if (XmlNode* setNode = settings->first_node("Project"))
+          {
+            ReadAttr(setNode, "name", projectName);
+            String scene;
+            ReadAttr(setNode, "scene", sceneName);
+          }
+
+          for (const Project& project : m_projects)
+          {
+            if (project.name == projectName)
+            {
+              Project project = {projectName, sceneName};
+              SetActiveProject(project);
+            }
+          }
+        }
       }
     }
 
