@@ -17,9 +17,6 @@
 
 #include "DebugNew.h"
 
-// TODO
-#include <iostream>
-
 namespace ToolKit
 {
   namespace Editor
