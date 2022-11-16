@@ -39,7 +39,7 @@ namespace ToolKit
     Entity_Surface,
     Entity_Light,
     Entity_Camera,
-    Entity_Directional,
+    UNUSEDSLOT_1,
     Entity_Node,
     Entity_Button,
     Entity_Sky,
@@ -69,14 +69,14 @@ namespace ToolKit
     virtual bool IsDrawable() const;
     virtual EntityType GetType() const;
     virtual void SetPose(const AnimationPtr& anim, float time);
-    virtual struct BoundingBox GetAABB(bool inWorld = false) const;
+    virtual BoundingBox GetAABB(bool inWorld = false) const;
     virtual Entity* Copy() const;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);
     virtual void RemoveResources();
     void SetVisibility(bool vis, bool deep);
     void SetTransformLock(bool vis, bool deep);
-    bool IsSurfaceInstance();
+    bool IsSurfaceInstance() const;
     bool IsLightInstance() const;
     bool IsSkyInstance() const;
 
@@ -100,13 +100,13 @@ namespace ToolKit
      * Used to easily access first MeshComponentPtr.
      * @return First MeshComponentPtr if any otherwise empty pointer.
      */
-    MeshComponentPtr GetMeshComponent();
+    MeshComponentPtr GetMeshComponent() const;
 
     /**
      * Used to easily access first MaterialComponentPtr.
      * @return First MaterialComponentPtr if any exist, otherwise empty pointer.
      */
-    MaterialComponentPtr GetMaterialComponent();
+    MaterialComponentPtr GetMaterialComponent() const;
 
     /**
      * Remove the given component from the components of the Entity.
@@ -164,6 +164,14 @@ namespace ToolKit
      * Removes all components from the entity.
      */
     void ClearComponents();
+
+    /**
+     * If there is a material component, returns its material else returns
+     * mesh's material. If there is not a MaterialComponent, it will return the
+     * mesh's first material. In case of multisubmesh, there may be multiple
+     * materials. But they are ignored.
+     */
+    MaterialPtr GetRenderMaterial() const;
 
    protected:
     virtual Entity* CopyTo(Entity* other) const;

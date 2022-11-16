@@ -346,25 +346,15 @@ namespace ToolKit
     Texture::Init(flushClientSideArray);
 
     // Convert hdri image to cubemap images
-    Texture* cubemap = GetRenderer()->GenerateCubemapFrom2DTexture(
+    m_cubemap = GetRenderer()->GenerateCubemapFrom2DTexture(
         GetTextureManager()->Create<Texture>(GetFile()),
         m_width,
         m_width,
         1.0f);
-    m_cubemap = std::make_shared<CubeMap>(cubemap->m_textureId);
-
-    // Don't let cubemap object delete this texture along with itself
-    cubemap->m_textureId = 0;
-    SafeDel(cubemap);
 
     // Generate irradience cubemap images
-    Texture* irradianceMap = GetRenderer()->GenerateIrradianceCubemap(
+    m_irradianceCubemap = GetRenderer()->GenerateIrradianceCubemap(
         m_cubemap, m_width / 64, m_width / 64);
-    m_irradianceCubemap = std::make_shared<CubeMap>(irradianceMap->m_textureId);
-
-    // Don't let cubemap object delete this texture along with itself
-    irradianceMap->m_textureId = 0;
-    SafeDel(irradianceMap);
   }
 
   void Hdri::UnInit()

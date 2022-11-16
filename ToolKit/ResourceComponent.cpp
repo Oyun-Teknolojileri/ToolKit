@@ -91,14 +91,10 @@ namespace ToolKit
   {
     ParameterConstructor();
     ParameterEventConstructor();
-
-    m_bbox = new BoundingBox();
-    UpdateBBox();
   }
 
   EnvironmentComponent::~EnvironmentComponent()
   {
-    SafeDel(m_bbox);
   }
 
   void EnvironmentComponent::Init(bool flushClientSideArray)
@@ -119,14 +115,14 @@ namespace ToolKit
                 true,
                 true);
 
-    Max_Define(Vec3(4.0f),
+    PositionOffset_Define(Vec3(-4.0f),
                EnvironmentComponentCategory.Name,
                EnvironmentComponentCategory.Priority,
                true,
                true,
                {false, true, 0.0f, 100000.0f, 0.5f});
 
-    Min_Define(Vec3(-4.0f),
+    Size_Define(Vec3(8.0f),
                EnvironmentComponentCategory.Name,
                EnvironmentComponentCategory.Priority,
                true,
@@ -178,7 +174,6 @@ namespace ToolKit
     EnvironmentComponentPtr ec = std::make_shared<EnvironmentComponent>();
     ec->m_localData            = m_localData;
     ec->m_entity               = ntt;
-    ec->UpdateBBox();
 
     return ec;
   }
@@ -191,42 +186,21 @@ namespace ToolKit
   void EnvironmentComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     Component::DeSerialize(doc, parent);
-    UpdateBBox();
     ParameterEventConstructor();
   }
 
-  void EnvironmentComponent::UpdateBBox()
+  BoundingBox EnvironmentComponent::GetBBox()
   {
+    Vec3 pos;
+    BoundingBox aabb;
     if (m_entity != nullptr)
     {
       static Vec3 pos;
       pos = m_entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-      m_bbox->max = GetMaxVal() + pos;
-      m_bbox->min = GetMinVal() + pos;
     }
-    else
-    {
-      m_bbox->max = GetMaxVal();
-      m_bbox->min = GetMinVal();
-    }
-  }
-
-  BoundingBox* EnvironmentComponent::GetBBox()
-  {
-    UpdateBBox();
-    return m_bbox;
-  }
-
-  Vec3 EnvironmentComponent::GetBBoxMin()
-  {
-    UpdateBBox();
-    return m_bbox->min;
-  }
-
-  Vec3 EnvironmentComponent::GetBBoxMax()
-  {
-    UpdateBBox();
-    return m_bbox->max;
+    aabb.min    = GetPositionOffsetVal() + pos;
+    aabb.max    = GetPositionOffsetVal() + GetSizeVal() + pos;
+    return aabb;
   }
 
   AnimControllerComponent::AnimControllerComponent()

@@ -14,9 +14,11 @@ namespace ToolKit
     virtual void Init();
     virtual void ReInit();
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    bool IsInitialized();
 
     virtual MaterialPtr GetSkyboxMaterial();
     virtual CubeMapPtr GetIrradianceMap();
+    BoundingBox GetAABB(bool inWorld = false) const override;
 
    protected:
     virtual void ParameterConstructor();

@@ -13,6 +13,9 @@ namespace ToolKit
 {
   Light::Light()
   {
+    m_shadowCamera = new Camera();
+    m_node->AddChild(m_shadowCamera->m_node);
+
     Color_Define(Vec3(1.0f), "Light", 0, true, true, {true});
     Intensity_Define(
         1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
@@ -36,6 +39,7 @@ namespace ToolKit
   Light::~Light()
   {
     UnInitShadowMap();
+    SafeDel(m_shadowCamera);
   }
 
   void Light::ParameterEventConstructor()
@@ -96,7 +100,7 @@ namespace ToolKit
     m_depthFramebuffer = std::make_shared<Framebuffer>();
     m_depthFramebuffer->Init({(uint) res.x, (uint) res.y, 0, false, true});
     m_depthFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                      m_shadowRt.get());
+                                      m_shadowRt);
 
     // Shadow map temporary render target for blurring
     m_shadowMapTempBlurRt =
@@ -138,6 +142,20 @@ namespace ToolKit
     return m_shadowMapMaterial;
   }
 
+  void Light::UpdateShadowCamera()
+  {
+    Mat4 proj = m_shadowCamera->GetProjectionMatrix();
+    Mat4 view = m_shadowCamera->GetViewMatrix();
+
+    m_shadowMapCameraProjectionViewMatrix = proj * view;
+    m_shadowMapCameraFar                  = m_shadowCamera->Far();
+  }
+
+  float Light::AffectDistance()
+  {
+    return 1000.0f;
+  }
+
   void Light::InitShadowMapDepthMaterial()
   {
     // Create shadow material
@@ -172,14 +190,10 @@ namespace ToolKit
     return EntityType::Entity_DirectionalLight;
   }
 
-  void DirectionalLight::UpdateShadowMapCamera(
-      Camera* cam, const EntityRawPtrArray& entities)
+  void DirectionalLight::UpdateShadowFrustum(const EntityRawPtrArray& entities)
   {
-    FitEntitiesBBoxIntoShadowFrustum(cam, entities);
-
-    m_shadowMapCameraProjectionViewMatrix =
-        cam->GetProjectionMatrix() * cam->GetViewMatrix();
-    m_shadowMapCameraFar = cam->GetData().far;
+    FitEntitiesBBoxIntoShadowFrustum(m_shadowCamera, entities);
+    UpdateShadowCamera();
   }
 
   // Returns 8 sized array
@@ -207,8 +221,6 @@ namespace ToolKit
   void DirectionalLight::FitEntitiesBBoxIntoShadowFrustum(
       Camera* lightCamera, const EntityRawPtrArray& entities)
   {
-    const TransformationSpace ts = TransformationSpace::TS_WORLD;
-
     // Calculate all scene's bounding box
     BoundingBox totalBBox;
     for (Entity* ntt : entities)
@@ -217,24 +229,26 @@ namespace ToolKit
       {
         continue;
       }
+
       if (!ntt->GetMeshComponent()->GetCastShadowVal())
       {
         continue;
       }
+
       BoundingBox bb = ntt->GetAABB(true);
       totalBBox.UpdateBoundary(bb.max);
       totalBBox.UpdateBoundary(bb.min);
     }
-    const Vec3 center = totalBBox.GetCenter();
+    Vec3 center = totalBBox.GetCenter();
 
     // Set light transformation
-    lightCamera->m_node->SetTranslation(center, ts);
-    lightCamera->m_node->SetOrientation(m_node->GetOrientation(ts), ts);
-    const Mat4 lightView = lightCamera->GetViewMatrix();
+    lightCamera->m_node->SetTranslation(center);
+    lightCamera->m_node->SetOrientation(m_node->GetOrientation());
+    Mat4 lightView = lightCamera->GetViewMatrix();
 
     // Bounding box of the scene
-    const Vec3 min   = totalBBox.min;
-    const Vec3 max   = totalBBox.max;
+    Vec3 min         = totalBBox.min;
+    Vec3 max         = totalBBox.max;
     Vec4 vertices[8] = {Vec4(min.x, min.y, min.z, 1.0f),
                         Vec4(min.x, min.y, max.z, 1.0f),
                         Vec4(min.x, max.y, min.z, 1.0f),
@@ -248,7 +262,7 @@ namespace ToolKit
     BoundingBox shadowBBox;
     for (int i = 0; i < 8; ++i)
     {
-      const Vec4 vertex = lightView * vertices[i];
+      Vec4 vertex = lightView * vertices[i];
       shadowBBox.UpdateBoundary(vertex);
     }
 
@@ -319,6 +333,10 @@ namespace ToolKit
     ParamPCFRadius().m_hint.increment = 0.02f;
   }
 
+  PointLight::~PointLight()
+  {
+  }
+
   EntityType PointLight::GetType() const
   {
     return EntityType::Entity_PointLight;
@@ -350,7 +368,7 @@ namespace ToolKit
     m_depthFramebuffer = std::make_shared<Framebuffer>();
     m_depthFramebuffer->Init({(uint) res.x, (uint) res.y, 0, false, true});
     m_depthFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                      m_shadowRt.get(),
+                                      m_shadowRt,
                                       Framebuffer::CubemapFace::POS_X);
 
     // Shadow map temporary render target for blur
@@ -363,20 +381,20 @@ namespace ToolKit
     m_shadowMapInitialized = true;
   }
 
-  void PointLight::UpdateShadowMapCamera(Camera* cam)
+  void PointLight::UpdateShadowCamera()
   {
-    cam->SetLens(glm::radians(90.0f),
-                 GetShadowResolutionVal().x,
-                 GetShadowResolutionVal().y,
-                 0.01f,
-                 GetRadiusVal());
-    cam->m_node->SetTranslation(
-        m_node->GetTranslation(TransformationSpace::TS_WORLD),
-        TransformationSpace::TS_WORLD);
+    Vec2 shadowRes = GetShadowResolutionVal();
+    m_shadowCamera->SetLens(glm::half_pi<float>(),
+                            shadowRes.x / shadowRes.y,
+                            0.01f,
+                            AffectDistance());
 
-    m_shadowMapCameraProjectionViewMatrix =
-        cam->GetProjectionMatrix() * cam->GetViewMatrix();
-    m_shadowMapCameraFar = cam->GetData().far;
+    Light::UpdateShadowCamera();
+  }
+
+  float PointLight::AffectDistance()
+  {
+    return GetRadiusVal();
   }
 
   void PointLight::InitShadowMapDepthMaterial()
@@ -405,27 +423,30 @@ namespace ToolKit
     AddComponent(new DirectionComponent(this));
   }
 
+  SpotLight::~SpotLight()
+  {
+  }
+
   EntityType SpotLight::GetType() const
   {
     return EntityType::Entity_SpotLight;
   }
 
-  void SpotLight::UpdateShadowMapCamera(Camera* cam)
+  void SpotLight::UpdateShadowCamera()
   {
-    cam->SetLens(glm::radians(GetOuterAngleVal()),
-                 GetShadowResolutionVal().x,
-                 GetShadowResolutionVal().y,
-                 0.01f,
-                 GetRadiusVal());
-    cam->m_node->SetOrientation(
-        m_node->GetOrientation(TransformationSpace::TS_WORLD));
-    cam->m_node->SetTranslation(
-        m_node->GetTranslation(TransformationSpace::TS_WORLD),
-        TransformationSpace::TS_WORLD);
+    Vec2 shadowRes = GetShadowResolutionVal();
 
-    m_shadowMapCameraProjectionViewMatrix =
-        cam->GetProjectionMatrix() * cam->GetViewMatrix();
-    m_shadowMapCameraFar = cam->GetData().far;
+    m_shadowCamera->SetLens(glm::radians(GetOuterAngleVal()),
+                            shadowRes.x / shadowRes.y,
+                            0.01f,
+                            AffectDistance());
+
+    Light::UpdateShadowCamera();
+  }
+
+  float SpotLight::AffectDistance()
+  {
+    return GetRadiusVal();
   }
 
   void SpotLight::InitShadowMapDepthMaterial()

@@ -304,9 +304,13 @@ namespace ToolKit
         {
           if (vp->IsVisible())
           {
+            assert(vp->IsOrthographic() &&
+                   "Viewport must be a 2d orthographic view.");
+
+            float zoomScale = vp->GetBillboardScale();
             float s = shapeSize;
-            p.translate *= vp->m_zoom;
-            p.scale *= Vec3(s * vp->m_zoom, s * vp->m_zoom, 1.f);
+            p.translate *= zoomScale;
+            p.scale *= Vec3(s * zoomScale, s * zoomScale, 1.f);
             handle->Generate(p);
           }
         }

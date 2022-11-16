@@ -121,46 +121,26 @@
 			
 			// Blend between falloff colors.
 			vec4 c = vec4(1.0f);
-			if (GridData.is2DViewport > 0u)
-			{
-				// 2D Viewport
-				if(lod2_a > 0.0f){
-					// Thick line (thick ones, main zero-axises too) for current distance
-					c = thick_color;
+			if(lod2_a > 0.0f){
+				// Thick line (thick ones, main zero-axises too) for current distance
+				c = thick_color;
+				c.a *= lod2_a;
+			}
+			else{
+				if(lod1_a > 0.0f){
+					// Medium line except 10ths (they're thick) for current distance
+					c = mix(thick_color, thin_color, lod_fade);
+					c.a *= lod1_a;
 				}
 				else{
-					if(lod1_a > 0.0f){
-						// Each thin line except 10ths (they're thick) for current distance
-						c = vec4(mix(thick_color, thin_color, lod_fade).xyz, 1.0f);
-					}
-					else{
-						// Empty Space
-						// No smooth transition is needed
-						c = vec4(thin_color.xyz, 0.0f);
-					}
+					// Remaining Space
+					// Smooth transition achieved by lod_fade lerp
+					c = thin_color;
+					c.a *= lod0_a * (1.0f-lod_fade);
 				}
 			}
-			else
+			if (GridData.is2DViewport == 0u)
 			{
-				if(lod2_a > 0.0f){
-					// Thick line (thick ones, main zero-axises too) for current distance
-					c = thick_color;
-					c.a *= lod2_a;
-				}
-				else{
-					if(lod1_a > 0.0f){
-						// Medium line except 10ths (they're thick) for current distance
-						c = mix(thick_color, thin_color, lod_fade);
-						c.a *= lod1_a;
-					}
-					else{
-						// Remaining Space
-						// Smooth transition achieved by lod_fade lerp
-						c = thin_color;
-						c.a *= lod0_a * (1.0f-lod_fade);
-					}
-				}
-				
 				// Attenuation
 				float constant = 1.0;
 				float linear = 0.009;

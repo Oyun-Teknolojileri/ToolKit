@@ -18,6 +18,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Pass.h"
+
 namespace ToolKit
 {
   namespace Editor
@@ -32,6 +34,9 @@ namespace ToolKit
     class App : Serializable
     {
      public:
+      ShadowPass myShadowPass;
+      RenderPass myRenderPass;
+
       App(int windowWidth, int windowHeight);
       virtual ~App();
 
@@ -77,6 +82,7 @@ namespace ToolKit
       // Import facilities.
       int Import(const String& fullPath, const String& subDir, bool overwrite);
       bool CanImport(const String& fullPath);
+      void ManageDropfile(const StringView& fileName);
 
       // Workspace.
       void OpenScene(const String& fullPath);
@@ -85,6 +91,7 @@ namespace ToolKit
       void ApplyProjectSettings(bool setDefaults);
       void OpenProject(const Project& project);
       void PackResources();
+      void SaveAllResources();
 
       // UI
       Window* GetActiveWindow();
@@ -208,7 +215,6 @@ namespace ToolKit
       bool m_showSelectionBoundary             = false;
       bool m_showDirectionalLightShadowFrustum = false;
       bool m_selectEffectingLights             = false;
-      bool m_showDepth                         = false;
       bool m_windowMaximized                   = false;
       byte m_showGraphicsApiErrors             = 0;
       TransformationSpace m_transformSpace     = TransformationSpace::TS_WORLD;

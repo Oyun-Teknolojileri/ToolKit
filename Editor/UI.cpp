@@ -562,6 +562,11 @@ namespace ToolKit
         {
           g_app->OnSaveAsScene();
         }
+
+        if (ImGui::MenuItem("Save All Resources"))
+        {
+          g_app->SaveAllResources();
+        }
         ImGui::EndMenu();
       }
 
@@ -744,7 +749,7 @@ namespace ToolKit
     void UI::ShowImportWindow()
     {
       static String load;
-      if (!ImportData.showImportWindow || ImportData.files.empty())
+      if (!ImportData.ShowImportWindow || ImportData.Files.empty())
       {
         load.clear();
         return;
@@ -757,7 +762,7 @@ namespace ToolKit
         importList.open(load, std::ios::out);
         if (importList.is_open())
         {
-          for (String& file : ImportData.files)
+          for (String& file : ImportData.Files)
           {
             if (g_app->CanImport(file))
             {
@@ -769,10 +774,10 @@ namespace ToolKit
 
       if (g_app->m_importSlient)
       {
-        g_app->Import(load, ImportData.subDir, ImportData.overwrite);
+        g_app->Import(load, ImportData.SubDir, ImportData.Overwrite);
         load.clear();
-        ImportData.files.clear();
-        ImportData.showImportWindow = false;
+        ImportData.Files.clear();
+        ImportData.ShowImportWindow = false;
         return;
       }
 
@@ -781,31 +786,32 @@ namespace ToolKit
               "Import", NULL, ImGuiWindowFlags_AlwaysAutoResize))
       {
         ImGui::Text("Import file: \n\n");
-        for (size_t i = 0; i < ImportData.files.size(); i++)
+        for (size_t i = 0; i < ImportData.Files.size(); i++)
         {
-          ImGui::Text("%s", ImportData.files[i].c_str());
+          ImGui::Text("%s", ImportData.Files[i].c_str());
         }
         ImGui::Separator();
 
         static StringArray fails;
-        if (!ImportData.files.empty() && fails.empty())
+        if (!ImportData.Files.empty() && fails.empty())
         {
-          for (int i = static_cast<int>(ImportData.files.size()) - 1; i >= 0;
+          for (int i = static_cast<int>(ImportData.Files.size()) - 1; i >= 0;
                i--)
           {
-            bool canImp = g_app->CanImport(ImportData.files[i]);
+            bool canImp = g_app->CanImport(ImportData.Files[i]);
             if (!canImp)
             {
-              fails.push_back(ImportData.files[i]);
-              ImportData.files.erase(ImportData.files.begin() + i);
+              fails.push_back(ImportData.Files[i]);
+              ImportData.Files.erase(ImportData.Files.begin() + i);
             }
           }
         }
 
         if (!fails.empty())
         {
-          ImGui::Text("Fallowing imports failed due to:\nFile format is"
-                      " not supported.\nSuported formats are fbx, glb, obj.");
+          ImGui::Text(
+              "Following imports failed due to:\nFile format is"
+              " not supported.\nSupported formats are fbx, glb, obj & png.");
           for (String& file : fails)
           {
             ImGui::Text("%s", file.c_str());
@@ -813,30 +819,69 @@ namespace ToolKit
           ImGui::Separator();
         }
 
+        String importFolder;
+        if (!ImportData.ActiveView->m_currRoot)
+        {
+          importFolder = ImportData.ActiveView->m_folder;
+          if (ImportData.SubDir.length())
+          {
+            importFolder += GetPathSeparatorAsStr();
+          }
+        }
+        importFolder += ImportData.SubDir;
+
+        ImportData.ActiveView->Refresh();
+        for (int i = static_cast<int>(ImportData.Files.size()) - 1; i >= 0; --i)
+        {
+          const String& file = ImportData.Files[i];
+          String ext;
+          DecomposePath(file, nullptr, nullptr, &ext);
+
+          if (ext == ".png" || ext == ".hdri")
+          {
+            if (ImportData.ActiveView->GetPath().find(TexturePath("")) !=
+                String::npos)
+            {
+              // Both HDRIs and PNGs stored in Textures/ root folder
+              std::filesystem::copy(
+                  file,
+                  ConcatPaths({GetResourcePath(ResourceType::Texture),
+                               ImportData.ActiveView->m_folder}),
+                  std::filesystem::copy_options::overwrite_existing);
+            }
+            ImportData.Files.erase(ImportData.Files.begin() + i);
+          }
+        }
+        if (ImportData.Files.size() == 0)
+        {
+          ImGui::EndPopup();
+          ImportData.ShowImportWindow = false;
+          ImGui::CloseCurrentPopup();
+          return;
+        }
+
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-        ImGui::Checkbox("Override", &ImportData.overwrite);
+        ImGui::Checkbox("Override", &ImportData.Overwrite);
         ImGui::PushItemWidth(100);
-        ImGui::InputFloat("Scale", &ImportData.scale);
+        ImGui::InputFloat("Scale", &ImportData.Scale);
         ImGui::PopItemWidth();
         ImGui::PopStyleVar();
 
-        ImGui::InputTextWithHint("Subdir", "optional", &ImportData.subDir);
-
+        ImGui::InputTextWithHint("Subdir", "optional", &ImportData.SubDir);
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {
-          if (g_app->Import(load, ImportData.subDir, ImportData.overwrite) ==
-              -1)
+          if (g_app->Import(load, importFolder, ImportData.Overwrite) == -1)
           {
             // Fall back to search.
             ImGui::EndPopup();
-            ImportData.showImportWindow = false;
+            ImportData.ShowImportWindow = false;
             return;
           }
 
           load.clear();
           fails.clear();
-          ImportData.files.clear();
-          ImportData.showImportWindow = false;
+          ImportData.Files.clear();
+          ImportData.ShowImportWindow = false;
           ImGui::CloseCurrentPopup();
         }
         ImGui::SetItemDefaultFocus();
@@ -845,8 +890,8 @@ namespace ToolKit
         {
           load.clear();
           fails.clear();
-          ImportData.files.clear();
-          ImportData.showImportWindow = false;
+          ImportData.Files.clear();
+          ImportData.ShowImportWindow = false;
           ImGui::CloseCurrentPopup();
         }
 
@@ -916,15 +961,15 @@ namespace ToolKit
 
         if (ImGui::Button("Search", ImVec2(120, 0)))
         {
-          g_app->Import("", ImportData.subDir, ImportData.overwrite);
-          ImportData.files.clear();
+          g_app->Import("", ImportData.SubDir, ImportData.Overwrite);
+          ImportData.Files.clear();
           ImGui::CloseCurrentPopup();
         }
         ImGui::SetItemDefaultFocus();
         ImGui::SameLine();
         if (ImGui::Button("Abort", ImVec2(120, 0)))
         {
-          ImportData.files.clear();
+          ImportData.Files.clear();
           SearchFileData.missingFiles.clear();
           SearchFileData.showSearchFileWindow = false;
           ImGui::CloseCurrentPopup();
@@ -1207,6 +1252,12 @@ namespace ToolKit
     bool Window::CanDispatchSignals() const
     {
       return m_active && m_visible && m_mouseHover;
+    }
+
+    bool Window::IsViewport() const
+    {
+      Type t = GetType();
+      return t == Type::Viewport || t == Type::Viewport2d;
     }
 
     void Window::DispatchSignals() const

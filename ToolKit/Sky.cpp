@@ -34,6 +34,11 @@ namespace ToolKit
     ParameterEventConstructor();
   }
 
+  bool SkyBase::IsInitialized()
+  {
+    return m_initialized;
+  }
+
   MaterialPtr SkyBase::GetSkyboxMaterial()
   {
     return m_skyboxMaterial;
@@ -43,6 +48,15 @@ namespace ToolKit
   {
     assert(false);
     return CubeMapPtr();
+  }
+
+  BoundingBox SkyBase::GetAABB(bool inWorld) const
+  {
+    // Return a unit boundary.
+    return {
+        {-0.5f, -0.5f, -0.5f},
+        { 0.5f,  0.5f,  0.5f}
+    };
   }
 
   void SkyBase::ParameterConstructor()
@@ -94,12 +108,12 @@ namespace ToolKit
     envComp->Init(true);
 
     // Do not expose environment component
-    envComp->ParamMax().m_exposed        = false;
-    envComp->ParamMin().m_exposed        = false;
-    envComp->ParamHdri().m_exposed       = false;
-    envComp->ParamIlluminate().m_exposed = false;
-    envComp->ParamIntensity().m_exposed  = false;
-    envComp->ParamExposure().m_exposed   = false;
+    envComp->ParamPositionOffset().m_exposed = false;
+    envComp->ParamSize().m_exposed           = false;
+    envComp->ParamHdri().m_exposed           = false;
+    envComp->ParamIlluminate().m_exposed     = false;
+    envComp->ParamIntensity().m_exposed      = false;
+    envComp->ParamExposure().m_exposed       = false;
 
     // Skybox material
     ShaderPtr vert = GetShaderManager()->Create<Shader>(
@@ -254,8 +268,8 @@ namespace ToolKit
 
   void GradientSky::GenerateGradientCubemap()
   {
-    Framebuffer fb;
-    fb.Init({m_size, m_size, 0, false, true});
+    FramebufferPtr fb = std::make_shared<Framebuffer>();
+    fb->Init({m_size, m_size, 0, false, true});
 
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
@@ -267,7 +281,8 @@ namespace ToolKit
                                      GraphicTypes::FormatRGB,
                                      GraphicTypes::FormatRGB,
                                      GraphicTypes::TypeUnsignedByte};
-    RenderTarget* cubemap         = new RenderTarget(m_size, m_size, set);
+    RenderTargetPtr cubemap =
+        std::make_shared<RenderTarget>(m_size, m_size, set);
     cubemap->Init();
 
     // Create material
@@ -283,7 +298,7 @@ namespace ToolKit
 
     // Views for 6 different angles
     CameraPtr cam = std::make_shared<Camera>();
-    cam->SetLens(glm::radians(90.0f), 1.0f, 1.0f, 0.1f, 10.0f);
+    cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
     Mat4 views[] = {
         glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
         glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
@@ -303,36 +318,32 @@ namespace ToolKit
       cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam->m_node->SetScale(sca);
 
-      fb.SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                       cubemap,
-                       (Framebuffer::CubemapFace) i);
+      fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                        cubemap,
+                        (Framebuffer::CubemapFace) i);
 
-      GetRenderer()->SetFramebuffer(&fb, true, Vec4(0.0f));
-
+      GetRenderer()->SetFramebuffer(fb, true, Vec4(0.0f));
       GetRenderer()->DrawCube(cam.get(), m_skyboxMaterial);
     }
-
-    m_skyboxMap = std::make_shared<CubeMap>(cubemap->m_textureId);
-
-    // Don't let cubemap object delete this texture along with itself
-    cubemap->m_textureId = 0;
-    SafeDel(cubemap);
-
     m_skyboxMaterial->GetRenderState()->depthTestEnabled = true;
+
+    // Take the ownership of render target.
+    m_skyboxMap          = std::make_shared<CubeMap>(cubemap->m_textureId);
+    cubemap->m_textureId = 0;
+    cubemap              = nullptr;
   }
 
   void GradientSky::GenerateIrradianceCubemap()
   {
-    Texture* irradianceMap = GetRenderer()->GenerateIrradianceCubemap(
+    TexturePtr irradianceMap = GetRenderer()->GenerateIrradianceCubemap(
         m_skyboxMap,
         (uint) GetIrradianceResolutionVal(),
         (uint) GetIrradianceResolutionVal());
 
+    // Take the ownership of render target.
     m_irradianceMap = std::make_shared<CubeMap>(irradianceMap->m_textureId);
-
-    // Don't let cubemap object delete this texture along with itself
     irradianceMap->m_textureId = 0;
-    SafeDel(irradianceMap);
+    irradianceMap              = nullptr;
   }
 
 } // namespace ToolKit

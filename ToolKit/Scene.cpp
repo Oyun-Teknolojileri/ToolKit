@@ -439,6 +439,31 @@ namespace ToolKit
     prefab->Init(this);
   }
 
+  EntityRawPtrArray Scene::GetEnvironmentLightEntities()
+  {
+    EntityRawPtrArray envLightNtties;
+    envLightNtties.clear();
+    for (Entity* ntt : envLightNtties)
+    {
+      if (ntt->GetType() == EntityType::Entity_Sky)
+      {
+        continue;
+      }
+
+      EnvironmentComponentPtr envCom =
+          ntt->GetComponent<EnvironmentComponent>();
+      if (envCom != nullptr && envCom->GetHdriVal() != nullptr &&
+          envCom->GetHdriVal()->IsTextureAssigned() &&
+          envCom->GetIlluminateVal())
+      {
+        envCom->Init(true);
+        envLightNtties.push_back(ntt);
+      }
+    }
+
+    return envLightNtties;
+  }
+
   void Scene::Destroy(bool removeResources)
   {
     for (uint nttIndx = 0; nttIndx < m_entities.size(); nttIndx++)
