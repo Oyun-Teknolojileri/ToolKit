@@ -636,13 +636,6 @@ namespace ToolKit
 
       FramebufferSettings fbSet = fb->GetSettings();
       SetViewportSize(fbSet.width, fbSet.height);
-
-      if (clear)
-      {
-        glClearColor(color.r, color.g, color.b, color.a);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
-                GL_STENCIL_BUFFER_BIT);
-      }
     }
     else
     {
@@ -652,7 +645,25 @@ namespace ToolKit
       SetViewportSize(m_windowSize.x, m_windowSize.y);
     }
 
+    if (clear)
+    {
+      glClearColor(color.r, color.g, color.b, color.a);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+              GL_STENCIL_BUFFER_BIT);
+    }
+
     m_framebuffer = fb;
+
+    // TODO
+    static int i = 0;
+    if (m_framebuffer)
+    {
+      std::cout << i++ << " Last fb: " << fb->GetFboId() << std::endl;
+    }
+    else
+    {
+      std::cout << i++ << " Last fb: 0" << std::endl;
+    }
   }
 
   void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear)
