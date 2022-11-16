@@ -136,8 +136,8 @@ namespace ToolKit
   }
 
   RenderTargetPtr Framebuffer::SetAttachment(Attachment atc,
-                                           RenderTargetPtr rt,
-                                           CubemapFace face)
+                                             RenderTargetPtr rt,
+                                             CubemapFace face)
   {
     GLenum attachment = GL_DEPTH_ATTACHMENT;
     if (IsColorAttachment(atc))
@@ -246,8 +246,8 @@ namespace ToolKit
 
   RenderTargetPtr Framebuffer::DetachAttachment(Attachment atc)
   {
-    RenderTargetPtr rt  = m_depthAtch;
-    GLenum attachment = GL_DEPTH_ATTACHMENT;
+    RenderTargetPtr rt = m_depthAtch;
+    GLenum attachment  = GL_DEPTH_ATTACHMENT;
     if (IsColorAttachment(atc))
     {
       attachment = GL_COLOR_ATTACHMENT0 + (int) atc;
@@ -279,8 +279,7 @@ namespace ToolKit
       else
 #endif
       {
-        glFramebufferTexture2D(
-            GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
       }
 
       if (IsColorAttachment(atc))

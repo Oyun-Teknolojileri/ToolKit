@@ -1276,7 +1276,7 @@ namespace ToolKit
         doc->append_node(node);
       }
 
-      WriteAttr(node, doc, "name", m_name);
+      WriteAttr(node, doc, XmlNodeName.data(), m_name);
       WriteAttr(node, doc, "id", std::to_string(m_id));
       WriteAttr(node, doc, "type", std::to_string(static_cast<int>(GetType())));
       WriteAttr(
@@ -1301,7 +1301,7 @@ namespace ToolKit
         node = doc->first_node("Window");
       }
 
-      ReadAttr(node, "name", m_name);
+      ReadAttr(node, XmlNodeName.data(), m_name);
       ReadAttr(node, "id", m_id);
       // Type is determined by the corrsesponding constructor.
       ReadAttr(node, "visible", m_visible);
