@@ -12,11 +12,9 @@ namespace ToolKit
 {
   namespace Editor
   {
-    static const StringView XmlNodeSettings  = "Settings";
     static const StringView XmlNodeWorkspace = "Workspace";
     static const StringView XmlNodeProject   = "Project";
     static const StringView XmlNodeScene     = "scene";
-    static const StringView XmlNodeName      = "name";
 
     Workspace::Workspace(App* app)
     {
