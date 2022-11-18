@@ -64,14 +64,18 @@ namespace ToolKit
               Vec3(magicScale * m_settings.heightInScreenSpace / scale));
         }
       }
+    }
+    else
+    {
+      m_node->SetTranslation(m_worldLocation, TransformationSpace::TS_WORLD);
+    }
 
-      if (m_settings.lookAtCamera)
-      {
-        Quaternion camOrientation =
-            cam->m_node->GetOrientation(TransformationSpace::TS_WORLD);
+    if (m_settings.lookAtCamera)
+    {
+      Quaternion camOrientation =
+          cam->m_node->GetOrientation(TransformationSpace::TS_WORLD);
 
-        m_node->SetOrientation(camOrientation, TransformationSpace::TS_WORLD);
-      }
+      m_node->SetOrientation(camOrientation, TransformationSpace::TS_WORLD);
     }
   }
 
