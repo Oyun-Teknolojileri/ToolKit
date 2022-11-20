@@ -712,6 +712,11 @@ namespace ToolKit
     {
     }
 
+    EditorBillboardBase::BillboardType MoveGizmo::GetBillboardType() const
+    {
+      return BillboardType::Move;
+    }
+
     ScaleGizmo::ScaleGizmo()
     {
       for (uint i = 0; i < 3; i++)
@@ -742,6 +747,11 @@ namespace ToolKit
     {
     }
 
+    EditorBillboardBase::BillboardType ScaleGizmo::GetBillboardType() const
+    {
+      return BillboardType::Scale;
+    }
+
     GizmoHandle::Params ScaleGizmo::GetParam() const
     {
       GizmoHandle::Params p = LinearGizmo::GetParam();
@@ -760,6 +770,11 @@ namespace ToolKit
 
     PolarGizmo::~PolarGizmo()
     {
+    }
+
+    EditorBillboardBase::BillboardType PolarGizmo::GetBillboardType() const
+    {
+      return BillboardType::Rotate;
     }
 
     void PolarGizmo::Update(float deltaTime)
@@ -823,29 +838,6 @@ namespace ToolKit
       }
 
       GetComponent<MeshComponent>()->SetMeshVal(mesh);
-    }
-
-    void PolarGizmo::Render(Renderer* renderer, Camera* cam)
-    {
-      // Draw an inverted sphere to mask back side.
-      static std::shared_ptr<Sphere> sphere = nullptr;
-      if (sphere == nullptr)
-      {
-        sphere = std::make_shared<Sphere>(1.0f);
-        sphere->GetMeshComponent()
-            ->GetMeshVal()
-            ->m_material->GetRenderState()
-            ->cullMode = CullingType::Front;
-      }
-
-      *sphere->m_node = *m_node;
-      sphere->m_node->Scale(Vec3(0.95f));
-
-      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-      renderer->Render(sphere.get(), cam);
-
-      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-      renderer->Render(this, cam);
     }
 
     SkyBillboard::SkyBillboard() : EditorBillboardBase({true, 3.5f, 10.0f})

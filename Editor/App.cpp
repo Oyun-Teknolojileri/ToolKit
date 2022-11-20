@@ -42,6 +42,7 @@ namespace ToolKit
   ShadowPass* myShadowPass               = nullptr;
   RenderPass* myRenderPass               = nullptr;
   Editor::EditorRenderPass* myEditorPass = nullptr;
+  Editor::GizmoPass* myGizmoPas          = nullptr;
 
   namespace Editor
   {
@@ -56,6 +57,7 @@ namespace ToolKit
       myShadowPass = new ShadowPass();
       myRenderPass = new RenderPass();
       myEditorPass = new EditorRenderPass();
+      myGizmoPas   = new GizmoPass();
 
       OverrideEntityConstructors();
 
@@ -69,6 +71,7 @@ namespace ToolKit
       SafeDel(myShadowPass);
       SafeDel(myRenderPass);
       SafeDel(myEditorPass);
+      SafeDel(myGizmoPas);
     }
 
     void App::Init()
@@ -265,20 +268,18 @@ namespace ToolKit
           myEditorPass->m_params.App      = this;
           myEditorPass->m_params.Viewport = viewport;
           myEditorPass->Render();
-          //  Pass Test End
+
+          myGizmoPas->m_params.Viewport   = viewport;
+          myGizmoPas->m_params.GizmoArray = {
+              m_gizmo,
+              viewport->GetType() == Window::Type::Viewport2d ? m_anchor.get()
+                                                              : nullptr};
+          myGizmoPas->Render();
+          // Pass Test End
 
           EntityRawPtrArray selectedEntities;
           GetCurrentScene()->GetSelectedEntities(selectedEntities);
           RenderSelected(viewport, selectedEntities);
-
-          // Render gizmo.
-          RenderGizmo(viewport, m_gizmo);
-
-          // Render anchor.
-          if (viewport->GetType() == Window::Type::Viewport2d)
-          {
-            RenderAnchor(viewport, m_anchor);
-          }
         }
       }
 
@@ -1324,49 +1325,6 @@ namespace ToolKit
               static_cast<EditorDirectionalLight*>(primary)
                   ->GetDebugShadowFrustum());
         }
-      }
-    }
-
-    void App::RenderGizmo(EditorViewport* viewport, Gizmo* gizmo)
-    {
-      if (gizmo == nullptr)
-      {
-        return;
-      }
-
-      gizmo->LookAt(viewport->GetCamera(), viewport->GetBillboardScale());
-
-      glClear(GL_DEPTH_BUFFER_BIT);
-      if (PolarGizmo* pg = dynamic_cast<PolarGizmo*>(gizmo))
-      {
-        pg->Render(m_renderer, viewport->GetCamera());
-      }
-      else
-      {
-        Entity* nttGizmo = dynamic_cast<Entity*>(gizmo);
-        if (nttGizmo != nullptr)
-        {
-          m_renderer->Render(gizmo, viewport->GetCamera());
-        }
-      }
-    }
-
-    void App::RenderAnchor(EditorViewport* viewport, AnchorPtr anchor)
-    {
-      if (anchor == nullptr)
-      {
-        return;
-      }
-
-      glClear(GL_DEPTH_BUFFER_BIT);
-
-      if (dynamic_cast<Entity*>(anchor.get()) != nullptr)
-      {
-        if (anchor->m_entity && anchor->m_entity->m_node->m_parent &&
-            anchor->m_entity->m_node->m_parent->m_entity &&
-            anchor->m_entity->m_node->m_parent->m_entity->GetType() ==
-                EntityType::Entity_Canvas)
-          m_renderer->Render(anchor.get(), viewport->GetCamera());
       }
     }
 

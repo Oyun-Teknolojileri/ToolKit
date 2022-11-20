@@ -181,8 +181,7 @@ namespace ToolKit
 
     MaterialPtr overrideMatPrev = m_overrideMat;
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    ClearBuffer(GraphicBitFields::ColorDepthBits, Vec4(0.0f));
 
     SetCameraLens(cam);
 
@@ -637,9 +636,7 @@ namespace ToolKit
 
       if (clear)
       {
-        glClearColor(color.r, color.g, color.b, color.a);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
-                GL_STENCIL_BUFFER_BIT);
+        ClearBuffer(GraphicBitFields::AllBits, color);
       }
     }
     else
@@ -682,6 +679,17 @@ namespace ToolKit
   {
     SwapFramebuffer(fb, true, color);
     SwapFramebuffer(fb, false);
+  }
+
+  void Renderer::ClearBuffer(GraphicBitFields fields, const Vec4& color)
+  {
+    glClearColor(color.r, color.g, color.b, color.a);
+    glClear((GLbitfield) fields);
+  }
+
+  void Renderer::ColorMask(bool r, bool g, bool b, bool a)
+  {
+    glColorMask(r, g, b, a);
   }
 
   void Renderer::SetViewport(Viewport* viewport)
@@ -1238,9 +1246,7 @@ namespace ToolKit
         auto renderForShadowMapFn = [this](Light* light,
                                            EntityRawPtrArray entities) -> void {
           FrustumCull(entities, light->m_shadowCamera);
-
-          glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+          ClearBuffer(GraphicBitFields::ColorDepthBits, Vec4(1.0f));
           m_overrideMat = light->GetShadowMaterial();
           for (Entity* ntt : entities)
           {

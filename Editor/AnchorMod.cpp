@@ -572,31 +572,15 @@ namespace ToolKit
     {
       State* state               = new StateAnchorBegin();
       StateAnchorBase* baseState = static_cast<StateAnchorBase*>(state);
-      switch (m_id)
-      {
-      case ModId::Anchor:
-        m_anchor =
-            std::make_shared<Anchor>(Billboard::Settings{false, 6.0f, 60.0f});
-        baseState->m_type = StateAnchorBase::TransformType::Translate;
-        break;
-      default:
-        assert(false);
-        return;
-      }
-
+      m_anchor =
+          std::make_shared<Anchor>(Billboard::Settings{false, 0.0f, 0.0f});
+      baseState->m_type = StateAnchorBase::TransformType::Translate;
       baseState->m_anchor            = m_anchor;
       m_stateMachine->m_currentState = state;
 
       m_stateMachine->PushState(state);
       m_stateMachine->PushState(new StateAnchorTo());
       m_stateMachine->PushState(new StateAnchorEnd());
-
-      /* state                      = new StateBeginPick();
-      state->m_links[m_backToStart] = StateType::StateAnchorBegin;
-      m_stateMachine->PushState(state);
-      state                         = new StateEndPick();
-      state->m_links[m_backToStart] = StateType::StateAnchorBegin;
-      m_stateMachine->PushState(state);*/
 
       m_prevTransformSpace = g_app->m_transformSpace;
     }
@@ -608,20 +592,6 @@ namespace ToolKit
     void AnchorMod::Update(float deltaTime)
     {
       BaseMod::Update(deltaTime);
-
-      /* if (m_stateMachine->m_currentState->ThisIsA<StateEndPick>())
-      {
-        StateEndPick* endPick =
-            static_cast<StateEndPick*>(m_stateMachine->m_currentState);
-
-        EntityIdArray entities;
-        endPick->PickDataToEntityId(entities);
-        g_app->GetCurrentScene()->AddToSelection(entities,
-                                                 ImGui::GetIO().KeyShift);
-
-        m_stateMachine->Signal(BaseMod::m_backToStart);
-      }*/
-
       if (m_stateMachine->m_currentState->ThisIsA<StateAnchorEnd>())
       {
         m_stateMachine->Signal(BaseMod::m_backToStart);

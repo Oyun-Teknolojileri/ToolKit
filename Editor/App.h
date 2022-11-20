@@ -24,7 +24,6 @@ namespace ToolKit
   {
 
     typedef std::shared_ptr<class Anchor> AnchorPtr;
-
     typedef std::function<void(int)> SysCommandDoneCallback;
     typedef std::function<int(StringView, bool, bool, SysCommandDoneCallback)>
         SysCommandExecutionFn;
@@ -138,9 +137,6 @@ namespace ToolKit
       // Quick selected render implementation.
       void RenderSelected(EditorViewport* viewport,
                           EntityRawPtrArray selecteds);
-
-      void RenderGizmo(EditorViewport* viewport, Gizmo* gizmo);
-      void RenderAnchor(EditorViewport* viewport, AnchorPtr anchor);
 
       void HideGizmos();
       void ShowGizmos();

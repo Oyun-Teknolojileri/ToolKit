@@ -289,6 +289,17 @@ namespace ToolKit
     TargetCubeMap        = 0x8513
   };
 
+  enum class GraphicBitFields
+  {
+    ColorBits        = 0x00004000,
+    DepthBits        = 0x00000100,
+    StencilBits      = 0x00000400,
+    ColorDepthBits   = ColorBits | DepthBits,
+    ColorStencilBits = ColorBits | StencilBits,
+    DepthStencilBits = DepthBits | StencilBits,
+    AllBits          = ColorBits | DepthBits | StencilBits
+  };
+
   static const char* TKVersionStr = "v0.3.17";
 
 } // namespace ToolKit

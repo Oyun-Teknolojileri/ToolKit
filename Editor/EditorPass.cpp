@@ -91,5 +91,72 @@ namespace ToolKit
       app->m_perFrameDebugObjects.clear();
     }
 
+    GizmoPass::GizmoPass()
+    {
+      m_depthMaskSphere   = std::make_shared<Sphere>(0.95f);
+      MeshComponentPtr mc = m_depthMaskSphere->GetMeshComponent();
+      MeshPtr mesh        = mc->GetMeshVal();
+      RenderState* rs     = mesh->m_material->GetRenderState();
+      rs->cullMode        = CullingType::Front;
+    }
+
+    void GizmoPass::Render()
+    {
+      PreRender();
+
+      Renderer* renderer = GetRenderer();
+
+      for (EditorBillboardBase* bb : m_params.GizmoArray)
+      {
+        if (bb->GetBillboardType() ==
+            EditorBillboardBase::BillboardType::Rotate)
+        {
+          Mat4 ts = bb->m_node->GetTransform();
+          m_depthMaskSphere->m_node->SetTransform(
+              ts, TransformationSpace::TS_WORLD, false);
+
+          renderer->ColorMask(false, false, false, false);
+          renderer->Render(m_depthMaskSphere.get(), m_camera);
+
+          renderer->ColorMask(true, true, true, true);
+          renderer->Render(bb, m_camera);
+        }
+        else
+        {
+          renderer->Render(bb, m_camera);
+        }
+      }
+
+      PostRender();
+    }
+
+    void GizmoPass::PreRender()
+    {
+      Pass::PreRender();
+
+      Renderer* renderer = GetRenderer();
+      m_camera           = m_params.Viewport->GetCamera();
+      renderer->SetFramebuffer(m_params.Viewport->m_framebuffer, false);
+      renderer->SetCameraLens(m_camera);
+      renderer->ClearBuffer(GraphicBitFields::DepthBits, Vec4(1.0f));
+
+      for (int i = (int)m_params.GizmoArray.size() - 1; i >= 0; i--)
+      {
+        if (EditorBillboardBase* bb = m_params.GizmoArray[i])
+        {
+          bb->LookAt(m_camera, m_params.Viewport->GetBillboardScale());
+        }
+        else
+        {
+          m_params.GizmoArray.erase(m_params.GizmoArray.begin() + i);
+        }
+      }
+    }
+
+    void GizmoPass::PostRender()
+    {
+      Pass::PostRender();
+    }
+
   } // namespace Editor
 } // namespace ToolKit

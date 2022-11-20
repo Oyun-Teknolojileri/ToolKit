@@ -40,6 +40,8 @@ namespace ToolKit
 
     FramebufferPtr GetFrameBuffer();
     void ClearFrameBuffer(FramebufferPtr fb, const Vec4& color);
+    void ClearBuffer(GraphicBitFields fields, const Vec4& color);
+    void ColorMask(bool r, bool g, bool b, bool a);
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
@@ -57,13 +59,13 @@ namespace ToolKit
     void ResetShadowMapBindings(ProgramPtr program);
 
     CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture,
-                                          uint width,
-                                          uint height,
-                                          float exposure = 1.0f);
+                                            uint width,
+                                            uint height,
+                                            float exposure = 1.0f);
 
     CubeMapPtr GenerateIrradianceCubemap(CubeMapPtr cubemap,
-                                       uint width,
-                                       uint height);
+                                         uint width,
+                                         uint height);
 
     LightRawPtrArray GetBestLights(Entity* entity,
                                    const LightRawPtrArray& lights);
@@ -189,7 +191,7 @@ namespace ToolKit
     Vec4 m_clearColor             = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
     MaterialPtr m_overrideMat     = nullptr;
     bool m_overrideDiffuseTexture = false;
-    Camera* m_uiCamera = nullptr;
+    Camera* m_uiCamera            = nullptr;
 
     bool m_renderOnlyLighting = false;
 
