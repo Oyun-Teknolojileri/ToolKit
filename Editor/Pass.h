@@ -15,7 +15,7 @@ namespace ToolKit
 
    protected:
     MaterialPtr m_prevOverrideMaterial = nullptr;
-    FramebufferPtr m_prevFrameBuffer     = nullptr;
+    FramebufferPtr m_prevFrameBuffer   = nullptr;
   };
 
   struct RenderPassParams
@@ -38,7 +38,7 @@ namespace ToolKit
     void PreRender() override;
     void PostRender() override;
 
-   private:
+   protected:
     void CullDrawList(EntityRawPtrArray& entities, Camera* camera);
     void CullLightList(Entity const* entity, LightRawPtrArray& lights);
 
@@ -75,7 +75,7 @@ namespace ToolKit
    public:
     RenderPassParams m_params;
 
-   private:
+   protected:
     EntityRawPtrArray m_drawList;
     LightRawPtrArray m_contributingLights;
   };
@@ -106,7 +106,7 @@ namespace ToolKit
 
    private:
     MaterialPtr m_prevOverrideMaterial = nullptr;
-    FramebufferPtr m_prevFrameBuffer     = nullptr;
+    FramebufferPtr m_prevFrameBuffer   = nullptr;
 
     EntityRawPtrArray m_drawList;
     Quaternion m_cubeMapRotations[6];

@@ -298,6 +298,24 @@ namespace ToolKit
           // Render Editor Objects.
           Camera* cam = viewport->GetCamera();
 
+
+          // Render debug objects.
+          if (!m_perFrameDebugObjects.empty())
+          {
+            for (Entity* dbgObj : m_perFrameDebugObjects)
+            {
+              m_renderer->Render(dbgObj, viewCam);
+            }
+            for (Entity* dbgObj : m_perFrameDebugObjects)
+            {
+              SafeDel(dbgObj);
+            }
+            m_perFrameDebugObjects.clear();
+          }
+
+          RenderSelected(viewport, selecteds);
+
+
           // Grid.
           Grid* grid = viewport->GetType() == Window::Type::Viewport2d
                            ? m_2dGrid
@@ -326,22 +344,6 @@ namespace ToolKit
           }
 
           RenderComponentGizmo(viewport, selecteds);
-        }
-
-        RenderSelected(viewport, selecteds);
-
-        // Render debug objects.
-        if (!m_perFrameDebugObjects.empty())
-        {
-          for (Entity* dbgObj : m_perFrameDebugObjects)
-          {
-            m_renderer->Render(dbgObj, viewCam);
-          }
-          for (Entity* dbgObj : m_perFrameDebugObjects)
-          {
-            SafeDel(dbgObj);
-          }
-          m_perFrameDebugObjects.clear();
         }
       }
 
