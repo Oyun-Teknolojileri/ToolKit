@@ -128,6 +128,10 @@ namespace ToolKit
     Destroy(false);
   }
 
+  void Scene::Update(float deltaTime)
+  {
+  }
+
   void Scene::Merge(ScenePtr other)
   {
     ULongID lastID = GetHandleManager()->GetNextHandle(), biggestID = 0;

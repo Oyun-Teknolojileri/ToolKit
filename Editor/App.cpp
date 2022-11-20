@@ -173,8 +173,7 @@ namespace ToolKit
       UI::BeginUI();
       UI::ShowUI();
 
-      // Update animations.
-      GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
+      GetCurrentScene()->Update(deltaTime);
 
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
@@ -190,54 +189,24 @@ namespace ToolKit
 
       ShowSimulationWindow(deltaTime);
 
-      // Selected entities
-      EntityRawPtrArray selecteds;
-      GetCurrentScene()->GetSelectedEntities(selecteds);
-
-      LightRawPtrArray allLights = GetCurrentScene()->GetLights();
-
-      // Enable light gizmos
-      bool foundFirstLight      = false;
-      Light* firstSelectedLight = nullptr;
-      for (Light* light : allLights)
-      {
-        bool found = false;
-        for (Entity* ntt : selecteds)
-        {
-          if (light->GetIdVal() == ntt->GetIdVal())
-          {
-            if (!foundFirstLight)
-            {
-              firstSelectedLight = light;
-              foundFirstLight    = true;
-            }
-            EnableLightGizmo(light, true);
-            found = true;
-            break;
-          }
-        }
-
-        if (!found)
-        {
-          EnableLightGizmo(light, false);
-        }
-      }
-
       // Take all lights in an array
       LightRawPtrArray totalLights;
-
-      totalLights = GetCurrentScene()->GetLights();
       if (m_sceneLightingMode == EditorLit)
       {
         totalLights = m_sceneLights;
+      }
+      else
+      {
+        totalLights = GetCurrentScene()->GetLights();
       }
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
       {
+        viewport->Update(deltaTime);
+
         // Update scene lights for the current view.
         Camera* viewCam = viewport->GetCamera();
-
         m_lightMaster->OrphanSelf();
         viewCam->m_node->AddChild(m_lightMaster);
 
@@ -249,9 +218,6 @@ namespace ToolKit
             continue;
           }
         }
-
-        viewport->Update(deltaTime);
-        GetCurrentScene()->UpdateBillboardTransforms(viewport);
 
         if (viewport->IsVisible())
         {
@@ -297,12 +263,14 @@ namespace ToolKit
           myRenderPass->m_params.BillboardScale = viewport->GetBillboardScale();
           myRenderPass->Render();
 
-          myEditorPass->m_params.App         = this;
-          myEditorPass->m_params.Viewport    = viewport;
+          myEditorPass->m_params.App      = this;
+          myEditorPass->m_params.Viewport = viewport;
           myEditorPass->Render();
           //  Pass Test End
 
-          RenderSelected(viewport, selecteds);
+          EntityRawPtrArray selectedEntities;
+          GetCurrentScene()->GetSelectedEntities(selectedEntities);
+          RenderSelected(viewport, selectedEntities);
 
           // Render gizmo.
           RenderGizmo(viewport, m_gizmo);
@@ -1406,30 +1374,6 @@ namespace ToolKit
             anchor->m_entity->m_node->m_parent->m_entity->GetType() ==
                 EntityType::Entity_Canvas)
           m_renderer->Render(anchor.get(), viewport->GetCamera());
-      }
-    }
-
-    void App::RenderComponentGizmo(EditorViewport* viewport,
-                                   EntityRawPtrArray selecteds)
-    {
-      // Entity billboards
-      for (Billboard* bb : GetCurrentScene()->GetBillboards())
-      {
-        m_renderer->Render(bb, viewport->GetCamera());
-      }
-
-      // Selected gizmos
-      for (Entity* ntt : selecteds)
-      {
-        // Environment Component
-        EnvironmentComponentPtr envCom =
-            ntt->GetComponent<EnvironmentComponent>();
-        if (envCom != nullptr && ntt->GetType() != EntityType::Entity_Sky)
-        {
-          // Bounding box
-          m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(
-              *envCom->GetBBox(), g_environmentGizmoColor, 1.0f));
-        }
       }
     }
 

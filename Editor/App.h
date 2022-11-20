@@ -141,8 +141,6 @@ namespace ToolKit
 
       void RenderGizmo(EditorViewport* viewport, Gizmo* gizmo);
       void RenderAnchor(EditorViewport* viewport, AnchorPtr anchor);
-      void RenderComponentGizmo(EditorViewport* viewport,
-                                EntityRawPtrArray selecteds);
 
       void HideGizmos();
       void ShowGizmos();
