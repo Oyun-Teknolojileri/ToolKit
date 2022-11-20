@@ -17,9 +17,15 @@ namespace ToolKit
     {
       Pass::PreRender();
 
+      App* app = m_params.App;
+      m_camera = m_params.Viewport->GetCamera();
+
+      Renderer* renderer = GetRenderer();
+      renderer->SetFramebuffer(m_params.Viewport->m_framebuffer, false);
+      renderer->SetCameraLens(m_camera);
+
       // Accumulate Editor entities.
       m_drawList.clear();
-      App* app = m_params.App;
 
       EditorScenePtr scene = app->GetCurrentScene();
       
@@ -44,36 +50,27 @@ namespace ToolKit
                         app->m_perFrameDebugObjects.end());
 
       // Billboards.
-      Renderer* renderer = GetRenderer();
-      renderer->SetFramebuffer(m_params.FrameBuffer, true);
-
-      Camera* cam   = m_params.Viewport->GetCamera();
-      float vpScale = m_params.Viewport->GetBillboardScale();
-
-      renderer->SetCameraLens(cam);
-
       std::vector<EditorBillboardBase*> bbs = scene->GetBillboards();
       bbs.push_back(app->m_origin);
       bbs.push_back(app->m_cursor);
 
+      float vpScale = m_params.Viewport->GetBillboardScale();
       for (EditorBillboardBase* bb : bbs)
       {
-        bb->LookAt(cam, vpScale);
+        bb->LookAt(m_camera, vpScale);
       }
 
       m_drawList.insert(m_drawList.end(), bbs.begin(), bbs.end());
 
       // Grid.
-      if (m_params.Viewport->GetType() == Window::Type::Viewport2d)
-      {
-        m_drawList.push_back(app->m_2dGrid);
-      }
-      else
-      {
-        m_drawList.push_back(app->m_grid);
-      }
+      Grid* grid = m_params.Viewport->GetType() == Window::Type::Viewport2d
+                       ? app->m_2dGrid
+                       : app->m_grid;
+      
+      grid->UpdateShaderParams();
+      m_drawList.push_back(grid);
 
-      CullDrawList(m_drawList, cam);
+      CullDrawList(m_drawList, m_camera);
     }
 
     void EditorRenderPass::PostRender()
@@ -81,7 +78,6 @@ namespace ToolKit
       Pass::PostRender();
 
       App* app = m_params.App;
-
       for (Entity* dbgObj : app->m_perFrameDebugObjects)
       {
         SafeDel(dbgObj);

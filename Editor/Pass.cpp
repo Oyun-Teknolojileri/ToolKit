@@ -27,8 +27,8 @@ namespace ToolKit
     EntityRawPtrArray translucentDrawList;
     SeperateTranslucentEntities(m_drawList, translucentDrawList);
 
-    RenderOpaque(m_drawList, m_params.Cam, m_contributingLights);
-    RenderTranslucent(translucentDrawList, m_params.Cam, m_contributingLights);
+    RenderOpaque(m_drawList, m_camera, m_contributingLights);
+    RenderTranslucent(translucentDrawList, m_camera, m_contributingLights);
 
     PostRender();
   }
@@ -43,10 +43,11 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     // Set self data.
-    renderer->SetFramebuffer(m_params.FrameBuffer, true);
-    renderer->SetCameraLens(m_params.Cam);
-
     m_drawList = m_params.Scene->GetEntities();
+    m_camera   = m_params.Cam;
+
+    renderer->SetFramebuffer(m_params.FrameBuffer, true);
+    renderer->SetCameraLens(m_camera);
 
     // Set contributing lights.
     LightRawPtrArray& lights = m_params.LightOverride;
@@ -62,7 +63,7 @@ namespace ToolKit
     // Gather volumes.
     renderer->CollectEnvironmentVolumes(m_drawList);
 
-    CullDrawList(m_drawList, m_params.Cam);
+    CullDrawList(m_drawList, m_camera);
 
     // Update billboards.
     for (Entity* ntt : m_drawList)
@@ -71,7 +72,7 @@ namespace ToolKit
       if (ntt->GetType() == EntityType::Entity_Billboard)
       {
         Billboard* billboard = static_cast<Billboard*>(ntt);
-        billboard->LookAt(m_params.Cam, m_params.BillboardScale);
+        billboard->LookAt(m_camera, m_params.BillboardScale);
       }
     }
   }

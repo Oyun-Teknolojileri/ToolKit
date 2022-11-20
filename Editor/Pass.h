@@ -76,6 +76,7 @@ namespace ToolKit
     RenderPassParams m_params;
 
    protected:
+    Camera* m_camera;
     EntityRawPtrArray m_drawList;
     LightRawPtrArray m_contributingLights;
   };

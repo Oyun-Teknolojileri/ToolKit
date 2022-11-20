@@ -11,11 +11,11 @@ namespace ToolKit
     {
       class App* App                 = nullptr;
       class EditorViewport* Viewport = nullptr;
-      FramebufferPtr FrameBuffer     = nullptr;
     };
 
     class EditorRenderPass : public RenderPass
     {
+     public:
       void Render() override;
       void PreRender() override;
       void PostRender() override;

@@ -6,6 +6,7 @@
 #include "ConsoleWindow.h"
 #include "DirectionComponent.h"
 #include "EditorCamera.h"
+#include "EditorPass.h"
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
 #include "FolderWindow.h"
@@ -38,8 +39,9 @@
 
 namespace ToolKit
 {
-  ShadowPass* myShadowPass = nullptr;
-  RenderPass* myRenderPass = nullptr;
+  ShadowPass* myShadowPass               = nullptr;
+  RenderPass* myRenderPass               = nullptr;
+  Editor::EditorRenderPass* myEditorPass = nullptr;
 
   namespace Editor
   {
@@ -53,6 +55,7 @@ namespace ToolKit
 
       myShadowPass = new ShadowPass();
       myRenderPass = new RenderPass();
+      myEditorPass = new EditorRenderPass();
 
       OverrideEntityConstructors();
 
@@ -65,6 +68,7 @@ namespace ToolKit
 
       SafeDel(myShadowPass);
       SafeDel(myRenderPass);
+      SafeDel(myEditorPass);
     }
 
     void App::Init()
@@ -247,7 +251,6 @@ namespace ToolKit
         }
 
         viewport->Update(deltaTime);
-
         GetCurrentScene()->UpdateBillboardTransforms(viewport);
 
         if (viewport->IsVisible())
@@ -257,7 +260,7 @@ namespace ToolKit
           case LightComplexity: {
             lightModeMat->UnInit();
             lightModeMat->m_fragmentShader = GetShaderManager()->Create<Shader>(
-                ShaderPath("ToolKit/lightComplexity.shader"));
+                ShaderPath("lightComplexity.shader", true));
             lightModeMat->Init();
             m_renderer->m_overrideMat = lightModeMat;
           }
@@ -280,59 +283,26 @@ namespace ToolKit
           }
 
           // Render scene.
-          m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
+          // m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
 
           // Pass Test Begin
           myShadowPass->m_params.Entities = GetCurrentScene()->GetEntities();
           myShadowPass->m_params.Lights   = totalLights;
-          //myShadowPass->Render();
+          myShadowPass->Render();
 
           myRenderPass->m_params.Scene          = GetCurrentScene();
           myRenderPass->m_params.LightOverride  = totalLights;
           myRenderPass->m_params.Cam            = viewCam;
           myRenderPass->m_params.FrameBuffer    = viewport->m_framebuffer;
           myRenderPass->m_params.BillboardScale = viewport->GetBillboardScale();
-          //myRenderPass->Render();
-          // Pass Test End
+          myRenderPass->Render();
 
-          // Render Editor Objects.
-          Camera* cam = viewport->GetCamera();
-
-
-          // Render debug objects.
-          if (!m_perFrameDebugObjects.empty())
-          {
-            for (Entity* dbgObj : m_perFrameDebugObjects)
-            {
-              m_renderer->Render(dbgObj, viewCam);
-            }
-            for (Entity* dbgObj : m_perFrameDebugObjects)
-            {
-              SafeDel(dbgObj);
-            }
-            m_perFrameDebugObjects.clear();
-          }
+          myEditorPass->m_params.App         = this;
+          myEditorPass->m_params.Viewport    = viewport;
+          myEditorPass->Render();
+          //  Pass Test End
 
           RenderSelected(viewport, selecteds);
-
-
-          // Grid.
-          Grid* grid = viewport->GetType() == Window::Type::Viewport2d
-                           ? m_2dGrid
-                           : m_grid;
-          grid->UpdateShaderParams();
-
-          m_renderer->Render(grid, cam);
-
-          // Render fixed scene objects.
-          if (viewport->GetType() != Window::Type::Viewport2d)
-          {
-            m_origin->LookAt(cam, viewport->GetBillboardScale());
-            m_renderer->Render(m_origin, cam);
-
-            m_cursor->LookAt(cam, viewport->GetBillboardScale());
-            m_renderer->Render(m_cursor, cam);
-          }
 
           // Render gizmo.
           RenderGizmo(viewport, m_gizmo);
@@ -342,8 +312,6 @@ namespace ToolKit
           {
             RenderAnchor(viewport, m_anchor);
           }
-
-          RenderComponentGizmo(viewport, selecteds);
         }
       }
 

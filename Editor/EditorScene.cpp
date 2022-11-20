@@ -459,8 +459,6 @@ namespace ToolKit
       {
         billboard->m_worldLocation =
             billboard->m_entity->m_node->GetTranslation();
-        billboard->LookAt(viewport->GetCamera(),
-                          viewport->GetBillboardScale());
       }
     }
 
