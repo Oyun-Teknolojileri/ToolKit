@@ -28,8 +28,8 @@ namespace ToolKit
       m_drawList.clear();
 
       EditorScenePtr scene = app->GetCurrentScene();
-      
-      // Generate Environment component boxes.
+
+      // Generate Selection boundary and Environment component boundary.
       EntityRawPtrArray selecteds;
       scene->GetSelectedEntities(selecteds);
 
@@ -41,6 +41,12 @@ namespace ToolKit
         {
           app->m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(
               *envCom->GetBBox(), g_environmentGizmoColor, 1.0f));
+        }
+
+        if (app->m_showSelectionBoundary && ntt->IsDrawable())
+        {
+          app->m_perFrameDebugObjects.push_back(
+              CreateBoundingBoxDebugObject(ntt->GetAABB(true)));
         }
       }
 
@@ -66,7 +72,7 @@ namespace ToolKit
       Grid* grid = m_params.Viewport->GetType() == Window::Type::Viewport2d
                        ? app->m_2dGrid
                        : app->m_grid;
-      
+
       grid->UpdateShaderParams();
       m_drawList.push_back(grid);
 

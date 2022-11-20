@@ -123,7 +123,9 @@
     <ClCompile Include="Pass.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="EditorPass.cpp" />
+    <ClCompile Include="EditorPass.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">

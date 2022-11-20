@@ -173,8 +173,6 @@ namespace ToolKit
       UI::BeginUI();
       UI::ShowUI();
 
-      GetCurrentScene()->Update(deltaTime);
-
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
       std::vector<EditorViewport*> viewports;
@@ -188,6 +186,7 @@ namespace ToolKit
       }
 
       ShowSimulationWindow(deltaTime);
+      GetCurrentScene()->Update(deltaTime);
 
       // Take all lights in an array
       LightRawPtrArray totalLights;
@@ -1314,12 +1313,6 @@ namespace ToolKit
       selecteds.clear();
       selecteds.push_back(primary);
       RenderFn(selecteds, g_selectHighLightPrimaryColor);
-
-      if (m_showSelectionBoundary && primary->IsDrawable())
-      {
-        m_perFrameDebugObjects.push_back(
-            CreateBoundingBoxDebugObject(primary->GetAABB(true)));
-      }
 
       if (m_showDirectionalLightShadowFrustum)
       {
