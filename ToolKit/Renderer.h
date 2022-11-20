@@ -189,17 +189,6 @@ namespace ToolKit
     Vec4 m_clearColor             = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
     MaterialPtr m_overrideMat     = nullptr;
     bool m_overrideDiffuseTexture = false;
-
-    // Grid parameters
-    struct GridParams
-    {
-      float sizeEachCell       = 0.1f;
-      float maxLinePixelCount  = 2.0f;
-      Vec3 axisColorHorizontal = X_AXIS;
-      Vec3 axisColorVertical   = Z_AXIS;
-      bool is2DViewport        = false;
-    };
-    GridParams m_gridParams;
     Camera* m_uiCamera = nullptr;
 
     bool m_renderOnlyLighting = false;

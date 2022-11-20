@@ -126,11 +126,6 @@ namespace ToolKit
     m_initiated = false;
   }
 
-  void Shader::SetShaderParameter(String param, const ParameterVariant& val)
-  {
-    m_shaderParams[param] = val;
-  }
-
   void Shader::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "shader", parent);
@@ -186,8 +181,7 @@ namespace ToolKit
       case Uniform::FRAME_COUNT:
         name = "FrameCount";
         break;
-      case Uniform::GRID_SETTINGS:
-        name = "GridData";
+      case Uniform::UNUSEDSLOT_1:
         break;
       case Uniform::PROJECTION_VIEW_NO_TR:
         name = "ProjectionViewNoTr";
@@ -298,10 +292,6 @@ namespace ToolKit
         {
           m_uniforms.push_back(Uniform::FRAME_COUNT);
         }
-        else if (strcmp("GridData", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::GRID_SETTINGS);
-        }
         else if (strcmp("Exposure", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::EXPOSURE);
@@ -359,6 +349,15 @@ namespace ToolKit
     {
       HandleShaderIncludes(*i);
     }
+  }
+
+  void Shader::SetShaderParameter(String param, const ParameterVariant& val)
+  {
+    m_shaderParams[param] = val;
+  }
+
+  void Shader::UpdateShaderParameters()
+  {
   }
 
   void Shader::HandleShaderIncludes(const String& file)

@@ -18,6 +18,7 @@ namespace ToolKit
 
   enum class Uniform
   {
+    // Order is important. Don't change for backward comparable resource files.
     PROJECT_MODEL_VIEW,
     VIEW,
     MODEL,
@@ -26,7 +27,7 @@ namespace ToolKit
     CAM_DATA,
     COLOR,
     FRAME_COUNT,
-    GRID_SETTINGS,
+    UNUSEDSLOT_1,
     EXPOSURE,
     PROJECTION_VIEW_NO_TR,
     USE_IBL,
@@ -51,22 +52,65 @@ namespace ToolKit
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
-    void SetShaderParameter(String param, const ParameterVariant& val);
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+
+    /**
+     * Adds a shader parameter to the parameter array with the given name and
+     * ParameterVariant. Shader is looked up with the parameter name "param" and
+     * its value set as "val".
+     * @param param is the name that the parameter is referred in the shader.
+     * @param val is the value of the given parameter.
+     */
+    void SetShaderParameter(String param, const ParameterVariant& val);
+
+    /**
+     * Renderer calls this function before feeding shader parameters to give
+     * custom shaders a chance to update. Derived classes may
+     * override this to update their custom parameters.
+     */
+    virtual void UpdateShaderParameters();
 
    private:
     void HandleShaderIncludes(const String& file);
 
    public:
+    /**
+     * Container that holds custom shader parameters.
+     */
     std::unordered_map<String, ParameterVariant> m_shaderParams;
 
+    /**
+     * Shader hash to look up. Any shader resolving to the same tag can be
+     * accessed from the Shader Manager. It helps avoiding creating the same
+     * shader multiple times.
+     */
     String m_tag;
+
+    /**
+     * Type of the shader.
+     */
     ShaderType m_shaderType = ShaderType::VertexShader;
-    uint m_shaderHandle     = 0;
-    StringArray m_includeFiles;
+
+    /**
+     * Internal Id that is being used by graphics API.
+     */
+    uint m_shaderHandle = 0;
+
+    /**
+     * Built-in Uniform's that is required for the shader.
+     */
     std::vector<Uniform> m_uniforms;
+
+    /**
+     * Include files that this shader needs.
+     */
+    StringArray m_includeFiles;
+
+    /**
+     * Shader's source file.
+     */
     String m_source;
   };
 

@@ -377,6 +377,7 @@ namespace ToolKit
       {
         return;
       }
+
       SkeletonPtr skel = skelComp->GetSkeletonResourceVal();
       if (skel == nullptr)
       {
@@ -1516,6 +1517,8 @@ namespace ToolKit
   {
     for (ShaderPtr shader : program->m_shaders)
     {
+      shader->UpdateShaderParameters();
+
       // Built-in variables.
       for (Uniform uni : shader->m_uniforms)
       {
@@ -1587,27 +1590,6 @@ namespace ToolKit
         case Uniform::FRAME_COUNT: {
           GLint loc = glGetUniformLocation(program->m_handle, "FrameCount");
           glUniform1ui(loc, m_frameCount);
-        }
-        break;
-        case Uniform::GRID_SETTINGS: {
-          GLint locCellSize =
-              glGetUniformLocation(program->m_handle, "GridData.cellSize");
-          glUniform1fv(locCellSize, 1, &m_gridParams.sizeEachCell);
-          GLint locLineMaxPixelCount = glGetUniformLocation(
-              program->m_handle, "GridData.lineMaxPixelCount");
-          glUniform1fv(
-              locLineMaxPixelCount, 1, &m_gridParams.maxLinePixelCount);
-          GLint locHorizontalAxisColor = glGetUniformLocation(
-              program->m_handle, "GridData.horizontalAxisColor");
-          glUniform3fv(
-              locHorizontalAxisColor, 1, &m_gridParams.axisColorHorizontal.x);
-          GLint locVerticalAxisColor = glGetUniformLocation(
-              program->m_handle, "GridData.verticalAxisColor");
-          glUniform3fv(
-              locVerticalAxisColor, 1, &m_gridParams.axisColorVertical.x);
-          GLint locIs2dViewport =
-              glGetUniformLocation(program->m_handle, "GridData.is2DViewport");
-          glUniform1ui(locIs2dViewport, m_gridParams.is2DViewport);
         }
         break;
         case Uniform::EXPOSURE: {
@@ -1696,6 +1678,9 @@ namespace ToolKit
 
         switch (var.second.GetType())
         {
+        case ParameterVariant::VariantType::Bool:
+          glUniform1ui(loc, var.second.GetVar<bool>());
+          break;
         case ParameterVariant::VariantType::Float:
           glUniform1f(loc, var.second.GetVar<float>());
           break;

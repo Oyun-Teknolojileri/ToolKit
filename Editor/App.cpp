@@ -280,42 +280,31 @@ namespace ToolKit
           }
 
           // Render scene.
-          // m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
+          m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
 
           // Pass Test Begin
           myShadowPass->m_params.Entities = GetCurrentScene()->GetEntities();
           myShadowPass->m_params.Lights   = totalLights;
-          myShadowPass->Render();
+          //myShadowPass->Render();
 
           myRenderPass->m_params.Scene          = GetCurrentScene();
           myRenderPass->m_params.LightOverride  = totalLights;
           myRenderPass->m_params.Cam            = viewCam;
           myRenderPass->m_params.FrameBuffer    = viewport->m_framebuffer;
           myRenderPass->m_params.BillboardScale = viewport->GetBillboardScale();
-          myRenderPass->Render();
+          //myRenderPass->Render();
           // Pass Test End
 
           // Render Editor Objects.
-          // Grid.
-          Camera* cam     = viewport->GetCamera();
-          auto gridDrawFn = [this, &cam, &viewport](Grid* grid) -> void {
-            m_renderer->m_gridParams.sizeEachCell = grid->m_gridCellSize;
-            m_renderer->m_gridParams.axisColorHorizontal =
-                grid->m_horizontalAxisColor;
-            m_renderer->m_gridParams.axisColorVertical =
-                grid->m_verticalAxisColor;
-            m_renderer->m_gridParams.maxLinePixelCount =
-                grid->m_maxLinePixelCount;
-            m_renderer->m_gridParams.is2DViewport =
-                (viewport->GetType() == Window::Type::Viewport2d);
-            m_renderer->Render(grid, cam);
-          };
+          Camera* cam = viewport->GetCamera();
 
+          // Grid.
           Grid* grid = viewport->GetType() == Window::Type::Viewport2d
                            ? m_2dGrid
                            : m_grid;
+          grid->UpdateShaderParams();
 
-          gridDrawFn(grid);
+          m_renderer->Render(grid, cam);
 
           // Render fixed scene objects.
           if (viewport->GetType() != Window::Type::Viewport2d)
@@ -1707,12 +1696,13 @@ namespace ToolKit
       m_cursor = new Cursor();
       m_origin = new Axis3d();
 
-      m_grid = new Grid(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0);
+      m_grid = new Grid(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0, false);
 
       m_2dGrid = new Grid(g_max2dGridSize,
                           AxisLabel::XY,
                           10.0f,
-                          4.0); // Generate grid cells 10 x 10
+                          4.0,
+                          true); // Generate grid cells 10 x 10
 
       // Lights and camera.
       m_lightMaster = new Node();
