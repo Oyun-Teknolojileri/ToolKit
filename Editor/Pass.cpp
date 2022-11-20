@@ -12,6 +12,12 @@ namespace ToolKit
 
   RenderPass::RenderPass(const RenderPassParams& params) : m_params(params)
   {
+    // Create a default frame buffer.
+    if (m_params.FrameBuffer == nullptr)
+    {
+      m_params.FrameBuffer = std::make_shared<Framebuffer>();
+      m_params.FrameBuffer->Init({1024u, 768u, 0, false, true});
+    }
   }
 
   void RenderPass::Render()
@@ -37,7 +43,7 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     // Set self data.
-    renderer->SetFramebuffer(m_framebuffer, true);
+    renderer->SetFramebuffer(m_params.FrameBuffer, true);
     renderer->SetCameraLens(m_params.Cam);
 
     m_drawList = m_params.Scene->GetEntities();
@@ -329,6 +335,8 @@ namespace ToolKit
 
   void ShadowPass::PreRender()
   {
+    Pass::PreRender();
+
     // Dropout non shadow casters.
     m_drawList = m_params.Entities;
     m_drawList.erase(
@@ -340,9 +348,8 @@ namespace ToolKit
                        }),
         m_drawList.end());
 
-    Renderer* renderer = GetRenderer();
-
     // Clear old rts.
+    Renderer* renderer = GetRenderer();
     for (Light* light : m_params.Lights)
     {
       if (light->GetShadowMapFramebuffer())
@@ -351,19 +358,11 @@ namespace ToolKit
                                    Vec4(1.0f));
       }
     }
-
-    // Store the render's state.
-    m_prevOverrideMaterial = renderer->m_overrideMat;
-    m_prevFrameBuffer      = renderer->GetFrameBuffer();
   }
 
   void ShadowPass::PostRender()
   {
-    // Restore renderer's state.
-    Renderer* renderer = GetRenderer();
-
-    renderer->m_overrideMat = m_prevOverrideMaterial;
-    renderer->SetFramebuffer(m_prevFrameBuffer, false);
+    Pass::PostRender();
   }
 
   void ShadowPass::UpdateShadowMap(Light* light,
@@ -455,8 +454,8 @@ namespace ToolKit
 
   void Pass::PostRender()
   {
-    Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_prevFrameBuffer);
+    Renderer* renderer      = GetRenderer();
+    renderer->m_overrideMat = m_prevOverrideMaterial;
     renderer->SetFramebuffer(m_prevFrameBuffer);
   }
 

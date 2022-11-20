@@ -228,14 +228,6 @@ namespace ToolKit
         totalLights = m_sceneLights;
       }
 
-      // Sort lights by type
-      auto lightSortFn = [](Light* light1, Light* light2) -> bool {
-        return (light1->GetType() == EntityType::Entity_DirectionalLight &&
-                (light2->GetType() == EntityType::Entity_SpotLight ||
-                 light2->GetType() == EntityType::Entity_PointLight));
-      };
-      std::stable_sort(totalLights.begin(), totalLights.end(), lightSortFn);
-
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
       {
@@ -288,18 +280,19 @@ namespace ToolKit
           }
 
           // Render scene.
-          m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
+          // m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
 
           // Pass Test Begin
           myShadowPass->m_params.Entities = GetCurrentScene()->GetEntities();
           myShadowPass->m_params.Lights   = totalLights;
-          // myShadowPass.Render();
+          myShadowPass->Render();
 
           myRenderPass->m_params.Scene          = GetCurrentScene();
+          myRenderPass->m_params.LightOverride  = totalLights;
           myRenderPass->m_params.Cam            = viewCam;
           myRenderPass->m_params.FrameBuffer    = viewport->m_framebuffer;
           myRenderPass->m_params.BillboardScale = viewport->GetBillboardScale();
-          // myRenderPass.Render();
+          myRenderPass->Render();
           // Pass Test End
 
           // Render Editor Objects.

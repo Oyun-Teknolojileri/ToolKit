@@ -75,18 +75,7 @@ namespace ToolKit
    public:
     RenderPassParams m_params;
 
-    /**
-     * Render target of for the pass.
-     */
-    RenderTargetPtr m_renderTarget = nullptr;
-
-    /**
-     * Framebuffer for the pass.
-     */
-    FramebufferPtr m_framebuffer = nullptr;
-
    private:
-    Framebuffer m_renderBuffer;
     EntityRawPtrArray m_drawList;
     LightRawPtrArray m_contributingLights;
   };

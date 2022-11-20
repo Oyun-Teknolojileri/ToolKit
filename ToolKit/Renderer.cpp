@@ -765,7 +765,7 @@ namespace ToolKit
       }
     }
 
-    GenerateSSAOTexture(entities, viewport);
+    // GenerateSSAOTexture(entities, viewport);
 
     SetViewport(viewport);
 
@@ -1877,6 +1877,14 @@ namespace ToolKit
                   ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
                   ->m_textureId,
               program);
+        }
+        else
+        {
+          GetLogger()->WriteConsole(
+              LogType::Error,
+              "Uninitilized shadow buffer ! Light Name: %s ID: %d",
+              currLight->GetNameVal().c_str(),
+              currLight->GetIdVal());
         }
       }
       GLuint loc = glGetUniformLocation(program->m_handle,
