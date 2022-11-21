@@ -633,11 +633,6 @@ namespace ToolKit
 
       FramebufferSettings fbSet = fb->GetSettings();
       SetViewportSize(fbSet.width, fbSet.height);
-
-      if (clear)
-      {
-        ClearBuffer(GraphicBitFields::AllBits, color);
-      }
     }
     else
     {
@@ -645,6 +640,11 @@ namespace ToolKit
       m_framebuffer = nullptr;
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
       SetViewportSize(m_windowSize.x, m_windowSize.y);
+    }
+
+    if (clear)
+    {
+      ClearBuffer(GraphicBitFields::AllBits, color);
     }
 
     m_framebuffer = fb;

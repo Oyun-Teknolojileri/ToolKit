@@ -279,7 +279,7 @@ namespace ToolKit
 
           EntityRawPtrArray selectedEntities;
           GetCurrentScene()->GetSelectedEntities(selectedEntities);
-          // RenderSelected(viewport, selectedEntities);
+          RenderSelected(viewport, selectedEntities);
         }
       }
 
@@ -1262,9 +1262,6 @@ namespace ToolKit
 
         m_renderer->SetFramebuffer(viewport->m_framebuffer, false);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
         // Dilate.
         GetRenderer()->SetTexture(0,
                                   viewport->m_selectedStencilRT->m_textureId);
@@ -1272,9 +1269,6 @@ namespace ToolKit
             ShaderPath("dilateFrag.shader", true));
         dilate->SetShaderParameter("Color", ParameterVariant(color));
         m_renderer->DrawFullQuad(dilate);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
       };
 
       Entity* primary = selecteds.back();
