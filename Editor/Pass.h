@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Primative.h"
 #include "FrameBuffer.h"
 #include "GeometryTypes.h"
 
@@ -9,6 +10,9 @@ namespace ToolKit
   class Pass
   {
    public:
+    Pass();
+    virtual ~Pass();
+
     virtual void Render() = 0;
     virtual void PreRender();
     virtual void PostRender();
@@ -76,7 +80,7 @@ namespace ToolKit
     RenderPassParams m_params;
 
    protected:
-    Camera* m_camera;
+    Camera* m_camera = nullptr;
     EntityRawPtrArray m_drawList;
     LightRawPtrArray m_contributingLights;
   };
@@ -112,6 +116,32 @@ namespace ToolKit
     EntityRawPtrArray m_drawList;
     Quaternion m_cubeMapRotations[6];
     Vec3 m_cubeMapScales[6];
+  };
+
+  struct FullQuadPassParams
+  {
+    FramebufferPtr FrameBuffer = nullptr;
+    ShaderPtr FragmentShader   = nullptr;
+  };
+
+  class FullQuadPass : public Pass
+  {
+   public:
+    FullQuadPass();
+    explicit FullQuadPass(const FullQuadPassParams& params);
+    ~FullQuadPass();
+
+    void Render() override;
+    void PreRender() override;
+    void PostRender() override;
+
+   public:
+    FullQuadPassParams m_params;
+
+   private:
+    CameraPtr m_camera;
+    QuadPtr m_quad;
+    MaterialPtr m_material;
   };
 
 } // namespace ToolKit

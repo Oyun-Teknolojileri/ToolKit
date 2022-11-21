@@ -324,7 +324,7 @@ namespace ToolKit
                         cubemap,
                         (Framebuffer::CubemapFace) i);
 
-      GetRenderer()->SetFramebuffer(fb, true, Vec4(0.0f));
+      GetRenderer()->SetFramebuffer(fb, Vec4(0.0f));
       GetRenderer()->DrawCube(cam.get(), m_skyboxMaterial);
     }
     m_skyboxMaterial->GetRenderState()->depthTestEnabled = true;

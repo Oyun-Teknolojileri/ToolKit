@@ -279,7 +279,7 @@ namespace ToolKit
 
           EntityRawPtrArray selectedEntities;
           GetCurrentScene()->GetSelectedEntities(selectedEntities);
-          //RenderSelected(viewport, selectedEntities);
+          // RenderSelected(viewport, selectedEntities);
         }
       }
 
@@ -1226,8 +1226,8 @@ namespace ToolKit
           return;
         }
 
-        m_renderer->SetFramebuffer(
-            viewport->m_selectedFramebuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
+        m_renderer->SetFramebuffer(viewport->m_selectedFramebuffer,
+                                   {0.0f, 0.0f, 0.0f, 1.0});
 
         glEnable(GL_STENCIL_TEST);
         glStencilMask(0xFF);

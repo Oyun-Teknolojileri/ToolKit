@@ -33,9 +33,9 @@ namespace ToolKit
 
     void SetRenderState(const RenderState* const state, ProgramPtr program);
 
-    void SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color);
+    void SetFramebuffer(FramebufferPtr fb, const Vec4& clearColor);
     void SetFramebuffer(FramebufferPtr fb, bool clear = true);
-    void SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color);
+    void SwapFramebuffer(FramebufferPtr& fb, const Vec4& clearColor);
     void SwapFramebuffer(FramebufferPtr& fb, bool clear = true);
 
     FramebufferPtr GetFrameBuffer();

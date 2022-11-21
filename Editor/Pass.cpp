@@ -395,7 +395,7 @@ namespace ToolKit
     {
     case EntityType::Entity_PointLight: {
       FramebufferPtr shadowMapBuffer = light->GetShadowMapFramebuffer();
-      renderer->SetFramebuffer(shadowMapBuffer, true, Vec4(1.0f));
+      renderer->SetFramebuffer(shadowMapBuffer, Vec4(1.0f));
 
       for (int i = 0; i < 6; ++i)
       {
@@ -414,8 +414,7 @@ namespace ToolKit
     }
     case EntityType::Entity_DirectionalLight:
     case EntityType::Entity_SpotLight:
-      renderer->SetFramebuffer(
-          light->GetShadowMapFramebuffer(), true, Vec4(1.0f));
+      renderer->SetFramebuffer(light->GetShadowMapFramebuffer(), Vec4(1.0f));
       renderForShadowMapFn(light, entities);
       break;
     default:
@@ -446,6 +445,14 @@ namespace ToolKit
                                    softness / shadowRes.y);
   }
 
+  Pass::Pass()
+  {
+  }
+
+  Pass::~Pass()
+  {
+  }
+
   void Pass::PreRender()
   {
     Renderer* renderer     = GetRenderer();
@@ -458,6 +465,53 @@ namespace ToolKit
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_prevOverrideMaterial;
     renderer->SetFramebuffer(m_prevFrameBuffer);
+  }
+
+  FullQuadPass::FullQuadPass()
+  {
+    m_camera = std::make_shared<Camera>(); // Unused.
+    m_quad   = std::make_shared<Quad>();
+
+    m_material                 = std::make_shared<Material>();
+    m_material->m_vertexShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("fullQuadVert.shader", true));
+  }
+
+  FullQuadPass::FullQuadPass(const FullQuadPassParams& params) : FullQuadPass()
+  {
+  }
+
+  FullQuadPass::~FullQuadPass()
+  {
+  }
+
+  void FullQuadPass::Render()
+  {
+    PreRender();
+
+    Renderer* renderer = GetRenderer();
+    renderer->SetFramebuffer(m_params.FrameBuffer, {0.0f, 0.0f, 0.0f, 1.0f});
+    renderer->Render(m_quad.get(), m_camera.get());
+
+    PostRender();
+  }
+
+  void FullQuadPass::PreRender()
+  {
+    Pass::PreRender();
+    m_material->m_fragmentShader = m_params.FragmentShader;
+    m_material->UnInit(); // Reinit in case, shader change.
+    m_material->Init();
+
+    MeshComponentPtr mc = m_quad->GetMeshComponent();
+    MeshPtr mesh        = mc->GetMeshVal();
+    mesh->m_material    = m_material;
+    mesh->Init();
+  }
+
+  void FullQuadPass::PostRender()
+  {
+    Pass::PostRender();
   }
 
 } // namespace ToolKit
