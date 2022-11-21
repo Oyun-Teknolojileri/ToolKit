@@ -395,7 +395,7 @@ namespace ToolKit
     {
     case EntityType::Entity_PointLight: {
       FramebufferPtr shadowMapBuffer = light->GetShadowMapFramebuffer();
-      renderer->SetFramebuffer(shadowMapBuffer, Vec4(1.0f));
+      renderer->SetFramebuffer(shadowMapBuffer, true, Vec4(1.0f));
 
       for (int i = 0; i < 6; ++i)
       {
@@ -414,7 +414,8 @@ namespace ToolKit
     }
     case EntityType::Entity_DirectionalLight:
     case EntityType::Entity_SpotLight:
-      renderer->SetFramebuffer(light->GetShadowMapFramebuffer(), Vec4(1.0f));
+      renderer->SetFramebuffer(
+          light->GetShadowMapFramebuffer(), true, Vec4(1.0f));
       renderForShadowMapFn(light, entities);
       break;
     default:
@@ -490,7 +491,8 @@ namespace ToolKit
     PreRender();
 
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_params.FrameBuffer, {0.0f, 0.0f, 0.0f, 1.0f});
+    renderer->SetFramebuffer(
+        m_params.FrameBuffer, true, {0.0f, 0.0f, 0.0f, 1.0f});
     renderer->Render(m_quad.get(), m_camera.get());
 
     PostRender();

@@ -158,7 +158,7 @@ namespace ToolKit
     viewport->m_ssaoGBuffer->SetAttachment(
         Framebuffer::Attachment::ColorAttachment1, viewport->m_ssaoNormal);
 
-    SetFramebuffer(viewport->m_ssaoGBuffer, {0.0f, 0.0f, 0.0f, 1.0});
+    SetFramebuffer(viewport->m_ssaoGBuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
 
     if (m_aoMat == nullptr)
     {
@@ -256,7 +256,7 @@ namespace ToolKit
         (uint) viewport->m_wndContentAreaSize.y);
     viewport->m_ssaoBuffer->SetAttachment(
         Framebuffer::Attachment::ColorAttachment0, viewport->m_ssao);
-    SetFramebuffer(viewport->m_ssaoBuffer, {0.0f, 0.0f, 0.0f, 1.0});
+    SetFramebuffer(viewport->m_ssaoBuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
 
     SetTexture(0, viewport->m_ssaoPosition->m_textureId);
     SetTexture(1, viewport->m_ssaoNormal->m_textureId);
@@ -615,7 +615,9 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetFramebuffer(FramebufferPtr fb, const Vec4& clearColor)
+  void Renderer::SetFramebuffer(FramebufferPtr fb,
+                                bool clear,
+                                const Vec4& color)
   {
     if (fb != nullptr)
     {
@@ -631,7 +633,11 @@ namespace ToolKit
 
       FramebufferSettings fbSet = fb->GetSettings();
       SetViewportSize(fbSet.width, fbSet.height);
-      ClearBuffer(GraphicBitFields::AllBits, clearColor);
+
+      if (clear)
+      {
+        ClearBuffer(GraphicBitFields::AllBits, color);
+      }
     }
     else
     {
@@ -646,34 +652,22 @@ namespace ToolKit
 
   void Renderer::SetFramebuffer(FramebufferPtr fb, bool clear)
   {
-    if (clear)
-    {
-      SetFramebuffer(fb, m_clearColor);
-    }
-    else
-    {
-      SetFramebuffer(fb, false);
-    }
+    SetFramebuffer(fb, clear, m_clearColor);
   }
 
-  void Renderer::SwapFramebuffer(FramebufferPtr& fb, const Vec4& clearColor)
+  void Renderer::SwapFramebuffer(FramebufferPtr& fb,
+                                 bool clear,
+                                 const Vec4& color)
   {
     FramebufferPtr& tmp1 = fb;
     FramebufferPtr tmp2  = m_framebuffer;
-    SetFramebuffer(fb, clearColor);
+    SetFramebuffer(fb, clear, color);
     tmp1.swap(tmp2);
   }
 
   void Renderer::SwapFramebuffer(FramebufferPtr& fb, bool clear)
   {
-    if (clear)
-    {
-      SwapFramebuffer(fb, m_clearColor);
-    }
-    else
-    {
-      SwapFramebuffer(fb, false);
-    }
+    SwapFramebuffer(fb, clear, m_clearColor);
   }
 
   FramebufferPtr Renderer::GetFrameBuffer()
@@ -683,7 +677,7 @@ namespace ToolKit
 
   void Renderer::ClearFrameBuffer(FramebufferPtr fb, const Vec4& color)
   {
-    SwapFramebuffer(fb, color);
+    SwapFramebuffer(fb, true, color);
     SwapFramebuffer(fb, false);
   }
 
@@ -1050,7 +1044,7 @@ namespace ToolKit
 
     // Set and clear fb
     FramebufferPtr lastFb = m_framebuffer;
-    SetFramebuffer(m_copyFb, Vec4(0.0f));
+    SetFramebuffer(m_copyFb, true, Vec4(0.0f));
 
     // Render to texture
     if (m_copyMaterial == nullptr)
@@ -1304,7 +1298,7 @@ namespace ToolKit
           }
 
           FramebufferPtr smBuffer = light->GetShadowMapFramebuffer();
-          SetFramebuffer(smBuffer, Vec4(1.0f));
+          SetFramebuffer(smBuffer, true, Vec4(1.0f));
 
           Vec2 shadowRes = light->GetShadowResolutionVal();
           glViewport(0, 0, uint(shadowRes.x), uint(shadowRes.y));
@@ -1325,7 +1319,7 @@ namespace ToolKit
         }
         case EntityType::Entity_DirectionalLight:
         case EntityType::Entity_SpotLight:
-          SetFramebuffer(light->GetShadowMapFramebuffer(), Vec4(1.0f));
+          SetFramebuffer(light->GetShadowMapFramebuffer(), true, Vec4(1.0f));
           renderForShadowMapFn(light, entities);
           break;
         default:
@@ -1391,7 +1385,7 @@ namespace ToolKit
     m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                      dest);
 
-    SetFramebuffer(m_utilFramebuffer, Vec4(1.0f));
+    SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_gaussianBlurMaterial);
   }
 
@@ -1423,7 +1417,7 @@ namespace ToolKit
     m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                      dest);
 
-    SetFramebuffer(m_utilFramebuffer, Vec4(1.0f));
+    SetFramebuffer(m_utilFramebuffer, true, Vec4(1.0f));
     DrawFullQuad(m_averageBlurMaterial);
   }
 
@@ -2118,7 +2112,7 @@ namespace ToolKit
           cubeMapRt,
           (Framebuffer::CubemapFace) i);
 
-      SetFramebuffer(m_utilFramebuffer, Vec4(0.0f));
+      SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
       DrawCube(&cam, mat);
     }
     SetFramebuffer(nullptr);
@@ -2194,7 +2188,7 @@ namespace ToolKit
           cubeMapRt,
           (Framebuffer::CubemapFace) i);
 
-      SetFramebuffer(m_utilFramebuffer, Vec4(0.0f));
+      SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
       DrawCube(cam.get(), mat);
     }
     SetFramebuffer(nullptr);
