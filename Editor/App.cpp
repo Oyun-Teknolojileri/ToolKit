@@ -1229,12 +1229,9 @@ namespace ToolKit
         m_renderer->SetFramebuffer(
             viewport->m_selectedFramebuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
 
-        glEnable(GL_STENCIL_TEST);
-        glStencilMask(0xFF);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-        glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-        glClear(GL_STENCIL_BUFFER_BIT);
+        m_renderer->ClearBuffer(GraphicBitFields::StencilBits, Vec4(0.0f));
+        m_renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
+        m_renderer->ColorMask(false, false, false, false);
 
         // webgl create problem with depth only drawing with textures.
         static MaterialPtr solidMat =
@@ -1250,15 +1247,15 @@ namespace ToolKit
 
         m_renderer->m_overrideMat = overrideMatPrev;
 
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
-        glStencilFunc(GL_NOTEQUAL, 0xFF, 0xFF);
-        glStencilMask(0x00);
+        m_renderer->ColorMask(true, true, true, true);
+        m_renderer->SetStencilOperation(
+            StencilOperation::AllowPixelsFailingStencil);
 
         ShaderPtr solidColor = GetShaderManager()->Create<Shader>(
             ShaderPath("unlitColorFrag.shader", true));
         m_renderer->DrawFullQuad(solidColor);
-        glDisable(GL_STENCIL_TEST);
+
+        m_renderer->SetStencilOperation(StencilOperation::None);
 
         m_renderer->SetFramebuffer(viewport->m_framebuffer, false);
 

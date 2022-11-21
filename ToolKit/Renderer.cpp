@@ -615,6 +615,31 @@ namespace ToolKit
     }
   }
 
+  void Renderer::SetStencilOperation(StencilOperation op)
+  {
+    switch (op)
+    {
+    case StencilOperation::None:
+      glDisable(GL_STENCIL_TEST);
+      glStencilMask(0x00);
+      break;
+    case StencilOperation::AllowAllPixels:
+      glEnable(GL_STENCIL_TEST);
+      glStencilMask(0xFF);
+      glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+      glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);
+      break;
+    case StencilOperation::AllowPixelsPassingStencil:
+      glStencilFunc(GL_EQUAL, 0xFF, 0xFF);
+      glStencilMask(0x00);
+      break;
+    case StencilOperation::AllowPixelsFailingStencil:
+      glStencilFunc(GL_NOTEQUAL, 0xFF, 0xFF);
+      glStencilMask(0x00);
+      break;
+    }
+  }
+
   void Renderer::SetFramebuffer(FramebufferPtr fb,
                                 bool clear,
                                 const Vec4& color)
