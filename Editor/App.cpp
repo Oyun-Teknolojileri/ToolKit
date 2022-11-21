@@ -279,7 +279,7 @@ namespace ToolKit
 
           EntityRawPtrArray selectedEntities;
           GetCurrentScene()->GetSelectedEntities(selectedEntities);
-          RenderSelected(viewport, selectedEntities);
+          //RenderSelected(viewport, selectedEntities);
         }
       }
 
@@ -1243,39 +1243,9 @@ namespace ToolKit
         MaterialPtr overrideMatPrev          = m_renderer->m_overrideMat;
         m_renderer->m_overrideMat            = solidMat;
 
-        bool isLight = false;
         for (Entity* ntt : selection)
         {
-          // Add billboard
-          Entity* billboard = GetCurrentScene()->GetBillboardOfEntity(ntt);
-          if (billboard != nullptr)
-          {
-            static_cast<Billboard*>(billboard)->LookAt(
-                viewport->GetCamera(), viewport->GetBillboardScale());
-            m_renderer->Render(billboard, viewport->GetCamera());
-          }
-
-          if (ntt->IsDrawable())
-          {
-            isLight = false;
-            if (ntt->IsLightInstance())
-            {
-              isLight = true;
-            }
-
-            // Disable all gizmos
-            if (isLight)
-            {
-              Light* light = static_cast<Light*>(ntt);
-              EnableLightGizmo(light, false);
-              m_renderer->Render(ntt, viewport->GetCamera());
-              EnableLightGizmo(light, true);
-            }
-            else
-            {
-              m_renderer->Render(ntt, viewport->GetCamera());
-            }
-          }
+          m_renderer->Render(ntt, viewport->GetCamera());
         }
 
         m_renderer->m_overrideMat = overrideMatPrev;
@@ -1284,6 +1254,7 @@ namespace ToolKit
 
         glStencilFunc(GL_NOTEQUAL, 0xFF, 0xFF);
         glStencilMask(0x00);
+
         ShaderPtr solidColor = GetShaderManager()->Create<Shader>(
             ShaderPath("unlitColorFrag.shader", true));
         m_renderer->DrawFullQuad(solidColor);
@@ -1314,18 +1285,6 @@ namespace ToolKit
       selecteds.clear();
       selecteds.push_back(primary);
       RenderFn(selecteds, g_selectHighLightPrimaryColor);
-
-      if (m_showDirectionalLightShadowFrustum)
-      {
-        // Directional light shadow map frustum
-        if (primary->GetType() == EntityType::Entity_DirectionalLight &&
-            static_cast<DirectionalLight*>(primary)->GetCastShadowVal())
-        {
-          m_perFrameDebugObjects.push_back(
-              static_cast<EditorDirectionalLight*>(primary)
-                  ->GetDebugShadowFrustum());
-        }
-      }
     }
 
     void App::HideGizmos()

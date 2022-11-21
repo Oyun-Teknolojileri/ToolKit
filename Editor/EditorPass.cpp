@@ -48,6 +48,21 @@ namespace ToolKit
           app->m_perFrameDebugObjects.push_back(
               CreateBoundingBoxDebugObject(ntt->GetAABB(true)));
         }
+
+        if (app->m_showDirectionalLightShadowFrustum)
+        {
+          // Directional light shadow map frustum
+          if (ntt->GetType() == EntityType::Entity_DirectionalLight)
+          {
+            EditorDirectionalLight* light =
+                static_cast<EditorDirectionalLight*>(ntt);
+            if (light->GetCastShadowVal())
+            {
+              app->m_perFrameDebugObjects.push_back(
+                  light->GetDebugShadowFrustum());
+            }
+          }
+        }
       }
 
       // Per frame objects.
@@ -140,7 +155,7 @@ namespace ToolKit
       renderer->SetCameraLens(m_camera);
       renderer->ClearBuffer(GraphicBitFields::DepthBits, Vec4(1.0f));
 
-      for (int i = (int)m_params.GizmoArray.size() - 1; i >= 0; i--)
+      for (int i = (int) m_params.GizmoArray.size() - 1; i >= 0; i--)
       {
         if (EditorBillboardBase* bb = m_params.GizmoArray[i])
         {
