@@ -50,31 +50,5 @@ namespace ToolKit
       Camera* m_camera            = nullptr;
     };
 
-    struct StencilRenderPassParams
-    {
-      RenderTargetPtr OutputTarget;
-    };
-
-    /**
-     * Creates a binary stencil buffer from the given entities and copies the
-     * binary image to OutputTarget.
-     */
-    class StencilRenderPass : public Pass
-    {
-     public:
-      StencilRenderPass();
-      explicit StencilRenderPass(const StencilRenderPassParams& params);
-
-      void Render() override;
-      void PreRender() override;
-      void PostRender() override;
-
-     public:
-      StencilRenderPassParams m_params;
-
-     private:
-      FramebufferPtr m_frameBuffer = nullptr;
-    };
-
   } // namespace Editor
 } // namespace ToolKit

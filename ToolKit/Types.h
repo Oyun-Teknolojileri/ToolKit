@@ -150,7 +150,7 @@ namespace ToolKit
 
   // System Types
   typedef std::vector<class Event*> EventPool;
-  typedef std::shared_ptr<class Viewport*> ViewportPtr;
+  typedef std::shared_ptr<class Viewport> ViewportPtr;
 
   // Filesystem variable types
   typedef std::filesystem::path Path;

@@ -1,12 +1,16 @@
 #pragma once
+#pragma once
 
-#include "Primative.h"
 #include "FrameBuffer.h"
 #include "GeometryTypes.h"
+#include "Primative.h"
 
 namespace ToolKit
 {
 
+  /**
+   * Base Pass class.
+   */
   class Pass
   {
    public:
@@ -31,6 +35,9 @@ namespace ToolKit
     float BillboardScale       = 1.0f;
   };
 
+  /**
+   * Renders the given scene with full forward render pipeline.
+   */
   class RenderPass : public Pass
   {
    public:
@@ -85,12 +92,17 @@ namespace ToolKit
     LightRawPtrArray m_contributingLights;
   };
 
+  typedef std::shared_ptr<RenderPass> RenderPassPtr;
+
   struct ShadowPassParams
   {
     LightRawPtrArray Lights;
     EntityRawPtrArray Entities;
   };
 
+  /**
+   * Create shadow map buffers for all given lights.
+   */
   class ShadowPass : public Pass
   {
    public:
@@ -118,12 +130,18 @@ namespace ToolKit
     Vec3 m_cubeMapScales[6];
   };
 
+  typedef std::shared_ptr<ShadowPass> ShadowPassPtr;
+
   struct FullQuadPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;
     ShaderPtr FragmentShader   = nullptr;
   };
 
+  /**
+   * Draws a full quad that covers entire FrameBuffer with given fragment
+   * shader.
+   */
   class FullQuadPass : public Pass
   {
    public:
@@ -142,6 +160,76 @@ namespace ToolKit
     CameraPtr m_camera;
     QuadPtr m_quad;
     MaterialPtr m_material;
+  };
+
+  typedef std::shared_ptr<FullQuadPass> FullQuadPassPtr;
+
+  struct StencilRenderPassParams
+  {
+    RenderTargetPtr OutputTarget;
+    EntityRawPtrArray DrawList;
+    Camera* Camera = nullptr;
+  };
+
+  /**
+   * Creates a binary stencil buffer from the given entities and copies the
+   * binary image to OutputTarget.
+   */
+  class StencilRenderPass : public Pass
+  {
+   public:
+    StencilRenderPass();
+    explicit StencilRenderPass(const StencilRenderPassParams& params);
+
+    void Render() override;
+    void PreRender() override;
+    void PostRender() override;
+
+   public:
+    StencilRenderPassParams m_params;
+
+   private:
+    FramebufferPtr m_frameBuffer         = nullptr;
+    MaterialPtr m_solidOverrideMaterial  = nullptr;
+    FullQuadPassPtr m_copyStencilSubPass = nullptr;
+  };
+
+  typedef std::shared_ptr<StencilRenderPass> StencilrenderPassPtr;
+
+  /**
+   * Base Interface class for rendering Techniques.
+   */
+  class Technique
+  {
+   public:
+    virtual void Render() = 0;
+  };
+
+  struct DrawOutlineParams
+  {
+    EntityRawPtrArray DrawList;
+    FramebufferPtr FrameBuffer = nullptr;
+    Camera* Camera             = nullptr;
+    Vec4 OutlineColor          = Vec4(1.0f);
+  };
+
+  /**
+   * Draws given entities' outlines to the FrameBuffer.
+   */
+  class DrawOutline : public Technique
+  {
+   public:
+    DrawOutline();
+    void Render() override;
+
+   public:
+    DrawOutlineParams m_params;
+
+   private:
+    StencilrenderPassPtr m_stencilPass = nullptr;
+    FullQuadPassPtr m_outlinePass      = nullptr;
+    ShaderPtr m_dilateShader           = nullptr;
+    RenderTargetPtr m_stencilAsRt      = nullptr;
   };
 
 } // namespace ToolKit

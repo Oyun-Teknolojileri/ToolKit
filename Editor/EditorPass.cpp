@@ -178,48 +178,5 @@ namespace ToolKit
       Pass::PostRender();
     }
 
-    StencilRenderPass::StencilRenderPass()
-    {
-      m_frameBuffer = std::make_shared<Framebuffer>();
-    }
-
-    StencilRenderPass::StencilRenderPass(const StencilRenderPassParams& params)
-        : StencilRenderPass()
-    {
-      m_params = params;
-    }
-
-    void StencilRenderPass::Render()
-    {
-      PreRender();
-
-      Renderer* renderer = GetRenderer();
-      renderer->SetFramebuffer(m_frameBuffer);
-
-
-      PostRender();
-    }
-
-    void StencilRenderPass::PreRender()
-    {
-      Pass::PreRender();
-
-      m_frameBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                   m_params.OutputTarget);
-
-      FramebufferSettings settings;
-      settings.depthStencil    = true;
-      settings.useDefaultDepth = true;
-      settings.width           = m_params.OutputTarget->m_width;
-      settings.height          = m_params.OutputTarget->m_height;
-
-      m_frameBuffer->Init(settings);
-    }
-
-    void StencilRenderPass::PostRender()
-    {
-      Pass::PostRender();
-    }
-
   } // namespace Editor
 } // namespace ToolKit
