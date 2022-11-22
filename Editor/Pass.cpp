@@ -582,7 +582,7 @@ namespace ToolKit
     m_copyStencilSubPass->m_params.FrameBuffer = m_frameBuffer;
 
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_frameBuffer);
+    renderer->SetFramebuffer(m_frameBuffer, true, Vec4(0.0f));
     renderer->SetCameraLens(m_params.Camera);
   }
 
