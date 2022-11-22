@@ -608,6 +608,8 @@ namespace ToolKit
 
   void OutlinePass::Render()
   {
+    PreRender();
+
     // Generate stencil binary image.
     m_stencilPass->Render();
 
@@ -621,6 +623,8 @@ namespace ToolKit
     m_outlinePass->m_params.FrameBuffer      = m_params.FrameBuffer;
     m_outlinePass->m_params.ClearFrameBuffer = false;
     m_outlinePass->Render();
+
+    PostRender();
   }
 
   void OutlinePass::PreRender()
