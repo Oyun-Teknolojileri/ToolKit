@@ -1229,7 +1229,7 @@ namespace ToolKit
         m_renderer->SetFramebuffer(
             viewport->m_selectedFramebuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
 
-        m_renderer->ClearBuffer(GraphicBitFields::StencilBits, Vec4(0.0f));
+        m_renderer->ClearStencilBuffer();
         m_renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
         m_renderer->ColorMask(false, false, false, false);
 

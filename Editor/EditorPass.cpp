@@ -115,6 +115,11 @@ namespace ToolKit
       rs->cullMode        = CullingType::Front;
     }
 
+    GizmoPass::GizmoPass(const GizmoPassParams& params) : GizmoPass()
+    {
+      m_params = params;
+    }
+
     void GizmoPass::Render()
     {
       PreRender();
@@ -153,7 +158,7 @@ namespace ToolKit
       m_camera           = m_params.Viewport->GetCamera();
       renderer->SetFramebuffer(m_params.Viewport->m_framebuffer, false);
       renderer->SetCameraLens(m_camera);
-      renderer->ClearBuffer(GraphicBitFields::DepthBits, Vec4(1.0f));
+      renderer->ClearDepthBuffer();
 
       for (int i = (int) m_params.GizmoArray.size() - 1; i >= 0; i--)
       {
@@ -169,6 +174,49 @@ namespace ToolKit
     }
 
     void GizmoPass::PostRender()
+    {
+      Pass::PostRender();
+    }
+
+    StencilRenderPass::StencilRenderPass()
+    {
+      m_frameBuffer = std::make_shared<Framebuffer>();
+    }
+
+    StencilRenderPass::StencilRenderPass(const StencilRenderPassParams& params)
+        : StencilRenderPass()
+    {
+      m_params = params;
+    }
+
+    void StencilRenderPass::Render()
+    {
+      PreRender();
+
+      Renderer* renderer = GetRenderer();
+      renderer->SetFramebuffer(m_frameBuffer);
+
+
+      PostRender();
+    }
+
+    void StencilRenderPass::PreRender()
+    {
+      Pass::PreRender();
+
+      m_frameBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                   m_params.OutputTarget);
+
+      FramebufferSettings settings;
+      settings.depthStencil    = true;
+      settings.useDefaultDepth = true;
+      settings.width           = m_params.OutputTarget->m_width;
+      settings.height          = m_params.OutputTarget->m_height;
+
+      m_frameBuffer->Init(settings);
+    }
+
+    void StencilRenderPass::PostRender()
     {
       Pass::PostRender();
     }

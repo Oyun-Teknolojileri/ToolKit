@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Gizmo.h"
 #include "Pass.h"
 #include "Primative.h"
-#include "Gizmo.h"
 
 namespace ToolKit
 {
@@ -36,6 +36,7 @@ namespace ToolKit
     {
      public:
       GizmoPass();
+      explicit GizmoPass(const GizmoPassParams& params);
 
       void Render() override;
       void PreRender() override;
@@ -47,6 +48,32 @@ namespace ToolKit
      private:
       SpherePtr m_depthMaskSphere = nullptr;
       Camera* m_camera            = nullptr;
+    };
+
+    struct StencilRenderPassParams
+    {
+      RenderTargetPtr OutputTarget;
+    };
+
+    /**
+     * Creates a binary stencil buffer from the given entities and copies the
+     * binary image to OutputTarget.
+     */
+    class StencilRenderPass : public Pass
+    {
+     public:
+      StencilRenderPass();
+      explicit StencilRenderPass(const StencilRenderPassParams& params);
+
+      void Render() override;
+      void PreRender() override;
+      void PostRender() override;
+
+     public:
+      StencilRenderPassParams m_params;
+
+     private:
+      FramebufferPtr m_frameBuffer = nullptr;
     };
 
   } // namespace Editor

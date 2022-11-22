@@ -65,7 +65,13 @@ namespace ToolKit
 
     FramebufferPtr GetFrameBuffer();
     void ClearFrameBuffer(FramebufferPtr fb, const Vec4& color);
-    void ClearBuffer(GraphicBitFields fields, const Vec4& color);
+    void ClearColorBuffer(const Vec4& value);
+    void ClearBuffer(GraphicBitFields fields);
+    void ClearColorBuffer();
+    void ClearStencilBuffer(int value);
+    void ClearStencilBuffer();
+    void ClearDepthBuffer(float value);
+    void ClearDepthBuffer();
     void ColorMask(bool r, bool g, bool b, bool a);
 
     void SetViewport(Viewport* viewport);
@@ -214,6 +220,8 @@ namespace ToolKit
     uint m_frameCount      = 0;
     UVec2 m_windowSize; //!< Application window size.
     Vec4 m_clearColor             = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    int m_clearStencil            = 0;
+    float m_clearDepth            = 1.0f;
     MaterialPtr m_overrideMat     = nullptr;
     bool m_overrideDiffuseTexture = false;
     Camera* m_uiCamera            = nullptr;
