@@ -310,7 +310,7 @@ namespace ToolKit
               XmlParamterTypeAttr,
               std::to_string(static_cast<int>(m_type)));
 
-    WriteAttr(node, doc, "name", m_name);
+    WriteAttr(node, doc, XmlNodeName.data(), m_name);
     WriteAttr(node, doc, "category", m_category.Name);
     WriteAttr(node, doc, "priority", std::to_string(m_category.Priority));
     WriteAttr(node, doc, "exposed", std::to_string(m_exposed));
@@ -477,7 +477,7 @@ namespace ToolKit
 
     XmlAttribute* attr = parent->first_attribute(XmlParamterTypeAttr.c_str());
     m_type             = (VariantType) std::atoi(attr->value());
-    ReadAttr(parent, "name", m_name);
+    ReadAttr(parent, XmlNodeName.data(), m_name);
     ReadAttr(parent, "category", m_category.Name);
     ReadAttr(parent, "priority", m_category.Priority);
     ReadAttr(parent, "exposed", m_exposed);

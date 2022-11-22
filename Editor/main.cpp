@@ -103,15 +103,20 @@ namespace ToolKit
                            "UILayout.ini",
                            "Engine.settings"};
 
-      String cfgPath    = ConcatPaths({String(appData), "ToolKit", "Config"});
-      String targetFile = ConcatPaths({cfgPath, files[0]});
+      String cfgPath = ConcatPaths({String(appData), "ToolKit", "Config"});
 
       // Create ToolKit Configs.
-      if (!CheckSystemFile(targetFile))
+      bool doesConfigFolderExists = true;
+      if (!CheckSystemFile(cfgPath))
       {
-        if (std::filesystem::create_directories(cfgPath))
+        doesConfigFolderExists = std::filesystem::create_directories(cfgPath);
+      }
+      if (doesConfigFolderExists)
+      {
+        for (int i = 0; i < 4; i++)
         {
-          for (int i = 0; i < 4; i++)
+          String targetFile = ConcatPaths({cfgPath, files[i]});
+          if (!CheckSystemFile(targetFile))
           {
             std::filesystem::copy(
                 ConcatPaths({ConfigPath(), files[i]}),
@@ -280,8 +285,7 @@ namespace ToolKit
 
       if (e.type == SDL_DROPFILE)
       {
-        UI::ImportData.files.push_back(e.drop.file);
-        UI::ImportData.showImportWindow = true;
+        g_app->ManageDropfile(e.drop.file);
       }
 
       if (e.type == SDL_QUIT)

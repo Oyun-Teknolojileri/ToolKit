@@ -108,12 +108,12 @@ namespace ToolKit
     envComp->Init(true);
 
     // Do not expose environment component
-    envComp->ParamMax().m_exposed        = false;
-    envComp->ParamMin().m_exposed        = false;
-    envComp->ParamHdri().m_exposed       = false;
-    envComp->ParamIlluminate().m_exposed = false;
-    envComp->ParamIntensity().m_exposed  = false;
-    envComp->ParamExposure().m_exposed   = false;
+    envComp->ParamPositionOffset().m_exposed = false;
+    envComp->ParamSize().m_exposed           = false;
+    envComp->ParamHdri().m_exposed           = false;
+    envComp->ParamIlluminate().m_exposed     = false;
+    envComp->ParamIntensity().m_exposed      = false;
+    envComp->ParamExposure().m_exposed       = false;
 
     // Skybox material
     ShaderPtr vert = GetShaderManager()->Create<Shader>(

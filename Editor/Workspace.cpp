@@ -12,6 +12,9 @@ namespace ToolKit
 {
   namespace Editor
   {
+    static const StringView XmlNodeWorkspace = "Workspace";
+    static const StringView XmlNodeProject   = "Project";
+    static const StringView XmlNodeScene     = "scene";
 
     Workspace::Workspace(App* app)
     {
@@ -37,7 +40,7 @@ namespace ToolKit
         bundle.doc  = lclDoc;
         bundle.file = lclFile;
 
-        StringArray path = {"Settings", "Workspace"};
+        StringArray path = {XmlNodeSettings.data(), XmlNodeWorkspace.data()};
         return Query(lclDoc.get(), path);
       }
 
@@ -50,7 +53,12 @@ namespace ToolKit
       XmlDocBundle docBundle;
       if (XmlNode* node = GetDefaultWorkspaceNode(docBundle))
       {
-        ReadAttr(node, "path", path);
+        String foundPath;
+        ReadAttr(node, XmlNodePath.data(), foundPath);
+        if (CheckFile(foundPath))
+        {
+          path = foundPath;
+        }
       }
 
       return path;
@@ -69,13 +77,13 @@ namespace ToolKit
         {
           m_activeWorkspace = path;
           RefreshProjects();
-          if (XmlAttribute* attr = node->first_attribute("path"))
+          if (XmlAttribute* attr = node->first_attribute(XmlNodePath.data()))
           {
             attr->value(docBundle.doc->allocate_string(path.c_str(), 0));
           }
           else
           {
-            WriteAttr(node, docBundle.doc.get(), "path", path);
+            WriteAttr(node, docBundle.doc.get(), XmlNodePath.data(), path);
           }
 
           String xml;
@@ -205,17 +213,19 @@ namespace ToolKit
       if (file.is_open())
       {
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
-        XmlNode* settings =
-            lclDoc->allocate_node(rapidxml::node_element, "Settings");
+        XmlNode* settings     = lclDoc->allocate_node(rapidxml::node_element,
+                                                  XmlNodeSettings.data());
         lclDoc->append_node(settings);
 
-        XmlNode* setNode =
-            lclDoc->allocate_node(rapidxml::node_element, "Workspace");
-        WriteAttr(setNode, lclDoc.get(), "path", m_activeWorkspace);
+        XmlNode* setNode = lclDoc->allocate_node(rapidxml::node_element,
+                                                 XmlNodeWorkspace.data());
+        WriteAttr(setNode, lclDoc.get(), XmlNodePath.data(), m_activeWorkspace);
         settings->append_node(setNode);
 
-        setNode = lclDoc->allocate_node(rapidxml::node_element, "Project");
-        WriteAttr(setNode, lclDoc.get(), "name", m_activeProject.name);
+        setNode = lclDoc->allocate_node(rapidxml::node_element,
+                                        XmlNodeProject.data());
+        WriteAttr(
+            setNode, lclDoc.get(), XmlNodeName.data(), m_activeProject.name);
         settings->append_node(setNode);
 
         String sceneFile = m_app->GetCurrentScene()->GetFile();
@@ -227,7 +237,7 @@ namespace ToolKit
           if (sceneFile.find(sceneRoot) != String::npos)
           {
             String scenePath = GetRelativeResourcePath(sceneFile);
-            WriteAttr(setNode, lclDoc.get(), "scene", scenePath);
+            WriteAttr(setNode, lclDoc.get(), XmlNodeScene.data(), scenePath);
           }
         }
 
@@ -248,23 +258,39 @@ namespace ToolKit
       XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
       lclDoc->parse<0>(lclFile->data());
 
-      if (XmlNode* settings = lclDoc->first_node("Settings"))
+      if (XmlNode* settings = lclDoc->first_node(XmlNodeSettings.data()))
       {
-        if (XmlNode* setNode = settings->first_node("Workspace"))
+        if (XmlNode* setNode = settings->first_node(XmlNodeWorkspace.data()))
         {
-          ReadAttr(setNode, "path", m_activeWorkspace);
+          String foundWorkspacePath;
+          ReadAttr(setNode, XmlNodePath.data(), foundWorkspacePath);
+          if (CheckFile(foundWorkspacePath))
+          {
+            m_activeWorkspace = foundWorkspacePath;
+          }
         }
 
-        String projectName, sceneName;
-        if (XmlNode* setNode = settings->first_node("Project"))
+        if (m_activeWorkspace.length())
         {
-          ReadAttr(setNode, "name", projectName);
-          String scene;
-          ReadAttr(setNode, "scene", sceneName);
-        }
+          RefreshProjects();
 
-        Project project = {projectName, sceneName};
-        SetActiveProject(project);
+          String projectName, sceneName;
+          if (XmlNode* setNode = settings->first_node(XmlNodeProject.data()))
+          {
+            ReadAttr(setNode, XmlNodeName.data(), projectName);
+            String scene;
+            ReadAttr(setNode, XmlNodeScene.data(), sceneName);
+          }
+
+          for (const Project& project : m_projects)
+          {
+            if (project.name == projectName)
+            {
+              Project project = {projectName, sceneName};
+              SetActiveProject(project);
+            }
+          }
+        }
       }
     }
 

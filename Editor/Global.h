@@ -39,6 +39,7 @@ namespace ToolKit
     const String g_uiLayoutFile("UILayout.ini");
     const String g_editorSettingsFile("Editor.settings");
     const String g_statusNoTerminate("#nte");
+    static const StringView XmlNodePath("path");
 
     // Colors and materials.
     // Reversed gamma correction for all colors

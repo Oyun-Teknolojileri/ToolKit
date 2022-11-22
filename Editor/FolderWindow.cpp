@@ -1323,7 +1323,7 @@ namespace ToolKit
       {
         XmlNode* viewNode =
             doc->allocate_node(rapidxml::node_element, "FolderView");
-        WriteAttr(viewNode, doc, "path", view.GetPath());
+        WriteAttr(viewNode, doc, XmlNodePath.data(), view.GetPath());
         WriteAttr(viewNode, doc, "vis", std::to_string(view.m_visible));
         WriteAttr(viewNode, doc, "active", std::to_string(view.m_active));
         folder->append_node(viewNode);
@@ -1347,7 +1347,7 @@ namespace ToolKit
           do
           {
             String path;
-            ReadAttr(view, "path", path);
+            ReadAttr(view, XmlNodePath.data(), path);
 
             ViewSettings vs;
             vs.visible = false;

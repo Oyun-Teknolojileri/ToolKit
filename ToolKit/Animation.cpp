@@ -141,7 +141,7 @@ namespace ToolKit
     for (XmlNode* animNode = node->first_node("node"); animNode;
          animNode          = animNode->next_sibling())
     {
-      attr            = animNode->first_attribute("name");
+      attr            = animNode->first_attribute(XmlNodeName.data());
       String boneName = attr->value();
 
       // Serialized as base64
@@ -200,7 +200,7 @@ namespace ToolKit
       XmlNode* boneNode = CreateXmlNode(doc, "node", container);
 
       boneNode->append_attribute(
-          doc->allocate_attribute("name", boneName.c_str()));
+          doc->allocate_attribute(XmlNodeName.data(), boneName.c_str()));
 
       if constexpr (SERIALIZE_ANIMATION_AS_BINARY)
       {

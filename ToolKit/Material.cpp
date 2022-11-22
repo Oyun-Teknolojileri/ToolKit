@@ -169,21 +169,21 @@ namespace ToolKit
       XmlNode* node = CreateXmlNode(doc, "diffuseTexture", container);
       String file =
           GetRelativeResourcePath(m_diffuseTexture->GetSerializeFile());
-      WriteAttr(node, doc, "name", file);
+      WriteAttr(node, doc, XmlNodeName.data(), file);
     }
 
     if (m_cubeMap)
     {
       XmlNode* node = CreateXmlNode(doc, "cubeMap", container);
       String file   = GetRelativeResourcePath(m_cubeMap->GetSerializeFile());
-      WriteAttr(node, doc, "name", file);
+      WriteAttr(node, doc, XmlNodeName.data(), file);
     }
 
     if (m_vertexShader)
     {
       XmlNode* node = CreateXmlNode(doc, "shader", container);
       String file = GetRelativeResourcePath(m_vertexShader->GetSerializeFile());
-      WriteAttr(node, doc, "name", file);
+      WriteAttr(node, doc, XmlNodeName.data(), file);
     }
 
     if (m_fragmentShader)
@@ -191,14 +191,14 @@ namespace ToolKit
       XmlNode* node = CreateXmlNode(doc, "shader", container);
       String file =
           GetRelativeResourcePath(m_fragmentShader->GetSerializeFile());
-      WriteAttr(node, doc, "name", file);
+      WriteAttr(node, doc, XmlNodeName.data(), file);
     }
 
     XmlNode* node = CreateXmlNode(doc, "color", container);
     WriteVec(node, doc, m_color);
 
     node = CreateXmlNode(doc, "alpha", container);
-    WriteAttr(node, doc, "name", std::to_string(m_alpha));
+    WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_alpha));
 
     m_renderState.Serialize(doc, container);
   }
@@ -216,7 +216,7 @@ namespace ToolKit
     {
       if (strcmp("diffuseTexture", node->name()) == 0)
       {
-        XmlAttribute* attr = node->first_attribute("name");
+        XmlAttribute* attr = node->first_attribute(XmlNodeName.data());
         String path        = attr->value();
         NormalizePath(path);
         m_diffuseTexture =
@@ -224,14 +224,14 @@ namespace ToolKit
       }
       else if (strcmp("cubeMap", node->name()) == 0)
       {
-        XmlAttribute* attr = node->first_attribute("name");
+        XmlAttribute* attr = node->first_attribute(XmlNodeName.data());
         String path        = attr->value();
         NormalizePath(path);
         m_cubeMap = GetTextureManager()->Create<CubeMap>(TexturePath(path));
       }
       else if (strcmp("shader", node->name()) == 0)
       {
-        XmlAttribute* attr = node->first_attribute("name");
+        XmlAttribute* attr = node->first_attribute(XmlNodeName.data());
         String path        = attr->value();
         NormalizePath(path);
         ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath(path));
@@ -254,7 +254,7 @@ namespace ToolKit
       }
       else if (strcmp("alpha", node->name()) == 0)
       {
-        ReadAttr(node, "name", m_alpha);
+        ReadAttr(node, XmlNodeName.data(), m_alpha);
       }
       else if (strcmp("renderState", node->name()) == 0)
       {

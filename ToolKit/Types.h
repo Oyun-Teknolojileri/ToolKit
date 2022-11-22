@@ -226,6 +226,8 @@ namespace ToolKit
   static const String XmlScaleElement("S");
   static const String XmlResRefElement("ResourceRef");
   static const String XmlComponent("Component");
+  static const StringView XmlNodeSettings("Settings");
+  static const StringView XmlNodeName = "name";
 
   enum class AxisLabel
   {

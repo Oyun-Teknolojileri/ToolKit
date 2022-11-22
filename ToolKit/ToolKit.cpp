@@ -437,7 +437,7 @@ namespace ToolKit
 
     if (parent == nullptr)
     {
-      parent = doc->first_node("Settings");
+      parent = doc->first_node(XmlNodeSettings.data());
     }
 
     if (parent)
@@ -452,7 +452,7 @@ namespace ToolKit
         {
           Window.Height = atoi(attr->value());
         }
-        if (XmlAttribute* attr = node2->first_attribute("name"))
+        if (XmlAttribute* attr = node2->first_attribute(XmlNodeName.data()))
         {
           Window.Name = attr->value();
         }

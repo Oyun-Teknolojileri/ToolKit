@@ -498,7 +498,7 @@ namespace ToolKit
 
     void SetWorkspaceDir(TagArgArray tagArgs)
     {
-      TagArgArray::const_iterator pathTag = GetTag("path", tagArgs);
+      TagArgArray::const_iterator pathTag = GetTag(XmlNodePath.data(), tagArgs);
       if (pathTag != tagArgs.end())
       {
         String path     = pathTag->second.front();
