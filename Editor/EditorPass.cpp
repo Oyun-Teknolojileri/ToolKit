@@ -158,7 +158,7 @@ namespace ToolKit
       m_camera           = m_params.Viewport->GetCamera();
       renderer->SetFramebuffer(m_params.Viewport->m_framebuffer, false);
       renderer->SetCameraLens(m_camera);
-      renderer->ClearDepthBuffer();
+      renderer->ClearBuffer(GraphicBitFields::DepthBits);
 
       for (int i = (int) m_params.GizmoArray.size() - 1; i >= 0; i--)
       {

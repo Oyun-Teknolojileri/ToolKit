@@ -553,7 +553,7 @@ namespace ToolKit
 
     // Copy pass.
     renderer->ColorMask(true, true, true, true);
-    renderer->SetStencilOperation(StencilOperation::AllowPixelsPassingStencil);
+    renderer->SetStencilOperation(StencilOperation::AllowPixelsFailingStencil);
 
     m_copyStencilSubPass->Render();
 
