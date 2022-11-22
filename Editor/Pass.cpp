@@ -492,8 +492,10 @@ namespace ToolKit
     PreRender();
 
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(
-        m_params.FrameBuffer, true, {0.0f, 0.0f, 0.0f, 1.0f});
+    renderer->SetFramebuffer(m_params.FrameBuffer,
+                             m_params.ClearFrameBuffer,
+                             {0.0f, 0.0f, 0.0f, 1.0f});
+
     renderer->Render(m_quad.get(), m_camera.get());
 
     PostRender();
@@ -502,6 +504,7 @@ namespace ToolKit
   void FullQuadPass::PreRender()
   {
     Pass::PreRender();
+    GetRenderer()->m_overrideMat = nullptr;
     m_material->m_fragmentShader = m_params.FragmentShader;
     m_material->UnInit(); // Reinit in case, shader change.
     m_material->Init();
@@ -521,12 +524,12 @@ namespace ToolKit
   {
     // Init sub pass.
     m_copyStencilSubPass = std::make_shared<FullQuadPass>();
-    m_copyStencilSubPass->m_params.FrameBuffer = m_frameBuffer;
     m_copyStencilSubPass->m_params.FragmentShader =
         GetShaderManager()->Create<Shader>(
             ShaderPath("unlitColorFrag.shader", true));
 
-    m_solidOverrideMaterial = GetMaterialManager()->GetCopyOfSolidMaterial();
+    m_solidOverrideMaterial =
+        GetMaterialManager()->GetCopyOfUnlitColorMaterial();
   }
 
   StencilRenderPass::StencilRenderPass(const StencilRenderPassParams& params)
@@ -576,6 +579,8 @@ namespace ToolKit
     m_frameBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                  m_params.OutputTarget);
 
+    m_copyStencilSubPass->m_params.FrameBuffer = m_frameBuffer;
+
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_frameBuffer);
     renderer->SetCameraLens(m_params.Camera);
@@ -599,9 +604,14 @@ namespace ToolKit
   void DrawOutline::Render()
   {
     // Create stencil image.
-    m_stencilPass->m_params.Camera       = m_params.Camera;
+    m_stencilPass->m_params.Camera   = m_params.Camera;
+    m_stencilPass->m_params.DrawList = m_params.DrawList;
+
+    // Construct output target.
+    FramebufferSettings fbs = m_params.FrameBuffer->GetSettings();
+    m_stencilAsRt->ReconstructIfNeeded(fbs.width, fbs.height);
     m_stencilPass->m_params.OutputTarget = m_stencilAsRt;
-    m_stencilPass->m_params.DrawList     = m_params.DrawList;
+
     m_stencilPass->Render();
 
     // Use stencil output as input to the dilation.
@@ -610,8 +620,9 @@ namespace ToolKit
                                        ParameterVariant(m_params.OutlineColor));
 
     // Draw outline to the viewport.
-    m_outlinePass->m_params.FragmentShader = m_dilateShader;
-    m_outlinePass->m_params.FrameBuffer    = m_params.FrameBuffer;
+    m_outlinePass->m_params.FragmentShader   = m_dilateShader;
+    m_outlinePass->m_params.FrameBuffer      = m_params.FrameBuffer;
+    m_outlinePass->m_params.ClearFrameBuffer = false;
     m_outlinePass->Render();
   }
 

@@ -136,6 +136,7 @@ namespace ToolKit
   {
     FramebufferPtr FrameBuffer = nullptr;
     ShaderPtr FragmentShader   = nullptr;
+    bool ClearFrameBuffer      = true;
   };
 
   /**
