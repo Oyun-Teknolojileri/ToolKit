@@ -40,7 +40,7 @@ namespace ToolKit
         if (envCom != nullptr && ntt->GetType() != EntityType::Entity_Sky)
         {
           app->m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(
-              *envCom->GetBBox(), g_environmentGizmoColor, 1.0f));
+              envCom->GetBBox(), g_environmentGizmoColor, 1.0f));
         }
 
         if (app->m_showSelectionBoundary && ntt->IsDrawable())
