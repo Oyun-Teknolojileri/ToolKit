@@ -43,7 +43,7 @@ namespace ToolKit
   RenderPass* myRenderPass               = nullptr;
   Editor::EditorRenderPass* myEditorPass = nullptr;
   Editor::GizmoPass* myGizmoPas          = nullptr;
-  DrawOutline* myOutlineTechnique        = nullptr;
+  OutlinePass* myOutlineTechnique        = nullptr;
 
   namespace Editor
   {
@@ -59,7 +59,7 @@ namespace ToolKit
       myRenderPass       = new RenderPass();
       myEditorPass       = new EditorRenderPass();
       myGizmoPas         = new GizmoPass();
-      myOutlineTechnique = new DrawOutline();
+      myOutlineTechnique = new OutlinePass();
 
       OverrideEntityConstructors();
 
@@ -1229,6 +1229,7 @@ namespace ToolKit
         {
           return;
         }
+
         myOutlineTechnique->m_params.Camera       = viewport->GetCamera();
         myOutlineTechnique->m_params.FrameBuffer  = viewport->m_framebuffer;
         myOutlineTechnique->m_params.OutlineColor = color;

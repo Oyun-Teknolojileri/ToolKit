@@ -195,18 +195,9 @@ namespace ToolKit
     FullQuadPassPtr m_copyStencilSubPass = nullptr;
   };
 
-  typedef std::shared_ptr<StencilRenderPass> StencilrenderPassPtr;
+  typedef std::shared_ptr<StencilRenderPass> StencilRenderPassPtr;
 
-  /**
-   * Base Interface class for rendering Techniques.
-   */
-  class Technique
-  {
-   public:
-    virtual void Render() = 0;
-  };
-
-  struct DrawOutlineParams
+  struct OutlinePassParams
   {
     EntityRawPtrArray DrawList;
     FramebufferPtr FrameBuffer = nullptr;
@@ -217,20 +208,26 @@ namespace ToolKit
   /**
    * Draws given entities' outlines to the FrameBuffer.
    */
-  class DrawOutline : public Technique
+  class OutlinePass : public Pass
   {
    public:
-    DrawOutline();
+    OutlinePass();
+    explicit OutlinePass(const OutlinePassParams& params);
+
     void Render() override;
+    void PreRender() override;
+    void PostRender() override;
 
    public:
-    DrawOutlineParams m_params;
+    OutlinePassParams m_params;
 
    private:
-    StencilrenderPassPtr m_stencilPass = nullptr;
+    StencilRenderPassPtr m_stencilPass = nullptr;
     FullQuadPassPtr m_outlinePass      = nullptr;
     ShaderPtr m_dilateShader           = nullptr;
     RenderTargetPtr m_stencilAsRt      = nullptr;
   };
+
+  typedef std::shared_ptr<OutlinePass> OutlinePassPtr;
 
 } // namespace ToolKit

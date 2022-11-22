@@ -591,7 +591,7 @@ namespace ToolKit
     Pass::PostRender();
   }
 
-  DrawOutline::DrawOutline()
+  OutlinePass::OutlinePass()
   {
     m_stencilPass = std::make_shared<StencilRenderPass>();
     m_stencilAsRt = std::make_shared<RenderTarget>();
@@ -601,17 +601,14 @@ namespace ToolKit
         ShaderPath("dilateFrag.shader", true));
   }
 
-  void DrawOutline::Render()
+  OutlinePass::OutlinePass(const OutlinePassParams& params) : OutlinePass()
   {
-    // Create stencil image.
-    m_stencilPass->m_params.Camera   = m_params.Camera;
-    m_stencilPass->m_params.DrawList = m_params.DrawList;
+    m_params = params;
+  }
 
-    // Construct output target.
-    FramebufferSettings fbs = m_params.FrameBuffer->GetSettings();
-    m_stencilAsRt->ReconstructIfNeeded(fbs.width, fbs.height);
-    m_stencilPass->m_params.OutputTarget = m_stencilAsRt;
-
+  void OutlinePass::Render()
+  {
+    // Generate stencil binary image.
     m_stencilPass->Render();
 
     // Use stencil output as input to the dilation.
@@ -624,6 +621,25 @@ namespace ToolKit
     m_outlinePass->m_params.FrameBuffer      = m_params.FrameBuffer;
     m_outlinePass->m_params.ClearFrameBuffer = false;
     m_outlinePass->Render();
+  }
+
+  void OutlinePass::PreRender()
+  {
+    Pass::PreRender();
+
+    // Create stencil image.
+    m_stencilPass->m_params.Camera   = m_params.Camera;
+    m_stencilPass->m_params.DrawList = m_params.DrawList;
+
+    // Construct output target.
+    FramebufferSettings fbs = m_params.FrameBuffer->GetSettings();
+    m_stencilAsRt->ReconstructIfNeeded(fbs.width, fbs.height);
+    m_stencilPass->m_params.OutputTarget = m_stencilAsRt;
+  }
+
+  void OutlinePass::PostRender()
+  {
+    Pass::PostRender();
   }
 
 } // namespace ToolKit
