@@ -43,6 +43,7 @@ namespace ToolKit
   RenderPass* myRenderPass               = nullptr;
   Editor::EditorRenderPass* myEditorPass = nullptr;
   Editor::GizmoPass* myGizmoPas          = nullptr;
+  DrawOutline* myOutlineTechnique        = nullptr;
 
   namespace Editor
   {
@@ -54,10 +55,11 @@ namespace ToolKit
       m_renderer->m_windowSize.y = windowHeight;
       m_statusMsg                = "OK";
 
-      myShadowPass = new ShadowPass();
-      myRenderPass = new RenderPass();
-      myEditorPass = new EditorRenderPass();
-      myGizmoPas   = new GizmoPass();
+      myShadowPass       = new ShadowPass();
+      myRenderPass       = new RenderPass();
+      myEditorPass       = new EditorRenderPass();
+      myGizmoPas         = new GizmoPass();
+      myOutlineTechnique = new DrawOutline();
 
       OverrideEntityConstructors();
 
@@ -72,6 +74,7 @@ namespace ToolKit
       SafeDel(myRenderPass);
       SafeDel(myEditorPass);
       SafeDel(myGizmoPas);
+      SafeDel(myOutlineTechnique);
     }
 
     void App::Init()
@@ -223,6 +226,7 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
+
           switch (m_sceneLightingMode)
           {
           case LightComplexity: {
@@ -275,7 +279,7 @@ namespace ToolKit
               viewport->GetType() == Window::Type::Viewport2d ? m_anchor.get()
                                                               : nullptr};
           myGizmoPas->Render();
-          // Pass Test End
+          //  Pass Test End
 
           EntityRawPtrArray selectedEntities;
           GetCurrentScene()->GetSelectedEntities(selectedEntities);
@@ -287,7 +291,7 @@ namespace ToolKit
 
       // Viewports set their own render target.
       // Set the app framebuffer back for UI.
-      m_renderer->SetFramebuffer(nullptr);
+      // m_renderer->SetFramebuffer(nullptr);
 
       // Render UI.
       UI::EndUI();
@@ -1225,47 +1229,11 @@ namespace ToolKit
         {
           return;
         }
-
-        m_renderer->SetFramebuffer(
-            viewport->m_selectedFramebuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
-
-        m_renderer->ClearStencilBuffer();
-        m_renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
-        m_renderer->ColorMask(false, false, false, false);
-
-        // webgl create problem with depth only drawing with textures.
-        static MaterialPtr solidMat =
-            GetMaterialManager()->GetCopyOfSolidMaterial();
-        solidMat->GetRenderState()->cullMode = CullingType::TwoSided;
-        MaterialPtr overrideMatPrev          = m_renderer->m_overrideMat;
-        m_renderer->m_overrideMat            = solidMat;
-
-        for (Entity* ntt : selection)
-        {
-          m_renderer->Render(ntt, viewport->GetCamera());
-        }
-
-        m_renderer->m_overrideMat = overrideMatPrev;
-
-        m_renderer->ColorMask(true, true, true, true);
-        m_renderer->SetStencilOperation(
-            StencilOperation::AllowPixelsFailingStencil);
-
-        ShaderPtr solidColor = GetShaderManager()->Create<Shader>(
-            ShaderPath("unlitColorFrag.shader", true));
-        m_renderer->DrawFullQuad(solidColor);
-
-        m_renderer->SetStencilOperation(StencilOperation::None);
-
-        m_renderer->SetFramebuffer(viewport->m_framebuffer, false);
-
-        // Dilate.
-        GetRenderer()->SetTexture(0,
-                                  viewport->m_selectedStencilRT->m_textureId);
-        ShaderPtr dilate = GetShaderManager()->Create<Shader>(
-            ShaderPath("dilateFrag.shader", true));
-        dilate->SetShaderParameter("Color", ParameterVariant(color));
-        m_renderer->DrawFullQuad(dilate);
+        myOutlineTechnique->m_params.Camera       = viewport->GetCamera();
+        myOutlineTechnique->m_params.FrameBuffer  = viewport->m_framebuffer;
+        myOutlineTechnique->m_params.OutlineColor = color;
+        myOutlineTechnique->m_params.DrawList     = selection;
+        myOutlineTechnique->Render();
       };
 
       Entity* primary = selecteds.back();
