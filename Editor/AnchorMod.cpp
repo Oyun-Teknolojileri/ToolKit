@@ -402,10 +402,10 @@ namespace ToolKit
       Vec3 deltaX, deltaY;
 
       m_deltaAccum += m_anchorDeltaTransform;
-      m_anchorDeltaTransform = ZERO;
 
       if (g_app->m_snapsEnabled)
       {
+        m_anchorDeltaTransform = ZERO;
         float spacing = g_app->m_moveDelta;
         for (uint i = 0; i < 2; i++)
         {

@@ -1,10 +1,10 @@
 #include "MathUtil.h"
 
+#include "Camera.h"
 #include "Mesh.h"
 #include "Node.h"
 #include "ResourceComponent.h"
 #include "Skeleton.h"
-#include "Camera.h"
 
 #include <algorithm>
 #include <execution>
@@ -799,6 +799,47 @@ namespace ToolKit
   {
     return (point.x <= max.x && point.x >= min.x && point.y <= max.y &&
             point.y >= min.y && point.z <= max.z && point.z >= min.z);
+  }
+
+  Vec3 ViewportSpaceToWorldSpace(const Vec2& pnt,
+                                 Camera* cam,
+                                 const Vec2& viewportSize)
+  {
+    Vec3 screenPoint = Vec3(pnt, 0.0f);
+
+    Mat4 view    = cam->GetViewMatrix();
+    Mat4 project = cam->GetProjectionMatrix();
+
+    return glm::unProject(screenPoint,
+                          view,
+                          project,
+                          Vec4(0.0f, 0.0f, viewportSize.x, viewportSize.y));
+  }
+
+  Vec2 ScreenSpaceToViewportSpace(const Vec2& pnt,
+                                  const Vec2 contentAreaLocation,
+                                  const Vec2& contentAreaSize)
+  {
+    Vec2 vp = pnt - contentAreaLocation;
+    vp.y    = contentAreaSize.y - vp.y;
+    return vp;
+  }
+
+  Vec2 WorldSpaceToScreenSpace(const Vec3& pnt,
+                               Camera* cam,
+                               const Vec2& contentAreaLocation,
+                               const Vec2& viewportSize)
+  {
+    glm::mat4 view    = cam->GetViewMatrix();
+    glm::mat4 project = cam->GetProjectionMatrix();
+
+    Vec3 screenPos = glm::project(
+        pnt, view, project, Vec4(0.0f, 0.0f, viewportSize.x, viewportSize.y));
+
+    screenPos.x += contentAreaLocation.x;
+    screenPos.y = viewportSize.y + contentAreaLocation.y - screenPos.y;
+
+    return screenPos.xy;
   }
 
 } // namespace ToolKit

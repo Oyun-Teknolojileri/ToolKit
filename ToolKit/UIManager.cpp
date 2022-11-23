@@ -79,9 +79,29 @@ namespace ToolKit
       BoundingBox box = surface->GetAABB(true);
       Ray ray         = vp->RayFromMousePosition();
 
+      if (surface->GetType() == EntityType::Entity_Button)
+      {
+        // TODO
+        GetLogger()->WriteConsole(LogType::Warning,
+                                  "RayPos: %f, %f, %f",
+                                  ray.position.x,
+                                  ray.position.y,
+                                  ray.position.z);
+        GetLogger()->WriteConsole(LogType::Warning,
+                                  "RayDir: %f, %f, %f",
+                                  ray.direction.x,
+                                  ray.direction.y,
+                                  ray.direction.z);
+      }
+
       float t = 0.0f;
       if (RayBoxIntersection(ray, box, t))
       {
+        // TODO
+        if (surface->GetType() == EntityType::Entity_Button)
+        {
+          int y = 5;
+        }
         return true;
       }
     }

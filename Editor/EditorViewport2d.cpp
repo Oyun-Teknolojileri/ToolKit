@@ -171,24 +171,13 @@ namespace ToolKit
 
     Vec3 EditorViewport2d::TransformViewportToWorldSpace(const Vec2& pnt)
     {
-      Vec3 screenPoint = Vec3(pnt, 0.0f);
-
-      Camera* cam  = GetCamera();
-      Mat4 view    = cam->GetViewMatrix();
-      Mat4 project = cam->GetProjectionMatrix();
-
-      return glm::unProject(screenPoint,
-                            view,
-                            project,
-                            Vec4(0.0f, 0.0f, m_canvasSize.x, m_canvasSize.y));
+      return ViewportSpaceToWorldSpace(pnt, GetCamera(), m_canvasSize);
     }
 
     Vec2 EditorViewport2d::TransformScreenToViewportSpace(const Vec2& pnt)
     {
-      Vec2 vp = pnt - m_contentAreaMin - m_canvasPos; // In canvas space.
-      vp.y    = m_canvasSize.y - vp.y;                // In viewport space.
-
-      return vp;
+      return ScreenSpaceToViewportSpace(
+          pnt, m_contentAreaMin + m_canvasPos, m_canvasSize);
     }
 
     void EditorViewport2d::GetContentAreaScreenCoordinates(Vec2* min,

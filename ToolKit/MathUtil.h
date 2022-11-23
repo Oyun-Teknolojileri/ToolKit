@@ -137,4 +137,19 @@ namespace ToolKit
                               const Vec3& max,
                               const Vec3& min);
 
+  // Coordinate system transformations
+  //////////////////////////////////////////
+
+  TK_API Vec3 ViewportSpaceToWorldSpace(const Vec2& pnt,
+                                        Camera* cam,
+                                        const Vec2& viewportSize);
+
+  TK_API Vec2 ScreenSpaceToViewportSpace(const Vec2& pnt,
+                                         const Vec2 contentAreaLocation,
+                                         const Vec2& contentAreaSize);
+
+  TK_API Vec2 WorldSpaceToScreenSpace(const Vec3& pnt,
+                                      Camera* cam,
+                                      const Vec2& contentAreaLocation,
+                                      const Vec2& viewportSize);
 } // namespace ToolKit

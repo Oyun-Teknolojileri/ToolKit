@@ -29,7 +29,10 @@ namespace ToolKit
 
   Renderer::Renderer()
   {
-    m_uiCamera        = new Camera();
+    m_uiCamera = new Camera();
+    m_uiCamera->m_node->SetTranslation(Z_AXIS, TransformationSpace::TS_WORLD);
+    m_uiCamera->GetComponent<DirectionComponent>()->LookAt(ZERO);
+
     m_utilFramebuffer = std::make_shared<Framebuffer>();
   }
 
