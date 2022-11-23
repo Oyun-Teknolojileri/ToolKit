@@ -207,6 +207,8 @@ namespace ToolKit
       ResetSelectedRenderTarget(GetRenderTargetSettings());
 
       AdjustZoom(0.0f);
+
+      g_app->ResizeSimulation();
     }
 
     void EditorViewport::ResizeWindow(uint width, uint height)

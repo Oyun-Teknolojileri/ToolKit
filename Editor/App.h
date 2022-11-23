@@ -50,6 +50,7 @@ namespace ToolKit
       void OnQuit();
       void OnNewProject(const String& name);
       void SetGameMod(GameMod mod);
+      void ResizeSimulation();
       void CompilePlugin();
       EditorScenePtr GetCurrentScene();
       void SetCurrentScene(const EditorScenePtr& scene);
@@ -180,6 +181,7 @@ namespace ToolKit
       // Simulator settings.
       EditorViewport* m_simulationWindow = nullptr;
       SimulationSettings m_simulatorSettings;
+      bool m_resizeSimulation = false;
 
       // Editor objects.
       Grid* m_grid;

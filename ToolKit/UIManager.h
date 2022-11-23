@@ -82,6 +82,14 @@ namespace ToolKit
     void GetLayers(ULongID viewportId, UILayerRawPtrArray& layers);
 
     /**
+    * Resizes the layers of given Viewport
+    * @param Viewport that holds the UILayer's
+    * @param width
+    * @param height
+    */
+    void ResizeLayers(Viewport* viewport, float width, float height);
+
+    /**
      * Add a new layer to m_viewportLayerMap array.
      * @param viewport to add the layer to.
      * @param layer to be inserted.

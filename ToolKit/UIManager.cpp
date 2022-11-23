@@ -179,6 +179,20 @@ namespace ToolKit
     }
   }
 
+  void UIManager::ResizeLayers(Viewport* viewport, float width, float height)
+  {
+    for (auto& layerArray : m_viewportIdLayerArrayMap)
+    {
+      if (layerArray.first == viewport->m_viewportId)
+      {
+        for (UILayer* layer : layerArray.second)
+        {
+          layer->ResizeUI(width, height);
+        }
+      }
+    }
+  }
+
   void UIManager::GetLayers(ULongID viewportId, UILayerRawPtrArray& layers)
   {
     auto res = m_viewportIdLayerArrayMap.find(viewportId);

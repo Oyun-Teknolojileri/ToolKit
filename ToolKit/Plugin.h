@@ -34,6 +34,7 @@ namespace ToolKit
   class TK_API GamePlugin : public Plugin
   {
    public:
+    virtual void Resize(const Vec2& size)                         = 0;
     virtual void Frame(float deltaTime, class Viewport* viewport) = 0;
     PluginType GetType()
     {

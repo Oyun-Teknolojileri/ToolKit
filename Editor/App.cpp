@@ -700,6 +700,11 @@ namespace ToolKit
       cam->FocusToBoundingBox(entity->GetAABB(true), 1.1f);
     }
 
+    void App::ResizeSimulation()
+    {
+      m_resizeSimulation = true;
+    }
+
     int App::ExecSysCommand(StringView cmd,
                             bool async,
                             bool showConsole,
@@ -1556,6 +1561,11 @@ namespace ToolKit
             playWindow = m_simulationWindow;
           }
           HideGizmos();
+          if (m_resizeSimulation)
+          {
+            plugin->Resize(playWindow->m_wndContentAreaSize);
+            m_resizeSimulation = false;
+          }
           plugin->Frame(deltaTime, playWindow);
           ShowGizmos();
         }
