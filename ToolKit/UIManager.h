@@ -56,6 +56,16 @@ namespace ToolKit
   {
    public:
     /**
+    * Constructor
+    */
+    UIManager();
+    
+    /**
+    * Destructor
+    */
+    ~UIManager();
+
+    /**
      * Updates all of the layers and activates Surface callbacks based on
      * events.
      * @param deltaTime is the time past since the previous frame.
@@ -136,6 +146,11 @@ namespace ToolKit
      * are stored for each viewport.
      */
     std::unordered_map<ULongID, UILayerRawPtrArray> m_viewportIdLayerArrayMap;
+
+    /**
+    * Camera for rendering UI layers
+    */
+    Camera* m_uiCamera = nullptr;
   };
 
 } // namespace ToolKit

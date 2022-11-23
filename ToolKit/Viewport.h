@@ -38,10 +38,11 @@ namespace ToolKit
     virtual Camera* GetCamera() const;
 
     /**
-     * Sets the new Camera for viewport. Deletes the last Camera.
+     * Sets the new Camera for viewport.
      * @param cam New Camera for viewport.
+     * @param variable to decide if the last Camera will be deleted.
      */
-    virtual void SetCamera(Camera* cam);
+    virtual void SetCamera(Camera* cam, bool deleteLastCam = true);
 
    public:
     /**

@@ -28,8 +28,9 @@ namespace ToolKit
      * Renders given UILayer to given Viewport.
      * @param layer UILayer that will be rendered.
      * @param viewport that UILayer will be rendered with.
+     * @param camera of rendering
      */
-    void RenderUI(Viewport* viewport, UILayer* layer);
+    void RenderUI(Viewport* viewport, UILayer* layer, Camera* cam);
 
     void SetRenderState(const RenderState* const state, ProgramPtr program);
 

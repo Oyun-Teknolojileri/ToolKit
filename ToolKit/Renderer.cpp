@@ -29,10 +29,6 @@ namespace ToolKit
 
   Renderer::Renderer()
   {
-    m_uiCamera = new Camera();
-    m_uiCamera->m_node->SetTranslation(Z_AXIS, TransformationSpace::TS_WORLD);
-    m_uiCamera->GetComponent<DirectionComponent>()->LookAt(ZERO);
-
     m_utilFramebuffer = std::make_shared<Framebuffer>();
   }
 
@@ -337,16 +333,15 @@ namespace ToolKit
    * @param layer UILayer that will be rendered.
    * @param viewport that UILayer will be rendered with.
    */
-  void Renderer::RenderUI(Viewport* viewport, UILayer* layer)
+  void Renderer::RenderUI(Viewport* viewport, UILayer* layer, Camera* cam)
   {
     float halfWidth  = viewport->m_wndContentAreaSize.x * 0.5f;
     float halfHeight = viewport->m_wndContentAreaSize.y * 0.5f;
 
-    m_uiCamera->SetLens(
-        -halfWidth, halfWidth, -halfHeight, halfHeight, 0.5f, 1000.0f);
+    cam->SetLens(-halfWidth, halfWidth, -halfHeight, halfHeight, 0.01f, 100.0f);
 
     EntityRawPtrArray entities = layer->m_scene->GetEntities();
-    RenderEntities(entities, m_uiCamera, viewport);
+    RenderEntities(entities, cam, viewport);
   }
 
   void Renderer::Render(Entity* ntt,

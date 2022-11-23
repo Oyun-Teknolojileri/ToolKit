@@ -1,6 +1,8 @@
 
 #include "UIManager.h"
 
+#include "DirectionComponent.h"
+#include "MathUtil.h"
 #include "ToolKit.h"
 
 #include <iterator>
@@ -77,31 +79,17 @@ namespace ToolKit
     if (e->m_type == Event::EventType::Mouse)
     {
       BoundingBox box = surface->GetAABB(true);
-      Ray ray         = vp->RayFromMousePosition();
 
-      if (surface->GetType() == EntityType::Entity_Button)
-      {
-        // TODO
-        GetLogger()->WriteConsole(LogType::Warning,
-                                  "RayPos: %f, %f, %f",
-                                  ray.position.x,
-                                  ray.position.y,
-                                  ray.position.z);
-        GetLogger()->WriteConsole(LogType::Warning,
-                                  "RayDir: %f, %f, %f",
-                                  ray.direction.x,
-                                  ray.direction.y,
-                                  ray.direction.z);
-      }
+      Camera* lastCamera = vp->GetCamera();
+      vp->Viewport::SetCamera(m_uiCamera, false);
+
+      Ray ray = vp->RayFromMousePosition();
+
+      vp->Viewport::SetCamera(lastCamera, false);
 
       float t = 0.0f;
       if (RayBoxIntersection(ray, box, t))
       {
-        // TODO
-        if (surface->GetType() == EntityType::Entity_Button)
-        {
-          int y = 5;
-        }
         return true;
       }
     }
@@ -161,6 +149,18 @@ namespace ToolKit
         }
       }
     }
+  }
+
+  UIManager::UIManager()
+  {
+    m_uiCamera = new Camera();
+    m_uiCamera->m_node->SetTranslation(Z_AXIS, TransformationSpace::TS_WORLD);
+    m_uiCamera->GetComponent<DirectionComponent>()->LookAt(ZERO);
+  }
+
+  UIManager::~UIManager()
+  {
+    SafeDel(m_uiCamera);
   }
 
   void UIManager::UpdateLayers(float deltaTime, Viewport* viewport)

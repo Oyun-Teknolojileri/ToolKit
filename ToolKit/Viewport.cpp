@@ -33,9 +33,12 @@ namespace ToolKit
     return m_camera;
   }
 
-  void ViewportBase::SetCamera(Camera* cam)
+  void ViewportBase::SetCamera(Camera* cam, bool deleteLastCam)
   {
-    SafeDel(m_camera);
+    if (deleteLastCam)
+    {
+      SafeDel(m_camera);
+    }
     m_camera         = cam;
     m_attachedCamera = cam->GetIdVal();
   }
@@ -167,18 +170,43 @@ namespace ToolKit
 
   Vec3 Viewport::TransformViewportToWorldSpace(const Vec2& pnt)
   {
-    return ViewportSpaceToWorldSpace(pnt, GetCamera(), m_wndContentAreaSize);
+    Vec3 screenPoint = Vec3(pnt, 0.0f);
+
+    Camera* cam  = GetCamera();
+    Mat4 view    = cam->GetViewMatrix();
+    Mat4 project = cam->GetProjectionMatrix();
+
+    return glm::unProject(
+        screenPoint,
+        view,
+        project,
+        Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
   }
 
   Vec2 Viewport::TransformWorldSpaceToScreenSpace(const Vec3& pnt)
   {
-    return WorldSpaceToScreenSpace(
-        pnt, GetCamera(), m_contentAreaLocation, m_wndContentAreaSize);
+    Camera* cam       = GetCamera();
+    glm::mat4 view    = cam->GetViewMatrix();
+    glm::mat4 project = cam->GetProjectionMatrix();
+
+    Vec3 screenPos = glm::project(
+        pnt,
+        view,
+        project,
+        Vec4(0.0f, 0.0f, m_wndContentAreaSize.x, m_wndContentAreaSize.y));
+
+    screenPos.x += m_contentAreaLocation.x;
+    screenPos.y =
+        m_wndContentAreaSize.y + m_contentAreaLocation.y - screenPos.y;
+
+    return screenPos.xy;
   }
 
   Vec2 Viewport::TransformScreenToViewportSpace(const Vec2& pnt)
   {
-    return ScreenSpaceToViewportSpace(pnt, m_contentAreaLocation, m_wndContentAreaSize);
+    Vec2 vp = pnt - m_contentAreaLocation;   // In window space.
+    vp.y    = m_wndContentAreaSize.y - vp.y; // In viewport space.
+    return vp;
   }
 
   bool Viewport::IsOrthographic()

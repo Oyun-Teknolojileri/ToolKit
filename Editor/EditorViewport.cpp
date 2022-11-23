@@ -223,9 +223,9 @@ namespace ToolKit
       *max = m_contentAreaLocation + m_wndContentAreaSize;
     }
 
-    void EditorViewport::SetCamera(Camera* cam)
+    void EditorViewport::SetCamera(Camera* cam, bool deleteLastCamera)
     {
-      Viewport::SetCamera(cam);
+      Viewport::SetCamera(cam, deleteLastCamera);
       AdjustZoom(0.0f);
     }
 
