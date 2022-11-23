@@ -267,7 +267,7 @@ namespace ToolKit
           myRenderPass->m_params.Cam            = viewCam;
           myRenderPass->m_params.FrameBuffer    = viewport->m_framebuffer;
           myRenderPass->m_params.BillboardScale = viewport->GetBillboardScale();
-          myRenderPass->Render();
+           //myRenderPass->Render();
 
           myEditorPass->m_params.App      = this;
           myEditorPass->m_params.Viewport = viewport;
@@ -278,7 +278,7 @@ namespace ToolKit
               m_gizmo,
               viewport->GetType() == Window::Type::Viewport2d ? m_anchor.get()
                                                               : nullptr};
-          myGizmoPas->Render();
+          //myGizmoPas->Render();
           //  Pass Test End
 
           EntityRawPtrArray selectedEntities;

@@ -560,6 +560,8 @@ namespace ToolKit
 
     m_copyStencilSubPass->Render();
 
+    renderer->SetStencilOperation(StencilOperation::None);
+
     PostRender();
   }
 

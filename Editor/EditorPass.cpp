@@ -21,13 +21,23 @@ namespace ToolKit
       m_camera = m_params.Viewport->GetCamera();
 
       Renderer* renderer = GetRenderer();
-      renderer->SetFramebuffer(m_params.Viewport->m_framebuffer, false);
+      renderer->SetFramebuffer(m_params.Viewport->m_framebuffer);
       renderer->SetCameraLens(m_camera);
 
       // Accumulate Editor entities.
       m_drawList.clear();
 
-      EditorScenePtr scene = app->GetCurrentScene();
+      EditorScenePtr scene              = app->GetCurrentScene();
+      const EntityRawPtrArray& entities = scene->GetEntities();
+      m_drawList.insert(m_drawList.end(), entities.begin(), entities.end());
+
+      if (app->m_sceneLightingMode == App::LightMode::EditorLit)
+      {
+        // Adjust scene lights.
+        app->m_lightMaster->OrphanSelf();
+        m_camera->m_node->AddChild(app->m_lightMaster);
+        m_contributingLights = app->m_sceneLights;
+      }
 
       // Generate Selection boundary and Environment component boundary.
       EntityRawPtrArray selecteds;

@@ -630,10 +630,12 @@ namespace ToolKit
       glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);
       break;
     case StencilOperation::AllowPixelsPassingStencil:
+      glEnable(GL_STENCIL_TEST);
       glStencilFunc(GL_EQUAL, 0xFF, 0xFF);
       glStencilMask(0x00);
       break;
     case StencilOperation::AllowPixelsFailingStencil:
+      glEnable(GL_STENCIL_TEST);
       glStencilFunc(GL_NOTEQUAL, 0xFF, 0xFF);
       glStencilMask(0x00);
       break;
