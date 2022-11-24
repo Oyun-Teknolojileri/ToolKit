@@ -455,7 +455,6 @@ namespace ToolKit
         tAnim->m_keys.insert(std::make_pair(nodeAnim->mNodeName.C_Str(), keys));
       }
 
-      // Recalculate duration. May be misleading dueto shifted animations.
       tAnim->m_duration = (float) duration;
       tAnim->m_fps      = (float) g_desiredFps;
 
