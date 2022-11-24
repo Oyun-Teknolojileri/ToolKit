@@ -49,7 +49,7 @@ namespace ToolKit
 
       // Editor functions
       void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const;
-      void SetCamera(Camera* cam, bool deleteLastCam = true) override;
+      void SetCamera(Camera* cam) override;
       void ResetSelectedRenderTarget(const RenderTargetSettigs& settings);
 
      protected:

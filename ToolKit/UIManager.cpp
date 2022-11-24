@@ -81,11 +81,11 @@ namespace ToolKit
       BoundingBox box = surface->GetAABB(true);
 
       Camera* lastCamera = vp->GetCamera();
-      vp->Viewport::SetCamera(m_uiCamera, false);
+      vp->Viewport::SwapCamera(&m_uiCamera);
 
       Ray ray = vp->RayFromMousePosition();
 
-      vp->Viewport::SetCamera(lastCamera, false);
+      vp->Viewport::SwapCamera(&m_uiCamera);
 
       float t = 0.0f;
       if (RayBoxIntersection(ray, box, t))

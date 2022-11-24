@@ -33,14 +33,18 @@ namespace ToolKit
     return m_camera;
   }
 
-  void ViewportBase::SetCamera(Camera* cam, bool deleteLastCam)
+  void ViewportBase::SetCamera(Camera* cam)
   {
-    if (deleteLastCam)
-    {
-      SafeDel(m_camera);
-    }
+    SafeDel(m_camera);
     m_camera         = cam;
     m_attachedCamera = cam->GetIdVal();
+  }
+
+  void ViewportBase::SwapCamera(Camera** cam)
+  {
+    Camera* temp = m_camera;
+    m_camera     = *cam;
+    *cam          = temp;
   }
 
   ViewportBase::ViewportBase()

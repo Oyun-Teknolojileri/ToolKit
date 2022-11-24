@@ -279,6 +279,7 @@ namespace ToolKit
           }
 
           // Render scene.
+          m_renderer->ClearFrameBuffer(viewport->m_framebuffer, Vec4(0.0f));
           m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
 
           // Pass Test Begin

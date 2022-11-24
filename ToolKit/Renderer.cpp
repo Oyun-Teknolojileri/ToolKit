@@ -683,7 +683,7 @@ namespace ToolKit
 
   void Renderer::SetViewport(Viewport* viewport)
   {
-    SetFramebuffer(viewport->m_framebuffer);
+    SetFramebuffer(viewport->m_framebuffer, false);
   }
 
   void Renderer::SetViewportSize(uint width, uint height)
