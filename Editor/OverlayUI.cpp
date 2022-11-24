@@ -9,6 +9,7 @@
 #include "Global.h"
 #include "Mod.h"
 #include "Sky.h"
+#include "EditorPass.h"
 
 #include "DebugNew.h"
 
@@ -247,11 +248,11 @@ namespace ToolKit
           }
 
           ImGui::PopItemWidth();
-          g_app->m_sceneLightingMode = (App::LightMode) lightModeIndx;
+          g_app->m_sceneLightingMode = (EditorLitMode) lightModeIndx;
         }
         else
         {
-          g_app->m_sceneLightingMode = App::EditorLit;
+          g_app->m_sceneLightingMode = EditorLitMode::EditorLit;
         }
 
         ImGui::TableSetColumnIndex(nextItemIndex++);

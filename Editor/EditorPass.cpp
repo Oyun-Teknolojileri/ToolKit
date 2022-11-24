@@ -1,6 +1,7 @@
 #include "EditorPass.h"
 
 #include "App.h"
+#include "DirectionComponent.h"
 #include "EditorViewport.h"
 #include "stdafx.h"
 
@@ -8,6 +9,28 @@ namespace ToolKit
 {
   namespace Editor
   {
+
+    EditorRenderPass::EditorRenderPass()
+    {
+      InitPass();
+    }
+
+    EditorRenderPass::EditorRenderPass(const EditorRenderPassParams& params)
+        : EditorRenderPass()
+    {
+      m_params = params;
+    }
+
+    EditorRenderPass::~EditorRenderPass()
+    {
+      for (Light* light : m_editorLights)
+      {
+        SafeDel(light);
+      }
+      m_editorLights.clear();
+      SafeDel(m_lightNode);
+    }
+
     void EditorRenderPass::Render()
     {
       RenderPass::Render();
@@ -15,12 +38,13 @@ namespace ToolKit
 
     void EditorRenderPass::PreRender()
     {
+      Renderer* renderer = GetRenderer();
       Pass::PreRender();
+      m_overrideDiffuseTexture = renderer->m_overrideDiffuseTexture;
 
       App* app = m_params.App;
       m_camera = m_params.Viewport->GetCamera();
 
-      Renderer* renderer = GetRenderer();
       renderer->SetFramebuffer(m_params.Viewport->m_framebuffer);
       renderer->SetCameraLens(m_camera);
 
@@ -31,13 +55,11 @@ namespace ToolKit
       const EntityRawPtrArray& entities = scene->GetEntities();
       m_drawList.insert(m_drawList.end(), entities.begin(), entities.end());
 
-      if (app->m_sceneLightingMode == App::LightMode::EditorLit)
-      {
-        // Adjust scene lights.
-        app->m_lightMaster->OrphanSelf();
-        m_camera->m_node->AddChild(app->m_lightMaster);
-        m_contributingLights = app->m_sceneLights;
-      }
+      // Adjust scene lights.
+      m_lightNode->OrphanSelf();
+      m_camera->m_node->AddChild(m_lightNode);
+
+      SetLitMode(m_params.LitMode);
 
       // Generate Selection boundary and Environment component boundary.
       EntityRawPtrArray selecteds;
@@ -107,6 +129,7 @@ namespace ToolKit
     void EditorRenderPass::PostRender()
     {
       Pass::PostRender();
+      GetRenderer()->m_overrideDiffuseTexture = m_overrideDiffuseTexture;
 
       App* app = m_params.App;
       for (Entity* dbgObj : app->m_perFrameDebugObjects)
@@ -114,6 +137,87 @@ namespace ToolKit
         SafeDel(dbgObj);
       }
       app->m_perFrameDebugObjects.clear();
+      m_lightNode->OrphanSelf();
+    }
+
+    void EditorRenderPass::SetLitMode(EditorLitMode mode)
+    {
+      EditorScenePtr scene = m_params.App->GetCurrentScene();
+      if (mode != EditorLitMode::EditorLit)
+      {
+        m_contributingLights = scene->GetLights();
+      }
+
+      Renderer* renderer = GetRenderer();
+
+      switch (mode)
+      {
+      case EditorLitMode::EditorLit:
+        m_contributingLights    = m_editorLights;
+        renderer->m_overrideMat = nullptr;
+        break;
+      case EditorLitMode::Unlit:
+        renderer->m_overrideMat = m_unlitOverride;
+        break;
+      case EditorLitMode::FullyLit:
+        renderer->m_overrideMat = nullptr;
+        break;
+      case EditorLitMode::LightComplexity:
+        renderer->m_overrideMat = m_lightComplexityOverride;
+        break;
+      case EditorLitMode::LightingOnly:
+        renderer->m_overrideMat = m_lightingOnlyOverride;
+        break;
+      default:
+        break;
+      }
+    }
+
+    void EditorRenderPass::InitPass()
+    {
+      // Create editor lights.
+      m_lightNode = new Node();
+
+      float intensity         = 1.5f;
+      DirectionalLight* light = new DirectionalLight();
+      light->SetColorVal(Vec3(0.55f));
+      light->SetIntensityVal(intensity);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
+      light->SetCastShadowVal(false);
+      m_lightNode->AddChild(light->m_node);
+      m_editorLights.push_back(light);
+
+      light = new DirectionalLight();
+      light->SetColorVal(Vec3(0.15f));
+      light->SetIntensityVal(intensity);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
+      light->SetCastShadowVal(false);
+      m_lightNode->AddChild(light->m_node);
+      m_editorLights.push_back(light);
+
+      light = new DirectionalLight();
+      light->SetColorVal(Vec3(0.1f));
+      light->SetIntensityVal(intensity);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
+      light->SetCastShadowVal(false);
+      m_lightNode->AddChild(light->m_node);
+      m_editorLights.push_back(light);
+
+      // Create render mode materials.
+      m_lightComplexityOverride = std::make_shared<Material>();
+      m_lightComplexityOverride->m_fragmentShader =
+          GetShaderManager()->Create<Shader>(
+              ShaderPath("lightComplexity.shader", true));
+      m_lightComplexityOverride->Init();
+
+      m_lightingOnlyOverride = GetMaterialManager()->GetCopyOfSolidMaterial();
+      m_lightingOnlyOverride->Init();
+
+      m_unlitOverride = GetMaterialManager()->GetCopyOfUnlitMaterial();
+      m_unlitOverride->Init();
     }
 
     GizmoPass::GizmoPass()

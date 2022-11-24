@@ -13,6 +13,7 @@
 #include "PublishManager.h"
 #include "ToolKit.h"
 #include "Workspace.h"
+#include "EditorPass.h"
 
 #include <memory>
 #include <unordered_map>
@@ -115,7 +116,7 @@ namespace ToolKit
         return nullptr;
       }
 
-      template<typename T>
+      template <typename T>
       std::vector<T*> GetAllWindows(const String& name)
       {
         std::vector<T*> list;
@@ -181,19 +182,6 @@ namespace ToolKit
       std::shared_ptr<Arrow2d> m_dbgArrow;
       std::shared_ptr<LineBatch> m_dbgFrustum;
 
-      // 3 point lighting system.
-      Node* m_lightMaster = nullptr;
-      LightRawPtrArray m_sceneLights; // { 0:key 1:fill, 2:back }
-      enum LightMode : ubyte
-      {
-        EditorLit,
-        Unlit,
-        FullyLit,
-        LightComplexity,
-        LightingOnly
-      };
-      LightMode m_sceneLightingMode = EditorLit;
-
       // Editor states.
       int m_fps                                = 0;
       bool m_showPickingDebug                  = false;
@@ -210,6 +198,7 @@ namespace ToolKit
       PublishManager* m_publishManager         = nullptr;
       GameMod m_gameMod                        = GameMod::Stop;
       SysCommandExecutionFn m_sysComExecFn     = nullptr;
+      EditorLitMode m_sceneLightingMode        = EditorLitMode::EditorLit;
       Workspace m_workspace;
 
       // Snap settings.

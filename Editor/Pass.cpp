@@ -65,17 +65,6 @@ namespace ToolKit
     renderer->CollectEnvironmentVolumes(m_drawList);
 
     CullDrawList(m_drawList, m_camera);
-
-    // Update billboards.
-    for (Entity* ntt : m_drawList)
-    {
-      // Update billboards.
-      if (ntt->GetType() == EntityType::Entity_Billboard)
-      {
-        Billboard* billboard = static_cast<Billboard*>(ntt);
-        billboard->LookAt(m_camera, m_params.BillboardScale);
-      }
-    }
   }
 
   void RenderPass::PostRender()

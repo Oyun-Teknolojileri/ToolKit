@@ -32,7 +32,6 @@ namespace ToolKit
     LightRawPtrArray LightOverride;
     Camera* Cam                = nullptr;
     FramebufferPtr FrameBuffer = nullptr;
-    float BillboardScale       = 1.0f;
   };
 
   /**
@@ -43,7 +42,7 @@ namespace ToolKit
    public:
     RenderPass();
     explicit RenderPass(const RenderPassParams& params);
-    ~RenderPass();
+    virtual ~RenderPass();
 
     void Render() override;
     void PreRender() override;

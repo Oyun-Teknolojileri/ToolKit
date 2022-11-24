@@ -143,13 +143,6 @@ namespace ToolKit
         m_dbgFrustum = nullptr;
       }
 
-      for (Light* light : m_sceneLights)
-      {
-        SafeDel(light);
-      }
-      SafeDel(m_lightMaster);
-      m_sceneLights.clear();
-
       for (Entity* dbgObj : m_perFrameDebugObjects)
       {
         SafeDel(dbgObj);
@@ -194,26 +187,10 @@ namespace ToolKit
       ShowSimulationWindow(deltaTime);
       GetCurrentScene()->Update(deltaTime);
 
-      // Take all lights in an array
-      LightRawPtrArray totalLights;
-      if (m_sceneLightingMode == EditorLit)
-      {
-        totalLights = m_sceneLights;
-      }
-      else
-      {
-        totalLights = GetCurrentScene()->GetLights();
-      }
-
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
       {
         viewport->Update(deltaTime);
-
-        // Update scene lights for the current view.
-        Camera* viewCam = viewport->GetCamera();
-        m_lightMaster->OrphanSelf();
-        viewCam->m_node->AddChild(m_lightMaster);
 
         // PlayWindow is drawn on perspective. Thus, skip perspective.
         if (m_gameMod != GameMod::Stop && !m_simulatorSettings.Windowed)
@@ -226,51 +203,34 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
-
-          switch (m_sceneLightingMode)
-          {
-          case LightComplexity: {
-            lightModeMat->UnInit();
-            lightModeMat->m_fragmentShader = GetShaderManager()->Create<Shader>(
-                ShaderPath("lightComplexity.shader", true));
-            lightModeMat->Init();
-            m_renderer->m_overrideMat = lightModeMat;
-          }
-          break;
-          case LightingOnly: {
-            m_renderer->m_renderOnlyLighting = true;
-          }
-          break;
-          case Unlit: {
-            lightModeMat =
-                GetMaterialManager()->Create<Material>("unlit.material");
-            lightModeMat->Init();
-            m_renderer->m_overrideMat            = lightModeMat;
-            m_renderer->m_overrideDiffuseTexture = true;
-          }
-          break;
-          default:
-            m_renderer->m_overrideMat            = nullptr;
-            m_renderer->m_overrideDiffuseTexture = false;
-          }
-
           // Render scene.
           // m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
 
           // Pass Test Begin
-          myShadowPass->m_params.Entities = GetCurrentScene()->GetEntities();
-          myShadowPass->m_params.Lights   = totalLights;
+          EditorScenePtr scene            = GetCurrentScene();
+          LightRawPtrArray lights         = scene->GetLights();
+          myShadowPass->m_params.Entities = scene->GetEntities();
+
+          if (m_sceneLightingMode == EditorLitMode::FullyLit)
+          {
+            myShadowPass->m_params.Lights = lights;
+          }
+          else
+          {
+            myShadowPass->m_params.Lights.clear();
+          }
+
           myShadowPass->Render();
 
-          myRenderPass->m_params.Scene          = GetCurrentScene();
-          myRenderPass->m_params.LightOverride  = totalLights;
-          myRenderPass->m_params.Cam            = viewCam;
-          myRenderPass->m_params.FrameBuffer    = viewport->m_framebuffer;
-          myRenderPass->m_params.BillboardScale = viewport->GetBillboardScale();
-           //myRenderPass->Render();
+          myRenderPass->m_params.Scene         = GetCurrentScene();
+          myRenderPass->m_params.LightOverride = lights;
+          myRenderPass->m_params.Cam           = viewport->GetCamera();
+          myRenderPass->m_params.FrameBuffer   = viewport->m_framebuffer;
+          // myRenderPass->Render();
 
           myEditorPass->m_params.App      = this;
           myEditorPass->m_params.Viewport = viewport;
+          myEditorPass->m_params.LitMode  = m_sceneLightingMode;
           myEditorPass->Render();
 
           myGizmoPas->m_params.Viewport   = viewport;
@@ -278,8 +238,8 @@ namespace ToolKit
               m_gizmo,
               viewport->GetType() == Window::Type::Viewport2d ? m_anchor.get()
                                                               : nullptr};
-          //myGizmoPas->Render();
-          //  Pass Test End
+          myGizmoPas->Render();
+          //   Pass Test End
 
           EntityRawPtrArray selectedEntities;
           GetCurrentScene()->GetSelectedEntities(selectedEntities);
@@ -295,9 +255,6 @@ namespace ToolKit
 
       // Render UI.
       UI::EndUI();
-
-      // Remove editor lights
-      m_lightMaster->OrphanSelf();
 
       m_renderer->m_totalFrameCount++;
     }
@@ -638,8 +595,6 @@ namespace ToolKit
 
     void App::ResetUI()
     {
-      m_lightMaster->OrphanSelf();
-
       DeleteWindows();
 
       String defEditSet = ConcatPaths({ConfigPath(), g_editorSettingsFile});
@@ -1509,37 +1464,6 @@ namespace ToolKit
                           10.0f,
                           4.0,
                           true); // Generate grid cells 10 x 10
-
-      // Lights and camera.
-      m_lightMaster = new Node();
-
-      float intensity         = 1.5f;
-      DirectionalLight* light = new DirectionalLight();
-      light->SetColorVal(Vec3(0.55f));
-      light->SetIntensityVal(intensity);
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
-      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
-      light->SetCastShadowVal(false);
-      m_lightMaster->AddChild(light->m_node);
-      m_sceneLights.push_back(light);
-
-      light = new DirectionalLight();
-      light->SetColorVal(Vec3(0.15f));
-      light->SetIntensityVal(intensity);
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
-      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
-      light->SetCastShadowVal(false);
-      m_lightMaster->AddChild(light->m_node);
-      m_sceneLights.push_back(light);
-
-      light = new DirectionalLight();
-      light->SetColorVal(Vec3(0.1f));
-      light->SetIntensityVal(intensity);
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
-      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
-      light->SetCastShadowVal(false);
-      m_lightMaster->AddChild(light->m_node);
-      m_sceneLights.push_back(light);
     }
 
     void DebugMessage(const String& msg)
