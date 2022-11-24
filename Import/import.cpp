@@ -420,82 +420,44 @@ namespace ToolKit
 
       double fps =
           anim->mTicksPerSecond == 0 ? g_desiredFps : anim->mTicksPerSecond;
-
       double duration = anim->mDuration / fps;
-      uint frameCount = (uint) ceil(duration * g_desiredFps);
 
-      // Used to normalize animation start time.
-      int cr, ct, cs, cmax;
-      cr = ct = cs = cmax = 0;
-
-      for (unsigned int chIndx = 0; chIndx < anim->mNumChannels; chIndx++)
+      for (uint chIndx = 0; chIndx < anim->mNumChannels; ++chIndx)
       {
         KeyArray keys;
         aiNodeAnim* nodeAnim = anim->mChannels[chIndx];
-        for (uint frame = 1; frame < frameCount; frame++)
+
+        for (uint kIndx = 0; kIndx < nodeAnim->mNumPositionKeys; ++kIndx)
         {
-          float timeInTicks = (frame / g_desiredFps) *
-                              static_cast<float>(anim->mTicksPerSecond);
-
-          aiVector3D t;
-          if (
-              // Timer is not yet reach the animation begin. Skip frames.
-              // Happens when there aren't keys at the beginning of the
-              // animation.
-              LessEqual(timeInTicks,
-                        static_cast<float>(nodeAnim->mPositionKeys[0].mTime),
-                        0.001f))
+          int keyFrameIndex = 0;
+          if (g_currentExt.compare(".glb") == 0)
           {
-            continue;
+            keyFrameIndex = (int) round(
+                fps * nodeAnim->mPositionKeys[kIndx].mTime / 1000.0f);
           }
           else
           {
-            CalcInterpolatedPosition(t, timeInTicks, nodeAnim);
-            ct++;
+            keyFrameIndex = (int) round(nodeAnim->mPositionKeys[kIndx].mTime);
           }
 
-          aiQuaternion r;
-          if (LessEqual(timeInTicks,
-                        static_cast<float>(nodeAnim->mRotationKeys[0].mTime),
-                        0.001f))
-          {
-            continue;
-          }
-          else
-          {
-            CalcInterpolatedRotation(r, timeInTicks, nodeAnim);
-            cr++;
-          }
-
-          aiVector3D s;
-          if (LessEqual(timeInTicks,
-                        static_cast<float>(nodeAnim->mScalingKeys[0].mTime),
-                        0.001f))
-          {
-            continue;
-          }
-          else
-          {
-            CalcInterpolatedScaling(s, timeInTicks, nodeAnim);
-            cs++;
-          }
+          aiVector3D t   = nodeAnim->mPositionKeys[kIndx].mValue;
+          aiQuaternion r = nodeAnim->mRotationKeys[kIndx].mValue;
+          aiVector3D s   = nodeAnim->mScalingKeys[kIndx].mValue;
 
           Key tKey;
-          tKey.m_frame    = frame;
+          tKey.m_frame    = keyFrameIndex;
           tKey.m_position = Vec3(t.x, t.y, t.z);
           tKey.m_rotation = Quaternion(r.w, r.x, r.y, r.z);
           tKey.m_scale    = Vec3(s.x, s.y, s.z);
           keys.push_back(tKey);
         }
 
-        cmax = GetMax(cr, ct, cs);
-        cr = ct = cs = 0;
         tAnim->m_keys.insert(std::make_pair(nodeAnim->mNodeName.C_Str(), keys));
       }
 
       // Recalculate duration. May be misleading dueto shifted animations.
-      tAnim->m_duration = static_cast<float>(cmax / g_desiredFps);
-      tAnim->m_fps      = static_cast<float>(g_desiredFps);
+      tAnim->m_duration = (float) duration;
+      tAnim->m_fps      = (float) g_desiredFps;
 
       CreateFileAndSerializeObject(tAnim.get(), animFilePath);
     }
