@@ -47,7 +47,7 @@ namespace ToolKit
     m_drawList = m_params.Scene->GetEntities();
     m_camera   = m_params.Cam;
 
-    renderer->SetFramebuffer(m_params.FrameBuffer, true);
+    renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
     renderer->SetCameraLens(m_camera);
 
     // Set contributing lights.

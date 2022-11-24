@@ -39,11 +39,8 @@
 
 namespace ToolKit
 {
-  ShadowPass* myShadowPass               = nullptr;
-  RenderPass* myRenderPass               = nullptr;
-  Editor::EditorRenderPass* myEditorPass = nullptr;
-  Editor::GizmoPass* myGizmoPas          = nullptr;
-  OutlinePass* myOutlineTechnique        = nullptr;
+  OutlinePass* myOutlineTechnique          = nullptr;
+  Editor::EditorRenderer* myEditorRenderer = nullptr;
 
   namespace Editor
   {
@@ -55,11 +52,8 @@ namespace ToolKit
       m_renderer->m_windowSize.y = windowHeight;
       m_statusMsg                = "OK";
 
-      myShadowPass       = new ShadowPass();
-      myRenderPass       = new RenderPass();
-      myEditorPass       = new EditorRenderPass();
-      myGizmoPas         = new GizmoPass();
       myOutlineTechnique = new OutlinePass();
+      myEditorRenderer   = new EditorRenderer();
 
       OverrideEntityConstructors();
 
@@ -69,11 +63,7 @@ namespace ToolKit
     App::~App()
     {
       Destroy();
-
-      SafeDel(myShadowPass);
-      SafeDel(myRenderPass);
-      SafeDel(myEditorPass);
-      SafeDel(myGizmoPas);
+      SafeDel(myEditorRenderer);
       SafeDel(myOutlineTechnique);
     }
 
@@ -185,7 +175,8 @@ namespace ToolKit
       }
 
       ShowSimulationWindow(deltaTime);
-      GetCurrentScene()->Update(deltaTime);
+      EditorScenePtr scene = GetCurrentScene();
+      scene->Update(deltaTime);
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -203,55 +194,17 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
-          // Render scene.
-          // m_renderer->RenderScene(GetCurrentScene(), viewport, totalLights);
+          myEditorRenderer->m_params.App     = this;
+          myEditorRenderer->m_params.LitMode = m_sceneLightingMode;
+          myEditorRenderer->m_params.Viewport = viewport;
+          myEditorRenderer->Render();
 
-          // Pass Test Begin
-          EditorScenePtr scene            = GetCurrentScene();
-          LightRawPtrArray lights         = scene->GetLights();
-          myShadowPass->m_params.Entities = scene->GetEntities();
-
-          if (m_sceneLightingMode == EditorLitMode::FullyLit)
-          {
-            myShadowPass->m_params.Lights = lights;
-          }
-          else
-          {
-            myShadowPass->m_params.Lights.clear();
-          }
-
-          myShadowPass->Render();
-
-          myRenderPass->m_params.Scene         = GetCurrentScene();
-          myRenderPass->m_params.LightOverride = lights;
-          myRenderPass->m_params.Cam           = viewport->GetCamera();
-          myRenderPass->m_params.FrameBuffer   = viewport->m_framebuffer;
-          // myRenderPass->Render();
-
-          myEditorPass->m_params.App      = this;
-          myEditorPass->m_params.Viewport = viewport;
-          myEditorPass->m_params.LitMode  = m_sceneLightingMode;
-          myEditorPass->Render();
-
-          myGizmoPas->m_params.Viewport   = viewport;
-          myGizmoPas->m_params.GizmoArray = {
-              m_gizmo,
-              viewport->GetType() == Window::Type::Viewport2d ? m_anchor.get()
-                                                              : nullptr};
-          myGizmoPas->Render();
-          //   Pass Test End
-
+          // TODO: Move to Editor Renderer.
           EntityRawPtrArray selectedEntities;
-          GetCurrentScene()->GetSelectedEntities(selectedEntities);
+          scene->GetSelectedEntities(selectedEntities);
           RenderSelected(viewport, selectedEntities);
         }
       }
-
-      m_renderer->m_renderOnlyLighting = false;
-
-      // Viewports set their own render target.
-      // Set the app framebuffer back for UI.
-      // m_renderer->SetFramebuffer(nullptr);
 
       // Render UI.
       UI::EndUI();

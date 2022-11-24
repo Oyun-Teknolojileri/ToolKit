@@ -32,6 +32,7 @@ namespace ToolKit
     LightRawPtrArray LightOverride;
     Camera* Cam                = nullptr;
     FramebufferPtr FrameBuffer = nullptr;
+    bool ClearFrameBuffer      = true;
   };
 
   /**

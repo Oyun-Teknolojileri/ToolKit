@@ -2,6 +2,7 @@
 
 #include "App.h"
 #include "DirectionComponent.h"
+#include "EditorScene.h"
 #include "EditorViewport.h"
 #include "stdafx.h"
 
@@ -10,18 +11,19 @@ namespace ToolKit
   namespace Editor
   {
 
-    EditorRenderPass::EditorRenderPass()
+    EditorRenderer::EditorRenderer()
     {
-      InitPass();
+      m_editorScene = std::make_shared<EditorScene>();
+      InitRenderer();
     }
 
-    EditorRenderPass::EditorRenderPass(const EditorRenderPassParams& params)
-        : EditorRenderPass()
+    EditorRenderer::EditorRenderer(const EditorRenderPassParams& params)
+        : EditorRenderer()
     {
       m_params = params;
     }
 
-    EditorRenderPass::~EditorRenderPass()
+    EditorRenderer::~EditorRenderer()
     {
       for (Light* light : m_editorLights)
       {
@@ -31,53 +33,59 @@ namespace ToolKit
       SafeDel(m_lightNode);
     }
 
-    void EditorRenderPass::Render()
+    void EditorRenderer::Render()
     {
-      RenderPass::Render();
+      PreRender();
+
+      m_shadowPass.Render();
+
+      SetLitMode(m_params.LitMode);
+
+      m_scenePass.Render();
+
+      SetLitMode(EditorLitMode::EditorLit);
+
+      m_editorPass.Render();
+
+      m_gizmoPass.Render();
+
+      PostRender();
     }
 
-    void EditorRenderPass::PreRender()
+    void EditorRenderer::PreRender()
     {
-      Renderer* renderer = GetRenderer();
-      Pass::PreRender();
-      m_overrideDiffuseTexture = renderer->m_overrideDiffuseTexture;
-
       App* app = m_params.App;
       m_camera = m_params.Viewport->GetCamera();
-
-      renderer->SetFramebuffer(m_params.Viewport->m_framebuffer);
-      renderer->SetCameraLens(m_camera);
-
-      // Accumulate Editor entities.
-      m_drawList.clear();
-
-      EditorScenePtr scene              = app->GetCurrentScene();
-      const EntityRawPtrArray& entities = scene->GetEntities();
-      m_drawList.insert(m_drawList.end(), entities.begin(), entities.end());
 
       // Adjust scene lights.
       m_lightNode->OrphanSelf();
       m_camera->m_node->AddChild(m_lightNode);
 
-      SetLitMode(m_params.LitMode);
+      Renderer* renderer       = GetRenderer();
+      m_overrideDiffuseTexture = renderer->m_overrideDiffuseTexture;
+
+      // Construct EditorScene
+      EntityRawPtrArray editorEntities;
+      EntityRawPtrArray selecteds;
 
       // Generate Selection boundary and Environment component boundary.
-      EntityRawPtrArray selecteds;
+      EditorScenePtr scene = app->GetCurrentScene();
       scene->GetSelectedEntities(selecteds);
 
       for (Entity* ntt : selecteds)
       {
         EnvironmentComponentPtr envCom =
             ntt->GetComponent<EnvironmentComponent>();
+
         if (envCom != nullptr && ntt->GetType() != EntityType::Entity_Sky)
         {
-          app->m_perFrameDebugObjects.push_back(CreateBoundingBoxDebugObject(
+          editorEntities.push_back(CreateBoundingBoxDebugObject(
               envCom->GetBBox(), g_environmentGizmoColor, 1.0f));
         }
 
         if (app->m_showSelectionBoundary && ntt->IsDrawable())
         {
-          app->m_perFrameDebugObjects.push_back(
+          editorEntities.push_back(
               CreateBoundingBoxDebugObject(ntt->GetAABB(true)));
         }
 
@@ -90,17 +98,16 @@ namespace ToolKit
                 static_cast<EditorDirectionalLight*>(ntt);
             if (light->GetCastShadowVal())
             {
-              app->m_perFrameDebugObjects.push_back(
-                  light->GetDebugShadowFrustum());
+              editorEntities.push_back(light->GetDebugShadowFrustum());
             }
           }
         }
       }
 
       // Per frame objects.
-      m_drawList.insert(m_drawList.end(),
-                        app->m_perFrameDebugObjects.begin(),
-                        app->m_perFrameDebugObjects.end());
+      editorEntities.insert(editorEntities.end(),
+                            app->m_perFrameDebugObjects.begin(),
+                            app->m_perFrameDebugObjects.end());
 
       // Billboards.
       std::vector<EditorBillboardBase*> bbs = scene->GetBillboards();
@@ -113,7 +120,7 @@ namespace ToolKit
         bb->LookAt(m_camera, vpScale);
       }
 
-      m_drawList.insert(m_drawList.end(), bbs.begin(), bbs.end());
+      editorEntities.insert(editorEntities.end(), bbs.begin(), bbs.end());
 
       // Grid.
       Grid* grid = m_params.Viewport->GetType() == Window::Type::Viewport2d
@@ -121,14 +128,46 @@ namespace ToolKit
                        : app->m_grid;
 
       grid->UpdateShaderParams();
-      m_drawList.push_back(grid);
+      editorEntities.push_back(grid);
 
-      CullDrawList(m_drawList, m_camera);
+      // Nothing lit, so no lights necessary.
+      m_editorScene->AccessEntityArray() = editorEntities;
+
+      LightRawPtrArray lights = m_params.LitMode == EditorLitMode::FullyLit
+                                    ? scene->GetLights()
+                                    : m_editorLights;
+
+      EditorViewport* viewport =
+          static_cast<EditorViewport*>(m_params.Viewport);
+
+      // Editor pass.
+      m_editorPass.m_params.Cam              = viewport->GetCamera();
+      m_editorPass.m_params.FrameBuffer      = viewport->m_framebuffer;
+      m_editorPass.m_params.Scene            = m_editorScene;
+      m_editorPass.m_params.ClearFrameBuffer = false;
+
+      // Shadow pass.
+      m_shadowPass.m_params.Entities = scene->GetEntities();
+      m_shadowPass.m_params.Lights   = lights;
+
+      // Scene Pass.
+      m_scenePass.m_params.Scene         = app->GetCurrentScene();
+      m_scenePass.m_params.LightOverride = lights;
+      m_scenePass.m_params.Cam           = m_camera;
+      m_scenePass.m_params.FrameBuffer   = viewport->m_framebuffer;
+
+      // Gizmo Pass.
+      m_gizmoPass.m_params.Viewport = viewport;
+      m_gizmoPass.m_params.GizmoArray.push_back(app->m_gizmo);
+      if (viewport->GetType() == Window::Type::Viewport2d)
+      {
+        EditorBillboardBase* gg = (EditorBillboardBase*) app->m_anchor.get();
+        m_gizmoPass.m_params.GizmoArray.push_back(gg);
+      }
     }
 
-    void EditorRenderPass::PostRender()
+    void EditorRenderer::PostRender()
     {
-      Pass::PostRender();
       GetRenderer()->m_overrideDiffuseTexture = m_overrideDiffuseTexture;
 
       App* app = m_params.App;
@@ -140,20 +179,12 @@ namespace ToolKit
       m_lightNode->OrphanSelf();
     }
 
-    void EditorRenderPass::SetLitMode(EditorLitMode mode)
+    void EditorRenderer::SetLitMode(EditorLitMode mode)
     {
-      EditorScenePtr scene = m_params.App->GetCurrentScene();
-      if (mode != EditorLitMode::EditorLit)
-      {
-        m_contributingLights = scene->GetLights();
-      }
-
       Renderer* renderer = GetRenderer();
-
       switch (mode)
       {
       case EditorLitMode::EditorLit:
-        m_contributingLights    = m_editorLights;
         renderer->m_overrideMat = nullptr;
         break;
       case EditorLitMode::Unlit:
@@ -166,14 +197,15 @@ namespace ToolKit
         renderer->m_overrideMat = m_lightComplexityOverride;
         break;
       case EditorLitMode::LightingOnly:
-        renderer->m_overrideMat = m_lightingOnlyOverride;
+        renderer->m_overrideMat        = m_lightingOnlyOverride;
+        renderer->m_renderOnlyLighting = false;
         break;
       default:
         break;
       }
     }
 
-    void EditorRenderPass::InitPass()
+    void EditorRenderer::InitRenderer()
     {
       // Create editor lights.
       m_lightNode = new Node();
