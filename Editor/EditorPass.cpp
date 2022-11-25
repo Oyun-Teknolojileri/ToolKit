@@ -158,12 +158,13 @@ namespace ToolKit
 
       // Gizmo Pass.
       m_gizmoPass.m_params.Viewport = viewport;
-      m_gizmoPass.m_params.GizmoArray.push_back(app->m_gizmo);
+
+      EditorBillboardBase* anchorGizmo = nullptr;
       if (viewport->GetType() == Window::Type::Viewport2d)
       {
-        EditorBillboardBase* gg = (EditorBillboardBase*) app->m_anchor.get();
-        m_gizmoPass.m_params.GizmoArray.push_back(gg);
+        anchorGizmo = (EditorBillboardBase*) app->m_anchor.get();
       }
+      m_gizmoPass.m_params.GizmoArray = {app->m_gizmo, anchorGizmo};
     }
 
     void EditorRenderer::PostRender()
