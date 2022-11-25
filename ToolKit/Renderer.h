@@ -14,6 +14,30 @@
 namespace ToolKit
 {
 
+  /**
+   * Simple binary stencil test operations.
+   */
+  enum class StencilOperation
+  {
+    /**
+     * Stencil write and operations are disabled.
+     */
+    None,
+    /**
+     * All pixels are drawn and stencil value of the corresponding pixel set
+     * to 1.
+     */
+    AllowAllPixels,
+    /**
+     * Pixels whose stencil value is 1 are drawn.
+     */
+    AllowPixelsPassingStencil,
+    /**
+     * Pixels whose stencil value is 0 are drawn.
+     */
+    AllowPixelsFailingStencil
+  };
+
   class TK_API Renderer
   {
    public:
@@ -33,6 +57,7 @@ namespace ToolKit
 
     void SetRenderState(const RenderState* const state, ProgramPtr program);
 
+    void SetStencilOperation(StencilOperation op);
     void SetFramebuffer(FramebufferPtr fb, bool clear, const Vec4& color);
     void SetFramebuffer(FramebufferPtr fb, bool clear = true);
     void SwapFramebuffer(FramebufferPtr& fb, bool clear, const Vec4& color);
@@ -40,6 +65,9 @@ namespace ToolKit
 
     FramebufferPtr GetFrameBuffer();
     void ClearFrameBuffer(FramebufferPtr fb, const Vec4& color);
+    void ClearColorBuffer(const Vec4& value);
+    void ClearBuffer(GraphicBitFields fields);
+    void ColorMask(bool r, bool g, bool b, bool a);
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
@@ -57,13 +85,13 @@ namespace ToolKit
     void ResetShadowMapBindings(ProgramPtr program);
 
     CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture,
-                                          uint width,
-                                          uint height,
-                                          float exposure = 1.0f);
+                                            uint width,
+                                            uint height,
+                                            float exposure = 1.0f);
 
     CubeMapPtr GenerateIrradianceCubemap(CubeMapPtr cubemap,
-                                       uint width,
-                                       uint height);
+                                         uint width,
+                                         uint height);
 
     LightRawPtrArray GetBestLights(Entity* entity,
                                    const LightRawPtrArray& lights);
@@ -189,18 +217,7 @@ namespace ToolKit
     Vec4 m_clearColor             = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
     MaterialPtr m_overrideMat     = nullptr;
     bool m_overrideDiffuseTexture = false;
-
-    // Grid parameters
-    struct GridParams
-    {
-      float sizeEachCell       = 0.1f;
-      float maxLinePixelCount  = 2.0f;
-      Vec3 axisColorHorizontal = X_AXIS;
-      Vec3 axisColorVertical   = Z_AXIS;
-      bool is2DViewport        = false;
-    };
-    GridParams m_gridParams;
-    Camera* m_uiCamera = nullptr;
+    Camera* m_uiCamera            = nullptr;
 
     bool m_renderOnlyLighting = false;
 

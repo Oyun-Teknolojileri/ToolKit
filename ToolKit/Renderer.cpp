@@ -181,8 +181,7 @@ namespace ToolKit
 
     MaterialPtr overrideMatPrev = m_overrideMat;
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    ClearBuffer(GraphicBitFields::ColorDepthBits);
 
     SetCameraLens(cam);
 
@@ -377,6 +376,7 @@ namespace ToolKit
       {
         return;
       }
+
       SkeletonPtr skel = skelComp->GetSkeletonResourceVal();
       if (skel == nullptr)
       {
@@ -615,6 +615,33 @@ namespace ToolKit
     }
   }
 
+  void Renderer::SetStencilOperation(StencilOperation op)
+  {
+    switch (op)
+    {
+    case StencilOperation::None:
+      glDisable(GL_STENCIL_TEST);
+      glStencilMask(0x00);
+      break;
+    case StencilOperation::AllowAllPixels:
+      glEnable(GL_STENCIL_TEST);
+      glStencilMask(0xFF);
+      glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+      glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);
+      break;
+    case StencilOperation::AllowPixelsPassingStencil:
+      glEnable(GL_STENCIL_TEST);
+      glStencilFunc(GL_EQUAL, 0xFF, 0xFF);
+      glStencilMask(0x00);
+      break;
+    case StencilOperation::AllowPixelsFailingStencil:
+      glEnable(GL_STENCIL_TEST);
+      glStencilFunc(GL_NOTEQUAL, 0xFF, 0xFF);
+      glStencilMask(0x00);
+      break;
+    }
+  }
+
   void Renderer::SetFramebuffer(FramebufferPtr fb,
                                 bool clear,
                                 const Vec4& color)
@@ -633,13 +660,6 @@ namespace ToolKit
 
       FramebufferSettings fbSet = fb->GetSettings();
       SetViewportSize(fbSet.width, fbSet.height);
-
-      if (clear)
-      {
-        glClearColor(color.r, color.g, color.b, color.a);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
-                GL_STENCIL_BUFFER_BIT);
-      }
     }
     else
     {
@@ -647,6 +667,12 @@ namespace ToolKit
       m_framebuffer = nullptr;
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
       SetViewportSize(m_windowSize.x, m_windowSize.y);
+    }
+
+    if (clear)
+    {
+      ClearBuffer(GraphicBitFields::DepthStencilBits);
+      ClearColorBuffer(color);
     }
 
     m_framebuffer = fb;
@@ -681,6 +707,24 @@ namespace ToolKit
   {
     SwapFramebuffer(fb, true, color);
     SwapFramebuffer(fb, false);
+  }
+
+  void Renderer::ClearColorBuffer(const Vec4& value)
+  {
+    glClearColor(value.r, value.g, value.b, value.a);
+    glClear((GLbitfield) GraphicBitFields::ColorBits);
+  }
+
+  void Renderer::ClearBuffer(GraphicBitFields fields)
+  {
+    glClearColor(
+        m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
+    glClear((GLbitfield) fields);
+  }
+
+  void Renderer::ColorMask(bool r, bool g, bool b, bool a)
+  {
+    glColorMask(r, g, b, a);
   }
 
   void Renderer::SetViewport(Viewport* viewport)
@@ -765,7 +809,7 @@ namespace ToolKit
       }
     }
 
-    GenerateSSAOTexture(entities, viewport);
+    // GenerateSSAOTexture(entities, viewport);
 
     SetViewport(viewport);
 
@@ -1234,9 +1278,7 @@ namespace ToolKit
         auto renderForShadowMapFn = [this](Light* light,
                                            EntityRawPtrArray entities) -> void {
           FrustumCull(entities, light->m_shadowCamera);
-
-          glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+          ClearBuffer(GraphicBitFields::DepthBits);
           m_overrideMat = light->GetShadowMaterial();
           for (Entity* ntt : entities)
           {
@@ -1513,6 +1555,8 @@ namespace ToolKit
   {
     for (ShaderPtr shader : program->m_shaders)
     {
+      shader->UpdateShaderParameters();
+
       // Built-in variables.
       for (Uniform uni : shader->m_uniforms)
       {
@@ -1584,27 +1628,6 @@ namespace ToolKit
         case Uniform::FRAME_COUNT: {
           GLint loc = glGetUniformLocation(program->m_handle, "FrameCount");
           glUniform1ui(loc, m_frameCount);
-        }
-        break;
-        case Uniform::GRID_SETTINGS: {
-          GLint locCellSize =
-              glGetUniformLocation(program->m_handle, "GridData.cellSize");
-          glUniform1fv(locCellSize, 1, &m_gridParams.sizeEachCell);
-          GLint locLineMaxPixelCount = glGetUniformLocation(
-              program->m_handle, "GridData.lineMaxPixelCount");
-          glUniform1fv(
-              locLineMaxPixelCount, 1, &m_gridParams.maxLinePixelCount);
-          GLint locHorizontalAxisColor = glGetUniformLocation(
-              program->m_handle, "GridData.horizontalAxisColor");
-          glUniform3fv(
-              locHorizontalAxisColor, 1, &m_gridParams.axisColorHorizontal.x);
-          GLint locVerticalAxisColor = glGetUniformLocation(
-              program->m_handle, "GridData.verticalAxisColor");
-          glUniform3fv(
-              locVerticalAxisColor, 1, &m_gridParams.axisColorVertical.x);
-          GLint locIs2dViewport =
-              glGetUniformLocation(program->m_handle, "GridData.is2DViewport");
-          glUniform1ui(locIs2dViewport, m_gridParams.is2DViewport);
         }
         break;
         case Uniform::EXPOSURE: {
@@ -1693,6 +1716,9 @@ namespace ToolKit
 
         switch (var.second.GetType())
         {
+        case ParameterVariant::VariantType::Bool:
+          glUniform1ui(loc, var.second.GetVar<bool>());
+          break;
         case ParameterVariant::VariantType::Float:
           glUniform1f(loc, var.second.GetVar<float>());
           break;
@@ -1874,6 +1900,14 @@ namespace ToolKit
                   ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
                   ->m_textureId,
               program);
+        }
+        else
+        {
+          GetLogger()->WriteConsole(
+              LogType::Error,
+              "Uninitilized shadow buffer ! Light Name: %s ID: %d",
+              currLight->GetNameVal().c_str(),
+              currLight->GetIdVal());
         }
       }
       GLuint loc = glGetUniformLocation(program->m_handle,

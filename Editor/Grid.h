@@ -1,12 +1,30 @@
 #pragma once
 
-#include "Drawable.h"
+#include "Entity.h"
 #include "Global.h"
+#include "Shader.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
+
+    class GridFragmentShader : public Shader
+    {
+     public:
+      GridFragmentShader();
+      virtual ~GridFragmentShader();
+      void UpdateShaderParameters() override;
+
+     public:
+      ParameterVariant m_sizeEachCell;
+      ParameterVariant m_maxLinePixelCount;
+      ParameterVariant m_axisColorHorizontal;
+      ParameterVariant m_axisColorVertical;
+      ParameterVariant m_is2DViewport;
+    };
+
+    typedef std::shared_ptr<GridFragmentShader> GridFragmentShaderPtr;
 
     class Grid : public Entity
     {
@@ -14,7 +32,8 @@ namespace ToolKit
       explicit Grid(UVec2 size,
                     AxisLabel axis,
                     float cellSize,
-                    float linePixelCount);
+                    float linePixelCount,
+                    bool is2d);
 
       void Resize(UVec2 size,
                   AxisLabel axis       = AxisLabel::ZX,
@@ -22,19 +41,20 @@ namespace ToolKit
                   float linePixelCount = 2.0f);
 
       bool HitTest(const Ray& ray, Vec3& pos);
+      void UpdateShaderParams();
 
      private:
       void Init();
 
-     public:
+     private:
       UVec2 m_size;                      // m^2 size of the grid.
       float m_gridCellSize       = 1.0f; // m^2 size of each cell
       Vec3 m_horizontalAxisColor = g_gridAxisRed;
       Vec3 m_verticalAxisColor   = g_gridAxisBlue;
       float m_maxLinePixelCount  = 2.0f;
-
-     private:
-      bool m_initiated = false;
+      bool m_is2d                = false;
+      bool m_initiated           = false;
+      MaterialPtr m_material     = nullptr;
     };
 
   } //  namespace Editor

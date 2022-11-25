@@ -59,6 +59,51 @@ namespace ToolKit
       }
     }
 
+    void EditorScene::Update(float deltaTime)
+    {
+      // Update animations.
+      GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
+
+      // Show selected light gizmos.
+      EntityRawPtrArray selecteds;
+      GetSelectedEntities(selecteds);
+
+      LightRawPtrArray sceneLights = GetLights();
+
+      bool foundFirstLight      = false;
+      Light* firstSelectedLight = nullptr;
+      for (Light* light : sceneLights)
+      {
+        bool found = false;
+        for (Entity* ntt : selecteds)
+        {
+          if (light->GetIdVal() == ntt->GetIdVal())
+          {
+            if (!foundFirstLight)
+            {
+              firstSelectedLight = light;
+              foundFirstLight    = true;
+            }
+            EnableLightGizmo(light, true);
+            found = true;
+            break;
+          }
+        }
+
+        if (!found)
+        {
+          EnableLightGizmo(light, false);
+        }
+      }
+
+      // Update billboards attached to entities.
+      for (Billboard* billboard : m_billboards)
+      {
+        billboard->m_worldLocation =
+            billboard->m_entity->m_node->GetTranslation();
+      }
+    }
+
     bool EditorScene::IsSelected(ULongID id) const
     {
       return std::find(m_selectedEntities.begin(),
@@ -450,17 +495,6 @@ namespace ToolKit
       else
       {
         return nullptr;
-      }
-    }
-
-    void EditorScene::UpdateBillboardTransforms(EditorViewport* viewport)
-    {
-      for (Billboard* billboard : m_billboards)
-      {
-        billboard->m_worldLocation =
-            billboard->m_entity->m_node->GetTranslation();
-        billboard->LookAt(viewport->GetCamera(),
-                          viewport->GetBillboardScale());
       }
     }
 

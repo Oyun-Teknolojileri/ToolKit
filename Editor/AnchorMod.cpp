@@ -588,18 +588,9 @@ namespace ToolKit
     {
       State* state               = new StateAnchorBegin();
       StateAnchorBase* baseState = static_cast<StateAnchorBase*>(state);
-      switch (m_id)
-      {
-      case ModId::Anchor:
-        m_anchor =
-            std::make_shared<Anchor>(Billboard::Settings{false, 6.0f, 60.0f});
-        baseState->m_type = StateAnchorBase::TransformType::Translate;
-        break;
-      default:
-        assert(false);
-        return;
-      }
-
+      m_anchor =
+          std::make_shared<Anchor>(Billboard::Settings{false, 0.0f, 0.0f});
+      baseState->m_type = StateAnchorBase::TransformType::Translate;
       baseState->m_anchor            = m_anchor;
       m_stateMachine->m_currentState = state;
 

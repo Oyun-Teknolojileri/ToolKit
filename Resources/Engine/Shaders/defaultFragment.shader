@@ -38,9 +38,9 @@
 
 			irradiance += IblIrradiance(n);
 
-			float ambientOcclusion = AmbientOcclusion();
+			// float ambientOcclusion = AmbientOcclusion();
 
-			fragColor = vec4(ambientOcclusion * irradiance, 1.0) * objectColor;
+			fragColor = vec4(irradiance, 1.0) * objectColor;
 		}
 	-->
 	</source>

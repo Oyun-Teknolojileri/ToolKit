@@ -366,7 +366,7 @@ namespace ToolKit
   };
 
   template <typename T>
-  void loadMesh(XmlDocument* doc, XmlNode* parent, T* mainMesh)
+  void LoadMesh(XmlDocument* doc, XmlNode* parent, T* mainMesh)
   {
     if (parent == nullptr)
     {
@@ -421,6 +421,11 @@ namespace ToolKit
         mesh->m_clientSideVertices.resize(vertexCount);
         XmlNode* b64Node = vertex->first_node("Base64");
         b64tobin(mesh->m_clientSideVertices.data(), b64Node->value());
+
+        if constexpr (std::is_same<T, Mesh>())
+        {
+          mesh->CalculateAABB();
+        }
       }
       else
       {
@@ -494,7 +499,7 @@ namespace ToolKit
 
   void Mesh::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
-    loadMesh(doc, parent, this);
+    LoadMesh(doc, parent, this);
   }
 
   void Mesh::InitVertices(bool flush)
@@ -612,10 +617,12 @@ namespace ToolKit
       m_loaded = true;
     }
   }
+
   void SkinMesh::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
-    loadMesh(doc, parent, this);
+    LoadMesh(doc, parent, this);
   }
+
   BoundingBox SkinMesh::CalculateAABB(const Skeleton* skel,
                                       const DynamicBoneMap* boneMap)
   {

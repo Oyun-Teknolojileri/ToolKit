@@ -123,6 +123,9 @@
     <ClCompile Include="Pass.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="EditorPass.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -231,6 +234,9 @@
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="Pass.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorPass.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

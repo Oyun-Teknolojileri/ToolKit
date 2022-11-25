@@ -22,6 +22,7 @@ namespace ToolKit
       virtual ~EditorScene();
 
       void Load() override;
+      void Update(float deltaTime) override;
 
       // Selection operations.
       bool IsSelected(ULongID id) const;
@@ -67,7 +68,6 @@ namespace ToolKit
       void RemoveBillboardFromEntity(Entity* entity);
       std::vector<EditorBillboardBase*> GetBillboards();
       Entity* GetBillboardOfEntity(Entity* entity);
-      void UpdateBillboardTransforms(EditorViewport* viewport);
       void InitEntityBillboard(Entity* entity);
 
      private:

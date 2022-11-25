@@ -2,6 +2,7 @@
 
 #include "Renderer.h"
 #include "Toolkit.h"
+#include "Viewport.h"
 
 namespace ToolKit
 {
@@ -12,6 +13,12 @@ namespace ToolKit
 
   RenderPass::RenderPass(const RenderPassParams& params) : m_params(params)
   {
+    // Create a default frame buffer.
+    if (m_params.FrameBuffer == nullptr)
+    {
+      m_params.FrameBuffer = std::make_shared<Framebuffer>();
+      m_params.FrameBuffer->Init({1024u, 768u, 0, false, true});
+    }
   }
 
   void RenderPass::Render()
@@ -21,8 +28,8 @@ namespace ToolKit
     EntityRawPtrArray translucentDrawList;
     SeperateTranslucentEntities(m_drawList, translucentDrawList);
 
-    RenderOpaque(m_drawList, m_params.Cam, m_contributingLights);
-    RenderTranslucent(translucentDrawList, m_params.Cam, m_contributingLights);
+    RenderOpaque(m_drawList, m_camera, m_contributingLights);
+    RenderTranslucent(translucentDrawList, m_camera, m_contributingLights);
 
     PostRender();
   }
@@ -37,10 +44,11 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     // Set self data.
-    renderer->SetFramebuffer(m_framebuffer, true);
-    renderer->SetCameraLens(m_params.Cam);
-
     m_drawList = m_params.Scene->GetEntities();
+    m_camera   = m_params.Cam;
+
+    renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
+    renderer->SetCameraLens(m_camera);
 
     // Set contributing lights.
     LightRawPtrArray& lights = m_params.LightOverride;
@@ -56,18 +64,7 @@ namespace ToolKit
     // Gather volumes.
     renderer->CollectEnvironmentVolumes(m_drawList);
 
-    CullDrawList(m_drawList, m_params.Cam);
-  
-    // Update billboards.
-    for (Entity* ntt : m_drawList)
-    {
-      // Update billboards.
-      if (ntt->GetType() == EntityType::Entity_Billboard)
-      {
-        Billboard* billboard = static_cast<Billboard*>(ntt);
-        billboard->LookAt(m_params.Cam, m_params.BillboardScale);
-      }
-    }
+    CullDrawList(m_drawList, m_camera);
   }
 
   void RenderPass::PostRender()
@@ -329,6 +326,8 @@ namespace ToolKit
 
   void ShadowPass::PreRender()
   {
+    Pass::PreRender();
+
     // Dropout non shadow casters.
     m_drawList = m_params.Entities;
     m_drawList.erase(
@@ -340,19 +339,21 @@ namespace ToolKit
                        }),
         m_drawList.end());
 
-    // Store the render's state.
-    Renderer* renderer     = GetRenderer();
-    m_prevOverrideMaterial = renderer->m_overrideMat;
-    m_prevFrameBuffer      = renderer->GetFrameBuffer();
+    // Clear old rts.
+    Renderer* renderer = GetRenderer();
+    for (Light* light : m_params.Lights)
+    {
+      if (light->GetShadowMapFramebuffer())
+      {
+        renderer->ClearFrameBuffer(light->GetShadowMapFramebuffer(),
+                                   Vec4(1.0f));
+      }
+    }
   }
 
   void ShadowPass::PostRender()
   {
-    // Restore renderer's state.
-    Renderer* renderer = GetRenderer();
-
-    renderer->m_overrideMat = m_prevOverrideMaterial;
-    renderer->SetFramebuffer(m_prevFrameBuffer, false);
+    Pass::PostRender();
   }
 
   void ShadowPass::UpdateShadowMap(Light* light,
@@ -435,6 +436,14 @@ namespace ToolKit
                                    softness / shadowRes.y);
   }
 
+  Pass::Pass()
+  {
+  }
+
+  Pass::~Pass()
+  {
+  }
+
   void Pass::PreRender()
   {
     Renderer* renderer     = GetRenderer();
@@ -444,9 +453,188 @@ namespace ToolKit
 
   void Pass::PostRender()
   {
+    Renderer* renderer      = GetRenderer();
+    renderer->m_overrideMat = m_prevOverrideMaterial;
+    renderer->SetFramebuffer(m_prevFrameBuffer);
+  }
+
+  FullQuadPass::FullQuadPass()
+  {
+    m_camera = std::make_shared<Camera>(); // Unused.
+    m_quad   = std::make_shared<Quad>();
+
+    m_material                 = std::make_shared<Material>();
+    m_material->m_vertexShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("fullQuadVert.shader", true));
+  }
+
+  FullQuadPass::FullQuadPass(const FullQuadPassParams& params) : FullQuadPass()
+  {
+  }
+
+  FullQuadPass::~FullQuadPass()
+  {
+  }
+
+  void FullQuadPass::Render()
+  {
+    PreRender();
+
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_prevFrameBuffer);
-    renderer->SetFramebuffer(m_prevFrameBuffer);
+    renderer->SetFramebuffer(m_params.FrameBuffer,
+                             m_params.ClearFrameBuffer,
+                             {0.0f, 0.0f, 0.0f, 1.0f});
+
+    renderer->Render(m_quad.get(), m_camera.get());
+
+    PostRender();
+  }
+
+  void FullQuadPass::PreRender()
+  {
+    Pass::PreRender();
+    GetRenderer()->m_overrideMat = nullptr;
+    m_material->m_fragmentShader = m_params.FragmentShader;
+    m_material->UnInit(); // Reinit in case, shader change.
+    m_material->Init();
+
+    MeshComponentPtr mc = m_quad->GetMeshComponent();
+    MeshPtr mesh        = mc->GetMeshVal();
+    mesh->m_material    = m_material;
+    mesh->Init();
+  }
+
+  void FullQuadPass::PostRender()
+  {
+    Pass::PostRender();
+  }
+
+  StencilRenderPass::StencilRenderPass()
+  {
+    // Init sub pass.
+    m_copyStencilSubPass = std::make_shared<FullQuadPass>();
+    m_copyStencilSubPass->m_params.FragmentShader =
+        GetShaderManager()->Create<Shader>(
+            ShaderPath("unlitColorFrag.shader", true));
+
+    m_solidOverrideMaterial =
+        GetMaterialManager()->GetCopyOfUnlitColorMaterial();
+  }
+
+  StencilRenderPass::StencilRenderPass(const StencilRenderPassParams& params)
+      : StencilRenderPass()
+  {
+    m_params = params;
+  }
+
+  void StencilRenderPass::Render()
+  {
+    PreRender();
+
+    Renderer* renderer      = GetRenderer();
+    renderer->m_overrideMat = m_solidOverrideMaterial;
+
+    // Stencil pass.
+    renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
+    renderer->ColorMask(false, false, false, false);
+
+    for (Entity* ntt : m_params.DrawList)
+    {
+      renderer->Render(ntt, m_params.Camera);
+    }
+
+    // Copy pass.
+    renderer->ColorMask(true, true, true, true);
+    renderer->SetStencilOperation(StencilOperation::AllowPixelsFailingStencil);
+
+    m_copyStencilSubPass->Render();
+
+    renderer->SetStencilOperation(StencilOperation::None);
+
+    PostRender();
+  }
+
+  void StencilRenderPass::PreRender()
+  {
+    Pass::PreRender();
+
+    m_frameBuffer = std::make_shared<Framebuffer>();
+
+    FramebufferSettings settings;
+    settings.depthStencil    = true;
+    settings.useDefaultDepth = true;
+    settings.width           = m_params.OutputTarget->m_width;
+    settings.height          = m_params.OutputTarget->m_height;
+
+    m_frameBuffer->Init(settings);
+    m_frameBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                 m_params.OutputTarget);
+
+    m_copyStencilSubPass->m_params.FrameBuffer = m_frameBuffer;
+
+    Renderer* renderer = GetRenderer();
+    renderer->SetFramebuffer(m_frameBuffer, true, Vec4(0.0f));
+    renderer->SetCameraLens(m_params.Camera);
+  }
+
+  void StencilRenderPass::PostRender()
+  {
+    Pass::PostRender();
+  }
+
+  OutlinePass::OutlinePass()
+  {
+    m_stencilPass = std::make_shared<StencilRenderPass>();
+    m_stencilAsRt = std::make_shared<RenderTarget>();
+
+    m_outlinePass  = std::make_shared<FullQuadPass>();
+    m_dilateShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("dilateFrag.shader", true));
+  }
+
+  OutlinePass::OutlinePass(const OutlinePassParams& params) : OutlinePass()
+  {
+    m_params = params;
+  }
+
+  void OutlinePass::Render()
+  {
+    PreRender();
+
+    // Generate stencil binary image.
+    m_stencilPass->Render();
+
+    // Use stencil output as input to the dilation.
+    GetRenderer()->SetTexture(0, m_stencilAsRt->m_textureId);
+    m_dilateShader->SetShaderParameter("Color",
+                                       ParameterVariant(m_params.OutlineColor));
+
+    // Draw outline to the viewport.
+    m_outlinePass->m_params.FragmentShader   = m_dilateShader;
+    m_outlinePass->m_params.FrameBuffer      = m_params.FrameBuffer;
+    m_outlinePass->m_params.ClearFrameBuffer = false;
+    m_outlinePass->Render();
+
+    PostRender();
+  }
+
+  void OutlinePass::PreRender()
+  {
+    Pass::PreRender();
+
+    // Create stencil image.
+    m_stencilPass->m_params.Camera   = m_params.Camera;
+    m_stencilPass->m_params.DrawList = m_params.DrawList;
+
+    // Construct output target.
+    FramebufferSettings fbs = m_params.FrameBuffer->GetSettings();
+    m_stencilAsRt->ReconstructIfNeeded(fbs.width, fbs.height);
+    m_stencilPass->m_params.OutputTarget = m_stencilAsRt;
+  }
+
+  void OutlinePass::PostRender()
+  {
+    Pass::PostRender();
   }
 
 } // namespace ToolKit

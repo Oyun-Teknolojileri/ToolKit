@@ -126,7 +126,8 @@ namespace ToolKit
 
   void Framebuffer::ReconstructIfNeeded(uint width, uint height)
   {
-    if (m_settings.width != width || m_settings.height != height)
+    if (!m_initialized || m_settings.width != width ||
+        m_settings.height != height)
     {
       UnInit();
       m_settings.width  = width;

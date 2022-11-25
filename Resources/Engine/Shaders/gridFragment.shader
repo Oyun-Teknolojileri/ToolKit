@@ -4,7 +4,6 @@
 	<uniform name = "CamData" />
 	<uniform name = "Model" />
 	<uniform name = "InverseTransModel" />
-	<uniform name = "GridData" />
 	<source>
 	<!--
 		// This algorithm works as:

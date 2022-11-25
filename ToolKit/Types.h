@@ -150,7 +150,7 @@ namespace ToolKit
 
   // System Types
   typedef std::vector<class Event*> EventPool;
-  typedef std::shared_ptr<class Viewport*> ViewportPtr;
+  typedef std::shared_ptr<class Viewport> ViewportPtr;
 
   // Filesystem variable types
   typedef std::filesystem::path Path;
@@ -289,6 +289,17 @@ namespace ToolKit
     TypeUnsignedByte     = 0x1401,
     Target2D             = 0x0DE1,
     TargetCubeMap        = 0x8513
+  };
+
+  enum class GraphicBitFields
+  {
+    ColorBits        = 0x00004000,
+    DepthBits        = 0x00000100,
+    StencilBits      = 0x00000400,
+    ColorDepthBits   = ColorBits | DepthBits,
+    ColorStencilBits = ColorBits | StencilBits,
+    DepthStencilBits = DepthBits | StencilBits,
+    AllBits          = ColorBits | DepthBits | StencilBits
   };
 
   static const char* TKVersionStr = "v0.3.17";

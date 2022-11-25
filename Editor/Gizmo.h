@@ -21,6 +21,9 @@ namespace ToolKit
         Cursor,
         Axis3d,
         Gizmo,
+        Move,
+        Rotate,
+        Scale,
         Sky,
         Light,
         Anchor
@@ -164,6 +167,7 @@ namespace ToolKit
      public:
       MoveGizmo();
       virtual ~MoveGizmo();
+      BillboardType GetBillboardType() const override;
     };
 
     class ScaleGizmo : public LinearGizmo
@@ -171,6 +175,7 @@ namespace ToolKit
      public:
       ScaleGizmo();
       virtual ~ScaleGizmo();
+      BillboardType GetBillboardType() const override;
 
      protected:
       GizmoHandle::Params GetParam() const override;
@@ -181,9 +186,9 @@ namespace ToolKit
      public:
       PolarGizmo();
       virtual ~PolarGizmo();
+      BillboardType GetBillboardType() const override;
 
       void Update(float deltaTime) override;
-      void Render(Renderer* renderer, Camera* cam);
     };
 
     class SkyBillboard : public EditorBillboardBase

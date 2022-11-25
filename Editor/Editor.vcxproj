@@ -101,6 +101,7 @@
     <ClCompile Include="ConsoleWindow.cpp" />
     <ClCompile Include="EditorCamera.cpp" />
     <ClCompile Include="EditorLight.cpp" />
+    <ClCompile Include="EditorPass.cpp" />
     <ClCompile Include="EditorViewport2d.cpp" />
     <ClCompile Include="FolderWindow.cpp" />
     <ClCompile Include="Gizmo.cpp" />
@@ -165,6 +166,7 @@
     <ClInclude Include="ConsoleWindow.h" />
     <ClInclude Include="EditorCamera.h" />
     <ClInclude Include="EditorLight.h" />
+    <ClInclude Include="EditorPass.h" />
     <ClInclude Include="EditorViewport2d.h" />
     <ClInclude Include="FolderWindow.h" />
     <ClInclude Include="Gizmo.h" />
