@@ -990,9 +990,9 @@ namespace ToolKit
           Quaternion r;
           DecomposeAssimpMatrix(node->mTransformation, &t, &r, &s);
 
-          dBone.node->Translate(t);
-          dBone.node->Rotate(r);
-          dBone.node->Scale(s);
+          dBone.node->SetTranslation(t);
+          dBone.node->SetOrientation(r);
+          dBone.node->SetScale(s);
         }
 
         // Set bind pose transformation
