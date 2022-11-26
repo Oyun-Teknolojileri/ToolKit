@@ -109,13 +109,14 @@ namespace ToolKit
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+#ifndef TK_GL_ES_3_0
     if (GL_EXT_texture_filter_anisotropic)
     {
       float aniso = 0.0f;
       glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
     }
-
+#endif // TK_GL_ES_3_0
     if (flushClientSideArray)
     {
       Clear();
@@ -564,13 +565,6 @@ namespace ToolKit
     glTexParameteri((int) m_settings.Target,
                     GL_TEXTURE_MAG_FILTER,
                     (int) m_settings.MagFilter);
-
-    if (m_settings.useBorderColor)
-    {
-      glTexParameterfv((int) m_settings.Target,
-                       GL_TEXTURE_BORDER_COLOR,
-                       &(m_settings.borderColor[0]));
-    }
 
     m_initiated = true;
 

@@ -1,10 +1,10 @@
 #include "MathUtil.h"
 
+#include "Camera.h"
 #include "Mesh.h"
 #include "Node.h"
 #include "ResourceComponent.h"
 #include "Skeleton.h"
-#include "Camera.h"
 
 #include <algorithm>
 #include <execution>
@@ -387,7 +387,7 @@ namespace ToolKit
     Vec3 transformedPos = {};
     for (uint boneIndx = 0; boneIndx < 4; boneIndx++)
     {
-      uint currentBone       = vertex->bones[boneIndx];
+      uint currentBone       = (uint) vertex->bones[boneIndx];
       StaticBone* sBone      = skel->m_bones[currentBone];
       Mat4 bindPoseTransform = sBone->m_inverseWorldMatrix;
       ToolKit::Mat4 boneTransform =

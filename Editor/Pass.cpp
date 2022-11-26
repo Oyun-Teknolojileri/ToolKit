@@ -131,7 +131,7 @@ namespace ToolKit
         Frustum frustum =
             ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
 
-        if (FrustumBoxIntersection(frustum, aabb) == IntersectResult::Inside)
+        if (FrustumBoxIntersection(frustum, aabb) != IntersectResult::Outside)
         {
           curIntersectCount++;
         }
@@ -314,7 +314,6 @@ namespace ToolKit
       else
       {
         light->UpdateShadowCamera();
-        FrustumCull(entities, light->m_shadowCamera);
       }
 
       UpdateShadowMap(light, entities);
@@ -338,17 +337,6 @@ namespace ToolKit
                                 !ntt->GetMeshComponent()->GetCastShadowVal();
                        }),
         m_drawList.end());
-
-    // Clear old rts.
-    Renderer* renderer = GetRenderer();
-    for (Light* light : m_params.Lights)
-    {
-      if (light->GetShadowMapFramebuffer())
-      {
-        renderer->ClearFrameBuffer(light->GetShadowMapFramebuffer(),
-                                   Vec4(1.0f));
-      }
-    }
   }
 
   void ShadowPass::PostRender()
@@ -366,6 +354,9 @@ namespace ToolKit
 
     auto renderForShadowMapFn =
         [this, &renderer](Light* light, EntityRawPtrArray entities) -> void {
+      FrustumCull(entities, light->m_shadowCamera);
+      renderer->ClearFrameBuffer(light->GetShadowMapFramebuffer(), Vec4(1.0f));
+
       renderer->m_overrideMat = light->GetShadowMaterial();
       for (Entity* ntt : entities)
       {

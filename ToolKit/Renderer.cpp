@@ -652,6 +652,12 @@ namespace ToolKit
       {
         if (fb->GetFboId() == m_framebuffer->GetFboId())
         {
+          if (clear)
+          {
+            ClearBuffer(GraphicBitFields::DepthStencilBits);
+            ClearColorBuffer(color);
+          }
+
           return;
         }
       }
@@ -2016,12 +2022,12 @@ namespace ToolKit
       glEnableVertexAttribArray(3); // BiTangent
       glVertexAttribPointer(
           3, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
-      offset += 3 * sizeof(uint);
+      offset += 3 * sizeof(float);
 
       glEnableVertexAttribArray(4); // Bones
       glVertexAttribPointer(
           4, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
-      offset += 4 * sizeof(unsigned int);
+      offset += 4 * sizeof(float);
 
       glEnableVertexAttribArray(5); // Weights
       glVertexAttribPointer(
@@ -2059,6 +2065,9 @@ namespace ToolKit
                                      uint textureId,
                                      ProgramPtr program)
   {
+    // TODO
+    return;
+
     if (m_bindedShadowMapCount >= m_rhiSettings::maxShadows)
     {
       return;
@@ -2123,7 +2132,6 @@ namespace ToolKit
                                                     float exposure)
   {
     const RenderTargetSettigs set = {0,
-                                     false,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::UVClampToEdge,
@@ -2132,8 +2140,8 @@ namespace ToolKit
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::FormatRGB,
                                      GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte,
-                                     Vec4(0.0f)};
+                                     GraphicTypes::TypeUnsignedByte};
+
     RenderTargetPtr cubeMapRt =
         std::make_shared<RenderTarget>(width, height, set);
     cubeMapRt->Init();
@@ -2201,7 +2209,6 @@ namespace ToolKit
                                                  uint height)
   {
     const RenderTargetSettigs set = {0,
-                                     false,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::UVClampToEdge,
@@ -2210,8 +2217,7 @@ namespace ToolKit
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::FormatRGB,
                                      GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte,
-                                     Vec4(0.0f)};
+                                     GraphicTypes::TypeUnsignedByte};
     RenderTargetPtr cubeMapRt =
         std::make_shared<RenderTarget>(width, height, set);
     cubeMapRt->Init();
