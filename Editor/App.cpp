@@ -935,7 +935,7 @@ namespace ToolKit
         return true;
       }
 
-      if (ext == ".png" || ext == ".hdri")
+      if (ext == ".png" || ext == ".hdri" || ext == ".jpg")
       {
         return true;
       }
