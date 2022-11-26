@@ -652,6 +652,12 @@ namespace ToolKit
       {
         if (fb->GetFboId() == m_framebuffer->GetFboId())
         {
+          if (clear)
+          {
+            ClearBuffer(GraphicBitFields::DepthStencilBits);
+            ClearColorBuffer(color);
+          }
+
           return;
         }
       }
