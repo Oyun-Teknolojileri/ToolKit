@@ -73,8 +73,6 @@ namespace ToolKit
         {
           g_app->GetConsole()->AddLog(msg, LogType::Error);
         }
-
-        GetLogger()->Log(msg);
       };
     }
 

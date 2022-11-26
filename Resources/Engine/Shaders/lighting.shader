@@ -25,6 +25,8 @@
 
 			mat4 projectionViewMatrix[12];
 			float shadowMapCameraFar[12];
+			//sampler2D dirAndSpotLightShadowMap[4];
+			//samplerCube pointLightShadowMap[4];
 			int castShadow[12];
 			int PCFSamples[12];
 			float PCFRadius[12];
