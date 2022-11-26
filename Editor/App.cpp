@@ -1,7 +1,6 @@
-#include "App.h"
-
 #include "Action.h"
 #include "Anchor.h"
+#include "App.h"
 #include "Camera.h"
 #include "ConsoleWindow.h"
 #include "DirectionComponent.h"
@@ -1163,11 +1162,40 @@ namespace ToolKit
           return;
         }
 
+        // Set parameters of pass
         myOutlineTechnique->m_params.Camera       = viewport->GetCamera();
         myOutlineTechnique->m_params.FrameBuffer  = viewport->m_framebuffer;
         myOutlineTechnique->m_params.OutlineColor = color;
         myOutlineTechnique->m_params.DrawList     = selection;
+
+        for (Entity* entity : selection)
+        {
+          // Disable light gizmos
+          if (entity->IsLightInstance())
+          {
+            EnableLightGizmo(static_cast<Light*>(entity), false);
+          }
+
+          // Add billboards to draw list
+          Entity* billboard = GetCurrentScene()->GetBillboardOfEntity(entity);
+          if (billboard)
+          {
+            static_cast<Billboard*>(billboard)->LookAt(
+                viewport->GetCamera(), viewport->GetBillboardScale());
+            myOutlineTechnique->m_params.DrawList.push_back(billboard);
+          }
+        }
+
         myOutlineTechnique->Render();
+
+        // Enable light gizmos back
+        for (Entity* entity : selection)
+        {
+          if (entity->IsLightInstance())
+          {
+            EnableLightGizmo(static_cast<Light*>(entity), true);
+          }
+        }
       };
 
       Entity* primary = selecteds.back();
