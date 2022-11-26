@@ -641,7 +641,8 @@ namespace ToolKit
   GammaPass::GammaPass()
   {
     m_copyTexture = std::make_shared<RenderTarget>();
-    //m_copyTexture->m_settings.Format = GraphicTypes::FormatRGBA8;
+    m_copyTexture->m_settings.InternalFormat = GraphicTypes::FormatRGBA8;
+    m_copyTexture->m_settings.Type           = GraphicTypes::TypeUnsignedByte;
     m_copyBuffer = std::make_shared<Framebuffer>();
     m_copyBuffer->Init({0, 0, 0, false, false});
 
@@ -684,11 +685,8 @@ namespace ToolKit
     renderer->CopyFrameBuffer(
         nullptr, m_copyBuffer, GraphicBitFields::ColorBits);
 
-    RenderTargetPtr rt =
-        m_copyBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
-
     // Set back buffer as a texture to be read in gamma pass.
-    renderer->SetTexture(0, rt->m_textureId);
+    renderer->SetTexture(0, m_copyTexture->m_textureId);
 
     m_gammaPass->m_params.FragmentShader   = m_gammaShader;
     m_gammaPass->m_params.FrameBuffer      = m_params.FrameBuffer;
