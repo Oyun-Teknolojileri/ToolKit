@@ -230,4 +230,33 @@ namespace ToolKit
 
   typedef std::shared_ptr<OutlinePass> OutlinePassPtr;
 
+  struct GammaPassParams
+  {
+    FramebufferPtr FrameBuffer = nullptr;
+    float Gamma                = 2.2f;
+  };
+
+  /**
+   * Apply gamma correction to given frame buffer.
+   */
+  class GammaPass : public Pass
+  {
+   public:
+    GammaPass();
+    explicit GammaPass(const GammaPassParams& params);
+
+    void Render() override;
+    void PreRender() override;
+    void PostRender() override;
+
+   public:
+    GammaPassParams m_params;
+
+   private:
+    FullQuadPassPtr m_gammaPass   = nullptr;
+    FramebufferPtr m_copyBuffer   = nullptr;
+    RenderTargetPtr m_copyTexture = nullptr;
+    ShaderPtr m_gammaShader       = nullptr;
+  };
+
 } // namespace ToolKit

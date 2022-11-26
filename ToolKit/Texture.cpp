@@ -591,8 +591,10 @@ namespace ToolKit
 
   void RenderTarget::ReconstructIfNeeded(uint width, uint height)
   {
-    if (m_width != width || m_height != height)
+    if (!m_initiated || m_width != width || m_height != height)
+    {
       Reconstruct(width, height, m_settings);
+    }
   }
 
   const RenderTargetSettigs& RenderTarget::GetSettings() const

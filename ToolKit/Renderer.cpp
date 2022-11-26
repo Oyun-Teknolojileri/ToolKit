@@ -727,6 +727,45 @@ namespace ToolKit
     glColorMask(r, g, b, a);
   }
 
+  void Renderer::CopyFrameBuffer(FramebufferPtr src,
+                                 FramebufferPtr dest,
+                                 GraphicBitFields fields)
+  {
+    GLuint srcId = 0;
+    uint width   = m_windowSize.x;
+    uint height  = m_windowSize.y;
+
+    if (src)
+    {
+      FramebufferSettings fbs = src->GetSettings();
+      width                   = fbs.width;
+      height                  = fbs.height;
+      srcId                   = src->GetFboId();
+    }
+
+    dest->ReconstructIfNeeded(width, height);
+
+    GLint drawFboId = 0, readFboId = 0;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFboId);
+    glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readFboId);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, srcId);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
+    glBlitFramebuffer(0,
+                      0,
+                      width,
+                      height,
+                      0,
+                      0,
+                      width,
+                      height,
+                      (GLbitfield) fields,
+                      GL_NEAREST);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, readFboId);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
+  }
+
   void Renderer::SetViewport(Viewport* viewport)
   {
     SetFramebuffer(viewport->m_framebuffer);
