@@ -194,8 +194,8 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
-          myEditorRenderer->m_params.App     = this;
-          myEditorRenderer->m_params.LitMode = m_sceneLightingMode;
+          myEditorRenderer->m_params.App      = this;
+          myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
           myEditorRenderer->m_params.Viewport = viewport;
           myEditorRenderer->Render();
 
@@ -944,16 +944,19 @@ namespace ToolKit
     }
     void App::ManageDropfile(const StringView& fileName)
     {
-      const FolderWindowRawPtrArray& assetBrowsers = g_app->GetAssetBrowsers();
-      for (FolderWindow* folderWindow : assetBrowsers)
-      {
-        if (folderWindow->MouseHovers())
+      UI::m_postponedActions.push_back([fileName]() -> void {
+        const FolderWindowRawPtrArray& assetBrowsers =
+            g_app->GetAssetBrowsers();
+        for (FolderWindow* folderWindow : assetBrowsers)
         {
-          UI::ImportData.ActiveView = folderWindow->GetActiveView(true);
-          UI::ImportData.Files.push_back(fileName.data());
-          UI::ImportData.ShowImportWindow = true;
+          if (folderWindow->MouseHovers())
+          {
+            UI::ImportData.ActiveView = folderWindow->GetActiveView(true);
+            UI::ImportData.Files.push_back(fileName.data());
+            UI::ImportData.ShowImportWindow = true;
+          }
         }
-      }
+      });
     }
 
     void App::OpenScene(const String& fullPath)

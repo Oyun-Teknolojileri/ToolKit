@@ -31,6 +31,9 @@ namespace ToolKit
       }
       m_editorLights.clear();
       SafeDel(m_lightNode);
+
+      // Prevent entities to be destroyed.
+      m_editorScene->AccessEntityArray().clear();
     }
 
     void EditorRenderer::Render()
