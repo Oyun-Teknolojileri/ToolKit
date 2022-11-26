@@ -446,7 +446,7 @@ namespace ToolKit
   {
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_prevOverrideMaterial;
-    renderer->SetFramebuffer(m_prevFrameBuffer);
+    renderer->SetFramebuffer(m_prevFrameBuffer, false);
   }
 
   FullQuadPass::FullQuadPass()
