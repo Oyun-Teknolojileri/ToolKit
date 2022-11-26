@@ -131,7 +131,7 @@ namespace ToolKit
         Frustum frustum =
             ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
 
-        if (FrustumBoxIntersection(frustum, aabb) == IntersectResult::Inside)
+        if (FrustumBoxIntersection(frustum, aabb) != IntersectResult::Outside)
         {
           curIntersectCount++;
         }
