@@ -73,6 +73,8 @@ namespace ToolKit
         {
           g_app->GetConsole()->AddLog(msg, LogType::Error);
         }
+
+        GetLogger()->Log(msg);
       };
     }
 
@@ -178,7 +180,7 @@ namespace ToolKit
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 2);
+        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 0);
 
         if (g_settings.Graphics.MSAA > 0)
         {
@@ -207,12 +209,17 @@ namespace ToolKit
         else
         {
           g_context = SDL_GL_CreateContext(g_window);
+
           if (g_context == nullptr)
           {
             g_running = false;
           }
           else
           {
+
+#ifdef TK_DEBUG
+            GlDebugReportInit();
+#endif
             //  Init glew
             glewExperimental = true;
             GLenum err       = glewInit();
@@ -221,10 +228,6 @@ namespace ToolKit
               g_running = false;
               return;
             }
-
-#ifdef TK_DEBUG
-            GlDebugReportInit();
-#endif
 
             // Init Main
             // Override SceneManager.
