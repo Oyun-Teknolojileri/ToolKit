@@ -461,6 +461,7 @@ namespace ToolKit
 
   FullQuadPass::FullQuadPass(const FullQuadPassParams& params) : FullQuadPass()
   {
+    m_params = params;
   }
 
   FullQuadPass::~FullQuadPass()
@@ -626,6 +627,78 @@ namespace ToolKit
   void OutlinePass::PostRender()
   {
     Pass::PostRender();
+  }
+
+  GammaPass::GammaPass()
+  {
+    m_copyTexture = std::make_shared<RenderTarget>();
+    m_copyTexture->m_settings.InternalFormat = GraphicTypes::FormatRGBA8;
+    m_copyTexture->m_settings.Type           = GraphicTypes::TypeUnsignedByte;
+    m_copyBuffer = std::make_shared<Framebuffer>();
+    m_copyBuffer->Init({0, 0, 0, false, false});
+
+    m_gammaPass   = std::make_shared<FullQuadPass>();
+    m_gammaShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("gammaFrag.shader", true));
+  }
+
+  GammaPass::GammaPass(const GammaPassParams& params) : GammaPass()
+  {
+    m_params = params;
+  }
+
+  void GammaPass::PreRender()
+  {
+    Renderer* renderer = GetRenderer();
+
+    // Initiate copy buffer.
+    FramebufferSettings fbs;
+    fbs.depthStencil    = false;
+    fbs.useDefaultDepth = false;
+    if (m_params.FrameBuffer == nullptr)
+    {
+      fbs.width  = renderer->m_windowSize.x;
+      fbs.height = renderer->m_windowSize.y;
+    }
+    else
+    {
+      FramebufferSettings targetFbs = m_params.FrameBuffer->GetSettings();
+      fbs.width                     = targetFbs.width;
+      fbs.height                    = targetFbs.height;
+    }
+
+    m_copyTexture->ReconstructIfNeeded(fbs.width, fbs.height);
+    m_copyBuffer->ReconstructIfNeeded(fbs.width, fbs.height);
+    m_copyBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                m_copyTexture);
+
+    // Copy back buffer.
+    renderer->CopyFrameBuffer(
+        nullptr, m_copyBuffer, GraphicBitFields::ColorBits);
+
+    // Set back buffer as a texture to be read in gamma pass.
+    renderer->SetTexture(0, m_copyTexture->m_textureId);
+
+    m_gammaPass->m_params.FragmentShader   = m_gammaShader;
+    m_gammaPass->m_params.FrameBuffer      = m_params.FrameBuffer;
+    m_gammaPass->m_params.ClearFrameBuffer = false;
+
+    m_gammaShader->SetShaderParameter("Gamma",
+                                      ParameterVariant(m_params.Gamma));
+
+    m_gammaPass->PreRender();
+  }
+
+  void GammaPass::Render()
+  {
+    PreRender();
+    m_gammaPass->Render();
+    PostRender();
+  }
+
+  void GammaPass::PostRender()
+  {
+    m_gammaPass->PostRender();
   }
 
 } // namespace ToolKit

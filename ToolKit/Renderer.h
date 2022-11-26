@@ -68,6 +68,9 @@ namespace ToolKit
     void ClearColorBuffer(const Vec4& value);
     void ClearBuffer(GraphicBitFields fields);
     void ColorMask(bool r, bool g, bool b, bool a);
+    void CopyFrameBuffer(FramebufferPtr src,
+                         FramebufferPtr dest,
+                         GraphicBitFields fields);
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
