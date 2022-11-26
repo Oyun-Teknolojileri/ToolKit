@@ -79,7 +79,10 @@
 
 #include "../../ToolKit/ToolKit.h"
 
+#ifdef TK_GL_ES_3_0
 #define IMGUI_IMPL_OPENGL_ES3
+#endif // TK_GL_ES_3_0
+
 
 #define IM_VEC2_CLASS_EXTRA                                                 \
         ImVec2(const ToolKit::Vec2& f) { x = f.x; y = f.y; }                       \

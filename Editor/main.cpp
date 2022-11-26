@@ -17,6 +17,10 @@
 
 #include "DebugNew.h"
 
+#ifndef TK_GL_CORE_3_2
+  #define TK_GL_CORE_3_2
+#endif
+
 namespace ToolKit
 {
   namespace Editor
@@ -168,11 +172,19 @@ namespace ToolKit
       }
       else
       {
+#ifdef TK_GL_CORE_3_2
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                            SDL_GL_CONTEXT_PROFILE_CORE);
+
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#elif defined(TK_GL_ES_3_0)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                             SDL_GL_CONTEXT_PROFILE_ES);
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#endif // TK_GL_CORE_3_2
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
