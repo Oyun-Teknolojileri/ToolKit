@@ -25,8 +25,8 @@
 
 			mat4 projectionViewMatrix[12];
 			float shadowMapCameraFar[12];
-			sampler2D dirAndSpotLightShadowMap[4];
-			samplerCube pointLightShadowMap[4];
+			//sampler2D dirAndSpotLightShadowMap[4];
+			//samplerCube pointLightShadowMap[4];
 			int castShadow[12];
 			int PCFSamples[12];
 			float PCFRadius[12];
@@ -40,6 +40,7 @@
 
 		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
 		{
+			/*
 			vec3 lightDir = normalize(LightData.pos[index] - pos);
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz;
@@ -63,10 +64,13 @@
 				vec2 moments = texture(LightData.dirAndSpotLightShadowMap[dirIndex], projCoord.xy).xy;
 				return ChebyshevUpperBound(moments, projCoord.z, LightData.lightBleedingReduction[index]);
 			}
+			*/
+			return 1.0;
 		}
 
 		float CalculateSpotShadow(vec3 pos, int index, int spotIndex, vec3 normal)
 		{
+			/*
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
 			projCoord = projCoord * 0.5 + 0.5;
@@ -85,10 +89,13 @@
 				vec2 moments = texture(LightData.dirAndSpotLightShadowMap[spotIndex], projCoord.xy).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
+			*/
+			return 1.0;
 		}
 
 		float CalculatePointShadow(vec3 pos, int index, int pointIndex, vec3 normal)
 		{
+			/*
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
 
@@ -103,6 +110,8 @@
 				vec2 moments = texture(LightData.pointLightShadowMap[pointIndex], lightToFrag).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
+			*/
+			return 1.0;
 		}
 
 		// Returns 0 or 1
