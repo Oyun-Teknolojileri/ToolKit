@@ -17,8 +17,8 @@
 
 #include "DebugNew.h"
 
-#ifndef TK_GL_CORE_3_2
-  #define TK_GL_CORE_3_2
+#ifndef TK_GL_ES_3_0
+  #define TK_GL_ES_3_0
 #endif
 
 namespace ToolKit
@@ -202,6 +202,11 @@ namespace ToolKit
 #ifdef TK_DEBUG
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
+
+        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 16);
+        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 16);
+        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 16);
+        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 16);
 
         g_window =
             SDL_CreateWindow(g_settings.Window.Name.c_str(),

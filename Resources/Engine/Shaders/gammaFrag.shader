@@ -3,7 +3,7 @@
 	<source>
 	<!--
 		#version 300 es
-		precision mediump float;
+		precision highp float;
 		
 		uniform sampler2D s_texture0;
 		in vec2 v_texture;

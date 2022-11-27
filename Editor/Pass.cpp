@@ -632,8 +632,8 @@ namespace ToolKit
   GammaPass::GammaPass()
   {
     m_copyTexture = std::make_shared<RenderTarget>();
-    m_copyTexture->m_settings.InternalFormat = GraphicTypes::FormatRGBA8;
-    m_copyTexture->m_settings.Type           = GraphicTypes::TypeUnsignedByte;
+    //m_copyTexture->m_settings.InternalFormat = GraphicTypes::FormatRGBA8;
+    //m_copyTexture->m_settings.Type           = GraphicTypes::TypeUnsignedByte;
     m_copyBuffer = std::make_shared<Framebuffer>();
     m_copyBuffer->Init({0, 0, 0, false, false});
 
