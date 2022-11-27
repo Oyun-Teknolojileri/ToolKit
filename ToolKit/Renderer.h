@@ -101,7 +101,12 @@ namespace ToolKit
 
     void CopyTexture(TexturePtr source, TexturePtr dest);
 
-    void ToggleBlending(bool blending);
+    /**
+     * Sets the underlying graphics api state directly which causes by passing
+     * material system. Don't use it unless its necessary for special cases.
+     * @param enable sets the blending on / off for the graphics api.
+     */
+    void EnableBlending(bool enable);
 
     // If there is a material component, returns its material else
     // returns mesh's material. If there is not a MaterialComponent, it will

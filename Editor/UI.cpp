@@ -498,10 +498,6 @@ namespace ToolKit
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
       ImGui::EndFrame();
 
-      ImGui::UpdatePlatformWindows();
-      ImGui::RenderPlatformWindowsDefault();
-      SDL_GL_MakeCurrent(g_window, g_context);
-
       // UI deferred functions.
       for (auto& action : m_postponedActions)
       {
