@@ -330,7 +330,7 @@ namespace ToolKit
           ImDrawList* drawList = ImGui::GetWindowDrawList();
           drawList->AddCallback(
               [](const ImDrawList* parentList, const ImDrawCmd* cmd) {
-                GetRenderer()->ToggleBlending(false);
+                GetRenderer()->EnableBlending(false);
               },
               nullptr);
 
@@ -341,7 +341,7 @@ namespace ToolKit
 
           drawList->AddCallback(
               [](const ImDrawList* parentList, const ImDrawCmd* cmd) {
-                GetRenderer()->ToggleBlending(true);
+                GetRenderer()->EnableBlending(true);
               },
               nullptr);
 

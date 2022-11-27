@@ -192,10 +192,10 @@ namespace ToolKit
 
         SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 0);
 
-        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 16);
-        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 16);
-        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 16);
-        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 16);
+        //SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 16);
+        //SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 16);
+        //SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 16);
+        //SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 16);
 
         if (g_settings.Graphics.MSAA > 0)
         {
@@ -235,7 +235,7 @@ namespace ToolKit
 #ifdef TK_DEBUG
             GlDebugReportInit();
 #endif
-            //  Init glew
+            // Init glew
             glewExperimental = true;
             GLenum err       = glewInit();
             if (GLEW_OK != err)
@@ -348,12 +348,15 @@ namespace ToolKit
         timer->currentTime = GetElapsedMilliSeconds();
         if (timer->currentTime > timer->lastTime + timer->deltaTime)
         {
-          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
-                  GL_STENCIL_BUFFER_BIT);
-
           g_app->Frame(timer->currentTime - timer->lastTime);
-          ClearPool(); // Clear after consumption.
+
+          // Update Present imgui windows.
+          ImGui::UpdatePlatformWindows();
+          ImGui::RenderPlatformWindowsDefault();
+          SDL_GL_MakeCurrent(g_window, g_context);
           SDL_GL_SwapWindow(g_window);
+
+          ClearPool(); // Clear after consumption.
 
           timer->frameCount++;
           timer->timeAccum += timer->currentTime - timer->lastTime;

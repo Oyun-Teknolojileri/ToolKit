@@ -648,29 +648,13 @@ namespace ToolKit
   {
     if (fb != nullptr)
     {
-      if (m_framebuffer)
-      {
-        if (fb->GetFboId() == m_framebuffer->GetFboId())
-        {
-          if (clear)
-          {
-            ClearBuffer(GraphicBitFields::DepthStencilBits);
-            ClearColorBuffer(color);
-          }
-
-          return;
-        }
-      }
-
       glBindFramebuffer(GL_FRAMEBUFFER, fb->GetFboId());
-
       FramebufferSettings fbSet = fb->GetSettings();
       SetViewportSize(fbSet.width, fbSet.height);
     }
     else
     {
       // Set backbuffer as draw area.
-      m_framebuffer = nullptr;
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
       SetViewportSize(m_windowSize.x, m_windowSize.y);
     }
@@ -1144,9 +1128,9 @@ namespace ToolKit
     SetFramebuffer(lastFb, false);
   }
 
-  void Renderer::ToggleBlending(bool blending)
+  void Renderer::EnableBlending(bool enable)
   {
-    if (blending)
+    if (enable)
     {
       glEnable(GL_BLEND);
     }

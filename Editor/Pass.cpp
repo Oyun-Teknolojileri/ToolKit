@@ -316,7 +316,7 @@ namespace ToolKit
         light->UpdateShadowCamera();
       }
 
-      UpdateShadowMap(light, entities);
+       UpdateShadowMap(light, entities);
       FilterShadowMap(light);
     }
 
@@ -421,7 +421,7 @@ namespace ToolKit
                                    X_AXIS,
                                    softness / shadowRes.x);
 
-    renderer->Apply7x1GaussianBlur(light->GetShadowMapTempBlurRt(),
+     renderer->Apply7x1GaussianBlur(light->GetShadowMapTempBlurRt(),
                                    light->GetShadowMapRenderTarget(),
                                    Y_AXIS,
                                    softness / shadowRes.y);
@@ -489,6 +489,7 @@ namespace ToolKit
     m_material->m_fragmentShader = m_params.FragmentShader;
     m_material->UnInit(); // Reinit in case, shader change.
     m_material->Init();
+    m_material->GetRenderState()->depthTestEnabled = false;
 
     MeshComponentPtr mc = m_quad->GetMeshComponent();
     MeshPtr mesh        = mc->GetMeshVal();
@@ -685,8 +686,6 @@ namespace ToolKit
 
     m_gammaShader->SetShaderParameter("Gamma",
                                       ParameterVariant(m_params.Gamma));
-
-    m_gammaPass->PreRender();
   }
 
   void GammaPass::Render()
@@ -698,7 +697,6 @@ namespace ToolKit
 
   void GammaPass::PostRender()
   {
-    m_gammaPass->PostRender();
   }
 
 } // namespace ToolKit
