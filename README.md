@@ -1,6 +1,6 @@
 # ToolKit
 
-<img align="left" width="48" height="48" src="https://github.com/afraidofdark/ToolKit/blob/master/Resources/Engine/Textures/Icons/app.png?raw=true">ToolKit is a 3d editor & interactive application development platform. It allows users to create 3d scenes and bring in the interactivity via C++ plug-ins.
+<img align="left" width="48" height="48" src="https://github.com/Oyun-Teknolojileri/ToolKit/blob/master/Resources/Engine/Textures/Icons/app.png?raw=true">ToolKit is a 3d editor & interactive application development platform. It allows users to create 3d scenes and bring in the interactivity via C++ plug-ins.
 
 ## Motivation
 
@@ -25,7 +25,7 @@ ToolKit can pubish for:
 Although it's possible, publishing to these platforms are not streamlined, still a lot of manual configuration and building is needed. Publishing for Android is on the way.
 
 <p align="center">
-  <img width="600" height="338" src="https://github.com/afraidofdark/ToolKit/blob/master/tk_ed_21.gif?raw=true">
+  <img width="600" height="338" src="https://github.com/Oyun-Teknolojileri/ToolKit/blob/master/tk_ed_21.gif?raw=true">
 </p>
 
 ## Dependencies
