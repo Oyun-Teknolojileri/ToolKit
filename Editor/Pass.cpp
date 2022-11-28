@@ -344,9 +344,11 @@ namespace ToolKit
                        }),
         m_drawList.end());
 
+    m_currentShadowAtlasLayer = 0;
+
     // Create shadow atlas
 
-    // TODO check if need change
+    // Check if the shadow atlas needs to be updated
     bool needChange       = false;
     static int lightCount = 0; // TODO Should be member variable
     int lightsWithShadows = 0;
@@ -428,7 +430,6 @@ namespace ToolKit
     auto renderForShadowMapFn =
         [this, &renderer](Light* light, EntityRawPtrArray entities) -> void {
       FrustumCull(entities, light->m_shadowCamera);
-      renderer->ClearFrameBuffer(light->GetShadowMapFramebuffer(), Vec4(1.0f));
 
       renderer->m_overrideMat = light->GetShadowMaterial();
       for (Entity* ntt : entities)
@@ -470,19 +471,20 @@ namespace ToolKit
     break;
     case EntityType::Entity_DirectionalLight:
     case EntityType::Entity_SpotLight: {
-      renderer->SetFramebuffer(m_shadowFramebuffer, true, Vec4(1.0f));
-      int layer = 0;
-      for (Light* light : m_params.Lights)
+      renderer->SetFramebuffer(m_shadowFramebuffer, false);
+      // TODO 1024 is constant
+      int lightLayers = (int) (light->GetShadowResolutionVal().x / 1024);
+      for (int i = 0; i < lightLayers; ++i)
       {
-        // TODO 1024 is constant
-        int lightLayers = (int) (light->GetShadowResolutionVal().x / 1024);
-        for (int i = 0; i < lightLayers; ++i)
-        {
-          m_shadowFramebuffer->SetAttachment(
-              Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, layer);
-          renderForShadowMapFn(light, entities);
-          layer += 1;
-        }
+        m_shadowFramebuffer->SetAttachment(
+            Framebuffer::Attachment::ColorAttachment0,
+            m_shadowAtlas,
+            m_currentShadowAtlasLayer);
+
+        renderer->ClearFrameBuffer(m_shadowFramebuffer, Vec4(1.0f));
+
+        renderForShadowMapFn(light, entities);
+        m_currentShadowAtlasLayer += 1;
       }
     }
     break;

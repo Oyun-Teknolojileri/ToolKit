@@ -127,6 +127,7 @@ namespace ToolKit
 
     FramebufferPtr m_shadowFramebuffer = nullptr;
     RenderTargetPtr m_shadowAtlas = nullptr;
+    int m_currentShadowAtlasLayer      = 0;
 
     EntityRawPtrArray m_drawList;
     Quaternion m_cubeMapRotations[6];
