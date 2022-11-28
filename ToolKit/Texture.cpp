@@ -517,6 +517,10 @@ namespace ToolKit
     {
       glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &currId);
     }
+    else if (m_settings.Target == GraphicTypes::Target2DArray)
+    {
+      glGetIntegerv(GL_TEXTURE_BINDING_2D_ARRAY, &currId);
+    }
 
     // Create frame buffer color texture
     glGenTextures(1, &m_textureId);
@@ -548,6 +552,15 @@ namespace ToolKit
                      (int) m_settings.Type,
                      0);
       }
+    }
+    else if (m_settings.Target == GraphicTypes::Target2DArray)
+    {
+      glTexStorage3D(GL_TEXTURE_2D_ARRAY,
+                     1,
+                     (int) m_settings.InternalFormat,
+                     m_width,
+                     m_height,
+                     m_settings.Layers);
     }
 
     glTexParameteri(

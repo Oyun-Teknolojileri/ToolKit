@@ -59,9 +59,11 @@ namespace ToolKit
 
     void Init(const FramebufferSettings& settings);
     void UnInit();
+    bool Initialized();
 
     RenderTargetPtr SetAttachment(Attachment atc,
                                   RenderTargetPtr rt,
+                                  int layer        = -1,
                                   CubemapFace face = CubemapFace::NONE);
     RenderTargetPtr GetAttachment(Attachment atc);
     void ClearAttachments();

@@ -125,6 +125,9 @@ namespace ToolKit
     MaterialPtr m_prevOverrideMaterial = nullptr;
     FramebufferPtr m_prevFrameBuffer   = nullptr;
 
+    FramebufferPtr m_shadowFramebuffer = nullptr;
+    RenderTargetPtr m_shadowAtlas = nullptr;
+
     EntityRawPtrArray m_drawList;
     Quaternion m_cubeMapRotations[6];
     Vec3 m_cubeMapScales[6];

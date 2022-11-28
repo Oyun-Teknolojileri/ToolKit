@@ -30,9 +30,9 @@ namespace ToolKit
     MaterialPtr GetShadowMaterial();
     virtual void UpdateShadowCamera();
     virtual float AffectDistance();
+    virtual void InitShadowMapDepthMaterial();
 
    protected:
-    virtual void InitShadowMapDepthMaterial();
     void ReInitShadowMap();
 
    public:
@@ -48,6 +48,7 @@ namespace ToolKit
     Mat4 m_shadowMapCameraProjectionViewMatrix;
     float m_shadowMapCameraFar = 1.0f;
     Camera* m_shadowCamera     = nullptr;
+    bool m_needToUpdateShadows = false;
 
    protected:
     bool m_shadowMapInitialized           = false;
@@ -92,8 +93,6 @@ namespace ToolKit
     void InitShadowMap() override;
     void UpdateShadowCamera() override;
     float AffectDistance() override;
-
-   protected:
     void InitShadowMapDepthMaterial() override;
 
    public:
@@ -109,8 +108,6 @@ namespace ToolKit
     EntityType GetType() const override;
     void UpdateShadowCamera() override;
     float AffectDistance() override;
-
-   protected:
     void InitShadowMapDepthMaterial() override;
 
    public:

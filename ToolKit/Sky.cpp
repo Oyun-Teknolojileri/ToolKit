@@ -320,6 +320,7 @@ namespace ToolKit
 
       fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                         cubemap,
+        -1,
                         (Framebuffer::CubemapFace) i);
 
       GetRenderer()->SetFramebuffer(fb, true, Vec4(0.0f));

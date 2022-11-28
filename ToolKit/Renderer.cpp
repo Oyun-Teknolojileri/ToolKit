@@ -1368,6 +1368,7 @@ namespace ToolKit
           {
             smBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                     light->GetShadowMapRenderTarget(),
+                                    -1,
                                     (Framebuffer::CubemapFace) i);
 
             light->m_node->SetOrientation(rotations[i]);
@@ -1932,11 +1933,13 @@ namespace ToolKit
         }
         else
         {
+          /* TODO
           GetLogger()->WriteConsole(
               LogType::Error,
               "Uninitilized shadow buffer ! Light Name: %s ID: %d",
               currLight->GetNameVal().c_str(),
               currLight->GetIdVal());
+           */
         }
       }
       GLuint loc = glGetUniformLocation(program->m_handle,
@@ -2173,6 +2176,7 @@ namespace ToolKit
       m_utilFramebuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
           cubeMapRt,
+          -1,
           (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
@@ -2247,6 +2251,7 @@ namespace ToolKit
       m_utilFramebuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
           cubeMapRt,
+          -1,
           (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));

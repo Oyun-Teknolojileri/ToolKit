@@ -284,10 +284,14 @@ namespace ToolKit
       DecomposeMatrix(
           views[i], nullptr, &m_cubeMapRotations[i], &m_cubeMapScales[i]);
     }
+
+    m_shadowAtlas       = std::make_shared<RenderTarget>();
+    m_shadowFramebuffer = std::make_shared<Framebuffer>();
   }
 
-  ShadowPass::ShadowPass(const ShadowPassParams& params) : m_params(params)
+  ShadowPass::ShadowPass(const ShadowPassParams& params) : ShadowPass()
   {
+    m_params = params;
   }
 
   ShadowPass::~ShadowPass()
@@ -306,6 +310,8 @@ namespace ToolKit
         continue;
       }
 
+      light->InitShadowMapDepthMaterial();
+
       EntityRawPtrArray entities = m_drawList;
       if (light->GetType() == EntityType::Entity_DirectionalLight)
       {
@@ -316,8 +322,8 @@ namespace ToolKit
         light->UpdateShadowCamera();
       }
 
-       UpdateShadowMap(light, entities);
-      FilterShadowMap(light);
+      UpdateShadowMap(light, entities);
+      // TODO FilterShadowMap(light);
     }
 
     PostRender();
@@ -337,6 +343,76 @@ namespace ToolKit
                                 !ntt->GetMeshComponent()->GetCastShadowVal();
                        }),
         m_drawList.end());
+
+    // Create shadow atlas
+
+    // TODO check if need change
+    bool needChange       = false;
+    static int lightCount = 0; // TODO Should be member variable
+    int lightsWithShadows = 0;
+    for (Light* light : m_params.Lights)
+    {
+      if (light->GetCastShadowVal())
+      {
+        lightsWithShadows++;
+      }
+    }
+    if (lightsWithShadows != lightCount)
+    {
+      needChange = true;
+      lightCount = lightsWithShadows;
+    }
+
+    if (!needChange)
+    {
+      for (Light* light : m_params.Lights)
+      {
+        if (light->m_needToUpdateShadows)
+        {
+          needChange = true;
+          break;
+        }
+      }
+    }
+
+    if (!needChange)
+    {
+      return;
+    }
+
+    int layerCount = 0;
+    for (Light* light : m_params.Lights)
+    {
+      if (light->GetCastShadowVal())
+      {
+        // TODO 1024 is constant
+        int ratio = (int) light->GetShadowResolutionVal().x / 1024;
+        layerCount += ratio * ratio;
+        light->m_needToUpdateShadows = false;
+      }
+    }
+
+    const RenderTargetSettigs set = {0,
+                                     GraphicTypes::Target2DArray,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::FormatRG32F,
+                                     GraphicTypes::FormatRG,
+                                     GraphicTypes::TypeFloat,
+                                     layerCount};
+
+    // TODO 1024 is constant
+    m_shadowAtlas->Reconstruct(1024, 1024, set);
+
+    if (!m_shadowFramebuffer->Initialized())
+    {
+      // TODO 1024 is constant
+      // TODO Msaa is good for variance shadow mapping
+      m_shadowFramebuffer->Init({1024, 1024, 0, false, true});
+    }
   }
 
   void ShadowPass::PostRender()
@@ -348,9 +424,6 @@ namespace ToolKit
                                    const EntityRawPtrArray& entities)
   {
     Renderer* renderer = GetRenderer();
-
-    // Update shadow map ProjView matrix every frame for all lights.
-    light->InitShadowMap();
 
     auto renderForShadowMapFn =
         [this, &renderer](Light* light, EntityRawPtrArray entities) -> void {
@@ -383,6 +456,7 @@ namespace ToolKit
         shadowMapBuffer->SetAttachment(
             Framebuffer::Attachment::ColorAttachment0,
             light->GetShadowMapRenderTarget(),
+            -1,
             (Framebuffer::CubemapFace) i);
 
         light->m_node->SetOrientation(m_cubeMapRotations[i]);
@@ -393,12 +467,25 @@ namespace ToolKit
         renderForShadowMapFn(light, entities);
       }
     }
+    break;
     case EntityType::Entity_DirectionalLight:
-    case EntityType::Entity_SpotLight:
-      renderer->SetFramebuffer(
-          light->GetShadowMapFramebuffer(), true, Vec4(1.0f));
-      renderForShadowMapFn(light, entities);
-      break;
+    case EntityType::Entity_SpotLight: {
+      renderer->SetFramebuffer(m_shadowFramebuffer, true, Vec4(1.0f));
+      int layer = 0;
+      for (Light* light : m_params.Lights)
+      {
+        // TODO 1024 is constant
+        int lightLayers = (int) (light->GetShadowResolutionVal().x / 1024);
+        for (int i = 0; i < lightLayers; ++i)
+        {
+          m_shadowFramebuffer->SetAttachment(
+              Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, layer);
+          renderForShadowMapFn(light, entities);
+          layer += 1;
+        }
+      }
+    }
+    break;
     default:
       break;
     }
@@ -421,7 +508,7 @@ namespace ToolKit
                                    X_AXIS,
                                    softness / shadowRes.x);
 
-     renderer->Apply7x1GaussianBlur(light->GetShadowMapTempBlurRt(),
+    renderer->Apply7x1GaussianBlur(light->GetShadowMapTempBlurRt(),
                                    light->GetShadowMapRenderTarget(),
                                    Y_AXIS,
                                    softness / shadowRes.y);
@@ -633,8 +720,9 @@ namespace ToolKit
   GammaPass::GammaPass()
   {
     m_copyTexture = std::make_shared<RenderTarget>();
-    //m_copyTexture->m_settings.InternalFormat = GraphicTypes::FormatRGBA8;
-    //m_copyTexture->m_settings.Type           = GraphicTypes::TypeUnsignedByte;
+    // m_copyTexture->m_settings.InternalFormat = GraphicTypes::FormatRGBA8;
+    // m_copyTexture->m_settings.Type           =
+    // GraphicTypes::TypeUnsignedByte;
     m_copyBuffer = std::make_shared<Framebuffer>();
     m_copyBuffer->Init({0, 0, 0, false, false});
 
