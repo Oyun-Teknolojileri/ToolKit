@@ -406,12 +406,12 @@ namespace ToolKit
           0.18431373f, 0.39607847f, 0.79215693f, 0.90f};
 
       // Reverse gamma correction
-      /* for (int i = 0; i < 55; ++i)
+      for (int i = 0; i < 55; ++i)
       {
         style->Colors[i].x = std::powf(style->Colors[i].x, 2.2f);
         style->Colors[i].y = std::powf(style->Colors[i].y, 2.2f);
         style->Colors[i].z = std::powf(style->Colors[i].z, 2.2f);
-      }*/
+      }
     }
 
     void UI::InitSettings()
@@ -497,10 +497,6 @@ namespace ToolKit
       ImGui::Render();
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
       ImGui::EndFrame();
-
-      ImGui::UpdatePlatformWindows();
-      ImGui::RenderPlatformWindowsDefault();
-      SDL_GL_MakeCurrent(g_window, g_context);
 
       // UI deferred functions.
       for (auto& action : m_postponedActions)

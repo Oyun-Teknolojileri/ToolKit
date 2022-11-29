@@ -39,6 +39,7 @@
 
 namespace ToolKit
 {
+  GammaPass* myGammaPass                   = nullptr;
   OutlinePass* myOutlineTechnique          = nullptr;
   Editor::EditorRenderer* myEditorRenderer = nullptr;
 
@@ -54,6 +55,7 @@ namespace ToolKit
 
       myOutlineTechnique = new OutlinePass();
       myEditorRenderer   = new EditorRenderer();
+      myGammaPass        = new GammaPass();
 
       OverrideEntityConstructors();
 
@@ -65,6 +67,7 @@ namespace ToolKit
       Destroy();
       SafeDel(myEditorRenderer);
       SafeDel(myOutlineTechnique);
+      SafeDel(myGammaPass);
     }
 
     void App::Init()
@@ -208,6 +211,10 @@ namespace ToolKit
 
       // Render UI.
       UI::EndUI();
+
+      // Apply gamma to back buffer
+      myGammaPass->Render();
+
 
       m_renderer->m_totalFrameCount++;
     }

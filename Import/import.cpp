@@ -656,7 +656,7 @@ namespace ToolKit
 
           for (ubyte i = 0; i < 4; i++)
           {
-            v.bones[i]   = skinData[vIndex][i].first;
+            v.bones[i]   = (float) skinData[vIndex][i].first;
             v.weights[i] = skinData[vIndex][i].second;
           }
         }

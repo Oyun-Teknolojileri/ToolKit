@@ -648,29 +648,13 @@ namespace ToolKit
   {
     if (fb != nullptr)
     {
-      if (m_framebuffer)
-      {
-        if (fb->GetFboId() == m_framebuffer->GetFboId())
-        {
-          if (clear)
-          {
-            ClearBuffer(GraphicBitFields::DepthStencilBits);
-            ClearColorBuffer(color);
-          }
-
-          return;
-        }
-      }
-
       glBindFramebuffer(GL_FRAMEBUFFER, fb->GetFboId());
-
       FramebufferSettings fbSet = fb->GetSettings();
       SetViewportSize(fbSet.width, fbSet.height);
     }
     else
     {
       // Set backbuffer as draw area.
-      m_framebuffer = nullptr;
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
       SetViewportSize(m_windowSize.x, m_windowSize.y);
     }
@@ -731,6 +715,45 @@ namespace ToolKit
   void Renderer::ColorMask(bool r, bool g, bool b, bool a)
   {
     glColorMask(r, g, b, a);
+  }
+
+  void Renderer::CopyFrameBuffer(FramebufferPtr src,
+                                 FramebufferPtr dest,
+                                 GraphicBitFields fields)
+  {
+    GLuint srcId = 0;
+    uint width   = m_windowSize.x;
+    uint height  = m_windowSize.y;
+
+    if (src)
+    {
+      FramebufferSettings fbs = src->GetSettings();
+      width                   = fbs.width;
+      height                  = fbs.height;
+      srcId                   = src->GetFboId();
+    }
+
+    dest->ReconstructIfNeeded(width, height);
+
+    GLint drawFboId = 0, readFboId = 0;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFboId);
+    glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readFboId);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, srcId);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
+    glBlitFramebuffer(0,
+                      0,
+                      width,
+                      height,
+                      0,
+                      0,
+                      width,
+                      height,
+                      (GLbitfield) fields,
+                      GL_NEAREST);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, readFboId);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
   }
 
   void Renderer::SetViewport(Viewport* viewport)
@@ -1105,9 +1128,9 @@ namespace ToolKit
     SetFramebuffer(lastFb, false);
   }
 
-  void Renderer::ToggleBlending(bool blending)
+  void Renderer::EnableBlending(bool enable)
   {
-    if (blending)
+    if (enable)
     {
       glEnable(GL_BLEND);
     }
