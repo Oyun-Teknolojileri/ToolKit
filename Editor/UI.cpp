@@ -837,7 +837,7 @@ namespace ToolKit
           String ext;
           DecomposePath(file, nullptr, nullptr, &ext);
 
-          if (ext == ".png" || ext == ".hdri" || ext == ".jpg")
+          if (SupportedImageFormat(ext))
           {
             String viewPath    = ImportData.ActiveView->GetPath();
             String texturePath = TexturePath("");
@@ -845,7 +845,7 @@ namespace ToolKit
             texturePath.pop_back();
             if (viewPath.find(texturePath) != String::npos)
             {
-              // Both HDRIs and 2D textures stored in Textures/ root folder
+              // All images are copied to the active subfolder of Textures
               const String& dst = ImportData.ActiveView->GetPath();
               std::filesystem::copy(
                   file, dst, std::filesystem::copy_options::overwrite_existing);
