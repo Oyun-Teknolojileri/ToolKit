@@ -148,9 +148,13 @@ namespace ToolKit
         const String& title,
         uint fallbackIcon,
         const String& file,
-        std::function<void(const DirectoryEntry& entry)> dropAction)
+        std::function<void(const DirectoryEntry& entry)> dropAction,
+        bool isEditable)
     {
-      if (ImGui::TreeNodeEx(title.c_str()))
+      ImGui::EndDisabled();
+      bool isOpen = ImGui::TreeNodeEx(title.c_str());
+      ImGui::BeginDisabled(!isEditable);
+      if (isOpen)
       {
         DropZone(fallbackIcon, file, dropAction);
         ImGui::TreePop();
@@ -159,7 +163,8 @@ namespace ToolKit
 
     void ShowMaterialPtr(const String& uniqueName,
                          const String& file,
-                         MaterialPtr& var)
+                         MaterialPtr& var,
+                         bool isEditable)
     {
       DropSubZone(
           uniqueName,
@@ -175,28 +180,31 @@ namespace ToolKit
               GetLogger()->WriteConsole(LogType::Error,
                                         "Only Material Types are accepted.");
             }
-          });
+          },
+          isEditable);
     }
 
     void ShowMaterialVariant(const String& uniqueName,
                              const String& file,
                              ParameterVariant* var)
     {
-      DropSubZone(uniqueName,
-                  static_cast<uint>(UI::m_materialIcon->m_textureId),
-                  file,
-                  [&var](const DirectoryEntry& entry) -> void {
-                    if (GetResourceType(entry.m_ext) == ResourceType::Material)
-                    {
-                      *var = GetMaterialManager()->Create<Material>(
-                          entry.GetFullPath());
-                    }
-                    else
-                    {
-                      GetLogger()->WriteConsole(
-                          LogType::Error, "Only Material Types are accepted.");
-                    }
-                  });
+      DropSubZone(
+          uniqueName,
+          static_cast<uint>(UI::m_materialIcon->m_textureId),
+          file,
+          [&var](const DirectoryEntry& entry) -> void {
+            if (GetResourceType(entry.m_ext) == ResourceType::Material)
+            {
+              *var =
+                  GetMaterialManager()->Create<Material>(entry.GetFullPath());
+            }
+            else
+            {
+              GetLogger()->WriteConsole(LogType::Error,
+                                        "Only Material Types are accepted.");
+            }
+          },
+          var->m_editable);
     }
 
     void ShowAnimControllerComponent(ParameterVariant* var, ComponentPtr comp)
@@ -321,6 +329,8 @@ namespace ToolKit
           // Signal Name
           showSignalName(columnIndx, *it);
 
+          ImGui::EndDisabled();
+
           // Play, Pause & Stop Buttons
           ImGui::TableSetColumnIndex(columnIndx++);
           if (it->second->m_animation)
@@ -357,6 +367,8 @@ namespace ToolKit
               animPlayerComp->Stop();
             }
           }
+
+          ImGui::BeginDisabled(!var->m_editable);
 
           // Remove Button
           {
@@ -621,7 +633,8 @@ namespace ToolKit
                 GetLogger()->WriteConsole(LogType::Error,
                                           "Only meshes are accepted.");
               }
-            });
+            },
+            var->m_editable);
       }
       break;
       case ParameterVariant::VariantType::HdriPtr: {
@@ -633,23 +646,24 @@ namespace ToolKit
           file = mref->GetFile();
         }
 
-        DropSubZone("Hdri##" + id,
-                    UI::m_imageIcon->m_textureId,
-                    file,
-                    [&var](const DirectoryEntry& entry) -> void {
-                      if (GetResourceType(entry.m_ext) == ResourceType::Hdri)
-                      {
-                        *var = GetTextureManager()->Create<Hdri>(
-                            entry.GetFullPath());
-                      }
-                      else
-                      {
-                        GetLogger()->WriteConsole(LogType::Error,
-                                                  "Only hdri's are accepted.");
-                      }
-                    });
-        break;
+        DropSubZone(
+            "Hdri##" + id,
+            UI::m_imageIcon->m_textureId,
+            file,
+            [&var](const DirectoryEntry& entry) -> void {
+              if (GetResourceType(entry.m_ext) == ResourceType::Hdri)
+              {
+                *var = GetTextureManager()->Create<Hdri>(entry.GetFullPath());
+              }
+              else
+              {
+                GetLogger()->WriteConsole(LogType::Error,
+                                          "Only hdri's are accepted.");
+              }
+            },
+            var->m_editable);
       }
+      break;
       case ParameterVariant::VariantType::SkeletonPtr: {
         SkeletonPtr mref = var->GetVar<SkeletonPtr>();
         String file, id;
@@ -675,8 +689,11 @@ namespace ToolKit
                                       "Only skeletons are accepted.");
           }
         };
-        DropSubZone(
-            "Skeleton##" + id, UI::m_boneIcon->m_textureId, file, dropZoneFnc);
+        DropSubZone("Skeleton##" + id,
+                    UI::m_boneIcon->m_textureId,
+                    file,
+                    dropZoneFnc,
+                    var->m_editable);
       }
       break;
       case ParameterVariant::VariantType::AnimRecordPtrMap: {
@@ -925,7 +942,9 @@ namespace ToolKit
     };
 
     void ShowMultiMaterialComponent(
-        ComponentPtr& comp, std::function<bool(const String&)> showCompFunc)
+        ComponentPtr& comp,
+        std::function<bool(const String&)> showCompFunc,
+        bool modifiableComp)
     {
       MultiMaterialComponent* mmComp = (MultiMaterialComponent*) comp.get();
       MaterialPtrArray& matList      = mmComp->GetMaterialList();
@@ -933,6 +952,8 @@ namespace ToolKit
 
       if (isOpen)
       {
+        ImGui::BeginDisabled(!modifiableComp);
+
         uint removeMaterialIndx = UINT32_MAX;
         for (uint i = 0; i < matList.size(); i++)
         {
@@ -946,7 +967,7 @@ namespace ToolKit
             removeMaterialIndx = i;
           }
           ImGui::SameLine();
-          ShowMaterialPtr(uniqueName, mat->GetFile(), mat);
+          ShowMaterialPtr(uniqueName, mat->GetFile(), mat, modifiableComp);
         }
         if (removeMaterialIndx != UINT32_MAX)
         {
@@ -968,20 +989,25 @@ namespace ToolKit
         UI::HelpMarker(
             "Update",
             "Update material list by first MeshComponent's mesh list");
+
+        ImGui::EndDisabled();
       }
     }
 
     void ShowAABBOverrideComponent(
-        ComponentPtr& comp, std::function<bool(const String&)> showCompFunc)
+        ComponentPtr& comp,
+        std::function<bool(const String&)> showCompFunc,
+        bool isEditable)
     {
       AABBOverrideComponent* overrideComp = (AABBOverrideComponent*) comp.get();
-
+      ImGui::BeginDisabled(!isEditable);
       MeshComponentPtr meshComp =
           overrideComp->m_entity->GetComponent<MeshComponent>();
       if (meshComp && ImGui::Button("Update from MeshComponent"))
       {
         overrideComp->SetAABB(meshComp->GetAABB());
       }
+      ImGui::EndDisabled();
     }
 
     const StringView& boolToString(bool b)
@@ -989,21 +1015,21 @@ namespace ToolKit
       return b ? "true" : "false";
     }
 
-    bool ShowComponentBlock(ComponentPtr& comp, const bool isCompRemovable)
+    bool ShowComponentBlock(ComponentPtr& comp, const bool modifiableComp)
     {
       VariantCategoryArray categories;
       comp->m_localData.GetCategories(categories, true, true);
 
       bool removeComp   = false;
-      auto showCompFunc = [comp, &removeComp, isCompRemovable](
+      auto showCompFunc = [comp, &removeComp, modifiableComp](
                               const String& headerName) -> bool {
         ImGui::PushID(static_cast<int>(comp->m_id));
         String varName =
-            headerName + "##" + boolToString(isCompRemovable).data();
+            headerName + "##" + boolToString(modifiableComp).data();
         bool isOpen = ImGui::TreeNodeEx(
             varName.c_str(), ImGuiTreeNodeFlags_DefaultOpen | g_treeNodeFlags);
 
-        if (isCompRemovable)
+        if (modifiableComp)
         {
           float offset = ImGui::GetContentRegionAvail().x - 10.0f;
           ImGui::SameLine(offset);
@@ -1030,7 +1056,16 @@ namespace ToolKit
 
           for (ParameterVariant* var : vars)
           {
+            bool editable = var->m_editable;
+            if (!modifiableComp)
+            {
+              var->m_editable = false;
+            }
             ShowVariant(var, comp);
+            if (!modifiableComp)
+            {
+              var->m_editable = true;
+            }
           }
 
           ImGui::TreePop();
@@ -1039,10 +1074,10 @@ namespace ToolKit
       switch (comp->GetType())
       {
       case ComponentType::MultiMaterialComponent:
-        ShowMultiMaterialComponent(comp, showCompFunc);
+        ShowMultiMaterialComponent(comp, showCompFunc, modifiableComp);
         break;
       case ComponentType::AABBOverrideComponent:
-        ShowAABBOverrideComponent(comp, showCompFunc);
+        ShowAABBOverrideComponent(comp, showCompFunc, modifiableComp);
         break;
       }
 

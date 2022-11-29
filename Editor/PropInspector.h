@@ -19,7 +19,8 @@ namespace ToolKit
         const String& title,
         uint fallbackIcon,
         const String& file,
-        std::function<void(const DirectoryEntry& entry)> dropAction);
+        std::function<void(const DirectoryEntry& entry)> dropAction,
+        bool isEditable);
 
     class View
     {
