@@ -1150,7 +1150,11 @@ namespace ToolKit
       }
 
       // Display scene hierarchy
-      if (ImGui::BeginChild("##Prefab Scene Nodes", ImVec2(0, 200)))
+      /*
+      ImGui::PushStyleColor(
+          ImGuiCol_ChildBg,
+          ImGui::GetStyleColorVec4(ImGuiCol_TitleBgCollapsed));*/
+      if (ImGui::BeginChild("##Prefab Scene Nodes", ImVec2(0, 200), true))
       {
         if (DrawHeader(m_entity,
                        g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen))
@@ -1167,8 +1171,7 @@ namespace ToolKit
         }
       }
       ImGui::EndChild();
-
-      ImGui::Separator();
+      // ImGui::PopStyleColor();
 
       Entity* shownEntity = m_entity;
       if (m_activeChildEntity)
@@ -1179,7 +1182,7 @@ namespace ToolKit
       ParameterVariantRawPtrArray inheritedParams;
       shownEntity->m_localData.GetByCategory(CustomDataCategory.Name,
                                              inheritedParams);
-      ShowCustomData(shownEntity, "", inheritedParams, false);
+      ShowCustomData(shownEntity, "Custom Data##1", inheritedParams, false);
     }
 
     // EntityView
