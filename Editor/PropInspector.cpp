@@ -984,6 +984,11 @@ namespace ToolKit
       }
     }
 
+    const StringView& boolToString(bool b)
+    {
+      return b ? "true" : "false";
+    }
+
     bool ShowComponentBlock(ComponentPtr& comp, const bool isCompRemovable)
     {
       VariantCategoryArray categories;
@@ -992,20 +997,23 @@ namespace ToolKit
       bool removeComp   = false;
       auto showCompFunc = [comp, &removeComp, isCompRemovable](
                               const String& headerName) -> bool {
-        String varName = headerName + "##" + std::to_string(comp->m_id);
-        bool isOpen    = ImGui::TreeNodeEx(
+        ImGui::PushID(static_cast<int>(comp->m_id));
+        String varName =
+            headerName + "##" + boolToString(isCompRemovable).data();
+        bool isOpen = ImGui::TreeNodeEx(
             varName.c_str(), ImGuiTreeNodeFlags_DefaultOpen | g_treeNodeFlags);
 
-        float offset = ImGui::GetContentRegionAvail().x - 10.0f;
-        ImGui::SameLine(offset);
-        ImGui::PushID(static_cast<int>(comp->m_id));
-        if (isCompRemovable &&
-            UI::ImageButtonDecorless(
-                UI::m_closeIcon->m_textureId, ImVec2(15.0f, 15.0f), false) &&
-            !removeComp)
+        if (isCompRemovable)
         {
-          g_app->m_statusMsg = "Component " + headerName + " removed.";
-          removeComp         = true;
+          float offset = ImGui::GetContentRegionAvail().x - 10.0f;
+          ImGui::SameLine(offset);
+          if (UI::ImageButtonDecorless(
+                  UI::m_closeIcon->m_textureId, ImVec2(15.0f, 15.0f), false) &&
+              !removeComp)
+          {
+            g_app->m_statusMsg = "Component " + headerName + " removed.";
+            removeComp         = true;
+          }
         }
         ImGui::PopID();
 
@@ -1150,10 +1158,6 @@ namespace ToolKit
       }
 
       // Display scene hierarchy
-      /*
-      ImGui::PushStyleColor(
-          ImGuiCol_ChildBg,
-          ImGui::GetStyleColorVec4(ImGuiCol_TitleBgCollapsed));*/
       if (ImGui::BeginChild("##Prefab Scene Nodes", ImVec2(0, 200), true))
       {
         if (DrawHeader(m_entity,
@@ -1171,7 +1175,6 @@ namespace ToolKit
         }
       }
       ImGui::EndChild();
-      // ImGui::PopStyleColor();
 
       Entity* shownEntity = m_entity;
       if (m_activeChildEntity)
@@ -1183,6 +1186,20 @@ namespace ToolKit
       shownEntity->m_localData.GetByCategory(CustomDataCategory.Name,
                                              inheritedParams);
       ShowCustomData(shownEntity, "Custom Data##1", inheritedParams, false);
+
+      if (ImGui::CollapsingHeader("Components##1",
+                                  ImGuiTreeNodeFlags_DefaultOpen))
+      {
+        ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
+
+        std::vector<ULongID> compRemove;
+        for (ComponentPtr& com : shownEntity->GetComponentPtrArray())
+        {
+          ShowComponentBlock(com, false);
+        }
+
+        ImGui::PopStyleVar();
+      }
     }
 
     // EntityView
