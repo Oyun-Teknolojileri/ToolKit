@@ -196,22 +196,23 @@ namespace ToolKit
 
       if (entityMod)
       {
-        DropSubZone("Material##" + std::to_string(entry->m_id),
-                    UI::m_materialIcon->m_textureId,
-                    entry->GetFile(),
-                    [&drawable](const DirectoryEntry& dirEnt) -> void {
-                      MeshPtr mesh = drawable->GetMesh();
-                      if (strcmp(dirEnt.m_ext.c_str(), ".material") != 0)
-                      {
-                        g_app->m_statusMsg =
-                            "An imported material file expected!";
-                        return;
-                      }
-                      mesh->m_material = GetMaterialManager()->Create<Material>(
-                          dirEnt.GetFullPath());
-                      mesh->m_material->Init();
-                      mesh->m_dirty = true;
-                    });
+        DropSubZone(
+            "Material##" + std::to_string(entry->m_id),
+            UI::m_materialIcon->m_textureId,
+            entry->GetFile(),
+            [&drawable](const DirectoryEntry& dirEnt) -> void {
+              MeshPtr mesh = drawable->GetMesh();
+              if (strcmp(dirEnt.m_ext.c_str(), ".material") != 0)
+              {
+                g_app->m_statusMsg = "An imported material file expected!";
+                return;
+              }
+              mesh->m_material =
+                  GetMaterialManager()->Create<Material>(dirEnt.GetFullPath());
+              mesh->m_material->Init();
+              mesh->m_dirty = true;
+            },
+            true);
       }
     }
 

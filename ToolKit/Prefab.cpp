@@ -87,24 +87,28 @@ namespace ToolKit
         m_currentScene->AddEntity(child);
         child->SetTransformLockVal(true);
         child->ParamTransformLock().m_editable = false;
-        auto foundParamArray = m_childCustomDatas.find(child->GetNameVal());
-        if (foundParamArray != m_childCustomDatas.end())
-        {
-          for (ParameterVariant& var : child->m_localData.m_variants)
-          {
-            for (ParameterVariant& serializedVar : foundParamArray->second)
-            {
-              if (var.m_name == serializedVar.m_name)
-              {
-                var = serializedVar;
-              }
-            }
-          }
-        }
       }
       m_instanceEntities.insert(m_instanceEntities.end(),
                                 instantiatedEntityList.begin(),
                                 instantiatedEntityList.end());
+    }
+
+    for (Entity* ntt : m_instanceEntities)
+    {
+      auto foundParamArray = m_childCustomDatas.find(ntt->GetNameVal());
+      if (foundParamArray != m_childCustomDatas.end())
+      {
+        for (ParameterVariant& var : ntt->m_localData.m_variants)
+        {
+          for (ParameterVariant& serializedVar : foundParamArray->second)
+          {
+            if (var.m_name == serializedVar.m_name)
+            {
+              var = serializedVar;
+            }
+          }
+        }
+      }
     }
 
     // We need this data only at deserialization, no later
@@ -138,11 +142,12 @@ namespace ToolKit
     Entity::Serialize(doc, parent);
     parent = CreateXmlNode(doc, "PrefabRoots", parent->last_node());
 
-    for (Node* rNode : m_node->m_children)
+    EntityRawPtrArray childs;
+    GetChildren(this, childs);
+    for (Entity* child : childs)
     {
-      Entity* r        = rNode->m_entity;
-      XmlNode* rootSer = CreateXmlNode(doc, r->GetNameVal(), parent);
-      for (const ParameterVariant& var : r->m_localData.m_variants)
+      XmlNode* rootSer = CreateXmlNode(doc, child->GetNameVal(), parent);
+      for (const ParameterVariant& var : child->m_localData.m_variants)
       {
         if (var.m_category.Name == CustomDataCategory.Name)
         {
@@ -154,7 +159,8 @@ namespace ToolKit
 
   void Prefab::ParameterConstructor()
   {
-    PrefabPath_Define("", PrefabCategory.Name, PrefabCategory.Priority, true, false);
+    PrefabPath_Define(
+        "", PrefabCategory.Name, PrefabCategory.Priority, true, false);
   }
   void Prefab::ParameterEventConstructor()
   {
