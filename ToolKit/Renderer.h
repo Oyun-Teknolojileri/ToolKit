@@ -114,6 +114,9 @@ namespace ToolKit
     // multiple materials. But they are ignored.
     MaterialPtr GetRenderMaterial(Entity* entity);
 
+    // Giving nullptr as argument means no shadows
+    void SetShadowAtlas(TexturePtr shadowAtlas);
+
     // TODO: Should be private or within a Pass.
     /////////////////////
     // Left public for thumbnail rendering. TODO: there must be techniques
@@ -240,6 +243,7 @@ namespace ToolKit
     MaterialPtr m_mat            = nullptr;
     MaterialPtr m_aoMat          = nullptr;
     FramebufferPtr m_framebuffer = nullptr;
+    TexturePtr m_shadowAtlas     = nullptr;
 
     typedef struct RHIConstants
     {
@@ -249,6 +253,8 @@ namespace ToolKit
       static constexpr int maxDirAndSpotLightShadows = 4;
       static constexpr int maxPointLightShadows      = 4;
       static constexpr int maxShadows                = 8;
+
+      static constexpr int shadowAtlasSlot = 8;
     } m_rhiSettings;
 
     uint m_textureSlots[RHIConstants::textureSlotCount];

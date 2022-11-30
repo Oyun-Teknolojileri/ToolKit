@@ -1920,28 +1920,8 @@ namespace ToolKit
         loc = glGetUniformLocation(program->m_handle,
                                    g_lightsoftShadowsStrCache[i].c_str());
         glUniform1i(loc, (int) (currLight->GetPCFSamplesVal() > 1));
-
-        if (FramebufferPtr shadowFrameBuffer =
-                currLight->GetShadowMapFramebuffer())
-        {
-          SetShadowMapTexture(
-              type,
-              shadowFrameBuffer
-                  ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
-                  ->m_textureId,
-              program);
-        }
-        else
-        {
-          /* TODO
-          GetLogger()->WriteConsole(
-              LogType::Error,
-              "Uninitilized shadow buffer ! Light Name: %s ID: %d",
-              currLight->GetNameVal().c_str(),
-              currLight->GetIdVal());
-           */
-        }
       }
+
       GLuint loc = glGetUniformLocation(program->m_handle,
                                         g_lightCastShadowStrCache[i].c_str());
       glUniform1i(loc, static_cast<int>(castShadow));
@@ -1950,6 +1930,15 @@ namespace ToolKit
     GLint loc =
         glGetUniformLocation(program->m_handle, "LightData.activeCount");
     glUniform1i(loc, static_cast<int>(m_lights.size()));
+
+    // Bind shadow map if activated
+    if (m_shadowAtlas != nullptr)
+    {
+      loc = glGetUniformLocation(program->m_handle, "shadowAtlas");
+      glUniform1i(loc, m_rhiSettings::shadowAtlasSlot);
+      glActiveTexture(GL_TEXTURE0 + m_rhiSettings::shadowAtlasSlot);
+      glBindTexture(GL_TEXTURE_2D_ARRAY, m_shadowAtlas->m_textureId);
+    }
   }
 
   void Renderer::SetVertexLayout(VertexLayout layout)
@@ -2046,6 +2035,16 @@ namespace ToolKit
     {
       glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureSlots[slotIndx]);
     }
+  }
+
+  void Renderer::SetShadowAtlas(TexturePtr shadowAtlas)
+  {
+    /*
+     * Texture slots:
+     * 8: Shadow atlas
+     */
+
+    m_shadowAtlas = shadowAtlas;
   }
 
   void Renderer::SetShadowMapTexture(EntityType type,

@@ -422,6 +422,11 @@ namespace ToolKit
     Pass::PostRender();
   }
 
+  RenderTargetPtr ShadowPass::GetShadowAtlas()
+  {
+    return m_shadowAtlas;
+  }
+
   void ShadowPass::UpdateShadowMap(Light* light,
                                    const EntityRawPtrArray& entities)
   {
@@ -786,6 +791,51 @@ namespace ToolKit
   }
 
   void GammaPass::PostRender()
+  {
+  }
+
+  SceneRenderPass::SceneRenderPass()
+  {
+    m_shadowPass = std::make_shared<ShadowPass>();
+    m_renderPass = std::make_shared<RenderPass>();
+  }
+
+  SceneRenderPass::SceneRenderPass(const SceneRenderPassParams& params)
+      : SceneRenderPass()
+  {
+    m_params               = params;
+    m_shadowPass->m_params = params.shadowPassParams;
+    m_renderPass->m_params = params.renderPassParams;
+  }
+
+  void SceneRenderPass::Render()
+  {
+    Renderer* renderer = GetRenderer();
+    PreRender();
+
+    // Shadow pass
+    m_shadowPass->Render();
+
+    renderer->SetShadowAtlas(
+        std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
+
+    // Render pass
+    m_renderPass->Render();
+
+    renderer->SetShadowAtlas(nullptr);
+
+    PostRender();
+  }
+
+  void SceneRenderPass::PreRender()
+  {
+    Pass::PreRender();
+
+    m_shadowPass->m_params = m_params.shadowPassParams;
+    m_renderPass->m_params = m_params.renderPassParams;
+  }
+
+  void SceneRenderPass::PostRender()
   {
   }
 

@@ -114,6 +114,8 @@ namespace ToolKit
     void PreRender() override;
     void PostRender() override;
 
+    RenderTargetPtr GetShadowAtlas();
+
    private:
     void UpdateShadowMap(Light* light, const EntityRawPtrArray& entities);
     void FilterShadowMap(Light* light);
@@ -126,7 +128,7 @@ namespace ToolKit
     FramebufferPtr m_prevFrameBuffer   = nullptr;
 
     FramebufferPtr m_shadowFramebuffer = nullptr;
-    RenderTargetPtr m_shadowAtlas = nullptr;
+    RenderTargetPtr m_shadowAtlas      = nullptr;
     int m_currentShadowAtlasLayer      = 0;
 
     EntityRawPtrArray m_drawList;
@@ -261,6 +263,32 @@ namespace ToolKit
     FramebufferPtr m_copyBuffer   = nullptr;
     RenderTargetPtr m_copyTexture = nullptr;
     ShaderPtr m_gammaShader       = nullptr;
+  };
+
+  struct SceneRenderPassParams
+  {
+    RenderPassParams renderPassParams;
+    ShadowPassParams shadowPassParams;
+  };
+
+  /**
+   * Render scene with shadows.
+   */
+  class SceneRenderPass : public Pass
+  {
+   public:
+    SceneRenderPass();
+    explicit SceneRenderPass(const SceneRenderPassParams& params);
+
+    void Render() override;
+    void PreRender() override;
+    void PostRender() override;
+
+   public:
+    SceneRenderPassParams m_params;
+
+    ShadowPassPtr m_shadowPass = nullptr;
+    RenderPassPtr m_renderPass = nullptr;
   };
 
 } // namespace ToolKit

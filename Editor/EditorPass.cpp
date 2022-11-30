@@ -40,8 +40,6 @@ namespace ToolKit
     {
       PreRender();
 
-      m_shadowPass.Render();
-
       SetLitMode(m_params.LitMode);
 
       m_scenePass.Render();
@@ -150,14 +148,14 @@ namespace ToolKit
       m_editorPass.m_params.ClearFrameBuffer = false;
 
       // Shadow pass.
-      m_shadowPass.m_params.Entities = scene->GetEntities();
-      m_shadowPass.m_params.Lights   = lights;
+      m_scenePass.m_params.shadowPassParams.Entities = scene->GetEntities();
+      m_scenePass.m_params.shadowPassParams.Lights   = lights;
 
       // Scene Pass.
-      m_scenePass.m_params.Scene         = app->GetCurrentScene();
-      m_scenePass.m_params.LightOverride = lights;
-      m_scenePass.m_params.Cam           = m_camera;
-      m_scenePass.m_params.FrameBuffer   = viewport->m_framebuffer;
+      m_scenePass.m_params.renderPassParams.Scene         = app->GetCurrentScene();
+      m_scenePass.m_params.renderPassParams.LightOverride = lights;
+      m_scenePass.m_params.renderPassParams.Cam           = m_camera;
+      m_scenePass.m_params.renderPassParams.FrameBuffer   = viewport->m_framebuffer;
 
       // Gizmo Pass.
       m_gizmoPass.m_params.Viewport = viewport;
