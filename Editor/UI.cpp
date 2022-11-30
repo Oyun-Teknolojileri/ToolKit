@@ -806,8 +806,8 @@ namespace ToolKit
         if (!fails.empty())
         {
           ImGui::Text(
-              "Following imports failed due to:\nFile format is"
-              " not supported.\nSupported formats are fbx, glb, obj & png.");
+              "Following imports failed due to:\nFile format is not "
+              "supported\nSupported formats: fbx, glb, obj, png, hdri & jpg");
           for (String& file : fails)
           {
             ImGui::Text("%s", file.c_str());
@@ -833,17 +833,23 @@ namespace ToolKit
           String ext;
           DecomposePath(file, nullptr, nullptr, &ext);
 
-          if (ext == ".png" || ext == ".hdri")
+          if (SupportedImageFormat(ext))
           {
-            if (ImportData.ActiveView->GetPath().find(TexturePath("")) !=
-                String::npos)
+            String viewPath    = ImportData.ActiveView->GetPath();
+            String texturePath = TexturePath("");
+            // Remove last string (PathSeperator)
+            texturePath.pop_back();
+            if (viewPath.find(texturePath) != String::npos)
             {
-              // Both HDRIs and PNGs stored in Textures/ root folder
+              // All images are copied to the active subfolder of Textures
+              const String& dst = ImportData.ActiveView->GetPath();
               std::filesystem::copy(
-                  file,
-                  ConcatPaths({GetResourcePath(ResourceType::Texture),
-                               ImportData.ActiveView->m_folder}),
-                  std::filesystem::copy_options::overwrite_existing);
+                  file, dst, std::filesystem::copy_options::overwrite_existing);
+            }
+            else
+            {
+              g_app->m_statusMsg = "Textures should be dropped to a folder "
+                                   "from Textures resource folder";
             }
             ImportData.Files.erase(ImportData.Files.begin() + i);
           }

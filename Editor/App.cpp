@@ -942,7 +942,7 @@ namespace ToolKit
         return true;
       }
 
-      if (ext == ".png" || ext == ".hdri")
+      if (SupportedImageFormat(ext))
       {
         return true;
       }
