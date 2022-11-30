@@ -31,6 +31,8 @@
 			float PCFRadius[12];
 			float lightBleedingReduction[12];
 			int softShadows[12];
+			int shadowAtlasFirstLayer[12];
+			int shadowAtlasLayers[12];
 		};
 		uniform _LightData LightData;
 		
@@ -41,7 +43,6 @@
 
 		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
 		{
-			/*
 			vec3 lightDir = normalize(LightData.pos[index] - pos);
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz;
@@ -54,6 +55,7 @@
 			// Get depth of the current fragment according to lights view
 			float currFragDepth = projCoord.z;
 
+/*
 			if (LightData.softShadows[index] == 1)
 			{
 				return PCFFilterShadow2D(LightData.dirAndSpotLightShadowMap[dirIndex], projCoord.xy,
@@ -61,24 +63,22 @@
 				LightData.lightBleedingReduction[index]);
 			}
 			else
+*/
 			{
-				vec2 moments = texture(LightData.dirAndSpotLightShadowMap[dirIndex], projCoord.xy).xy;
+				vec2 moments = texture(shadowAtlas, vec3(projCoord.xy, LightData.shadowAtlasFirstLayer[index])).xy;
 				return ChebyshevUpperBound(moments, projCoord.z, LightData.lightBleedingReduction[index]);
 			}
-			*/
-			return 1.0;
 		}
 
 		float CalculateSpotShadow(vec3 pos, int index, int spotIndex, vec3 normal)
 		{
-			/*
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
 			projCoord = projCoord * 0.5 + 0.5;
 
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
-
+/*
 			if (LightData.softShadows[index] == 1)
 			{
 				return PCFFilterShadow2D(LightData.dirAndSpotLightShadowMap[spotIndex], projCoord.xy,
@@ -86,12 +86,11 @@
 				LightData.lightBleedingReduction[index]);
 			}
 			else
+*/
 			{
-				vec2 moments = texture(LightData.dirAndSpotLightShadowMap[spotIndex], projCoord.xy).xy;
+				vec2 moments = texture(shadowAtlas, vec3(projCoord.xy, LightData.shadowAtlasFirstLayer[index])).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
-			*/
-			return 1.0;
 		}
 
 		float CalculatePointShadow(vec3 pos, int index, int pointIndex, vec3 normal)

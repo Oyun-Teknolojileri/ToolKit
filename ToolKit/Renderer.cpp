@@ -1920,6 +1920,14 @@ namespace ToolKit
         loc = glGetUniformLocation(program->m_handle,
                                    g_lightsoftShadowsStrCache[i].c_str());
         glUniform1i(loc, (int) (currLight->GetPCFSamplesVal() > 1));
+
+        loc = glGetUniformLocation(
+            program->m_handle, g_lightShadowAtlasFirstLayerStrCache[i].c_str());
+        glUniform1i(loc, currLight->m_shadowAtlasFirstLayer);
+
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowAtlasLayersStrCache[i].c_str());
+        glUniform1i(loc, currLight->m_shadowAtlasLayers);
       }
 
       GLuint loc = glGetUniformLocation(program->m_handle,
@@ -2045,64 +2053,6 @@ namespace ToolKit
      */
 
     m_shadowAtlas = shadowAtlas;
-  }
-
-  void Renderer::SetShadowMapTexture(EntityType type,
-                                     uint textureId,
-                                     ProgramPtr program)
-  {
-    // TODO
-    return;
-
-    if (m_bindedShadowMapCount >= m_rhiSettings::maxShadows)
-    {
-      return;
-    }
-
-    /*
-     * Texture Slots:
-     * 8-11: Directional and spot light shadow maps
-     * 12-15: Point light shadow maps
-     */
-
-    if (type == EntityType::Entity_PointLight)
-    {
-      if (m_pointLightShadowCount < m_rhiSettings::maxPointLightShadows)
-      {
-        int curr = m_pointLightShadowCount +
-                   m_rhiSettings::maxDirAndSpotLightShadows +
-                   m_rhiSettings::textureSlotCount;
-        glUniform1i(
-            glGetUniformLocation(program->m_handle,
-                                 ("LightData.pointLightShadowMap[" +
-                                  std::to_string(m_pointLightShadowCount) + "]")
-                                     .c_str()),
-            curr);
-        glActiveTexture(GL_TEXTURE0 + curr);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
-        m_bindedShadowMapCount++;
-        m_pointLightShadowCount++;
-      }
-    }
-    else
-    {
-      if (m_dirAndSpotLightShadowCount <
-          m_rhiSettings::maxDirAndSpotLightShadows)
-      {
-        int curr =
-            m_dirAndSpotLightShadowCount + m_rhiSettings::textureSlotCount;
-        glUniform1i(glGetUniformLocation(
-                        program->m_handle,
-                        ("LightData.dirAndSpotLightShadowMap[" +
-                         std::to_string(m_dirAndSpotLightShadowCount) + "]")
-                            .c_str()),
-                    curr);
-        glActiveTexture(GL_TEXTURE0 + curr);
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        m_bindedShadowMapCount++;
-        m_dirAndSpotLightShadowCount++;
-      }
-    }
   }
 
   void Renderer::ResetShadowMapBindings(ProgramPtr program)

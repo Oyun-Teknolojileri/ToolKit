@@ -479,6 +479,10 @@ namespace ToolKit
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
       // TODO 1024 is constant
       int lightLayers = (int) (light->GetShadowResolutionVal().x / 1024);
+
+      light->m_shadowAtlasFirstLayer = m_currentShadowAtlasLayer;
+      light->m_shadowAtlasLayers     = lightLayers;
+
       for (int i = 0; i < lightLayers; ++i)
       {
         m_shadowFramebuffer->SetAttachment(

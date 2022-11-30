@@ -46,9 +46,11 @@ namespace ToolKit
     TKDeclareParam(float, LightBleedingReduction);
 
     Mat4 m_shadowMapCameraProjectionViewMatrix;
-    float m_shadowMapCameraFar = 1.0f;
-    Camera* m_shadowCamera     = nullptr;
-    bool m_needToUpdateShadows = false;
+    float m_shadowMapCameraFar  = 1.0f;
+    Camera* m_shadowCamera      = nullptr;
+    bool m_needToUpdateShadows  = false;
+    int m_shadowAtlasFirstLayer = -1;
+    int m_shadowAtlasLayers     = -1;
 
    protected:
     bool m_shadowMapInitialized           = false;

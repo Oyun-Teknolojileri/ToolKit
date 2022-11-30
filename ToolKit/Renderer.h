@@ -82,9 +82,6 @@ namespace ToolKit
                   const Mat4& transform = Mat4(1.0f));
 
     void SetTexture(ubyte slotIndx, uint textureId);
-    void SetShadowMapTexture(EntityType type,
-                             uint textureId,
-                             ProgramPtr program);
     void ResetShadowMapBindings(ProgramPtr program);
 
     CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture,
@@ -250,9 +247,6 @@ namespace ToolKit
       static constexpr ubyte textureSlotCount = 8;
       // 4 studio lights, 8 in game lights
       static constexpr size_t maxLightsPerObject     = 12;
-      static constexpr int maxDirAndSpotLightShadows = 4;
-      static constexpr int maxPointLightShadows      = 4;
-      static constexpr int maxShadows                = 8;
 
       static constexpr int shadowAtlasSlot = 8;
     } m_rhiSettings;
