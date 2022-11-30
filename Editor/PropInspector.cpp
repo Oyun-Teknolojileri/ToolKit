@@ -1193,23 +1193,27 @@ namespace ToolKit
       }
 
       // Display scene hierarchy
-      if (ImGui::BeginChild("##Prefab Scene Nodes", ImVec2(0, 200), true))
+      if (ImGui::CollapsingHeader("Prefab Scene View",
+                                  ImGuiTreeNodeFlags_DefaultOpen))
       {
-        if (DrawHeader(m_entity,
-                       g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::BeginChild("##Prefab Scene Nodes", ImVec2(0, 200), true))
         {
-          for (Node* n : m_entity->m_node->m_children)
+          if (DrawHeader(m_entity,
+                         g_treeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen))
           {
-            if (n->m_entity)
+            for (Node* n : m_entity->m_node->m_children)
             {
-              ShowNode(n->m_entity);
+              if (n->m_entity)
+              {
+                ShowNode(n->m_entity);
+              }
             }
-          }
 
-          ImGui::TreePop();
+            ImGui::TreePop();
+          }
         }
+        ImGui::EndChild();
       }
-      ImGui::EndChild();
 
       Entity* shownEntity = m_entity;
       if (m_activeChildEntity)
@@ -1846,44 +1850,62 @@ namespace ToolKit
 
     void PropInspector::Show()
     {
+      ImVec4 windowBg  = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+      ImVec4 childBg   = ImGui::GetStyleColorVec4(ImGuiCol_ChildBg);
+      ImGuiStyle style = ImGui::GetStyle();
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+      ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
+                          ImVec2(2, style.ItemSpacing.y));
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         HandleStates();
 
         const ImVec2 windowSize      = ImGui::GetWindowSize();
-        const ImVec2 sidebarIconSize = ImVec2(16, 16);
-        const ImVec2 spacing         = ImGui::GetStyle().ItemSpacing;
-        const ImVec2 sidebarSize =
-            ImVec2((2.0 * spacing.x) + sidebarIconSize.x,
-                   m_views.size() * (sidebarIconSize.y + (spacing.y * 2.0)));
+        const ImVec2 sidebarIconSize = ImVec2(18, 18);
 
         // Show ViewType sidebar
-        if (ImGui::BeginChildFrame(ImGui::GetID("ViewTypeSidebar"),
-                                   sidebarSize))
+        ImGui::GetStyle()    = style;
+        const ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
+        const ImVec2 sidebarSize =
+            ImVec2(spacing.x + sidebarIconSize.x + spacing.x, windowSize.y);
+        if (ImGui::BeginChildFrame(
+                ImGui::GetID("ViewTypeSidebar"), sidebarSize, 0))
         {
           for (uint viewIndx = 0; viewIndx < m_views.size(); viewIndx++)
           {
             ViewRawPtr view = m_views[viewIndx];
-            if (UI::ImageButtonDecorless(
-                    view->m_viewIcn->m_textureId, Vec2(16, 16), false))
+
+            if (m_activeViewIndx == viewIndx)
+            {
+              ImGui::PushStyleColor(ImGuiCol_Button, windowBg);
+            }
+            else
+            {
+              ImGui::PushStyleColor(ImGuiCol_Button, childBg);
+            }
+            if (ImGui::ImageButton(reinterpret_cast<void*>(
+                                       (intptr_t) view->m_viewIcn->m_textureId),
+                                   sidebarIconSize))
             {
               m_activeViewIndx = viewIndx;
             }
+            ImGui::PopStyleColor(1);
           }
           ImGui::EndChildFrame();
         }
 
         ImGui::SameLine();
 
-        if (ImGui::BeginChildFrame(
+        if (ImGui::BeginChild(
                 ImGui::GetID("PropInspectorActiveView"),
                 Vec2(windowSize.x - sidebarSize.x - spacing.x, windowSize.y)))
         {
           m_views[m_activeViewIndx]->Show();
-          ImGui::EndChildFrame();
+          ImGui::EndChild();
         }
       }
       ImGui::End();
+      ImGui::PopStyleVar(2);
     }
 
     Window::Type PropInspector::GetType() const
