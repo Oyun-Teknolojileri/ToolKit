@@ -493,9 +493,6 @@ namespace ToolKit
           m_shadowAtlas,
           light->m_shadowAtlasLayer);
 
-      // Assumes layers will be rendered in ascending order
-      // TODO: Before implemnting bin pack algorithm, change here and hold a
-      // boolean array
       if (!m_clearedLayers[light->m_shadowAtlasLayer])
       {
         renderer->ClearBuffer(GraphicBitFields::DepthBits);
