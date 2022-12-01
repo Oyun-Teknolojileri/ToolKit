@@ -414,13 +414,14 @@ namespace ToolKit
                                      GraphicTypes::TypeFloat,
                                      m_layerCount};
 
-    // TODO 4096 is constant
-    m_shadowAtlas->Reconstruct(4096, 4096, set);
+    m_shadowAtlas->Reconstruct(
+        g_shadowAtlasTextureSize, g_shadowAtlasTextureSize, set);
 
     if (!m_shadowFramebuffer->Initialized())
     {
       // TODO: Msaa is good for variance shadow mapping.
-      m_shadowFramebuffer->Init({4096, 4096, 0, false, true});
+      m_shadowFramebuffer->Init(
+          {g_shadowAtlasTextureSize, g_shadowAtlasTextureSize, 0, false, true});
     }
   }
 
@@ -540,14 +541,15 @@ namespace ToolKit
   {
     // TODO: use better algorithm
 
-    const int size = 4096; // TODO: 4096 is constant
+    const int size = g_shadowAtlasTextureSize;
 
     int layer = 0;
     int rem   = size;
     for (Light* light : lights)
     {
       const float res = light->GetShadowResolutionVal().x;
-      assert(res <= 4096.0f + 1.0f && "Shadow resolution can not exceed 4096.");
+      assert(res <= g_shadowAtlasTextureSize + 1.0f &&
+             "Shadow resolution can not exceed 4096.");
       if (res > rem)
       {
         layer++;

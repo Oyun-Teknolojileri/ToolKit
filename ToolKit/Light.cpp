@@ -48,8 +48,10 @@ namespace ToolKit
     ParamShadowResolution().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void {
           const Vec2 val = std::get<Vec2>(newVal);
-          // TODO: 4096 is constant
-          if (val.x > -0.5f && val.y > -0.5f && val.x < 4096.0f + 0.1f && val.y < 4096.0f + 0.1f)
+
+          if (val.x > -0.5f && val.y > -0.5f &&
+              val.x < g_shadowAtlasTextureSize + 0.1f &&
+              val.y < g_shadowAtlasTextureSize + 0.1f)
           {
             if (GetCastShadowVal())
             {

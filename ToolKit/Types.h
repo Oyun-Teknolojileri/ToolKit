@@ -304,6 +304,9 @@ namespace ToolKit
     AllBits          = ColorBits | DepthBits | StencilBits
   };
 
+  // TODO: Carry this to somewhere
+  static constexpr int g_shadowAtlasTextureSize = 4096;
+
   static const char* TKVersionStr = "v0.3.17";
 
 } // namespace ToolKit

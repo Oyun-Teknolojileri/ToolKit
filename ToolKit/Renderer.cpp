@@ -1939,18 +1939,19 @@ namespace ToolKit
 
         loc = glGetUniformLocation(program->m_handle,
                                    g_lightShadowAtlasLayerStrCache[i].c_str());
-        glUniform1f(loc, (GLfloat)currLight->m_shadowAtlasLayer);
+        glUniform1f(loc, (GLfloat) currLight->m_shadowAtlasLayer);
 
-        // TODO: 4096 is constant
-        const Vec2 coord = currLight->m_shadowAtlasCoord / 4096.0f;
+        const Vec2 coord =
+            currLight->m_shadowAtlasCoord / (float) g_shadowAtlasTextureSize;
         loc = glGetUniformLocation(program->m_handle,
                                    g_lightShadowAtlasCoordStrCache[i].c_str());
         glUniform2fv(loc, 1, &coord.x);
 
-        // TODO: 4096 is constant
         loc = glGetUniformLocation(
             program->m_handle, g_lightShadowAtlasEdgeRatioStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetShadowResolutionVal().x / 4096.0f);
+        glUniform1f(loc,
+                    currLight->GetShadowResolutionVal().x /
+                        g_shadowAtlasTextureSize);
       }
 
       GLuint loc = glGetUniformLocation(program->m_handle,
