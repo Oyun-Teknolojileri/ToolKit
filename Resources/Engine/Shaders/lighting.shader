@@ -31,15 +31,16 @@
 			float PCFRadius[12];
 			float lightBleedingReduction[12];
 			int softShadows[12];
-			int shadowAtlasFirstLayer[12];
-			int shadowAtlasLayers[12];
+			float shadowAtlasLayer[12];
+			float shadowAtlasEdgeRatio[12];
+			vec2 shadowAtlasCoord[12]; // Between 0 and 1
 		};
 		uniform _LightData LightData;
-		
+
 		sampler2DArray shadowAtlas;
 
-		const int maxPointLightShadows = 4;
-		const int maxDirAndSpotLightShadows = 4;
+		const int maxPointLightShadows = 16;
+		const int maxDirAndSpotLightShadows = 16;
 
 		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
 		{
@@ -55,7 +56,7 @@
 			// Get depth of the current fragment according to lights view
 			float currFragDepth = projCoord.z;
 
-/*
+/* TODO: bring pack PCF
 			if (LightData.softShadows[index] == 1)
 			{
 				return PCFFilterShadow2D(LightData.dirAndSpotLightShadowMap[dirIndex], projCoord.xy,
@@ -65,7 +66,8 @@
 			else
 */
 			{
-				vec2 moments = texture(shadowAtlas, vec3(projCoord.xy, LightData.shadowAtlasFirstLayer[index])).xy;
+				vec2 coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * projCoord.xy;
+				vec2 moments = texture(shadowAtlas, vec3(coord, LightData.shadowAtlasLayer[index])).xy;
 				return ChebyshevUpperBound(moments, projCoord.z, LightData.lightBleedingReduction[index]);
 			}
 		}
@@ -78,7 +80,8 @@
 
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
-/*
+
+/* TODO: bring pack PCF
 			if (LightData.softShadows[index] == 1)
 			{
 				return PCFFilterShadow2D(LightData.dirAndSpotLightShadowMap[spotIndex], projCoord.xy,
@@ -88,7 +91,8 @@
 			else
 */
 			{
-				vec2 moments = texture(shadowAtlas, vec3(projCoord.xy, LightData.shadowAtlasFirstLayer[index])).xy;
+				vec2 coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * projCoord.xy;
+				vec2 moments = texture(shadowAtlas, vec3(coord, LightData.shadowAtlasLayer[index])).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
 		}

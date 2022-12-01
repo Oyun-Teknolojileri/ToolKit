@@ -302,6 +302,15 @@ namespace ToolKit
   {
     PreRender();
 
+    // Clear all layers of shadow atlas
+    // TODO: do it an a better way?
+    for (int i = 0; i < m_layerCount; ++i)
+    {
+      m_shadowFramebuffer->SetAttachment(
+          Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, i);
+      GetRenderer()->ClearFrameBuffer(m_shadowFramebuffer, Vec4(1.0f));
+    }
+
     // Update shadow maps.
     for (Light* light : m_params.Lights)
     {
@@ -322,7 +331,7 @@ namespace ToolKit
         light->UpdateShadowCamera();
       }
 
-      UpdateShadowMap(light, entities);
+      RenderShadowMaps(light, entities);
       // TODO FilterShadowMap(light);
     }
 
@@ -344,36 +353,37 @@ namespace ToolKit
                        }),
         m_drawList.end());
 
-    m_currentShadowAtlasLayer = 0;
-
-    // Create shadow atlas
-
     // Check if the shadow atlas needs to be updated
-    bool needChange       = false;
-    static int lightCount = 0; // TODO Should be member variable
-    int lightsWithShadows = 0;
-    for (Light* light : m_params.Lights)
+    bool needChange = false;
+
+    // After this loop lastShadowLights is set with lights with shadows
+    int nextId = 0;
+    for (int i = 0; i < m_params.Lights.size(); ++i)
     {
+      Light* light = m_params.Lights[i];
       if (light->GetCastShadowVal())
       {
-        lightsWithShadows++;
-      }
-    }
-    if (lightsWithShadows != lightCount)
-    {
-      needChange = true;
-      lightCount = lightsWithShadows;
-    }
+        if (light->m_shadowResolutionUpdated)
+        {
+          light->m_shadowResolutionUpdated = false;
+          needChange                       = true;
+        }
 
-    if (!needChange)
-    {
-      for (Light* light : m_params.Lights)
-      {
-        if (light->m_needToUpdateShadows)
+        if (nextId >= m_lastShadowLights.size())
         {
           needChange = true;
-          break;
+          m_lastShadowLights.push_back(light);
+          nextId++;
+          continue;
         }
+
+        if (m_lastShadowLights[nextId] != light)
+        {
+          needChange = true;
+        }
+
+        m_lastShadowLights[nextId] = light;
+        nextId++;
       }
     }
 
@@ -382,16 +392,14 @@ namespace ToolKit
       return;
     }
 
-    int layerCount = 0;
-    for (Light* light : m_params.Lights)
+    m_layerCount = PlaceShadowMapsToShadowAtlas(m_lastShadowLights);
+
+    const int maxLayers = GetRenderer()->GetMaxArrayTextureLayers();
+    if (maxLayers < m_layerCount)
     {
-      if (light->GetCastShadowVal())
-      {
-        // TODO 1024 is constant
-        int ratio = (int) light->GetShadowResolutionVal().x / 1024;
-        layerCount += ratio * ratio;
-        light->m_needToUpdateShadows = false;
-      }
+      m_layerCount = maxLayers;
+      GetLogger()->Log("ERROR: Max array texture layer size is reached: " +
+                       std::to_string(maxLayers) + " !");
     }
 
     const RenderTargetSettigs set = {0,
@@ -404,16 +412,15 @@ namespace ToolKit
                                      GraphicTypes::FormatRG32F,
                                      GraphicTypes::FormatRG,
                                      GraphicTypes::TypeFloat,
-                                     layerCount};
+                                     m_layerCount};
 
-    // TODO 1024 is constant
-    m_shadowAtlas->Reconstruct(1024, 1024, set);
+    // TODO 4096 is constant
+    m_shadowAtlas->Reconstruct(4096, 4096, set);
 
     if (!m_shadowFramebuffer->Initialized())
     {
-      // TODO 1024 is constant
-      // TODO Msaa is good for variance shadow mapping
-      m_shadowFramebuffer->Init({1024, 1024, 0, false, true});
+      // TODO: Msaa is good for variance shadow mapping.
+      m_shadowFramebuffer->Init({4096, 4096, 0, false, true});
     }
   }
 
@@ -427,8 +434,8 @@ namespace ToolKit
     return m_shadowAtlas;
   }
 
-  void ShadowPass::UpdateShadowMap(Light* light,
-                                   const EntityRawPtrArray& entities)
+  void ShadowPass::RenderShadowMaps(Light* light,
+                                    const EntityRawPtrArray& entities)
   {
     Renderer* renderer = GetRenderer();
 
@@ -451,6 +458,7 @@ namespace ToolKit
       }
     };
 
+    m_currentRenderingLayer = 0;
     switch (light->GetType())
     {
     case EntityType::Entity_PointLight: {
@@ -476,25 +484,28 @@ namespace ToolKit
     break;
     case EntityType::Entity_DirectionalLight:
     case EntityType::Entity_SpotLight: {
+
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
-      // TODO 1024 is constant
-      int lightLayers = (int) (light->GetShadowResolutionVal().x / 1024);
+      m_shadowFramebuffer->SetAttachment(
+          Framebuffer::Attachment::ColorAttachment0,
+          m_shadowAtlas,
+          light->m_shadowAtlasLayer);
 
-      light->m_shadowAtlasFirstLayer = m_currentShadowAtlasLayer;
-      light->m_shadowAtlasLayers     = lightLayers;
-
-      for (int i = 0; i < lightLayers; ++i)
+      // Assumes layers will be rendered in ascending order
+      // TODO: Before implemnting bin pack algorithm, change here and hold a
+      // boolean array
+      if (m_currentRenderingLayer != light->m_shadowAtlasLayer)
       {
-        m_shadowFramebuffer->SetAttachment(
-            Framebuffer::Attachment::ColorAttachment0,
-            m_shadowAtlas,
-            m_currentShadowAtlasLayer);
-
-        renderer->ClearFrameBuffer(m_shadowFramebuffer, Vec4(1.0f));
-
-        renderForShadowMapFn(light, entities);
-        m_currentShadowAtlasLayer += 1;
+        renderer->ClearBuffer(GraphicBitFields::DepthBits);
+        m_currentRenderingLayer = light->m_shadowAtlasLayer;
       }
+
+      renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
+                                (uint) light->m_shadowAtlasCoord.y,
+                                (uint) light->GetShadowResolutionVal().x,
+                                (uint) light->GetShadowResolutionVal().x);
+
+      renderForShadowMapFn(light, entities);
     }
     break;
     default:
@@ -523,6 +534,32 @@ namespace ToolKit
                                    light->GetShadowMapRenderTarget(),
                                    Y_AXIS,
                                    softness / shadowRes.y);
+  }
+
+  int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights)
+  {
+    // TODO: use better algorithm
+
+    const int size = 4096; // TODO: 4096 is constant
+
+    int layer = 0;
+    int rem   = size;
+    for (Light* light : lights)
+    {
+      const float res = light->GetShadowResolutionVal().x;
+      assert(res <= 4096.0f + 1.0f && "Shadow resolution can not exceed 4096.");
+      if (res > rem)
+      {
+        layer++;
+        rem = size;
+      }
+
+      light->m_shadowAtlasCoord = Vec2((float) size - rem);
+      light->m_shadowAtlasLayer = layer;
+      rem -= (int) res;
+    }
+
+    return layer + 1;
   }
 
   Pass::Pass()

@@ -91,6 +91,15 @@ namespace ToolKit
       }
   }
 
+  int Renderer::GetMaxArrayTextureLayers()
+  {
+    if (m_maxArrayTextureLayers == -1)
+    {
+      glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &m_maxArrayTextureLayers);
+    }
+    return m_maxArrayTextureLayers;
+  }
+
   void Renderer::SetCameraLens(Camera* cam)
   {
     float aspect = (float) m_viewportSize.x / (float) m_viewportSize.y;
@@ -766,6 +775,13 @@ namespace ToolKit
     m_viewportSize.x = width;
     m_viewportSize.y = height;
     glViewport(0, 0, width, height);
+  }
+
+  void Renderer::SetViewportSize(uint x, uint y, uint width, uint height)
+  {
+    m_viewportSize.x = width;
+    m_viewportSize.y = height;
+    glViewport(x, y, width, height);
   }
 
   void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
@@ -1921,13 +1937,20 @@ namespace ToolKit
                                    g_lightsoftShadowsStrCache[i].c_str());
         glUniform1i(loc, (int) (currLight->GetPCFSamplesVal() > 1));
 
-        loc = glGetUniformLocation(
-            program->m_handle, g_lightShadowAtlasFirstLayerStrCache[i].c_str());
-        glUniform1i(loc, currLight->m_shadowAtlasFirstLayer);
-
         loc = glGetUniformLocation(program->m_handle,
-                                   g_lightShadowAtlasLayersStrCache[i].c_str());
-        glUniform1i(loc, currLight->m_shadowAtlasLayers);
+                                   g_lightShadowAtlasLayerStrCache[i].c_str());
+        glUniform1f(loc, (GLfloat)currLight->m_shadowAtlasLayer);
+
+        // TODO: 4096 is constant
+        const Vec2 coord = currLight->m_shadowAtlasCoord / 4096.0f;
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowAtlasCoordStrCache[i].c_str());
+        glUniform2fv(loc, 1, &coord.x);
+
+        // TODO: 4096 is constant
+        loc = glGetUniformLocation(
+            program->m_handle, g_lightShadowAtlasEdgeRatioStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetShadowResolutionVal().x / 4096.0f);
       }
 
       GLuint loc = glGetUniformLocation(program->m_handle,

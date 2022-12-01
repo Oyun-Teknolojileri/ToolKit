@@ -117,8 +117,9 @@ namespace ToolKit
     RenderTargetPtr GetShadowAtlas();
 
    private:
-    void UpdateShadowMap(Light* light, const EntityRawPtrArray& entities);
+    void RenderShadowMaps(Light* light, const EntityRawPtrArray& entities);
     void FilterShadowMap(Light* light);
+    int PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights);
 
    public:
     ShadowPassParams m_params;
@@ -129,7 +130,9 @@ namespace ToolKit
 
     FramebufferPtr m_shadowFramebuffer = nullptr;
     RenderTargetPtr m_shadowAtlas      = nullptr;
-    int m_currentShadowAtlasLayer      = 0;
+    int m_layerCount                   = 0;
+    int m_currentRenderingLayer        = 0;
+    LightRawPtrArray m_lastShadowLights;
 
     EntityRawPtrArray m_drawList;
     Quaternion m_cubeMapRotations[6];

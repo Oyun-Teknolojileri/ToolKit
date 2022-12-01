@@ -74,6 +74,7 @@ namespace ToolKit
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
+    void SetViewportSize(uint x, uint y, uint width, uint height);
 
     void DrawFullQuad(ShaderPtr fragmentShader);
     void DrawFullQuad(MaterialPtr mat);
@@ -138,6 +139,8 @@ namespace ToolKit
     void CollectEnvironmentVolumes(const EntityRawPtrArray& entities);
 
     /////////////////////
+
+    int GetMaxArrayTextureLayers();
 
    private:
     void RenderEntities(
@@ -273,6 +276,8 @@ namespace ToolKit
 
     FramebufferPtr m_copyFb    = nullptr;
     MaterialPtr m_copyMaterial = nullptr;
+
+    int m_maxArrayTextureLayers = -1;
   };
 
 } // namespace ToolKit
