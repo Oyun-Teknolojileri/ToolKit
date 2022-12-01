@@ -302,15 +302,6 @@ namespace ToolKit
   {
     PreRender();
 
-    // Clear all layers of shadow atlas
-    // TODO: do it an a better way?
-    for (int i = 0; i < m_layerCount; ++i)
-    {
-      m_shadowFramebuffer->SetAttachment(
-          Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, i);
-      GetRenderer()->ClearFrameBuffer(m_shadowFramebuffer, Vec4(1.0f));
-    }
-
     // Update shadow maps.
     for (Light* light : m_params.Lights)
     {
