@@ -617,7 +617,7 @@ namespace ToolKit
       return false;
     }
 
-    static String supportedFormats(PNG + JPG + JPEG + TGA + BMP + PSD);
+    static String supportedFormats(PNG + JPG + JPEG + TGA + BMP + PSD + HDR);
     return supportedFormats.find(ToLower(ext)) != String::npos;
   }
 

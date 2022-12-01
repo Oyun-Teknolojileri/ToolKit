@@ -10,6 +10,17 @@ namespace ToolKit
 {
   namespace Editor
   {
+    void DropZone(uint fallbackIcon,
+                  const String& file,
+                  std::function<void(const DirectoryEntry& entry)> dropAction,
+                  const String& dropName = "");
+
+    void DropSubZone(
+        const String& title,
+        uint fallbackIcon,
+        const String& file,
+        std::function<void(const DirectoryEntry& entry)> dropAction,
+        bool isEditable);
 
     class View
     {
@@ -18,60 +29,42 @@ namespace ToolKit
       {
       }
       virtual void Show() = 0;
-      virtual void ShowVariant(ParameterVariant* var, ComponentPtr comp);
-      void ShowAnimControllerComponent(ParameterVariant* var, ComponentPtr cmp);
-      void ShowMaterialPtr(const String& uniqueName,
-                           const String& file,
-                           MaterialPtr& var);
-      void ShowMaterialVariant(const String& uniqueName,
-                               const String& file,
-                               ParameterVariant* var);
-
-      void DropZone(uint fallbackIcon,
-                    const String& file,
-                    std::function<void(const DirectoryEntry& entry)> dropAction,
-                    const String& dropName = "");
-
-      void DropSubZone(
-          const String& title,
-          uint fallbackIcon,
-          const String& file,
-          std::function<void(const DirectoryEntry& entry)> dropAction);
-
-     protected:
-      bool IsTextInputFinalized();
 
      public:
-      Entity* m_entity = nullptr;
-      int m_viewID     = 0;
+      Entity* m_entity     = nullptr;
+      int m_viewID         = 0;
+      TexturePtr m_viewIcn = nullptr;
+    };
+
+    class PrefabView : public View
+    {
+     public:
+      PrefabView();
+      virtual ~PrefabView();
+      virtual void Show();
+
+     private:
+      bool DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags);
+      void ShowNode(Entity* e);
+
+     private:
+      Entity* m_activeChildEntity = nullptr;
     };
 
     class EntityView : public View
     {
      public:
-      EntityView()
-      {
-        m_viewID = 1;
-      }
-      virtual ~EntityView()
-      {
-      }
+      EntityView();
+      virtual ~EntityView();
       virtual void Show();
       virtual void ShowParameterBlock();
-      virtual bool ShowComponentBlock(ComponentPtr& comp);
 
      protected:
-      void ShowCustomData(String headerName,
-                          ParameterVariantRawPtrArray& vars,
-                          bool isListEditable);
-      ValueUpdateFn MultiUpdate(ParameterVariant* var);
-      void ShowMultiMaterialComponent(
-          ComponentPtr& comp, std::function<bool(const String&)> showCompFunc);
-      void ShowAABBOverrideComponent(
-          ComponentPtr& comp, std::function<bool(const String&)> showCompFunc);
       void ShowAnchorSettings();
     };
 
+    typedef View* ViewRawPtr;
+    typedef std::vector<ViewRawPtr> ViewRawPtrArray;
     class PropInspector : public Window
     {
      public:
@@ -84,7 +77,8 @@ namespace ToolKit
       void DispatchSignals() const override;
 
      public:
-      EntityView* m_view;
+      ViewRawPtrArray m_views;
+      uint m_activeViewIndx = 0;
     };
 
   } // namespace Editor
