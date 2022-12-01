@@ -133,6 +133,7 @@ namespace ToolKit
     int m_layerCount                   = 0;
     int m_currentRenderingLayer        = 0;
     LightRawPtrArray m_lastShadowLights;
+    std::vector<bool> m_clearedLayers;
 
     EntityRawPtrArray m_drawList;
     Quaternion m_cubeMapRotations[6];

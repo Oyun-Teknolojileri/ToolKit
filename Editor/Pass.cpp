@@ -387,42 +387,53 @@ namespace ToolKit
       }
     }
 
-    if (!needChange)
+    if (needChange)
     {
-      return;
+
+      // Place shadow textures to atlas
+      m_layerCount = PlaceShadowMapsToShadowAtlas(m_lastShadowLights);
+
+      const int maxLayers = GetRenderer()->GetMaxArrayTextureLayers();
+      if (maxLayers < m_layerCount)
+      {
+        m_layerCount = maxLayers;
+        GetLogger()->Log("ERROR: Max array texture layer size is reached: " +
+                         std::to_string(maxLayers) + " !");
+      }
+
+      const RenderTargetSettigs set = {0,
+                                       GraphicTypes::Target2DArray,
+                                       GraphicTypes::UVClampToEdge,
+                                       GraphicTypes::UVClampToEdge,
+                                       GraphicTypes::UVClampToEdge,
+                                       GraphicTypes::SampleLinear,
+                                       GraphicTypes::SampleLinear,
+                                       GraphicTypes::FormatRG32F,
+                                       GraphicTypes::FormatRG,
+                                       GraphicTypes::TypeFloat,
+                                       m_layerCount};
+
+      m_shadowAtlas->Reconstruct(
+          g_shadowAtlasTextureSize, g_shadowAtlasTextureSize, set);
+
+      if (!m_shadowFramebuffer->Initialized())
+      {
+        // TODO: Msaa is good for variance shadow mapping.
+        m_shadowFramebuffer->Init({g_shadowAtlasTextureSize,
+                                   g_shadowAtlasTextureSize,
+                                   0,
+                                   false,
+                                   true});
+      }
     }
 
-    m_layerCount = PlaceShadowMapsToShadowAtlas(m_lastShadowLights);
-
-    const int maxLayers = GetRenderer()->GetMaxArrayTextureLayers();
-    if (maxLayers < m_layerCount)
+    // Set all layers uncleared
+    if (m_layerCount != m_clearedLayers.size())
     {
-      m_layerCount = maxLayers;
-      GetLogger()->Log("ERROR: Max array texture layer size is reached: " +
-                       std::to_string(maxLayers) + " !");
+      m_clearedLayers.resize(m_layerCount);
     }
-
-    const RenderTargetSettigs set = {0,
-                                     GraphicTypes::Target2DArray,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::SampleLinear,
-                                     GraphicTypes::SampleLinear,
-                                     GraphicTypes::FormatRG32F,
-                                     GraphicTypes::FormatRG,
-                                     GraphicTypes::TypeFloat,
-                                     m_layerCount};
-
-    m_shadowAtlas->Reconstruct(
-        g_shadowAtlasTextureSize, g_shadowAtlasTextureSize, set);
-
-    if (!m_shadowFramebuffer->Initialized())
-    {
-      // TODO: Msaa is good for variance shadow mapping.
-      m_shadowFramebuffer->Init(
-          {g_shadowAtlasTextureSize, g_shadowAtlasTextureSize, 0, false, true});
-    }
+    for (int i = 0; i < m_layerCount; ++i)
+      m_clearedLayers[i] = false;
   }
 
   void ShadowPass::PostRender()
@@ -459,7 +470,6 @@ namespace ToolKit
       }
     };
 
-    m_currentRenderingLayer = 0;
     switch (light->GetType())
     {
     case EntityType::Entity_PointLight: {
@@ -495,10 +505,10 @@ namespace ToolKit
       // Assumes layers will be rendered in ascending order
       // TODO: Before implemnting bin pack algorithm, change here and hold a
       // boolean array
-      if (m_currentRenderingLayer != light->m_shadowAtlasLayer)
+      if (!m_clearedLayers[light->m_shadowAtlasLayer])
       {
         renderer->ClearBuffer(GraphicBitFields::DepthBits);
-        m_currentRenderingLayer = light->m_shadowAtlasLayer;
+        m_clearedLayers[light->m_shadowAtlasLayer] = true;
       }
 
       renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
