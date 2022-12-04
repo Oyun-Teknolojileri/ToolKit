@@ -48,79 +48,67 @@
 		vec3 UVWToUVLayer(vec3 vec)
 		{
 			/*
-			0: pos x
-			1: neg X
-			2: pos y
-			3: neg y
-			4: pos z
-			5: neg z
+				layer:
+				  0       1       2       3       4       5
+				pos X   neg X   pos Y   neg Y   pos Z   neg Z
 			*/
-			float slice;
+			float layer;
 			vec2 coord;
-			vec.z = -vec.z;
 
 			if (abs(vec.x) >= abs(vec.y) && abs(vec.x) >= abs(vec.z))
 			{
-				vec.y = -vec.y;
 				if (vec.x > 0.0)
 				{
-					slice = 0.0;
-					vec.z = -vec.z;//
-					vec.y = -vec.y;//
+					layer = 0.0;
 					vec /= vec.x;
 					coord = vec.yz;
 				}
 				else
 				{
-					slice = 1.0;
-					vec.z = -vec.z;
+					layer = 1.0;
+					vec.y = -vec.y;
 					vec /= vec.x;
 					coord = vec.yz;
 				}
+				coord.xy = -coord.yx;
 			}
 			else if (abs(vec.y) >= abs(vec.x) && abs(vec.y) >= abs(vec.z))
 			{
 				if (vec.y > 0.0)
 				{
-					slice = 2.0;
-					vec.z = -vec.z;//
+					layer = 2.0;
 					vec /= vec.y;
 					coord = vec.xz;
 				}
 				else
 				{
-					slice = 3.0;
-					vec.z = -vec.z;
-					vec.x = -vec.x;//
+					layer = 3.0;
+					vec.x = -vec.x;
 					vec /= vec.y;
 					coord = vec.xz;
 				}
-				coord.xy = -coord.yx;//
 			}
 			else
 			{
-				vec.y = -vec.y;
+				vec.z = -vec.z;
 				if (vec.z < 0.0)
 				{
-					slice = 4.0;
+					layer = 4.0;
+					vec.y = -vec.y;
 					vec /= vec.z;
 					coord = vec.yx;
 				}
 				else
 				{
-					slice = 5.0;
-					//vec.x = -vec.x;
-					vec.y = -vec.y;//
+					layer = 5.0;
 					vec /= vec.z;
 					coord = vec.yx;
 				}
+				coord.xy = -coord.yx;
 			}
 
-			coord.xy = -coord.yx;//
-
 			coord = (coord + vec2(1.0)) * 0.5;
-
-			return vec3(coord, slice);
+			return vec3(coord, layer);
 		}
 
 		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
