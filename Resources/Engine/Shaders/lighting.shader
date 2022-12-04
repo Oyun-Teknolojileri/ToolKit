@@ -40,7 +40,7 @@
 		sampler2DArray shadowAtlas;
 
 		// TODO: There is no more need to separate the limitation of point lights from directional and spot lights limitations
-		const int maxPointLightShadows = 8
+		const int maxPointLightShadows = 8;
 		const int maxDirAndSpotLightShadows = 8;
 
 		// Returns uv coordinates and layers such as: vec3(u,v,layer)

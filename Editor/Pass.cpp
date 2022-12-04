@@ -348,81 +348,9 @@ namespace ToolKit
                        }),
         m_drawList.end());
 
-    // Check if the shadow atlas needs to be updated
-    bool needChange = false;
+    InitShadowAtlas();
 
-    // After this loop lastShadowLights is set with lights with shadows
-    int nextId = 0;
-    for (int i = 0; i < m_params.Lights.size(); ++i)
-    {
-      Light* light = m_params.Lights[i];
-      if (light->GetCastShadowVal())
-      {
-        if (light->m_shadowResolutionUpdated)
-        {
-          light->m_shadowResolutionUpdated = false;
-          needChange                       = true;
-        }
-
-        if (nextId >= m_lastShadowLights.size())
-        {
-          needChange = true;
-          m_lastShadowLights.push_back(light);
-          nextId++;
-          continue;
-        }
-
-        if (m_lastShadowLights[nextId] != light)
-        {
-          needChange = true;
-        }
-
-        m_lastShadowLights[nextId] = light;
-        nextId++;
-      }
-    }
-
-    if (needChange)
-    {
-
-      // Place shadow textures to atlas
-      m_layerCount = PlaceShadowMapsToShadowAtlas(m_lastShadowLights);
-
-      const int maxLayers = GetRenderer()->GetMaxArrayTextureLayers();
-      if (maxLayers < m_layerCount)
-      {
-        m_layerCount = maxLayers;
-        GetLogger()->Log("ERROR: Max array texture layer size is reached: " +
-                         std::to_string(maxLayers) + " !");
-      }
-
-      const RenderTargetSettigs set = {0,
-                                       GraphicTypes::Target2DArray,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::SampleLinear,
-                                       GraphicTypes::SampleLinear,
-                                       GraphicTypes::FormatRG32F,
-                                       GraphicTypes::FormatRG,
-                                       GraphicTypes::TypeFloat,
-                                       m_layerCount};
-
-      m_shadowAtlas->Reconstruct(
-          g_shadowAtlasTextureSize, g_shadowAtlasTextureSize, set);
-
-      if (!m_shadowFramebuffer->Initialized())
-      {
-        // TODO: Msaa is good for variance shadow mapping.
-        m_shadowFramebuffer->Init({g_shadowAtlasTextureSize,
-                                   g_shadowAtlasTextureSize,
-                                   0,
-                                   false,
-                                   true});
-      }
-    }
-
-    // Set all layers uncleared
+    // Set all shadow atlas layers uncleared
     if (m_layerCount != m_clearedLayers.size())
     {
       m_clearedLayers.resize(m_layerCount);
@@ -636,6 +564,83 @@ namespace ToolKit
     }
 
     return layer + 1;
+  }
+
+  void ShadowPass::InitShadowAtlas()
+  {
+    // Check if the shadow atlas needs to be updated
+    bool needChange = false;
+
+    // After this loop lastShadowLights is set with lights with shadows
+    int nextId = 0;
+    for (int i = 0; i < m_params.Lights.size(); ++i)
+    {
+      Light* light = m_params.Lights[i];
+      if (light->GetCastShadowVal())
+      {
+        if (light->m_shadowResolutionUpdated)
+        {
+          light->m_shadowResolutionUpdated = false;
+          needChange                       = true;
+        }
+
+        if (nextId >= m_lastShadowLights.size())
+        {
+          needChange = true;
+          m_lastShadowLights.push_back(light);
+          nextId++;
+          continue;
+        }
+
+        if (m_lastShadowLights[nextId] != light)
+        {
+          needChange = true;
+        }
+
+        m_lastShadowLights[nextId] = light;
+        nextId++;
+      }
+    }
+
+    if (needChange)
+    {
+
+      // Place shadow textures to atlas
+      m_layerCount = PlaceShadowMapsToShadowAtlas(m_lastShadowLights);
+
+      const int maxLayers = GetRenderer()->GetMaxArrayTextureLayers();
+      if (maxLayers < m_layerCount)
+      {
+        m_layerCount = maxLayers;
+        GetLogger()->Log("ERROR: Max array texture layer size is reached: " +
+                         std::to_string(maxLayers) + " !");
+      }
+
+      const RenderTargetSettigs set = {0,
+                                       GraphicTypes::Target2DArray,
+                                       GraphicTypes::UVClampToEdge,
+                                       GraphicTypes::UVClampToEdge,
+                                       GraphicTypes::UVClampToEdge,
+                                       GraphicTypes::SampleLinear,
+                                       GraphicTypes::SampleLinear,
+                                       GraphicTypes::FormatRG32F,
+                                       GraphicTypes::FormatRG,
+                                       GraphicTypes::TypeFloat,
+                                       m_layerCount};
+
+      m_shadowAtlas->Reconstruct(
+          g_shadowAtlasTextureSize, g_shadowAtlasTextureSize, set);
+
+      if (!m_shadowFramebuffer->Initialized())
+      {
+        // TODO: Msaa is good for variance shadow mapping.
+        m_shadowFramebuffer->Init({g_shadowAtlasTextureSize,
+                                   g_shadowAtlasTextureSize,
+                                   0,
+                                   false,
+                                   true});
+      }
+    }
   }
 
   Pass::Pass()

@@ -127,6 +127,8 @@ namespace ToolKit
      */
     int PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights);
 
+    void InitShadowAtlas();
+
    public:
     ShadowPassParams m_params;
 
