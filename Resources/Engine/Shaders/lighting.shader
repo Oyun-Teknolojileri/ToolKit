@@ -34,6 +34,7 @@
 			float shadowAtlasLayer[12];
 			float shadowAtlasEdgeRatio[12];
 			vec2 shadowAtlasCoord[12]; // Between 0 and 1
+			float shadowResolution[12];
 		};
 		uniform _LightData LightData;
 
@@ -111,6 +112,15 @@
 			return vec3(coord, layer);
 		}
 
+		vec2 ShadowBorderShrink(float resolution, vec2 uv)
+		{
+			float borderSize = 0.5;
+			uv *= resolution - borderSize * 2.0;
+			uv += borderSize;
+			uv /= resolution;
+			return uv;
+		}
+
 		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
 		{		
 			vec3 lightDir = normalize(LightData.pos[index] - pos);
@@ -181,7 +191,9 @@
 			else
 			*/
 			{
+				// Avoid border sampling
 				vec3 coord = UVWToUVLayer(lightToFrag);
+				coord.xy = ShadowBorderShrink(LightData.shadowResolution[index], coord.xy);
 				coord.xy = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord.xy;
 				coord.z = LightData.shadowAtlasLayer[index] + coord.z;
 				vec2 moments = texture(shadowAtlas, coord).xy;
