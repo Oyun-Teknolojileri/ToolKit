@@ -19,7 +19,7 @@ namespace ToolKit
   class TK_API Framebuffer
   {
     // NOTE: This class does not handle renderbuffer attachments, multi-sampled
-    // cubemaps, texture arrays, stencil attachments(including depth_stencil).
+    // cubemaps, stencil attachments(including depth_stencil).
     // NOTE: All mipmap levels set to 0. No support to set different levels of
     // mipmaps of textures.
 

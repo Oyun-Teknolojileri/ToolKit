@@ -119,6 +119,12 @@ namespace ToolKit
    private:
     void RenderShadowMaps(Light* light, const EntityRawPtrArray& entities);
     void FilterShadowMap(Light* light);
+
+    /**
+     * Sets layer and coordintes of the shadow maps in shadow atlas.
+     * @param lights Light array that have shadows.
+     * @return number of layers needed.
+     */
     int PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights);
 
    public:

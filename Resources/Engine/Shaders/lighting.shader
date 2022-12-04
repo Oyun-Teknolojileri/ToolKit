@@ -39,11 +39,92 @@
 
 		sampler2DArray shadowAtlas;
 
-		const int maxPointLightShadows = 16;
-		const int maxDirAndSpotLightShadows = 16;
+		// TODO: There is no more need to separate the limitation of point lights from directional and spot lights limitations
+		const int maxPointLightShadows = 100;//TODO8
+		const int maxDirAndSpotLightShadows = 100;//TODO8;
+
+		// Returns uv coordinates and layers such as: vec3(u,v,layer)
+		// https://kosmonautblog.wordpress.com/2017/03/25/shadow-filtering-for-pointlights/
+		vec3 UVWToUVLayer(vec3 vec)
+		{
+			/*
+			0: pos x
+			1: neg X
+			2: pos y
+			3: neg y
+			4: pos z
+			5: neg z
+			*/
+			float slice;
+			vec2 coord;
+			vec.z = -vec.z;
+
+			if (abs(vec.x) >= abs(vec.y) && abs(vec.x) >= abs(vec.z))
+			{
+				vec.y = -vec.y;
+				if (vec.x > 0.0)
+				{
+					slice = 0.0;
+					vec.z = -vec.z;//
+					vec.y = -vec.y;//
+					vec /= vec.x;
+					coord = vec.yz;
+				}
+				else
+				{
+					slice = 1.0;
+					vec.z = -vec.z;
+					vec /= vec.x;
+					coord = vec.yz;
+				}
+			}
+			else if (abs(vec.y) >= abs(vec.x) && abs(vec.y) >= abs(vec.z))
+			{
+				if (vec.y > 0.0)
+				{
+					slice = 2.0;
+					vec.z = -vec.z;//
+					vec /= vec.y;
+					coord = vec.xz;
+				}
+				else
+				{
+					slice = 3.0;
+					vec.z = -vec.z;
+					vec.x = -vec.x;//
+					vec /= vec.y;
+					coord = vec.xz;
+				}
+				coord.xy = -coord.yx;//
+			}
+			else
+			{
+				vec.y = -vec.y;
+				if (vec.z < 0.0)
+				{
+					slice = 4.0;
+					vec /= vec.z;
+					coord = vec.yx;
+				}
+				else
+				{
+					slice = 5.0;
+					//vec.x = -vec.x;
+					vec.y = -vec.y;//
+					vec /= vec.z;
+					coord = vec.yx;
+				}
+			}
+
+			coord.xy = -coord.yx;//
+
+			coord = (coord + vec2(1.0)) * 0.5;
+
+			return vec3(coord, slice);
+		}
 
 		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
-		{
+		{		
 			vec3 lightDir = normalize(LightData.pos[index] - pos);
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz;
@@ -56,7 +137,7 @@
 			// Get depth of the current fragment according to lights view
 			float currFragDepth = projCoord.z;
 
-/* TODO: bring pack PCF
+			/* TODO: bring pack PCF
 			if (LightData.softShadows[index] == 1)
 			{
 				return PCFFilterShadow2D(LightData.dirAndSpotLightShadowMap[dirIndex], projCoord.xy,
@@ -64,7 +145,7 @@
 				LightData.lightBleedingReduction[index]);
 			}
 			else
-*/
+			*/
 			{
 				vec2 coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * projCoord.xy;
 				vec2 moments = texture(shadowAtlas, vec3(coord, LightData.shadowAtlasLayer[index])).xy;
@@ -81,7 +162,7 @@
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
 
-/* TODO: bring pack PCF
+			/* TODO: bring pack PCF
 			if (LightData.softShadows[index] == 1)
 			{
 				return PCFFilterShadow2D(LightData.dirAndSpotLightShadowMap[spotIndex], projCoord.xy,
@@ -89,7 +170,7 @@
 				LightData.lightBleedingReduction[index]);
 			}
 			else
-*/
+			*/
 			{
 				vec2 coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * projCoord.xy;
 				vec2 moments = texture(shadowAtlas, vec3(coord, LightData.shadowAtlasLayer[index])).xy;
@@ -99,10 +180,10 @@
 
 		float CalculatePointShadow(vec3 pos, int index, int pointIndex, vec3 normal)
 		{
-			/*
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
 
+			/* TODO bring back PCF
 			if (LightData.softShadows[index] == 1)
 			{
 				return PCFFilterShadow3D(LightData.pointLightShadowMap[pointIndex], lightToFrag,
@@ -110,11 +191,15 @@
 				LightData.lightBleedingReduction[index]);
 			}
 			else
+			*/
 			{
-				vec2 moments = texture(LightData.pointLightShadowMap[pointIndex], lightToFrag).xy;
+				vec3 coord = UVWToUVLayer(lightToFrag);
+				coord.xy = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord.xy;
+				coord.z = LightData.shadowAtlasLayer[index] + coord.z;
+				vec2 moments = texture(shadowAtlas, coord).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
-			*/
+			
 			return 1.0;
 		}
 

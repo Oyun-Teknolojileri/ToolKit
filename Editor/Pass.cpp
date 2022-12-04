@@ -302,6 +302,8 @@ namespace ToolKit
   {
     PreRender();
 
+    const Vec4 lastClearColor = GetRenderer()->m_clearColor;
+
     // Update shadow maps.
     for (Light* light : m_params.Lights)
     {
@@ -325,6 +327,8 @@ namespace ToolKit
       RenderShadowMaps(light, entities);
       // TODO FilterShadowMap(light);
     }
+
+    GetRenderer()->m_clearColor = lastClearColor;
 
     PostRender();
   }
@@ -464,21 +468,38 @@ namespace ToolKit
     switch (light->GetType())
     {
     case EntityType::Entity_PointLight: {
-      FramebufferPtr shadowMapBuffer = light->GetShadowMapFramebuffer();
-      renderer->SetFramebuffer(shadowMapBuffer, true, Vec4(1.0f));
+      renderer->SetFramebuffer(m_shadowFramebuffer, false);
 
       for (int i = 0; i < 6; ++i)
       {
-        shadowMapBuffer->SetAttachment(
+        m_shadowFramebuffer->SetAttachment(
             Framebuffer::Attachment::ColorAttachment0,
-            light->GetShadowMapRenderTarget(),
-            -1,
-            (Framebuffer::CubemapFace) i);
+            m_shadowAtlas,
+            light->m_shadowAtlasLayer + i);
 
-        light->m_node->SetOrientation(m_cubeMapRotations[i]);
+        // Clear the layer if needed
+        if (!m_clearedLayers[light->m_shadowAtlasLayer + i])
+        {
+          renderer->m_clearColor = Vec4(1.0f);
+          renderer->ClearBuffer(GraphicBitFields::AllBits);
+          m_clearedLayers[light->m_shadowAtlasLayer + i] = true;
+        }
+        else
+        {
+          renderer->ClearBuffer(GraphicBitFields::DepthBits);
+        }
+
+        light->m_shadowCamera->m_node->SetTranslation(
+            light->m_node->GetTranslation());
+        light->m_shadowCamera->m_node->SetOrientation(m_cubeMapRotations[i]);
 
         // TODO: Scales are not needed. Remove.
-        light->m_node->SetScale(m_cubeMapScales[i]);
+        light->m_shadowCamera->m_node->SetScale(m_cubeMapScales[i]);
+
+        renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
+                                  (uint) light->m_shadowAtlasCoord.y,
+                                  (uint) light->GetShadowResolutionVal().x,
+                                  (uint) light->GetShadowResolutionVal().x);
 
         renderForShadowMapFn(light, entities);
       }
@@ -493,10 +514,16 @@ namespace ToolKit
           m_shadowAtlas,
           light->m_shadowAtlasLayer);
 
+      // Clear the layer if needed
       if (!m_clearedLayers[light->m_shadowAtlasLayer])
       {
-        renderer->ClearBuffer(GraphicBitFields::DepthBits);
+        renderer->m_clearColor = Vec4(1.0f);
+        renderer->ClearBuffer(GraphicBitFields::AllBits);
         m_clearedLayers[light->m_shadowAtlasLayer] = true;
+      }
+      else
+      {
+        renderer->ClearBuffer(GraphicBitFields::DepthBits);
       }
 
       renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
@@ -537,14 +564,23 @@ namespace ToolKit
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights)
   {
-    // TODO: use better algorithm
+    // TODO: Use a better algorithm
 
     const int size = g_shadowAtlasTextureSize;
 
-    int layer = 0;
-    int rem   = size;
+    int layer              = 0;
+    int rem                = size;
+    bool anyDirOrSpotLight = false;
     for (Light* light : lights)
     {
+      if (light->GetType() == EntityType::Entity_PointLight)
+      {
+        // Point lights layers are at the end (cubemaps as 2d array)
+        continue;
+      }
+
+      anyDirOrSpotLight = true;
+
       const float res = light->GetShadowResolutionVal().x;
       assert(res <= g_shadowAtlasTextureSize + 1.0f &&
              "Shadow resolution can not exceed 4096.");
@@ -557,6 +593,46 @@ namespace ToolKit
       light->m_shadowAtlasCoord = Vec2((float) size - rem);
       light->m_shadowAtlasLayer = layer;
       rem -= (int) res;
+    }
+
+    rem = size;
+
+    bool anyPointLight = false;
+    if (anyDirOrSpotLight)
+    {
+      layer += 1;
+    }
+
+    for (Light* light : lights)
+    {
+      if (light->GetType() != EntityType::Entity_PointLight)
+      {
+        continue;
+      }
+
+      anyPointLight = true;
+
+      const float res = light->GetShadowResolutionVal().x;
+      assert(res <= g_shadowAtlasTextureSize + 1.0f &&
+             "Shadow resolution can not exceed 4096.");
+      if (res > rem)
+      {
+        layer += 6;
+        rem = size;
+      }
+
+      light->m_shadowAtlasCoord = Vec2((float) size - rem);
+      light->m_shadowAtlasLayer = layer;
+      rem -= (int) res;
+    }
+
+    if (anyPointLight)
+    {
+      layer += 5;
+    }
+    else
+    {
+      layer -= 1;
     }
 
     return layer + 1;

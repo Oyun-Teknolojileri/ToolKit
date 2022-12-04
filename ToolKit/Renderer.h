@@ -249,7 +249,7 @@ namespace ToolKit
     {
       static constexpr ubyte textureSlotCount = 8;
       // 4 studio lights, 8 in game lights
-      static constexpr size_t maxLightsPerObject     = 12;
+      static constexpr size_t maxLightsPerObject = 12;
 
       static constexpr int shadowAtlasSlot = 8;
     } m_rhiSettings;

@@ -14,7 +14,6 @@ namespace ToolKit
   Light::Light()
   {
     m_shadowCamera = new Camera();
-    m_node->AddChild(m_shadowCamera->m_node);
 
     Color_Define(Vec3(1.0f), "Light", 0, true, true, {true});
     Intensity_Define(
@@ -156,6 +155,8 @@ namespace ToolKit
 
     m_shadowMapCameraProjectionViewMatrix = proj * view;
     m_shadowMapCameraFar                  = m_shadowCamera->Far();
+
+    m_shadowCamera->m_node->SetTransform(m_node->GetTransform());
   }
 
   float Light::AffectDistance()
