@@ -37,7 +37,6 @@ namespace ToolKit
 
   Light::~Light()
   {
-    UnInitShadowMap();
     SafeDel(m_shadowCamera);
   }
 
@@ -82,68 +81,6 @@ namespace ToolKit
     ParameterEventConstructor();
   }
 
-  void Light::InitShadowMap()
-  {
-    if (m_shadowMapInitialized && !m_shadowMapResolutionChanged)
-    {
-      return;
-    }
-
-    // Shadow map render target
-    int res                            = (int) GetShadowResolutionVal().x;
-    const RenderTargetSettigs settings = {0,
-                                          GraphicTypes::Target2DArray,
-                                          GraphicTypes::UVClampToEdge,
-                                          GraphicTypes::UVClampToEdge,
-                                          GraphicTypes::UVClampToEdge,
-                                          GraphicTypes::SampleLinear,
-                                          GraphicTypes::SampleLinear,
-                                          GraphicTypes::FormatRG32F,
-                                          GraphicTypes::FormatRG,
-                                          GraphicTypes::TypeFloat,
-                                          res / 1024};
-    m_shadowRt = std::make_shared<RenderTarget>(res, res, settings);
-    m_shadowRt->Init();
-
-    m_depthFramebuffer = std::make_shared<Framebuffer>();
-    m_depthFramebuffer->Init({(uint) res, (uint) res, 0, false, true});
-    m_depthFramebuffer->SetAttachment(
-        Framebuffer::Attachment::ColorAttachment0, m_shadowRt, 0);
-
-    // Shadow map temporary render target for blurring
-    m_shadowMapTempBlurRt = std::make_shared<RenderTarget>(res, res, settings);
-    m_shadowMapTempBlurRt->Init();
-
-    // Shadow map material
-    InitShadowMapDepthMaterial();
-    m_shadowMapInitialized = true;
-  }
-
-  void Light::UnInitShadowMap()
-  {
-    if (!m_shadowMapInitialized)
-    {
-      return;
-    }
-
-    m_shadowMapInitialized = false;
-  }
-
-  FramebufferPtr Light::GetShadowMapFramebuffer()
-  {
-    return m_depthFramebuffer;
-  }
-
-  RenderTargetPtr Light::GetShadowMapRenderTarget()
-  {
-    return m_shadowRt;
-  }
-
-  RenderTargetPtr Light::GetShadowMapTempBlurRt()
-  {
-    return m_shadowMapTempBlurRt;
-  }
-
   MaterialPtr Light::GetShadowMaterial()
   {
     return m_shadowMapMaterial;
@@ -177,12 +114,6 @@ namespace ToolKit
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
-  }
-
-  void Light::ReInitShadowMap()
-  {
-    UnInitShadowMap();
-    InitShadowMap();
   }
 
   DirectionalLight::DirectionalLight()
@@ -349,46 +280,6 @@ namespace ToolKit
   EntityType PointLight::GetType() const
   {
     return EntityType::Entity_PointLight;
-  }
-
-  void PointLight::InitShadowMap()
-  {
-    if (m_shadowMapInitialized && !m_shadowMapResolutionChanged)
-    {
-      return;
-    }
-
-    // Shadow map render target
-    Vec2 res                           = GetShadowResolutionVal();
-    const RenderTargetSettigs settings = {0,
-                                          GraphicTypes::TargetCubeMap,
-                                          GraphicTypes::UVClampToEdge,
-                                          GraphicTypes::UVClampToEdge,
-                                          GraphicTypes::UVClampToEdge,
-                                          GraphicTypes::SampleLinear,
-                                          GraphicTypes::SampleLinear,
-                                          GraphicTypes::FormatRG32F,
-                                          GraphicTypes::FormatRG,
-                                          GraphicTypes::TypeFloat};
-    m_shadowRt =
-        std::make_shared<RenderTarget>((int) res.x, (int) res.y, settings);
-    m_shadowRt->Init();
-
-    m_depthFramebuffer = std::make_shared<Framebuffer>();
-    m_depthFramebuffer->Init({(uint) res.x, (uint) res.y, 0, false, true});
-    m_depthFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                      m_shadowRt,
-                                      -1,
-                                      Framebuffer::CubemapFace::POS_X);
-
-    // Shadow map temporary render target for blur
-    m_shadowMapTempBlurRt =
-        std::make_shared<RenderTarget>((int) res.x, (int) res.y, settings);
-    m_shadowMapTempBlurRt->Init();
-
-    // Shadow map material
-    InitShadowMapDepthMaterial();
-    m_shadowMapInitialized = true;
   }
 
   void PointLight::UpdateShadowCamera()

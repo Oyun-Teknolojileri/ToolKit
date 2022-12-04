@@ -21,19 +21,11 @@ namespace ToolKit
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-    // Shadow operations
-    virtual void InitShadowMap();
-    virtual void UnInitShadowMap();
-    FramebufferPtr GetShadowMapFramebuffer();
-    RenderTargetPtr GetShadowMapRenderTarget();
-    RenderTargetPtr GetShadowMapTempBlurRt();
+    // Shadow
     MaterialPtr GetShadowMaterial();
     virtual void UpdateShadowCamera();
     virtual float AffectDistance();
     virtual void InitShadowMapDepthMaterial();
-
-   protected:
-    void ReInitShadowMap();
 
    public:
     TKDeclareParam(Vec3, Color);
@@ -53,12 +45,8 @@ namespace ToolKit
     bool m_shadowResolutionUpdated = false;
 
    protected:
-    bool m_shadowMapInitialized           = false;
     bool m_shadowMapResolutionChanged     = false;
     MaterialPtr m_shadowMapMaterial       = nullptr;
-    FramebufferPtr m_depthFramebuffer     = nullptr;
-    RenderTargetPtr m_shadowRt            = nullptr;
-    RenderTargetPtr m_shadowMapTempBlurRt = nullptr;
   };
 
   class TK_API DirectionalLight : public Light
@@ -92,7 +80,6 @@ namespace ToolKit
 
     EntityType GetType() const override;
 
-    void InitShadowMap() override;
     void UpdateShadowCamera() override;
     float AffectDistance() override;
     void InitShadowMapDepthMaterial() override;

@@ -1286,13 +1286,16 @@ namespace ToolKit
   void Renderer::ShadowPass(const LightRawPtrArray& lights,
                             const EntityRawPtrArray& entities)
   {
+    /*
     UpdateShadowMaps(lights, entities);
     FilterShadowMaps(lights);
+    */
   }
 
   void Renderer::UpdateShadowMaps(const LightRawPtrArray& lights,
                                   const EntityRawPtrArray& entities)
   {
+    /*
     MaterialPtr lastOverrideMaterial = m_overrideMat;
 
     GLint lastFBO;
@@ -1408,10 +1411,12 @@ namespace ToolKit
 
     m_overrideMat = lastOverrideMaterial;
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+    */
   }
 
   void Renderer::FilterShadowMaps(const LightRawPtrArray& lights)
   {
+    /*
     for (Light* light : lights)
     {
       if (!light->GetCastShadowVal() || light->GetShadowThicknessVal() < 0.001f)
@@ -1433,6 +1438,7 @@ namespace ToolKit
                            Y_AXIS,
                            softness / light->GetShadowResolutionVal().y);
     }
+    */
   }
 
   void Renderer::Apply7x1GaussianBlur(const TexturePtr source,

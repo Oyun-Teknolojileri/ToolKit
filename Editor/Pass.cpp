@@ -469,6 +469,7 @@ namespace ToolKit
 
   void ShadowPass::FilterShadowMap(Light* light)
   {
+    /*
     if (light->GetType() == EntityType::Entity_PointLight ||
         light->GetShadowThicknessVal() < 0.001f)
     {
@@ -488,6 +489,7 @@ namespace ToolKit
                                    light->GetShadowMapRenderTarget(),
                                    Y_AXIS,
                                    softness / shadowRes.y);
+                                   */
   }
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights)
