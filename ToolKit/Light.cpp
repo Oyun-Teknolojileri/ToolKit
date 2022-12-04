@@ -49,8 +49,9 @@ namespace ToolKit
           const Vec2 val = std::get<Vec2>(newVal);
 
           if (val.x > -0.5f && val.y > -0.5f &&
-              val.x < g_shadowAtlasTextureSize + 0.1f &&
-              val.y < g_shadowAtlasTextureSize + 0.1f)
+              val.x <
+                  Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 0.1f &&
+              val.y < Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 0.1f)
           {
             if (GetCastShadowVal())
             {

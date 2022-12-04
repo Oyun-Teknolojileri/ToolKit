@@ -494,7 +494,7 @@ namespace ToolKit
   {
     // TODO: Use a better algorithm
 
-    const int size = g_shadowAtlasTextureSize;
+    const int size = Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
 
     int layer              = 0;
     int rem                = size;
@@ -510,7 +510,7 @@ namespace ToolKit
       anyDirOrSpotLight = true;
 
       const float res = light->GetShadowResolutionVal().x;
-      assert(res <= g_shadowAtlasTextureSize + 1.0f &&
+      assert(res <= Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 1.0f &&
              "Shadow resolution can not exceed 4096.");
       if (res > rem)
       {
@@ -541,7 +541,7 @@ namespace ToolKit
       anyPointLight = true;
 
       const float res = light->GetShadowResolutionVal().x;
-      assert(res <= g_shadowAtlasTextureSize + 1.0f &&
+      assert(res <= Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 1.0f &&
              "Shadow resolution can not exceed 4096.");
       if (res > rem)
       {
@@ -629,16 +629,19 @@ namespace ToolKit
                                        m_layerCount};
 
       m_shadowAtlas->Reconstruct(
-          g_shadowAtlasTextureSize, g_shadowAtlasTextureSize, set);
+          Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
+          Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
+          set);
 
       if (!m_shadowFramebuffer->Initialized())
       {
         // TODO: Msaa is good for variance shadow mapping.
-        m_shadowFramebuffer->Init({g_shadowAtlasTextureSize,
-                                   g_shadowAtlasTextureSize,
-                                   0,
-                                   false,
-                                   true});
+        m_shadowFramebuffer->Init(
+            {Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
+             Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
+             0,
+             false,
+             true});
       }
     }
   }

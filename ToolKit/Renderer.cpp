@@ -1942,7 +1942,8 @@ namespace ToolKit
         glUniform1f(loc, (GLfloat) currLight->m_shadowAtlasLayer);
 
         const Vec2 coord =
-            currLight->m_shadowAtlasCoord / (float) g_shadowAtlasTextureSize;
+            currLight->m_shadowAtlasCoord /
+            (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
         loc = glGetUniformLocation(program->m_handle,
                                    g_lightShadowAtlasCoordStrCache[i].c_str());
         glUniform2fv(loc, 1, &coord.x);
@@ -1951,7 +1952,7 @@ namespace ToolKit
             program->m_handle, g_lightShadowAtlasEdgeRatioStrCache[i].c_str());
         glUniform1f(loc,
                     currLight->GetShadowResolutionVal().x /
-                        g_shadowAtlasTextureSize);
+                        Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
       }
 
       GLuint loc = glGetUniformLocation(program->m_handle,

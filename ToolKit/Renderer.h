@@ -232,6 +232,16 @@ namespace ToolKit
 
     bool m_renderOnlyLighting = false;
 
+    typedef struct RHIConstants
+    {
+      static constexpr ubyte textureSlotCount = 8;
+      // 4 studio lights, 8 in game lights
+      static constexpr size_t maxLightsPerObject = 12;
+
+      static constexpr int shadowAtlasSlot          = 8;
+      static constexpr int g_shadowAtlasTextureSize = 4096;
+    } m_rhiSettings;
+
    private:
     uint m_currentProgram = 0;
     Mat4 m_project;
@@ -244,15 +254,6 @@ namespace ToolKit
     MaterialPtr m_aoMat          = nullptr;
     FramebufferPtr m_framebuffer = nullptr;
     TexturePtr m_shadowAtlas     = nullptr;
-
-    typedef struct RHIConstants
-    {
-      static constexpr ubyte textureSlotCount = 8;
-      // 4 studio lights, 8 in game lights
-      static constexpr size_t maxLightsPerObject = 12;
-
-      static constexpr int shadowAtlasSlot = 8;
-    } m_rhiSettings;
 
     uint m_textureSlots[RHIConstants::textureSlotCount];
     int m_bindedShadowMapCount       = 0;
