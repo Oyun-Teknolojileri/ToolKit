@@ -25,6 +25,7 @@ namespace ToolKit
     class View
     {
      public:
+      View(const StringView viewName);
       virtual ~View()
       {
       }
@@ -34,6 +35,7 @@ namespace ToolKit
       Entity* m_entity     = nullptr;
       int m_viewID         = 0;
       TexturePtr m_viewIcn = nullptr;
+      const StringView m_viewName;
     };
 
     class PrefabView : public View
@@ -63,6 +65,22 @@ namespace ToolKit
       void ShowAnchorSettings();
     };
 
+    class ComponentView : public View
+    {
+     public:
+      ComponentView();
+      virtual ~ComponentView();
+      virtual void Show();
+    };
+
+    class CustomDataView : public View
+    {
+     public:
+      CustomDataView();
+      virtual ~CustomDataView();
+      virtual void Show();
+    };
+
     typedef View* ViewRawPtr;
     typedef std::vector<ViewRawPtr> ViewRawPtrArray;
     class PropInspector : public Window
@@ -80,6 +98,5 @@ namespace ToolKit
       ViewRawPtrArray m_views;
       uint m_activeViewIndx = 0;
     };
-
   } // namespace Editor
 } // namespace ToolKit

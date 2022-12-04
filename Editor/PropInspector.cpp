@@ -1010,7 +1010,7 @@ namespace ToolKit
       ImGui::EndDisabled();
     }
 
-    const StringView& boolToString(bool b)
+    const char* boolToString(bool b)
     {
       return b ? "true" : "false";
     }
@@ -1024,14 +1024,13 @@ namespace ToolKit
       auto showCompFunc = [comp, &removeComp, modifiableComp](
                               const String& headerName) -> bool {
         ImGui::PushID(static_cast<int>(comp->m_id));
-        String varName =
-            headerName + "##" + boolToString(modifiableComp).data();
-        bool isOpen = ImGui::TreeNodeEx(
+        String varName = headerName + "##" + std::to_string(modifiableComp);
+        bool isOpen    = ImGui::TreeNodeEx(
             varName.c_str(), ImGuiTreeNodeFlags_DefaultOpen | g_treeNodeFlags);
 
         if (modifiableComp)
         {
-          float offset = ImGui::GetContentRegionAvail().x - 10.0f;
+          float offset = ImGui::GetContentRegionAvail().x - 30.0f;
           ImGui::SameLine(offset);
           if (UI::ImageButtonDecorless(
                   UI::m_closeIcon->m_textureId, ImVec2(15.0f, 15.0f), false) &&
@@ -1084,10 +1083,14 @@ namespace ToolKit
       return removeComp;
     }
 
+    View::View(const StringView viewName) : m_viewName(viewName)
+    {
+    }
+
     // PrefabView
     //////////////////////////////////////////////////////////////////////////
 
-    PrefabView::PrefabView()
+    PrefabView::PrefabView() : View("Prefab View")
     {
       m_viewID  = 2;
       m_viewIcn = UI::m_prefabIcn;
@@ -1241,10 +1244,154 @@ namespace ToolKit
       }
     }
 
+    // CustomDataView
+    //////////////////////////////////////////////////////////////////////////
+
+    CustomDataView::CustomDataView() : View("Custom Data View")
+    {
+      m_viewID  = 4;
+      m_viewIcn = UI::m_fileIcon;
+    }
+    CustomDataView::~CustomDataView()
+    {
+    }
+
+    void CustomDataView::Show()
+    {
+      m_entity = g_app->GetCurrentScene()->GetCurrentSelection();
+      if (m_entity == nullptr)
+      {
+        ImGui::Text("Select an entity");
+        return;
+      }
+
+      ParameterVariantRawPtrArray customParams;
+      m_entity->m_localData.GetByCategory(CustomDataCategory.Name,
+                                          customParams);
+      ShowCustomData(m_entity, "Custom Data", customParams, true);
+    }
+
+    // ComponentView
+    //////////////////////////////////////////////////////////////////////////
+
+    ComponentView::ComponentView() : View("Component View")
+    {
+      m_viewID  = 3;
+      m_viewIcn = UI::m_collectionIcon;
+    }
+    ComponentView::~ComponentView()
+    {
+    }
+
+    void ComponentView::Show()
+    {
+      m_entity = g_app->GetCurrentScene()->GetCurrentSelection();
+      if (m_entity == nullptr)
+      {
+        ImGui::Text("Select an entity");
+        return;
+      }
+
+      if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
+      {
+        ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
+
+        std::vector<ULongID> compRemove;
+        for (ComponentPtr& com : m_entity->GetComponentPtrArray())
+        {
+          if (ShowComponentBlock(com, true))
+          {
+            compRemove.push_back(com->m_id);
+          }
+        }
+
+        for (ULongID id : compRemove)
+        {
+          ActionManager::GetInstance()->AddAction(
+              new DeleteComponentAction(m_entity->GetComponent(id)));
+        }
+
+        // Remove billboards if necessary
+        std::static_pointer_cast<EditorScene>(
+            GetSceneManager()->GetCurrentScene())
+            ->InitEntityBillboard(m_entity);
+
+        ImGui::PushItemWidth(150);
+        static bool addInAction = false;
+        if (addInAction)
+        {
+          int dataType = 0;
+          if (ImGui::Combo("##NewComponent",
+                           &dataType,
+                           "..."
+                           "\0Mesh Component"
+                           "\0Material Component"
+                           "\0Environment Component"
+                           "\0Animation Controller Component"
+                           "\0Skeleton Component"
+                           "\0Multi-Material Component"
+                           "\0AABB Override Component"))
+          {
+            Component* newComponent = nullptr;
+            switch (dataType)
+            {
+            case 1:
+              newComponent = new MeshComponent();
+              break;
+            case 2:
+              newComponent = new MaterialComponent;
+              break;
+            case 3:
+              newComponent = new EnvironmentComponent;
+              break;
+            case 4:
+              newComponent = new AnimControllerComponent;
+              break;
+            case 5:
+              newComponent = new SkeletonComponent;
+              break;
+            case 6: {
+              MultiMaterialComponent* mmComp = new MultiMaterialComponent;
+              mmComp->UpdateMaterialList(m_entity->GetMeshComponent());
+              newComponent = mmComp;
+            }
+            break;
+            case 7:
+              newComponent = new AABBOverrideComponent;
+              break;
+            default:
+              break;
+            }
+
+            if (newComponent)
+            {
+              m_entity->AddComponent(newComponent);
+              addInAction = false;
+
+              // Add gizmo if needed
+              std::static_pointer_cast<EditorScene>(
+                  GetSceneManager()->GetCurrentScene())
+                  ->AddBillboardToEntity(m_entity);
+            }
+          }
+        }
+        ImGui::PopItemWidth();
+
+        ImGui::Separator();
+        if (UI::BeginCenteredTextButton("Add Component"))
+        {
+          addInAction = true;
+        }
+        UI::EndCenteredTextButton();
+
+        ImGui::PopStyleVar();
+      }
+    }
+
     // EntityView
     //////////////////////////////////////////////////////////////////////////
 
-    EntityView::EntityView()
+    EntityView::EntityView() : View("Entity View")
     {
       m_viewID  = 1;
       m_viewIcn = UI::m_arrowsIcon;
@@ -1554,6 +1701,8 @@ namespace ToolKit
 
         Vec3 scale = m_entity->m_node->GetScale();
 
+        ImGui::BeginDisabled(m_entity->GetTransformLockVal());
+
         // Continuous edit utils.
         static TransformAction* dragMem = nullptr;
         const auto saveDragMemFn        = [this]() -> void {
@@ -1652,6 +1801,8 @@ namespace ToolKit
               m_entity->m_node->m_inheritScale);
         }
 
+        ImGui::EndDisabled();
+
         ImGui::Separator();
 
         BoundingBox bb = m_entity->GetAABB(true);
@@ -1662,111 +1813,6 @@ namespace ToolKit
         ImGui::Text("\ty: %.2f", dim.y);
         ImGui::SameLine();
         ImGui::Text("\tz: %.2f", dim.z);
-      }
-
-      ParameterVariantRawPtrArray customParams;
-      m_entity->m_localData.GetByCategory(CustomDataCategory.Name,
-                                          customParams);
-      ShowCustomData(m_entity, "Custom Data", customParams, true);
-
-      // If entity belongs to a prefab, don't show components
-      if (Prefab::GetPrefabRoot(m_entity))
-      {
-        return;
-      }
-      if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
-      {
-        ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, g_indentSpacing);
-
-        std::vector<ULongID> compRemove;
-        for (ComponentPtr& com : m_entity->GetComponentPtrArray())
-        {
-          if (ShowComponentBlock(com, true))
-          {
-            compRemove.push_back(com->m_id);
-          }
-        }
-
-        for (ULongID id : compRemove)
-        {
-          ActionManager::GetInstance()->AddAction(
-              new DeleteComponentAction(m_entity->GetComponent(id)));
-        }
-
-        // Remove billboards if necessary
-        std::static_pointer_cast<EditorScene>(
-            GetSceneManager()->GetCurrentScene())
-            ->InitEntityBillboard(m_entity);
-
-        ImGui::PushItemWidth(150);
-        static bool addInAction = false;
-        if (addInAction)
-        {
-          int dataType = 0;
-          if (ImGui::Combo("##NewComponent",
-                           &dataType,
-                           "..."
-                           "\0Mesh Component"
-                           "\0Material Component"
-                           "\0Environment Component"
-                           "\0Animation Controller Component"
-                           "\0Skeleton Component"
-                           "\0Multi-Material Component"
-                           "\0AABB Override Component"))
-          {
-            Component* newComponent = nullptr;
-            switch (dataType)
-            {
-            case 1:
-              newComponent = new MeshComponent();
-              break;
-            case 2:
-              newComponent = new MaterialComponent;
-              break;
-            case 3:
-              newComponent = new EnvironmentComponent;
-              break;
-            case 4:
-              newComponent = new AnimControllerComponent;
-              break;
-            case 5:
-              newComponent = new SkeletonComponent;
-              break;
-            case 6: {
-              MultiMaterialComponent* mmComp = new MultiMaterialComponent;
-              mmComp->UpdateMaterialList(m_entity->GetMeshComponent());
-              newComponent = mmComp;
-            }
-            break;
-            case 7:
-              newComponent = new AABBOverrideComponent;
-              break;
-            default:
-              break;
-            }
-
-            if (newComponent)
-            {
-              m_entity->AddComponent(newComponent);
-              addInAction = false;
-
-              // Add gizmo if needed
-              std::static_pointer_cast<EditorScene>(
-                  GetSceneManager()->GetCurrentScene())
-                  ->AddBillboardToEntity(m_entity);
-            }
-          }
-        }
-        ImGui::PopItemWidth();
-
-        ImGui::Separator();
-        if (UI::BeginCenteredTextButton("Add Component"))
-        {
-          addInAction = true;
-        }
-        UI::EndCenteredTextButton();
-
-        ImGui::PopStyleVar();
       }
     }
 
@@ -1838,6 +1884,8 @@ namespace ToolKit
     {
       m_views.push_back(new EntityView());
       m_views.push_back(new PrefabView());
+      m_views.push_back(new CustomDataView());
+      m_views.push_back(new ComponentView());
     }
 
     PropInspector::~PropInspector()
@@ -1889,6 +1937,8 @@ namespace ToolKit
             {
               m_activeViewIndx = viewIndx;
             }
+            UI::HelpMarker("View#" + std::to_string(viewIndx),
+                           view->m_viewName.data());
             ImGui::PopStyleColor(1);
           }
           ImGui::EndChildFrame();
