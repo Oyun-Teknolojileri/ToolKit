@@ -46,6 +46,9 @@
 
 		// Returns uv coordinates and layers such as: vec3(u,v,layer)
 		// https://kosmonautblog.wordpress.com/2017/03/25/shadow-filtering-for-pointlights/
+
+		// Can be improved:
+		// https://stackoverflow.com/questions/53115467/how-to-implement-texturecube-using-6-sampler2d
 		vec3 UVWToUVLayer(vec3 vec)
 		{
 			/*
@@ -109,11 +112,11 @@
 			return vec3(coord, layer);
 		}
 
-		vec2 ShadowBorderShrink(float resolution, vec2 uv)
+		// Avoid border sampling
+		vec2 ShadowBorderShrink(float resolution, vec2 uv, float offset)
 		{
-			float borderSize = 1.5;
-			uv *= resolution - borderSize * 2.0;
-			uv += borderSize;
+			uv *= resolution - offset * 2.0;
+			uv += offset;
 			uv /= resolution;
 			return uv;
 		}
@@ -131,18 +134,22 @@
 
 			// Get depth of the current fragment according to lights view
 			float currFragDepth = projCoord.z;
-			// Avoid border sampling
-			vec2 coord = ShadowBorderShrink(LightData.shadowResolution[index], projCoord.xy);
-			coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord;
 
 			if (LightData.softShadows[index] == 1)
 			{
+				float pcfRadius = LightData.PCFRadius[index] * LightData.shadowAtlasEdgeRatio[index];
+				// 0.5 is Poission Disk radius which PCF uses for random sampling offset
+				vec2 coord = ShadowBorderShrink(LightData.shadowResolution[index], projCoord.xy, 0.55 * pcfRadius);
+				coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord;
+
 				return PCFFilterShadow2D(shadowAtlas, coord, LightData.shadowAtlasLayer[index],
-				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasEdgeRatio[index], projCoord.z,
-				LightData.lightBleedingReduction[index]);
+				LightData.PCFSamples[index], pcfRadius, projCoord.z, LightData.lightBleedingReduction[index]);
 			}
 			else
 			{
+				vec2 coord = ShadowBorderShrink(LightData.shadowResolution[index], projCoord.xy, 0.5);
+				coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord;
+
 				vec2 moments = texture(shadowAtlas, vec3(coord, LightData.shadowAtlasLayer[index])).xy;
 				return ChebyshevUpperBound(moments, projCoord.z, LightData.lightBleedingReduction[index]);
 			}
@@ -156,18 +163,23 @@
 
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
-			// Avoid border sampling
-			vec2 coord = ShadowBorderShrink(LightData.shadowResolution[index], projCoord.xy);
-			coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord;
 
 			if (LightData.softShadows[index] == 1)
 			{
+				float pcfRadius = LightData.PCFRadius[index] * LightData.shadowAtlasEdgeRatio[index];
+				// 0.5 is Poission Disk radius which PCF uses for random sampling offset
+				vec2 coord = ShadowBorderShrink(LightData.shadowResolution[index], projCoord.xy, 0.55 * pcfRadius);
+				coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord;
+
 				return PCFFilterShadow2D(shadowAtlas, coord, LightData.shadowAtlasLayer[index],
-				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasEdgeRatio[index], currFragDepth,
+				LightData.PCFSamples[index], pcfRadius, currFragDepth,
 				LightData.lightBleedingReduction[index]);
 			}
 			else
 			{
+				vec2 coord = ShadowBorderShrink(LightData.shadowResolution[index], projCoord.xy, 0.5);
+				coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord;
+
 				vec2 moments = texture(shadowAtlas, vec3(coord, LightData.shadowAtlasLayer[index])).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
@@ -190,7 +202,7 @@
 			{
 				// Avoid border sampling
 				vec3 coord = UVWToUVLayer(lightToFrag);
-				coord.xy = ShadowBorderShrink(LightData.shadowResolution[index], coord.xy);
+				coord.xy = ShadowBorderShrink(LightData.shadowResolution[index], coord.xy, 0.5);
 				coord.xy = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord.xy;
 				coord.z = LightData.shadowAtlasLayer[index] + coord.z;
 				vec2 moments = texture(shadowAtlas, coord).xy;
