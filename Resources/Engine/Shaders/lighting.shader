@@ -154,18 +154,16 @@
 
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
+			vec2 coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * projCoord.xy;
 
-			/* TODO: bring pack PCF
 			if (LightData.softShadows[index] == 1)
 			{
-				return PCFFilterShadow2D(LightData.dirAndSpotLightShadowMap[spotIndex], projCoord.xy,
-				LightData.PCFSamples[index], LightData.PCFRadius[index], currFragDepth,
+				return PCFFilterShadow2D(shadowAtlas, coord, LightData.shadowAtlasLayer[index],
+				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasEdgeRatio[index], currFragDepth,
 				LightData.lightBleedingReduction[index]);
 			}
 			else
-			*/
 			{
-				vec2 coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * projCoord.xy;
 				vec2 moments = texture(shadowAtlas, vec3(coord, LightData.shadowAtlasLayer[index])).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
