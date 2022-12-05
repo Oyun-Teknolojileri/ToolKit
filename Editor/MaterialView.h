@@ -11,9 +11,10 @@ namespace ToolKit
       MaterialView();
 
       void Show() override;
+      void SetMaterial(MaterialPtr mat);
 
-     public:
-      MaterialPtr m_material;
+     private:
+      ScenePtr m_previewScene;
     };
 
   } // namespace Editor

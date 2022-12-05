@@ -6,142 +6,140 @@ namespace ToolKit
 {
   namespace Editor
   {
-    MaterialView::MaterialView() : View("Material Inspector")
-    {
-      m_viewID  = 3;
-      m_viewIcn = UI::m_materialIcon;
-    }
 
     // MaterialView
     //////////////////////////////////////////////////////////////////////////
 
+    MaterialView::MaterialView() : View("Material View")
+    {
+      m_viewID  = 3;
+      m_viewIcn = UI::m_materialIcon;
+
+      // Initialize scene
+      m_previewScene = std::make_shared<Scene>();
+      Entity* previewEntity = new Entity;
+      previewEntity->AddComponent(std::make_shared<MaterialComponent>());
+      m_previewScene->AddEntity(previewEntity);
+    }
+    void MaterialView::SetMaterial(MaterialPtr mat)
+    {
+      Entity* previewEntity = m_previewScene->GetEntities()[0];
+      previewEntity->GetMaterialComponent()->SetMaterialVal(mat);
+    }
+
     void MaterialView::Show()
     {
-      if (m_material == nullptr)
+      Entity* previewEntity = m_previewScene->GetEntities()[0];
+      MaterialPtr mat = previewEntity->GetMaterialComponent()->GetMaterialVal();
+      if (!mat)
       {
         ImGui::Text("Select a material");
         return;
       }
 
-      Drawable* drawable = static_cast<Drawable*>(m_entity);
-      MaterialPtr entry;
-
-      bool entityMod = true;
-      if ((entry = m_material))
-      {
-        entityMod = false;
-      }
-      else
-      {
-        if (drawable == nullptr)
-        {
-          return;
-        }
-        entry = drawable->GetMesh()->m_material;
-      }
-
-      auto updateThumbFn = [&entry]() -> void {
-        DirectoryEntry dirEnt(entry->GetFile());
-        g_app->m_thumbnailCache.erase(entry->GetFile());
-
-        dirEnt.GenerateThumbnail();
-        entry->m_dirty = true;
-      };
-
       String name, ext;
-      DecomposePath(entry->GetFile(), nullptr, &name, &ext);
+      DecomposePath(mat->GetFile(), nullptr, &name, &ext);
 
       ImGui::Text("Material: %s%s", name.c_str(), ext.c_str());
       ImGui::Separator();
 
-      Vec4 col = Vec4(entry->m_color, entry->m_alpha);
-      if (ImGui::ColorEdit4(
-              "Material Color##1", &col.x, ImGuiColorEditFlags_NoLabel))
+      if (ImGui::CollapsingHeader("Material Preview",
+                                  ImGuiTreeNodeFlags_DefaultOpen))
       {
-        entry->m_color = col.xyz;
-        entry->m_alpha = col.a;
-        updateThumbFn();
+
+        // Draw Preview Scene
       }
 
-      if (ImGui::TreeNode("Textures"))
+      auto updateThumbFn = [&mat]() -> void {
+        DirectoryEntry dirEnt(mat->GetFile());
+        g_app->m_thumbnailCache.erase(mat->GetFile());
+
+        dirEnt.GenerateThumbnail();
+        mat->m_dirty = true;
+      };
+
+      if (ImGui::CollapsingHeader("Shaders"))
+      {
+        ImGui::LabelText("##vertShader", "Vertex Shader: ");
+        DropZone(UI::m_codeIcon->m_textureId,
+                 mat->m_vertexShader->GetFile(),
+                 [&mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
+                   if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
+                   {
+                     g_app->m_statusMsg = "An imported shader file expected!";
+                     return;
+                   }
+                   mat->m_vertexShader =
+                       GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
+                   mat->m_vertexShader->Init();
+                   updateThumbFn();
+                 });
+
+        ImGui::LabelText("##fragShader", "Fragment Shader: ");
+        DropZone(UI::m_codeIcon->m_textureId,
+                 mat->m_fragmentShader->GetFile(),
+                 [&mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
+                   mat->m_fragmentShader =
+                       GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
+                   mat->m_fragmentShader->Init();
+                   updateThumbFn();
+                 });
+      }
+
+      if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
       {
         ImGui::LabelText("##diffTexture", "Diffuse Texture: ");
         String target = GetPathSeparatorAsStr();
-        if (entry->m_diffuseTexture)
+        if (mat->m_diffuseTexture)
         {
-          target = entry->m_diffuseTexture->GetFile();
+          target = mat->m_diffuseTexture->GetFile();
         }
 
-        DropZone(
-            UI::m_imageIcon->m_textureId,
-            target,
-            [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
-              // Switch from solid color material to default for texturing.
-              if (entry->m_diffuseTexture == nullptr)
-              {
-                entry->m_fragmentShader = GetShaderManager()->Create<Shader>(
-                    ShaderPath("defaultFragment.shader", true));
-                entry->m_fragmentShader->Init();
-              }
-              entry->m_diffuseTexture =
-                  GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
-              entry->m_diffuseTexture->Init();
-              updateThumbFn();
-            });
-
-        ImGui::TreePop();
+        DropZone(UI::m_imageIcon->m_textureId,
+                 target,
+                 [&mat, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
+                   // Switch from solid color material to default for texturing.
+                   if (mat->m_diffuseTexture == nullptr)
+                   {
+                     mat->m_fragmentShader = GetShaderManager()->Create<Shader>(
+                         ShaderPath("defaultFragment.shader", true));
+                     mat->m_fragmentShader->Init();
+                   }
+                   mat->m_diffuseTexture = GetTextureManager()->Create<Texture>(
+                       dirEnt.GetFullPath());
+                   mat->m_diffuseTexture->Init();
+                   updateThumbFn();
+                 });
       }
 
-      if (ImGui::TreeNode("Shaders"))
+      if (ImGui::CollapsingHeader("Render States",
+                                  ImGuiTreeNodeFlags_DefaultOpen))
       {
-        ImGui::LabelText("##vertShader", "Vertex Shader: ");
-        DropZone(
-            UI::m_codeIcon->m_textureId,
-            entry->m_vertexShader->GetFile(),
-            [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
-              if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
-              {
-                g_app->m_statusMsg = "An imported shader file expected!";
-                return;
-              }
-              entry->m_vertexShader =
-                  GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-              entry->m_vertexShader->Init();
-              updateThumbFn();
-            });
+        Vec4 col = Vec4(mat->m_color, mat->m_alpha);
+        if (ImGui::ColorEdit4(
+                "Material Color##1", &col.x, ImGuiColorEditFlags_NoLabel))
+        {
+          mat->m_color = col.xyz;
+          mat->m_alpha = col.a;
+          updateThumbFn();
+        }
 
-        ImGui::LabelText("##fragShader", "Fragment Shader: ");
-        DropZone(
-            UI::m_codeIcon->m_textureId,
-            entry->m_fragmentShader->GetFile(),
-            [&entry, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
-              entry->m_fragmentShader =
-                  GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-              entry->m_fragmentShader->Init();
-              updateThumbFn();
-            });
-        ImGui::TreePop();
-      }
-
-      if (ImGui::TreeNode("Render State"))
-      {
-        int cullMode = static_cast<int>(entry->GetRenderState()->cullMode);
+        int cullMode = static_cast<int>(mat->GetRenderState()->cullMode);
         if (ImGui::Combo("Cull mode", &cullMode, "Two Sided\0Front\0Back"))
         {
-          entry->GetRenderState()->cullMode = (CullingType) cullMode;
-          entry->m_dirty                    = true;
+          mat->GetRenderState()->cullMode = (CullingType) cullMode;
+          mat->m_dirty                    = true;
         }
 
-        int blendMode =
-            static_cast<int>(entry->GetRenderState()->blendFunction);
+        int blendMode = static_cast<int>(mat->GetRenderState()->blendFunction);
         if (ImGui::Combo("Blend mode", &blendMode, "None\0Alpha Blending"))
         {
-          entry->GetRenderState()->blendFunction = (BlendFunction) blendMode;
-          entry->m_dirty                         = true;
+          mat->GetRenderState()->blendFunction = (BlendFunction) blendMode;
+          mat->m_dirty                         = true;
         }
 
         int drawType = -1;
-        switch (entry->GetRenderState()->drawType)
+        switch (mat->GetRenderState()->drawType)
         {
         case DrawType::Triangle:
           drawType = 0;
@@ -167,48 +165,63 @@ namespace ToolKit
           switch (drawType)
           {
           case 0:
-            entry->GetRenderState()->drawType = DrawType::Triangle;
+            mat->GetRenderState()->drawType = DrawType::Triangle;
             break;
           case 1:
-            entry->GetRenderState()->drawType = DrawType::Line;
+            mat->GetRenderState()->drawType = DrawType::Line;
             break;
           case 2:
-            entry->GetRenderState()->drawType = DrawType::LineStrip;
+            mat->GetRenderState()->drawType = DrawType::LineStrip;
             break;
           case 3:
-            entry->GetRenderState()->drawType = DrawType::LineLoop;
+            mat->GetRenderState()->drawType = DrawType::LineLoop;
             break;
           case 4:
-            entry->GetRenderState()->drawType = DrawType::Point;
+            mat->GetRenderState()->drawType = DrawType::Point;
             break;
           }
 
-          entry->m_dirty = true;
+          mat->m_dirty = true;
         }
 
-        bool depthTest = entry->GetRenderState()->depthTestEnabled;
+        bool depthTest = mat->GetRenderState()->depthTestEnabled;
         if (ImGui::Checkbox("Enable depth test", &depthTest))
         {
-          entry->GetRenderState()->depthTestEnabled = depthTest;
-          entry->m_dirty                            = true;
+          mat->GetRenderState()->depthTestEnabled = depthTest;
+          mat->m_dirty                            = true;
         }
 
-        bool AOInUse = entry->GetRenderState()->AOInUse;
+        bool AOInUse = mat->GetRenderState()->AOInUse;
         if (ImGui::Checkbox("Ambient Occlusion", &AOInUse))
         {
-          entry->GetRenderState()->AOInUse = AOInUse;
-          entry->m_dirty                   = true;
+          mat->GetRenderState()->AOInUse = AOInUse;
+          mat->m_dirty                   = true;
         }
-
-        ImGui::TreePop();
       }
+
+      /*
+      bool entityMod = true;
+      if ((mat = m_material))
+      {
+        entityMod = false;
+      }
+      else
+      {
+        if (drawable == nullptr)
+        {
+          return;
+        }
+        mat = drawable->GetMesh()->m_material;
+      }
+
+
 
       if (entityMod)
       {
         DropSubZone(
-            "Material##" + std::to_string(entry->m_id),
+            "Material##" + std::to_string(mat->m_id),
             UI::m_materialIcon->m_textureId,
-            entry->GetFile(),
+            mat->GetFile(),
             [&drawable](const DirectoryEntry& dirEnt) -> void {
               MeshPtr mesh = drawable->GetMesh();
               if (strcmp(dirEnt.m_ext.c_str(), ".material") != 0)
@@ -222,7 +235,7 @@ namespace ToolKit
               mesh->m_dirty = true;
             },
             true);
-      }
+      }*/
     }
   } // namespace Editor
 } // namespace ToolKit

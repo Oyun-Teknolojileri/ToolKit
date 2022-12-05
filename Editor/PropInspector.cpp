@@ -273,7 +273,7 @@ namespace ToolKit
       m_activeView          = ViewType::Material;
       uint matViewIndx      = (uint) ViewType::Material;
       MaterialView* matView = (MaterialView*) m_views[matViewIndx];
-      matView->m_material   = mat;
+      matView->SetMaterial(mat);
     }
 
   } // namespace Editor
