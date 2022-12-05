@@ -118,7 +118,7 @@
 			return uv;
 		}
 
-		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
+		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex)
 		{		
 			vec3 lightDir = normalize(LightData.pos[index] - pos);
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
@@ -148,7 +148,7 @@
 			}
 		}
 
-		float CalculateSpotShadow(vec3 pos, int index, int spotIndex, vec3 normal)
+		float CalculateSpotShadow(vec3 pos, int index, int spotIndex)
 		{
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
@@ -173,7 +173,7 @@
 			}
 		}
 
-		float CalculatePointShadow(vec3 pos, int index, int pointIndex, vec3 normal)
+		float CalculatePointShadow(vec3 pos, int index, int pointIndex)
 		{
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
@@ -296,7 +296,7 @@
 					bool maxShadowCheck = maxPointLightShadows > pointLightShadowCount;
 					if (maxShadowCheck && LightData.castShadow[i] == 1)
 					{
-						shadow = CalculatePointShadow(fragPos, i, pointLightShadowCount, normal);
+						shadow = CalculatePointShadow(fragPos, i, pointLightShadowCount);
 						pointLightShadowCount += 1;
 					}
 				}
@@ -309,7 +309,7 @@
 					bool maxShadowCheck = maxDirAndSpotLightShadows > dirAndSpotLightShadowCount;
 					if (maxShadowCheck && LightData.castShadow[i] == 1)
 					{
-						shadow = CalculateDirectionalShadow(fragPos, i, dirAndSpotLightShadowCount, normal);
+						shadow = CalculateDirectionalShadow(fragPos, i, dirAndSpotLightShadowCount);
 						dirAndSpotLightShadowCount += 1;
 					}		
 				}
@@ -322,7 +322,7 @@
 					bool maxShadowCheck = maxDirAndSpotLightShadows > dirAndSpotLightShadowCount;
 					if (maxShadowCheck && LightData.castShadow[i] == 1)
 					{
-						shadow = CalculateSpotShadow(fragPos, i, dirAndSpotLightShadowCount, normal);
+						shadow = CalculateSpotShadow(fragPos, i, dirAndSpotLightShadowCount);
 						dirAndSpotLightShadowCount += 1;
 					}
 				}
