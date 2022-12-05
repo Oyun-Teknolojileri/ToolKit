@@ -26,7 +26,6 @@
 
 			mat4 projectionViewMatrix[12];
 			float shadowMapCameraFar[12];
-			//samplerCube pointLightShadowMap[4];
 			int castShadow[12];
 			int PCFSamples[12];
 			float PCFRadius[12];
@@ -145,7 +144,6 @@
 
 		float CalculateSpotShadow(vec3 pos, int index, int spotIndex)
 		{
-/*
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
 			projCoord = projCoord * 0.5 + 0.5;
@@ -155,22 +153,21 @@
 
 			vec2 startCoord = LightData.shadowAtlasCoord[index];
 			float resRatio = LightData.shadowAtlasEdgeRatio[index];
-			vec2 coord = startCoord + resRatio * projCoord.xy;
+			vec3 coord = vec3(startCoord + resRatio * projCoord.xy, LightData.shadowAtlasLayer[index]);
 
 			if (LightData.softShadows[index] == 1)
 			{
-				return PCFFilterShadow2D(shadowAtlas, coord, LightData.shadowAtlasLayer[index],
+				return PCFFilterShadow2D(shadowAtlas, coord, startCoord, startCoord + resRatio,
 				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasEdgeRatio[index], currFragDepth,
 				LightData.lightBleedingReduction[index]);
 			}
 			else
 			{
-				
-
-				vec2 moments = texture(shadowAtlas, vec3(coord, LightData.shadowAtlasLayer[index])).xy;
+				coord.xy = ClampTextureCoordinates(coord.xy, startCoord, startCoord + resRatio);
+				vec2 moments = texture(shadowAtlas, coord).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
-*/
+
 			return 1.0;
 		}
 
