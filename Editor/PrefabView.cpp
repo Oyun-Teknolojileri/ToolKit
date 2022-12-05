@@ -1,9 +1,11 @@
 #include "PrefabView.h"
-#include "CustomDataView.h"
-#include "ComponentView.h"
-#include "PrefabView.h"
-#include "Global.h"
+
 #include "App.h"
+#include "ComponentView.h"
+#include "CustomDataView.h"
+#include "Global.h"
+#include "PrefabView.h"
+
 #include <Prefab.h>
 
 namespace ToolKit
@@ -150,7 +152,8 @@ namespace ToolKit
       ParameterVariantRawPtrArray inheritedParams;
       shownEntity->m_localData.GetByCategory(CustomDataCategory.Name,
                                              inheritedParams);
-      CustomDataView::ShowCustomData(shownEntity, "Custom Data##1", inheritedParams, false);
+      CustomDataView::ShowCustomData(
+          shownEntity, "Custom Data##1", inheritedParams, false);
 
       if (ImGui::CollapsingHeader("Components##1",
                                   ImGuiTreeNodeFlags_DefaultOpen))
@@ -167,5 +170,5 @@ namespace ToolKit
       }
     }
 
-  }
-}
+  } // namespace Editor
+} // namespace ToolKit

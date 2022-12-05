@@ -192,10 +192,10 @@ namespace ToolKit
 
         SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 0);
 
-        //SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 16);
-        //SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 16);
-        //SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 16);
-        //SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 16);
+        // SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 16);
+        // SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 16);
+        // SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 16);
+        // SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 16);
 
         if (g_settings.Graphics.MSAA > 0)
         {

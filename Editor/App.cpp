@@ -215,7 +215,6 @@ namespace ToolKit
       // Apply gamma to back buffer
       myGammaPass->Render();
 
-
       m_renderer->m_totalFrameCount++;
     }
 

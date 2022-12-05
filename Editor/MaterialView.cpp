@@ -1,4 +1,5 @@
 #include "MaterialView.h"
+
 #include "App.h"
 
 namespace ToolKit
@@ -223,6 +224,5 @@ namespace ToolKit
             true);
       }
     }
-  }
-}
-
+  } // namespace Editor
+} // namespace ToolKit

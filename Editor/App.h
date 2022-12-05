@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ConsoleWindow.h"
+#include "EditorPass.h"
 #include "EditorScene.h"
 #include "FolderWindow.h"
 #include "Global.h"
@@ -12,7 +13,7 @@
 #include "PublishManager.h"
 #include "ToolKit.h"
 #include "Workspace.h"
-#include "EditorPass.h"
+
 #include <memory>
 #include <unordered_map>
 #include <vector>

@@ -16,5 +16,5 @@ namespace ToolKit
       MaterialPtr m_material;
     };
 
-  }
-}
+  } // namespace Editor
+} // namespace ToolKit

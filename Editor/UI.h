@@ -148,7 +148,7 @@ namespace ToolKit
         bool Overwrite        = false;
         StringArray Files;
         String SubDir;
-        float Scale            = 1.0f;
+        float Scale                  = 1.0f;
         class FolderView* ActiveView = nullptr;
       } ImportData;
 

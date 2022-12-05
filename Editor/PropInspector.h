@@ -14,10 +14,11 @@ namespace ToolKit
     class View
     {
      public:
-      static void DropZone(uint fallbackIcon,
-                    const String& file,
-                    std::function<void(const DirectoryEntry& entry)> dropAction,
-                    const String& dropName = "");
+      static void DropZone(
+          uint fallbackIcon,
+          const String& file,
+          std::function<void(const DirectoryEntry& entry)> dropAction,
+          const String& dropName = "");
       static void DropSubZone(
           const String& title,
           uint fallbackIcon,

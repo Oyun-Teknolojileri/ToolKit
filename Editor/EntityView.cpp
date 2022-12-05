@@ -1,8 +1,9 @@
 #include "EntityView.h"
+
 #include "App.h"
-#include "TransformMod.h"
-#include "Prefab.h"
 #include "CustomDataView.h"
+#include "Prefab.h"
+#include "TransformMod.h"
 
 namespace ToolKit
 {
@@ -492,5 +493,5 @@ namespace ToolKit
       }
     }
 
-  }
-}
+  } // namespace Editor
+} // namespace ToolKit

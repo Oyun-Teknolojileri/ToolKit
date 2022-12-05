@@ -16,9 +16,9 @@ namespace ToolKit
                                       const String& file,
                                       ParameterVariant* var);
       static void ShowCustomData(Entity* m_entity,
-                          String headerName,
-                          ParameterVariantRawPtrArray& vars,
-                          bool isListEditable);
+                                 String headerName,
+                                 ParameterVariantRawPtrArray& vars,
+                                 bool isListEditable);
       static void ShowVariant(ParameterVariant* var, ComponentPtr comp);
       static ValueUpdateFn MultiUpdate(ParameterVariant* var);
       CustomDataView();
