@@ -62,16 +62,15 @@
 				{
 					layer = 0.0;
 					vec /= vec.x;
-					coord = vec.yz;
+					coord = -vec.zy;
 				}
 				else
 				{
 					layer = 1.0;
 					vec.y = -vec.y;
 					vec /= vec.x;
-					coord = vec.yz;
+					coord = -vec.zy;
 				}
-				coord.xy = -coord.yx;
 			}
 			else if (abs(vec.y) >= abs(vec.x) && abs(vec.y) >= abs(vec.z))
 			{
@@ -91,21 +90,19 @@
 			}
 			else
 			{
-				vec.z = -vec.z;
-				if (vec.z < 0.0)
+				if (vec.z > 0.0)
 				{
 					layer = 4.0;
 					vec.y = -vec.y;
-					vec /= vec.z;
-					coord = vec.yx;
+					vec /= -vec.z;
+					coord = -vec.xy;
 				}
 				else
 				{
 					layer = 5.0;
-					vec /= vec.z;
-					coord = vec.yx;
+					vec /= -vec.z;
+					coord = -vec.xy;
 				}
-				coord.xy = -coord.yx;
 			}
 
 			coord = (coord + vec2(1.0)) * 0.5;

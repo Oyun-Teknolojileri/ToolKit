@@ -606,6 +606,7 @@ namespace ToolKit
 
     if (needChange)
     {
+      m_lastShadowLights.resize(nextId);
 
       // Place shadow textures to atlas
       m_layerCount = PlaceShadowMapsToShadowAtlas(m_lastShadowLights);
