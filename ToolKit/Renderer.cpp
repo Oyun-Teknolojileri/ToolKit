@@ -91,6 +91,15 @@ namespace ToolKit
       }
   }
 
+  int Renderer::GetMaxArrayTextureLayers()
+  {
+    if (m_maxArrayTextureLayers == -1)
+    {
+      glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &m_maxArrayTextureLayers);
+    }
+    return m_maxArrayTextureLayers;
+  }
+
   void Renderer::SetCameraLens(Camera* cam)
   {
     float aspect = (float) m_viewportSize.x / (float) m_viewportSize.y;
@@ -768,6 +777,13 @@ namespace ToolKit
     glViewport(0, 0, width, height);
   }
 
+  void Renderer::SetViewportSize(uint x, uint y, uint width, uint height)
+  {
+    m_viewportSize.x = width;
+    m_viewportSize.y = height;
+    glViewport(x, y, width, height);
+  }
+
   void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
   {
     static ShaderPtr fullQuadVert = GetShaderManager()->Create<Shader>(
@@ -1270,13 +1286,16 @@ namespace ToolKit
   void Renderer::ShadowPass(const LightRawPtrArray& lights,
                             const EntityRawPtrArray& entities)
   {
+    /*
     UpdateShadowMaps(lights, entities);
     FilterShadowMaps(lights);
+    */
   }
 
   void Renderer::UpdateShadowMaps(const LightRawPtrArray& lights,
                                   const EntityRawPtrArray& entities)
   {
+    /*
     MaterialPtr lastOverrideMaterial = m_overrideMat;
 
     GLint lastFBO;
@@ -1368,6 +1387,7 @@ namespace ToolKit
           {
             smBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                     light->GetShadowMapRenderTarget(),
+                                    -1,
                                     (Framebuffer::CubemapFace) i);
 
             light->m_node->SetOrientation(rotations[i]);
@@ -1391,10 +1411,12 @@ namespace ToolKit
 
     m_overrideMat = lastOverrideMaterial;
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+    */
   }
 
   void Renderer::FilterShadowMaps(const LightRawPtrArray& lights)
   {
+    /*
     for (Light* light : lights)
     {
       if (!light->GetCastShadowVal() || light->GetShadowThicknessVal() < 0.001f)
@@ -1416,6 +1438,7 @@ namespace ToolKit
                            Y_AXIS,
                            softness / light->GetShadowResolutionVal().y);
     }
+    */
   }
 
   void Renderer::Apply7x1GaussianBlur(const TexturePtr source,
@@ -1920,25 +1943,28 @@ namespace ToolKit
                                    g_lightsoftShadowsStrCache[i].c_str());
         glUniform1i(loc, (int) (currLight->GetPCFSamplesVal() > 1));
 
-        if (FramebufferPtr shadowFrameBuffer =
-                currLight->GetShadowMapFramebuffer())
-        {
-          SetShadowMapTexture(
-              type,
-              shadowFrameBuffer
-                  ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
-                  ->m_textureId,
-              program);
-        }
-        else
-        {
-          GetLogger()->WriteConsole(
-              LogType::Error,
-              "Uninitilized shadow buffer ! Light Name: %s ID: %d",
-              currLight->GetNameVal().c_str(),
-              currLight->GetIdVal());
-        }
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowAtlasLayerStrCache[i].c_str());
+        glUniform1f(loc, (GLfloat) currLight->m_shadowAtlasLayer);
+
+        const Vec2 coord =
+            currLight->m_shadowAtlasCoord /
+            (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowAtlasCoordStrCache[i].c_str());
+        glUniform2fv(loc, 1, &coord.x);
+
+        loc = glGetUniformLocation(
+            program->m_handle, g_lightShadowAtlasEdgeRatioStrCache[i].c_str());
+        glUniform1f(loc,
+                    currLight->GetShadowResolutionVal().x /
+                        Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowResolutionStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetShadowResolutionVal().x);
       }
+
       GLuint loc = glGetUniformLocation(program->m_handle,
                                         g_lightCastShadowStrCache[i].c_str());
       glUniform1i(loc, static_cast<int>(castShadow));
@@ -1947,6 +1973,15 @@ namespace ToolKit
     GLint loc =
         glGetUniformLocation(program->m_handle, "LightData.activeCount");
     glUniform1i(loc, static_cast<int>(m_lights.size()));
+
+    // Bind shadow map if activated
+    if (m_shadowAtlas != nullptr)
+    {
+      loc = glGetUniformLocation(program->m_handle, "shadowAtlas");
+      glUniform1i(loc, m_rhiSettings::shadowAtlasSlot);
+      glActiveTexture(GL_TEXTURE0 + m_rhiSettings::shadowAtlasSlot);
+      glBindTexture(GL_TEXTURE_2D_ARRAY, m_shadowAtlas->m_textureId);
+    }
   }
 
   void Renderer::SetVertexLayout(VertexLayout layout)
@@ -2045,62 +2080,14 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetShadowMapTexture(EntityType type,
-                                     uint textureId,
-                                     ProgramPtr program)
+  void Renderer::SetShadowAtlas(TexturePtr shadowAtlas)
   {
-    // TODO
-    return;
-
-    if (m_bindedShadowMapCount >= m_rhiSettings::maxShadows)
-    {
-      return;
-    }
-
     /*
-     * Texture Slots:
-     * 8-11: Directional and spot light shadow maps
-     * 12-15: Point light shadow maps
+     * Texture slots:
+     * 8: Shadow atlas
      */
 
-    if (type == EntityType::Entity_PointLight)
-    {
-      if (m_pointLightShadowCount < m_rhiSettings::maxPointLightShadows)
-      {
-        int curr = m_pointLightShadowCount +
-                   m_rhiSettings::maxDirAndSpotLightShadows +
-                   m_rhiSettings::textureSlotCount;
-        glUniform1i(
-            glGetUniformLocation(program->m_handle,
-                                 ("LightData.pointLightShadowMap[" +
-                                  std::to_string(m_pointLightShadowCount) + "]")
-                                     .c_str()),
-            curr);
-        glActiveTexture(GL_TEXTURE0 + curr);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
-        m_bindedShadowMapCount++;
-        m_pointLightShadowCount++;
-      }
-    }
-    else
-    {
-      if (m_dirAndSpotLightShadowCount <
-          m_rhiSettings::maxDirAndSpotLightShadows)
-      {
-        int curr =
-            m_dirAndSpotLightShadowCount + m_rhiSettings::textureSlotCount;
-        glUniform1i(glGetUniformLocation(
-                        program->m_handle,
-                        ("LightData.dirAndSpotLightShadowMap[" +
-                         std::to_string(m_dirAndSpotLightShadowCount) + "]")
-                            .c_str()),
-                    curr);
-        glActiveTexture(GL_TEXTURE0 + curr);
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        m_bindedShadowMapCount++;
-        m_dirAndSpotLightShadowCount++;
-      }
-    }
+    m_shadowAtlas = shadowAtlas;
   }
 
   void Renderer::ResetShadowMapBindings(ProgramPtr program)
@@ -2173,6 +2160,7 @@ namespace ToolKit
       m_utilFramebuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
           cubeMapRt,
+          -1,
           (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
@@ -2247,6 +2235,7 @@ namespace ToolKit
       m_utilFramebuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
           cubeMapRt,
+          -1,
           (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));

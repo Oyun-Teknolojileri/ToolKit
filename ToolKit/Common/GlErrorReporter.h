@@ -27,6 +27,7 @@ void GLDebugMessageCallback(GLenum source,
                             const GLchar* msg,
                             const void* data)
 {
+  /* TODO
   const char* _source;
   const char* _type;
   const char* _severity;
@@ -129,4 +130,5 @@ void GLDebugMessageCallback(GLenum source,
           _source,
           msg);
   GlErrorReporter::Report(msg);
+  */
 }

@@ -25,22 +25,101 @@
 
 			mat4 projectionViewMatrix[12];
 			float shadowMapCameraFar[12];
-			//sampler2D dirAndSpotLightShadowMap[4];
 			//samplerCube pointLightShadowMap[4];
 			int castShadow[12];
 			int PCFSamples[12];
 			float PCFRadius[12];
 			float lightBleedingReduction[12];
 			int softShadows[12];
+			float shadowAtlasLayer[12];
+			float shadowAtlasEdgeRatio[12];
+			vec2 shadowAtlasCoord[12]; // Between 0 and 1
+			float shadowResolution[12];
 		};
 		uniform _LightData LightData;
 
-		const int maxPointLightShadows = 4;
-		const int maxDirAndSpotLightShadows = 4;
+		sampler2DArray shadowAtlas;
 
-		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
+		// TODO: There is no more need to separate the limitation of point lights from directional and spot lights limitations
+		const int maxPointLightShadows = 8;
+		const int maxDirAndSpotLightShadows = 8;
+
+		// Returns uv coordinates and layers such as: vec3(u,v,layer)
+		// https://kosmonautblog.wordpress.com/2017/03/25/shadow-filtering-for-pointlights/
+		vec3 UVWToUVLayer(vec3 vec)
 		{
 			/*
+				layer:
+				  0       1       2       3       4       5
+				pos X   neg X   pos Y   neg Y   pos Z   neg Z
+			*/
+			float layer;
+			vec2 coord;
+
+			if (abs(vec.x) >= abs(vec.y) && abs(vec.x) >= abs(vec.z))
+			{
+				if (vec.x > 0.0)
+				{
+					layer = 0.0;
+					vec /= vec.x;
+					coord = -vec.zy;
+				}
+				else
+				{
+					layer = 1.0;
+					vec.y = -vec.y;
+					vec /= vec.x;
+					coord = -vec.zy;
+				}
+			}
+			else if (abs(vec.y) >= abs(vec.x) && abs(vec.y) >= abs(vec.z))
+			{
+				if (vec.y > 0.0)
+				{
+					layer = 2.0;
+					vec /= vec.y;
+					coord = vec.xz;
+				}
+				else
+				{
+					layer = 3.0;
+					vec.x = -vec.x;
+					vec /= vec.y;
+					coord = vec.xz;
+				}
+			}
+			else
+			{
+				if (vec.z > 0.0)
+				{
+					layer = 4.0;
+					vec.y = -vec.y;
+					vec /= -vec.z;
+					coord = -vec.xy;
+				}
+				else
+				{
+					layer = 5.0;
+					vec /= -vec.z;
+					coord = -vec.xy;
+				}
+			}
+
+			coord = (coord + vec2(1.0)) * 0.5;
+			return vec3(coord, layer);
+		}
+
+		vec2 ShadowBorderShrink(float resolution, vec2 uv)
+		{
+			float borderSize = 0.5;
+			uv *= resolution - borderSize * 2.0;
+			uv += borderSize;
+			uv /= resolution;
+			return uv;
+		}
+
+		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
+		{		
 			vec3 lightDir = normalize(LightData.pos[index] - pos);
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz;
@@ -53,6 +132,7 @@
 			// Get depth of the current fragment according to lights view
 			float currFragDepth = projCoord.z;
 
+			/* TODO: bring pack PCF
 			if (LightData.softShadows[index] == 1)
 			{
 				return PCFFilterShadow2D(LightData.dirAndSpotLightShadowMap[dirIndex], projCoord.xy,
@@ -60,17 +140,16 @@
 				LightData.lightBleedingReduction[index]);
 			}
 			else
+			*/
 			{
-				vec2 moments = texture(LightData.dirAndSpotLightShadowMap[dirIndex], projCoord.xy).xy;
+				vec2 coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * projCoord.xy;
+				vec2 moments = texture(shadowAtlas, vec3(coord, LightData.shadowAtlasLayer[index])).xy;
 				return ChebyshevUpperBound(moments, projCoord.z, LightData.lightBleedingReduction[index]);
 			}
-			*/
-			return 1.0;
 		}
 
 		float CalculateSpotShadow(vec3 pos, int index, int spotIndex, vec3 normal)
 		{
-			/*
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
 			projCoord = projCoord * 0.5 + 0.5;
@@ -78,6 +157,7 @@
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
 
+			/* TODO: bring pack PCF
 			if (LightData.softShadows[index] == 1)
 			{
 				return PCFFilterShadow2D(LightData.dirAndSpotLightShadowMap[spotIndex], projCoord.xy,
@@ -85,20 +165,20 @@
 				LightData.lightBleedingReduction[index]);
 			}
 			else
+			*/
 			{
-				vec2 moments = texture(LightData.dirAndSpotLightShadowMap[spotIndex], projCoord.xy).xy;
+				vec2 coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * projCoord.xy;
+				vec2 moments = texture(shadowAtlas, vec3(coord, LightData.shadowAtlasLayer[index])).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
-			*/
-			return 1.0;
 		}
 
 		float CalculatePointShadow(vec3 pos, int index, int pointIndex, vec3 normal)
 		{
-			/*
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
 
+			/* TODO bring back PCF
 			if (LightData.softShadows[index] == 1)
 			{
 				return PCFFilterShadow3D(LightData.pointLightShadowMap[pointIndex], lightToFrag,
@@ -106,11 +186,17 @@
 				LightData.lightBleedingReduction[index]);
 			}
 			else
+			*/
 			{
-				vec2 moments = texture(LightData.pointLightShadowMap[pointIndex], lightToFrag).xy;
+				// Avoid border sampling
+				vec3 coord = UVWToUVLayer(lightToFrag);
+				coord.xy = ShadowBorderShrink(LightData.shadowResolution[index], coord.xy);
+				coord.xy = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord.xy;
+				coord.z = LightData.shadowAtlasLayer[index] + coord.z;
+				vec2 moments = texture(shadowAtlas, coord).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
-			*/
+			
 			return 1.0;
 		}
 

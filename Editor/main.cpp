@@ -17,10 +17,6 @@
 
 #include "DebugNew.h"
 
-#ifndef TK_GL_ES_3_0
-  #define TK_GL_ES_3_0
-#endif
-
 namespace ToolKit
 {
   namespace Editor
@@ -35,12 +31,14 @@ namespace ToolKit
 
     void GlDebugReportInit()
     {
+      /* TODO
       if (glDebugMessageCallback != NULL)
       {
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
       }
+      */
 
       GlErrorReporter::Report = [](const std::string& msg) -> void {
         static byte state = g_app->m_showGraphicsApiErrors;
@@ -53,7 +51,7 @@ namespace ToolKit
         if (state != g_app->m_showGraphicsApiErrors)
         {
           state = g_app->m_showGraphicsApiErrors;
-
+          /* TODO
           if (state == 1)
           {
             glDebugMessageControl(
@@ -71,6 +69,7 @@ namespace ToolKit
             glDebugMessageControl(
                 GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
           }
+          */
         }
 
         if (g_app->m_showGraphicsApiErrors)
@@ -235,6 +234,7 @@ namespace ToolKit
 #ifdef TK_DEBUG
             GlDebugReportInit();
 #endif
+            
             // Init glew
             glewExperimental = true;
             GLenum err       = glewInit();
@@ -243,7 +243,7 @@ namespace ToolKit
               g_running = false;
               return;
             }
-
+            
             // Init Main
             // Override SceneManager.
             SafeDel(g_proxy->m_sceneManager);

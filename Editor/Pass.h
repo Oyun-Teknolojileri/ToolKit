@@ -114,9 +114,20 @@ namespace ToolKit
     void PreRender() override;
     void PostRender() override;
 
+    RenderTargetPtr GetShadowAtlas();
+
    private:
-    void UpdateShadowMap(Light* light, const EntityRawPtrArray& entities);
+    void RenderShadowMaps(Light* light, const EntityRawPtrArray& entities);
     void FilterShadowMap(Light* light);
+
+    /**
+     * Sets layer and coordintes of the shadow maps in shadow atlas.
+     * @param lights Light array that have shadows.
+     * @return number of layers needed.
+     */
+    int PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights);
+
+    void InitShadowAtlas();
 
    public:
     ShadowPassParams m_params;
@@ -124,6 +135,13 @@ namespace ToolKit
    private:
     MaterialPtr m_prevOverrideMaterial = nullptr;
     FramebufferPtr m_prevFrameBuffer   = nullptr;
+
+    FramebufferPtr m_shadowFramebuffer = nullptr;
+    RenderTargetPtr m_shadowAtlas      = nullptr;
+    int m_layerCount                   = 0;
+    int m_currentRenderingLayer        = 0;
+    LightRawPtrArray m_lastShadowLights;
+    std::vector<bool> m_clearedLayers;
 
     EntityRawPtrArray m_drawList;
     Quaternion m_cubeMapRotations[6];
@@ -257,6 +275,32 @@ namespace ToolKit
     FramebufferPtr m_copyBuffer   = nullptr;
     RenderTargetPtr m_copyTexture = nullptr;
     ShaderPtr m_gammaShader       = nullptr;
+  };
+
+  struct SceneRenderPassParams
+  {
+    RenderPassParams renderPassParams;
+    ShadowPassParams shadowPassParams;
+  };
+
+  /**
+   * Render scene with shadows.
+   */
+  class SceneRenderPass : public Pass
+  {
+   public:
+    SceneRenderPass();
+    explicit SceneRenderPass(const SceneRenderPassParams& params);
+
+    void Render() override;
+    void PreRender() override;
+    void PostRender() override;
+
+   public:
+    SceneRenderPassParams m_params;
+
+    ShadowPassPtr m_shadowPass = nullptr;
+    RenderPassPtr m_renderPass = nullptr;
   };
 
 } // namespace ToolKit

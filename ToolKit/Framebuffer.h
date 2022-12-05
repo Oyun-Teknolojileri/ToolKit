@@ -19,7 +19,7 @@ namespace ToolKit
   class TK_API Framebuffer
   {
     // NOTE: This class does not handle renderbuffer attachments, multi-sampled
-    // cubemaps, texture arrays, stencil attachments(including depth_stencil).
+    // cubemaps, stencil attachments(including depth_stencil).
     // NOTE: All mipmap levels set to 0. No support to set different levels of
     // mipmaps of textures.
 
@@ -59,9 +59,11 @@ namespace ToolKit
 
     void Init(const FramebufferSettings& settings);
     void UnInit();
+    bool Initialized();
 
     RenderTargetPtr SetAttachment(Attachment atc,
                                   RenderTargetPtr rt,
+                                  int layer        = -1,
                                   CubemapFace face = CubemapFace::NONE);
     RenderTargetPtr GetAttachment(Attachment atc);
     void ClearAttachments();
