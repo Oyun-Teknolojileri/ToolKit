@@ -111,7 +111,7 @@
 
 		vec2 ShadowBorderShrink(float resolution, vec2 uv)
 		{
-			float borderSize = 0.5;
+			float borderSize = 1.5;
 			uv *= resolution - borderSize * 2.0;
 			uv += borderSize;
 			uv /= resolution;
@@ -131,7 +131,9 @@
 
 			// Get depth of the current fragment according to lights view
 			float currFragDepth = projCoord.z;
-			vec2 coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * projCoord.xy;
+			// Avoid border sampling
+			vec2 coord = ShadowBorderShrink(LightData.shadowResolution[index], projCoord.xy);
+			coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord;
 
 			if (LightData.softShadows[index] == 1)
 			{
@@ -154,7 +156,9 @@
 
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
-			vec2 coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * projCoord.xy;
+			// Avoid border sampling
+			vec2 coord = ShadowBorderShrink(LightData.shadowResolution[index], projCoord.xy);
+			coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord;
 
 			if (LightData.softShadows[index] == 1)
 			{

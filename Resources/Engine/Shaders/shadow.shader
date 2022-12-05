@@ -134,6 +134,12 @@
         vec3(-0.209922, -0.437284, -0.235557)
     );
 
+    /*
+      Warning: Pcf might try to sample outside of the shadow map (from another texture in shadow atlas) since the
+      offset increases with the radius. In lighting.shader we use ShadowBorderShrink() function to avoid border sampling
+      with shrinking the uv coordinates with a constant value and this might not be enough in some big radius cases.
+    */
+
 		float PCFFilterShadow2D(sampler2DArray shadowAtlas, vec2 tc, float layer, int samples, float radius, float currDepth, float LBR)
 		{
 			float sum = 0.0;
