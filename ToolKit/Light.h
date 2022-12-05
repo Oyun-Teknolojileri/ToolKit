@@ -26,6 +26,9 @@ namespace ToolKit
     virtual void UpdateShadowCamera();
     virtual float AffectDistance();
     virtual void InitShadowMapDepthMaterial();
+    
+    protected:
+    void UpdateShadowCameraTransform();
 
    public:
     TKDeclareParam(Vec3, Color);

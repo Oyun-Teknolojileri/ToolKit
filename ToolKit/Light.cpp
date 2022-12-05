@@ -93,8 +93,6 @@ namespace ToolKit
 
     m_shadowMapCameraProjectionViewMatrix = proj * view;
     m_shadowMapCameraFar                  = m_shadowCamera->Far();
-
-    m_shadowCamera->m_node->SetTransform(m_node->GetTransform());
   }
 
   float Light::AffectDistance()
@@ -114,6 +112,11 @@ namespace ToolKit
     m_shadowMapMaterial->m_vertexShader   = vert;
     m_shadowMapMaterial->m_fragmentShader = frag;
     m_shadowMapMaterial->Init();
+  }
+
+  void Light::UpdateShadowCameraTransform()
+  {
+    m_shadowCamera->m_node->SetTransform(m_node->GetTransform());
   }
 
   DirectionalLight::DirectionalLight()
@@ -291,6 +294,7 @@ namespace ToolKit
                             AffectDistance());
 
     Light::UpdateShadowCamera();
+    UpdateShadowCameraTransform();
   }
 
   float PointLight::AffectDistance()
@@ -343,6 +347,7 @@ namespace ToolKit
                             AffectDistance());
 
     Light::UpdateShadowCamera();
+    UpdateShadowCameraTransform();
   }
 
   float SpotLight::AffectDistance()
