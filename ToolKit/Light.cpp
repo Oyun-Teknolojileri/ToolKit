@@ -19,12 +19,8 @@ namespace ToolKit
     Intensity_Define(
         1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
     CastShadow_Define(false, "Light", 90, true, true);
-    ShadowResolution_Define(Vec2(1024.0f, 1024.0f),
-                            "Light",
-                            90,
-                            true,
-                            true,
-                            {false, true, 32.0f, 4096.0f, 2.0f});
+    ShadowRes_Define(
+        1024.0f, "Light", 90, true, true, {false, true, 32.0f, 4096.0f, 2.0f});
     PCFSamples_Define(32, "Light", 90, true, true, {false, true, 0, 128, 1});
     PCFRadius_Define(
         0.01f, "Light", 90, true, true, {false, true, 0.0f, 5.0f, 0.0001f});
@@ -42,15 +38,13 @@ namespace ToolKit
 
   void Light::ParameterEventConstructor()
   {
-    ParamShadowResolution().m_onValueChangedFn.clear();
-    ParamShadowResolution().m_onValueChangedFn.push_back(
+    ParamShadowRes().m_onValueChangedFn.clear();
+    ParamShadowRes().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void {
-          const Vec2 val = std::get<Vec2>(newVal);
+          const float val = std::get<float>(newVal);
 
-          if (val.x > -0.5f && val.y > -0.5f &&
-              val.x <
-                  Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 0.1f &&
-              val.y < Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 0.1f)
+          if (val > -0.5f &&
+              val < Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 0.1f)
           {
             if (GetCastShadowVal())
             {
@@ -287,11 +281,8 @@ namespace ToolKit
 
   void PointLight::UpdateShadowCamera()
   {
-    Vec2 shadowRes = GetShadowResolutionVal();
-    m_shadowCamera->SetLens(glm::half_pi<float>(),
-                            shadowRes.x / shadowRes.y,
-                            0.01f,
-                            AffectDistance());
+    m_shadowCamera->SetLens(
+        glm::half_pi<float>(), 1.0f, 0.01f, AffectDistance());
 
     Light::UpdateShadowCamera();
     UpdateShadowCameraTransform();
@@ -339,12 +330,8 @@ namespace ToolKit
 
   void SpotLight::UpdateShadowCamera()
   {
-    Vec2 shadowRes = GetShadowResolutionVal();
-
-    m_shadowCamera->SetLens(glm::radians(GetOuterAngleVal()),
-                            shadowRes.x / shadowRes.y,
-                            0.01f,
-                            AffectDistance());
+    m_shadowCamera->SetLens(
+        glm::radians(GetOuterAngleVal()), 1.0f, 0.01f, AffectDistance());
 
     Light::UpdateShadowCamera();
     UpdateShadowCameraTransform();

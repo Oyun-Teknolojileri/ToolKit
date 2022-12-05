@@ -1957,12 +1957,12 @@ namespace ToolKit
         loc = glGetUniformLocation(
             program->m_handle, g_lightShadowAtlasResRatioStrCache[i].c_str());
         glUniform1f(loc,
-                    currLight->GetShadowResolutionVal().x /
+                    currLight->GetShadowResVal() /
                         Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
 
         loc = glGetUniformLocation(program->m_handle,
                                    g_lightShadowResolutionStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetShadowResolutionVal().x);
+        glUniform1f(loc, currLight->GetShadowResVal());
       }
 
       GLuint loc = glGetUniformLocation(program->m_handle,

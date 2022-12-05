@@ -426,8 +426,8 @@ namespace ToolKit
 
         renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
                                   (uint) light->m_shadowAtlasCoord.y,
-                                  (uint) light->GetShadowResolutionVal().x,
-                                  (uint) light->GetShadowResolutionVal().x);
+                                  (uint) light->GetShadowResVal(),
+                                  (uint) light->GetShadowResVal());
 
         renderForShadowMapFn(light, entities);
       }
@@ -456,8 +456,8 @@ namespace ToolKit
 
       renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
                                 (uint) light->m_shadowAtlasCoord.y,
-                                (uint) light->GetShadowResolutionVal().x,
-                                (uint) light->GetShadowResolutionVal().x);
+                                (uint) light->GetShadowResVal(),
+                                (uint) light->GetShadowResVal());
 
       renderForShadowMapFn(light, entities);
     }
@@ -494,7 +494,7 @@ namespace ToolKit
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights)
   {
-    // TODO: Use a better algorithm
+    // TODO: Use bin packing algorithm
 
     const int size = Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
 
@@ -511,7 +511,7 @@ namespace ToolKit
 
       anyDirOrSpotLight = true;
 
-      const float res = light->GetShadowResolutionVal().x;
+      const float res = light->GetShadowResVal();
       assert(res <= Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 1.0f &&
              "Shadow resolution can not exceed 4096.");
       if (res > rem)
@@ -542,7 +542,7 @@ namespace ToolKit
 
       anyPointLight = true;
 
-      const float res = light->GetShadowResolutionVal().x;
+      const float res = light->GetShadowResVal();
       assert(res <= Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 1.0f &&
              "Shadow resolution can not exceed 4096.");
       if (res > rem)
