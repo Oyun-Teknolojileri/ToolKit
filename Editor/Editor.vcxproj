@@ -98,11 +98,14 @@
     <ClCompile Include="Anchor.cpp" />
     <ClCompile Include="AnchorMod.cpp" />
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="ComponentView.cpp" />
     <ClCompile Include="ConsoleWindow.cpp" />
+    <ClCompile Include="CustomDataView.cpp" />
     <ClCompile Include="EditorCamera.cpp" />
     <ClCompile Include="EditorLight.cpp" />
     <ClCompile Include="EditorPass.cpp" />
     <ClCompile Include="EditorViewport2d.cpp" />
+    <ClCompile Include="EntityView.cpp" />
     <ClCompile Include="FolderWindow.cpp" />
     <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="Grid.cpp" />
@@ -115,10 +118,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="MaterialInspector.cpp" />
+    <ClCompile Include="MaterialView.cpp" />
     <ClCompile Include="OutlinerWindow.cpp" />
     <ClCompile Include="Pass.cpp" />
     <ClCompile Include="PluginWindow.cpp" />
     <ClCompile Include="PopupWindows.cpp" />
+    <ClCompile Include="PrefabView.cpp" />
     <ClCompile Include="PropInspector.cpp" />
     <ClCompile Include="PublishManager.cpp" />
     <ClCompile Include="TransformMod.cpp" />
@@ -163,20 +168,25 @@
     <ClInclude Include="Anchor.h" />
     <ClInclude Include="AnchorMod.h" />
     <ClInclude Include="App.h" />
+    <ClInclude Include="ComponentView.h" />
     <ClInclude Include="ConsoleWindow.h" />
+    <ClInclude Include="CustomDataView.h" />
     <ClInclude Include="EditorCamera.h" />
     <ClInclude Include="EditorLight.h" />
     <ClInclude Include="EditorPass.h" />
     <ClInclude Include="EditorViewport2d.h" />
+    <ClInclude Include="EntityView.h" />
     <ClInclude Include="FolderWindow.h" />
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="ImGui\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="MaterialInspector.h" />
+    <ClInclude Include="MaterialView.h" />
     <ClInclude Include="Pass.h" />
     <ClInclude Include="PluginWindow.h" />
     <ClInclude Include="PopupWindows.h" />
+    <ClInclude Include="PrefabView.h" />
     <ClInclude Include="PublishManager.h" />
     <ClInclude Include="Workspace.h" />
     <ClInclude Include="ImGui\imconfig.h" />

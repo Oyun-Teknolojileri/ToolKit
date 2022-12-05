@@ -16,6 +16,9 @@
     <Filter Include="Entities">
       <UniqueIdentifier>{23ef0147-ea57-41a4-9b24-719e3e46ff22}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI\InspectorViews">
+      <UniqueIdentifier>{0dc80406-1a58-4f44-abab-b7242951b6f2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -125,6 +128,21 @@
     </ClCompile>
     <ClCompile Include="EditorPass.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityView.cpp">
+      <Filter>UI\InspectorViews</Filter>
+    </ClCompile>
+    <ClCompile Include="PrefabView.cpp">
+      <Filter>UI\InspectorViews</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentView.cpp">
+      <Filter>UI\InspectorViews</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomDataView.cpp">
+      <Filter>UI\InspectorViews</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialView.cpp">
+      <Filter>UI\InspectorViews</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -238,6 +256,21 @@
     </ClInclude>
     <ClInclude Include="EditorPass.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityView.h">
+      <Filter>UI\InspectorViews</Filter>
+    </ClInclude>
+    <ClInclude Include="PrefabView.h">
+      <Filter>UI\InspectorViews</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentView.h">
+      <Filter>UI\InspectorViews</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomDataView.h">
+      <Filter>UI\InspectorViews</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialView.h">
+      <Filter>UI\InspectorViews</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
