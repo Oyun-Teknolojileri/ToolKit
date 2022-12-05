@@ -2,10 +2,15 @@
 
 #include "AnchorMod.h"
 #include "App.h"
+#include "ComponentView.h"
 #include "ConsoleWindow.h"
+#include "CustomDataView.h"
+#include "EntityView.h"
 #include "ImGui/imgui_stdlib.h"
-#include "MaterialInspector.h"
+#
+#include "MaterialView.h"
 #include "Prefab.h"
+#include "PrefabView.h"
 #include "TransformMod.h"
 #include "Util.h"
 
@@ -13,11 +18,6 @@
 #include <utility>
 
 #include "DebugNew.h"
-#include "EntityView.h"
-#include "PrefabView.h"
-#include "CustomDataView.h"
-#include "ComponentView.h"
-#include "MaterialView.h"
 
 namespace ToolKit
 {
@@ -36,9 +36,9 @@ namespace ToolKit
 
     void View::DropZone(
         uint fallbackIcon,
-                  const String& file,
-                  std::function<void(const DirectoryEntry& entry)> dropAction,
-                  const String& dropName)
+        const String& file,
+        std::function<void(const DirectoryEntry& entry)> dropAction,
+        const String& dropName)
     {
       DirectoryEntry dirEnt;
 
@@ -117,7 +117,7 @@ namespace ToolKit
             MaterialPtr mr = man->Create<Material>(file);
             if (clicked)
             {
-              g_app->GetMaterialInspector()->m_material = mr;
+              g_app->GetPropInspector()->SetMaterialView(mr);
             }
 
             info += "File: " + dirEnt.m_fileName + dirEnt.m_ext + "\n";
@@ -167,7 +167,6 @@ namespace ToolKit
       }
     }
 
-
     View::View(const StringView viewName) : m_viewName(viewName)
     {
     }
@@ -182,10 +181,12 @@ namespace ToolKit
 
     PropInspector::PropInspector()
     {
-      m_views.push_back(new EntityView());
-      m_views.push_back(new PrefabView());
-      m_views.push_back(new CustomDataView());
-      m_views.push_back(new ComponentView());
+      m_views.resize((uint) ViewType::ViewCount);
+      m_views[(uint) ViewType::Entity]     = new EntityView();
+      m_views[(uint) ViewType::Prefab]     = new PrefabView();
+      m_views[(uint) ViewType::CustomData] = new CustomDataView();
+      m_views[(uint) ViewType::Component]  = new ComponentView();
+      m_views[(uint) ViewType::Material]   = new MaterialView();
     }
 
     PropInspector::~PropInspector()
@@ -223,7 +224,7 @@ namespace ToolKit
           {
             ViewRawPtr view = m_views[viewIndx];
 
-            if (m_activeViewIndx == viewIndx)
+            if ((uint) m_activeView == viewIndx)
             {
               ImGui::PushStyleColor(ImGuiCol_Button, windowBg);
             }
@@ -235,7 +236,7 @@ namespace ToolKit
                                        (intptr_t) view->m_viewIcn->m_textureId),
                                    sidebarIconSize))
             {
-              m_activeViewIndx = viewIndx;
+              m_activeView = (ViewType) viewIndx;
             }
             UI::HelpMarker("View#" + std::to_string(viewIndx),
                            view->m_viewName.data());
@@ -250,7 +251,7 @@ namespace ToolKit
                 ImGui::GetID("PropInspectorActiveView"),
                 Vec2(windowSize.x - sidebarSize.x - spacing.x, windowSize.y)))
         {
-          m_views[m_activeViewIndx]->Show();
+          m_views[(uint) m_activeView]->Show();
           ImGui::EndChild();
         }
       }
@@ -266,6 +267,13 @@ namespace ToolKit
     void PropInspector::DispatchSignals() const
     {
       ModShortCutSignals();
+    }
+    void PropInspector::SetMaterialView(MaterialPtr mat)
+    {
+      m_activeView          = ViewType::Material;
+      uint matViewIndx      = (uint) ViewType::Material;
+      MaterialView* matView = (MaterialView*) m_views[matViewIndx];
+      matView->m_material   = mat;
     }
 
   } // namespace Editor

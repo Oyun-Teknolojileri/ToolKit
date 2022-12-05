@@ -51,10 +51,20 @@ namespace ToolKit
       void Show() override;
       Type GetType() const override;
       void DispatchSignals() const override;
+      void SetMaterialView(MaterialPtr mat);
 
      public:
       ViewRawPtrArray m_views;
-      uint m_activeViewIndx = 0;
+      enum class ViewType
+      {
+        Entity,
+        Prefab,
+        CustomData,
+        Component,
+        Material,
+        ViewCount
+      };
+      ViewType m_activeView = ViewType::Entity;
     };
   } // namespace Editor
 } // namespace ToolKit

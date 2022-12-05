@@ -8,7 +8,7 @@
 #include "Global.h"
 #include "ImGui/imgui_stdlib.h"
 #include "Light.h"
-#include "MaterialInspector.h"
+#
 #include "PopupWindows.h"
 #include "PropInspector.h"
 #include "Util.h"
@@ -390,8 +390,8 @@ namespace ToolKit
               ResourceManager* rm = dirEnt.GetManager();
               if (rm && rm->m_type == ResourceType::Material)
               {
-                MaterialInspector* mi = g_app->GetMaterialInspector();
-                mi->m_material = rm->Create<Material>(dirEnt.GetFullPath());
+                g_app->GetPropInspector()->SetMaterialView(
+                    rm->Create<Material>(dirEnt.GetFullPath()));
               }
             }
 

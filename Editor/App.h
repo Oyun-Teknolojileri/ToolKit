@@ -6,7 +6,6 @@
 #include "Global.h"
 #include "Grid.h"
 #include "Light.h"
-#include "MaterialInspector.h"
 #include "OutlinerWindow.h"
 #include "PluginWindow.h"
 #include "PropInspector.h"
@@ -14,7 +13,6 @@
 #include "ToolKit.h"
 #include "Workspace.h"
 #include "EditorPass.h"
-
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -96,7 +94,6 @@ namespace ToolKit
       FolderWindowRawPtrArray GetAssetBrowsers();
       OutlinerWindow* GetOutliner();
       PropInspector* GetPropInspector();
-      MaterialInspector* GetMaterialInspector();
 
       template <typename T>
       T* GetWindow(const String& name)

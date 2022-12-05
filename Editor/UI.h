@@ -31,7 +31,6 @@ namespace ToolKit
         Browser,
         Outliner,
         Inspector,
-        MaterialInspector,
         PluginWindow,
         Viewport2d
       };

@@ -10,7 +10,7 @@
 #include "ImGui/imgui_stdlib.h"
 #include "Imgui/imgui_impl_opengl3.h"
 #include "Imgui/imgui_impl_sdl.h"
-#include "MaterialInspector.h"
+#
 #include "Mod.h"
 #include "OutlinerWindow.h"
 #include "OverlayUI.h"
@@ -660,14 +660,6 @@ namespace ToolKit
                           !g_app->GetPropInspector()->IsVisible()))
       {
         g_app->GetPropInspector()->SetVisibility(true);
-      }
-
-      if (ImGui::MenuItem("Material Inspector",
-                          "Alt+R",
-                          nullptr,
-                          !g_app->GetMaterialInspector()->IsVisible()))
-      {
-        g_app->GetMaterialInspector()->SetVisibility(true);
       }
 
       if (PluginWindow* wnd = g_app->GetWindow<PluginWindow>("Plugin"))
