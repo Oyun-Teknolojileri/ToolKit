@@ -32,7 +32,7 @@
 			float lightBleedingReduction[12];
 			int softShadows[12];
 			float shadowAtlasLayer[12];
-			float shadowAtlasEdgeRatio[12];
+			float shadowAtlasResRatio[12];
 			vec2 shadowAtlasCoord[12]; // Between 0 and 1
 			float shadowResolution[12];
 		};
@@ -127,13 +127,13 @@
 			float currFragDepth = projCoord.z;
 
 			vec2 startCoord = LightData.shadowAtlasCoord[index];
-			float resRatio = LightData.shadowAtlasEdgeRatio[index];
+			float resRatio = LightData.shadowAtlasResRatio[index];
 			vec3 coord = vec3(startCoord + resRatio * projCoord.xy, LightData.shadowAtlasLayer[index]);
 
 			if (LightData.softShadows[index] == 1)
 			{
 				return PCFFilterShadow2D(shadowAtlas, coord, startCoord, startCoord + resRatio,
-				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasEdgeRatio[index],
+				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasResRatio[index],
 				projCoord.z, LightData.lightBleedingReduction[index]);
 			}
 			else
@@ -156,13 +156,13 @@
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
 
 			vec2 startCoord = LightData.shadowAtlasCoord[index];
-			float resRatio = LightData.shadowAtlasEdgeRatio[index];
+			float resRatio = LightData.shadowAtlasResRatio[index];
 			vec3 coord = vec3(startCoord + resRatio * projCoord.xy, LightData.shadowAtlasLayer[index]);
 
 			if (LightData.softShadows[index] == 1)
 			{
 				return PCFFilterShadow2D(shadowAtlas, coord, startCoord, startCoord + resRatio,
-				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasEdgeRatio[index], currFragDepth,
+				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasResRatio[index], currFragDepth,
 				LightData.lightBleedingReduction[index]);
 			}
 			else
@@ -181,7 +181,7 @@
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
 
 			vec2 startCoord = LightData.shadowAtlasCoord[index];
-			float resRatio = LightData.shadowAtlasEdgeRatio[index];
+			float resRatio = LightData.shadowAtlasResRatio[index];
 
 			vec3 coord = UVWToUVLayer(lightToFrag);
 			coord.xy = startCoord + resRatio * coord.xy;

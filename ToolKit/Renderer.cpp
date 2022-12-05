@@ -1955,7 +1955,7 @@ namespace ToolKit
         glUniform2fv(loc, 1, &coord.x);
 
         loc = glGetUniformLocation(
-            program->m_handle, g_lightShadowAtlasEdgeRatioStrCache[i].c_str());
+            program->m_handle, g_lightShadowAtlasResRatioStrCache[i].c_str());
         glUniform1f(loc,
                     currLight->GetShadowResolutionVal().x /
                         Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
