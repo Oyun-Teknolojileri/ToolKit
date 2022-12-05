@@ -134,32 +134,19 @@
         vec3(-0.209922, -0.437284, -0.235557)
     );
 
-    /*
-      Pcf might try to sample outside of the shadow map (from another texture in shadow atlas) since the
-      offset increases with the radius. In lighting.shader we use ShadowBorderShrink() function to avoid border sampling
-      with shrinking the uv coordinates with 0.5 * pcf_radius. 0.5 is radius the Poission Disk.
-    */
+    // NOTE: "ClampTextureCoordinates" function is from "textureUtil.shader" and this shader includes from "lighting.shader" which already includes that.
+    // If you need to use this shader from your shader, include "textureUtil.shader".
 
-		float PCFFilterShadow2D(sampler2DArray shadowAtlas, vec2 tc, float layer, int samples, float radius, float currDepth, float LBR)
+		float PCFFilterShadow2D(sampler2DArray shadowAtlas, vec3 uvLayer, vec2 coordStart, vec2 coordEnd, int samples, float radius, float currDepth, float LBR)
 		{
 			float sum = 0.0;
 			for (int i = 0; i < samples; ++i)
 			{
 				vec2 offset = poissonDisk[i].xy * radius;
-				vec2 moments = texture(shadowAtlas, vec3(tc + offset, layer)).xy;
-				sum += ChebyshevUpperBound(moments, currDepth, LBR);
-			}
-			return sum / float(samples);
-		}
-
-		float PCFFilterShadow3D(samplerCube map, vec3 tc, int samples, float radius, float currDepth, float LBR)
-		{
-			float sum = 0.0;
-			for (int i = 0; i < samples; ++i)
-			{
-				vec3 offset = poissonDisk[i] * radius;
-				vec2 moments = texture(map, tc + offset).xy;
-				sum += ChebyshevUpperBound(moments, currDepth, LBR);
+        vec3 texCoord = uvLayer;
+        texCoord.xy = ClampTextureCoordinates(uvLayer.xy + offset, coordStart, coordEnd);
+				vec2 moments = texture(shadowAtlas, texCoord).xy;
+				sum += ChebyshevUpperBound(moments, currDepth, LBR);;
 			}
 			return sum / float(samples);
 		}

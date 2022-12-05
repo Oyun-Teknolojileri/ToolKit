@@ -88,7 +88,10 @@ namespace ToolKit
 
   RenderTargetSettigs Viewport::GetRenderTargetSettings()
   {
-    return RenderTargetSettigs();
+    RenderTargetSettigs x;
+    x.InternalFormat = GraphicTypes::FormatRGBA16F;
+    x.Type = GraphicTypes::TypeFloat;
+    return x;
   }
 
   void Viewport::ResetViewportImage(const RenderTargetSettigs& settings)
