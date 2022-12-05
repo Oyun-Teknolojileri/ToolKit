@@ -190,21 +190,25 @@
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
 
-			/* TODO bring back PCF
 			if (LightData.softShadows[index] == 1)
 			{
-				return PCFFilterShadow3D(LightData.pointLightShadowMap[pointIndex], lightToFrag,
-				LightData.PCFSamples[index], LightData.PCFRadius[index], currFragDepth,
-				LightData.lightBleedingReduction[index]);
+				float pcfRadius = LightData.PCFRadius[index] * LightData.shadowAtlasEdgeRatio[index];
+				vec3 coord = UVWToUVLayer(lightToFrag);
+				// 0.5 is Poission Disk radius which PCF uses for random sampling offset
+				coord.xy = ShadowBorderShrink(LightData.shadowResolution[index], coord.xy, 0.55 * pcfRadius);
+				coord.xy = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord.xy;
+				coord.z = LightData.shadowAtlasLayer[index] + coord.z;
+
+				return PCFFilterShadow2D(shadowAtlas, coord.xy, coord.z, LightData.PCFSamples[index],
+				pcfRadius, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
 			else
-			*/
 			{
-				// Avoid border sampling
 				vec3 coord = UVWToUVLayer(lightToFrag);
 				coord.xy = ShadowBorderShrink(LightData.shadowResolution[index], coord.xy, 0.5);
 				coord.xy = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * coord.xy;
 				coord.z = LightData.shadowAtlasLayer[index] + coord.z;
+
 				vec2 moments = texture(shadowAtlas, coord).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
