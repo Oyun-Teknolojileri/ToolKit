@@ -131,18 +131,16 @@
 
 			// Get depth of the current fragment according to lights view
 			float currFragDepth = projCoord.z;
+			vec2 coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * projCoord.xy;
 
-			/* TODO: bring pack PCF
 			if (LightData.softShadows[index] == 1)
 			{
-				return PCFFilterShadow2D(LightData.dirAndSpotLightShadowMap[dirIndex], projCoord.xy,
-				LightData.PCFSamples[index], LightData.PCFRadius[index], projCoord.z,
+				return PCFFilterShadow2D(shadowAtlas, coord, LightData.shadowAtlasLayer[index],
+				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasEdgeRatio[index], projCoord.z,
 				LightData.lightBleedingReduction[index]);
 			}
 			else
-			*/
 			{
-				vec2 coord = LightData.shadowAtlasCoord[index] + LightData.shadowAtlasEdgeRatio[index] * projCoord.xy;
 				vec2 moments = texture(shadowAtlas, vec3(coord, LightData.shadowAtlasLayer[index])).xy;
 				return ChebyshevUpperBound(moments, projCoord.z, LightData.lightBleedingReduction[index]);
 			}
