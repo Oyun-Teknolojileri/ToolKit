@@ -93,13 +93,13 @@ namespace ToolKit
     EntityType GetType() const override;
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+    static void Generate(MeshComponentPtr mesh, float radius);
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
     void ParameterConstructor(float radius);
 
    private:
-    void Generate();
 
    public:
     TKDeclareParam(float, Radius);

@@ -1,5 +1,5 @@
 #include "MaterialView.h"
-
+#include "EditorViewport.h"
 #include "App.h"
 
 namespace ToolKit
@@ -14,22 +14,26 @@ namespace ToolKit
     {
       m_viewID  = 3;
       m_viewIcn = UI::m_materialIcon;
+      m_viewport = new PreviewViewport(300, 300);
 
       // Initialize scene
-      m_previewScene = std::make_shared<Scene>();
       Entity* previewEntity = new Entity;
       previewEntity->AddComponent(std::make_shared<MaterialComponent>());
-      m_previewScene->AddEntity(previewEntity);
+      MeshComponentPtr meshComp = std::make_shared<MeshComponent>();
+      Sphere::Generate(meshComp, 1.0f);
+      previewEntity->AddComponent(meshComp);
+      m_viewport->GetScene()->AddEntity(previewEntity);
+      m_viewport->SetCameraMode(true);
     }
     void MaterialView::SetMaterial(MaterialPtr mat)
     {
-      Entity* previewEntity = m_previewScene->GetEntities()[0];
+      Entity* previewEntity = m_viewport->GetScene()->GetEntities()[0];
       previewEntity->GetMaterialComponent()->SetMaterialVal(mat);
     }
 
     void MaterialView::Show()
     {
-      Entity* previewEntity = m_previewScene->GetEntities()[0];
+      Entity* previewEntity = m_viewport->GetScene()->GetEntities()[0];
       MaterialPtr mat = previewEntity->GetMaterialComponent()->GetMaterialVal();
       if (!mat)
       {
@@ -46,10 +50,10 @@ namespace ToolKit
       if (ImGui::CollapsingHeader("Material Preview",
                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
-
-        // Draw Preview Scene
+        m_viewport->Update(g_app->GetDeltaTime());
+        m_viewport->Show();
       }
-
+      
       auto updateThumbFn = [&mat]() -> void {
         DirectoryEntry dirEnt(mat->GetFile());
         g_app->m_thumbnailCache.erase(mat->GetFile());

@@ -376,14 +376,14 @@ namespace ToolKit
 
     if (genDef)
     {
-      Generate();
+      Generate(GetMeshComponent(), GetRadiusVal());
     }
   }
 
   Sphere::Sphere(float radius)
   {
     ParameterConstructor(radius);
-    Generate();
+    Generate(GetMeshComponent(), GetRadiusVal());
   }
 
   Entity* Sphere::CopyTo(Entity* copyTo) const
@@ -398,9 +398,8 @@ namespace ToolKit
     return EntityType::Entity_Sphere;
   }
 
-  void Sphere::Generate()
+  void Sphere::Generate(MeshComponentPtr meshComp, float r)
   {
-    const float r       = GetRadiusVal();
     const int nRings    = 32;
     const int nSegments = 32;
 
@@ -452,7 +451,7 @@ namespace ToolKit
       } // end for seg
     }   // end for ring
 
-    MeshPtr mesh               = GetMeshComponent()->GetMeshVal();
+    MeshPtr mesh               = meshComp->GetMeshVal();
     mesh->m_vertexCount        = (uint) vertices.size();
     mesh->m_clientSideVertices = vertices;
     mesh->m_indexCount         = (uint) indices.size();
@@ -471,7 +470,7 @@ namespace ToolKit
   void Sphere::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     Entity::DeSerialize(doc, parent);
-    Generate();
+    Generate(GetMeshComponent(), GetRadiusVal());
   }
 
   void Sphere::ParameterConstructor(float radius)

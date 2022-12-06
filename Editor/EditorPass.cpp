@@ -208,11 +208,10 @@ namespace ToolKit
         break;
       }
     }
-
-    void EditorRenderer::InitRenderer()
+    void EditorRenderer::CreateEditorLights(LightRawPtrArray& list,
+                                          Node** parentNode)
     {
-      // Create editor lights.
-      m_lightNode = new Node();
+      *parentNode = new Node();
 
       float intensity         = 1.5f;
       DirectionalLight* light = new DirectionalLight();
@@ -221,8 +220,8 @@ namespace ToolKit
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
       light->SetCastShadowVal(false);
-      m_lightNode->AddChild(light->m_node);
-      m_editorLights.push_back(light);
+      (*parentNode)->AddChild(light->m_node);
+      list.push_back(light);
 
       light = new DirectionalLight();
       light->SetColorVal(Vec3(0.15f));
@@ -230,8 +229,8 @@ namespace ToolKit
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
       light->SetCastShadowVal(false);
-      m_lightNode->AddChild(light->m_node);
-      m_editorLights.push_back(light);
+      (*parentNode)->AddChild(light->m_node);
+      list.push_back(light);
 
       light = new DirectionalLight();
       light->SetColorVal(Vec3(0.1f));
@@ -239,8 +238,13 @@ namespace ToolKit
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
       light->SetCastShadowVal(false);
-      m_lightNode->AddChild(light->m_node);
-      m_editorLights.push_back(light);
+      (*parentNode)->AddChild(light->m_node);
+      list.push_back(light);
+    }
+
+    void EditorRenderer::InitRenderer()
+    {
+      CreateEditorLights(m_editorLights, &m_lightNode);
 
       // Create render mode materials.
       m_lightComplexityOverride = std::make_shared<Material>();

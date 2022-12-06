@@ -145,6 +145,7 @@ namespace ToolKit
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
+      float GetDeltaTime();
 
      private:
       void OverrideEntityConstructors();
@@ -212,6 +213,7 @@ namespace ToolKit
       // Internal states.
       bool m_onQuit = false;
       String m_newSceneName;
+      float m_deltaTime = 0.0f;
 
       MaterialPtr lightModeMat = nullptr;
     };

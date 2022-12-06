@@ -5,6 +5,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+    class EditorViewport;
     class MaterialView : public View
     {
      public:
@@ -14,7 +15,7 @@ namespace ToolKit
       void SetMaterial(MaterialPtr mat);
 
      private:
-      ScenePtr m_previewScene;
+      PreviewViewport* m_viewport;
     };
 
   } // namespace Editor

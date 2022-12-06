@@ -162,6 +162,7 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
+      m_deltaTime = deltaTime;
       UI::BeginUI();
       UI::ShowUI();
 
@@ -1411,6 +1412,10 @@ namespace ToolKit
                           10.0f,
                           4.0,
                           true); // Generate grid cells 10 x 10
+    }
+    float App::GetDeltaTime()
+    {
+      return m_deltaTime;
     }
 
     void DebugMessage(const String& msg)

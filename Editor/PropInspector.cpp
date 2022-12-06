@@ -5,14 +5,16 @@
 #include "ComponentView.h"
 #include "ConsoleWindow.h"
 #include "CustomDataView.h"
+#include "EditorPass.h"
 #include "EntityView.h"
 #include "ImGui/imgui_stdlib.h"
-#
 #include "MaterialView.h"
 #include "Prefab.h"
 #include "PrefabView.h"
 #include "TransformMod.h"
 #include "Util.h"
+
+#include <DirectionComponent.h>
 
 #include <memory>
 #include <utility>
@@ -169,6 +171,61 @@ namespace ToolKit
 
     View::View(const StringView viewName) : m_viewName(viewName)
     {
+    }
+
+    // PreviewViewport
+    //////////////////////////////////////////////////////////////////////////
+
+    PreviewViewport::PreviewViewport(uint width, uint height)
+        : EditorViewport(width, height)
+    {
+      GetCamera()->m_node->Translate(Vec3(0, 0, 5));
+      DirectionComponentPtr directionComp =
+          GetCamera()->GetComponent<DirectionComponent>();
+      directionComp->LookAt(Vec3(0, 0, 0));
+      m_renderPass                            = new RenderPass;
+      m_renderPass->m_params.Scene            = std::make_shared<Scene>();
+      m_renderPass->m_params.FrameBuffer      = m_framebuffer;
+      m_renderPass->m_params.Cam              = GetCamera();
+      m_renderPass->m_params.ClearFrameBuffer = true;
+      EditorRenderer::CreateEditorLights(m_renderPass->m_params.LightOverride,
+                                         &m_lightNode);
+    }
+
+    PreviewViewport::~PreviewViewport()
+    {
+      SafeDel(m_renderPass);
+      SafeDel(m_lightNode);
+    }
+
+    void PreviewViewport::Show()
+    {
+      RenderTargetPtr colorRT = m_framebuffer->GetAttachment(
+          Framebuffer::Attachment::ColorAttachment0);
+      if (colorRT == nullptr)
+      {
+        return;
+      }
+
+      ComitResize();
+      HandleStates();
+      DrawCommands();
+      m_renderPass->Render();
+      ImGui::Image(Convert2ImGuiTexture(colorRT),
+                   ImVec2(m_framebuffer->GetSettings().width,
+                          m_framebuffer->GetSettings().height),
+                   ImVec2(0.0f, 0.0f),
+                   ImVec2(1.0f, -1.0f));
+    }
+
+    ScenePtr PreviewViewport::GetScene()
+    {
+      return m_renderPass->m_params.Scene;
+    }
+
+    void PreviewViewport::SetCameraMode(bool isLocked)
+    {
+      m_isLocked = isLocked;
     }
 
     // PropInspector

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EditorViewport.h"
 #include "FolderWindow.h"
 #include "UI.h"
 
@@ -8,6 +9,8 @@
 
 namespace ToolKit
 {
+
+  class RenderPass;
   namespace Editor
   {
 
@@ -38,6 +41,22 @@ namespace ToolKit
       int m_viewID         = 0;
       TexturePtr m_viewIcn = nullptr;
       const StringView m_viewName;
+    };
+
+    class PreviewViewport : public EditorViewport
+    {
+     public:
+      PreviewViewport(uint width, uint height);
+      ~PreviewViewport();
+      void Show() override;
+      ScenePtr GetScene();
+      void SetCameraMode(bool isLocked);
+
+     private:
+      RenderPass* m_renderPass;
+      Node* m_lightNode;
+      float m_radius;
+      bool m_isLocked;
     };
 
     typedef View* ViewRawPtr;
