@@ -134,13 +134,13 @@
         vec3(-0.209922, -0.437284, -0.235557)
     );
 
-		float PCFFilterShadow2D(sampler2D map, vec2 tc, int samples, float radius, float currDepth, float LBR)
+		float PCFFilterShadow2D(sampler2DArray shadowAtlas, vec2 tc, float layer, int samples, float radius, float currDepth, float LBR)
 		{
 			float sum = 0.0;
 			for (int i = 0; i < samples; ++i)
 			{
 				vec2 offset = poissonDisk[i].xy * radius;
-				vec2 moments = texture(map, tc + offset).xy;
+				vec2 moments = texture(shadowAtlas, vec3(tc + offset, layer)).xy;
 				sum += ChebyshevUpperBound(moments, currDepth, LBR);
 			}
 			return sum / float(samples);

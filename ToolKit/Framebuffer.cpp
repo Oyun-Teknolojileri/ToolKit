@@ -124,6 +124,11 @@ namespace ToolKit
     m_initialized = false;
   }
 
+  bool Framebuffer::Initialized()
+  {
+    return m_initialized;
+  }
+
   void Framebuffer::ReconstructIfNeeded(uint width, uint height)
   {
     if (!m_initialized || m_settings.width != width ||
@@ -138,6 +143,7 @@ namespace ToolKit
 
   RenderTargetPtr Framebuffer::SetAttachment(Attachment atc,
                                              RenderTargetPtr rt,
+                                             int layer,
                                              CubemapFace face)
   {
     GLenum attachment = GL_DEPTH_ATTACHMENT;
@@ -178,6 +184,7 @@ namespace ToolKit
 #ifndef TK_GL_ES_3_0
     else if (rt->m_settings.Msaa > 0 && m_settings.msaa == rt->m_settings.Msaa)
     {
+      // No support for msaa array texture
       glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER,
                                            attachment,
                                            GL_TEXTURE_2D,
@@ -188,8 +195,16 @@ namespace ToolKit
 #endif // TK_GL_ES_3_0
     else
     {
-      glFramebufferTexture2D(
-          GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, rt->m_textureId, 0);
+      if (layer != -1)
+      {
+        assert(layer < rt->m_settings.Layers);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, rt->m_textureId, 0, layer);
+      }
+      else
+      {
+        glFramebufferTexture2D(
+            GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, rt->m_textureId, 0);
+      }
     }
 
     if (!IsColorAttachment(atc))

@@ -534,7 +534,7 @@ namespace ToolKit
         }
         else
         {
-          res = IntersectResult::Inside;
+          // Inside
         }
       }
       else if (distmin < 0)

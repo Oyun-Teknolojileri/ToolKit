@@ -97,6 +97,7 @@ namespace ToolKit
 
     void EditorDirectionalLight::ParameterEventConstructor()
     {
+      Light::ParameterEventConstructor();
     }
 
     Entity* EditorDirectionalLight::Copy() const
@@ -177,6 +178,7 @@ namespace ToolKit
 
     void EditorPointLight::ParameterEventConstructor()
     {
+      Light::ParameterEventConstructor();
       ParamRadius().m_onValueChangedFn.clear();
       ParamRadius().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
     }
@@ -222,6 +224,8 @@ namespace ToolKit
 
     void EditorSpotLight::ParameterEventConstructor()
     {
+      Light::ParameterEventConstructor();
+
       ParamRadius().m_onValueChangedFn.clear();
       ParamRadius().m_onValueChangedFn.push_back(m_gizmoUpdateFn);
       ParamOuterAngle().m_onValueChangedFn.clear();

@@ -289,7 +289,8 @@ namespace ToolKit
     TypeFloat            = 0x1406,
     TypeUnsignedByte     = 0x1401,
     Target2D             = 0x0DE1,
-    TargetCubeMap        = 0x8513
+    TargetCubeMap        = 0x8513,
+    Target2DArray        = 0x8C1A
   };
 
   enum class GraphicBitFields

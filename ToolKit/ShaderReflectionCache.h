@@ -141,34 +141,6 @@ namespace ToolKit
       "LightData.castShadow[10]",
       "LightData.castShadow[11]"};
 
-  static const StringArray g_pointLightShadowMapStrCache = {
-      "LightData.pointLightShadowMap[0]",
-      "LightData.pointLightShadowMap[1]",
-      "LightData.pointLightShadowMap[2]",
-      "LightData.pointLightShadowMap[3]",
-      "LightData.pointLightShadowMap[4]",
-      "LightData.pointLightShadowMap[5]",
-      "LightData.pointLightShadowMap[6]",
-      "LightData.pointLightShadowMap[7]",
-      "LightData.pointLightShadowMap[8]",
-      "LightData.pointLightShadowMap[9]",
-      "LightData.pointLightShadowMap[10]",
-      "LightData.pointLightShadowMap[11]"};
-
-  static const StringArray g_dirAndSpotLightShadowMapStrCache = {
-      "LightData.dirAndSpotLightShadowMap[0]",
-      "LightData.dirAndSpotLightShadowMap[1]",
-      "LightData.dirAndSpotLightShadowMap[2]",
-      "LightData.dirAndSpotLightShadowMap[3]",
-      "LightData.dirAndSpotLightShadowMap[4]",
-      "LightData.dirAndSpotLightShadowMap[5]",
-      "LightData.dirAndSpotLightShadowMap[6]",
-      "LightData.dirAndSpotLightShadowMap[7]",
-      "LightData.dirAndSpotLightShadowMap[8]",
-      "LightData.dirAndSpotLightShadowMap[9]",
-      "LightData.dirAndSpotLightShadowMap[10]",
-      "LightData.dirAndSpotLightShadowMap[11]"};
-
   static const StringArray g_lightShadowMapCameraFarStrCache = {
       "LightData.shadowMapCameraFar[0]",
       "LightData.shadowMapCameraFar[1]",
@@ -238,6 +210,62 @@ namespace ToolKit
       "LightData.lightBleedingReduction[9]",
       "LightData.lightBleedingReduction[10]",
       "LightData.lightBleedingReduction[11]"};
+
+  static const StringArray g_lightShadowAtlasLayerStrCache = {
+      "LightData.shadowAtlasLayer[0]",
+      "LightData.shadowAtlasLayer[1]",
+      "LightData.shadowAtlasLayer[2]",
+      "LightData.shadowAtlasLayer[3]",
+      "LightData.shadowAtlasLayer[4]",
+      "LightData.shadowAtlasLayer[5]",
+      "LightData.shadowAtlasLayer[6]",
+      "LightData.shadowAtlasLayer[7]",
+      "LightData.shadowAtlasLayer[8]",
+      "LightData.shadowAtlasLayer[9]",
+      "LightData.shadowAtlasLayer[10]",
+      "LightData.shadowAtlasLayer[11]"};
+
+  static const StringArray g_lightShadowAtlasEdgeRatioStrCache = {
+      "LightData.shadowAtlasEdgeRatio[0]",
+      "LightData.shadowAtlasEdgeRatio[1]",
+      "LightData.shadowAtlasEdgeRatio[2]",
+      "LightData.shadowAtlasEdgeRatio[3]",
+      "LightData.shadowAtlasEdgeRatio[4]",
+      "LightData.shadowAtlasEdgeRatio[5]",
+      "LightData.shadowAtlasEdgeRatio[6]",
+      "LightData.shadowAtlasEdgeRatio[7]",
+      "LightData.shadowAtlasEdgeRatio[8]",
+      "LightData.shadowAtlasEdgeRatio[9]",
+      "LightData.shadowAtlasEdgeRatio[10]",
+      "LightData.shadowAtlasEdgeRatio[11]"};
+
+    static const StringArray g_lightShadowResolutionStrCache = {
+      "LightData.shadowResolution[0]",
+      "LightData.shadowResolution[1]",
+      "LightData.shadowResolution[2]",
+      "LightData.shadowResolution[3]",
+      "LightData.shadowResolution[4]",
+      "LightData.shadowResolution[5]",
+      "LightData.shadowResolution[6]",
+      "LightData.shadowResolution[7]",
+      "LightData.shadowResolution[8]",
+      "LightData.shadowResolution[9]",
+      "LightData.shadowResolution[10]",
+      "LightData.shadowResolution[11]"};
+
+  static const StringArray g_lightShadowAtlasCoordStrCache = {
+      "LightData.shadowAtlasCoord[0]",
+      "LightData.shadowAtlasCoord[1]",
+      "LightData.shadowAtlasCoord[2]",
+      "LightData.shadowAtlasCoord[3]",
+      "LightData.shadowAtlasCoord[4]",
+      "LightData.shadowAtlasCoord[5]",
+      "LightData.shadowAtlasCoord[6]",
+      "LightData.shadowAtlasCoord[7]",
+      "LightData.shadowAtlasCoord[8]",
+      "LightData.shadowAtlasCoord[9]",
+      "LightData.shadowAtlasCoord[10]",
+      "LightData.shadowAtlasCoord[11]"};
 
   static const StringArray g_ssaoSamplesStrCache = {
       "samples[0]",  "samples[1]",  "samples[2]",  "samples[3]",  "samples[4]",
