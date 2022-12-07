@@ -1,7 +1,6 @@
 #pragma once
-#pragma once
 
-#include "FrameBuffer.h"
+#include "Framebuffer.h"
 #include "GeometryTypes.h"
 #include "Primative.h"
 
@@ -11,7 +10,7 @@ namespace ToolKit
   /**
    * Base Pass class.
    */
-  class Pass
+  class TK_API Pass
   {
    public:
     Pass();
@@ -38,7 +37,7 @@ namespace ToolKit
   /**
    * Renders the given scene with full forward render pipeline.
    */
-  class RenderPass : public Pass
+  class TK_API RenderPass : public Pass
   {
    public:
     RenderPass();
@@ -77,7 +76,7 @@ namespace ToolKit
      * first render back, than renders front.
      * @param entities All entities to render.
      * @param cam Camera for rendering.
-     * @param editorLights All lights.
+     * @param lights ights All lights.
      */
     void RenderTranslucent(EntityRawPtrArray entities,
                            Camera* cam,
@@ -103,7 +102,7 @@ namespace ToolKit
   /**
    * Create shadow map buffers for all given lights.
    */
-  class ShadowPass : public Pass
+  class TK_API ShadowPass : public Pass
   {
    public:
     ShadowPass();
@@ -128,8 +127,8 @@ namespace ToolKit
     int PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights);
 
     /**
-    * Creates a shadow atlas for m_params.Lights
-    */
+     * Creates a shadow atlas for m_params.Lights
+     */
     void InitShadowAtlas();
 
    public:
@@ -163,7 +162,7 @@ namespace ToolKit
    * Draws a full quad that covers entire FrameBuffer with given fragment
    * shader.
    */
-  class FullQuadPass : public Pass
+  class TK_API FullQuadPass : public Pass
   {
    public:
     FullQuadPass();
@@ -196,7 +195,7 @@ namespace ToolKit
    * Creates a binary stencil buffer from the given entities and copies the
    * binary image to OutputTarget.
    */
-  class StencilRenderPass : public Pass
+  class TK_API StencilRenderPass : public Pass
   {
    public:
     StencilRenderPass();
@@ -228,7 +227,7 @@ namespace ToolKit
   /**
    * Draws given entities' outlines to the FrameBuffer.
    */
-  class OutlinePass : public Pass
+  class TK_API OutlinePass : public Pass
   {
    public:
     OutlinePass();
@@ -259,7 +258,7 @@ namespace ToolKit
   /**
    * Apply gamma correction to given frame buffer.
    */
-  class GammaPass : public Pass
+  class TK_API GammaPass : public Pass
   {
    public:
     GammaPass();
@@ -288,7 +287,7 @@ namespace ToolKit
   /**
    * Render scene with shadows.
    */
-  class SceneRenderPass : public Pass
+  class TK_API SceneRenderPass : public Pass
   {
    public:
     SceneRenderPass();

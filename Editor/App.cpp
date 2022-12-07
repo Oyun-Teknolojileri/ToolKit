@@ -177,9 +177,9 @@ namespace ToolKit
         wnd->DispatchSignals();
       }
 
-      ShowSimulationWindow(deltaTime);
       EditorScenePtr scene = GetCurrentScene();
       scene->Update(deltaTime);
+      ShowSimulationWindow(deltaTime);
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -213,8 +213,7 @@ namespace ToolKit
       UI::EndUI();
 
       // Apply gamma to back buffer
-      myGammaPass->Render();
-
+      //myGammaPass->Render();
 
       m_renderer->m_totalFrameCount++;
     }
