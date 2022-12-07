@@ -24,7 +24,7 @@ namespace ToolKit
       {
         ImGui::BeginDisabled(!modifiableComp);
 
-        uint removeMaterialIndx = UINT32_MAX;
+        uint removeMaterialIndx = TK_UINT_MAX;
         for (uint i = 0; i < matList.size(); i++)
         {
           MaterialPtr& mat = matList[i];
@@ -40,7 +40,7 @@ namespace ToolKit
           CustomDataView::ShowMaterialPtr(
               uniqueName, mat->GetFile(), mat, modifiableComp);
         }
-        if (removeMaterialIndx != UINT32_MAX)
+        if (removeMaterialIndx != TK_UINT_MAX)
         {
           mmComp->RemoveMaterial(removeMaterialIndx);
         }
