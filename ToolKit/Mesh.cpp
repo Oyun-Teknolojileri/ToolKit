@@ -91,6 +91,7 @@ namespace ToolKit
   Mesh::Mesh()
   {
     m_material = std::make_shared<Material>();
+    m_vertexLayout = VertexLayout::Mesh;
   }
 
   Mesh::Mesh(const String& file) : Mesh()
@@ -111,7 +112,6 @@ namespace ToolKit
     }
 
     InitVertices(flushClientSideArray);
-    m_vertexLayout = VertexLayout::Mesh;
     SetVertexLayout(m_vertexLayout);
     InitIndices(flushClientSideArray);
     
@@ -621,9 +621,10 @@ namespace ToolKit
 
   SkinMesh::SkinMesh() : Mesh()
   {
+    m_vertexLayout = VertexLayout::SkinMesh;
   }
 
-  SkinMesh::SkinMesh(const String& file) : Mesh()
+  SkinMesh::SkinMesh(const String& file) : SkinMesh()
   {
     SetFile(file);
 
@@ -640,7 +641,6 @@ namespace ToolKit
 
   void SkinMesh::Init(bool flushClientSideArray)
   {
-    m_vertexLayout = VertexLayout::SkinMesh;
     if (m_skeleton == nullptr)
     {
       return;
