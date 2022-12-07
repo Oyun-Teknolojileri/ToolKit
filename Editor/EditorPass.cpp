@@ -48,6 +48,8 @@ namespace ToolKit
 
       m_editorPass.Render();
 
+      OutlineSelecteds();
+
       m_gizmoPass.Render();
 
       PostRender();
@@ -67,13 +69,13 @@ namespace ToolKit
 
       // Construct EditorScene
       EntityRawPtrArray editorEntities;
-      EntityRawPtrArray selecteds;
 
       // Generate Selection boundary and Environment component boundary.
       EditorScenePtr scene = app->GetCurrentScene();
-      scene->GetSelectedEntities(selecteds);
+      m_selecteds.clear();
+      scene->GetSelectedEntities(m_selecteds);
 
-      for (Entity* ntt : selecteds)
+      for (Entity* ntt : m_selecteds)
       {
         EnvironmentComponentPtr envCom =
             ntt->GetComponent<EnvironmentComponent>();
@@ -152,10 +154,11 @@ namespace ToolKit
       m_scenePass.m_params.shadowPassParams.Lights   = lights;
 
       // Scene Pass.
-      m_scenePass.m_params.renderPassParams.Scene         = app->GetCurrentScene();
+      m_scenePass.m_params.renderPassParams.Scene = app->GetCurrentScene();
       m_scenePass.m_params.renderPassParams.LightOverride = lights;
       m_scenePass.m_params.renderPassParams.Cam           = m_camera;
-      m_scenePass.m_params.renderPassParams.FrameBuffer   = viewport->m_framebuffer;
+      m_scenePass.m_params.renderPassParams.FrameBuffer =
+          viewport->m_framebuffer;
 
       // Gizmo Pass.
       m_gizmoPass.m_params.Viewport = viewport;
@@ -252,6 +255,69 @@ namespace ToolKit
 
       m_unlitOverride = GetMaterialManager()->GetCopyOfUnlitMaterial();
       m_unlitOverride->Init();
+    }
+
+    void EditorRenderer::OutlineSelecteds()
+    {
+      if (m_selecteds.empty())
+      {
+        return;
+      }
+      EntityRawPtrArray selecteds = m_selecteds; // Copy
+
+      Viewport* viewport = m_params.Viewport;
+      auto RenderFn      = [this, viewport](const EntityRawPtrArray& selection,
+                                       const Vec4& color) -> void {
+        if (selection.empty())
+        {
+          return;
+        }
+
+        // Set parameters of pass
+        m_outlinePass.m_params.Camera       = viewport->GetCamera();
+        m_outlinePass.m_params.FrameBuffer  = viewport->m_framebuffer;
+        m_outlinePass.m_params.OutlineColor = color;
+        m_outlinePass.m_params.DrawList     = selection;
+
+        for (Entity* entity : selection)
+        {
+          // Disable light gizmos
+          if (entity->IsLightInstance())
+          {
+            EnableLightGizmo(static_cast<Light*>(entity), false);
+          }
+
+          // Add billboards to draw list
+          Entity* billboard =
+              m_params.App->GetCurrentScene()->GetBillboardOfEntity(entity);
+          if (billboard)
+          {
+            static_cast<Billboard*>(billboard)->LookAt(
+                viewport->GetCamera(), viewport->GetBillboardScale());
+            m_outlinePass.m_params.DrawList.push_back(billboard);
+          }
+        }
+
+        m_outlinePass.Render();
+
+        // Enable light gizmos back
+        for (Entity* entity : selection)
+        {
+          if (entity->IsLightInstance())
+          {
+            EnableLightGizmo(static_cast<Light*>(entity), true);
+          }
+        }
+      };
+
+      Entity* primary = selecteds.back();
+
+      selecteds.pop_back();
+      RenderFn(selecteds, g_selectHighLightSecondaryColor);
+
+      selecteds.clear();
+      selecteds.push_back(primary);
+      RenderFn(selecteds, g_selectHighLightPrimaryColor);
     }
 
     GizmoPass::GizmoPass()

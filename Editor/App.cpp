@@ -39,7 +39,6 @@
 namespace ToolKit
 {
   GammaPass* myGammaPass                   = nullptr;
-  OutlinePass* myOutlineTechnique          = nullptr;
   Editor::EditorRenderer* myEditorRenderer = nullptr;
 
   namespace Editor
@@ -52,7 +51,6 @@ namespace ToolKit
       m_renderer->m_windowSize.y = windowHeight;
       m_statusMsg                = "OK";
 
-      myOutlineTechnique = new OutlinePass();
       myEditorRenderer   = new EditorRenderer();
       myGammaPass        = new GammaPass();
 
@@ -65,7 +63,6 @@ namespace ToolKit
     {
       Destroy();
       SafeDel(myEditorRenderer);
-      SafeDel(myOutlineTechnique);
       SafeDel(myGammaPass);
     }
 
@@ -200,11 +197,6 @@ namespace ToolKit
           myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
           myEditorRenderer->m_params.Viewport = viewport;
           myEditorRenderer->Render();
-
-          // TODO: Move to Editor Renderer.
-          EntityRawPtrArray selectedEntities;
-          scene->GetSelectedEntities(selectedEntities);
-          RenderSelected(viewport, selectedEntities);
         }
       }
 
@@ -1152,67 +1144,6 @@ namespace ToolKit
     MaterialInspector* App::GetMaterialInspector()
     {
       return GetWindow<MaterialInspector>(g_matInspector);
-    }
-
-    void App::RenderSelected(EditorViewport* viewport,
-                             EntityRawPtrArray selecteds)
-    {
-      if (selecteds.empty())
-      {
-        return;
-      }
-
-      auto RenderFn = [this, viewport](const EntityRawPtrArray& selection,
-                                       const Vec4& color) -> void {
-        if (selection.empty())
-        {
-          return;
-        }
-
-        // Set parameters of pass
-        myOutlineTechnique->m_params.Camera       = viewport->GetCamera();
-        myOutlineTechnique->m_params.FrameBuffer  = viewport->m_framebuffer;
-        myOutlineTechnique->m_params.OutlineColor = color;
-        myOutlineTechnique->m_params.DrawList     = selection;
-
-        for (Entity* entity : selection)
-        {
-          // Disable light gizmos
-          if (entity->IsLightInstance())
-          {
-            EnableLightGizmo(static_cast<Light*>(entity), false);
-          }
-
-          // Add billboards to draw list
-          Entity* billboard = GetCurrentScene()->GetBillboardOfEntity(entity);
-          if (billboard)
-          {
-            static_cast<Billboard*>(billboard)->LookAt(
-                viewport->GetCamera(), viewport->GetBillboardScale());
-            myOutlineTechnique->m_params.DrawList.push_back(billboard);
-          }
-        }
-
-        myOutlineTechnique->Render();
-
-        // Enable light gizmos back
-        for (Entity* entity : selection)
-        {
-          if (entity->IsLightInstance())
-          {
-            EnableLightGizmo(static_cast<Light*>(entity), true);
-          }
-        }
-      };
-
-      Entity* primary = selecteds.back();
-
-      selecteds.pop_back();
-      RenderFn(selecteds, g_selectHighLightSecondaryColor);
-
-      selecteds.clear();
-      selecteds.push_back(primary);
-      RenderFn(selecteds, g_selectHighLightPrimaryColor);
     }
 
     void App::HideGizmos()
