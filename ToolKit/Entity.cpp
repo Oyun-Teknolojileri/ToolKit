@@ -125,7 +125,6 @@ namespace ToolKit
 
     if (renderMat == nullptr)
     {
-      assert(false && "Entity with no material.");
       renderMat = GetMaterialManager()->GetCopyOfDefaultMaterial();
     }
 

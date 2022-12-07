@@ -86,6 +86,7 @@ namespace ToolKit
       void PreRender();
       void PostRender();
       void SetLitMode(EditorLitMode mode);
+      static void CreateEditorLights(LightRawPtrArray& list, Node** parentNode);
 
      private:
       void InitRenderer();

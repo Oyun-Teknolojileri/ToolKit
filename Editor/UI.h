@@ -31,7 +31,6 @@ namespace ToolKit
         Browser,
         Outliner,
         Inspector,
-        MaterialInspector,
         PluginWindow,
         Viewport2d
       };
@@ -149,7 +148,7 @@ namespace ToolKit
         bool Overwrite        = false;
         StringArray Files;
         String SubDir;
-        float Scale            = 1.0f;
+        float Scale                  = 1.0f;
         class FolderView* ActiveView = nullptr;
       } ImportData;
 
@@ -206,6 +205,9 @@ namespace ToolKit
       static TexturePtr m_prefabIcn;
       static TexturePtr m_buildIcn;
       static TexturePtr m_addIcon;
+      static TexturePtr m_sphereIcon;
+      static TexturePtr m_cubeIcon;
+      static TexturePtr m_shaderBallIcon;
 
       struct AnchorPresetImages
       {

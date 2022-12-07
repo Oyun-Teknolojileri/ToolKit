@@ -217,10 +217,10 @@ namespace ToolKit
     // Look at Util/DeepCopy for preserving hierarchy.
     Node* node = new Node();
 
-    node->m_inheritScale         = m_inheritScale;
-    node->m_translation          = m_translation;
-    node->m_orientation          = m_orientation;
-    node->m_scale                = m_scale;
+    node->m_inheritScale = m_inheritScale;
+    node->m_translation  = m_translation;
+    node->m_orientation  = m_orientation;
+    node->m_scale        = m_scale;
 
     return node;
   }

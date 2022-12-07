@@ -259,6 +259,7 @@ namespace ToolKit
 
   static const float TK_FLT_MAX = std::numeric_limits<float>::max();
   static const int TK_INT_MAX   = std::numeric_limits<int>::max();
+  static const int TK_UINT_MAX   = std::numeric_limits<unsigned int>::max();
 
   // Graphics Api Type Overrides.
   enum class GraphicTypes

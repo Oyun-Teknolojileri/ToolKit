@@ -97,6 +97,8 @@ namespace ToolKit
           if (!currScene->IsSelected(e->GetIdVal()))
           {
             currScene->AddToSelection(e->GetIdVal(), false);
+            g_app->GetPropInspector()->m_activeView =
+                PropInspector::ViewType::Entity;
           }
         }
       }

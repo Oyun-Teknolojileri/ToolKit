@@ -10,7 +10,7 @@
 #include "ImGui/imgui_stdlib.h"
 #include "Imgui/imgui_impl_opengl3.h"
 #include "Imgui/imgui_impl_sdl.h"
-#include "MaterialInspector.h"
+#
 #include "Mod.h"
 #include "OutlinerWindow.h"
 #include "OverlayUI.h"
@@ -85,6 +85,9 @@ namespace ToolKit
     TexturePtr UI::m_prefabIcn;
     TexturePtr UI::m_buildIcn;
     TexturePtr UI::m_addIcon;
+    TexturePtr UI::m_sphereIcon;
+    TexturePtr UI::m_cubeIcon;
+    TexturePtr UI::m_shaderBallIcon;
     UI::AnchorPresetImages UI::m_anchorPresetIcons;
 
     void UI::Init()
@@ -277,15 +280,12 @@ namespace ToolKit
       m_skyIcon = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/sky.png", true));
       m_skyIcon->Init();
-
       m_closeIcon = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/close.png", true));
       m_closeIcon->Init();
-
       m_phoneRotateIcon = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/rotate-icon.png", true));
       m_phoneRotateIcon->Init();
-
       m_studioLightsToggleIcon = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/studio_lights_toggle.png", true));
       m_studioLightsToggleIcon->Init();
@@ -295,13 +295,21 @@ namespace ToolKit
       m_prefabIcn = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/scene_data.png", true));
       m_prefabIcn->Init();
-
       m_buildIcn = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/build.png", true));
       m_buildIcn->Init();
       m_addIcon = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/add.png", true));
       m_addIcon->Init();
+      m_sphereIcon = GetTextureManager()->Create<Texture>(
+          TexturePath("Icons/sphere.png", true));
+      m_sphereIcon->Init();
+      m_cubeIcon = GetTextureManager()->Create<Texture>(
+          TexturePath("Icons/cube.png", true));
+      m_cubeIcon->Init();
+      m_shaderBallIcon = GetTextureManager()->Create<Texture>(
+          TexturePath("Icons/shader-ball.png", true));
+      m_shaderBallIcon->Init();
 
       for (uint anchorPresentIndx = 0;
            anchorPresentIndx < AnchorPresetImages::presetCount;
@@ -660,14 +668,6 @@ namespace ToolKit
                           !g_app->GetPropInspector()->IsVisible()))
       {
         g_app->GetPropInspector()->SetVisibility(true);
-      }
-
-      if (ImGui::MenuItem("Material Inspector",
-                          "Alt+R",
-                          nullptr,
-                          !g_app->GetMaterialInspector()->IsVisible()))
-      {
-        g_app->GetMaterialInspector()->SetVisibility(true);
       }
 
       if (PluginWindow* wnd = g_app->GetWindow<PluginWindow>("Plugin"))
