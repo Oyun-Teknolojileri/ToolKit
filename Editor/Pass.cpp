@@ -503,6 +503,11 @@ namespace ToolKit
     bool anyDirOrSpotLight = false;
     for (Light* light : lights)
     {
+      if (!light->GetCastShadowVal())
+      {
+        continue;
+      }
+
       if (light->GetType() == EntityType::Entity_PointLight)
       {
         // Point lights layers are at the end (cubemaps as 2d array)
@@ -535,6 +540,11 @@ namespace ToolKit
 
     for (Light* light : lights)
     {
+      if (!light->GetCastShadowVal())
+      {
+        continue;
+      }
+
       if (light->GetType() != EntityType::Entity_PointLight)
       {
         continue;
@@ -589,17 +599,17 @@ namespace ToolKit
         if (nextId >= m_lastShadowLights.size())
         {
           needChange = true;
-          m_lastShadowLights.push_back(light);
+          m_lastShadowLights.push_back(light->GetIdVal());
           nextId++;
           continue;
         }
 
-        if (m_lastShadowLights[nextId] != light)
+        if (m_lastShadowLights[nextId] != light->GetIdVal())
         {
           needChange = true;
         }
 
-        m_lastShadowLights[nextId] = light;
+        m_lastShadowLights[nextId] = light->GetIdVal();
         nextId++;
       }
     }
@@ -609,7 +619,7 @@ namespace ToolKit
       m_lastShadowLights.resize(nextId);
 
       // Place shadow textures to atlas
-      m_layerCount = PlaceShadowMapsToShadowAtlas(m_lastShadowLights);
+      m_layerCount = PlaceShadowMapsToShadowAtlas(m_params.Lights);
 
       const int maxLayers = GetRenderer()->GetMaxArrayTextureLayers();
       if (maxLayers < m_layerCount)

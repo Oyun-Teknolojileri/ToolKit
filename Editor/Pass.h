@@ -140,7 +140,7 @@ namespace ToolKit
     RenderTargetPtr m_shadowAtlas      = nullptr;
     int m_layerCount                   = 0;
     int m_currentRenderingLayer        = 0;
-    LightRawPtrArray m_lastShadowLights;
+    EntityIdArray m_lastShadowLights;
     std::vector<bool> m_clearedLayers;
 
     EntityRawPtrArray m_drawList;
