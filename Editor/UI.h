@@ -25,14 +25,15 @@ namespace ToolKit
      public:
       enum class Type
       {
-        Viewport,
-        Console,
-        InputPopup,
-        Browser,
-        Outliner,
-        Inspector,
-        PluginWindow,
-        Viewport2d
+        Viewport = 0,
+        Console = 1,
+        InputPopup = 2,
+        Browser = 3,
+        Outliner = 4,
+        Inspector = 5,
+        UNUSEDSLOT_1 = 6,
+        PluginWindow = 7,
+        Viewport2d = 8
       };
 
      public:

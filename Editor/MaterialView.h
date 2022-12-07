@@ -5,11 +5,11 @@ namespace ToolKit
 {
   namespace Editor
   {
-    class EditorViewport;
     class MaterialView : public View
     {
      public:
       MaterialView();
+      ~MaterialView();
 
       void Show() override;
       void SetMaterial(MaterialPtr mat);
