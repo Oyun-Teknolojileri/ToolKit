@@ -214,7 +214,6 @@ namespace ToolKit
     ProgramPtr CreateProgram(ShaderPtr vertex, ShaderPtr fragment);
     void FeedUniforms(ProgramPtr program);
     void FeedLightUniforms(ProgramPtr program);
-    void SetVertexLayout(VertexLayout layout);
 
     void GenerateSSAOTexture(const EntityRawPtrArray& entities,
                              Viewport* viewport);

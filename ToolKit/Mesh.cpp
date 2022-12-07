@@ -21,6 +21,73 @@ static constexpr bool SERIALIZE_MESH_AS_BINARY = true;
 namespace ToolKit
 {
 
+#define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
+
+  void SetVertexLayout(VertexLayout layout)
+  {
+    if (layout == VertexLayout::None)
+    {
+      for (int i = 0; i < 6; i++)
+      {
+        glDisableVertexAttribArray(i);
+      }
+    }
+
+    if (layout == VertexLayout::Mesh)
+    {
+      GLuint offset = 0;
+      glEnableVertexAttribArray(0); // Vertex
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+      offset += 3 * sizeof(float);
+
+      glEnableVertexAttribArray(1); // Normal
+      glVertexAttribPointer(
+          1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
+      offset += 3 * sizeof(float);
+
+      glEnableVertexAttribArray(2); // Texture
+      glVertexAttribPointer(
+          2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
+      offset += 2 * sizeof(float);
+
+      glEnableVertexAttribArray(3); // BiTangent
+      glVertexAttribPointer(
+          3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
+    }
+
+    if (layout == VertexLayout::SkinMesh)
+    {
+      GLuint offset = 0;
+      glEnableVertexAttribArray(0); // Vertex
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), 0);
+      offset += 3 * sizeof(float);
+
+      glEnableVertexAttribArray(1); // Normal
+      glVertexAttribPointer(
+          1, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      offset += 3 * sizeof(float);
+
+      glEnableVertexAttribArray(2); // Texture
+      glVertexAttribPointer(
+          2, 2, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      offset += 2 * sizeof(float);
+
+      glEnableVertexAttribArray(3); // BiTangent
+      glVertexAttribPointer(
+          3, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      offset += 3 * sizeof(float);
+
+      glEnableVertexAttribArray(4); // Bones
+      glVertexAttribPointer(
+          4, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      offset += 4 * sizeof(float);
+
+      glEnableVertexAttribArray(5); // Weights
+      glVertexAttribPointer(
+          5, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+    }
+  }
+
   Mesh::Mesh()
   {
     m_material = std::make_shared<Material>();
@@ -44,8 +111,10 @@ namespace ToolKit
     }
 
     InitVertices(flushClientSideArray);
-    InitIndices(flushClientSideArray);
     m_vertexLayout = VertexLayout::Mesh;
+    SetVertexLayout(m_vertexLayout);
+    InitIndices(flushClientSideArray);
+    
     if (!flushClientSideArray)
     {
       ConstructFaces();
