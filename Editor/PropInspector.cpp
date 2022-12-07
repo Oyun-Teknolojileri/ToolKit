@@ -183,14 +183,23 @@ namespace ToolKit
       DirectionComponentPtr directionComp =
           GetCamera()->GetComponent<DirectionComponent>();
       directionComp->LookAt(Vec3(0, 0, 0));
-      m_renderPass                            = new RenderPass;
-      m_renderPass->m_params.Scene            = std::make_shared<Scene>();
-      m_renderPass->m_params.FrameBuffer      = m_framebuffer;
-      m_renderPass->m_params.Cam              = GetCamera();
-      m_renderPass->m_params.ClearFrameBuffer = true;
-      EditorRenderer::CreateEditorLights(m_renderPass->m_params.LightOverride,
-                                         &m_lightNode);
-      GetCamera()->m_node->AddChild(m_lightNode);
+      m_renderPass                                  = new SceneRenderPass;
+      m_renderPass->m_params.renderPassParams.Scene = std::make_shared<Scene>();
+      m_renderPass->m_params.renderPassParams.FrameBuffer      = m_framebuffer;
+      m_renderPass->m_params.renderPassParams.Cam              = GetCamera();
+      m_renderPass->m_params.renderPassParams.ClearFrameBuffer = true;
+
+      float intensity         = 1.5f;
+      DirectionalLight* light = new DirectionalLight();
+      light->SetColorVal(Vec3(0.55f));
+      light->SetIntensityVal(intensity);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
+      light->SetCastShadowVal(true);
+
+      m_renderPass->m_params.renderPassParams.LightOverride = {light};
+      m_renderPass->m_params.shadowPassParams.Lights =
+          m_renderPass->m_params.renderPassParams.LightOverride;
     }
 
     PreviewViewport::~PreviewViewport()
@@ -211,6 +220,16 @@ namespace ToolKit
       ComitResize();
       HandleStates();
       DrawCommands();
+
+      m_renderPass->m_params.shadowPassParams.Entities.clear();
+      for (Entity* ntt :
+           m_renderPass->m_params.renderPassParams.Scene->GetEntities())
+      {
+        if (ntt->GetVisibleVal())
+        {
+          m_renderPass->m_params.shadowPassParams.Entities.push_back(ntt);
+        }
+      }
       m_renderPass->Render();
       ImGui::Image(Convert2ImGuiTexture(colorRT),
                    ImVec2(m_framebuffer->GetSettings().width,
@@ -221,7 +240,7 @@ namespace ToolKit
 
     ScenePtr PreviewViewport::GetScene()
     {
-      return m_renderPass->m_params.Scene;
+      return m_renderPass->m_params.renderPassParams.Scene;
     }
 
     // PropInspector

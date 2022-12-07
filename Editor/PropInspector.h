@@ -10,7 +10,7 @@
 namespace ToolKit
 {
 
-  class RenderPass;
+  class SceneRenderPass;
   namespace Editor
   {
 
@@ -52,7 +52,7 @@ namespace ToolKit
       ScenePtr GetScene();
 
      private:
-      RenderPass* m_renderPass;
+      SceneRenderPass* m_renderPass;
       Node* m_lightNode;
       float m_radius;
       bool m_isLocked;

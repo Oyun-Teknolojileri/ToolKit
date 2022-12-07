@@ -20,7 +20,7 @@ namespace ToolKit
       m_viewport = new PreviewViewport(300, 150);
 
       // Initialize ground entity
-      Cube* ground = new Cube(Vec3(1000, 0.01, 1000));
+      Cube* ground = new Cube(Vec3(50, 0.01, 50));
       ground->GetMeshComponent()->GetMeshVal()->m_material =
           GetMaterialManager()->GetCopyOfSolidMaterial();
       m_viewport->GetScene()->AddEntity(ground);
@@ -46,7 +46,7 @@ namespace ToolKit
     }
     void MaterialView::ResetCamera()
     {
-      m_viewport->GetCamera()->m_node->SetTranslation(Vec3(0, 0.5, 5));
+      m_viewport->GetCamera()->m_node->SetTranslation(Vec3(0, 2.0, 5));
       m_viewport->GetCamera()->GetComponent<DirectionComponent>()->LookAt(
           Vec3(0));
     }
