@@ -40,7 +40,7 @@ namespace ToolKit
     void ParameterEventConstructor();
 
    public:
-     // Should be in Prefab folder
+    // Should be in Prefab folder
     TKDeclareParam(String, PrefabPath);
     ScenePtr m_prefabScene;
     Scene* m_currentScene;

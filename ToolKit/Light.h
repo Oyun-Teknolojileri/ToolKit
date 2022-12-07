@@ -26,8 +26,8 @@ namespace ToolKit
     virtual void UpdateShadowCamera();
     virtual float AffectDistance();
     virtual void InitShadowMapDepthMaterial();
-    
-    protected:
+
+   protected:
     void UpdateShadowCameraTransform();
 
    public:
@@ -41,15 +41,15 @@ namespace ToolKit
     TKDeclareParam(float, LightBleedingReduction);
 
     Mat4 m_shadowMapCameraProjectionViewMatrix;
-    float m_shadowMapCameraFar = 1.0f;
-    Camera* m_shadowCamera     = nullptr;
-    int m_shadowAtlasLayer     = -1;
-    Vec2 m_shadowAtlasCoord    = Vec2(-1.0f);
+    float m_shadowMapCameraFar     = 1.0f;
+    Camera* m_shadowCamera         = nullptr;
+    int m_shadowAtlasLayer         = -1;
+    Vec2 m_shadowAtlasCoord        = Vec2(-1.0f);
     bool m_shadowResolutionUpdated = false;
 
    protected:
-    bool m_shadowMapResolutionChanged     = false;
-    MaterialPtr m_shadowMapMaterial       = nullptr;
+    bool m_shadowMapResolutionChanged = false;
+    MaterialPtr m_shadowMapMaterial   = nullptr;
   };
 
   class TK_API DirectionalLight : public Light

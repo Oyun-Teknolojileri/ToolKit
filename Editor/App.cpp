@@ -14,7 +14,6 @@
 #include "Gizmo.h"
 #include "Global.h"
 #include "Grid.h"
-#include "MaterialInspector.h"
 #include "Mod.h"
 #include "Node.h"
 #include "OutlinerWindow.h"
@@ -158,6 +157,7 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
+      m_deltaTime = deltaTime;
       UI::BeginUI();
       UI::ShowUI();
 
@@ -205,7 +205,6 @@ namespace ToolKit
 
       // Apply gamma to back buffer
       myGammaPass->Render();
-
 
       m_renderer->m_totalFrameCount++;
     }
@@ -613,10 +612,6 @@ namespace ToolKit
         inspector->m_name        = g_propInspector;
         m_windows.push_back(inspector);
 
-        MaterialInspector* matInspect = new MaterialInspector();
-        matInspect->m_name            = g_matInspector;
-        m_windows.push_back(matInspect);
-
         PluginWindow* plugWindow = new PluginWindow();
         m_windows.push_back(plugWindow);
 
@@ -668,17 +663,11 @@ namespace ToolKit
           case Window::Type::Inspector:
             wnd = new PropInspector(wndNode);
             break;
-          case Window::Type::MaterialInspector:
-            wnd = new MaterialInspector(wndNode);
-            break;
           case Window::Type::PluginWindow:
             wnd = new PluginWindow(wndNode);
             break;
           case Window::Type::Viewport2d:
             wnd = new EditorViewport2d(wndNode);
-            break;
-          default:
-            assert(false);
             break;
           }
 
@@ -1141,11 +1130,6 @@ namespace ToolKit
       return GetWindow<PropInspector>(g_propInspector);
     }
 
-    MaterialInspector* App::GetMaterialInspector()
-    {
-      return GetWindow<MaterialInspector>(g_matInspector);
-    }
-
     void App::HideGizmos()
     {
       for (Entity* ntt : GetCurrentScene()->GetEntities())
@@ -1386,6 +1370,10 @@ namespace ToolKit
                           10.0f,
                           4.0,
                           true); // Generate grid cells 10 x 10
+    }
+    float App::GetDeltaTime()
+    {
+      return m_deltaTime;
     }
 
     void DebugMessage(const String& msg)

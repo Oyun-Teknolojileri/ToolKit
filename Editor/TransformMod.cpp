@@ -717,12 +717,12 @@ namespace ToolKit
       else
       {
         // Calc. major axis sign.
-        Mat3& axes     = m_gizmo->m_normalVectors;
-        float mas      = 1.0f;
-        float maxPrj   = -1.0f;
+        Mat3& axes   = m_gizmo->m_normalVectors;
+        float mas    = 1.0f;
+        float maxPrj = -1.0f;
         for (int i = 0; i < 2; i++)
         {
-          float prj = glm::dot(m_delta, axes[i]);
+          float prj   = glm::dot(m_delta, axes[i]);
           float abPrj = glm::abs(prj);
           if (maxPrj < abPrj)
           {

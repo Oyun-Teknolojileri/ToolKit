@@ -191,10 +191,10 @@ namespace ToolKit
 
         SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 0);
 
-        //SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 16);
-        //SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 16);
-        //SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 16);
-        //SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 16);
+        // SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 16);
+        // SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 16);
+        // SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 16);
+        // SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 16);
 
         if (g_settings.Graphics.MSAA > 0)
         {
@@ -234,7 +234,7 @@ namespace ToolKit
 #ifdef TK_DEBUG
             GlDebugReportInit();
 #endif
-            
+
             // Init glew
             glewExperimental = true;
             GLenum err       = glewInit();
@@ -243,7 +243,7 @@ namespace ToolKit
               g_running = false;
               return;
             }
-            
+
             // Init Main
             // Override SceneManager.
             SafeDel(g_proxy->m_sceneManager);

@@ -128,8 +128,8 @@ namespace ToolKit
     int PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights);
 
     /**
-    * Creates a shadow atlas for m_params.Lights
-    */
+     * Creates a shadow atlas for m_params.Lights
+     */
     void InitShadowAtlas();
 
    public:
