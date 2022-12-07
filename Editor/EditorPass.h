@@ -90,6 +90,7 @@ namespace ToolKit
 
      private:
       void InitRenderer();
+      void OutlineSelecteds();
 
      public:
       /**
@@ -124,8 +125,14 @@ namespace ToolKit
       SceneRenderPass m_scenePass;
       RenderPass m_editorPass;
       GizmoPass m_gizmoPass;
+      OutlinePass m_outlinePass;
       Camera* m_camera             = nullptr;
       EditorScenePtr m_editorScene = nullptr;
+
+      /**
+       * Selected entity list
+       */
+      EntityRawPtrArray m_selecteds;
     };
 
   } // namespace Editor

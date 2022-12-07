@@ -1,7 +1,6 @@
-#include "App.h"
-
 #include "Action.h"
 #include "Anchor.h"
+#include "App.h"
 #include "Camera.h"
 #include "ConsoleWindow.h"
 #include "DirectionComponent.h"
@@ -39,7 +38,6 @@
 namespace ToolKit
 {
   GammaPass* myGammaPass                   = nullptr;
-  OutlinePass* myOutlineTechnique          = nullptr;
   Editor::EditorRenderer* myEditorRenderer = nullptr;
 
   namespace Editor
@@ -52,7 +50,6 @@ namespace ToolKit
       m_renderer->m_windowSize.y = windowHeight;
       m_statusMsg                = "OK";
 
-      myOutlineTechnique = new OutlinePass();
       myEditorRenderer   = new EditorRenderer();
       myGammaPass        = new GammaPass();
 
@@ -65,7 +62,6 @@ namespace ToolKit
     {
       Destroy();
       SafeDel(myEditorRenderer);
-      SafeDel(myOutlineTechnique);
       SafeDel(myGammaPass);
     }
 
@@ -201,11 +197,6 @@ namespace ToolKit
           myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
           myEditorRenderer->m_params.Viewport = viewport;
           myEditorRenderer->Render();
-
-          // TODO: Move to Editor Renderer.
-          EntityRawPtrArray selectedEntities;
-          scene->GetSelectedEntities(selectedEntities);
-          RenderSelected(viewport, selectedEntities);
         }
       }
 
@@ -1137,38 +1128,6 @@ namespace ToolKit
     PropInspector* App::GetPropInspector()
     {
       return GetWindow<PropInspector>(g_propInspector);
-    }
-
-    void App::RenderSelected(EditorViewport* viewport,
-                             EntityRawPtrArray selecteds)
-    {
-      if (selecteds.empty())
-      {
-        return;
-      }
-
-      auto RenderFn = [this, viewport](const EntityRawPtrArray& selection,
-                                       const Vec4& color) -> void {
-        if (selection.empty())
-        {
-          return;
-        }
-
-        myOutlineTechnique->m_params.Camera       = viewport->GetCamera();
-        myOutlineTechnique->m_params.FrameBuffer  = viewport->m_framebuffer;
-        myOutlineTechnique->m_params.OutlineColor = color;
-        myOutlineTechnique->m_params.DrawList     = selection;
-        myOutlineTechnique->Render();
-      };
-
-      Entity* primary = selecteds.back();
-
-      selecteds.pop_back();
-      RenderFn(selecteds, g_selectHighLightSecondaryColor);
-
-      selecteds.clear();
-      selecteds.push_back(primary);
-      RenderFn(selecteds, g_selectHighLightPrimaryColor);
     }
 
     void App::HideGizmos()

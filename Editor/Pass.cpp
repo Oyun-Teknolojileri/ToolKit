@@ -332,6 +332,8 @@ namespace ToolKit
   {
     Pass::PreRender();
 
+    m_lastOverrideMat = GetRenderer()->m_overrideMat;
+
     // Dropout non shadow casters.
     m_drawList = m_params.Entities;
     m_drawList.erase(
@@ -364,6 +366,7 @@ namespace ToolKit
 
   void ShadowPass::PostRender()
   {
+    GetRenderer()->m_overrideMat = m_lastOverrideMat;
     Pass::PostRender();
   }
 
