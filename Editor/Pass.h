@@ -127,6 +127,9 @@ namespace ToolKit
      */
     int PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights);
 
+    /**
+    * Creates a shadow atlas for m_params.Lights
+    */
     void InitShadowAtlas();
 
    public:
@@ -138,9 +141,8 @@ namespace ToolKit
 
     FramebufferPtr m_shadowFramebuffer = nullptr;
     RenderTargetPtr m_shadowAtlas      = nullptr;
-    int m_layerCount                   = 0;
-    int m_currentRenderingLayer        = 0;
-    EntityIdArray m_lastShadowLights;
+    int m_layerCount = 0; // Number of textures in array texture (shadow atlas)
+    EntityIdArray m_previousShadowCasters;
     std::vector<bool> m_clearedLayers;
 
     EntityRawPtrArray m_drawList;
