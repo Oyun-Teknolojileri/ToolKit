@@ -134,10 +134,6 @@ namespace ToolKit
         return list;
       }
 
-      // Quick selected render implementation.
-      void RenderSelected(EditorViewport* viewport,
-                          EntityRawPtrArray selecteds);
-
       void HideGizmos();
       void ShowGizmos();
 
