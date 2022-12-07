@@ -205,6 +205,9 @@ namespace ToolKit
       static TexturePtr m_prefabIcn;
       static TexturePtr m_buildIcn;
       static TexturePtr m_addIcon;
+      static TexturePtr m_sphereIcon;
+      static TexturePtr m_cubeIcon;
+      static TexturePtr m_shaderBallIcon;
 
       struct AnchorPresetImages
       {

@@ -50,7 +50,6 @@ namespace ToolKit
       ~PreviewViewport();
       void Show() override;
       ScenePtr GetScene();
-      void SetCameraMode(bool isLocked);
 
      private:
       RenderPass* m_renderPass;

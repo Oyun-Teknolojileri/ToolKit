@@ -810,7 +810,7 @@ namespace ToolKit
   void Renderer::DrawCube(Camera* cam, MaterialPtr mat, const Mat4& transform)
   {
     static Cube cube;
-    cube.Generate();
+    cube.Generate(cube.GetMeshComponent(), cube.GetCubeScaleVal());
     cube.m_node->SetTransform(transform);
 
     MaterialComponentPtr matc = cube.GetMaterialComponent();

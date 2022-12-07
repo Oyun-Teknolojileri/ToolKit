@@ -190,6 +190,7 @@ namespace ToolKit
       m_renderPass->m_params.ClearFrameBuffer = true;
       EditorRenderer::CreateEditorLights(m_renderPass->m_params.LightOverride,
                                          &m_lightNode);
+      GetCamera()->m_node->AddChild(m_lightNode);
     }
 
     PreviewViewport::~PreviewViewport()
@@ -221,11 +222,6 @@ namespace ToolKit
     ScenePtr PreviewViewport::GetScene()
     {
       return m_renderPass->m_params.Scene;
-    }
-
-    void PreviewViewport::SetCameraMode(bool isLocked)
-    {
-      m_isLocked = isLocked;
     }
 
     // PropInspector

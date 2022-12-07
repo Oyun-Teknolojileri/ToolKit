@@ -1,0 +1,58 @@
+<S version="v0.3.17" name="ShaderBall">
+	<E t="0" i="1">
+		<N is="1">
+			<T x="0.000000" y="0.000000" z="0.000000"/>
+			<R x="0.707107" y="0.000000" z="0.000000" w="0.707107"/>
+			<S x="0.010000" y="0.010000" z="0.010000"/>
+		</N>
+		<PB>
+			<P t="11" name="Id" category="Meta" priority="100" exposed="1" editable="0" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="17270"/>
+			<P t="9" name="Name" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="Entity_1023"/>
+			<P t="9" name="Tag" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v=""/>
+			<P t="10" name="Visible" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1"/>
+			<P t="10" name="TransformLock" category="Meta" priority="100" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="0"/>
+		</PB>
+		<Components>
+			<Component t="1">
+				<PB>
+					<P t="12" name="Mesh" category="Mesh Component" priority="90" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000">
+						<ResourceRef Type="4" File="ToolKit\ShaderBall\0.mesh"/>
+					</P>
+					<P t="10" name="CastShadow" category="Mesh Component" priority="90" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1"/>
+				</PB>
+			</Component>
+			<Component t="1">
+				<PB>
+					<P t="12" name="Mesh" category="Mesh Component" priority="90" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000">
+						<ResourceRef Type="4" File="ToolKit\ShaderBall\1.mesh"/>
+					</P>
+					<P t="10" name="CastShadow" category="Mesh Component" priority="90" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1"/>
+				</PB>
+			</Component>
+			<Component t="1">
+				<PB>
+					<P t="12" name="Mesh" category="Mesh Component" priority="90" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000">
+						<ResourceRef Type="4" File="ToolKit\ShaderBall\2.mesh"/>
+					</P>
+					<P t="10" name="CastShadow" category="Mesh Component" priority="90" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1"/>
+				</PB>
+			</Component>
+			<Component t="1">
+				<PB>
+					<P t="12" name="Mesh" category="Mesh Component" priority="90" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000">
+						<ResourceRef Type="4" File="ToolKit\ShaderBall\3.mesh"/>
+					</P>
+					<P t="10" name="CastShadow" category="Mesh Component" priority="90" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000" v="1"/>
+				</PB>
+			</Component>
+			<Component t="3">
+				<PB>
+					<P t="13" name="Material" category="Material Component" priority="90" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000">
+						<ResourceRef Type="3" File="ToolKit\missing.material"/>
+					</P>
+				</PB>
+			</Component>
+		</Components>
+	</E>
+</S>
+

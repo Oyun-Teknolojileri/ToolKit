@@ -53,7 +53,7 @@ namespace ToolKit
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
 
-    void Generate();
+    static void Generate(MeshComponentPtr meshComp, const Vec3& scale);
 
    public:
     TKDeclareParam(Vec3, CubeScale);
