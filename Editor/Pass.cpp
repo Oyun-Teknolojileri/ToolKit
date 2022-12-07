@@ -896,11 +896,11 @@ namespace ToolKit
     m_copyBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                 m_copyTexture);
 
-    // Copy back buffer.
+    // Copy given buffer.
     renderer->CopyFrameBuffer(
-        nullptr, m_copyBuffer, GraphicBitFields::ColorBits);
+        m_params.FrameBuffer, m_copyBuffer, GraphicBitFields::ColorBits);
 
-    // Set back buffer as a texture to be read in gamma pass.
+    // Set given buffer as a texture to be read in gamma pass.
     renderer->SetTexture(0, m_copyTexture->m_textureId);
 
     m_gammaPass->m_params.FragmentShader   = m_gammaShader;

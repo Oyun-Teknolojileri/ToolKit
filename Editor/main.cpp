@@ -189,7 +189,7 @@ namespace ToolKit
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 0);
+        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 
         // SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 16);
         // SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 16);

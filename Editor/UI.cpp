@@ -412,14 +412,6 @@ namespace ToolKit
           1.00f, 0.60f, 0.00f, 1.00f};
       style->Colors[ImGuiCol_TextSelectedBg] = {
           0.18431373f, 0.39607847f, 0.79215693f, 0.90f};
-
-      // Reverse gamma correction
-      for (int i = 0; i < 55; ++i)
-      {
-        style->Colors[i].x = std::powf(style->Colors[i].x, 2.2f);
-        style->Colors[i].y = std::powf(style->Colors[i].y, 2.2f);
-        style->Colors[i].z = std::powf(style->Colors[i].z, 2.2f);
-      }
     }
 
     void UI::InitSettings()

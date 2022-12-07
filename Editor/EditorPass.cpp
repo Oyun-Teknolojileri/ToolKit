@@ -50,6 +50,8 @@ namespace ToolKit
 
       m_gizmoPass.Render();
 
+      m_gammaPass.Render();
+
       PostRender();
     }
 
@@ -157,6 +159,11 @@ namespace ToolKit
       m_scenePass.m_params.renderPassParams.Cam           = m_camera;
       m_scenePass.m_params.renderPassParams.FrameBuffer =
           viewport->m_framebuffer;
+
+      // Gamma Pass.
+      m_gammaPass.m_params.FrameBuffer = viewport->m_framebuffer;
+      // TODO: Read it from engine settings.
+      m_gammaPass.m_params.Gamma       = 2.2f;
 
       // Gizmo Pass.
       m_gizmoPass.m_params.Viewport = viewport;
