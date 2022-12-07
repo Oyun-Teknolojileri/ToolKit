@@ -307,11 +307,6 @@ namespace ToolKit
     // Update shadow maps.
     for (Light* light : m_params.Lights)
     {
-      if (light->GetCastShadowVal() == false)
-      {
-        continue;
-      }
-
       light->InitShadowMapDepthMaterial();
 
       EntityRawPtrArray entities = m_drawList;
@@ -347,6 +342,14 @@ namespace ToolKit
                                 !ntt->GetMeshComponent()->GetCastShadowVal();
                        }),
         m_drawList.end());
+
+    // Dropout non shadow casting lights.
+    m_params.Lights.erase(std::remove_if(m_params.Lights.begin(),
+                                         m_params.Lights.end(),
+                                         [](Light* light) -> bool {
+                                           return !light->GetCastShadowVal();
+                                         }),
+                          m_params.Lights.end());
 
     InitShadowAtlas();
 
@@ -426,8 +429,8 @@ namespace ToolKit
 
         renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
                                   (uint) light->m_shadowAtlasCoord.y,
-                                  (uint) light->GetShadowResolutionVal().x,
-                                  (uint) light->GetShadowResolutionVal().x);
+                                  (uint) light->GetShadowResVal(),
+                                  (uint) light->GetShadowResVal());
 
         renderForShadowMapFn(light, entities);
       }
@@ -456,8 +459,8 @@ namespace ToolKit
 
       renderer->SetViewportSize((uint) light->m_shadowAtlasCoord.x,
                                 (uint) light->m_shadowAtlasCoord.y,
-                                (uint) light->GetShadowResolutionVal().x,
-                                (uint) light->GetShadowResolutionVal().x);
+                                (uint) light->GetShadowResVal(),
+                                (uint) light->GetShadowResVal());
 
       renderForShadowMapFn(light, entities);
     }
@@ -494,7 +497,7 @@ namespace ToolKit
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights)
   {
-    // TODO: Use a better algorithm
+    // TODO: Use bin packing algorithm
 
     const int size = Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
 
@@ -511,7 +514,7 @@ namespace ToolKit
 
       anyDirOrSpotLight = true;
 
-      const float res = light->GetShadowResolutionVal().x;
+      const float res = light->GetShadowResVal();
       assert(res <= Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 1.0f &&
              "Shadow resolution can not exceed 4096.");
       if (res > rem)
@@ -542,7 +545,7 @@ namespace ToolKit
 
       anyPointLight = true;
 
-      const float res = light->GetShadowResolutionVal().x;
+      const float res = light->GetShadowResVal();
       assert(res <= Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 1.0f &&
              "Shadow resolution can not exceed 4096.");
       if (res > rem)
@@ -578,38 +581,35 @@ namespace ToolKit
     for (int i = 0; i < m_params.Lights.size(); ++i)
     {
       Light* light = m_params.Lights[i];
-      if (light->GetCastShadowVal())
+      if (light->m_shadowResolutionUpdated)
       {
-        if (light->m_shadowResolutionUpdated)
-        {
-          light->m_shadowResolutionUpdated = false;
-          needChange                       = true;
-        }
-
-        if (nextId >= m_lastShadowLights.size())
-        {
-          needChange = true;
-          m_lastShadowLights.push_back(light);
-          nextId++;
-          continue;
-        }
-
-        if (m_lastShadowLights[nextId] != light)
-        {
-          needChange = true;
-        }
-
-        m_lastShadowLights[nextId] = light;
-        nextId++;
+        light->m_shadowResolutionUpdated = false;
+        needChange                       = true;
       }
+
+      if (nextId >= m_previousShadowCasters.size())
+      {
+        needChange = true;
+        m_previousShadowCasters.push_back(light->GetIdVal());
+        nextId++;
+        continue;
+      }
+
+      if (m_previousShadowCasters[nextId] != light->GetIdVal())
+      {
+        needChange = true;
+      }
+
+      m_previousShadowCasters[nextId] = light->GetIdVal();
+      nextId++;
     }
 
     if (needChange)
     {
-      m_lastShadowLights.resize(nextId);
+      m_previousShadowCasters.resize(nextId);
 
       // Place shadow textures to atlas
-      m_layerCount = PlaceShadowMapsToShadowAtlas(m_lastShadowLights);
+      m_layerCount = PlaceShadowMapsToShadowAtlas(m_params.Lights);
 
       const int maxLayers = GetRenderer()->GetMaxArrayTextureLayers();
       if (maxLayers < m_layerCount)
