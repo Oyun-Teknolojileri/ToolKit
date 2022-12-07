@@ -68,9 +68,13 @@ namespace ToolKit
     void ClearColorBuffer(const Vec4& value);
     void ClearBuffer(GraphicBitFields fields);
     void ColorMask(bool r, bool g, bool b, bool a);
+    void CopyFrameBuffer(FramebufferPtr src,
+                         FramebufferPtr dest,
+                         GraphicBitFields fields);
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
+    void SetViewportSize(uint x, uint y, uint width, uint height);
 
     void DrawFullQuad(ShaderPtr fragmentShader);
     void DrawFullQuad(MaterialPtr mat);
@@ -79,9 +83,6 @@ namespace ToolKit
                   const Mat4& transform = Mat4(1.0f));
 
     void SetTexture(ubyte slotIndx, uint textureId);
-    void SetShadowMapTexture(EntityType type,
-                             uint textureId,
-                             ProgramPtr program);
     void ResetShadowMapBindings(ProgramPtr program);
 
     CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture,
@@ -98,13 +99,21 @@ namespace ToolKit
 
     void CopyTexture(TexturePtr source, TexturePtr dest);
 
-    void ToggleBlending(bool blending);
+    /**
+     * Sets the underlying graphics api state directly which causes by passing
+     * material system. Don't use it unless its necessary for special cases.
+     * @param enable sets the blending on / off for the graphics api.
+     */
+    void EnableBlending(bool enable);
 
     // If there is a material component, returns its material else
     // returns mesh's material. If there is not a MaterialComponent, it will
     // return the mesh's first material. In case of multisubmesh, there may be
     // multiple materials. But they are ignored.
     MaterialPtr GetRenderMaterial(Entity* entity);
+
+    // Giving nullptr as argument means no shadows
+    void SetShadowAtlas(TexturePtr shadowAtlas);
 
     // TODO: Should be private or within a Pass.
     /////////////////////
@@ -130,6 +139,8 @@ namespace ToolKit
     void CollectEnvironmentVolumes(const EntityRawPtrArray& entities);
 
     /////////////////////
+
+    int GetMaxArrayTextureLayers();
 
    private:
     void RenderEntities(
@@ -221,6 +232,16 @@ namespace ToolKit
 
     bool m_renderOnlyLighting = false;
 
+    typedef struct RHIConstants
+    {
+      static constexpr ubyte textureSlotCount = 8;
+
+      static constexpr size_t maxLightsPerObject = 16;
+
+      static constexpr int shadowAtlasSlot          = 8;
+      static constexpr int g_shadowAtlasTextureSize = 4096;
+    } m_rhiSettings;
+
    private:
     uint m_currentProgram = 0;
     Mat4 m_project;
@@ -232,16 +253,7 @@ namespace ToolKit
     MaterialPtr m_mat            = nullptr;
     MaterialPtr m_aoMat          = nullptr;
     FramebufferPtr m_framebuffer = nullptr;
-
-    typedef struct RHIConstants
-    {
-      static constexpr ubyte textureSlotCount = 8;
-      // 4 studio lights, 8 in game lights
-      static constexpr size_t maxLightsPerObject     = 12;
-      static constexpr int maxDirAndSpotLightShadows = 4;
-      static constexpr int maxPointLightShadows      = 4;
-      static constexpr int maxShadows                = 8;
-    } m_rhiSettings;
+    TexturePtr m_shadowAtlas     = nullptr;
 
     uint m_textureSlots[RHIConstants::textureSlotCount];
     int m_bindedShadowMapCount       = 0;
@@ -265,6 +277,8 @@ namespace ToolKit
 
     FramebufferPtr m_copyFb    = nullptr;
     MaterialPtr m_copyMaterial = nullptr;
+
+    int m_maxArrayTextureLayers = -1;
   };
 
 } // namespace ToolKit

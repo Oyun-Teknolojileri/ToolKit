@@ -10,7 +10,7 @@ namespace ToolKit
     class MaterialView : public View
     {
      public:
-      MaterialView()
+      MaterialView() : View("Material Inspector")
       {
         m_viewID = 3;
       }

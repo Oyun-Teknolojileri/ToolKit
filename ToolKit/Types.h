@@ -278,6 +278,7 @@ namespace ToolKit
     FormatRed            = 0x1903,
     FormatRG             = 0x8227,
     FormatRGB            = 0x1907,
+    FormatRGBA8          = 0x8058,
     FormatRGBA           = 0x1908,
     FormatR32F           = 0x822E,
     FormatRG32F          = 0x8230,
@@ -288,7 +289,8 @@ namespace ToolKit
     TypeFloat            = 0x1406,
     TypeUnsignedByte     = 0x1401,
     Target2D             = 0x0DE1,
-    TargetCubeMap        = 0x8513
+    TargetCubeMap        = 0x8513,
+    Target2DArray        = 0x8C1A
   };
 
   enum class GraphicBitFields

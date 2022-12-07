@@ -81,7 +81,7 @@ namespace ToolKit
   class SkinVertex : public Vertex
   {
    public:
-    UVec4 bones;
+    Vec4 bones;
     Vec4 weights;
   };
 

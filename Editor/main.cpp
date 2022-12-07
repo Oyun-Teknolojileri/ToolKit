@@ -31,12 +31,14 @@ namespace ToolKit
 
     void GlDebugReportInit()
     {
+      /* TODO
       if (glDebugMessageCallback != NULL)
       {
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
       }
+      */
 
       GlErrorReporter::Report = [](const std::string& msg) -> void {
         static byte state = g_app->m_showGraphicsApiErrors;
@@ -49,7 +51,7 @@ namespace ToolKit
         if (state != g_app->m_showGraphicsApiErrors)
         {
           state = g_app->m_showGraphicsApiErrors;
-
+          /* TODO
           if (state == 1)
           {
             glDebugMessageControl(
@@ -67,6 +69,7 @@ namespace ToolKit
             glDebugMessageControl(
                 GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
           }
+          */
         }
 
         if (g_app->m_showGraphicsApiErrors)
@@ -168,17 +171,30 @@ namespace ToolKit
       }
       else
       {
+#ifdef TK_GL_CORE_3_2
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                            SDL_GL_CONTEXT_PROFILE_CORE);
+
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#elif defined(TK_GL_ES_3_0)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                             SDL_GL_CONTEXT_PROFILE_ES);
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#endif // TK_GL_CORE_3_2
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 2);
+        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 0);
+
+        //SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 16);
+        //SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 16);
+        //SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 16);
+        //SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 16);
 
         if (g_settings.Graphics.MSAA > 0)
         {
@@ -207,13 +223,19 @@ namespace ToolKit
         else
         {
           g_context = SDL_GL_CreateContext(g_window);
+
           if (g_context == nullptr)
           {
             g_running = false;
           }
           else
           {
-            //  Init glew
+
+#ifdef TK_DEBUG
+            GlDebugReportInit();
+#endif
+            
+            // Init glew
             glewExperimental = true;
             GLenum err       = glewInit();
             if (GLEW_OK != err)
@@ -221,11 +243,7 @@ namespace ToolKit
               g_running = false;
               return;
             }
-
-#ifdef TK_DEBUG
-            GlDebugReportInit();
-#endif
-
+            
             // Init Main
             // Override SceneManager.
             SafeDel(g_proxy->m_sceneManager);
@@ -330,12 +348,15 @@ namespace ToolKit
         timer->currentTime = GetElapsedMilliSeconds();
         if (timer->currentTime > timer->lastTime + timer->deltaTime)
         {
-          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
-                  GL_STENCIL_BUFFER_BIT);
-
           g_app->Frame(timer->currentTime - timer->lastTime);
-          ClearPool(); // Clear after consumption.
+
+          // Update Present imgui windows.
+          ImGui::UpdatePlatformWindows();
+          ImGui::RenderPlatformWindowsDefault();
+          SDL_GL_MakeCurrent(g_window, g_context);
           SDL_GL_SwapWindow(g_window);
+
+          ClearPool(); // Clear after consumption.
 
           timer->frameCount++;
           timer->timeAccum += timer->currentTime - timer->lastTime;

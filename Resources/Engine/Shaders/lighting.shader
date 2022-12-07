@@ -1,5 +1,6 @@
 <shader>
 	<type name = "includeShader" />
+	<include name = "textureUtil.shader" />
 	<include name = "shadow.shader" />
 	<uniform name = "LightData" />
 	<source>
@@ -13,32 +14,103 @@
 				2 : Point light
 				3 : Spot light
 			*/
-			int type[12];
-			vec3 pos[12];
-			vec3 dir[12];
-			vec3 color[12];
-			float intensity[12];
-			float radius[12];
-			float outAngle[12];
-			float innAngle[12];
+			int type[16];
+			vec3 pos[16];
+			vec3 dir[16];
+			vec3 color[16];
+			float intensity[16];
+			float radius[16];
+			float outAngle[16];
+			float innAngle[16];
 			int activeCount;
 
-			mat4 projectionViewMatrix[12];
-			float shadowMapCameraFar[12];
-			sampler2D dirAndSpotLightShadowMap[4];
-			samplerCube pointLightShadowMap[4];
-			int castShadow[12];
-			int PCFSamples[12];
-			float PCFRadius[12];
-			float lightBleedingReduction[12];
-			int softShadows[12];
+			mat4 projectionViewMatrix[16];
+			float shadowMapCameraFar[16];
+			int castShadow[16];
+			int PCFSamples[16];
+			float PCFRadius[16];
+			float lightBleedingReduction[16];
+			int softShadows[16];
+			float shadowAtlasLayer[16];
+			float shadowAtlasResRatio[16];
+			vec2 shadowAtlasCoord[16]; // Between 0 and 1
+			float shadowResolution[16];
 		};
 		uniform _LightData LightData;
 
-		const int maxPointLightShadows = 4;
-		const int maxDirAndSpotLightShadows = 4;
+		sampler2DArray shadowAtlas;
 
-		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex, vec3 normal)
+		const int maxLights = 16;
+
+		// Returns uv coordinates and layers such as: vec3(u,v,layer)
+		// https://kosmonautblog.wordpress.com/2017/03/25/shadow-filtering-for-pointlights/
+
+		// Can be improved:
+		// https://stackoverflow.com/questions/53115467/how-to-implement-texturecube-using-6-sampler2d
+		vec3 UVWToUVLayer(vec3 vec)
+		{
+			/*
+				layer:
+				  0       1       2       3       4       5
+				pos X   neg X   pos Y   neg Y   pos Z   neg Z
+			*/
+			float layer;
+			vec2 coord;
+
+			if (abs(vec.x) >= abs(vec.y) && abs(vec.x) >= abs(vec.z))
+			{
+				if (vec.x > 0.0)
+				{
+					layer = 0.0;
+					vec /= vec.x;
+					coord = -vec.zy;
+				}
+				else
+				{
+					layer = 1.0;
+					vec.y = -vec.y;
+					vec /= vec.x;
+					coord = -vec.zy;
+				}
+			}
+			else if (abs(vec.y) >= abs(vec.x) && abs(vec.y) >= abs(vec.z))
+			{
+				if (vec.y > 0.0)
+				{
+					layer = 2.0;
+					vec /= vec.y;
+					coord = vec.xz;
+				}
+				else
+				{
+					layer = 3.0;
+					vec.x = -vec.x;
+					vec /= vec.y;
+					coord = vec.xz;
+				}
+			}
+			else
+			{
+				if (vec.z > 0.0)
+				{
+					layer = 4.0;
+					vec.y = -vec.y;
+					vec /= -vec.z;
+					coord = -vec.xy;
+				}
+				else
+				{
+					layer = 5.0;
+					vec /= -vec.z;
+					coord = -vec.xy;
+				}
+			}
+
+			coord = (coord + vec2(1.0)) * 0.5;
+			return vec3(coord, layer);
+		}
+
+		float CalculateDirectionalShadow(vec3 pos, int index)
 		{
 			vec3 lightDir = normalize(LightData.pos[index] - pos);
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
@@ -52,20 +124,27 @@
 			// Get depth of the current fragment according to lights view
 			float currFragDepth = projCoord.z;
 
+			vec2 startCoord = LightData.shadowAtlasCoord[index];
+			float resRatio = LightData.shadowAtlasResRatio[index];
+			vec3 coord = vec3(startCoord + resRatio * projCoord.xy, LightData.shadowAtlasLayer[index]);
+
 			if (LightData.softShadows[index] == 1)
 			{
-				return PCFFilterShadow2D(LightData.dirAndSpotLightShadowMap[dirIndex], projCoord.xy,
-				LightData.PCFSamples[index], LightData.PCFRadius[index], projCoord.z,
-				LightData.lightBleedingReduction[index]);
+				return PCFFilterShadow2D(shadowAtlas, coord, startCoord, startCoord + resRatio,
+				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasResRatio[index],
+				projCoord.z, LightData.lightBleedingReduction[index]);
 			}
 			else
 			{
-				vec2 moments = texture(LightData.dirAndSpotLightShadowMap[dirIndex], projCoord.xy).xy;
+				coord.xy = ClampTextureCoordinates(coord.xy, startCoord, startCoord + resRatio);
+				vec2 moments = texture(shadowAtlas, coord).xy;
 				return ChebyshevUpperBound(moments, projCoord.z, LightData.lightBleedingReduction[index]);
 			}
+
+			return 1.0;
 		}
 
-		float CalculateSpotShadow(vec3 pos, int index, int spotIndex, vec3 normal)
+		float CalculateSpotShadow(vec3 pos, int index)
 		{
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
@@ -74,35 +153,52 @@
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
 
+			vec2 startCoord = LightData.shadowAtlasCoord[index];
+			float resRatio = LightData.shadowAtlasResRatio[index];
+			vec3 coord = vec3(startCoord + resRatio * projCoord.xy, LightData.shadowAtlasLayer[index]);
+
 			if (LightData.softShadows[index] == 1)
 			{
-				return PCFFilterShadow2D(LightData.dirAndSpotLightShadowMap[spotIndex], projCoord.xy,
-				LightData.PCFSamples[index], LightData.PCFRadius[index], currFragDepth,
+				return PCFFilterShadow2D(shadowAtlas, coord, startCoord, startCoord + resRatio,
+				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasResRatio[index], currFragDepth,
 				LightData.lightBleedingReduction[index]);
 			}
 			else
 			{
-				vec2 moments = texture(LightData.dirAndSpotLightShadowMap[spotIndex], projCoord.xy).xy;
+				coord.xy = ClampTextureCoordinates(coord.xy, startCoord, startCoord + resRatio);
+				vec2 moments = texture(shadowAtlas, coord).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
+
+			return 1.0;
 		}
 
-		float CalculatePointShadow(vec3 pos, int index, int pointIndex, vec3 normal)
+		float CalculatePointShadow(vec3 pos, int index)
 		{
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
 
+			vec2 startCoord = LightData.shadowAtlasCoord[index];
+			float resRatio = LightData.shadowAtlasResRatio[index];
+
+			vec3 coord = UVWToUVLayer(lightToFrag);
+			coord.xy = startCoord + resRatio * coord.xy;
+			coord.z = LightData.shadowAtlasLayer[index] + coord.z;
+
 			if (LightData.softShadows[index] == 1)
 			{
-				return PCFFilterShadow3D(LightData.pointLightShadowMap[pointIndex], lightToFrag,
-				LightData.PCFSamples[index], LightData.PCFRadius[index], currFragDepth,
+				return PCFFilterShadow2D(shadowAtlas, coord, startCoord, startCoord + resRatio,
+				LightData.PCFSamples[index], LightData.PCFRadius[index] * resRatio, currFragDepth,
 				LightData.lightBleedingReduction[index]);
 			}
 			else
 			{
-				vec2 moments = texture(LightData.pointLightShadowMap[pointIndex], lightToFrag).xy;
+				coord.xy = ClampTextureCoordinates(coord.xy, startCoord, startCoord + resRatio);
+				vec2 moments = texture(shadowAtlas, coord).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
+			
+			return 1.0;
 		}
 
 		// Returns 0 or 1
@@ -182,8 +278,7 @@
 
 		vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye)
 		{
-			int dirAndSpotLightShadowCount = 0;
-			int pointLightShadowCount = 0;
+			int lightCount = 0;
 
 			float shadow = 1.0;
 			vec3 irradiance = vec3(0.0);
@@ -198,11 +293,11 @@
 					PointLightBlinnPhong(i, LightData.pos[i] - fragPos, fragToEye, normal, diffuse, specular);
 
 					// Shadow
-					bool maxShadowCheck = maxPointLightShadows > pointLightShadowCount;
+					bool maxShadowCheck = maxLights > lightCount;
 					if (maxShadowCheck && LightData.castShadow[i] == 1)
 					{
-						shadow = CalculatePointShadow(fragPos, i, pointLightShadowCount, normal);
-						pointLightShadowCount += 1;
+						shadow = CalculatePointShadow(fragPos, i);
+						lightCount += 1;
 					}
 				}
 				else if (LightData.type[i] == 1) // Directional light
@@ -211,11 +306,11 @@
 					DirectionalLightBlinnPhong(i, -LightData.dir[i], fragToEye, normal, diffuse, specular);
 
 					// Shadow
-					bool maxShadowCheck = maxDirAndSpotLightShadows > dirAndSpotLightShadowCount;
+					bool maxShadowCheck = maxLights > lightCount;
 					if (maxShadowCheck && LightData.castShadow[i] == 1)
 					{
-						shadow = CalculateDirectionalShadow(fragPos, i, dirAndSpotLightShadowCount, normal);
-						dirAndSpotLightShadowCount += 1;
+						shadow = CalculateDirectionalShadow(fragPos, i);
+						lightCount += 1;
 					}		
 				}
 				else if (LightData.type[i] == 3) // Spot light
@@ -224,11 +319,11 @@
 					SpotLightBlinnPhong(i, LightData.pos[i] - fragPos, fragToEye, normal, diffuse, specular);
 
 					// Shadow
-					bool maxShadowCheck = maxDirAndSpotLightShadows > dirAndSpotLightShadowCount;
+					bool maxShadowCheck = maxLights > lightCount;
 					if (maxShadowCheck && LightData.castShadow[i] == 1)
 					{
-						shadow = CalculateSpotShadow(fragPos, i, dirAndSpotLightShadowCount, normal);
-						dirAndSpotLightShadowCount += 1;
+						shadow = CalculateSpotShadow(fragPos, i);
+						lightCount += 1;
 					}
 				}
 

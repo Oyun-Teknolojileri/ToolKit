@@ -272,7 +272,6 @@ namespace ToolKit
     fb->Init({m_size, m_size, 0, false, true});
 
     const RenderTargetSettigs set = {0,
-                                     false,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::UVClampToEdge,
@@ -281,8 +280,7 @@ namespace ToolKit
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::FormatRGB,
                                      GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte,
-                                     Vec4(0.0f)};
+                                     GraphicTypes::TypeUnsignedByte};
     RenderTargetPtr cubemap =
         std::make_shared<RenderTarget>(m_size, m_size, set);
     cubemap->Init();
@@ -322,6 +320,7 @@ namespace ToolKit
 
       fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                         cubemap,
+        -1,
                         (Framebuffer::CubemapFace) i);
 
       GetRenderer()->SetFramebuffer(fb, true, Vec4(0.0f));

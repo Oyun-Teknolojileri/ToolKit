@@ -91,6 +91,15 @@ namespace ToolKit
       }
   }
 
+  int Renderer::GetMaxArrayTextureLayers()
+  {
+    if (m_maxArrayTextureLayers == -1)
+    {
+      glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &m_maxArrayTextureLayers);
+    }
+    return m_maxArrayTextureLayers;
+  }
+
   void Renderer::SetCameraLens(Camera* cam)
   {
     float aspect = (float) m_viewportSize.x / (float) m_viewportSize.y;
@@ -648,29 +657,13 @@ namespace ToolKit
   {
     if (fb != nullptr)
     {
-      if (m_framebuffer)
-      {
-        if (fb->GetFboId() == m_framebuffer->GetFboId())
-        {
-          if (clear)
-          {
-            ClearBuffer(GraphicBitFields::DepthStencilBits);
-            ClearColorBuffer(color);
-          }
-
-          return;
-        }
-      }
-
       glBindFramebuffer(GL_FRAMEBUFFER, fb->GetFboId());
-
       FramebufferSettings fbSet = fb->GetSettings();
       SetViewportSize(fbSet.width, fbSet.height);
     }
     else
     {
       // Set backbuffer as draw area.
-      m_framebuffer = nullptr;
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
       SetViewportSize(m_windowSize.x, m_windowSize.y);
     }
@@ -733,6 +726,45 @@ namespace ToolKit
     glColorMask(r, g, b, a);
   }
 
+  void Renderer::CopyFrameBuffer(FramebufferPtr src,
+                                 FramebufferPtr dest,
+                                 GraphicBitFields fields)
+  {
+    GLuint srcId = 0;
+    uint width   = m_windowSize.x;
+    uint height  = m_windowSize.y;
+
+    if (src)
+    {
+      FramebufferSettings fbs = src->GetSettings();
+      width                   = fbs.width;
+      height                  = fbs.height;
+      srcId                   = src->GetFboId();
+    }
+
+    dest->ReconstructIfNeeded(width, height);
+
+    GLint drawFboId = 0, readFboId = 0;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFboId);
+    glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readFboId);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, srcId);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
+    glBlitFramebuffer(0,
+                      0,
+                      width,
+                      height,
+                      0,
+                      0,
+                      width,
+                      height,
+                      (GLbitfield) fields,
+                      GL_NEAREST);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, readFboId);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
+  }
+
   void Renderer::SetViewport(Viewport* viewport)
   {
     SetFramebuffer(viewport->m_framebuffer);
@@ -743,6 +775,13 @@ namespace ToolKit
     m_viewportSize.x = width;
     m_viewportSize.y = height;
     glViewport(0, 0, width, height);
+  }
+
+  void Renderer::SetViewportSize(uint x, uint y, uint width, uint height)
+  {
+    m_viewportSize.x = width;
+    m_viewportSize.y = height;
+    glViewport(x, y, width, height);
   }
 
   void Renderer::DrawFullQuad(ShaderPtr fragmentShader)
@@ -1105,9 +1144,9 @@ namespace ToolKit
     SetFramebuffer(lastFb, false);
   }
 
-  void Renderer::ToggleBlending(bool blending)
+  void Renderer::EnableBlending(bool enable)
   {
-    if (blending)
+    if (enable)
     {
       glEnable(GL_BLEND);
     }
@@ -1247,13 +1286,16 @@ namespace ToolKit
   void Renderer::ShadowPass(const LightRawPtrArray& lights,
                             const EntityRawPtrArray& entities)
   {
+    /*
     UpdateShadowMaps(lights, entities);
     FilterShadowMaps(lights);
+    */
   }
 
   void Renderer::UpdateShadowMaps(const LightRawPtrArray& lights,
                                   const EntityRawPtrArray& entities)
   {
+    /*
     MaterialPtr lastOverrideMaterial = m_overrideMat;
 
     GLint lastFBO;
@@ -1345,6 +1387,7 @@ namespace ToolKit
           {
             smBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                     light->GetShadowMapRenderTarget(),
+                                    -1,
                                     (Framebuffer::CubemapFace) i);
 
             light->m_node->SetOrientation(rotations[i]);
@@ -1368,10 +1411,12 @@ namespace ToolKit
 
     m_overrideMat = lastOverrideMaterial;
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
+    */
   }
 
   void Renderer::FilterShadowMaps(const LightRawPtrArray& lights)
   {
+    /*
     for (Light* light : lights)
     {
       if (!light->GetCastShadowVal() || light->GetShadowThicknessVal() < 0.001f)
@@ -1393,6 +1438,7 @@ namespace ToolKit
                            Y_AXIS,
                            softness / light->GetShadowResolutionVal().y);
     }
+    */
   }
 
   void Renderer::Apply7x1GaussianBlur(const TexturePtr source,
@@ -1897,25 +1943,28 @@ namespace ToolKit
                                    g_lightsoftShadowsStrCache[i].c_str());
         glUniform1i(loc, (int) (currLight->GetPCFSamplesVal() > 1));
 
-        if (FramebufferPtr shadowFrameBuffer =
-                currLight->GetShadowMapFramebuffer())
-        {
-          SetShadowMapTexture(
-              type,
-              shadowFrameBuffer
-                  ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
-                  ->m_textureId,
-              program);
-        }
-        else
-        {
-          GetLogger()->WriteConsole(
-              LogType::Error,
-              "Uninitilized shadow buffer ! Light Name: %s ID: %d",
-              currLight->GetNameVal().c_str(),
-              currLight->GetIdVal());
-        }
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowAtlasLayerStrCache[i].c_str());
+        glUniform1f(loc, (GLfloat) currLight->m_shadowAtlasLayer);
+
+        const Vec2 coord =
+            currLight->m_shadowAtlasCoord /
+            (float) Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowAtlasCoordStrCache[i].c_str());
+        glUniform2fv(loc, 1, &coord.x);
+
+        loc = glGetUniformLocation(
+            program->m_handle, g_lightShadowAtlasResRatioStrCache[i].c_str());
+        glUniform1f(loc,
+                    currLight->GetShadowResVal() /
+                        Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowResolutionStrCache[i].c_str());
+        glUniform1f(loc, currLight->GetShadowResVal());
       }
+
       GLuint loc = glGetUniformLocation(program->m_handle,
                                         g_lightCastShadowStrCache[i].c_str());
       glUniform1i(loc, static_cast<int>(castShadow));
@@ -1924,6 +1973,15 @@ namespace ToolKit
     GLint loc =
         glGetUniformLocation(program->m_handle, "LightData.activeCount");
     glUniform1i(loc, static_cast<int>(m_lights.size()));
+
+    // Bind shadow map if activated
+    if (m_shadowAtlas != nullptr)
+    {
+      loc = glGetUniformLocation(program->m_handle, "shadowAtlas");
+      glUniform1i(loc, m_rhiSettings::shadowAtlasSlot);
+      glActiveTexture(GL_TEXTURE0 + m_rhiSettings::shadowAtlasSlot);
+      glBindTexture(GL_TEXTURE_2D_ARRAY, m_shadowAtlas->m_textureId);
+    }
   }
 
   void Renderer::SetVertexLayout(VertexLayout layout)
@@ -1983,12 +2041,12 @@ namespace ToolKit
       glEnableVertexAttribArray(3); // BiTangent
       glVertexAttribPointer(
           3, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
-      offset += 3 * sizeof(uint);
+      offset += 3 * sizeof(float);
 
       glEnableVertexAttribArray(4); // Bones
       glVertexAttribPointer(
           4, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
-      offset += 4 * sizeof(unsigned int);
+      offset += 4 * sizeof(float);
 
       glEnableVertexAttribArray(5); // Weights
       glVertexAttribPointer(
@@ -2022,59 +2080,14 @@ namespace ToolKit
     }
   }
 
-  void Renderer::SetShadowMapTexture(EntityType type,
-                                     uint textureId,
-                                     ProgramPtr program)
+  void Renderer::SetShadowAtlas(TexturePtr shadowAtlas)
   {
-    if (m_bindedShadowMapCount >= m_rhiSettings::maxShadows)
-    {
-      return;
-    }
-
     /*
-     * Texture Slots:
-     * 8-11: Directional and spot light shadow maps
-     * 12-15: Point light shadow maps
+     * Texture slots:
+     * 8: Shadow atlas
      */
 
-    if (type == EntityType::Entity_PointLight)
-    {
-      if (m_pointLightShadowCount < m_rhiSettings::maxPointLightShadows)
-      {
-        int curr = m_pointLightShadowCount +
-                   m_rhiSettings::maxDirAndSpotLightShadows +
-                   m_rhiSettings::textureSlotCount;
-        glUniform1i(
-            glGetUniformLocation(program->m_handle,
-                                 ("LightData.pointLightShadowMap[" +
-                                  std::to_string(m_pointLightShadowCount) + "]")
-                                     .c_str()),
-            curr);
-        glActiveTexture(GL_TEXTURE0 + curr);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
-        m_bindedShadowMapCount++;
-        m_pointLightShadowCount++;
-      }
-    }
-    else
-    {
-      if (m_dirAndSpotLightShadowCount <
-          m_rhiSettings::maxDirAndSpotLightShadows)
-      {
-        int curr =
-            m_dirAndSpotLightShadowCount + m_rhiSettings::textureSlotCount;
-        glUniform1i(glGetUniformLocation(
-                        program->m_handle,
-                        ("LightData.dirAndSpotLightShadowMap[" +
-                         std::to_string(m_dirAndSpotLightShadowCount) + "]")
-                            .c_str()),
-                    curr);
-        glActiveTexture(GL_TEXTURE0 + curr);
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        m_bindedShadowMapCount++;
-        m_dirAndSpotLightShadowCount++;
-      }
-    }
+    m_shadowAtlas = shadowAtlas;
   }
 
   void Renderer::ResetShadowMapBindings(ProgramPtr program)
@@ -2090,7 +2103,6 @@ namespace ToolKit
                                                     float exposure)
   {
     const RenderTargetSettigs set = {0,
-                                     false,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::UVClampToEdge,
@@ -2099,8 +2111,8 @@ namespace ToolKit
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::FormatRGB,
                                      GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte,
-                                     Vec4(0.0f)};
+                                     GraphicTypes::TypeUnsignedByte};
+
     RenderTargetPtr cubeMapRt =
         std::make_shared<RenderTarget>(width, height, set);
     cubeMapRt->Init();
@@ -2148,6 +2160,7 @@ namespace ToolKit
       m_utilFramebuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
           cubeMapRt,
+          -1,
           (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
@@ -2168,7 +2181,6 @@ namespace ToolKit
                                                  uint height)
   {
     const RenderTargetSettigs set = {0,
-                                     false,
                                      GraphicTypes::TargetCubeMap,
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::UVClampToEdge,
@@ -2177,8 +2189,7 @@ namespace ToolKit
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::FormatRGB,
                                      GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte,
-                                     Vec4(0.0f)};
+                                     GraphicTypes::TypeUnsignedByte};
     RenderTargetPtr cubeMapRt =
         std::make_shared<RenderTarget>(width, height, set);
     cubeMapRt->Init();
@@ -2224,6 +2235,7 @@ namespace ToolKit
       m_utilFramebuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
           cubeMapRt,
+          -1,
           (Framebuffer::CubemapFace) i);
 
       SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
