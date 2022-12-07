@@ -40,9 +40,7 @@
 
 		sampler2DArray shadowAtlas;
 
-		// TODO: There is no more need to separate the limitation of point lights from directional and spot lights limitations
-		const int maxPointLightShadows = 8;
-		const int maxDirAndSpotLightShadows = 8;
+		const int maxLights = 12;
 
 		// Returns uv coordinates and layers such as: vec3(u,v,layer)
 		// https://kosmonautblog.wordpress.com/2017/03/25/shadow-filtering-for-pointlights/
@@ -112,7 +110,7 @@
 			return vec3(coord, layer);
 		}
 
-		float CalculateDirectionalShadow(vec3 pos, int index, int dirIndex)
+		float CalculateDirectionalShadow(vec3 pos, int index)
 		{
 			vec3 lightDir = normalize(LightData.pos[index] - pos);
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
@@ -146,7 +144,7 @@
 			return 1.0;
 		}
 
-		float CalculateSpotShadow(vec3 pos, int index, int spotIndex)
+		float CalculateSpotShadow(vec3 pos, int index)
 		{
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
@@ -175,7 +173,7 @@
 			return 1.0;
 		}
 
-		float CalculatePointShadow(vec3 pos, int index, int pointIndex)
+		float CalculatePointShadow(vec3 pos, int index)
 		{
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
@@ -280,8 +278,7 @@
 
 		vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye)
 		{
-			int dirAndSpotLightShadowCount = 0;
-			int pointLightShadowCount = 0;
+			int lightCount = 0;
 
 			float shadow = 1.0;
 			vec3 irradiance = vec3(0.0);
@@ -296,11 +293,11 @@
 					PointLightBlinnPhong(i, LightData.pos[i] - fragPos, fragToEye, normal, diffuse, specular);
 
 					// Shadow
-					bool maxShadowCheck = maxPointLightShadows > pointLightShadowCount;
+					bool maxShadowCheck = maxLights > lightCount;
 					if (maxShadowCheck && LightData.castShadow[i] == 1)
 					{
-						shadow = CalculatePointShadow(fragPos, i, pointLightShadowCount);
-						pointLightShadowCount += 1;
+						shadow = CalculatePointShadow(fragPos, i);
+						lightCount += 1;
 					}
 				}
 				else if (LightData.type[i] == 1) // Directional light
@@ -309,11 +306,11 @@
 					DirectionalLightBlinnPhong(i, -LightData.dir[i], fragToEye, normal, diffuse, specular);
 
 					// Shadow
-					bool maxShadowCheck = maxDirAndSpotLightShadows > dirAndSpotLightShadowCount;
+					bool maxShadowCheck = maxLights > lightCount;
 					if (maxShadowCheck && LightData.castShadow[i] == 1)
 					{
-						shadow = CalculateDirectionalShadow(fragPos, i, dirAndSpotLightShadowCount);
-						dirAndSpotLightShadowCount += 1;
+						shadow = CalculateDirectionalShadow(fragPos, i);
+						lightCount += 1;
 					}		
 				}
 				else if (LightData.type[i] == 3) // Spot light
@@ -322,11 +319,11 @@
 					SpotLightBlinnPhong(i, LightData.pos[i] - fragPos, fragToEye, normal, diffuse, specular);
 
 					// Shadow
-					bool maxShadowCheck = maxDirAndSpotLightShadows > dirAndSpotLightShadowCount;
+					bool maxShadowCheck = maxLights > lightCount;
 					if (maxShadowCheck && LightData.castShadow[i] == 1)
 					{
-						shadow = CalculateSpotShadow(fragPos, i, dirAndSpotLightShadowCount);
-						dirAndSpotLightShadowCount += 1;
+						shadow = CalculateSpotShadow(fragPos, i);
+						lightCount += 1;
 					}
 				}
 
