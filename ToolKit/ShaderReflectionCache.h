@@ -17,7 +17,11 @@ namespace ToolKit
                                                  "LightData.pos[8]",
                                                  "LightData.pos[9]",
                                                  "LightData.pos[10]",
-                                                 "LightData.pos[11]"};
+                                                 "LightData.pos[11]",
+                                                 "LightData.pos[12]",
+                                                 "LightData.pos[13]",
+                                                 "LightData.pos[14]",
+                                                 "LightData.pos[15]"};
 
   static const StringArray g_lightDirStrCache = {"LightData.dir[0]",
                                                  "LightData.dir[1]",
@@ -30,7 +34,11 @@ namespace ToolKit
                                                  "LightData.dir[8]",
                                                  "LightData.dir[9]",
                                                  "LightData.dir[10]",
-                                                 "LightData.dir[11]"};
+                                                 "LightData.dir[11]",
+                                                 "LightData.dir[12]",
+                                                 "LightData.dir[13]",
+                                                 "LightData.dir[14]",
+                                                 "LightData.dir[15]"};
 
   static const StringArray g_lightColorStrCache = {"LightData.color[0]",
                                                    "LightData.color[1]",
@@ -43,7 +51,11 @@ namespace ToolKit
                                                    "LightData.color[8]",
                                                    "LightData.color[9]",
                                                    "LightData.color[10]",
-                                                   "LightData.color[11]"};
+                                                   "LightData.color[11]",
+                                                   "LightData.color[12]",
+                                                   "LightData.color[13]",
+                                                   "LightData.color[14]",
+                                                   "LightData.color[15]"};
 
   static const StringArray g_lightIntensityStrCache = {
       "LightData.intensity[0]",
@@ -57,7 +69,11 @@ namespace ToolKit
       "LightData.intensity[8]",
       "LightData.intensity[9]",
       "LightData.intensity[10]",
-      "LightData.intensity[11]"};
+      "LightData.intensity[11]",
+      "LightData.intensity[12]",
+      "LightData.intensity[13]",
+      "LightData.intensity[14]",
+      "LightData.intensity[15]"};
 
   static const StringArray g_lightTypeStrCache = {"LightData.type[0]",
                                                   "LightData.type[1]",
@@ -70,7 +86,11 @@ namespace ToolKit
                                                   "LightData.type[8]",
                                                   "LightData.type[9]",
                                                   "LightData.type[10]",
-                                                  "LightData.type[11]"};
+                                                  "LightData.type[11]",
+                                                  "LightData.type[12]",
+                                                  "LightData.type[13]",
+                                                  "LightData.type[14]",
+                                                  "LightData.type[15]"};
 
   static const StringArray g_lightRadiusStrCache = {"LightData.radius[0]",
                                                     "LightData.radius[1]",
@@ -83,7 +103,11 @@ namespace ToolKit
                                                     "LightData.radius[8]",
                                                     "LightData.radius[9]",
                                                     "LightData.radius[10]",
-                                                    "LightData.radius[11]"};
+                                                    "LightData.radius[11]",
+                                                    "LightData.radius[12]",
+                                                    "LightData.radius[13]",
+                                                    "LightData.radius[14]",
+                                                    "LightData.radius[15]"};
 
   static const StringArray g_lightOuterAngleStrCache = {
       "LightData.outAngle[0]",
@@ -97,7 +121,11 @@ namespace ToolKit
       "LightData.outAngle[8]",
       "LightData.outAngle[9]",
       "LightData.outAngle[10]",
-      "LightData.outAngle[11]"};
+      "LightData.outAngle[11]",
+      "LightData.outAngle[12]",
+      "LightData.outAngle[13]",
+      "LightData.outAngle[14]",
+      "LightData.outAngle[15]"};
 
   static const StringArray g_lightInnerAngleStrCache = {
       "LightData.innAngle[0]",
@@ -111,7 +139,11 @@ namespace ToolKit
       "LightData.innAngle[8]",
       "LightData.innAngle[9]",
       "LightData.innAngle[10]",
-      "LightData.innAngle[11]"};
+      "LightData.innAngle[11]",
+      "LightData.innAngle[12]",
+      "LightData.innAngle[13]",
+      "LightData.innAngle[14]",
+      "LightData.innAngle[15]"};
 
   static const StringArray g_lightprojectionViewMatrixStrCache = {
       "LightData.projectionViewMatrix[0]",
@@ -125,7 +157,11 @@ namespace ToolKit
       "LightData.projectionViewMatrix[8]",
       "LightData.projectionViewMatrix[9]",
       "LightData.projectionViewMatrix[10]",
-      "LightData.projectionViewMatrix[11]"};
+      "LightData.projectionViewMatrix[11]",
+      "LightData.projectionViewMatrix[12]",
+      "LightData.projectionViewMatrix[13]",
+      "LightData.projectionViewMatrix[14]",
+      "LightData.projectionViewMatrix[15]"};
 
   static const StringArray g_lightCastShadowStrCache = {
       "LightData.castShadow[0]",
@@ -139,7 +175,11 @@ namespace ToolKit
       "LightData.castShadow[8]",
       "LightData.castShadow[9]",
       "LightData.castShadow[10]",
-      "LightData.castShadow[11]"};
+      "LightData.castShadow[11]",
+      "LightData.castShadow[12]",
+      "LightData.castShadow[13]",
+      "LightData.castShadow[14]",
+      "LightData.castShadow[15]"};
 
   static const StringArray g_lightShadowMapCameraFarStrCache = {
       "LightData.shadowMapCameraFar[0]",
@@ -153,7 +193,11 @@ namespace ToolKit
       "LightData.shadowMapCameraFar[8]",
       "LightData.shadowMapCameraFar[9]",
       "LightData.shadowMapCameraFar[10]",
-      "LightData.shadowMapCameraFar[11]"};
+      "LightData.shadowMapCameraFar[11]",
+      "LightData.shadowMapCameraFar[12]",
+      "LightData.shadowMapCameraFar[13]",
+      "LightData.shadowMapCameraFar[14]",
+      "LightData.shadowMapCameraFar[15]"};
 
   static const StringArray g_lightPCFSamplesStrCache = {
       "LightData.PCFSamples[0]",
@@ -167,7 +211,11 @@ namespace ToolKit
       "LightData.PCFSamples[8]",
       "LightData.PCFSamples[9]",
       "LightData.PCFSamples[10]",
-      "LightData.PCFSamples[11]"};
+      "LightData.PCFSamples[11]",
+      "LightData.PCFSamples[12]",
+      "LightData.PCFSamples[13]",
+      "LightData.PCFSamples[14]",
+      "LightData.PCFSamples[15]"};
 
   static const StringArray g_lightPCFRadiusStrCache = {
       "LightData.PCFRadius[0]",
@@ -181,7 +229,11 @@ namespace ToolKit
       "LightData.PCFRadius[8]",
       "LightData.PCFRadius[9]",
       "LightData.PCFRadius[10]",
-      "LightData.PCFRadius[11]"};
+      "LightData.PCFRadius[11]",
+      "LightData.PCFRadius[12]",
+      "LightData.PCFRadius[13]",
+      "LightData.PCFRadius[14]",
+      "LightData.PCFRadius[15]"};
 
   static const StringArray g_lightsoftShadowsStrCache = {
       "LightData.softShadows[0]",
@@ -195,7 +247,11 @@ namespace ToolKit
       "LightData.softShadows[8]",
       "LightData.softShadows[9]",
       "LightData.softShadows[10]",
-      "LightData.softShadows[11]"};
+      "LightData.softShadows[11]",
+      "LightData.softShadows[12]",
+      "LightData.softShadows[13]",
+      "LightData.softShadows[14]",
+      "LightData.softShadows[15]"};
 
   static const StringArray g_lightBleedingReductionStrCache = {
       "LightData.lightBleedingReduction[0]",
@@ -209,7 +265,11 @@ namespace ToolKit
       "LightData.lightBleedingReduction[8]",
       "LightData.lightBleedingReduction[9]",
       "LightData.lightBleedingReduction[10]",
-      "LightData.lightBleedingReduction[11]"};
+      "LightData.lightBleedingReduction[11]",
+      "LightData.lightBleedingReduction[12]",
+      "LightData.lightBleedingReduction[13]",
+      "LightData.lightBleedingReduction[14]",
+      "LightData.lightBleedingReduction[15]"};
 
   static const StringArray g_lightShadowAtlasLayerStrCache = {
       "LightData.shadowAtlasLayer[0]",
@@ -223,7 +283,11 @@ namespace ToolKit
       "LightData.shadowAtlasLayer[8]",
       "LightData.shadowAtlasLayer[9]",
       "LightData.shadowAtlasLayer[10]",
-      "LightData.shadowAtlasLayer[11]"};
+      "LightData.shadowAtlasLayer[11]",
+      "LightData.shadowAtlasLayer[12]",
+      "LightData.shadowAtlasLayer[13]",
+      "LightData.shadowAtlasLayer[14]",
+      "LightData.shadowAtlasLayer[15]"};
 
   static const StringArray g_lightShadowAtlasResRatioStrCache = {
       "LightData.shadowAtlasResRatio[0]",
@@ -237,9 +301,13 @@ namespace ToolKit
       "LightData.shadowAtlasResRatio[8]",
       "LightData.shadowAtlasResRatio[9]",
       "LightData.shadowAtlasResRatio[10]",
-      "LightData.shadowAtlasResRatio[11]"};
+      "LightData.shadowAtlasResRatio[11]",
+      "LightData.shadowAtlasResRatio[12]",
+      "LightData.shadowAtlasResRatio[13]",
+      "LightData.shadowAtlasResRatio[14]",
+      "LightData.shadowAtlasResRatio[15]"};
 
-    static const StringArray g_lightShadowResolutionStrCache = {
+  static const StringArray g_lightShadowResolutionStrCache = {
       "LightData.shadowResolution[0]",
       "LightData.shadowResolution[1]",
       "LightData.shadowResolution[2]",
@@ -251,7 +319,11 @@ namespace ToolKit
       "LightData.shadowResolution[8]",
       "LightData.shadowResolution[9]",
       "LightData.shadowResolution[10]",
-      "LightData.shadowResolution[11]"};
+      "LightData.shadowResolution[11]",
+      "LightData.shadowResolution[12]",
+      "LightData.shadowResolution[13]",
+      "LightData.shadowResolution[14]",
+      "LightData.shadowResolution[15]"};
 
   static const StringArray g_lightShadowAtlasCoordStrCache = {
       "LightData.shadowAtlasCoord[0]",
@@ -265,7 +337,11 @@ namespace ToolKit
       "LightData.shadowAtlasCoord[8]",
       "LightData.shadowAtlasCoord[9]",
       "LightData.shadowAtlasCoord[10]",
-      "LightData.shadowAtlasCoord[11]"};
+      "LightData.shadowAtlasCoord[11]",
+      "LightData.shadowAtlasCoord[12]",
+      "LightData.shadowAtlasCoord[13]",
+      "LightData.shadowAtlasCoord[14]",
+      "LightData.shadowAtlasCoord[15]"};
 
   static const StringArray g_ssaoSamplesStrCache = {
       "samples[0]",  "samples[1]",  "samples[2]",  "samples[3]",  "samples[4]",

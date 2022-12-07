@@ -14,33 +14,33 @@
 				2 : Point light
 				3 : Spot light
 			*/
-			int type[12];
-			vec3 pos[12];
-			vec3 dir[12];
-			vec3 color[12];
-			float intensity[12];
-			float radius[12];
-			float outAngle[12];
-			float innAngle[12];
+			int type[16];
+			vec3 pos[16];
+			vec3 dir[16];
+			vec3 color[16];
+			float intensity[16];
+			float radius[16];
+			float outAngle[16];
+			float innAngle[16];
 			int activeCount;
 
-			mat4 projectionViewMatrix[12];
-			float shadowMapCameraFar[12];
-			int castShadow[12];
-			int PCFSamples[12];
-			float PCFRadius[12];
-			float lightBleedingReduction[12];
-			int softShadows[12];
-			float shadowAtlasLayer[12];
-			float shadowAtlasResRatio[12];
-			vec2 shadowAtlasCoord[12]; // Between 0 and 1
-			float shadowResolution[12];
+			mat4 projectionViewMatrix[16];
+			float shadowMapCameraFar[16];
+			int castShadow[16];
+			int PCFSamples[16];
+			float PCFRadius[16];
+			float lightBleedingReduction[16];
+			int softShadows[16];
+			float shadowAtlasLayer[16];
+			float shadowAtlasResRatio[16];
+			vec2 shadowAtlasCoord[16]; // Between 0 and 1
+			float shadowResolution[16];
 		};
 		uniform _LightData LightData;
 
 		sampler2DArray shadowAtlas;
 
-		const int maxLights = 12;
+		const int maxLights = 16;
 
 		// Returns uv coordinates and layers such as: vec3(u,v,layer)
 		// https://kosmonautblog.wordpress.com/2017/03/25/shadow-filtering-for-pointlights/
