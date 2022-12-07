@@ -152,10 +152,11 @@ namespace ToolKit
       m_scenePass.m_params.shadowPassParams.Lights   = lights;
 
       // Scene Pass.
-      m_scenePass.m_params.renderPassParams.Scene         = app->GetCurrentScene();
+      m_scenePass.m_params.renderPassParams.Scene = app->GetCurrentScene();
       m_scenePass.m_params.renderPassParams.LightOverride = lights;
       m_scenePass.m_params.renderPassParams.Cam           = m_camera;
-      m_scenePass.m_params.renderPassParams.FrameBuffer   = viewport->m_framebuffer;
+      m_scenePass.m_params.renderPassParams.FrameBuffer =
+          viewport->m_framebuffer;
 
       // Gizmo Pass.
       m_gizmoPass.m_params.Viewport = viewport;
@@ -207,7 +208,7 @@ namespace ToolKit
       }
     }
     void EditorRenderer::CreateEditorLights(LightRawPtrArray& list,
-                                          Node** parentNode)
+                                            Node** parentNode)
     {
       *parentNode = new Node();
 

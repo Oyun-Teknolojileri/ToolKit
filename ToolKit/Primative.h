@@ -100,7 +100,6 @@ namespace ToolKit
     void ParameterConstructor(float radius);
 
    private:
-
    public:
     TKDeclareParam(float, Radius);
   };
@@ -149,7 +148,6 @@ namespace ToolKit
   };
   typedef std::shared_ptr<Arrow2d> Arrow2dPtr;
 
-
   class TK_API LineBatch final : public Entity
   {
    public:
@@ -169,6 +167,5 @@ namespace ToolKit
     Entity* CopyTo(Entity* copyTo) const override;
   };
   typedef std::shared_ptr<LineBatch> LineBatchPtr;
-
 
 } // namespace ToolKit

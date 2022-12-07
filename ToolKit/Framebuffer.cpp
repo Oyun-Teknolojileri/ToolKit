@@ -198,7 +198,8 @@ namespace ToolKit
       if (layer != -1)
       {
         assert(layer < rt->m_settings.Layers);
-        glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, rt->m_textureId, 0, layer);
+        glFramebufferTextureLayer(
+            GL_FRAMEBUFFER, attachment, rt->m_textureId, 0, layer);
       }
       else
       {

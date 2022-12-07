@@ -234,7 +234,7 @@ namespace ToolKit
 #ifdef TK_DEBUG
             GlDebugReportInit();
 #endif
-            
+
             // Init glew
             glewExperimental = true;
             GLenum err       = glewInit();
@@ -243,7 +243,7 @@ namespace ToolKit
               g_running = false;
               return;
             }
-            
+
             // Init Main
             // Override SceneManager.
             SafeDel(g_proxy->m_sceneManager);
