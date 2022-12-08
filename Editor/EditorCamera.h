@@ -15,6 +15,9 @@ namespace ToolKit
       virtual ~EditorCamera();
       Entity* Copy() const override;
       void GenerateFrustum();
+
+     private:
+      void CreateGizmo();
     };
 
   } // namespace Editor
