@@ -120,7 +120,6 @@
     <ClCompile Include="MaterialView.cpp" />
     <ClCompile Include="MeshView.cpp" />
     <ClCompile Include="OutlinerWindow.cpp" />
-    <ClCompile Include="Pass.cpp" />
     <ClCompile Include="PluginWindow.cpp" />
     <ClCompile Include="PopupWindows.cpp" />
     <ClCompile Include="PrefabView.cpp" />
@@ -183,7 +182,6 @@
     <ClInclude Include="ImGui\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="MaterialView.h" />
     <ClInclude Include="MeshView.h" />
-    <ClInclude Include="Pass.h" />
     <ClInclude Include="PluginWindow.h" />
     <ClInclude Include="PopupWindows.h" />
     <ClInclude Include="PrefabView.h" />
