@@ -968,6 +968,7 @@ namespace ToolKit
 
   void SceneRenderPass::PostRender()
   {
+    Pass::PostRender();
   }
 
 } // namespace ToolKit

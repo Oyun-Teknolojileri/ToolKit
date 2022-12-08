@@ -120,9 +120,6 @@
     <ClCompile Include="PopupWindows.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="Pass.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="EditorPass.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -247,9 +244,6 @@
     </ClInclude>
     <ClInclude Include="PopupWindows.h">
       <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Pass.h">
-      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="EditorPass.h">
       <Filter>Source</Filter>

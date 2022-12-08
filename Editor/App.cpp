@@ -173,9 +173,9 @@ namespace ToolKit
         wnd->DispatchSignals();
       }
 
-      ShowSimulationWindow(deltaTime);
       EditorScenePtr scene = GetCurrentScene();
       scene->Update(deltaTime);
+      ShowSimulationWindow(deltaTime);
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
