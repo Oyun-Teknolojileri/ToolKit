@@ -575,9 +575,15 @@ namespace ToolKit
     return layer + 1;
     */
 
+    // Create 2 arrays: dirandspotlights, point lights
+
+    // Sort dir and spot lights based on resolutions (greater to smaller)
+
     // Get dir and spot lights into the pack
 
-    // Get point light into another
+    // Sort point lights based on resolutions (greater to smaller)
+
+    // Get point light into another pack
     // Adjust point light parameters
     // Layer += maxDirAndSpotLightLayer (+1 if pack is not empty)
     // each layer takes 6 layers for point lights
