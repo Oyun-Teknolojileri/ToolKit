@@ -9,6 +9,7 @@
 #include "EntityView.h"
 #include "ImGui/imgui_stdlib.h"
 #include "MaterialView.h"
+#include "MeshView.h"
 #include "Prefab.h"
 #include "PrefabView.h"
 #include "TransformMod.h"
@@ -136,6 +137,12 @@ namespace ToolKit
               man->m_type == ResourceType::SkinMesh)
           {
             MeshPtr mesh = man->Create<Mesh>(file);
+
+            if (clicked)
+            {
+              g_app->GetPropInspector()->SetMeshView(mesh);
+            }
+
             info += "File: " + dirEnt.m_fileName + dirEnt.m_ext + "\n";
             info +=
                 "Vertex Count: " + std::to_string(mesh->m_vertexCount) + "\n";
@@ -196,6 +203,7 @@ namespace ToolKit
       light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
       light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
       light->SetCastShadowVal(true);
+      m_light = light;
 
       m_renderPass->m_params.renderPassParams.LightOverride = {light};
       m_renderPass->m_params.shadowPassParams.Lights =
@@ -205,7 +213,7 @@ namespace ToolKit
     PreviewViewport::~PreviewViewport()
     {
       SafeDel(m_renderPass);
-      SafeDel(m_lightNode);
+      SafeDel(m_light);
     }
 
     void PreviewViewport::Show()
@@ -259,6 +267,7 @@ namespace ToolKit
       m_views[(uint) ViewType::CustomData] = new CustomDataView();
       m_views[(uint) ViewType::Component]  = new ComponentView();
       m_views[(uint) ViewType::Material]   = new MaterialView();
+      m_views[(uint) ViewType::Mesh]       = new MeshView();
     }
 
     PropInspector::~PropInspector()
@@ -346,6 +355,13 @@ namespace ToolKit
       uint matViewIndx      = (uint) ViewType::Material;
       MaterialView* matView = (MaterialView*) m_views[matViewIndx];
       matView->SetMaterial(mat);
+    }
+    void PropInspector::SetMeshView(MeshPtr mesh)
+    {
+      m_activeView       = ViewType::Mesh;
+      uint meshViewIndx  = (uint) ViewType::Mesh;
+      MeshView* meshView = (MeshView*) m_views[meshViewIndx];
+      meshView->SetMesh(mesh);
     }
 
   } // namespace Editor

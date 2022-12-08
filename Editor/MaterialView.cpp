@@ -40,6 +40,10 @@ namespace ToolKit
 
       ResetCamera();
     }
+    MaterialView::~MaterialView()
+    {
+      SafeDel(m_viewport);
+    }
     void MaterialView::SetMaterial(MaterialPtr mat)
     {
       m_mat = mat;

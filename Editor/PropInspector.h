@@ -53,7 +53,7 @@ namespace ToolKit
 
      private:
       SceneRenderPass* m_renderPass;
-      Node* m_lightNode;
+      Light* m_light;
       float m_radius;
       bool m_isLocked;
     };
@@ -71,6 +71,7 @@ namespace ToolKit
       Type GetType() const override;
       void DispatchSignals() const override;
       void SetMaterialView(MaterialPtr mat);
+      void SetMeshView(MeshPtr mesh);
 
      public:
       ViewRawPtrArray m_views;
@@ -81,6 +82,7 @@ namespace ToolKit
         CustomData,
         Component,
         Material,
+        Mesh,
         ViewCount
       };
       ViewType m_activeView = ViewType::Entity;

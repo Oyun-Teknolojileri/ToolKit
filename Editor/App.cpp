@@ -1,6 +1,7 @@
+#include "App.h"
+
 #include "Action.h"
 #include "Anchor.h"
-#include "App.h"
 #include "Camera.h"
 #include "ConsoleWindow.h"
 #include "DirectionComponent.h"

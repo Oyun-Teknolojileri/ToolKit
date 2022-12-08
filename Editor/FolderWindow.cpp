@@ -387,11 +387,23 @@ namespace ToolKit
                                    ImVec2(0.0f, 0.0f),
                                    texCoords))
             {
-              ResourceManager* rm = dirEnt.GetManager();
-              if (rm && rm->m_type == ResourceType::Material)
+              if (ResourceManager* rm = dirEnt.GetManager())
               {
-                g_app->GetPropInspector()->SetMaterialView(
-                    rm->Create<Material>(dirEnt.GetFullPath()));
+                switch (rm->m_type)
+                {
+                case ResourceType::Material:
+                  g_app->GetPropInspector()->SetMaterialView(
+                      rm->Create<Material>(dirEnt.GetFullPath()));
+                  break;
+                case ResourceType::Mesh:
+                  g_app->GetPropInspector()->SetMeshView(
+                      rm->Create<Mesh>(dirEnt.GetFullPath()));
+                  break;
+                case ResourceType::SkinMesh:
+                  g_app->GetPropInspector()->SetMeshView(
+                      rm->Create<SkinMesh>(dirEnt.GetFullPath()));
+                  break;
+                }
               }
             }
 

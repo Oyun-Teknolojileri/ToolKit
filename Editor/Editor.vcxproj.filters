@@ -141,6 +141,9 @@
     <ClCompile Include="MaterialView.cpp">
       <Filter>UI\InspectorViews</Filter>
     </ClCompile>
+    <ClCompile Include="MeshView.cpp">
+      <Filter>UI\InspectorViews</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -264,6 +267,9 @@
       <Filter>UI\InspectorViews</Filter>
     </ClInclude>
     <ClInclude Include="MaterialView.h">
+      <Filter>UI\InspectorViews</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshView.h">
       <Filter>UI\InspectorViews</Filter>
     </ClInclude>
   </ItemGroup>
