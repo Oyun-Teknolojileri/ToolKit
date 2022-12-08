@@ -11,7 +11,7 @@ namespace ToolKit
      public:
       MeshView();
       ~MeshView();
-      
+
       void Show() override;
       void SetMesh(MeshPtr mesh);
       void ResetCamera();

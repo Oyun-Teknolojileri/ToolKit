@@ -267,7 +267,7 @@ namespace ToolKit
       m_views[(uint) ViewType::CustomData] = new CustomDataView();
       m_views[(uint) ViewType::Component]  = new ComponentView();
       m_views[(uint) ViewType::Material]   = new MaterialView();
-      m_views[(uint) ViewType::Mesh]   = new MeshView();
+      m_views[(uint) ViewType::Mesh]       = new MeshView();
     }
 
     PropInspector::~PropInspector()
@@ -358,9 +358,9 @@ namespace ToolKit
     }
     void PropInspector::SetMeshView(MeshPtr mesh)
     {
-      m_activeView          = ViewType::Mesh;
+      m_activeView       = ViewType::Mesh;
       uint meshViewIndx  = (uint) ViewType::Mesh;
-      MeshView* meshView    = (MeshView*) m_views[meshViewIndx];
+      MeshView* meshView = (MeshView*) m_views[meshViewIndx];
       meshView->SetMesh(mesh);
     }
 

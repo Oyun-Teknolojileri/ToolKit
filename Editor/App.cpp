@@ -1,6 +1,7 @@
+#include "App.h"
+
 #include "Action.h"
 #include "Anchor.h"
-#include "App.h"
 #include "Camera.h"
 #include "ConsoleWindow.h"
 #include "DirectionComponent.h"
@@ -50,8 +51,8 @@ namespace ToolKit
       m_renderer->m_windowSize.y = windowHeight;
       m_statusMsg                = "OK";
 
-      myEditorRenderer   = new EditorRenderer();
-      myGammaPass        = new GammaPass();
+      myEditorRenderer = new EditorRenderer();
+      myGammaPass      = new GammaPass();
 
       OverrideEntityConstructors();
 

@@ -1,8 +1,7 @@
 #include "MeshView.h"
 
 #include "App.h"
-
-#include <DirectionComponent.h>
+#include "DirectionComponent.h"
 
 namespace ToolKit
 {
@@ -82,7 +81,7 @@ namespace ToolKit
         aabb.UpdateBoundary(ntt->GetAABB(true).min);
         aabb.UpdateBoundary(ntt->GetAABB(true).max);
       }
-      m_viewport->GetCamera()->FocusToBoundingBox(aabb, -1.0f);
+      m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.0f);
     }
   } // namespace Editor
 } // namespace ToolKit

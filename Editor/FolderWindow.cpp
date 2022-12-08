@@ -387,8 +387,7 @@ namespace ToolKit
                                    ImVec2(0.0f, 0.0f),
                                    texCoords))
             {
-              ResourceManager* rm = dirEnt.GetManager();
-              if (rm)
+              if (ResourceManager* rm = dirEnt.GetManager())
               {
                 switch (rm->m_type)
                 {
