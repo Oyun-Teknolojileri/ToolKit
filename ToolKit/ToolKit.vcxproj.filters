@@ -132,9 +132,6 @@
     <ClCompile Include="Framebuffer.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Pass.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -267,9 +264,6 @@
       <Filter>Source\Entity</Filter>
     </ClInclude>
     <ClInclude Include="Framebuffer.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Pass.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
