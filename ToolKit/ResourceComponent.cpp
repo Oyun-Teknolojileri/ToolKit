@@ -116,18 +116,18 @@ namespace ToolKit
                 true);
 
     PositionOffset_Define(Vec3(-4.0f),
-               EnvironmentComponentCategory.Name,
-               EnvironmentComponentCategory.Priority,
-               true,
-               true,
-               {false, true, 0.0f, 100000.0f, 0.5f});
+                          EnvironmentComponentCategory.Name,
+                          EnvironmentComponentCategory.Priority,
+                          true,
+                          true,
+                          {false, true, 0.0f, 100000.0f, 0.5f});
 
     Size_Define(Vec3(8.0f),
-               EnvironmentComponentCategory.Name,
-               EnvironmentComponentCategory.Priority,
-               true,
-               true,
-               {false, true, 0.0f, 100000.0f, 0.5f});
+                EnvironmentComponentCategory.Name,
+                EnvironmentComponentCategory.Priority,
+                true,
+                true,
+                {false, true, 0.0f, 100000.0f, 0.5f});
 
     Illuminate_Define(true,
                       EnvironmentComponentCategory.Name,
@@ -198,8 +198,8 @@ namespace ToolKit
       static Vec3 pos;
       pos = m_entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
     }
-    aabb.min    = GetPositionOffsetVal() + pos;
-    aabb.max    = GetPositionOffsetVal() + GetSizeVal() + pos;
+    aabb.min = GetPositionOffsetVal() + pos;
+    aabb.max = GetPositionOffsetVal() + GetSizeVal() + pos;
     return aabb;
   }
 

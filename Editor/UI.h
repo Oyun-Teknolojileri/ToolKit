@@ -25,15 +25,15 @@ namespace ToolKit
      public:
       enum class Type
       {
-        Viewport,
-        Console,
-        InputPopup,
-        Browser,
-        Outliner,
-        Inspector,
-        MaterialInspector,
-        PluginWindow,
-        Viewport2d
+        Viewport     = 0,
+        Console      = 1,
+        InputPopup   = 2,
+        Browser      = 3,
+        Outliner     = 4,
+        Inspector    = 5,
+        UNUSEDSLOT_1 = 6,
+        PluginWindow = 7,
+        Viewport2d   = 8
       };
 
      public:
@@ -149,7 +149,7 @@ namespace ToolKit
         bool Overwrite        = false;
         StringArray Files;
         String SubDir;
-        float Scale            = 1.0f;
+        float Scale                  = 1.0f;
         class FolderView* ActiveView = nullptr;
       } ImportData;
 
@@ -206,6 +206,9 @@ namespace ToolKit
       static TexturePtr m_prefabIcn;
       static TexturePtr m_buildIcn;
       static TexturePtr m_addIcon;
+      static TexturePtr m_sphereIcon;
+      static TexturePtr m_cubeIcon;
+      static TexturePtr m_shaderBallIcon;
 
       struct AnchorPresetImages
       {

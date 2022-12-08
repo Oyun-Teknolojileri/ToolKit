@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EditorViewport.h"
 #include "FolderWindow.h"
 #include "UI.h"
 
@@ -8,23 +9,27 @@
 
 namespace ToolKit
 {
+
+  class SceneRenderPass;
   namespace Editor
   {
-    void DropZone(uint fallbackIcon,
-                  const String& file,
-                  std::function<void(const DirectoryEntry& entry)> dropAction,
-                  const String& dropName = "");
-
-    void DropSubZone(
-        const String& title,
-        uint fallbackIcon,
-        const String& file,
-        std::function<void(const DirectoryEntry& entry)> dropAction,
-        bool isEditable);
 
     class View
     {
      public:
+      static void DropZone(
+          uint fallbackIcon,
+          const String& file,
+          std::function<void(const DirectoryEntry& entry)> dropAction,
+          const String& dropName = "");
+      static void DropSubZone(
+          const String& title,
+          uint fallbackIcon,
+          const String& file,
+          std::function<void(const DirectoryEntry& entry)> dropAction,
+          bool isEditable);
+      static bool IsTextInputFinalized();
+
       View(const StringView viewName);
       virtual ~View()
       {
@@ -38,47 +43,19 @@ namespace ToolKit
       const StringView m_viewName;
     };
 
-    class PrefabView : public View
+    class PreviewViewport : public EditorViewport
     {
      public:
-      PrefabView();
-      virtual ~PrefabView();
-      virtual void Show();
+      PreviewViewport(uint width, uint height);
+      ~PreviewViewport();
+      void Show() override;
+      ScenePtr GetScene();
 
      private:
-      bool DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags);
-      void ShowNode(Entity* e);
-
-     private:
-      Entity* m_activeChildEntity = nullptr;
-    };
-
-    class EntityView : public View
-    {
-     public:
-      EntityView();
-      virtual ~EntityView();
-      virtual void Show();
-      virtual void ShowParameterBlock();
-
-     protected:
-      void ShowAnchorSettings();
-    };
-
-    class ComponentView : public View
-    {
-     public:
-      ComponentView();
-      virtual ~ComponentView();
-      virtual void Show();
-    };
-
-    class CustomDataView : public View
-    {
-     public:
-      CustomDataView();
-      virtual ~CustomDataView();
-      virtual void Show();
+      SceneRenderPass* m_renderPass;
+      Light* m_light;
+      float m_radius;
+      bool m_isLocked;
     };
 
     typedef View* ViewRawPtr;
@@ -93,10 +70,22 @@ namespace ToolKit
       void Show() override;
       Type GetType() const override;
       void DispatchSignals() const override;
+      void SetMaterialView(MaterialPtr mat);
+      void SetMeshView(MeshPtr mesh);
 
      public:
       ViewRawPtrArray m_views;
-      uint m_activeViewIndx = 0;
+      enum class ViewType
+      {
+        Entity,
+        Prefab,
+        CustomData,
+        Component,
+        Material,
+        Mesh,
+        ViewCount
+      };
+      ViewType m_activeView = ViewType::Entity;
     };
   } // namespace Editor
 } // namespace ToolKit

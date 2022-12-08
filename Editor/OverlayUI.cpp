@@ -4,12 +4,12 @@
 #include "ConsoleWindow.h"
 #include "EditorCamera.h"
 #include "EditorLight.h"
+#include "EditorPass.h"
 #include "EditorViewport.h"
 #include "EditorViewport2d.h"
 #include "Global.h"
 #include "Mod.h"
 #include "Sky.h"
-#include "EditorPass.h"
 
 #include "DebugNew.h"
 

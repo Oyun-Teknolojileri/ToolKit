@@ -15,7 +15,6 @@
 #include "Gizmo.h"
 #include "Global.h"
 #include "Grid.h"
-#include "MaterialInspector.h"
 #include "Mod.h"
 #include "Node.h"
 #include "OutlinerWindow.h"
@@ -39,7 +38,6 @@
 
 namespace ToolKit
 {
-  GammaPass* myGammaPass                   = nullptr;
   OutlinePass* myOutlineTechnique          = nullptr;
   Editor::EditorRenderer* myEditorRenderer = nullptr;
 
@@ -53,9 +51,7 @@ namespace ToolKit
       m_renderer->m_windowSize.y = windowHeight;
       m_statusMsg                = "OK";
 
-      myOutlineTechnique = new OutlinePass();
       myEditorRenderer   = new EditorRenderer();
-      myGammaPass        = new GammaPass();
 
       OverrideEntityConstructors();
 
@@ -67,7 +63,6 @@ namespace ToolKit
       Destroy();
       SafeDel(myEditorRenderer);
       SafeDel(myOutlineTechnique);
-      SafeDel(myGammaPass);
     }
 
     void App::Init()
@@ -162,6 +157,7 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
+      m_deltaTime = deltaTime;
       UI::BeginUI();
       UI::ShowUI();
 
@@ -201,19 +197,11 @@ namespace ToolKit
           myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
           myEditorRenderer->m_params.Viewport = viewport;
           myEditorRenderer->Render();
-
-          // TODO: Move to Editor Renderer.
-          EntityRawPtrArray selectedEntities;
-          scene->GetSelectedEntities(selectedEntities);
-          RenderSelected(viewport, selectedEntities);
         }
       }
 
       // Render UI.
       UI::EndUI();
-
-      // Apply gamma to back buffer
-      //myGammaPass->Render();
 
       m_renderer->m_totalFrameCount++;
     }
@@ -621,10 +609,6 @@ namespace ToolKit
         inspector->m_name        = g_propInspector;
         m_windows.push_back(inspector);
 
-        MaterialInspector* matInspect = new MaterialInspector();
-        matInspect->m_name            = g_matInspector;
-        m_windows.push_back(matInspect);
-
         PluginWindow* plugWindow = new PluginWindow();
         m_windows.push_back(plugWindow);
 
@@ -676,17 +660,11 @@ namespace ToolKit
           case Window::Type::Inspector:
             wnd = new PropInspector(wndNode);
             break;
-          case Window::Type::MaterialInspector:
-            wnd = new MaterialInspector(wndNode);
-            break;
           case Window::Type::PluginWindow:
             wnd = new PluginWindow(wndNode);
             break;
           case Window::Type::Viewport2d:
             wnd = new EditorViewport2d(wndNode);
-            break;
-          default:
-            assert(false);
             break;
           }
 
@@ -1149,43 +1127,6 @@ namespace ToolKit
       return GetWindow<PropInspector>(g_propInspector);
     }
 
-    MaterialInspector* App::GetMaterialInspector()
-    {
-      return GetWindow<MaterialInspector>(g_matInspector);
-    }
-
-    void App::RenderSelected(EditorViewport* viewport,
-                             EntityRawPtrArray selecteds)
-    {
-      if (selecteds.empty())
-      {
-        return;
-      }
-
-      auto RenderFn = [this, viewport](const EntityRawPtrArray& selection,
-                                       const Vec4& color) -> void {
-        if (selection.empty())
-        {
-          return;
-        }
-
-        myOutlineTechnique->m_params.Camera       = viewport->GetCamera();
-        myOutlineTechnique->m_params.FrameBuffer  = viewport->m_framebuffer;
-        myOutlineTechnique->m_params.OutlineColor = color;
-        myOutlineTechnique->m_params.DrawList     = selection;
-        myOutlineTechnique->Render();
-      };
-
-      Entity* primary = selecteds.back();
-
-      selecteds.pop_back();
-      RenderFn(selecteds, g_selectHighLightSecondaryColor);
-
-      selecteds.clear();
-      selecteds.push_back(primary);
-      RenderFn(selecteds, g_selectHighLightPrimaryColor);
-    }
-
     void App::HideGizmos()
     {
       for (Entity* ntt : GetCurrentScene()->GetEntities())
@@ -1426,6 +1367,10 @@ namespace ToolKit
                           10.0f,
                           4.0,
                           true); // Generate grid cells 10 x 10
+    }
+    float App::GetDeltaTime()
+    {
+      return m_deltaTime;
     }
 
     void DebugMessage(const String& msg)

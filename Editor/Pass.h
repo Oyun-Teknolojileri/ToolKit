@@ -137,6 +137,7 @@ namespace ToolKit
    private:
     MaterialPtr m_prevOverrideMaterial = nullptr;
     FramebufferPtr m_prevFrameBuffer   = nullptr;
+    MaterialPtr m_lastOverrideMat      = nullptr;
 
     FramebufferPtr m_shadowFramebuffer = nullptr;
     RenderTargetPtr m_shadowAtlas      = nullptr;
@@ -226,6 +227,7 @@ namespace ToolKit
 
   /**
    * Draws given entities' outlines to the FrameBuffer.
+   * TODO: It should be Technique instead of Pass
    */
   class TK_API OutlinePass : public Pass
   {
@@ -286,6 +288,7 @@ namespace ToolKit
 
   /**
    * Render scene with shadows.
+   * TODO: It should be Tecnhique instead of Pass.
    */
   class TK_API SceneRenderPass : public Pass
   {

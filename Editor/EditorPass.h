@@ -86,9 +86,11 @@ namespace ToolKit
       void PreRender();
       void PostRender();
       void SetLitMode(EditorLitMode mode);
+      static void CreateEditorLights(LightRawPtrArray& list, Node** parentNode);
 
      private:
       void InitRenderer();
+      void OutlineSelecteds();
 
      public:
       /**
@@ -123,8 +125,15 @@ namespace ToolKit
       SceneRenderPass m_scenePass;
       RenderPass m_editorPass;
       GizmoPass m_gizmoPass;
+      GammaPass m_gammaPass;
+      OutlinePass m_outlinePass;
       Camera* m_camera             = nullptr;
       EditorScenePtr m_editorScene = nullptr;
+
+      /**
+       * Selected entity list
+       */
+      EntityRawPtrArray m_selecteds;
     };
 
   } // namespace Editor
