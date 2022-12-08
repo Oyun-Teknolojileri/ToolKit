@@ -44,40 +44,35 @@ namespace ToolKit
     // Colors and materials.
     // Reversed gamma correction for all colors
     const String g_gridMaterialName("TK_EDITOR_GRID");
-    const Vec3 g_gridAxisBlue  = Vec3(0.027730861f, 0.258841545f, 0.802836066f);
-    const Vec3 g_gridAxisRed   = Vec3(0.773852188f, 0.042901787f, 0.093769075f);
-    const Vec3 g_gridAxisGreen = Vec3(0.254649852f, 0.665460455f, 0.002878828f);
-    const Vec3 g_gizmoRed      = Vec3(0.773852188f, 0.042901787f, 0.093769075f);
-    const Vec3 g_gizmoGreen    = Vec3(0.254649852f, 0.665460455f, 0.002878828f);
-    const Vec3 g_gizmoBlue     = Vec3(0.027730861f, 0.258841545f, 0.802836066f);
+    const Vec3 g_gridAxisBlue            = Vec3(0.196f, 0.541f, 0.905f);
+    const Vec3 g_gridAxisRed             = Vec3(0.89f, 0.239f, 0.341f);
+    const Vec3 g_gridAxisGreen           = Vec3(0.537f, 0.831f, 0.07f);
+    const Vec3 g_gizmoRed                = Vec3(0.89f, 0.239f, 0.341f);
+    const Vec3 g_gizmoGreen              = Vec3(0.537f, 0.831f, 0.07f);
+    const Vec3 g_gizmoBlue               = Vec3(0.196f, 0.541f, 0.905f);
     const Vec3 g_cameraGizmoColor        = Vec3(0.0f);
     const Vec3 g_lightGizmoColor         = Vec3(0.0f);
     const Vec3 g_environmentGizmoColor   = Vec3(0.0f);
-    const Vec3 g_gizmoLocked             = Vec3(0.070740278f);
+    const Vec3 g_gizmoLocked             = Vec3(0.3f);
     const std::vector<Vec3> g_gizmoColor = {
         g_gizmoRed, g_gizmoGreen, g_gizmoBlue};
     const Vec4 g_wndBgColor =
         Vec4(0.007024517f, 0.00959683f, 0.018735119f, 1.0f);
 
-    const Vec4 g_selectBoxWindowColor = Vec4(0.133208513f);
-    const Vec4 g_selectBoxBorderColor = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    const Vec4 g_selectHighLightPrimaryColor =
-        Vec4(1.0f, 0.358087029f, 0.016783175f, 1.0f);
+    const Vec4 g_selectBoxWindowColor        = Vec4(0.4f, 0.4f, 0.4f, 0.4f);
+    const Vec4 g_selectBoxBorderColor        = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    const Vec4 g_selectHighLightPrimaryColor = Vec4(1.0f, 0.627f, 0.156f, 1.0f);
     const Vec4 g_selectHighLightSecondaryColor =
-        Vec4(0.789237915f, 0.100552728f, 0.000479729f, 1.0f);
+        Vec4(0.898f, 0.352f, 0.031f, 1.0f);
 
     const Vec3 g_anchorColor = Vec3(1.f);
     const Vec4 g_anchorGuideLineColor =
         Vec4(0.032276204f, 0.681419299f, 0.681419299f, 0.456263458f);
 
-    const Vec4 g_consoleErrorColor =
-        Vec4(1.0f, 0.133208513f, 0.133208513f, 1.0f);
-    const Vec4 g_consoleCommandColor =
-        Vec4(1.0f, 0.6120656f, 0.325036963f, 1.0f);
-    const Vec4 g_consoleWarningColor =
-        Vec4(0.070740278f, 0.6120656f, 0.070740278f, 1.0f);
-    const Vec4 g_consoleMemoColor =
-        Vec4(0.456263458f, 0.456263458f, 0.456263458f, 1.0f);
+    const Vec4 g_consoleErrorColor   = Vec4(1.0f, 0.4f, 0.4f, 1.0f);
+    const Vec4 g_consoleCommandColor = Vec4(1.0f, 0.8f, 0.6f, 1.0f);
+    const Vec4 g_consoleWarningColor = Vec4(0.3f, 0.8f, 0.3f, 1.0f);
+    const Vec4 g_consoleMemoColor    = Vec4(0.7f, 0.7f, 0.7f, 1.0f);
 
     const Vec4 g_blueTintButtonColor       = Vec4(0.043f, 0.173f, 0.325f, 1.0f);
     const Vec4 g_blueTintButtonHoverColor  = Vec4(0.032f, 0.208f, 0.456f, 1.0f);

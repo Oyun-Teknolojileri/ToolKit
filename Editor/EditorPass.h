@@ -125,6 +125,7 @@ namespace ToolKit
       SceneRenderPass m_scenePass;
       RenderPass m_editorPass;
       GizmoPass m_gizmoPass;
+      GammaPass m_gammaPass;
       OutlinePass m_outlinePass;
       Camera* m_camera             = nullptr;
       EditorScenePtr m_editorScene = nullptr;

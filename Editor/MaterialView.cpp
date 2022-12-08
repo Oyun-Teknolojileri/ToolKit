@@ -106,7 +106,7 @@ namespace ToolKit
       if (ImGui::CollapsingHeader("Material Preview",
                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
-        ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - 300.0) / 2.0f);
+        ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - 300.0f) / 2.0f);
         updatePreviewScene();
         if (UI::ImageButtonDecorless(
                 UI::m_cameraIcon->m_textureId, Vec2(16.0f), false))

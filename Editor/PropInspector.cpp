@@ -184,7 +184,7 @@ namespace ToolKit
     //////////////////////////////////////////////////////////////////////////
 
     PreviewViewport::PreviewViewport(uint width, uint height)
-        : EditorViewport(width, height)
+        : EditorViewport((float) width, (float) height)
     {
       GetCamera()->m_node->Translate(Vec3(0, 0, 5));
       DirectionComponentPtr directionComp =
@@ -239,9 +239,9 @@ namespace ToolKit
         }
       }
       m_renderPass->Render();
+      FramebufferSettings fbs = m_framebuffer->GetSettings();
       ImGui::Image(Convert2ImGuiTexture(colorRT),
-                   ImVec2(m_framebuffer->GetSettings().width,
-                          m_framebuffer->GetSettings().height),
+                   ImVec2((float) fbs.width, (float) fbs.height),
                    ImVec2(0.0f, 0.0f),
                    ImVec2(1.0f, -1.0f));
     }
