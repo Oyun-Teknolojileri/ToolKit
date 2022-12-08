@@ -500,6 +500,7 @@ namespace ToolKit
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights)
   {
+    /*
     // TODO: Use bin packing algorithm
 
     const int size = Renderer::m_rhiSettings::g_shadowAtlasTextureSize;
@@ -572,6 +573,14 @@ namespace ToolKit
     }
 
     return layer + 1;
+    */
+
+    // Get dir and spot lights into the pack
+
+    // Get point light into another
+    // Adjust point light parameters
+    // Layer += maxDirAndSpotLightLayer (+1 if pack is not empty)
+    // each layer takes 6 layers for point lights
   }
 
   void ShadowPass::InitShadowAtlas()
