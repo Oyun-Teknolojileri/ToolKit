@@ -777,7 +777,7 @@ namespace ToolKit
 
           inputWnd->m_taskFn = [views, inputWnd](const String& val) {
    
-            if (!StringIncludes(val, inputWnd->m_illegalChars))
+            if (!StringIncludes(val, inputWnd->GetIllegalChars()))
             {
               String file = ConcatPaths({views[0]->m_path, val});
               std::filesystem::create_directories(file);

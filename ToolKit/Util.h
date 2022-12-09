@@ -95,7 +95,7 @@ namespace ToolKit
   TK_API void ReplaceCharInPlace(String& subject,
                                  const char search,
                                  const char replace);
-  
+
   // Check if given string includes one of given characters.
   TK_API bool StringIncludes(const String& s, std::vector<char> charSet);
 

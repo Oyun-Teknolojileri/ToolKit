@@ -18,6 +18,10 @@ namespace ToolKit
       {
         return Window::Type::InputPopup;
       }
+      std::vector<char> GetIllegalChars()
+      {
+        return m_illegalChars;
+      }
 
      public:
       std::function<void(const String& val)> m_taskFn;
@@ -25,10 +29,10 @@ namespace ToolKit
       String m_inputLabel;
       String m_hint;
 
-      std::vector<char> m_illegalChars = {
-        '/', ':', '*', '?', '"', '<', '>', '|', '\\'};
      private:
       bool m_showCancel;
+      const std::vector<char> m_illegalChars = {
+          '/', ':', '*', '?', '"', '<', '>', '|', '\\'};
     };
 
     class YesNoWindow : public Window
