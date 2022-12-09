@@ -775,15 +775,23 @@ namespace ToolKit
           inputWnd->m_inputLabel = "Name";
           inputWnd->m_hint       = "Directory name...";
 
-          inputWnd->m_taskFn = [views](const String& val) {
-            String file = ConcatPaths({views[0]->m_path, val});
-            std::filesystem::create_directories(file);
-            for (FolderView* view : views)
+          inputWnd->m_taskFn = [views, inputWnd](const String& val) {
+   
+            if (!StringIncludes(val, inputWnd->m_illegalChars))
             {
-              view->m_dirty = true;
+              String file = ConcatPaths({views[0]->m_path, val});
+              std::filesystem::create_directories(file);
+              for (FolderView* view : views)
+              {
+                view->m_dirty = true;
+              }
+            }
+            else
+            {
+              String msg = "Illegal characters are not accepted.";
+              GetLogger()->WriteConsole(LogType::Error, msg.c_str());
             }
           };
-
           ImGui::CloseCurrentPopup();
         }
       };

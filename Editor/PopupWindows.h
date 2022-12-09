@@ -25,6 +25,8 @@ namespace ToolKit
       String m_inputLabel;
       String m_hint;
 
+      std::vector<char> m_illegalChars = {
+        '/', ':', '*', '?', '"', '<', '>', '|', '\\'};
      private:
       bool m_showCancel;
     };
