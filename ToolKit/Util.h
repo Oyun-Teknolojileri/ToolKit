@@ -96,9 +96,6 @@ namespace ToolKit
                                  const char search,
                                  const char replace);
 
-  // Check if given string includes one of given characters.
-  TK_API bool StringIncludes(const String& s, std::vector<char> charSet);
-
   /**
    * Transform ascii chars to lower. Intended usage is extention comparison.
    */

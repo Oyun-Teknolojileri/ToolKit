@@ -1,5 +1,5 @@
 #include "PopupWindows.h"
-
+#include "App.h"
 #include "ImGui/imgui_stdlib.h"
 
 #include <algorithm>
@@ -41,10 +41,17 @@ namespace ToolKit
           ImGui::SetKeyboardFocusHere();
         }
 
-        ImGui::InputTextWithHint(m_inputLabel.c_str(),
-                                 m_hint.c_str(),
-                                 &m_inputVal,
-                                 ImGuiInputTextFlags_AutoSelectAll);
+        ImGui::InputTextWithHint(
+            m_inputLabel.c_str(),
+            m_hint.c_str(),
+            &m_inputVal,
+            ImGuiInputTextFlags_AutoSelectAll |
+                ImGuiInputTextFlags_CallbackCharFilter,
+            [](ImGuiInputTextCallbackData* data) -> int {
+              return (reinterpret_cast<StringInputWindow*>(data->UserData))
+                  ->FilterChars(data);
+            },
+            reinterpret_cast<void*>(this));
 
         // Center buttons.
         ImGui::BeginTable("##FilterZoom",
@@ -86,6 +93,19 @@ namespace ToolKit
         ImGui::EndPopup();
       }
     }
+
+    int StringInputWindow::FilterChars(ImGuiInputTextCallbackData* data)
+    {
+      if (std::find(m_illegalChars.begin(),
+                    m_illegalChars.end(),
+                    (char) data->EventChar) != m_illegalChars.end() )
+      {
+        g_app->m_statusMsg = "Failed.";
+        return 1;
+      }
+      return 0;
+    }
+
 
     YesNoWindow::YesNoWindow(const String& name, const String& msg)
     {

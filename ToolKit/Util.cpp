@@ -711,18 +711,6 @@ namespace ToolKit
     }
   }
 
-  bool StringIncludes(const String& s, std::vector<char> charSet)
-  {
-    for (char ch : charSet)
-    {
-      if (s.find(ch) != std::string::npos)
-      {
-        return true;
-      }
-    }
-    return false;
-  }
-
   String ToLower(const String& str)
   {
     String lwr = str;
