@@ -76,9 +76,6 @@ namespace ToolKit
 
   Vec2 BinPack2D::Shelf::Place(int size)
   {
-    // TODO remove assert, only debug purpose
-    assert(size <= AvailableWidth);
-
     Vec2 rectCoord = Coord;
     Coord.x += size;
     AvailableWidth -= size;
@@ -93,9 +90,6 @@ namespace ToolKit
 
   void BinPack2D::Layer::CreateShelf(int size, int atlasSize)
   {
-    // TODO remove assert, only debug purpose
-    assert(size <= MaxHeight - CurrentHeight);
-
     Shelves.push_back({Vec2(0.0f, CurrentHeight), size, atlasSize});
     CurrentHeight += size;
   }
