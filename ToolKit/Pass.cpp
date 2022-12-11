@@ -536,7 +536,7 @@ namespace ToolKit
       resolutions.push_back((int) light->GetShadowResVal());
     }
 
-    std::vector<BinPack2D::PackedRect> rects = packer.Pack(
+    std::vector<BinPack2D::PackedRect> rects = m_packer.Pack(
         resolutions, Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
 
     for (int i = 0; i < rects.size(); ++i)
@@ -556,7 +556,7 @@ namespace ToolKit
       resolutions.push_back((int) light->GetShadowResVal());
     }
 
-    rects = packer.Pack(resolutions,
+    rects = m_packer.Pack(resolutions,
                         Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
 
     for (int i = 0; i < rects.size(); ++i)

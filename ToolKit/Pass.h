@@ -150,7 +150,7 @@ namespace ToolKit
     Quaternion m_cubeMapRotations[6];
     Vec3 m_cubeMapScales[6];
 
-    BinPack2D packer;
+    BinPack2D m_packer;
   };
 
   typedef std::shared_ptr<ShadowPass> ShadowPassPtr;
