@@ -22,7 +22,7 @@ namespace ToolKit
     {
       Vec2 Coord = Vec2(-1.0f);
       int Height = -1;
-      int CurrentWidth = -1;
+      int AvailableWidth = -1;
 
       bool Fits(int size);
       Vec2 Place(int size);
@@ -35,7 +35,7 @@ namespace ToolKit
       int MaxHeight = -1;
 
       bool Fits(int size);
-      void CreateShelf(int size);
+      void CreateShelf(int size, int atlasSize);
     };
 
     std::vector<PackedRect> Pack(std::vector<int> squares, int atlasSize);

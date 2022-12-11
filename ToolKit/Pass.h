@@ -3,6 +3,7 @@
 #include "Framebuffer.h"
 #include "GeometryTypes.h"
 #include "Primative.h"
+#include "BinPack2D.h"
 
 namespace ToolKit
 {
@@ -148,6 +149,8 @@ namespace ToolKit
     EntityRawPtrArray m_drawList;
     Quaternion m_cubeMapRotations[6];
     Vec3 m_cubeMapScales[6];
+
+    BinPack2D packer;
   };
 
   typedef std::shared_ptr<ShadowPass> ShadowPassPtr;

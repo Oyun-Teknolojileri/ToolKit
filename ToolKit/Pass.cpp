@@ -575,18 +575,80 @@ namespace ToolKit
     return layer + 1;
     */
 
-    // Create 2 arrays: dirandspotlights, point lights
+    int layerCount                           = -1;
+    int lastLayerOfDirAndSpotLightShadowsUse = -1;
 
-    // Sort dir and spot lights based on resolutions (greater to smaller)
+    // Create 2 arrays: dirandspotlights, point lights
+    LightRawPtrArray dirAndSpotLights = lights;
+    LightRawPtrArray pointLights;
+    LightRawPtrArray::iterator it = dirAndSpotLights.begin();
+    while (it != dirAndSpotLights.end())
+    {
+      if ((*it)->GetType() == EntityType::Entity_PointLight)
+      {
+        pointLights.push_back(*it);
+        it = dirAndSpotLights.erase(it);
+      }
+      else
+      {
+        ++it;
+      }
+    }
+
+    // Sort lights based on resolutions (greater to smaller)
+    auto sortByResFn = [](const Light* l1, const Light* l2) -> bool {
+      return l1->GetShadowResVal() > l2->GetShadowResVal();
+    };
+
+    std::sort(dirAndSpotLights.begin(), dirAndSpotLights.end(), sortByResFn);
+    std::sort(pointLights.begin(), pointLights.end(), sortByResFn);
 
     // Get dir and spot lights into the pack
+    std::vector<int> resolutions;
+    resolutions.reserve(dirAndSpotLights.size());
+    for (Light* light : dirAndSpotLights)
+    {
+      resolutions.push_back((int) light->GetShadowResVal());
+    }
 
-    // Sort point lights based on resolutions (greater to smaller)
+    std::vector<BinPack2D::PackedRect> rects = packer.Pack(
+        resolutions, Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+
+    for (int i = 0; i < rects.size(); ++i)
+    {
+      dirAndSpotLights[i]->m_shadowAtlasCoord = rects[i].Coord;
+      dirAndSpotLights[i]->m_shadowAtlasLayer = rects[i].ArrayIndex;
+
+      lastLayerOfDirAndSpotLightShadowsUse = rects[i].ArrayIndex;
+      layerCount                           = std::max(rects[i].ArrayIndex, layerCount);
+    }
 
     // Get point light into another pack
+    resolutions.clear();
+    resolutions.reserve(pointLights.size());
+    for (Light* light : pointLights)
+    {
+      resolutions.push_back((int) light->GetShadowResVal());
+    }
+
+    rects = packer.Pack(resolutions,
+                        Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+
+    for (int i = 0; i < rects.size(); ++i)
+    {
+      pointLights[i]->m_shadowAtlasCoord = rects[i].Coord;
+      pointLights[i]->m_shadowAtlasLayer = rects[i].ArrayIndex;
+    }
+
     // Adjust point light parameters
-    // Layer += maxDirAndSpotLightLayer (+1 if pack is not empty)
-    // each layer takes 6 layers for point lights
+    for (Light* light : pointLights)
+    {
+      light->m_shadowAtlasLayer += lastLayerOfDirAndSpotLightShadowsUse + 1;
+      light->m_shadowAtlasLayer *= 6;
+      layerCount = std::max(light->m_shadowAtlasLayer + 5, layerCount);
+    }
+
+    return layerCount + 1;
   }
 
   void ShadowPass::InitShadowAtlas()

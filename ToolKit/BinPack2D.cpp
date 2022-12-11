@@ -45,7 +45,7 @@ namespace ToolKit
         {
           if (layer.Fits(size))
           {
-            layer.CreateShelf(size);
+            layer.CreateShelf(size, atlasSize);
             Vec2 coord = layer.Shelves.back().Place(size);
             packed[i]  = {coord, layerIndex};
 
@@ -59,7 +59,7 @@ namespace ToolKit
         if (!foundLayer)
         {
           layers.push_back({{}, 0, atlasSize});
-          layers.back().CreateShelf(size);
+          layers.back().CreateShelf(size, atlasSize);
           Vec2 coord = layers.back().Shelves.back().Place(size);
           packed[i]  = {coord, (int) layers.size() - 1};
         }
@@ -71,18 +71,18 @@ namespace ToolKit
 
   bool BinPack2D::Shelf::Fits(int size)
   {
-    return size <= CurrentWidth;
+    return size <= AvailableWidth;
   }
 
   Vec2 BinPack2D::Shelf::Place(int size)
   {
     // TODO remove assert, only debug purpose
-    assert(size <= CurrentWidth);
+    assert(size <= AvailableWidth);
 
     Vec2 rectCoord = Coord;
     Coord.x += size;
-    CurrentWidth -= size;
-    
+    AvailableWidth -= size;
+
     return rectCoord;
   }
 
@@ -91,12 +91,12 @@ namespace ToolKit
     return size <= MaxHeight - CurrentHeight;
   }
 
-  void BinPack2D::Layer::CreateShelf(int size)
+  void BinPack2D::Layer::CreateShelf(int size, int atlasSize)
   {
     // TODO remove assert, only debug purpose
     assert(size <= MaxHeight - CurrentHeight);
 
-    Shelves.push_back({Vec2(CurrentHeight, 0.0f), size, MaxHeight});
+    Shelves.push_back({Vec2(0.0f, CurrentHeight), size, atlasSize});
     CurrentHeight += size;
   }
 } // namespace ToolKit
