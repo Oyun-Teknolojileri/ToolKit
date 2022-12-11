@@ -8,7 +8,8 @@ namespace ToolKit
   enum class BlendFunction
   {
     NONE,
-    SRC_ALPHA_ONE_MINUS_SRC_ALPHA
+    SRC_ALPHA_ONE_MINUS_SRC_ALPHA,
+    ALPHA_MASK
   };
 
   enum class DrawType
@@ -44,6 +45,7 @@ namespace ToolKit
     CullingType cullMode        = CullingType::Back;
     bool depthTestEnabled       = true;
     BlendFunction blendFunction = BlendFunction::NONE;
+    float alphaMaskTreshold     = 0.001f;
     DrawType drawType           = DrawType::Triangle;
     uint diffuseTexture         = 0;
     bool diffuseTextureInUse    = false;

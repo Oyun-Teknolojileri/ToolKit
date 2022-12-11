@@ -106,7 +106,8 @@ namespace ToolKit
       if (ImGui::CollapsingHeader("Material Preview",
                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
-        ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - 300.0f) / 2.0f);
+        ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - 300.0f) /
+                             2.0f);
         updatePreviewScene();
         if (UI::ImageButtonDecorless(
                 UI::m_cameraIcon->m_textureId, Vec2(16.0f), false))
@@ -223,7 +224,8 @@ namespace ToolKit
 
         int blendMode =
             static_cast<int>(m_mat->GetRenderState()->blendFunction);
-        if (ImGui::Combo("Blend mode", &blendMode, "None\0Alpha Blending"))
+        if (ImGui::Combo(
+                "Blend mode", &blendMode, "None\0Alpha Blending\0Alpha Mask"))
         {
           m_mat->GetRenderState()->blendFunction = (BlendFunction) blendMode;
           m_mat->m_dirty                         = true;
@@ -287,6 +289,21 @@ namespace ToolKit
         {
           m_mat->GetRenderState()->AOInUse = AOInUse;
           m_mat->m_dirty                   = true;
+        }
+
+        if (m_mat->GetRenderState()->blendFunction == BlendFunction::ALPHA_MASK)
+        {
+          float alphaMaskTreshold = m_mat->GetRenderState()->alphaMaskTreshold;
+          if (ImGui::DragFloat("Alpha Mask Treshold",
+                               &alphaMaskTreshold,
+                               0.001f,
+                               0.0f,
+                               1.0f,
+                               "%.3f"))
+          {
+            m_mat->GetRenderState()->alphaMaskTreshold = alphaMaskTreshold;
+            m_mat->m_dirty                             = true;
+          }
         }
       }
     }

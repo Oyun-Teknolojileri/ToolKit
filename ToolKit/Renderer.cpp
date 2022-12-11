@@ -587,17 +587,21 @@ namespace ToolKit
     {
       switch (state->blendFunction)
       {
-      case BlendFunction::NONE:
-        glDisable(GL_BLEND);
-        break;
-      case BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA:
+      case BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA: {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        break;
+      }
+      break;
+      default: {
+        glDisable(GL_BLEND);
+      }
+      break;
       }
 
       m_renderState.blendFunction = state->blendFunction;
     }
+
+    m_renderState.alphaMaskTreshold = state->alphaMaskTreshold;
 
     if (state->diffuseTextureInUse)
     {
@@ -1655,8 +1659,7 @@ namespace ToolKit
             break;
 
           Vec4 color = Vec4(m_mat->m_color, m_mat->m_alpha);
-          if (m_mat->GetRenderState()->blendFunction !=
-              BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
+          if (m_mat->GetRenderState()->blendFunction == BlendFunction::NONE)
           {
             color.a = 1.0f;
           }
@@ -1745,6 +1748,17 @@ namespace ToolKit
         case Uniform::LIGHTING_ONLY: {
           GLint loc = glGetUniformLocation(program->m_handle, "LightingOnly");
           glUniform1i(loc, m_renderOnlyLighting ? 1 : 0);
+        }
+        break;
+        case Uniform::USE_ALPHA_MASK: {
+          GLint loc = glGetUniformLocation(program->m_handle, "useAlphaMask");
+          glUniform1i(loc,
+                      m_renderState.blendFunction == BlendFunction::ALPHA_MASK);
+        }
+        break;
+        case Uniform::ALPHA_MASK: {
+          GLint loc = glGetUniformLocation(program->m_handle, "alphaMask");
+          glUniform1f(loc, m_renderState.alphaMaskTreshold);
         }
         break;
         default:

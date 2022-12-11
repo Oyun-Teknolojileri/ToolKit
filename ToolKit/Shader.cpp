@@ -9,7 +9,6 @@
 
 #include <unordered_set>
 #include <vector>
-#include <unordered_set>
 
 #include "DebugNew.h"
 
@@ -205,6 +204,12 @@ namespace ToolKit
       case Uniform::LIGHTING_ONLY:
         name = "LightingOnly";
         break;
+      case Uniform::USE_ALPHA_MASK:
+        name = "useAlphaMask";
+        break;
+      case Uniform::ALPHA_MASK:
+        name = "alphaMask";
+        break;
       default:
         assert(false && "unknown uniform");
         break;
@@ -332,6 +337,14 @@ namespace ToolKit
         else if (strcmp("LightingOnly", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::LIGHTING_ONLY);
+        }
+        else if (strcmp("useAlphaMask", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::USE_ALPHA_MASK);
+        }
+        else if (strcmp("alphaMask", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::ALPHA_MASK);
         }
         else
         {

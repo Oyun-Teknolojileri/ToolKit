@@ -37,7 +37,9 @@ namespace ToolKit
     COLOR_ALPHA,
     USE_AO,
     IBL_ROTATION,
-    LIGHTING_ONLY
+    LIGHTING_ONLY,
+    USE_ALPHA_MASK,
+    ALPHA_MASK
   };
 
   class TK_API Shader : public Resource

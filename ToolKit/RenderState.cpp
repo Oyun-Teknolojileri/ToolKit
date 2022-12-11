@@ -32,6 +32,11 @@ namespace ToolKit
               "blendFunction",
               std::to_string(static_cast<int>(blendFunction)));
 
+    WriteAttr(container,
+              doc,
+              "alphaMaskTreshold",
+              std::to_string((float) alphaMaskTreshold));
+
     WriteAttr(
         container, doc, "drawType", std::to_string(static_cast<int>(drawType)));
 
@@ -61,6 +66,10 @@ namespace ToolKit
 
       ReadAttr(
           container, "blendFunction", *reinterpret_cast<int*>(&blendFunction));
+
+      ReadAttr(container,
+               "alphaMaskTreshold",
+               *reinterpret_cast<float*>(&alphaMaskTreshold));
 
       ReadAttr(container, "drawType", *reinterpret_cast<int*>(&drawType));
 
