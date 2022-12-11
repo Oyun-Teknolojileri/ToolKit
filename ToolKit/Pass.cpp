@@ -939,9 +939,7 @@ namespace ToolKit
   SceneRenderPass::SceneRenderPass(const SceneRenderPassParams& params)
       : SceneRenderPass()
   {
-    m_params               = params;
-    m_shadowPass->m_params = params.shadowPassParams;
-    m_renderPass->m_params = params.renderPassParams;
+    m_params = params;
   }
 
   void SceneRenderPass::Render()
@@ -957,7 +955,13 @@ namespace ToolKit
 
     // Render pass
     m_renderPass->Render();
+    /*
+    EntityRawPtrArray translucentDrawList;
+    SeperateTranslucentEntities(m_drawList, translucentDrawList);
 
+    RenderOpaque(m_drawList, m_camera, m_contributingLights);
+    RenderTranslucent(translucentDrawList, m_camera, m_contributingLights);
+    */
     renderer->SetShadowAtlas(nullptr);
 
     PostRender();
@@ -967,13 +971,59 @@ namespace ToolKit
   {
     Pass::PreRender();
 
-    m_shadowPass->m_params = m_params.shadowPassParams;
-    m_renderPass->m_params = m_params.renderPassParams;
+    SetPassParams();
   }
 
   void SceneRenderPass::PostRender()
   {
     Pass::PostRender();
+  }
+
+  void SceneRenderPass::SetPassParams()
+  {
+    m_shadowPass->m_params.Entities = m_params.Scene->GetEntities();
+    m_shadowPass->m_params.Lights   = m_params.Lights;
+
+    m_renderPass->m_params.Scene         = m_params.Scene;
+    m_renderPass->m_params.LightOverride = m_params.Lights;
+    m_renderPass->m_params.Cam           = m_params.Cam;
+    m_renderPass->m_params.FrameBuffer   = m_params.MainFramebuffer;
+  }
+
+  GBufferPass::GBufferPass()
+  {
+  }
+
+  GBufferPass::GBufferPass(const GBufferPassParams& params)
+  {
+    m_params = params;
+  }
+
+  void GBufferPass::InitGBuffers()
+  {
+    if (m_initialized)
+    {
+      return;
+    }
+    // TODO init
+    m_initialized = true;
+  }
+
+  void GBufferPass::PreRender()
+  {
+    Pass::PreRender();
+
+    GetRenderer()->SetFramebuffer(m_params.GBufferFramebuffer,
+                                  m_params.ClearFramebuffer);
+  }
+
+  void GBufferPass::PostRender()
+  {
+    Pass::PostRender();
+  }
+
+  void GBufferPass::Render()
+  {
   }
 
 } // namespace ToolKit

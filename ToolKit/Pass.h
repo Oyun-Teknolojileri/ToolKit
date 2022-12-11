@@ -1,9 +1,9 @@
 #pragma once
 
+#include "BinPack2D.h"
 #include "Framebuffer.h"
 #include "GeometryTypes.h"
 #include "Primative.h"
-#include "BinPack2D.h"
 
 namespace ToolKit
 {
@@ -285,8 +285,11 @@ namespace ToolKit
 
   struct SceneRenderPassParams
   {
-    RenderPassParams renderPassParams;
-    ShadowPassParams shadowPassParams;
+    ScenePtr Scene = nullptr;
+    LightRawPtrArray Lights;
+    Camera* Cam = nullptr;
+    FramebufferPtr MainFramebuffer = nullptr;
+    bool ClearFramebuffer = true;
   };
 
   /**
@@ -303,11 +306,44 @@ namespace ToolKit
     void PreRender() override;
     void PostRender() override;
 
+    private:
+    void SetPassParams();
+
    public:
     SceneRenderPassParams m_params;
 
     ShadowPassPtr m_shadowPass = nullptr;
     RenderPassPtr m_renderPass = nullptr;
+  };
+
+  struct GBufferPassParams
+  {
+    FramebufferPtr GBufferFramebuffer = nullptr;
+    bool ClearFramebuffer             = true;
+    int Width                         = 1024;
+    int Height                        = 1024;
+  };
+
+  class TK_API GBufferPass : public Pass
+  {
+   public:
+    GBufferPass();
+    explicit GBufferPass(const GBufferPassParams& params);
+
+    void PreRender() override;
+    void PostRender() override;
+    void Render() override;
+    void InitGBuffers();
+
+   public:
+    RenderTargetPtr m_gPosRt    = nullptr;
+    RenderTargetPtr m_gNormalRt = nullptr;
+    RenderTargetPtr m_gColorRt  = nullptr;
+
+    GBufferPassParams m_params;
+
+   private:
+    bool m_initialized = false;
   };
 
 } // namespace ToolKit

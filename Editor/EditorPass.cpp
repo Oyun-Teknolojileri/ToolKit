@@ -151,16 +151,11 @@ namespace ToolKit
       m_editorPass.m_params.Scene            = m_editorScene;
       m_editorPass.m_params.ClearFrameBuffer = false;
 
-      // Shadow pass.
-      m_scenePass.m_params.shadowPassParams.Entities = scene->GetEntities();
-      m_scenePass.m_params.shadowPassParams.Lights   = lights;
-
-      // Scene Pass.
-      m_scenePass.m_params.renderPassParams.Scene = app->GetCurrentScene();
-      m_scenePass.m_params.renderPassParams.LightOverride = lights;
-      m_scenePass.m_params.renderPassParams.Cam           = m_camera;
-      m_scenePass.m_params.renderPassParams.FrameBuffer =
-          viewport->m_framebuffer;
+      // Scene pass.
+      m_scenePass.m_params.Cam = m_camera;
+      m_scenePass.m_params.Lights = lights;
+      m_scenePass.m_params.MainFramebuffer = viewport->m_framebuffer;
+      m_scenePass.m_params.Scene           = scene;
 
       // Gamma Pass.
       m_gammaPass.m_params.FrameBuffer = viewport->m_framebuffer;
