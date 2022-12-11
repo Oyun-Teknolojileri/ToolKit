@@ -100,7 +100,7 @@ namespace ToolKit
                     m_illegalChars.end(),
                     (char) data->EventChar) != m_illegalChars.end() )
       {
-        g_app->m_statusMsg = "Failed.";
+        g_app->m_statusMsg = "Invalid Character Entered.";
         return 1;
       }
       return 0;
