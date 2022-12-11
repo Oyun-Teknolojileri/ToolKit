@@ -17,19 +17,14 @@ namespace ToolKit
 
     EditorCamera::EditorCamera()
     {
-      AddComponent(new MeshComponent());
-      GetMeshComponent()->SetCastShadowVal(false);
-      GenerateFrustum();
+      CreateGizmo();
     }
 
     EditorCamera::EditorCamera(const EditorCamera* cam)
     {
       cam->CopyTo(this);
 
-      // Recreate frustum.
-      AddComponent(new MeshComponent());
-      GetMeshComponent()->SetCastShadowVal(false);
-      GenerateFrustum();
+      CreateGizmo();
     }
 
     EditorCamera::~EditorCamera()
@@ -39,7 +34,9 @@ namespace ToolKit
     Entity* EditorCamera::Copy() const
     {
       EditorCamera* cpy = new EditorCamera();
-      return Camera::CopyTo(cpy);
+      Camera::CopyTo(cpy);
+      cpy->CreateGizmo();
+      return cpy;
     }
 
     void EditorCamera::GenerateFrustum()
@@ -103,6 +100,14 @@ namespace ToolKit
 
       // Do not expose camera mesh component
       camMeshComp->ParamMesh().m_exposed = false;
+    }
+
+    void EditorCamera::CreateGizmo()
+    {
+      // Recreate frustum.
+      AddComponent(new MeshComponent());
+      GetMeshComponent()->SetCastShadowVal(false);
+      GenerateFrustum();
     }
 
   } // namespace Editor

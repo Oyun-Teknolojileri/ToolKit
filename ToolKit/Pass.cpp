@@ -878,6 +878,8 @@ namespace ToolKit
 
   void GammaPass::PreRender()
   {
+    Pass::PreRender();
+
     Renderer* renderer = GetRenderer();
 
     // Initiate copy buffer.
@@ -925,6 +927,7 @@ namespace ToolKit
 
   void GammaPass::PostRender()
   {
+    Pass::PostRender();
   }
 
   SceneRenderPass::SceneRenderPass()
