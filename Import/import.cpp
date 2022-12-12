@@ -833,7 +833,7 @@ namespace ToolKit
     string path, name;
     Decompose(filePath, path, name);
 
-    string fullPath = path + name + ".scene";
+    string fullPath = path + name + SCENE;
     AddToUsedFiles(fullPath);
     Scene* tScene = new Scene;
 
@@ -922,6 +922,11 @@ namespace ToolKit
       {
         g_skeletonMap[bone->mName.C_Str()].bone = bone;
       }
+    }
+
+    if (bones.size() == 0)
+    {
+      return;
     }
 
     // Assign indices

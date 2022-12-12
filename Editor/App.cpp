@@ -51,7 +51,7 @@ namespace ToolKit
       m_renderer->m_windowSize.y = windowHeight;
       m_statusMsg                = "OK";
 
-      myEditorRenderer   = new EditorRenderer();
+      myEditorRenderer = new EditorRenderer();
 
       OverrideEntityConstructors();
 
@@ -820,7 +820,7 @@ namespace ToolKit
               String fullPath;
               if (ext == SCENE)
               {
-                fullPath = ScenePath(line);
+                fullPath = PrefabPath(line);
               }
 
               if (ext == MESH || ext == SKINMESH)
@@ -939,6 +939,13 @@ namespace ToolKit
             UI::ImportData.Files.push_back(fileName.data());
             UI::ImportData.ShowImportWindow = true;
           }
+        }
+        if (!UI::ImportData.ShowImportWindow)
+        {
+          g_app->m_statusMsg = "Files should be dropped onto Asset Browser";
+          GetLogger()->WriteConsole(LogType::Warning,
+                                    "File isn't imported because it's not "
+                                    "dropped onto Asset Browser");
         }
       });
     }
