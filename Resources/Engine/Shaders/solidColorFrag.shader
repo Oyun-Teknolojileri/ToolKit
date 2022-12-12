@@ -7,7 +7,7 @@
 	<uniform name = "CamData" />
 	<uniform name = "Color" />
 	<uniform name = "useAlphaMask" />
-	<uniform name = "alphaMask" />
+	<uniform name = "alphaMaskTreshold" />
 
 	<source>
 	<!--
@@ -15,7 +15,7 @@
 		precision highp float;
 
 		uniform int useAlphaMask;
-		uniform float alphaMask;
+		uniform float alphaMaskTreshold;
 		uniform vec4 Color;
 
 		in vec3 v_pos;
@@ -28,7 +28,7 @@
 		{
 			if (useAlphaMask == 1)
 			{
-				if (Color.a < alphaMask)
+				if (Color.a < alphaMaskTreshold)
 				{
 					discard;
 				}

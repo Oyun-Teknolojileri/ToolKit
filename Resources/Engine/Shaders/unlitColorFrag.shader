@@ -2,14 +2,14 @@
 	<type name = "fragmentShader" />
 	<uniform name = "Color" />
 	<uniform name = "useAlphaMask" />
-	<uniform name = "alphaMask" />
+	<uniform name = "alphaMaskTreshold" />
 	<source>
 	<!--
 		#version 300 es
 		precision mediump float;
 		
 		uniform int useAlphaMask;
-		uniform float alphaMask;
+		uniform float alphaMaskTreshold;
 		uniform vec4 Color;
 		out vec4 fragColor;
 
@@ -17,7 +17,7 @@
 		{
 			if (useAlphaMask == 1)
 			{
-				if (Color.a < alphaMask)
+				if (Color.a < alphaMaskTreshold)
 				{
 					discard;
 				}
