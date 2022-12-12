@@ -1994,14 +1994,20 @@ namespace ToolKit
   void Renderer::SetTexture(ubyte slotIndx, uint textureId)
   {
     // Texture Slots:
-    // 0 - 5 : 2D textures
-    // 6 - 7 : Cube map textures
+    // 0 - 5  : 2D textures
+    // 6 - 7  : Cube map textures
+    // 8      : Shadow atlas
+    // 9-11   : 2D textures
+    //
     // 0 -> Color Texture
     // 2 & 3 -> Skinning information
     // 7 -> Irradiance Map
-    // 8 -> Shadow Atlas
-    // Note: These are defaults.
-    //  You can override these slots in your linked shader program
+    //
+    // Deferred Render Pass:
+    // 9 -> gBuffer position texture
+    // 10 -> gBuffer normal texture
+    // 11 -> gBuffer color texture
+
     assert(slotIndx < m_rhiSettings::textureSlotCount &&
            "You exceed texture slot count");
     m_textureSlots[slotIndx] = textureId;
@@ -2011,7 +2017,7 @@ namespace ToolKit
     {
       glBindTexture(GL_TEXTURE_2D_ARRAY, m_textureSlots[slotIndx]);
     }
-    else if (slotIndx < 6) // Slot id 6 - 7 are cubemaps
+    else if (slotIndx < 6)
     {
       glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
     }
@@ -2019,9 +2025,9 @@ namespace ToolKit
     {
       glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureSlots[slotIndx]);
     }
-    else
+    else if (slotIndx < 12)
     {
-      
+      glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
     }
   }
 

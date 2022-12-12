@@ -54,25 +54,6 @@ namespace ToolKit
     void CullLightList(Entity const* entity, LightRawPtrArray& lights);
 
     /**
-     * Extracts translucent entities from given entity array.
-     * @param entities Entity array that the translucent will extracted from.
-     * @param translucent Entity array that contains translucent entities.
-     */
-    void SeperateTranslucentEntities(EntityRawPtrArray& entities,
-                                     EntityRawPtrArray& translucentEntities);
-
-    /**
-     * Renders the entities immediately. No sorting applied.
-     * @param entities All entities to render.
-     * @param cam Camera for rendering.
-     * @param zoom Zoom amount of camera.
-     * @param lights All lights.
-     */
-    void RenderOpaque(EntityRawPtrArray entities,
-                      Camera* cam,
-                      const LightRawPtrArray& lights);
-
-    /**
      * Sorts and renders translucent entities. For double-sided blended entities
      * first render back, than renders front.
      * @param entities All entities to render.
@@ -159,6 +140,7 @@ namespace ToolKit
     FramebufferPtr FrameBuffer = nullptr;
     ShaderPtr FragmentShader   = nullptr;
     bool ClearFrameBuffer      = true;
+    LightRawPtrArray lights;
   };
 
   /**
@@ -330,6 +312,8 @@ namespace ToolKit
     FramebufferPtr MainFramebuffer;
     FramebufferPtr GBufferFramebuffer;
     bool ClearFramebuffer = true;
+    LightRawPtrArray lights;
+    Camera* GBufferCamera = nullptr;
   };
 
   class TK_API DeferredRenderPass : public Pass
@@ -347,6 +331,7 @@ namespace ToolKit
 
    private:
     FullQuadPass m_fullQuadPass;
+    ShaderPtr m_deferredRenderShader = nullptr;
   };
 
   /**
@@ -366,12 +351,21 @@ namespace ToolKit
    private:
     void SetPassParams();
 
+    /**
+     * Extracts translucent entities from given entity array.
+     * @param entities Entity array that the translucent will extracted from.
+     * @param translucent Entity array that contains translucent entities.
+     */
+    void SeperateTranslucentEntities(EntityRawPtrArray& entities,
+                                     EntityRawPtrArray& translucentEntities);
+
    public:
     SceneRenderPassParams m_params;
 
     ShadowPassPtr m_shadowPass = nullptr;
     RenderPassPtr m_renderPass = nullptr;
     GBufferPass m_gBufferPass;
+    DeferredRenderPass m_deferredRenderPass;
   };
 
 } // namespace ToolKit
