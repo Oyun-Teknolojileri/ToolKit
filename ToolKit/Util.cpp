@@ -1000,6 +1000,60 @@ namespace ToolKit
         });
   }
 
+  TK_API void SeperateTranslucentEntities(
+      EntityRawPtrArray& entities, EntityRawPtrArray& translucentEntities)
+  {
+    auto delTrFn = [&translucentEntities](Entity* ntt) -> bool {
+      // Check too see if there are any material with blend state.
+      MaterialComponentPtrArray materials;
+      ntt->GetComponent<MaterialComponent>(materials);
+
+      if (!materials.empty())
+      {
+        for (MaterialComponentPtr& mt : materials)
+        {
+          if (mt->GetMaterialVal() &&
+              mt->GetMaterialVal()->GetRenderState()->blendFunction ==
+                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
+          {
+            translucentEntities.push_back(ntt);
+            return true;
+          }
+        }
+      }
+      else
+      {
+        MeshComponentPtrArray meshes;
+        ntt->GetComponent<MeshComponent>(meshes);
+
+        if (meshes.empty())
+        {
+          return false;
+        }
+
+        for (MeshComponentPtr& ms : meshes)
+        {
+          MeshRawCPtrArray all;
+          ms->GetMeshVal()->GetAllMeshes(all);
+          for (const Mesh* m : all)
+          {
+            if (m->m_material->GetRenderState()->blendFunction ==
+                BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
+            {
+              translucentEntities.push_back(ntt);
+              return true;
+            }
+          }
+        }
+      }
+
+      return false;
+    };
+
+    entities.erase(std::remove_if(entities.begin(), entities.end(), delTrFn),
+                   entities.end());
+  }
+
   void* TKMalloc(size_t sz)
   {
     return malloc(sz);

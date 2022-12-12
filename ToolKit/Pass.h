@@ -50,8 +50,18 @@ namespace ToolKit
     void PostRender() override;
 
    protected:
-    void CullDrawList(EntityRawPtrArray& entities, Camera* camera);
     void CullLightList(Entity const* entity, LightRawPtrArray& lights);
+
+    /**
+     * Renders the entities immediately. No sorting applied.
+     * @param entities All entities to render.
+     * @param cam Camera for rendering.
+     * @param zoom Zoom amount of camera.
+     * @param lights All lights.
+     */
+    void RenderOpaque(EntityRawPtrArray entities,
+                      Camera* cam,
+                      const LightRawPtrArray& lights);
 
     /**
      * Sorts and renders translucent entities. For double-sided blended entities
@@ -351,13 +361,7 @@ namespace ToolKit
    private:
     void SetPassParams();
 
-    /**
-     * Extracts translucent entities from given entity array.
-     * @param entities Entity array that the translucent will extracted from.
-     * @param translucent Entity array that contains translucent entities.
-     */
-    void SeperateTranslucentEntities(EntityRawPtrArray& entities,
-                                     EntityRawPtrArray& translucentEntities);
+    void CullDrawList(EntityRawPtrArray& entities, Camera* camera);
 
    public:
     SceneRenderPassParams m_params;

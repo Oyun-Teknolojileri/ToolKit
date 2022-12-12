@@ -25,7 +25,11 @@ namespace ToolKit
   {
     PreRender();
 
-    RenderTranslucent(m_drawList, m_camera, m_params.Lights);
+    EntityRawPtrArray translucentDrawList;
+    SeperateTranslucentEntities(m_drawList, translucentDrawList);
+
+    RenderOpaque(m_drawList, m_camera, m_params.Lights);
+    RenderTranslucent(translucentDrawList, m_camera, m_params.Lights);
 
     PostRender();
   }
@@ -48,27 +52,11 @@ namespace ToolKit
 
     // Gather volumes.
     renderer->CollectEnvironmentVolumes(m_drawList);
-
-    CullDrawList(m_drawList, m_camera);
   }
 
   void RenderPass::PostRender()
   {
     Pass::PostRender();
-  }
-
-  void RenderPass::CullDrawList(EntityRawPtrArray& entities, Camera* camera)
-  {
-    // Dropout non visible & drawable entities.
-    entities.erase(std::remove_if(entities.begin(),
-                                  entities.end(),
-                                  [](Entity* ntt) -> bool {
-                                    return !ntt->GetVisibleVal() ||
-                                           !ntt->IsDrawable();
-                                  }),
-                   entities.end());
-
-    FrustumCull(entities, camera);
   }
 
   void RenderPass::CullLightList(Entity const* entity, LightRawPtrArray& lights)
@@ -151,6 +139,20 @@ namespace ToolKit
     }
 
     lights = bestLights;
+  }
+
+  void RenderPass::RenderOpaque(EntityRawPtrArray entities,
+                                Camera* cam,
+                                const LightRawPtrArray& lights)
+  {
+    Renderer* renderer = GetRenderer();
+    for (Entity* ntt : entities)
+    {
+      LightRawPtrArray lightList = lights;
+      CullLightList(ntt, lightList);
+
+      renderer->Render(ntt, cam, lightList);
+    }
   }
 
   void RenderPass::RenderTranslucent(EntityRawPtrArray entities,
@@ -864,8 +866,8 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     PreRender();
 
-    // TODO RenderPass::CullDrawList and RenderPass::CullLightList functions
-    // should be here too
+    CullDrawList(m_gBufferPass.m_params.entities, m_params.Cam);
+    CullDrawList(m_renderPass->m_params.Entities, m_params.Cam);
 
     // Gbuffer for deferred render
     m_gBufferPass.Render();
@@ -928,65 +930,27 @@ namespace ToolKit
     m_deferredRenderPass.m_params.MainFramebuffer = m_params.MainFramebuffer;
     m_deferredRenderPass.m_params.GBufferCamera   = m_params.Cam;
 
-    m_renderPass->m_params.Entities         = translucentDrawList;
     m_renderPass->m_params.Lights           = m_params.Lights;
     m_renderPass->m_params.Cam              = m_params.Cam;
     m_renderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
     m_renderPass->m_params.ClearFrameBuffer = false;
+
+    m_renderPass->m_params.Entities = translucentDrawList;
   }
 
-  void SceneRenderPass::SeperateTranslucentEntities(
-      EntityRawPtrArray& entities, EntityRawPtrArray& translucentEntities)
+  void SceneRenderPass::CullDrawList(EntityRawPtrArray& entities,
+                                     Camera* camera)
   {
-    auto delTrFn = [&translucentEntities](Entity* ntt) -> bool {
-      // Check too see if there are any material with blend state.
-      MaterialComponentPtrArray materials;
-      ntt->GetComponent<MaterialComponent>(materials);
-
-      if (!materials.empty())
-      {
-        for (MaterialComponentPtr& mt : materials)
-        {
-          if (mt->GetMaterialVal() &&
-              mt->GetMaterialVal()->GetRenderState()->blendFunction ==
-                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
-          {
-            translucentEntities.push_back(ntt);
-            return true;
-          }
-        }
-      }
-      else
-      {
-        MeshComponentPtrArray meshes;
-        ntt->GetComponent<MeshComponent>(meshes);
-
-        if (meshes.empty())
-        {
-          return false;
-        }
-
-        for (MeshComponentPtr& ms : meshes)
-        {
-          MeshRawCPtrArray all;
-          ms->GetMeshVal()->GetAllMeshes(all);
-          for (const Mesh* m : all)
-          {
-            if (m->m_material->GetRenderState()->blendFunction ==
-                BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
-            {
-              translucentEntities.push_back(ntt);
-              return true;
-            }
-          }
-        }
-      }
-
-      return false;
-    };
-
-    entities.erase(std::remove_if(entities.begin(), entities.end(), delTrFn),
+    // Dropout non visible & drawable entities.
+    entities.erase(std::remove_if(entities.begin(),
+                                  entities.end(),
+                                  [](Entity* ntt) -> bool {
+                                    return !ntt->GetVisibleVal() ||
+                                           !ntt->IsDrawable();
+                                  }),
                    entities.end());
+
+    FrustumCull(entities, camera);
   }
 
   GBufferPass::GBufferPass()
@@ -1099,8 +1063,6 @@ namespace ToolKit
                                                     !ntt->IsDrawable();
                                            }),
                             m_params.entities.end());
-
-    FrustumCull(m_params.entities, m_params.camera);
   }
 
   void GBufferPass::PostRender()

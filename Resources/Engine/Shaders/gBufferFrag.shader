@@ -26,7 +26,17 @@
 
 		void main()
 		{
-			vec4 color = texture(s_texture0, v_texture).rgba * float(DiffuseTextureInUse) + (1.0 - float(DiffuseTextureInUse)) * Color;
+			vec4 color;
+			
+			if (DiffuseTextureInUse == 1)
+			{
+				color = texture(s_texture0, v_texture).rgba;
+			}
+			else
+			{
+				color = Color;
+			}
+
 			if (useAlphaMask == 1)
 			{
 				if (color.a < alphaMaskTreshold)

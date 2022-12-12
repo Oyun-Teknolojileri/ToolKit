@@ -143,6 +143,14 @@ namespace ToolKit
   // descending order.
   TK_API void StableSortByMaterialPriority(EntityRawPtrArray& entities);
 
+  /**
+   * Extracts translucent entities from given entity array.
+   * @param entities Entity array that the translucent will extracted from.
+   * @param translucent Entity array that contains translucent entities.
+   */
+  TK_API void SeperateTranslucentEntities(
+      EntityRawPtrArray& entities, EntityRawPtrArray& translucentEntities);
+
   // Memory operations.
   ///////////////////////////////////////////////////////
   // Useful to force plugin modules to allocate from main toolkit module.
