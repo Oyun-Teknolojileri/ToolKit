@@ -181,8 +181,8 @@ namespace ToolKit
         for (MaterialComponentPtr& mt : materials)
         {
           if (mt->GetMaterialVal() &&
-              mt->GetMaterialVal()->GetRenderState()->blendFunction !=
-                  BlendFunction::NONE)
+              mt->GetMaterialVal()->GetRenderState()->blendFunction ==
+                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
           {
             translucentEntities.push_back(ntt);
             return true;
@@ -205,8 +205,8 @@ namespace ToolKit
           ms->GetMeshVal()->GetAllMeshes(all);
           for (const Mesh* m : all)
           {
-            if (m->m_material->GetRenderState()->blendFunction !=
-                BlendFunction::NONE)
+            if (m->m_material->GetRenderState()->blendFunction ==
+                BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
             {
               translucentEntities.push_back(ntt);
               return true;
@@ -545,7 +545,7 @@ namespace ToolKit
       dirAndSpotLights[i]->m_shadowAtlasLayer = rects[i].ArrayIndex;
 
       lastLayerOfDirAndSpotLightShadowsUse = rects[i].ArrayIndex;
-      layerCount                           = std::max(rects[i].ArrayIndex, layerCount);
+      layerCount = std::max(rects[i].ArrayIndex, layerCount);
     }
 
     // Get point light into another pack
@@ -557,7 +557,7 @@ namespace ToolKit
     }
 
     rects = m_packer.Pack(resolutions,
-                        Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+                          Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
 
     for (int i = 0; i < rects.size(); ++i)
     {

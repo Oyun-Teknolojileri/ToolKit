@@ -6,12 +6,16 @@
 	<include name = "AO.shader" />
 	<uniform name = "CamData" />
 	<uniform name = "Color" />
+	<uniform name = "useAlphaMask" />
+	<uniform name = "alphaMaskTreshold" />
 
 	<source>
 	<!--
 		#version 300 es
 		precision highp float;
 
+		uniform int useAlphaMask;
+		uniform float alphaMaskTreshold;
 		uniform vec4 Color;
 
 		in vec3 v_pos;
@@ -22,6 +26,14 @@
 
 		void main()
 		{
+			if (useAlphaMask == 1)
+			{
+				if (Color.a < alphaMaskTreshold)
+				{
+					discard;
+				}
+			}
+
 			vec3 n = normalize(v_normal);
 			vec3 e = normalize(CamData.pos - v_pos);
 
