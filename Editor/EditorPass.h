@@ -67,6 +67,7 @@ namespace ToolKit
       class App* App                 = nullptr;
       class EditorViewport* Viewport = nullptr;
       EditorLitMode LitMode          = EditorLitMode::EditorLit;
+      int AcesTonemapper            = 0;
     };
 
     class Technique

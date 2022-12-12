@@ -1,9 +1,9 @@
 #pragma once
 
+#include "BinPack2D.h"
 #include "Framebuffer.h"
 #include "GeometryTypes.h"
 #include "Primative.h"
-#include "BinPack2D.h"
 
 namespace ToolKit
 {
@@ -283,10 +283,39 @@ namespace ToolKit
     ShaderPtr m_gammaShader       = nullptr;
   };
 
+  struct ToneMapPassParams
+  {
+    FramebufferPtr FrameBuffer = nullptr;
+    bool AcesTonemapper        = true; //!-< If false, Tonemapper is Reinhard
+  };
+
+  class TK_API ToneMapPass : public Pass
+  {
+   public:
+    ToneMapPass();
+    explicit ToneMapPass(const ToneMapPassParams& params);
+
+    void Render() override;
+    void PreRender() override;
+    void PostRender() override;
+
+   public:
+    ToneMapPassParams m_params;
+
+   private:
+    FullQuadPassPtr m_tonemapPass = nullptr;
+    FramebufferPtr m_copyBuffer   = nullptr;
+    RenderTargetPtr m_copyTexture = nullptr;
+    ShaderPtr m_tonemapShader     = nullptr;
+  };
+
+  typedef std::shared_ptr<ToneMapPass> ToneMapPassPtr;
+
   struct SceneRenderPassParams
   {
     RenderPassParams renderPassParams;
     ShadowPassParams shadowPassParams;
+    int acesTonemapper = 0; // !-< 0: Tonemap off, 1: Reinhard, 2: ACES
   };
 
   /**
@@ -306,8 +335,9 @@ namespace ToolKit
    public:
     SceneRenderPassParams m_params;
 
-    ShadowPassPtr m_shadowPass = nullptr;
-    RenderPassPtr m_renderPass = nullptr;
+    ShadowPassPtr m_shadowPass   = nullptr;
+    RenderPassPtr m_renderPass   = nullptr;
+    ToneMapPassPtr m_tonemapPass = nullptr;
   };
 
 } // namespace ToolKit

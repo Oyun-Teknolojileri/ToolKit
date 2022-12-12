@@ -930,10 +930,84 @@ namespace ToolKit
     Pass::PostRender();
   }
 
+  ToneMapPass::ToneMapPass()
+  {
+    m_copyTexture = std::make_shared<RenderTarget>();
+    // m_copyTexture->m_settings.InternalFormat = GraphicTypes::FormatRGBA8;
+    // m_copyTexture->m_settings.Type           =
+    // GraphicTypes::TypeUnsignedByte;
+    m_copyBuffer = std::make_shared<Framebuffer>();
+    m_copyBuffer->Init({0, 0, 0, false, false});
+
+    m_tonemapPass   = std::make_shared<FullQuadPass>();
+    m_tonemapShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("tonemapFrag.shader", true));
+  }
+
+  ToneMapPass::ToneMapPass(const ToneMapPassParams& params) : ToneMapPass()
+  {
+    m_params = params;
+  }
+
+  void ToneMapPass::Render()
+  {
+    PreRender();
+    m_tonemapPass->Render();
+    PostRender();
+  }
+
+  void ToneMapPass::PreRender()
+  {
+    Pass::PreRender();
+
+    Renderer* renderer = GetRenderer();
+
+    // Initiate copy buffer.
+    FramebufferSettings fbs;
+    fbs.depthStencil    = false;
+    fbs.useDefaultDepth = false;
+    if (m_params.FrameBuffer == nullptr)
+    {
+      fbs.width  = renderer->m_windowSize.x;
+      fbs.height = renderer->m_windowSize.y;
+    }
+    else
+    {
+      FramebufferSettings targetFbs = m_params.FrameBuffer->GetSettings();
+      fbs.width                     = targetFbs.width;
+      fbs.height                    = targetFbs.height;
+    }
+
+    m_copyTexture->ReconstructIfNeeded(fbs.width, fbs.height);
+    m_copyBuffer->ReconstructIfNeeded(fbs.width, fbs.height);
+    m_copyBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                m_copyTexture);
+
+    // Copy given buffer.
+    renderer->CopyFrameBuffer(
+        m_params.FrameBuffer, m_copyBuffer, GraphicBitFields::ColorBits);
+
+    // Set given buffer as a texture to be read in tonemap pass.
+    renderer->SetTexture(0, m_copyTexture->m_textureId);
+
+    m_tonemapPass->m_params.FragmentShader   = m_tonemapShader;
+    m_tonemapPass->m_params.FrameBuffer      = m_params.FrameBuffer;
+    m_tonemapPass->m_params.ClearFrameBuffer = false;
+
+    m_tonemapShader->SetShaderParameter(
+        "UseAcesTonemapper", ParameterVariant(m_params.AcesTonemapper));
+  }
+
+  void ToneMapPass::PostRender()
+  {
+    Pass::PostRender();
+  }
+
   SceneRenderPass::SceneRenderPass()
   {
-    m_shadowPass = std::make_shared<ShadowPass>();
-    m_renderPass = std::make_shared<RenderPass>();
+    m_shadowPass  = std::make_shared<ShadowPass>();
+    m_renderPass  = std::make_shared<RenderPass>();
+    m_tonemapPass = std::make_shared<ToneMapPass>();
   }
 
   SceneRenderPass::SceneRenderPass(const SceneRenderPassParams& params)
@@ -960,6 +1034,19 @@ namespace ToolKit
 
     renderer->SetShadowAtlas(nullptr);
 
+    // If render target is 16bit float, apply tonemapping
+    if (m_params.renderPassParams.FrameBuffer->GetAttachment(
+            Framebuffer::Attachment::ColorAttachment0) &&
+        m_params.acesTonemapper)
+    {
+      RenderTargetPtr rt = m_params.renderPassParams.FrameBuffer->GetAttachment(
+          Framebuffer::Attachment::ColorAttachment0);
+      if (rt->m_settings.InternalFormat == GraphicTypes::FormatRGBA16F)
+      {
+        m_tonemapPass->Render();
+      }
+    }
+
     PostRender();
   }
 
@@ -967,8 +1054,10 @@ namespace ToolKit
   {
     Pass::PreRender();
 
-    m_shadowPass->m_params = m_params.shadowPassParams;
-    m_renderPass->m_params = m_params.renderPassParams;
+    m_shadowPass->m_params                 = m_params.shadowPassParams;
+    m_renderPass->m_params                 = m_params.renderPassParams;
+    m_tonemapPass->m_params.AcesTonemapper = m_params.acesTonemapper - 1;
+    m_tonemapPass->m_params.FrameBuffer = m_params.renderPassParams.FrameBuffer;
   }
 
   void SceneRenderPass::PostRender()
