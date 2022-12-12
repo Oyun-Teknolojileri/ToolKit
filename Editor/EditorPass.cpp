@@ -66,8 +66,7 @@ namespace ToolKit
       m_lightNode->OrphanSelf();
       m_camera->m_node->AddChild(m_lightNode);
 
-      Renderer* renderer       = GetRenderer();
-      m_overrideDiffuseTexture = renderer->m_overrideDiffuseTexture;
+      Renderer* renderer = GetRenderer();
 
       // Construct EditorScene
       EntityRawPtrArray editorEntities;
@@ -180,8 +179,6 @@ namespace ToolKit
 
     void EditorRenderer::PostRender()
     {
-      GetRenderer()->m_overrideDiffuseTexture = m_overrideDiffuseTexture;
-
       App* app = m_params.App;
       for (Entity* dbgObj : app->m_perFrameDebugObjects)
       {
