@@ -942,7 +942,7 @@ namespace ToolKit
         }
         if (!UI::ImportData.ShowImportWindow)
         {
-          g_app->m_statusMsg = "Files should be dropped onto Asset Browser";
+          g_app->m_statusMsg = "Drop discarded";
           GetLogger()->WriteConsole(LogType::Warning,
                                     "File isn't imported because it's not "
                                     "dropped onto Asset Browser");
