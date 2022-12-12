@@ -38,7 +38,7 @@
 		};
 		uniform _LightData LightData;
 
-		sampler2DArray shadowAtlas;
+		sampler2DArray s_texture8; // Shadow atlas
 
 		const int maxLights = 16;
 
@@ -130,14 +130,14 @@
 
 			if (LightData.softShadows[index] == 1)
 			{
-				return PCFFilterShadow2D(shadowAtlas, coord, startCoord, startCoord + resRatio,
+				return PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + resRatio,
 				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasResRatio[index],
 				projCoord.z, LightData.lightBleedingReduction[index]);
 			}
 			else
 			{
 				coord.xy = ClampTextureCoordinates(coord.xy, startCoord, startCoord + resRatio);
-				vec2 moments = texture(shadowAtlas, coord).xy;
+				vec2 moments = texture(s_texture8, coord).xy;
 				return ChebyshevUpperBound(moments, projCoord.z, LightData.lightBleedingReduction[index]);
 			}
 
@@ -159,14 +159,14 @@
 
 			if (LightData.softShadows[index] == 1)
 			{
-				return PCFFilterShadow2D(shadowAtlas, coord, startCoord, startCoord + resRatio,
+				return PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + resRatio,
 				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasResRatio[index], currFragDepth,
 				LightData.lightBleedingReduction[index]);
 			}
 			else
 			{
 				coord.xy = ClampTextureCoordinates(coord.xy, startCoord, startCoord + resRatio);
-				vec2 moments = texture(shadowAtlas, coord).xy;
+				vec2 moments = texture(s_texture8, coord).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
 
@@ -187,14 +187,14 @@
 
 			if (LightData.softShadows[index] == 1)
 			{
-				return PCFFilterShadow2D(shadowAtlas, coord, startCoord, startCoord + resRatio,
+				return PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + resRatio,
 				LightData.PCFSamples[index], LightData.PCFRadius[index] * resRatio, currFragDepth,
 				LightData.lightBleedingReduction[index]);
 			}
 			else
 			{
 				coord.xy = ClampTextureCoordinates(coord.xy, startCoord, startCoord + resRatio);
-				vec2 moments = texture(shadowAtlas, coord).xy;
+				vec2 moments = texture(s_texture8, coord).xy;
 				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
 			}
 			

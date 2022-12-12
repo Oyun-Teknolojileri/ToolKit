@@ -1143,4 +1143,32 @@ namespace ToolKit
     PostRender();
   }
 
+  DeferredRenderPass::DeferredRenderPass()
+  {
+  }
+
+  DeferredRenderPass::DeferredRenderPass(const DeferredRenderPassParams& params)
+  {
+    m_params = params;
+  }
+
+  void DeferredRenderPass::PreRender()
+  {
+    Pass::PreRender();
+  }
+
+  void DeferredRenderPass::PostRender()
+  {
+    Pass::PostRender();
+  }
+
+  void DeferredRenderPass::Render()
+  {
+    PreRender();
+
+
+
+    PostRender();
+  }
+
 } // namespace ToolKit

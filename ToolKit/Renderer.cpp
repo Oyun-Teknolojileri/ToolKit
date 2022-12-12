@@ -1987,21 +1987,19 @@ namespace ToolKit
     // Bind shadow map if activated
     if (m_shadowAtlas != nullptr)
     {
-      loc = glGetUniformLocation(program->m_handle, "shadowAtlas");
-      glUniform1i(loc, m_rhiSettings::shadowAtlasSlot);
-      glActiveTexture(GL_TEXTURE0 + m_rhiSettings::shadowAtlasSlot);
-      glBindTexture(GL_TEXTURE_2D_ARRAY, m_shadowAtlas->m_textureId);
+      SetTexture(8, m_shadowAtlas->m_textureId);
     }
   }
 
   void Renderer::SetTexture(ubyte slotIndx, uint textureId)
   {
-    // Slots:
+    // Texture Slots:
     // 0 - 5 : 2D textures
     // 6 - 7 : Cube map textures
     // 0 -> Color Texture
     // 2 & 3 -> Skinning information
     // 7 -> Irradiance Map
+    // 8 -> Shadow Atlas
     // Note: These are defaults.
     //  You can override these slots in your linked shader program
     assert(slotIndx < m_rhiSettings::textureSlotCount &&
@@ -2009,24 +2007,26 @@ namespace ToolKit
     m_textureSlots[slotIndx] = textureId;
     glActiveTexture(GL_TEXTURE0 + slotIndx);
 
-    // Slot id 6 - 7 are cubemaps
-    if (slotIndx < 6)
+    if (slotIndx == m_rhiSettings::shadowAtlasSlot)
+    {
+      glBindTexture(GL_TEXTURE_2D_ARRAY, m_textureSlots[slotIndx]);
+    }
+    else if (slotIndx < 6) // Slot id 6 - 7 are cubemaps
     {
       glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
     }
-    else
+    else if (slotIndx < 8)
     {
       glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureSlots[slotIndx]);
+    }
+    else
+    {
+      
     }
   }
 
   void Renderer::SetShadowAtlas(TexturePtr shadowAtlas)
   {
-    /*
-     * Texture slots:
-     * 8: Shadow atlas
-     */
-
     m_shadowAtlas = shadowAtlas;
   }
 

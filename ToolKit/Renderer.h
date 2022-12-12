@@ -233,7 +233,7 @@ namespace ToolKit
 
     typedef struct RHIConstants
     {
-      static constexpr ubyte textureSlotCount = 8;
+      static constexpr ubyte textureSlotCount = 16;
 
       static constexpr size_t maxLightsPerObject = 16;
 

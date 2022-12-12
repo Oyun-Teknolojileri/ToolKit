@@ -320,9 +320,33 @@ namespace ToolKit
     GBufferPassParams m_params;
 
    private:
-    bool m_initialized = false;
+    bool m_initialized            = false;
     bool m_attachmentsSet         = false;
     MaterialPtr m_gBufferMaterial = nullptr;
+  };
+
+  struct DeferredRenderPassParams
+  {
+    FramebufferPtr MainFramebuffer;
+    FramebufferPtr GBufferFramebuffer;
+    bool ClearFramebuffer = true;
+  };
+
+  class TK_API DeferredRenderPass : public Pass
+  {
+   public:
+    DeferredRenderPass();
+    DeferredRenderPass(const DeferredRenderPassParams& params);
+
+    void PreRender() override;
+    void PostRender() override;
+    void Render() override;
+
+   public:
+    DeferredRenderPassParams m_params;
+
+   private:
+    FullQuadPass m_fullQuadPass;
   };
 
   /**
