@@ -138,9 +138,9 @@ namespace ToolKit
       // Nothing lit, so no lights necessary.
       m_editorScene->AccessEntityArray() = editorEntities;
 
-      LightRawPtrArray lights = m_params.LitMode == EditorLitMode::FullyLit
-                                    ? scene->GetLights()
-                                    : m_editorLights;
+      LightRawPtrArray lights = m_params.LitMode == EditorLitMode::EditorLit
+                                    ? m_editorLights
+                                    : scene->GetLights();
 
       EditorViewport* viewport =
           static_cast<EditorViewport*>(m_params.Viewport);
@@ -165,7 +165,7 @@ namespace ToolKit
       // Gamma Pass.
       m_gammaPass.m_params.FrameBuffer = viewport->m_framebuffer;
       // TODO: Read it from engine settings.
-      m_gammaPass.m_params.Gamma       = 2.2f;
+      m_gammaPass.m_params.Gamma = 2.2f;
 
       // Gizmo Pass.
       m_gizmoPass.m_params.Viewport = viewport;
