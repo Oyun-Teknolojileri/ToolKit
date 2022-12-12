@@ -68,6 +68,7 @@ namespace ToolKit
   // Primitive types.
   typedef char byte;
   typedef unsigned char ubyte;
+  typedef std::vector<byte> ByteArray;
   typedef uint32_t uint;
   typedef uint8_t uint8;
   typedef uint64_t ULongID;
