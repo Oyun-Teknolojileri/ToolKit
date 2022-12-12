@@ -259,7 +259,7 @@ namespace ToolKit
 
   static const float TK_FLT_MAX = std::numeric_limits<float>::max();
   static const int TK_INT_MAX   = std::numeric_limits<int>::max();
-  static const int TK_UINT_MAX   = std::numeric_limits<unsigned int>::max();
+  static const int TK_UINT_MAX  = std::numeric_limits<unsigned int>::max();
 
   // Graphics Api Type Overrides.
   enum class GraphicTypes
@@ -283,6 +283,7 @@ namespace ToolKit
     FormatRGBA           = 0x1908,
     FormatR32F           = 0x822E,
     FormatRG32F          = 0x8230,
+    FormatRGB16F         = 0x881B,
     FormatRGBA16F        = 0x881A,
     FormatDepthComponent = 0x1902,
     ColorAttachment0     = 0x8CE0,

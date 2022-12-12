@@ -148,19 +148,19 @@ namespace ToolKit
       // Editor pass.
       m_editorPass.m_params.Cam              = viewport->GetCamera();
       m_editorPass.m_params.FrameBuffer      = viewport->m_framebuffer;
-      m_editorPass.m_params.Scene            = m_editorScene;
+      m_editorPass.m_params.Entities         = m_editorScene->GetEntities();
       m_editorPass.m_params.ClearFrameBuffer = false;
 
       // Scene pass.
-      m_scenePass.m_params.Cam = m_camera;
-      m_scenePass.m_params.Lights = lights;
+      m_scenePass.m_params.Cam             = m_camera;
+      m_scenePass.m_params.Lights          = lights;
       m_scenePass.m_params.MainFramebuffer = viewport->m_framebuffer;
       m_scenePass.m_params.Scene           = scene;
 
       // Gamma Pass.
       m_gammaPass.m_params.FrameBuffer = viewport->m_framebuffer;
       // TODO: Read it from engine settings.
-      m_gammaPass.m_params.Gamma       = 2.2f;
+      m_gammaPass.m_params.Gamma = 2.2f;
 
       // Gizmo Pass.
       m_gizmoPass.m_params.Viewport = viewport;

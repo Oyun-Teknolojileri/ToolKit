@@ -28,15 +28,15 @@ namespace ToolKit
 
   struct RenderPassParams
   {
-    ScenePtr Scene;
-    LightRawPtrArray LightOverride;
+    EntityRawPtrArray Entities;
+    LightRawPtrArray Lights;
     Camera* Cam                = nullptr;
     FramebufferPtr FrameBuffer = nullptr;
     bool ClearFrameBuffer      = true;
   };
 
   /**
-   * Renders the given scene with full forward render pipeline.
+   * Renders given entities with given lights using forward rendering
    */
   class TK_API RenderPass : public Pass
   {
@@ -89,7 +89,6 @@ namespace ToolKit
    protected:
     Camera* m_camera = nullptr;
     EntityRawPtrArray m_drawList;
-    LightRawPtrArray m_contributingLights;
   };
 
   typedef std::shared_ptr<RenderPass> RenderPassPtr;
@@ -287,9 +286,43 @@ namespace ToolKit
   {
     ScenePtr Scene = nullptr;
     LightRawPtrArray Lights;
-    Camera* Cam = nullptr;
+    Camera* Cam                    = nullptr;
     FramebufferPtr MainFramebuffer = nullptr;
-    bool ClearFramebuffer = true;
+    bool ClearFramebuffer          = true;
+  };
+
+  struct GBufferPassParams
+  {
+    EntityRawPtrArray entities;
+    Camera* camera;
+  };
+
+  class TK_API GBufferPass : public Pass
+  {
+   public:
+    GBufferPass();
+
+    void PreRender() override;
+    void PostRender() override;
+    void Render() override;
+    void InitGBuffers(int width, int height);
+    void UnInitGBuffers();
+
+   public:
+    FramebufferPtr m_framebuffer = nullptr;
+    RenderTargetPtr m_gPosRt     = nullptr;
+    RenderTargetPtr m_gNormalRt  = nullptr;
+    RenderTargetPtr m_gColorRt   = nullptr;
+
+    int m_width  = 1024;
+    int m_height = 1024;
+
+    GBufferPassParams m_params;
+
+   private:
+    bool m_initialized = false;
+    bool m_attachmentsSet         = false;
+    MaterialPtr m_gBufferMaterial = nullptr;
   };
 
   /**
@@ -306,7 +339,7 @@ namespace ToolKit
     void PreRender() override;
     void PostRender() override;
 
-    private:
+   private:
     void SetPassParams();
 
    public:
@@ -314,36 +347,7 @@ namespace ToolKit
 
     ShadowPassPtr m_shadowPass = nullptr;
     RenderPassPtr m_renderPass = nullptr;
-  };
-
-  struct GBufferPassParams
-  {
-    FramebufferPtr GBufferFramebuffer = nullptr;
-    bool ClearFramebuffer             = true;
-    int Width                         = 1024;
-    int Height                        = 1024;
-  };
-
-  class TK_API GBufferPass : public Pass
-  {
-   public:
-    GBufferPass();
-    explicit GBufferPass(const GBufferPassParams& params);
-
-    void PreRender() override;
-    void PostRender() override;
-    void Render() override;
-    void InitGBuffers();
-
-   public:
-    RenderTargetPtr m_gPosRt    = nullptr;
-    RenderTargetPtr m_gNormalRt = nullptr;
-    RenderTargetPtr m_gColorRt  = nullptr;
-
-    GBufferPassParams m_params;
-
-   private:
-    bool m_initialized = false;
+    GBufferPass m_gBufferPass;
   };
 
 } // namespace ToolKit

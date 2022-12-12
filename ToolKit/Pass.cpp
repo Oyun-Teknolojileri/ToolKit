@@ -25,11 +25,12 @@ namespace ToolKit
   {
     PreRender();
 
+    // TODO remove seperation, just render like opaque
     EntityRawPtrArray translucentDrawList;
     SeperateTranslucentEntities(m_drawList, translucentDrawList);
 
-    RenderOpaque(m_drawList, m_camera, m_contributingLights);
-    RenderTranslucent(translucentDrawList, m_camera, m_contributingLights);
+    RenderOpaque(m_drawList, m_camera, m_params.Lights);
+    RenderTranslucent(translucentDrawList, m_camera, m_params.Lights);
 
     PostRender();
   }
@@ -44,22 +45,11 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     // Set self data.
-    m_drawList = m_params.Scene->GetEntities();
+    m_drawList = m_params.Entities;
     m_camera   = m_params.Cam;
 
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
     renderer->SetCameraLens(m_camera);
-
-    // Set contributing lights.
-    LightRawPtrArray& lights = m_params.LightOverride;
-    if (lights.empty())
-    {
-      m_contributingLights = m_params.Scene->GetLights();
-    }
-    else
-    {
-      m_contributingLights = lights;
-    }
 
     // Gather volumes.
     renderer->CollectEnvironmentVolumes(m_drawList);
@@ -947,21 +937,35 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     PreRender();
 
-    // Shadow pass
-    m_shadowPass->Render();
-
-    renderer->SetShadowAtlas(
-        std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
-
-    // Render pass
-    m_renderPass->Render();
-    /*
+    /* TODO make this here
     EntityRawPtrArray translucentDrawList;
     SeperateTranslucentEntities(m_drawList, translucentDrawList);
 
     RenderOpaque(m_drawList, m_camera, m_contributingLights);
     RenderTranslucent(translucentDrawList, m_camera, m_contributingLights);
     */
+
+    // Gbuffer for deferred render
+    m_gBufferPass.Render();
+
+    // Shadow pass
+    m_shadowPass->Render();
+
+    renderer->SetShadowAtlas(
+        std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
+
+    // TODO RenderPass::CullDrawList and RenderPass::CullLightList functions
+    // should be here too
+
+    // TODO render with deferred renderer
+
+    // TODO SSAO pass
+
+    // TODO render sky pass
+
+    // Forward render pass // TODO for translucents
+    m_renderPass->Render();
+
     renderer->SetShadowAtlas(nullptr);
 
     PostRender();
@@ -972,6 +976,9 @@ namespace ToolKit
     Pass::PreRender();
 
     SetPassParams();
+
+    m_gBufferPass.InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
+                               m_params.MainFramebuffer->GetSettings().height);
   }
 
   void SceneRenderPass::PostRender()
@@ -984,37 +991,127 @@ namespace ToolKit
     m_shadowPass->m_params.Entities = m_params.Scene->GetEntities();
     m_shadowPass->m_params.Lights   = m_params.Lights;
 
-    m_renderPass->m_params.Scene         = m_params.Scene;
-    m_renderPass->m_params.LightOverride = m_params.Lights;
-    m_renderPass->m_params.Cam           = m_params.Cam;
-    m_renderPass->m_params.FrameBuffer   = m_params.MainFramebuffer;
+    m_renderPass->m_params.Entities    = m_params.Scene->GetEntities();
+    m_renderPass->m_params.Lights      = m_params.Lights;
+    m_renderPass->m_params.Cam         = m_params.Cam;
+    m_renderPass->m_params.FrameBuffer = m_params.MainFramebuffer;
+
+    m_gBufferPass.m_params.entities = m_params.Scene->GetEntities();
+    m_gBufferPass.m_params.camera   = m_params.Cam;
   }
 
   GBufferPass::GBufferPass()
   {
+    RenderTargetSettigs gBufferRenderTargetSettings = {
+        0,
+        GraphicTypes::Target2D,
+        GraphicTypes::UVClampToEdge,
+        GraphicTypes::UVClampToEdge,
+        GraphicTypes::UVClampToEdge,
+        GraphicTypes::SampleNearest,
+        GraphicTypes::SampleNearest,
+        GraphicTypes::FormatRGB16F,
+        GraphicTypes::FormatRGB,
+        GraphicTypes::TypeFloat,
+        1};
+
+    m_gPosRt =
+        std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gNormalRt =
+        std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gColorRt =
+        std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_framebuffer = std::make_shared<Framebuffer>();
+
+    m_gBufferMaterial = std::make_shared<Material>();
   }
 
-  GBufferPass::GBufferPass(const GBufferPassParams& params)
-  {
-    m_params = params;
-  }
-
-  void GBufferPass::InitGBuffers()
+  void GBufferPass::InitGBuffers(int width, int height)
   {
     if (m_initialized)
     {
+      if (width != m_width || height != m_height)
+      {
+        UnInitGBuffers();
+      }
+      else
+      {
+        return;
+      }
+    }
+
+    m_width  = width;
+    m_height = height;
+
+    // Gbuffers render targets
+    m_framebuffer->Init({(uint) width, (uint) height, 0, false, true});
+    m_gPosRt->m_width     = width;
+    m_gPosRt->m_height    = height;
+    m_gNormalRt->m_width  = width;
+    m_gNormalRt->m_height = height;
+    m_gColorRt->m_width   = width;
+    m_gColorRt->m_height  = height;
+    m_gPosRt->Init();
+    m_gNormalRt->Init();
+    m_gColorRt->Init();
+
+    if (!m_attachmentsSet)
+    {
+      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                   m_gPosRt);
+      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment1,
+                                   m_gNormalRt);
+      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment2,
+                                   m_gColorRt);
+      m_attachmentsSet = true;
+    }
+
+    // Gbuffer material
+    ShaderPtr vertexShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("defaultVertex.shader", true));
+    ShaderPtr fragmentShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("gBufferFrag.shader", true));
+    m_gBufferMaterial->m_vertexShader   = vertexShader;
+    m_gBufferMaterial->m_fragmentShader = fragmentShader;
+
+    m_initialized = true;
+  }
+
+  void GBufferPass::UnInitGBuffers()
+  {
+    if (!m_initialized)
+    {
       return;
     }
-    // TODO init
-    m_initialized = true;
+
+    m_framebuffer->UnInit();
+    m_attachmentsSet = false;
+
+    m_gPosRt->UnInit();
+    m_gNormalRt->UnInit();
+    m_gColorRt->UnInit();
+
+    m_initialized = false;
   }
 
   void GBufferPass::PreRender()
   {
     Pass::PreRender();
 
-    GetRenderer()->SetFramebuffer(m_params.GBufferFramebuffer,
-                                  m_params.ClearFramebuffer);
+    GetRenderer()->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
+    GetRenderer()->SetCameraLens(m_params.camera);
+
+    // TODO change it with CullDrawList and carry the function somewhere else
+    // from RenderPass
+    m_params.entities.erase(std::remove_if(m_params.entities.begin(),
+                                           m_params.entities.end(),
+                                           [](Entity* ntt) -> bool {
+                                             return !ntt->GetVisibleVal() ||
+                                                    !ntt->IsDrawable();
+                                           }),
+                            m_params.entities.end());
+
+    FrustumCull(m_params.entities, m_params.camera);
   }
 
   void GBufferPass::PostRender()
@@ -1024,6 +1121,26 @@ namespace ToolKit
 
   void GBufferPass::Render()
   {
+    PreRender();
+
+    Renderer* renderer = GetRenderer();
+
+    for (Entity* ntt : m_params.entities)
+    {
+      MaterialPtr mat = ntt->GetRenderMaterial();
+
+      m_gBufferMaterial->UnInit();
+      m_gBufferMaterial->m_diffuseTexture = mat->m_diffuseTexture;
+      m_gBufferMaterial->m_cubeMap        = mat->m_cubeMap;
+      m_gBufferMaterial->m_color          = mat->m_color;
+      m_gBufferMaterial->m_alpha          = mat->m_alpha;
+      m_gBufferMaterial->Init();
+      renderer->m_overrideMat = m_gBufferMaterial;
+
+      renderer->Render(ntt, m_params.camera);
+    }
+
+    PostRender();
   }
 
 } // namespace ToolKit
