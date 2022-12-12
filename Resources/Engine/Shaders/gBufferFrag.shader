@@ -3,7 +3,7 @@
 	<uniform name = "DiffuseTextureInUse" />
 	<uniform name = "Color" />
 	<uniform name = "useAlphaMask" />
-	<uniform name = "alphaMask" />
+	<uniform name = "alphaMaskTreshold" />
 	<source>
 	<!--
 		#version 300 es
@@ -22,14 +22,14 @@
 		uniform vec4 Color;
 
 		uniform int useAlphaMask;
-		uniform float alphaMask;
+		uniform float alphaMaskTreshold;
 
 		void main()
 		{
 			vec4 color = texture(s_texture0, v_texture).rgba * float(DiffuseTextureInUse) + (1.0 - float(DiffuseTextureInUse)) * Color;
 			if (useAlphaMask == 1)
 			{
-				if (color.a < alphaMask)
+				if (color.a < alphaMaskTreshold)
 				{
 					discard;
 				}
