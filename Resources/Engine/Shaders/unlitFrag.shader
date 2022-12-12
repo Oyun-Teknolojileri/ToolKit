@@ -1,7 +1,7 @@
 <shader>
 	<type name = "fragmentShader" />
 	<uniform name = "useAlphaMask" />
-	<uniform name = "alphaMask" />
+	<uniform name = "alphaMaskTreshold" />
 	<source>
 	<!--
 		#version 300 es
@@ -9,7 +9,7 @@
 
 		uniform sampler2D s_texture0;
 		uniform int useAlphaMask;
-		uniform float alphaMask;
+		uniform float alphaMaskTreshold;
 
 		in vec2 v_texture;
 		out vec4 fragColor;
@@ -19,7 +19,7 @@
 		  fragColor = texture(s_texture0, v_texture);
 			if (useAlphaMask == 1)
 			{
-				if(fragColor.a < alphaMask){
+				if(fragColor.a < alphaMaskTreshold){
 					discard;
 				}
 			}

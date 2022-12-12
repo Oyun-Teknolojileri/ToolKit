@@ -1756,8 +1756,8 @@ namespace ToolKit
                       m_renderState.blendFunction == BlendFunction::ALPHA_MASK);
         }
         break;
-        case Uniform::ALPHA_MASK: {
-          GLint loc = glGetUniformLocation(program->m_handle, "alphaMask");
+        case Uniform::ALPHA_MASK_TRESHOLD: {
+          GLint loc = glGetUniformLocation(program->m_handle, "alphaMaskTreshold");
           glUniform1f(loc, m_renderState.alphaMaskTreshold);
         }
         break;

@@ -207,8 +207,8 @@ namespace ToolKit
       case Uniform::USE_ALPHA_MASK:
         name = "useAlphaMask";
         break;
-      case Uniform::ALPHA_MASK:
-        name = "alphaMask";
+      case Uniform::ALPHA_MASK_TRESHOLD:
+        name = "alphaMaskTreshold";
         break;
       default:
         assert(false && "unknown uniform");
@@ -342,9 +342,9 @@ namespace ToolKit
         {
           m_uniforms.push_back(Uniform::USE_ALPHA_MASK);
         }
-        else if (strcmp("alphaMask", attr->value()) == 0)
+        else if (strcmp("alphaMaskTreshold", attr->value()) == 0)
         {
-          m_uniforms.push_back(Uniform::ALPHA_MASK);
+          m_uniforms.push_back(Uniform::ALPHA_MASK_TRESHOLD);
         }
         else
         {
