@@ -122,7 +122,6 @@ namespace ToolKit
        */
       MaterialPtr m_unlitOverride = nullptr;
 
-      bool m_overrideDiffuseTexture = false;
       SceneRenderPass m_scenePass;
       RenderPass m_editorPass;
       GizmoPass m_gizmoPass;
