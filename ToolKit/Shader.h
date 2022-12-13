@@ -39,8 +39,12 @@ namespace ToolKit
     IBL_ROTATION,
     LIGHTING_ONLY,
     USE_ALPHA_MASK,
-    ALPHA_MASK_TRESHOLD
+    ALPHA_MASK_TRESHOLD,
+    EMISSIVE_COLOR_MULTIPLIER,
+    UNIFORM_MAX_INVALID
   };
+
+  const char* GetUniformName(Uniform u);
 
   class TK_API Shader : public Resource
   {

@@ -1,9 +1,9 @@
 #pragma once
 
+#include "BinPack2D.h"
 #include "Framebuffer.h"
 #include "GeometryTypes.h"
 #include "Primative.h"
-#include "BinPack2D.h"
 
 namespace ToolKit
 {
