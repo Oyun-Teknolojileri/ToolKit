@@ -20,8 +20,9 @@ namespace ToolKit
     {
       const char* items[] = {"Off", "Reinhard", "ACES"};
       uint itemCount      = sizeof(items) / sizeof(items[0]);
-      if (ImGui::BeginCombo("Tonemapper mode",
-                            items[g_app->m_useAcesTonemapper]))
+      uint& tonemapperMode =
+          Main::GetInstance()->m_engineSettings.Graphics.TonemapperMode;
+      if (ImGui::BeginCombo("Tonemapper mode", items[tonemapperMode]))
       {
         for (uint itemIndx = 0; itemIndx < itemCount; itemIndx++)
         {
@@ -30,7 +31,7 @@ namespace ToolKit
           ImGui::Selectable(itemName, &isSelected);
           if (isSelected)
           {
-            g_app->m_useAcesTonemapper = itemIndx;
+            tonemapperMode = itemIndx;
           }
         }
 

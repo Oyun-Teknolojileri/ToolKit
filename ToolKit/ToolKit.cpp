@@ -472,6 +472,10 @@ namespace ToolKit
         {
           Graphics.MSAA = atoi(attr->value());
         }
+        if (XmlAttribute* attr = node2->first_attribute("tonemapper"))
+        {
+          Graphics.TonemapperMode = atoi(attr->value());
+        }
       }
     }
   }

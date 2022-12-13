@@ -195,7 +195,6 @@ namespace ToolKit
       SysCommandExecutionFn m_sysComExecFn     = nullptr;
       EditorLitMode m_sceneLightingMode        = EditorLitMode::EditorLit;
       Workspace m_workspace;
-      int m_useAcesTonemapper = 2;
 
       // Snap settings.
       bool m_snapsEnabled = false; // Delta transforms.

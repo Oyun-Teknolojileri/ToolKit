@@ -76,8 +76,9 @@ namespace ToolKit
 
     struct GraphicSettings
     {
-      uint MSAA = 2;
-      uint FPS  = 60;
+      uint MSAA           = 2;
+      uint FPS            = 60;
+      uint TonemapperMode = 2;
     } Graphics;
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
