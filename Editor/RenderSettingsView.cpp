@@ -18,9 +18,9 @@ namespace ToolKit
 
     void RenderSettingsView::Show()
     {
-      const char* items[] = {"Off", "Reinhard", "ACES"};
+      const char* items[] = {"Reinhard", "ACES"};
       uint itemCount      = sizeof(items) / sizeof(items[0]);
-      uint& tonemapperMode =
+      uint tonemapperMode =
           Main::GetInstance()->m_engineSettings.Graphics.TonemapperMode;
       if (ImGui::BeginCombo("Tonemapper mode", items[tonemapperMode]))
       {
@@ -31,7 +31,8 @@ namespace ToolKit
           ImGui::Selectable(itemName, &isSelected);
           if (isSelected)
           {
-            tonemapperMode = itemIndx;
+            Main::GetInstance()->m_engineSettings.Graphics.TonemapperMode =
+                (TonemapPassParams::TonemapMethod) itemIndx;
           }
         }
 

@@ -67,7 +67,7 @@ namespace ToolKit
       class App* App                 = nullptr;
       class EditorViewport* Viewport = nullptr;
       EditorLitMode LitMode          = EditorLitMode::EditorLit;
-      int AcesTonemapper            = 0;
+      TonemapPassParams::TonemapMethod tonemapping = TonemapPassParams::Aces;
     };
 
     class Technique
@@ -123,6 +123,7 @@ namespace ToolKit
       MaterialPtr m_unlitOverride = nullptr;
 
       SceneRenderPass m_scenePass;
+      TonemapPass m_tonemapPass;
       RenderPass m_editorPass;
       GizmoPass m_gizmoPass;
       GammaPass m_gammaPass;

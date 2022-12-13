@@ -196,7 +196,7 @@ namespace ToolKit
           myEditorRenderer->m_params.App      = this;
           myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
           myEditorRenderer->m_params.Viewport = viewport;
-          myEditorRenderer->m_params.AcesTonemapper =
+          myEditorRenderer->m_params.tonemapping =
               Main::GetInstance()->m_engineSettings.Graphics.TonemapperMode;
           myEditorRenderer->Render();
         }

@@ -283,24 +283,29 @@ namespace ToolKit
     ShaderPtr m_gammaShader       = nullptr;
   };
 
-  struct ToneMapPassParams
+  struct TonemapPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;
-    bool AcesTonemapper        = true; //!-< If false, Tonemapper is Reinhard
+    enum TonemapMethod
+    {
+      Reinhard,
+      Aces
+    };
+    TonemapMethod Method = Aces;
   };
 
-  class TK_API ToneMapPass : public Pass
+  class TK_API TonemapPass : public Pass
   {
    public:
-    ToneMapPass();
-    explicit ToneMapPass(const ToneMapPassParams& params);
+    TonemapPass();
+    explicit TonemapPass(const TonemapPassParams& params);
 
     void Render() override;
     void PreRender() override;
     void PostRender() override;
 
    public:
-    ToneMapPassParams m_params;
+    TonemapPassParams m_params;
 
    private:
     FullQuadPassPtr m_tonemapPass = nullptr;
@@ -309,7 +314,7 @@ namespace ToolKit
     ShaderPtr m_tonemapShader     = nullptr;
   };
 
-  typedef std::shared_ptr<ToneMapPass> ToneMapPassPtr;
+  typedef std::shared_ptr<TonemapPass> TonemapPassPtr;
 
   struct SceneRenderPassParams
   {
@@ -335,9 +340,8 @@ namespace ToolKit
    public:
     SceneRenderPassParams m_params;
 
-    ShadowPassPtr m_shadowPass   = nullptr;
-    RenderPassPtr m_renderPass   = nullptr;
-    ToneMapPassPtr m_tonemapPass = nullptr;
+    ShadowPassPtr m_shadowPass = nullptr;
+    RenderPassPtr m_renderPass = nullptr;
   };
 
 } // namespace ToolKit

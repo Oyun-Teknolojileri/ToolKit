@@ -930,7 +930,7 @@ namespace ToolKit
     Pass::PostRender();
   }
 
-  ToneMapPass::ToneMapPass()
+  TonemapPass::TonemapPass()
   {
     m_copyTexture = std::make_shared<RenderTarget>();
     // m_copyTexture->m_settings.InternalFormat = GraphicTypes::FormatRGBA8;
@@ -944,19 +944,19 @@ namespace ToolKit
         ShaderPath("tonemapFrag.shader", true));
   }
 
-  ToneMapPass::ToneMapPass(const ToneMapPassParams& params) : ToneMapPass()
+  TonemapPass::TonemapPass(const TonemapPassParams& params) : TonemapPass()
   {
     m_params = params;
   }
 
-  void ToneMapPass::Render()
+  void TonemapPass::Render()
   {
     PreRender();
     m_tonemapPass->Render();
     PostRender();
   }
 
-  void ToneMapPass::PreRender()
+  void TonemapPass::PreRender()
   {
     Pass::PreRender();
 
@@ -995,19 +995,18 @@ namespace ToolKit
     m_tonemapPass->m_params.ClearFrameBuffer = false;
 
     m_tonemapShader->SetShaderParameter(
-        "UseAcesTonemapper", ParameterVariant(m_params.AcesTonemapper));
+        "UseAcesTonemapper", ParameterVariant((uint) m_params.Method));
   }
 
-  void ToneMapPass::PostRender()
+  void TonemapPass::PostRender()
   {
     Pass::PostRender();
   }
 
   SceneRenderPass::SceneRenderPass()
   {
-    m_shadowPass  = std::make_shared<ShadowPass>();
-    m_renderPass  = std::make_shared<RenderPass>();
-    m_tonemapPass = std::make_shared<ToneMapPass>();
+    m_shadowPass = std::make_shared<ShadowPass>();
+    m_renderPass = std::make_shared<RenderPass>();
   }
 
   SceneRenderPass::SceneRenderPass(const SceneRenderPassParams& params)
@@ -1034,19 +1033,6 @@ namespace ToolKit
 
     renderer->SetShadowAtlas(nullptr);
 
-    // If render target is 16bit float, apply tonemapping
-    if (m_params.renderPassParams.FrameBuffer->GetAttachment(
-            Framebuffer::Attachment::ColorAttachment0) &&
-        m_params.acesTonemapper)
-    {
-      RenderTargetPtr rt = m_params.renderPassParams.FrameBuffer->GetAttachment(
-          Framebuffer::Attachment::ColorAttachment0);
-      if (rt->m_settings.InternalFormat == GraphicTypes::FormatRGBA16F)
-      {
-        m_tonemapPass->Render();
-      }
-    }
-
     PostRender();
   }
 
@@ -1054,10 +1040,8 @@ namespace ToolKit
   {
     Pass::PreRender();
 
-    m_shadowPass->m_params                 = m_params.shadowPassParams;
-    m_renderPass->m_params                 = m_params.renderPassParams;
-    m_tonemapPass->m_params.AcesTonemapper = m_params.acesTonemapper - 1;
-    m_tonemapPass->m_params.FrameBuffer = m_params.renderPassParams.FrameBuffer;
+    m_shadowPass->m_params = m_params.shadowPassParams;
+    m_renderPass->m_params = m_params.renderPassParams;
   }
 
   void SceneRenderPass::PostRender()

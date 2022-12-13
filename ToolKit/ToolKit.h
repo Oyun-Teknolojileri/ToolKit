@@ -16,6 +16,7 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Node.h"
+#include "Pass.h"
 #include "PluginManager.h"
 #include "Primative.h"
 #include "RenderState.h"
@@ -76,9 +77,9 @@ namespace ToolKit
 
     struct GraphicSettings
     {
-      uint MSAA           = 2;
-      uint FPS            = 60;
-      uint TonemapperMode = 2;
+      uint MSAA                                       = 2;
+      uint FPS                                        = 60;
+      TonemapPassParams::TonemapMethod TonemapperMode = TonemapPassParams::Aces;
     } Graphics;
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
