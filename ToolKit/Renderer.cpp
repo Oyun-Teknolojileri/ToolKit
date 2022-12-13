@@ -1787,6 +1787,9 @@ namespace ToolKit
         case ParameterVariant::VariantType::Int:
           glUniform1i(loc, var.second.GetVar<int>());
           break;
+        case ParameterVariant::VariantType::UInt:
+          glUniform1ui(loc, var.second.GetVar<uint>());
+          break;
         case ParameterVariant::VariantType::Vec2:
           glUniform2fv(
               loc, 1, reinterpret_cast<float*>(&var.second.GetVar<Vec2>()));
