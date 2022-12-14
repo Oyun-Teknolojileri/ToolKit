@@ -214,6 +214,23 @@ namespace ToolKit
           m_mat->m_alpha = col.a;
           updateThumbFn();
         }
+        // Display emissive color multiplier if fragment is emissive
+        for (Uniform u : m_mat->m_fragmentShader->m_uniforms)
+        {
+          if (u == Uniform::EMISSIVE_COLOR_MULTIPLIER)
+          {
+            if (ImGui::ColorEdit3(
+                    "Emissive Color Multiplier##1",
+                    &m_mat->GetRenderState()->emissiveColorMultiplier.x,
+                    ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoLabel |
+                        ImGuiColorEditFlags_Float))
+            {
+              updateThumbFn();
+            }
+            ImGui::SameLine();
+            ImGui::Text("Emissive Strength");
+          }
+        }
 
         int cullMode = static_cast<int>(m_mat->GetRenderState()->cullMode);
         if (ImGui::Combo("Cull mode", &cullMode, "Two Sided\0Front\0Back"))

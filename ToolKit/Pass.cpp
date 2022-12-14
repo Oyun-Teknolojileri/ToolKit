@@ -937,26 +937,22 @@ namespace ToolKit
     Pass::PostRender();
   }
 
-  GammaPass::GammaPass()
+  PostProcessPass::PostProcessPass()
   {
     m_copyTexture = std::make_shared<RenderTarget>();
-    // m_copyTexture->m_settings.InternalFormat = GraphicTypes::FormatRGBA8;
-    // m_copyTexture->m_settings.Type           =
-    // GraphicTypes::TypeUnsignedByte;
-    m_copyBuffer = std::make_shared<Framebuffer>();
+    m_copyBuffer  = std::make_shared<Framebuffer>();
     m_copyBuffer->Init({0, 0, 0, false, false});
 
-    m_gammaPass   = std::make_shared<FullQuadPass>();
-    m_gammaShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("gammaFrag.shader", true));
+    m_postProcessPass = std::make_shared<FullQuadPass>();
   }
 
-  GammaPass::GammaPass(const GammaPassParams& params) : GammaPass()
+  PostProcessPass::PostProcessPass(const PostProcessPassParams& params)
+      : PostProcessPass()
   {
     m_params = params;
   }
 
-  void GammaPass::PreRender()
+  void PostProcessPass::PreRender()
   {
     Pass::PreRender();
 
@@ -990,24 +986,61 @@ namespace ToolKit
     // Set given buffer as a texture to be read in gamma pass.
     renderer->SetTexture(0, m_copyTexture->m_textureId);
 
-    m_gammaPass->m_params.FragmentShader   = m_gammaShader;
-    m_gammaPass->m_params.FrameBuffer      = m_params.FrameBuffer;
-    m_gammaPass->m_params.ClearFrameBuffer = false;
-
-    m_gammaShader->SetShaderParameter("Gamma",
-                                      ParameterVariant(m_params.Gamma));
+    m_postProcessPass->m_params.FragmentShader   = m_postProcessShader;
+    m_postProcessPass->m_params.FrameBuffer      = m_params.FrameBuffer;
+    m_postProcessPass->m_params.ClearFrameBuffer = false;
   }
 
-  void GammaPass::Render()
+  void PostProcessPass::Render()
   {
     PreRender();
-    m_gammaPass->Render();
+    m_postProcessPass->Render();
     PostRender();
   }
 
-  void GammaPass::PostRender()
+  void PostProcessPass::PostRender()
   {
     Pass::PostRender();
+  }
+
+  GammaPass::GammaPass() : PostProcessPass()
+  {
+    m_postProcessShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("gammaFrag.shader", true));
+  }
+
+  GammaPass::GammaPass(const GammaPassParams& params) : GammaPass()
+  {
+    m_params = params;
+  }
+
+  void GammaPass::PreRender()
+  {
+    PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
+    PostProcessPass::PreRender();
+
+    m_postProcessShader->SetShaderParameter("Gamma",
+                                            ParameterVariant(m_params.Gamma));
+  }
+
+  TonemapPass::TonemapPass() : PostProcessPass()
+  {
+    m_postProcessShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("tonemapFrag.shader", true));
+  }
+
+  TonemapPass::TonemapPass(const TonemapPassParams& params) : TonemapPass()
+  {
+    m_params = params;
+  }
+
+  void TonemapPass::PreRender()
+  {
+    PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
+    PostProcessPass::PreRender();
+
+    m_postProcessShader->SetShaderParameter(
+        "UseAcesTonemapper", ParameterVariant((uint) m_params.Method));
   }
 
   SceneRenderPass::SceneRenderPass()

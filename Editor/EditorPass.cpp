@@ -52,6 +52,8 @@ namespace ToolKit
 
       m_gizmoPass.Render();
 
+      m_tonemapPass.Render();
+
       m_gammaPass.Render();
 
       PostRender();
@@ -155,6 +157,12 @@ namespace ToolKit
       m_scenePass.m_params.Lights          = lights;
       m_scenePass.m_params.MainFramebuffer = viewport->m_framebuffer;
       m_scenePass.m_params.Scene           = scene;
+
+      // Tonemap Pass
+      m_scenePass.m_params.acesTonemapper = m_params.tonemapping;
+
+      m_tonemapPass.m_params.FrameBuffer = viewport->m_framebuffer;
+      m_tonemapPass.m_params.Method      = m_params.tonemapping;
 
       // Gamma Pass.
       m_gammaPass.m_params.FrameBuffer = viewport->m_framebuffer;

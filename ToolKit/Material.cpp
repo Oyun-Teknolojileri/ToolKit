@@ -322,6 +322,15 @@ namespace ToolKit
 
     m_storage[MaterialPath("unlitSolid.material", true)] =
         MaterialPtr(material);
+
+    material                 = new Material();
+    material->m_vertexShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("defaultVertex.shader", true));
+    material->m_fragmentShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("emissiveFrag.shader", true));
+    material->Init();
+
+    m_storage[MaterialPath("emissive.material", true)] = MaterialPtr(material);
   }
 
   bool MaterialManager::CanStore(ResourceType t)
@@ -369,6 +378,11 @@ namespace ToolKit
   MaterialPtr MaterialManager::GetCopyOfDefaultMaterial()
   {
     return m_storage[MaterialPath("default.material", true)]->Copy<Material>();
+  }
+
+  MaterialPtr MaterialManager::GetCopyOfEmissiveMaterial()
+  {
+    return m_storage[MaterialPath("emissive.material", true)]->Copy<Material>();
   }
 
 } // namespace ToolKit

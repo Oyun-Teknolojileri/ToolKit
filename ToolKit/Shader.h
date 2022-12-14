@@ -40,8 +40,12 @@ namespace ToolKit
     LIGHTING_ONLY,
     USE_ALPHA_MASK,
     ALPHA_MASK_TRESHOLD,
+    EMISSIVE_COLOR_MULTIPLIER,
+    UNIFORM_MAX_INVALID,
     IS_UNLIT
   };
+
+  const char* GetUniformName(Uniform u);
 
   class TK_API Shader : public Resource
   {

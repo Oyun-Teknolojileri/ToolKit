@@ -32,7 +32,6 @@ namespace ToolKit
   class TK_API RenderPass : public Pass
   {
    public:
-
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
     void StableSortByDistanceToCamera(EntityRawPtrArray& entities,
@@ -280,6 +279,32 @@ namespace ToolKit
 
   typedef std::shared_ptr<OutlinePass> OutlinePassPtr;
 
+  struct PostProcessPassParams
+  {
+    FramebufferPtr FrameBuffer = nullptr;
+    ShaderPtr Shader           = nullptr;
+  };
+
+  struct TK_API PostProcessPass : public Pass
+  {
+   public:
+    PostProcessPass();
+    explicit PostProcessPass(const PostProcessPassParams& params);
+
+    void Render() override;
+    void PreRender() override;
+    void PostRender() override;
+
+   public:
+    PostProcessPassParams m_params;
+
+   protected:
+    ShaderPtr m_postProcessShader;
+    FullQuadPassPtr m_postProcessPass = nullptr;
+    FramebufferPtr m_copyBuffer       = nullptr;
+    RenderTargetPtr m_copyTexture     = nullptr;
+  };
+
   struct GammaPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;
@@ -289,34 +314,42 @@ namespace ToolKit
   /**
    * Apply gamma correction to given frame buffer.
    */
-  class TK_API GammaPass : public Pass
+  class TK_API GammaPass : public PostProcessPass
   {
    public:
     GammaPass();
     explicit GammaPass(const GammaPassParams& params);
 
-    void Render() override;
     void PreRender() override;
-    void PostRender() override;
 
    public:
     GammaPassParams m_params;
-
-   private:
-    FullQuadPassPtr m_gammaPass   = nullptr;
-    FramebufferPtr m_copyBuffer   = nullptr;
-    RenderTargetPtr m_copyTexture = nullptr;
-    ShaderPtr m_gammaShader       = nullptr;
   };
 
-  struct SceneRenderPassParams
+  struct TonemapPassParams
   {
-    ScenePtr Scene = nullptr;
-    LightRawPtrArray Lights;
-    Camera* Cam                    = nullptr;
-    FramebufferPtr MainFramebuffer = nullptr;
-    bool ClearFramebuffer          = true;
+    FramebufferPtr FrameBuffer = nullptr;
+    enum TonemapMethod
+    {
+      Reinhard,
+      Aces
+    };
+    TonemapMethod Method = Reinhard;
   };
+
+  class TK_API TonemapPass : public PostProcessPass
+  {
+   public:
+    TonemapPass();
+    explicit TonemapPass(const TonemapPassParams& params);
+
+    void PreRender() override;
+
+   public:
+    TonemapPassParams m_params;
+  };
+
+  typedef std::shared_ptr<TonemapPass> TonemapPassPtr;
 
   struct GBufferPassParams
   {
@@ -377,6 +410,16 @@ namespace ToolKit
    private:
     FullQuadPass m_fullQuadPass;
     ShaderPtr m_deferredRenderShader = nullptr;
+  };
+
+  struct SceneRenderPassParams
+  {
+    ScenePtr Scene = nullptr;
+    LightRawPtrArray Lights;
+    Camera* Cam                    = nullptr;
+    FramebufferPtr MainFramebuffer = nullptr;
+    bool ClearFramebuffer          = true;
+    int acesTonemapper = 0; // !-< 0: Tonemap off, 1: Reinhard, 2: ACES
   };
 
   /**
