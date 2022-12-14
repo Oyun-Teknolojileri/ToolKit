@@ -460,18 +460,9 @@ namespace ToolKit
         };
         activateSkinning(mesh->IsSkinned());
 
-        RenderState rs = *m_mat->GetRenderState();
-        if (m_overrideDiffuseTexture && m_overrideMat)
-        {
-          Material* secondaryMat =
-              nttMat ? nttMat.get() : mesh->m_material.get();
-          if (secondaryMat->m_diffuseTexture)
-          {
-            rs.diffuseTexture = secondaryMat->m_diffuseTexture->m_textureId;
-          }
-        }
+        RenderState* rs = m_mat->GetRenderState();
 
-        SetRenderState(&rs, prg);
+        SetRenderState(rs, prg);
         FeedUniforms(prg);
 
         glBindVertexArray(mesh->m_vaoId);
@@ -480,14 +471,14 @@ namespace ToolKit
         if (mesh->m_indexCount != 0)
         {
           glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->m_vboIndexId);
-          glDrawElements((GLenum) rs.drawType,
+          glDrawElements((GLenum) rs->drawType,
                          mesh->m_indexCount,
                          GL_UNSIGNED_INT,
                          nullptr);
         }
         else
         {
-          glDrawArrays((GLenum) rs.drawType, 0, mesh->m_vertexCount);
+          glDrawArrays((GLenum) rs->drawType, 0, mesh->m_vertexCount);
         }
       }
     }

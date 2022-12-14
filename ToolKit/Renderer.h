@@ -224,10 +224,9 @@ namespace ToolKit
     uint m_totalFrameCount = 0;
     uint m_frameCount      = 0;
     UVec2 m_windowSize; //!< Application window size.
-    Vec4 m_clearColor             = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    MaterialPtr m_overrideMat     = nullptr;
-    bool m_overrideDiffuseTexture = false;
-    Camera* m_uiCamera            = nullptr;
+    Vec4 m_clearColor         = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    MaterialPtr m_overrideMat = nullptr;
+    Camera* m_uiCamera        = nullptr;
 
     bool m_renderOnlyLighting = false;
 
