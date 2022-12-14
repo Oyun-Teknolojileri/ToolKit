@@ -26,6 +26,41 @@ namespace ToolKit
     FramebufferPtr m_prevFrameBuffer   = nullptr;
   };
 
+  /*
+   * Base class for main rendering classes.
+   */
+  class TK_API RenderPass : public Pass
+  {
+   public:
+
+    // Sort entities  by distance (from boundary center)
+    // in ascending order to camera. Accounts for isometric camera.
+    void StableSortByDistanceToCamera(EntityRawPtrArray& entities,
+                                      const Camera* cam);
+
+    // Sort entities by their material's render state's priority in
+    // descending order.
+    void StableSortByMaterialPriority(EntityRawPtrArray& entities);
+
+    /**
+     * Extracts translucent entities from given entity array.
+     * @param entities Entity array that the translucent will extracted from.
+     * @param translucent Entity array that contains translucent entities.
+     */
+    void SeperateTranslucentEntities(EntityRawPtrArray& entities,
+                                     EntityRawPtrArray& translucentEntities);
+
+    /**
+     * Extracts translucent and unlit entities from given entity array.
+     * @param entities Entity array that the translucent will extracted from.
+     * @param translucentAndUnlit Entity array that contains translucent and
+     * unlit entities.
+     */
+    void SeperateTranslucentAndUnlitEntities(
+        EntityRawPtrArray& entities,
+        EntityRawPtrArray& translucentAndUnlitEntities);
+  };
+
   struct ForwardRenderPassParams
   {
     EntityRawPtrArray Entities;
@@ -38,7 +73,7 @@ namespace ToolKit
   /**
    * Renders given entities with given lights using forward rendering
    */
-  class TK_API ForwardRenderPass : public Pass
+  class TK_API ForwardRenderPass : public RenderPass
   {
    public:
     ForwardRenderPass();
@@ -326,7 +361,7 @@ namespace ToolKit
     Camera* GBufferCamera = nullptr;
   };
 
-  class TK_API DeferredRenderPass : public Pass
+  class TK_API DeferredRenderPass : public RenderPass
   {
    public:
     DeferredRenderPass();

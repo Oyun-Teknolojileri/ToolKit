@@ -37,22 +37,6 @@ namespace ToolKit
     SafeDel(m_uiCamera);
   }
 
-  void Renderer::RenderScene(const ScenePtr scene,
-                             Viewport* viewport,
-                             const LightRawPtrArray& editorLights)
-  {
-    Camera* cam                = viewport->GetCamera();
-    EntityRawPtrArray entities = scene->GetEntities();
-
-    SkyBase* sky = scene->GetSky();
-    if (sky != nullptr)
-    {
-      sky->Init();
-    }
-
-    RenderEntities(entities, cam, viewport, editorLights, sky);
-  }
-
   void Renderer::GenerateKernelAndNoiseForSSAOSamples(Vec3Array& ssaoKernel,
                                                       Vec2Array& ssaoNoise)
   {
@@ -89,7 +73,6 @@ namespace ToolKit
         ssaoNoise.push_back(noise);
       }
   }
-
   int Renderer::GetMaxArrayTextureLayers()
   {
     if (m_maxArrayTextureLayers == -1)
@@ -335,8 +318,8 @@ namespace ToolKit
       // DrawFullQuad(quad);
     }
   }
-
   /**
+   * DEPRECATED
    * Renders given UILayer to given Viewport.
    * @param layer UILayer that will be rendered.
    * @param viewport that UILayer will be rendered with.
@@ -350,7 +333,7 @@ namespace ToolKit
         -halfWidth, halfWidth, -halfHeight, halfHeight, 0.5f, 1000.0f);
 
     EntityRawPtrArray entities = layer->m_scene->GetEntities();
-    RenderEntities(entities, m_uiCamera, viewport);
+    // RenderEntities(entities, m_uiCamera, viewport);
   }
 
   void Renderer::Render(Entity* ntt,
@@ -816,151 +799,6 @@ namespace ToolKit
     Render(&cube, cam);
   }
 
-  void Renderer::RenderEntities(EntityRawPtrArray& entities,
-                                Camera* cam,
-                                Viewport* viewport,
-                                const LightRawPtrArray& lights,
-                                SkyBase* sky)
-  {
-    ShadowPass(lights, entities);
-
-    CollectEnvironmentVolumes(entities);
-
-    // Dropout non visible & drawable entities.
-    entities.erase(std::remove_if(entities.begin(),
-                                  entities.end(),
-                                  [](Entity* ntt) -> bool {
-                                    return !ntt->GetVisibleVal() ||
-                                           !ntt->IsDrawable();
-                                  }),
-                   entities.end());
-
-    FrustumCull(entities, cam);
-
-    // Update billboards.
-    for (Entity* ntt : entities)
-    {
-      if (ntt->GetType() == EntityType::Entity_Billboard)
-      {
-        Billboard* billboard = static_cast<Billboard*>(ntt);
-        billboard->LookAt(cam, viewport->GetBillboardScale());
-      }
-    }
-
-    // GenerateSSAOTexture(entities, viewport);
-
-    SetViewport(viewport);
-
-    SetCameraLens(cam);
-
-    if (sky && !cam->IsOrtographic())
-    {
-      RenderSky(sky, cam);
-    }
-
-    EntityRawPtrArray blendedEntities;
-    GetTransparentEntites(entities, blendedEntities);
-
-    RenderOpaque(entities, cam, lights);
-
-    RenderTransparent(blendedEntities, cam, lights);
-  }
-
-  void Renderer::GetTransparentEntites(EntityRawPtrArray& entities,
-                                       EntityRawPtrArray& blendedEntities)
-  {
-    auto delTrFn = [&blendedEntities](Entity* ntt) -> bool {
-      // Check too see if there are any material with blend state.
-      MaterialComponentPtrArray materials;
-      ntt->GetComponent<MaterialComponent>(materials);
-
-      if (!materials.empty())
-      {
-        for (MaterialComponentPtr& mt : materials)
-        {
-          if (mt->GetMaterialVal() &&
-              mt->GetMaterialVal()->GetRenderState()->blendFunction !=
-                  BlendFunction::NONE)
-          {
-            blendedEntities.push_back(ntt);
-            return true;
-          }
-        }
-      }
-      else
-      {
-        MeshComponentPtrArray meshes;
-        ntt->GetComponent<MeshComponent>(meshes);
-
-        if (meshes.empty())
-        {
-          return false;
-        }
-
-        for (MeshComponentPtr& ms : meshes)
-        {
-          MeshRawCPtrArray all;
-          ms->GetMeshVal()->GetAllMeshes(all);
-          for (const Mesh* m : all)
-          {
-            if (m->m_material->GetRenderState()->blendFunction !=
-                BlendFunction::NONE)
-            {
-              blendedEntities.push_back(ntt);
-              return true;
-            }
-          }
-        }
-      }
-
-      return false;
-    };
-
-    entities.erase(std::remove_if(entities.begin(), entities.end(), delTrFn),
-                   entities.end());
-  }
-
-  void Renderer::RenderOpaque(EntityRawPtrArray entities,
-                              Camera* cam,
-                              const LightRawPtrArray& editorLights)
-  {
-    // Render opaque objects
-    for (Entity* ntt : entities)
-    {
-      Render(ntt, cam, editorLights);
-    }
-  }
-
-  void Renderer::RenderTransparent(EntityRawPtrArray entities,
-                                   Camera* cam,
-                                   const LightRawPtrArray& editorLights)
-  {
-    StableSortByDistanceToCamera(entities, cam);
-    StableSortByMaterialPriority(entities);
-
-    // Render transparent entities
-    for (Entity* ntt : entities)
-    {
-      // For two sided materials,
-      // first render back of transparent objects then render front
-      MaterialPtr renderMaterial = GetRenderMaterial(ntt);
-      if (renderMaterial->GetRenderState()->cullMode == CullingType::TwoSided)
-      {
-        renderMaterial->GetRenderState()->cullMode = CullingType::Front;
-        Render(ntt, cam, editorLights);
-
-        renderMaterial->GetRenderState()->cullMode = CullingType::Back;
-        Render(ntt, cam, editorLights);
-
-        renderMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
-      }
-      else
-      {
-        Render(ntt, cam, editorLights);
-      }
-    }
-  }
-
   MaterialPtr Renderer::GetRenderMaterial(Entity* entity)
   {
     if (m_overrideMat)
@@ -969,23 +807,6 @@ namespace ToolKit
     }
 
     return entity->GetRenderMaterial();
-  }
-
-  void Renderer::RenderSky(SkyBase* sky, Camera* cam)
-  {
-    if (sky == nullptr || (!sky->GetDrawSkyVal()))
-    {
-      return;
-    }
-
-    glDepthFunc(GL_LEQUAL);
-
-    MaterialPtr skyboxMat = sky->GetSkyboxMaterial();
-    const Mat4 rotation =
-        Mat4(sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
-    DrawCube(cam, skyboxMat, rotation);
-
-    glDepthFunc(GL_LESS); // Return to default depth test
   }
 
   // An interval has start time and end time
@@ -1274,164 +1095,6 @@ namespace ToolKit
         m_iblRotation                        = Mat4(1.0f);
       }
     }
-  }
-
-  void Renderer::ShadowPass(const LightRawPtrArray& lights,
-                            const EntityRawPtrArray& entities)
-  {
-    /*
-    UpdateShadowMaps(lights, entities);
-    FilterShadowMaps(lights);
-    */
-  }
-
-  void Renderer::UpdateShadowMaps(const LightRawPtrArray& lights,
-                                  const EntityRawPtrArray& entities)
-  {
-    /*
-    MaterialPtr lastOverrideMaterial = m_overrideMat;
-
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
-
-    for (Light* light : lights)
-    {
-      // Update shadow map ProjView matrix every frame for all lights
-      if (light->GetCastShadowVal())
-      {
-        if (light->GetCastShadowVal() == false)
-        {
-          continue;
-        }
-
-        if (light->GetType() == EntityType::Entity_DirectionalLight)
-        {
-          static_cast<DirectionalLight*>(light)->UpdateShadowFrustum(entities);
-        }
-        else
-        {
-          light->UpdateShadowCamera();
-        }
-
-        // Create framebuffer
-        light->InitShadowMap();
-
-        auto renderForShadowMapFn = [this](Light* light,
-                                           EntityRawPtrArray entities) -> void {
-          FrustumCull(entities, light->m_shadowCamera);
-          ClearBuffer(GraphicBitFields::DepthBits);
-          m_overrideMat = light->GetShadowMaterial();
-          for (Entity* ntt : entities)
-          {
-            if (ntt->IsDrawable() &&
-                ntt->GetMeshComponent()->GetCastShadowVal())
-            {
-              MaterialPtr entityMat = ntt->GetRenderMaterial();
-              m_overrideMat->SetRenderState(entityMat->GetRenderState());
-              m_overrideMat->UnInit();
-              m_overrideMat->m_alpha          = entityMat->m_alpha;
-              m_overrideMat->m_diffuseTexture = entityMat->m_diffuseTexture;
-              m_overrideMat->GetRenderState()->blendFunction =
-                  BlendFunction::NONE;
-              m_overrideMat->Init();
-              Render(ntt, light->m_shadowCamera);
-            }
-          }
-        };
-
-        switch (light->GetType())
-        {
-        case EntityType::Entity_PointLight: {
-          // Initialize point light view transforms.
-          static Quaternion rotations[6];
-          static Vec3 scales[6];
-          static bool viewsCalculated = false;
-          if (!viewsCalculated)
-          {
-            Mat4 views[6] = {
-                glm::lookAt(
-                    ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                glm::lookAt(
-                    ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                glm::lookAt(
-                    ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-                glm::lookAt(
-                    ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-                glm::lookAt(
-                    ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                glm::lookAt(
-                    ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
-
-            for (int i = 0; i < 6; ++i)
-            {
-              DecomposeMatrix(views[i], nullptr, &rotations[i], &scales[i]);
-            }
-
-            viewsCalculated = true;
-          }
-
-          FramebufferPtr smBuffer = light->GetShadowMapFramebuffer();
-          SetFramebuffer(smBuffer, true, Vec4(1.0f));
-
-          Vec2 shadowRes = light->GetShadowResolutionVal();
-          glViewport(0, 0, uint(shadowRes.x), uint(shadowRes.y));
-
-          for (unsigned int i = 0; i < 6; ++i)
-          {
-            smBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                    light->GetShadowMapRenderTarget(),
-                                    -1,
-                                    (Framebuffer::CubemapFace) i);
-
-            light->m_node->SetOrientation(rotations[i]);
-
-            // TODO: Scales are not needed. Remove.
-            light->m_node->SetScale(scales[i]);
-
-            renderForShadowMapFn(light, entities);
-          }
-        }
-        case EntityType::Entity_DirectionalLight:
-        case EntityType::Entity_SpotLight:
-          SetFramebuffer(light->GetShadowMapFramebuffer(), true, Vec4(1.0f));
-          renderForShadowMapFn(light, entities);
-          break;
-        default:
-          break;
-        }
-      }
-    }
-
-    m_overrideMat = lastOverrideMaterial;
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-    */
-  }
-
-  void Renderer::FilterShadowMaps(const LightRawPtrArray& lights)
-  {
-    /*
-    for (Light* light : lights)
-    {
-      if (!light->GetCastShadowVal() || light->GetShadowThicknessVal() < 0.001f)
-      {
-        continue;
-      }
-
-      if (light->GetType() == EntityType::Entity_PointLight)
-      {
-        continue;
-      }
-      const float softness = light->GetShadowThicknessVal();
-      Apply7x1GaussianBlur(light->GetShadowMapRenderTarget(),
-                           light->GetShadowMapTempBlurRt(),
-                           X_AXIS,
-                           softness / light->GetShadowResolutionVal().x);
-      Apply7x1GaussianBlur(light->GetShadowMapTempBlurRt(),
-                           light->GetShadowMapRenderTarget(),
-                           Y_AXIS,
-                           softness / light->GetShadowResolutionVal().y);
-    }
-    */
   }
 
   void Renderer::Apply7x1GaussianBlur(const TexturePtr source,
