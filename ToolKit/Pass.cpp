@@ -860,7 +860,7 @@ namespace ToolKit
   PostProcessPass::PostProcessPass()
   {
     m_copyTexture = std::make_shared<RenderTarget>();
-    m_copyBuffer = std::make_shared<Framebuffer>();
+    m_copyBuffer  = std::make_shared<Framebuffer>();
     m_copyBuffer->Init({0, 0, 0, false, false});
 
     m_postProcessPass = std::make_shared<FullQuadPass>();
@@ -907,7 +907,7 @@ namespace ToolKit
     renderer->SetTexture(0, m_copyTexture->m_textureId);
 
     m_postProcessPass->m_params.FragmentShader   = m_postProcessShader;
-    m_postProcessPass->m_params.FrameBuffer    = m_params.FrameBuffer;
+    m_postProcessPass->m_params.FrameBuffer      = m_params.FrameBuffer;
     m_postProcessPass->m_params.ClearFrameBuffer = false;
   }
 
@@ -940,7 +940,7 @@ namespace ToolKit
     PostProcessPass::PreRender();
 
     m_postProcessShader->SetShaderParameter("Gamma",
-                                      ParameterVariant(m_params.Gamma));
+                                            ParameterVariant(m_params.Gamma));
   }
 
   TonemapPass::TonemapPass() : PostProcessPass()
@@ -958,7 +958,6 @@ namespace ToolKit
   {
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
-
 
     m_postProcessShader->SetShaderParameter(
         "UseAcesTonemapper", ParameterVariant((uint) m_params.Method));
