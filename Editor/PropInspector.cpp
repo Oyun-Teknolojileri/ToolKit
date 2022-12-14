@@ -12,6 +12,7 @@
 #include "MeshView.h"
 #include "Prefab.h"
 #include "PrefabView.h"
+#include "RenderSettingsView.h"
 #include "TransformMod.h"
 #include "Util.h"
 
@@ -268,6 +269,7 @@ namespace ToolKit
       m_views[(uint) ViewType::Component]  = new ComponentView();
       m_views[(uint) ViewType::Material]   = new MaterialView();
       m_views[(uint) ViewType::Mesh]       = new MeshView();
+      m_views[(uint) ViewType::RenderSettings] = new RenderSettingsView();
     }
 
     PropInspector::~PropInspector()

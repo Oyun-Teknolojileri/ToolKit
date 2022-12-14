@@ -83,6 +83,7 @@ namespace ToolKit
         Component,
         Material,
         Mesh,
+        RenderSettings,
         ViewCount
       };
       ViewType m_activeView = ViewType::Entity;
