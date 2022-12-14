@@ -13,7 +13,6 @@ namespace ToolKit
 
     EditorRenderer::EditorRenderer()
     {
-      m_editorScene = std::make_shared<EditorScene>();
       InitRenderer();
     }
 
@@ -31,9 +30,6 @@ namespace ToolKit
       }
       m_editorLights.clear();
       SafeDel(m_lightNode);
-
-      // Prevent entities to be destroyed.
-      m_editorScene->AccessEntityArray().clear();
     }
 
     void EditorRenderer::Render()
@@ -136,9 +132,6 @@ namespace ToolKit
       grid->UpdateShaderParams();
       editorEntities.push_back(grid);
 
-      // Nothing lit, so no lights necessary.
-      m_editorScene->AccessEntityArray() = editorEntities;
-
       LightRawPtrArray lights = m_params.LitMode == EditorLitMode::EditorLit
                                     ? m_editorLights
                                     : scene->GetLights();
@@ -149,7 +142,7 @@ namespace ToolKit
       // Editor pass.
       m_editorPass.m_params.Cam              = viewport->GetCamera();
       m_editorPass.m_params.FrameBuffer      = viewport->m_framebuffer;
-      m_editorPass.m_params.Entities         = m_editorScene->GetEntities();
+      m_editorPass.m_params.Entities         = editorEntities;
       m_editorPass.m_params.ClearFrameBuffer = false;
 
       // Scene pass.
@@ -157,9 +150,6 @@ namespace ToolKit
       m_scenePass.m_params.Lights          = lights;
       m_scenePass.m_params.MainFramebuffer = viewport->m_framebuffer;
       m_scenePass.m_params.Scene           = scene;
-
-      // Tonemap Pass
-      m_scenePass.m_params.acesTonemapper = m_params.tonemapping;
 
       m_tonemapPass.m_params.FrameBuffer = viewport->m_framebuffer;
       m_tonemapPass.m_params.Method      = m_params.tonemapping;

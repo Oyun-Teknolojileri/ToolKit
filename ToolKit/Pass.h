@@ -334,7 +334,7 @@ namespace ToolKit
       Reinhard,
       Aces
     };
-    TonemapMethod Method = Reinhard;
+    TonemapMethod Method = Aces;
   };
 
   class TK_API TonemapPass : public PostProcessPass
@@ -419,7 +419,6 @@ namespace ToolKit
     Camera* Cam                    = nullptr;
     FramebufferPtr MainFramebuffer = nullptr;
     bool ClearFramebuffer          = true;
-    int acesTonemapper = 0; // !-< 0: Tonemap off, 1: Reinhard, 2: ACES
   };
 
   /**

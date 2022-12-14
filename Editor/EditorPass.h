@@ -129,7 +129,6 @@ namespace ToolKit
       GammaPass m_gammaPass;
       OutlinePass m_outlinePass;
       Camera* m_camera             = nullptr;
-      EditorScenePtr m_editorScene = nullptr;
 
       /**
        * Selected entity list
