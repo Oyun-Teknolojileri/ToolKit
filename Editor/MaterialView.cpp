@@ -291,6 +291,13 @@ namespace ToolKit
           m_mat->m_dirty                   = true;
         }
 
+        bool isUnlit = m_mat->GetRenderState()->isUnlit;
+        if (ImGui::Checkbox("Unlit", &isUnlit))
+        {
+          m_mat->GetRenderState()->isUnlit = isUnlit;
+          m_mat->m_dirty                   = true;
+        }
+
         if (m_mat->GetRenderState()->blendFunction == BlendFunction::ALPHA_MASK)
         {
           float alphaMaskTreshold = m_mat->GetRenderState()->alphaMaskTreshold;

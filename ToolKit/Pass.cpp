@@ -917,8 +917,8 @@ namespace ToolKit
     // render
 
     EntityRawPtrArray opaqueDrawList = m_params.Scene->GetEntities();
-    EntityRawPtrArray translucentDrawList;
-    SeperateTranslucentEntities(opaqueDrawList, translucentDrawList);
+    EntityRawPtrArray translucentAndUnlitDrawList;
+    SeperateTranslucentAndUnlitEntities(opaqueDrawList, translucentAndUnlitDrawList);
 
     m_gBufferPass.m_params.entities = opaqueDrawList;
     m_gBufferPass.m_params.camera   = m_params.Cam;
@@ -935,7 +935,7 @@ namespace ToolKit
     m_renderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
     m_renderPass->m_params.ClearFrameBuffer = false;
 
-    m_renderPass->m_params.Entities = translucentDrawList;
+    m_renderPass->m_params.Entities = translucentAndUnlitDrawList;
   }
 
   void SceneRenderPass::CullDrawList(EntityRawPtrArray& entities,
@@ -1080,6 +1080,7 @@ namespace ToolKit
     {
       MaterialPtr mat = ntt->GetRenderMaterial();
 
+      m_gBufferMaterial->SetRenderState(mat->GetRenderState());
       m_gBufferMaterial->UnInit();
       m_gBufferMaterial->m_diffuseTexture = mat->m_diffuseTexture;
       m_gBufferMaterial->m_cubeMap        = mat->m_cubeMap;

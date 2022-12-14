@@ -59,7 +59,8 @@ namespace ToolKit
     float iblIntensity = 0.25f;
     uint irradianceMap = 0;
     bool AOInUse       = true;
-    int priority       = 0; // The higher the priority, the earlier to draw.
+    int priority       = 0;     // The higher the priority, the earlier to draw.
+    bool isUnlit       = false; // True if the material is not going to be lit.
   };
 
 } // namespace ToolKit

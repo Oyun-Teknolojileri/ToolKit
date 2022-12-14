@@ -39,7 +39,8 @@ namespace ToolKit
     IBL_ROTATION,
     LIGHTING_ONLY,
     USE_ALPHA_MASK,
-    ALPHA_MASK_TRESHOLD
+    ALPHA_MASK_TRESHOLD,
+    IS_UNLIT
   };
 
   class TK_API Shader : public Resource

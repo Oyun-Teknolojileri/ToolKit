@@ -622,6 +622,8 @@ namespace ToolKit
       m_renderState.lineWidth = state->lineWidth;
       glLineWidth(m_renderState.lineWidth);
     }
+
+    m_renderState.isUnlit = state->isUnlit;
   }
 
   void Renderer::SetStencilOperation(StencilOperation op)
@@ -1757,8 +1759,14 @@ namespace ToolKit
         }
         break;
         case Uniform::ALPHA_MASK_TRESHOLD: {
-          GLint loc = glGetUniformLocation(program->m_handle, "alphaMaskTreshold");
+          GLint loc =
+              glGetUniformLocation(program->m_handle, "alphaMaskTreshold");
           glUniform1f(loc, m_renderState.alphaMaskTreshold);
+        }
+        break;
+        case Uniform::IS_UNLIT: {
+          GLint loc = glGetUniformLocation(program->m_handle, "isUnlit");
+          glUniform1i(loc, (GLint) m_renderState.isUnlit);
         }
         break;
         default:

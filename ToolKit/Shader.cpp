@@ -210,6 +210,9 @@ namespace ToolKit
       case Uniform::ALPHA_MASK_TRESHOLD:
         name = "alphaMaskTreshold";
         break;
+      case Uniform::IS_UNLIT:
+        name = "isUnlit";
+        break;
       default:
         assert(false && "unknown uniform");
         break;
@@ -345,6 +348,10 @@ namespace ToolKit
         else if (strcmp("alphaMaskTreshold", attr->value()) == 0)
         {
           m_uniforms.push_back(Uniform::ALPHA_MASK_TRESHOLD);
+        }
+        else if (strcmp("isUnlit", attr->value()) == 0)
+        {
+          m_uniforms.push_back(Uniform::IS_UNLIT);
         }
         else
         {

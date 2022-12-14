@@ -151,6 +151,14 @@ namespace ToolKit
   TK_API void SeperateTranslucentEntities(
       EntityRawPtrArray& entities, EntityRawPtrArray& translucentEntities);
 
+  /**
+   * Extracts translucent and unlit entities from given entity array.
+   * @param entities Entity array that the translucent will extracted from.
+   * @param translucentAndUnlit Entity array that contains translucent and unlit entities.
+   */
+  TK_API void SeperateTranslucentAndUnlitEntities(
+      EntityRawPtrArray& entities, EntityRawPtrArray& translucentAndUnlitEntities);
+
   // Memory operations.
   ///////////////////////////////////////////////////////
   // Useful to force plugin modules to allocate from main toolkit module.
