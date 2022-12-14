@@ -6,12 +6,172 @@
 
 namespace ToolKit
 {
+  void RenderPass::StableSortByDistanceToCamera(EntityRawPtrArray& entities,
+                                                const Camera* cam)
+  {
+    std::function<bool(Entity*, Entity*)> sortFn = [cam](Entity* ntt1,
+                                                         Entity* ntt2) -> bool {
+      Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
-  RenderPass::RenderPass()
+      BoundingBox bb1 = ntt1->GetAABB(true);
+      float first     = glm::length2(bb1.GetCenter() - camLoc);
+
+      BoundingBox bb2 = ntt2->GetAABB(true);
+      float second    = glm::length2(bb2.GetCenter() - camLoc);
+
+      return second < first;
+    };
+
+    if (cam->IsOrtographic())
+    {
+      sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool {
+        float first =
+            ntt1->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
+
+        float second =
+            ntt2->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
+
+        return first < second;
+      };
+    }
+
+    std::stable_sort(entities.begin(), entities.end(), sortFn);
+  }
+
+  void RenderPass::StableSortByMaterialPriority(EntityRawPtrArray& entities)
+  {
+    std::stable_sort(
+        entities.begin(), entities.end(), [](Entity* a, Entity* b) -> bool {
+          MaterialComponentPtr matA = a->GetMaterialComponent();
+          MaterialComponentPtr matB = b->GetMaterialComponent();
+          if (matA && matB)
+          {
+            int pA = matA->GetMaterialVal()->GetRenderState()->priority;
+            int pB = matB->GetMaterialVal()->GetRenderState()->priority;
+            return pA > pB;
+          }
+
+          return false;
+        });
+  }
+
+  void RenderPass::SeperateTranslucentEntities(
+      EntityRawPtrArray& entities, EntityRawPtrArray& translucentEntities)
+  {
+    auto delTrFn = [&translucentEntities](Entity* ntt) -> bool {
+      // Check too see if there are any material with blend state.
+      MaterialComponentPtrArray materials;
+      ntt->GetComponent<MaterialComponent>(materials);
+
+      if (!materials.empty())
+      {
+        for (MaterialComponentPtr& mt : materials)
+        {
+          if (mt->GetMaterialVal() &&
+              mt->GetMaterialVal()->GetRenderState()->blendFunction ==
+                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
+          {
+            translucentEntities.push_back(ntt);
+            return true;
+          }
+        }
+      }
+      else
+      {
+        MeshComponentPtrArray meshes;
+        ntt->GetComponent<MeshComponent>(meshes);
+
+        if (meshes.empty())
+        {
+          return false;
+        }
+
+        for (MeshComponentPtr& ms : meshes)
+        {
+          MeshRawCPtrArray all;
+          ms->GetMeshVal()->GetAllMeshes(all);
+          for (const Mesh* m : all)
+          {
+            if (m->m_material->GetRenderState()->blendFunction ==
+                BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
+            {
+              translucentEntities.push_back(ntt);
+              return true;
+            }
+          }
+        }
+      }
+
+      return false;
+    };
+
+    entities.erase(std::remove_if(entities.begin(), entities.end(), delTrFn),
+                   entities.end());
+  }
+
+  void RenderPass::SeperateTranslucentAndUnlitEntities(
+      EntityRawPtrArray& entities,
+      EntityRawPtrArray& translucentAndUnlitEntities)
+  {
+    auto delTrFn = [&translucentAndUnlitEntities](Entity* ntt) -> bool {
+      // Check too see if there are any material with blend state.
+      MaterialComponentPtrArray materials;
+      ntt->GetComponent<MaterialComponent>(materials);
+
+      if (!materials.empty())
+      {
+        for (MaterialComponentPtr& mt : materials)
+        {
+          if (mt->GetMaterialVal() &&
+              (mt->GetMaterialVal()->GetRenderState()->blendFunction ==
+                   BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA ||
+               mt->GetMaterialVal()->GetRenderState()->isUnlit))
+          {
+            translucentAndUnlitEntities.push_back(ntt);
+            return true;
+          }
+        }
+      }
+      else
+      {
+        MeshComponentPtrArray meshes;
+        ntt->GetComponent<MeshComponent>(meshes);
+
+        if (meshes.empty())
+        {
+          return false;
+        }
+
+        for (MeshComponentPtr& ms : meshes)
+        {
+          MeshRawCPtrArray all;
+          ms->GetMeshVal()->GetAllMeshes(all);
+          for (const Mesh* m : all)
+          {
+            if (m->m_material->GetRenderState()->blendFunction ==
+                    BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA ||
+                m->m_material->GetRenderState()->isUnlit)
+            {
+              translucentAndUnlitEntities.push_back(ntt);
+              return true;
+            }
+          }
+        }
+      }
+
+      return false;
+    };
+
+    entities.erase(std::remove_if(entities.begin(), entities.end(), delTrFn),
+                   entities.end());
+  }
+
+  ForwardRenderPass::ForwardRenderPass()
   {
   }
 
-  RenderPass::RenderPass(const RenderPassParams& params) : m_params(params)
+  ForwardRenderPass::ForwardRenderPass(const ForwardRenderPassParams& params)
+      : m_params(params)
   {
     // Create a default frame buffer.
     if (m_params.FrameBuffer == nullptr)
@@ -21,72 +181,46 @@ namespace ToolKit
     }
   }
 
-  void RenderPass::Render()
+  void ForwardRenderPass::Render()
   {
     PreRender();
 
     EntityRawPtrArray translucentDrawList;
     SeperateTranslucentEntities(m_drawList, translucentDrawList);
 
-    RenderOpaque(m_drawList, m_camera, m_contributingLights);
-    RenderTranslucent(translucentDrawList, m_camera, m_contributingLights);
+    RenderOpaque(m_drawList, m_camera, m_params.Lights);
+    RenderTranslucent(translucentDrawList, m_camera, m_params.Lights);
 
     PostRender();
   }
 
-  RenderPass::~RenderPass()
+  ForwardRenderPass::~ForwardRenderPass()
   {
   }
 
-  void RenderPass::PreRender()
+  void ForwardRenderPass::PreRender()
   {
     Pass::PreRender();
     Renderer* renderer = GetRenderer();
 
     // Set self data.
-    m_drawList = m_params.Scene->GetEntities();
+    m_drawList = m_params.Entities;
     m_camera   = m_params.Cam;
 
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
     renderer->SetCameraLens(m_camera);
 
-    // Set contributing lights.
-    LightRawPtrArray& lights = m_params.LightOverride;
-    if (lights.empty())
-    {
-      m_contributingLights = m_params.Scene->GetLights();
-    }
-    else
-    {
-      m_contributingLights = lights;
-    }
-
     // Gather volumes.
     renderer->CollectEnvironmentVolumes(m_drawList);
-
-    CullDrawList(m_drawList, m_camera);
   }
 
-  void RenderPass::PostRender()
+  void ForwardRenderPass::PostRender()
   {
     Pass::PostRender();
   }
 
-  void RenderPass::CullDrawList(EntityRawPtrArray& entities, Camera* camera)
-  {
-    // Dropout non visible & drawable entities.
-    entities.erase(std::remove_if(entities.begin(),
-                                  entities.end(),
-                                  [](Entity* ntt) -> bool {
-                                    return !ntt->GetVisibleVal() ||
-                                           !ntt->IsDrawable();
-                                  }),
-                   entities.end());
-
-    FrustumCull(entities, camera);
-  }
-
-  void RenderPass::CullLightList(Entity const* entity, LightRawPtrArray& lights)
+  void ForwardRenderPass::CullLightList(Entity const* entity,
+                                        LightRawPtrArray& lights)
   {
     LightRawPtrArray bestLights;
     bestLights.reserve(lights.size());
@@ -168,63 +302,9 @@ namespace ToolKit
     lights = bestLights;
   }
 
-  void RenderPass::SeperateTranslucentEntities(
-      EntityRawPtrArray& entities, EntityRawPtrArray& translucentEntities)
-  {
-    auto delTrFn = [&translucentEntities](Entity* ntt) -> bool {
-      // Check too see if there are any material with blend state.
-      MaterialComponentPtrArray materials;
-      ntt->GetComponent<MaterialComponent>(materials);
-
-      if (!materials.empty())
-      {
-        for (MaterialComponentPtr& mt : materials)
-        {
-          if (mt->GetMaterialVal() &&
-              mt->GetMaterialVal()->GetRenderState()->blendFunction ==
-                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
-          {
-            translucentEntities.push_back(ntt);
-            return true;
-          }
-        }
-      }
-      else
-      {
-        MeshComponentPtrArray meshes;
-        ntt->GetComponent<MeshComponent>(meshes);
-
-        if (meshes.empty())
-        {
-          return false;
-        }
-
-        for (MeshComponentPtr& ms : meshes)
-        {
-          MeshRawCPtrArray all;
-          ms->GetMeshVal()->GetAllMeshes(all);
-          for (const Mesh* m : all)
-          {
-            if (m->m_material->GetRenderState()->blendFunction ==
-                BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
-            {
-              translucentEntities.push_back(ntt);
-              return true;
-            }
-          }
-        }
-      }
-
-      return false;
-    };
-
-    entities.erase(std::remove_if(entities.begin(), entities.end(), delTrFn),
-                   entities.end());
-  }
-
-  void RenderPass::RenderOpaque(EntityRawPtrArray entities,
-                                Camera* cam,
-                                const LightRawPtrArray& lights)
+  void ForwardRenderPass::RenderOpaque(EntityRawPtrArray entities,
+                                       Camera* cam,
+                                       const LightRawPtrArray& lights)
   {
     Renderer* renderer = GetRenderer();
     for (Entity* ntt : entities)
@@ -236,9 +316,9 @@ namespace ToolKit
     }
   }
 
-  void RenderPass::RenderTranslucent(EntityRawPtrArray entities,
-                                     Camera* cam,
-                                     const LightRawPtrArray& lights)
+  void ForwardRenderPass::RenderTranslucent(EntityRawPtrArray entities,
+                                            Camera* cam,
+                                            const LightRawPtrArray& lights)
   {
     StableSortByDistanceToCamera(entities, cam);
     StableSortByMaterialPriority(entities);
@@ -704,7 +784,7 @@ namespace ToolKit
                              m_params.ClearFrameBuffer,
                              {0.0f, 0.0f, 0.0f, 1.0f});
 
-    renderer->Render(m_quad.get(), m_camera.get());
+    renderer->Render(m_quad.get(), m_camera.get(), m_params.lights);
 
     PostRender();
   }
@@ -965,16 +1045,14 @@ namespace ToolKit
 
   SceneRenderPass::SceneRenderPass()
   {
-    m_shadowPass = std::make_shared<ShadowPass>();
-    m_renderPass = std::make_shared<RenderPass>();
+    m_shadowPass        = std::make_shared<ShadowPass>();
+    m_forwardRenderPass = std::make_shared<ForwardRenderPass>();
   }
 
   SceneRenderPass::SceneRenderPass(const SceneRenderPassParams& params)
       : SceneRenderPass()
   {
-    m_params               = params;
-    m_shadowPass->m_params = params.shadowPassParams;
-    m_renderPass->m_params = params.renderPassParams;
+    m_params = params;
   }
 
   void SceneRenderPass::Render()
@@ -982,14 +1060,27 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     PreRender();
 
+    CullDrawList(m_gBufferPass.m_params.entities, m_params.Cam);
+    CullDrawList(m_forwardRenderPass->m_params.Entities, m_params.Cam);
+
+    // Gbuffer for deferred render
+    m_gBufferPass.Render();
+
     // Shadow pass
     m_shadowPass->Render();
 
     renderer->SetShadowAtlas(
         std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
-    // Render pass
-    m_renderPass->Render();
+    // Render non-blended entities with deferred renderer
+    m_deferredRenderPass.Render();
+
+    // TODO SSAO pass
+
+    // TODO render sky pass
+
+    // Forward render blended entities
+    m_forwardRenderPass->Render();
 
     renderer->SetShadowAtlas(nullptr);
 
@@ -1000,13 +1091,273 @@ namespace ToolKit
   {
     Pass::PreRender();
 
-    m_shadowPass->m_params = m_params.shadowPassParams;
-    m_renderPass->m_params = m_params.renderPassParams;
+    SetPassParams();
+
+    m_gBufferPass.InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
+                               m_params.MainFramebuffer->GetSettings().height);
   }
 
   void SceneRenderPass::PostRender()
   {
     Pass::PostRender();
+  }
+
+  void SceneRenderPass::SetPassParams()
+  {
+    m_shadowPass->m_params.Entities = m_params.Scene->GetEntities();
+    m_shadowPass->m_params.Lights   = m_params.Lights;
+
+    // Give blended entities to forward render, non-blendeds to deferred
+    // render
+
+    EntityRawPtrArray opaqueDrawList = m_params.Scene->GetEntities();
+    EntityRawPtrArray translucentAndUnlitDrawList;
+    m_forwardRenderPass->SeperateTranslucentAndUnlitEntities(
+        opaqueDrawList, translucentAndUnlitDrawList);
+
+    m_gBufferPass.m_params.entities = opaqueDrawList;
+    m_gBufferPass.m_params.camera   = m_params.Cam;
+
+    m_deferredRenderPass.m_params.ClearFramebuffer = true;
+    m_deferredRenderPass.m_params.GBufferFramebuffer =
+        m_gBufferPass.m_framebuffer;
+    m_deferredRenderPass.m_params.lights          = m_params.Lights;
+    m_deferredRenderPass.m_params.MainFramebuffer = m_params.MainFramebuffer;
+    m_deferredRenderPass.m_params.GBufferCamera   = m_params.Cam;
+
+    m_forwardRenderPass->m_params.Lights           = m_params.Lights;
+    m_forwardRenderPass->m_params.Cam              = m_params.Cam;
+    m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
+    m_forwardRenderPass->m_params.ClearFrameBuffer = false;
+
+    m_forwardRenderPass->m_params.Entities = translucentAndUnlitDrawList;
+  }
+
+  void SceneRenderPass::CullDrawList(EntityRawPtrArray& entities,
+                                     Camera* camera)
+  {
+    // Dropout non visible & drawable entities.
+    entities.erase(std::remove_if(entities.begin(),
+                                  entities.end(),
+                                  [](Entity* ntt) -> bool {
+                                    return !ntt->GetVisibleVal() ||
+                                           !ntt->IsDrawable();
+                                  }),
+                   entities.end());
+
+    FrustumCull(entities, camera);
+  }
+
+  GBufferPass::GBufferPass()
+  {
+    RenderTargetSettigs gBufferRenderTargetSettings = {
+        0,
+        GraphicTypes::Target2D,
+        GraphicTypes::UVClampToEdge,
+        GraphicTypes::UVClampToEdge,
+        GraphicTypes::UVClampToEdge,
+        GraphicTypes::SampleNearest,
+        GraphicTypes::SampleNearest,
+        GraphicTypes::FormatRGB16F,
+        GraphicTypes::FormatRGB,
+        GraphicTypes::TypeFloat,
+        1};
+
+    m_gPosRt =
+        std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gNormalRt =
+        std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gColorRt =
+        std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_framebuffer = std::make_shared<Framebuffer>();
+
+    m_gBufferMaterial = std::make_shared<Material>();
+  }
+
+  void GBufferPass::InitGBuffers(int width, int height)
+  {
+    if (m_initialized)
+    {
+      if (width != m_width || height != m_height)
+      {
+        UnInitGBuffers();
+      }
+      else
+      {
+        return;
+      }
+    }
+
+    m_width  = width;
+    m_height = height;
+
+    // Gbuffers render targets
+    m_framebuffer->Init({(uint) width, (uint) height, 0, false, true});
+    m_gPosRt->m_width     = width;
+    m_gPosRt->m_height    = height;
+    m_gNormalRt->m_width  = width;
+    m_gNormalRt->m_height = height;
+    m_gColorRt->m_width   = width;
+    m_gColorRt->m_height  = height;
+    m_gPosRt->Init();
+    m_gNormalRt->Init();
+    m_gColorRt->Init();
+
+    if (!m_attachmentsSet)
+    {
+      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                   m_gPosRt);
+      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment1,
+                                   m_gNormalRt);
+      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment2,
+                                   m_gColorRt);
+      m_attachmentsSet = true;
+    }
+
+    // Gbuffer material
+    ShaderPtr vertexShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("defaultVertex.shader", true));
+    ShaderPtr fragmentShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("gBufferFrag.shader", true));
+    m_gBufferMaterial->m_vertexShader   = vertexShader;
+    m_gBufferMaterial->m_fragmentShader = fragmentShader;
+
+    m_initialized = true;
+  }
+
+  void GBufferPass::UnInitGBuffers()
+  {
+    if (!m_initialized)
+    {
+      return;
+    }
+
+    m_framebuffer->UnInit();
+    m_attachmentsSet = false;
+
+    m_gPosRt->UnInit();
+    m_gNormalRt->UnInit();
+    m_gColorRt->UnInit();
+
+    m_initialized = false;
+  }
+
+  void GBufferPass::PreRender()
+  {
+    Pass::PreRender();
+
+    GetRenderer()->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
+    GetRenderer()->SetCameraLens(m_params.camera);
+
+    // TODO change it with CullDrawList and carry the function somewhere else
+    // from RenderPass
+    m_params.entities.erase(std::remove_if(m_params.entities.begin(),
+                                           m_params.entities.end(),
+                                           [](Entity* ntt) -> bool {
+                                             return !ntt->GetVisibleVal() ||
+                                                    !ntt->IsDrawable();
+                                           }),
+                            m_params.entities.end());
+  }
+
+  void GBufferPass::PostRender()
+  {
+    Pass::PostRender();
+  }
+
+  void GBufferPass::Render()
+  {
+    PreRender();
+
+    Renderer* renderer = GetRenderer();
+
+    for (Entity* ntt : m_params.entities)
+    {
+      MaterialPtr mat = ntt->GetRenderMaterial();
+
+      m_gBufferMaterial->SetRenderState(mat->GetRenderState());
+      m_gBufferMaterial->UnInit();
+      m_gBufferMaterial->m_diffuseTexture = mat->m_diffuseTexture;
+      m_gBufferMaterial->m_cubeMap        = mat->m_cubeMap;
+      m_gBufferMaterial->m_color          = mat->m_color;
+      m_gBufferMaterial->m_alpha          = mat->m_alpha;
+      m_gBufferMaterial->Init();
+      renderer->m_overrideMat = m_gBufferMaterial;
+
+      renderer->Render(ntt, m_params.camera);
+    }
+
+    PostRender();
+  }
+
+  DeferredRenderPass::DeferredRenderPass()
+  {
+  }
+
+  DeferredRenderPass::DeferredRenderPass(const DeferredRenderPassParams& params)
+  {
+    m_params = params;
+  }
+
+  void DeferredRenderPass::PreRender()
+  {
+    Pass::PreRender();
+
+    if (m_deferredRenderShader == nullptr)
+    {
+      m_deferredRenderShader = GetShaderManager()->Create<Shader>(
+          ShaderPath("deferredRenderFrag.shader", true));
+    }
+    m_deferredRenderShader->SetShaderParameter(
+        "camPos",
+        ParameterVariant(m_params.GBufferCamera->m_node->GetTranslation(
+            TransformationSpace::TS_WORLD)));
+
+    m_fullQuadPass.m_params.ClearFrameBuffer = true;
+    m_fullQuadPass.m_params.FragmentShader   = m_deferredRenderShader;
+    m_fullQuadPass.m_params.FrameBuffer      = m_params.MainFramebuffer;
+    m_fullQuadPass.m_params.lights           = m_params.lights;
+  }
+
+  void DeferredRenderPass::PostRender()
+  {
+    Pass::PostRender();
+  }
+
+  void DeferredRenderPass::Render()
+  {
+    PreRender();
+
+    Renderer* renderer = GetRenderer();
+
+    renderer->SetFramebuffer(m_params.MainFramebuffer, true, Vec4(0.0f));
+
+    // Set gbuffer
+    // 9: Position, 10: Normal, 11: Color
+    renderer->SetTexture(
+        9,
+        m_params.GBufferFramebuffer
+            ->GetAttachment(Framebuffer::Attachment::ColorAttachment0)
+            ->m_textureId);
+    renderer->SetTexture(
+        10,
+        m_params.GBufferFramebuffer
+            ->GetAttachment(Framebuffer::Attachment::ColorAttachment1)
+            ->m_textureId);
+    renderer->SetTexture(
+        11,
+        m_params.GBufferFramebuffer
+            ->GetAttachment(Framebuffer::Attachment::ColorAttachment2)
+            ->m_textureId);
+
+    m_fullQuadPass.Render();
+
+    // Copy real depth buffer to main framebuffer depth
+    renderer->CopyFrameBuffer(m_params.GBufferFramebuffer,
+                              m_params.MainFramebuffer,
+                              GraphicBitFields::DepthBits);
+
+    PostRender();
   }
 
 } // namespace ToolKit

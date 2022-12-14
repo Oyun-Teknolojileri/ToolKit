@@ -191,11 +191,7 @@ namespace ToolKit
       DirectionComponentPtr directionComp =
           GetCamera()->GetComponent<DirectionComponent>();
       directionComp->LookAt(Vec3(0, 0, 0));
-      m_renderPass                                  = new SceneRenderPass;
-      m_renderPass->m_params.renderPassParams.Scene = std::make_shared<Scene>();
-      m_renderPass->m_params.renderPassParams.FrameBuffer      = m_framebuffer;
-      m_renderPass->m_params.renderPassParams.Cam              = GetCamera();
-      m_renderPass->m_params.renderPassParams.ClearFrameBuffer = true;
+      m_renderPass = new SceneRenderPass;
 
       float intensity         = 1.5f;
       DirectionalLight* light = new DirectionalLight();
@@ -206,9 +202,11 @@ namespace ToolKit
       light->SetCastShadowVal(true);
       m_light = light;
 
-      m_renderPass->m_params.renderPassParams.LightOverride = {light};
-      m_renderPass->m_params.shadowPassParams.Lights =
-          m_renderPass->m_params.renderPassParams.LightOverride;
+      m_renderPass->m_params.Cam              = GetCamera();
+      m_renderPass->m_params.ClearFramebuffer = true;
+      m_renderPass->m_params.Lights           = {light};
+      m_renderPass->m_params.MainFramebuffer  = m_framebuffer;
+      m_renderPass->m_params.Scene            = std::make_shared<Scene>();
     }
 
     PreviewViewport::~PreviewViewport()
@@ -230,13 +228,20 @@ namespace ToolKit
       HandleStates();
       DrawCommands();
 
-      m_renderPass->m_params.shadowPassParams.Entities.clear();
-      for (Entity* ntt :
-           m_renderPass->m_params.renderPassParams.Scene->GetEntities())
+      for (Entity* ntt : m_renderPass->m_params.Scene->GetEntities())
       {
+        MeshComponentPtr mc = ntt->GetMeshComponent();
+        if (!mc)
+        {
+          continue;
+        }
         if (ntt->GetVisibleVal())
         {
-          m_renderPass->m_params.shadowPassParams.Entities.push_back(ntt);
+          mc->SetCastShadowVal(true);
+        }
+        else
+        {
+          mc->SetCastShadowVal(false);
         }
       }
       m_renderPass->Render();
@@ -249,7 +254,7 @@ namespace ToolKit
 
     ScenePtr PreviewViewport::GetScene()
     {
-      return m_renderPass->m_params.renderPassParams.Scene;
+      return m_renderPass->m_params.Scene;
     }
 
     // PropInspector

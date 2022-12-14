@@ -44,10 +44,6 @@ namespace ToolKit
     Renderer();
     ~Renderer();
 
-    void RenderScene(const ScenePtr scene,
-                     Viewport* viewport,
-                     const LightRawPtrArray& editorLights);
-
     /**
      * Renders given UILayer to given Viewport.
      * @param layer UILayer that will be rendered.
@@ -143,49 +139,6 @@ namespace ToolKit
     int GetMaxArrayTextureLayers();
 
    private:
-    void RenderEntities(
-        EntityRawPtrArray& entities,
-        Camera* cam,
-        Viewport* viewport,
-        const LightRawPtrArray& editorLights = LightRawPtrArray(),
-        SkyBase* sky                         = nullptr);
-
-    /**
-     * Extracts blended entites from given entity array.
-     * @param entities Entity array that the transparents will extracted from.
-     * @param blendedEntities Entity array that are going to be filled
-     * with transparents.
-     */
-    void GetTransparentEntites(EntityRawPtrArray& entities,
-                               EntityRawPtrArray& blendedEntities);
-
-    /**
-     * Renders the entities immediately. No sorting applied.
-     * @param entities All entities to render.
-     * @param cam Camera for rendering.
-     * @param zoom Zoom amount of camera.
-     * @param editorLights All lights.
-     */
-    void RenderOpaque(
-        EntityRawPtrArray entities,
-        Camera* cam,
-        const LightRawPtrArray& editorLights = LightRawPtrArray());
-
-    /**
-     * Sorts and renders entities. For double-sided blended entities first
-     * render back, than renders front.
-     * @param entities All entities to render.
-     * @param cam Camera for rendering.
-     * @param zoom Zoom amount of camera.
-     * @param editorLights All lights.
-     */
-    void RenderTransparent(
-        EntityRawPtrArray entities,
-        Camera* cam,
-        const LightRawPtrArray& editorLights = LightRawPtrArray());
-
-    void RenderSky(SkyBase* sky, Camera* cam);
-
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);
 
@@ -196,12 +149,6 @@ namespace ToolKit
      * @param entity to find the environment volume.
      */
     void FindEnvironmentLight(Entity* entity);
-
-    void ShadowPass(const LightRawPtrArray& lights,
-                    const EntityRawPtrArray& entities);
-    void UpdateShadowMaps(const LightRawPtrArray& lights,
-                          const EntityRawPtrArray& entities);
-    void FilterShadowMaps(const LightRawPtrArray& lights);
 
     void ApplyAverageBlur(const TexturePtr source,
                           RenderTargetPtr dest,
@@ -232,7 +179,7 @@ namespace ToolKit
 
     typedef struct RHIConstants
     {
-      static constexpr ubyte textureSlotCount = 8;
+      static constexpr ubyte textureSlotCount = 16;
 
       static constexpr size_t maxLightsPerObject = 16;
 

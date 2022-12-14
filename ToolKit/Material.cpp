@@ -298,6 +298,7 @@ namespace ToolKit
         ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
+    material->GetRenderState()->isUnlit = true;
     material->Init();
 
     m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
@@ -316,6 +317,7 @@ namespace ToolKit
         ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(
         ShaderPath("unlitColorFrag.shader", true));
+    material->GetRenderState()->isUnlit = true;
     material->Init();
 
     m_storage[MaterialPath("unlitSolid.material", true)] =

@@ -64,9 +64,9 @@ namespace ToolKit
 
     struct EditorRenderPassParams
     {
-      class App* App                 = nullptr;
-      class EditorViewport* Viewport = nullptr;
-      EditorLitMode LitMode          = EditorLitMode::EditorLit;
+      class App* App                               = nullptr;
+      class EditorViewport* Viewport               = nullptr;
+      EditorLitMode LitMode                        = EditorLitMode::EditorLit;
       TonemapPassParams::TonemapMethod tonemapping = TonemapPassParams::Aces;
     };
 
@@ -124,12 +124,11 @@ namespace ToolKit
 
       SceneRenderPass m_scenePass;
       TonemapPass m_tonemapPass;
-      RenderPass m_editorPass;
+      ForwardRenderPass m_editorPass;
       GizmoPass m_gizmoPass;
       GammaPass m_gammaPass;
       OutlinePass m_outlinePass;
       Camera* m_camera             = nullptr;
-      EditorScenePtr m_editorScene = nullptr;
 
       /**
        * Selected entity list
