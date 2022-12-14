@@ -14,14 +14,14 @@ namespace ToolKit
    public:
     struct PackedRect
     {
-      Vec2 Coord = Vec2(-1.0f);
+      Vec2 Coord     = Vec2(-1.0f);
       int ArrayIndex = -1;
     };
 
     struct Shelf
     {
-      Vec2 Coord = Vec2(-1.0f);
-      int Height = -1;
+      Vec2 Coord         = Vec2(-1.0f);
+      int Height         = -1;
       int AvailableWidth = -1;
 
       bool Fits(int size);
@@ -32,7 +32,7 @@ namespace ToolKit
     {
       std::vector<Shelf> Shelves;
       int CurrentHeight = -1;
-      int MaxHeight = -1;
+      int MaxHeight     = -1;
 
       bool Fits(int size);
       void CreateShelf(int size, int atlasSize);
