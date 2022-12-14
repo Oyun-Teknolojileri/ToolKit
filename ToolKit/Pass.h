@@ -254,6 +254,32 @@ namespace ToolKit
 
   typedef std::shared_ptr<OutlinePass> OutlinePassPtr;
 
+  struct PostProcessPassParams
+  {
+    FramebufferPtr FrameBuffer = nullptr;
+    ShaderPtr Shader           = nullptr;
+  };
+
+  struct TK_API PostProcessPass : public Pass
+  {
+   public:
+    PostProcessPass();
+    explicit PostProcessPass(const PostProcessPassParams& params);
+
+    void Render() override;
+    void PreRender() override;
+    void PostRender() override;
+
+   public:
+    PostProcessPassParams m_params;
+
+   protected:
+    ShaderPtr m_postProcessShader;
+    FullQuadPassPtr m_postProcessPass = nullptr;
+    FramebufferPtr m_copyBuffer       = nullptr;
+    RenderTargetPtr m_copyTexture     = nullptr;
+  };
+
   struct GammaPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;
@@ -263,24 +289,16 @@ namespace ToolKit
   /**
    * Apply gamma correction to given frame buffer.
    */
-  class TK_API GammaPass : public Pass
+  class TK_API GammaPass : public PostProcessPass
   {
    public:
     GammaPass();
     explicit GammaPass(const GammaPassParams& params);
 
-    void Render() override;
     void PreRender() override;
-    void PostRender() override;
 
    public:
     GammaPassParams m_params;
-
-   private:
-    FullQuadPassPtr m_gammaPass   = nullptr;
-    FramebufferPtr m_copyBuffer   = nullptr;
-    RenderTargetPtr m_copyTexture = nullptr;
-    ShaderPtr m_gammaShader       = nullptr;
   };
 
   struct TonemapPassParams
@@ -294,24 +312,16 @@ namespace ToolKit
     TonemapMethod Method = Aces;
   };
 
-  class TK_API TonemapPass : public Pass
+  class TK_API TonemapPass : public PostProcessPass
   {
    public:
     TonemapPass();
     explicit TonemapPass(const TonemapPassParams& params);
 
-    void Render() override;
     void PreRender() override;
-    void PostRender() override;
 
    public:
     TonemapPassParams m_params;
-
-   private:
-    FullQuadPassPtr m_tonemapPass = nullptr;
-    FramebufferPtr m_copyBuffer   = nullptr;
-    RenderTargetPtr m_copyTexture = nullptr;
-    ShaderPtr m_tonemapShader     = nullptr;
   };
 
   typedef std::shared_ptr<TonemapPass> TonemapPassPtr;

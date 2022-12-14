@@ -857,26 +857,22 @@ namespace ToolKit
     Pass::PostRender();
   }
 
-  GammaPass::GammaPass()
+  PostProcessPass::PostProcessPass()
   {
     m_copyTexture = std::make_shared<RenderTarget>();
-    // m_copyTexture->m_settings.InternalFormat = GraphicTypes::FormatRGBA8;
-    // m_copyTexture->m_settings.Type           =
-    // GraphicTypes::TypeUnsignedByte;
     m_copyBuffer = std::make_shared<Framebuffer>();
     m_copyBuffer->Init({0, 0, 0, false, false});
 
-    m_gammaPass   = std::make_shared<FullQuadPass>();
-    m_gammaShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("gammaFrag.shader", true));
+    m_postProcessPass = std::make_shared<FullQuadPass>();
   }
 
-  GammaPass::GammaPass(const GammaPassParams& params) : GammaPass()
+  PostProcessPass::PostProcessPass(const PostProcessPassParams& params)
+      : PostProcessPass()
   {
     m_params = params;
   }
 
-  void GammaPass::PreRender()
+  void PostProcessPass::PreRender()
   {
     Pass::PreRender();
 
@@ -910,37 +906,46 @@ namespace ToolKit
     // Set given buffer as a texture to be read in gamma pass.
     renderer->SetTexture(0, m_copyTexture->m_textureId);
 
-    m_gammaPass->m_params.FragmentShader   = m_gammaShader;
-    m_gammaPass->m_params.FrameBuffer      = m_params.FrameBuffer;
-    m_gammaPass->m_params.ClearFrameBuffer = false;
-
-    m_gammaShader->SetShaderParameter("Gamma",
-                                      ParameterVariant(m_params.Gamma));
+    m_postProcessPass->m_params.FragmentShader   = m_postProcessShader;
+    m_postProcessPass->m_params.FrameBuffer    = m_params.FrameBuffer;
+    m_postProcessPass->m_params.ClearFrameBuffer = false;
   }
 
-  void GammaPass::Render()
+  void PostProcessPass::Render()
   {
     PreRender();
-    m_gammaPass->Render();
+    m_postProcessPass->Render();
     PostRender();
   }
 
-  void GammaPass::PostRender()
+  void PostProcessPass::PostRender()
   {
     Pass::PostRender();
   }
 
-  TonemapPass::TonemapPass()
+  GammaPass::GammaPass() : PostProcessPass()
   {
-    m_copyTexture = std::make_shared<RenderTarget>();
-    // m_copyTexture->m_settings.InternalFormat = GraphicTypes::FormatRGBA8;
-    // m_copyTexture->m_settings.Type           =
-    // GraphicTypes::TypeUnsignedByte;
-    m_copyBuffer = std::make_shared<Framebuffer>();
-    m_copyBuffer->Init({0, 0, 0, false, false});
+    m_postProcessShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("gammaFrag.shader", true));
+  }
 
-    m_tonemapPass   = std::make_shared<FullQuadPass>();
-    m_tonemapShader = GetShaderManager()->Create<Shader>(
+  GammaPass::GammaPass(const GammaPassParams& params) : GammaPass()
+  {
+    m_params = params;
+  }
+
+  void GammaPass::PreRender()
+  {
+    PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
+    PostProcessPass::PreRender();
+
+    m_postProcessShader->SetShaderParameter("Gamma",
+                                      ParameterVariant(m_params.Gamma));
+  }
+
+  TonemapPass::TonemapPass() : PostProcessPass()
+  {
+    m_postProcessShader = GetShaderManager()->Create<Shader>(
         ShaderPath("tonemapFrag.shader", true));
   }
 
@@ -949,58 +954,14 @@ namespace ToolKit
     m_params = params;
   }
 
-  void TonemapPass::Render()
-  {
-    PreRender();
-    m_tonemapPass->Render();
-    PostRender();
-  }
-
   void TonemapPass::PreRender()
   {
-    Pass::PreRender();
+    PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
+    PostProcessPass::PreRender();
 
-    Renderer* renderer = GetRenderer();
 
-    // Initiate copy buffer.
-    FramebufferSettings fbs;
-    fbs.depthStencil    = false;
-    fbs.useDefaultDepth = false;
-    if (m_params.FrameBuffer == nullptr)
-    {
-      fbs.width  = renderer->m_windowSize.x;
-      fbs.height = renderer->m_windowSize.y;
-    }
-    else
-    {
-      FramebufferSettings targetFbs = m_params.FrameBuffer->GetSettings();
-      fbs.width                     = targetFbs.width;
-      fbs.height                    = targetFbs.height;
-    }
-
-    m_copyTexture->ReconstructIfNeeded(fbs.width, fbs.height);
-    m_copyBuffer->ReconstructIfNeeded(fbs.width, fbs.height);
-    m_copyBuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                m_copyTexture);
-
-    // Copy given buffer.
-    renderer->CopyFrameBuffer(
-        m_params.FrameBuffer, m_copyBuffer, GraphicBitFields::ColorBits);
-
-    // Set given buffer as a texture to be read in tonemap pass.
-    renderer->SetTexture(0, m_copyTexture->m_textureId);
-
-    m_tonemapPass->m_params.FragmentShader   = m_tonemapShader;
-    m_tonemapPass->m_params.FrameBuffer      = m_params.FrameBuffer;
-    m_tonemapPass->m_params.ClearFrameBuffer = false;
-
-    m_tonemapShader->SetShaderParameter(
+    m_postProcessShader->SetShaderParameter(
         "UseAcesTonemapper", ParameterVariant((uint) m_params.Method));
-  }
-
-  void TonemapPass::PostRender()
-  {
-    Pass::PostRender();
   }
 
   SceneRenderPass::SceneRenderPass()
