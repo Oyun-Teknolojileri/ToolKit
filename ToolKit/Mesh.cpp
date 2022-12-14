@@ -90,7 +90,7 @@ namespace ToolKit
 
   Mesh::Mesh()
   {
-    m_material = std::make_shared<Material>();
+    m_material     = std::make_shared<Material>();
     m_vertexLayout = VertexLayout::Mesh;
   }
 
@@ -114,7 +114,7 @@ namespace ToolKit
     InitVertices(flushClientSideArray);
     SetVertexLayout(m_vertexLayout);
     InitIndices(flushClientSideArray);
-    
+
     if (!flushClientSideArray)
     {
       ConstructFaces();

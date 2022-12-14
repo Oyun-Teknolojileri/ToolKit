@@ -613,6 +613,11 @@ namespace ToolKit
       m_renderState.lineWidth = state->lineWidth;
       glLineWidth(m_renderState.lineWidth);
     }
+
+    if (m_renderState.emissiveColorMultiplier != state->emissiveColorMultiplier)
+    {
+      m_renderState.emissiveColorMultiplier = state->emissiveColorMultiplier;
+    }
   }
 
   void Renderer::SetStencilOperation(StencilOperation op)
@@ -1606,24 +1611,26 @@ namespace ToolKit
         switch (uni)
         {
         case Uniform::PROJECT_MODEL_VIEW: {
-          GLint loc =
-              glGetUniformLocation(program->m_handle, "ProjectViewModel");
+          GLint loc = glGetUniformLocation(
+              program->m_handle, GetUniformName(Uniform::PROJECT_MODEL_VIEW));
           Mat4 mul = m_project * m_view * m_model;
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
         break;
         case Uniform::VIEW: {
-          GLint loc = glGetUniformLocation(program->m_handle, "View");
+          GLint loc = glGetUniformLocation(program->m_handle,
+                                           GetUniformName(Uniform::VIEW));
           glUniformMatrix4fv(loc, 1, false, &m_view[0][0]);
         }
         case Uniform::MODEL: {
-          GLint loc = glGetUniformLocation(program->m_handle, "Model");
+          GLint loc = glGetUniformLocation(program->m_handle,
+                                           GetUniformName(Uniform::MODEL));
           glUniformMatrix4fv(loc, 1, false, &m_model[0][0]);
         }
         break;
         case Uniform::INV_TR_MODEL: {
-          GLint loc =
-              glGetUniformLocation(program->m_handle, "InverseTransModel");
+          GLint loc = glGetUniformLocation(
+              program->m_handle, GetUniformName(Uniform::INV_TR_MODEL));
           Mat4 invTrModel = glm::transpose(glm::inverse(m_model));
           glUniformMatrix4fv(loc, 1, false, &invTrModel[0][0]);
         }
@@ -1636,12 +1643,16 @@ namespace ToolKit
           if (m_cam == nullptr)
             break;
 
-          Camera::CamData data = m_cam->GetData();
-          GLint loc = glGetUniformLocation(program->m_handle, "CamData.pos");
+          Camera::CamData data     = m_cam->GetData();
+          String uniformStructName = GetUniformName(Uniform::CAM_DATA);
+          GLint loc                = glGetUniformLocation(
+              program->m_handle, (uniformStructName + ".pos").c_str());
           glUniform3fv(loc, 1, &data.pos.x);
-          loc = glGetUniformLocation(program->m_handle, "CamData.dir");
+          loc = glGetUniformLocation(program->m_handle,
+                                     (uniformStructName + ".dir").c_str());
           glUniform3fv(loc, 1, &data.dir.x);
-          loc = glGetUniformLocation(program->m_handle, "CamData.far");
+          loc = glGetUniformLocation(program->m_handle,
+                                     (uniformStructName + ".far").c_str());
           glUniform1f(loc, data.far);
         }
         break;
@@ -1655,7 +1666,8 @@ namespace ToolKit
             color.a = 1.0f;
           }
 
-          GLint loc = glGetUniformLocation(program->m_handle, "Color");
+          GLint loc = glGetUniformLocation(program->m_handle,
+                                           GetUniformName(Uniform::COLOR));
           if (m_renderOnlyLighting)
           {
             const Vec4 overrideColor = Vec4(1.0f, 1.0f, 1.0f, color.a);
@@ -1668,18 +1680,21 @@ namespace ToolKit
         }
         break;
         case Uniform::FRAME_COUNT: {
-          GLint loc = glGetUniformLocation(program->m_handle, "FrameCount");
+          GLint loc = glGetUniformLocation(
+              program->m_handle, GetUniformName(Uniform::FRAME_COUNT));
           glUniform1ui(loc, m_frameCount);
         }
         break;
         case Uniform::EXPOSURE: {
-          GLint loc = glGetUniformLocation(program->m_handle, "Exposure");
+          GLint loc = glGetUniformLocation(program->m_handle,
+                                           GetUniformName(Uniform::EXPOSURE));
           glUniform1f(loc, shader->m_shaderParams["Exposure"].GetVar<float>());
         }
         break;
         case Uniform::PROJECTION_VIEW_NO_TR: {
-          GLint loc =
-              glGetUniformLocation(program->m_handle, "ProjectionViewNoTr");
+          GLint loc = glGetUniformLocation(
+              program->m_handle,
+              GetUniformName(Uniform::PROJECTION_VIEW_NO_TR));
           // Zero transalate variables in model matrix
           Mat4 view  = m_view;
           view[0][3] = 0.0f;
@@ -1695,13 +1710,15 @@ namespace ToolKit
         break;
         case Uniform::USE_IBL: {
           m_renderState.IBLInUse = m_mat->GetRenderState()->IBLInUse;
-          GLint loc = glGetUniformLocation(program->m_handle, "UseIbl");
+          GLint loc              = glGetUniformLocation(program->m_handle,
+                                           GetUniformName(Uniform::USE_IBL));
           glUniform1f(loc, static_cast<float>(m_renderState.IBLInUse));
         }
         break;
         case Uniform::IBL_INTENSITY: {
           m_renderState.iblIntensity = m_mat->GetRenderState()->iblIntensity;
-          GLint loc = glGetUniformLocation(program->m_handle, "IblIntensity");
+          GLint loc                  = glGetUniformLocation(
+              program->m_handle, GetUniformName(Uniform::IBL_INTENSITY));
           glUniform1f(loc, static_cast<float>(m_renderState.iblIntensity));
         }
         break;
@@ -1711,8 +1728,9 @@ namespace ToolKit
         }
         break;
         case Uniform::DIFFUSE_TEXTURE_IN_USE: {
-          GLint loc =
-              glGetUniformLocation(program->m_handle, "DiffuseTextureInUse");
+          GLint loc = glGetUniformLocation(
+              program->m_handle,
+              GetUniformName(Uniform::DIFFUSE_TEXTURE_IN_USE));
           glUniform1i(loc, (int) m_mat->GetRenderState()->diffuseTextureInUse);
         }
         break;
@@ -1720,37 +1738,49 @@ namespace ToolKit
           if (m_mat == nullptr)
             break;
 
-          GLint loc = glGetUniformLocation(program->m_handle, "colorAlpha");
+          GLint loc = glGetUniformLocation(
+              program->m_handle, GetUniformName(Uniform::COLOR_ALPHA));
           glUniform1f(loc, m_mat->m_alpha);
         }
         break;
         case Uniform::USE_AO: {
           m_renderState.AOInUse = m_mat->GetRenderState()->AOInUse;
-          GLint loc = glGetUniformLocation(program->m_handle, "UseAO");
+          GLint loc             = glGetUniformLocation(program->m_handle,
+                                           GetUniformName(Uniform::USE_AO));
           glUniform1i(loc, (int) m_renderState.AOInUse);
         }
         break;
         case Uniform::IBL_ROTATION: {
-          GLint loc = glGetUniformLocation(program->m_handle, "IblRotation");
+          GLint loc = glGetUniformLocation(
+              program->m_handle, GetUniformName(Uniform::IBL_ROTATION));
 
           glUniformMatrix4fv(loc, 1, false, &m_iblRotation[0][0]);
         }
         break;
         case Uniform::LIGHTING_ONLY: {
-          GLint loc = glGetUniformLocation(program->m_handle, "LightingOnly");
+          GLint loc = glGetUniformLocation(
+              program->m_handle, GetUniformName(Uniform::LIGHTING_ONLY));
           glUniform1i(loc, m_renderOnlyLighting ? 1 : 0);
         }
         break;
         case Uniform::USE_ALPHA_MASK: {
-          GLint loc = glGetUniformLocation(program->m_handle, "useAlphaMask");
+          GLint loc = glGetUniformLocation(
+              program->m_handle, GetUniformName(Uniform::USE_ALPHA_MASK));
           glUniform1i(loc,
                       m_renderState.blendFunction == BlendFunction::ALPHA_MASK);
         }
         break;
         case Uniform::ALPHA_MASK_TRESHOLD: {
-          GLint loc =
-              glGetUniformLocation(program->m_handle, "alphaMaskTreshold");
+          GLint loc = glGetUniformLocation(
+              program->m_handle, GetUniformName(Uniform::ALPHA_MASK_TRESHOLD));
           glUniform1f(loc, m_renderState.alphaMaskTreshold);
+        }
+        break;
+        case Uniform::EMISSIVE_COLOR_MULTIPLIER: {
+          GLint loc = glGetUniformLocation(
+              program->m_handle,
+              GetUniformName(Uniform::EMISSIVE_COLOR_MULTIPLIER));
+          glUniform3fv(loc, 1, &m_renderState.emissiveColorMultiplier.x);
         }
         break;
         default:

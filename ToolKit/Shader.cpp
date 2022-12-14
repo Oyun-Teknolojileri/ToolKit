@@ -126,6 +126,58 @@ namespace ToolKit
     m_initiated = false;
   }
 
+  const char* GetUniformName(Uniform u)
+  {
+    switch (u)
+    {
+    case Uniform::PROJECT_MODEL_VIEW:
+      return "ProjectViewModel";
+    case Uniform::VIEW:
+      return "View";
+    case Uniform::MODEL:
+      return "Model";
+    case Uniform::INV_TR_MODEL:
+      return "InverseTransModel";
+    case Uniform::LIGHT_DATA:
+      return "LightData";
+    case Uniform::CAM_DATA:
+      return "CamData";
+    case Uniform::COLOR:
+      return "Color";
+    case Uniform::FRAME_COUNT:
+      return "FrameCount";
+    case Uniform::PROJECTION_VIEW_NO_TR:
+      return "ProjectionViewNoTr";
+    case Uniform::USE_IBL:
+      return "UseIbl";
+    case Uniform::IBL_INTENSITY:
+      return "IblIntensity";
+    case Uniform::IBL_IRRADIANCE:
+      return "IBLIrradianceMap";
+    case Uniform::USE_AO:
+      return "UseAO";
+    case Uniform::DIFFUSE_TEXTURE_IN_USE:
+      return "DiffuseTextureInUse";
+    case Uniform::IBL_ROTATION:
+      return "IblRotation";
+    case Uniform::LIGHTING_ONLY:
+      return "LightingOnly";
+    case Uniform::USE_ALPHA_MASK:
+      return "useAlphaMask";
+    case Uniform::ALPHA_MASK_TRESHOLD:
+      return "alphaMaskTreshold";
+    case Uniform::EMISSIVE_COLOR_MULTIPLIER:
+      return "emissiveColorMultiplier";
+    case Uniform::EXPOSURE:
+      return "Exposure";
+    case Uniform::COLOR_ALPHA:
+      return "ColorAlpha";
+    case Uniform::UNUSEDSLOT_1:
+    default:
+      return "";
+    }
+  }
+
   void Shader::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "shader", parent);
@@ -154,68 +206,7 @@ namespace ToolKit
     {
       XmlNode* node = CreateXmlNode(doc, "uniform", container);
 
-      String name;
-      switch (ui)
-      {
-      case Uniform::PROJECT_MODEL_VIEW:
-        name = "ProjectViewModel";
-        break;
-      case Uniform::VIEW:
-        name = "View";
-        break;
-      case Uniform::MODEL:
-        name = "Model";
-        break;
-      case Uniform::INV_TR_MODEL:
-        name = "InverseTransModel";
-        break;
-      case Uniform::LIGHT_DATA:
-        name = "LightData";
-        break;
-      case Uniform::CAM_DATA:
-        name = "CamData";
-        break;
-      case Uniform::COLOR:
-        name = "Color";
-        break;
-      case Uniform::FRAME_COUNT:
-        name = "FrameCount";
-        break;
-      case Uniform::UNUSEDSLOT_1:
-        break;
-      case Uniform::PROJECTION_VIEW_NO_TR:
-        name = "ProjectionViewNoTr";
-        break;
-      case Uniform::USE_IBL:
-        name = "UseIbl";
-        break;
-      case Uniform::IBL_IRRADIANCE:
-        name = "IBLIrradianceMap";
-        break;
-      case Uniform::USE_AO:
-        name = "UseAO";
-        break;
-      case Uniform::DIFFUSE_TEXTURE_IN_USE:
-        name = "DiffuseTextureInUse";
-        break;
-      case Uniform::IBL_ROTATION:
-        name = "IblRotation";
-        break;
-      case Uniform::LIGHTING_ONLY:
-        name = "LightingOnly";
-        break;
-      case Uniform::USE_ALPHA_MASK:
-        name = "useAlphaMask";
-        break;
-      case Uniform::ALPHA_MASK_TRESHOLD:
-        name = "alphaMaskTreshold";
-        break;
-      default:
-        assert(false && "unknown uniform");
-        break;
-      }
-
-      WriteAttr(node, doc, "name", name);
+      WriteAttr(node, doc, "name", GetUniformName(ui));
     }
 
     XmlNode* src      = CreateXmlNode(doc, "source", container);
@@ -265,91 +256,18 @@ namespace ToolKit
 
       if (strcmp("uniform", node->name()) == 0)
       {
-        XmlAttribute* attr = node->first_attribute();
-        if (strcmp("ProjectViewModel", attr->value()) == 0)
+        XmlAttribute* attr  = node->first_attribute();
+        bool isUniformFound = false;
+        for (uint i = 0; i < (uint) Uniform::UNIFORM_MAX_INVALID; i++)
         {
-          m_uniforms.push_back(Uniform::PROJECT_MODEL_VIEW);
+          if (strcmp(GetUniformName((Uniform) i), attr->value()) == 0)
+          {
+            m_uniforms.push_back((Uniform) i);
+            isUniformFound = true;
+            break;
+          }
         }
-        else if (strcmp("View", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::VIEW);
-        }
-        else if (strcmp("Model", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::MODEL);
-        }
-        else if (strcmp("InverseTransModel", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::INV_TR_MODEL);
-        }
-        else if (strcmp("LightData", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::LIGHT_DATA);
-        }
-        else if (strcmp("CamData", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::CAM_DATA);
-        }
-        else if (strcmp("Color", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::COLOR);
-        }
-        else if (strcmp("FrameCount", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::FRAME_COUNT);
-        }
-        else if (strcmp("Exposure", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::EXPOSURE);
-        }
-        else if (strcmp("ProjectionViewNoTr", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::PROJECTION_VIEW_NO_TR);
-        }
-        else if (strcmp("UseIbl", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::USE_IBL);
-        }
-        else if (strcmp("IblIntensity", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::IBL_INTENSITY);
-        }
-        else if (strcmp("IBLIrradianceMap", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::IBL_IRRADIANCE);
-        }
-        else if (strcmp("DiffuseTextureInUse", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::DIFFUSE_TEXTURE_IN_USE);
-        }
-        else if (strcmp("ColorAlpha", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::COLOR_ALPHA);
-        }
-        else if (strcmp("UseAO", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::USE_AO);
-        }
-        else if (strcmp("IblRotation", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::IBL_ROTATION);
-        }
-        else if (strcmp("LightingOnly", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::LIGHTING_ONLY);
-        }
-        else if (strcmp("useAlphaMask", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::USE_ALPHA_MASK);
-        }
-        else if (strcmp("alphaMaskTreshold", attr->value()) == 0)
-        {
-          m_uniforms.push_back(Uniform::ALPHA_MASK_TRESHOLD);
-        }
-        else
-        {
-          assert(false);
-        }
+        assert(isUniformFound);
       }
 
       if (strcmp("source", node->name()) == 0)

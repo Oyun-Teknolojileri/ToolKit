@@ -60,6 +60,7 @@ namespace ToolKit
     uint irradianceMap = 0;
     bool AOInUse       = true;
     int priority       = 0; // The higher the priority, the earlier to draw.
+    Vec3 emissiveColorMultiplier = Vec3(1.0f);
   };
 
 } // namespace ToolKit
