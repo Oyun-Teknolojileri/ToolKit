@@ -26,7 +26,7 @@ namespace ToolKit
     FramebufferPtr m_prevFrameBuffer   = nullptr;
   };
 
-  struct RenderPassParams
+  struct ForwardRenderPassParams
   {
     EntityRawPtrArray Entities;
     LightRawPtrArray Lights;
@@ -38,12 +38,12 @@ namespace ToolKit
   /**
    * Renders given entities with given lights using forward rendering
    */
-  class TK_API RenderPass : public Pass
+  class TK_API ForwardRenderPass : public Pass
   {
    public:
-    RenderPass();
-    explicit RenderPass(const RenderPassParams& params);
-    virtual ~RenderPass();
+    ForwardRenderPass();
+    explicit ForwardRenderPass(const ForwardRenderPassParams& params);
+    virtual ~ForwardRenderPass();
 
     void Render() override;
     void PreRender() override;
@@ -75,14 +75,14 @@ namespace ToolKit
                            const LightRawPtrArray& lights);
 
    public:
-    RenderPassParams m_params;
+    ForwardRenderPassParams m_params;
 
    protected:
     Camera* m_camera = nullptr;
     EntityRawPtrArray m_drawList;
   };
 
-  typedef std::shared_ptr<RenderPass> RenderPassPtr;
+  typedef std::shared_ptr<ForwardRenderPass> ForwardRenderPassPtr;
 
   struct ShadowPassParams
   {
@@ -345,7 +345,7 @@ namespace ToolKit
   };
 
   /**
-   * Render scene with shadows.
+   * Main scene renderer.
    * TODO: It should be Tecnhique instead of Pass.
    */
   class TK_API SceneRenderPass : public Pass
@@ -366,8 +366,8 @@ namespace ToolKit
    public:
     SceneRenderPassParams m_params;
 
-    ShadowPassPtr m_shadowPass = nullptr;
-    RenderPassPtr m_renderPass = nullptr;
+    ShadowPassPtr m_shadowPass               = nullptr;
+    ForwardRenderPassPtr m_forwardRenderPass = nullptr;
     GBufferPass m_gBufferPass;
     DeferredRenderPass m_deferredRenderPass;
   };

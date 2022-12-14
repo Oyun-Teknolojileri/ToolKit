@@ -7,11 +7,12 @@
 namespace ToolKit
 {
 
-  RenderPass::RenderPass()
+  ForwardRenderPass::ForwardRenderPass()
   {
   }
 
-  RenderPass::RenderPass(const RenderPassParams& params) : m_params(params)
+  ForwardRenderPass::ForwardRenderPass(const ForwardRenderPassParams& params)
+      : m_params(params)
   {
     // Create a default frame buffer.
     if (m_params.FrameBuffer == nullptr)
@@ -21,7 +22,7 @@ namespace ToolKit
     }
   }
 
-  void RenderPass::Render()
+  void ForwardRenderPass::Render()
   {
     PreRender();
 
@@ -34,11 +35,11 @@ namespace ToolKit
     PostRender();
   }
 
-  RenderPass::~RenderPass()
+  ForwardRenderPass::~ForwardRenderPass()
   {
   }
 
-  void RenderPass::PreRender()
+  void ForwardRenderPass::PreRender()
   {
     Pass::PreRender();
     Renderer* renderer = GetRenderer();
@@ -54,12 +55,13 @@ namespace ToolKit
     renderer->CollectEnvironmentVolumes(m_drawList);
   }
 
-  void RenderPass::PostRender()
+  void ForwardRenderPass::PostRender()
   {
     Pass::PostRender();
   }
 
-  void RenderPass::CullLightList(Entity const* entity, LightRawPtrArray& lights)
+  void ForwardRenderPass::CullLightList(Entity const* entity,
+                                        LightRawPtrArray& lights)
   {
     LightRawPtrArray bestLights;
     bestLights.reserve(lights.size());
@@ -141,9 +143,9 @@ namespace ToolKit
     lights = bestLights;
   }
 
-  void RenderPass::RenderOpaque(EntityRawPtrArray entities,
-                                Camera* cam,
-                                const LightRawPtrArray& lights)
+  void ForwardRenderPass::RenderOpaque(EntityRawPtrArray entities,
+                                       Camera* cam,
+                                       const LightRawPtrArray& lights)
   {
     Renderer* renderer = GetRenderer();
     for (Entity* ntt : entities)
@@ -155,9 +157,9 @@ namespace ToolKit
     }
   }
 
-  void RenderPass::RenderTranslucent(EntityRawPtrArray entities,
-                                     Camera* cam,
-                                     const LightRawPtrArray& lights)
+  void ForwardRenderPass::RenderTranslucent(EntityRawPtrArray entities,
+                                            Camera* cam,
+                                            const LightRawPtrArray& lights)
   {
     StableSortByDistanceToCamera(entities, cam);
     StableSortByMaterialPriority(entities);
@@ -851,8 +853,8 @@ namespace ToolKit
 
   SceneRenderPass::SceneRenderPass()
   {
-    m_shadowPass = std::make_shared<ShadowPass>();
-    m_renderPass = std::make_shared<RenderPass>();
+    m_shadowPass        = std::make_shared<ShadowPass>();
+    m_forwardRenderPass = std::make_shared<ForwardRenderPass>();
   }
 
   SceneRenderPass::SceneRenderPass(const SceneRenderPassParams& params)
@@ -867,7 +869,7 @@ namespace ToolKit
     PreRender();
 
     CullDrawList(m_gBufferPass.m_params.entities, m_params.Cam);
-    CullDrawList(m_renderPass->m_params.Entities, m_params.Cam);
+    CullDrawList(m_forwardRenderPass->m_params.Entities, m_params.Cam);
 
     // Gbuffer for deferred render
     m_gBufferPass.Render();
@@ -886,7 +888,7 @@ namespace ToolKit
     // TODO render sky pass
 
     // Forward render blended entities
-    m_renderPass->Render();
+    m_forwardRenderPass->Render();
 
     renderer->SetShadowAtlas(nullptr);
 
@@ -918,7 +920,8 @@ namespace ToolKit
 
     EntityRawPtrArray opaqueDrawList = m_params.Scene->GetEntities();
     EntityRawPtrArray translucentAndUnlitDrawList;
-    SeperateTranslucentAndUnlitEntities(opaqueDrawList, translucentAndUnlitDrawList);
+    SeperateTranslucentAndUnlitEntities(opaqueDrawList,
+                                        translucentAndUnlitDrawList);
 
     m_gBufferPass.m_params.entities = opaqueDrawList;
     m_gBufferPass.m_params.camera   = m_params.Cam;
@@ -930,12 +933,12 @@ namespace ToolKit
     m_deferredRenderPass.m_params.MainFramebuffer = m_params.MainFramebuffer;
     m_deferredRenderPass.m_params.GBufferCamera   = m_params.Cam;
 
-    m_renderPass->m_params.Lights           = m_params.Lights;
-    m_renderPass->m_params.Cam              = m_params.Cam;
-    m_renderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
-    m_renderPass->m_params.ClearFrameBuffer = false;
+    m_forwardRenderPass->m_params.Lights           = m_params.Lights;
+    m_forwardRenderPass->m_params.Cam              = m_params.Cam;
+    m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
+    m_forwardRenderPass->m_params.ClearFrameBuffer = false;
 
-    m_renderPass->m_params.Entities = translucentAndUnlitDrawList;
+    m_forwardRenderPass->m_params.Entities = translucentAndUnlitDrawList;
   }
 
   void SceneRenderPass::CullDrawList(EntityRawPtrArray& entities,

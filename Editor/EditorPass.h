@@ -122,7 +122,7 @@ namespace ToolKit
       MaterialPtr m_unlitOverride = nullptr;
 
       SceneRenderPass m_scenePass;
-      RenderPass m_editorPass;
+      ForwardRenderPass m_editorPass;
       GizmoPass m_gizmoPass;
       GammaPass m_gammaPass;
       OutlinePass m_outlinePass;
