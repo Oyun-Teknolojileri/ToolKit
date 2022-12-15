@@ -6,6 +6,7 @@
 	<include name = "AO.shader" />
 	<uniform name = "CamData" />
 	<uniform name = "Color" />
+	<uniform name = "DiffuseTextureInUse" />
 	<uniform name = "useAlphaMask" />
 	<uniform name = "alphaMaskTreshold" />
 
@@ -17,6 +18,8 @@
 		uniform int useAlphaMask;
 		uniform float alphaMaskTreshold;
 		uniform vec4 Color;
+		uniform int DiffuseTextureInUse;
+		uniform sampler2D s_texture0;
 
 		in vec3 v_pos;
 		in vec3 v_normal;
@@ -26,9 +29,19 @@
 
 		void main()
 		{
+			vec4 color;
+			if (DiffuseTextureInUse == 1)
+			{
+				color = texture(s_texture0, v_texture);
+			}
+			else
+			{
+				color = Color;
+			}
+
 			if (useAlphaMask == 1)
 			{
-				if (Color.a < alphaMaskTreshold)
+				if (color.a < alphaMaskTreshold)
 				{
 					discard;
 				}
@@ -43,7 +56,7 @@
 
 			// float ambientOcclusion = AmbientOcclusion();
 
-			fragColor = vec4(irradiance * Color.xyz, Color.a);
+			fragColor = vec4(irradiance * color.xyz, color.a);
 		}
 	-->
 	</source>
