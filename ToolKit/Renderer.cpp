@@ -577,10 +577,10 @@ namespace ToolKit
 
     m_renderState.alphaMaskTreshold = state->alphaMaskTreshold;
 
-    if (state->diffuseTextureInUse)
+    bool diffuseTexture = !state->isColorMaterial && state->diffuseTextureInUse;
+    if (diffuseTexture)
     {
-      m_renderState.diffuseTexture      = state->diffuseTexture;
-      m_renderState.diffuseTextureInUse = state->diffuseTextureInUse;
+      m_renderState.diffuseTexture = state->diffuseTexture;
       SetTexture(0, state->diffuseTexture);
     }
 
@@ -1396,7 +1396,7 @@ namespace ToolKit
           GLint loc = glGetUniformLocation(
               program->m_handle,
               GetUniformName(Uniform::DIFFUSE_TEXTURE_IN_USE));
-          glUniform1i(loc, (int) m_mat->GetRenderState()->diffuseTextureInUse);
+          glUniform1i(loc, (int) !(m_mat->GetRenderState()->isColorMaterial));
         }
         break;
         case Uniform::COLOR_ALPHA: {

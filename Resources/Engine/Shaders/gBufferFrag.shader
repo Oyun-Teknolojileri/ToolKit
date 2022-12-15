@@ -27,7 +27,6 @@
 		void main()
 		{
 			vec4 color;
-			
 			if (DiffuseTextureInUse == 1)
 			{
 				color = texture(s_texture0, v_texture).rgba;
