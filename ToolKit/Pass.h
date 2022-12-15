@@ -300,6 +300,8 @@ namespace ToolKit
    private:
     FramebufferPtr m_sourceBuffer = {}, m_tempDownsampleBuffers[5] = {};
     RenderTargetPtr m_tempDownsampleTextures[5] = {};
+    FullQuadPassPtr m_passes[5]                 = {};
+    ShaderPtr m_downsampleShader = {}, m_upsampleShader = {};
   };
 
   struct PostProcessPassParams

@@ -127,6 +127,7 @@ namespace ToolKit
       ForwardRenderPass m_editorPass;
       GizmoPass m_gizmoPass;
       GammaPass m_gammaPass;
+      BloomPass m_bloomPass;
       OutlinePass m_outlinePass;
       Camera* m_camera             = nullptr;
 

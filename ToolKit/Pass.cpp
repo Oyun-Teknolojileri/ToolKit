@@ -939,44 +939,117 @@ namespace ToolKit
 
   BloomPass::BloomPass()
   {
-  }
-
-  BloomPass::BloomPass(const BloomPassParams& params) : BloomPass()
-  {
-    m_params = params;
     for (uint i = 0; i < 5; i++)
     {
       m_tempDownsampleTextures[i] = std::make_shared<RenderTarget>();
+      m_tempDownsampleTextures[i]->m_settings.InternalFormat =
+          GraphicTypes::FormatRGB16F;
 
       m_tempDownsampleBuffers[i] = std::make_shared<Framebuffer>();
       m_tempDownsampleBuffers[i]->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
           m_tempDownsampleTextures[i]);
+
+      m_passes[i]                       = std::make_shared<FullQuadPass>();
+      m_passes[i]->m_params.FrameBuffer = m_tempDownsampleBuffers[i];
     }
+
+    m_downsampleShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("bloomDownsample.shader", true));
+    m_upsampleShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("bloomUpsample.shader", true));
+  }
+
+  BloomPass::BloomPass(const BloomPassParams& params) : BloomPass()
+  {
+    m_params = params;
   }
 
   void BloomPass::Render()
   {
-    // GetRenderer()->Apply7x1GaussianBlur();
+    PreRender();
+
+    RenderTargetPtr mainRt = m_sourceBuffer->GetAttachment(
+        Framebuffer::Attachment::ColorAttachment0);
+    if (mainRt == nullptr)
+    {
+      PostRender();
+      return;
+    }
+
+    UVec2 mainRes = UVec2(mainRt->m_width, mainRt->m_height);
+    for (uint i = 0; i < 5; i++)
+    {
+      // Calculate current and previous resolutions
+      const Vec2 factor(1.0 / pow(2, i + 1));
+      const UVec2 curRes = Vec2(mainRes) * Vec2((1.0 / pow(2, i + 1)));
+      const Vec2 prevRes = Vec2(mainRes) * Vec2((1.0 / pow(2, i)));
+
+      // Reconstruct current downsample RT
+      m_tempDownsampleBuffers[i]->ReconstructIfNeeded(curRes.x, curRes.y);
+      m_tempDownsampleTextures[i]->ReconstructIfNeeded(curRes.x, curRes.y);
+      m_tempDownsampleBuffers[i]->SetAttachment(
+          Framebuffer::Attachment::ColorAttachment0,
+          m_tempDownsampleTextures[i]);
+
+      m_passes[i]->m_params.FrameBuffer = m_tempDownsampleBuffers[i];
+      // Find previous framebuffer & RT
+      FramebufferPtr prevFramebuffer =
+          i == 0 ? m_params.FrameBuffer : m_passes[i - 1]->m_params.FrameBuffer;
+      TexturePtr prevRt = prevFramebuffer->GetAttachment(
+          Framebuffer::Attachment::ColorAttachment0);
+
+      // Set pass' shader and parameters
+      m_passes[i]->m_params.FragmentShader = m_downsampleShader;
+      m_downsampleShader->SetShaderParameter("srcResolution",
+                                             ParameterVariant(prevRes));
+      GetRenderer()->SetTexture(0, prevRt->m_textureId);
+
+      m_passes[i]->Render();
+    }
+    for (uint i = 5; i-- > 0;)
+    {
+      m_passes[i]->m_params.FragmentShader = m_upsampleShader;
+      static constexpr float filterRadius  = 0.005f;
+      m_downsampleShader->SetShaderParameter("filterRadius",
+                                             ParameterVariant(filterRadius));
+
+      FramebufferPtr prevFramebuffer = m_passes[i]->m_params.FrameBuffer;
+      m_passes[i]->m_params.FrameBuffer =
+          (i == 0) ? m_sourceBuffer : m_tempDownsampleBuffers[i - 1];
+      TexturePtr prevRt              = prevFramebuffer->GetAttachment(
+          Framebuffer::Attachment::ColorAttachment0);
+      GetRenderer()->SetTexture(0, prevRt->m_textureId);
+
+      m_passes[i]->Render();
+    }
+
+    PostRender();
   }
 
   void BloomPass::PreRender()
   {
+    Pass::PreRender();
+
+    m_sourceBuffer = m_params.FrameBuffer;
+
     RenderTargetPtr mainRt = m_sourceBuffer->GetAttachment(
         Framebuffer::Attachment::ColorAttachment0);
+    if (!mainRt)
+    {
+      return;
+    }
     UVec2 mainRes = UVec2(mainRt->m_width, mainRt->m_height);
     for (uint i = 0; i < 5; i++)
     {
-      m_tempDownsampleTextures[i]->ReconstructIfNeeded(
-          mainRes.x * pow(2, i + 1), mainRes.y * pow(2, i + 1));
-
-      m_tempDownsampleBuffers[i]->ReconstructIfNeeded(
-          mainRes.x * pow(2, i + 1), mainRes.y * pow(2, i + 1));
+      const Vec2 factor(1.0 / pow(2, i + 1));
+      const UVec2 curRes = Vec2(mainRes) * factor;
     }
   }
 
   void BloomPass::PostRender()
   {
+    Pass::PostRender();
   }
 
   PostProcessPass::PostProcessPass()
