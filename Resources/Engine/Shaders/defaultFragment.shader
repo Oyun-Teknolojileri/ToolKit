@@ -8,6 +8,8 @@
 	<uniform name = "LightingOnly" />
 	<uniform name = "useAlphaMask" />
 	<uniform name = "alphaMaskTreshold" />
+	<uniform name = "DiffuseTextureInUse" />
+	<uniform name = "Color" />
 	<source>
 	<!--
 		#version 300 es
@@ -17,6 +19,8 @@
 		uniform int LightingOnly;
 		uniform int useAlphaMask;
 		uniform float alphaMaskTreshold;
+		uniform int DiffuseTextureInUse;
+		uniform vec4 Color;
 
 		in vec3 v_pos;
 		in vec3 v_normal;
@@ -26,16 +30,25 @@
 
 		void main()
 		{
-			vec4 objectColor = texture(s_texture0, v_texture);
+			vec4 color;
+			if(DiffuseTextureInUse > 0)
+			{
+		  	color = texture(s_texture0, v_texture);
+			}
+			else
+			{
+				color = Color;
+			}
+
 			if (useAlphaMask == 1)
 			{
-				if(objectColor.a < alphaMaskTreshold){
+				if(color.a < alphaMaskTreshold){
 					discard;
 				}
 			}
 			if (LightingOnly == 1)
 			{
-				objectColor.xyz = vec3(1.0);
+				color.xyz = vec3(1.0);
 			}
 
 			vec3 n = normalize(v_normal);
@@ -47,7 +60,7 @@
 
 			// float ambientOcclusion = AmbientOcclusion();
 
-			fragColor = vec4(irradiance, 1.0) * objectColor;
+			fragColor = vec4(irradiance, 1.0) * color;
 		}
 	-->
 	</source>

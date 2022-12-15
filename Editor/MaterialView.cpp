@@ -315,6 +315,13 @@ namespace ToolKit
           m_mat->m_dirty                   = true;
         }
 
+        bool isColorMaterial = m_mat->GetRenderState()->isColorMaterial;
+        if (ImGui::Checkbox("Color Material", &isColorMaterial))
+        {
+          m_mat->GetRenderState()->isColorMaterial = isColorMaterial;
+          m_mat->m_dirty                           = true;
+        }
+
         if (m_mat->GetRenderState()->blendFunction == BlendFunction::ALPHA_MASK)
         {
           float alphaMaskTreshold = m_mat->GetRenderState()->alphaMaskTreshold;

@@ -2,11 +2,15 @@
 	<type name = "fragmentShader" />
 	<uniform name = "useAlphaMask" />
 	<uniform name = "alphaMaskTreshold" />
+	<uniform name = "DiffuseTextureInUse" />
+	<uniform name = "Color" />
 	<source>
 	<!--
 		#version 300 es
 		precision mediump float;
 
+		uniform vec4 Color;
+		uniform int DiffuseTextureInUse;
 		uniform sampler2D s_texture0;
 		uniform int useAlphaMask;
 		uniform float alphaMaskTreshold;
@@ -16,13 +20,24 @@
 
 		void main()
 		{
-		  fragColor = texture(s_texture0, v_texture);
+			vec4 color;
+			if (DiffuseTextureInUse == 1)
+			{
+				color = texture(s_texture0, v_texture);
+			}
+			else
+			{
+				color = Color;
+			}
+
 			if (useAlphaMask == 1)
 			{
-				if(fragColor.a < alphaMaskTreshold){
+				if(color.a < alphaMaskTreshold){
 					discard;
 				}
 			}
+
+			fragColor = color;
 		}
 	-->
 	</source>

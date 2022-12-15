@@ -61,6 +61,7 @@ namespace ToolKit
     bool AOInUse       = true;
     int priority       = 0;     // The higher the priority, the earlier to draw.
     bool isUnlit       = false; // True if the material is not going to be lit.
+    bool isColorMaterial         = true;
     Vec3 emissiveColorMultiplier = Vec3(1.0f);
   };
 
