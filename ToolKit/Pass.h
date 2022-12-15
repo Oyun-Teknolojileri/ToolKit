@@ -279,13 +279,36 @@ namespace ToolKit
 
   typedef std::shared_ptr<OutlinePass> OutlinePassPtr;
 
+  struct BloomPassParams
+  {
+    FramebufferPtr FrameBuffer = nullptr;
+  };
+
+  class TK_API BloomPass : public Pass
+  {
+   public:
+    BloomPass();
+    explicit BloomPass(const BloomPassParams& params);
+
+    void Render() override;
+    void PreRender() override;
+    void PostRender() override;
+
+   public:
+    BloomPassParams m_params;
+
+   private:
+    FramebufferPtr m_sourceBuffer = {}, m_tempDownsampleBuffers[5] = {};
+    RenderTargetPtr m_tempDownsampleTextures[5] = {};
+  };
+
   struct PostProcessPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;
     ShaderPtr Shader           = nullptr;
   };
 
-  struct TK_API PostProcessPass : public Pass
+  class TK_API PostProcessPass : public Pass
   {
    public:
     PostProcessPass();

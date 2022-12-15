@@ -937,6 +937,48 @@ namespace ToolKit
     Pass::PostRender();
   }
 
+  BloomPass::BloomPass()
+  {
+  }
+
+  BloomPass::BloomPass(const BloomPassParams& params) : BloomPass()
+  {
+    m_params = params;
+    for (uint i = 0; i < 5; i++)
+    {
+      m_tempDownsampleTextures[i] = std::make_shared<RenderTarget>();
+
+      m_tempDownsampleBuffers[i] = std::make_shared<Framebuffer>();
+      m_tempDownsampleBuffers[i]->SetAttachment(
+          Framebuffer::Attachment::ColorAttachment0,
+          m_tempDownsampleTextures[i]);
+    }
+  }
+
+  void BloomPass::Render()
+  {
+    // GetRenderer()->Apply7x1GaussianBlur();
+  }
+
+  void BloomPass::PreRender()
+  {
+    RenderTargetPtr mainRt = m_sourceBuffer->GetAttachment(
+        Framebuffer::Attachment::ColorAttachment0);
+    UVec2 mainRes = UVec2(mainRt->m_width, mainRt->m_height);
+    for (uint i = 0; i < 5; i++)
+    {
+      m_tempDownsampleTextures[i]->ReconstructIfNeeded(
+          mainRes.x * pow(2, i + 1), mainRes.y * pow(2, i + 1));
+
+      m_tempDownsampleBuffers[i]->ReconstructIfNeeded(
+          mainRes.x * pow(2, i + 1), mainRes.y * pow(2, i + 1));
+    }
+  }
+
+  void BloomPass::PostRender()
+  {
+  }
+
   PostProcessPass::PostProcessPass()
   {
     m_copyTexture = std::make_shared<RenderTarget>();
