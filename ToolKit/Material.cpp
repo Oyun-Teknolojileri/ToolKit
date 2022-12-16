@@ -300,7 +300,7 @@ namespace ToolKit
         ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
-    material->GetRenderState()->isUnlit = true;
+    material->GetRenderState()->isUnlit         = true;
     material->GetRenderState()->isColorMaterial = false;
     material->Init();
 

@@ -21,6 +21,16 @@
 		in vec2 v_texture;
 		layout (location = 0) out vec3 downsample;
 
+		uniform int prefilter;
+		uniform float threshold;
+
+		vec3 Prefilter (vec3 c) {
+			float brightness = max(c.r, max(c.g, c.b));
+			float contribution = max(0.0f, brightness - threshold);
+			contribution /= max(brightness, 0.00001);
+			return c * contribution;
+		}
+
 		void main()
 		{
 				vec2 srcTexelSize = 1.0 / srcResolution;
@@ -68,6 +78,9 @@
 				downsample += (a+c+g+i)*0.03125;
 				downsample += (b+d+f+h)*0.0625;
 				downsample += (j+k+l+m)*0.125;
+				if(prefilter > 0){
+					downsample = Prefilter(downsample);
+				}
     		downsample = max(downsample, 0.0001f);
 		}
 	-->

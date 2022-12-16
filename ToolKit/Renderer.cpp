@@ -566,6 +566,12 @@ namespace ToolKit
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       }
       break;
+      case BlendFunction::ONE_TO_ONE: {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE);
+        glBlendEquation(GL_FUNC_ADD);
+      }
+      break;
       default: {
         glDisable(GL_BLEND);
       }

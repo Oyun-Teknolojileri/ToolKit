@@ -182,6 +182,7 @@ namespace ToolKit
   struct FullQuadPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;
+    BlendFunction BlendFunc    = BlendFunction::NONE;
     ShaderPtr FragmentShader   = nullptr;
     bool ClearFrameBuffer      = true;
     LightRawPtrArray lights;
@@ -282,6 +283,8 @@ namespace ToolKit
   struct BloomPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;
+    uint iterationCount        = 6;
+    float minThreshold = 1.0f, intensity = 1.0f;
   };
 
   class TK_API BloomPass : public Pass
@@ -298,9 +301,10 @@ namespace ToolKit
     BloomPassParams m_params;
 
    private:
-    FramebufferPtr m_sourceBuffer = {}, m_tempDownsampleBuffers[5] = {};
-    RenderTargetPtr m_tempDownsampleTextures[5] = {};
-    FullQuadPassPtr m_passes[5]                 = {};
+    // Iteration Count + 1 number of textures & framebuffers
+    std::vector<RenderTargetPtr> m_tempTextures;
+    std::vector<FramebufferPtr> m_tempFrameBuffers;
+    FullQuadPassPtr m_pass       = {};
     ShaderPtr m_downsampleShader = {}, m_upsampleShader = {};
   };
 

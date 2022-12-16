@@ -80,6 +80,8 @@ namespace ToolKit
       uint MSAA                                       = 2;
       uint FPS                                        = 60;
       TonemapPassParams::TonemapMethod TonemapperMode = TonemapPassParams::Aces;
+      float bloomIntensity = 1.0f, bloomThreshold = 1.0f;
+      int bloomIterationCount = 5;
     } Graphics;
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;

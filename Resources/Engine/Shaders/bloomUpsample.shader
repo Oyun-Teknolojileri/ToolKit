@@ -15,6 +15,7 @@
 		// Remember to use edge clamping for this texture!
 		uniform sampler2D s_texture0;
 		uniform float filterRadius;
+		uniform float intensity;
 
 		in vec2 v_texture;
 		layout (location = 0) out vec3 upsample;
@@ -51,6 +52,7 @@
 				upsample += (b+d+f+h)*2.0;
 				upsample += (a+c+g+i);
 				upsample *= 1.0 / 16.0;
+				upsample *= intensity;
 		}
 	-->
 	</source>

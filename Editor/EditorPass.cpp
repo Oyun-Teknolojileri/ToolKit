@@ -155,6 +155,12 @@ namespace ToolKit
 
       // Bloom pass
       m_bloomPass.m_params.FrameBuffer = viewport->m_framebuffer;
+      m_bloomPass.m_params.intensity =
+          Main::GetInstance()->m_engineSettings.Graphics.bloomIntensity;
+      m_bloomPass.m_params.minThreshold =
+          Main::GetInstance()->m_engineSettings.Graphics.bloomThreshold;
+      m_bloomPass.m_params.iterationCount =
+          Main::GetInstance()->m_engineSettings.Graphics.bloomIterationCount;
 
       m_tonemapPass.m_params.FrameBuffer = viewport->m_framebuffer;
       m_tonemapPass.m_params.Method      = m_params.tonemapping;
