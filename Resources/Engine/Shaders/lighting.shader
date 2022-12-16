@@ -37,8 +37,26 @@
 			float shadowResolution[16];
 		};
 		uniform _LightData LightData;
+		
+		uniform sampler2DArray s_texture8; // Shadow atlas
 
-		sampler2DArray s_texture8; // Shadow atlas
+		/// Deferred rendering uniforms
+		uniform sampler2D s_texture12; // Light data
+
+		uniform float lightDataTextureWidth;
+		uniform vec2 shadowDirLightsInterval;
+		uniform vec2 shadowPointLightsInterval;
+		uniform vec2 shadowSpotLightsInterval;
+		uniform vec2 nonShadowDirLightsInterval;
+		uniform vec2 nonShadowPointLightsInterval;
+		uniform vec2 nonShadowSpotLightsInterval;
+		uniform float dirShadowLightDataSize;
+		uniform float pointShadowLightDataSize;
+		uniform float spotShadowLightDataSize;
+		uniform float dirNonShadowLightDataSize;
+		uniform float pointNonShadowLightDataSize;
+		uniform float spotNonShadowLightDataSize;
+		///
 
 		const int maxLights = 16;
 
@@ -110,8 +128,15 @@
 			return vec3(coord, layer);
 		}
 
+		bool EpsilonEqual(float a, float b, float eps)
+		{
+			return abs(a - b) < eps;
+		}
+
 		float CalculateDirectionalShadow(vec3 pos, int index)
 		{
+			return 1.0;
+			/*
 			vec3 lightDir = normalize(LightData.pos[index] - pos);
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz;
@@ -142,10 +167,13 @@
 			}
 
 			return 1.0;
+			*/
 		}
 
 		float CalculateSpotShadow(vec3 pos, int index)
 		{
+			return 1.0;
+			/*
 			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz / fragPosForLight.w;
 			projCoord = projCoord * 0.5 + 0.5;
@@ -171,10 +199,13 @@
 			}
 
 			return 1.0;
+			*/
 		}
 
 		float CalculatePointShadow(vec3 pos, int index)
 		{
+			return 1.0;
+			/*
 			vec3 lightToFrag = pos - LightData.pos[index];
 			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
 
@@ -199,6 +230,7 @@
 			}
 			
 			return 1.0;
+			*/
 		}
 
 		// Returns 0 or 1
@@ -278,10 +310,10 @@
 
 		vec3 BlinnPhongLighting(vec3 fragPos, vec3 normal, vec3 fragToEye)
 		{
-			int lightCount = 0;
-
 			float shadow = 1.0;
 			vec3 irradiance = vec3(0.0);
+
+			int lightCount = 0;
 			for (int i = 0; i < LightData.activeCount; i++)
 			{
 				shadow = 1.0;
@@ -329,6 +361,80 @@
 
 				irradiance += (diffuse + specular) * LightData.intensity[i] * shadow;
 			}
+
+			return irradiance;
+		}
+
+		float LightType(sampler2D data, float startingPoint)
+		{
+			float typeLoc = startingPoint + 0.0;
+			vec2 loc = vec2(mod(typeLoc, lightDataTextureWidth), floor(typeLoc / lightDataTextureWidth));
+			float type = texture(data, loc);
+			return type;
+		}
+
+		//
+
+		vec3 BlinnPhongLightingDeferred(vec3 fragPos, vec3 normal, vec3 fragToEye)
+		{
+			float shadow = 1.0;
+			vec3 irradiance = vec3(0.0);
+			float lightDataIndex = 0.0;
+
+			// Directional lights with shadows
+			for (lightDataIndex = shadowDirLightsInterval.x; lightDataIndex < shadowDirLightsInterval.y; lightDataIndex += dirShadowLightDataSize)
+			{
+				vec3 diffuse = vec3(0.0);
+				vec3 specular = vec3(0.0);
+				
+				irradiance += vec3(-0.1, 0.0, 0.0);
+			}
+
+			// Directional lights with no shadows
+			for (lightDataIndex = nonShadowDirLightsInterval.x; lightDataIndex < nonShadowDirLightsInterval.y; lightDataIndex += dirNonShadowLightDataSize)
+			{
+				vec3 diffuse = vec3(0.0);
+				vec3 specular = vec3(0.0);
+				
+				irradiance += vec3(0.1, 0.0, 0.0);
+			}
+
+			// Point lights with shadows
+			for (lightDataIndex = shadowPointLightsInterval.x; lightDataIndex < shadowPointLightsInterval.y; lightDataIndex += pointShadowLightDataSize)
+			{
+				vec3 diffuse = vec3(0.0);
+				vec3 specular = vec3(0.0);
+				
+				irradiance += vec3(0.0, -0.1, 0.0);
+			}
+
+			// Point lights with no shadows
+			for (lightDataIndex = nonShadowPointLightsInterval.x; lightDataIndex < nonShadowPointLightsInterval.y; lightDataIndex += pointNonShadowLightDataSize)
+			{
+				vec3 diffuse = vec3(0.0);
+				vec3 specular = vec3(0.0);
+				
+				irradiance += vec3(0.0, 0.1, 0.0);
+			}
+
+			// Spot lights with shadows
+			for (lightDataIndex = shadowSpotLightsInterval.x; lightDataIndex < shadowSpotLightsInterval.y; lightDataIndex += spotShadowLightDataSize)
+			{
+				vec3 diffuse = vec3(0.0);
+				vec3 specular = vec3(0.0);
+				
+				irradiance += vec3(0.0, 0.0, -0.1);
+			}
+
+			// Spot lights with no shadows
+			for (lightDataIndex = nonShadowSpotLightsInterval.x; lightDataIndex < nonShadowSpotLightsInterval.y; lightDataIndex += spotNonShadowLightDataSize)
+			{
+				vec3 diffuse = vec3(0.0);
+				vec3 specular = vec3(0.0);
+
+				irradiance += vec3(0.0, 0.0, 0.1);
+			}
+
 			return irradiance;
 		}
 

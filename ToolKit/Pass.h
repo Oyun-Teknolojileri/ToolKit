@@ -404,12 +404,18 @@ namespace ToolKit
     void PostRender() override;
     void Render() override;
 
+   private:
+    void InitLightDataTexture();
+
    public:
     DeferredRenderPassParams m_params;
 
    private:
     FullQuadPass m_fullQuadPass;
     ShaderPtr m_deferredRenderShader = nullptr;
+
+    const int m_lightDataTextureSize = 1024;
+    TexturePtr m_lightDataTexture    = nullptr;
   };
 
   struct SceneRenderPassParams

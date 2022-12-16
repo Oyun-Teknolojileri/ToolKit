@@ -156,4 +156,20 @@ namespace ToolKit
     String GetDefaultResource(ResourceType type) override;
   };
 
+  class TK_API DataTexture : public Texture
+  {
+   public:
+    TKResourceType(DataTexture)
+
+    DataTexture(int width, int height);
+
+    void Init(bool flushClientSideArray = false) override;
+    void UnInit() override;
+
+   private:
+    DataTexture();
+    void Load() override;
+    void Clear() override;
+  };
+
 } // namespace ToolKit

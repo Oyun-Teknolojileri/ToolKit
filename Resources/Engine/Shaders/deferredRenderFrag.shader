@@ -31,7 +31,7 @@
 			vec3 n = normalize(normal);
 			vec3 e = normalize(camPos - position);
 
-			vec3 irradiance = BlinnPhongLighting(position, n, e);
+			vec3 irradiance = BlinnPhongLightingDeferred(position, n, e);
 
 			irradiance += IblIrradiance(n);
 

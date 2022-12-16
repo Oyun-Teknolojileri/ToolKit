@@ -79,7 +79,6 @@ namespace ToolKit
                   const Mat4& transform = Mat4(1.0f));
 
     void SetTexture(ubyte slotIndx, uint textureId);
-    void ResetShadowMapBindings(ProgramPtr program);
 
     CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture,
                                             uint width,
@@ -137,6 +136,21 @@ namespace ToolKit
     /////////////////////
 
     int GetMaxArrayTextureLayers();
+
+    void UpdateLightDataTexture(TexturePtr lightDataTexture,
+                                LightRawPtrArray& lights,
+                                Vec2& shadowDirLightIndexInterval,
+                                Vec2& shadowPointLightIndexInterval,
+                                Vec2& shadowSpotLightIndexInterval,
+                                Vec2& nonShadowDirLightIndexInterval,
+                                Vec2& nonShadowPointLightIndexInterval,
+                                Vec2& nonShadowSpotLightIndexInterval,
+                                float& sizeD,
+                                float& sizeP,
+                                float& sizeS,
+                                float& sizeND,
+                                float& sizeNP,
+                                float& sizeNS);
 
    private:
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
@@ -201,9 +215,6 @@ namespace ToolKit
     TexturePtr m_shadowAtlas     = nullptr;
 
     uint m_textureSlots[RHIConstants::textureSlotCount];
-    int m_bindedShadowMapCount       = 0;
-    int m_dirAndSpotLightShadowCount = 0;
-    int m_pointLightShadowCount      = 0;
 
     std::unordered_map<String, ProgramPtr> m_programs;
     RenderState m_renderState;
