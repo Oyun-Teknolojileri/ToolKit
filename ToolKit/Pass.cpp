@@ -970,9 +970,9 @@ namespace ToolKit
     // Filter pass
     {
       m_pass->m_params.FragmentShader = m_downsampleShader;
-      int prefilter                   = 1;
-      m_downsampleShader->SetShaderParameter("prefilter",
-                                             ParameterVariant(prefilter));
+      int passIndx                   = 0;
+      m_downsampleShader->SetShaderParameter("passIndx",
+                                             ParameterVariant(passIndx));
       m_downsampleShader->SetShaderParameter("srcResolution",
                                              ParameterVariant(mainRes));
       TexturePtr prevRt = m_params.FrameBuffer->GetAttachment(
@@ -997,20 +997,23 @@ namespace ToolKit
       TexturePtr prevRt              = prevFramebuffer->GetAttachment(
           Framebuffer::Attachment::ColorAttachment0);
 
+      
       // Set pass' shader and parameters
       m_pass->m_params.FragmentShader = m_downsampleShader;
+      int passIndx                    = i + 1;
+      m_downsampleShader->SetShaderParameter("passIndx",
+                                             ParameterVariant(passIndx));
+      m_downsampleShader->SetShaderParameter(
+          "threshold", ParameterVariant(m_params.minThreshold));
       m_downsampleShader->SetShaderParameter("srcResolution",
                                              ParameterVariant(prevRes));
       GetRenderer()->SetTexture(0, prevRt->m_textureId);
 
+      // Set pass parameters
       m_pass->m_params.ClearFrameBuffer = true;
       m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[i + 1ull];
       m_pass->m_params.BlendFunc        = BlendFunction::NONE;
-      int prefilter                     = 0;
-      m_downsampleShader->SetShaderParameter("prefilter",
-                                             ParameterVariant(prefilter));
-      m_downsampleShader->SetShaderParameter(
-          "threshold", ParameterVariant(m_params.minThreshold));
+
       m_pass->Render();
     }
 
