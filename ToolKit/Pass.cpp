@@ -970,7 +970,7 @@ namespace ToolKit
     // Filter pass
     {
       m_pass->m_params.FragmentShader = m_downsampleShader;
-      int passIndx                   = 0;
+      int passIndx                    = 0;
       m_downsampleShader->SetShaderParameter("passIndx",
                                              ParameterVariant(passIndx));
       m_downsampleShader->SetShaderParameter("srcResolution",
@@ -997,7 +997,6 @@ namespace ToolKit
       TexturePtr prevRt              = prevFramebuffer->GetAttachment(
           Framebuffer::Attachment::ColorAttachment0);
 
-      
       // Set pass' shader and parameters
       m_pass->m_params.FragmentShader = m_downsampleShader;
       int passIndx                    = i + 1;
