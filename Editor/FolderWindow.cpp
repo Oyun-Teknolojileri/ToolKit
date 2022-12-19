@@ -459,14 +459,6 @@ namespace ToolKit
                                    m_iconSize,
                                    ImVec2(0.0f, 0.0f),
                                    texCoords);
-                if (io.KeyShift)
-                {
-                  g_app->m_statusMsg = "Copy " + fullName;
-                }
-                else
-                {
-                  g_app->m_statusMsg = "Instantiate " + fullName;
-                }
                 ImGui::EndDragDropSource();
               }
               ImGui::PopStyleColor();

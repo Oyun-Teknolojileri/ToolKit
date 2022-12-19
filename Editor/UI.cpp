@@ -840,8 +840,10 @@ namespace ToolKit
             }
             else
             {
-              g_app->m_statusMsg = "Textures should be dropped to a folder "
-                                   "from Textures resource folder";
+              g_app->m_statusMsg = "Drop discarded.";
+              GetLogger()->WriteConsole(LogType::Warning,
+                                        "File isn't imported because it's not "
+                                        "dropped onto Textures folder.");
             }
             ImportData.Files.erase(ImportData.Files.begin() + i);
           }

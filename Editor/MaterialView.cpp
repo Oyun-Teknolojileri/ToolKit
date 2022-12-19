@@ -156,7 +156,7 @@ namespace ToolKit
                  [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
                    if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
                    {
-                     g_app->m_statusMsg = "An imported shader file expected!";
+                     g_app->m_statusMsg = "Failed. Shader expected.";
                      return;
                    }
                    m_mat->m_vertexShader =
