@@ -35,7 +35,6 @@
 			float shadowAtlasLayer[16];
 			float shadowAtlasResRatio[16];
 			vec2 shadowAtlasCoord[16]; // Between 0 and 1
-			float shadowResolution[16];
 		};
 		uniform _LightData LightData;
 		
@@ -134,12 +133,10 @@
 			return abs(a - b) < eps;
 		}
 
-		float CalculateDirectionalShadow(vec3 pos, int index)
+		float CalculateDirectionalShadow(vec3 pos, mat4 lightProjView, vec2 shadowAtlasCoord,
+			float shadowAtlasResRatio, float shadowAtlasLayer, int softShadows, int PCFSamples, float PCFRadius, float lightBleedReduction)
 		{
-			return 1.0;
-			/*
-			vec3 lightDir = normalize(LightData.pos[index] - pos);
-			vec4 fragPosForLight = LightData.projectionViewMatrix[index] * vec4(pos, 1.0);
+			vec4 fragPosForLight = lightProjView * vec4(pos, 1.0);
 			vec3 projCoord = fragPosForLight.xyz;
 			projCoord = projCoord * 0.5 + 0.5;
 			if (projCoord.z < 0.0 || projCoord.z > 1.0)
@@ -150,25 +147,24 @@
 			// Get depth of the current fragment according to lights view
 			float currFragDepth = projCoord.z;
 
-			vec2 startCoord = LightData.shadowAtlasCoord[index];
-			float resRatio = LightData.shadowAtlasResRatio[index];
-			vec3 coord = vec3(startCoord + resRatio * projCoord.xy, LightData.shadowAtlasLayer[index]);
+			vec2 startCoord = shadowAtlasCoord;
+			float resRatio = shadowAtlasResRatio;
+			vec3 coord = vec3(startCoord + resRatio * projCoord.xy, shadowAtlasLayer);
 
-			if (LightData.softShadows[index] == 1)
+			if (softShadows == 1)
 			{
 				return PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + resRatio,
-				LightData.PCFSamples[index], LightData.PCFRadius[index] * LightData.shadowAtlasResRatio[index],
-				projCoord.z, LightData.lightBleedingReduction[index]);
+				PCFSamples, PCFRadius * shadowAtlasResRatio,
+				projCoord.z, lightBleedReduction);
 			}
 			else
 			{
 				coord.xy = ClampTextureCoordinates(coord.xy, startCoord, startCoord + resRatio);
 				vec2 moments = texture(s_texture8, coord).xy;
-				return ChebyshevUpperBound(moments, projCoord.z, LightData.lightBleedingReduction[index]);
+				return ChebyshevUpperBound(moments, projCoord.z, lightBleedReduction);
 			}
 
 			return 1.0;
-			*/
 		}
 
 		float CalculateSpotShadow(vec3 pos, int index)
@@ -343,7 +339,8 @@
 					bool maxShadowCheck = maxLights > lightCount;
 					if (maxShadowCheck && LightData.castShadow[i] == 1)
 					{
-						shadow = CalculateDirectionalShadow(fragPos, i);
+						shadow = CalculateDirectionalShadow(fragPos, LightData.projectionViewMatrix[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
+							LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i]);
 						lightCount += 1;
 					}		
 				}
@@ -379,6 +376,23 @@
 			{
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
+
+				vec3 dir = DirLightDirection(s_texture12, lightDataIndex, lightDataTextureWidth);
+				vec3 col = DirLightColor(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float intensity = DirLightIntensity(s_texture12, lightDataIndex, lightDataTextureWidth);
+				DirectionalLightBlinnPhong(-dir, fragToEye, normal, col, diffuse, specular);
+
+				mat4 pv = DirLightProjViewMatrix(s_texture12, lightDataIndex, lightDataTextureWidth);
+				vec2 shadowAtlasCoord = DirLightShadowAtlasCoord(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float shadowAtlasResRatio = DirLightShadowAtlasResRatio(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float shadowAtlasLayer = DirLightShadowAtlasLayer(s_texture12, lightDataIndex, lightDataTextureWidth);
+				int softShadows = DirLightSoftShadows(s_texture12, lightDataIndex, lightDataTextureWidth);
+				int PCFSamples = DirLightPCFSamples(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float PCFRadius = DirLightPCFRadius(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float lbr = DirLightBleedReduction(s_texture12, lightDataIndex, lightDataTextureWidth);
+				shadow = CalculateDirectionalShadow(fragPos, pv, shadowAtlasCoord, shadowAtlasResRatio, shadowAtlasLayer, softShadows, PCFSamples, PCFRadius, lbr);
+
+				irradiance += (diffuse + specular) * intensity * shadow;
 			}
 
 			// Directional lights with no shadows

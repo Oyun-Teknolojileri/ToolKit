@@ -1521,8 +1521,6 @@ namespace ToolKit
 
   void Renderer::FeedLightUniforms(ProgramPtr program)
   {
-    // TODO return;
-
     size_t lightSize =
         glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
     for (size_t i = 0; i < lightSize; i++)
@@ -1667,10 +1665,6 @@ namespace ToolKit
         glUniform1f(loc,
                     currLight->GetShadowResVal() /
                         Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
-
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightShadowResolutionStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetShadowResVal());
       }
 
       GLuint loc = glGetUniformLocation(program->m_handle,
@@ -1700,12 +1694,12 @@ namespace ToolKit
     // 0 -> Color Texture
     // 2 & 3 -> Skinning information
     // 7 -> Irradiance Map
-    // 12 -> Light Data Texture
     //
     // Deferred Render Pass:
     // 9 -> gBuffer position texture
     // 10 -> gBuffer normal texture
     // 11 -> gBuffer color texture
+    // 12 -> Light Data Texture
 
     assert(slotIndx < m_rhiSettings::textureSlotCount &&
            "You exceed texture slot count");
