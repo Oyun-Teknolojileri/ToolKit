@@ -96,6 +96,8 @@ namespace ToolKit
                                  const char search,
                                  const char replace);
 
+  TK_API int CountChar(const String& str, const char chr);
+
   /**
    * Transform ascii chars to lower. Intended usage is extention comparison.
    */

@@ -1178,6 +1178,10 @@ namespace ToolKit
         m_entries.clear();
       }
 
+      String resourceRoot = ResourcePath();
+      char pathSep        = GetPathSeparator();
+      int baseCount       = CountChar(resourceRoot, pathSep);
+
       for (const std::filesystem::directory_entry& entry :
            std::filesystem::directory_iterator(path))
       {
@@ -1185,6 +1189,8 @@ namespace ToolKit
         {
           FolderView view(this);
           String path = entry.path().u8string();
+          view.m_root = CountChar(path, pathSep) == baseCount + 1;
+          
           view.SetPath(path);
           if (!view.m_folder.compare("Engine"))
           {

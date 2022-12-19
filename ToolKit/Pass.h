@@ -283,7 +283,7 @@ namespace ToolKit
   struct BloomPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;
-    uint iterationCount        = 6;
+    int iterationCount         = 6;
     float minThreshold = 1.0f, intensity = 1.0f;
   };
 
