@@ -2,6 +2,7 @@
 	<type name = "includeShader" />
 	<include name = "textureUtil.shader" />
 	<include name = "shadow.shader" />
+	<include name = "lightDataTextureUtils.shader" />
 	<uniform name = "LightData" />
 	<source>
 	<!--
@@ -266,43 +267,44 @@
 			return specular;
 		}
 
-		void PointLightBlinnPhong(int i, vec3 fragToLight, vec3 fragToEye, vec3 normal, out vec3 diffuse, out vec3 specular)
+		void PointLightBlinnPhong(vec3 fragToLight, vec3 fragToEye, vec3 normal, vec3 color, float radius, out vec3 diffuse, out vec3 specular)
 		{
 			vec3 l = normalize(fragToLight);
 
 			// No need calculation for the fragments outside of the light radius
-			float radiusCheck = RadiusCheck(LightData.radius[i], length(fragToLight));
+			float radiusCheck = RadiusCheck(radius, length(fragToLight));
 
-			float attenuation = Attenuation(length(fragToLight), LightData.radius[i], 1.0, 0.09, 0.032);
-			diffuse = PhongDiffuse(normal, l, LightData.color[i]);
-			specular = BlinnPhongSpecular(l, fragToEye, normal, 32.0, 0.4, LightData.color[i]);
+			float attenuation = Attenuation(length(fragToLight), radius, 1.0, 0.09, 0.032);
+			diffuse = PhongDiffuse(normal, l, color);
+			specular = BlinnPhongSpecular(l, fragToEye, normal, 32.0, 0.4, color);
 
 			diffuse  *= attenuation * radiusCheck;
 			specular *= attenuation * radiusCheck;
 		}
 
-		void DirectionalLightBlinnPhong(int i, vec3 fragToLight, vec3 fragToEye, vec3 normal, out vec3 diffuse, out vec3 specular)
+		void DirectionalLightBlinnPhong(vec3 fragToLight, vec3 fragToEye, vec3 normal, vec3 color, out vec3 diffuse, out vec3 specular)
 		{
-			diffuse = PhongDiffuse(normal, fragToLight, LightData.color[i]);
-			specular = BlinnPhongSpecular(fragToLight, fragToEye, normal, 32.0, 0.4, LightData.color[i]);
+			diffuse = PhongDiffuse(normal, fragToLight, color);
+			specular = BlinnPhongSpecular(fragToLight, fragToEye, normal, 32.0, 0.4, color);
 		}
 
-		void SpotLightBlinnPhong(int i, vec3 fragToLight, vec3 fragToEye, vec3 normal, out vec3 diffuse, out vec3 specular)
+		void SpotLightBlinnPhong(vec3 fragToLight, vec3 fragToEye, vec3 normal, vec3 color, vec3 direction, float radius,
+			float innerAngle, float outerAngle, out vec3 diffuse, out vec3 specular)
 		{
 					vec3 fragToLightNorm = normalize(fragToLight);
 					float fragToLightDist = length(fragToLight);
 
 					// No need calculation for the fragments outside of the light radius
-					float radiusCheck = RadiusCheck(LightData.radius[i], fragToLightDist);
+					float radiusCheck = RadiusCheck(radius, fragToLightDist);
 	
-					float attenuation = Attenuation(fragToLightDist, LightData.radius[i], 1.0, 0.09, 0.032);
-					diffuse = PhongDiffuse(normal, fragToLightNorm, LightData.color[i]);
-					specular = BlinnPhongSpecular(fragToLightNorm, fragToEye, normal, 32.0, 0.4, LightData.color[i]);
+					float attenuation = Attenuation(fragToLightDist, radius, 1.0, 0.09, 0.032);
+					diffuse = PhongDiffuse(normal, fragToLightNorm, color);
+					specular = BlinnPhongSpecular(fragToLightNorm, fragToEye, normal, 32.0, 0.4, color);
 
 					// Lighting angle and falloff
-					float theta = dot(-fragToLightNorm, LightData.dir[i]);
-					float epsilon =  LightData.innAngle[i] - LightData.outAngle[i];
-					float intensity = clamp((theta - LightData.outAngle[i]) / epsilon, 0.0, 1.0);
+					float theta = dot(-fragToLightNorm, direction);
+					float epsilon = innerAngle - outerAngle;
+					float intensity = clamp((theta - outerAngle) / epsilon, 0.0, 1.0);
 
 					diffuse *= intensity * radiusCheck * attenuation;
 					specular *= intensity * radiusCheck * attenuation;
@@ -322,7 +324,7 @@
 				if (LightData.type[i] == 2) // Point light
 				{
 					// Light
-					PointLightBlinnPhong(i, LightData.pos[i] - fragPos, fragToEye, normal, diffuse, specular);
+					PointLightBlinnPhong(LightData.pos[i] - fragPos, fragToEye, normal, LightData.color[i], LightData.radius[i], diffuse, specular);
 
 					// Shadow
 					bool maxShadowCheck = maxLights > lightCount;
@@ -335,7 +337,7 @@
 				else if (LightData.type[i] == 1) // Directional light
 				{
 					// Light
-					DirectionalLightBlinnPhong(i, -LightData.dir[i], fragToEye, normal, diffuse, specular);
+					DirectionalLightBlinnPhong(-LightData.dir[i], fragToEye, normal, LightData.color[i], diffuse, specular);
 
 					// Shadow
 					bool maxShadowCheck = maxLights > lightCount;
@@ -348,7 +350,8 @@
 				else if (LightData.type[i] == 3) // Spot light
 				{
 					// Light
-					SpotLightBlinnPhong(i, LightData.pos[i] - fragPos, fragToEye, normal, diffuse, specular);
+					SpotLightBlinnPhong(LightData.pos[i] - fragPos, fragToEye, normal, LightData.color[i], LightData.dir[i], LightData.radius[i],
+						LightData.innAngle[i], LightData.outAngle[i], diffuse, specular);
 
 					// Shadow
 					bool maxShadowCheck = maxLights > lightCount;
@@ -365,16 +368,6 @@
 			return irradiance;
 		}
 
-		float LightType(sampler2D data, float startingPoint)
-		{
-			float typeLoc = startingPoint + 0.0;
-			vec2 loc = vec2(mod(typeLoc, lightDataTextureWidth), floor(typeLoc / lightDataTextureWidth));
-			float type = texture(data, loc);
-			return type;
-		}
-
-		//
-
 		vec3 BlinnPhongLightingDeferred(vec3 fragPos, vec3 normal, vec3 fragToEye)
 		{
 			float shadow = 1.0;
@@ -386,8 +379,6 @@
 			{
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
-				
-				irradiance += vec3(-0.1, 0.0, 0.0);
 			}
 
 			// Directional lights with no shadows
@@ -395,8 +386,13 @@
 			{
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
-				
-				irradiance += vec3(0.1, 0.0, 0.0);
+
+				vec3 dir = DirLightDirection(s_texture12, lightDataIndex, lightDataTextureWidth);
+				vec3 col = DirLightColor(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float intensity = DirLightIntensity(s_texture12, lightDataIndex, lightDataTextureWidth);
+				DirectionalLightBlinnPhong(-dir, fragToEye, normal, col, diffuse, specular);
+
+				irradiance += (diffuse + specular) * intensity;
 			}
 
 			// Point lights with shadows
@@ -404,8 +400,6 @@
 			{
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
-				
-				irradiance += vec3(0.0, -0.1, 0.0);
 			}
 
 			// Point lights with no shadows
@@ -413,8 +407,14 @@
 			{
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
-				
-				irradiance += vec3(0.0, 0.1, 0.0);
+
+				vec3 col = PointLightColor(s_texture12, lightDataIndex, lightDataTextureWidth);
+				vec3 pos = PointLightPosition(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float radius = PointLightRadius(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float intensity = PointLightIntensity(s_texture12, lightDataIndex, lightDataTextureWidth);
+				PointLightBlinnPhong(pos - fragPos, fragToEye, normal, col, radius, diffuse, specular);
+
+				irradiance += (diffuse + specular) * intensity;
 			}
 
 			// Spot lights with shadows
@@ -422,8 +422,6 @@
 			{
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
-				
-				irradiance += vec3(0.0, 0.0, -0.1);
 			}
 
 			// Spot lights with no shadows
@@ -432,7 +430,16 @@
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
 
-				irradiance += vec3(0.0, 0.0, 0.1);
+				vec3 col = SpotLightColor(s_texture12, lightDataIndex, lightDataTextureWidth);
+				vec3 pos = SpotLightPosition(s_texture12, lightDataIndex, lightDataTextureWidth);
+				vec3 dir = SpotLightDirection(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float radius = SpotLightRadius(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float innAngle = SpotLightInnerAngle(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float outAngle = SpotLightInnerAngle(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float intensity = SpotLightIntensity(s_texture12, lightDataIndex, lightDataTextureWidth);
+				SpotLightBlinnPhong(pos - fragPos, fragToEye, normal, col, dir, radius,	innAngle, outAngle, diffuse, specular);
+
+				irradiance += (diffuse + specular) * intensity;
 			}
 
 			return irradiance;
