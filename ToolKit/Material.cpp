@@ -71,6 +71,13 @@ namespace ToolKit
       m_renderState.diffuseTextureInUse = true;
     }
 
+    if (m_emissiveTexture)
+    {
+      m_emissiveTexture->Init(flushClientSideArray);
+      m_renderState.emissiveTexture      = m_emissiveTexture->m_textureId;
+      m_renderState.emissiveTextureInUse = true;
+    }
+
     if (m_cubeMap)
     {
       m_cubeMap->Init(flushClientSideArray);
@@ -95,17 +102,8 @@ namespace ToolKit
     }
     else
     {
-      if (m_diffuseTexture)
-      {
-        m_fragmentShader = GetShaderManager()->Create<Shader>(
-            ShaderPath("defaultFragment.shader", true));
-      }
-      else
-      {
-        m_fragmentShader = GetShaderManager()->Create<Shader>(
-            ShaderPath("solidColorFrag.shader", true));
-      }
-
+      m_fragmentShader = GetShaderManager()->Create<Shader>(
+          ShaderPath("defaultFragment.shader", true));
       m_fragmentShader->Init();
     }
 
@@ -120,15 +118,17 @@ namespace ToolKit
   void Material::CopyTo(Resource* other)
   {
     Resource::CopyTo(other);
-    Material* cpy         = static_cast<Material*>(other);
-    cpy->m_cubeMap        = m_cubeMap;
-    cpy->m_diffuseTexture = m_diffuseTexture;
-    cpy->m_vertexShader   = m_vertexShader;
-    cpy->m_fragmentShader = m_fragmentShader;
-    cpy->m_color          = m_color;
-    cpy->m_alpha          = m_alpha;
-    cpy->m_renderState    = m_renderState;
-    cpy->m_dirty          = true;
+    Material* cpy          = static_cast<Material*>(other);
+    cpy->m_cubeMap         = m_cubeMap;
+    cpy->m_diffuseTexture  = m_diffuseTexture;
+    cpy->m_vertexShader    = m_vertexShader;
+    cpy->m_fragmentShader  = m_fragmentShader;
+    cpy->m_color           = m_color;
+    cpy->m_alpha           = m_alpha;
+    cpy->m_renderState     = m_renderState;
+    cpy->m_dirty           = true;
+    cpy->m_emissiveTexture = m_emissiveTexture;
+    cpy->m_emissiveColor   = m_emissiveColor;
   }
 
   RenderState* Material::GetRenderState()
@@ -142,6 +142,15 @@ namespace ToolKit
     {
       m_renderState.diffuseTextureInUse = false;
     }
+    if (m_emissiveTexture)
+    {
+      m_renderState.emissiveTextureInUse = true;
+      m_renderState.emissiveTexture      = m_emissiveTexture->m_textureId;
+    }
+    else
+    {
+      m_renderState.emissiveTextureInUse = false;
+    }
 
     if (m_cubeMap)
     {
@@ -150,6 +159,16 @@ namespace ToolKit
     else
     {
       m_renderState.cubeMap = false;
+    }
+    if (m_fragmentShader)
+    {
+      for (Uniform u : m_fragmentShader->m_uniforms)
+      {
+        if (u == Uniform::EMISSIVE_COLOR)
+        {
+          m_renderState.useForwardPath = true;
+        }
+      }
     }
 
     return &m_renderState;
@@ -194,8 +213,19 @@ namespace ToolKit
       WriteAttr(node, doc, XmlNodeName.data(), file);
     }
 
+    if (m_emissiveTexture)
+    {
+      XmlNode* node = CreateXmlNode(doc, "emissiveTexture", container);
+      String file =
+          GetRelativeResourcePath(m_emissiveTexture->GetSerializeFile());
+      WriteAttr(node, doc, XmlNodeName.data(), file);
+    }
+
     XmlNode* node = CreateXmlNode(doc, "color", container);
     WriteVec(node, doc, m_color);
+
+    node = CreateXmlNode(doc, "emissiveColor", container);
+    WriteVec(node, doc, m_emissiveColor);
 
     node = CreateXmlNode(doc, "alpha", container);
     WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_alpha));
@@ -261,6 +291,18 @@ namespace ToolKit
       {
         m_renderState.DeSerialize(doc, parent);
       }
+      else if (strcmp("emissiveTexture", node->name()) == 0)
+      {
+        XmlAttribute* attr = node->first_attribute(XmlNodeName.data());
+        String path        = attr->value();
+        NormalizePath(path);
+        m_emissiveTexture =
+            GetTextureManager()->Create<Texture>(TexturePath(path));
+      }
+      else if (strcmp("emissiveColor", node->name()) == 0)
+      {
+        ReadVec(node, m_emissiveColor);
+      }
       else
       {
         assert(false);
@@ -300,7 +342,7 @@ namespace ToolKit
         ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
-    material->GetRenderState()->isUnlit         = true;
+    material->GetRenderState()->useForwardPath  = true;
     material->GetRenderState()->isColorMaterial = false;
     material->Init();
 
@@ -320,20 +362,11 @@ namespace ToolKit
         ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(
         ShaderPath("unlitColorFrag.shader", true));
-    material->GetRenderState()->isUnlit = true;
+    material->GetRenderState()->useForwardPath = true;
     material->Init();
 
     m_storage[MaterialPath("unlitSolid.material", true)] =
         MaterialPtr(material);
-
-    material                 = new Material();
-    material->m_vertexShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("emissiveFrag.shader", true));
-    material->Init();
-
-    m_storage[MaterialPath("emissive.material", true)] = MaterialPtr(material);
   }
 
   bool MaterialManager::CanStore(ResourceType t)
