@@ -166,14 +166,16 @@ namespace ToolKit
       return "useAlphaMask";
     case Uniform::ALPHA_MASK_TRESHOLD:
       return "alphaMaskTreshold";
-    case Uniform::EMISSIVE_COLOR_MULTIPLIER:
-      return "emissiveColorMultiplier";
     case Uniform::EXPOSURE:
       return "Exposure";
     case Uniform::COLOR_ALPHA:
       return "ColorAlpha";
     case Uniform::IS_UNLIT:
       return "isUnlit";
+    case Uniform::EMISSIVE_COLOR:
+      return "emissiveColor";
+    case Uniform::EMISSIVE_TEXTURE_IN_USE:
+      return "emissiveTextureInUse";
     case Uniform::UNUSEDSLOT_1:
     default:
       return "";

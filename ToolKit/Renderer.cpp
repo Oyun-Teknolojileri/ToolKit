@@ -603,9 +603,11 @@ namespace ToolKit
       glLineWidth(m_renderState.lineWidth);
     }
 
-    if (m_renderState.emissiveColorMultiplier != state->emissiveColorMultiplier)
+    m_renderState.emissiveTextureInUse = state->emissiveTextureInUse;
+    if (m_renderState.emissiveTextureInUse)
     {
-      m_renderState.emissiveColorMultiplier = state->emissiveColorMultiplier;
+      m_renderState.emissiveTexture = state->diffuseTexture;
+      SetTexture(1, state->emissiveTexture);
     }
 
     m_renderState.isUnlit = state->isUnlit;
@@ -1447,11 +1449,17 @@ namespace ToolKit
           glUniform1f(loc, m_renderState.alphaMaskTreshold);
         }
         break;
-        case Uniform::EMISSIVE_COLOR_MULTIPLIER: {
+        case Uniform::EMISSIVE_COLOR: {
+          GLint loc = glGetUniformLocation(
+              program->m_handle, GetUniformName(Uniform::EMISSIVE_COLOR));
+          glUniform3fv(loc, 1, &m_mat->m_emissiveColor.x);
+        }
+        break;
+        case Uniform::EMISSIVE_TEXTURE_IN_USE: {
           GLint loc = glGetUniformLocation(
               program->m_handle,
-              GetUniformName(Uniform::EMISSIVE_COLOR_MULTIPLIER));
-          glUniform3fv(loc, 1, &m_renderState.emissiveColorMultiplier.x);
+              GetUniformName(Uniform::EMISSIVE_TEXTURE_IN_USE));
+          glUniform1i(loc, m_renderState.emissiveTextureInUse);
         }
         break;
         case Uniform::IS_UNLIT: {

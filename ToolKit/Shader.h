@@ -40,9 +40,10 @@ namespace ToolKit
     LIGHTING_ONLY,
     USE_ALPHA_MASK,
     ALPHA_MASK_TRESHOLD,
-    EMISSIVE_COLOR_MULTIPLIER,
-    UNIFORM_MAX_INVALID,
-    IS_UNLIT
+    IS_UNLIT,
+    EMISSIVE_TEXTURE_IN_USE,
+    EMISSIVE_COLOR,
+    UNIFORM_MAX_INVALID
   };
 
   const char* GetUniformName(Uniform u);
