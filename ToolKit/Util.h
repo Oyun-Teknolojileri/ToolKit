@@ -134,15 +134,6 @@ namespace ToolKit
   // {copies} First one is the copy root, fallowing are attached children.
   TK_API Entity* DeepCopy(Entity* root, EntityRawPtrArray& copies);
 
-  // Sort entities  by distance (from boundary center)
-  // in ascending order to camera. Accounts for isometric camera.
-  TK_API void StableSortByDistanceToCamera(EntityRawPtrArray& entities,
-                                           const Camera* cam);
-
-  // Sort entities by their material's render state's priority in
-  // descending order.
-  TK_API void StableSortByMaterialPriority(EntityRawPtrArray& entities);
-
   // Memory operations.
   ///////////////////////////////////////////////////////
   // Useful to force plugin modules to allocate from main toolkit module.

@@ -164,7 +164,7 @@ namespace ToolKit
   {
     XmlNode* container = CreateXmlNode(doc, "material", parent);
 
-    if (m_diffuseTexture)
+    if (m_diffuseTexture && !m_renderState.isColorMaterial)
     {
       XmlNode* node = CreateXmlNode(doc, "diffuseTexture", container);
       String file =
@@ -221,6 +221,7 @@ namespace ToolKit
         NormalizePath(path);
         m_diffuseTexture =
             GetTextureManager()->Create<Texture>(TexturePath(path));
+        m_renderState.isColorMaterial = false;
       }
       else if (strcmp("cubeMap", node->name()) == 0)
       {
@@ -287,6 +288,7 @@ namespace ToolKit
         ShaderPath("defaultFragment.shader", true));
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
+    material->GetRenderState()->isColorMaterial = false;
     material->Init();
 
     m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
@@ -298,6 +300,8 @@ namespace ToolKit
         ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
+    material->GetRenderState()->isUnlit         = true;
+    material->GetRenderState()->isColorMaterial = false;
     material->Init();
 
     m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
@@ -316,6 +320,7 @@ namespace ToolKit
         ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(
         ShaderPath("unlitColorFrag.shader", true));
+    material->GetRenderState()->isUnlit = true;
     material->Init();
 
     m_storage[MaterialPath("unlitSolid.material", true)] =

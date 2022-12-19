@@ -172,6 +172,8 @@ namespace ToolKit
       return "Exposure";
     case Uniform::COLOR_ALPHA:
       return "ColorAlpha";
+    case Uniform::IS_UNLIT:
+      return "isUnlit";
     case Uniform::UNUSEDSLOT_1:
     default:
       return "";

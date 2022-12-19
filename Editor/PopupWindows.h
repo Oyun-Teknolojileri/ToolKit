@@ -25,6 +25,7 @@ namespace ToolKit
       String m_inputLabel;
       String m_hint;
       ByteArray m_illegalChars;
+
      private:
       int FilterChars(ImGuiInputTextCallbackData* data);
       bool m_showCancel;
