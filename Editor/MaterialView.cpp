@@ -256,6 +256,8 @@ namespace ToolKit
             {
               updateThumbFn();
             }
+            ImGui::SameLine();
+            ImGui::Text("Emissive Color");
           }
         }
 
@@ -335,11 +337,11 @@ namespace ToolKit
           m_mat->m_dirty                   = true;
         }
 
-        bool isUnlit = m_mat->GetRenderState()->isUnlit;
-        if (ImGui::Checkbox("Unlit", &isUnlit))
+        bool useForwardPath = m_mat->GetRenderState()->useForwardPath;
+        if (ImGui::Checkbox("Use Forward Path", &useForwardPath))
         {
-          m_mat->GetRenderState()->isUnlit = isUnlit;
-          m_mat->m_dirty                   = true;
+          m_mat->GetRenderState()->useForwardPath = useForwardPath;
+          m_mat->m_dirty                          = true;
         }
 
         bool isColorMaterial = m_mat->GetRenderState()->isColorMaterial;
@@ -352,7 +354,7 @@ namespace ToolKit
         if (m_mat->GetRenderState()->blendFunction == BlendFunction::ALPHA_MASK)
         {
           float alphaMaskTreshold = m_mat->GetRenderState()->alphaMaskTreshold;
-          if (ImGui::DragFloat("Alpha Mask Treshold",
+          if (ImGui::DragFloat("Alpha Mask Threshold",
                                &alphaMaskTreshold,
                                0.001f,
                                0.0f,

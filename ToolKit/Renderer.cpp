@@ -610,7 +610,7 @@ namespace ToolKit
       SetTexture(1, state->emissiveTexture);
     }
 
-    m_renderState.isUnlit = state->isUnlit;
+    m_renderState.useForwardPath = state->useForwardPath;
   }
 
   void Renderer::SetStencilOperation(StencilOperation op)
@@ -1462,10 +1462,10 @@ namespace ToolKit
           glUniform1i(loc, m_renderState.emissiveTextureInUse);
         }
         break;
-        case Uniform::IS_UNLIT: {
-          GLint loc = glGetUniformLocation(program->m_handle,
-                                           GetUniformName(Uniform::IS_UNLIT));
-          glUniform1i(loc, (GLint) m_renderState.isUnlit);
+        case Uniform::USE_FORWARD_PATH: {
+          GLint loc = glGetUniformLocation(
+              program->m_handle, GetUniformName(Uniform::USE_FORWARD_PATH));
+          glUniform1i(loc, (GLint) m_renderState.useForwardPath);
         }
         break;
         default:

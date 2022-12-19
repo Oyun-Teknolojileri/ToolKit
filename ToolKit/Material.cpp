@@ -175,7 +175,7 @@ namespace ToolKit
       {
         if (u == Uniform::EMISSIVE_COLOR)
         {
-          m_renderState.isUnlit = true;
+          m_renderState.useForwardPath = true;
         }
       }
     }
@@ -351,7 +351,7 @@ namespace ToolKit
         ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
-    material->GetRenderState()->isUnlit         = true;
+    material->GetRenderState()->useForwardPath  = true;
     material->GetRenderState()->isColorMaterial = false;
     material->Init();
 
@@ -371,20 +371,11 @@ namespace ToolKit
         ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(
         ShaderPath("unlitColorFrag.shader", true));
-    material->GetRenderState()->isUnlit = true;
+    material->GetRenderState()->useForwardPath = true;
     material->Init();
 
     m_storage[MaterialPath("unlitSolid.material", true)] =
         MaterialPtr(material);
-
-    material                 = new Material();
-    material->m_vertexShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("emissiveFrag.shader", true));
-    material->Init();
-
-    m_storage[MaterialPath("emissive.material", true)] = MaterialPtr(material);
   }
 
   bool MaterialManager::CanStore(ResourceType t)

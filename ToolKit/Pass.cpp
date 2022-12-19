@@ -125,7 +125,7 @@ namespace ToolKit
           if (mt->GetMaterialVal() &&
               (mt->GetMaterialVal()->GetRenderState()->blendFunction ==
                    BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA ||
-               mt->GetMaterialVal()->GetRenderState()->isUnlit))
+               mt->GetMaterialVal()->GetRenderState()->useForwardPath))
           {
             translucentAndUnlitEntities.push_back(ntt);
             return true;
@@ -150,7 +150,7 @@ namespace ToolKit
           {
             if (m->m_material->GetRenderState()->blendFunction ==
                     BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA ||
-                m->m_material->GetRenderState()->isUnlit)
+                m->m_material->GetRenderState()->useForwardPath)
             {
               translucentAndUnlitEntities.push_back(ntt);
               return true;

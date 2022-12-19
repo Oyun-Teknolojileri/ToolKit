@@ -10,17 +10,22 @@
 	<uniform name = "alphaMaskTreshold" />
 	<uniform name = "DiffuseTextureInUse" />
 	<uniform name = "Color" />
+	<uniform name = "emissiveColor" />
+	<uniform name = "emissiveTextureInUse" />
 	<source>
 	<!--
 		#version 300 es
 		precision highp float;
 
 		uniform sampler2D s_texture0;
+		uniform sampler2D s_texture1;
 		uniform int LightingOnly;
 		uniform int useAlphaMask;
 		uniform float alphaMaskTreshold;
 		uniform int DiffuseTextureInUse;
 		uniform vec4 Color;
+		uniform int emissiveTextureInUse;
+		uniform vec3 emissiveColor;
 
 		in vec3 v_pos;
 		in vec3 v_normal;
@@ -38,6 +43,13 @@
 			else
 			{
 				color = Color;
+			}
+			vec3 emissive;
+			if(emissiveTextureInUse > 0){
+				emissive = texture(s_texture1, v_texture).xyz;
+			}
+			else{
+				emissive = emissiveColor;
 			}
 
 			if (useAlphaMask == 1)
@@ -60,7 +72,7 @@
 
 			// float ambientOcclusion = AmbientOcclusion();
 
-			fragColor = vec4(irradiance, 1.0) * color;
+			fragColor = (vec4(irradiance, 1.0) * color) + vec4(emissive, 0.0f);
 		}
 	-->
 	</source>
