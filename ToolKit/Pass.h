@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BinPack2D.h"
+#include "DataTexture.h"
 #include "Framebuffer.h"
 #include "GeometryTypes.h"
 #include "Primative.h"
@@ -414,8 +415,8 @@ namespace ToolKit
     FullQuadPass m_fullQuadPass;
     ShaderPtr m_deferredRenderShader = nullptr;
 
-    const int m_lightDataTextureSize = 1024;
-    TexturePtr m_lightDataTexture    = nullptr;
+    const int m_lightDataTextureSize       = 1024;
+    LightDataTexturePtr m_lightDataTexture = nullptr;
   };
 
   struct SceneRenderPassParams

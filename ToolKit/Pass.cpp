@@ -1,5 +1,6 @@
 #include "Pass.h"
 
+#include "DataTexture.h"
 #include "DirectionComponent.h"
 #include "Renderer.h"
 #include "Toolkit.h"
@@ -1330,24 +1331,24 @@ namespace ToolKit
     Vec2 sd, nsd, sp, nsp, ss, nss;
     float sizeD, sizeP, sizeS, sizeND, sizeNP, sizeNS;
     // Update light data texture
-    renderer->UpdateLightDataTexture(m_lightDataTexture,
-                                     m_params.lights,
-                                     sd,
-                                     sp,
-                                     ss,
-                                     nsd,
-                                     nsp,
-                                     nss,
-                                     sizeD,
-                                     sizeP,
-                                     sizeS,
-                                     sizeND,
-                                     sizeNP,
-                                     sizeNS);
+    m_lightDataTexture->UpdateTextureData(m_params.lights,
+                                          sd,
+                                          sp,
+                                          ss,
+                                          nsd,
+                                          nsp,
+                                          nss,
+                                          sizeD,
+                                          sizeP,
+                                          sizeS,
+                                          sizeND,
+                                          sizeNP,
+                                          sizeNS);
 
     // Update light uniforms
     m_deferredRenderShader->SetShaderParameter(
-        "lightDataTextureWidth", ParameterVariant((float)m_lightDataTextureSize));
+        "lightDataTextureWidth",
+        ParameterVariant((float) m_lightDataTextureSize));
     m_deferredRenderShader->SetShaderParameter("shadowDirLightsInterval",
                                                ParameterVariant(sd));
     m_deferredRenderShader->SetShaderParameter("shadowPointLightsInterval",
@@ -1416,7 +1417,7 @@ namespace ToolKit
   void DeferredRenderPass::InitLightDataTexture()
   {
     m_lightDataTexture =
-        std::make_shared<DataTexture>(m_lightDataTextureSize, 1);
+        std::make_shared<LightDataTexture>(m_lightDataTextureSize, 1);
     m_lightDataTexture->Init();
   }
 

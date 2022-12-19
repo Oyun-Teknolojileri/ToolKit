@@ -137,21 +137,6 @@ namespace ToolKit
 
     int GetMaxArrayTextureLayers();
 
-    void UpdateLightDataTexture(TexturePtr lightDataTexture,
-                                LightRawPtrArray& lights,
-                                Vec2& shadowDirLightIndexInterval,
-                                Vec2& shadowPointLightIndexInterval,
-                                Vec2& shadowSpotLightIndexInterval,
-                                Vec2& nonShadowDirLightIndexInterval,
-                                Vec2& nonShadowPointLightIndexInterval,
-                                Vec2& nonShadowSpotLightIndexInterval,
-                                float& sizeD,
-                                float& sizeP,
-                                float& sizeS,
-                                float& sizeND,
-                                float& sizeNP,
-                                float& sizeNS);
-
    private:
     void Render2d(Surface* object, glm::ivec2 screenDimensions);
     void Render2d(SpriteAnimation* object, glm::ivec2 screenDimensions);

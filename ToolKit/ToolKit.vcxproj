@@ -17,6 +17,7 @@
     <ClCompile Include="Canvas.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DataTexture.cpp" />
     <ClCompile Include="DirectionComponent.cpp" />
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -61,6 +62,7 @@
     <ClInclude Include="BinPack2D.h" />
     <ClInclude Include="Canvas.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="DataTexture.h" />
     <ClInclude Include="DebugNew.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DirectionComponent.h" />
