@@ -1348,7 +1348,7 @@ namespace ToolKit
     // Update light uniforms
     m_deferredRenderShader->SetShaderParameter(
         "lightDataTextureWidth",
-        ParameterVariant((float) m_lightDataTextureSize));
+        ParameterVariant((float) m_lightDataTextureSize.x));
     m_deferredRenderShader->SetShaderParameter("shadowDirLightsInterval",
                                                ParameterVariant(sd));
     m_deferredRenderShader->SetShaderParameter("shadowPointLightsInterval",
@@ -1416,8 +1416,8 @@ namespace ToolKit
 
   void DeferredRenderPass::InitLightDataTexture()
   {
-    m_lightDataTexture =
-        std::make_shared<LightDataTexture>(m_lightDataTextureSize, 1);
+    m_lightDataTexture = std::make_shared<LightDataTexture>(
+        m_lightDataTextureSize.x, m_lightDataTextureSize.y);
     m_lightDataTexture->Init();
   }
 

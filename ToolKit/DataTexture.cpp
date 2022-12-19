@@ -68,6 +68,13 @@ namespace ToolKit
   {
   }
 
+  bool LightDataTexture::IncrementDataIndex(int& index)
+  {
+    int verticalIndex = (index + 1) / m_width;
+    index             = (index + 1) % m_width;
+    return (bool) verticalIndex;
+  }
+
   LightDataTexture::LightDataTexture(int width, int height)
       : DataTexture(width, height)
   {
@@ -193,7 +200,8 @@ namespace ToolKit
 
     glBindTexture(GL_TEXTURE_2D, m_textureId);
 
-    uint index = 0;
+    int xIndex = 0;
+    int yIndex = 0;
 
     // This can be packed with a lot more efficiency. Currently we store each
     // element in 4 slotted memory (rgba).
@@ -213,32 +221,55 @@ namespace ToolKit
       // Point light
       if (type == EntityType::Entity_PointLight)
       {
+        // Check data texture limits
+        int size = shadow ? (int) pointShadowSize : (int) pointNonShadowSize;
+        if (xIndex + yIndex * m_width + size >= m_width * m_height)
+        {
+          break;
+        }
+
         Vec3 color      = light->GetColorVal();
         float intensity = light->GetIntensityVal();
         Vec3 pos = light->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         float radius = static_cast<PointLight*>(light)->GetRadiusVal();
 
+        // TODO increment inndex y
+
         // type
-        float t = 2.0;
+        float t = 2.0f;
         glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &t);
-        index += 1;
+            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &t);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // color
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &color.x);
-        index += 1;
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &color.x);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // intensity
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &intensity);
-        index += 1;
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &intensity);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // position
         glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &pos.x);
-        index += 1;
+            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &pos.x);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // radius
         glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &radius);
-        index += 1;
+            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &radius);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
         if (shadow)
         {
@@ -266,6 +297,13 @@ namespace ToolKit
       // Directional light
       else if (type == EntityType::Entity_DirectionalLight)
       {
+        // Check data texture limits
+        int size = shadow ? (int) dirShadowSize : (int) dirNonShadowSize;
+        if (xIndex + yIndex * m_width + size >= m_width * m_height)
+        {
+          break;
+        }
+
         Vec3 color      = light->GetColorVal();
         float intensity = light->GetIntensityVal();
         Vec3 dir        = static_cast<DirectionalLight*>(light)
@@ -273,22 +311,36 @@ namespace ToolKit
                        ->GetDirection();
 
         // type
-        float t = 1.0;
+        float t = 1.0f;
         glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &t);
-        index += 1;
+            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &t);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // color
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &color.x);
-        index += 1;
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &color.x);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // intensity
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &intensity);
-        index += 1;
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &intensity);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // direction
         glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &dir.x);
-        index += 1;
+            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &dir.x);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
         if (shadow)
         {
@@ -316,6 +368,13 @@ namespace ToolKit
       // Spot light
       else if (type == EntityType::Entity_SpotLight)
       {
+        // Check data texture limits
+        int size = shadow ? (int) spotShadowSize : (int) spotNonShadowSize;
+        if (xIndex + yIndex * m_width + size >= m_width * m_height)
+        {
+          break;
+        }
+
         Vec3 color      = light->GetColorVal();
         float intensity = light->GetIntensityVal();
         Vec3 pos = light->m_node->GetTranslation(TransformationSpace::TS_WORLD);
@@ -329,38 +388,66 @@ namespace ToolKit
             glm::cos(glm::radians(spotLight->GetInnerAngleVal() / 2.0f));
 
         // type
-        float t = 3.0;
+        float t = 3.0f;
         glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &t);
-        index += 1;
+            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &t);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // color
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &color.x);
-        index += 1;
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &color.x);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // intensity
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &intensity);
-        index += 1;
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &intensity);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // position
         glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &pos.x);
-        index += 1;
+            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &pos.x);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // direction
         glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &dir.x);
-        index += 1;
+            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &dir.x);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // radius
         glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &radius);
-        index += 1;
+            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &radius);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // outer angle
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &outAngle);
-        index += 1;
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &outAngle);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // inner angle
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, index, 0, 1, 1, GL_RGBA, GL_FLOAT, &innAngle);
-        index += 1;
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &innAngle);
+        yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
         if (shadow)
         {

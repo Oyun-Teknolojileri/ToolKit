@@ -415,7 +415,7 @@ namespace ToolKit
     FullQuadPass m_fullQuadPass;
     ShaderPtr m_deferredRenderShader = nullptr;
 
-    const int m_lightDataTextureSize       = 1024;
+    const IVec2 m_lightDataTextureSize       = IVec2(1024);
     LightDataTexturePtr m_lightDataTexture = nullptr;
   };
 

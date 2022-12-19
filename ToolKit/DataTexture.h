@@ -47,6 +47,8 @@ namespace ToolKit
 
    private:
     LightDataTexture();
+
+    bool IncrementDataIndex(int& index);
   };
 
 } // namespace ToolKit

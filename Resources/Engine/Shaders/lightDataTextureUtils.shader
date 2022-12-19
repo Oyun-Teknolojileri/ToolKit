@@ -2,6 +2,22 @@
 	<type name = "includeShader" />
 	<source>
 	<!--
+		
+		const float LightTypeIndex = 0.0;
+		const float DirColorIndex = 1.0;
+		const float PointColorIndex = 1.0;
+		const float SpotColorIndex = 1.0;
+		const float DirIntensityIndex = 2.0;
+		const float PointIntensityIndex = 2.0;
+		const float SpotIntensityIndex = 2.0;
+		const float DirDirectionIndex = 3.0;
+		const float SpotDirectionIndex = 4.0;
+		const float PointPositionIndex = 3.0;
+		const float SpotPositionIndex = 3.0;
+		const float PointRadiusIndex = 4.0;
+		const float SpotRadiusIndex = 5.0;
+		const float SpotOuterAngleIndex = 6.0;
+		const float SpotInnerAngleIndex = 7.0;
 
 		float ReadFloat(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
@@ -21,77 +37,77 @@
 
 		float LightType(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadFloat(data, startingPoint + 0.0, lightDataTextureWidth);
+			return ReadFloat(data, startingPoint + LightTypeIndex, lightDataTextureWidth);
 		}
 
 		vec3 DirLightColor(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadVec3(data, startingPoint + 1.0, lightDataTextureWidth);
+			return ReadVec3(data, startingPoint + DirColorIndex, lightDataTextureWidth);
 		}
 
 		vec3 PointLightColor(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadVec3(data, startingPoint + 1.0, lightDataTextureWidth);
+			return ReadVec3(data, startingPoint + PointColorIndex, lightDataTextureWidth);
 		}
 
 		vec3 SpotLightColor(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadVec3(data, startingPoint + 1.0, lightDataTextureWidth);
+			return ReadVec3(data, startingPoint + SpotColorIndex, lightDataTextureWidth);
 		}
 
 		float DirLightIntensity(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadFloat(data, startingPoint + 2.0, lightDataTextureWidth);
+			return ReadFloat(data, startingPoint + DirIntensityIndex, lightDataTextureWidth);
 		}
 
 		float PointLightIntensity(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadFloat(data, startingPoint + 2.0, lightDataTextureWidth);
+			return ReadFloat(data, startingPoint + PointIntensityIndex, lightDataTextureWidth);
 		}
 
 		float SpotLightIntensity(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadFloat(data, startingPoint + 2.0, lightDataTextureWidth);
+			return ReadFloat(data, startingPoint + SpotIntensityIndex, lightDataTextureWidth);
 		}
 
 		vec3 DirLightDirection(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadVec3(data, startingPoint + 3.0, lightDataTextureWidth);
+			return ReadVec3(data, startingPoint + DirDirectionIndex, lightDataTextureWidth);
 		}
 
 		vec3 SpotLightDirection(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadVec3(data, startingPoint + 4.0, lightDataTextureWidth);
+			return ReadVec3(data, startingPoint + SpotDirectionIndex, lightDataTextureWidth);
 		}
 
 		vec3 PointLightPosition(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadVec3(data, startingPoint + 3.0, lightDataTextureWidth);
+			return ReadVec3(data, startingPoint + PointPositionIndex, lightDataTextureWidth);
 		}
 
 		vec3 SpotLightPosition(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadVec3(data, startingPoint + 3.0, lightDataTextureWidth);
+			return ReadVec3(data, startingPoint + SpotPositionIndex, lightDataTextureWidth);
 		}
 
 		float PointLightRadius(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadFloat(data, startingPoint + 4.0, lightDataTextureWidth);
+			return ReadFloat(data, startingPoint + PointRadiusIndex, lightDataTextureWidth);
 		}
 
 		float SpotLightRadius(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadFloat(data, startingPoint + 5.0, lightDataTextureWidth);
+			return ReadFloat(data, startingPoint + SpotRadiusIndex, lightDataTextureWidth);
 		}
 
 		float SpotLightOuterAngle(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadFloat(data, startingPoint + 6.0, lightDataTextureWidth);
+			return ReadFloat(data, startingPoint + SpotOuterAngleIndex, lightDataTextureWidth);
 		}
 
 		float SpotLightInnerAngle(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadFloat(data, startingPoint + 7.0, lightDataTextureWidth);
+			return ReadFloat(data, startingPoint + SpotInnerAngleIndex, lightDataTextureWidth);
 		}
 
 	-->
