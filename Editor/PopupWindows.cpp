@@ -1,4 +1,5 @@
 #include "PopupWindows.h"
+
 #include "App.h"
 #include "ImGui/imgui_stdlib.h"
 
@@ -98,14 +99,13 @@ namespace ToolKit
     {
       if (std::find(m_illegalChars.begin(),
                     m_illegalChars.end(),
-                    (char) data->EventChar) != m_illegalChars.end() )
+                    (char) data->EventChar) != m_illegalChars.end())
       {
         g_app->m_statusMsg = "Invalid Character.";
         return 1;
       }
       return 0;
     }
-
 
     YesNoWindow::YesNoWindow(const String& name, const String& msg)
     {

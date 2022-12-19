@@ -9,7 +9,8 @@ namespace ToolKit
   {
     NONE,
     SRC_ALPHA_ONE_MINUS_SRC_ALPHA,
-    ALPHA_MASK
+    ALPHA_MASK,
+    ONE_TO_ONE
   };
 
   enum class DrawType

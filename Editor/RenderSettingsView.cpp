@@ -20,8 +20,9 @@ namespace ToolKit
     {
       const char* items[] = {"Reinhard", "ACES"};
       uint itemCount      = sizeof(items) / sizeof(items[0]);
-      uint tonemapperMode =
-          Main::GetInstance()->m_engineSettings.Graphics.TonemapperMode;
+      EngineSettings::GraphicSettings& gfx =
+          Main::GetInstance()->m_engineSettings.Graphics;
+      uint tonemapperMode = gfx.TonemapperMode;
       if (ImGui::BeginCombo("Tonemapper mode", items[tonemapperMode]))
       {
         for (uint itemIndx = 0; itemIndx < itemCount; itemIndx++)
@@ -31,13 +32,18 @@ namespace ToolKit
           ImGui::Selectable(itemName, &isSelected);
           if (isSelected)
           {
-            Main::GetInstance()->m_engineSettings.Graphics.TonemapperMode =
-                (TonemapPassParams::TonemapMethod) itemIndx;
+            gfx.TonemapperMode = (TonemapPassParams::TonemapMethod) itemIndx;
           }
         }
 
         ImGui::EndCombo();
       }
+
+      ImGui::DragFloat(
+          "Bloom Intensity", &gfx.bloomIntensity, 0.01f, 0.0f, 100.0f);
+      ImGui::DragFloat(
+          "Bloom Threshold", &gfx.bloomThreshold, 0.01f, 0.0f, FLT_MAX);
+      ImGui::InputInt("Bloom Iteration Count", &gfx.bloomIterationCount, 1, 2);
     }
   } // namespace Editor
 } // namespace ToolKit

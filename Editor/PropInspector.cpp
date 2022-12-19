@@ -268,12 +268,12 @@ namespace ToolKit
     PropInspector::PropInspector()
     {
       m_views.resize((uint) ViewType::ViewCount);
-      m_views[(uint) ViewType::Entity]     = new EntityView();
-      m_views[(uint) ViewType::Prefab]     = new PrefabView();
-      m_views[(uint) ViewType::CustomData] = new CustomDataView();
-      m_views[(uint) ViewType::Component]  = new ComponentView();
-      m_views[(uint) ViewType::Material]   = new MaterialView();
-      m_views[(uint) ViewType::Mesh]       = new MeshView();
+      m_views[(uint) ViewType::Entity]         = new EntityView();
+      m_views[(uint) ViewType::Prefab]         = new PrefabView();
+      m_views[(uint) ViewType::CustomData]     = new CustomDataView();
+      m_views[(uint) ViewType::Component]      = new ComponentView();
+      m_views[(uint) ViewType::Material]       = new MaterialView();
+      m_views[(uint) ViewType::Mesh]           = new MeshView();
       m_views[(uint) ViewType::RenderSettings] = new RenderSettingsView();
     }
 
