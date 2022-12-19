@@ -580,6 +580,13 @@ namespace ToolKit
         tMaterial->m_diffuseTexture = diffuse;
       }
 
+      auto emissive =
+          textureFindAndCreateFunc(aiTextureType_EMISSIVE, material);
+      if (emissive)
+      {
+        tMaterial->m_emissiveTexture = emissive;
+      }
+
       tMaterial->SetFile(writePath);
       CreateFileAndSerializeObject(tMaterial.get(), writePath);
       AddToUsedFiles(writePath);

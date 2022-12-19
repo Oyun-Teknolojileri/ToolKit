@@ -102,17 +102,8 @@ namespace ToolKit
     }
     else
     {
-      if (m_diffuseTexture)
-      {
-        m_fragmentShader = GetShaderManager()->Create<Shader>(
-            ShaderPath("defaultFragment.shader", true));
-      }
-      else
-      {
-        m_fragmentShader = GetShaderManager()->Create<Shader>(
-            ShaderPath("solidColorFrag.shader", true));
-      }
-
+      m_fragmentShader = GetShaderManager()->Create<Shader>(
+          ShaderPath("defaultFragment.shader", true));
       m_fragmentShader->Init();
     }
 
