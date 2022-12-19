@@ -582,9 +582,20 @@ namespace ToolKit
       MaterialPtr tMaterial = std::make_shared<Material>();
 
       auto diffuse = textureFindAndCreateFunc(aiTextureType_DIFFUSE, material);
+      tMaterial->GetRenderState()->isColorMaterial = true;
       if (diffuse)
       {
-        tMaterial->m_diffuseTexture = diffuse;
+        tMaterial->m_diffuseTexture                  = diffuse;
+        tMaterial->GetRenderState()->isColorMaterial = false;
+      }
+
+      auto emissive =
+          textureFindAndCreateFunc(aiTextureType_EMISSIVE, material);
+      tMaterial->GetRenderState()->emissiveTextureInUse = false;
+      if (emissive)
+      {
+        tMaterial->m_emissiveTexture                      = emissive;
+        tMaterial->GetRenderState()->emissiveTextureInUse = true;
       }
 
       tMaterial->SetFile(writePath);
