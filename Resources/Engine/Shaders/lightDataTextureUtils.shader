@@ -21,49 +21,32 @@
 		const float SpotOuterAngleIndex = 6.0;
 		const float SpotInnerAngleIndex = 7.0;
 
-		vec4 ReadVec(int vecSize, sampler2D data, float startingPoint, float lightDataTextureWidth)
+		vec4 ReadVec(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
 			vec2 loc = vec2(mod(startingPoint, lightDataTextureWidth), floor(startingPoint / lightDataTextureWidth));
 			loc = loc / lightDataTextureWidth;
-
-			if (vecSize == 1)
-			{
-				return vec4(texture(data, loc).r, 0.0, 0.0, 0.0);
-			}
-			else if (vecSize == 2)
-			{
-				return vec4(texture(data, loc).rg, 0.0, 0.0);
-			}
-			else if (vecSize == 3)
-			{
-				return vec4(texture(data, loc).rgb, 0.0);
-			}
-			else // if (vecSize == 4)
-			{
-				return texture(data, loc).rgba;
-			}
-
-			return vec4(0.0);
+	
+			return texture(data, loc);
 		}
 
 		float ReadFloat(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadVec(1, data, startingPoint, lightDataTextureWidth).r;
+			return ReadVec(data, startingPoint, lightDataTextureWidth).r;
 		}
 
 		int ReadInt(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return int(ReadVec(1, data, startingPoint, lightDataTextureWidth).r);
+			return int(ReadVec(data, startingPoint, lightDataTextureWidth).r);
 		}
 
 		vec2 ReadVec2(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadVec(2, data, startingPoint, lightDataTextureWidth).rg;
+			return ReadVec(data, startingPoint, lightDataTextureWidth).rg;
 		}
 
 		vec3 ReadVec3(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadVec(3, data, startingPoint, lightDataTextureWidth).rgb;
+			return ReadVec(data, startingPoint, lightDataTextureWidth).rgb;
 		}
 
 		mat4 ReadMat4(sampler2D data, float startingPoint, float lightDataTextureWidth)
@@ -183,7 +166,7 @@
 
 		vec2 DirLightShadowAtlasCoord(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			return ReadVec(2, data, startingPoint + DirShadowAtlasCoordIndex, lightDataTextureWidth).rg;
+			return ReadVec2(data, startingPoint + DirShadowAtlasCoordIndex, lightDataTextureWidth);
 		}
 
 		float DirLightShadowAtlasLayer(sampler2D data, float startingPoint, float lightDataTextureWidth)
