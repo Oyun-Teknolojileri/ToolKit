@@ -49,10 +49,6 @@ namespace ToolKit
     WriteAttr(container, doc, "AOInUse", std::to_string(AOInUse));
 
     WriteAttr(container, doc, "priority", std::to_string(priority));
-
-    XmlNode* emissiveNode = CreateXmlNode(
-        doc, GetUniformName(Uniform::EMISSIVE_COLOR_MULTIPLIER), container);
-    WriteVec(emissiveNode, doc, emissiveColorMultiplier);
   }
 
   void RenderState::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -84,12 +80,6 @@ namespace ToolKit
       ReadAttr(container, "priority", priority);
 
       ReadAttr(container, "AOInUse", AOInUse);
-
-      if (XmlNode* emissiveNode = container->first_node(
-              GetUniformName(Uniform::EMISSIVE_COLOR_MULTIPLIER)))
-      {
-        ReadVec(emissiveNode, emissiveColorMultiplier);
-      }
     }
   }
 
