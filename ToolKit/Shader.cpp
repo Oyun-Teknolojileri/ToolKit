@@ -170,8 +170,6 @@ namespace ToolKit
       return "Exposure";
     case Uniform::COLOR_ALPHA:
       return "ColorAlpha";
-    case Uniform::USE_FORWARD_PATH:
-      return "useForwardPath";
     case Uniform::EMISSIVE_COLOR:
       return "emissiveColor";
     case Uniform::EMISSIVE_TEXTURE_IN_USE:
