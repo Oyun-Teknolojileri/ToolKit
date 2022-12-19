@@ -24,7 +24,7 @@
 		vec4 ReadVec(int vecSize, sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
 			vec2 loc = vec2(mod(startingPoint, lightDataTextureWidth), floor(startingPoint / lightDataTextureWidth));
-			loc = loc / lightDataTextureWidth; // TODO Can be done in CPU
+			loc = loc / lightDataTextureWidth;
 
 			if (vecSize == 1)
 			{
@@ -68,19 +68,27 @@
 
 		mat4 ReadMat4(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
-			// TODO limit check
-
 			float unit = 1.0 / lightDataTextureWidth;
-			vec2 loc = vec2(mod(startingPoint, lightDataTextureWidth), floor(startingPoint * unit));
-			loc = loc / lightDataTextureWidth; // TODO Can be done in CPU
-			mat4 mat = mat4
-			(
-				texture(data, loc).rgba,
-				texture(data, vec2(loc.x + unit, loc.y)).rgba,
-				texture(data, vec2(loc.x + 2.0 * unit, loc.y)).rgba,
-				texture(data, vec2(loc.x + 3.0 * unit, loc.y)).rgba
-			);
+			vec2 currentPoint = vec2(mod(startingPoint, lightDataTextureWidth), floor(startingPoint * unit));
+			vec2 loc = currentPoint * unit;
+			vec4 v1 = texture(data, loc).rgba;
 
+			currentPoint = vec2(startingPoint + 1.0, 0.0);
+			currentPoint = vec2(mod(currentPoint.x, lightDataTextureWidth), floor(currentPoint.x * unit));
+			loc = currentPoint * unit;
+			vec4 v2 = texture(data, loc).rgba;
+
+			currentPoint = vec2(startingPoint + 2.0, 0.0);
+			currentPoint = vec2(mod(currentPoint.x, lightDataTextureWidth), floor(currentPoint.x * unit));
+			loc = currentPoint * unit;
+			vec4 v3 = texture(data, loc).rgba;
+
+			currentPoint = vec2(startingPoint + 3.0, 0.0);
+			currentPoint = vec2(mod(currentPoint.x, lightDataTextureWidth), floor(currentPoint.x * unit));
+			loc = currentPoint * unit;
+			vec4 v4 = texture(data, loc).rgba;
+
+			mat4 mat = mat4(v1, v2, v3, v4);
 			return mat;
 		}
 
