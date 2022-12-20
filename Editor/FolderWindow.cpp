@@ -120,8 +120,23 @@ namespace ToolKit
         LightRawPtrArray lights = {&light};
 
         g_app->m_renderer->Render(obj, cam, lights);
-
         g_app->m_renderer->SwapFramebuffer(thumbFbPtr, false);
+        BloomPass bloom;
+        bloom.m_params.FrameBuffer = thumbFbPtr;
+        EngineSettings::GraphicSettings& graphicSettings =
+            Main::GetInstance()->m_engineSettings.Graphics;
+        bloom.m_params.intensity      = graphicSettings.bloomIntensity;
+        bloom.m_params.iterationCount = graphicSettings.bloomIterationCount;
+        bloom.m_params.minThreshold   = graphicSettings.bloomThreshold;
+        bloom.Render();
+        TonemapPass tonemapPass;
+        tonemapPass.m_params.FrameBuffer = thumbFbPtr;
+        tonemapPass.m_params.Method      = graphicSettings.TonemapperMode;
+        tonemapPass.Render();
+        GammaPass gamma;
+        gamma.m_params.FrameBuffer = thumbFbPtr;
+        gamma.m_params.Gamma       = 2.2f;
+        gamma.Render();
         g_app->m_thumbnailCache[GetFullPath()] = thumbPtr;
       };
 
