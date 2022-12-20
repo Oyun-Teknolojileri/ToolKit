@@ -304,8 +304,11 @@ namespace ToolKit
     // Iteration Count + 1 number of textures & framebuffers
     std::vector<RenderTargetPtr> m_tempTextures;
     std::vector<FramebufferPtr> m_tempFrameBuffers;
-    FullQuadPassPtr m_pass       = {};
-    ShaderPtr m_downsampleShader = {}, m_upsampleShader = {};
+    FullQuadPassPtr m_pass       = nullptr;
+    ShaderPtr m_downsampleShader = nullptr;
+    ShaderPtr m_upsampleShader   = nullptr;
+
+    bool m_invalidRenderParams = false;
   };
 
   struct PostProcessPassParams

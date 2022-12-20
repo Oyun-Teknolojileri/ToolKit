@@ -960,7 +960,7 @@ namespace ToolKit
     RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(
         Framebuffer::Attachment::ColorAttachment0);
 
-    if (mainRt == nullptr)
+    if (mainRt == nullptr || m_invalidRenderParams)
     {
       PostRender();
       return;
@@ -1030,20 +1030,20 @@ namespace ToolKit
 
     // Upsample Pass
     const float filterRadius = 0.002f;
-    for (int i = m_params.iterationCount - 1; i > 0; i--)
+    for (int i = m_params.iterationCount; i > 0; i--)
     {
       m_pass->m_params.FragmentShader = m_upsampleShader;
       m_upsampleShader->SetShaderParameter("filterRadius",
                                            ParameterVariant(filterRadius));
 
-      FramebufferPtr prevFramebuffer = m_tempFrameBuffers[i + 1];
+      FramebufferPtr prevFramebuffer = m_tempFrameBuffers[i];
       TexturePtr prevRt              = prevFramebuffer->GetAttachment(
           Framebuffer::Attachment::ColorAttachment0);
       GetRenderer()->SetTexture(0, prevRt->m_textureId);
 
       m_pass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE;
       m_pass->m_params.ClearFrameBuffer = false;
-      m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[i];
+      m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[i - 1];
       m_upsampleShader->SetShaderParameter("intensity", ParameterVariant(1.0f));
       m_pass->Render();
     }
@@ -1091,9 +1091,13 @@ namespace ToolKit
       const Vec2 factor(1.0f / glm::pow(2.0f, float(i)));
       const UVec2 curRes = Vec2(mainRes) * factor;
 
+      m_invalidRenderParams = false; 
       if (curRes.x == 1 || curRes.y == 1)
       {
-        assert(0 && "Bloom iteration count is more than supported");
+        m_invalidRenderParams = true;
+        GetLogger()->WriteConsole(
+            LogType::Warning, "Bloom iteration count is more than supported");
+        return;
       }
 
       RenderTargetPtr& rt           = m_tempTextures[i];
