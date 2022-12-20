@@ -106,33 +106,38 @@ namespace ToolKit
       if (ImGui::CollapsingHeader("Material Preview",
                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
+        /*
         ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - 300.0f) /
-                             2.0f);
+                             2.0f);*/
+        const ImVec2 iconSize = ImVec2(16, 16);
+        const ImVec2 spacing  = ImGui::GetStyle().ItemSpacing;
         updatePreviewScene();
         if (UI::ImageButtonDecorless(
-                UI::m_cameraIcon->m_textureId, Vec2(16.0f), false))
+                UI::m_cameraIcon->m_textureId, iconSize, false))
         {
           ResetCamera();
         }
         ImGui::SameLine();
+        m_viewport->ResizeWindow(ImGui::GetContentRegionAvail().x - iconSize.x -
+                                     5.0 * spacing.x,
+                                 150.0f);
         m_viewport->Update(g_app->GetDeltaTime());
         m_viewport->Show();
         ImGui::SameLine();
         ImGui::BeginGroup();
         if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_sphereIcon),
-                               ImVec2(16, 16)))
+                               iconSize))
         {
           m_activeObjectIndx = 0;
           isMeshChanged      = true;
         }
-        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_cubeIcon),
-                               ImVec2(16, 16)))
+        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_cubeIcon), iconSize))
         {
           m_activeObjectIndx = 1;
           isMeshChanged      = true;
         }
         if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_shaderBallIcon),
-                               ImVec2(16, 16)))
+                               iconSize))
         {
           m_activeObjectIndx = 2;
           isMeshChanged      = true;

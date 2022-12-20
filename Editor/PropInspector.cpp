@@ -7,6 +7,8 @@
 #include "CustomDataView.h"
 #include "EditorPass.h"
 #include "EntityView.h"
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "ImGui/imgui_internal.h"
 #include "ImGui/imgui_stdlib.h"
 #include "MaterialView.h"
 #include "MeshView.h"
@@ -217,17 +219,15 @@ namespace ToolKit
 
     void PreviewViewport::Show()
     {
-      RenderTargetPtr colorRT = m_framebuffer->GetAttachment(
-          Framebuffer::Attachment::ColorAttachment0);
-      if (colorRT == nullptr)
+      if (m_needsResize)
       {
-        return;
+        OnResizeContentArea(m_size.x, m_size.y);
       }
-
-      ComitResize();
+      // ComitResize();
       HandleStates();
       DrawCommands();
 
+      m_renderPass->m_params.MainFramebuffer = m_framebuffer;
       for (Entity* ntt : m_renderPass->m_params.Scene->GetEntities())
       {
         MeshComponentPtr mc = ntt->GetMeshComponent();
@@ -245,11 +245,23 @@ namespace ToolKit
         }
       }
       m_renderPass->Render();
-      FramebufferSettings fbs = m_framebuffer->GetSettings();
-      ImGui::Image(Convert2ImGuiTexture(colorRT),
-                   ImVec2((float) fbs.width, (float) fbs.height),
-                   ImVec2(0.0f, 0.0f),
-                   ImVec2(1.0f, -1.0f));
+
+      // Render color attachment as rounded image
+      FramebufferSettings fbSettings = m_framebuffer->GetSettings();
+      ImVec2 imageSize        = ImVec2(fbSettings.width, fbSettings.height);
+      ImVec2 currentCursorPos = ImGui::GetCursorPos() + ImGui::GetWindowPos();
+      ImRect bb(currentCursorPos, currentCursorPos + imageSize);
+      ImGui::ItemSize(bb);
+      ImGui::ItemAdd(bb, 0);
+      ImGui::GetWindowDrawList()->AddImageRounded(
+          Convert2ImGuiTexture(m_framebuffer->GetAttachment(
+              Framebuffer::Attachment::ColorAttachment0)),
+          bb.Min,
+          bb.Max,
+          ImVec2(0.0f, 0.0f),
+          ImVec2(1.0f, -1.0f),
+          ImGui::GetColorU32(ImVec4(1, 1, 1, 1)),
+          5.0f);
     }
 
     ScenePtr PreviewViewport::GetScene()
@@ -293,7 +305,8 @@ namespace ToolKit
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
       ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
                           ImVec2(2, style.ItemSpacing.y));
-      if (ImGui::Begin(m_name.c_str(), &m_visible))
+      if (ImGui::Begin(
+              m_name.c_str(), &m_visible, ImGuiWindowFlags_NoScrollWithMouse))
       {
         HandleStates();
 

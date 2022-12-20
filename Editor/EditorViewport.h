@@ -104,11 +104,11 @@ namespace ToolKit
       Vec2 m_contentAreaMin;
       Vec2 m_contentAreaMax;
       IVec2 m_mousePosBegin;
+      bool m_needsResize = false;
 
      private:
       // States.
       bool m_relMouseModBegin = true;
-      bool m_needsResize      = false;
     };
 
   } // namespace Editor
