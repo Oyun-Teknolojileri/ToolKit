@@ -146,6 +146,11 @@ namespace ToolKit
     {
       m_renderState.emissiveTextureInUse = true;
       m_renderState.emissiveTexture      = m_emissiveTexture->m_textureId;
+      
+      // TODO: Remove the line below.
+      // This will stay here until, translucent gbuffer added to deferred
+      // renderer.
+      m_renderState.useForwardPath = true;
     }
     else
     {
@@ -159,16 +164,6 @@ namespace ToolKit
     else
     {
       m_renderState.cubeMap = false;
-    }
-    if (m_fragmentShader)
-    {
-      for (Uniform u : m_fragmentShader->m_uniforms)
-      {
-        if (u == Uniform::EMISSIVE_COLOR)
-        {
-          m_renderState.useForwardPath = true;
-        }
-      }
     }
 
     return &m_renderState;

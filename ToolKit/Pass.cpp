@@ -120,15 +120,18 @@ namespace ToolKit
 
       if (!materials.empty())
       {
-        for (MaterialComponentPtr& mt : materials)
+        for (MaterialComponentPtr& mtc : materials)
         {
-          if (mt->GetMaterialVal() &&
-              (mt->GetMaterialVal()->GetRenderState()->blendFunction ==
-                   BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA ||
-               mt->GetMaterialVal()->GetRenderState()->useForwardPath))
+          if (MaterialPtr mat = mtc->GetMaterialVal())
           {
-            translucentAndUnlitEntities.push_back(ntt);
-            return true;
+            RenderState* rs = mat->GetRenderState();
+            if (rs->blendFunction ==
+                    BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA ||
+                rs->useForwardPath)
+            {
+              translucentAndUnlitEntities.push_back(ntt);
+              return true;
+            }
           }
         }
       }
@@ -998,9 +1001,8 @@ namespace ToolKit
       const Vec2 factor(1.0f / powVal);
       const UVec2 curRes = Vec2(mainRes) * factor;
 
-      powVal       = glm::pow(2.0f, float(i));
-      const Vec2 prevRes =
-          Vec2(mainRes) * Vec2((1.0f / powVal));
+      powVal             = glm::pow(2.0f, float(i));
+      const Vec2 prevRes = Vec2(mainRes) * Vec2((1.0f / powVal));
 
       // Find previous framebuffer & RT
       FramebufferPtr prevFramebuffer = m_tempFrameBuffers[i];
@@ -1010,7 +1012,7 @@ namespace ToolKit
       // Set pass' shader and parameters
       m_pass->m_params.FragmentShader = m_downsampleShader;
 
-      int passIndx                    = i + 1;
+      int passIndx = i + 1;
       m_downsampleShader->SetShaderParameter("passIndx",
                                              ParameterVariant(passIndx));
       m_downsampleShader->SetShaderParameter(
@@ -1091,7 +1093,7 @@ namespace ToolKit
       const Vec2 factor(1.0f / glm::pow(2.0f, float(i)));
       const UVec2 curRes = Vec2(mainRes) * factor;
 
-      m_invalidRenderParams = false; 
+      m_invalidRenderParams = false;
       if (curRes.x == 1 || curRes.y == 1)
       {
         m_invalidRenderParams = true;
