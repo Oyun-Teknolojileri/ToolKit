@@ -57,9 +57,7 @@ namespace ToolKit
     MaterialPtr GetCopyOfUnlitMaterial();
     MaterialPtr GetCopyOfUIMaterial();
     MaterialPtr GetCopyOfUnlitColorMaterial();
-    MaterialPtr GetCopyOfSolidMaterial();
     MaterialPtr GetCopyOfDefaultMaterial();
-    MaterialPtr GetCopyOfEmissiveMaterial();
   };
 
 } // namespace ToolKit

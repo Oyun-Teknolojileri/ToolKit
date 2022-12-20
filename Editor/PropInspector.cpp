@@ -219,6 +219,7 @@ namespace ToolKit
     {
       RenderTargetPtr colorRT = m_framebuffer->GetAttachment(
           Framebuffer::Attachment::ColorAttachment0);
+
       if (colorRT == nullptr)
       {
         return;
@@ -235,6 +236,7 @@ namespace ToolKit
         {
           continue;
         }
+
         if (ntt->GetVisibleVal())
         {
           mc->SetCastShadowVal(true);
@@ -244,8 +246,10 @@ namespace ToolKit
           mc->SetCastShadowVal(false);
         }
       }
+
       m_renderPass->Render();
       FramebufferSettings fbs = m_framebuffer->GetSettings();
+
       ImGui::Image(Convert2ImGuiTexture(colorRT),
                    ImVec2((float) fbs.width, (float) fbs.height),
                    ImVec2(0.0f, 0.0f),

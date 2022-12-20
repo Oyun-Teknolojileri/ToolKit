@@ -19,7 +19,7 @@ namespace ToolKit
       PreviewViewport* m_viewport;
       MaterialPtr m_mat;
       uint m_activeObjectIndx = 0;
-      bool isMeshChanged      = true;
+      bool m_isMeshChanged    = true;
       void updatePreviewScene();
     };
 

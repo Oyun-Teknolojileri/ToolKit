@@ -967,7 +967,7 @@ namespace ToolKit
             else
             {
               MaterialManager* man = GetMaterialManager();
-              MaterialPtr mat      = man->GetCopyOfSolidMaterial();
+              MaterialPtr mat      = man->GetCopyOfDefaultMaterial();
               mat->m_name          = val;
               mat->SetFile(file);
               for (FolderView* view : views)

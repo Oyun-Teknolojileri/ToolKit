@@ -816,7 +816,7 @@ namespace ToolKit
     m_copyStencilSubPass = std::make_shared<FullQuadPass>();
     m_copyStencilSubPass->m_params.FragmentShader =
         GetShaderManager()->Create<Shader>(
-            ShaderPath("unlitColorFrag.shader", true));
+            ShaderPath("unlitFrag.shader", true));
 
     m_solidOverrideMaterial =
         GetMaterialManager()->GetCopyOfUnlitColorMaterial();
