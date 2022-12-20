@@ -16,11 +16,13 @@ namespace ToolKit
       void ResetCamera();
 
      private:
-      PreviewViewport* m_viewport;
-      MaterialPtr m_mat;
-      uint m_activeObjectIndx = 0;
-      bool m_isMeshChanged    = true;
-      void updatePreviewScene();
+      void UpdatePreviewScene();
+
+     private:
+      PreviewViewport* m_viewport = nullptr;
+      MaterialPtr m_mat           = nullptr;
+      uint m_activeObjectIndx     = 0;
+      bool m_isMeshChanged        = true;
     };
 
   } // namespace Editor

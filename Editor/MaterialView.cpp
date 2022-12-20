@@ -24,7 +24,8 @@ namespace ToolKit
       groundMat->m_diffuseTexture = GetTextureManager()->Create<Texture>(
           TexturePath("checkerBoard.png", true));
 
-      Cube* ground = new Cube(Vec3(50.0f, 0.01f, 50.0f));
+      Cube* ground = new Cube(Vec3(20.0f, 0.01f, 20.0f));
+      ground->GetMeshComponent()->SetCastShadowVal(false);
       ground->GetMeshComponent()->GetMeshVal()->m_material = groundMat;
 
       ScenePtr scene = m_viewport->GetScene();
@@ -50,26 +51,27 @@ namespace ToolKit
 
       ResetCamera();
     }
+
     MaterialView::~MaterialView()
     {
       SafeDel(m_viewport);
     }
+
     void MaterialView::SetMaterial(MaterialPtr mat)
     {
       m_mat = mat;
     }
+
     void MaterialView::ResetCamera()
     {
-      m_viewport->GetCamera()->m_node->SetTranslation(Vec3(0.0f, 2.0f, 5.0f));
-      m_viewport->GetCamera()->GetComponent<DirectionComponent>()->LookAt(
-          Vec3(0.0f));
+      m_viewport->ResetCamera();
     }
 
-    void MaterialView::updatePreviewScene()
+    void MaterialView::UpdatePreviewScene()
     {
       EntityRawPtrArray& entities = m_viewport->GetScene()->AccessEntityArray();
       Entity* primNtt             = nullptr;
-      if (entities.size() > 1)
+      if (entities.size() > 1u)
       {
         primNtt = entities[1];
       }
@@ -80,11 +82,15 @@ namespace ToolKit
         switch (m_activeObjectIndx)
         {
         case 0:
-          Sphere::Generate(newMeshComp, 1.5f);
+          Sphere::Generate(newMeshComp, 1.35f);
+          primNtt->m_node->SetTranslation(Vec3(0.0f, 1.35f, 0.0f));
           break;
         case 1:
-          Cube::Generate(newMeshComp, Vec3(3.0f));
+          Cube::Generate(newMeshComp, Vec3(2.3f));
+          primNtt->m_node->SetTranslation(Vec3(0.0f, 2.3f * 0.5f, 0.0f));
           break;
+        default:
+          primNtt->m_node->SetTranslation(Vec3(0.0f));
         }
 
         if (primNtt)
@@ -136,7 +142,7 @@ namespace ToolKit
         ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - 300.0f) /
                              2.0f);
 
-        updatePreviewScene();
+        UpdatePreviewScene();
 
         if (UI::ImageButtonDecorless(
                 UI::m_cameraIcon->m_textureId, Vec2(16.0f), false))
@@ -248,7 +254,7 @@ namespace ToolKit
             {
               ImGui::SameLine();
               if (UI::ImageButtonDecorless(
-                      UI::m_closeIcon->m_textureId, Vec2(16, 16), false))
+                      UI::m_closeIcon->m_textureId, Vec2(16.0f, 16.0f), false))
               {
                 m_mat->m_emissiveTexture = nullptr;
               }
@@ -287,15 +293,14 @@ namespace ToolKit
           }
         }
 
-        int cullMode = static_cast<int>(m_mat->GetRenderState()->cullMode);
+        int cullMode = (int) m_mat->GetRenderState()->cullMode;
         if (ImGui::Combo("Cull mode", &cullMode, "Two Sided\0Front\0Back"))
         {
           m_mat->GetRenderState()->cullMode = (CullingType) cullMode;
           m_mat->m_dirty                    = true;
         }
 
-        int blendMode =
-            static_cast<int>(m_mat->GetRenderState()->blendFunction);
+        int blendMode = (int) m_mat->GetRenderState()->blendFunction;
         if (ImGui::Combo(
                 "Blend mode", &blendMode, "None\0Alpha Blending\0Alpha Mask"))
         {
@@ -393,5 +398,6 @@ namespace ToolKit
         }
       }
     }
+
   } // namespace Editor
 } // namespace ToolKit
