@@ -815,7 +815,8 @@ namespace ToolKit
         String importFolder;
         if (!ImportData.ActiveView->m_currRoot)
         {
-          importFolder = ImportData.ActiveView->m_folder;
+          importFolder = ImportData.ActiveView->GetPath();
+          importFolder = GetRelativeResourcePath(importFolder);
           if (ImportData.SubDir.length())
           {
             importFolder += GetPathSeparatorAsStr();
