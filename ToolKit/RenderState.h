@@ -9,7 +9,8 @@ namespace ToolKit
   {
     NONE,
     SRC_ALPHA_ONE_MINUS_SRC_ALPHA,
-    ALPHA_MASK
+    ALPHA_MASK,
+    ONE_TO_ONE
   };
 
   enum class DrawType
@@ -56,13 +57,14 @@ namespace ToolKit
     bool IBLInUse = false; // ONLY Renderer class edits and uses this variable.
                            // This variable does not give any functionality to
                            // disable or enable ibl for material.
-    float iblIntensity = 0.25f;
-    uint irradianceMap = 0;
-    bool AOInUse       = true;
-    int priority       = 0;     // The higher the priority, the earlier to draw.
-    bool isUnlit       = false; // True if the material is not going to be lit.
-    bool isColorMaterial         = true;
-    Vec3 emissiveColorMultiplier = Vec3(1.0f);
+    float iblIntensity  = 0.25f;
+    uint irradianceMap  = 0;
+    bool AOInUse        = true;
+    int priority        = 0; // The higher the priority, the earlier to draw.
+    bool useForwardPath = false; // True if the material is not going to be lit.
+    bool isColorMaterial      = true;
+    bool emissiveTextureInUse = false;
+    uint emissiveTexture      = 0;
   };
 
 } // namespace ToolKit

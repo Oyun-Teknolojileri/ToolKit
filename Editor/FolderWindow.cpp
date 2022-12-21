@@ -772,18 +772,18 @@ namespace ToolKit
         {
           StringInputWindow* inputWnd =
               new StringInputWindow("New Directory##NwDirName", true);
-          inputWnd->m_inputLabel = "Name";
-          inputWnd->m_hint       = "Directory name...";
+          inputWnd->m_inputLabel   = "Name";
+          inputWnd->m_hint         = "Directory name...";
           inputWnd->m_illegalChars = {
               '/', ':', '*', '?', '"', '<', '>', '|', '\\'};
-        
+
           inputWnd->m_taskFn = [views, inputWnd](const String& val) {
-              String file = ConcatPaths({views[0]->m_path, val});
-              std::filesystem::create_directories(file);
-              for (FolderView* view : views)
-              {
-                view->m_dirty = true;
-              }
+            String file = ConcatPaths({views[0]->m_path, val});
+            std::filesystem::create_directories(file);
+            for (FolderView* view : views)
+            {
+              view->m_dirty = true;
+            }
           };
           ImGui::CloseCurrentPopup();
         }

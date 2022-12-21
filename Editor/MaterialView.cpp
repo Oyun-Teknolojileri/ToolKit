@@ -185,22 +185,50 @@ namespace ToolKit
           target = m_mat->m_diffuseTexture->GetFile();
         }
 
-        DropZone(
-            UI::m_imageIcon->m_textureId,
-            target,
-            [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
-              // Switch from solid color Material to default for texturing.
-              if (m_mat->m_diffuseTexture == nullptr)
+        DropZone(UI::m_imageIcon->m_textureId,
+                 target,
+                 [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
+                   m_mat->m_diffuseTexture =
+                       GetTextureManager()->Create<Texture>(
+                           dirEnt.GetFullPath());
+                   m_mat->m_diffuseTexture->Init();
+                   updateThumbFn();
+                 });
+
+        // Display emissive color multiplier if fragment is emissive
+        for (Uniform u : m_mat->m_fragmentShader->m_uniforms)
+        {
+          if (u == Uniform::EMISSIVE_COLOR)
+          {
+            ImGui::LabelText("##emissiveTexture", "Emissive Texture: ");
+            String target = GetPathSeparatorAsStr();
+            if (m_mat->m_emissiveTexture)
+            {
+              target = m_mat->m_emissiveTexture->GetFile();
+            }
+
+            DropZone(
+                UI::m_imageIcon->m_textureId,
+                target,
+                [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
+                  m_mat->m_emissiveTexture =
+                      GetTextureManager()->Create<Texture>(
+                          dirEnt.GetFullPath());
+                  m_mat->m_emissiveTexture->Init();
+                  updateThumbFn();
+                });
+
+            if (m_mat->m_emissiveTexture)
+            {
+              ImGui::SameLine();
+              if (UI::ImageButtonDecorless(
+                      UI::m_closeIcon->m_textureId, Vec2(16, 16), false))
               {
-                m_mat->m_fragmentShader = GetShaderManager()->Create<Shader>(
-                    ShaderPath("defaultFragment.shader", true));
-                m_mat->m_fragmentShader->Init();
+                m_mat->m_emissiveTexture = nullptr;
               }
-              m_mat->m_diffuseTexture =
-                  GetTextureManager()->Create<Texture>(dirEnt.GetFullPath());
-              m_mat->m_diffuseTexture->Init();
-              updateThumbFn();
-            });
+            }
+          }
+        }
       }
 
       if (ImGui::CollapsingHeader("Render States",
@@ -217,18 +245,19 @@ namespace ToolKit
         // Display emissive color multiplier if fragment is emissive
         for (Uniform u : m_mat->m_fragmentShader->m_uniforms)
         {
-          if (u == Uniform::EMISSIVE_COLOR_MULTIPLIER)
+          if (u == Uniform::EMISSIVE_COLOR &&
+              m_mat->m_emissiveTexture == nullptr)
           {
-            if (ImGui::ColorEdit3(
-                    "Emissive Color Multiplier##1",
-                    &m_mat->GetRenderState()->emissiveColorMultiplier.x,
-                    ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoLabel |
-                        ImGuiColorEditFlags_Float))
+            if (ImGui::ColorEdit3("Emissive Color Multiplier##1",
+                                  &m_mat->m_emissiveColor.x,
+                                  ImGuiColorEditFlags_HDR |
+                                      ImGuiColorEditFlags_NoLabel |
+                                      ImGuiColorEditFlags_Float))
             {
               updateThumbFn();
             }
             ImGui::SameLine();
-            ImGui::Text("Emissive Strength");
+            ImGui::Text("Emissive Color");
           }
         }
 
@@ -308,11 +337,11 @@ namespace ToolKit
           m_mat->m_dirty                   = true;
         }
 
-        bool isUnlit = m_mat->GetRenderState()->isUnlit;
-        if (ImGui::Checkbox("Unlit", &isUnlit))
+        bool useForwardPath = m_mat->GetRenderState()->useForwardPath;
+        if (ImGui::Checkbox("Use Forward Path", &useForwardPath))
         {
-          m_mat->GetRenderState()->isUnlit = isUnlit;
-          m_mat->m_dirty                   = true;
+          m_mat->GetRenderState()->useForwardPath = useForwardPath;
+          m_mat->m_dirty                          = true;
         }
 
         bool isColorMaterial = m_mat->GetRenderState()->isColorMaterial;
@@ -325,7 +354,7 @@ namespace ToolKit
         if (m_mat->GetRenderState()->blendFunction == BlendFunction::ALPHA_MASK)
         {
           float alphaMaskTreshold = m_mat->GetRenderState()->alphaMaskTreshold;
-          if (ImGui::DragFloat("Alpha Mask Treshold",
+          if (ImGui::DragFloat("Alpha Mask Threshold",
                                &alphaMaskTreshold,
                                0.001f,
                                0.0f,

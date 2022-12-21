@@ -40,6 +40,8 @@ namespace ToolKit
 
       m_scenePass.Render();
 
+      m_bloomPass.Render();
+
       SetLitMode(EditorLitMode::EditorLit);
 
       m_editorPass.Render();
@@ -150,6 +152,15 @@ namespace ToolKit
       m_scenePass.m_params.Lights          = lights;
       m_scenePass.m_params.MainFramebuffer = viewport->m_framebuffer;
       m_scenePass.m_params.Scene           = scene;
+
+      // Bloom pass
+      m_bloomPass.m_params.FrameBuffer = viewport->m_framebuffer;
+      m_bloomPass.m_params.intensity =
+          Main::GetInstance()->m_engineSettings.Graphics.bloomIntensity;
+      m_bloomPass.m_params.minThreshold =
+          Main::GetInstance()->m_engineSettings.Graphics.bloomThreshold;
+      m_bloomPass.m_params.iterationCount =
+          Main::GetInstance()->m_engineSettings.Graphics.bloomIterationCount;
 
       m_tonemapPass.m_params.FrameBuffer = viewport->m_framebuffer;
       m_tonemapPass.m_params.Method      = m_params.tonemapping;
