@@ -223,7 +223,7 @@ namespace ToolKit
       {
         OnResizeContentArea(m_size.x, m_size.y);
       }
-      // ComitResize();
+
       HandleStates();
       DrawCommands();
 
@@ -267,6 +267,13 @@ namespace ToolKit
     ScenePtr PreviewViewport::GetScene()
     {
       return m_renderPass->m_params.Scene;
+    }
+    void PreviewViewport::ResizeWindow(uint width, uint height)
+    {
+      if (width != m_size.x || height != m_size.y)
+      {
+        EditorViewport::ResizeWindow(width, height);
+      }
     }
 
     // PropInspector

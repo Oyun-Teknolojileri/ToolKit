@@ -50,6 +50,7 @@ namespace ToolKit
       ~PreviewViewport();
       void Show() override;
       ScenePtr GetScene();
+      void ResizeWindow(uint width, uint height) override;
 
      private:
       SceneRenderPass* m_renderPass;

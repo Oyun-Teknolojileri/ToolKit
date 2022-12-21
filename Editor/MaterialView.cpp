@@ -118,9 +118,10 @@ namespace ToolKit
           ResetCamera();
         }
         ImGui::SameLine();
-        m_viewport->ResizeWindow(ImGui::GetContentRegionAvail().x - iconSize.x -
-                                     5.0 * spacing.x,
-                                 150.0f);
+        const ImVec2 viewportSize = ImVec2(ImGui::GetContentRegionAvail().x -
+                                               iconSize.x - 5.0 * spacing.x,
+                                           150.0f);
+        m_viewport->ResizeWindow(viewportSize.x, viewportSize.y);
         m_viewport->Update(g_app->GetDeltaTime());
         m_viewport->Show();
         ImGui::SameLine();
