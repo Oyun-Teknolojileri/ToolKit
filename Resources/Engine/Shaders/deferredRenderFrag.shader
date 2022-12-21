@@ -14,6 +14,8 @@
 		uniform sampler2D s_texture10;
 		// Color buffer
 		uniform sampler2D s_texture11;
+		// Emissive buffer
+		uniform sampler2D s_texture12;
 
 		uniform vec3 camPos;
 
@@ -27,6 +29,7 @@
 			vec3 position = texture(s_texture9, texCoord).rgb;
 			vec3 normal = texture(s_texture10, texCoord).rgb;
 			vec3 color = texture(s_texture11, texCoord).rgb;
+			vec3 emissive = texture(s_texture12, texCoord).rgb;
 
 			vec3 n = normalize(normal);
 			vec3 e = normalize(camPos - position);
@@ -37,7 +40,7 @@
 
 			// float ambientOcclusion = AmbientOcclusion();
 
-			fragColor = vec4(irradiance * color, 1.0);
+			fragColor = vec4(irradiance * color, 1.0) + vec4(emissive, 0.0f);
 		}
 	-->
 	</source>
