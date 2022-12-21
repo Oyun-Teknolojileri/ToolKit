@@ -79,7 +79,6 @@ namespace ToolKit
                   const Mat4& transform = Mat4(1.0f));
 
     void SetTexture(ubyte slotIndx, uint textureId);
-    void ResetShadowMapBindings(ProgramPtr program);
 
     CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture,
                                             uint width,
@@ -201,9 +200,6 @@ namespace ToolKit
     TexturePtr m_shadowAtlas     = nullptr;
 
     uint m_textureSlots[RHIConstants::textureSlotCount];
-    int m_bindedShadowMapCount       = 0;
-    int m_dirAndSpotLightShadowCount = 0;
-    int m_pointLightShadowCount      = 0;
 
     std::unordered_map<String, ProgramPtr> m_programs;
     RenderState m_renderState;

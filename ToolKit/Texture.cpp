@@ -664,5 +664,4 @@ namespace ToolKit
       return TexturePath("default.png", true);
     }
   }
-
 } // namespace ToolKit
