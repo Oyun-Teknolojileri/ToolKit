@@ -7,7 +7,7 @@
 #include "CustomDataView.h"
 #include "EditorPass.h"
 #include "EntityView.h"
-#define IMGUI_DEFINE_MATH_OPERATORS
+#include "ImGui/imconfig.h"
 #include "ImGui/imgui_internal.h"
 #include "ImGui/imgui_stdlib.h"
 #include "MaterialView.h"
@@ -251,8 +251,9 @@ namespace ToolKit
 
       // Render color attachment as rounded image
       FramebufferSettings fbSettings = m_framebuffer->GetSettings();
-      ImVec2 imageSize        = ImVec2(fbSettings.width, fbSettings.height);
-      ImVec2 currentCursorPos = ImGui::GetCursorPos() + ImGui::GetWindowPos();
+      Vec2 imageSize = Vec2(fbSettings.width, fbSettings.height);
+      Vec2 currentCursorPos =
+          Vec2(ImGui::GetCursorPos()) + Vec2(ImGui::GetWindowPos());
       ImRect bb(currentCursorPos, currentCursorPos + imageSize);
       ImGui::ItemSize(bb);
       ImGui::ItemAdd(bb, 0);
