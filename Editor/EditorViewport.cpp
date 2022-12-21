@@ -487,7 +487,7 @@ namespace ToolKit
         static bool hitFound = false;
         static float dist    = 0.0f;
         Camera::CamData dat  = cam->GetData();
-        if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle) || m_forceOrbit)
+        if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
         {
           // Figure out orbiting point.
           EditorScenePtr currScene = g_app->GetCurrentScene();
