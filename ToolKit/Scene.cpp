@@ -40,6 +40,10 @@ namespace ToolKit
     // Update parent - child relation for entities.
     for (Entity* e : m_entities)
     {
+      if (e == nullptr)
+      {
+        continue;
+      }
       if (e->_parentId != 0)
       {
         Entity* parent = GetEntity(e->_parentId);
@@ -87,6 +91,10 @@ namespace ToolKit
     const EntityRawPtrArray& ntties = GetEntities();
     for (Entity* ntt : ntties)
     {
+      if (ntt == nullptr)
+      {
+        continue;
+      }
       if (ntt->GetType() == EntityType::Entity_Sky)
       {
         static_cast<Sky*>(ntt)->Init();
@@ -124,6 +132,10 @@ namespace ToolKit
     const EntityRawPtrArray& entities = other->GetEntities();
     for (Entity* ntt : entities)
     {
+      if (ntt == nullptr)
+      {
+        continue;
+      }
       AddEntity(ntt); // Insert into this scene.
     }
     GetHandleManager()->SetMaxHandle(biggestID);
@@ -146,6 +158,10 @@ namespace ToolKit
     {
       for (Entity* ntt : entities)
       {
+        if (ntt == nullptr)
+        {
+          continue;
+        }
         if (!ntt->IsDrawable())
         {
           continue;
@@ -231,6 +247,10 @@ namespace ToolKit
     {
       for (Entity* e : entities)
       {
+        if (e == nullptr)
+        {
+          continue;
+        }
         if (!e->IsDrawable())
         {
           continue;
@@ -270,6 +290,10 @@ namespace ToolKit
   {
     for (Entity* e : m_entities)
     {
+      if (e == nullptr)
+      {
+        continue;
+      }
       if (e->GetIdVal() == id)
       {
         return e;
@@ -293,6 +317,10 @@ namespace ToolKit
     Entity* removed = nullptr;
     for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; i--)
     {
+      if (m_entities[i] == nullptr)
+      {
+        continue;
+      }
       if (m_entities[i]->GetIdVal() == id)
       {
         removed = m_entities[i];
@@ -308,7 +336,10 @@ namespace ToolKit
   {
     for (Entity* ntt : entities)
     {
-      RemoveEntity(ntt->GetIdVal());
+      if (ntt)
+      {
+        RemoveEntity(ntt->GetIdVal());
+      }
     }
   }
 
@@ -321,6 +352,10 @@ namespace ToolKit
     LightRawPtrArray lights;
     for (Entity* ntt : m_entities)
     {
+      if (ntt == nullptr)
+      {
+        continue;
+      }
       if (ntt->IsLightInstance())
       {
         lights.push_back(static_cast<Light*>(ntt));
@@ -334,6 +369,10 @@ namespace ToolKit
   {
     for (Entity* e : m_entities)
     {
+      if (e == nullptr)
+      {
+        continue;
+      }
       if (e->GetNameVal() == name)
       {
         return e;
@@ -347,6 +386,10 @@ namespace ToolKit
     EntityRawPtrArray arrayByTag;
     for (Entity* e : m_entities)
     {
+      if (e == nullptr)
+      {
+        continue;
+      }
       StringArray tokens;
       Split(e->GetTagVal(), ".", tokens);
 
@@ -383,6 +426,10 @@ namespace ToolKit
   {
     for (int i = static_cast<int>(m_entities.size()) - 1; i >= 0; --i)
     {
+      if (m_entities[i] == nullptr)
+      {
+        continue;
+      }
       if (m_entities[i]->IsSkyInstance())
       {
         return static_cast<SkyBase*>(m_entities[i]);
@@ -449,12 +496,20 @@ namespace ToolKit
 
   void Scene::Destroy(bool removeResources)
   {
+    std::vector<Entity*> prefabRoots;
     for (uint nttIndx = 0; nttIndx < m_entities.size(); nttIndx++)
     {
-      Entity* ntt = m_entities[nttIndx];
-      if (Prefab::GetPrefabRoot(ntt) &&
-          ntt->GetType() != EntityType::Entity_Prefab)
+      Entity*& ntt = m_entities[nttIndx];
+      if (ntt == nullptr)
       {
+        continue;
+      }
+      if (Prefab::GetPrefabRoot(ntt))
+      {
+        if (ntt->GetType() == EntityType::Entity_Prefab)
+        {
+          prefabRoots.push_back(ntt);
+        }
         continue;
       }
       if (removeResources)
@@ -462,6 +517,10 @@ namespace ToolKit
         ntt->RemoveResources();
       }
       SafeDel(ntt);
+    }
+    for (Entity*& prefab : prefabRoots)
+    {
+      SafeDel(prefab);
     }
     m_entities.clear();
 
@@ -524,6 +583,10 @@ namespace ToolKit
     for (size_t listIndx = 0; listIndx < m_entities.size(); listIndx++)
     {
       Entity* ntt = m_entities[listIndx];
+      if (ntt == nullptr)
+      {
+        continue;
+      }
       // If entity isn't a prefab type but from a prefab, don't serialize it
       if (ntt->GetType() != EntityType::Entity_Prefab &&
           Prefab::GetPrefabRoot(ntt))
@@ -549,7 +612,11 @@ namespace ToolKit
     parent->remove_attribute(parent->first_attribute(XmlEntityIdAttr.c_str()));
     WriteAttr(parent, doc, XmlEntityIdAttr, std::to_string(listIndx + 1));
 
-    Entity* ntt      = m_entities[listIndx];
+    Entity* ntt = m_entities[listIndx];
+    if (ntt == nullptr)
+    {
+      return;
+    }
     Node* parentNode = ntt->m_node->m_parent;
     // If parent is in scene, save its list index too
     if (parentNode && parentNode->m_entity)
@@ -557,6 +624,10 @@ namespace ToolKit
       for (uint parentSrchIndx = 0; parentSrchIndx < m_entities.size();
            parentSrchIndx++)
       {
+        if (m_entities[parentSrchIndx] == nullptr)
+        {
+          continue;
+        }
         if (parentNode->m_entity == m_entities[parentSrchIndx])
         {
           parent->remove_attribute(parentAttrib);
@@ -623,6 +694,10 @@ namespace ToolKit
     ULongID lastId = 0;
     for (Entity* ntt : m_entities)
     {
+      if (ntt == nullptr)
+      {
+        continue;
+      }
       lastId = glm::max(lastId, ntt->GetIdVal());
     }
 

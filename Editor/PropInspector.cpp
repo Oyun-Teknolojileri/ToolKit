@@ -212,7 +212,10 @@ namespace ToolKit
       m_renderPass.m_params.Scene            = std::make_shared<Scene>();
     }
 
-    PreviewViewport::~PreviewViewport() { SafeDel(m_light); }
+    PreviewViewport::~PreviewViewport()
+    {
+      SafeDel(m_light);
+    }
 
     void PreviewViewport::Show()
     {
