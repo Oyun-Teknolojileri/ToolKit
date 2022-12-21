@@ -307,24 +307,6 @@ namespace ToolKit
       "LightData.shadowAtlasResRatio[14]",
       "LightData.shadowAtlasResRatio[15]"};
 
-  static const StringArray g_lightShadowResolutionStrCache = {
-      "LightData.shadowResolution[0]",
-      "LightData.shadowResolution[1]",
-      "LightData.shadowResolution[2]",
-      "LightData.shadowResolution[3]",
-      "LightData.shadowResolution[4]",
-      "LightData.shadowResolution[5]",
-      "LightData.shadowResolution[6]",
-      "LightData.shadowResolution[7]",
-      "LightData.shadowResolution[8]",
-      "LightData.shadowResolution[9]",
-      "LightData.shadowResolution[10]",
-      "LightData.shadowResolution[11]",
-      "LightData.shadowResolution[12]",
-      "LightData.shadowResolution[13]",
-      "LightData.shadowResolution[14]",
-      "LightData.shadowResolution[15]"};
-
   static const StringArray g_lightShadowAtlasCoordStrCache = {
       "LightData.shadowAtlasCoord[0]",
       "LightData.shadowAtlasCoord[1]",

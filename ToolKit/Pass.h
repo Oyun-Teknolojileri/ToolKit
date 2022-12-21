@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BinPack2D.h"
+#include "DataTexture.h"
 #include "Framebuffer.h"
 #include "GeometryTypes.h"
 #include "Primative.h"
@@ -433,12 +434,18 @@ namespace ToolKit
     void PostRender() override;
     void Render() override;
 
+   private:
+    void InitLightDataTexture();
+
    public:
     DeferredRenderPassParams m_params;
 
    private:
     FullQuadPass m_fullQuadPass;
     ShaderPtr m_deferredRenderShader = nullptr;
+
+    const IVec2 m_lightDataTextureSize       = IVec2(1024);
+    LightDataTexturePtr m_lightDataTexture = nullptr;
   };
 
   struct SceneRenderPassParams
