@@ -139,7 +139,7 @@ namespace ToolKit
       if (ImGui::CollapsingHeader("Material Preview",
                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
-        const ImVec2 iconSize = ImVec2(16.0f, 16.0f);
+        static const ImVec2 iconSize = ImVec2(16.0f, 16.0f);
         const ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
         UpdatePreviewScene();
         if (UI::ImageButtonDecorless(

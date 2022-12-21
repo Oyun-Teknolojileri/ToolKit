@@ -228,7 +228,7 @@ namespace ToolKit
       HandleStates();
       DrawCommands();
 
-      m_renderPass->m_params.MainFramebuffer = m_framebuffer;
+      m_renderPass.m_params.MainFramebuffer = m_framebuffer;
       EntityRawPtrArray& entities = GetScene()->AccessEntityArray();
       for (Entity* ntt : entities)
       {
