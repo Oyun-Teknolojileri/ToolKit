@@ -449,7 +449,7 @@
 				vec3 dir = SpotLightDirection(s_texture12, lightDataIndex, lightDataTextureWidth);
 				float radius = SpotLightRadius(s_texture12, lightDataIndex, lightDataTextureWidth);
 				float innAngle = SpotLightInnerAngle(s_texture12, lightDataIndex, lightDataTextureWidth);
-				float outAngle = SpotLightInnerAngle(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float outAngle = SpotLightOuterAngle(s_texture12, lightDataIndex, lightDataTextureWidth);
 				float intensity = SpotLightIntensity(s_texture12, lightDataIndex, lightDataTextureWidth);
 				SpotLightBlinnPhong(pos - fragPos, fragToEye, normal, col, dir, radius,	innAngle, outAngle, diffuse, specular);
 
