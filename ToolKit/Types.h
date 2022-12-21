@@ -100,6 +100,8 @@ namespace ToolKit
   typedef std::vector<MaterialPtr> MaterialPtrArray;
   typedef std::shared_ptr<class CubeMap> CubeMapPtr;
   typedef std::shared_ptr<class Texture> TexturePtr;
+  typedef std::shared_ptr<class DataTexture> DataTexturePtr;
+  typedef std::shared_ptr<class LightDataTexture> LightDataTexturePtr;
   typedef std::shared_ptr<class Hdri> HdriPtr;
   typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;
   typedef std::shared_ptr<class Framebuffer> FramebufferPtr;

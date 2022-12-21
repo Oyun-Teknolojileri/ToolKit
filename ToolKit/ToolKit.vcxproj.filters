@@ -138,6 +138,9 @@
     <ClCompile Include="BinPack2D.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="DataTexture.cpp">
+      <Filter>Source\Resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">
@@ -277,6 +280,9 @@
     </ClInclude>
     <ClInclude Include="BinPack2D.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTexture.h">
+      <Filter>Source\Resource</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

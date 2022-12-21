@@ -25,7 +25,8 @@ namespace ToolKit
     Hdri,
     RenderTarget,
     Scene,
-    Skeleton
+    Skeleton,
+    DataTexture
   };
 
   class TK_API ResourceManager

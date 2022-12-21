@@ -73,6 +73,7 @@ namespace ToolKit
         ssaoNoise.push_back(noise);
       }
   }
+
   int Renderer::GetMaxArrayTextureLayers()
   {
     if (m_maxArrayTextureLayers == -1)
@@ -318,6 +319,7 @@ namespace ToolKit
       // DrawFullQuad(quad);
     }
   }
+
   /**
    * DEPRECATED
    * Renders given UILayer to given Viewport.
@@ -1533,8 +1535,6 @@ namespace ToolKit
 
   void Renderer::FeedLightUniforms(ProgramPtr program)
   {
-    ResetShadowMapBindings(program);
-
     size_t lightSize =
         glm::min(m_lights.size(), m_rhiSettings::maxLightsPerObject);
     for (size_t i = 0; i < lightSize; i++)
@@ -1679,10 +1679,6 @@ namespace ToolKit
         glUniform1f(loc,
                     currLight->GetShadowResVal() /
                         Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
-
-        loc = glGetUniformLocation(program->m_handle,
-                                   g_lightShadowResolutionStrCache[i].c_str());
-        glUniform1f(loc, currLight->GetShadowResVal());
       }
 
       GLuint loc = glGetUniformLocation(program->m_handle,
@@ -1707,7 +1703,7 @@ namespace ToolKit
     // 0 - 5  : 2D textures
     // 6 - 7  : Cube map textures
     // 8      : Shadow atlas
-    // 9-11   : 2D textures
+    // 9-12   : 2D textures
     //
     // 0 -> Color Texture
     // 2 & 3 -> Skinning information
@@ -1717,6 +1713,7 @@ namespace ToolKit
     // 9 -> gBuffer position texture
     // 10 -> gBuffer normal texture
     // 11 -> gBuffer color texture
+    // 12 -> Light Data Texture
 
     assert(slotIndx < m_rhiSettings::textureSlotCount &&
            "You exceed texture slot count");
@@ -1735,7 +1732,7 @@ namespace ToolKit
     {
       glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureSlots[slotIndx]);
     }
-    else if (slotIndx < 12)
+    else if (slotIndx < 13)
     {
       glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
     }
@@ -1744,13 +1741,6 @@ namespace ToolKit
   void Renderer::SetShadowAtlas(TexturePtr shadowAtlas)
   {
     m_shadowAtlas = shadowAtlas;
-  }
-
-  void Renderer::ResetShadowMapBindings(ProgramPtr program)
-  {
-    m_bindedShadowMapCount       = 0;
-    m_dirAndSpotLightShadowCount = 0;
-    m_pointLightShadowCount      = 0;
   }
 
   CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture,

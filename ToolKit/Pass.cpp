@@ -1,5 +1,7 @@
 #include "Pass.h"
 
+#include "DataTexture.h"
+#include "DirectionComponent.h"
 #include "Renderer.h"
 #include "Toolkit.h"
 #include "Viewport.h"
@@ -1491,6 +1493,11 @@ namespace ToolKit
   {
     Pass::PreRender();
 
+    if (m_lightDataTexture == nullptr)
+    {
+      InitLightDataTexture();
+    }
+
     if (m_deferredRenderShader == nullptr)
     {
       m_deferredRenderShader = GetShaderManager()->Create<Shader>(
@@ -1504,21 +1511,56 @@ namespace ToolKit
     m_fullQuadPass.m_params.ClearFrameBuffer = true;
     m_fullQuadPass.m_params.FragmentShader   = m_deferredRenderShader;
     m_fullQuadPass.m_params.FrameBuffer      = m_params.MainFramebuffer;
-    m_fullQuadPass.m_params.lights           = m_params.lights;
-  }
-
-  void DeferredRenderPass::PostRender()
-  {
-    Pass::PostRender();
-  }
-
-  void DeferredRenderPass::Render()
-  {
-    PreRender();
 
     Renderer* renderer = GetRenderer();
 
     renderer->SetFramebuffer(m_params.MainFramebuffer, true, Vec4(0.0f));
+
+    Vec2 sd, nsd, sp, nsp, ss, nss;
+    float sizeD, sizeP, sizeS, sizeND, sizeNP, sizeNS;
+    // Update light data texture
+    m_lightDataTexture->UpdateTextureData(m_params.lights,
+                                          sd,
+                                          sp,
+                                          ss,
+                                          nsd,
+                                          nsp,
+                                          nss,
+                                          sizeD,
+                                          sizeP,
+                                          sizeS,
+                                          sizeND,
+                                          sizeNP,
+                                          sizeNS);
+
+    // Update light uniforms
+    m_deferredRenderShader->SetShaderParameter(
+        "lightDataTextureWidth",
+        ParameterVariant((float) m_lightDataTextureSize.x));
+    m_deferredRenderShader->SetShaderParameter("shadowDirLightsInterval",
+                                               ParameterVariant(sd));
+    m_deferredRenderShader->SetShaderParameter("shadowPointLightsInterval",
+                                               ParameterVariant(sp));
+    m_deferredRenderShader->SetShaderParameter("shadowSpotLightsInterval",
+                                               ParameterVariant(ss));
+    m_deferredRenderShader->SetShaderParameter("nonShadowDirLightsInterval",
+                                               ParameterVariant(nsd));
+    m_deferredRenderShader->SetShaderParameter("nonShadowPointLightsInterval",
+                                               ParameterVariant(nsp));
+    m_deferredRenderShader->SetShaderParameter("nonShadowSpotLightsInterval",
+                                               ParameterVariant(nss));
+    m_deferredRenderShader->SetShaderParameter("dirShadowLightDataSize",
+                                               ParameterVariant(sizeD));
+    m_deferredRenderShader->SetShaderParameter("pointShadowLightDataSize",
+                                               ParameterVariant(sizeP));
+    m_deferredRenderShader->SetShaderParameter("spotShadowLightDataSize",
+                                               ParameterVariant(sizeS));
+    m_deferredRenderShader->SetShaderParameter("dirNonShadowLightDataSize",
+                                               ParameterVariant(sizeND));
+    m_deferredRenderShader->SetShaderParameter("pointNonShadowLightDataSize",
+                                               ParameterVariant(sizeNP));
+    m_deferredRenderShader->SetShaderParameter("spotNonShadowLightDataSize",
+                                               ParameterVariant(sizeNS));
 
     // Set gbuffer
     // 9: Position, 10: Normal, 11: Color
@@ -1538,14 +1580,33 @@ namespace ToolKit
             ->GetAttachment(Framebuffer::Attachment::ColorAttachment2)
             ->m_textureId);
 
+    renderer->SetTexture(12, m_lightDataTexture->m_textureId);
+  }
+
+  void DeferredRenderPass::PostRender()
+  {
+    // Copy real depth buffer to main framebuffer depth
+    GetRenderer()->CopyFrameBuffer(m_params.GBufferFramebuffer,
+                                   m_params.MainFramebuffer,
+                                   GraphicBitFields::DepthBits);
+
+    Pass::PostRender();
+  }
+
+  void DeferredRenderPass::Render()
+  {
+    PreRender();
+
     m_fullQuadPass.Render();
 
-    // Copy real depth buffer to main framebuffer depth
-    renderer->CopyFrameBuffer(m_params.GBufferFramebuffer,
-                              m_params.MainFramebuffer,
-                              GraphicBitFields::DepthBits);
-
     PostRender();
+  }
+
+  void DeferredRenderPass::InitLightDataTexture()
+  {
+    m_lightDataTexture = std::make_shared<LightDataTexture>(
+        m_lightDataTextureSize.x, m_lightDataTextureSize.y);
+    m_lightDataTexture->Init();
   }
 
 } // namespace ToolKit
