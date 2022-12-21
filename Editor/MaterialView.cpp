@@ -140,7 +140,7 @@ namespace ToolKit
                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
         static const ImVec2 iconSize = ImVec2(16.0f, 16.0f);
-        const ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
+        const ImVec2 spacing         = ImGui::GetStyle().ItemSpacing;
         UpdatePreviewScene();
         if (UI::ImageButtonDecorless(
                 UI::m_cameraIcon->m_textureId, iconSize, false))
@@ -159,8 +159,7 @@ namespace ToolKit
         ImGui::BeginGroup();
 
         auto setIconFn = [this](TexturePtr icon, uint id) -> void {
-          if (ImGui::ImageButton(Convert2ImGuiTexture(icon),
-                                 iconSize))
+          if (ImGui::ImageButton(Convert2ImGuiTexture(icon), iconSize))
           {
             m_activeObjectIndx = id;
             m_isMeshChanged    = true;
