@@ -403,7 +403,7 @@ namespace ToolKit
   String GetFileName(const String& path)
   {
     char sep = GetPathSeparator();
-    int i    = path.find_last_of(sep) + 1;
+    int i    = (int) path.find_last_of(sep) + 1;
     return path.substr(i);
   }
 
