@@ -62,6 +62,7 @@ namespace ToolKit
   TK_API void DosifyPath(String& path);
   TK_API String ConcatPaths(const StringArray& entries);
   TK_API String GetRelativeResourcePath(const String& path);
+  TK_API String GetFileName(const String& path);
 
   enum class ResourceType;
   TK_API String CreatePathFromResourceType(const String& file,
@@ -95,6 +96,8 @@ namespace ToolKit
   TK_API void ReplaceCharInPlace(String& subject,
                                  const char search,
                                  const char replace);
+
+  TK_API int CountChar(const String& str, const char chr);
 
   /**
    * Transform ascii chars to lower. Intended usage is extention comparison.

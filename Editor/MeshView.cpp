@@ -64,8 +64,11 @@ namespace ToolKit
         DropZone(UI::m_materialIcon->m_textureId,
                  m_mesh->m_material->GetFile(),
                  [this](const DirectoryEntry& entry) {
-                   g_app->m_statusMsg =
-                       "You can't change mesh's default material";
+                   g_app->m_statusMsg = "Failed.";
+
+                   GetLogger()->WriteConsole(
+                       LogType::Warning,
+                       "You can't change mesh's default material.");
                  });
       }
     }

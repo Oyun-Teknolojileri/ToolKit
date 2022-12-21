@@ -262,7 +262,8 @@ namespace ToolKit
               ShaderPath("lightComplexity.shader", true));
       m_lightComplexityOverride->Init();
 
-      m_lightingOnlyOverride = GetMaterialManager()->GetCopyOfSolidMaterial();
+      m_lightingOnlyOverride = GetMaterialManager()->GetCopyOfDefaultMaterial();
+      m_lightingOnlyOverride->GetRenderState()->isColorMaterial = true;
       m_lightingOnlyOverride->Init();
 
       m_unlitOverride = GetMaterialManager()->GetCopyOfUnlitMaterial();

@@ -146,6 +146,11 @@ namespace ToolKit
     {
       m_renderState.emissiveTextureInUse = true;
       m_renderState.emissiveTexture      = m_emissiveTexture->m_textureId;
+      
+      // TODO: Remove the line below.
+      // This will stay here until, translucent gbuffer added to deferred
+      // renderer.
+      m_renderState.useForwardPath = true;
     }
     else
     {
@@ -337,26 +342,6 @@ namespace ToolKit
     material->Init();
 
     m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
-
-    material                 = new Material();
-    material->m_vertexShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("solidColorFrag.shader", true));
-    material->Init();
-
-    m_storage[MaterialPath("solid.material", true)] = MaterialPtr(material);
-
-    material                 = new Material();
-    material->m_vertexShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("unlitColorFrag.shader", true));
-    material->GetRenderState()->useForwardPath = true;
-    material->Init();
-
-    m_storage[MaterialPath("unlitSolid.material", true)] =
-        MaterialPtr(material);
   }
 
   bool MaterialManager::CanStore(ResourceType t)
@@ -392,23 +377,14 @@ namespace ToolKit
 
   MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial()
   {
-    return m_storage[MaterialPath("unlitSolid.material", true)]
-        ->Copy<Material>();
-  }
-
-  MaterialPtr MaterialManager::GetCopyOfSolidMaterial()
-  {
-    return m_storage[MaterialPath("solid.material", true)]->Copy<Material>();
+    MaterialPtr umat = GetCopyOfUnlitMaterial();
+    umat->GetRenderState()->isColorMaterial = true;
+    return umat;
   }
 
   MaterialPtr MaterialManager::GetCopyOfDefaultMaterial()
   {
     return m_storage[MaterialPath("default.material", true)]->Copy<Material>();
-  }
-
-  MaterialPtr MaterialManager::GetCopyOfEmissiveMaterial()
-  {
-    return m_storage[MaterialPath("emissive.material", true)]->Copy<Material>();
   }
 
 } // namespace ToolKit

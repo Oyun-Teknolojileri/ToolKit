@@ -554,7 +554,7 @@ namespace ToolKit
       else
       {
         // Warn user
-        g_app->m_statusMsg = "Attempt to transform a locked object";
+        g_app->m_statusMsg = "Falied. Transform locked.";
       }
 
       // Set original parents back.
