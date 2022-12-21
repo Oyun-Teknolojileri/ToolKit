@@ -1417,8 +1417,6 @@ namespace ToolKit
     GetRenderer()->SetFramebuffer(m_framebuffer, true, Vec4(0.0f));
     GetRenderer()->SetCameraLens(m_params.camera);
 
-    // TODO change it with CullDrawList and carry the function somewhere else
-    // from RenderPass
     m_params.entities.erase(std::remove_if(m_params.entities.begin(),
                                            m_params.entities.end(),
                                            [](Entity* ntt) -> bool {

@@ -477,7 +477,7 @@ namespace ToolKit
 
         // If entity is gradient sky create a "Update IBL Textures" button
         if (m_entity->GetType() == EntityType::Entity_GradientSky &&
-            category.Name.compare("Sky") == 0) // TODO(Osman) test without this
+            category.Name.compare("Sky") == 0) // TODO This might not be necessary
         {
           if (UI::BeginCenteredTextButton("Update IBL Textures"))
           {
