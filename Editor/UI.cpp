@@ -773,12 +773,12 @@ namespace ToolKit
       if (ImGui::BeginPopupModal(
               "Import", NULL, ImGuiWindowFlags_AlwaysAutoResize))
       {
-        ImGui::Text("Import file:");
         String text;
+        ImGui::Text("Import File:");
         for (size_t i = 0; i < ImportData.Files.size(); i++)
         {
           text = GetFileName(ImportData.Files[i]);
-          ImGui::Text("%s\n\n", text.c_str());
+          ImGui::Text(" %s\n\n", text.c_str());
         }
 
         text = GetRelativeResourcePath(ImportData.ActiveView->GetPath());
