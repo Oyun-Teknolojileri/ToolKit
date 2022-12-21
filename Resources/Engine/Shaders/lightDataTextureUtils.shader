@@ -199,6 +199,61 @@
 			return ReadFloat(data, startingPoint + DirLightBleedReducIndex, lightDataTextureWidth);
 		}
 
+		const float SpotProjViewMatrixIndex = 8.0;
+		const float SpotShadowCameraFarIndex = 12.0;
+		const float SpotShadowAtlasCoordIndex = 13.0;
+		const float SpotShadowAtlasLayerIndex = 14.0;
+		const float SpotShadowAtlasResRatioIndex = 15.0;
+		const float SpotSoftShadowsIndex = 16.0;
+		const float SpotPCFSamplesIndex = 17.0;
+		const float SpotPCFRadiusIndex = 18.0;
+		const float SpotLightBleedReducIndex = 19.0;
+
+		mat4 SpotLightProjViewMatrix(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadMat4(data, startingPoint + SpotProjViewMatrixIndex, lightDataTextureWidth);
+		}
+
+		float SpotLightShadowCameraFar(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadFloat(data, startingPoint + SpotShadowCameraFarIndex, lightDataTextureWidth);
+		}
+
+		vec2 SpotLightShadowAtlasCoord(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadVec2(data, startingPoint + SpotShadowAtlasCoordIndex, lightDataTextureWidth);
+		}
+
+		float SpotLightShadowAtlasLayer(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadFloat(data, startingPoint + SpotShadowAtlasLayerIndex, lightDataTextureWidth);
+		}
+
+		float SpotLightShadowAtlasResRatio(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadFloat(data, startingPoint + SpotShadowAtlasResRatioIndex, lightDataTextureWidth);
+		}
+
+		int SpotLightSoftShadows(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadInt(data, startingPoint + SpotSoftShadowsIndex, lightDataTextureWidth);
+		}
+
+		int SpotLightPCFSamples(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadInt(data, startingPoint + SpotPCFSamplesIndex, lightDataTextureWidth);
+		}
+
+		float SpotLightPCFRadius(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadFloat(data, startingPoint + SpotPCFRadiusIndex, lightDataTextureWidth);
+		}
+
+		float SpotLightBleedReduction(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadFloat(data, startingPoint + SpotLightBleedReducIndex, lightDataTextureWidth);
+		}
+
 	-->
 	</source>
 </shader>
