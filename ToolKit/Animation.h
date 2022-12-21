@@ -115,8 +115,11 @@ namespace ToolKit
      * @param ratio output ratio.
      * @param t time to search keys for.
      */
-    void GetNearestKeys(
-        const KeyArray& keys, int& key1, int& key2, float& ratio, float t);
+    void GetNearestKeys(const KeyArray& keys,
+                        int& key1,
+                        int& key2,
+                        float& ratio,
+                        float t);
 
    public:
     /**

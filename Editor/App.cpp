@@ -51,7 +51,7 @@ namespace ToolKit
       m_renderer->m_windowSize.y = windowHeight;
       m_statusMsg                = "OK";
 
-      myEditorRenderer = new EditorRenderer();
+      myEditorRenderer           = new EditorRenderer();
 
       OverrideEntityConstructors();
 
@@ -96,7 +96,8 @@ namespace ToolKit
         wsDir->m_hint       = "User/Documents/ToolKit";
         wsDir->m_inputLabel = "Workspace Directory";
         wsDir->m_name       = "Set Workspace Directory";
-        wsDir->m_taskFn     = [](const String& val) -> void {
+        wsDir->m_taskFn     = [](const String& val) -> void
+        {
           String cmd = "SetWorkspaceDir --path \"" + val + "\"";
           g_app->GetConsole()->ExecCommand(cmd);
         };
@@ -234,7 +235,8 @@ namespace ToolKit
         return OnSaveAsScene();
       }
 
-      auto saveFn = []() -> void {
+      auto saveFn = []() -> void
+      {
         g_app->GetCurrentScene()->Save(false);
         g_app->m_statusMsg                    = "Scene saved";
         FolderWindowRawPtrArray folderWindows = g_app->GetAssetBrowsers();
@@ -254,7 +256,8 @@ namespace ToolKit
             new YesNoWindow("Override existing file##OvrdScn", msg);
         overrideScene->m_yesCallback = [&saveFn]() { saveFn(); };
 
-        overrideScene->m_noCallback = []() {
+        overrideScene->m_noCallback  = []()
+        {
           g_app->GetConsole()->AddLog(
               "Scene has not been saved.\n"
               "A scene with the same name exist. Use File->SaveAs.",
@@ -275,7 +278,8 @@ namespace ToolKit
           new StringInputWindow("SaveScene##SvScn1", true);
       inputWnd->m_inputLabel = "Name";
       inputWnd->m_hint       = "Scene name";
-      inputWnd->m_taskFn     = [](const String& val) {
+      inputWnd->m_taskFn     = [](const String& val)
+      {
         String path;
         EditorScenePtr currScene = g_app->GetCurrentScene();
         DecomposePath(currScene->GetFile(), &path, nullptr, nullptr);
@@ -299,7 +303,8 @@ namespace ToolKit
         YesNoWindow* reallyQuit =
             new YesNoWindow("Quiting... Are you sure?##ClsApp");
 
-        reallyQuit->m_yesCallback = [this]() {
+        reallyQuit->m_yesCallback = [this]()
+        {
           m_workspace.Serialize(nullptr, nullptr);
           Serialize(nullptr, nullptr);
           g_running = false;
@@ -465,35 +470,48 @@ namespace ToolKit
 #endif
       String cmd  = "cmake -S " + codePath + " -B " + buildDir;
       m_statusMsg = "Compiling ..." + g_statusNoTerminate;
-      ExecSysCommand(cmd, true, false, [this, buildDir](int res) -> void {
-        String cmd =
-            "cmake --build " + buildDir + " --config " + buildConfig.data();
-        ExecSysCommand(cmd, false, false, [=](int res) -> void {
-          if (res)
+      ExecSysCommand(
+          cmd,
+          true,
+          false,
+          [this, buildDir](int res) -> void
           {
-            m_statusMsg = "Compile Failed.";
+            String cmd =
+                "cmake --build " + buildDir + " --config " + buildConfig.data();
+            ExecSysCommand(cmd,
+                           false,
+                           false,
+                           [=](int res) -> void
+                           {
+                             if (res)
+                             {
+                               m_statusMsg = "Compile Failed.";
 
-            String detail;
-            if (res == 1)
-            {
-              detail = "CMake Build Failed.";
-            }
+                               String detail;
+                               if (res == 1)
+                               {
+                                 detail = "CMake Build Failed.";
+                               }
 
-            if (res == -1)
-            {
-              detail = "CMake Generate Failed.";
-            }
+                               if (res == -1)
+                               {
+                                 detail = "CMake Generate Failed.";
+                               }
 
-            GetLogger()->WriteConsole(
-                LogType::Error, "%s %s", m_statusMsg.c_str(), detail.c_str());
-          }
-          else
-          {
-            m_statusMsg = "Compiled.";
-            GetLogger()->WriteConsole(LogType::Memo, "%s", m_statusMsg.c_str());
-          }
-        });
-      });
+                               GetLogger()->WriteConsole(LogType::Error,
+                                                         "%s %s",
+                                                         m_statusMsg.c_str(),
+                                                         detail.c_str());
+                             }
+                             else
+                             {
+                               m_statusMsg = "Compiled.";
+                               GetLogger()->WriteConsole(LogType::Memo,
+                                                         "%s",
+                                                         m_statusMsg.c_str());
+                             }
+                           });
+          });
     }
 
     EditorScenePtr App::GetCurrentScene()
@@ -698,7 +716,7 @@ namespace ToolKit
         return -1;
       }
 
-      bool importFileExist = CheckFile(fullPath);
+      bool importFileExist          = CheckFile(fullPath);
 
       // Set the execute path.
       std::filesystem::path pathBck = std::filesystem::current_path();
@@ -738,7 +756,7 @@ namespace ToolKit
             cmd += finalPath;
           }
 
-          cmd += "\" -s " + std::to_string(UI::ImportData.Scale);
+          cmd    += "\" -s " + std::to_string(UI::ImportData.Scale);
 
           // Execute command
           result = ExecSysCommand(cmd.c_str(), false, false);
@@ -931,38 +949,41 @@ namespace ToolKit
 
     void App::ManageDropfile(const StringView& fileName)
     {
-      UI::m_postponedActions.push_back([fileName]() -> void {
-        const FolderWindowRawPtrArray& assetBrowsers =
-            g_app->GetAssetBrowsers();
-
-        String log =
-            "File isn't imported because it's not dropped onto Asset Browser";
-
-        for (FolderWindow* folderWindow : assetBrowsers)
-        {
-          if (folderWindow->MouseHovers())
+      UI::m_postponedActions.push_back(
+          [fileName]() -> void
           {
-            FolderView* activeView = folderWindow->GetActiveView(true);
-            if (activeView == nullptr)
-            {
-              log = "Activate a resource folder by selecting it from the Asset "
-                    "Browser.";
-            }
-            else
-            {
-              UI::ImportData.ActiveView = activeView;
-              UI::ImportData.Files.push_back(fileName.data());
-              UI::ImportData.ShowImportWindow = true;
-            }
-          }
-        }
+            const FolderWindowRawPtrArray& assetBrowsers =
+                g_app->GetAssetBrowsers();
 
-        if (!UI::ImportData.ShowImportWindow)
-        {
-          g_app->m_statusMsg = "Drop discarded";
-          GetLogger()->WriteConsole(LogType::Warning, log.c_str());
-        }
-      });
+            String log = "File isn't imported because it's not dropped onto "
+                         "Asset Browser";
+
+            for (FolderWindow* folderWindow : assetBrowsers)
+            {
+              if (folderWindow->MouseHovers())
+              {
+                FolderView* activeView = folderWindow->GetActiveView(true);
+                if (activeView == nullptr)
+                {
+                  log = "Activate a resource folder by selecting it from the "
+                        "Asset "
+                        "Browser.";
+                }
+                else
+                {
+                  UI::ImportData.ActiveView = activeView;
+                  UI::ImportData.Files.push_back(fileName.data());
+                  UI::ImportData.ShowImportWindow = true;
+                }
+              }
+            }
+
+            if (!UI::ImportData.ShowImportWindow)
+            {
+              g_app->m_statusMsg = "Drop discarded";
+              GetLogger()->WriteConsole(LogType::Warning, log.c_str());
+            }
+          });
     }
 
     void App::OpenScene(const String& fullPath)
@@ -1017,11 +1038,13 @@ namespace ToolKit
       }
 
       // Restore app window.
-      SDL_SetWindowSize(
-          g_window, m_renderer->m_windowSize.x, m_renderer->m_windowSize.y);
+      SDL_SetWindowSize(g_window,
+                        m_renderer->m_windowSize.x,
+                        m_renderer->m_windowSize.y);
 
-      SDL_SetWindowPosition(
-          g_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+      SDL_SetWindowPosition(g_window,
+                            SDL_WINDOWPOS_CENTERED,
+                            SDL_WINDOWPOS_CENTERED);
 
       if (m_windowMaximized)
       {
@@ -1031,11 +1054,13 @@ namespace ToolKit
 
     void App::OpenProject(const Project& project)
     {
-      UI::m_postponedActions.push_back([this, project]() -> void {
-        m_workspace.SetActiveProject(project);
-        m_workspace.Serialize(nullptr, nullptr);
-        OnNewScene("New Scene");
-      });
+      UI::m_postponedActions.push_back(
+          [this, project]() -> void
+          {
+            m_workspace.SetActiveProject(project);
+            m_workspace.Serialize(nullptr, nullptr);
+            OnNewScene("New Scene");
+          });
     }
 
     void App::PackResources()
@@ -1342,10 +1367,10 @@ namespace ToolKit
 
     void App::CreateSimulationWindow(float width, float height)
     {
-      m_simulationWindow = new EditorViewport(m_simulatorSettings.Width,
+      m_simulationWindow         = new EditorViewport(m_simulatorSettings.Width,
                                               m_simulatorSettings.Height);
 
-      m_simulationWindow->m_name                  = g_simulationViewport;
+      m_simulationWindow->m_name = g_simulationViewport;
       m_simulationWindow->m_additionalWindowFlags = ImGuiWindowFlags_NoResize |
                                                     ImGuiWindowFlags_NoDocking |
                                                     ImGuiWindowFlags_NoCollapse;
@@ -1356,7 +1381,8 @@ namespace ToolKit
     void App::AssignManagerReporters()
     {
       // Register manager reporters
-      auto genericReporterFn = [](LogType logType, String msg) -> void {
+      auto genericReporterFn = [](LogType logType, String msg) -> void
+      {
         if (ConsoleWindow* console = g_app->GetConsole())
         {
           console->AddLog(msg, logType);
@@ -1382,7 +1408,7 @@ namespace ToolKit
       m_cursor = new Cursor();
       m_origin = new Axis3d();
 
-      m_grid = new Grid(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0, false);
+      m_grid   = new Grid(g_max2dGridSize, AxisLabel::ZX, 0.020f, 3.0, false);
 
       m_2dGrid = new Grid(g_max2dGridSize,
                           AxisLabel::XY,
@@ -1390,10 +1416,8 @@ namespace ToolKit
                           4.0,
                           true); // Generate grid cells 10 x 10
     }
-    float App::GetDeltaTime()
-    {
-      return m_deltaTime;
-    }
+
+    float App::GetDeltaTime() { return m_deltaTime; }
 
     void DebugMessage(const String& msg)
     {

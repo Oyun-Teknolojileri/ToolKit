@@ -13,7 +13,7 @@ namespace ToolKit
 
     for (int i = 0; i < squares.size(); ++i)
     {
-      int size = squares[i];
+      int size        = squares[i];
 
       bool foundShelf = false;
       int layerIndex  = 0;
@@ -69,15 +69,12 @@ namespace ToolKit
     return packed;
   }
 
-  bool BinPack2D::Shelf::Fits(int size)
-  {
-    return size <= AvailableWidth;
-  }
+  bool BinPack2D::Shelf::Fits(int size) { return size <= AvailableWidth; }
 
   Vec2 BinPack2D::Shelf::Place(int size)
   {
     Vec2 rectCoord = Coord;
-    Coord.x += size;
+    Coord.x        += size;
     AvailableWidth -= size;
 
     return rectCoord;

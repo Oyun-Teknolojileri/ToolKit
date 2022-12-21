@@ -59,9 +59,7 @@ namespace ToolKit
       return NullSignal;
     }
 
-    void StateTransformBase::TransitionIn(State* prevState)
-    {
-    }
+    void StateTransformBase::TransitionIn(State* prevState) {}
 
     void StateTransformBase::TransitionOut(State* nextState)
     {
@@ -157,8 +155,8 @@ namespace ToolKit
         Vec3 dir                = glm::normalize(camOrg - gizmOrg);
         m_gizmo->m_initialPoint = gizmOrg;
 
-        float safetyMeasure    = glm::abs(glm::cos(glm::radians(5.0f)));
-        AxisLabel axisLabes[3] = {AxisLabel::X, AxisLabel::Y, AxisLabel::Z};
+        float safetyMeasure     = glm::abs(glm::cos(glm::radians(5.0f)));
+        AxisLabel axisLabes[3]  = {AxisLabel::X, AxisLabel::Y, AxisLabel::Z};
 
         Vec3 axes[3];
         ExtractAxes(m_gizmo->m_normalVectors, axes[0], axes[1], axes[2]);
@@ -358,26 +356,19 @@ namespace ToolKit
       m_transform = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
     }
 
-    TransformAction::~TransformAction()
-    {
-    }
+    TransformAction::~TransformAction() {}
 
-    void TransformAction::Undo()
-    {
-      Swap();
-    }
+    void TransformAction::Undo() { Swap(); }
 
-    void TransformAction::Redo()
-    {
-      Swap();
-    }
+    void TransformAction::Redo() { Swap(); }
 
     void TransformAction::Swap()
     {
       Mat4 backUp =
           m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
-      m_entity->m_node->SetTransform(
-          m_transform, TransformationSpace::TS_WORLD, false);
+      m_entity->m_node->SetTransform(m_transform,
+                                     TransformationSpace::TS_WORLD,
+                                     false);
       m_transform = backUp;
     }
 
@@ -441,7 +432,8 @@ namespace ToolKit
         vp->GetContentAreaScreenCoordinates(&contentMin, &contentMax);
 
         auto drawMoveCursorFn =
-            [this, contentMin, contentMax](ImDrawList* drawList) -> void {
+            [this, contentMin, contentMax](ImDrawList* drawList) -> void
+        {
           // Clamp the mouse pos.
           Vec2 pos = m_mouseData[1];
           pos      = glm::clamp(pos, contentMin, contentMax);
@@ -473,10 +465,7 @@ namespace ToolKit
       return StateType::Null;
     }
 
-    String StateTransformTo::GetType()
-    {
-      return StateType::StateTransformTo;
-    }
+    String StateTransformTo::GetType() { return StateType::StateTransformTo; }
 
     void StateTransformTo::CalculateDelta()
     {
@@ -497,7 +486,7 @@ namespace ToolKit
         Vec3 p = PointOnRay(ray, t);
 
         // Previous. point.
-        ray = vp->RayFromScreenSpacePoint(m_mouseData[0]);
+        ray    = vp->RayFromScreenSpacePoint(m_mouseData[0]);
         LinePlaneIntersection(ray, m_intersectionPlane, t);
         Vec3 p0 = PointOnRay(ray, t);
         m_delta = p - p0;
@@ -581,14 +570,14 @@ namespace ToolKit
       }
 
       m_deltaAccum += delta;
-      Vec3 target = ntt->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      Vec3 target  = ntt->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
       // Snap for pos.
       if (g_app->m_snapsEnabled)
       {
-        target        = m_initialLoc + m_deltaAccum;
-        float spacing = g_app->m_moveDelta;
-        Vec3 snapped  = glm::round(target / spacing) * spacing;
+        target                = m_initialLoc + m_deltaAccum;
+        float spacing         = g_app->m_moveDelta;
+        Vec3 snapped          = glm::round(target / spacing) * spacing;
 
         // Apply axis lock.
         AxisLabel grabbedAxis = m_gizmo->GetGrabbedAxis();
@@ -625,17 +614,17 @@ namespace ToolKit
       Vec3 projAxis            = pg->m_handles[axisInd]->m_tangentDir;
       Vec3 mouseDelta          = m_delta;
 
-      float delta    = glm::dot(projAxis, mouseDelta);
-      Vec3 deltaInWS = Vec3(delta, 0.0f, 0.0f);
+      float delta              = glm::dot(projAxis, mouseDelta);
+      Vec3 deltaInWS           = Vec3(delta, 0.0f, 0.0f);
       Vec2 deltaInSS = viewport->TransformWorldSpaceToScreenSpace(deltaInWS);
-      deltaInSS -= viewport->TransformWorldSpaceToScreenSpace(Vec3(0));
-      deltaInSS = Vec2(deltaInSS.x / viewport->m_wndContentAreaSize.x,
+      deltaInSS      -= viewport->TransformWorldSpaceToScreenSpace(Vec3(0));
+      deltaInSS      = Vec2(deltaInSS.x / viewport->m_wndContentAreaSize.x,
                        deltaInSS.y / viewport->m_wndContentAreaSize.y);
-      delta     = glm::length(deltaInSS) * ((delta > 0.0f) ? 1 : -1);
-      delta     = glm::degrees(delta) / 9.0f;
+      delta          = glm::length(deltaInSS) * ((delta > 0.0f) ? 1 : -1);
+      delta          = glm::degrees(delta) / 9.0f;
 
       m_deltaAccum.x += delta;
-      float spacing = glm::radians(g_app->m_rotateDelta);
+      float spacing  = glm::radians(g_app->m_rotateDelta);
       if (g_app->m_snapsEnabled)
       {
         if (glm::abs(m_deltaAccum.x) < spacing)
@@ -667,18 +656,18 @@ namespace ToolKit
       scaleAxes[(int) AxisLabel::ZX]  = ZX_AXIS;
       scaleAxes[(int) AxisLabel::XYZ] = Vec3(1.0f);
 
-      BoundingBox bb = ntt->GetAABB();
-      Vec3 aabbSize  = bb.max - bb.min;
+      BoundingBox bb                  = ntt->GetAABB();
+      Vec3 aabbSize                   = bb.max - bb.min;
 
-      int axisIndex = int(m_gizmo->GetGrabbedAxis());
-      Vec3 axis     = scaleAxes[axisIndex];
+      int axisIndex                   = int(m_gizmo->GetGrabbedAxis());
+      Vec3 axis                       = scaleAxes[axisIndex];
 
-      aabbSize *= axis;
-      aabbSize   = glm::max(aabbSize, 0.0001f);
-      Vec3 delta = Vec3(glm::length(m_delta) / glm::length(aabbSize));
+      aabbSize                        *= axis;
+      aabbSize                        = glm::max(aabbSize, 0.0001f);
+      Vec3 delta    = Vec3(glm::length(m_delta) / glm::length(aabbSize));
 
-      delta *= glm::normalize(axis);
-      m_deltaAccum += delta;
+      delta         *= glm::normalize(axis);
+      m_deltaAccum  += delta;
 
       float spacing = g_app->m_scaleDelta;
       if (g_app->m_snapsEnabled)
@@ -712,7 +701,7 @@ namespace ToolKit
       if (axisIndex <= (int) AxisLabel::Z)
       {
         Vec3 axisDir = m_gizmo->m_normalVectors[axisIndex % 3];
-        delta *= glm::sign(glm::dot(m_delta, axisDir));
+        delta        *= glm::sign(glm::dot(m_delta, axisDir));
       }
       else
       {
@@ -781,18 +770,12 @@ namespace ToolKit
       return StateType::Null;
     }
 
-    String StateTransformEnd::GetType()
-    {
-      return StateType::StateTransformEnd;
-    }
+    String StateTransformEnd::GetType() { return StateType::StateTransformEnd; }
 
     // MoveMod
     //////////////////////////////////////////////////////////////////////////
 
-    TransformMod::TransformMod(ModId id) : BaseMod(id)
-    {
-      m_gizmo = nullptr;
-    }
+    TransformMod::TransformMod(ModId id) : BaseMod(id) { m_gizmo = nullptr; }
 
     TransformMod::~TransformMod()
     {

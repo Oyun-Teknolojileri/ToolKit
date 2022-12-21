@@ -21,10 +21,16 @@ namespace ToolKit
     ~FileManager();
 
     XmlFilePtr GetXmlFile(const String& filePath);
-    uint8* GetImageFile(
-        const String& filePath, int* x, int* y, int* comp, int reqComp);
-    float* GetHdriFile(
-        const String& filePath, int* x, int* y, int* comp, int reqComp);
+    uint8* GetImageFile(const String& filePath,
+                        int* x,
+                        int* y,
+                        int* comp,
+                        int reqComp);
+    float* GetHdriFile(const String& filePath,
+                       int* x,
+                       int* y,
+                       int* comp,
+                       int reqComp);
 
     void PackResources(const String& path);
 
@@ -92,10 +98,7 @@ namespace ToolKit
 
     struct _streambuf : std::streambuf
     {
-      _streambuf(char* begin, char* end)
-      {
-        this->setg(begin, begin, end);
-      }
+      _streambuf(char* begin, char* end) { this->setg(begin, begin, end); }
     };
   };
 } // namespace ToolKit

@@ -12,9 +12,7 @@ namespace ToolKit
       m_viewIcn = UI::m_cameraIcon;
     }
 
-    RenderSettingsView::~RenderSettingsView()
-    {
-    }
+    RenderSettingsView::~RenderSettingsView() {}
 
     void RenderSettingsView::Show()
     {
@@ -39,10 +37,16 @@ namespace ToolKit
         ImGui::EndCombo();
       }
 
-      ImGui::DragFloat(
-          "Bloom Intensity", &gfx.bloomIntensity, 0.01f, 0.0f, 100.0f);
-      ImGui::DragFloat(
-          "Bloom Threshold", &gfx.bloomThreshold, 0.01f, 0.0f, FLT_MAX);
+      ImGui::DragFloat("Bloom Intensity",
+                       &gfx.bloomIntensity,
+                       0.01f,
+                       0.0f,
+                       100.0f);
+      ImGui::DragFloat("Bloom Threshold",
+                       &gfx.bloomThreshold,
+                       0.01f,
+                       0.0f,
+                       FLT_MAX);
       ImGui::InputInt("Bloom Iteration Count", &gfx.bloomIterationCount, 1, 2);
     }
   } // namespace Editor

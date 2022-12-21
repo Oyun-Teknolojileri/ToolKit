@@ -12,15 +12,9 @@ namespace ToolKit
 {
   namespace Editor
   {
-    PublishManager::PublishManager()
-    {
-      m_webPublisher = new WebPublisher();
-    }
+    PublishManager::PublishManager() { m_webPublisher = new WebPublisher(); }
 
-    PublishManager::~PublishManager()
-    {
-      SafeDel(m_webPublisher);
-    }
+    PublishManager::~PublishManager() { SafeDel(m_webPublisher); }
 
     void PublishManager::Publish(PublishPlatform platform)
     {
@@ -77,9 +71,11 @@ namespace ToolKit
 
       // Output user about where are the output files
       GetLogger()->WriteConsole(
-          LogType::Memo, "Building for web has been completed successfully.");
-      GetLogger()->WriteConsole(
-          LogType::Memo, "Output files location: %s", publishDirectory);
+          LogType::Memo,
+          "Building for web has been completed successfully.");
+      GetLogger()->WriteConsole(LogType::Memo,
+                                "Output files location: %s",
+                                publishDirectory);
     }
 
   } // namespace Editor

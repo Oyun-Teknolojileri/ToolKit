@@ -13,7 +13,7 @@
 namespace ToolKit
 {
 
-  static VariantCategory SurfaceCategory{"Surface", 90};
+  static VariantCategory SurfaceCategory {"Surface", 90};
 
   class TK_API Surface : public Entity
   {
@@ -71,7 +71,7 @@ namespace ToolKit
     SurfaceEventCallback m_onMouseClick = nullptr;
   };
 
-  static VariantCategory ButtonCategory{"Button", 90};
+  static VariantCategory ButtonCategory {"Button", 90};
 
   class TK_API Button : public Surface
   {

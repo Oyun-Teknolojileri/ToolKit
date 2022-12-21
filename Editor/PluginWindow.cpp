@@ -25,9 +25,7 @@ namespace ToolKit
       DeSerialize(nullptr, node);
     }
 
-    PluginWindow::~PluginWindow()
-    {
-    }
+    PluginWindow::~PluginWindow() {}
 
     void PluginWindow::Show()
     {
@@ -50,10 +48,7 @@ namespace ToolKit
       ImGui::End();
     }
 
-    Window::Type PluginWindow::GetType() const
-    {
-      return Type::PluginWindow;
-    }
+    Window::Type PluginWindow::GetType() const { return Type::PluginWindow; }
 
     void PluginWindow::Serialize(XmlDocument* doc, XmlNode* parent) const
     {
@@ -104,9 +99,9 @@ namespace ToolKit
 
     void PluginWindow::ShowActionButtons()
     {
-      Vec2 min  = ImGui::GetWindowContentRegionMin();
-      Vec2 max  = ImGui::GetWindowContentRegionMax();
-      Vec2 size = max - min;
+      Vec2 min       = ImGui::GetWindowContentRegionMin();
+      Vec2 max       = ImGui::GetWindowContentRegionMax();
+      Vec2 size      = max - min;
 
       // Draw play - pause - stop buttons.
       float btnWidth = 24.0f;
@@ -228,7 +223,7 @@ namespace ToolKit
         // Resolution Bar
         EmulatorResolution resolution = m_settings->Resolution;
 
-        int resolutionType = static_cast<int>(resolution);
+        int resolutionType            = static_cast<int>(resolution);
 
         ImGui::Text("Resolution");
         ImGui::TableSetColumnIndex(1);
@@ -324,8 +319,12 @@ namespace ToolKit
         ImGui::TableSetColumnIndex(1);
         ImGui::SetNextItemWidth(150.0f);
 
-        if (ImGui::DragFloat(
-                "##w", &m_settings->Width, 1.0f, 1.0f, 4096.0f, "%.0f"))
+        if (ImGui::DragFloat("##w",
+                             &m_settings->Width,
+                             1.0f,
+                             1.0f,
+                             4096.0f,
+                             "%.0f"))
         {
           UpdateSimulationWndSize();
         }
@@ -336,8 +335,12 @@ namespace ToolKit
         ImGui::TableSetColumnIndex(1);
         ImGui::SetNextItemWidth(150.0f);
 
-        if (ImGui::DragFloat(
-                "##h", &m_settings->Height, 1.0f, 1.0f, 4096.0f, "%.0f"))
+        if (ImGui::DragFloat("##h",
+                             &m_settings->Height,
+                             1.0f,
+                             1.0f,
+                             4096.0f,
+                             "%.0f"))
         {
           UpdateSimulationWndSize();
         }

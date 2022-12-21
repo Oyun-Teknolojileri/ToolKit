@@ -62,8 +62,8 @@ namespace ToolKit
       bool m_root     = false;
       // States if the tab is visible.
       // Doesnt necesserly mean active, its just a tab in the FolderView.
-      bool m_visible = false;
-      bool m_active  = false; // Active tab, whose content is being displayed.
+      bool m_visible  = false;
+      bool m_active   = false; // Active tab, whose content is being displayed.
       // Always false. When set to true,
       // actives the view and becomes false again.
       bool m_activateNext    = false;

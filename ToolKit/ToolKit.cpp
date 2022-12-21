@@ -68,7 +68,7 @@ namespace ToolKit
     m_fileManager     = new FileManager();
     m_entityFactory   = new EntityFactory();
 
-    m_preInitiated = true;
+    m_preInitiated    = true;
   }
 
   void Main::Init()
@@ -140,15 +140,9 @@ namespace ToolKit
     SafeDel(m_entityFactory);
   }
 
-  void Main::SetConfigPath(StringView cfgPath)
-  {
-    m_cfgPath = cfgPath;
-  }
+  void Main::SetConfigPath(StringView cfgPath) { m_cfgPath = cfgPath; }
 
-  StringView Main::GetConfigPath()
-  {
-    return m_cfgPath;
-  }
+  StringView Main::GetConfigPath() { return m_cfgPath; }
 
   Main* Main::GetInstance()
   {
@@ -166,15 +160,9 @@ namespace ToolKit
     }
   }
 
-  Logger* GetLogger()
-  {
-    return Main::GetInstance()->m_logger;
-  }
+  Logger* GetLogger() { return Main::GetInstance()->m_logger; }
 
-  Renderer* GetRenderer()
-  {
-    return Main::GetInstance()->m_renderer;
-  }
+  Renderer* GetRenderer() { return Main::GetInstance()->m_renderer; }
 
   AnimationManager* GetAnimationManager()
   {
@@ -186,25 +174,16 @@ namespace ToolKit
     return Main::GetInstance()->m_animationPlayer;
   }
 
-  AudioManager* GetAudioManager()
-  {
-    return Main::GetInstance()->m_audioMan;
-  }
+  AudioManager* GetAudioManager() { return Main::GetInstance()->m_audioMan; }
 
   MaterialManager* GetMaterialManager()
   {
     return Main::GetInstance()->m_materialManager;
   }
 
-  MeshManager* GetMeshManager()
-  {
-    return Main::GetInstance()->m_meshMan;
-  }
+  MeshManager* GetMeshManager() { return Main::GetInstance()->m_meshMan; }
 
-  ShaderManager* GetShaderManager()
-  {
-    return Main::GetInstance()->m_shaderMan;
-  }
+  ShaderManager* GetShaderManager() { return Main::GetInstance()->m_shaderMan; }
 
   SpriteSheetManager* GetSpriteSheetManager()
   {
@@ -260,10 +239,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  UIManager* GetUIManager()
-  {
-    return Main::GetInstance()->m_uiManager;
-  }
+  UIManager* GetUIManager() { return Main::GetInstance()->m_uiManager; }
 
   HandleManager* GetHandleManager()
   {
@@ -432,7 +408,7 @@ namespace ToolKit
       lclData.file = file;
       lclData.doc  = docPtr;
 
-      doc = docPtr.get();
+      doc          = docPtr.get();
     }
 
     if (parent == nullptr)

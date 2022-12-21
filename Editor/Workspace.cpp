@@ -16,10 +16,7 @@ namespace ToolKit
     static const StringView XmlNodeProject   = "Project";
     static const StringView XmlNodeScene     = "scene";
 
-    Workspace::Workspace(App* app)
-    {
-      m_app = app;
-    }
+    Workspace::Workspace(App* app) { m_app = app; }
 
     void Workspace::Init()
     {
@@ -37,8 +34,8 @@ namespace ToolKit
         XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();
         lclDoc->parse<0>(lclFile->data());
 
-        bundle.doc  = lclDoc;
-        bundle.file = lclFile;
+        bundle.doc       = lclDoc;
+        bundle.file      = lclFile;
 
         StringArray path = {XmlNodeSettings.data(), XmlNodeWorkspace.data()};
         return Query(lclDoc.get(), path);
@@ -136,15 +133,9 @@ namespace ToolKit
           {m_activeWorkspace, m_activeProject.name, "Resources"});
     }
 
-    String Workspace::GetActiveWorkspace() const
-    {
-      return m_activeWorkspace;
-    }
+    String Workspace::GetActiveWorkspace() const { return m_activeWorkspace; }
 
-    Project Workspace::GetActiveProject() const
-    {
-      return m_activeProject;
-    }
+    Project Workspace::GetActiveProject() const { return m_activeProject; }
 
     void Workspace::SetActiveProject(const Project& project)
     {
@@ -160,7 +151,7 @@ namespace ToolKit
     void Workspace::RefreshProjects()
     {
       m_projects.clear();
-      for (std::filesystem::directory_entry const& dir :
+      for (const std::filesystem::directory_entry& dir :
            std::filesystem::directory_iterator(m_activeWorkspace))
       {
         if (dir.is_directory())
@@ -174,9 +165,11 @@ namespace ToolKit
           {
             continue;
           }
-          const StringArray requiredResourceFolders = {
-              "Materials", "Meshes", "Scenes", "Textures"};
-          bool foundAllRequiredFolders = true;
+          const StringArray requiredResourceFolders = {"Materials",
+                                                       "Meshes",
+                                                       "Scenes",
+                                                       "Textures"};
+          bool foundAllRequiredFolders              = true;
           for (uint i = 0; i < requiredResourceFolders.size(); i++)
           {
             if (!(std::filesystem::directory_entry(
@@ -224,8 +217,10 @@ namespace ToolKit
 
         setNode = lclDoc->allocate_node(rapidxml::node_element,
                                         XmlNodeProject.data());
-        WriteAttr(
-            setNode, lclDoc.get(), XmlNodeName.data(), m_activeProject.name);
+        WriteAttr(setNode,
+                  lclDoc.get(),
+                  XmlNodeName.data(),
+                  m_activeProject.name);
         settings->append_node(setNode);
 
         String sceneFile = m_app->GetCurrentScene()->GetFile();
@@ -252,7 +247,7 @@ namespace ToolKit
 
     void Workspace::DeSerialize(XmlDocument* doc, XmlNode* parent)
     {
-      String settingsFile = ConcatPaths({ConfigPath(), g_workspaceFile});
+      String settingsFile   = ConcatPaths({ConfigPath(), g_workspaceFile});
 
       XmlFilePtr lclFile    = std::make_shared<XmlFile>(settingsFile.c_str());
       XmlDocumentPtr lclDoc = std::make_shared<XmlDocument>();

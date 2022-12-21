@@ -321,15 +321,9 @@ namespace ToolKit
 #endif
   }
 
-  void UnixifyPath(String& path)
-  {
-    ReplaceCharInPlace(path, '\\', '/');
-  }
+  void UnixifyPath(String& path) { ReplaceCharInPlace(path, '\\', '/'); }
 
-  void DosifyPath(String& path)
-  {
-    ReplaceCharInPlace(path, '/', '\\');
-  }
+  void DosifyPath(String& path) { ReplaceCharInPlace(path, '/', '\\'); }
 
   String ConcatPaths(const StringArray& entries)
   {
@@ -380,7 +374,7 @@ namespace ToolKit
       {
         String rel = path.substr(root.length() + 1);
         // Extract the root layer. Mesh, Texture ect...
-        exist = rel.find(GetPathSeparator());
+        exist      = rel.find(GetPathSeparator());
         if (exist != String::npos)
         {
           rel = rel.substr(exist + 1);
@@ -612,10 +606,7 @@ namespace ToolKit
 #endif
   }
 
-  String GetPathSeparatorAsStr()
-  {
-    return String() + GetPathSeparator();
-  }
+  String GetPathSeparatorAsStr() { return String() + GetPathSeparator(); }
 
   bool SupportedImageFormat(const String& ext)
   {
@@ -800,13 +791,13 @@ namespace ToolKit
     y      = glm::normalize(glm::cross(z, x));
 
     NormalizePlaneEquation(plane);
-    Vec3 o = plane.normal * plane.d;
+    Vec3 o      = plane.normal * plane.d;
 
     float hSize = size * 0.5f;
-    Vec3Array corners{o + x * hSize + y * hSize,
-                      o - x * hSize + y * hSize,
-                      o - x * hSize - y * hSize,
-                      o + x * hSize - y * hSize};
+    Vec3Array corners {o + x * hSize + y * hSize,
+                       o - x * hSize + y * hSize,
+                       o - x * hSize - y * hSize,
+                       o + x * hSize - y * hSize};
 
     LineBatch* obj = new LineBatch(corners, X_AXIS, DrawType::LineLoop, 5.0f);
     return obj;
@@ -885,7 +876,8 @@ namespace ToolKit
                  EntityRawPtrArray& roots,
                  Entity* child)
   {
-    auto AddUnique = [&roots](Entity* e) -> void {
+    auto AddUnique = [&roots](Entity* e) -> void
+    {
       assert(e != nullptr);
       bool unique = std::find(roots.begin(), roots.end(), e) == roots.end();
       if (unique)
@@ -972,15 +964,9 @@ namespace ToolKit
     return cpy;
   }
 
-  void* TKMalloc(size_t sz)
-  {
-    return malloc(sz);
-  }
+  void* TKMalloc(size_t sz) { return malloc(sz); }
 
-  void TKFree(void* m)
-  {
-    free(m);
-  }
+  void TKFree(void* m) { free(m); }
 
   int IndexOf(Entity* ntt, const EntityRawPtrArray& entities)
   {
@@ -1008,10 +994,7 @@ namespace ToolKit
     return false;
   }
 
-  float MillisecToSec(float ms)
-  {
-    return ms / 1000.0f;
-  }
+  float MillisecToSec(float ms) { return ms / 1000.0f; }
 
   float GetElapsedMilliSeconds()
   {

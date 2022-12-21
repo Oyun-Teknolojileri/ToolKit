@@ -12,14 +12,14 @@ namespace ToolKit
    public:
     struct Settings
     {
-      bool lookAtCamera = true;
+      bool lookAtCamera         = true;
 
       /**
        * If grater then 0, place the billboard always at approximately
        * (Difference due to RadialToPlanarDistance conversion)
        * given distance to camera.
        */
-      float distanceToCamera = 0.0f;
+      float distanceToCamera    = 0.0f;
 
       /**
        * If greater then 0,
@@ -65,6 +65,7 @@ namespace ToolKit
    private:
     bool m_generated = false;
   };
+
   typedef std::shared_ptr<Cube> CubePtr;
 
   class TK_API Quad final : public Entity
@@ -82,6 +83,7 @@ namespace ToolKit
    private:
     void Generate();
   };
+
   typedef std::shared_ptr<Quad> QuadPtr;
 
   class TK_API Sphere final : public Entity
@@ -103,6 +105,7 @@ namespace ToolKit
    public:
     TKDeclareParam(float, Radius);
   };
+
   typedef std::shared_ptr<Sphere> SpherePtr;
 
   class TK_API Cone final : public Entity
@@ -128,6 +131,7 @@ namespace ToolKit
     TKDeclareParam(int, SegBase);
     TKDeclareParam(int, SegHeight);
   };
+
   typedef std::shared_ptr<Cone> ConePtr;
 
   class TK_API Arrow2d final : public Entity
@@ -146,6 +150,7 @@ namespace ToolKit
    private:
     AxisLabel m_label;
   };
+
   typedef std::shared_ptr<Arrow2d> Arrow2dPtr;
 
   class TK_API LineBatch final : public Entity
@@ -166,6 +171,7 @@ namespace ToolKit
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
   };
+
   typedef std::shared_ptr<LineBatch> LineBatchPtr;
 
 } // namespace ToolKit

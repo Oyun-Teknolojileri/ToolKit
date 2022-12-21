@@ -57,7 +57,7 @@ namespace ToolKit
           fileExist = true;
         }
       }
-      uint iconId = fallbackIcon;
+      uint iconId      = fallbackIcon;
 
       ImVec2 texCoords = ImVec2(1.0f, 1.0f);
       if (RenderTargetPtr thumb = dirEnt.GetThumbnail())
@@ -106,7 +106,8 @@ namespace ToolKit
         info = "";
         if (ResourceManager* man = dirEnt.GetManager())
         {
-          auto textureRepFn = [&info, file](const TexturePtr& t) -> void {
+          auto textureRepFn = [&info, file](const TexturePtr& t) -> void
+          {
             if (t)
             {
               String file, ext;
@@ -179,9 +180,7 @@ namespace ToolKit
       }
     }
 
-    View::View(const StringView viewName) : m_viewName(viewName)
-    {
-    }
+    View::View(const StringView viewName) : m_viewName(viewName) {}
 
     // PreviewViewport
     //////////////////////////////////////////////////////////////////////////
@@ -204,7 +203,7 @@ namespace ToolKit
 
       directionComp->Yaw(glm::radians(-20.0f));
       directionComp->Pitch(glm::radians(-20.0f));
-      m_light = light;
+      m_light                                = light;
 
       m_renderPass.m_params.Cam              = GetCamera();
       m_renderPass.m_params.ClearFramebuffer = true;
@@ -213,10 +212,7 @@ namespace ToolKit
       m_renderPass.m_params.Scene            = std::make_shared<Scene>();
     }
 
-    PreviewViewport::~PreviewViewport()
-    {
-      SafeDel(m_light);
-    }
+    PreviewViewport::~PreviewViewport() { SafeDel(m_light); }
 
     void PreviewViewport::Show()
     {
@@ -268,10 +264,7 @@ namespace ToolKit
           5.0f);
     }
 
-    ScenePtr PreviewViewport::GetScene()
-    {
-      return m_renderPass.m_params.Scene;
-    }
+    ScenePtr PreviewViewport::GetScene() { return m_renderPass.m_params.Scene; }
 
     void PreviewViewport::ResetCamera()
     {
@@ -279,6 +272,7 @@ namespace ToolKit
       cam->m_node->SetTranslation(Vec3(3.0f, 5.0f, 4.0f));
       cam->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f));
     }
+
     void PreviewViewport::ResizeWindow(uint width, uint height)
     {
       if (width != m_size.x || height != m_size.y)
@@ -323,8 +317,9 @@ namespace ToolKit
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
                           ImVec2(2.0f, style.ItemSpacing.y));
-      if (ImGui::Begin(
-              m_name.c_str(), &m_visible, ImGuiWindowFlags_NoScrollWithMouse))
+      if (ImGui::Begin(m_name.c_str(),
+                       &m_visible,
+                       ImGuiWindowFlags_NoScrollWithMouse))
       {
         HandleStates();
 
@@ -332,12 +327,13 @@ namespace ToolKit
         const ImVec2 sidebarIconSize = ImVec2(18.0f, 18.0f);
 
         // Show ViewType sidebar
-        ImGui::GetStyle()    = style;
-        const ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
+        ImGui::GetStyle()            = style;
+        const ImVec2 spacing         = ImGui::GetStyle().ItemSpacing;
         const ImVec2 sidebarSize =
             ImVec2(spacing.x + sidebarIconSize.x + spacing.x, windowSize.y);
-        if (ImGui::BeginChildFrame(
-                ImGui::GetID("ViewTypeSidebar"), sidebarSize, 0))
+        if (ImGui::BeginChildFrame(ImGui::GetID("ViewTypeSidebar"),
+                                   sidebarSize,
+                                   0))
         {
           for (uint viewIndx = 0; viewIndx < m_views.size(); viewIndx++)
           {
@@ -382,10 +378,8 @@ namespace ToolKit
       return Window::Type::Inspector;
     }
 
-    void PropInspector::DispatchSignals() const
-    {
-      ModShortCutSignals();
-    }
+    void PropInspector::DispatchSignals() const { ModShortCutSignals(); }
+
     void PropInspector::SetMaterialView(MaterialPtr mat)
     {
       m_activeView          = ViewType::Material;
@@ -393,6 +387,7 @@ namespace ToolKit
       MaterialView* matView = (MaterialView*) m_views[matViewIndx];
       matView->SetMaterial(mat);
     }
+
     void PropInspector::SetMeshView(MeshPtr mesh)
     {
       m_activeView       = ViewType::Mesh;

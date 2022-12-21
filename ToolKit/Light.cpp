@@ -16,31 +16,49 @@ namespace ToolKit
     m_shadowCamera = new Camera();
 
     Color_Define(Vec3(1.0f), "Light", 0, true, true, {true});
-    Intensity_Define(
-        1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
+    Intensity_Define(1.0f,
+                     "Light",
+                     90,
+                     true,
+                     true,
+                     {false, true, 0.0f, 100000.0f, 0.1f});
     CastShadow_Define(false, "Light", 90, true, true);
-    ShadowRes_Define(
-        1024.0f, "Light", 90, true, true, {false, true, 32.0f, 4096.0f, 2.0f});
+    ShadowRes_Define(1024.0f,
+                     "Light",
+                     90,
+                     true,
+                     true,
+                     {false, true, 32.0f, 4096.0f, 2.0f});
     PCFSamples_Define(32, "Light", 90, true, true, {false, true, 0, 128, 1});
-    PCFRadius_Define(
-        0.01f, "Light", 90, true, true, {false, true, 0.0f, 5.0f, 0.0001f});
-    ShadowThickness_Define(
-        0.5f, "Light", 90, true, true, {false, true, 0.0f, 5.0f, 0.05f});
-    LightBleedingReduction_Define(
-        0.1f, "Light", 90, true, true, {false, true, 0.0f, 1.0f, 0.001f});
+    PCFRadius_Define(0.01f,
+                     "Light",
+                     90,
+                     true,
+                     true,
+                     {false, true, 0.0f, 5.0f, 0.0001f});
+    ShadowThickness_Define(0.5f,
+                           "Light",
+                           90,
+                           true,
+                           true,
+                           {false, true, 0.0f, 5.0f, 0.05f});
+    LightBleedingReduction_Define(0.1f,
+                                  "Light",
+                                  90,
+                                  true,
+                                  true,
+                                  {false, true, 0.0f, 1.0f, 0.001f});
     ParameterEventConstructor();
   }
 
-  Light::~Light()
-  {
-    SafeDel(m_shadowCamera);
-  }
+  Light::~Light() { SafeDel(m_shadowCamera); }
 
   void Light::ParameterEventConstructor()
   {
     ParamShadowRes().m_onValueChangedFn.clear();
     ParamShadowRes().m_onValueChangedFn.push_back(
-        [this](Value& oldVal, Value& newVal) -> void {
+        [this](Value& oldVal, Value& newVal) -> void
+        {
           const float val = std::get<float>(newVal);
 
           if (val > -0.5f &&
@@ -58,10 +76,7 @@ namespace ToolKit
         });
   }
 
-  EntityType Light::GetType() const
-  {
-    return EntityType::Entity_Light;
-  }
+  EntityType Light::GetType() const { return EntityType::Entity_Light; }
 
   void Light::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
@@ -75,10 +90,7 @@ namespace ToolKit
     ParameterEventConstructor();
   }
 
-  MaterialPtr Light::GetShadowMaterial()
-  {
-    return m_shadowMapMaterial;
-  }
+  MaterialPtr Light::GetShadowMaterial() { return m_shadowMapMaterial; }
 
   void Light::UpdateShadowCamera()
   {
@@ -89,10 +101,7 @@ namespace ToolKit
     m_shadowMapCameraFar                  = m_shadowCamera->Far();
   }
 
-  float Light::AffectDistance()
-  {
-    return 1000.0f;
-  }
+  float Light::AffectDistance() { return 1000.0f; }
 
   void Light::InitShadowMapDepthMaterial()
   {
@@ -118,9 +127,7 @@ namespace ToolKit
     AddComponent(new DirectionComponent(this));
   }
 
-  DirectionalLight::~DirectionalLight()
-  {
-  }
+  DirectionalLight::~DirectionalLight() {}
 
   EntityType DirectionalLight::GetType() const
   {
@@ -156,7 +163,8 @@ namespace ToolKit
   }
 
   void DirectionalLight::FitEntitiesBBoxIntoShadowFrustum(
-      Camera* lightCamera, const EntityRawPtrArray& entities)
+      Camera* lightCamera,
+      const EntityRawPtrArray& entities)
   {
     // Calculate all scene's bounding box
     BoundingBox totalBBox;
@@ -181,7 +189,7 @@ namespace ToolKit
     // Set light transformation
     lightCamera->m_node->SetTranslation(center);
     lightCamera->m_node->SetOrientation(m_node->GetOrientation());
-    Mat4 lightView = lightCamera->GetViewMatrix();
+    Mat4 lightView   = lightCamera->GetViewMatrix();
 
     // Bounding box of the scene
     Vec3 min         = totalBBox.min;
@@ -216,14 +224,14 @@ namespace ToolKit
   {
     assert(false && "Experimental.");
     // Fit view frustum into light frustum
-    Vec3 frustum[8] = {Vec3(-1.0f, -1.0f, -1.0f),
-                       Vec3(1.0f, -1.0f, -1.0f),
-                       Vec3(1.0f, -1.0f, 1.0f),
-                       Vec3(-1.0f, -1.0f, 1.0f),
-                       Vec3(-1.0f, 1.0f, -1.0f),
-                       Vec3(1.0f, 1.0f, -1.0f),
-                       Vec3(1.0f, 1.0f, 1.0f),
-                       Vec3(-1.0f, 1.0f, 1.0f)};
+    Vec3 frustum[8]            = {Vec3(-1.0f, -1.0f, -1.0f),
+                                  Vec3(1.0f, -1.0f, -1.0f),
+                                  Vec3(1.0f, -1.0f, 1.0f),
+                                  Vec3(-1.0f, -1.0f, 1.0f),
+                                  Vec3(-1.0f, 1.0f, -1.0f),
+                                  Vec3(1.0f, 1.0f, -1.0f),
+                                  Vec3(1.0f, 1.0f, 1.0f),
+                                  Vec3(-1.0f, 1.0f, 1.0f)};
 
     const Mat4 inverseViewProj = glm::inverse(
         viewCamera->GetProjectionMatrix() * viewCamera->GetViewMatrix());
@@ -239,7 +247,7 @@ namespace ToolKit
     {
       center += frustum[i];
     }
-    center /= 8.0f;
+    center                 /= 8.0f;
 
     TransformationSpace ts = TransformationSpace::TS_WORLD;
     lightCamera->m_node->SetTranslation(center, ts);
@@ -264,15 +272,17 @@ namespace ToolKit
 
   PointLight::PointLight()
   {
-    Radius_Define(
-        3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
+    Radius_Define(3.0f,
+                  "Light",
+                  90,
+                  true,
+                  true,
+                  {false, true, 0.1f, 100000.0f, 0.4f});
     ParamShadowThickness().m_exposed  = false;
     ParamPCFRadius().m_hint.increment = 0.02f;
   }
 
-  PointLight::~PointLight()
-  {
-  }
+  PointLight::~PointLight() {}
 
   EntityType PointLight::GetType() const
   {
@@ -281,17 +291,16 @@ namespace ToolKit
 
   void PointLight::UpdateShadowCamera()
   {
-    m_shadowCamera->SetLens(
-        glm::half_pi<float>(), 1.0f, 0.01f, AffectDistance());
+    m_shadowCamera->SetLens(glm::half_pi<float>(),
+                            1.0f,
+                            0.01f,
+                            AffectDistance());
 
     Light::UpdateShadowCamera();
     UpdateShadowCameraTransform();
   }
 
-  float PointLight::AffectDistance()
-  {
-    return GetRadiusVal();
-  }
+  float PointLight::AffectDistance() { return GetRadiusVal(); }
 
   void PointLight::InitShadowMapDepthMaterial()
   {
@@ -309,38 +318,44 @@ namespace ToolKit
 
   SpotLight::SpotLight()
   {
-    Radius_Define(
-        10.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.4f});
-    OuterAngle_Define(
-        35.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
-    InnerAngle_Define(
-        30.0f, "Light", 90, true, true, {false, true, 0.5f, 179.8f, 1.0f});
+    Radius_Define(10.0f,
+                  "Light",
+                  90,
+                  true,
+                  true,
+                  {false, true, 0.1f, 100000.0f, 0.4f});
+    OuterAngle_Define(35.0f,
+                      "Light",
+                      90,
+                      true,
+                      true,
+                      {false, true, 0.5f, 179.8f, 1.0f});
+    InnerAngle_Define(30.0f,
+                      "Light",
+                      90,
+                      true,
+                      true,
+                      {false, true, 0.5f, 179.8f, 1.0f});
 
     AddComponent(new DirectionComponent(this));
   }
 
-  SpotLight::~SpotLight()
-  {
-  }
+  SpotLight::~SpotLight() {}
 
-  EntityType SpotLight::GetType() const
-  {
-    return EntityType::Entity_SpotLight;
-  }
+  EntityType SpotLight::GetType() const { return EntityType::Entity_SpotLight; }
 
   void SpotLight::UpdateShadowCamera()
   {
-    m_shadowCamera->SetLens(
-        glm::radians(GetOuterAngleVal()), 1.0f, 0.01f, AffectDistance());
+    m_shadowCamera->SetLens(glm::radians(GetOuterAngleVal()),
+                            1.0f,
+                            0.01f,
+                            AffectDistance());
 
     Light::UpdateShadowCamera();
     UpdateShadowCameraTransform();
   }
 
-  float SpotLight::AffectDistance()
-  {
-    return GetRadiusVal();
-  }
+  float SpotLight::AffectDistance() { return GetRadiusVal(); }
 
   void SpotLight::InitShadowMapDepthMaterial()
   {

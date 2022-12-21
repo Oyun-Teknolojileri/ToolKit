@@ -24,13 +24,9 @@ namespace ToolKit
       DeSerialize(nullptr, node);
     }
 
-    OutlinerWindow::OutlinerWindow()
-    {
-    }
+    OutlinerWindow::OutlinerWindow() {}
 
-    OutlinerWindow::~OutlinerWindow()
-    {
-    }
+    OutlinerWindow::~OutlinerWindow() {}
 
     // Recursively show entity hierarchy & update via drag drop.
     ULongID g_parent = NULL_HANDLE;
@@ -171,7 +167,7 @@ namespace ToolKit
 
     bool OutlinerWindow::FindShownEntities(Entity* e, const String& str)
     {
-      bool self = Utf8CaseInsensitiveSearch(e->GetNameVal(), str);
+      bool self     = Utf8CaseInsensitiveSearch(e->GetNameVal(), str);
 
       bool children = false;
       if (e->GetType() != EntityType::Entity_Prefab)
@@ -253,10 +249,7 @@ namespace ToolKit
       return Window::Type::Outliner;
     }
 
-    void OutlinerWindow::DispatchSignals() const
-    {
-      ModShortCutSignals();
-    }
+    void OutlinerWindow::DispatchSignals() const { ModShortCutSignals(); }
 
     void OutlinerWindow::Focus(Entity* ntt)
     {
@@ -418,8 +411,9 @@ namespace ToolKit
 
       // Texture only toggle button.
       ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
-      if (UI::ImageButtonDecorless(
-              icon->m_textureId, ImVec2(15.0f, 15.0f), false))
+      if (UI::ImageButtonDecorless(icon->m_textureId,
+                                   ImVec2(15.0f, 15.0f),
+                                   false))
       {
         ntt->SetVisibility(!ntt->GetVisibleVal(), true);
       }
@@ -431,8 +425,9 @@ namespace ToolKit
 
       // Texture only toggle button.
       ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
-      if (UI::ImageButtonDecorless(
-              icon->m_textureId, ImVec2(15.0f, 15.0f), false))
+      if (UI::ImageButtonDecorless(icon->m_textureId,
+                                   ImVec2(15.0f, 15.0f),
+                                   false))
       {
         ntt->SetTransformLock(!ntt->GetTransformLockVal(), true);
       }

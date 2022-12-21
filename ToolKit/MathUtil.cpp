@@ -88,9 +88,9 @@ namespace ToolKit
     float fInvLength = glm::inversesqrt(m[0][0] * m[0][0] + m[1][0] * m[1][0] +
                                         m[2][0] * m[2][0]);
 
-    kQ[0][0] = m[0][0] * fInvLength;
-    kQ[1][0] = m[1][0] * fInvLength;
-    kQ[2][0] = m[2][0] * fInvLength;
+    kQ[0][0]         = m[0][0] * fInvLength;
+    kQ[1][0]         = m[1][0] * fInvLength;
+    kQ[2][0]         = m[2][0] * fInvLength;
 
     float fDot = kQ[0][0] * m[0][1] + kQ[1][0] * m[1][1] + kQ[2][0] * m[2][1];
     kQ[0][1]   = m[0][1] - fDot * kQ[0][0];
@@ -99,24 +99,24 @@ namespace ToolKit
     fInvLength = glm::inversesqrt(kQ[0][1] * kQ[0][1] + kQ[1][1] * kQ[1][1] +
                                   kQ[2][1] * kQ[2][1]);
 
-    kQ[0][1] *= fInvLength;
-    kQ[1][1] *= fInvLength;
-    kQ[2][1] *= fInvLength;
+    kQ[0][1]   *= fInvLength;
+    kQ[1][1]   *= fInvLength;
+    kQ[2][1]   *= fInvLength;
 
-    fDot     = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] + kQ[2][0] * m[2][2];
-    kQ[0][2] = m[0][2] - fDot * kQ[0][0];
-    kQ[1][2] = m[1][2] - fDot * kQ[1][0];
-    kQ[2][2] = m[2][2] - fDot * kQ[2][0];
-    fDot     = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] + kQ[2][1] * m[2][2];
-    kQ[0][2] -= fDot * kQ[0][1];
-    kQ[1][2] -= fDot * kQ[1][1];
-    kQ[2][2] -= fDot * kQ[2][1];
+    fDot       = kQ[0][0] * m[0][2] + kQ[1][0] * m[1][2] + kQ[2][0] * m[2][2];
+    kQ[0][2]   = m[0][2] - fDot * kQ[0][0];
+    kQ[1][2]   = m[1][2] - fDot * kQ[1][0];
+    kQ[2][2]   = m[2][2] - fDot * kQ[2][0];
+    fDot       = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] + kQ[2][1] * m[2][2];
+    kQ[0][2]   -= fDot * kQ[0][1];
+    kQ[1][2]   -= fDot * kQ[1][1];
+    kQ[2][2]   -= fDot * kQ[2][1];
     fInvLength = glm::inversesqrt(kQ[0][2] * kQ[0][2] + kQ[1][2] * kQ[1][2] +
                                   kQ[2][2] * kQ[2][2]);
 
-    kQ[0][2] *= fInvLength;
-    kQ[1][2] *= fInvLength;
-    kQ[2][2] *= fInvLength;
+    kQ[0][2]   *= fInvLength;
+    kQ[1][2]   *= fInvLength;
+    kQ[2][2]   *= fInvLength;
 
     // guarantee that orthogonal matrix has determinant 1 (no reflections)
     float fDet =
@@ -140,13 +140,13 @@ namespace ToolKit
     kR[1][2] = kQ[0][1] * m[0][2] + kQ[1][1] * m[1][2] + kQ[2][1] * m[2][2];
     kR[2][2] = kQ[0][2] * m[0][2] + kQ[1][2] * m[1][2] + kQ[2][2] * m[2][2];
 
-    kQ = glm::transpose(kQ); // TK_MOD To column major. Ogre is row major.
-    kR = glm::transpose(kR); // TK_MOD To column major. Ogre is row major.
+    kQ       = glm::transpose(kQ); // TK_MOD To column major. Ogre is row major.
+    kR       = glm::transpose(kR); // TK_MOD To column major. Ogre is row major.
 
     // the scaling component
-    kD[0] = kR[0][0];
-    kD[1] = kR[1][1];
-    kD[2] = kR[2][2];
+    kD[0]    = kR[0][0];
+    kD[1]    = kR[1][1];
+    kD[2]    = kR[2][2];
 
     // the shear component
     float fInvD0 = 1.0f / kD[0];
@@ -155,8 +155,11 @@ namespace ToolKit
     kU[2]        = kR[1][2] / kD[1];
   }
 
-  void ExtractAxes(
-      const Mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize)
+  void ExtractAxes(const Mat4& transform,
+                   Vec3& x,
+                   Vec3& y,
+                   Vec3& z,
+                   bool normalize)
   {
     x = glm::column(transform, 0);
     y = glm::column(transform, 1);
@@ -250,6 +253,7 @@ namespace ToolKit
     }
     return sqDist;
   }
+
   // Returns true if sphere s intersects AABB b, false otherwise
   bool SphereBoxIntersection(const BoundingSphere& s, const BoundingBox& b)
   {
@@ -305,19 +309,19 @@ namespace ToolKit
   {
     // r.dir is unit direction vector of ray
     Vec3 dirfrac;
-    dirfrac.x = 1.0f / ray.direction.x;
-    dirfrac.y = 1.0f / ray.direction.y;
-    dirfrac.z = 1.0f / ray.direction.z;
+    dirfrac.x  = 1.0f / ray.direction.x;
+    dirfrac.y  = 1.0f / ray.direction.y;
+    dirfrac.z  = 1.0f / ray.direction.z;
 
     // lb is the corner of AABB with minimal coordinates - left bottom
     // rt is maximal corner
     // r.org is origin of ray
-    float t1 = (box.min.x - ray.position.x) * dirfrac.x;
-    float t2 = (box.max.x - ray.position.x) * dirfrac.x;
-    float t3 = (box.min.y - ray.position.y) * dirfrac.y;
-    float t4 = (box.max.y - ray.position.y) * dirfrac.y;
-    float t5 = (box.min.z - ray.position.z) * dirfrac.z;
-    float t6 = (box.max.z - ray.position.z) * dirfrac.z;
+    float t1   = (box.min.x - ray.position.x) * dirfrac.x;
+    float t2   = (box.max.x - ray.position.x) * dirfrac.x;
+    float t3   = (box.min.y - ray.position.y) * dirfrac.y;
+    float t4   = (box.max.y - ray.position.y) * dirfrac.y;
+    float t5   = (box.min.z - ray.position.z) * dirfrac.z;
+    float t6   = (box.max.z - ray.position.z) * dirfrac.z;
 
     float tmin = glm::max(glm::max(glm::min(t1, t2), glm::min(t3, t4)),
                           glm::min(t5, t6));
@@ -344,8 +348,11 @@ namespace ToolKit
   }
 
   // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-  bool RayTriangleIntersection(
-      const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t)
+  bool RayTriangleIntersection(const Ray& ray,
+                               const Vec3& v0,
+                               const Vec3& v1,
+                               const Vec3& v2,
+                               float& t)
   {
     const float EPSILON = 0.0000001f;
     Vec3 vertex0        = v0;
@@ -420,7 +427,8 @@ namespace ToolKit
           mesh->m_faces.begin(),
           mesh->m_faces.end(),
           [&updateHit, &t, &closestPickedDistance, &ray, &hit, skelComp, mesh](
-              Face& face) {
+              Face& face)
+          {
             Vec3 positions[3] = {face.vertices[0]->pos,
                                  face.vertices[1]->pos,
                                  face.vertices[2]->pos};
@@ -436,8 +444,11 @@ namespace ToolKit
               }
             }
             float dist = FLT_MAX;
-            if (RayTriangleIntersection(
-                    ray, positions[0], positions[1], positions[2], dist))
+            if (RayTriangleIntersection(ray,
+                                        positions[0],
+                                        positions[1],
+                                        positions[2],
+                                        dist))
             {
               std::lock_guard<std::mutex> guard(updateHit);
               if (dist < closestPickedDistance && t >= 0.0f)
@@ -571,10 +582,10 @@ namespace ToolKit
                              const BoundingSphere& sphere,
                              float& t)
   {
-    Vec3 r0  = ray.position;
-    Vec3 rd  = ray.direction;
-    Vec3 s0  = sphere.pos;
-    float sr = sphere.radius;
+    Vec3 r0    = ray.position;
+    Vec3 rd    = ray.direction;
+    Vec3 s0    = sphere.pos;
+    float sr   = sphere.radius;
 
     float a    = glm::dot(rd, rd);
     Vec3 s0_r0 = r0 - s0;
@@ -633,7 +644,8 @@ namespace ToolKit
     Mat4 v          = camera->GetViewMatrix();
     Frustum frustum = ExtractFrustum(pr * v, false);
 
-    auto delFn = [frustum](Entity* ntt) -> bool {
+    auto delFn      = [frustum](Entity* ntt) -> bool
+    {
       IntersectResult res = FrustumBoxIntersection(frustum, ntt->GetAABB(true));
       if (res == IntersectResult::Outside)
       {
@@ -690,10 +702,10 @@ namespace ToolKit
     Vec3 mintr = maxtr;
     mintr.z    = box.min.z;
 
-    corners = {mintl, mintr, minbr, minbl, maxtl, maxtr, maxbr, maxbl};
+    corners    = {mintl, mintr, minbr, minbl, maxtl, maxtr, maxbr, maxbl};
   }
 
-  PlaneEquation PlaneFrom(Vec3 const pnts[3])
+  PlaneEquation PlaneFrom(const Vec3 pnts[3])
   {
     // Expecting 3 non coplanar points in CCW order.
     Vec3 v1 = pnts[1] - pnts[0];

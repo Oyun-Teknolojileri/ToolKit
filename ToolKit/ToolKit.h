@@ -94,8 +94,8 @@ namespace ToolKit
     Main();
     virtual ~Main();
 
-    Main(Main const&)           = delete;
-    void operator=(Main const&) = delete;
+    Main(const Main&)           = delete;
+    void operator=(const Main&) = delete;
 
     virtual void PreInit();
     virtual void Init();
@@ -135,12 +135,12 @@ namespace ToolKit
     UIManager* m_uiManager               = nullptr;
     SkeletonManager* m_skeletonManager   = nullptr;
     HandleManager m_handleManager;
-    FileManager* m_fileManager = nullptr;
+    FileManager* m_fileManager     = nullptr;
 
     EntityFactory* m_entityFactory = nullptr;
 
-    bool m_preInitiated = false;
-    bool m_initiated    = false;
+    bool m_preInitiated            = false;
+    bool m_initiated               = false;
     String m_resourceRoot;
     String m_cfgPath;
     EventPool m_eventPool;

@@ -17,9 +17,7 @@
 
 namespace ToolKit
 {
-  ResourceManager::ResourceManager()
-  {
-  }
+  ResourceManager::ResourceManager() {}
 
   ResourceManager::~ResourceManager()
   {
@@ -41,8 +39,8 @@ namespace ToolKit
   {
     String file = resource->GetFile();
     bool sane   = !file.empty();
-    sane &= !Exist(file);
-    sane &= CanStore(resource->GetType());
+    sane        &= !Exist(file);
+    sane        &= CanStore(resource->GetType());
 
     if (sane)
     {

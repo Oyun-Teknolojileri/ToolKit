@@ -231,6 +231,7 @@ namespace ToolKit
                                                   "Whole"};
         TexturePtr m_presetImages[presetCount] = {};
       };
+
       static AnchorPresetImages m_anchorPresetIcons;
     };
 

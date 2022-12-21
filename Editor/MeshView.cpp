@@ -9,18 +9,16 @@ namespace ToolKit
   {
     MeshView::MeshView() : View("Mesh View")
     {
-      m_viewID   = 3;
-      m_viewIcn  = UI::m_meshIcon;
-      m_viewport = new PreviewViewport(300, 300);
+      m_viewID              = 3;
+      m_viewIcn             = UI::m_meshIcon;
+      m_viewport            = new PreviewViewport(300, 300);
 
       Entity* previewEntity = new Entity;
       previewEntity->AddComponent(std::make_shared<MeshComponent>());
       m_viewport->GetScene()->AddEntity(previewEntity);
     }
-    MeshView::~MeshView()
-    {
-      SafeDel(m_viewport);
-    }
+
+    MeshView::~MeshView() { SafeDel(m_viewport); }
 
     void MeshView::ResetCamera()
     {
@@ -46,8 +44,9 @@ namespace ToolKit
       if (ImGui::CollapsingHeader("Mesh Preview",
                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
-        if (UI::ImageButtonDecorless(
-                UI::m_cameraIcon->m_textureId, Vec2(16.0f), false))
+        if (UI::ImageButtonDecorless(UI::m_cameraIcon->m_textureId,
+                                     Vec2(16.0f),
+                                     false))
         {
           ResetCamera();
         }
@@ -63,7 +62,8 @@ namespace ToolKit
                     m_mesh->m_indexCount);
         DropZone(UI::m_materialIcon->m_textureId,
                  m_mesh->m_material->GetFile(),
-                 [this](const DirectoryEntry& entry) {
+                 [this](const DirectoryEntry& entry)
+                 {
                    g_app->m_statusMsg = "Failed.";
 
                    GetLogger()->WriteConsole(

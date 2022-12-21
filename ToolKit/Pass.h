@@ -85,7 +85,7 @@ namespace ToolKit
     void PostRender() override;
 
    protected:
-    void CullLightList(Entity const* entity, LightRawPtrArray& lights);
+    void CullLightList(const Entity* entity, LightRawPtrArray& lights);
 
     /**
      * Renders the entities immediately. No sorting applied.
@@ -309,7 +309,7 @@ namespace ToolKit
     ShaderPtr m_downsampleShader = nullptr;
     ShaderPtr m_upsampleShader   = nullptr;
 
-    bool m_invalidRenderParams = false;
+    bool m_invalidRenderParams   = false;
   };
 
   struct PostProcessPassParams
@@ -362,11 +362,13 @@ namespace ToolKit
   struct TonemapPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;
+
     enum TonemapMethod
     {
       Reinhard,
       Aces
     };
+
     TonemapMethod Method = Aces;
   };
 
@@ -407,8 +409,8 @@ namespace ToolKit
     RenderTargetPtr m_gNormalRt  = nullptr;
     RenderTargetPtr m_gColorRt   = nullptr;
 
-    int m_width  = 1024;
-    int m_height = 1024;
+    int m_width                  = 1024;
+    int m_height                 = 1024;
 
     GBufferPassParams m_params;
 
@@ -445,9 +447,9 @@ namespace ToolKit
 
    private:
     FullQuadPass m_fullQuadPass;
-    ShaderPtr m_deferredRenderShader = nullptr;
+    ShaderPtr m_deferredRenderShader       = nullptr;
 
-    const IVec2 m_lightDataTextureSize       = IVec2(1024);
+    const IVec2 m_lightDataTextureSize     = IVec2(1024);
     LightDataTexturePtr m_lightDataTexture = nullptr;
   };
 

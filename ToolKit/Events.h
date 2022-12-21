@@ -33,10 +33,7 @@ namespace ToolKit
   class TK_API KeyboardEvent : public Event
   {
    public:
-    KeyboardEvent()
-    {
-      m_type = EventType::Keyboard;
-    }
+    KeyboardEvent() { m_type = EventType::Keyboard; }
 
    public:
     int m_keyCode = 0;
@@ -46,10 +43,7 @@ namespace ToolKit
   class TK_API MouseEvent : public Event
   {
    public:
-    MouseEvent()
-    {
-      m_type = EventType::Mouse;
-    }
+    MouseEvent() { m_type = EventType::Mouse; }
 
    public:
     bool m_release  = false;  // If true mouse button is up else down.

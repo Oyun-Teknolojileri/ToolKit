@@ -204,7 +204,7 @@ namespace ToolKit
     /**
      * Framebuffer of the render target of the viewport.
      */
-    FramebufferPtr m_framebuffer = nullptr;
+    FramebufferPtr m_framebuffer   = nullptr;
 
     FramebufferPtr m_ssaoGBuffer =
         nullptr; // Basicly needed for SSAO algorithm.

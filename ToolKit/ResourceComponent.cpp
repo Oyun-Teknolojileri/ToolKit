@@ -26,9 +26,7 @@ namespace ToolKit
                       true);
   }
 
-  MeshComponent::~MeshComponent()
-  {
-  }
+  MeshComponent::~MeshComponent() {}
 
   ComponentPtr MeshComponent::Copy(Entity* ntt)
   {
@@ -46,8 +44,9 @@ namespace ToolKit
       SkinMesh* skinMesh = (SkinMesh*) GetMeshVal().get();
       if (skelComp->isDirty)
       {
-        m_aabb = skinMesh->CalculateAABB(
-            skelComp->GetSkeletonResourceVal().get(), skelComp->m_map);
+        m_aabb =
+            skinMesh->CalculateAABB(skelComp->GetSkeletonResourceVal().get(),
+                                    skelComp->m_map);
         skelComp->isDirty = false;
       }
       return m_aabb;
@@ -69,9 +68,7 @@ namespace ToolKit
                     true);
   }
 
-  MaterialComponent::~MaterialComponent()
-  {
-  }
+  MaterialComponent::~MaterialComponent() {}
 
   void MaterialComponent::Init(bool flushClientSideArray)
   {
@@ -93,9 +90,7 @@ namespace ToolKit
     ParameterEventConstructor();
   }
 
-  EnvironmentComponent::~EnvironmentComponent()
-  {
-  }
+  EnvironmentComponent::~EnvironmentComponent() {}
 
   void EnvironmentComponent::Init(bool flushClientSideArray)
   {
@@ -151,7 +146,8 @@ namespace ToolKit
 
   void EnvironmentComponent::ParameterEventConstructor()
   {
-    auto reInitHdriFn = [](HdriPtr hdri, float exposure) {
+    auto reInitHdriFn = [](HdriPtr hdri, float exposure)
+    {
       hdri->UnInit();
       hdri->Load();
       hdri->m_exposure = exposure;
@@ -159,14 +155,12 @@ namespace ToolKit
     };
 
     ParamExposure().m_onValueChangedFn.push_back(
-        [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void {
-          reInitHdriFn(GetHdriVal(), std::get<float>(newVal));
-        });
+        [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
+        { reInitHdriFn(GetHdriVal(), std::get<float>(newVal)); });
 
     ParamHdri().m_onValueChangedFn.push_back(
-        [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void {
-          reInitHdriFn(std::get<HdriPtr>(newVal), GetExposureVal());
-        });
+        [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
+        { reInitHdriFn(std::get<HdriPtr>(newVal), GetExposureVal()); });
   }
 
   ComponentPtr EnvironmentComponent::Copy(Entity* ntt)
@@ -213,6 +207,7 @@ namespace ToolKit
 
     m_id = GetHandleManager()->GetNextHandle();
   }
+
   AnimControllerComponent::~AnimControllerComponent()
   {
     if (activeRecord != nullptr)
@@ -306,6 +301,7 @@ namespace ToolKit
   {
     return activeRecord;
   }
+
   AnimRecordPtr AnimControllerComponent::GetAnimRecord(const String& signalName)
   {
     AnimRecordPtrMap& records = ParamRecords().GetVar<AnimRecordPtrMap>();
@@ -335,6 +331,7 @@ namespace ToolKit
       delete m_map;
     }
   }
+
   void SkeletonComponent::Init()
   {
     const SkeletonPtr& resource = GetSkeletonResourceVal();
@@ -357,6 +354,7 @@ namespace ToolKit
 
     return dst;
   }
+
   void SkeletonComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     Component::DeSerialize(doc, parent);
@@ -364,13 +362,9 @@ namespace ToolKit
     m_map->Init(GetSkeletonResourceVal().get());
   }
 
-  MultiMaterialComponent::MultiMaterialComponent()
-  {
-  }
+  MultiMaterialComponent::MultiMaterialComponent() {}
 
-  MultiMaterialComponent::~MultiMaterialComponent()
-  {
-  }
+  MultiMaterialComponent::~MultiMaterialComponent() {}
 
   ComponentPtr MultiMaterialComponent::Copy(Entity* ntt)
   {
@@ -382,10 +376,10 @@ namespace ToolKit
     return mc;
   }
 
-  void MultiMaterialComponent::Init(bool flushClientSideArray)
-  {
-  }
+  void MultiMaterialComponent::Init(bool flushClientSideArray) {}
+
   const char *XmlMatCountAttrib = "MaterialCount", *XmlMatIdAttrib = "ID";
+
   void MultiMaterialComponent::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     Component::DeSerialize(doc, parent);
@@ -404,13 +398,16 @@ namespace ToolKit
           MaterialPath(Resource::DeserializeRef(resourceNode)));
     }
   }
+
   void MultiMaterialComponent::Serialize(XmlDocument* doc,
                                          XmlNode* parent) const
   {
     Component::Serialize(doc, parent);
     XmlNode* compNode = parent->last_node(XmlComponent.c_str());
-    WriteAttr(
-        compNode, doc, XmlMatCountAttrib, std::to_string(materials.size()));
+    WriteAttr(compNode,
+              doc,
+              XmlMatCountAttrib,
+              std::to_string(materials.size()));
     for (uint i = 0; i < materials.size(); i++)
     {
       XmlNode* resourceRefNode =
@@ -418,23 +415,28 @@ namespace ToolKit
       materials[i]->SerializeRef(doc, resourceRefNode);
     }
   }
+
   void MultiMaterialComponent::AddMaterial(MaterialPtr mat)
   {
     materials.push_back(mat);
   }
+
   void MultiMaterialComponent::RemoveMaterial(uint index)
   {
     assert(materials.size() >= index && "Material List overflow");
     materials.erase(materials.begin() + index);
   }
+
   const MaterialPtrArray& MultiMaterialComponent::GetMaterialList() const
   {
     return materials;
   }
+
   MaterialPtrArray& MultiMaterialComponent::GetMaterialList()
   {
     return materials;
   }
+
   void MultiMaterialComponent::UpdateMaterialList(MeshComponentPtr meshComp)
   {
     if (meshComp == nullptr || meshComp->GetMeshVal() == nullptr)
@@ -464,9 +466,8 @@ namespace ToolKit
                 true,
                 true);
   }
-  AABBOverrideComponent::~AABBOverrideComponent()
-  {
-  }
+
+  AABBOverrideComponent::~AABBOverrideComponent() {}
 
   ComponentPtr AABBOverrideComponent::Copy(Entity* ntt)
   {
@@ -477,9 +478,8 @@ namespace ToolKit
     return dst;
   }
 
-  void AABBOverrideComponent::Init(bool flushClientSideArray)
-  {
-  }
+  void AABBOverrideComponent::Init(bool flushClientSideArray) {}
+
   BoundingBox AABBOverrideComponent::GetAABB()
   {
     BoundingBox aabb = {};
@@ -487,6 +487,7 @@ namespace ToolKit
     aabb.max         = GetPositionOffsetVal() + GetSizeVal();
     return aabb;
   }
+
   void AABBOverrideComponent::SetAABB(BoundingBox aabb)
   {
     SetPositionOffsetVal(aabb.min);

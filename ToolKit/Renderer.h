@@ -178,9 +178,9 @@ namespace ToolKit
 
     typedef struct RHIConstants
     {
-      static constexpr ubyte textureSlotCount = 16;
+      static constexpr ubyte textureSlotCount       = 16;
 
-      static constexpr size_t maxLightsPerObject = 16;
+      static constexpr size_t maxLightsPerObject    = 16;
 
       static constexpr int shadowAtlasSlot          = 8;
       static constexpr int g_shadowAtlasTextureSize = 4096;
@@ -216,10 +216,10 @@ namespace ToolKit
     MaterialPtr m_gaussianBlurMaterial = nullptr;
     MaterialPtr m_averageBlurMaterial  = nullptr;
 
-    FramebufferPtr m_copyFb    = nullptr;
-    MaterialPtr m_copyMaterial = nullptr;
+    FramebufferPtr m_copyFb            = nullptr;
+    MaterialPtr m_copyMaterial         = nullptr;
 
-    int m_maxArrayTextureLayers = -1;
+    int m_maxArrayTextureLayers        = -1;
   };
 
 } // namespace ToolKit

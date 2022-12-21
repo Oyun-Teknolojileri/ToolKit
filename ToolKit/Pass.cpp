@@ -12,7 +12,8 @@ namespace ToolKit
                                                 const Camera* cam)
   {
     std::function<bool(Entity*, Entity*)> sortFn = [cam](Entity* ntt1,
-                                                         Entity* ntt2) -> bool {
+                                                         Entity* ntt2) -> bool
+    {
       Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
       BoundingBox bb1 = ntt1->GetAABB(true);
@@ -26,7 +27,8 @@ namespace ToolKit
 
     if (cam->IsOrtographic())
     {
-      sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool {
+      sortFn = [cam](Entity* ntt1, Entity* ntt2) -> bool
+      {
         float first =
             ntt1->m_node->GetTranslation(TransformationSpace::TS_WORLD).z;
 
@@ -42,25 +44,31 @@ namespace ToolKit
 
   void RenderPass::StableSortByMaterialPriority(EntityRawPtrArray& entities)
   {
-    std::stable_sort(
-        entities.begin(), entities.end(), [](Entity* a, Entity* b) -> bool {
-          MaterialComponentPtr matA = a->GetMaterialComponent();
-          MaterialComponentPtr matB = b->GetMaterialComponent();
-          if (matA && matB)
-          {
-            int pA = matA->GetMaterialVal()->GetRenderState()->priority;
-            int pB = matB->GetMaterialVal()->GetRenderState()->priority;
-            return pA > pB;
-          }
+    std::stable_sort(entities.begin(),
+                     entities.end(),
+                     [](Entity* a, Entity* b) -> bool
+                     {
+                       MaterialComponentPtr matA = a->GetMaterialComponent();
+                       MaterialComponentPtr matB = b->GetMaterialComponent();
+                       if (matA && matB)
+                       {
+                         int pA =
+                             matA->GetMaterialVal()->GetRenderState()->priority;
+                         int pB =
+                             matB->GetMaterialVal()->GetRenderState()->priority;
+                         return pA > pB;
+                       }
 
-          return false;
-        });
+                       return false;
+                     });
   }
 
   void RenderPass::SeperateTranslucentEntities(
-      EntityRawPtrArray& entities, EntityRawPtrArray& translucentEntities)
+      EntityRawPtrArray& entities,
+      EntityRawPtrArray& translucentEntities)
   {
-    auto delTrFn = [&translucentEntities](Entity* ntt) -> bool {
+    auto delTrFn = [&translucentEntities](Entity* ntt) -> bool
+    {
       // Check too see if there are any material with blend state.
       MaterialComponentPtrArray materials;
       ntt->GetComponent<MaterialComponent>(materials);
@@ -115,7 +123,8 @@ namespace ToolKit
       EntityRawPtrArray& entities,
       EntityRawPtrArray& translucentAndUnlitEntities)
   {
-    auto delTrFn = [&translucentAndUnlitEntities](Entity* ntt) -> bool {
+    auto delTrFn = [&translucentAndUnlitEntities](Entity* ntt) -> bool
+    {
       // Check too see if there are any material with blend state.
       MaterialComponentPtrArray materials;
       ntt->GetComponent<MaterialComponent>(materials);
@@ -171,9 +180,7 @@ namespace ToolKit
                    entities.end());
   }
 
-  ForwardRenderPass::ForwardRenderPass()
-  {
-  }
+  ForwardRenderPass::ForwardRenderPass() {}
 
   ForwardRenderPass::ForwardRenderPass(const ForwardRenderPassParams& params)
       : m_params(params)
@@ -199,9 +206,7 @@ namespace ToolKit
     PostRender();
   }
 
-  ForwardRenderPass::~ForwardRenderPass()
-  {
-  }
+  ForwardRenderPass::~ForwardRenderPass() {}
 
   void ForwardRenderPass::PreRender()
   {
@@ -209,8 +214,8 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     // Set self data.
-    m_drawList = m_params.Entities;
-    m_camera   = m_params.Cam;
+    m_drawList         = m_params.Entities;
+    m_camera           = m_params.Cam;
 
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
     renderer->SetCameraLens(m_camera);
@@ -219,12 +224,9 @@ namespace ToolKit
     renderer->CollectEnvironmentVolumes(m_drawList);
   }
 
-  void ForwardRenderPass::PostRender()
-  {
-    Pass::PostRender();
-  }
+  void ForwardRenderPass::PostRender() { Pass::PostRender(); }
 
-  void ForwardRenderPass::CullLightList(Entity const* entity,
+  void ForwardRenderPass::CullLightList(const Entity* entity,
                                         LightRawPtrArray& lights)
   {
     LightRawPtrArray bestLights;
@@ -290,9 +292,8 @@ namespace ToolKit
 
     std::sort(intersectCounts.begin(),
               intersectCounts.end(),
-              [](const LightSortStruct& i1, const LightSortStruct& i2) -> bool {
-                return (i1.intersectCount > i2.intersectCount);
-              });
+              [](const LightSortStruct& i1, const LightSortStruct& i2) -> bool
+              { return (i1.intersectCount > i2.intersectCount); });
 
     for (uint i = 0; i < intersectCounts.size(); i++)
     {
@@ -366,8 +367,10 @@ namespace ToolKit
 
     for (int i = 0; i < 6; ++i)
     {
-      DecomposeMatrix(
-          views[i], nullptr, &m_cubeMapRotations[i], &m_cubeMapScales[i]);
+      DecomposeMatrix(views[i],
+                      nullptr,
+                      &m_cubeMapRotations[i],
+                      &m_cubeMapScales[i]);
     }
 
     m_shadowAtlas       = std::make_shared<RenderTarget>();
@@ -379,9 +382,7 @@ namespace ToolKit
     m_params = params;
   }
 
-  ShadowPass::~ShadowPass()
-  {
-  }
+  ShadowPass::~ShadowPass() {}
 
   void ShadowPass::Render()
   {
@@ -420,7 +421,7 @@ namespace ToolKit
     m_lastOverrideMat = GetRenderer()->m_overrideMat;
 
     // Dropout non shadow casters.
-    m_drawList = m_params.Entities;
+    m_drawList        = m_params.Entities;
     m_drawList.erase(
         std::remove_if(m_drawList.begin(),
                        m_drawList.end(),
@@ -455,10 +456,7 @@ namespace ToolKit
     Pass::PostRender();
   }
 
-  RenderTargetPtr ShadowPass::GetShadowAtlas()
-  {
-    return m_shadowAtlas;
-  }
+  RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
   void ShadowPass::RenderShadowMaps(Light* light,
                                     const EntityRawPtrArray& entities)
@@ -466,7 +464,8 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     auto renderForShadowMapFn =
-        [this, &renderer](Light* light, EntityRawPtrArray entities) -> void {
+        [this, &renderer](Light* light, EntityRawPtrArray entities) -> void
+    {
       FrustumCull(entities, light->m_shadowCamera);
 
       renderer->m_overrideMat = light->GetShadowMaterial();
@@ -486,7 +485,8 @@ namespace ToolKit
 
     switch (light->GetType())
     {
-    case EntityType::Entity_PointLight: {
+    case EntityType::Entity_PointLight:
+    {
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
 
       for (int i = 0; i < 6; ++i)
@@ -525,7 +525,8 @@ namespace ToolKit
     }
     break;
     case EntityType::Entity_DirectionalLight:
-    case EntityType::Entity_SpotLight: {
+    case EntityType::Entity_SpotLight:
+    {
 
       renderer->SetFramebuffer(m_shadowFramebuffer, false);
       m_shadowFramebuffer->SetAttachment(
@@ -589,7 +590,7 @@ namespace ToolKit
     int lastLayerOfDirAndSpotLightShadowsUse = -1;
 
     // Create 2 arrays: dirandspotlights, point lights
-    LightRawPtrArray dirAndSpotLights = lights;
+    LightRawPtrArray dirAndSpotLights        = lights;
     LightRawPtrArray pointLights;
     LightRawPtrArray::iterator it = dirAndSpotLights.begin();
     while (it != dirAndSpotLights.end())
@@ -606,9 +607,8 @@ namespace ToolKit
     }
 
     // Sort lights based on resolutions (greater to smaller)
-    auto sortByResFn = [](const Light* l1, const Light* l2) -> bool {
-      return l1->GetShadowResVal() > l2->GetShadowResVal();
-    };
+    auto sortByResFn = [](const Light* l1, const Light* l2) -> bool
+    { return l1->GetShadowResVal() > l2->GetShadowResVal(); };
 
     std::sort(dirAndSpotLights.begin(), dirAndSpotLights.end(), sortByResFn);
     std::sort(pointLights.begin(), pointLights.end(), sortByResFn);
@@ -621,15 +621,16 @@ namespace ToolKit
       resolutions.push_back((int) light->GetShadowResVal());
     }
 
-    std::vector<BinPack2D::PackedRect> rects = m_packer.Pack(
-        resolutions, Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+    std::vector<BinPack2D::PackedRect> rects =
+        m_packer.Pack(resolutions,
+                      Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
 
     for (int i = 0; i < rects.size(); ++i)
     {
       dirAndSpotLights[i]->m_shadowAtlasCoord = rects[i].Coord;
       dirAndSpotLights[i]->m_shadowAtlasLayer = rects[i].ArrayIndex;
 
-      lastLayerOfDirAndSpotLightShadowsUse = rects[i].ArrayIndex;
+      lastLayerOfDirAndSpotLightShadowsUse    = rects[i].ArrayIndex;
       layerCount = std::max(rects[i].ArrayIndex, layerCount);
     }
 
@@ -667,7 +668,7 @@ namespace ToolKit
     bool needChange = false;
 
     // After this loop lastShadowLights is set with lights with shadows
-    int nextId = 0;
+    int nextId      = 0;
     for (int i = 0; i < m_params.Lights.size(); ++i)
     {
       Light* light = m_params.Lights[i];
@@ -699,7 +700,7 @@ namespace ToolKit
       m_previousShadowCasters.resize(nextId);
 
       // Place shadow textures to atlas
-      m_layerCount = PlaceShadowMapsToShadowAtlas(m_params.Lights);
+      m_layerCount        = PlaceShadowMapsToShadowAtlas(m_params.Lights);
 
       const int maxLayers = GetRenderer()->GetMaxArrayTextureLayers();
       if (maxLayers < m_layerCount)
@@ -739,13 +740,9 @@ namespace ToolKit
     }
   }
 
-  Pass::Pass()
-  {
-  }
+  Pass::Pass() {}
 
-  Pass::~Pass()
-  {
-  }
+  Pass::~Pass() {}
 
   void Pass::PreRender()
   {
@@ -763,8 +760,8 @@ namespace ToolKit
 
   FullQuadPass::FullQuadPass()
   {
-    m_camera = std::make_shared<Camera>(); // Unused.
-    m_quad   = std::make_shared<Quad>();
+    m_camera                   = std::make_shared<Camera>(); // Unused.
+    m_quad                     = std::make_shared<Quad>();
 
     m_material                 = std::make_shared<Material>();
     m_material->m_vertexShader = GetShaderManager()->Create<Shader>(
@@ -776,9 +773,7 @@ namespace ToolKit
     m_params = params;
   }
 
-  FullQuadPass::~FullQuadPass()
-  {
-  }
+  FullQuadPass::~FullQuadPass() {}
 
   void FullQuadPass::Render()
   {
@@ -804,16 +799,13 @@ namespace ToolKit
     m_material->GetRenderState()->depthTestEnabled = false;
     m_material->GetRenderState()->blendFunction    = m_params.BlendFunc;
 
-    MeshComponentPtr mc = m_quad->GetMeshComponent();
-    MeshPtr mesh        = mc->GetMeshVal();
-    mesh->m_material    = m_material;
+    MeshComponentPtr mc                            = m_quad->GetMeshComponent();
+    MeshPtr mesh                                   = mc->GetMeshVal();
+    mesh->m_material                               = m_material;
     mesh->Init();
   }
 
-  void FullQuadPass::PostRender()
-  {
-    Pass::PostRender();
-  }
+  void FullQuadPass::PostRender() { Pass::PostRender(); }
 
   StencilRenderPass::StencilRenderPass()
   {
@@ -878,20 +870,17 @@ namespace ToolKit
 
     m_copyStencilSubPass->m_params.FrameBuffer = m_frameBuffer;
 
-    Renderer* renderer = GetRenderer();
+    Renderer* renderer                         = GetRenderer();
     renderer->SetFramebuffer(m_frameBuffer, true, Vec4(0.0f));
     renderer->SetCameraLens(m_params.Camera);
   }
 
-  void StencilRenderPass::PostRender()
-  {
-    Pass::PostRender();
-  }
+  void StencilRenderPass::PostRender() { Pass::PostRender(); }
 
   OutlinePass::OutlinePass()
   {
-    m_stencilPass = std::make_shared<StencilRenderPass>();
-    m_stencilAsRt = std::make_shared<RenderTarget>();
+    m_stencilPass  = std::make_shared<StencilRenderPass>();
+    m_stencilAsRt  = std::make_shared<RenderTarget>();
 
     m_outlinePass  = std::make_shared<FullQuadPass>();
     m_dilateShader = GetShaderManager()->Create<Shader>(
@@ -933,15 +922,12 @@ namespace ToolKit
     m_stencilPass->m_params.DrawList = m_params.DrawList;
 
     // Construct output target.
-    FramebufferSettings fbs = m_params.FrameBuffer->GetSettings();
+    FramebufferSettings fbs          = m_params.FrameBuffer->GetSettings();
     m_stencilAsRt->ReconstructIfNeeded(fbs.width, fbs.height);
     m_stencilPass->m_params.OutputTarget = m_stencilAsRt;
   }
 
-  void OutlinePass::PostRender()
-  {
-    Pass::PostRender();
-  }
+  void OutlinePass::PostRender() { Pass::PostRender(); }
 
   BloomPass::BloomPass()
   {
@@ -1001,10 +987,10 @@ namespace ToolKit
 
       float powVal = glm::pow(2.0f, float(i + 1));
       const Vec2 factor(1.0f / powVal);
-      const UVec2 curRes = Vec2(mainRes) * factor;
+      const UVec2 curRes             = Vec2(mainRes) * factor;
 
-      powVal             = glm::pow(2.0f, float(i));
-      const Vec2 prevRes = Vec2(mainRes) * Vec2((1.0f / powVal));
+      powVal                         = glm::pow(2.0f, float(i));
+      const Vec2 prevRes             = Vec2(mainRes) * Vec2((1.0f / powVal));
 
       // Find previous framebuffer & RT
       FramebufferPtr prevFramebuffer = m_tempFrameBuffers[i];
@@ -1014,11 +1000,12 @@ namespace ToolKit
       // Set pass' shader and parameters
       m_pass->m_params.FragmentShader = m_downsampleShader;
 
-      int passIndx = i + 1;
+      int passIndx                    = i + 1;
       m_downsampleShader->SetShaderParameter("passIndx",
                                              ParameterVariant(passIndx));
       m_downsampleShader->SetShaderParameter(
-          "threshold", ParameterVariant(m_params.minThreshold));
+          "threshold",
+          ParameterVariant(m_params.minThreshold));
       m_downsampleShader->SetShaderParameter("srcResolution",
                                              ParameterVariant(prevRes));
 
@@ -1067,7 +1054,8 @@ namespace ToolKit
       m_pass->m_params.ClearFrameBuffer = false;
       m_pass->m_params.FrameBuffer      = m_params.FrameBuffer;
       m_upsampleShader->SetShaderParameter(
-          "intensity", ParameterVariant(m_params.intensity));
+          "intensity",
+          ParameterVariant(m_params.intensity));
 
       m_pass->Render();
     }
@@ -1093,14 +1081,15 @@ namespace ToolKit
     for (int i = 0; i < m_params.iterationCount + 1; i++)
     {
       const Vec2 factor(1.0f / glm::pow(2.0f, float(i)));
-      const UVec2 curRes = Vec2(mainRes) * factor;
+      const UVec2 curRes    = Vec2(mainRes) * factor;
 
       m_invalidRenderParams = false;
       if (curRes.x == 1 || curRes.y == 1)
       {
         m_invalidRenderParams = true;
         GetLogger()->WriteConsole(
-            LogType::Warning, "Bloom iteration count is more than supported");
+            LogType::Warning,
+            "Bloom iteration count is more than supported");
         return;
       }
 
@@ -1121,10 +1110,7 @@ namespace ToolKit
     }
   }
 
-  void BloomPass::PostRender()
-  {
-    Pass::PostRender();
-  }
+  void BloomPass::PostRender() { Pass::PostRender(); }
 
   PostProcessPass::PostProcessPass()
   {
@@ -1169,8 +1155,9 @@ namespace ToolKit
                                 m_copyTexture);
 
     // Copy given buffer.
-    renderer->CopyFrameBuffer(
-        m_params.FrameBuffer, m_copyBuffer, GraphicBitFields::ColorBits);
+    renderer->CopyFrameBuffer(m_params.FrameBuffer,
+                              m_copyBuffer,
+                              GraphicBitFields::ColorBits);
 
     // Set given buffer as a texture to be read in gamma pass.
     renderer->SetTexture(0, m_copyTexture->m_textureId);
@@ -1187,10 +1174,7 @@ namespace ToolKit
     PostRender();
   }
 
-  void PostProcessPass::PostRender()
-  {
-    Pass::PostRender();
-  }
+  void PostProcessPass::PostRender() { Pass::PostRender(); }
 
   GammaPass::GammaPass() : PostProcessPass()
   {
@@ -1229,7 +1213,8 @@ namespace ToolKit
     PostProcessPass::PreRender();
 
     m_postProcessShader->SetShaderParameter(
-        "UseAcesTonemapper", ParameterVariant((uint) m_params.Method));
+        "UseAcesTonemapper",
+        ParameterVariant((uint) m_params.Method));
   }
 
   SceneRenderPass::SceneRenderPass()
@@ -1286,15 +1271,12 @@ namespace ToolKit
                                m_params.MainFramebuffer->GetSettings().height);
   }
 
-  void SceneRenderPass::PostRender()
-  {
-    Pass::PostRender();
-  }
+  void SceneRenderPass::PostRender() { Pass::PostRender(); }
 
   void SceneRenderPass::SetPassParams()
   {
-    m_shadowPass->m_params.Entities = m_params.Scene->GetEntities();
-    m_shadowPass->m_params.Lights   = m_params.Lights;
+    m_shadowPass->m_params.Entities  = m_params.Scene->GetEntities();
+    m_shadowPass->m_params.Lights    = m_params.Lights;
 
     // Give blended entities to forward render, non-blendeds to deferred
     // render
@@ -1302,18 +1284,19 @@ namespace ToolKit
     EntityRawPtrArray opaqueDrawList = m_params.Scene->GetEntities();
     EntityRawPtrArray translucentAndUnlitDrawList;
     m_forwardRenderPass->SeperateTranslucentAndUnlitEntities(
-        opaqueDrawList, translucentAndUnlitDrawList);
+        opaqueDrawList,
+        translucentAndUnlitDrawList);
 
-    m_gBufferPass.m_params.entities = opaqueDrawList;
-    m_gBufferPass.m_params.camera   = m_params.Cam;
+    m_gBufferPass.m_params.entities                = opaqueDrawList;
+    m_gBufferPass.m_params.camera                  = m_params.Cam;
 
     m_deferredRenderPass.m_params.ClearFramebuffer = true;
     m_deferredRenderPass.m_params.GBufferFramebuffer =
         m_gBufferPass.m_framebuffer;
 
-    m_deferredRenderPass.m_params.lights          = m_params.Lights;
-    m_deferredRenderPass.m_params.MainFramebuffer = m_params.MainFramebuffer;
-    m_deferredRenderPass.m_params.GBufferCamera   = m_params.Cam;
+    m_deferredRenderPass.m_params.lights           = m_params.Lights;
+    m_deferredRenderPass.m_params.MainFramebuffer  = m_params.MainFramebuffer;
+    m_deferredRenderPass.m_params.GBufferCamera    = m_params.Cam;
 
     m_forwardRenderPass->m_params.Lights           = m_params.Lights;
     m_forwardRenderPass->m_params.Cam              = m_params.Cam;
@@ -1359,7 +1342,7 @@ namespace ToolKit
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
     m_gColorRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-    m_framebuffer = std::make_shared<Framebuffer>();
+    m_framebuffer     = std::make_shared<Framebuffer>();
 
     m_gBufferMaterial = std::make_shared<Material>();
   }
@@ -1412,7 +1395,7 @@ namespace ToolKit
     m_gBufferMaterial->m_vertexShader   = vertexShader;
     m_gBufferMaterial->m_fragmentShader = fragmentShader;
 
-    m_initialized = true;
+    m_initialized                       = true;
   }
 
   void GBufferPass::UnInitGBuffers()
@@ -1448,10 +1431,7 @@ namespace ToolKit
                             m_params.entities.end());
   }
 
-  void GBufferPass::PostRender()
-  {
-    Pass::PostRender();
-  }
+  void GBufferPass::PostRender() { Pass::PostRender(); }
 
   void GBufferPass::Render()
   {
@@ -1478,9 +1458,7 @@ namespace ToolKit
     PostRender();
   }
 
-  DeferredRenderPass::DeferredRenderPass()
-  {
-  }
+  DeferredRenderPass::DeferredRenderPass() {}
 
   DeferredRenderPass::DeferredRenderPass(const DeferredRenderPassParams& params)
   {
@@ -1510,7 +1488,7 @@ namespace ToolKit
     m_fullQuadPass.m_params.FragmentShader   = m_deferredRenderShader;
     m_fullQuadPass.m_params.FrameBuffer      = m_params.MainFramebuffer;
 
-    Renderer* renderer = GetRenderer();
+    Renderer* renderer                       = GetRenderer();
 
     renderer->SetFramebuffer(m_params.MainFramebuffer, true, Vec4(0.0f));
 
@@ -1602,8 +1580,9 @@ namespace ToolKit
 
   void DeferredRenderPass::InitLightDataTexture()
   {
-    m_lightDataTexture = std::make_shared<LightDataTexture>(
-        m_lightDataTextureSize.x, m_lightDataTextureSize.y);
+    m_lightDataTexture =
+        std::make_shared<LightDataTexture>(m_lightDataTextureSize.x,
+                                           m_lightDataTextureSize.y);
     m_lightDataTexture->Init();
   }
 

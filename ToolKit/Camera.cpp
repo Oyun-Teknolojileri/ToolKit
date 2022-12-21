@@ -15,9 +15,7 @@ namespace ToolKit
     AddComponent(new DirectionComponent(this));
   }
 
-  Camera::~Camera()
-  {
-  }
+  Camera::~Camera() {}
 
   void Camera::SetLens(float fov, float aspect)
   {
@@ -34,11 +32,15 @@ namespace ToolKit
     m_ortographic = false;
   }
 
-  void Camera::SetLens(
-      float left, float right, float bottom, float top, float near, float far)
+  void Camera::SetLens(float left,
+                       float right,
+                       float bottom,
+                       float top,
+                       float near,
+                       float far)
   {
-    m_aspect     = (right - left) / (top - bottom);
-    m_projection = glm::ortho(left * m_orthographicScale,
+    m_aspect      = (right - left) / (top - bottom);
+    m_projection  = glm::ortho(left * m_orthographicScale,
                               right * m_orthographicScale,
                               bottom * m_orthographicScale,
                               top * m_orthographicScale,
@@ -61,22 +63,16 @@ namespace ToolKit
     return glm::inverse(view);
   }
 
-  Mat4 Camera::GetProjectionMatrix() const
-  {
-    return m_projection;
-  }
+  Mat4 Camera::GetProjectionMatrix() const { return m_projection; }
 
-  bool Camera::IsOrtographic() const
-  {
-    return m_ortographic;
-  }
+  bool Camera::IsOrtographic() const { return m_ortographic; }
 
   Camera::CamData Camera::GetData() const
   {
     CamData data;
     DirectionComponentPtr dcp = GetComponent<DirectionComponent>();
     assert(dcp);
-    data.dir = dcp->GetDirection();
+    data.dir         = dcp->GetDirection();
 
     data.pos         = m_node->GetTranslation();
     data.projection  = m_projection;
@@ -89,15 +85,12 @@ namespace ToolKit
     return data;
   }
 
-  EntityType Camera::GetType() const
-  {
-    return EntityType::Entity_Camera;
-  }
+  EntityType Camera::GetType() const { return EntityType::Entity_Camera; }
 
   void Camera::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     Entity::Serialize(doc, parent);
-    parent = parent->last_node();
+    parent        = parent->last_node();
 
     XmlNode* node = CreateXmlNode(doc, "Camera", parent);
 
@@ -158,50 +151,23 @@ namespace ToolKit
     GetComponent<DirectionComponent>()->LookAt(geoCenter);
   }
 
-  float Camera::Fov() const
-  {
-    return m_fov;
-  }
+  float Camera::Fov() const { return m_fov; }
 
-  float Camera::Aspect() const
-  {
-    return m_aspect;
-  }
+  float Camera::Aspect() const { return m_aspect; }
 
-  float Camera::Near() const
-  {
-    return m_near;
-  }
+  float Camera::Near() const { return m_near; }
 
-  float Camera::Far() const
-  {
-    return m_far;
-  }
+  float Camera::Far() const { return m_far; }
 
-  float Camera::Left() const
-  {
-    return m_left;
-  }
+  float Camera::Left() const { return m_left; }
 
-  float Camera::Right() const
-  {
-    return m_right;
-  }
+  float Camera::Right() const { return m_right; }
 
-  float Camera::Top() const
-  {
-    return m_top;
-  }
+  float Camera::Top() const { return m_top; }
 
-  float Camera::Bottom() const
-  {
-    return m_bottom;
-  }
+  float Camera::Bottom() const { return m_bottom; }
 
-  Vec3 Camera::Position() const
-  {
-    return m_node->GetTranslation();
-  }
+  Vec3 Camera::Position() const { return m_node->GetTranslation(); }
 
   Vec3 Camera::Direction() const
   {

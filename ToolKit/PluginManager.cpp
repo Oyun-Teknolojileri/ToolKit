@@ -138,16 +138,11 @@ namespace ToolKit
     reg->m_loaded = false;
   }
 #else
-  bool PluginManager::Load(const String& name)
-  {
-    return false;
-  }
-  void PluginManager::UnInit()
-  {
-  }
-  void PluginManager::Unload(const String& file)
-  {
-  }
+  bool PluginManager::Load(const String& name) { return false; }
+
+  void PluginManager::UnInit() {}
+
+  void PluginManager::Unload(const String& file) {}
 #endif
 
   void PluginManager::Report(const char* msg, ...)
@@ -211,12 +206,8 @@ namespace ToolKit
     return nullptr;
   }
 
-  PluginManager::PluginManager()
-  {
-  }
+  PluginManager::PluginManager() {}
 
-  PluginManager::~PluginManager()
-  {
-  }
+  PluginManager::~PluginManager() {}
 
 } // namespace ToolKit

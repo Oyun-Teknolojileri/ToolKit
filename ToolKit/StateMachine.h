@@ -32,7 +32,7 @@ namespace ToolKit
      * this state.
      * @param prevState State that has been left.
      */
-    virtual void TransitionIn(State* prevState) = 0;
+    virtual void TransitionIn(State* prevState)  = 0;
 
     /**
      * Actions to perform while transitioning from previous state to
@@ -46,21 +46,21 @@ namespace ToolKit
      * @retrun Self signal. State machine signals
      * itself with the returning signal.
      */
-    virtual SignalId Update(float deltaTime) = 0;
+    virtual SignalId Update(float deltaTime)     = 0;
 
     /**
      * Determines the next state, based on the incoming signal.
      * @param signal Incoming signal.
      * @retrun Next state's name.
      */
-    virtual String Signaled(SignalId signal) = 0;
+    virtual String Signaled(SignalId signal)     = 0;
 
     /**
      * Unique string identifier within the state machine. Two different states
      * should not share the same type.
      * @return String identifier of the state.
      */
-    virtual String GetType() = 0;
+    virtual String GetType()                     = 0;
 
     /**
      * Test fucntion to check state types.

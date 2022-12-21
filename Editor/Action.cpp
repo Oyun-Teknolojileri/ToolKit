@@ -16,9 +16,7 @@ namespace ToolKit
     // Action
     //////////////////////////////////////////////////////////////////////////
 
-    Action::Action()
-    {
-    }
+    Action::Action() {}
 
     Action::~Action()
     {
@@ -54,9 +52,7 @@ namespace ToolKit
           comp->Stop();
         }
       }
-      else
-      {
-      }
+      else {}
     }
 
     void DeleteAction::Undo()
@@ -147,7 +143,8 @@ namespace ToolKit
       m_com = com;
       switch (com->GetType())
       {
-      case ComponentType::AnimControllerComponent: {
+      case ComponentType::AnimControllerComponent:
+      {
         reinterpret_cast<AnimControllerComponent*>(com.get())->Stop();
       }
       break;
@@ -276,10 +273,7 @@ namespace ToolKit
       m_actionGrouping = false;
     }
 
-    void ActionManager::BeginActionGroup()
-    {
-      m_actionGrouping = true;
-    }
+    void ActionManager::BeginActionGroup() { m_actionGrouping = true; }
 
     void ActionManager::RemoveLastAction()
     {
@@ -335,10 +329,7 @@ namespace ToolKit
       }
     }
 
-    ActionManager* ActionManager::GetInstance()
-    {
-      return &m_instance;
-    }
+    ActionManager* ActionManager::GetInstance() { return &m_instance; }
 
   } // namespace Editor
 } // namespace ToolKit

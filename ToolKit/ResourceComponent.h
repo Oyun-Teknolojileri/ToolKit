@@ -12,7 +12,7 @@ namespace ToolKit
 
   typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
   typedef std::vector<MeshComponentPtr> MeshComponentPtrArray;
-  static VariantCategory MeshComponentCategory{"Mesh Component", 90};
+  static VariantCategory MeshComponentCategory {"Mesh Component", 90};
 
   class TK_API MeshComponent : public Component
   {
@@ -63,7 +63,7 @@ namespace ToolKit
   typedef std::shared_ptr<class MaterialComponent> MaterialComponentPtr;
   typedef std::vector<MaterialComponentPtr> MaterialComponentPtrArray;
 
-  static VariantCategory MaterialComponentCategory{"Material Component", 90};
+  static VariantCategory MaterialComponentCategory {"Material Component", 90};
 
   class TK_API MaterialComponent : public Component
   {
@@ -94,8 +94,8 @@ namespace ToolKit
   };
 
   typedef std::shared_ptr<class EnvironmentComponent> EnvironmentComponentPtr;
-  static VariantCategory EnvironmentComponentCategory{"Environment Component",
-                                                      90};
+  static VariantCategory EnvironmentComponentCategory {"Environment Component",
+                                                       90};
 
   class TK_API EnvironmentComponent : public Component
   {
@@ -126,8 +126,9 @@ namespace ToolKit
     TKDeclareParam(float, Exposure);
   };
 
-  static VariantCategory AnimRecordComponentCategory{
-      "Animation Record Component", 90};
+  static VariantCategory AnimRecordComponentCategory {
+      "Animation Record Component",
+      90};
   typedef std::shared_ptr<class AnimControllerComponent>
       AnimControllerComponentPtr;
 
@@ -163,7 +164,7 @@ namespace ToolKit
     AnimRecordPtr activeRecord;
   };
 
-  static VariantCategory SkeletonComponentCategory{"Skeleton Component", 90};
+  static VariantCategory SkeletonComponentCategory {"Skeleton Component", 90};
   typedef std::shared_ptr<class SkeletonComponent> SkeletonComponentPtr;
 
   /**
@@ -171,6 +172,7 @@ namespace ToolKit
       transformation info
    */
   class DynamicBoneMap;
+
   class TK_API SkeletonComponent : public Component
   {
    public:
@@ -195,8 +197,8 @@ namespace ToolKit
   typedef std::shared_ptr<class MultiMaterialComponent> MultiMaterialPtr;
   typedef std::vector<MultiMaterialPtr> MultiMaterialPtrArray;
 
-  static VariantCategory MultiMaterialCompCategory{"Multi-Material Component",
-                                                   90};
+  static VariantCategory MultiMaterialCompCategory {"Multi-Material Component",
+                                                    90};
 
   class TK_API MultiMaterialComponent : public Component
   {
@@ -229,8 +231,8 @@ namespace ToolKit
   typedef std::shared_ptr<class AABBOverrideComponent> AABBOverrideComponentPtr;
   typedef std::vector<AABBOverrideComponentPtr> AABBOverrideComponentPtrArray;
 
-  static VariantCategory AABBOverrideCompCategory{"AABB Override Component",
-                                                  90};
+  static VariantCategory AABBOverrideCompCategory {"AABB Override Component",
+                                                   90};
 
   class TK_API AABBOverrideComponent : public Component
   {

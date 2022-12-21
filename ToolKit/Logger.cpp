@@ -7,15 +7,9 @@
 namespace ToolKit
 {
 
-  Logger::Logger()
-  {
-    m_logFile.open("Log.txt", std::ios::out);
-  }
+  Logger::Logger() { m_logFile.open("Log.txt", std::ios::out); }
 
-  Logger::~Logger()
-  {
-    m_logFile.close();
-  }
+  Logger::~Logger() { m_logFile.close(); }
 
   void Logger::Log(const String& message)
   {

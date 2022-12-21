@@ -77,8 +77,8 @@ namespace ToolKit
      public:
       ~ActionManager();
 
-      ActionManager(ActionManager const&)  = delete;
-      void operator=(ActionManager const&) = delete;
+      ActionManager(const ActionManager&)  = delete;
+      void operator=(const ActionManager&) = delete;
 
       void Init();
       void UnInit();

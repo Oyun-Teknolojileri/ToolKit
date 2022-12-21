@@ -26,9 +26,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    DirectoryEntry::DirectoryEntry()
-    {
-    }
+    DirectoryEntry::DirectoryEntry() {}
 
     DirectoryEntry::DirectoryEntry(const String& fullPath)
     {
@@ -81,8 +79,8 @@ namespace ToolKit
     void DirectoryEntry::GenerateThumbnail() const
     {
       const Vec2& thumbSize = g_app->m_thumbnailSize;
-      auto renderThumbFn    = [this, &thumbSize](Camera* cam,
-                                              Entity* obj) -> void {
+      auto renderThumbFn = [this, &thumbSize](Camera* cam, Entity* obj) -> void
+      {
         RenderTargetPtr thumbPtr = nullptr;
         String fullPath          = GetFullPath();
 
@@ -130,7 +128,7 @@ namespace ToolKit
         Entity tempDrawEntity;
         String fullpath = ConcatPaths({m_rootPath, m_fileName + m_ext});
 
-        MeshPtr mesh = nullptr;
+        MeshPtr mesh    = nullptr;
         if (m_ext == MESH)
         {
           mesh = GetMeshManager()->Create<Mesh>(fullpath);
@@ -162,14 +160,14 @@ namespace ToolKit
       else if (m_ext == MATERIAL)
       {
         Sphere ball;
-        String fullpath = GetFullPath();
-        MeshPtr mesh    = ball.GetMeshComponent()->GetMeshVal();
+        String fullpath  = GetFullPath();
+        MeshPtr mesh     = ball.GetMeshComponent()->GetMeshVal();
 
         MaterialPtr mat  = GetMaterialManager()->Create<Material>(fullpath);
         mesh->m_material = mat;
 
         // Disable ao
-        bool aoActive = mesh->m_material->GetRenderState()->AOInUse;
+        bool aoActive    = mesh->m_material->GetRenderState()->AOInUse;
         mat->GetRenderState()->AOInUse  = false;
         mat->GetRenderState()->IBLInUse = false;
 
@@ -229,10 +227,7 @@ namespace ToolKit
       return nullptr;
     }
 
-    FolderView::FolderView()
-    {
-      CreateItemActions();
-    }
+    FolderView::FolderView() { CreateItemActions(); }
 
     FolderView::FolderView(class FolderWindow* parent) : FolderView()
     {
@@ -261,8 +256,8 @@ namespace ToolKit
         }
 
         // Handle Item Icon size.
-        ImGuiIO io  = ImGui::GetIO();
-        float delta = io.MouseWheel;
+        ImGuiIO io                 = ImGui::GetIO();
+        float delta                = io.MouseWheel;
 
         // Initial zoom value
         static float thumbnailZoom = m_thumbnailMaxZoom / 6.f;
@@ -319,7 +314,8 @@ namespace ToolKit
             bool flipRenderTarget = false;
             uint iconId           = UI::m_fileIcon->m_textureId;
 
-            auto genThumbFn = [&flipRenderTarget, &iconId, &dirEnt]() -> void {
+            auto genThumbFn = [&flipRenderTarget, &iconId, &dirEnt]() -> void
+            {
               if (dirEnt.GetThumbnail() == nullptr)
               {
                 dirEnt.GenerateThumbnail();
@@ -453,8 +449,9 @@ namespace ToolKit
               if (ImGui::BeginDragDropSource(
                       ImGuiDragDropFlags_SourceAllowNullID))
               {
-                ImGui::SetDragDropPayload(
-                    "BrowserDragZone", &dirEnt, sizeof(DirectoryEntry));
+                ImGui::SetDragDropPayload("BrowserDragZone",
+                                          &dirEnt,
+                                          sizeof(DirectoryEntry));
                 ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
                                    m_iconSize,
                                    ImVec2(0.0f, 0.0f),
@@ -555,10 +552,7 @@ namespace ToolKit
       m_folder = splits.back();
     }
 
-    const String& FolderView::GetPath() const
-    {
-      return m_path;
-    }
+    const String& FolderView::GetPath() const { return m_path; }
 
     void FolderView::Iterate()
     {
@@ -663,10 +657,7 @@ namespace ToolKit
       }
     }
 
-    void FolderView::Refresh()
-    {
-      m_dirty = true;
-    }
+    void FolderView::Refresh() { m_dirty = true; }
 
     float FolderView::GetThumbnailZoomPercent(float thumbnailZoom)
     {
@@ -678,7 +669,8 @@ namespace ToolKit
 
     void FolderView::CreateItemActions()
     {
-      auto getSameViewsFn = [](FolderView* thisView) -> FolderViewRawPtrArray {
+      auto getSameViewsFn = [](FolderView* thisView) -> FolderViewRawPtrArray
+      {
         // Always fetch the active view for self.
         FolderViewRawPtrArray list = {};
         for (FolderWindow* folder : g_app->GetAssetBrowsers())
@@ -693,7 +685,8 @@ namespace ToolKit
       };
 
       auto deleteDirFn = [this, getSameViewsFn](const String& path,
-                                                FolderView* thisView) -> void {
+                                                FolderView* thisView) -> void
+      {
         std::error_code ec;
         std::filesystem::remove_all(path, ec);
         if (ec)
@@ -709,8 +702,8 @@ namespace ToolKit
 
       // Copy file path.
       m_itemActions["FileSystem/CopyPath"] =
-          [getSameViewsFn](DirectoryEntry* entry,
-                           FolderView* thisView) -> void {
+          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
         {
@@ -724,16 +717,17 @@ namespace ToolKit
           {
             // Error
             g_app->GetConsole()->AddLog(
-                "Could not copy the folder path to clipboard", LogType::Error);
+                "Could not copy the folder path to clipboard",
+                LogType::Error);
           }
           ImGui::CloseCurrentPopup();
         }
       };
 
       // Refresh.
-      m_itemActions["Refresh"] =
-          [getSameViewsFn](DirectoryEntry* entry,
-                           FolderView* thisView) -> void {
+      m_itemActions["Refresh"] = [getSameViewsFn](DirectoryEntry* entry,
+                                                  FolderView* thisView) -> void
+      {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
         {
@@ -752,8 +746,8 @@ namespace ToolKit
 
       // FileSystem/MakeDir.
       m_itemActions["FileSystem/MakeDir"] =
-          [getSameViewsFn](DirectoryEntry* entry,
-                           FolderView* thisView) -> void {
+          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
         {
@@ -764,12 +758,13 @@ namespace ToolKit
         {
           StringInputWindow* inputWnd =
               new StringInputWindow("New Directory##NwDirName", true);
-          inputWnd->m_inputLabel   = "Name";
-          inputWnd->m_hint         = "Directory name...";
-          inputWnd->m_illegalChars = {
-              '/', ':', '*', '?', '"', '<', '>', '|', '\\'};
+          inputWnd->m_inputLabel = "Name";
+          inputWnd->m_hint       = "Directory name...";
+          inputWnd
+              ->m_illegalChars = {'/', ':', '*', '?', '"', '<', '>', '|', '\\'};
 
-          inputWnd->m_taskFn = [views, inputWnd](const String& val) {
+          inputWnd->m_taskFn   = [views, inputWnd](const String& val)
+          {
             String file = ConcatPaths({views[0]->m_path, val});
             std::filesystem::create_directories(file);
             for (FolderView* view : views)
@@ -783,8 +778,8 @@ namespace ToolKit
 
       // FileSystem/Rename.
       m_itemActions["FileSystem/Rename"] =
-          [getSameViewsFn](DirectoryEntry* entry,
-                           FolderView* thisView) -> void {
+          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
         {
@@ -805,7 +800,8 @@ namespace ToolKit
             inputWnd->m_inputLabel = "New Name";
             inputWnd->m_hint       = "New name...";
 
-            inputWnd->m_taskFn = [views, oldFile](const String& val) {
+            inputWnd->m_taskFn     = [views, oldFile](const String& val)
+            {
               String path, ext;
               DecomposePath(oldFile, &path, nullptr, &ext);
 
@@ -834,7 +830,8 @@ namespace ToolKit
       // FileSystem/Delete.
       m_itemActions["FileSystem/Delete"] =
           [getSameViewsFn, deleteDirFn](DirectoryEntry* entry,
-                                        FolderView* thisView) -> void {
+                                        FolderView* thisView) -> void
+      {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
         {
@@ -867,8 +864,8 @@ namespace ToolKit
 
       // FileSystem/Copy.
       m_itemActions["FileSystem/Copy"] =
-          [getSameViewsFn](DirectoryEntry* entry,
-                           FolderView* thisView) -> void {
+          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
         {
@@ -891,7 +888,8 @@ namespace ToolKit
 
       auto sceneCreateFn = [getSameViewsFn](DirectoryEntry* entry,
                                             FolderView* thisView,
-                                            const String& extention) -> void {
+                                            const String& extention) -> void
+      {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
         {
@@ -905,7 +903,8 @@ namespace ToolKit
           inputWnd->m_inputVal   = "New Scene";
           inputWnd->m_inputLabel = "Name";
           inputWnd->m_hint       = "New scene name...";
-          inputWnd->m_taskFn     = [views, extention](const String& val) {
+          inputWnd->m_taskFn     = [views, extention](const String& val)
+          {
             String file = ConcatPaths({views[0]->m_path, val + extention});
             if (CheckFile(file))
             {
@@ -929,20 +928,18 @@ namespace ToolKit
 
       // Scene/Create.
       m_itemActions["Scene/Create"] =
-          [sceneCreateFn](DirectoryEntry* entry, FolderView* thisView) -> void {
-        sceneCreateFn(entry, thisView, SCENE);
-      };
+          [sceneCreateFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      { sceneCreateFn(entry, thisView, SCENE); };
 
       // Layer/Create.
       m_itemActions["Layer/Create"] =
-          [sceneCreateFn](DirectoryEntry* entry, FolderView* thisView) -> void {
-        sceneCreateFn(entry, thisView, LAYER);
-      };
+          [sceneCreateFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      { sceneCreateFn(entry, thisView, LAYER); };
 
       // Material/Create.
       m_itemActions["Material/Create"] =
-          [getSameViewsFn](DirectoryEntry* entry,
-                           FolderView* thisView) -> void {
+          [getSameViewsFn](DirectoryEntry* entry, FolderView* thisView) -> void
+      {
         FolderViewRawPtrArray views = getSameViewsFn(thisView);
         if (views.size() == 0)
         {
@@ -956,7 +953,8 @@ namespace ToolKit
           inputWnd->m_inputVal   = "New Material";
           inputWnd->m_inputLabel = "Name";
           inputWnd->m_hint       = "New material name";
-          inputWnd->m_taskFn     = [views](const String& val) {
+          inputWnd->m_taskFn     = [views](const String& val)
+          {
             String file = ConcatPaths({views[0]->m_path, val + MATERIAL});
             if (CheckFile(file))
             {
@@ -1033,9 +1031,7 @@ namespace ToolKit
       Iterate(ResourcePath(), true, addEngine);
     }
 
-    FolderWindow::~FolderWindow()
-    {
-    }
+    FolderWindow::~FolderWindow() {}
 
     void FolderWindow::Show()
     {
@@ -1044,7 +1040,8 @@ namespace ToolKit
       {
         HandleStates();
 
-        auto IsRootFn = [](const String& path) {
+        auto IsRootFn = [](const String& path)
+        {
           size_t lastSep = path.find_last_of(GetPathSeparator());
           if (lastSep != String::npos)
           {
@@ -1096,8 +1093,9 @@ namespace ToolKit
               currSel = true;
             }
 
-            currSel = UI::ToggleButton(
-                m_entries[i].m_folder, ImVec2(100, 25), currSel);
+            currSel = UI::ToggleButton(m_entries[i].m_folder,
+                                       ImVec2(100, 25),
+                                       currSel);
 
             // Selection switch.
             if (currSel)
@@ -1136,7 +1134,8 @@ namespace ToolKit
                                    ImGuiTabBarFlags_AutoSelectNewTabs))
         {
           String currRootPath;
-          auto IsDescendentFn = [&currRootPath](String candidate) -> bool {
+          auto IsDescendentFn = [&currRootPath](String candidate) -> bool
+          {
             return !currRootPath.empty() &&
                    candidate.find(currRootPath) != std::string::npos;
           };
@@ -1166,10 +1165,7 @@ namespace ToolKit
       ImGui::End();
     }
 
-    Window::Type FolderWindow::GetType() const
-    {
-      return Window::Type::Browser;
-    }
+    Window::Type FolderWindow::GetType() const { return Window::Type::Browser; }
 
     void FolderWindow::Iterate(const String& path, bool clear, bool addEngine)
     {
@@ -1190,7 +1186,7 @@ namespace ToolKit
           FolderView view(this);
           String path = entry.path().u8string();
           view.m_root = CountChar(path, pathSep) == baseCount + 1;
-          
+
           view.SetPath(path);
           if (!view.m_folder.compare("Engine"))
           {
@@ -1247,10 +1243,7 @@ namespace ToolKit
       }
     }
 
-    FolderView& FolderWindow::GetView(int indx)
-    {
-      return m_entries[indx];
-    }
+    FolderView& FolderWindow::GetView(int indx) { return m_entries[indx]; }
 
     FolderView* FolderWindow::GetActiveView(bool deep)
     {

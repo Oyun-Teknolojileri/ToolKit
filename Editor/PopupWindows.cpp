@@ -34,8 +34,9 @@ namespace ToolKit
           ImVec2(0.5f, 0.5f));
 
       ImGui::OpenPopup(m_name.c_str());
-      if (ImGui::BeginPopupModal(
-              m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
+      if (ImGui::BeginPopupModal(m_name.c_str(),
+                                 NULL,
+                                 ImGuiWindowFlags_AlwaysAutoResize))
       {
         if (ImGui::IsWindowAppearing())
         {
@@ -48,7 +49,8 @@ namespace ToolKit
             &m_inputVal,
             ImGuiInputTextFlags_AutoSelectAll |
                 ImGuiInputTextFlags_CallbackCharFilter,
-            [](ImGuiInputTextCallbackData* data) -> int {
+            [](ImGuiInputTextCallbackData* data) -> int
+            {
               return (reinterpret_cast<StringInputWindow*>(data->UserData))
                   ->FilterChars(data);
             },
@@ -140,8 +142,9 @@ namespace ToolKit
           ImVec2(0.5f, 0.5f));
 
       ImGui::OpenPopup(m_name.c_str());
-      if (ImGui::BeginPopupModal(
-              m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
+      if (ImGui::BeginPopupModal(m_name.c_str(),
+                                 NULL,
+                                 ImGuiWindowFlags_AlwaysAutoResize))
       {
         if (!m_msg.empty())
         {
@@ -233,8 +236,9 @@ namespace ToolKit
           ImVec2(0.5f, 0.5f));
 
       ImGui::OpenPopup(m_name.c_str());
-      if (ImGui::BeginPopupModal(
-              m_name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
+      if (ImGui::BeginPopupModal(m_name.c_str(),
+                                 NULL,
+                                 ImGuiWindowFlags_AlwaysAutoResize))
       {
         if (!m_msg.empty())
         {
@@ -242,10 +246,11 @@ namespace ToolKit
         }
 
         uint columnCount = (uint) m_buttons.size() + 2;
-        columnCount += m_showCancel ? 1 : 0;
+        columnCount      += m_showCancel ? 1 : 0;
         // Center buttons.
-        ImGui::BeginTable(
-            "##FilterZoom", columnCount, ImGuiTableFlags_SizingFixedFit);
+        ImGui::BeginTable("##FilterZoom",
+                          columnCount,
+                          ImGuiTableFlags_SizingFixedFit);
 
         ImGui::TableSetupColumn("##spaceL", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("##yes");

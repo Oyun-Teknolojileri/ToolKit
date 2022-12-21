@@ -15,19 +15,11 @@
 namespace ToolKit
 {
 
-  Shader::Shader()
-  {
-  }
+  Shader::Shader() {}
 
-  Shader::Shader(String file) : Shader()
-  {
-    SetFile(file);
-  }
+  Shader::Shader(String file) : Shader() { SetFile(file); }
 
-  Shader::~Shader()
-  {
-    UnInit();
-  }
+  Shader::~Shader() { UnInit(); }
 
   void Shader::Load()
   {
@@ -290,9 +282,7 @@ namespace ToolKit
     m_shaderParams[param] = val;
   }
 
-  void Shader::UpdateShaderParameters()
-  {
-  }
+  void Shader::UpdateShaderParameters() {}
 
   void Shader::HandleShaderIncludes(const String& file)
   {
@@ -303,7 +293,7 @@ namespace ToolKit
     String includeSource = includeShader->m_source; // Copy
 
     // Crop the version and precision defines
-    size_t versionLoc = includeSource.find("#version");
+    size_t versionLoc    = includeSource.find("#version");
     if (versionLoc != String::npos)
     {
       for (size_t fileLoc = versionLoc; fileLoc < includeSource.length();
@@ -326,8 +316,9 @@ namespace ToolKit
       {
         if (includeSource[fileLoc] == ';')
         {
-          includeSource = includeSource.replace(
-              precisionLoc, fileLoc - precisionLoc + 1, "");
+          includeSource = includeSource.replace(precisionLoc,
+                                                fileLoc - precisionLoc + 1,
+                                                "");
           break;
         }
       }
@@ -376,9 +367,7 @@ namespace ToolKit
     }
   }
 
-  Program::Program()
-  {
-  }
+  Program::Program() {}
 
   Program::Program(ShaderPtr vertex, ShaderPtr fragment)
   {
@@ -395,19 +384,11 @@ namespace ToolKit
     m_handle = 0;
   }
 
-  ShaderManager::ShaderManager()
-  {
-    m_type = ResourceType::Shader;
-  }
+  ShaderManager::ShaderManager() { m_type = ResourceType::Shader; }
 
-  ShaderManager::~ShaderManager()
-  {
-  }
+  ShaderManager::~ShaderManager() {}
 
-  void ShaderManager::Init()
-  {
-    ResourceManager::Init();
-  }
+  void ShaderManager::Init() { ResourceManager::Init(); }
 
   bool ShaderManager::CanStore(ResourceType t)
   {

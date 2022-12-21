@@ -53,7 +53,7 @@ namespace ToolKit
     ENTITY_TYPE_COUNT // Holds the size of the enum
   };
 
-  static VariantCategory EntityCategory{"Meta", 100};
+  static VariantCategory EntityCategory {"Meta", 100};
 
   /**
    * Fundamental object that all the ToolKit utilities can interacted with.

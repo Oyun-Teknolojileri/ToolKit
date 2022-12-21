@@ -195,7 +195,7 @@ namespace ToolKit
         gfs->Load();
         GetShaderManager()->Manage(gfs);
 
-        material->m_fragmentShader = gfs;
+        material->m_fragmentShader           = gfs;
 
         material->GetRenderState()->priority = 100;
         material->Init();
@@ -231,9 +231,7 @@ namespace ToolKit
       m_is2DViewport        = false;
     }
 
-    GridFragmentShader::~GridFragmentShader()
-    {
-    }
+    GridFragmentShader::~GridFragmentShader() {}
 
     void GridFragmentShader::UpdateShaderParameters()
     {

@@ -14,9 +14,7 @@ namespace ToolKit
     m_name = "Resource_" + std::to_string(m_id);
   }
 
-  Resource::~Resource()
-  {
-  }
+  Resource::~Resource() {}
 
   void Resource::Save(bool onlyIfDirty)
   {
@@ -56,10 +54,7 @@ namespace ToolKit
     }
   }
 
-  bool Resource::IsDynamic()
-  {
-    return GetFile().empty();
-  }
+  bool Resource::IsDynamic() { return GetFile().empty(); }
 
   void Resource::CopyTo(Resource* other)
   {
@@ -74,10 +69,7 @@ namespace ToolKit
     other->m_initiated = m_initiated;
   }
 
-  ResourceType Resource::GetType() const
-  {
-    return ResourceType::Base;
-  }
+  ResourceType Resource::GetType() const { return ResourceType::Base; }
 
   void Resource::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
@@ -92,8 +84,10 @@ namespace ToolKit
   void Resource::SerializeRef(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* refNode = CreateXmlNode(doc, XmlResRefElement, parent);
-    WriteAttr(
-        refNode, doc, "Type", std::to_string(static_cast<int>(GetType())));
+    WriteAttr(refNode,
+              doc,
+              "Type",
+              std::to_string(static_cast<int>(GetType())));
 
     String file = GetSerializeFile();
     file        = GetRelativeResourcePath(file);
@@ -111,10 +105,7 @@ namespace ToolKit
     return val;
   }
 
-  String Resource::GetFile() const
-  {
-    return m_file;
-  }
+  String Resource::GetFile() const { return m_file; }
 
   const String& Resource::GetSerializeFile() const
   {
@@ -126,9 +117,6 @@ namespace ToolKit
     return _missingFile;
   }
 
-  void Resource::SetFile(const String& file)
-  {
-    m_file = file;
-  }
+  void Resource::SetFile(const String& file) { m_file = file; }
 
 } // namespace ToolKit

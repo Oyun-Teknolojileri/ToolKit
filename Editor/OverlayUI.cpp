@@ -18,14 +18,9 @@ namespace ToolKit
   namespace Editor
   {
 
-    OverlayUI::OverlayUI(EditorViewport* owner)
-    {
-      m_owner = owner;
-    }
+    OverlayUI::OverlayUI(EditorViewport* owner) { m_owner = owner; }
 
-    OverlayUI::~OverlayUI()
-    {
-    }
+    OverlayUI::~OverlayUI() {}
 
     void OverlayUI::SetOwnerState()
     {
@@ -41,9 +36,7 @@ namespace ToolKit
     // OverlayMods
     //////////////////////////////////////////////////////////////////////////
 
-    OverlayMods::OverlayMods(EditorViewport* owner) : OverlayUI(owner)
-    {
-    }
+    OverlayMods::OverlayMods(EditorViewport* owner) : OverlayUI(owner) {}
 
     void OverlayMods::Show()
     {
@@ -72,8 +65,9 @@ namespace ToolKit
         bool isCurrentMod =
             ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Select;
         ModManager::GetInstance()->SetMod(
-            UI::ToggleButton(
-                UI::m_selectIcn->m_textureId, ImVec2(32, 32), isCurrentMod) &&
+            UI::ToggleButton(UI::m_selectIcn->m_textureId,
+                             ImVec2(32, 32),
+                             isCurrentMod) &&
                 !isCurrentMod,
             ModId::Select);
         UI::HelpMarker(TKLoc + m_owner->m_name,
@@ -83,8 +77,9 @@ namespace ToolKit
         isCurrentMod =
             ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Cursor;
         ModManager::GetInstance()->SetMod(
-            UI::ToggleButton(
-                UI::m_cursorIcn->m_textureId, ImVec2(32, 32), isCurrentMod) &&
+            UI::ToggleButton(UI::m_cursorIcn->m_textureId,
+                             ImVec2(32, 32),
+                             isCurrentMod) &&
                 !isCurrentMod,
             ModId::Cursor);
         UI::HelpMarker(TKLoc + m_owner->m_name,
@@ -95,8 +90,9 @@ namespace ToolKit
         isCurrentMod =
             ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Move;
         ModManager::GetInstance()->SetMod(
-            UI::ToggleButton(
-                UI::m_moveIcn->m_textureId, ImVec2(32, 32), isCurrentMod) &&
+            UI::ToggleButton(UI::m_moveIcn->m_textureId,
+                             ImVec2(32, 32),
+                             isCurrentMod) &&
                 !isCurrentMod,
             ModId::Move);
         UI::HelpMarker(TKLoc + m_owner->m_name, "Move\nMove selected items.");
@@ -105,8 +101,9 @@ namespace ToolKit
         isCurrentMod =
             ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Rotate;
         ModManager::GetInstance()->SetMod(
-            UI::ToggleButton(
-                UI::m_rotateIcn->m_textureId, ImVec2(32, 32), isCurrentMod) &&
+            UI::ToggleButton(UI::m_rotateIcn->m_textureId,
+                             ImVec2(32, 32),
+                             isCurrentMod) &&
                 !isCurrentMod,
             ModId::Rotate);
         UI::HelpMarker(TKLoc + m_owner->m_name,
@@ -116,8 +113,9 @@ namespace ToolKit
         isCurrentMod =
             ModManager::GetInstance()->m_modStack.back()->m_id == ModId::Scale;
         ModManager::GetInstance()->SetMod(
-            UI::ToggleButton(
-                UI::m_scaleIcn->m_textureId, ImVec2(32, 32), isCurrentMod) &&
+            UI::ToggleButton(UI::m_scaleIcn->m_textureId,
+                             ImVec2(32, 32),
+                             isCurrentMod) &&
                 !isCurrentMod,
             ModId::Scale);
         UI::HelpMarker(TKLoc + m_owner->m_name,
@@ -127,8 +125,9 @@ namespace ToolKit
         const char* items[]     = {"1", "2", "4", "8", "16"};
         static int current_item = 3; // Also the default.
         ImGui::PushItemWidth(40);
-        if (ImGui::BeginCombo(
-                "##CS", items[current_item], ImGuiComboFlags_None))
+        if (ImGui::BeginCombo("##CS",
+                              items[current_item],
+                              ImGuiComboFlags_None))
         {
           for (int n = 0; n < IM_ARRAYSIZE(items); n++)
           {
@@ -200,7 +199,7 @@ namespace ToolKit
 
       const Vec2 padding = Vec2(-overlaySize.x + width, overlaySize.y + 5.0f);
       Vec2 pos           = ImGui::GetWindowPos();
-      pos += padding;
+      pos                += padding;
       ImGui::SetNextWindowPos(pos);
 
       ImGui::SetNextWindowBgAlpha(0.65f);
@@ -296,16 +295,17 @@ namespace ToolKit
       ImGui::Image(Convert2ImGuiTexture(UI::m_axisIcon), ImVec2(20.0f, 20.0f));
 
       // Transform orientation combo.
-      ImGuiStyle& style = ImGui::GetStyle();
-      float spacing     = style.ItemInnerSpacing.x;
+      ImGuiStyle& style            = ImGui::GetStyle();
+      float spacing                = style.ItemInnerSpacing.x;
 
       const char* itemsOrient[]    = {"World", "Local"};
       static int currentItemOrient = 0;
 
       ImGui::TableSetColumnIndex(nextColumnItem++);
       ImGui::PushItemWidth(72);
-      if (ImGui::BeginCombo(
-              "##TRS", itemsOrient[currentItemOrient], ImGuiComboFlags_None))
+      if (ImGui::BeginCombo("##TRS",
+                            itemsOrient[currentItemOrient],
+                            ImGuiComboFlags_None))
       {
         for (int n = 0; n < IM_ARRAYSIZE(itemsOrient); n++)
         {
@@ -367,20 +367,30 @@ namespace ToolKit
       }
 
       ImGui::TableSetColumnIndex(nextItemIndex++);
-      g_app->m_snapsEnabled = UI::ToggleButton(
-          UI::m_snapIcon->m_textureId, ImVec2(16, 16), g_app->m_snapsEnabled);
+      g_app->m_snapsEnabled = UI::ToggleButton(UI::m_snapIcon->m_textureId,
+                                               ImVec2(16, 16),
+                                               g_app->m_snapsEnabled);
       UI::HelpMarker(TKLoc + m_owner->m_name,
                      "Grid snaping\nRight click for options");
 
       if (ImGui::BeginPopupContextItem("##SnapMenu"))
       {
         ImGui::PushItemWidth(75);
-        ImGui::InputFloat(
-            "Move delta", &m_owner->m_snapDeltas.x, 0.0f, 0.0f, "%.2f");
-        ImGui::InputFloat(
-            "Rotate delta", &m_owner->m_snapDeltas.y, 0.0f, 0.0f, "%.2f");
-        ImGui::InputFloat(
-            "Scale delta", &m_owner->m_snapDeltas.z, 0.0f, 0.0f, "%.2f");
+        ImGui::InputFloat("Move delta",
+                          &m_owner->m_snapDeltas.x,
+                          0.0f,
+                          0.0f,
+                          "%.2f");
+        ImGui::InputFloat("Rotate delta",
+                          &m_owner->m_snapDeltas.y,
+                          0.0f,
+                          0.0f,
+                          "%.2f");
+        ImGui::InputFloat("Scale delta",
+                          &m_owner->m_snapDeltas.z,
+                          0.0f,
+                          0.0f,
+                          "%.2f");
         ImGui::PopItemWidth();
         ImGui::EndPopup();
       }
@@ -409,8 +419,9 @@ namespace ToolKit
 
       ImGui::TableSetColumnIndex(nextItemIndex++);
       ImGui::PushItemWidth(72);
-      if (ImGui::BeginCombo(
-              "##VC", itemsCam[currentItemCam], ImGuiComboFlags_None))
+      if (ImGui::BeginCombo("##VC",
+                            itemsCam[currentItemCam],
+                            ImGuiComboFlags_None))
       {
         for (int n = 0; n < IM_ARRAYSIZE(itemsCam); n++)
         {
@@ -519,7 +530,8 @@ namespace ToolKit
     // 2DView only
     void showGridOptions(EditorViewport* m_owner, uint32_t& nextItemIndex)
     {
-      auto ShowGridOptionsFn = [m_owner]() -> void {
+      auto ShowGridOptionsFn = [m_owner]() -> void
+      {
         ImGui::PushItemWidth(75);
         EditorViewport2d* editorViewport =
             reinterpret_cast<EditorViewport2d*>(m_owner);
@@ -564,7 +576,8 @@ namespace ToolKit
         return;
       }
 
-      auto ShowAddMenuFn = []() -> void {
+      auto ShowAddMenuFn = []() -> void
+      {
         EditorScenePtr currScene = g_app->GetCurrentScene();
         if (ImGui::BeginMenu("Mesh"))
         {
@@ -695,8 +708,9 @@ namespace ToolKit
       {
         SetOwnerState();
 
-        ImGui::BeginTable(
-            "##SettingsBar", 8, ImGuiTableFlags_SizingStretchProp);
+        ImGui::BeginTable("##SettingsBar",
+                          8,
+                          ImGuiTableFlags_SizingStretchProp);
         ImGui::TableNextRow();
         unsigned int nextItemIndex = 0;
 
@@ -729,7 +743,8 @@ namespace ToolKit
         return;
       }
 
-      auto ShowAddMenuFn = []() -> void {
+      auto ShowAddMenuFn = []() -> void
+      {
         EditorScenePtr currScene = g_app->GetCurrentScene();
 
         if (ImGui::MenuItem("Surface"))
@@ -780,8 +795,9 @@ namespace ToolKit
       {
         SetOwnerState();
 
-        ImGui::BeginTable(
-            "##SettingsBar", 8, ImGuiTableFlags_SizingStretchProp);
+        ImGui::BeginTable("##SettingsBar",
+                          8,
+                          ImGuiTableFlags_SizingStretchProp);
         ImGui::TableNextRow();
 
         unsigned int nextItemIndex = 0;
@@ -804,9 +820,7 @@ namespace ToolKit
     // StatusBar
     //////////////////////////////////////////////////////////////////////////
 
-    StatusBar::StatusBar(EditorViewport* owner) : OverlayUI(owner)
-    {
-    }
+    StatusBar::StatusBar(EditorViewport* owner) : OverlayUI(owner) {}
 
     void StatusBar::Show()
     {
@@ -817,8 +831,8 @@ namespace ToolKit
       overlaySize.y = 24;
       Vec2 pos      = m_owner->m_contentAreaLocation;
 
-      pos.x += 1;
-      pos.y += m_owner->m_wndContentAreaSize.y - wndPadding.y - 16.0f;
+      pos.x         += 1;
+      pos.y         += m_owner->m_wndContentAreaSize.y - wndPadding.y - 16.0f;
       ImGui::SetNextWindowPos(pos);
       ImGui::SetNextWindowBgAlpha(0.65f);
 
@@ -839,7 +853,7 @@ namespace ToolKit
         {
           // Hold msg for 3 sec. before switching to OK.
           static float elapsedTime = 0.0f;
-          elapsedTime += ImGui::GetIO().DeltaTime;
+          elapsedTime              += ImGui::GetIO().DeltaTime;
 
           // For overlapping message updates,
           // always reset timer for the last event.

@@ -14,10 +14,8 @@ namespace ToolKit
      public:
       StringInputWindow(const String& name, bool showCancel);
       void Show() override;
-      Type GetType() const override
-      {
-        return Window::Type::InputPopup;
-      }
+
+      Type GetType() const override { return Window::Type::InputPopup; }
 
      public:
       std::function<void(const String& val)> m_taskFn;
@@ -41,10 +39,8 @@ namespace ToolKit
                   const String& msg,
                   bool showCancel);
       void Show() override;
-      Type GetType() const override
-      {
-        return Window::Type::InputPopup;
-      }
+
+      Type GetType() const override { return Window::Type::InputPopup; }
 
      public:
       std::function<void()> m_yesCallback;
@@ -63,16 +59,15 @@ namespace ToolKit
         String m_name;
         std::function<void()> m_callback;
       };
+
       explicit MultiChoiceWindow(const String& name, const String& msg = "");
       MultiChoiceWindow(const String& name,
                         const std::vector<ButtonInfo>& buttons,
                         const String& msg,
                         bool showCancel);
       void Show() override;
-      Type GetType() const override
-      {
-        return Window::Type::InputPopup;
-      }
+
+      Type GetType() const override { return Window::Type::InputPopup; }
 
      public:
       std::vector<ButtonInfo> m_buttons;

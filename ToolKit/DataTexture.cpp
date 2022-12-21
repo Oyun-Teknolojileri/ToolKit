@@ -7,19 +7,11 @@
 
 namespace ToolKit
 {
-  DataTexture::DataTexture()
-  {
-  }
+  DataTexture::DataTexture() {}
 
-  void DataTexture::Load()
-  {
-    assert(false);
-  }
+  void DataTexture::Load() { assert(false); }
 
-  void DataTexture::Clear()
-  {
-    assert(false);
-  }
+  void DataTexture::Clear() { assert(false); }
 
   DataTexture::DataTexture(int width, int height)
   {
@@ -65,9 +57,7 @@ namespace ToolKit
     m_initiated = false;
   }
 
-  LightDataTexture::LightDataTexture()
-  {
-  }
+  LightDataTexture::LightDataTexture() {}
 
   bool LightDataTexture::IncrementDataIndex(int& index, int amount)
   {
@@ -86,10 +76,7 @@ namespace ToolKit
     DataTexture::Init(flushClientSideArray);
   }
 
-  void LightDataTexture::UnInit()
-  {
-    DataTexture::UnInit();
-  }
+  void LightDataTexture::UnInit() { DataTexture::UnInit(); }
 
   void LightDataTexture::UpdateTextureData(
       LightRawPtrArray& lights,
@@ -114,7 +101,8 @@ namespace ToolKit
     // 5- Shadow caster spot lights
     // 6- Non shadow caster spot lights
 
-    auto sortByType = [](const Light* l1, const Light* l2) -> bool {
+    auto sortByType = [](const Light* l1, const Light* l2) -> bool
+    {
       EntityType t1 = l1->GetType();
       EntityType t2 = l2->GetType();
 
@@ -151,7 +139,8 @@ namespace ToolKit
       }
     };
 
-    auto sortByShadow = [](const Light* l1, const Light* l2) -> bool {
+    auto sortByShadow = [](const Light* l1, const Light* l2) -> bool
+    {
       bool s1 = l1->GetCastShadowVal();
       bool s2 = l2->GetCastShadowVal();
 
@@ -177,24 +166,24 @@ namespace ToolKit
     const float pointNonShadowSize = 5.0f;
     const float spotNonShadowSize  = 8.0f;
 
-    float minShadowDir       = 0.0f;
-    float maxShadowDir       = -dirShadowSize;
-    float minShadowPoint     = 0.0f;
-    float maxShadowPoint     = -pointShadowSize;
-    float minShadowSpot      = 0.0f;
-    float maxShadowSpot      = -spotShadowSize;
-    float minNonShadowDir    = 0.0f;
-    float maxNonShadowDir    = -dirNonShadowSize;
-    float minNonShadowPoint  = 0.0f;
-    float maxNonShadowPoint  = -pointNonShadowSize;
-    float minNonShadowSpot   = 0.0f;
-    float maxNonShadowSpot   = -spotNonShadowSize;
-    bool firstShadowDir      = true;
-    bool firstShadowPoint    = true;
-    bool firstShadowSpot     = true;
-    bool firstNonShadowDir   = true;
-    bool firstNonShadowPoint = true;
-    bool firstNonShadowSpot  = true;
+    float minShadowDir             = 0.0f;
+    float maxShadowDir             = -dirShadowSize;
+    float minShadowPoint           = 0.0f;
+    float maxShadowPoint           = -pointShadowSize;
+    float minShadowSpot            = 0.0f;
+    float maxShadowSpot            = -spotShadowSize;
+    float minNonShadowDir          = 0.0f;
+    float maxNonShadowDir          = -dirNonShadowSize;
+    float minNonShadowPoint        = 0.0f;
+    float maxNonShadowPoint        = -pointNonShadowSize;
+    float minNonShadowSpot         = 0.0f;
+    float maxNonShadowSpot         = -spotNonShadowSize;
+    bool firstShadowDir            = true;
+    bool firstShadowPoint          = true;
+    bool firstShadowSpot           = true;
+    bool firstNonShadowDir         = true;
+    bool firstNonShadowPoint       = true;
+    bool firstNonShadowSpot        = true;
 
     // Set light data into a texture
 
@@ -206,7 +195,7 @@ namespace ToolKit
     // This can be packed with a lot more efficiency. Currently we store each
     // element in 4 slotted memory (rgba).
 
-    float i = 0.0f;
+    float i    = 0.0f;
     for (Light* light : lights)
     {
       bool shadow = false;
@@ -234,9 +223,16 @@ namespace ToolKit
         float radius = static_cast<PointLight*>(light)->GetRadiusVal();
 
         // type
-        float t = 2.0f;
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &t);
+        float t      = 2.0f;
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &t);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // color
         glTexSubImage2D(GL_TEXTURE_2D,
@@ -261,12 +257,26 @@ namespace ToolKit
                         &intensity);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // position
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &pos.x);
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &pos.x);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // radius
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &radius);
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &radius);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
         if (shadow)
@@ -296,7 +306,7 @@ namespace ToolKit
                           GL_RGBA,
                           GL_FLOAT,
                           &coord.x);
-          yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
+          yIndex            = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow atlas layer
           const float layer = (float) light->m_shadowAtlasLayer;
@@ -415,8 +425,15 @@ namespace ToolKit
 
         // type
         float t = 1.0f;
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &t);
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &t);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // color
         glTexSubImage2D(GL_TEXTURE_2D,
@@ -441,8 +458,15 @@ namespace ToolKit
                         &intensity);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // direction
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &dir.x);
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &dir.x);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
         if (shadow)
@@ -473,7 +497,7 @@ namespace ToolKit
                           GL_RGBA,
                           GL_FLOAT,
                           &coord.x);
-          yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
+          yIndex            = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow atlas layer
           const float layer = (float) light->m_shadowAtlasLayer;
@@ -599,8 +623,15 @@ namespace ToolKit
 
         // type
         float t = 3.0f;
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &t);
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &t);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // color
         glTexSubImage2D(GL_TEXTURE_2D,
@@ -625,16 +656,37 @@ namespace ToolKit
                         &intensity);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // position
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &pos.x);
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &pos.x);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // direction
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &dir.x);
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &dir.x);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // radius
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, xIndex, yIndex, 1, 1, GL_RGBA, GL_FLOAT, &radius);
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xIndex,
+                        yIndex,
+                        1,
+                        1,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        &radius);
         yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
         // outer angle
         glTexSubImage2D(GL_TEXTURE_2D,
@@ -699,7 +751,7 @@ namespace ToolKit
                           GL_RGBA,
                           GL_FLOAT,
                           &coord.x);
-          yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
+          yIndex            = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           // Shadow atlas layer
           const float layer = (float) light->m_shadowAtlasLayer;

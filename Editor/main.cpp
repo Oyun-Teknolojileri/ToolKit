@@ -40,7 +40,8 @@ namespace ToolKit
       }
       */
 
-      GlErrorReporter::Report = [](const std::string& msg) -> void {
+      GlErrorReporter::Report = [](const std::string& msg) -> void
+      {
         static byte state = g_app->m_showGraphicsApiErrors;
 
         if (g_app == nullptr)
@@ -106,7 +107,7 @@ namespace ToolKit
                            "UILayout.ini",
                            "Engine.settings"};
 
-      String cfgPath = ConcatPaths({String(appData), "ToolKit", "Config"});
+      String cfgPath    = ConcatPaths({String(appData), "ToolKit", "Config"});
 
       // Create ToolKit Configs.
       bool doesConfigFolderExists = true;

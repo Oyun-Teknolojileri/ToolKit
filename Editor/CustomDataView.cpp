@@ -22,7 +22,8 @@ namespace ToolKit
           uniqueName,
           static_cast<uint>(UI::m_materialIcon->m_textureId),
           file,
-          [&var](const DirectoryEntry& entry) -> void {
+          [&var](const DirectoryEntry& entry) -> void
+          {
             if (GetResourceType(entry.m_ext) == ResourceType::Material)
             {
               var = GetMaterialManager()->Create<Material>(entry.GetFullPath());
@@ -44,7 +45,8 @@ namespace ToolKit
           uniqueName,
           static_cast<uint>(UI::m_materialIcon->m_textureId),
           file,
-          [&var](const DirectoryEntry& entry) -> void {
+          [&var](const DirectoryEntry& entry) -> void
+          {
             if (GetResourceType(entry.m_ext) == ResourceType::Material)
             {
               *var =
@@ -68,7 +70,8 @@ namespace ToolKit
       entities.pop_back();
 
       ValueUpdateFn multiUpdate = [var, entities](Value& oldVal,
-                                                  Value& newVal) -> void {
+                                                  Value& newVal) -> void
+      {
         for (Entity* ntt : entities)
         {
           // If entity is a prefab scene entity, skip it
@@ -79,8 +82,9 @@ namespace ToolKit
           }
 
           ParameterVariant* vLookUp = nullptr;
-          if (ntt->m_localData.LookUp(
-                  var->m_category.Name, var->m_name, &vLookUp))
+          if (ntt->m_localData.LookUp(var->m_category.Name,
+                                      var->m_name,
+                                      &vLookUp))
           {
             vLookUp->SetValue(newVal);
           }
@@ -107,15 +111,17 @@ namespace ToolKit
                                 ImGuiTableFlags_SizingFixedSame))
       {
         Vec2 xSize = ImGui::CalcTextSize("Name");
-        xSize *= 3.0f;
-        ImGui::TableSetupColumn(
-            "Name", ImGuiTableColumnFlags_WidthFixed, xSize.x);
+        xSize      *= 3.0f;
+        ImGui::TableSetupColumn("Name",
+                                ImGuiTableColumnFlags_WidthFixed,
+                                xSize.x);
         ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
         xSize = ImGui::CalcTextSize("X");
         xSize *= 2.5f;
-        ImGui::TableSetupColumn(
-            "##Remove", ImGuiTableColumnFlags_WidthFixed, xSize.x);
+        ImGui::TableSetupColumn("##Remove",
+                                ImGuiTableColumnFlags_WidthFixed,
+                                xSize.x);
 
         ImGui::TableHeadersRow();
 
@@ -155,11 +161,13 @@ namespace ToolKit
           String pId = "##" + std::to_string(i);
           switch (var->GetType())
           {
-          case ParameterVariant::VariantType::String: {
+          case ParameterVariant::VariantType::String:
+          {
             ImGui::InputText(pId.c_str(), var->GetVarPtr<String>());
           }
           break;
-          case ParameterVariant::VariantType::Bool: {
+          case ParameterVariant::VariantType::Bool:
+          {
             bool val = var->GetVar<bool>();
             if (ImGui::Checkbox(pId.c_str(), &val))
             {
@@ -167,23 +175,28 @@ namespace ToolKit
             }
           }
           break;
-          case ParameterVariant::VariantType::Int: {
+          case ParameterVariant::VariantType::Int:
+          {
             ImGui::InputInt(pId.c_str(), var->GetVarPtr<int>());
           }
           break;
-          case ParameterVariant::VariantType::Float: {
+          case ParameterVariant::VariantType::Float:
+          {
             ImGui::DragFloat(pId.c_str(), var->GetVarPtr<float>(), 0.1f);
           }
           break;
-          case ParameterVariant::VariantType::Vec3: {
+          case ParameterVariant::VariantType::Vec3:
+          {
             ImGui::DragFloat3(pId.c_str(), &var->GetVar<Vec3>()[0], 0.1f);
           }
           break;
-          case ParameterVariant::VariantType::Vec4: {
+          case ParameterVariant::VariantType::Vec4:
+          {
             ImGui::DragFloat4(pId.c_str(), &var->GetVar<Vec4>()[0], 0.1f);
           }
           break;
-          case ParameterVariant::VariantType::Mat3: {
+          case ParameterVariant::VariantType::Mat3:
+          {
             Vec3 vec;
             Mat3 val = var->GetVar<Mat3>();
             for (int j = 0; j < 3; j++)
@@ -196,7 +209,8 @@ namespace ToolKit
             }
           }
           break;
-          case ParameterVariant::VariantType::Mat4: {
+          case ParameterVariant::VariantType::Mat4:
+          {
             Vec4 vec;
             Mat4 val = var->GetVar<Mat4>();
             for (int j = 0; j < 4; j++)
@@ -248,7 +262,7 @@ namespace ToolKit
             customVar.m_editable = true;
             customVar.m_category = CustomDataCategory;
 
-            bool added = true;
+            bool added           = true;
             switch (dataType)
             {
             case 1:
@@ -311,7 +325,8 @@ namespace ToolKit
 
       switch (var->GetType())
       {
-      case ParameterVariant::VariantType::Bool: {
+      case ParameterVariant::VariantType::Bool:
+      {
         bool val = var->GetVar<bool>();
         if (ImGui::Checkbox(var->m_name.c_str(), &val))
         {
@@ -319,7 +334,8 @@ namespace ToolKit
         }
       }
       break;
-      case ParameterVariant::VariantType::Float: {
+      case ParameterVariant::VariantType::Float:
+      {
         float val = var->GetVar<float>();
         if (!var->m_hint.isRangeLimited)
         {
@@ -341,7 +357,8 @@ namespace ToolKit
         }
       }
       break;
-      case ParameterVariant::VariantType::Int: {
+      case ParameterVariant::VariantType::Int:
+      {
         int val = var->GetVar<int>();
         if (var->m_hint.isRangeLimited)
         {
@@ -363,7 +380,8 @@ namespace ToolKit
         }
       }
       break;
-      case ParameterVariant::VariantType::Vec2: {
+      case ParameterVariant::VariantType::Vec2:
+      {
         Vec2 val = var->GetVar<Vec2>();
         if (var->m_hint.isRangeLimited)
         {
@@ -385,12 +403,14 @@ namespace ToolKit
         }
       }
       break;
-      case ParameterVariant::VariantType::Vec3: {
+      case ParameterVariant::VariantType::Vec3:
+      {
         Vec3 val = var->GetVar<Vec3>();
         if (var->m_hint.isColor)
         {
-          if (ImGui::ColorEdit3(
-                  var->m_name.c_str(), &val[0], ImGuiColorEditFlags_NoLabel))
+          if (ImGui::ColorEdit3(var->m_name.c_str(),
+                                &val[0],
+                                ImGuiColorEditFlags_NoLabel))
           {
             *var = val;
           }
@@ -415,12 +435,14 @@ namespace ToolKit
         }
       }
       break;
-      case ParameterVariant::VariantType::Vec4: {
+      case ParameterVariant::VariantType::Vec4:
+      {
         Vec4 val = var->GetVar<Vec4>();
         if (var->m_hint.isColor)
         {
-          if (ImGui::ColorEdit4(
-                  var->m_name.c_str(), &val[0], ImGuiColorEditFlags_NoLabel))
+          if (ImGui::ColorEdit4(var->m_name.c_str(),
+                                &val[0],
+                                ImGuiColorEditFlags_NoLabel))
           {
             *var = val;
           }
@@ -445,7 +467,8 @@ namespace ToolKit
         }
       }
       break;
-      case ParameterVariant::VariantType::String: {
+      case ParameterVariant::VariantType::String:
+      {
         String val = var->GetVar<String>();
         if (ImGui::InputText(var->m_name.c_str(), &val) &&
             IsTextInputFinalized())
@@ -454,7 +477,8 @@ namespace ToolKit
         }
       }
       break;
-      case ParameterVariant::VariantType::ULongID: {
+      case ParameterVariant::VariantType::ULongID:
+      {
         ULongID val = var->GetVar<ULongID>();
         if (ImGui::InputScalar(var->m_name.c_str(),
                                ImGuiDataType_U32,
@@ -465,7 +489,8 @@ namespace ToolKit
         }
       }
       break;
-      case ParameterVariant::VariantType::MaterialPtr: {
+      case ParameterVariant::VariantType::MaterialPtr:
+      {
         MaterialPtr& mref = var->GetVar<MaterialPtr>();
         String file, id;
         if (mref)
@@ -478,13 +503,15 @@ namespace ToolKit
         ShowMaterialVariant(uniqueName, file, var);
       }
       break;
-      case ParameterVariant::VariantType::MeshPtr: {
+      case ParameterVariant::VariantType::MeshPtr:
+      {
         MeshPtr mref = var->GetVar<MeshPtr>();
         DropSubZone(
             "Mesh##" + std::to_string(mref->m_id),
             static_cast<uint>(UI::m_meshIcon->m_textureId),
             mref->GetFile(),
-            [&var](const DirectoryEntry& entry) -> void {
+            [&var](const DirectoryEntry& entry) -> void
+            {
               if (GetResourceType(entry.m_ext) == ResourceType::Mesh)
               {
                 *var = GetMeshManager()->Create<Mesh>(entry.GetFullPath());
@@ -502,7 +529,8 @@ namespace ToolKit
             var->m_editable);
       }
       break;
-      case ParameterVariant::VariantType::HdriPtr: {
+      case ParameterVariant::VariantType::HdriPtr:
+      {
         HdriPtr mref = var->GetVar<HdriPtr>();
         String file, id;
         if (mref)
@@ -515,7 +543,8 @@ namespace ToolKit
             "Hdri##" + id,
             UI::m_imageIcon->m_textureId,
             file,
-            [&var](const DirectoryEntry& entry) -> void {
+            [&var](const DirectoryEntry& entry) -> void
+            {
               if (GetResourceType(entry.m_ext) == ResourceType::Hdri)
               {
                 *var = GetTextureManager()->Create<Hdri>(entry.GetFullPath());
@@ -529,7 +558,8 @@ namespace ToolKit
             var->m_editable);
       }
       break;
-      case ParameterVariant::VariantType::SkeletonPtr: {
+      case ParameterVariant::VariantType::SkeletonPtr:
+      {
         SkeletonPtr mref = var->GetVar<SkeletonPtr>();
         String file, id;
         if (mref)
@@ -538,7 +568,8 @@ namespace ToolKit
           file = mref->GetFile();
         }
 
-        auto dropZoneFnc = [&var, &comp](const DirectoryEntry& entry) -> void {
+        auto dropZoneFnc = [&var, &comp](const DirectoryEntry& entry) -> void
+        {
           if (GetResourceType(entry.m_ext) == ResourceType::Skeleton)
           {
             *var = GetSkeletonManager()->Create<Skeleton>(entry.GetFullPath());
@@ -561,7 +592,8 @@ namespace ToolKit
                     var->m_editable);
       }
       break;
-      case ParameterVariant::VariantType::AnimRecordPtrMap: {
+      case ParameterVariant::VariantType::AnimRecordPtrMap:
+      {
         ComponentView::ShowAnimControllerComponent(var, comp);
       }
       break;
@@ -577,9 +609,8 @@ namespace ToolKit
       m_viewID  = 4;
       m_viewIcn = UI::m_fileIcon;
     }
-    CustomDataView::~CustomDataView()
-    {
-    }
+
+    CustomDataView::~CustomDataView() {}
 
     void CustomDataView::Show()
     {

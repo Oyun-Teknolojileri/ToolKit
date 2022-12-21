@@ -20,8 +20,10 @@ namespace ToolKit
       doc->append_node(container);
     }
 
-    WriteAttr(
-        container, doc, "cullMode", std::to_string(static_cast<int>(cullMode)));
+    WriteAttr(container,
+              doc,
+              "cullMode",
+              std::to_string(static_cast<int>(cullMode)));
 
     WriteAttr(container,
               doc,
@@ -38,8 +40,10 @@ namespace ToolKit
               "alphaMaskTreshold",
               std::to_string((float) alphaMaskTreshold));
 
-    WriteAttr(
-        container, doc, "drawType", std::to_string(static_cast<int>(drawType)));
+    WriteAttr(container,
+              doc,
+              "drawType",
+              std::to_string(static_cast<int>(drawType)));
 
     WriteAttr(container,
               doc,
@@ -62,11 +66,13 @@ namespace ToolKit
     {
       ReadAttr(container, "cullMode", *reinterpret_cast<int*>(&cullMode));
 
-      ReadAttr(
-          container, "depthTest", *reinterpret_cast<int*>(&depthTestEnabled));
+      ReadAttr(container,
+               "depthTest",
+               *reinterpret_cast<int*>(&depthTestEnabled));
 
-      ReadAttr(
-          container, "blendFunction", *reinterpret_cast<int*>(&blendFunction));
+      ReadAttr(container,
+               "blendFunction",
+               *reinterpret_cast<int*>(&blendFunction));
 
       ReadAttr(container,
                "alphaMaskTreshold",
@@ -74,8 +80,9 @@ namespace ToolKit
 
       ReadAttr(container, "drawType", *reinterpret_cast<int*>(&drawType));
 
-      ReadAttr(
-          container, "vertexLayout", *reinterpret_cast<int*>(&vertexLayout));
+      ReadAttr(container,
+               "vertexLayout",
+               *reinterpret_cast<int*>(&vertexLayout));
 
       ReadAttr(container, "priority", priority);
 

@@ -6,6 +6,7 @@ namespace ToolKit
   namespace Editor
   {
     class EditorViewport;
+
     class MeshView : public View
     {
      public:

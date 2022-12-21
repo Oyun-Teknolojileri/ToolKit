@@ -14,10 +14,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    EditorScene::EditorScene() : Scene()
-    {
-      m_newScene = true;
-    }
+    EditorScene::EditorScene() : Scene() { m_newScene = true; }
 
     EditorScene::EditorScene(const String& file) : EditorScene()
     {
@@ -25,10 +22,7 @@ namespace ToolKit
       m_newScene = false;
     }
 
-    EditorScene::~EditorScene()
-    {
-      Destroy(false);
-    }
+    EditorScene::~EditorScene() { Destroy(false); }
 
     void EditorScene::Load()
     {
@@ -70,8 +64,8 @@ namespace ToolKit
 
       LightRawPtrArray sceneLights = GetLights();
 
-      bool foundFirstLight      = false;
-      Light* firstSelectedLight = nullptr;
+      bool foundFirstLight         = false;
+      Light* firstSelectedLight    = nullptr;
       for (Light* light : sceneLights)
       {
         bool found = false;
@@ -145,9 +139,8 @@ namespace ToolKit
       //  select all childs of the prefab entity too
       if (Prefab* mainPrefab = Prefab::GetPrefabRoot(ntt))
       {
-        auto addToSelectionFn = [this](Node* node) {
-          m_selectedEntities.push_back(node->m_entity->GetIdVal());
-        };
+        auto addToSelectionFn = [this](Node* node)
+        { m_selectedEntities.push_back(node->m_entity->GetIdVal()); };
         TraverseChildNodes(mainPrefab->m_node, addToSelectionFn);
         return;
       }
@@ -249,10 +242,7 @@ namespace ToolKit
       AddToSelection(ids, additive);
     }
 
-    void EditorScene::ClearSelection()
-    {
-      m_selectedEntities.clear();
-    }
+    void EditorScene::ClearSelection() { m_selectedEntities.clear(); }
 
     bool EditorScene::IsCurrentSelection(ULongID id) const
     {
@@ -390,8 +380,11 @@ namespace ToolKit
       EntityRawPtrArray temp = extraList;
       temp.insert(temp.end(), m_billboards.begin(), m_billboards.end());
 
-      Scene::PickObject(
-          frustum, pickedObjects, ignoreList, temp, pickPartiallyInside);
+      Scene::PickObject(frustum,
+                        pickedObjects,
+                        ignoreList,
+                        temp,
+                        pickPartiallyInside);
 
       // If the billboards are picked, pick the entity
 
@@ -400,7 +393,8 @@ namespace ToolKit
           std::remove_if(
               pickedObjects.begin(),
               pickedObjects.end(),
-              [&pickedObjects](PickData& pd) -> bool {
+              [&pickedObjects](PickData& pd) -> bool
+              {
                 if (pd.entity != nullptr &&
                     pd.entity->GetType() == EntityType::Entity_Billboard &&
                     static_cast<Billboard*>(pd.entity)->m_entity != nullptr)
@@ -435,7 +429,8 @@ namespace ToolKit
 
     void EditorScene::AddBillboardToEntity(Entity* entity)
     {
-      auto addBillboardFn = [this, &entity](EditorBillboardBase* billboard) {
+      auto addBillboardFn = [this, &entity](EditorBillboardBase* billboard)
+      {
         billboard->m_entity          = entity;
         m_entityBillboardMap[entity] = billboard;
         m_billboards.push_back(billboard);
@@ -572,13 +567,9 @@ namespace ToolKit
       }
     }
 
-    EditorSceneManager::EditorSceneManager()
-    {
-    }
+    EditorSceneManager::EditorSceneManager() {}
 
-    EditorSceneManager::~EditorSceneManager()
-    {
-    }
+    EditorSceneManager::~EditorSceneManager() {}
 
     ResourcePtr EditorSceneManager::CreateLocal(ResourceType type)
     {

@@ -21,8 +21,11 @@ namespace ToolKit
                                Vec3& kD,
                                Vec3& kU);
 
-  TK_API void ExtractAxes(
-      const Mat4& transform, Vec3& x, Vec3& y, Vec3& z, bool normalize = true);
+  TK_API void ExtractAxes(const Mat4& transform,
+                          Vec3& x,
+                          Vec3& y,
+                          Vec3& z,
+                          bool normalize = true);
 
   TK_API Frustum ExtractFrustum(const Mat4& projectViewModel, bool normalize);
 
@@ -59,8 +62,11 @@ namespace ToolKit
                                  const BoundingBox& box,
                                  float& t);
 
-  TK_API bool RayTriangleIntersection(
-      const Ray& ray, const Vec3& v0, const Vec3& v1, const Vec3& v2, float& t);
+  TK_API bool RayTriangleIntersection(const Ray& ray,
+                                      const Vec3& v0,
+                                      const Vec3& v1,
+                                      const Vec3& v2,
+                                      float& t);
 
   class DynamicBoneMap;
   class SkinVertex;
@@ -100,7 +106,7 @@ namespace ToolKit
   TK_API void NormalizePlaneEquation(PlaneEquation& plane);
   TK_API void TransformAABB(BoundingBox& box, const Mat4& transform);
   TK_API void GetCorners(const BoundingBox& box, Vec3Array& corners);
-  TK_API PlaneEquation PlaneFrom(Vec3 const pnts[3]);
+  TK_API PlaneEquation PlaneFrom(const Vec3 pnts[3]);
   TK_API PlaneEquation PlaneFrom(Vec3 point, Vec3 normal);
   TK_API float SignedDistance(const PlaneEquation& plane, const Vec3& pnt);
   TK_API Vec3 ProjectPointOntoPlane(const PlaneEquation& plane, const Vec3& pt);
