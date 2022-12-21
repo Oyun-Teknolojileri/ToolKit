@@ -138,9 +138,16 @@ namespace ToolKit
     *s = Vec3(aiS.x, aiS.y, aiS.z);
   }
 
-  string GetEmbeddedTextureName(const aiTexture* texture)
+  string GetEmbeddedTextureName(const aiTexture* texture, int i)
   {
     string name = texture->mFilename.C_Str();
+    if (name.empty())
+    {
+      // Some glb files doesn't contain any file name for embedded textures.
+      // So we add one to help importer.
+      name = "@" + std::to_string(i);
+    }
+
     NormalizePath(name);
     name = name + "." + texture->achFormatHint;
 
@@ -521,11 +528,11 @@ namespace ToolKit
         {
           embedded           = true;
           string indxPart    = tName.substr(1);
-          unsigned int tIndx = atoi(indxPart.c_str());
+          uint tIndx = atoi(indxPart.c_str());
           if (g_scene->mNumTextures > tIndx)
           {
             aiTexture* t = g_scene->mTextures[tIndx];
-            tName        = GetEmbeddedTextureName(t);
+            tName        = GetEmbeddedTextureName(t, tIndx);
           }
         }
 
@@ -1052,7 +1059,7 @@ namespace ToolKit
       {
         TexturePtr tTexture = std::make_shared<Texture>();
         aiTexture* texture  = g_scene->mTextures[i];
-        string embId        = GetEmbeddedTextureName(texture);
+        string embId        = GetEmbeddedTextureName(texture, i);
 
         // Compressed.
         if (texture->mHeight == 0)

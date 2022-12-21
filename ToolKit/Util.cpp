@@ -400,6 +400,13 @@ namespace ToolKit
     return path;
   }
 
+  String GetFileName(const String& path)
+  {
+    char sep = GetPathSeparator();
+    int i    = (int) path.find_last_of(sep) + 1;
+    return path.substr(i);
+  }
+
   String CreatePathFromResourceType(const String& file, ResourceType type)
   {
     return GetResourcePath(type) + file;
@@ -709,6 +716,20 @@ namespace ToolKit
         ch = replace;
       }
     }
+  }
+
+  TK_API int CountChar(const String& str, const char chr)
+  {
+    int cnt = 0;
+    for (char c : str)
+    {
+      if (c == chr)
+      {
+        cnt++;
+      }
+    }
+
+    return cnt;
   }
 
   String ToLower(const String& str)

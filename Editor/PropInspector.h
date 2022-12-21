@@ -2,6 +2,7 @@
 
 #include "EditorViewport.h"
 #include "FolderWindow.h"
+#include "Pass.h"
 #include "UI.h"
 
 #include <functional>
@@ -10,7 +11,6 @@
 namespace ToolKit
 {
 
-  class SceneRenderPass;
   namespace Editor
   {
 
@@ -50,19 +50,32 @@ namespace ToolKit
       ~PreviewViewport();
       void Show() override;
       ScenePtr GetScene();
+      void ResetCamera();
       void ResizeWindow(uint width, uint height) override;
 
      private:
-      SceneRenderPass* m_renderPass;
-      Light* m_light;
-      float m_radius;
-      bool m_isLocked;
+      SceneRenderPass m_renderPass;
+      Light* m_light = nullptr;
     };
 
     typedef View* ViewRawPtr;
     typedef std::vector<ViewRawPtr> ViewRawPtrArray;
+
     class PropInspector : public Window
     {
+     public:
+      enum class ViewType
+      {
+        Entity,
+        Prefab,
+        CustomData,
+        Component,
+        Material,
+        Mesh,
+        RenderSettings,
+        ViewCount
+      };
+
      public:
       explicit PropInspector(XmlNode* node);
       PropInspector();
@@ -76,18 +89,8 @@ namespace ToolKit
 
      public:
       ViewRawPtrArray m_views;
-      enum class ViewType
-      {
-        Entity,
-        Prefab,
-        CustomData,
-        Component,
-        Material,
-        Mesh,
-        RenderSettings,
-        ViewCount
-      };
       ViewType m_activeView = ViewType::Entity;
     };
+
   } // namespace Editor
 } // namespace ToolKit
