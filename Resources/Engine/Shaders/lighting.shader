@@ -195,35 +195,32 @@
 			return 1.0;
 		}
 
-		float CalculatePointShadow(vec3 pos, int index)
+		float CalculatePointShadow(vec3 pos, vec3 lightPos, float shadowCameraFar, vec2 shadowAtlasCoord, float shadowAtlasResRatio,
+			float shadowAtlasLayer, int softShadows, int PCFSamples, float PCFRadius, float lightBleedReduction)
 		{
-			return 1.0;
-			/*
-			vec3 lightToFrag = pos - LightData.pos[index];
-			float currFragDepth = length(lightToFrag) / LightData.shadowMapCameraFar[index];
+			vec3 lightToFrag = pos - lightPos;
+			float currFragDepth = length(lightToFrag) / shadowCameraFar;
 
-			vec2 startCoord = LightData.shadowAtlasCoord[index];
-			float resRatio = LightData.shadowAtlasResRatio[index];
+			vec2 startCoord = shadowAtlasCoord;
+			float resRatio = shadowAtlasResRatio;
 
 			vec3 coord = UVWToUVLayer(lightToFrag);
 			coord.xy = startCoord + resRatio * coord.xy;
-			coord.z = LightData.shadowAtlasLayer[index] + coord.z;
+			coord.z = shadowAtlasLayer + coord.z;
 
-			if (LightData.softShadows[index] == 1)
+			if (softShadows == 1)
 			{
 				return PCFFilterShadow2D(s_texture8, coord, startCoord, startCoord + resRatio,
-				LightData.PCFSamples[index], LightData.PCFRadius[index] * resRatio, currFragDepth,
-				LightData.lightBleedingReduction[index]);
+				PCFSamples, PCFRadius * resRatio, currFragDepth, lightBleedReduction);
 			}
 			else
 			{
 				coord.xy = ClampTextureCoordinates(coord.xy, startCoord, startCoord + resRatio);
 				vec2 moments = texture(s_texture8, coord).xy;
-				return ChebyshevUpperBound(moments, currFragDepth, LightData.lightBleedingReduction[index]);
+				return ChebyshevUpperBound(moments, currFragDepth, lightBleedReduction);
 			}
 			
 			return 1.0;
-			*/
 		}
 
 		// Returns 0 or 1
@@ -322,7 +319,8 @@
 					bool maxShadowCheck = maxLights > lightCount;
 					if (maxShadowCheck && LightData.castShadow[i] == 1)
 					{
-						shadow = CalculatePointShadow(fragPos, i);
+						shadow = CalculatePointShadow(fragPos, LightData.pos[i], LightData.shadowMapCameraFar[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
+							LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i]);
 						lightCount += 1;
 					}
 				}
@@ -418,9 +416,18 @@
 				float intensity = PointLightIntensity(s_texture12, lightDataIndex, lightDataTextureWidth);
 				PointLightBlinnPhong(pos - fragPos, fragToEye, normal, col, radius, diffuse, specular);
 
-				irradiance += (diffuse + specular) * intensity;
+				float shadowCameraFar = PointLightShadowCameraFar(s_texture12, lightDataIndex, lightDataTextureWidth);
+				vec2 shadowAtlasCoord = PointLightShadowAtlasCoord(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float shadowAtlasResRatio = PointLightShadowAtlasResRatio(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float shadowAtlasLayer = PointLightShadowAtlasLayer(s_texture12, lightDataIndex, lightDataTextureWidth);
+				int softShadows = PointLightSoftShadows(s_texture12, lightDataIndex, lightDataTextureWidth);
+				int PCFSamples = PointLightPCFSamples(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float PCFRadius = PointLightPCFRadius(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float lightBleedReduction = PointLightBleedReduction(s_texture12, lightDataIndex, lightDataTextureWidth);
+				shadow = CalculatePointShadow(fragPos, pos, shadowCameraFar, shadowAtlasCoord, shadowAtlasResRatio, shadowAtlasLayer, softShadows,
+					PCFSamples, PCFRadius, lightBleedReduction);
 
-				// TODO shadows
+				irradiance += (diffuse + specular) * intensity * shadow;
 			}
 
 			// Point lights with no shadows

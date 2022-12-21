@@ -254,6 +254,55 @@
 			return ReadFloat(data, startingPoint + SpotLightBleedReducIndex, lightDataTextureWidth);
 		}
 
+		const float PointShadowCameraFarIndex = 5.0;
+		const float PointShadowAtlasCoordIndex = 6.0;
+		const float PointShadowAtlasLayerIndex = 7.0;
+		const float PointShadowAtlasResRatioIndex = 8.0;
+		const float PointSoftShadowsIndex = 9.0;
+		const float PointPCFSamplesIndex = 10.0;
+		const float PointPCFRadiusIndex = 11.0;
+		const float PointLightBleedReducIndex = 12.0;
+
+		float PointLightShadowCameraFar(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadFloat(data, startingPoint + PointShadowCameraFarIndex, lightDataTextureWidth);
+		}
+
+		vec2 PointLightShadowAtlasCoord(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadVec2(data, startingPoint + PointShadowAtlasCoordIndex, lightDataTextureWidth);
+		}
+
+		float PointLightShadowAtlasLayer(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadFloat(data, startingPoint + PointShadowAtlasLayerIndex, lightDataTextureWidth);
+		}
+
+		float PointLightShadowAtlasResRatio(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadFloat(data, startingPoint + PointShadowAtlasResRatioIndex, lightDataTextureWidth);
+		}
+
+		int PointLightSoftShadows(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadInt(data, startingPoint + PointSoftShadowsIndex, lightDataTextureWidth);
+		}
+
+		int PointLightPCFSamples(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadInt(data, startingPoint + PointPCFSamplesIndex, lightDataTextureWidth);
+		}
+
+		float PointLightPCFRadius(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadFloat(data, startingPoint + PointPCFRadiusIndex, lightDataTextureWidth);
+		}
+
+		float PointLightBleedReduction(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadFloat(data, startingPoint + PointLightBleedReducIndex, lightDataTextureWidth);
+		}
+
 	-->
 	</source>
 </shader>
