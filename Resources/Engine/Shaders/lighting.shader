@@ -411,6 +411,16 @@
 			{
 				vec3 diffuse = vec3(0.0);
 				vec3 specular = vec3(0.0);
+
+				vec3 col = PointLightColor(s_texture12, lightDataIndex, lightDataTextureWidth);
+				vec3 pos = PointLightPosition(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float radius = PointLightRadius(s_texture12, lightDataIndex, lightDataTextureWidth);
+				float intensity = PointLightIntensity(s_texture12, lightDataIndex, lightDataTextureWidth);
+				PointLightBlinnPhong(pos - fragPos, fragToEye, normal, col, radius, diffuse, specular);
+
+				irradiance += (diffuse + specular) * intensity;
+
+				// TODO shadows
 			}
 
 			// Point lights with no shadows
