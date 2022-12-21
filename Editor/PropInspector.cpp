@@ -187,31 +187,32 @@ namespace ToolKit
     PreviewViewport::PreviewViewport(uint width, uint height)
         : EditorViewport((float) width, (float) height)
     {
-      GetCamera()->m_node->Translate(Vec3(0, 0, 5));
-      DirectionComponentPtr directionComp =
-          GetCamera()->GetComponent<DirectionComponent>();
-      directionComp->LookAt(Vec3(0, 0, 0));
-      m_renderPass = new SceneRenderPass;
-
-      float intensity         = 1.5f;
       DirectionalLight* light = new DirectionalLight();
-      light->SetColorVal(Vec3(0.55f));
-      light->SetIntensityVal(intensity);
-      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
-      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
+      light->SetPCFRadiusVal(0.001f);
+      light->SetShadowResVal(1024.0f);
+      light->SetPCFSamplesVal(32);
+      light->SetLightBleedingReductionVal(0.1f);
+
+      light->SetColorVal(Vec3(1.0f));
+      light->SetIntensityVal(1.0f);
       light->SetCastShadowVal(true);
+
+      DirectionComponentPtr directionComp =
+          light->GetComponent<DirectionComponent>();
+
+      directionComp->Yaw(glm::radians(-20.0f));
+      directionComp->Pitch(glm::radians(-20.0f));
       m_light = light;
 
-      m_renderPass->m_params.Cam              = GetCamera();
-      m_renderPass->m_params.ClearFramebuffer = true;
-      m_renderPass->m_params.Lights           = {light};
-      m_renderPass->m_params.MainFramebuffer  = m_framebuffer;
-      m_renderPass->m_params.Scene            = std::make_shared<Scene>();
+      m_renderPass.m_params.Cam              = GetCamera();
+      m_renderPass.m_params.ClearFramebuffer = true;
+      m_renderPass.m_params.Lights           = {m_light};
+      m_renderPass.m_params.MainFramebuffer  = m_framebuffer;
+      m_renderPass.m_params.Scene            = std::make_shared<Scene>();
     }
 
     PreviewViewport::~PreviewViewport()
     {
-      SafeDel(m_renderPass);
       SafeDel(m_light);
     }
 
@@ -219,6 +220,7 @@ namespace ToolKit
     {
       RenderTargetPtr colorRT = m_framebuffer->GetAttachment(
           Framebuffer::Attachment::ColorAttachment0);
+
       if (colorRT == nullptr)
       {
         return;
@@ -228,13 +230,15 @@ namespace ToolKit
       HandleStates();
       DrawCommands();
 
-      for (Entity* ntt : m_renderPass->m_params.Scene->GetEntities())
+      EntityRawPtrArray& entities = GetScene()->AccessEntityArray();
+      for (Entity* ntt : entities)
       {
         MeshComponentPtr mc = ntt->GetMeshComponent();
         if (!mc)
         {
           continue;
         }
+
         if (ntt->GetVisibleVal())
         {
           mc->SetCastShadowVal(true);
@@ -244,8 +248,10 @@ namespace ToolKit
           mc->SetCastShadowVal(false);
         }
       }
-      m_renderPass->Render();
+
+      m_renderPass.Render();
       FramebufferSettings fbs = m_framebuffer->GetSettings();
+
       ImGui::Image(Convert2ImGuiTexture(colorRT),
                    ImVec2((float) fbs.width, (float) fbs.height),
                    ImVec2(0.0f, 0.0f),
@@ -254,7 +260,14 @@ namespace ToolKit
 
     ScenePtr PreviewViewport::GetScene()
     {
-      return m_renderPass->m_params.Scene;
+      return m_renderPass.m_params.Scene;
+    }
+
+    void PreviewViewport::ResetCamera()
+    {
+      Camera* cam = GetCamera();
+      cam->m_node->SetTranslation(Vec3(3.0f, 5.0f, 4.0f));
+      cam->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f));
     }
 
     // PropInspector
@@ -290,15 +303,15 @@ namespace ToolKit
       ImVec4 windowBg  = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
       ImVec4 childBg   = ImGui::GetStyleColorVec4(ImGuiCol_ChildBg);
       ImGuiStyle style = ImGui::GetStyle();
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
-                          ImVec2(2, style.ItemSpacing.y));
+                          ImVec2(2.0f, style.ItemSpacing.y));
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         HandleStates();
 
         const ImVec2 windowSize      = ImGui::GetWindowSize();
-        const ImVec2 sidebarIconSize = ImVec2(18, 18);
+        const ImVec2 sidebarIconSize = ImVec2(18.0f, 18.0f);
 
         // Show ViewType sidebar
         ImGui::GetStyle()    = style;
@@ -320,8 +333,7 @@ namespace ToolKit
             {
               ImGui::PushStyleColor(ImGuiCol_Button, childBg);
             }
-            if (ImGui::ImageButton(reinterpret_cast<void*>(
-                                       (intptr_t) view->m_viewIcn->m_textureId),
+            if (ImGui::ImageButton(Convert2ImGuiTexture(view->m_viewIcn),
                                    sidebarIconSize))
             {
               m_activeView = (ViewType) viewIndx;

@@ -358,7 +358,7 @@ namespace ToolKit
           0.23529413f, 0.24705884f, 0.25490198f, 0.00f};
       style->Colors[ImGuiCol_PopupBg] = {0.13f, 0.13f, 0.13f, 0.94f};
       style->Colors[ImGuiCol_Border]  = {
-           0.33333334f, 0.33333334f, 0.33333334f, 0.50f};
+          0.33333334f, 0.33333334f, 0.33333334f, 0.50f};
       style->Colors[ImGuiCol_BorderShadow] = {
           0.15686275f, 0.15686275f, 0.15686275f, 0.00f};
       style->Colors[ImGuiCol_FrameBg] = {
@@ -371,7 +371,7 @@ namespace ToolKit
       style->Colors[ImGuiCol_TitleBgCollapsed] = {0.16f, 0.29f, 0.48f, 1.00f};
       style->Colors[ImGuiCol_TitleBgActive]    = {0.00f, 0.00f, 0.00f, 0.51f};
       style->Colors[ImGuiCol_MenuBarBg]        = {
-                 0.27058825f, 0.28627452f, 0.2901961f, 0.80f};
+          0.27058825f, 0.28627452f, 0.2901961f, 0.80f};
       style->Colors[ImGuiCol_ScrollbarBg] = {
           0.27058825f, 0.28627452f, 0.2901961f, 0.60f};
       style->Colors[ImGuiCol_ScrollbarGrab] = {
@@ -385,7 +385,7 @@ namespace ToolKit
       style->Colors[ImGuiCol_SliderGrab]       = {0.70f, 0.70f, 0.70f, 0.62f};
       style->Colors[ImGuiCol_SliderGrabActive] = {0.30f, 0.30f, 0.30f, 0.84f};
       style->Colors[ImGuiCol_Button]           = {
-                    0.33333334f, 0.3529412f, 0.36078432f, 0.49f};
+          0.33333334f, 0.3529412f, 0.36078432f, 0.49f};
       style->Colors[ImGuiCol_ButtonHovered] = {
           0.21960786f, 0.30980393f, 0.41960788f, 1.00f};
       style->Colors[ImGuiCol_ButtonActive] = {
@@ -773,11 +773,16 @@ namespace ToolKit
       if (ImGui::BeginPopupModal(
               "Import", NULL, ImGuiWindowFlags_AlwaysAutoResize))
       {
-        ImGui::Text("Import file: \n\n");
+        String text;
+        ImGui::Text("Import File:");
         for (size_t i = 0; i < ImportData.Files.size(); i++)
         {
-          ImGui::Text("%s", ImportData.Files[i].c_str());
+          text = GetFileName(ImportData.Files[i]);
+          ImGui::Text(" %s\n\n", text.c_str());
         }
+
+        text = GetRelativeResourcePath(ImportData.ActiveView->GetPath());
+        ImGui::Text("Import Target: %s\n\n", text.c_str());
         ImGui::Separator();
 
         static StringArray fails;
@@ -810,7 +815,8 @@ namespace ToolKit
         String importFolder;
         if (!ImportData.ActiveView->m_currRoot)
         {
-          importFolder = ImportData.ActiveView->m_folder;
+          importFolder = ImportData.ActiveView->GetPath();
+          importFolder = GetRelativeResourcePath(importFolder);
           if (ImportData.SubDir.length())
           {
             importFolder += GetPathSeparatorAsStr();
@@ -840,8 +846,10 @@ namespace ToolKit
             }
             else
             {
-              g_app->m_statusMsg = "Textures should be dropped to a folder "
-                                   "from Textures resource folder";
+              g_app->m_statusMsg = "Drop discarded.";
+              GetLogger()->WriteConsole(LogType::Warning,
+                                        "File isn't imported because it's not "
+                                        "dropped onto Textures folder.");
             }
             ImportData.Files.erase(ImportData.Files.begin() + i);
           }

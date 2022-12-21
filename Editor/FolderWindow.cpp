@@ -382,7 +382,7 @@ namespace ToolKit
                 flipRenderTarget ? ImVec2(1.0f, -1.0f) : ImVec2(1.0f, 1.0f);
 
             // Draw Item Icon.
-            if (ImGui::ImageButton(reinterpret_cast<void*>((intptr_t) iconId),
+            if (ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
                                    m_iconSize,
                                    ImVec2(0.0f, 0.0f),
                                    texCoords))
@@ -455,18 +455,10 @@ namespace ToolKit
               {
                 ImGui::SetDragDropPayload(
                     "BrowserDragZone", &dirEnt, sizeof(DirectoryEntry));
-                ImGui::ImageButton(reinterpret_cast<void*>((intptr_t) iconId),
+                ImGui::ImageButton(ConvertUIntImGuiTexture(iconId),
                                    m_iconSize,
                                    ImVec2(0.0f, 0.0f),
                                    texCoords);
-                if (io.KeyShift)
-                {
-                  g_app->m_statusMsg = "Copy " + fullName;
-                }
-                else
-                {
-                  g_app->m_statusMsg = "Instantiate " + fullName;
-                }
                 ImGui::EndDragDropSource();
               }
               ImGui::PopStyleColor();
@@ -480,7 +472,7 @@ namespace ToolKit
 
             // Handle Item sub text.
             ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + m_iconSize.x);
-            size_t charLim = static_cast<size_t>(m_iconSize.x * 0.1f);
+            size_t charLim = size_t(m_iconSize.x * 0.1f);
             if (dirEnt.m_fileName.size() > charLim)
             {
               String shorten = dirEnt.m_fileName.substr(0, charLim) + "...";
@@ -600,12 +592,12 @@ namespace ToolKit
       }
 
       // Folder first, files next
-      for (int i = 0; i < static_cast<int>(m_temp_dirs.size()); i++)
+      for (int i = 0; i < (int) m_temp_dirs.size(); i++)
       {
         m_entries.push_back(m_temp_dirs[i]);
       }
 
-      for (int i = 0; i < static_cast<int>(m_temp_files.size()); i++)
+      for (int i = 0; i < (int) m_temp_files.size(); i++)
       {
         m_entries.push_back(m_temp_files[i]);
       }
@@ -613,7 +605,7 @@ namespace ToolKit
 
     int FolderView::Exist(const String& file, const String& ext)
     {
-      for (int i = 0; i < static_cast<int>(m_entries.size()); i++)
+      for (int i = 0; i < (int) m_entries.size(); i++)
       {
         if (m_entries[i].m_fileName == file && m_entries[i].m_ext == ext)
         {
@@ -679,11 +671,11 @@ namespace ToolKit
     float FolderView::GetThumbnailZoomPercent(float thumbnailZoom)
     {
       float percent = (thumbnailZoom * 0.36f) - 8.f;
-
       return percent;
     }
 
     typedef std::vector<FolderView*> FolderViewRawPtrArray;
+
     void FolderView::CreateItemActions()
     {
       auto getSameViewsFn = [](FolderView* thisView) -> FolderViewRawPtrArray {
@@ -975,7 +967,7 @@ namespace ToolKit
             else
             {
               MaterialManager* man = GetMaterialManager();
-              MaterialPtr mat      = man->GetCopyOfSolidMaterial();
+              MaterialPtr mat      = man->GetCopyOfDefaultMaterial();
               mat->m_name          = val;
               mat->SetFile(file);
               for (FolderView* view : views)
@@ -1186,6 +1178,10 @@ namespace ToolKit
         m_entries.clear();
       }
 
+      String resourceRoot = ResourcePath();
+      char pathSep        = GetPathSeparator();
+      int baseCount       = CountChar(resourceRoot, pathSep);
+
       for (const std::filesystem::directory_entry& entry :
            std::filesystem::directory_iterator(path))
       {
@@ -1193,6 +1189,8 @@ namespace ToolKit
         {
           FolderView view(this);
           String path = entry.path().u8string();
+          view.m_root = CountChar(path, pathSep) == baseCount + 1;
+          
           view.SetPath(path);
           if (!view.m_folder.compare("Engine"))
           {

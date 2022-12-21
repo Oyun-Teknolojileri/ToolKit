@@ -48,7 +48,7 @@
 			<Component t="3">
 				<PB>
 					<P t="13" name="Material" category="Material Component" priority="90" exposed="1" editable="1" hint.isColor="0" hint.isRanLim="0" hint.rangeMin="0.000000" hint.rangeMax="100.000000" hint.increment="0.100000">
-						<ResourceRef Type="3" File="ToolKit\missing.material"/>
+						<ResourceRef Type="3" File="ToolKit\default.material"/>
 					</P>
 				</PB>
 			</Component>

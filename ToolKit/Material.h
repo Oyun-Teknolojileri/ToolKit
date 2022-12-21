@@ -32,10 +32,12 @@ namespace ToolKit
 
    public:
     CubeMapPtr m_cubeMap;
-    TexturePtr m_diffuseTexture, m_emissiveTexture;
+    TexturePtr m_diffuseTexture;
+    TexturePtr m_emissiveTexture;
     ShaderPtr m_vertexShader;
     ShaderPtr m_fragmentShader;
-    Vec3 m_color, m_emissiveColor;
+    Vec3 m_color;
+    Vec3 m_emissiveColor;
     float m_alpha = 1.0f;
 
    private:
@@ -55,9 +57,7 @@ namespace ToolKit
     MaterialPtr GetCopyOfUnlitMaterial();
     MaterialPtr GetCopyOfUIMaterial();
     MaterialPtr GetCopyOfUnlitColorMaterial();
-    MaterialPtr GetCopyOfSolidMaterial();
     MaterialPtr GetCopyOfDefaultMaterial();
-    MaterialPtr GetCopyOfEmissiveMaterial();
   };
 
 } // namespace ToolKit

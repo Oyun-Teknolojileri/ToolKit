@@ -928,26 +928,39 @@ namespace ToolKit
 
       return false;
     }
+
     void App::ManageDropfile(const StringView& fileName)
     {
       UI::m_postponedActions.push_back([fileName]() -> void {
         const FolderWindowRawPtrArray& assetBrowsers =
             g_app->GetAssetBrowsers();
+
+        String log =
+            "File isn't imported because it's not dropped onto Asset Browser";
+
         for (FolderWindow* folderWindow : assetBrowsers)
         {
           if (folderWindow->MouseHovers())
           {
-            UI::ImportData.ActiveView = folderWindow->GetActiveView(true);
-            UI::ImportData.Files.push_back(fileName.data());
-            UI::ImportData.ShowImportWindow = true;
+            FolderView* activeView = folderWindow->GetActiveView(true);
+            if (activeView == nullptr)
+            {
+              log = "Activate a resource folder by selecting it from the Asset "
+                    "Browser.";
+            }
+            else
+            {
+              UI::ImportData.ActiveView = activeView;
+              UI::ImportData.Files.push_back(fileName.data());
+              UI::ImportData.ShowImportWindow = true;
+            }
           }
         }
+
         if (!UI::ImportData.ShowImportWindow)
         {
           g_app->m_statusMsg = "Drop discarded";
-          GetLogger()->WriteConsole(LogType::Warning,
-                                    "File isn't imported because it's not "
-                                    "dropped onto Asset Browser");
+          GetLogger()->WriteConsole(LogType::Warning, log.c_str());
         }
       });
     }
