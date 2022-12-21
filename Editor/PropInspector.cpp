@@ -7,6 +7,8 @@
 #include "CustomDataView.h"
 #include "EditorPass.h"
 #include "EntityView.h"
+#include "ImGui/imconfig.h"
+#include "ImGui/imgui_internal.h"
 #include "ImGui/imgui_stdlib.h"
 #include "MaterialView.h"
 #include "MeshView.h"
@@ -218,19 +220,16 @@ namespace ToolKit
 
     void PreviewViewport::Show()
     {
-      RenderTargetPtr colorRT = m_framebuffer->GetAttachment(
-          Framebuffer::Attachment::ColorAttachment0);
-
-      if (colorRT == nullptr)
+      if (m_needsResize)
       {
-        return;
+        OnResizeContentArea(m_size.x, m_size.y);
       }
 
-      ComitResize();
       HandleStates();
       DrawCommands();
 
-      EntityRawPtrArray& entities = GetScene()->AccessEntityArray();
+      m_renderPass.m_params.MainFramebuffer = m_framebuffer;
+      EntityRawPtrArray& entities           = GetScene()->AccessEntityArray();
       for (Entity* ntt : entities)
       {
         MeshComponentPtr mc = ntt->GetMeshComponent();
@@ -248,14 +247,25 @@ namespace ToolKit
           mc->SetCastShadowVal(false);
         }
       }
-
       m_renderPass.Render();
-      FramebufferSettings fbs = m_framebuffer->GetSettings();
 
-      ImGui::Image(Convert2ImGuiTexture(colorRT),
-                   ImVec2((float) fbs.width, (float) fbs.height),
-                   ImVec2(0.0f, 0.0f),
-                   ImVec2(1.0f, -1.0f));
+      // Render color attachment as rounded image
+      FramebufferSettings fbSettings = m_framebuffer->GetSettings();
+      Vec2 imageSize = Vec2(fbSettings.width, fbSettings.height);
+      Vec2 currentCursorPos =
+          Vec2(ImGui::GetCursorPos()) + Vec2(ImGui::GetWindowPos());
+      ImRect bb(currentCursorPos, currentCursorPos + imageSize);
+      ImGui::ItemSize(bb);
+      ImGui::ItemAdd(bb, 0);
+      ImGui::GetWindowDrawList()->AddImageRounded(
+          Convert2ImGuiTexture(m_framebuffer->GetAttachment(
+              Framebuffer::Attachment::ColorAttachment0)),
+          bb.Min,
+          bb.Max,
+          ImVec2(0.0f, 0.0f),
+          ImVec2(1.0f, -1.0f),
+          ImGui::GetColorU32(ImVec4(1, 1, 1, 1)),
+          5.0f);
     }
 
     ScenePtr PreviewViewport::GetScene()
@@ -268,6 +278,13 @@ namespace ToolKit
       Camera* cam = GetCamera();
       cam->m_node->SetTranslation(Vec3(3.0f, 5.0f, 4.0f));
       cam->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f));
+    }
+    void PreviewViewport::ResizeWindow(uint width, uint height)
+    {
+      if (width != m_size.x || height != m_size.y)
+      {
+        EditorViewport::ResizeWindow(width, height);
+      }
     }
 
     // PropInspector
@@ -306,7 +323,8 @@ namespace ToolKit
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
                           ImVec2(2.0f, style.ItemSpacing.y));
-      if (ImGui::Begin(m_name.c_str(), &m_visible))
+      if (ImGui::Begin(
+              m_name.c_str(), &m_visible, ImGuiWindowFlags_NoScrollWithMouse))
       {
         HandleStates();
 

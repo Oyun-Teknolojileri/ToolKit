@@ -51,6 +51,7 @@ namespace ToolKit
       void Show() override;
       ScenePtr GetScene();
       void ResetCamera();
+      void ResizeWindow(uint width, uint height) override;
 
      private:
       SceneRenderPass m_renderPass;

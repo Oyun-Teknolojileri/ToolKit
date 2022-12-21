@@ -139,26 +139,27 @@ namespace ToolKit
       if (ImGui::CollapsingHeader("Material Preview",
                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
-        ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - 300.0f) /
-                             2.0f);
-
+        static const ImVec2 iconSize = ImVec2(16.0f, 16.0f);
+        const ImVec2 spacing         = ImGui::GetStyle().ItemSpacing;
         UpdatePreviewScene();
-
         if (UI::ImageButtonDecorless(
-                UI::m_cameraIcon->m_textureId, Vec2(16.0f), false))
+                UI::m_cameraIcon->m_textureId, iconSize, false))
         {
           ResetCamera();
         }
 
         ImGui::SameLine();
+        const ImVec2 viewportSize = ImVec2(ImGui::GetContentRegionAvail().x -
+                                               iconSize.x - 5.0 * spacing.x,
+                                           150.0f);
+        m_viewport->ResizeWindow(viewportSize.x, viewportSize.y);
         m_viewport->Update(g_app->GetDeltaTime());
         m_viewport->Show();
         ImGui::SameLine();
         ImGui::BeginGroup();
 
         auto setIconFn = [this](TexturePtr icon, uint id) -> void {
-          if (ImGui::ImageButton(Convert2ImGuiTexture(icon),
-                                 ImVec2(16.0f, 16.0f)))
+          if (ImGui::ImageButton(Convert2ImGuiTexture(icon), iconSize))
           {
             m_activeObjectIndx = id;
             m_isMeshChanged    = true;
