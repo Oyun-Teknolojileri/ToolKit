@@ -357,8 +357,8 @@ namespace ToolKit
                            view->m_viewName.data());
             ImGui::PopStyleColor(1);
           }
-          ImGui::EndChildFrame();
         }
+        ImGui::EndChildFrame();
 
         ImGui::SameLine();
 
@@ -367,8 +367,8 @@ namespace ToolKit
                 Vec2(windowSize.x - sidebarSize.x - spacing.x, windowSize.y)))
         {
           m_views[(uint) m_activeView]->Show();
-          ImGui::EndChild();
         }
+        ImGui::EndChild();
       }
       ImGui::End();
       ImGui::PopStyleVar(2);
