@@ -160,16 +160,6 @@ namespace ToolKit
     {
       m_renderState.cubeMap = false;
     }
-    if (m_fragmentShader)
-    {
-      for (Uniform u : m_fragmentShader->m_uniforms)
-      {
-        if (u == Uniform::EMISSIVE_COLOR)
-        {
-          m_renderState.useForwardPath = true;
-        }
-      }
-    }
 
     return &m_renderState;
   }
