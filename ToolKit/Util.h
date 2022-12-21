@@ -62,6 +62,7 @@ namespace ToolKit
   TK_API void DosifyPath(String& path);
   TK_API String ConcatPaths(const StringArray& entries);
   TK_API String GetRelativeResourcePath(const String& path);
+  TK_API String GetFileName(const String& path);
 
   enum class ResourceType;
   TK_API String CreatePathFromResourceType(const String& file,

@@ -400,6 +400,13 @@ namespace ToolKit
     return path;
   }
 
+  String GetFileName(const String& path)
+  {
+    char sep = GetPathSeparator();
+    int i    = path.find_last_of(sep) + 1;
+    return path.substr(i);
+  }
+
   String CreatePathFromResourceType(const String& file, ResourceType type)
   {
     return GetResourcePath(type) + file;
