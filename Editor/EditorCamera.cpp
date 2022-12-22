@@ -5,6 +5,7 @@
 #include "Primative.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
+#include "App.h"
 
 #include <memory>
 
@@ -15,13 +16,17 @@ namespace ToolKit
   namespace Editor
   {
 
-    EditorCamera::EditorCamera() { CreateGizmo(); }
+    EditorCamera::EditorCamera()
+    {
+      CreateGizmo();
+      ParameterConstructor();
+    }
 
     EditorCamera::EditorCamera(const EditorCamera* cam)
     {
       cam->CopyTo(this);
-
       CreateGizmo();
+      ParameterConstructor();
     }
 
     EditorCamera::~EditorCamera() {}
@@ -103,6 +108,33 @@ namespace ToolKit
       AddComponent(new MeshComponent());
       GetMeshComponent()->SetCastShadowVal(false);
       GenerateFrustum();
+    }
+
+    void EditorCamera::ParameterConstructor()
+    {
+      Poses_Define(
+          [this]() -> void
+          {
+            if (Viewport* av = g_app->GetViewport(g_3dViewport))
+            {
+              if (m_posessed) 
+              {
+                av->AttachCamera(NULL_HANDLE);
+                ParamPoses().m_name = "Poses";
+              }
+              else 
+              {
+                av->AttachCamera(GetIdVal());
+                ParamPoses().m_name = "Free";
+              }
+
+              m_posessed = !m_posessed;
+            }
+          },
+          CameraCategory.Name,
+          CameraCategory.Priority,
+          true,
+          true);
     }
 
   } // namespace Editor

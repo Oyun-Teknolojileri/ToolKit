@@ -70,6 +70,16 @@
 namespace ToolKit
 {
 
+  /**
+   * Functions can be registered with variant and can be accessed within the
+   * Framework. Functions are not serialized they have to be constructed in the
+   * appropriate constructors.
+   */
+  typedef std::function<void()> VariantCallback;
+
+  /**
+   * Variant types.
+   */
   typedef std::variant<bool,
                        byte,
                        ubyte,
@@ -87,9 +97,14 @@ namespace ToolKit
                        MaterialPtr,
                        HdriPtr,
                        AnimRecordPtrMap,
-                       SkeletonPtr>
+                       SkeletonPtr,
+                       VariantCallback>
       Value;
 
+  /**
+   * Value change function callback. When the Variant value has changed, all the
+   * registered callbacks are called with old and new values of the parameter.
+   */
   typedef std::function<void(Value& oldVal, Value& newVal)> ValueUpdateFn;
 
   struct UIHint
@@ -175,7 +190,8 @@ namespace ToolKit
       Vec2,
       HdriPtr,
       AnimRecordPtrMap,
-      SkeletonPtr
+      SkeletonPtr,
+      VariantCallback
     };
 
     /**
@@ -293,6 +309,11 @@ namespace ToolKit
      * Constructs SkeletonPtr type variant.
      */
     explicit ParameterVariant(const SkeletonPtr& var);
+
+    /**
+     * Constructs CallbackFn type variant.
+     */
+    ParameterVariant(const VariantCallback& var);
 
     /**
      * Used to retrieve VariantType of the variant.
@@ -434,6 +455,11 @@ namespace ToolKit
      * Assign a SkeletonPtr to the value of the variant.
      */
     ParameterVariant& operator=(const SkeletonPtr& var);
+
+    /**
+     * Assign a CallbackFn to the value of the variant.
+     */
+    ParameterVariant& operator=(const VariantCallback& var);
 
     /**
      * Serializes the variant to the xml document.

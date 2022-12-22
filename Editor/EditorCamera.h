@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Camera.h"
+#include "ParameterBlock.h"
 
 namespace ToolKit
 {
@@ -16,8 +17,15 @@ namespace ToolKit
       Entity* Copy() const override;
       void GenerateFrustum();
 
+     public:
+      TKDeclareParam(VariantCallback, Poses);
+
      private:
       void CreateGizmo();
+      void ParameterConstructor();
+
+     private:
+      bool m_posessed = false;
     };
 
   } // namespace Editor
