@@ -94,6 +94,11 @@ namespace ToolKit
 
   ParameterVariant::ParameterVariant(const SkeletonPtr& var) { *this = var; }
 
+  ParameterVariant::ParameterVariant(const VariantCallback& var)
+  {
+    *this  = var;
+  }
+
   ParameterVariant::VariantType ParameterVariant::GetType() const
   {
     return m_type;
@@ -235,6 +240,13 @@ namespace ToolKit
   ParameterVariant& ParameterVariant::operator=(const SkeletonPtr& var)
   {
     m_type = VariantType::SkeletonPtr;
+    AsignVal(var);
+    return *this;
+  }
+
+  ParameterVariant& ParameterVariant::operator=(const VariantCallback& var)
+  {
+    m_type = VariantType::VariantCallback;
     AsignVal(var);
     return *this;
   }
@@ -417,6 +429,8 @@ namespace ToolKit
       GetCVar<SkeletonPtr>()->SerializeRef(doc, node);
     }
     break;
+    case VariantType::VariantCallback:
+      break;
     default:
       assert(false && "Invalid type.");
       break;
@@ -643,6 +657,8 @@ namespace ToolKit
       }
     }
     break;
+    case VariantType::VariantCallback:
+      break;
     default:
       assert(false && "Invalid type.");
       break;
