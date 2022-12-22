@@ -4,6 +4,8 @@
 	<uniform name = "Color" />
 	<uniform name = "useAlphaMask" />
 	<uniform name = "alphaMaskTreshold" />
+	<uniform name = "emissiveColor" />
+	<uniform name = "emissiveTextureInUse" />
 	<source>
 	<!--
 		#version 300 es
@@ -16,13 +18,17 @@
 		layout (location = 0) out vec3 fragPosition;
 		layout (location = 1) out vec3 fragNormal;
 		layout (location = 2) out vec3 fragColor;
+		layout (location = 3) out vec3 fragEmissive;
 
 		uniform int DiffuseTextureInUse;
 		uniform sampler2D s_texture0;
+		uniform sampler2D s_texture1;
 		uniform vec4 Color;
+		uniform vec3 emissiveColor;
 
 		uniform int useAlphaMask;
 		uniform float alphaMaskTreshold;
+		uniform int emissiveTextureInUse;
 
 		void main()
 		{
@@ -42,6 +48,13 @@
 				{
 					discard;
 				}
+			}
+
+			if(emissiveTextureInUse == 1){
+				fragEmissive = texture(s_texture1, v_texture).rgb;
+			}
+			else{
+				fragEmissive = emissiveColor;
 			}
 
 		  fragPosition = v_pos;

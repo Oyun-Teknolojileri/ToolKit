@@ -1077,10 +1077,16 @@ namespace ToolKit
       return;
     }
 
+    // Set to minimum iteration count
+    Vec2 mainRes = UVec2(mainRt->m_width, mainRt->m_height);
+    const IVec2 maxIterCounts(glm::log2(mainRes) - 1.0f);
+    m_params.iterationCount =
+        glm::min(m_params.iterationCount,
+                 glm::min(maxIterCounts.x, maxIterCounts.y));
+
     m_tempTextures.resize(m_params.iterationCount + 1);
     m_tempFrameBuffers.resize(m_params.iterationCount + 1);
 
-    UVec2 mainRes = UVec2(mainRt->m_width, mainRt->m_height);
     for (int i = 0; i < m_params.iterationCount + 1; i++)
     {
       const Vec2 factor(1.0f / glm::pow(2.0f, float(i)));
@@ -1090,9 +1096,6 @@ namespace ToolKit
       if (curRes.x == 1 || curRes.y == 1)
       {
         m_invalidRenderParams = true;
-        GetLogger()->WriteConsole(
-            LogType::Warning,
-            "Bloom iteration count is more than supported");
         return;
       }
 
@@ -1351,6 +1354,8 @@ namespace ToolKit
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
     m_gColorRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    m_gEmissiveRt =
+        std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
     m_framebuffer     = std::make_shared<Framebuffer>();
 
     m_gBufferMaterial = std::make_shared<Material>();
@@ -1375,15 +1380,18 @@ namespace ToolKit
 
     // Gbuffers render targets
     m_framebuffer->Init({(uint) width, (uint) height, 0, false, true});
-    m_gPosRt->m_width     = width;
-    m_gPosRt->m_height    = height;
-    m_gNormalRt->m_width  = width;
-    m_gNormalRt->m_height = height;
-    m_gColorRt->m_width   = width;
-    m_gColorRt->m_height  = height;
+    m_gPosRt->m_width       = width;
+    m_gPosRt->m_height      = height;
+    m_gNormalRt->m_width    = width;
+    m_gNormalRt->m_height   = height;
+    m_gColorRt->m_width     = width;
+    m_gColorRt->m_height    = height;
+    m_gEmissiveRt->m_width  = width;
+    m_gEmissiveRt->m_height = height;
     m_gPosRt->Init();
     m_gNormalRt->Init();
     m_gColorRt->Init();
+    m_gEmissiveRt->Init();
 
     if (!m_attachmentsSet)
     {
@@ -1393,6 +1401,8 @@ namespace ToolKit
                                    m_gNormalRt);
       m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment2,
                                    m_gColorRt);
+      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment3,
+                                   m_gEmissiveRt);
       m_attachmentsSet = true;
     }
 
@@ -1420,6 +1430,7 @@ namespace ToolKit
     m_gPosRt->UnInit();
     m_gNormalRt->UnInit();
     m_gColorRt->UnInit();
+    m_gEmissiveRt->UnInit();
 
     m_initialized = false;
   }
@@ -1454,10 +1465,12 @@ namespace ToolKit
 
       m_gBufferMaterial->SetRenderState(mat->GetRenderState());
       m_gBufferMaterial->UnInit();
-      m_gBufferMaterial->m_diffuseTexture = mat->m_diffuseTexture;
-      m_gBufferMaterial->m_cubeMap        = mat->m_cubeMap;
-      m_gBufferMaterial->m_color          = mat->m_color;
-      m_gBufferMaterial->m_alpha          = mat->m_alpha;
+      m_gBufferMaterial->m_diffuseTexture  = mat->m_diffuseTexture;
+      m_gBufferMaterial->m_emissiveTexture = mat->m_emissiveTexture;
+      m_gBufferMaterial->m_emissiveColor   = mat->m_emissiveColor;
+      m_gBufferMaterial->m_cubeMap         = mat->m_cubeMap;
+      m_gBufferMaterial->m_color           = mat->m_color;
+      m_gBufferMaterial->m_alpha           = mat->m_alpha;
       m_gBufferMaterial->Init();
       renderer->m_overrideMat = m_gBufferMaterial;
 
@@ -1564,8 +1577,13 @@ namespace ToolKit
         m_params.GBufferFramebuffer
             ->GetAttachment(Framebuffer::Attachment::ColorAttachment2)
             ->m_textureId);
+    renderer->SetTexture(
+        12,
+        m_params.GBufferFramebuffer
+            ->GetAttachment(Framebuffer::Attachment::ColorAttachment3)
+            ->m_textureId);
 
-    renderer->SetTexture(12, m_lightDataTexture->m_textureId);
+    renderer->SetTexture(13, m_lightDataTexture->m_textureId);
 
     if (m_params.AOTexture)
     {
