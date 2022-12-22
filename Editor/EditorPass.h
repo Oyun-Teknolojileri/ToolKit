@@ -34,6 +34,36 @@ namespace ToolKit
       Camera* m_camera            = nullptr;
     };
 
+    struct SingleMatSceneRenderPassParams
+    {
+      ForwardRenderPassParams ForwardParams;
+      ShaderPtr OverrideFragmentShader;
+    };
+
+    // Render whole scene in forward renderer with a single override material
+    struct SingleMatSceneRenderPass : public Pass
+    {
+     public:
+      SingleMatSceneRenderPass();
+      explicit SingleMatSceneRenderPass(const SingleMatSceneRenderPassParams& params);
+
+      void Render() override;
+      void PreRender() override;
+
+     public:
+      SingleMatSceneRenderPassParams m_params;
+
+     private:
+      /**
+       * Override material for EditorLitMode::LightComplexity.
+       */
+      MaterialPtr m_overrideMat = nullptr;
+
+      ForwardRenderPassPtr m_forwardPass    = nullptr;
+    };
+
+    typedef std::shared_ptr<SingleMatSceneRenderPass> LightComplexityPassPtr;
+
     /**
      * Enumeration for available render modes for the editor.
      */
@@ -110,10 +140,6 @@ namespace ToolKit
        */
       Node* m_lightNode                     = nullptr;
       /**
-       * Override material for EditorLitMode::LightComplexity.
-       */
-      MaterialPtr m_lightComplexityOverride = nullptr;
-      /**
        * Override material for EditorLitMode::Unlit.
        */
       MaterialPtr m_unlitOverride           = nullptr;
@@ -125,6 +151,7 @@ namespace ToolKit
       GammaPass m_gammaPass;
       BloomPass m_bloomPass;
       OutlinePass m_outlinePass;
+      SingleMatSceneRenderPass m_singleMatRenderer;
       Camera* m_camera = nullptr;
 
       /**
