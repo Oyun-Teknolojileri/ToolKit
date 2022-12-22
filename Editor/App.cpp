@@ -871,8 +871,7 @@ namespace ToolKit
                 fullPath = AnimationPath(line);
               }
 
-              if (ext == PNG || ext == JPG || ext == JPEG || ext == TGA ||
-                  ext == BMP || ext == PSD)
+              if (SupportedImageFormat(ext))
               {
                 fullPath = TexturePath(line);
               }

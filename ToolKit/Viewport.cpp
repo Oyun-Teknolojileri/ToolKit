@@ -37,13 +37,14 @@ namespace ToolKit
   {
     SafeDel(m_camera);
     m_camera         = cam;
-    m_attachedCamera = cam->GetIdVal();
+    m_attachedCamera = NULL_HANDLE;
   }
 
   ViewportBase::ViewportBase()
   {
     m_camera     = new Camera();
     m_viewportId = GetHandleManager()->GetNextHandle();
+    m_attachedCamera = NULL_HANDLE;
   }
 
   ViewportBase::~ViewportBase() { SafeDel(m_camera); }

@@ -13,11 +13,11 @@
 #include "Node.h"
 #include "OverlayUI.h"
 #include "PopupWindows.h"
+#include "Prefab.h"
 #include "Primative.h"
 #include "Renderer.h"
 #include "SDL.h"
 #include "Util.h"
-#include "Prefab.h"
 
 #include <algorithm>
 
@@ -119,7 +119,7 @@ namespace ToolKit
       }
 
       // Update viewport mods.
-      FpsNavigationMode(deltaTime);
+      FpsNavigationMod(deltaTime);
       OrbitPanMod(deltaTime);
     }
 
@@ -375,10 +375,16 @@ namespace ToolKit
       m_drawCommands.clear();
     }
 
-    void EditorViewport::FpsNavigationMode(float deltaTime)
+    void EditorViewport::FpsNavigationMod(float deltaTime)
     {
       Camera* cam = GetCamera();
-      if (cam && !cam->IsOrtographic())
+      if (cam == nullptr)
+      {
+        return;
+      }
+
+      // Allow user camera to fps navigate even in orthographic mod.
+      if (m_attachedCamera != NULL_HANDLE || !cam->IsOrtographic())
       {
         // Mouse is right clicked
         if (ImGui::IsMouseDown(ImGuiMouseButton_Right))
@@ -609,10 +615,14 @@ namespace ToolKit
 
       if (cam->IsOrtographic())
       {
-        // Magic zoom.
-        Camera::CamData dat      = cam->GetData();
-        float dist               = glm::distance(ZERO, dat.pos);
-        cam->m_orthographicScale = dist / 600.0f;
+        // Don't allow user camera to have magic zoom.
+        if (m_attachedCamera == NULL_HANDLE)
+        {
+          // Magic zoom.
+          Camera::CamData dat      = cam->GetData();
+          float dist               = glm::distance(ZERO, dat.pos);
+          cam->m_orthographicScale = dist / 600.0f;
+        }
       }
     }
 
@@ -709,8 +719,7 @@ namespace ToolKit
             if (pd.entity != nullptr && pd.entity->IsDrawable())
             {
               // If there is a mesh component, update material component.
-              bool notPrefab =
-                  Prefab::GetPrefabRoot(pd.entity) == nullptr;
+              bool notPrefab = Prefab::GetPrefabRoot(pd.entity) == nullptr;
 
               bool hasMesh =
                   pd.entity->GetComponent<MeshComponent>() != nullptr;
@@ -755,7 +764,6 @@ namespace ToolKit
               {
                 g_app->m_statusMsg = "Failed. Target is Prefab.";
               }
-
             }
           }
         }
