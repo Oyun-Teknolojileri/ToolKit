@@ -15,9 +15,9 @@ namespace ToolKit
 
     MaterialView::MaterialView() : View("Material View")
     {
-      m_viewID   = 3;
-      m_viewIcn  = UI::m_materialIcon;
-      m_viewport = new PreviewViewport(300u, 150u);
+      m_viewID              = 3;
+      m_viewIcn             = UI::m_materialIcon;
+      m_viewport            = new PreviewViewport(300u, 150u);
 
       // Initialize ground entity
       MaterialPtr groundMat = GetMaterialManager()->GetCopyOfDefaultMaterial();
@@ -52,20 +52,11 @@ namespace ToolKit
       ResetCamera();
     }
 
-    MaterialView::~MaterialView()
-    {
-      SafeDel(m_viewport);
-    }
+    MaterialView::~MaterialView() { SafeDel(m_viewport); }
 
-    void MaterialView::SetMaterial(MaterialPtr mat)
-    {
-      m_mat = mat;
-    }
+    void MaterialView::SetMaterial(MaterialPtr mat) { m_mat = mat; }
 
-    void MaterialView::ResetCamera()
-    {
-      m_viewport->ResetCamera();
-    }
+    void MaterialView::ResetCamera() { m_viewport->ResetCamera(); }
 
     void MaterialView::UpdatePreviewScene()
     {
@@ -142,8 +133,9 @@ namespace ToolKit
         static const ImVec2 iconSize = ImVec2(16.0f, 16.0f);
         const ImVec2 spacing         = ImGui::GetStyle().ItemSpacing;
         UpdatePreviewScene();
-        if (UI::ImageButtonDecorless(
-                UI::m_cameraIcon->m_textureId, iconSize, false))
+        if (UI::ImageButtonDecorless(UI::m_cameraIcon->m_textureId,
+                                     iconSize,
+                                     false))
         {
           ResetCamera();
         }
@@ -158,7 +150,8 @@ namespace ToolKit
         ImGui::SameLine();
         ImGui::BeginGroup();
 
-        auto setIconFn = [this](TexturePtr icon, uint id) -> void {
+        auto setIconFn = [this](TexturePtr icon, uint id) -> void
+        {
           if (ImGui::ImageButton(Convert2ImGuiTexture(icon), iconSize))
           {
             m_activeObjectIndx = id;
@@ -173,7 +166,8 @@ namespace ToolKit
         ImGui::EndGroup();
       }
 
-      auto updateThumbFn = [this]() -> void {
+      auto updateThumbFn = [this]() -> void
+      {
         DirectoryEntry dirEnt(m_mat->GetFile());
         g_app->m_thumbnailCache.erase(m_mat->GetFile());
 
@@ -186,7 +180,8 @@ namespace ToolKit
         ImGui::LabelText("##vertShader", "Vertex Shader: ");
         DropZone(UI::m_codeIcon->m_textureId,
                  m_mat->m_vertexShader->GetFile(),
-                 [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
+                 [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                 {
                    if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
                    {
                      g_app->m_statusMsg = "Failed. Shader expected.";
@@ -201,7 +196,8 @@ namespace ToolKit
         ImGui::LabelText("##fragShader", "Fragment Shader: ");
         DropZone(UI::m_codeIcon->m_textureId,
                  m_mat->m_fragmentShader->GetFile(),
-                 [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
+                 [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                 {
                    m_mat->m_fragmentShader =
                        GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
                    m_mat->m_fragmentShader->Init();
@@ -220,7 +216,8 @@ namespace ToolKit
 
         DropZone(UI::m_imageIcon->m_textureId,
                  target,
-                 [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
+                 [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                 {
                    m_mat->m_diffuseTexture =
                        GetTextureManager()->Create<Texture>(
                            dirEnt.GetFullPath());
@@ -243,7 +240,8 @@ namespace ToolKit
             DropZone(
                 UI::m_imageIcon->m_textureId,
                 target,
-                [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void {
+                [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                {
                   m_mat->m_emissiveTexture =
                       GetTextureManager()->Create<Texture>(
                           dirEnt.GetFullPath());
@@ -254,8 +252,9 @@ namespace ToolKit
             if (m_mat->m_emissiveTexture)
             {
               ImGui::SameLine();
-              if (UI::ImageButtonDecorless(
-                      UI::m_closeIcon->m_textureId, Vec2(16.0f, 16.0f), false))
+              if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
+                                           Vec2(16.0f, 16.0f),
+                                           false))
               {
                 m_mat->m_emissiveTexture = nullptr;
               }
@@ -268,8 +267,9 @@ namespace ToolKit
                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
         Vec4 col = Vec4(m_mat->m_color, m_mat->m_alpha);
-        if (ImGui::ColorEdit4(
-                "Material Color##1", &col.x, ImGuiColorEditFlags_NoLabel))
+        if (ImGui::ColorEdit4("Material Color##1",
+                              &col.x,
+                              ImGuiColorEditFlags_NoLabel))
         {
           m_mat->m_color = col.xyz;
           m_mat->m_alpha = col.a;
@@ -302,8 +302,9 @@ namespace ToolKit
         }
 
         int blendMode = (int) m_mat->GetRenderState()->blendFunction;
-        if (ImGui::Combo(
-                "Blend mode", &blendMode, "None\0Alpha Blending\0Alpha Mask"))
+        if (ImGui::Combo("Blend mode",
+                         &blendMode,
+                         "None\0Alpha Blending\0Alpha Mask"))
         {
           m_mat->GetRenderState()->blendFunction = (BlendFunction) blendMode;
           m_mat->m_dirty                         = true;

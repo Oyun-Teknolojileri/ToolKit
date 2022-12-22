@@ -80,10 +80,7 @@ namespace ToolKit
       ImGui::PopStyleColor();
     }
 
-    Window::Type EditorViewport2d::GetType() const
-    {
-      return Type::Viewport2d;
-    }
+    Window::Type EditorViewport2d::GetType() const { return Type::Viewport2d; }
 
     void EditorViewport2d::Update(float deltaTime)
     {
@@ -173,9 +170,9 @@ namespace ToolKit
     {
       Vec3 screenPoint = Vec3(pnt, 0.0f);
 
-      Camera* cam  = GetCamera();
-      Mat4 view    = cam->GetViewMatrix();
-      Mat4 project = cam->GetProjectionMatrix();
+      Camera* cam      = GetCamera();
+      Mat4 view        = cam->GetViewMatrix();
+      Mat4 project     = cam->GetProjectionMatrix();
 
       return glm::unProject(screenPoint,
                             view,
@@ -201,13 +198,13 @@ namespace ToolKit
     void EditorViewport2d::UpdateContentArea()
     {
       // Content area size
-      m_contentAreaMin = ImGui::GetWindowContentRegionMin();
-      m_contentAreaMax = ImGui::GetWindowContentRegionMax();
+      m_contentAreaMin        = ImGui::GetWindowContentRegionMin();
+      m_contentAreaMax        = ImGui::GetWindowContentRegionMax();
 
-      m_contentAreaMin.x += ImGui::GetWindowPos().x;
-      m_contentAreaMin.y += ImGui::GetWindowPos().y;
-      m_contentAreaMax.x += ImGui::GetWindowPos().x;
-      m_contentAreaMax.y += ImGui::GetWindowPos().y;
+      m_contentAreaMin.x      += ImGui::GetWindowPos().x;
+      m_contentAreaMin.y      += ImGui::GetWindowPos().y;
+      m_contentAreaMax.x      += ImGui::GetWindowPos().x;
+      m_contentAreaMax.y      += ImGui::GetWindowPos().y;
 
       m_contentAreaLocation.x = m_contentAreaMin.x;
       m_contentAreaLocation.y = m_contentAreaMin.y;
@@ -216,7 +213,7 @@ namespace ToolKit
           Vec2(glm::abs(m_contentAreaMax.x - m_contentAreaMin.x),
                glm::abs(m_contentAreaMax.y - m_contentAreaMin.y));
 
-      m_canvasSize = m_wndContentAreaSize;
+      m_canvasSize           = m_wndContentAreaSize;
 
       ImGuiIO& io            = ImGui::GetIO();
       ImVec2 absMousePos     = io.MousePos;
@@ -268,7 +265,7 @@ namespace ToolKit
                                      ImGuiWindowFlags_AlwaysUseWindowPadding);
           m_canvasPos = ImGui::GetWindowPos();
 
-          uint texId = 0;
+          uint texId  = 0;
           if (m_framebuffer->GetAttachment(
                   Framebuffer::Attachment::ColorAttachment0) != nullptr)
           {
@@ -295,8 +292,9 @@ namespace ToolKit
           // Draw borders.
           if (IsActive())
           {
-            ImGui::GetWindowDrawList()->AddRect(
-                m_contentAreaMin, m_contentAreaMax, IM_COL32(255, 255, 0, 255));
+            ImGui::GetWindowDrawList()->AddRect(m_contentAreaMin,
+                                                m_contentAreaMax,
+                                                IM_COL32(255, 255, 0, 255));
           }
           else
           {
@@ -336,19 +334,22 @@ namespace ToolKit
           {
             MultiChoiceWindow::ButtonInfo openButton;
             openButton.m_name     = "Open";
-            openButton.m_callback = [entry]() -> void {
+            openButton.m_callback = [entry]() -> void
+            {
               String fullPath = entry.GetFullPath();
               g_app->OpenScene(fullPath);
             };
             MultiChoiceWindow::ButtonInfo linkButton;
             linkButton.m_name     = "Link";
-            linkButton.m_callback = [entry]() -> void {
+            linkButton.m_callback = [entry]() -> void
+            {
               String fullPath = entry.GetFullPath();
               GetSceneManager()->GetCurrentScene()->LinkPrefab(fullPath);
             };
             MultiChoiceWindow::ButtonInfo mergeButton;
             mergeButton.m_name     = "Merge";
-            mergeButton.m_callback = [entry]() -> void {
+            mergeButton.m_callback = [entry]() -> void
+            {
               String fullPath = entry.GetFullPath();
               g_app->MergeScene(fullPath);
             };
@@ -443,9 +444,9 @@ namespace ToolKit
       if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
       {
         // Orbit around it.
-        ImGuiIO& io = ImGui::GetIO();
-        float x     = -io.MouseDelta.x * cam->m_orthographicScale;
-        float y     = io.MouseDelta.y * cam->m_orthographicScale;
+        ImGuiIO& io   = ImGui::GetIO();
+        float x       = -io.MouseDelta.x * cam->m_orthographicScale;
+        float y       = io.MouseDelta.y * cam->m_orthographicScale;
 
         Vec3 displace = X_AXIS * x + Y_AXIS * y;
         cam->m_node->Translate(displace, TransformationSpace::TS_WORLD);

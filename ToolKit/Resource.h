@@ -44,6 +44,7 @@ namespace ToolKit
       }
       return resource;
     }
+
     virtual ResourceType GetType() const;
     virtual void Serialize(XmlDocument* doc, XmlNode* parent) const;
     virtual void DeSerialize(XmlDocument* doc, XmlNode* parent);

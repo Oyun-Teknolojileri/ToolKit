@@ -28,10 +28,7 @@ namespace ToolKit
     m_initiated = true;
   }
 
-  Texture::~Texture()
-  {
-    UnInit();
-  }
+  Texture::~Texture() { UnInit(); }
 
   void Texture::Load()
   {
@@ -42,16 +39,22 @@ namespace ToolKit
 
     if (m_floatFormat)
     {
-      if ((m_imagef = GetFileManager()->GetHdriFile(
-               GetFile().c_str(), &m_width, &m_height, &m_bytePP, 3)))
+      if ((m_imagef = GetFileManager()->GetHdriFile(GetFile().c_str(),
+                                                    &m_width,
+                                                    &m_height,
+                                                    &m_bytePP,
+                                                    3)))
       {
         m_loaded = true;
       }
     }
     else
     {
-      if ((m_image = GetFileManager()->GetImageFile(
-               GetFile(), &m_width, &m_height, &m_bytePP, 4)))
+      if ((m_image = GetFileManager()->GetImageFile(GetFile(),
+                                                    &m_width,
+                                                    &m_height,
+                                                    &m_bytePP,
+                                                    4)))
       {
         m_loaded = true;
       }
@@ -103,8 +106,9 @@ namespace ToolKit
                    GL_UNSIGNED_BYTE,
                    m_image);
       glGenerateMipmap(GL_TEXTURE_2D);
-      glTexParameteri(
-          GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D,
+                      GL_TEXTURE_MIN_FILTER,
+                      GL_LINEAR_MIPMAP_LINEAR);
     }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -143,14 +147,9 @@ namespace ToolKit
     m_loaded = false;
   }
 
-  CubeMap::CubeMap() : Texture()
-  {
-  }
+  CubeMap::CubeMap() : Texture() {}
 
-  CubeMap::CubeMap(String file) : Texture()
-  {
-    SetFile(file);
-  }
+  CubeMap::CubeMap(String file) : Texture() { SetFile(file); }
 
   CubeMap::CubeMap(uint cubemapId)
   {
@@ -158,10 +157,7 @@ namespace ToolKit
     m_initiated = true;
   }
 
-  CubeMap::~CubeMap()
-  {
-    UnInit();
-  }
+  CubeMap::~CubeMap() { UnInit(); }
 
   void CubeMap::Load()
   {
@@ -205,8 +201,9 @@ namespace ToolKit
       }
 
       String name = file + postfix;
-      if ((m_images[i] = GetFileManager()->GetImageFile(
-               name, &m_width, &m_height, &m_bytePP, 0)))
+      if ((m_images[i] =
+               GetFileManager()
+                   ->GetImageFile(name, &m_width, &m_height, &m_bytePP, 0)))
       {
         GetLogger()->Log("Missing file: " + name);
         GetLogger()->Log(
@@ -266,10 +263,12 @@ namespace ToolKit
                    m_images[i]);
     }
 
-    glTexParameteri(
-        GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(
-        GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,
+                    GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,
+                    GL_TEXTURE_MAG_FILTER,
+                    GL_LINEAR_MIPMAP_LINEAR);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -305,8 +304,8 @@ namespace ToolKit
 
   Hdri::Hdri()
   {
-    m_floatFormat = true;
-    m_exposure    = 1.0f;
+    m_floatFormat               = true;
+    m_exposure                  = 1.0f;
 
     m_texToCubemapMat           = std::make_shared<Material>();
     m_cubemapToIrradiancemapMat = std::make_shared<Material>();
@@ -314,15 +313,9 @@ namespace ToolKit
     m_equirectangularTexture = std::make_shared<Texture>(static_cast<uint>(0));
   }
 
-  Hdri::Hdri(const String& file) : Hdri()
-  {
-    SetFile(file);
-  }
+  Hdri::Hdri(const String& file) : Hdri() { SetFile(file); }
 
-  Hdri::~Hdri()
-  {
-    UnInit();
-  }
+  Hdri::~Hdri() { UnInit(); }
 
   void Hdri::Load()
   {
@@ -361,8 +354,10 @@ namespace ToolKit
         1.0f);
 
     // Generate irradience cubemap images
-    m_irradianceCubemap = GetRenderer()->GenerateIrradianceCubemap(
-        m_cubemap, m_width / 64, m_width / 64);
+    m_irradianceCubemap =
+        GetRenderer()->GenerateIrradianceCubemap(m_cubemap,
+                                                 m_width / 64,
+                                                 m_width / 64);
   }
 
   void Hdri::UnInit()
@@ -375,20 +370,11 @@ namespace ToolKit
     Texture::UnInit();
   }
 
-  bool Hdri::IsTextureAssigned()
-  {
-    return (GetFile().size() != 0);
-  }
+  bool Hdri::IsTextureAssigned() { return (GetFile().size() != 0); }
 
-  CubeMapPtr Hdri::GetCubemap()
-  {
-    return m_cubemap;
-  }
+  CubeMapPtr Hdri::GetCubemap() { return m_cubemap; }
 
-  CubeMapPtr Hdri::GetIrradianceCubemap()
-  {
-    return m_irradianceCubemap;
-  }
+  CubeMapPtr Hdri::GetIrradianceCubemap() { return m_irradianceCubemap; }
 
   uint Hdri::GenerateCubemapBuffers(struct CubeMapSettings cubeMapSettings)
   {
@@ -413,16 +399,21 @@ namespace ToolKit
                    cubeMapSettings.pixels);
     }
 
-    glTexParameteri(
-        GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, cubeMapSettings.wrapSet);
-    glTexParameteri(
-        GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, cubeMapSettings.wrapSet);
-    glTexParameteri(
-        GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, cubeMapSettings.wrapSet);
-    glTexParameteri(
-        GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, cubeMapSettings.filterSet);
-    glTexParameteri(
-        GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, cubeMapSettings.filterSet);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,
+                    GL_TEXTURE_WRAP_S,
+                    cubeMapSettings.wrapSet);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,
+                    GL_TEXTURE_WRAP_T,
+                    cubeMapSettings.wrapSet);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,
+                    GL_TEXTURE_WRAP_R,
+                    cubeMapSettings.wrapSet);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,
+                    GL_TEXTURE_MIN_FILTER,
+                    cubeMapSettings.filterSet);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,
+                    GL_TEXTURE_MAG_FILTER,
+                    cubeMapSettings.filterSet);
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, currId);
 
@@ -470,9 +461,7 @@ namespace ToolKit
     glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
   }
 
-  RenderTarget::RenderTarget() : Texture()
-  {
-  }
+  RenderTarget::RenderTarget() : Texture() {}
 
   RenderTarget::RenderTarget(uint width,
                              uint height,
@@ -484,9 +473,7 @@ namespace ToolKit
     m_settings = settings;
   }
 
-  void RenderTarget::Load()
-  {
-  }
+  void RenderTarget::Load() {}
 
   RenderTarget::RenderTarget(Texture* texture)
   {
@@ -563,14 +550,17 @@ namespace ToolKit
                      m_settings.Layers);
     }
 
-    glTexParameteri(
-        (int) m_settings.Target, GL_TEXTURE_WRAP_S, (int) m_settings.WarpS);
-    glTexParameteri(
-        (int) m_settings.Target, GL_TEXTURE_WRAP_T, (int) m_settings.WarpT);
+    glTexParameteri((int) m_settings.Target,
+                    GL_TEXTURE_WRAP_S,
+                    (int) m_settings.WarpS);
+    glTexParameteri((int) m_settings.Target,
+                    GL_TEXTURE_WRAP_T,
+                    (int) m_settings.WarpT);
     if (m_settings.Target == GraphicTypes::TargetCubeMap)
     {
-      glTexParameteri(
-          (int) m_settings.Target, GL_TEXTURE_WRAP_R, (int) m_settings.WarpR);
+      glTexParameteri((int) m_settings.Target,
+                      GL_TEXTURE_WRAP_R,
+                      (int) m_settings.WarpR);
     }
     glTexParameteri((int) m_settings.Target,
                     GL_TEXTURE_MIN_FILTER,
@@ -609,14 +599,9 @@ namespace ToolKit
     return m_settings;
   }
 
-  TextureManager::TextureManager()
-  {
-    m_type = ResourceType::Texture;
-  }
+  TextureManager::TextureManager() { m_type = ResourceType::Texture; }
 
-  TextureManager::~TextureManager()
-  {
-  }
+  TextureManager::~TextureManager() {}
 
   bool TextureManager::CanStore(ResourceType t)
   {

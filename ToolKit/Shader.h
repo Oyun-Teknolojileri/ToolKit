@@ -104,7 +104,7 @@ namespace ToolKit
     /**
      * Internal Id that is being used by graphics API.
      */
-    uint m_shaderHandle = 0;
+    uint m_shaderHandle     = 0;
 
     /**
      * Built-in Uniform's that is required for the shader.

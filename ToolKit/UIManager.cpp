@@ -15,21 +15,13 @@ namespace ToolKit
     m_id    = GetHandleManager()->GetNextHandle();
   }
 
-  UILayer::~UILayer()
-  {
-  }
+  UILayer::~UILayer() {}
 
-  void UILayer::Init()
-  {
-  }
+  void UILayer::Init() {}
 
-  void UILayer::Uninit()
-  {
-  }
+  void UILayer::Uninit() {}
 
-  void UILayer::Update(float deltaTime)
-  {
-  }
+  void UILayer::Update(float deltaTime) {}
 
   void UILayer::ResizeUI(float width, float height)
   {
@@ -79,7 +71,7 @@ namespace ToolKit
       BoundingBox box = surface->GetAABB(true);
       Ray ray         = vp->RayFromMousePosition();
 
-      float t = 0.0f;
+      float t         = 0.0f;
       if (RayBoxIntersection(ray, box, t))
       {
         return true;

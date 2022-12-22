@@ -131,8 +131,11 @@ namespace ToolKit
       // errorCheck();
       // now we put our data into the openAL buffer and
       // check for success
-      alBufferData(
-          *buffer, *format, reinterpret_cast<void*>(data), *size, *frequency);
+      alBufferData(*buffer,
+                   *format,
+                   reinterpret_cast<void*>(data),
+                   *size,
+                   *frequency);
       // errorCheck();
       // clean up and return true if successful
 
@@ -152,23 +155,13 @@ namespace ToolKit
     }
   }
 
-  Audio::Audio()
-  {
-  }
+  Audio::Audio() {}
 
-  Audio::Audio(String file) : Audio()
-  {
-    SetFile(file);
-  }
+  Audio::Audio(String file) : Audio() { SetFile(file); }
 
-  Audio::~Audio()
-  {
-    UnInit();
-  }
+  Audio::~Audio() { UnInit(); }
 
-  void Audio::Init(bool flushClientSideArray)
-  {
-  }
+  void Audio::Init(bool flushClientSideArray) {}
 
   void Audio::Load()
   {
@@ -184,14 +177,9 @@ namespace ToolKit
     m_initiated = false;
   }
 
-  AudioManager::AudioManager()
-  {
-    m_type = ResourceType::Audio;
-  }
+  AudioManager::AudioManager() { m_type = ResourceType::Audio; }
 
-  AudioManager::~AudioManager()
-  {
-  }
+  AudioManager::~AudioManager() {}
 
   void AudioManager::Init()
   {
@@ -220,15 +208,9 @@ namespace ToolKit
     return ResourcePtr(new Audio());
   }
 
-  AudioSource::AudioSource()
-  {
-    alGenSources(1, &m_source);
-  }
+  AudioSource::AudioSource() { alGenSources(1, &m_source); }
 
-  AudioSource::~AudioSource()
-  {
-    alDeleteSources(1, &m_source);
-  }
+  AudioSource::~AudioSource() { alDeleteSources(1, &m_source); }
 
   EntityType AudioSource::GetType() const
   {
@@ -249,10 +231,7 @@ namespace ToolKit
       alSourcei(m_source, AL_LOOPING, 0);
   }
 
-  void AudioSource::SetVolume(float val)
-  {
-    alSourcef(m_source, AL_GAIN, val);
-  }
+  void AudioSource::SetVolume(float val) { alSourcef(m_source, AL_GAIN, val); }
 
   void AudioPlayer::Play(AudioSource* source)
   {

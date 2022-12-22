@@ -49,14 +49,9 @@ namespace ToolKit
     SetPivotOffsetVal(offset);
   }
 
-  Surface::~Surface()
-  {
-  }
+  Surface::~Surface() {}
 
-  EntityType Surface::GetType() const
-  {
-    return EntityType::Entity_Surface;
-  }
+  EntityType Surface::GetType() const { return EntityType::Entity_Surface; }
 
   void Surface::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
@@ -87,8 +82,9 @@ namespace ToolKit
         ReadAttr(node,
                  "ratios" + std::to_string(i),
                  m_anchorParams.m_anchorRatios[i]);
-        ReadAttr(
-            node, "offsets" + std::to_string(i), m_anchorParams.m_offsets[i]);
+        ReadAttr(node,
+                 "offsets" + std::to_string(i),
+                 m_anchorParams.m_offsets[i]);
       }
     }
     ParameterEventConstructor();
@@ -155,14 +151,12 @@ namespace ToolKit
   void Surface::ParameterEventConstructor()
   {
     ParamSize().m_onValueChangedFn.push_back(
-        [this](Value& oldVal, Value& newVal) -> void {
-          UpdateGeometry(false);
-        });
+        [this](Value& oldVal, Value& newVal) -> void
+        { UpdateGeometry(false); });
 
     ParamPivotOffset().m_onValueChangedFn.push_back(
-        [this](Value& oldVal, Value& newVal) -> void {
-          UpdateGeometry(false);
-        });
+        [this](Value& oldVal, Value& newVal) -> void
+        { UpdateGeometry(false); });
 
     ParamMaterial().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void {
@@ -175,7 +169,7 @@ namespace ToolKit
 
   Entity* Surface::CopyTo(Entity* other) const
   {
-    Entity* cpy = Entity::CopyTo(other);
+    Entity* cpy  = Entity::CopyTo(other);
 
     // Create an independent mesh.
     MeshPtr mesh = std::make_shared<Mesh>();
@@ -219,7 +213,7 @@ namespace ToolKit
     vertices[5].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
     vertices[5].tex = Vec2(0.0f, 0.0f);
 
-    MeshPtr mesh               = GetMeshComponent()->GetMeshVal();
+    MeshPtr mesh    = GetMeshComponent()->GetMeshVal();
     mesh->m_clientSideVertices = vertices;
     mesh->CalculateAABB();
   }
@@ -242,7 +236,7 @@ namespace ToolKit
     textureRect.Height = (static_cast<float>(val.rectangle.Height) /
                           static_cast<float>(imageHeight));
 
-    textureRect.Y = 1.0f -
+    textureRect.Y      = 1.0f -
                     (static_cast<float>(val.rectangle.Y) /
                      static_cast<float>(imageHeight)) -
                     textureRect.Height;
@@ -299,7 +293,7 @@ namespace ToolKit
         m_node->m_parent->m_entity->GetType() != EntityType::Entity_Canvas)
       return;
 
-    Canvas* canvasPanel = static_cast<Canvas*>(m_node->m_parent->m_entity);
+    Canvas* canvasPanel  = static_cast<Canvas*>(m_node->m_parent->m_entity);
 
     const BoundingBox bb = canvasPanel->GetAABB(true);
     const float w        = bb.GetWidth();
@@ -307,8 +301,8 @@ namespace ToolKit
 
     Vec3 pos =
         canvasPanel->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-    pos.x = bb.min.x;
-    pos.y = bb.max.y;
+    pos.x              = bb.min.x;
+    pos.y              = bb.max.y;
 
     const Vec3 axis[3] = {
         {1.f, 0.f, 0.f},
@@ -316,24 +310,24 @@ namespace ToolKit
         {0.f, 0.f, 1.f}
     };
 
-    canvas[0] = pos;
-    canvas[0] -= axis[1] * ((m_anchorParams.m_anchorRatios[2]) * h);
-    canvas[0] += axis[0] * ((m_anchorParams.m_anchorRatios[0]) * w);
+    canvas[0]   = pos;
+    canvas[0]   -= axis[1] * ((m_anchorParams.m_anchorRatios[2]) * h);
+    canvas[0]   += axis[0] * ((m_anchorParams.m_anchorRatios[0]) * w);
     canvas[0].z = 0.f;
 
-    canvas[1] = pos;
-    canvas[1] -= axis[1] * ((m_anchorParams.m_anchorRatios[2]) * h);
-    canvas[1] += axis[0] * ((1.f - m_anchorParams.m_anchorRatios[1]) * w);
+    canvas[1]   = pos;
+    canvas[1]   -= axis[1] * ((m_anchorParams.m_anchorRatios[2]) * h);
+    canvas[1]   += axis[0] * ((1.f - m_anchorParams.m_anchorRatios[1]) * w);
     canvas[1].z = 0.f;
 
-    canvas[2] = pos;
-    canvas[2] -= axis[1] * ((1.f - m_anchorParams.m_anchorRatios[3]) * h);
-    canvas[2] += axis[0] * ((m_anchorParams.m_anchorRatios[0]) * w);
+    canvas[2]   = pos;
+    canvas[2]   -= axis[1] * ((1.f - m_anchorParams.m_anchorRatios[3]) * h);
+    canvas[2]   += axis[0] * ((m_anchorParams.m_anchorRatios[0]) * w);
     canvas[2].z = 0.f;
 
-    canvas[3] = pos;
-    canvas[3] -= axis[1] * ((1.f - m_anchorParams.m_anchorRatios[3]) * h);
-    canvas[3] += axis[0] * ((1.f - m_anchorParams.m_anchorRatios[1]) * w);
+    canvas[3]   = pos;
+    canvas[3]   -= axis[1] * ((1.f - m_anchorParams.m_anchorRatios[3]) * h);
+    canvas[3]   += axis[0] * ((1.f - m_anchorParams.m_anchorRatios[1]) * w);
     canvas[3].z = 0.f;
 
     const BoundingBox surfaceBB = GetAABB(true);
@@ -370,14 +364,9 @@ namespace ToolKit
     ResetCallbacks();
   }
 
-  Button::~Button()
-  {
-  }
+  Button::~Button() {}
 
-  EntityType Button::GetType() const
-  {
-    return EntityType::Entity_Button;
-  }
+  EntityType Button::GetType() const { return EntityType::Entity_Button; }
 
   void Button::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
@@ -394,14 +383,12 @@ namespace ToolKit
   {
     Surface::ResetCallbacks();
 
-    m_onMouseEnterLocal = [this](Event* e, Entity* ntt) -> void {
-      SetMaterialVal(GetHoverMaterialVal());
-    };
-    m_onMouseEnter = m_onMouseEnterLocal;
+    m_onMouseEnterLocal = [this](Event* e, Entity* ntt) -> void
+    { SetMaterialVal(GetHoverMaterialVal()); };
+    m_onMouseEnter     = m_onMouseEnterLocal;
 
-    m_onMouseExitLocal = [this](Event* e, Entity* ntt) -> void {
-      SetMaterialVal(GetButtonMaterialVal());
-    };
+    m_onMouseExitLocal = [this](Event* e, Entity* ntt) -> void
+    { SetMaterialVal(GetButtonMaterialVal()); };
     m_onMouseExit = m_onMouseExitLocal;
   }
 
@@ -432,7 +419,8 @@ namespace ToolKit
     Surface::ParameterEventConstructor();
 
     ParamButtonMaterial().m_onValueChangedFn.push_back(
-        [this](Value& oldVal, Value& newVal) -> void {
+        [this](Value& oldVal, Value& newVal) -> void
+        {
           // Override surface material.
           SetMaterialVal(std::get<MaterialPtr>(newVal));
         });

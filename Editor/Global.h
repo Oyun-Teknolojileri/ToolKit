@@ -54,8 +54,9 @@ namespace ToolKit
     const Vec3 g_lightGizmoColor         = Vec3(0.0f);
     const Vec3 g_environmentGizmoColor   = Vec3(0.0f);
     const Vec3 g_gizmoLocked             = Vec3(0.3f);
-    const std::vector<Vec3> g_gizmoColor = {
-        g_gizmoRed, g_gizmoGreen, g_gizmoBlue};
+    const std::vector<Vec3> g_gizmoColor = {g_gizmoRed,
+                                            g_gizmoGreen,
+                                            g_gizmoBlue};
     const Vec4 g_wndBgColor =
         Vec4(0.007024517f, 0.00959683f, 0.018735119f, 1.0f);
 
@@ -69,10 +70,10 @@ namespace ToolKit
     const Vec4 g_anchorGuideLineColor =
         Vec4(0.032276204f, 0.681419299f, 0.681419299f, 0.456263458f);
 
-    const Vec4 g_consoleErrorColor   = Vec4(1.0f, 0.4f, 0.4f, 1.0f);
-    const Vec4 g_consoleCommandColor = Vec4(1.0f, 0.8f, 0.6f, 1.0f);
-    const Vec4 g_consoleWarningColor = Vec4(0.3f, 0.8f, 0.3f, 1.0f);
-    const Vec4 g_consoleMemoColor    = Vec4(0.7f, 0.7f, 0.7f, 1.0f);
+    const Vec4 g_consoleErrorColor         = Vec4(1.0f, 0.4f, 0.4f, 1.0f);
+    const Vec4 g_consoleCommandColor       = Vec4(1.0f, 0.8f, 0.6f, 1.0f);
+    const Vec4 g_consoleWarningColor       = Vec4(0.3f, 0.8f, 0.3f, 1.0f);
+    const Vec4 g_consoleMemoColor          = Vec4(0.7f, 0.7f, 0.7f, 1.0f);
 
     const Vec4 g_blueTintButtonColor       = Vec4(0.043f, 0.173f, 0.325f, 1.0f);
     const Vec4 g_blueTintButtonHoverColor  = Vec4(0.032f, 0.208f, 0.456f, 1.0f);
@@ -88,7 +89,7 @@ namespace ToolKit
     const Vec4 g_redTintButtonActiveColor = Vec4(0.612f, 0.018f, 0.018f, 1.0f);
 
     // Editor settings.
-    const size_t g_maxUndoCount = 50;
+    const size_t g_maxUndoCount           = 50;
     const UVec2 g_max2dGridSize(100 * 100 * 2);
 
     // Editor types.

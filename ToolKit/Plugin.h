@@ -20,12 +20,10 @@ namespace ToolKit
   class TK_API Plugin
   {
    public:
-    Plugin()
-    {
-    }
-    virtual ~Plugin()
-    {
-    }
+    Plugin() {}
+
+    virtual ~Plugin() {}
+
     virtual PluginType GetType()          = 0;
     virtual void Init(class Main* master) = 0;
     virtual void Destroy()                = 0;
@@ -35,10 +33,8 @@ namespace ToolKit
   {
    public:
     virtual void Frame(float deltaTime, class Viewport* viewport) = 0;
-    PluginType GetType()
-    {
-      return PluginType::Game;
-    }
+
+    PluginType GetType() { return PluginType::Game; }
 
    public:
     bool m_quit = false; // Set this flag true to stop gameplay.

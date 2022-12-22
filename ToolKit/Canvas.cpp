@@ -30,10 +30,7 @@ namespace ToolKit
     CreateQuadLines();
   }
 
-  EntityType Canvas::GetType() const
-  {
-    return EntityType::Entity_Canvas;
-  }
+  EntityType Canvas::GetType() const { return EntityType::Entity_Canvas; }
 
   void Canvas::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
@@ -61,10 +58,7 @@ namespace ToolKit
     ParamMaterial().m_onValueChangedFn.clear();
   }
 
-  void Canvas::UpdateGeometry(bool byTexture)
-  {
-    CreateQuadLines();
-  }
+  void Canvas::UpdateGeometry(bool byTexture) { CreateQuadLines(); }
 
   void Canvas::ApplyRecursiveResizePolicy(float width, float height)
   {
@@ -92,7 +86,7 @@ namespace ToolKit
           // Scale operation
           {
             const Vec4 surfaceCurrentSize(surface->GetSizeVal(), 0.f, 1.f);
-            const BoundingBox surfaceBB = surface->GetAABB(true);
+            const BoundingBox surfaceBB       = surface->GetAABB(true);
 
             const float surfaceAbsoluteWidth  = surfaceBB.GetWidth();
             const float surfaceAbsoluteHeight = surfaceBB.GetHeight();
@@ -113,8 +107,9 @@ namespace ToolKit
 
             Mat4 scaleMat;
             scaleMat = glm::scale(scaleMat, surfaceScale);
-            childNode->Transform(
-                scaleMat, TransformationSpace::TS_WORLD, false);
+            childNode->Transform(scaleMat,
+                                 TransformationSpace::TS_WORLD,
+                                 false);
           }
 
           // Translate operation
@@ -145,12 +140,12 @@ namespace ToolKit
             Vec3 translate = (canvasPoints[0] + widthVector * offsets[2] -
                               heightVector * offsets[0]);
 
-            translate -= surfacePoints[0];
+            translate      -= surfacePoints[0];
 
             const Vec3 surfaceCurrentPos =
                 surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
-            translate += surfaceCurrentPos;
+            translate   += surfaceCurrentPos;
             translate.z = surfaceCurrentPos.z;
 
             childNode->SetTranslation(translate, TransformationSpace::TS_WORLD);
@@ -187,7 +182,7 @@ namespace ToolKit
     vertices[6].pos = Vec3(-absOffset.x, height - absOffset.y, depth);
     vertices[7].pos = Vec3(-absOffset.x, -absOffset.y, depth);
 
-    MeshPtr mesh               = std::make_shared<Mesh>();
+    MeshPtr mesh    = std::make_shared<Mesh>();
     mesh->m_clientSideVertices = vertices;
     mesh->CalculateAABB();
     mesh->Init();

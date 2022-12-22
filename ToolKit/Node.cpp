@@ -9,10 +9,7 @@
 namespace ToolKit
 {
 
-  Node::Node()
-  {
-    m_id = GetHandleManager()->GetNextHandle();
-  }
+  Node::Node() { m_id = GetHandleManager()->GetNextHandle(); }
 
   Node::~Node()
   {
@@ -28,7 +25,7 @@ namespace ToolKit
     Vec3 tmpScl = m_scale;
     m_scale     = Vec3(1.0f);
 
-    Mat4 ts = glm::translate(Mat4(), val);
+    Mat4 ts     = glm::translate(Mat4(), val);
     TransformImp(ts, space, &m_translation, nullptr, nullptr);
 
     m_scale = tmpScl;
@@ -39,7 +36,7 @@ namespace ToolKit
     Vec3 tmpScl = m_scale;
     m_scale     = Vec3(1.0f);
 
-    Mat4 ts = glm::toMat4(val);
+    Mat4 ts     = glm::toMat4(val);
     TransformImp(ts, space, nullptr, &m_orientation, nullptr);
 
     m_scale = tmpScl;
@@ -132,10 +129,7 @@ namespace ToolKit
     SetChildrenDirty();
   }
 
-  Vec3 Node::GetScale()
-  {
-    return m_scale;
-  }
+  Vec3 Node::GetScale() { return m_scale; }
 
   Mat3 Node::GetTransformAxes()
   {
@@ -215,7 +209,7 @@ namespace ToolKit
   {
     // Does not preserve parent / child relation
     // Look at Util/DeepCopy for preserving hierarchy.
-    Node* node = new Node();
+    Node* node           = new Node();
 
     node->m_inheritScale = m_inheritScale;
     node->m_translation  = m_translation;

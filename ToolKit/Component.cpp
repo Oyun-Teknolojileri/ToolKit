@@ -7,19 +7,11 @@
 namespace ToolKit
 {
 
-  Component::Component()
-  {
-    m_id = GetHandleManager()->GetNextHandle();
-  }
+  Component::Component() { m_id = GetHandleManager()->GetNextHandle(); }
 
-  Component::~Component()
-  {
-  }
+  Component::~Component() {}
 
-  ComponentType Component::GetType() const
-  {
-    return ComponentType::Base;
-  }
+  ComponentType Component::GetType() const { return ComponentType::Base; }
 
   void Component::Serialize(XmlDocument* doc, XmlNode* parent) const
   {

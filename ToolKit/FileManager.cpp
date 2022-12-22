@@ -25,8 +25,11 @@ namespace ToolKit
     return std::get<XmlFilePtr>(GetFile(FileType::Xml, fileInfo));
   }
 
-  uint8* FileManager::GetImageFile(
-      const String& filePath, int* x, int* y, int* comp, int reqComp)
+  uint8* FileManager::GetImageFile(const String& filePath,
+                                   int* x,
+                                   int* y,
+                                   int* comp,
+                                   int reqComp)
   {
     String path            = filePath;
     ImageFileInfo fileInfo = {path, x, y, comp, reqComp};
@@ -34,8 +37,11 @@ namespace ToolKit
     return std::get<uint8*>(data);
   }
 
-  float* FileManager::GetHdriFile(
-      const String& filePath, int* x, int* y, int* comp, int reqComp)
+  float* FileManager::GetHdriFile(const String& filePath,
+                                  int* x,
+                                  int* y,
+                                  int* comp,
+                                  int reqComp)
   {
     String path            = filePath;
     ImageFileInfo fileInfo = {path, x, y, comp, reqComp};
@@ -63,8 +69,9 @@ namespace ToolKit
 
       if (fileType == FileType::Xml)
       {
-        return ReadXmlFileFromZip(
-            m_zfile, relativePath, fileInfo.filePath.c_str());
+        return ReadXmlFileFromZip(m_zfile,
+                                  relativePath,
+                                  fileInfo.filePath.c_str());
       }
       else if (fileType == FileType::ImageUint8)
       {
@@ -280,8 +287,9 @@ namespace ToolKit
     {
       if (!AddFileToZip(zFile, path.c_str()))
       {
-        GetLogger()->WriteConsole(
-            LogType::Error, "Error adding file to zip. %s", path.c_str());
+        GetLogger()->WriteConsole(LogType::Error,
+                                  "Error adding file to zip. %s",
+                                  path.c_str());
       }
     }
 
@@ -316,7 +324,7 @@ namespace ToolKit
     }
     stream.unsetf(std::ios::skipws);
     stream.seekg(0, std::ios::end); // Determine stream size
-    flen = stream.tellg();
+    flen               = stream.tellg();
 
     String filenameStr = String(filename);
     size_t index       = filenameStr.find("Resources");
@@ -327,8 +335,9 @@ namespace ToolKit
     }
     else
     {
-      GetLogger()->WriteConsole(
-          LogType::Error, "Resource is not under resources path: %s", filename);
+      GetLogger()->WriteConsole(LogType::Error,
+                                "Resource is not under resources path: %s",
+                                filename);
       return false;
     }
 
@@ -406,7 +415,8 @@ namespace ToolKit
     {
       GetLogger()->Log("'ExtraFiles.txt' is not found in resources path.");
       GetLogger()->WriteConsole(
-          LogType::Warning, "'ExtraFiles.txt' is not found in resources path.");
+          LogType::Warning,
+          "'ExtraFiles.txt' is not found in resources path.");
       return;
     }
 
@@ -454,8 +464,14 @@ namespace ToolKit
           unz_file_info fileInfo;
           memset(&fileInfo, 0, sizeof(unz_file_info));
 
-          if (unzGetCurrentFileInfo(
-                  zfile, &fileInfo, NULL, 0, NULL, 0, NULL, 0) == UNZ_OK)
+          if (unzGetCurrentFileInfo(zfile,
+                                    &fileInfo,
+                                    NULL,
+                                    0,
+                                    NULL,
+                                    0,
+                                    NULL,
+                                    0) == UNZ_OK)
           {
             XmlFilePtr file = CreateXmlFileFromZip(
                 zfile,
@@ -488,8 +504,14 @@ namespace ToolKit
           unz_file_info unzFileInfo;
           memset(&unzFileInfo, 0, sizeof(unz_file_info));
 
-          if (unzGetCurrentFileInfo(
-                  zfile, &unzFileInfo, NULL, 0, NULL, 0, NULL, 0) == UNZ_OK)
+          if (unzGetCurrentFileInfo(zfile,
+                                    &unzFileInfo,
+                                    NULL,
+                                    0,
+                                    NULL,
+                                    0,
+                                    NULL,
+                                    0) == UNZ_OK)
           {
             fileInfo.filePath = relativePath;
             uint8* img        = CreateImageFileFromZip(
@@ -527,8 +549,14 @@ namespace ToolKit
           unz_file_info unzFileInfo;
           memset(&unzFileInfo, 0, sizeof(unz_file_info));
 
-          if (unzGetCurrentFileInfo(
-                  zfile, &unzFileInfo, NULL, 0, NULL, 0, NULL, 0) == UNZ_OK)
+          if (unzGetCurrentFileInfo(zfile,
+                                    &unzFileInfo,
+                                    NULL,
+                                    0,
+                                    NULL,
+                                    0,
+                                    NULL,
+                                    0) == UNZ_OK)
           {
             fileInfo.filePath = relativePath;
             float* img        = CreateHdriFileFromZip(
@@ -649,8 +677,14 @@ namespace ToolKit
           unz_file_info fileInfo;
           memset(&fileInfo, 0, sizeof(unz_file_info));
 
-          if (unzGetCurrentFileInfo(
-                  m_zfile, &fileInfo, NULL, 0, NULL, 0, NULL, 0) == UNZ_OK)
+          if (unzGetCurrentFileInfo(m_zfile,
+                                    &fileInfo,
+                                    NULL,
+                                    0,
+                                    NULL,
+                                    0,
+                                    NULL,
+                                    0) == UNZ_OK)
           {
             // Get file name
             char* filename = new char[fileInfo.size_filename + 1]();

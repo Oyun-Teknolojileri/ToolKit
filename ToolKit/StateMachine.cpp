@@ -7,18 +7,11 @@
 namespace ToolKit
 {
 
-  State::State()
-  {
-  }
+  State::State() {}
 
-  State::~State()
-  {
-  }
+  State::~State() {}
 
-  StateMachine::StateMachine()
-  {
-    m_currentState = nullptr;
-  }
+  StateMachine::StateMachine() { m_currentState = nullptr; }
 
   StateMachine::~StateMachine()
   {

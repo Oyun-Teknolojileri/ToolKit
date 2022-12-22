@@ -1,45 +1,63 @@
 ---
 BasedOnStyle: Microsoft
-AccessModifierOffset: '-1'
-AlignAfterOpenBracket: Align
-AlignConsecutiveMacros: 'true'
-AlignConsecutiveAssignments: 'true'
-AlignEscapedNewlines: Right
-AlwaysBreakTemplateDeclarations: 'Yes'
-BinPackArguments: 'false'
-BinPackParameters: 'false'
-ColumnLimit: '80'
-MaxEmptyLinesToKeep: '1'
-NamespaceIndentation: All
-SpacesInParentheses: 'false'
-PointerAlignment: Left
-TabWidth: '1'
-IndentWidth: '2'
-UseTab: Never
-SortIncludes: 'false'
-IndentPPDirectives: 'BeforeHash'
-LambdaBodyIndentation: 'Signature'
-AlignArrayOfStructures: 'Right'
-SpaceAfterCStyleCast: 'true'
-FixNamespaceComments: 'true'
-TypenameMacros: ["TKResourceType", "TKComponentType", "TKDeclareParam"]
-SortIncludes: true
+AccessModifierOffset: -1
+AlignArrayOfStructures: Left
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+  AlignCompound: true
+AlignConsecutiveBitFields:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+  AlignCompound: true
+  PadOperators: true
+AlignConsecutiveDeclarations:
+  AcrossComments: true
+  AlignCompound: true
+  PadOperators: true
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+  AlignCompound: true
+  PadOperators: true
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Always
+AllowShortFunctionsOnASingleLine: All
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: false
+BinPackParameters: false
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterUnion: true
+  BeforeLambdaBody: true
+BreakBeforeBraces: Allman
+ColumnLimit: 80
 IncludeBlocks: Regroup
 IncludeCategories:
-  # Headers in <> from specific external libraries.
-  - Regex:           'DebugNew.h'
-    Priority:        4
-  # Headers in <> without extension.
-  - Regex:           '<([A-Za-z0-9\Q/-_\E])+>'
-    Priority:        3
-  # Headers in <> with extension.
-  - Regex:           '<([A-Za-z0-9.\Q/-_\E])+>'
-    Priority:        2
-  # Headers in "" with extension.
-  - Regex:           '"([A-Za-z0-9.\Q/-_\E])+"'
-    Priority:        1
-
-Language: 'Cpp'
-Standard: 'c++17'
-
-...
+  - Regex: DebugNew.h
+    Priority: 4
+  - Regex: <([A-Za-z0-9\Q/-_\E])+>
+    Priority: 3
+  - Regex: <([A-Za-z0-9.\Q/-_\E])+>
+    Priority: 2
+  - Regex: '"([A-Za-z0-9.\Q/-_\E])+"'
+    Priority: 1
+IndentPPDirectives: BeforeHash
+IndentWidth: 2
+NamespaceIndentation: All
+PointerAlignment: Left
+QualifierAlignment: Left
+SeparateDefinitionBlocks: Always
+SpaceAfterCStyleCast: true
+SpaceBeforeCpp11BracedList: true
+SpacesInContainerLiterals: false
+Standard: c++17
+TabWidth: 1
+TypenameMacros:
+  - TKResourceType
+  - TKComponentType
+  - TKDeclareParam

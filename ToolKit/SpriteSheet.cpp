@@ -12,19 +12,11 @@
 namespace ToolKit
 {
 
-  SpriteSheet::SpriteSheet() : m_imageWidth(0), m_imageHeight(0)
-  {
-  }
+  SpriteSheet::SpriteSheet() : m_imageWidth(0), m_imageHeight(0) {}
 
-  SpriteSheet::SpriteSheet(String file) : SpriteSheet()
-  {
-    SetFile(file);
-  }
+  SpriteSheet::SpriteSheet(String file) : SpriteSheet() { SetFile(file); }
 
-  SpriteSheet::~SpriteSheet()
-  {
-    UnInit();
-  }
+  SpriteSheet::~SpriteSheet() { UnInit(); }
 
   void SpriteSheet::Load()
   {
@@ -87,8 +79,8 @@ namespace ToolKit
     m_imageFile        = attr->value();
     NormalizePath(m_imageFile);
 
-    attr         = node->first_attribute("w");
-    m_imageWidth = std::atoi(attr->value());
+    attr          = node->first_attribute("w");
+    m_imageWidth  = std::atoi(attr->value());
 
     attr          = node->first_attribute("h");
     m_imageHeight = std::atoi(attr->value());
@@ -107,7 +99,7 @@ namespace ToolKit
       attr                   = node->first_attribute("h");
       entry.rectangle.Height = std::atoi(attr->value());
 
-      attr = node->first_attribute("px");
+      attr                   = node->first_attribute("px");
       if (attr != nullptr)
       {
         entry.offset.x = static_cast<float>(std::atof(attr->value()));
@@ -125,18 +117,14 @@ namespace ToolKit
     return true;
   }
 
-  SpriteAnimation::SpriteAnimation()
-  {
-  }
+  SpriteAnimation::SpriteAnimation() {}
 
   SpriteAnimation::SpriteAnimation(const SpriteSheetPtr& spriteSheet)
   {
     m_sheet = spriteSheet;
   }
 
-  SpriteAnimation::~SpriteAnimation()
-  {
-  }
+  SpriteAnimation::~SpriteAnimation() {}
 
   EntityType SpriteAnimation::GetType() const
   {
@@ -217,9 +205,7 @@ namespace ToolKit
     m_type = ResourceType::SpriteSheet;
   }
 
-  SpriteSheetManager::~SpriteSheetManager()
-  {
-  }
+  SpriteSheetManager::~SpriteSheetManager() {}
 
   bool SpriteSheetManager::CanStore(ResourceType t)
   {

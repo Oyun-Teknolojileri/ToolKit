@@ -38,10 +38,7 @@ namespace ToolKit
       assert(m_initiated == false && "Call UnInit.");
     }
 
-    ModManager* ModManager::GetInstance()
-    {
-      return &m_instance;
-    }
+    ModManager* ModManager::GetInstance() { return &m_instance; }
 
     void ModManager::Update(float deltaTime)
     {
@@ -139,10 +136,7 @@ namespace ToolKit
       }
     }
 
-    ModManager::ModManager()
-    {
-      m_initiated = false;
-    }
+    ModManager::ModManager() { m_initiated = false; }
 
     void ModManager::Init()
     {
@@ -179,23 +173,13 @@ namespace ToolKit
       m_stateMachine = new StateMachine();
     }
 
-    BaseMod::~BaseMod()
-    {
-      SafeDel(m_stateMachine);
-    }
+    BaseMod::~BaseMod() { SafeDel(m_stateMachine); }
 
-    void BaseMod::Init()
-    {
-    }
+    void BaseMod::Init() {}
 
-    void BaseMod::UnInit()
-    {
-    }
+    void BaseMod::UnInit() {}
 
-    void BaseMod::Update(float deltaTime)
-    {
-      m_stateMachine->Update(deltaTime);
-    }
+    void BaseMod::Update(float deltaTime) { m_stateMachine->Update(deltaTime); }
 
     void BaseMod::Signal(SignalId signal)
     {
@@ -244,14 +228,9 @@ namespace ToolKit
     const String StateType::StateAnchorTo       = "StateAnchorTo";
     const String StateType::StateAnchorEnd      = "StateAnchorEnd";
 
-    StatePickingBase::StatePickingBase()
-    {
-      m_mouseData.resize(2);
-    }
+    StatePickingBase::StatePickingBase() { m_mouseData.resize(2); }
 
-    void StatePickingBase::TransitionIn(State* prevState)
-    {
-    }
+    void StatePickingBase::TransitionIn(State* prevState) {}
 
     void StatePickingBase::TransitionOut(State* nextState)
     {
@@ -315,10 +294,7 @@ namespace ToolKit
       m_ignoreList.push_back(g_app->m_grid->GetIdVal());
     }
 
-    SignalId StateBeginPick::Update(float deltaTime)
-    {
-      return NullSignal;
-    }
+    SignalId StateBeginPick::Update(float deltaTime) { return NullSignal; }
 
     String StateBeginPick::Signaled(SignalId signal)
     {
@@ -336,7 +312,7 @@ namespace ToolKit
         EditorViewport* vp = g_app->GetActiveViewport();
         if (vp != nullptr)
         {
-          m_mouseData[0] = vp->GetLastMousePosScreenSpace();
+          m_mouseData[0]           = vp->GetLastMousePosScreenSpace();
 
           Ray ray                  = vp->RayFromMousePosition();
           EditorScenePtr currScene = g_app->GetCurrentScene();
@@ -377,10 +353,7 @@ namespace ToolKit
       return StateType::Null;
     }
 
-    SignalId StateBeginBoxPick::Update(float deltaTime)
-    {
-      return NullSignal;
-    }
+    SignalId StateBeginBoxPick::Update(float deltaTime) { return NullSignal; }
 
     String StateBeginBoxPick::Signaled(SignalId signal)
     {
@@ -512,8 +485,8 @@ namespace ToolKit
 
           if (!vp->IsMoving())
           {
-            auto drawSelectionRectangleFn =
-                [this](ImDrawList* drawList) -> void {
+            auto drawSelectionRectangleFn = [this](ImDrawList* drawList) -> void
+            {
               Vec2 min, max;
               GetMouseRect(min, max);
 
@@ -544,15 +517,9 @@ namespace ToolKit
       }
     }
 
-    SignalId StateEndPick::Update(float deltaTime)
-    {
-      return NullSignal;
-    }
+    SignalId StateEndPick::Update(float deltaTime) { return NullSignal; }
 
-    String StateEndPick::Signaled(SignalId signal)
-    {
-      return StateType::Null;
-    }
+    String StateEndPick::Signaled(SignalId signal) { return StateType::Null; }
 
     SignalId StateDeletePick::Update(float deltaTime)
     {
@@ -662,26 +629,16 @@ namespace ToolKit
       }
     }
 
-    void StateDuplicate::TransitionOut(State* nextState)
-    {
-    }
+    void StateDuplicate::TransitionOut(State* nextState) {}
 
-    SignalId StateDuplicate::Update(float deltaTime)
-    {
-      return NullSignal;
-    }
+    SignalId StateDuplicate::Update(float deltaTime) { return NullSignal; }
 
-    String StateDuplicate::Signaled(SignalId signal)
-    {
-      return StateType::Null;
-    }
+    String StateDuplicate::Signaled(SignalId signal) { return StateType::Null; }
 
     // Mods
     //////////////////////////////////////////////////////////////////////////
 
-    SelectMod::SelectMod() : BaseMod(ModId::Select)
-    {
-    }
+    SelectMod::SelectMod() : BaseMod(ModId::Select) {}
 
     void SelectMod::Init()
     {
@@ -723,9 +680,7 @@ namespace ToolKit
       }
     }
 
-    CursorMod::CursorMod() : BaseMod(ModId::Cursor)
-    {
-    }
+    CursorMod::CursorMod() : BaseMod(ModId::Cursor) {}
 
     void CursorMod::Init()
     {

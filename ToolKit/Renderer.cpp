@@ -32,10 +32,7 @@ namespace ToolKit
     m_utilFramebuffer = std::make_shared<Framebuffer>();
   }
 
-  Renderer::~Renderer()
-  {
-    SafeDel(m_uiCamera);
-  }
+  Renderer::~Renderer() { SafeDel(m_uiCamera); }
 
   void Renderer::GenerateKernelAndNoiseForSSAOSamples(Vec3Array& ssaoKernel,
                                                       Vec2Array& ssaoNoise)
@@ -45,7 +42,8 @@ namespace ToolKit
     auto lerp = [](float a, float b, float f) { return a + f * (b - a); };
 
     std::uniform_real_distribution<GLfloat> randomFloats(
-        0.0, 1.0); // generates random floats between 0.0 and 1.0
+        0.0,
+        1.0); // generates random floats between 0.0 and 1.0
     std::default_random_engine generator;
     if (ssaoKernel.size() == 0)
       for (unsigned int i = 0; i < 64; ++i)
@@ -53,13 +51,13 @@ namespace ToolKit
         glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0,
                          randomFloats(generator) * 2.0 - 1.0,
                          randomFloats(generator));
-        sample = glm::normalize(sample);
-        sample *= randomFloats(generator);
+        sample      = glm::normalize(sample);
+        sample      *= randomFloats(generator);
         float scale = float(i) / 64.0f;
 
         // scale samples s.t. they're more aligned to center of kernel
-        scale = lerp(0.1f, 1.0f, scale * scale);
-        sample *= scale;
+        scale       = lerp(0.1f, 1.0f, scale * scale);
+        sample      *= scale;
         ssaoKernel.push_back(sample);
       }
 
@@ -145,10 +143,12 @@ namespace ToolKit
         (uint) viewport->m_wndContentAreaSize.y);
 
     viewport->m_ssaoGBuffer->SetAttachment(
-        Framebuffer::Attachment::ColorAttachment0, viewport->m_ssaoPosition);
+        Framebuffer::Attachment::ColorAttachment0,
+        viewport->m_ssaoPosition);
 
     viewport->m_ssaoGBuffer->SetAttachment(
-        Framebuffer::Attachment::ColorAttachment1, viewport->m_ssaoNormal);
+        Framebuffer::Attachment::ColorAttachment1,
+        viewport->m_ssaoNormal);
 
     SetFramebuffer(viewport->m_ssaoGBuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
 
@@ -169,7 +169,8 @@ namespace ToolKit
     }
     m_aoMat->UnInit();
     m_aoMat->m_fragmentShader->SetShaderParameter(
-        "viewMatrix", ParameterVariant(cam->GetViewMatrix()));
+        "viewMatrix",
+        ParameterVariant(cam->GetViewMatrix()));
 
     MaterialPtr overrideMatPrev = m_overrideMat;
 
@@ -190,7 +191,7 @@ namespace ToolKit
         m_aoMat->m_alpha          = entityMat->m_alpha;
         m_aoMat->m_diffuseTexture = entityMat->m_diffuseTexture;
 
-        m_overrideMat = m_aoMat;
+        m_overrideMat             = m_aoMat;
         Render(ntt, cam);
       }
     }
@@ -207,8 +208,15 @@ namespace ToolKit
     {
       glGenTextures(1, &noiseTexture);
       glBindTexture(GL_TEXTURE_2D, noiseTexture);
-      glTexImage2D(
-          GL_TEXTURE_2D, 0, GL_RG32F, 4, 4, 0, GL_RG, GL_FLOAT, &ssaoNoise[0]);
+      glTexImage2D(GL_TEXTURE_2D,
+                   0,
+                   GL_RG32F,
+                   4,
+                   4,
+                   0,
+                   GL_RG,
+                   GL_FLOAT,
+                   &ssaoNoise[0]);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -247,7 +255,8 @@ namespace ToolKit
         (uint) viewport->m_wndContentAreaSize.x,
         (uint) viewport->m_wndContentAreaSize.y);
     viewport->m_ssaoBuffer->SetAttachment(
-        Framebuffer::Attachment::ColorAttachment0, viewport->m_ssao);
+        Framebuffer::Attachment::ColorAttachment0,
+        viewport->m_ssao);
     SetFramebuffer(viewport->m_ssaoBuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
 
     SetTexture(0, viewport->m_ssaoPosition->m_textureId);
@@ -270,7 +279,8 @@ namespace ToolKit
     ssaoFrag->SetShaderParameter("projection",
                                  ParameterVariant(cam->GetProjectionMatrix()));
     ssaoFrag->SetShaderParameter(
-        "screen_size", ParameterVariant(viewport->m_wndContentAreaSize));
+        "screen_size",
+        ParameterVariant(viewport->m_wndContentAreaSize));
     ssaoFrag->SetShaderParameter("gPosition", ParameterVariant(0));
     ssaoFrag->SetShaderParameter("gNormal", ParameterVariant(1));
     ssaoFrag->SetShaderParameter("texNoise", ParameterVariant(2));
@@ -331,8 +341,12 @@ namespace ToolKit
     float halfWidth  = viewport->m_wndContentAreaSize.x * 0.5f;
     float halfHeight = viewport->m_wndContentAreaSize.y * 0.5f;
 
-    m_uiCamera->SetLens(
-        -halfWidth, halfWidth, -halfHeight, halfHeight, 0.5f, 1000.0f);
+    m_uiCamera->SetLens(-halfWidth,
+                        halfWidth,
+                        -halfHeight,
+                        halfHeight,
+                        0.5f,
+                        1000.0f);
 
     EntityRawPtrArray entities = layer->m_scene->GetEntities();
     // RenderEntities(entities, m_uiCamera, viewport);
@@ -363,7 +377,8 @@ namespace ToolKit
     MultiMaterialPtr mmComp = ntt->GetComponent<MultiMaterialComponent>();
 
     // Skeleton Component is used by all meshes of an entity.
-    const auto& updateAndBindSkinningTextures = [ntt, this]() {
+    const auto& updateAndBindSkinningTextures = [ntt, this]()
+    {
       SkeletonComponentPtr skelComp = ntt->GetComponent<SkeletonComponent>();
       if (skelComp == nullptr)
       {
@@ -430,7 +445,8 @@ namespace ToolKit
 
         BindProgram(prg);
 
-        auto activateSkinning = [prg, ntt](uint isSkinned) {
+        auto activateSkinning = [prg, ntt](uint isSkinned)
+        {
           GLint isSkinnedLoc = glGetUniformLocation(prg->m_handle, "isSkinned");
           glUniform1ui(isSkinnedLoc, isSkinned);
           if (isSkinned)
@@ -507,8 +523,8 @@ namespace ToolKit
   {
     Surface* surface = object->GetCurrentSurface();
 
-    Node* backup    = surface->m_node;
-    surface->m_node = object->m_node;
+    Node* backup     = surface->m_node;
+    surface->m_node  = object->m_node;
 
     Render2d(surface, screenDimensions);
 
@@ -563,18 +579,21 @@ namespace ToolKit
     {
       switch (state->blendFunction)
       {
-      case BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA: {
+      case BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA:
+      {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       }
       break;
-      case BlendFunction::ONE_TO_ONE: {
+      case BlendFunction::ONE_TO_ONE:
+      {
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE);
         glBlendEquation(GL_FUNC_ADD);
       }
       break;
-      default: {
+      default:
+      {
         glDisable(GL_BLEND);
       }
       break;
@@ -688,10 +707,7 @@ namespace ToolKit
     SwapFramebuffer(fb, clear, m_clearColor);
   }
 
-  FramebufferPtr Renderer::GetFrameBuffer()
-  {
-    return m_framebuffer;
-  }
+  FramebufferPtr Renderer::GetFrameBuffer() { return m_framebuffer; }
 
   void Renderer::ClearFrameBuffer(FramebufferPtr fb, const Vec4& color)
   {
@@ -707,8 +723,10 @@ namespace ToolKit
 
   void Renderer::ClearBuffer(GraphicBitFields fields)
   {
-    glClearColor(
-        m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
+    glClearColor(m_clearColor.r,
+                 m_clearColor.g,
+                 m_clearColor.b,
+                 m_clearColor.a);
     glClear((GLbitfield) fields);
   }
 
@@ -915,8 +933,9 @@ namespace ToolKit
       }
     }
 
-    std::sort(
-        intersectCounts.begin(), intersectCounts.end(), CompareLightIntersects);
+    std::sort(intersectCounts.begin(),
+              intersectCounts.end(),
+              CompareLightIntersects);
 
     for (uint i = 0; i < intersectCounts.size(); i++)
     {
@@ -1020,7 +1039,7 @@ namespace ToolKit
     MaterialPtr mat = GetRenderMaterial(entity);
 
     Vec3 pos = entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-    BoundingBox bestBox{ZERO, ZERO};
+    BoundingBox bestBox {ZERO, ZERO};
     BoundingBox currentBox;
     for (Entity* envNtt : m_environmentLightEntities)
     {
@@ -1029,7 +1048,8 @@ namespace ToolKit
       if (PointInsideBBox(pos, currentBox.max, currentBox.min))
       {
         auto setCurrentBBox = [&bestBox, &env](const BoundingBox& box,
-                                               Entity* ntt) -> void {
+                                               Entity* ntt) -> void
+        {
           bestBox = box;
           env     = ntt;
         };
@@ -1134,7 +1154,8 @@ namespace ToolKit
     m_gaussianBlurMaterial->UnInit();
     m_gaussianBlurMaterial->m_diffuseTexture = source;
     m_gaussianBlurMaterial->m_fragmentShader->SetShaderParameter(
-        "BlurScale", ParameterVariant(axis * amount));
+        "BlurScale",
+        ParameterVariant(axis * amount));
     m_gaussianBlurMaterial->Init();
 
     m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
@@ -1166,7 +1187,8 @@ namespace ToolKit
     m_averageBlurMaterial->UnInit();
     m_averageBlurMaterial->m_diffuseTexture = source;
     m_averageBlurMaterial->m_fragmentShader->SetShaderParameter(
-        "BlurScale", ParameterVariant(axis * amount));
+        "BlurScale",
+        ParameterVariant(axis * amount));
     m_averageBlurMaterial->Init();
 
     m_utilFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
@@ -1178,7 +1200,7 @@ namespace ToolKit
 
   void Renderer::SetProjectViewModel(Entity* ntt, Camera* cam)
   {
-    m_view = cam->GetViewMatrix();
+    m_view    = cam->GetViewMatrix();
 
     // Recalculate the projection matrix due to aspect ratio changes of the
     // current frame buffer.
@@ -1253,8 +1275,9 @@ namespace ToolKit
     {
       ProgramPtr program = std::make_shared<Program>(vertex, fragment);
       program->m_handle  = glCreateProgram();
-      LinkProgram(
-          program->m_handle, vertex->m_shaderHandle, fragment->m_shaderHandle);
+      LinkProgram(program->m_handle,
+                  vertex->m_shaderHandle,
+                  fragment->m_shaderHandle);
       glUseProgram(program->m_handle);
       for (ubyte slotIndx = 0; slotIndx < m_rhiSettings::textureSlotCount;
            slotIndx++)
@@ -1285,43 +1308,52 @@ namespace ToolKit
       {
         switch (uni)
         {
-        case Uniform::PROJECT_MODEL_VIEW: {
-          GLint loc = glGetUniformLocation(
-              program->m_handle, GetUniformName(Uniform::PROJECT_MODEL_VIEW));
+        case Uniform::PROJECT_MODEL_VIEW:
+        {
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::PROJECT_MODEL_VIEW));
           Mat4 mul = m_project * m_view * m_model;
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
         break;
-        case Uniform::VIEW: {
+        case Uniform::VIEW:
+        {
           GLint loc = glGetUniformLocation(program->m_handle,
                                            GetUniformName(Uniform::VIEW));
           glUniformMatrix4fv(loc, 1, false, &m_view[0][0]);
         }
-        case Uniform::MODEL: {
+        case Uniform::MODEL:
+        {
           GLint loc = glGetUniformLocation(program->m_handle,
                                            GetUniformName(Uniform::MODEL));
           glUniformMatrix4fv(loc, 1, false, &m_model[0][0]);
         }
         break;
-        case Uniform::INV_TR_MODEL: {
-          GLint loc = glGetUniformLocation(
-              program->m_handle, GetUniformName(Uniform::INV_TR_MODEL));
+        case Uniform::INV_TR_MODEL:
+        {
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::INV_TR_MODEL));
           Mat4 invTrModel = glm::transpose(glm::inverse(m_model));
           glUniformMatrix4fv(loc, 1, false, &invTrModel[0][0]);
         }
         break;
-        case Uniform::LIGHT_DATA: {
+        case Uniform::LIGHT_DATA:
+        {
           FeedLightUniforms(program);
         }
         break;
-        case Uniform::CAM_DATA: {
+        case Uniform::CAM_DATA:
+        {
           if (m_cam == nullptr)
             break;
 
           Camera::CamData data     = m_cam->GetData();
           String uniformStructName = GetUniformName(Uniform::CAM_DATA);
-          GLint loc                = glGetUniformLocation(
-              program->m_handle, (uniformStructName + ".pos").c_str());
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   (uniformStructName + ".pos").c_str());
           glUniform3fv(loc, 1, &data.pos.x);
           loc = glGetUniformLocation(program->m_handle,
                                      (uniformStructName + ".dir").c_str());
@@ -1331,7 +1363,8 @@ namespace ToolKit
           glUniform1f(loc, data.far);
         }
         break;
-        case Uniform::COLOR: {
+        case Uniform::COLOR:
+        {
           if (m_mat == nullptr)
             break;
 
@@ -1354,19 +1387,23 @@ namespace ToolKit
           }
         }
         break;
-        case Uniform::FRAME_COUNT: {
-          GLint loc = glGetUniformLocation(
-              program->m_handle, GetUniformName(Uniform::FRAME_COUNT));
+        case Uniform::FRAME_COUNT:
+        {
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::FRAME_COUNT));
           glUniform1ui(loc, m_frameCount);
         }
         break;
-        case Uniform::EXPOSURE: {
+        case Uniform::EXPOSURE:
+        {
           GLint loc = glGetUniformLocation(program->m_handle,
                                            GetUniformName(Uniform::EXPOSURE));
           glUniform1f(loc, shader->m_shaderParams["Exposure"].GetVar<float>());
         }
         break;
-        case Uniform::PROJECTION_VIEW_NO_TR: {
+        case Uniform::PROJECTION_VIEW_NO_TR:
+        {
           GLint loc = glGetUniformLocation(
               program->m_handle,
               GetUniformName(Uniform::PROJECTION_VIEW_NO_TR));
@@ -1383,90 +1420,111 @@ namespace ToolKit
           glUniformMatrix4fv(loc, 1, false, &mul[0][0]);
         }
         break;
-        case Uniform::USE_IBL: {
+        case Uniform::USE_IBL:
+        {
           m_renderState.IBLInUse = m_mat->GetRenderState()->IBLInUse;
           GLint loc              = glGetUniformLocation(program->m_handle,
                                            GetUniformName(Uniform::USE_IBL));
           glUniform1f(loc, static_cast<float>(m_renderState.IBLInUse));
         }
         break;
-        case Uniform::IBL_INTENSITY: {
+        case Uniform::IBL_INTENSITY:
+        {
           m_renderState.iblIntensity = m_mat->GetRenderState()->iblIntensity;
-          GLint loc                  = glGetUniformLocation(
-              program->m_handle, GetUniformName(Uniform::IBL_INTENSITY));
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::IBL_INTENSITY));
           glUniform1f(loc, static_cast<float>(m_renderState.iblIntensity));
         }
         break;
-        case Uniform::IBL_IRRADIANCE: {
+        case Uniform::IBL_IRRADIANCE:
+        {
           m_renderState.irradianceMap = m_mat->GetRenderState()->irradianceMap;
           SetTexture(7, m_renderState.irradianceMap);
         }
         break;
-        case Uniform::DIFFUSE_TEXTURE_IN_USE: {
+        case Uniform::DIFFUSE_TEXTURE_IN_USE:
+        {
           GLint loc = glGetUniformLocation(
               program->m_handle,
               GetUniformName(Uniform::DIFFUSE_TEXTURE_IN_USE));
           glUniform1i(loc, (int) !(m_mat->GetRenderState()->isColorMaterial));
         }
         break;
-        case Uniform::COLOR_ALPHA: {
+        case Uniform::COLOR_ALPHA:
+        {
           if (m_mat == nullptr)
             break;
 
-          GLint loc = glGetUniformLocation(
-              program->m_handle, GetUniformName(Uniform::COLOR_ALPHA));
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::COLOR_ALPHA));
           glUniform1f(loc, m_mat->m_alpha);
         }
         break;
-        case Uniform::USE_AO: {
+        case Uniform::USE_AO:
+        {
           m_renderState.AOInUse = m_mat->GetRenderState()->AOInUse;
           GLint loc             = glGetUniformLocation(program->m_handle,
                                            GetUniformName(Uniform::USE_AO));
           glUniform1i(loc, (int) m_renderState.AOInUse);
         }
         break;
-        case Uniform::IBL_ROTATION: {
-          GLint loc = glGetUniformLocation(
-              program->m_handle, GetUniformName(Uniform::IBL_ROTATION));
+        case Uniform::IBL_ROTATION:
+        {
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::IBL_ROTATION));
 
           glUniformMatrix4fv(loc, 1, false, &m_iblRotation[0][0]);
         }
         break;
-        case Uniform::LIGHTING_ONLY: {
-          GLint loc = glGetUniformLocation(
-              program->m_handle, GetUniformName(Uniform::LIGHTING_ONLY));
+        case Uniform::LIGHTING_ONLY:
+        {
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::LIGHTING_ONLY));
           glUniform1i(loc, m_renderOnlyLighting ? 1 : 0);
         }
         break;
-        case Uniform::USE_ALPHA_MASK: {
-          GLint loc = glGetUniformLocation(
-              program->m_handle, GetUniformName(Uniform::USE_ALPHA_MASK));
+        case Uniform::USE_ALPHA_MASK:
+        {
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::USE_ALPHA_MASK));
           glUniform1i(loc,
                       m_renderState.blendFunction == BlendFunction::ALPHA_MASK);
         }
         break;
-        case Uniform::ALPHA_MASK_TRESHOLD: {
+        case Uniform::ALPHA_MASK_TRESHOLD:
+        {
           GLint loc = glGetUniformLocation(
-              program->m_handle, GetUniformName(Uniform::ALPHA_MASK_TRESHOLD));
+              program->m_handle,
+              GetUniformName(Uniform::ALPHA_MASK_TRESHOLD));
           glUniform1f(loc, m_renderState.alphaMaskTreshold);
         }
         break;
-        case Uniform::EMISSIVE_COLOR: {
-          GLint loc = glGetUniformLocation(
-              program->m_handle, GetUniformName(Uniform::EMISSIVE_COLOR));
+        case Uniform::EMISSIVE_COLOR:
+        {
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::EMISSIVE_COLOR));
           glUniform3fv(loc, 1, &m_mat->m_emissiveColor.x);
         }
         break;
-        case Uniform::EMISSIVE_TEXTURE_IN_USE: {
+        case Uniform::EMISSIVE_TEXTURE_IN_USE:
+        {
           GLint loc = glGetUniformLocation(
               program->m_handle,
               GetUniformName(Uniform::EMISSIVE_TEXTURE_IN_USE));
           glUniform1i(loc, m_renderState.emissiveTextureInUse);
         }
         break;
-        case Uniform::USE_FORWARD_PATH: {
-          GLint loc = glGetUniformLocation(
-              program->m_handle, GetUniformName(Uniform::USE_FORWARD_PATH));
+        case Uniform::USE_FORWARD_PATH:
+        {
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::USE_FORWARD_PATH));
           glUniform1i(loc, (GLint) m_renderState.useForwardPath);
         }
         break;
@@ -1500,16 +1558,19 @@ namespace ToolKit
           glUniform1ui(loc, var.second.GetVar<uint>());
           break;
         case ParameterVariant::VariantType::Vec2:
-          glUniform2fv(
-              loc, 1, reinterpret_cast<float*>(&var.second.GetVar<Vec2>()));
+          glUniform2fv(loc,
+                       1,
+                       reinterpret_cast<float*>(&var.second.GetVar<Vec2>()));
           break;
         case ParameterVariant::VariantType::Vec3:
-          glUniform3fv(
-              loc, 1, reinterpret_cast<float*>(&var.second.GetVar<Vec3>()));
+          glUniform3fv(loc,
+                       1,
+                       reinterpret_cast<float*>(&var.second.GetVar<Vec3>()));
           break;
         case ParameterVariant::VariantType::Vec4:
-          glUniform4fv(
-              loc, 1, reinterpret_cast<float*>(&var.second.GetVar<Vec4>()));
+          glUniform4fv(loc,
+                       1,
+                       reinterpret_cast<float*>(&var.second.GetVar<Vec4>()));
           break;
         case ParameterVariant::VariantType::Mat3:
           glUniformMatrix3fv(
@@ -1541,7 +1602,7 @@ namespace ToolKit
     {
       Light* currLight = m_lights[i];
 
-      EntityType type = currLight->GetType();
+      EntityType type  = currLight->GetType();
 
       // Point light uniforms
       if (type == EntityType::Entity_PointLight)
@@ -1552,7 +1613,7 @@ namespace ToolKit
             currLight->m_node->GetTranslation(TransformationSpace::TS_WORLD);
         float radius = static_cast<PointLight*>(currLight)->GetRadiusVal();
 
-        GLuint loc = glGetUniformLocation(program->m_handle,
+        GLuint loc   = glGetUniformLocation(program->m_handle,
                                           g_lightTypeStrCache[i].c_str());
         glUniform1i(loc, static_cast<GLuint>(2));
         loc = glGetUniformLocation(program->m_handle,
@@ -1636,15 +1697,17 @@ namespace ToolKit
       if (castShadow)
       {
         GLint loc = glGetUniformLocation(
-            program->m_handle, g_lightprojectionViewMatrixStrCache[i].c_str());
+            program->m_handle,
+            g_lightprojectionViewMatrixStrCache[i].c_str());
         glUniformMatrix4fv(
             loc,
             1,
             GL_FALSE,
             &(currLight->m_shadowMapCameraProjectionViewMatrix)[0][0]);
 
-        loc = glGetUniformLocation(
-            program->m_handle, g_lightShadowMapCameraFarStrCache[i].c_str());
+        loc =
+            glGetUniformLocation(program->m_handle,
+                                 g_lightShadowMapCameraFarStrCache[i].c_str());
         glUniform1f(loc, currLight->m_shadowMapCameraFar);
 
         loc = glGetUniformLocation(program->m_handle,
@@ -1674,8 +1737,9 @@ namespace ToolKit
                                    g_lightShadowAtlasCoordStrCache[i].c_str());
         glUniform2fv(loc, 1, &coord.x);
 
-        loc = glGetUniformLocation(
-            program->m_handle, g_lightShadowAtlasResRatioStrCache[i].c_str());
+        loc =
+            glGetUniformLocation(program->m_handle,
+                                 g_lightShadowAtlasResRatioStrCache[i].c_str());
         glUniform1f(loc,
                     currLight->GetShadowResVal() /
                         Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
@@ -1771,10 +1835,10 @@ namespace ToolKit
         ShaderPath("equirectToCubeFrag.shader", true));
     frag->m_shaderParams["Exposure"] = exposure;
 
-    mat->m_diffuseTexture           = texture;
-    mat->m_vertexShader             = vert;
-    mat->m_fragmentShader           = frag;
-    mat->GetRenderState()->cullMode = CullingType::TwoSided;
+    mat->m_diffuseTexture            = texture;
+    mat->m_vertexShader              = vert;
+    mat->m_fragmentShader            = frag;
+    mat->GetRenderState()->cullMode  = CullingType::TwoSided;
     mat->Init();
 
     m_utilFramebuffer->UnInit();

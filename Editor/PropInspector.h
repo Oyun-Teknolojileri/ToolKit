@@ -31,9 +31,9 @@ namespace ToolKit
       static bool IsTextInputFinalized();
 
       View(const StringView viewName);
-      virtual ~View()
-      {
-      }
+
+      virtual ~View() {}
+
       virtual void Show() = 0;
 
      public:

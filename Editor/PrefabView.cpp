@@ -21,9 +21,7 @@ namespace ToolKit
       m_viewIcn = UI::m_prefabIcn;
     }
 
-    PrefabView::~PrefabView()
-    {
-    }
+    PrefabView::~PrefabView() {}
 
     bool PrefabView::DrawHeader(Entity* ntt, ImGuiTreeNodeFlags flags)
     {
@@ -66,8 +64,9 @@ namespace ToolKit
 
       // Texture only toggle button.
       ImGui::PushID(static_cast<int>(ntt->GetIdVal()));
-      if (UI::ImageButtonDecorless(
-              icon->m_textureId, ImVec2(15.0f, 15.0f), false))
+      if (UI::ImageButtonDecorless(icon->m_textureId,
+                                   ImVec2(15.0f, 15.0f),
+                                   false))
       {
         ntt->SetVisibility(!ntt->GetVisibleVal(), true);
       }
@@ -152,8 +151,10 @@ namespace ToolKit
       ParameterVariantRawPtrArray inheritedParams;
       shownEntity->m_localData.GetByCategory(CustomDataCategory.Name,
                                              inheritedParams);
-      CustomDataView::ShowCustomData(
-          shownEntity, "Custom Data##1", inheritedParams, false);
+      CustomDataView::ShowCustomData(shownEntity,
+                                     "Custom Data##1",
+                                     inheritedParams,
+                                     false);
 
       if (ImGui::CollapsingHeader("Components##1",
                                   ImGuiTreeNodeFlags_DefaultOpen))

@@ -13,7 +13,7 @@
 namespace ToolKit
 {
 
-  static VariantCategory PrefabCategory{"Prefab", 90};
+  static VariantCategory PrefabCategory {"Prefab", 90};
 
   /**
    * Entity to use in scenes

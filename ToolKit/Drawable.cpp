@@ -16,19 +16,11 @@
 namespace ToolKit
 {
 
-  Drawable::Drawable()
-  {
-    AddComponent(new MeshComponent());
-  }
+  Drawable::Drawable() { AddComponent(new MeshComponent()); }
 
-  Drawable::~Drawable()
-  {
-  }
+  Drawable::~Drawable() {}
 
-  EntityType Drawable::GetType() const
-  {
-    return EntityType::Entity_Drawable;
-  }
+  EntityType Drawable::GetType() const { return EntityType::Entity_Drawable; }
 
   void Drawable::SetPose(const AnimationPtr& anim, float time)
   {

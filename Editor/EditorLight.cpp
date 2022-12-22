@@ -35,15 +35,11 @@ namespace ToolKit
 
     EditorLightBase::EditorLightBase(Light* light) : m_light(light)
     {
-      m_gizmoUpdateFn = [this](Value& oldVal, Value& newVal) -> void {
-        m_gizmo->InitGizmo(m_light);
-      };
+      m_gizmoUpdateFn = [this](Value& oldVal, Value& newVal) -> void
+      { m_gizmo->InitGizmo(m_light); };
     }
 
-    EditorLightBase::~EditorLightBase()
-    {
-      SafeDel(m_gizmo);
-    }
+    EditorLightBase::~EditorLightBase() { SafeDel(m_gizmo); }
 
     void EditorLightBase::Init()
     {
@@ -60,8 +56,8 @@ namespace ToolKit
       m_gizmo->InitGizmo(m_light);
       m_gizmoMC->ParamMesh().m_exposed = false;
 
-      m_gizmoActive = false;
-      m_initialized = true;
+      m_gizmoActive                    = false;
+      m_initialized                    = true;
     }
 
     void EditorLightBase::EnableGizmo(bool enable)
@@ -91,9 +87,7 @@ namespace ToolKit
       m_gizmo = new DirectionalLightGizmo(this);
     }
 
-    EditorDirectionalLight::~EditorDirectionalLight()
-    {
-    }
+    EditorDirectionalLight::~EditorDirectionalLight() {}
 
     void EditorDirectionalLight::ParameterEventConstructor()
     {
@@ -172,9 +166,7 @@ namespace ToolKit
       ParameterEventConstructor();
     }
 
-    EditorPointLight::~EditorPointLight()
-    {
-    }
+    EditorPointLight::~EditorPointLight() {}
 
     void EditorPointLight::ParameterEventConstructor()
     {
@@ -218,9 +210,7 @@ namespace ToolKit
       ParameterEventConstructor();
     }
 
-    EditorSpotLight::~EditorSpotLight()
-    {
-    }
+    EditorSpotLight::~EditorSpotLight() {}
 
     void EditorSpotLight::ParameterEventConstructor()
     {

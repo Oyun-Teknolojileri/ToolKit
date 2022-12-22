@@ -19,19 +19,11 @@ static constexpr bool SERIALIZE_ANIMATION_AS_BINARY = false;
 namespace ToolKit
 {
 
-  Animation::Animation()
-  {
-  }
+  Animation::Animation() {}
 
-  Animation::Animation(const String& file) : Animation()
-  {
-    SetFile(file);
-  }
+  Animation::Animation(const String& file) : Animation() { SetFile(file); }
 
-  Animation::~Animation()
-  {
-    UnInit();
-  }
+  Animation::~Animation() { UnInit(); }
 
   void Animation::GetPose(Node* node, float time)
   {
@@ -135,8 +127,8 @@ namespace ToolKit
     XmlAttribute* attr = node->first_attribute("fps");
     m_fps              = static_cast<float>(std::atof(attr->value()));
 
-    attr       = node->first_attribute("duration");
-    m_duration = static_cast<float>(std::atof(attr->value()));
+    attr               = node->first_attribute("duration");
+    m_duration         = static_cast<float>(std::atof(attr->value()));
 
     for (XmlNode* animNode = node->first_node("node"); animNode;
          animNode          = animNode->next_sibling())
@@ -161,8 +153,8 @@ namespace ToolKit
              keyNode          = keyNode->next_sibling())
         {
           Key key;
-          attr        = keyNode->first_attribute("frame");
-          key.m_frame = std::atoi(attr->value());
+          attr             = keyNode->first_attribute("frame");
+          key.m_frame      = std::atoi(attr->value());
 
           XmlNode* subNode = keyNode->first_node("translation");
           ReadVec(subNode, key.m_position);
@@ -180,11 +172,12 @@ namespace ToolKit
 
     m_loaded = true;
   }
+
   void Animation::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "anim", parent);
 
-    char* fpsValueStr = doc->allocate_string(std::to_string(m_fps).c_str());
+    char* fpsValueStr  = doc->allocate_string(std::to_string(m_fps).c_str());
     XmlAttribute* fpsAttrib = doc->allocate_attribute("fps", fpsValueStr);
     container->append_attribute(fpsAttrib);
 
@@ -195,7 +188,7 @@ namespace ToolKit
     container->append_attribute(durAttrib);
 
     BoneKeyArrayMap::const_iterator iterator;
-    for (auto const& [boneName, keys] : m_keys)
+    for (const auto& [boneName, keys] : m_keys)
     {
       XmlNode* boneNode = CreateXmlNode(doc, "node", container);
 
@@ -224,22 +217,21 @@ namespace ToolKit
           keyNode->append_attribute(
               doc->allocate_attribute("frame", frameIndexValueStr));
 
-          WriteVec(
-              CreateXmlNode(doc, "translation", keyNode), doc, key.m_position);
+          WriteVec(CreateXmlNode(doc, "translation", keyNode),
+                   doc,
+                   key.m_position);
 
           WriteVec(CreateXmlNode(doc, "scale", keyNode), doc, key.m_scale);
 
-          WriteVec(
-              CreateXmlNode(doc, "rotation", keyNode), doc, key.m_rotation);
+          WriteVec(CreateXmlNode(doc, "rotation", keyNode),
+                   doc,
+                   key.m_rotation);
         }
       }
     }
   }
 
-  void Animation::Init(bool flushClientSideArray)
-  {
-    m_initiated = true;
-  }
+  void Animation::Init(bool flushClientSideArray) { m_initiated = true; }
 
   void Animation::UnInit()
   {
@@ -271,8 +263,11 @@ namespace ToolKit
     cpy->m_duration = m_duration;
   }
 
-  void Animation::GetNearestKeys(
-      const KeyArray& keys, int& key1, int& key2, float& ratio, float t)
+  void Animation::GetNearestKeys(const KeyArray& keys,
+                                 int& key1,
+                                 int& key2,
+                                 float& ratio,
+                                 float t)
   {
     // Find nearset keys.
     key1  = -1;
@@ -326,10 +321,7 @@ namespace ToolKit
     }
   }
 
-  AnimRecord::AnimRecord()
-  {
-    m_id = GetHandleManager()->GetNextHandle();
-  }
+  AnimRecord::AnimRecord() { m_id = GetHandleManager()->GetNextHandle(); }
 
   AnimRecord::AnimRecord(Entity* entity, const AnimationPtr& anim)
       : m_entity(entity), m_animation(anim)
@@ -439,14 +431,9 @@ namespace ToolKit
     return -1;
   }
 
-  AnimationManager::AnimationManager()
-  {
-    m_type = ResourceType::Animation;
-  }
+  AnimationManager::AnimationManager() { m_type = ResourceType::Animation; }
 
-  AnimationManager::~AnimationManager()
-  {
-  }
+  AnimationManager::~AnimationManager() {}
 
   bool AnimationManager::CanStore(ResourceType t)
   {

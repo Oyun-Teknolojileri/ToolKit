@@ -121,7 +121,7 @@ namespace ToolKit
       Surface* surface    = static_cast<Surface*>(m_entity);
       float* anchorRatios = surface->m_anchorParams.m_anchorRatios;
 
-      const Vec3 axis[3] = {
+      const Vec3 axis[3]  = {
           {1.f, 0.f, 0.f},
           {0.f, 1.f, 0.f},
           {0.f, 0.f, 1.f}
@@ -153,10 +153,10 @@ namespace ToolKit
 
       for (AnchorHandlePtr handle : m_handles)
       {
-        AnchorHandle::Params p = GetParam();
-        p.type                 = AnchorHandle::SolidType::Quad;
+        AnchorHandle::Params p         = GetParam();
+        p.type                         = AnchorHandle::SolidType::Quad;
 
-        p.worldLoc = pos;
+        p.worldLoc                     = pos;
 
         const DirectionLabel direction = handle->m_params.direction;
 
@@ -200,8 +200,8 @@ namespace ToolKit
 
         if (direction == DirectionLabel::NE)
         {
-          p.worldLoc -= axis[1] * ((anchorRatios[2]) * h);
-          p.worldLoc += axis[0] * ((1.f - anchorRatios[1]) * w);
+          p.worldLoc  -= axis[1] * ((anchorRatios[2]) * h);
+          p.worldLoc  += axis[0] * ((1.f - anchorRatios[1]) * w);
 
           p.translate = Vec3(0.f, handleTranslate, 0.f);
           p.scale     = Vec3(0.5f, 1.1f, 1.f);
@@ -209,8 +209,8 @@ namespace ToolKit
         }
         if (direction == DirectionLabel::SE)
         {
-          p.worldLoc -= axis[1] * ((1.f - anchorRatios[3]) * h);
-          p.worldLoc += axis[0] * ((1.f - anchorRatios[1]) * w);
+          p.worldLoc  -= axis[1] * ((1.f - anchorRatios[3]) * h);
+          p.worldLoc  += axis[0] * ((1.f - anchorRatios[1]) * w);
 
           p.translate = Vec3(0.f, -handleTranslate, 0.f);
           p.scale     = Vec3(0.5f, 1.1f, 1.f);
@@ -218,8 +218,8 @@ namespace ToolKit
         }
         if (direction == DirectionLabel::NW)
         {
-          p.worldLoc -= axis[1] * ((anchorRatios[2]) * h);
-          p.worldLoc += axis[0] * ((anchorRatios[0]) * w);
+          p.worldLoc  -= axis[1] * ((anchorRatios[2]) * h);
+          p.worldLoc  += axis[0] * ((anchorRatios[0]) * w);
 
           p.translate = Vec3(0.f, handleTranslate, 0.f);
           p.scale     = Vec3(0.5f, 1.1f, 1.f);
@@ -227,8 +227,8 @@ namespace ToolKit
         }
         if (direction == DirectionLabel::SW)
         {
-          p.worldLoc -= axis[1] * ((1.f - anchorRatios[3]) * h);
-          p.worldLoc += axis[0] * ((anchorRatios[0]) * w);
+          p.worldLoc  -= axis[1] * ((1.f - anchorRatios[3]) * h);
+          p.worldLoc  += axis[0] * ((anchorRatios[0]) * w);
 
           p.translate = Vec3(0.f, handleTranslate, 0.f);
           p.scale     = Vec3(0.5f, 1.1f, 1.f);
@@ -309,8 +309,8 @@ namespace ToolKit
 
             float zoomScale = vp->GetBillboardScale();
             float s         = shapeSize;
-            p.translate *= zoomScale;
-            p.scale *= Vec3(s * zoomScale, s * zoomScale, 1.f);
+            p.translate     *= zoomScale;
+            p.scale         *= Vec3(s * zoomScale, s * zoomScale, 1.f);
             handle->Generate(p);
           }
         }
@@ -376,10 +376,7 @@ namespace ToolKit
     // AnchorHandle
     //////////////////////////////////////////////////////////////////////////
 
-    AnchorHandle::AnchorHandle()
-    {
-      m_params.color = g_anchorColor;
-    }
+    AnchorHandle::AnchorHandle() { m_params.color = g_anchorColor; }
 
     void AnchorHandle::Generate(const Params& params)
     {

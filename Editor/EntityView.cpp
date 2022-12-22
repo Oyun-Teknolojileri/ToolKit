@@ -17,9 +17,8 @@ namespace ToolKit
       m_viewID  = 1;
       m_viewIcn = UI::m_arrowsIcon;
     }
-    EntityView::~EntityView()
-    {
-    }
+
+    EntityView::~EntityView() {}
 
     void EntityView::ShowAnchorSettings()
     {
@@ -50,30 +49,37 @@ namespace ToolKit
                                                   ->m_textureId),
                       Vec2(32, 32)))
               {
-                auto changeAnchor = [surface](uint anchorPreset) {
-                  auto gatherAtLeft = [surface]() {
+                auto changeAnchor = [surface](uint anchorPreset)
+                {
+                  auto gatherAtLeft = [surface]()
+                  {
                     surface->m_anchorParams.m_anchorRatios[0] = 0.0f;
                     surface->m_anchorParams.m_anchorRatios[1] = 1.0f;
                   };
-                  auto gatherAtRight = [surface]() {
+                  auto gatherAtRight = [surface]()
+                  {
                     surface->m_anchorParams.m_anchorRatios[0] = 1.0f;
                     surface->m_anchorParams.m_anchorRatios[1] = 0.0f;
                   };
-                  auto gatherAtMiddle = [surface](bool horizontal) {
+                  auto gatherAtMiddle = [surface](bool horizontal)
+                  {
                     surface->m_anchorParams
                         .m_anchorRatios[(horizontal) ? 0 : 2] = 0.5f;
                     surface->m_anchorParams
                         .m_anchorRatios[(horizontal) ? 1 : 3] = 0.5f;
                   };
-                  auto gatherAtTop = [surface]() {
+                  auto gatherAtTop = [surface]()
+                  {
                     surface->m_anchorParams.m_anchorRatios[2] = 0.0f;
                     surface->m_anchorParams.m_anchorRatios[3] = 1.0f;
                   };
-                  auto gatherAtBottom = [surface]() {
+                  auto gatherAtBottom = [surface]()
+                  {
                     surface->m_anchorParams.m_anchorRatios[2] = 1.0f;
                     surface->m_anchorParams.m_anchorRatios[3] = 0.0f;
                   };
-                  auto scatterToSide = [surface](bool horizontal) {
+                  auto scatterToSide = [surface](bool horizontal)
+                  {
                     surface->m_anchorParams
                         .m_anchorRatios[(horizontal) ? 0 : 2] = 0.0f;
                     surface->m_anchorParams
@@ -88,7 +94,7 @@ namespace ToolKit
                     // 0: Left, 1: Middle, 2: Right, 3: Side-to-Side
                     uint anchorHorizontalPos = subMode;
                     // 0: Top, 1: Middle, 2: Bottom
-                    uint anchorVerticalPos = mainMode;
+                    uint anchorVerticalPos   = mainMode;
                     switch (anchorHorizontalPos)
                     {
                     case 0:
@@ -179,8 +185,8 @@ namespace ToolKit
           {
             pos = canvasPanel->m_node->GetTranslation(
                 TransformationSpace::TS_WORLD);
-            w = canvasPanel->GetSizeVal().x;
-            h = canvasPanel->GetSizeVal().y;
+            w   = canvasPanel->GetSizeVal().x;
+            h   = canvasPanel->GetSizeVal().y;
             pos -= Vec3(w / 2.f, h / 2.f, 0.f);
             const Vec3 surfacePos =
                 surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
@@ -326,14 +332,16 @@ namespace ToolKit
 
         // Continuous edit utils.
         static TransformAction* dragMem = nullptr;
-        const auto saveDragMemFn        = [this]() -> void {
+        const auto saveDragMemFn        = [this]() -> void
+        {
           if (dragMem == nullptr)
           {
             dragMem = new TransformAction(m_entity);
           }
         };
 
-        const auto saveTransformActionFn = [this]() -> void {
+        const auto saveTransformActionFn = [this]() -> void
+        {
           if (ImGui::IsItemDeactivatedAfterEdit())
           {
             ActionManager::GetInstance()->AddAction(dragMem);
@@ -477,7 +485,8 @@ namespace ToolKit
 
         // If entity is gradient sky create a "Update IBL Textures" button
         if (m_entity->GetType() == EntityType::Entity_GradientSky &&
-            category.Name.compare("Sky") == 0) // TODO This might not be necessary
+            category.Name.compare("Sky") ==
+                0) // TODO This might not be necessary
         {
           if (UI::BeginCenteredTextButton("Update IBL Textures"))
           {

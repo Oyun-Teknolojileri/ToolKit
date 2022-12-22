@@ -46,14 +46,9 @@ namespace ToolKit
     m_viewportId = GetHandleManager()->GetNextHandle();
   }
 
-  ViewportBase::~ViewportBase()
-  {
-    SafeDel(m_camera);
-  }
+  ViewportBase::~ViewportBase() { SafeDel(m_camera); }
 
-  Viewport::Viewport()
-  {
-  }
+  Viewport::Viewport() {}
 
   Viewport::Viewport(float width, float height)
       : m_wndContentAreaSize(width, height)
@@ -62,9 +57,7 @@ namespace ToolKit
     ResetViewportImage(GetRenderTargetSettings());
   }
 
-  Viewport::~Viewport()
-  {
-  }
+  Viewport::~Viewport() {}
 
   void Viewport::OnResizeContentArea(float width, float height)
   {
@@ -105,8 +98,10 @@ namespace ToolKit
                          false,
                          true});
 
-    m_renderTarget = std::make_shared<RenderTarget>(
-        (uint) m_wndContentAreaSize.x, (uint) m_wndContentAreaSize.y, settings);
+    m_renderTarget =
+        std::make_shared<RenderTarget>((uint) m_wndContentAreaSize.x,
+                                       (uint) m_wndContentAreaSize.y,
+                                       settings);
     m_renderTarget->Init();
 
     if (m_renderTarget->m_initiated)
@@ -129,7 +124,7 @@ namespace ToolKit
     Ray ray;
     ray.position = TransformViewportToWorldSpace(mcInVs);
 
-    Camera* cam = GetCamera();
+    Camera* cam  = GetCamera();
     if (cam->IsOrtographic())
     {
       ray.direction = cam->GetComponent<DirectionComponent>()->GetDirection();
@@ -169,9 +164,9 @@ namespace ToolKit
   {
     Vec3 screenPoint = Vec3(pnt, 0.0f);
 
-    Camera* cam  = GetCamera();
-    Mat4 view    = cam->GetViewMatrix();
-    Mat4 project = cam->GetProjectionMatrix();
+    Camera* cam      = GetCamera();
+    Mat4 view        = cam->GetViewMatrix();
+    Mat4 project     = cam->GetProjectionMatrix();
 
     return glm::unProject(
         screenPoint,
@@ -186,7 +181,7 @@ namespace ToolKit
     glm::mat4 view    = cam->GetViewMatrix();
     glm::mat4 project = cam->GetProjectionMatrix();
 
-    Vec3 screenPos = glm::project(
+    Vec3 screenPos    = glm::project(
         pnt,
         view,
         project,
@@ -216,10 +211,7 @@ namespace ToolKit
     return false;
   }
 
-  void Viewport::AttachCamera(ULongID camId)
-  {
-    m_attachedCamera = camId;
-  }
+  void Viewport::AttachCamera(ULongID camId) { m_attachedCamera = camId; }
 
   float Viewport::GetBillboardScale()
   {

@@ -14,10 +14,7 @@
 namespace ToolKit
 {
 
-  StaticBone::StaticBone(String name)
-  {
-    m_name = name;
-  }
+  StaticBone::StaticBone(String name) { m_name = name; }
 
   StaticBone::~StaticBone()
   {
@@ -25,6 +22,7 @@ namespace ToolKit
     m_node->m_parent = nullptr;
     m_node->m_children.clear();*/
   }
+
   // Create a texture such that there is mat4x4 per bone
   TexturePtr CreateBoneTransformTexture(const Skeleton* skeleton)
   {
@@ -52,11 +50,19 @@ namespace ToolKit
     ptr->m_loaded    = true;
     return ptr;
   }
+
   void uploadBoneMatrix(Mat4 mat, TexturePtr& ptr, uint boneIndx)
   {
     glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);
-    glTexSubImage2D(
-        GL_TEXTURE_2D, 0, boneIndx * 4, 0, 4, 1, GL_RGBA, GL_FLOAT, &mat);
+    glTexSubImage2D(GL_TEXTURE_2D,
+                    0,
+                    boneIndx * 4,
+                    0,
+                    4,
+                    1,
+                    GL_RGBA,
+                    GL_FLOAT,
+                    &mat);
   };
 
   void DynamicBoneMap::AddDynamicBone(const String& boneName,
@@ -108,6 +114,7 @@ namespace ToolKit
 
     boneTransformNodeTexture = CreateBoneTransformTexture(skeleton);
   }
+
   void DynamicBoneMap::UpdateGPUTexture()
   {
     for (auto& dBoneIter : boneList)
@@ -119,6 +126,7 @@ namespace ToolKit
                        dBone.boneIndx);
     }
   }
+
   DynamicBoneMap::~DynamicBoneMap()
   {
     for (auto& dBoneIter : boneList)
@@ -131,23 +139,13 @@ namespace ToolKit
     boneList.clear();
   }
 
-  Skeleton::Skeleton()
-  {
-  }
+  Skeleton::Skeleton() {}
 
-  Skeleton::Skeleton(String file)
-  {
-    SetFile(file);
-  }
+  Skeleton::Skeleton(String file) { SetFile(file); }
 
-  Skeleton::~Skeleton()
-  {
-    UnInit();
-  }
+  Skeleton::~Skeleton() { UnInit(); }
 
-  void Skeleton::Init(bool flushClientSideArray)
-  {
-  }
+  void Skeleton::Init(bool flushClientSideArray) {}
 
   // Find skeleton's each child bone from its child nodes
   // Then call childProcessFunc (should be recursive to traverse all childs)
@@ -159,7 +157,7 @@ namespace ToolKit
     {
       if (bone.second.node->m_parent == nullptr)
       {
-        Node* childNode = bone.second.node;
+        Node* childNode              = bone.second.node;
         // Dynamic child node
         const DynamicBone* childBone = nullptr;
         for (auto& boneSearch : boneList)
@@ -178,6 +176,7 @@ namespace ToolKit
       }
     }
   }
+
   void DynamicBoneMap::ForEachRootBone(
       std::function<void(DynamicBone*)> childProcessFunc)
   {
@@ -186,7 +185,7 @@ namespace ToolKit
     {
       if (bone.second.node->m_parent == nullptr)
       {
-        Node* childNode = bone.second.node;
+        Node* childNode        = bone.second.node;
         // Dynamic child node
         DynamicBone* childBone = nullptr;
         for (auto& boneSearch : boneList)
@@ -271,16 +270,17 @@ namespace ToolKit
     WriteAttr(boneXmlNode, doc, "name", sBone->m_name.c_str());
 
     auto writeTransformFnc =
-        [doc](XmlNode* parent, Vec3 tra, Quaternion rot, Vec3 scale) {
-          XmlNode* traNode = CreateXmlNode(doc, "translation", parent);
-          WriteVec(traNode, doc, tra);
+        [doc](XmlNode* parent, Vec3 tra, Quaternion rot, Vec3 scale)
+    {
+      XmlNode* traNode = CreateXmlNode(doc, "translation", parent);
+      WriteVec(traNode, doc, tra);
 
-          XmlNode* rotNode = CreateXmlNode(doc, "rotation", parent);
-          WriteVec(rotNode, doc, rot);
+      XmlNode* rotNode = CreateXmlNode(doc, "rotation", parent);
+      WriteVec(rotNode, doc, rot);
 
-          XmlNode* scaleNode = CreateXmlNode(doc, "scale", parent);
-          WriteVec(scaleNode, doc, scale);
-        };
+      XmlNode* scaleNode = CreateXmlNode(doc, "scale", parent);
+      WriteVec(scaleNode, doc, scale);
+    };
 
     // Bone Node Transform
     writeTransformFnc(boneXmlNode,
@@ -316,15 +316,15 @@ namespace ToolKit
       }
     }
   }
+
   void Skeleton::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "skeleton", parent);
 
     auto writeBoneFnc =
         [doc, container, this](
-            const DynamicBoneMap::DynamicBone* childBone) -> void {
-      WriteBone(this, childBone, doc, container);
-    };
+            const DynamicBoneMap::DynamicBone* childBone) -> void
+    { WriteBone(this, childBone, doc, container); };
     m_Tpose.ForEachRootBone(writeBoneFnc);
   }
 
@@ -380,8 +380,8 @@ namespace ToolKit
       Mat4 tsm;
       tsm = glm::translate(tsm, ts);
       Mat4 sclm;
-      sclm     = glm::scale(sclm, scl);
-      Mat4 rtm = glm::toMat4(rt);
+      sclm                        = glm::scale(sclm, scl);
+      Mat4 rtm                    = glm::toMat4(rt);
 
       sBone->m_inverseWorldMatrix = tsm * rtm * sclm;
     }
@@ -396,6 +396,7 @@ namespace ToolKit
       Traverse(subNode, &dBone, skeleton);
     }
   }
+
   void Skeleton::DeSerialize(XmlDocument* doc, XmlNode* parent)
   {
     if (parent == nullptr)
@@ -450,14 +451,9 @@ namespace ToolKit
     dst->Load();
   }
 
-  SkeletonManager::SkeletonManager()
-  {
-    m_type = ResourceType::Skeleton;
-  }
+  SkeletonManager::SkeletonManager() { m_type = ResourceType::Skeleton; }
 
-  SkeletonManager::~SkeletonManager()
-  {
-  }
+  SkeletonManager::~SkeletonManager() {}
 
   bool SkeletonManager::CanStore(ResourceType t)
   {

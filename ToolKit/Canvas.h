@@ -13,7 +13,7 @@
 
 namespace ToolKit
 {
-  static VariantCategory CanvasCategory{"Canvas", 90};
+  static VariantCategory CanvasCategory {"Canvas", 90};
 
   class TK_API Canvas : public Surface
   {

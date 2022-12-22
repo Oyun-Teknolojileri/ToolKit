@@ -60,7 +60,7 @@ namespace ToolKit
 
     void StateAnchorBase::MakeSureAnchorIsValid()
     {
-      g_app->m_anchor = nullptr;
+      g_app->m_anchor          = nullptr;
 
       EditorScenePtr currScene = g_app->GetCurrentScene();
       if (currScene->GetSelectedEntityCount() == 0)
@@ -177,10 +177,7 @@ namespace ToolKit
       return StateType::Null;
     }
 
-    String StateAnchorBegin::GetType()
-    {
-      return StateType::StateAnchorBegin;
-    }
+    String StateAnchorBegin::GetType() { return StateType::StateAnchorBegin; }
 
     void StateAnchorBegin::CalculateIntersectionPlane()
     {
@@ -190,7 +187,7 @@ namespace ToolKit
             TransformationSpace::TS_WORLD);
         const Vec3 anchorOrg = m_anchor->m_worldLocation;
         const Vec3 dir       = glm::normalize(camOrg - anchorOrg);
-        m_intersectionPlane  = PlaneFrom(anchorOrg, Vec3{0, 0, 1});
+        m_intersectionPlane  = PlaneFrom(anchorOrg, Vec3 {0, 0, 1});
       }
     }
 
@@ -218,26 +215,19 @@ namespace ToolKit
       m_transform = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
     }
 
-    AnchorAction::~AnchorAction()
-    {
-    }
+    AnchorAction::~AnchorAction() {}
 
-    void AnchorAction::Undo()
-    {
-      Swap();
-    }
+    void AnchorAction::Undo() { Swap(); }
 
-    void AnchorAction::Redo()
-    {
-      Swap();
-    }
+    void AnchorAction::Redo() { Swap(); }
 
     void AnchorAction::Swap()
     {
       const Mat4 backUp =
           m_entity->m_node->GetTransform(TransformationSpace::TS_WORLD);
-      m_entity->m_node->SetTransform(
-          m_transform, TransformationSpace::TS_WORLD, false);
+      m_entity->m_node->SetTransform(m_transform,
+                                     TransformationSpace::TS_WORLD,
+                                     false);
       m_transform = backUp;
     }
 
@@ -301,7 +291,8 @@ namespace ToolKit
         vp->GetContentAreaScreenCoordinates(&contentMin, &contentMax);
 
         auto drawMoveCursorFn =
-            [this, contentMin, contentMax](ImDrawList* drawList) -> void {
+            [this, contentMin, contentMax](ImDrawList* drawList) -> void
+        {
           // Clamp the mouse pos.
           Vec2 pos = m_mouseData[1];
           pos      = glm::clamp(pos, contentMin, contentMax);
@@ -333,10 +324,7 @@ namespace ToolKit
       return StateType::Null;
     }
 
-    String StateAnchorTo::GetType()
-    {
-      return StateType::StateAnchorTo;
-    }
+    String StateAnchorTo::GetType() { return StateType::StateAnchorTo; }
 
     void StateAnchorTo::CalculateDelta()
     {
@@ -351,7 +339,7 @@ namespace ToolKit
       Ray ray            = vp->RayFromScreenSpacePoint(m_mouseData[1]);
       if (LinePlaneIntersection(ray, m_intersectionPlane, t))
       {
-        Vec3 p = PointOnRay(ray, t);
+        Vec3 p              = PointOnRay(ray, t);
 
         Canvas* canvasPanel = static_cast<Canvas*>(
             m_anchor->m_entity->m_node->m_parent->m_entity);
@@ -389,7 +377,7 @@ namespace ToolKit
               EntityType::Entity_Canvas)
         return;
 
-      Surface* surface = static_cast<Surface*>(ntt);
+      Surface* surface               = static_cast<Surface*>(ntt);
 
       const DirectionLabel direction = m_anchor->GetGrabbedDirection();
       const bool hasXDirection =
@@ -401,7 +389,7 @@ namespace ToolKit
 
       Vec3 deltaX, deltaY;
 
-      m_deltaAccum += m_anchorDeltaTransform;
+      m_deltaAccum           += m_anchorDeltaTransform;
       m_anchorDeltaTransform = ZERO;
 
       if (g_app->m_snapsEnabled)
@@ -420,15 +408,15 @@ namespace ToolKit
 
       if (hasXDirection)
       {
-        Vec3 dir{1.f, 0.f, 0.f};
-        dir = glm::normalize(dir);
+        Vec3 dir {1.f, 0.f, 0.f};
+        dir    = glm::normalize(dir);
         deltaX += glm::dot(dir, m_anchorDeltaTransform) * dir;
       }
 
       if (hasYDirection)
       {
-        Vec3 dir{0.f, 1.f, 0.f};
-        dir = glm::normalize(dir);
+        Vec3 dir {0.f, 1.f, 0.f};
+        dir    = glm::normalize(dir);
         deltaY += glm::dot(dir, m_anchorDeltaTransform) * dir;
       }
       float w = 0, h = 0;
@@ -448,8 +436,8 @@ namespace ToolKit
 
       if (direction == DirectionLabel::CENTER)
       {
-        const float dX = m_anchorDeltaTransform.x / w;
-        const float dY = m_anchorDeltaTransform.y / h;
+        const float dX  = m_anchorDeltaTransform.x / w;
+        const float dY  = m_anchorDeltaTransform.y / h;
 
         anchorRatios[0] += std::min(1.f, dX);
         anchorRatios[0] = std::max(0.f, anchorRatios[0]);
@@ -467,7 +455,7 @@ namespace ToolKit
       if (direction == DirectionLabel::W || direction == DirectionLabel::NW ||
           direction == DirectionLabel::SW)
       {
-        const float d = m_anchorDeltaTransform.x / w;
+        const float d   = m_anchorDeltaTransform.x / w;
         anchorRatios[0] += std::min(1.f, d);
         anchorRatios[0] = std::max(0.f, anchorRatios[0]);
         anchorRatios[0] = std::min(1.f, anchorRatios[0]);
@@ -480,7 +468,7 @@ namespace ToolKit
       if (direction == DirectionLabel::E || direction == DirectionLabel::NE ||
           direction == DirectionLabel::SE)
       {
-        const float d = m_anchorDeltaTransform.x / w;
+        const float d   = m_anchorDeltaTransform.x / w;
         anchorRatios[1] -= std::min(1.f, d);
 
         anchorRatios[1] = std::max(0.f, anchorRatios[1]);
@@ -494,7 +482,7 @@ namespace ToolKit
       if (direction == DirectionLabel::N || direction == DirectionLabel::NW ||
           direction == DirectionLabel::NE)
       {
-        const float d = m_anchorDeltaTransform.y / h;
+        const float d   = m_anchorDeltaTransform.y / h;
         anchorRatios[2] -= std::min(1.f, d);
 
         anchorRatios[2] = std::max(0.f, anchorRatios[2]);
@@ -508,7 +496,7 @@ namespace ToolKit
       if (direction == DirectionLabel::S || direction == DirectionLabel::SW ||
           direction == DirectionLabel::SE)
       {
-        const float d = m_anchorDeltaTransform.y / h;
+        const float d   = m_anchorDeltaTransform.y / h;
         anchorRatios[3] += std::min(1.f, d);
 
         anchorRatios[3] = std::max(0.f, anchorRatios[3]);
@@ -567,29 +555,21 @@ namespace ToolKit
       return StateType::Null;
     }
 
-    String StateAnchorEnd::GetType()
-    {
-      return StateType::StateAnchorEnd;
-    }
+    String StateAnchorEnd::GetType() { return StateType::StateAnchorEnd; }
 
     // MoveMod
     //////////////////////////////////////////////////////////////////////////
 
-    AnchorMod::AnchorMod(ModId id) : BaseMod(id)
-    {
-    }
+    AnchorMod::AnchorMod(ModId id) : BaseMod(id) {}
 
-    AnchorMod::~AnchorMod()
-    {
-      g_app->m_anchor = nullptr;
-    }
+    AnchorMod::~AnchorMod() { g_app->m_anchor = nullptr; }
 
     void AnchorMod::Init()
     {
       State* state               = new StateAnchorBegin();
       StateAnchorBase* baseState = static_cast<StateAnchorBase*>(state);
       m_anchor =
-          std::make_shared<Anchor>(Billboard::Settings{false, 0.0f, 0.0f});
+          std::make_shared<Anchor>(Billboard::Settings {false, 0.0f, 0.0f});
       baseState->m_type   = StateAnchorBase::TransformType::Translate;
       baseState->m_anchor = m_anchor;
       m_stateMachine->m_currentState = state;
@@ -601,9 +581,7 @@ namespace ToolKit
       m_prevTransformSpace = g_app->m_transformSpace;
     }
 
-    void AnchorMod::UnInit()
-    {
-    }
+    void AnchorMod::UnInit() {}
 
     void AnchorMod::Update(float deltaTime)
     {

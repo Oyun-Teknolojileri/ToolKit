@@ -41,18 +41,30 @@ namespace ToolKit
       offset += 3 * sizeof(float);
 
       glEnableVertexAttribArray(1); // Normal
-      glVertexAttribPointer(
-          1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
+      glVertexAttribPointer(1,
+                            3,
+                            GL_FLOAT,
+                            GL_FALSE,
+                            sizeof(Vertex),
+                            BUFFER_OFFSET(offset));
       offset += 3 * sizeof(float);
 
       glEnableVertexAttribArray(2); // Texture
-      glVertexAttribPointer(
-          2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
+      glVertexAttribPointer(2,
+                            2,
+                            GL_FLOAT,
+                            GL_FALSE,
+                            sizeof(Vertex),
+                            BUFFER_OFFSET(offset));
       offset += 2 * sizeof(float);
 
       glEnableVertexAttribArray(3); // BiTangent
-      glVertexAttribPointer(
-          3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offset));
+      glVertexAttribPointer(3,
+                            3,
+                            GL_FLOAT,
+                            GL_FALSE,
+                            sizeof(Vertex),
+                            BUFFER_OFFSET(offset));
     }
 
     if (layout == VertexLayout::SkinMesh)
@@ -63,28 +75,48 @@ namespace ToolKit
       offset += 3 * sizeof(float);
 
       glEnableVertexAttribArray(1); // Normal
-      glVertexAttribPointer(
-          1, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      glVertexAttribPointer(1,
+                            3,
+                            GL_FLOAT,
+                            GL_FALSE,
+                            sizeof(SkinVertex),
+                            BUFFER_OFFSET(offset));
       offset += 3 * sizeof(float);
 
       glEnableVertexAttribArray(2); // Texture
-      glVertexAttribPointer(
-          2, 2, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      glVertexAttribPointer(2,
+                            2,
+                            GL_FLOAT,
+                            GL_FALSE,
+                            sizeof(SkinVertex),
+                            BUFFER_OFFSET(offset));
       offset += 2 * sizeof(float);
 
       glEnableVertexAttribArray(3); // BiTangent
-      glVertexAttribPointer(
-          3, 3, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      glVertexAttribPointer(3,
+                            3,
+                            GL_FLOAT,
+                            GL_FALSE,
+                            sizeof(SkinVertex),
+                            BUFFER_OFFSET(offset));
       offset += 3 * sizeof(float);
 
       glEnableVertexAttribArray(4); // Bones
-      glVertexAttribPointer(
-          4, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      glVertexAttribPointer(4,
+                            4,
+                            GL_FLOAT,
+                            GL_FALSE,
+                            sizeof(SkinVertex),
+                            BUFFER_OFFSET(offset));
       offset += 4 * sizeof(float);
 
       glEnableVertexAttribArray(5); // Weights
-      glVertexAttribPointer(
-          5, 4, GL_FLOAT, GL_FALSE, sizeof(SkinVertex), BUFFER_OFFSET(offset));
+      glVertexAttribPointer(5,
+                            4,
+                            GL_FLOAT,
+                            GL_FALSE,
+                            sizeof(SkinVertex),
+                            BUFFER_OFFSET(offset));
     }
   }
 
@@ -94,15 +126,9 @@ namespace ToolKit
     m_vertexLayout = VertexLayout::Mesh;
   }
 
-  Mesh::Mesh(const String& file) : Mesh()
-  {
-    SetFile(file);
-  }
+  Mesh::Mesh(const String& file) : Mesh() { SetFile(file); }
 
-  Mesh::~Mesh()
-  {
-    UnInit();
-  }
+  Mesh::~Mesh() { UnInit(); }
 
   void Mesh::Init(bool flushClientSideArray)
   {
@@ -143,7 +169,7 @@ namespace ToolKit
     m_vboVertexId = 0;
     m_vboIndexId  = 0;
 
-    m_vaoId = 0;
+    m_vaoId       = 0;
 
     m_subMeshes.clear();
 
@@ -198,8 +224,11 @@ namespace ToolKit
       glBindBuffer(GL_COPY_READ_BUFFER, m_vboVertexId);
       uint size = GetVertexSize() * m_vertexCount;
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
-      glCopyBufferSubData(
-          GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
+      glCopyBufferSubData(GL_COPY_READ_BUFFER,
+                          GL_COPY_WRITE_BUFFER,
+                          0,
+                          0,
+                          size);
     }
 
     if (m_indexCount > 0)
@@ -209,8 +238,11 @@ namespace ToolKit
       glBindBuffer(GL_COPY_READ_BUFFER, m_vboIndexId);
       uint size = sizeof(uint) * m_indexCount;
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
-      glCopyBufferSubData(
-          GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
+      glCopyBufferSubData(GL_COPY_READ_BUFFER,
+                          GL_COPY_WRITE_BUFFER,
+                          0,
+                          0,
+                          size);
     }
 
     cpy->m_material = m_material->Copy<Material>();
@@ -223,15 +255,9 @@ namespace ToolKit
     }
   }
 
-  int Mesh::GetVertexSize() const
-  {
-    return sizeof(Vertex);
-  }
+  int Mesh::GetVertexSize() const { return sizeof(Vertex); }
 
-  bool Mesh::IsSkinned() const
-  {
-    return false;
-  }
+  bool Mesh::IsSkinned() const { return false; }
 
   void Mesh::CalculateAABB()
   {
@@ -368,8 +394,9 @@ namespace ToolKit
                 "VertexCount",
                 std::to_string(mesh->m_clientSideVertices.size()));
       char* b64Data = new char[vertexBufferDataSize * 2];
-      bintob64(
-          b64Data, mesh->m_clientSideVertices.data(), vertexBufferDataSize);
+      bintob64(b64Data,
+               mesh->m_clientSideVertices.data(),
+               vertexBufferDataSize);
       XmlNode* base64XML = CreateXmlNode(doc, "Base64", vertices);
       base64XML->value(doc->allocate_string(b64Data));
       SafeDelArray(b64Data);
@@ -380,7 +407,7 @@ namespace ToolKit
       {
         XmlNode* vNod = CreateXmlNode(doc, "v", vertices);
 
-        XmlNode* p = CreateXmlNode(doc, "p", vNod);
+        XmlNode* p    = CreateXmlNode(doc, "p", vNod);
         WriteVec(p, doc, v.pos);
 
         XmlNode* n = CreateXmlNode(doc, "n", vNod);
@@ -424,12 +451,18 @@ namespace ToolKit
       {
         XmlNode* f = CreateXmlNode(doc, "f", faces);
 
-        WriteAttr(
-            f, doc, "x", std::to_string(mesh->m_clientSideIndices[i * 3]));
-        WriteAttr(
-            f, doc, "y", std::to_string(mesh->m_clientSideIndices[i * 3 + 1]));
-        WriteAttr(
-            f, doc, "z", std::to_string(mesh->m_clientSideIndices[i * 3 + 2]));
+        WriteAttr(f,
+                  doc,
+                  "x",
+                  std::to_string(mesh->m_clientSideIndices[i * 3]));
+        WriteAttr(f,
+                  doc,
+                  "y",
+                  std::to_string(mesh->m_clientSideIndices[i * 3 + 1]));
+        WriteAttr(f,
+                  doc,
+                  "z",
+                  std::to_string(mesh->m_clientSideIndices[i * 3 + 2]));
       }
     }
   };
@@ -444,8 +477,8 @@ namespace ToolKit
 
     mainMesh->m_aabb = BoundingBox();
 
-    T* mesh       = mainMesh;
-    XmlNode* node = parent;
+    T* mesh          = mainMesh;
+    XmlNode* node    = parent;
 
     String typeString;
     if constexpr (std::is_same<T, Mesh>())
@@ -619,25 +652,19 @@ namespace ToolKit
     }
   }
 
-  SkinMesh::SkinMesh() : Mesh()
-  {
-    m_vertexLayout = VertexLayout::SkinMesh;
-  }
+  SkinMesh::SkinMesh() : Mesh() { m_vertexLayout = VertexLayout::SkinMesh; }
 
   SkinMesh::SkinMesh(const String& file) : SkinMesh()
   {
     SetFile(file);
 
     String skelFile = file.substr(0, file.find_last_of("."));
-    skelFile += ".skeleton";
+    skelFile        += ".skeleton";
 
-    m_skeleton = GetSkeletonManager()->Create<Skeleton>(skelFile);
+    m_skeleton      = GetSkeletonManager()->Create<Skeleton>(skelFile);
   }
 
-  SkinMesh::~SkinMesh()
-  {
-    UnInit();
-  }
+  SkinMesh::~SkinMesh() { UnInit(); }
 
   void SkinMesh::Init(bool flushClientSideArray)
   {
@@ -651,10 +678,7 @@ namespace ToolKit
     Mesh::Init(false);
   }
 
-  void SkinMesh::UnInit()
-  {
-    m_initiated = false;
-  }
+  void SkinMesh::UnInit() { m_initiated = false; }
 
   void SkinMesh::Load()
   {
@@ -711,7 +735,8 @@ namespace ToolKit
         std::execution::par_unseq,
         indexes.begin(),
         indexes.end(),
-        [skel, boneMap, &AABBs, &meshes](uint index) {
+        [skel, boneMap, &AABBs, &meshes](uint index)
+        {
           SkinMesh* m = (SkinMesh*) meshes[index];
           if (m->m_clientSideVertices.empty())
           {
@@ -724,7 +749,8 @@ namespace ToolKit
               std::execution::par_unseq,
               m->m_clientSideVertices.begin(),
               m->m_clientSideVertices.end(),
-              [skel, boneMap, &meshAABBLocker, &meshAABB](SkinVertex& v) {
+              [skel, boneMap, &meshAABBLocker, &meshAABB](SkinVertex& v)
+              {
                 Vec3 skinnedPos = CPUSkinning(&v, skel, boneMap);
                 std::lock_guard<std::mutex> guard(meshAABBLocker);
                 meshAABB.UpdateBoundary(skinnedPos);
@@ -756,15 +782,9 @@ namespace ToolKit
     return finalAABB;
   }
 
-  int SkinMesh::GetVertexSize() const
-  {
-    return sizeof(SkinVertex);
-  }
+  int SkinMesh::GetVertexSize() const { return sizeof(SkinVertex); }
 
-  bool SkinMesh::IsSkinned() const
-  {
-    return true;
-  }
+  bool SkinMesh::IsSkinned() const { return true; }
 
   void SkinMesh::InitVertices(bool flush)
   {
@@ -790,6 +810,7 @@ namespace ToolKit
       m_clientSideVertices.clear();
     }
   }
+
   void SkinMesh::CopyTo(Resource* other)
   {
     Mesh::CopyTo(other);
@@ -798,14 +819,9 @@ namespace ToolKit
     cpy->m_skeleton->Init();
   }
 
-  MeshManager::MeshManager()
-  {
-    m_type = ResourceType::Mesh;
-  }
+  MeshManager::MeshManager() { m_type = ResourceType::Mesh; }
 
-  MeshManager::~MeshManager()
-  {
-  }
+  MeshManager::~MeshManager() {}
 
   bool MeshManager::CanStore(ResourceType t)
   {

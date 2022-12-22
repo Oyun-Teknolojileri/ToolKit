@@ -13,14 +13,9 @@ namespace ToolKit
     ParameterEventConstructor();
   }
 
-  EntityType SkyBase::GetType() const
-  {
-    return EntityType::Entity_SkyBase;
-  }
+  EntityType SkyBase::GetType() const { return EntityType::Entity_SkyBase; }
 
-  void SkyBase::Init()
-  {
-  }
+  void SkyBase::Init() {}
 
   void SkyBase::ReInit()
   {
@@ -34,15 +29,9 @@ namespace ToolKit
     ParameterEventConstructor();
   }
 
-  bool SkyBase::IsInitialized()
-  {
-    return m_initialized;
-  }
+  bool SkyBase::IsInitialized() { return m_initialized; }
 
-  MaterialPtr SkyBase::GetSkyboxMaterial()
-  {
-    return m_skyboxMaterial;
-  }
+  MaterialPtr SkyBase::GetSkyboxMaterial() { return m_skyboxMaterial; }
 
   CubeMapPtr SkyBase::GetIrradianceMap()
   {
@@ -55,7 +44,7 @@ namespace ToolKit
     // Return a unit boundary.
     return {
         {-0.5f, -0.5f, -0.5f},
-        { 0.5f,  0.5f,  0.5f}
+        {0.5f,  0.5f,  0.5f }
     };
   }
 
@@ -63,15 +52,17 @@ namespace ToolKit
   {
     DrawSky_Define(true, "Sky", 90, true, true);
     Illuminate_Define(true, "Sky", 90, true, true);
-    Intensity_Define(
-        0.25f, "Sky", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
+    Intensity_Define(0.25f,
+                     "Sky",
+                     90,
+                     true,
+                     true,
+                     {false, true, 0.0f, 100000.0f, 0.1f});
 
     SetNameVal("SkyBase");
   }
 
-  void SkyBase::ParameterEventConstructor()
-  {
-  }
+  void SkyBase::ParameterEventConstructor() {}
 
   Sky::Sky()
   {
@@ -84,14 +75,9 @@ namespace ToolKit
     ParameterEventConstructor();
   }
 
-  Sky::~Sky()
-  {
-  }
+  Sky::~Sky() {}
 
-  EntityType Sky::GetType() const
-  {
-    return EntityType::Entity_Sky;
-  }
+  EntityType Sky::GetType() const { return EntityType::Entity_Sky; }
 
   void Sky::Init()
   {
@@ -139,10 +125,7 @@ namespace ToolKit
     return m_skyboxMaterial;
   }
 
-  CubeMapPtr Sky::GetIrradianceMap()
-  {
-    return CubeMapPtr();
-  }
+  CubeMapPtr Sky::GetIrradianceMap() { return CubeMapPtr(); }
 
   void Sky::ParameterConstructor()
   {
@@ -167,21 +150,24 @@ namespace ToolKit
   {
     ParamIntensity().m_onValueChangedFn.clear();
     ParamIntensity().m_onValueChangedFn.push_back(
-        [this](Value& oldVal, Value& newVal) -> void {
+        [this](Value& oldVal, Value& newVal) -> void
+        {
           GetComponent<EnvironmentComponent>()->SetIntensityVal(
               std::get<float>(newVal));
         });
 
     ParamExposure().m_onValueChangedFn.clear();
     ParamExposure().m_onValueChangedFn.push_back(
-        [this](Value& oldVal, Value& newVal) -> void {
+        [this](Value& oldVal, Value& newVal) -> void
+        {
           GetComponent<EnvironmentComponent>()->SetExposureVal(
               std::get<float>(newVal));
         });
 
     ParamHdri().m_onValueChangedFn.clear();
     ParamHdri().m_onValueChangedFn.push_back(
-        [this](Value& oldVal, Value& newVal) -> void {
+        [this](Value& oldVal, Value& newVal) -> void
+        {
           GetComponent<EnvironmentComponent>()->SetHdriVal(
               std::get<HdriPtr>(newVal));
         });
@@ -193,9 +179,7 @@ namespace ToolKit
     ParameterEventConstructor();
   }
 
-  GradientSky::~GradientSky()
-  {
-  }
+  GradientSky::~GradientSky() {}
 
   EntityType GradientSky::GetType() const
   {
@@ -234,37 +218,44 @@ namespace ToolKit
     Init();
 
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
-        "topColor", ParameterVariant(GetTopColorVal()));
+        "topColor",
+        ParameterVariant(GetTopColorVal()));
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
-        "middleColor", ParameterVariant(GetMiddleColorVal()));
+        "middleColor",
+        ParameterVariant(GetMiddleColorVal()));
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
-        "bottomColor", ParameterVariant(GetBottomColorVal()));
+        "bottomColor",
+        ParameterVariant(GetBottomColorVal()));
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
-        "exponent", ParameterVariant(GetGradientExponentVal()));
+        "exponent",
+        ParameterVariant(GetGradientExponentVal()));
     return m_skyboxMaterial;
   }
 
-  CubeMapPtr GradientSky::GetIrradianceMap()
-  {
-    return m_irradianceMap;
-  }
+  CubeMapPtr GradientSky::GetIrradianceMap() { return m_irradianceMap; }
 
   void GradientSky::ParameterConstructor()
   {
     TopColor_Define(Vec3(0.3f, 0.3f, 1.0f), "Sky", 90, true, true, {true});
     MiddleColor_Define(Vec3(1.0f, 1.0f, 0.8f), "Sky", 90, true, true, {true});
     BottomColor_Define(Vec3(0.5f, 0.3f, 0.1f), "Sky", 90, true, true, {true});
-    GradientExponent_Define(
-        0.3f, "Sky", 90, true, true, {false, true, 0.0f, 10.0f, 0.02f});
-    IrradianceResolution_Define(
-        64.0f, "Sky", 90, true, true, {false, true, 32.0f, 2048.0f, 2.0f});
+    GradientExponent_Define(0.3f,
+                            "Sky",
+                            90,
+                            true,
+                            true,
+                            {false, true, 0.0f, 10.0f, 0.02f});
+    IrradianceResolution_Define(64.0f,
+                                "Sky",
+                                90,
+                                true,
+                                true,
+                                {false, true, 32.0f, 2048.0f, 2.0f});
 
     SetNameVal("Gradient Sky");
   }
 
-  void GradientSky::ParameterEventConstructor()
-  {
-  }
+  void GradientSky::ParameterEventConstructor() {}
 
   void GradientSky::GenerateGradientCubemap()
   {
@@ -287,13 +278,17 @@ namespace ToolKit
 
     // Create material
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
-        "topColor", ParameterVariant(GetTopColorVal()));
+        "topColor",
+        ParameterVariant(GetTopColorVal()));
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
-        "middleColor", ParameterVariant(GetMiddleColorVal()));
+        "middleColor",
+        ParameterVariant(GetMiddleColorVal()));
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
-        "bottomColor", ParameterVariant(GetBottomColorVal()));
+        "bottomColor",
+        ParameterVariant(GetBottomColorVal()));
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
-        "exponent", ParameterVariant(GetGradientExponentVal()));
+        "exponent",
+        ParameterVariant(GetGradientExponentVal()));
     m_skyboxMaterial->GetRenderState()->depthTestEnabled = false;
 
     // Views for 6 different angles

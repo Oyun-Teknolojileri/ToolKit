@@ -11,10 +11,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    EditorRenderer::EditorRenderer()
-    {
-      InitRenderer();
-    }
+    EditorRenderer::EditorRenderer() { InitRenderer(); }
 
     EditorRenderer::EditorRenderer(const EditorRenderPassParams& params)
         : EditorRenderer()
@@ -83,8 +80,10 @@ namespace ToolKit
 
         if (envCom != nullptr && ntt->GetType() != EntityType::Entity_Sky)
         {
-          editorEntities.push_back(CreateBoundingBoxDebugObject(
-              envCom->GetBBox(), g_environmentGizmoColor, 1.0f));
+          editorEntities.push_back(
+              CreateBoundingBoxDebugObject(envCom->GetBBox(),
+                                           g_environmentGizmoColor,
+                                           1.0f));
         }
 
         if (app->m_showSelectionBoundary && ntt->IsDrawable())
@@ -148,13 +147,13 @@ namespace ToolKit
       m_editorPass.m_params.ClearFrameBuffer = false;
 
       // Scene pass.
-      m_scenePass.m_params.Cam             = m_camera;
-      m_scenePass.m_params.Lights          = lights;
-      m_scenePass.m_params.MainFramebuffer = viewport->m_framebuffer;
-      m_scenePass.m_params.Scene           = scene;
+      m_scenePass.m_params.Cam               = m_camera;
+      m_scenePass.m_params.Lights            = lights;
+      m_scenePass.m_params.MainFramebuffer   = viewport->m_framebuffer;
+      m_scenePass.m_params.Scene             = scene;
 
       // Bloom pass
-      m_bloomPass.m_params.FrameBuffer = viewport->m_framebuffer;
+      m_bloomPass.m_params.FrameBuffer       = viewport->m_framebuffer;
       m_bloomPass.m_params.intensity =
           Main::GetInstance()->m_engineSettings.Graphics.bloomIntensity;
       m_bloomPass.m_params.minThreshold =
@@ -166,14 +165,14 @@ namespace ToolKit
       m_tonemapPass.m_params.Method      = m_params.tonemapping;
 
       // Gamma Pass.
-      m_gammaPass.m_params.FrameBuffer = viewport->m_framebuffer;
+      m_gammaPass.m_params.FrameBuffer   = viewport->m_framebuffer;
       // TODO: Read it from engine settings.
-      m_gammaPass.m_params.Gamma = 2.2f;
+      m_gammaPass.m_params.Gamma         = 2.2f;
 
       // Gizmo Pass.
-      m_gizmoPass.m_params.Viewport = viewport;
+      m_gizmoPass.m_params.Viewport      = viewport;
 
-      EditorBillboardBase* anchorGizmo = nullptr;
+      EditorBillboardBase* anchorGizmo   = nullptr;
       if (viewport->GetType() == Window::Type::Viewport2d)
       {
         anchorGizmo = (EditorBillboardBase*) app->m_anchor.get();
@@ -217,10 +216,11 @@ namespace ToolKit
         break;
       }
     }
+
     void EditorRenderer::CreateEditorLights(LightRawPtrArray& list,
                                             Node** parentNode)
     {
-      *parentNode = new Node();
+      *parentNode             = new Node();
 
       float intensity         = 1.5f;
       DirectionalLight* light = new DirectionalLight();
@@ -278,9 +278,10 @@ namespace ToolKit
       }
       EntityRawPtrArray selecteds = m_selecteds; // Copy
 
-      Viewport* viewport = m_params.Viewport;
-      auto RenderFn      = [this, viewport](const EntityRawPtrArray& selection,
-                                       const Vec4& color) -> void {
+      Viewport* viewport          = m_params.Viewport;
+      auto RenderFn = [this, viewport](const EntityRawPtrArray& selection,
+                                       const Vec4& color) -> void
+      {
         if (selection.empty())
         {
           return;
@@ -306,7 +307,8 @@ namespace ToolKit
           if (billboard)
           {
             static_cast<Billboard*>(billboard)->LookAt(
-                viewport->GetCamera(), viewport->GetBillboardScale());
+                viewport->GetCamera(),
+                viewport->GetBillboardScale());
             m_outlinePass.m_params.DrawList.push_back(billboard);
           }
         }
@@ -359,8 +361,9 @@ namespace ToolKit
             EditorBillboardBase::BillboardType::Rotate)
         {
           Mat4 ts = bb->m_node->GetTransform();
-          m_depthMaskSphere->m_node->SetTransform(
-              ts, TransformationSpace::TS_WORLD, false);
+          m_depthMaskSphere->m_node->SetTransform(ts,
+                                                  TransformationSpace::TS_WORLD,
+                                                  false);
 
           renderer->ColorMask(false, false, false, false);
           renderer->Render(m_depthMaskSphere.get(), m_camera);
@@ -400,10 +403,7 @@ namespace ToolKit
       }
     }
 
-    void GizmoPass::PostRender()
-    {
-      Pass::PostRender();
-    }
+    void GizmoPass::PostRender() { Pass::PostRender(); }
 
   } // namespace Editor
 } // namespace ToolKit

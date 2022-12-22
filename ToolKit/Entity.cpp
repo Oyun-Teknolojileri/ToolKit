@@ -35,10 +35,7 @@ namespace ToolKit
     return GetComponent<MeshComponent>() != nullptr;
   }
 
-  EntityType Entity::GetType() const
-  {
-    return EntityType::Entity_Base;
-  }
+  EntityType Entity::GetType() const { return EntityType::Entity_Base; }
 
   void Entity::SetPose(const AnimationPtr& anim, float time)
   {
@@ -159,11 +156,17 @@ namespace ToolKit
 
     Tag_Define("", EntityCategory.Name, EntityCategory.Priority, true, true);
 
-    Visible_Define(
-        true, EntityCategory.Name, EntityCategory.Priority, true, true);
+    Visible_Define(true,
+                   EntityCategory.Name,
+                   EntityCategory.Priority,
+                   true,
+                   true);
 
-    TransformLock_Define(
-        false, EntityCategory.Name, EntityCategory.Priority, true, true);
+    TransformLock_Define(false,
+                         EntityCategory.Name,
+                         EntityCategory.Priority,
+                         true,
+                         true);
   }
 
   void Entity::WeakCopy(Entity* other, bool copyComponents) const
@@ -174,8 +177,8 @@ namespace ToolKit
     other->m_node->m_entity = other;
 
     // Preserve Ids.
-    ULongID id         = other->GetIdVal();
-    other->m_localData = m_localData;
+    ULongID id              = other->GetIdVal();
+    other->m_localData      = m_localData;
     other->SetIdVal(id);
 
     if (copyComponents)
@@ -224,10 +227,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  ComponentPtrArray& Entity::GetComponentPtrArray()
-  {
-    return m_components;
-  }
+  ComponentPtrArray& Entity::GetComponentPtrArray() { return m_components; }
 
   const ComponentPtrArray& Entity::GetComponentPtrArray() const
   {
@@ -314,10 +314,7 @@ namespace ToolKit
     }
   }
 
-  void Entity::RemoveResources()
-  {
-    assert(false && "Not implemented");
-  }
+  void Entity::RemoveResources() { assert(false && "Not implemented"); }
 
   void Entity::SetVisibility(bool vis, bool deep)
   {
@@ -377,27 +374,15 @@ namespace ToolKit
             type == EntityType::Entity_GradientSky);
   }
 
-  EntityNode::EntityNode()
-  {
-  }
+  EntityNode::EntityNode() {}
 
-  EntityNode::EntityNode(const String& name)
-  {
-    SetNameVal(name);
-  }
+  EntityNode::EntityNode(const String& name) { SetNameVal(name); }
 
-  EntityNode::~EntityNode()
-  {
-  }
+  EntityNode::~EntityNode() {}
 
-  EntityType EntityNode::GetType() const
-  {
-    return EntityType::Entity_Node;
-  }
+  EntityType EntityNode::GetType() const { return EntityType::Entity_Node; }
 
-  void EntityNode::RemoveResources()
-  {
-  }
+  void EntityNode::RemoveResources() {}
 
   EntityFactory::EntityFactory()
   {
@@ -405,10 +390,7 @@ namespace ToolKit
                          nullptr);
   }
 
-  EntityFactory::~EntityFactory()
-  {
-    m_overrideFns.clear();
-  }
+  EntityFactory::~EntityFactory() { m_overrideFns.clear(); }
 
   Entity* EntityFactory::CreateByType(EntityType type)
   {

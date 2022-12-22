@@ -301,7 +301,8 @@ namespace ToolKit
       Entity* e = g_app->GetCurrentScene()->GetCurrentSelection();
       if (e != nullptr)
       {
-        auto PrintTransform = [e](TransformationSpace ts) -> void {
+        auto PrintTransform = [e](TransformationSpace ts) -> void
+        {
           Quaternion q = e->m_node->GetOrientation(ts);
           Vec3 t       = e->m_node->GetTranslation(ts);
           Vec3 s       = e->m_node->GetScale();
@@ -562,6 +563,7 @@ namespace ToolKit
       }
       return d;
     }
+
     static int Strnicmp(const char* str1, const char* str2, int n)
     {
       int d = 0;
@@ -573,6 +575,7 @@ namespace ToolKit
       }
       return d;
     }
+
     static void Strtrim(char* str)
     {
       char* str_end = str + strlen(str);
@@ -612,9 +615,7 @@ namespace ToolKit
       CreateCommand(g_selectEffectingLights, SelectAllEffectingLights);
     }
 
-    ConsoleWindow::~ConsoleWindow()
-    {
-    }
+    ConsoleWindow::~ConsoleWindow() {}
 
     void ConsoleWindow::Show()
     {
@@ -702,7 +703,8 @@ namespace ToolKit
                 ImGuiInputTextFlags_EnterReturnsTrue |
                     ImGuiInputTextFlags_CallbackCompletion |
                     ImGuiInputTextFlags_CallbackHistory,
-                [](ImGuiInputTextCallbackData* data) -> int {
+                [](ImGuiInputTextCallbackData* data) -> int
+                {
                   return (reinterpret_cast<ConsoleWindow*>(data->UserData))
                       ->TextEditCallback(data);
                 },
@@ -738,10 +740,7 @@ namespace ToolKit
       ImGui::End();
     }
 
-    Window::Type ConsoleWindow::GetType() const
-    {
-      return Type::Console;
-    }
+    Window::Type ConsoleWindow::GetType() const { return Type::Console; }
 
     void ConsoleWindow::AddLog(const String& log, LogType type)
     {
@@ -787,10 +786,7 @@ namespace ToolKit
       }
     }
 
-    void ConsoleWindow::ClearLog()
-    {
-      m_items.clear();
-    }
+    void ConsoleWindow::ClearLog() { m_items.clear(); }
 
     void ConsoleWindow::ExecCommand(const String& commandLine)
     {
@@ -834,8 +830,8 @@ namespace ToolKit
       String arg          = s;
       const char spaceSub = static_cast<char>(26);
 
-      size_t indx  = arg.find_first_of('"');
-      size_t indx2 = arg.find_first_of('"', indx + 1);
+      size_t indx         = arg.find_first_of('"');
+      size_t indx2        = arg.find_first_of('"', indx + 1);
       while (indx != String::npos && indx2 != String::npos)
       {
         std::replace(arg.begin() + indx, arg.begin() + indx2, ' ', spaceSub);
@@ -847,8 +843,9 @@ namespace ToolKit
 
       for (String& val : v)
       {
-        val.erase(std::remove_if(
-                      val.begin(), val.end(), [](char c) { return c == '"'; }),
+        val.erase(std::remove_if(val.begin(),
+                                 val.end(),
+                                 [](char c) { return c == '"'; }),
                   val.end());
 
         std::replace(val.begin(), val.end(), spaceSub, ' ');
@@ -916,7 +913,8 @@ namespace ToolKit
 
       switch (data->EventFlag)
       {
-      case ImGuiInputTextFlags_CallbackCompletion: {
+      case ImGuiInputTextFlags_CallbackCompletion:
+      {
         // Locate beginning of current word
         const char* word_end   = data->Buf + data->CursorPos;
         const char* word_start = word_end;
@@ -1010,7 +1008,8 @@ namespace ToolKit
 
         break;
       }
-      case ImGuiInputTextFlags_CallbackHistory: {
+      case ImGuiInputTextFlags_CallbackHistory:
+      {
         const int prev_history_pos = m_historyPos;
         if (data->EventKey == ImGuiKey_UpArrow)
         {

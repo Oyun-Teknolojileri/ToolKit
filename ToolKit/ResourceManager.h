@@ -40,8 +40,8 @@ namespace ToolKit
     virtual bool CanStore(ResourceType t) = 0;
     virtual String GetDefaultResource(ResourceType type);
 
-    ResourceManager(ResourceManager const&) = delete;
-    void operator=(ResourceManager const&)  = delete;
+    ResourceManager(const ResourceManager&) = delete;
+    void operator=(const ResourceManager&)  = delete;
 
     template <typename T>
     std::shared_ptr<T> Create(const String& file)

@@ -18,18 +18,11 @@ namespace ToolKit
     m_id = GetHandleManager()->GetNextHandle();
   }
 
-  ParameterVariantBase::~ParameterVariantBase()
-  {
-  }
+  ParameterVariantBase::~ParameterVariantBase() {}
 
-  ParameterVariant::ParameterVariant()
-  {
-    *this = 0;
-  }
+  ParameterVariant::ParameterVariant() { *this = 0; }
 
-  ParameterVariant::~ParameterVariant()
-  {
-  }
+  ParameterVariant::~ParameterVariant() {}
 
   void ParameterVariant::SetValue(Value& newVal)
   {
@@ -60,100 +53,46 @@ namespace ToolKit
     return *this;
   }
 
-  ParameterVariant::ParameterVariant(bool var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(bool var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(byte var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(byte var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(ubyte var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(ubyte var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(float var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(float var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(int var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(int var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(uint var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(uint var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(const Vec2& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const Vec2& var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(const Vec3& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const Vec3& var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(const Vec4& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const Vec4& var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(const Mat3& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const Mat3& var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(const Mat4& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const Mat4& var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(const String& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const String& var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(const char* var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const char* var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(ULongID& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(ULongID& var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(const MeshPtr& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const MeshPtr& var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(const MaterialPtr& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const MaterialPtr& var) { *this = var; }
 
-  ParameterVariant::ParameterVariant(const HdriPtr& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const HdriPtr& var) { *this = var; }
 
   ParameterVariant::ParameterVariant(const AnimRecordPtrMap& var)
   {
     *this = var;
   }
 
-  ParameterVariant::ParameterVariant(const SkeletonPtr& var)
-  {
-    *this = var;
-  }
+  ParameterVariant::ParameterVariant(const SkeletonPtr& var) { *this = var; }
 
   ParameterVariant::VariantType ParameterVariant::GetType() const
   {
@@ -316,8 +255,10 @@ namespace ToolKit
     WriteAttr(node, doc, "exposed", std::to_string(m_exposed));
     WriteAttr(node, doc, "editable", std::to_string(m_editable));
     WriteAttr(node, doc, "hint.isColor", std::to_string(m_hint.isColor));
-    WriteAttr(
-        node, doc, "hint.isRanLim", std::to_string(m_hint.isRangeLimited));
+    WriteAttr(node,
+              doc,
+              "hint.isRanLim",
+              std::to_string(m_hint.isRangeLimited));
     WriteAttr(node, doc, "hint.rangeMin", std::to_string(m_hint.rangeMin));
     WriteAttr(node, doc, "hint.rangeMax", std::to_string(m_hint.rangeMax));
     WriteAttr(node, doc, "hint.increment", std::to_string(m_hint.increment));
@@ -325,61 +266,71 @@ namespace ToolKit
     // Serialize data.
     switch (m_type)
     {
-    case VariantType::Bool: {
+    case VariantType::Bool:
+    {
       WriteAttr(node,
                 doc,
                 XmlParamterValAttr.c_str(),
                 std::to_string(GetCVar<bool>()));
     }
     break;
-    case VariantType::byte: {
+    case VariantType::byte:
+    {
       WriteAttr(node,
                 doc,
                 XmlParamterValAttr.c_str(),
                 std::to_string(GetCVar<byte>()));
     }
     break;
-    case VariantType::ubyte: {
+    case VariantType::ubyte:
+    {
       WriteAttr(node,
                 doc,
                 XmlParamterValAttr.c_str(),
                 std::to_string(GetCVar<ubyte>()));
     }
     break;
-    case VariantType::Float: {
+    case VariantType::Float:
+    {
       WriteAttr(node,
                 doc,
                 XmlParamterValAttr.c_str(),
                 std::to_string(GetCVar<float>()));
     }
     break;
-    case VariantType::Int: {
+    case VariantType::Int:
+    {
       WriteAttr(node,
                 doc,
                 XmlParamterValAttr.c_str(),
                 std::to_string(GetCVar<int>()));
     }
     break;
-    case VariantType::UInt: {
+    case VariantType::UInt:
+    {
       WriteAttr(node,
                 doc,
                 XmlParamterValAttr.c_str(),
                 std::to_string(GetCVar<uint>()));
     }
     break;
-    case VariantType::Vec2: {
+    case VariantType::Vec2:
+    {
       WriteVec(node, doc, GetCVar<Vec2>());
     }
     break;
-    case VariantType::Vec3: {
+    case VariantType::Vec3:
+    {
       WriteVec(node, doc, GetCVar<Vec3>());
     }
     break;
-    case VariantType::Vec4: {
+    case VariantType::Vec4:
+    {
       WriteVec(node, doc, GetCVar<Vec4>());
     }
     break;
-    case VariantType::Mat3: {
+    case VariantType::Mat3:
+    {
       const Mat3& val = GetCVar<Mat3>();
       for (int i = 0; i < 3; i++)
       {
@@ -388,7 +339,8 @@ namespace ToolKit
       }
     }
     break;
-    case VariantType::Mat4: {
+    case VariantType::Mat4:
+    {
       const Mat4& val = GetCVar<Mat4>();
       for (int i = 0; i < 4; i++)
       {
@@ -397,7 +349,8 @@ namespace ToolKit
       }
     }
     break;
-    case VariantType::String: {
+    case VariantType::String:
+    {
       WriteAttr(node, doc, XmlParamterValAttr.c_str(), GetCVar<String>());
     }
     break;
@@ -407,7 +360,8 @@ namespace ToolKit
                 XmlParamterValAttr.c_str(),
                 std::to_string(GetCVar<ULongID>()));
       break;
-    case VariantType::MeshPtr: {
+    case VariantType::MeshPtr:
+    {
       MeshPtr res = GetCVar<MeshPtr>();
       if (res && !res->IsDynamic())
       {
@@ -416,7 +370,8 @@ namespace ToolKit
       }
     }
     break;
-    case VariantType::MaterialPtr: {
+    case VariantType::MaterialPtr:
+    {
       MaterialPtr res = GetCVar<MaterialPtr>();
       if (res && !res->IsDynamic())
       {
@@ -425,7 +380,8 @@ namespace ToolKit
       }
     }
     break;
-    case VariantType::HdriPtr: {
+    case VariantType::HdriPtr:
+    {
       HdriPtr res = GetCVar<HdriPtr>();
       if (res && !res->IsDynamic())
       {
@@ -434,7 +390,8 @@ namespace ToolKit
       }
     }
     break;
-    case VariantType::AnimRecordPtrMap: {
+    case VariantType::AnimRecordPtrMap:
+    {
       const AnimRecordPtrMap& list = GetCVar<AnimRecordPtrMap>();
       XmlNode* listNode            = CreateXmlNode(doc, "List", node);
       WriteAttr(listNode, doc, "size", std::to_string(list.size()));
@@ -455,7 +412,8 @@ namespace ToolKit
       }
     }
     break;
-    case VariantType::SkeletonPtr: {
+    case VariantType::SkeletonPtr:
+    {
       GetCVar<SkeletonPtr>()->SerializeRef(doc, node);
     }
     break;
@@ -490,67 +448,78 @@ namespace ToolKit
 
     switch (m_type)
     {
-    case VariantType::Bool: {
+    case VariantType::Bool:
+    {
       bool val(false);
       ReadAttr(parent, XmlParamterValAttr, val);
       m_var = val;
     }
     break;
-    case VariantType::byte: {
+    case VariantType::byte:
+    {
       byte val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
       m_var = val;
     }
     break;
-    case VariantType::ubyte: {
+    case VariantType::ubyte:
+    {
       ubyte val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
       m_var = val;
     }
     break;
-    case VariantType::Float: {
+    case VariantType::Float:
+    {
       float val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
       m_var = val;
     }
     break;
-    case VariantType::Int: {
+    case VariantType::Int:
+    {
       int val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
       m_var = val;
     }
     break;
-    case VariantType::UInt: {
+    case VariantType::UInt:
+    {
       int val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
       m_var = val;
     }
     break;
-    case VariantType::Vec2: {
+    case VariantType::Vec2:
+    {
       Vec2 var;
       ReadVec(parent, var);
       m_var = var;
     }
     break;
-    case VariantType::Vec3: {
+    case VariantType::Vec3:
+    {
       Vec3 var;
       ReadVec(parent, var);
       m_var = var;
     }
     break;
-    case VariantType::Vec4: {
+    case VariantType::Vec4:
+    {
       Vec4 var;
       ReadVec(parent, var);
       m_var = var;
     }
     break;
-    case VariantType::String: {
+    case VariantType::String:
+    {
       String val;
       ReadAttr(parent, XmlParamterValAttr, val);
       m_var = val;
     }
     break;
-    case VariantType::Mat3: {
+    case VariantType::Mat3:
+    {
       Mat3 val;
       Vec3 vec;
       XmlNode* row = parent->first_node();
@@ -563,7 +532,8 @@ namespace ToolKit
       m_var = val;
     }
     break;
-    case VariantType::Mat4: {
+    case VariantType::Mat4:
+    {
       Mat4 val;
       Vec4 vec;
       XmlNode* row = parent->first_node();
@@ -576,13 +546,15 @@ namespace ToolKit
       m_var = val;
     }
     break;
-    case VariantType::ULongID: {
+    case VariantType::ULongID:
+    {
       ULongID val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
       m_var = val;
     }
     break;
-    case VariantType::MeshPtr: {
+    case VariantType::MeshPtr:
+    {
       String file = Resource::DeserializeRef(parent);
       if (file.empty())
       {
@@ -604,7 +576,8 @@ namespace ToolKit
       }
     }
     break;
-    case VariantType::MaterialPtr: {
+    case VariantType::MaterialPtr:
+    {
       String file = Resource::DeserializeRef(parent);
       if (file.empty())
       {
@@ -617,7 +590,8 @@ namespace ToolKit
       }
     }
     break;
-    case VariantType::HdriPtr: {
+    case VariantType::HdriPtr:
+    {
       String file = Resource::DeserializeRef(parent);
       if (file.empty())
       {
@@ -630,7 +604,8 @@ namespace ToolKit
       }
     }
     break;
-    case VariantType::AnimRecordPtrMap: {
+    case VariantType::AnimRecordPtrMap:
+    {
       XmlNode* listNode = parent->first_node("List");
       uint listSize     = 0;
       ReadAttr(listNode, "size", listSize);
@@ -654,7 +629,8 @@ namespace ToolKit
       m_var = list;
     }
     break;
-    case VariantType::SkeletonPtr: {
+    case VariantType::SkeletonPtr:
+    {
       String file = Resource::DeserializeRef(parent);
       if (file.empty())
       {
@@ -769,7 +745,8 @@ namespace ToolKit
           std::remove_if(
               categories.begin(),
               categories.end(),
-              [&containsExposedVar](const VariantCategory& vc) -> bool {
+              [&containsExposedVar](const VariantCategory& vc) -> bool
+              {
                 // remove if not contains exposed var.
                 return containsExposedVar.find(vc.Name) ==
                        containsExposedVar.end();
@@ -779,9 +756,8 @@ namespace ToolKit
 
     std::sort(categories.begin(),
               categories.end(),
-              [](VariantCategory& a, VariantCategory& b) -> bool {
-                return a.Priority > b.Priority;
-              });
+              [](VariantCategory& a, VariantCategory& b) -> bool
+              { return a.Priority > b.Priority; });
   }
 
   void ParameterBlock::GetByCategory(const String& category,

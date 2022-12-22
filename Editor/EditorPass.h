@@ -108,7 +108,7 @@ namespace ToolKit
       /**
        * Parent Node that m_editorLights are attached to.
        */
-      Node* m_lightNode = nullptr;
+      Node* m_lightNode                     = nullptr;
       /**
        * Override material for EditorLitMode::LightComplexity.
        */
@@ -116,11 +116,11 @@ namespace ToolKit
       /**
        * Override material for EditorLitMode::LightingOnly.
        */
-      MaterialPtr m_lightingOnlyOverride = nullptr;
+      MaterialPtr m_lightingOnlyOverride    = nullptr;
       /**
        * Override material for EditorLitMode::Unlit.
        */
-      MaterialPtr m_unlitOverride = nullptr;
+      MaterialPtr m_unlitOverride           = nullptr;
 
       SceneRenderPass m_scenePass;
       TonemapPass m_tonemapPass;

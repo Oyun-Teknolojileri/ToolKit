@@ -31,14 +31,17 @@ namespace ToolKit
           String path, fileName, ext;
           DecomposePath(mat->GetFile(), &path, &fileName, &ext);
           String uniqueName = std::to_string(i) + "##" + std::to_string(i);
-          if (UI::ImageButtonDecorless(
-                  UI::m_closeIcon->m_textureId, Vec2(15), false))
+          if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
+                                       Vec2(15),
+                                       false))
           {
             removeMaterialIndx = i;
           }
           ImGui::SameLine();
-          CustomDataView::ShowMaterialPtr(
-              uniqueName, mat->GetFile(), mat, modifiableComp);
+          CustomDataView::ShowMaterialPtr(uniqueName,
+                                          mat->GetFile(),
+                                          mat,
+                                          modifiableComp);
         }
         if (removeMaterialIndx != TK_UINT_MAX)
         {
@@ -125,17 +128,21 @@ namespace ToolKit
                             ImVec2(ImGui::GetWindowSize().x - 15, 200)))
       {
         float tableWdth = ImGui::GetItemRectSize().x;
-        ImGui::TableSetupColumn(
-            "Animation", ImGuiTableColumnFlags_WidthStretch, tableWdth / 5.0f);
+        ImGui::TableSetupColumn("Animation",
+                                ImGuiTableColumnFlags_WidthStretch,
+                                tableWdth / 5.0f);
 
-        ImGui::TableSetupColumn(
-            "Name", ImGuiTableColumnFlags_WidthStretch, tableWdth / 2.5f);
+        ImGui::TableSetupColumn("Name",
+                                ImGuiTableColumnFlags_WidthStretch,
+                                tableWdth / 2.5f);
 
-        ImGui::TableSetupColumn(
-            "Preview", ImGuiTableColumnFlags_WidthStretch, tableWdth / 4.0f);
+        ImGui::TableSetupColumn("Preview",
+                                ImGuiTableColumnFlags_WidthStretch,
+                                tableWdth / 4.0f);
 
-        ImGui::TableSetupColumn(
-            "", ImGuiTableColumnFlags_WidthStretch, tableWdth / 20.0f);
+        ImGui::TableSetupColumn("",
+                                ImGuiTableColumnFlags_WidthStretch,
+                                tableWdth / 20.0f);
 
         ImGui::TableHeadersRow();
 
@@ -150,49 +157,52 @@ namespace ToolKit
         // Animation DropZone
         auto showAnimationDropzone =
             [tableWdth, file](uint& columnIndx,
-                              const std::pair<String, AnimRecordPtr>& pair) {
-              ImGui::TableSetColumnIndex(columnIndx++);
-              ImGui::SetCursorPosX(tableWdth / 25.0f);
-              DropZone(static_cast<uint>(UI::m_clipIcon->m_textureId),
-                       file,
-                       [&pair](const DirectoryEntry& entry) -> void {
-                         if (GetResourceType(entry.m_ext) ==
-                             ResourceType::Animation)
-                         {
-                           pair.second->m_animation =
-                               GetAnimationManager()->Create<Animation>(
-                                   entry.GetFullPath());
-                           if (pair.first.empty())
-                           {
-                             extraTrack.first = entry.m_fileName;
-                           }
-                         }
-                         else
-                         {
-                           GetLogger()->WriteConsole(
-                               LogType::Error, "Only animations are accepted.");
-                         }
-                       });
-            };
-
-        auto showSignalName =
-            [&nameUpdated, &nameUpdatedPair, tableWdth](
-                uint& columnIndx,
-                const std::pair<String, AnimRecordPtr>& pair) {
-              ImGui::TableSetColumnIndex(columnIndx++);
-              ImGui::SetCursorPosY(ImGui::GetCursorPos().y +
-                                   (ImGui::GetItemRectSize().y / 4.0f));
-              ImGui::PushItemWidth((tableWdth / 2.5f) - 5.0f);
-              String readOnly = pair.first;
-              if (ImGui::InputText(
-                      "##", &readOnly, ImGuiInputTextFlags_EnterReturnsTrue) &&
-                  readOnly.length())
+                              const std::pair<String, AnimRecordPtr>& pair)
+        {
+          ImGui::TableSetColumnIndex(columnIndx++);
+          ImGui::SetCursorPosX(tableWdth / 25.0f);
+          DropZone(
+              static_cast<uint>(UI::m_clipIcon->m_textureId),
+              file,
+              [&pair](const DirectoryEntry& entry) -> void
               {
-                nameUpdated     = readOnly;
-                nameUpdatedPair = pair;
-              }
-              ImGui::PopItemWidth();
-            };
+                if (GetResourceType(entry.m_ext) == ResourceType::Animation)
+                {
+                  pair.second->m_animation =
+                      GetAnimationManager()->Create<Animation>(
+                          entry.GetFullPath());
+                  if (pair.first.empty())
+                  {
+                    extraTrack.first = entry.m_fileName;
+                  }
+                }
+                else
+                {
+                  GetLogger()->WriteConsole(LogType::Error,
+                                            "Only animations are accepted.");
+                }
+              });
+        };
+
+        auto showSignalName = [&nameUpdated, &nameUpdatedPair, tableWdth](
+                                  uint& columnIndx,
+                                  const std::pair<String, AnimRecordPtr>& pair)
+        {
+          ImGui::TableSetColumnIndex(columnIndx++);
+          ImGui::SetCursorPosY(ImGui::GetCursorPos().y +
+                               (ImGui::GetItemRectSize().y / 4.0f));
+          ImGui::PushItemWidth((tableWdth / 2.5f) - 5.0f);
+          String readOnly = pair.first;
+          if (ImGui::InputText("##",
+                               &readOnly,
+                               ImGuiInputTextFlags_EnterReturnsTrue) &&
+              readOnly.length())
+          {
+            nameUpdated     = readOnly;
+            nameUpdatedPair = pair;
+          }
+          ImGui::PopItemWidth();
+        };
         for (auto it = mref.begin(); it != mref.end(); ++it, rowIndx++)
         {
           uint columnIndx = 0;
@@ -222,22 +232,25 @@ namespace ToolKit
             if (activeRecord == it->second &&
                 activeRecord->m_state == AnimRecord::State::Play)
             {
-              if (UI::ImageButtonDecorless(
-                      UI::m_pauseIcon->m_textureId, Vec2(24, 24), false))
+              if (UI::ImageButtonDecorless(UI::m_pauseIcon->m_textureId,
+                                           Vec2(24, 24),
+                                           false))
               {
                 animPlayerComp->Pause();
               }
             }
-            else if (UI::ImageButtonDecorless(
-                         UI::m_playIcon->m_textureId, Vec2(24, 24), false))
+            else if (UI::ImageButtonDecorless(UI::m_playIcon->m_textureId,
+                                              Vec2(24, 24),
+                                              false))
             {
               animPlayerComp->Play(it->first.c_str());
             }
 
             // Draw stop button always.
             ImGui::SameLine();
-            if (UI::ImageButtonDecorless(
-                    UI::m_stopIcon->m_textureId, Vec2(24, 24), false))
+            if (UI::ImageButtonDecorless(UI::m_stopIcon->m_textureId,
+                                         Vec2(24, 24),
+                                         false))
             {
               animPlayerComp->Stop();
             }
@@ -251,8 +264,9 @@ namespace ToolKit
             ImGui::SetCursorPosY(ImGui::GetCursorPos().y +
                                  (ImGui::GetItemRectSize().y / 4.0f));
 
-            if (UI::ImageButtonDecorless(
-                    UI::m_closeIcon->m_textureId, Vec2(15, 15), false))
+            if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
+                                         Vec2(15, 15),
+                                         false))
             {
               removedSignalName = it->first;
             }
@@ -316,20 +330,23 @@ namespace ToolKit
       VariantCategoryArray categories;
       comp->m_localData.GetCategories(categories, true, true);
 
-      bool removeComp   = false;
-      auto showCompFunc = [comp, &removeComp, modifiableComp](
-                              const String& headerName) -> bool {
+      bool removeComp = false;
+      auto showCompFunc =
+          [comp, &removeComp, modifiableComp](const String& headerName) -> bool
+      {
         ImGui::PushID(static_cast<int>(comp->m_id));
         String varName = headerName + "##" + std::to_string(modifiableComp);
-        bool isOpen    = ImGui::TreeNodeEx(
-            varName.c_str(), ImGuiTreeNodeFlags_DefaultOpen | g_treeNodeFlags);
+        bool isOpen =
+            ImGui::TreeNodeEx(varName.c_str(),
+                              ImGuiTreeNodeFlags_DefaultOpen | g_treeNodeFlags);
 
         if (modifiableComp)
         {
           float offset = ImGui::GetContentRegionAvail().x - 30.0f;
           ImGui::SameLine(offset);
-          if (UI::ImageButtonDecorless(
-                  UI::m_closeIcon->m_textureId, ImVec2(15.0f, 15.0f), false) &&
+          if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
+                                       ImVec2(15.0f, 15.0f),
+                                       false) &&
               !removeComp)
           {
             g_app->m_statusMsg = "Component " + headerName + " removed.";
@@ -387,9 +404,8 @@ namespace ToolKit
       m_viewID  = 3;
       m_viewIcn = UI::m_collectionIcon;
     }
-    ComponentView::~ComponentView()
-    {
-    }
+
+    ComponentView::~ComponentView() {}
 
     void ComponentView::Show()
     {
@@ -458,7 +474,8 @@ namespace ToolKit
             case 5:
               newComponent = new SkeletonComponent;
               break;
-            case 6: {
+            case 6:
+            {
               MultiMaterialComponent* mmComp = new MultiMaterialComponent;
               mmComp->UpdateMaterialList(m_entity->GetMeshComponent());
               newComponent = mmComp;

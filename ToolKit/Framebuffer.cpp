@@ -21,10 +21,7 @@ namespace ToolKit
     }
   }
 
-  Framebuffer::~Framebuffer()
-  {
-    UnInit();
-  }
+  Framebuffer::~Framebuffer() { UnInit(); }
 
   void Framebuffer::Init(const FramebufferSettings& settings)
   {
@@ -89,13 +86,17 @@ namespace ToolKit
       else
 #endif // TK_GL_ES_3_0
       {
-        glRenderbufferStorage(
-            GL_RENDERBUFFER, component, m_settings.width, m_settings.height);
+        glRenderbufferStorage(GL_RENDERBUFFER,
+                              component,
+                              m_settings.width,
+                              m_settings.height);
       }
 
       // Attach depth buffer to FBO
-      glFramebufferRenderbuffer(
-          GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, m_defaultRboId);
+      glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+                                attachment,
+                                GL_RENDERBUFFER,
+                                m_defaultRboId);
 
       // Check if framebuffer is complete
       if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -124,10 +125,7 @@ namespace ToolKit
     m_initialized = false;
   }
 
-  bool Framebuffer::Initialized()
-  {
-    return m_initialized;
-  }
+  bool Framebuffer::Initialized() { return m_initialized; }
 
   void Framebuffer::ReconstructIfNeeded(uint width, uint height)
   {
@@ -198,13 +196,19 @@ namespace ToolKit
       if (layer != -1)
       {
         assert(layer < rt->m_settings.Layers);
-        glFramebufferTextureLayer(
-            GL_FRAMEBUFFER, attachment, rt->m_textureId, 0, layer);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER,
+                                  attachment,
+                                  rt->m_textureId,
+                                  0,
+                                  layer);
       }
       else
       {
-        glFramebufferTexture2D(
-            GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, rt->m_textureId, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER,
+                               attachment,
+                               GL_TEXTURE_2D,
+                               rt->m_textureId,
+                               0);
       }
     }
 
@@ -269,7 +273,7 @@ namespace ToolKit
     {
       attachment = GL_COLOR_ATTACHMENT0 + (int) atc;
 
-      rt = m_colorAtchs[(int) atc];
+      rt         = m_colorAtchs[(int) atc];
     }
     else if (atc == Attachment::DepthStencilAttachment)
     {
@@ -311,20 +315,11 @@ namespace ToolKit
     return rt;
   }
 
-  uint Framebuffer::GetFboId()
-  {
-    return m_fboId;
-  }
+  uint Framebuffer::GetFboId() { return m_fboId; }
 
-  uint Framebuffer::GetDefaultRboId()
-  {
-    return m_defaultRboId;
-  }
+  uint Framebuffer::GetDefaultRboId() { return m_defaultRboId; }
 
-  FramebufferSettings Framebuffer::GetSettings()
-  {
-    return m_settings;
-  }
+  FramebufferSettings Framebuffer::GetSettings() { return m_settings; }
 
   void Framebuffer::CheckFramebufferComplete()
   {

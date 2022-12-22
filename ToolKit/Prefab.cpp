@@ -13,10 +13,8 @@ namespace ToolKit
     ParameterEventConstructor();
   }
 
-  Prefab::~Prefab()
-  {
-    UnInit();
-  }
+  Prefab::~Prefab() { UnInit(); }
+
   void Prefab::UnInit()
   {
     if (m_initiated)
@@ -30,10 +28,7 @@ namespace ToolKit
     m_initiated = false;
   }
 
-  EntityType Prefab::GetType() const
-  {
-    return EntityType::Entity_Prefab;
-  }
+  EntityType Prefab::GetType() const { return EntityType::Entity_Prefab; }
 
   Prefab* Prefab::GetPrefabRoot(Entity* ntt)
   {
@@ -159,10 +154,12 @@ namespace ToolKit
 
   void Prefab::ParameterConstructor()
   {
-    PrefabPath_Define(
-        "", PrefabCategory.Name, PrefabCategory.Priority, true, false);
+    PrefabPath_Define("",
+                      PrefabCategory.Name,
+                      PrefabCategory.Priority,
+                      true,
+                      false);
   }
-  void Prefab::ParameterEventConstructor()
-  {
-  }
+
+  void Prefab::ParameterEventConstructor() {}
 } // namespace ToolKit

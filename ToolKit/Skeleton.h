@@ -30,6 +30,7 @@ namespace ToolKit
       uint boneIndx;
       Node* node;
     };
+
     // Call after skeleton fills m_bones list
     void Init(const Skeleton* skeleton);
     ~DynamicBoneMap();

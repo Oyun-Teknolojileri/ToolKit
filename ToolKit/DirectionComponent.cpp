@@ -5,18 +5,11 @@
 namespace ToolKit
 {
 
-  DirectionComponent::DirectionComponent()
-  {
-  }
+  DirectionComponent::DirectionComponent() {}
 
-  DirectionComponent::DirectionComponent(Entity* entity)
-  {
-    m_entity = entity;
-  }
+  DirectionComponent::DirectionComponent(Entity* entity) { m_entity = entity; }
 
-  DirectionComponent::~DirectionComponent()
-  {
-  }
+  DirectionComponent::~DirectionComponent() {}
 
   ComponentPtr DirectionComponent::Copy(Entity* ntt)
   {
@@ -88,7 +81,7 @@ namespace ToolKit
     Vec3 rotAxis = glm::normalize(glm::cross(dir, tdir));
     float yaw    = glm::acos(glm::dot(tdir, dir));
 
-    yaw *= glm::sign(glm::dot(Y_AXIS, rotAxis));
+    yaw          *= glm::sign(glm::dot(Y_AXIS, rotAxis));
     RotateOnUpVector(yaw);
 
     tdir        = target - eye;
@@ -96,7 +89,7 @@ namespace ToolKit
     dir         = glm::normalize(GetDirection());
     rotAxis     = glm::normalize(glm::cross(dir, tdir));
     float pitch = glm::acos(glm::dot(tdir, dir));
-    pitch *= glm::sign(glm::dot(GetRight(), rotAxis));
+    pitch       *= glm::sign(glm::dot(GetRight(), rotAxis));
     Pitch(pitch);
 
     // Check upside down case

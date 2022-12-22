@@ -16,15 +16,9 @@ namespace ToolKit
     m_alpha = 1.0f;
   }
 
-  Material::Material(String file) : Material()
-  {
-    SetFile(file);
-  }
+  Material::Material(String file) : Material() { SetFile(file); }
 
-  Material::~Material()
-  {
-    UnInit();
-  }
+  Material::~Material() { UnInit(); }
 
   void Material::Load()
   {
@@ -110,10 +104,7 @@ namespace ToolKit
     m_initiated = true;
   }
 
-  void Material::UnInit()
-  {
-    m_initiated = false;
-  }
+  void Material::UnInit() { m_initiated = false; }
 
   void Material::CopyTo(Resource* other)
   {
@@ -146,11 +137,11 @@ namespace ToolKit
     {
       m_renderState.emissiveTextureInUse = true;
       m_renderState.emissiveTexture      = m_emissiveTexture->m_textureId;
-      
+
       // TODO: Remove the line below.
       // This will stay here until, translucent gbuffer added to deferred
       // renderer.
-      m_renderState.useForwardPath = true;
+      m_renderState.useForwardPath       = true;
     }
     else
     {
@@ -305,14 +296,9 @@ namespace ToolKit
     }
   }
 
-  MaterialManager::MaterialManager()
-  {
-    m_type = ResourceType::Material;
-  }
+  MaterialManager::MaterialManager() { m_type = ResourceType::Material; }
 
-  MaterialManager::~MaterialManager()
-  {
-  }
+  MaterialManager::~MaterialManager() {}
 
   void MaterialManager::Init()
   {
@@ -330,7 +316,7 @@ namespace ToolKit
 
     m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
 
-    material                 = new Material();
+    material                                          = new Material();
     material->m_vertexShader = GetShaderManager()->Create<Shader>(
         ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(
@@ -377,7 +363,7 @@ namespace ToolKit
 
   MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial()
   {
-    MaterialPtr umat = GetCopyOfUnlitMaterial();
+    MaterialPtr umat                        = GetCopyOfUnlitMaterial();
     umat->GetRenderState()->isColorMaterial = true;
     return umat;
   }
