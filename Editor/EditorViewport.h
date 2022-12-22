@@ -64,7 +64,7 @@ namespace ToolKit
       void UpdateSnaps();
 
       // Mods.
-      void FpsNavigationMode(float deltaTime);
+      void FpsNavigationMod(float deltaTime);
       void OrbitPanMod(float deltaTime);
       void AdjustZoom(float delta) override;
 
