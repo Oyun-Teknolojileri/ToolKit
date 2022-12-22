@@ -13,11 +13,12 @@
 		in vec3 v_normal;
 		in vec2 v_texture;
 
-		uniform sampler2D gPosition;
-		uniform sampler2D gNormal;
-		uniform sampler2D texNoise;
+		uniform sampler2D s_texture0; // position (in world space)
+		uniform sampler2D s_texture1; // normal
+		uniform sampler2D s_texture2; // noise
 
 		uniform vec2 screen_size;
+		uniform mat4 viewMatrix;
 
 		uniform vec3 samples[64];
 
@@ -32,10 +33,13 @@
 
 		void main()
 		{
-		    vec2 noiseScale = vec2(screen_size[0]/4.0, screen_size[1]/4.0); 
-			vec3 fragPos = texture(gPosition, v_texture).xyz;
-			vec3 normal = normalize(texture(gNormal, v_texture).rgb);
-			vec3 randomVec = vec3(normalize(texture(texNoise, v_texture * noiseScale).xy), 0.0);
+			vec2 texCoord = vec2(v_texture.x, 1.0 - v_texture.y);
+			vec3 pos = vec3(viewMatrix * vec4(texture(s_texture0, texCoord).xyz, 1.0));
+
+		  vec2 noiseScale = vec2(screen_size[0]/4.0, screen_size[1]/4.0); 
+			vec3 fragPos = pos;
+			vec3 normal = normalize(texture(s_texture1, texCoord).rgb);
+			vec3 randomVec = vec3(normalize(texture(s_texture2, texCoord * noiseScale).xy), 0.0);
 			// create TBN change-of-basis matrix: from tangent-space to view-space
 			vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
 			vec3 bitangent = cross(normal, tangent);
@@ -55,7 +59,7 @@
 				offset.xyz = offset.xyz * 0.5 + 0.5; // transform to range 0.0 - 1.0
 				
 				// get sample depth
-				float sampleDepth = texture(gPosition, offset.xy).z; // get depth value of kernel sample
+				float sampleDepth = (viewMatrix * vec4(texture(s_texture0, offset.xy).xyz, 1.0)).z; // get depth value of kernel sample
 				
 				// range check & accumulate
 				float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
