@@ -462,7 +462,7 @@ namespace ToolKit
       // create a build dir if not exist.
       std::filesystem::create_directories(buildDir);
 
-// Update project files in case of change.
+      // Update project files in case of change.
 #ifdef TK_DEBUG
       static const StringView buildConfig = "Debug";
 #else
@@ -544,7 +544,19 @@ namespace ToolKit
         return;
       }
 
-      cam->FocusToBoundingBox(entity->GetAABB(true), 1.1f);
+      if (!GetCurrentScene()->GetBillboardOfEntity(entity))
+      {
+        cam->FocusToBoundingBox(entity->GetAABB(true), 1.1f);
+      }
+      else
+      {
+        BoundingBox defaultBBox = {Vec3(-1.0f), Vec3(1.0f)};
+        Vec3 pos =
+            entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+        defaultBBox.max += pos;
+        defaultBBox.min += pos;
+        cam->FocusToBoundingBox(defaultBBox, 1.1f);
+      }
     }
 
     int App::ExecSysCommand(StringView cmd,
