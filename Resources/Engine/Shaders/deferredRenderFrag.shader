@@ -15,6 +15,8 @@
 		// Color buffer
 		uniform sampler2D s_texture11;
 
+		uniform int aoEnabled;
+
 		uniform vec3 camPos;
 
 		in vec2 v_texture;
@@ -35,9 +37,17 @@
 
 			irradiance += IblIrradiance(n);
 
-			// float ambientOcclusion = AmbientOcclusion();
+			float ambientOcclusion;
+			if (aoEnabled == 1)
+			{
+				ambientOcclusion = AmbientOcclusion();
+			}
+			else
+			{
+				ambientOcclusion = 1.0;
+			}
 
-			fragColor = vec4(irradiance * color, 1.0);
+			fragColor = vec4(irradiance * color * ambientOcclusion, 1.0);
 		}
 	-->
 	</source>

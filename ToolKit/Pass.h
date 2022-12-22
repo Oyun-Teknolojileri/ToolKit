@@ -426,7 +426,8 @@ namespace ToolKit
     FramebufferPtr GBufferFramebuffer;
     bool ClearFramebuffer = true;
     LightRawPtrArray lights;
-    Camera* GBufferCamera = nullptr;
+    Camera* Cam = nullptr;
+    TexturePtr AOTexture = nullptr;
   };
 
   class TK_API DeferredRenderPass : public RenderPass
@@ -451,6 +452,42 @@ namespace ToolKit
 
     const IVec2 m_lightDataTextureSize     = IVec2(1024);
     LightDataTexturePtr m_lightDataTexture = nullptr;
+  };
+
+  struct SSAOPassParams
+  {
+    TexturePtr GPositionBuffer;
+    TexturePtr GNormalBuffer;
+    Camera* Cam;
+  };
+
+  class TK_API SSAOPass : public Pass
+  {
+   public:
+    SSAOPass();
+    explicit SSAOPass(const SSAOPassParams& params);
+
+    void Render();
+    void PreRender();
+    void PostRender();
+
+   private:
+    void GenerateSSAONoise();
+
+   public:
+    SSAOPassParams m_params;
+    RenderTargetPtr m_ssaoTexture = nullptr;
+
+   private:
+    Vec3Array m_ssaoKernel;
+    Vec2Array m_ssaoNoise;
+
+    FramebufferPtr m_ssaoFramebuffer   = nullptr;
+    SSAONoiseTexturePtr m_noiseTexture = nullptr;
+    RenderTargetPtr m_tempBlurRt       = nullptr;
+
+    FullQuadPass m_quadPass;
+    ShaderPtr m_ssaoShader = nullptr;
   };
 
   struct SceneRenderPassParams
@@ -488,6 +525,6 @@ namespace ToolKit
     ForwardRenderPassPtr m_forwardRenderPass = nullptr;
     GBufferPass m_gBufferPass;
     DeferredRenderPass m_deferredRenderPass;
+    SSAOPass m_ssaoPass;
   };
-
 } // namespace ToolKit
