@@ -152,8 +152,6 @@ namespace ToolKit
       return "DiffuseTextureInUse";
     case Uniform::IBL_ROTATION:
       return "IblRotation";
-    case Uniform::LIGHTING_ONLY:
-      return "LightingOnly";
     case Uniform::USE_ALPHA_MASK:
       return "useAlphaMask";
     case Uniform::ALPHA_MASK_TRESHOLD:
@@ -166,7 +164,6 @@ namespace ToolKit
       return "emissiveColor";
     case Uniform::EMISSIVE_TEXTURE_IN_USE:
       return "emissiveTextureInUse";
-    case Uniform::UNUSEDSLOT_1:
     default:
       return "";
     }

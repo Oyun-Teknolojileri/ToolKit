@@ -197,20 +197,24 @@ namespace ToolKit
       switch (mode)
       {
       case EditorLitMode::EditorLit:
-        renderer->m_overrideMat = nullptr;
+        renderer->m_overrideMat        = nullptr;
+        renderer->m_renderOnlyLighting = false;
         break;
       case EditorLitMode::Unlit:
-        renderer->m_overrideMat = m_unlitOverride;
+        renderer->m_overrideMat        = m_unlitOverride;
+        renderer->m_renderOnlyLighting = false;
         break;
       case EditorLitMode::FullyLit:
-        renderer->m_overrideMat = nullptr;
+        renderer->m_overrideMat        = nullptr;
+        renderer->m_renderOnlyLighting = false;
         break;
       case EditorLitMode::LightComplexity:
         renderer->m_overrideMat = m_lightComplexityOverride;
+        renderer->m_renderOnlyLighting = false;
         break;
       case EditorLitMode::LightingOnly:
-        renderer->m_overrideMat        = m_lightingOnlyOverride;
-        renderer->m_renderOnlyLighting = false;
+        renderer->m_overrideMat        = nullptr;
+        renderer->m_renderOnlyLighting = true;
         break;
       default:
         break;
@@ -261,10 +265,6 @@ namespace ToolKit
           GetShaderManager()->Create<Shader>(
               ShaderPath("lightComplexity.shader", true));
       m_lightComplexityOverride->Init();
-
-      m_lightingOnlyOverride = GetMaterialManager()->GetCopyOfDefaultMaterial();
-      m_lightingOnlyOverride->GetRenderState()->isColorMaterial = true;
-      m_lightingOnlyOverride->Init();
 
       m_unlitOverride = GetMaterialManager()->GetCopyOfUnlitMaterial();
       m_unlitOverride->Init();

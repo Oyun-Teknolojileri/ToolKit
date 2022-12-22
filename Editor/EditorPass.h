@@ -114,10 +114,6 @@ namespace ToolKit
        */
       MaterialPtr m_lightComplexityOverride = nullptr;
       /**
-       * Override material for EditorLitMode::LightingOnly.
-       */
-      MaterialPtr m_lightingOnlyOverride    = nullptr;
-      /**
        * Override material for EditorLitMode::Unlit.
        */
       MaterialPtr m_unlitOverride           = nullptr;

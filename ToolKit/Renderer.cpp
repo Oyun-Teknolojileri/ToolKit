@@ -1378,13 +1378,9 @@ namespace ToolKit
                                            GetUniformName(Uniform::COLOR));
           if (m_renderOnlyLighting)
           {
-            const Vec4 overrideColor = Vec4(1.0f, 1.0f, 1.0f, color.a);
-            glUniform4fv(loc, 1, &overrideColor.x);
+            color = Vec4(1.0f, 1.0f, 1.0f, color.a);
           }
-          else
-          {
-            glUniform4fv(loc, 1, &color.x);
-          }
+          glUniform4fv(loc, 1, &color.x);
         }
         break;
         case Uniform::FRAME_COUNT:
@@ -1448,7 +1444,12 @@ namespace ToolKit
           GLint loc = glGetUniformLocation(
               program->m_handle,
               GetUniformName(Uniform::DIFFUSE_TEXTURE_IN_USE));
-          glUniform1i(loc, (int) !(m_mat->GetRenderState()->isColorMaterial));
+          int v = (int) !(m_mat->GetRenderState()->isColorMaterial);
+          if (m_renderOnlyLighting)
+          {
+            v = false;
+          }
+          glUniform1i(loc, v);
         }
         break;
         case Uniform::COLOR_ALPHA:
@@ -1477,14 +1478,6 @@ namespace ToolKit
                                    GetUniformName(Uniform::IBL_ROTATION));
 
           glUniformMatrix4fv(loc, 1, false, &m_iblRotation[0][0]);
-        }
-        break;
-        case Uniform::LIGHTING_ONLY:
-        {
-          GLint loc =
-              glGetUniformLocation(program->m_handle,
-                                   GetUniformName(Uniform::LIGHTING_ONLY));
-          glUniform1i(loc, m_renderOnlyLighting ? 1 : 0);
         }
         break;
         case Uniform::USE_ALPHA_MASK:
