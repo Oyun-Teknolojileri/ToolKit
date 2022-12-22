@@ -140,30 +140,34 @@ namespace ToolKit
           ResetCamera();
         }
 
-        ImGui::SameLine();
         const ImVec2 viewportSize = ImVec2(ImGui::GetContentRegionAvail().x -
-                                               iconSize.x - 5.0 * spacing.x,
+                                               iconSize.x - 9.0f * spacing.x,
                                            150.0f);
-        m_viewport->ResizeWindow(viewportSize.x, viewportSize.y);
-        m_viewport->Update(g_app->GetDeltaTime());
-        m_viewport->Show();
-        ImGui::SameLine();
-        ImGui::BeginGroup();
-
-        auto setIconFn = [this](TexturePtr icon, uint id) -> void
+        if (viewportSize.x > 1 && viewportSize.y > 1)
         {
-          if (ImGui::ImageButton(Convert2ImGuiTexture(icon), iconSize))
+          ImGui::SameLine();
+          m_viewport->ResizeWindow((uint) viewportSize.x,
+                                   (uint) viewportSize.y);
+          m_viewport->Update(g_app->GetDeltaTime());
+          m_viewport->Show();
+          ImGui::SameLine();
+          ImGui::BeginGroup();
+
+          auto setIconFn = [this](TexturePtr icon, uint id) -> void
           {
-            m_activeObjectIndx = id;
-            m_isMeshChanged    = true;
-          }
-        };
+            if (ImGui::ImageButton(Convert2ImGuiTexture(icon), iconSize))
+            {
+              m_activeObjectIndx = id;
+              m_isMeshChanged    = true;
+            }
+          };
 
-        setIconFn(UI::m_sphereIcon, 0u);
-        setIconFn(UI::m_cubeIcon, 1u);
-        setIconFn(UI::m_shaderBallIcon, 2u);
+          setIconFn(UI::m_sphereIcon, 0u);
+          setIconFn(UI::m_cubeIcon, 1u);
+          setIconFn(UI::m_shaderBallIcon, 2u);
 
-        ImGui::EndGroup();
+          ImGui::EndGroup();
+        }
       }
 
       auto updateThumbFn = [this]() -> void
