@@ -308,10 +308,7 @@ namespace ToolKit
   {
     for (Entity* ntt : entities)
     {
-      if (ntt)
-      {
-        RemoveEntity(ntt->GetIdVal());
-      }
+      RemoveEntity(ntt->GetIdVal());
     }
   }
 
