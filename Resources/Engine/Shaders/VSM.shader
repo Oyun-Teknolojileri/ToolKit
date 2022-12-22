@@ -8,7 +8,7 @@
 			moments.x = depth;
 			float dx = dFdx(moments.x);
 			float dy = dFdy(moments.x);
-			moments.y = moments.x * moments.x * 0.25 * (dx * dx + dy * dy);
+			moments.y = moments.x * moments.x + 0.25 * (dx * dx + dy * dy);
 			return moments;
 		}
 
