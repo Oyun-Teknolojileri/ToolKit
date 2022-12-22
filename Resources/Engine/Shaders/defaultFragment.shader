@@ -5,7 +5,6 @@
 	<include name = "camera.shader" />
 	<include name = "AO.shader" />
 	<uniform name = "CamData" />
-	<uniform name = "LightingOnly" />
 	<uniform name = "useAlphaMask" />
 	<uniform name = "alphaMaskTreshold" />
 	<uniform name = "DiffuseTextureInUse" />
