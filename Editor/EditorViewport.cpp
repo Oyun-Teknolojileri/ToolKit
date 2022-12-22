@@ -17,6 +17,7 @@
 #include "Renderer.h"
 #include "SDL.h"
 #include "Util.h"
+#include "Prefab.h"
 
 #include <algorithm>
 
@@ -707,28 +708,54 @@ namespace ToolKit
             EditorScene::PickData pd = currScene->PickObject(ray);
             if (pd.entity != nullptr && pd.entity->IsDrawable())
             {
-              MeshComponentPtr ms = pd.entity->GetComponent<MeshComponent>();
-              if (ms != nullptr)
+              // If there is a mesh component, update material component.
+              bool notPrefab =
+                  Prefab::GetPrefabRoot(pd.entity) == nullptr;
+
+              bool hasMesh =
+                  pd.entity->GetComponent<MeshComponent>() != nullptr;
+
+              if (notPrefab && hasMesh)
               {
                 // Load material once
                 String path =
                     ConcatPaths({dragEntry.m_rootPath,
                                  dragEntry.m_fileName + dragEntry.m_ext});
+
                 MaterialPtr material =
                     GetMaterialManager()->Create<Material>(path);
+
                 // Set material to material component
-                MaterialComponentPtr matPtr = pd.entity->GetMaterialComponent();
                 MultiMaterialPtr mmPtr =
                     pd.entity->GetComponent<MultiMaterialComponent>();
-                if (matPtr == nullptr && mmPtr == nullptr)
+
+                MaterialComponentPtr matPtr = pd.entity->GetMaterialComponent();
+
+                assert(!(matPtr != nullptr && mmPtr != nullptr) &&
+                       "Having both material component and multi material "
+                       "component on a single entity is not allowed.");
+
+                if (matPtr != nullptr)
                 {
-                  // Create a new material component
-                  MaterialComponent* matComp = new MaterialComponent();
-                  pd.entity->AddComponent(matComp);
-                  matPtr = pd.entity->GetMaterialComponent();
+                  matPtr->SetMaterialVal(material);
                 }
-                matPtr->m_localData[matPtr->MaterialIndex()] = material;
+
+                if (mmPtr != nullptr)
+                {
+                  // A better implementation would be finding the submesh that
+                  // ray intersects and updating the multi material slot
+                  // accordingly.
+                  pd.entity->RemoveComponent(mmPtr->m_id);
+                  MaterialComponent* matCom = new MaterialComponent();
+                  matCom->SetMaterialVal(material);
+                  pd.entity->AddComponent(matCom);
+                }
               }
+              else if (!notPrefab)
+              {
+                g_app->m_statusMsg = "Failed. Target is Prefab.";
+              }
+
             }
           }
         }
