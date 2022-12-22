@@ -214,25 +214,23 @@ namespace ToolKit
       switch (mode)
       {
       case EditorLitMode::EditorLit:
-        renderer->m_renderOnlyLighting = false;
-        break;
-      case EditorLitMode::Unlit:
-        m_singleMatRenderer.m_params.OverrideFragmentShader =
-            GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader",true));
-        renderer->m_renderOnlyLighting = false;
-        break;
       case EditorLitMode::FullyLit:
-        renderer->m_renderOnlyLighting = false;
-        break;
-      case EditorLitMode::LightComplexity:
-        m_singleMatRenderer.m_params.OverrideFragmentShader =
-            GetShaderManager()->Create<Shader>(ShaderPath("lightComplexity.shader", true));
         renderer->m_renderOnlyLighting = false;
         break;
       case EditorLitMode::LightingOnly:
         renderer->m_renderOnlyLighting = true;
         break;
-      default:
+      case EditorLitMode::Unlit:
+        m_singleMatRenderer.m_params.OverrideFragmentShader =
+            GetShaderManager()->Create<Shader>(
+                ShaderPath("unlitFrag.shader", true));
+        renderer->m_renderOnlyLighting = false;
+        break;
+      case EditorLitMode::LightComplexity:
+        m_singleMatRenderer.m_params.OverrideFragmentShader =
+            GetShaderManager()->Create<Shader>(
+                ShaderPath("lightComplexity.shader", true));
+        renderer->m_renderOnlyLighting = false;
         break;
       }
     }
@@ -415,36 +413,62 @@ namespace ToolKit
 
     void GizmoPass::PostRender() { Pass::PostRender(); }
 
-    SingleMatSceneRenderPass::SingleMatSceneRenderPass()
+    SingleMatForwardRenderPass::SingleMatForwardRenderPass()
+        : ForwardRenderPass()
     {
       m_overrideMat = std::make_shared<Material>();
-
-      m_forwardPass = std::make_shared<ForwardRenderPass>();
     }
 
-    SingleMatSceneRenderPass::SingleMatSceneRenderPass(
-        const SingleMatSceneRenderPassParams& params)
-        : SingleMatSceneRenderPass()
+    SingleMatForwardRenderPass::SingleMatForwardRenderPass(
+        const SingleMatForwardRenderPassParams& params)
+        : SingleMatForwardRenderPass()
     {
       m_params = params;
     }
 
-    void SingleMatSceneRenderPass::Render()
+    void SingleMatForwardRenderPass::Render()
     {
       PreRender();
 
-      GetRenderer()->m_overrideMat = m_overrideMat;
-      m_forwardPass->Render();
+      EntityRawPtrArray translucentDrawList;
+      SeperateTranslucentEntities(m_params.ForwardParams.Entities,
+                                  translucentDrawList);
+
+      Renderer* renderer = GetRenderer();
+      for (Entity* ntt : m_params.ForwardParams.Entities)
+      {
+        LightRawPtrArray lightList = m_params.ForwardParams.Lights;
+        ForwardRenderPass::CullLightList(ntt, lightList);
+
+        MaterialPtr mat         = ntt->GetRenderMaterial();
+        renderer->m_overrideMat = std::make_shared<Material>();
+        renderer->m_overrideMat->SetRenderState(mat->GetRenderState());
+        renderer->m_overrideMat->m_vertexShader = mat->m_vertexShader;
+        renderer->m_overrideMat->m_fragmentShader =
+            m_params.OverrideFragmentShader;
+        renderer->m_overrideMat->m_diffuseTexture  = mat->m_diffuseTexture;
+        renderer->m_overrideMat->m_emissiveTexture = mat->m_emissiveTexture;
+        renderer->m_overrideMat->m_emissiveColor   = mat->m_emissiveColor;
+        renderer->m_overrideMat->m_cubeMap         = mat->m_cubeMap;
+        renderer->m_overrideMat->m_color           = mat->m_color;
+        renderer->m_overrideMat->m_alpha           = mat->m_alpha;
+        renderer->m_overrideMat->Init();
+
+        renderer->Render(ntt, m_params.ForwardParams.Cam, lightList);
+      }
+
+      RenderTranslucent(translucentDrawList,
+                        m_camera,
+                        m_params.ForwardParams.Lights);
 
       PostRender();
     }
 
-    void SingleMatSceneRenderPass::PreRender()
+    void SingleMatForwardRenderPass::PreRender()
     {
-      Pass::PreRender();
-
-      m_forwardPass->m_params = m_params.ForwardParams;
-
+      ForwardRenderPass::m_params = m_params.ForwardParams;
+      ForwardRenderPass::PreRender();
+      Renderer* renderer = GetRenderer();
 
       m_overrideMat->UnInit();
       m_overrideMat->m_fragmentShader = m_params.OverrideFragmentShader;

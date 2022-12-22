@@ -34,35 +34,32 @@ namespace ToolKit
       Camera* m_camera            = nullptr;
     };
 
-    struct SingleMatSceneRenderPassParams
+    struct SingleMatForwardRenderPassParams
     {
       ForwardRenderPassParams ForwardParams;
       ShaderPtr OverrideFragmentShader;
     };
 
     // Render whole scene in forward renderer with a single override material
-    struct SingleMatSceneRenderPass : public Pass
+    struct SingleMatForwardRenderPass : public ForwardRenderPass
     {
      public:
-      SingleMatSceneRenderPass();
-      explicit SingleMatSceneRenderPass(const SingleMatSceneRenderPassParams& params);
+      SingleMatForwardRenderPass();
+      explicit SingleMatForwardRenderPass(
+          const SingleMatForwardRenderPassParams& params);
 
       void Render() override;
       void PreRender() override;
 
      public:
-      SingleMatSceneRenderPassParams m_params;
+      SingleMatForwardRenderPassParams m_params;
 
      private:
-      /**
-       * Override material for EditorLitMode::LightComplexity.
-       */
       MaterialPtr m_overrideMat = nullptr;
-
-      ForwardRenderPassPtr m_forwardPass    = nullptr;
     };
 
-    typedef std::shared_ptr<SingleMatSceneRenderPass> LightComplexityPassPtr;
+    typedef std::shared_ptr<SingleMatForwardRenderPass>
+        SingleMatForwardRenderPassPtr;
 
     /**
      * Enumeration for available render modes for the editor.
@@ -138,11 +135,11 @@ namespace ToolKit
       /**
        * Parent Node that m_editorLights are attached to.
        */
-      Node* m_lightNode                     = nullptr;
+      Node* m_lightNode           = nullptr;
       /**
        * Override material for EditorLitMode::Unlit.
        */
-      MaterialPtr m_unlitOverride           = nullptr;
+      MaterialPtr m_unlitOverride = nullptr;
 
       SceneRenderPass m_scenePass;
       TonemapPass m_tonemapPass;
@@ -151,7 +148,7 @@ namespace ToolKit
       GammaPass m_gammaPass;
       BloomPass m_bloomPass;
       OutlinePass m_outlinePass;
-      SingleMatSceneRenderPass m_singleMatRenderer;
+      SingleMatForwardRenderPass m_singleMatRenderer;
       Camera* m_camera = nullptr;
 
       /**
