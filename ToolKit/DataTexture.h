@@ -24,12 +24,9 @@ namespace ToolKit
   class TK_API LightDataTexture : public DataTexture
   {
    public:
-    TKResourceType(DataTexture)
-
     LightDataTexture(int width, int height);
 
     void Init(bool flushClientSideArray = false) override;
-    void UnInit() override;
 
     void UpdateTextureData(LightRawPtrArray& lights,
                            Vec2& shadowDirLightIndexInterval,
@@ -50,5 +47,21 @@ namespace ToolKit
 
     bool IncrementDataIndex(int& index, int amount = 1);
   };
+
+  class SSAONoiseTexture : public DataTexture
+  {
+   public:
+    SSAONoiseTexture(int width, int height);
+
+    void Init(void* data);
+
+   protected:
+    SSAONoiseTexture();
+
+   private:
+    void Init(bool flushClientSideArray = false) override;
+  };
+
+  using SSAONoiseTexturePtr = std::shared_ptr<SSAONoiseTexture>;
 
 } // namespace ToolKit

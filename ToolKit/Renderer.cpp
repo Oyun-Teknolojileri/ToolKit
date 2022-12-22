@@ -1149,6 +1149,7 @@ namespace ToolKit
       m_gaussianBlurMaterial                   = std::make_shared<Material>();
       m_gaussianBlurMaterial->m_vertexShader   = vert;
       m_gaussianBlurMaterial->m_fragmentShader = frag;
+      m_gaussianBlurMaterial->GetRenderState()->isColorMaterial = false;
     }
 
     m_gaussianBlurMaterial->UnInit();
@@ -1182,6 +1183,7 @@ namespace ToolKit
       m_averageBlurMaterial                   = std::make_shared<Material>();
       m_averageBlurMaterial->m_vertexShader   = vert;
       m_averageBlurMaterial->m_fragmentShader = frag;
+      m_averageBlurMaterial->GetRenderState()->isColorMaterial = false;
     }
 
     m_averageBlurMaterial->UnInit();
@@ -1764,6 +1766,7 @@ namespace ToolKit
     //
     // 0 -> Color Texture
     // 2 & 3 -> Skinning information
+    // 5 -> AO Texture
     // 7 -> Irradiance Map
     //
     // Deferred Render Pass:

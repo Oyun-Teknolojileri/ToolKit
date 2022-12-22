@@ -123,6 +123,11 @@ namespace ToolKit
                               const Vec3& axis,
                               const float amount);
 
+    void ApplyAverageBlur(const TexturePtr source,
+      RenderTargetPtr dest,
+      const Vec3& axis,
+      const float amount);
+
     /**
      * Just before the render, set the lens to fit aspect ratio to frame buffer.
      */
@@ -148,11 +153,6 @@ namespace ToolKit
      * @param entity to find the environment volume.
      */
     void FindEnvironmentLight(Entity* entity);
-
-    void ApplyAverageBlur(const TexturePtr source,
-                          RenderTargetPtr dest,
-                          const Vec3& axis,
-                          const float amount);
 
     void SetProjectViewModel(Entity* ntt, Camera* cam);
     void BindProgram(ProgramPtr program);
