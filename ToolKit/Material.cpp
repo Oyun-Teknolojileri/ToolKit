@@ -137,11 +137,6 @@ namespace ToolKit
     {
       m_renderState.emissiveTextureInUse = true;
       m_renderState.emissiveTexture      = m_emissiveTexture->m_textureId;
-
-      // TODO: Remove the line below.
-      // This will stay here until, translucent gbuffer added to deferred
-      // renderer.
-      m_renderState.useForwardPath       = true;
     }
     else
     {

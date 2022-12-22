@@ -221,7 +221,7 @@ namespace ToolKit
     {
       if (m_needsResize)
       {
-        OnResizeContentArea(m_size.x, m_size.y);
+        OnResizeContentArea((float) m_size.x, (float) m_size.y);
       }
 
       HandleStates();
@@ -250,9 +250,10 @@ namespace ToolKit
 
       // Render color attachment as rounded image
       FramebufferSettings fbSettings = m_framebuffer->GetSettings();
-      Vec2 imageSize = Vec2(fbSettings.width, fbSettings.height);
-      Vec2 currentCursorPos =
-          Vec2(ImGui::GetCursorPos()) + Vec2(ImGui::GetWindowPos());
+      Vec2 imageSize        = Vec2(fbSettings.width, fbSettings.height);
+      Vec2 currentCursorPos = Vec2(ImGui::GetWindowContentRegionMin()) +
+                              Vec2(ImGui::GetCursorPos()) +
+                              Vec2(ImGui::GetWindowPos());
       ImRect bb(currentCursorPos, currentCursorPos + imageSize);
       ImGui::ItemSize(bb);
       ImGui::ItemAdd(bb, 0);
@@ -359,8 +360,8 @@ namespace ToolKit
                            view->m_viewName.data());
             ImGui::PopStyleColor(1);
           }
-          ImGui::EndChildFrame();
         }
+        ImGui::EndChildFrame();
 
         ImGui::SameLine();
 
@@ -369,8 +370,8 @@ namespace ToolKit
                 Vec2(windowSize.x - sidebarSize.x - spacing.x, windowSize.y)))
         {
           m_views[(uint) m_activeView]->Show();
-          ImGui::EndChild();
         }
+        ImGui::EndChild();
       }
       ImGui::End();
       ImGui::PopStyleVar(2);
