@@ -158,6 +158,7 @@
 		const float DirPCFSamplesIndex = 12.0;
 		const float DirPCFRadiusIndex = 13.0;
 		const float DirLightBleedReducIndex = 14.0;
+		const float DirShadowBiasIndex = 15.0;
 
 		mat4 DirLightProjViewMatrix(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
@@ -199,6 +200,11 @@
 			return ReadFloat(data, startingPoint + DirLightBleedReducIndex, lightDataTextureWidth);
 		}
 
+		float DirLightShadowBias(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadFloat(data, startingPoint + DirShadowBiasIndex, lightDataTextureWidth);
+		}
+
 		const float SpotProjViewMatrixIndex = 8.0;
 		const float SpotShadowCameraFarIndex = 12.0;
 		const float SpotShadowAtlasCoordIndex = 13.0;
@@ -208,6 +214,7 @@
 		const float SpotPCFSamplesIndex = 17.0;
 		const float SpotPCFRadiusIndex = 18.0;
 		const float SpotLightBleedReducIndex = 19.0;
+		const float SpotShadowBiasIndex = 20.0;
 
 		mat4 SpotLightProjViewMatrix(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
@@ -254,6 +261,11 @@
 			return ReadFloat(data, startingPoint + SpotLightBleedReducIndex, lightDataTextureWidth);
 		}
 
+		float SpotLightShadowBias(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadFloat(data, startingPoint + SpotShadowBiasIndex, lightDataTextureWidth);
+		}
+
 		const float PointShadowCameraFarIndex = 5.0;
 		const float PointShadowAtlasCoordIndex = 6.0;
 		const float PointShadowAtlasLayerIndex = 7.0;
@@ -262,6 +274,7 @@
 		const float PointPCFSamplesIndex = 10.0;
 		const float PointPCFRadiusIndex = 11.0;
 		const float PointLightBleedReducIndex = 12.0;
+		const float PointShadowBiasIndex = 13.0;
 
 		float PointLightShadowCameraFar(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
@@ -301,6 +314,11 @@
 		float PointLightBleedReduction(sampler2D data, float startingPoint, float lightDataTextureWidth)
 		{
 			return ReadFloat(data, startingPoint + PointLightBleedReducIndex, lightDataTextureWidth);
+		}
+
+		float PointLightShadowBias(sampler2D data, float startingPoint, float lightDataTextureWidth)
+		{
+			return ReadFloat(data, startingPoint + PointShadowBiasIndex, lightDataTextureWidth);
 		}
 
 	-->

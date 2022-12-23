@@ -409,7 +409,6 @@ namespace ToolKit
       }
 
       RenderShadowMaps(light, entities);
-      // TODO FilterShadowMap(light);
     }
 
     GetRenderer()->m_clearColor = lastClearColor;
@@ -502,7 +501,7 @@ namespace ToolKit
         // Clear the layer if needed
         if (!m_clearedLayers[light->m_shadowAtlasLayer + i])
         {
-          renderer->m_clearColor = Vec4(1.0f);
+          renderer->m_clearColor = m_shadowClearColor;
           renderer->ClearBuffer(GraphicBitFields::AllBits);
           m_clearedLayers[light->m_shadowAtlasLayer + i] = true;
         }
@@ -540,7 +539,7 @@ namespace ToolKit
       // Clear the layer if needed
       if (!m_clearedLayers[light->m_shadowAtlasLayer])
       {
-        renderer->m_clearColor = Vec4(1.0f);
+        renderer->m_clearColor = m_shadowClearColor;
         renderer->ClearBuffer(GraphicBitFields::AllBits);
         m_clearedLayers[light->m_shadowAtlasLayer] = true;
       }
@@ -560,31 +559,6 @@ namespace ToolKit
     default:
       break;
     }
-  }
-
-  void ShadowPass::FilterShadowMap(Light* light)
-  {
-    /*
-    if (light->GetType() == EntityType::Entity_PointLight ||
-        light->GetShadowThicknessVal() < 0.001f)
-    {
-      return;
-    }
-
-    Renderer* renderer = GetRenderer();
-    float softness     = light->GetShadowThicknessVal();
-    Vec2 shadowRes     = light->GetShadowResolutionVal();
-
-    renderer->Apply7x1GaussianBlur(light->GetShadowMapRenderTarget(),
-                                   light->GetShadowMapTempBlurRt(),
-                                   X_AXIS,
-                                   softness / shadowRes.x);
-
-    renderer->Apply7x1GaussianBlur(light->GetShadowMapTempBlurRt(),
-                                   light->GetShadowMapRenderTarget(),
-                                   Y_AXIS,
-                                   softness / shadowRes.y);
-                                   */
   }
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights)

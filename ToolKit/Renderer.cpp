@@ -1466,6 +1466,11 @@ namespace ToolKit
         glUniform1f(loc,
                     currLight->GetShadowResVal() /
                         Renderer::m_rhiSettings::g_shadowAtlasTextureSize);
+
+        loc = glGetUniformLocation(program->m_handle,
+                                   g_lightShadowBiasStrCache[i].c_str());
+        glUniform1f(loc,
+                    currLight->GetShadowBiasVal() * g_shadowBiasMultiplier);
       }
 
       GLuint loc = glGetUniformLocation(program->m_handle,

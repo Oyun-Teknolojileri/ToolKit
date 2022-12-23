@@ -181,6 +181,8 @@ namespace ToolKit
       static constexpr int g_shadowAtlasTextureSize = 4096;
     } m_rhiSettings;
 
+    static constexpr float g_shadowBiasMultiplier = 0.0001f;
+
    private:
     uint m_currentProgram = 0;
     Mat4 m_project;
