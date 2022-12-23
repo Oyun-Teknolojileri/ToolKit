@@ -70,7 +70,7 @@ namespace ToolKit
      * Used to apply zoom by adjusting camera frustum. The bigger the frustum,
      * the closer the image will be.
      */
-    float m_orthographicScale = 0.001f;
+    float m_orthographicScale = 1.0f;
 
     TKDeclareParam(float, Fov);
     TKDeclareParam(float, NearClip);
