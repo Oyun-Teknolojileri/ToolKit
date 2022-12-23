@@ -68,10 +68,16 @@ namespace ToolKit
       return;
     }
 
-    // Sanity check
-    if ((m_image == nullptr && m_imagef == nullptr) || m_width <= 0 ||
-        m_height <= 0)
+    // Sanity checks
+    if ((m_image == nullptr && m_imagef == nullptr))
     {
+      assert(0 && "No texture data.");
+      return;
+    }
+
+    if (m_width <= 0 || m_height <= 0)
+    {
+      assert(0 && "Zero texture size.");
       return;
     }
 
@@ -92,6 +98,7 @@ namespace ToolKit
                    GL_RGB,
                    GL_FLOAT,
                    m_imagef);
+
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
     else
@@ -105,7 +112,9 @@ namespace ToolKit
                    GL_RGBA,
                    GL_UNSIGNED_BYTE,
                    m_image);
+
       glGenerateMipmap(GL_TEXTURE_2D);
+
       glTexParameteri(GL_TEXTURE_2D,
                       GL_TEXTURE_MIN_FILTER,
                       GL_LINEAR_MIPMAP_LINEAR);
@@ -121,6 +130,7 @@ namespace ToolKit
       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
     }
 #endif // TK_GL_ES_3_0
+
     if (flushClientSideArray)
     {
       Clear();
