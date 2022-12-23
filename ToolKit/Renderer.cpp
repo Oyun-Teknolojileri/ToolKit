@@ -34,44 +34,6 @@ namespace ToolKit
 
   Renderer::~Renderer() { SafeDel(m_uiCamera); }
 
-  void Renderer::GenerateKernelAndNoiseForSSAOSamples(Vec3Array& ssaoKernel,
-                                                      Vec2Array& ssaoNoise)
-  {
-    // generate sample kernel
-    // ----------------------
-    auto lerp = [](float a, float b, float f) { return a + f * (b - a); };
-
-    std::uniform_real_distribution<GLfloat> randomFloats(
-        0.0,
-        1.0); // generates random floats between 0.0 and 1.0
-    std::default_random_engine generator;
-    if (ssaoKernel.size() == 0)
-      for (unsigned int i = 0; i < 64; ++i)
-      {
-        glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0,
-                         randomFloats(generator) * 2.0 - 1.0,
-                         randomFloats(generator));
-        sample      = glm::normalize(sample);
-        sample      *= randomFloats(generator);
-        float scale = float(i) / 64.0f;
-
-        // scale samples s.t. they're more aligned to center of kernel
-        scale       = lerp(0.1f, 1.0f, scale * scale);
-        sample      *= scale;
-        ssaoKernel.push_back(sample);
-      }
-
-    // generate noise texture
-    // ----------------------
-    if (ssaoNoise.size() == 0)
-      for (unsigned int i = 0; i < 16; i++)
-      {
-        glm::vec2 noise(randomFloats(generator) * 2.0 - 1.0,
-                        randomFloats(generator) * 2.0 - 1.0);
-        ssaoNoise.push_back(noise);
-      }
-  }
-
   int Renderer::GetMaxArrayTextureLayers()
   {
     if (m_maxArrayTextureLayers == -1)
