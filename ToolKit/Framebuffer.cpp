@@ -9,7 +9,7 @@ namespace ToolKit
   bool FramebufferSettings::Compare(const FramebufferSettings& settings)
   {
     return settings.width == width && settings.height == height &&
-           settings.msaa == msaa && settings.depthStencil == depthStencil &&
+           settings.depthStencil == depthStencil &&
            settings.useDefaultDepth == useDefaultDepth;
   }
 
@@ -32,18 +32,6 @@ namespace ToolKit
 
     m_settings = settings;
 
-#ifndef TK_GL_ES_3_0
-    // If msaa is not supported, do not use
-    if (glFramebufferTexture2DMultisampleEXT == nullptr)
-    {
-      m_settings.msaa = 0;
-      GetLogger()->Log(
-          "Unsupported Extension: glFramebufferTexture2DMultisampleEXT");
-    }
-#else
-    m_settings.msaa = 0;
-#endif
-
     // Create framebuffer object
     glGenFramebuffers(1, &m_fboId);
 
@@ -51,6 +39,7 @@ namespace ToolKit
     {
       m_settings.width = 1024;
     }
+
     if (settings.height == 0)
     {
       m_settings.height = 1024;
@@ -74,23 +63,11 @@ namespace ToolKit
         component  = GL_DEPTH24_STENCIL8;
         attachment = GL_DEPTH_STENCIL_ATTACHMENT;
       }
-#ifndef TK_GL_ES_3_0
-      if (m_settings.msaa > 0)
-      {
-        glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER,
-                                            m_settings.msaa,
-                                            component,
-                                            m_settings.width,
-                                            m_settings.height);
-      }
-      else
-#endif // TK_GL_ES_3_0
-      {
-        glRenderbufferStorage(GL_RENDERBUFFER,
-                              component,
-                              m_settings.width,
-                              m_settings.height);
-      }
+
+      glRenderbufferStorage(GL_RENDERBUFFER,
+                            component,
+                            m_settings.width,
+                            m_settings.height);
 
       // Attach depth buffer to FBO
       glFramebufferRenderbuffer(GL_FRAMEBUFFER,
@@ -179,18 +156,6 @@ namespace ToolKit
                              rt->m_textureId,
                              0);
     }
-#ifndef TK_GL_ES_3_0
-    else if (rt->m_settings.Msaa > 0 && m_settings.msaa == rt->m_settings.Msaa)
-    {
-      // No support for msaa array texture
-      glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER,
-                                           attachment,
-                                           GL_TEXTURE_2D,
-                                           rt->m_textureId,
-                                           0,
-                                           rt->m_settings.Msaa);
-    }
-#endif // TK_GL_ES_3_0
     else
     {
       if (layer != -1)
@@ -287,21 +252,7 @@ namespace ToolKit
 
       // Detach
       glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-#ifndef TK_GL_ES_3_0
-      if (rt->m_settings.Msaa > 0 && m_settings.msaa == rt->m_settings.Msaa)
-      {
-        glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER,
-                                             attachment,
-                                             GL_TEXTURE_2D,
-                                             0,
-                                             0,
-                                             rt->m_settings.Msaa);
-      }
-      else
-#endif // TK_GL_ES_3_0
-      {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
-      }
+      glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
 
       if (IsColorAttachment(atc))
       {

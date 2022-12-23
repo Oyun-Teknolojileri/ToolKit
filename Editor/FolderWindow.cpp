@@ -104,7 +104,7 @@ namespace ToolKit
           thumbPtr->Init();
           thumbFbPtr = std::make_shared<Framebuffer>();
           thumbFbPtr->Init(
-              {(uint) thumbSize.x, (uint) thumbSize.y, 0, false, true});
+              {(uint) thumbSize.x, (uint) thumbSize.y, false, true});
           thumbFbPtr->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                                     thumbPtr);
         }

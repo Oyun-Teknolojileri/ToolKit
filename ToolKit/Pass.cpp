@@ -192,7 +192,7 @@ namespace ToolKit
     if (m_params.FrameBuffer == nullptr)
     {
       m_params.FrameBuffer = std::make_shared<Framebuffer>();
-      m_params.FrameBuffer->Init({1024u, 768u, 0, false, true});
+      m_params.FrameBuffer->Init({1024u, 768u, false, true});
     }
   }
 
@@ -736,7 +736,6 @@ namespace ToolKit
         m_shadowFramebuffer->Init(
             {Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
              Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
-             0,
              false,
              true});
       }
@@ -1122,7 +1121,7 @@ namespace ToolKit
   {
     m_copyTexture = std::make_shared<RenderTarget>();
     m_copyBuffer  = std::make_shared<Framebuffer>();
-    m_copyBuffer->Init({0, 0, 0, false, false});
+    m_copyBuffer->Init({0, 0, false, false});
 
     m_postProcessPass = std::make_shared<FullQuadPass>();
   }
@@ -1379,7 +1378,7 @@ namespace ToolKit
     m_height = height;
 
     // Gbuffers render targets
-    m_framebuffer->Init({(uint) width, (uint) height, 0, false, true});
+    m_framebuffer->Init({(uint) width, (uint) height, false, true});
     m_gPosRt->m_width       = width;
     m_gPosRt->m_height      = height;
     m_gNormalRt->m_width    = width;
@@ -1677,7 +1676,7 @@ namespace ToolKit
 
     // No need destroy and re init framebuffer when size is changed, because
     // the only render target is already being resized.
-    m_ssaoFramebuffer->Init({(uint) width, (uint) height, 0, false, false});
+    m_ssaoFramebuffer->Init({(uint) width, (uint) height, false, false});
 
     RenderTargetSettigs oneChannelSet = {};
     oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;

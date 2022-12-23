@@ -134,7 +134,6 @@ namespace ToolKit
 
     viewport->m_ssaoGBuffer->Init({(uint) viewport->m_wndContentAreaSize.x,
                                    (uint) viewport->m_wndContentAreaSize.y,
-                                   0,
                                    false,
                                    true});
 
@@ -247,7 +246,6 @@ namespace ToolKit
       viewport->m_ssaoBuffer = std::make_shared<Framebuffer>();
     viewport->m_ssaoBuffer->Init({(uint) viewport->m_wndContentAreaSize.x,
                                   (uint) viewport->m_wndContentAreaSize.y,
-                                  0,
                                   false,
                                   true});
 
@@ -305,7 +303,6 @@ namespace ToolKit
       viewport->m_ssaoBufferBlur = std::make_shared<Framebuffer>();
     viewport->m_ssaoBufferBlur->Init({(uint) viewport->m_wndContentAreaSize.x,
                                       (uint) viewport->m_wndContentAreaSize.y,
-                                      0,
                                       false,
                                       true});
 
@@ -964,7 +961,7 @@ namespace ToolKit
     {
       m_copyFb = std::make_shared<Framebuffer>();
       m_copyFb->Init(
-          {(uint) source->m_width, (uint) source->m_height, 0, false, false});
+          {(uint) source->m_width, (uint) source->m_height, false, false});
     }
 
     RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dest);
@@ -1138,7 +1135,7 @@ namespace ToolKit
                                       const float amount)
   {
     m_utilFramebuffer->UnInit();
-    m_utilFramebuffer->Init({0, 0, 0, false, false});
+    m_utilFramebuffer->Init({0, 0, false, false});
 
     if (m_gaussianBlurMaterial == nullptr)
     {
@@ -1172,7 +1169,7 @@ namespace ToolKit
                                   const float amount)
   {
     m_utilFramebuffer->UnInit();
-    m_utilFramebuffer->Init({0, 0, 0, false, false});
+    m_utilFramebuffer->Init({0, 0, false, false});
 
     if (m_averageBlurMaterial == nullptr)
     {
@@ -1839,7 +1836,7 @@ namespace ToolKit
     mat->Init();
 
     m_utilFramebuffer->UnInit();
-    m_utilFramebuffer->Init({width, height, 0, false, false});
+    m_utilFramebuffer->Init({width, height, false, false});
     m_utilFramebuffer->ClearAttachments();
 
     // Views for 6 different angles
@@ -1926,7 +1923,7 @@ namespace ToolKit
     mat->Init();
 
     m_utilFramebuffer->UnInit();
-    m_utilFramebuffer->Init({width, height, 0, false, false});
+    m_utilFramebuffer->Init({width, height, false, false});
 
     for (int i = 0; i < 6; ++i)
     {

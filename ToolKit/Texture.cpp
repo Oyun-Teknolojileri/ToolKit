@@ -553,9 +553,11 @@ namespace ToolKit
     glTexParameteri((int) m_settings.Target,
                     GL_TEXTURE_WRAP_S,
                     (int) m_settings.WarpS);
+
     glTexParameteri((int) m_settings.Target,
                     GL_TEXTURE_WRAP_T,
                     (int) m_settings.WarpT);
+
     if (m_settings.Target == GraphicTypes::TargetCubeMap)
     {
       glTexParameteri((int) m_settings.Target,
@@ -565,6 +567,7 @@ namespace ToolKit
     glTexParameteri((int) m_settings.Target,
                     GL_TEXTURE_MIN_FILTER,
                     (int) m_settings.MinFilter);
+
     glTexParameteri((int) m_settings.Target,
                     GL_TEXTURE_MAG_FILTER,
                     (int) m_settings.MagFilter);

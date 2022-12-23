@@ -240,7 +240,6 @@ namespace ToolKit
       m_selectedFramebuffer = std::make_shared<Framebuffer>();
       m_selectedFramebuffer->Init({(uint) m_wndContentAreaSize.x,
                                    (uint) m_wndContentAreaSize.y,
-                                   selectedSettings.Msaa,
                                    true,
                                    true});
 

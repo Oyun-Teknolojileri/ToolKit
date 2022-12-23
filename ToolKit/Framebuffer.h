@@ -9,7 +9,6 @@ namespace ToolKit
   {
     uint width           = 1024;
     uint height          = 1024;
-    int msaa             = 0;
     bool depthStencil    = false;
     bool useDefaultDepth = true;
 

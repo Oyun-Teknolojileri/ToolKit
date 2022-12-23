@@ -42,8 +42,8 @@ namespace ToolKit
 
   ViewportBase::ViewportBase()
   {
-    m_camera     = new Camera();
-    m_viewportId = GetHandleManager()->GetNextHandle();
+    m_camera         = new Camera();
+    m_viewportId     = GetHandleManager()->GetNextHandle();
     m_attachedCamera = NULL_HANDLE;
   }
 
@@ -95,7 +95,6 @@ namespace ToolKit
     m_framebuffer->UnInit();
     m_framebuffer->Init({(uint) m_wndContentAreaSize.x,
                          (uint) m_wndContentAreaSize.y,
-                         settings.Msaa,
                          false,
                          true});
 

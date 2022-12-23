@@ -260,7 +260,7 @@ namespace ToolKit
   void GradientSky::GenerateGradientCubemap()
   {
     FramebufferPtr fb = std::make_shared<Framebuffer>();
-    fb->Init({m_size, m_size, 0, false, true});
+    fb->Init({m_size, m_size, false, true});
 
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
