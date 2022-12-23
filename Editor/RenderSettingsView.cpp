@@ -20,7 +20,7 @@ namespace ToolKit
       uint itemCount      = sizeof(items) / sizeof(items[0]);
       EngineSettings::GraphicSettings& gfx =
           Main::GetInstance()->m_engineSettings.Graphics;
-      uint tonemapperMode = gfx.TonemapperMode;
+      uint tonemapperMode = (uint) gfx.TonemapperMode;
       if (ImGui::BeginCombo("Tonemapper mode", items[tonemapperMode]))
       {
         for (uint itemIndx = 0; itemIndx < itemCount; itemIndx++)
@@ -30,7 +30,7 @@ namespace ToolKit
           ImGui::Selectable(itemName, &isSelected);
           if (isSelected)
           {
-            gfx.TonemapperMode = (TonemapPassParams::TonemapMethod) itemIndx;
+            gfx.TonemapperMode = (TonemapMethod) itemIndx;
           }
         }
 

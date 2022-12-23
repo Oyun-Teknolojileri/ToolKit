@@ -4,6 +4,7 @@
 #include "Global.h"
 #include "Pass.h"
 #include "Primative.h"
+#include "PostProcessPass.h"
 
 namespace ToolKit
 {
@@ -94,7 +95,7 @@ namespace ToolKit
       class App* App                               = nullptr;
       class EditorViewport* Viewport               = nullptr;
       EditorLitMode LitMode                        = EditorLitMode::EditorLit;
-      TonemapPassParams::TonemapMethod tonemapping = TonemapPassParams::Aces;
+      TonemapMethod tonemapping                    = TonemapMethod::Aces;
     };
 
     class Technique
@@ -142,11 +143,12 @@ namespace ToolKit
       MaterialPtr m_unlitOverride = nullptr;
 
       SceneRenderPass m_scenePass;
-      TonemapPass m_tonemapPass;
       ForwardRenderPass m_editorPass;
       GizmoPass m_gizmoPass;
+      TonemapPass m_tonemapPass;
       GammaPass m_gammaPass;
       BloomPass m_bloomPass;
+      SSAOPass m_ssaoPass;
       OutlinePass m_outlinePass;
       SingleMatForwardRenderPass m_singleMatRenderer;
       Camera* m_camera = nullptr;

@@ -18,6 +18,7 @@
 #include "Node.h"
 #include "Pass.h"
 #include "PluginManager.h"
+#include "PostProcessPass.h"
 #include "Primative.h"
 #include "RenderState.h"
 #include "Renderer.h"
@@ -77,9 +78,9 @@ namespace ToolKit
 
     struct GraphicSettings
     {
-      uint MSAA                                       = 2;
-      uint FPS                                        = 60;
-      TonemapPassParams::TonemapMethod TonemapperMode = TonemapPassParams::Aces;
+      uint MSAA                    = 2;
+      uint FPS                     = 60;
+      TonemapMethod TonemapperMode = TonemapMethod::Aces;
       float bloomIntensity = 1.0f, bloomThreshold = 1.0f;
       int bloomIterationCount = 5;
     } Graphics;

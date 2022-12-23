@@ -57,19 +57,6 @@ namespace ToolKit
     std::vector<uint8*> m_images;
   };
 
-  struct CubeMapSettings
-  {
-    int level;
-    int internalformat;
-    int width;
-    int height;
-    uint format;
-    uint type;
-    void* pixels;
-    int wrapSet;
-    int filterSet;
-  };
-
   class TK_API Hdri : public Texture
   {
    public:
@@ -84,18 +71,6 @@ namespace ToolKit
     void UnInit() override;
 
     bool IsTextureAssigned();
-    CubeMapPtr GetCubemap();
-    CubeMapPtr GetIrradianceCubemap();
-
-   private:
-    uint GenerateCubemapBuffers(struct CubeMapSettings cubeMapSettings);
-    void RenderToCubeMap(uint fbo,
-                         const Mat4 views[6],
-                         CameraPtr cam,
-                         uint cubeMapTextureId,
-                         int width,
-                         int height,
-                         MaterialPtr mat);
 
    public:
     CubeMapPtr m_cubemap           = nullptr;

@@ -34,44 +34,6 @@ namespace ToolKit
 
   Renderer::~Renderer() { SafeDel(m_uiCamera); }
 
-  void Renderer::GenerateKernelAndNoiseForSSAOSamples(Vec3Array& ssaoKernel,
-                                                      Vec2Array& ssaoNoise)
-  {
-    // generate sample kernel
-    // ----------------------
-    auto lerp = [](float a, float b, float f) { return a + f * (b - a); };
-
-    std::uniform_real_distribution<GLfloat> randomFloats(
-        0.0,
-        1.0); // generates random floats between 0.0 and 1.0
-    std::default_random_engine generator;
-    if (ssaoKernel.size() == 0)
-      for (unsigned int i = 0; i < 64; ++i)
-      {
-        glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0,
-                         randomFloats(generator) * 2.0 - 1.0,
-                         randomFloats(generator));
-        sample      = glm::normalize(sample);
-        sample      *= randomFloats(generator);
-        float scale = float(i) / 64.0f;
-
-        // scale samples s.t. they're more aligned to center of kernel
-        scale       = lerp(0.1f, 1.0f, scale * scale);
-        sample      *= scale;
-        ssaoKernel.push_back(sample);
-      }
-
-    // generate noise texture
-    // ----------------------
-    if (ssaoNoise.size() == 0)
-      for (unsigned int i = 0; i < 16; i++)
-      {
-        glm::vec2 noise(randomFloats(generator) * 2.0 - 1.0,
-                        randomFloats(generator) * 2.0 - 1.0);
-        ssaoNoise.push_back(noise);
-      }
-  }
-
   int Renderer::GetMaxArrayTextureLayers()
   {
     if (m_maxArrayTextureLayers == -1)
@@ -93,240 +55,6 @@ namespace ToolKit
       float width  = m_viewportSize.x * 0.5f;
       float height = m_viewportSize.y * 0.5f;
       cam->SetLens(-width, width, -height, height, cam->Near(), cam->Far());
-    }
-  }
-
-  void Renderer::GenerateSSAOTexture(const EntityRawPtrArray& entities,
-                                     Viewport* viewport)
-  {
-    Camera* cam = viewport->GetCamera();
-
-    RenderTargetSettigs rtSet;
-    rtSet.WarpS = rtSet.WarpT = GraphicTypes::UVClampToEdge;
-    rtSet.InternalFormat      = GraphicTypes::FormatRGBA16F;
-    rtSet.Format              = GraphicTypes::FormatRGBA;
-    rtSet.Type                = GraphicTypes::TypeFloat;
-
-    if (!viewport->m_ssaoPosition)
-      viewport->m_ssaoPosition = std::make_shared<RenderTarget>(
-          (uint) viewport->m_wndContentAreaSize.x,
-          (uint) viewport->m_wndContentAreaSize.y,
-          rtSet);
-
-    viewport->m_ssaoPosition->Init();
-    viewport->m_ssaoPosition->ReconstructIfNeeded(
-        (uint) viewport->m_wndContentAreaSize.x,
-        (uint) viewport->m_wndContentAreaSize.y);
-
-    if (!viewport->m_ssaoNormal)
-      viewport->m_ssaoNormal = std::make_shared<RenderTarget>(
-          (uint) viewport->m_wndContentAreaSize.x,
-          (uint) viewport->m_wndContentAreaSize.y,
-          rtSet);
-
-    viewport->m_ssaoNormal->Init();
-    viewport->m_ssaoNormal->ReconstructIfNeeded(
-        (uint) viewport->m_wndContentAreaSize.x,
-        (uint) viewport->m_wndContentAreaSize.y);
-
-    if (!viewport->m_ssaoGBuffer)
-      viewport->m_ssaoGBuffer = std::make_shared<Framebuffer>();
-
-    viewport->m_ssaoGBuffer->Init({(uint) viewport->m_wndContentAreaSize.x,
-                                   (uint) viewport->m_wndContentAreaSize.y,
-                                   0,
-                                   false,
-                                   true});
-
-    viewport->m_ssaoGBuffer->ReconstructIfNeeded(
-        (uint) viewport->m_wndContentAreaSize.x,
-        (uint) viewport->m_wndContentAreaSize.y);
-
-    viewport->m_ssaoGBuffer->SetAttachment(
-        Framebuffer::Attachment::ColorAttachment0,
-        viewport->m_ssaoPosition);
-
-    viewport->m_ssaoGBuffer->SetAttachment(
-        Framebuffer::Attachment::ColorAttachment1,
-        viewport->m_ssaoNormal);
-
-    SetFramebuffer(viewport->m_ssaoGBuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
-
-    if (m_aoMat == nullptr)
-    {
-      ShaderPtr ssaoGeoVert = GetShaderManager()->Create<Shader>(
-          ShaderPath("ssaoVertex.shader", true));
-      ssaoGeoVert->Init();
-      ssaoGeoVert->SetShaderParameter("viewMatrix",
-                                      ParameterVariant(cam->GetViewMatrix()));
-      ShaderPtr ssaoGeoFrag = GetShaderManager()->Create<Shader>(
-          ShaderPath("ssaoGBufferFrag.shader", true));
-      ssaoGeoFrag->Init();
-
-      m_aoMat                   = std::make_shared<Material>();
-      m_aoMat->m_vertexShader   = ssaoGeoVert;
-      m_aoMat->m_fragmentShader = ssaoGeoFrag;
-    }
-    m_aoMat->UnInit();
-    m_aoMat->m_fragmentShader->SetShaderParameter(
-        "viewMatrix",
-        ParameterVariant(cam->GetViewMatrix()));
-
-    MaterialPtr overrideMatPrev = m_overrideMat;
-
-    ClearBuffer(GraphicBitFields::ColorDepthBits);
-
-    SetCameraLens(cam);
-
-    for (Entity* ntt : entities)
-    {
-      if (ntt->IsDrawable() && ntt->GetVisibleVal())
-      {
-        MaterialPtr entityMat = ntt->GetRenderMaterial();
-        if (!entityMat->GetRenderState()->AOInUse)
-        {
-          continue;
-        }
-
-        m_aoMat->m_alpha          = entityMat->m_alpha;
-        m_aoMat->m_diffuseTexture = entityMat->m_diffuseTexture;
-
-        m_overrideMat             = m_aoMat;
-        Render(ntt, cam);
-      }
-    }
-
-    SetFramebuffer(nullptr);
-    m_overrideMat = nullptr;
-
-    static Vec3Array ssaoKernel;
-    static Vec2Array ssaoNoise;
-    GenerateKernelAndNoiseForSSAOSamples(ssaoKernel, ssaoNoise);
-
-    static unsigned int noiseTexture = 0;
-    if (noiseTexture == 0)
-    {
-      glGenTextures(1, &noiseTexture);
-      glBindTexture(GL_TEXTURE_2D, noiseTexture);
-      glTexImage2D(GL_TEXTURE_2D,
-                   0,
-                   GL_RG32F,
-                   4,
-                   4,
-                   0,
-                   GL_RG,
-                   GL_FLOAT,
-                   &ssaoNoise[0]);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    }
-
-    RenderTargetSettigs oneChannelSet = {};
-    oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatR32F;
-    oneChannelSet.Format              = GraphicTypes::FormatRed;
-    oneChannelSet.Type                = GraphicTypes::TypeFloat;
-
-    if (!viewport->m_ssao)
-    {
-      viewport->m_ssao = std::make_shared<RenderTarget>(
-          (uint) viewport->m_wndContentAreaSize.x,
-          (uint) viewport->m_wndContentAreaSize.y,
-          oneChannelSet);
-    }
-
-    viewport->m_ssao->Init();
-    viewport->m_ssao->ReconstructIfNeeded(
-        (uint) viewport->m_wndContentAreaSize.x,
-        (uint) viewport->m_wndContentAreaSize.y);
-
-    if (!viewport->m_ssaoBuffer)
-      viewport->m_ssaoBuffer = std::make_shared<Framebuffer>();
-    viewport->m_ssaoBuffer->Init({(uint) viewport->m_wndContentAreaSize.x,
-                                  (uint) viewport->m_wndContentAreaSize.y,
-                                  0,
-                                  false,
-                                  true});
-
-    viewport->m_ssaoBuffer->ReconstructIfNeeded(
-        (uint) viewport->m_wndContentAreaSize.x,
-        (uint) viewport->m_wndContentAreaSize.y);
-    viewport->m_ssaoBuffer->SetAttachment(
-        Framebuffer::Attachment::ColorAttachment0,
-        viewport->m_ssao);
-    SetFramebuffer(viewport->m_ssaoBuffer, true, {0.0f, 0.0f, 0.0f, 1.0});
-
-    SetTexture(0, viewport->m_ssaoPosition->m_textureId);
-    SetTexture(1, viewport->m_ssaoNormal->m_textureId);
-    SetTexture(2, noiseTexture);
-
-    if (!viewport->m_ssaoCalcMat)
-    {
-      viewport->m_ssaoCalcMat = std::make_shared<Material>();
-      ShaderPtr ssaoVert      = GetShaderManager()->Create<Shader>(
-          ShaderPath("ssaoCalcVert.shader", true));
-      ShaderPtr ssaoFrag = GetShaderManager()->Create<Shader>(
-          ShaderPath("ssaoCalcFrag.shader", true));
-      viewport->m_ssaoCalcMat->m_vertexShader   = ssaoVert;
-      viewport->m_ssaoCalcMat->m_fragmentShader = ssaoFrag;
-      viewport->m_ssaoCalcMat->Init();
-    }
-    ShaderPtr ssaoFrag = viewport->m_ssaoCalcMat->m_fragmentShader;
-
-    ssaoFrag->SetShaderParameter("projection",
-                                 ParameterVariant(cam->GetProjectionMatrix()));
-    ssaoFrag->SetShaderParameter(
-        "screen_size",
-        ParameterVariant(viewport->m_wndContentAreaSize));
-    ssaoFrag->SetShaderParameter("gPosition", ParameterVariant(0));
-    ssaoFrag->SetShaderParameter("gNormal", ParameterVariant(1));
-    ssaoFrag->SetShaderParameter("texNoise", ParameterVariant(2));
-    for (unsigned int i = 0; i < 64; ++i)
-      ssaoFrag->SetShaderParameter(g_ssaoSamplesStrCache[i],
-                                   ParameterVariant(ssaoKernel[i]));
-
-    DrawFullQuad(viewport->m_ssaoCalcMat);
-    SetFramebuffer(nullptr);
-
-    if (!viewport->m_ssaoBlur)
-      viewport->m_ssaoBlur = std::make_shared<RenderTarget>(
-          (uint) viewport->m_wndContentAreaSize.x,
-          (uint) viewport->m_wndContentAreaSize.y,
-          oneChannelSet);
-    viewport->m_ssaoBlur->Init();
-    viewport->m_ssaoBlur->ReconstructIfNeeded(
-        (uint) viewport->m_wndContentAreaSize.x,
-        (uint) viewport->m_wndContentAreaSize.y);
-
-    if (!viewport->m_ssaoBufferBlur)
-      viewport->m_ssaoBufferBlur = std::make_shared<Framebuffer>();
-    viewport->m_ssaoBufferBlur->Init({(uint) viewport->m_wndContentAreaSize.x,
-                                      (uint) viewport->m_wndContentAreaSize.y,
-                                      0,
-                                      false,
-                                      true});
-
-    viewport->m_ssaoBufferBlur->ReconstructIfNeeded(
-        (uint) viewport->m_wndContentAreaSize.x,
-        (uint) viewport->m_wndContentAreaSize.y);
-
-    const Vec2 scale = 1.0f / viewport->m_wndContentAreaSize;
-    ApplyAverageBlur(viewport->m_ssao, viewport->m_ssaoBlur, X_AXIS, scale.x);
-    ApplyAverageBlur(viewport->m_ssaoBlur, viewport->m_ssao, Y_AXIS, scale.y);
-
-    m_overrideMat = overrideMatPrev;
-    SetFramebuffer(nullptr);
-    SetTexture(5, (uint) viewport->m_ssao->m_textureId);
-    // Debug purpose.
-    {
-      // ShaderPtr quad = GetShaderManager()->Create<Shader>(
-      //     ShaderPath("unlitFrag.shader", true));
-      // quad->SetShaderParameter("s_texture0", ParameterVariant(5));
-      // SetViewport(viewport);
-      // DrawFullQuad(quad);
     }
   }
 
@@ -964,7 +692,7 @@ namespace ToolKit
     {
       m_copyFb = std::make_shared<Framebuffer>();
       m_copyFb->Init(
-          {(uint) source->m_width, (uint) source->m_height, 0, false, false});
+          {(uint) source->m_width, (uint) source->m_height, false, false});
     }
 
     RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dest);
@@ -1088,7 +816,7 @@ namespace ToolKit
           env->GetComponent<EnvironmentComponent>();
       mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
       if (CubeMapPtr irradianceCubemap =
-              envCom->GetHdriVal()->GetIrradianceCubemap())
+              envCom->GetHdriVal()->m_irradianceCubemap)
       {
         mat->GetRenderState()->irradianceMap = irradianceCubemap->m_textureId;
       }
@@ -1108,7 +836,7 @@ namespace ToolKit
                   static_cast<Sky*>(sky)
                       ->GetComponent<EnvironmentComponent>()
                       ->GetHdriVal()
-                      ->GetIrradianceCubemap())
+                      ->m_irradianceCubemap)
           {
             mat->GetRenderState()->irradianceMap =
                 irradianceCubemap->m_textureId;
@@ -1119,6 +847,7 @@ namespace ToolKit
           mat->GetRenderState()->irradianceMap =
               static_cast<GradientSky*>(sky)->GetIrradianceMap()->m_textureId;
         }
+
         mat->GetRenderState()->iblIntensity = sky->GetIntensityVal();
         m_iblRotation =
             Mat4(sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
@@ -1138,7 +867,7 @@ namespace ToolKit
                                       const float amount)
   {
     m_utilFramebuffer->UnInit();
-    m_utilFramebuffer->Init({0, 0, 0, false, false});
+    m_utilFramebuffer->Init({0, 0, false, false});
 
     if (m_gaussianBlurMaterial == nullptr)
     {
@@ -1172,7 +901,7 @@ namespace ToolKit
                                   const float amount)
   {
     m_utilFramebuffer->UnInit();
-    m_utilFramebuffer->Init({0, 0, 0, false, false});
+    m_utilFramebuffer->Init({0, 0, false, false});
 
     if (m_averageBlurMaterial == nullptr)
     {
@@ -1844,7 +1573,7 @@ namespace ToolKit
     mat->Init();
 
     m_utilFramebuffer->UnInit();
-    m_utilFramebuffer->Init({width, height, 0, false, false});
+    m_utilFramebuffer->Init({width, height, false, false});
     m_utilFramebuffer->ClearAttachments();
 
     // Views for 6 different angles
@@ -1931,7 +1660,7 @@ namespace ToolKit
     mat->Init();
 
     m_utilFramebuffer->UnInit();
-    m_utilFramebuffer->Init({width, height, 0, false, false});
+    m_utilFramebuffer->Init({width, height, false, false});
 
     for (int i = 0; i < 6; ++i)
     {

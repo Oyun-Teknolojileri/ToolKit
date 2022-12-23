@@ -79,7 +79,6 @@ namespace ToolKit
       m_name = g_viewportStr + " " + std::to_string(m_id);
       InitOverlays(this);
       m_snapDeltas = Vec3(0.25f, 45.0f, 0.25f);
-      ResetSelectedRenderTarget(GetRenderTargetSettings());
     }
 
     EditorViewport::~EditorViewport() {}
@@ -204,9 +203,6 @@ namespace ToolKit
     void EditorViewport::OnResizeContentArea(float width, float height)
     {
       Viewport::OnResizeContentArea(width, height);
-
-      ResetSelectedRenderTarget(GetRenderTargetSettings());
-
       AdjustZoom(0.0f);
     }
 
@@ -228,31 +224,6 @@ namespace ToolKit
     {
       Viewport::SetCamera(cam);
       AdjustZoom(0.0f);
-    }
-
-    void EditorViewport::ResetSelectedRenderTarget(
-        const RenderTargetSettigs& settings)
-    {
-      RenderTargetSettigs selectedSettings;
-      selectedSettings.WarpS = selectedSettings.WarpT =
-          GraphicTypes::UVClampToEdge;
-
-      m_selectedFramebuffer = std::make_shared<Framebuffer>();
-      m_selectedFramebuffer->Init({(uint) m_wndContentAreaSize.x,
-                                   (uint) m_wndContentAreaSize.y,
-                                   selectedSettings.Msaa,
-                                   true,
-                                   true});
-
-      m_selectedStencilRT =
-          std::make_shared<RenderTarget>((uint) m_wndContentAreaSize.x,
-                                         (uint) m_wndContentAreaSize.y,
-                                         selectedSettings);
-
-      m_selectedStencilRT->Init();
-      m_selectedFramebuffer->SetAttachment(
-          Framebuffer::Attachment::ColorAttachment0,
-          m_selectedStencilRT);
     }
 
     RenderTargetSettigs EditorViewport::GetRenderTargetSettings()

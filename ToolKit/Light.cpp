@@ -14,6 +14,7 @@ namespace ToolKit
   Light::Light()
   {
     m_shadowCamera = new Camera();
+    m_shadowCamera->SetOrthographicScaleVal(1.0f);
 
     Color_Define(Vec3(1.0f), "Light", 0, true, true, {true});
     Intensity_Define(1.0f,

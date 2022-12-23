@@ -161,11 +161,6 @@ namespace ToolKit
     void FeedUniforms(ProgramPtr program);
     void FeedLightUniforms(ProgramPtr program);
 
-    void GenerateSSAOTexture(const EntityRawPtrArray& entities,
-                             Viewport* viewport);
-    void GenerateKernelAndNoiseForSSAOSamples(Vec3Array& ssaoKernel,
-                                              Vec2Array& ssaoNoise);
-
    public:
     uint m_totalFrameCount = 0;
     uint m_frameCount      = 0;

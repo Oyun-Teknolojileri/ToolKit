@@ -50,7 +50,6 @@ namespace ToolKit
       // Editor functions
       void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const;
       void SetCamera(Camera* cam) override;
-      void ResetSelectedRenderTarget(const RenderTargetSettigs& settings);
 
      protected:
       RenderTargetSettigs GetRenderTargetSettings() override;
@@ -94,8 +93,6 @@ namespace ToolKit
       int m_additionalWindowFlags       = 0;
       bool m_orbitLock                  = false;
       Vec3 m_snapDeltas; // X: Translation, Y: Rotation, Z: Scale
-      FramebufferPtr m_selectedFramebuffer = nullptr;
-      RenderTargetPtr m_selectedStencilRT  = nullptr;
 
       // UI Draw commands.
       std::vector<std::function<void(ImDrawList*)>> m_drawCommands;

@@ -206,16 +206,6 @@ namespace ToolKit
      */
     FramebufferPtr m_framebuffer   = nullptr;
 
-    FramebufferPtr m_ssaoGBuffer =
-        nullptr; // Basicly needed for SSAO algorithm.
-    FramebufferPtr m_ssaoBuffer     = nullptr;
-    FramebufferPtr m_ssaoBufferBlur = nullptr;
-    RenderTargetPtr m_ssaoPosition  = nullptr;
-    RenderTargetPtr m_ssaoNormal    = nullptr;
-    RenderTargetPtr m_ssao          = nullptr;
-    RenderTargetPtr m_ssaoBlur      = nullptr;
-    MaterialPtr m_ssaoCalcMat       = nullptr;
-
     // Window properties.
     Vec2 m_contentAreaLocation; //!< Position of content area in screen space.
 
