@@ -145,7 +145,7 @@ namespace ToolKit
     void RenderShadowMaps(Light* light, const EntityRawPtrArray& entities);
 
     /**
-     * Sets layer and coordintes of the shadow maps in shadow atlas.
+     * Sets layer and coordinates of the shadow maps in shadow atlas.
      * @param lights Light array that have shadows.
      * @return number of layers needed.
      */
@@ -281,111 +281,6 @@ namespace ToolKit
 
   typedef std::shared_ptr<OutlinePass> OutlinePassPtr;
 
-  struct BloomPassParams
-  {
-    FramebufferPtr FrameBuffer = nullptr;
-    int iterationCount         = 6;
-    float minThreshold = 1.0f, intensity = 1.0f;
-  };
-
-  class TK_API BloomPass : public Pass
-  {
-   public:
-    BloomPass();
-    explicit BloomPass(const BloomPassParams& params);
-
-    void Render() override;
-    void PreRender() override;
-    void PostRender() override;
-
-   public:
-    BloomPassParams m_params;
-
-   private:
-    // Iteration Count + 1 number of textures & framebuffers
-    std::vector<RenderTargetPtr> m_tempTextures;
-    std::vector<FramebufferPtr> m_tempFrameBuffers;
-    FullQuadPassPtr m_pass       = nullptr;
-    ShaderPtr m_downsampleShader = nullptr;
-    ShaderPtr m_upsampleShader   = nullptr;
-
-    bool m_invalidRenderParams   = false;
-  };
-
-  struct PostProcessPassParams
-  {
-    FramebufferPtr FrameBuffer = nullptr;
-    ShaderPtr Shader           = nullptr;
-  };
-
-  class TK_API PostProcessPass : public Pass
-  {
-   public:
-    PostProcessPass();
-    explicit PostProcessPass(const PostProcessPassParams& params);
-
-    void Render() override;
-    void PreRender() override;
-    void PostRender() override;
-
-   public:
-    PostProcessPassParams m_params;
-
-   protected:
-    ShaderPtr m_postProcessShader;
-    FullQuadPassPtr m_postProcessPass = nullptr;
-    FramebufferPtr m_copyBuffer       = nullptr;
-    RenderTargetPtr m_copyTexture     = nullptr;
-  };
-
-  struct GammaPassParams
-  {
-    FramebufferPtr FrameBuffer = nullptr;
-    float Gamma                = 2.2f;
-  };
-
-  /**
-   * Apply gamma correction to given frame buffer.
-   */
-  class TK_API GammaPass : public PostProcessPass
-  {
-   public:
-    GammaPass();
-    explicit GammaPass(const GammaPassParams& params);
-
-    void PreRender() override;
-
-   public:
-    GammaPassParams m_params;
-  };
-
-  struct TonemapPassParams
-  {
-    FramebufferPtr FrameBuffer = nullptr;
-
-    enum TonemapMethod
-    {
-      Reinhard,
-      Aces
-    };
-
-    TonemapMethod Method = Aces;
-  };
-
-  class TK_API TonemapPass : public PostProcessPass
-  {
-   public:
-    TonemapPass();
-    explicit TonemapPass(const TonemapPassParams& params);
-
-    void PreRender() override;
-
-   public:
-    TonemapPassParams m_params;
-  };
-
-  typedef std::shared_ptr<TonemapPass> TonemapPassPtr;
-
   struct GBufferPassParams
   {
     EntityRawPtrArray entities;
@@ -421,6 +316,8 @@ namespace ToolKit
     MaterialPtr m_gBufferMaterial = nullptr;
   };
 
+  typedef std::shared_ptr<GBufferPass> GBufferPassPtr;
+
   struct DeferredRenderPassParams
   {
     FramebufferPtr MainFramebuffer;
@@ -453,6 +350,17 @@ namespace ToolKit
 
     const IVec2 m_lightDataTextureSize     = IVec2(1024);
     LightDataTexturePtr m_lightDataTexture = nullptr;
+  };
+
+  typedef std::shared_ptr<DeferredRenderPass> DeferredRenderPassPtr;
+
+  struct SceneRenderPassParams
+  {
+    ScenePtr Scene = nullptr;
+    LightRawPtrArray Lights;
+    Camera* Cam                    = nullptr;
+    FramebufferPtr MainFramebuffer = nullptr;
+    bool ClearFramebuffer          = true;
   };
 
   struct SSAOPassParams
@@ -491,14 +399,7 @@ namespace ToolKit
     ShaderPtr m_ssaoShader = nullptr;
   };
 
-  struct SceneRenderPassParams
-  {
-    ScenePtr Scene = nullptr;
-    LightRawPtrArray Lights;
-    Camera* Cam                    = nullptr;
-    FramebufferPtr MainFramebuffer = nullptr;
-    bool ClearFramebuffer          = true;
-  };
+  typedef std::shared_ptr<SSAOPass> SSAOPassPtr;
 
   /**
    * Main scene renderer.
@@ -516,7 +417,6 @@ namespace ToolKit
 
    private:
     void SetPassParams();
-
     void CullDrawList(EntityRawPtrArray& entities, Camera* camera);
 
    public:
@@ -528,4 +428,7 @@ namespace ToolKit
     DeferredRenderPass m_deferredRenderPass;
     SSAOPass m_ssaoPass;
   };
+
+  typedef std::shared_ptr<SceneRenderPass> SceneRenderPassPtr;
+
 } // namespace ToolKit

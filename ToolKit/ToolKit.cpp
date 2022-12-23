@@ -450,8 +450,7 @@ namespace ToolKit
         }
         if (XmlAttribute* attr = node2->first_attribute("tonemapper"))
         {
-          Graphics.TonemapperMode =
-              (TonemapPassParams::TonemapMethod) atoi(attr->value());
+          Graphics.TonemapperMode = (TonemapMethod) atoi(attr->value());
         }
       }
     }

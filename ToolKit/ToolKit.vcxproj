@@ -32,6 +32,7 @@
     <ClCompile Include="ParameterBlock.cpp" />
     <ClCompile Include="Pass.cpp" />
     <ClCompile Include="PluginManager.cpp" />
+    <ClCompile Include="PostProcessPass.cpp" />
     <ClCompile Include="Prefab.cpp" />
     <ClCompile Include="Primative.cpp" />
     <ClCompile Include="Renderer.cpp" />
@@ -72,6 +73,7 @@
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="Pass.h" />
+    <ClInclude Include="PostProcessPass.h" />
     <ClInclude Include="ShaderReflectionCache.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Logger.h" />

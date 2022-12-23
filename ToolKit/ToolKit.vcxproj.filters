@@ -16,6 +16,9 @@
     <Filter Include="Source\UI">
       <UniqueIdentifier>{b83754ed-1ff1-4e41-8b4e-68bd5094ba69}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Pass">
+      <UniqueIdentifier>{3bf51b1e-9da9-41ef-bac7-0d39d55fd50c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drawable.cpp">
@@ -132,14 +135,17 @@
     <ClCompile Include="Framebuffer.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Pass.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="BinPack2D.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="DataTexture.cpp">
       <Filter>Source\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass.cpp">
+      <Filter>Source\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcessPass.cpp">
+      <Filter>Source\Pass</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -275,14 +281,17 @@
     <ClInclude Include="Framebuffer.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Pass.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="BinPack2D.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="DataTexture.h">
       <Filter>Source\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass.h">
+      <Filter>Source\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="PostProcessPass.h">
+      <Filter>Source\Pass</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
