@@ -34,6 +34,33 @@ namespace ToolKit
       Camera* m_camera            = nullptr;
     };
 
+    struct SingleMatForwardRenderPassParams
+    {
+      ForwardRenderPassParams ForwardParams;
+      ShaderPtr OverrideFragmentShader;
+    };
+
+    // Render whole scene in forward renderer with a single override material
+    struct SingleMatForwardRenderPass : public ForwardRenderPass
+    {
+     public:
+      SingleMatForwardRenderPass();
+      explicit SingleMatForwardRenderPass(
+          const SingleMatForwardRenderPassParams& params);
+
+      void Render() override;
+      void PreRender() override;
+
+     public:
+      SingleMatForwardRenderPassParams m_params;
+
+     private:
+      MaterialPtr m_overrideMat = nullptr;
+    };
+
+    typedef std::shared_ptr<SingleMatForwardRenderPass>
+        SingleMatForwardRenderPassPtr;
+
     /**
      * Enumeration for available render modes for the editor.
      */
@@ -108,19 +135,11 @@ namespace ToolKit
       /**
        * Parent Node that m_editorLights are attached to.
        */
-      Node* m_lightNode                     = nullptr;
-      /**
-       * Override material for EditorLitMode::LightComplexity.
-       */
-      MaterialPtr m_lightComplexityOverride = nullptr;
-      /**
-       * Override material for EditorLitMode::LightingOnly.
-       */
-      MaterialPtr m_lightingOnlyOverride    = nullptr;
+      Node* m_lightNode           = nullptr;
       /**
        * Override material for EditorLitMode::Unlit.
        */
-      MaterialPtr m_unlitOverride           = nullptr;
+      MaterialPtr m_unlitOverride = nullptr;
 
       SceneRenderPass m_scenePass;
       TonemapPass m_tonemapPass;
@@ -129,6 +148,7 @@ namespace ToolKit
       GammaPass m_gammaPass;
       BloomPass m_bloomPass;
       OutlinePass m_outlinePass;
+      SingleMatForwardRenderPass m_singleMatRenderer;
       Camera* m_camera = nullptr;
 
       /**

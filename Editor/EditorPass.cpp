@@ -35,9 +35,17 @@ namespace ToolKit
 
       SetLitMode(m_params.LitMode);
 
-      m_scenePass.Render();
-
-      m_bloomPass.Render();
+      switch (m_params.LitMode)
+      {
+      case EditorLitMode::LightComplexity:
+      case EditorLitMode::Unlit:
+        m_singleMatRenderer.Render();
+        break;
+      default:
+        m_scenePass.Render();
+        m_bloomPass.Render();
+        break;
+      }
 
       SetLitMode(EditorLitMode::EditorLit);
 
@@ -161,6 +169,15 @@ namespace ToolKit
       m_bloomPass.m_params.iterationCount =
           Main::GetInstance()->m_engineSettings.Graphics.bloomIterationCount;
 
+      // Light Complexity pass
+      m_singleMatRenderer.m_params.ForwardParams.Cam              = m_camera;
+      m_singleMatRenderer.m_params.ForwardParams.Lights           = lights;
+      m_singleMatRenderer.m_params.ForwardParams.ClearFrameBuffer = true;
+      m_singleMatRenderer.m_params.ForwardParams.Entities =
+          scene->GetEntities();
+      m_singleMatRenderer.m_params.ForwardParams.FrameBuffer =
+          viewport->m_framebuffer;
+
       m_tonemapPass.m_params.FrameBuffer = viewport->m_framebuffer;
       m_tonemapPass.m_params.Method      = m_params.tonemapping;
 
@@ -197,22 +214,23 @@ namespace ToolKit
       switch (mode)
       {
       case EditorLitMode::EditorLit:
-        renderer->m_overrideMat = nullptr;
-        break;
-      case EditorLitMode::Unlit:
-        renderer->m_overrideMat = m_unlitOverride;
-        break;
       case EditorLitMode::FullyLit:
-        renderer->m_overrideMat = nullptr;
-        break;
-      case EditorLitMode::LightComplexity:
-        renderer->m_overrideMat = m_lightComplexityOverride;
-        break;
-      case EditorLitMode::LightingOnly:
-        renderer->m_overrideMat        = m_lightingOnlyOverride;
         renderer->m_renderOnlyLighting = false;
         break;
-      default:
+      case EditorLitMode::LightingOnly:
+        renderer->m_renderOnlyLighting = true;
+        break;
+      case EditorLitMode::Unlit:
+        m_singleMatRenderer.m_params.OverrideFragmentShader =
+            GetShaderManager()->Create<Shader>(
+                ShaderPath("unlitFrag.shader", true));
+        renderer->m_renderOnlyLighting = false;
+        break;
+      case EditorLitMode::LightComplexity:
+        m_singleMatRenderer.m_params.OverrideFragmentShader =
+            GetShaderManager()->Create<Shader>(
+                ShaderPath("lightComplexity.shader", true));
+        renderer->m_renderOnlyLighting = false;
         break;
       }
     }
@@ -256,16 +274,6 @@ namespace ToolKit
       CreateEditorLights(m_editorLights, &m_lightNode);
 
       // Create render mode materials.
-      m_lightComplexityOverride = std::make_shared<Material>();
-      m_lightComplexityOverride->m_fragmentShader =
-          GetShaderManager()->Create<Shader>(
-              ShaderPath("lightComplexity.shader", true));
-      m_lightComplexityOverride->Init();
-
-      m_lightingOnlyOverride = GetMaterialManager()->GetCopyOfDefaultMaterial();
-      m_lightingOnlyOverride->GetRenderState()->isColorMaterial = true;
-      m_lightingOnlyOverride->Init();
-
       m_unlitOverride = GetMaterialManager()->GetCopyOfUnlitMaterial();
       m_unlitOverride->Init();
     }
@@ -405,5 +413,66 @@ namespace ToolKit
 
     void GizmoPass::PostRender() { Pass::PostRender(); }
 
+    SingleMatForwardRenderPass::SingleMatForwardRenderPass()
+        : ForwardRenderPass()
+    {
+      m_overrideMat = std::make_shared<Material>();
+    }
+
+    SingleMatForwardRenderPass::SingleMatForwardRenderPass(
+        const SingleMatForwardRenderPassParams& params)
+        : SingleMatForwardRenderPass()
+    {
+      m_params = params;
+    }
+
+    void SingleMatForwardRenderPass::Render()
+    {
+      PreRender();
+
+      EntityRawPtrArray translucentDrawList;
+      SeperateTranslucentEntities(m_params.ForwardParams.Entities,
+                                  translucentDrawList);
+
+      Renderer* renderer = GetRenderer();
+      for (Entity* ntt : m_params.ForwardParams.Entities)
+      {
+        LightRawPtrArray lightList = m_params.ForwardParams.Lights;
+        ForwardRenderPass::CullLightList(ntt, lightList);
+
+        MaterialPtr mat         = ntt->GetRenderMaterial();
+        renderer->m_overrideMat = std::make_shared<Material>();
+        renderer->m_overrideMat->SetRenderState(mat->GetRenderState());
+        renderer->m_overrideMat->m_vertexShader = mat->m_vertexShader;
+        renderer->m_overrideMat->m_fragmentShader =
+            m_params.OverrideFragmentShader;
+        renderer->m_overrideMat->m_diffuseTexture  = mat->m_diffuseTexture;
+        renderer->m_overrideMat->m_emissiveTexture = mat->m_emissiveTexture;
+        renderer->m_overrideMat->m_emissiveColor   = mat->m_emissiveColor;
+        renderer->m_overrideMat->m_cubeMap         = mat->m_cubeMap;
+        renderer->m_overrideMat->m_color           = mat->m_color;
+        renderer->m_overrideMat->m_alpha           = mat->m_alpha;
+        renderer->m_overrideMat->Init();
+
+        renderer->Render(ntt, m_params.ForwardParams.Cam, lightList);
+      }
+
+      RenderTranslucent(translucentDrawList,
+                        m_camera,
+                        m_params.ForwardParams.Lights);
+
+      PostRender();
+    }
+
+    void SingleMatForwardRenderPass::PreRender()
+    {
+      ForwardRenderPass::m_params = m_params.ForwardParams;
+      ForwardRenderPass::PreRender();
+      Renderer* renderer = GetRenderer();
+
+      m_overrideMat->UnInit();
+      m_overrideMat->m_fragmentShader = m_params.OverrideFragmentShader;
+      m_overrideMat->Init();
+    };
   } // namespace Editor
 } // namespace ToolKit

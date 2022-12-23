@@ -13,6 +13,7 @@
 #include "Node.h"
 #include "OverlayUI.h"
 #include "PopupWindows.h"
+#include "Prefab.h"
 #include "Primative.h"
 #include "Renderer.h"
 #include "SDL.h"
@@ -118,7 +119,7 @@ namespace ToolKit
       }
 
       // Update viewport mods.
-      FpsNavigationMode(deltaTime);
+      FpsNavigationMod(deltaTime);
       OrbitPanMod(deltaTime);
     }
 
@@ -374,10 +375,16 @@ namespace ToolKit
       m_drawCommands.clear();
     }
 
-    void EditorViewport::FpsNavigationMode(float deltaTime)
+    void EditorViewport::FpsNavigationMod(float deltaTime)
     {
       Camera* cam = GetCamera();
-      if (cam && !cam->IsOrtographic())
+      if (cam == nullptr)
+      {
+        return;
+      }
+
+      // Allow user camera to fps navigate even in orthographic mod.
+      if (m_attachedCamera != NULL_HANDLE || !cam->IsOrtographic())
       {
         // Mouse is right clicked
         if (ImGui::IsMouseDown(ImGuiMouseButton_Right))
@@ -608,10 +615,14 @@ namespace ToolKit
 
       if (cam->IsOrtographic())
       {
-        // Magic zoom.
-        Camera::CamData dat      = cam->GetData();
-        float dist               = glm::distance(ZERO, dat.pos);
-        cam->m_orthographicScale = dist / 600.0f;
+        // Don't allow user camera to have magic zoom.
+        if (m_attachedCamera == NULL_HANDLE)
+        {
+          // Magic zoom.
+          Camera::CamData dat      = cam->GetData();
+          float dist               = glm::distance(ZERO, dat.pos);
+          cam->m_orthographicScale = dist / 600.0f;
+        }
       }
     }
 
@@ -707,27 +718,51 @@ namespace ToolKit
             EditorScene::PickData pd = currScene->PickObject(ray);
             if (pd.entity != nullptr && pd.entity->IsDrawable())
             {
-              MeshComponentPtr ms = pd.entity->GetComponent<MeshComponent>();
-              if (ms != nullptr)
+              // If there is a mesh component, update material component.
+              bool notPrefab = Prefab::GetPrefabRoot(pd.entity) == nullptr;
+
+              bool hasMesh =
+                  pd.entity->GetComponent<MeshComponent>() != nullptr;
+
+              if (notPrefab && hasMesh)
               {
                 // Load material once
                 String path =
                     ConcatPaths({dragEntry.m_rootPath,
                                  dragEntry.m_fileName + dragEntry.m_ext});
+
                 MaterialPtr material =
                     GetMaterialManager()->Create<Material>(path);
+
                 // Set material to material component
-                MaterialComponentPtr matPtr = pd.entity->GetMaterialComponent();
                 MultiMaterialPtr mmPtr =
                     pd.entity->GetComponent<MultiMaterialComponent>();
-                if (matPtr == nullptr && mmPtr == nullptr)
+
+                MaterialComponentPtr matPtr = pd.entity->GetMaterialComponent();
+
+                assert(!(matPtr != nullptr && mmPtr != nullptr) &&
+                       "Having both material component and multi material "
+                       "component on a single entity is not allowed.");
+
+                if (matPtr != nullptr)
                 {
-                  // Create a new material component
-                  MaterialComponent* matComp = new MaterialComponent();
-                  pd.entity->AddComponent(matComp);
-                  matPtr = pd.entity->GetMaterialComponent();
+                  matPtr->SetMaterialVal(material);
                 }
-                matPtr->m_localData[matPtr->MaterialIndex()] = material;
+
+                if (mmPtr != nullptr)
+                {
+                  // A better implementation would be finding the submesh that
+                  // ray intersects and updating the multi material slot
+                  // accordingly.
+                  pd.entity->RemoveComponent(mmPtr->m_id);
+                  MaterialComponent* matCom = new MaterialComponent();
+                  matCom->SetMaterialVal(material);
+                  pd.entity->AddComponent(matCom);
+                }
+              }
+              else if (!notPrefab)
+              {
+                g_app->m_statusMsg = "Failed. Target is Prefab.";
               }
             }
           }

@@ -5,6 +5,9 @@
 
 namespace ToolKit
 {
+
+  static VariantCategory CameraCategory {"Camera", 100};
+
   class TK_API Camera : public Entity
   {
    public:
@@ -59,13 +62,21 @@ namespace ToolKit
 
    protected:
     Entity* CopyTo(Entity* copyTo) const override;
+    void ParameterConstructor();
+    void ParameterEventConstructor();
 
    public:
     /**
      * Used to apply zoom by adjusting camera frustum. The bigger the frustum,
      * the closer the image will be.
      */
-    float m_orthographicScale = 1.0f;
+    float m_orthographicScale = 0.001f;
+
+    TKDeclareParam(float, Fov);
+    TKDeclareParam(float, NearClip);
+    TKDeclareParam(float, FarClip);
+    TKDeclareParam(bool, Orthographic);
+    TKDeclareParam(float, OrthographicScale);
 
    private:
     float m_fov        = 1.0f;

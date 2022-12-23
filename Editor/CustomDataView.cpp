@@ -597,6 +597,16 @@ namespace ToolKit
         ComponentView::ShowAnimControllerComponent(var, comp);
       }
       break;
+      case ParameterVariant::VariantType::VariantCallback:
+      {
+        if (UI::BeginCenteredTextButton(var->m_name)) 
+        {
+          VariantCallback callback = var->GetVar<VariantCallback>();
+          callback();
+        }
+        UI::EndCenteredTextButton();
+      }
+      break;
       default:
         break;
       }
