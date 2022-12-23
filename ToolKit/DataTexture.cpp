@@ -157,9 +157,9 @@ namespace ToolKit
 
     // These variables needs to be updated if you change any data type in light
     // for light data texture
-    const float dirShadowSize      = 15.0f;
-    const float pointShadowSize    = 13.0f;
-    const float spotShadowSize     = 20.0f;
+    const float dirShadowSize      = 16.0f;
+    const float pointShadowSize    = 14.0f;
+    const float spotShadowSize     = 21.0f;
     const float dirNonShadowSize   = 4.0f;
     const float pointNonShadowSize = 5.0f;
     const float spotNonShadowSize  = 8.0f;
@@ -384,6 +384,20 @@ namespace ToolKit
                           &light->GetLightBleedingReductionVal());
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
+          // Shadow bias
+          const float bias =
+              light->GetShadowBiasVal() * Renderer::g_shadowBiasMultiplier;
+          glTexSubImage2D(GL_TEXTURE_2D,
+                          0,
+                          xIndex,
+                          yIndex,
+                          1,
+                          1,
+                          GL_RGBA,
+                          GL_FLOAT,
+                          &bias);
+          yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
+
           if (firstShadowPoint)
           {
             minShadowPoint   = FLT_MAX;
@@ -573,6 +587,20 @@ namespace ToolKit
                           GL_RGBA,
                           GL_FLOAT,
                           &light->GetLightBleedingReductionVal());
+          yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
+
+          // Shadow bias
+          const float bias =
+              light->GetShadowBiasVal() * Renderer::g_shadowBiasMultiplier;
+          glTexSubImage2D(GL_TEXTURE_2D,
+                          0,
+                          xIndex,
+                          yIndex,
+                          1,
+                          1,
+                          GL_RGBA,
+                          GL_FLOAT,
+                          &bias);
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           if (firstShadowDir)
@@ -827,6 +855,20 @@ namespace ToolKit
                           GL_RGBA,
                           GL_FLOAT,
                           &light->GetLightBleedingReductionVal());
+          yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
+
+          // Shadow bias
+          const float bias =
+              light->GetShadowBiasVal() * Renderer::g_shadowBiasMultiplier;
+          glTexSubImage2D(GL_TEXTURE_2D,
+                          0,
+                          xIndex,
+                          yIndex,
+                          1,
+                          1,
+                          GL_RGBA,
+                          GL_FLOAT,
+                          &bias);
           yIndex = IncrementDataIndex(xIndex) ? yIndex + 1 : yIndex;
 
           if (firstShadowSpot)

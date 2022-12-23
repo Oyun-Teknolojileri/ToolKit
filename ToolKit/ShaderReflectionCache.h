@@ -307,6 +307,24 @@ namespace ToolKit
       "LightData.shadowAtlasResRatio[14]",
       "LightData.shadowAtlasResRatio[15]"};
 
+  static const StringArray g_lightShadowBiasStrCache = {
+      "LightData.shadowBias[0]",
+      "LightData.shadowBias[1]",
+      "LightData.shadowBias[2]",
+      "LightData.shadowBias[3]",
+      "LightData.shadowBias[4]",
+      "LightData.shadowBias[5]",
+      "LightData.shadowBias[6]",
+      "LightData.shadowBias[7]",
+      "LightData.shadowBias[8]",
+      "LightData.shadowBias[9]",
+      "LightData.shadowBias[10]",
+      "LightData.shadowBias[11]",
+      "LightData.shadowBias[12]",
+      "LightData.shadowBias[13]",
+      "LightData.shadowBias[14]",
+      "LightData.shadowBias[15]"};
+
   static const StringArray g_lightShadowAtlasCoordStrCache = {
       "LightData.shadowAtlasCoord[0]",
       "LightData.shadowAtlasCoord[1]",

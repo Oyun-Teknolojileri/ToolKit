@@ -137,7 +137,7 @@
     // NOTE: "ClampTextureCoordinates" function is from "textureUtil.shader" and this shader includes from "lighting.shader" which already includes that.
     // If you need to use this shader from your shader, include "textureUtil.shader".
 
-		float PCFFilterShadow2D(sampler2DArray shadowAtlas, vec3 uvLayer, vec2 coordStart, vec2 coordEnd, int samples, float radius, float currDepth, float LBR)
+		float PCFFilterShadow2D(sampler2DArray shadowAtlas, vec3 uvLayer, vec2 coordStart, vec2 coordEnd, int samples, float radius, float currDepth, float LBR, float shadowBias)
 		{
 			float sum = 0.0;
 			for (int i = 0; i < samples; ++i)
@@ -146,7 +146,7 @@
         vec3 texCoord = uvLayer;
         texCoord.xy = ClampTextureCoordinates(uvLayer.xy + offset, coordStart, coordEnd);
 				vec2 moments = texture(shadowAtlas, texCoord).xy;
-				sum += ChebyshevUpperBound(moments, currDepth, LBR);;
+				sum += ChebyshevUpperBound(moments, currDepth, LBR, shadowBias);
 			}
 			return sum / float(samples);
 		}

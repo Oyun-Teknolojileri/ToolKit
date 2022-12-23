@@ -37,7 +37,7 @@ namespace ToolKit
     TKDeclareParam(float, ShadowRes);
     TKDeclareParam(int, PCFSamples);
     TKDeclareParam(float, PCFRadius);
-    TKDeclareParam(float, ShadowThickness);
+    TKDeclareParam(float, ShadowBias);
     TKDeclareParam(float, LightBleedingReduction);
 
     Mat4 m_shadowMapCameraProjectionViewMatrix;

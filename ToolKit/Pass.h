@@ -143,7 +143,6 @@ namespace ToolKit
 
    private:
     void RenderShadowMaps(Light* light, const EntityRawPtrArray& entities);
-    void FilterShadowMap(Light* light);
 
     /**
      * Sets layer and coordintes of the shadow maps in shadow atlas.
@@ -164,6 +163,7 @@ namespace ToolKit
     MaterialPtr m_prevOverrideMaterial = nullptr;
     FramebufferPtr m_prevFrameBuffer   = nullptr;
     MaterialPtr m_lastOverrideMat      = nullptr;
+    const Vec4 m_shadowClearColor      = Vec4(1.0f);
 
     FramebufferPtr m_shadowFramebuffer = nullptr;
     RenderTargetPtr m_shadowAtlas      = nullptr;
@@ -427,7 +427,7 @@ namespace ToolKit
     FramebufferPtr GBufferFramebuffer;
     bool ClearFramebuffer = true;
     LightRawPtrArray lights;
-    Camera* Cam = nullptr;
+    Camera* Cam          = nullptr;
     TexturePtr AOTexture = nullptr;
   };
 

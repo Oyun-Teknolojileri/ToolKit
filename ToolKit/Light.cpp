@@ -36,12 +36,12 @@ namespace ToolKit
                      true,
                      true,
                      {false, true, 0.0f, 5.0f, 0.0001f});
-    ShadowThickness_Define(0.5f,
-                           "Light",
-                           90,
-                           true,
-                           true,
-                           {false, true, 0.0f, 5.0f, 0.05f});
+    ShadowBias_Define(0.1f,
+                      "Light",
+                      90,
+                      true,
+                      true,
+                      {false, true, 0.0f, 20000.0f, 0.01f});
     LightBleedingReduction_Define(0.1f,
                                   "Light",
                                   90,
@@ -278,7 +278,6 @@ namespace ToolKit
                   true,
                   true,
                   {false, true, 0.1f, 100000.0f, 0.4f});
-    ParamShadowThickness().m_exposed  = false;
     ParamPCFRadius().m_hint.increment = 0.02f;
   }
 
