@@ -276,9 +276,11 @@ namespace ToolKit
     glTexParameteri(GL_TEXTURE_CUBE_MAP,
                     GL_TEXTURE_MIN_FILTER,
                     GL_LINEAR_MIPMAP_LINEAR);
+
     glTexParameteri(GL_TEXTURE_CUBE_MAP,
                     GL_TEXTURE_MAG_FILTER,
                     GL_LINEAR_MIPMAP_LINEAR);
+
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -380,96 +382,7 @@ namespace ToolKit
     Texture::UnInit();
   }
 
-  bool Hdri::IsTextureAssigned() { return (GetFile().size() != 0); }
-
-  CubeMapPtr Hdri::GetCubemap() { return m_cubemap; }
-
-  CubeMapPtr Hdri::GetIrradianceCubemap() { return m_irradianceCubemap; }
-
-  uint Hdri::GenerateCubemapBuffers(struct CubeMapSettings cubeMapSettings)
-  {
-    GLint currId;
-    glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &currId);
-
-    // Create buffers for cubemap textures
-    GLuint textureId;
-    glGenTextures(1, &textureId);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
-
-    for (unsigned int i = 0; i < 6; ++i)
-    {
-      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                   cubeMapSettings.level,
-                   cubeMapSettings.internalformat,
-                   cubeMapSettings.width,
-                   cubeMapSettings.height,
-                   0,
-                   cubeMapSettings.format,
-                   cubeMapSettings.type,
-                   cubeMapSettings.pixels);
-    }
-
-    glTexParameteri(GL_TEXTURE_CUBE_MAP,
-                    GL_TEXTURE_WRAP_S,
-                    cubeMapSettings.wrapSet);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP,
-                    GL_TEXTURE_WRAP_T,
-                    cubeMapSettings.wrapSet);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP,
-                    GL_TEXTURE_WRAP_R,
-                    cubeMapSettings.wrapSet);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP,
-                    GL_TEXTURE_MIN_FILTER,
-                    cubeMapSettings.filterSet);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP,
-                    GL_TEXTURE_MAG_FILTER,
-                    cubeMapSettings.filterSet);
-
-    glBindTexture(GL_TEXTURE_CUBE_MAP, currId);
-
-    return textureId;
-  }
-
-  void Hdri::RenderToCubeMap(GLuint fbo,
-                             const Mat4 views[6],
-                             CameraPtr cam,
-                             uint cubeMapTextureId,
-                             int width,
-                             int height,
-                             MaterialPtr mat)
-  {
-    GLint lastFBO;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &lastFBO);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    // Render cube from 6 different angles for 6 images of cubemap
-    for (int i = 0; i < 6; ++i)
-    {
-      Vec3 pos;
-      Quaternion rot;
-      Vec3 sca;
-      DecomposeMatrix(views[i], &pos, &rot, &sca);
-
-      cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
-      cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
-      cam->m_node->SetScale(sca);
-
-      glFramebufferTexture2D(GL_FRAMEBUFFER,
-                             GL_COLOR_ATTACHMENT0,
-                             GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                             cubeMapTextureId,
-                             0);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      GetRenderer()->SetViewportSize(width, height);
-
-      CullingType currType            = mat->GetRenderState()->cullMode;
-      mat->GetRenderState()->cullMode = CullingType::TwoSided;
-      GetRenderer()->DrawCube(cam.get(), mat);
-      mat->GetRenderState()->cullMode = currType;
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, lastFBO);
-  }
+  bool Hdri::IsTextureAssigned() { return !GetFile().empty(); }
 
   RenderTarget::RenderTarget() : Texture() {}
 

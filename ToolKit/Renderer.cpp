@@ -816,7 +816,7 @@ namespace ToolKit
           env->GetComponent<EnvironmentComponent>();
       mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
       if (CubeMapPtr irradianceCubemap =
-              envCom->GetHdriVal()->GetIrradianceCubemap())
+              envCom->GetHdriVal()->m_irradianceCubemap)
       {
         mat->GetRenderState()->irradianceMap = irradianceCubemap->m_textureId;
       }
@@ -836,7 +836,7 @@ namespace ToolKit
                   static_cast<Sky*>(sky)
                       ->GetComponent<EnvironmentComponent>()
                       ->GetHdriVal()
-                      ->GetIrradianceCubemap())
+                      ->m_irradianceCubemap)
           {
             mat->GetRenderState()->irradianceMap =
                 irradianceCubemap->m_textureId;
@@ -847,6 +847,7 @@ namespace ToolKit
           mat->GetRenderState()->irradianceMap =
               static_cast<GradientSky*>(sky)->GetIrradianceMap()->m_textureId;
         }
+
         mat->GetRenderState()->iblIntensity = sky->GetIntensityVal();
         m_iblRotation =
             Mat4(sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));

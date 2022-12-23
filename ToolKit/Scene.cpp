@@ -433,14 +433,20 @@ namespace ToolKit
         continue;
       }
 
-      EnvironmentComponentPtr envCom =
-          ntt->GetComponent<EnvironmentComponent>();
-      if (envCom != nullptr && envCom->GetHdriVal() != nullptr &&
-          envCom->GetHdriVal()->IsTextureAssigned() &&
-          envCom->GetIlluminateVal())
+      if (EnvironmentComponentPtr envCom =
+              ntt->GetComponent<EnvironmentComponent>())
       {
-        envCom->Init(true);
-        envLightNtties.push_back(ntt);
+        if (envCom->GetIlluminateVal())
+        {
+          if (HdriPtr hdr = envCom->GetHdriVal())
+          {
+            if (hdr->IsTextureAssigned())
+            {
+              envCom->Init(true);
+              envLightNtties.push_back(ntt);
+            }
+          }
+        }
       }
     }
 
