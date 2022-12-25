@@ -36,6 +36,7 @@ namespace ToolKit
     sceneDoc.parse<0>(sceneFile->data());
 
     DeSerialize(&sceneDoc, nullptr);
+    PostDeSerialize();
 
     // Update parent - child relation for entities.
     for (Entity* e : m_entities)
@@ -616,6 +617,8 @@ namespace ToolKit
       Entity* ntt            = GetEntityFactory()->CreateByType(t);
 
       ntt->DeSerialize(doc, node);
+      ntt->PostDeSerialize();
+
       if (ntt->GetType() == EntityType::Entity_Prefab)
       {
         static_cast<Prefab*>(ntt)->Init(this);

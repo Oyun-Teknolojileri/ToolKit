@@ -1,11 +1,11 @@
 #include "EditorCamera.h"
 
+#include "App.h"
 #include "Global.h"
 #include "Mesh.h"
 #include "Primative.h"
 #include "ResourceComponent.h"
 #include "ToolKit.h"
-#include "App.h"
 
 #include <memory>
 
@@ -18,15 +18,13 @@ namespace ToolKit
 
     EditorCamera::EditorCamera()
     {
-      CreateGizmo();
       ParameterConstructor();
+      CreateGizmo();
     }
 
-    EditorCamera::EditorCamera(const EditorCamera* cam)
-    {
-      cam->CopyTo(this);
-      CreateGizmo();
-      ParameterConstructor();
+    EditorCamera::EditorCamera(const EditorCamera* cam) 
+    { 
+      cam->CopyTo(this); 
     }
 
     EditorCamera::~EditorCamera() {}
@@ -36,7 +34,15 @@ namespace ToolKit
       EditorCamera* cpy = new EditorCamera();
       Camera::CopyTo(cpy);
       cpy->CreateGizmo();
+      cpy->ParameterConstructor();
+
       return cpy;
+    }
+
+    void EditorCamera::PostDeSerialize()
+    {
+      ParameterConstructor();
+      CreateGizmo();
     }
 
     void EditorCamera::GenerateFrustum()
@@ -117,12 +123,12 @@ namespace ToolKit
           {
             if (Viewport* av = g_app->GetViewport(g_3dViewport))
             {
-              if (m_posessed) 
+              if (m_posessed)
               {
                 av->AttachCamera(NULL_HANDLE);
                 ParamPoses().m_name = "Poses";
               }
-              else 
+              else
               {
                 av->AttachCamera(GetIdVal());
                 ParamPoses().m_name = "Free";

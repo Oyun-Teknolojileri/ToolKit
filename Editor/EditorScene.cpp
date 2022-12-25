@@ -34,11 +34,7 @@ namespace ToolKit
         AddBillboardToEntity(ntt);
 
         // Create gizmos
-        if (ntt->GetType() == EntityType::Entity_Camera)
-        {
-          static_cast<EditorCamera*>(ntt)->GenerateFrustum();
-        }
-        else if (ntt->GetType() == EntityType::Entity_DirectionalLight)
+        if (ntt->GetType() == EntityType::Entity_DirectionalLight)
         {
           static_cast<EditorDirectionalLight*>(ntt)->Init();
         }

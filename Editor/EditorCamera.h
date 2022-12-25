@@ -15,6 +15,7 @@ namespace ToolKit
       explicit EditorCamera(const EditorCamera* cam);
       virtual ~EditorCamera();
       Entity* Copy() const override;
+      void PostDeSerialize() override;
       void GenerateFrustum();
 
      public:

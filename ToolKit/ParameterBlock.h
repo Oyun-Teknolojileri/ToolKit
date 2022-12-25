@@ -23,7 +23,7 @@
  */
 #define TKDeclareParam(Class, Name)                                            \
  private:                                                                      \
-  size_t Name##_Index;                                                         \
+  size_t Name##_Index = -1;                                                    \
                                                                                \
  private:                                                                      \
   inline void Name##_Define(Class val,                                         \
@@ -39,8 +39,15 @@
     var.m_exposed  = exposed;                                                  \
     var.m_editable = editable;                                                 \
     var.m_hint     = hint;                                                     \
-    Name##_Index   = m_localData.m_variants.size();                            \
-    m_localData.Add(var);                                                      \
+    if (Name##_Index == -1)                                                    \
+    {                                                                          \
+      Name##_Index = m_localData.m_variants.size();                            \
+      m_localData.Add(var);                                                    \
+    }                                                                          \
+    else                                                                       \
+    {                                                                          \
+      m_localData[Name##_Index] = var;                                         \
+    }                                                                          \
   }                                                                            \
                                                                                \
  public:                                                                       \
