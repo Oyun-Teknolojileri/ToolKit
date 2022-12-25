@@ -124,9 +124,9 @@ namespace ToolKit
                               const float amount);
 
     void ApplyAverageBlur(const TexturePtr source,
-      RenderTargetPtr dest,
-      const Vec3& axis,
-      const float amount);
+                          RenderTargetPtr dest,
+                          const Vec3& axis,
+                          const float amount);
 
     /**
      * Just before the render, set the lens to fit aspect ratio to frame buffer.
@@ -216,7 +216,7 @@ namespace ToolKit
     FramebufferPtr m_copyFb            = nullptr;
     MaterialPtr m_copyMaterial         = nullptr;
 
-    int m_maxArrayTextureLayers        = -1;
+    int m_maxArrayTextureLayers = -1;
   };
 
 } // namespace ToolKit

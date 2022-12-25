@@ -45,6 +45,7 @@ namespace ToolKit
    public:
     CullingType cullMode        = CullingType::Back;
     bool depthTestEnabled       = true;
+    GraphicTypes depthFunction  = GraphicTypes::FuncLess;
     BlendFunction blendFunction = BlendFunction::NONE;
     float alphaMaskTreshold     = 0.001f;
     DrawType drawType           = DrawType::Triangle;
@@ -54,14 +55,16 @@ namespace ToolKit
     bool cubeMapInUse           = false;
     float lineWidth             = 1.0f;
     VertexLayout vertexLayout   = VertexLayout::None;
-    bool IBLInUse = false; // ONLY Renderer class edits and uses this variable.
-                           // This variable does not give any functionality to
-                           // disable or enable ibl for material.
-    float iblIntensity  = 0.25f;
-    uint irradianceMap  = 0;
-    bool AOInUse        = true;
-    int priority        = 0; // The higher the priority, the earlier to draw.
-    bool useForwardPath = false; // True if the material is not going to be lit.
+
+    /* ONLY Renderer class edits and uses this variable. This variable does not
+     * give any functionality to disable or enable ibl for material.*/
+    bool IBLInUse               = false;
+    float iblIntensity          = 0.25f;
+    uint irradianceMap          = 0;
+    bool AOInUse                = true;
+    int priority = 0; // The higher the priority, the earlier to draw.
+    bool useForwardPath =
+        false; // Force material to be drawn with forward pass.
     bool isColorMaterial      = true;
     bool emissiveTextureInUse = false;
     uint emissiveTexture      = 0;

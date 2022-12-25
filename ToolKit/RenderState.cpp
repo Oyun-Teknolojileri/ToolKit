@@ -20,35 +20,31 @@ namespace ToolKit
       doc->append_node(container);
     }
 
-    WriteAttr(container,
-              doc,
-              "cullMode",
-              std::to_string(static_cast<int>(cullMode)));
+    WriteAttr(container, doc, "cullMode", std::to_string(int(cullMode)));
 
     WriteAttr(container,
               doc,
               "depthTest",
-              std::to_string(static_cast<int>(depthTestEnabled)));
+              std::to_string(int(depthTestEnabled)));
+
+    WriteAttr(container, doc, "depthFunc", std::to_string(int(depthFunction)));
 
     WriteAttr(container,
               doc,
               "blendFunction",
-              std::to_string(static_cast<int>(blendFunction)));
+              std::to_string(int(blendFunction)));
 
     WriteAttr(container,
               doc,
               "alphaMaskTreshold",
               std::to_string((float) alphaMaskTreshold));
 
-    WriteAttr(container,
-              doc,
-              "drawType",
-              std::to_string(static_cast<int>(drawType)));
+    WriteAttr(container, doc, "drawType", std::to_string(int(drawType)));
 
     WriteAttr(container,
               doc,
               "vertexLayout",
-              std::to_string(static_cast<int>(vertexLayout)));
+              std::to_string(int(vertexLayout)));
 
     WriteAttr(container, doc, "AOInUse", std::to_string(AOInUse));
 
@@ -69,6 +65,8 @@ namespace ToolKit
       ReadAttr(container,
                "depthTest",
                *reinterpret_cast<int*>(&depthTestEnabled));
+
+      ReadAttr(container, "depthTest", *reinterpret_cast<int*>(&depthFunction));
 
       ReadAttr(container,
                "blendFunction",

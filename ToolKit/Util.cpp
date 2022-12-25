@@ -425,12 +425,12 @@ namespace ToolKit
 
     if (SupportedImageFormat(ext))
     {
-      return ResourceType::Texture;
-    }
+      if (ext == HDR)
+      {
+        return ResourceType::Hdri;
+      }
 
-    if (ext == HDR)
-    {
-      return ResourceType::Hdri;
+      return ResourceType::Texture;
     }
 
     if (ext == SHADER)
