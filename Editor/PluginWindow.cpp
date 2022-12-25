@@ -107,8 +107,8 @@ namespace ToolKit
       float btnWidth = 24.0f;
       float offset   = (size.x - btnWidth * 5.0f) * 0.5f;
 
-      ImGui::SameLine(offset);
       float curYoff = ImGui::GetCursorPosY() + 10.0f;
+      ImGui::SameLine(offset);
       ImGui::SetCursorPosY(curYoff);
 
       if (g_app->m_gameMod == GameMod::Playing)
@@ -149,14 +149,15 @@ namespace ToolKit
         ImGui::PopStyleColor(3);
       }
 
-      ImGui::SameLine();
-
       // Red tint.
       ImGui::PushStyleColor(ImGuiCol_Button, g_redTintButtonColor);
       ImGui::PushStyleColor(ImGuiCol_ButtonHovered, g_redTintButtonHoverColor);
       ImGui::PushStyleColor(ImGuiCol_ButtonActive, g_redTintButtonActiveColor);
 
       // Stop.
+      ImGui::SameLine();
+      ImGui::SetCursorPosY(curYoff);
+
       if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_stopIcon),
                              ImVec2(btnWidth, btnWidth)))
       {
@@ -169,6 +170,7 @@ namespace ToolKit
 
       ImGui::PopStyleColor(3);
       ImGui::SameLine();
+      ImGui::SetCursorPosY(curYoff);
 
       // VS Code.
       if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_vsCodeIcon),
@@ -195,11 +197,14 @@ namespace ToolKit
 
       // Build.
       ImGui::SameLine();
+      ImGui::SetCursorPosY(curYoff);
+
       if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_buildIcn),
                              ImVec2(btnWidth, btnWidth)))
       {
         g_app->CompilePlugin();
       }
+
       UI::HelpMarker(TKLoc, "Build\nBuilds the projects code files.");
     }
 
