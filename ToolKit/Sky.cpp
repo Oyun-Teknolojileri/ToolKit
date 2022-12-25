@@ -201,12 +201,17 @@ namespace ToolKit
     // Skybox material
     ShaderPtr vert = GetShaderManager()->Create<Shader>(
         ShaderPath("skyboxVert.shader", true));
+
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("gradientSkyboxFrag.shader", true));
+
     m_skyboxMaterial                             = std::make_shared<Material>();
     m_skyboxMaterial->m_vertexShader             = vert;
     m_skyboxMaterial->m_fragmentShader           = frag;
-    m_skyboxMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
+
+    RenderState* rs   = m_skyboxMaterial->GetRenderState();
+    rs->cullMode      = CullingType::TwoSided;
+    rs->depthFunction = GraphicTypes::FuncLequal;
     m_skyboxMaterial->Init();
 
     // Render gradient to cubemap and store the output
@@ -225,15 +230,19 @@ namespace ToolKit
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
         "topColor",
         ParameterVariant(GetTopColorVal()));
+
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
         "middleColor",
         ParameterVariant(GetMiddleColorVal()));
+
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
         "bottomColor",
         ParameterVariant(GetBottomColorVal()));
+
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
         "exponent",
         ParameterVariant(GetGradientExponentVal()));
+
     return m_skyboxMaterial;
   }
 
@@ -250,6 +259,7 @@ namespace ToolKit
                             true,
                             true,
                             {false, true, 0.0f, 10.0f, 0.02f});
+
     IrradianceResolution_Define(64.0f,
                                 "Sky",
                                 90,
@@ -277,28 +287,35 @@ namespace ToolKit
                                      GraphicTypes::FormatRGB,
                                      GraphicTypes::FormatRGB,
                                      GraphicTypes::TypeUnsignedByte};
+
     RenderTargetPtr cubemap =
         std::make_shared<RenderTarget>(m_size, m_size, set);
+
     cubemap->Init();
 
     // Create material
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
         "topColor",
         ParameterVariant(GetTopColorVal()));
+
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
         "middleColor",
         ParameterVariant(GetMiddleColorVal()));
+
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
         "bottomColor",
         ParameterVariant(GetBottomColorVal()));
+
     m_skyboxMaterial->m_fragmentShader->SetShaderParameter(
         "exponent",
         ParameterVariant(GetGradientExponentVal()));
+
     m_skyboxMaterial->GetRenderState()->depthTestEnabled = false;
 
     // Views for 6 different angles
     CameraPtr cam = std::make_shared<Camera>();
     cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+
     Mat4 views[] = {
         glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
         glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
@@ -326,6 +343,7 @@ namespace ToolKit
       GetRenderer()->SetFramebuffer(fb, true, Vec4(0.0f));
       GetRenderer()->DrawCube(cam.get(), m_skyboxMaterial);
     }
+
     m_skyboxMaterial->GetRenderState()->depthTestEnabled = true;
 
     // Take the ownership of render target.

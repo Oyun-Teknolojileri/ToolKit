@@ -801,7 +801,7 @@ namespace ToolKit
     PreRender();
 
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_params.FrameBuffer, true, Vec4(1.0f));
+    renderer->SetFramebuffer(m_params.FrameBuffer, false);
 
     m_cube->m_node->SetTransform(m_params.Transform);
     renderer->Render(m_cube.get(), m_params.Cam);
@@ -944,7 +944,7 @@ namespace ToolKit
   {
     m_shadowPass        = std::make_shared<ShadowPass>();
     m_forwardRenderPass = std::make_shared<ForwardRenderPass>();
-    m_skyPass       = std::make_shared<CubeMapPass>();
+    m_skyPass           = std::make_shared<CubeMapPass>();
   }
 
   SceneRenderPass::SceneRenderPass(const SceneRenderPassParams& params)
@@ -973,13 +973,13 @@ namespace ToolKit
     renderer->SetShadowAtlas(
         std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
+    // Render non-blended entities with deferred renderer
+    m_deferredRenderPass.Render();
+
     if (m_drawSky)
     {
       m_skyPass->Render();
     }
-
-    // Render non-blended entities with deferred renderer
-    m_deferredRenderPass.Render();
 
     // Forward render blended entities
     m_forwardRenderPass->Render();
@@ -1042,7 +1042,6 @@ namespace ToolKit
     {
       if (m_drawSky = sky->GetDrawSkyVal())
       {
-        m_deferredRenderPass.m_params.ClearFramebuffer = false;
         m_skyPass->m_params.FrameBuffer = m_params.MainFramebuffer;
         m_skyPass->m_params.Cam         = m_params.Cam;
         m_skyPass->m_params.Transform   = sky->m_node->GetTransform();
@@ -1382,23 +1381,15 @@ namespace ToolKit
         ParameterVariant(m_params.Cam->m_node->GetTranslation(
             TransformationSpace::TS_WORLD)));
 
-    m_fullQuadPass.m_params.ClearFrameBuffer = true;
+    m_fullQuadPass.m_params.ClearFrameBuffer = m_params.ClearFramebuffer;
     m_fullQuadPass.m_params.FragmentShader   = m_deferredRenderShader;
     m_fullQuadPass.m_params.FrameBuffer      = m_params.MainFramebuffer;
 
     Renderer* renderer                       = GetRenderer();
 
-    if (m_params.ClearFramebuffer)
-    {
-      renderer->SetFramebuffer(m_params.MainFramebuffer, true, Vec4(0.0f));
-    }
-    else
-    {
-      renderer->SetFramebuffer(m_params.MainFramebuffer, false);
-    }
-
     Vec2 sd, nsd, sp, nsp, ss, nss;
     float sizeD, sizeP, sizeS, sizeND, sizeNP, sizeNS;
+
     // Update light data texture
     m_lightDataTexture->UpdateTextureData(m_params.lights,
                                           sd,
