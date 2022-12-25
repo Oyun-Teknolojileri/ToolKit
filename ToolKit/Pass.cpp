@@ -1038,6 +1038,7 @@ namespace ToolKit
     m_ssaoPass.m_params.Cam                = m_params.Cam;
 
     // Set CubeMapPass for sky.
+    m_drawSky                              = false;
     if (SkyBase* sky = m_params.Scene->GetSky())
     {
       if (m_drawSky = sky->GetDrawSkyVal())

@@ -452,7 +452,7 @@ namespace ToolKit
 
     ShadowPassPtr m_shadowPass               = nullptr;
     ForwardRenderPassPtr m_forwardRenderPass = nullptr;
-    CubeMapPassPtr m_skyPass             = nullptr;
+    CubeMapPassPtr m_skyPass                 = nullptr;
     GBufferPass m_gBufferPass;
     DeferredRenderPass m_deferredRenderPass;
     SSAOPass m_ssaoPass;
