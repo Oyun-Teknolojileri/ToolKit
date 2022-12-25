@@ -783,6 +783,41 @@ namespace ToolKit
 
   void FullQuadPass::PostRender() { Pass::PostRender(); }
 
+  CubeMapPass::CubeMapPass()
+  {
+    m_cube = std::make_shared<Cube>();
+    m_cube->AddComponent(new MaterialComponent());
+  }
+
+  CubeMapPass::CubeMapPass(const CubeMapPassParams& params) : CubeMapPass()
+  {
+    m_params = params;
+  }
+
+  CubeMapPass::~CubeMapPass() {}
+
+  void CubeMapPass::Render()
+  {
+    PreRender();
+
+    Renderer* renderer = GetRenderer();
+    renderer->SetFramebuffer(m_params.FrameBuffer, true, Vec4(1.0f));
+
+    m_cube->m_node->SetTransform(m_params.Transform);
+    renderer->Render(m_cube.get(), m_params.Cam);
+
+    PostRender();
+  }
+
+  void CubeMapPass::PreRender()
+  {
+    Pass::PreRender();
+    MaterialComponentPtr matCom = m_cube->GetMaterialComponent();
+    matCom->SetMaterialVal(m_params.Material);
+  }
+
+  void CubeMapPass::PostRender() { Pass::PostRender(); }
+
   StencilRenderPass::StencilRenderPass()
   {
     // Init sub pass.
@@ -909,6 +944,7 @@ namespace ToolKit
   {
     m_shadowPass        = std::make_shared<ShadowPass>();
     m_forwardRenderPass = std::make_shared<ForwardRenderPass>();
+    m_skyPass       = std::make_shared<CubeMapPass>();
   }
 
   SceneRenderPass::SceneRenderPass(const SceneRenderPassParams& params)
@@ -937,10 +973,13 @@ namespace ToolKit
     renderer->SetShadowAtlas(
         std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
+    if (m_drawSky)
+    {
+      m_skyPass->Render();
+    }
+
     // Render non-blended entities with deferred renderer
     m_deferredRenderPass.Render();
-
-    // TODO render sky pass
 
     // Forward render blended entities
     m_forwardRenderPass->Render();
@@ -953,7 +992,6 @@ namespace ToolKit
   void SceneRenderPass::PreRender()
   {
     Pass::PreRender();
-
     SetPassParams();
 
     m_gBufferPass.InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
@@ -998,6 +1036,19 @@ namespace ToolKit
     m_ssaoPass.m_params.GPositionBuffer    = m_gBufferPass.m_gPosRt;
     m_ssaoPass.m_params.GNormalBuffer      = m_gBufferPass.m_gNormalRt;
     m_ssaoPass.m_params.Cam                = m_params.Cam;
+
+    // Set CubeMapPass for sky.
+    if (SkyBase* sky = m_params.Scene->GetSky())
+    {
+      if (m_drawSky = sky->GetDrawSkyVal())
+      {
+        m_deferredRenderPass.m_params.ClearFramebuffer = false;
+        m_skyPass->m_params.FrameBuffer = m_params.MainFramebuffer;
+        m_skyPass->m_params.Cam         = m_params.Cam;
+        m_skyPass->m_params.Transform   = sky->m_node->GetTransform();
+        m_skyPass->m_params.Material    = sky->GetSkyboxMaterial();
+      }
+    }
   }
 
   void SceneRenderPass::CullDrawList(EntityRawPtrArray& entities,
@@ -1337,7 +1388,14 @@ namespace ToolKit
 
     Renderer* renderer                       = GetRenderer();
 
-    renderer->SetFramebuffer(m_params.MainFramebuffer, true, Vec4(0.0f));
+    if (m_params.ClearFramebuffer)
+    {
+      renderer->SetFramebuffer(m_params.MainFramebuffer, true, Vec4(0.0f));
+    }
+    else
+    {
+      renderer->SetFramebuffer(m_params.MainFramebuffer, false);
+    }
 
     Vec2 sd, nsd, sp, nsp, ss, nss;
     float sizeD, sizeP, sizeS, sizeND, sizeNP, sizeNS;

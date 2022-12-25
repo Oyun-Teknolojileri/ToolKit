@@ -32,7 +32,10 @@ namespace ToolKit
     m_utilFramebuffer = std::make_shared<Framebuffer>();
   }
 
-  Renderer::~Renderer() { SafeDel(m_uiCamera); }
+  Renderer::~Renderer()
+  {
+    SafeDel(m_uiCamera);
+  }
 
   int Renderer::GetMaxArrayTextureLayers()
   {
@@ -301,6 +304,12 @@ namespace ToolKit
         glDisable(GL_DEPTH_TEST);
       }
       m_renderState.depthTestEnabled = state->depthTestEnabled;
+    }
+
+    if (m_renderState.depthFunction != state->depthFunction) 
+    {
+      m_renderState.depthFunction = state->depthFunction;
+      glDepthFunc((int) state->depthFunction);
     }
 
     if (m_renderState.blendFunction != state->blendFunction)

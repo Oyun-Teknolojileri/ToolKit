@@ -296,7 +296,15 @@ namespace ToolKit
     TypeUnsignedByte     = 0x1401,
     Target2D             = 0x0DE1,
     TargetCubeMap        = 0x8513,
-    Target2DArray        = 0x8C1A
+    Target2DArray        = 0x8C1A,
+    FuncNever            = 0x0200,
+    FuncLess             = 0x0201,
+    FuncEqual            = 0x0202,
+    FuncLequal           = 0x0203,
+    FuncGreater          = 0x0204,
+    FuncNEqual           = 0x0205,
+    FuncGEqual           = 0x0206,
+    FuncAlways           = 0x0207
   };
 
   enum class GraphicBitFields

@@ -215,6 +215,34 @@ namespace ToolKit
 
   typedef std::shared_ptr<FullQuadPass> FullQuadPassPtr;
 
+  struct CubeMapPassParams
+  {
+    FramebufferPtr FrameBuffer = nullptr;
+    Camera* Cam                = nullptr;
+    MaterialPtr Material       = nullptr;
+    Mat4 Transform;
+  };
+
+  class TK_API CubeMapPass : public Pass
+  {
+   public:
+    CubeMapPass();
+    explicit CubeMapPass(const CubeMapPassParams& params);
+    ~CubeMapPass();
+
+    void Render() override;
+    void PreRender() override;
+    void PostRender() override;
+
+   public:
+    CubeMapPassParams m_params;
+
+   private:
+    CubePtr m_cube = nullptr;
+  };
+
+  typedef std::shared_ptr<CubeMapPass> CubeMapPassPtr;
+
   struct StencilRenderPassParams
   {
     RenderTargetPtr OutputTarget;
@@ -320,12 +348,12 @@ namespace ToolKit
 
   struct DeferredRenderPassParams
   {
-    FramebufferPtr MainFramebuffer;
-    FramebufferPtr GBufferFramebuffer;
-    bool ClearFramebuffer = true;
     LightRawPtrArray lights;
-    Camera* Cam          = nullptr;
-    TexturePtr AOTexture = nullptr;
+    FramebufferPtr MainFramebuffer    = nullptr;
+    FramebufferPtr GBufferFramebuffer = nullptr;
+    bool ClearFramebuffer             = true;
+    Camera* Cam                       = nullptr;
+    TexturePtr AOTexture              = nullptr;
   };
 
   class TK_API DeferredRenderPass : public RenderPass
@@ -365,9 +393,9 @@ namespace ToolKit
 
   struct SSAOPassParams
   {
-    TexturePtr GPositionBuffer;
-    TexturePtr GNormalBuffer;
-    Camera* Cam;
+    TexturePtr GPositionBuffer = nullptr;
+    TexturePtr GNormalBuffer   = nullptr;
+    Camera* Cam                = nullptr;
   };
 
   class TK_API SSAOPass : public Pass
@@ -424,9 +452,13 @@ namespace ToolKit
 
     ShadowPassPtr m_shadowPass               = nullptr;
     ForwardRenderPassPtr m_forwardRenderPass = nullptr;
+    CubeMapPassPtr m_skyPass             = nullptr;
     GBufferPass m_gBufferPass;
     DeferredRenderPass m_deferredRenderPass;
     SSAOPass m_ssaoPass;
+
+   private:
+    bool m_drawSky = false;
   };
 
   typedef std::shared_ptr<SceneRenderPass> SceneRenderPassPtr;
