@@ -2,6 +2,7 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
+#include "assimp/material.h"
 
 #include <assert.h>
 #include <rapidxml_ext.h>
@@ -584,6 +585,35 @@ namespace ToolKit
       {
         tMaterial->m_emissiveTexture                      = emissive;
         tMaterial->GetRenderState()->emissiveTextureInUse = true;
+      }
+
+      float opacity;
+      
+      if (material->Get(AI_MATKEY_OPACITY, opacity) != aiReturn_SUCCESS)
+      {
+        std::cout << "Not Read." << endl;
+      }
+      else
+      {
+        std::cout << std::to_string(opacity) << endl;
+      }
+      
+
+
+      aiBlendMode blendMode;
+      material->Get(AI_MATKEY_BLEND_FUNC, blendMode);
+      if (aiBlendMode::aiBlendMode_Default == blendMode)
+      {
+        std::cout << "Default" << endl;
+      }
+      else if (aiBlendMode::aiBlendMode_Additive == blendMode)
+      {
+        std::cout << "Additive"<< endl;
+      }
+
+      else if (aiBlendMode::_aiBlendMode_Force32Bit == blendMode)
+      {
+        std::cout << "Force32" << endl;
       }
 
       tMaterial->SetFile(writePath);
