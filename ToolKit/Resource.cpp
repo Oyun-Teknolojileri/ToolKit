@@ -41,6 +41,8 @@ namespace ToolKit
       file << xml;
       file.close();
       doc.clear();
+
+      m_dirty = false;
     }
   }
 

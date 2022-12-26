@@ -9,7 +9,7 @@ namespace ToolKit
     RenderSettingsView::RenderSettingsView() : View("Render Settings View")
     {
       m_viewID  = 5;
-      m_viewIcn = UI::m_cameraIcon;
+      m_viewIcn = UI::m_sceneIcon;
     }
 
     RenderSettingsView::~RenderSettingsView() {}

@@ -46,8 +46,7 @@ namespace ToolKit
 
       meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitMaterial();
       meshPtr->m_material->UnInit();
-      meshPtr->m_material->m_diffuseTexture =
-          GetTextureManager()->Create<Texture>(m_imagePath);
+      meshPtr->m_material->m_diffuseTexture = m_iconImage;
       meshPtr->m_material->GetRenderState()->blendFunction =
           BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
       meshPtr->m_material->Init();
@@ -832,7 +831,7 @@ namespace ToolKit
 
     void SkyBillboard::Generate()
     {
-      m_imagePath = TexturePath(ConcatPaths({"Icons", "sky.png"}), true);
+      m_iconImage = UI::m_skyIcon;
       EditorBillboardBase::Generate();
     }
 
@@ -850,8 +849,7 @@ namespace ToolKit
 
     void LightBillboard::Generate()
     {
-      m_imagePath =
-          TexturePath(ConcatPaths({"Icons", "light_point.png"}), true);
+      m_iconImage = UI::m_lightIcon;
       EditorBillboardBase::Generate();
     }
 

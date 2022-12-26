@@ -117,14 +117,14 @@ namespace ToolKit
     {
       if (!m_mat)
       {
-        ImGui::Text("Select a material");
+        ImGui::Text("\nSelect a material");
         return;
       }
 
       String name, ext;
       DecomposePath(m_mat->GetFile(), nullptr, &name, &ext);
 
-      ImGui::Text("Material: %s%s", name.c_str(), ext.c_str());
+      ImGui::Text("\nMaterial: %s%s", name.c_str(), ext.c_str());
       ImGui::Separator();
 
       if (ImGui::CollapsingHeader("Material Preview",
@@ -261,6 +261,7 @@ namespace ToolKit
                                            false))
               {
                 m_mat->m_emissiveTexture = nullptr;
+                m_mat->m_dirty           = true;
               }
             }
           }

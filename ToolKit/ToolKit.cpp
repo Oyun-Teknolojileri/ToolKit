@@ -246,17 +246,17 @@ namespace ToolKit
     return &Main::GetInstance()->m_handleManager;
   }
 
-  TK_API SkeletonManager* GetSkeletonManager()
+  SkeletonManager* GetSkeletonManager()
   {
     return Main::GetInstance()->m_skeletonManager;
   }
 
-  TK_API FileManager* GetFileManager()
+  FileManager* GetFileManager()
   {
     return Main::GetInstance()->m_fileManager;
   }
 
-  TK_API EntityFactory* GetEntityFactory()
+  EntityFactory* GetEntityFactory()
   {
     return Main::GetInstance()->m_entityFactory;
   }
@@ -287,8 +287,7 @@ namespace ToolKit
 
   String DefaultPath()
   {
-    static String res = ConcatPaths({"..", "Resources", "Engine"});
-
+    static const String res = ConcatPaths({"..", "Resources", "Engine"});
     return res;
   }
 

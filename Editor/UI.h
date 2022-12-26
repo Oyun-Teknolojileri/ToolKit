@@ -209,10 +209,14 @@ namespace ToolKit
       static TexturePtr m_sphereIcon;
       static TexturePtr m_cubeIcon;
       static TexturePtr m_shaderBallIcon;
+      static TexturePtr m_diskDriveIcon;
+      static TexturePtr m_packageIcon;
+      static TexturePtr m_objectDataIcon;
+      static TexturePtr m_sceneIcon;
 
       struct AnchorPresetImages
       {
-        static constexpr uint presetCount      = 16;
+        static const uint presetCount      = 16;
         const char* m_presetNames[presetCount] = {"Top Left",
                                                   "Top Middle",
                                                   "Top Right",

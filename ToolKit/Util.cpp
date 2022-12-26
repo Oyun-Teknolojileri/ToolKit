@@ -394,6 +394,22 @@ namespace ToolKit
     return path;
   }
 
+  TK_API bool IsDefaultResource(const String& path) 
+  { 
+    if (path._Starts_with("ToolKit"))
+    {
+      return true;
+    }
+
+    static const String defPath = DefaultPath();
+    if (path._Starts_with(defPath))
+    {
+      return true;
+    }
+
+    return false; 
+  }
+
   String GetFileName(const String& path)
   {
     char sep = GetPathSeparator();
