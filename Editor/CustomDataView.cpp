@@ -617,7 +617,7 @@ namespace ToolKit
     CustomDataView::CustomDataView() : View("Custom Data View")
     {
       m_viewID  = 4;
-      m_viewIcn = UI::m_fileIcon;
+      m_viewIcn = UI::m_objectDataIcon;
     }
 
     CustomDataView::~CustomDataView() {}

@@ -402,7 +402,7 @@ namespace ToolKit
     ComponentView::ComponentView() : View("Component View")
     {
       m_viewID  = 3;
-      m_viewIcn = UI::m_collectionIcon;
+      m_viewIcn = UI::m_packageIcon;
     }
 
     ComponentView::~ComponentView() {}

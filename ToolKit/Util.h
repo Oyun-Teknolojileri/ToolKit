@@ -62,6 +62,16 @@ namespace ToolKit
   TK_API void DosifyPath(String& path);
   TK_API String ConcatPaths(const StringArray& entries);
   TK_API String GetRelativeResourcePath(const String& path);
+
+  /**
+   * Checks if a resource has default path.
+   * @return true if the resource is from Engine's directory.
+   */
+  TK_API bool IsDefaultResource(const String& path);
+
+  /**
+  * Extracts the file name with the extension from a path.
+  */
   TK_API String GetFileName(const String& path);
 
   enum class ResourceType;
