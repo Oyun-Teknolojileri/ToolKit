@@ -1093,22 +1093,25 @@ namespace ToolKit
 
     void App::SaveAllResources()
     {
-      for (auto resource : GetResourceManager(ResourceType::Mesh)->m_storage)
+      ResourceType types[] = {ResourceType::Material,
+                              ResourceType::Mesh,
+                              ResourceType::SkinMesh,
+                              ResourceType::Animation};
+
+      for (ResourceType t : types)
       {
-        resource.second->m_dirty = true;
-        resource.second->Save(true);
-      }
-      for (auto resource :
-           GetResourceManager(ResourceType::SkinMesh)->m_storage)
-      {
-        resource.second->m_dirty = true;
-        resource.second->Save(true);
-      }
-      for (auto resource :
-           GetResourceManager(ResourceType::Animation)->m_storage)
-      {
-        resource.second->m_dirty = true;
-        resource.second->Save(true);
+        for (auto resource : GetResourceManager(t)->m_storage)
+        {
+          if (!resource.second->IsDynamic())
+          {
+            String file = resource.second->GetFile();
+            if (!IsDefaultResource(file))
+            {
+              resource.second->m_dirty = true;
+              resource.second->Save(true);
+            }
+          }
+        }
       }
     }
 

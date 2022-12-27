@@ -88,6 +88,11 @@ namespace ToolKit
     TexturePtr UI::m_sphereIcon;
     TexturePtr UI::m_cubeIcon;
     TexturePtr UI::m_shaderBallIcon;
+    TexturePtr UI::m_diskDriveIcon;
+    TexturePtr UI::m_packageIcon;
+    TexturePtr UI::m_objectDataIcon;
+    TexturePtr UI::m_sceneIcon;
+
     UI::AnchorPresetImages UI::m_anchorPresetIcons;
 
     void UI::Init()
@@ -256,7 +261,7 @@ namespace ToolKit
           TexturePath("Icons/collection.png", true));
       m_collectionIcon->Init();
       m_arrowsIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/arrows.png", true));
+          TexturePath("Icons/empty_arrows.png", true));
       m_arrowsIcon->Init();
       m_lockIcon = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/locked.png", true));
@@ -274,13 +279,13 @@ namespace ToolKit
           TexturePath("Icons/small_unlocked.png", true));
       m_unlockedIcon->Init();
       m_viewZoomIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/viewzoom.png", true));
+          TexturePath("Icons/view_zoom.png", true));
       m_viewZoomIcon->Init();
       m_gridIcon = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/grid.png", true));
       m_gridIcon->Init();
       m_skyIcon = GetTextureManager()->Create<Texture>(
-          TexturePath("Icons/sky.png", true));
+          TexturePath("Icons/outliner_data_volume.png", true));
       m_skyIcon->Init();
       m_closeIcon = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/close.png", true));
@@ -312,6 +317,18 @@ namespace ToolKit
       m_shaderBallIcon = GetTextureManager()->Create<Texture>(
           TexturePath("Icons/shader-ball.png", true));
       m_shaderBallIcon->Init();
+      m_diskDriveIcon = GetTextureManager()->Create<Texture>(
+          TexturePath("Icons/disk_drive.png", true));
+      m_diskDriveIcon->Init();
+      m_packageIcon = GetTextureManager()->Create<Texture>(
+          TexturePath("Icons/package.png", true));
+      m_packageIcon->Init();
+      m_objectDataIcon = GetTextureManager()->Create<Texture>(
+          TexturePath("Icons/object_data.png", true));
+      m_objectDataIcon->Init();
+      m_sceneIcon = GetTextureManager()->Create<Texture>(
+          TexturePath("Icons/scene.png", true));
+      m_sceneIcon->Init();
 
       for (uint anchorPresentIndx = 0;
            anchorPresentIndx < AnchorPresetImages::presetCount;

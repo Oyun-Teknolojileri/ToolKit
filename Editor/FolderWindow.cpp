@@ -494,7 +494,7 @@ namespace ToolKit
         } // Tab item handling ends.
         ImGui::EndChild();
 
-        ImGui::BeginTable("##FilterZoom", 4, ImGuiTableFlags_SizingFixedFit);
+        ImGui::BeginTable("##FilterZoom", 5, ImGuiTableFlags_SizingFixedFit);
 
         ImGui::TableSetupColumn("##flt", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("##zoom");
@@ -505,14 +505,12 @@ namespace ToolKit
 
         // Handle searchbar
         ImGui::PushItemWidth(-1);
-        ImGui::InputTextWithHint(" Filter", "Filter", &m_filter);
+        ImGui::InputTextWithHint(" Search", "Search", &m_filter);
         ImGui::PopItemWidth();
 
-        // Zoom amount
+        // Zoom.
         ImGui::TableNextColumn();
         ImGui::Text("%.0f%%", GetThumbnailZoomPercent(thumbnailZoom));
-        // Tooltips
-        UI::HelpMarker(TKLoc, "Ctrl + mouse scroll to adjust thumbnail size.");
 
         // Zoom toggle button
         ImGui::TableNextColumn();
@@ -537,6 +535,15 @@ namespace ToolKit
             thumbnailZoom = m_thumbnailMaxZoom * 0.5833f; // (7/12 ~ 0.5833)
           }
         }
+        UI::HelpMarker(TKLoc, "Ctrl + mouse scroll to adjust thumbnail size.");
+
+        ImGui::TableNextColumn();
+        if (ImGui::ImageButton(Convert2ImGuiTexture(UI::m_diskDriveIcon),
+                               ImVec2(20.0f, 20.0f)))
+        {
+          g_app->SaveAllResources();
+        }
+        UI::HelpMarker(TKLoc, "Saves all resources.");
 
         ImGui::EndTable();
 

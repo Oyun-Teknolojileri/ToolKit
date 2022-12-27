@@ -35,8 +35,8 @@ namespace ToolKit
 
       virtual void Generate();
 
-     public:
-      String m_imagePath;
+     protected:
+      TexturePtr m_iconImage = nullptr;
     };
 
     class Cursor : public EditorBillboardBase
