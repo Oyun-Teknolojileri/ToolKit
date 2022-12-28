@@ -1035,6 +1035,7 @@ namespace ToolKit
 
     m_ssaoPass.m_params.GPositionBuffer    = m_gBufferPass.m_gPosRt;
     m_ssaoPass.m_params.GNormalBuffer      = m_gBufferPass.m_gNormalRt;
+    m_ssaoPass.m_params.GLinearDepthBuffer = m_gBufferPass.m_gLinearDepthRt;
     m_ssaoPass.m_params.Cam                = m_params.Cam;
 
     // Set CubeMapPass for sky.
@@ -1089,6 +1090,10 @@ namespace ToolKit
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
     m_gEmissiveRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR32F;
+    gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
+    m_gLinearDepthRt =
+        std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
     m_framebuffer     = std::make_shared<Framebuffer>();
 
     m_gBufferMaterial = std::make_shared<Material>();
@@ -1113,18 +1118,21 @@ namespace ToolKit
 
     // Gbuffers render targets
     m_framebuffer->Init({(uint) width, (uint) height, false, true});
-    m_gPosRt->m_width       = width;
-    m_gPosRt->m_height      = height;
-    m_gNormalRt->m_width    = width;
-    m_gNormalRt->m_height   = height;
-    m_gColorRt->m_width     = width;
-    m_gColorRt->m_height    = height;
-    m_gEmissiveRt->m_width  = width;
-    m_gEmissiveRt->m_height = height;
+    m_gPosRt->m_width          = width;
+    m_gPosRt->m_height         = height;
+    m_gNormalRt->m_width       = width;
+    m_gNormalRt->m_height      = height;
+    m_gColorRt->m_width        = width;
+    m_gColorRt->m_height       = height;
+    m_gEmissiveRt->m_width     = width;
+    m_gEmissiveRt->m_height    = height;
+    m_gLinearDepthRt->m_width  = width;
+    m_gLinearDepthRt->m_height = height;
     m_gPosRt->Init();
     m_gNormalRt->Init();
     m_gColorRt->Init();
     m_gEmissiveRt->Init();
+    m_gLinearDepthRt->Init();
 
     if (!m_attachmentsSet)
     {
@@ -1136,6 +1144,8 @@ namespace ToolKit
                                    m_gColorRt);
       m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment3,
                                    m_gEmissiveRt);
+      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment4,
+                                   m_gLinearDepthRt);
       m_attachmentsSet = true;
     }
 
@@ -1164,6 +1174,7 @@ namespace ToolKit
     m_gNormalRt->UnInit();
     m_gColorRt->UnInit();
     m_gEmissiveRt->UnInit();
+    m_gLinearDepthRt->UnInit();
 
     m_initialized = false;
   }
@@ -1236,6 +1247,7 @@ namespace ToolKit
     renderer->SetTexture(0, m_params.GPositionBuffer->m_textureId);
     renderer->SetTexture(1, m_params.GNormalBuffer->m_textureId);
     renderer->SetTexture(2, m_noiseTexture->m_textureId);
+    renderer->SetTexture(3, m_params.GLinearDepthBuffer->m_textureId);
     m_quadPass.m_params.FragmentShader = m_ssaoShader;
     m_quadPass.Render();
 

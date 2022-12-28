@@ -285,6 +285,7 @@ namespace ToolKit
     FormatRGB            = 0x1907,
     FormatRGBA8          = 0x8058,
     FormatRGBA           = 0x1908,
+    FormatR16F           = 0x822A,
     FormatR32F           = 0x822E,
     FormatRG32F          = 0x8230,
     FormatRGB16F         = 0x881B,
