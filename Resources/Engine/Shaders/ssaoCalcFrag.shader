@@ -37,9 +37,9 @@
 			vec2 texCoord = vec2(v_texture.x, 1.0 - v_texture.y);
 			vec3 fragPos = vec3(viewMatrix * vec4(texture(s_texture0, texCoord).xyz, 1.0));
 
-		  vec2 noiseScale = vec2(screen_size[0]/4.0, screen_size[1]/4.0); 
-			vec3 normal = normalize(texture(s_texture1, texCoord).rgb);
-			vec3 randomVec = vec3(normalize(texture(s_texture2, texCoord * noiseScale).xy), 0.0);
+		  vec2 noiseScale = vec2(screen_size.x / 4.0, screen_size.y / 4.0); 
+			vec3 normal = texture(s_texture1, texCoord).rgb;
+			vec3 randomVec = vec3(texture(s_texture2, texCoord * noiseScale).xy, 0.0);
 			// create TBN change-of-basis matrix: from tangent-space to view-space
 			vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
 			vec3 bitangent = cross(normal, tangent);
