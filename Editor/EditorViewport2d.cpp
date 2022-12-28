@@ -302,6 +302,8 @@ namespace ToolKit
                                                 m_contentAreaMax,
                                                 IM_COL32(128, 128, 128, 255));
           }
+
+          GetUIManager()->UpdateLayers(g_app->GetDeltaTime(), this);
         }
       }
 

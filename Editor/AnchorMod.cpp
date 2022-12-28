@@ -80,10 +80,8 @@ namespace ToolKit
             {
               m_anchor->m_entity  = surface;
               Canvas* canvasPanel = static_cast<Canvas*>(parentNode->m_entity);
-              m_anchor->m_worldLocation = canvasPanel->m_node->GetTranslation(
-                  TransformationSpace::TS_WORLD);
 
-              g_app->m_anchor = m_anchor;
+              g_app->m_anchor     = m_anchor;
             }
           }
         }
@@ -389,12 +387,11 @@ namespace ToolKit
 
       Vec3 deltaX, deltaY;
 
-      m_deltaAccum           += m_anchorDeltaTransform;
-      m_anchorDeltaTransform = ZERO;
-
       if (g_app->m_snapsEnabled)
       {
-        float spacing = g_app->m_moveDelta;
+        m_deltaAccum           += m_anchorDeltaTransform;
+        m_anchorDeltaTransform = ZERO;
+        float spacing          = g_app->m_moveDelta;
         for (uint i = 0; i < 2; i++)
         {
           if (abs(m_deltaAccum[i]) > spacing)

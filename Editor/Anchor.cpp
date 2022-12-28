@@ -412,7 +412,10 @@ namespace ToolKit
 
       meshPtr->m_material = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
       meshPtr->m_material->UnInit();
-      meshPtr->m_material->m_color = params.color;
+      meshPtr->m_material->m_color                            = params.color;
+      meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
+      meshPtr->m_material->GetRenderState()->blendFunction =
+          BlendFunction::ONE_TO_ONE;
       meshPtr->m_material->Init();
 
       meshPtr->m_material->GetRenderState()->depthTestEnabled = false;
