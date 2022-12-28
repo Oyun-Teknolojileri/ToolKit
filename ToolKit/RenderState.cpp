@@ -49,6 +49,8 @@ namespace ToolKit
     WriteAttr(container, doc, "AOInUse", std::to_string(AOInUse));
 
     WriteAttr(container, doc, "priority", std::to_string(priority));
+
+    WriteAttr(container, doc, "useForwardPath", std::to_string(useForwardPath));
   }
 
   void RenderState::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -85,6 +87,8 @@ namespace ToolKit
       ReadAttr(container, "priority", priority);
 
       ReadAttr(container, "AOInUse", AOInUse);
+
+      ReadAttr(container, "useForwardPath", useForwardPath);
     }
   }
 

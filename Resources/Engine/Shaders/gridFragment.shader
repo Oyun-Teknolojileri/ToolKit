@@ -104,8 +104,8 @@
 			vec2 lod2_cross_a = 1.f - abs(clamp(mod(uv, lod2_cs) / dudv, 0.0f, 1.0f) * 2.0f - 1.f);
 			float lod2_a = max(lod2_cross_a.x, lod2_cross_a.y);
 
-			vec4 thin_color = vec4(vec3(0.1736f), 1.0f);
-			vec4 thick_color = vec4(vec3(0.5536f), 1.0f);
+			vec4 thin_color = vec4(vec3(0.0736f), 1.0f);
+			vec4 thick_color = vec4(vec3(0.1536f), 1.0f);
 
 			// Set XZ axis colors for axis-matching thick lines
 			bool is_axis_z = lod2_cross_a.x > 0.0f && (-lod1_cs < o_gridPos.x && o_gridPos.x < lod1_cs);
