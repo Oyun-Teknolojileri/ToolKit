@@ -39,6 +39,8 @@
 
 		  vec2 noiseScale = vec2(screen_size.x / 4.0, screen_size.y / 4.0); 
 			vec3 normal = texture(s_texture1, texCoord).rgb;
+			mat3 normalMatrix = (inverse(transpose(mat3(viewMatrix))));
+			normal = normalize(normalMatrix * normal);
 			vec3 randomVec = vec3(texture(s_texture2, texCoord * noiseScale).xy, 0.0);
 			// create TBN change-of-basis matrix: from tangent-space to view-space
 			vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
