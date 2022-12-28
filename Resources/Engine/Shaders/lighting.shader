@@ -474,7 +474,7 @@
 				int PCFSamples = SpotLightPCFSamples(s_texture13, lightDataIndex, lightDataTextureWidth);
 				float PCFRadius = SpotLightPCFRadius(s_texture13, lightDataIndex, lightDataTextureWidth);
 				float lbr = SpotLightBleedReduction(s_texture13, lightDataIndex, lightDataTextureWidth);
-				float shadowBias = PointLightShadowBias(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float shadowBias = SpotLightShadowBias(s_texture13, lightDataIndex, lightDataTextureWidth);
 				shadow = CalculateSpotShadow(fragPos, pos, projView, far, shadowAtlasCoord, shadowAtlasResRatio, shadowAtlasLayer, softShadows, PCFSamples, PCFRadius, lbr, shadowBias);
 
 				irradiance += (diffuse + specular) * intensity * shadow;
