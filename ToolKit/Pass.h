@@ -327,14 +327,15 @@ namespace ToolKit
     void UnInitGBuffers();
 
    public:
-    FramebufferPtr m_framebuffer  = nullptr;
-    RenderTargetPtr m_gPosRt      = nullptr;
-    RenderTargetPtr m_gNormalRt   = nullptr;
-    RenderTargetPtr m_gColorRt    = nullptr;
-    RenderTargetPtr m_gEmissiveRt = nullptr;
+    FramebufferPtr m_framebuffer     = nullptr;
+    RenderTargetPtr m_gPosRt         = nullptr;
+    RenderTargetPtr m_gNormalRt      = nullptr;
+    RenderTargetPtr m_gColorRt       = nullptr;
+    RenderTargetPtr m_gEmissiveRt    = nullptr;
+    RenderTargetPtr m_gLinearDepthRt = nullptr;
 
-    int m_width                   = 1024;
-    int m_height                  = 1024;
+    int m_width                      = 1024;
+    int m_height                     = 1024;
 
     GBufferPassParams m_params;
 
@@ -393,9 +394,10 @@ namespace ToolKit
 
   struct SSAOPassParams
   {
-    TexturePtr GPositionBuffer = nullptr;
-    TexturePtr GNormalBuffer   = nullptr;
-    Camera* Cam                = nullptr;
+    TexturePtr GPositionBuffer    = nullptr;
+    TexturePtr GNormalBuffer      = nullptr;
+    TexturePtr GLinearDepthBuffer = nullptr;
+    Camera* Cam                   = nullptr;
   };
 
   class TK_API SSAOPass : public Pass
