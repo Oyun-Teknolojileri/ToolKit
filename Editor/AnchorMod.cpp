@@ -402,10 +402,6 @@ namespace ToolKit
           }
         }
       }
-      else
-      {
-        // m_anchorDeltaTransform = m_deltaAccum;
-      }
 
       if (hasXDirection)
       {
