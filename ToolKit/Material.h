@@ -8,6 +8,13 @@
 namespace ToolKit
 {
 
+  enum class MaterialType
+  {
+    Phong = 0,
+    PBR = 1,
+    Custom = 2
+  };
+
   class TK_API Material : public Resource
   {
    public:
@@ -38,7 +45,11 @@ namespace ToolKit
     ShaderPtr m_fragmentShader;
     Vec3 m_color;
     Vec3 m_emissiveColor;
-    float m_alpha = 1.0f;
+    float m_metallic            = 0.2f;
+    float m_roughness           = 0.5f;
+    float m_alpha               = 1.0f;
+
+    MaterialType m_materialType = MaterialType::Custom;
 
    private:
     RenderState m_renderState;

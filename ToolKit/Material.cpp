@@ -211,6 +211,12 @@ namespace ToolKit
     node = CreateXmlNode(doc, "alpha", container);
     WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_alpha));
 
+    node = CreateXmlNode(doc, "metallic", container);
+    WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_metallic));
+
+    node = CreateXmlNode(doc, "roughness", container);
+    WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_roughness));
+
     m_renderState.Serialize(doc, container);
   }
 
@@ -283,6 +289,14 @@ namespace ToolKit
       else if (strcmp("emissiveColor", node->name()) == 0)
       {
         ReadVec(node, m_emissiveColor);
+      }
+      else if (strcmp("metallic", node->name()) == 0)
+      {
+        ReadAttr(node, XmlNodeName.data(), m_metallic);
+      }
+      else if (strcmp("roughness", node->name()) == 0)
+      {
+        ReadAttr(node, XmlNodeName.data(), m_roughness);
       }
       else
       {

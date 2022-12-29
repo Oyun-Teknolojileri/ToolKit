@@ -179,34 +179,49 @@ namespace ToolKit
         m_mat->m_dirty = true;
       };
 
-      if (ImGui::CollapsingHeader("Shaders"))
+      int matType     = (int) m_mat->m_materialType;
+      int currentType = matType;
+      if (ImGui::Combo("Material Type", &matType, "Phong\0PBR\0Custom"))
       {
-        ImGui::LabelText("##vertShader", "Vertex Shader: ");
-        DropZone(UI::m_codeIcon->m_textureId,
-                 m_mat->m_vertexShader->GetFile(),
-                 [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-                 {
-                   if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
-                   {
-                     g_app->m_statusMsg = "Failed. Shader expected.";
-                     return;
-                   }
-                   m_mat->m_vertexShader =
-                       GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-                   m_mat->m_vertexShader->Init();
-                   updateThumbFn();
-                 });
+        if (matType != currentType)
+        {
+          m_mat->m_materialType = (MaterialType) matType;
+          m_mat->m_dirty        = true;
+        }
+      }
 
-        ImGui::LabelText("##fragShader", "Fragment Shader: ");
-        DropZone(UI::m_codeIcon->m_textureId,
-                 m_mat->m_fragmentShader->GetFile(),
-                 [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-                 {
-                   m_mat->m_fragmentShader =
-                       GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
-                   m_mat->m_fragmentShader->Init();
-                   updateThumbFn();
-                 });
+      if (m_mat->m_materialType == MaterialType::Custom)
+      {
+        if (ImGui::CollapsingHeader("Shaders"))
+        {
+          ImGui::LabelText("##vertShader", "Vertex Shader: ");
+          DropZone(UI::m_codeIcon->m_textureId,
+                   m_mat->m_vertexShader->GetFile(),
+                   [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                   {
+                     if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
+                     {
+                       g_app->m_statusMsg = "Failed. Shader expected.";
+                       return;
+                     }
+                     m_mat->m_vertexShader = GetShaderManager()->Create<Shader>(
+                         dirEnt.GetFullPath());
+                     m_mat->m_vertexShader->Init();
+                     updateThumbFn();
+                   });
+
+          ImGui::LabelText("##fragShader", "Fragment Shader: ");
+          DropZone(UI::m_codeIcon->m_textureId,
+                   m_mat->m_fragmentShader->GetFile(),
+                   [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                   {
+                     m_mat->m_fragmentShader =
+                         GetShaderManager()->Create<Shader>(
+                             dirEnt.GetFullPath());
+                     m_mat->m_fragmentShader->Init();
+                     updateThumbFn();
+                   });
+        }
       }
 
       if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
@@ -296,6 +311,29 @@ namespace ToolKit
             }
             ImGui::SameLine();
             ImGui::Text("Emissive Color");
+          }
+        }
+
+        if (m_mat->m_materialType == MaterialType::PBR)
+        {
+          if (ImGui::DragFloat("Metallic",
+                               &(m_mat->m_metallic),
+                               0.01f,
+                               0.0f,
+                               1.0f,
+                               "%.3f"))
+          {
+            updateThumbFn();
+          }
+
+          if (ImGui::DragFloat("Roughess",
+                               &(m_mat->m_roughness),
+                               0.01f,
+                               0.0f,
+                               1.0f,
+                               "%.3f"))
+          {
+            updateThumbFn();
           }
         }
 
