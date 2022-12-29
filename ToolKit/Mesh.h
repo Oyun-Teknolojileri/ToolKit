@@ -125,4 +125,6 @@ namespace ToolKit
     ResourcePtr CreateLocal(ResourceType type) override;
     String GetDefaultResource(ResourceType type) override;
   };
+
+  void SetVertexLayout(VertexLayout layout);
 } // namespace ToolKit
