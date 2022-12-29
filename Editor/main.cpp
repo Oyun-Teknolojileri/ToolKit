@@ -199,9 +199,9 @@ namespace ToolKit
 
         if (g_settings.Graphics.MSAA > 0)
         {
-          SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+          /*SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
           SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,
-                              g_settings.Graphics.MSAA);
+                              g_settings.Graphics.MSAA);*/
         }
 
 #ifdef TK_DEBUG

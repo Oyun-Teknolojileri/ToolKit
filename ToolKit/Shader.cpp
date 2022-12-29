@@ -164,6 +164,8 @@ namespace ToolKit
       return "emissiveColor";
     case Uniform::EMISSIVE_TEXTURE_IN_USE:
       return "emissiveTextureInUse";
+    case Uniform::RENDER_TARGET_SIZE:
+      return "renderTargetSize";
     default:
       return "";
     }

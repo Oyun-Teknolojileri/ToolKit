@@ -150,6 +150,7 @@ namespace ToolKit
       BloomPass m_bloomPass;
       SSAOPass m_ssaoPass;
       OutlinePass m_outlinePass;
+      FxaaPass m_fxaaPass;
       SingleMatForwardRenderPass m_singleMatRenderer;
       Camera* m_camera = nullptr;
 

@@ -107,6 +107,23 @@ namespace ToolKit
     TonemapPassParams m_params;
   };
 
+  struct FxaaPassParams
+  {
+    FramebufferPtr FrameBuffer = nullptr;
+  };
+
+  class TK_API FxaaPass : public PostProcessPass
+  {
+   public:
+    FxaaPass();
+    explicit FxaaPass(const FxaaPassParams& params);
+
+    void PreRender() override;
+
+   public:
+    FxaaPassParams m_params;
+  };
+
   typedef std::shared_ptr<TonemapPass> TonemapPassPtr;
 
 } // namespace ToolKit

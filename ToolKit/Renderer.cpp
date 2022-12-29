@@ -1259,6 +1259,15 @@ namespace ToolKit
           glUniform1i(loc, (GLint) m_renderState.useForwardPath);
         }
         break;
+        case Uniform::RENDER_TARGET_SIZE:
+        {
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::RENDER_TARGET_SIZE));
+          Vec2 rtSize = Vec2(m_viewportSize);
+          glUniform2fv(loc, 1, &rtSize.x);
+        }
+        break;
         default:
           assert(false);
           break;

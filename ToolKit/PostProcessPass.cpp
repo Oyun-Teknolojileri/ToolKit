@@ -298,4 +298,22 @@ namespace ToolKit
         ParameterVariant((uint) m_params.Method));
   }
 
+  FxaaPass::FxaaPass()
+  {
+    m_postProcessShader =
+        GetShaderManager()->Create<Shader>(ShaderPath("fxaaFrag.shader", true));
+  }
+
+  FxaaPass::FxaaPass(const FxaaPassParams& params) : FxaaPass()
+  {
+    m_params = params;
+  }
+
+  void FxaaPass::PreRender()
+  {
+    PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
+    //m_copyTexture->m_settings.InternalFormat = GraphicTypes::FormatRGBA8;
+    PostProcessPass::PreRender();
+  }
+
 } // namespace ToolKit
