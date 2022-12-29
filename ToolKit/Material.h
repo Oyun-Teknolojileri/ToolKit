@@ -10,8 +10,8 @@ namespace ToolKit
 
   enum class MaterialType
   {
-    Phong = 0,
-    PBR = 1,
+    Phong  = 0,
+    PBR    = 1,
     Custom = 2
   };
 
@@ -41,6 +41,7 @@ namespace ToolKit
     CubeMapPtr m_cubeMap;
     TexturePtr m_diffuseTexture;
     TexturePtr m_emissiveTexture;
+    TexturePtr m_metallicRoughnessTexture;
     ShaderPtr m_vertexShader;
     ShaderPtr m_fragmentShader;
     Vec3 m_color;
