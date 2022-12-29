@@ -14,8 +14,11 @@
 
 // GLM
 #define GLM_FORCE_CTOR_INIT
-#define GLM_FORCE_SWIZZLE
 #define GLM_ENABLE_EXPERIMENTAL
+
+#ifndef GLM_FORCE_SWIZZLE
+  #define GLM_FORCE_SWIZZLE
+#endif
 
 #include "glm/glm.hpp"
 #include "glm/gtc/epsilon.hpp"

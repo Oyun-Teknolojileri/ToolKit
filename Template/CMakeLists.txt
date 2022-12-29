@@ -75,6 +75,7 @@ set(
 )
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH})
+add_compile_definitions(GLM_FORCE_SWIZZLE)
 
 target_link_libraries(${PROJECT_NAME} debug ToolKit_d)
 target_link_libraries(${PROJECT_NAME} optimized ToolKit)
