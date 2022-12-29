@@ -196,6 +196,7 @@ namespace ToolKit
 
         glBindVertexArray(mesh->m_vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, mesh->m_vboVertexId);
+        SetVertexLayout(mesh->m_vertexLayout);
 
         if (mesh->m_indexCount != 0)
         {
