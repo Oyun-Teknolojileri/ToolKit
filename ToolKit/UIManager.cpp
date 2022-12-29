@@ -104,7 +104,6 @@ namespace ToolKit
 
           if (ntt->GetType() == EntityType::Entity_Button)
           {
-            CheckMouseOver(surface, e, vp);
             Button* button        = static_cast<Button*>(ntt);
             MaterialPtr hoverMat  = button->GetHoverMaterialVal();
             MaterialPtr normalMat = button->GetButtonMaterialVal();
