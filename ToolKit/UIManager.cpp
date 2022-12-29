@@ -96,10 +96,28 @@ namespace ToolKit
       {
         if (ntt->IsSurfaceInstance())
         {
-          Surface* surface   = static_cast<Surface*>(ntt);
-          bool mouseOverPrev = surface->m_mouseOver;
+          Surface* surface        = static_cast<Surface*>(ntt);
+          bool mouseOverPrev      = surface->m_mouseOver;
 
-          if (surface->m_mouseOver = CheckMouseOver(surface, e, vp))
+          surface->m_mouseOver    = CheckMouseOver(surface, e, vp);
+          surface->m_mouseClicked = CheckMouseClick(surface, e, vp);
+
+          if (ntt->GetType() == EntityType::Entity_Button)
+          {
+            Button* button        = static_cast<Button*>(ntt);
+            MaterialPtr hoverMat  = button->GetHoverMaterialVal();
+            MaterialPtr normalMat = button->GetButtonMaterialVal();
+            if (surface->m_mouseOver && hoverMat)
+            {
+              button->SetMaterialVal(hoverMat);
+            }
+            else
+            {
+              button->SetMaterialVal(normalMat);
+            }
+          }
+
+          if (surface->m_mouseOver)
           {
             if (surface->m_onMouseOver)
             {
@@ -107,7 +125,7 @@ namespace ToolKit
             }
           }
 
-          if (surface->m_mouseClicked = CheckMouseClick(surface, e, vp))
+          if (surface->m_mouseClicked)
           {
             if (surface->m_onMouseClick)
             {
