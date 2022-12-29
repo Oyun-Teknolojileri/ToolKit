@@ -319,6 +319,6 @@ namespace ToolKit
     AllBits          = ColorBits | DepthBits | StencilBits
   };
 
-  static const char* TKVersionStr = "v0.3.18";
+  static const char* TKVersionStr = "v0.3.19";
 
 } // namespace ToolKit
