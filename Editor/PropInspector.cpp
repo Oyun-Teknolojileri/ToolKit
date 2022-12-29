@@ -320,7 +320,8 @@ namespace ToolKit
                           ImVec2(2.0f, style.ItemSpacing.y));
       if (ImGui::Begin(m_name.c_str(),
                        &m_visible,
-                       ImGuiWindowFlags_NoScrollWithMouse))
+                       ImGuiWindowFlags_NoScrollbar |
+                           ImGuiWindowFlags_NoScrollWithMouse))
       {
         HandleStates();
 
@@ -362,9 +363,8 @@ namespace ToolKit
 
         ImGui::SameLine();
 
-        if (ImGui::BeginChild(
-                ImGui::GetID("PropInspectorActiveView"),
-                Vec2(windowSize.x - sidebarSize.x - spacing.x, windowSize.y)))
+        if (ImGui::BeginChild(ImGui::GetID("PropInspectorActiveView"),
+                              ImGui::GetContentRegionAvail()))
         {
           m_views[(uint) m_activeView]->Show();
         }
