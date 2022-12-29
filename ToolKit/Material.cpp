@@ -202,6 +202,14 @@ namespace ToolKit
       WriteAttr(node, doc, XmlNodeName.data(), file);
     }
 
+    if (m_metallicRoughnessTexture)
+    {
+      XmlNode* node = CreateXmlNode(doc, "metallicRoughnessTexture", container);
+      String file   = GetRelativeResourcePath(
+          m_metallicRoughnessTexture->GetSerializeFile());
+      WriteAttr(node, doc, XmlNodeName.data(), file);
+    }
+
     XmlNode* node = CreateXmlNode(doc, "color", container);
     WriteVec(node, doc, m_color);
 
@@ -210,6 +218,12 @@ namespace ToolKit
 
     node = CreateXmlNode(doc, "alpha", container);
     WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_alpha));
+
+    node = CreateXmlNode(doc, "metallic", container);
+    WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_metallic));
+
+    node = CreateXmlNode(doc, "roughness", container);
+    WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_roughness));
 
     m_renderState.Serialize(doc, container);
   }
@@ -283,6 +297,22 @@ namespace ToolKit
       else if (strcmp("emissiveColor", node->name()) == 0)
       {
         ReadVec(node, m_emissiveColor);
+      }
+      else if (strcmp("metallicRoughnessTexture", node->name()) == 0)
+      {
+        XmlAttribute* attr = node->first_attribute(XmlNodeName.data());
+        String path        = attr->value();
+        NormalizePath(path);
+        m_metallicRoughnessTexture =
+            GetTextureManager()->Create<Texture>(TexturePath(path));
+      }
+      else if (strcmp("metallic", node->name()) == 0)
+      {
+        ReadAttr(node, XmlNodeName.data(), m_metallic);
+      }
+      else if (strcmp("roughness", node->name()) == 0)
+      {
+        ReadAttr(node, XmlNodeName.data(), m_roughness);
       }
       else
       {
