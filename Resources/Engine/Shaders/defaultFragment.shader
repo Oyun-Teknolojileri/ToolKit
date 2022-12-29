@@ -11,6 +11,7 @@
 	<uniform name = "Color" />
 	<uniform name = "emissiveColor" />
 	<uniform name = "emissiveTextureInUse" />
+	<uniform name = "lightingType" />
 	<source>
 	<!--
 		#version 300 es
@@ -25,6 +26,13 @@
 		uniform vec4 Color;
 		uniform int emissiveTextureInUse;
 		uniform vec3 emissiveColor;
+
+		/*
+			lightingType:
+			0 -> Phong
+			1 -> PBR 
+		*/
+		uniform int lightingType;
 
 		in vec3 v_pos;
 		in vec3 v_normal;
@@ -65,13 +73,22 @@
 			vec3 n = normalize(v_normal);
 			vec3 e = normalize(CamData.pos - v_pos);
 
-			vec3 irradiance = BlinnPhongLighting(v_pos, n, e);
+			vec3 irradiance = vec3(0.0);
+			if (lightingType == 0)
+			{
+				irradiance = BlinnPhongLighting(v_pos, n, e);
+				irradiance *= color.xyz;
+			}
+			else
+			{
+				irradiance = PBRLighting(v_pos, n, e, color.xyz);
+			}
 
 			irradiance += IblIrradiance(n);
 
 			// float ambientOcclusion = AmbientOcclusion();
 
-			fragColor = (vec4(irradiance, 1.0) * color) + vec4(emissive, 0.0f);
+			fragColor = vec4(irradiance, color.a) + vec4(emissive, 0.0f);
 		}
 	-->
 	</source>

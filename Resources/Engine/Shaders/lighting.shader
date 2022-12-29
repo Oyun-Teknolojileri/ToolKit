@@ -4,6 +4,8 @@
 	<include name = "shadow.shader" />
 	<include name = "lightDataTextureUtils.shader" />
 	<uniform name = "LightData" />
+	<uniform name = "metallic" />
+	<uniform name = "roughness" />
 	<source>
 	<!--
 		// Fixed Declaretions
@@ -59,7 +61,11 @@
 		uniform float spotNonShadowLightDataSize;
 		///
 
+		uniform float metallic;
+		uniform float roughness;
+
 		const int maxLights = 16;
+		const float PI = 3.14159265359;
 
 		// Returns uv coordinates and layers such as: vec3(u,v,layer)
 		// https://kosmonautblog.wordpress.com/2017/03/25/shadow-filtering-for-pointlights/
@@ -496,6 +502,108 @@
 				SpotLightBlinnPhong(pos - fragPos, fragToEye, normal, col, dir, radius,	innAngle, outAngle, diffuse, specular);
 
 				irradiance += (diffuse + specular) * intensity;
+			}
+
+			return irradiance;
+		}
+
+		float DistributionGGX(vec3 N, vec3 H, float roughness)
+		{
+				float a = roughness*roughness;
+				float a2 = a*a;
+				float NdotH = max(dot(N, H), 0.0);
+				float NdotH2 = NdotH*NdotH;
+
+				float nom   = a2;
+				float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+				denom = PI * denom * denom;
+
+				return nom / denom;
+		}
+
+		float GeometrySchlickGGX(float NdotV, float roughness)
+		{
+				float r = (roughness + 1.0);
+				float k = (r*r) / 8.0;
+
+				float nom   = NdotV;
+				float denom = NdotV * (1.0 - k) + k;
+
+				return nom / denom;
+		}
+
+		float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+		{
+				float NdotV = max(dot(N, V), 0.0);
+				float NdotL = max(dot(N, L), 0.0);
+				float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+				float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+
+				return ggx1 * ggx2;
+		}
+
+		vec3 FresnelSchlick(float cosTheta, vec3 F0)
+		{
+				return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+		}
+
+		vec3 PointLightPBR(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo, float metallic, float roughness, vec3 lightPos, vec3 lightColor)
+		{
+			// Reflectance normal incidence
+			vec3 F0 = vec3(0.04);
+			F0 = mix(F0, albedo, metallic);
+
+			vec3 lightDir = normalize(lightPos - fragPos);
+			vec3 halfway = normalize(lightDir + fragToEye);
+			float hXe = clamp(dot(halfway, fragToEye), 0.0, 1.0);
+			float nXe = max(dot(normal, fragToEye), 0.0);
+			float nXl = max(dot(normal, lightDir), 0.0);
+			vec3 radiance = lightColor;
+
+			// Cook-Torrance BRDF
+			float NDF = DistributionGGX(normal, halfway, roughness);
+			float G = GeometrySmith(normal, fragToEye, lightDir, roughness);
+			vec3 F = FresnelSchlick(max(dot(halfway, fragToEye), 0.0), F0);
+			vec3 numerator = NDF * G * F;
+			float denominator = 4.0 * nXe * nXl + 0.0001; // 0.0001 to prevent divide by zero
+			vec3 specular = numerator / denominator;
+
+			vec3 kS = F; // Specular part
+			// Energy conservation
+			vec3 kD = vec3(1.0) - kS; // Diffuse part
+			// Only non-metals have diffuse part. (Also works fine with metallic values between 0-1)
+			kD *= 1.0 - metallic;
+
+			// Note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+			// Scale light by light and normal vectors angle
+			vec3 outIrradiance = (kD * albedo / PI + specular) * radiance * nXl;
+
+			return outIrradiance;
+		}
+
+		vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo)
+		{
+			// TODO Lighting for other light types
+			// TODO Shadows
+
+			vec3 irradiance = vec3(0.0);
+
+			for (int i = 0; i < LightData.activeCount; i++)
+			{
+				if (LightData.type[i] == 2) // Point light
+				{
+					// TODO radius check
+
+					irradiance += PointLightPBR(fragPos, normal, fragToEye, albedo, metallic, roughness, LightData.pos[i], LightData.color[i] * LightData.intensity[i]);
+				}
+				else if (LightData.type[i] == 1) // Directional light
+				{
+
+				}
+				else // if (LightData.type[i] == 3) Spot light
+				{
+
+				}
 			}
 
 			return irradiance;

@@ -186,6 +186,7 @@ namespace ToolKit
         if (matType != currentType)
         {
           m_mat->m_materialType = (MaterialType) matType;
+          m_mat->SetDefaultMaterialTypeShaders();
           m_mat->m_dirty        = true;
         }
       }
@@ -318,7 +319,7 @@ namespace ToolKit
         {
           if (ImGui::DragFloat("Metallic",
                                &(m_mat->m_metallic),
-                               0.01f,
+                               0.001f,
                                0.0f,
                                1.0f,
                                "%.3f"))
@@ -328,7 +329,7 @@ namespace ToolKit
 
           if (ImGui::DragFloat("Roughess",
                                &(m_mat->m_roughness),
-                               0.01f,
+                               0.001f,
                                0.0f,
                                1.0f,
                                "%.3f"))

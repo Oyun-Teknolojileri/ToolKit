@@ -160,6 +160,24 @@ namespace ToolKit
     m_renderState = *state; // Copy
   }
 
+  void Material::SetDefaultMaterialTypeShaders()
+  {
+    switch (m_materialType)
+    {
+    case MaterialType::Phong:
+    case MaterialType::PBR:
+      UnInit();
+      m_vertexShader = GetShaderManager()->Create<Shader>(
+          ShaderPath("defaultVertex.shader", true));
+      m_fragmentShader = GetShaderManager()->Create<Shader>(
+          ShaderPath("defaultFragment.shader", true));
+      Init();
+      break;
+    default: // Custom
+      break;
+    }
+  }
+
   void Material::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* container = CreateXmlNode(doc, "material", parent);
@@ -216,6 +234,12 @@ namespace ToolKit
 
     node = CreateXmlNode(doc, "roughness", container);
     WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_roughness));
+
+    node = CreateXmlNode(doc, "materialType", container);
+    WriteAttr(node,
+              doc,
+              XmlNodeName.data(),
+              std::to_string((int) m_materialType));
 
     m_renderState.Serialize(doc, container);
   }
@@ -297,6 +321,12 @@ namespace ToolKit
       else if (strcmp("roughness", node->name()) == 0)
       {
         ReadAttr(node, XmlNodeName.data(), m_roughness);
+      }
+      else if (strcmp("materialType", node->name()) == 0)
+      {
+        int matType;
+        ReadAttr(node, XmlNodeName.data(), matType);
+        m_materialType = (MaterialType) matType;
       }
       else
       {

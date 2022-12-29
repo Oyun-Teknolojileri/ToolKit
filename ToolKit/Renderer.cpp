@@ -1258,6 +1258,41 @@ namespace ToolKit
           glUniform1i(loc, (GLint) m_renderState.useForwardPath);
         }
         break;
+        case Uniform::LIGHTING_TYPE:
+        {
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::LIGHTING_TYPE));
+          int lightingType;
+          if (m_mat->m_materialType == MaterialType::Phong)
+          {
+            lightingType = 0;
+          }
+          else if (m_mat->m_materialType == MaterialType::PBR)
+          {
+            lightingType = 1;
+          }
+          else // Custom
+          {
+            lightingType = 2;
+          }
+          glUniform1i(loc, (GLint) lightingType);
+        }
+        break;
+        case Uniform::METALLIC:
+        {
+          GLint loc = glGetUniformLocation(program->m_handle,
+                                           GetUniformName(Uniform::METALLIC));
+          glUniform1f(loc, (GLfloat) m_mat->m_metallic);
+        }
+        break;
+        case Uniform::ROUGHNESS:
+        {
+          GLint loc = glGetUniformLocation(program->m_handle,
+                                           GetUniformName(Uniform::ROUGHNESS));
+          glUniform1f(loc, (GLfloat) m_mat->m_roughness);
+        }
+        break;
         default:
           assert(false);
           break;
