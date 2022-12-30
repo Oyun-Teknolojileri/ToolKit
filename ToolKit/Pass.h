@@ -340,15 +340,16 @@ namespace ToolKit
     void UnInitGBuffers();
 
    public:
-    FramebufferPtr m_framebuffer     = nullptr;
-    RenderTargetPtr m_gPosRt         = nullptr;
-    RenderTargetPtr m_gNormalRt      = nullptr;
-    RenderTargetPtr m_gColorRt       = nullptr;
-    RenderTargetPtr m_gEmissiveRt    = nullptr;
-    RenderTargetPtr m_gLinearDepthRt = nullptr;
+    FramebufferPtr m_framebuffer           = nullptr;
+    RenderTargetPtr m_gPosRt               = nullptr;
+    RenderTargetPtr m_gNormalRt            = nullptr;
+    RenderTargetPtr m_gColorRt             = nullptr;
+    RenderTargetPtr m_gEmissiveRt          = nullptr;
+    RenderTargetPtr m_gLinearDepthRt       = nullptr;
+    RenderTargetPtr m_gMetallicRoughnessRt = nullptr;
 
-    int m_width                      = 1024;
-    int m_height                     = 1024;
+    int m_width                            = 1024;
+    int m_height                           = 1024;
 
     GBufferPassParams m_params;
 

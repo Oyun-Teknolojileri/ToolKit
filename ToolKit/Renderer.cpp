@@ -171,7 +171,6 @@ namespace ToolKit
         if (mmComp && mmComp->GetMaterialList().size() > meshIndx)
         {
           nttMat = mmComp->GetMaterialList()[meshIndx];
-          nttMat->Init();
         }
         mesh->Init();
         if (m_overrideMat != nullptr)
@@ -182,6 +181,7 @@ namespace ToolKit
         {
           m_mat = nttMat ? nttMat : mesh->m_material;
         }
+        m_mat->Init();
 
         ProgramPtr prg =
             CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);
@@ -379,6 +379,11 @@ namespace ToolKit
     {
       m_renderState.emissiveTexture = state->diffuseTexture;
       SetTexture(1, state->emissiveTexture);
+    }
+
+    if (m_mat->m_metallicRoughnessTexture)
+    {
+      SetTexture(4, m_mat->m_metallicRoughnessTexture->m_textureId);
     }
 
     m_renderState.useForwardPath = state->useForwardPath;
@@ -1274,6 +1279,50 @@ namespace ToolKit
           glUniform1i(loc, (GLint) m_renderState.useForwardPath);
         }
         break;
+        case Uniform::LIGHTING_TYPE:
+        {
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::LIGHTING_TYPE));
+          int lightingType;
+          if (m_mat->m_materialType == MaterialType::Phong)
+          {
+            lightingType = 0;
+          }
+          else if (m_mat->m_materialType == MaterialType::PBR)
+          {
+            lightingType = 1;
+          }
+          else // Custom
+          {
+            lightingType = 2;
+          }
+          glUniform1i(loc, (GLint) lightingType);
+        }
+        break;
+        case Uniform::METALLIC:
+        {
+          GLint loc = glGetUniformLocation(program->m_handle,
+                                           GetUniformName(Uniform::METALLIC));
+          glUniform1f(loc, (GLfloat) m_mat->m_metallic);
+        }
+        break;
+        case Uniform::ROUGHNESS:
+        {
+          GLint loc = glGetUniformLocation(program->m_handle,
+                                           GetUniformName(Uniform::ROUGHNESS));
+          glUniform1f(loc, (GLfloat) m_mat->m_roughness);
+        }
+        break;
+        case Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE:
+        {
+          GLint loc = glGetUniformLocation(
+              program->m_handle,
+              GetUniformName(Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE));
+          glUniform1i(loc,
+                      (int) (m_mat->m_metallicRoughnessTexture != nullptr));
+        }
+        break;
         default:
           assert(false);
           break;
@@ -1521,7 +1570,9 @@ namespace ToolKit
     // 9-12   : 2D textures
     //
     // 0 -> Color Texture
+    // 1 -> Emissive Texture
     // 2 & 3 -> Skinning information
+    // 4 -> Metallic Roughness Texture
     // 5 -> AO Texture
     // 7 -> Irradiance Map
     //
@@ -1531,6 +1582,7 @@ namespace ToolKit
     // 11 -> gBuffer color texture
     // 12 -> gBuffer emissive texture
     // 13 -> Light Data Texture
+    // 14 -> gBuffer metallic roughness texture
 
     assert(slotIndx < m_rhiSettings::textureSlotCount &&
            "You exceed texture slot count");
@@ -1549,7 +1601,7 @@ namespace ToolKit
     {
       glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureSlots[slotIndx]);
     }
-    else if (slotIndx < 14)
+    else if (slotIndx < 15)
     {
       glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
     }

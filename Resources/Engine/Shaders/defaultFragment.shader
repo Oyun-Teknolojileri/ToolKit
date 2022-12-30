@@ -11,13 +11,18 @@
 	<uniform name = "Color" />
 	<uniform name = "emissiveColor" />
 	<uniform name = "emissiveTextureInUse" />
+	<uniform name = "lightingType" />
+	<uniform name = "metallicRoughnessTextureInUse" />
+	<uniform name = "metallic" />
+	<uniform name = "roughness" />
 	<source>
 	<!--
 		#version 300 es
 		precision highp float;
 
-		uniform sampler2D s_texture0;
-		uniform sampler2D s_texture1;
+		uniform sampler2D s_texture0; // color
+		uniform sampler2D s_texture1; // emissive
+		uniform sampler2D s_texture4; // metallic-roughness
 		uniform int LightingOnly;
 		uniform int useAlphaMask;
 		uniform float alphaMaskTreshold;
@@ -25,6 +30,17 @@
 		uniform vec4 Color;
 		uniform int emissiveTextureInUse;
 		uniform vec3 emissiveColor;
+
+		uniform int metallicRoughnessTextureInUse;
+		uniform float metallic;
+		uniform float roughness;
+
+		/*
+			lightingType:
+			0 -> Phong
+			1 -> PBR 
+		*/
+		uniform int lightingType;
 
 		in vec3 v_pos;
 		in vec3 v_normal;
@@ -65,13 +81,31 @@
 			vec3 n = normalize(v_normal);
 			vec3 e = normalize(CamData.pos - v_pos);
 
-			vec3 irradiance = BlinnPhongLighting(v_pos, n, e);
+			vec3 irradiance = vec3(0.0);
+			if (lightingType == 0)
+			{
+				irradiance = BlinnPhongLighting(v_pos, n, e);
+				irradiance *= color.xyz;
+			}
+			else
+			{
+				vec2 metallicRoughness;
+				if (metallicRoughnessTextureInUse == 1)
+				{
+					metallicRoughness = texture(s_texture4, v_texture).rg;
+				}
+				else
+				{
+					metallicRoughness = vec2(metallic, roughness);
+				}
+				irradiance = PBRLighting(v_pos, n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
+			}
 
 			irradiance += IblIrradiance(n);
 
 			// float ambientOcclusion = AmbientOcclusion();
 
-			fragColor = (vec4(irradiance, 1.0) * color) + vec4(emissive, 0.0f);
+			fragColor = vec4(irradiance, color.a) + vec4(emissive, 0.0f);
 		}
 	-->
 	</source>

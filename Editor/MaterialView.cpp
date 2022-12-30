@@ -186,7 +186,8 @@ namespace ToolKit
         if (matType != currentType)
         {
           m_mat->m_materialType = (MaterialType) matType;
-          m_mat->m_dirty        = true;
+          m_mat->SetDefaultMaterialTypeShaders();
+          m_mat->m_dirty = true;
         }
       }
 
@@ -281,6 +282,40 @@ namespace ToolKit
             }
           }
         }
+
+        if (m_mat->m_materialType == MaterialType::PBR)
+        {
+          ImGui::LabelText("##metallicRoughnessTexture",
+                           "Metallic Roughess Texture: ");
+          target = GetPathSeparatorAsStr();
+          if (m_mat->m_metallicRoughnessTexture)
+          {
+            target = m_mat->m_metallicRoughnessTexture->GetFile();
+          }
+
+          DropZone(UI::m_imageIcon->m_textureId,
+                   target,
+                   [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                   {
+                     m_mat->m_metallicRoughnessTexture =
+                         GetTextureManager()->Create<Texture>(
+                             dirEnt.GetFullPath());
+                     m_mat->m_metallicRoughnessTexture->Init();
+                     updateThumbFn();
+                   });
+
+          if (m_mat->m_metallicRoughnessTexture)
+          {
+            ImGui::SameLine();
+            if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
+                                         Vec2(16.0f, 16.0f),
+                                         false))
+            {
+              m_mat->m_metallicRoughnessTexture = nullptr;
+              m_mat->m_dirty                    = true;
+            }
+          }
+        }
       }
 
       if (ImGui::CollapsingHeader("Render States",
@@ -318,7 +353,7 @@ namespace ToolKit
         {
           if (ImGui::DragFloat("Metallic",
                                &(m_mat->m_metallic),
-                               0.01f,
+                               0.001f,
                                0.0f,
                                1.0f,
                                "%.3f"))
@@ -328,7 +363,7 @@ namespace ToolKit
 
           if (ImGui::DragFloat("Roughess",
                                &(m_mat->m_roughness),
-                               0.01f,
+                               0.001f,
                                0.0f,
                                1.0f,
                                "%.3f"))

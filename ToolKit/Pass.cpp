@@ -1135,6 +1135,10 @@ namespace ToolKit
     gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
     m_gLinearDepthRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRG32F;
+    gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRG;
+    m_gMetallicRoughnessRt =
+        std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
     m_framebuffer     = std::make_shared<Framebuffer>();
 
     m_gBufferMaterial = std::make_shared<Material>();
@@ -1175,21 +1179,24 @@ namespace ToolKit
 
     // Gbuffers render targets
     m_framebuffer->Init({(uint) width, (uint) height, false, true});
-    m_gPosRt->m_width          = width;
-    m_gPosRt->m_height         = height;
-    m_gNormalRt->m_width       = width;
-    m_gNormalRt->m_height      = height;
-    m_gColorRt->m_width        = width;
-    m_gColorRt->m_height       = height;
-    m_gEmissiveRt->m_width     = width;
-    m_gEmissiveRt->m_height    = height;
-    m_gLinearDepthRt->m_width  = width;
-    m_gLinearDepthRt->m_height = height;
+    m_gPosRt->m_width                = width;
+    m_gPosRt->m_height               = height;
+    m_gNormalRt->m_width             = width;
+    m_gNormalRt->m_height            = height;
+    m_gColorRt->m_width              = width;
+    m_gColorRt->m_height             = height;
+    m_gEmissiveRt->m_width           = width;
+    m_gEmissiveRt->m_height          = height;
+    m_gLinearDepthRt->m_width        = width;
+    m_gLinearDepthRt->m_height       = height;
+    m_gMetallicRoughnessRt->m_width  = width;
+    m_gMetallicRoughnessRt->m_height = height;
     m_gPosRt->Init();
     m_gNormalRt->Init();
     m_gColorRt->Init();
     m_gEmissiveRt->Init();
     m_gLinearDepthRt->Init();
+    m_gMetallicRoughnessRt->Init();
 
     if (!m_attachmentsSet)
     {
@@ -1203,6 +1210,8 @@ namespace ToolKit
                                    m_gEmissiveRt);
       m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment4,
                                    m_gLinearDepthRt);
+      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment5,
+                                   m_gMetallicRoughnessRt);
       m_attachmentsSet = true;
     }
 
@@ -1232,6 +1241,7 @@ namespace ToolKit
     m_gColorRt->UnInit();
     m_gEmissiveRt->UnInit();
     m_gLinearDepthRt->UnInit();
+    m_gMetallicRoughnessRt->UnInit();
 
     m_initialized = false;
   }
@@ -1269,9 +1279,13 @@ namespace ToolKit
       m_gBufferMaterial->m_diffuseTexture  = mat->m_diffuseTexture;
       m_gBufferMaterial->m_emissiveTexture = mat->m_emissiveTexture;
       m_gBufferMaterial->m_emissiveColor   = mat->m_emissiveColor;
-      m_gBufferMaterial->m_cubeMap         = mat->m_cubeMap;
-      m_gBufferMaterial->m_color           = mat->m_color;
-      m_gBufferMaterial->m_alpha           = mat->m_alpha;
+      m_gBufferMaterial->m_metallicRoughnessTexture =
+          mat->m_metallicRoughnessTexture;
+      m_gBufferMaterial->m_cubeMap   = mat->m_cubeMap;
+      m_gBufferMaterial->m_color     = mat->m_color;
+      m_gBufferMaterial->m_alpha     = mat->m_alpha;
+      m_gBufferMaterial->m_metallic  = mat->m_metallic;
+      m_gBufferMaterial->m_roughness = mat->m_roughness;
       m_gBufferMaterial->Init();
       renderer->m_overrideMat = m_gBufferMaterial;
 
@@ -1526,7 +1540,7 @@ namespace ToolKit
                                                ParameterVariant(sizeNS));
 
     // Set gbuffer
-    // 9: Position, 10: Normal, 11: Color
+    // 9: Position, 10: Normal, 11: Color, 12: emissive, 14: metallic-roughness
     renderer->SetTexture(
         9,
         m_params.GBufferFramebuffer
@@ -1546,6 +1560,11 @@ namespace ToolKit
         12,
         m_params.GBufferFramebuffer
             ->GetAttachment(Framebuffer::Attachment::ColorAttachment3)
+            ->m_textureId);
+    renderer->SetTexture(
+        14,
+        m_params.GBufferFramebuffer
+            ->GetAttachment(Framebuffer::Attachment::ColorAttachment5)
             ->m_textureId);
 
     renderer->SetTexture(13, m_lightDataTexture->m_textureId);

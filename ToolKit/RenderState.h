@@ -59,6 +59,7 @@ namespace ToolKit
     /* ONLY Renderer class edits and uses this variable. This variable does not
      * give any functionality to disable or enable ibl for material.*/
     bool IBLInUse               = false;
+
     float iblIntensity          = 0.25f;
     uint irradianceMap          = 0;
     bool AOInUse                = true;
