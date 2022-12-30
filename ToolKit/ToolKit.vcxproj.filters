@@ -147,6 +147,7 @@
     <ClCompile Include="PostProcessPass.cpp">
       <Filter>Source\Pass</Filter>
     </ClCompile>
+    <ClCompile Include="RenderSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugNew.h">

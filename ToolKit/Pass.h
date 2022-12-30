@@ -5,6 +5,7 @@
 #include "Framebuffer.h"
 #include "GeometryTypes.h"
 #include "Primative.h"
+#include "Renderer.h"
 
 namespace ToolKit
 {
@@ -22,16 +23,19 @@ namespace ToolKit
     virtual void PreRender();
     virtual void PostRender();
 
-    class Renderer* GetRenderer();
-    void SetRenderer(class Renderer* renderer);
+    Renderer* GetRenderer();
+    void SetRenderer(Renderer* renderer);
 
    protected:
     MaterialPtr m_prevOverrideMaterial = nullptr;
     FramebufferPtr m_prevFrameBuffer   = nullptr;
 
    private:
-    class Renderer* m_renderer = nullptr;
+    Renderer* m_renderer = nullptr;
   };
+
+  typedef std::shared_ptr<Pass> PassPtr;
+  typedef std::vector<PassPtr> PassPtrArray;
 
   /*
    * Base class for main rendering classes.

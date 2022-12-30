@@ -7,17 +7,25 @@
 namespace ToolKit
 {
 
-  class Technique
+  class TK_API Technique
   {
    public:
-    virtual void Render(Renderer* renderer) = 0;
+    Technique();
+    virtual ~Technique();
+    virtual void Render(Renderer* renderer);
+
+   public:
+    PassPtrArray m_passArray;
   };
 
-  class RenderSystem
+  class TK_API RenderSystem
   {
    public:
+    RenderSystem();
+    ~RenderSystem();
+    void Render(Technique* technique);
 
-   public:
+   private:
     Renderer* m_renderer         = nullptr;
     Technique* m_renderTechnique = nullptr;
   };

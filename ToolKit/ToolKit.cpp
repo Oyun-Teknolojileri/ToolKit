@@ -52,6 +52,7 @@ namespace ToolKit
     m_engineSettings.DeSerialize(nullptr, nullptr);
 
     m_logger->Log("Main PreInit");
+    m_renderSys       = new RenderSystem();
     m_renderer        = new Renderer();
     m_pluginManager   = new PluginManager();
     m_animationMan    = new AnimationManager();
@@ -124,6 +125,7 @@ namespace ToolKit
     m_pluginManager->UnInit();
 
     SafeDel(m_renderer);
+    SafeDel(m_renderSys);
     SafeDel(m_pluginManager);
     SafeDel(m_animationMan);
     SafeDel(m_animationPlayer);
@@ -163,6 +165,11 @@ namespace ToolKit
   Logger* GetLogger() { return Main::GetInstance()->m_logger; }
 
   Renderer* GetRenderer() { return Main::GetInstance()->m_renderer; }
+
+  RenderSystem* GetRenderSystem()
+  {
+    return Main::GetInstance()->m_renderSys;
+  }
 
   AnimationManager* GetAnimationManager()
   {
@@ -251,10 +258,7 @@ namespace ToolKit
     return Main::GetInstance()->m_skeletonManager;
   }
 
-  FileManager* GetFileManager()
-  {
-    return Main::GetInstance()->m_fileManager;
-  }
+  FileManager* GetFileManager() { return Main::GetInstance()->m_fileManager; }
 
   EntityFactory* GetEntityFactory()
   {

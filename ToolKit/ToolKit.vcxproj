@@ -37,6 +37,7 @@
     <ClCompile Include="Primative.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RenderState.cpp" />
+    <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="ResourceComponent.cpp" />
     <ClCompile Include="ResourceManager.cpp" />

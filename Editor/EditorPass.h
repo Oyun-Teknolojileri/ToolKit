@@ -3,8 +3,8 @@
 #include "Gizmo.h"
 #include "Global.h"
 #include "Pass.h"
-#include "Primative.h"
 #include "PostProcessPass.h"
+#include "Primative.h"
 #include "RenderSystem.h"
 
 namespace ToolKit
@@ -35,6 +35,8 @@ namespace ToolKit
       SpherePtr m_depthMaskSphere = nullptr;
       Camera* m_camera            = nullptr;
     };
+
+    typedef std::shared_ptr<GizmoPass> GizmoPassPtr;
 
     struct SingleMatForwardRenderPassParams
     {
@@ -93,10 +95,10 @@ namespace ToolKit
 
     struct EditorRenderPassParams
     {
-      class App* App                               = nullptr;
-      class EditorViewport* Viewport               = nullptr;
-      EditorLitMode LitMode                        = EditorLitMode::EditorLit;
-      TonemapMethod tonemapping                    = TonemapMethod::Aces;
+      class App* App                 = nullptr;
+      class EditorViewport* Viewport = nullptr;
+      EditorLitMode LitMode          = EditorLitMode::EditorLit;
+      TonemapMethod tonemapping      = TonemapMethod::Aces;
     };
 
     class EditorRenderer : public Technique
@@ -106,7 +108,7 @@ namespace ToolKit
       explicit EditorRenderer(const EditorRenderPassParams& params);
       virtual ~EditorRenderer();
 
-      void Render() override;
+      void Render(Renderer* renderer) override;
       void PreRender();
       void PostRender();
       void SetLitMode(EditorLitMode mode);
@@ -128,25 +130,27 @@ namespace ToolKit
        * EditorLit mode.
        */
       LightRawPtrArray m_editorLights;
+
       /**
        * Parent Node that m_editorLights are attached to.
        */
-      Node* m_lightNode           = nullptr;
+      Node* m_lightNode                                 = nullptr;
+
       /**
        * Override material for EditorLitMode::Unlit.
        */
-      MaterialPtr m_unlitOverride = nullptr;
+      MaterialPtr m_unlitOverride                       = nullptr;
 
-      SceneRenderPass m_scenePass;
-      ForwardRenderPass m_editorPass;
-      GizmoPass m_gizmoPass;
-      TonemapPass m_tonemapPass;
-      GammaPass m_gammaPass;
-      BloomPass m_bloomPass;
-      SSAOPass m_ssaoPass;
-      OutlinePass m_outlinePass;
-      SingleMatForwardRenderPass m_singleMatRenderer;
-      Camera* m_camera = nullptr;
+      SceneRenderPassPtr m_scenePass                    = nullptr;
+      ForwardRenderPassPtr m_editorPass                 = nullptr;
+      GizmoPassPtr m_gizmoPass                          = nullptr;
+      TonemapPassPtr m_tonemapPass                      = nullptr;
+      GammaPassPtr m_gammaPass                          = nullptr;
+      BloomPassPtr m_bloomPass                          = nullptr;
+      SSAOPassPtr m_ssaoPass                            = nullptr;
+      OutlinePassPtr m_outlinePass                      = nullptr;
+      SingleMatForwardRenderPassPtr m_singleMatRenderer = nullptr;
+      Camera* m_camera                                  = nullptr;
 
       /**
        * Selected entity list
