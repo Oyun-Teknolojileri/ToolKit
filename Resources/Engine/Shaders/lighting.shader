@@ -756,13 +756,74 @@
 			// Spot lights with shadows
 			for (lightDataIndex = shadowSpotLightsInterval.x; lightDataIndex < shadowSpotLightsInterval.y; lightDataIndex += spotShadowLightDataSize)
 			{
+				vec3 color = SpotLightColor(s_texture13, lightDataIndex, lightDataTextureWidth);
+				vec3 lightPos = SpotLightPosition(s_texture13, lightDataIndex, lightDataTextureWidth);
+				vec3 dir = SpotLightDirection(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float radius = SpotLightRadius(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float innAngle = SpotLightInnerAngle(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float outAngle = SpotLightOuterAngle(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float lightIntensity = SpotLightIntensity(s_texture13, lightDataIndex, lightDataTextureWidth);
 
+				mat4 projView = SpotLightProjViewMatrix(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float far = SpotLightShadowCameraFar(s_texture13, lightDataIndex, lightDataTextureWidth);
+				vec2 shadowAtlasCoord = SpotLightShadowAtlasCoord(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float shadowAtlasResRatio = SpotLightShadowAtlasResRatio(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float shadowAtlasLayer = SpotLightShadowAtlasLayer(s_texture13, lightDataIndex, lightDataTextureWidth);
+				int softShadows = SpotLightSoftShadows(s_texture13, lightDataIndex, lightDataTextureWidth);
+				int PCFSamples = SpotLightPCFSamples(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float PCFRadius = SpotLightPCFRadius(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float lbr = SpotLightBleedReduction(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float shadowBias = SpotLightShadowBias(s_texture13, lightDataIndex, lightDataTextureWidth);
+
+				// radius check and attenuation
+				vec3 fragToLight = lightPos - fragPos;
+				float lightDistance = length(fragToLight);
+				float radiusCheck = RadiusCheck(radius, lightDistance);
+				float attenuation = Attenuation(lightDistance, radius, 1.0, 0.09, 0.032);
+
+				// Lighting angle and falloff
+				float theta = dot(-normalize(fragToLight), dir);
+				float epsilon = innAngle - outAngle;
+				float intensity = clamp((theta - outAngle) / epsilon, 0.0, 1.0);
+
+				// lighting
+				vec3 lightDir = normalize(-dir);
+				vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, color * lightIntensity);
+
+				// shadow
+				float shadow = CalculateSpotShadow(fragPos, lightPos, projView, far, shadowAtlasCoord,
+					shadowAtlasResRatio, shadowAtlasLayer, softShadows, PCFSamples, PCFRadius, lbr, shadowBias);
+
+				irradiance += Lo * shadow * intensity * radiusCheck * attenuation;
 			}
 
 			// Spot lights with no shadows
 			for (lightDataIndex = nonShadowSpotLightsInterval.x; lightDataIndex < nonShadowSpotLightsInterval.y; lightDataIndex += spotNonShadowLightDataSize)
 			{
+				vec3 color = SpotLightColor(s_texture13, lightDataIndex, lightDataTextureWidth);
+				vec3 lightPos = SpotLightPosition(s_texture13, lightDataIndex, lightDataTextureWidth);
+				vec3 dir = SpotLightDirection(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float radius = SpotLightRadius(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float innAngle = SpotLightInnerAngle(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float outAngle = SpotLightOuterAngle(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float lightIntensity = SpotLightIntensity(s_texture13, lightDataIndex, lightDataTextureWidth);
 
+				// radius check and attenuation
+				vec3 fragToLight = lightPos - fragPos;
+				float lightDistance = length(fragToLight);
+				float radiusCheck = RadiusCheck(radius, lightDistance);
+				float attenuation = Attenuation(lightDistance, radius, 1.0, 0.09, 0.032);
+
+				// Lighting angle and falloff
+				float theta = dot(-normalize(fragToLight), dir);
+				float epsilon = innAngle - outAngle;
+				float intensity = clamp((theta - outAngle) / epsilon, 0.0, 1.0);
+
+				// lighting
+				vec3 lightDir = normalize(-dir);
+				vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, color * lightIntensity);
+
+				irradiance += Lo * intensity * radiusCheck * attenuation;
 			}
 
 			return irradiance;
