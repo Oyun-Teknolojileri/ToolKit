@@ -32,7 +32,22 @@ namespace ToolKit
     m_utilFramebuffer = std::make_shared<Framebuffer>();
   }
 
-  Renderer::~Renderer() { SafeDel(m_uiCamera); }
+  Renderer::~Renderer()
+  {
+    SafeDel(m_uiCamera);
+    m_utilFramebuffer      = nullptr;
+    m_gaussianBlurMaterial = nullptr;
+    m_averageBlurMaterial  = nullptr;
+    m_copyFb               = nullptr;
+    m_copyMaterial         = nullptr;
+
+    m_mat                  = nullptr;
+    m_aoMat                = nullptr;
+    m_framebuffer          = nullptr;
+    m_shadowAtlas          = nullptr;
+
+    m_programs.clear();
+  }
 
   int Renderer::GetMaxArrayTextureLayers()
   {
