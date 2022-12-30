@@ -556,12 +556,11 @@
 			return specular;
 		}
 
-		vec3 PointLightPBR(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo, float metallic, float roughness, vec3 lightPos, vec3 lightColor)
+		vec3 PBR(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo, float metallic, float roughness, vec3 lightDir, vec3 lightColor)
 		{
 			// Base reflectivity
 			vec3 F0 = BaseReflectivityPBR(vec3(0.04), albedo, metallic);
 
-			vec3 lightDir = normalize(lightPos - fragPos);
 			vec3 halfway = normalize(lightDir + fragToEye);
 
 			// Cook-Torrance BRDF
@@ -589,35 +588,69 @@
 			{
 				if (LightData.type[i] == 2) // Point light
 				{
-					vec3 pointLightIrradiance = vec3(0.0);
-
 					// radius check and attenuation
 					float lightDistance = length(LightData.pos[i] - fragPos);
 					float radiusCheck = RadiusCheck(LightData.radius[i], lightDistance);
 					float attenuation = Attenuation(lightDistance, LightData.radius[i], 1.0, 0.09, 0.032);
 
 					// lighting
-					pointLightIrradiance += PointLightPBR(fragPos, normal, fragToEye, albedo, metallic, roughness, LightData.pos[i], LightData.color[i] * LightData.intensity[i])
-						* radiusCheck * attenuation;
+					vec3 lightDir = normalize(LightData.pos[i] - fragPos);
+					vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, LightData.color[i] * LightData.intensity[i]);
 
-					// shadowing
+					// shadow
+					float shadow = 1.0;
 					if (LightData.castShadow[i] == 1)
 					{
-						float shadow = CalculatePointShadow(fragPos, LightData.pos[i], LightData.shadowMapCameraFar[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
+						shadow = CalculatePointShadow(fragPos, LightData.pos[i], LightData.shadowMapCameraFar[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
 								LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i], LightData.shadowBias[i]);
-
-						pointLightIrradiance *= shadow;
 					}
 
-					irradiance += pointLightIrradiance;
+					irradiance += Lo * shadow * attenuation * radiusCheck;
 				}
 				else if (LightData.type[i] == 1) // Directional light
 				{
+					// lighting
+					vec3 lightDir = normalize(-LightData.dir[i]);
+					vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, LightData.color[i] * LightData.intensity[i]);
 
+					// shadow
+					float shadow = 1.0;
+					if (LightData.castShadow[i] == 1)
+					{
+						float shadow = CalculateDirectionalShadow(fragPos, LightData.projectionViewMatrix[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
+							LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i],
+							LightData.shadowBias[i]);
+					}
+
+					irradiance += Lo * shadow;
 				}
 				else // if (LightData.type[i] == 3) Spot light
 				{
+					// radius check and attenuation
+					vec3 fragToLight = LightData.pos[i] - fragPos;
+					float lightDistance = length(fragToLight);
+					float radiusCheck = RadiusCheck(LightData.radius[i], lightDistance);
+					float attenuation = Attenuation(lightDistance, LightData.radius[i], 1.0, 0.09, 0.032);
 
+					// Lighting angle and falloff
+					float theta = dot(-normalize(fragToLight), LightData.dir[i]);
+					float epsilon = LightData.innAngle[i] - LightData.outAngle[i];
+					float intensity = clamp((theta - LightData.outAngle[i]) / epsilon, 0.0, 1.0);
+
+					// lighting
+					vec3 lightDir = normalize(-LightData.dir[i]);
+					vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, LightData.color[i] * LightData.intensity[i]);
+
+					// shadow
+					float shadow = 1.0;
+					if (LightData.castShadow[i] == 1)
+					{
+						shadow = CalculateSpotShadow(fragPos, LightData.pos[i], LightData.projectionViewMatrix[i], LightData.shadowMapCameraFar[i], LightData.shadowAtlasCoord[i],
+							LightData.shadowAtlasResRatio[i], LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i],
+							LightData.shadowBias[i]);
+					}
+
+					irradiance += Lo * shadow * intensity * radiusCheck * attenuation;
 				}
 			}
 
