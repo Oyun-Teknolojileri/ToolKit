@@ -753,7 +753,12 @@ namespace ToolKit
     m_params = params;
   }
 
-  FullQuadPass::~FullQuadPass() {}
+  FullQuadPass::~FullQuadPass()
+  {
+    m_camera   = nullptr;
+    m_quad     = nullptr;
+    m_material = nullptr;
+  }
 
   void FullQuadPass::Render()
   {
@@ -798,7 +803,7 @@ namespace ToolKit
     m_params = params;
   }
 
-  CubeMapPass::~CubeMapPass() {}
+  CubeMapPass::~CubeMapPass() { m_cube = nullptr; }
 
   void CubeMapPass::Render()
   {
@@ -840,7 +845,12 @@ namespace ToolKit
     m_params = params;
   }
 
-  StencilRenderPass::~StencilRenderPass() {}
+  StencilRenderPass::~StencilRenderPass()
+  {
+    m_frameBuffer           = nullptr;
+    m_solidOverrideMaterial = nullptr;
+    m_copyStencilSubPass    = nullptr;
+  }
 
   void StencilRenderPass::Render()
   {
@@ -909,7 +919,13 @@ namespace ToolKit
     m_params = params;
   }
 
-  OutlinePass::~OutlinePass() {}
+  OutlinePass::~OutlinePass()
+  {
+    m_stencilPass  = nullptr;
+    m_outlinePass  = nullptr;
+    m_dilateShader = nullptr;
+    m_stencilAsRt  = nullptr;
+  }
 
   void OutlinePass::Render()
   {
@@ -962,6 +978,16 @@ namespace ToolKit
       : SceneRenderPass()
   {
     m_params = params;
+  }
+
+  SceneRenderPass::~SceneRenderPass()
+  {
+    m_shadowPass         = nullptr;
+    m_forwardRenderPass  = nullptr;
+    m_skyPass            = nullptr;
+    m_gBufferPass        = nullptr;
+    m_deferredRenderPass = nullptr;
+    m_ssaoPass           = nullptr;
   }
 
   void SceneRenderPass::Render()
@@ -1115,7 +1141,16 @@ namespace ToolKit
     m_params = params;
   }
 
-  GBufferPass::~GBufferPass() {}
+  GBufferPass::~GBufferPass()
+  {
+    m_framebuffer     = nullptr;
+    m_gPosRt          = nullptr;
+    m_gNormalRt       = nullptr;
+    m_gColorRt        = nullptr;
+    m_gEmissiveRt     = nullptr;
+    m_gLinearDepthRt  = nullptr;
+    m_gBufferMaterial = nullptr;
+  }
 
   void GBufferPass::InitGBuffers(int width, int height)
   {
@@ -1256,6 +1291,15 @@ namespace ToolKit
     m_params = params;
   }
 
+  SSAOPass::~SSAOPass()
+  {
+    m_ssaoFramebuffer = nullptr;
+    m_noiseTexture    = nullptr;
+    m_tempBlurRt      = nullptr;
+    m_quadPass        = nullptr;
+    m_ssaoShader      = nullptr;
+  }
+
   void SSAOPass::Render()
   {
     PreRender();
@@ -1387,7 +1431,10 @@ namespace ToolKit
     }
   }
 
-  DeferredRenderPass::DeferredRenderPass() {}
+  DeferredRenderPass::DeferredRenderPass() 
+  {
+    m_fullQuadPass = std::make_shared<FullQuadPass>();
+  }
 
   DeferredRenderPass::DeferredRenderPass(const DeferredRenderPassParams& params)
       : DeferredRenderPass()
@@ -1395,7 +1442,12 @@ namespace ToolKit
     m_params = params;
   }
 
-  DeferredRenderPass::~DeferredRenderPass() {}
+  DeferredRenderPass::~DeferredRenderPass()
+  {
+    m_fullQuadPass         = nullptr;
+    m_deferredRenderShader = nullptr;
+    m_lightDataTexture     = nullptr;
+  }
 
   void DeferredRenderPass::PreRender()
   {
@@ -1416,9 +1468,9 @@ namespace ToolKit
         ParameterVariant(m_params.Cam->m_node->GetTranslation(
             TransformationSpace::TS_WORLD)));
 
-    m_fullQuadPass.m_params.ClearFrameBuffer = m_params.ClearFramebuffer;
-    m_fullQuadPass.m_params.FragmentShader   = m_deferredRenderShader;
-    m_fullQuadPass.m_params.FrameBuffer      = m_params.MainFramebuffer;
+    m_fullQuadPass->m_params.ClearFrameBuffer = m_params.ClearFramebuffer;
+    m_fullQuadPass->m_params.FragmentShader   = m_deferredRenderShader;
+    m_fullQuadPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
 
     Renderer* renderer                       = GetRenderer();
 
@@ -1521,7 +1573,7 @@ namespace ToolKit
   {
     PreRender();
 
-    m_fullQuadPass.Render();
+    m_fullQuadPass->Render();
 
     PostRender();
   }

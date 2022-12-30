@@ -185,11 +185,11 @@ namespace ToolKit
 
   struct FullQuadPassParams
   {
+    LightRawPtrArray lights;
     FramebufferPtr FrameBuffer = nullptr;
     BlendFunction BlendFunc    = BlendFunction::NONE;
     ShaderPtr FragmentShader   = nullptr;
     bool ClearFrameBuffer      = true;
-    LightRawPtrArray lights;
   };
 
   /**
@@ -382,11 +382,10 @@ namespace ToolKit
     DeferredRenderPassParams m_params;
 
    private:
-    FullQuadPass m_fullQuadPass;
+    FullQuadPassPtr m_fullQuadPass         = nullptr;
     ShaderPtr m_deferredRenderShader       = nullptr;
-
-    const IVec2 m_lightDataTextureSize     = IVec2(1024);
     LightDataTexturePtr m_lightDataTexture = nullptr;
+    const IVec2 m_lightDataTextureSize     = IVec2(1024);
   };
 
   typedef std::shared_ptr<DeferredRenderPass> DeferredRenderPassPtr;
@@ -404,6 +403,7 @@ namespace ToolKit
    public:
     SSAOPass();
     explicit SSAOPass(const SSAOPassParams& params);
+    ~SSAOPass();
 
     void Render();
     void PreRender();
@@ -448,6 +448,7 @@ namespace ToolKit
    public:
     SceneRenderPass();
     explicit SceneRenderPass(const SceneRenderPassParams& params);
+    ~SceneRenderPass();
 
     void Render() override;
     void PreRender() override;

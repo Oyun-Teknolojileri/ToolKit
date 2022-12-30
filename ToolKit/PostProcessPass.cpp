@@ -22,7 +22,13 @@ namespace ToolKit
     m_params = params;
   }
 
-  BloomPass::~BloomPass() {}
+  BloomPass::~BloomPass()
+  {
+    m_pass             = nullptr;
+    m_downsampleShader = nullptr;
+    m_upsampleShader   = nullptr;
+    m_tempTextures.clear();
+  }
 
   void BloomPass::Render()
   {
@@ -210,7 +216,13 @@ namespace ToolKit
     m_params = params;
   }
 
-  PostProcessPass::~PostProcessPass() {}
+  PostProcessPass::~PostProcessPass()
+  {
+    m_postProcessShader = nullptr;
+    m_postProcessPass   = nullptr;
+    m_copyBuffer        = nullptr;
+    m_copyTexture       = nullptr;
+  }
 
   void PostProcessPass::PreRender()
   {

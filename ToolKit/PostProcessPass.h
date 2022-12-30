@@ -60,7 +60,7 @@ namespace ToolKit
     PostProcessPassParams m_params;
 
    protected:
-    ShaderPtr m_postProcessShader;
+    ShaderPtr m_postProcessShader     = nullptr;
     FullQuadPassPtr m_postProcessPass = nullptr;
     FramebufferPtr m_copyBuffer       = nullptr;
     RenderTargetPtr m_copyTexture     = nullptr;
