@@ -4,8 +4,7 @@
 	<include name = "shadow.shader" />
 	<include name = "lightDataTextureUtils.shader" />
 	<uniform name = "LightData" />
-	<uniform name = "metallic" />
-	<uniform name = "roughness" />
+
 	<source>
 	<!--
 		// Fixed Declaretions
@@ -60,9 +59,6 @@
 		uniform float pointNonShadowLightDataSize;
 		uniform float spotNonShadowLightDataSize;
 		///
-
-		uniform float metallic;
-		uniform float roughness;
 
 		const float PI = 3.14159265359;
 
@@ -580,7 +576,7 @@
 			return outIrradiance;
 		}
 
-		vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo)
+		vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo, float metallic, float roughness)
 		{
 			vec3 irradiance = vec3(0.0);
 
