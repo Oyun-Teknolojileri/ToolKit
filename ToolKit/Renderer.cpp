@@ -366,6 +366,11 @@ namespace ToolKit
       SetTexture(1, state->emissiveTexture);
     }
 
+    if (m_mat->m_metallicRoughnessTexture)
+    {
+      SetTexture(4, m_mat->m_metallicRoughnessTexture->m_textureId);
+    }
+
     m_renderState.useForwardPath = state->useForwardPath;
   }
 
@@ -1294,6 +1299,15 @@ namespace ToolKit
           glUniform1f(loc, (GLfloat) m_mat->m_roughness);
         }
         break;
+        case Uniform::METALLIC_ROUGHNESS_TEXTURE_UN_USE:
+        {
+          GLint loc = glGetUniformLocation(
+              program->m_handle,
+              GetUniformName(Uniform::METALLIC_ROUGHNESS_TEXTURE_UN_USE));
+          glUniform1i(loc,
+                      (int) (m_mat->m_metallicRoughnessTexture != nullptr));
+        }
+        break;
         default:
           assert(false);
           break;
@@ -1541,7 +1555,9 @@ namespace ToolKit
     // 9-12   : 2D textures
     //
     // 0 -> Color Texture
+    // 1 -> Emissive Texture
     // 2 & 3 -> Skinning information
+    // 4 -> Metallic Roughness Texture
     // 5 -> AO Texture
     // 7 -> Irradiance Map
     //

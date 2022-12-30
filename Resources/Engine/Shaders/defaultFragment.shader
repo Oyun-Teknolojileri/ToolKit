@@ -12,13 +12,17 @@
 	<uniform name = "emissiveColor" />
 	<uniform name = "emissiveTextureInUse" />
 	<uniform name = "lightingType" />
+	<uniform name = "metallicRoughnessTextureInUse" />
+	<uniform name = "metallic" />
+	<uniform name = "roughness" />
 	<source>
 	<!--
 		#version 300 es
 		precision highp float;
 
-		uniform sampler2D s_texture0;
-		uniform sampler2D s_texture1;
+		uniform sampler2D s_texture0; // color
+		uniform sampler2D s_texture1; // emissive
+		uniform sampler2D s_texture4; // metallic-roughness
 		uniform int LightingOnly;
 		uniform int useAlphaMask;
 		uniform float alphaMaskTreshold;
@@ -26,6 +30,10 @@
 		uniform vec4 Color;
 		uniform int emissiveTextureInUse;
 		uniform vec3 emissiveColor;
+
+		uniform int metallicRoughnessTextureInUse;
+		uniform float metallic;
+		uniform float roughness;
 
 		/*
 			lightingType:
@@ -81,7 +89,16 @@
 			}
 			else
 			{
-				irradiance = PBRLighting(v_pos, n, e, color.xyz);
+				vec2 metallicRoughness;
+				if (metallicRoughnessTextureInUse == 1)
+				{
+					metallicRoughness = texture(s_texture4, v_texture).rg;
+				}
+				else
+				{
+					metallicRoughness = vec2(metallic, roughness);
+				}
+				irradiance = PBRLighting(v_pos, n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
 			}
 
 			irradiance += IblIrradiance(n);
