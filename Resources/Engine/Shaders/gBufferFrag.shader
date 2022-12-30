@@ -7,6 +7,8 @@
 	<uniform name = "emissiveColor" />
 	<uniform name = "emissiveTextureInUse" />
 	<uniform name = "View" />
+	<uniform name = "metallic" />
+	<uniform name = "roughness" />
 	<source>
 	<!--
 		#version 300 es
@@ -21,6 +23,7 @@
 		layout (location = 2) out vec3 fragColor;
 		layout (location = 3) out vec3 fragEmissive;
 		layout (location = 4) out float fragLinearDepth;
+		layout (location = 5) out vec2 fragMetallicRoughess;
 
 		uniform int DiffuseTextureInUse;
 		uniform sampler2D s_texture0;
@@ -31,6 +34,9 @@
 		uniform int useAlphaMask;
 		uniform float alphaMaskTreshold;
 		uniform int emissiveTextureInUse;
+
+		uniform float metallic;
+		uniform float roughness;
 
 		uniform mat4 View;
 
@@ -65,6 +71,7 @@
 		  fragNormal = normalize(v_normal);
 			fragColor = color.xyz;
 			fragLinearDepth = (View * vec4(v_pos, 1.0)).z;
+			fragMetallicRoughess = vec2(metallic, roughness);
 		}
 	-->
 	</source>

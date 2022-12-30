@@ -657,6 +657,75 @@
 			return irradiance;
 		}
 
+		vec3 PBRLightingDeferred(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo, float metallic, float roughness)
+		{
+			float shadow = 1.0;
+			vec3 irradiance = vec3(0.0);
+			float lightDataIndex = 0.0;
+
+			// Directional lights with shadows
+			for (lightDataIndex = shadowDirLightsInterval.x; lightDataIndex < shadowDirLightsInterval.y; lightDataIndex += dirShadowLightDataSize)
+			{
+				vec3 lightDir = -DirLightDirection(s_texture13, lightDataIndex, lightDataTextureWidth);
+				vec3 color = DirLightColor(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float intensity = DirLightIntensity(s_texture13, lightDataIndex, lightDataTextureWidth);
+				// lighting
+				vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, color * intensity);
+
+				mat4 pv = DirLightProjViewMatrix(s_texture13, lightDataIndex, lightDataTextureWidth);
+				vec2 shadowAtlasCoord = DirLightShadowAtlasCoord(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float shadowAtlasResRatio = DirLightShadowAtlasResRatio(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float shadowAtlasLayer = DirLightShadowAtlasLayer(s_texture13, lightDataIndex, lightDataTextureWidth);
+				int softShadows = DirLightSoftShadows(s_texture13, lightDataIndex, lightDataTextureWidth);
+				int PCFSamples = DirLightPCFSamples(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float PCFRadius = DirLightPCFRadius(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float lbr = DirLightBleedReduction(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float shadowBias = DirLightShadowBias(s_texture13, lightDataIndex, lightDataTextureWidth);
+				// shadow
+				float shadow = CalculateDirectionalShadow(fragPos, pv, shadowAtlasCoord, shadowAtlasResRatio, shadowAtlasLayer, softShadows, PCFSamples, PCFRadius, lbr, shadowBias);
+
+				irradiance += Lo * shadow;
+			}
+
+			// Directional lights with no shadows
+			for (lightDataIndex = nonShadowDirLightsInterval.x; lightDataIndex < nonShadowDirLightsInterval.y; lightDataIndex += dirNonShadowLightDataSize)
+			{
+				vec3 lightDir = -DirLightDirection(s_texture13, lightDataIndex, lightDataTextureWidth);
+				vec3 color = DirLightColor(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float intensity = DirLightIntensity(s_texture13, lightDataIndex, lightDataTextureWidth);
+				// lighting
+				vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, color * intensity);
+
+				irradiance += Lo;
+			}
+
+			// Point lights with shadows
+			for (lightDataIndex = shadowPointLightsInterval.x; lightDataIndex < shadowPointLightsInterval.y; lightDataIndex += pointShadowLightDataSize)
+			{
+
+			}
+
+			// Point lights with no shadows
+			for (lightDataIndex = nonShadowPointLightsInterval.x; lightDataIndex < nonShadowPointLightsInterval.y; lightDataIndex += pointNonShadowLightDataSize)
+			{
+
+			}
+
+			// Spot lights with shadows
+			for (lightDataIndex = shadowSpotLightsInterval.x; lightDataIndex < shadowSpotLightsInterval.y; lightDataIndex += spotShadowLightDataSize)
+			{
+
+			}
+
+			// Spot lights with no shadows
+			for (lightDataIndex = nonShadowSpotLightsInterval.x; lightDataIndex < nonShadowSpotLightsInterval.y; lightDataIndex += spotNonShadowLightDataSize)
+			{
+
+			}
+
+			return irradiance;
+		}
+
 	-->
 	</source>
 </shader>
