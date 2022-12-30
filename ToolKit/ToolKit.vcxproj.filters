@@ -293,5 +293,8 @@
     <ClInclude Include="PostProcessPass.h">
       <Filter>Source\Pass</Filter>
     </ClInclude>
+    <ClInclude Include="RenderSystem.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

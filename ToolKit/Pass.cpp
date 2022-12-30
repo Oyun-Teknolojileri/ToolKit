@@ -738,6 +738,10 @@ namespace ToolKit
     renderer->SetFramebuffer(m_prevFrameBuffer, false);
   }
 
+  Renderer* Pass::GetRenderer() { return m_renderer; }
+
+  void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
+
   FullQuadPass::FullQuadPass()
   {
     m_camera                   = std::make_shared<Camera>(); // Unused.

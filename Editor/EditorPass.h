@@ -5,6 +5,7 @@
 #include "Pass.h"
 #include "Primative.h"
 #include "PostProcessPass.h"
+#include "RenderSystem.h"
 
 namespace ToolKit
 {
@@ -96,12 +97,6 @@ namespace ToolKit
       class EditorViewport* Viewport               = nullptr;
       EditorLitMode LitMode                        = EditorLitMode::EditorLit;
       TonemapMethod tonemapping                    = TonemapMethod::Aces;
-    };
-
-    class Technique
-    {
-     public:
-      virtual void Render() = 0;
     };
 
     class EditorRenderer : public Technique

@@ -22,9 +22,15 @@ namespace ToolKit
     virtual void PreRender();
     virtual void PostRender();
 
+    Renderer* GetRenderer();
+    void SetRenderer(Renderer* renderer);
+
    protected:
     MaterialPtr m_prevOverrideMaterial = nullptr;
     FramebufferPtr m_prevFrameBuffer   = nullptr;
+
+   private:
+    Renderer* m_renderer = nullptr;
   };
 
   /*
