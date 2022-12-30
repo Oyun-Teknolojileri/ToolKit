@@ -156,7 +156,6 @@ namespace ToolKit
         if (mmComp && mmComp->GetMaterialList().size() > meshIndx)
         {
           nttMat = mmComp->GetMaterialList()[meshIndx];
-          nttMat->Init();
         }
         mesh->Init();
         if (m_overrideMat != nullptr)
@@ -167,6 +166,7 @@ namespace ToolKit
         {
           m_mat = nttMat ? nttMat : mesh->m_material;
         }
+        m_mat->Init();
 
         ProgramPtr prg =
             CreateProgram(m_mat->m_vertexShader, m_mat->m_fragmentShader);

@@ -72,6 +72,11 @@ namespace ToolKit
       m_renderState.emissiveTextureInUse = true;
     }
 
+    if (m_metallicRoughnessTexture)
+    {
+      m_metallicRoughnessTexture->Init(flushClientSideArray);
+    }
+
     if (m_cubeMap)
     {
       m_cubeMap->Init(flushClientSideArray);
