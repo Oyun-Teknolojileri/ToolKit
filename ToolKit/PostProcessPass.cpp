@@ -22,6 +22,8 @@ namespace ToolKit
     m_params = params;
   }
 
+  BloomPass::~BloomPass() {}
+
   void BloomPass::Render()
   {
     PreRender();
@@ -208,6 +210,8 @@ namespace ToolKit
     m_params = params;
   }
 
+  PostProcessPass::~PostProcessPass() {}
+
   void PostProcessPass::PreRender()
   {
     Pass::PreRender();
@@ -268,6 +272,8 @@ namespace ToolKit
     m_params = params;
   }
 
+  GammaPass::~GammaPass() {}
+
   void GammaPass::PreRender()
   {
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
@@ -287,6 +293,8 @@ namespace ToolKit
   {
     m_params = params;
   }
+
+  TonemapPass::~TonemapPass() {}
 
   void TonemapPass::PreRender()
   {

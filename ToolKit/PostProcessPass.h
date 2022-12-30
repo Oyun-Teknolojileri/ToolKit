@@ -17,6 +17,7 @@ namespace ToolKit
    public:
     BloomPass();
     explicit BloomPass(const BloomPassParams& params);
+    ~BloomPass();
 
     void Render() override;
     void PreRender() override;
@@ -36,6 +37,8 @@ namespace ToolKit
     bool m_invalidRenderParams   = false;
   };
 
+  typedef std::shared_ptr<BloomPass> BloomPassPtr;
+
   struct PostProcessPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;
@@ -47,6 +50,7 @@ namespace ToolKit
    public:
     PostProcessPass();
     explicit PostProcessPass(const PostProcessPassParams& params);
+    ~PostProcessPass();
 
     void Render() override;
     void PreRender() override;
@@ -76,12 +80,15 @@ namespace ToolKit
    public:
     GammaPass();
     explicit GammaPass(const GammaPassParams& params);
+    ~GammaPass();
 
     void PreRender() override;
 
    public:
     GammaPassParams m_params;
   };
+
+  typedef std::shared_ptr<GammaPass> GammaPassPtr;
 
   enum class TonemapMethod
   {
@@ -100,6 +107,7 @@ namespace ToolKit
    public:
     TonemapPass();
     explicit TonemapPass(const TonemapPassParams& params);
+    ~TonemapPass();
 
     void PreRender() override;
 
