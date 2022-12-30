@@ -164,6 +164,12 @@ namespace ToolKit
       return "emissiveColor";
     case Uniform::EMISSIVE_TEXTURE_IN_USE:
       return "emissiveTextureInUse";
+    case Uniform::LIGHTING_TYPE:
+      return "lightingType";
+    case Uniform::METALLIC:
+      return "metallic";
+    case Uniform::ROUGHNESS:
+      return "roughness";
     default:
       return "";
     }

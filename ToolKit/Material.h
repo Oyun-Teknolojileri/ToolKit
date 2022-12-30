@@ -30,6 +30,7 @@ namespace ToolKit
     void UnInit() override;
     RenderState* GetRenderState();
     void SetRenderState(RenderState* state);
+    void SetDefaultMaterialTypeShaders();
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
     void DeSerialize(XmlDocument* doc, XmlNode* parent) override;

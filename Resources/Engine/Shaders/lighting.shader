@@ -4,6 +4,8 @@
 	<include name = "shadow.shader" />
 	<include name = "lightDataTextureUtils.shader" />
 	<uniform name = "LightData" />
+	<uniform name = "metallic" />
+	<uniform name = "roughness" />
 	<source>
 	<!--
 		// Fixed Declaretions
@@ -59,7 +61,10 @@
 		uniform float spotNonShadowLightDataSize;
 		///
 
-		const int maxLights = 16;
+		uniform float metallic;
+		uniform float roughness;
+
+		const float PI = 3.14159265359;
 
 		// Returns uv coordinates and layers such as: vec3(u,v,layer)
 		// https://kosmonautblog.wordpress.com/2017/03/25/shadow-filtering-for-pointlights/
@@ -305,7 +310,6 @@
 			float shadow = 1.0;
 			vec3 irradiance = vec3(0.0);
 
-			int lightCount = 0;
 			for (int i = 0; i < LightData.activeCount; i++)
 			{
 				shadow = 1.0;
@@ -317,12 +321,10 @@
 					PointLightBlinnPhong(LightData.pos[i] - fragPos, fragToEye, normal, LightData.color[i], LightData.radius[i], diffuse, specular);
 
 					// Shadow
-					bool maxShadowCheck = maxLights > lightCount;
-					if (maxShadowCheck && LightData.castShadow[i] == 1)
+					if (LightData.castShadow[i] == 1)
 					{
 						shadow = CalculatePointShadow(fragPos, LightData.pos[i], LightData.shadowMapCameraFar[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
 							LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i], LightData.shadowBias[i]);
-						lightCount += 1;
 					}
 				}
 				else if (LightData.type[i] == 1) // Directional light
@@ -331,13 +333,11 @@
 					DirectionalLightBlinnPhong(-LightData.dir[i], fragToEye, normal, LightData.color[i], diffuse, specular);
 
 					// Shadow
-					bool maxShadowCheck = maxLights > lightCount;
-					if (maxShadowCheck && LightData.castShadow[i] == 1)
+					if (LightData.castShadow[i] == 1)
 					{
 						shadow = CalculateDirectionalShadow(fragPos, LightData.projectionViewMatrix[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
 							LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i],
 							LightData.shadowBias[i]);
-						lightCount += 1;
 					}		
 				}
 				else if (LightData.type[i] == 3) // Spot light
@@ -347,13 +347,11 @@
 						LightData.innAngle[i], LightData.outAngle[i], diffuse, specular);
 
 					// Shadow
-					bool maxShadowCheck = maxLights > lightCount;
-					if (maxShadowCheck && LightData.castShadow[i] == 1)
+					if (LightData.castShadow[i] == 1)
 					{
 						shadow = CalculateSpotShadow(fragPos, LightData.pos[i], LightData.projectionViewMatrix[i], LightData.shadowMapCameraFar[i], LightData.shadowAtlasCoord[i],
 							LightData.shadowAtlasResRatio[i], LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i],
 							LightData.shadowBias[i]);
-						lightCount += 1;
 					}
 				}
 
@@ -496,6 +494,164 @@
 				SpotLightBlinnPhong(pos - fragPos, fragToEye, normal, col, dir, radius,	innAngle, outAngle, diffuse, specular);
 
 				irradiance += (diffuse + specular) * intensity;
+			}
+
+			return irradiance;
+		}
+
+		float DistributionGGX(vec3 N, vec3 H, float roughness)
+		{
+				float a = roughness*roughness;
+				float a2 = a*a;
+				float NdotH = max(dot(N, H), 0.0);
+				float NdotH2 = NdotH*NdotH;
+
+				float nom   = a2;
+				float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+				denom = PI * denom * denom;
+
+				return nom / denom;
+		}
+
+		float GeometrySchlickGGX(float NdotV, float roughness)
+		{
+				float r = (roughness + 1.0);
+				float k = (r*r) / 8.0;
+
+				float nom   = NdotV;
+				float denom = NdotV * (1.0 - k) + k;
+
+				return nom / denom;
+		}
+
+		float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+		{
+				float NdotV = max(dot(N, V), 0.0);
+				float NdotL = max(dot(N, L), 0.0);
+				float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+				float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+
+				return ggx1 * ggx2;
+		}
+
+		vec3 FresnelSchlick(float cosTheta, vec3 F0)
+		{
+				return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+		}
+
+		vec3 BaseReflectivityPBR(vec3 F0, vec3 albedo, float metallic)
+		{
+			return mix(F0, albedo, metallic);
+		}
+
+		vec3 CookTorranceBRDF(vec3 fragToEye, vec3 normal, vec3 lightDir, vec3 halfway, float roughness, vec3 F0, out vec3 fresnel)
+		{
+			float NDF = DistributionGGX(normal, halfway, roughness);
+			float geometry = GeometrySmith(normal, fragToEye, lightDir, roughness);
+			fresnel = FresnelSchlick(max(dot(halfway, fragToEye), 0.0), F0);
+			vec3 numerator = NDF * geometry * fresnel;
+			float denominator = 4.0 * max(dot(normal, fragToEye), 0.0) * max(dot(normal, lightDir), 0.0) + 0.0001; // 0.0001 to prevent divide by zero
+			vec3 specular = numerator / denominator;
+
+			return specular;
+		}
+
+		vec3 PBR(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo, float metallic, float roughness, vec3 lightDir, vec3 lightColor)
+		{
+			// Base reflectivity
+			vec3 F0 = BaseReflectivityPBR(vec3(0.04), albedo, metallic);
+
+			vec3 halfway = normalize(lightDir + fragToEye);
+
+			// Cook-Torrance BRDF
+			vec3 fresnel;
+			vec3 specular = CookTorranceBRDF(fragToEye, normal, lightDir, halfway, roughness, F0, fresnel);
+
+			vec3 kS = fresnel; // Specular part
+			// Energy conservation
+			vec3 kD = vec3(1.0) - kS; // Diffuse part
+			// Only non-metals have diffuse part. (Also works fine with metallic values between 0-1)
+			kD *= 1.0 - metallic;
+
+			// Note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+			// Scale light by light and normal vectors angle
+			vec3 outIrradiance = (kD * albedo / PI + specular) * lightColor * max(dot(normal, lightDir), 0.0);
+
+			return outIrradiance;
+		}
+
+		vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo)
+		{
+			vec3 irradiance = vec3(0.0);
+
+			for (int i = 0; i < LightData.activeCount; i++)
+			{
+				if (LightData.type[i] == 2) // Point light
+				{
+					// radius check and attenuation
+					float lightDistance = length(LightData.pos[i] - fragPos);
+					float radiusCheck = RadiusCheck(LightData.radius[i], lightDistance);
+					float attenuation = Attenuation(lightDistance, LightData.radius[i], 1.0, 0.09, 0.032);
+
+					// lighting
+					vec3 lightDir = normalize(LightData.pos[i] - fragPos);
+					vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, LightData.color[i] * LightData.intensity[i]);
+
+					// shadow
+					float shadow = 1.0;
+					if (LightData.castShadow[i] == 1)
+					{
+						shadow = CalculatePointShadow(fragPos, LightData.pos[i], LightData.shadowMapCameraFar[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
+								LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i], LightData.shadowBias[i]);
+					}
+
+					irradiance += Lo * shadow * attenuation * radiusCheck;
+				}
+				else if (LightData.type[i] == 1) // Directional light
+				{
+					// lighting
+					vec3 lightDir = normalize(-LightData.dir[i]);
+					vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, LightData.color[i] * LightData.intensity[i]);
+
+					// shadow
+					float shadow = 1.0;
+					if (LightData.castShadow[i] == 1)
+					{
+						float shadow = CalculateDirectionalShadow(fragPos, LightData.projectionViewMatrix[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
+							LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i],
+							LightData.shadowBias[i]);
+					}
+
+					irradiance += Lo * shadow;
+				}
+				else // if (LightData.type[i] == 3) Spot light
+				{
+					// radius check and attenuation
+					vec3 fragToLight = LightData.pos[i] - fragPos;
+					float lightDistance = length(fragToLight);
+					float radiusCheck = RadiusCheck(LightData.radius[i], lightDistance);
+					float attenuation = Attenuation(lightDistance, LightData.radius[i], 1.0, 0.09, 0.032);
+
+					// Lighting angle and falloff
+					float theta = dot(-normalize(fragToLight), LightData.dir[i]);
+					float epsilon = LightData.innAngle[i] - LightData.outAngle[i];
+					float intensity = clamp((theta - LightData.outAngle[i]) / epsilon, 0.0, 1.0);
+
+					// lighting
+					vec3 lightDir = normalize(-LightData.dir[i]);
+					vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, LightData.color[i] * LightData.intensity[i]);
+
+					// shadow
+					float shadow = 1.0;
+					if (LightData.castShadow[i] == 1)
+					{
+						shadow = CalculateSpotShadow(fragPos, LightData.pos[i], LightData.projectionViewMatrix[i], LightData.shadowMapCameraFar[i], LightData.shadowAtlasCoord[i],
+							LightData.shadowAtlasResRatio[i], LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i],
+							LightData.shadowBias[i]);
+					}
+
+					irradiance += Lo * shadow * intensity * radiusCheck * attenuation;
+				}
 			}
 
 			return irradiance;
