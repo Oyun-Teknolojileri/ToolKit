@@ -371,6 +371,11 @@ namespace ToolKit
       SetTexture(4, m_mat->m_metallicRoughnessTexture->m_textureId);
     }
 
+    if (m_mat->m_normalMap)
+    {
+      SetTexture(9, m_mat->m_normalMap->m_textureId);
+    }
+
     m_renderState.useForwardPath = state->useForwardPath;
   }
 
@@ -1308,6 +1313,14 @@ namespace ToolKit
                       (int) (m_mat->m_metallicRoughnessTexture != nullptr));
         }
         break;
+        case Uniform::NORMAL_MAP_IN_USE:
+        {
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::NORMAL_MAP_IN_USE));
+          glUniform1i(loc, (int) (m_mat->m_normalMap != nullptr));
+        }
+        break;
         default:
           assert(false);
           break;
@@ -1552,7 +1565,7 @@ namespace ToolKit
     // 0 - 5  : 2D textures
     // 6 - 7  : Cube map textures
     // 8      : Shadow atlas
-    // 9-12   : 2D textures
+    // 9-14   : 2D textures
     //
     // 0 -> Color Texture
     // 1 -> Emissive Texture
@@ -1560,6 +1573,7 @@ namespace ToolKit
     // 4 -> Metallic Roughness Texture
     // 5 -> AO Texture
     // 7 -> Irradiance Map
+    // 9 -> Normal map
     //
     // Deferred Render Pass:
     // 9 -> gBuffer position texture
