@@ -1551,6 +1551,7 @@ namespace ToolKit
     // 11 -> gBuffer color texture
     // 12 -> gBuffer emissive texture
     // 13 -> Light Data Texture
+    // 14 -> gBuffer metallic roughness texture
 
     assert(slotIndx < m_rhiSettings::textureSlotCount &&
            "You exceed texture slot count");
@@ -1569,7 +1570,7 @@ namespace ToolKit
     {
       glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureSlots[slotIndx]);
     }
-    else if (slotIndx < 14)
+    else if (slotIndx < 15)
     {
       glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
     }
