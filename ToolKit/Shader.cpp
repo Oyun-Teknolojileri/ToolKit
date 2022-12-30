@@ -170,7 +170,7 @@ namespace ToolKit
       return "metallic";
     case Uniform::ROUGHNESS:
       return "roughness";
-    case Uniform::METALLIC_ROUGHNESS_TEXTURE_UN_USE:
+    case Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE:
       return "metallicRoughnessTextureInUse";
     default:
       return "";

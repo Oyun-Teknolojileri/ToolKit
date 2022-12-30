@@ -1299,11 +1299,11 @@ namespace ToolKit
           glUniform1f(loc, (GLfloat) m_mat->m_roughness);
         }
         break;
-        case Uniform::METALLIC_ROUGHNESS_TEXTURE_UN_USE:
+        case Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE:
         {
           GLint loc = glGetUniformLocation(
               program->m_handle,
-              GetUniformName(Uniform::METALLIC_ROUGHNESS_TEXTURE_UN_USE));
+              GetUniformName(Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE));
           glUniform1i(loc,
                       (int) (m_mat->m_metallicRoughnessTexture != nullptr));
         }
