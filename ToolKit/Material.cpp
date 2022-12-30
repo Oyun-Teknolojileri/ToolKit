@@ -220,6 +220,14 @@ namespace ToolKit
       WriteAttr(node, doc, XmlNodeName.data(), file);
     }
 
+    if (m_metallicRoughnessTexture)
+    {
+      XmlNode* node = CreateXmlNode(doc, "metallicRoughnessTexture", container);
+      String file   = GetRelativeResourcePath(
+          m_metallicRoughnessTexture->GetSerializeFile());
+      WriteAttr(node, doc, XmlNodeName.data(), file);
+    }
+
     XmlNode* node = CreateXmlNode(doc, "color", container);
     WriteVec(node, doc, m_color);
 
@@ -314,6 +322,14 @@ namespace ToolKit
       {
         ReadVec(node, m_emissiveColor);
       }
+      else if (strcmp("metallicRoughnessTexture", node->name()) == 0)
+      {
+        XmlAttribute* attr = node->first_attribute(XmlNodeName.data());
+        String path        = attr->value();
+        NormalizePath(path);
+        m_metallicRoughnessTexture =
+            GetTextureManager()->Create<Texture>(TexturePath(path));
+      }
       else if (strcmp("metallic", node->name()) == 0)
       {
         ReadAttr(node, XmlNodeName.data(), m_metallic);
@@ -326,7 +342,7 @@ namespace ToolKit
       {
         int matType;
         ReadAttr(node, XmlNodeName.data(), matType);
-        m_materialType = (MaterialType) matType;
+        m_materialType = (MaterialType)matType;
       }
       else
       {
