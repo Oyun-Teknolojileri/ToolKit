@@ -702,13 +702,55 @@
 			// Point lights with shadows
 			for (lightDataIndex = shadowPointLightsInterval.x; lightDataIndex < shadowPointLightsInterval.y; lightDataIndex += pointShadowLightDataSize)
 			{
+				vec3 lightPos = PointLightPosition(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float radius = PointLightRadius(s_texture13, lightDataIndex, lightDataTextureWidth);
+				vec3 color = PointLightColor(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float intensity = PointLightIntensity(s_texture13, lightDataIndex, lightDataTextureWidth);
 
+				float shadowCameraFar = PointLightShadowCameraFar(s_texture13, lightDataIndex, lightDataTextureWidth);
+				vec2 shadowAtlasCoord = PointLightShadowAtlasCoord(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float shadowAtlasResRatio = PointLightShadowAtlasResRatio(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float shadowAtlasLayer = PointLightShadowAtlasLayer(s_texture13, lightDataIndex, lightDataTextureWidth);
+				int softShadows = PointLightSoftShadows(s_texture13, lightDataIndex, lightDataTextureWidth);
+				int PCFSamples = PointLightPCFSamples(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float PCFRadius = PointLightPCFRadius(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float lightBleedReduction = PointLightBleedReduction(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float shadowBias = PointLightShadowBias(s_texture13, lightDataIndex, lightDataTextureWidth);
+
+				// radius check and attenuation
+				float lightDistance = length(lightPos - fragPos);
+				float radiusCheck = RadiusCheck(radius, lightDistance);
+				float attenuation = Attenuation(lightDistance, radius, 1.0, 0.09, 0.032);
+
+				// lighting
+				vec3 lightDir = normalize(lightPos - fragPos);
+				vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, color * intensity);
+
+				// shadow
+				float shadow = CalculatePointShadow(fragPos, lightPos, shadowCameraFar, shadowAtlasCoord, shadowAtlasResRatio,
+					shadowAtlasLayer, softShadows, PCFSamples, PCFRadius, lightBleedReduction, shadowBias);
+
+				irradiance += Lo * shadow * attenuation * radiusCheck;
 			}
 
 			// Point lights with no shadows
 			for (lightDataIndex = nonShadowPointLightsInterval.x; lightDataIndex < nonShadowPointLightsInterval.y; lightDataIndex += pointNonShadowLightDataSize)
 			{
+				vec3 lightPos = PointLightPosition(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float radius = PointLightRadius(s_texture13, lightDataIndex, lightDataTextureWidth);
+				vec3 color = PointLightColor(s_texture13, lightDataIndex, lightDataTextureWidth);
+				float intensity = PointLightIntensity(s_texture13, lightDataIndex, lightDataTextureWidth);
 
+				// radius check and attenuation
+				float lightDistance = length(lightPos - fragPos);
+				float radiusCheck = RadiusCheck(radius, lightDistance);
+				float attenuation = Attenuation(lightDistance, radius, 1.0, 0.09, 0.032);
+
+				// lighting
+				vec3 lightDir = normalize(lightPos - fragPos);
+				vec3 Lo = PBR(fragPos, normal, fragToEye, albedo, metallic, roughness, lightDir, color * intensity);
+
+				irradiance += Lo * attenuation * radiusCheck;
 			}
 
 			// Spot lights with shadows
