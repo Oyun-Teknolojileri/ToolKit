@@ -539,28 +539,36 @@
 				return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 		}
 
+		vec3 BaseReflectivityPBR(vec3 F0, vec3 albedo, float metallic)
+		{
+			return mix(F0, albedo, metallic);
+		}
+
+		vec3 CookTorranceBRDF(vec3 fragToEye, vec3 normal, vec3 lightDir, vec3 halfway, float roughness, vec3 F0, out vec3 fresnel)
+		{
+			float NDF = DistributionGGX(normal, halfway, roughness);
+			float geometry = GeometrySmith(normal, fragToEye, lightDir, roughness);
+			fresnel = FresnelSchlick(max(dot(halfway, fragToEye), 0.0), F0);
+			vec3 numerator = NDF * geometry * fresnel;
+			float denominator = 4.0 * max(dot(normal, fragToEye), 0.0) * max(dot(normal, lightDir), 0.0) + 0.0001; // 0.0001 to prevent divide by zero
+			vec3 specular = numerator / denominator;
+
+			return specular;
+		}
+
 		vec3 PointLightPBR(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo, float metallic, float roughness, vec3 lightPos, vec3 lightColor)
 		{
-			// Reflectance normal incidence
-			vec3 F0 = vec3(0.04);
-			F0 = mix(F0, albedo, metallic);
+			// Base reflectivity
+			vec3 F0 = BaseReflectivityPBR(vec3(0.04), albedo, metallic);
 
 			vec3 lightDir = normalize(lightPos - fragPos);
 			vec3 halfway = normalize(lightDir + fragToEye);
-			float hXe = clamp(dot(halfway, fragToEye), 0.0, 1.0);
-			float nXe = max(dot(normal, fragToEye), 0.0);
-			float nXl = max(dot(normal, lightDir), 0.0);
-			vec3 radiance = lightColor;
 
 			// Cook-Torrance BRDF
-			float NDF = DistributionGGX(normal, halfway, roughness);
-			float G = GeometrySmith(normal, fragToEye, lightDir, roughness);
-			vec3 F = FresnelSchlick(max(dot(halfway, fragToEye), 0.0), F0);
-			vec3 numerator = NDF * G * F;
-			float denominator = 4.0 * nXe * nXl + 0.0001; // 0.0001 to prevent divide by zero
-			vec3 specular = numerator / denominator;
+			vec3 fresnel;
+			vec3 specular = CookTorranceBRDF(fragToEye, normal, lightDir, halfway, roughness, F0, fresnel);
 
-			vec3 kS = F; // Specular part
+			vec3 kS = fresnel; // Specular part
 			// Energy conservation
 			vec3 kD = vec3(1.0) - kS; // Diffuse part
 			// Only non-metals have diffuse part. (Also works fine with metallic values between 0-1)
@@ -568,7 +576,7 @@
 
 			// Note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 			// Scale light by light and normal vectors angle
-			vec3 outIrradiance = (kD * albedo / PI + specular) * radiance * nXl;
+			vec3 outIrradiance = (kD * albedo / PI + specular) * lightColor * max(dot(normal, lightDir), 0.0);
 
 			return outIrradiance;
 		}
