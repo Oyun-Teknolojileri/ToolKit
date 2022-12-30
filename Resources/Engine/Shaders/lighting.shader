@@ -64,7 +64,6 @@
 		uniform float metallic;
 		uniform float roughness;
 
-		const int maxLights = 16;
 		const float PI = 3.14159265359;
 
 		// Returns uv coordinates and layers such as: vec3(u,v,layer)
@@ -311,7 +310,6 @@
 			float shadow = 1.0;
 			vec3 irradiance = vec3(0.0);
 
-			int lightCount = 0;
 			for (int i = 0; i < LightData.activeCount; i++)
 			{
 				shadow = 1.0;
@@ -323,12 +321,10 @@
 					PointLightBlinnPhong(LightData.pos[i] - fragPos, fragToEye, normal, LightData.color[i], LightData.radius[i], diffuse, specular);
 
 					// Shadow
-					bool maxShadowCheck = maxLights > lightCount;
-					if (maxShadowCheck && LightData.castShadow[i] == 1)
+					if (LightData.castShadow[i] == 1)
 					{
 						shadow = CalculatePointShadow(fragPos, LightData.pos[i], LightData.shadowMapCameraFar[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
 							LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i], LightData.shadowBias[i]);
-						lightCount += 1;
 					}
 				}
 				else if (LightData.type[i] == 1) // Directional light
@@ -337,13 +333,11 @@
 					DirectionalLightBlinnPhong(-LightData.dir[i], fragToEye, normal, LightData.color[i], diffuse, specular);
 
 					// Shadow
-					bool maxShadowCheck = maxLights > lightCount;
-					if (maxShadowCheck && LightData.castShadow[i] == 1)
+					if (LightData.castShadow[i] == 1)
 					{
 						shadow = CalculateDirectionalShadow(fragPos, LightData.projectionViewMatrix[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
 							LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i],
 							LightData.shadowBias[i]);
-						lightCount += 1;
 					}		
 				}
 				else if (LightData.type[i] == 3) // Spot light
@@ -353,13 +347,11 @@
 						LightData.innAngle[i], LightData.outAngle[i], diffuse, specular);
 
 					// Shadow
-					bool maxShadowCheck = maxLights > lightCount;
-					if (maxShadowCheck && LightData.castShadow[i] == 1)
+					if (LightData.castShadow[i] == 1)
 					{
 						shadow = CalculateSpotShadow(fragPos, LightData.pos[i], LightData.projectionViewMatrix[i], LightData.shadowMapCameraFar[i], LightData.shadowAtlasCoord[i],
 							LightData.shadowAtlasResRatio[i], LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i],
 							LightData.shadowBias[i]);
-						lightCount += 1;
 					}
 				}
 
@@ -583,18 +575,33 @@
 
 		vec3 PBRLighting(vec3 fragPos, vec3 normal, vec3 fragToEye, vec3 albedo)
 		{
-			// TODO Lighting for other light types
-			// TODO Shadows
-
 			vec3 irradiance = vec3(0.0);
 
 			for (int i = 0; i < LightData.activeCount; i++)
 			{
 				if (LightData.type[i] == 2) // Point light
 				{
-					// TODO radius check
+					vec3 pointLightIrradiance = vec3(0.0);
 
-					irradiance += PointLightPBR(fragPos, normal, fragToEye, albedo, metallic, roughness, LightData.pos[i], LightData.color[i] * LightData.intensity[i]);
+					// radius check and attenuation
+					float lightDistance = length(LightData.pos[i] - fragPos);
+					float radiusCheck = RadiusCheck(LightData.radius[i], lightDistance);
+					float attenuation = Attenuation(lightDistance, LightData.radius[i], 1.0, 0.09, 0.032);
+
+					// lighting
+					pointLightIrradiance += PointLightPBR(fragPos, normal, fragToEye, albedo, metallic, roughness, LightData.pos[i], LightData.color[i] * LightData.intensity[i])
+						* radiusCheck * attenuation;
+
+					// shadowing
+					if (LightData.castShadow[i] == 1)
+					{
+						float shadow = CalculatePointShadow(fragPos, LightData.pos[i], LightData.shadowMapCameraFar[i], LightData.shadowAtlasCoord[i], LightData.shadowAtlasResRatio[i],
+								LightData.shadowAtlasLayer[i], LightData.softShadows[i], LightData.PCFSamples[i], LightData.PCFRadius[i], LightData.lightBleedingReduction[i], LightData.shadowBias[i]);
+
+						pointLightIrradiance *= shadow;
+					}
+
+					irradiance += pointLightIrradiance;
 				}
 				else if (LightData.type[i] == 1) // Directional light
 				{
