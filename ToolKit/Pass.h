@@ -33,6 +33,9 @@ namespace ToolKit
   class TK_API RenderPass : public Pass
   {
    public:
+    RenderPass();
+    virtual ~RenderPass();
+
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
     void StableSortByDistanceToCamera(EntityRawPtrArray& entities,
@@ -78,7 +81,7 @@ namespace ToolKit
    public:
     ForwardRenderPass();
     explicit ForwardRenderPass(const ForwardRenderPassParams& params);
-    virtual ~ForwardRenderPass();
+    ~ForwardRenderPass();
 
     void Render() override;
     void PreRender() override;
@@ -259,6 +262,7 @@ namespace ToolKit
    public:
     StencilRenderPass();
     explicit StencilRenderPass(const StencilRenderPassParams& params);
+    ~StencilRenderPass();
 
     void Render() override;
     void PreRender() override;
@@ -292,6 +296,7 @@ namespace ToolKit
    public:
     OutlinePass();
     explicit OutlinePass(const OutlinePassParams& params);
+    ~OutlinePass();
 
     void Render() override;
     void PreRender() override;
@@ -319,6 +324,8 @@ namespace ToolKit
   {
    public:
     GBufferPass();
+    explicit GBufferPass(const GBufferPassParams& params);
+    ~GBufferPass();
 
     void PreRender() override;
     void PostRender() override;
@@ -362,6 +369,7 @@ namespace ToolKit
    public:
     DeferredRenderPass();
     DeferredRenderPass(const DeferredRenderPassParams& params);
+    ~DeferredRenderPass();
 
     void PreRender() override;
     void PostRender() override;
@@ -382,15 +390,6 @@ namespace ToolKit
   };
 
   typedef std::shared_ptr<DeferredRenderPass> DeferredRenderPassPtr;
-
-  struct SceneRenderPassParams
-  {
-    ScenePtr Scene = nullptr;
-    LightRawPtrArray Lights;
-    Camera* Cam                    = nullptr;
-    FramebufferPtr MainFramebuffer = nullptr;
-    bool ClearFramebuffer          = true;
-  };
 
   struct SSAOPassParams
   {
@@ -425,11 +424,20 @@ namespace ToolKit
     SSAONoiseTexturePtr m_noiseTexture = nullptr;
     RenderTargetPtr m_tempBlurRt       = nullptr;
 
-    FullQuadPass m_quadPass;
-    ShaderPtr m_ssaoShader = nullptr;
+    FullQuadPassPtr m_quadPass         = nullptr;
+    ShaderPtr m_ssaoShader             = nullptr;
   };
 
   typedef std::shared_ptr<SSAOPass> SSAOPassPtr;
+
+  struct SceneRenderPassParams
+  {
+    LightRawPtrArray Lights;
+    ScenePtr Scene                 = nullptr;
+    Camera* Cam                    = nullptr;
+    FramebufferPtr MainFramebuffer = nullptr;
+    bool ClearFramebuffer          = true;
+  };
 
   /**
    * Main scene renderer.
@@ -452,12 +460,12 @@ namespace ToolKit
    public:
     SceneRenderPassParams m_params;
 
-    ShadowPassPtr m_shadowPass               = nullptr;
-    ForwardRenderPassPtr m_forwardRenderPass = nullptr;
-    CubeMapPassPtr m_skyPass                 = nullptr;
-    GBufferPass m_gBufferPass;
-    DeferredRenderPass m_deferredRenderPass;
-    SSAOPass m_ssaoPass;
+    ShadowPassPtr m_shadowPass                 = nullptr;
+    ForwardRenderPassPtr m_forwardRenderPass   = nullptr;
+    CubeMapPassPtr m_skyPass                   = nullptr;
+    GBufferPassPtr m_gBufferPass               = nullptr;
+    DeferredRenderPassPtr m_deferredRenderPass = nullptr;
+    SSAOPassPtr m_ssaoPass                     = nullptr;
 
    private:
     bool m_drawSky = false;

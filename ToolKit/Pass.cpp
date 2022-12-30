@@ -11,6 +11,10 @@
 
 namespace ToolKit
 {
+  RenderPass::RenderPass() {}
+
+  RenderPass::~RenderPass() {}
+
   void RenderPass::StableSortByDistanceToCamera(EntityRawPtrArray& entities,
                                                 const Camera* cam)
   {
@@ -836,6 +840,8 @@ namespace ToolKit
     m_params = params;
   }
 
+  StencilRenderPass::~StencilRenderPass() {}
+
   void StencilRenderPass::Render()
   {
     PreRender();
@@ -903,6 +909,8 @@ namespace ToolKit
     m_params = params;
   }
 
+  OutlinePass::~OutlinePass() {}
+
   void OutlinePass::Render()
   {
     PreRender();
@@ -942,9 +950,12 @@ namespace ToolKit
 
   SceneRenderPass::SceneRenderPass()
   {
-    m_shadowPass        = std::make_shared<ShadowPass>();
-    m_forwardRenderPass = std::make_shared<ForwardRenderPass>();
-    m_skyPass           = std::make_shared<CubeMapPass>();
+    m_shadowPass         = std::make_shared<ShadowPass>();
+    m_forwardRenderPass  = std::make_shared<ForwardRenderPass>();
+    m_skyPass            = std::make_shared<CubeMapPass>();
+    m_gBufferPass        = std::make_shared<GBufferPass>();
+    m_deferredRenderPass = std::make_shared<DeferredRenderPass>();
+    m_ssaoPass           = std::make_shared<SSAOPass>();
   }
 
   SceneRenderPass::SceneRenderPass(const SceneRenderPassParams& params)
@@ -958,23 +969,23 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     PreRender();
 
-    CullDrawList(m_gBufferPass.m_params.entities, m_params.Cam);
+    CullDrawList(m_gBufferPass->m_params.entities, m_params.Cam);
     CullDrawList(m_forwardRenderPass->m_params.Entities, m_params.Cam);
 
     // Gbuffer for deferred render
-    m_gBufferPass.Render();
+    m_gBufferPass->Render();
 
     // Shadow pass
     m_shadowPass->Render();
 
     // SSAO pass
-    m_ssaoPass.Render();
+    m_ssaoPass->Render();
 
     renderer->SetShadowAtlas(
         std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
     // Render non-blended entities with deferred renderer
-    m_deferredRenderPass.Render();
+    m_deferredRenderPass->Render();
 
     if (m_drawSky)
     {
@@ -994,8 +1005,8 @@ namespace ToolKit
     Pass::PreRender();
     SetPassParams();
 
-    m_gBufferPass.InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
-                               m_params.MainFramebuffer->GetSettings().height);
+    m_gBufferPass->InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
+                                m_params.MainFramebuffer->GetSettings().height);
   }
 
   void SceneRenderPass::PostRender() { Pass::PostRender(); }
@@ -1014,32 +1025,32 @@ namespace ToolKit
         opaqueDrawList,
         translucentAndUnlitDrawList);
 
-    m_gBufferPass.m_params.entities                = opaqueDrawList;
-    m_gBufferPass.m_params.camera                  = m_params.Cam;
+    m_gBufferPass->m_params.entities                = opaqueDrawList;
+    m_gBufferPass->m_params.camera                  = m_params.Cam;
 
-    m_deferredRenderPass.m_params.ClearFramebuffer = true;
-    m_deferredRenderPass.m_params.GBufferFramebuffer =
-        m_gBufferPass.m_framebuffer;
+    m_deferredRenderPass->m_params.ClearFramebuffer = true;
+    m_deferredRenderPass->m_params.GBufferFramebuffer =
+        m_gBufferPass->m_framebuffer;
 
-    m_deferredRenderPass.m_params.lights           = m_params.Lights;
-    m_deferredRenderPass.m_params.MainFramebuffer  = m_params.MainFramebuffer;
-    m_deferredRenderPass.m_params.Cam              = m_params.Cam;
-    m_deferredRenderPass.m_params.AOTexture        = m_ssaoPass.m_ssaoTexture;
+    m_deferredRenderPass->m_params.lights          = m_params.Lights;
+    m_deferredRenderPass->m_params.MainFramebuffer = m_params.MainFramebuffer;
+    m_deferredRenderPass->m_params.Cam             = m_params.Cam;
+    m_deferredRenderPass->m_params.AOTexture       = m_ssaoPass->m_ssaoTexture;
 
     m_forwardRenderPass->m_params.Lights           = m_params.Lights;
     m_forwardRenderPass->m_params.Cam              = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.ClearFrameBuffer = false;
 
-    m_forwardRenderPass->m_params.Entities = translucentAndUnlitDrawList;
+    m_forwardRenderPass->m_params.Entities  = translucentAndUnlitDrawList;
 
-    m_ssaoPass.m_params.GPositionBuffer    = m_gBufferPass.m_gPosRt;
-    m_ssaoPass.m_params.GNormalBuffer      = m_gBufferPass.m_gNormalRt;
-    m_ssaoPass.m_params.GLinearDepthBuffer = m_gBufferPass.m_gLinearDepthRt;
-    m_ssaoPass.m_params.Cam                = m_params.Cam;
+    m_ssaoPass->m_params.GPositionBuffer    = m_gBufferPass->m_gPosRt;
+    m_ssaoPass->m_params.GNormalBuffer      = m_gBufferPass->m_gNormalRt;
+    m_ssaoPass->m_params.GLinearDepthBuffer = m_gBufferPass->m_gLinearDepthRt;
+    m_ssaoPass->m_params.Cam                = m_params.Cam;
 
     // Set CubeMapPass for sky.
-    m_drawSky                              = false;
+    m_drawSky                               = false;
     if (SkyBase* sky = m_params.Scene->GetSky())
     {
       if (m_drawSky = sky->GetDrawSkyVal())
@@ -1098,6 +1109,13 @@ namespace ToolKit
 
     m_gBufferMaterial = std::make_shared<Material>();
   }
+
+  GBufferPass::GBufferPass(const GBufferPassParams& params) : GBufferPass()
+  {
+    m_params = params;
+  }
+
+  GBufferPass::~GBufferPass() {}
 
   void GBufferPass::InitGBuffers(int width, int height)
   {
@@ -1230,6 +1248,7 @@ namespace ToolKit
     m_ssaoTexture     = std::make_shared<RenderTarget>();
     m_tempBlurRt      = std::make_shared<RenderTarget>();
     m_noiseTexture    = std::make_shared<SSAONoiseTexture>(4, 4);
+    m_quadPass        = std::make_shared<FullQuadPass>();
   }
 
   SSAOPass::SSAOPass(const SSAOPassParams& params) : SSAOPass()
@@ -1248,8 +1267,8 @@ namespace ToolKit
     renderer->SetTexture(1, m_params.GNormalBuffer->m_textureId);
     renderer->SetTexture(2, m_noiseTexture->m_textureId);
     renderer->SetTexture(3, m_params.GLinearDepthBuffer->m_textureId);
-    m_quadPass.m_params.FragmentShader = m_ssaoShader;
-    m_quadPass.Render();
+    m_quadPass->m_params.FragmentShader = m_ssaoShader;
+    m_quadPass->Render();
 
     // Horizontal blur
     renderer->ApplyAverageBlur(m_ssaoTexture,
@@ -1302,8 +1321,8 @@ namespace ToolKit
 
     GetRenderer()->SetFramebuffer(m_ssaoFramebuffer, true, Vec4(0.0f));
 
-    m_quadPass.m_params.FrameBuffer      = m_ssaoFramebuffer;
-    m_quadPass.m_params.ClearFrameBuffer = true;
+    m_quadPass->m_params.FrameBuffer      = m_ssaoFramebuffer;
+    m_quadPass->m_params.ClearFrameBuffer = true;
 
     // SSAO fragment shader
     if (!m_ssaoShader)
@@ -1371,9 +1390,12 @@ namespace ToolKit
   DeferredRenderPass::DeferredRenderPass() {}
 
   DeferredRenderPass::DeferredRenderPass(const DeferredRenderPassParams& params)
+      : DeferredRenderPass()
   {
     m_params = params;
   }
+
+  DeferredRenderPass::~DeferredRenderPass() {}
 
   void DeferredRenderPass::PreRender()
   {
