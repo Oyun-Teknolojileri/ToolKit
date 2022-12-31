@@ -10,6 +10,7 @@
 	<uniform name = "metallicRoughnessTextureInUse" />
 	<uniform name = "metallic" />
 	<uniform name = "roughness" />
+  <uniform name = "normalMapInUse" />
 	<source>
 	<!--
 		#version 300 es
@@ -18,6 +19,7 @@
 		in vec3 v_pos;
 		in vec3 v_normal;
 		in vec2 v_texture;
+		in mat3 TBN;
 
 		layout (location = 0) out vec3 fragPosition;
 		layout (location = 1) out vec3 fragNormal;
@@ -30,6 +32,7 @@
 		uniform sampler2D s_texture0; // color
 		uniform sampler2D s_texture1; // emissive
 		uniform sampler2D s_texture4; // metallic-roughness
+		uniform sampler2D s_texture9; // normal
 		uniform vec4 Color;
 		uniform vec3 emissiveColor;
 
@@ -40,6 +43,8 @@
 		uniform int metallicRoughnessTextureInUse;
 		uniform float metallic;
 		uniform float roughness;
+
+		uniform int normalMapInUse;
 
 		uniform mat4 View;
 
@@ -71,7 +76,19 @@
 			}
 
 		  fragPosition = v_pos;
-		  fragNormal = normalize(v_normal);
+
+			if (normalMapInUse == 1)
+			{
+				fragNormal = texture(s_texture9, v_texture).xyz;
+				fragNormal = fragNormal * 2.0 - 1.0;
+				fragNormal = TBN * fragNormal;
+				fragNormal = normalize(fragNormal);
+			}
+			else
+			{
+		  	fragNormal = normalize(v_normal);
+			}
+
 			fragColor = color.xyz;
 			fragLinearDepth = (View * vec4(v_pos, 1.0)).z;
 

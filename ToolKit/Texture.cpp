@@ -99,13 +99,13 @@ namespace ToolKit
                    GL_FLOAT,
                    m_imagef);
 
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
     else
     {
       glTexImage2D(GL_TEXTURE_2D,
                    0,
-                   GL_SRGB8_ALPHA8,
+                   GL_RGBA,//GL_SRGB8_ALPHA8,
                    m_width,
                    m_height,
                    0,
@@ -117,10 +117,10 @@ namespace ToolKit
 
       glTexParameteri(GL_TEXTURE_2D,
                       GL_TEXTURE_MIN_FILTER,
-                      GL_LINEAR_MIPMAP_LINEAR);
+                      GL_NEAREST_MIPMAP_NEAREST);
     }
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 #ifndef TK_GL_ES_3_0
     if (GL_EXT_texture_filter_anisotropic)

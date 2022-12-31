@@ -15,7 +15,6 @@
 	<uniform name = "metallicRoughnessTextureInUse" />
 	<uniform name = "metallic" />
 	<uniform name = "roughness" />
-	<uniform name = "InverseTransModel" />
   <uniform name = "normalMapInUse" />
 	<source>
 	<!--
@@ -45,7 +44,6 @@
 		*/
 		uniform int lightingType;
 
-    uniform mat4 InverseTransModel;
 		uniform int normalMapInUse;
 
 		in vec3 v_pos;
@@ -89,8 +87,9 @@
 			if (normalMapInUse == 1)
 			{
 				n = texture(s_texture9, v_texture).xyz;
-				n = TBN * (n * 2.0 - 1.0);
-				n = normalize((InverseTransModel * vec4(n, 0.0)).xyz);
+				n = n * 2.0 - 1.0;
+				n = TBN * n;
+				n = normalize(n);
 			}
 			else
 			{
