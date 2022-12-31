@@ -74,11 +74,35 @@ namespace ToolKit
 
     if (m_metallicRoughnessTexture)
     {
+      if (m_metallicRoughnessTexture->GetTextureSettings().MinFilter !=
+          GraphicTypes::SampleNearest)
+      {
+        m_metallicRoughnessTexture->UnInit();
+        TextureSettings set;
+        set.InternalFormat = GraphicTypes::FormatRG8;
+        set.MinFilter      = GraphicTypes::SampleNearest;
+        set.MagFilter      = GraphicTypes::SampleNearest;
+        set.Type           = GraphicTypes::TypeUnsignedByte;
+        m_metallicRoughnessTexture->SetTextureSettings(set);
+      }
+
       m_metallicRoughnessTexture->Init(flushClientSideArray);
     }
 
     if (m_normalMap)
     {
+      if (m_normalMap->GetTextureSettings().MinFilter !=
+          GraphicTypes::SampleNearest)
+      {
+        m_normalMap->UnInit();
+        TextureSettings set;
+        set.InternalFormat = GraphicTypes::FormatRGB8;
+        set.MinFilter      = GraphicTypes::SampleNearest;
+        set.MagFilter      = GraphicTypes::SampleNearest;
+        set.Type           = GraphicTypes::TypeUnsignedByte;
+        m_normalMap->SetTextureSettings(set);
+      }
+
       m_normalMap->Init(flushClientSideArray);
     }
 

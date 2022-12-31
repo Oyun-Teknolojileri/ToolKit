@@ -29,7 +29,11 @@ namespace ToolKit
     m_initiated = true;
   }
 
-  Texture::~Texture() { UnInit(); }
+  Texture::~Texture()
+  {
+    UnInit();
+    Clear();
+  }
 
   void Texture::Load()
   {
@@ -40,11 +44,9 @@ namespace ToolKit
 
     if (m_textureSettings.Type == GraphicTypes::TypeFloat)
     {
-      if ((m_imagef = GetFileManager()->GetHdriFile(GetFile().c_str(),
-                                                    &m_width,
-                                                    &m_height,
-                                                    &m_bytePP,
-                                                    3)))
+      if ((m_imagef =
+               GetFileManager()
+                   ->GetHdriFile(GetFile(), &m_width, &m_height, &m_bytePP, 3)))
       {
         m_loaded = true;
       }
@@ -112,8 +114,8 @@ namespace ToolKit
                    m_width,
                    m_height,
                    0,
-                   (GLint) m_textureSettings.Format,
-                   (GLint) m_textureSettings.Type,
+                   GL_RGBA,
+                   GL_UNSIGNED_BYTE,
                    m_image);
 
       glGenerateMipmap(GL_TEXTURE_2D);
@@ -126,6 +128,9 @@ namespace ToolKit
                       (GLint) m_textureSettings.MipMapMagFilter);
     }
 
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MIN_FILTER,
+                    (GLint) m_textureSettings.MinFilter);
     glTexParameteri(GL_TEXTURE_2D,
                     GL_TEXTURE_MAG_FILTER,
                     (GLint) m_textureSettings.MagFilter);
@@ -152,8 +157,17 @@ namespace ToolKit
   {
     glDeleteTextures(1, &m_textureId);
     m_textureId = 0;
-    Clear();
     m_initiated = false;
+  }
+
+  const TextureSettings& Texture::GetTextureSettings()
+  {
+    return m_textureSettings;
+  }
+
+  void Texture::SetTextureSettings(const TextureSettings& settings)
+  {
+    m_textureSettings = settings;
   }
 
   void Texture::Clear()
@@ -325,11 +339,9 @@ namespace ToolKit
   Hdri::Hdri()
   {
     m_textureSettings.InternalFormat = GraphicTypes::FormatRGB32F;
-    m_textureSettings.Format         = GraphicTypes::FormatRGB;
     m_textureSettings.Type           = GraphicTypes::TypeFloat;
     m_textureSettings.MinFilter      = GraphicTypes::SampleNearest;
     m_textureSettings.MagFilter      = GraphicTypes::SampleNearest;
-    m_textureSettings.GenerateMipmap = false;
     m_exposure                       = 1.0f;
 
     m_texToCubemapMat                = std::make_shared<Material>();

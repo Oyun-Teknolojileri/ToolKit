@@ -10,15 +10,10 @@ namespace ToolKit
 {
   struct TextureSettings
   {
-    GraphicTypes MinFilter       = GraphicTypes::SampleNearest;
-    GraphicTypes MagFilter       = GraphicTypes::SampleNearest;
+    GraphicTypes MinFilter       = GraphicTypes::SampleLinear;
+    GraphicTypes MagFilter       = GraphicTypes::SampleLinear;
     GraphicTypes InternalFormat  = GraphicTypes::FormatSRGB8_A8;
-    GraphicTypes InternalFormat  = GraphicTypes::FormatRGBA;
-    GraphicTypes Format          = GraphicTypes::FormatRGBA;
     GraphicTypes Type            = GraphicTypes::TypeUnsignedByte;
-    bool GenerateMipmap          = true;
-    GraphicTypes MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
-    GraphicTypes MipMapMagFilter = GraphicTypes::SampleNearestMipmapNearest;
     GraphicTypes MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
     GraphicTypes MipMapMagFilter = GraphicTypes::SampleLinearMipmapLinear;
   };
@@ -36,6 +31,9 @@ namespace ToolKit
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
+
+    const TextureSettings& GetTextureSettings();
+    void SetTextureSettings(const TextureSettings& settings);
 
    protected:
     virtual void Clear();
