@@ -33,6 +33,32 @@ namespace ToolKit
     void Render(Technique* technique);
     void Render(TechniquePtr technique);
 
+    /**
+     * Sets application window size. Doesn't necessarily update any frame buffer
+     * or render target. Systems that rely on this data updates them selfs.
+     * Programmer is responsible to keep this value up to date when application
+     * size has changed.
+     * @param width of the Application window.
+     * @param height of the Application window.
+     */
+    void SetAppWindowSize(uint width, uint height);
+
+    /**
+    * @return Application window size.
+    */
+    UVec2 GetAppWindowSize();
+
+    /**
+     * Sets default clear color for render targets.
+     * @param clearColor default clear color.
+     */
+    void SetClearColor(Vec4 clearColor);
+
+    /**
+     * Sets frame count to be that will be used as uniform in shaders.
+     */
+    void SetFrameCount(uint count);
+
    private:
     Renderer* m_renderer         = nullptr;
     Technique* m_renderTechnique = nullptr;

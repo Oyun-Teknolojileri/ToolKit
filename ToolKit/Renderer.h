@@ -162,7 +162,6 @@ namespace ToolKit
     void FeedLightUniforms(ProgramPtr program);
 
    public:
-    uint m_totalFrameCount = 0;
     uint m_frameCount      = 0;
     UVec2 m_windowSize; //!< Application window size.
     Vec4 m_clearColor         = Vec4(0.0f, 0.0f, 0.0f, 1.0f);

@@ -1,4 +1,5 @@
 #include "RenderSystem.h"
+#include "ToolKit.h"
 
 #include "stdafx.h"
 
@@ -31,6 +32,23 @@ namespace ToolKit
   void RenderSystem::Render(TechniquePtr technique)
   {
     technique->Render(m_renderer);
+  }
+
+  void RenderSystem::SetAppWindowSize(uint width, uint height)
+  {
+    m_renderer->m_windowSize = UVec2(width, height);
+  }
+
+  UVec2 RenderSystem::GetAppWindowSize() { return m_renderer->m_windowSize; }
+
+  void RenderSystem::SetClearColor(Vec4 clearColor)
+  {
+    m_renderer->m_clearColor = clearColor;
+  }
+
+  void RenderSystem::SetFrameCount(uint count)
+  {
+    m_renderer->m_frameCount = count;
   }
 
 } // namespace ToolKit

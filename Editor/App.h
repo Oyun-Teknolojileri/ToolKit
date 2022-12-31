@@ -179,6 +179,7 @@ namespace ToolKit
 
       // Editor states.
       int m_fps                                = 0;
+      uint m_totalFrameCount                   = 0;
       bool m_showPickingDebug                  = false;
       bool m_showStateTransitionsDebug         = false;
       bool m_showOverlayUI                     = true;
@@ -201,8 +202,6 @@ namespace ToolKit
       float m_moveDelta   = 0.25f;
       float m_rotateDelta = 15.0f;
       float m_scaleDelta  = 0.5f;
-
-      Renderer* m_renderer;
       bool m_windowCamLoad = true;
 
      private:

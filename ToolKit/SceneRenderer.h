@@ -23,7 +23,7 @@ namespace ToolKit
    public:
     SceneRenderer();
     explicit SceneRenderer(const SceneRenderPassParams& params);
-    ~SceneRenderer();
+    virtual ~SceneRenderer();
 
     void Render(Renderer* renderer) override;
     void PreRender();

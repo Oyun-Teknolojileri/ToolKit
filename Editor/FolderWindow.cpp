@@ -196,10 +196,9 @@ namespace ToolKit
           texture = GetTextureManager()->Create<Texture>(fullpath);
         }
 
-        float maxDim =
-            static_cast<float>(glm::max(texture->m_width, texture->m_height));
-        float w = (texture->m_width / maxDim) * thumbSize.x;
-        float h = (texture->m_height / maxDim) * thumbSize.y;
+        float maxDim = float(glm::max(texture->m_width, texture->m_height));
+        float w      = (texture->m_width / maxDim) * thumbSize.x;
+        float h      = (texture->m_height / maxDim) * thumbSize.y;
 
         Surface surface(Vec2(w, h));
         MaterialComponentPtr matCom = surface.GetMaterialComponent();

@@ -45,13 +45,12 @@ namespace ToolKit
   {
     App::App(int windowWidth, int windowHeight) : m_workspace(this)
     {
-      m_cursor                   = nullptr;
-      m_renderer                 = Main::GetInstance()->m_renderer;
-      m_renderer->m_windowSize.x = windowWidth;
-      m_renderer->m_windowSize.y = windowHeight;
-      m_statusMsg                = "OK";
+      m_cursor           = nullptr;
+      RenderSystem* rsys = GetRenderSystem();
+      rsys->SetAppWindowSize((uint) windowWidth, (uint) windowHeight);
+      m_statusMsg      = "OK";
 
-      myEditorRenderer           = new EditorRenderer();
+      myEditorRenderer = new EditorRenderer();
 
       OverrideEntityConstructors();
 
@@ -202,20 +201,20 @@ namespace ToolKit
 
           // TODO: Cihan
           // GetRenderSystem()->Render(myEditorRenderer);
-          //myEditorRenderer->Render();
+          // myEditorRenderer->Render();
         }
       }
 
       // Render UI.
       UI::EndUI();
 
-      m_renderer->m_totalFrameCount++;
+      GetRenderSystem()->SetFrameCount(m_totalFrameCount++);
     }
 
     void App::OnResize(uint width, uint height)
     {
-      m_renderer->m_windowSize.x = width;
-      m_renderer->m_windowSize.y = height;
+      RenderSystem* rsys = GetRenderSystem();
+      rsys->SetAppWindowSize(width, height);
     }
 
     void App::OnNewScene(const String& name)
@@ -604,7 +603,9 @@ namespace ToolKit
       else
       {
         // 3d viewport.
-        Vec2 vpSize        = Vec2(m_renderer->m_windowSize) * 0.8f;
+        float w            = (float) GetEngineSettings().Window.Width;
+        float h            = (float) GetEngineSettings().Window.Height;
+        Vec2 vpSize        = Vec2(w, h) * 0.8f;
         EditorViewport* vp = new EditorViewport(vpSize);
         vp->m_name         = g_3dViewport;
         vp->GetCamera()->m_node->SetTranslation({5.0f, 3.0f, 5.0f});
@@ -1052,9 +1053,9 @@ namespace ToolKit
       }
 
       // Restore app window.
-      SDL_SetWindowSize(g_window,
-                        m_renderer->m_windowSize.x,
-                        m_renderer->m_windowSize.y);
+      UVec2 size = GetRenderSystem()->GetAppWindowSize();
+
+      SDL_SetWindowSize(g_window, size.x, size.y);
 
       SDL_SetWindowPosition(g_window,
                             SDL_WINDOWPOS_CENTERED,
@@ -1279,20 +1280,15 @@ namespace ToolKit
         XmlNode* setNode =
             lclDoc->allocate_node(rapidxml::node_element, "Size");
 
-        WriteAttr(setNode,
-                  lclDoc.get(),
-                  "width",
-                  std::to_string(m_renderer->m_windowSize.x));
-
-        WriteAttr(setNode,
-                  lclDoc.get(),
-                  "height",
-                  std::to_string(m_renderer->m_windowSize.y));
+        UVec2 size = GetRenderSystem()->GetAppWindowSize();
+        WriteAttr(setNode, lclDoc.get(), "width", std::to_string(size.x));
+        WriteAttr(setNode, lclDoc.get(), "height", std::to_string(size.y));
 
         WriteAttr(setNode,
                   lclDoc.get(),
                   "maximized",
                   std::to_string(m_windowMaximized));
+
         settings->append_node(setNode);
 
         for (Window* wnd : m_windows)

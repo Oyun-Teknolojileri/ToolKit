@@ -132,7 +132,6 @@ namespace ToolKit
     TextureManager* m_textureMan         = nullptr;
     SceneManager* m_sceneManager         = nullptr;
     PluginManager* m_pluginManager       = nullptr;
-    Renderer* m_renderer                 = nullptr;
     Logger* m_logger                     = nullptr;
     UIManager* m_uiManager               = nullptr;
     SkeletonManager* m_skeletonManager   = nullptr;
@@ -154,7 +153,6 @@ namespace ToolKit
 
   // Accessors.
   TK_API Logger* GetLogger();
-  TK_API Renderer* GetRenderer();
   TK_API RenderSystem* GetRenderSystem();
   TK_API AnimationManager* GetAnimationManager();
   TK_API AnimationPlayer* GetAnimationPlayer();
@@ -171,8 +169,8 @@ namespace ToolKit
   TK_API HandleManager* GetHandleManager();
   TK_API SkeletonManager* GetSkeletonManager();
   TK_API FileManager* GetFileManager();
-
   TK_API EntityFactory* GetEntityFactory();
+  TK_API EngineSettings& GetEngineSettings();
 
   TK_API String DefaultPath();
   TK_API String DefaultAbsolutePath();
