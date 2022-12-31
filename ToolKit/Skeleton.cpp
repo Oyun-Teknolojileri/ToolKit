@@ -27,7 +27,6 @@ namespace ToolKit
   TexturePtr CreateBoneTransformTexture(const Skeleton* skeleton)
   {
     TexturePtr ptr     = std::make_shared<Texture>();
-    ptr->m_floatFormat = true;
     ptr->m_height      = 1;
     ptr->m_width       = static_cast<int>(skeleton->m_bones.size()) * 4;
     ptr->m_name        = skeleton->m_name + " BindPoseTexture";

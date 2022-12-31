@@ -1224,11 +1224,13 @@ namespace ToolKit
       m_gBufferMaterial->m_emissiveColor   = mat->m_emissiveColor;
       m_gBufferMaterial->m_metallicRoughnessTexture =
           mat->m_metallicRoughnessTexture;
-      m_gBufferMaterial->m_cubeMap   = mat->m_cubeMap;
-      m_gBufferMaterial->m_color     = mat->m_color;
-      m_gBufferMaterial->m_alpha     = mat->m_alpha;
-      m_gBufferMaterial->m_metallic  = mat->m_metallic;
-      m_gBufferMaterial->m_roughness = mat->m_roughness;
+      m_gBufferMaterial->m_normalMap    = mat->m_normalMap;
+      m_gBufferMaterial->m_cubeMap      = mat->m_cubeMap;
+      m_gBufferMaterial->m_color        = mat->m_color;
+      m_gBufferMaterial->m_alpha        = mat->m_alpha;
+      m_gBufferMaterial->m_metallic     = mat->m_metallic;
+      m_gBufferMaterial->m_roughness    = mat->m_roughness;
+      m_gBufferMaterial->m_materialType = mat->m_materialType;
       m_gBufferMaterial->Init();
       renderer->m_overrideMat = m_gBufferMaterial;
 
@@ -1518,6 +1520,8 @@ namespace ToolKit
   {
     PreRender();
 
+    // Deferred render always uses PBR material
+    m_fullQuadPass.m_material->m_materialType = MaterialType::PBR;
     m_fullQuadPass.Render();
 
     PostRender();

@@ -11,13 +11,14 @@
 namespace ToolKit
 {
 
-  Texture::Texture(bool floatFormat)
+  Texture::Texture(const TextureSettings& settings)
   {
-    m_floatFormat = floatFormat;
-    m_textureId   = 0;
+    m_textureSettings = settings;
+    m_textureId       = 0;
   }
 
-  Texture::Texture(String file, bool floatFormat) : Texture(floatFormat)
+  Texture::Texture(String file, const TextureSettings& settings)
+      : Texture(settings)
   {
     SetFile(file);
   }
@@ -28,7 +29,11 @@ namespace ToolKit
     m_initiated = true;
   }
 
-  Texture::~Texture() { UnInit(); }
+  Texture::~Texture()
+  {
+    UnInit();
+    Clear();
+  }
 
   void Texture::Load()
   {
@@ -37,13 +42,11 @@ namespace ToolKit
       return;
     }
 
-    if (m_floatFormat)
+    if (m_textureSettings.Type == GraphicTypes::TypeFloat)
     {
-      if ((m_imagef = GetFileManager()->GetHdriFile(GetFile().c_str(),
-                                                    &m_width,
-                                                    &m_height,
-                                                    &m_bytePP,
-                                                    3)))
+      if ((m_imagef =
+               GetFileManager()
+                   ->GetHdriFile(GetFile(), &m_width, &m_height, &m_bytePP, 3)))
       {
         m_loaded = true;
       }
@@ -87,7 +90,9 @@ namespace ToolKit
     glGenTextures(1, &m_textureId);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
 
-    if (m_floatFormat)
+    // TODO remove this branch and set ALL parameter settings from
+    // m_textureSettings
+    if (m_textureSettings.Type == GraphicTypes::TypeFloat)
     {
       glTexImage2D(GL_TEXTURE_2D,
                    0,
@@ -99,13 +104,13 @@ namespace ToolKit
                    GL_FLOAT,
                    m_imagef);
 
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
     else
     {
       glTexImage2D(GL_TEXTURE_2D,
                    0,
-                   GL_SRGB8_ALPHA8,
+                   (GLint) m_textureSettings.InternalFormat,
                    m_width,
                    m_height,
                    0,
@@ -117,10 +122,18 @@ namespace ToolKit
 
       glTexParameteri(GL_TEXTURE_2D,
                       GL_TEXTURE_MIN_FILTER,
-                      GL_LINEAR_MIPMAP_LINEAR);
+                      (GLint) m_textureSettings.MipMapMinFilter);
+      glTexParameteri(GL_TEXTURE_2D,
+                      GL_TEXTURE_MAG_FILTER,
+                      (GLint) m_textureSettings.MipMapMagFilter);
     }
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MIN_FILTER,
+                    (GLint) m_textureSettings.MinFilter);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MAG_FILTER,
+                    (GLint) m_textureSettings.MagFilter);
 
 #ifndef TK_GL_ES_3_0
     if (GL_EXT_texture_filter_anisotropic)
@@ -144,8 +157,17 @@ namespace ToolKit
   {
     glDeleteTextures(1, &m_textureId);
     m_textureId = 0;
-    Clear();
     m_initiated = false;
+  }
+
+  const TextureSettings& Texture::GetTextureSettings()
+  {
+    return m_textureSettings;
+  }
+
+  void Texture::SetTextureSettings(const TextureSettings& settings)
+  {
+    m_textureSettings = settings;
   }
 
   void Texture::Clear()
@@ -316,12 +338,15 @@ namespace ToolKit
 
   Hdri::Hdri()
   {
-    m_floatFormat               = true;
-    m_exposure                  = 1.0f;
+    m_textureSettings.InternalFormat = GraphicTypes::FormatRGB32F;
+    m_textureSettings.Type           = GraphicTypes::TypeFloat;
+    m_textureSettings.MinFilter      = GraphicTypes::SampleNearest;
+    m_textureSettings.MagFilter      = GraphicTypes::SampleNearest;
+    m_exposure                       = 1.0f;
 
-    m_texToCubemapMat           = std::make_shared<Material>();
-    m_cubemapToIrradiancemapMat = std::make_shared<Material>();
-    m_irradianceCubemap         = std::make_shared<CubeMap>(0); // TODO
+    m_texToCubemapMat                = std::make_shared<Material>();
+    m_cubemapToIrradiancemapMat      = std::make_shared<Material>();
+    m_irradianceCubemap              = std::make_shared<CubeMap>(0);
     m_equirectangularTexture = std::make_shared<Texture>(static_cast<uint>(0));
   }
 

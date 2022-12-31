@@ -187,7 +187,12 @@ namespace ToolKit
         TexturePtr texture = nullptr;
         if (m_ext == HDR)
         {
-          texture = std::make_shared<Texture>(fullpath, true);
+          TextureSettings set;
+          set.InternalFormat = GraphicTypes::FormatRGB32F;
+          set.Type           = GraphicTypes::TypeFloat;
+          set.MinFilter      = GraphicTypes::SampleNearest;
+          set.MagFilter      = GraphicTypes::SampleNearest;
+          texture            = std::make_shared<Texture>(fullpath, set);
           texture->Load();
           texture->Init(true);
         }
