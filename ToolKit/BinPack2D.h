@@ -7,6 +7,21 @@
 namespace ToolKit
 {
   /**
+  * Shelves are holding squares
+  * Layer are holding shelves
+  * 
+  * The packing algorithm works as follows:
+  * Iterate trough squares that are going to be packed:
+  *    If sqaure can fit in any active shelf
+  *       Place the sqaure inside that shelf
+  *    Else
+  *       If there is an available layer to create a shelf
+  *         Create a shelf in that layer and place the square
+  *       Else
+  *         Create a new layer, create a new shelf, place the square
+  */
+
+  /**
    * Packs 2D sqaures into an atlas (array of squares)
    */
   class BinPack2D
