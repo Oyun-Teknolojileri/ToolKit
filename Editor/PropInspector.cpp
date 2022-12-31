@@ -188,6 +188,8 @@ namespace ToolKit
     PreviewViewport::PreviewViewport(uint width, uint height)
         : EditorViewport((float) width, (float) height)
     {
+      m_renderPass            = std::make_shared<SceneRenderer>();
+
       DirectionalLight* light = new DirectionalLight();
       light->SetPCFRadiusVal(0.001f);
       light->SetShadowResVal(1024.0f);
@@ -203,16 +205,20 @@ namespace ToolKit
 
       directionComp->Yaw(glm::radians(-20.0f));
       directionComp->Pitch(glm::radians(-20.0f));
-      m_light                                = light;
 
-      m_renderPass.m_params.Cam              = GetCamera();
-      m_renderPass.m_params.ClearFramebuffer = true;
-      m_renderPass.m_params.Lights           = {m_light};
-      m_renderPass.m_params.MainFramebuffer  = m_framebuffer;
-      m_renderPass.m_params.Scene            = std::make_shared<Scene>();
+      m_light                                 = light;
+      m_renderPass->m_params.Cam              = GetCamera();
+      m_renderPass->m_params.ClearFramebuffer = true;
+      m_renderPass->m_params.Lights           = {m_light};
+      m_renderPass->m_params.MainFramebuffer  = m_framebuffer;
+      m_renderPass->m_params.Scene            = std::make_shared<Scene>();
     }
 
-    PreviewViewport::~PreviewViewport() { SafeDel(m_light); }
+    PreviewViewport::~PreviewViewport()
+    {
+      SafeDel(m_light);
+      m_renderPass = nullptr;
+    }
 
     void PreviewViewport::Show()
     {
@@ -224,8 +230,8 @@ namespace ToolKit
       HandleStates();
       DrawCommands();
 
-      m_renderPass.m_params.MainFramebuffer = m_framebuffer;
-      EntityRawPtrArray& entities           = GetScene()->AccessEntityArray();
+      m_renderPass->m_params.MainFramebuffer = m_framebuffer;
+      EntityRawPtrArray& entities            = GetScene()->AccessEntityArray();
       for (Entity* ntt : entities)
       {
         MeshComponentPtr mc = ntt->GetMeshComponent();
@@ -243,7 +249,8 @@ namespace ToolKit
           mc->SetCastShadowVal(false);
         }
       }
-      m_renderPass.Render();
+
+      GetRenderSystem()->Render(m_renderPass);
 
       // Render color attachment as rounded image
       FramebufferSettings fbSettings = m_framebuffer->GetSettings();
@@ -251,6 +258,7 @@ namespace ToolKit
       Vec2 currentCursorPos = Vec2(ImGui::GetWindowContentRegionMin()) +
                               Vec2(ImGui::GetCursorPos()) +
                               Vec2(ImGui::GetWindowPos());
+
       ImRect bb(currentCursorPos, currentCursorPos + imageSize);
       ImGui::ItemSize(bb);
       ImGui::ItemAdd(bb, 0);
@@ -265,7 +273,10 @@ namespace ToolKit
           5.0f);
     }
 
-    ScenePtr PreviewViewport::GetScene() { return m_renderPass.m_params.Scene; }
+    ScenePtr PreviewViewport::GetScene()
+    {
+      return m_renderPass->m_params.Scene;
+    }
 
     void PreviewViewport::ResetCamera()
     {

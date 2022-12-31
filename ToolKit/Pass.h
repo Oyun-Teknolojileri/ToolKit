@@ -441,48 +441,4 @@ namespace ToolKit
 
   typedef std::shared_ptr<SSAOPass> SSAOPassPtr;
 
-  struct SceneRenderPassParams
-  {
-    LightRawPtrArray Lights;
-    ScenePtr Scene                 = nullptr;
-    Camera* Cam                    = nullptr;
-    FramebufferPtr MainFramebuffer = nullptr;
-    bool ClearFramebuffer          = true;
-  };
-
-  /**
-   * Main scene renderer.
-   * TODO: It should be Tecnhique instead of Pass.
-   */
-  class TK_API SceneRenderPass : public Pass
-  {
-   public:
-    SceneRenderPass();
-    explicit SceneRenderPass(const SceneRenderPassParams& params);
-    ~SceneRenderPass();
-
-    void Render() override;
-    void PreRender() override;
-    void PostRender() override;
-
-   private:
-    void SetPassParams();
-    void CullDrawList(EntityRawPtrArray& entities, Camera* camera);
-
-   public:
-    SceneRenderPassParams m_params;
-
-    ShadowPassPtr m_shadowPass                 = nullptr;
-    ForwardRenderPassPtr m_forwardRenderPass   = nullptr;
-    CubeMapPassPtr m_skyPass                   = nullptr;
-    GBufferPassPtr m_gBufferPass               = nullptr;
-    DeferredRenderPassPtr m_deferredRenderPass = nullptr;
-    SSAOPassPtr m_ssaoPass                     = nullptr;
-
-   private:
-    bool m_drawSky = false;
-  };
-
-  typedef std::shared_ptr<SceneRenderPass> SceneRenderPassPtr;
-
 } // namespace ToolKit

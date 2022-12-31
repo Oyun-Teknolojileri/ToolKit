@@ -28,4 +28,9 @@ namespace ToolKit
     technique->Render(m_renderer);
   }
 
+  void RenderSystem::Render(TechniquePtr technique)
+  {
+    technique->Render(m_renderer);
+  }
+
 } // namespace ToolKit

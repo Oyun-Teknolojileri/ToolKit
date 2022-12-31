@@ -6,6 +6,7 @@
 #include "PostProcessPass.h"
 #include "Primative.h"
 #include "RenderSystem.h"
+#include "SceneRenderer.h"
 
 namespace ToolKit
 {
@@ -141,7 +142,7 @@ namespace ToolKit
        */
       MaterialPtr m_unlitOverride                       = nullptr;
 
-      SceneRenderPassPtr m_scenePass                    = nullptr;
+      SceneRendererPtr m_scenePass                      = nullptr;
       ForwardRenderPassPtr m_editorPass                 = nullptr;
       GizmoPassPtr m_gizmoPass                          = nullptr;
       TonemapPassPtr m_tonemapPass                      = nullptr;

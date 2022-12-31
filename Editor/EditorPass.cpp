@@ -4,7 +4,6 @@
 #include "DirectionComponent.h"
 #include "EditorScene.h"
 #include "EditorViewport.h"
-#include "stdafx.h"
 
 namespace ToolKit
 {
@@ -54,7 +53,8 @@ namespace ToolKit
         m_passArray.push_back(m_singleMatRenderer);
         break;
       default:
-        m_passArray.push_back(m_scenePass);
+        // TODO: Cihan
+        // m_passArray.push_back(m_scenePass);
         m_passArray.push_back(m_bloomPass);
         break;
       }
@@ -63,6 +63,7 @@ namespace ToolKit
 
       m_passArray.push_back(m_editorPass);
 
+      // TODO: Cihan
       // OutlineSelecteds();
 
       m_passArray.push_back(m_gizmoPass);
@@ -82,8 +83,6 @@ namespace ToolKit
       // Adjust scene lights.
       m_lightNode->OrphanSelf();
       m_camera->m_node->AddChild(m_lightNode);
-
-      Renderer* renderer = GetRenderer();
 
       // Construct EditorScene
       EntityRawPtrArray editorEntities;
@@ -289,7 +288,7 @@ namespace ToolKit
       m_unlitOverride = GetMaterialManager()->GetCopyOfUnlitMaterial();
       m_unlitOverride->Init();
 
-      m_scenePass         = std::make_shared<SceneRenderPass>();
+      m_scenePass         = std::make_shared<SceneRenderer>();
       m_editorPass        = std::make_shared<ForwardRenderPass>();
       m_gizmoPass         = std::make_shared<GizmoPass>();
       m_tonemapPass       = std::make_shared<TonemapPass>();

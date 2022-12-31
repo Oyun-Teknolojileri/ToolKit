@@ -32,14 +32,11 @@ namespace ToolKit
 
   void BloomPass::Render()
   {
-    PreRender();
-
     RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(
         Framebuffer::Attachment::ColorAttachment0);
 
     if (mainRt == nullptr || m_invalidRenderParams)
     {
-      PostRender();
       return;
     }
 
@@ -145,8 +142,6 @@ namespace ToolKit
 
       m_pass->Render();
     }
-
-    PostRender();
   }
 
   void BloomPass::PreRender()
@@ -266,9 +261,7 @@ namespace ToolKit
 
   void PostProcessPass::Render()
   {
-    PreRender();
     m_postProcessPass->Render();
-    PostRender();
   }
 
   void PostProcessPass::PostRender() { Pass::PostRender(); }

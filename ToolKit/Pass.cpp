@@ -202,15 +202,11 @@ namespace ToolKit
 
   void ForwardRenderPass::Render()
   {
-    PreRender();
-
     EntityRawPtrArray translucentDrawList;
     SeperateTranslucentEntities(m_drawList, translucentDrawList);
 
     RenderOpaque(m_drawList, m_camera, m_params.Lights);
     RenderTranslucent(translucentDrawList, m_camera, m_params.Lights);
-
-    PostRender();
   }
 
   ForwardRenderPass::~ForwardRenderPass() {}
@@ -393,8 +389,6 @@ namespace ToolKit
 
   void ShadowPass::Render()
   {
-    PreRender();
-
     const Vec4 lastClearColor = GetRenderer()->m_clearColor;
 
     // Update shadow maps.
@@ -416,8 +410,6 @@ namespace ToolKit
     }
 
     GetRenderer()->m_clearColor = lastClearColor;
-
-    PostRender();
   }
 
   void ShadowPass::PreRender()
@@ -766,16 +758,12 @@ namespace ToolKit
 
   void FullQuadPass::Render()
   {
-    PreRender();
-
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer,
                              m_params.ClearFrameBuffer,
                              {0.0f, 0.0f, 0.0f, 1.0f});
 
     renderer->Render(m_quad.get(), m_camera.get(), m_params.lights);
-
-    PostRender();
   }
 
   void FullQuadPass::PreRender()
@@ -811,15 +799,11 @@ namespace ToolKit
 
   void CubeMapPass::Render()
   {
-    PreRender();
-
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, false);
 
     m_cube->m_node->SetTransform(m_params.Transform);
     renderer->Render(m_cube.get(), m_params.Cam);
-
-    PostRender();
   }
 
   void CubeMapPass::PreRender()
@@ -858,8 +842,6 @@ namespace ToolKit
 
   void StencilRenderPass::Render()
   {
-    PreRender();
-
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_solidOverrideMaterial;
 
@@ -879,8 +861,6 @@ namespace ToolKit
     m_copyStencilSubPass->Render();
 
     renderer->SetStencilOperation(StencilOperation::None);
-
-    PostRender();
   }
 
   void StencilRenderPass::PreRender()
@@ -933,8 +913,6 @@ namespace ToolKit
 
   void OutlinePass::Render()
   {
-    PreRender();
-
     // Generate stencil binary image.
     m_stencilPass->Render();
 
@@ -948,8 +926,6 @@ namespace ToolKit
     m_outlinePass->m_params.FrameBuffer      = m_params.FrameBuffer;
     m_outlinePass->m_params.ClearFrameBuffer = false;
     m_outlinePass->Render();
-
-    PostRender();
   }
 
   void OutlinePass::PreRender()
@@ -967,146 +943,6 @@ namespace ToolKit
   }
 
   void OutlinePass::PostRender() { Pass::PostRender(); }
-
-  SceneRenderPass::SceneRenderPass()
-  {
-    m_shadowPass         = std::make_shared<ShadowPass>();
-    m_forwardRenderPass  = std::make_shared<ForwardRenderPass>();
-    m_skyPass            = std::make_shared<CubeMapPass>();
-    m_gBufferPass        = std::make_shared<GBufferPass>();
-    m_deferredRenderPass = std::make_shared<DeferredRenderPass>();
-    m_ssaoPass           = std::make_shared<SSAOPass>();
-  }
-
-  SceneRenderPass::SceneRenderPass(const SceneRenderPassParams& params)
-      : SceneRenderPass()
-  {
-    m_params = params;
-  }
-
-  SceneRenderPass::~SceneRenderPass()
-  {
-    m_shadowPass         = nullptr;
-    m_forwardRenderPass  = nullptr;
-    m_skyPass            = nullptr;
-    m_gBufferPass        = nullptr;
-    m_deferredRenderPass = nullptr;
-    m_ssaoPass           = nullptr;
-  }
-
-  void SceneRenderPass::Render()
-  {
-    Renderer* renderer = GetRenderer();
-    PreRender();
-
-    CullDrawList(m_gBufferPass->m_params.entities, m_params.Cam);
-    CullDrawList(m_forwardRenderPass->m_params.Entities, m_params.Cam);
-
-    // Gbuffer for deferred render
-    m_gBufferPass->Render();
-
-    // Shadow pass
-    m_shadowPass->Render();
-
-    // SSAO pass
-    m_ssaoPass->Render();
-
-    renderer->SetShadowAtlas(
-        std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
-
-    // Render non-blended entities with deferred renderer
-    m_deferredRenderPass->Render();
-
-    if (m_drawSky)
-    {
-      m_skyPass->Render();
-    }
-
-    // Forward render blended entities
-    m_forwardRenderPass->Render();
-
-    renderer->SetShadowAtlas(nullptr);
-
-    PostRender();
-  }
-
-  void SceneRenderPass::PreRender()
-  {
-    Pass::PreRender();
-    SetPassParams();
-
-    m_gBufferPass->InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
-                                m_params.MainFramebuffer->GetSettings().height);
-  }
-
-  void SceneRenderPass::PostRender() { Pass::PostRender(); }
-
-  void SceneRenderPass::SetPassParams()
-  {
-    m_shadowPass->m_params.Entities  = m_params.Scene->GetEntities();
-    m_shadowPass->m_params.Lights    = m_params.Lights;
-
-    // Give blended entities to forward render, non-blendeds to deferred
-    // render
-
-    EntityRawPtrArray opaqueDrawList = m_params.Scene->GetEntities();
-    EntityRawPtrArray translucentAndUnlitDrawList;
-    m_forwardRenderPass->SeperateTranslucentAndUnlitEntities(
-        opaqueDrawList,
-        translucentAndUnlitDrawList);
-
-    m_gBufferPass->m_params.entities                = opaqueDrawList;
-    m_gBufferPass->m_params.camera                  = m_params.Cam;
-
-    m_deferredRenderPass->m_params.ClearFramebuffer = true;
-    m_deferredRenderPass->m_params.GBufferFramebuffer =
-        m_gBufferPass->m_framebuffer;
-
-    m_deferredRenderPass->m_params.lights          = m_params.Lights;
-    m_deferredRenderPass->m_params.MainFramebuffer = m_params.MainFramebuffer;
-    m_deferredRenderPass->m_params.Cam             = m_params.Cam;
-    m_deferredRenderPass->m_params.AOTexture       = m_ssaoPass->m_ssaoTexture;
-
-    m_forwardRenderPass->m_params.Lights           = m_params.Lights;
-    m_forwardRenderPass->m_params.Cam              = m_params.Cam;
-    m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.ClearFrameBuffer = false;
-
-    m_forwardRenderPass->m_params.Entities  = translucentAndUnlitDrawList;
-
-    m_ssaoPass->m_params.GPositionBuffer    = m_gBufferPass->m_gPosRt;
-    m_ssaoPass->m_params.GNormalBuffer      = m_gBufferPass->m_gNormalRt;
-    m_ssaoPass->m_params.GLinearDepthBuffer = m_gBufferPass->m_gLinearDepthRt;
-    m_ssaoPass->m_params.Cam                = m_params.Cam;
-
-    // Set CubeMapPass for sky.
-    m_drawSky                               = false;
-    if (SkyBase* sky = m_params.Scene->GetSky())
-    {
-      if (m_drawSky = sky->GetDrawSkyVal())
-      {
-        m_skyPass->m_params.FrameBuffer = m_params.MainFramebuffer;
-        m_skyPass->m_params.Cam         = m_params.Cam;
-        m_skyPass->m_params.Transform   = sky->m_node->GetTransform();
-        m_skyPass->m_params.Material    = sky->GetSkyboxMaterial();
-      }
-    }
-  }
-
-  void SceneRenderPass::CullDrawList(EntityRawPtrArray& entities,
-                                     Camera* camera)
-  {
-    // Dropout non visible & drawable entities.
-    entities.erase(std::remove_if(entities.begin(),
-                                  entities.end(),
-                                  [](Entity* ntt) -> bool {
-                                    return !ntt->GetVisibleVal() ||
-                                           !ntt->IsDrawable();
-                                  }),
-                   entities.end());
-
-    FrustumCull(entities, camera);
-  }
 
   GBufferPass::GBufferPass()
   {
@@ -1266,8 +1102,6 @@ namespace ToolKit
 
   void GBufferPass::Render()
   {
-    PreRender();
-
     Renderer* renderer = GetRenderer();
 
     for (Entity* ntt : m_params.entities)
@@ -1291,8 +1125,6 @@ namespace ToolKit
 
       renderer->Render(ntt, m_params.camera);
     }
-
-    PostRender();
   }
 
   SSAOPass::SSAOPass()
@@ -1320,8 +1152,6 @@ namespace ToolKit
 
   void SSAOPass::Render()
   {
-    PreRender();
-
     Renderer* renderer = GetRenderer();
 
     // Generate SSAO texture
@@ -1343,8 +1173,6 @@ namespace ToolKit
                                m_ssaoTexture,
                                Y_AXIS,
                                1.0f / m_ssaoTexture->m_height);
-
-    PostRender();
   }
 
   void SSAOPass::PreRender()
@@ -1449,7 +1277,7 @@ namespace ToolKit
     }
   }
 
-  DeferredRenderPass::DeferredRenderPass() 
+  DeferredRenderPass::DeferredRenderPass()
   {
     m_fullQuadPass = std::make_shared<FullQuadPass>();
   }
@@ -1490,7 +1318,7 @@ namespace ToolKit
     m_fullQuadPass->m_params.FragmentShader   = m_deferredRenderShader;
     m_fullQuadPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
 
-    Renderer* renderer                       = GetRenderer();
+    Renderer* renderer                        = GetRenderer();
 
     Vec2 sd, nsd, sp, nsp, ss, nss;
     float sizeD, sizeP, sizeS, sizeND, sizeNP, sizeNS;
@@ -1592,14 +1420,7 @@ namespace ToolKit
     Pass::PostRender();
   }
 
-  void DeferredRenderPass::Render()
-  {
-    PreRender();
-
-    m_fullQuadPass->Render();
-
-    PostRender();
-  }
+  void DeferredRenderPass::Render() { m_fullQuadPass->Render(); }
 
   void DeferredRenderPass::InitLightDataTexture()
   {
