@@ -108,7 +108,7 @@ namespace ToolKit
 
       m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager               = new PublishManager();
-      GetRenderer()->m_clearColor    = g_wndBgColor;
+      GetRenderSystem()->SetClearColor(g_wndBgColor);
     }
 
     void App::DestroyEditorEntities()

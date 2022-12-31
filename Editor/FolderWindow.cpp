@@ -76,154 +76,9 @@ namespace ToolKit
       return nullptr;
     }
 
-    void DirectoryEntry::GenerateThumbnail() const
-    {
-      const Vec2& thumbSize = g_app->m_thumbnailSize;
-      auto renderThumbFn = [this, &thumbSize](Camera* cam, Entity* obj) -> void
-      {
-        RenderTargetPtr thumbPtr = nullptr;
-        String fullPath          = GetFullPath();
-
-        if (g_app->m_thumbnailCache.find(fullPath) !=
-            g_app->m_thumbnailCache.end())
-        {
-          thumbPtr = g_app->m_thumbnailCache[fullPath];
-          if (thumbPtr->m_width - (int) thumbSize.x != 0 ||
-              thumbPtr->m_height - (int) thumbSize.y != 0)
-          {
-            // Re - render.
-            thumbPtr = nullptr;
-          }
-        }
-
-        FramebufferPtr thumbFbPtr = nullptr;
-        if (thumbPtr == nullptr)
-        {
-          thumbPtr = std::make_shared<RenderTarget>((uint) thumbSize.x,
-                                                    (uint) thumbSize.y);
-          thumbPtr->Init();
-          thumbFbPtr = std::make_shared<Framebuffer>();
-          thumbFbPtr->Init(
-              {(uint) thumbSize.x, (uint) thumbSize.y, false, true});
-          thumbFbPtr->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                    thumbPtr);
-        }
-
-        g_app->m_renderer->SwapFramebuffer(thumbFbPtr);
-
-        DirectionalLight light;
-        light.m_node->SetTranslation({5.0f, 5.0f, 5.0f});
-        light.GetComponent<DirectionComponent>()->LookAt(ZERO);
-
-        LightRawPtrArray lights = {&light};
-
-        g_app->m_renderer->Render(obj, cam, lights);
-
-        g_app->m_renderer->SwapFramebuffer(thumbFbPtr, false);
-        g_app->m_thumbnailCache[GetFullPath()] = thumbPtr;
-      };
-
-      if (m_ext == MESH || m_ext == SKINMESH)
-      {
-        Entity tempDrawEntity;
-        String fullpath = ConcatPaths({m_rootPath, m_fileName + m_ext});
-
-        MeshPtr mesh    = nullptr;
-        if (m_ext == MESH)
-        {
-          mesh = GetMeshManager()->Create<Mesh>(fullpath);
-        }
-        else
-        {
-          mesh = GetMeshManager()->Create<SkinMesh>(fullpath);
-        }
-        mesh->Init(false);
-        MeshComponentPtr meshComp = std::make_shared<MeshComponent>();
-        meshComp->SetMeshVal(mesh);
-        tempDrawEntity.AddComponent(meshComp);
-
-        if (m_ext == SKINMESH)
-        {
-          SkinMesh* skinMesh            = (SkinMesh*) mesh.get();
-          SkeletonComponentPtr skelComp = std::make_shared<SkeletonComponent>();
-          skelComp->SetSkeletonResourceVal(skinMesh->m_skeleton);
-          skelComp->Init();
-          tempDrawEntity.AddComponent(skelComp);
-        }
-
-        Camera cam;
-        cam.SetLens(glm::radians(45.0f), thumbSize.x / thumbSize.y);
-        cam.FocusToBoundingBox(meshComp->GetAABB(), 1.1f);
-
-        renderThumbFn(&cam, &tempDrawEntity);
-      }
-      else if (m_ext == MATERIAL)
-      {
-        Sphere ball;
-        String fullpath  = GetFullPath();
-        MeshPtr mesh     = ball.GetMeshComponent()->GetMeshVal();
-
-        MaterialPtr mat  = GetMaterialManager()->Create<Material>(fullpath);
-        mesh->m_material = mat;
-
-        // Disable ao
-        bool aoActive    = mesh->m_material->GetRenderState()->AOInUse;
-        mat->GetRenderState()->AOInUse  = false;
-        mat->GetRenderState()->IBLInUse = false;
-
-        mesh->Init(false);
-
-        Camera cam;
-        cam.SetLens(glm::half_pi<float>(), thumbSize.x / thumbSize.y);
-        cam.m_node->SetTranslation(Vec3(0.0f, 0.0f, 1.5f));
-
-        renderThumbFn(&cam, &ball);
-
-        mat->GetRenderState()->AOInUse = aoActive;
-      }
-      else if (SupportedImageFormat(m_ext) || m_ext == HDR)
-      {
-        String fullpath = m_rootPath + GetPathSeparator() + m_fileName + m_ext;
-        TexturePtr texture = nullptr;
-        if (m_ext == HDR)
-        {
-          texture = std::make_shared<Texture>(fullpath, true);
-          texture->Load();
-          texture->Init(true);
-        }
-        else
-        {
-          texture = GetTextureManager()->Create<Texture>(fullpath);
-        }
-
-        float maxDim = float(glm::max(texture->m_width, texture->m_height));
-        float w      = (texture->m_width / maxDim) * thumbSize.x;
-        float h      = (texture->m_height / maxDim) * thumbSize.y;
-
-        Surface surface(Vec2(w, h));
-        MaterialComponentPtr matCom = surface.GetMaterialComponent();
-        matCom->GetMaterialVal()->m_diffuseTexture = texture;
-        matCom->Init(false);
-
-        Camera cam;
-        cam.SetLens(w * -0.5f, w * 0.5f, h * -0.5f, h * 0.5f, 0.01f, 1000.0f);
-        cam.m_node->Translate(Vec3(0.0f, 0.0f, 10.0f),
-                              TransformationSpace::TS_LOCAL);
-
-        renderThumbFn(&cam, &surface);
-      }
-    }
-
     RenderTargetPtr DirectoryEntry::GetThumbnail() const
     {
-      String fullPath = GetFullPath();
-      if (g_app->m_thumbnailCache.find(fullPath) !=
-          g_app->m_thumbnailCache.end())
-      {
-        return g_app->m_thumbnailCache[fullPath];
-      }
-
-      return nullptr;
+      return g_app->m_thumbnailManager.GetThumbnail(*this);
     }
 
     FolderView::FolderView() { CreateItemActions(); }
@@ -315,10 +170,6 @@ namespace ToolKit
 
             auto genThumbFn = [&flipRenderTarget, &iconId, &dirEnt]() -> void
             {
-              if (dirEnt.GetThumbnail() == nullptr)
-              {
-                dirEnt.GenerateThumbnail();
-              }
               iconId           = dirEnt.GetThumbnail()->m_textureId;
               flipRenderTarget = true;
             };

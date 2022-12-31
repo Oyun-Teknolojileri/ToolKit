@@ -41,7 +41,7 @@ namespace ToolKit
 
   UVec2 RenderSystem::GetAppWindowSize() { return m_renderer->m_windowSize; }
 
-  void RenderSystem::SetClearColor(Vec4 clearColor)
+  void RenderSystem::SetClearColor(const Vec4& clearColor)
   {
     m_renderer->m_clearColor = clearColor;
   }
@@ -49,6 +49,11 @@ namespace ToolKit
   void RenderSystem::SetFrameCount(uint count)
   {
     m_renderer->m_frameCount = count;
+  }
+
+  void RenderSystem::EnableBlending(bool enable) 
+  {
+    m_renderer->EnableBlending(enable);
   }
 
 } // namespace ToolKit

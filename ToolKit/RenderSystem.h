@@ -52,12 +52,14 @@ namespace ToolKit
      * Sets default clear color for render targets.
      * @param clearColor default clear color.
      */
-    void SetClearColor(Vec4 clearColor);
+    void SetClearColor(const Vec4& clearColor);
 
     /**
      * Sets frame count to be that will be used as uniform in shaders.
      */
     void SetFrameCount(uint count);
+
+    void EnableBlending(bool enable);
 
    private:
     Renderer* m_renderer         = nullptr;

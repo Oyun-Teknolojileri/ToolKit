@@ -339,9 +339,9 @@ namespace ToolKit
                         cubemap,
                         -1,
                         (Framebuffer::CubemapFace) i);
-
-      GetRenderer()->SetFramebuffer(fb, true, Vec4(0.0f));
-      GetRenderer()->DrawCube(cam.get(), m_skyboxMaterial);
+      // TODO: Cihan
+      // GetRenderer()->SetFramebuffer(fb, true, Vec4(0.0f));
+      // GetRenderer()->DrawCube(cam.get(), m_skyboxMaterial);
     }
 
     m_skyboxMaterial->GetRenderState()->depthTestEnabled = true;
@@ -354,7 +354,8 @@ namespace ToolKit
 
   void GradientSky::GenerateIrradianceCubemap()
   {
-    TexturePtr irradianceMap = GetRenderer()->GenerateIrradianceCubemap(
+    // TODO: Cihan
+    /*TexturePtr irradianceMap = GetRenderer()->GenerateIrradianceCubemap(
         m_skyboxMap,
         (uint) GetIrradianceResolutionVal(),
         (uint) GetIrradianceResolutionVal());
@@ -363,6 +364,7 @@ namespace ToolKit
     m_irradianceMap = std::make_shared<CubeMap>(irradianceMap->m_textureId);
     irradianceMap->m_textureId = 0;
     irradianceMap              = nullptr;
+    */
   }
 
 } // namespace ToolKit

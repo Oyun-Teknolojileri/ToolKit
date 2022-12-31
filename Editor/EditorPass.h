@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EditorLight.h"
 #include "Gizmo.h"
 #include "Global.h"
 #include "Pass.h"
@@ -113,7 +114,6 @@ namespace ToolKit
       void PreRender();
       void PostRender();
       void SetLitMode(EditorLitMode mode);
-      static void CreateEditorLights(LightRawPtrArray& list, Node** parentNode);
 
      private:
       void InitRenderer();
@@ -130,7 +130,7 @@ namespace ToolKit
        * Three point lighting system which is used to illuminate the scene in
        * EditorLit mode.
        */
-      LightRawPtrArray m_editorLights;
+      ThreePointLightSystemPtr m_editorLights           = nullptr;
 
       /**
        * Parent Node that m_editorLights are attached to.

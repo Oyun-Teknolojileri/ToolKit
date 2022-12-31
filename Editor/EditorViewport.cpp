@@ -304,7 +304,7 @@ namespace ToolKit
           ImDrawList* drawList = ImGui::GetWindowDrawList();
           drawList->AddCallback(
               [](const ImDrawList* parentList, const ImDrawCmd* cmd)
-              { GetRenderer()->EnableBlending(false); },
+              { GetRenderSystem()->EnableBlending(false); },
               nullptr);
 
           ImGui::Image(ConvertUIntImGuiTexture(texId),
@@ -314,7 +314,7 @@ namespace ToolKit
 
           drawList->AddCallback(
               [](const ImDrawList* parentList, const ImDrawCmd* cmd)
-              { GetRenderer()->EnableBlending(true); },
+              { GetRenderSystem()->EnableBlending(true); },
               nullptr);
 
           if (IsActive())

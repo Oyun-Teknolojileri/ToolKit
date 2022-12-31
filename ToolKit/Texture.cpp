@@ -358,6 +358,9 @@ namespace ToolKit
     // Init 2D hdri texture
     Texture::Init(flushClientSideArray);
 
+    // TODO: Cihan
+
+    /*
     // Convert hdri image to cubemap images
     m_cubemap = GetRenderer()->GenerateCubemapFrom2DTexture(
         GetTextureManager()->Create<Texture>(GetFile()),
@@ -370,6 +373,7 @@ namespace ToolKit
         GetRenderer()->GenerateIrradianceCubemap(m_cubemap,
                                                  m_width / 64,
                                                  m_width / 64);
+                                                 */
   }
 
   void Hdri::UnInit()

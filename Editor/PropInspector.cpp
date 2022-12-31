@@ -67,8 +67,6 @@ namespace ToolKit
       }
       else if (fileExist)
       {
-        dirEnt.GenerateThumbnail();
-
         if (RenderTargetPtr thumb = dirEnt.GetThumbnail())
         {
           iconId = thumb->m_textureId;

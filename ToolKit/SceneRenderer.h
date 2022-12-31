@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Pass.h"
+#include "PostProcessPass.h"
 #include "RenderSystem.h"
 
 namespace ToolKit

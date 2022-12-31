@@ -26,6 +26,112 @@
 namespace ToolKit
 {
 
+  // An interval has start time and end time
+  struct LightSortStruct
+  {
+    Light* light        = nullptr;
+    uint intersectCount = 0;
+  };
+
+  // Compares two intervals according to starting times.
+  bool CompareLightIntersects(const LightSortStruct& i1,
+                              const LightSortStruct& i2)
+  {
+    return (i1.intersectCount > i2.intersectCount);
+  }
+
+  LightRawPtrArray GetBestLights(Entity* entity, const LightRawPtrArray& lights)
+  {
+    LightRawPtrArray bestLights;
+    bestLights.reserve(lights.size());
+
+    // Find the end of directional lights
+    for (int i = 0; i < lights.size(); i++)
+    {
+      if (lights[i]->GetType() == EntityType::Entity_DirectionalLight)
+      {
+        bestLights.push_back(lights[i]);
+      }
+    }
+
+    // Add the lights inside of the radius first
+    std::vector<LightSortStruct> intersectCounts(lights.size());
+    BoundingBox aabb = entity->GetAABB(true);
+    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
+    {
+      float radius;
+      Light* light = lights[lightIndx];
+      if (light->GetType() == EntityType::Entity_PointLight)
+      {
+        radius = static_cast<PointLight*>(light)->GetRadiusVal();
+      }
+      else if (light->GetType() == EntityType::Entity_SpotLight)
+      {
+        radius = static_cast<SpotLight*>(light)->GetRadiusVal();
+      }
+      else
+      {
+        continue;
+      }
+
+      intersectCounts[lightIndx].light = light;
+      uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
+
+      /* This algorithms can be used for better sorting
+      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
+      {
+        for (uint isMin = 0; isMin < 2; isMin++)
+        {
+          Vec3 p     = aabb.min;
+          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
+          float dist = glm::length(
+              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+          if (dist <= radius)
+          {
+            curIntersectCount++;
+          }
+        }
+      }*/
+
+      if (light->GetType() == EntityType::Entity_SpotLight)
+      {
+        light->UpdateShadowCamera();
+
+        Frustum spotFrustum =
+            ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
+
+        if (FrustumBoxIntersection(spotFrustum, aabb) !=
+            IntersectResult::Outside)
+        {
+          curIntersectCount++;
+        }
+      }
+      if (light->GetType() == EntityType::Entity_PointLight)
+      {
+        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
+        if (SphereBoxIntersection(lightSphere, aabb))
+        {
+          curIntersectCount++;
+        }
+      }
+    }
+
+    std::sort(intersectCounts.begin(),
+              intersectCounts.end(),
+              CompareLightIntersects);
+
+    for (uint i = 0; i < intersectCounts.size(); i++)
+    {
+      if (intersectCounts[i].intersectCount == 0)
+      {
+        break;
+      }
+      bestLights.push_back(intersectCounts[i].light);
+    }
+
+    return bestLights;
+  }
+
   Renderer::Renderer()
   {
     m_uiCamera        = new Camera();
@@ -595,113 +701,6 @@ namespace ToolKit
     }
 
     return entity->GetRenderMaterial();
-  }
-
-  // An interval has start time and end time
-  struct LightSortStruct
-  {
-    Light* light        = nullptr;
-    uint intersectCount = 0;
-  };
-
-  // Compares two intervals according to starting times.
-  bool CompareLightIntersects(const LightSortStruct& i1,
-                              const LightSortStruct& i2)
-  {
-    return (i1.intersectCount > i2.intersectCount);
-  }
-
-  LightRawPtrArray Renderer::GetBestLights(Entity* entity,
-                                           const LightRawPtrArray& lights)
-  {
-    LightRawPtrArray bestLights;
-    bestLights.reserve(lights.size());
-
-    // Find the end of directional lights
-    for (int i = 0; i < lights.size(); i++)
-    {
-      if (lights[i]->GetType() == EntityType::Entity_DirectionalLight)
-      {
-        bestLights.push_back(lights[i]);
-      }
-    }
-
-    // Add the lights inside of the radius first
-    std::vector<LightSortStruct> intersectCounts(lights.size());
-    BoundingBox aabb = entity->GetAABB(true);
-    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
-    {
-      float radius;
-      Light* light = lights[lightIndx];
-      if (light->GetType() == EntityType::Entity_PointLight)
-      {
-        radius = static_cast<PointLight*>(light)->GetRadiusVal();
-      }
-      else if (light->GetType() == EntityType::Entity_SpotLight)
-      {
-        radius = static_cast<SpotLight*>(light)->GetRadiusVal();
-      }
-      else
-      {
-        continue;
-      }
-
-      intersectCounts[lightIndx].light = light;
-      uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
-
-      /* This algorithms can be used for better sorting
-      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
-      {
-        for (uint isMin = 0; isMin < 2; isMin++)
-        {
-          Vec3 p     = aabb.min;
-          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
-          float dist = glm::length(
-              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
-          if (dist <= radius)
-          {
-            curIntersectCount++;
-          }
-        }
-      }*/
-
-      if (light->GetType() == EntityType::Entity_SpotLight)
-      {
-        light->UpdateShadowCamera();
-
-        Frustum spotFrustum =
-            ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
-
-        if (FrustumBoxIntersection(spotFrustum, aabb) !=
-            IntersectResult::Outside)
-        {
-          curIntersectCount++;
-        }
-      }
-      if (light->GetType() == EntityType::Entity_PointLight)
-      {
-        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
-        if (SphereBoxIntersection(lightSphere, aabb))
-        {
-          curIntersectCount++;
-        }
-      }
-    }
-
-    std::sort(intersectCounts.begin(),
-              intersectCounts.end(),
-              CompareLightIntersects);
-
-    for (uint i = 0; i < intersectCounts.size(); i++)
-    {
-      if (intersectCounts[i].intersectCount == 0)
-      {
-        break;
-      }
-      bestLights.push_back(intersectCounts[i].light);
-    }
-
-    return bestLights;
   }
 
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
