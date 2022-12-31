@@ -7,6 +7,11 @@
 namespace ToolKit
 {
   /**
+  * The Pack() function does the packing.
+  * Pack() function returns a PackedRect array. Each PackedRect holds
+  * the layer index and the coordinates of the square in the layer.
+  * 
+  * 
   * Shelves are holding squares
   * Layer are holding shelves
   * 
@@ -19,6 +24,7 @@ namespace ToolKit
   *         Create a shelf in that layer and place the square
   *       Else
   *         Create a new layer, create a new shelf, place the square
+  * 
   */
 
   /**
