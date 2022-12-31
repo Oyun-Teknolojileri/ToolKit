@@ -8,14 +8,28 @@
 
 namespace ToolKit
 {
+  struct TextureSettings
+  {
+    GraphicTypes MinFilter       = GraphicTypes::SampleNearest;
+    GraphicTypes MagFilter       = GraphicTypes::SampleNearest;
+    GraphicTypes InternalFormat  = GraphicTypes::FormatSRGB8_A8;
+    GraphicTypes InternalFormat  = GraphicTypes::FormatRGBA;
+    GraphicTypes Format          = GraphicTypes::FormatRGBA;
+    GraphicTypes Type            = GraphicTypes::TypeUnsignedByte;
+    bool GenerateMipmap          = true;
+    GraphicTypes MipMapMinFilter = GraphicTypes::SampleNearestMipmapNearest;
+    GraphicTypes MipMapMagFilter = GraphicTypes::SampleNearestMipmapNearest;
+    GraphicTypes MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
+    GraphicTypes MipMapMagFilter = GraphicTypes::SampleLinearMipmapLinear;
+  };
 
   class TK_API Texture : public Resource
   {
    public:
     TKResourceType(Texture);
 
-    explicit Texture(bool floatFormat = false);
-    explicit Texture(String file, bool floatFormat = false);
+    explicit Texture(const TextureSettings& settings = {});
+    explicit Texture(String file, const TextureSettings& settings = {});
     explicit Texture(uint textureId);
     virtual ~Texture();
 
@@ -27,13 +41,15 @@ namespace ToolKit
     virtual void Clear();
 
    public:
-    uint m_textureId   = 0;
-    int m_width        = 0;
-    int m_height       = 0;
-    int m_bytePP       = 0;
-    bool m_floatFormat = false;
-    uint8* m_image     = nullptr;
-    float* m_imagef    = nullptr;
+    uint m_textureId = 0;
+    int m_width      = 0;
+    int m_height     = 0;
+    int m_bytePP     = 0;
+    uint8* m_image   = nullptr;
+    float* m_imagef  = nullptr;
+
+   protected:
+    TextureSettings m_textureSettings;
   };
 
   class TK_API CubeMap : public Texture
@@ -119,6 +135,9 @@ namespace ToolKit
 
    public:
     RenderTargetSettigs m_settings;
+
+   private:
+    TextureSettings m_textureSettings;
   };
 
   class TK_API TextureManager : public ResourceManager
