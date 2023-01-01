@@ -54,14 +54,21 @@ namespace ToolKit
         break;
       }
 
+      // Draw scene and apply bloom effect.
+      Technique::Render(renderer);
+      m_passArray.clear();
+
       SetLitMode(renderer, EditorLitMode::EditorLit);
 
+      // Draw outlines.
+      OutlineSelecteds(renderer);
+      m_passArray.clear();
+
+      // Draw editor objects.
       m_passArray.push_back(m_editorPass);
-
-      // TODO: Cihan
-      // OutlineSelecteds();
-
       m_passArray.push_back(m_gizmoPass);
+
+      // Post process.
       m_passArray.push_back(m_tonemapPass);
       m_passArray.push_back(m_gammaPass);
 
@@ -262,7 +269,7 @@ namespace ToolKit
       m_singleMatRenderer = std::make_shared<SingleMatForwardRenderPass>();
     }
 
-    void EditorRenderer::OutlineSelecteds()
+    void EditorRenderer::OutlineSelecteds(Renderer* renderer)
     {
       if (m_selecteds.empty())
       {
@@ -271,8 +278,9 @@ namespace ToolKit
       EntityRawPtrArray selecteds = m_selecteds; // Copy
 
       Viewport* viewport          = m_params.Viewport;
-      auto RenderFn = [this, viewport](const EntityRawPtrArray& selection,
-                                       const Vec4& color) -> void
+      auto RenderFn =
+          [this, viewport, renderer](const EntityRawPtrArray& selection,
+                                     const Vec4& color) -> void
       {
         if (selection.empty())
         {
@@ -305,7 +313,9 @@ namespace ToolKit
           }
         }
 
-        m_outlinePass->Render();
+        m_passArray.clear();
+        m_passArray.push_back(m_outlinePass);
+        Technique::Render(renderer);
 
         // Enable light gizmos back
         for (Entity* entity : selection)

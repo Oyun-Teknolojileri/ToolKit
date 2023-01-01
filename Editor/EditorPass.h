@@ -117,7 +117,7 @@ namespace ToolKit
      private:
       void SetLitMode(Renderer* renderer, EditorLitMode mode);
       void InitRenderer();
-      void OutlineSelecteds();
+      void OutlineSelecteds(Renderer* renderer);
 
      public:
       /**

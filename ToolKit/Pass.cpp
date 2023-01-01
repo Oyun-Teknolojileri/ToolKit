@@ -867,7 +867,7 @@ namespace ToolKit
     renderer->ColorMask(true, true, true, true);
     renderer->SetStencilOperation(StencilOperation::AllowPixelsFailingStencil);
 
-    m_copyStencilSubPass->Render();
+    RenderSubPass(m_copyStencilSubPass);
 
     renderer->SetStencilOperation(StencilOperation::None);
   }
@@ -923,7 +923,7 @@ namespace ToolKit
   void OutlinePass::Render()
   {
     // Generate stencil binary image.
-    m_stencilPass->Render();
+    RenderSubPass(m_stencilPass);
 
     // Use stencil output as input to the dilation.
     GetRenderer()->SetTexture(0, m_stencilAsRt->m_textureId);
@@ -934,7 +934,8 @@ namespace ToolKit
     m_outlinePass->m_params.FragmentShader   = m_dilateShader;
     m_outlinePass->m_params.FrameBuffer      = m_params.FrameBuffer;
     m_outlinePass->m_params.ClearFrameBuffer = false;
-    m_outlinePass->Render();
+
+    RenderSubPass(m_outlinePass);
   }
 
   void OutlinePass::PreRender()
@@ -970,22 +971,29 @@ namespace ToolKit
 
     m_gPosRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
     m_gNormalRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
     m_gColorRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
     m_gEmissiveRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
     gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR32F;
     gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
+
     m_gLinearDepthRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
     gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRG32F;
     gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRG;
+
     m_gMetallicRoughnessRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-    m_framebuffer     = std::make_shared<Framebuffer>();
 
+    m_framebuffer     = std::make_shared<Framebuffer>();
     m_gBufferMaterial = std::make_shared<Material>();
   }
 
