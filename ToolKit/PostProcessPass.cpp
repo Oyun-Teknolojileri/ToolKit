@@ -104,7 +104,7 @@ namespace ToolKit
       m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[i + 1];
       m_pass->m_params.BlendFunc        = BlendFunction::NONE;
 
-      m_pass->Render();
+      RenderSubPass(m_pass);
     }
 
     // Upsample Pass
@@ -124,7 +124,8 @@ namespace ToolKit
       m_pass->m_params.ClearFrameBuffer = false;
       m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[i - 1];
       m_upsampleShader->SetShaderParameter("intensity", ParameterVariant(1.0f));
-      m_pass->Render();
+
+      RenderSubPass(m_pass);
     }
 
     // Merge Pass
@@ -145,7 +146,7 @@ namespace ToolKit
           "intensity",
           ParameterVariant(m_params.intensity));
 
-      m_pass->Render();
+      RenderSubPass(m_pass);
     }
   }
 

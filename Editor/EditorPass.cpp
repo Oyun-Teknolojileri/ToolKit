@@ -60,7 +60,7 @@ namespace ToolKit
       // m_passArray.push_back(m_editorPass);
 
       // TODO: Cihan
-      // OutlineSelecteds();
+      //OutlineSelecteds();
 
       // m_passArray.push_back(m_gizmoPass);
       m_passArray.push_back(m_tonemapPass);
