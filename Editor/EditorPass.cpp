@@ -38,7 +38,7 @@ namespace ToolKit
     {
       PreRender();
 
-      SetLitMode(m_params.LitMode);
+      SetLitMode(renderer, m_params.LitMode);
 
       m_passArray.clear();
 
@@ -46,23 +46,22 @@ namespace ToolKit
       {
       case EditorLitMode::LightComplexity:
       case EditorLitMode::Unlit:
-        // m_passArray.push_back(m_singleMatRenderer);
+        m_passArray.push_back(m_singleMatRenderer);
         break;
       default:
-        // TODO: Cihan
         m_scenePass->Render(renderer);
         m_passArray.push_back(m_bloomPass);
         break;
       }
 
-      SetLitMode(EditorLitMode::EditorLit);
+      SetLitMode(renderer, EditorLitMode::EditorLit);
 
-      // m_passArray.push_back(m_editorPass);
+      m_passArray.push_back(m_editorPass);
 
       // TODO: Cihan
-      //OutlineSelecteds();
+      // OutlineSelecteds();
 
-      // m_passArray.push_back(m_gizmoPass);
+      m_passArray.push_back(m_gizmoPass);
       m_passArray.push_back(m_tonemapPass);
       m_passArray.push_back(m_gammaPass);
 
@@ -218,11 +217,8 @@ namespace ToolKit
       app->m_perFrameDebugObjects.clear();
     }
 
-    void EditorRenderer::SetLitMode(EditorLitMode mode)
+    void EditorRenderer::SetLitMode(Renderer* renderer, EditorLitMode mode)
     {
-      // TODO: Cihan
-      /*
-      Renderer* renderer = GetRenderer();
       switch (mode)
       {
       case EditorLitMode::EditorLit:
@@ -245,7 +241,6 @@ namespace ToolKit
         renderer->m_renderOnlyLighting = false;
         break;
       }
-      */
     }
 
     void EditorRenderer::InitRenderer()
@@ -348,8 +343,6 @@ namespace ToolKit
 
     void GizmoPass::Render()
     {
-      PreRender();
-
       Renderer* renderer = GetRenderer();
 
       for (EditorBillboardBase* bb : m_params.GizmoArray)
@@ -373,8 +366,6 @@ namespace ToolKit
           renderer->Render(bb, m_camera);
         }
       }
-
-      PostRender();
     }
 
     void GizmoPass::PreRender()
@@ -417,8 +408,6 @@ namespace ToolKit
 
     void SingleMatForwardRenderPass::Render()
     {
-      PreRender();
-
       EntityRawPtrArray translucentDrawList;
       SeperateTranslucentEntities(m_params.ForwardParams.Entities,
                                   translucentDrawList);
@@ -449,8 +438,6 @@ namespace ToolKit
       RenderTranslucent(translucentDrawList,
                         m_camera,
                         m_params.ForwardParams.Lights);
-
-      PostRender();
     }
 
     void SingleMatForwardRenderPass::PreRender()

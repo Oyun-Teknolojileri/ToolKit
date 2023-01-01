@@ -113,9 +113,9 @@ namespace ToolKit
       void Render(Renderer* renderer) override;
       void PreRender();
       void PostRender();
-      void SetLitMode(EditorLitMode mode);
 
      private:
+      void SetLitMode(Renderer* renderer, EditorLitMode mode);
       void InitRenderer();
       void OutlineSelecteds();
 
