@@ -22,7 +22,7 @@ namespace ToolKit
 
     EditorRenderer::~EditorRenderer()
     {
-      m_editorLights      = nullptr;
+      m_lightSystem       = nullptr;
       m_scenePass         = nullptr;
       m_editorPass        = nullptr;
       m_gizmoPass         = nullptr;
@@ -46,23 +46,23 @@ namespace ToolKit
       {
       case EditorLitMode::LightComplexity:
       case EditorLitMode::Unlit:
-        m_passArray.push_back(m_singleMatRenderer);
+        // m_passArray.push_back(m_singleMatRenderer);
         break;
       default:
         // TODO: Cihan
-        // m_passArray.push_back(m_scenePass);
+        m_scenePass->Render(renderer);
         m_passArray.push_back(m_bloomPass);
         break;
       }
 
       SetLitMode(EditorLitMode::EditorLit);
 
-      m_passArray.push_back(m_editorPass);
+      // m_passArray.push_back(m_editorPass);
 
       // TODO: Cihan
       // OutlineSelecteds();
 
-      m_passArray.push_back(m_gizmoPass);
+      // m_passArray.push_back(m_gizmoPass);
       m_passArray.push_back(m_tonemapPass);
       m_passArray.push_back(m_gammaPass);
 
@@ -77,8 +77,8 @@ namespace ToolKit
       m_camera = m_params.Viewport->GetCamera();
 
       // Adjust scene lights.
-      m_lightNode->OrphanSelf();
-      m_camera->m_node->AddChild(m_lightNode);
+      m_lightSystem->m_parentNode->OrphanSelf();
+      m_camera->m_node->AddChild(m_lightSystem->m_parentNode);
 
       // Construct EditorScene
       EntityRawPtrArray editorEntities;
@@ -149,14 +149,14 @@ namespace ToolKit
       editorEntities.push_back(grid);
 
       LightRawPtrArray lights = m_params.LitMode == EditorLitMode::EditorLit
-                                    ? m_editorLights->m_lights
+                                    ? m_lightSystem->m_lights
                                     : scene->GetLights();
 
       EditorViewport* viewport =
           static_cast<EditorViewport*>(m_params.Viewport);
 
       // Editor pass.
-      m_editorPass->m_params.Cam              = viewport->GetCamera();
+      m_editorPass->m_params.Cam              = m_camera;
       m_editorPass->m_params.FrameBuffer      = viewport->m_framebuffer;
       m_editorPass->m_params.Entities         = editorEntities;
       m_editorPass->m_params.ClearFrameBuffer = false;
@@ -169,19 +169,24 @@ namespace ToolKit
 
       // Bloom pass
       m_bloomPass->m_params.FrameBuffer       = viewport->m_framebuffer;
+
       m_bloomPass->m_params.intensity =
-          Main::GetInstance()->m_engineSettings.Graphics.bloomIntensity;
+          GetEngineSettings().Graphics.BloomIntensity;
+
       m_bloomPass->m_params.minThreshold =
-          Main::GetInstance()->m_engineSettings.Graphics.bloomThreshold;
+          GetEngineSettings().Graphics.BloomThreshold;
+
       m_bloomPass->m_params.iterationCount =
-          Main::GetInstance()->m_engineSettings.Graphics.bloomIterationCount;
+          GetEngineSettings().Graphics.BloomIterationCount;
 
       // Light Complexity pass
       m_singleMatRenderer->m_params.ForwardParams.Cam              = m_camera;
       m_singleMatRenderer->m_params.ForwardParams.Lights           = lights;
       m_singleMatRenderer->m_params.ForwardParams.ClearFrameBuffer = true;
+
       m_singleMatRenderer->m_params.ForwardParams.Entities =
           scene->GetEntities();
+
       m_singleMatRenderer->m_params.ForwardParams.FrameBuffer =
           viewport->m_framebuffer;
 
@@ -190,8 +195,7 @@ namespace ToolKit
 
       // Gamma Pass.
       m_gammaPass->m_params.FrameBuffer   = viewport->m_framebuffer;
-      // TODO: Read it from engine settings.
-      m_gammaPass->m_params.Gamma         = 2.2f;
+      m_gammaPass->m_params.Gamma         = GetEngineSettings().Graphics.Gamma;
 
       // Gizmo Pass.
       m_gizmoPass->m_params.Viewport      = viewport;
@@ -212,7 +216,6 @@ namespace ToolKit
         SafeDel(dbgObj);
       }
       app->m_perFrameDebugObjects.clear();
-      m_lightNode->OrphanSelf();
     }
 
     void EditorRenderer::SetLitMode(EditorLitMode mode)
@@ -247,7 +250,7 @@ namespace ToolKit
 
     void EditorRenderer::InitRenderer()
     {
-      m_editorLights  = std::make_shared<ThreePointLightSystem>();
+      m_lightSystem   = std::make_shared<ThreePointLightSystem>();
 
       // Create render mode materials.
       m_unlitOverride = GetMaterialManager()->GetCopyOfUnlitMaterial();

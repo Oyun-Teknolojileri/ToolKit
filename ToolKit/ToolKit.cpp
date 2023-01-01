@@ -456,6 +456,10 @@ namespace ToolKit
         {
           Graphics.TonemapperMode = (TonemapMethod) atoi(attr->value());
         }
+        if (XmlAttribute* attr = node2->first_attribute("gamma"))
+        {
+          Graphics.TonemapperMode = (TonemapMethod) atof(attr->value());
+        }
       }
     }
   }

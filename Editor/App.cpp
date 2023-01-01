@@ -200,8 +200,7 @@ namespace ToolKit
               Main::GetInstance()->m_engineSettings.Graphics.TonemapperMode;
 
           // TODO: Cihan
-          // GetRenderSystem()->Render(myEditorRenderer);
-          // myEditorRenderer->Render();
+          GetRenderSystem()->Render(myEditorRenderer);
         }
       }
 

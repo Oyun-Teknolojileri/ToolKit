@@ -130,12 +130,7 @@ namespace ToolKit
        * Three point lighting system which is used to illuminate the scene in
        * EditorLit mode.
        */
-      ThreePointLightSystemPtr m_editorLights           = nullptr;
-
-      /**
-       * Parent Node that m_editorLights are attached to.
-       */
-      Node* m_lightNode                                 = nullptr;
+      ThreePointLightSystemPtr m_lightSystem            = nullptr;
 
       /**
        * Override material for EditorLitMode::Unlit.

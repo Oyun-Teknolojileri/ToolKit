@@ -64,7 +64,8 @@ namespace ToolKit
       m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[0];
       m_pass->m_params.BlendFunc        = BlendFunction::NONE;
       m_pass->m_params.ClearFrameBuffer = true;
-      m_pass->Render();
+
+      RenderSubPass(m_pass);
     }
 
     // Downsample Pass
@@ -263,7 +264,7 @@ namespace ToolKit
     m_postProcessPass->m_params.ClearFrameBuffer = false;
   }
 
-  void PostProcessPass::Render() { m_postProcessPass->Render(); }
+  void PostProcessPass::Render() { RenderSubPass(m_postProcessPass); }
 
   void PostProcessPass::PostRender() { Pass::PostRender(); }
 
