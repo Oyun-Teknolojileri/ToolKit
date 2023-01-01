@@ -17,14 +17,14 @@ namespace ToolKit
 
       m_thumbnailScene = std::make_shared<Scene>();
 
-      m_entity = std::make_shared<Entity>();
+      m_entity         = std::make_shared<Entity>();
       m_entity->AddComponent(new MeshComponent());
 
       m_sphere = std::make_shared<Sphere>();
       m_sphere->AddComponent(new MaterialComponent());
 
-      m_lights = std::make_shared<ThreePointLightSystem>();
-      m_cam    = std::make_shared<Camera>();
+      m_lightSystem = std::make_shared<ThreePointLightSystem>();
+      m_cam         = std::make_shared<Camera>();
     }
 
     ThumbnailRenderer::~ThumbnailRenderer()
@@ -41,11 +41,11 @@ namespace ToolKit
         const DirectoryEntry& dirEnt)
     {
       String fullpath = dirEnt.GetFullPath();
+      m_thumbnailScene->ClearEntities();
 
       if (dirEnt.m_ext == MESH || dirEnt.m_ext == SKINMESH)
       {
         MeshPtr mesh = nullptr;
-
         if (dirEnt.m_ext == MESH)
         {
           mesh = GetMeshManager()->Create<Mesh>(fullpath);
@@ -126,11 +126,16 @@ namespace ToolKit
 
       m_thumbnailRT =
           std::make_shared<RenderTarget>(m_maxThumbSize, m_maxThumbSize);
+      m_thumbnailRT->Init();
 
       m_thumbnailBuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
           m_thumbnailRT);
 
+      Mat4 camTs = m_cam->m_node->GetTransform();
+      m_lightSystem->m_parentNode->SetTransform(camTs);
+
+      m_params.Lights          = m_lightSystem->m_lights;
       m_params.Scene           = m_thumbnailScene;
       m_params.Cam             = m_cam.get();
       m_params.MainFramebuffer = m_thumbnailBuffer;

@@ -144,7 +144,6 @@
     <ClCompile Include="PostProcessPass.cpp">
       <Filter>Source\Render\Pass</Filter>
     </ClCompile>
-    <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="Renderer.cpp">
       <Filter>Source\Render</Filter>
     </ClCompile>
@@ -152,6 +151,9 @@
       <Filter>Source\Render</Filter>
     </ClCompile>
     <ClCompile Include="SceneRenderer.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderSystem.cpp">
       <Filter>Source\Render</Filter>
     </ClCompile>
   </ItemGroup>

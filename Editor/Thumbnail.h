@@ -19,14 +19,14 @@ namespace ToolKit
 
      private:
       uint m_maxThumbSize;
-      FramebufferPtr m_thumbnailBuffer  = nullptr;
-      RenderTargetPtr m_thumbnailRT     = nullptr;
-      ScenePtr m_thumbnailScene         = nullptr;
-      SpherePtr m_sphere                = nullptr;
-      SurfacePtr m_surface              = nullptr;
-      EntityPtr m_entity                = nullptr;
-      CameraPtr m_cam                   = nullptr;
-      ThreePointLightSystemPtr m_lights = nullptr;
+      FramebufferPtr m_thumbnailBuffer       = nullptr;
+      RenderTargetPtr m_thumbnailRT          = nullptr;
+      ScenePtr m_thumbnailScene              = nullptr;
+      SpherePtr m_sphere                     = nullptr;
+      SurfacePtr m_surface                   = nullptr;
+      EntityPtr m_entity                     = nullptr;
+      CameraPtr m_cam                        = nullptr;
+      ThreePointLightSystemPtr m_lightSystem = nullptr;
     };
 
     class ThumbnailManager

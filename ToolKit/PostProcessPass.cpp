@@ -343,8 +343,7 @@ namespace ToolKit
     renderer->SetTexture(2, m_noiseTexture->m_textureId);
     renderer->SetTexture(3, m_params.GLinearDepthBuffer->m_textureId);
 
-    m_quadPass->m_params.FragmentShader = m_ssaoShader;
-    m_quadPass->Render();
+    RenderSubPass(m_quadPass);
 
     // Horizontal blur
     renderer->ApplyAverageBlur(m_ssaoTexture,
@@ -393,8 +392,6 @@ namespace ToolKit
     // Init noise texture
     m_noiseTexture->Init(&m_ssaoNoise[0]);
 
-    GetRenderer()->SetFramebuffer(m_ssaoFramebuffer, true, Vec4(0.0f));
-
     m_quadPass->m_params.FrameBuffer      = m_ssaoFramebuffer;
     m_quadPass->m_params.ClearFrameBuffer = true;
 
@@ -417,6 +414,8 @@ namespace ToolKit
     m_ssaoShader->SetShaderParameter(
         "viewMatrix",
         ParameterVariant(m_params.Cam->GetViewMatrix()));
+
+    m_quadPass->m_params.FragmentShader = m_ssaoShader;
   }
 
   void SSAOPass::PostRender() { Pass::PostRender(); }

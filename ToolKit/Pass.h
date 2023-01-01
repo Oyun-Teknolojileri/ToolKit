@@ -10,6 +10,9 @@
 namespace ToolKit
 {
 
+  typedef std::shared_ptr<class Pass> PassPtr;
+  typedef std::vector<PassPtr> PassPtrArray;
+
   /**
    * Base Pass class.
    */
@@ -22,6 +25,7 @@ namespace ToolKit
     virtual void Render() = 0;
     virtual void PreRender();
     virtual void PostRender();
+    void RenderSubPass(const PassPtr& pass);
 
     Renderer* GetRenderer();
     void SetRenderer(Renderer* renderer);
@@ -33,9 +37,6 @@ namespace ToolKit
    private:
     Renderer* m_renderer = nullptr;
   };
-
-  typedef std::shared_ptr<Pass> PassPtr;
-  typedef std::vector<PassPtr> PassPtrArray;
 
   /*
    * Base class for main rendering classes.

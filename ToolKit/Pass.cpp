@@ -728,6 +728,15 @@ namespace ToolKit
     renderer->SetFramebuffer(m_prevFrameBuffer, false);
   }
 
+  void Pass::RenderSubPass(const PassPtr& pass)
+  {
+    Renderer* renderer = GetRenderer();
+    pass->SetRenderer(renderer);
+    pass->PreRender();
+    pass->Render();
+    pass->PostRender();
+  }
+
   Renderer* Pass::GetRenderer() { return m_renderer; }
 
   void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
@@ -1268,7 +1277,7 @@ namespace ToolKit
     Pass::PostRender();
   }
 
-  void DeferredRenderPass::Render() { m_fullQuadPass->Render(); }
+  void DeferredRenderPass::Render() { RenderSubPass(m_fullQuadPass); }
 
   void DeferredRenderPass::InitLightDataTexture()
   {
