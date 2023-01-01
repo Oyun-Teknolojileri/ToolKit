@@ -5,6 +5,8 @@
 
 #include <memory>
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
   SkyBase::SkyBase()
@@ -205,13 +207,13 @@ namespace ToolKit
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("gradientSkyboxFrag.shader", true));
 
-    m_skyboxMaterial                             = std::make_shared<Material>();
-    m_skyboxMaterial->m_vertexShader             = vert;
-    m_skyboxMaterial->m_fragmentShader           = frag;
+    m_skyboxMaterial                   = std::make_shared<Material>();
+    m_skyboxMaterial->m_vertexShader   = vert;
+    m_skyboxMaterial->m_fragmentShader = frag;
 
-    RenderState* rs   = m_skyboxMaterial->GetRenderState();
-    rs->cullMode      = CullingType::TwoSided;
-    rs->depthFunction = GraphicTypes::FuncLequal;
+    RenderState* rs                    = m_skyboxMaterial->GetRenderState();
+    rs->cullMode                       = CullingType::TwoSided;
+    rs->depthFunction                  = GraphicTypes::FuncLequal;
     m_skyboxMaterial->Init();
 
     // Render gradient to cubemap and store the output

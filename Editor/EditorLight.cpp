@@ -9,6 +9,8 @@
 #include <memory>
 #include <string>
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
   namespace Editor

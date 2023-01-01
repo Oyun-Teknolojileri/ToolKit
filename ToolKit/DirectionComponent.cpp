@@ -2,6 +2,8 @@
 
 #include "Entity.h"
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
 

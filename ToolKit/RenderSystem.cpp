@@ -1,7 +1,8 @@
 #include "RenderSystem.h"
+
 #include "ToolKit.h"
 
-#include "stdafx.h"
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -51,7 +52,7 @@ namespace ToolKit
     m_renderer->m_frameCount = count;
   }
 
-  void RenderSystem::EnableBlending(bool enable) 
+  void RenderSystem::EnableBlending(bool enable)
   {
     m_renderer->EnableBlending(enable);
   }

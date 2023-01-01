@@ -5,6 +5,8 @@
 #include "EditorScene.h"
 #include "EditorViewport.h"
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
   namespace Editor

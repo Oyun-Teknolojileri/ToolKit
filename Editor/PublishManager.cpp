@@ -8,6 +8,8 @@
 #include <filesystem>
 #include <fstream>
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
   namespace Editor

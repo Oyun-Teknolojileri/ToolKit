@@ -1,7 +1,8 @@
 #include "Thumbnail.h"
 
 #include "Entity.h"
-#include "stdafx.h"
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -31,10 +32,13 @@ namespace ToolKit
     {
       m_thumbnailBuffer = nullptr;
       m_thumbnailRT     = nullptr;
-      m_thumbnailScene  = nullptr;
-      m_sphere          = nullptr;
-      m_cam             = nullptr;
-      m_entity          = nullptr;
+
+      m_thumbnailScene->ClearEntities();
+      m_thumbnailScene = nullptr;
+
+      m_sphere         = nullptr;
+      m_cam            = nullptr;
+      m_entity         = nullptr;
     }
 
     RenderTargetPtr ThumbnailRenderer::RenderThumbnail(

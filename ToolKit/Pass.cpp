@@ -7,6 +7,8 @@
 #include "Toolkit.h"
 #include "Viewport.h"
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
   RenderPass::RenderPass() {}

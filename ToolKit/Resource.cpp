@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
 

@@ -3,6 +3,8 @@
 #include "Shader.h"
 #include "Util.h"
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
 
