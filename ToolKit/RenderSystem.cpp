@@ -23,7 +23,7 @@ namespace ToolKit
 
   RenderSystem::RenderSystem() { m_renderer = new Renderer(); }
 
-  RenderSystem::~RenderSystem() {}
+  RenderSystem::~RenderSystem() { SafeDel(m_renderer); }
 
   void RenderSystem::Render(Technique* technique)
   {
