@@ -27,10 +27,17 @@ namespace ToolKit
   typedef std::function<void(Renderer*)> RenderTaskFn;
   typedef std::function<void()> RenderTaskOnComplatedFn;
 
+  enum class RenderTaskPriority
+  {
+    High,
+    Low
+  };
+
   struct RenderTask
   {
     RenderTaskFn Task                = nullptr;
     RenderTaskOnComplatedFn Callback = nullptr;
+    RenderTaskPriority Priority      = RenderTaskPriority::High;
   };
 
   /**
@@ -75,7 +82,8 @@ namespace ToolKit
     void EnableBlending(bool enable);
 
    private:
-    std::vector<RenderTask> m_renderTaskArray;
+    std::vector<RenderTask> m_highQueue;
+    std::vector<RenderTask> m_lowQueue;
     Renderer* m_renderer         = nullptr;
     Technique* m_renderTechnique = nullptr;
   };

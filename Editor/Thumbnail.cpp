@@ -192,7 +192,9 @@ namespace ToolKit
            {
              RenderTargetPtr rt = m_renderer.RenderThumbnail(renderer, dirEnt);
              m_thumbnailCache[fullPath] = rt;
-           }});
+           },
+           nullptr,
+           RenderTaskPriority::Low});
     }
 
   } // namespace Editor

@@ -39,13 +39,20 @@ namespace ToolKit
 
   void RenderSystem::AddRenderTask(RenderTask task)
   {
-    m_renderTaskArray.push_back(task);
+    switch (task.Priority)
+    {
+    case RenderTaskPriority::High:
+      m_highQueue.push_back(task);
+      break;
+    case RenderTaskPriority::Low:
+      m_lowQueue.push_back(task);
+      break;
+    }
   }
 
   void RenderSystem::ExecuteRenderTasks()
   {
-    std::vector<RenderTask> tasks = std::move(m_renderTaskArray);
-    for (RenderTask rt : tasks)
+    auto executeFn = [this](RenderTask& rt) -> void
     {
       if (rt.Task != nullptr)
       {
@@ -56,6 +63,35 @@ namespace ToolKit
           rt.Callback();
         }
       }
+    };
+
+    // Immediate execution.
+    std::vector<RenderTask> tasks = std::move(m_highQueue);
+    for (RenderTask& rt : tasks)
+    {
+      executeFn(rt);
+    }
+
+    // Time limited execution.
+    if (!m_lowQueue.empty())
+    {
+      const float timeLimit = 10.0f; // Adjust this to give more chance.
+      float time0           = GetElapsedMilliSeconds();
+      float time1           = time0;
+
+      tasks                 = std::move(m_lowQueue);
+      while (time1 - time0 < timeLimit)
+      {
+        RenderTask rt = tasks.front();
+        pop_front<RenderTask>(tasks);
+
+        executeFn(rt);
+
+        time1 = GetElapsedMilliSeconds();
+      }
+
+      // Merge remaining.
+      m_lowQueue.insert(m_lowQueue.begin(), tasks.begin(), tasks.end());
     }
   }
 
