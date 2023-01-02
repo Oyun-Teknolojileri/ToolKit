@@ -62,6 +62,24 @@ namespace ToolKit
     RenderTargetPtr m_copyTexture     = nullptr;
   };
 
+  struct FXAAPassParams
+  {
+    FramebufferPtr FrameBuffer = nullptr;
+    Vec2 screen_size;
+  };
+
+  class TK_API FXAAPass : public PostProcessPass
+  {
+  public:
+    FXAAPass();
+    explicit FXAAPass(const FXAAPassParams& params);
+
+    void PreRender() override;
+
+  public:
+    FXAAPassParams m_params;
+  };
+
   struct GammaPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;

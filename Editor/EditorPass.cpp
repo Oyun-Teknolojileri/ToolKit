@@ -55,6 +55,8 @@ namespace ToolKit
 
       m_gizmoPass.Render();
 
+      m_fxaaPass.Render();
+
       m_tonemapPass.Render();
 
       m_gammaPass.Render();
@@ -185,6 +187,10 @@ namespace ToolKit
       m_gammaPass.m_params.FrameBuffer   = viewport->m_framebuffer;
       // TODO: Read it from engine settings.
       m_gammaPass.m_params.Gamma         = 2.2f;
+
+      // FXAA Pass
+      m_fxaaPass.m_params.FrameBuffer = viewport->m_framebuffer;
+      m_fxaaPass.m_params.screen_size = viewport->m_size;
 
       // Gizmo Pass.
       m_gizmoPass.m_params.Viewport      = viewport;

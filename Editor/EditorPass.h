@@ -147,6 +147,7 @@ namespace ToolKit
       GizmoPass m_gizmoPass;
       TonemapPass m_tonemapPass;
       GammaPass m_gammaPass;
+      FXAAPass m_fxaaPass;
       BloomPass m_bloomPass;
       SSAOPass m_ssaoPass;
       OutlinePass m_outlinePass;
