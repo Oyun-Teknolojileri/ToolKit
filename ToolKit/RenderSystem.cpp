@@ -35,6 +35,28 @@ namespace ToolKit
     technique->Render(m_renderer);
   }
 
+  void RenderSystem::AddRenderTask(RenderTask task)
+  {
+    m_renderTaskArray.push_back(task);
+  }
+
+  void RenderSystem::ExecuteRenderTasks()
+  {
+    std::vector<RenderTask> tasks = std::move(m_renderTaskArray);
+    for (RenderTask rt : tasks)
+    {
+      if (rt.Task != nullptr)
+      {
+        rt.Task(m_renderer);
+
+        if (rt.Callback != nullptr)
+        {
+          rt.Callback();
+        }
+      }
+    }
+  }
+
   void RenderSystem::SetAppWindowSize(uint width, uint height)
   {
     m_renderer->m_windowSize = UVec2(width, height);

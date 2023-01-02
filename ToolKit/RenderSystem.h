@@ -3,6 +3,8 @@
 #include "Pass.h"
 #include "Renderer.h"
 
+#include <functional>
+
 namespace ToolKit
 {
 
@@ -22,6 +24,15 @@ namespace ToolKit
 
   typedef std::shared_ptr<Technique> TechniquePtr;
 
+  typedef std::function<void(Renderer*)> RenderTaskFn;
+  typedef std::function<void()> RenderTaskOnComplatedFn;
+
+  struct RenderTask
+  {
+    RenderTaskFn Task                = nullptr;
+    RenderTaskOnComplatedFn Callback = nullptr;
+  };
+
   /**
    * System class that facilitates renderer to the techniques.
    */
@@ -32,6 +43,8 @@ namespace ToolKit
     ~RenderSystem();
     void Render(Technique* technique);
     void Render(TechniquePtr technique);
+    void AddRenderTask(RenderTask task);
+    void ExecuteRenderTasks();
 
     /**
      * Sets application window size. Doesn't necessarily update any frame buffer
@@ -44,8 +57,8 @@ namespace ToolKit
     void SetAppWindowSize(uint width, uint height);
 
     /**
-    * @return Application window size.
-    */
+     * @return Application window size.
+     */
     UVec2 GetAppWindowSize();
 
     /**
@@ -62,6 +75,7 @@ namespace ToolKit
     void EnableBlending(bool enable);
 
    private:
+    std::vector<RenderTask> m_renderTaskArray;
     Renderer* m_renderer         = nullptr;
     Technique* m_renderTechnique = nullptr;
   };

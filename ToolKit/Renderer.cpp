@@ -851,6 +851,9 @@ namespace ToolKit
     }
     else
     {
+      // TODO: sky must come here with either technique or some other means
+      // than fetching it from scene.
+
       // Sky light
       SkyBase* sky = GetSceneManager()->GetCurrentScene()->GetSky();
       if (sky != nullptr && sky->IsInitialized() && sky->GetIlluminateVal())

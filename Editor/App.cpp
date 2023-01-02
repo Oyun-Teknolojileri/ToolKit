@@ -161,6 +161,8 @@ namespace ToolKit
       UI::BeginUI();
       UI::ShowUI();
 
+      GetRenderSystem()->ExecuteRenderTasks();
+
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
       std::vector<EditorViewport*> viewports;
@@ -199,7 +201,6 @@ namespace ToolKit
           myEditorRenderer->m_params.tonemapping =
               Main::GetInstance()->m_engineSettings.Graphics.TonemapperMode;
 
-          // TODO: Cihan
           GetRenderSystem()->Render(myEditorRenderer);
         }
       }

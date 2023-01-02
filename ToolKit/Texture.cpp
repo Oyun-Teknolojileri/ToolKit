@@ -358,22 +358,28 @@ namespace ToolKit
     // Init 2D hdri texture
     Texture::Init(flushClientSideArray);
 
-    // TODO: Cihan
+    // Only ready after cubemap constructed and irradiance calculated.
+    m_initiated     = false;
 
-    /*
-    // Convert hdri image to cubemap images
-    m_cubemap = GetRenderer()->GenerateCubemapFrom2DTexture(
-        GetTextureManager()->Create<Texture>(GetFile()),
-        m_width,
-        m_width,
-        1.0f);
+    RenderTask task = {[this, flushClientSideArray](Renderer* renderer) -> void
+                       {
+                         // Convert hdri image to cubemap images.
+                         m_cubemap = renderer->GenerateCubemapFrom2DTexture(
+                             GetTextureManager()->Create<Texture>(GetFile()),
+                             m_width,
+                             m_width,
+                             1.0f);
 
-    // Generate irradience cubemap images
-    m_irradianceCubemap =
-        GetRenderer()->GenerateIrradianceCubemap(m_cubemap,
-                                                 m_width / 64,
-                                                 m_width / 64);
-                                                 */
+                         // Generate irradience cubemap images.
+                         m_irradianceCubemap =
+                             renderer->GenerateIrradianceCubemap(m_cubemap,
+                                                                 m_width / 64,
+                                                                 m_width / 64);
+
+                         m_initiated = true;
+                       }};
+
+    GetRenderSystem()->AddRenderTask(task);
   }
 
   void Hdri::UnInit()
@@ -383,6 +389,7 @@ namespace ToolKit
       m_cubemap->UnInit();
       m_irradianceCubemap->UnInit();
     }
+
     Texture::UnInit();
   }
 
