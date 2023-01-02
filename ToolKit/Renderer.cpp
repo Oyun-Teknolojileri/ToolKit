@@ -26,13 +26,134 @@
 namespace ToolKit
 {
 
+  // An interval has start time and end time
+  struct LightSortStruct
+  {
+    Light* light        = nullptr;
+    uint intersectCount = 0;
+  };
+
+  // Compares two intervals according to starting times.
+  bool CompareLightIntersects(const LightSortStruct& i1,
+                              const LightSortStruct& i2)
+  {
+    return (i1.intersectCount > i2.intersectCount);
+  }
+
+  LightRawPtrArray GetBestLights(Entity* entity, const LightRawPtrArray& lights)
+  {
+    LightRawPtrArray bestLights;
+    bestLights.reserve(lights.size());
+
+    // Find the end of directional lights
+    for (int i = 0; i < lights.size(); i++)
+    {
+      if (lights[i]->GetType() == EntityType::Entity_DirectionalLight)
+      {
+        bestLights.push_back(lights[i]);
+      }
+    }
+
+    // Add the lights inside of the radius first
+    std::vector<LightSortStruct> intersectCounts(lights.size());
+    BoundingBox aabb = entity->GetAABB(true);
+    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
+    {
+      float radius;
+      Light* light = lights[lightIndx];
+      if (light->GetType() == EntityType::Entity_PointLight)
+      {
+        radius = static_cast<PointLight*>(light)->GetRadiusVal();
+      }
+      else if (light->GetType() == EntityType::Entity_SpotLight)
+      {
+        radius = static_cast<SpotLight*>(light)->GetRadiusVal();
+      }
+      else
+      {
+        continue;
+      }
+
+      intersectCounts[lightIndx].light = light;
+      uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
+
+      /* This algorithms can be used for better sorting
+      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
+      {
+        for (uint isMin = 0; isMin < 2; isMin++)
+        {
+          Vec3 p     = aabb.min;
+          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
+          float dist = glm::length(
+              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+          if (dist <= radius)
+          {
+            curIntersectCount++;
+          }
+        }
+      }*/
+
+      if (light->GetType() == EntityType::Entity_SpotLight)
+      {
+        light->UpdateShadowCamera();
+
+        Frustum spotFrustum =
+            ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
+
+        if (FrustumBoxIntersection(spotFrustum, aabb) !=
+            IntersectResult::Outside)
+        {
+          curIntersectCount++;
+        }
+      }
+      if (light->GetType() == EntityType::Entity_PointLight)
+      {
+        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
+        if (SphereBoxIntersection(lightSphere, aabb))
+        {
+          curIntersectCount++;
+        }
+      }
+    }
+
+    std::sort(intersectCounts.begin(),
+              intersectCounts.end(),
+              CompareLightIntersects);
+
+    for (uint i = 0; i < intersectCounts.size(); i++)
+    {
+      if (intersectCounts[i].intersectCount == 0)
+      {
+        break;
+      }
+      bestLights.push_back(intersectCounts[i].light);
+    }
+
+    return bestLights;
+  }
+
   Renderer::Renderer()
   {
     m_uiCamera        = new Camera();
     m_utilFramebuffer = std::make_shared<Framebuffer>();
   }
 
-  Renderer::~Renderer() { SafeDel(m_uiCamera); }
+  Renderer::~Renderer()
+  {
+    SafeDel(m_uiCamera);
+    m_utilFramebuffer      = nullptr;
+    m_gaussianBlurMaterial = nullptr;
+    m_averageBlurMaterial  = nullptr;
+    m_copyFb               = nullptr;
+    m_copyMaterial         = nullptr;
+
+    m_mat                  = nullptr;
+    m_aoMat                = nullptr;
+    m_framebuffer          = nullptr;
+    m_shadowAtlas          = nullptr;
+
+    m_programs.clear();
+  }
 
   int Renderer::GetMaxArrayTextureLayers()
   {
@@ -587,113 +708,6 @@ namespace ToolKit
     return entity->GetRenderMaterial();
   }
 
-  // An interval has start time and end time
-  struct LightSortStruct
-  {
-    Light* light        = nullptr;
-    uint intersectCount = 0;
-  };
-
-  // Compares two intervals according to starting times.
-  bool CompareLightIntersects(const LightSortStruct& i1,
-                              const LightSortStruct& i2)
-  {
-    return (i1.intersectCount > i2.intersectCount);
-  }
-
-  LightRawPtrArray Renderer::GetBestLights(Entity* entity,
-                                           const LightRawPtrArray& lights)
-  {
-    LightRawPtrArray bestLights;
-    bestLights.reserve(lights.size());
-
-    // Find the end of directional lights
-    for (int i = 0; i < lights.size(); i++)
-    {
-      if (lights[i]->GetType() == EntityType::Entity_DirectionalLight)
-      {
-        bestLights.push_back(lights[i]);
-      }
-    }
-
-    // Add the lights inside of the radius first
-    std::vector<LightSortStruct> intersectCounts(lights.size());
-    BoundingBox aabb = entity->GetAABB(true);
-    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
-    {
-      float radius;
-      Light* light = lights[lightIndx];
-      if (light->GetType() == EntityType::Entity_PointLight)
-      {
-        radius = static_cast<PointLight*>(light)->GetRadiusVal();
-      }
-      else if (light->GetType() == EntityType::Entity_SpotLight)
-      {
-        radius = static_cast<SpotLight*>(light)->GetRadiusVal();
-      }
-      else
-      {
-        continue;
-      }
-
-      intersectCounts[lightIndx].light = light;
-      uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
-
-      /* This algorithms can be used for better sorting
-      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
-      {
-        for (uint isMin = 0; isMin < 2; isMin++)
-        {
-          Vec3 p     = aabb.min;
-          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
-          float dist = glm::length(
-              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
-          if (dist <= radius)
-          {
-            curIntersectCount++;
-          }
-        }
-      }*/
-
-      if (light->GetType() == EntityType::Entity_SpotLight)
-      {
-        light->UpdateShadowCamera();
-
-        Frustum spotFrustum =
-            ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
-
-        if (FrustumBoxIntersection(spotFrustum, aabb) !=
-            IntersectResult::Outside)
-        {
-          curIntersectCount++;
-        }
-      }
-      if (light->GetType() == EntityType::Entity_PointLight)
-      {
-        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
-        if (SphereBoxIntersection(lightSphere, aabb))
-        {
-          curIntersectCount++;
-        }
-      }
-    }
-
-    std::sort(intersectCounts.begin(),
-              intersectCounts.end(),
-              CompareLightIntersects);
-
-    for (uint i = 0; i < intersectCounts.size(); i++)
-    {
-      if (intersectCounts[i].intersectCount == 0)
-      {
-        break;
-      }
-      bestLights.push_back(intersectCounts[i].light);
-    }
-
-    return bestLights;
-  }
-
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
   {
     assert(source->m_width == dest->m_width &&
@@ -843,14 +857,14 @@ namespace ToolKit
     else
     {
       // Sky light
-      SkyBase* sky = GetSceneManager()->GetCurrentScene()->GetSky();
-      if (sky != nullptr && sky->IsInitialized() && sky->GetIlluminateVal())
+      if (m_sky != nullptr && m_sky->IsInitialized() &&
+          m_sky->GetIlluminateVal())
       {
         mat->GetRenderState()->IBLInUse = true;
-        if (sky->GetType() == EntityType::Entity_Sky)
+        if (m_sky->GetType() == EntityType::Entity_Sky)
         {
           if (CubeMapPtr irradianceCubemap =
-                  static_cast<Sky*>(sky)
+                  static_cast<Sky*>(m_sky)
                       ->GetComponent<EnvironmentComponent>()
                       ->GetHdriVal()
                       ->m_irradianceCubemap)
@@ -859,15 +873,15 @@ namespace ToolKit
                 irradianceCubemap->m_textureId;
           }
         }
-        else if (sky->GetType() == EntityType::Entity_GradientSky)
+        else if (m_sky->GetType() == EntityType::Entity_GradientSky)
         {
           mat->GetRenderState()->irradianceMap =
-              static_cast<GradientSky*>(sky)->GetIrradianceMap()->m_textureId;
+              static_cast<GradientSky*>(m_sky)->GetIrradianceMap()->m_textureId;
         }
 
-        mat->GetRenderState()->iblIntensity = sky->GetIntensityVal();
+        mat->GetRenderState()->iblIntensity = m_sky->GetIntensityVal();
         m_iblRotation =
-            Mat4(sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
+            Mat4(m_sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
       }
       else
       {

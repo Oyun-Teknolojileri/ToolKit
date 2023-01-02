@@ -16,7 +16,10 @@
     <Filter Include="Source\UI">
       <UniqueIdentifier>{b83754ed-1ff1-4e41-8b4e-68bd5094ba69}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Pass">
+    <Filter Include="Source\Render">
+      <UniqueIdentifier>{6736831a-564c-47ad-bcfb-a3a3aa194285}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Render\Pass">
       <UniqueIdentifier>{3bf51b1e-9da9-41ef-bac7-0d39d55fd50c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -37,12 +40,6 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="PluginManager.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderer.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderState.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="StateMachine.cpp">
@@ -142,10 +139,22 @@
       <Filter>Source\Resource</Filter>
     </ClCompile>
     <ClCompile Include="Pass.cpp">
-      <Filter>Source\Pass</Filter>
+      <Filter>Source\Render\Pass</Filter>
     </ClCompile>
     <ClCompile Include="PostProcessPass.cpp">
-      <Filter>Source\Pass</Filter>
+      <Filter>Source\Render\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderState.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneRenderer.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderSystem.cpp">
+      <Filter>Source\Render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -177,12 +186,6 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="PluginManager.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderer.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderState.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Serialize.h">
@@ -288,10 +291,22 @@
       <Filter>Source\Resource</Filter>
     </ClInclude>
     <ClInclude Include="Pass.h">
-      <Filter>Source\Pass</Filter>
+      <Filter>Source\Render\Pass</Filter>
     </ClInclude>
     <ClInclude Include="PostProcessPass.h">
-      <Filter>Source\Pass</Filter>
+      <Filter>Source\Render\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Source\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem.h">
+      <Filter>Source\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderState.h">
+      <Filter>Source\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneRenderer.h">
+      <Filter>Source\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

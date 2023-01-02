@@ -52,7 +52,7 @@ namespace ToolKit
     m_engineSettings.DeSerialize(nullptr, nullptr);
 
     m_logger->Log("Main PreInit");
-    m_renderer        = new Renderer();
+    m_renderSys       = new RenderSystem();
     m_pluginManager   = new PluginManager();
     m_animationMan    = new AnimationManager();
     m_animationPlayer = new AnimationPlayer();
@@ -123,7 +123,7 @@ namespace ToolKit
     // After all the resources, we can safely free modules.
     m_pluginManager->UnInit();
 
-    SafeDel(m_renderer);
+    SafeDel(m_renderSys);
     SafeDel(m_pluginManager);
     SafeDel(m_animationMan);
     SafeDel(m_animationPlayer);
@@ -162,7 +162,10 @@ namespace ToolKit
 
   Logger* GetLogger() { return Main::GetInstance()->m_logger; }
 
-  Renderer* GetRenderer() { return Main::GetInstance()->m_renderer; }
+  RenderSystem* GetRenderSystem()
+  {
+    return Main::GetInstance()->m_renderSys;
+  }
 
   AnimationManager* GetAnimationManager()
   {
@@ -251,14 +254,16 @@ namespace ToolKit
     return Main::GetInstance()->m_skeletonManager;
   }
 
-  FileManager* GetFileManager()
-  {
-    return Main::GetInstance()->m_fileManager;
-  }
+  FileManager* GetFileManager() { return Main::GetInstance()->m_fileManager; }
 
   EntityFactory* GetEntityFactory()
   {
     return Main::GetInstance()->m_entityFactory;
+  }
+
+  EngineSettings& GetEngineSettings()
+  {
+    return Main::GetInstance()->m_engineSettings;
   }
 
   String DefaultAbsolutePath()
@@ -450,6 +455,10 @@ namespace ToolKit
         if (XmlAttribute* attr = node2->first_attribute("tonemapper"))
         {
           Graphics.TonemapperMode = (TonemapMethod) atoi(attr->value());
+        }
+        if (XmlAttribute* attr = node2->first_attribute("gamma"))
+        {
+          Graphics.TonemapperMode = (TonemapMethod) atof(attr->value());
         }
       }
     }
