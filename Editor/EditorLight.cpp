@@ -2,11 +2,14 @@
 #include "EditorLight.h"
 
 #include "App.h"
+#include "DirectionComponent.h"
 #include "Material.h"
 #include "Texture.h"
 
 #include <memory>
 #include <string>
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -251,6 +254,50 @@ namespace ToolKit
       }
 
       ParameterEventConstructor();
+    }
+
+    ThreePointLightSystem::ThreePointLightSystem()
+    {
+      m_parentNode            = new Node();
+
+      float intensity         = 1.5f;
+      DirectionalLight* light = new DirectionalLight();
+      light->SetColorVal(Vec3(0.55f));
+      light->SetIntensityVal(intensity);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(-20.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-20.0f));
+      light->SetCastShadowVal(false);
+      m_parentNode->AddChild(light->m_node);
+      m_lights.push_back(light);
+
+      light = new DirectionalLight();
+      light->SetColorVal(Vec3(0.15f));
+      light->SetIntensityVal(intensity);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(90.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(-45.0f));
+      light->SetCastShadowVal(false);
+      m_parentNode->AddChild(light->m_node);
+      m_lights.push_back(light);
+
+      light = new DirectionalLight();
+      light->SetColorVal(Vec3(0.1f));
+      light->SetIntensityVal(intensity);
+      light->GetComponent<DirectionComponent>()->Yaw(glm::radians(120.0f));
+      light->GetComponent<DirectionComponent>()->Pitch(glm::radians(60.0f));
+      light->SetCastShadowVal(false);
+      m_parentNode->AddChild(light->m_node);
+      m_lights.push_back(light);
+    }
+
+    ThreePointLightSystem::~ThreePointLightSystem()
+    {
+      for (Light* light : m_lights)
+      {
+        SafeDel(light);
+      }
+
+      m_lights.clear();
+      SafeDel(m_parentNode);
     }
 
   } // namespace Editor

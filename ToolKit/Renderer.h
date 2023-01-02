@@ -15,6 +15,13 @@ namespace ToolKit
 {
 
   /**
+   * Utility function that sorts lights according to lit conditions from
+   * best to worst.
+   */
+  TK_API LightRawPtrArray GetBestLights(Entity* entity,
+                                        const LightRawPtrArray& lights);
+
+  /**
    * Simple binary stencil test operations.
    */
   enum class StencilOperation
@@ -89,9 +96,6 @@ namespace ToolKit
                                          uint width,
                                          uint height);
 
-    LightRawPtrArray GetBestLights(Entity* entity,
-                                   const LightRawPtrArray& lights);
-
     void CopyTexture(TexturePtr source, TexturePtr dest);
 
     /**
@@ -162,12 +166,12 @@ namespace ToolKit
     void FeedLightUniforms(ProgramPtr program);
 
    public:
-    uint m_totalFrameCount = 0;
-    uint m_frameCount      = 0;
+    uint m_frameCount = 0;
     UVec2 m_windowSize; //!< Application window size.
     Vec4 m_clearColor         = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
     MaterialPtr m_overrideMat = nullptr;
     Camera* m_uiCamera        = nullptr;
+    SkyBase* m_sky            = nullptr;
 
     bool m_renderOnlyLighting = false;
 
@@ -216,7 +220,7 @@ namespace ToolKit
     FramebufferPtr m_copyFb            = nullptr;
     MaterialPtr m_copyMaterial         = nullptr;
 
-    int m_maxArrayTextureLayers = -1;
+    int m_maxArrayTextureLayers        = -1;
   };
 
 } // namespace ToolKit

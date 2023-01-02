@@ -184,9 +184,7 @@ namespace ToolKit
       auto updateThumbFn = [this]() -> void
       {
         DirectoryEntry dirEnt(m_mat->GetFile());
-        g_app->m_thumbnailCache.erase(m_mat->GetFile());
-
-        dirEnt.GenerateThumbnail();
+        g_app->m_thumbnailManager.UpdateThumbnail(dirEnt);
         m_mat->m_dirty = true;
       };
 

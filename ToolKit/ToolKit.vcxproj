@@ -37,10 +37,12 @@
     <ClCompile Include="Primative.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RenderState.cpp" />
+    <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="ResourceComponent.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneRenderer.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="Sky.cpp" />
@@ -74,6 +76,8 @@
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="Pass.h" />
     <ClInclude Include="PostProcessPass.h" />
+    <ClInclude Include="RenderSystem.h" />
+    <ClInclude Include="SceneRenderer.h" />
     <ClInclude Include="ShaderReflectionCache.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Logger.h" />
