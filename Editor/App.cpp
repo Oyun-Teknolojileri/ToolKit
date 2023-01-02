@@ -655,6 +655,8 @@ namespace ToolKit
 
     void App::DeleteWindows()
     {
+      GetRenderSystem()->FlushRenderTasks();
+
       for (Window* wnd : m_windows)
       {
         SafeDel(wnd);
@@ -1003,6 +1005,7 @@ namespace ToolKit
 
     void App::OpenScene(const String& fullPath)
     {
+      GetRenderSystem()->FlushRenderTasks();
       GetCurrentScene()->Destroy(false);
       GetSceneManager()->Remove(GetCurrentScene()->GetFile());
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);

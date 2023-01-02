@@ -40,6 +40,8 @@ namespace ToolKit
     RenderTaskPriority Priority      = RenderTaskPriority::High;
   };
 
+  typedef std::vector<RenderTask> RenderTaskArray;
+
   /**
    * System class that facilitates renderer to the techniques.
    */
@@ -52,6 +54,7 @@ namespace ToolKit
     void AddRenderTask(TechniquePtr technique);
     void AddRenderTask(RenderTask task);
     void ExecuteRenderTasks();
+    void FlushRenderTasks();
 
     /**
      * Sets application window size. Doesn't necessarily update any frame buffer
@@ -82,8 +85,11 @@ namespace ToolKit
     void EnableBlending(bool enable);
 
    private:
-    std::vector<RenderTask> m_highQueue;
-    std::vector<RenderTask> m_lowQueue;
+    void ExecuteTaskImp(RenderTask& task);
+
+   private:
+    RenderTaskArray m_highQueue;
+    RenderTaskArray m_lowQueue;
     Renderer* m_renderer         = nullptr;
     Technique* m_renderTechnique = nullptr;
   };

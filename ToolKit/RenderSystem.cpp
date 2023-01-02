@@ -52,24 +52,11 @@ namespace ToolKit
 
   void RenderSystem::ExecuteRenderTasks()
   {
-    auto executeFn = [this](RenderTask& rt) -> void
-    {
-      if (rt.Task != nullptr)
-      {
-        rt.Task(m_renderer);
-
-        if (rt.Callback != nullptr)
-        {
-          rt.Callback();
-        }
-      }
-    };
-
     // Immediate execution.
-    std::vector<RenderTask> tasks = std::move(m_highQueue);
+    RenderTaskArray tasks = std::move(m_highQueue);
     for (RenderTask& rt : tasks)
     {
-      executeFn(rt);
+      ExecuteTaskImp(rt);
     }
 
     // Time limited execution.
@@ -85,14 +72,37 @@ namespace ToolKit
         RenderTask rt = tasks.front();
         pop_front<RenderTask>(tasks);
 
-        executeFn(rt);
+        ExecuteTaskImp(rt);
 
         time1 = GetElapsedMilliSeconds();
       }
 
       // Merge remaining.
       m_lowQueue.insert(m_lowQueue.begin(), tasks.begin(), tasks.end());
+      GetLogger()->WriteConsole(LogType::Warning,
+                                "Asnyc Render %d",
+                                m_lowQueue.size());
     }
+  }
+
+  void RenderSystem::FlushRenderTasks()
+  {
+    auto flushTasksFn = [this](RenderTaskArray& rts) -> void
+    {
+      while (!rts.empty())
+      {
+        // Complete all existing and potential fallow-up render tasks.
+        // For this reason while loop must stay.
+        RenderTaskArray tasks = std::move(rts);
+        for (RenderTask& rt : tasks)
+        {
+          ExecuteTaskImp(rt);
+        }
+      }
+    };
+
+    flushTasksFn(m_highQueue);
+    flushTasksFn(m_lowQueue);
   }
 
   void RenderSystem::SetAppWindowSize(uint width, uint height)
@@ -115,6 +125,19 @@ namespace ToolKit
   void RenderSystem::EnableBlending(bool enable)
   {
     m_renderer->EnableBlending(enable);
+  }
+
+  void RenderSystem::ExecuteTaskImp(RenderTask& task)
+  {
+    if (task.Task != nullptr)
+    {
+      task.Task(m_renderer);
+
+      if (task.Callback != nullptr)
+      {
+        task.Callback();
+      }
+    }
   }
 
 } // namespace ToolKit

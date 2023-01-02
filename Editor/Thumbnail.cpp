@@ -164,10 +164,11 @@ namespace ToolKit
     RenderTargetPtr ThumbnailManager::GetThumbnail(const DirectoryEntry& dirEnt)
     {
       String fullPath = dirEnt.GetFullPath();
+
       if (!Exist(fullPath))
       {
         CreateRenderTask(dirEnt);
-        return m_defaultThumbnail;
+        m_thumbnailCache[fullPath] = m_defaultThumbnail;
       }
 
       return m_thumbnailCache[fullPath];
