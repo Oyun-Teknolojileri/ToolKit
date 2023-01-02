@@ -49,8 +49,10 @@ namespace ToolKit
         m_passArray.push_back(m_singleMatRenderer);
         break;
       default:
+        m_scenePass->m_params.Gfx = GetEngineSettings().Graphics;
+        m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
+        m_scenePass->m_params.Gfx.TonemappingEnabled     = false;
         m_scenePass->Render(renderer);
-        m_passArray.push_back(m_bloomPass);
         break;
       }
 

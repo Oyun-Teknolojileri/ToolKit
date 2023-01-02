@@ -3,6 +3,7 @@
 #include "SceneRenderer.h"
 
 #include "Scene.h"
+#include "ToolKit.h"
 
 #include "DebugNew.h"
 
@@ -17,6 +18,9 @@ namespace ToolKit
     m_gBufferPass        = std::make_shared<GBufferPass>();
     m_deferredRenderPass = std::make_shared<DeferredRenderPass>();
     m_ssaoPass           = std::make_shared<SSAOPass>();
+    m_tonemapPass        = std::make_shared<TonemapPass>();
+    m_gammaPass          = std::make_shared<GammaPass>();
+    m_bloomPass          = std::make_shared<BloomPass>();
   }
 
   SceneRenderer::SceneRenderer(const SceneRenderPassParams& params)
@@ -33,6 +37,9 @@ namespace ToolKit
     m_gBufferPass        = nullptr;
     m_deferredRenderPass = nullptr;
     m_ssaoPass           = nullptr;
+    m_tonemapPass        = nullptr;
+    m_gammaPass          = nullptr;
+    m_bloomPass          = nullptr;
   }
 
   void SceneRenderer::Render(Renderer* renderer)
@@ -52,7 +59,10 @@ namespace ToolKit
     m_passArray.push_back(m_shadowPass);
 
     // SSAO pass
-    m_passArray.push_back(m_ssaoPass);
+    if (m_params.Gfx.SSAOEnabled)
+    {
+      m_passArray.push_back(m_ssaoPass);
+    }
 
     Technique::Render(renderer);
 
@@ -73,6 +83,22 @@ namespace ToolKit
     // Forward render blended entities
     m_passArray.push_back(m_forwardRenderPass);
 
+    if (m_params.Gfx.BloomEnabled)
+    {
+      m_passArray.push_back(m_bloomPass);
+    }
+
+    // Post processes.
+    if (m_params.Gfx.TonemappingEnabled)
+    {
+      m_passArray.push_back(m_tonemapPass);
+    }
+
+    if (m_params.Gfx.GammaCorrectionEnabled)
+    {
+      m_passArray.push_back(m_gammaPass);
+    }
+
     Technique::Render(renderer);
 
     renderer->SetShadowAtlas(nullptr);
@@ -92,6 +118,11 @@ namespace ToolKit
 
   void SceneRenderer::SetPassParams()
   {
+    LightRawPtrArray lights;
+    if (m_params.Lights.empty())
+    {
+      lights = m_params.Scene->GetLights();
+    }
     m_shadowPass->m_params.Entities  = m_params.Scene->GetEntities();
     m_shadowPass->m_params.Lights    = m_params.Lights;
 
@@ -140,6 +171,20 @@ namespace ToolKit
         m_skyPass->m_params.Material    = sky->GetSkyboxMaterial();
       }
     }
+
+    // Bloom pass
+    m_bloomPass->m_params.FrameBuffer    = m_params.MainFramebuffer;
+    m_bloomPass->m_params.intensity      = m_params.Gfx.BloomIntensity;
+    m_bloomPass->m_params.minThreshold   = m_params.Gfx.BloomThreshold;
+    m_bloomPass->m_params.iterationCount = m_params.Gfx.BloomIterationCount;
+
+    // Tonemap pass.
+    m_tonemapPass->m_params.FrameBuffer  = m_params.MainFramebuffer;
+    m_tonemapPass->m_params.Method       = m_params.Gfx.TonemapperMode;
+
+    // Gamma pass.
+    m_gammaPass->m_params.FrameBuffer    = m_params.MainFramebuffer;
+    m_gammaPass->m_params.Gamma          = m_params.Gfx.Gamma;
   }
 
   void SceneRenderer::CullDrawList(EntityRawPtrArray& entities, Camera* camera)

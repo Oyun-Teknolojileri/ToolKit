@@ -3,6 +3,7 @@
 #include "Pass.h"
 #include "PostProcessPass.h"
 #include "RenderSystem.h"
+#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -14,6 +15,7 @@ namespace ToolKit
     Camera* Cam                    = nullptr;
     FramebufferPtr MainFramebuffer = nullptr;
     bool ClearFramebuffer          = true;
+    EngineSettings::GraphicSettings Gfx;
   };
 
   /**
@@ -37,12 +39,16 @@ namespace ToolKit
    public:
     SceneRenderPassParams m_params;
 
+   private:
     ShadowPassPtr m_shadowPass                 = nullptr;
     ForwardRenderPassPtr m_forwardRenderPass   = nullptr;
     CubeMapPassPtr m_skyPass                   = nullptr;
     GBufferPassPtr m_gBufferPass               = nullptr;
     DeferredRenderPassPtr m_deferredRenderPass = nullptr;
     SSAOPassPtr m_ssaoPass                     = nullptr;
+    GammaPassPtr m_gammaPass                   = nullptr;
+    BloomPassPtr m_bloomPass                   = nullptr;
+    TonemapPassPtr m_tonemapPass               = nullptr;
 
    private:
     bool m_drawSky = false;

@@ -81,11 +81,15 @@ namespace ToolKit
     {
       uint MSAA                    = 2;
       uint FPS                     = 60;
+      bool TonemappingEnabled      = true;
       TonemapMethod TonemapperMode = TonemapMethod::Aces;
+      bool BloomEnabled            = true;
       float BloomIntensity         = 1.0f;
       float BloomThreshold         = 1.0f;
       int BloomIterationCount      = 5;
+      bool GammaCorrectionEnabled  = true;
       float Gamma                  = 2.2f;
+      bool SSAOEnabled             = true;
     } Graphics;
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;

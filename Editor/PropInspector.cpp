@@ -187,6 +187,7 @@ namespace ToolKit
         : EditorViewport((float) width, (float) height)
     {
       m_renderPass            = std::make_shared<SceneRenderer>();
+      //m_renderPass->m_params.Gfx.BloomEnabled = false;
 
       DirectionalLight* light = new DirectionalLight();
       light->SetPCFRadiusVal(0.001f);

@@ -15,6 +15,7 @@ namespace ToolKit
   {
     m_downsampleShader = GetShaderManager()->Create<Shader>(
         ShaderPath("bloomDownsample.shader", true));
+
     m_upsampleShader = GetShaderManager()->Create<Shader>(
         ShaderPath("bloomUpsample.shader", true));
 
@@ -91,9 +92,11 @@ namespace ToolKit
       int passIndx                    = i + 1;
       m_downsampleShader->SetShaderParameter("passIndx",
                                              ParameterVariant(passIndx));
+
       m_downsampleShader->SetShaderParameter(
           "threshold",
           ParameterVariant(m_params.minThreshold));
+
       m_downsampleShader->SetShaderParameter("srcResolution",
                                              ParameterVariant(prevRes));
 
@@ -142,6 +145,7 @@ namespace ToolKit
       m_pass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE;
       m_pass->m_params.ClearFrameBuffer = false;
       m_pass->m_params.FrameBuffer      = m_params.FrameBuffer;
+
       m_upsampleShader->SetShaderParameter(
           "intensity",
           ParameterVariant(m_params.intensity));
