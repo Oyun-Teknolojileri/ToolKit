@@ -66,7 +66,7 @@ void main()
 {
 	vec2 uv = vec2(v_texture.x, 1.0 - v_texture.y);
 
-	fragColor = vec4(fxaa(uv), 1);
+	fragColor = vec4(fxaa(uv), texture(s_texture0, uv).a);
 
     // Split screen on/off for debugging purpose
 	/*if (uv.x < 0.5)
