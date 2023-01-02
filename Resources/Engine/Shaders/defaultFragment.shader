@@ -97,6 +97,16 @@
 			}
 			vec3 e = normalize(CamData.pos - v_pos);
 
+			vec2 metallicRoughness;
+			if (metallicRoughnessTextureInUse == 1)
+			{
+				metallicRoughness = texture(s_texture4, v_texture).rg;
+			}
+			else
+			{
+				metallicRoughness = vec2(metallic, roughness);
+			}
+
 			vec3 irradiance = vec3(0.0);
 			if (lightingType == 0)
 			{
@@ -105,19 +115,17 @@
 			}
 			else
 			{
-				vec2 metallicRoughness;
-				if (metallicRoughnessTextureInUse == 1)
-				{
-					metallicRoughness = texture(s_texture4, v_texture).rg;
-				}
-				else
-				{
-					metallicRoughness = vec2(metallic, roughness);
-				}
 				irradiance = PBRLighting(v_pos, n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
 			}
 
-			irradiance += IblIrradiance(n);
+			if (lightingType == 0)
+			{
+				irradiance += IblIrradiance(n);
+			}
+			else
+			{
+				irradiance += IBLIrradiancePBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
+			}
 
 			// float ambientOcclusion = AmbientOcclusion();
 

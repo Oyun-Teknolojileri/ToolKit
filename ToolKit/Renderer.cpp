@@ -1169,7 +1169,7 @@ namespace ToolKit
           m_renderState.IBLInUse = m_mat->GetRenderState()->IBLInUse;
           GLint loc              = glGetUniformLocation(program->m_handle,
                                            GetUniformName(Uniform::USE_IBL));
-          glUniform1f(loc, static_cast<float>(m_renderState.IBLInUse));
+          glUniform1i(loc, (GLint) m_renderState.IBLInUse);
         }
         break;
         case Uniform::IBL_INTENSITY:
@@ -1178,7 +1178,7 @@ namespace ToolKit
           GLint loc =
               glGetUniformLocation(program->m_handle,
                                    GetUniformName(Uniform::IBL_INTENSITY));
-          glUniform1f(loc, static_cast<float>(m_renderState.iblIntensity));
+          glUniform1f(loc, m_renderState.iblIntensity);
         }
         break;
         case Uniform::IBL_IRRADIANCE:
