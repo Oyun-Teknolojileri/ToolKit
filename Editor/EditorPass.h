@@ -100,7 +100,6 @@ namespace ToolKit
       class App* App                 = nullptr;
       class EditorViewport* Viewport = nullptr;
       EditorLitMode LitMode          = EditorLitMode::EditorLit;
-      TonemapMethod tonemapping      = TonemapMethod::Aces;
     };
 
     class EditorRenderer : public Technique

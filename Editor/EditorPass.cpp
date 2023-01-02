@@ -175,17 +175,13 @@ namespace ToolKit
       m_scenePass->m_params.MainFramebuffer   = viewport->m_framebuffer;
       m_scenePass->m_params.Scene             = scene;
 
+      EngineSettings::GraphicSettings gfx     = GetEngineSettings().Graphics;
+
       // Bloom pass
       m_bloomPass->m_params.FrameBuffer       = viewport->m_framebuffer;
-
-      m_bloomPass->m_params.intensity =
-          GetEngineSettings().Graphics.BloomIntensity;
-
-      m_bloomPass->m_params.minThreshold =
-          GetEngineSettings().Graphics.BloomThreshold;
-
-      m_bloomPass->m_params.iterationCount =
-          GetEngineSettings().Graphics.BloomIterationCount;
+      m_bloomPass->m_params.intensity         = gfx.BloomIntensity;
+      m_bloomPass->m_params.minThreshold      = gfx.BloomThreshold;
+      m_bloomPass->m_params.iterationCount    = gfx.BloomIterationCount;
 
       // Light Complexity pass
       m_singleMatRenderer->m_params.ForwardParams.Cam              = m_camera;
@@ -199,11 +195,11 @@ namespace ToolKit
           viewport->m_framebuffer;
 
       m_tonemapPass->m_params.FrameBuffer = viewport->m_framebuffer;
-      m_tonemapPass->m_params.Method      = m_params.tonemapping;
+      m_tonemapPass->m_params.Method      = gfx.TonemapperMode;
 
       // Gamma Pass.
       m_gammaPass->m_params.FrameBuffer   = viewport->m_framebuffer;
-      m_gammaPass->m_params.Gamma         = GetEngineSettings().Graphics.Gamma;
+      m_gammaPass->m_params.Gamma         = gfx.Gamma;
 
       // Gizmo Pass.
       m_gizmoPass->m_params.Viewport      = viewport;

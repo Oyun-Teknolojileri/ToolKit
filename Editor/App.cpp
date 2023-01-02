@@ -195,13 +195,14 @@ namespace ToolKit
 
         if (viewport->IsVisible())
         {
-          myEditorRenderer->m_params.App      = this;
-          myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
-          myEditorRenderer->m_params.Viewport = viewport;
-          myEditorRenderer->m_params.tonemapping =
-              Main::GetInstance()->m_engineSettings.Graphics.TonemapperMode;
-
-          GetRenderSystem()->AddRenderTask(myEditorRenderer);
+          GetRenderSystem()->AddRenderTask(
+              {[this, viewport](Renderer* renderer) -> void
+               {
+                 myEditorRenderer->m_params.App      = g_app;
+                 myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
+                 myEditorRenderer->m_params.Viewport = viewport;
+                 myEditorRenderer->Render(renderer);
+               }});
         }
       }
 
