@@ -221,9 +221,9 @@ namespace ToolKit
                        // Render gradient to cubemap and store the output
                        GenerateGradientCubemap();
 
-                       // Create irradiance map from cubemap and set
-
                        m_onInit = true;
+
+                       // Create irradiance map from cubemap and set
                        GenerateIrradianceCubemap();
                      }};
 

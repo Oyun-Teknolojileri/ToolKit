@@ -25,14 +25,16 @@ namespace ToolKit
 
   RenderSystem::~RenderSystem() { SafeDel(m_renderer); }
 
-  void RenderSystem::Render(Technique* technique)
+  void RenderSystem::AddRenderTask(Technique* technique)
   {
-    technique->Render(m_renderer);
+    AddRenderTask({[technique](Renderer* renderer) -> void
+                   { technique->Render(renderer); }});
   }
 
-  void RenderSystem::Render(TechniquePtr technique)
+  void RenderSystem::AddRenderTask(TechniquePtr technique)
   {
-    technique->Render(m_renderer);
+    AddRenderTask({[technique](Renderer* renderer) -> void
+                   { technique->Render(renderer); }});
   }
 
   void RenderSystem::AddRenderTask(RenderTask task)

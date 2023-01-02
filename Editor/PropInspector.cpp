@@ -249,7 +249,7 @@ namespace ToolKit
         }
       }
 
-      GetRenderSystem()->Render(m_renderPass);
+      GetRenderSystem()->AddRenderTask(m_renderPass);
 
       // Render color attachment as rounded image
       FramebufferSettings fbSettings = m_framebuffer->GetSettings();

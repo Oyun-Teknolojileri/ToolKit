@@ -41,8 +41,8 @@ namespace ToolKit
    public:
     RenderSystem();
     ~RenderSystem();
-    void Render(Technique* technique);
-    void Render(TechniquePtr technique);
+    void AddRenderTask(Technique* technique);
+    void AddRenderTask(TechniquePtr technique);
     void AddRenderTask(RenderTask task);
     void ExecuteRenderTasks();
 

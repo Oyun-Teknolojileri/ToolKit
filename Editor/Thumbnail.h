@@ -15,7 +15,9 @@ namespace ToolKit
      public:
       ThumbnailRenderer();
       ~ThumbnailRenderer();
-      RenderTargetPtr RenderThumbnail(const DirectoryEntry& dirEnt);
+
+      RenderTargetPtr RenderThumbnail(Renderer* renderer,
+                                      const DirectoryEntry& dirEnt);
 
      private:
       uint m_maxThumbSize;
@@ -32,6 +34,9 @@ namespace ToolKit
     class ThumbnailManager
     {
      public:
+      ThumbnailManager();
+      ~ThumbnailManager();
+
       /**
        * Creates or retrieve the thumbnail for the given DirectoryEntry.
        * @param dirEnt DirectoryEntry that will be used to create a thumbnail.
@@ -53,7 +58,11 @@ namespace ToolKit
       void UpdateThumbnail(const DirectoryEntry& dirEnt);
 
      private:
+      void CreateRenderTask(const DirectoryEntry& dirEnt);
+
+     private:
       ThumbnailRenderer m_renderer;
+      RenderTargetPtr m_defaultThumbnail = nullptr;
       std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
     };
 

@@ -42,10 +42,15 @@ namespace ToolKit
     }
 
     RenderTargetPtr ThumbnailRenderer::RenderThumbnail(
+        Renderer* renderer,
         const DirectoryEntry& dirEnt)
     {
       String fullpath = dirEnt.GetFullPath();
       m_thumbnailScene->ClearEntities();
+
+      // TODO: This function should not load meshes.
+      // Instead another task queue may be used to load meshes async.
+      // Because we are in the rendering phase at this stage.
 
       if (dirEnt.m_ext == MESH || dirEnt.m_ext == SKINMESH)
       {
@@ -144,19 +149,25 @@ namespace ToolKit
       m_params.Cam             = m_cam.get();
       m_params.MainFramebuffer = m_thumbnailBuffer;
 
-      RenderSystem* rsys       = GetRenderSystem();
-      rsys->Render(this);
+      Render(renderer);
 
       return m_thumbnailRT;
     }
+
+    ThumbnailManager::ThumbnailManager()
+    {
+      m_defaultThumbnail = std::make_shared<RenderTarget>(10u, 10u);
+    }
+
+    ThumbnailManager::~ThumbnailManager() { m_defaultThumbnail = nullptr; }
 
     RenderTargetPtr ThumbnailManager::GetThumbnail(const DirectoryEntry& dirEnt)
     {
       String fullPath = dirEnt.GetFullPath();
       if (!Exist(fullPath))
       {
-        RenderTargetPtr rt         = m_renderer.RenderThumbnail(dirEnt);
-        m_thumbnailCache[fullPath] = rt;
+        CreateRenderTask(dirEnt);
+        return m_defaultThumbnail;
       }
 
       return m_thumbnailCache[fullPath];
@@ -169,8 +180,19 @@ namespace ToolKit
 
     void ThumbnailManager::UpdateThumbnail(const DirectoryEntry& dirEnt)
     {
-      String fullPath            = dirEnt.GetFullPath();
-      m_thumbnailCache[fullPath] = m_renderer.RenderThumbnail(dirEnt);
+      CreateRenderTask(dirEnt);
+    }
+
+    void ToolKit::Editor::ThumbnailManager::CreateRenderTask(
+        const DirectoryEntry& dirEnt)
+    {
+      String fullPath = dirEnt.GetFullPath();
+      GetRenderSystem()->AddRenderTask(
+          {[this, fullPath, dirEnt](Renderer* renderer) -> void
+           {
+             RenderTargetPtr rt = m_renderer.RenderThumbnail(renderer, dirEnt);
+             m_thumbnailCache[fullPath] = rt;
+           }});
     }
 
   } // namespace Editor
