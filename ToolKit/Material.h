@@ -43,6 +43,7 @@ namespace ToolKit
     TexturePtr m_diffuseTexture;
     TexturePtr m_emissiveTexture;
     TexturePtr m_metallicRoughnessTexture;
+    TexturePtr m_normalMap;
     ShaderPtr m_vertexShader;
     ShaderPtr m_fragmentShader;
     Vec3 m_color;

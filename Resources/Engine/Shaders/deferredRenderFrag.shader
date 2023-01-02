@@ -70,6 +70,15 @@
 				ambientOcclusion = 1.0;
 			}
 
+			if (lightingType == 0)
+			{
+				irradiance += IblIrradiance(n);
+			}
+			else
+			{
+				irradiance += IBLIrradiancePBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
+			}
+
 			fragColor = vec4(irradiance * ambientOcclusion, 1.0) + vec4(emissive, 0.0f);
 		}
 	-->

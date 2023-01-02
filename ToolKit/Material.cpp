@@ -74,7 +74,36 @@ namespace ToolKit
 
     if (m_metallicRoughnessTexture)
     {
+      if (m_metallicRoughnessTexture->GetTextureSettings().MinFilter !=
+          GraphicTypes::SampleNearest)
+      {
+        m_metallicRoughnessTexture->UnInit();
+        TextureSettings set;
+        set.InternalFormat = GraphicTypes::FormatRG8;
+        set.MinFilter      = GraphicTypes::SampleNearest;
+        set.MagFilter      = GraphicTypes::SampleNearest;
+        set.Type           = GraphicTypes::TypeUnsignedByte;
+        m_metallicRoughnessTexture->SetTextureSettings(set);
+      }
+
       m_metallicRoughnessTexture->Init(flushClientSideArray);
+    }
+
+    if (m_normalMap)
+    {
+      if (m_normalMap->GetTextureSettings().MinFilter !=
+          GraphicTypes::SampleNearest)
+      {
+        m_normalMap->UnInit();
+        TextureSettings set;
+        set.InternalFormat = GraphicTypes::FormatRGB8;
+        set.MinFilter      = GraphicTypes::SampleNearest;
+        set.MagFilter      = GraphicTypes::SampleNearest;
+        set.Type           = GraphicTypes::TypeUnsignedByte;
+        m_normalMap->SetTextureSettings(set);
+      }
+
+      m_normalMap->Init(flushClientSideArray);
     }
 
     if (m_cubeMap)
@@ -114,17 +143,22 @@ namespace ToolKit
   void Material::CopyTo(Resource* other)
   {
     Resource::CopyTo(other);
-    Material* cpy          = static_cast<Material*>(other);
-    cpy->m_cubeMap         = m_cubeMap;
-    cpy->m_diffuseTexture  = m_diffuseTexture;
-    cpy->m_vertexShader    = m_vertexShader;
-    cpy->m_fragmentShader  = m_fragmentShader;
-    cpy->m_color           = m_color;
-    cpy->m_alpha           = m_alpha;
-    cpy->m_renderState     = m_renderState;
-    cpy->m_dirty           = true;
-    cpy->m_emissiveTexture = m_emissiveTexture;
-    cpy->m_emissiveColor   = m_emissiveColor;
+    Material* cpy                   = static_cast<Material*>(other);
+    cpy->m_cubeMap                  = m_cubeMap;
+    cpy->m_diffuseTexture           = m_diffuseTexture;
+    cpy->m_vertexShader             = m_vertexShader;
+    cpy->m_fragmentShader           = m_fragmentShader;
+    cpy->m_color                    = m_color;
+    cpy->m_alpha                    = m_alpha;
+    cpy->m_metallic                 = m_metallic;
+    cpy->m_roughness                = m_roughness;
+    cpy->m_renderState              = m_renderState;
+    cpy->m_dirty                    = true;
+    cpy->m_emissiveTexture          = m_emissiveTexture;
+    cpy->m_emissiveColor            = m_emissiveColor;
+    cpy->m_metallicRoughnessTexture = m_metallicRoughnessTexture;
+    cpy->m_normalMap                = m_normalMap;
+    cpy->m_normalMap                = m_normalMap;
   }
 
   RenderState* Material::GetRenderState()
@@ -233,6 +267,13 @@ namespace ToolKit
       WriteAttr(node, doc, XmlNodeName.data(), file);
     }
 
+    if (m_normalMap)
+    {
+      XmlNode* node = CreateXmlNode(doc, "normalMap", container);
+      String file   = GetRelativeResourcePath(m_normalMap->GetSerializeFile());
+      WriteAttr(node, doc, XmlNodeName.data(), file);
+    }
+
     XmlNode* node = CreateXmlNode(doc, "color", container);
     WriteVec(node, doc, m_color);
 
@@ -335,6 +376,13 @@ namespace ToolKit
         m_metallicRoughnessTexture =
             GetTextureManager()->Create<Texture>(TexturePath(path));
       }
+      else if (strcmp("normalMap", node->name()) == 0)
+      {
+        XmlAttribute* attr = node->first_attribute(XmlNodeName.data());
+        String path        = attr->value();
+        NormalizePath(path);
+        m_normalMap = GetTextureManager()->Create<Texture>(TexturePath(path));
+      }
       else if (strcmp("metallic", node->name()) == 0)
       {
         ReadAttr(node, XmlNodeName.data(), m_metallic);
@@ -347,7 +395,7 @@ namespace ToolKit
       {
         int matType;
         ReadAttr(node, XmlNodeName.data(), matType);
-        m_materialType = (MaterialType)matType;
+        m_materialType = (MaterialType) matType;
       }
       else
       {

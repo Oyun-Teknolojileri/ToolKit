@@ -492,6 +492,11 @@ namespace ToolKit
       SetTexture(4, m_mat->m_metallicRoughnessTexture->m_textureId);
     }
 
+    if (m_mat->m_normalMap)
+    {
+      SetTexture(9, m_mat->m_normalMap->m_textureId);
+    }
+
     m_renderState.useForwardPath = state->useForwardPath;
   }
 
@@ -1181,7 +1186,7 @@ namespace ToolKit
           m_renderState.IBLInUse = m_mat->GetRenderState()->IBLInUse;
           GLint loc              = glGetUniformLocation(program->m_handle,
                                            GetUniformName(Uniform::USE_IBL));
-          glUniform1f(loc, static_cast<float>(m_renderState.IBLInUse));
+          glUniform1i(loc, (GLint) m_renderState.IBLInUse);
         }
         break;
         case Uniform::IBL_INTENSITY:
@@ -1190,7 +1195,7 @@ namespace ToolKit
           GLint loc =
               glGetUniformLocation(program->m_handle,
                                    GetUniformName(Uniform::IBL_INTENSITY));
-          glUniform1f(loc, static_cast<float>(m_renderState.iblIntensity));
+          glUniform1f(loc, m_renderState.iblIntensity);
         }
         break;
         case Uniform::IBL_IRRADIANCE:
@@ -1323,6 +1328,14 @@ namespace ToolKit
               GetUniformName(Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE));
           glUniform1i(loc,
                       (int) (m_mat->m_metallicRoughnessTexture != nullptr));
+        }
+        break;
+        case Uniform::NORMAL_MAP_IN_USE:
+        {
+          GLint loc =
+              glGetUniformLocation(program->m_handle,
+                                   GetUniformName(Uniform::NORMAL_MAP_IN_USE));
+          glUniform1i(loc, (int) (m_mat->m_normalMap != nullptr));
         }
         break;
         default:
@@ -1569,7 +1582,7 @@ namespace ToolKit
     // 0 - 5  : 2D textures
     // 6 - 7  : Cube map textures
     // 8      : Shadow atlas
-    // 9-12   : 2D textures
+    // 9-14   : 2D textures
     //
     // 0 -> Color Texture
     // 1 -> Emissive Texture
@@ -1577,6 +1590,7 @@ namespace ToolKit
     // 4 -> Metallic Roughness Texture
     // 5 -> AO Texture
     // 7 -> Irradiance Map
+    // 9 -> Normal map
     //
     // Deferred Render Pass:
     // 9 -> gBuffer position texture

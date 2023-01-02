@@ -220,11 +220,11 @@ namespace ToolKit
 
    public:
     FullQuadPassParams m_params;
+    MaterialPtr m_material;
 
    private:
     CameraPtr m_camera;
     QuadPtr m_quad;
-    MaterialPtr m_material;
   };
 
   typedef std::shared_ptr<FullQuadPass> FullQuadPassPtr;

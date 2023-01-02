@@ -70,7 +70,9 @@ namespace ToolKit
       m_passArray.push_back(m_editorPass);
       m_passArray.push_back(m_gizmoPass);
 
+
       // Post process.
+      m_fxaaPass.Render();
       m_passArray.push_back(m_tonemapPass);
       m_passArray.push_back(m_gammaPass);
 
@@ -200,6 +202,10 @@ namespace ToolKit
       // Gamma Pass.
       m_gammaPass->m_params.FrameBuffer   = viewport->m_framebuffer;
       m_gammaPass->m_params.Gamma         = gfx.Gamma;
+
+      // FXAA Pass
+      m_fxaaPass.m_params.FrameBuffer = viewport->m_framebuffer;
+      m_fxaaPass.m_params.screen_size = viewport->m_size;
 
       // Gizmo Pass.
       m_gizmoPass->m_params.Viewport      = viewport;

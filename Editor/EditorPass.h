@@ -146,6 +146,7 @@ namespace ToolKit
       OutlinePassPtr m_outlinePass                      = nullptr;
       SingleMatForwardRenderPassPtr m_singleMatRenderer = nullptr;
       Camera* m_camera                                  = nullptr;
+      FXAAPass m_fxaaPass;
 
       /**
        * Selected entity list

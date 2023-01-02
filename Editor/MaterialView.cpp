@@ -281,6 +281,35 @@ namespace ToolKit
           }
         }
 
+        ImGui::LabelText("##normapMap", "Normal Map");
+        target = GetPathSeparatorAsStr();
+        if (m_mat->m_normalMap)
+        {
+          target = m_mat->m_normalMap->GetFile();
+        }
+
+        DropZone(UI::m_imageIcon->m_textureId,
+                 target,
+                 [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                 {
+                   m_mat->m_normalMap = GetTextureManager()->Create<Texture>(
+                       dirEnt.GetFullPath());
+                   m_mat->m_normalMap->Init();
+                   updateThumbFn();
+                 });
+
+        if (m_mat->m_normalMap)
+        {
+          ImGui::SameLine();
+          if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
+                                       Vec2(16.0f, 16.0f),
+                                       false))
+          {
+            m_mat->m_normalMap = nullptr;
+            m_mat->m_dirty     = true;
+          }
+        }
+
         if (m_mat->m_materialType == MaterialType::PBR)
         {
           ImGui::LabelText("##metallicRoughnessTexture",
