@@ -67,7 +67,7 @@ namespace ToolKit
       float time1           = time0;
 
       tasks                 = std::move(m_lowQueue);
-      while (time1 - time0 < timeLimit)
+      while (time1 - time0 < timeLimit && !tasks.empty())
       {
         RenderTask rt = tasks.front();
         pop_front<RenderTask>(tasks);

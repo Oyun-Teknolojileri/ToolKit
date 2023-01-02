@@ -1006,6 +1006,7 @@ namespace ToolKit
     void App::OpenScene(const String& fullPath)
     {
       GetRenderSystem()->FlushRenderTasks();
+
       GetCurrentScene()->Destroy(false);
       GetSceneManager()->Remove(GetCurrentScene()->GetFile());
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
