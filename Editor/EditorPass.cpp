@@ -28,6 +28,7 @@ namespace ToolKit
       m_gizmoPass         = nullptr;
       m_tonemapPass       = nullptr;
       m_gammaPass         = nullptr;
+      m_fxaaPass          = nullptr;
       m_bloomPass         = nullptr;
       m_ssaoPass          = nullptr;
       m_outlinePass       = nullptr;
@@ -72,7 +73,7 @@ namespace ToolKit
 
 
       // Post process.
-      //m_fxaaPass.Render();
+      m_passArray.push_back(m_fxaaPass);
       m_passArray.push_back(m_tonemapPass);
       m_passArray.push_back(m_gammaPass);
 
@@ -204,8 +205,8 @@ namespace ToolKit
       m_gammaPass->m_params.Gamma         = gfx.Gamma;
 
       // FXAA Pass
-      m_fxaaPass.m_params.FrameBuffer = viewport->m_framebuffer;
-      m_fxaaPass.m_params.screen_size = viewport->m_size;
+      m_fxaaPass->m_params.FrameBuffer = viewport->m_framebuffer;
+      m_fxaaPass->m_params.screen_size = viewport->m_size;
 
       // Gizmo Pass.
       m_gizmoPass->m_params.Viewport      = viewport;
@@ -267,6 +268,7 @@ namespace ToolKit
       m_gizmoPass         = std::make_shared<GizmoPass>();
       m_tonemapPass       = std::make_shared<TonemapPass>();
       m_gammaPass         = std::make_shared<GammaPass>();
+      m_fxaaPass          = std::make_shared<FXAAPass>();
       m_bloomPass         = std::make_shared<BloomPass>();
       m_ssaoPass          = std::make_shared<SSAOPass>();
       m_outlinePass       = std::make_shared<OutlinePass>();

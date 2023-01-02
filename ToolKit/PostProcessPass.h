@@ -74,15 +74,17 @@ namespace ToolKit
 
   class TK_API FXAAPass : public PostProcessPass
   {
-  public:
+   public:
     FXAAPass();
     explicit FXAAPass(const FXAAPassParams& params);
 
     void PreRender() override;
 
-  public:
+   public:
     FXAAPassParams m_params;
   };
+
+  typedef std::shared_ptr<FXAAPass> FXAAPassPtr;
 
   struct GammaPassParams
   {

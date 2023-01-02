@@ -144,9 +144,9 @@ namespace ToolKit
       BloomPassPtr m_bloomPass                          = nullptr;
       SSAOPassPtr m_ssaoPass                            = nullptr;
       OutlinePassPtr m_outlinePass                      = nullptr;
+      FXAAPassPtr m_fxaaPass                            = nullptr;
       SingleMatForwardRenderPassPtr m_singleMatRenderer = nullptr;
       Camera* m_camera                                  = nullptr;
-      FXAAPass m_fxaaPass;
 
       /**
        * Selected entity list
