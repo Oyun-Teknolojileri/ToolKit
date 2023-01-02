@@ -73,7 +73,7 @@ namespace ToolKit
 
 
       // Post process.
-      m_passArray.push_back(m_fxaaPass);
+      // m_passArray.push_back(m_fxaaPass);
       m_passArray.push_back(m_tonemapPass);
       m_passArray.push_back(m_gammaPass);
 
