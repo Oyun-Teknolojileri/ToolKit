@@ -125,6 +125,17 @@ namespace ToolKit
       DecomposePath(m_mat->GetFile(), nullptr, &name, &ext);
 
       ImGui::Text("\nMaterial: %s%s", name.c_str(), ext.c_str());
+      int matType     = (int) m_mat->m_materialType;
+      int currentType = matType;
+      if (ImGui::Combo("Material Type", &matType, "Phong\0PBR\0Custom"))
+      {
+        if (matType != currentType)
+        {
+          m_mat->m_materialType = (MaterialType) matType;
+          m_mat->SetDefaultMaterialTypeShaders();
+          m_mat->m_dirty = true;
+        }
+      }
       ImGui::Separator();
 
       if (ImGui::CollapsingHeader("Material Preview",
@@ -178,18 +189,6 @@ namespace ToolKit
         dirEnt.GenerateThumbnail();
         m_mat->m_dirty = true;
       };
-
-      int matType     = (int) m_mat->m_materialType;
-      int currentType = matType;
-      if (ImGui::Combo("Material Type", &matType, "Phong\0PBR\0Custom"))
-      {
-        if (matType != currentType)
-        {
-          m_mat->m_materialType = (MaterialType) matType;
-          m_mat->SetDefaultMaterialTypeShaders();
-          m_mat->m_dirty = true;
-        }
-      }
 
       if (m_mat->m_materialType == MaterialType::Custom)
       {
@@ -245,6 +244,18 @@ namespace ToolKit
                    updateThumbFn();
                  });
 
+        if (m_mat->m_diffuseTexture)
+        {
+          ImGui::SameLine();
+          if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
+                                       Vec2(16.0f, 16.0f),
+                                       false))
+          {
+            m_mat->m_diffuseTexture = nullptr;
+            m_mat->m_dirty          = true;
+          }
+        }
+
         // Display emissive color multiplier if fragment is emissive
         for (Uniform u : m_mat->m_fragmentShader->m_uniforms)
         {
@@ -283,7 +294,7 @@ namespace ToolKit
           }
         }
 
-        ImGui::LabelText("##normapMap", "Normal Map");
+        ImGui::LabelText("##normalMap", "Normal Map");
         target = GetPathSeparatorAsStr();
         if (m_mat->m_normalMap)
         {
@@ -315,7 +326,7 @@ namespace ToolKit
         if (m_mat->m_materialType == MaterialType::PBR)
         {
           ImGui::LabelText("##metallicRoughnessTexture",
-                           "Metallic Roughess Texture: ");
+                           "Metallic Roughness Texture: ");
           target = GetPathSeparatorAsStr();
           if (m_mat->m_metallicRoughnessTexture)
           {
@@ -350,14 +361,26 @@ namespace ToolKit
       if (ImGui::CollapsingHeader("Render States",
                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
-        Vec4 col = Vec4(m_mat->m_color, m_mat->m_alpha);
-        if (ImGui::ColorEdit4("Material Color##1",
-                              &col.x,
-                              ImGuiColorEditFlags_NoLabel))
+        if (m_mat->m_diffuseTexture == nullptr)
         {
-          m_mat->m_color = col.xyz;
-          m_mat->m_alpha = col.a;
-          updateThumbFn();
+          if (ImGui::ColorEdit3("Diffuse Color", &m_mat->m_color.x))
+          {
+            updateThumbFn();
+          }
+          if (ImGui::DragFloat("Alpha",
+                               &m_mat->m_alpha,
+                               1.0f / 256.0f,
+                               0.0f,
+                               1.0f))
+          {
+            if (m_mat->GetRenderState()->blendFunction == BlendFunction::NONE)
+            {
+              m_mat->GetRenderState()->blendFunction =
+                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+              m_mat->GetRenderState()->useForwardPath = true;
+            }
+            updateThumbFn();
+          }
         }
         // Display emissive color multiplier if fragment is emissive
         for (Uniform u : m_mat->m_fragmentShader->m_uniforms)
@@ -378,7 +401,8 @@ namespace ToolKit
           }
         }
 
-        if (m_mat->m_materialType == MaterialType::PBR)
+        if (m_mat->m_materialType == MaterialType::PBR &&
+            m_mat->m_metallicRoughnessTexture == nullptr)
         {
           if (ImGui::DragFloat("Metallic",
                                &(m_mat->m_metallic),
@@ -390,7 +414,7 @@ namespace ToolKit
             updateThumbFn();
           }
 
-          if (ImGui::DragFloat("Roughess",
+          if (ImGui::DragFloat("Roughness",
                                &(m_mat->m_roughness),
                                0.001f,
                                0.0f,
@@ -482,13 +506,6 @@ namespace ToolKit
         {
           m_mat->GetRenderState()->useForwardPath = useForwardPath;
           m_mat->m_dirty                          = true;
-        }
-
-        bool isColorMaterial = m_mat->GetRenderState()->isColorMaterial;
-        if (ImGui::Checkbox("Color Material", &isColorMaterial))
-        {
-          m_mat->GetRenderState()->isColorMaterial = isColorMaterial;
-          m_mat->m_dirty                           = true;
         }
 
         if (m_mat->GetRenderState()->blendFunction == BlendFunction::ALPHA_MASK)
