@@ -856,18 +856,15 @@ namespace ToolKit
     }
     else
     {
-      // TODO: sky must come here with either technique or some other means
-      // than fetching it from scene.
-
       // Sky light
-      SkyBase* sky = GetSceneManager()->GetCurrentScene()->GetSky();
-      if (sky != nullptr && sky->IsInitialized() && sky->GetIlluminateVal())
+      if (m_sky != nullptr && m_sky->IsInitialized() &&
+          m_sky->GetIlluminateVal())
       {
         mat->GetRenderState()->IBLInUse = true;
-        if (sky->GetType() == EntityType::Entity_Sky)
+        if (m_sky->GetType() == EntityType::Entity_Sky)
         {
           if (CubeMapPtr irradianceCubemap =
-                  static_cast<Sky*>(sky)
+                  static_cast<Sky*>(m_sky)
                       ->GetComponent<EnvironmentComponent>()
                       ->GetHdriVal()
                       ->m_irradianceCubemap)
@@ -876,15 +873,15 @@ namespace ToolKit
                 irradianceCubemap->m_textureId;
           }
         }
-        else if (sky->GetType() == EntityType::Entity_GradientSky)
+        else if (m_sky->GetType() == EntityType::Entity_GradientSky)
         {
           mat->GetRenderState()->irradianceMap =
-              static_cast<GradientSky*>(sky)->GetIrradianceMap()->m_textureId;
+              static_cast<GradientSky*>(m_sky)->GetIrradianceMap()->m_textureId;
         }
 
-        mat->GetRenderState()->iblIntensity = sky->GetIntensityVal();
+        mat->GetRenderState()->iblIntensity = m_sky->GetIntensityVal();
         m_iblRotation =
-            Mat4(sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
+            Mat4(m_sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
       }
       else
       {

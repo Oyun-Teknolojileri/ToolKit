@@ -52,6 +52,9 @@ namespace ToolKit
     // First stage of the render.
     m_passArray.clear();
 
+    // Set current sky.
+    renderer->m_sky = m_sky;
+
     // Gbuffer for deferred render
     m_passArray.push_back(m_gBufferPass);
 
@@ -161,14 +164,14 @@ namespace ToolKit
 
     // Set CubeMapPass for sky.
     m_drawSky                               = false;
-    if (SkyBase* sky = m_params.Scene->GetSky())
+    if (m_sky = m_params.Scene->GetSky())
     {
-      if (m_drawSky = sky->GetDrawSkyVal())
+      if (m_drawSky = m_sky->GetDrawSkyVal())
       {
         m_skyPass->m_params.FrameBuffer = m_params.MainFramebuffer;
         m_skyPass->m_params.Cam         = m_params.Cam;
-        m_skyPass->m_params.Transform   = sky->m_node->GetTransform();
-        m_skyPass->m_params.Material    = sky->GetSkyboxMaterial();
+        m_skyPass->m_params.Transform   = m_sky->m_node->GetTransform();
+        m_skyPass->m_params.Material    = m_sky->GetSkyboxMaterial();
       }
     }
 

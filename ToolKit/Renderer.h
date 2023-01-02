@@ -171,6 +171,7 @@ namespace ToolKit
     Vec4 m_clearColor         = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
     MaterialPtr m_overrideMat = nullptr;
     Camera* m_uiCamera        = nullptr;
+    SkyBase* m_sky            = nullptr;
 
     bool m_renderOnlyLighting = false;
 

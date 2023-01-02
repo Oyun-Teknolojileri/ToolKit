@@ -52,6 +52,7 @@ namespace ToolKit
 
    private:
     bool m_drawSky = false;
+    SkyBase* m_sky = nullptr;
   };
 
   typedef std::shared_ptr<SceneRenderer> SceneRendererPtr;
