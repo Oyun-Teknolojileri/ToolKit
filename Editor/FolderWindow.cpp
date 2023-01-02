@@ -189,9 +189,10 @@ namespace ToolKit
         {
           TextureSettings set;
           set.InternalFormat = GraphicTypes::FormatRGB32F;
+          set.Format         = GraphicTypes::FormatRGB;
           set.Type           = GraphicTypes::TypeFloat;
           set.MinFilter      = GraphicTypes::SampleNearest;
-          set.MagFilter      = GraphicTypes::SampleNearest;
+          set.GenerateMipMap = false;
           texture            = std::make_shared<Texture>(fullpath, set);
           texture->Load();
           texture->Init(true);

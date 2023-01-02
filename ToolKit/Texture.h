@@ -11,11 +11,11 @@ namespace ToolKit
   struct TextureSettings
   {
     GraphicTypes MinFilter       = GraphicTypes::SampleLinear;
-    GraphicTypes MagFilter       = GraphicTypes::SampleLinear;
     GraphicTypes InternalFormat  = GraphicTypes::FormatSRGB8_A8;
+    GraphicTypes Format          = GraphicTypes::FormatRGBA;
     GraphicTypes Type            = GraphicTypes::TypeUnsignedByte;
     GraphicTypes MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
-    GraphicTypes MipMapMagFilter = GraphicTypes::SampleLinearMipmapLinear;
+    bool GenerateMipMap          = true;
   };
 
   class TK_API Texture : public Resource
@@ -86,8 +86,12 @@ namespace ToolKit
 
     bool IsTextureAssigned();
 
+   protected:
+    void GeneratePrefilteredEnvMap();
+
    public:
     CubeMapPtr m_cubemap           = nullptr;
+    CubeMapPtr m_prefilteredEnvMap = nullptr;
     CubeMapPtr m_irradianceCubemap = nullptr;
     float m_exposure               = 1.0f;
 

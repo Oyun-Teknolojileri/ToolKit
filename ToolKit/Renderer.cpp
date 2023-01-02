@@ -1623,9 +1623,9 @@ namespace ToolKit
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::SampleLinear,
+                                     GraphicTypes::FormatRGB16F,
                                      GraphicTypes::FormatRGB,
-                                     GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte};
+                                     GraphicTypes::TypeFloat};
 
     RenderTargetPtr cubeMapRt =
         std::make_shared<RenderTarget>(width, height, set);
@@ -1640,6 +1640,7 @@ namespace ToolKit
     frag->m_shaderParams["Exposure"] = exposure;
 
     mat->m_diffuseTexture            = texture;
+    mat->GetRenderState()->isColorMaterial = false;
     mat->m_vertexShader              = vert;
     mat->m_fragmentShader            = frag;
     mat->GetRenderState()->cullMode  = CullingType::TwoSided;
@@ -1647,7 +1648,6 @@ namespace ToolKit
 
     m_utilFramebuffer->UnInit();
     m_utilFramebuffer->Init({width, height, false, false});
-    m_utilFramebuffer->ClearAttachments();
 
     // Views for 6 different angles
     static Camera cam;
@@ -1690,9 +1690,9 @@ namespace ToolKit
     return cubeMap;
   }
 
-  CubeMapPtr Renderer::GenerateIrradianceCubemap(CubeMapPtr cubemap,
-                                                 uint width,
-                                                 uint height)
+  CubeMapPtr Renderer::GenerateEnvIrradianceMap(CubeMapPtr cubemap,
+                                                uint width,
+                                                uint height)
   {
     const RenderTargetSettigs set = {0,
                                      GraphicTypes::TargetCubeMap,
@@ -1727,6 +1727,7 @@ namespace ToolKit
         ShaderPath("irradianceGenerateFrag.shader", true));
 
     mat->m_cubeMap                  = cubemap;
+    mat->GetRenderState()->isColorMaterial = false;
     mat->m_vertexShader             = vert;
     mat->m_fragmentShader           = frag;
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
@@ -1761,6 +1762,89 @@ namespace ToolKit
     CubeMapPtr cubeMap     = std::make_shared<CubeMap>(cubeMapRt->m_textureId);
     cubeMapRt->m_textureId = 0;
     cubeMapRt              = nullptr;
+
+    return cubeMap;
+  }
+
+  CubeMapPtr Renderer::GenerateEnvPrefilteredMap(CubeMapPtr cubemap,
+                                                 uint width,
+                                                 uint height,
+                                                 int mipMaps)
+  {
+    const RenderTargetSettigs set = {0,
+                                     GraphicTypes::TargetCubeMap,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::FormatRGB16F,
+                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::TypeFloat};
+    RenderTargetPtr cubemapRt =
+        std::make_shared<RenderTarget>(width, height, set);
+    cubemapRt->Init();
+
+    // Views for 6 different angles
+    CameraPtr cam = std::make_shared<Camera>();
+    cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+    Mat4 views[] = {
+        glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+        glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+
+    // Create material
+    MaterialPtr mat = std::make_shared<Material>();
+    ShaderPtr vert  = GetShaderManager()->Create<Shader>(
+        ShaderPath("positionVert.shader", true));
+    ShaderPtr frag = GetShaderManager()->Create<Shader>(
+        ShaderPath("preFilterEnvMapFrag.shader", true));
+
+    mat->m_cubeMap                  = cubemap;
+    mat->GetRenderState()->isColorMaterial = false;
+    mat->m_vertexShader             = vert;
+    mat->m_fragmentShader           = frag;
+    mat->GetRenderState()->cullMode = CullingType::TwoSided;
+    mat->Init();
+
+    // No need to re init framebuffer since m_util framebuffer has only 1
+    // render target
+
+    // for (int i = 0; i < mipMaps; ++i)
+    {
+      // TODO generate for all mip maps
+
+      for (int i = 0; i < 6; ++i)
+      {
+        Vec3 pos;
+        Quaternion rot;
+        Vec3 sca;
+        DecomposeMatrix(views[i], &pos, &rot, &sca);
+
+        cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
+        cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
+        cam->m_node->SetScale(sca);
+
+        m_utilFramebuffer->SetAttachment(
+            Framebuffer::Attachment::ColorAttachment0,
+            cubemapRt,
+            -1,
+            (Framebuffer::CubemapFace) i);
+
+        SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
+        DrawCube(cam.get(), mat);
+      }
+    }
+
+    SetFramebuffer(nullptr);
+
+    // Take the ownership of render target.
+    CubeMapPtr cubeMap     = std::make_shared<CubeMap>(cubemapRt->m_textureId);
+    cubemapRt->m_textureId = 0;
+    cubemapRt              = nullptr;
 
     return cubeMap;
   }

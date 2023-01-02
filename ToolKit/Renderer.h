@@ -85,9 +85,14 @@ namespace ToolKit
                                             uint height,
                                             float exposure = 1.0f);
 
-    CubeMapPtr GenerateIrradianceCubemap(CubeMapPtr cubemap,
+    CubeMapPtr GenerateEnvPrefilteredMap(CubeMapPtr cubemap,
                                          uint width,
-                                         uint height);
+                                         uint height,
+                                         int mipMaps);
+
+    CubeMapPtr GenerateEnvIrradianceMap(CubeMapPtr cubemap,
+                                        uint width,
+                                        uint height);
 
     LightRawPtrArray GetBestLights(Entity* entity,
                                    const LightRawPtrArray& lights);
@@ -216,7 +221,7 @@ namespace ToolKit
     FramebufferPtr m_copyFb            = nullptr;
     MaterialPtr m_copyMaterial         = nullptr;
 
-    int m_maxArrayTextureLayers = -1;
+    int m_maxArrayTextureLayers        = -1;
   };
 
 } // namespace ToolKit

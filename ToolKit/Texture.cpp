@@ -90,21 +90,17 @@ namespace ToolKit
     glGenTextures(1, &m_textureId);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
 
-    // TODO remove this branch and set ALL parameter settings from
-    // m_textureSettings
-    if (m_textureSettings.Type == GraphicTypes::TypeFloat)
+    if (m_textureSettings.Type != GraphicTypes::TypeFloat)
     {
       glTexImage2D(GL_TEXTURE_2D,
                    0,
-                   GL_RGB32F,
+                   (GLint) m_textureSettings.InternalFormat,
                    m_width,
                    m_height,
                    0,
-                   GL_RGB,
-                   GL_FLOAT,
-                   m_imagef);
-
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                   (GLint) m_textureSettings.Format,
+                   GL_UNSIGNED_BYTE,
+                   m_image);
     }
     else
     {
@@ -114,26 +110,23 @@ namespace ToolKit
                    m_width,
                    m_height,
                    0,
-                   GL_RGBA,
-                   GL_UNSIGNED_BYTE,
-                   m_image);
+                   (GLint) m_textureSettings.Format,
+                   GL_FLOAT,
+                   m_imagef);
+    }
 
+    if (m_textureSettings.GenerateMipMap)
+    {
       glGenerateMipmap(GL_TEXTURE_2D);
 
       glTexParameteri(GL_TEXTURE_2D,
                       GL_TEXTURE_MIN_FILTER,
                       (GLint) m_textureSettings.MipMapMinFilter);
-      glTexParameteri(GL_TEXTURE_2D,
-                      GL_TEXTURE_MAG_FILTER,
-                      (GLint) m_textureSettings.MipMapMagFilter);
     }
 
     glTexParameteri(GL_TEXTURE_2D,
                     GL_TEXTURE_MIN_FILTER,
                     (GLint) m_textureSettings.MinFilter);
-    glTexParameteri(GL_TEXTURE_2D,
-                    GL_TEXTURE_MAG_FILTER,
-                    (GLint) m_textureSettings.MagFilter);
 
 #ifndef TK_GL_ES_3_0
     if (GL_EXT_texture_filter_anisotropic)
@@ -338,15 +331,17 @@ namespace ToolKit
 
   Hdri::Hdri()
   {
-    m_textureSettings.InternalFormat = GraphicTypes::FormatRGB32F;
-    m_textureSettings.Type           = GraphicTypes::TypeFloat;
-    m_textureSettings.MinFilter      = GraphicTypes::SampleNearest;
-    m_textureSettings.MagFilter      = GraphicTypes::SampleNearest;
-    m_exposure                       = 1.0f;
+    m_textureSettings.InternalFormat  = GraphicTypes::FormatRGB32F;
+    m_textureSettings.Format          = GraphicTypes::FormatRGB;
+    m_textureSettings.Type            = GraphicTypes::TypeFloat;
+    m_textureSettings.MinFilter       = GraphicTypes::SampleNearest;
+    m_textureSettings.MipMapMinFilter = GraphicTypes::SampleNearest;
+    m_textureSettings.GenerateMipMap  = false;
+    m_exposure                        = 1.0f;
 
-    m_texToCubemapMat                = std::make_shared<Material>();
-    m_cubemapToIrradiancemapMat      = std::make_shared<Material>();
-    m_irradianceCubemap              = std::make_shared<CubeMap>(0);
+    m_texToCubemapMat                 = std::make_shared<Material>();
+    m_cubemapToIrradiancemapMat       = std::make_shared<Material>();
+    m_irradianceCubemap               = std::make_shared<CubeMap>(0);
     m_equirectangularTexture = std::make_shared<Texture>(static_cast<uint>(0));
   }
 
@@ -390,11 +385,28 @@ namespace ToolKit
         m_width,
         1.0f);
 
+    // Generate mip maps of cubemap
+    glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemap->m_textureId);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+    // TODO since there is a "update ibl" button, we can make these parameter
+    // variant
+    // TODO Pre-filtered and mip mapped environment map
+    const int prefilteredEnvMapSize =
+        128;               // TODO member variable or parameter variant
+    const int mipMaps = 5; // TODO member variable or parameter variant
+    m_prefilteredEnvMap =
+        GetRenderer()->GenerateEnvPrefilteredMap(m_cubemap,
+                                                 prefilteredEnvMapSize,
+                                                 prefilteredEnvMapSize,
+                                                 mipMaps);
+
+    // TODO Pre-compute BRDF lut
+
     // Generate irradience cubemap images
-    m_irradianceCubemap =
-        GetRenderer()->GenerateIrradianceCubemap(m_cubemap,
-                                                 m_width / 64,
-                                                 m_width / 64);
+    m_irradianceCubemap = GetRenderer()->GenerateEnvIrradianceMap(m_cubemap,
+                                                                  m_width / 64,
+                                                                  m_width / 64);
   }
 
   void Hdri::UnInit()
