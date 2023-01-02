@@ -2,7 +2,7 @@
 
 #include "EditorViewport.h"
 #include "FolderWindow.h"
-#include "Pass.h"
+#include "SceneRenderer.h"
 #include "UI.h"
 
 #include <functional>
@@ -54,8 +54,8 @@ namespace ToolKit
       void ResizeWindow(uint width, uint height) override;
 
      private:
-      SceneRenderPass m_renderPass;
-      Light* m_light = nullptr;
+      SceneRendererPtr m_renderPass = nullptr;
+      Light* m_light                = nullptr;
     };
 
     typedef View* ViewRawPtr;

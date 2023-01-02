@@ -15,6 +15,19 @@ namespace ToolKit
   namespace Editor
   {
 
+    class ThreePointLightSystem
+    {
+     public:
+      ThreePointLightSystem();
+      ~ThreePointLightSystem();
+
+     public:
+      LightRawPtrArray m_lights;
+      Node* m_parentNode = nullptr;
+    };
+
+    typedef std::shared_ptr<ThreePointLightSystem> ThreePointLightSystemPtr;
+
     // Editor Light Utils.
     extern void EnableLightGizmo(Light* light, bool enable);
 

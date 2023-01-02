@@ -3,10 +3,11 @@
 #include "App.h"
 #include "EditorScene.h"
 #include "Global.h"
-
-#include <Prefab.h>
+#include "Prefab.h"
 
 #include <utility>
+
+#include "DebugNew.h"
 
 namespace ToolKit
 {

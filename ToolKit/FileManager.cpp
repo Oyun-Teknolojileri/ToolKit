@@ -8,6 +8,8 @@
 #include "ToolKit.h"
 #include "stb/stb_image.h"
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
   FileManager::~FileManager()

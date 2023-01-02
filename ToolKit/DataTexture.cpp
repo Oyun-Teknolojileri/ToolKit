@@ -5,6 +5,8 @@
 #include "Light.h"
 #include "Renderer.h"
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
   DataTexture::DataTexture() {}

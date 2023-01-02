@@ -144,6 +144,7 @@
     <ClCompile Include="RenderSettingsView.cpp">
       <Filter>UI\InspectorViews</Filter>
     </ClCompile>
+    <ClCompile Include="Thumbnail.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -271,6 +272,9 @@
     </ClInclude>
     <ClInclude Include="RenderSettingsView.h">
       <Filter>UI\InspectorViews</Filter>
+    </ClInclude>
+    <ClInclude Include="Thumbnail.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

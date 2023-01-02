@@ -5,6 +5,8 @@
 
 #include <utility>
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
   Prefab::Prefab()

@@ -123,6 +123,7 @@ namespace ToolKit
   typedef std::vector<AnimRecordRawPtr> AnimRecordRawPtrArray;
 
   // Entity types.
+  typedef std::shared_ptr<class Entity> EntityPtr;
   typedef std::vector<class Entity*> EntityRawPtrArray;
   typedef std::vector<class Light*> LightRawPtrArray;
   typedef std::vector<class DirectionalLight*> DirectionalLightRawPtrArray;

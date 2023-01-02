@@ -1,10 +1,13 @@
 #pragma once
 
+#include "EditorLight.h"
 #include "Gizmo.h"
 #include "Global.h"
 #include "Pass.h"
-#include "Primative.h"
 #include "PostProcessPass.h"
+#include "Primative.h"
+#include "RenderSystem.h"
+#include "SceneRenderer.h"
 
 namespace ToolKit
 {
@@ -34,6 +37,8 @@ namespace ToolKit
       SpherePtr m_depthMaskSphere = nullptr;
       Camera* m_camera            = nullptr;
     };
+
+    typedef std::shared_ptr<GizmoPass> GizmoPassPtr;
 
     struct SingleMatForwardRenderPassParams
     {
@@ -92,16 +97,9 @@ namespace ToolKit
 
     struct EditorRenderPassParams
     {
-      class App* App                               = nullptr;
-      class EditorViewport* Viewport               = nullptr;
-      EditorLitMode LitMode                        = EditorLitMode::EditorLit;
-      TonemapMethod tonemapping                    = TonemapMethod::Aces;
-    };
-
-    class Technique
-    {
-     public:
-      virtual void Render() = 0;
+      class App* App                 = nullptr;
+      class EditorViewport* Viewport = nullptr;
+      EditorLitMode LitMode          = EditorLitMode::EditorLit;
     };
 
     class EditorRenderer : public Technique
@@ -111,15 +109,14 @@ namespace ToolKit
       explicit EditorRenderer(const EditorRenderPassParams& params);
       virtual ~EditorRenderer();
 
-      void Render() override;
+      void Render(Renderer* renderer) override;
       void PreRender();
       void PostRender();
-      void SetLitMode(EditorLitMode mode);
-      static void CreateEditorLights(LightRawPtrArray& list, Node** parentNode);
 
      private:
+      void SetLitMode(Renderer* renderer, EditorLitMode mode);
       void InitRenderer();
-      void OutlineSelecteds();
+      void OutlineSelecteds(Renderer* renderer);
 
      public:
       /**
@@ -132,27 +129,24 @@ namespace ToolKit
        * Three point lighting system which is used to illuminate the scene in
        * EditorLit mode.
        */
-      LightRawPtrArray m_editorLights;
-      /**
-       * Parent Node that m_editorLights are attached to.
-       */
-      Node* m_lightNode           = nullptr;
+      ThreePointLightSystemPtr m_lightSystem            = nullptr;
+
       /**
        * Override material for EditorLitMode::Unlit.
        */
-      MaterialPtr m_unlitOverride = nullptr;
+      MaterialPtr m_unlitOverride                       = nullptr;
 
-      SceneRenderPass m_scenePass;
-      ForwardRenderPass m_editorPass;
-      GizmoPass m_gizmoPass;
-      TonemapPass m_tonemapPass;
-      GammaPass m_gammaPass;
-      FXAAPass m_fxaaPass;
-      BloomPass m_bloomPass;
-      SSAOPass m_ssaoPass;
-      OutlinePass m_outlinePass;
-      SingleMatForwardRenderPass m_singleMatRenderer;
-      Camera* m_camera = nullptr;
+      SceneRendererPtr m_scenePass                      = nullptr;
+      ForwardRenderPassPtr m_editorPass                 = nullptr;
+      GizmoPassPtr m_gizmoPass                          = nullptr;
+      TonemapPassPtr m_tonemapPass                      = nullptr;
+      GammaPassPtr m_gammaPass                          = nullptr;
+      BloomPassPtr m_bloomPass                          = nullptr;
+      SSAOPassPtr m_ssaoPass                            = nullptr;
+      OutlinePassPtr m_outlinePass                      = nullptr;
+      FXAAPassPtr m_fxaaPass                            = nullptr;
+      SingleMatForwardRenderPassPtr m_singleMatRenderer = nullptr;
+      Camera* m_camera                                  = nullptr;
 
       /**
        * Selected entity list

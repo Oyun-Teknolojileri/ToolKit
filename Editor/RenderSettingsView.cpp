@@ -38,16 +38,16 @@ namespace ToolKit
       }
 
       ImGui::DragFloat("Bloom Intensity",
-                       &gfx.bloomIntensity,
+                       &gfx.BloomIntensity,
                        0.01f,
                        0.0f,
                        100.0f);
       ImGui::DragFloat("Bloom Threshold",
-                       &gfx.bloomThreshold,
+                       &gfx.BloomThreshold,
                        0.01f,
                        0.0f,
                        FLT_MAX);
-      ImGui::InputInt("Bloom Iteration Count", &gfx.bloomIterationCount, 1, 2);
+      ImGui::InputInt("Bloom Iteration Count", &gfx.BloomIterationCount, 1, 2);
     }
   } // namespace Editor
 } // namespace ToolKit

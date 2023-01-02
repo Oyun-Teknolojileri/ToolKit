@@ -5,9 +5,13 @@
 #include "Framebuffer.h"
 #include "GeometryTypes.h"
 #include "Primative.h"
+#include "Renderer.h"
 
 namespace ToolKit
 {
+
+  typedef std::shared_ptr<class Pass> PassPtr;
+  typedef std::vector<PassPtr> PassPtrArray;
 
   /**
    * Base Pass class.
@@ -21,10 +25,17 @@ namespace ToolKit
     virtual void Render() = 0;
     virtual void PreRender();
     virtual void PostRender();
+    void RenderSubPass(const PassPtr& pass);
+
+    Renderer* GetRenderer();
+    void SetRenderer(Renderer* renderer);
 
    protected:
     MaterialPtr m_prevOverrideMaterial = nullptr;
     FramebufferPtr m_prevFrameBuffer   = nullptr;
+
+   private:
+    Renderer* m_renderer = nullptr;
   };
 
   /*
@@ -33,6 +44,9 @@ namespace ToolKit
   class TK_API RenderPass : public Pass
   {
    public:
+    RenderPass();
+    virtual ~RenderPass();
+
     // Sort entities  by distance (from boundary center)
     // in ascending order to camera. Accounts for isometric camera.
     void StableSortByDistanceToCamera(EntityRawPtrArray& entities,
@@ -78,7 +92,7 @@ namespace ToolKit
    public:
     ForwardRenderPass();
     explicit ForwardRenderPass(const ForwardRenderPassParams& params);
-    virtual ~ForwardRenderPass();
+    ~ForwardRenderPass();
 
     void Render() override;
     void PreRender() override;
@@ -182,11 +196,11 @@ namespace ToolKit
 
   struct FullQuadPassParams
   {
+    LightRawPtrArray lights;
     FramebufferPtr FrameBuffer = nullptr;
     BlendFunction BlendFunc    = BlendFunction::NONE;
     ShaderPtr FragmentShader   = nullptr;
     bool ClearFrameBuffer      = true;
-    LightRawPtrArray lights;
   };
 
   /**
@@ -259,6 +273,7 @@ namespace ToolKit
    public:
     StencilRenderPass();
     explicit StencilRenderPass(const StencilRenderPassParams& params);
+    ~StencilRenderPass();
 
     void Render() override;
     void PreRender() override;
@@ -292,6 +307,7 @@ namespace ToolKit
    public:
     OutlinePass();
     explicit OutlinePass(const OutlinePassParams& params);
+    ~OutlinePass();
 
     void Render() override;
     void PreRender() override;
@@ -319,6 +335,8 @@ namespace ToolKit
   {
    public:
     GBufferPass();
+    explicit GBufferPass(const GBufferPassParams& params);
+    ~GBufferPass();
 
     void PreRender() override;
     void PostRender() override;
@@ -363,6 +381,7 @@ namespace ToolKit
    public:
     DeferredRenderPass();
     DeferredRenderPass(const DeferredRenderPassParams& params);
+    ~DeferredRenderPass();
 
     void PreRender() override;
     void PostRender() override;
@@ -375,95 +394,12 @@ namespace ToolKit
     DeferredRenderPassParams m_params;
 
    private:
-    FullQuadPass m_fullQuadPass;
+    FullQuadPassPtr m_fullQuadPass         = nullptr;
     ShaderPtr m_deferredRenderShader       = nullptr;
-
-    const IVec2 m_lightDataTextureSize     = IVec2(1024);
     LightDataTexturePtr m_lightDataTexture = nullptr;
+    const IVec2 m_lightDataTextureSize     = IVec2(1024);
   };
 
   typedef std::shared_ptr<DeferredRenderPass> DeferredRenderPassPtr;
-
-  struct SceneRenderPassParams
-  {
-    ScenePtr Scene = nullptr;
-    LightRawPtrArray Lights;
-    Camera* Cam                    = nullptr;
-    FramebufferPtr MainFramebuffer = nullptr;
-    bool ClearFramebuffer          = true;
-  };
-
-  struct SSAOPassParams
-  {
-    TexturePtr GPositionBuffer    = nullptr;
-    TexturePtr GNormalBuffer      = nullptr;
-    TexturePtr GLinearDepthBuffer = nullptr;
-    Camera* Cam                   = nullptr;
-  };
-
-  class TK_API SSAOPass : public Pass
-  {
-   public:
-    SSAOPass();
-    explicit SSAOPass(const SSAOPassParams& params);
-
-    void Render();
-    void PreRender();
-    void PostRender();
-
-   private:
-    void GenerateSSAONoise();
-
-   public:
-    SSAOPassParams m_params;
-    RenderTargetPtr m_ssaoTexture = nullptr;
-
-   private:
-    Vec3Array m_ssaoKernel;
-    Vec2Array m_ssaoNoise;
-
-    FramebufferPtr m_ssaoFramebuffer   = nullptr;
-    SSAONoiseTexturePtr m_noiseTexture = nullptr;
-    RenderTargetPtr m_tempBlurRt       = nullptr;
-
-    FullQuadPass m_quadPass;
-    ShaderPtr m_ssaoShader = nullptr;
-  };
-
-  typedef std::shared_ptr<SSAOPass> SSAOPassPtr;
-
-  /**
-   * Main scene renderer.
-   * TODO: It should be Tecnhique instead of Pass.
-   */
-  class TK_API SceneRenderPass : public Pass
-  {
-   public:
-    SceneRenderPass();
-    explicit SceneRenderPass(const SceneRenderPassParams& params);
-
-    void Render() override;
-    void PreRender() override;
-    void PostRender() override;
-
-   private:
-    void SetPassParams();
-    void CullDrawList(EntityRawPtrArray& entities, Camera* camera);
-
-   public:
-    SceneRenderPassParams m_params;
-
-    ShadowPassPtr m_shadowPass               = nullptr;
-    ForwardRenderPassPtr m_forwardRenderPass = nullptr;
-    CubeMapPassPtr m_skyPass                 = nullptr;
-    GBufferPass m_gBufferPass;
-    DeferredRenderPass m_deferredRenderPass;
-    SSAOPass m_ssaoPass;
-
-   private:
-    bool m_drawSky = false;
-  };
-
-  typedef std::shared_ptr<SceneRenderPass> SceneRenderPassPtr;
 
 } // namespace ToolKit

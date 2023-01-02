@@ -13,6 +13,7 @@
 #include "PublishManager.h"
 #include "ToolKit.h"
 #include "Workspace.h"
+#include "Thumbnail.h"
 
 #include <memory>
 #include <unordered_map>
@@ -159,8 +160,7 @@ namespace ToolKit
       // Editor variables.
       float m_camSpeed         = 8.0; // Meters per sec.
       float m_mouseSensitivity = 0.5f;
-      Vec2 m_thumbnailSize     = Vec2(300.0f, 300.0f);
-      std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
+      ThumbnailManager m_thumbnailManager;
 
       // Simulator settings.
       EditorViewport* m_simulationWindow = nullptr;
@@ -179,6 +179,7 @@ namespace ToolKit
 
       // Editor states.
       int m_fps                                = 0;
+      uint m_totalFrameCount                   = 0;
       bool m_showPickingDebug                  = false;
       bool m_showStateTransitionsDebug         = false;
       bool m_showOverlayUI                     = true;
@@ -201,8 +202,6 @@ namespace ToolKit
       float m_moveDelta   = 0.25f;
       float m_rotateDelta = 15.0f;
       float m_scaleDelta  = 0.5f;
-
-      Renderer* m_renderer;
       bool m_windowCamLoad = true;
 
      private:

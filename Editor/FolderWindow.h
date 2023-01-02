@@ -19,7 +19,6 @@ namespace ToolKit
       explicit DirectoryEntry(const String& fullPath);
       String GetFullPath() const;
       ResourceManager* GetManager() const;
-      void GenerateThumbnail() const;
       RenderTargetPtr GetThumbnail() const;
 
      public:

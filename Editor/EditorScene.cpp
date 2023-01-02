@@ -141,14 +141,10 @@ namespace ToolKit
         return;
       }
 
-      if (g_app->m_selectEffectingLights &&
-          ntt->GetType() != EntityType::Entity_Light &&
-          ntt->GetType() != EntityType::Entity_DirectionalLight &&
-          ntt->GetType() != EntityType::Entity_PointLight &&
-          ntt->GetType() != EntityType::Entity_SpotLight)
+      if (g_app->m_selectEffectingLights && !ntt->IsLightInstance())
       {
-        LightRawPtrArray effectingLights =
-            GetRenderer()->GetBestLights(ntt, GetLights());
+        LightRawPtrArray effectingLights = GetBestLights(ntt, GetLights());
+
         for (Light* light : effectingLights)
         {
           if (!IsSelected(light->GetIdVal()))

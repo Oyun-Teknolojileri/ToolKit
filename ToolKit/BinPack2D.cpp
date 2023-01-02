@@ -1,5 +1,7 @@
 #include "BinPack2D.h"
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
   std::vector<BinPack2D::PackedRect> BinPack2D::Pack(std::vector<int> squares,

@@ -6,6 +6,8 @@
 #include <iterator>
 #include <vector>
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
 
