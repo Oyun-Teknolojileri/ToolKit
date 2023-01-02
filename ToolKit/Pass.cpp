@@ -1292,7 +1292,7 @@ namespace ToolKit
   void DeferredRenderPass::Render() 
   { 
     // Deferred render always uses PBR material
-    m_fullQuadPass.m_material->m_materialType = MaterialType::PBR;
+    m_fullQuadPass->m_material->m_materialType = MaterialType::PBR;
     RenderSubPass(m_fullQuadPass); 
   }
 

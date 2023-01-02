@@ -72,7 +72,7 @@ namespace ToolKit
 
 
       // Post process.
-      m_fxaaPass.Render();
+      //m_fxaaPass.Render();
       m_passArray.push_back(m_tonemapPass);
       m_passArray.push_back(m_gammaPass);
 

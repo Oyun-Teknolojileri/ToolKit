@@ -106,7 +106,9 @@ namespace ToolKit
         TexturePtr texture = nullptr;
         if (dirEnt.m_ext == HDR)
         {
-          texture = std::make_shared<Texture>(fullpath, true);
+          TextureSettings ts;
+          ts.InternalFormat = GraphicTypes::FormatRGB16F;
+          texture = std::make_shared<Texture>(fullpath, ts);
           texture->Load();
           texture->Init(true);
         }
