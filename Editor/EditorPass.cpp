@@ -49,6 +49,11 @@ namespace ToolKit
       case EditorLitMode::Unlit:
         m_passArray.push_back(m_singleMatRenderer);
         break;
+      case EditorLitMode::Game:
+        m_params.App->HideGizmos();
+        m_scenePass->m_params.Gfx = GetEngineSettings().Graphics;
+        m_scenePass->Render(renderer);
+        break;
       default:
         m_scenePass->m_params.Gfx = GetEngineSettings().Graphics;
         m_scenePass->m_params.Gfx.GammaCorrectionEnabled = false;
@@ -57,26 +62,33 @@ namespace ToolKit
         break;
       }
 
-      // Draw scene and apply bloom effect.
-      Technique::Render(renderer);
-      m_passArray.clear();
+      if (m_params.LitMode != EditorLitMode::Game)
+      {
+        // Draw scene and apply bloom effect.
+        Technique::Render(renderer);
+        m_passArray.clear();
 
-      SetLitMode(renderer, EditorLitMode::EditorLit);
+        SetLitMode(renderer, EditorLitMode::EditorLit);
 
-      // Draw outlines.
-      OutlineSelecteds(renderer);
-      m_passArray.clear();
+        // Draw outlines.
+        OutlineSelecteds(renderer);
+        m_passArray.clear();
 
-      // Draw editor objects.
-      m_passArray.push_back(m_editorPass);
-      m_passArray.push_back(m_gizmoPass);
+        // Draw editor objects.
+        m_passArray.push_back(m_editorPass);
+        m_passArray.push_back(m_gizmoPass);
 
-      // Post process.
-      // m_passArray.push_back(m_fxaaPass);
-      m_passArray.push_back(m_tonemapPass);
-      m_passArray.push_back(m_gammaPass);
+        // Post process.
+        // m_passArray.push_back(m_fxaaPass);
+        m_passArray.push_back(m_tonemapPass);
+        m_passArray.push_back(m_gammaPass);
 
-      Technique::Render(renderer);
+        Technique::Render(renderer);
+      }
+      else
+      {
+        m_params.App->ShowGizmos();
+      }
 
       PostRender();
     }
@@ -234,6 +246,7 @@ namespace ToolKit
       {
       case EditorLitMode::EditorLit:
       case EditorLitMode::FullyLit:
+      case EditorLitMode::Game:
         renderer->m_renderOnlyLighting = false;
         break;
       case EditorLitMode::LightingOnly:

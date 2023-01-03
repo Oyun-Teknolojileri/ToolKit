@@ -227,7 +227,8 @@ namespace ToolKit
                                        "Unlit",
                                        "Full Lit",
                                        "Light Complexity",
-                                       "Lighting Only"};
+                                       "Lighting Only",
+                                       "Game"};
           uint itemCount            = sizeof(itemNames) / sizeof(itemNames[0]);
           if (ImGui::BeginCombo("", itemNames[lightModeIndx]))
           {

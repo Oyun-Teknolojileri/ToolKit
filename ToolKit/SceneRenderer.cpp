@@ -126,8 +126,13 @@ namespace ToolKit
     {
       lights = m_params.Scene->GetLights();
     }
-    m_shadowPass->m_params.Entities = m_params.Scene->GetEntities();
-    m_shadowPass->m_params.Lights   = m_params.Lights;
+    else
+    {
+      lights = m_params.Lights;
+    }
+
+    m_shadowPass->m_params.Entities  = m_params.Scene->GetEntities();
+    m_shadowPass->m_params.Lights    = lights;
 
     // Give blended entities to forward render, non-blendeds to deferred
     // render
@@ -147,12 +152,12 @@ namespace ToolKit
     m_deferredRenderPass->m_params.GBufferFramebuffer =
         m_gBufferPass->m_framebuffer;
 
-    m_deferredRenderPass->m_params.lights          = m_params.Lights;
+    m_deferredRenderPass->m_params.lights          = lights;
     m_deferredRenderPass->m_params.MainFramebuffer = m_params.MainFramebuffer;
     m_deferredRenderPass->m_params.Cam             = m_params.Cam;
     m_deferredRenderPass->m_params.AOTexture       = m_ssaoPass->m_ssaoTexture;
 
-    m_forwardRenderPass->m_params.Lights           = m_params.Lights;
+    m_forwardRenderPass->m_params.Lights           = lights;
     m_forwardRenderPass->m_params.Cam              = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.ClearFrameBuffer = false;

@@ -39,6 +39,8 @@ namespace ToolKit
       m_sphere         = nullptr;
       m_cam            = nullptr;
       m_entity         = nullptr;
+
+      m_lightSystem    = nullptr;
     }
 
     RenderTargetPtr ThumbnailRenderer::RenderThumbnail(
@@ -80,7 +82,7 @@ namespace ToolKit
         m_thumbnailScene->AddEntity(m_entity.get());
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
-        m_cam->FocusToBoundingBox(meshComp->GetAABB(), 1.1f);
+        m_cam->FocusToBoundingBox(m_entity->GetAABB(true), 1.5f);
       }
       else if (dirEnt.m_ext == MATERIAL)
       {
@@ -99,6 +101,7 @@ namespace ToolKit
         m_thumbnailScene->AddEntity(m_sphere.get());
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
+        m_cam->m_node->SetOrientation(Quaternion());
         m_cam->m_node->SetTranslation(Vec3(0.0f, 0.0f, 1.5f));
       }
       else if (SupportedImageFormat(dirEnt.m_ext) || dirEnt.m_ext == HDR)
@@ -122,15 +125,17 @@ namespace ToolKit
         float h      = (texture->m_height / maxDim) * m_maxThumbSize;
 
         m_surface    = std::make_shared<Surface>(Vec2(w, h));
+        m_surface->UpdateGeometry(false);
         MaterialComponentPtr matCom = m_surface->GetMaterialComponent();
         matCom->GetMaterialVal()->m_diffuseTexture = texture;
         matCom->Init(false);
 
         m_thumbnailScene->AddEntity(m_surface.get());
-
+        m_cam->m_orthographicScale = 1.0f;
         m_cam
             ->SetLens(w * -0.5f, w * 0.5f, h * -0.5f, h * 0.5f, 0.01f, 1000.0f);
 
+        m_cam->m_node->SetOrientation(Quaternion());
         m_cam->m_node->SetTranslation(Vec3(0.0f, 0.0f, 10.0f),
                                       TransformationSpace::TS_LOCAL);
       }

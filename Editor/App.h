@@ -138,7 +138,7 @@ namespace ToolKit
       void HideGizmos();
       void ShowGizmos();
 
-      void ShowSimulationWindow(float deltaTime);
+      void UpdateSimulation(float deltaTime);
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
@@ -209,8 +209,6 @@ namespace ToolKit
       bool m_onQuit = false;
       String m_newSceneName;
       float m_deltaTime        = 0.0f;
-
-      MaterialPtr lightModeMat = nullptr;
     };
 
     extern void DebugMessage(const String& msg);
