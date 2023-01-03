@@ -103,6 +103,8 @@ namespace ToolKit
 
     flushTasksFn(m_highQueue);
     flushTasksFn(m_lowQueue);
+
+    m_renderer->m_sky = nullptr;
   }
 
   void RenderSystem::SetAppWindowSize(uint width, uint height)
