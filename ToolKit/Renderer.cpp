@@ -474,11 +474,10 @@ namespace ToolKit
 
     m_renderState.alphaMaskTreshold = state->alphaMaskTreshold;
 
-    bool diffuseTexture = !state->isColorMaterial && state->diffuseTextureInUse;
-    if (diffuseTexture)
+    if (m_mat->m_diffuseTexture)
     {
-      m_renderState.diffuseTexture = state->diffuseTexture;
-      SetTexture(0, state->diffuseTexture);
+
+      SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
     }
 
     if (state->cubeMapInUse)
@@ -494,11 +493,9 @@ namespace ToolKit
       glLineWidth(m_renderState.lineWidth);
     }
 
-    m_renderState.emissiveTextureInUse = state->emissiveTextureInUse;
-    if (m_renderState.emissiveTextureInUse)
+    if (m_mat->m_emissiveTexture)
     {
-      m_renderState.emissiveTexture = state->diffuseTexture;
-      SetTexture(1, state->emissiveTexture);
+      SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
     }
 
     if (m_mat->m_metallicRoughnessTexture)
@@ -923,7 +920,7 @@ namespace ToolKit
       m_gaussianBlurMaterial                   = std::make_shared<Material>();
       m_gaussianBlurMaterial->m_vertexShader   = vert;
       m_gaussianBlurMaterial->m_fragmentShader = frag;
-      m_gaussianBlurMaterial->GetRenderState()->isColorMaterial = false;
+      m_gaussianBlurMaterial->m_diffuseTexture = nullptr;
     }
 
     m_gaussianBlurMaterial->UnInit();
@@ -957,7 +954,7 @@ namespace ToolKit
       m_averageBlurMaterial                   = std::make_shared<Material>();
       m_averageBlurMaterial->m_vertexShader   = vert;
       m_averageBlurMaterial->m_fragmentShader = frag;
-      m_averageBlurMaterial->GetRenderState()->isColorMaterial = false;
+      m_averageBlurMaterial->m_diffuseTexture = nullptr;
     }
 
     m_averageBlurMaterial->UnInit();
@@ -1220,7 +1217,7 @@ namespace ToolKit
           GLint loc = glGetUniformLocation(
               program->m_handle,
               GetUniformName(Uniform::DIFFUSE_TEXTURE_IN_USE));
-          int v = (int) !(m_mat->GetRenderState()->isColorMaterial);
+          int v = (int) (m_mat->m_diffuseTexture != nullptr);
           if (m_renderOnlyLighting)
           {
             v = false;
@@ -1286,7 +1283,8 @@ namespace ToolKit
           GLint loc = glGetUniformLocation(
               program->m_handle,
               GetUniformName(Uniform::EMISSIVE_TEXTURE_IN_USE));
-          glUniform1i(loc, m_renderState.emissiveTextureInUse);
+          int v = (int) (m_mat->m_emissiveTexture != nullptr);
+          glUniform1i(loc, v);
         }
         break;
         case Uniform::USE_FORWARD_PATH:
