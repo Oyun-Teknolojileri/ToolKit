@@ -276,7 +276,7 @@ namespace ToolKit
   FXAAPass::FXAAPass() : PostProcessPass()
   {
     m_postProcessShader = GetShaderManager()->Create<Shader>(
-      ShaderPath("fxaaFilterFrag.shader", true));
+        ShaderPath("fxaaFilterFrag.shader", true));
   }
 
   FXAAPass::FXAAPass(const FXAAPassParams& params) : FXAAPass()
@@ -289,8 +289,9 @@ namespace ToolKit
     PostProcessPass::m_params.FrameBuffer = m_params.FrameBuffer;
     PostProcessPass::PreRender();
 
-    m_postProcessShader->SetShaderParameter("screen_size",
-      ParameterVariant(m_params.screen_size));
+    m_postProcessShader->SetShaderParameter(
+        "screen_size",
+        ParameterVariant(m_params.screen_size));
   }
 
   GammaPass::GammaPass() : PostProcessPass()

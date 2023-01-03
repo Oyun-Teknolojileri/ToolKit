@@ -267,7 +267,8 @@ namespace ToolKit
       MeshRawPtrArray meshCollector;
       mainMesh->GetAllMeshes(meshCollector);
 
-      for (uint meshIndx = 0; meshIndx < meshCollector.size(); meshIndx++, entityMeshIndex++)
+      for (uint meshIndx = 0; meshIndx < meshCollector.size();
+           meshIndx++, entityMeshIndex++)
       {
         if (meshIndices.size() && meshIndicesIterator < meshIndices.size())
         {

@@ -108,7 +108,7 @@ namespace ToolKit
         {
           TextureSettings ts;
           ts.InternalFormat = GraphicTypes::FormatRGB16F;
-          texture = std::make_shared<Texture>(fullpath, ts);
+          texture           = std::make_shared<Texture>(fullpath, ts);
           texture->Load();
           texture->Init(true);
         }
