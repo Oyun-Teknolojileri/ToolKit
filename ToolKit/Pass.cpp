@@ -86,67 +86,96 @@ namespace ToolKit
         return false;
       };
 
-      MultiMaterialPtr mmComp;
-      mmComp = ntt->GetComponent<MultiMaterialComponent>();
-      if (mmComp)
+      // Return true if multi material component is found
+      auto checkMultiMaterialComp = [ntt,
+                                     &checkMatTranslucency,
+                                     &opaqueEntities,
+                                     &translucentEntities]() -> bool
       {
-        bool isThereOpaque = false, isThereTranslucent = false;
-        for (MaterialPtr mat : mmComp->GetMaterialList())
+        MultiMaterialPtr mmComp;
+        mmComp = ntt->GetComponent<MultiMaterialComponent>();
+        if (mmComp)
         {
-          if (checkMatTranslucency(mat))
+          bool isThereOpaque = false, isThereTranslucent = false;
+          for (MaterialPtr mat : mmComp->GetMaterialList())
           {
-            isThereTranslucent = true;
+            if (checkMatTranslucency(mat))
+            {
+              isThereTranslucent = true;
+            }
+            else
+            {
+              isThereOpaque = true;
+            }
           }
-          else
+          if (isThereTranslucent)
           {
-            isThereOpaque = true;
+            translucentEntities.push_back(ntt);
           }
+          if (isThereOpaque)
+          {
+            opaqueEntities.push_back(ntt);
+          }
+          return true;
         }
-        if (isThereTranslucent)
-        {
-          translucentEntities.push_back(ntt);
-        }
-        if (isThereOpaque)
-        {
-          opaqueEntities.push_back(ntt);
-        }
+        return false;
+      };
+      if (checkMultiMaterialComp())
+      {
+        continue;
       }
 
-      // Check too see if there are any material with blend state.
-      MaterialComponentPtrArray materials;
-      ntt->GetComponent<MaterialComponent>(materials);
-
-      if (!materials.empty())
+      auto checkMaterialComps = [ntt,
+                                 &checkMatTranslucency,
+                                 &opaqueEntities,
+                                 &translucentEntities]() -> bool
       {
-        bool isThereOpaque = false, isThereTranslucent = false;
-        for (MaterialComponentPtr& mt : materials)
+        // Check too see if there are any material with blend state.
+        MaterialComponentPtrArray materials;
+        ntt->GetComponent<MaterialComponent>(materials);
+
+        if (!materials.empty())
         {
-          if (checkMatTranslucency(mt->GetMaterialVal()))
+          bool isThereOpaque = false, isThereTranslucent = false;
+          for (MaterialComponentPtr& mt : materials)
           {
-            isThereTranslucent = true;
+            if (checkMatTranslucency(mt->GetMaterialVal()))
+            {
+              isThereTranslucent = true;
+            }
+            else
+            {
+              isThereOpaque = true;
+            }
           }
-          else
+          if (isThereTranslucent)
           {
-            isThereOpaque = true;
+            translucentEntities.push_back(ntt);
           }
+          if (isThereOpaque)
+          {
+            opaqueEntities.push_back(ntt);
+          }
+          return true;
         }
-        if (isThereTranslucent)
-        {
-          translucentEntities.push_back(ntt);
-        }
-        if (isThereOpaque)
-        {
-          opaqueEntities.push_back(ntt);
-        }
+        return false;
+      };
+      if (checkMaterialComps())
+      {
+        continue;
       }
-      else
+
+      auto checkSubmeshes = [ntt,
+                             &checkMatTranslucency,
+                             &opaqueEntities,
+                             &translucentEntities]() -> bool
       {
         MeshComponentPtrArray meshes;
         ntt->GetComponent<MeshComponent>(meshes);
 
         if (meshes.empty())
         {
-          continue;
+          return false;
         }
 
         bool isThereOpaque = false, isThereTranslucent = false;
@@ -174,7 +203,9 @@ namespace ToolKit
             opaqueEntities.push_back(ntt);
           }
         }
-      }
+        return true;
+      };
+      checkSubmeshes();
     }
   }
 
@@ -211,68 +242,98 @@ namespace ToolKit
         return false;
       };
 
-      MultiMaterialPtr mmComp;
-      mmComp = ntt->GetComponent<MultiMaterialComponent>();
-      if (mmComp)
+      auto checkMultiMaterialComp = [ntt,
+                                     &checkMatTranslucentUnlit,
+                                     &checkMatOpaque,
+                                     &opaqueEntities,
+                                     &translucentAndUnlitEntities]() -> bool
       {
-        bool isThereOpaque = false, isThereTranslucentUnlit = false;
-        for (MaterialPtr mat : mmComp->GetMaterialList())
+        MultiMaterialPtr mmComp;
+        mmComp = ntt->GetComponent<MultiMaterialComponent>();
+        if (mmComp)
         {
-          if (!isThereTranslucentUnlit && checkMatTranslucentUnlit(mat))
+          bool isThereOpaque = false, isThereTranslucentUnlit = false;
+          for (MaterialPtr mat : mmComp->GetMaterialList())
           {
-            isThereTranslucentUnlit = true;
+            if (!isThereTranslucentUnlit && checkMatTranslucentUnlit(mat))
+            {
+              isThereTranslucentUnlit = true;
+            }
+            if (!isThereOpaque && checkMatOpaque(mat))
+            {
+              isThereOpaque = true;
+            }
           }
-          if (!isThereOpaque && checkMatOpaque(mat))
+          if (isThereTranslucentUnlit)
           {
-            isThereOpaque = true;
+            translucentAndUnlitEntities.push_back(ntt);
           }
+          if (isThereOpaque)
+          {
+            opaqueEntities.push_back(ntt);
+          }
+          return true;
         }
-        if (isThereTranslucentUnlit)
-        {
-          translucentAndUnlitEntities.push_back(ntt);
-        }
-        if (isThereOpaque)
-        {
-          opaqueEntities.push_back(ntt);
-        }
+        return false;
+      };
+      if (checkMultiMaterialComp())
+      {
+        continue;
       }
 
-      // Check too see if there are any material with blend state.
-      MaterialComponentPtrArray materials;
-      ntt->GetComponent<MaterialComponent>(materials);
-
-      if (!materials.empty())
+      auto checkMatComps = [ntt,
+                            &checkMatTranslucentUnlit,
+                            &checkMatOpaque,
+                            &opaqueEntities,
+                            &translucentAndUnlitEntities]() -> bool
       {
-        bool isThereOpaque = false, isThereTranslucentUnlit = false;
-        for (MaterialComponentPtr& mtc : materials)
+        // Check too see if there are any material with blend state.
+        MaterialComponentPtrArray materials;
+        ntt->GetComponent<MaterialComponent>(materials);
+        if (!materials.empty())
         {
-          if (!isThereTranslucentUnlit &&
-              checkMatTranslucentUnlit(mtc->GetMaterialVal()))
+          bool isThereOpaque = false, isThereTranslucentUnlit = false;
+          for (MaterialComponentPtr& mtc : materials)
           {
-            isThereTranslucentUnlit = true;
+            if (!isThereTranslucentUnlit &&
+                checkMatTranslucentUnlit(mtc->GetMaterialVal()))
+            {
+              isThereTranslucentUnlit = true;
+            }
+            if (!isThereOpaque && checkMatOpaque(mtc->GetMaterialVal()))
+            {
+              isThereOpaque = true;
+            }
           }
-          if (!isThereOpaque && checkMatOpaque(mtc->GetMaterialVal()))
+          if (isThereTranslucentUnlit)
           {
-            isThereOpaque = true;
+            translucentAndUnlitEntities.push_back(ntt);
           }
+          if (isThereOpaque)
+          {
+            opaqueEntities.push_back(ntt);
+          }
+          return true;
         }
-        if (isThereTranslucentUnlit)
-        {
-          translucentAndUnlitEntities.push_back(ntt);
-        }
-        if (isThereOpaque)
-        {
-          opaqueEntities.push_back(ntt);
-        }
+        return false;
+      };
+      if (checkMatComps())
+      {
+        continue;
       }
-      else
+
+      auto checkSubmeshes = [ntt,
+                             &checkMatTranslucentUnlit,
+                             &checkMatOpaque,
+                             &opaqueEntities,
+                             &translucentAndUnlitEntities]() -> bool
       {
         MeshComponentPtrArray meshes;
         ntt->GetComponent<MeshComponent>(meshes);
 
         if (meshes.empty())
         {
-          continue;
+          return false;
         }
 
         for (MeshComponentPtr& ms : meshes)
@@ -301,7 +362,9 @@ namespace ToolKit
             opaqueEntities.push_back(ntt);
           }
         }
-      }
+        return true;
+      };
+      checkSubmeshes();
     }
   }
 
@@ -457,7 +520,8 @@ namespace ToolKit
           if (mmComp && mmComp->GetMaterialList().size() > activeMeshIndx)
           {
             MaterialPtr mat = mmComp->GetMaterialList()[activeMeshIndx];
-            if (mat->GetRenderState()->useForwardPath)
+            if (mat->GetRenderState()->useForwardPath &&
+                mat->GetRenderState()->blendFunction == BlendFunction::NONE)
             {
               renderer->Render(ntt, cam, lightList, {activeMeshIndx});
             }
@@ -504,6 +568,8 @@ namespace ToolKit
               continue;
             }
           }
+          bool prevState = renderMaterial->GetRenderState()->depthWriteEnabled;
+          renderMaterial->GetRenderState()->depthWriteEnabled = false;
           if (renderMaterial->GetRenderState()->cullMode ==
               CullingType::TwoSided)
           {
@@ -519,6 +585,7 @@ namespace ToolKit
           {
             renderer->Render(ntt, cam, lightList, {activeMeshIndx});
           }
+          renderMaterial->GetRenderState()->depthWriteEnabled = prevState;
         }
       }
     }

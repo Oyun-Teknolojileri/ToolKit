@@ -48,7 +48,7 @@ namespace ToolKit
     {
       DirectoryEntry dirEnt;
 
-      bool fileExist                        = false;
+      bool fileExist = GetFileManager()->CheckFileFromResources(file);
       FolderWindowRawPtrArray folderWindows = g_app->GetAssetBrowsers();
       for (FolderWindow* folderWnd : folderWindows)
       {
@@ -57,17 +57,25 @@ namespace ToolKit
           fileExist = true;
         }
       }
-      uint iconId      = fallbackIcon;
+      uint iconId           = fallbackIcon;
 
-      ImVec2 texCoords = ImVec2(1.0f, 1.0f);
-      if (RenderTargetPtr thumb = dirEnt.GetThumbnail())
+      ImVec2 texCoords      = ImVec2(1.0f, 1.0f);
+
+      RenderTargetPtr thumb = dirEnt.GetThumbnail();
+      if (dirEnt.m_ext.length() && thumb != nullptr)
       {
         texCoords = ImVec2(1.0f, -1.0f);
         iconId    = thumb->m_textureId;
       }
       else if (fileExist)
       {
-        if (RenderTargetPtr thumb = dirEnt.GetThumbnail())
+        DecomposePath(file,
+                      &dirEnt.m_rootPath,
+                      &dirEnt.m_fileName,
+                      &dirEnt.m_ext);
+
+        if (RenderTargetPtr thumb =
+                g_app->m_thumbnailManager.GetThumbnail(dirEnt))
         {
           iconId = thumb->m_textureId;
         }

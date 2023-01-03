@@ -270,9 +270,10 @@ namespace ToolKit
       for (uint meshIndx = 0; meshIndx < meshCollector.size();
            meshIndx++, entityMeshIndex++)
       {
-        if (meshIndices.size() && meshIndicesIterator < meshIndices.size())
+        if (meshIndices.size())
         {
-          if (entityMeshIndex != meshIndices[meshIndicesIterator])
+          if (meshIndicesIterator >= meshIndices.size() ||
+              entityMeshIndex != meshIndices[meshIndicesIterator])
           {
             continue;
           }
@@ -443,6 +444,12 @@ namespace ToolKit
     {
       m_renderState.depthFunction = state->depthFunction;
       glDepthFunc((int) state->depthFunction);
+    }
+
+    if (m_renderState.depthWriteEnabled != state->depthWriteEnabled)
+    {
+      glDepthMask(state->depthWriteEnabled);
+      m_renderState.depthWriteEnabled = state->depthWriteEnabled;
     }
 
     if (m_renderState.blendFunction != state->blendFunction)
