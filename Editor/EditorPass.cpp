@@ -71,7 +71,6 @@ namespace ToolKit
       m_passArray.push_back(m_editorPass);
       m_passArray.push_back(m_gizmoPass);
 
-
       // Post process.
       // m_passArray.push_back(m_fxaaPass);
       m_passArray.push_back(m_tonemapPass);
@@ -205,8 +204,8 @@ namespace ToolKit
       m_gammaPass->m_params.Gamma         = gfx.Gamma;
 
       // FXAA Pass
-      m_fxaaPass->m_params.FrameBuffer = viewport->m_framebuffer;
-      m_fxaaPass->m_params.screen_size = viewport->m_size;
+      m_fxaaPass->m_params.FrameBuffer    = viewport->m_framebuffer;
+      m_fxaaPass->m_params.screen_size    = viewport->m_size;
 
       // Gizmo Pass.
       m_gizmoPass->m_params.Viewport      = viewport;
@@ -424,12 +423,14 @@ namespace ToolKit
 
     void SingleMatForwardRenderPass::Render()
     {
+      EntityRawPtrArray opaqueDrawList;
       EntityRawPtrArray translucentDrawList;
       SeperateTranslucentEntities(m_params.ForwardParams.Entities,
+                                  opaqueDrawList,
                                   translucentDrawList);
 
       Renderer* renderer = GetRenderer();
-      for (Entity* ntt : m_params.ForwardParams.Entities)
+      for (Entity* ntt : opaqueDrawList)
       {
         LightRawPtrArray lightList = m_params.ForwardParams.Lights;
         ForwardRenderPass::CullLightList(ntt, lightList);

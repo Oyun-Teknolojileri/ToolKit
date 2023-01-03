@@ -71,10 +71,11 @@ namespace ToolKit
   }
 
   void RenderPass::SeperateTranslucentEntities(
-      EntityRawPtrArray& entities,
+      const EntityRawPtrArray& allEntities,
+      EntityRawPtrArray& opaqueEntities,
       EntityRawPtrArray& translucentEntities)
   {
-    auto delTrFn = [&translucentEntities](Entity* ntt) -> bool
+    for (Entity* ntt : allEntities)
     {
       auto checkMatTranslucency = [](MaterialPtr mat) -> bool
       {
@@ -89,13 +90,25 @@ namespace ToolKit
       mmComp = ntt->GetComponent<MultiMaterialComponent>();
       if (mmComp)
       {
+        bool isThereOpaque = false, isThereTranslucent = false;
         for (MaterialPtr mat : mmComp->GetMaterialList())
         {
           if (checkMatTranslucency(mat))
           {
-            translucentEntities.push_back(ntt);
-            return true;
+            isThereTranslucent = true;
           }
+          else
+          {
+            isThereOpaque = true;
+          }
+        }
+        if (isThereTranslucent)
+        {
+          translucentEntities.push_back(ntt);
+        }
+        if (isThereOpaque)
+        {
+          opaqueEntities.push_back(ntt);
         }
       }
 
@@ -105,13 +118,25 @@ namespace ToolKit
 
       if (!materials.empty())
       {
+        bool isThereOpaque = false, isThereTranslucent = false;
         for (MaterialComponentPtr& mt : materials)
         {
           if (checkMatTranslucency(mt->GetMaterialVal()))
           {
-            translucentEntities.push_back(ntt);
-            return true;
+            isThereTranslucent = true;
           }
+          else
+          {
+            isThereOpaque = true;
+          }
+        }
+        if (isThereTranslucent)
+        {
+          translucentEntities.push_back(ntt);
+        }
+        if (isThereOpaque)
+        {
+          opaqueEntities.push_back(ntt);
         }
       }
       else
@@ -121,9 +146,10 @@ namespace ToolKit
 
         if (meshes.empty())
         {
-          return false;
+          continue;
         }
 
+        bool isThereOpaque = false, isThereTranslucent = false;
         for (MeshComponentPtr& ms : meshes)
         {
           MeshRawCPtrArray all;
@@ -132,25 +158,32 @@ namespace ToolKit
           {
             if (checkMatTranslucency(m->m_material))
             {
-              translucentEntities.push_back(ntt);
-              return true;
+              isThereTranslucent = true;
             }
+            else
+            {
+              isThereOpaque = true;
+            }
+          }
+          if (isThereTranslucent)
+          {
+            translucentEntities.push_back(ntt);
+          }
+          if (isThereOpaque)
+          {
+            opaqueEntities.push_back(ntt);
           }
         }
       }
-
-      return false;
-    };
-
-    entities.erase(std::remove_if(entities.begin(), entities.end(), delTrFn),
-                   entities.end());
+    }
   }
 
   void RenderPass::SeperateTranslucentAndUnlitEntities(
-      EntityRawPtrArray& entities,
+      const EntityRawPtrArray& allEntities,
+      EntityRawPtrArray& opaqueEntities,
       EntityRawPtrArray& translucentAndUnlitEntities)
   {
-    auto delTrFn = [&translucentAndUnlitEntities](Entity* ntt) -> bool
+    for (Entity* ntt : allEntities)
     {
       auto checkMatTranslucentUnlit = [](MaterialPtr mat)
       {
@@ -165,17 +198,42 @@ namespace ToolKit
         return false;
       };
 
+      auto checkMatOpaque = [](MaterialPtr mat)
+      {
+        if (mat)
+        {
+          RenderState* rs = mat->GetRenderState();
+          if (rs->blendFunction == BlendFunction::NONE && !rs->useForwardPath)
+          {
+            return true;
+          }
+        }
+        return false;
+      };
+
       MultiMaterialPtr mmComp;
       mmComp = ntt->GetComponent<MultiMaterialComponent>();
       if (mmComp)
       {
+        bool isThereOpaque = false, isThereTranslucentUnlit = false;
         for (MaterialPtr mat : mmComp->GetMaterialList())
         {
-          if (checkMatTranslucentUnlit(mat))
+          if (!isThereTranslucentUnlit && checkMatTranslucentUnlit(mat))
           {
-            translucentAndUnlitEntities.push_back(ntt);
-            return true;
+            isThereTranslucentUnlit = true;
           }
+          if (!isThereOpaque && checkMatOpaque(mat))
+          {
+            isThereOpaque = true;
+          }
+        }
+        if (isThereTranslucentUnlit)
+        {
+          translucentAndUnlitEntities.push_back(ntt);
+        }
+        if (isThereOpaque)
+        {
+          opaqueEntities.push_back(ntt);
         }
       }
 
@@ -185,13 +243,26 @@ namespace ToolKit
 
       if (!materials.empty())
       {
+        bool isThereOpaque = false, isThereTranslucentUnlit = false;
         for (MaterialComponentPtr& mtc : materials)
         {
-          if (checkMatTranslucentUnlit(mtc->GetMaterialVal()))
+          if (!isThereTranslucentUnlit &&
+              checkMatTranslucentUnlit(mtc->GetMaterialVal()))
           {
-            translucentAndUnlitEntities.push_back(ntt);
-            return true;
+            isThereTranslucentUnlit = true;
           }
+          if (!isThereOpaque && checkMatOpaque(mtc->GetMaterialVal()))
+          {
+            isThereOpaque = true;
+          }
+        }
+        if (isThereTranslucentUnlit)
+        {
+          translucentAndUnlitEntities.push_back(ntt);
+        }
+        if (isThereOpaque)
+        {
+          opaqueEntities.push_back(ntt);
         }
       }
       else
@@ -201,29 +272,37 @@ namespace ToolKit
 
         if (meshes.empty())
         {
-          return false;
+          continue;
         }
 
         for (MeshComponentPtr& ms : meshes)
         {
           MeshRawCPtrArray all;
           ms->GetMeshVal()->GetAllMeshes(all);
+          bool isThereOpaque = false, isThereTranslucentUnlit = false;
           for (const Mesh* m : all)
           {
-            if (checkMatTranslucentUnlit(m->m_material))
+            if (!isThereTranslucentUnlit &&
+                checkMatTranslucentUnlit(m->m_material))
             {
-              translucentAndUnlitEntities.push_back(ntt);
-              return true;
+              isThereTranslucentUnlit = true;
             }
+            if (!isThereOpaque && checkMatOpaque(m->m_material))
+            {
+              isThereOpaque = true;
+            }
+          }
+          if (isThereTranslucentUnlit)
+          {
+            translucentAndUnlitEntities.push_back(ntt);
+          }
+          if (isThereOpaque)
+          {
+            opaqueEntities.push_back(ntt);
           }
         }
       }
-
-      return false;
-    };
-
-    entities.erase(std::remove_if(entities.begin(), entities.end(), delTrFn),
-                   entities.end());
+    }
   }
 
   ForwardRenderPass::ForwardRenderPass() {}
@@ -241,10 +320,13 @@ namespace ToolKit
 
   void ForwardRenderPass::Render()
   {
+    EntityRawPtrArray opaqueDrawList;
     EntityRawPtrArray translucentDrawList;
-    SeperateTranslucentEntities(m_drawList, translucentDrawList);
+    SeperateTranslucentEntities(m_drawList,
+                                opaqueDrawList,
+                                translucentDrawList);
 
-    RenderOpaque(m_drawList, m_camera, m_params.Lights);
+    RenderOpaque(opaqueDrawList, m_camera, m_params.Lights);
     RenderTranslucent(translucentDrawList, m_camera, m_params.Lights);
   }
 
@@ -398,9 +480,9 @@ namespace ToolKit
       LightRawPtrArray lightList = lights;
       CullLightList(ntt, lightList);
 
-      uint activeMeshIndx     = 0;
+      uint activeMeshIndx        = 0;
 
-      MultiMaterialPtr mmComp = ntt->GetComponent<MultiMaterialComponent>();
+      MultiMaterialPtr mmComp    = ntt->GetComponent<MultiMaterialComponent>();
       MaterialPtr renderMaterial = ntt->GetRenderMaterial();
 
       MeshComponentPtrArray meshComps;
@@ -1229,7 +1311,9 @@ namespace ToolKit
           {
             activeMaterial = mmComp->GetMaterialList()[activeMeshIndex];
           }
-          if (activeMaterial->GetRenderState()->useForwardPath)
+          if (activeMaterial->GetRenderState()->useForwardPath ||
+              activeMaterial->GetRenderState()->blendFunction !=
+                  BlendFunction::NONE)
           {
             continue;
           }
