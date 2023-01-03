@@ -53,8 +53,6 @@ namespace ToolKit
       myEditorRenderer = new EditorRenderer();
 
       OverrideEntityConstructors();
-
-      lightModeMat = std::make_shared<Material>();
     }
 
     App::~App()
@@ -177,21 +175,21 @@ namespace ToolKit
 
       EditorScenePtr scene = GetCurrentScene();
       scene->Update(deltaTime);
-      ShowSimulationWindow(deltaTime);
+      UpdateSimulation(deltaTime);
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
       {
         viewport->Update(deltaTime);
 
-        // PlayWindow is drawn on perspective. Thus, skip perspective.
+        /*// PlayWindow is drawn on perspective. Thus, skip perspective.
         if (m_gameMod != GameMod::Stop && !m_simulatorSettings.Windowed)
         {
           if (viewport->m_name == g_3dViewport)
           {
             continue;
           }
-        }
+        }*/
 
         if (viewport->IsVisible())
         {
@@ -417,6 +415,7 @@ namespace ToolKit
         {
           // Save to catch any changes in the editor.
           GetCurrentScene()->Save(true);
+          m_sceneLightingMode = EditorLitMode::Game;
         }
 
         String pluginPath = m_workspace.GetPluginPath();
@@ -454,6 +453,7 @@ namespace ToolKit
         GetCurrentScene()->Reload();
         GetCurrentScene()->Init();
         m_simulationWindow->SetVisibility(false);
+        m_sceneLightingMode = EditorLitMode::EditorLit;
       }
     }
 
@@ -1223,7 +1223,7 @@ namespace ToolKit
       }
     }
 
-    void App::ShowSimulationWindow(float deltaTime)
+    void App::UpdateSimulation(float deltaTime)
     {
       if (GamePlugin* plugin = GetPluginManager()->GetGamePlugin())
       {
@@ -1248,9 +1248,7 @@ namespace ToolKit
             }
             playWindow = m_simulationWindow;
           }
-          HideGizmos();
           plugin->Frame(deltaTime, playWindow);
-          ShowGizmos();
         }
       }
     }

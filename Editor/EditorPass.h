@@ -92,7 +92,11 @@ namespace ToolKit
       /**
        * Shows lighting result with a white material assigned to all objects.
        */
-      LightingOnly
+      LightingOnly,
+      /**
+      * Renders scene exactly as in game.
+      */
+      Game
     };
 
     struct EditorRenderPassParams
