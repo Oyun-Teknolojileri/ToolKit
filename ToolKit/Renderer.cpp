@@ -203,7 +203,8 @@ namespace ToolKit
 
   void Renderer::Render(Entity* ntt,
                         Camera* cam,
-                        const LightRawPtrArray& lights)
+                        const LightRawPtrArray& lights,
+                        const UIntArray& meshIndices)
   {
     if (!cam->IsOrtographic())
     {
@@ -253,6 +254,7 @@ namespace ToolKit
 
     updateAndBindSkinningTextures();
 
+    uint entityMeshIndex = 0, meshIndicesIterator = 0;
     for (MeshComponentPtr meshCom : meshComponents)
     {
       MeshPtr mainMesh = meshCom->GetMeshVal();
@@ -265,8 +267,19 @@ namespace ToolKit
       MeshRawPtrArray meshCollector;
       mainMesh->GetAllMeshes(meshCollector);
 
-      for (uint meshIndx = 0; meshIndx < meshCollector.size(); meshIndx++)
+      for (uint meshIndx = 0; meshIndx < meshCollector.size(); meshIndx++, entityMeshIndex++)
       {
+        if (meshIndices.size() && meshIndicesIterator < meshIndices.size())
+        {
+          if (entityMeshIndex != meshIndices[meshIndicesIterator])
+          {
+            continue;
+          }
+          else
+          {
+            meshIndicesIterator++;
+          }
+        }
         Mesh* mesh = meshCollector[meshIndx];
 
         if (mesh->m_vertexCount == 0)
@@ -274,9 +287,9 @@ namespace ToolKit
           continue;
         }
 
-        if (mmComp && mmComp->GetMaterialList().size() > meshIndx)
+        if (mmComp && mmComp->GetMaterialList().size() > entityMeshIndex)
         {
-          nttMat = mmComp->GetMaterialList()[meshIndx];
+          nttMat = mmComp->GetMaterialList()[entityMeshIndex];
         }
         mesh->Init();
         if (m_overrideMat != nullptr)

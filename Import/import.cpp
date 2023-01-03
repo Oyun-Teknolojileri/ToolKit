@@ -820,7 +820,7 @@ namespace ToolKit
       }
       MultiMaterialPtr matComp = std::make_shared<MultiMaterialComponent>();
       ntt->AddComponent(matComp);
-      matComp->UpdateMaterialList(meshComp);
+      matComp->UpdateMaterialList();
     }
 
     for (uint childIndx = 0; childIndx < node->mNumChildren; childIndx++)
