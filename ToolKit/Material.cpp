@@ -445,7 +445,8 @@ namespace ToolKit
 
   MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial()
   {
-    MaterialPtr umat = GetCopyOfUnlitMaterial();
+    MaterialPtr umat       = GetCopyOfUnlitMaterial();
+    umat->m_diffuseTexture = nullptr;
     return umat;
   }
 
