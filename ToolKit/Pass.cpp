@@ -496,6 +496,7 @@ namespace ToolKit
         m_shadowFramebuffer->SetAttachment(
             Framebuffer::Attachment::ColorAttachment0,
             m_shadowAtlas,
+            0,
             light->m_shadowAtlasLayer + i);
 
         // Clear the layer if needed
@@ -534,6 +535,7 @@ namespace ToolKit
       m_shadowFramebuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
           m_shadowAtlas,
+          0,
           light->m_shadowAtlasLayer);
 
       // Clear the layer if needed

@@ -213,6 +213,7 @@ namespace ToolKit
     /**
      * Temporary frame buffer to use in various operation. Don't rely on its
      * sate or use it to cache state.
+     * Only use ColorAttachment 0 and do not init with depth buffer.
      */
     FramebufferPtr m_utilFramebuffer   = nullptr;
     MaterialPtr m_gaussianBlurMaterial = nullptr;

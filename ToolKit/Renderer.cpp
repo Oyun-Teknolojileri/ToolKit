@@ -1637,13 +1637,13 @@ namespace ToolKit
         ShaderPath("equirectToCubeVert.shader", true));
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("equirectToCubeFrag.shader", true));
-    frag->m_shaderParams["Exposure"] = exposure;
+    frag->m_shaderParams["Exposure"]       = exposure;
 
-    mat->m_diffuseTexture            = texture;
+    mat->m_diffuseTexture                  = texture;
     mat->GetRenderState()->isColorMaterial = false;
-    mat->m_vertexShader              = vert;
-    mat->m_fragmentShader            = frag;
-    mat->GetRenderState()->cullMode  = CullingType::TwoSided;
+    mat->m_vertexShader                    = vert;
+    mat->m_fragmentShader                  = frag;
+    mat->GetRenderState()->cullMode        = CullingType::TwoSided;
     mat->Init();
 
     m_utilFramebuffer->UnInit();
@@ -1674,6 +1674,7 @@ namespace ToolKit
       m_utilFramebuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
           cubeMapRt,
+          0,
           -1,
           (Framebuffer::CubemapFace) i);
 
@@ -1726,11 +1727,11 @@ namespace ToolKit
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("irradianceGenerateFrag.shader", true));
 
-    mat->m_cubeMap                  = cubemap;
+    mat->m_cubeMap                         = cubemap;
     mat->GetRenderState()->isColorMaterial = false;
-    mat->m_vertexShader             = vert;
-    mat->m_fragmentShader           = frag;
-    mat->GetRenderState()->cullMode = CullingType::TwoSided;
+    mat->m_vertexShader                    = vert;
+    mat->m_fragmentShader                  = frag;
+    mat->GetRenderState()->cullMode        = CullingType::TwoSided;
     mat->Init();
 
     m_utilFramebuffer->UnInit();
@@ -1750,6 +1751,7 @@ namespace ToolKit
       m_utilFramebuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
           cubeMapRt,
+          0,
           -1,
           (Framebuffer::CubemapFace) i);
 
@@ -1771,19 +1773,23 @@ namespace ToolKit
                                                  uint height,
                                                  int mipMaps)
   {
-    const RenderTargetSettigs set = {0,
-                                     GraphicTypes::TargetCubeMap,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::UVClampToEdge,
-                                     GraphicTypes::SampleLinear,
-                                     GraphicTypes::SampleLinear,
-                                     GraphicTypes::FormatRGB16F,
-                                     GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeFloat};
+    const RenderTargetSettigs set = {
+        0,
+        GraphicTypes::TargetCubeMap,
+        GraphicTypes::UVClampToEdge,
+        GraphicTypes::UVClampToEdge,
+        GraphicTypes::UVClampToEdge,
+        GraphicTypes::SampleNearest, // GraphicTypes::SampleLinear,
+        GraphicTypes::SampleNearest, // GraphicTypes::SampleLinear,
+        GraphicTypes::FormatRGB16F,
+        GraphicTypes::FormatRGB,
+        GraphicTypes::TypeFloat};
     RenderTargetPtr cubemapRt =
         std::make_shared<RenderTarget>(width, height, set);
     cubemapRt->Init();
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
     // Views for 6 different angles
     CameraPtr cam = std::make_shared<Camera>();
@@ -1803,22 +1809,27 @@ namespace ToolKit
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("preFilterEnvMapFrag.shader", true));
 
-    mat->m_cubeMap                  = cubemap;
+    mat->m_cubeMap                         = cubemap;
     mat->GetRenderState()->isColorMaterial = false;
-    mat->m_vertexShader             = vert;
-    mat->m_fragmentShader           = frag;
-    mat->GetRenderState()->cullMode = CullingType::TwoSided;
+    mat->m_vertexShader                    = vert;
+    mat->m_fragmentShader                  = frag;
+    mat->GetRenderState()->cullMode        = CullingType::TwoSided;
     mat->Init();
 
     // No need to re init framebuffer since m_util framebuffer has only 1
     // render target
+    m_utilFramebuffer->Init({width, height, false, false});
 
-    // for (int i = 0; i < mipMaps; ++i)
+    UVec2 lastViewportSize = m_viewportSize;
+
+    for (int mip = 0; mip < mipMaps; ++mip)
     {
-      // TODO generate for all mip maps
-
       for (int i = 0; i < 6; ++i)
       {
+        frag->SetShaderParameter(
+            "roughness",
+            ParameterVariant((float) mip / (float) mipMaps));
+
         Vec3 pos;
         Quaternion rot;
         Vec3 sca;
@@ -1831,15 +1842,22 @@ namespace ToolKit
         m_utilFramebuffer->SetAttachment(
             Framebuffer::Attachment::ColorAttachment0,
             cubemapRt,
+            mip,
             -1,
             (Framebuffer::CubemapFace) i);
 
-        SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0f));
+        uint w = (uint) (width * std::powf(0.5f, (float) mip));
+        uint h = (uint) (height * std::powf(0.5f, (float) mip));
+
+        SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0));
+        SetViewportSize(w, h);
+
         DrawCube(cam.get(), mat);
       }
     }
 
     SetFramebuffer(nullptr);
+    SetViewportSize(lastViewportSize.x, lastViewportSize.y);
 
     // Take the ownership of render target.
     CubeMapPtr cubeMap     = std::make_shared<CubeMap>(cubemapRt->m_textureId);

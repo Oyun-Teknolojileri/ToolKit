@@ -337,6 +337,7 @@ namespace ToolKit
 
       fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
                         cubemap,
+                        0,
                         -1,
                         (Framebuffer::CubemapFace) i);
 

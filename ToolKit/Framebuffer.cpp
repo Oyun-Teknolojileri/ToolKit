@@ -118,6 +118,7 @@ namespace ToolKit
 
   RenderTargetPtr Framebuffer::SetAttachment(Attachment atc,
                                              RenderTargetPtr rt,
+                                             int mip,
                                              int layer,
                                              CubemapFace face)
   {
@@ -154,7 +155,7 @@ namespace ToolKit
                              attachment,
                              GL_TEXTURE_CUBE_MAP_POSITIVE_X + (int) face,
                              rt->m_textureId,
-                             0);
+                             mip);
     }
     else
     {
@@ -164,7 +165,7 @@ namespace ToolKit
         glFramebufferTextureLayer(GL_FRAMEBUFFER,
                                   attachment,
                                   rt->m_textureId,
-                                  0,
+                                  mip,
                                   layer);
       }
       else
@@ -173,7 +174,7 @@ namespace ToolKit
                                attachment,
                                GL_TEXTURE_2D,
                                rt->m_textureId,
-                               0);
+                               mip);
       }
     }
 

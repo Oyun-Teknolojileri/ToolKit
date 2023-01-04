@@ -19,8 +19,6 @@ namespace ToolKit
   {
     // NOTE: This class does not handle renderbuffer attachments, multi-sampled
     // cubemaps, stencil attachments(including depth_stencil).
-    // NOTE: All mipmap levels set to 0. No support to set different levels of
-    // mipmaps of textures.
 
     // Initalized framebuffer carries either depth attachment or depth
     // stencil attachment. In order to change, uninit and init the framebuffer
@@ -62,6 +60,7 @@ namespace ToolKit
 
     RenderTargetPtr SetAttachment(Attachment atc,
                                   RenderTargetPtr rt,
+                                  int mip = 0,
                                   int layer        = -1,
                                   CubemapFace face = CubemapFace::NONE);
     RenderTargetPtr GetAttachment(Attachment atc);
