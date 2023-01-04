@@ -61,15 +61,11 @@ namespace ToolKit
     if (m_diffuseTexture)
     {
       m_diffuseTexture->Init(flushClientSideArray);
-      m_renderState.diffuseTexture      = m_diffuseTexture->m_textureId;
-      m_renderState.diffuseTextureInUse = true;
     }
 
     if (m_emissiveTexture)
     {
       m_emissiveTexture->Init(flushClientSideArray);
-      m_renderState.emissiveTexture      = m_emissiveTexture->m_textureId;
-      m_renderState.emissiveTextureInUse = true;
     }
 
     if (m_metallicRoughnessTexture)
@@ -165,25 +161,6 @@ namespace ToolKit
 
   RenderState* Material::GetRenderState()
   {
-    if (m_diffuseTexture)
-    {
-      m_renderState.diffuseTextureInUse = true;
-      m_renderState.diffuseTexture      = m_diffuseTexture->m_textureId;
-    }
-    else
-    {
-      m_renderState.diffuseTextureInUse = false;
-    }
-    if (m_emissiveTexture)
-    {
-      m_renderState.emissiveTextureInUse = true;
-      m_renderState.emissiveTexture      = m_emissiveTexture->m_textureId;
-    }
-    else
-    {
-      m_renderState.emissiveTextureInUse = false;
-    }
-
     if (m_cubeMap)
     {
       m_renderState.cubeMap = m_cubeMap->m_textureId;
@@ -223,7 +200,7 @@ namespace ToolKit
   {
     XmlNode* container = CreateXmlNode(doc, "material", parent);
 
-    if (m_diffuseTexture && !m_renderState.isColorMaterial)
+    if (m_diffuseTexture)
     {
       XmlNode* node = CreateXmlNode(doc, "diffuseTexture", container);
       String file =
@@ -318,7 +295,6 @@ namespace ToolKit
         NormalizePath(path);
         m_diffuseTexture =
             GetTextureManager()->Create<Texture>(TexturePath(path));
-        m_renderState.isColorMaterial = false;
       }
       else if (strcmp("cubeMap", node->name()) == 0)
       {
@@ -421,7 +397,6 @@ namespace ToolKit
         ShaderPath("defaultFragment.shader", true));
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
-    material->GetRenderState()->isColorMaterial = false;
     material->Init();
 
     m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);
@@ -433,8 +408,7 @@ namespace ToolKit
         ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
-    material->GetRenderState()->useForwardPath  = true;
-    material->GetRenderState()->isColorMaterial = false;
+    material->GetRenderState()->useForwardPath = true;
     material->Init();
 
     m_storage[MaterialPath("unlit.material", true)] = MaterialPtr(material);
@@ -473,8 +447,8 @@ namespace ToolKit
 
   MaterialPtr MaterialManager::GetCopyOfUnlitColorMaterial()
   {
-    MaterialPtr umat                        = GetCopyOfUnlitMaterial();
-    umat->GetRenderState()->isColorMaterial = true;
+    MaterialPtr umat       = GetCopyOfUnlitMaterial();
+    umat->m_diffuseTexture = nullptr;
     return umat;
   }
 

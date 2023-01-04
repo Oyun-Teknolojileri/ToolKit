@@ -17,6 +17,7 @@ namespace ToolKit
    public:
     BloomPass();
     explicit BloomPass(const BloomPassParams& params);
+    ~BloomPass();
 
     void Render() override;
     void PreRender() override;
@@ -36,6 +37,8 @@ namespace ToolKit
     bool m_invalidRenderParams   = false;
   };
 
+  typedef std::shared_ptr<BloomPass> BloomPassPtr;
+
   struct PostProcessPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;
@@ -47,6 +50,7 @@ namespace ToolKit
    public:
     PostProcessPass();
     explicit PostProcessPass(const PostProcessPassParams& params);
+    ~PostProcessPass();
 
     void Render() override;
     void PreRender() override;
@@ -56,11 +60,31 @@ namespace ToolKit
     PostProcessPassParams m_params;
 
    protected:
-    ShaderPtr m_postProcessShader;
+    ShaderPtr m_postProcessShader     = nullptr;
     FullQuadPassPtr m_postProcessPass = nullptr;
     FramebufferPtr m_copyBuffer       = nullptr;
     RenderTargetPtr m_copyTexture     = nullptr;
   };
+
+  struct FXAAPassParams
+  {
+    FramebufferPtr FrameBuffer = nullptr;
+    Vec2 screen_size;
+  };
+
+  class TK_API FXAAPass : public PostProcessPass
+  {
+   public:
+    FXAAPass();
+    explicit FXAAPass(const FXAAPassParams& params);
+
+    void PreRender() override;
+
+   public:
+    FXAAPassParams m_params;
+  };
+
+  typedef std::shared_ptr<FXAAPass> FXAAPassPtr;
 
   struct GammaPassParams
   {
@@ -76,12 +100,15 @@ namespace ToolKit
    public:
     GammaPass();
     explicit GammaPass(const GammaPassParams& params);
+    ~GammaPass();
 
     void PreRender() override;
 
    public:
     GammaPassParams m_params;
   };
+
+  typedef std::shared_ptr<GammaPass> GammaPassPtr;
 
   enum class TonemapMethod
   {
@@ -100,6 +127,7 @@ namespace ToolKit
    public:
     TonemapPass();
     explicit TonemapPass(const TonemapPassParams& params);
+    ~TonemapPass();
 
     void PreRender() override;
 
@@ -108,5 +136,45 @@ namespace ToolKit
   };
 
   typedef std::shared_ptr<TonemapPass> TonemapPassPtr;
+
+  struct SSAOPassParams
+  {
+    TexturePtr GPositionBuffer    = nullptr;
+    TexturePtr GNormalBuffer      = nullptr;
+    TexturePtr GLinearDepthBuffer = nullptr;
+    Camera* Cam                   = nullptr;
+  };
+
+  class TK_API SSAOPass : public Pass
+  {
+   public:
+    SSAOPass();
+    explicit SSAOPass(const SSAOPassParams& params);
+    ~SSAOPass();
+
+    void Render();
+    void PreRender();
+    void PostRender();
+
+   private:
+    void GenerateSSAONoise();
+
+   public:
+    SSAOPassParams m_params;
+    RenderTargetPtr m_ssaoTexture = nullptr;
+
+   private:
+    Vec3Array m_ssaoKernel;
+    Vec2Array m_ssaoNoise;
+
+    FramebufferPtr m_ssaoFramebuffer   = nullptr;
+    SSAONoiseTexturePtr m_noiseTexture = nullptr;
+    RenderTargetPtr m_tempBlurRt       = nullptr;
+
+    FullQuadPassPtr m_quadPass         = nullptr;
+    ShaderPtr m_ssaoShader             = nullptr;
+  };
+
+  typedef std::shared_ptr<SSAOPass> SSAOPassPtr;
 
 } // namespace ToolKit

@@ -45,17 +45,14 @@ namespace ToolKit
   {
     App::App(int windowWidth, int windowHeight) : m_workspace(this)
     {
-      m_cursor                   = nullptr;
-      m_renderer                 = Main::GetInstance()->m_renderer;
-      m_renderer->m_windowSize.x = windowWidth;
-      m_renderer->m_windowSize.y = windowHeight;
-      m_statusMsg                = "OK";
+      m_cursor           = nullptr;
+      RenderSystem* rsys = GetRenderSystem();
+      rsys->SetAppWindowSize((uint) windowWidth, (uint) windowHeight);
+      m_statusMsg      = "OK";
 
-      myEditorRenderer           = new EditorRenderer();
+      myEditorRenderer = new EditorRenderer();
 
       OverrideEntityConstructors();
-
-      lightModeMat = std::make_shared<Material>();
     }
 
     App::~App()
@@ -109,7 +106,7 @@ namespace ToolKit
 
       m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager               = new PublishManager();
-      GetRenderer()->m_clearColor    = g_wndBgColor;
+      GetRenderSystem()->SetClearColor(g_wndBgColor);
     }
 
     void App::DestroyEditorEntities()
@@ -162,6 +159,8 @@ namespace ToolKit
       UI::BeginUI();
       UI::ShowUI();
 
+      GetRenderSystem()->ExecuteRenderTasks();
+
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
       std::vector<EditorViewport*> viewports;
@@ -176,43 +175,45 @@ namespace ToolKit
 
       EditorScenePtr scene = GetCurrentScene();
       scene->Update(deltaTime);
-      ShowSimulationWindow(deltaTime);
+      UpdateSimulation(deltaTime);
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
       {
         viewport->Update(deltaTime);
 
-        // PlayWindow is drawn on perspective. Thus, skip perspective.
+        /*// PlayWindow is drawn on perspective. Thus, skip perspective.
         if (m_gameMod != GameMod::Stop && !m_simulatorSettings.Windowed)
         {
           if (viewport->m_name == g_3dViewport)
           {
             continue;
           }
-        }
+        }*/
 
         if (viewport->IsVisible())
         {
-          myEditorRenderer->m_params.App      = this;
-          myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
-          myEditorRenderer->m_params.Viewport = viewport;
-          myEditorRenderer->m_params.tonemapping =
-              Main::GetInstance()->m_engineSettings.Graphics.TonemapperMode;
-          myEditorRenderer->Render();
+          GetRenderSystem()->AddRenderTask(
+              {[this, viewport](Renderer* renderer) -> void
+               {
+                 myEditorRenderer->m_params.App      = g_app;
+                 myEditorRenderer->m_params.LitMode  = m_sceneLightingMode;
+                 myEditorRenderer->m_params.Viewport = viewport;
+                 myEditorRenderer->Render(renderer);
+               }});
         }
       }
 
       // Render UI.
       UI::EndUI();
 
-      m_renderer->m_totalFrameCount++;
+      GetRenderSystem()->SetFrameCount(m_totalFrameCount++);
     }
 
     void App::OnResize(uint width, uint height)
     {
-      m_renderer->m_windowSize.x = width;
-      m_renderer->m_windowSize.y = height;
+      RenderSystem* rsys = GetRenderSystem();
+      rsys->SetAppWindowSize(width, height);
     }
 
     void App::OnNewScene(const String& name)
@@ -414,6 +415,7 @@ namespace ToolKit
         {
           // Save to catch any changes in the editor.
           GetCurrentScene()->Save(true);
+          m_sceneLightingMode = EditorLitMode::Game;
         }
 
         String pluginPath = m_workspace.GetPluginPath();
@@ -451,6 +453,7 @@ namespace ToolKit
         GetCurrentScene()->Reload();
         GetCurrentScene()->Init();
         m_simulationWindow->SetVisibility(false);
+        m_sceneLightingMode = EditorLitMode::EditorLit;
       }
     }
 
@@ -601,7 +604,9 @@ namespace ToolKit
       else
       {
         // 3d viewport.
-        Vec2 vpSize        = Vec2(m_renderer->m_windowSize) * 0.8f;
+        float w            = (float) GetEngineSettings().Window.Width;
+        float h            = (float) GetEngineSettings().Window.Height;
+        Vec2 vpSize        = Vec2(w, h) * 0.8f;
         EditorViewport* vp = new EditorViewport(vpSize);
         vp->m_name         = g_3dViewport;
         vp->GetCamera()->m_node->SetTranslation({5.0f, 3.0f, 5.0f});
@@ -651,6 +656,8 @@ namespace ToolKit
 
     void App::DeleteWindows()
     {
+      GetRenderSystem()->FlushRenderTasks();
+
       for (Window* wnd : m_windows)
       {
         SafeDel(wnd);
@@ -999,6 +1006,8 @@ namespace ToolKit
 
     void App::OpenScene(const String& fullPath)
     {
+      GetRenderSystem()->FlushRenderTasks();
+
       GetCurrentScene()->Destroy(false);
       GetSceneManager()->Remove(GetCurrentScene()->GetFile());
       EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
@@ -1049,9 +1058,9 @@ namespace ToolKit
       }
 
       // Restore app window.
-      SDL_SetWindowSize(g_window,
-                        m_renderer->m_windowSize.x,
-                        m_renderer->m_windowSize.y);
+      UVec2 size = GetRenderSystem()->GetAppWindowSize();
+
+      SDL_SetWindowSize(g_window, size.x, size.y);
 
       SDL_SetWindowPosition(g_window,
                             SDL_WINDOWPOS_CENTERED,
@@ -1214,7 +1223,7 @@ namespace ToolKit
       }
     }
 
-    void App::ShowSimulationWindow(float deltaTime)
+    void App::UpdateSimulation(float deltaTime)
     {
       if (GamePlugin* plugin = GetPluginManager()->GetGamePlugin())
       {
@@ -1239,9 +1248,7 @@ namespace ToolKit
             }
             playWindow = m_simulationWindow;
           }
-          HideGizmos();
           plugin->Frame(deltaTime, playWindow);
-          ShowGizmos();
         }
       }
     }
@@ -1276,20 +1283,15 @@ namespace ToolKit
         XmlNode* setNode =
             lclDoc->allocate_node(rapidxml::node_element, "Size");
 
-        WriteAttr(setNode,
-                  lclDoc.get(),
-                  "width",
-                  std::to_string(m_renderer->m_windowSize.x));
-
-        WriteAttr(setNode,
-                  lclDoc.get(),
-                  "height",
-                  std::to_string(m_renderer->m_windowSize.y));
+        UVec2 size = GetRenderSystem()->GetAppWindowSize();
+        WriteAttr(setNode, lclDoc.get(), "width", std::to_string(size.x));
+        WriteAttr(setNode, lclDoc.get(), "height", std::to_string(size.y));
 
         WriteAttr(setNode,
                   lclDoc.get(),
                   "maximized",
                   std::to_string(m_windowMaximized));
+
         settings->append_node(setNode);
 
         for (Window* wnd : m_windows)

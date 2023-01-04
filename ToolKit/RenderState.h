@@ -45,12 +45,11 @@ namespace ToolKit
    public:
     CullingType cullMode        = CullingType::Back;
     bool depthTestEnabled       = true;
+    bool depthWriteEnabled      = true;
     GraphicTypes depthFunction  = GraphicTypes::FuncLess;
     BlendFunction blendFunction = BlendFunction::NONE;
     float alphaMaskTreshold     = 0.001f;
     DrawType drawType           = DrawType::Triangle;
-    uint diffuseTexture         = 0;
-    bool diffuseTextureInUse    = false;
     uint cubeMap                = 0;
     bool cubeMapInUse           = false;
     float lineWidth             = 1.0f;
@@ -68,9 +67,6 @@ namespace ToolKit
     int priority = 0; // The higher the priority, the earlier to draw.
     bool useForwardPath =
         false; // Force material to be drawn with forward pass.
-    bool isColorMaterial      = true;
-    bool emissiveTextureInUse = false;
-    uint emissiveTexture      = 0;
   };
 
 } // namespace ToolKit

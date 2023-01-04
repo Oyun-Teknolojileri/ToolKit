@@ -126,6 +126,7 @@
     <ClCompile Include="PropInspector.cpp" />
     <ClCompile Include="PublishManager.cpp" />
     <ClCompile Include="RenderSettingsView.cpp" />
+    <ClCompile Include="Thumbnail.cpp" />
     <ClCompile Include="TransformMod.cpp" />
     <ClCompile Include="EditorScene.cpp" />
     <ClCompile Include="UI.cpp" />
@@ -188,6 +189,7 @@
     <ClInclude Include="PrefabView.h" />
     <ClInclude Include="PublishManager.h" />
     <ClInclude Include="RenderSettingsView.h" />
+    <ClInclude Include="Thumbnail.h" />
     <ClInclude Include="Workspace.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />

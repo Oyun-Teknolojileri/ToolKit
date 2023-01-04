@@ -3,6 +3,8 @@
 #include "GL/glew.h"
 #include "ToolKit.h"
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
 
@@ -138,6 +140,7 @@ namespace ToolKit
 
     if (rt->m_width <= 0 || rt->m_height <= 0 || rt->m_textureId == 0)
     {
+      assert(false && "Render target can't be bind.");
       return nullptr;
     }
 

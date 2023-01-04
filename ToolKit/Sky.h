@@ -86,6 +86,7 @@ namespace ToolKit
    private:
     CubeMapPtr m_skyboxMap     = nullptr;
     CubeMapPtr m_irradianceMap = nullptr;
+    bool m_onInit              = false;
   };
 
 } // namespace ToolKit

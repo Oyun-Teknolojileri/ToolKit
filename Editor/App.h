@@ -11,6 +11,7 @@
 #include "PluginWindow.h"
 #include "PropInspector.h"
 #include "PublishManager.h"
+#include "Thumbnail.h"
 #include "ToolKit.h"
 #include "Workspace.h"
 
@@ -137,7 +138,7 @@ namespace ToolKit
       void HideGizmos();
       void ShowGizmos();
 
-      void ShowSimulationWindow(float deltaTime);
+      void UpdateSimulation(float deltaTime);
 
       void Serialize(XmlDocument* doc, XmlNode* parent) const override;
       void DeSerialize(XmlDocument* doc, XmlNode* parent) override;
@@ -159,8 +160,7 @@ namespace ToolKit
       // Editor variables.
       float m_camSpeed         = 8.0; // Meters per sec.
       float m_mouseSensitivity = 0.5f;
-      Vec2 m_thumbnailSize     = Vec2(300.0f, 300.0f);
-      std::unordered_map<String, RenderTargetPtr> m_thumbnailCache;
+      ThumbnailManager m_thumbnailManager;
 
       // Simulator settings.
       EditorViewport* m_simulationWindow = nullptr;
@@ -179,6 +179,7 @@ namespace ToolKit
 
       // Editor states.
       int m_fps                                = 0;
+      uint m_totalFrameCount                   = 0;
       bool m_showPickingDebug                  = false;
       bool m_showStateTransitionsDebug         = false;
       bool m_showOverlayUI                     = true;
@@ -197,12 +198,10 @@ namespace ToolKit
       Workspace m_workspace;
 
       // Snap settings.
-      bool m_snapsEnabled = false; // Delta transforms.
-      float m_moveDelta   = 0.25f;
-      float m_rotateDelta = 15.0f;
-      float m_scaleDelta  = 0.5f;
-
-      Renderer* m_renderer;
+      bool m_snapsEnabled  = false; // Delta transforms.
+      float m_moveDelta    = 0.25f;
+      float m_rotateDelta  = 15.0f;
+      float m_scaleDelta   = 0.5f;
       bool m_windowCamLoad = true;
 
      private:
@@ -210,8 +209,6 @@ namespace ToolKit
       bool m_onQuit = false;
       String m_newSceneName;
       float m_deltaTime        = 0.0f;
-
-      MaterialPtr lightModeMat = nullptr;
     };
 
     extern void DebugMessage(const String& msg);

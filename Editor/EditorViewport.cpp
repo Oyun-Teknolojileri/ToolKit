@@ -304,7 +304,7 @@ namespace ToolKit
           ImDrawList* drawList = ImGui::GetWindowDrawList();
           drawList->AddCallback(
               [](const ImDrawList* parentList, const ImDrawCmd* cmd)
-              { GetRenderer()->EnableBlending(false); },
+              { GetRenderSystem()->EnableBlending(false); },
               nullptr);
 
           ImGui::Image(ConvertUIntImGuiTexture(texId),
@@ -314,7 +314,7 @@ namespace ToolKit
 
           drawList->AddCallback(
               [](const ImDrawList* parentList, const ImDrawCmd* cmd)
-              { GetRenderer()->EnableBlending(true); },
+              { GetRenderSystem()->EnableBlending(true); },
               nullptr);
 
           if (IsActive())
@@ -844,8 +844,8 @@ namespace ToolKit
         }
 
         MultiMaterialPtr matComp = std::make_shared<MultiMaterialComponent>();
-        matComp->UpdateMaterialList((*dwMesh)->GetMeshComponent());
         (*dwMesh)->AddComponent(matComp);
+        matComp->UpdateMaterialList();
 
         // Load bounding box once
         *boundingBox = CreateBoundingBoxDebugObject((*dwMesh)->GetAABB(true));

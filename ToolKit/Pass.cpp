@@ -7,10 +7,14 @@
 #include "Toolkit.h"
 #include "Viewport.h"
 
-#include <random>
+#include "DebugNew.h"
 
 namespace ToolKit
 {
+  RenderPass::RenderPass() {}
+
+  RenderPass::~RenderPass() {}
+
   void RenderPass::StableSortByDistanceToCamera(EntityRawPtrArray& entities,
                                                 const Camera* cam)
   {
@@ -67,29 +71,106 @@ namespace ToolKit
   }
 
   void RenderPass::SeperateTranslucentEntities(
-      EntityRawPtrArray& entities,
+      const EntityRawPtrArray& allEntities,
+      EntityRawPtrArray& opaqueEntities,
       EntityRawPtrArray& translucentEntities)
   {
-    auto delTrFn = [&translucentEntities](Entity* ntt) -> bool
+    for (Entity* ntt : allEntities)
     {
-      // Check too see if there are any material with blend state.
-      MaterialComponentPtrArray materials;
-      ntt->GetComponent<MaterialComponent>(materials);
-
-      if (!materials.empty())
+      auto checkMatTranslucency = [](MaterialPtr mat) -> bool
       {
-        for (MaterialComponentPtr& mt : materials)
+        if (mat &&
+            mat->GetRenderState()->blendFunction != BlendFunction::NONE &&
+            mat->GetRenderState()->blendFunction != BlendFunction::ALPHA_MASK)
         {
-          if (mt->GetMaterialVal() &&
-              mt->GetMaterialVal()->GetRenderState()->blendFunction ==
-                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
+          return true;
+        }
+        return false;
+      };
+
+      // Return true if multi material component is found
+      auto checkMultiMaterialComp = [ntt,
+                                     &checkMatTranslucency,
+                                     &opaqueEntities,
+                                     &translucentEntities]() -> bool
+      {
+        MultiMaterialPtr mmComp;
+        mmComp = ntt->GetComponent<MultiMaterialComponent>();
+        if (mmComp)
+        {
+          bool isThereOpaque = false, isThereTranslucent = false;
+          for (MaterialPtr mat : mmComp->GetMaterialList())
+          {
+            if (checkMatTranslucency(mat))
+            {
+              isThereTranslucent = true;
+            }
+            else
+            {
+              isThereOpaque = true;
+            }
+          }
+          if (isThereTranslucent)
           {
             translucentEntities.push_back(ntt);
-            return true;
           }
+          if (isThereOpaque)
+          {
+            opaqueEntities.push_back(ntt);
+          }
+          return true;
         }
+        return false;
+      };
+      if (checkMultiMaterialComp())
+      {
+        continue;
       }
-      else
+
+      auto checkMaterialComps = [ntt,
+                                 &checkMatTranslucency,
+                                 &opaqueEntities,
+                                 &translucentEntities]() -> bool
+      {
+        // Check too see if there are any material with blend state.
+        MaterialComponentPtrArray materials;
+        ntt->GetComponent<MaterialComponent>(materials);
+
+        if (!materials.empty())
+        {
+          bool isThereOpaque = false, isThereTranslucent = false;
+          for (MaterialComponentPtr& mt : materials)
+          {
+            if (checkMatTranslucency(mt->GetMaterialVal()))
+            {
+              isThereTranslucent = true;
+            }
+            else
+            {
+              isThereOpaque = true;
+            }
+          }
+          if (isThereTranslucent)
+          {
+            translucentEntities.push_back(ntt);
+          }
+          if (isThereOpaque)
+          {
+            opaqueEntities.push_back(ntt);
+          }
+          return true;
+        }
+        return false;
+      };
+      if (checkMaterialComps())
+      {
+        continue;
+      }
+
+      auto checkSubmeshes = [ntt,
+                             &checkMatTranslucency,
+                             &opaqueEntities,
+                             &translucentEntities]() -> bool
       {
         MeshComponentPtrArray meshes;
         ntt->GetComponent<MeshComponent>(meshes);
@@ -99,57 +180,159 @@ namespace ToolKit
           return false;
         }
 
+        bool isThereOpaque = false, isThereTranslucent = false;
         for (MeshComponentPtr& ms : meshes)
         {
           MeshRawCPtrArray all;
           ms->GetMeshVal()->GetAllMeshes(all);
           for (const Mesh* m : all)
           {
-            if (m->m_material->GetRenderState()->blendFunction ==
-                BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA)
+            if (checkMatTranslucency(m->m_material))
             {
-              translucentEntities.push_back(ntt);
-              return true;
+              isThereTranslucent = true;
+            }
+            else
+            {
+              isThereOpaque = true;
             }
           }
+          if (isThereTranslucent)
+          {
+            translucentEntities.push_back(ntt);
+          }
+          if (isThereOpaque)
+          {
+            opaqueEntities.push_back(ntt);
+          }
         }
-      }
-
-      return false;
-    };
-
-    entities.erase(std::remove_if(entities.begin(), entities.end(), delTrFn),
-                   entities.end());
+        return true;
+      };
+      checkSubmeshes();
+    }
   }
 
   void RenderPass::SeperateTranslucentAndUnlitEntities(
-      EntityRawPtrArray& entities,
+      const EntityRawPtrArray& allEntities,
+      EntityRawPtrArray& opaqueEntities,
       EntityRawPtrArray& translucentAndUnlitEntities)
   {
-    auto delTrFn = [&translucentAndUnlitEntities](Entity* ntt) -> bool
+    for (Entity* ntt : allEntities)
     {
-      // Check too see if there are any material with blend state.
-      MaterialComponentPtrArray materials;
-      ntt->GetComponent<MaterialComponent>(materials);
-
-      if (!materials.empty())
+      auto checkMatTranslucentUnlit = [](MaterialPtr mat)
       {
-        for (MaterialComponentPtr& mtc : materials)
+        if (mat)
         {
-          if (MaterialPtr mat = mtc->GetMaterialVal())
+          RenderState* rs = mat->GetRenderState();
+          if ((rs->blendFunction != BlendFunction::NONE &&
+               rs->blendFunction != BlendFunction::ALPHA_MASK) ||
+              rs->useForwardPath)
           {
-            RenderState* rs = mat->GetRenderState();
-            if (rs->blendFunction ==
-                    BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA ||
-                rs->useForwardPath)
-            {
-              translucentAndUnlitEntities.push_back(ntt);
-              return true;
-            }
+            return true;
           }
         }
+        return false;
+      };
+
+      auto checkMatOpaque = [](MaterialPtr mat)
+      {
+        if (mat)
+        {
+          RenderState* rs = mat->GetRenderState();
+          if ((rs->blendFunction == BlendFunction::NONE ||
+               rs->blendFunction == BlendFunction::ALPHA_MASK) &&
+              !rs->useForwardPath)
+          {
+            return true;
+          }
+        }
+        return false;
+      };
+
+      auto checkMultiMaterialComp = [ntt,
+                                     &checkMatTranslucentUnlit,
+                                     &checkMatOpaque,
+                                     &opaqueEntities,
+                                     &translucentAndUnlitEntities]() -> bool
+      {
+        MultiMaterialPtr mmComp;
+        mmComp = ntt->GetComponent<MultiMaterialComponent>();
+        if (mmComp)
+        {
+          bool isThereOpaque = false, isThereTranslucentUnlit = false;
+          for (MaterialPtr mat : mmComp->GetMaterialList())
+          {
+            if (!isThereTranslucentUnlit && checkMatTranslucentUnlit(mat))
+            {
+              isThereTranslucentUnlit = true;
+            }
+            if (!isThereOpaque && checkMatOpaque(mat))
+            {
+              isThereOpaque = true;
+            }
+          }
+          if (isThereTranslucentUnlit)
+          {
+            translucentAndUnlitEntities.push_back(ntt);
+          }
+          if (isThereOpaque)
+          {
+            opaqueEntities.push_back(ntt);
+          }
+          return true;
+        }
+        return false;
+      };
+      if (checkMultiMaterialComp())
+      {
+        continue;
       }
-      else
+
+      auto checkMatComps = [ntt,
+                            &checkMatTranslucentUnlit,
+                            &checkMatOpaque,
+                            &opaqueEntities,
+                            &translucentAndUnlitEntities]() -> bool
+      {
+        // Check too see if there are any material with blend state.
+        MaterialComponentPtrArray materials;
+        ntt->GetComponent<MaterialComponent>(materials);
+        if (!materials.empty())
+        {
+          bool isThereOpaque = false, isThereTranslucentUnlit = false;
+          for (MaterialComponentPtr& mtc : materials)
+          {
+            if (!isThereTranslucentUnlit &&
+                checkMatTranslucentUnlit(mtc->GetMaterialVal()))
+            {
+              isThereTranslucentUnlit = true;
+            }
+            if (!isThereOpaque && checkMatOpaque(mtc->GetMaterialVal()))
+            {
+              isThereOpaque = true;
+            }
+          }
+          if (isThereTranslucentUnlit)
+          {
+            translucentAndUnlitEntities.push_back(ntt);
+          }
+          if (isThereOpaque)
+          {
+            opaqueEntities.push_back(ntt);
+          }
+          return true;
+        }
+        return false;
+      };
+      if (checkMatComps())
+      {
+        continue;
+      }
+
+      auto checkSubmeshes = [ntt,
+                             &checkMatTranslucentUnlit,
+                             &checkMatOpaque,
+                             &opaqueEntities,
+                             &translucentAndUnlitEntities]() -> bool
       {
         MeshComponentPtrArray meshes;
         ntt->GetComponent<MeshComponent>(meshes);
@@ -163,24 +346,32 @@ namespace ToolKit
         {
           MeshRawCPtrArray all;
           ms->GetMeshVal()->GetAllMeshes(all);
+          bool isThereOpaque = false, isThereTranslucentUnlit = false;
           for (const Mesh* m : all)
           {
-            if (m->m_material->GetRenderState()->blendFunction ==
-                    BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA ||
-                m->m_material->GetRenderState()->useForwardPath)
+            if (!isThereTranslucentUnlit &&
+                checkMatTranslucentUnlit(m->m_material))
             {
-              translucentAndUnlitEntities.push_back(ntt);
-              return true;
+              isThereTranslucentUnlit = true;
+            }
+            if (!isThereOpaque && checkMatOpaque(m->m_material))
+            {
+              isThereOpaque = true;
             }
           }
+          if (isThereTranslucentUnlit)
+          {
+            translucentAndUnlitEntities.push_back(ntt);
+          }
+          if (isThereOpaque)
+          {
+            opaqueEntities.push_back(ntt);
+          }
         }
-      }
-
-      return false;
-    };
-
-    entities.erase(std::remove_if(entities.begin(), entities.end(), delTrFn),
-                   entities.end());
+        return true;
+      };
+      checkSubmeshes();
+    }
   }
 
   ForwardRenderPass::ForwardRenderPass() {}
@@ -198,15 +389,14 @@ namespace ToolKit
 
   void ForwardRenderPass::Render()
   {
-    PreRender();
-
+    EntityRawPtrArray opaqueDrawList;
     EntityRawPtrArray translucentDrawList;
-    SeperateTranslucentEntities(m_drawList, translucentDrawList);
+    SeperateTranslucentEntities(m_drawList,
+                                opaqueDrawList,
+                                translucentDrawList);
 
-    RenderOpaque(m_drawList, m_camera, m_params.Lights);
+    RenderOpaque(opaqueDrawList, m_camera, m_params.Lights);
     RenderTranslucent(translucentDrawList, m_camera, m_params.Lights);
-
-    PostRender();
   }
 
   ForwardRenderPass::~ForwardRenderPass() {}
@@ -320,8 +510,40 @@ namespace ToolKit
     {
       LightRawPtrArray lightList = lights;
       CullLightList(ntt, lightList);
+      uint activeMeshIndx     = 0;
 
-      renderer->Render(ntt, cam, lightList);
+      MultiMaterialPtr mmComp = ntt->GetComponent<MultiMaterialComponent>();
+
+      if (mmComp == nullptr)
+      {
+        renderer->Render(ntt, cam, lightList);
+      }
+      else
+      {
+        MeshComponentPtrArray meshComps;
+        ntt->GetComponent<MeshComponent>(meshComps);
+        for (MeshComponentPtr meshComp : meshComps)
+        {
+          MeshRawCPtrArray meshes;
+          meshComp->GetMeshVal()->GetAllMeshes(meshes);
+          for (uint meshIndx = 0; meshIndx < meshes.size();
+               meshIndx++, activeMeshIndx++)
+          {
+            if (mmComp && mmComp->GetMaterialList().size() > activeMeshIndx)
+            {
+              MaterialPtr mat = mmComp->GetMaterialList()[activeMeshIndx];
+              if (mat->GetRenderState()->useForwardPath &&
+                  (mat->GetRenderState()->blendFunction ==
+                       BlendFunction::NONE ||
+                   mat->GetRenderState()->blendFunction ==
+                       BlendFunction::ALPHA_MASK))
+              {
+                renderer->Render(ntt, cam, lightList, {activeMeshIndx});
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -338,22 +560,63 @@ namespace ToolKit
       LightRawPtrArray lightList = lights;
       CullLightList(ntt, lightList);
 
-      // For two sided materials,
-      // first render back of translucent objects then render front
-      MaterialPtr renderMaterial = renderer->GetRenderMaterial(ntt);
-      if (renderMaterial->GetRenderState()->cullMode == CullingType::TwoSided)
+      uint activeMeshIndx        = 0;
+
+      MultiMaterialPtr mmComp    = ntt->GetComponent<MultiMaterialComponent>();
+      MaterialPtr renderMaterial = ntt->GetRenderMaterial();
+      auto renderFnc =
+          [ntt, cam, lights, lightList, renderer](MaterialPtr renderMaterial,
+                                                  const UIntArray& meshIndices)
       {
-        renderMaterial->GetRenderState()->cullMode = CullingType::Front;
-        renderer->Render(ntt, cam, lights);
+        bool prevState = renderMaterial->GetRenderState()->depthWriteEnabled;
+        renderMaterial->GetRenderState()->depthWriteEnabled = false;
+        if (renderMaterial->GetRenderState()->cullMode == CullingType::TwoSided)
+        {
+          renderMaterial->GetRenderState()->cullMode = CullingType::Front;
+          renderer->Render(ntt, cam, lights, meshIndices);
 
-        renderMaterial->GetRenderState()->cullMode = CullingType::Back;
-        renderer->Render(ntt, cam, lights);
+          renderMaterial->GetRenderState()->cullMode = CullingType::Back;
+          renderer->Render(ntt, cam, lights, meshIndices);
 
-        renderMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
+          renderMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
+        }
+        else
+        {
+          renderer->Render(ntt, cam, lightList, meshIndices);
+        }
+        renderMaterial->GetRenderState()->depthWriteEnabled = prevState;
+      };
+
+      if (mmComp == nullptr)
+      {
+        renderFnc(renderMaterial, {});
       }
       else
       {
-        renderer->Render(ntt, cam, lightList);
+        MeshComponentPtrArray meshComps;
+        ntt->GetComponent<MeshComponent>(meshComps);
+        for (MeshComponentPtr meshComp : meshComps)
+        {
+          MeshRawCPtrArray meshes;
+          meshComp->GetMeshVal()->GetAllMeshes(meshes);
+          for (uint meshIndx = 0; meshIndx < meshes.size();
+               meshIndx++, activeMeshIndx++)
+          {
+            if (mmComp && mmComp->GetMaterialList().size() > activeMeshIndx)
+            {
+              renderMaterial = mmComp->GetMaterialList()[activeMeshIndx];
+              if (!renderMaterial->GetRenderState()->useForwardPath ||
+                  (renderMaterial->GetRenderState()->blendFunction ==
+                       BlendFunction::NONE ||
+                   renderMaterial->GetRenderState()->blendFunction ==
+                       BlendFunction::ALPHA_MASK))
+              {
+                continue;
+              }
+            }
+            renderFnc(renderMaterial, {activeMeshIndx});
+          }
+        }
       }
     }
   }
@@ -389,8 +652,6 @@ namespace ToolKit
 
   void ShadowPass::Render()
   {
-    PreRender();
-
     const Vec4 lastClearColor = GetRenderer()->m_clearColor;
 
     // Update shadow maps.
@@ -412,8 +673,6 @@ namespace ToolKit
     }
 
     GetRenderer()->m_clearColor = lastClearColor;
-
-    PostRender();
   }
 
   void ShadowPass::PreRender()
@@ -735,6 +994,19 @@ namespace ToolKit
     renderer->SetFramebuffer(m_prevFrameBuffer, false);
   }
 
+  void Pass::RenderSubPass(const PassPtr& pass)
+  {
+    Renderer* renderer = GetRenderer();
+    pass->SetRenderer(renderer);
+    pass->PreRender();
+    pass->Render();
+    pass->PostRender();
+  }
+
+  Renderer* Pass::GetRenderer() { return m_renderer; }
+
+  void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
+
   FullQuadPass::FullQuadPass()
   {
     m_camera                   = std::make_shared<Camera>(); // Unused.
@@ -750,20 +1022,21 @@ namespace ToolKit
     m_params = params;
   }
 
-  FullQuadPass::~FullQuadPass() {}
+  FullQuadPass::~FullQuadPass()
+  {
+    m_camera   = nullptr;
+    m_quad     = nullptr;
+    m_material = nullptr;
+  }
 
   void FullQuadPass::Render()
   {
-    PreRender();
-
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer,
                              m_params.ClearFrameBuffer,
                              {0.0f, 0.0f, 0.0f, 1.0f});
 
     renderer->Render(m_quad.get(), m_camera.get(), m_params.lights);
-
-    PostRender();
   }
 
   void FullQuadPass::PreRender()
@@ -795,19 +1068,15 @@ namespace ToolKit
     m_params = params;
   }
 
-  CubeMapPass::~CubeMapPass() {}
+  CubeMapPass::~CubeMapPass() { m_cube = nullptr; }
 
   void CubeMapPass::Render()
   {
-    PreRender();
-
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, false);
 
     m_cube->m_node->SetTransform(m_params.Transform);
     renderer->Render(m_cube.get(), m_params.Cam);
-
-    PostRender();
   }
 
   void CubeMapPass::PreRender()
@@ -837,10 +1106,15 @@ namespace ToolKit
     m_params = params;
   }
 
+  StencilRenderPass::~StencilRenderPass()
+  {
+    m_frameBuffer           = nullptr;
+    m_solidOverrideMaterial = nullptr;
+    m_copyStencilSubPass    = nullptr;
+  }
+
   void StencilRenderPass::Render()
   {
-    PreRender();
-
     Renderer* renderer      = GetRenderer();
     renderer->m_overrideMat = m_solidOverrideMaterial;
 
@@ -857,11 +1131,9 @@ namespace ToolKit
     renderer->ColorMask(true, true, true, true);
     renderer->SetStencilOperation(StencilOperation::AllowPixelsFailingStencil);
 
-    m_copyStencilSubPass->Render();
+    RenderSubPass(m_copyStencilSubPass);
 
     renderer->SetStencilOperation(StencilOperation::None);
-
-    PostRender();
   }
 
   void StencilRenderPass::PreRender()
@@ -904,12 +1176,18 @@ namespace ToolKit
     m_params = params;
   }
 
+  OutlinePass::~OutlinePass()
+  {
+    m_stencilPass  = nullptr;
+    m_outlinePass  = nullptr;
+    m_dilateShader = nullptr;
+    m_stencilAsRt  = nullptr;
+  }
+
   void OutlinePass::Render()
   {
-    PreRender();
-
     // Generate stencil binary image.
-    m_stencilPass->Render();
+    RenderSubPass(m_stencilPass);
 
     // Use stencil output as input to the dilation.
     GetRenderer()->SetTexture(0, m_stencilAsRt->m_textureId);
@@ -920,9 +1198,8 @@ namespace ToolKit
     m_outlinePass->m_params.FragmentShader   = m_dilateShader;
     m_outlinePass->m_params.FrameBuffer      = m_params.FrameBuffer;
     m_outlinePass->m_params.ClearFrameBuffer = false;
-    m_outlinePass->Render();
 
-    PostRender();
+    RenderSubPass(m_outlinePass);
   }
 
   void OutlinePass::PreRender()
@@ -941,133 +1218,6 @@ namespace ToolKit
 
   void OutlinePass::PostRender() { Pass::PostRender(); }
 
-  SceneRenderPass::SceneRenderPass()
-  {
-    m_shadowPass        = std::make_shared<ShadowPass>();
-    m_forwardRenderPass = std::make_shared<ForwardRenderPass>();
-    m_skyPass           = std::make_shared<CubeMapPass>();
-  }
-
-  SceneRenderPass::SceneRenderPass(const SceneRenderPassParams& params)
-      : SceneRenderPass()
-  {
-    m_params = params;
-  }
-
-  void SceneRenderPass::Render()
-  {
-    Renderer* renderer = GetRenderer();
-    PreRender();
-
-    CullDrawList(m_gBufferPass.m_params.entities, m_params.Cam);
-    CullDrawList(m_forwardRenderPass->m_params.Entities, m_params.Cam);
-
-    // Gbuffer for deferred render
-    m_gBufferPass.Render();
-
-    // Shadow pass
-    m_shadowPass->Render();
-
-    // SSAO pass
-    m_ssaoPass.Render();
-
-    renderer->SetShadowAtlas(
-        std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
-
-    // Render non-blended entities with deferred renderer
-    m_deferredRenderPass.Render();
-
-    if (m_drawSky)
-    {
-      m_skyPass->Render();
-    }
-
-    // Forward render blended entities
-    m_forwardRenderPass->Render();
-
-    renderer->SetShadowAtlas(nullptr);
-
-    PostRender();
-  }
-
-  void SceneRenderPass::PreRender()
-  {
-    Pass::PreRender();
-    SetPassParams();
-
-    m_gBufferPass.InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
-                               m_params.MainFramebuffer->GetSettings().height);
-  }
-
-  void SceneRenderPass::PostRender() { Pass::PostRender(); }
-
-  void SceneRenderPass::SetPassParams()
-  {
-    m_shadowPass->m_params.Entities  = m_params.Scene->GetEntities();
-    m_shadowPass->m_params.Lights    = m_params.Lights;
-
-    // Give blended entities to forward render, non-blendeds to deferred
-    // render
-
-    EntityRawPtrArray opaqueDrawList = m_params.Scene->GetEntities();
-    EntityRawPtrArray translucentAndUnlitDrawList;
-    m_forwardRenderPass->SeperateTranslucentAndUnlitEntities(
-        opaqueDrawList,
-        translucentAndUnlitDrawList);
-
-    m_gBufferPass.m_params.entities                = opaqueDrawList;
-    m_gBufferPass.m_params.camera                  = m_params.Cam;
-
-    m_deferredRenderPass.m_params.ClearFramebuffer = true;
-    m_deferredRenderPass.m_params.GBufferFramebuffer =
-        m_gBufferPass.m_framebuffer;
-
-    m_deferredRenderPass.m_params.lights           = m_params.Lights;
-    m_deferredRenderPass.m_params.MainFramebuffer  = m_params.MainFramebuffer;
-    m_deferredRenderPass.m_params.Cam              = m_params.Cam;
-    m_deferredRenderPass.m_params.AOTexture        = m_ssaoPass.m_ssaoTexture;
-
-    m_forwardRenderPass->m_params.Lights           = m_params.Lights;
-    m_forwardRenderPass->m_params.Cam              = m_params.Cam;
-    m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.ClearFrameBuffer = false;
-
-    m_forwardRenderPass->m_params.Entities = translucentAndUnlitDrawList;
-
-    m_ssaoPass.m_params.GPositionBuffer    = m_gBufferPass.m_gPosRt;
-    m_ssaoPass.m_params.GNormalBuffer      = m_gBufferPass.m_gNormalRt;
-    m_ssaoPass.m_params.GLinearDepthBuffer = m_gBufferPass.m_gLinearDepthRt;
-    m_ssaoPass.m_params.Cam                = m_params.Cam;
-
-    // Set CubeMapPass for sky.
-    m_drawSky                              = false;
-    if (SkyBase* sky = m_params.Scene->GetSky())
-    {
-      if (m_drawSky = sky->GetDrawSkyVal())
-      {
-        m_skyPass->m_params.FrameBuffer = m_params.MainFramebuffer;
-        m_skyPass->m_params.Cam         = m_params.Cam;
-        m_skyPass->m_params.Transform   = sky->m_node->GetTransform();
-        m_skyPass->m_params.Material    = sky->GetSkyboxMaterial();
-      }
-    }
-  }
-
-  void SceneRenderPass::CullDrawList(EntityRawPtrArray& entities,
-                                     Camera* camera)
-  {
-    // Dropout non visible & drawable entities.
-    entities.erase(std::remove_if(entities.begin(),
-                                  entities.end(),
-                                  [](Entity* ntt) -> bool {
-                                    return !ntt->GetVisibleVal() ||
-                                           !ntt->IsDrawable();
-                                  }),
-                   entities.end());
-
-    FrustumCull(entities, camera);
-  }
-
   GBufferPass::GBufferPass()
   {
     RenderTargetSettigs gBufferRenderTargetSettings = {
@@ -1085,23 +1235,46 @@ namespace ToolKit
 
     m_gPosRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
     m_gNormalRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
     m_gColorRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
     m_gEmissiveRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
     gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR32F;
     gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
+
     m_gLinearDepthRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
     gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRG32F;
     gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRG;
+
     m_gMetallicRoughnessRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
-    m_framebuffer     = std::make_shared<Framebuffer>();
 
+    m_framebuffer     = std::make_shared<Framebuffer>();
     m_gBufferMaterial = std::make_shared<Material>();
+  }
+
+  GBufferPass::GBufferPass(const GBufferPassParams& params) : GBufferPass()
+  {
+    m_params = params;
+  }
+
+  GBufferPass::~GBufferPass()
+  {
+    m_framebuffer     = nullptr;
+    m_gPosRt          = nullptr;
+    m_gNormalRt       = nullptr;
+    m_gColorRt        = nullptr;
+    m_gEmissiveRt     = nullptr;
+    m_gLinearDepthRt  = nullptr;
+    m_gBufferMaterial = nullptr;
   }
 
   void GBufferPass::InitGBuffers(int width, int height)
@@ -1210,186 +1383,82 @@ namespace ToolKit
 
   void GBufferPass::Render()
   {
-    PreRender();
-
     Renderer* renderer = GetRenderer();
 
     for (Entity* ntt : m_params.entities)
     {
-      MaterialPtr mat = ntt->GetRenderMaterial();
+      MultiMaterialPtr mmComp    = ntt->GetComponent<MultiMaterialComponent>();
+      uint activeMeshIndex       = 0;
+      MaterialPtr activeMaterial = nullptr;
 
-      m_gBufferMaterial->SetRenderState(mat->GetRenderState());
-      m_gBufferMaterial->UnInit();
-      m_gBufferMaterial->m_diffuseTexture  = mat->m_diffuseTexture;
-      m_gBufferMaterial->m_emissiveTexture = mat->m_emissiveTexture;
-      m_gBufferMaterial->m_emissiveColor   = mat->m_emissiveColor;
-      m_gBufferMaterial->m_metallicRoughnessTexture =
-          mat->m_metallicRoughnessTexture;
-      m_gBufferMaterial->m_normalMap    = mat->m_normalMap;
-      m_gBufferMaterial->m_cubeMap      = mat->m_cubeMap;
-      m_gBufferMaterial->m_color        = mat->m_color;
-      m_gBufferMaterial->m_alpha        = mat->m_alpha;
-      m_gBufferMaterial->m_metallic     = mat->m_metallic;
-      m_gBufferMaterial->m_roughness    = mat->m_roughness;
-      m_gBufferMaterial->m_materialType = mat->m_materialType;
-      m_gBufferMaterial->Init();
-      renderer->m_overrideMat = m_gBufferMaterial;
-
-      renderer->Render(ntt, m_params.camera);
-    }
-
-    PostRender();
-  }
-
-  SSAOPass::SSAOPass()
-  {
-    m_ssaoFramebuffer = std::make_shared<Framebuffer>();
-    m_ssaoTexture     = std::make_shared<RenderTarget>();
-    m_tempBlurRt      = std::make_shared<RenderTarget>();
-    m_noiseTexture    = std::make_shared<SSAONoiseTexture>(4, 4);
-  }
-
-  SSAOPass::SSAOPass(const SSAOPassParams& params) : SSAOPass()
-  {
-    m_params = params;
-  }
-
-  void SSAOPass::Render()
-  {
-    PreRender();
-
-    Renderer* renderer = GetRenderer();
-
-    // Generate SSAO texture
-    renderer->SetTexture(0, m_params.GPositionBuffer->m_textureId);
-    renderer->SetTexture(1, m_params.GNormalBuffer->m_textureId);
-    renderer->SetTexture(2, m_noiseTexture->m_textureId);
-    renderer->SetTexture(3, m_params.GLinearDepthBuffer->m_textureId);
-    m_quadPass.m_params.FragmentShader = m_ssaoShader;
-    m_quadPass.Render();
-
-    // Horizontal blur
-    renderer->ApplyAverageBlur(m_ssaoTexture,
-                               m_tempBlurRt,
-                               X_AXIS,
-                               1.0f / m_ssaoTexture->m_width);
-
-    // Vertical blur
-    renderer->ApplyAverageBlur(m_tempBlurRt,
-                               m_ssaoTexture,
-                               Y_AXIS,
-                               1.0f / m_ssaoTexture->m_height);
-
-    PostRender();
-  }
-
-  void SSAOPass::PreRender()
-  {
-    Pass::PreRender();
-
-    int width  = m_params.GPositionBuffer->m_width;
-    int height = m_params.GPositionBuffer->m_height;
-
-    GenerateSSAONoise();
-
-    // No need destroy and re init framebuffer when size is changed, because
-    // the only render target is already being resized.
-    m_ssaoFramebuffer->Init({(uint) width, (uint) height, false, false});
-
-    RenderTargetSettigs oneChannelSet = {};
-    oneChannelSet.WarpS               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.WarpT               = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat      = GraphicTypes::FormatR32F;
-    oneChannelSet.Format              = GraphicTypes::FormatRed;
-    oneChannelSet.Type                = GraphicTypes::TypeFloat;
-
-    // Init ssao texture
-    m_ssaoTexture->m_settings         = oneChannelSet;
-    m_ssaoTexture->ReconstructIfNeeded((uint) width, (uint) height);
-
-    m_ssaoFramebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                                     m_ssaoTexture);
-
-    // Init temporary blur render target
-    m_tempBlurRt->m_settings = oneChannelSet;
-    m_tempBlurRt->ReconstructIfNeeded((uint) width, (uint) height);
-
-    // Init noise texture
-    m_noiseTexture->Init(&m_ssaoNoise[0]);
-
-    GetRenderer()->SetFramebuffer(m_ssaoFramebuffer, true, Vec4(0.0f));
-
-    m_quadPass.m_params.FrameBuffer      = m_ssaoFramebuffer;
-    m_quadPass.m_params.ClearFrameBuffer = true;
-
-    // SSAO fragment shader
-    if (!m_ssaoShader)
-    {
-      m_ssaoShader = GetShaderManager()->Create<Shader>(
-          ShaderPath("ssaoCalcFrag.shader", true));
-      for (uint i = 0; i < 64; ++i)
+      if (mmComp == nullptr)
       {
-        m_ssaoShader->SetShaderParameter(g_ssaoSamplesStrCache[i],
-                                         ParameterVariant(m_ssaoKernel[i]));
+        activeMaterial = ntt->GetRenderMaterial();
       }
-    }
-    m_ssaoShader->SetShaderParameter("screen_size",
-                                     ParameterVariant(Vec2(width, height)));
-    m_ssaoShader->SetShaderParameter(
-        "projection",
-        ParameterVariant(m_params.Cam->GetProjectionMatrix()));
-    m_ssaoShader->SetShaderParameter(
-        "viewMatrix",
-        ParameterVariant(m_params.Cam->GetViewMatrix()));
-  }
 
-  void SSAOPass::PostRender() { Pass::PostRender(); }
-
-  void SSAOPass::GenerateSSAONoise()
-  {
-    // generate sample kernel
-    // ----------------------
-    auto lerp = [](float a, float b, float f) { return a + f * (b - a); };
-
-    // generates random floats between 0.0 and 1.0
-    std::uniform_real_distribution<float> randomFloats(0.0f, 1.0f);
-    std::default_random_engine generator;
-    if (m_ssaoKernel.size() == 0)
-    {
-      for (uint i = 0; i < 64; ++i)
+      MeshComponentPtrArray meshComps;
+      ntt->GetComponent<MeshComponent>(meshComps);
+      for (MeshComponentPtr meshComp : meshComps)
       {
-        Vec3 sample(randomFloats(generator) * 2.0f - 1.0f,
-                    randomFloats(generator) * 2.0f - 1.0f,
-                    randomFloats(generator));
-        sample      = glm::normalize(sample);
-        sample      *= randomFloats(generator);
-        float scale = float(i) / 64.0f;
+        MeshRawCPtrArray meshes;
+        meshComp->GetMeshVal()->GetAllMeshes(meshes);
+        for (uint meshIndx = 0; meshIndx < meshes.size();
+             meshIndx++, activeMeshIndex++)
+        {
+          if (mmComp && mmComp->GetMaterialList().size() > activeMeshIndex)
+          {
+            activeMaterial = mmComp->GetMaterialList()[activeMeshIndex];
+          }
+          if (activeMaterial->GetRenderState()->useForwardPath ||
+              (activeMaterial->GetRenderState()->blendFunction !=
+                   BlendFunction::NONE &&
+               activeMaterial->GetRenderState()->blendFunction !=
+                   BlendFunction::ALPHA_MASK))
+          {
+            continue;
+          }
 
-        // scale samples s.t. they're more aligned to center of kernel
-        scale       = lerp(0.1f, 1.0f, scale * scale);
-        sample      *= scale;
-        m_ssaoKernel.push_back(sample);
-      }
-    }
+          m_gBufferMaterial->SetRenderState(activeMaterial->GetRenderState());
+          m_gBufferMaterial->UnInit();
+          m_gBufferMaterial->m_diffuseTexture =
+              activeMaterial->m_diffuseTexture;
+          m_gBufferMaterial->m_emissiveTexture =
+              activeMaterial->m_emissiveTexture;
+          m_gBufferMaterial->m_emissiveColor = activeMaterial->m_emissiveColor;
+          m_gBufferMaterial->m_metallicRoughnessTexture =
+              activeMaterial->m_metallicRoughnessTexture;
+          m_gBufferMaterial->m_normalMap    = activeMaterial->m_normalMap;
+          m_gBufferMaterial->m_cubeMap      = activeMaterial->m_cubeMap;
+          m_gBufferMaterial->m_color        = activeMaterial->m_color;
+          m_gBufferMaterial->m_alpha        = activeMaterial->m_alpha;
+          m_gBufferMaterial->m_metallic     = activeMaterial->m_metallic;
+          m_gBufferMaterial->m_roughness    = activeMaterial->m_roughness;
+          m_gBufferMaterial->m_materialType = activeMaterial->m_materialType;
+          m_gBufferMaterial->Init();
+          renderer->m_overrideMat = m_gBufferMaterial;
 
-    // generate noise texture
-    // ----------------------
-    if (m_ssaoNoise.size() == 0)
-    {
-      for (unsigned int i = 0; i < 16; i++)
-      {
-        glm::vec2 noise(randomFloats(generator) * 2.0f - 1.0f,
-                        randomFloats(generator) * 2.0f - 1.0f);
-        m_ssaoNoise.push_back(noise);
+          renderer->Render(ntt, m_params.camera, {}, {activeMeshIndex});
+        }
       }
     }
   }
 
-  DeferredRenderPass::DeferredRenderPass() {}
+  DeferredRenderPass::DeferredRenderPass()
+  {
+    m_fullQuadPass = std::make_shared<FullQuadPass>();
+  }
 
   DeferredRenderPass::DeferredRenderPass(const DeferredRenderPassParams& params)
+      : DeferredRenderPass()
   {
     m_params = params;
+  }
+
+  DeferredRenderPass::~DeferredRenderPass()
+  {
+    m_fullQuadPass         = nullptr;
+    m_deferredRenderShader = nullptr;
+    m_lightDataTexture     = nullptr;
   }
 
   void DeferredRenderPass::PreRender()
@@ -1411,11 +1480,11 @@ namespace ToolKit
         ParameterVariant(m_params.Cam->m_node->GetTranslation(
             TransformationSpace::TS_WORLD)));
 
-    m_fullQuadPass.m_params.ClearFrameBuffer = m_params.ClearFramebuffer;
-    m_fullQuadPass.m_params.FragmentShader   = m_deferredRenderShader;
-    m_fullQuadPass.m_params.FrameBuffer      = m_params.MainFramebuffer;
+    m_fullQuadPass->m_params.ClearFrameBuffer = m_params.ClearFramebuffer;
+    m_fullQuadPass->m_params.FragmentShader   = m_deferredRenderShader;
+    m_fullQuadPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
 
-    Renderer* renderer                       = GetRenderer();
+    Renderer* renderer                        = GetRenderer();
 
     Vec2 sd, nsd, sp, nsp, ss, nss;
     float sizeD, sizeP, sizeS, sizeND, sizeNP, sizeNS;
@@ -1519,13 +1588,9 @@ namespace ToolKit
 
   void DeferredRenderPass::Render()
   {
-    PreRender();
-
     // Deferred render always uses PBR material
-    m_fullQuadPass.m_material->m_materialType = MaterialType::PBR;
-    m_fullQuadPass.Render();
-
-    PostRender();
+    m_fullQuadPass->m_material->m_materialType = MaterialType::PBR;
+    RenderSubPass(m_fullQuadPass);
   }
 
   void DeferredRenderPass::InitLightDataTexture()

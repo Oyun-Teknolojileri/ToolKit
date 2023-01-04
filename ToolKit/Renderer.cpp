@@ -26,13 +26,134 @@
 namespace ToolKit
 {
 
+  // An interval has start time and end time
+  struct LightSortStruct
+  {
+    Light* light        = nullptr;
+    uint intersectCount = 0;
+  };
+
+  // Compares two intervals according to starting times.
+  bool CompareLightIntersects(const LightSortStruct& i1,
+                              const LightSortStruct& i2)
+  {
+    return (i1.intersectCount > i2.intersectCount);
+  }
+
+  LightRawPtrArray GetBestLights(Entity* entity, const LightRawPtrArray& lights)
+  {
+    LightRawPtrArray bestLights;
+    bestLights.reserve(lights.size());
+
+    // Find the end of directional lights
+    for (int i = 0; i < lights.size(); i++)
+    {
+      if (lights[i]->GetType() == EntityType::Entity_DirectionalLight)
+      {
+        bestLights.push_back(lights[i]);
+      }
+    }
+
+    // Add the lights inside of the radius first
+    std::vector<LightSortStruct> intersectCounts(lights.size());
+    BoundingBox aabb = entity->GetAABB(true);
+    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
+    {
+      float radius;
+      Light* light = lights[lightIndx];
+      if (light->GetType() == EntityType::Entity_PointLight)
+      {
+        radius = static_cast<PointLight*>(light)->GetRadiusVal();
+      }
+      else if (light->GetType() == EntityType::Entity_SpotLight)
+      {
+        radius = static_cast<SpotLight*>(light)->GetRadiusVal();
+      }
+      else
+      {
+        continue;
+      }
+
+      intersectCounts[lightIndx].light = light;
+      uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
+
+      /* This algorithms can be used for better sorting
+      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
+      {
+        for (uint isMin = 0; isMin < 2; isMin++)
+        {
+          Vec3 p     = aabb.min;
+          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
+          float dist = glm::length(
+              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+          if (dist <= radius)
+          {
+            curIntersectCount++;
+          }
+        }
+      }*/
+
+      if (light->GetType() == EntityType::Entity_SpotLight)
+      {
+        light->UpdateShadowCamera();
+
+        Frustum spotFrustum =
+            ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
+
+        if (FrustumBoxIntersection(spotFrustum, aabb) !=
+            IntersectResult::Outside)
+        {
+          curIntersectCount++;
+        }
+      }
+      if (light->GetType() == EntityType::Entity_PointLight)
+      {
+        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
+        if (SphereBoxIntersection(lightSphere, aabb))
+        {
+          curIntersectCount++;
+        }
+      }
+    }
+
+    std::sort(intersectCounts.begin(),
+              intersectCounts.end(),
+              CompareLightIntersects);
+
+    for (uint i = 0; i < intersectCounts.size(); i++)
+    {
+      if (intersectCounts[i].intersectCount == 0)
+      {
+        break;
+      }
+      bestLights.push_back(intersectCounts[i].light);
+    }
+
+    return bestLights;
+  }
+
   Renderer::Renderer()
   {
     m_uiCamera        = new Camera();
     m_utilFramebuffer = std::make_shared<Framebuffer>();
   }
 
-  Renderer::~Renderer() { SafeDel(m_uiCamera); }
+  Renderer::~Renderer()
+  {
+    SafeDel(m_uiCamera);
+    m_utilFramebuffer      = nullptr;
+    m_gaussianBlurMaterial = nullptr;
+    m_averageBlurMaterial  = nullptr;
+    m_copyFb               = nullptr;
+    m_copyMaterial         = nullptr;
+
+    m_mat                  = nullptr;
+    m_aoMat                = nullptr;
+    m_framebuffer          = nullptr;
+    m_shadowAtlas          = nullptr;
+
+    m_programs.clear();
+  }
 
   int Renderer::GetMaxArrayTextureLayers()
   {
@@ -82,7 +203,8 @@ namespace ToolKit
 
   void Renderer::Render(Entity* ntt,
                         Camera* cam,
-                        const LightRawPtrArray& lights)
+                        const LightRawPtrArray& lights,
+                        const UIntArray& meshIndices)
   {
     if (!cam->IsOrtographic())
     {
@@ -132,6 +254,7 @@ namespace ToolKit
 
     updateAndBindSkinningTextures();
 
+    uint entityMeshIndex = 0, meshIndicesIterator = 0;
     for (MeshComponentPtr meshCom : meshComponents)
     {
       MeshPtr mainMesh = meshCom->GetMeshVal();
@@ -144,8 +267,21 @@ namespace ToolKit
       MeshRawPtrArray meshCollector;
       mainMesh->GetAllMeshes(meshCollector);
 
-      for (uint meshIndx = 0; meshIndx < meshCollector.size(); meshIndx++)
+      for (uint meshIndx = 0; meshIndx < meshCollector.size();
+           meshIndx++, entityMeshIndex++)
       {
+        if (meshIndices.size())
+        {
+          if (meshIndicesIterator >= meshIndices.size() ||
+              entityMeshIndex != meshIndices[meshIndicesIterator])
+          {
+            continue;
+          }
+          else
+          {
+            meshIndicesIterator++;
+          }
+        }
         Mesh* mesh = meshCollector[meshIndx];
 
         if (mesh->m_vertexCount == 0)
@@ -153,9 +289,9 @@ namespace ToolKit
           continue;
         }
 
-        if (mmComp && mmComp->GetMaterialList().size() > meshIndx)
+        if (mmComp && mmComp->GetMaterialList().size() > entityMeshIndex)
         {
-          nttMat = mmComp->GetMaterialList()[meshIndx];
+          nttMat = mmComp->GetMaterialList()[entityMeshIndex];
         }
         mesh->Init();
         if (m_overrideMat != nullptr)
@@ -310,6 +446,12 @@ namespace ToolKit
       glDepthFunc((int) state->depthFunction);
     }
 
+    if (m_renderState.depthWriteEnabled != state->depthWriteEnabled)
+    {
+      glDepthMask(state->depthWriteEnabled);
+      m_renderState.depthWriteEnabled = state->depthWriteEnabled;
+    }
+
     if (m_renderState.blendFunction != state->blendFunction)
     {
       switch (state->blendFunction)
@@ -339,11 +481,10 @@ namespace ToolKit
 
     m_renderState.alphaMaskTreshold = state->alphaMaskTreshold;
 
-    bool diffuseTexture = !state->isColorMaterial && state->diffuseTextureInUse;
-    if (diffuseTexture)
+    if (m_mat->m_diffuseTexture)
     {
-      m_renderState.diffuseTexture = state->diffuseTexture;
-      SetTexture(0, state->diffuseTexture);
+
+      SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
     }
 
     if (state->cubeMapInUse)
@@ -359,11 +500,9 @@ namespace ToolKit
       glLineWidth(m_renderState.lineWidth);
     }
 
-    m_renderState.emissiveTextureInUse = state->emissiveTextureInUse;
-    if (m_renderState.emissiveTextureInUse)
+    if (m_mat->m_emissiveTexture)
     {
-      m_renderState.emissiveTexture = state->diffuseTexture;
-      SetTexture(1, state->emissiveTexture);
+      SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
     }
 
     if (m_mat->m_metallicRoughnessTexture)
@@ -589,113 +728,6 @@ namespace ToolKit
     return entity->GetRenderMaterial();
   }
 
-  // An interval has start time and end time
-  struct LightSortStruct
-  {
-    Light* light        = nullptr;
-    uint intersectCount = 0;
-  };
-
-  // Compares two intervals according to starting times.
-  bool CompareLightIntersects(const LightSortStruct& i1,
-                              const LightSortStruct& i2)
-  {
-    return (i1.intersectCount > i2.intersectCount);
-  }
-
-  LightRawPtrArray Renderer::GetBestLights(Entity* entity,
-                                           const LightRawPtrArray& lights)
-  {
-    LightRawPtrArray bestLights;
-    bestLights.reserve(lights.size());
-
-    // Find the end of directional lights
-    for (int i = 0; i < lights.size(); i++)
-    {
-      if (lights[i]->GetType() == EntityType::Entity_DirectionalLight)
-      {
-        bestLights.push_back(lights[i]);
-      }
-    }
-
-    // Add the lights inside of the radius first
-    std::vector<LightSortStruct> intersectCounts(lights.size());
-    BoundingBox aabb = entity->GetAABB(true);
-    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
-    {
-      float radius;
-      Light* light = lights[lightIndx];
-      if (light->GetType() == EntityType::Entity_PointLight)
-      {
-        radius = static_cast<PointLight*>(light)->GetRadiusVal();
-      }
-      else if (light->GetType() == EntityType::Entity_SpotLight)
-      {
-        radius = static_cast<SpotLight*>(light)->GetRadiusVal();
-      }
-      else
-      {
-        continue;
-      }
-
-      intersectCounts[lightIndx].light = light;
-      uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
-
-      /* This algorithms can be used for better sorting
-      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
-      {
-        for (uint isMin = 0; isMin < 2; isMin++)
-        {
-          Vec3 p     = aabb.min;
-          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
-          float dist = glm::length(
-              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
-          if (dist <= radius)
-          {
-            curIntersectCount++;
-          }
-        }
-      }*/
-
-      if (light->GetType() == EntityType::Entity_SpotLight)
-      {
-        light->UpdateShadowCamera();
-
-        Frustum spotFrustum =
-            ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
-
-        if (FrustumBoxIntersection(spotFrustum, aabb) !=
-            IntersectResult::Outside)
-        {
-          curIntersectCount++;
-        }
-      }
-      if (light->GetType() == EntityType::Entity_PointLight)
-      {
-        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
-        if (SphereBoxIntersection(lightSphere, aabb))
-        {
-          curIntersectCount++;
-        }
-      }
-    }
-
-    std::sort(intersectCounts.begin(),
-              intersectCounts.end(),
-              CompareLightIntersects);
-
-    for (uint i = 0; i < intersectCounts.size(); i++)
-    {
-      if (intersectCounts[i].intersectCount == 0)
-      {
-        break;
-      }
-      bestLights.push_back(intersectCounts[i].light);
-    }
-
-    return bestLights;
-  }
-
   void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
   {
     assert(source->m_width == dest->m_width &&
@@ -851,23 +883,23 @@ namespace ToolKit
     else
     {
       // Sky light
-      SkyBase* sky = GetSceneManager()->GetCurrentScene()->GetSky();
-      if (sky != nullptr && sky->IsInitialized() && sky->GetIlluminateVal())
+      if (m_sky != nullptr && m_sky->IsInitialized() &&
+          m_sky->GetIlluminateVal())
       {
         mat->GetRenderState()->IBLInUse = true;
-        if (sky->GetType() == EntityType::Entity_Sky)
+        if (m_sky->GetType() == EntityType::Entity_Sky)
         {
           CubeMapPtr irradianceCubemap =
-              static_cast<Sky*>(sky)
+              static_cast<Sky*>(m_sky)
                   ->GetComponent<EnvironmentComponent>()
                   ->GetHdriVal()
                   ->m_irradianceCubemap;
           CubeMapPtr preFilteredSpecularIBLMap =
-              static_cast<Sky*>(sky)
+              static_cast<Sky*>(m_sky)
                   ->GetComponent<EnvironmentComponent>()
                   ->GetHdriVal()
                   ->m_prefilteredEnvMap;
-          RenderTargetPtr brdfLut = static_cast<Sky*>(sky)
+          RenderTargetPtr brdfLut = static_cast<Sky*>(m_sky)
                                         ->GetComponent<EnvironmentComponent>()
                                         ->GetHdriVal()
                                         ->m_brdfLut;
@@ -880,15 +912,15 @@ namespace ToolKit
             mat->GetRenderState()->brdfLut = brdfLut->m_textureId;
           }
         }
-        else if (sky->GetType() == EntityType::Entity_GradientSky)
+        else if (m_sky->GetType() == EntityType::Entity_GradientSky)
         {
           mat->GetRenderState()->irradianceMap =
-              static_cast<GradientSky*>(sky)->GetIrradianceMap()->m_textureId;
+              static_cast<GradientSky*>(m_sky)->GetIrradianceMap()->m_textureId;
         }
 
-        mat->GetRenderState()->iblIntensity = sky->GetIntensityVal();
+        mat->GetRenderState()->iblIntensity = m_sky->GetIntensityVal();
         m_iblRotation =
-            Mat4(sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
+            Mat4(m_sky->m_node->GetOrientation(TransformationSpace::TS_WORLD));
       }
       else
       {
@@ -916,7 +948,7 @@ namespace ToolKit
       m_gaussianBlurMaterial                   = std::make_shared<Material>();
       m_gaussianBlurMaterial->m_vertexShader   = vert;
       m_gaussianBlurMaterial->m_fragmentShader = frag;
-      m_gaussianBlurMaterial->GetRenderState()->isColorMaterial = false;
+      m_gaussianBlurMaterial->m_diffuseTexture = nullptr;
     }
 
     m_gaussianBlurMaterial->UnInit();
@@ -950,7 +982,7 @@ namespace ToolKit
       m_averageBlurMaterial                   = std::make_shared<Material>();
       m_averageBlurMaterial->m_vertexShader   = vert;
       m_averageBlurMaterial->m_fragmentShader = frag;
-      m_averageBlurMaterial->GetRenderState()->isColorMaterial = false;
+      m_averageBlurMaterial->m_diffuseTexture = nullptr;
     }
 
     m_averageBlurMaterial->UnInit();
@@ -1218,7 +1250,7 @@ namespace ToolKit
           GLint loc = glGetUniformLocation(
               program->m_handle,
               GetUniformName(Uniform::DIFFUSE_TEXTURE_IN_USE));
-          int v = (int) !(m_mat->GetRenderState()->isColorMaterial);
+          int v = (int) (m_mat->m_diffuseTexture != nullptr);
           if (m_renderOnlyLighting)
           {
             v = false;
@@ -1284,7 +1316,8 @@ namespace ToolKit
           GLint loc = glGetUniformLocation(
               program->m_handle,
               GetUniformName(Uniform::EMISSIVE_TEXTURE_IN_USE));
-          glUniform1i(loc, m_renderState.emissiveTextureInUse);
+          int v = (int) (m_mat->m_emissiveTexture != nullptr);
+          glUniform1i(loc, v);
         }
         break;
         case Uniform::USE_FORWARD_PATH:
@@ -1687,7 +1720,6 @@ namespace ToolKit
     frag->m_shaderParams["Exposure"]       = exposure;
 
     mat->m_diffuseTexture                  = texture;
-    mat->GetRenderState()->isColorMaterial = false;
     mat->m_vertexShader                    = vert;
     mat->m_fragmentShader                  = frag;
     mat->GetRenderState()->cullMode        = CullingType::TwoSided;
@@ -1775,7 +1807,6 @@ namespace ToolKit
         ShaderPath("irradianceGenerateFrag.shader", true));
 
     mat->m_cubeMap                         = cubemap;
-    mat->GetRenderState()->isColorMaterial = false;
     mat->m_vertexShader                    = vert;
     mat->m_fragmentShader                  = frag;
     mat->GetRenderState()->cullMode        = CullingType::TwoSided;
@@ -1857,7 +1888,6 @@ namespace ToolKit
         ShaderPath("preFilterEnvMapFrag.shader", true));
 
     mat->m_cubeMap                         = cubemap;
-    mat->GetRenderState()->isColorMaterial = false;
     mat->m_vertexShader                    = vert;
     mat->m_fragmentShader                  = frag;
     mat->GetRenderState()->cullMode        = CullingType::TwoSided;

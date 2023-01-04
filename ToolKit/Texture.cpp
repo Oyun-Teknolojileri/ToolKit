@@ -378,60 +378,77 @@ namespace ToolKit
     // Init 2D hdri texture
     Texture::Init(flushClientSideArray);
 
-    // Convert hdri image to cubemap images
-    m_cubemap = GetRenderer()->GenerateCubemapFrom2DTexture(
-        GetTextureManager()->Create<Texture>(GetFile()),
-        m_width,
-        m_width,
-        1.0f);
+    // Only ready after cubemap constructed and irradiance calculated.
+    m_initiated     = false;
 
-    // Generate mip maps of cubemap
-    glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemap->m_textureId);
-    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    RenderTask task = {
+        [this, flushClientSideArray](Renderer* renderer) -> void
+        {
+          // Convert hdri image to cubemap images.
+          m_cubemap = renderer->GenerateCubemapFrom2DTexture(
+              GetTextureManager()->Create<Texture>(GetFile()),
+              m_width,
+              m_width,
+              1.0f);
 
-    // TODO since there is a "update ibl" button, we can make these parameter
-    // variant
-    const int prefilteredEnvMapSize =
-        512; // TODO member variable or parameter variant
-    // Pre-filtered and mip mapped environment map
-    m_prefilteredEnvMap = GetRenderer()->GenerateEnvPrefilteredMap(
-        m_cubemap,
-        prefilteredEnvMapSize,
-        prefilteredEnvMapSize,
-        Renderer::RHIConstants::specularIBLLods);
+          // Generate mip maps of cubemap
+          glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemap->m_textureId);
+          glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
-    // Pre-compute BRDF lut
-    if (!m_quadPass)
-    {
-      m_quadPass = std::make_shared<FullQuadPass>();
-    }
-    const int lutSize = 512; // TODO member variable or parameter variant
-    if (!m_brdfLut)
-    {
-      RenderTargetSettigs set;
-      set.InternalFormat = GraphicTypes::FormatRG16F;
-      set.Format         = GraphicTypes::FormatRG;
-      m_brdfLut = std::make_shared<RenderTarget>(lutSize, lutSize, set);
-      m_brdfLut->Init();
-    }
-    if (!m_utilFramebuffer)
-    {
-      m_utilFramebuffer = std::make_shared<Framebuffer>();
-      m_utilFramebuffer->Init({lutSize, lutSize, false, false});
-      m_utilFramebuffer->SetAttachment(
-          Framebuffer::Attachment::ColorAttachment0,
-          m_brdfLut);
-    }
+          // TODO since there is a "update ibl" button, we can make these
+          // parameter variant
+          const int prefilteredEnvMapSize =
+              512; // TODO member variable or parameter variant
+          // Pre-filtered and mip mapped environment map
+          m_prefilteredEnvMap = renderer->GenerateEnvPrefilteredMap(
+              m_cubemap,
+              prefilteredEnvMapSize,
+              prefilteredEnvMapSize,
+              Renderer::RHIConstants::specularIBLLods);
 
-    m_quadPass->m_params.FrameBuffer    = m_utilFramebuffer;
-    m_quadPass->m_params.FragmentShader = GetShaderManager()->Create<Shader>(
-        ShaderPath("BRDFLutFrag.shader", true));
-    m_quadPass->Render();
+          // Pre-compute BRDF lut
+          if (!m_quadPass)
+          {
+            m_quadPass = std::make_shared<FullQuadPass>();
+          }
+          const int lutSize = 512; // TODO member variable or parameter variant
+          if (!m_brdfLut)
+          {
+            RenderTargetSettigs set;
+            set.InternalFormat = GraphicTypes::FormatRG16F;
+            set.Format         = GraphicTypes::FormatRG;
+            m_brdfLut = std::make_shared<RenderTarget>(lutSize, lutSize, set);
+            m_brdfLut->Init();
+          }
+          if (!m_utilFramebuffer)
+          {
+            m_utilFramebuffer = std::make_shared<Framebuffer>();
+            m_utilFramebuffer->Init({lutSize, lutSize, false, false});
+            m_utilFramebuffer->SetAttachment(
+                Framebuffer::Attachment::ColorAttachment0,
+                m_brdfLut);
+          }
 
-    // Generate irradience cubemap images
-    m_irradianceCubemap = GetRenderer()->GenerateEnvIrradianceMap(m_cubemap,
-                                                                  m_width / 64,
-                                                                  m_width / 64);
+          m_quadPass->m_params.FrameBuffer = m_utilFramebuffer;
+          m_quadPass->m_params.FragmentShader =
+              GetShaderManager()->Create<Shader>(
+                  ShaderPath("BRDFLutFrag.shader", true));
+
+          m_quadPass->SetRenderer(renderer);
+          m_quadPass->PreRender();
+          m_quadPass->Render();
+          m_quadPass->PostRender();
+
+          // Generate irradience cubemap images
+          m_irradianceCubemap =
+              renderer->GenerateEnvIrradianceMap(m_cubemap,
+                                                 m_width / 64,
+                                                 m_width / 64);
+
+          m_initiated = true;
+        }};
+
+    GetRenderSystem()->AddRenderTask(task);
   }
 
   void Hdri::UnInit()
@@ -441,6 +458,7 @@ namespace ToolKit
       m_cubemap->UnInit();
       m_irradianceCubemap->UnInit();
     }
+
     Texture::UnInit();
   }
 

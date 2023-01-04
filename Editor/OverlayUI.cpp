@@ -187,7 +187,7 @@ namespace ToolKit
     void OverlayLighting::Show()
     {
       ImVec2 overlaySize(28, 30);
-      if (!editorLitModeOn)
+      if (!m_editorLitModeOn)
       {
         overlaySize.x += 170;
       }
@@ -211,24 +211,26 @@ namespace ToolKit
                                      ImGuiWindowFlags_NoScrollWithMouse))
       {
         SetOwnerState();
-
         ImGui::BeginTable("##SettingsBar",
-                          editorLitModeOn ? 1 : 2,
+                          m_editorLitModeOn ? 1 : 2,
                           ImGuiTableFlags_SizingStretchProp);
+
         ImGui::TableNextRow();
         unsigned int nextItemIndex = 0;
 
-        if (!editorLitModeOn)
+        if (!m_editorLitModeOn)
         {
           ImGui::TableSetColumnIndex(nextItemIndex++);
           ImGui::PushItemWidth(160);
-          static uint lightModeIndx = 0;
-          const char* itemNames[]   = {"Editor Lit",
-                                       "Unlit",
-                                       "Full Lit",
-                                       "Light Complexity",
-                                       "Lighting Only"};
-          uint itemCount            = sizeof(itemNames) / sizeof(itemNames[0]);
+          uint lightModeIndx      = (int) g_app->m_sceneLightingMode;
+          const char* itemNames[] = {"Editor Lit",
+                                     "Unlit",
+                                     "Full Lit",
+                                     "Light Complexity",
+                                     "Lighting Only",
+                                     "Game"};
+
+          uint itemCount          = sizeof(itemNames) / sizeof(itemNames[0]);
           if (ImGui::BeginCombo("", itemNames[lightModeIndx]))
           {
             for (uint itemIndx = 1; itemIndx < itemCount; itemIndx++)
@@ -251,16 +253,19 @@ namespace ToolKit
         }
         else
         {
-          g_app->m_sceneLightingMode = EditorLitMode::EditorLit;
+          if (g_app->m_gameMod == GameMod::Stop)
+          {
+            g_app->m_sceneLightingMode = EditorLitMode::EditorLit;
+          }
         }
 
         ImGui::TableSetColumnIndex(nextItemIndex++);
-        editorLitModeOn =
+        m_editorLitModeOn =
             UI::ToggleButton(UI::m_studioLightsToggleIcon->m_textureId,
                              ImVec2(12.0f, 14.0f),
-                             editorLitModeOn);
-        UI::HelpMarker(TKLoc + m_owner->m_name, "Scene Lighting Mode");
+                             m_editorLitModeOn);
 
+        UI::HelpMarker(TKLoc + m_owner->m_name, "Scene Lighting Mode");
         ImGui::EndTable();
       }
       ImGui::EndChildFrame();

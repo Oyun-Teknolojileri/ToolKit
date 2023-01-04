@@ -3,6 +3,8 @@
 #include "Shader.h"
 #include "Util.h"
 
+#include "DebugNew.h"
+
 namespace ToolKit
 {
 
@@ -26,6 +28,11 @@ namespace ToolKit
               doc,
               "depthTest",
               std::to_string(int(depthTestEnabled)));
+
+    WriteAttr(container,
+              doc,
+              "depthWrite",
+              std::to_string(int(depthWriteEnabled)));
 
     WriteAttr(container, doc, "depthFunc", std::to_string(int(depthFunction)));
 
@@ -89,6 +96,8 @@ namespace ToolKit
       ReadAttr(container, "AOInUse", AOInUse);
 
       ReadAttr(container, "useForwardPath", useForwardPath);
+
+      ReadAttr(container, "depthWrite", depthWriteEnabled);
     }
   }
 

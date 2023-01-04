@@ -21,6 +21,7 @@
 #include "PostProcessPass.h"
 #include "Primative.h"
 #include "RenderState.h"
+#include "RenderSystem.h"
 #include "Renderer.h"
 #include "Scene.h"
 #include "Shader.h"
@@ -80,9 +81,15 @@ namespace ToolKit
     {
       uint MSAA                    = 2;
       uint FPS                     = 60;
+      bool TonemappingEnabled      = true;
       TonemapMethod TonemapperMode = TonemapMethod::Aces;
-      float bloomIntensity = 1.0f, bloomThreshold = 1.0f;
-      int bloomIterationCount = 5;
+      bool BloomEnabled            = true;
+      float BloomIntensity         = 1.0f;
+      float BloomThreshold         = 1.0f;
+      int BloomIterationCount      = 5;
+      bool GammaCorrectionEnabled  = true;
+      float Gamma                  = 2.2f;
+      bool SSAOEnabled             = true;
     } Graphics;
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
@@ -131,17 +138,16 @@ namespace ToolKit
     TextureManager* m_textureMan         = nullptr;
     SceneManager* m_sceneManager         = nullptr;
     PluginManager* m_pluginManager       = nullptr;
-    Renderer* m_renderer                 = nullptr;
     Logger* m_logger                     = nullptr;
     UIManager* m_uiManager               = nullptr;
     SkeletonManager* m_skeletonManager   = nullptr;
+    FileManager* m_fileManager           = nullptr;
+    EntityFactory* m_entityFactory       = nullptr;
+    RenderSystem* m_renderSys            = nullptr;
     HandleManager m_handleManager;
-    FileManager* m_fileManager     = nullptr;
 
-    EntityFactory* m_entityFactory = nullptr;
-
-    bool m_preInitiated            = false;
-    bool m_initiated               = false;
+    bool m_preInitiated = false;
+    bool m_initiated    = false;
     String m_resourceRoot;
     String m_cfgPath;
     EventPool m_eventPool;
@@ -153,7 +159,7 @@ namespace ToolKit
 
   // Accessors.
   TK_API Logger* GetLogger();
-  TK_API Renderer* GetRenderer();
+  TK_API RenderSystem* GetRenderSystem();
   TK_API AnimationManager* GetAnimationManager();
   TK_API AnimationPlayer* GetAnimationPlayer();
   TK_API AudioManager* GetAudioManager();
@@ -169,8 +175,8 @@ namespace ToolKit
   TK_API HandleManager* GetHandleManager();
   TK_API SkeletonManager* GetSkeletonManager();
   TK_API FileManager* GetFileManager();
-
   TK_API EntityFactory* GetEntityFactory();
+  TK_API EngineSettings& GetEngineSettings();
 
   TK_API String DefaultPath();
   TK_API String DefaultAbsolutePath();
