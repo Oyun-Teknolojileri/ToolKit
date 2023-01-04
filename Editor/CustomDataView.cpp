@@ -599,7 +599,7 @@ namespace ToolKit
       break;
       case ParameterVariant::VariantType::VariantCallback:
       {
-        if (UI::BeginCenteredTextButton(var->m_name)) 
+        if (UI::BeginCenteredTextButton(var->m_name))
         {
           VariantCallback callback = var->GetVar<VariantCallback>();
           callback();

@@ -1,5 +1,6 @@
 #include "assimp/DefaultLogger.hpp"
 #include "assimp/Importer.hpp"
+#include "assimp/pbrmaterial.h"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 
@@ -35,6 +36,17 @@ using std::to_string;
 using std::unordered_map;
 using std::vector;
 namespace fs = std::filesystem;
+
+template <typename GLMtype, typename AiType>
+GLMtype convertAssimpColorToGlm(AiType source)
+{
+  GLMtype color = {};
+  for (uint32_t i = 0; i < GLMtype::length(); i++)
+  {
+    color[i] = source[i];
+  }
+  return color;
+}
 
 char GetPathSeparator()
 {
@@ -570,21 +582,93 @@ namespace ToolKit
       MaterialPtr tMaterial = std::make_shared<Material>();
 
       auto diffuse = textureFindAndCreateFunc(aiTextureType_DIFFUSE, material);
-      tMaterial->GetRenderState()->isColorMaterial = true;
       if (diffuse)
       {
-        tMaterial->m_diffuseTexture                  = diffuse;
-        tMaterial->GetRenderState()->isColorMaterial = false;
+        tMaterial->m_diffuseTexture = diffuse;
       }
 
       auto emissive =
           textureFindAndCreateFunc(aiTextureType_EMISSIVE, material);
-      tMaterial->GetRenderState()->emissiveTextureInUse = false;
       if (emissive)
       {
-        tMaterial->m_emissiveTexture                      = emissive;
-        tMaterial->GetRenderState()->emissiveTextureInUse = true;
+        tMaterial->m_emissiveTexture = emissive;
       }
+      else
+      {
+        aiColor3D emissiveColor;
+        if (material->Get(AI_MATKEY_EMISSIVE_INTENSITY, emissiveColor) ==
+            aiReturn_SUCCESS)
+        {
+          tMaterial->m_emissiveColor =
+              convertAssimpColorToGlm<Vec3>(emissiveColor);
+        }
+      }
+
+      auto metallicRoughness =
+          textureFindAndCreateFunc(aiTextureType_UNKNOWN, material);
+      if (metallicRoughness)
+      {
+        tMaterial->m_metallicRoughnessTexture = metallicRoughness;
+        tMaterial->m_materialType             = MaterialType::PBR;
+      }
+
+      auto normal = textureFindAndCreateFunc(aiTextureType_NORMALS, material);
+      if (normal)
+      {
+        tMaterial->m_normalMap = normal;
+      }
+      else
+      {
+        float metalness, roughness;
+        if (material->Get(AI_MATKEY_METALLIC_FACTOR, metalness) ==
+            aiReturn_SUCCESS)
+        {
+          tMaterial->m_metallic     = metalness;
+          tMaterial->m_materialType = MaterialType::PBR;
+        }
+        if (material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness) ==
+            aiReturn_SUCCESS)
+        {
+          tMaterial->m_roughness    = roughness;
+          tMaterial->m_materialType = MaterialType::PBR;
+        }
+      }
+
+      // There are various ways to get alpha value in Assimp, try each step
+      // until succeed
+      float transparency = 1.0f;
+      if (material->Get(AI_MATKEY_TRANSPARENCYFACTOR, transparency) !=
+          aiReturn_SUCCESS)
+      {
+        if (material->Get(AI_MATKEY_OPACITY, transparency) != aiReturn_SUCCESS)
+        {
+          material->Get(AI_MATKEY_COLOR_TRANSPARENT, transparency);
+        }
+      }
+      tMaterial->m_alpha    = transparency;
+
+      aiBlendMode blendFunc = aiBlendMode_Default;
+      if (material->Get(AI_MATKEY_BLEND_FUNC, blendFunc) == aiReturn_SUCCESS)
+      {
+        if (blendFunc == aiBlendMode_Default)
+        {
+          tMaterial->GetRenderState()->blendFunction =
+              BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+        }
+        else
+        {
+          tMaterial->GetRenderState()->blendFunction =
+              BlendFunction::ONE_TO_ONE;
+        }
+      }
+      else if (transparency != 1.0f)
+      {
+        tMaterial->GetRenderState()->blendFunction =
+            BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
+      }
+
+      material->Get(AI_MATKEY_GLTF_ALPHACUTOFF,
+                    tMaterial->GetRenderState()->alphaMaskTreshold);
 
       tMaterial->SetFile(writePath);
       CreateFileAndSerializeObject(tMaterial.get(), writePath);
@@ -820,7 +904,7 @@ namespace ToolKit
       }
       MultiMaterialPtr matComp = std::make_shared<MultiMaterialComponent>();
       ntt->AddComponent(matComp);
-      matComp->UpdateMaterialList(meshComp);
+      matComp->UpdateMaterialList();
     }
 
     for (uint childIndx = 0; childIndx < node->mNumChildren; childIndx++)

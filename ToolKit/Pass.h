@@ -61,7 +61,8 @@ namespace ToolKit
      * @param entities Entity array that the translucent will extracted from.
      * @param translucent Entity array that contains translucent entities.
      */
-    void SeperateTranslucentEntities(EntityRawPtrArray& entities,
+    void SeperateTranslucentEntities(const EntityRawPtrArray& allEntities,
+                                     EntityRawPtrArray& opaqueEntities,
                                      EntityRawPtrArray& translucentEntities);
 
     /**
@@ -71,7 +72,8 @@ namespace ToolKit
      * unlit entities.
      */
     void SeperateTranslucentAndUnlitEntities(
-        EntityRawPtrArray& entities,
+        const EntityRawPtrArray& allEntities,
+        EntityRawPtrArray& opaqueEntities,
         EntityRawPtrArray& translucentAndUnlitEntities);
   };
 

@@ -107,7 +107,7 @@ namespace ToolKit
       float btnWidth = 24.0f;
       float offset   = (size.x - btnWidth * 5.0f) * 0.5f;
 
-      float curYoff = ImGui::GetCursorPosY() + 10.0f;
+      float curYoff  = ImGui::GetCursorPosY() + 10.0f;
       ImGui::SameLine(offset);
       ImGui::SetCursorPosY(curYoff);
 
