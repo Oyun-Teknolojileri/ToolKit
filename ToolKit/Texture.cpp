@@ -401,7 +401,33 @@ namespace ToolKit
                                                  prefilteredEnvMapSize,
                                                  mipMaps);
 
-    // TODO Pre-compute BRDF lut
+    // Pre-compute BRDF lut
+    if (!m_quadPass)
+    {
+      m_quadPass = std::make_shared<FullQuadPass>();
+    }
+    const int lutSize = 512; // TODO member variable or parameter variant
+    if (!m_brdfLut)
+    {
+      RenderTargetSettigs set;
+      set.InternalFormat = GraphicTypes::FormatRG16F;
+      set.Format         = GraphicTypes::FormatRG;
+      m_brdfLut = std::make_shared<RenderTarget>(lutSize, lutSize, set);
+      m_brdfLut->Init();
+    }
+    if (!m_utilFramebuffer)
+    {
+      m_utilFramebuffer = std::make_shared<Framebuffer>();
+      m_utilFramebuffer->Init({lutSize, lutSize, false, false});
+      m_utilFramebuffer->SetAttachment(
+          Framebuffer::Attachment::ColorAttachment0,
+          m_brdfLut);
+    }
+
+    m_quadPass->m_params.FrameBuffer    = m_utilFramebuffer;
+    m_quadPass->m_params.FragmentShader = GetShaderManager()->Create<Shader>(
+        ShaderPath("BRDFLutFrag.shader", true));
+    m_quadPass->Render();
 
     // Generate irradience cubemap images
     m_irradianceCubemap = GetRenderer()->GenerateEnvIrradianceMap(m_cubemap,

@@ -54,14 +54,33 @@
 				return nom / denom;
 		}
 
-		// TODO float GeometrySchlickGGXForIBL(float NdotV, float roughness)
-
 		float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 		{
 				float NdotV = max(dot(N, V), 0.0);
 				float NdotL = max(dot(N, L), 0.0);
 				float ggx2 = GeometrySchlickGGX(NdotV, roughness);
 				float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+
+				return ggx1 * ggx2;
+		}
+
+		float GeometrySchlickGGXForIBL(float NdotV, float roughness)
+		{
+				float r = roughness;
+				float k = (r*r) / 2.0;
+
+				float nom   = NdotV;
+				float denom = NdotV * (1.0 - k) + k;
+
+				return nom / denom;
+		}
+
+		float GeometrySmithForIBL(vec3 N, vec3 V, vec3 L, float roughness)
+		{
+				float NdotV = max(dot(N, V), 0.0);
+				float NdotL = max(dot(N, L), 0.0);
+				float ggx2 = GeometrySchlickGGXForIBL(NdotV, roughness);
+				float ggx1 = GeometrySchlickGGXForIBL(NdotL, roughness);
 
 				return ggx1 * ggx2;
 		}
