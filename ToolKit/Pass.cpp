@@ -568,8 +568,14 @@ namespace ToolKit
               continue;
             }
           }
+          bool stateChanged = false;
           bool prevState = renderMaterial->GetRenderState()->depthWriteEnabled;
-          renderMaterial->GetRenderState()->depthWriteEnabled = false;
+          if (renderMaterial->GetRenderState()->blendFunction !=
+              BlendFunction::ALPHA_MASK)
+          {
+            renderMaterial->GetRenderState()->depthWriteEnabled = false;
+            stateChanged                                        = true;
+          }
           if (renderMaterial->GetRenderState()->cullMode ==
               CullingType::TwoSided)
           {
@@ -585,7 +591,11 @@ namespace ToolKit
           {
             renderer->Render(ntt, cam, lightList, {activeMeshIndx});
           }
-          renderMaterial->GetRenderState()->depthWriteEnabled = prevState;
+          if (stateChanged)
+          {
+            renderMaterial->GetRenderState()->depthWriteEnabled = prevState;
+            stateChanged                                        = false;
+          }
         }
       }
     }
