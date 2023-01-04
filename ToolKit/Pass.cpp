@@ -79,7 +79,9 @@ namespace ToolKit
     {
       auto checkMatTranslucency = [](MaterialPtr mat) -> bool
       {
-        if (mat && mat->GetRenderState()->blendFunction != BlendFunction::NONE)
+        if (mat &&
+            mat->GetRenderState()->blendFunction != BlendFunction::NONE &&
+            mat->GetRenderState()->blendFunction != BlendFunction::ALPHA_MASK)
         {
           return true;
         }
@@ -221,7 +223,9 @@ namespace ToolKit
         if (mat)
         {
           RenderState* rs = mat->GetRenderState();
-          if (rs->blendFunction != BlendFunction::NONE || rs->useForwardPath)
+          if ((rs->blendFunction != BlendFunction::NONE &&
+               rs->blendFunction != BlendFunction::ALPHA_MASK) ||
+              rs->useForwardPath)
           {
             return true;
           }
@@ -234,7 +238,9 @@ namespace ToolKit
         if (mat)
         {
           RenderState* rs = mat->GetRenderState();
-          if (rs->blendFunction == BlendFunction::NONE && !rs->useForwardPath)
+          if ((rs->blendFunction == BlendFunction::NONE ||
+               rs->blendFunction == BlendFunction::ALPHA_MASK) &&
+              !rs->useForwardPath)
           {
             return true;
           }
@@ -508,22 +514,32 @@ namespace ToolKit
 
       MultiMaterialPtr mmComp = ntt->GetComponent<MultiMaterialComponent>();
 
-      MeshComponentPtrArray meshComps;
-      ntt->GetComponent<MeshComponent>(meshComps);
-      for (MeshComponentPtr meshComp : meshComps)
+      if (mmComp == nullptr)
       {
-        MeshRawCPtrArray meshes;
-        meshComp->GetMeshVal()->GetAllMeshes(meshes);
-        for (uint meshIndx = 0; meshIndx < meshes.size();
-             meshIndx++, activeMeshIndx++)
+        renderer->Render(ntt, cam, lightList);
+      }
+      else
+      {
+        MeshComponentPtrArray meshComps;
+        ntt->GetComponent<MeshComponent>(meshComps);
+        for (MeshComponentPtr meshComp : meshComps)
         {
-          if (mmComp && mmComp->GetMaterialList().size() > activeMeshIndx)
+          MeshRawCPtrArray meshes;
+          meshComp->GetMeshVal()->GetAllMeshes(meshes);
+          for (uint meshIndx = 0; meshIndx < meshes.size();
+               meshIndx++, activeMeshIndx++)
           {
-            MaterialPtr mat = mmComp->GetMaterialList()[activeMeshIndx];
-            if (mat->GetRenderState()->useForwardPath &&
-                mat->GetRenderState()->blendFunction == BlendFunction::NONE)
+            if (mmComp && mmComp->GetMaterialList().size() > activeMeshIndx)
             {
-              renderer->Render(ntt, cam, lightList, {activeMeshIndx});
+              MaterialPtr mat = mmComp->GetMaterialList()[activeMeshIndx];
+              if (mat->GetRenderState()->useForwardPath &&
+                  (mat->GetRenderState()->blendFunction ==
+                       BlendFunction::NONE ||
+                   mat->GetRenderState()->blendFunction ==
+                       BlendFunction::ALPHA_MASK))
+              {
+                renderer->Render(ntt, cam, lightList, {activeMeshIndx});
+              }
             }
           }
         }
@@ -548,53 +564,57 @@ namespace ToolKit
 
       MultiMaterialPtr mmComp    = ntt->GetComponent<MultiMaterialComponent>();
       MaterialPtr renderMaterial = ntt->GetRenderMaterial();
-
-      MeshComponentPtrArray meshComps;
-      ntt->GetComponent<MeshComponent>(meshComps);
-      for (MeshComponentPtr meshComp : meshComps)
+      auto renderFnc =
+          [ntt, cam, lights, lightList, renderer](MaterialPtr renderMaterial,
+                                                  const UIntArray& meshIndices)
       {
-        MeshRawCPtrArray meshes;
-        meshComp->GetMeshVal()->GetAllMeshes(meshes);
-        for (uint meshIndx = 0; meshIndx < meshes.size();
-             meshIndx++, activeMeshIndx++)
+        bool prevState = renderMaterial->GetRenderState()->depthWriteEnabled;
+        renderMaterial->GetRenderState()->depthWriteEnabled = false;
+        if (renderMaterial->GetRenderState()->cullMode == CullingType::TwoSided)
         {
-          if (mmComp && mmComp->GetMaterialList().size() > activeMeshIndx)
+          renderMaterial->GetRenderState()->cullMode = CullingType::Front;
+          renderer->Render(ntt, cam, lights, meshIndices);
+
+          renderMaterial->GetRenderState()->cullMode = CullingType::Back;
+          renderer->Render(ntt, cam, lights, meshIndices);
+
+          renderMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
+        }
+        else
+        {
+          renderer->Render(ntt, cam, lightList, meshIndices);
+        }
+        renderMaterial->GetRenderState()->depthWriteEnabled = prevState;
+      };
+
+      if (mmComp == nullptr)
+      {
+        renderFnc(renderMaterial, {});
+      }
+      else
+      {
+        MeshComponentPtrArray meshComps;
+        ntt->GetComponent<MeshComponent>(meshComps);
+        for (MeshComponentPtr meshComp : meshComps)
+        {
+          MeshRawCPtrArray meshes;
+          meshComp->GetMeshVal()->GetAllMeshes(meshes);
+          for (uint meshIndx = 0; meshIndx < meshes.size();
+               meshIndx++, activeMeshIndx++)
           {
-            renderMaterial = mmComp->GetMaterialList()[activeMeshIndx];
-            if (!renderMaterial->GetRenderState()->useForwardPath ||
-                renderMaterial->GetRenderState()->blendFunction ==
-                    BlendFunction::NONE)
+            if (mmComp && mmComp->GetMaterialList().size() > activeMeshIndx)
             {
-              continue;
+              renderMaterial = mmComp->GetMaterialList()[activeMeshIndx];
+              if (!renderMaterial->GetRenderState()->useForwardPath ||
+                  (renderMaterial->GetRenderState()->blendFunction ==
+                       BlendFunction::NONE ||
+                   renderMaterial->GetRenderState()->blendFunction ==
+                       BlendFunction::ALPHA_MASK))
+              {
+                continue;
+              }
             }
-          }
-          bool stateChanged = false;
-          bool prevState = renderMaterial->GetRenderState()->depthWriteEnabled;
-          if (renderMaterial->GetRenderState()->blendFunction !=
-              BlendFunction::ALPHA_MASK)
-          {
-            renderMaterial->GetRenderState()->depthWriteEnabled = false;
-            stateChanged                                        = true;
-          }
-          if (renderMaterial->GetRenderState()->cullMode ==
-              CullingType::TwoSided)
-          {
-            renderMaterial->GetRenderState()->cullMode = CullingType::Front;
-            renderer->Render(ntt, cam, lights, {activeMeshIndx});
-
-            renderMaterial->GetRenderState()->cullMode = CullingType::Back;
-            renderer->Render(ntt, cam, lights, {activeMeshIndx});
-
-            renderMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
-          }
-          else
-          {
-            renderer->Render(ntt, cam, lightList, {activeMeshIndx});
-          }
-          if (stateChanged)
-          {
-            renderMaterial->GetRenderState()->depthWriteEnabled = prevState;
-            stateChanged                                        = false;
+            renderFnc(renderMaterial, {activeMeshIndx});
           }
         }
       }
@@ -1389,8 +1409,10 @@ namespace ToolKit
             activeMaterial = mmComp->GetMaterialList()[activeMeshIndex];
           }
           if (activeMaterial->GetRenderState()->useForwardPath ||
-              activeMaterial->GetRenderState()->blendFunction !=
-                  BlendFunction::NONE)
+              (activeMaterial->GetRenderState()->blendFunction !=
+                   BlendFunction::NONE &&
+               activeMaterial->GetRenderState()->blendFunction !=
+                   BlendFunction::ALPHA_MASK))
           {
             continue;
           }
