@@ -1826,10 +1826,6 @@ namespace ToolKit
     {
       for (int i = 0; i < 6; ++i)
       {
-        frag->SetShaderParameter(
-            "roughness",
-            ParameterVariant((float) mip / (float) mipMaps));
-
         Vec3 pos;
         Quaternion rot;
         Vec3 sca;
@@ -1848,6 +1844,11 @@ namespace ToolKit
 
         uint w = (uint) (width * std::powf(0.5f, (float) mip));
         uint h = (uint) (height * std::powf(0.5f, (float) mip));
+
+        frag->SetShaderParameter(
+            "roughness",
+            ParameterVariant((float) mip / (float) mipMaps));
+        frag->SetShaderParameter("resPerFace", ParameterVariant((float) w));
 
         SetFramebuffer(m_utilFramebuffer, true, Vec4(0.0));
         SetViewportSize(w, h);

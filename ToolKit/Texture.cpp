@@ -334,8 +334,8 @@ namespace ToolKit
     m_textureSettings.InternalFormat  = GraphicTypes::FormatRGB32F;
     m_textureSettings.Format          = GraphicTypes::FormatRGB;
     m_textureSettings.Type            = GraphicTypes::TypeFloat;
-    m_textureSettings.MinFilter       = GraphicTypes::SampleNearest;
-    m_textureSettings.MipMapMinFilter = GraphicTypes::SampleNearest;
+    m_textureSettings.MinFilter       = GraphicTypes::SampleLinear;
+    m_textureSettings.MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
     m_textureSettings.GenerateMipMap  = false;
     m_exposure                        = 1.0f;
 
