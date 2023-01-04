@@ -393,13 +393,12 @@ namespace ToolKit
     // variant
     // TODO Pre-filtered and mip mapped environment map
     const int prefilteredEnvMapSize =
-        128;               // TODO member variable or parameter variant
-    const int mipMaps = 5; // TODO member variable or parameter variant
-    m_prefilteredEnvMap =
-        GetRenderer()->GenerateEnvPrefilteredMap(m_cubemap,
-                                                 prefilteredEnvMapSize,
-                                                 prefilteredEnvMapSize,
-                                                 mipMaps);
+        128; // TODO member variable or parameter variant
+    m_prefilteredEnvMap = GetRenderer()->GenerateEnvPrefilteredMap(
+        m_cubemap,
+        prefilteredEnvMapSize,
+        prefilteredEnvMapSize,
+        Renderer::RHIConstants::specularIBLLods);
 
     // Pre-compute BRDF lut
     if (!m_quadPass)

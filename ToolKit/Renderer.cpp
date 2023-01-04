@@ -376,6 +376,8 @@ namespace ToolKit
       SetTexture(9, m_mat->m_normalMap->m_textureId);
     }
 
+    if (m_mat->GetRenderState()->IBLInUse) {}
+
     m_renderState.useForwardPath = state->useForwardPath;
   }
 
@@ -832,10 +834,16 @@ namespace ToolKit
       EnvironmentComponentPtr envCom =
           env->GetComponent<EnvironmentComponent>();
       mat->GetRenderState()->iblIntensity = envCom->GetIntensityVal();
-      if (CubeMapPtr irradianceCubemap =
-              envCom->GetHdriVal()->m_irradianceCubemap)
+      CubeMapPtr irradianceCubemap = envCom->GetHdriVal()->m_irradianceCubemap;
+      CubeMapPtr preFilteredSpecularIBLMap =
+          envCom->GetHdriVal()->m_prefilteredEnvMap;
+      RenderTargetPtr brdfLut = envCom->GetHdriVal()->m_brdfLut;
+      if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
       {
         mat->GetRenderState()->irradianceMap = irradianceCubemap->m_textureId;
+        mat->GetRenderState()->preFilteredSpecularMap =
+            preFilteredSpecularIBLMap->m_textureId;
+        mat->GetRenderState()->brdfLut = brdfLut->m_textureId;
       }
       m_iblRotation =
           Mat4(env->m_node->GetOrientation(TransformationSpace::TS_WORLD));
@@ -849,14 +857,27 @@ namespace ToolKit
         mat->GetRenderState()->IBLInUse = true;
         if (sky->GetType() == EntityType::Entity_Sky)
         {
-          if (CubeMapPtr irradianceCubemap =
-                  static_cast<Sky*>(sky)
-                      ->GetComponent<EnvironmentComponent>()
-                      ->GetHdriVal()
-                      ->m_irradianceCubemap)
+          CubeMapPtr irradianceCubemap =
+              static_cast<Sky*>(sky)
+                  ->GetComponent<EnvironmentComponent>()
+                  ->GetHdriVal()
+                  ->m_irradianceCubemap;
+          CubeMapPtr preFilteredSpecularIBLMap =
+              static_cast<Sky*>(sky)
+                  ->GetComponent<EnvironmentComponent>()
+                  ->GetHdriVal()
+                  ->m_prefilteredEnvMap;
+          RenderTargetPtr brdfLut = static_cast<Sky*>(sky)
+                                        ->GetComponent<EnvironmentComponent>()
+                                        ->GetHdriVal()
+                                        ->m_brdfLut;
+          if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
           {
             mat->GetRenderState()->irradianceMap =
                 irradianceCubemap->m_textureId;
+            mat->GetRenderState()->preFilteredSpecularMap =
+                preFilteredSpecularIBLMap->m_textureId;
+            mat->GetRenderState()->brdfLut = brdfLut->m_textureId;
           }
         }
         else if (sky->GetType() == EntityType::Entity_GradientSky)
@@ -1185,6 +1206,11 @@ namespace ToolKit
         {
           m_renderState.irradianceMap = m_mat->GetRenderState()->irradianceMap;
           SetTexture(7, m_renderState.irradianceMap);
+          m_renderState.preFilteredSpecularMap =
+              m_mat->GetRenderState()->preFilteredSpecularMap;
+          SetTexture(15, m_renderState.preFilteredSpecularMap);
+          m_renderState.brdfLut = m_mat->GetRenderState()->brdfLut;
+          SetTexture(16, m_renderState.brdfLut);
         }
         break;
         case Uniform::DIFFUSE_TEXTURE_IN_USE:
@@ -1319,6 +1345,14 @@ namespace ToolKit
               glGetUniformLocation(program->m_handle,
                                    GetUniformName(Uniform::NORMAL_MAP_IN_USE));
           glUniform1i(loc, (int) (m_mat->m_normalMap != nullptr));
+        }
+        break;
+        case Uniform::IBL_MAX_REFLECTION_LOD:
+        {
+          GLint loc = glGetUniformLocation(
+              program->m_handle,
+              GetUniformName(Uniform::IBL_MAX_REFLECTION_LOD));
+          glUniform1i(loc, RHIConstants::specularIBLLods - 1);
         }
         break;
         default:
@@ -1566,14 +1600,19 @@ namespace ToolKit
     // 6 - 7  : Cube map textures
     // 8      : Shadow atlas
     // 9-14   : 2D textures
+    // 15     : Cube map
     //
     // 0 -> Color Texture
     // 1 -> Emissive Texture
     // 2 & 3 -> Skinning information
     // 4 -> Metallic Roughness Texture
     // 5 -> AO Texture
+    // 6 -> Cubemap
     // 7 -> Irradiance Map
+    // 8 -> Shadow Atlas
     // 9 -> Normal map
+    // 15 -> IBL Specular Pre-Filtered Map
+    // 16 -> IBL BRDF Lut
     //
     // Deferred Render Pass:
     // 9 -> gBuffer position texture
@@ -1601,6 +1640,14 @@ namespace ToolKit
       glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureSlots[slotIndx]);
     }
     else if (slotIndx < 15)
+    {
+      glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
+    }
+    else if (slotIndx < 16)
+    {
+      glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureSlots[slotIndx]);
+    }
+    else if (slotIndx < 17)
     {
       glBindTexture(GL_TEXTURE_2D, m_textureSlots[slotIndx]);
     }

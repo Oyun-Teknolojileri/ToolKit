@@ -174,6 +174,8 @@ namespace ToolKit
       return "metallicRoughnessTextureInUse";
     case Uniform::NORMAL_MAP_IN_USE:
       return "normalMapInUse";
+    case Uniform::IBL_MAX_REFLECTION_LOD:
+      return "iblMaxReflectionLod";
     default:
       return "";
     }

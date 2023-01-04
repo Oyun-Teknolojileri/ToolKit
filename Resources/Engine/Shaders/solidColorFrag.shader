@@ -52,7 +52,7 @@
 
 			vec3 irradiance = BlinnPhongLighting(v_pos, n, e);
 
-			irradiance += IblIrradiance(n);
+			irradiance += IBLPhong(n);
 
 			// float ambientOcclusion = AmbientOcclusion();
 

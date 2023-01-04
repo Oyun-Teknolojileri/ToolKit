@@ -58,8 +58,6 @@
 				irradiance = PBRLightingDeferred(position, n, e, color, metallicRoughness.r, metallicRoughness.g);
 			}
 
-			irradiance += IblIrradiance(n);
-
 			float ambientOcclusion;
 			if (aoEnabled == 1)
 			{
@@ -72,11 +70,11 @@
 
 			if (lightingType == 0)
 			{
-				irradiance += IblIrradiance(n);
+				irradiance += IBLPhong(n);
 			}
 			else
 			{
-				irradiance += IBLIrradiancePBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
+				irradiance += IBLPBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
 			}
 
 			fragColor = vec4(irradiance * ambientOcclusion, 1.0) + vec4(emissive, 0.0f);
