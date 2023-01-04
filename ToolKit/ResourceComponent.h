@@ -222,7 +222,7 @@ namespace ToolKit
     void RemoveMaterial(uint index);
     const MaterialPtrArray& GetMaterialList() const;
     MaterialPtrArray& GetMaterialList();
-    void UpdateMaterialList();
+    void UpdateMaterialList(MeshComponentPtr meshComp);
 
    private:
     MaterialPtrArray materials;

@@ -125,17 +125,6 @@ namespace ToolKit
       DecomposePath(m_mat->GetFile(), nullptr, &name, &ext);
 
       ImGui::Text("\nMaterial: %s%s", name.c_str(), ext.c_str());
-      int matType     = (int) m_mat->m_materialType;
-      int currentType = matType;
-      if (ImGui::Combo("Material Type", &matType, "Phong\0PBR\0Custom"))
-      {
-        if (matType != currentType)
-        {
-          m_mat->m_materialType = (MaterialType) matType;
-          m_mat->SetDefaultMaterialTypeShaders();
-          m_mat->m_dirty = true;
-        }
-      }
       ImGui::Separator();
 
       if (ImGui::CollapsingHeader("Material Preview",
@@ -188,6 +177,18 @@ namespace ToolKit
         m_mat->m_dirty = true;
       };
 
+      int matType     = (int) m_mat->m_materialType;
+      int currentType = matType;
+      if (ImGui::Combo("Material Type", &matType, "Phong\0PBR\0Custom"))
+      {
+        if (matType != currentType)
+        {
+          m_mat->m_materialType = (MaterialType) matType;
+          m_mat->SetDefaultMaterialTypeShaders();
+          m_mat->m_dirty = true;
+        }
+      }
+
       if (m_mat->m_materialType == MaterialType::Custom)
       {
         if (ImGui::CollapsingHeader("Shaders"))
@@ -224,50 +225,30 @@ namespace ToolKit
 
       if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        uint textureIndx = 0;
+        ImGui::LabelText("##diffTexture", "Diffuse Texture: ");
+        String target = GetPathSeparatorAsStr();
+        if (m_mat->m_diffuseTexture)
+        {
+          target = m_mat->m_diffuseTexture->GetFile();
+        }
+
+        DropZone(UI::m_imageIcon->m_textureId,
+                 target,
+                 [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                 {
+                   m_mat->m_diffuseTexture =
+                       GetTextureManager()->Create<Texture>(
+                           dirEnt.GetFullPath());
+                   m_mat->m_diffuseTexture->Init();
+                   updateThumbFn();
+                 });
+
+        // Display emissive color multiplier if fragment is emissive
         for (Uniform u : m_mat->m_fragmentShader->m_uniforms)
         {
-          switch (u)
+          if (u == Uniform::EMISSIVE_COLOR)
           {
-          case Uniform::DIFFUSE_TEXTURE_IN_USE:
-          {
-            ImGui::LabelText("##diffTexture", "Diffuse");
-            String target = GetPathSeparatorAsStr();
-            if (m_mat->m_diffuseTexture)
-            {
-              target = m_mat->m_diffuseTexture->GetFile();
-            }
-
-            DropZone(
-                UI::m_imageIcon->m_textureId,
-                target,
-                [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-                {
-                  m_mat->m_diffuseTexture =
-                      GetTextureManager()->Create<Texture>(
-                          dirEnt.GetFullPath());
-                  m_mat->m_diffuseTexture->Init();
-                  updateThumbFn();
-                });
-
-            if (m_mat->m_diffuseTexture)
-            {
-              ImGui::SameLine();
-              ImGui::PushID(textureIndx++);
-              if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
-                                           Vec2(16.0f, 16.0f),
-                                           false))
-              {
-                m_mat->m_diffuseTexture = nullptr;
-                m_mat->m_dirty          = true;
-              }
-              ImGui::PopID();
-            }
-          }
-          break;
-          case Uniform::EMISSIVE_TEXTURE_IN_USE:
-          {
-            ImGui::LabelText("##emissiveTexture", "Emissive");
+            ImGui::LabelText("##emissiveTexture", "Emissive Texture: ");
             String target = GetPathSeparatorAsStr();
             if (m_mat->m_emissiveTexture)
             {
@@ -289,7 +270,6 @@ namespace ToolKit
             if (m_mat->m_emissiveTexture)
             {
               ImGui::SameLine();
-              ImGui::PushID(textureIndx++);
               if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
                                            Vec2(16.0f, 16.0f),
                                            false))
@@ -297,108 +277,85 @@ namespace ToolKit
                 m_mat->m_emissiveTexture = nullptr;
                 m_mat->m_dirty           = true;
               }
-              ImGui::PopID();
             }
           }
-          break;
-          case Uniform::NORMAL_MAP_IN_USE:
+        }
+
+        ImGui::LabelText("##normapMap", "Normal Map");
+        target = GetPathSeparatorAsStr();
+        if (m_mat->m_normalMap)
+        {
+          target = m_mat->m_normalMap->GetFile();
+        }
+
+        DropZone(UI::m_imageIcon->m_textureId,
+                 target,
+                 [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                 {
+                   m_mat->m_normalMap = GetTextureManager()->Create<Texture>(
+                       dirEnt.GetFullPath());
+                   m_mat->m_normalMap->Init();
+                   updateThumbFn();
+                 });
+
+        if (m_mat->m_normalMap)
+        {
+          ImGui::SameLine();
+          if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
+                                       Vec2(16.0f, 16.0f),
+                                       false))
           {
-            ImGui::LabelText("##normalMap", "Normal Map");
-            String target = GetPathSeparatorAsStr();
-            if (m_mat->m_normalMap)
-            {
-              target = m_mat->m_normalMap->GetFile();
-            }
-
-            DropZone(
-                UI::m_imageIcon->m_textureId,
-                target,
-                [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-                {
-                  m_mat->m_normalMap = GetTextureManager()->Create<Texture>(
-                      dirEnt.GetFullPath());
-                  m_mat->m_normalMap->Init();
-                  updateThumbFn();
-                });
-
-            if (m_mat->m_normalMap)
-            {
-              ImGui::SameLine();
-              ImGui::PushID(textureIndx++);
-              if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
-                                           Vec2(16.0f, 16.0f),
-                                           false))
-              {
-                m_mat->m_normalMap = nullptr;
-                m_mat->m_dirty     = true;
-              }
-              ImGui::PopID();
-            }
+            m_mat->m_normalMap = nullptr;
+            m_mat->m_dirty     = true;
           }
-          break;
-          case Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE:
+        }
+
+        if (m_mat->m_materialType == MaterialType::PBR)
+        {
+          ImGui::LabelText("##metallicRoughnessTexture",
+                           "Metallic Roughess Texture: ");
+          target = GetPathSeparatorAsStr();
+          if (m_mat->m_metallicRoughnessTexture)
           {
-            ImGui::LabelText("##metallicRoughnessTexture",
-                             "Metallic Roughness");
-            String target = GetPathSeparatorAsStr();
-            if (m_mat->m_metallicRoughnessTexture)
-            {
-              target = m_mat->m_metallicRoughnessTexture->GetFile();
-            }
-
-            DropZone(
-                UI::m_imageIcon->m_textureId,
-                target,
-                [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
-                {
-                  m_mat->m_metallicRoughnessTexture =
-                      GetTextureManager()->Create<Texture>(
-                          dirEnt.GetFullPath());
-                  m_mat->m_metallicRoughnessTexture->Init();
-                  updateThumbFn();
-                });
-
-            if (m_mat->m_metallicRoughnessTexture)
-            {
-              ImGui::SameLine();
-              ImGui::PushID(textureIndx++);
-              if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
-                                           Vec2(16.0f, 16.0f),
-                                           false))
-              {
-                m_mat->m_metallicRoughnessTexture = nullptr;
-                m_mat->m_dirty                    = true;
-              }
-              ImGui::PopID();
-            }
+            target = m_mat->m_metallicRoughnessTexture->GetFile();
           }
-          break;
+
+          DropZone(UI::m_imageIcon->m_textureId,
+                   target,
+                   [this, &updateThumbFn](const DirectoryEntry& dirEnt) -> void
+                   {
+                     m_mat->m_metallicRoughnessTexture =
+                         GetTextureManager()->Create<Texture>(
+                             dirEnt.GetFullPath());
+                     m_mat->m_metallicRoughnessTexture->Init();
+                     updateThumbFn();
+                   });
+
+          if (m_mat->m_metallicRoughnessTexture)
+          {
+            ImGui::SameLine();
+            if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
+                                         Vec2(16.0f, 16.0f),
+                                         false))
+            {
+              m_mat->m_metallicRoughnessTexture = nullptr;
+              m_mat->m_dirty                    = true;
+            }
           }
         }
       }
+
       if (ImGui::CollapsingHeader("Render States",
                                   ImGuiTreeNodeFlags_DefaultOpen))
       {
-        if (m_mat->m_diffuseTexture == nullptr)
+        Vec4 col = Vec4(m_mat->m_color, m_mat->m_alpha);
+        if (ImGui::ColorEdit4("Material Color##1",
+                              &col.x,
+                              ImGuiColorEditFlags_NoLabel))
         {
-          if (ImGui::ColorEdit3("Diffuse Color", &m_mat->m_color.x))
-          {
-            updateThumbFn();
-          }
-          if (ImGui::DragFloat("Alpha",
-                               &m_mat->m_alpha,
-                               1.0f / 256.0f,
-                               0.0f,
-                               1.0f))
-          {
-            if (m_mat->GetRenderState()->blendFunction == BlendFunction::NONE)
-            {
-              m_mat->GetRenderState()->blendFunction =
-                  BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
-              m_mat->GetRenderState()->useForwardPath = true;
-            }
-            updateThumbFn();
-          }
+          m_mat->m_color = col.xyz;
+          m_mat->m_alpha = col.a;
+          updateThumbFn();
         }
         // Display emissive color multiplier if fragment is emissive
         for (Uniform u : m_mat->m_fragmentShader->m_uniforms)
@@ -419,8 +376,7 @@ namespace ToolKit
           }
         }
 
-        if (m_mat->m_materialType == MaterialType::PBR &&
-            m_mat->m_metallicRoughnessTexture == nullptr)
+        if (m_mat->m_materialType == MaterialType::PBR)
         {
           if (ImGui::DragFloat("Metallic",
                                &(m_mat->m_metallic),
@@ -432,7 +388,7 @@ namespace ToolKit
             updateThumbFn();
           }
 
-          if (ImGui::DragFloat("Roughness",
+          if (ImGui::DragFloat("Roughess",
                                &(m_mat->m_roughness),
                                0.001f,
                                0.0f,
@@ -524,6 +480,13 @@ namespace ToolKit
         {
           m_mat->GetRenderState()->useForwardPath = useForwardPath;
           m_mat->m_dirty                          = true;
+        }
+
+        bool isColorMaterial = m_mat->GetRenderState()->isColorMaterial;
+        if (ImGui::Checkbox("Color Material", &isColorMaterial))
+        {
+          m_mat->GetRenderState()->isColorMaterial = isColorMaterial;
+          m_mat->m_dirty                           = true;
         }
 
         if (m_mat->GetRenderState()->blendFunction == BlendFunction::ALPHA_MASK)

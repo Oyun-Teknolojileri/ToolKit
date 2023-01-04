@@ -11,9 +11,9 @@
 #include "PluginWindow.h"
 #include "PropInspector.h"
 #include "PublishManager.h"
-#include "Thumbnail.h"
 #include "ToolKit.h"
 #include "Workspace.h"
+#include "Thumbnail.h"
 
 #include <memory>
 #include <unordered_map>
@@ -198,10 +198,10 @@ namespace ToolKit
       Workspace m_workspace;
 
       // Snap settings.
-      bool m_snapsEnabled  = false; // Delta transforms.
-      float m_moveDelta    = 0.25f;
-      float m_rotateDelta  = 15.0f;
-      float m_scaleDelta   = 0.5f;
+      bool m_snapsEnabled = false; // Delta transforms.
+      float m_moveDelta   = 0.25f;
+      float m_rotateDelta = 15.0f;
+      float m_scaleDelta  = 0.5f;
       bool m_windowCamLoad = true;
 
      private:

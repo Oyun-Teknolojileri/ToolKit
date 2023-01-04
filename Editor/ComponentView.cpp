@@ -52,7 +52,7 @@ namespace ToolKit
 
         if (UI::BeginCenteredTextButton("Update"))
         {
-          mmComp->UpdateMaterialList();
+          mmComp->UpdateMaterialList(mmComp->m_entity->GetMeshComponent());
         }
         UI::EndCenteredTextButton();
         ImGui::SameLine();
@@ -477,7 +477,7 @@ namespace ToolKit
             case 6:
             {
               MultiMaterialComponent* mmComp = new MultiMaterialComponent;
-              mmComp->UpdateMaterialList();
+              mmComp->UpdateMaterialList(m_entity->GetMeshComponent());
               newComponent = mmComp;
             }
             break;

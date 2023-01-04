@@ -84,9 +84,9 @@ namespace ToolKit
     uint m_size = 1024;
 
    private:
-    CubeMapPtr m_skyboxMap     = nullptr;
-    CubeMapPtr m_irradianceMap = nullptr;
-    bool m_onInit              = false;
+    CubeMapPtr m_skyboxMap                  = nullptr;
+    CubeMapPtr m_irradianceMap              = nullptr;
+    bool m_onInit                           = false;
   };
 
 } // namespace ToolKit

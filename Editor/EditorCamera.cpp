@@ -22,7 +22,10 @@ namespace ToolKit
       CreateGizmo();
     }
 
-    EditorCamera::EditorCamera(const EditorCamera* cam) { cam->CopyTo(this); }
+    EditorCamera::EditorCamera(const EditorCamera* cam) 
+    { 
+      cam->CopyTo(this); 
+    }
 
     EditorCamera::~EditorCamera() {}
 

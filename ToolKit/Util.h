@@ -70,8 +70,8 @@ namespace ToolKit
   TK_API bool IsDefaultResource(const String& path);
 
   /**
-   * Extracts the file name with the extension from a path.
-   */
+  * Extracts the file name with the extension from a path.
+  */
   TK_API String GetFileName(const String& path);
 
   enum class ResourceType;

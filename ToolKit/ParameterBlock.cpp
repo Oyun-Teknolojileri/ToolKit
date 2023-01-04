@@ -96,7 +96,7 @@ namespace ToolKit
 
   ParameterVariant::ParameterVariant(const VariantCallback& var)
   {
-    *this = var;
+    *this  = var;
   }
 
   ParameterVariant::VariantType ParameterVariant::GetType() const

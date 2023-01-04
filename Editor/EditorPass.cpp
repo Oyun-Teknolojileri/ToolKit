@@ -436,14 +436,12 @@ namespace ToolKit
 
     void SingleMatForwardRenderPass::Render()
     {
-      EntityRawPtrArray opaqueDrawList;
       EntityRawPtrArray translucentDrawList;
       SeperateTranslucentEntities(m_params.ForwardParams.Entities,
-                                  opaqueDrawList,
                                   translucentDrawList);
 
       Renderer* renderer = GetRenderer();
-      for (Entity* ntt : opaqueDrawList)
+      for (Entity* ntt : m_params.ForwardParams.Entities)
       {
         LightRawPtrArray lightList = m_params.ForwardParams.Lights;
         ForwardRenderPass::CullLightList(ntt, lightList);

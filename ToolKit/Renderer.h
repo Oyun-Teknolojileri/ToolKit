@@ -120,8 +120,7 @@ namespace ToolKit
     // handling thumbnail render.
     void Render(Entity* ntt,
                 Camera* cam,
-                const LightRawPtrArray& editorLights = LightRawPtrArray(),
-                const UIntArray& meshIndices         = {});
+                const LightRawPtrArray& editorLights = LightRawPtrArray());
 
     void Apply7x1GaussianBlur(const TexturePtr source,
                               RenderTargetPtr dest,

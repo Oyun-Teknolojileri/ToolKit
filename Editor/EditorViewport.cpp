@@ -844,8 +844,8 @@ namespace ToolKit
         }
 
         MultiMaterialPtr matComp = std::make_shared<MultiMaterialComponent>();
+        matComp->UpdateMaterialList((*dwMesh)->GetMeshComponent());
         (*dwMesh)->AddComponent(matComp);
-        matComp->UpdateMaterialList();
 
         // Load bounding box once
         *boundingBox = CreateBoundingBoxDebugObject((*dwMesh)->GetAABB(true));

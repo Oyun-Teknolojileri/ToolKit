@@ -26,10 +26,10 @@ namespace ToolKit
   // Create a texture such that there is mat4x4 per bone
   TexturePtr CreateBoneTransformTexture(const Skeleton* skeleton)
   {
-    TexturePtr ptr = std::make_shared<Texture>();
-    ptr->m_height  = 1;
-    ptr->m_width   = static_cast<int>(skeleton->m_bones.size()) * 4;
-    ptr->m_name    = skeleton->m_name + " BindPoseTexture";
+    TexturePtr ptr     = std::make_shared<Texture>();
+    ptr->m_height      = 1;
+    ptr->m_width       = static_cast<int>(skeleton->m_bones.size()) * 4;
+    ptr->m_name        = skeleton->m_name + " BindPoseTexture";
 
     glGenTextures(1, &ptr->m_textureId);
     glBindTexture(GL_TEXTURE_2D, ptr->m_textureId);

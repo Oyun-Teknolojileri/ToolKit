@@ -37,7 +37,7 @@ namespace ToolKit
     COLOR_ALPHA,
     USE_AO,
     IBL_ROTATION,
-    UNUSEDSLOT_2, // Lighting Only
+    UNUSEDSLOT_2, //Lighting Only
     USE_ALPHA_MASK,
     ALPHA_MASK_TRESHOLD,
     USE_FORWARD_PATH,
