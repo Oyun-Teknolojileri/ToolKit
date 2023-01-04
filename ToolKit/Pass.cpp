@@ -708,7 +708,6 @@ namespace ToolKit
 
       if (!m_shadowFramebuffer->Initialized())
       {
-        // TODO: Msaa is good for variance shadow mapping.
         m_shadowFramebuffer->Init(
             {Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
              Renderer::m_rhiSettings::g_shadowAtlasTextureSize,

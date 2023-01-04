@@ -391,9 +391,9 @@ namespace ToolKit
 
     // TODO since there is a "update ibl" button, we can make these parameter
     // variant
-    // TODO Pre-filtered and mip mapped environment map
     const int prefilteredEnvMapSize =
-        128; // TODO member variable or parameter variant
+        512; // TODO member variable or parameter variant
+    // Pre-filtered and mip mapped environment map
     m_prefilteredEnvMap = GetRenderer()->GenerateEnvPrefilteredMap(
         m_cubemap,
         prefilteredEnvMapSize,
