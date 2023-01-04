@@ -137,9 +137,11 @@ namespace ToolKit
     // Give blended entities to forward render, non-blendeds to deferred
     // render
 
-    EntityRawPtrArray opaqueDrawList = m_params.Scene->GetEntities();
+    EntityRawPtrArray allDrawList   = m_params.Scene->GetEntities();
+    EntityRawPtrArray opaqueDrawList;
     EntityRawPtrArray translucentAndUnlitDrawList;
     m_forwardRenderPass->SeperateTranslucentAndUnlitEntities(
+        allDrawList,
         opaqueDrawList,
         translucentAndUnlitDrawList);
 

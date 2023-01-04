@@ -439,18 +439,25 @@ namespace ToolKit
     return materials;
   }
 
-  void MultiMaterialComponent::UpdateMaterialList(MeshComponentPtr meshComp)
+  void MultiMaterialComponent::UpdateMaterialList()
   {
-    if (meshComp == nullptr || meshComp->GetMeshVal() == nullptr)
+    materials.clear();
+    MeshComponentPtrArray meshComps;
+    m_entity->GetComponent<MeshComponent>(meshComps);
+
+    for (MeshComponentPtr meshComp : meshComps)
     {
-      return;
-    }
-    MeshRawPtrArray meshCollector;
-    meshComp->GetMeshVal()->GetAllMeshes(meshCollector);
-    materials.resize(meshCollector.size());
-    for (uint i = 0; i < meshCollector.size(); i++)
-    {
-      materials[i] = meshCollector[i]->m_material;
+      if (meshComp == nullptr || meshComp->GetMeshVal() == nullptr)
+      {
+        continue;
+      }
+      MeshRawPtrArray meshCollector;
+      meshComp->GetMeshVal()->GetAllMeshes(meshCollector);
+
+      for (uint i = 0; i < meshCollector.size(); i++)
+      {
+        materials.push_back(meshCollector[i]->m_material);
+      }
     }
   }
 

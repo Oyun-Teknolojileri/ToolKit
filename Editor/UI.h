@@ -216,7 +216,7 @@ namespace ToolKit
 
       struct AnchorPresetImages
       {
-        static const uint presetCount      = 16;
+        static const uint presetCount          = 16;
         const char* m_presetNames[presetCount] = {"Top Left",
                                                   "Top Middle",
                                                   "Top Right",

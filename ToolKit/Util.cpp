@@ -394,8 +394,8 @@ namespace ToolKit
     return path;
   }
 
-  TK_API bool IsDefaultResource(const String& path) 
-  { 
+  TK_API bool IsDefaultResource(const String& path)
+  {
     if (path._Starts_with("ToolKit"))
     {
       return true;
@@ -407,7 +407,7 @@ namespace ToolKit
       return true;
     }
 
-    return false; 
+    return false;
   }
 
   String GetFileName(const String& path)

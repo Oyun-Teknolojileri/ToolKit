@@ -203,7 +203,8 @@ namespace ToolKit
 
   void Renderer::Render(Entity* ntt,
                         Camera* cam,
-                        const LightRawPtrArray& lights)
+                        const LightRawPtrArray& lights,
+                        const UIntArray& meshIndices)
   {
     if (!cam->IsOrtographic())
     {
@@ -253,6 +254,7 @@ namespace ToolKit
 
     updateAndBindSkinningTextures();
 
+    uint entityMeshIndex = 0, meshIndicesIterator = 0;
     for (MeshComponentPtr meshCom : meshComponents)
     {
       MeshPtr mainMesh = meshCom->GetMeshVal();
@@ -265,8 +267,21 @@ namespace ToolKit
       MeshRawPtrArray meshCollector;
       mainMesh->GetAllMeshes(meshCollector);
 
-      for (uint meshIndx = 0; meshIndx < meshCollector.size(); meshIndx++)
+      for (uint meshIndx = 0; meshIndx < meshCollector.size();
+           meshIndx++, entityMeshIndex++)
       {
+        if (meshIndices.size())
+        {
+          if (meshIndicesIterator >= meshIndices.size() ||
+              entityMeshIndex != meshIndices[meshIndicesIterator])
+          {
+            continue;
+          }
+          else
+          {
+            meshIndicesIterator++;
+          }
+        }
         Mesh* mesh = meshCollector[meshIndx];
 
         if (mesh->m_vertexCount == 0)
@@ -274,9 +289,9 @@ namespace ToolKit
           continue;
         }
 
-        if (mmComp && mmComp->GetMaterialList().size() > meshIndx)
+        if (mmComp && mmComp->GetMaterialList().size() > entityMeshIndex)
         {
-          nttMat = mmComp->GetMaterialList()[meshIndx];
+          nttMat = mmComp->GetMaterialList()[entityMeshIndex];
         }
         mesh->Init();
         if (m_overrideMat != nullptr)
@@ -431,6 +446,12 @@ namespace ToolKit
       glDepthFunc((int) state->depthFunction);
     }
 
+    if (m_renderState.depthWriteEnabled != state->depthWriteEnabled)
+    {
+      glDepthMask(state->depthWriteEnabled);
+      m_renderState.depthWriteEnabled = state->depthWriteEnabled;
+    }
+
     if (m_renderState.blendFunction != state->blendFunction)
     {
       switch (state->blendFunction)
@@ -460,11 +481,10 @@ namespace ToolKit
 
     m_renderState.alphaMaskTreshold = state->alphaMaskTreshold;
 
-    bool diffuseTexture = !state->isColorMaterial && state->diffuseTextureInUse;
-    if (diffuseTexture)
+    if (m_mat->m_diffuseTexture)
     {
-      m_renderState.diffuseTexture = state->diffuseTexture;
-      SetTexture(0, state->diffuseTexture);
+
+      SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
     }
 
     if (state->cubeMapInUse)
@@ -480,11 +500,9 @@ namespace ToolKit
       glLineWidth(m_renderState.lineWidth);
     }
 
-    m_renderState.emissiveTextureInUse = state->emissiveTextureInUse;
-    if (m_renderState.emissiveTextureInUse)
+    if (m_mat->m_emissiveTexture)
     {
-      m_renderState.emissiveTexture = state->diffuseTexture;
-      SetTexture(1, state->emissiveTexture);
+      SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
     }
 
     if (m_mat->m_metallicRoughnessTexture)
@@ -909,7 +927,7 @@ namespace ToolKit
       m_gaussianBlurMaterial                   = std::make_shared<Material>();
       m_gaussianBlurMaterial->m_vertexShader   = vert;
       m_gaussianBlurMaterial->m_fragmentShader = frag;
-      m_gaussianBlurMaterial->GetRenderState()->isColorMaterial = false;
+      m_gaussianBlurMaterial->m_diffuseTexture = nullptr;
     }
 
     m_gaussianBlurMaterial->UnInit();
@@ -943,7 +961,7 @@ namespace ToolKit
       m_averageBlurMaterial                   = std::make_shared<Material>();
       m_averageBlurMaterial->m_vertexShader   = vert;
       m_averageBlurMaterial->m_fragmentShader = frag;
-      m_averageBlurMaterial->GetRenderState()->isColorMaterial = false;
+      m_averageBlurMaterial->m_diffuseTexture = nullptr;
     }
 
     m_averageBlurMaterial->UnInit();
@@ -1206,7 +1224,7 @@ namespace ToolKit
           GLint loc = glGetUniformLocation(
               program->m_handle,
               GetUniformName(Uniform::DIFFUSE_TEXTURE_IN_USE));
-          int v = (int) !(m_mat->GetRenderState()->isColorMaterial);
+          int v = (int) (m_mat->m_diffuseTexture != nullptr);
           if (m_renderOnlyLighting)
           {
             v = false;
@@ -1272,7 +1290,8 @@ namespace ToolKit
           GLint loc = glGetUniformLocation(
               program->m_handle,
               GetUniformName(Uniform::EMISSIVE_TEXTURE_IN_USE));
-          glUniform1i(loc, m_renderState.emissiveTextureInUse);
+          int v = (int) (m_mat->m_emissiveTexture != nullptr);
+          glUniform1i(loc, v);
         }
         break;
         case Uniform::USE_FORWARD_PATH:

@@ -162,10 +162,7 @@ namespace ToolKit
 
   Logger* GetLogger() { return Main::GetInstance()->m_logger; }
 
-  RenderSystem* GetRenderSystem()
-  {
-    return Main::GetInstance()->m_renderSys;
-  }
+  RenderSystem* GetRenderSystem() { return Main::GetInstance()->m_renderSys; }
 
   AnimationManager* GetAnimationManager()
   {
