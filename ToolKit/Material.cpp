@@ -76,9 +76,10 @@ namespace ToolKit
         m_metallicRoughnessTexture->UnInit();
         TextureSettings set;
         set.InternalFormat = GraphicTypes::FormatRG8;
+        set.Format         = GraphicTypes::FormatRG;
         set.MinFilter      = GraphicTypes::SampleNearest;
-        set.MagFilter      = GraphicTypes::SampleNearest;
         set.Type           = GraphicTypes::TypeUnsignedByte;
+        set.GenerateMipMap = false;
         m_metallicRoughnessTexture->SetTextureSettings(set);
       }
 
@@ -93,9 +94,10 @@ namespace ToolKit
         m_normalMap->UnInit();
         TextureSettings set;
         set.InternalFormat = GraphicTypes::FormatRGB8;
+        set.Format         = GraphicTypes::FormatRGB;
         set.MinFilter      = GraphicTypes::SampleNearest;
-        set.MagFilter      = GraphicTypes::SampleNearest;
         set.Type           = GraphicTypes::TypeUnsignedByte;
+        set.GenerateMipMap = false;
         m_normalMap->SetTextureSettings(set);
       }
 

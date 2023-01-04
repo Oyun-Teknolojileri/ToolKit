@@ -11,11 +11,11 @@ namespace ToolKit
   struct TextureSettings
   {
     GraphicTypes MinFilter       = GraphicTypes::SampleLinear;
-    GraphicTypes MagFilter       = GraphicTypes::SampleLinear;
     GraphicTypes InternalFormat  = GraphicTypes::FormatSRGB8_A8;
+    GraphicTypes Format          = GraphicTypes::FormatRGBA;
     GraphicTypes Type            = GraphicTypes::TypeUnsignedByte;
     GraphicTypes MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
-    GraphicTypes MipMapMagFilter = GraphicTypes::SampleLinearMipmapLinear;
+    bool GenerateMipMap          = true;
   };
 
   class TK_API Texture : public Resource
@@ -86,15 +86,25 @@ namespace ToolKit
 
     bool IsTextureAssigned();
 
+   protected:
+    void GeneratePrefilteredEnvMap();
+
    public:
     CubeMapPtr m_cubemap           = nullptr;
+    CubeMapPtr m_prefilteredEnvMap = nullptr;
     CubeMapPtr m_irradianceCubemap = nullptr;
+    RenderTargetPtr m_brdfLut      = nullptr;
     float m_exposure               = 1.0f;
 
    protected:
-    MaterialPtr m_texToCubemapMat           = nullptr;
-    MaterialPtr m_cubemapToIrradiancemapMat = nullptr;
-    TexturePtr m_equirectangularTexture     = nullptr;
+    MaterialPtr m_texToCubemapMat                  = nullptr;
+    MaterialPtr m_cubemapToIrradiancemapMat        = nullptr;
+    TexturePtr m_equirectangularTexture            = nullptr;
+    std::shared_ptr<class FullQuadPass> m_quadPass = nullptr;
+
+    // Use only Color Attachment 0, so we do not need to re-init the framebuffer
+    // every time we change the size or the attachment.
+    FramebufferPtr m_utilFramebuffer               = nullptr;
   };
 
   struct RenderTargetSettigs

@@ -92,9 +92,14 @@ namespace ToolKit
                                             uint height,
                                             float exposure = 1.0f);
 
-    CubeMapPtr GenerateIrradianceCubemap(CubeMapPtr cubemap,
+    CubeMapPtr GenerateEnvPrefilteredMap(CubeMapPtr cubemap,
                                          uint width,
-                                         uint height);
+                                         uint height,
+                                         int mipMaps);
+
+    CubeMapPtr GenerateEnvIrradianceMap(CubeMapPtr cubemap,
+                                        uint width,
+                                        uint height);
 
     void CopyTexture(TexturePtr source, TexturePtr dest);
 
@@ -178,12 +183,14 @@ namespace ToolKit
 
     typedef struct RHIConstants
     {
-      static constexpr ubyte textureSlotCount       = 16;
+      static constexpr ubyte textureSlotCount       = 32;
 
       static constexpr size_t maxLightsPerObject    = 16;
 
       static constexpr int shadowAtlasSlot          = 8;
       static constexpr int g_shadowAtlasTextureSize = 4096;
+
+      static constexpr int specularIBLLods          = 5;
     } m_rhiSettings;
 
     static constexpr float g_shadowBiasMultiplier = 0.0001f;
@@ -213,6 +220,7 @@ namespace ToolKit
     /**
      * Temporary frame buffer to use in various operation. Don't rely on its
      * sate or use it to cache state.
+     * Only use ColorAttachment 0 and do not init with depth buffer.
      */
     FramebufferPtr m_utilFramebuffer   = nullptr;
     MaterialPtr m_gaussianBlurMaterial = nullptr;

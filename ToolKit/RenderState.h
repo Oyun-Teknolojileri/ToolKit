@@ -61,6 +61,8 @@ namespace ToolKit
 
     float iblIntensity          = 0.25f;
     uint irradianceMap          = 0;
+    uint preFilteredSpecularMap = 0;
+    uint brdfLut                = 0;
     bool AOInUse                = true;
     int priority = 0; // The higher the priority, the earlier to draw.
     bool useForwardPath =

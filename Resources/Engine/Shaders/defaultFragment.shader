@@ -120,11 +120,11 @@
 
 			if (lightingType == 0)
 			{
-				irradiance += IblIrradiance(n);
+				irradiance += IBLPhong(n);
 			}
 			else
 			{
-				irradiance += IBLIrradiancePBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
+				irradiance += IBLPBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
 			}
 
 			// float ambientOcclusion = AmbientOcclusion();

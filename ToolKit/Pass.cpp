@@ -755,6 +755,7 @@ namespace ToolKit
         m_shadowFramebuffer->SetAttachment(
             Framebuffer::Attachment::ColorAttachment0,
             m_shadowAtlas,
+            0,
             light->m_shadowAtlasLayer + i);
 
         // Clear the layer if needed
@@ -793,6 +794,7 @@ namespace ToolKit
       m_shadowFramebuffer->SetAttachment(
           Framebuffer::Attachment::ColorAttachment0,
           m_shadowAtlas,
+          0,
           light->m_shadowAtlasLayer);
 
       // Clear the layer if needed
@@ -965,7 +967,6 @@ namespace ToolKit
 
       if (!m_shadowFramebuffer->Initialized())
       {
-        // TODO: Msaa is good for variance shadow mapping.
         m_shadowFramebuffer->Init(
             {Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
              Renderer::m_rhiSettings::g_shadowAtlasTextureSize,
