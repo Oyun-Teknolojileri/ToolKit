@@ -1,5 +1,7 @@
 <shader>
 	<type name = "fragmentShader" />
+	<include name = "camera.shader" />
+	<include name = "ibl.shader" />
 	<uniform name = "DiffuseTextureInUse" />
 	<uniform name = "Color" />
 	<uniform name = "useAlphaMask" />
@@ -11,6 +13,7 @@
 	<uniform name = "metallic" />
 	<uniform name = "roughness" />
   <uniform name = "normalMapInUse" />
+	<uniform name = "lightingType" />
 	<source>
 	<!--
 		#version 300 es
@@ -27,6 +30,7 @@
 		layout (location = 3) out vec3 fragEmissive;
 		layout (location = 4) out float fragLinearDepth;
 		layout (location = 5) out vec2 fragMetallicRoughess;
+		layout (location = 6) out vec3 fragIbl;
 
 		uniform int DiffuseTextureInUse;
 		uniform sampler2D s_texture0; // color
@@ -47,6 +51,8 @@
 		uniform int normalMapInUse;
 
 		uniform mat4 View;
+
+		uniform int lightingType;
 
 		void main()
 		{
@@ -92,16 +98,24 @@
 			fragColor = color.xyz;
 			fragLinearDepth = (View * vec4(v_pos, 1.0)).z;
 
-			vec2 metallicRoughness;
 			if (metallicRoughnessTextureInUse == 1)
 			{
-				metallicRoughness = texture(s_texture4, v_texture).rg;
+				fragMetallicRoughess = texture(s_texture4, v_texture).rg;
 			}
 			else
 			{
-				metallicRoughness = vec2(metallic, roughness);
+				fragMetallicRoughess = vec2(metallic, roughness);
 			}
-			fragMetallicRoughess = metallicRoughness;
+
+			vec3 fragToEye = normalize(CamData.pos - v_pos);
+			if (lightingType == 0) // phong
+			{
+				fragIbl = IBLPhong(fragNormal);
+			}
+			else // pbr
+			{
+				fragIbl = IBLPBR(fragNormal, fragToEye, fragColor.xyz, fragMetallicRoughess.x, fragMetallicRoughess.y);
+			}
 		}
 	-->
 	</source>

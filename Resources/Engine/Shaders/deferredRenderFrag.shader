@@ -1,7 +1,6 @@
 <shader>
 	<type name = "fragmentShader" />
 	<include name = "lighting.shader" />
-	<include name = "ibl.shader" />
 	<include name = "AO.shader" />
 	<uniform name = "lightingType" />
 	<source>
@@ -19,6 +18,8 @@
 		uniform sampler2D s_texture12;
 		// Metallic roughness buffer
 		uniform sampler2D s_texture14;
+		// ibl buffer
+		uniform sampler2D s_texture16;
 
 		uniform int aoEnabled;
 
@@ -43,6 +44,7 @@
 			vec3 color = texture(s_texture11, texCoord).rgb;
 			vec2 metallicRoughness = texture(s_texture14, texCoord).rg;
 			vec3 emissive = texture(s_texture12, texCoord).rgb;
+			vec3 ibl = texture(s_texture16, texCoord).rgb;
 
 			vec3 n = normalize(normal);
 			vec3 e = normalize(camPos - position);
@@ -68,14 +70,7 @@
 				ambientOcclusion = 1.0;
 			}
 
-			if (lightingType == 0)
-			{
-				irradiance += IBLPhong(n);
-			}
-			else
-			{
-				irradiance += IBLPBR(n, e, color.xyz, metallicRoughness.x, metallicRoughness.y);
-			}
+			irradiance += ibl;
 
 			fragColor = vec4(irradiance * ambientOcclusion, 1.0) + vec4(emissive, 0.0f);
 		}
