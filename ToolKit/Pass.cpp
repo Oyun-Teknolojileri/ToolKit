@@ -412,9 +412,6 @@ namespace ToolKit
 
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
     renderer->SetCameraLens(m_camera);
-
-    // Gather volumes.
-    renderer->CollectEnvironmentVolumes(m_drawList);
   }
 
   void ForwardRenderPass::PostRender() { Pass::PostRender(); }
