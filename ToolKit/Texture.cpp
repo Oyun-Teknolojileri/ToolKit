@@ -98,7 +98,7 @@ namespace ToolKit
                    m_width,
                    m_height,
                    0,
-                   (GLint) m_textureSettings.Format,
+                   GL_RGBA,
                    GL_UNSIGNED_BYTE,
                    m_image);
     }
@@ -110,7 +110,7 @@ namespace ToolKit
                    m_width,
                    m_height,
                    0,
-                   (GLint) m_textureSettings.Format,
+                   GL_RGB,
                    GL_FLOAT,
                    m_imagef);
     }
@@ -332,7 +332,6 @@ namespace ToolKit
   Hdri::Hdri()
   {
     m_textureSettings.InternalFormat  = GraphicTypes::FormatRGB32F;
-    m_textureSettings.Format          = GraphicTypes::FormatRGB;
     m_textureSettings.Type            = GraphicTypes::TypeFloat;
     m_textureSettings.MinFilter       = GraphicTypes::SampleLinear;
     m_textureSettings.MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
