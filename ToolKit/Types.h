@@ -278,6 +278,7 @@ namespace ToolKit
     SampleLinear               = 0x2601,
     SampleNearestMipmapNearest = 0x2700,
     SampleLinearMipmapLinear   = 0x2703,
+    SampleLinearMipmapNearest  = 0x2701,
     DrawTypeTriangle           = 0x0004,
     DrawTypeLines              = 0x0001,
     DrawTypeLineStrip          = 0x0003,
