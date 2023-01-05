@@ -1717,12 +1717,12 @@ namespace ToolKit
         ShaderPath("equirectToCubeVert.shader", true));
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("equirectToCubeFrag.shader", true));
-    frag->m_shaderParams["Exposure"]       = exposure;
+    frag->m_shaderParams["Exposure"] = exposure;
 
-    mat->m_diffuseTexture                  = texture;
-    mat->m_vertexShader                    = vert;
-    mat->m_fragmentShader                  = frag;
-    mat->GetRenderState()->cullMode        = CullingType::TwoSided;
+    mat->m_diffuseTexture            = texture;
+    mat->m_vertexShader              = vert;
+    mat->m_fragmentShader            = frag;
+    mat->GetRenderState()->cullMode  = CullingType::TwoSided;
     mat->Init();
 
     m_utilFramebuffer->UnInit();
@@ -1806,10 +1806,10 @@ namespace ToolKit
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("irradianceGenerateFrag.shader", true));
 
-    mat->m_cubeMap                         = cubemap;
-    mat->m_vertexShader                    = vert;
-    mat->m_fragmentShader                  = frag;
-    mat->GetRenderState()->cullMode        = CullingType::TwoSided;
+    mat->m_cubeMap                  = cubemap;
+    mat->m_vertexShader             = vert;
+    mat->m_fragmentShader           = frag;
+    mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
     m_utilFramebuffer->UnInit();
@@ -1851,23 +1851,26 @@ namespace ToolKit
                                                  uint height,
                                                  int mipMaps)
   {
-    const RenderTargetSettigs set = {
-        0,
-        GraphicTypes::TargetCubeMap,
-        GraphicTypes::UVClampToEdge,
-        GraphicTypes::UVClampToEdge,
-        GraphicTypes::UVClampToEdge,
-        GraphicTypes::SampleNearest, // GraphicTypes::SampleLinear,
-        GraphicTypes::SampleNearest, // GraphicTypes::SampleLinear,
-        GraphicTypes::FormatRGB16F,
-        GraphicTypes::FormatRGB,
-        GraphicTypes::TypeFloat};
+    const RenderTargetSettigs set = {0,
+                                     GraphicTypes::TargetCubeMap,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::UVClampToEdge,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::SampleLinear,
+                                     GraphicTypes::FormatRGB16F,
+                                     GraphicTypes::FormatRGB,
+                                     GraphicTypes::TypeFloat};
     RenderTargetPtr cubemapRt =
         std::make_shared<RenderTarget>(width, height, set);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
     cubemapRt->Init();
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP,
+                    GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_NEAREST);
 
     // Views for 6 different angles
     CameraPtr cam = std::make_shared<Camera>();
@@ -1887,10 +1890,10 @@ namespace ToolKit
     ShaderPtr frag = GetShaderManager()->Create<Shader>(
         ShaderPath("preFilterEnvMapFrag.shader", true));
 
-    mat->m_cubeMap                         = cubemap;
-    mat->m_vertexShader                    = vert;
-    mat->m_fragmentShader                  = frag;
-    mat->GetRenderState()->cullMode        = CullingType::TwoSided;
+    mat->m_cubeMap                  = cubemap;
+    mat->m_vertexShader             = vert;
+    mat->m_fragmentShader           = frag;
+    mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
     // No need to re init framebuffer since m_util framebuffer has only 1
