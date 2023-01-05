@@ -111,7 +111,6 @@ namespace ToolKit
         {
           TextureSettings ts;
           ts.InternalFormat = GraphicTypes::FormatRGB16F;
-          ts.Format         = GraphicTypes::FormatRGB;
           ts.GenerateMipMap = false;
           texture           = std::make_shared<Texture>(fullpath, ts);
           texture->Load();
