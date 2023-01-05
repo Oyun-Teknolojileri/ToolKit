@@ -12,7 +12,6 @@ namespace ToolKit
   {
     GraphicTypes MinFilter       = GraphicTypes::SampleLinear;
     GraphicTypes InternalFormat  = GraphicTypes::FormatSRGB8_A8;
-    GraphicTypes Format          = GraphicTypes::FormatRGBA;
     GraphicTypes Type            = GraphicTypes::TypeUnsignedByte;
     GraphicTypes MipMapMinFilter = GraphicTypes::SampleLinearMipmapLinear;
     bool GenerateMipMap          = true;
