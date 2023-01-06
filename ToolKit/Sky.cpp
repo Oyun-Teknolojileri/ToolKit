@@ -54,7 +54,7 @@ namespace ToolKit
   {
     DrawSky_Define(true, "Sky", 90, true, true);
     Illuminate_Define(true, "Sky", 90, true, true);
-    Intensity_Define(0.25f,
+    Intensity_Define(1.0f,
                      "Sky",
                      90,
                      true,

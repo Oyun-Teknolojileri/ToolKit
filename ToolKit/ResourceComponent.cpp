@@ -112,12 +112,12 @@ namespace ToolKit
                 true,
                 true);
 
-    PositionOffset_Define(Vec3(-4.0f),
+    PositionOffset_Define(Vec3(0.0f),
                           EnvironmentComponentCategory.Name,
                           EnvironmentComponentCategory.Priority,
                           true,
                           true,
-                          {false, true, 0.0f, 100000.0f, 0.5f});
+                          {false, true, -FLT_MAX, FLT_MAX, 0.5f});
 
     Size_Define(Vec3(8.0f),
                 EnvironmentComponentCategory.Name,
@@ -132,7 +132,7 @@ namespace ToolKit
                       true,
                       true);
 
-    Intensity_Define(0.25f,
+    Intensity_Define(1.0f,
                      EnvironmentComponentCategory.Name,
                      EnvironmentComponentCategory.Priority,
                      true,
@@ -191,11 +191,10 @@ namespace ToolKit
     BoundingBox aabb;
     if (m_entity != nullptr)
     {
-      static Vec3 pos;
-      pos = m_entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+      pos += m_entity->m_node->GetTranslation(TransformationSpace::TS_WORLD);
     }
-    aabb.min = GetPositionOffsetVal() + pos;
-    aabb.max = GetPositionOffsetVal() + GetSizeVal() + pos;
+    aabb.min = GetPositionOffsetVal() + pos - GetSizeVal() * 0.5f;
+    aabb.max = GetPositionOffsetVal() + pos + GetSizeVal() * 0.5f;
     return aabb;
   }
 
