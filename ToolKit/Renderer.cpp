@@ -869,7 +869,8 @@ namespace ToolKit
       CubeMapPtr irradianceCubemap = envCom->GetHdriVal()->m_irradianceCubemap;
       CubeMapPtr preFilteredSpecularIBLMap =
           envCom->GetHdriVal()->m_prefilteredEnvMap;
-      RenderTargetPtr brdfLut = envCom->GetHdriVal()->m_brdfLut;
+      RenderTargetPtr brdfLut =
+          GetTextureManager()->Create<RenderTarget>("GLOBAL_BRDF_LUT_TEXTURE");
       if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
       {
         mat->GetRenderState()->irradianceMap = irradianceCubemap->m_textureId;
@@ -899,10 +900,8 @@ namespace ToolKit
                   ->GetComponent<EnvironmentComponent>()
                   ->GetHdriVal()
                   ->m_prefilteredEnvMap;
-          RenderTargetPtr brdfLut = static_cast<Sky*>(m_sky)
-                                        ->GetComponent<EnvironmentComponent>()
-                                        ->GetHdriVal()
-                                        ->m_brdfLut;
+          RenderTargetPtr brdfLut = GetTextureManager()->Create<RenderTarget>(
+              "GLOBAL_BRDF_LUT_TEXTURE");
           if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
           {
             mat->GetRenderState()->irradianceMap =
