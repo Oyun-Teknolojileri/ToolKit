@@ -65,7 +65,10 @@ namespace ToolKit
     }
     else
     {
-      MeshComponentPtrArray meshCmps;
+      static MeshComponentPtrArray meshCmps;
+      meshCmps.reserve(20);
+      meshCmps.clear();
+
       GetComponent<MeshComponent>(meshCmps);
 
       if (meshCmps.empty())
@@ -79,7 +82,8 @@ namespace ToolKit
         BoundingBox cmpAABB;
         for (MeshComponentPtr& cmp : meshCmps)
         {
-          cmpAABB = cmp->GetAABB();
+          cmpAABB = std::move(cmp->GetAABB());
+
           aabb.UpdateBoundary(cmpAABB.max);
           aabb.UpdateBoundary(cmpAABB.min);
         }

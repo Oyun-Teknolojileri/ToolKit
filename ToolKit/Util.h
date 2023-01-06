@@ -120,6 +120,8 @@ namespace ToolKit
   TK_API bool Utf8CaseInsensitiveSearch(const String& text,
                                         const String& search);
 
+  TK_API bool StartsWith(const String& str, const String& prefix);
+
   // Debug geometries.
   ///////////////////////////////////////////////////////
   class LineBatch;

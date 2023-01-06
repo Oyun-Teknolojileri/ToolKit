@@ -394,15 +394,15 @@ namespace ToolKit
     return path;
   }
 
-  TK_API bool IsDefaultResource(const String& path)
+  bool IsDefaultResource(const String& path)
   {
-    if (path._Starts_with("ToolKit"))
+    if (StartsWith(path, "ToolKit"))
     {
       return true;
     }
 
     static const String defPath = DefaultPath();
-    if (path._Starts_with(defPath))
+    if (StartsWith(path, defPath))
     {
       return true;
     }
@@ -762,6 +762,11 @@ namespace ToolKit
     {
       return false;
     }
+  }
+
+  bool StartsWith(const String& str, const String& prefix)
+  {
+    return str.rfind(prefix, 0) == 0;
   }
 
   String Format(const char* msg, ...)

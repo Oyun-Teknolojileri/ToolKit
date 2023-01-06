@@ -144,11 +144,13 @@ namespace ToolKit
     template <typename T>
     void GetComponent(std::vector<std::shared_ptr<T>>& components) const
     {
-      for (const ComponentPtr& com : GetComponentPtrArray())
+      const ComponentPtrArray& cptrArray = GetComponentPtrArray();
+      for (const ComponentPtr& com : cptrArray)
       {
         if (com->GetType() == T::GetTypeStatic())
         {
-          components.push_back(std::static_pointer_cast<T>(com));
+          std::shared_ptr<T> ptr = std::static_pointer_cast<T>(com); 
+          components.push_back(ptr);
         }
       }
     }

@@ -40,20 +40,26 @@ namespace ToolKit
 
   BoundingBox MeshComponent::GetAABB()
   {
-    SkeletonComponentPtr skelComp = m_entity->GetComponent<SkeletonComponent>();
-    if (skelComp && GetMeshVal()->IsSkinned())
+    MeshPtr mesh = GetMeshVal();
+    if (mesh->IsSkinned())
     {
-      SkinMesh* skinMesh = (SkinMesh*) GetMeshVal().get();
-      if (skelComp->isDirty)
+      if (SkeletonComponentPtr skelComp =
+              m_entity->GetComponent<SkeletonComponent>())
       {
-        m_aabb =
-            skinMesh->CalculateAABB(skelComp->GetSkeletonResourceVal().get(),
-                                    skelComp->m_map);
-        skelComp->isDirty = false;
+        SkinMesh* skinMesh = (SkinMesh*) mesh.get();
+        if (skelComp->isDirty)
+        {
+          m_aabb =
+              skinMesh->CalculateAABB(skelComp->GetSkeletonResourceVal().get(),
+                                      skelComp->m_map);
+          
+          skelComp->isDirty = false;
+          return m_aabb;
+        }
       }
-      return m_aabb;
     }
-    return GetMeshVal()->m_aabb;
+
+    return mesh->m_aabb;
   }
 
   void MeshComponent::Init(bool flushClientSideArray)

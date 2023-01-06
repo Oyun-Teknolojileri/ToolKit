@@ -334,7 +334,7 @@ namespace ToolKit
      * variant.
      */
     template <typename T>
-    T& GetVar()
+    inline T& GetVar()
     {
       return std::get<T>(m_var);
     }
@@ -345,7 +345,7 @@ namespace ToolKit
      * @return const reference to the value of variant.
      */
     template <typename T>
-    const T& GetCVar() const
+    inline const T& GetCVar() const
     {
       return std::get<T>(m_var);
     }
@@ -355,7 +355,7 @@ namespace ToolKit
      * @return A pointer to the value of the variant.
      */
     template <typename T>
-    T* GetVarPtr()
+    inline T* GetVarPtr()
     {
       return &std::get<T>(m_var);
     }

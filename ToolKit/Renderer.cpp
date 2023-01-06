@@ -55,7 +55,9 @@ namespace ToolKit
     }
 
     // Add the lights inside of the radius first
-    std::vector<LightSortStruct> intersectCounts(lights.size());
+    std::vector<LightSortStruct> intersectCounts;
+    intersectCounts.reserve(lights.size());
+
     BoundingBox aabb = entity->GetAABB(true);
     for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
     {
@@ -212,7 +214,10 @@ namespace ToolKit
       FindEnvironmentLight(ntt);
     }
 
-    MeshComponentPtrArray meshComponents;
+    static MeshComponentPtrArray meshComponents;
+    meshComponents.reserve(20);
+    meshComponents.clear();
+
     ntt->GetComponent<MeshComponent>(meshComponents);
 
     MaterialPtr nttMat;
