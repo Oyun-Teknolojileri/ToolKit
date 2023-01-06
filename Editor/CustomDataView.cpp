@@ -323,19 +323,19 @@ namespace ToolKit
 
       ImGui::BeginDisabled(!var->m_editable);
 
-      static String m_lastDragName;
+      static String lastDragName = "";
       static bool lastDragActive = false;
       static bool dragActive;
       lastDragActive      = dragActive;
       dragActive          = UI::IsKeyboardCaptured();
       static bool endDrag = false;
-      if (lastDragActive && !dragActive)
+      if (!endDrag)
       {
-        endDrag = true;
+        endDrag = lastDragActive && !dragActive;
       }
 
       bool nameMatch = false;
-      if (m_lastDragName.compare(var->m_name) == 0)
+      if (lastDragName.compare(var->m_name) == 0)
       {
         nameMatch = true;
       }
@@ -376,9 +376,9 @@ namespace ToolKit
                                var->m_hint.rangeMin,
                                var->m_hint.rangeMax))
           {
-            m_lastDragName = var->m_name;
-            lastVal        = val;
-            dragged        = true;
+            lastDragName = var->m_name;
+            lastVal      = val;
+            dragged      = true;
           }
 
           if ((endDrag && nameMatch) ||
@@ -408,9 +408,9 @@ namespace ToolKit
                              static_cast<int>(var->m_hint.rangeMin),
                              static_cast<int>(var->m_hint.rangeMax)))
           {
-            m_lastDragName = var->m_name;
-            lastVal        = val;
-            dragged        = true;
+            lastDragName = var->m_name;
+            lastVal      = val;
+            dragged      = true;
           }
 
           if ((endDrag && nameMatch) ||
@@ -447,9 +447,9 @@ namespace ToolKit
                                 var->m_hint.rangeMin,
                                 var->m_hint.rangeMax))
           {
-            m_lastDragName = var->m_name;
-            lastVal        = val;
-            dragged        = true;
+            lastDragName = var->m_name;
+            lastVal      = val;
+            dragged      = true;
           }
 
           if ((endDrag && nameMatch) ||
@@ -495,9 +495,9 @@ namespace ToolKit
                                 var->m_hint.rangeMin,
                                 var->m_hint.rangeMax))
           {
-            m_lastDragName = var->m_name;
-            lastVal        = val;
-            dragged        = true;
+            lastDragName = var->m_name;
+            lastVal      = val;
+            dragged      = true;
           }
 
           if ((endDrag && nameMatch) ||
@@ -543,9 +543,9 @@ namespace ToolKit
                                 var->m_hint.rangeMin,
                                 var->m_hint.rangeMax))
           {
-            m_lastDragName = var->m_name;
-            lastVal        = val;
-            dragged        = true;
+            lastDragName = var->m_name;
+            lastVal      = val;
+            dragged      = true;
           }
 
           if ((endDrag && nameMatch) ||
