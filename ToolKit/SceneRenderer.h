@@ -29,7 +29,7 @@ namespace ToolKit
     virtual ~SceneRenderer();
 
     void Render(Renderer* renderer) override;
-    void PreRender();
+    void PreRender(Renderer* renderer);
     void PostRender();
 
    private:

@@ -354,6 +354,7 @@ namespace ToolKit
     RenderTargetPtr m_gEmissiveRt          = nullptr;
     RenderTargetPtr m_gLinearDepthRt       = nullptr;
     RenderTargetPtr m_gMetallicRoughnessRt = nullptr;
+    RenderTargetPtr m_gIblRt               = nullptr;
 
     int m_width                            = 1024;
     int m_height                           = 1024;

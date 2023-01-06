@@ -412,9 +412,6 @@ namespace ToolKit
 
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.ClearFrameBuffer);
     renderer->SetCameraLens(m_camera);
-
-    // Gather volumes.
-    renderer->CollectEnvironmentVolumes(m_drawList);
   }
 
   void ForwardRenderPass::PostRender() { Pass::PostRender(); }
@@ -1245,6 +1242,9 @@ namespace ToolKit
     m_gEmissiveRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
+    m_gIblRt =
+        std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
+
     gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR32F;
     gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
 
@@ -1273,6 +1273,7 @@ namespace ToolKit
     m_gNormalRt       = nullptr;
     m_gColorRt        = nullptr;
     m_gEmissiveRt     = nullptr;
+    m_gIblRt          = nullptr;
     m_gLinearDepthRt  = nullptr;
     m_gBufferMaterial = nullptr;
   }
@@ -1303,6 +1304,8 @@ namespace ToolKit
     m_gColorRt->m_width              = width;
     m_gColorRt->m_height             = height;
     m_gEmissiveRt->m_width           = width;
+    m_gIblRt->m_width                = width;
+    m_gIblRt->m_height               = height;
     m_gEmissiveRt->m_height          = height;
     m_gLinearDepthRt->m_width        = width;
     m_gLinearDepthRt->m_height       = height;
@@ -1312,6 +1315,7 @@ namespace ToolKit
     m_gNormalRt->Init();
     m_gColorRt->Init();
     m_gEmissiveRt->Init();
+    m_gIblRt->Init();
     m_gLinearDepthRt->Init();
     m_gMetallicRoughnessRt->Init();
 
@@ -1329,6 +1333,8 @@ namespace ToolKit
                                    m_gLinearDepthRt);
       m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment5,
                                    m_gMetallicRoughnessRt);
+      m_framebuffer->SetAttachment(Framebuffer::Attachment::ColorAttachment6,
+                                   m_gIblRt);
       m_attachmentsSet = true;
     }
 
@@ -1357,6 +1363,7 @@ namespace ToolKit
     m_gNormalRt->UnInit();
     m_gColorRt->UnInit();
     m_gEmissiveRt->UnInit();
+    m_gIblRt->UnInit();
     m_gLinearDepthRt->UnInit();
     m_gMetallicRoughnessRt->UnInit();
 
@@ -1534,7 +1541,8 @@ namespace ToolKit
                                                ParameterVariant(sizeNS));
 
     // Set gbuffer
-    // 9: Position, 10: Normal, 11: Color, 12: emissive, 14: metallic-roughness
+    // 9: Position, 10: Normal, 11: Color, 12: emissive, 14: metallic-roughness,
+    // 16: ibl contribution
     renderer->SetTexture(
         9,
         m_params.GBufferFramebuffer
@@ -1559,6 +1567,11 @@ namespace ToolKit
         14,
         m_params.GBufferFramebuffer
             ->GetAttachment(Framebuffer::Attachment::ColorAttachment5)
+            ->m_textureId);
+    renderer->SetTexture(
+        16,
+        m_params.GBufferFramebuffer
+            ->GetAttachment(Framebuffer::Attachment::ColorAttachment6)
             ->m_textureId);
 
     renderer->SetTexture(13, m_lightDataTexture->m_textureId);

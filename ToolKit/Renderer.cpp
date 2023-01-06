@@ -1654,6 +1654,7 @@ namespace ToolKit
     // 12 -> gBuffer emissive texture
     // 13 -> Light Data Texture
     // 14 -> gBuffer metallic roughness texture
+    // 17 -> IBL Contribution
 
     assert(slotIndx < m_rhiSettings::textureSlotCount &&
            "You exceed texture slot count");

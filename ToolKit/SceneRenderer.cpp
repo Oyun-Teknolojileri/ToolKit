@@ -44,7 +44,7 @@ namespace ToolKit
 
   void SceneRenderer::Render(Renderer* renderer)
   {
-    PreRender();
+    PreRender(renderer);
 
     CullDrawList(m_gBufferPass->m_params.entities, m_params.Cam);
     CullDrawList(m_forwardRenderPass->m_params.Entities, m_params.Cam);
@@ -109,12 +109,14 @@ namespace ToolKit
     PostRender();
   }
 
-  void SceneRenderer::PreRender()
+  void SceneRenderer::PreRender(Renderer* renderer)
   {
     SetPassParams();
 
     m_gBufferPass->InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
                                 m_params.MainFramebuffer->GetSettings().height);
+
+    renderer->CollectEnvironmentVolumes(m_params.Scene->GetEntities());
   }
 
   void SceneRenderer::PostRender() {}
@@ -131,8 +133,8 @@ namespace ToolKit
       lights = m_params.Lights;
     }
 
-    m_shadowPass->m_params.Entities  = m_params.Scene->GetEntities();
-    m_shadowPass->m_params.Lights    = lights;
+    m_shadowPass->m_params.Entities = m_params.Scene->GetEntities();
+    m_shadowPass->m_params.Lights   = lights;
 
     // Give blended entities to forward render, non-blendeds to deferred
     // render
