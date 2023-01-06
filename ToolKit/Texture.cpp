@@ -394,12 +394,9 @@ namespace ToolKit
           glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemap->m_textureId);
           glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
-          // TODO since there is a "update ibl" button, we can make these
-          // parameter variant
-          const int prefilteredEnvMapSize =
-              512; // TODO member variable or parameter variant
+          const int prefilteredEnvMapSize = m_specularIBLTextureSize;
           // Pre-filtered and mip mapped environment map
-          m_prefilteredEnvMap = renderer->GenerateEnvPrefilteredMap(
+          m_prefilteredEnvMap             = renderer->GenerateEnvPrefilteredMap(
               m_cubemap,
               prefilteredEnvMapSize,
               prefilteredEnvMapSize,
@@ -409,18 +406,22 @@ namespace ToolKit
           if (!GetTextureManager()->Exist("GLOBAL_BRDF_LUT_TEXTURE"))
           {
             FullQuadPass quadPass;
-            const int lutSize = 512;
 
             RenderTargetSettigs set;
             set.InternalFormat = GraphicTypes::FormatRG16F;
             set.Format         = GraphicTypes::FormatRG;
 
             RenderTargetPtr brdfLut =
-                std::make_shared<RenderTarget>(lutSize, lutSize, set);
+                std::make_shared<RenderTarget>(m_brdfLutTextureSize,
+                                               m_brdfLutTextureSize,
+                                               set);
             brdfLut->Init();
             FramebufferPtr utilFramebuffer = std::make_shared<Framebuffer>();
 
-            utilFramebuffer->Init({lutSize, lutSize, false, false});
+            utilFramebuffer->Init({(uint) m_brdfLutTextureSize,
+                                   (uint) m_brdfLutTextureSize,
+                                   false,
+                                   false});
             utilFramebuffer->SetAttachment(
                 Framebuffer::Attachment::ColorAttachment0,
                 brdfLut);
