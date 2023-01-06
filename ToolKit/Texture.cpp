@@ -406,37 +406,38 @@ namespace ToolKit
               Renderer::RHIConstants::specularIBLLods);
 
           // Pre-compute BRDF lut
-          if (!m_quadPass)
+          if (!GetTextureManager()->Exist("GLOBAL_BRDF_LUT_TEXTURE"))
           {
-            m_quadPass = std::make_shared<FullQuadPass>();
-          }
-          const int lutSize = 512; // TODO member variable or parameter variant
-          if (!m_brdfLut)
-          {
+            FullQuadPass quadPass;
+            const int lutSize = 512;
+
             RenderTargetSettigs set;
             set.InternalFormat = GraphicTypes::FormatRG16F;
             set.Format         = GraphicTypes::FormatRG;
-            m_brdfLut = std::make_shared<RenderTarget>(lutSize, lutSize, set);
-            m_brdfLut->Init();
-          }
-          if (!m_utilFramebuffer)
-          {
-            m_utilFramebuffer = std::make_shared<Framebuffer>();
-            m_utilFramebuffer->Init({lutSize, lutSize, false, false});
-            m_utilFramebuffer->SetAttachment(
+
+            RenderTargetPtr brdfLut =
+                std::make_shared<RenderTarget>(lutSize, lutSize, set);
+            brdfLut->Init();
+            FramebufferPtr utilFramebuffer = std::make_shared<Framebuffer>();
+
+            utilFramebuffer->Init({lutSize, lutSize, false, false});
+            utilFramebuffer->SetAttachment(
                 Framebuffer::Attachment::ColorAttachment0,
-                m_brdfLut);
+                brdfLut);
+
+            quadPass.m_params.FrameBuffer = utilFramebuffer;
+            quadPass.m_params.FragmentShader =
+                GetShaderManager()->Create<Shader>(
+                    ShaderPath("BRDFLutFrag.shader", true));
+
+            quadPass.SetRenderer(renderer);
+            quadPass.PreRender();
+            quadPass.Render();
+            quadPass.PostRender();
+
+            brdfLut->SetFile("GLOBAL_BRDF_LUT_TEXTURE");
+            GetTextureManager()->Manage(brdfLut);
           }
-
-          m_quadPass->m_params.FrameBuffer = m_utilFramebuffer;
-          m_quadPass->m_params.FragmentShader =
-              GetShaderManager()->Create<Shader>(
-                  ShaderPath("BRDFLutFrag.shader", true));
-
-          m_quadPass->SetRenderer(renderer);
-          m_quadPass->PreRender();
-          m_quadPass->Render();
-          m_quadPass->PostRender();
 
           // Generate irradience cubemap images
           m_irradianceCubemap =
