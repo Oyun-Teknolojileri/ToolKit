@@ -323,6 +323,23 @@ namespace ToolKit
 
       ImGui::BeginDisabled(!var->m_editable);
 
+      static String m_lastDragName;
+      static bool lastDragActive = false;
+      static bool dragActive;
+      lastDragActive      = dragActive;
+      dragActive          = UI::IsKeyboardCaptured();
+      static bool endDrag = false;
+      if (lastDragActive && !dragActive)
+      {
+        endDrag = true;
+      }
+
+      bool nameMatch = false;
+      if (m_lastDragName.compare(var->m_name) == 0)
+      {
+        nameMatch = true;
+      }
+
       switch (var->GetType())
       {
       case ParameterVariant::VariantType::Bool:
@@ -346,24 +363,7 @@ namespace ToolKit
         }
         else
         {
-          static String m_lastDragName;
           static float lastVal;
-          static bool lastDragActive = false;
-          static bool dragActive;
-          lastDragActive      = dragActive;
-          dragActive          = UI::IsKeyboardCaptured();
-          static bool endDrag = false;
-          if (lastDragActive && !dragActive)
-          {
-            endDrag = true;
-          }
-
-          bool nameMatch = false;
-          if (m_lastDragName.compare(var->m_name) == 0)
-          {
-            nameMatch = true;
-          }
-
           if (nameMatch && dragActive)
           {
             val = lastVal;
@@ -395,13 +395,29 @@ namespace ToolKit
         int val = var->GetVar<int>();
         if (var->m_hint.isRangeLimited)
         {
+          static int lastVal;
+          if (nameMatch && dragActive)
+          {
+            val = lastVal;
+          }
+
+          bool dragged = false;
           if (ImGui::DragInt(var->m_name.c_str(),
                              &val,
                              var->m_hint.increment,
                              static_cast<int>(var->m_hint.rangeMin),
                              static_cast<int>(var->m_hint.rangeMax)))
           {
-            *var = val;
+            m_lastDragName = var->m_name;
+            lastVal        = val;
+            dragged        = true;
+          }
+
+          if ((endDrag && nameMatch) ||
+              (!var->m_hint.waitForTheEndOfInput && dragged))
+          {
+            endDrag = false;
+            *var    = lastVal;
           }
         }
         else
@@ -418,13 +434,29 @@ namespace ToolKit
         Vec2 val = var->GetVar<Vec2>();
         if (var->m_hint.isRangeLimited)
         {
+          static Vec2 lastVal;
+          if (nameMatch && dragActive)
+          {
+            val = lastVal;
+          }
+
+          bool dragged = false;
           if (ImGui::DragFloat2(var->m_name.c_str(),
                                 &val[0],
                                 var->m_hint.increment,
                                 var->m_hint.rangeMin,
                                 var->m_hint.rangeMax))
           {
-            *var = val;
+            m_lastDragName = var->m_name;
+            lastVal        = val;
+            dragged        = true;
+          }
+
+          if ((endDrag && nameMatch) ||
+              (!var->m_hint.waitForTheEndOfInput && dragged))
+          {
+            endDrag = false;
+            *var    = lastVal;
           }
         }
         else
@@ -450,13 +482,29 @@ namespace ToolKit
         }
         else if (var->m_hint.isRangeLimited)
         {
+          static Vec3 lastVal;
+          if (nameMatch && dragActive)
+          {
+            val = lastVal;
+          }
+
+          bool dragged = false;
           if (ImGui::DragFloat3(var->m_name.c_str(),
                                 &val[0],
                                 var->m_hint.increment,
                                 var->m_hint.rangeMin,
                                 var->m_hint.rangeMax))
           {
-            *var = val;
+            m_lastDragName = var->m_name;
+            lastVal        = val;
+            dragged        = true;
+          }
+
+          if ((endDrag && nameMatch) ||
+              (!var->m_hint.waitForTheEndOfInput && dragged))
+          {
+            endDrag = false;
+            *var    = lastVal;
           }
         }
         else
@@ -482,13 +530,29 @@ namespace ToolKit
         }
         else if (var->m_hint.isRangeLimited)
         {
+          static Vec4 lastVal;
+          if (nameMatch && dragActive)
+          {
+            val = lastVal;
+          }
+
+          bool dragged = false;
           if (ImGui::DragFloat4(var->m_name.c_str(),
                                 &val[0],
                                 var->m_hint.increment,
                                 var->m_hint.rangeMin,
                                 var->m_hint.rangeMax))
           {
-            *var = val;
+            m_lastDragName = var->m_name;
+            lastVal        = val;
+            dragged        = true;
+          }
+
+          if ((endDrag && nameMatch) ||
+              (!var->m_hint.waitForTheEndOfInput && dragged))
+          {
+            endDrag = false;
+            *var    = lastVal;
           }
         }
         else
