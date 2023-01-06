@@ -102,9 +102,6 @@ namespace ToolKit
       m_lightSystem->m_parentNode->OrphanSelf();
       m_camera->m_node->AddChild(m_lightSystem->m_parentNode);
 
-      // Construct EditorScene
-      EntityRawPtrArray editorEntities;
-
       // Generate Selection boundary and Environment component boundary.
       EditorScenePtr scene = app->GetCurrentScene();
       m_selecteds.clear();
@@ -117,7 +114,7 @@ namespace ToolKit
 
         if (envCom != nullptr && ntt->GetType() != EntityType::Entity_Sky)
         {
-          editorEntities.push_back(
+          app->m_perFrameDebugObjects.push_back(
               CreateBoundingBoxDebugObject(envCom->GetBBox(),
                                            g_environmentGizmoColor,
                                            1.0f));
@@ -125,7 +122,7 @@ namespace ToolKit
 
         if (app->m_showSelectionBoundary && ntt->IsDrawable())
         {
-          editorEntities.push_back(
+          app->m_perFrameDebugObjects.push_back(
               CreateBoundingBoxDebugObject(ntt->GetAABB(true)));
         }
 
@@ -138,13 +135,15 @@ namespace ToolKit
                 static_cast<EditorDirectionalLight*>(ntt);
             if (light->GetCastShadowVal())
             {
-              editorEntities.push_back(light->GetDebugShadowFrustum());
+              app->m_perFrameDebugObjects.push_back(
+                  light->GetDebugShadowFrustum());
             }
           }
         }
       }
 
       // Per frame objects.
+      EntityRawPtrArray editorEntities;
       editorEntities.insert(editorEntities.end(),
                             app->m_perFrameDebugObjects.begin(),
                             app->m_perFrameDebugObjects.end());
