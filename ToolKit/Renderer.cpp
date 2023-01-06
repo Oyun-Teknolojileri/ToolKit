@@ -1781,9 +1781,9 @@ namespace ToolKit
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::SampleLinear,
+                                     GraphicTypes::FormatRGB16F,
                                      GraphicTypes::FormatRGB,
-                                     GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte};
+                                     GraphicTypes::TypeFloat};
     RenderTargetPtr cubeMapRt =
         std::make_shared<RenderTarget>(width, height, set);
     cubeMapRt->Init();
