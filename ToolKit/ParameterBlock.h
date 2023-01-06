@@ -116,11 +116,12 @@ namespace ToolKit
 
   struct UIHint
   {
-    bool isColor        = false;
-    bool isRangeLimited = false;
-    float rangeMin      = 0.0f;
-    float rangeMax      = 100.0f;
-    float increment     = 0.1f;
+    bool isColor              = false;
+    bool isRangeLimited       = false;
+    float rangeMin            = 0.0f;
+    float rangeMax            = 100.0f;
+    float increment           = 0.1f;
+    bool waitForTheEndOfInput = false;
   };
 
   /**

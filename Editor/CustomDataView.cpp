@@ -346,13 +346,46 @@ namespace ToolKit
         }
         else
         {
+          static String m_lastDragName;
+          static float lastVal;
+          static bool lastDragActive = false;
+          static bool dragActive;
+          lastDragActive      = dragActive;
+          dragActive          = UI::IsKeyboardCaptured();
+          static bool endDrag = false;
+          if (lastDragActive && !dragActive)
+          {
+            endDrag = true;
+          }
+
+          bool nameMatch = false;
+          if (m_lastDragName.compare(var->m_name) == 0)
+          {
+            nameMatch = true;
+          }
+
+          if (nameMatch && dragActive)
+          {
+            val = lastVal;
+          }
+
+          bool dragged = false;
           if (ImGui::DragFloat(var->m_name.c_str(),
                                &val,
                                var->m_hint.increment,
                                var->m_hint.rangeMin,
                                var->m_hint.rangeMax))
           {
-            *var = val;
+            m_lastDragName = var->m_name;
+            lastVal        = val;
+            dragged        = true;
+          }
+
+          if ((endDrag && nameMatch) ||
+              (!var->m_hint.waitForTheEndOfInput && dragged))
+          {
+            endDrag = false;
+            *var    = lastVal;
           }
         }
       }
