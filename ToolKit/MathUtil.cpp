@@ -408,77 +408,72 @@ namespace ToolKit
     return transformedPos;
   }
 
-  bool RayMeshIntersection(Mesh* const mesh,
+  bool RayMeshIntersection(const Mesh* const mesh,
                            const Ray& ray,
                            float& t,
                            const SkeletonComponent* skelComp)
   {
-    std::vector<Mesh*> meshes;
-    mesh->GetAllMeshes(meshes);
     float closestPickedDistance = FLT_MAX;
     bool hit                    = false;
 
-    for (Mesh* const mesh : meshes)
-    {
 #ifndef __EMSCRIPTEN__
-      std::mutex updateHit;
-      std::for_each(
-          std::execution::par_unseq,
-          mesh->m_faces.begin(),
-          mesh->m_faces.end(),
-          [&updateHit, &t, &closestPickedDistance, &ray, &hit, skelComp, mesh](
-              Face& face)
-          {
-            Vec3 positions[3] = {face.vertices[0]->pos,
-                                 face.vertices[1]->pos,
-                                 face.vertices[2]->pos};
-            if (skelComp != nullptr && mesh->IsSkinned())
-            {
-              SkinMesh* skinMesh = (SkinMesh*) mesh;
-              for (uint32_t vertexIndx = 0; vertexIndx < 3; vertexIndx++)
-              {
-                positions[vertexIndx] =
-                    CPUSkinning((SkinVertex*) face.vertices[vertexIndx],
-                                skinMesh->m_skeleton.get(),
-                                skelComp->m_map);
-              }
-            }
-            float dist = FLT_MAX;
-            if (RayTriangleIntersection(ray,
-                                        positions[0],
-                                        positions[1],
-                                        positions[2],
-                                        dist))
-            {
-              std::lock_guard<std::mutex> guard(updateHit);
-              if (dist < closestPickedDistance && t >= 0.0f)
-              {
-                t                     = dist;
-                closestPickedDistance = dist;
-                hit                   = true;
-              }
-            }
-          });
-#else
-      for (const Face& face : mesh->m_faces)
-      {
-        float dist = FLT_MAX;
-        if (RayTriangleIntersection(ray,
-                                    face.vertices[0]->pos,
-                                    face.vertices[1]->pos,
-                                    face.vertices[2]->pos,
-                                    dist))
+    std::mutex updateHit;
+    std::for_each(
+        std::execution::par_unseq,
+        mesh->m_faces.begin(),
+        mesh->m_faces.end(),
+        [&updateHit, &t, &closestPickedDistance, &ray, &hit, skelComp, mesh](
+            const Face& face)
         {
-          if (dist < closestPickedDistance && t >= 0.0f)
+          Vec3 positions[3] = {face.vertices[0]->pos,
+                               face.vertices[1]->pos,
+                               face.vertices[2]->pos};
+          if (skelComp != nullptr && mesh->IsSkinned())
           {
-            t                     = dist;
-            closestPickedDistance = dist;
-            hit                   = true;
+            SkinMesh* skinMesh = (SkinMesh*) mesh;
+            for (uint32_t vertexIndx = 0; vertexIndx < 3; vertexIndx++)
+            {
+              positions[vertexIndx] =
+                  CPUSkinning((SkinVertex*) face.vertices[vertexIndx],
+                              skinMesh->m_skeleton.get(),
+                              skelComp->m_map);
+            }
           }
+          float dist = FLT_MAX;
+          if (RayTriangleIntersection(ray,
+                                      positions[0],
+                                      positions[1],
+                                      positions[2],
+                                      dist))
+          {
+            std::lock_guard<std::mutex> guard(updateHit);
+            if (dist < closestPickedDistance && t >= 0.0f)
+            {
+              t                     = dist;
+              closestPickedDistance = dist;
+              hit                   = true;
+            }
+          }
+        });
+#else
+    for (const Face& face : mesh->m_faces)
+    {
+      float dist = FLT_MAX;
+      if (RayTriangleIntersection(ray,
+                                  face.vertices[0]->pos,
+                                  face.vertices[1]->pos,
+                                  face.vertices[2]->pos,
+                                  dist))
+      {
+        if (dist < closestPickedDistance && t >= 0.0f)
+        {
+          t                     = dist;
+          closestPickedDistance = dist;
+          hit                   = true;
         }
       }
-#endif
     }
+#endif
 
     return hit;
   }

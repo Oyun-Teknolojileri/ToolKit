@@ -170,12 +170,17 @@ namespace ToolKit
           bool hit = true;
 
           // Collect meshes.
-          MeshComponentPtrArray meshes;
-          ntt->GetComponent<MeshComponent>(meshes);
+          MeshComponentPtrArray meshComps;
+          ntt->GetComponent<MeshComponent>(meshComps);
 
-          for (MeshComponentPtr& meshCmp : meshes)
+          std::vector<const Mesh*> meshes;
+          for (MeshComponentPtr& meshCmp : meshComps)
           {
-            Mesh* mesh = meshCmp->GetMeshVal().get();
+            meshCmp->GetMeshVal()->GetAllMeshes(meshes);
+          }
+
+          
+          for (const Mesh* const mesh : meshes){
             // There is a special case for SkinMeshes, because
             // m_clientSideVertices.size() here always accesses to Mesh's vertex
             // array (Vertex*) but it should've access to SkinMesh's vertex

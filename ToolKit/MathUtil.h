@@ -75,7 +75,7 @@ namespace ToolKit
                           const DynamicBoneMap* dynamicBoneMap);
 
   class SkeletonComponent;
-  TK_API bool RayMeshIntersection(class Mesh* const mesh,
+  TK_API bool RayMeshIntersection(const class Mesh* const mesh,
                                   const Ray& ray,
                                   float& t,
                                   const SkeletonComponent* skelComp = nullptr);
