@@ -39,14 +39,25 @@
 
          if (normalMapInUse == 1)
          {
-            vec3 B = skinNormal(normalize(vec3(Model * vec4(vBiTan, 0.0))));
-            vec3 N = skinNormal(normalize(vec3(Model * vec4(vNormal, 0.0))));
+            vec3 B = normalize(vec3(Model * vec4(vBiTan, 0.0)));
+            vec3 N = normalize(vec3(Model * vec4(vNormal, 0.0)));
+
+            if (isSkinned > 0u)
+            {
+               B = skinNormal(B);
+               N = skinNormal(N);
+            }
+
             vec3 T = normalize(cross(B,N));
             TBN = mat3(T,B,N);
          }
          else
          {
-            v_normal = skinNormal((InverseTransModel * vec4(vNormal, 1.0)).xyz);
+            v_normal = (InverseTransModel * vec4(vNormal, 1.0)).xyz;
+            if (isSkinned > 0u)
+            {
+               v_normal = skinNormal(v_normal);
+            }
          }
       }
 	-->
