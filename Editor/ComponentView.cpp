@@ -477,6 +477,7 @@ namespace ToolKit
             case 6:
             {
               MultiMaterialComponent* mmComp = new MultiMaterialComponent;
+              mmComp->m_entity               = m_entity;
               mmComp->UpdateMaterialList();
               newComponent = mmComp;
             }

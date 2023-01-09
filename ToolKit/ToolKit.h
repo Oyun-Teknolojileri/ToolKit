@@ -90,6 +90,10 @@ namespace ToolKit
       bool GammaCorrectionEnabled  = true;
       float Gamma                  = 2.2f;
       bool SSAOEnabled             = true;
+      bool DepthofFieldEnabled     = false;
+      float focusPoint             = 10.0f;
+      float focusScale             = 5.0f;
+      DoFQuality dofQuality        = DoFQuality::Normal;
     } Graphics;
 
     void Serialize(XmlDocument* doc, XmlNode* parent) const override;
