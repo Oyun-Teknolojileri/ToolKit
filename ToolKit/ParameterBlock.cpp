@@ -100,6 +100,12 @@ namespace ToolKit
     *this = var;
   }
 
+  ParameterVariant::ParameterVariant(
+      const std::vector<std::pair<String, Value>>& var)
+  {
+    *this = var;
+  }
+
   ParameterVariant::VariantType ParameterVariant::GetType() const
   {
     return m_type;
@@ -248,6 +254,14 @@ namespace ToolKit
   ParameterVariant& ParameterVariant::operator=(const VariantCallback& var)
   {
     m_type = VariantType::VariantCallback;
+    AsignVal(var);
+    return *this;
+  }
+
+  ParameterVariant& ParameterVariant::operator=(
+      const std::vector<std::pair<String, Value>>& var)
+  {
+    m_type = VariantType::Combo;
     AsignVal(var);
     return *this;
   }
@@ -432,6 +446,8 @@ namespace ToolKit
     break;
     case VariantType::VariantCallback:
       break;
+    case VariantType::Combo:
+      break;
     default:
       assert(false && "Invalid type.");
       break;
@@ -600,7 +616,7 @@ namespace ToolKit
       }
       else
       {
-        file  = MaterialPath(file);
+        file       = MaterialPath(file);
         m_var.data = GetMaterialManager()->Create<Material>(file);
       }
     }
@@ -614,7 +630,7 @@ namespace ToolKit
       }
       else
       {
-        file  = TexturePath(file);
+        file       = TexturePath(file);
         m_var.data = GetTextureManager()->Create<Hdri>(file);
       }
     }
@@ -653,12 +669,14 @@ namespace ToolKit
       }
       else
       {
-        file  = SkeletonPath(file);
+        file       = SkeletonPath(file);
         m_var.data = GetSkeletonManager()->Create<Skeleton>(file);
       }
     }
     break;
     case VariantType::VariantCallback:
+      break;
+    case VariantType::Combo:
       break;
     default:
       assert(false && "Invalid type.");

@@ -329,6 +329,11 @@ namespace ToolKit
     ParameterVariant(const VariantCallback& var);
 
     /**
+     * Constructs Combo type variant.
+     */
+    ParameterVariant(const std::vector<std::pair<String, Value>>& var);
+
+    /**
      * Used to retrieve VariantType of the variant.
      * @return VariantType That corresponds to current type of the variant.
      */
@@ -473,6 +478,11 @@ namespace ToolKit
      * Assign a CallbackFn to the value of the variant.
      */
     ParameterVariant& operator=(const VariantCallback& var);
+
+    /**
+     * Assign a Combo to the value of the variant.
+     */
+    ParameterVariant& operator=(const std::vector<std::pair<String, Value>>& var);
 
     /**
      * Serializes the variant to the xml document.
