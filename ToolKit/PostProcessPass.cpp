@@ -491,10 +491,10 @@ namespace ToolKit
 
   DoFPass::DoFPass()
   {
-    m_quadPass  = std::make_shared<FullQuadPass>();
+    m_quadPass                       = std::make_shared<FullQuadPass>();
     m_quadPass->m_params.FrameBuffer = std::make_shared<Framebuffer>();
 
-    m_dofShader = GetShaderManager()->Create<Shader>(
+    m_dofShader                      = GetShaderManager()->Create<Shader>(
         ShaderPath("depthOfFieldFrag.shader", true));
   }
 
@@ -521,8 +521,7 @@ namespace ToolKit
                                     ParameterVariant(m_params.focusPoint));
     m_dofShader->SetShaderParameter("focusScale",
                                     ParameterVariant(m_params.focusScale));
-    m_dofShader->SetShaderParameter("blurSize",
-                                    ParameterVariant(5.0f));
+    m_dofShader->SetShaderParameter("blurSize", ParameterVariant(5.0f));
 
     float blurRadiusScale = 0.5f;
     switch (m_params.blurQuality)

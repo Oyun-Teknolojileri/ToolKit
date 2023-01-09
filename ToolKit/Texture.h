@@ -95,9 +95,9 @@ namespace ToolKit
     float m_exposure               = 1.0f;
 
    protected:
-    MaterialPtr m_texToCubemapMat                  = nullptr;
-    MaterialPtr m_cubemapToIrradiancemapMat        = nullptr;
-    TexturePtr m_equirectangularTexture            = nullptr;
+    MaterialPtr m_texToCubemapMat           = nullptr;
+    MaterialPtr m_cubemapToIrradiancemapMat = nullptr;
+    TexturePtr m_equirectangularTexture     = nullptr;
   };
 
   struct RenderTargetSettigs

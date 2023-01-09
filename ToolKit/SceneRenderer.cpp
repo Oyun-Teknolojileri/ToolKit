@@ -202,7 +202,7 @@ namespace ToolKit
     m_dofPass->m_params.DepthRt         = m_gBufferPass->m_gLinearDepthRt;
     m_dofPass->m_params.focusPoint      = m_params.Gfx.focusPoint;
     m_dofPass->m_params.focusScale      = m_params.Gfx.focusScale;
-    m_dofPass->m_params.blurQuality        = m_params.Gfx.dofQuality;
+    m_dofPass->m_params.blurQuality     = m_params.Gfx.dofQuality;
 
     // Tonemap pass.
     m_tonemapPass->m_params.FrameBuffer = m_params.MainFramebuffer;
