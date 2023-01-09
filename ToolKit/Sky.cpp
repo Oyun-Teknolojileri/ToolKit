@@ -160,7 +160,7 @@ namespace ToolKit
         [this](Value& oldVal, Value& newVal) -> void
         {
           GetComponent<EnvironmentComponent>()->SetIntensityVal(
-              std::get<float>(newVal));
+              std::get<float>(newVal.data));
         });
 
     ParamExposure().m_onValueChangedFn.clear();
@@ -168,7 +168,7 @@ namespace ToolKit
         [this](Value& oldVal, Value& newVal) -> void
         {
           GetComponent<EnvironmentComponent>()->SetExposureVal(
-              std::get<float>(newVal));
+              std::get<float>(newVal.data));
         });
 
     ParamHdri().m_onValueChangedFn.clear();
@@ -176,7 +176,7 @@ namespace ToolKit
         [this](Value& oldVal, Value& newVal) -> void
         {
           GetComponent<EnvironmentComponent>()->SetHdriVal(
-              std::get<HdriPtr>(newVal));
+              std::get<HdriPtr>(newVal.data));
         });
   }
 

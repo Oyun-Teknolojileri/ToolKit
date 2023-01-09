@@ -62,7 +62,7 @@ namespace ToolKit
     ParamShadowRes().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         {
-          const float val = std::get<float>(newVal);
+          const float val = std::get<float>(newVal.data);
 
           if (val > -0.5f &&
               val < Renderer::m_rhiSettings::g_shadowAtlasTextureSize + 0.1f)

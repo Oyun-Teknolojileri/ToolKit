@@ -164,18 +164,18 @@ namespace ToolKit
 
     ParamExposure().m_onValueChangedFn.push_back(
         [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
-        { reInitHdriFn(GetHdriVal(), std::get<float>(newVal)); });
+        { reInitHdriFn(GetHdriVal(), std::get<float>(newVal.data)); });
 
     ParamHdri().m_onValueChangedFn.push_back(
         [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
-        { reInitHdriFn(std::get<HdriPtr>(newVal), GetExposureVal()); });
+        { reInitHdriFn(std::get<HdriPtr>(newVal.data), GetExposureVal()); });
 
     ParamIBLQuality().m_onValueChangedFn.push_back(
         [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
         {
           if (HdriPtr hdri = GetHdriVal())
           {
-            int val                                = std::get<int>(newVal);
+            int val                                = std::get<int>(newVal.data);
             val                                    = std::clamp(val, 0, 5);
             GetHdriVal()->m_specularIBLTextureSize = (int) std::pow(2, 5 + val);
             reInitHdriFn(hdri, GetExposureVal());

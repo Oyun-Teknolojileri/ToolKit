@@ -84,29 +84,33 @@ namespace ToolKit
    */
   typedef std::function<void()> VariantCallback;
 
-  /**
-   * Variant types.
-   */
-  typedef std::variant<bool,
-                       byte,
-                       ubyte,
-                       float,
-                       int,
-                       uint,
-                       Vec2,
-                       Vec3,
-                       Vec4,
-                       Mat3,
-                       Mat4,
-                       String,
-                       ULongID,
-                       MeshPtr,
-                       MaterialPtr,
-                       HdriPtr,
-                       AnimRecordPtrMap,
-                       SkeletonPtr,
-                       VariantCallback>
-      Value;
+  struct Value
+  {
+    /**
+     * Variant types.
+     */
+    std::variant<bool,
+                 byte,
+                 ubyte,
+                 float,
+                 int,
+                 uint,
+                 Vec2,
+                 Vec3,
+                 Vec4,
+                 Mat3,
+                 Mat4,
+                 String,
+                 ULongID,
+                 MeshPtr,
+                 MaterialPtr,
+                 HdriPtr,
+                 AnimRecordPtrMap,
+                 SkeletonPtr,
+                 VariantCallback,
+                 std::vector<std::pair<String, struct Value>>>
+        data;
+  };
 
   /**
    * Value change function callback. When the Variant value has changed, all the
@@ -199,7 +203,8 @@ namespace ToolKit
       HdriPtr,
       AnimRecordPtrMap,
       SkeletonPtr,
-      VariantCallback
+      VariantCallback,
+      Combo
     };
 
     /**
@@ -337,7 +342,7 @@ namespace ToolKit
     template <typename T>
     T& GetVar()
     {
-      return std::get<T>(m_var);
+      return std::get<T>(m_var.data);
     }
 
     /**
@@ -348,7 +353,7 @@ namespace ToolKit
     template <typename T>
     const T& GetCVar() const
     {
-      return std::get<T>(m_var);
+      return std::get<T>(m_var.data);
     }
 
     /**
@@ -358,7 +363,7 @@ namespace ToolKit
     template <typename T>
     T* GetVarPtr()
     {
-      return &std::get<T>(m_var);
+      return &std::get<T>(m_var.data);
     }
 
     /**
@@ -517,7 +522,7 @@ namespace ToolKit
     void AsignVal(T& val)
     {
       Value oldVal = m_var;
-      m_var        = val;
+      m_var.data   = val;
 
       for (ValueUpdateFn& fn : m_onValueChangedFn)
       {

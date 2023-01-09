@@ -160,7 +160,7 @@ namespace ToolKit
 
     ParamMaterial().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void {
-          GetMaterialComponent()->SetMaterialVal(std::get<MaterialPtr>(newVal));
+          GetMaterialComponent()->SetMaterialVal(std::get<MaterialPtr>(newVal.data));
         });
 
     GetMeshComponent()->ParamMesh().m_exposed       = false;
@@ -422,7 +422,7 @@ namespace ToolKit
         [this](Value& oldVal, Value& newVal) -> void
         {
           // Override surface material.
-          SetMaterialVal(std::get<MaterialPtr>(newVal));
+          SetMaterialVal(std::get<MaterialPtr>(newVal.data));
         });
 
     GetMeshComponent()->ParamMesh().m_exposed       = false;

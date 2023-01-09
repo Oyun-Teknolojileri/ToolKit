@@ -26,7 +26,8 @@ namespace ToolKit
 
   void ParameterVariant::SetValue(Value& newVal)
   {
-    assert(m_var.index() == newVal.index() && "Variant types must match.");
+    assert(m_var.data.index() == newVal.data.index() &&
+           "Variant types must match.");
     m_var = newVal;
   }
 
@@ -44,7 +45,7 @@ namespace ToolKit
       m_exposed  = other.m_exposed;
       m_name     = other.m_name;
       m_type     = other.m_type;
-      m_var      = other.m_var;
+      m_var.data = other.m_var.data;
       m_hint     = other.m_hint;
 
       // Events m_onValueChangedFn intentionally not copied.
@@ -466,70 +467,70 @@ namespace ToolKit
     {
       bool val(false);
       ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
+      m_var.data = val;
     }
     break;
     case VariantType::byte:
     {
       byte val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
+      m_var.data = val;
     }
     break;
     case VariantType::ubyte:
     {
       ubyte val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
+      m_var.data = val;
     }
     break;
     case VariantType::Float:
     {
       float val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
+      m_var.data = val;
     }
     break;
     case VariantType::Int:
     {
       int val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
+      m_var.data = val;
     }
     break;
     case VariantType::UInt:
     {
       int val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
+      m_var.data = val;
     }
     break;
     case VariantType::Vec2:
     {
       Vec2 var;
       ReadVec(parent, var);
-      m_var = var;
+      m_var.data = var;
     }
     break;
     case VariantType::Vec3:
     {
       Vec3 var;
       ReadVec(parent, var);
-      m_var = var;
+      m_var.data = var;
     }
     break;
     case VariantType::Vec4:
     {
       Vec4 var;
       ReadVec(parent, var);
-      m_var = var;
+      m_var.data = var;
     }
     break;
     case VariantType::String:
     {
       String val;
       ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
+      m_var.data = val;
     }
     break;
     case VariantType::Mat3:
@@ -543,7 +544,7 @@ namespace ToolKit
         val = glm::row(val, i, vec);
         row = row->next_sibling();
       }
-      m_var = val;
+      m_var.data = val;
     }
     break;
     case VariantType::Mat4:
@@ -557,14 +558,14 @@ namespace ToolKit
         val = glm::row(val, i, vec);
         row = row->next_sibling();
       }
-      m_var = val;
+      m_var.data = val;
     }
     break;
     case VariantType::ULongID:
     {
       ULongID val(0);
       ReadAttr(parent, XmlParamterValAttr, val);
-      m_var = val;
+      m_var.data = val;
     }
     break;
     case VariantType::MeshPtr:
@@ -572,7 +573,7 @@ namespace ToolKit
       String file = Resource::DeserializeRef(parent);
       if (file.empty())
       {
-        m_var = std::make_shared<Mesh>();
+        m_var.data = std::make_shared<Mesh>();
       }
       else
       {
@@ -581,11 +582,11 @@ namespace ToolKit
         DecomposePath(file, nullptr, nullptr, &ext);
         if (ext == SKINMESH)
         {
-          m_var = GetMeshManager()->Create<SkinMesh>(file);
+          m_var.data = GetMeshManager()->Create<SkinMesh>(file);
         }
         else
         {
-          m_var = GetMeshManager()->Create<Mesh>(file);
+          m_var.data = GetMeshManager()->Create<Mesh>(file);
         }
       }
     }
@@ -595,12 +596,12 @@ namespace ToolKit
       String file = Resource::DeserializeRef(parent);
       if (file.empty())
       {
-        m_var = std::make_shared<Material>();
+        m_var.data = std::make_shared<Material>();
       }
       else
       {
         file  = MaterialPath(file);
-        m_var = GetMaterialManager()->Create<Material>(file);
+        m_var.data = GetMaterialManager()->Create<Material>(file);
       }
     }
     break;
@@ -609,12 +610,12 @@ namespace ToolKit
       String file = Resource::DeserializeRef(parent);
       if (file.empty())
       {
-        m_var = std::make_shared<Hdri>();
+        m_var.data = std::make_shared<Hdri>();
       }
       else
       {
         file  = TexturePath(file);
-        m_var = GetTextureManager()->Create<Hdri>(file);
+        m_var.data = GetTextureManager()->Create<Hdri>(file);
       }
     }
     break;
@@ -640,7 +641,7 @@ namespace ToolKit
         }
         list.insert(std::make_pair(signalName, record));
       }
-      m_var = list;
+      m_var.data = list;
     }
     break;
     case VariantType::SkeletonPtr:
@@ -648,12 +649,12 @@ namespace ToolKit
       String file = Resource::DeserializeRef(parent);
       if (file.empty())
       {
-        m_var = std::make_shared<Skeleton>();
+        m_var.data = std::make_shared<Skeleton>();
       }
       else
       {
         file  = SkeletonPath(file);
-        m_var = GetSkeletonManager()->Create<Skeleton>(file);
+        m_var.data = GetSkeletonManager()->Create<Skeleton>(file);
       }
     }
     break;

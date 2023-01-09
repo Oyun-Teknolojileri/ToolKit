@@ -251,7 +251,7 @@ namespace ToolKit
     ParamFov().m_onValueChangedFn.push_back(
         [this, updateLensInternalFn](Value& oldVal, Value& newVal) -> void
         {
-          float degree = std::get<float>(newVal);
+          float degree = std::get<float>(newVal.data);
           m_fov        = glm::radians(degree);
           updateLensInternalFn();
         });
@@ -259,28 +259,28 @@ namespace ToolKit
     ParamNearClip().m_onValueChangedFn.push_back(
         [this, updateLensInternalFn](Value& oldVal, Value& newVal) -> void
         {
-          m_near = std::get<float>(newVal);
+          m_near = std::get<float>(newVal.data);
           updateLensInternalFn();
         });
 
     ParamFarClip().m_onValueChangedFn.push_back(
         [this, updateLensInternalFn](Value& oldVal, Value& newVal) -> void
         {
-          m_far = std::get<float>(newVal);
+          m_far = std::get<float>(newVal.data);
           updateLensInternalFn();
         });
 
     ParamOrthographic().m_onValueChangedFn.push_back(
         [this, updateLensInternalFn](Value& oldVal, Value& newVal) -> void
         {
-          m_ortographic = std::get<bool>(newVal);
+          m_ortographic = std::get<bool>(newVal.data);
           updateLensInternalFn();
         });
 
     ParamOrthographicScale().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         {
-          m_orthographicScale = std::get<float>(newVal);
+          m_orthographicScale = std::get<float>(newVal.data);
 
           if (m_ortographic)
           {
