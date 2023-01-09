@@ -93,11 +93,14 @@ namespace ToolKit
     CubeMapPtr m_prefilteredEnvMap = nullptr;
     CubeMapPtr m_irradianceCubemap = nullptr;
     float m_exposure               = 1.0f;
+    int m_specularIBLTextureSize   = 128;
 
    protected:
-    MaterialPtr m_texToCubemapMat                  = nullptr;
-    MaterialPtr m_cubemapToIrradiancemapMat        = nullptr;
-    TexturePtr m_equirectangularTexture            = nullptr;
+    MaterialPtr m_texToCubemapMat           = nullptr;
+    MaterialPtr m_cubemapToIrradiancemapMat = nullptr;
+    TexturePtr m_equirectangularTexture     = nullptr;
+
+    const int m_brdfLutTextureSize            = 512;
   };
 
   struct RenderTargetSettigs

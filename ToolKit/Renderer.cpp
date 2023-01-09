@@ -869,10 +869,11 @@ namespace ToolKit
       CubeMapPtr irradianceCubemap = envCom->GetHdriVal()->m_irradianceCubemap;
       CubeMapPtr preFilteredSpecularIBLMap =
           envCom->GetHdriVal()->m_prefilteredEnvMap;
-      RenderTargetPtr brdfLut =
-          GetTextureManager()->Create<RenderTarget>("GLOBAL_BRDF_LUT_TEXTURE");
-      if (irradianceCubemap && preFilteredSpecularIBLMap && brdfLut)
+      if (irradianceCubemap && preFilteredSpecularIBLMap &&
+          GetTextureManager()->Exist("GLOBAL_BRDF_LUT_TEXTURE"))
       {
+        RenderTargetPtr brdfLut = GetTextureManager()->Create<RenderTarget>(
+            "GLOBAL_BRDF_LUT_TEXTURE");
         mat->GetRenderState()->irradianceMap = irradianceCubemap->m_textureId;
         mat->GetRenderState()->preFilteredSpecularMap =
             preFilteredSpecularIBLMap->m_textureId;
@@ -1781,9 +1782,9 @@ namespace ToolKit
                                      GraphicTypes::UVClampToEdge,
                                      GraphicTypes::SampleLinear,
                                      GraphicTypes::SampleLinear,
+                                     GraphicTypes::FormatRGB16F,
                                      GraphicTypes::FormatRGB,
-                                     GraphicTypes::FormatRGB,
-                                     GraphicTypes::TypeUnsignedByte};
+                                     GraphicTypes::TypeFloat};
     RenderTargetPtr cubeMapRt =
         std::make_shared<RenderTarget>(width, height, set);
     cubeMapRt->Init();

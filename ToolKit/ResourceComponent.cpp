@@ -144,6 +144,12 @@ namespace ToolKit
                     true,
                     true,
                     {false, true, 0.0f, 50.0f, 0.05f});
+    IBLQuality_Define(2,
+                      EnvironmentComponentCategory.Name,
+                      EnvironmentComponentCategory.Priority,
+                      true,
+                      true,
+                      {false, true, (float) 0, (float) 5, (float) 1, true});
   }
 
   void EnvironmentComponent::ParameterEventConstructor()
@@ -163,6 +169,18 @@ namespace ToolKit
     ParamHdri().m_onValueChangedFn.push_back(
         [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
         { reInitHdriFn(std::get<HdriPtr>(newVal), GetExposureVal()); });
+
+    ParamIBLQuality().m_onValueChangedFn.push_back(
+        [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
+        {
+          if (HdriPtr hdri = GetHdriVal())
+          {
+            int val                                = std::get<int>(newVal);
+            val                                    = std::clamp(val, 0, 5);
+            GetHdriVal()->m_specularIBLTextureSize = (int) std::pow(2, 5 + val);
+            reInitHdriFn(hdri, GetExposureVal());
+          }
+        });
   }
 
   ComponentPtr EnvironmentComponent::Copy(Entity* ntt)
