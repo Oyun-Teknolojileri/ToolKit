@@ -84,6 +84,8 @@ namespace ToolKit
    */
   typedef std::function<void()> VariantCallback;
 
+  typedef std::vector<std::pair<String, struct Value>> Combo;
+
   struct Value
   {
     /**
@@ -108,7 +110,7 @@ namespace ToolKit
                  AnimRecordPtrMap,
                  SkeletonPtr,
                  VariantCallback,
-                 std::vector<std::pair<String, struct Value>>>
+                 Combo>
         data;
   };
 
@@ -482,7 +484,8 @@ namespace ToolKit
     /**
      * Assign a Combo to the value of the variant.
      */
-    ParameterVariant& operator=(const std::vector<std::pair<String, Value>>& var);
+    ParameterVariant& operator=(
+        const std::vector<std::pair<String, Value>>& var);
 
     /**
      * Serializes the variant to the xml document.
