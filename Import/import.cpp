@@ -41,7 +41,7 @@ template <typename GLMtype, typename AiType>
 GLMtype convertAssimpColorToGlm(AiType source)
 {
   GLMtype color = {};
-  for (uint32_t i = 0; i < GLMtype::length(); i++)
+  for (glm::length_t i = 0; i < GLMtype::length(); i++)
   {
     color[i] = source[i];
   }

@@ -478,6 +478,90 @@ namespace ToolKit
     return hit;
   }
 
+  TK_API uint FindMeshIntersection(const class Entity* const ntt,
+                                   const Ray& rayInWorldSpace,
+                                   float& t)
+  {
+    SkeletonComponent* skel = ntt->GetComponent<SkeletonComponent>().get();
+
+    MeshComponentPtrArray meshComps;
+    ntt->GetComponent<MeshComponent>(meshComps);
+
+    MeshRawCPtrArray meshes;
+    for (MeshComponentPtr meshComp : meshComps)
+    {
+      meshComp->GetMeshVal()->GetAllMeshes(meshes);
+    }
+
+    struct meshTrace
+    {
+      float dist;
+      uint indx;
+    };
+
+    std::vector<meshTrace> meshTraces;
+    for (uint i = 0; i < meshes.size(); i++)
+    {
+      // There is a special case for SkinMeshes, because
+      // m_clientSideVertices.size() here always accesses to Mesh's vertex
+      // array (Vertex*) but it should've access to SkinMesh's vertex
+      // array (SkinVertex*). That's why SkinMeshes checked with a cast
+      const Mesh* const mesh = meshes[i];
+      if (mesh->IsSkinned())
+      {
+        SkinMesh* skinMesh = (SkinMesh*) mesh;
+        if (skinMesh->m_clientSideVertices.size() && skel)
+        {
+          meshTraces.push_back({TK_FLT_MAX, i});
+        }
+      }
+      else if (mesh->m_clientSideVertices.size())
+      {
+        meshTraces.push_back({TK_FLT_MAX, i});
+      }
+    }
+
+    if (meshTraces.size() == 0)
+    {
+      t = 0.0f;
+      return UINT32_MAX;
+    }
+
+    Ray rayInObjectSpace = rayInWorldSpace;
+    Mat4 ts  = ntt->m_node->GetTransform(TransformationSpace::TS_WORLD);
+    Mat4 its = glm::inverse(ts);
+    rayInObjectSpace.position  = its * Vec4(rayInWorldSpace.position, 1.0f);
+    rayInObjectSpace.direction = its * Vec4(rayInWorldSpace.direction, 0.0f);
+
+    std::for_each(std::execution::par_unseq,
+                  meshTraces.begin(),
+                  meshTraces.end(),
+                  [rayInObjectSpace, skel, &meshes](meshTrace& trace)
+                  {
+                    float t = FLT_MAX;
+
+                    if (RayMeshIntersection(meshes[trace.indx],
+                                            rayInObjectSpace,
+                                            t,
+                                            skel))
+                    {
+                      trace.dist = t;
+                    }
+                  });
+
+    t                = TK_FLT_MAX;
+    uint closestIndx = TK_UINT_MAX;
+    for (const meshTrace& trace : meshTraces)
+    {
+      if (trace.dist < t)
+      {
+        t           = trace.dist;
+        closestIndx = trace.indx;
+      }
+    }
+    return closestIndx;
+  }
+
   /*
    * When the plane equation is not normalized, the distance of a point to the
    * plane: If distance < 0 , then the point p lies in the negative halfspace.

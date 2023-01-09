@@ -76,9 +76,16 @@ namespace ToolKit
 
   class SkeletonComponent;
   TK_API bool RayMeshIntersection(const class Mesh* const mesh,
-                                  const Ray& ray,
+                                  const Ray& rayInWorldSpace,
                                   float& t,
                                   const SkeletonComponent* skelComp = nullptr);
+
+  // @return TK_UINT_MAX = no intersection, otherwise submesh index
+  // If there is no tracing possible object, t set as 0.0
+  // Tracing possible object: Vertex positions should be in memory
+  TK_API uint FindMeshIntersection(const class Entity* const ntt,
+                                   const Ray& ray,
+                                   float& t);
 
   TK_API IntersectResult FrustumBoxIntersection(
       const Frustum& frustum,

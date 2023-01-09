@@ -749,57 +749,11 @@ namespace ToolKit
                     mmPtr->UpdateMaterialList();
                   }
 
-                  struct meshTrace
+                  float t          = TK_FLT_MAX;
+                  uint submeshIndx = FindMeshIntersection(pd.entity, ray, t);
+                  if (submeshIndx != TK_UINT_MAX && t != TK_FLT_MAX)
                   {
-                    float dist;
-                    uint indx;
-                  };
-
-                  std::vector<meshTrace> meshTraces(meshes.size());
-                  for (uint i = 0; i < meshTraces.size(); i++)
-                  {
-                    meshTraces[i].dist = FLT_MAX;
-                    meshTraces[i].indx = i;
-                  }
-
-                  Ray rayInObjectSpace = ray;
-                  Mat4 ts              = pd.entity->m_node->GetTransform(
-                      TransformationSpace::TS_WORLD);
-                  Mat4 its                   = glm::inverse(ts);
-                  rayInObjectSpace.position  = its * Vec4(ray.position, 1.0f);
-                  rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
-                  SkeletonComponent* skel =
-                      pd.entity->GetComponent<SkeletonComponent>().get();
-
-                  std::for_each(
-                      std::execution::par_unseq,
-                      meshTraces.begin(),
-                      meshTraces.end(),
-                      [rayInObjectSpace, skel, &meshes](meshTrace& const trace)
-                      {
-                        float t = FLT_MAX;
-
-                        if (RayMeshIntersection(meshes[trace.indx],
-                                                rayInObjectSpace,
-                                                t,
-                                                skel))
-                        {
-                          trace.dist = t;
-                        }
-                      });
-                  float closestDist = FLT_MAX;
-                  uint closestIndx  = UINT32_MAX;
-                  for (const meshTrace& const trace : meshTraces)
-                  {
-                    if (trace.dist < closestDist)
-                    {
-                      closestDist = trace.dist;
-                      closestIndx = trace.indx;
-                    }
-                  }
-                  if (closestIndx != UINT32_MAX && closestDist != FLT_MAX)
-                  {
-                    mmPtr->GetMaterialList()[closestIndx] = material;
+                    mmPtr->GetMaterialList()[submeshIndx] = material;
                   }
                 }
                 else if (meshes.size() == 1)
