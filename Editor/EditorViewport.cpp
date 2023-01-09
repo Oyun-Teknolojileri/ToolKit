@@ -20,6 +20,7 @@
 #include "Util.h"
 
 #include <algorithm>
+#include <execution>
 
 #include "DebugNew.h"
 
@@ -631,7 +632,6 @@ namespace ToolKit
                                                       dwMesh,
                                                       &boundingBox);
         }
-
         if (const ImGuiPayload* payload =
                 ImGui::AcceptDragDropPayload("BrowserDragZone"))
         {
@@ -692,11 +692,21 @@ namespace ToolKit
               // If there is a mesh component, update material component.
               bool notPrefab = Prefab::GetPrefabRoot(pd.entity) == nullptr;
 
-              bool hasMesh =
-                  pd.entity->GetComponent<MeshComponent>() != nullptr;
-
-              if (notPrefab && hasMesh)
+              if (!notPrefab)
               {
+                g_app->m_statusMsg = "Failed. Target is Prefab.";
+              }
+              else
+              {
+                MeshComponentPtrArray meshComps;
+                pd.entity->GetComponent<MeshComponent>(meshComps);
+
+                MeshRawCPtrArray meshes;
+                for (MeshComponentPtr meshComp : meshComps)
+                {
+                  meshComp->GetMeshVal()->GetAllMeshes(meshes);
+                }
+
                 // Load material once
                 String path =
                     ConcatPaths({dragEntry.m_rootPath,
@@ -711,29 +721,60 @@ namespace ToolKit
 
                 MaterialComponentPtr matPtr = pd.entity->GetMaterialComponent();
 
-                assert(!(matPtr != nullptr && mmPtr != nullptr) &&
-                       "Having both material component and multi material "
-                       "component on a single entity is not allowed.");
-
-                if (matPtr != nullptr)
+                if (meshes.size() && mmPtr == nullptr)
                 {
-                  matPtr->SetMaterialVal(material);
+                  if (matPtr)
+                  {
+                    pd.entity->RemoveComponent(matPtr->m_id);
+                  }
+
+                  g_app->m_statusMsg = "Added MultiMaterial component";
+                  GetLogger()->WriteConsole(
+                      LogType::Warning,
+                      "Automatically added the MultiMaterial component");
+                  pd.entity->AddComponent(new MultiMaterialComponent);
+                  mmPtr = pd.entity->GetComponent<MultiMaterialComponent>();
+                  mmPtr->UpdateMaterialList();
                 }
 
-                if (mmPtr != nullptr)
+                if (meshes.size() > 1)
                 {
-                  // A better implementation would be finding the submesh that
-                  // ray intersects and updating the multi material slot
-                  // accordingly.
-                  pd.entity->RemoveComponent(mmPtr->m_id);
-                  MaterialComponent* matCom = new MaterialComponent();
-                  matCom->SetMaterialVal(material);
-                  pd.entity->AddComponent(matCom);
+                  if (meshes.size() != mmPtr->GetMaterialList().size())
+                  {
+                    g_app->m_statusMsg = "Updated MultiMaterial list";
+                    GetLogger()->WriteConsole(
+                        LogType::Warning,
+                        "MultiMaterial component didn't match with entity's "
+                        "submeshes. Updated material list.");
+                    mmPtr->UpdateMaterialList();
+                  }
+
+                  float t          = TK_FLT_MAX;
+                  uint submeshIndx = FindMeshIntersection(pd.entity, ray, t);
+                  if (submeshIndx != TK_UINT_MAX && t != TK_FLT_MAX)
+                  {
+                    mmPtr->GetMaterialList()[submeshIndx] = material;
+                  }
                 }
-              }
-              else if (!notPrefab)
-              {
-                g_app->m_statusMsg = "Failed. Target is Prefab.";
+                else if (meshes.size() == 1)
+                {
+                  if (mmPtr)
+                  {
+                    if (mmPtr->GetMaterialList().size() != 1)
+                    {
+                      mmPtr->UpdateMaterialList();
+                    }
+                    else if (matPtr)
+                    {
+                      pd.entity->RemoveComponent(matPtr->m_id);
+                    }
+                    mmPtr->GetMaterialList()[0] = material;
+                  }
+                  else if (matPtr)
+                  {
+                    matPtr->SetMaterialVal(material);
+                  }
+                }
               }
             }
           }
