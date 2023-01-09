@@ -25,7 +25,14 @@
          for(int i = 0; i < 4; i++){
             skinned += getMatrixFromTexture(s_texture3, vBones[i]) * getMatrixFromTexture(s_texture2, vBones[i]) * vertexPos * vWeights[i];
          }
-         return skinned;
+         return normalize(skinned);
+      }
+      vec3 skinNormal(vec3 vertexNormal){
+         vec3 skinned = vec3(0);
+         for(int i = 0; i < 4; i++){
+            skinned += mat3(getMatrixFromTexture(s_texture3, vBones[i])) * mat3(getMatrixFromTexture(s_texture2, vBones[i])) * vertexNormal * vWeights[i];
+         }
+         return normalize(skinned);
       }
 	-->
 	</source>
