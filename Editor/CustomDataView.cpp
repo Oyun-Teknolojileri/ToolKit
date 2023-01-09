@@ -323,6 +323,8 @@ namespace ToolKit
 
       ImGui::BeginDisabled(!var->m_editable);
 
+      static bool lastValActive = false;
+
       switch (var->GetType())
       {
       case ParameterVariant::VariantType::Bool:
@@ -336,7 +338,11 @@ namespace ToolKit
       break;
       case ParameterVariant::VariantType::Float:
       {
-        float val = var->GetVar<float>();
+        static float lastVal = 0.0f;
+        float val            = var->m_hint.waitForTheEndOfInput && lastValActive
+                                   ? lastVal
+                                   : var->GetVar<float>();
+
         if (!var->m_hint.isRangeLimited)
         {
           if (ImGui::InputFloat(var->m_name.c_str(), &val))
@@ -346,29 +352,65 @@ namespace ToolKit
         }
         else
         {
+          bool dragged = false;
           if (ImGui::DragFloat(var->m_name.c_str(),
                                &val,
                                var->m_hint.increment,
                                var->m_hint.rangeMin,
                                var->m_hint.rangeMax))
           {
-            *var = val;
+            if (!var->m_hint.waitForTheEndOfInput)
+            {
+              *var = val;
+            }
+            else
+            {
+              lastVal       = val;
+              lastValActive = true;
+            }
+          }
+
+          if (var->m_hint.waitForTheEndOfInput &&
+              ImGui::IsItemDeactivatedAfterEdit())
+          {
+            *var          = lastVal;
+            lastValActive = false;
           }
         }
       }
       break;
       case ParameterVariant::VariantType::Int:
       {
-        int val = var->GetVar<int>();
+        static int lastVal = 0;
+        int val            = var->m_hint.waitForTheEndOfInput && lastValActive
+                                 ? lastVal
+                                 : var->GetVar<int>();
+
         if (var->m_hint.isRangeLimited)
         {
+          bool dragged = false;
           if (ImGui::DragInt(var->m_name.c_str(),
                              &val,
                              var->m_hint.increment,
                              static_cast<int>(var->m_hint.rangeMin),
                              static_cast<int>(var->m_hint.rangeMax)))
           {
-            *var = val;
+            if (!var->m_hint.waitForTheEndOfInput)
+            {
+              *var = val;
+            }
+            else
+            {
+              lastVal       = val;
+              lastValActive = true;
+            }
+          }
+
+          if (var->m_hint.waitForTheEndOfInput &&
+              ImGui::IsItemDeactivatedAfterEdit())
+          {
+            *var          = lastVal;
+            lastValActive = false;
           }
         }
         else
@@ -382,16 +424,36 @@ namespace ToolKit
       break;
       case ParameterVariant::VariantType::Vec2:
       {
-        Vec2 val = var->GetVar<Vec2>();
+        static Vec2 lastVal = Vec2(0.0f);
+        Vec2 val            = var->m_hint.waitForTheEndOfInput && lastValActive
+                                  ? lastVal
+                                  : var->GetVar<Vec2>();
+
         if (var->m_hint.isRangeLimited)
         {
+          bool dragged = false;
           if (ImGui::DragFloat2(var->m_name.c_str(),
                                 &val[0],
                                 var->m_hint.increment,
                                 var->m_hint.rangeMin,
                                 var->m_hint.rangeMax))
           {
-            *var = val;
+            if (!var->m_hint.waitForTheEndOfInput)
+            {
+              *var = val;
+            }
+            else
+            {
+              lastVal       = val;
+              lastValActive = true;
+            }
+          }
+
+          if (var->m_hint.waitForTheEndOfInput &&
+              ImGui::IsItemDeactivatedAfterEdit())
+          {
+            *var          = lastVal;
+            lastValActive = false;
           }
         }
         else
@@ -417,13 +479,33 @@ namespace ToolKit
         }
         else if (var->m_hint.isRangeLimited)
         {
+          static Vec3 lastVal = Vec3(0.0f);
+          val = var->m_hint.waitForTheEndOfInput && lastValActive
+                    ? lastVal
+                    : var->GetVar<Vec3>();
+
           if (ImGui::DragFloat3(var->m_name.c_str(),
                                 &val[0],
                                 var->m_hint.increment,
                                 var->m_hint.rangeMin,
                                 var->m_hint.rangeMax))
           {
-            *var = val;
+            if (!var->m_hint.waitForTheEndOfInput)
+            {
+              *var = val;
+            }
+            else
+            {
+              lastVal       = val;
+              lastValActive = true;
+            }
+          }
+
+          if (var->m_hint.waitForTheEndOfInput &&
+              ImGui::IsItemDeactivatedAfterEdit())
+          {
+            *var          = lastVal;
+            lastValActive = false;
           }
         }
         else
@@ -449,13 +531,33 @@ namespace ToolKit
         }
         else if (var->m_hint.isRangeLimited)
         {
+          static Vec4 lastVal = Vec4(0.0f);
+          val = var->m_hint.waitForTheEndOfInput && lastValActive
+                    ? lastVal
+                    : var->GetVar<Vec4>();
+
           if (ImGui::DragFloat4(var->m_name.c_str(),
                                 &val[0],
                                 var->m_hint.increment,
                                 var->m_hint.rangeMin,
                                 var->m_hint.rangeMax))
           {
-            *var = val;
+            if (!var->m_hint.waitForTheEndOfInput)
+            {
+              *var = val;
+            }
+            else
+            {
+              lastVal       = val;
+              lastValActive = true;
+            }
+          }
+
+          if (var->m_hint.waitForTheEndOfInput &&
+              ImGui::IsItemDeactivatedAfterEdit())
+          {
+            *var          = lastVal;
+            lastValActive = false;
           }
         }
         else
