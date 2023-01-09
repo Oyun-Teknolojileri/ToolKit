@@ -60,7 +60,7 @@ namespace ToolKit
 
     RenderTargetPtr SetAttachment(Attachment atc,
                                   RenderTargetPtr rt,
-                                  int mip = 0,
+                                  int mip          = 0,
                                   int layer        = -1,
                                   CubemapFace face = CubemapFace::NONE);
     RenderTargetPtr GetAttachment(Attachment atc);

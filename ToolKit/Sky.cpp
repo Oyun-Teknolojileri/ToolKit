@@ -355,11 +355,11 @@ namespace ToolKit
             cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
             cam->m_node->SetScale(sca);
 
-      fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
-                        cubemap,
-                        0,
-                        -1,
-                        (Framebuffer::CubemapFace) i);
+            fb->SetAttachment(Framebuffer::Attachment::ColorAttachment0,
+                              cubemap,
+                              0,
+                              -1,
+                              (Framebuffer::CubemapFace) i);
 
             renderer->SetFramebuffer(fb, true, Vec4(0.0f));
             renderer->DrawCube(cam.get(), m_skyboxMaterial);
