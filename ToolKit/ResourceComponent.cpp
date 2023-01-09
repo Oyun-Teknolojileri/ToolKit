@@ -102,6 +102,9 @@ namespace ToolKit
 
     GetHdriVal()->m_exposure = GetExposureVal();
     GetHdriVal()->Init(flushClientSideArray);
+
+    ParamIBLTextureSize().GetVarPtr<ValueCombo>()->second =
+        (int) std::log2(GetHdriVal()->m_specularIBLTextureSize) - 5;
   }
 
   void EnvironmentComponent::ParameterConstructor()
@@ -144,43 +147,64 @@ namespace ToolKit
                     true,
                     true,
                     {false, true, 0.0f, 50.0f, 0.05f});
-    IBLQuality_Define(2,
-                      EnvironmentComponentCategory.Name,
-                      EnvironmentComponentCategory.Priority,
-                      true,
-                      true,
-                      {false, true, (float) 0, (float) 5, (float) 1, true});
+
+    VariantCallback f32 = [this]()
+    {
+      GetHdriVal()->m_specularIBLTextureSize = 32;
+      ReInitHdri(GetHdriVal(), GetExposureVal());
+    };
+    VariantCallback f64 = [this]()
+    {
+      GetHdriVal()->m_specularIBLTextureSize = 64;
+      ReInitHdri(GetHdriVal(), GetExposureVal());
+    };
+    VariantCallback f128 = [this]()
+    {
+      GetHdriVal()->m_specularIBLTextureSize = 128;
+      ReInitHdri(GetHdriVal(), GetExposureVal());
+    };
+    VariantCallback f256 = [this]()
+    {
+      GetHdriVal()->m_specularIBLTextureSize = 256;
+      ReInitHdri(GetHdriVal(), GetExposureVal());
+    };
+    VariantCallback f512 = [this]()
+    {
+      GetHdriVal()->m_specularIBLTextureSize = 512;
+      ReInitHdri(GetHdriVal(), GetExposureVal());
+    };
+    VariantCallback f1024 = [this]()
+    {
+      GetHdriVal()->m_specularIBLTextureSize = 1024;
+      ReInitHdri(GetHdriVal(), GetExposureVal());
+    };
+    ValueCombo combo = {
+        {{"32", {f32}},
+         {"64", {f64}},
+         {"128", {f128}},
+         {"256", {f256}},
+         {"512", {f512}},
+         {"1024", {f1024}}},
+        1
+    };
+
+    IBLTextureSize_Define(combo,
+                          EnvironmentComponentCategory.Name,
+                          EnvironmentComponentCategory.Priority,
+                          true,
+                          true,
+                          {false, false});
   }
 
   void EnvironmentComponent::ParameterEventConstructor()
   {
-    auto reInitHdriFn = [](HdriPtr hdri, float exposure)
-    {
-      hdri->UnInit();
-      hdri->Load();
-      hdri->m_exposure = exposure;
-      hdri->Init(true);
-    };
-
     ParamExposure().m_onValueChangedFn.push_back(
-        [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
-        { reInitHdriFn(GetHdriVal(), std::get<float>(newVal)); });
+        [this](Value& oldVal, Value& newVal) -> void
+        { ReInitHdri(GetHdriVal(), std::get<float>(newVal)); });
 
     ParamHdri().m_onValueChangedFn.push_back(
-        [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
-        { reInitHdriFn(std::get<HdriPtr>(newVal), GetExposureVal()); });
-
-    ParamIBLQuality().m_onValueChangedFn.push_back(
-        [this, reInitHdriFn](Value& oldVal, Value& newVal) -> void
-        {
-          if (HdriPtr hdri = GetHdriVal())
-          {
-            int val                                = std::get<int>(newVal);
-            val                                    = std::clamp(val, 0, 5);
-            GetHdriVal()->m_specularIBLTextureSize = (int) std::pow(2, 5 + val);
-            reInitHdriFn(hdri, GetExposureVal());
-          }
-        });
+        [this](Value& oldVal, Value& newVal) -> void
+        { ReInitHdri(std::get<HdriPtr>(newVal), GetExposureVal()); });
   }
 
   ComponentPtr EnvironmentComponent::Copy(Entity* ntt)
@@ -215,6 +239,14 @@ namespace ToolKit
     aabb.max = GetPositionOffsetVal() + pos + GetSizeVal() * 0.5f;
     return aabb;
   }
+
+  void EnvironmentComponent::ReInitHdri(HdriPtr hdri, float exposure)
+  {
+    hdri->UnInit();
+    hdri->Load();
+    hdri->m_exposure = exposure;
+    hdri->Init(true);
+  };
 
   AnimControllerComponent::AnimControllerComponent()
   {

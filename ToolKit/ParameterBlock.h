@@ -83,7 +83,14 @@ namespace ToolKit
    * appropriate constructors.
    */
   typedef std::function<void()> VariantCallback;
-  typedef std::vector<std::pair<String, struct ValueWrapper>> ValueCombo;
+
+  /*
+   * This type stores the vector of combo pairs and index of the current set
+   * value in the vector.
+   * The vector stores the String-Value pairs.
+   */
+  typedef std::pair<std::vector<std::pair<String, struct ValueWrapper>>, uint>
+      ValueCombo;
 
   /**
    * Variant types.

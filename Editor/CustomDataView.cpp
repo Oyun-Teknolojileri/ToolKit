@@ -709,6 +709,25 @@ namespace ToolKit
         UI::EndCenteredTextButton();
       }
       break;
+      case ParameterVariant::VariantType::ValueCombo:
+      {
+        ValueCombo* c = var->GetVarPtr<ValueCombo>();
+        if (ImGui::BeginCombo("##CustomDataCombo",
+                              c->first[c->second].first.c_str()))
+        {
+          for (uint i = 0; i < c->first.size(); ++i)
+          {
+            bool isSelected = i == c->second;
+            if (ImGui::Selectable(c->first[i].first.c_str(), isSelected))
+            {
+              c->second = i;
+              std::get<VariantCallback>(c->first[i].second.data)();
+            }
+          }
+          ImGui::EndCombo();
+        }
+      }
+      break;
       default:
         break;
       }

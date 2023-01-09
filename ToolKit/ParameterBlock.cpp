@@ -262,6 +262,11 @@ namespace ToolKit
 
   void ParameterVariant::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
+    if (m_type == VariantType::ValueCombo)
+    {
+      return;
+    }
+
     XmlNode* node =
         doc->allocate_node(rapidxml::node_element, XmlParamterElement.c_str());
 
@@ -439,8 +444,6 @@ namespace ToolKit
     }
     break;
     case VariantType::VariantCallback:
-      break;
-    case VariantType::ValueCombo:
       break;
     default:
       assert(false && "Invalid type.");

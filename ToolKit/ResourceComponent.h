@@ -116,6 +116,7 @@ namespace ToolKit
    private:
     void ParameterConstructor();
     void ParameterEventConstructor();
+    void ReInitHdri(HdriPtr hdri, float exposure);
 
    public:
     TKDeclareParam(HdriPtr, Hdri);
@@ -124,7 +125,7 @@ namespace ToolKit
     TKDeclareParam(bool, Illuminate);
     TKDeclareParam(float, Intensity);
     TKDeclareParam(float, Exposure);
-    TKDeclareParam(int, IBLQuality);
+    TKDeclareParam(ValueCombo, IBLTextureSize);
   };
 
   static VariantCategory AnimRecordComponentCategory {
