@@ -83,30 +83,36 @@ namespace ToolKit
    * appropriate constructors.
    */
   typedef std::function<void()> VariantCallback;
+  typedef std::vector<std::pair<String, struct ValueWrapper>> ValueCombo;
 
   /**
    * Variant types.
    */
-  typedef std::variant<bool,
-                       byte,
-                       ubyte,
-                       float,
-                       int,
-                       uint,
-                       Vec2,
-                       Vec3,
-                       Vec4,
-                       Mat3,
-                       Mat4,
-                       String,
-                       ULongID,
-                       MeshPtr,
-                       MaterialPtr,
-                       HdriPtr,
-                       AnimRecordPtrMap,
-                       SkeletonPtr,
-                       VariantCallback>
-      Value;
+  using Value = std::variant<bool,
+                             byte,
+                             ubyte,
+                             float,
+                             int,
+                             uint,
+                             Vec2,
+                             Vec3,
+                             Vec4,
+                             Mat3,
+                             Mat4,
+                             String,
+                             ULongID,
+                             MeshPtr,
+                             MaterialPtr,
+                             HdriPtr,
+                             AnimRecordPtrMap,
+                             SkeletonPtr,
+                             VariantCallback,
+                             ValueCombo>;
+
+  struct ValueWrapper
+  {
+    Value data;
+  };
 
   /**
    * Value change function callback. When the Variant value has changed, all the
@@ -199,7 +205,8 @@ namespace ToolKit
       HdriPtr,
       AnimRecordPtrMap,
       SkeletonPtr,
-      VariantCallback
+      VariantCallback,
+      ValueCombo
     };
 
     /**
@@ -322,6 +329,11 @@ namespace ToolKit
      * Constructs CallbackFn type variant.
      */
     ParameterVariant(const VariantCallback& var);
+
+    /**
+     * Constructs ValueCombo type variant.
+     */
+    ParameterVariant(const ValueCombo& var);
 
     /**
      * Used to retrieve VariantType of the variant.
@@ -468,6 +480,11 @@ namespace ToolKit
      * Assign a CallbackFn to the value of the variant.
      */
     ParameterVariant& operator=(const VariantCallback& var);
+
+    /**
+     * Assign a ValueCombo to the value of the variant.
+     */
+    ParameterVariant& operator=(const ValueCombo& var);
 
     /**
      * Serializes the variant to the xml document.

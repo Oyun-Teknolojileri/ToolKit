@@ -99,6 +99,8 @@ namespace ToolKit
     *this = var;
   }
 
+  ParameterVariant::ParameterVariant(const ValueCombo& var) { *this = var; }
+
   ParameterVariant::VariantType ParameterVariant::GetType() const
   {
     return m_type;
@@ -247,6 +249,13 @@ namespace ToolKit
   ParameterVariant& ParameterVariant::operator=(const VariantCallback& var)
   {
     m_type = VariantType::VariantCallback;
+    AsignVal(var);
+    return *this;
+  }
+
+  ParameterVariant& ParameterVariant::operator=(const ValueCombo& var)
+  {
+    m_type = VariantType::ValueCombo;
     AsignVal(var);
     return *this;
   }
@@ -430,6 +439,8 @@ namespace ToolKit
     }
     break;
     case VariantType::VariantCallback:
+      break;
+    case VariantType::ValueCombo:
       break;
     default:
       assert(false && "Invalid type.");
@@ -658,6 +669,8 @@ namespace ToolKit
     }
     break;
     case VariantType::VariantCallback:
+      break;
+    case VariantType::ValueCombo:
       break;
     default:
       assert(false && "Invalid type.");
