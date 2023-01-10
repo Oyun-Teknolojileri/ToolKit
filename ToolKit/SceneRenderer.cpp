@@ -140,7 +140,7 @@ namespace ToolKit
     renderer->CollectEnvironmentVolumes(m_params.Scene->GetEntities());
   }
 
-  void SceneRenderer::PostRender() {}
+  void SceneRenderer::PostRender() { m_updatedLights.clear(); }
 
   void SceneRenderer::SetPassParams()
   {

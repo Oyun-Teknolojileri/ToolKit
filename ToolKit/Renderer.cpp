@@ -45,7 +45,7 @@ namespace ToolKit
     LightRawPtrArray bestLights;
     bestLights.reserve(lights.size());
 
-    // Get all directional lights.
+    // Find the end of directional lights
     for (int i = 0; i < lights.size(); i++)
     {
       if (lights[i]->GetType() == EntityType::Entity_DirectionalLight)
@@ -54,44 +54,61 @@ namespace ToolKit
       }
     }
 
-    struct LightSortStruct
-    {
-      Light* light        = nullptr;
-      uint intersectCount = 0;
-    };
-
     // Add the lights inside of the radius first
     std::vector<LightSortStruct> intersectCounts(lights.size());
     BoundingBox aabb = entity->GetAABB(true);
-    for (size_t lightIndx = 0; lightIndx < lights.size(); lightIndx++)
+    for (uint lightIndx = 0; lightIndx < lights.size(); lightIndx++)
     {
+      float radius;
       Light* light = lights[lightIndx];
-      switch (light->GetType())
+      if (light->GetType() == EntityType::Entity_PointLight)
       {
-      case EntityType::Entity_PointLight:
-      case EntityType::Entity_SpotLight:
-        break;
-      default:
+        radius = static_cast<PointLight*>(light)->GetRadiusVal();
+      }
+      else if (light->GetType() == EntityType::Entity_SpotLight)
+      {
+        radius = static_cast<SpotLight*>(light)->GetRadiusVal();
+      }
+      else
+      {
         continue;
       }
 
       intersectCounts[lightIndx].light = light;
       uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
 
+      /* This algorithms can be used for better sorting
+      for (uint dimIndx = 0; dimIndx < 3; dimIndx++)
+      {
+        for (uint isMin = 0; isMin < 2; isMin++)
+        {
+          Vec3 p     = aabb.min;
+          p[dimIndx] = (isMin == 0) ? aabb.min[dimIndx] : aabb.max[dimIndx];
+          float dist = glm::length(
+              p - light->m_node->GetTranslation(TransformationSpace::TS_WORLD));
+          if (dist <= radius)
+          {
+            curIntersectCount++;
+          }
+        }
+      }*/
+
       if (light->GetType() == EntityType::Entity_SpotLight)
       {
-        Frustum frustum = static_cast<SpotLight*>(light)->n_frustumCache;
-        if (FrustumBoxIntersection(frustum, aabb) != IntersectResult::Outside)
+        light->UpdateShadowCamera();
+
+        Frustum spotFrustum =
+            ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
+
+        if (FrustumBoxIntersection(spotFrustum, aabb) !=
+            IntersectResult::Outside)
         {
           curIntersectCount++;
         }
       }
-
       if (light->GetType() == EntityType::Entity_PointLight)
       {
-        BoundingSphere lightSphere = {light->m_node->GetTranslation(),
-                                      light->AffectDistance()};
-
+        BoundingSphere lightSphere = {light->m_node->GetTranslation(), radius};
         if (SphereBoxIntersection(lightSphere, aabb))
         {
           curIntersectCount++;
@@ -101,8 +118,7 @@ namespace ToolKit
 
     std::sort(intersectCounts.begin(),
               intersectCounts.end(),
-              [](const LightSortStruct& i1, const LightSortStruct& i2) -> bool
-              { return (i1.intersectCount > i2.intersectCount); });
+              CompareLightIntersects);
 
     for (uint i = 0; i < intersectCounts.size(); i++)
     {
@@ -110,7 +126,6 @@ namespace ToolKit
       {
         break;
       }
-
       bestLights.push_back(intersectCounts[i].light);
     }
 
