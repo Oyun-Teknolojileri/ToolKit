@@ -16,7 +16,8 @@ namespace ToolKit
 
   /**
    * Utility function that sorts lights according to lit conditions from
-   * best to worst.
+   * best to worst. Make sure lights array has updated shadow camera. Shadow
+   * camera is used in culling calculations.
    */
   TK_API LightRawPtrArray GetBestLights(Entity* entity,
                                         const LightRawPtrArray& lights);

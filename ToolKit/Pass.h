@@ -101,8 +101,6 @@ namespace ToolKit
     void PostRender() override;
 
    protected:
-    void CullLightList(const Entity* entity, LightRawPtrArray& lights);
-
     /**
      * Renders the entities immediately. No sorting applied.
      * @param entities All entities to render.

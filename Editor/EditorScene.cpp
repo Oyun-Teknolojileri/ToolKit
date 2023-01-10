@@ -123,7 +123,11 @@ namespace ToolKit
 
     void EditorScene::AddToSelection(ULongID id, bool additive)
     {
-      assert(!IsSelected(id));
+      if (IsSelected(id))
+      {
+        GetLogger()->WriteConsole(LogType::Error, "%d already selected !", id);
+      }
+
       if (!additive)
       {
         m_selectedEntities.clear();
@@ -143,7 +147,8 @@ namespace ToolKit
 
       if (g_app->m_selectEffectingLights && !ntt->IsLightInstance())
       {
-        LightRawPtrArray effectingLights = GetBestLights(ntt, GetLights());
+        LightRawPtrArray lights          = GetLights();
+        LightRawPtrArray effectingLights = GetBestLights(ntt, lights);
 
         for (Light* light : effectingLights)
         {

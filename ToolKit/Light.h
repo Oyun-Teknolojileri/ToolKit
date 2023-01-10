@@ -106,6 +106,8 @@ namespace ToolKit
     TKDeclareParam(float, Radius);
     TKDeclareParam(float, OuterAngle);
     TKDeclareParam(float, InnerAngle);
+
+    Frustum n_frustumCache; //!< Updated after call to UpdateShadowCamera().
   };
 
 } // namespace ToolKit

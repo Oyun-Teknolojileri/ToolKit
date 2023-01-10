@@ -125,22 +125,27 @@ namespace ToolKit
     renderer->CollectEnvironmentVolumes(m_params.Scene->GetEntities());
   }
 
-  void SceneRenderer::PostRender() {}
+  void SceneRenderer::PostRender() { m_updatedLights.clear(); }
 
   void SceneRenderer::SetPassParams()
   {
-    LightRawPtrArray lights;
+    // Update all lights before using them.
     if (m_params.Lights.empty())
     {
-      lights = m_params.Scene->GetLights();
+      m_updatedLights = m_params.Scene->GetLights();
     }
     else
     {
-      lights = m_params.Lights;
+      m_updatedLights = m_params.Lights;
+    }
+
+    for (Light* light : m_updatedLights)
+    {
+      light->UpdateShadowCamera();
     }
 
     m_shadowPass->m_params.Entities = m_params.Scene->GetEntities();
-    m_shadowPass->m_params.Lights   = lights;
+    m_shadowPass->m_params.Lights   = m_updatedLights;
 
     // Give blended entities to forward render, non-blendeds to deferred
     // render
@@ -160,12 +165,12 @@ namespace ToolKit
     m_deferredRenderPass->m_params.GBufferFramebuffer =
         m_gBufferPass->m_framebuffer;
 
-    m_deferredRenderPass->m_params.lights          = lights;
+    m_deferredRenderPass->m_params.lights          = m_updatedLights;
     m_deferredRenderPass->m_params.MainFramebuffer = m_params.MainFramebuffer;
     m_deferredRenderPass->m_params.Cam             = m_params.Cam;
     m_deferredRenderPass->m_params.AOTexture       = m_ssaoPass->m_ssaoTexture;
 
-    m_forwardRenderPass->m_params.Lights           = lights;
+    m_forwardRenderPass->m_params.Lights           = m_updatedLights;
     m_forwardRenderPass->m_params.Cam              = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.ClearFrameBuffer = false;

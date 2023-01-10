@@ -296,7 +296,7 @@ namespace ToolKit
 
   const EntityRawPtrArray& Scene::GetEntities() const { return m_entities; }
 
-  const LightRawPtrArray Scene::GetLights() const
+  LightRawPtrArray Scene::GetLights() const
   {
     LightRawPtrArray lights;
     for (Entity* ntt : m_entities)

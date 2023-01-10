@@ -1,7 +1,6 @@
-#include "Pass.h"
-
 #include "DataTexture.h"
 #include "DirectionComponent.h"
+#include "Pass.h"
 #include "Renderer.h"
 #include "ShaderReflectionCache.h"
 #include "Toolkit.h"
@@ -404,6 +403,7 @@ namespace ToolKit
   void ForwardRenderPass::PreRender()
   {
     Pass::PreRender();
+
     Renderer* renderer = GetRenderer();
 
     // Set self data.
@@ -416,88 +416,6 @@ namespace ToolKit
 
   void ForwardRenderPass::PostRender() { Pass::PostRender(); }
 
-  void ForwardRenderPass::CullLightList(const Entity* entity,
-                                        LightRawPtrArray& lights)
-  {
-    LightRawPtrArray bestLights;
-    bestLights.reserve(lights.size());
-
-    // Get all directional lights.
-    for (int i = 0; i < lights.size(); i++)
-    {
-      if (lights[i]->GetType() == EntityType::Entity_DirectionalLight)
-      {
-        bestLights.push_back(lights[i]);
-      }
-    }
-
-    struct LightSortStruct
-    {
-      Light* light        = nullptr;
-      uint intersectCount = 0;
-    };
-
-    // Add the lights inside of the radius first
-    std::vector<LightSortStruct> intersectCounts(lights.size());
-    BoundingBox aabb = entity->GetAABB(true);
-    for (size_t lightIndx = 0; lightIndx < lights.size(); lightIndx++)
-    {
-      Light* light = lights[lightIndx];
-      switch (light->GetType())
-      {
-      case EntityType::Entity_PointLight:
-      case EntityType::Entity_SpotLight:
-        break;
-      default:
-        continue;
-      }
-
-      intersectCounts[lightIndx].light = light;
-      uint& curIntersectCount = intersectCounts[lightIndx].intersectCount;
-
-      if (light->GetType() == EntityType::Entity_SpotLight)
-      {
-        // Update in case its outdated.
-        light->UpdateShadowCamera();
-        Frustum frustum =
-            ExtractFrustum(light->m_shadowMapCameraProjectionViewMatrix, false);
-
-        if (FrustumBoxIntersection(frustum, aabb) != IntersectResult::Outside)
-        {
-          curIntersectCount++;
-        }
-      }
-
-      if (light->GetType() == EntityType::Entity_PointLight)
-      {
-        BoundingSphere lightSphere = {light->m_node->GetTranslation(),
-                                      light->AffectDistance()};
-
-        if (SphereBoxIntersection(lightSphere, aabb))
-        {
-          curIntersectCount++;
-        }
-      }
-    }
-
-    std::sort(intersectCounts.begin(),
-              intersectCounts.end(),
-              [](const LightSortStruct& i1, const LightSortStruct& i2) -> bool
-              { return (i1.intersectCount > i2.intersectCount); });
-
-    for (uint i = 0; i < intersectCounts.size(); i++)
-    {
-      if (intersectCounts[i].intersectCount == 0)
-      {
-        break;
-      }
-
-      bestLights.push_back(intersectCounts[i].light);
-    }
-
-    lights = bestLights;
-  }
-
   void ForwardRenderPass::RenderOpaque(EntityRawPtrArray entities,
                                        Camera* cam,
                                        const LightRawPtrArray& lights)
@@ -505,11 +423,10 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     for (Entity* ntt : entities)
     {
-      LightRawPtrArray lightList = lights;
-      CullLightList(ntt, lightList);
-      uint activeMeshIndx     = 0;
+      LightRawPtrArray lightList = GetBestLights(ntt, lights);
+      uint activeMeshIndx        = 0;
 
-      MultiMaterialPtr mmComp = ntt->GetComponent<MultiMaterialComponent>();
+      MultiMaterialPtr mmComp    = ntt->GetComponent<MultiMaterialComponent>();
 
       if (mmComp == nullptr)
       {
@@ -554,32 +471,30 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     for (Entity* ntt : entities)
     {
-      LightRawPtrArray lightList = lights;
-      CullLightList(ntt, lightList);
 
       uint activeMeshIndx        = 0;
-
       MultiMaterialPtr mmComp    = ntt->GetComponent<MultiMaterialComponent>();
       MaterialPtr renderMaterial = ntt->GetRenderMaterial();
       auto renderFnc =
-          [ntt, cam, lights, lightList, renderer](MaterialPtr renderMaterial,
-                                                  const UIntArray& meshIndices)
+          [ntt, cam, lights, renderer](MaterialPtr renderMaterial,
+                                       const UIntArray& meshIndices)
       {
         bool prevState = renderMaterial->GetRenderState()->depthWriteEnabled;
         renderMaterial->GetRenderState()->depthWriteEnabled = false;
+        LightRawPtrArray culledLights = GetBestLights(ntt, lights);
         if (renderMaterial->GetRenderState()->cullMode == CullingType::TwoSided)
         {
           renderMaterial->GetRenderState()->cullMode = CullingType::Front;
-          renderer->Render(ntt, cam, lights, meshIndices);
+          renderer->Render(ntt, cam, culledLights, meshIndices);
 
           renderMaterial->GetRenderState()->cullMode = CullingType::Back;
-          renderer->Render(ntt, cam, lights, meshIndices);
+          renderer->Render(ntt, cam, culledLights, meshIndices);
 
           renderMaterial->GetRenderState()->cullMode = CullingType::TwoSided;
         }
         else
         {
-          renderer->Render(ntt, cam, lightList, meshIndices);
+          renderer->Render(ntt, cam, culledLights, meshIndices);
         }
         renderMaterial->GetRenderState()->depthWriteEnabled = prevState;
       };
