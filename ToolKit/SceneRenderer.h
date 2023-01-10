@@ -50,6 +50,7 @@ namespace ToolKit
     BloomPassPtr m_bloomPass                   = nullptr;
     TonemapPassPtr m_tonemapPass               = nullptr;
     DoFPassPtr m_dofPass                       = nullptr;
+    LightRawPtrArray m_updatedLights;
 
    private:
     bool m_drawSky = false;

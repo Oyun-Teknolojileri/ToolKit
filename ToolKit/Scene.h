@@ -54,7 +54,7 @@ namespace ToolKit
     virtual void AddEntity(Entity* entity);
     EntityRawPtrArray& AccessEntityArray(); //!< Mutable Entity array access.
     const EntityRawPtrArray& GetEntities() const;
-    const LightRawPtrArray GetLights() const;
+    LightRawPtrArray GetLights() const;
     Entity* GetFirstEntityByName(const String& name);
     EntityRawPtrArray GetByTag(const String& tag);
     Entity* GetFirstByTag(const String& tag);
