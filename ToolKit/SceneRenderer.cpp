@@ -119,6 +119,16 @@ namespace ToolKit
   {
     SetPassParams();
 
+    m_gBufferPass->InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
+                                m_params.MainFramebuffer->GetSettings().height);
+
+    renderer->CollectEnvironmentVolumes(m_params.Scene->GetEntities());
+  }
+
+  void SceneRenderer::PostRender() { m_updatedLights.clear(); }
+
+  void SceneRenderer::SetPassParams()
+  {
     // Update all lights before using them.
     if (m_params.Lights.empty())
     {
@@ -134,16 +144,6 @@ namespace ToolKit
       light->UpdateShadowCamera();
     }
 
-    m_gBufferPass->InitGBuffers(m_params.MainFramebuffer->GetSettings().width,
-                                m_params.MainFramebuffer->GetSettings().height);
-
-    renderer->CollectEnvironmentVolumes(m_params.Scene->GetEntities());
-  }
-
-  void SceneRenderer::PostRender() { m_updatedLights.clear(); }
-
-  void SceneRenderer::SetPassParams()
-  {
     m_shadowPass->m_params.Entities = m_params.Scene->GetEntities();
     m_shadowPass->m_params.Lights   = m_updatedLights;
 
