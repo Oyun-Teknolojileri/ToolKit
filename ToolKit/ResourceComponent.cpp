@@ -101,9 +101,7 @@ namespace ToolKit
            "that does not exist in environment component.");
 
     GetHdriVal()->m_specularIBLTextureSize =
-        GetIBLTextureSizeVal()
-            .Choices[GetIBLTextureSizeVal().CurrentVal.Index]
-            .second.GetCVar<int>();
+        GetMultiChoiceVal(GetIBLTextureSizeVal(), int);
     GetHdriVal()->m_exposure = GetExposureVal();
     GetHdriVal()->Init(flushClientSideArray);
   }

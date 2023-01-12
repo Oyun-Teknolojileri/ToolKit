@@ -74,6 +74,9 @@
     return Name##_Index;                                                       \
   }
 
+#define GetMultiChoiceVal(MCVariant, T) \
+ MCVariant.Choices[MCVariant.CurrentVal.Index].second.GetCVar<T>();
+
 namespace ToolKit
 {
 
