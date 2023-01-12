@@ -108,8 +108,11 @@ namespace ToolKit
     void EditorCamera::CreateGizmo()
     {
       // Recreate frustum.
-      AddComponent(new MeshComponent());
-      GetMeshComponent()->SetCastShadowVal(false);
+      if (GetComponent<MeshComponent>() == nullptr)
+      {
+        AddComponent(new MeshComponent());
+        GetMeshComponent()->SetCastShadowVal(false);
+      }
       GenerateFrustum();
     }
 
