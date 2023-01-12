@@ -125,7 +125,7 @@ namespace ToolKit
     TKDeclareParam(bool, Illuminate);
     TKDeclareParam(float, Intensity);
     TKDeclareParam(float, Exposure);
-    TKDeclareParam(ValueCombo, IBLTextureSize);
+    TKDeclareParam(MultiChoiceVariant, IBLTextureSize);
   };
 
   static VariantCategory AnimRecordComponentCategory {

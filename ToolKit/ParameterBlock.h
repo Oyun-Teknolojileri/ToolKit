@@ -84,14 +84,6 @@ namespace ToolKit
    */
   typedef std::function<void()> VariantCallback;
 
-  /*
-   * This type stores the vector of combo pairs and index of the current set
-   * value in the vector.
-   * The vector stores the String-Value pairs.
-   */
-  typedef std::pair<std::vector<std::pair<String, struct ValueWrapper>>, uint>
-      ValueCombo;
-
   /**
    * Variant types.
    */
@@ -114,18 +106,38 @@ namespace ToolKit
                              AnimRecordPtrMap,
                              SkeletonPtr,
                              VariantCallback,
-                             ValueCombo>;
-
-  struct ValueWrapper
-  {
-    Value data;
-  };
+                             struct MultiChoiceVariant>;
 
   /**
    * Value change function callback. When the Variant value has changed, all the
    * registered callbacks are called with old and new values of the parameter.
    */
   typedef std::function<void(Value& oldVal, Value& newVal)> ValueUpdateFn;
+
+  typedef std::function<void(uint& oldVal, uint& newVal)> IndexUpdateFn;
+
+  struct MultiChoiceVariant
+  {
+    std::vector<std::pair<String, class ParameterVariant>> Choices;
+
+    struct CurrentValue
+    {
+      uint Index;
+
+      void operator=(CurrentValue val)
+      {
+        uint old = Index;
+        Index    = val.Index;
+        if (Callback != nullptr)
+        {
+          Callback(old, Index);
+        }
+      }
+
+      IndexUpdateFn Callback;
+
+    } CurrentVal;
+  };
 
   struct UIHint
   {
@@ -213,7 +225,7 @@ namespace ToolKit
       AnimRecordPtrMap,
       SkeletonPtr,
       VariantCallback,
-      ValueCombo
+      MultiChoice
     };
 
     /**
@@ -338,9 +350,9 @@ namespace ToolKit
     ParameterVariant(const VariantCallback& var);
 
     /**
-     * Constructs ValueCombo type variant.
+     * Constructs MultiChoiceVariant type variant.
      */
-    ParameterVariant(const ValueCombo& var);
+    ParameterVariant(const MultiChoiceVariant& var);
 
     /**
      * Used to retrieve VariantType of the variant.
@@ -489,9 +501,9 @@ namespace ToolKit
     ParameterVariant& operator=(const VariantCallback& var);
 
     /**
-     * Assign a ValueCombo to the value of the variant.
+     * Assign a MultiChoiceVariant to the value of the variant.
      */
-    ParameterVariant& operator=(const ValueCombo& var);
+    ParameterVariant& operator=(const MultiChoiceVariant& var);
 
     /**
      * Serializes the variant to the xml document.

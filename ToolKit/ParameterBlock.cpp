@@ -99,7 +99,10 @@ namespace ToolKit
     *this = var;
   }
 
-  ParameterVariant::ParameterVariant(const ValueCombo& var) { *this = var; }
+  ParameterVariant::ParameterVariant(const MultiChoiceVariant& var)
+  {
+    *this = var;
+  }
 
   ParameterVariant::VariantType ParameterVariant::GetType() const
   {
@@ -253,20 +256,15 @@ namespace ToolKit
     return *this;
   }
 
-  ParameterVariant& ParameterVariant::operator=(const ValueCombo& var)
+  ParameterVariant& ParameterVariant::operator=(const MultiChoiceVariant& var)
   {
-    m_type = VariantType::ValueCombo;
+    m_type = VariantType::MultiChoice;
     AsignVal(var);
     return *this;
   }
 
   void ParameterVariant::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
-    if (m_type == VariantType::ValueCombo)
-    {
-      return;
-    }
-
     XmlNode* node =
         doc->allocate_node(rapidxml::node_element, XmlParamterElement.c_str());
 
@@ -289,166 +287,205 @@ namespace ToolKit
     WriteAttr(node, doc, "hint.rangeMax", std::to_string(m_hint.rangeMax));
     WriteAttr(node, doc, "hint.increment", std::to_string(m_hint.increment));
 
-    // Serialize data.
-    switch (m_type)
+    std::function<void(const ParameterVariant*)> serializeDataFn;
+    serializeDataFn =
+        [&node, &doc, &serializeDataFn](const ParameterVariant* var)
     {
-    case VariantType::Bool:
-    {
-      WriteAttr(node,
-                doc,
-                XmlParamterValAttr.c_str(),
-                std::to_string(GetCVar<bool>()));
-    }
-    break;
-    case VariantType::byte:
-    {
-      WriteAttr(node,
-                doc,
-                XmlParamterValAttr.c_str(),
-                std::to_string(GetCVar<byte>()));
-    }
-    break;
-    case VariantType::ubyte:
-    {
-      WriteAttr(node,
-                doc,
-                XmlParamterValAttr.c_str(),
-                std::to_string(GetCVar<ubyte>()));
-    }
-    break;
-    case VariantType::Float:
-    {
-      WriteAttr(node,
-                doc,
-                XmlParamterValAttr.c_str(),
-                std::to_string(GetCVar<float>()));
-    }
-    break;
-    case VariantType::Int:
-    {
-      WriteAttr(node,
-                doc,
-                XmlParamterValAttr.c_str(),
-                std::to_string(GetCVar<int>()));
-    }
-    break;
-    case VariantType::UInt:
-    {
-      WriteAttr(node,
-                doc,
-                XmlParamterValAttr.c_str(),
-                std::to_string(GetCVar<uint>()));
-    }
-    break;
-    case VariantType::Vec2:
-    {
-      WriteVec(node, doc, GetCVar<Vec2>());
-    }
-    break;
-    case VariantType::Vec3:
-    {
-      WriteVec(node, doc, GetCVar<Vec3>());
-    }
-    break;
-    case VariantType::Vec4:
-    {
-      WriteVec(node, doc, GetCVar<Vec4>());
-    }
-    break;
-    case VariantType::Mat3:
-    {
-      const Mat3& val = GetCVar<Mat3>();
-      for (int i = 0; i < 3; i++)
+      // Serialize data.
+      switch (var->GetType())
       {
-        XmlNode* row = CreateXmlNode(doc, "row", node);
-        WriteVec(row, doc, glm::row(val, i));
-      }
-    }
-    break;
-    case VariantType::Mat4:
-    {
-      const Mat4& val = GetCVar<Mat4>();
-      for (int i = 0; i < 4; i++)
+      case VariantType::Bool:
       {
-        XmlNode* row = CreateXmlNode(doc, "row", node);
-        WriteVec(row, doc, glm::row(val, i));
+        WriteAttr(node,
+                  doc,
+                  XmlParamterValAttr.c_str(),
+                  std::to_string(var->GetCVar<bool>()));
       }
-    }
-    break;
-    case VariantType::String:
-    {
-      WriteAttr(node, doc, XmlParamterValAttr.c_str(), GetCVar<String>());
-    }
-    break;
-    case VariantType::ULongID:
-      WriteAttr(node,
-                doc,
-                XmlParamterValAttr.c_str(),
-                std::to_string(GetCVar<ULongID>()));
       break;
-    case VariantType::MeshPtr:
-    {
-      MeshPtr res = GetCVar<MeshPtr>();
-      if (res && !res->IsDynamic())
+      case VariantType::byte:
       {
-        res->Save(true);
-        res->SerializeRef(doc, node);
+        WriteAttr(node,
+                  doc,
+                  XmlParamterValAttr.c_str(),
+                  std::to_string(var->GetCVar<byte>()));
       }
-    }
-    break;
-    case VariantType::MaterialPtr:
-    {
-      MaterialPtr res = GetCVar<MaterialPtr>();
-      if (res && !res->IsDynamic())
+      break;
+      case VariantType::ubyte:
       {
-        res->Save(true);
-        res->SerializeRef(doc, node);
+        WriteAttr(node,
+                  doc,
+                  XmlParamterValAttr.c_str(),
+                  std::to_string(var->GetCVar<ubyte>()));
       }
-    }
-    break;
-    case VariantType::HdriPtr:
-    {
-      HdriPtr res = GetCVar<HdriPtr>();
-      if (res && !res->IsDynamic())
+      break;
+      case VariantType::Float:
       {
-        res->Save(true);
-        res->SerializeRef(doc, node);
+        WriteAttr(node,
+                  doc,
+                  XmlParamterValAttr.c_str(),
+                  std::to_string(var->GetCVar<float>()));
       }
-    }
-    break;
-    case VariantType::AnimRecordPtrMap:
-    {
-      const AnimRecordPtrMap& list = GetCVar<AnimRecordPtrMap>();
-      XmlNode* listNode            = CreateXmlNode(doc, "List", node);
-      WriteAttr(listNode, doc, "size", std::to_string(list.size()));
-      uint recordIndx = 0;
-      for (auto iter = list.begin(); iter != list.end(); ++iter, recordIndx++)
+      break;
+      case VariantType::Int:
       {
-        const AnimRecordPtr& state = iter->second;
-        XmlNode* elementNode =
-            CreateXmlNode(doc, std::to_string(recordIndx), listNode);
-        if (iter->first.length())
+        WriteAttr(node,
+                  doc,
+                  XmlParamterValAttr.c_str(),
+                  std::to_string(var->GetCVar<int>()));
+      }
+      break;
+      case VariantType::UInt:
+      {
+        WriteAttr(node,
+                  doc,
+                  XmlParamterValAttr.c_str(),
+                  std::to_string(var->GetCVar<uint>()));
+      }
+      break;
+      case VariantType::Vec2:
+      {
+        WriteVec(node, doc, var->GetCVar<Vec2>());
+      }
+      break;
+      case VariantType::Vec3:
+      {
+        WriteVec(node, doc, var->GetCVar<Vec3>());
+      }
+      break;
+      case VariantType::Vec4:
+      {
+        WriteVec(node, doc, var->GetCVar<Vec4>());
+      }
+      break;
+      case VariantType::Mat3:
+      {
+        const Mat3& val = var->GetCVar<Mat3>();
+        for (int i = 0; i < 3; i++)
         {
-          WriteAttr(elementNode, doc, "SignalName", iter->first);
-        }
-        if (state->m_animation)
-        {
-          state->m_animation->SerializeRef(doc, elementNode);
+          XmlNode* row = CreateXmlNode(doc, "row", node);
+          WriteVec(row, doc, glm::row(val, i));
         }
       }
-    }
-    break;
-    case VariantType::SkeletonPtr:
-    {
-      GetCVar<SkeletonPtr>()->SerializeRef(doc, node);
-    }
-    break;
-    case VariantType::VariantCallback:
       break;
-    default:
-      assert(false && "Invalid type.");
+      case VariantType::Mat4:
+      {
+        const Mat4& val = var->GetCVar<Mat4>();
+        for (int i = 0; i < 4; i++)
+        {
+          XmlNode* row = CreateXmlNode(doc, "row", node);
+          WriteVec(row, doc, glm::row(val, i));
+        }
+      }
       break;
-    }
+      case VariantType::String:
+      {
+        WriteAttr(node,
+                  doc,
+                  XmlParamterValAttr.c_str(),
+                  var->GetCVar<String>());
+      }
+      break;
+      case VariantType::ULongID:
+        WriteAttr(node,
+                  doc,
+                  XmlParamterValAttr.c_str(),
+                  std::to_string(var->GetCVar<ULongID>()));
+        break;
+      case VariantType::MeshPtr:
+      {
+        MeshPtr res = var->GetCVar<MeshPtr>();
+        if (res && !res->IsDynamic())
+        {
+          res->Save(true);
+          res->SerializeRef(doc, node);
+        }
+      }
+      break;
+      case VariantType::MaterialPtr:
+      {
+        MaterialPtr res = var->GetCVar<MaterialPtr>();
+        if (res && !res->IsDynamic())
+        {
+          res->Save(true);
+          res->SerializeRef(doc, node);
+        }
+      }
+      break;
+      case VariantType::HdriPtr:
+      {
+        HdriPtr res = var->GetCVar<HdriPtr>();
+        if (res && !res->IsDynamic())
+        {
+          res->Save(true);
+          res->SerializeRef(doc, node);
+        }
+      }
+      break;
+      case VariantType::AnimRecordPtrMap:
+      {
+        const AnimRecordPtrMap& list = var->GetCVar<AnimRecordPtrMap>();
+        XmlNode* listNode            = CreateXmlNode(doc, "List", node);
+        WriteAttr(listNode, doc, "size", std::to_string(list.size()));
+        uint recordIndx = 0;
+        for (auto iter = list.begin(); iter != list.end(); ++iter, recordIndx++)
+        {
+          const AnimRecordPtr& state = iter->second;
+          XmlNode* elementNode =
+              CreateXmlNode(doc, std::to_string(recordIndx), listNode);
+          if (iter->first.length())
+          {
+            WriteAttr(elementNode, doc, "SignalName", iter->first);
+          }
+          if (state->m_animation)
+          {
+            state->m_animation->SerializeRef(doc, elementNode);
+          }
+        }
+      }
+      break;
+      case VariantType::SkeletonPtr:
+      {
+        var->GetCVar<SkeletonPtr>()->SerializeRef(doc, node);
+      }
+      break;
+      case VariantType::VariantCallback:
+        break;
+      case VariantType::MultiChoice:
+      {
+        MultiChoiceVariant mcv = var->GetCVar<MultiChoiceVariant>();
+        size_t choiceCount     = mcv.Choices.size();
+
+        XmlNode* listNode      = CreateXmlNode(doc, "List", node);
+        WriteAttr(listNode, doc, "size", std::to_string(choiceCount));
+
+        XmlNode* nextNode = CreateXmlNode(doc, "CurrVal", listNode);
+        WriteAttr(nextNode,
+                  doc,
+                  XmlParamterValAttr.c_str(),
+                  std::to_string(mcv.CurrentVal.Index));
+
+        for (size_t i = 0; i < choiceCount; ++i)
+        {
+          nextNode = CreateXmlNode(doc, std::to_string(i), listNode);
+          WriteAttr(nextNode,
+                    doc,
+                    "valType",
+                    std::to_string((int) mcv.Choices[i].second.GetType()));
+          WriteAttr(nextNode,
+                    doc,
+                    XmlParamterValAttr.c_str(),
+                    mcv.Choices[i].first);
+          const ParameterVariant* variant = &mcv.Choices[i].second;
+          serializeDataFn(variant);
+        }
+      }
+      break;
+      default:
+        assert(false && "Invalid type.");
+        break;
+      }
+    };
+    serializeDataFn(this);
 
     parent->append_node(node);
   }
@@ -673,7 +710,7 @@ namespace ToolKit
     break;
     case VariantType::VariantCallback:
       break;
-    case VariantType::ValueCombo:
+    case VariantType::MultiChoice:
       break;
     default:
       assert(false && "Invalid type.");

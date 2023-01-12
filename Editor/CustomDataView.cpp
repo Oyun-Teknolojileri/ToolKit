@@ -709,19 +709,19 @@ namespace ToolKit
         UI::EndCenteredTextButton();
       }
       break;
-      case ParameterVariant::VariantType::ValueCombo:
+      case ParameterVariant::VariantType::MultiChoice:
       {
-        ValueCombo* c = var->GetVarPtr<ValueCombo>();
-        if (ImGui::BeginCombo("##CustomDataCombo",
-                              c->first[c->second].first.c_str()))
+        MultiChoiceVariant* mcv = var->GetVarPtr<MultiChoiceVariant>();
+        if (ImGui::BeginCombo(
+                "##MultiChoiceVariant",
+                mcv->Choices[mcv->CurrentVal.Index].first.c_str()))
         {
-          for (uint i = 0; i < c->first.size(); ++i)
+          for (uint i = 0; i < mcv->Choices.size(); ++i)
           {
-            bool isSelected = i == c->second;
-            if (ImGui::Selectable(c->first[i].first.c_str(), isSelected))
+            bool isSelected = i == mcv->CurrentVal.Index;
+            if (ImGui::Selectable(mcv->Choices[i].first.c_str(), isSelected))
             {
-              c->second = i;
-              std::get<VariantCallback>(c->first[i].second.data)();
+              mcv->CurrentVal = {i};
             }
           }
           ImGui::EndCombo();

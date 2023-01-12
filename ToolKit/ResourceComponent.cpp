@@ -100,11 +100,12 @@ namespace ToolKit
            "Attempt to initialize hdri resource "
            "that does not exist in environment component.");
 
+    GetHdriVal()->m_specularIBLTextureSize =
+        GetIBLTextureSizeVal()
+            .Choices[GetIBLTextureSizeVal().CurrentVal.Index]
+            .second.GetCVar<int>();
     GetHdriVal()->m_exposure = GetExposureVal();
     GetHdriVal()->Init(flushClientSideArray);
-
-    ParamIBLTextureSize().GetVarPtr<ValueCombo>()->second =
-        (int) std::log2(GetHdriVal()->m_specularIBLTextureSize) - 5;
   }
 
   void EnvironmentComponent::ParameterConstructor()
@@ -148,47 +149,26 @@ namespace ToolKit
                     true,
                     {false, true, 0.0f, 50.0f, 0.05f});
 
-    VariantCallback f32 = [this]()
-    {
-      GetHdriVal()->m_specularIBLTextureSize = 32;
-      ReInitHdri(GetHdriVal(), GetExposureVal());
-    };
-    VariantCallback f64 = [this]()
-    {
-      GetHdriVal()->m_specularIBLTextureSize = 64;
-      ReInitHdri(GetHdriVal(), GetExposureVal());
-    };
-    VariantCallback f128 = [this]()
-    {
-      GetHdriVal()->m_specularIBLTextureSize = 128;
-      ReInitHdri(GetHdriVal(), GetExposureVal());
-    };
-    VariantCallback f256 = [this]()
-    {
-      GetHdriVal()->m_specularIBLTextureSize = 256;
-      ReInitHdri(GetHdriVal(), GetExposureVal());
-    };
-    VariantCallback f512 = [this]()
-    {
-      GetHdriVal()->m_specularIBLTextureSize = 512;
-      ReInitHdri(GetHdriVal(), GetExposureVal());
-    };
-    VariantCallback f1024 = [this]()
-    {
-      GetHdriVal()->m_specularIBLTextureSize = 1024;
-      ReInitHdri(GetHdriVal(), GetExposureVal());
-    };
-    ValueCombo combo = {
-        {{"32", {f32}},
-         {"64", {f64}},
-         {"128", {f128}},
-         {"256", {f256}},
-         {"512", {f512}},
-         {"1024", {f1024}}},
-        1
+    MultiChoiceVariant mcv = {
+        {std::pair<String, ParameterVariant>("32", ParameterVariant(32)),
+         std::pair<String, ParameterVariant>("64", ParameterVariant(64)),
+         std::pair<String, ParameterVariant>("128", ParameterVariant(128)),
+         std::pair<String, ParameterVariant>("256", ParameterVariant(256)),
+         std::pair<String, ParameterVariant>("512", ParameterVariant(512)),
+         std::pair<String, ParameterVariant>("1024", ParameterVariant(1024))},
+        1,
+        [&](uint& oldVal, uint& newVal)
+        {
+          HdriPtr hdri           = GetHdriVal();
+          MultiChoiceVariant mcv = GetIBLTextureSizeVal();
+          ParameterVariant& val  = mcv.Choices[mcv.CurrentVal.Index].second;
+          hdri->m_specularIBLTextureSize =
+              mcv.Choices[mcv.CurrentVal.Index].second.GetVar<int>();
+          ReInitHdri(hdri, GetExposureVal());
+         }
     };
 
-    IBLTextureSize_Define(combo,
+    IBLTextureSize_Define(mcv,
                           EnvironmentComponentCategory.Name,
                           EnvironmentComponentCategory.Priority,
                           true,
