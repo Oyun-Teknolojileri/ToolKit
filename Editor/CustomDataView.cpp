@@ -602,12 +602,15 @@ namespace ToolKit
         }
 
         String uniqueName = var->m_name + "##" + id;
+        ImGui::EndDisabled();
         ShowMaterialVariant(uniqueName, file, var);
+        ImGui::BeginDisabled(!var->m_editable);
       }
       break;
       case ParameterVariant::VariantType::MeshPtr:
       {
         MeshPtr mref = var->GetVar<MeshPtr>();
+        ImGui::EndDisabled();
         DropSubZone(
             "Mesh##" + std::to_string(mref->m_id),
             static_cast<uint>(UI::m_meshIcon->m_textureId),
@@ -629,6 +632,7 @@ namespace ToolKit
               }
             },
             var->m_editable);
+        ImGui::BeginDisabled(!var->m_editable);
       }
       break;
       case ParameterVariant::VariantType::HdriPtr:
@@ -641,6 +645,7 @@ namespace ToolKit
           file = mref->GetFile();
         }
 
+        ImGui::EndDisabled();
         DropSubZone(
             "Hdri##" + id,
             UI::m_imageIcon->m_textureId,
@@ -658,6 +663,7 @@ namespace ToolKit
               }
             },
             var->m_editable);
+        ImGui::BeginDisabled(!var->m_editable);
       }
       break;
       case ParameterVariant::VariantType::SkeletonPtr:
@@ -687,11 +693,13 @@ namespace ToolKit
                                       "Only skeletons are accepted.");
           }
         };
+        ImGui::EndDisabled();
         DropSubZone("Skeleton##" + id,
                     UI::m_boneIcon->m_textureId,
                     file,
                     dropZoneFnc,
                     var->m_editable);
+        ImGui::BeginDisabled(!var->m_editable);
       }
       break;
       case ParameterVariant::VariantType::AnimRecordPtrMap:
