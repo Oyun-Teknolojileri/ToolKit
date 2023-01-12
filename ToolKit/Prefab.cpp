@@ -151,6 +151,23 @@ namespace ToolKit
           var.Serialize(doc, rootSer);
         }
       }
+
+      // Save material changes
+      {
+        MaterialComponentPtrArray matComps;
+        child->GetComponent<MaterialComponent>(matComps);
+        for (MaterialComponentPtr matComp : matComps) {
+          matComp->GetMaterialVal()->Save(true);
+        }
+
+        MultiMaterialPtrArray mmComps;
+        child->GetComponent<MultiMaterialComponent>(mmComps);
+        for (MultiMaterialPtr mmComp : mmComps) {
+          for (MaterialPtr mat : mmComp->GetMaterialList()) {
+            mat->Save(true);
+          }
+        }
+      }
     }
   }
 
