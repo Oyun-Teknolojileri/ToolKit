@@ -85,6 +85,15 @@ namespace ToolKit
         }
         ImGui::EndDisabled();
       }
+
+      if (ImGui::CollapsingHeader("Ambient Occlusion"))
+      {
+        ImGui::Checkbox("SSAO##1", &gfx.SSAOEnabled);
+        ImGui::BeginDisabled(!gfx.SSAOEnabled);
+        ImGui::InputFloat("Radius", &gfx.ssaoRadius, 0.01f);
+        ImGui::InputFloat("Bias", &gfx.ssaoBias, 0.001f);
+        ImGui::EndDisabled();
+      }
     }
   } // namespace Editor
 } // namespace ToolKit
