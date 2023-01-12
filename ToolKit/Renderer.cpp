@@ -258,7 +258,7 @@ namespace ToolKit
     for (MeshComponentPtr meshCom : meshComponents)
     {
       MeshPtr mainMesh = meshCom->GetMeshVal();
-      m_lights         = GetBestLights(ntt, lights);
+      m_lights         = lights; // GetBestLights(ntt, lights);
       m_cam            = cam;
       SetProjectViewModel(ntt, cam);
 

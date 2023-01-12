@@ -444,8 +444,8 @@ namespace ToolKit
       Renderer* renderer = GetRenderer();
       for (Entity* ntt : opaqueDrawList)
       {
-        LightRawPtrArray lightList = m_params.ForwardParams.Lights;
-        ForwardRenderPass::CullLightList(ntt, lightList);
+        LightRawPtrArray lightList =
+            GetBestLights(ntt, m_params.ForwardParams.Lights);
 
         MaterialPtr mat         = ntt->GetRenderMaterial();
         renderer->m_overrideMat = std::make_shared<Material>();
