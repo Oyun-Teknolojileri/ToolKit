@@ -74,9 +74,6 @@
     return Name##_Index;                                                       \
   }
 
-#define GetMultiChoiceVal(MCVariant, T) \
- MCVariant.Choices[MCVariant.CurrentVal.Index].second.GetCVar<T>();
-
 namespace ToolKit
 {
 
@@ -117,8 +114,6 @@ namespace ToolKit
    */
   typedef std::function<void(Value& oldVal, Value& newVal)> ValueUpdateFn;
 
-  typedef std::function<void(uint& oldVal, uint& newVal)> IndexUpdateFn;
-
   struct MultiChoiceVariant
   {
     std::vector<std::pair<String, class ParameterVariant>> Choices;
@@ -133,14 +128,19 @@ namespace ToolKit
         Index    = val.Index;
         if (Callback != nullptr)
         {
-          Callback(old, Index);
+          Value oldVal = old;
+          Value newVal = Index;
+          Callback(oldVal, newVal);
         }
       }
 
-      IndexUpdateFn Callback;
+      ValueUpdateFn Callback;
 
     } CurrentVal;
   };
+
+#define GetMultiChoiceVal(MCVariant, T)                                        \
+  MCVariant.Choices[MCVariant.CurrentVal.Index].second.GetCVar<T>();
 
   struct UIHint
   {

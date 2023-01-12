@@ -155,13 +155,12 @@ namespace ToolKit
          std::pair<String, ParameterVariant>("512", ParameterVariant(512)),
          std::pair<String, ParameterVariant>("1024", ParameterVariant(1024))},
         1,
-        [&](uint& oldVal, uint& newVal)
+        [&](Value& oldVal, Value& newVal)
         {
           HdriPtr hdri           = GetHdriVal();
           MultiChoiceVariant mcv = GetIBLTextureSizeVal();
-          ParameterVariant& val  = mcv.Choices[mcv.CurrentVal.Index].second;
-          hdri->m_specularIBLTextureSize =
-              mcv.Choices[mcv.CurrentVal.Index].second.GetVar<int>();
+          
+          hdri->m_specularIBLTextureSize = GetMultiChoiceVal(mcv, int);
           ReInitHdri(hdri, GetExposureVal());
          }
     };
