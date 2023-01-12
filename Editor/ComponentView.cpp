@@ -39,10 +39,12 @@ namespace ToolKit
             removeMaterialIndx = i;
           }
           ImGui::SameLine();
+          ImGui::EndDisabled();
           CustomDataView::ShowMaterialPtr(uniqueName,
                                           mat->GetFile(),
                                           mat,
                                           modifiableComp);
+          ImGui::BeginDisabled(!modifiableComp);
           ImGui::PopID();
         }
         if (removeMaterialIndx != TK_UINT_MAX)

@@ -429,6 +429,9 @@ namespace ToolKit
               std::to_string(materials.size()));
     for (uint i = 0; i < materials.size(); i++)
     {
+      if (materials[i]->m_dirty) {
+        materials[i]->Save(true);
+      }
       XmlNode* resourceRefNode =
           CreateXmlNode(doc, std::to_string(i), compNode);
       materials[i]->SerializeRef(doc, resourceRefNode);
