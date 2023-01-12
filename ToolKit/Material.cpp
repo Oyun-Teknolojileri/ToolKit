@@ -161,7 +161,7 @@ namespace ToolKit
   {
     if (m_cubeMap)
     {
-      m_renderState.cubeMap = m_cubeMap->m_textureId;
+      m_renderState.cubeMap      = m_cubeMap->m_textureId;
       m_renderState.cubeMapInUse = true;
     }
     else

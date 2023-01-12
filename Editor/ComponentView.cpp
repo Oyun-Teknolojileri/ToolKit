@@ -31,6 +31,7 @@ namespace ToolKit
           String path, fileName, ext;
           DecomposePath(mat->GetFile(), &path, &fileName, &ext);
           String uniqueName = std::to_string(i) + "##" + std::to_string(i);
+          ImGui::PushID(i);
           if (UI::ImageButtonDecorless(UI::m_closeIcon->m_textureId,
                                        Vec2(15),
                                        false))
@@ -42,6 +43,7 @@ namespace ToolKit
                                           mat->GetFile(),
                                           mat,
                                           modifiableComp);
+          ImGui::PopID();
         }
         if (removeMaterialIndx != TK_UINT_MAX)
         {
@@ -477,6 +479,7 @@ namespace ToolKit
             case 6:
             {
               MultiMaterialComponent* mmComp = new MultiMaterialComponent;
+              mmComp->m_entity               = m_entity;
               mmComp->UpdateMaterialList();
               newComponent = mmComp;
             }

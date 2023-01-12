@@ -100,7 +100,7 @@ namespace ToolKit
     MaterialPtr m_cubemapToIrradiancemapMat = nullptr;
     TexturePtr m_equirectangularTexture     = nullptr;
 
-    const int m_brdfLutTextureSize            = 512;
+    const int m_brdfLutTextureSize          = 512;
   };
 
   struct RenderTargetSettigs

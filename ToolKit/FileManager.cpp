@@ -1,10 +1,10 @@
 
 #include "FileManager.h"
 
+#include "ToolKit.h"
+
 #include <memory>
 #include <string>
-
-#include "ToolKit.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 

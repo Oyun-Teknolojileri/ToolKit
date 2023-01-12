@@ -21,6 +21,7 @@ namespace ToolKit
     m_tonemapPass        = std::make_shared<TonemapPass>();
     m_gammaPass          = std::make_shared<GammaPass>();
     m_bloomPass          = std::make_shared<BloomPass>();
+    m_dofPass            = std::make_shared<DoFPass>();
   }
 
   SceneRenderer::SceneRenderer(const SceneRenderPassParams& params)
@@ -40,6 +41,7 @@ namespace ToolKit
     m_tonemapPass        = nullptr;
     m_gammaPass          = nullptr;
     m_bloomPass          = nullptr;
+    m_dofPass            = nullptr;
   }
 
   void SceneRenderer::Render(Renderer* renderer)
@@ -86,12 +88,16 @@ namespace ToolKit
     // Forward render blended entities
     m_passArray.push_back(m_forwardRenderPass);
 
+    // Post processes.
     if (m_params.Gfx.BloomEnabled)
     {
       m_passArray.push_back(m_bloomPass);
     }
+    if (m_params.Gfx.DepthofFieldEnabled)
+    {
+      m_passArray.push_back(m_dofPass);
+    }
 
-    // Post processes.
     if (m_params.Gfx.TonemappingEnabled)
     {
       m_passArray.push_back(m_tonemapPass);
@@ -119,22 +125,27 @@ namespace ToolKit
     renderer->CollectEnvironmentVolumes(m_params.Scene->GetEntities());
   }
 
-  void SceneRenderer::PostRender() {}
+  void SceneRenderer::PostRender() { m_updatedLights.clear(); }
 
   void SceneRenderer::SetPassParams()
   {
-    LightRawPtrArray lights;
+    // Update all lights before using them.
     if (m_params.Lights.empty())
     {
-      lights = m_params.Scene->GetLights();
+      m_updatedLights = m_params.Scene->GetLights();
     }
     else
     {
-      lights = m_params.Lights;
+      m_updatedLights = m_params.Lights;
+    }
+
+    for (Light* light : m_updatedLights)
+    {
+      light->UpdateShadowCamera();
     }
 
     m_shadowPass->m_params.Entities = m_params.Scene->GetEntities();
-    m_shadowPass->m_params.Lights   = lights;
+    m_shadowPass->m_params.Lights   = m_updatedLights;
 
     // Give blended entities to forward render, non-blendeds to deferred
     // render
@@ -154,12 +165,12 @@ namespace ToolKit
     m_deferredRenderPass->m_params.GBufferFramebuffer =
         m_gBufferPass->m_framebuffer;
 
-    m_deferredRenderPass->m_params.lights          = lights;
+    m_deferredRenderPass->m_params.lights          = m_updatedLights;
     m_deferredRenderPass->m_params.MainFramebuffer = m_params.MainFramebuffer;
     m_deferredRenderPass->m_params.Cam             = m_params.Cam;
     m_deferredRenderPass->m_params.AOTexture       = m_ssaoPass->m_ssaoTexture;
 
-    m_forwardRenderPass->m_params.Lights           = lights;
+    m_forwardRenderPass->m_params.Lights           = m_updatedLights;
     m_forwardRenderPass->m_params.Cam              = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.ClearFrameBuffer = false;
@@ -190,13 +201,21 @@ namespace ToolKit
     m_bloomPass->m_params.minThreshold   = m_params.Gfx.BloomThreshold;
     m_bloomPass->m_params.iterationCount = m_params.Gfx.BloomIterationCount;
 
+    // DoF pass
+    m_dofPass->m_params.ColorRt = m_params.MainFramebuffer->GetAttachment(
+        Framebuffer::Attachment::ColorAttachment0);
+    m_dofPass->m_params.DepthRt         = m_gBufferPass->m_gLinearDepthRt;
+    m_dofPass->m_params.focusPoint      = m_params.Gfx.focusPoint;
+    m_dofPass->m_params.focusScale      = m_params.Gfx.focusScale;
+    m_dofPass->m_params.blurQuality     = m_params.Gfx.dofQuality;
+
     // Tonemap pass.
-    m_tonemapPass->m_params.FrameBuffer  = m_params.MainFramebuffer;
-    m_tonemapPass->m_params.Method       = m_params.Gfx.TonemapperMode;
+    m_tonemapPass->m_params.FrameBuffer = m_params.MainFramebuffer;
+    m_tonemapPass->m_params.Method      = m_params.Gfx.TonemapperMode;
 
     // Gamma pass.
-    m_gammaPass->m_params.FrameBuffer    = m_params.MainFramebuffer;
-    m_gammaPass->m_params.Gamma          = m_params.Gfx.Gamma;
+    m_gammaPass->m_params.FrameBuffer   = m_params.MainFramebuffer;
+    m_gammaPass->m_params.Gamma         = m_params.Gfx.Gamma;
   }
 
   void SceneRenderer::CullDrawList(EntityRawPtrArray& entities, Camera* camera)

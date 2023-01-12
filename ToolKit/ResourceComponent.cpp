@@ -63,7 +63,7 @@ namespace ToolKit
 
   MaterialComponent::MaterialComponent()
   {
-    Material_Define(nullptr,
+    Material_Define(GetMaterialManager()->GetCopyOfDefaultMaterial(),
                     MaterialComponentCategory.Name,
                     MaterialComponentCategory.Priority,
                     true,

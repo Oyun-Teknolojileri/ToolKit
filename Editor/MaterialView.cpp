@@ -456,7 +456,11 @@ namespace ToolKit
                          "None\0Alpha Blending\0Alpha Mask"))
         {
           m_mat->GetRenderState()->blendFunction = (BlendFunction) blendMode;
-          m_mat->m_dirty                         = true;
+          if (m_mat->GetRenderState()->blendFunction == BlendFunction::NONE)
+          {
+            m_mat->m_alpha = 1.0f;
+          }
+          m_mat->m_dirty = true;
         }
 
         int drawType = -1;

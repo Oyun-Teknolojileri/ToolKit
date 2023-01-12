@@ -1,8 +1,7 @@
-#include "Scene.h"
-
 #include "Component.h"
 #include "Prefab.h"
 #include "ResourceComponent.h"
+#include "Scene.h"
 #include "ToolKit.h"
 #include "Util.h"
 
@@ -167,48 +166,28 @@ namespace ToolKit
         float dist                 = 0;
         if (RayBoxIntersection(rayInObjectSpace, ntt->GetAABB(), dist))
         {
-          bool hit = true;
+          bool hit         = false;
 
-          // Collect meshes.
-          MeshComponentPtrArray meshes;
-          ntt->GetComponent<MeshComponent>(meshes);
+          float t          = TK_FLT_MAX;
+          uint submeshIndx = FindMeshIntersection(ntt, ray, t);
 
-          for (MeshComponentPtr& meshCmp : meshes)
+          // There was no tracing possible object, so hit should be true
+          if (t == 0.0f && submeshIndx == TK_UINT_MAX)
           {
-            Mesh* mesh = meshCmp->GetMeshVal().get();
-            // There is a special case for SkinMeshes, because
-            // m_clientSideVertices.size() here always accesses to Mesh's vertex
-            // array (Vertex*) but it should've access to SkinMesh's vertex
-            // array (SkinVertex*). I don't want to template this function to
-            // support it, that's why isSkinned() is enough!
-            if (mesh->m_clientSideVertices.size() == mesh->m_vertexCount ||
-                mesh->IsSkinned())
-            {
-              // Per polygon check if data exist.
-              float meshDist              = 0.0f;
-              SkeletonComponent* skelComp = nullptr;
-              if (mesh->IsSkinned())
-              {
-                skelComp = ntt->GetComponent<SkeletonComponent>().get();
-              }
-              hit = RayMeshIntersection(mesh,
-                                        rayInObjectSpace,
-                                        meshDist,
-                                        skelComp);
-              if (hit)
-              {
-                dist = meshDist;
-              }
-            }
+            hit = true;
+          }
+          else if (t != TK_FLT_MAX && submeshIndx != TK_UINT_MAX)
+          {
+            hit = true;
+          }
 
-            if (hit)
+          if (hit)
+          {
+            if (dist < closestPickedDistance && dist > 0.0f)
             {
-              if (dist < closestPickedDistance && dist > 0.0f)
-              {
-                pd.entity             = ntt;
-                pd.pickPos            = ray.position + ray.direction * dist;
-                closestPickedDistance = dist;
-              }
+              pd.entity             = ntt;
+              pd.pickPos            = ray.position + ray.direction * dist;
+              closestPickedDistance = dist;
             }
           }
         }
@@ -317,7 +296,7 @@ namespace ToolKit
 
   const EntityRawPtrArray& Scene::GetEntities() const { return m_entities; }
 
-  const LightRawPtrArray Scene::GetLights() const
+  LightRawPtrArray Scene::GetLights() const
   {
     LightRawPtrArray lights;
     for (Entity* ntt : m_entities)

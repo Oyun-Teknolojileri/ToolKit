@@ -219,6 +219,7 @@ namespace ToolKit
       m_renderPass->m_params.Lights           = {m_light};
       m_renderPass->m_params.MainFramebuffer  = m_framebuffer;
       m_renderPass->m_params.Scene            = std::make_shared<Scene>();
+      m_renderPass->m_params.Gfx.DepthofFieldEnabled = false;
     }
 
     PreviewViewport::~PreviewViewport()

@@ -356,6 +356,9 @@ namespace ToolKit
 
     Light::UpdateShadowCamera();
     UpdateShadowCameraTransform();
+
+    n_frustumCache =
+        ExtractFrustum(m_shadowMapCameraProjectionViewMatrix, false);
   }
 
   float SpotLight::AffectDistance() { return GetRadiusVal(); }
