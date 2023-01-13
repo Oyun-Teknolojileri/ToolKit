@@ -64,6 +64,12 @@ namespace ToolKit
 
     void App::Init()
     {
+      GLenum er = glGetError();
+      if (er != 0)
+      {
+        int y = 5;
+      }
+
       AssignManagerReporters();
       CreateEditorEntities();
 
@@ -107,6 +113,12 @@ namespace ToolKit
       m_simulatorSettings.Resolution = EmulatorResolution::Custom;
       m_publishManager               = new PublishManager();
       GetRenderSystem()->SetClearColor(g_wndBgColor);
+
+      er = glGetError();
+      if (er != 0)
+      {
+        int y = 5;
+      }
     }
 
     void App::DestroyEditorEntities()
@@ -155,6 +167,12 @@ namespace ToolKit
 
     void App::Frame(float deltaTime)
     {
+      GLenum er = glGetError();
+      if (er != 0)
+      {
+        int y = 5;
+      }
+
       m_deltaTime = deltaTime;
       UI::BeginUI();
       UI::ShowUI();
@@ -208,6 +226,12 @@ namespace ToolKit
       UI::EndUI();
 
       GetRenderSystem()->SetFrameCount(m_totalFrameCount++);
+
+      er = glGetError();
+      if (er != 0)
+      {
+        int y = 5;
+      }
     }
 
     void App::OnResize(uint width, uint height)

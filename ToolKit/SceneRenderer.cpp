@@ -46,6 +46,8 @@ namespace ToolKit
 
   void SceneRenderer::Render(Renderer* renderer)
   {
+    //renderer->m_windowSize = UVec2(640, 480); // TODO
+
     PreRender(renderer);
 
     CullDrawList(m_gBufferPass->m_params.entities, m_params.Cam);
@@ -58,7 +60,7 @@ namespace ToolKit
     renderer->m_sky = m_sky;
 
     // Gbuffer for deferred render
-    m_passArray.push_back(m_gBufferPass);
+    // m_passArray.push_back(m_gBufferPass);
 
     // Shadow pass
     m_passArray.push_back(m_shadowPass);
@@ -66,7 +68,7 @@ namespace ToolKit
     // SSAO pass
     if (m_params.Gfx.SSAOEnabled)
     {
-      m_passArray.push_back(m_ssaoPass);
+      // m_passArray.push_back(m_ssaoPass);
     }
 
     Technique::Render(renderer);
@@ -78,11 +80,11 @@ namespace ToolKit
         std::static_pointer_cast<Texture>(m_shadowPass->GetShadowAtlas()));
 
     // Render non-blended entities with deferred renderer
-    m_passArray.push_back(m_deferredRenderPass);
+    // m_passArray.push_back(m_deferredRenderPass);
 
     if (m_drawSky)
     {
-      m_passArray.push_back(m_skyPass);
+      // m_passArray.push_back(m_skyPass);
     }
 
     // Forward render blended entities
@@ -91,16 +93,16 @@ namespace ToolKit
     // Post processes.
     if (m_params.Gfx.BloomEnabled)
     {
-      m_passArray.push_back(m_bloomPass);
+      // m_passArray.push_back(m_bloomPass);
     }
     if (m_params.Gfx.DepthofFieldEnabled)
     {
-      m_passArray.push_back(m_dofPass);
+      // m_passArray.push_back(m_dofPass);
     }
 
     if (m_params.Gfx.TonemappingEnabled)
     {
-      m_passArray.push_back(m_tonemapPass);
+      // m_passArray.push_back(m_tonemapPass);
     }
 
     if (m_params.Gfx.GammaCorrectionEnabled)
@@ -173,7 +175,7 @@ namespace ToolKit
     m_forwardRenderPass->m_params.Lights           = m_updatedLights;
     m_forwardRenderPass->m_params.Cam              = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.ClearFrameBuffer = false;
+    m_forwardRenderPass->m_params.ClearFrameBuffer = true;
 
     m_forwardRenderPass->m_params.Entities  = translucentAndUnlitDrawList;
 

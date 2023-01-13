@@ -35,9 +35,23 @@ namespace ToolKit
       m_singleMatRenderer = nullptr;
     }
 
+#include "GL/glew.h"
+
     void EditorRenderer::Render(Renderer* renderer)
     {
+      GLenum er = glGetError();
+      if (er != 0)
+      {
+        int y = 5;
+      }
+
       PreRender();
+
+      er = glGetError();
+      if (er != 0)
+      {
+        int y = 5;
+      }
 
       SetLitMode(renderer, m_params.LitMode);
 
@@ -60,6 +74,12 @@ namespace ToolKit
         m_scenePass->m_params.Gfx.TonemappingEnabled     = false;
         m_scenePass->Render(renderer);
         break;
+      }
+
+      er = glGetError();
+      if (er != 0)
+      {
+        int y = 5;
       }
 
       if (m_params.LitMode != EditorLitMode::Game)

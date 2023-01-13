@@ -75,7 +75,7 @@ namespace ToolKit
                "depthTest",
                *reinterpret_cast<int*>(&depthTestEnabled));
 
-      ReadAttr(container, "depthTest", *reinterpret_cast<int*>(&depthFunction));
+      ReadAttr(container, "depthFunc", *reinterpret_cast<int*>(&depthFunction));
 
       ReadAttr(container,
                "blendFunction",

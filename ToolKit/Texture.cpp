@@ -410,6 +410,7 @@ namespace ToolKit
             RenderTargetSettigs set;
             set.InternalFormat = GraphicTypes::FormatRG16F;
             set.Format         = GraphicTypes::FormatRG;
+            set.Type           = GraphicTypes::TypeFloat;
 
             RenderTargetPtr brdfLut =
                 std::make_shared<RenderTarget>(m_brdfLutTextureSize,

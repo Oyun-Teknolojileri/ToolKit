@@ -1,6 +1,7 @@
+#include "Pass.h"
+
 #include "DataTexture.h"
 #include "DirectionComponent.h"
-#include "Pass.h"
 #include "Renderer.h"
 #include "ShaderReflectionCache.h"
 #include "Toolkit.h"
@@ -1140,9 +1141,9 @@ namespace ToolKit
         GraphicTypes::UVClampToEdge,
         GraphicTypes::SampleNearest,
         GraphicTypes::SampleNearest,
-        GraphicTypes::FormatRGB16F,
+        GraphicTypes::FormatRGB8,
         GraphicTypes::FormatRGB,
-        GraphicTypes::TypeFloat,
+        GraphicTypes::TypeUnsignedByte,
         1};
 
     m_gPosRt =
@@ -1160,13 +1161,13 @@ namespace ToolKit
     m_gIblRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR32F;
+    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR8;
     gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
 
     m_gLinearDepthRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRG32F;
+    gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatRG8;
     gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRG;
 
     m_gMetallicRoughnessRt =
@@ -1301,11 +1302,19 @@ namespace ToolKit
                             m_params.entities.end());
   }
 
+#include "GL/glew.h"
+
   void GBufferPass::PostRender() { Pass::PostRender(); }
 
   void GBufferPass::Render()
   {
     Renderer* renderer = GetRenderer();
+
+    GLenum er          = glGetError();
+    if (er != 0)
+    {
+      int y = 5;
+    }
 
     for (Entity* ntt : m_params.entities)
     {
@@ -1316,6 +1325,12 @@ namespace ToolKit
       if (mmComp == nullptr)
       {
         activeMaterial = ntt->GetRenderMaterial();
+      }
+
+      er = glGetError();
+      if (er != 0)
+      {
+        int y = 5;
       }
 
       MeshComponentPtrArray meshComps;
@@ -1340,6 +1355,12 @@ namespace ToolKit
             continue;
           }
 
+          er = glGetError();
+          if (er != 0)
+          {
+            int y = 5;
+          }
+
           m_gBufferMaterial->SetRenderState(activeMaterial->GetRenderState());
           m_gBufferMaterial->UnInit();
           m_gBufferMaterial->m_diffuseTexture =
@@ -1359,7 +1380,19 @@ namespace ToolKit
           m_gBufferMaterial->Init();
           renderer->m_overrideMat = m_gBufferMaterial;
 
+          er                      = glGetError();
+          if (er != 0)
+          {
+            int y = 5;
+          }
+
           renderer->Render(ntt, m_params.camera, {}, {activeMeshIndex});
+
+          er = glGetError();
+          if (er != 0)
+          {
+            int y = 5;
+          }
         }
       }
     }

@@ -396,13 +396,13 @@ namespace ToolKit
 
   TK_API bool IsDefaultResource(const String& path)
   {
-    if (path._Starts_with("ToolKit"))
+    if (path.rfind("ToolKit") == 0)
     {
       return true;
     }
 
     static const String defPath = DefaultPath();
-    if (path._Starts_with(defPath))
+    if (path.rfind(defPath) == 0)
     {
       return true;
     }

@@ -285,6 +285,7 @@ namespace ToolKit
     DrawTypeLineLoop           = 0x0002,
     DrawTypePoints             = 0x0000,
     FormatRed                  = 0x1903,
+    FormatR8                   = 0x8229,
     FormatRG                   = 0x8227,
     FormatRG8                  = 0x822B,
     FormatRGB                  = 0x1907,
