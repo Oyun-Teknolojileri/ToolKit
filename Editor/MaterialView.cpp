@@ -259,7 +259,7 @@ namespace ToolKit
                                            false))
               {
                 m_mat->m_diffuseTexture = nullptr;
-                m_mat->m_dirty          = true;
+                updateThumbFn();
               }
               ImGui::PopID();
             }
@@ -295,7 +295,7 @@ namespace ToolKit
                                            false))
               {
                 m_mat->m_emissiveTexture = nullptr;
-                m_mat->m_dirty           = true;
+                updateThumbFn();
               }
               ImGui::PopID();
             }
@@ -330,7 +330,7 @@ namespace ToolKit
                                            false))
               {
                 m_mat->m_normalMap = nullptr;
-                m_mat->m_dirty     = true;
+                updateThumbFn();
               }
               ImGui::PopID();
             }
@@ -367,7 +367,7 @@ namespace ToolKit
                                            false))
               {
                 m_mat->m_metallicRoughnessTexture = nullptr;
-                m_mat->m_dirty                    = true;
+                updateThumbFn();
               }
               ImGui::PopID();
             }
@@ -447,7 +447,7 @@ namespace ToolKit
         if (ImGui::Combo("Cull mode", &cullMode, "Two Sided\0Front\0Back"))
         {
           m_mat->GetRenderState()->cullMode = (CullingType) cullMode;
-          m_mat->m_dirty                    = true;
+          updateThumbFn();
         }
 
         int blendMode = (int) m_mat->GetRenderState()->blendFunction;
@@ -460,7 +460,7 @@ namespace ToolKit
           {
             m_mat->m_alpha = 1.0f;
           }
-          m_mat->m_dirty = true;
+          updateThumbFn();
         }
 
         int drawType = -1;
@@ -506,14 +506,14 @@ namespace ToolKit
             break;
           }
 
-          m_mat->m_dirty = true;
+          updateThumbFn();
         }
 
         bool depthTest = m_mat->GetRenderState()->depthTestEnabled;
         if (ImGui::Checkbox("Enable depth test", &depthTest))
         {
           m_mat->GetRenderState()->depthTestEnabled = depthTest;
-          m_mat->m_dirty                            = true;
+          updateThumbFn();
         }
 
         bool useForwardPath = m_mat->GetRenderState()->useForwardPath;
@@ -543,7 +543,7 @@ namespace ToolKit
                                "%.3f"))
           {
             m_mat->GetRenderState()->alphaMaskTreshold = alphaMaskTreshold;
-            m_mat->m_dirty                             = true;
+            updateThumbFn();
           }
         }
       }
