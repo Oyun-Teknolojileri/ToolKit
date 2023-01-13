@@ -51,6 +51,7 @@ namespace ToolKit
                                   true,
                                   true,
                                   {false, true, 0.0f, 1.0f, 0.001f});
+
     ParameterEventConstructor();
   }
 

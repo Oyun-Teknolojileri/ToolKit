@@ -143,6 +143,8 @@ namespace ToolKit
     TexturePtr GNormalBuffer      = nullptr;
     TexturePtr GLinearDepthBuffer = nullptr;
     Camera* Cam                   = nullptr;
+    float ssaoRadius              = 0.5f;
+    float ssaoBias                = 0.025f;
   };
 
   class TK_API SSAOPass : public Pass

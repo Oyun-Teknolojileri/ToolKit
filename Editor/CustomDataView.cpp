@@ -717,6 +717,25 @@ namespace ToolKit
         UI::EndCenteredTextButton();
       }
       break;
+      case ParameterVariant::VariantType::MultiChoice:
+      {
+        MultiChoiceVariant* mcv = var->GetVarPtr<MultiChoiceVariant>();
+        if (ImGui::BeginCombo(
+                "##MultiChoiceVariant",
+                mcv->Choices[mcv->CurrentVal.Index].first.c_str()))
+        {
+          for (uint i = 0; i < mcv->Choices.size(); ++i)
+          {
+            bool isSelected = i == mcv->CurrentVal.Index;
+            if (ImGui::Selectable(mcv->Choices[i].first.c_str(), isSelected))
+            {
+              mcv->CurrentVal = {i};
+            }
+          }
+          ImGui::EndCombo();
+        }
+      }
+      break;
       default:
         break;
       }

@@ -516,18 +516,20 @@ namespace ToolKit
           updateThumbFn();
         }
 
-        bool AOInUse = m_mat->GetRenderState()->AOInUse;
-        if (ImGui::Checkbox("Ambient Occlusion", &AOInUse))
-        {
-          m_mat->GetRenderState()->AOInUse = AOInUse;
-          updateThumbFn();
-        }
-
         bool useForwardPath = m_mat->GetRenderState()->useForwardPath;
         if (ImGui::Checkbox("Use Forward Path", &useForwardPath))
         {
           m_mat->GetRenderState()->useForwardPath = useForwardPath;
-          updateThumbFn();
+          m_mat->m_dirty                          = true;
+        }
+        if (useForwardPath)
+        {
+          bool AOInUse = m_mat->GetRenderState()->AOInUse;
+          if (ImGui::Checkbox("Ambient Occlusion", &AOInUse))
+          {
+            m_mat->GetRenderState()->AOInUse = AOInUse;
+            m_mat->m_dirty                   = true;
+          }
         }
 
         if (m_mat->GetRenderState()->blendFunction == BlendFunction::ALPHA_MASK)

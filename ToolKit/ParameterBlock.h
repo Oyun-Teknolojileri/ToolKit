@@ -87,32 +87,60 @@ namespace ToolKit
   /**
    * Variant types.
    */
-  typedef std::variant<bool,
-                       byte,
-                       ubyte,
-                       float,
-                       int,
-                       uint,
-                       Vec2,
-                       Vec3,
-                       Vec4,
-                       Mat3,
-                       Mat4,
-                       String,
-                       ULongID,
-                       MeshPtr,
-                       MaterialPtr,
-                       HdriPtr,
-                       AnimRecordPtrMap,
-                       SkeletonPtr,
-                       VariantCallback>
-      Value;
+  using Value = std::variant<bool,
+                             byte,
+                             ubyte,
+                             float,
+                             int,
+                             uint,
+                             Vec2,
+                             Vec3,
+                             Vec4,
+                             Mat3,
+                             Mat4,
+                             String,
+                             ULongID,
+                             MeshPtr,
+                             MaterialPtr,
+                             HdriPtr,
+                             AnimRecordPtrMap,
+                             SkeletonPtr,
+                             VariantCallback,
+                             struct MultiChoiceVariant>;
 
   /**
    * Value change function callback. When the Variant value has changed, all the
    * registered callbacks are called with old and new values of the parameter.
    */
   typedef std::function<void(Value& oldVal, Value& newVal)> ValueUpdateFn;
+
+  struct MultiChoiceVariant
+  {
+    std::vector<std::pair<String, class ParameterVariant>> Choices;
+
+    struct CurrentValue
+    {
+      uint Index;
+
+      void operator=(CurrentValue val)
+      {
+        uint old = Index;
+        Index    = val.Index;
+        if (Callback != nullptr)
+        {
+          Value oldVal = old;
+          Value newVal = Index;
+          Callback(oldVal, newVal);
+        }
+      }
+
+      ValueUpdateFn Callback;
+
+    } CurrentVal;
+  };
+
+#define GetMultiChoiceVal(MCVariant, T)                                        \
+  MCVariant.Choices[MCVariant.CurrentVal.Index].second.GetCVar<T>();
 
   struct UIHint
   {
@@ -199,7 +227,8 @@ namespace ToolKit
       HdriPtr,
       AnimRecordPtrMap,
       SkeletonPtr,
-      VariantCallback
+      VariantCallback,
+      MultiChoice
     };
 
     /**
@@ -322,6 +351,11 @@ namespace ToolKit
      * Constructs CallbackFn type variant.
      */
     ParameterVariant(const VariantCallback& var);
+
+    /**
+     * Constructs MultiChoiceVariant type variant.
+     */
+    ParameterVariant(const MultiChoiceVariant& var);
 
     /**
      * Used to retrieve VariantType of the variant.
@@ -468,6 +502,11 @@ namespace ToolKit
      * Assign a CallbackFn to the value of the variant.
      */
     ParameterVariant& operator=(const VariantCallback& var);
+
+    /**
+     * Assign a MultiChoiceVariant to the value of the variant.
+     */
+    ParameterVariant& operator=(const MultiChoiceVariant& var);
 
     /**
      * Serializes the variant to the xml document.
