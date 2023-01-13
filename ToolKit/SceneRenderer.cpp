@@ -168,7 +168,14 @@ namespace ToolKit
     m_deferredRenderPass->m_params.lights          = m_updatedLights;
     m_deferredRenderPass->m_params.MainFramebuffer = m_params.MainFramebuffer;
     m_deferredRenderPass->m_params.Cam             = m_params.Cam;
-    m_deferredRenderPass->m_params.AOTexture       = m_ssaoPass->m_ssaoTexture;
+    if (m_params.Gfx.SSAOEnabled)
+    {
+      m_deferredRenderPass->m_params.AOTexture = m_ssaoPass->m_ssaoTexture;
+    }
+    else
+    {
+      m_deferredRenderPass->m_params.AOTexture = nullptr;
+    }
 
     m_forwardRenderPass->m_params.Lights           = m_updatedLights;
     m_forwardRenderPass->m_params.Cam              = m_params.Cam;
@@ -181,6 +188,8 @@ namespace ToolKit
     m_ssaoPass->m_params.GNormalBuffer      = m_gBufferPass->m_gNormalRt;
     m_ssaoPass->m_params.GLinearDepthBuffer = m_gBufferPass->m_gLinearDepthRt;
     m_ssaoPass->m_params.Cam                = m_params.Cam;
+    m_ssaoPass->m_params.ssaoRadius         = m_params.Gfx.ssaoRadius;
+    m_ssaoPass->m_params.ssaoBias           = m_params.Gfx.ssaoBias;
 
     // Set CubeMapPass for sky.
     m_drawSky                               = false;
