@@ -610,10 +610,11 @@ namespace ToolKit
   void Renderer::ClearBuffer(GraphicBitFields fields)
   {
     glDepthMask(true);
-    if ((int)fields & (int)GraphicBitFields::DepthBits) {
+    if ((int) fields & (int) GraphicBitFields::DepthBits)
+    {
       glClearDepth(m_clearColor.a);
     }
-    if ((int)fields & (int)GraphicBitFields::ColorBits)
+    if ((int) fields & (int) GraphicBitFields::ColorBits)
     {
       glClearColor(m_clearColor.r,
                    m_clearColor.g,
@@ -621,7 +622,8 @@ namespace ToolKit
                    m_clearColor.a);
     }
     glClear((GLbitfield) fields);
-    if (!m_renderState.depthWriteEnabled) {
+    if (!m_renderState.depthWriteEnabled)
+    {
       glDepthMask(false);
     }
   }
