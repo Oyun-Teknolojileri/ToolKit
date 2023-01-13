@@ -396,6 +396,7 @@ namespace ToolKit
         ShaderPath("defaultFragment.shader", true));
     material->m_diffuseTexture =
         GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
+    material->GetRenderState()->useForwardPath = true;
     material->Init();
 
     m_storage[MaterialPath("default.material", true)] = MaterialPtr(material);

@@ -122,7 +122,7 @@ namespace ToolKit
 
   Mesh::Mesh()
   {
-    m_material     = std::make_shared<Material>();
+    m_material     = GetMaterialManager()->GetCopyOfDefaultMaterial();
     m_vertexLayout = VertexLayout::Mesh;
   }
 
