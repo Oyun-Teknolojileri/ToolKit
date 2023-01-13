@@ -57,32 +57,58 @@ namespace ToolKit
 
       if (ImGui::CollapsingHeader("Mesh Info", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        ImGui::Text("Vertex Count: %u\nIndex Count: %u",
-                    m_mesh->m_vertexCount,
-                    m_mesh->m_indexCount);
-        DropZone(UI::m_materialIcon->m_textureId,
-                 m_mesh->m_material->GetFile(),
-                 [this](const DirectoryEntry& entry)
-                 {
-                   g_app->m_statusMsg = "Failed.";
+        MeshRawCPtrArray submeshes;
+        m_mesh->GetAllMeshes(submeshes);
+        for (uint i = 0; i < submeshes.size(); i++)
+        {
+          ImGui::PushID(i);
+          const Mesh* submesh = submeshes[i];
+          ImGui::Text("Submesh Index: %u\nVertex Count: %u\nIndex Count: %u",
+                      i,
+                      submesh->m_vertexCount,
+                      submesh->m_indexCount);
+          DropZone(UI::m_materialIcon->m_textureId,
+                   submesh->m_material->GetFile(),
+                   [this](const DirectoryEntry& entry)
+                   {
+                     g_app->m_statusMsg = "Failed.";
 
-                   GetLogger()->WriteConsole(
-                       LogType::Warning,
-                       "You can't change mesh's default material.");
-                 });
+                     GetLogger()->WriteConsole(
+                         LogType::Warning,
+                         "You can't change mesh's default material.");
+                   });
+          if (i < submeshes.size() - 1)
+          {
+            ImGui::Separator();
+          }
+          ImGui::PopID();
+        }
       }
     }
 
     void MeshView::SetMesh(MeshPtr mesh)
     {
-      m_mesh = mesh;
-      m_viewport->GetScene()->GetEntities()[0]->GetMeshComponent()->SetMeshVal(
-          m_mesh);
+      m_mesh             = mesh;
+      Entity* previewNtt = m_viewport->GetScene()->GetEntities()[0];
+      previewNtt->GetMeshComponent()->SetMeshVal(m_mesh);
       BoundingBox aabb;
       for (Entity* ntt : m_viewport->GetScene()->GetEntities())
       {
         aabb.UpdateBoundary(ntt->GetAABB(true).min);
         aabb.UpdateBoundary(ntt->GetAABB(true).max);
+      }
+      if (m_mesh->IsSkinned())
+      {
+        SkeletonComponentPtr skelComp =
+            previewNtt->GetComponent<SkeletonComponent>();
+        if (skelComp == nullptr)
+        {
+          skelComp = std::make_shared<SkeletonComponent>();
+          previewNtt->AddComponent(skelComp);
+        }
+        skelComp->SetSkeletonResourceVal(
+            ((SkinMesh*) m_mesh.get())->m_skeleton);
+        skelComp->Init();
       }
       m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.0f);
     }

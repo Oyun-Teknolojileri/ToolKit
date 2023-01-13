@@ -372,6 +372,10 @@ namespace ToolKit
     renderer->SetTexture(2, m_noiseTexture->m_textureId);
     renderer->SetTexture(3, m_params.GLinearDepthBuffer->m_textureId);
 
+    m_ssaoShader->SetShaderParameter("radius",
+                                     ParameterVariant(m_params.ssaoRadius));
+    m_ssaoShader->SetShaderParameter("bias",
+                                     ParameterVariant(m_params.ssaoBias));
     RenderSubPass(m_quadPass);
 
     // Horizontal blur

@@ -44,7 +44,8 @@ namespace ToolKit
         uint fallbackIcon,
         const String& file,
         std::function<void(const DirectoryEntry& entry)> dropAction,
-        const String& dropName)
+        const String& dropName,
+        bool isEditable)
     {
       DirectoryEntry dirEnt;
 
@@ -92,7 +93,7 @@ namespace ToolKit
                              ImVec2(0.0f, 0.0f),
                              texCoords);
 
-      if (ImGui::BeginDragDropTarget())
+      if (isEditable && ImGui::BeginDragDropTarget())
       {
         if (const ImGuiPayload* payload =
                 ImGui::AcceptDragDropPayload("BrowserDragZone"))
@@ -176,12 +177,10 @@ namespace ToolKit
         std::function<void(const DirectoryEntry& entry)> dropAction,
         bool isEditable)
     {
-      ImGui::EndDisabled();
       bool isOpen = ImGui::TreeNodeEx(title.c_str());
-      ImGui::BeginDisabled(!isEditable);
       if (isOpen)
       {
-        DropZone(fallbackIcon, file, dropAction);
+        DropZone(fallbackIcon, file, dropAction, "", isEditable);
         ImGui::TreePop();
       }
     }
