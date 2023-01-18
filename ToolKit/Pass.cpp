@@ -895,8 +895,8 @@ namespace ToolKit
                                        GraphicTypes::UVClampToEdge,
                                        GraphicTypes::UVClampToEdge,
                                        GraphicTypes::UVClampToEdge,
-                                       GraphicTypes::SampleLinear,
-                                       GraphicTypes::SampleLinear,
+                                       GraphicTypes::SampleNearest,
+                                       GraphicTypes::SampleNearest,
                                        GraphicTypes::FormatRG32F,
                                        GraphicTypes::FormatRG,
                                        GraphicTypes::TypeFloat,
@@ -1190,8 +1190,8 @@ namespace ToolKit
     m_gIblRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);
 
-    //gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR16F;
-    //gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
+    // gBufferRenderTargetSettings.InternalFormat = GraphicTypes::FormatR16F;
+    // gBufferRenderTargetSettings.Format         = GraphicTypes::FormatRed;
 
     m_gLinearDepthRt =
         std::make_shared<RenderTarget>(1024, 1024, gBufferRenderTargetSettings);

@@ -92,7 +92,7 @@ namespace ToolKit
       {
         m_normalMap->UnInit();
         TextureSettings set;
-        set.InternalFormat = GraphicTypes::FormatRGB;
+        set.InternalFormat = GraphicTypes::FormatRGBA;
         set.MinFilter      = GraphicTypes::SampleNearest;
         set.Type           = GraphicTypes::TypeUnsignedByte;
         set.GenerateMipMap = false;
