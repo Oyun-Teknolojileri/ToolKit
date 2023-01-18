@@ -63,18 +63,18 @@ namespace ToolKit
     m_passArray.clear();
 
     // Set current sky.
-    // renderer->m_sky = m_sky;
+    renderer->m_sky = m_sky;
 
     // Gbuffer for deferred render
     m_passArray.push_back(m_gBufferPass);
 
     // Shadow pass
-    // m_passArray.push_back(m_shadowPass);
+    m_passArray.push_back(m_shadowPass);
 
     // SSAO pass
     if (m_params.Gfx.SSAOEnabled)
     {
-      //m_passArray.push_back(m_ssaoPass);
+      m_passArray.push_back(m_ssaoPass);
     }
 
     Technique::Render(renderer);
@@ -96,7 +96,7 @@ namespace ToolKit
 
     if (m_drawSky)
     {
-      // m_passArray.push_back(m_skyPass);
+      m_passArray.push_back(m_skyPass);
     }
 
     // Forward render blended entities
@@ -105,21 +105,21 @@ namespace ToolKit
     // Post processes.
     if (m_params.Gfx.BloomEnabled)
     {
-      // m_passArray.push_back(m_bloomPass);
+      m_passArray.push_back(m_bloomPass);
     }
     if (m_params.Gfx.DepthofFieldEnabled)
     {
-      // m_passArray.push_back(m_dofPass);
+      m_passArray.push_back(m_dofPass);
     }
 
     if (m_params.Gfx.TonemappingEnabled)
     {
-      // m_passArray.push_back(m_tonemapPass);
+      m_passArray.push_back(m_tonemapPass);
     }
 
     if (m_params.Gfx.GammaCorrectionEnabled)
     {
-      // m_passArray.push_back(m_gammaPass);
+      m_passArray.push_back(m_gammaPass);
     }
 
     Technique::Render(renderer);
@@ -131,7 +131,6 @@ namespace ToolKit
     }
 
     renderer->SetShadowAtlas(nullptr);
-
 
     PostRender();
 
